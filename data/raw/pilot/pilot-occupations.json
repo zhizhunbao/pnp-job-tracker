@@ -1,7 +1,232 @@
 {
- "fetched": "2026-08-15",
- "note": "各社区官方优先/在收职业清单(当前有效版;年中调整以官方页为准)。sectorOnly=官方只给行业名未列职业。",
+ "fetched": "2026-08-14",
+ "note": "各社区官方优先/在收职业清单(批C 自动刷新;当前有效版)。sectorOnly=官方只给行业名。",
  "rows": [
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "12200",
+   "title": "Accounting technicians and bookkeepers",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "21211",
+   "title": "Data scientists",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "21220",
+   "title": "Cybersecurity specialists",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "22212",
+   "title": "Drafting technologists and technicians",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "21301",
+   "title": "Mechanical engineers",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "22301",
+   "title": "Mechanical engineering technologists and technicians",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "31120",
+   "title": "Pharmacists",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "33103",
+   "title": "Pharmacy technical assistants and pharmacy technicians",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "42202",
+   "title": "Early childhood educators and assistants",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "60020",
+   "title": "Retail and wholesale trade managers",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "63200",
+   "title": "Cooks",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "63202",
+   "title": "Bakers",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "72100",
+   "title": "Machinists and machining and tooling inspectors",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "72310",
+   "title": "Carpenters",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "72400",
+   "title": "Construction millwrights and industrial mechanics",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "72402",
+   "title": "Heating, refrigeration and air conditioning mechanics",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "72410",
+   "title": "Automotive service technicians, truck and bus mechanics and mechanical repairers",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "72411",
+   "title": "Auto body collision, refinishing and glass technicians and damage repair estimators",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "73210",
+   "title": "Plasterers, drywall installers and finishers and lathers",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "75101",
+   "title": "Material Handler",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "92014",
+   "title": "Supervisors, forest products processing",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "94132",
+   "title": "Industrial sewing machine operators",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "94152",
+   "title": "Binding and finishing machine operators",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "94201",
+   "title": "Electronics assemblers, fabricators, inspectors and testers",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
+  {
+   "community": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "noc": "94211",
+   "title": "Assemblers and inspectors of other wood products",
+   "sectorOnly": false,
+   "url": "https://pcrcip.ca/"
+  },
   {
    "community": "North Bay and Area",
    "province": "ON",
@@ -1114,7 +1339,7 @@
    "province": "ON",
    "type": "FCIP",
    "noc": "85103",
-   "title": "Nursery and greenhouse labourers",
+   "title": "Nursey and greenhouse labourers",
    "sectorOnly": false,
    "url": "https://timminsedc.com/immigration/"
   },
@@ -1585,1599 +1810,6 @@
    "title": "Sawmill Machine Operators",
    "sectorOnly": false,
    "url": "https://gotothunderbay.ca/rural-community-immigration-pilot-rcip/"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "32101",
-   "title": "Licensed practical nurses",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "32102",
-   "title": "Paramedical occupations",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "33102",
-   "title": "Nurse Aides, Orderlies, and Patient Service Associates",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "41220",
-   "title": "Secondary School Teachers",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "41221",
-   "title": "Elementary School Teacher",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "42202",
-   "title": "Early Childhood Educator (ECE)",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "44101",
-   "title": "Home Support Workers, Caregivers and related occupations (PSW)",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "62010",
-   "title": "Retail Sales Supervisor",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "62020",
-   "title": "Food Service Supervisor",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "62022",
-   "title": "Accommodation, travel, tourism and related services supervisors",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "63200",
-   "title": "Line Cooks",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "65100",
-   "title": "Cashiers",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "65201",
-   "title": "Food counter attendants, kitchen helpers and related support occupations",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "65310",
-   "title": "Light duty cleaners",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "72106",
-   "title": "Welders and related machine operators",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "72200",
-   "title": "Electricians",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "72310",
-   "title": "Carpenters",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "72400",
-   "title": "Construction Millwrights and industrial mechanics",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "72410",
-   "title": "Automotive service technicians, truck and bus mechanics and mechanical repairers",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "72429",
-   "title": "Other small engine and small equipment repairers",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "73201",
-   "title": "General building maintenance workers and building superintendents",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "73400",
-   "title": "Heavy Equipment Operator",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "75110",
-   "title": "Construction Trades Helpers and Labourers",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "83100",
-   "title": "Underground production and development miners",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "Superior East Region, ON",
-   "province": "ON",
-   "type": "FCIP",
-   "noc": "95103",
-   "title": "Labourers in wood, pulp and paper processing",
-   "sectorOnly": false,
-   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "11100",
-   "title": "Accountants",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "12200",
-   "title": "Accounting Technicians & Bookkeepers",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "13110",
-   "title": "Administrative Assistant",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "31301",
-   "title": "Registered Nurse",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "32101",
-   "title": "Licensed Practical Nurse",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "33102",
-   "title": "Health Care Aides",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "42201",
-   "title": "Social & Community Service Workers",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "42202",
-   "title": "Early Childhood Educators & ECE-Assistants",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "44101",
-   "title": "Home Support Worker",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "60020",
-   "title": "Retail & Wholesale Trade Manager",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "60030",
-   "title": "Restaurant & Food Service Manager",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "62200",
-   "title": "Chef",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "63100",
-   "title": "Insurance Broker",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "63200",
-   "title": "Cook",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "63202",
-   "title": "Baker",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "64314",
-   "title": "Front Desk Agent",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "65200",
-   "title": "Food & Beverage Server",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "72400",
-   "title": "Construction Millwright & Industrial Mechanic",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "72410",
-   "title": "Commercial Vehicle/ Automotive Service Technician",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "73112",
-   "title": "Painters",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "73300",
-   "title": "Transport Truck Drivers",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "75101",
-   "title": "Material Handlers",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "75110",
-   "title": "Construction trades helpers and labourers",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "94140",
-   "title": "Operators, Food & Beverage Processing",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "West Kootenay, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "95109",
-   "title": "Other Labourers, Processing, Manufacturing & Utilities",
-   "sectorOnly": false,
-   "url": "https://westkootenayimmigration.ca/priorities/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "12200",
-   "title": "Accounting technicians and bookkeepers",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "13100",
-   "title": "Administrative Officers",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "13111",
-   "title": "Legal Administrative Assistant",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "14200",
-   "title": "Accounting and related clerks",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "21321",
-   "title": "Industrial and Manufacturing Engineers",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "32124",
-   "title": "Pharmacy Technicians",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "33100",
-   "title": "Dental Assistant and Dental Laboratory Assistants",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "33101",
-   "title": "Medical Laboratory Assistants and Related Technical Occupations",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "33102",
-   "title": "Nurse Aides, Orderlies, and Patient Service Associates",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "42201",
-   "title": "Social and Community Service Workers",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "42202",
-   "title": "Early Childhood Educator and Assistants",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "60030",
-   "title": "Restaurant and Food Service Managers",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "62010",
-   "title": "Retail Sales Supervisor",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "62021",
-   "title": "Executive Housekeepers",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "63100",
-   "title": "Insurance Agents and Brokers",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "63202",
-   "title": "Bakers",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "65310",
-   "title": "Light Duty Cleaners",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "72310",
-   "title": "Carpenters",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "72402",
-   "title": "Heating, Refrigeration, and Air Conditioning Mechanics",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "72410",
-   "title": "Automotive Service Technicians, Truck and Bus Mechanics and Mechanical Repairers",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "73300",
-   "title": "Transport Truck Drivers",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "75110",
-   "title": "Construction Trades Helper",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "90010",
-   "title": "Manufacturing Managers",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "94140",
-   "title": "Process Control and Machine Operators, Food and Beverage Processing",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "North Okanagan Shuswap, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "94212",
-   "title": "Plastic Products Assemblers, Finishers and Inspectors",
-   "sectorOnly": false,
-   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "12200",
-   "title": "Accounting Technicians and Bookkeepers",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "13100",
-   "title": "Administrative Officer",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "13110",
-   "title": "Administrative Assistant",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "14100",
-   "title": "General Office Support Worker",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "14401",
-   "title": "Storekeepers and Partspersons",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "33103",
-   "title": "Pharmacy Technical Assistant",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "33109",
-   "title": "Other Assisting Occupations in Support of Health Services",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "42201",
-   "title": "Community Service Worker",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "42202",
-   "title": "Early Childhood Educators and Assistants",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "60020",
-   "title": "Retail and Wholesale Trade Managers",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "60030",
-   "title": "Food Service Managers",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "60031",
-   "title": "Accommodation Service Managers",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "62010",
-   "title": "Retail Sales Supervisor",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "62020",
-   "title": "Food Service Supervisor",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "63200",
-   "title": "Cook",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "64314",
-   "title": "Front Desk Clerk",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "65100",
-   "title": "Cashier",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "65310",
-   "title": "Light Duty Cleaner",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "72404",
-   "title": "Aircraft Mechanics",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "72410",
-   "title": "Automotive Service Technician",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "72600",
-   "title": "Air Pilots, Flight Engineers and Flying Instructors",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "73201",
-   "title": "General Building Maintenance Workers and Building Superintendents",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "73300",
-   "title": "Transport Truck Drivers (local)",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "21222",
-   "title": "Information Systems Specialist",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Peace Liard, BC",
-   "province": "BC",
-   "type": "RCIP",
-   "noc": "22220",
-   "title": "Computer Network and Web Technician",
-   "sectorOnly": false,
-   "url": "https://www.nebcimmigration.ca/priority-occupations"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "63202",
-   "title": "Bakers",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "62024",
-   "title": "Cleaning supervisors",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "63200",
-   "title": "Cooks",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "60010",
-   "title": "Corporate sales managers",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "64314",
-   "title": "Hotel front desk clerks",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "72310",
-   "title": "Carpenters",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "72200",
-   "title": "Electrician",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "72410",
-   "title": "Automotive service technicians, truck and bus mechanics, and mechanical repairers",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "73209",
-   "title": "Other repairers and servicers",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "73112",
-   "title": "Painters and decorators (except interior decorators)",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "72311",
-   "title": "Cabinetmakers",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "73110",
-   "title": "Roofers and shinglers",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "73102",
-   "title": "Plasterers, drywall installers and finishers, and lathers",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "42202",
-   "title": "Early Childhood Educators and Assistants",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "44101",
-   "title": "Home support workers, caregivers, and related occupations",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "43100",
-   "title": "Elementary and secondary school teacher assistants",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "41210",
-   "title": "College and other vocational instructors",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "42201",
-   "title": "Social and community service workers",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "33102",
-   "title": "Nurse aides, orderlies, and patient service associates",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "33109",
-   "title": "Other assisting occupations in support of health services",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "33101",
-   "title": "Medical laboratory assistants and related technical occupations",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "12200",
-   "title": "Accounting technicians and bookkeepers",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "12011",
-   "title": "Supervisors of finance and insurance office workers",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "12010",
-   "title": "Supervisors, general office and administrative support workers",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Kelowna, BC",
-   "province": "BC",
-   "type": "FCIP",
-   "noc": "13100",
-   "title": "Administrative Officers",
-   "sectorOnly": false,
-   "url": "https://www.sdecb.com/en/pilot-program/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "33102",
-   "title": "Nurse Aides, Orderlies & Patient Service Workers (CCAs)",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "33109",
-   "title": "Other Assisting Occupations in Support of Health",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "42202",
-   "title": "ECEs and Assistants",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "44101",
-   "title": "Home Support Workers, Caregivers",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "42201",
-   "title": "Social and Community Service Workers",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "12200",
-   "title": "Accounting Technicians and Bookkeepers",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "14201",
-   "title": "Banking, Insurance, and Other Financial Clerks",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "13100",
-   "title": "Administrative Officer",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "63211",
-   "title": "Estheticians, Skin and Nail Techs",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "72106",
-   "title": "Welders and Related Machine Operators",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "74203",
-   "title": "Automotive and Heavy Truck Equipment Parts Installers",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "72410",
-   "title": "Automotive and Heavy Equipment Parts Installers",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "72411",
-   "title": "Autobody collision, refinishing and glass techs",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "73113",
-   "title": "Floor Covering Installers",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "75101",
-   "title": "Material Handlers",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "22111",
-   "title": "Ag and Fish Products Inspectors",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "95106",
-   "title": "Food Processing Labourers",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "94141",
-   "title": "Industrial Butchers and Meat Cutters",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "65310",
-   "title": "Light Duty Cleaners",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "65312",
-   "title": "Janitors, Caretakes, Heavy Duty Cleaners",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "73201",
-   "title": "General Building Maintenance Workers and Superintendents",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "64314",
-   "title": "Hotel Front Desk Clerks",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "60020",
-   "title": "Retail and Wholesale Trade Managers",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "62010",
-   "title": "Retail Supervisors (capped at 5% annually, across all employers)",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Moose Jaw, SK",
-   "province": "SK",
-   "type": "RCIP",
-   "noc": "63200",
-   "title": "Cooks (capped at 5% annually, across all employers)",
-   "sectorOnly": false,
-   "url": "https://rcip.mjchamber.com/employers/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "33102",
-   "title": "Nurse aides",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "31301",
-   "title": "Registered Nurse",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "32101",
-   "title": "Licensed Practical Nurse",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "63200",
-   "title": "Cook",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "65202",
-   "title": "Meat cutters",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "94103",
-   "title": "Stone Saw Operator (Effective July 1st)",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "94140",
-   "title": "Machine operators, Process control, food and beverage processing",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "13110",
-   "title": "Administrative assistant",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "22100",
-   "title": "Chemical technologist and technicians",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "73100",
-   "title": "Concrete Finishers",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "72310",
-   "title": "Carpenter",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "22301",
-   "title": "Mechanical Engineering Technologist and technicians",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "94106",
-   "title": "Machining tool operators",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "72014",
-   "title": "Concrete finishing foreman/woman",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "94124",
-   "title": "Woodworking Machine Operators",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "92022",
-   "title": "Supervisors, furniture and fixtures manufacturing",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "93200",
-   "title": "Aircraft assembler",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "72404",
-   "title": "Aircraft mechanic",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "21390",
-   "title": "Aerospace engineer",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "20010",
-   "title": "Engineering Manager",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "22232",
-   "title": "Sr. Health and Safety Coordinator",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "95106",
-   "title": "Labourers in food and beverage processing",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "75119",
-   "title": "Mechanic Helper",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "63200",
-   "title": "Cook (Full-Service Restaurant Subsector Only)",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "13100",
-   "title": "Administrative Officers",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "72600",
-   "title": "Flight Instructor",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
-  },
-  {
-   "community": "Claresholm, AB",
-   "province": "AB",
-   "type": "RCIP",
-   "noc": "84120",
-   "title": "Specialized livestock workers and farm machinery operators",
-   "sectorOnly": false,
-   "url": "https://claresholm-rcip.ca/"
   },
   {
    "community": "Steinbach, MB",
@@ -3855,454 +2487,1147 @@
    "url": "https://economicdevelopmentbrandon.com/rcip/rcip-sector-labour-market-priorities-list"
   },
   {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
-   "noc": "14100",
-   "title": "General office support workers",
-   "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
-  },
-  {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
-   "noc": "12200",
-   "title": "Accounting technicians and bookkeepers",
-   "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
-  },
-  {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
-   "noc": "13110",
-   "title": "Administrative assistants",
-   "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
-  },
-  {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
    "noc": "33102",
-   "title": "Nurse aides, orderlies and patient service associates",
+   "title": "Nurse Aides, Orderlies & Patient Service Workers (CCAs)",
    "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+   "url": "https://rcip.mjchamber.com/employers/"
   },
   {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
    "noc": "33109",
-   "title": "Other health service support workers",
+   "title": "Other Assisting Occupations in Support of Health",
    "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+   "url": "https://rcip.mjchamber.com/employers/"
   },
   {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
    "noc": "42202",
-   "title": "Early childhood educators and assistants",
+   "title": "ECEs and Assistants",
    "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+   "url": "https://rcip.mjchamber.com/employers/"
   },
   {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
-   "noc": "43100",
-   "title": "Teacher assistants",
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
+   "noc": "44101",
+   "title": "Home Support Workers, Caregivers",
    "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+   "url": "https://rcip.mjchamber.com/employers/"
   },
   {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
-   "noc": "41302",
-   "title": "Religious leaders",
-   "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
-  },
-  {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
-   "noc": "41221",
-   "title": "Elementary and kindergarten teachers",
-   "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
-  },
-  {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
-   "noc": "41220",
-   "title": "Secondary school teachers",
-   "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
-  },
-  {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
    "noc": "42201",
-   "title": "Social and community service workers",
+   "title": "Social and Community Service Workers",
    "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+   "url": "https://rcip.mjchamber.com/employers/"
   },
   {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
-   "noc": "65201",
-   "title": "Counter attendants, kitchen helpers and related support occupations",
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
+   "noc": "12200",
+   "title": "Accounting Technicians and Bookkeepers",
    "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+   "url": "https://rcip.mjchamber.com/employers/"
   },
   {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
-   "noc": "63200",
-   "title": "Cooks",
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
+   "noc": "14201",
+   "title": "Banking, Insurance, and Other Financial Clerks",
    "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+   "url": "https://rcip.mjchamber.com/employers/"
   },
   {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
-   "noc": "65310",
-   "title": "Light duty cleaners",
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
+   "noc": "13100",
+   "title": "Administrative Officer",
    "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+   "url": "https://rcip.mjchamber.com/employers/"
   },
   {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
-   "noc": "63202",
-   "title": "Bakers and pastry chefs",
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
+   "noc": "63211",
+   "title": "Estheticians, Skin and Nail Techs",
    "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+   "url": "https://rcip.mjchamber.com/employers/"
   },
   {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
-   "noc": "65312",
-   "title": "Janitors, caretakers and heavy-duty cleaners",
-   "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
-  },
-  {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
-   "noc": "65100",
-   "title": "Cashiers",
-   "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
-  },
-  {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
-   "noc": "65102",
-   "title": "Store shelf stockers, clerks and order fillers",
-   "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
-  },
-  {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
-   "noc": "63100",
-   "title": "Insurance agents and brokers",
-   "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
-  },
-  {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
-   "noc": "64400",
-   "title": "Customer service representatives – financial institutions",
-   "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
-  },
-  {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
    "noc": "72106",
-   "title": "Welders and related machine operators",
+   "title": "Welders and Related Machine Operators",
    "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+   "url": "https://rcip.mjchamber.com/employers/"
   },
   {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
-   "noc": "72300",
-   "title": "Plumbers",
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
+   "noc": "74203",
+   "title": "Automotive and Heavy Truck Equipment Parts Installers",
    "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+   "url": "https://rcip.mjchamber.com/employers/"
   },
   {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
    "noc": "72410",
-   "title": "Automotive service technicians, truck and bus mechanics",
+   "title": "Automotive and Heavy Equipment Parts Installers",
    "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+   "url": "https://rcip.mjchamber.com/employers/"
   },
   {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
    "noc": "72411",
-   "title": "Auto body collision, refinishing and glass technicians and damage repair estimators",
+   "title": "Autobody collision, refinishing and glass techs",
    "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+   "url": "https://rcip.mjchamber.com/employers/"
   },
   {
-   "community": "St. Pierre Jolys, MB",
-   "province": "MB",
-   "type": "FCIP",
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
+   "noc": "73113",
+   "title": "Floor Covering Installers",
+   "sectorOnly": false,
+   "url": "https://rcip.mjchamber.com/employers/"
+  },
+  {
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
+   "noc": "75101",
+   "title": "Material Handlers",
+   "sectorOnly": false,
+   "url": "https://rcip.mjchamber.com/employers/"
+  },
+  {
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
+   "noc": "22111",
+   "title": "Ag and Fish Products Inspectors",
+   "sectorOnly": false,
+   "url": "https://rcip.mjchamber.com/employers/"
+  },
+  {
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
+   "noc": "95106",
+   "title": "Food Processing Labourers",
+   "sectorOnly": false,
+   "url": "https://rcip.mjchamber.com/employers/"
+  },
+  {
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
+   "noc": "94141",
+   "title": "Industrial Butchers and Meat Cutters",
+   "sectorOnly": false,
+   "url": "https://rcip.mjchamber.com/employers/"
+  },
+  {
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
+   "noc": "65310",
+   "title": "Light Duty Cleaners",
+   "sectorOnly": false,
+   "url": "https://rcip.mjchamber.com/employers/"
+  },
+  {
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
+   "noc": "65312",
+   "title": "Janitors, Caretakes, Heavy Duty Cleaners",
+   "sectorOnly": false,
+   "url": "https://rcip.mjchamber.com/employers/"
+  },
+  {
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
+   "noc": "73201",
+   "title": "General Building Maintenance Workers and Superintendents",
+   "sectorOnly": false,
+   "url": "https://rcip.mjchamber.com/employers/"
+  },
+  {
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
+   "noc": "64314",
+   "title": "Hotel Front Desk Clerks",
+   "sectorOnly": false,
+   "url": "https://rcip.mjchamber.com/employers/"
+  },
+  {
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
+   "noc": "60020",
+   "title": "Retail and Wholesale Trade Managers",
+   "sectorOnly": false,
+   "url": "https://rcip.mjchamber.com/employers/"
+  },
+  {
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
+   "noc": "62010",
+   "title": "Retail Supervisors (capped at 5% annually, across all employers)",
+   "sectorOnly": false,
+   "url": "https://rcip.mjchamber.com/employers/"
+  },
+  {
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
+   "noc": "63200",
+   "title": "Cooks (capped at 5% annually, across all employers)",
+   "sectorOnly": false,
+   "url": "https://rcip.mjchamber.com/employers/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "33102",
+   "title": "Nurse aides",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "31301",
+   "title": "Registered Nurse",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "32101",
+   "title": "Licensed Practical Nurse",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "63200",
+   "title": "Cook",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "65202",
+   "title": "Meat cutters",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "94103",
+   "title": "Stone Saw Operator – Effective July 1st",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "94140",
+   "title": "Machine operators, Process control, food and beverage processing",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "13110",
+   "title": "Administrative assistant",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "22100",
+   "title": "Chemical technologist and technicians",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "73100",
+   "title": "Concrete Finishers",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "72310",
+   "title": "Carpenter",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "22301",
+   "title": "Mechanical Engineering Technologist and technicians",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "94106",
+   "title": "Machining tool operators",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "72014",
+   "title": "Concrete finishing foreman/woman",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "94124",
+   "title": "Woodworking Machine Operators",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "92022",
+   "title": "Supervisors, furniture and fixtures manufacturing",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "93200",
+   "title": "Aircraft assembler",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "72404",
+   "title": "Aircraft mechanic",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "21390",
+   "title": "Aerospace engineer",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "20010",
+   "title": "Engineering Manager",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "22232",
+   "title": "Sr. Health and Safety Coordinator",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "95106",
+   "title": "Labourers in food and beverage processing",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "75119",
+   "title": "Mechanic Helper",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "63200",
+   "title": "Cook (Full-Service Restaurant Subsector Only)",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "13100",
+   "title": "Administrative Officers",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "noc": "72600",
+   "title": "Flight Instructor",
+   "sectorOnly": false,
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
    "noc": "84120",
    "title": "Specialized livestock workers and farm machinery operators",
    "sectorOnly": false,
-   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+   "url": "https://claresholm-rcip.ca/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "11100",
+   "title": "Accountants",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "12200",
+   "title": "Accounting Technicians & Bookkeepers",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "13110",
+   "title": "Administrative Assistant",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "31301",
+   "title": "Registered Nurse",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "32101",
+   "title": "Licensed Practical Nurse",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "33102",
+   "title": "Health Care Aides",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "42201",
+   "title": "Social & Community Service Workers",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "42202",
+   "title": "Early Childhood Educators & ECE-Assistants",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "44101",
+   "title": "Home Support Worker",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "60020",
+   "title": "Retail & Wholesale Trade Manager",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "60030",
+   "title": "Restaurant & Food Service Manager",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "62200",
+   "title": "Chef",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "63100",
+   "title": "Insurance Broker",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "63200",
+   "title": "Cook",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "63202",
+   "title": "Baker",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "64314",
+   "title": "Front Desk Agent",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "65200",
+   "title": "Food & Beverage Server",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "72400",
+   "title": "Construction Millwright & Industrial Mechanic",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "72410",
+   "title": "Commercial Vehicle/ Automotive Service Technician",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "73112",
+   "title": "Painters",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "73300",
+   "title": "Transport Truck Drivers",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "75101",
+   "title": "Material Handlers",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "75110",
+   "title": "Construction trades helpers and labourers",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "94140",
+   "title": "Operators, Food & Beverage Processing",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "95109",
+   "title": "Other Labourers, Processing, Manufacturing & Utilities",
+   "sectorOnly": false,
+   "url": "https://westkootenayimmigration.ca/priorities/"
+  },
+  {
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
    "type": "RCIP",
    "noc": "12200",
    "title": "Accounting technicians and bookkeepers",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
    "type": "RCIP",
-   "noc": "21211",
-   "title": "Data scientists",
+   "noc": "13100",
+   "title": "Administrative Officers",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
    "type": "RCIP",
-   "noc": "21220",
-   "title": "Cybersecurity specialists",
+   "noc": "13111",
+   "title": "Legal Administrative Assistant",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
    "type": "RCIP",
-   "noc": "22212",
-   "title": "Drafting technologists and technicians",
+   "noc": "14200",
+   "title": "Accounting and related clerks",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
    "type": "RCIP",
-   "noc": "21301",
-   "title": "Mechanical engineers",
+   "noc": "21321",
+   "title": "Industrial and Manufacturing Engineers",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
    "type": "RCIP",
-   "noc": "22301",
-   "title": "Mechanical engineering technologists and technicians",
+   "noc": "32124",
+   "title": "Pharmacy Technicians",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
    "type": "RCIP",
-   "noc": "31120",
-   "title": "Pharmacists",
+   "noc": "33100",
+   "title": "Dental Assistant and Dental Laboratory Assistants",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
    "type": "RCIP",
-   "noc": "33103",
-   "title": "Pharmacy technical assistants and pharmacy technicians",
+   "noc": "33101",
+   "title": "Medical Laboratory Assistants and Related Technical Occupations",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "33102",
+   "title": "Nurse Aides, Orderlies, and Patient Service Associates",
+   "sectorOnly": false,
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
+  },
+  {
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "42201",
+   "title": "Social and Community Service Workers",
+   "sectorOnly": false,
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
+  },
+  {
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
    "type": "RCIP",
    "noc": "42202",
-   "title": "Early childhood educators and assistants",
+   "title": "Early Childhood Educator and Assistants",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
    "type": "RCIP",
-   "noc": "60020",
-   "title": "Retail and wholesale trade managers",
+   "noc": "60030",
+   "title": "Restaurant and Food Service Managers",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
    "type": "RCIP",
-   "noc": "63200",
-   "title": "Cooks",
+   "noc": "62010",
+   "title": "Retail Sales Supervisor",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "62021",
+   "title": "Executive Housekeepers",
+   "sectorOnly": false,
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
+  },
+  {
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "63100",
+   "title": "Insurance Agents and Brokers",
+   "sectorOnly": false,
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
+  },
+  {
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
    "type": "RCIP",
    "noc": "63202",
    "title": "Bakers",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
    "type": "RCIP",
-   "noc": "72100",
-   "title": "Machinists and machining and tooling inspectors",
+   "noc": "65310",
+   "title": "Light Duty Cleaners",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
    "type": "RCIP",
    "noc": "72310",
    "title": "Carpenters",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
-   "type": "RCIP",
-   "noc": "72400",
-   "title": "Construction millwrights and industrial mechanics",
-   "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
-  },
-  {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
    "type": "RCIP",
    "noc": "72402",
-   "title": "Heating, refrigeration and air conditioning mechanics",
+   "title": "Heating, Refrigeration, and Air Conditioning Mechanics",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
    "type": "RCIP",
    "noc": "72410",
-   "title": "Automotive service technicians, truck and bus mechanics and mechanical repairers",
+   "title": "Automotive Service Technicians, Truck and Bus Mechanics and Mechanical Repairers",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
    "type": "RCIP",
-   "noc": "72411",
-   "title": "Auto body collision, refinishing and glass technicians and damage repair estimators",
+   "noc": "73300",
+   "title": "Transport Truck Drivers",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
    "type": "RCIP",
-   "noc": "73210",
-   "title": "Plasterers, drywall installers and finishers and lathers",
+   "noc": "75110",
+   "title": "Construction Trades Helper",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
    "type": "RCIP",
-   "noc": "75101",
-   "title": "Material Handler",
+   "noc": "90010",
+   "title": "Manufacturing Managers",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
    "type": "RCIP",
-   "noc": "92014",
-   "title": "Supervisors, forest products processing",
+   "noc": "94140",
+   "title": "Process Control and Machine Operators, Food and Beverage Processing",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "North Okanagan Shuswap, BC",
+   "province": "BC",
    "type": "RCIP",
-   "noc": "94132",
-   "title": "Industrial sewing machine operators",
+   "noc": "94212",
+   "title": "Plastic Products Assemblers, Finishers and Inspectors",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://rcipnorthokanaganshuswap.com/priority-sectors-nocs/"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "Peace Liard, BC",
+   "province": "BC",
    "type": "RCIP",
-   "noc": "94152",
-   "title": "Binding and finishing machine operators",
+   "noc": "12200",
+   "title": "Accounting Technicians and Bookkeepers",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "Peace Liard, BC",
+   "province": "BC",
    "type": "RCIP",
-   "noc": "94201",
-   "title": "Electronics assemblers, fabricators, inspectors and testers",
+   "noc": "13100",
+   "title": "Administrative Officer",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
   },
   {
-   "community": "Pictou County, NS",
-   "province": "NS",
+   "community": "Peace Liard, BC",
+   "province": "BC",
    "type": "RCIP",
-   "noc": "94211",
-   "title": "Assemblers and inspectors of other wood products",
+   "noc": "13110",
+   "title": "Administrative Assistant",
    "sectorOnly": false,
-   "url": "https://pcrcip.ca/"
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "14100",
+   "title": "General Office Support Worker",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "14401",
+   "title": "Storekeepers and Partspersons",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "33103",
+   "title": "Pharmacy Technical Assistant",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "33109",
+   "title": "Other Assisting Occupations in Support of Health Services",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "42201",
+   "title": "Community Service Worker",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "42202",
+   "title": "Early Childhood Educators and Assistants",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "60020",
+   "title": "Retail and Wholesale Trade Managers",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "60030",
+   "title": "Food Service Managers",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "60031",
+   "title": "Accommodation Service Managers",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "62010",
+   "title": "Retail Sales Supervisor",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "62020",
+   "title": "Food Service Supervisor",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "63200",
+   "title": "Cook",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "64314",
+   "title": "Front Desk Clerk",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "65100",
+   "title": "Cashier",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "65310",
+   "title": "Light Duty Cleaner",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "72404",
+   "title": "Aircraft Mechanics",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "72410",
+   "title": "Automotive Service Technician",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "72600",
+   "title": "Air Pilots, Flight Engineers and Flying Instructors",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "73201",
+   "title": "General Building Maintenance Workers and Building Superintendents",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "73300",
+   "title": "Transport Truck Drivers (local)",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "21222",
+   "title": "Information Systems Specialist",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "noc": "22220",
+   "title": "Computer Network and Web Technician",
+   "sectorOnly": false,
+   "url": "https://www.nebcimmigration.ca/priority-occupations"
   },
   {
    "community": "Acadian Peninsula, NB",
@@ -4528,6 +3853,681 @@
    "title": "Manœuvres dans la transformation des aliments et des boissons",
    "sectorOnly": false,
    "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "32101",
+   "title": "Licensed practical nurses",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "32102",
+   "title": "Paramedical occupations",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "33102",
+   "title": "Nurse Aides, Orderlies, and Patient Service Associates",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "41220",
+   "title": "Secondary School Teachers",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "41221",
+   "title": "Elementary School Teacher",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "42202",
+   "title": "Early Childhood Educator (ECE)",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "44101",
+   "title": "Home Support Workers, Caregivers",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "62010",
+   "title": "Retail Sales Supervisor",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "62020",
+   "title": "Food Service Supervisor",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "62022",
+   "title": "Accommodation, travel, tourism and related services supervisors",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "63200",
+   "title": "Line Cooks",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "65100",
+   "title": "Cashiers",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "65201",
+   "title": "Food counter attendants, kitchen helpers and related support occupations",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "65310",
+   "title": "Light duty cleaners",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "72106",
+   "title": "Welders and related machine operators",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "72200",
+   "title": "Electricians",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "72310",
+   "title": "Carpenters",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "72400",
+   "title": "Construction Millwrights and industrial mechanics",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "72410",
+   "title": "Automotive service technicians, truck and bus mechanics and mechanical repairers",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "72429",
+   "title": "Other small engine and small equipment repairers",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "73201",
+   "title": "General building maintenance workers and building superintendents",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "73400",
+   "title": "Heavy Equipment Operator",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "75110",
+   "title": "Construction Trades Helpers and Labourers",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "83100",
+   "title": "Underground production and development miners",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "95103",
+   "title": "Labourers in wood, pulp and paper processing",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "14100",
+   "title": "General office support workers",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "12200",
+   "title": "Accounting technicians and bookkeepers",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "13110",
+   "title": "Administrative assistants",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "33102",
+   "title": "Nurse aides, orderlies and patient service associates",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "33109",
+   "title": "Other health service support workers",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "42202",
+   "title": "Early childhood educators and assistants",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "43100",
+   "title": "Teacher assistants",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "41302",
+   "title": "Religious leaders",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "41221",
+   "title": "Elementary and kindergarten teachers",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "41220",
+   "title": "Secondary school teachers",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "42201",
+   "title": "Social and community service workers",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "65201",
+   "title": "Counter attendants, kitchen helpers and related support occupations",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "63200",
+   "title": "Cooks",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "65310",
+   "title": "Light duty cleaners",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "63202",
+   "title": "Bakers and pastry chefs",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "65312",
+   "title": "Janitors, caretakers and heavy-duty cleaners",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "65100",
+   "title": "Cashiers",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "65102",
+   "title": "Store shelf stockers, clerks and order fillers",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "63100",
+   "title": "Insurance agents and brokers",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "64400",
+   "title": "Customer service representatives – financial institutions",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "72106",
+   "title": "Welders and related machine operators",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "72300",
+   "title": "Plumbers",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "72410",
+   "title": "Automotive service technicians, truck and bus mechanics",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "72411",
+   "title": "Auto body collision, refinishing and glass technicians and damage repair estimators",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "84120",
+   "title": "Specialized livestock workers and farm machinery operators",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "63202",
+   "title": "Bakers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "62024",
+   "title": "Cleaning supervisors",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "63200",
+   "title": "Cooks",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "60010",
+   "title": "Corporate sales managers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "64314",
+   "title": "Hotel front desk clerks",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "72310",
+   "title": "Carpenters",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "72200",
+   "title": "Electrician",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "72410",
+   "title": "Automotive service technicians, truck and bus mechanics, and mechanical repairers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "73209",
+   "title": "Other repairers and servicers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "73112",
+   "title": "Painters and decorators (except interior decorators)",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "72311",
+   "title": "Cabinetmakers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "73110",
+   "title": "Roofers and shinglers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "73102",
+   "title": "Plasterers, drywall installers and finishers, and lathers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "42202",
+   "title": "Early Childhood Educators and Assistants",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "44101",
+   "title": "Home support workers, caregivers, and related occupations",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "43100",
+   "title": "Elementary and secondary school teacher assistants",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "41210",
+   "title": "College and other vocational instructors",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "42201",
+   "title": "Social and community service workers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "33102",
+   "title": "Nurse aides, orderlies, and patient service associates",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "33109",
+   "title": "Other assisting occupations in support of health services",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "33101",
+   "title": "Medical laboratory assistants and related technical occupations",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "12200",
+   "title": "Accounting technicians and bookkeepers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "12011",
+   "title": "Supervisors of finance and insurance office workers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "12010",
+   "title": "Supervisors, general office and administrative support workers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "13100",
+   "title": "Administrative Officers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
   }
  ]
 }

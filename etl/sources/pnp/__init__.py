@@ -26,6 +26,8 @@ META = {
         ["python", "etl/06_scrape_aip_employers.py"],  # AIP 指定雇主(NL/NB/NS;PE 仍 TODO)
         ["python", "etl/build_field_sources.py"],     # 字段级来源注册表(E4-04:验证 URL+抽 title/meta)
         ["python", "etl/build_dli.py"],               # PGWP 可申 DLI 子集(E12-03 旗舰②学校数据;IRCC 官方 JSON)
+        # E6-11 批C(2026-08-15):18 试点社区指定雇主/职业清单周更;逐社区塌方保旧+「!」喊人,永远 exit 0 不拦役
+        ["python", "etl/build_pilot_details.py"],
         # ↓ 自校失败会 exit 1 的步骤一律排在最后:本役是「一步失败就中止本役」,
         #   排前面会把后面的清单/DLI 一起拖掉(build_bc_sirs / build_sk_points 同理,故至今仍手动跑)。
         ["python", "etl/pnp/build_bc_req.py"],  # E13-01 BC 官方门槛(语言/最低收入/经验/雇主侧;解析不全则保留旧表 exit 1)
