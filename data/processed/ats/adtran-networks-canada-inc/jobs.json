@@ -19,7 +19,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Director Product Line Management Optical Engines",
@@ -37,7 +38,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     }
   ]
 }

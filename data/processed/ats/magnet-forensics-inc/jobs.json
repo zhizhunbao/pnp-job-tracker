@@ -21,7 +21,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Finance Co-op (Fall 2026)",
@@ -39,7 +40,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Product Manager, Graykey",
@@ -59,7 +61,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Software Developer Co-op (Fall 2026)",
@@ -79,7 +82,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     }
   ]
 }

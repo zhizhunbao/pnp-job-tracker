@@ -21,7 +21,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Cloud Site Reliability Engineer",
@@ -39,7 +40,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Cloud Site Reliability Engineer",
@@ -59,7 +61,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Principal Software Developer - AI Integration",
@@ -79,7 +82,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Payroll Specialist",
@@ -99,7 +103,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Sales Director, GOC",
@@ -117,7 +122,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Software Developer - Datapath",
@@ -137,7 +143,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Software Developer - Full Stack ",
@@ -157,7 +164,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Office Coordinator",
@@ -177,7 +185,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Assistant Controller",
@@ -197,7 +206,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Chaos Engineer",
@@ -217,7 +227,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior DevOps Engineer",
@@ -237,7 +248,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     }
   ]
 }

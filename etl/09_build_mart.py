@@ -53,6 +53,8 @@ IN_SCORED = _paths.PROCESSED / "all-scored.json"
 IN_AIP = _paths.AIP / "aip-designated-employers.json"
 IN_PILOT = _paths.PILOT / "pilot-communities.json"   # RCIP/FCIP 试点社区(build_pilots 产,E6-11)
 IN_STATCAN = _paths.IRCC / "statcan_tr_prov.json"    # 竞争卡存量(StatCan 常住估算,方案C 2026-08-15)
+IN_PILOT_EMP = _paths.PILOT / "pilot-employers.json"     # 批B:社区指定雇主(人工核对整理,agent 抽取+抽查)
+IN_PILOT_OCC = _paths.PILOT / "pilot-occupations.json"   # 批B:社区 × 职业清单
 IN_NL_EMPLOYERS = _paths.PNP / "nl-employers.json"  # NL 官网指定雇主 645 家(C4-W4,含申报 NOC)
 IN_WAGES = _paths.WAGES / "wages.json"   # NOC×省 中位工资(build_wages.py 从 ESDC 开放数据建)
 IN_PNP = _paths.PNP                      # raw/pnp/*.json(各省具名通道:每文件一条通道)
@@ -698,6 +700,7 @@ def build():
                         applyUrl=j.get("url"), officialUrl=prof.get("website"),
                         salary=j.get("salary"), salaryAnnual=j.get("salaryAnnual"), salaryText=j.get("salaryText"),
                         aip=bool(j.get("aip")), pilot=j.get("pilot") or "", pilotCommunity=j.get("pilotCommunity") or "",
+                        pilotEmployer=bool(j.get("pilotEmployer")),
                         apprenticeFriendly=False, datePosted=j.get("posted"), lastSeen=ats_seen)
 
     # 2) Job Bank(全国全职业)
@@ -728,6 +731,7 @@ def build():
                     applyUrl=j.get("url"), officialUrl=j.get("website"),
                     salary=j.get("salary"), salaryAnnual=j.get("salaryAnnual"), salaryText=j.get("salaryText"),
                     aip=bool(j.get("aip")), pilot=j.get("pilot") or "", pilotCommunity=j.get("pilotCommunity") or "",
+                    pilotEmployer=bool(j.get("pilotEmployer")),
                     apprenticeFriendly=bool(j.get("apprentice_friendly")),
                     datePosted=j.get("date"), lastSeen=j.get("last_seen"),
                     # 雇佣形态 + 入职要求(E6-06/E6-07A,05b 解析):空值靠 add_job 的 (None,"") 过滤/or None 剔除
@@ -1246,6 +1250,23 @@ def build():
         pilot_communities = [{"name": r["name"], "province": r["province"], "type": r["type"],
                               "cities": "、".join(r.get("cities") or []), "url": r.get("url", ""),
                               "fetched": _pl.get("fetched", "")} for r in _pl.get("rows", [])]
+    # 批B:社区指定雇主并入 designated_employers 维度(source=RCIP/FCIP,location=社区名,判定层按 source 显示制度名);
+    # 社区 × 职业清单单独成表(sector_only 行留痕不硬编码)
+    if IN_PILOT_EMP.exists():
+        _pe = json.loads(IN_PILOT_EMP.read_text(encoding="utf-8"))
+        for r in _pe.get("rows", []):
+            designated.append({"name": r["name"], "province": r.get("province", ""),
+                               "location": r.get("community", ""), "isTech": False,
+                               "source": r.get("type", "RCIP"), "nocs": "",
+                               "url": r.get("url", ""), "fetched": _pe.get("fetched", "")})
+    pilot_occupations_mart: list[dict] = []
+    if IN_PILOT_OCC.exists():
+        _po = json.loads(IN_PILOT_OCC.read_text(encoding="utf-8"))
+        pilot_occupations_mart = [{"community": r["community"], "province": r.get("province", ""),
+                                   "type": r.get("type", ""), "noc": r.get("noc", "") or "",
+                                   "title": r.get("title", ""), "sectorOnly": bool(r.get("sectorOnly")),
+                                   "url": r.get("url", ""), "fetched": _po.get("fetched", "")}
+                                  for r in _po.get("rows", [])]
 
     return {
         "companies": list(companies.values()), "jobs": jobs, "closed_jobs": closed_jobs,
@@ -1253,6 +1274,7 @@ def build():
         "provinces": provinces, "cities": cities, "districts": districts,
         "designated_employers": designated,
         "pilot_communities": pilot_communities,
+        "pilot_occupations": pilot_occupations_mart,
         "noc_categories": noc_categories, "sources": sources, "experience_levels": experience_levels,
         "pnp_occupations": pnp_occupations, "pnp_draws": pnp_draws, "pnp_score_factors": pnp_score_factors,
         "pnp_requirements": pnp_requirements, "pnp_ops_stats": build_pnp_ops_stats(IN_PNP_STATS),

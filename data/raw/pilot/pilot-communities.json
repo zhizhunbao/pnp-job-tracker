@@ -7,7 +7,13 @@
    "name": "Pictou County, NS",
    "province": "NS",
    "type": "RCIP",
-   "cities": [],
+   "cities": [
+    "New Glasgow",
+    "Pictou",
+    "Stellarton",
+    "Trenton",
+    "Westville"
+   ],
    "url": "https://pictoucountypartnership.com/rcip/"
   },
   {
@@ -97,7 +103,9 @@
    "province": "AB",
    "type": "RCIP",
    "cities": [
-    "Claresholm"
+    "Claresholm",
+    "Granum",
+    "Stavely"
    ],
    "url": "https://claresholm-rcip.ca/"
   },
@@ -105,28 +113,74 @@
    "name": "West Kootenay, BC",
    "province": "BC",
    "type": "RCIP",
-   "cities": [],
+   "cities": [
+    "Nelson",
+    "Castlegar",
+    "Trail",
+    "Rossland",
+    "Kaslo",
+    "Nakusp",
+    "Creston",
+    "Grand Forks"
+   ],
    "url": "https://wk-rnip.ca/"
   },
   {
    "name": "North Okanagan Shuswap, BC",
    "province": "BC",
    "type": "RCIP",
-   "cities": [],
+   "cities": [
+    "Vernon",
+    "Salmon Arm",
+    "Armstrong",
+    "Enderby",
+    "Lumby",
+    "Coldstream",
+    "Lavington",
+    "Sicamous",
+    "Falkland",
+    "Sorrento",
+    "Blind Bay",
+    "Spallumcheen",
+    "Grindrod",
+    "Cherryville",
+    "Malakwa",
+    "Celista",
+    "Scotch Creek",
+    "Anglemont",
+    "Ashton Creek",
+    "Deep Creek"
+   ],
    "url": "https://rcipnorthokanaganshuswap.com/"
   },
   {
    "name": "Peace Liard, BC",
    "province": "BC",
    "type": "RCIP",
-   "cities": [],
+   "cities": [
+    "Fort St. John",
+    "Dawson Creek",
+    "Fort Nelson",
+    "Chetwynd",
+    "Tumbler Ridge",
+    "Taylor",
+    "Pouce Coupe",
+    "Hudson's Hope"
+   ],
    "url": "https://www.nebcimmigration.ca/"
   },
   {
    "name": "Acadian Peninsula, NB",
    "province": "NB",
    "type": "FCIP",
-   "cities": [],
+   "cities": [
+    "Caraquet",
+    "Shippagan",
+    "Tracadie",
+    "Tracadie-Sheila",
+    "Neguac",
+    "Lamèque"
+   ],
    "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
   },
   {
@@ -152,7 +206,14 @@
    "name": "Superior East Region, ON",
    "province": "ON",
    "type": "FCIP",
-   "cities": [],
+   "cities": [
+    "Chapleau",
+    "Dubreuilville",
+    "Wawa",
+    "White River",
+    "Hornepayne",
+    "Manitouwadge"
+   ],
    "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
   },
   {

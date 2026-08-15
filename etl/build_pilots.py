@@ -31,22 +31,34 @@ IN_MANIFEST = _paths.CRAWL / "fed-rcip" / "manifest.json"
 OUT = _paths.PILOT / "pilot-communities.json"
 print(f"IN_MANIFEST={IN_MANIFEST}\nOUT={OUT}", flush=True)
 
-# 社区 → Job Bank 城市(2026-08-15 生产库实测城市名;Sudbury 库里双写名并存都收)
+# 社区 → Job Bank 城市(2026-08-15 生产库实测城市名;Sudbury 库里双写名并存都收)。
+# 区域型社区界线 2026-08-15 批B 举证补齐(各社区官方站原句,agent 抽取归档 raw/pilot 备查):
+#   Pictou=五镇+县;WK=官方首页 Discover our Region(正向名单,非穷尽);NOS=官方首页原句 20 社区;
+#   Peace=PRRD+NRRM 八城镇;Acadian=官方首页八市镇(取库内实拼,Tracadie 双写名并存都收,
+#   Bas-Caraquet 因官方只点名上级市政区 Rivière-du-Nord 不单列 → 不映射);Superior East=官方六镇;
+#   Claresholm 官方注明 25km 含 Granum/Stavely(Stavely 库内暂无岗,留名);Rhineland 辖内官方未列名 → 只保 Altona
 CITY_MAP: dict[str, list[str]] = {
     "North Bay and Area": ["North Bay"],
     "Sudbury, ON": ["Sudbury", "Greater Sudbury"],
     "Timmins, ON": ["Timmins"],
     "Sault Ste. Marie, ON": ["Sault Ste. Marie"],
     "Thunder Bay, ON": ["Thunder Bay"],
+    "Superior East Region, ON": ["Chapleau", "Dubreuilville", "Wawa", "White River", "Hornepayne", "Manitouwadge"],
     "Steinbach, MB": ["Steinbach"],
     "Altona/Rhineland, MB": ["Altona"],
     "Brandon, MB": ["Brandon"],
     "Moose Jaw, SK": ["Moose Jaw"],
-    "Claresholm, AB": ["Claresholm"],
+    "Claresholm, AB": ["Claresholm", "Granum", "Stavely"],
     "St. Pierre Jolys, MB": ["St-Pierre-Jolys"],
     "Kelowna, BC": ["Kelowna"],
-    # 区域型社区界线未举证 → 不映射(Pictou County/West Kootenay/North Okanagan Shuswap/
-    # Peace Liard/Acadian Peninsula/Superior East Region)
+    "Pictou County, NS": ["New Glasgow", "Pictou", "Stellarton", "Trenton", "Westville"],
+    "West Kootenay, BC": ["Nelson", "Castlegar", "Trail", "Rossland", "Kaslo", "Nakusp", "Creston", "Grand Forks"],
+    "North Okanagan Shuswap, BC": ["Vernon", "Salmon Arm", "Armstrong", "Enderby", "Lumby", "Coldstream", "Lavington",
+                                    "Sicamous", "Falkland", "Sorrento", "Blind Bay", "Spallumcheen", "Grindrod",
+                                    "Cherryville", "Malakwa", "Celista", "Scotch Creek", "Anglemont", "Ashton Creek", "Deep Creek"],
+    "Peace Liard, BC": ["Fort St. John", "Dawson Creek", "Fort Nelson", "Chetwynd", "Tumbler Ridge", "Taylor",
+                         "Pouce Coupe", "Hudson's Hope"],
+    "Acadian Peninsula, NB": ["Caraquet", "Shippagan", "Tracadie", "Tracadie-Sheila", "Neguac", "Lamèque"],
 }
 PROV_RE = re.compile(r",\s*(ON|MB|SK|AB|BC|NS|NB)\s*$")
 PROV_HINT = {"North Bay and Area": "ON", "Pictou County, NS": "NS", "Acadian Peninsula, NB": "NB",

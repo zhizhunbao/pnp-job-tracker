@@ -21,7 +21,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Director of Engineering, Developer Infrastructure",
@@ -39,7 +40,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "IT Administrator lll",
@@ -59,7 +61,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Lead Data Scientist",
@@ -77,7 +80,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Customer Insights Analyst",
@@ -97,7 +101,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Data Engineer",
@@ -115,7 +120,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Developer, Backend - Developer Infrastructure",
@@ -135,7 +141,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Developer, Fullstack - Canada Pod",
@@ -155,7 +162,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Developer, Fullstack - Identity and Access Management (IAM)",
@@ -175,7 +183,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Machine Learning Engineer",
@@ -195,7 +204,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Support Enablement Specialist",
@@ -215,7 +225,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Staff, Machine Learning Engineer",
@@ -233,7 +244,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Staff, Security Engineer",
@@ -251,7 +263,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Workforce Management Manager, Customer Support",
@@ -271,7 +284,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     }
   ]
 }

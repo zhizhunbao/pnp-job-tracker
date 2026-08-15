@@ -21,7 +21,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Engineer - 6G",
@@ -41,7 +42,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Co-op Engineer – Wireless Sensing",
@@ -61,7 +63,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Intern Engineer - Digital IC Design (AI-Assisted Design Focus)",
@@ -81,7 +84,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Engineer - Advanced Network",
@@ -101,7 +105,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Researcher - Hollow-Core Fiber (HCF) Communications",
@@ -121,7 +126,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Assets Manager",
@@ -138,7 +144,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Co-op Engineer - Real-Time Operating System (12-16 months)",
@@ -158,7 +165,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Strategic Researcher - Computing Hardware",
@@ -175,7 +183,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Researcher – AI/ML Real-Time Embedded OS",
@@ -192,7 +201,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Intellectual Property Counsel",
@@ -212,7 +222,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Recruiter",
@@ -232,7 +243,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "HR Assistant",
@@ -252,7 +264,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Administrative Assistant",
@@ -272,7 +285,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Researcher - Real-Time Embedded OS",
@@ -289,7 +303,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Junior Software Developer - Real-time Operating System",
@@ -306,7 +321,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Software Developer - Real-time Operating System",
@@ -323,7 +339,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Kernel Developer - RTOS",
@@ -340,7 +357,8 @@
       "aip": false,
       "apprentice_friendly": false,
       "pilot": "",
-      "pilotCommunity": ""
+      "pilotCommunity": "",
+      "pilotEmployer": false
     }
   ]
 }

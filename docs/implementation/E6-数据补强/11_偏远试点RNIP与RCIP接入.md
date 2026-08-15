@@ -18,10 +18,12 @@
 
 - [x] `pilot_communities` 表（新）：社区名、省、试点类型（RCIP / FCIP）、官方页、抓取日 —— 2026-08-15 批A 落库
       （20 社区 = 14 RCIP + 6 FCIP，源=fed-rcip crawl 的 IRCC 名单页;docs/sql/e6-11-pilot.sql）
-- [ ] 社区职业要求落库（各社区自行公布优先职业/行业时）：`pilot_occupations`（社区 × NOC），无清单的社区**留空不猜**（同 PE/NL 惯例）→ **批B**（社区站种子已进 crawl，html_cache 到位后解析）
-- [ ] **指定雇主维度**（2026-08-14 补）：RCIP 是**雇主须先被社区 designate** 才能出试点 offer ——
-      逐社区抓 designated employer 名单（各社区官网公布,格式各异),照 AIP 管线同构:
-      名单 → 雇主名匹配 → `jobs.pilot` 置信来源之一;没公布名单的社区**留空不猜** → **批B**
+- [x] 社区职业要求落库：`pilot_occupations` 503 行(18 社区,基本每社区 25 NOC;仅 1 行 sectorOnly)——
+      批B 2026-08-15,agent 四路逐站抽取(官方页/PDF/组件数据源),docs/sql/e6-11-pilot-b.sql
+- [x] **指定雇主维度**:2,516 家并入 designated_employers(source=RCIP/FCIP,location=社区名);
+      Thunder Bay 官方标 excluded-from-2026 的 70 行已剔;Peace Liard 官方明示待公示(原句在 raw note);
+      05f 归一匹配(与 05c/designationMatch 同口径)→ `jobs.pilot_employer`,在招命中 139 岗;
+      弹框只做正向展示(false≠未指定,名单未公布的社区不写反话)
 - [x] 职位侧：`jobs.pilot`（RCIP|FCIP|RCIP+FCIP）+ `jobs.pilot_community`（命中社区名）—— 批A:
       判定在 `etl/clean/05f_flag_pilot.py`（城市×省 精确匹配人工核对映射,不走 08_score;
       与 05c AIP 同款「一字段一脚本」），首轮 1,915/93,844 岗命中
@@ -36,7 +38,8 @@
       （含 Sudbury 双写名 Sudbury/Greater Sudbury）；**区域型社区 6 个 cities=[] 不打标**
       （Pictou County/West Kootenay/North Okanagan Shuswap/Peace Liard/Acadian Peninsula/Superior East,
       界线待社区官网举证后补,种子已进 crawl）。宁漏勿错执行到位。
-- [ ] **3.3** 逐社区找职业要求页（多数社区自建站，格式各异）→ 有 NOC 的落库，只给行业名的留空不猜。→ **批B**
+- [x] **3.3** 逐社区职业要求页已抽(批B);区域社区界线全部举证补齐(CITY_MAP 20/20,城市键 68,
+      试点岗 1,915→2,923;Rhineland 辖内/Bas-Caraquet 官方未单列 → 仍不映射)。
 - [x] **3.4** 打标在 05f(城市匹配,不进 08_score);mart 列对齐(09);seed 加载(维度三元组+jobs 两列)。
 - [x] **3.5** 前端字段与弹框,口径注=fact.pilotGate「试点为社区推荐制,雇主须先获社区指定;命中≠资格认定」。
 

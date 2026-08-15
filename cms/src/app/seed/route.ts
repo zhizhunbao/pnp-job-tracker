@@ -110,6 +110,9 @@ export async function GET(req: Request) {
     // RCIP/FCIP 试点社区(E6-11):**先在生产跑 docs/sql/e6-11-pilot.sql**(建表 + 锁表补列)
     ['pilot_communities', 'pilot_communities', ['name', 'province', 'type', 'cities', 'url', 'fetched'],
       (r) => ({ name: r.name, province: r.province, type: r.type ?? '', cities: r.cities ?? '', url: r.url ?? '', fetched: r.fetched ?? '' })],
+    // 社区 × 职业清单(E6-11 批B):**先跑 docs/sql/e6-11-pilot-b.sql**
+    ['pilot_occupations', 'pilot_occupations', ['community', 'province', 'type', 'noc', 'title', 'sector_only', 'url', 'fetched'],
+      (r) => ({ community: r.community, province: r.province ?? '', type: r.type ?? '', noc: r.noc ?? '', title: r.title ?? '', sector_only: !!r.sectorOnly, url: r.url ?? '', fetched: r.fetched ?? '' })],
     // 职业在招量聚合(2026-08-12):**先在生产跑 docs/sql/noc-openings.sql**(建表 + 补
     // payload_locked_documents_rels 的列),否则这段 INSERT 撞 42P01/42703 → 整个 seed 事务回滚
     ['noc_openings', 'noc_openings', ['noc', 'open', 'eligible', 'median_salary', 'broad', 'title', 'title_zh', 'title_zh_short', 'title_ko_short', 'title_en_short'],
@@ -330,7 +333,7 @@ export async function GET(req: Request) {
       'description', 'country', 'province', 'city', 'district', 'address', 'apply_url', 'official_url',
       'salary', 'salary_annual', 'salary_text', 'wage_med_hourly', 'wage_med_annual', 'wage_low_hourly',
       'wage_low_annual', 'wage_high_hourly', 'wage_high_annual', 'wage_year', 'date_posted', 'source',
-      'source_label', 'origin', 'accessibility', 'score', 'grade_channel', 'score_detail', 'pnp_eligible', 'pnp_stream', 'ee_category', 'aip', 'pilot', 'pilot_community', 'apprentice_friendly',
+      'source_label', 'origin', 'accessibility', 'score', 'grade_channel', 'score_detail', 'pnp_eligible', 'pnp_stream', 'ee_category', 'aip', 'pilot', 'pilot_community', 'pilot_employer', 'apprentice_friendly',
       'employment_term', 'employment_hours', 'certificates', 'education',
       'eligibility_flag', 'eligibility_quote',
       'status', 'closed_at', 'first_seen', 'last_seen', 'created_at', 'updated_at']
@@ -373,7 +376,7 @@ export async function GET(req: Request) {
           origin: j.origin, accessibility: j.accessibility, score: j.score,
           grade_channel: j.gradeChannel ?? null, score_detail: j.scoreDetail ? JSON.stringify(j.scoreDetail) : null,
           pnp_eligible: !!j.pnpEligible, pnp_stream: j.pnpStream, ee_category: j.eeCategory, aip: !!j.aip,
-          pilot: j.pilot ?? '', pilot_community: j.pilotCommunity ?? '',
+          pilot: j.pilot ?? '', pilot_community: j.pilotCommunity ?? '', pilot_employer: !!j.pilotEmployer,
           apprentice_friendly: !!j.apprenticeFriendly,   // B1-3:官方标「不要经验/带训」或学徒标题(05e)
           // 雇佣形态+入职要求(E6-06/E6-07A);certificates 是 jsonb,pg 参数须传 JSON 字符串
           employment_term: j.employmentTerm, employment_hours: j.employmentHours,

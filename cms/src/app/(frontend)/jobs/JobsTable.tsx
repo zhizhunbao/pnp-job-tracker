@@ -315,6 +315,8 @@ export type JobRow = {
   /** RCIP/FCIP 试点社区命中('RCIP'|'FCIP'|'RCIP+FCIP'|'');粗筛信号,试点须雇主先被社区指定 */
   pilot: string
   pilotCommunity: string
+  /** 批B:雇主在其试点社区的官方指定名单上;false≠未指定(名单可能未公布),只做正向展示 */
+  pilotEmployer: boolean
   eligibilityFlag?: string   // GAP1③:''|'no_sponsorship'|'pr_required'(数据层 visa_flag 检测)
   eligibilityQuote?: string  // 命中原句(可核验出处)
   // 雇佣形态 + 入职要求(E6-06/E6-07A,详情页结构化标注 05b 解析;空=未标注,ATS 岗天然空)
@@ -2980,6 +2982,8 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
           <VerdictPill tone={on ? 'ok' : 'na'}>{t(on ? 'ch.pilot.on' : 'ch.pilot.na')}</VerdictPill>
         </FactRow>
         {on ? <FactRow k={job.pilotCommunity || job.city}>{job.pilot}</FactRow> : null}
+        {/* 批B:雇主已获社区指定(强一级信号)。只做正向展示 —— false 可能只是名单未公布,不写反话 */}
+        {on && job.pilotEmployer ? <FactRow k={job.company}>{t('fact.pilotEmp')}</FactRow> : null}
       </FactsBox>
     )
   }
