@@ -890,11 +890,22 @@ export function pathVerdict(profile: VerdictProfile, data: VerdictData): Pathway
   // 改成一把尺:**最难拆的那道障碍**。能说出具体障碍的(blockedBy)按它排,说不出的(needs-info)
   // 落在「境内身份」与「重考语言」之间 —— 我们连判都判不了,不该压过一条已知只差 offer 的路。
   const RANK = { none: 0, offer: 1, statusInCanada: 2, selfEmployed: 3, fieldMatch: 3.5, unknown: 4, language: 5, french: 5.5, credentialCanada: 6, excluded: 9 }
+  // 工签闸对「本省在读学生」降本(2026-08-15 Frank「这个推荐科学吗」实拍:人在阿省、阿省学历,
+  // 阿省机会通道因为「差工签」被排到差 offer 的路之后,而他毕业拿 PGWP 基本是既定事实,
+  // offer 才是真要去抢的那一样)。**只降到与 offer 同级、不越过它**:PGWP 仍需毕业+申请,
+  // 不是今天就有。判据要三件同时成立 —— 在本省读书 + 学历在本省 + 这条路要的是工签(不是 PGWP 本身)。
+  const pgwpExpected = profile.status === 'study' && profile.canadaStudy === true
+  const workPermitSoon = (v: PathwayVerdict): boolean =>
+    pgwpExpected && v.blockedBy === 'statusInCanada'
+    && profile.studyProvince != null && profile.studyProvince === v.province
+    && gateOf(v.key, 'statusInCanada').need === 'required'
+    && (gateOf(v.key, 'statusInCanada') as { asks?: string }).asks === 'workPermit'
   const obstacle = (v: PathwayVerdict): number =>
     v.verdict === 'excluded' ? RANK.excluded
-      : v.blockedBy ? (RANK as Record<string, number>)[v.blockedBy] ?? RANK.unknown
-        : v.verdict === 'needs-info' ? RANK.unknown
-          : RANK.none
+      : workPermitSoon(v) ? RANK.offer
+        : v.blockedBy ? (RANK as Record<string, number>)[v.blockedBy] ?? RANK.unknown
+          : v.verdict === 'needs-info' ? RANK.unknown
+            : RANK.none
   out.sort((a, b) => {
     if (obstacle(a.v) !== obstacle(b.v)) return obstacle(a.v) - obstacle(b.v)
     const ta = a.v.tier ?? 9, tb = b.v.tier ?? 9

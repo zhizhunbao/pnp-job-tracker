@@ -382,6 +382,26 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
     }
   })
 
+  // 工签闸对「本省在读学生」降本(2026-08-15 Frank「这个推荐科学吗」:人在阿省、阿省学历,
+  // 阿省机会通道因「差工签」被排在差 offer 的路之后 —— 而他毕业拿 PGWP 是既定事实,offer 才要去抢)
+  it('本省在读学生:工签闸降到与 offer 同级(不越过它),换省读的不享受', () => {
+    const abStudent: VerdictProfile = {
+      ...C01, noc: '72310', teer: 2, clb: 5, status: 'study', permit: 'study',
+      canadaStudy: true, studyProvince: 'AB', province: 'AB', hasOffer: false,
+      expCanadaMonths: 0, expForeignMonths: 0, foreignExpSelfEmployed: false, fieldMatch: true,
+    }
+    const rank = (p: VerdictProfile, key: string) => pathVerdict(p, data).findIndex((v) => v.key === key)
+    const ab = byKey(pathVerdict(abStudent, data), 'AB-opportunity')
+    expect(ab.blockedBy, '闸本身不变:官方要的仍是工签').toBe('statusInCanada')
+    // 在安省读的书 → 阿省那条不该享受降本,名次必然更靠后
+    const onStudent = { ...abStudent, studyProvince: 'ON', province: 'ON' }
+    expect(rank(abStudent, 'AB-opportunity'), '本省在读 → 提到 offer 档')
+      .toBeLessThan(rank(onStudent, 'AB-opportunity'))
+    // 不越过 offer:同为 offer 档时,真·只差 offer 的那条仍在前(靠注册表原序与 tier 决定,不被插队)
+    const offerBlocked = pathVerdict(abStudent, data).filter((v) => v.blockedBy === 'offer')
+    expect(offerBlocked.length, '场上应有真·差 offer 的路').toBeGreaterThan(0)
+  })
+
   it('境外档不回归:inCanada=false 时五条通道的身份闸照旧全是缺口', () => {
     const overseas: VerdictProfile = { ...student, inCanada: false, status: 'other', permit: null, province: null, canadaStudy: false }
     const rows = pathVerdict(overseas, data)

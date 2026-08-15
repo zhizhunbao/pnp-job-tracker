@@ -601,7 +601,13 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                     }
                     const bandRank = new Map<string, number>()
                     profilePaths.forEach((row) => { if (!bandRank.has(bandOf(row))) bandRank.set(bandOf(row), bandRank.size) })
-                    const resorted = profilePaths.map((row, i) => ({ row, i, band: bandRank.get(bandOf(row)) ?? 0, n: jobsOf(row) }))
+                    // 本省(2026-08-15 Frank「这个推荐科学吗」实拍:人在阿省、学历在阿省,第一推荐却是安省):
+                    // 跨省意味着搬家 + 在陌生省份从零找 offer,那是真实成本,先前的排序把它当成了零。
+                    // 判据用**现居省**与**学历所在省**(两道题今晚刚问到手);同档同量级内本省优先,
+                    // **不跨档翻盘** —— 门槛仍是第一主键,再近的省门槛过不去也不是路。
+                    const homeProvs = new Set([bands.resProv, bands.eduProv].filter(Boolean))
+                    const atHome = (row: ProfilePath) => /^[A-Z]{2}$/.test(row.province) && homeProvs.has(row.province)
+                    const resorted = profilePaths.map((row, i) => ({ row, i, band: bandRank.get(bandOf(row)) ?? 0, n: jobsOf(row), home: atHome(row) }))
                     resorted.sort((a, b) => {
                       // 0 岗**跨档沉底**(2026-08-15 Frank 两问「0 个岗位也推荐在前面?」):
                       // 「岗数不跨档翻盘」那条管的是岗多岗少,而 0 不是「少」,是**没有** —— 这些通道
@@ -615,10 +621,15 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       // 联邦 EE 无 offer 闸 → band 不同,不受这条影响
                       const aThin = a.n == null || a.n < 10, bThin = b.n == null || b.n < 10
                       if (aThin !== bThin) return aThin ? 1 : -1
+                      // 同档同量级内:本省优先(thin 分组之后 —— 1 个岗的本省不该压过 167 个岗的邻省,
+                      // 但同样是「岗少」或同样是「岗足」时,他已经在住的省该排前面)
+                      if (a.home !== b.home) return a.home ? -1 : 1
                       if (aThin && bThin && a.n !== b.n) return (b.n ?? -1) - (a.n ?? -1)
                       return a.i - b.i                     // 足量组保持引擎序(竞争比松→紧)
                     })
-                    const shown = resorted.map((x) => x.row).slice(0, planCoarse ? 6 : 3)
+                    // 个人档从 3 条放到 5 条(同批实拍:阿省机会通道排第 4 被砍掉,而它竞争 34.7:1 比场上第一的
+                    // 安省 67.1:1 松一半、又正好在他住的省 —— 唯一一条本省的路,用户根本看不见)
+                    const shown = resorted.map((x) => x.row).slice(0, planCoarse ? 6 : 5)
                     // 榜首都是 0 岗(2026-08-15 Frank「0 个岗位也推荐在前面?」):这些通道的推荐语
                     // 是「拿到该省 offer 即可申请」,而本站在这些省一个该职业的岗都没挂 —— 排第一等于
                     // 让人去空盘里找 offer。**不删行**(0 是本站在招数,不代表官方说没有),改成上面一句实话,
