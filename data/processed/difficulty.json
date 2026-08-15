@@ -1,6 +1,6 @@
 {
  "generated": "2026-08-14",
- "trYear": "2024",
+ "trAsOf": "2026-04",
  "rows": [
   {
    "province": "ON",
@@ -8,15 +8,15 @@
    "factors": [
     {
      "key": "comp",
-     "value": 76.5,
-     "pool": 1080750,
-     "poolStudy": 482100,
-     "poolWork": 598650,
+     "value": 67.1,
+     "pool": 947478,
+     "poolStudy": 252733,
+     "poolWork": 694745,
      "quota": 14119,
      "quotaYear": 2026,
      "tier": "tight",
-     "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
-     "asOf": "2024"
+     "source": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710012101",
+     "asOf": "2026-04"
     },
     {
      "key": "quotaTrend",
@@ -50,15 +50,15 @@
    "factors": [
     {
      "key": "comp",
-     "value": 84.2,
-     "pool": 442210,
-     "poolStudy": 203995,
-     "poolWork": 238215,
+     "value": 78.0,
+     "pool": 409597,
+     "poolStudy": 138731,
+     "poolWork": 270866,
      "quota": 5254,
      "quotaYear": 2026,
      "tier": "tight",
-     "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
-     "asOf": "2024"
+     "source": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710012101",
+     "asOf": "2026-04"
     },
     {
      "key": "quotaTrend",
@@ -92,15 +92,15 @@
    "factors": [
     {
      "key": "comp",
-     "value": 32.9,
-     "pool": 216935,
-     "poolStudy": 71545,
-     "poolWork": 145390,
+     "value": 34.7,
+     "pool": 229353,
+     "poolStudy": 56723,
+     "poolWork": 172630,
      "quota": 6603,
      "quotaYear": 2026,
      "tier": "mid",
-     "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
-     "asOf": "2024"
+     "source": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710012101",
+     "asOf": "2026-04"
     },
     {
      "key": "quotaTrend",
@@ -134,15 +134,15 @@
    "factors": [
     {
      "key": "comp",
-     "value": 9.0,
-     "pool": 43025,
-     "poolStudy": 18520,
-     "poolWork": 24505,
+     "value": 8.9,
+     "pool": 42449,
+     "poolStudy": 13718,
+     "poolWork": 28731,
      "quota": 4761,
      "quotaYear": 2026,
      "tier": "easy",
-     "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
-     "asOf": "2024"
+     "source": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710012101",
+     "asOf": "2026-04"
     },
     {
      "key": "quotaTrend",
@@ -159,15 +159,15 @@
    "factors": [
     {
      "key": "comp",
-     "value": 12.0,
-     "pool": 74615,
-     "poolStudy": 27635,
-     "poolWork": 46980,
+     "value": 11.1,
+     "pool": 69202,
+     "poolStudy": 20662,
+     "poolWork": 48540,
      "quota": 6239,
      "quotaYear": 2026,
      "tier": "easy",
-     "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
-     "asOf": "2024"
+     "source": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710012101",
+     "asOf": "2026-04"
     },
     {
      "key": "quotaTrend",
@@ -192,15 +192,15 @@
    "factors": [
     {
      "key": "comp",
-     "value": 22.2,
-     "pool": 52100,
-     "poolStudy": 24410,
-     "poolWork": 27690,
+     "value": 22.3,
+     "pool": 52376,
+     "poolStudy": 15379,
+     "poolWork": 36997,
      "quota": 2344,
      "quotaYear": 2026,
      "tier": "mid",
-     "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
-     "asOf": "2024"
+     "source": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710012101",
+     "asOf": "2026-04"
     },
     {
      "key": "quotaTrend",
@@ -217,15 +217,15 @@
    "factors": [
     {
      "key": "comp",
-     "value": 11.6,
-     "pool": 34815,
-     "poolStudy": 15545,
-     "poolWork": 19270,
+     "value": 11.7,
+     "pool": 35062,
+     "poolStudy": 12137,
+     "poolWork": 22925,
      "quota": 3000,
      "quotaYear": 2025,
      "tier": "easy",
-     "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
-     "asOf": "2024"
+     "source": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710012101",
+     "asOf": "2026-04"
     },
     {
      "key": "activity",
@@ -243,15 +243,15 @@
    "factors": [
     {
      "key": "comp",
-     "value": 7.9,
-     "pool": 16125,
-     "poolStudy": 6950,
-     "poolWork": 9175,
+     "value": 7.6,
+     "pool": 15579,
+     "poolStudy": 5186,
+     "poolWork": 10393,
      "quota": 2050,
      "quotaYear": 2025,
      "tier": "easy",
-     "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
-     "asOf": "2024"
+     "source": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710012101",
+     "asOf": "2026-04"
     },
     {
      "key": "activity",

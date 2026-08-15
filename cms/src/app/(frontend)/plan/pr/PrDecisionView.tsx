@@ -657,10 +657,14 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
   )
   // 年份视图取数:格值与排序共用一套(缺位 null → 显「—」、排序沉底)
   const yStock = (r: ProvCompetition, k: 'study' | 'work') => r.series?.stocks?.[compYear]?.[k] ?? null
+  // 存量快照月随数据走(方案C:StatCan 季度口径,年末=Y-12、进行年=最新季度月如 2026-04,不再硬拼 -12)
+  const yStockAsOf = compYear
+    ? (competition.find((r) => r.series?.stocks?.[compYear]?.asOf)?.series?.stocks?.[compYear]?.asOf ?? `${compYear}-12`)
+    : null
   const yQuota = (r: ProvCompetition) => (compYear === '2024' ? r.series?.quota.y2024 : compYear === '2025' ? r.series?.quota.y2025 : compYear === '2026' ? r.series?.quota.y2026 : null) ?? null
   const yFlow = (r: ProvCompetition) => r.series?.flow?.[compYear]?.n ?? null
   // 年份视图竞争比:**三列同年齐才算**(存量学+工 ÷ 该年名额,舍入口径与 04e 一致)。
-  // 2024 三列齐 → 有比值;2025/2026 存量缺位 → 自动「—」,IRCC 补发年末数后无需改码
+  // 方案C 后三个年份的存量全有(StatCan 季度),该年名额在的行都能算;NB/PE 缺名额年份自动「—」
   const yRatio = (r: ProvCompetition) => {
     const s = yStock(r, 'study'), w = yStock(r, 'work'), q = yQuota(r)
     return s != null && w != null && q ? Math.round(((s + w) / q) * 10) / 10 : null
@@ -718,15 +722,15 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
             // 年份视图(compYear):三列数字切到该年,官方缺位显「—」(存量停在 2024,25/26 无年末数)
             ...(hasSplit
               ? [
-                  { key: 'poolStudy', label: thSub(t('dp.compStudy'), compYear ? `${compYear}-12` : null), width: '14%', align: 'right' as const,
+                  { key: 'poolStudy', label: thSub(t('dp.compStudy'), yStockAsOf), width: '14%', align: 'right' as const,
                     sort: (r: ProvCompetition) => (compYear ? yStock(r, 'study') : r.poolStudy),
                     render: (r: ProvCompetition) => (compYear ? numOrDash(yStock(r, 'study')) : <span>{r.poolStudy!.toLocaleString('en-CA')}</span>) },
-                  { key: 'poolWork', label: thSub(t('dp.compWork'), compYear ? `${compYear}-12` : null), width: '14%', align: 'right' as const,
+                  { key: 'poolWork', label: thSub(t('dp.compWork'), yStockAsOf), width: '14%', align: 'right' as const,
                     sort: (r: ProvCompetition) => (compYear ? yStock(r, 'work') : r.poolWork),
                     render: (r: ProvCompetition) => (compYear ? numOrDash(yStock(r, 'work')) : <span>{r.poolWork!.toLocaleString('en-CA')}</span>) },
                 ]
               : [
-                  { key: 'pool', label: thSub(t('dp.compPool'), poolAsOf ? `${poolAsOf}-12` : null), width: '20%', align: 'right' as const, sort: (r: ProvCompetition) => r.pool,
+                  { key: 'pool', label: thSub(t('dp.compPool'), poolAsOf || null), width: '20%', align: 'right' as const, sort: (r: ProvCompetition) => r.pool,
                     render: (r: ProvCompetition) => <span>{r.pool.toLocaleString('en-CA')}</span> },
                 ]),
             // 名额年度**逐省不同**(ON/BC/AB/SK/MB/NS 2026、NB/NL/PE 2025)—— 现行视图留行内;年份视图切该年配额
@@ -750,7 +754,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
           ]} />
       </div>
       {/* 口径脚注一行说完(2026-08-13 Frank:「改成一行」);本站更新整列同一天 → 撤列并进这行 */}
-      <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.6, marginTop: 8 }}>{t('dp.compNoteShort', { d: compGen ?? '', m: poolAsOf ? `${poolAsOf}-12` : '', p: flowPeriod ?? '' })}</div>
+      <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.6, marginTop: 8 }}>{t('dp.compNoteShort', { d: compGen ?? '', m: poolAsOf ?? '', p: flowPeriod ?? '' })}</div>
     </div>
   ) : null
 

@@ -13,7 +13,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import _paths  # noqa: E402
 
-IN_TR = _paths.IRCC / "temp_residents.json"
+# 2026-08-15 方案C(Frank「那就换 C 吧」):竞争比分子整体换 StatCan 常住估算口径 ——
+# IRCC 年末许可表停在 2024 且高估(含已离境者),StatCan 季度估算的才是「还在境内抢名额的人」。
+# temp_residents.json(IRCC)不再进本脚本;其余消费端(省弹框体量卡等)不受影响。
+IN_TR = _paths.IRCC / "statcan_tr_prov.json"
 IN_ALLOC = _paths.IRCC / "pnp_allocations.json"
 IN_DRAWS = _paths.PNP / "draws.json"
 OUT = _paths.PROCESSED / "difficulty.json"
@@ -33,14 +36,17 @@ def main() -> None:
     tr = json.loads(IN_TR.read_text(encoding="utf-8"))
     alloc = {r["prov"]: r for r in json.loads(IN_ALLOC.read_text(encoding="utf-8"))["rows"]}
     draws = json.loads(IN_DRAWS.read_text(encoding="utf-8"))["provinces"]
-    tr_year = tr["study"]["year"]
+    by_prov = tr.get("byProv") or {}
+    latest_ref = tr.get("latestRefPer") or max(q for p in by_prov.values() for q in p)
+    tr_asof = latest_ref[:7]                     # 季度参考日 → 快照月(如 2026-04);前端原样显示不再拼 -12
     rows = []
     for p in PROVS:
         factors = []
-        # ① 竞争比。存量只含学签+工签(TFWP+IMP)持有人,访客/旅游签从不计入;
-        #    学签/工签拆分单独带出(2026-08-14 Frank「拆成多列,学签 工签」),合计仍是比值分子
-        pool_study = tr["study"]["byProv"].get(p) or 0
-        pool_work = (tr["tfwp"]["byProv"].get(p) or 0) + (tr["imp"]["byProv"].get(p) or 0)
+        # ① 竞争比(StatCan 常住估算):访客/庇护从不计入;学签=仅学签+学工双持,工签=仅工签+学工双持
+        #    (双持两列各计一次 → 公式仍=两列相加,与旧 IRCC 口径同构,用户可自行验算)
+        v = (by_prov.get(p) or {}).get(latest_ref) or {}
+        pool_study = (v.get("studyOnly") or 0) + (v.get("workStudy") or 0)
+        pool_work = (v.get("workOnly") or 0) + (v.get("workStudy") or 0)
         pool = pool_study + pool_work
         a = alloc.get(p) or {}
         quota, qyear = (a.get("y2026"), 2026) if a.get("y2026") else (a.get("y2025"), 2025)
@@ -48,7 +54,7 @@ def main() -> None:
         if comp is not None:
             factors.append({"key": "comp", "value": comp, "pool": pool, "poolStudy": pool_study, "poolWork": pool_work,
                             "quota": quota, "quotaYear": qyear,
-                            "tier": tier_of_comp(comp), "source": tr["study"]["source"] if isinstance(tr["study"].get("source"), str) else tr["source"]["study"], "asOf": tr_year})
+                            "tier": tier_of_comp(comp), "source": tr.get("source", ""), "asOf": tr_asof})
         # ② 配额趋势(两年都有才出)
         if a.get("y2026") and a.get("y2025"):
             trend = round(a["y2026"] / a["y2025"] - 1, 3)
@@ -80,7 +86,7 @@ def main() -> None:
                 tier = "tight"
         rows.append({"province": p, "tier": tier, "factors": factors})
         print(f"{p}: tier={tier} comp={comp} factors={len(factors)}", flush=True)
-    OUT.write_text(json.dumps({"generated": TODAY.isoformat(), "trYear": tr_year, "rows": rows}, ensure_ascii=False, indent=1), encoding="utf-8")
+    OUT.write_text(json.dumps({"generated": TODAY.isoformat(), "trAsOf": tr_asof, "rows": rows}, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"done → {OUT}", flush=True)
 
 

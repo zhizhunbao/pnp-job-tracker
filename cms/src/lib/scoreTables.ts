@@ -43,7 +43,8 @@ export type ProvCompetition = {
   generated: string
   /** 年份筛选序列(2026-08-14):存量近 3 年(官方停在 2024,之后年份缺位)、流量近 5 年、名额 2024–2026 */
   series?: {
-    stocks: Record<string, { study?: number | null; work?: number | null }>
+    /** asOf=该年存量快照月(StatCan 季度参考日;年末=Y-12,进行年=最新季度月,方案C 2026-08-15) */
+    stocks: Record<string, { study?: number | null; work?: number | null; asOf?: string }>
     flow: Record<string, { n: number; period: string }>
     quota: { y2024: number | null; y2025: number | null; y2026: number | null }
   } | null
@@ -152,7 +153,7 @@ async function load(): Promise<Tables> {
       const raw = r.info
       let info: {
         studyFlow?: { year?: string; n?: number; throughMonth?: string; prev?: number | null }
-        trSeries?: Record<string, { study?: number | null; work?: number | null }>
+        trSeries?: Record<string, { study?: number | null; work?: number | null; asOf?: string }>
         flowSeries?: Record<string, { n?: number; complete?: boolean; throughMonth?: string }>
         alloc?: { y2024?: number | null; y2025?: number | null; y2026?: number | null }
       } | null = null

@@ -52,6 +52,7 @@ IN_ATS_COMPANIES = _paths.COMPANIES                       # processed/ats/.../co
 IN_SCORED = _paths.PROCESSED / "all-scored.json"
 IN_AIP = _paths.AIP / "aip-designated-employers.json"
 IN_PILOT = _paths.PILOT / "pilot-communities.json"   # RCIP/FCIP 试点社区(build_pilots 产,E6-11)
+IN_STATCAN = _paths.IRCC / "statcan_tr_prov.json"    # 竞争卡存量(StatCan 常住估算,方案C 2026-08-15)
 IN_NL_EMPLOYERS = _paths.PNP / "nl-employers.json"  # NL 官网指定雇主 645 家(C4-W4,含申报 NOC)
 IN_WAGES = _paths.WAGES / "wages.json"   # NOC×省 中位工资(build_wages.py 从 ESDC 开放数据建)
 IN_PNP = _paths.PNP                      # raw/pnp/*.json(各省具名通道:每文件一条通道)
@@ -847,18 +848,26 @@ def build():
                 for c, v in (blk.get("byProv") or {}).items():
                     if c in info:
                         info[c][out] = {"n": v, "year": blk.get("year", "")}
-            # 年份序列(2026-08-14 竞争卡年份筛选):近 3 年存量,学签单列、工签=TFWP+IMP 合计。
-            # 官方存量停在 2024 → 2025/2026 自然缺位,前端显「—」不编数
-            years = sorted((tr.get("study") or {}).get("byYear") or {})[-3:]
-            for y in years:
-                for c in info:
-                    s = ((tr.get("study") or {}).get("byYear") or {}).get(y, {}).get(c)
-                    w1 = ((tr.get("tfwp") or {}).get("byYear") or {}).get(y, {}).get(c)
-                    w2 = ((tr.get("imp") or {}).get("byYear") or {}).get(y, {}).get(c)
-                    if s is None and w1 is None and w2 is None:
+            # 年份序列(2026-08-15 方案C):竞争卡存量整体换 StatCan 常住估算(IRCC 年末表停在 2024)。
+            # 年末=次年 1/1 参考日(≈12/31,asOf 标 Y-12);进行年=年内最新参考日(asOf 标到季度月)。
+            # 学签=仅学签+学工双持,工签=仅工签+学工双持(与 04e 同口径,公式=两列相加)
+            if IN_STATCAN.exists():
+                sc = json.loads(IN_STATCAN.read_text(encoding="utf-8"))
+                sc_prov = sc.get("byProv") or {}
+                quarters = sorted({q for pv in sc_prov.values() for q in pv})
+                for y in sorted({q[:4] for q in quarters})[-3:]:
+                    nxt = f"{int(y) + 1}-01-01"
+                    inyear = [q for q in quarters if q.startswith(y)]
+                    ref, label = (nxt, f"{y}-12") if nxt in quarters else ((inyear[-1], inyear[-1][:7]) if inyear else (None, None))
+                    if not ref:
                         continue
-                    info[c].setdefault("trSeries", {})[y] = {
-                        "study": s, "work": (w1 or 0) + (w2 or 0) if (w1 is not None or w2 is not None) else None}
+                    for c in info:
+                        v = (sc_prov.get(c) or {}).get(ref)
+                        if not v:
+                            continue
+                        info[c].setdefault("trSeries", {})[y] = {
+                            "study": (v.get("studyOnly") or 0) + (v.get("workStudy") or 0),
+                            "work": (v.get("workOnly") or 0) + (v.get("workStudy") or 0), "asOf": label}
         if IN_IRCC_PR.exists():
             pr = json.loads(IN_IRCC_PR.read_text(encoding="utf-8"))
             for c, v in (pr.get("byProv") or {}).items():
