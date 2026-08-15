@@ -58,7 +58,7 @@ export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }:
   // /plan/pr 自己就是问卷宿主:保留 job 参数原地展开;其它页面用 next 在答完后回跳。
   const quizDestination = (): string | null => {
     const a = readAnswers()
-    if (a.nocs.length && missingFields(fieldsOf('pr', 'basic'), a).length === 0) return null
+    if (a.nocs.length && missingFields(fieldsOf('pr', 'basic', 0, a), a).length === 0) return null
     const raw = returnTo || window.location.pathname + window.location.search
     const safe = /^\/(?!\/)/.test(raw) ? raw : '/'
     const from = new URL(safe, window.location.origin)

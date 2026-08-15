@@ -17,8 +17,14 @@
 
 export type GateKey = 'offer' | 'statusInCanada' | 'credentialCanada'
 
+/** statusInCanada 闸「问的是什么」(2026-08-15 拆分)。「境内身份」一个词底下其实是三种官方要求:
+ *  AB/PE 要**有效工签**、NL 指名 **PGWP**、NB/MB 要**住在/受雇于该省** —— 先前统统拿
+ *  「人在不在加拿大」(inCanada)判,于是学签在读被 AB 的工签闸放行、安省居民被 MB 的
+ *  「曼省在职」闸放行。required 的 statusInCanada 闸必须标注,引擎按标注去档案里取对应的答案。 */
+export type StatusAsk = 'workPermit' | 'pgwp' | 'provResidence' | 'provEmployment'
+
 export type GateRule =
-  | { need: 'required'; quote: string; url: string; fetched: string; note?: string }
+  | { need: 'required'; quote: string; url: string; fetched: string; note?: string; asks?: StatusAsk }
   | { need: 'notRequired'; quote: string; url: string; fetched: string; note?: string }
   | { need: 'notRequired'; basis: 'absent'; url: string; fetched: string; note?: string }
   | { need: 'unknown'; why: 'no-source' | 'criteria-elsewhere'; url?: string; fetched?: string; note?: string }
@@ -28,6 +34,14 @@ export const GATE_LABEL: Record<GateKey, { zh: string; en: string; ko: string }>
   offer: { zh: 'job offer', en: 'job offer', ko: '잡 오퍼' },
   statusInCanada: { zh: '境内身份', en: 'status in Canada', ko: '캐나다 체류 신분' },
   credentialCanada: { zh: '加拿大学历', en: 'Canadian credential', ko: '캐나다 학력' },
+}
+
+/** statusInCanada 按 asks 拆开后的人话名(结论文案用它,不再统称「境内身份」) */
+export const ASK_LABEL: Record<StatusAsk, { zh: string; en: string; ko: string }> = {
+  workPermit: { zh: '有效工签', en: 'work permit', ko: '유효한 취업 허가' },
+  pgwp: { zh: '毕业工签 PGWP', en: 'PGWP', ko: 'PGWP' },
+  provResidence: { zh: '在该省居住', en: 'residence in the province', ko: '해당 주 거주' },
+  provEmployment: { zh: '在该省在职', en: 'employment in the province', ko: '해당 주 재직' },
 }
 
 const D = '2026-08-12'   // 本轮 crawl 抓取日(mb-mpnp 是 08-03,见该条)
@@ -91,7 +105,7 @@ export const GATE_MANIFEST: Record<string, Partial<Record<GateKey, GateRule>>> =
     offer: { need: 'required', url: NB_SW, fetched: D,
       quote: 'have the support of an eligible employer who has been actively operating in New Brunswick for the past 24 months, providing goods or services',
       note: 'Experience pathway 另写「be working full time in a non-seasonal position for the employer who is supporting your application」—— 雇主支持是硬闸' },
-    statusInCanada: { need: 'required', url: NB_SW, fetched: D,
+    statusInCanada: { need: 'required', asks: 'provResidence', url: NB_SW, fetched: D,
       quote: 'have lived in New Brunswick for the past six months',
       note: 'Experience pathway 专条;另两条 pathway(Graduates / Priority Occupations)不是本站 NB-sw 判的那条' },
     credentialCanada: { need: 'notRequired', basis: 'absent', url: NB_SW, fetched: D,
@@ -118,7 +132,7 @@ export const GATE_MANIFEST: Record<string, Partial<Record<GateKey, GateRule>>> =
   'MB-swm': {
     offer: { need: 'required', url: 'https://immigratemanitoba.com/mpnp/skilled-worker/swm/eligibility', fetched: '2026-08-03',
       quote: 'Your employer must demonstrate to the satisfaction of the MPNP that they are an established business with an ability to offer you full-time and long-term employment in Manitoba.' },
-    statusInCanada: { need: 'required', url: 'https://immigratemanitoba.com/mpnp/skilled-worker/swm/eligibility', fetched: '2026-08-03',
+    statusInCanada: { need: 'required', asks: 'provEmployment', url: 'https://immigratemanitoba.com/mpnp/skilled-worker/swm/eligibility', fetched: '2026-08-03',
       quote: 'To apply to the Skilled Worker in Manitoba (SWM) Pathway, you must demonstrate ongoing Manitoba employment as your established connection to Manitoba.' },
     credentialCanada: { need: 'notRequired', basis: 'absent', url: 'https://immigratemanitoba.com/mpnp/skilled-worker/swm/eligibility', fetched: '2026-08-03' },
   },
@@ -127,7 +141,7 @@ export const GATE_MANIFEST: Record<string, Partial<Record<GateKey, GateRule>>> =
   'AB-opportunity': {
     offer: { need: 'required', url: 'https://www.alberta.ca/aaip-alberta-opportunity-stream', fetched: D,
       quote: 'The Alberta Opportunity Stream is for temporary foreign workers who are already working full-time in Alberta and have a full-time job offer from an Alberta employer in an eligible occupation.' },
-    statusInCanada: { need: 'required', url: 'https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility', fetched: D,
+    statusInCanada: { need: 'required', asks: 'workPermit', url: 'https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility', fetched: D,
       quote: 'At the time your application is submitted, and at the time AAIP assesses your application, you must have a valid work permit' },
     credentialCanada: { need: 'notRequired', basis: 'absent', url: 'https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility', fetched: D },
   },
@@ -164,7 +178,7 @@ export const GATE_MANIFEST: Record<string, Partial<Record<GateKey, GateRule>>> =
   'NL-intl-grad': {
     offer: { need: 'required', url: 'https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/international-graduate', fetched: D,
       quote: 'Full-time job or job offer from an eligible Newfoundland and Labrador employer , guarantee a minimum of 30 hours per week, and be at least one year in duration with a reasonable expectation of extension.' },
-    statusInCanada: { need: 'required', url: 'https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/international-graduate', fetched: D,
+    statusInCanada: { need: 'required', asks: 'pgwp', url: 'https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/international-graduate', fetched: D,
       quote: 'Must hold a valid post-graduation work permit (PGWP).' },
     credentialCanada: { need: 'required', url: 'https://www.gov.nl.ca/immigration/international-graduate-category', fetched: D,
       quote: 'Applicant’s to this category must hold a valid post-graduation work permit (PGWP) and have a job offer with a Newfoundland and Labrador employer, meeting the employer criteria.',
@@ -178,7 +192,7 @@ export const GATE_MANIFEST: Record<string, Partial<Record<GateKey, GateRule>>> =
   'PE-sw': {
     offer: { need: 'required', url: PE_GUIDE, fetched: D,
       quote: 'have a full-time, non-seasonal (permanent or minimum of two years) job offer from a PEI employer in a high skilled occupation defined by the Training, Education, Experience, and Responsibility classification system as TEER category 0, 1, 2, or 3' },
-    statusInCanada: { need: 'required', url: PE_GUIDE, fetched: D,
+    statusInCanada: { need: 'required', asks: 'workPermit', url: PE_GUIDE, fetched: D,
       quote: 'have a valid work permit to be working in Canada',
       note: '同页 Note 留了境外招募的口子:「The Skilled Worker Stream may be utilized for talent recruitment outside of Canada, if the Prince Edward Island Employer has received authorization from the Office of Immigration prior to issuing a job offer.」—— 但那道口子要**雇主事先获授权**,不是申请人自己能满足的条件,故资格闸按 bullet 记' },
     credentialCanada: { need: 'notRequired', basis: 'absent', url: PE_GUIDE, fetched: D,

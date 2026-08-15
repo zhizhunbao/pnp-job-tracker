@@ -21,7 +21,9 @@ export const DECISIONS: Record<string, Decision> = {
     // 2026-08-12 加两题(门槛清单三类闸,设计 §3.3):offerBand 是既有题、先前只在卡③用;
     // canadaEduBand 是新题。不问这两样,判定核只能对一半通道说「判不了」——而先前它是**默认放行**,
     // 把从没来过加拿大的人推荐去走「国际毕业生」通道。第三类闸「人在不在境内」由 status 推,不另开题。
-    basic: ['status', 'clbBand', 'totalExpBand', 'expBand', 'offerBand', 'canadaEduBand'],
+    // 2026-08-15 拆闸批再加两题(permitBand/resProv,均只对境内处境显示 —— fields.ts visible):
+    // AB/PE 的闸是工签、NL 是 PGWP、NB/MB 是住在/受雇于该省,原「由 status 推境内身份」答不了这三种问法
+    basic: ['status', 'permitBand', 'resProv', 'clbBand', 'totalExpBand', 'expBand', 'offerBand', 'canadaEduBand'],
     // 批 2 = B1-4 PGWP(20260803):批首 studyMonthsBand 是 free 题(batchLeadsFree ✓)——
     // 批 1 的历史偏差(KNOWN_NO_FREE_LEAD)不因此消,但新批守规矩
     explore: [['crsBand', 'pgwpBand'], ['studyMonthsBand', 'studyLevelBand']],
@@ -43,10 +45,13 @@ export const DECISIONS: Record<string, Decision> = {
   prov: { basic: ['goalBand', 'totalExpBand', 'offerBand'], explore: [] },
 }
 
-export const fieldsOf = (decision: string, stage: Stage, batch = 0): string[] => {
+// 传了答案就按题级显隐过滤(fields.ts visible):问题清单与完整度计数必须同源 ——
+// 一边把题藏了、另一边还按全量计数,「已答 8/10」就永远到不了满
+export const fieldsOf = (decision: string, stage: Stage, batch = 0, a?: Answers): string[] => {
   const d = DECISIONS[decision]
   if (!d) return []
-  return stage === 'basic' ? d.basic : (d.explore[batch] ?? [])
+  const names = stage === 'basic' ? d.basic : (d.explore[batch] ?? [])
+  return a ? names.filter((n) => FIELDS[n]?.visible?.(a) ?? true) : names
 }
 
 // 只问缺的(字段属于用户,不属于页面)

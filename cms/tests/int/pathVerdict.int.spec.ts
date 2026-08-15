@@ -47,6 +47,7 @@ const C01: VerdictProfile = {
   foreignExpSelfEmployed: true, hasOffer: false, inCanada: true,   // 在找工作(无 offer)+ 持 PGWP 在境内
   status: 'pgwp',
   province: 'ON',
+  permit: 'pgwp',
 }
 
 const run = (p: VerdictProfile = C01) => pathVerdict(p, data)
@@ -269,7 +270,7 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
       age: null, married: null, clb: 4, edu: null, eduYears: null, canadaStudy: null, studyProvince: null,
       noc: '63200', teer: 3, expCanadaMonths: 0, expForeignMonths: 60, foreignExpSelfEmployed: null,
       hasOffer: false, inCanada: true,     // 在加读书、还没拿到 offer(新卷这两题都会问)
-      status: 'study', province: null,
+      status: 'study', province: null, permit: null,
     }, data)
     const ee = weak.find((v) => v.key === 'FED-EE')!
     expect(ee.blockedBy).toBe('language')
@@ -285,7 +286,7 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
     const profile = {
       age: null, married: null, clb: 5, edu: null, eduYears: null, canadaStudy: true, studyProvince: null,
       noc: '21231', teer: 1, expCanadaMonths: 0, expForeignMonths: 60, foreignExpSelfEmployed: null,
-      hasOffer: false, inCanada: true, status: 'study' as const, province: null,
+      hasOffer: false, inCanada: true, status: 'study' as const, province: null, permit: null,
     }
     const before = pathVerdict(profile, data)
     const offerBlocked = before.filter((v) => v.blockedBy === 'offer')
@@ -295,6 +296,50 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
       const cf = after.find((x) => x.key === v.key)!
       expect(cf.blockedBy, `${v.key} 反事实后不许再报 offer`).not.toBe('offer')
       expect(cf.reasons.some((r) => r.kind === 'gap' && r.key === 'pv.gate.offer.gap'), `${v.key} 不许再有 offer 缺口理由`).toBe(false)
+    }
+  })
+
+  // ── statusInCanada 拆闸(2026-08-15):「境内身份」底下是三种官方要求,inCanada 一个 bool 答不了 ──
+  // 病灶实拍(Frank 学签档):AB「must have a valid work permit」、NL「Must hold a valid PGWP」
+  // 全被「人在境内」放行,NL 排到第一只差 offer;NB「住满 6 个月」/MB「曼省在职」对安省居民照样放行。
+  const student: VerdictProfile = {
+    age: null, married: null, clb: 5, edu: 'bachelor', eduYears: null, canadaStudy: true, studyProvince: null,
+    noc: '21234', teer: 1, expCanadaMonths: 0, expForeignMonths: 60, foreignExpSelfEmployed: null,
+    hasOffer: false, inCanada: true, status: 'study', province: 'ON', permit: 'study',
+  }
+  it('学签在读不再被工签/PGWP 闸放行:AB、PE 报差工签,NL 报差 PGWP(都不再只差 offer)', () => {
+    const rows = pathVerdict(student, data)
+    for (const key of ['AB-opportunity', 'PE-sw', 'NL-intl-grad']) {
+      const v = byKey(rows, key)
+      expect(v.blockedBy, `${key} 挡路的是身份闸,不是 offer`).toBe('statusInCanada')
+    }
+    // 文案跟判据对得上:AB 说工签、NL 说 PGWP,不再统称「境内身份」
+    expect(byKey(rows, 'AB-opportunity').reasons.some((r) => r.key === 'pv.gate.statusInCanada.workPermit.gap')).toBe(true)
+    expect(byKey(rows, 'NL-intl-grad').reasons.some((r) => r.key === 'pv.gate.statusInCanada.pgwp.gap')).toBe(true)
+  })
+  it('NB/MB 按现居省判:人在安省 → 两条都卡身份闸;没答现居省 → 判不了,不默认放行', () => {
+    const rows = pathVerdict(student, data)
+    expect(byKey(rows, 'NB-sw').reasons.some((r) => r.key === 'pv.gate.statusInCanada.provResidence.gap')).toBe(true)
+    expect(byKey(rows, 'MB-swm').reasons.some((r) => r.key === 'pv.gate.statusInCanada.provEmployment.gap')).toBe(true)
+    const noProv = pathVerdict({ ...student, province: null }, data)
+    for (const key of ['NB-sw', 'MB-swm']) {
+      const v = byKey(noProv, key)
+      expect(v.verdict, `${key} 缺现居省只能判不了`).toBe('needs-info')
+      expect(v.missingSlots ?? []).toContain('statusInCanada')
+    }
+  })
+  it('工签在职的人照常过闸:在曼省工作 → MB 身份闸 met;在阿省持工签 → AB 只差 offer', () => {
+    const worker: VerdictProfile = { ...student, status: 'worker', permit: 'work', province: 'MB', canadaStudy: null }
+    const mb = byKey(pathVerdict(worker, data), 'MB-swm')
+    expect(mb.reasons.some((r) => r.key === 'pv.gate.statusInCanada.provEmployment.met')).toBe(true)
+    const ab = byKey(pathVerdict({ ...worker, province: 'AB' }, data), 'AB-opportunity')
+    expect(ab.blockedBy).toBe('offer')
+  })
+  it('境外档不回归:inCanada=false 时五条通道的身份闸照旧全是缺口', () => {
+    const overseas: VerdictProfile = { ...student, inCanada: false, status: 'other', permit: null, province: null, canadaStudy: false }
+    const rows = pathVerdict(overseas, data)
+    for (const key of ['AB-opportunity', 'PE-sw', 'NL-intl-grad', 'NB-sw', 'MB-swm']) {
+      expect(byKey(rows, key).reasons.some((r) => r.kind === 'gap' && String(r.key).startsWith('pv.gate.statusInCanada.')), `${key} 境外必须是身份缺口`).toBe(true)
     }
   })
 })
@@ -518,7 +563,7 @@ describe('红线不变量', () => {
     const blank: VerdictProfile = {
       age: null, married: null, clb: null, edu: null, eduYears: null, canadaStudy: null, studyProvince: null,
       noc: null, teer: null, expCanadaMonths: null, expForeignMonths: null, foreignExpSelfEmployed: null, hasOffer: null, inCanada: null,
-      status: null, province: null,
+      status: null, province: null, permit: null,
     }
     const out = run(blank)
     expect(out.every((v) => v.verdict === 'needs-info')).toBe(true)

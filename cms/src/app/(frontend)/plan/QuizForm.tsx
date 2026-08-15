@@ -30,7 +30,9 @@ export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplet
   finishLabel?: string
   onFinish?: () => void
 }) {
-  const names = fieldsOf(decision, stage)
+  // 传 answers = 按题级显隐过滤(境外用户看不到「持什么许可/人在哪个省」)。答处境题时清单会
+  // 当场增减 —— names 每次渲染重算,idx 由下面的 Math.min 收口,不会停在被裁掉的题上
+  const names = fieldsOf(decision, stage, 0, answers)
   // 起步落在第一道没答的题(答过的不重走,上一题仍可回去改)。只在挂载时算一次 ——
   // 之后 idx 归用户的「上一题/下一题」管,答完当前题不该自己往前跳
   const [idx, setIdx] = useState(() => {

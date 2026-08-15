@@ -23,6 +23,9 @@ export type FieldDef = {
   unlocks: string[]
   tier: Tier
   toAnswer?: (v: any, all: Answers) => unknown         // 返回 undefined = 不传(缺答与「答案是 0」要分开)
+  /** 题级显隐(2026-08-15 拆闸批新增,此前只有选项级过滤):不该问的人不见这道题,
+   *  完整度计数同源过滤 —— 境外用户没有「持什么许可/人在哪个省」可答,摆着=逼他乱答。 */
+  visible?: (a: Answers) => boolean
 }
 
 const l = (en: string, zh: string, ko: string): L => ({ default: en, 'zh-cn': zh, ko })
@@ -54,6 +57,10 @@ const TOTAL_EXP = [0, 0, 6, 12, 24, 36, 48, 60]
 // B1-4 PGWP:课程时长档下界 / 层级(引擎只对 master 有特例,其余按时长档)
 const STUDY_MONTHS = [0, 4, 8, 12, 24]
 const STUDY_LEVEL = ['', 'college', 'bachelor', 'master', 'doctorate']
+// statusInCanada 拆闸(2026-08-15):许可类型档。学签在读不问(处境题已说明持学签),
+// 境外不问(没有加拿大许可可答)—— 见各题 visible。
+const PERMIT = ['', 'study', 'pgwp', 'work', 'none']
+const inCanada = (a: Answers) => ['studying', 'working', 'jobhunting'].includes(a.status)
 
 export const FIELDS: Record<string, FieldDef> = {
   // 处境:决定签证题算不算数(境外没有加拿大签证),并计入基本题完整度
@@ -71,6 +78,51 @@ export const FIELDS: Record<string, FieldDef> = {
         { value: 'working', text: l('Working in Canada', '已经在加拿大工作', '캐나다에서 근무 중') },
         { value: 'jobhunting', text: l('In Canada, job hunting', '在加拿大找工作', '캐나다에서 구직 중') },
         { value: 'unsure', text: l('Not sure', '不清楚', '잘 모르겠음') },
+      ],
+    },
+  },
+  // 持的许可(2026-08-15 statusInCanada 拆闸):AB/PE 的闸是**有效工签**、NL 指名 **PGWP** ——
+  // 「人在境内」答不了这两道闸(学签在读曾因此被 AB 放行)。学签在读不问(处境题已说明),
+  // 境外不问;「在工作」的人这题分出 PGWP/其他工签,「在找工作」的人分出还有没有许可。
+  permitBand: {
+    engineKey: 'permit',
+    unlocks: ['rpt.g.basics'],
+    tier: 'free',
+    visible: (a) => a.status === 'working' || a.status === 'jobhunting',
+    toAnswer: (b: number, all) => (inCanada(all) && b && b !== UNSURE_BAND ? PERMIT[b] : undefined),
+    q: {
+      title: l('What permit are you on now?', '你现在持什么许可?', '지금 어떤 허가로 체류 중인가요?'),
+      choices: [
+        { value: 2, text: l('PGWP', '毕业工签 PGWP', 'PGWP(졸업 후 취업 허가)') },
+        { value: 3, text: l('Other work permit', '其他工签', '기타 취업 허가') },
+        { value: 1, text: l('Study permit', '学签', '학업 허가') },
+        { value: 4, text: l('Visitor or no permit', '访客或没有许可', '방문자·허가 없음') },
+        { value: 9, text: l('Not sure', '不清楚', '잘 모르겠음') },
+      ],
+    },
+  },
+  // 现居省(2026-08-15 statusInCanada 拆闸):NB 的闸是「在新省住满 6 个月」、MB 是「在曼省在职」——
+  // 目标省答不了「你人在哪」(在安省问曼省的人不是曼省居民)。境外不问;领地并作一档。
+  resProv: {
+    engineKey: 'residenceProvince',
+    unlocks: ['rpt.g.basics'],
+    tier: 'free',
+    visible: inCanada,
+    toAnswer: (v: string, all) => (inCanada(all) && v ? v : undefined),
+    q: {
+      title: l('Which province are you in now?', '你现在人在哪个省?', '지금 어느 주에 있나요?'),
+      choices: [
+        { value: 'ON', text: l('Ontario', '安省 Ontario', '온타리오') },
+        { value: 'BC', text: l('British Columbia', 'BC 不列颠哥伦比亚', '브리티시컬럼비아') },
+        { value: 'AB', text: l('Alberta', '阿省 Alberta', '앨버타') },
+        { value: 'QC', text: l('Quebec', '魁省 Quebec', '퀘벡') },
+        { value: 'MB', text: l('Manitoba', '曼省 Manitoba', '매니토바') },
+        { value: 'SK', text: l('Saskatchewan', '萨省 Saskatchewan', '서스캐처원') },
+        { value: 'NS', text: l('Nova Scotia', '新斯科舍 Nova Scotia', '노바스코샤') },
+        { value: 'NB', text: l('New Brunswick', '新不伦瑞克 New Brunswick', '뉴브런즈윅') },
+        { value: 'NL', text: l('Newfoundland and Labrador', '纽芬兰 Newfoundland', '뉴펀들랜드') },
+        { value: 'PE', text: l('Prince Edward Island', '爱德华王子岛 PEI', '프린스에드워드아일랜드') },
+        { value: 'TERR', text: l('Territories', '三个领地 Territories', '준주 지역') },
       ],
     },
   },

@@ -188,7 +188,9 @@ export async function buildTripleWire(id: number, answers: ClientAnswers): Promi
     // 「人在不在境内」由既有的分型槽推,不另存一列(与 /api/profile-pathways 同一口径)
     inCanada: statusRaw ? statusRaw !== 'overseas' : null,
     status: permitLeft != null && permitLeft > 0 ? 'pgwp' : (STATUS_OF[statusRaw] ?? null),
-    province: null,
+    // 现居省/许可(2026-08-15 拆闸批,与 /api/profile-pathways 同一口径):来自问卷答案,没答留 null
+    province: /^([A-Z]{2}|TERR)$/.test(String(a.residenceProvince ?? '')) ? String(a.residenceProvince) : null,
+    permit: (['study', 'pgwp', 'work', 'none'] as const).find((k) => k === String(a.permit ?? '')) ?? null,
     permitMonthsLeft: permitLeft,
     targetProvinces: provs.map(String),
     familySize: nOf(up.familySize, a.familySize),

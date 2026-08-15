@@ -25,6 +25,10 @@ export type Answers = {
   totalExpBand: number
   offerBand: number       // 已有字段(卡③专属题),类型里先前漏声明
   canadaEduBand: number   // 有没有加拿大学历(2026-08-12 门槛清单三类闸之一)
+  // statusInCanada 拆闸(2026-08-15):持的许可档 + 现居省(省码字符串,'TERR'=领地)。
+  // 只对境内处境显示(fields.ts visible),境外用户这两格保持空
+  permitBand: number
+  resProv: string
   provsAny?: boolean      // 目标省「还不确定」——**答过了**,只是不限省(与「没答」不同)
   /** 档位 v2 标记(2026-08-13/14 语言+经验合一):clbBand 从区间档改成精确档(2=CLB4…8=CLB10+),
    *  totalExpBand 从区间档改成整年档(3=1年…7=5年+,9=不清楚不变)。没打标的旧答案读取时按
@@ -40,6 +44,7 @@ export const EMPTY: Answers = {
   status: '', nocs: [], provs: [],
   clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0,
   eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0, canadaEduBand: 0,
+  permitBand: 0, resProv: '',
   studyMonthsBand: 0, studyLevelBand: 0, bandsV2: true,
 }
 
@@ -102,6 +107,7 @@ export function readAnswers(): Answers {
       eduBand: num(cur.eduBand), ageBand: num(cur.ageBand),
       totalExpBand: cur.bandsV2 ? num(cur.totalExpBand) : totalV2(num(cur.totalExpBand)),
       offerBand: num(cur.offerBand), canadaEduBand: num(cur.canadaEduBand),
+      permitBand: num(cur.permitBand), resProv: typeof cur.resProv === 'string' ? cur.resProv : '',
       // 2026-08-15 Frank 实拍「学历下面的内容填完一刷新就没了」:这俩跟进题(就读时长/层级)
       // 写入一直正常,是**读取路径漏了字段** → 每次刷新被归零。逐字段重建的清单必须与 Answers 全量对齐
       studyMonthsBand: num(cur.studyMonthsBand), studyLevelBand: num(cur.studyLevelBand),

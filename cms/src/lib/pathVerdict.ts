@@ -28,7 +28,7 @@ import { streamMatches, type ScoreFactor } from './pnpSelfScore'
 import type { EduKey } from './pnpSelfScore'
 // 只 import type:编译期擦除,不给 chatTools(它拉着 match/planTimeline/reportFacts)加运行时边。
 import type { Availability, Evidence } from './chatTools'
-import { GATE_LABEL, gateOf, type GateKey } from './gateManifest'
+import { ASK_LABEL, GATE_LABEL, gateOf, type GateKey, type StatusAsk } from './gateManifest'
 
 /** 门槛清单里参与裁决的三类闸(顺序=理由的展示顺序) */
 const GATE_KEYS: GateKey[] = ['offer', 'statusInCanada', 'credentialCanada']
@@ -57,11 +57,14 @@ export type VerdictProfile = {
   expForeignMonths: number | null
   foreignExpSelfEmployed: boolean | null   // 海外经验是否全为自雇(C01:开商店=自雇→多通道记 0)
   status: string | null              // pgwp / study / worker / other
-  province: string | null            // 现居省
+  province: string | null            // 现居省(问卷「你现在人在哪个省」;'TERR'=三个领地)
   // ── 门槛清单三类闸的答案(2026-08-12,设计 §3.2)。null = 没答 → 该闸 unknown → 判不了,
   //    **不许**当成「没有障碍」——那正是「没有行 ⇒ 没有闸 ⇒ open」的同一个病。
   hasOffer: boolean | null           // 手上有没有 job offer
   inCanada: boolean | null           // 人是否已在加拿大境内(由「你现在的情况」推出)
+  /** 持的许可(2026-08-15 statusInCanada 拆闸):study=学签 / pgwp / work=其他工签 / none=访客或已过期。
+   *  null = 没答 → 工签/PGWP 类闸落「判不了」,不拿 inCanada 冒充有工签(学签在读被 AB 放行的那个病)。 */
+  permit: 'study' | 'pgwp' | 'work' | 'none' | null
 }
 
 export type VerdictReason = {
@@ -838,6 +841,33 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   const answerOf: Record<GateKey, boolean | null> = {
     offer: p.hasOffer, statusInCanada: p.inCanada, credentialCanada: p.canadaStudy,
   }
+  // statusInCanada 按 asks 取答案(2026-08-15 拆闸):「境内身份」底下其实是三种官方要求,
+  // inCanada 只答得了「人在不在加拿大」—— 拿它过工签闸,学签在读全被 AB/PE 放行;
+  // 拿它过 NB/MB 的「住在/受雇于该省」,安省居民照样被放行。境外(inCanada=false)四种问法都是「没有」。
+  const statusGateAnswer = (asks: StatusAsk | undefined): boolean | null => {
+    if (!asks) return p.inCanada                                 // 未标注 = 旧口径兜底
+    if (p.inCanada === false) return false
+    // 学签/PGWP 由既有处境槽推得出,不逼用户多答一题;'work'/'none' 只能来自许可题
+    const permit = p.permit ?? (p.status === 'study' ? 'study' : p.status === 'pgwp' ? 'pgwp' : null)
+    switch (asks) {
+      case 'workPermit':
+        if (permit) return permit === 'pgwp' || permit === 'work'
+        return p.status === 'worker' ? true : null               // 在工作=持某种工签;其余判不了
+      case 'pgwp':
+        return permit ? permit === 'pgwp' : null                 // 封闭/开放工签都不是 PGWP,不许充数
+      case 'provResidence':
+        return p.province == null ? null : p.province === spec.reqProvince
+      case 'provEmployment': {
+        if (p.province == null) return null
+        if (p.province !== spec.reqProvince) return false
+        if (p.status === 'worker') return true                   // 处境明说在工作
+        if (p.status === 'study' || p.status === 'other') return false  // 读书/找工作=明说不在职
+        // pgwp/没答说明不了在不在职 → 看本省在职月数(tenure 口径本来就只认本省攒的):
+        // 攒过 = 在职过这家雇主;0 = 没在本省受雇过;没答 = 判不了
+        return p.expCanadaMonths == null ? null : p.expCanadaMonths > 0
+      }
+    }
+  }
   for (const g of GATE_KEYS) {
     const rule = gateOf(spec.key, g)
     if (rule.need === 'notRequired') continue                    // 没这道闸
@@ -849,22 +879,26 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
         ...(rule.url ? { evidence: { url: rule.url, fetched: rule.fetched ?? '', label: spec.stream } } : {}) })
       continue
     }
-    const have = answerOf[g]
+    const asks = g === 'statusInCanada' ? rule.asks : undefined
+    const have = asks ? statusGateAnswer(asks) : answerOf[g]
+    // 文案与 i18n key 按 asks 细分:判的是工签就说工签,不再统称「境内身份」(文案跟判据必须对得上)
+    const what = asks ? ASK_LABEL[asks].zh : GATE_LABEL[g].zh
+    const keyOf = (state: string) => `pv.gate.${g}${asks ? `.${asks}` : ''}.${state}`
     const ev = { url: rule.url, fetched: rule.fetched, label: spec.stream }
     if (have == null) {                                          // 有闸,但用户没答 → 判不了
       manifestUnknown = true
       missingSlots.push(g)
-      reasons.push({ kind: 'needs-info', text: `${GATE_LABEL[g].zh}判不了,档案缺这一项`,
-        key: `pv.gate.${g}.unknown`, evidence: ev })
+      reasons.push({ kind: 'needs-info', text: `${what}判不了,档案缺这一项`,
+        key: keyOf('unknown'), evidence: ev })
       continue
     }
-    if (have) { reasons.push({ kind: 'met', text: `${GATE_LABEL[g].zh} 达标`, key: `pv.gate.${g}.met`, evidence: ev }); continue }
+    if (have) { reasons.push({ kind: 'met', text: `${what} 达标`, key: keyOf('met'), evidence: ev }); continue }
     manifestGap = true                                           // 明确没有 → 现在走不了
     // 标签报**最难拆的**那道闸:一个从没来过加拿大、也没有 offer 的人,写「要先有 offer」
     // 会让他以为找份工作就行,而真正挡路的是那张加拿大学历(2026-08-12 实拍)
     if (blockCost(g) > blockCost(blockedBy)) blockedBy = g
-    reasons.push({ kind: 'gap', text: `这条通道要求${GATE_LABEL[g].zh},你现在没有`,
-      key: `pv.gate.${g}.gap`, evidence: ev })
+    reasons.push({ kind: 'gap', text: `这条通道要求${what},你现在没有`,
+      key: keyOf('gap'), evidence: ev })
   }
 
   const tier: PathwayVerdict['tier'] = excluded ? null : tierOfMonths(gaps.length ? Math.max(...gaps) : 0)
@@ -944,7 +978,7 @@ export type JobPathwayRow = {
 const EMPTY_PROFILE: VerdictProfile = {
   age: null, married: null, clb: null, edu: null, eduYears: null, canadaStudy: null,
   studyProvince: null, noc: null, teer: null, expCanadaMonths: null, expForeignMonths: null,
-  foreignExpSelfEmployed: null, hasOffer: null, inCanada: null, status: null, province: null,
+  foreignExpSelfEmployed: null, hasOffer: null, inCanada: null, status: null, province: null, permit: null,
 }
 
 /** 排序:可判的按经验门槛升序 → 门槛未收录 → 清单排除沉底;同档按注册表原序(与卡片效果图一致)。 */

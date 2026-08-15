@@ -3,13 +3,13 @@
 // (只写一边 → 另一个入口会重新问一遍,那正是这次收敛掉的病);③ 档位→引擎输入的换算与重构前逐字一致。
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ANSWERS_KEY, answeredBasics, pullAndMerge, readAnswers, readScoreAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
-import { DECISIONS, batchLeadsFree, KNOWN_NO_FREE_LEAD } from '@/lib/decisions'
+import { DECISIONS, batchLeadsFree, fieldsOf, KNOWN_NO_FREE_LEAD } from '@/lib/decisions'
 import { FIELDS } from '@/lib/fields'
 
 const OLD_QUIZ = 'jobs_quiz_v1'
 const OLD_PR = 'plan_pr_v1'
 const base = (p: Partial<Answers> = {}): Answers =>
-  ({ status: '', nocs: [], provs: [], clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0, eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0, canadaEduBand: 0, studyMonthsBand: 0, studyLevelBand: 0, bandsV2: true, ...p })
+  ({ status: '', nocs: [], provs: [], clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0, eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0, canadaEduBand: 0, permitBand: 0, resProv: '', studyMonthsBand: 0, studyLevelBand: 0, bandsV2: true, ...p })
 
 beforeEach(() => localStorage.clear())
 
@@ -116,6 +116,30 @@ describe('档位 → 引擎输入', () => {
   it('境外不传签证剩余 —— 没有加拿大签证,拿档位造时间窗=编数', () => {
     expect(toEngineAnswers(base({ status: 'overseas', pgwpBand: 2 })).pgwpMonthsLeft).toBeUndefined()
     expect(toEngineAnswers(base({ status: 'studying', pgwpBand: 2 })).pgwpMonthsLeft).toBe(9)
+  })
+
+  // statusInCanada 拆闸(2026-08-15):许可/现居省两题只对境内处境生效
+  it('许可/现居省档 → 引擎输入;境外答案残留不传(改处境后旧答案不许跟着进引擎)', () => {
+    const out = toEngineAnswers(base({ status: 'jobhunting', permitBand: 2, resProv: 'MB' }))
+    expect(out.permit).toBe('pgwp')
+    expect(out.residenceProvince).toBe('MB')
+    expect(toEngineAnswers(base({ status: 'working', permitBand: 9 })).permit).toBeUndefined()   // 「不清楚」不传
+    const stale = toEngineAnswers(base({ status: 'overseas', permitBand: 3, resProv: 'ON' }))
+    expect(stale.permit).toBeUndefined()
+    expect(stale.residenceProvince).toBeUndefined()
+  })
+})
+
+describe('题级显隐(fieldsOf 过滤)', () => {
+  it('境外不问许可/现居省;学签只问现居省;在工作两道都问 —— 完整度计数与题单同源', () => {
+    const names = (a: Answers) => fieldsOf('pr', 'basic', 0, a)
+    expect(names(base({ status: 'overseas' }))).not.toContain('permitBand')
+    expect(names(base({ status: 'overseas' }))).not.toContain('resProv')
+    expect(names(base({ status: 'studying' }))).toContain('resProv')
+    expect(names(base({ status: 'studying' }))).not.toContain('permitBand')
+    expect(names(base({ status: 'working' }))).toEqual(expect.arrayContaining(['permitBand', 'resProv']))
+    // 不传答案 = 全量清单(服务端/静态场景不误裁)
+    expect(fieldsOf('pr', 'basic')).toEqual(expect.arrayContaining(['permitBand', 'resProv']))
   })
 })
 

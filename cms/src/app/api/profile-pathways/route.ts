@@ -112,8 +112,11 @@ export async function POST(req: Request) {
     expForeignMonths: totalExp == null ? null : Math.max(0, totalExp - (canadaExp ?? 0)),
     foreignExpSelfEmployed: null,
     status: STATUS[String(answers.currentStatus ?? '')] ?? null,
-    // 目标省不是现居省。居住门槛没有单独问过，必须留空让引擎如实标 needs-info。
-    province: null,
+    // 现居省(2026-08-15 拆闸批新题「你现在人在哪个省」):NB/MB 的「住在/受雇于该省」闸靠它判。
+    // 目标省不是现居省 —— 没答仍留 null,引擎如实标 needs-info
+    province: /^([A-Z]{2}|TERR)$/.test(String(answers.residenceProvince ?? '')) ? String(answers.residenceProvince) : null,
+    // 持的许可(同批新题):AB/PE 的工签闸、NL 的 PGWP 闸靠它判;没答留 null → 判不了,不猜
+    permit: (['study', 'pgwp', 'work', 'none'] as const).find((k) => k === String(answers.permit ?? '')) ?? null,
     // 门槛清单三类闸(2026-08-12):没答就是 null → 引擎落「判不了」,**不许**当成没有障碍。
     hasOffer: typeof answers.hasJobOffer === 'boolean' ? answers.hasJobOffer : null,
     // 「人在不在境内」不另开一题:既有的「你现在的情况」已经把 overseas 与另外三个境内选项分开了

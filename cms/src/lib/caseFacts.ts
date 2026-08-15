@@ -67,7 +67,7 @@ const PROFILES: Record<string, {
       expCanadaMonths: 0,
       expForeignMonths: 0,         // 海外经历全是自雇 → 可计月数 0
       foreignExpSelfEmployed: true,
-      status: 'pgwp', province: 'ON',
+      status: 'pgwp', province: 'ON', permit: 'pgwp',
     } as VerdictProfile,
   },
 }

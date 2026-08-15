@@ -1602,6 +1602,8 @@ export function verdictProfileOf(slots: Slots, teer: number | null): VerdictProf
     // 现居省本站还没有这个槽(slots.provs 是他**问的**省,不是他**住的**省 —— 拿它当现居地,
     // 一个在安省问「曼省怎么样」的人会被当成曼省居民)。留 null → 带居住门槛的通道落 needs-info。
     province: null,
+    // 许可(2026-08-15 拆闸):对话链只有处境槽,学签/PGWP 推得出来,其余判不了留 null
+    permit: slots.status === 'pgwp' ? 'pgwp' : slots.status === 'study' ? 'study' : null,
   }
 }
 

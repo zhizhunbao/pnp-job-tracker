@@ -28,6 +28,7 @@ import { IconRefresh } from '../../Icons'
 import { EMPTY, clearAnswers, pullAndMerge, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
 import { fieldsOf, missingFields } from '@/lib/decisions'
 import { FIELDS } from '@/lib/fields'
+import { gateOf } from '@/lib/gateManifest'
 import { pickName } from '@/lib/occName'
 import { track } from '@/lib/track'
 import type { DrawRow, ScoreFactor, SelfProfile } from '@/lib/pnpSelfScore'
@@ -78,6 +79,14 @@ const COUNT_PILL: React.CSSProperties = { borderRadius: 999, padding: '2px 8px',
 const NOC_TITLE_CACHE: Record<string, string> = {}
 // 已经问过的码(不论问到没问到)。失败不重试:同一个码问一次拿不到名字,再问十次也一样。
 const NOC_TITLE_TRIED = new Set<string>()
+
+// statusInCanada 按 asks 细分文案键(2026-08-15 拆闸):判的是工签就说工签,不再统称「加拿大身份」。
+// 未标注(如 AIP/RCIP 这类本无此闸的 key)回落通用键
+const gateChip = (pathKey: string, blocked: string): string => {
+  if (blocked !== 'statusInCanada') return blocked
+  const r = gateOf(pathKey, 'statusInCanada')
+  return r.need === 'required' && r.asks ? `statusInCanada.${r.asks}` : 'statusInCanada'
+}
 
 export function PrDecisionView({ overview, competition = [], tvJob, topNocs, initialVerdict }: {
   overview: OverviewDraw[]; tvJob: TvJob | null
@@ -143,7 +152,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
     const a = readAnswers()
     setBands(a)
     setNoc(a.nocs[0] || '')
-    const baseComplete = missingFields(fieldsOf('pr', 'basic'), a).length === 0
+    const baseComplete = missingFields(fieldsOf('pr', 'basic', 0, a), a).length === 0
     setOccStep(a.nocs.length === 0)
     setProvinceStep(a.nocs.length > 0 && baseComplete && a.provs.length === 0 && !a.provsAny)
     return a
@@ -171,7 +180,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
     return () => ctrl.abort()
   }, [noc, occNoc])
 
-  const stepNames = fieldsOf('pr', 'basic')
+  const stepNames = fieldsOf('pr', 'basic', 0, bands)
   const stepTotal = stepNames.length + 2
   // 目标省「还不确定」是**答过的**(Frank 2026-08-12:「很多人不知道去哪个省,比如国内的厨师」)——
   // 它跟「没答」不是一回事:前者=不限省、13 条通道全判一遍;后者=还没走到这一步。
@@ -213,6 +222,8 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
     // 引擎实际消费的另外四个档(2026-08-15 学历持久化根治时补上):学历/年龄由分值卡写回
     // (eduBand/ageBand),offer/加拿大学历在基础卷 —— 不进 key 就是「答了初评也不动」
     bands.eduBand, bands.ageBand, bands.offerBand, bands.canadaEduBand,
+    // 拆闸批两题(2026-08-15):许可/现居省进了闸判定,不进 key 就是「答了初评也不动」
+    bands.permitBand, bands.resProv,
   ])
   useEffect(() => {
     // 职业档粗筛(2026-08-15):有职业就跑 —— 引擎对没答的题落「判不了」不当障碍,答满后同一请求自动升级个人档
@@ -283,6 +294,9 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
     { key: 'occ', prov: '', label: t('dp.sum.occ'), value: occText || unparsed, filled: !!occText,
       ...(occMismatch ? { warn: t('dp.warnOcc') } : {}) },
     { key: 'status', prov: '', label: t('dp.sum.status'), value: choiceText('status') || unparsed, filled: !!choiceText('status') },
+    // 拆闸批两题只对境内处境回显(与题的显隐同源):境外用户不摆两个永远「待填写」的格
+    ...(FIELDS.permitBand.visible?.(bands) ? [{ key: 'permitBand', prov: '', label: t('dp.sum.permit'), value: choiceText('permitBand') || unparsed, filled: !!choiceText('permitBand') }] : []),
+    ...(FIELDS.resProv.visible?.(bands) ? [{ key: 'resProv', prov: '', label: t('dp.sum.resProv'), value: choiceText('resProv') || unparsed, filled: !!choiceText('resProv') }] : []),
     { key: 'clbBand', prov: '', label: t('dp.sum.clb'), value: choiceText('clbBand') || unparsed, filled: !!choiceText('clbBand') },
     { key: 'totalExpBand', prov: '', label: t('dp.sum.totalExp'), value: choiceText('totalExpBand') || unparsed, filled: !!choiceText('totalExpBand') },
     { key: 'expBand', prov: '', label: t('dp.sum.canExp'), value: choiceText('expBand') || unparsed, filled: !!choiceText('expBand') },
@@ -590,9 +604,9 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                                       // → 话术如实降级,不承诺 Day0(2026-08-15 Frank「失实的话术修掉,按如实的改」)
                                       : row.key === 'AB-opportunity' ? 'dp.planAfterOfferOkAb'
                                         : 'dp.planAfterOfferOk')
-                              : ao?.blockedBy ? `dp.planAfterOfferGap.${ao.blockedBy}` : 'dp.planBlocked.offer')
+                              : ao?.blockedBy ? `dp.planAfterOfferGap.${gateChip(row.key, ao.blockedBy)}` : 'dp.planBlocked.offer')
                           : row.blockedBy
-                            ? `dp.planBlocked.${row.blockedBy}`
+                            ? `dp.planBlocked.${gateChip(row.key, row.blockedBy)}`
                             : row.verdict === 'needs-info'
                               ? 'dp.planNeedInfo'
                               : `dp.planTier${row.tier ?? 0}`
