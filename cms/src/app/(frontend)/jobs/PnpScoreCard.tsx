@@ -15,6 +15,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { QuizChecks, QuizChoices, QuizNav, QuizSub, QuizTitle } from '../quiz/QuizUI'
 import type { Lang, TFn } from './i18n'
 import { officialLabel as label } from '@/lib/officialLabels'
+import { readScoreAnswers, writeScoreAnswers } from '@/lib/answers'
 import { DEFAULT_PROFILE, EDU_KEYS, scoreProvince, streamMatches, type DrawRow, type EduKey, type ScoreFactor, type SelfProfile } from '@/lib/pnpSelfScore'
 
 // 打分是**关于你这个人**的功能,不绑某一个岗位(Frank 2026-07-27「应该单独弄个功能吧,
@@ -158,16 +159,19 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
     return p
   })
   const set = <K extends keyof SelfProfile>(k: K, v: SelfProfile[K]) => setProfile((p) => ({ ...p, [k]: v }))
-  const [ticks, setTicks] = useState<Record<string, boolean>>({})
+  // 分值卡答案持久化(2026-08-15 Frank「学历以下的字段都有这个问题」):此前三个 map 只活在
+  // state,刷新全丢。初始从 lib/answers 读档,变更即写回(键=用户自身条件,跨岗位跨页面通用)
+  const [ticks, setTicks] = useState<Record<string, boolean>>(() => readScoreAnswers().ticks)
   const [wage, setWage] = useState<number>(() => Math.round(ctx.hourly ?? 0))
   // 保守默认:知道城市才猜地区,否则默认 Area 1(0 分)—— 不许用有利默认把分数吹上去
   const [areaI, setAreaI] = useState<number>(() => (ctx.city ? guessArea(ctx.city) : 0))
   const [hasOffer, setHasOffer] = useState<boolean>(() => !!ctx.hasOffer)
   // 官方表中没有通用自动映射的档位(如 ON 工作许可/加拿大收入)也必须有输入入口。
   // 空值=未回答=0 分;选择后直接使用该官方行的 points,不在前端另造规则。
-  const [rowAnswers, setRowAnswers] = useState<Record<string, number>>({})
+  const [rowAnswers, setRowAnswers] = useState<Record<string, number>>(() => readScoreAnswers().rowAnswers)
   const [extraQuestionIndex, setExtraQuestionIndex] = useState(0)
-  const [extraAnswered, setExtraAnswered] = useState<Record<string, boolean>>({})
+  const [extraAnswered, setExtraAnswered] = useState<Record<string, boolean>>(() => readScoreAnswers().extraAnswered)
+  useEffect(() => { writeScoreAnswers({ ticks, rowAnswers, extraAnswered }) }, [ticks, rowAnswers, extraAnswered])
 
   // PR 评估页把官方表字段收敛成逐题选择。这里只换输入形态，不改任何分值或匹配规则；
   // 时薪是 BC 每整元计分，不能粗暴切区间，所以仍是单题数字输入。

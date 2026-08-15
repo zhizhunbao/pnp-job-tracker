@@ -114,8 +114,32 @@ export function writeAnswers(patch: Partial<Answers>): Answers {
 // 重置(Frank 2026-07-31「答题给一个重置的功能」):把这份答案整份丢掉,回到从没答过的状态。
 // 连 done 一起清 —— 留着它职位板就不再问三问了,那不叫重置。
 export function clearAnswers(): Answers {
-  try { localStorage.removeItem(ANSWERS_KEY) } catch { /* ignore */ }
+  try { localStorage.removeItem(ANSWERS_KEY); localStorage.removeItem(SCORE_ANSWERS_KEY) } catch { /* ignore */ }
   return { ...EMPTY }
+}
+
+// ── 分值卡(估分段)答案(2026-08-15 Frank「学历以下的字段都有这个问题」)────────────────
+// 基础 8 题一直走上面的 ANSWERS_KEY,而分值卡的勾选/逐题答案只活在组件 state → 刷新全丢。
+// 同一原则:这里是唯一读写口。键是 `${prov}:${factor}` / tick 的 `${factor}:${seq}`,
+// 都是用户自身条件(外省经历/亲属/本省学历…),跨岗位跨页面通用,与具体职位无关。
+export const SCORE_ANSWERS_KEY = 'o2p_score_answers_v1'
+export type ScoreAnswers = {
+  ticks: Record<string, boolean>
+  rowAnswers: Record<string, number>
+  extraAnswered: Record<string, boolean>
+}
+const SCORE_EMPTY: ScoreAnswers = { ticks: {}, rowAnswers: {}, extraAnswered: {} }
+
+export function readScoreAnswers(): ScoreAnswers {
+  if (typeof localStorage === 'undefined') return { ...SCORE_EMPTY }
+  const cur = parse(localStorage.getItem(SCORE_ANSWERS_KEY))
+  if (!cur || typeof cur !== 'object') return { ...SCORE_EMPTY }
+  const rec = (v: unknown) => (v && typeof v === 'object' ? (v as Record<string, never>) : {})
+  return { ticks: rec(cur.ticks), rowAnswers: rec(cur.rowAnswers), extraAnswered: rec(cur.extraAnswered) }
+}
+
+export function writeScoreAnswers(a: ScoreAnswers): void {
+  try { localStorage.setItem(SCORE_ANSWERS_KEY, JSON.stringify(a)) } catch { /* 无痕模式写不进也不能崩页面 */ }
 }
 
 // 答过三问没有(职位板判断弹不弹、拿 PR 判断要不要拉起选职业)
