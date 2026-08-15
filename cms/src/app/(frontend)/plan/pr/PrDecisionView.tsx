@@ -558,7 +558,10 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                         : row.key === 'RCIP' ? '/jobs?pilot=RCIP'
                           : provincial ? `/jobs?prov=${row.province}&pnp=yes` : null
                       const jobsN = provincial && occComp ? (occComp.find((o) => o.province === row.province)?.openJobs ?? 0) : null
-                      return { rowKey: row.key, index, province, routeName, top: index === 0 && !row.blockedBy,
+                      // 制度归属灰标(2026-08-14 Frank「通道要标明哪些是 pnp aip 或者 rcip」;08-15 实拍再确认):
+                      // key 即真相 —— FED-EE=EE、AIP/RCIP 自名,其余全是省提名
+                      const program = row.key === 'FED-EE' ? 'EE' : row.key === 'AIP' ? 'AIP' : row.key === 'RCIP' ? 'RCIP' : 'PNP'
+                      return { rowKey: row.key, index, province, routeName, program, top: index === 0 && !row.blockedBy,
                         ratio: row.competition?.ratio ?? null, stateText: t(stateKey), afterOk, openOk, jobsHref, jobsN }
                     })
                     // 门槛全行同值(常见:全被 offer 卡住)→ 一句脚注,不铺一整列同一句话
@@ -591,6 +594,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                               <div style={{ display: 'flex', alignItems: 'baseline', gap: 7 }}>
                                 <span style={{ fontSize: 12, color: UI.text3, fontVariantNumeric: 'tabular-nums' }}>{r.index + 1}</span>
                                 <b style={{ fontSize: 13.5, color: '#111827', minWidth: 0 }}>{r.routeName}</b>
+                                <span style={{ color: UI.text3, fontSize: 10.5, border: `1px solid ${UI.hairline}`, borderRadius: 4, padding: '0 4px', flexShrink: 0 }}>{r.program}</span>
                                 <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 600, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{r.ratio == null ? '—' : `${r.ratio}:1`}</span>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 4, flexWrap: 'wrap' }}>
@@ -608,6 +612,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                               { key: 'path', label: t('dp.planPath'), width: planCoarse || gateUniform ? '54%' : '34%', render: (r) => (
                                 <span style={{ display: 'flex', alignItems: 'baseline', gap: 8, minWidth: 0 }}>
                                   <b style={{ color: '#111827', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.routeName}</b>
+                                  <span style={{ color: UI.text3, fontSize: 10.5, border: `1px solid ${UI.hairline}`, borderRadius: 4, padding: '0 4px', flexShrink: 0 }}>{r.program}</span>
                                   <span style={{ color: UI.text3, fontSize: 11.5, flexShrink: 0 }}>{r.province}</span>
                                 </span>
                               ) },
