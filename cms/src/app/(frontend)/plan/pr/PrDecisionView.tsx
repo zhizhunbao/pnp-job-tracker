@@ -1231,6 +1231,7 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
                   <div style={{ fontSize: 12.5, color: UI.text3, margin: '-10px 0 13px', lineHeight: 1.55 }}>{t('quiz.q2sub')}</div>
                   {/* initialTop:服务端已按在招量取好的热门榜 → 控件首帧即终态,一个请求都不发 */}
                   <OccPicker key={resetNonce} inline t={t} lang={lang} initial={bands.nocs} doneLabel={t('plan.next')} initialTop={topNocs}
+                    finishLabel={quizComplete ? t('ps.finish') : undefined} onFinish={finishQuiz}
                     onChange={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || '') }}
                     onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || ''); setOccStep(false); setProvinceStep(false); setFormAtEnd(false) }} />
                 </div>
@@ -1238,6 +1239,8 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
                 <div className="plQuizPad">
                   {/* 省份是基础段最后一题:答完由 onQuizDone 决定 —— 还有估分题就翻进估分段,答满才收框 */}
                   <ProvincePicker key={`${resetNonce}:provinces`} t={t} initial={bands.provs} unsure={bands.provsAny}
+                    finishLabel={quizComplete ? t('ps.finish') : undefined}
+                    onFinish={(provs, any) => { setBands(writeAnswers({ provs, provsAny: !!any })); finishQuiz() }}
                     onChange={(provs) => setBands(writeAnswers({ provs }))}
                     onBack={() => { setProvinceStep(false); setFormAtEnd(true) }}
                     onDone={(provs, any) => { setBands(writeAnswers({ provs, provsAny: !!any })); onQuizDone() }} />

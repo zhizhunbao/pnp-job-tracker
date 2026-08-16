@@ -28,7 +28,7 @@ const Skeleton = () => (
   <span aria-hidden style={{ display: 'inline-block', width: 76, height: '0.85em', borderRadius: 4, background: 'rgba(255,255,255,.45)' }} />
 )
 
-export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline, doneLabel, hideDone, initialTop }: {
+export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline, doneLabel, hideDone, initialTop, finishLabel, onFinish }: {
   t: TFn
   lang: string
   initial: string[]
@@ -44,6 +44,9 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
   inline?: boolean
   doneLabel?: string
   hideDone?: boolean
+  /** 旁路收卷钮(2026-08-16 Frank「这两个右下角都需要一个完成按钮」);选择经 onChange 已实时落档 */
+  finishLabel?: string
+  onFinish?: () => void
 }) {
   const [nocs, setNocs] = useState<string[]>(initial)
   // 常用职业名同步就有,刷新时不为回显一颗已选 chip 再等一次事实查询。
@@ -327,7 +330,8 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
           // 按钮文案也恒定:选了几个写在左边灰字里,不塞进按钮 —— 文案变宽 = 按钮跟着挪。
           <QuizNav prevLabel={t('plan.prev')} nextLabel={doneLabel || t('plan.next')}
             nextDisabled={nocs.length === 0} onNext={() => onDone(nocs)}
-            hint={nocs.length === 0 ? t('quiz.pickFirst') : undefined} />
+            hint={nocs.length === 0 ? t('quiz.pickFirst') : undefined}
+            doneLabel={finishLabel && nocs.length > 0 ? finishLabel : undefined} onDone={onFinish} />
         ) : nocs.length > 0 ? (
           <Button kind="primary" onClick={() => onDone(nocs)} style={{ width: '100%', padding: '11px 0', fontSize: 15, marginTop: 14 }}>
             {t('quiz.nextN', { n: nocs.length })}
