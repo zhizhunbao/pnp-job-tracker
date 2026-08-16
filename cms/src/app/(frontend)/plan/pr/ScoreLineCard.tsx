@@ -11,6 +11,7 @@
 //      **只到「够不够线」为止**:不许延伸成「多久能被捞」「概率多大」(禁概率红线)。
 import { useState } from 'react'
 
+import { DataTable } from '../../ui/DataTable'
 import { Tabs } from '../../ui/Tabs'
 import { UI } from '../../ui/primitives'
 import { lineStateOf, type LineState } from '@/lib/scoreLine'
@@ -26,8 +27,6 @@ export type ScoreRow = {
 const CARD: React.CSSProperties = { background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, padding: '14px 16px', margin: '0 0 10px' }
 const H2: React.CSSProperties = { fontSize: 16, fontWeight: 700, color: '#111827', margin: 0 }
 const PILL: React.CSSProperties = { borderRadius: 999, padding: '2px 8px', fontSize: 11.5, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }
-const TH: React.CSSProperties = { padding: '0 0 6px', fontSize: 11.5, fontWeight: 600, color: UI.text3, whiteSpace: 'nowrap' }
-const TD: React.CSSProperties = { padding: '7px 0', fontSize: 12.5, color: UI.text2, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }
 
 /** 该省近 N 轮有分数的抽选(倒序);没有分数的轮次不进 —— 拿它当 0 比就是编 */
 export const recentDraws = (draws: DrawRow[], province: string): DrawRow[] =>
@@ -190,26 +189,21 @@ export function ScoreLineCard({
               </div>
             ))}
           </div>
-          <table className="slTbl" style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
-            <thead>
-              <tr>
-                <th style={{ ...TH, textAlign: 'left' }}>{t('sl.date')}</th>
-                <th style={{ ...TH, textAlign: 'left', padding: '0 10px 6px' }}>{t('sl.stream')}</th>
-                <th style={{ ...TH, textAlign: 'right' }}>{t('sl.cutoff')}</th>
-                <th style={{ ...TH, textAlign: 'right' }}>{t('sl.you')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {list.map((d, i) => (
-                <tr key={`${d.drawDate}:${i}`} style={{ borderTop: `1px solid ${UI.hairline}` }}>
-                  <td style={{ ...TD, textAlign: 'left' }}>{d.drawDate}</td>
-                  <td style={{ ...TD, padding: '7px 10px', color: '#111827', whiteSpace: 'normal' }}>{d.stream}</td>
-                  <td style={{ ...TD, textAlign: 'right', fontSize: 13.5, fontWeight: 600, color: '#111827' }}>{d.score}</td>
-                  <td style={{ ...TD, textAlign: 'right' }}>{gapCell(d.score as number)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="slTbl">
+            <DataTable<DrawRow> rows={list} rowKey={(d, i) => `${d.drawDate}:${i}`} bare
+              cols={[
+                { key: 'date', label: t('sl.date'), width: '18%', nowrap: true, sort: (d) => d.drawDate,
+                  render: (d) => <span style={{ fontVariantNumeric: 'tabular-nums', color: UI.text2, fontSize: 12.5 }}>{d.drawDate}</span> },
+                // 官方通道名不截断(走查 #297 同一条:我们没有权力给官方原名编个短名),放不下就换行
+                { key: 'stream', label: t('sl.stream'), width: '52%',
+                  render: (d) => <span style={{ display: 'block', color: '#111827', overflowWrap: 'anywhere' }}>{d.stream}</span> },
+                { key: 'cut', label: t('sl.cutoff'), width: '15%', align: 'right', nowrap: true, sort: (d) => d.score,
+                  render: (d) => <span style={{ fontWeight: 600, color: '#111827' }}>{d.score}</span> },
+                { key: 'you', label: t('sl.you'), width: '15%', align: 'right', nowrap: true,
+                  sort: (d) => (score?.value == null ? null : score.value - (d.score as number)),
+                  render: (d) => gapCell(d.score as number) },
+              ]} />
+          </div>
         </>
       ) : prov ? (
         <Box tone="muted">{t('sl.noDraws', { prov: provDisp(prov) })}</Box>
