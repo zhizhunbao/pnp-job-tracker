@@ -33,7 +33,7 @@ async function getMatchDimsCached(payload: Awaited<ReturnType<typeof getPayload>
   return dims
 }
 // ⚠️ 新增筛选键三处同步:buildJobsWhere(jobsSql)+ 前端 state + 本白名单(#73 排序白名单同款教训,fElig 漏过一回)
-const FILTER_KEYS = ['q', 'fProv', 'fCity', 'fDistrict', 'fBroad', 'fMid', 'fFine', 'fTeer',
+const FILTER_KEYS = ['q', 'fNoc', 'fProv', 'fCity', 'fDistrict', 'fBroad', 'fMid', 'fFine', 'fTeer',
   'fSource', 'fAcc', 'fPnp', 'fAip', 'fPilot', 'fStatus', 'fOrigin', 'fScore', 'fSal', 'fVs', 'fEmp', 'fElig'] as const
 
 export async function GET(req: Request) {

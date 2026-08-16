@@ -132,7 +132,7 @@ export async function POST(req: Request) {
     canadaStudy: typeof answers.canadaStudy === 'boolean' ? answers.canadaStudy : null,
   }
 
-  const [data, comp, occRows, pilotQuota] = await Promise.all([getVerdictData(), competitionByProvince(), fetchOccCompetition(noc), fetchPilotQuota()])
+  const [data, comp, occRows, pilotQuota] = await Promise.all([getVerdictData(), competitionByProvince(), fetchOccCompetition(nocs.length ? nocs : [noc]), fetchPilotQuota()])
   // RCIP/FCIP 名额状态(2026-08-16 Frank「不是有比名额竞争更准确的数据吗」):社区官网 quote-anchored,
   // 按 省×制度 聚合,挂给区域线行 —— 展示层用语义单一的 remainingSum/perIntakeSum,不上混算的 quotaSum
   const quotaByKey = new Map<string, PilotQuotaAgg>(pilotQuota.map((q) => [`${q.province}|${q.type}`, q]))
@@ -246,5 +246,6 @@ export async function POST(req: Request) {
     } : null,
   } : null
 
-  return Response.json({ noc, rows, excluded, outside })
+  // nocs 全量回传(2026-08-16「要支持多个职位类别」):展示层的「查岗位」要按档案里的全部职业深链
+  return Response.json({ noc, nocs: nocs.length ? nocs : [noc], rows, excluded, outside })
 }

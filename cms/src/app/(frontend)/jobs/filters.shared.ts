@@ -19,6 +19,9 @@ export const PROV_NAMES: Record<string, string> = {
 
 /** URL 短名 → 筛选键(筛选键 = 前端 state 名 = buildJobsWhere 的键,三者同名,不必再各翻译一遍) */
 export const URL_TO_FILTER: Record<string, string> = {
+  // noc:逗号分隔的 NOC 码多值(2026-08-16 Frank「查岗位应该带着条件查」「要支持多个职位类别」)——
+  // 先前从初评表跳过来是把 NOC 码塞进关键词框(q=72310):页面看着像在搜一串数字,且只带得动一个职业。
+  noc: 'fNoc',
   q: 'q', prov: 'fProv', broad: 'fBroad', mid: 'fMid', fine: 'fFine', city: 'fCity',
   dist: 'fDistrict', country: 'fCountry', teer: 'fTeer', src: 'fSource', acc: 'fAcc',
   pnp: 'fPnp', aip: 'fAip', pilot: 'fPilot', st: 'fStatus', org: 'fOrigin', score: 'fScore', sal: 'fSal',

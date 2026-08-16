@@ -565,6 +565,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const [q, setQ] = useState(seed('q'))
   const [directOnly, setDirectOnly] = useState(initialFilters.directOnly === true)
   const [fElig, setFElig] = useState(seed('fElig'))   // GAP1③:'ok'=排除明确不担保/须 PR 岗
+  // 职业多值(2026-08-16):逗号分隔 NOC 码,从初评表「查岗位」带过来;UI 显示为职业胶囊
+  const [fNoc, setFNoc] = useState(seed('fNoc'));
   const [fCountry, setFCountry] = useState(seed('fCountry')); const [fProv, setFProv] = useState(seed('fProv')); const [fCity, setFCity] = useState(seed('fCity')); const [fDistrict, setFDistrict] = useState(seed('fDistrict'))
   const [fBroad, setFBroad] = useState(seed('fBroad')); const [fMid, setFMid] = useState(seed('fMid')); const [fFine, setFFine] = useState(seed('fFine'))
   const [fTeer, setFTeer] = useState(seed('fTeer')); const [fSource, setFSource] = useState(seed('fSource')); const [fAcc, setFAcc] = useState(seed('fAcc'))
@@ -586,7 +588,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   //    Frank 2026-08-03「右键一刷新,之前的选项也没有保持」→ 筛选进 URL:刷新能复原、链接能分享,
   //    而搜索引擎进来的干净 /jobs 依旧是干净板(没参数就没筛选,不会替陌生人预设条件)。
   const fState: Record<string, { v: string; set: (s: string) => void }> = {
-    q: { v: q, set: setQ }, fProv: { v: fProv, set: setFProv }, fBroad: { v: fBroad, set: setFBroad },
+    q: { v: q, set: setQ }, fNoc: { v: fNoc, set: setFNoc }, fProv: { v: fProv, set: setFProv }, fBroad: { v: fBroad, set: setFBroad },
     fMid: { v: fMid, set: setFMid }, fFine: { v: fFine, set: setFFine }, fCity: { v: fCity, set: setFCity },
     fDistrict: { v: fDistrict, set: setFDistrict }, fCountry: { v: fCountry, set: setFCountry },
     fTeer: { v: fTeer, set: setFTeer }, fSource: { v: fSource, set: setFSource }, fAcc: { v: fAcc, set: setFAcc },
@@ -650,7 +652,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       else localStorage.removeItem('boardFilters')
     } catch { /* ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, directOnly, fElig, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fPilot, fStatus, fOrigin, fScore, fSal, fVs, fEmp])
+  }, [q, fNoc, directOnly, fElig, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fPilot, fStatus, fOrigin, fScore, fSal, fVs, fEmp])
   // E8-10:popup 存**分组**不再存字段(24 → 3);srcField 只用于打开时锚到哪一节,不参与内容分支
   const [popup, setPopup] = useState<{ group: FieldGroup; srcField: ColKey; job: JobRow; title: string } | null>(null)
   // 单一路由:查 FIELD_GROUP 决定开哪个弹框 / 跳地图 / 什么都不做。两处调用方(表格行、手机卡)共用,
@@ -876,7 +878,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   }, [colOpen])
 
   // 分页(E10-01 P3:服务端分页)——筛选/搜索/排序/切匹配视图变化 → 回第 0 页(fetch effect 随之重拉替换)
-  useEffect(() => { setPage(0) }, [q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fPilot, fStatus, fOrigin, fScore, fSal, fVs, fEmp, fElig, sort, matchView])
+  useEffect(() => { setPage(0) }, [q, fNoc, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fPilot, fStatus, fOrigin, fScore, fSal, fVs, fEmp, fElig, sort, matchView])
 
   // 联动选项来自维度表(provinces/cities/districts;E10-01 P3:维度独立加载后不再从 job 行现推)。
   // 国家/TEER 下拉已删(2026-07-07 文案审计);fCountry/fTeer state 保留给已存的 saved-search 兼容
@@ -895,9 +897,17 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const midOpts = useMemo(() => uniq(nc.filter((c) => !fBroad || c.broad === fBroad).map((c) => c.mid)), [nc, fBroad])
   const fineOpts = useMemo(() => uniq(nc.filter((c) => (!fBroad || c.broad === fBroad) && (!fMid || c.mid === fMid)).map((c) => c.fine)), [nc, fBroad, fMid])
   // 来源/状态/经验/评分下拉已下架(2026-07-16 拍板只留薪资);state 与谓词保留=URL/老保存筛选照常生效
-  const anyFilter = q || directOnly || fCountry || fProv || fCity || fDistrict || fBroad || fMid || fFine || fTeer || fSource || fAcc || fPnp || fAip || fPilot || fStatus || fOrigin || fScore || fSal || fVs || fEmp || fElig
+  // 职业胶囊的显示名:走维度表里的 NOC 译名(与卡片上那条灰注同一个出口),查不到就显码本身
+  const fNocLabel = useMemo(() => {
+    const codes = fNoc.split(',').map((x) => x.trim()).filter(Boolean)
+    if (!codes.length) return ''
+    return codes
+      .map((code) => nocLocalTitle(dims.nocDescriptions.find((d) => d.noc === code) || null, lang) || code)
+      .join(lang === 'zh' ? '、' : ', ')
+  }, [fNoc, dims, lang])
+  const anyFilter = q || fNoc || directOnly || fCountry || fProv || fCity || fDistrict || fBroad || fMid || fFine || fTeer || fSource || fAcc || fPnp || fAip || fPilot || fStatus || fOrigin || fScore || fSal || fVs || fEmp || fElig
   const clearAll = () => {
-    setQ(''); setDirectOnly(false); setFCountry(''); setFProv(''); setFCity(''); setFDistrict(''); setFBroad(''); setFMid(''); setFFine(''); setFTeer(''); setFSource(''); setFAcc(''); setFPnp(''); setFAip(''); setFPilot(''); setFStatus(''); setFOrigin(''); setFScore(''); setFSal(''); setFVs(''); setFEmp(''); setFElig('')
+    setQ(''); setFNoc(''); setDirectOnly(false); setFCountry(''); setFProv(''); setFCity(''); setFDistrict(''); setFBroad(''); setFMid(''); setFFine(''); setFTeer(''); setFSource(''); setFAcc(''); setFPnp(''); setFAip(''); setFPilot(''); setFStatus(''); setFOrigin(''); setFScore(''); setFSal(''); setFVs(''); setFEmp(''); setFElig('')
     // URL 参数不用在这儿摘:上面「筛选 → URL」那一处会把清空后的状态同步回地址栏
     // (2026-07-19 Frank「点击清除筛选,一刷新又回去了」的老补丁已并入同一出口)
   }
@@ -1010,6 +1020,16 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               右端=更新时间+字段钮(#56 拍板延续)。市/区、中/小类仍是省/大类的联动下级,只在折叠区出现。 ═══ */}
           <div className="jtCtl" style={filtRow}>
             <input className="jtSearch" placeholder={t('search.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} enterKeyHint="search" style={{ ...ctrl, flex: '0 1 260px', minWidth: 160 }} />
+            {/* 职业胶囊(2026-08-16 「查岗位应该带着条件查」「要支持多个职位类别」):从初评表带 noc=码,码 …
+                这里显人话名(取自当前结果行的 NOC 译名,查不到就显码),点 ✕ 撤掉 —— 先前是把码塞进搜索框,
+                页面看着像在搜一串数字(代码不裸奔) */}
+            {fNoc && (
+              <span style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', gap: 8, background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8', fontSize: 12.5, fontWeight: 600 }}>
+                {fNocLabel}
+                <button onClick={() => setFNoc('')} aria-label={t('clear')}
+                  style={{ border: 'none', background: 'none', color: '#1d4ed8', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
+              </span>
+            )}
             <Sel value={fProv} onChange={(v) => { setFProv(v); setFCity(''); setFDistrict('') }} opts={provOpts} all={t('all.prov')} />
             <Sel value={fBroad} onChange={(v) => { setFBroad(v); setFMid(''); setFFine('') }} opts={broadOpts} all={t('all.broad')} labelOf={broadLabel} />
             <Sel value={fPnp} onChange={setFPnp} opts={['yes', 'no']} all={t('all.pnp')} labelOf={(v) => t('opt.' + v)} />

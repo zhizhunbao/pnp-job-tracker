@@ -68,6 +68,11 @@ export function buildJobsWhere(filters: Record<string, unknown>, startIndex = 1)
   if (s('fCity')) conds.push(`j.city = ${param(s('fCity'))}`)
   if (s('fDistrict')) conds.push(`j.district = ${param(s('fDistrict'))}`)
 
+  // 职业多值(2026-08-16):逗号分隔 NOC 码,档案里选了几个职业就查几个 —— 与初评表「在招」同一把尺
+  if (s('fNoc')) {
+    const codes = s('fNoc').split(',').map((x) => x.trim()).filter((x) => /^\d{5}$/.test(x))
+    if (codes.length) conds.push(`j.noc = ANY(${param(codes)})`)
+  }
   if (s('fBroad')) conds.push(`j.broad = ${param(s('fBroad'))}`)
   if (s('fMid')) conds.push(`j.mid = ${param(s('fMid'))}`)
   if (s('fFine')) conds.push(`j.fine = ${param(s('fFine'))}`)

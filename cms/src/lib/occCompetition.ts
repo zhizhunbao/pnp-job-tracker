@@ -27,17 +27,31 @@ const num = (v: unknown): number | null => {
   return Number.isFinite(n) ? n : null
 }
 
-export async function fetchOccCompetition(noc: string): Promise<OccCompetitionRow[]> {
+/**
+ * 2026-08-16 Frank「在招是显示多少就查多少」「要支持多个职位类别」:
+ *   ① openJobs 改**实时 jobs 表**查(与「查岗位」落地页同一条谓词),不再取 stats_occupation 日快照 ——
+ *      快照与实时差 1-3 岗,点进去数字对不上就是「跑偏」;new30d/平均在招天数仍走快照(它们本就是统计口径)。
+ *   ② 档案里选了几个职业就算几个:nocs 全量参与,岗位按 noc = ANY(...) 去重计数。
+ */
+export async function fetchOccCompetition(nocInput: string | string[]): Promise<OccCompetitionRow[]> {
+  const nocs = (Array.isArray(nocInput) ? nocInput : [nocInput]).filter((n) => /^\d{5}$/.test(n))
+  if (!nocs.length) return []
+  const noc = nocs[0]
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as { pool?: { query: (q: string, v?: unknown[]) => Promise<{ rows: Record<string, unknown>[] }> } }).pool
   if (!pool) return []
 
   const [occ, comp, aip, rcip, fcip] = await Promise.all([
+    // 实时在招(与落地页同一条谓词:status=open ∧ 省 ∧ noc ∈ 档案职业);统计列另取快照
     pool.query(
-      `SELECT province, open_jobs, new30d, avg_days_open
-         FROM stats_occupation
-        WHERE noc = $1 AND province <> 'all' AND COALESCE(open_jobs, 0) > 0
-        ORDER BY open_jobs DESC`, [noc],
+      `SELECT j.province AS province, COUNT(*)::int AS open_jobs,
+              COALESCE(SUM(s.new30d), 0)::int AS new30d,
+              ROUND(AVG(s.avg_days_open)::numeric, 1) AS avg_days_open
+         FROM jobs j
+         LEFT JOIN stats_occupation s ON s.noc = j.noc AND s.province = j.province
+        WHERE COALESCE(j.status, 'open') <> 'closed' AND COALESCE(j.is_dup, false) = false AND j.noc = ANY($1) AND COALESCE(j.province, '') <> ''
+        GROUP BY j.province
+        ORDER BY open_jobs DESC`, [nocs],
     ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
     pool.query(
       `SELECT province, difficulty FROM stats
@@ -45,18 +59,18 @@ export async function fetchOccCompetition(noc: string): Promise<OccCompetitionRo
     ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
     pool.query(
       `SELECT province, COUNT(*)::int AS n FROM jobs
-        WHERE status = 'open' AND COALESCE(aip, false) = true AND noc = $1 AND province <> ''
-        GROUP BY province`, [noc],
+        WHERE COALESCE(status, 'open') <> 'closed' AND COALESCE(is_dup, false) = false AND COALESCE(aip, false) = true AND noc = ANY($1) AND province <> ''
+        GROUP BY province`, [nocs],
     ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
     pool.query(
       `SELECT province, COUNT(*)::int AS n FROM jobs
-        WHERE status = 'open' AND COALESCE(pilot, '') LIKE '%RCIP%' AND noc = $1 AND province <> ''
-        GROUP BY province`, [noc],
+        WHERE COALESCE(status, 'open') <> 'closed' AND COALESCE(is_dup, false) = false AND COALESCE(pilot, '') LIKE '%RCIP%' AND noc = ANY($1) AND province <> ''
+        GROUP BY province`, [nocs],
     ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
     pool.query(
       `SELECT province, COUNT(*)::int AS n FROM jobs
-        WHERE status = 'open' AND COALESCE(pilot, '') LIKE '%FCIP%' AND noc = $1 AND province <> ''
-        GROUP BY province`, [noc],
+        WHERE COALESCE(status, 'open') <> 'closed' AND COALESCE(is_dup, false) = false AND COALESCE(pilot, '') LIKE '%FCIP%' AND noc = ANY($1) AND province <> ''
+        GROUP BY province`, [nocs],
     ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
   ])
 

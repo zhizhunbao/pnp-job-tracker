@@ -324,6 +324,9 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
     return occTitles[`${lang}:${code}`] || NOC_TITLE_CACHE[`${lang}:${code}`] || `NOC ${code}`
   }
   const occText = bands.nocs.map(occName).filter(Boolean).join(lang === 'zh' ? '、' : ', ')
+  // 「查岗位」要带的职业(2026-08-16「要支持多个职位类别」):档案里选了几个就带几个,
+  // 与「在招」那个数同一把尺(服务端也是按整份 nocs 算的)
+  const planNocs = bands.nocs.filter((c) => /^\d{5}$/.test(c))
   const unparsed = lang === 'zh' ? '待填写' : 'Not completed'
   // key = 点这格该落到哪道题:'occ'/'prov' 是专属页,基础题用字段名,分值题用分值卡的题 key(带冒号);
   // prov=''为全省共用,其余按省分 tab(ConditionGrid)
@@ -678,10 +681,14 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       // URL 用 filters.shared 短名;旧值「1」不匹配谓词的 yes|no(=无效参数),已全修成 yes
                       // 2026-08-16 Frank「查到也不对」:此前链接只带省+通道,不带职业 —— 在招数按本职业算、
                       // 点进去却是全省全职业。补 q=<NOC 码>(职位板搜索框本就吃 NOC),数字与落点同口径
-                      const jobsHref = (ui.jobsQuery
-                        ? `/jobs?${ui.jobsQuery}${provincial ? `&prov=${row.province}` : ''}`
-                        : provincial ? `/jobs?prov=${row.province}&pnp=yes` : null)
-                        ?.concat(noc ? `&q=${encodeURIComponent(noc)}` : '') ?? null
+                      // 2026-08-16「查岗位应该带着条件查」「在招是显示多少就查多少」:
+                      //   ① 职业走 noc= 多值参数(不再把码塞进关键词框,页面上显示为职业胶囊);
+                      //   ② 档案选了几个职业就带几个 —— 与「在招」那个数同一把尺;
+                      //   ③ 不再加 pnp=yes:那不在「在招」的口径里,加了两边数字就对不上
+                      const nocParam = planNocs.length ? `&noc=${planNocs.join(',')}` : ''
+                      const jobsHref = ui.jobsQuery
+                        ? `/jobs?${ui.jobsQuery}${provincial ? `&prov=${row.province}` : ''}${nocParam}`
+                        : provincial ? `/jobs?prov=${row.province}${nocParam}` : null
                       // 查雇主(2026-08-16「这个怎么没有查雇主按钮」两次修正):**指定雇主是硬门槛的制度才给**
                       // —— AIP/RCIP/FCIP 的 offer 必须出自被指定的雇主,名录在库(6,680 行)、本轮新建页面承载;
                       // 普通省提名没有「指定雇主」这回事(任何合规雇主都行),给了等于凭空发明一道门槛。

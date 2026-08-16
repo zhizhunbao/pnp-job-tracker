@@ -1,21 +1,13 @@
-// 指定雇主名录页(2026-08-16):初评表「查雇主」在 AIP/RCIP/FCIP 行的落点。
-// SSR 直查 designated_employers(库里 6,680 行),按 ?program=AIP|RCIP|FCIP & ?prov=XX 过滤。
-// /employers 本身 308 到把脉页(08-08 货架页下架),本页是它下面的独立名录路由,不受影响。
-import { getPayload } from 'payload'
-
-import config from '@/payload.config'
-import { fetchDesignatedEmployers } from '@/lib/designatedEmployers'
-import { ssrLang } from '@/lib/lang.server'
-import { makeT } from '../../jobs/i18n'
-import { DesignatedEmployersView } from './DesignatedEmployersView'
+// 指定雇主名录入口(2026-08-16 重做:与 /employers/hiring 合并成同一块**雇主板**,口径作筛选项之一)。
+// 入口契约不变:/employers/designated?program=AIP&prov=NS 仍直达并预置筛选(初评表「查雇主」的落点)。
+import { employersBoardProps } from '../board'
+import { EmployersBoardView } from '../EmployersBoardView'
 
 export const dynamic = 'force-dynamic'
 
-const PROGRAMS = new Set(['AIP', 'RCIP', 'FCIP'])
-
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ program?: string; prov?: string }> }) {
   const sp = await searchParams
-  const program = PROGRAMS.has(String(sp.program ?? '')) ? String(sp.program) : ''
+  const program = ['AIP', 'RCIP', 'FCIP'].includes(String(sp.program ?? '')) ? String(sp.program) : ''
   const prov = /^[A-Z]{2}$/.test(String(sp.prov ?? '')) ? String(sp.prov) : ''
   const scope = [prov, program].filter(Boolean).join(' ')
   return {
@@ -24,21 +16,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   }
 }
 
-export default async function DesignatedEmployersPage({ searchParams }: {
-  searchParams: Promise<{ program?: string; prov?: string }>
-}) {
-  const sp = await searchParams
-  const program = PROGRAMS.has(String(sp.program ?? '')) ? String(sp.program) : ''
-  const province = /^[A-Z]{2}$/.test(String(sp.prov ?? '')) ? String(sp.prov) : ''
-  const payload = await getPayload({ config: await config })
-  const pool = (payload.db as { pool?: Parameters<typeof fetchDesignatedEmployers>[0] }).pool
-  const rows = pool ? await fetchDesignatedEmployers(pool, { program, province }) : []
-  const t = makeT(await ssrLang())
-  const title = [province ? t('pr.' + province) : '', program, t('de.title')].filter(Boolean).join(' ')
-  return (
-    <DesignatedEmployersView
-      rows={rows.map((r) => ({ name: r.name, where: r.location || (province ? t('pr.' + province) : ''), tag: r.source }))}
-      title={title} colTag={t('de.colProgram')} empty={t('de.empty')}
-      fetched={rows.find((r) => r.fetched)?.fetched ?? ''} backHref="/plan/pr" />
-  )
+export default async function DesignatedEmployersPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const props = await employersBoardProps(await searchParams, 'designated')
+  return <EmployersBoardView {...props} />
 }
