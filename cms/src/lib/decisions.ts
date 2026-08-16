@@ -27,7 +27,10 @@ export const DECISIONS: Record<string, Decision> = {
     // 官方要求专业对口,例外按毕业院校所在省分档;eduProv 同时喂 MB/ON 两条既有条款(先前恒缺槽)
     // 2026-08-15 #316 加 eduYearsBand(同闸,只对「有加拿大学历」的人出):ON 毕业生 3 个月档 /
     // MB 学历分档 / CRS 学习加分全按学制年数分档,不问就恒判不了。排在学历相关题(eduProv)后面。
-    basic: ['status', 'permitBand', 'resProv', 'clbBand', 'totalExpBand', 'expBand', 'offerBand', 'canadaEduBand', 'fieldMatchBand', 'eduProv', 'eduYearsBand', 'frenchBand'],
+    // 2026-08-16 Frank「这个不应该是 基本问题吗」:学历/年龄收回基础卷。08-10 撤它们时的理由是
+    // 「没有消费方」——而 08-15 学历接线之后,CRS、六省官方分值表、多条门槛全在吃这两样;
+    // 留在分值卡里问,等于把最基本的个人条件塞进「省专属估分」那一段。
+    basic: ['status', 'permitBand', 'resProv', 'eduBand', 'ageBand', 'clbBand', 'totalExpBand', 'expBand', 'offerBand', 'canadaEduBand', 'fieldMatchBand', 'eduProv', 'eduYearsBand', 'frenchBand'],
     // 批 2 = B1-4 PGWP(20260803):批首 studyMonthsBand 是 free 题(batchLeadsFree ✓)——
     // 批 1 的历史偏差(KNOWN_NO_FREE_LEAD)不因此消,但新批守规矩
     explore: [['crsBand', 'pgwpBand'], ['studyMonthsBand', 'studyLevelBand']],

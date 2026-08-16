@@ -102,6 +102,12 @@ const NOC_TITLE_CACHE: Record<string, string> = {}
 // 已经问过的码(不论问到没问到)。失败不重试:同一个码问一次拿不到名字,再问十次也一样。
 const NOC_TITLE_TRIED = new Set<string>()
 
+// 基础卷的档 → 分值卡口径(index = 选项 value,与 lib/fields.ts 的 EDU/AGE 同一张表;
+// 学历/年龄 2026-08-16 收回基础卷后,值由这里带进分值卡,不再让人答第二遍)
+const EDU_OF: Record<number, 'highschool' | 'diploma2y' | 'bachelor' | 'master' | 'doctorate' | undefined> =
+  { 1: 'highschool', 2: 'diploma2y', 3: 'bachelor', 4: 'master', 5: 'doctorate' }
+const AGE_OF: Record<number, number | undefined> = { 1: 23, 2: 28, 3: 33, 4: 38, 5: 43 }
+
 /** 官方**明说不打分**的省(举证责任在我们:一个 URL + 一句原句,同 gateManifest 的规矩)。
  *  不在这张表里的缺省一律按「本站未收录」说 —— 两句话在用户那儿意思相反,不许拿一句混着用。
  *  NS:2025-11-28 起 NSNP 全通道 + AIP 指定改 EOI,选谁由厅里按当期优先级酌情定,没有可对照的分值表。 */
@@ -361,6 +367,8 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
     // 拆闸批两题只对境内处境回显(与题的显隐同源):境外用户不摆两个永远「待填写」的格
     ...(FIELDS.permitBand.visible?.(bands) ? [{ key: 'permitBand', prov: '', label: t('dp.sum.permit'), value: choiceText('permitBand') || unparsed, filled: !!choiceText('permitBand') }] : []),
     ...(FIELDS.resProv.visible?.(bands) ? [{ key: 'resProv', prov: '', label: t('dp.sum.resProv'), value: choiceText('resProv') || unparsed, filled: !!choiceText('resProv') }] : []),
+    { key: 'eduBand', prov: '', label: t('dp.sum.edu'), value: choiceText('eduBand') || unparsed, filled: !!choiceText('eduBand') },
+    { key: 'ageBand', prov: '', label: t('dp.sum.age'), value: choiceText('ageBand') || unparsed, filled: !!choiceText('ageBand') },
     { key: 'clbBand', prov: '', label: t('dp.sum.clb'), value: choiceText('clbBand') || unparsed, filled: !!choiceText('clbBand') },
     { key: 'totalExpBand', prov: '', label: t('dp.sum.totalExp'), value: choiceText('totalExpBand') || unparsed, filled: !!choiceText('totalExpBand') },
     { key: 'expBand', prov: '', label: t('dp.sum.canExp'), value: choiceText('expBand') || unparsed, filled: !!choiceText('expBand') },
@@ -435,12 +443,20 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
   }
   const scoreInitial: Partial<SelfProfile> = {
     clb1: clbLower,
+    // 学历/年龄归基础卷(2026-08-16):值带进分值卡直接参与算分,分值卡自己不再问第二遍
+    ...(EDU_OF[bands.eduBand] ? { edu: EDU_OF[bands.eduBand] } : {}),
+    ...(AGE_OF[bands.ageBand] ? { age: AGE_OF[bands.ageBand] } : {}),
     // BC/MB 的 work 是总经验,可直接复用基础题;SK 按时间段拆分,必须让用户另答,不能猜最近几年。
     expRecent: hasSplitWork ? 0 : totalExpLower,
     expOlder: 0,
   }
   // 只有不拆“近 5 年/6-10 年”的表才隐藏第二段经验，并把第一格当总经验使用。
-  const hiddenScoreInputs: (keyof SelfProfile)[] = hasSplitWork ? [] : ['expOlder']
+  const hiddenScoreInputs: (keyof SelfProfile)[] = [
+    ...(hasSplitWork ? [] : ['expOlder' as const]),
+    // 基础卷问过的不再问:答过的题重复出现,人会以为自己答错了(而且两处答案会打架)
+    ...(bands.eduBand ? ['edu' as const] : []),
+    ...(bands.ageBand ? ['age' as const] : []),
+  ]
   // 基础卷的 offer 答案 → 分值卡语境:有=true;面试中/没有/自雇=false(都还没有 offer);
   // 不清楚/没答=undefined,分值段照问。答过就不再问第二遍(2026-08-14 offer 合一)。
   const ctxHasOffer = bands.offerBand === 1 ? true : [2, 3, 4].includes(bands.offerBand) ? false : undefined
@@ -1310,9 +1326,6 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                     <h2 style={{ ...H2, margin: 0, whiteSpace: 'nowrap' }}>{t('dp.quiz')}</h2>
                     {basicPill}
-                  </div>
-                  <div style={{ fontSize: 12.5, color: UI.text3, marginTop: 4, lineHeight: 1.4 }}>
-                    {lang === 'zh' ? '包含目标职业、身份、语言、工作经验及目标省份' : 'Covers occupation, status, CLB, experience & provinces'}
                   </div>
                 </div>
                 <span style={{ marginLeft: 'auto', display: 'flex', gap: 8, flexShrink: 0 }}>

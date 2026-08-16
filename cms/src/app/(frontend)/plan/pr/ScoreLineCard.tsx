@@ -131,8 +131,15 @@ export function ScoreLineCard({
             ) : null}
           </div>
         </div>
-        {/* 主行动按钮随态走,**一颗就够**:没选省先选省 → 选了省先算分 → 答满了改答案 */}
-        <span style={{ marginLeft: 'auto', flexShrink: 0 }}>
+        {/* 右上角动作区:次要在左、主要在右。主钮随态走 —— 没选省先选省 → 选了省先算分 → 答满了改答案。
+            「改省份」2026-08-16 从页签末位挪上来(Frank「也应该放到右上角」):页签只管切省,不混动作 */}
+        <span style={{ marginLeft: 'auto', display: 'flex', gap: 8, flexShrink: 0 }}>
+          {prov ? (
+            <button onClick={onPickProv} style={{
+              border: `1px solid ${UI.border}`, background: '#fff', color: UI.text, borderRadius: 8,
+              padding: '6px 14px', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', fontWeight: 600,
+            }}>{t('sl.editProv')}</button>
+          ) : null}
           <button onClick={!prov ? onPickProv : onEdit} style={{
             border: `1px solid ${prov && answered ? UI.border : UI.primary}`,
             background: prov && answered ? '#fff' : UI.primary,
@@ -155,7 +162,6 @@ export function ScoreLineCard({
               </button>
             )
           })}
-          <button onClick={onPickProv} style={{ ...TAB(false), color: UI.text3, borderStyle: 'dashed' }}>{t('sl.editProv')}</button>
         </div>
       ) : null}
 
@@ -166,6 +172,12 @@ export function ScoreLineCard({
 
       {list.length > 0 ? (
         <>
+          {/* 边界(2026-08-16 Frank「虽然在一个 section,但是也应该有一个明显的边界吧」):
+              上半是**你要动手的**(结论 + 估分题),下半是**不用动手的参照**(官方抽选线)。
+              动作在前、参照在后;一条实线加一个小标题,不靠留白硬分。 */}
+          <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${UI.border}` }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: UI.text, marginBottom: 2 }}>{t('sl.drawsTitle')}</div>
+          </div>
           {/* 手机=卡片行,桌面=表格(与页尾抽选表同款二选一渲染);375 上四列会挤成两行 */}
           <div className="slCards" style={{ marginTop: 10 }}>
             {list.map((d, i) => (
