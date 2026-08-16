@@ -68,6 +68,8 @@ type ProfilePath = {
   gaps?: string[]
   /** 该省该职业在招岗数(#307:服务端与排序同源下发;客户端不再自取自排) */
   jobsN?: number | null
+  /** RCIP/FCIP 社区名额状态(省×制度聚合;竞争格用它替「—」) */
+  pilotQuota?: { communities: number; firstComeN: number; remainingSum: number | null; perIntakeSum: number | null; asOf: string } | null
   /** 反事实(L2-09):拿到该省 offer 之后这条路的判定;只有被 offer 卡住的行才带 */
   afterOffer?: { verdict: 'viable' | 'needs-info' | 'excluded'; blockedBy: string | null; tier: 0 | 1 | 2 | 3 | null } | null
   /** 打分制通道估分与官方线;belowLine=估分<最近线(服务端已沉队尾,门槛列写数字) */
@@ -661,9 +663,15 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       const provincial = /^[A-Z]{2}$/.test(row.province)
                       // 看岗链接:筛选参数归策略文件(AIP=指定雇主、RCIP=试点社区、其余=该省 pnp)。
                       // URL 用 filters.shared 短名;旧值「1」不匹配谓词的 yes|no(=无效参数),已全修成 yes
-                      const jobsHref = ui.jobsQuery
+                      // 2026-08-16 Frank「查到也不对」:此前链接只带省+通道,不带职业 —— 在招数按本职业算、
+                      // 点进去却是全省全职业。补 q=<NOC 码>(职位板搜索框本就吃 NOC),数字与落点同口径
+                      const jobsHref = (ui.jobsQuery
                         ? `/jobs?${ui.jobsQuery}${provincial ? `&prov=${row.province}` : ''}`
-                        : provincial ? `/jobs?prov=${row.province}&pnp=yes` : null
+                        : provincial ? `/jobs?prov=${row.province}&pnp=yes` : null)
+                        ?.concat(noc ? `&q=${encodeURIComponent(noc)}` : '') ?? null
+                      // 查雇主(同日「应该是查岗位再加查雇主的按钮」):AIP/普通省提名 → 担保雇主名录页;
+                      // RCIP/FCIP 社区雇主名录(raw 2813 行)还没有页面 —— 不给假链接,立项后补
+                      const empHref = ui.program === 'RCIP' || ui.program === 'FCIP' ? null : '/employers'
                       const jobsN = jobsOf(row)
                       // 门槛文案:够不着线的写数字(估分 X < 线 Y),数字是官方事实,结论用户自己得
                       const stateText = row.belowLine && row.score?.refLine != null
@@ -671,7 +679,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                         : t(stateKey)
                       // 区域线拆省后同 key 多行 → rowKey 带省码去重(React key / DataTable rowKey / 埋点共用)
                       return { rowKey: regionProvincesOf(row.key) && /^[A-Z]{2}$/.test(row.province) ? `${row.key}:${row.province}` : row.key, index, province, routeName, top: index === 0 && !row.blockedBy && !row.belowLine,
-                        ratio: row.competition?.ratio ?? null, stateText, afterOk, openOk, jobsHref, jobsN,
+                        ratio: row.competition?.ratio ?? null, pilotQuota: row.pilotQuota ?? null, stateText, afterOk, openOk, jobsHref, jobsN, empHref,
                         seeJobsKey: ui.seeJobsKey ?? 'dp.planSeeJobsAip',
                         // 推荐原因拆胶囊要的两个判据:被单一门槛卡住(拆「已达标 + 差这样」两枚)、
                         // 本站没收录规则(这枚是我们的窟窿,不许染成「你不行」的黄色)
@@ -771,6 +779,16 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       r.jobsN == null ? <span style={{ color: UI.text3 }}>—</span>
                         : <span style={{ fontVariantNumeric: 'tabular-nums' }}>{t('dp.planJobsN', { n: r.jobsN })}</span>
                     )
+                    // 竞争格:试点行(RCIP/FCIP)无 EOI 池,原「—」换社区名额状态(2026-08-16 Frank
+                    // 「不是有比名额竞争更准确的数据吗」)——语义单一才上屏:剩余名额 > 每轮上限 > 先到先得
+                    const compCell = (r: PlanRow) => {
+                      if (r.ratio != null) return <span style={{ fontVariantNumeric: 'tabular-nums' }}>{r.ratio}:1</span>
+                      const q = r.pilotQuota
+                      if (q?.remainingSum != null) return <span style={{ fontVariantNumeric: 'tabular-nums' }}>{t('dp.pq.remaining', { n: q.remainingSum })}</span>
+                      if (q?.perIntakeSum != null) return <span style={{ fontVariantNumeric: 'tabular-nums' }}>{t('dp.pq.perIntake', { n: q.perIntakeSum })}</span>
+                      if (q && q.firstComeN > 0) return <span>{t('dp.pq.firstCome')}</span>
+                      return <span style={{ color: UI.text3 }}>—</span>
+                    }
                     return (
                       <>
                         {/* display 走 CSS 类不走内联(2026-08-15 实撞:内联 display:grid 压过媒体查询的
@@ -785,7 +803,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                                 <span style={{ fontSize: 12, color: UI.text3, fontVariantNumeric: 'tabular-nums' }}>{r.extra ? '·' : r.index + 1}</span>
                                 {/* 制度归属已并进名字小括号(08-15「标签去掉 统一改成后面小括号」),边框小标撤销 */}
                                 <b style={{ fontSize: 13.5, color: '#111827', minWidth: 0 }}>{r.routeName}</b>
-                                <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 600, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{r.ratio == null ? '—' : `${r.ratio}:1`}</span>
+                                <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 600, flexShrink: 0 }}>{compCell(r)}</span>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 4, flexWrap: 'wrap' }}>
                                 <span style={{ fontSize: 11.5, color: UI.text3 }}>{r.province}</span>
@@ -793,13 +811,21 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                                 {!planCoarse ? <>{gapPills(r).map(pillSpan)}{(() => { const p = timePill(r); return p ? pillSpan(p) : null })()}</> : null}
                                 <span style={{ marginLeft: 'auto', fontSize: 12.5 }}>{jobsCell(r)}</span>
                               </div>
-                              {/* 操作钮(手机=卡片底行;二改拍板恢复,链接从在招数字挪到这里,无尖号) */}
-                              {r.jobsHref ? (
-                                <div style={{ marginTop: 8 }}>
-                                  <a href={r.jobsHref} onClick={() => track('dp-act-apply', { key: r.rowKey })}
-                                    style={{ display: 'inline-block', background: UI.primary, color: '#fff', borderRadius: 8, padding: '6px 14px', fontSize: 12.5, fontWeight: 600, textDecoration: 'none' }}>
-                                    {t('dp.actGo')}
-                                  </a>
+                              {/* 操作钮(手机=卡片底行;三改拆双钮) */}
+                              {r.jobsHref || r.empHref ? (
+                                <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+                                  {r.jobsHref ? (
+                                    <a href={r.jobsHref} onClick={() => track('dp-act-jobs', { key: r.rowKey })}
+                                      style={{ display: 'inline-block', background: UI.primary, color: '#fff', borderRadius: 8, padding: '6px 14px', fontSize: 12.5, fontWeight: 600, textDecoration: 'none' }}>
+                                      {t('dp.actGo')}
+                                    </a>
+                                  ) : null}
+                                  {r.empHref ? (
+                                    <a href={r.empHref} onClick={() => track('dp-act-emp', { key: r.rowKey })}
+                                      style={{ display: 'inline-block', background: '#fff', color: UI.primary, border: '1px solid #bfdbfe', borderRadius: 8, padding: '5px 14px', fontSize: 12.5, fontWeight: 600, textDecoration: 'none' }}>
+                                      {t('dp.actEmp')}
+                                    </a>
+                                  ) : null}
                                 </div>
                               ) : null}
                             </div>
@@ -817,8 +843,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                                   {r.extra ? <span style={{ fontSize: 10.5, color: '#1d4ed8', background: '#eff6ff', borderRadius: 999, padding: '1px 7px', flexShrink: 0 }}>{t('dp.planJobProvRow')}</span> : null}
                                 </span>
                               ) },
-                              { key: 'ratio', label: t('dp.compCol'), width: '13%', align: 'right', sort: (r) => r.ratio,
-                                render: (r) => (r.ratio == null ? <span style={{ color: UI.text3 }}>—</span> : <span style={{ fontVariantNumeric: 'tabular-nums' }}>{r.ratio}:1</span>) },
+                              { key: 'ratio', label: t('dp.compCol'), width: '13%', align: 'right', sort: (r) => r.ratio, render: compCell },
                               { key: 'jobs', label: t('dp.planOpen'), width: '11%', align: 'right', sort: (r) => r.jobsN, render: jobsCell },
                               // 前提拆两列(2026-08-16 Frank「显示的内容也不是推荐原因啊」「可以拆成两个列吧」):
                               // 还差 = 缺口;还要多久 = 时长 —— 各说各的,不再混在一格
@@ -826,15 +851,24 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                                 ? [{ key: 'gap', label: t('dp.planGapCol'), width: '17%', align: 'right', render: gapCell } as const,
                                    { key: 'time', label: t('dp.planTimeCol'), width: '18%', align: 'right', render: timeCell } as const]
                                 : []),
-                              // 操作列(2026-08-16 二改拍板「还是需要操作列的。之后可能加其他功能」):
-                              // 在招列纯数字化后,链接住这里;按钮无尖号
-                              { key: 'act', label: t('dp.act'), width: planCoarse ? '18%' : '13%', align: 'right', render: (r) => (
-                                r.jobsHref ? (
-                                  <a href={r.jobsHref} onClick={() => track('dp-act-apply', { key: r.rowKey })}
-                                    style={{ display: 'inline-block', background: UI.primary, color: '#fff', borderRadius: 7, padding: '4px 12px', fontSize: 12, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
-                                    {t('dp.actGo')}
-                                  </a>
-                                ) : <span style={{ color: UI.text3 }}>—</span>
+                              // 操作列(二改「还是需要操作列的」;三改拆双钮「查岗位再加查雇主」):
+                              // 查岗位带 q=NOC 与在招数同口径;查雇主=担保雇主名录(试点社区雇主页立项后补)
+                              { key: 'act', label: t('dp.act'), width: planCoarse ? '20%' : '16%', align: 'right', render: (r) => (
+                                <span style={{ display: 'inline-flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                                  {r.jobsHref ? (
+                                    <a href={r.jobsHref} onClick={() => track('dp-act-jobs', { key: r.rowKey })}
+                                      style={{ display: 'inline-block', background: UI.primary, color: '#fff', borderRadius: 7, padding: '4px 10px', fontSize: 12, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                                      {t('dp.actGo')}
+                                    </a>
+                                  ) : null}
+                                  {r.empHref ? (
+                                    <a href={r.empHref} onClick={() => track('dp-act-emp', { key: r.rowKey })}
+                                      style={{ display: 'inline-block', background: '#fff', color: UI.primary, border: `1px solid #bfdbfe`, borderRadius: 7, padding: '3px 10px', fontSize: 12, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                                      {t('dp.actEmp')}
+                                    </a>
+                                  ) : null}
+                                  {!r.jobsHref && !r.empHref ? <span style={{ color: UI.text3 }}>—</span> : null}
+                                </span>
                               ) },
                             ]} />
                         </div>

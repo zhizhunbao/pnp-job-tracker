@@ -113,6 +113,15 @@ export async function GET(req: Request) {
     // 社区 × 职业清单(E6-11 批B):**先跑 docs/sql/e6-11-pilot-b.sql**
     ['pilot_occupations', 'pilot_occupations', ['community', 'province', 'type', 'noc', 'title', 'sector_only', 'url', 'fetched'],
       (r) => ({ community: r.community, province: r.province ?? '', type: r.type ?? '', noc: r.noc ?? '', title: r.title ?? '', sector_only: !!r.sectorOnly, url: r.url ?? '', fetched: r.fetched ?? '' })],
+    // 社区名额状态(旧账立项 2026-08-15):**先在生产跑 docs/sql/pilot-quota.sql**(建表 + 锁表补列)
+    // ⚠️ first_come/per_intake/remaining 保持可空 —— 空 = 官网没写,不是 0/false,禁 `?? 0` / `!!`
+    ['pilot_quota', 'pilot_quota',
+      ['community', 'province', 'type', 'noc', 'status', 'first_come', 'first_come_quote', 'first_come_url', 'per_intake', 'per_intake_quote', 'per_intake_url', 'remaining', 'remaining_quote', 'remaining_url', 'quote', 'url', 'as_of'],
+      (r) => ({ community: r.community, province: r.province ?? '', type: r.type ?? '', noc: r.noc ?? '', status: r.status ?? '',
+        first_come: r.firstCome ?? null, first_come_quote: r.firstComeQuote ?? '', first_come_url: r.firstComeUrl ?? '',
+        per_intake: r.perIntake ?? null, per_intake_quote: r.perIntakeQuote ?? '', per_intake_url: r.perIntakeUrl ?? '',
+        remaining: r.remaining ?? null, remaining_quote: r.remainingQuote ?? '', remaining_url: r.remainingUrl ?? '',
+        quote: r.quote ?? '', url: r.url ?? '', as_of: r.asOf ?? '' })],
     // 职业在招量聚合(2026-08-12):**先在生产跑 docs/sql/noc-openings.sql**(建表 + 补
     // payload_locked_documents_rels 的列),否则这段 INSERT 撞 42P01/42703 → 整个 seed 事务回滚
     ['noc_openings', 'noc_openings', ['noc', 'open', 'eligible', 'median_salary', 'broad', 'title', 'title_zh', 'title_zh_short', 'title_ko_short', 'title_en_short'],

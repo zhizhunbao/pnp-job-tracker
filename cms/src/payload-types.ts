@@ -85,6 +85,7 @@ export interface Config {
     'designated-employers': DesignatedEmployer;
     'pilot-communities': PilotCommunity;
     'pilot-occupations': PilotOccupation;
+    'pilot-quota': PilotQuota;
     provinces: Province;
     cities: City;
     districts: District;
@@ -127,6 +128,7 @@ export interface Config {
     'designated-employers': DesignatedEmployersSelect<false> | DesignatedEmployersSelect<true>;
     'pilot-communities': PilotCommunitiesSelect<false> | PilotCommunitiesSelect<true>;
     'pilot-occupations': PilotOccupationsSelect<false> | PilotOccupationsSelect<true>;
+    'pilot-quota': PilotQuotaSelect<false> | PilotQuotaSelect<true>;
     provinces: ProvincesSelect<false> | ProvincesSelect<true>;
     cities: CitiesSelect<false> | CitiesSelect<true>;
     districts: DistrictsSelect<false> | DistrictsSelect<true>;
@@ -1279,6 +1281,53 @@ export interface PilotOccupation {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pilot-quota".
+ */
+export interface PilotQuota {
+  id: number;
+  community: string;
+  province?: string | null;
+  /**
+   * RCIP | FCIP | RCIP+FCIP(pilot-communities 按社区名关联)
+   */
+  type?: string | null;
+  /**
+   * 空=社区级行;5 位码=该职业满额行
+   */
+  noc?: string | null;
+  /**
+   * 职业行:full=官网明文满额/不再收
+   */
+  status?: string | null;
+  /**
+   * 先到先得;未勾=官网没写(数据只有 true/null,没有 false)
+   */
+  firstCome?: boolean | null;
+  firstComeQuote?: string | null;
+  firstComeUrl?: string | null;
+  /**
+   * 每轮最多发几个推荐;空=官网没写
+   */
+  perIntake?: number | null;
+  perIntakeQuote?: string | null;
+  perIntakeUrl?: string | null;
+  /**
+   * 官网自报剩余名额;空=官网没写
+   */
+  remaining?: number | null;
+  remainingQuote?: string | null;
+  remainingUrl?: string | null;
+  /**
+   * 职业行的锚定原句
+   */
+  quote?: string | null;
+  url?: string | null;
+  asOf?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "provinces".
  */
 export interface Province {
@@ -2010,6 +2059,10 @@ export interface PayloadLockedDocument {
         value: number | PilotOccupation;
       } | null)
     | ({
+        relationTo: 'pilot-quota';
+        value: number | PilotQuota;
+      } | null)
+    | ({
         relationTo: 'provinces';
         value: number | Province;
       } | null)
@@ -2558,6 +2611,31 @@ export interface PilotOccupationsSelect<T extends boolean = true> {
   sectorOnly?: T;
   url?: T;
   fetched?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pilot-quota_select".
+ */
+export interface PilotQuotaSelect<T extends boolean = true> {
+  community?: T;
+  province?: T;
+  type?: T;
+  noc?: T;
+  status?: T;
+  firstCome?: T;
+  firstComeQuote?: T;
+  firstComeUrl?: T;
+  perIntake?: T;
+  perIntakeQuote?: T;
+  perIntakeUrl?: T;
+  remaining?: T;
+  remainingQuote?: T;
+  remainingUrl?: T;
+  quote?: T;
+  url?: T;
+  asOf?: T;
   updatedAt?: T;
   createdAt?: T;
 }

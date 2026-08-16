@@ -8,6 +8,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { fetchOccCompetition } from '@/lib/occCompetition'
+import { fetchPilotQuota, type PilotQuotaAgg } from '@/lib/pilotQuota'
 import { pathVerdict, type VerdictProfile } from '@/lib/pathVerdict'
 import { regionProvincesOf, uiOf } from '@/lib/pathways'
 import { pickOutside, rankRows, type RankCtx } from '@/lib/planRank'
@@ -131,7 +132,10 @@ export async function POST(req: Request) {
     canadaStudy: typeof answers.canadaStudy === 'boolean' ? answers.canadaStudy : null,
   }
 
-  const [data, comp, occRows] = await Promise.all([getVerdictData(), competitionByProvince(), fetchOccCompetition(noc)])
+  const [data, comp, occRows, pilotQuota] = await Promise.all([getVerdictData(), competitionByProvince(), fetchOccCompetition(noc), fetchPilotQuota()])
+  // RCIP/FCIP 名额状态(2026-08-16 Frank「不是有比名额竞争更准确的数据吗」):社区官网 quote-anchored,
+  // 按 省×制度 聚合,挂给区域线行 —— 展示层用语义单一的 remainingSum/perIntakeSum,不上混算的 quotaSum
+  const quotaByKey = new Map<string, PilotQuotaAgg>(pilotQuota.map((q) => [`${q.province}|${q.type}`, q]))
   const all = pathVerdict(profile, data)
   // 反事实(L2-09):明确没 offer 的档案,把 hasOffer=true 代入重跑一次 —— 被 offer 卡住的行
   // 附上「拿到该省 offer 之后的世界」:立刻分出「即可申请」和「拿了 offer 还差语言/学历」的省,
@@ -194,6 +198,10 @@ export async function POST(req: Request) {
       competition: row.competition,
       /** 该省该职业在招岗数(服务端与排序同源,#307;客户端不再自取自排) */
       jobsN: jobsOf(row),
+      /** RCIP/FCIP 社区名额状态(省×制度聚合;非试点行 null) */
+      pilotQuota: (row.key === 'RCIP' || row.key === 'FCIP') && /^[A-Z]{2}$/.test(row.province)
+        ? quotaByKey.get(`${row.province}|${row.key}`) ?? null
+        : null,
       /** 反事实:拿到该省 offer 之后这条路的判定(只给被 offer 卡住的行) */
       afterOffer: after ? { verdict: after.verdict, blockedBy: after.blockedBy ?? null, tier: after.tier } : null,
       /** 打分制通道的估分与官方线;belowLine=估分<最近线(已沉队尾,前端门槛列写明数字);

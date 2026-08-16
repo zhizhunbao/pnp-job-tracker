@@ -55,6 +55,7 @@ IN_PILOT = _paths.PILOT / "pilot-communities.json"   # RCIP/FCIP 试点社区(bu
 IN_STATCAN = _paths.IRCC / "statcan_tr_prov.json"    # 竞争卡存量(StatCan 常住估算,方案C 2026-08-15)
 IN_PILOT_EMP = _paths.PILOT / "pilot-employers.json"     # 批B:社区指定雇主(人工核对整理,agent 抽取+抽查)
 IN_PILOT_OCC = _paths.PILOT / "pilot-occupations.json"   # 批B:社区 × 职业清单
+IN_PILOT_QUOTA = _paths.PILOT / "pilot-quota.json"       # 社区名额状态(build_pilot_quota.py 周更,quote-anchored)
 IN_NL_EMPLOYERS = _paths.PNP / "nl-employers.json"  # NL 官网指定雇主 645 家(C4-W4,含申报 NOC)
 IN_WAGES = _paths.WAGES / "wages.json"   # NOC×省 中位工资(build_wages.py 从 ESDC 开放数据建)
 IN_PNP = _paths.PNP                      # raw/pnp/*.json(各省具名通道:每文件一条通道)
@@ -570,6 +571,54 @@ def build_ee_language_grid(src) -> list:
                     "seq": seq, "url": table.get("url", ""), "fetched": table.get("fetched", ""),
                 })
                 seq += 1
+    return out
+
+
+def build_pilot_quota(src, communities_src) -> list:
+    """RCIP/FCIP 社区名额状态(build_pilot_quota.py 产)→ pilot_quota 表。
+    一行 = 一社区(noc 空,社区级名额状态)或官网给的更细粒度(社区 × NOC 满额行,noc 非空)。
+    宁缺勿猜:数值只透传官网原句里的数,缺 = None(官网没写 ≠ 0,firstCome 同理只有 True/None);
+    type 从 pilot-communities 关联,身兼两制 → 'RCIP+FCIP'(同 jobs.pilot 口径)。
+    文件缺失 → [](seed 侧 -1 跳过保留旧行);文件在但内容坏/0 行 → 抛错断整个 mart,
+    不许「清空+重灌 0 行」把生产表静默抹掉(22c8d6a 空灌事故同款防线)。
+    """
+    if not src.exists():
+        return []
+    data = json.loads(src.read_text(encoding="utf-8"))
+
+    types: dict[str, set] = {}
+    if communities_src.exists():
+        for r in json.loads(communities_src.read_text(encoding="utf-8")).get("rows", []):
+            types.setdefault(r["name"], set()).add(r.get("type", ""))
+    type_of = {n: "+".join(t for t in ("RCIP", "FCIP") if t in s) for n, s in types.items()}
+
+    blank = {"firstCome": None, "firstComeQuote": "", "firstComeUrl": "",
+             "perIntake": None, "perIntakeQuote": "", "perIntakeUrl": "",
+             "remaining": None, "remainingQuote": "", "remainingUrl": ""}
+    out: list = []
+    for r in data.get("communities", []):
+        out.append({"community": r["community"], "province": r.get("province", ""),
+                    "type": type_of.get(r["community"], ""), "noc": "", "status": "",
+                    **{k: r.get(k, v) for k, v in blank.items()},
+                    "quote": "", "url": "", "asOf": r.get("asOf", "")})
+    for r in data.get("occupations", []):
+        out.append({"community": r["community"], "province": r.get("province", ""),
+                    "type": type_of.get(r["community"], ""), "noc": r.get("noc", ""),
+                    "status": r.get("status", ""), **blank,
+                    "quote": r.get("quote", ""), "url": r.get("url", ""), "asOf": r.get("asOf", "")})
+
+    # 脚本级自检(抽取器契约,坏一行整步失败,别带病入库)
+    assert out, f"pilot_quota: {src} 存在但产出 0 行 —— 抽取器契约破了,不许空灌"
+    for r in out:
+        assert r["community"] and r["province"] and r["asOf"], f"pilot_quota 必填缺失: {r}"
+        for k in ("firstCome", "perIntake", "remaining"):
+            has = r[k] is not None
+            assert has == bool(r[f"{k}Quote"]) == bool(r[f"{k}Url"]), \
+                f"pilot_quota {k} 的值与 quote/url 不成对: {r['community']}"
+        assert r["perIntake"] is None or isinstance(r["perIntake"], int), f"pilot_quota perIntake 非整数: {r}"
+        assert r["remaining"] is None or isinstance(r["remaining"], int), f"pilot_quota remaining 非整数: {r}"
+        if r["noc"]:
+            assert r["status"] and r["quote"] and r["url"], f"pilot_quota 职业行缺 status/quote/url: {r}"
     return out
 
 
@@ -1287,6 +1336,7 @@ def build():
         "designated_employers": designated,
         "pilot_communities": pilot_communities,
         "pilot_occupations": pilot_occupations_mart,
+        "pilot_quota": build_pilot_quota(IN_PILOT_QUOTA, IN_PILOT),
         "noc_categories": noc_categories, "sources": sources, "experience_levels": experience_levels,
         "pnp_occupations": pnp_occupations, "pnp_draws": pnp_draws, "pnp_score_factors": pnp_score_factors,
         "pnp_requirements": pnp_requirements, "pnp_ops_stats": build_pnp_ops_stats(IN_PNP_STATS),

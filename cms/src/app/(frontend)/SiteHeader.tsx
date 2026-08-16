@@ -245,7 +245,11 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
         <style>{`@media (max-width:640px){.shDivider{display:none}.shNav{display:none !important}.shBurger{display:inline-block !important;width:44px !important;height:44px !important}
           .shTapY{position:relative}
           .shTapY::after{content:'';position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:44px}
-          .shLangWrap button{min-height:44px}}
+          .shLangWrap{overflow:visible !important}
+          .shLangWrap button{position:relative}
+          .shLangWrap button::after{content:'';position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:44px}
+          .shLangWrap button:first-child{border-top-left-radius:5px;border-bottom-left-radius:5px}
+          .shLangWrap button:last-child{border-top-right-radius:5px;border-bottom-right-radius:5px}}
           @media (max-width:1350px){.shTagline{display:none}}
           @media (min-width:1351px){.shBar{flex-wrap:nowrap !important}.shRight{flex-wrap:nowrap !important;flex-shrink:0}}`}</style>
         <div className="shRight" style={{ display: 'flex', alignItems: 'center', gap: 12, maxWidth: '100%', flexWrap: 'wrap' }}>
@@ -276,7 +280,8 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
           </div>
           <span className="shDivider" style={{ width: 1, height: 16, background: '#e5e7eb' }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            {/* 语言钮组 overflow:hidden 会把 ::after 热区裁掉(375 探针实证)——组内改真实 min-height,仅 ≤640 */}
+            {/* 2026-08-16 Frank「怎么给我拉长了」:真实 min-height 撑高被点名 → 回视觉 25px,
+                ≤640 放开 overflow:hidden 让 ::after 纵向热区生效,圆角由首尾钮自收 */}
             <div className="shLangWrap" style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
               {LANGS.map((l) => (
                 <button key={l.code} onClick={() => setLang(l.code)}
