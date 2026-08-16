@@ -738,12 +738,10 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       if (!r.blocked) return [...dataPill, ...fieldPill]
                       const out: Pill[] = []
                       const push = (g: string) => {
-                        // 普通 offer 在「还差」列显裸值「offer」灰囊(2026-08-16 复盘:整列剥掉后
-                        // 「还差 —」读起来像啥都不缺,比重复还误导);专门化变体照旧 warn
-                        if (famOf(g) === 'offer') {
-                          if (!out.some((p) => p.text === t('dp.gapOffer'))) out.push({ text: t('dp.gapOffer'), tone: 'mute' })
-                          return
-                        }
+                        // 普通 offer 整枚不出(2026-08-16 Frank「这个需要 offer 也是废话」):每条省提名
+                        // 都要 offer,逐行重复一遍零信息 —— 找 offer 本来就是操作列「查岗位」那件事。
+                        // 专门化变体(社区雇主/指定雇主 offer)留着:它说的是「要的不是同一种 offer」
+                        if (famOf(g) === 'offer') return
                         const text = t(`dp.why.gap.${g}`)
                         if (!out.some((p) => p.text === text)) out.push({ text, tone: 'warn' })
                       }
