@@ -363,8 +363,8 @@ const zh: Dict = {
   // #324 原因列重做:共有缺项上提一次说清,每行只摆行间差异
   // #306:tier 是攒够门槛所需,排队与审批不在内
   // #323 操作列 / #325 带岗语境 / 前提两列(2026-08-16 拆分)
-  'dp.act': '操作', 'dp.actGo': '去投递', 'dp.planJobProvRow': '本岗所在省',
-  'dp.planGapCol': '还差', 'dp.planTimeCol': '还要多久', 'dp.gapOffer': 'offer',
+  'dp.act': '操作', 'dp.actGo': '挑岗', 'dp.planJobProvRow': '本岗所在省',
+  'dp.planGapCol': '还差', 'dp.planTimeCol': '多久能递交', 'dp.gapOffer': 'offer',
   // #302/#303 省外提示:两边对照如实说,不裸称「更优」
   'dp.planOutside2': '未选的{prov}有门槛更快的通道:{name};名额竞争 {r1}(所选省 {r2})',
   'dp.planOutsideNoInside': '所选省暂无可行通道;{prov}有:{name}(名额竞争 {r1})',
@@ -1463,8 +1463,8 @@ const en: Dict = {
   'dp.compRatio': '{n}:1 per nomination',
   'dp.provMismatch': 'Assessed against target provinces {provs}; this position is in {jobProv}', 'dp.provAdd': 'Add {jobProv}', 'dp.planHint': 'See viable directions from your occupation, language, experience, and target province first. Verify a specific job and employer afterward.',
   'dp.planTier0': 'Check first', 'dp.planTier1': 'About 3–6 months to build', 'dp.planTier2': 'About 12 months to build', 'dp.planTier3': 'About 24 months to build',
-  'dp.planTierGrad1': 'About 3–6 months after graduation and permit', 'dp.planTierGrad2': 'About 12 months after graduation and permit', 'dp.planTierGrad3': 'About 24 months after graduation and permit', 'dp.act': 'Action', 'dp.actGo': 'Apply', 'dp.planJobProvRow': 'This job’s province',
-  'dp.planGapCol': 'Still missing', 'dp.planTimeCol': 'Time to build', 'dp.gapOffer': 'offer',
+  'dp.planTierGrad1': 'About 3–6 months after graduation and permit', 'dp.planTierGrad2': 'About 12 months after graduation and permit', 'dp.planTierGrad3': 'About 24 months after graduation and permit', 'dp.act': 'Action', 'dp.actGo': 'Browse jobs', 'dp.planJobProvRow': 'This job’s province',
+  'dp.planGapCol': 'Still missing', 'dp.planTimeCol': 'Until you can apply', 'dp.gapOffer': 'offer',
   'dp.planOutside2': 'Unselected {prov} has a faster-threshold route: {name}; competition {r1} vs {r2} in your provinces',
   'dp.planOutsideNoInside': 'No viable route in your provinces; {prov} has {name} (competition {r1})',
   'dp.planBlocked.language': 'Language below the floor', 'dp.planBlocked.selfEmployed': 'Self-employed time not counted',
@@ -2504,8 +2504,8 @@ const ko: Dict = {
   'dp.compRatio': '지명 경쟁 {n}:1',
   'dp.provMismatch': '목표 주 {provs} 기준 평가, 본 직무는 {jobProv}', 'dp.provAdd': '{jobProv} 추가', 'dp.planHint': '직업·언어·경력·희망 주를 기준으로 가능한 방향을 먼저 보여 드립니다. 특정 공고와 고용주는 다음 단계에서 검증합니다.',
   'dp.planTier0': '우선 확인', 'dp.planTier1': '약 3–6개월 준비', 'dp.planTier2': '약 12개월 준비', 'dp.planTier3': '약 24개월 준비',
-  'dp.planTierGrad1': '졸업·워크퍼밋 후 약 3–6개월', 'dp.planTierGrad2': '졸업·워크퍼밋 후 약 12개월', 'dp.planTierGrad3': '졸업·워크퍼밋 후 약 24개월', 'dp.act': '작업', 'dp.actGo': '지원하기', 'dp.planJobProvRow': '이 공고의 주',
-  'dp.planTimeCol': '소요 기간', 'dp.planGapCol': '부족한 것', 'dp.gapOffer': '잡오퍼',
+  'dp.planTierGrad1': '졸업·워크퍼밋 후 약 3–6개월', 'dp.planTierGrad2': '졸업·워크퍼밋 후 약 12개월', 'dp.planTierGrad3': '졸업·워크퍼밋 후 약 24개월', 'dp.act': '작업', 'dp.actGo': '공고 보기', 'dp.planJobProvRow': '이 공고의 주',
+  'dp.planTimeCol': '지원 가능까지', 'dp.planGapCol': '부족한 것', 'dp.gapOffer': '잡오퍼',
   'dp.planOutside2': '미선택 {prov}에 요건이 더 빠른 통로: {name}; 정원 경쟁 {r1}(선택 주 {r2})',
   'dp.planOutsideNoInside': '선택한 주에 가능한 통로 없음; {prov}에 {name}(정원 경쟁 {r1})',
   'dp.planBlocked.language': '언어 점수 미달', 'dp.planBlocked.selfEmployed': '자영업 경력 불인정',

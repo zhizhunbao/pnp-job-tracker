@@ -3,13 +3,16 @@
 // 服务端(profile-pathways route)排完序下发,客户端只渲染不再重排;省外提示与主排序共用
 // 本文件同一把尺(#302),并把竞争比与地理成本一并纳入判据(#303)。
 //
-// 次序(全部沿用 Frank 逐条拍板的既有规则,只是收拢到一处):
+// 次序(全部 Frank 逐条拍板;2026-08-16 凌晨④升位:「所以在阿尔伯塔省学完,需要跑到安省走
+// pnp??????」—— 本省优先从「同档内加分」升为**跨档主键**:搬省从来不是零成本,本省可行的路
+// 必须排在外省更快的路前面;「外省门槛更快」由省外提示如实说,不霸榜):
 //   ① 0 岗跨档沉底(「0 不是少,是没有」)
-//   ② 档位 band:availability≠ok 沉 → belowLine 沉 → verdict|blockedBy|tier(引擎序首现定档)
-//   ③ thin(在招 <10 或无数)沉同档尾;null 不逃降档
-//   ④ 同档同量级内本省优先(现居省 ∪ 学历省;不跨档翻盘)
-//   ⑤ thin 组内按岗数多→少;足量组按竞争比松→紧
-//   ⑥ 引擎原序兜底
+//   ② 沉降段:availability≠ok / belowLine(估分够不着线)沉底 —— 本省也救不了缺数据与够不着
+//   ③ **本省优先(跨档)**:现居省 ∪ 学历省的行排在外省行前
+//   ④ 档位 band:verdict|blockedBy|tier(引擎序首现定档)
+//   ⑤ thin(在招 <10 或无数)沉同档尾;null 不逃降档
+//   ⑥ thin 组内按岗数多→少;足量组按竞争比松→紧
+//   ⑦ 引擎原序兜底
 export type RankableRow = {
   key: string
   province: string
@@ -49,10 +52,14 @@ function decorate<T extends RankableRow>(rows: T[], ctx: RankCtx): Decorated<T>[
 function cmp<T extends RankableRow>(a: Decorated<T>, b: Decorated<T>): number {
   const aZero = a.n === 0, bZero = b.n === 0
   if (aZero !== bZero) return aZero ? 1 : -1
+  // 沉降段先于本省:缺数据/够不着线的行,本省也救不上来
+  const sink = (d: Decorated<T>) => d.row.availability !== 'ok' || !!d.row.belowLine
+  if (sink(a) !== sink(b)) return sink(a) ? 1 : -1
+  // 本省优先跨档(2026-08-16 升位,见文件头)
+  if (a.home !== b.home) return a.home ? -1 : 1
   if (a.band !== b.band) return a.band - b.band
   const aThin = a.n == null || a.n < 10, bThin = b.n == null || b.n < 10
   if (aThin !== bThin) return aThin ? 1 : -1
-  if (a.home !== b.home) return a.home ? -1 : 1
   if (aThin && bThin && a.n !== b.n) return (b.n ?? -1) - (a.n ?? -1)
   if (a.ratio !== b.ratio) return a.ratio - b.ratio
   return a.i - b.i

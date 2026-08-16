@@ -4362,7 +4362,9 @@ function Sel({ value, onChange, opts, all, labelOf }: { value: string; onChange:
   // select 的内在宽度=最长选项,放流内怎么都会撑满上限 → 镜像文本在流内定宽,select 绝对铺满不参与布局
   return (
     <span style={{ position: 'relative', display: 'inline-block', maxWidth: 150 }}>
-      <span aria-hidden style={{ ...ctrl, display: 'block', visibility: 'hidden', paddingRight: 28, whiteSpace: 'nowrap', overflow: 'hidden', border: '1px solid transparent' }}>{shown}</span>
+      {/* 2026-08-16 Frank「最后一个字都被挡住了一半」:28px 不够 —— 原生 select 左 padding 10 +
+          自绘箭头区 ~20,镜像只留 28 差 2-6px,末字被箭头压半个;38 = 10+20+8 余量 */}
+      <span aria-hidden style={{ ...ctrl, display: 'block', visibility: 'hidden', paddingRight: 38, whiteSpace: 'nowrap', overflow: 'hidden', border: '1px solid transparent' }}>{shown}</span>
       <select value={value} onChange={(e) => onChange(e.target.value)} style={{ ...ctrl, position: 'absolute', inset: 0, width: '100%' }}>
         <option value="">{all}</option>
         {list.map((o) => <option key={o} value={o}>{labelOf ? labelOf(o) : o}</option>)}
