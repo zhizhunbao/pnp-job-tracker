@@ -102,6 +102,14 @@ const NOC_TITLE_CACHE: Record<string, string> = {}
 // 已经问过的码(不论问到没问到)。失败不重试:同一个码问一次拿不到名字,再问十次也一样。
 const NOC_TITLE_TRIED = new Set<string>()
 
+// 分值卡 profile 段的题 → 它对应官方表里的哪个因素。共用题(prov='')先前在**每个**省页签下都摆,
+// 于是 BC 页签下冒出一格「第二语言 CLB」(那是 SK/ON 表才有的 language2)——2026-08-16 Frank 实拍。
+const PROFILE_FACTOR: Record<string, string[]> = {
+  'profile:edu': ['education'], 'profile:age': ['age'],
+  'profile:clb1': ['language', 'language1'], 'profile:clb2': ['language2'],
+  'profile:expRecent': ['work', 'work5', 'workMonths'], 'profile:expOlder': ['work610'],
+}
+
 // 基础卷的档 → 分值卡口径(index = 选项 value,与 lib/fields.ts 的 EDU/AGE 同一张表;
 // 学历/年龄 2026-08-16 收回基础卷后,值由这里带进分值卡,不再让人答第二遍)
 const EDU_OF: Record<number, 'highschool' | 'diploma2y' | 'bachelor' | 'master' | 'doctorate' | undefined> =
@@ -400,7 +408,6 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
   const factorProvinces = scoreTables?.factorProvinces ?? []
   const scoredProvinces = selectedProvinces.filter((province) => factorProvinces.includes(province))
   // 选了、但分值卡里没有页签的省(本站有表的六省:AB/BC/MB/NL/ON/SK)
-  const ungriddedProvinces = selectedProvinces.filter((province) => !factorProvinces.includes(province))
   const scoreFactors = scoreTables?.factors ?? []
   const scoreDraws = scoreTables?.draws ?? []
   const targetFactors = scoreFactors.filter((f) => scoredProvinces.includes(f.province))
@@ -588,9 +595,11 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
   // 只有线没有分的省(BC/ON 这类必答档位喂不出来的)照样值得看线,那是免费的硬事实。
   // 线优先用懒取的全量(答满题后有),没有就用 SSR 那份近 6 轮 —— 两者形状同源,前端不区分
   const lineDraws = scoreDraws.length ? scoreDraws : drawsRecent
+  // 页签 = 用户选的每一个省(2026-08-16 Frank「这个缺省份」):没分值表的省照样给页签,
+  // 点进去如实说明是「官方不打分」还是「本站未收录」—— 选了却不见,看着像我们漏了
   const scoreLineProvinces = [
     ...scoredProvinces,
-    ...selectedProvinces.filter((p) => !scoredProvinces.includes(p) && recentDraws(lineDraws, p).length > 0),
+    ...selectedProvinces.filter((p) => !scoredProvinces.includes(p)),
   ]
 
   // 通道短名(走查 #293 的两步剥省名),初评表行与省外提示行共用一份
@@ -1346,23 +1355,6 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
                 {/* 只留共用题:省专属题=估分题,已随结论并进「估分与抽选线」那张卡(2026-08-16) */}
                 <ConditionGrid rows={basicRows} provLabel={provDisp} ariaLabel={t('dp.prov')} idPrefix="dpCond"
                   onTile={(key) => startQuiz(key)} />
-                {/* 选了却没有页签的省要说清楚为什么(2026-08-15 Frank「这个为什么没有新斯科舍」):
-                    不说 = 看着像我们漏了。两句话意思相反,分开写:官方按 EOI 酌情选人不打分(带原句)
-                    vs 本站还没收录该省的表。铁律见 CLAUDE.md「官方不公布是需要举证的断言」。 */}
-                {ungriddedProvinces.length > 0 && scoreTables ? (
-                  <div style={{ marginTop: 10, fontSize: 11.5, color: UI.text3, lineHeight: 1.7 }}>
-                    {ungriddedProvinces.map((p) => {
-                      const ev = NO_POINTS_GRID[p]
-                      return (
-                        <div key={p}>
-                          {ev
-                            ? <>{t('dp.noGridOfficial', { prov: provDisp(p) })} <a href={ev.url} target="_blank" rel="noopener noreferrer" style={{ color: UI.text3 }}>{t('dp.src')}</a></>
-                            : t('dp.noGridSite', { prov: provDisp(p) })}
-                        </div>
-                      )
-                    })}
-                  </div>
-                ) : null}
               </div>
             </div>
             )}
@@ -1378,14 +1370,20 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
                 done={scoreDone} total={scoreTotal} onEdit={() => (quizComplete ? openScoreStep() : startQuiz())}
                 onPickProv={() => startQuiz('prov')} gridProvinces={scoreTables ? factorProvinces : null}
                 pendingOf={(p) => scoreRows.filter((r) => r.prov === p && !r.filled).length}
+                noGridNote={(p) => {
+                  // 两句话意思相反,分开写:官方按 EOI 酌情选人不打分(带原句出处)vs 本站还没收录。
+                  // 铁律见 CLAUDE.md「官方不公布是需要举证的断言」
+                  const ev = NO_POINTS_GRID[p]
+                  return ev
+                    ? <>{t('dp.noGridOfficial', { prov: provDisp(p) })} <a href={ev.url} target="_blank" rel="noopener noreferrer" style={{ color: UI.text3 }}>{t('dp.src')}</a></>
+                    : t('dp.noGridSite', { prov: provDisp(p) })
+                }}
                 tiles={(p) => (
-                  <>
-                    {/* 共用估分题(学历/年龄):与省无关,页签之下只出一次,不随切省重复 */}
-                    <ConditionGrid rows={scoreRows} provLabel={provDisp} ariaLabel={t('dp.prov')}
-                      idPrefix="slShared" only="shared" onTile={(key) => startQuiz(key)} />
-                    <ConditionGrid rows={scoreRows} provLabel={provDisp} ariaLabel={t('dp.prov')}
-                      idPrefix="slCond" province={p} onTile={(key) => startQuiz(key)} />
-                  </>
+                  <ConditionGrid flat idPrefix="slCond" provLabel={provDisp} ariaLabel={t('dp.prov')}
+                    onTile={(key) => startQuiz(key)}
+                    rows={scoreRows.filter((r) => (r.prov ? r.prov === p
+                      // 共用题只在**真要它**的省下出现(BC 没有 language2,就不该问第二语言)
+                      : !PROFILE_FACTOR[r.key] || scoreFactors.some((f) => f.province === p && PROFILE_FACTOR[r.key].includes(f.factor))))} />
                 )}>
                 {quizSection}
               </ScoreLineCard>

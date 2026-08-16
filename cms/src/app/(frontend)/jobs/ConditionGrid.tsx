@@ -12,7 +12,7 @@ export type ConditionRow = {
   warn?: string
 }
 
-export function ConditionGrid({ rows, provLabel, onTile, ariaLabel, idPrefix, only, province }: {
+export function ConditionGrid({ rows, provLabel, onTile, ariaLabel, idPrefix, only, province, flat }: {
   rows: ConditionRow[]
   provLabel: (code: string) => string
   /** 点哪格进哪题(带 key 直达) */
@@ -24,6 +24,9 @@ export function ConditionGrid({ rows, provLabel, onTile, ariaLabel, idPrefix, on
   only?: 'shared' | 'prov'
   /** 指定省时不出自己的省页签(调用方已经有一排了,嵌两层 tabs 是重) */
   province?: string
+  /** 平铺:给什么就渲什么,一个网格到底(2026-08-16 Frank「布局也不对」——
+   *  共用题与省专属题先前各起一个网格,两段之间断行、列也对不齐) */
+  flat?: boolean
 }) {
   const shared = rows.filter((r) => !r.prov)
   const provs = Array.from(new Set(rows.filter((r) => r.prov).map((r) => r.prov)))
@@ -57,6 +60,11 @@ export function ConditionGrid({ rows, provLabel, onTile, ariaLabel, idPrefix, on
   )
 
   const GRID_CSS = '.cgGrid{display:grid;gap:8px;grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:640px){.cgGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}'
+
+  if (flat) {
+    if (!rows.length) return null
+    return <><style>{GRID_CSS}</style><div className="cgGrid">{rows.map(tile)}</div></>
+  }
 
   // 调用方自己有省页签:只渲该省的格子,不再嵌一层 tabs
   if (province) {

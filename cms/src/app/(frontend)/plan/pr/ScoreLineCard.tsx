@@ -40,7 +40,7 @@ export const recentDraws = (draws: DrawRow[], province: string): DrawRow[] =>
     .slice(0, N_DRAWS)
 
 export function ScoreLineCard({
-  t, rows, draws, provinces, provDisp, done, total, onEdit, onPickProv, gridProvinces, tiles, pendingOf, children,
+  t, rows, draws, provinces, provDisp, done, total, onEdit, onPickProv, gridProvinces, tiles, pendingOf, noGridNote, children,
 }: {
   t: (k: string, p?: Record<string, string | number>) => string
   /** 服务端下发的通道行(每省取分最高的一行代表);客户端不算分 */
@@ -64,6 +64,9 @@ export function ScoreLineCard({
   tiles?: (province: string) => React.ReactNode
   /** 该省还欠几道估分题(页签角标) */
   pendingOf?: (province: string) => number
+  /** 该省没有分值表时的说明(举证口径:官方不打分 vs 本站未收录,两句意思相反)。
+   *  2026-08-16 从「申请人条件」卡搬来 —— 省的语境在这张卡,说明就该在这儿 */
+  noGridNote?: (province: string) => React.ReactNode
   /** 问卷弹框壳 + 分值卡实例(常驻,不搬树 —— 搬容器 = 重挂 = 答案清零) */
   children?: React.ReactNode
 }) {
@@ -83,7 +86,8 @@ export function ScoreLineCard({
     // (2026-08-16 Frank 圈了「答完 7 道估分题看你够不够线」)。留下的两句说的是**别的事**:
     // 表还没取到(得先答完基础卷)/ 本站真没这个省的表 —— 后者是举证口径,不能省。
     total > 0 || gridProvinces?.includes(prov) ? null
-      : <Box tone="muted">{t(gridProvinces === null ? 'sl.needBasic' : 'sl.noTable')}</Box>
+      : gridProvinces === null ? <Box tone="muted">{t('sl.needBasic')}</Box>
+        : <Box tone="muted">{noGridNote?.(prov) ?? t('sl.noTable')}</Box>
   ) : state === 'above' ? (
     <Box tone="ok">
       <b style={{ fontSize: 14, fontWeight: 700, color: '#15803d' }}>{t('sl.yours', { prov: provDisp(prov), v: score.value })}</b>
