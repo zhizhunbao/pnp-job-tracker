@@ -188,6 +188,8 @@ export async function POST(req: Request) {
       blockedBy: row.blockedBy ?? null,
       /** tier 的起算点(#319):在读学生的经验型 tier 要等毕业拿工签才起算;引擎侧字段,缺省 now */
       tierBasis: (row as { tierBasis?: 'now' | 'after-study' }).tierBasis ?? 'now',
+      /** 这段等待要不要全职(取自官方条文行;2026-08-16「而且需要全职的吗?」) */
+      tierFullTime: (row as { tierFullTime?: boolean }).tierFullTime ?? false,
       /** 全部缺口闸(#324 原因列要逐行差异,单一 blockedBy 不够):gap 类理由的闸键列表 */
       gaps: Array.from(new Set((row.reasons ?? [])
         .filter((r) => r.kind === 'gap' && r.key)

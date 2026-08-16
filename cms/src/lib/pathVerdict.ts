@@ -116,6 +116,8 @@ export type PathwayVerdict = {
    * 消费端契约:随行下发,措辞层自己决定怎么说(「毕业后再 12 个月」vs「12 个月」)。
    */
   tierBasis: 'now' | 'after-study'
+  /** 这段等待要的是**全职**经验吗(取自选中门槛行的官方原文,不手写);居住类等待不带此标 */
+  tierFullTime?: boolean
   /** 被**攒时间补不了**的门槛卡住(语言差档 / 自雇经历不计 / 门槛清单里明确不满足的那类闸)。
    *  不是 excluded —— 考一次试、找一份 offer 就能过,但**现在**走不了。先前这类缺口只生成一条理由、
    *  不进 gaps,于是 tier=0 + verdict=open,CLB 4 的厨师也能把联邦 EE 顶到方案第一位
@@ -971,12 +973,13 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   const statusGateAnswer = (asks: StatusAsk | undefined): boolean | null => {
     if (!asks) return p.inCanada                                 // 未标注 = 旧口径兜底
     if (p.inCanada === false) return false
-    // 学签/PGWP 由既有处境槽推得出,不逼用户多答一题;'work'/'none' 只能来自许可题
-    const permit = p.permit ?? (p.status === 'study' ? 'study' : p.status === 'pgwp' ? 'pgwp' : null)
+    // 2026-08-16 Frank「这个上面的问题也没问,你是否有工签啊?」:**许可只认许可题的答案**。
+    // 先前由处境推(在读→学签、在工作→有工签),推出来的却是「差工签/已达标」这种结论性判定 ——
+    // 两个方向都是没问就替他认定。境内一律问那道题(fields.permitBand 同日改成 inCanada),没答=判不了。
+    const permit = p.permit
     switch (asks) {
       case 'workPermit':
-        if (permit) return permit === 'pgwp' || permit === 'work'
-        return p.status === 'worker' ? true : null               // 在工作=持某种工签;其余判不了
+        return permit ? permit === 'pgwp' || permit === 'work' : null
       case 'pgwp':
         return permit ? permit === 'pgwp' : null                 // 封闭/开放工签都不是 PGWP,不许充数
       case 'provResidence':
@@ -1051,10 +1054,14 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   const tierBasis: PathwayVerdict['tierBasis'] =
     studying && !excluded && outTier != null && outTier > 0 && worst?.kind === 'work' && worst.months > 0
       ? 'after-study' : 'now'
+  // 这段等待要的是不是**全职**(2026-08-16 Frank「而且需要全职的吗?」):判据取选中那一行的官方原文,
+  // 代码里不写死 —— AB/ON/SK/MB 的行都明写 full-time,NS 写的是「paid work + 1,560 小时」不含全职字样。
+  // 只对经验/在职类等待有意义(居住类不谈全职)。
+  const tierFullTime = worst?.kind === 'work' && /full[\s-]?time/i.test(gate.picked?.label ?? '')
 
   return {
     key: spec.key, province: spec.province, stream: spec.stream,
-    verdict, tier: outTier, tierBasis,
+    verdict, tier: outTier, tierBasis, ...(tierFullTime ? { tierFullTime: true } : {}),
     ...(blockedBy && !excluded ? { blockedBy } : {}),
     ...(missingSlots.length && !excluded ? { missingSlots: Array.from(new Set(missingSlots)) } : {}),
     reasons, ...(score ? { score } : {}), availability,

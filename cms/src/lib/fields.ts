@@ -88,13 +88,14 @@ export const FIELDS: Record<string, FieldDef> = {
     },
   },
   // 持的许可(2026-08-15 statusInCanada 拆闸):AB/PE 的闸是**有效工签**、NL 指名 **PGWP** ——
-  // 「人在境内」答不了这两道闸(学签在读曾因此被 AB 放行)。学签在读不问(处境题已说明),
-  // 境外不问;「在工作」的人这题分出 PGWP/其他工签,「在找工作」的人分出还有没有许可。
+  // 「人在境内」答不了这两道闸(学签在读曾因此被 AB 放行)。境外不问。
+  // 2026-08-16 Frank「这个上面的问题也没问,你是否有工签啊?」:**在读也要问** —— 先前拿「在加拿大读书」
+  // 推定持学签,推出来的却是「差工签」这种结论性判定,等于没问就替他认定。境内一律问,答了才判。
   permitBand: {
     engineKey: 'permit',
     unlocks: ['rpt.g.basics'],
     tier: 'free',
-    visible: (a) => a.status === 'working' || a.status === 'jobhunting',
+    visible: inCanada,
     toAnswer: (b: number, all) => (inCanada(all) && b && b !== UNSURE_BAND ? PERMIT[b] : undefined),
     q: {
       title: l('What permit are you on now?', '你现在持什么许可?', '지금 어떤 허가로 체류 중인가요?'),

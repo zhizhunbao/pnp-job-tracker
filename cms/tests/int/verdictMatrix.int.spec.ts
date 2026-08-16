@@ -674,8 +674,12 @@ const GOLDEN: Golden[] = [
     p: { province: 'AB', inCanada: true, permit: 'study', status: 'study' } },
   { name: '持工签 ⇒ AB 工签闸达标', path: 'AB-opportunity', gate: 'statusInCanada', want: 'met',
     p: { province: 'AB', inCanada: true, permit: 'work', status: 'worker' } },
-  { name: '没答许可但处境是「在工作」⇒ 持某种工签,达标', path: 'AB-opportunity', gate: 'statusInCanada', want: 'met',
+  // 2026-08-16 Frank「这个上面的问题也没问,你是否有工签啊?」→ 许可只认许可题的答案:
+  //   没答就判不了,两个方向都不许推(在工作≠已有工签、在读≠没工签)
+  { name: '没答许可、处境是「在工作」⇒ 判不了(不许由处境推得达标)', path: 'AB-opportunity', gate: 'statusInCanada', want: 'unknown',
     p: { province: 'AB', inCanada: true, permit: null, status: 'worker' } },
+  { name: '没答许可、处境是「在读」⇒ 判不了(不许由处境推成没工签)', path: 'AB-opportunity', gate: 'statusInCanada', want: 'unknown',
+    p: { province: 'AB', inCanada: true, permit: null, status: 'study' } },
   { name: '没答许可、处境是「找工作」⇒ 判不了,不许放行', path: 'AB-opportunity', gate: 'statusInCanada', want: 'unknown',
     p: { province: 'AB', inCanada: true, permit: null, status: 'other' } },
   { name: '访客/过期(permit=none)⇒ 没有工签', path: 'PE-sw', gate: 'statusInCanada', want: 'gap',
@@ -687,7 +691,7 @@ const GOLDEN: Golden[] = [
     p: { inCanada: true, permit: 'work', status: 'worker' } },
   { name: '持 PGWP ⇒ NL 达标', path: 'NL-intl-grad', gate: 'statusInCanada', want: 'met',
     p: { inCanada: true, permit: 'pgwp', status: 'pgwp' } },
-  { name: '没答许可、处境=PGWP ⇒ 由处境推得达标', path: 'NL-intl-grad', gate: 'statusInCanada', want: 'met',
+  { name: '没答许可、处境=PGWP ⇒ 判不了(处境不替许可题作答)', path: 'NL-intl-grad', gate: 'statusInCanada', want: 'unknown',
     p: { inCanada: true, permit: null, status: 'pgwp' } },
   { name: '没答许可、处境=在工作 ⇒ 说不清是不是 PGWP,判不了', path: 'NL-intl-grad', gate: 'statusInCanada', want: 'unknown',
     p: { inCanada: true, permit: null, status: 'worker' } },

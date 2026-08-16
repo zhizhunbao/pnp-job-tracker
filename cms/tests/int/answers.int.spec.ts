@@ -145,12 +145,13 @@ describe('档位 → 引擎输入', () => {
 })
 
 describe('题级显隐(fieldsOf 过滤)', () => {
-  it('境外不问许可/现居省;学签只问现居省;在工作两道都问 —— 完整度计数与题单同源', () => {
+  // 2026-08-16 Frank「这个上面的问题也没问,你是否有工签啊?」:境内**一律**问许可 ——
+  // 先前拿「在加拿大读书」推定学签,推出来的却是「差工签」这种结论,等于没问就替他认定
+  it('境外不问许可/现居省;境内(在读也算)两道都问 —— 完整度计数与题单同源', () => {
     const names = (a: Answers) => fieldsOf('pr', 'basic', 0, a)
     expect(names(base({ status: 'overseas' }))).not.toContain('permitBand')
     expect(names(base({ status: 'overseas' }))).not.toContain('resProv')
-    expect(names(base({ status: 'studying' }))).toContain('resProv')
-    expect(names(base({ status: 'studying' }))).not.toContain('permitBand')
+    expect(names(base({ status: 'studying' }))).toEqual(expect.arrayContaining(['permitBand', 'resProv']))
     expect(names(base({ status: 'working' }))).toEqual(expect.arrayContaining(['permitBand', 'resProv']))
     // 不传答案 = 全量清单(服务端/静态场景不误裁)
     expect(fieldsOf('pr', 'basic')).toEqual(expect.arrayContaining(['permitBand', 'resProv']))

@@ -359,7 +359,8 @@ const zh: Dict = {
   'dp.provMismatch': '本表按目标省{provs}评估,本职位在{jobProv}', 'dp.provAdd': '将{jobProv}加入目标省', 'dp.planHint': '先按职业、语言、经验和目标省给出可走方向；具体岗位和雇主留到下一步验证。',
   'dp.planTier0': '优先核对', 'dp.planTier1': '约需积累 3–6 个月', 'dp.planTier2': '约需积累 12 个月', 'dp.planTier3': '约需积累 24 个月',
   // #319 在读学生变体:经验从毕业拿工签起算,不写会被读成从今天起算
-  'dp.planTierGrad1': '毕业拿工签后约 3–6 个月', 'dp.planTierGrad2': '毕业拿工签后约 12 个月', 'dp.planTierGrad3': '毕业拿工签后约 24 个月',
+  'dp.planTierGrad1': '工签后工作满 3–6 个月', 'dp.planTierGrad2': '工签后工作满 12 个月', 'dp.planTierGrad3': '工签后工作满 24 个月',
+  'dp.planTierGradFt1': '工签后全职满 3–6 个月', 'dp.planTierGradFt2': '工签后全职满 12 个月', 'dp.planTierGradFt3': '工签后全职满 24 个月',
   // #324 原因列重做:共有缺项上提一次说清,每行只摆行间差异
   // #306:tier 是攒够门槛所需,排队与审批不在内
   // #323 操作列 / #325 带岗语境 / 前提两列(2026-08-16 拆分)
@@ -1464,7 +1465,8 @@ const en: Dict = {
   'dp.compRatio': '{n}:1 per nomination',
   'dp.provMismatch': 'Assessed against target provinces {provs}; this position is in {jobProv}', 'dp.provAdd': 'Add {jobProv}', 'dp.planHint': 'See viable directions from your occupation, language, experience, and target province first. Verify a specific job and employer afterward.',
   'dp.planTier0': 'Check first', 'dp.planTier1': 'About 3–6 months to build', 'dp.planTier2': 'About 12 months to build', 'dp.planTier3': 'About 24 months to build',
-  'dp.planTierGrad1': 'About 3–6 months after graduation and permit', 'dp.planTierGrad2': 'About 12 months after graduation and permit', 'dp.planTierGrad3': 'About 24 months after graduation and permit', 'dp.act': 'Action', 'dp.actGo': 'Jobs', 'dp.actEmp': 'Employers', 'dp.planJobProvRow': 'This job’s province',
+  'dp.planTierGrad1': '3–6 months of work after permit', 'dp.planTierGrad2': '12 months of work after permit', 'dp.planTierGrad3': '24 months of work after permit',
+  'dp.planTierGradFt1': '3–6 months full-time after permit', 'dp.planTierGradFt2': '12 months full-time after permit', 'dp.planTierGradFt3': '24 months full-time after permit', 'dp.act': 'Action', 'dp.actGo': 'Jobs', 'dp.actEmp': 'Employers', 'dp.planJobProvRow': 'This job’s province',
   'dp.planGapCol': 'Still missing', 'dp.planTimeCol': 'Until you can apply', 'dp.gapOffer': 'offer',
   'dp.pq.remaining': '{n} spots left', 'dp.pq.perIntake': '{n} per intake', 'dp.pq.firstCome': 'First come first served',
   'dp.planOutside2': 'Unselected {prov} has a faster-threshold route: {name}; competition {r1} vs {r2} in your provinces',
@@ -2506,7 +2508,8 @@ const ko: Dict = {
   'dp.compRatio': '지명 경쟁 {n}:1',
   'dp.provMismatch': '목표 주 {provs} 기준 평가, 본 직무는 {jobProv}', 'dp.provAdd': '{jobProv} 추가', 'dp.planHint': '직업·언어·경력·희망 주를 기준으로 가능한 방향을 먼저 보여 드립니다. 특정 공고와 고용주는 다음 단계에서 검증합니다.',
   'dp.planTier0': '우선 확인', 'dp.planTier1': '약 3–6개월 준비', 'dp.planTier2': '약 12개월 준비', 'dp.planTier3': '약 24개월 준비',
-  'dp.planTierGrad1': '졸업·워크퍼밋 후 약 3–6개월', 'dp.planTierGrad2': '졸업·워크퍼밋 후 약 12개월', 'dp.planTierGrad3': '졸업·워크퍼밋 후 약 24개월', 'dp.act': '작업', 'dp.actGo': '공고 찾기', 'dp.actEmp': '고용주 찾기', 'dp.planJobProvRow': '이 공고의 주',
+  'dp.planTierGrad1': '워크퍼밋 후 근무 3–6개월', 'dp.planTierGrad2': '워크퍼밋 후 근무 12개월', 'dp.planTierGrad3': '워크퍼밋 후 근무 24개월',
+  'dp.planTierGradFt1': '워크퍼밋 후 풀타임 3–6개월', 'dp.planTierGradFt2': '워크퍼밋 후 풀타임 12개월', 'dp.planTierGradFt3': '워크퍼밋 후 풀타임 24개월', 'dp.act': '작업', 'dp.actGo': '공고 찾기', 'dp.actEmp': '고용주 찾기', 'dp.planJobProvRow': '이 공고의 주',
   'dp.planTimeCol': '지원 가능까지', 'dp.planGapCol': '부족한 것', 'dp.gapOffer': '잡오퍼',
   'dp.pq.remaining': '잔여 정원 {n}', 'dp.pq.perIntake': '회차당 {n}', 'dp.pq.firstCome': '선착순',
   'dp.planOutside2': '미선택 {prov}에 요건이 더 빠른 통로: {name}; 정원 경쟁 {r1}(선택 주 {r2})',

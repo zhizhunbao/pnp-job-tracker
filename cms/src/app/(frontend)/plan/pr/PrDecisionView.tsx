@@ -65,6 +65,8 @@ type ProfilePath = {
   competition?: { ratio: number; tier: string; pool: number; quota: number; quotaYear: number } | null
   /** tier 起算点(#319):在读学生的经验型 tier 要等毕业拿工签才起算 */
   tierBasis?: 'now' | 'after-study'
+  /** 这段等待要不要全职(官方条文行说了才为 true) */
+  tierFullTime?: boolean
   /** 全部缺口的措辞键(#324:原因列要逐行差异,单一 blockedBy 不够) */
   gaps?: string[]
   /** 该省该职业在招岗数(#307:服务端与排序同源下发;客户端不再自取自排) */
@@ -702,6 +704,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                         waitAfterOffer: isOffer,
                         // #319:在读学生的经验型 tier 从毕业拿工签起算,文案换「毕业后」变体
                         afterStudy: (row.tierBasis ?? 'now') === 'after-study',
+                        fullTime: row.tierFullTime === true,
                         // #324:全部缺口键(逐行差异用;blockedBy 只有第一道闸)
                         gapsAll: row.gaps ?? [],
                         // #325:带岗态补的「本岗所在省」行,不冒充名次
@@ -758,7 +761,11 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       if (r.dataGap && !r.blocked) return null
                       if (r.openOk) return { text: r.stateText, tone: 'ok' }
                       if (!r.blocked) return { text: r.stateText, tone: r.afterOk ? 'info' : 'warn' }
-                      if (r.waitTier) return { text: t(r.afterStudy ? `dp.planTierGrad${r.waitTier}` : `${r.waitAfterOffer ? 'dp.why.wait' : 'dp.planTier'}${r.waitTier}`), tone: 'info' }
+                      // 起算点与「要不要全职」都照条文说(2026-08-16 Frank 两问):在读学生用工签后变体,
+                      // 官方原文写了 full-time 才敢写「全职」——NS 那条写的是 paid work,就只说「工作」
+                      if (r.waitTier) return { text: t(r.afterStudy
+                        ? `dp.planTierGrad${r.fullTime ? 'Ft' : ''}${r.waitTier}`
+                        : `${r.waitAfterOffer ? 'dp.why.wait' : 'dp.planTier'}${r.waitTier}`), tone: 'info' }
                       return r.afterOk ? { text: r.stateText, tone: 'info' } : null
                     }
                     const pillSpan = (p: Pill) => (
@@ -782,13 +789,22 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                     )
                     // 竞争格:试点行(RCIP/FCIP)无 EOI 池,原「—」换社区名额状态(2026-08-16 Frank
                     // 「不是有比名额竞争更准确的数据吗」)——语义单一才上屏:剩余名额 > 每轮上限 > 先到先得
+                    // 试点行两件事都要说(2026-08-16 Frank「RCIP 先到先得的列哪去了」):发放规则是主文案,
+                    // 官网公布的数字做灰字小注 —— 先前按优先级只显一个,ON 有 153 个剩余名额就把
+                    // 「先到先得」顶没了,而那正是决定「要不要马上投」的那条规则
                     const compCell = (r: PlanRow) => {
                       if (r.ratio != null) return <span style={{ fontVariantNumeric: 'tabular-nums' }}>{r.ratio}:1</span>
                       const q = r.pilotQuota
-                      if (q?.remainingSum != null) return <span style={{ fontVariantNumeric: 'tabular-nums' }}>{t('dp.pq.remaining', { n: q.remainingSum })}</span>
-                      if (q?.perIntakeSum != null) return <span style={{ fontVariantNumeric: 'tabular-nums' }}>{t('dp.pq.perIntake', { n: q.perIntakeSum })}</span>
-                      if (q && q.firstComeN > 0) return <span>{t('dp.pq.firstCome')}</span>
-                      return <span style={{ color: UI.text3 }}>—</span>
+                      const numText = q?.remainingSum != null ? t('dp.pq.remaining', { n: q.remainingSum })
+                        : q?.perIntakeSum != null ? t('dp.pq.perIntake', { n: q.perIntakeSum }) : null
+                      const fc = !!q && q.firstComeN > 0
+                      if (!fc && !numText) return <span style={{ color: UI.text3 }}>—</span>
+                      return (
+                        <span style={{ display: 'inline-block', textAlign: 'right' }}>
+                          <span style={{ fontVariantNumeric: 'tabular-nums' }}>{fc ? t('dp.pq.firstCome') : numText}</span>
+                          {fc && numText ? <span style={{ display: 'block', fontSize: 11, fontWeight: 400, color: UI.text3, fontVariantNumeric: 'tabular-nums' }}>{numText}</span> : null}
+                        </span>
+                      )
                     }
                     return (
                       <>
@@ -816,7 +832,9 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                                 return all.length ? <>{all.map(pillSpan)}</> : undefined
                               })()}
                               footer={r.jobsHref || r.empHref ? (
-                                <span style={{ display: 'flex', gap: 8 }}>
+                                // 动作靠右下(2026-08-16 Frank「按钮放到右下角」):与卡片右列数字同一条竖线,
+                                // 手指下滑时右边一路都是「可比的数」与「可点的动作」
+                                <span style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                                   {r.jobsHref ? (
                                     <a href={r.jobsHref} onClick={() => track('dp-act-jobs', { key: r.rowKey })}
                                       style={{ display: 'inline-block', background: UI.primary, color: '#fff', borderRadius: 8, padding: '6px 14px', fontSize: 12.5, fontWeight: 600, textDecoration: 'none' }}>
