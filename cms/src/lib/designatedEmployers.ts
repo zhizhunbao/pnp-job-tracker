@@ -42,3 +42,31 @@ export async function fetchDesignatedEmployers(
     fetched: String(r.fetched ?? '').slice(0, 10),
   }))
 }
+
+/**
+ * 在招雇主(2026-08-16 Frank「其他的查雇主按钮呢?」):普通省提名没有「指定雇主」这回事,
+ * 对它们有意义的雇主视图 = **这个省正在招这个职业的雇主**,数据来自本站每日职位库。
+ * 🔴 口径:在招数是**本站库内**的数(不是该雇主全部招聘),排序按岗位数降序。
+ */
+export type HiringEmployerRow = { name: string; province: string; location: string; openJobs: number }
+
+export async function fetchHiringEmployers(
+  pool: Pool, opts: { province: string; noc: string },
+): Promise<HiringEmployerRow[]> {
+  if (!/^[A-Z]{2}$/.test(opts.province) || !/^\d{5}$/.test(opts.noc)) return []
+  const { rows } = await pool.query(
+    `SELECT c.name AS name, j.province AS province,
+            MIN(COALESCE(j.city, '')) AS location, COUNT(*)::int AS n
+       FROM jobs j JOIN companies c ON c.id = j.company_id
+      WHERE j.status = 'open' AND j.province = $1 AND j.noc = $2 AND COALESCE(c.name, '') <> ''
+      GROUP BY c.name, j.province
+      ORDER BY n DESC, c.name ASC
+      LIMIT 300`, [opts.province, opts.noc],
+  ).catch(() => ({ rows: [] as Record<string, unknown>[] }))
+  return rows.map((r) => ({
+    name: String(r.name ?? ''),
+    province: String(r.province ?? ''),
+    location: String(r.location ?? ''),
+    openJobs: Number(r.n) || 0,
+  }))
+}

@@ -189,9 +189,19 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
   }, [])
 
   useEffect(() => {
-    refreshFromStore()
+    const a = refreshFromStore()
     // 改为弹窗形态后默认收起弹窗,避免刚进页面就强插弹窗遮罩。只有 URL 带 ?quiz=1 时才自动唤起弹窗。
-    setQuizOpen(new URLSearchParams(window.location.search).get('quiz') === '1')
+    // 2026-08-16 Frank「已经选完了,每次刷新不要再弹框了」:?quiz=1 是处境页那条入口带来的,
+    // 留在地址栏后**每次刷新都重弹**。答满了就不弹(他要改答案有「修改条件」那颗钮),
+    // 并把这个参数从地址栏抹掉 —— 一次性入口不该变成常驻状态。
+    const wantQuiz = new URLSearchParams(window.location.search).get('quiz') === '1'
+    const basicDone = a.nocs.length > 0 && missingFields(fieldsOf('pr', 'basic', 0, a), a).length === 0
+    setQuizOpen(wantQuiz && !basicDone)
+    if (wantQuiz) {
+      const u = new URL(window.location.href)
+      u.searchParams.delete('quiz')
+      window.history.replaceState(null, '', u.pathname + u.search + u.hash)
+    }
     setReady(true)
     track('dp-open', { job: tvJob ? '1' : '0' })
     // 登录态拉服务端答案档(清了浏览器/换设备答案还在;未登录 401 无感):有变化才重建
@@ -676,9 +686,12 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       // —— AIP/RCIP/FCIP 的 offer 必须出自被指定的雇主,名录在库(6,680 行)、本轮新建页面承载;
                       // 普通省提名没有「指定雇主」这回事(任何合规雇主都行),给了等于凭空发明一道门槛。
                       // 上一版链的 /employers 是坏链接:那条路 08-08 起 308 到把脉页,承诺雇主却落在别处。
+                      // 每条路都给「查雇主」(2026-08-16「其他的查雇主按钮呢?」),但两种口径不混:
+                      //   指定雇主是硬门槛的(AIP/RCIP/FCIP)→ 官方指定名录;
+                      //   普通省提名 → 该省该职业**在招**的雇主(本站职位库)—— 那才是他要投的人
                       const empHref = ui.program === 'AIP' || ui.program === 'RCIP' || ui.program === 'FCIP'
                         ? `/employers/designated?program=${ui.program}${provincial ? `&prov=${row.province}` : ''}`
-                        : null
+                        : provincial && noc ? `/employers/hiring?prov=${row.province}&noc=${noc}` : null
                       const jobsN = jobsOf(row)
                       // 门槛文案:够不着线的写数字(估分 X < 线 Y),数字是官方事实,结论用户自己得
                       const stateText = row.belowLine && row.score?.refLine != null
