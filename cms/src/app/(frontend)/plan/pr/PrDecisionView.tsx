@@ -116,9 +116,14 @@ const EDU_OF: Record<number, 'highschool' | 'diploma2y' | 'bachelor' | 'master' 
   { 1: 'highschool', 2: 'diploma2y', 3: 'bachelor', 4: 'master', 5: 'doctorate' }
 const AGE_OF: Record<number, number | undefined> = { 1: 23, 2: 28, 3: 33, 4: 38, 5: 43 }
 
-/** 官方**明说不打分**的省(举证责任在我们:一个 URL + 一句原句,同 gateManifest 的规矩)。
+/** 官方**没有公布**分值表的省(举证责任在我们:一个 URL + 一句原句,同 gateManifest 的规矩)。
  *  不在这张表里的缺省一律按「本站未收录」说 —— 两句话在用户那儿意思相反,不许拿一句混着用。
- *  NS:2025-11-28 起 NSNP 全通道 + AIP 指定改 EOI,选谁由厅里按当期优先级酌情定,没有可对照的分值表。 */
+ *
+ *  🔴 口径(2026-08-16 Frank 问「EOI 池子里面不打分吗」时校正):这里能断言的只有
+ *  「**没公布**分值/排序办法」,**不是**「池子里不打分」。NS 那份处理政策全文没有一个分数,
+ *  但也从没说过自己不排序 —— 池子内部有没有一套不公开的办法,官方没说,我们不知道,
+ *  不许替它说没有(CLAUDE.md「官方不公布是需要举证的断言」的同一条线)。
+ *  NS:2025-11-28 起 NSNP 全通道 + AIP 指定改 EOI,选谁由厅里(LSI)按当期优先级**酌情**定。 */
 const NO_POINTS_GRID: Record<string, { url: string; quote: string; fetched: string }> = {
   NS: {
     url: 'https://liveinnovascotia.com/eoi-process',

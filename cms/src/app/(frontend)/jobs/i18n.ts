@@ -332,7 +332,7 @@ const zh: Dict = {
   // 决策页(判定合一批1)
   'dp.sub': '雇主 offer → 省提名',
   'dp.draws': '各省最近抽选', 'dp.prov': '省份', 'dp.quiz': '申请人条件',
-  'dp.noGridOfficial': '{prov} 官方按 EOI 酌情选人,不设分值表', 'dp.noGridSite': '本站未收录 {prov} 的官方分值表', 'dp.src': '出处',
+  'dp.noGridOfficial': '{prov} 官方按 EOI 酌情选人,未公布分值表', 'dp.noGridSite': '本站未收录 {prov} 的官方分值表', 'dp.src': '出处',
   // 估分独立 section(2026-08-16):结论只说「够不够线」,不许延伸成「多久被捞」「概率多大」
   'sl.title': '估分与抽选线', 'sl.check': '算我的分', 'sl.edit': '改答案',
   'sl.noTable': '本站未收录该省的官方分值表',
