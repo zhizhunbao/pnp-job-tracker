@@ -79,11 +79,11 @@ export function ScoreLineCard({
   // 结论行:三态各说各的,**不混着说**。没分(没答完 / 该省无表)只出引导,不出结论。
   const clears = score?.value != null ? list.filter((d) => (d.score as number) <= (score.value as number)).length : 0
   const banner = !prov ? null : !score ? (
-    <Box tone="muted">{t(
-      total > 0 ? 'sl.empty'                                   // 估分题还有欠账
-        : gridProvinces === null ? 'sl.needBasic'              // 表还没取(基础卷没答满)—— 不许说「没有表」
-          : gridProvinces.includes(prov) ? 'sl.empty'
-            : 'sl.noTable', { n: total })}</Box>
+    // 估分题还有欠账 → 不出提示:没填的格子就在下面摆着,右上角还有「算我的分」,再写一句是废话
+    // (2026-08-16 Frank 圈了「答完 7 道估分题看你够不够线」)。留下的两句说的是**别的事**:
+    // 表还没取到(得先答完基础卷)/ 本站真没这个省的表 —— 后者是举证口径,不能省。
+    total > 0 || gridProvinces?.includes(prov) ? null
+      : <Box tone="muted">{t(gridProvinces === null ? 'sl.needBasic' : 'sl.noTable')}</Box>
   ) : state === 'above' ? (
     <Box tone="ok">
       <b style={{ fontSize: 14, fontWeight: 700, color: '#15803d' }}>{t('sl.yours', { prov: provDisp(prov), v: score.value })}</b>

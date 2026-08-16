@@ -381,6 +381,11 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
     // 分值表的题一视同仁逐格回显(合并成 17 的另一半:计数合了,格子也得合,数和格子才对得上)
     ...scoreEcho.map((r): SummaryRow => ({ key: r.key, prov: r.prov, label: r.label, value: r.value || unparsed, filled: r.filled })),
   ]
+  // 2026-08-16 合卡:**凡是分值卡回报的都是估分题**,归估分卡 —— 不只省专属那批。
+  // 共用估分题(学历/年龄这类,prov='')先前混在基础卷格子里,于是「申请人条件」卡里
+  // 冒出一格谁也不知道从哪来的「学历」(Frank 实拍问「怎么和你未登录的不一样」)。
+  const scoreRows = conditionSummary.filter((r) => scoreEcho.some((e) => e.key === r.key))
+  const basicRows = conditionSummary.filter((r) => !scoreEcho.some((e) => e.key === r.key))
 
   // 用户在问卷里直接多选具体省份。共用条件交给一张 PnpScoreCard 只问一次，省独有条件按所选省追加。
   const selectedProvinces = tvJob?.province ? [tvJob.province] : bands.provs
@@ -1326,8 +1331,8 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
               {/* 每格可点、直达那道题;省专属题按省分 tab(ConditionGrid,与带岗态判定卡②共用) */}
               <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${UI.hairline}` }}>
                 {/* 只留共用题:省专属题=估分题,已随结论并进「估分与抽选线」那张卡(2026-08-16) */}
-                <ConditionGrid rows={conditionSummary} provLabel={provDisp} ariaLabel={t('dp.prov')} idPrefix="dpCond"
-                  only="shared" onTile={(key) => startQuiz(key)} />
+                <ConditionGrid rows={basicRows} provLabel={provDisp} ariaLabel={t('dp.prov')} idPrefix="dpCond"
+                  onTile={(key) => startQuiz(key)} />
                 {/* 选了却没有页签的省要说清楚为什么(2026-08-15 Frank「这个为什么没有新斯科舍」):
                     不说 = 看着像我们漏了。两句话意思相反,分开写:官方按 EOI 酌情选人不打分(带原句)
                     vs 本站还没收录该省的表。铁律见 CLAUDE.md「官方不公布是需要举证的断言」。 */}
@@ -1359,10 +1364,15 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
                 provinces={scoreLineProvinces} provDisp={provDisp}
                 done={scoreDone} total={scoreTotal} onEdit={() => (quizComplete ? openScoreStep() : startQuiz())}
                 onPickProv={() => startQuiz('prov')} gridProvinces={scoreTables ? factorProvinces : null}
-                pendingOf={(p) => conditionSummary.filter((r) => r.prov === p && !r.filled).length}
+                pendingOf={(p) => scoreRows.filter((r) => r.prov === p && !r.filled).length}
                 tiles={(p) => (
-                  <ConditionGrid rows={conditionSummary} provLabel={provDisp} ariaLabel={t('dp.prov')}
-                    idPrefix="slCond" province={p} onTile={(key) => startQuiz(key)} />
+                  <>
+                    {/* 共用估分题(学历/年龄):与省无关,页签之下只出一次,不随切省重复 */}
+                    <ConditionGrid rows={scoreRows} provLabel={provDisp} ariaLabel={t('dp.prov')}
+                      idPrefix="slShared" only="shared" onTile={(key) => startQuiz(key)} />
+                    <ConditionGrid rows={scoreRows} provLabel={provDisp} ariaLabel={t('dp.prov')}
+                      idPrefix="slCond" province={p} onTile={(key) => startQuiz(key)} />
+                  </>
                 )}>
                 {quizSection}
               </ScoreLineCard>
