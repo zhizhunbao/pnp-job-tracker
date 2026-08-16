@@ -34,6 +34,29 @@ type Alloc = { key: string; head: number; word: number; p90: number; max: number
 const FLOOR = 44
 
 /**
+ * 拖列的**纯算法**(Excel 式,2026-08-16):把第 idx 列拉到 want 宽,总宽恒定不变。
+ *   · idx 左边的列一律不动(先前全局重分,左边会跟着跳 —— Frank「有时候左边的列移动」)
+ *   · 差额从**右边**列里出,自最右一列开始逐列让到各自下限;中间列宽度不变=整体平移
+ *   · 最后一列没有右邻居,只能反过来向左要(否则拖了没反应)
+ * floors[i] = 该列下限(表头不折行:max(FLOOR, head, word))。返回整数像素,和恒等于输入和。
+ */
+export function resizeColWidths(base: number[], idx: number, want: number, floors: number[]): number[] {
+  const w = base.slice()
+  if (idx < 0 || idx >= w.length) return w
+  const donors = idx < w.length - 1
+    ? Array.from({ length: w.length - 1 - idx }, (_, n) => w.length - 1 - n)
+    : Array.from({ length: idx }, (_, n) => idx - 1 - n)
+  let need = Math.max(floors[idx] ?? FLOOR, want) - base[idx]
+  for (const d of donors) {
+    if (need === 0) break
+    if (need > 0) { const give = Math.min(need, w[d] - (floors[d] ?? FLOOR)); w[d] -= give; need -= give }
+    else { w[d] -= need; need = 0 }
+  }
+  w[idx] = base[idx] + (Math.max(floors[idx] ?? FLOOR, want) - base[idx] - need)
+  return w.map((x) => Math.round(x))
+}
+
+/**
  * 纯函数:按 ①②③ 把 avail 像素分给各列。返回整数像素,和恒等于 avail(除非表头都放不下)。
  */
 export function allocateColWidths(cols: Alloc[], avail: number): Record<string, number> {
@@ -127,6 +150,9 @@ export function useColWidths(opts: {
   const [manual, setManual] = useState<Record<string, number>>({})
   const doneKey = useRef('')
   const keysKey = keys.join(',')
+  // 拖列回调是 useCallback([]) 常驻件,直接闭包 keys/measured 会钉死在首帧的值(列集换了、量宽更新了都读不到)
+  const keysRef = useRef(keys); keysRef.current = keys
+  const measuredRef = useRef(measured); measuredRef.current = measured
 
   // ── 量宽:整表临时「不折行 + 按内容撑开」,读每列真实需要多宽,量完立刻还原(只存在一帧)
   const measure = useCallback((): boolean => {
@@ -221,13 +247,34 @@ export function useColWidths(opts: {
   const px = allocateColWidths(cols, Math.max(avail, minTotal))
   const total = keys.reduce((s, k) => s + (px[k] ?? 0), 0)
 
-  // ── 触发点三:拖列竖线 —— 只把这一列钉成手动宽,其余列**照同一套规则重分**
+  // ── 触发点三:拖列竖线 —— **Excel 式**(2026-08-16 Frank「有时候右边的列移动,有时候左边的列移动,
+  //    能不能统一都改成右边的列整体移动」)。
+  //    先前只钉被拖的那一列、其余列照 ①②③ 重分 → 重分是全局的,左边的列也会跟着跳。
+  //    现在:拖之前**把所有列按当前实宽钉住**(左边从此一动不动),被拖列吃掉位移,
+  //    差额只从**右边**列里出、且从最右一列开始逐列让 —— 中间那些列宽度不变,整体平移,正是 Excel 的手感。
+  //    总宽恒定不变,所以「永不横滚」那条铁律仍然成立(④)。
+  //    让宽的下限仍是「表头不折行」(max(FLOOR, head, word)),让到底了再找左边一列继续让。
+  //    最后一列没有右邻居 → 只能反过来从它左边那列让,否则拖了没反应。
   const startResize = useCallback((e: React.MouseEvent, key: string) => {
     e.preventDefault(); e.stopPropagation()
     const th = (e.currentTarget as HTMLElement).closest('th') as HTMLElement | null
-    const startW = th ? th.getBoundingClientRect().width : 120
+    const rowEl = th?.parentElement
+    if (!th || !rowEl) return
+    const ths = Array.from(rowEl.children) as HTMLElement[]
+    const base = ths.map((el) => el.getBoundingClientRect().width)
+    const order = keysRef.current
+    const idx = order.indexOf(key)
+    if (idx < 0 || base.length !== order.length) return
+    const floorOf = (i: number) => {
+      const m = measuredRef.current[order[i]]
+      return Math.max(FLOOR, m?.head ?? FLOOR, m?.word ?? FLOOR)
+    }
+    const floors = order.map((_, i) => floorOf(i))
     const startX = e.clientX
-    const onMove = (ev: MouseEvent) => setManual((p) => ({ ...p, [key]: Math.max(FLOOR, Math.round(startW + (ev.clientX - startX))) }))
+    const onMove = (ev: MouseEvent) => {
+      const w = resizeColWidths(base, idx, Math.round(base[idx] + (ev.clientX - startX)), floors)
+      setManual(Object.fromEntries(order.map((k, i) => [k, w[i]])))
+    }
     const onUp = () => {
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
