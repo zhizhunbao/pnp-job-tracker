@@ -124,6 +124,8 @@ const PROFILE_FACTOR: Record<string, string[]> = {
 const EDU_OF: Record<number, 'highschool' | 'diploma2y' | 'bachelor' | 'master' | 'doctorate' | undefined> =
   { 1: 'highschool', 2: 'diploma2y', 3: 'bachelor', 4: 'master', 5: 'doctorate' }
 const AGE_OF: Record<number, number | undefined> = { 1: 23, 2: 28, 3: 33, 4: 38, 5: 43 }
+// 第二语言档 → CLB 数(1=没成绩→0;与 fields.ts 的 CLB 阶梯同源)
+const CLB_OF: Record<number, number> = { 1: 0, 2: 4, 3: 5, 4: 6, 5: 7, 6: 8, 7: 9, 8: 10 }
 
 /** 官方**没有公布**分值表的省(举证责任在我们:一个 URL + 一句原句,同 gateManifest 的规矩)。
  *  不在这张表里的缺省一律按「本站未收录」说 —— 两句话在用户那儿意思相反,不许拿一句混着用。
@@ -210,6 +212,20 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
     fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json())
       .then((d) => setMe(!!d?.user?.id)).catch(() => setMe(false))
   }, [])
+  // 🔴 真登录了就**无条件**拉档(2026-08-16 实撞:Frank 本地登录着,页面却「已答 0/11」)。
+  // pullAndMerge 无参调用受「登录迹象 cookie」那道闸限制 —— 那枚 cookie 由同步层自己维护,
+  // 换浏览器/清过站点数据就没有;缓存撤掉之后没有本地档兜底,一缺就永远读不到自己的答案。
+  // /api/users/me 才是登录态的真相,以它为准绕过闸。
+  useEffect(() => {
+    if (me !== true) return
+    pullAndMerge(true).then((changed) => {
+      if (!changed) return
+      refreshFromStore()
+      const a = readScoreAnswers()
+      setScoreTicks(a.ticks ?? {}); setScoreRowsAns(pickAnswered(a))
+    }).catch(() => { /* 静默:下次进页面再拉 */ })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me])
   // 答题卡默认收起(Frank「上来有必要让人测分数吗」——不逼人考试,一行入口自愿点开);
   // 「开始评估/继续作答/改答案」展开,答完自动收回
   const [quizOpen, setQuizOpen] = useState(false)
@@ -389,27 +405,31 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
   const unparsed = lang === 'zh' ? '待填写' : 'Not completed'
   // key = 点这格该落到哪道题:'occ'/'prov' 是专属页,基础题用字段名,分值题用分值卡的题 key(带冒号);
   // prov=''为全省共用,其余按省分 tab(ConditionGrid)
-  type SummaryRow = { key: string; prov: string; label: string; value: string; filled: boolean; warn?: string }
+  type SummaryRow = { key: string; prov: string; label: string; value: string; filled: boolean; warn?: string; group?: string }
+  // 小类别(2026-08-16 Frank「分一下小类别,不然看着太乱,而且没有排序」)。
+  // 组序 = 这里的书写顺序,组内 = 题序;两者都不随答案变动而跳
+  const G = { who: t('dp.grp.who'), edu: t('dp.grp.edu'), lang: t('dp.grp.lang'), work: t('dp.grp.work'), goal: t('dp.grp.goal') }
   // 带岗态的不匹配小标(2026-08-14 Frank「加个图标标一下 职业不匹配」「省份不匹配」):
   // 岗位职业不在档案职业里 / 岗位省不在目标省里 → 对应格挂 ⚠ 胶囊,长句不要
   const occMismatch = !!tvJob?.noc && bands.nocs.length > 0 && !bands.nocs.includes(tvJob.noc)
   const provMismatch = !!tvJob && !bands.provsAny && bands.provs.length > 0 && !bands.provs.includes(tvJob.province)
   const conditionSummary: SummaryRow[] = [
-    { key: 'occ', prov: '', label: t('dp.sum.occ'), value: occText || unparsed, filled: !!occText,
+    { key: 'occ', prov: '', group: G.work, label: t('dp.sum.occ'), value: occText || unparsed, filled: !!occText,
       ...(occMismatch ? { warn: t('dp.warnOcc') } : {}) },
-    { key: 'status', prov: '', label: t('dp.sum.status'), value: choiceText('status') || unparsed, filled: !!choiceText('status') },
+    { key: 'status', prov: '', group: G.who, label: t('dp.sum.status'), value: choiceText('status') || unparsed, filled: !!choiceText('status') },
     // 拆闸批两题只对境内处境回显(与题的显隐同源):境外用户不摆两个永远「待填写」的格
-    ...(FIELDS.permitBand.visible?.(bands) ? [{ key: 'permitBand', prov: '', label: t('dp.sum.permit'), value: choiceText('permitBand') || unparsed, filled: !!choiceText('permitBand') }] : []),
-    ...(FIELDS.resProv.visible?.(bands) ? [{ key: 'resProv', prov: '', label: t('dp.sum.resProv'), value: choiceText('resProv') || unparsed, filled: !!choiceText('resProv') }] : []),
-    { key: 'eduBand', prov: '', label: t('dp.sum.edu'), value: choiceText('eduBand') || unparsed, filled: !!choiceText('eduBand') },
-    { key: 'ageBand', prov: '', label: t('dp.sum.age'), value: choiceText('ageBand') || unparsed, filled: !!choiceText('ageBand') },
-    { key: 'clbBand', prov: '', label: t('dp.sum.clb'), value: choiceText('clbBand') || unparsed, filled: !!choiceText('clbBand') },
-    { key: 'totalExpBand', prov: '', label: t('dp.sum.totalExp'), value: choiceText('totalExpBand') || unparsed, filled: !!choiceText('totalExpBand') },
-    { key: 'expBand', prov: '', label: t('dp.sum.canExp'), value: choiceText('expBand') || unparsed, filled: !!choiceText('expBand') },
+    ...(FIELDS.permitBand.visible?.(bands) ? [{ key: 'permitBand', prov: '', group: G.who, label: t('dp.sum.permit'), value: choiceText('permitBand') || unparsed, filled: !!choiceText('permitBand') }] : []),
+    ...(FIELDS.resProv.visible?.(bands) ? [{ key: 'resProv', prov: '', group: G.who, label: t('dp.sum.resProv'), value: choiceText('resProv') || unparsed, filled: !!choiceText('resProv') }] : []),
+    { key: 'eduBand', prov: '', group: G.edu, label: t('dp.sum.edu'), value: choiceText('eduBand') || unparsed, filled: !!choiceText('eduBand') },
+    { key: 'ageBand', prov: '', group: G.who, label: t('dp.sum.age'), value: choiceText('ageBand') || unparsed, filled: !!choiceText('ageBand') },
+    { key: 'clbBand', prov: '', group: G.lang, label: t('dp.sum.clb'), value: choiceText('clbBand') || unparsed, filled: !!choiceText('clbBand') },
+    { key: 'clb2Band', prov: '', group: G.lang, label: t('dp.sum.clb2'), value: choiceText('clb2Band') || unparsed, filled: !!choiceText('clb2Band') },
+    { key: 'totalExpBand', prov: '', group: G.work, label: t('dp.sum.totalExp'), value: choiceText('totalExpBand') || unparsed, filled: !!choiceText('totalExpBand') },
+    { key: 'expBand', prov: '', group: G.work, label: t('dp.sum.canExp'), value: choiceText('expBand') || unparsed, filled: !!choiceText('expBand') },
     // 选多了就缩写(2026-08-16 Frank「这个要对齐」):十个省名全列会把这一格撑成三行,
     // 同排另外两格只有一行 —— 格子高度被它带跑,一排看着就是歪的。铁律见 [[copy-no-wrap-no-filler]]:
     // 值折行 = 文案太长,删到一行,而不是让版式迁就它
-    { key: 'prov', prov: '', label: t('dp.sum.prov'),
+    { key: 'prov', prov: '', group: G.goal, label: t('dp.sum.prov'),
       value: bands.provs.length
         ? (bands.provs.length > 2
           ? t('dp.sum.provN', { first: t('prov.' + bands.provs[0]), second: t('prov.' + bands.provs[1]), n: bands.provs.length })
@@ -418,16 +438,16 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
       filled: provAnswered,
       ...(provMismatch ? { warn: t('dp.warnProv') } : {}) },
     // 2026-08-12 加的两题也要回显 —— 卡头写着「已答 6/8」而下面只摆 6 格,数和格子对不上
-    { key: 'offerBand', prov: '', label: t('dp.sum.offer'), value: choiceText('offerBand') || unparsed, filled: !!choiceText('offerBand') },
-    { key: 'canadaEduBand', prov: '', label: t('dp.sum.canadaEdu'), value: choiceText('canadaEduBand') || unparsed, filled: !!choiceText('canadaEduBand') },
+    { key: 'offerBand', prov: '', group: G.work, label: t('dp.sum.offer'), value: choiceText('offerBand') || unparsed, filled: !!choiceText('offerBand') },
+    { key: 'canadaEduBand', prov: '', group: G.edu, label: t('dp.sum.canadaEdu'), value: choiceText('canadaEduBand') || unparsed, filled: !!choiceText('canadaEduBand') },
     // 专业对口两题同样只对「有加拿大学历」的人回显(与题的显隐同源)
-    ...(FIELDS.fieldMatchBand.visible?.(bands) ? [{ key: 'fieldMatchBand', prov: '', label: t('dp.sum.fieldMatch'), value: choiceText('fieldMatchBand') || unparsed, filled: !!choiceText('fieldMatchBand') }] : []),
-    ...(FIELDS.eduProv.visible?.(bands) ? [{ key: 'eduProv', prov: '', label: t('dp.sum.eduProv'), value: choiceText('eduProv') || unparsed, filled: !!choiceText('eduProv') }] : []),
+    ...(FIELDS.fieldMatchBand.visible?.(bands) ? [{ key: 'fieldMatchBand', prov: '', group: G.edu, label: t('dp.sum.fieldMatch'), value: choiceText('fieldMatchBand') || unparsed, filled: !!choiceText('fieldMatchBand') }] : []),
+    ...(FIELDS.eduProv.visible?.(bands) ? [{ key: 'eduProv', prov: '', group: G.edu, label: t('dp.sum.eduProv'), value: choiceText('eduProv') || unparsed, filled: !!choiceText('eduProv') }] : []),
     // 学制年数(#316 新题):有加拿大学历才问,格随题显隐同源
-    ...(FIELDS.eduYearsBand?.visible?.(bands) ? [{ key: 'eduYearsBand', prov: '', label: t('dp.sum.eduYears'), value: choiceText('eduYearsBand') || unparsed, filled: !!choiceText('eduYearsBand') }] : []),
+    ...(FIELDS.eduYearsBand?.visible?.(bands) ? [{ key: 'eduYearsBand', prov: '', group: G.edu, label: t('dp.sum.eduYears'), value: choiceText('eduYearsBand') || unparsed, filled: !!choiceText('eduYearsBand') }] : []),
     // 法语(FCIP 的定义性门槛):全员都问,所以格子也无条件摆 —— 2026-08-15 首版漏了这一格,
     // 题问了、答案也存了(计数都对),就是回显没有,人在格子里找不到自己答过的那道题
-    { key: 'frenchBand', prov: '', label: t('dp.sum.french'), value: choiceText('frenchBand') || unparsed, filled: !!choiceText('frenchBand') },
+    { key: 'frenchBand', prov: '', group: G.lang, label: t('dp.sum.french'), value: choiceText('frenchBand') || unparsed, filled: !!choiceText('frenchBand') },
     // 分值表的题一视同仁逐格回显(合并成 17 的另一半:计数合了,格子也得合,数和格子才对得上)
     ...scoreEcho.map((r): SummaryRow => ({ key: r.key, prov: r.prov, label: r.label, value: r.value || unparsed, filled: r.filled })),
   ]
@@ -435,7 +455,12 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
   // 共用估分题(学历/年龄这类,prov='')先前混在基础卷格子里,于是「申请人条件」卡里
   // 冒出一格谁也不知道从哪来的「学历」(Frank 实拍问「怎么和你未登录的不一样」)。
   const scoreRows = conditionSummary.filter((r) => scoreEcho.some((e) => e.key === r.key))
+  // 组序固定成「身份 → 教育 → 语言 → 职业经验 → 目标」,不跟着题序跑(组内仍按题序,稳定排序)
+  const GROUP_ORDER = [G.who, G.edu, G.lang, G.work, G.goal]
   const basicRows = conditionSummary.filter((r) => !scoreEcho.some((e) => e.key === r.key))
+    .map((r, i) => ({ r, i }))
+    .sort((a, b) => (GROUP_ORDER.indexOf(a.r.group ?? '') - GROUP_ORDER.indexOf(b.r.group ?? '')) || (a.i - b.i))
+    .map((x) => x.r)
 
   // 用户在问卷里直接多选具体省份。共用条件交给一张 PnpScoreCard 只问一次，省独有条件按所选省追加。
   const selectedProvinces = tvJob?.province ? [tvJob.province] : bands.provs
@@ -487,6 +512,7 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
     // 学历/年龄归基础卷(2026-08-16):值带进分值卡直接参与算分,分值卡自己不再问第二遍
     ...(EDU_OF[bands.eduBand] ? { edu: EDU_OF[bands.eduBand] } : {}),
     ...(AGE_OF[bands.ageBand] ? { age: AGE_OF[bands.ageBand] } : {}),
+    ...(bands.clb2Band ? { clb2: CLB_OF[bands.clb2Band] ?? 0 } : {}),
     // BC/MB 的 work 是总经验,可直接复用基础题;SK 按时间段拆分,必须让用户另答,不能猜最近几年。
     expRecent: hasSplitWork ? 0 : totalExpLower,
     expOlder: 0,
@@ -497,6 +523,8 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
     // 基础卷问过的不再问:答过的题重复出现,人会以为自己答错了(而且两处答案会打架)
     ...(bands.eduBand ? ['edu' as const] : []),
     ...(bands.ageBand ? ['age' as const] : []),
+    // 第二语言同样归基础卷了(2026-08-16):答过就别在分值段再问一遍
+    ...(bands.clb2Band ? ['clb2' as const] : []),
   ]
   // 基础卷的 offer 答案 → 分值卡语境:有=true;面试中/没有/自雇=false(都还没有 offer);
   // 不清楚/没答=undefined,分值段照问。答过就不再问第二遍(2026-08-14 offer 合一)。

@@ -15,6 +15,8 @@ export type Answers = {
   provs: string[]
   done?: boolean                     // 三问答完过(职位板据此判断还弹不弹)
   clbBand: number
+  /** 第二官方语言档(2026-08-16 收进基础卷:ON/SK 的表与 CRS 都吃它) */
+  clb2Band: number
   expBand: number
   provBand: number
   crsBand: number
@@ -48,7 +50,7 @@ export type Answers = {
 // 空答案(页面初始 state 也用它:再抄一份就会漏掉新字段)
 export const EMPTY: Answers = {
   status: '', nocs: [], provs: [],
-  clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0,
+  clbBand: 0, clb2Band: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0,
   eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0, canadaEduBand: 0,
   permitBand: 0, resProv: '', fieldMatchBand: 0, eduProv: '', frenchBand: 0,
   studyMonthsBand: 0, studyLevelBand: 0, bandsV2: true,
@@ -109,6 +111,7 @@ function normalize(cur: any): Answers {
     ...EMPTY, ...cur,
     nocs: arr(cur.nocs), provs: arr(cur.provs),
     clbBand: cur.bandsV2 ? num(cur.clbBand) : (CLB_V2_MAP[num(cur.clbBand)] ?? 0), bandsV2: true,
+    clb2Band: num(cur.clb2Band),
     expBand: num(cur.expBand), provBand: num(cur.provBand),
     crsBand: num(cur.crsBand), pgwpBand: num(cur.pgwpBand),
     eduBand: num(cur.eduBand), ageBand: num(cur.ageBand),

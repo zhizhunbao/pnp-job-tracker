@@ -375,6 +375,29 @@ export const FIELDS: Record<string, FieldDef> = {
       ],
     },
   },
+  // 第二官方语言(2026-08-16 Frank「这个问题 怎么没在基础问题里面」):与学历/年龄同性质 ——
+  // 它是**申请人自身条件**,不是某个省的专属估分项:ON 与 SK 的官方表都有 language2 档位,
+  // 联邦 CRS 也给第二语言加分。留在分值卡里问,等于同一件个人条件按省重复问。
+  // 档与第一语言共用 CLB 阶梯(值 1=没成绩,其余同 clbBand),引擎侧走 clb2。
+  clb2Band: {
+    engineKey: 'clb2',
+    unlocks: ['rpt.s.cur'],
+    tier: 'free',
+    toAnswer: (b: number) => (b === 1 ? 0 : CLB[b] || undefined),
+    q: {
+      title: l('Your second official language (CLB)?', '第二官方语言到 CLB 几?', '제2공용어(CLB)는?'),
+      choices: [
+        { value: 1, text: l('No score', '没有成绩', '점수 없음') },
+        { value: 2, text: l('CLB 4', 'CLB 4', 'CLB 4') },
+        { value: 3, text: l('CLB 5', 'CLB 5', 'CLB 5') },
+        { value: 4, text: l('CLB 6', 'CLB 6', 'CLB 6') },
+        { value: 5, text: l('CLB 7', 'CLB 7', 'CLB 7') },
+        { value: 6, text: l('CLB 8', 'CLB 8', 'CLB 8') },
+        { value: 7, text: l('CLB 9', 'CLB 9', 'CLB 9') },
+        { value: 8, text: l('CLB 10 or higher', 'CLB 10 以上', 'CLB 10 이상') },
+      ],
+    },
+  },
   // 法语(2026-08-15 Frank「需要加法语问题」):FCIP 要 **NCLC 5 四项**,而且是法语。
   // 站里那道语言题问的是 CLB —— 英语的尺子,拿它折算 NCLC 就是替他编一个法语成绩。
   // 所以直接问「达没达到官方那条线」:门槛数值留在官方原句里(策略文件的 quote),这里只收是/否。

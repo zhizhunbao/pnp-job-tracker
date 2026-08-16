@@ -8,6 +8,8 @@ import { Tabs, TabPanel } from '../ui/Tabs'
 
 export type ConditionRow = {
   key: string; prov: string; label: string; value: string; filled: boolean
+  /** 小类别(2026-08-16):十几个格子平铺看不出结构。同组的挨在一起,组序=下面 GROUPS 的顺序 */
+  group?: string
   /** 与当前岗位不匹配的小标(2026-08-14 Frank「加个图标标一下」):琥珀 ⚠ 胶囊,不带长句 */
   warn?: string
 }
@@ -64,6 +66,35 @@ export function ConditionGrid({ rows, provLabel, onTile, ariaLabel, idPrefix, on
   if (flat) {
     if (!rows.length) return null
     return <><style>{GRID_CSS}</style><div className="cgGrid">{rows.map(tile)}</div></>
+  }
+
+  // 分组渲染:组序固定(调用方按 GROUPS 顺序给),组内保持题序 —— 两者都不许随答案变动而跳
+  const groups = only !== 'prov' ? Array.from(new Set(shared.map((r) => r.group).filter(Boolean))) as string[] : []
+  if (groups.length) {
+    return (
+      <>
+        <style>{GRID_CSS}</style>
+        {groups.map((g, i) => (
+          <div key={g} style={{ marginTop: i ? 14 : 0 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#9ca3af', marginBottom: 6 }}>{g}</div>
+            <div className="cgGrid">{shared.filter((r) => r.group === g).map(tile)}</div>
+          </div>
+        ))}
+        {only === 'shared' || !provs.length ? null : (
+          <>
+            <div style={{ margin: '12px 0 10px' }}>
+              <Tabs ariaLabel={ariaLabel} idPrefix={idPrefix} value={active} onChange={setTab}
+                items={provs.map((p) => ({ key: p, label: provLabel(p), badge: rows.filter((r) => r.prov === p && !r.filled).length || undefined }))} />
+            </div>
+            {provs.map((p) => (
+              <TabPanel key={p} tabKey={p} active={p === active} idPrefix={idPrefix}>
+                <div className="cgGrid">{rows.filter((r) => r.prov === p).map(tile)}</div>
+              </TabPanel>
+            ))}
+          </>
+        )}
+      </>
+    )
   }
 
   // 调用方自己有省页签:只渲该省的格子,不再嵌一层 tabs
