@@ -12,6 +12,7 @@ import { fetchPilotQuota, type PilotQuotaAgg } from '@/lib/pilotQuota'
 import { pathVerdict, type VerdictProfile } from '@/lib/pathVerdict'
 import { regionProvincesOf, uiOf } from '@/lib/pathways'
 import { pickOutside, rankRows, type RankCtx } from '@/lib/planRank'
+import { isAboveLine, isBelowLine } from '@/lib/scoreLine'
 import { getVerdictData } from '@/lib/verdictCache'
 
 export const dynamic = 'force-dynamic'
@@ -144,21 +145,29 @@ export async function POST(req: Request) {
     ? new Map(pathVerdict({ ...profile, hasOffer: true }, data).map((v) => [v.key, v]))
     : null
 
-  // 2026-08-15 Frank「能够得到就排前面,够不到就排后面」:估分<最近抽选线 → 沉队尾(planRank 的
-  // band 首段)。比较双方都是官方事实(估分=官方分值表,线=官方抽选史),不碰禁概率红线。
-  // partial(#301)= 该分是**下界**(问不到的加分项按 0 记)—— 下界<线不等于够不着,不沉
-  const belowLine = (row: (typeof all)[number]) =>
-    !(row.score as { partial?: boolean } | undefined)?.partial
-    && row.score?.refLine != null && row.score.value != null && row.score.value < row.score.refLine
+  // 2026-08-15 Frank「能够得到就排前面,够不到就排后面」:估分与最近抽选线比,够得着的提前、
+  // 够不着的沉队尾。比较双方都是官方事实(估分=官方分值表,线=官方抽选史),不碰禁概率红线。
+  //
+  // 2026-08-16 口径纠正(Frank「如果用户分数达标 就等着被捞」):原来两头都拿 `value` 判、
+  // 又把 partial 整个排除掉 —— 结果是**两头都没生效**(AB 表带 12 条加分项 → 恒 partial →
+  // 沉底永不触发;够得着更是压根没算过)。partial 的含义是 value=**下界**、ceiling=**上界**,
+  // 于是两个方向各用各的那一侧才是硬结论:
+  //   · 够得着 aboveLine = **下界** ≥ 线 —— 加分项只会更高,partial 与否都成立
+  //   · 够不着 belowLine = **上界** < 线 —— 加分项全按满分也摸不到线才叫够不着
+  // 中间那段(下界<线≤上界)两头都不占:如实留白,由展示层说「取决于加分项」。
+  // 判定本体在 lib/scoreLine(纯函数 + 单测);这里只负责挂到行上
+  const aboveLine = (row: (typeof all)[number]) => isAboveLine(row.score)
+  const belowLine = (row: (typeof all)[number]) => isBelowLine(row.score)
 
   // ── 排序(#307 单源化):拆省在先(每个省级行按自己的在招/竞争排),planRank 一把尺排完再下发;
   //    客户端只渲染不再重排 —— 此前引擎/服务端/客户端三处口径并存,#302 的「省外提示与排序
   //    不是同一把尺」就是分叉的直接后果。
-  type SplitRow = (typeof all)[number] & { belowLine: boolean; competition: { ratio: number } & Record<string, unknown> | null }
+  type SplitRow = (typeof all)[number] & { belowLine: boolean; aboveLine: boolean; competition: { ratio: number } & Record<string, unknown> | null }
   const decorateSplit = (rows: typeof all, targets: string[]): SplitRow[] =>
     splitRegionalByProvince(rows.map((row) => ({ ...row })), targets).map((row) => ({
       ...row,
       belowLine: belowLine(row),
+      aboveLine: aboveLine(row),
       // AIP/RCIP/FCIP 无 EOI 池 → competition 保持 null,不许拿该省 PNP 名额竞争比充数
       competition: regionProvincesOf(row.key) ? null : (comp[row.province] ?? null),
     }))
@@ -206,11 +215,13 @@ export async function POST(req: Request) {
         : null,
       /** 反事实:拿到该省 offer 之后这条路的判定(只给被 offer 卡住的行) */
       afterOffer: after ? { verdict: after.verdict, blockedBy: after.blockedBy ?? null, tier: after.tier } : null,
-      /** 打分制通道的估分与官方线;belowLine=估分<最近线(已沉队尾,前端门槛列写明数字);
-       *  partial=true 是下界分(加分项按 0 记),不参与沉底、文案不许说「够不着」 */
+      /** 打分制通道的估分与官方线。三态互斥,两头都是硬结论、中间如实留白(2026-08-16):
+       *  aboveLine=下界≥线(够得着,提前);belowLine=上界<线(够不着,沉底);都 false=取决于加分项。
+       *  partial=true 表示 value 是下界(加分项按 0 记),展示层据此决定说不说「取决于加分项」 */
       score: row.score ? { value: row.score.value, ceiling: row.score.ceiling, refLine: row.score.refLine,
         partial: (row.score as { partial?: boolean }).partial ?? false } : null,
       belowLine: row.belowLine,
+      aboveLine: row.aboveLine,
     }
   }
   const rows = ranked.map(wireOf)

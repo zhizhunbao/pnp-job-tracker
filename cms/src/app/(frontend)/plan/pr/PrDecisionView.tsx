@@ -23,6 +23,7 @@ import { DataTable } from '../../ui/DataTable'
 import { JobCard } from '../../ui/JobCard'
 import { TripleVerdictPanel } from '../../jobs/TripleVerdictModal'
 import { ConditionGrid } from '../../jobs/ConditionGrid'
+import { ScoreLineCard, recentDraws } from './ScoreLineCard'
 import { PnpScoreCard } from '../../jobs/PnpScoreCard'
 import { iconBtnS, SCRIM, CARD as OVERLAY_CARD, useIsNarrow } from '../../jobs/Modal'
 import { IconRefresh } from '../../Icons'
@@ -75,9 +76,11 @@ type ProfilePath = {
   pilotQuota?: { communities: number; firstComeN: number; remainingSum: number | null; perIntakeSum: number | null; asOf: string } | null
   /** 反事实(L2-09):拿到该省 offer 之后这条路的判定;只有被 offer 卡住的行才带 */
   afterOffer?: { verdict: 'viable' | 'needs-info' | 'excluded'; blockedBy: string | null; tier: 0 | 1 | 2 | 3 | null } | null
-  /** 打分制通道估分与官方线;belowLine=估分<最近线(服务端已沉队尾,门槛列写数字) */
-  score?: { value: number; ceiling: number | null; refLine: number | null } | null
+  /** 打分制通道估分与官方线。两头都是硬结论、中间留白(2026-08-16,判定见 lib/scoreLine):
+   *  aboveLine=下界≥线(够得着,服务端已提前);belowLine=上界<线(够不着,已沉队尾) */
+  score?: { value: number; ceiling: number | null; refLine: number | null; partial?: boolean } | null
   belowLine?: boolean
+  aboveLine?: boolean
 }
 
 /** 省外提示(#302/#303:与主排序同一把尺;inside 给措辞层摆两边对照) */
@@ -542,6 +545,12 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
   }, [scoreTables, targetFactors.length])
 
   const provDisp = (code: string) => { const full = t('prov.' + code); return full === 'prov.' + code ? code : full }
+  // 估分卡的页签省序:有分值表的在前(它们才出得了分),其余所选省只要**有带分抽选记录**也进 ——
+  // 只有线没有分的省(BC/ON 这类必答档位喂不出来的)照样值得看线,那是免费的硬事实。
+  const scoreLineProvinces = [
+    ...scoredProvinces,
+    ...selectedProvinces.filter((p) => !scoredProvinces.includes(p) && recentDraws(scoreDraws, p).length > 0),
+  ]
 
   // 通道短名(走查 #293 的两步剥省名),初评表行与省外提示行共用一份
   const routeNameOf = (key: string, provinceLabel: string) => {
@@ -565,6 +574,14 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
   // 摘要卡头、带岗态判定卡②、问卷弹框头共用同一份。
   const doneAll = stepDone + scoreDone
   const totalAll = stepTotal + scoreTotal
+  // 基础卷自己的计数(2026-08-16 拆 section 后):摘要卡只报基础段,估分段的计数归它自己那张卡 ——
+  // 合并成 17 项时看不出人是卡在基础题还是估分题,而那正是要改哪一边的唯一依据
+  const basicPill = ready ? (
+    <span style={{ ...COUNT_PILL, background: stepDone === stepTotal ? '#eff6ff' : UI.bg,
+      color: stepDone === stepTotal ? UI.primary : UI.text3 }}>
+      {t('dp.basicCount', { done: stepDone, total: stepTotal })}
+    </span>
+  ) : null
   const countPills = ready ? (
     <span style={{ ...COUNT_PILL, background: doneAll === totalAll ? '#eff6ff' : UI.bg,
       color: doneAll === totalAll ? UI.primary : UI.text3 }}>
@@ -1264,7 +1281,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       真放不下时让胶囊换行,标题保持一行 */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                     <h2 style={{ ...H2, margin: 0, whiteSpace: 'nowrap' }}>{t('dp.quiz')}</h2>
-                    {countPills}
+                    {basicPill}
                   </div>
                   <div style={{ fontSize: 12.5, color: UI.text3, marginTop: 4, lineHeight: 1.4 }}>
                     {lang === 'zh' ? '包含目标职业、身份、语言、工作经验及目标省份' : 'Covers occupation, status, CLB, experience & provinces'}
@@ -1305,8 +1322,20 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                   </div>
                 ) : null}
               </div>
-              {quizSection}
             </div>
+            )}
+
+            {/* 估分与抽选线:**独立 section**(2026-08-16 Frank「估分的答题和结论 放到单独一个 section,
+                不要和基础题放一块」)。问卷弹框壳与分值卡实例跟着搬进来 —— 它们本就是估分那一段的东西;
+                两态互斥:带岗态照旧走判定卡的 scoreSlot,不在这里渲第二份。 */}
+            {/* 卡**恒定渲染**(哪怕一个省都还没选):分值卡实例常驻在它里面,容器一会儿在、一会儿不在
+                = React 重挂 = 答案清零。省没选/没表时卡自己退化成一句提示,不搬树。 */}
+            {!tvJob && (
+              <ScoreLineCard t={t} rows={profilePaths ?? []} draws={scoreDraws}
+                provinces={scoreLineProvinces} provDisp={provDisp}
+                done={scoreDone} total={scoreTotal} onEdit={() => (quizComplete ? openScoreStep() : startQuiz())}>
+                {quizSection}
+              </ScoreLineCard>
             )}
 
             {/* 卡序:初评在前、竞争表随后(2026-08-14 Frank:「这个放到各省竞争名额上面吧」——

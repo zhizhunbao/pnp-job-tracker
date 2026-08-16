@@ -10,9 +10,10 @@
 //   ② 沉降段:availability≠ok / belowLine(估分够不着线)沉底 —— 本省也救不了缺数据与够不着
 //   ③ **本省优先(跨档)**:现居省 ∪ 学历省的行排在外省行前
 //   ④ 档位 band:verdict|blockedBy|tier(引擎序首现定档)
-//   ⑤ thin(在招 <10 或无数)沉同档尾;null 不逃降档
-//   ⑥ thin 组内按岗数多→少;足量组按竞争比松→紧
-//   ⑦ 引擎原序兜底
+//   ⑤ **档内**够得着优先(aboveLine:估分下界 ≥ 最近抽选线)
+//   ⑥ thin(在招 <10 或无数)沉同档尾;null 不逃降档
+//   ⑦ thin 组内按岗数多→少;足量组按竞争比松→紧
+//   ⑧ 引擎原序兜底
 export type RankableRow = {
   key: string
   province: string
@@ -21,6 +22,8 @@ export type RankableRow = {
   availability: string
   blockedBy?: string | null
   belowLine?: boolean
+  /** 估分下界已 ≥ 最近抽选线(2026-08-16 Frank「分数达标就等着被捞」)—— 同档内提前 */
+  aboveLine?: boolean
   competition?: { ratio: number } | null
 }
 
@@ -58,6 +61,9 @@ function cmp<T extends RankableRow>(a: Decorated<T>, b: Decorated<T>): number {
   // 本省优先跨档(2026-08-16 升位,见文件头)
   if (a.home !== b.home) return a.home ? -1 : 1
   if (a.band !== b.band) return a.band - b.band
+  // 够得着的排同档前头(2026-08-16):**只在档内**,不跨 verdict/本省 —— 分够不够是「多久能到手」,
+  // 不是「能不能走」,拿它翻越前面那几个主键会把走不了的路捧到前排
+  if (!!a.row.aboveLine !== !!b.row.aboveLine) return a.row.aboveLine ? -1 : 1
   const aThin = a.n == null || a.n < 10, bThin = b.n == null || b.n < 10
   if (aThin !== bThin) return aThin ? 1 : -1
   if (aThin && bThin && a.n !== b.n) return (b.n ?? -1) - (a.n ?? -1)
