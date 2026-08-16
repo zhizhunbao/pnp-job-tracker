@@ -385,8 +385,16 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
     { key: 'clbBand', prov: '', label: t('dp.sum.clb'), value: choiceText('clbBand') || unparsed, filled: !!choiceText('clbBand') },
     { key: 'totalExpBand', prov: '', label: t('dp.sum.totalExp'), value: choiceText('totalExpBand') || unparsed, filled: !!choiceText('totalExpBand') },
     { key: 'expBand', prov: '', label: t('dp.sum.canExp'), value: choiceText('expBand') || unparsed, filled: !!choiceText('expBand') },
-    { key: 'prov', prov: '', label: t('dp.sum.prov'), value: bands.provs.length ? bands.provs.map((code) => t('prov.' + code)).join(lang === 'zh' ? '、' : ', ')
-      : bands.provsAny ? t('quiz.provAnyShort') : unparsed, filled: provAnswered,
+    // 选多了就缩写(2026-08-16 Frank「这个要对齐」):十个省名全列会把这一格撑成三行,
+    // 同排另外两格只有一行 —— 格子高度被它带跑,一排看着就是歪的。铁律见 [[copy-no-wrap-no-filler]]:
+    // 值折行 = 文案太长,删到一行,而不是让版式迁就它
+    { key: 'prov', prov: '', label: t('dp.sum.prov'),
+      value: bands.provs.length
+        ? (bands.provs.length > 2
+          ? t('dp.sum.provN', { first: t('prov.' + bands.provs[0]), second: t('prov.' + bands.provs[1]), n: bands.provs.length })
+          : bands.provs.map((code) => t('prov.' + code)).join(lang === 'zh' ? '、' : ', '))
+        : bands.provsAny ? t('quiz.provAnyShort') : unparsed,
+      filled: provAnswered,
       ...(provMismatch ? { warn: t('dp.warnProv') } : {}) },
     // 2026-08-12 加的两题也要回显 —— 卡头写着「已答 6/8」而下面只摆 6 格,数和格子对不上
     { key: 'offerBand', prov: '', label: t('dp.sum.offer'), value: choiceText('offerBand') || unparsed, filled: !!choiceText('offerBand') },
@@ -1370,7 +1378,7 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
             {/* 卡**恒定渲染**(哪怕一个省都还没选):分值卡实例常驻在它里面,容器一会儿在、一会儿不在
                 = React 重挂 = 答案清零。省没选/没表时卡自己退化成一句提示,不搬树。 */}
             {!tvJob && (
-              <ScoreLineCard t={t} rows={profilePaths ?? []} draws={lineDraws}
+              <ScoreLineCard t={t} lang={lang} rows={profilePaths ?? []} draws={lineDraws}
                 provinces={scoreLineProvinces} provDisp={provDisp}
                 done={scoreDone} total={scoreTotal} onEdit={() => (quizComplete ? openScoreStep() : startQuiz())}
                 onPickProv={() => startQuiz('prov')} gridProvinces={scoreTables ? factorProvinces : null}

@@ -95,7 +95,7 @@ async function load(): Promise<Tables> {
 
   const draws: DrawRow[] = drawDocs.map((r) => ({
     province: str(r.province), kind: str(r.kind), drawDate: str(r.drawDate),
-    stream: str(r.stream), score: numOrNull(r.score),
+    stream: str(r.stream), score: numOrNull(r.score), streamZh: str(r.streamZh) || undefined,
   }))
   const factors: ScoreFactor[] = factorDocs.map((r) => ({
     province: str(r.province), system: str(r.system), factor: str(r.factor),
@@ -128,7 +128,8 @@ async function load(): Promise<Tables> {
     const n = perProv.get(prov) ?? 0
     if (n >= 6) continue
     perProv.set(prov, n + 1)
-    drawsRecent.push({ province: prov, kind: str(r.kind), drawDate: str(r.drawDate), stream: str(r.stream), score: r.score })
+    drawsRecent.push({ province: prov, kind: str(r.kind), drawDate: str(r.drawDate),
+      stream: str(r.stream), score: r.score, streamZh: str(r.streamZh) || undefined })
   }
 
   // 热门职业 24 条:聚合表一次索引扫描(表还没建时 fetchTopNocs 内部自动回退老查询)

@@ -24,7 +24,12 @@ export type ScoreFactor = {
   maxTotal: number | null; guideEffective: string; fetched: string; url: string
 }
 // 省抽选事实(pnp_draws 的用得着的几列;与 JobsTable.PnpDraw 结构兼容)
-export type DrawRow = { province: string; kind: string; drawDate: string; stream: string; score: number | null }
+export type DrawRow = {
+  province: string; kind: string; drawDate: string; stream: string; score: number | null
+  /** 通道名的中文灰注(ETL 已译,86/145 行有)。**只在 zh 界面出** —— en/ko 不读:
+   *  官方原名是事实,译名是辅助,不能反过来盖掉原名(同 DRAW_STREAM_L10N 的老规矩) */
+  streamZh?: string
+}
 
 
 // 抽选线要对得上通道:BC 现行是**按通道分别设线**(近 12 次里 Build 97 / Care: Health 96 / Innovate 132 /

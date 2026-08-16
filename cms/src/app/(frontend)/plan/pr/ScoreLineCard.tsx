@@ -35,9 +35,11 @@ export const recentDraws = (draws: DrawRow[], province: string): DrawRow[] =>
     .slice(0, N_DRAWS)
 
 export function ScoreLineCard({
-  t, rows, draws, provinces, provDisp, done, total, onEdit, onPickProv, gridProvinces, tiles, pendingOf, noGridNote, children,
+  t, lang, rows, draws, provinces, provDisp, done, total, onEdit, onPickProv, gridProvinces, tiles, pendingOf, noGridNote, children,
 }: {
   t: (k: string, p?: Record<string, string | number>) => string
+  /** 通道名的中文灰注只在 zh 界面出(官方原名是事实,译名是辅助,不许盖掉原名) */
+  lang: string
   /** 服务端下发的通道行(每省取分最高的一行代表);客户端不算分 */
   rows: ScoreRow[]
   draws: DrawRow[]
@@ -177,7 +179,11 @@ export function ScoreLineCard({
             {list.map((d, i) => (
               <div key={`${d.drawDate}:${i}`} style={{ borderTop: `1px solid ${UI.hairline}`, padding: '8px 0' }}>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                  <b style={{ fontSize: 13.5, color: '#111827', minWidth: 0, overflowWrap: 'anywhere' }}>{d.stream}</b>
+                  <b style={{ fontSize: 13.5, color: '#111827', minWidth: 0, overflowWrap: 'anywhere' }}>
+                    {d.stream}
+                    {lang === 'zh' && d.streamZh
+                      ? <span style={{ display: 'block', color: UI.text3, fontSize: 11.5, fontWeight: 400, marginTop: 1 }}>{d.streamZh}</span> : null}
+                  </b>
                   <span style={{ marginLeft: 'auto' }}>{gapCell(d.score as number)}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 8, fontSize: 12.5, color: UI.text3, marginTop: 2 }}>
@@ -195,8 +201,13 @@ export function ScoreLineCard({
                 { key: 'date', label: t('sl.date'), width: '18%', nowrap: true, sort: (d) => d.drawDate,
                   render: (d) => <span style={{ fontVariantNumeric: 'tabular-nums', color: UI.text2, fontSize: 12.5 }}>{d.drawDate}</span> },
                 // 官方通道名不截断(走查 #297 同一条:我们没有权力给官方原名编个短名),放不下就换行
-                { key: 'stream', label: t('sl.stream'), width: '52%',
-                  render: (d) => <span style={{ display: 'block', color: '#111827', overflowWrap: 'anywhere' }}>{d.stream}</span> },
+                { key: 'stream', label: t('sl.stream'), width: '52%', render: (d) => (
+                  <span style={{ display: 'block', color: '#111827', overflowWrap: 'anywhere' }}>
+                    {d.stream}
+                    {lang === 'zh' && d.streamZh
+                      ? <span style={{ display: 'block', color: UI.text3, fontSize: 11.5, marginTop: 1 }}>{d.streamZh}</span> : null}
+                  </span>
+                ) },
                 { key: 'cut', label: t('sl.cutoff'), width: '15%', align: 'right', nowrap: true, sort: (d) => d.score,
                   render: (d) => <span style={{ fontWeight: 600, color: '#111827' }}>{d.score}</span> },
                 { key: 'you', label: t('sl.you'), width: '15%', align: 'right', nowrap: true,
