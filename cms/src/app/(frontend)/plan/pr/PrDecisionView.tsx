@@ -1348,7 +1348,8 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
             {!tvJob && (
               <ScoreLineCard t={t} rows={profilePaths ?? []} draws={scoreDraws}
                 provinces={scoreLineProvinces} provDisp={provDisp}
-                done={scoreDone} total={scoreTotal} onEdit={() => (quizComplete ? openScoreStep() : startQuiz())}>
+                done={scoreDone} total={scoreTotal} onEdit={() => (quizComplete ? openScoreStep() : startQuiz())}
+                onPickProv={() => startQuiz('prov')}>
                 {quizSection}
               </ScoreLineCard>
             )}

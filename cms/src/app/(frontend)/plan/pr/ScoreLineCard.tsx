@@ -40,7 +40,7 @@ export const recentDraws = (draws: DrawRow[], province: string): DrawRow[] =>
     .slice(0, N_DRAWS)
 
 export function ScoreLineCard({
-  t, rows, draws, provinces, provDisp, done, total, onEdit, children,
+  t, rows, draws, provinces, provDisp, done, total, onEdit, onPickProv, children,
 }: {
   t: (k: string, p?: Record<string, string | number>) => string
   /** 服务端下发的通道行(每省取分最高的一行代表);客户端不算分 */
@@ -53,6 +53,9 @@ export function ScoreLineCard({
   done: number
   total: number
   onEdit: () => void
+  /** 选目标省(2026-08-16 Frank「这个部分加一个按钮,选省份吧?可以多选」)——
+   *  落的是基础卷同一道省份题(字段单一来源),不新开一份省份答案 */
+  onPickProv: () => void
   /** 问卷弹框壳 + 分值卡实例(常驻,不搬树 —— 搬容器 = 重挂 = 答案清零) */
   children?: React.ReactNode
 }) {
@@ -119,22 +122,25 @@ export function ScoreLineCard({
           </div>
           <div style={{ fontSize: 12.5, color: UI.text3, marginTop: 4, lineHeight: 1.4 }}>{t('sl.sub')}</div>
         </div>
-        {total > 0 ? (
-          <span style={{ marginLeft: 'auto', flexShrink: 0 }}>
-            <button onClick={onEdit} style={{
-              border: `1px solid ${answered ? UI.border : UI.primary}`, background: answered ? '#fff' : UI.primary,
-              color: answered ? UI.text : '#fff', borderRadius: 8, padding: '6px 16px', fontSize: 13,
-              cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', fontWeight: 600,
-            }}>{t(answered ? 'sl.edit' : 'sl.check')}</button>
-          </span>
-        ) : null}
+        {/* 主行动按钮随态走,**一颗就够**:没选省先选省 → 选了省先算分 → 答满了改答案 */}
+        <span style={{ marginLeft: 'auto', flexShrink: 0 }}>
+          <button onClick={!prov ? onPickProv : onEdit} style={{
+            border: `1px solid ${prov && answered ? UI.border : UI.primary}`,
+            background: prov && answered ? '#fff' : UI.primary,
+            color: prov && answered ? UI.text : '#fff', borderRadius: 8, padding: '6px 16px', fontSize: 13,
+            cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', fontWeight: 600,
+          }}>{t(!prov ? 'sl.pickProv' : answered ? 'sl.edit' : 'sl.check')}</button>
+        </span>
       </div>
 
-      {provinces.length > 1 ? (
+      {/* 页签(2026-08-16 Frank「显示的时候用 tabs」):**一个省也出** —— 它同时是「按省看」的
+          说明和加省的入口;末位那颗是改省份,多选就在那儿改 */}
+      {provinces.length > 0 ? (
         <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${UI.hairline}`, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {provinces.map((p) => (
             <button key={p} onClick={() => setActive(p)} style={TAB(p === prov)}>{provDisp(p)}</button>
           ))}
+          <button onClick={onPickProv} style={{ ...TAB(false), color: UI.text3, borderStyle: 'dashed' }}>{t('sl.editProv')}</button>
         </div>
       ) : null}
 
