@@ -11,7 +11,7 @@ export const L10N: Record<string, { zh?: string; ko?: string }> = {
   'Language proficiency in both English and French': { zh: '英法双语都达标', ko: '영어·프랑스어 모두 충족' },
   'Area 1: Metro Vancouver Regional District': { zh: '大温地区', ko: '메트로 밴쿠버' },
   'Area 2: Squamish, Abbotsford, Agassiz, Mission, and Chilliwack': { zh: 'Squamish、Abbotsford、Agassiz、Mission、Chilliwack', ko: 'Squamish, Abbotsford, Agassiz, Mission, Chilliwack' },
-  'Area 3: Areas of B.C. not included in Area 1 or 2': { zh: '卑诗省其余地区', ko: '브리티시컬럼비아 기타 지역' },
+  'Area 3: Areas of B.C. not included in Area 1 or 2': { zh: '不列颠哥伦比亚省其余地区', ko: '브리티시컬럼비아주 기타 지역' },
   'Regional Experience, or': { zh: '有地区工作经验或地区院校毕业', ko: '지역 근무 경력 또는 지역 졸업' },
   // MB(MPNP EOI 加分/扣分项 —— Risk Assessment 两条是负分,符号由 Tick 按分值出)
   'Work experience in another province': { zh: '有外省工作经历', ko: '타 주 근무 경력' },
