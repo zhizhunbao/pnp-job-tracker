@@ -73,9 +73,7 @@ export function ScoreLineCard({
 
   // 结论行:三态各说各的,**不混着说**。没分(没答完 / 该省无表)只出引导,不出结论。
   const clears = score?.value != null ? list.filter((d) => (d.score as number) <= (score.value as number)).length : 0
-  const banner = !prov ? (
-    <Box tone="muted">{t('sl.needProv')}</Box>
-  ) : !score ? (
+  const banner = !prov ? null : !score ? (
     <Box tone="muted">{t(
       total > 0 ? 'sl.empty'                                   // 估分题还有欠账
         : gridProvinces === null ? 'sl.needBasic'              // 表还没取(基础卷没答满)—— 不许说「没有表」
@@ -127,7 +125,6 @@ export function ScoreLineCard({
               </span>
             ) : null}
           </div>
-          <div style={{ fontSize: 12.5, color: UI.text3, marginTop: 4, lineHeight: 1.4 }}>{t('sl.sub')}</div>
         </div>
         {/* 主行动按钮随态走,**一颗就够**:没选省先选省 → 选了省先算分 → 答满了改答案 */}
         <span style={{ marginLeft: 'auto', flexShrink: 0 }}>
