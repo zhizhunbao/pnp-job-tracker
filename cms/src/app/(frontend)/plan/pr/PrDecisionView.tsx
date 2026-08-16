@@ -121,8 +121,11 @@ const gateChip = (pathKey: string, blocked: string): string => {
   return r.need === 'required' && r.asks ? `statusInCanada.${r.asks}` : 'statusInCanada'
 }
 
-export function PrDecisionView({ overview, competition = [], tvJob, topNocs, initialVerdict }: {
+export function PrDecisionView({ overview, drawsRecent = [], competition = [], tvJob, topNocs, initialVerdict }: {
   overview: OverviewDraw[]; tvJob: TvJob | null
+  /** 每省近 6 轮有分数的抽选(SSR 直出)。估分卡的线**不许**等答完题才有 ——
+   *  懒取那份(scoreTables)只在答满全卷后才发请求,于是「选了省却看不到线」(2026-08-16 生产实撞) */
+  drawsRecent?: DrawRow[]
   /** 各省名额竞争(松→紧);与抽选表并列的第二条免费硬事实 */
   competition?: ProvCompetition[]
   /** 服务端取好的热门职业榜(noc_openings 直出)→ 选职业控件一次成型,不再分段刷 */
@@ -562,9 +565,11 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
   const provDisp = (code: string) => { const full = t('prov.' + code); return full === 'prov.' + code ? code : full }
   // 估分卡的页签省序:有分值表的在前(它们才出得了分),其余所选省只要**有带分抽选记录**也进 ——
   // 只有线没有分的省(BC/ON 这类必答档位喂不出来的)照样值得看线,那是免费的硬事实。
+  // 线优先用懒取的全量(答满题后有),没有就用 SSR 那份近 6 轮 —— 两者形状同源,前端不区分
+  const lineDraws = scoreDraws.length ? scoreDraws : drawsRecent
   const scoreLineProvinces = [
     ...scoredProvinces,
-    ...selectedProvinces.filter((p) => !scoredProvinces.includes(p) && recentDraws(scoreDraws, p).length > 0),
+    ...selectedProvinces.filter((p) => !scoredProvinces.includes(p) && recentDraws(lineDraws, p).length > 0),
   ]
 
   // 通道短名(走查 #293 的两步剥省名),初评表行与省外提示行共用一份
@@ -1346,10 +1351,10 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
             {/* 卡**恒定渲染**(哪怕一个省都还没选):分值卡实例常驻在它里面,容器一会儿在、一会儿不在
                 = React 重挂 = 答案清零。省没选/没表时卡自己退化成一句提示,不搬树。 */}
             {!tvJob && (
-              <ScoreLineCard t={t} rows={profilePaths ?? []} draws={scoreDraws}
+              <ScoreLineCard t={t} rows={profilePaths ?? []} draws={lineDraws}
                 provinces={scoreLineProvinces} provDisp={provDisp}
                 done={scoreDone} total={scoreTotal} onEdit={() => (quizComplete ? openScoreStep() : startQuiz())}
-                onPickProv={() => startQuiz('prov')}>
+                onPickProv={() => startQuiz('prov')} gridProvinces={scoreTables ? factorProvinces : null}>
                 {quizSection}
               </ScoreLineCard>
             )}

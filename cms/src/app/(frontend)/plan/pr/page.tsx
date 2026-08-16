@@ -23,7 +23,7 @@ export const metadata = {
 
 export default async function PlanPrPage({ searchParams }: { searchParams: Promise<{ job?: string }> }) {
   const sp = await searchParams
-  const { overview, competition, topNocs } = await getScoreTables()
+  const { overview, drawsRecent, competition, topNocs } = await getScoreTables()
 
   // ?job= 带岗进来 → 三项结果直接并入本页(轻查:判定本体在 /api/triple-verdict,这里只要表头四样)
   let tvJob: TvJob | null = null
@@ -66,5 +66,5 @@ export default async function PlanPrPage({ searchParams }: { searchParams: Promi
     if (wire && !('error' in wire)) initialVerdict = wire
   }
 
-  return <PrDecisionView overview={overview} competition={competition} tvJob={tvJob} topNocs={topNocs} initialVerdict={initialVerdict} />
+  return <PrDecisionView overview={overview} drawsRecent={drawsRecent} competition={competition} tvJob={tvJob} topNocs={topNocs} initialVerdict={initialVerdict} />
 }

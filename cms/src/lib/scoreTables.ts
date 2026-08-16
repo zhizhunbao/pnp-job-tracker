@@ -60,6 +60,10 @@ export type ProvCompetition = {
 
 type Tables = {
   overview: OverviewDraw[]
+  /** 每省**近 6 轮有分数**的抽选(2026-08-16):估分卡的空态诱饵。
+   *  必须随 SSR 下发 —— 先前它取自 `/api/score-factors`,而那个请求只在**答满全卷**后才发,
+   *  于是「选了省却看不到线」,连「先选目标省份」都还在提示(实撞)。线是免费硬事实,不该收在答题之后。 */
+  drawsRecent: DrawRow[]
   /** 各省名额竞争(松→紧);这一页的第二条免费硬事实,要被爬到 */
   competition: ProvCompetition[]
   /** 选职业控件的热门榜:服务端取好随页面下发 → 控件首帧即终态,不再分段刷 */
@@ -111,6 +115,18 @@ async function load(): Promise<Tables> {
     seen.add(prov)
     overview.push({ province: prov, drawDate: str(r.drawDate), stream: str(r.stream),
       score: numOrNull(r.score), invitations: numOrNull(r.invitations) })
+  }
+
+  // 每省近 6 轮**有分数**的(没分数的轮次不进 —— 拿它跟估分比就是编)。9 省 × 6 ≈ 54 行,随 SSR 走
+  const perProv = new Map<string, number>()
+  const drawsRecent: DrawRow[] = []
+  for (const r of drawDocs) {
+    const prov = str(r.province)
+    if (!prov || typeof r.score !== 'number') continue
+    const n = perProv.get(prov) ?? 0
+    if (n >= 6) continue
+    perProv.set(prov, n + 1)
+    drawsRecent.push({ province: prov, kind: str(r.kind), drawDate: str(r.drawDate), stream: str(r.stream), score: r.score })
   }
 
   // 热门职业 24 条:聚合表一次索引扫描(表还没建时 fetchTopNocs 内部自动回退老查询)
@@ -181,7 +197,7 @@ async function load(): Promise<Tables> {
     competition.sort((x, y) => x.ratio - y.ratio)          // 松 → 紧
   }
 
-  return { overview, competition, draws, factors, topNocs, factorProvinces: Array.from(new Set(factors.map((f) => f.province).filter(Boolean))) }
+  return { overview, drawsRecent, competition, draws, factors, topNocs, factorProvinces: Array.from(new Set(factors.map((f) => f.province).filter(Boolean))) }
 }
 
 export async function getScoreTables(): Promise<Tables> {

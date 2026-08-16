@@ -40,7 +40,7 @@ export const recentDraws = (draws: DrawRow[], province: string): DrawRow[] =>
     .slice(0, N_DRAWS)
 
 export function ScoreLineCard({
-  t, rows, draws, provinces, provDisp, done, total, onEdit, onPickProv, children,
+  t, rows, draws, provinces, provDisp, done, total, onEdit, onPickProv, gridProvinces, children,
 }: {
   t: (k: string, p?: Record<string, string | number>) => string
   /** 服务端下发的通道行(每省取分最高的一行代表);客户端不算分 */
@@ -56,6 +56,9 @@ export function ScoreLineCard({
   /** 选目标省(2026-08-16 Frank「这个部分加一个按钮,选省份吧?可以多选」)——
    *  落的是基础卷同一道省份题(字段单一来源),不新开一份省份答案 */
   onPickProv: () => void
+  /** 分值表状态:null=还没取到(基础卷没答满时压根不取)。
+   *  没有它就分不清「本站没有这个省的表」和「你还没答完基础卷」—— 两句话在用户那儿意思相反 */
+  gridProvinces: string[] | null
   /** 问卷弹框壳 + 分值卡实例(常驻,不搬树 —— 搬容器 = 重挂 = 答案清零) */
   children?: React.ReactNode
 }) {
@@ -73,7 +76,11 @@ export function ScoreLineCard({
   const banner = !prov ? (
     <Box tone="muted">{t('sl.needProv')}</Box>
   ) : !score ? (
-    <Box tone="muted">{t(total > 0 ? 'sl.empty' : 'sl.noTable', { n: total })}</Box>
+    <Box tone="muted">{t(
+      total > 0 ? 'sl.empty'                                   // 估分题还有欠账
+        : gridProvinces === null ? 'sl.needBasic'              // 表还没取(基础卷没答满)—— 不许说「没有表」
+          : gridProvinces.includes(prov) ? 'sl.empty'
+            : 'sl.noTable', { n: total })}</Box>
   ) : state === 'above' ? (
     <Box tone="ok">
       <b style={{ fontSize: 14, fontWeight: 700, color: '#15803d' }}>{t('sl.yours', { prov: provDisp(prov), v: score.value })}</b>
