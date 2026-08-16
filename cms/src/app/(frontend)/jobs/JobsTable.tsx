@@ -809,13 +809,14 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // ── 列宽唯一控制点(见 ./colWidths.ts):刷新页面 / 查完筛选 / 拖列竖线 三条触发共用一套规则。
   //    数据指纹变了就重量 —— 换列、换语言、换了这一批行(筛选/翻页)都按新内容重分;
   //    老版本只看「有没有行」,筛完「IT」还按上一批的宽度占地(Frank 2026-08-03 实拍)。
-  // 操作列按按钮实宽钉死,不参与瓜分;以后加按钮就调这一个数。
-  // 96→168(2026-08-09 Frank「加了一个按钮之后最后一列被隐藏了一半」):批D 加「身份判定」钮时没跟着调,
-  // 168=三语最宽组合(★ Saved + PR verdict ≈150)+ 单元格内距的富余
-  const ACTIONS_W = 168
+  // 操作列**不再写死宽度**(2026-08-16 Frank「操作右面空了一大截」):
+  //   96→168 是 2026-08-09 三颗钮时代的数,今天这列只剩一颗「收藏」(判定入口同日撤到评估页),
+  //   数字没人跟着改 —— 于是常年空着近百像素。写死的宽度就是会过期的宽度:
+  //   交给量宽(表头第一、内容第二)按它**当前真实**内容分,加钮删钮都不用再记得回来改这个数。
+  //   它内容恒短,规则③「余量给最长那列」也不会把空地摊给它。
   const CELL_PAD = 14       // 单元格左右内边距(6+6)+ 1px 列分隔线:量到的是纯内容宽,分宽要算上
   const dataKey = `${shownKey}|${lang}|${rows.length}|${rows[0]?.id ?? ''}|${rows[rows.length - 1]?.id ?? ''}`
-  const cw = useColWidths({ keys: shown.map((c) => c.key), headRowRef, pinnedPx: { actions: ACTIONS_W }, dataKey, pad: CELL_PAD, seed: initialColW })
+  const cw = useColWidths({ keys: shown.map((c) => c.key), headRowRef, dataKey, pad: CELL_PAD, seed: initialColW })
 
   // ── 固定左列(发布时间/大分类/公司/职位):只有**真的横滚**时才需要(默认总宽=容器宽,压根不滚)。
   //    顺带收掉一个副作用:border-collapse 的表里 sticky 单元格的右边框 Chromium 不画 ——
