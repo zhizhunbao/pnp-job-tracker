@@ -86,9 +86,20 @@ const finite = (v: unknown): number | null => {
 }
 
 export async function POST(req: Request) {
-  const body = await req.json().catch(() => null) as { answers?: Record<string, unknown> } | null
+  const body = await req.json().catch(() => null) as { answers?: Record<string, unknown>; ticks?: Record<string, unknown> } | null
   const answers = body?.answers
   if (!answers || typeof answers !== 'object') return Response.json({ error: 'answers required' }, { status: 400 })
+
+  // 加分项勾选(2026-08-16):`省:因素:批` 三段键,值是布尔。**信任边界校验**:形状不对的丢掉,
+  // 总量封顶 —— 它直接进分值计算,放任自由文本进来等于让请求方自己写分。
+  // 只收 true 的键;没勾的一律不算(与「value 是下界」那条口径一致)。
+  const TICK_KEY = /^[A-Z]{2}:[A-Za-z][A-Za-z0-9]{0,23}:\d{1,2}$/
+  const ticks: Record<string, boolean> = {}
+  for (const [k, v] of Object.entries(body?.ticks ?? {})) {
+    if (v !== true || !TICK_KEY.test(k)) continue
+    ticks[k] = true
+    if (Object.keys(ticks).length >= 64) break
+  }
 
   const nocs = Array.isArray(answers.nocs) ? answers.nocs.map(String).filter((n) => /^\d{5}$/.test(n)) : []
   const noc = nocs[0] || (/^\d{5}$/.test(String(answers.noc ?? '')) ? String(answers.noc) : '')
@@ -131,6 +142,8 @@ export async function POST(req: Request) {
     // 「人在不在境内」不另开一题:既有的「你现在的情况」已经把 overseas 与另外三个境内选项分开了
     inCanada: answers.currentStatus ? String(answers.currentStatus) !== 'overseas' : null,
     canadaStudy: typeof answers.canadaStudy === 'boolean' ? answers.canadaStudy : null,
+    // 用户勾中的加分项(2026-08-16):进 provinceGridScore 的 now 那一侧。校验过的键才到这
+    scoreTicks: ticks,
   }
 
   const [data, comp, occRows, pilotQuota] = await Promise.all([getVerdictData(), competitionByProvince(), fetchOccCompetition(nocs.length ? nocs : [noc]), fetchPilotQuota()])

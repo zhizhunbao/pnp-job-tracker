@@ -84,6 +84,10 @@ export type VerdictProfile = {
   /** 持的许可(2026-08-15 statusInCanada 拆闸):study=学签 / pgwp / work=其他工签 / none=访客或已过期。
    *  null = 没答 → 工签/PGWP 类闸落「判不了」,不拿 inCanada 冒充有工签(学签在读被 AB 放行的那个病)。 */
   permit: 'study' | 'pgwp' | 'work' | 'none' | null
+  /** 用户在分值卡上勾中的加分项,键 `省:因素:批`(2026-08-16 Frank「把加分项做成正式答案字段」)。
+   *  先前这一侧恒空 ⇒ 带加分项的省估分永远是「全 0 下界」⇒ 恒落「取决于加分项」。
+   *  没勾的仍按 0 —— value 因此**仍是下界**,「够得着」照旧是不会翻案的硬结论。 */
+  scoreTicks?: Record<string, boolean>
 }
 
 export type VerdictReason = {
@@ -475,7 +479,10 @@ function provinceGridScore(
     ? { offer: { pts: has ? (offerRow.points ?? 0) : 0, matched: offerRow.label, source: 'profile' } }
     : {})
 
-  const now = scoreProvince(factors, spec.reqProvince, self, ovOf(p.hasOffer === true), {}, only)
+  // 勾选只取**本省**的键:别省的勾进来会被 scoreProvince 忽略,但先滤一道免得越界
+  const ownTicks: Record<string, boolean> = {}
+  for (const [k, v] of Object.entries(p.scoreTicks ?? {})) if (v && k.startsWith(`${spec.reqProvince}:`)) ownTicks[k] = true
+  const now = scoreProvince(factors, spec.reqProvince, self, ovOf(p.hasOffer === true), ownTicks, only)
   if (!now) return undefined
   // 上界:语言拉到官方最高档 + 加分项**全部按满分**(官方档位自己封顶)。
   // 少算加分项的「上界」是假上界,拿它判分数鸿沟会把够得着的人判死 —— 那正是四态口径最忌的那种错。

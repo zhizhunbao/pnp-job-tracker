@@ -27,7 +27,7 @@ import { ScoreLineCard, recentDraws } from './ScoreLineCard'
 import { PnpScoreCard } from '../../jobs/PnpScoreCard'
 import { iconBtnS, SCRIM, CARD as OVERLAY_CARD, useIsNarrow } from '../../jobs/Modal'
 import { IconRefresh } from '../../Icons'
-import { EMPTY, clearAnswers, pullAndMerge, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
+import { EMPTY, clearAnswers, pullAndMerge, readAnswers, readScoreAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
 import { fieldsOf, missingFields } from '@/lib/decisions'
 import { FIELDS } from '@/lib/fields'
 import { gateOf, regionProvincesOf, uiOf } from '@/lib/pathways'
@@ -157,6 +157,8 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
   // 官方分值表 + 抽选记录:不再随页面下发(192 行 ≈ 88KB 塞给每个访客),答完题按所选省现取。
   // null = 还没取到,此时既不出估分区也不敢说「这些省本站没有表」——那两句都得等表到手才算数。
   const [scoreTables, setScoreTables] = useState<ScoreTables | null>(null)
+  // 加分项勾选(分值卡的 localStorage 存档):随请求上行,服务端按它算分。挂载与每次答题回报时同步
+  const [scoreTicks, setScoreTicks] = useState<Record<string, boolean>>({})
   // 该职业分省竞争面:按 NOC 懒取(省级那张表随页面 SSR,这张要等他答完职业才知道查谁)
   const [occComp, setOccComp] = useState<OccCompetitionRow[] | null>(null)
   // 分省竞争表的职业切换(2026-08-14 Frank「需要分职业吧」):默认第一职业,选了就看谁;
@@ -206,9 +208,10 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
       window.history.replaceState(null, '', u.pathname + u.search + u.hash)
     }
     setReady(true)
+    setScoreTicks(readScoreAnswers().ticks ?? {})
     track('dp-open', { job: tvJob ? '1' : '0' })
     // 登录态拉服务端答案档(清了浏览器/换设备答案还在;未登录 401 无感):有变化才重建
-    pullAndMerge().then((changed) => { if (changed) refreshFromStore() }).catch(() => { /* 静默 */ })
+    pullAndMerge().then((changed) => { if (changed) { refreshFromStore(); setScoreTicks(readScoreAnswers().ticks ?? {}) } }).catch(() => { /* 静默 */ })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -259,6 +262,13 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
   const allDone = quizComplete && !scorePending
 
   // 基础问卷本身就足够做“人 → 通道”的初筛，不应强迫用户先找一份具体岗位。
+  // 加分项勾选(AB 那 12 条「亲属在本省 / offer 地区 / 受监管职业」这类)。**存在分值卡的
+  // localStorage 里**,先前从不上行 —— 服务端一律按「没勾=0」算,于是带加分项的省
+  // 估分恒是全 0 下界、恒落「取决于加分项」(2026-08-16 生产实测:CLB10 硕士 10 年经验的档案
+  // 在 AB 也只有 46 分对线 53)。这里把它接上:签名进重算边界,值随请求上行。
+  // 仍是**下界**(没勾的按 0),所以「够得着」照旧是不会翻案的硬结论。
+  const tickSig = Object.keys(scoreTicks).filter((k) => scoreTicks[k]).sort().join(',')
+
   // 岗位与雇主只在第二层三项判定里使用。输入键用于修改答案后原地重算。
   const pathInputKey = JSON.stringify([
     bands.nocs, bands.status, bands.clbBand, bands.totalExpBand, bands.expBand, bands.provs,
@@ -269,6 +279,9 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
     bands.permitBand, bands.resProv,
     // 专业对口两题(2026-08-15):进了 NL 的第四类闸,不进 key 就是「答了初评也不动」
     bands.fieldMatchBand, bands.eduProv,
+    // 加分项勾选(2026-08-16 Frank 拍第 1 条:「把加分项做成正式答案字段」)——
+    // 勾了不进 key = 用户勾满了分数纹丝不动,正是这次要修的那个病
+    tickSig,
   ])
   useEffect(() => {
     // 职业档粗筛(2026-08-15):有职业就跑 —— 引擎对没答的题落「判不了」不当障碍,答满后同一请求自动升级个人档
@@ -277,7 +290,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
     setProfilePaths(null)
     fetch('/api/profile-pathways', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
-      body: JSON.stringify({ answers: toEngineAnswers(bands) }),
+      body: JSON.stringify({ answers: toEngineAnswers(bands), ticks: scoreTicks }),
     })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => { if (!ctrl.signal.aborted) {
@@ -457,6 +470,8 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
   const onScoreAnswers = useCallback((rows: { key: string; prov: string; label: string; value: string; filled: boolean }[]) => {
     setScoreEcho(rows)
     setBands(readAnswers())
+    // 加分项的勾选同步上来(2026-08-16):不同步 = 用户勾满了初评那张表的分还是老样子
+    setScoreTicks(readScoreAnswers().ticks ?? {})
   }, [])
 
   // 估分答完 = 整卷答完,收框显示各省结果(结果在「申请人条件」卡内)
