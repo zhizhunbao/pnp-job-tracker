@@ -11,6 +11,7 @@
 //      **只到「够不够线」为止**:不许延伸成「多久能被捞」「概率多大」(禁概率红线)。
 import { useState } from 'react'
 
+import { Tabs } from '../../ui/Tabs'
 import { UI } from '../../ui/primitives'
 import { lineStateOf, type LineState } from '@/lib/scoreLine'
 import type { DrawRow } from '@/lib/pnpSelfScore'
@@ -25,11 +26,6 @@ export type ScoreRow = {
 const CARD: React.CSSProperties = { background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, padding: '14px 16px', margin: '0 0 10px' }
 const H2: React.CSSProperties = { fontSize: 16, fontWeight: 700, color: '#111827', margin: 0 }
 const PILL: React.CSSProperties = { borderRadius: 999, padding: '2px 8px', fontSize: 11.5, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }
-const TAB = (active: boolean): React.CSSProperties => ({
-  border: `1px solid ${active ? UI.primary : UI.border}`, background: active ? UI.primary : '#fff',
-  color: active ? '#fff' : UI.text2, borderRadius: 999, padding: '5px 14px', fontSize: 12.5,
-  fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
-})
 const TH: React.CSSProperties = { padding: '0 0 6px', fontSize: 11.5, fontWeight: 600, color: UI.text3, whiteSpace: 'nowrap' }
 const TD: React.CSSProperties = { padding: '7px 0', fontSize: 12.5, color: UI.text2, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }
 
@@ -153,19 +149,14 @@ export function ScoreLineCard({
         </span>
       </div>
 
-      {/* 页签(2026-08-16 Frank「显示的时候用 tabs」):**一个省也出** —— 它同时是「按省看」的
-          说明和加省的入口;末位那颗是改省份,多选就在那儿改 */}
+      {/* 页签走**站内通用选项卡**(ui/Tabs,与条件格那排同一个组件):真 tablist —— 键盘 ←→、
+          读屏报「第 n 项共 m 项」、窄屏横滚不换行。先前这里自造了一排胶囊按钮,
+          与全站的筛选胶囊撞脸,而且语义是「点了发生一件事」而不是「当前在哪一面」
+          (2026-08-16 Frank「我不是有专门的 tabs 组件吗」) */}
       {provinces.length > 0 ? (
-        <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${UI.hairline}`, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {provinces.map((p) => {
-            const n = pendingOf?.(p) ?? 0
-            return (
-              <button key={p} onClick={() => setActive(p)} style={TAB(p === prov)}>
-                {provDisp(p)}
-                {n > 0 ? <span style={{ marginLeft: 6, fontVariantNumeric: 'tabular-nums', opacity: 0.75 }}>{n}</span> : null}
-              </button>
-            )
-          })}
+        <div style={{ marginTop: 14 }}>
+          <Tabs ariaLabel={t('dp.prov')} idPrefix="slProv" value={prov} onChange={setActive}
+            items={provinces.map((p) => ({ key: p, label: provDisp(p), badge: pendingOf?.(p) || undefined }))} />
         </div>
       ) : null}
 

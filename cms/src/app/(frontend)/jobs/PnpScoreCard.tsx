@@ -454,11 +454,15 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
       : q.checks
         ? (q.checks.filter((c) => c.on).map((c) => c.text).join(lang === 'zh' ? '、' : ', ') || t('ps.no'))
         : q.number ? `$${q.number.value}/hr` : ''
-    // 省名不再拼进标签(tab 上就是省名);加分项组保留「加分项」前缀 —— MB 的风险评估
-    // 同时是档位题和加分勾选,没这个前缀两个格子同名。bonus 题的 key 恒为 省:因素:批 三段。
+    // 省名不再拼进标签(tab 上就是省名)。「加分项」前缀 2026-08-16 Frank 让去掉 ——
+    // 但**同名时必须留**:MB 的风险评估既是档位题又是加分勾选,去了前缀两个格子一模一样。
+    // 所以只在同省内真撞名时才加。bonus 题的 key 恒为 省:因素:批 三段。
     const short = q.echoLabel || q.title
     const isBonus = q.key.split(':').length === 3
-    return { key: q.key, prov: provOfKey(q.key), label: isBonus ? `${bonusWord} ${short}` : short, value, filled }
+    const prov = provOfKey(q.key)
+    const clash = isBonus && extraQuestions.some((o) => o.key.split(':').length !== 3
+      && provOfKey(o.key) === prov && (o.echoLabel || o.title) === short)
+    return { key: q.key, prov, label: clash ? `${bonusWord} ${short}` : short, value, filled }
     // #305:推导出的因子不占题,但格子照摆、恒为已填 —— 值来自基础卷答案,已填态与答过的题同一副样式
   }).concat(derivedEcho.map((r) => ({ ...r, filled: true })))
   const echoSig = JSON.stringify(echoRows)
