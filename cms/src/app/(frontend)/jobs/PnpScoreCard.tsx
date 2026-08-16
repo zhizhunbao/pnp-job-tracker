@@ -41,6 +41,7 @@ const guessArea = (city: string): number => {
 // 年龄下拉的选项档(打分按选中值算,预填吸附也以此为准 —— 两处必须同一张表)
 const AGES = [17, 19, 25, 30, 34, 38, 42, 45, 48, 52]
 
+
 // #304 offer 前提因子族:这些因子在官方表里全以「有 offer」为前提(AB 的 offer/offerSector/
 // offerArea/regulated、SK 的 offer)。闸门只认**基础卷**的 hasJobOffer(ctx.hasOffer):
 // true=开;false/没答(undefined)=关 —— 没答不等于有。关闸时整族不出题、勾选不计分;
@@ -84,6 +85,9 @@ type ExtraQuestion = {
   key: string; title: string; sub?: string
   choices?: ExtraChoice[]                       // 单选:官方分值表的档位
   checks?: ExtraCheck[]                         // 多选:该省的加分项(一省一屏,不是一条一屏)
+  /** 数字题。**只剩时薪这一道**,保持输入框:两位数字秒答,而且一分不差 ——
+   *  档位化的代价 2026-08-16 算过:每 $1 一档 = 56 项下拉;每 $5 一档按下界取值,
+   *  BC 那 55 分里最多低估 4 分,等于把人的分算低了(Frank「有必要按 1 一个档位吗」→ 撤回)。 */
   number?: { value: number; set: (value: number) => void }
   /** 条件格子回显用的短名。单条加分项的 title 是整句问句(「你是否符合:…」),摆进格子要的是条件本身 */
   echoLabel?: string

@@ -85,7 +85,9 @@ async function load(): Promise<Tables> {
   const [drawRes, factorRes] = await Promise.all([
     payload.find({ collection: 'pnp-draws', limit: 200, depth: 0, sort: '-drawDate' })
       .catch(() => ({ docs: [] as Record<string, unknown>[] })),
-    payload.find({ collection: 'pnp-score-factors', limit: 1000, depth: 0, sort: 'province' })
+    // sort 必须带 factor+seq:只按 province 排的话,同一道题的官方档位顺序随 DB 返回
+    // (2026-08-16 Frank 实拍:BC 工作地区出成「Area 3 / Area 1 / Area 2」)
+    payload.find({ collection: 'pnp-score-factors', limit: 1000, depth: 0, sort: ['province', 'factor', 'seq'] })
       .catch(() => ({ docs: [] as Record<string, unknown>[] })),
   ])
   const drawDocs = drawRes.docs as Record<string, unknown>[]
