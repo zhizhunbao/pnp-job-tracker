@@ -163,7 +163,10 @@ function MobileDrawer({ t, active, onClose }: { t: TFn; active?: string; onClose
           <a href="/start" style={item('/start', '', active === 'start' || active === 'stats' || active === 'rank')}>{t('pulse.entry')}</a>
           <a href="/?view=match" style={item('/?view=match', '', active === 'match')}>{t('mv.entry')}</a>
           <a href="/plan/pr" style={item('/plan/pr', '', active === 'pathways')}>{t('plan.pr.title')}</a>
-          {/* 「担保雇主」一级项 08-08 Frank 摘除(截图点名):/employers 入口=弹框雇主线/报告卡互通链/定价配图,不占顶栏 */}
+          {/* 「雇主」一级项 2026-08-16 挂回(Frank「header 需要加一个雇主的 title 吧」+ 拍板叫「雇主」):
+              08-08 摘的是那个已下架的货架页;今天有了真雇主板(指定名录 + 在招雇主,带筛选),入口该回来。
+              名字只两个字:板里本来就有口径筛选,名字不必替筛选说话;「担保雇主」旧名会与 LMIA 担保混淆。 */}
+          <a href="/employers/designated" style={item('/employers/designated', '', active === 'employers')}>{t('nav.employers')}</a>
           {grp('lib', t('nav.library'), [
             { href: '/occupations', label: t('dir.occ.title') },
             { href: '/resources', label: t('res.entry') },
@@ -262,6 +265,7 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
               : <a href="/?view=match" style={{ ...nav, color: active === 'match' ? '#2563eb' : '#6b7280', fontWeight: active === 'match' ? 700 : 400 }}><IconTarget /> {t('mv.entry')}</a>}
             {/* 判定合一批2:/pathways 301 并入决策页,导航项改指 /plan/pr、label=拿 PR 评估(active 键沿用) */}
             <a href="/plan/pr" style={{ ...nav, color: active === 'pathways' ? '#2563eb' : '#6b7280', fontWeight: active === 'pathways' ? 700 : 400 }}><IconCompass /> {t('plan.pr.title')}</a>
+            <a href="/employers/designated" style={{ ...nav, color: active === 'employers' ? '#2563eb' : '#6b7280', fontWeight: active === 'employers' ? 700 : 400 }}><IconUsers /> {t('nav.employers')}</a>
             {/* 「担保雇主」一级项 08-08 Frank 摘除;/employers 走弹框雇主线/报告卡/定价配图入口 */}
             {/* 资料库 ▾(2026-07-19 Frank 批提案方案 A;E8-07 E:点击开改 hover 开,NavDrop 统一交互) */}
             <NavDrop label={t('nav.library')} icon={<IconUsers />} highlight={false} items={[

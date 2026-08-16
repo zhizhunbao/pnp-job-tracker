@@ -60,11 +60,14 @@ function nocCell(r: EmployerRow, f: EmployerFilters, titles: EmployerPage['nocTi
   if (r.nocs.length === 0) return <span style={{ color: UI.text3 }}>{t('de.nocNone')}</span>
   const picked = f.noc && r.nocs.includes(f.noc) ? [f.noc] : r.nocs.slice(0, 2)
   const rest = r.nocs.length - picked.length
+  const names = picked.map((n) => nocLabel(n, titles, lang)).join(t('de.sep'))
+  const codes = picked.join(t('de.sep'))
   return (
     <>
-      <span>{picked.map((n) => nocLabel(n, titles, lang)).join(t('de.sep'))}</span>
+      <span>{names}</span>
       {rest > 0 ? <span style={{ color: UI.text3 }}>{t('de.nocMore', { n: rest })}</span> : null}
-      <div style={{ color: UI.text3, fontSize: 11.5, marginTop: 1 }}>{picked.join(t('de.sep'))}</div>
+      {/* 代码灰注(站规 ui-plain-language);字典没这个码时主文案已经是码本身,不再重复一遍 */}
+      {names !== codes ? <div style={{ color: UI.text3, fontSize: 11.5, marginTop: 1 }}>{codes}</div> : null}
     </>
   )
 }
@@ -125,13 +128,15 @@ export function EmployersBoardView({ initial, initialFilters }: { initial: Emplo
   // 375 实测:「新斯科舍 AIP 指定雇主名录」折两行 —— 站规「一行放下不折行」,删到一行
   const title = designated ? t('de.title') : t('de.hiringTitle')
 
+  // 名录出处列:本批一行都没有 url 就整列不出(容缺先例同 hasVerdictSignal —— 不渲染一列全「—」)
+  const hasList = data.rows.some((r) => r.url)
   const cols: DTCol<EmployerRow>[] = designated
     ? [
-        { key: 'name', label: t('de.colName'), width: '34%', sort: (r) => r.name.toLowerCase(), render: (r) => <a href={jobsHref(r.name)} title={t('rank.viewJobs')} style={{ color: UI.primary, textDecoration: 'none', fontWeight: 600 }}>{r.name}</a> },
-        { key: 'where', label: t('de.colWhere'), width: '22%', sort: (r) => r.where || provName(t, r.province), render: (r) => <>{r.where || provName(t, r.province)}</> },
-        { key: 'program', label: t('de.colProgram'), width: '13%', nowrap: true, sort: (r) => r.program, render: (r) => <>{r.program || '—'}</> },
-        { key: 'noc', label: t('de.colNoc'), width: '23%', sort: (r) => r.nocs.length, render: (r) => nocCell(r, f, titles, lang, t) },
-        { key: 'list', label: t('de.colList'), width: '8%', nowrap: true, render: (r) => (r.url ? <a href={r.url} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none', fontSize: 12.5 }}>{t('de.list')}</a> : <span style={{ color: UI.text3 }}>—</span>) },
+        { key: 'name', label: t('de.colName'), width: hasList ? '34%' : '37%', sort: (r) => r.name.toLowerCase(), render: (r) => <a href={jobsHref(r.name)} title={t('rank.viewJobs')} style={{ color: UI.primary, textDecoration: 'none', fontWeight: 600 }}>{r.name}</a> },
+        { key: 'where', label: t('de.colWhere'), width: hasList ? '22%' : '24%', sort: (r) => r.where || provName(t, r.province), render: (r) => <>{r.where || provName(t, r.province)}</> },
+        { key: 'program', label: t('de.colProgram'), width: hasList ? '13%' : '14%', nowrap: true, sort: (r) => r.program, render: (r) => <>{r.program || '—'}</> },
+        { key: 'noc', label: t('de.colNoc'), width: hasList ? '23%' : '25%', sort: (r) => r.nocs.length, render: (r) => nocCell(r, f, titles, lang, t) },
+        ...(hasList ? [{ key: 'list', label: t('de.colList'), width: '8%', nowrap: true, render: (r: EmployerRow) => (r.url ? <a href={r.url} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none', fontSize: 12.5 }}>{t('de.list')}</a> : <span style={{ color: UI.text3 }}>—</span>) }] : []),
       ]
     : [
         { key: 'name', label: t('de.colName'), width: '46%', sort: (r) => r.name.toLowerCase(), render: (r) => <a href={jobsHref(r.name)} title={t('rank.viewJobs')} style={{ color: UI.primary, textDecoration: 'none', fontWeight: 600 }}>{r.name}</a> },

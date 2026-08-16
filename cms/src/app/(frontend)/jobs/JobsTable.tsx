@@ -1030,7 +1030,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   style={{ border: 'none', background: 'none', color: '#1d4ed8', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
               </span>
             )}
-            <Sel value={fProv} onChange={(v) => { setFProv(v); setFCity(''); setFDistrict('') }} opts={provOpts} all={t('all.prov')} />
+            {/* 2026-08-16 Frank「这个没有完全国际化」:省下拉的选项一直是英文全名(筛选值就是它,深链/保存的
+                筛选都靠它),中文界面看着半中半英 —— 挂上既有的 provName 显示层(中韩出「Ontario(安大略省)」),
+                **值不动**:labelOf 只管显示 */}
+            <Sel value={fProv} onChange={(v) => { setFProv(v); setFCity(''); setFDistrict('') }} opts={provOpts} all={t('all.prov')}
+              labelOf={(v) => provName(t, PROV_CODE[v] || v)} />
             <Sel value={fBroad} onChange={(v) => { setFBroad(v); setFMid(''); setFFine('') }} opts={broadOpts} all={t('all.broad')} labelOf={broadLabel} />
             <Sel value={fPnp} onChange={setFPnp} opts={['yes', 'no']} all={t('all.pnp')} labelOf={(v) => t('opt.' + v)} />
             <Sel value={fSal} onChange={setFSal} opts={['ge100', '80', '60', 'u60']} all={t('all.sal')} labelOf={(v) => t('sal.' + v)} />
