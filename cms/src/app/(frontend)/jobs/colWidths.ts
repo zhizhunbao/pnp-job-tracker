@@ -36,24 +36,39 @@ const FLOOR = 44
 /**
  * 拖列的**纯算法**(Excel 式,2026-08-16):把第 idx 列拉到 want 宽,总宽恒定不变。
  *   · idx 左边的列一律不动(先前全局重分,左边会跟着跳 —— Frank「有时候左边的列移动」)
- *   · 差额从**右边**列里出,自最右一列开始逐列让到各自下限;中间列宽度不变=整体平移
+ *   · 拉宽:差额从**右边**列里出,自最右一列开始逐列让到各自下限;中间列宽度不变=整体平移
+ *   · 缩窄:腾出的宽度按**内容**给(见 takerOf),不按位置甩给最右一列
  *   · 最后一列没有右邻居,只能反过来向左要(否则拖了没反应)
- * floors[i] = 该列下限(表头不折行:max(FLOOR, head, word))。返回整数像素,和恒等于输入和。
+ * floors[i] = 该列下限(表头不折行:max(FLOOR, head, word));maxes[i] = 该列内容自然宽(可不给)。
+ * 返回整数像素,和恒等于输入和。
  */
-export function resizeColWidths(base: number[], idx: number, want: number, floors: number[]): number[] {
+export function resizeColWidths(base: number[], idx: number, want: number, floors: number[], maxes?: number[]): number[] {
   const w = base.slice()
   if (idx < 0 || idx >= w.length) return w
   const donors = idx < w.length - 1
     ? Array.from({ length: w.length - 1 - idx }, (_, n) => w.length - 1 - n)
     : Array.from({ length: idx }, (_, n) => idx - 1 - n)
   let need = Math.max(floors[idx] ?? FLOOR, want) - base[idx]
+  if (need < 0) { w[takerOf(donors, w, maxes)] -= need; need = 0 }   // 缩窄:整块给一列(见下)
   for (const d of donors) {
     if (need === 0) break
-    if (need > 0) { const give = Math.min(need, w[d] - (floors[d] ?? FLOOR)); w[d] -= give; need -= give }
-    else { w[d] -= need; need = 0 }
+    const give = Math.min(need, w[d] - (floors[d] ?? FLOOR)); w[d] -= give; need -= give
   }
   w[idx] = base[idx] + (Math.max(floors[idx] ?? FLOOR, want) - base[idx] - need)
   return w.map((x) => Math.round(x))
+}
+
+/**
+ * 缩窄一列时,腾出来的宽度归谁 —— 和分宽规则③同一条:**给内容最需要的那列**。
+ * 先前按位置给最右一列:那通常是「操作」(内容恒短),于是每缩一次就在右端空出一大片
+ * (Frank「操作右面空了一大截」的老毛病换个入口又长出来)。
+ * 缺口最大的优先;都补平了(或压根没量到内容)就给内容最长的那列;maxes 缺席才退回最右一列。
+ */
+function takerOf(donors: number[], w: number[], maxes?: number[]): number {
+  if (!maxes) return donors[0]
+  const gap = (i: number) => Math.max(0, (maxes[i] ?? 0) - w[i])
+  const best = donors.reduce((a, b) => (gap(b) > gap(a) ? b : a), donors[0])
+  return gap(best) > 0 ? best : donors.reduce((a, b) => ((maxes[b] ?? 0) > (maxes[a] ?? 0) ? b : a), donors[0])
 }
 
 /**
@@ -233,7 +248,10 @@ export function useColWidths(opts: {
   useEffect(() => { setManual({}) }, [keysKey])
 
   // ── 分宽(唯一出口)
-  const avail = (wrapW || 0) - 2      // 容器左右各 1px 边框
+  // 可分宽度 = 容器 clientWidth,**不要再减边框**:clientWidth 本来就不含 border(减了就凭空少 2px)。
+  // 少这 2px 的后果不是「窄一点」,是**假横滚**:拖列时所有列都按实宽钉住,minTotal=wrapW>avail=wrapW-2
+  // → overflow 判真 → 固定左列开 sticky → 偏移量一旦跟不上拖动就把隔壁列盖住(2026-08-16 Frank 实拍「穿透了职位列」)。
+  const avail = wrapW || 0
   const cols: Alloc[] = keys.map((k) => ({
     key: k,
     head: measured[k]?.head ?? FLOOR,
@@ -270,9 +288,10 @@ export function useColWidths(opts: {
       return Math.max(FLOOR, m?.head ?? FLOOR, m?.word ?? FLOOR)
     }
     const floors = order.map((_, i) => floorOf(i))
+    const maxes = order.map((k) => measuredRef.current[k]?.max ?? 0)   // 缩窄时按内容决定谁接手
     const startX = e.clientX
     const onMove = (ev: MouseEvent) => {
-      const w = resizeColWidths(base, idx, Math.round(base[idx] + (ev.clientX - startX)), floors)
+      const w = resizeColWidths(base, idx, Math.round(base[idx] + (ev.clientX - startX)), floors, maxes)
       setManual(Object.fromEntries(order.map((k, i) => [k, w[i]])))
     }
     const onUp = () => {

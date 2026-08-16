@@ -15,8 +15,6 @@ export type Answers = {
   provs: string[]
   done?: boolean                     // 三问答完过(职位板据此判断还弹不弹)
   clbBand: number
-  /** 第二官方语言档(2026-08-16 收进基础卷:ON/SK 的表与 CRS 都吃它) */
-  clb2Band: number
   expBand: number
   provBand: number
   crsBand: number
@@ -37,6 +35,8 @@ export type Answers = {
   eduProv: string
   /** 法语是否达 NCLC 5 四项(2026-08-15,FCIP 的定义性门槛;不由 clbBand 折算) */
   frenchBand: number
+  /** 法语题已是档位版(2026-08-16)。没有这个标记的是旧「是/否」答案,读时迁移 */
+  frenchV2?: boolean
   provsAny?: boolean      // 目标省「还不确定」——**答过了**,只是不限省(与「没答」不同)
   /** 档位 v2 标记(2026-08-13/14 语言+经验合一):clbBand 从区间档改成精确档(2=CLB4…8=CLB10+),
    *  totalExpBand 从区间档改成整年档(3=1年…7=5年+,9=不清楚不变)。没打标的旧答案读取时按
@@ -50,7 +50,7 @@ export type Answers = {
 // 空答案(页面初始 state 也用它:再抄一份就会漏掉新字段)
 export const EMPTY: Answers = {
   status: '', nocs: [], provs: [],
-  clbBand: 0, clb2Band: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0,
+  clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0,
   eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0, canadaEduBand: 0,
   permitBand: 0, resProv: '', fieldMatchBand: 0, eduProv: '', frenchBand: 0,
   studyMonthsBand: 0, studyLevelBand: 0, bandsV2: true,
@@ -60,6 +60,8 @@ export const EMPTY: Answers = {
 // TOTAL_EXP=[0,0,6,24,48,60] 月),判定核收到的数字前后不变 —— 迁移只影响「格子里显示哪一档」
 // 与「还要不要再追问精确题」。总经验 9(不清楚)原样保留。
 const CLB_V2_MAP = [0, 1, 2, 4, 6, 8]
+// 法语旧答案(1=是 / 2=否 / 9=不清楚)→ 新档位(3=NCLC5 / 1=没到 / 9=不清楚)
+const FRENCH_V2_MAP: Record<number, number> = { 0: 0, 1: 3, 2: 1, 9: 9 }
 const TOTAL_V2_MAP = [0, 1, 2, 4, 6, 7]
 const totalV2 = (b: number) => (b === 9 ? 9 : TOTAL_V2_MAP[b] ?? 0)
 
@@ -111,7 +113,6 @@ function normalize(cur: any): Answers {
     ...EMPTY, ...cur,
     nocs: arr(cur.nocs), provs: arr(cur.provs),
     clbBand: cur.bandsV2 ? num(cur.clbBand) : (CLB_V2_MAP[num(cur.clbBand)] ?? 0), bandsV2: true,
-    clb2Band: num(cur.clb2Band),
     expBand: num(cur.expBand), provBand: num(cur.provBand),
     crsBand: num(cur.crsBand), pgwpBand: num(cur.pgwpBand),
     eduBand: num(cur.eduBand), ageBand: num(cur.ageBand),
@@ -119,7 +120,10 @@ function normalize(cur: any): Answers {
     offerBand: num(cur.offerBand), canadaEduBand: num(cur.canadaEduBand),
     permitBand: num(cur.permitBand), resProv: typeof cur.resProv === 'string' ? cur.resProv : '',
     fieldMatchBand: num(cur.fieldMatchBand), eduProv: typeof cur.eduProv === 'string' ? cur.eduProv : '',
-    frenchBand: num(cur.frenchBand),
+    // 法语档位化迁移:旧 1(是,四项 NCLC 5+)→ 新 3(NCLC 5);旧 2(不会/没到)→ 新 1;9 不清楚不变。
+    // 新旧值域重叠(旧 1 = 是,新 1 = 不会),所以只能靠 frenchV2 标记区分,不能靠值本身猜
+    frenchBand: cur.frenchV2 ? num(cur.frenchBand) : FRENCH_V2_MAP[num(cur.frenchBand)] ?? 0,
+    frenchV2: true,
     // 2026-08-15 Frank 实拍「学历下面的内容填完一刷新就没了」:这俩跟进题(就读时长/层级)
     // 写入一直正常,是**读取路径漏了字段** → 每次刷新被归零。逐字段重建的清单必须与 Answers 全量对齐
     studyMonthsBand: num(cur.studyMonthsBand), studyLevelBand: num(cur.studyLevelBand),

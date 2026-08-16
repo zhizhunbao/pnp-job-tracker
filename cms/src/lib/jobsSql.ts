@@ -33,12 +33,29 @@ const SEARCH_COLS = ['j.title', 'j.city', 'j.district', 'j.noc', 'j.source_label
 
 export type JobsWhere = { sql: string; params: unknown[]; skipped: string[] }
 
-/** q 搜索公司名分支预解析:不限 LIMIT 保语义等价(全量 2 万公司的极端泛词也就 ~2 万 int,ANY 哈希扛得住) */
+/**
+ * 搜索词拆分(2026-08-16 Frank「文本框可以搜索多个条件 用空格隔开可以吗」)。
+ * 先前整串 `%q%` 只能在**同一列**里命中 —— 本地实测 q="line cook" 432 条,而 q="cook toronto" 0 条:
+ * 用户一打空格就归零,而「木匠 多伦多」正是人本能会打的。改成按空格拆词、**词间 AND**(每词自己跨列 OR)。
+ * 封顶 4 词:再多是滥用,每多一词就多一组位图 OR,平白拖慢(词数上限不报错,截断即可——搜索不是表单)。
+ */
+export const splitQ = (q: string): string[] => q.trim().split(/\s+/).filter(Boolean).slice(0, 4)
+
+/** 省全名 → 省码(小写索引):库里 province 存 2 字码,搜「carpenter ontario」若不翻译必然 0 条 */
+const PROV_BY_LOWER: Record<string, string> = Object.fromEntries(
+  Object.entries(PROV_CODE).map(([name, code]) => [name.toLowerCase(), code]),
+)
+
+/** q 搜索公司名分支预解析:不限 LIMIT 保语义等价(全量 2 万公司的极端泛词也就 ~2 万 int,ANY 哈希扛得住)。
+ *  多词:**逐词各查一组**(与 jobs 侧一样词间 AND),返回 number[][],下标与 splitQ 对齐 */
 export async function resolveQCompanyIds(pool: any, filters: Record<string, unknown>): Promise<Record<string, unknown>> {
-  const q = typeof filters.q === 'string' ? filters.q.trim() : ''
-  if (!q) return filters
-  const { rows } = await pool.query(`SELECT id FROM companies WHERE name ILIKE $1`, [`%${q}%`])   // 不转义:与 jobs 侧 ILIKE 分支同口径
-  return { ...filters, qCompanyIds: rows.map((r: any) => Number(r.id)) }
+  const terms = splitQ(typeof filters.q === 'string' ? filters.q : '')
+  if (!terms.length) return filters
+  const ids = await Promise.all(terms.map(async (t) => {
+    const { rows } = await pool.query(`SELECT id FROM companies WHERE name ILIKE $1`, [`%${t}%`])   // 不转义:与 jobs 侧 ILIKE 分支同口径
+    return rows.map((r: any) => Number(r.id))
+  }))
+  return { ...filters, qCompanyIds: ids }
 }
 
 // 契约:返回 { sql(条件串,无 WHERE 前缀,空=TRUE), params, skipped };startIndex=占位符起始($N)。
@@ -50,14 +67,20 @@ export function buildJobsWhere(filters: Record<string, unknown>, startIndex = 1)
   const s = (k: string) => (typeof filters[k] === 'string' ? (filters[k] as string).trim() : '')
   const isOn = (k: string) => filters[k] === true || filters[k] === 'true' || filters[k] === '1'
 
-  if (s('q')) {
-    const ph = param(`%${s('q')}%`)
-    const cols = s('q').length <= 2 ? [...SEARCH_COLS, 'j.province'] : SEARCH_COLS
+  // 每词一组「跨列 OR」,词与词之间 AND(见 splitQ)。单词时与旧写法逐字等价。
+  for (const [i, term] of splitQ(s('q')).entries()) {
+    const ph = param(`%${term}%`)
+    const cols = term.length <= 2 ? [...SEARCH_COLS, 'j.province'] : SEARCH_COLS
     const branches = cols.map((c) => `${c} ILIKE ${ph}`)
+    // 省全名单独翻成省码:2026-08-16 实测 q="carpenter ontario" 0 条 —— province 列存 'ON',
+    // 'ontario' 在任何一列里都不存在。整串搜索时代这条不明显(整串本来就 0),分词之后它就成了主路。
+    const pc = PROV_BY_LOWER[term.toLowerCase()]
+    if (pc) branches.push(`j.province = ${param(pc)}`)
     // 公司名分支:qCompanyIds=调用方经 resolveQCompanyIds 预查(companies trgm 索引,ms 级)——
     // `= ANY(数组)` 才能与 trgm 分支一起进位图 OR;IN(子查询) 计划期不可索引,整个 OR 退化全表扫(EXPLAIN 实锤)。
-    const ids = filters.qCompanyIds
-    if (Array.isArray(ids)) { if (ids.length) branches.push(`j.company_id = ANY(${param(ids)})`) }
+    const pre = Array.isArray(filters.qCompanyIds) ? (filters.qCompanyIds as unknown[]) : null
+    const ids = pre ? (Array.isArray(pre[i]) ? pre[i] as number[] : []) : null
+    if (ids) { if (ids.length) branches.push(`j.company_id = ANY(${param(ids)})`) }
     else branches.push(`j.company_id IN (SELECT id FROM companies WHERE name ILIKE ${ph})`)   // 未预查回退(语义同,慢)
     conds.push(`(${branches.join(' OR ')})`)
   }

@@ -30,7 +30,7 @@ export const DECISIONS: Record<string, Decision> = {
     // 2026-08-16 Frank「这个不应该是 基本问题吗」:学历/年龄收回基础卷。08-10 撤它们时的理由是
     // 「没有消费方」——而 08-15 学历接线之后,CRS、六省官方分值表、多条门槛全在吃这两样;
     // 留在分值卡里问,等于把最基本的个人条件塞进「省专属估分」那一段。
-    basic: ['status', 'permitBand', 'resProv', 'eduBand', 'ageBand', 'clbBand', 'clb2Band', 'totalExpBand', 'expBand', 'offerBand', 'canadaEduBand', 'fieldMatchBand', 'eduProv', 'eduYearsBand', 'frenchBand'],
+    basic: ['status', 'permitBand', 'resProv', 'eduBand', 'ageBand', 'clbBand', 'totalExpBand', 'expBand', 'offerBand', 'canadaEduBand', 'fieldMatchBand', 'eduProv', 'eduYearsBand', 'frenchBand'],
     // 批 2 = B1-4 PGWP(20260803):批首 studyMonthsBand 是 free 题(batchLeadsFree ✓)——
     // 批 1 的历史偏差(KNOWN_NO_FREE_LEAD)不因此消,但新批守规矩
     explore: [['crsBand', 'pgwpBand'], ['studyMonthsBand', 'studyLevelBand']],

@@ -150,6 +150,8 @@ export type PathwayVerdict = {
   score?: {
     system: string; value: number; ceiling: number | null
     refLine: number | null; refLabel: string; evidence: Evidence
+    /** 对照的那一轮属于哪条通道(BC 按通道分别设线;拿别的通道的线比就是错的对照) */
+    refStream?: string | null
     /**
      * true = 这个分是**下界**:官方表里有几块分本站问不到(阿省的「亲属在阿省」「岗位在指定社区」
      * 这类加分项),按已上线打分卡的默认口径记 0。所以 `value < refLine` **不等于**够不着线 ——
@@ -552,6 +554,9 @@ function provinceGridScore(
   return {
     system: head.system, value: now.total, ceiling: top ? top.total : null,
     refLine: draw?.score ?? null,
+    // 挑中的那一轮是哪条通道(2026-08-16 Frank「我的职业是 it 有必要 对比 其他通道的 分数吗」):
+    // BC 现行按通道分别设线,拿 Care 的线去比一个 IT 的分是错的对照 —— 展示层据此只列同通道的轮次
+    refStream: draw?.stream ?? null,
     refLabel: draw
       ? `本站问得到的因子算出的估分(加分项未计);对照最近一轮 ${draw.stream}(${draw.drawDate})`
       : '本站问得到的因子算出的估分(加分项未计);本站未收录可对照的抽选线',

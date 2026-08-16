@@ -253,6 +253,7 @@ export async function POST(req: Request) {
        *  aboveLine=下界≥线(够得着,提前);belowLine=上界<线(够不着,沉底);都 false=取决于加分项。
        *  partial=true 表示 value 是下界(加分项按 0 记),展示层据此决定说不说「取决于加分项」 */
       score: row.score ? { value: row.score.value, ceiling: row.score.ceiling, refLine: row.score.refLine,
+        refStream: (row.score as { refStream?: string | null }).refStream ?? null,
         partial: (row.score as { partial?: boolean }).partial ?? false } : null,
       belowLine: row.belowLine,
       aboveLine: row.aboveLine,

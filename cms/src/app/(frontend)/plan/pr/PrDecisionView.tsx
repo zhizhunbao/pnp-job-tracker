@@ -29,7 +29,7 @@ import { iconBtnS, SCRIM, CARD as OVERLAY_CARD, useIsNarrow } from '../../jobs/M
 import { IconRefresh } from '../../Icons'
 import { EMPTY, clearAnswers, pullAndMerge, readAnswers, readScoreAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
 import { fieldsOf, missingFields } from '@/lib/decisions'
-import { FIELDS } from '@/lib/fields'
+import { FIELDS, NCLC } from '@/lib/fields'
 import { gateOf, regionProvincesOf, uiOf } from '@/lib/pathways'
 import { pickName } from '@/lib/occName'
 import { track } from '@/lib/track'
@@ -78,7 +78,7 @@ type ProfilePath = {
   afterOffer?: { verdict: 'viable' | 'needs-info' | 'excluded'; blockedBy: string | null; tier: 0 | 1 | 2 | 3 | null } | null
   /** 打分制通道估分与官方线。两头都是硬结论、中间留白(2026-08-16,判定见 lib/scoreLine):
    *  aboveLine=下界≥线(够得着,服务端已提前);belowLine=上界<线(够不着,已沉队尾) */
-  score?: { value: number; ceiling: number | null; refLine: number | null; partial?: boolean } | null
+  score?: { value: number; ceiling: number | null; refLine: number | null; refStream?: string | null; partial?: boolean } | null
   belowLine?: boolean
   aboveLine?: boolean
 }
@@ -124,8 +124,7 @@ const PROFILE_FACTOR: Record<string, string[]> = {
 const EDU_OF: Record<number, 'highschool' | 'diploma2y' | 'bachelor' | 'master' | 'doctorate' | undefined> =
   { 1: 'highschool', 2: 'diploma2y', 3: 'bachelor', 4: 'master', 5: 'doctorate' }
 const AGE_OF: Record<number, number | undefined> = { 1: 23, 2: 28, 3: 33, 4: 38, 5: 43 }
-// 第二语言档 → CLB 数(1=没成绩→0;与 fields.ts 的 CLB 阶梯同源)
-const CLB_OF: Record<number, number> = { 1: 0, 2: 4, 3: 5, 4: 6, 5: 7, 6: 8, 7: 9, 8: 10 }
+
 
 /** 官方**没有公布**分值表的省(举证责任在我们:一个 URL + 一句原句,同 gateManifest 的规矩)。
  *  不在这张表里的缺省一律按「本站未收录」说 —— 两句话在用户那儿意思相反,不许拿一句混着用。
@@ -423,7 +422,6 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
     { key: 'eduBand', prov: '', group: G.edu, label: t('dp.sum.edu'), value: choiceText('eduBand') || unparsed, filled: !!choiceText('eduBand') },
     { key: 'ageBand', prov: '', group: G.who, label: t('dp.sum.age'), value: choiceText('ageBand') || unparsed, filled: !!choiceText('ageBand') },
     { key: 'clbBand', prov: '', group: G.lang, label: t('dp.sum.clb'), value: choiceText('clbBand') || unparsed, filled: !!choiceText('clbBand') },
-    { key: 'clb2Band', prov: '', group: G.lang, label: t('dp.sum.clb2'), value: choiceText('clb2Band') || unparsed, filled: !!choiceText('clb2Band') },
     { key: 'totalExpBand', prov: '', group: G.work, label: t('dp.sum.totalExp'), value: choiceText('totalExpBand') || unparsed, filled: !!choiceText('totalExpBand') },
     { key: 'expBand', prov: '', group: G.work, label: t('dp.sum.canExp'), value: choiceText('expBand') || unparsed, filled: !!choiceText('expBand') },
     // 选多了就缩写(2026-08-16 Frank「这个要对齐」):十个省名全列会把这一格撑成三行,
@@ -512,7 +510,8 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
     // 学历/年龄归基础卷(2026-08-16):值带进分值卡直接参与算分,分值卡自己不再问第二遍
     ...(EDU_OF[bands.eduBand] ? { edu: EDU_OF[bands.eduBand] } : {}),
     ...(AGE_OF[bands.ageBand] ? { age: AGE_OF[bands.ageBand] } : {}),
-    ...(bands.clb2Band ? { clb2: CLB_OF[bands.clb2Band] ?? 0 } : {}),
+    // 第二语言分档由法语题提供(2026-08-16 合一):官方 language2 的档位按同数值可比
+    ...(bands.frenchBand && bands.frenchBand !== 9 ? { clb2: NCLC[bands.frenchBand] ?? 0 } : {}),
     // BC/MB 的 work 是总经验,可直接复用基础题;SK 按时间段拆分,必须让用户另答,不能猜最近几年。
     expRecent: hasSplitWork ? 0 : totalExpLower,
     expOlder: 0,
@@ -523,8 +522,8 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
     // 基础卷问过的不再问:答过的题重复出现,人会以为自己答错了(而且两处答案会打架)
     ...(bands.eduBand ? ['edu' as const] : []),
     ...(bands.ageBand ? ['age' as const] : []),
-    // 第二语言同样归基础卷了(2026-08-16):答过就别在分值段再问一遍
-    ...(bands.clb2Band ? ['clb2' as const] : []),
+    // 第二语言由法语题供档(2026-08-16 合一):答过就别在分值段再问一遍
+    ...(bands.frenchBand && bands.frenchBand !== 9 ? ['clb2' as const] : []),
   ]
   // 基础卷的 offer 答案 → 分值卡语境:有=true;面试中/没有/自雇=false(都还没有 offer);
   // 不清楚/没答=undefined,分值段照问。答过就不再问第二遍(2026-08-14 offer 合一)。
@@ -617,8 +616,9 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
       return
     }
     setQuizFocus('')
-    // 未登录不抄近道进估分段:先落在基础流,让注册闸接住(闸只渲在 !scoreStep 分支)
-    if (me === true && quizComplete && scorePending) { openScoreStep(); return }
+    // 2026-08-16 Frank「我点击 继续作答 为什么会弹出来 曼尼托巴的问题」:这里原先有条近道 ——
+    // 基础卷答满且估分有欠账就直接跳估分段。那是「唯一入口按钮」时代(08-13)的设计,
+    // 两张卡拆开之后它就错位了:申请人条件卡的按钮只管基础卷,估分段有它自己的「算分」。
     const resuming = stepDone > 0 && stepDone < stepTotal
     const baseDone = missingFields(stepNames, bands).length === 0
     setQuizOpen(true)

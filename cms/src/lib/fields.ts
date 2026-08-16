@@ -43,6 +43,8 @@ export const UNSURE_BAND = 9
 // index = 选项 value;1「还没考」= 没有分,不传。**不用 CLB 数字当 value**:9 会撞 UNSURE_BAND。
 // export:估分段推导双语加分(PnpScoreCard #305)按同一把梯子读英语档,不许另抄一份。
 export const CLB = [0, 0, 4, 5, 6, 7, 8, 9, 10]
+// 法语档(2026-08-16):index = 选项 value,值 = NCLC 等级(0 = 不会或不到 4)
+export const NCLC = [0, 0, 4, 5, 6, 7, 8]
 const EXP = [0, 0, 6, 18, 30]          // a1「没有」= 0 个月,是答案不是缺答
 // a4「先看哪个够得着」= 不限省。**海洋四省挂 5 不挂 4**:4 已经在生产用了,改它的含义会把
 // 已存档案里的「不限省」静默变成「海洋四省」(2026-08-03 加这一档时的取舍——显示顺序看 choices 数组,与值无关)。
@@ -375,44 +377,27 @@ export const FIELDS: Record<string, FieldDef> = {
       ],
     },
   },
-  // 第二官方语言(2026-08-16 Frank「这个问题 怎么没在基础问题里面」):与学历/年龄同性质 ——
-  // 它是**申请人自身条件**,不是某个省的专属估分项:ON 与 SK 的官方表都有 language2 档位,
-  // 联邦 CRS 也给第二语言加分。留在分值卡里问,等于同一件个人条件按省重复问。
-  // 档与第一语言共用 CLB 阶梯(值 1=没成绩,其余同 clbBand),引擎侧走 clb2。
-  clb2Band: {
-    engineKey: 'clb2',
-    unlocks: ['rpt.s.cur'],
-    tier: 'free',
-    toAnswer: (b: number) => (b === 1 ? 0 : CLB[b] || undefined),
-    q: {
-      title: l('Your second official language (CLB)?', '第二官方语言到 CLB 几?', '제2공용어(CLB)는?'),
-      choices: [
-        { value: 1, text: l('No score', '没有成绩', '점수 없음') },
-        { value: 2, text: l('CLB 4', 'CLB 4', 'CLB 4') },
-        { value: 3, text: l('CLB 5', 'CLB 5', 'CLB 5') },
-        { value: 4, text: l('CLB 6', 'CLB 6', 'CLB 6') },
-        { value: 5, text: l('CLB 7', 'CLB 7', 'CLB 7') },
-        { value: 6, text: l('CLB 8', 'CLB 8', 'CLB 8') },
-        { value: 7, text: l('CLB 9', 'CLB 9', 'CLB 9') },
-        { value: 8, text: l('CLB 10 or higher', 'CLB 10 以上', 'CLB 10 이상') },
-      ],
-    },
-  },
-  // 法语(2026-08-15 Frank「需要加法语问题」):FCIP 要 **NCLC 5 四项**,而且是法语。
-  // 站里那道语言题问的是 CLB —— 英语的尺子,拿它折算 NCLC 就是替他编一个法语成绩。
-  // 所以直接问「达没达到官方那条线」:门槛数值留在官方原句里(策略文件的 quote),这里只收是/否。
-  // 全员都问:「不会法语」是一秒钟就能点掉的出口,而漏问的代价是把不会法语的人推荐去法语社区。
+  // 法语(2026-08-15 立,2026-08-16 升级成档位)。两件事本来问了两遍:
+  //   · FCIP 的定义性门槛只看「四项够不够 NCLC 5」
+  //   · ON/SK 官方表的 language2 要的是**档位**(第二官方语言 CLB/NCLC 4-10 逐档给分)
+  // Frank「前面那个就是英语 后面那个就是法语吧」——于是并成一道:问档位,门槛由档位自己判。
+  // 量表用 NCLC(法语的尺子);官方 language2 档位按同数值可比,直接喂 clb2。
   frenchBand: {
     engineKey: 'frenchOk',
     unlocks: ['rpt.g.basics'],
     tier: 'free',
-    toAnswer: (b: number) => (b && b !== UNSURE_BAND ? b === 1 : undefined),
+    // 引擎要的是「够不够 NCLC 5」:≥5 为 true;不会/NCLC 4 为 false;不清楚不传(判不了)
+    toAnswer: (b: number) => (b === UNSURE_BAND ? undefined : b >= 1 ? NCLC[b] >= 5 : undefined),
     q: {
-      title: l('Is your French at NCLC 5 or above in all four abilities?',
-        '你的法语四项都到 NCLC 5 了吗?', '프랑스어 4개 영역이 모두 NCLC 5 이상인가요?'),
+      title: l('Your French level (NCLC, all four abilities)?',
+        '法语四项到 NCLC 几?', '프랑스어 4개 영역 NCLC 등급은?'),
       choices: [
-        { value: 2, text: l('No French / below that', '不会法语或没到', '프랑스어 미보유·미달') },
-        { value: 1, text: l('Yes, NCLC 5 or above', '是,四项都到了', '예, 모두 충족') },
+        { value: 1, text: l('No French / below NCLC 4', '不会法语或不到 NCLC 4', '프랑스어 미보유·NCLC 4 미만') },
+        { value: 2, text: l('NCLC 4', 'NCLC 4', 'NCLC 4') },
+        { value: 3, text: l('NCLC 5', 'NCLC 5', 'NCLC 5') },
+        { value: 4, text: l('NCLC 6', 'NCLC 6', 'NCLC 6') },
+        { value: 5, text: l('NCLC 7', 'NCLC 7', 'NCLC 7') },
+        { value: 6, text: l('NCLC 8 or higher', 'NCLC 8 以上', 'NCLC 8 이상') },
         { value: 9, text: l('Not sure', '不清楚', '잘 모르겠음') },
       ],
     },

@@ -21,7 +21,7 @@ const N_DRAWS = 6
 
 export type ScoreRow = {
   province: string
-  score?: { value: number; ceiling: number | null; refLine: number | null; partial?: boolean } | null
+  score?: { value: number; ceiling: number | null; refLine: number | null; refStream?: string | null; partial?: boolean } | null
 }
 
 const CARD: React.CSSProperties = { background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, padding: '14px 16px', margin: '0 0 10px' }
@@ -72,12 +72,19 @@ export function ScoreLineCard({
 
   const row = prov ? rows.find((r) => r.province === prov && r.score) ?? null : null
   const score = row?.score ?? null
-  const list = prov ? recentDraws(draws, prov) : []
+  // 只列**对得上的那条通道**(2026-08-16 Frank「我的职业是 it 有必要 对比 其他通道的 分数吗」):
+  // BC 现行按通道分别设线,一个 IT 的分对着 Care: Childcare 的 102 比就是错的对照。
+  // 判定层挑对照线时早就按通道匹配过(refDraw),这里跟它同一条:同通道的轮次才进表。
+  // 拿不到通道名(该省不按通道设线,如 AB)→ 照旧全列。
+  const all = prov ? recentDraws(draws, prov) : []
+  const sameStream = score?.refStream ? all.filter((d) => d.stream === score.refStream) : []
+  const list = sameStream.length ? sameStream : all
   const state: LineState = lineStateOf(score)
   const answered = total > 0 && done >= total
 
   // 结论行:三态各说各的,**不混着说**。没分(没答完 / 该省无表)只出引导,不出结论。
-  const clears = score?.value != null ? list.filter((d) => (d.score as number) <= (score.value as number)).length : 0
+  const clears = score?.value != null ? list.filter((d) => (d.score as number) <= (score.value as number)
+    && (!score.refStream || d.stream === score.refStream)).length : 0
   const banner = !prov ? null : !score ? (
     // 估分题还有欠账 → 不出提示:没填的格子就在下面摆着,右上角还有「算我的分」,再写一句是废话
     // (2026-08-16 Frank 圈了「答完 7 道估分题看你够不够线」)。留下的两句说的是**别的事**:
@@ -108,8 +115,10 @@ export function ScoreLineCard({
     </Box>
   )
 
-  const gapCell = (cut: number) => {
-    if (score?.value == null) return <span style={{ fontSize: 13, color: UI.border }}>—</span>
+  const gapCell = (cut: number, stream?: string) => {
+    // 通道对不上不给差值:线是事实照摆,但「你」那一栏留空 —— 拿别的通道的线比你的分是错的对照
+    if (score?.value == null || (score.refStream && stream && stream !== score.refStream))
+      return <span style={{ fontSize: 13, color: UI.border }}>—</span>
     const gap = score.value - cut
     return (
       <span style={{ fontSize: 13, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: gap >= 0 ? '#15803d' : UI.text3 }}>
@@ -184,7 +193,7 @@ export function ScoreLineCard({
                     {lang === 'zh' && d.streamZh
                       ? <span style={{ display: 'block', color: UI.text3, fontSize: 11.5, fontWeight: 400, marginTop: 1 }}>{d.streamZh}</span> : null}
                   </b>
-                  <span style={{ marginLeft: 'auto' }}>{gapCell(d.score as number)}</span>
+                  <span style={{ marginLeft: 'auto' }}>{gapCell(d.score as number, d.stream)}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 8, fontSize: 12.5, color: UI.text3, marginTop: 2 }}>
                   <span style={{ fontVariantNumeric: 'tabular-nums' }}>{d.drawDate}</span>
@@ -212,7 +221,7 @@ export function ScoreLineCard({
                   render: (d) => <span style={{ fontWeight: 600, color: '#111827' }}>{d.score}</span> },
                 { key: 'you', label: t('sl.you'), width: '15%', align: 'right', nowrap: true,
                   sort: (d) => (score?.value == null ? null : score.value - (d.score as number)),
-                  render: (d) => gapCell(d.score as number) },
+                  render: (d) => gapCell(d.score as number, d.stream) },
               ]} />
           </div>
         </>

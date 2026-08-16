@@ -396,11 +396,14 @@ const isDirect = (j: JobRow): boolean => (fromJobBank(j) ? j.source === 'Job Ban
 export { PROV_NAMES }
 // #146 显示用省名(Frank「中韩用户只看英文难理解」,拍板英文在前):中韩界面出「Ontario(安大略省)」,
 // 英文界面译名==英文名故只出英文。**只用于显示**——筛选值仍是 PROV_NAMES 的英文全名(fProv/深链/保存的筛选都依赖它)
-export const provName = (t: TFn, code: string): string => {
+// localeOnly:只出界面语言的省名(Frank 2026-08-16「中文模式只显示中文即可」)。
+// <option> 里没有灰字小注这一手,「Ontario(安大略省)」在下拉里就是一行两遍——中文界面出中文名即可。
+export const provName = (t: TFn, code: string, localeOnly = false): string => {
   const c = (code || '').toUpperCase()
   const en = PROV_NAMES[c] || code || ''
   const loc = t('prov.' + c)
-  return loc && loc !== 'prov.' + c && loc !== en ? `${en}(${loc})` : en
+  const has = loc && loc !== 'prov.' + c && loc !== en
+  return has ? (localeOnly ? loc : `${en}(${loc})`) : en
 }
 // 地点已由清洗脚本(04c)规范化进库,这里直接读结构化字段(省码→全称仅用于显示)
 const parseLoc = (j: JobRow): { country: string; prov: string; city: string; district: string } => ({
@@ -577,7 +580,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // 开关行右侧带更新时间+字段按钮(同日「放到一行」拍板保留,只是宿主行从薪资行换成开关行)
   // 窄屏筛选抽屉(E8-03):≤640px 整个筛选区默认收起,一行「筛选」开关展开;CSS 媒体查询控制显隐,零水合差异
   const [fDrawer, setFDrawer] = useState(false)   // #59:「更多筛选」折叠开关(原窄屏抽屉退役,本 state 复用)
-  const foldActive = [fCity, fDistrict, fMid, fFine, fAip, fPilot, fEmp, fVs, fElig].filter(Boolean).length + (directOnly ? 1 : 0)
+  // 2026-08-16:PNP/年薪 从常用一行下沉进折叠区(方案 B)→ 一并进徽标计数,否则选了却看不出来
+  const foldActive = [fCity, fDistrict, fMid, fFine, fPnp, fSal, fAip, fPilot, fEmp, fVs, fElig].filter(Boolean).length + (directOnly ? 1 : 0)
   // 初始列:服务端从 cookie 解析后由 initialCols 传入 → SSR 与客户端首帧一致(零闪);无则用默认
   const [visible, setVisible] = useState<ColKey[]>(() => {
     const v = (initialCols ?? []).filter((k): k is ColKey => COLUMNS.some((c) => c.key === k))
@@ -841,7 +845,10 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     })
     setStickyLeft(offs)
   }
-  useIsoLayoutEffect(() => { measureSticky() }, [shownKey, cw.overflow])  // eslint-disable-line react-hooks/exhaustive-deps
+  // 列宽变了必须重量:sticky 的 left 是**累计实宽**,拖列改了左侧列宽而偏移量还停在旧值,
+  // 固定列就会钉在旧位置、拿不透明底色盖住右邻居(Frank 2026-08-16「怎么穿透了职位列」)。
+  const colwKey = shown.map((c) => String(cw.width(c.key))).join(',')
+  useIsoLayoutEffect(() => { measureSticky() }, [shownKey, cw.overflow, colwKey])  // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     window.addEventListener('resize', measureSticky)
     return () => window.removeEventListener('resize', measureSticky)
@@ -1018,7 +1025,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             答案的家是档案页 —— 职位板只管找工作,不再在列表上方常驻一条「你上次填了什么」。 */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '1rem 0' }}>
           {/* ═══ #59 筛选区重设计(2026-07-18 效果图过目后 Frank「可以」):5 行 label+下拉收成
-              「常用一行(搜索/省/大类/PNP/年薪)+ 更多筛选折叠(激活计数徽标)」;07-07 行序拍板与
+              「常用一行(搜索/省/大类;PNP/年薪 08-16 下沉)+ 更多筛选折叠(激活计数徽标)」;07-07 行序拍板与
               窄屏抽屉(jtDrawerToggle)一并退役——一行+折叠对窄屏同样成立,靠 flexWrap 自然换行。
               右端=更新时间+字段钮(#56 拍板延续)。市/区、中/小类仍是省/大类的联动下级,只在折叠区出现。 ═══ */}
           <div className="jtCtl" style={filtRow}>
@@ -1034,13 +1041,13 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               </span>
             )}
             {/* 2026-08-16 Frank「这个没有完全国际化」:省下拉的选项一直是英文全名(筛选值就是它,深链/保存的
-                筛选都靠它),中文界面看着半中半英 —— 挂上既有的 provName 显示层(中韩出「Ontario(安大略省)」),
-                **值不动**:labelOf 只管显示 */}
+                筛选都靠它),中文界面看着半中半英 —— 挂上既有的 provName 显示层,**值不动**:labelOf 只管显示。
+                同日续:出**界面语言的省名就够**(localeOnly),「Ontario(安大略省)」在下拉里是一行说两遍 */}
             <Sel value={fProv} onChange={(v) => { setFProv(v); setFCity(''); setFDistrict('') }} opts={provOpts} all={t('all.prov')}
-              labelOf={(v) => provName(t, PROV_CODE[v] || v)} />
+              labelOf={(v) => provName(t, PROV_CODE[v] || v, true)} />
             <Sel value={fBroad} onChange={(v) => { setFBroad(v); setFMid(''); setFFine('') }} opts={broadOpts} all={t('all.broad')} labelOf={broadLabel} />
-            <Sel value={fPnp} onChange={setFPnp} opts={['yes', 'no']} all={t('all.pnp')} labelOf={(v) => t('opt.' + v)} />
-            <Sel value={fSal} onChange={setFSal} opts={['ge100', '80', '60', 'u60']} all={t('all.sal')} labelOf={(v) => t('sal.' + v)} />
+            {/* 「PNP」「年薪」2026-08-16 下沉进折叠区(Frank「上面这一行太长了吧」,效果图 B 拍板):
+                常用一行只留 搜索/省/大类 + 更多筛选;选了什么不会藏起来 —— foldActive 徽标把它们算进计数 */}
             {/* P1 换装:secondary 型(激活态浅蓝底描边蓝);高度 38 与同行下拉对齐 */}
             <Button kind="secondary" onClick={() => setFDrawer((o) => !o)}
               style={{ height: 38, display: 'inline-flex', alignItems: 'center', gap: 5, color: '#374151', ...(fDrawer || foldActive ? { background: '#eff6ff', borderColor: '#2563eb', color: '#1d4ed8' } : {}) }}>
@@ -1077,8 +1084,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 <IconSave /> {t('ss.save')}
               </button>
             )}
-            {/* #202(第 26 轮体检):「核对 时间」原在 jtHideNarrow 里,手机端整块藏掉 → 主流量端看不到心跳,
-                07-23 立的「最近核对」等于白做。提出来单挂,手机上随 flexWrap 落到筛选行下方。 */}
+            {/* 更新时间 + 字段(10):不是筛选,但 2026-08-16 PNP/年薪 下沉后这一行腾出了地方 ——
+                Frank「这个能放到一行吗」→ 回到本行右端(marginLeft:auto 顶到最右),不再单占一条。
+                #202:更新时间不进 jtHideNarrow,手机端(卡片视图)随 flexWrap 落到下方仍看得见心跳。 */}
             {updatedAt && <span style={{ color: '#9ca3af', fontSize: 12, whiteSpace: 'nowrap', marginLeft: 'auto' }}>{t('updated', { t: fmtLocal(updatedAt) })}</span>}
             <div ref={colRef} className="jtHideNarrow" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10 }}>
               <Button kind="secondary" onClick={() => setColOpen((o) => !o)} style={{ height: 38, display: 'inline-flex', alignItems: 'center', color: '#374151' }}><IconSettings style={{ marginRight: 5 }} />{t('fields', { n: shown.length })}</Button>
@@ -1117,10 +1125,13 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               {/* gig=兼职∪casual∪seasonal(E6-06);未标注岗选类型自然不命中,与「未分类」同一诚实口径 */}
               <div className="jtCtl" style={filtRow}>
                 <span style={filtLabel}>{t('filter.other')}</span>
+                {/* PNP / 年薪:原在常用一行,2026-08-16 下沉至此(方案 B);年薪排到「对比中位」旁,两条薪资维度同处 */}
+                <Sel value={fPnp} onChange={setFPnp} opts={['yes', 'no']} all={t('all.pnp')} labelOf={(v) => t('opt.' + v)} />
                 <Sel value={fAip} onChange={setFAip} opts={['yes', 'no']} all={t('all.aip')} labelOf={(v) => t('opt.' + v)} />
                 {/* RCIP/FCIP 试点社区(E6-11):yes=任一命中,RCIP/FCIP=指定类型 */}
                 <Sel value={fPilot} onChange={setFPilot} opts={['yes', 'RCIP', 'FCIP', 'no']} all={t('all.pilot')} labelOf={(v) => (v === 'yes' || v === 'no' ? t('opt.' + v) : v)} />
                 <Sel value={fEmp} onChange={setFEmp} opts={['full', 'part', 'gig']} all={t('all.emp')} labelOf={(v) => t('emp.' + v)} />
+                <Sel value={fSal} onChange={setFSal} opts={['ge100', '80', '60', 'u60']} all={t('all.sal')} labelOf={(v) => t('sal.' + v)} />
                 <Sel value={fVs} onChange={setFVs} opts={['above', 'above20', 'below']} all={t('all.vs')} labelOf={(v) => t('vs.' + v)} />
                 <label style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: directOnly ? '#eef2ff' : '#fff', whiteSpace: 'nowrap' }} title={t('directOnly.tip')}>
                   <input type="checkbox" checked={directOnly} onChange={(e) => setDirectOnly(e.target.checked)} />{t('directOnly')}
@@ -1152,7 +1163,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             <button onClick={toggleMatchView} style={{ border: 'none', background: 'none', padding: 0, color: '#6b7280', cursor: 'pointer', fontSize: 12.5 }}>{t('mv.exit')} ×</button>
           </div>
         )}
-        {/* 字段选择+更新时间已并入薪资筛选行右侧(2026-07-11 用户拍板「这两个放到一行」) */}
+        {/* 字段选择+更新时间在筛选行右端(2026-07-11 拍板「这两个放到一行」,08-16 复核仍成立) */}
         {/* #83(Frank「点我的匹配先跳医疗再跳科技」):整表换血(第 0 页在拉)期间旧行原样挂着零提示,
             视觉像跳两次——换血中表格/卡片半透明+顶部「更新中」条,数据回来再恢复 */}
         {loading && page === 0 && (

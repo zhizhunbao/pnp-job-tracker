@@ -16,7 +16,7 @@ import { QuizChecks, QuizChoices, QuizNav, QuizSub, QuizTitle } from '../quiz/Qu
 import type { Lang, TFn } from './i18n'
 import { officialLabel as label } from '@/lib/officialLabels'
 import { pullAndMerge, readAnswers, readScoreAnswers, writeAnswers, writeScoreAnswers, type ScoreAnswers } from '@/lib/answers'
-import { CLB } from '@/lib/fields'
+import { CLB, NCLC } from '@/lib/fields'
 import { DEFAULT_PROFILE, EDU_KEYS, scoreProvince, streamMatches, type DrawRow, type EduKey, type ScoreFactor, type SelfProfile } from '@/lib/pnpSelfScore'
 
 // 打分是**关于你这个人**的功能,不绑某一个岗位(Frank 2026-07-27「应该单独弄个功能吧,
@@ -286,9 +286,9 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
    *  - workLocationCanada(加拿大经验所在地):expBand=1(加拿大经验「没有」=0 个月)→
    *    「本省/外省 ≥6 个月加拿大经验」必然全否;有经验时不知道攒在哪省、够不够 6 个月 → 推不出。
    *  - language 双语加分(行文含 both English and French,门槛分从官方行文解析,如 AB 的 4):
-   *    法语侧由 frenchBand 判 —— 1=NCLC 5 四项(门槛 ≤5 时达标)、2=不会/没到 NCLC 5(按不满足计,
-   *    硬约束⑤:不许用有利默认把分数吹上去);英语侧由基础卷精确 CLB 档判(1「还没考」=CLB 0)。
-   *    任一侧没答、门槛解析不出、门槛 >5(frenchBand 判不动)→ 推不出,照旧出题。 */
+   *    法语侧由 frenchBand 判 —— 2026-08-16 起它是**档位**(NCLC 等级),直接与门槛比;
+   *    不会/不到 NCLC 4 按不满足计(硬约束⑤:不许用有利默认把分数吹上去)。
+   *    英语侧由基础卷精确 CLB 档判(1「还没考」=CLB 0)。任一侧没答/门槛解析不出 → 推不出,照旧出题。 */
   const deriveBonus = (prov: string, factor: string, rows: ScoreFactor[]): Record<number, boolean> | null => {
     if (factor === 'eduLocationCanada') {
       if (basics.canadaEduBand === 2) return Object.fromEntries(rows.map((r) => [r.seq, false]))
@@ -304,8 +304,10 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
       const th = /(?:CLB|NCLC)[^0-9]*(\d+)/i.exec(rows[0].label)
       if (!th) return null
       const n = Number(th[1])
-      if (basics.frenchBand === 2) return { [rows[0].seq]: false }
-      if (basics.frenchBand !== 1 || n > 5 || !basics.clbBand) return null
+      if (!basics.frenchBand || basics.frenchBand === 9) return null      // 没答/不清楚 → 推不出
+      const fr = NCLC[basics.frenchBand] ?? 0
+      if (fr < n) return { [rows[0].seq]: false }                          // 法语侧就不够,整条必否
+      if (!basics.clbBand) return null
       return { [rows[0].seq]: (CLB[basics.clbBand] ?? 0) >= n }
     }
     return null
