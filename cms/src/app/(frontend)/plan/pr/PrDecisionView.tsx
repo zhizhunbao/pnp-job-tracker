@@ -672,9 +672,13 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                         ? `/jobs?${ui.jobsQuery}${provincial ? `&prov=${row.province}` : ''}`
                         : provincial ? `/jobs?prov=${row.province}&pnp=yes` : null)
                         ?.concat(noc ? `&q=${encodeURIComponent(noc)}` : '') ?? null
-                      // 查雇主(同日「应该是查岗位再加查雇主的按钮」):AIP/普通省提名 → 担保雇主名录页;
-                      // RCIP/FCIP 社区雇主名录(raw 2813 行)还没有页面 —— 不给假链接,立项后补
-                      const empHref = ui.program === 'RCIP' || ui.program === 'FCIP' ? null : '/employers'
+                      // 查雇主(2026-08-16「这个怎么没有查雇主按钮」两次修正):**指定雇主是硬门槛的制度才给**
+                      // —— AIP/RCIP/FCIP 的 offer 必须出自被指定的雇主,名录在库(6,680 行)、本轮新建页面承载;
+                      // 普通省提名没有「指定雇主」这回事(任何合规雇主都行),给了等于凭空发明一道门槛。
+                      // 上一版链的 /employers 是坏链接:那条路 08-08 起 308 到把脉页,承诺雇主却落在别处。
+                      const empHref = ui.program === 'AIP' || ui.program === 'RCIP' || ui.program === 'FCIP'
+                        ? `/employers/designated?program=${ui.program}${provincial ? `&prov=${row.province}` : ''}`
+                        : null
                       const jobsN = jobsOf(row)
                       // 门槛文案:够不着线的写数字(估分 X < 线 Y),数字是官方事实,结论用户自己得
                       const stateText = row.belowLine && row.score?.refLine != null

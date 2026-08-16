@@ -365,7 +365,10 @@ const zh: Dict = {
   // #306:tier 是攒够门槛所需,排队与审批不在内
   // #323 操作列 / #325 带岗语境 / 前提两列(2026-08-16 拆分)
   'dp.act': '操作', 'dp.actGo': '查岗位', 'dp.actEmp': '查雇主', 'dp.planJobProvRow': '本岗所在省',
-  'dp.planGapCol': '还差', 'dp.planTimeCol': '多久能递交',
+  'dp.planGapCol': '前提条件', 'dp.planTimeCol': '递交时间',
+  // 指定雇主名录页(2026-08-16)
+  'de.title': '指定雇主名录', 'de.back': '返回', 'de.count': '{n} 家', 'de.colName': '雇主', 'de.colWhere': '所在地', 'de.colProgram': '制度',
+  'de.empty': '本站尚未收录该范围的指定雇主名录',
   'dp.pq.remaining': '剩余名额 {n}', 'dp.pq.perIntake': '每期名额 {n}', 'dp.pq.firstCome': '先到先得',
   // #302/#303 省外提示:两边对照如实说,不裸称「更优」
   'dp.planOutside2': '未选的{prov}有门槛更快的通道:{name};名额竞争 {r1}(所选省 {r2})',
@@ -1467,7 +1470,9 @@ const en: Dict = {
   'dp.planTier0': 'Check first', 'dp.planTier1': 'About 3–6 months to build', 'dp.planTier2': 'About 12 months to build', 'dp.planTier3': 'About 24 months to build',
   'dp.planTierGrad1': '3–6 months of work after permit', 'dp.planTierGrad2': '12 months of work after permit', 'dp.planTierGrad3': '24 months of work after permit',
   'dp.planTierGradFt1': '3–6 months full-time after permit', 'dp.planTierGradFt2': '12 months full-time after permit', 'dp.planTierGradFt3': '24 months full-time after permit', 'dp.act': 'Action', 'dp.actGo': 'Jobs', 'dp.actEmp': 'Employers', 'dp.planJobProvRow': 'This job’s province',
-  'dp.planGapCol': 'Still missing', 'dp.planTimeCol': 'Until you can apply',
+  'dp.planGapCol': 'Prerequisites', 'dp.planTimeCol': 'Time to apply',
+  'de.title': 'designated employers', 'de.back': 'Back', 'de.count': '{n} employers', 'de.colName': 'Employer', 'de.colWhere': 'Location', 'de.colProgram': 'Program',
+  'de.empty': 'No designated employer list on file for this scope',
   'dp.pq.remaining': '{n} spots left', 'dp.pq.perIntake': '{n} per intake', 'dp.pq.firstCome': 'First come first served',
   'dp.planOutside2': 'Unselected {prov} has a faster-threshold route: {name}; competition {r1} vs {r2} in your provinces',
   'dp.planOutsideNoInside': 'No viable route in your provinces; {prov} has {name} (competition {r1})',
@@ -2510,7 +2515,9 @@ const ko: Dict = {
   'dp.planTier0': '우선 확인', 'dp.planTier1': '약 3–6개월 준비', 'dp.planTier2': '약 12개월 준비', 'dp.planTier3': '약 24개월 준비',
   'dp.planTierGrad1': '워크퍼밋 후 근무 3–6개월', 'dp.planTierGrad2': '워크퍼밋 후 근무 12개월', 'dp.planTierGrad3': '워크퍼밋 후 근무 24개월',
   'dp.planTierGradFt1': '워크퍼밋 후 풀타임 3–6개월', 'dp.planTierGradFt2': '워크퍼밋 후 풀타임 12개월', 'dp.planTierGradFt3': '워크퍼밋 후 풀타임 24개월', 'dp.act': '작업', 'dp.actGo': '공고 찾기', 'dp.actEmp': '고용주 찾기', 'dp.planJobProvRow': '이 공고의 주',
-  'dp.planTimeCol': '지원 가능까지', 'dp.planGapCol': '부족한 것',
+  'dp.planTimeCol': '지원 시점', 'dp.planGapCol': '전제 조건',
+  'de.title': '지정 고용주 명단', 'de.back': '돌아가기', 'de.count': '{n}개사', 'de.colName': '고용주', 'de.colWhere': '소재지', 'de.colProgram': '제도',
+  'de.empty': '해당 범위의 지정 고용주 명단은 본 사이트 미수록',
   'dp.pq.remaining': '잔여 정원 {n}', 'dp.pq.perIntake': '회차당 {n}', 'dp.pq.firstCome': '선착순',
   'dp.planOutside2': '미선택 {prov}에 요건이 더 빠른 통로: {name}; 정원 경쟁 {r1}(선택 주 {r2})',
   'dp.planOutsideNoInside': '선택한 주에 가능한 통로 없음; {prov}에 {name}(정원 경쟁 {r1})',

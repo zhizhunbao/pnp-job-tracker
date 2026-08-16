@@ -119,11 +119,13 @@ export function QuizNav({ prevLabel, nextLabel, onPrev, onNext, nextDisabled, hi
     <div className="quizBar">
       {onPrev && <button type="button" onClick={onPrev} style={PREV_BTN}>{prevLabel}</button>}
       <span className="qzHint">{hint}</span>
-      {doneLabel && onDone ? <button type="button" onClick={onDone} style={PREV_BTN}>{doneLabel}</button> : null}
+      {/* 2026-08-16 Frank「这个调换一下位置」:「下一题」在内、「完成」收尾在最右 ——
+          答题主动线一路向右点到底,收卷是终点动作,摆在动作条末端 */}
       <Button kind="primary" disabled={nextDisabled} onClick={onNext}
         style={{ ...NEXT_BTN, ...(nextDisabled ? { background: UI.hairline, color: UI.text3, cursor: 'default' } : null) }}>
         {nextLabel}
       </Button>
+      {doneLabel && onDone ? <button type="button" onClick={onDone} style={PREV_BTN}>{doneLabel}</button> : null}
     </div>
   )
 }
