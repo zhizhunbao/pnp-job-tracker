@@ -53,7 +53,7 @@ type ScoreTables = { factorProvinces: string[]; factors: ScoreFactor[]; draws: D
 type ProfilePath = {
   key: string
   province: string
-  verdict: 'open' | 'needs-info'
+  verdict: 'viable' | 'needs-info'
   tier: 0 | 1 | 2 | 3 | null
   availability: string
   /** 被攒时间补不了的门槛卡住(语言差档 / 自雇不计经验)—— 排在能走的后面,标签也另写 */
@@ -62,11 +62,30 @@ type ProfilePath = {
   missingSlots?: string[]
   /** 该省名额竞争度(临时居民存量 ÷ 当年省提名名额,IRCC 开放数据);联邦线为 null */
   competition?: { ratio: number; tier: string; pool: number; quota: number; quotaYear: number } | null
+  /** tier 起算点(#319):在读学生的经验型 tier 要等毕业拿工签才起算 */
+  tierBasis?: 'now' | 'after-study'
+  /** 全部缺口的措辞键(#324:原因列要逐行差异,单一 blockedBy 不够) */
+  gaps?: string[]
+  /** 该省该职业在招岗数(#307:服务端与排序同源下发;客户端不再自取自排) */
+  jobsN?: number | null
   /** 反事实(L2-09):拿到该省 offer 之后这条路的判定;只有被 offer 卡住的行才带 */
-  afterOffer?: { verdict: 'open' | 'needs-info' | 'excluded'; blockedBy: string | null; tier: 0 | 1 | 2 | 3 | null } | null
+  afterOffer?: { verdict: 'viable' | 'needs-info' | 'excluded'; blockedBy: string | null; tier: 0 | 1 | 2 | 3 | null } | null
   /** 打分制通道估分与官方线;belowLine=估分<最近线(服务端已沉队尾,门槛列写数字) */
   score?: { value: number; ceiling: number | null; refLine: number | null } | null
   belowLine?: boolean
+}
+
+/** 已排除通道(#318:excluded 不再隐身,单列一组带理由) */
+type ExcludedPath = {
+  key: string
+  province: string
+  reason: { key: string | null; params: Record<string, string | number> | null; text: string; quote: string | null } | null
+}
+
+/** 省外提示(#302/#303:与主排序同一把尺;inside 给措辞层摆两边对照) */
+type OutsidePath = {
+  key: string; province: string; ratio: number | null; tier: 0 | 1 | 2 | 3 | null; blockedBy: string | null
+  inside: { key: string; province: string; ratio: number | null; tier: 0 | 1 | 2 | 3 | null; blockedBy: string | null } | null
 }
 
 const CARD: React.CSSProperties = { background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, padding: '14px 16px', margin: '0 0 10px' }
@@ -133,7 +152,8 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
   const [occTitles, setOccTitles] = useState<Record<string, string>>({})
   const [profilePaths, setProfilePaths] = useState<ProfilePath[] | null>(null)
   // 省外更优提示(2026-08-15):目标省外档位更优的那条省级通道,服务端算好只给一条;null=无
-  const [outsidePath, setOutsidePath] = useState<{ key: string; province: string } | null>(null)
+  const [outsidePath, setOutsidePath] = useState<OutsidePath | null>(null)
+  const [excludedPaths, setExcludedPaths] = useState<ExcludedPath[]>([])
   // 官方分值表 + 抽选记录:不再随页面下发(192 行 ≈ 88KB 塞给每个访客),答完题按所选省现取。
   // null = 还没取到,此时既不出估分区也不敢说「这些省本站没有表」——那两句都得等表到手才算数。
   const [scoreTables, setScoreTables] = useState<ScoreTables | null>(null)
@@ -252,9 +272,10 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => { if (!ctrl.signal.aborted) {
         setProfilePaths(Array.isArray(d?.rows) ? d.rows : [])
+        setExcludedPaths(Array.isArray(d?.excluded) ? d.excluded : [])
         setOutsidePath(d?.outside && typeof d.outside.key === 'string' && typeof d.outside.province === 'string' ? d.outside : null)
       } })
-      .catch(() => { if (!ctrl.signal.aborted) { setProfilePaths([]); setOutsidePath(null) } })
+      .catch(() => { if (!ctrl.signal.aborted) { setProfilePaths([]); setExcludedPaths([]); setOutsidePath(null) } })
     return () => ctrl.abort()
     // pathInputKey 是刻意收窄的重算边界；bands 对象每次写答案都会换引用，不能直接作为依赖。
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -324,6 +345,8 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
     // 专业对口两题同样只对「有加拿大学历」的人回显(与题的显隐同源)
     ...(FIELDS.fieldMatchBand.visible?.(bands) ? [{ key: 'fieldMatchBand', prov: '', label: t('dp.sum.fieldMatch'), value: choiceText('fieldMatchBand') || unparsed, filled: !!choiceText('fieldMatchBand') }] : []),
     ...(FIELDS.eduProv.visible?.(bands) ? [{ key: 'eduProv', prov: '', label: t('dp.sum.eduProv'), value: choiceText('eduProv') || unparsed, filled: !!choiceText('eduProv') }] : []),
+    // 学制年数(#316 新题):有加拿大学历才问,格随题显隐同源
+    ...(FIELDS.eduYearsBand?.visible?.(bands) ? [{ key: 'eduYearsBand', prov: '', label: t('dp.sum.eduYears'), value: choiceText('eduYearsBand') || unparsed, filled: !!choiceText('eduYearsBand') }] : []),
     // 法语(FCIP 的定义性门槛):全员都问,所以格子也无条件摆 —— 2026-08-15 首版漏了这一格,
     // 题问了、答案也存了(计数都对),就是回显没有,人在格子里找不到自己答过的那道题
     { key: 'frenchBand', prov: '', label: t('dp.sum.french'), value: choiceText('frenchBand') || unparsed, filled: !!choiceText('frenchBand') },
@@ -566,11 +589,24 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                     {planCoarse ? <span style={{ color: UI.text3, fontSize: 12, fontWeight: 400, marginLeft: 8 }}>{t('dp.planCoarse')}</span> : null}
                   </h2>
                   {planCoarse ? <div style={{ fontSize: 12.5, color: UI.text2, margin: '0 0 10px' }}>{t('dp.planCoarseSub', { occ: occText })}</div> : null}
+                  {/* #325 岗位语境:初评按档案不按岗,看着 NS 的岗第一名却推 ON 时用户必然问「为什么」——
+                      带岗态一行说清评估口径;职业不匹配再补一句(判定三关按岗判,初评按档案职业) */}
+                  {tvJob ? (
+                    <div style={{ fontSize: 12, color: UI.text2, lineHeight: 1.6, marginBottom: occMismatch ? 2 : 8 }}>
+                      {bands.provs.length > 0 && !bands.provsAny
+                        ? t('dp.provMismatch', { provs: bands.provs.map(provDisp).join('、'), jobProv: provDisp(tvJob.province) })
+                        : t('dp.provCtxNone', { jobProv: provDisp(tvJob.province) })}
+                    </div>
+                  ) : null}
+                  {occMismatch && tvJob ? (
+                    <div style={{ fontSize: 12, color: UI.text2, lineHeight: 1.6, marginBottom: 8 }}>{t('dp.occCtx', { occ: occText })}</div>
+                  ) : null}
                   {/* 不匹配动作条(2026-08-14 Frank:「不需要这么多文字描述」「给个按钮重新跳过去选职位」)——
-                      长句撤掉,⚠ 小标挂在条件格上;这里只留动作:省不匹配可一键并省,或跳回职位板重选 */}
-                  {(jobProvOutside || occMismatch) && tvJob ? (
+                      长句撤掉,⚠ 小标挂在条件格上;这里只留动作:省不匹配/没选省可一键并省,或跳回职位板重选 */}
+                  {(jobProvOutside || occMismatch || (tvJob && bands.provs.length === 0 && !bands.provsAny)) && tvJob ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
-                      {jobProvOutside ? <button onClick={addJobProv} style={BTN}>{t('dp.provAdd', { jobProv: provDisp(tvJob.province) })}</button> : null}
+                      {jobProvOutside || (bands.provs.length === 0 && !bands.provsAny)
+                        ? <button onClick={addJobProv} style={BTN}>{t('dp.provAdd', { jobProv: provDisp(tvJob.province) })}</button> : null}
                       <a href={`/jobs?pnp=yes${bands.provs.length === 1 ? `&prov=${bands.provs[0]}` : ''}`}
                         onClick={() => track('dp-repick-job')} style={{ ...BTN, textDecoration: 'none', display: 'inline-block' }}>
                         {t('dp.repick')}
@@ -591,50 +627,26 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                     // 「规则待核对」(本站没收录该通道条文)沉到有数据的行之后(2026-08-15 实拍:FCIP
                     // 门槛行还没入库,它顶着「规则待核对」排第一,把答得出来的「差法语」压在下面)——
                     // 与「belowLine 沉底」同一条老规矩:**缺数据不许换来好位置**
-                    const bandOf = (row: ProfilePath) => `${row.availability !== 'ok' ? 'y' : 'a'}|${row.belowLine ? 'z' : 'a'}|${row.verdict}|${row.blockedBy ?? ''}|${row.tier ?? ''}`
-                    // AIP/RCIP 已按省拆行(08-15 Frank「别四个省放一起,分开来算」「rcip 也需要拆」)→
-                    // 在招 = 该省指定雇主/试点社区 ∩ 本职业(aipJobs/rcipJobs),不是全省在招 —— 口径不许混
+                    // 排序已单源化(#307,2026-08-15 深夜):0 岗沉底/档位/thin/本省优先/竞争比全部
+                    // 住在 lib/planRank.ts,服务端排完下发 —— 这里**只渲染不重排**,一处改处处同
+                    //(此前引擎/服务端/客户端三处口径并存,#302「省外提示与排序不是同一把尺」即由此来)。
+                    // 在招岗数以服务端下发的 jobsN 为准(与排序同源);旧响应无此字段时退回本地 occComp 查
                     const jobsOf = (row: ProfilePath) => {
+                      if (row.jobsN !== undefined) return row.jobsN
                       if (!/^[A-Z]{2}$/.test(row.province) || !occComp) return null
                       const o = occComp.find((x) => x.province === row.province)
                       return o?.[uiOf(row.key).jobsSource] ?? 0
                     }
-                    const bandRank = new Map<string, number>()
-                    profilePaths.forEach((row) => { if (!bandRank.has(bandOf(row))) bandRank.set(bandOf(row), bandRank.size) })
-                    // 本省(2026-08-15 Frank「这个推荐科学吗」实拍:人在阿省、学历在阿省,第一推荐却是安省):
-                    // 跨省意味着搬家 + 在陌生省份从零找 offer,那是真实成本,先前的排序把它当成了零。
-                    // 判据用**现居省**与**学历所在省**(两道题今晚刚问到手);同档同量级内本省优先,
-                    // **不跨档翻盘** —— 门槛仍是第一主键,再近的省门槛过不去也不是路。
-                    const homeProvs = new Set([bands.resProv, bands.eduProv].filter(Boolean))
-                    const atHome = (row: ProfilePath) => /^[A-Z]{2}$/.test(row.province) && homeProvs.has(row.province)
-                    const resorted = profilePaths.map((row, i) => ({ row, i, band: bandRank.get(bandOf(row)) ?? 0, n: jobsOf(row), home: atHome(row) }))
-                    resorted.sort((a, b) => {
-                      // 0 岗**跨档沉底**(2026-08-15 Frank 两问「0 个岗位也推荐在前面?」):
-                      // 「岗数不跨档翻盘」那条管的是岗多岗少,而 0 不是「少」,是**没有** —— 这些通道
-                      // 整条的前提就是先拿到该省 offer,本站该省该职业一个岗都没挂,排在有岗的路前面
-                      // 等于让人去空盘里找 offer。数据缺失(null)不算 0,仍按下面的 thin 规则处理
-                      const aZero = a.n === 0, bZero = b.n === 0
-                      if (aZero !== bZero) return aZero ? 1 : -1
-                      if (a.band !== b.band) return a.band - b.band
-                      // 无数不逃降档(2026-08-15 Frank「竞争数字也没有 在招的数字也没有?为什么推到第一名」——
-                      // 此前 n=null 不参与降档,AIP 靠缺数据顶到第一):null 一律按 thin 处理且排 thin 末尾。
-                      // 联邦 EE 无 offer 闸 → band 不同,不受这条影响
-                      const aThin = a.n == null || a.n < 10, bThin = b.n == null || b.n < 10
-                      if (aThin !== bThin) return aThin ? 1 : -1
-                      // 同档同量级内:本省优先(thin 分组之后 —— 1 个岗的本省不该压过 167 个岗的邻省,
-                      // 但同样是「岗少」或同样是「岗足」时,他已经在住的省该排前面)
-                      if (a.home !== b.home) return a.home ? -1 : 1
-                      if (aThin && bThin && a.n !== b.n) return (b.n ?? -1) - (a.n ?? -1)
-                      return a.i - b.i                     // 足量组保持引擎序(竞争比松→紧)
-                    })
-                    // 个人档从 3 条放到 5 条(同批实拍:阿省机会通道排第 4 被砍掉,而它竞争 34.7:1 比场上第一的
-                    // 安省 67.1:1 松一半、又正好在他住的省 —— 唯一一条本省的路,用户根本看不见)
-                    const shown = resorted.map((x) => x.row).slice(0, planCoarse ? 6 : 5)
-                    // 榜首都是 0 岗(2026-08-15 Frank「0 个岗位也推荐在前面?」):这些通道的推荐语
-                    // 是「拿到该省 offer 即可申请」,而本站在这些省一个该职业的岗都没挂 —— 排第一等于
-                    // 让人去空盘里找 offer。**不删行**(0 是本站在招数,不代表官方说没有),改成上面一句实话,
-                    // 让「换省/放宽职业」成为下一步。判据用榜首:它才是被当成「第一推荐」的那条
-                    const topEmpty = resorted.length > 0 && (resorted[0].n ?? 0) === 0
+                    const shownBase = profilePaths.slice(0, planCoarse ? 6 : 5)
+                    // 带岗态(#325):初评按档案不按岗,但看着这份岗的人至少要看得到**岗位所在省**的
+                    // 最优行 —— 不在前 5 就补一行,标「本岗所在省」,不冒充名次
+                    const jobProvExtra = tvJob && /^[A-Z]{2}$/.test(tvJob.province)
+                      && !shownBase.some((r) => r.province === tvJob.province)
+                      ? profilePaths.find((r) => r.province === tvJob.province) ?? null
+                      : null
+                    const shown = jobProvExtra ? [...shownBase, jobProvExtra] : shownBase
+                    // 榜首 0 岗照旧一句实话(「0 不是少,是没有」);null 数据缺失同句提示
+                    const topEmpty = profilePaths.length > 0 && (jobsOf(profilePaths[0]) ?? 0) === 0
                     const rows = shown.map((row, index) => {
                       // 通道特性一次取齐(2026-08-15 C 批:前端读字段不认 key)
                       const ui = uiOf(row.key)
@@ -649,7 +661,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       const stateKey = row.availability !== 'ok'
                         ? 'dp.planDataGap'
                         : isOffer
-                          ? (ao?.verdict === 'open'
+                          ? (ao?.verdict === 'viable'
                               // 「拿到 offer 即可申请」各家说法不同(AIP=指定雇主、RCIP=社区雇主、
                               // AB 官方还要求已在阿省全职在岗)→ 话术住在策略文件里,这里只取
                               ? (ao.tier ? `dp.planAfterOfferTier${ao.tier}` : ui.afterOfferOkKey ?? 'dp.planAfterOfferOk')
@@ -660,9 +672,9 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                               ? 'dp.planNeedInfo'
                               : `dp.planTier${row.tier ?? 0}`
                       // 「拿到本省 offer 即可申请」是信息态不是达标态 → 蓝,不抢 open 的绿
-                      const afterOk = isOffer && ao?.verdict === 'open' && !ao.tier && row.availability === 'ok'
+                      const afterOk = isOffer && ao?.verdict === 'viable' && !ao.tier && row.availability === 'ok'
                       // 估分<线的行不许亮绿(2026-08-15「够不到就排后面」):门槛列直接写数字
-                      const openOk = row.verdict === 'open' && row.availability === 'ok' && !row.blockedBy && !row.belowLine
+                      const openOk = row.verdict === 'viable' && row.availability === 'ok' && !row.blockedBy && !row.belowLine
                       // 在招岗数(该省该职业本站在招;查无该省 = 0,0 必须显式写出,空着会被读成「没数据」):
                       // 数字本身就是直达链接;AIP 走指定雇主筛选无职业数,RCIP/联邦无岗位级标记 → 「—」
                       const provincial = /^[A-Z]{2}$/.test(row.province)
@@ -696,12 +708,18 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                         // 其余行看本行 tier —— 2026-08-15 实撞:AB 机会通道被工签闸挡着,tier 只挂在
                         // 本行上,先前只读反事实 tier → 那行的 24 个月经验缺口整个不出现,
                         // 却还挂着「其余门槛已达标」= 睁眼说瞎话
-                        waitTier: (isOffer ? (ao?.verdict === 'open' ? ao.tier : 0) : row.tier) || 0,
-                        waitAfterOffer: isOffer }
+                        waitTier: (isOffer ? (ao?.verdict === 'viable' ? ao.tier : 0) : row.tier) || 0,
+                        waitAfterOffer: isOffer,
+                        // #319:在读学生的经验型 tier 从毕业拿工签起算,文案换「毕业后」变体
+                        afterStudy: (row.tierBasis ?? 'now') === 'after-study',
+                        // #324:全部缺口键(逐行差异用;blockedBy 只有第一道闸)
+                        gapsAll: row.gaps ?? [],
+                        // #325:带岗态补的「本岗所在省」行,不冒充名次
+                        extra: row === jobProvExtra }
                     })
                     type PlanRow = (typeof rows)[number]
                     const rank = (r: PlanRow) => (
-                      <span style={{ width: 24, height: 24, borderRadius: 999, display: 'grid', placeItems: 'center', background: r.top ? UI.primary : UI.bg, color: r.top ? '#fff' : UI.text2, fontSize: 12, fontWeight: 700 }}>{r.index + 1}</span>
+                      <span style={{ width: 24, height: 24, borderRadius: 999, display: 'grid', placeItems: 'center', background: r.top ? UI.primary : UI.bg, color: r.top ? '#fff' : UI.text2, fontSize: 12, fontWeight: 700 }}>{r.extra ? '·' : r.index + 1}</span>
                     )
                     // 推荐原因(2026-08-15 Frank「改成推荐原因吧,然后用胶囊 bullets」):
                     // 一句话拆成几枚胶囊 —— 「为什么它排在这」本来就是两件事:**其余门槛已经达标**
@@ -715,7 +733,9 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                     } as const
                     // 胶囊短到一行放得下(铁律:值折行 = 文案太长):差什么就写「差 X」,
                     // 「拿到 offer 之后还要攒多久」另起一枚,不揉进同一句
-                    const whyPills = (r: PlanRow): { text: string; tone: keyof typeof TONE }[] => {
+                    // fam:offer 家族标记(#324 上提用)——plain=普通 offer,var=专门化变体(社区雇主/指定雇主),
+                    // 变体本身就是行间差异,上提时只剥 plain 留 var
+                    const whyPills = (r: PlanRow): { text: string; tone: keyof typeof TONE; fam?: 'offer' | 'offerVar' }[] => {
                       // 专业对口(2026-08-15 起是真闸):**只在他还没答**那道题时挂灰提醒 ——
                       // 答了「对口」闸就达标、不必再提醒;答了「不对口」引擎会直接报成缺口。
                       // 灰=待核对,不是判他不行。摆最后一枚,不盖过「差什么」那枚
@@ -730,26 +750,55 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       if (r.openOk) return [{ text: r.stateText, tone: 'ok' }, ...fieldPill]
                       if (!r.blocked) return [{ text: r.stateText, tone: r.afterOk ? 'info' : 'warn' }, ...fieldPill]
                       // 被门槛卡住:差的那一样 + 还要攒多久。
-                      // 🔴「其余门槛已达标」只在**真的没有别的缺口**时才敢说(waitTier=0):
-                      // 一个 0 经验的人被写成「其余门槛已达标 · 还需积累 24 个月」,两句话自相矛盾,
-                      // 而少写后半句就是拿达标掩盖经验缺口(2026-08-15 Frank「这个推荐对么」实拍)
-                      const out: { text: string; tone: keyof typeof TONE }[] = [{ text: t(`dp.why.gap.${r.gapKey}`), tone: 'warn' }]
-                      // 差 offer 的行:时间从拿到 offer 起算;被别的闸挡着的行没有那个起点,写「还需积累」
-                      if (r.waitTier) out.push({ text: t(`${r.waitAfterOffer ? 'dp.why.wait' : 'dp.planTier'}${r.waitTier}`), tone: 'info' })
-                      else out.unshift({ text: t('dp.planWhyMet'), tone: 'ok' })
+                      // 🔴「其余门槛已达标」只在**真的没有别的缺口**时才敢说(waitTier=0 且无第二道闸)
+                      const famOf = (g: string): 'offer' | 'offerVar' | undefined =>
+                        g === 'offer' ? 'offer' : g.startsWith('offer') ? 'offerVar' : undefined
+                      const out: { text: string; tone: keyof typeof TONE; fam?: 'offer' | 'offerVar' }[] =
+                        [{ text: t(`dp.why.gap.${r.gapKey}`), tone: 'warn', fam: famOf(r.gapKey) }]
+                      // #324:blockedBy 只有最先卡住的那道闸;其余缺口(pv.gate.<闸>.gap 族)补成胶囊 ——
+                      // 同样「差 offer」的两行,一行还差法语、一行只差 offer,差异这才看得见
+                      for (const k of r.gapsAll) {
+                        const m = /^pv\.gate\.([a-z]+(?:\.[a-zA-Z]+)?)\.gap$/.exec(k)
+                        if (!m) continue
+                        const g = m[1] === 'offer' ? r.gapKey : m[1]
+                        const gapText = t(`dp.why.gap.${g}`)
+                        if (!out.some((p) => p.text === gapText)) out.push({ text: gapText, tone: 'warn', fam: famOf(g) })
+                      }
+                      // 差 offer 的行:时间从拿到 offer 起算;在读学生(#319)换「毕业拿工签后」变体 ——
+                      // 学签在读攒不出全职经验,写「约需积累 N 个月」会被读成从今天起算
+                      if (r.waitTier) out.push({ text: t(r.afterStudy ? `dp.planTierGrad${r.waitTier}` : `${r.waitAfterOffer ? 'dp.why.wait' : 'dp.planTier'}${r.waitTier}`), tone: 'info' })
+                      else if (out.length === 1) out.unshift({ text: t('dp.planWhyMet'), tone: 'ok' })
                       return [...out, ...fieldPill]
                     }
-                    // 全行同因(常见:全被 offer 卡住)→ 收成一句脚注,不铺一整列同一串胶囊。
-                    // 判同不再看合成句,看胶囊本身 —— 列渲染的是胶囊,收不收也该由胶囊说了算
-                    const gates = Array.from(new Set(rows.map((r) => whyPills(r).map((p) => p.text).join('、'))))
-                    const gateUniform = !planCoarse && gates.length === 1
-                    const whyCell = (r: PlanRow) => (
-                      <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                        {whyPills(r).map((p) => (
-                          <span key={p.text} style={{ ...TONE[p.tone], borderRadius: 999, padding: '3px 9px', fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap' }}>{p.text}</span>
-                        ))}
-                      </span>
-                    )
+                    // #324 共有缺项上提(Frank「写差 offer 全他妈是废话」):所有行都带的胶囊 = 零区分度,
+                    // 抽成表上方一行说一次;每行只剩**与别行不同**的部分。全同 → 原有 planGateSame 收法
+                    const pillsByRow = new Map(rows.map((r) => [r.rowKey, whyPills(r)]))
+                    const commonTexts = rows.length > 1
+                      ? (pillsByRow.get(rows[0].rowKey) ?? [])
+                          .filter((p) => rows.every((r) => (pillsByRow.get(r.rowKey) ?? []).some((q) => q.text === p.text)))
+                          .map((p) => p.text)
+                      : []
+                    // offer 家族上提:每行都有某种 offer 缺口(普通/社区雇主/指定雇主)时,「都要 offer」
+                    // 就是共同前提 —— 普通款并进共同行剥掉,专门化变体留在行里当差异(Frank:「写差 offer
+                    // 全他妈是废话」;变体不是废话,它说的是「要的不是同一种 offer」)
+                    const offerHoisted = rows.length > 1
+                      && rows.every((r) => (pillsByRow.get(r.rowKey) ?? []).some((p) => p.fam === 'offer' || p.fam === 'offerVar'))
+                    if (offerHoisted && !commonTexts.includes(t('dp.why.gap.offer'))) commonTexts.unshift(t('dp.why.gap.offer'))
+                    const restOf = (r: PlanRow) => (pillsByRow.get(r.rowKey) ?? [])
+                      .filter((p) => !commonTexts.includes(p.text) && !(offerHoisted && p.fam === 'offer'))
+                    const gateUniform = !planCoarse && rows.length > 1 && rows.every((r) => restOf(r).length === 0)
+                    const whyCell = (r: PlanRow) => {
+                      const rest = restOf(r)
+                      return (
+                        <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                          {rest.length === 0 && commonTexts.length > 0
+                            ? <span style={{ ...TONE.ok, borderRadius: 999, padding: '3px 9px', fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap' }}>{t('dp.planOnlyCommon')}</span>
+                            : rest.map((p) => (
+                              <span key={p.text} style={{ ...TONE[p.tone], borderRadius: 999, padding: '3px 9px', fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap' }}>{p.text}</span>
+                            ))}
+                        </span>
+                      )
+                    }
                     const jobsCell = (r: PlanRow) => (
                       r.jobsN == null && !r.jobsHref ? <span style={{ color: UI.text3 }}>—</span>
                         : r.jobsHref ? (
@@ -764,60 +813,116 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                         {/* display 走 CSS 类不走内联(2026-08-15 实撞:内联 display:grid 压过媒体查询的
                             display:none,桌面上卡片藏不掉 → 表格+卡片双份渲染) */}
                         <style>{`.dpPlanCards{display:grid;gap:8px}@media(max-width:640px){.dpPlanTbl{display:none}}@media(min-width:641px){.dpPlanCards{display:none}}`}</style>
+                        {/* #324 共有缺项一次说清(不逐行铺):列里只剩行间差异 */}
+                        {commonTexts.length > 0 && !gateUniform && !planCoarse ? (
+                          <div style={{ fontSize: 12, color: UI.text2, lineHeight: 1.6, margin: '0 0 8px' }}>{t('dp.planCommonGate', { s: commonTexts.join('、') })}</div>
+                        ) : null}
                         <div className="dpPlanCards">
                           {rows.map((r) => (
                             <div key={r.rowKey} style={{ border: `1px solid ${UI.hairline}`, borderRadius: 10, padding: '10px 12px', background: r.top ? '#f8fbff' : '#fff' }}>
                               <div style={{ display: 'flex', alignItems: 'baseline', gap: 7 }}>
-                                <span style={{ fontSize: 12, color: UI.text3, fontVariantNumeric: 'tabular-nums' }}>{r.index + 1}</span>
+                                <span style={{ fontSize: 12, color: UI.text3, fontVariantNumeric: 'tabular-nums' }}>{r.extra ? '·' : r.index + 1}</span>
                                 {/* 制度归属已并进名字小括号(08-15「标签去掉 统一改成后面小括号」),边框小标撤销 */}
                                 <b style={{ fontSize: 13.5, color: '#111827', minWidth: 0 }}>{r.routeName}</b>
                                 <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 600, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{r.ratio == null ? '—' : `${r.ratio}:1`}</span>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 4, flexWrap: 'wrap' }}>
                                 <span style={{ fontSize: 11.5, color: UI.text3 }}>{r.province}</span>
+                                {r.extra ? <span style={{ fontSize: 11, color: '#1d4ed8', background: '#eff6ff', borderRadius: 999, padding: '1px 7px' }}>{t('dp.planJobProvRow')}</span> : null}
                                 {!planCoarse && !gateUniform ? whyCell(r) : null}
                                 <span style={{ marginLeft: 'auto', fontSize: 12.5 }}>{jobsCell(r)}</span>
                               </div>
+                              {/* #323 操作列(手机=卡片底行):选完省的下一步就是去投 —— 直达该省该职业在招列表,
+                                  岗卡上邮件投递/简历那套已经在等着 */}
+                              {r.jobsHref ? (
+                                <div style={{ marginTop: 8 }}>
+                                  <a href={r.jobsHref} onClick={() => track('dp-act-apply', { key: r.rowKey })}
+                                    style={{ display: 'inline-block', background: UI.primary, color: '#fff', borderRadius: 8, padding: '6px 14px', fontSize: 12.5, fontWeight: 600, textDecoration: 'none' }}>
+                                    {t('dp.actGo')} ›
+                                  </a>
+                                </div>
+                              ) : null}
                             </div>
                           ))}
                         </div>
                         <div className="dpPlanTbl">
                           <DataTable<PlanRow> rows={rows} rowKey={(r) => r.rowKey} bare
                             cols={[
-                              { key: 'rank', label: '#', width: '6%', render: rank },
-                              { key: 'path', label: t('dp.planPath'), width: planCoarse || gateUniform ? '54%' : '28%', render: (r) => (
+                              { key: 'rank', label: '#', width: '5%', render: rank },
+                              { key: 'path', label: t('dp.planPath'), width: planCoarse || gateUniform ? '43%' : '26%', render: (r) => (
                                 <span style={{ display: 'flex', alignItems: 'baseline', gap: 8, minWidth: 0 }}>
                                   <b style={{ color: '#111827', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.routeName}</b>
                                   <span style={{ color: UI.text3, fontSize: 11.5, flexShrink: 0 }}>{r.province}</span>
+                                  {/* #325:带岗态补的行,标它是「本岗所在省」不冒充名次 */}
+                                  {r.extra ? <span style={{ fontSize: 10.5, color: '#1d4ed8', background: '#eff6ff', borderRadius: 999, padding: '1px 7px', flexShrink: 0 }}>{t('dp.planJobProvRow')}</span> : null}
                                 </span>
                               ) },
-                              { key: 'ratio', label: t('dp.compCol'), width: '20%', align: 'right', sort: (r) => r.ratio,
+                              { key: 'ratio', label: t('dp.compCol'), width: '14%', align: 'right', sort: (r) => r.ratio,
                                 render: (r) => (r.ratio == null ? <span style={{ color: UI.text3 }}>—</span> : <span style={{ fontVariantNumeric: 'tabular-nums' }}>{r.ratio}:1</span>) },
-                              { key: 'jobs', label: t('dp.planOpen'), width: '20%', align: 'right', sort: (r) => r.jobsN, render: jobsCell },
-                              // 推荐原因摆末列(2026-08-15 Frank「这个放到最后一列」):它是结论性的一栏,
-                              // 让前面的名字/竞争/在招三列先把事实摆完
+                              { key: 'jobs', label: t('dp.planOpen'), width: '13%', align: 'right', sort: (r) => r.jobsN, render: jobsCell },
+                              // 推荐原因摆倒数第二列:结论性的一栏,让名字/竞争/在招先把事实摆完
                               ...(!planCoarse && !gateUniform
-                                ? [{ key: 'why', label: t('dp.planWhy'), width: '32%', align: 'right', render: whyCell } as const]
+                                ? [{ key: 'why', label: t('dp.planWhy'), width: '28%', align: 'right', render: whyCell } as const]
                                 : []),
+                              // #323 操作列:选完省的下一步(找岗→选雇主→投递)一键进场,岗卡上投递栏接力
+                              { key: 'act', label: t('dp.act'), width: planCoarse || gateUniform ? '19%' : '14%', align: 'right', render: (r) => (
+                                r.jobsHref ? (
+                                  <a href={r.jobsHref} onClick={() => track('dp-act-apply', { key: r.rowKey })}
+                                    style={{ display: 'inline-block', background: UI.primary, color: '#fff', borderRadius: 7, padding: '4px 12px', fontSize: 12, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                                    {t('dp.actGo')} ›
+                                  </a>
+                                ) : <span style={{ color: UI.text3 }}>—</span>
+                              ) },
                             ]} />
                         </div>
                         {gateUniform ? (
-                          <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.6, marginTop: 8 }}>{t('dp.planGateSame', { s: gates[0] })}</div>
+                          <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.6, marginTop: 8 }}>{t('dp.planGateSame', { s: commonTexts.join('、') })}</div>
                         ) : null}
                         {topEmpty ? (
                           <div style={{ fontSize: 11.5, color: '#92400e', lineHeight: 1.6, marginTop: 8 }}>{t('dp.planTopEmpty')}</div>
                         ) : null}
-                        {/* 省外更优提示(2026-08-15「随便选了一个目标省…其他省更合适」):一行 + 一键并省,
-                            交互同 addJobProv(消歧不警告,不替他改答案);并省后重算,提示自动消失 */}
+                        {/* #306:tier 是「攒够门槛所需」,EOI 排队/邀请/省审/联邦审四段不在内 —— 一句说清,
+                            不让「offer 后约 3-6 个月」被读成递交或下签时间(≠资格认定同类,保留项) */}
+                        {rows.some((r) => r.waitTier > 0) ? (
+                          <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.6, marginTop: 8 }}>{t('dp.planNoQueue')}</div>
+                        ) : null}
+                        {/* 省外提示(#302/#303 重做):与主排序同一把尺(planRank),措辞两边对照 ——
+                            不再裸称「更优」,竞争比并排给,搬省的账用户自己算;一键并省照旧 */}
                         {outsidePath ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
                             <span style={{ fontSize: 12.5, color: UI.text2 }}>
-                              {t('dp.planOutside', { prov: provDisp(outsidePath.province), name: routeNameFull(outsidePath.key, provDisp(outsidePath.province)) })}
+                              {outsidePath.inside
+                                ? t('dp.planOutside2', {
+                                    prov: provDisp(outsidePath.province),
+                                    name: routeNameFull(outsidePath.key, provDisp(outsidePath.province)),
+                                    r1: outsidePath.ratio != null ? `${outsidePath.ratio}:1` : '—',
+                                    r2: outsidePath.inside.ratio != null ? `${outsidePath.inside.ratio}:1` : '—',
+                                  })
+                                : t('dp.planOutsideNoInside', {
+                                    prov: provDisp(outsidePath.province),
+                                    name: routeNameFull(outsidePath.key, provDisp(outsidePath.province)),
+                                    r1: outsidePath.ratio != null ? `${outsidePath.ratio}:1` : '—',
+                                  })}
                             </span>
                             <button style={BTN} onClick={() => {
                               const next = writeAnswers({ provs: [...bands.provs, outsidePath.province] })
                               setBands(next); setVerdictNonce((n) => n + 1); track('dp-add-outside-prov', { prov: outsidePath.province })
                             }}>{t('dp.provAdd', { jobProv: provDisp(outsidePath.province) })}</button>
+                          </div>
+                        ) : null}
+                        {/* #318:被判死的通道不再隐身 —— 「EE 走不了因为加拿大经验 0」正是最常被问的结论。
+                            灰字单列,一行一条,理由走措辞层(quote 不翻) */}
+                        {excludedPaths.length > 0 && !planCoarse ? (
+                          <div style={{ marginTop: 10, paddingTop: 8, borderTop: `1px solid ${UI.hairline}` }}>
+                            {excludedPaths.map((e) => {
+                              const provName = /^[A-Z]{2}$/.test(e.province) ? provDisp(e.province) : t(uiOf(e.key).regionLabelKey ?? 'dp.federal')
+                              return (
+                                <div key={`${e.key}:${e.province}`} style={{ fontSize: 12, color: UI.text3, lineHeight: 1.7 }}>
+                                  <span style={{ color: UI.text2, fontWeight: 600 }}>{t('dp.planExcluded')}</span>
+                                  {' '}{routeNameFull(e.key, provName)}:{e.reason?.key ? t(e.reason.key, (e.reason.params ?? {}) as Record<string, string | number>) : (e.reason?.text ?? '')}
+                                </div>
+                              )
+                            })}
                           </div>
                         ) : null}
                         {/* 粗筛态只留一句说明,不再摆第二颗「继续作答」(2026-08-15 Frank「未登录左下角还有
@@ -1188,6 +1293,8 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
             {!tvJob && planCard}
             {!tvJob && occCompCard}
             {!tvJob && competitionCard}
+            {/* #321:带岗态此前把两张竞争卡整个藏了 —— 从职位点进来的用户全程看不到竞争数据,
+                初评表里的竞争列只有比值没有存量/名额底数。判定面板之后按同一卡序补上 */}
 
             {/* 带岗进入后,三项判定就是本页结果,不再自动套一层弹窗。条件在上、结果在下,修改后原地重算。
                 **必须等 ready**:quizOpen 初值是 false,不等读完 localStorage 就渲染的话,新用户首帧先看到
@@ -1210,6 +1317,8 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
               }}
               // 「修改」= 与摘要卡同一颗唯一入口:落在第一道没答的题(估分有欠账直接落估分段)
               onEditAnswers={startQuiz} /></div>}
+            {(ready || !!initialVerdict) && tvJob ? occCompCard : null}
+            {(ready || !!initialVerdict) && tvJob ? competitionCard : null}
 
             {/* 「其余所选省份」卡 2026-08-13 Frank 拍板删除(「我觉得没必要吧」):
                 估分结果的省份 tabs 自己就说明了覆盖哪几个省,单独一张卡交代「哪些省没表」是重。 */}

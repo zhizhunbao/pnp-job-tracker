@@ -40,6 +40,9 @@ const t = ((key: string, vars?: Record<string, string | number>) => {
     'ps.under': '{n} SHORT',
     'prov.BC': 'BC',
     'prov.SK': 'SK',
+    'prov.AB': 'AB',
+    'ps.yes': '是',
+    'ps.no': '否',
   }
   return (messages[key] || key).replace(/\{(\w+)\}/g, (_, name) => String(vars?.[name] ?? ''))
 }) as TFn
@@ -200,6 +203,119 @@ describe('PnpScoreCard target questionnaire', () => {
 
     await act(async () => root.unmount())
     container.remove()
+  })
+
+  // ── #304 offer 前提闸 ──────────────────────────────────────────────────────
+  // AB 的 offer/offerSector/offerArea/regulated 四族全以「有 offer」为前提。闸门只认基础卷的
+  // hasJobOffer(ctx.hasOffer):没答/答没有 → 四族不出题(分母跟着变小),true 才出。
+  // AB 题单基线:profile 3 题(学历/语言/年龄)+ 加分 4 屏(学历完成地/双语/经验所在地/阿省亲属)。
+  const renderAb = async ({ ctx, ...rest }: { ctx?: object } & Record<string, unknown> = {}) => {
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    const root = createRoot(container)
+    await act(async () => {
+      root.render(React.createElement(PnpScoreCard, {
+        t, lang: 'zh', ctx: { noc: '63200', teer: 3, province: 'AB', ...ctx },
+        factors: allFactors.filter((row) => row.province === 'AB'),
+        draws: [], ...rest,
+      } as never))
+    })
+    return { container, root }
+  }
+
+  it('#304: no offer answered in the basic quiz -> offer-premise questions are gone', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})))
+    const onQuestionnaireProgress = vi.fn()
+    const { container, root } = await renderAb({ targetMode: true, questionnaireActive: true, onQuestionnaireProgress })
+    // ctx.hasOffer 缺省(基础卷没答)= 关闸:offer 自问兜底也一并收掉,7 题(3 profile + 4 加分屏)
+    expect(onQuestionnaireProgress).toHaveBeenLastCalledWith({ done: 0, total: 7 })
+    await act(async () => root.unmount())
+    container.remove()
+  })
+
+  it('#304: with an offer from the basic quiz the premise families come back', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})))
+    const onQuestionnaireProgress = vi.fn()
+    const { container, root } = await renderAb({ ctx: { hasOffer: true }, targetMode: true, questionnaireActive: true, onQuestionnaireProgress })
+    // 开闸多出 offerSector / offerArea / regulated 三屏(offer 本行的答案来自基础卷,仍不占屏)
+    expect(onQuestionnaireProgress).toHaveBeenLastCalledWith({ done: 0, total: 10 })
+    await act(async () => root.unmount())
+    container.remove()
+  })
+
+  it('#304: stored premise ticks stop counting when the gate is closed, kept when reopened', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})))
+    // 存量勾选:offerSector 0 / offerArea 0 / regulated 0 —— 期望差值从官方表自己读,不写死分值
+    localStorage.setItem('o2p_score_answers_v1', JSON.stringify({
+      ticks: { 'AB:offerSector:0': true, 'AB:offerArea:0': true, 'AB:regulated:0': true },
+      rowAnswers: {}, extraAnswered: {}, profile: {},
+    }))
+    const pts = (factor: string, kind: string) =>
+      allFactors.find((r) => r.province === 'AB' && r.factor === factor && r.kind === kind && r.seq === 0)?.points ?? 0
+    const totalOf = (c: HTMLElement) => parseInt(c.querySelector('[role="tabpanel"] span')?.textContent || '', 10)
+
+    const closed = await renderAb({ ctx: { hasOffer: false } })
+    const closedTotal = totalOf(closed.container)
+    await act(async () => closed.root.unmount())
+    closed.container.remove()
+
+    const open = await renderAb({ ctx: { hasOffer: true } })
+    const openTotal = totalOf(open.container)
+    await act(async () => open.root.unmount())
+    open.container.remove()
+
+    // 开闸 = offer 行 + 三条存量勾选恢复参与;关闸只是不参与,勾选没被删
+    expect(openTotal - closedTotal).toBe(pts('offer', 'row') + pts('offerSector', 'bonus') + pts('offerArea', 'bonus') + pts('regulated', 'bonus'))
+    expect(JSON.parse(localStorage.getItem('o2p_score_answers_v1')!).ticks['AB:offerSector:0']).toBe(true)
+  })
+
+  // ── #305 从基础卷答案推导的加分项 ──────────────────────────────────────────
+  it('#305: derivable bonus factors stop being asked and echo as filled', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})))
+    // 基础卷:有加拿大学历、在 AB 读的、加拿大经验「没有」、法语 NCLC5+、CLB 7
+    localStorage.setItem('o2p_answers_v1', JSON.stringify({
+      canadaEduBand: 1, eduProv: 'AB', expBand: 1, frenchBand: 1, clbBand: 5, bandsV2: true,
+    }))
+    const onQuestionnaireProgress = vi.fn()
+    const onQuestionnaireAnswers = vi.fn()
+    const { container, root } = await renderAb({ ctx: { hasOffer: false }, targetMode: true, questionnaireActive: true, onQuestionnaireProgress, onQuestionnaireAnswers })
+    // 学历完成地 / 经验所在地 / 双语三屏推掉,只剩 3 profile + 阿省亲属
+    expect(onQuestionnaireProgress).toHaveBeenLastCalledWith({ done: 0, total: 4 })
+    const rows = onQuestionnaireAnswers.mock.lastCall?.[0] as { key: string; value: string; filled: boolean }[]
+    const derived = Object.fromEntries(rows.map((r) => [r.key, r]))
+    expect(derived['AB:eduLocationCanada:0'].filled).toBe(true)
+    expect(derived['AB:eduLocationCanada:0'].value).toBeTruthy()           // 命中「本省完成」那行的官方行文
+    expect(derived['AB:workLocationCanada:0'].value).toBe('否')            // 0 个月加拿大经验 → 恒无
+    expect(derived['AB:language:0'].value).toBe('是')                      // CLB 7 + NCLC 5 → 双语 4+ 成立
+    await act(async () => root.unmount())
+    container.remove()
+  })
+
+  it('#305: derived values feed the score; missing basics keep the questions', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})))
+    const totalOf = (c: HTMLElement) => parseInt(c.querySelector('[role="tabpanel"] span')?.textContent || '', 10)
+    const bare = await renderAb({ ctx: { hasOffer: false } })
+    const bareTotal = totalOf(bare.container)
+    await act(async () => bare.root.unmount())
+    bare.container.remove()
+
+    localStorage.setItem('o2p_answers_v1', JSON.stringify({
+      canadaEduBand: 1, eduProv: 'AB', expBand: 1, frenchBand: 1, clbBand: 5, bandsV2: true,
+    }))
+    const withBasics = await renderAb({ ctx: { hasOffer: false } })
+    const eduLoc = allFactors.find((r) => r.province === 'AB' && r.factor === 'eduLocationCanada' && r.seq === 0)?.points ?? 0
+    const bilingual = allFactors.find((r) => r.province === 'AB' && r.factor === 'language' && r.kind === 'bonus')?.points ?? 0
+    expect(totalOf(withBasics.container) - bareTotal).toBe(eduLoc + bilingual)
+    await act(async () => withBasics.root.unmount())
+    withBasics.container.remove()
+
+    // 基础答案缺(canadaEduBand 没答等)→ 三屏照旧出:回到 7 题基线
+    localStorage.clear()
+    const onQuestionnaireProgress = vi.fn()
+    const asked = await renderAb({ ctx: { hasOffer: false }, targetMode: true, questionnaireActive: true, onQuestionnaireProgress })
+    expect(onQuestionnaireProgress).toHaveBeenLastCalledWith({ done: 0, total: 7 })
+    await act(async () => asked.root.unmount())
+    asked.container.remove()
   })
 
   it('shows every selected province as a separate threshold comparison', async () => {

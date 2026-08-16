@@ -276,4 +276,10 @@ button:not(:disabled):hover {
   .sbCtl {
     min-height: 44px;
   }
+
+  /* #300(第 38 轮):统计主图控件行 / TopN 下拉 / 省内职业榜省下拉(28-32px)——
+     手机断点抬 ≥44(min-height 压过行内 height:30/32),桌面一像素不动 */
+  .mktCtl {
+    min-height: 44px;
+  }
 }

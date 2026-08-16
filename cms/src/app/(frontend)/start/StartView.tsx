@@ -58,12 +58,18 @@ const pctSigned = (ratio: number) => `${ratio > 0 ? '+' : ratio < 0 ? '-' : ''}$
 const ymd = (iso: string) => (iso || '').slice(0, 10)
 const isAllProv = (p: string) => (p || '').toLowerCase() === 'all'
 
-// 职业名三态(人话名主文案 + 代码/译名灰注,站规):
-//   列表主文案 = NOC 官方英文名(引用依据),灰注 = 界面语言译名;标题里则直接用界面语言的人话名。
-const occMain = (o: OccRow) => o.titleEn || o.titleZh || o.noc
+// 职业名三态(#309 主次对调:人话名主文案 + 官方名灰注,站规):
+//   zh/ko 界面主文案 = 界面语言人话名(zh 走 shortOcc 砍分类学尾巴),灰注 = NOC 官方英文名(引用依据);
+//   en 界面主文案 = 官方英文名,无灰注;缺译名的行回退官方名,灰注同文时不出(不双份堆叠)。
+const occMain = (o: OccRow, lang: string) => {
+  if (lang === 'zh') { const s = o.titleZhShort || o.titleZh; if (s) return shortOcc(s) }
+  if (lang === 'ko' && o.titleKo) return o.titleKo
+  return o.titleEn || o.titleZh || o.noc
+}
 const occNote = (o: OccRow, lang: string) => {
-  const s = lang === 'zh' ? (o.titleZhShort || o.titleZh) : lang === 'ko' ? o.titleKo : ''
-  return s ? shortOcc(s) : ''
+  if (lang === 'en') return ''
+  const en = o.titleEn || ''
+  return en && en !== occMain(o, lang) ? en : ''
 }
 // 样本门槛(设计 §3):全国榜在架 ≥30,省级 ≥10 —— 不足不进榜,禁上榜噪音
 const NAT_MIN_OPEN = 30   // 省级榜门槛(S4)沿用
@@ -280,7 +286,7 @@ function TopN({ v, on, max }: { v: number; on: (n: number) => void; max: number 
   const opts = [10, 20, 50].filter((n, i) => i === 0 || n <= Math.max(max, 10))
   if (opts.length < 2) return null
   return (
-    <select value={v} onChange={(e) => on(Number(e.target.value))}
+    <select className="mktCtl" value={v} onChange={(e) => on(Number(e.target.value))}
       style={{ height: 30, border: `1px solid ${UI.border}`, borderRadius: 8, background: '#fff', fontSize: 12.5, color: '#374151', padding: '0 6px' }}>
       {opts.map((n) => <option key={n} value={n}>Top {n}</option>)}
     </select>
@@ -359,13 +365,13 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
 
   const cols: DTCol<OccRow>[] = [
     {
-      key: 'occ', label: t('pulse.col.occ'), sort: (o) => occMain(o),
+      key: 'occ', label: t('pulse.col.occ'), sort: (o) => occMain(o, lang),
       // Frank 08-06「职业名字要显示完整,右面有很多空间」:不截断不省略,长名自然折行
       // (数字列全 nowrap,表格仍不会横滚;折行只发生在主列自己的宽度里)
       render: (o) => (
         <div>
           <a href={`/?q=${o.noc}`} onClick={() => track('pulse_occ_click')}
-            style={{ color: UI.primary, textDecoration: 'none', display: 'block' }}>{occMain(o)}</a>
+            style={{ color: UI.primary, textDecoration: 'none', display: 'block' }}>{occMain(o, lang)}</a>
           {occNote(o, lang)
             ? <span style={{ display: 'block', fontSize: 11.5, color: UI.text3 }}>{occNote(o, lang)}</span>
             : null}
@@ -428,7 +434,7 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
         {rows.slice(p * pageSize, (p + 1) * pageSize).map((o) => {
           return (
             <JobCard key={o.noc} href={`/?q=${o.noc}`}
-              title={{ text: occMain(o), href: `/?q=${o.noc}` }}
+              title={{ text: occMain(o, lang), href: `/?q=${o.noc}` }}
               note={occNote(o, lang) || undefined}
               company={o.openJobs != null ? { text: `${t('pulse.col.open')} ${num(o.openJobs)}` } : undefined}
               salary={momCell(o) ?? undefined}
@@ -470,6 +476,18 @@ export function StartView({ stats }: { stats: HomeStats }) {
   const [lang, setLangSaved, t] = useLang()
   // 主图四份数据(occ 含 E13-03 派生列)挂载后拉;null=加载中 → 依赖它的区渲占位高度,不出空壳
   const market = useMarketStats()
+  // #313:橱窗三分表 SSR 只带每表前 50 行(RSC payload 6.5MB 瘦身),挂载后拉全量换上
+  // (手法照 occ 大表的 /api/market-stats);拉挂/拉到空表就继续用 SSR 那 50 行,不闪不塌
+  const [sponsorFull, setSponsorFull] = useState<HomeStats['sponsor'] | null>(null)
+  useEffect(() => {
+    const ctrl = new AbortController()
+    fetch('/api/sponsor-employers', { signal: ctrl.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => { if (j?.lmia?.top?.length) setSponsorFull(j) })
+      .catch(() => { /* 保底 SSR 首 50 行 */ })
+    return () => ctrl.abort()
+  }, [])
+  const sponsor = sponsorFull ?? stats.sponsor
   const [drawsN, setDrawsN] = useState(10)
   const [newsN, setNewsN] = useState(10)
   const [prov, setProv] = useState(stats.provPreset || 'ON')
@@ -632,6 +650,9 @@ export function StartView({ stats }: { stats: HomeStats }) {
         .seAsk{font-size:12.5px;font-weight:600;color:${UI.primary};background:none;border:none;cursor:pointer;padding:4px 2px;font-family:inherit;white-space:nowrap;display:inline-flex;align-items:center;min-height:44px}
         /* #289:二级导航条锚点链接同款(37 轮体检 R8 实测 20px,#276 那批漏了这一族) */
         .plNavA{display:inline-flex;align-items:center;min-height:44px}
+        /* #300(第 38 轮):S4b 省 chips 与表题旁链接同款触控靶(默认手机 44,桌面收回) */
+        .plProvChips button{min-height:44px}
+        .plMoreA{display:inline-flex;align-items:center;min-height:44px}
         .plNavRow{padding:3px 0}
         @media (min-width:900px){
           .plBand{padding:56px 0}
@@ -648,6 +669,8 @@ export function StartView({ stats }: { stats: HomeStats }) {
           .plCta .plBtn{flex:0 0 auto;padding:12px 28px}
           .seAsk{min-height:auto}
           .plNavA{min-height:auto}
+          .plProvChips button{min-height:auto}
+          .plMoreA{min-height:auto}
           .plNavRow{padding:9px 0}
         }`}</style>
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="start" />
@@ -660,7 +683,9 @@ export function StartView({ stats }: { stats: HomeStats }) {
             {/* 归属设计(Frank 08-08「二级标题应该只属于这个一级标题」):条首挂一级项「就业把脉」作属主 */}
             <span style={{ fontWeight: 700, color: UI.text, flexShrink: 0 }}>{t('pulse.entry')}</span>
             <span style={{ width: 1, height: 14, background: UI.border, flexShrink: 0, alignSelf: 'center' }} />
-            {([['pl-se', t('se.title')], ['pl-boards', t('pulse.nav.boards')], ['pl-prov', t('pulse.s4')], ['pl-provocc', t('pulse.s4b')], ['pl-draws', t('pulse.s5')]] as [string, string][]).map(([id, label]) => (
+            {/* #312:导航项与分区 h2 逐字同文=同屏同一事实说两遍——TOC 保留(可点锚跳),
+                措辞差异化:导航用短词(pulse.nav.*),h2 保全称(se.title/pulse.s4 等不动) */}
+            {([['pl-se', t('pulse.nav.se')], ['pl-boards', t('pulse.nav.occ')], ['pl-prov', t('pulse.nav.prov')], ['pl-provocc', t('pulse.nav.provocc')], ['pl-draws', t('pulse.nav.draws')]] as [string, string][]).map(([id, label]) => (
               <a key={id} href={'#' + id} className="plNavA" style={{ color: navSec === id ? UI.primary : '#6b7280', textDecoration: 'none', fontWeight: navSec === id ? 700 : 600, flexShrink: 0 }}>{label}</a>
             ))}
           </div>
@@ -696,7 +721,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
             (se.title)完全一致,原三张表各自的表题降级为 sub 子标题 ── */}
         <Band id="pl-se">
           <Sec id="pl-se-um" title={t('se.title')}>
-            {([['lmia', stats.sponsor.lmia], ['named', stats.sponsor.named], ['aip', stats.sponsor.aip]] as [string, { top: SponsorEmployerRow[]; total: number }][]).map(([k, grp], idx) => (
+            {([['lmia', sponsor.lmia], ['named', sponsor.named], ['aip', sponsor.aip]] as [string, { top: SponsorEmployerRow[]; total: number }][]).map(([k, grp], idx) => (
               grp.top.length > 0 ? (
                 <div key={k} style={{ marginTop: idx === 0 ? 0 : 24 }}>
                   {/* 08-08 追加「表管事实,人话归对话」:表题旁挂对话导流钮,三张统一形态 */}
@@ -858,8 +883,8 @@ export function StartView({ stats }: { stats: HomeStats }) {
         <Band bg="#fff" id="pl-provocc">
           <Sec id="s4b" title={t('pulse.s4b')}>
           {/* 全国档打头(Frank 08-06「全国 省份 城市 都需要」;职业×城市粒度现库没有,ETL 侧排下一批,不瞎猜) */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '4px 0 8px', alignItems: 'center' }}>
-            <select value={prov} onChange={(e) => setProv(e.target.value)}
+          <div className="plProvChips" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '4px 0 8px', alignItems: 'center' }}>
+            <select className="mktCtl" value={prov} onChange={(e) => setProv(e.target.value)}
               style={{ height: 32, border: `1px solid ${UI.border}`, borderRadius: 8, background: '#fff', fontSize: 13, color: '#374151', padding: '0 8px', maxWidth: '100%' }}>
               <option value="ALL">{t('pulse.s4.all')}</option>
               {PROVS.map((p) => <option key={p} value={p}>{PROV_NAME[p] || p}</option>)}
@@ -901,7 +926,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
             {stats.draws.length > 0 && (
               <>
                 <Sec id="s5" title={t('pulse.s5')}
-                  right={<><TopN v={drawsN} on={setDrawsN} max={stats.draws.length} /><a href="/plan/pr" style={moreA}>{t('plan.pr.title')}</a></>}>
+                  right={<><TopN v={drawsN} on={setDrawsN} max={stats.draws.length} /><a href="/plan/pr" className="plMoreA" style={moreA}>{t('plan.pr.title')}</a></>}>
                 <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
                   {/* 2026-08-11(Frank「都改成一套」):自造裸 <table> → 公共 DataTable(bare=外面这层就是卡壳)。
                       列宽照旧写死(冷解读吃最宽一列,它是这张表的结论);百分比固定布局永不横滚 */}
@@ -949,7 +974,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
                 <h3 style={{ fontSize: 15, margin: '0 0 8px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10 }}>{t('home.policy')}
                   <span style={hmRight}>
                     <TopN v={newsN} on={setNewsN} max={stats.news.length} />
-                    <a href="/news" style={moreA}>{t('home.pulse.all')}</a>
+                    <a href="/news" className="plMoreA" style={moreA}>{t('home.pulse.all')}</a>
                   </span></h3>
                 <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
                   {stats.news.slice(0, newsN).map((r, i) => (

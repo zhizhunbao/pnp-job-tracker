@@ -255,6 +255,13 @@ def build(prov: str, url: str, parse, scale: str | None, label: str, old: dict) 
 # 的条目 → draws(官方按轮次公布邀请数,无分数线 → score=None,scale=None 不假装有分制)。
 ON_ENTRY = re.compile(
     r"^(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+20\d\d$")
+# 2026-08 起更新页新条目改成「August 4: <标题>」——无年份、日期后直接冒号接标题(旧条目仍是
+# 「June 26, 2026」整行日期 + 下一行标题,两种格式同页混排)。年份不猜:从页面自报的
+# 「2026 Ontario Immigrant Nominee Program Updates」标题锚定,锚不到就只吃老格式(宁缺勿猜)。
+ON_ENTRY_NOYEAR = re.compile(
+    r"^(January|February|March|April|May|June|July|August|September|October|November|December)"
+    r"\s+(\d{1,2}):\s*(\S.*)$")
+ON_PAGE_YEAR = re.compile(r"\b(20\d\d)\s+Ontario Immigrant Nominee Program Updates", re.I)
 ON_INV = re.compile(r"issued\s+([\d,]+)\s+invitations?", re.I)
 
 
@@ -264,15 +271,25 @@ def parse_on(html: str) -> tuple[list[dict], dict | None]:
     lines = [re.sub(r"\s+", " ", x).strip() for x in re.sub(r"<[^>]+>", "\n", body).split("\n")]
     lines = [x for x in lines if len(x) > 2]
 
+    ym = ON_PAGE_YEAR.search(html)
+    page_year = ym.group(1) if ym else None
+
     entries: list[tuple[str, str, str]] = []   # (iso 日期, 标题, 正文片段)
     for i, ln in enumerate(lines):
-        if not ON_ENTRY.match(ln):
+        if ON_ENTRY.match(ln):                 # 老格式:整行日期,标题在下一行
+            iso = _iso(ln)
+            if not iso:
+                continue
+            title = lines[i + 1] if i + 1 < len(lines) else ""
+            blob = " ".join(lines[i + 1:i + 4])
+        elif (m := ON_ENTRY_NOYEAR.match(ln)) and page_year:  # 新格式:「August 4: 标题」同一行
+            iso = _iso(f"{m.group(1)} {m.group(2)}, {page_year}")
+            if not iso:
+                continue
+            title = m.group(3)
+            blob = " ".join(lines[i:i + 3])
+        else:
             continue
-        iso = _iso(ln)
-        if not iso:
-            continue
-        title = lines[i + 1] if i + 1 < len(lines) else ""
-        blob = " ".join(lines[i + 1:i + 4])
         entries.append((iso, title[:160], blob))
 
     if not entries:

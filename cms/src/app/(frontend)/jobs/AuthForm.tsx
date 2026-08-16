@@ -76,7 +76,8 @@ export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }:
     // 答案档入库绑账号(2026-08-15):登录一成功先拉服务端档与本地合并(新者胜;服务端
     // 无档则把浏览器旧答案送上去 —— dp.authGate「注册后答案自动存档」兑现处)。必须等它:
     // 下面 quizDestination 读的就是合并后的答案,跳转/回调前档已落定。失败不拦登录。
-    await pullAndMerge().catch(() => { /* 网络失败:答案仍在浏览器,下次改动重试 */ })
+    // afterLogin=true:登录刚成功,迹象 cookie(#311 匿名不发请求的闸)还没置位,这一调必须绕闸发出
+    await pullAndMerge(true).catch(() => { /* 网络失败:答案仍在浏览器,下次改动重试 */ })
     const destination = quizDestination()
     if (destination) { window.location.assign(destination); return }
     onDone()

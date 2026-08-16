@@ -7,8 +7,10 @@
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
+import { fetchOccCompetition } from '@/lib/occCompetition'
 import { pathVerdict, type VerdictProfile } from '@/lib/pathVerdict'
-import { regionProvincesOf } from '@/lib/pathways'
+import { regionProvincesOf, uiOf } from '@/lib/pathways'
+import { pickOutside, rankRows, type RankCtx } from '@/lib/planRank'
 import { getVerdictData } from '@/lib/verdictCache'
 
 export const dynamic = 'force-dynamic'
@@ -103,7 +105,9 @@ export async function POST(req: Request) {
   const edu = EDU_KEYS.has(String(answers.edu ?? '')) ? String(answers.edu) as VerdictProfile['edu'] : null
   const profile: VerdictProfile = {
     age: finite(answers.age), married: null,
-    clb: finite(answers.clb), edu, eduYears: null,
+    // eduYears(#316):基础卷新题「学制年数」,单位=年;此前写死 null → 安省毕业生 3 个月档
+    // 恒判不了、曼省 2 年制学历恒按 1 年算
+    clb: finite(answers.clb), edu, eduYears: finite(answers.eduYears),
     // 学历所在省(2026-08-15 新题):NL 专业对口的例外按它分档,MB/ON 两条既有条款也吃它
     studyProvince: /^([A-Z]{2}|TERR)$/.test(String(answers.studyProvince ?? '')) ? String(answers.studyProvince) : null,
     noc, teer: Number.isInteger(teer) && teer >= 0 && teer <= 5 ? teer : null,
@@ -127,7 +131,7 @@ export async function POST(req: Request) {
     canadaStudy: typeof answers.canadaStudy === 'boolean' ? answers.canadaStudy : null,
   }
 
-  const [data, comp] = await Promise.all([getVerdictData(), competitionByProvince()])
+  const [data, comp, occRows] = await Promise.all([getVerdictData(), competitionByProvince(), fetchOccCompetition(noc)])
   const all = pathVerdict(profile, data)
   // 反事实(L2-09):明确没 offer 的档案,把 hasOffer=true 代入重跑一次 —— 被 offer 卡住的行
   // 附上「拿到该省 offer 之后的世界」:立刻分出「即可申请」和「拿了 offer 还差语言/学历」的省,
@@ -135,34 +139,40 @@ export async function POST(req: Request) {
   const afterByKey = profile.hasOffer === false
     ? new Map(pathVerdict({ ...profile, hasOffer: true }, data).map((v) => [v.key, v]))
     : null
+
+  // 2026-08-15 Frank「能够得到就排前面,够不到就排后面」:估分<最近抽选线 → 沉队尾(planRank 的
+  // band 首段)。比较双方都是官方事实(估分=官方分值表,线=官方抽选史),不碰禁概率红线。
+  // partial(#301)= 该分是**下界**(问不到的加分项按 0 记)—— 下界<线不等于够不着,不沉
+  const belowLine = (row: (typeof all)[number]) =>
+    !(row.score as { partial?: boolean } | undefined)?.partial
+    && row.score?.refLine != null && row.score.value != null && row.score.value < row.score.refLine
+
+  // ── 排序(#307 单源化):拆省在先(每个省级行按自己的在招/竞争排),planRank 一把尺排完再下发;
+  //    客户端只渲染不再重排 —— 此前引擎/服务端/客户端三处口径并存,#302 的「省外提示与排序
+  //    不是同一把尺」就是分叉的直接后果。
+  type SplitRow = (typeof all)[number] & { belowLine: boolean; competition: { ratio: number } & Record<string, unknown> | null }
+  const decorateSplit = (rows: typeof all, targets: string[]): SplitRow[] =>
+    splitRegionalByProvince(rows.map((row) => ({ ...row })), targets).map((row) => ({
+      ...row,
+      belowLine: belowLine(row),
+      // AIP/RCIP/FCIP 无 EOI 池 → competition 保持 null,不许拿该省 PNP 名额竞争比充数
+      competition: regionProvincesOf(row.key) ? null : (comp[row.province] ?? null),
+    }))
+  // 该省该职业在招岗数,按通道口径取列(AIP=指定雇主∩职业、RCIP/FCIP=试点∩职业、其余=全省)。
+  // 查无该省 = 0(occ 查询只回有岗的省);非省级行 = null
+  const jobsOf: RankCtx['jobsOf'] = (row) => {
+    if (!/^[A-Z]{2}$/.test(row.province)) return null
+    const o = occRows.find((x) => x.province === row.province)
+    return o?.[uiOf(row.key).jobsSource] ?? 0
+  }
+  // 本省 = 现居省 ∪ 学历省(#302:地理成本进服务端,与客户端展示同一把尺)
+  const homeProvs = new Set([profile.province, profile.studyProvince].filter((p): p is string => !!p && /^[A-Z]{2}$/.test(p)))
+  const ctx: RankCtx = { jobsOf, homeProvs }
+
   const scoped = all.filter((row) => pathwayMatchesTargets(row.key, row.province, targetProvinces))
-  // 方案区只推荐仍可推进或待补资料的路径；硬排除项不包装成“方案”。
-  const open = scoped.filter((row) => row.verdict !== 'excluded')
+  const ranked = rankRows(decorateSplit(scoped.filter((row) => row.verdict !== 'excluded'), targetProvinces), ctx)
 
-  // 排序:**门槛难度仍是第一主键**(pathVerdict 的原序:能走的在前、被卡住的在后、判不了沉底),
-  // 竞争度只在**同一障碍档内**做次级排序 —— 同样是「至少还差 offer」,SK(9.0)该排在 BC(84.2)前面。
-  // 拿竞争度盖过门槛就是本末倒置:再松的省,门槛不满足也走不了。
-  const bandOf = (row: (typeof open)[number]) => `${row.verdict}|${row.blockedBy ?? ''}|${row.tier ?? ''}`
-  // 2026-08-15 Frank「能够得到就排前面,够不到就排后面——毕竟大家都要找工作的」:
-  // 分数线才是 EE 的真门槛。**估分 < 最近抽选线 → 沉到全队尾**(省线好歹拿到 offer 就能走);
-  // 线/估分未知不动(不拿缺数据当降档理由)。比较双方都是官方事实(估分=官方分值表,线=官方抽选史),不碰禁概率红线
-  const belowLine = (row: (typeof open)[number]) =>
-    row.score?.refLine != null && row.score.value != null && row.score.value < row.score.refLine
-  const ranked = open.map((row, i) => ({ row, i, band: bandOf(row), c: comp[row.province] }))
-  ranked.sort((a, b) => {
-    const ab = belowLine(a.row) ? 1 : 0, bb = belowLine(b.row) ? 1 : 0
-    if (ab !== bb) return ab - bb                           // 够不着线的沉底,先于一切档位比较
-    if (a.band !== b.band) return a.i - b.i                 // 不同档:原序(门槛难度)
-    // 联邦线没有省级竞争度 → 沉在同档末尾,不拿 0 冒充「最松」
-    const ar = a.c?.ratio ?? Number.POSITIVE_INFINITY
-    const br = b.c?.ratio ?? Number.POSITIVE_INFINITY
-    return ar === br ? a.i - b.i : ar - br
-  })
-
-  // 全量返回不截断(2026-08-15 RCIP 拆省时实撞:此前 slice(0,6) 在拆省前砍行,RCIP 排第 7
-  // 整条到不了客户端 —— 客户端要按在招岗数降档重排,喂残缺候选集等于把重排废了;行数上限
-  // 13 条拆完 ≤ 21,负载可忽略,展示条数由客户端自己截)
-  const rows = ranked.map(({ row, c }) => {
+  const wireOf = (row: SplitRow) => {
     const after = row.blockedBy === 'offer' ? afterByKey?.get(row.key) : undefined
     return {
       key: row.key,
@@ -172,41 +182,59 @@ export async function POST(req: Request) {
       availability: row.availability,
       // 被硬门槛卡住时,方案卡不能再写「优先核对」——那等于让人拿着不够的语言分去核对
       blockedBy: row.blockedBy ?? null,
+      /** tier 的起算点(#319):在读学生的经验型 tier 要等毕业拿工签才起算;引擎侧字段,缺省 now */
+      tierBasis: (row as { tierBasis?: 'now' | 'after-study' }).tierBasis ?? 'now',
+      /** 全部缺口闸(#324 原因列要逐行差异,单一 blockedBy 不够):gap 类理由的闸键列表 */
+      gaps: Array.from(new Set((row.reasons ?? [])
+        .filter((r) => r.kind === 'gap' && r.key)
+        .map((r) => String(r.key)))),
       /** 判不了是因为**他还没答**哪几道题(展示层据此挂提醒,而不是笼统写「判不了」) */
       missingSlots: row.missingSlots ?? [],
-      /** 该省名额竞争度(联邦口径,9 省可比);联邦线为 null */
-      competition: c ?? null,
+      /** 该省名额竞争度(联邦口径,9 省可比);联邦区域线为 null */
+      competition: row.competition,
+      /** 该省该职业在招岗数(服务端与排序同源,#307;客户端不再自取自排) */
+      jobsN: jobsOf(row),
       /** 反事实:拿到该省 offer 之后这条路的判定(只给被 offer 卡住的行) */
       afterOffer: after ? { verdict: after.verdict, blockedBy: after.blockedBy ?? null, tier: after.tier } : null,
-      /** 打分制通道的估分与官方线(EE);belowLine=估分<最近线(已沉队尾,前端门槛列写明数字) */
-      score: row.score ? { value: row.score.value, ceiling: row.score.ceiling, refLine: row.score.refLine } : null,
-      belowLine: belowLine(row),
+      /** 打分制通道的估分与官方线;belowLine=估分<最近线(已沉队尾,前端门槛列写明数字);
+       *  partial=true 是下界分(加分项按 0 记),不参与沉底、文案不许说「够不着」 */
+      score: row.score ? { value: row.score.value, ceiling: row.score.ceiling, refLine: row.score.refLine,
+        partial: (row.score as { partial?: boolean }).partial ?? false } : null,
+      belowLine: row.belowLine,
     }
-  })
-
-  // ── 省外更优提示(2026-08-15 Frank「用户随便选了一个目标省…其他省更合适。这个怎么解决」)──
-  // 目标省是硬过滤,随手选的省会把按条件更优的通道整条滤没且无声。判据只看**档位**
-  // (belowLine → verdict|blockedBy|tier,与上面 bandOf 同一把尺):省外档位严格优于场内第一名才提示;
-  // 竞争比不参与升降 —— 再松的省,档位不如场内也轮不到它。只提省级通道:AIP/RCIP 这类联邦区域线
-  // 没有单一省可「一键加入」。展示层给一行 + 一键并省,不替他改答案(消歧不警告,同 addJobProv)。
-  let outside: { key: string; province: string } | null = null
-  if (targetProvinces.length) {
-    const openAll = all.filter((row) => row.verdict !== 'excluded')
-    const orderedAll = openAll.map((row, i) => ({ row, i }))
-      .sort((a, b) => ((belowLine(a.row) ? 1 : 0) - (belowLine(b.row) ? 1 : 0)) || a.i - b.i)
-    const bandK = (row: (typeof openAll)[number]) => `${belowLine(row) ? 'z' : 'a'}|${bandOf(row)}`
-    const bandRank = new Map<string, number>()
-    for (const { row } of orderedAll) if (!bandRank.has(bandK(row))) bandRank.set(bandK(row), bandRank.size)
-    const insideBest = ranked[0]?.row
-    const insideRank = insideBest ? bandRank.get(bandK(insideBest)) ?? Infinity : Infinity
-    const cand = orderedAll
-      .filter(({ row }) => /^[A-Z]{2}$/.test(row.province) && !targetProvinces.includes(row.province))
-      .filter(({ row }) => (bandRank.get(bandK(row)) ?? Infinity) < insideRank)
-      .sort((a, b) => (bandRank.get(bandK(a.row))! - bandRank.get(bandK(b.row))!)
-        || ((comp[a.row.province]?.ratio ?? Infinity) - (comp[b.row.province]?.ratio ?? Infinity))
-        || a.i - b.i)
-    outside = cand.length ? { key: cand[0].row.key, province: cand[0].row.province } : null
   }
+  const rows = ranked.map(wireOf)
 
-  return Response.json({ noc, rows: splitRegionalByProvince(rows, targetProvinces), outside })
+  // ── 已排除通道(#318):excluded 不再整条隐身 —— 「联邦 EE 走不了,因为加拿大经验 0」正是
+  //    最常被问的结论,滤掉等于把答案藏起来。单列一组,带第一条排除理由(措辞层键+参数,quote 随行)
+  const excluded = decorateSplit(scoped.filter((row) => row.verdict === 'excluded'), targetProvinces)
+    .map((row) => {
+      const r = (row.reasons ?? []).find((x) => x.kind === 'excluded') ?? (row.reasons ?? [])[0]
+      return {
+        key: row.key,
+        province: row.province,
+        reason: r ? { key: r.key ?? null, params: r.params ?? null, text: r.text, quote: r.quote ?? null } : null,
+      }
+    })
+
+  // ── 省外提示(#302/#303):与主排序共用 planRank 同一把尺(含 0 岗/thin/本省/竞争比)。
+  //    措辞层拿 insideBest 摆对照(两边竞争比与档位如实并排),不再裸称「更优」。
+  const allSplit = decorateSplit(all.filter((row) => row.verdict !== 'excluded'), [])
+  const picked = pickOutside(allSplit, targetProvinces, ctx)
+  const outside = picked ? {
+    key: picked.row.key,
+    province: picked.row.province,
+    ratio: picked.row.competition?.ratio ?? null,
+    tier: picked.row.tier,
+    blockedBy: picked.row.blockedBy ?? null,
+    inside: picked.insideBest ? {
+      key: picked.insideBest.key,
+      province: picked.insideBest.province,
+      ratio: picked.insideBest.competition?.ratio ?? null,
+      tier: picked.insideBest.tier,
+      blockedBy: picked.insideBest.blockedBy ?? null,
+    } : null,
+  } : null
+
+  return Response.json({ noc, rows, excluded, outside })
 }

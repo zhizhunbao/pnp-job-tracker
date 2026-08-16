@@ -90,6 +90,15 @@ const gateStatesOf = (v: PathwayVerdict): Partial<Record<GateKey, GateState>> =>
 /** 库里没有该通道的门槛行时引擎的早退形态(见文件头「坑」) */
 const isNoReqStub = (v: PathwayVerdict): boolean => v.reasons.length === 1 && v.reasons[0].key === 'pv.noReq'
 
+/** 判定的逐字节指纹,**去掉 tierBasis**。
+ *  tierBasis(#319)按设计就是 `status` 的函数:在读学生的「再攒 N 个月」要等毕业拿到工签才开始走,
+ *  所以每条有经验/在职门槛的通道都读 status —— 拿它去测「不相干输入零影响」会把设计当成 bug。
+ *  它自己的判据由本文件末尾的 tierBasis 专节盯着(性质 + 金标),这里只把它排除在指纹之外。 */
+const fingerprint = (v: PathwayVerdict): string => {
+  const { tierBasis: _drop, ...rest } = v
+  return JSON.stringify(rest)
+}
+
 const byKey = (list: PathwayVerdict[], key: string): PathwayVerdict => {
   const hit = list.find((v) => v.key === key)
   expect(hit, `注册表里没有 ${key}`).toBeTruthy()
@@ -287,7 +296,7 @@ describe('铁律①:没答 ≠ 没有障碍', () => {
     expect(silent.slice(0, 10)).toEqual([])
   })
 
-  // 🔴 「无障碍」在这一层是 **verdict='open' 且没挂 blockedBy**,不是 verdict='open' 本身。
+  // 🔴 「无障碍」在这一层是 **verdict='viable' 且没挂 blockedBy**,不是 verdict='viable' 本身。
   //    引擎是四档不是三档:verdict 只回答「判不判得了」,「答了、但没有」那类缺口由 blockedBy 承载
   //    (pathVerdict.ts §⑤ `void manifestGap`,排序层把挂了 blockedBy 的 open 排在无障碍 open 之后)。
   //    2026-08-15 夜首次写这条断言时按「open = 能走」下的手,12 条红 —— 查引擎后确认是断言写错了档:
@@ -296,7 +305,7 @@ describe('铁律①:没答 ≠ 没有障碍', () => {
     const bad: string[] = []
     for (const { p, list } of MATRIX) {
       for (const v of list) {
-        if (v.verdict !== 'open' || v.blockedBy) continue
+        if (v.verdict !== 'viable' || v.blockedBy) continue
         const st = gateStatesOf(v)
         for (const g of requiredGates(v.key)) if (st[g] !== 'met') bad.push(`${v.key} 无障碍 open 但 ${g}=${st[g]} ← ${sig(p)}`)
       }
@@ -465,7 +474,7 @@ describe('铁律④:通道没声明的闸,它读的字段怎么摇都不许影�
         if (reads.has(field)) continue                       // 这道闸真读它 → 变了是应该的
         const shots = values.map((frag) => {
           const v = byKey(pathVerdict(withFrags(frag), data), spec.key)
-          return { frag: JSON.stringify(frag), json: JSON.stringify(v) }
+          return { frag: JSON.stringify(frag), json: fingerprint(v) }
         })
         const first = shots[0]
         for (const s of shots.slice(1)) {
@@ -489,6 +498,73 @@ describe('铁律④:通道没声明的闸,它读的字段怎么摇都不许影�
           if (st) bad.push(`${v.key} 没声明 ${g} 却判了它(${st}) ← ${sig(p)}`)
           if (v.missingSlots?.includes(g)) bad.push(`${v.key} 没声明 ${g} 却点名要它 ← ${sig(p)}`)
         }
+      }
+    }
+    expect(bad.slice(0, 10)).toEqual([])
+  })
+})
+
+// ── tier 的起算点(#319)────────────────────────────────────────────────────
+//
+// 性质而不是期望值:不需要知道「这条通道应该是几个月」,也能判出引擎有没有把在读学生的
+// 等待期说成从今天起算。判据全部读引擎自己的产出(reasons 的 pv.* 键),不重算一遍门槛。
+
+/** 这条通道**还没达标**的经验/在职门槛(含 #317 的省外毕业生那条) */
+const UNMET_EXP = /^pv\.(exp\.\w+\.(need|short|unknown)|oopGrad\.(need|short|unknown|condUnknown))$/
+/** 还没达标的居住门槛(搬过去当天就在计时,不吃「毕业后才起算」) */
+const UNMET_RES = /^pv\.res(Need|Short|Unknown)$/
+/** 只认**还没达标**的那几条(键名对得上 + kind 不是 met:res 那几个键在达标时也在用) */
+const hasKey = (v: PathwayVerdict, re: RegExp) =>
+  v.reasons.some((r) => !!r.key && re.test(r.key) && r.kind !== 'met')
+/** 学签在读:不许全职上班 ⇒ 攒经验的钟还没开始走 */
+const isStudying = (p: VerdictProfile) => p.status === 'study' && (p.permit == null || p.permit === 'study')
+
+const tierBasisProps = (p: VerdictProfile, list: PathwayVerdict[], bad: string[]) => {
+  for (const v of list) {
+    if (v.tierBasis !== 'now' && v.tierBasis !== 'after-study') { bad.push(`${v.key} tierBasis=${v.tierBasis}`); continue }
+    if (v.tierBasis === 'after-study') {
+      if (!isStudying(p)) bad.push(`${v.key} 不在读却 after-study ← ${sig(p)}`)
+      if (!((v.tier ?? 0) > 0)) bad.push(`${v.key} tier=${v.tier} 却 after-study ← ${sig(p)}`)
+      if (v.verdict === 'excluded') bad.push(`${v.key} 已判死却谈起算点 ← ${sig(p)}`)
+      if (!hasKey(v, UNMET_EXP)) bad.push(`${v.key} after-study 却没有未达标的经验门槛 ← ${sig(p)}`)
+    }
+    // 反向:在读 + 有等待期 + 挡着的只有经验门槛(没有居住门槛)⇒ 必须是 after-study,不许漏
+    if (isStudying(p) && v.verdict !== 'excluded' && (v.tier ?? 0) > 0 && hasKey(v, UNMET_EXP) && !hasKey(v, UNMET_RES)) {
+      if (v.tierBasis !== 'after-study') bad.push(`${v.key} 在读却说从今天起算 ← ${sig(p)}`)
+    }
+  }
+}
+
+describe('#319 tierBasis:等待期的起算点', () => {
+  it('整张矩阵:after-study 只出现在「在读 + 经验型等待期」上,且一格不漏', () => {
+    const bad: string[] = []
+    for (const { p, list } of MATRIX) tierBasisProps(p, list, bad)
+    expect(bad.slice(0, 10)).toEqual([])
+  })
+
+  it('非在读档案(在职 / PGWP / 找工作 / 没答)的每一条通道都是 now', () => {
+    const bad: string[] = []
+    for (const status of ['worker', 'pgwp', 'other', null]) {
+      for (const permit of ['work', 'pgwp', 'none', null] as const) {
+        for (const exp of [0, 12, null]) {
+          const p = withFrags({ status, permit, expCanadaMonths: exp })
+          for (const v of pathVerdict(p, data)) {
+            if (v.tierBasis !== 'now') bad.push(`${v.key} ${status}/${permit}/exp=${exp} → ${v.tierBasis}`)
+          }
+        }
+      }
+    }
+    expect(bad.slice(0, 10)).toEqual([])
+  })
+
+  it('单调性:在读改成在职,起算点只会从 after-study 变 now,不会反过来', () => {
+    const bad: string[] = []
+    for (const { p, list } of MATRIX) {
+      if (!isStudying(p)) continue
+      const after = pathVerdict({ ...p, status: 'worker', permit: 'work' }, data)
+      for (const v of list) {
+        const w = byKey(after, v.key)
+        if (w.tierBasis === 'after-study') bad.push(`${v.key} 在职了还说毕业后起算 ← ${sig(p)}`)
       }
     }
     expect(bad.slice(0, 10)).toEqual([])
@@ -526,7 +602,7 @@ describe('随机性质(fast-check,失败会 shrink 出最小反例)', () => {
         const st = gateStatesOf(v)
         for (const g of requiredGates(v.key)) {
           expect(st[g], `${v.key}/${g} 没表态`).toBeTruthy()
-          if (v.verdict === 'open' && !v.blockedBy) expect(st[g], `${v.key} 无障碍 open 却 ${g} 不是 met`).toBe('met')
+          if (v.verdict === 'viable' && !v.blockedBy) expect(st[g], `${v.key} 无障碍 open 却 ${g} 不是 met`).toBe('met')
           if (st[g] === 'gap' && v.verdict !== 'excluded') expect(v.blockedBy, `${v.key} ${g}=gap 却没挂 blockedBy`).toBeTruthy()
         }
         if (v.verdict === 'excluded') continue
@@ -543,7 +619,7 @@ describe('随机性质(fast-check,失败会 shrink 出最小反例)', () => {
     // metamorphic relation:不需要知道正确答案,只需要「补上一项达标的信息不许让结论更糟」。
     // 只挑**闸独占**的布尔槽(hasOffer/fieldMatch/frenchOk):canadaStudy 还喂 CRS 估分、
     // inCanada/permit 的「更好」不是单一方向,混进来就不是单调性了。
-    const rank = { open: 0, 'needs-info': 1, excluded: 2 } as const
+    const rank = { viable: 0, 'needs-info': 1, excluded: 2 } as const
     const FIELDS = ['hasOffer', 'fieldMatch', 'frenchOk'] as const
     const GATE_OF: Record<(typeof FIELDS)[number], GateKey> = { hasOffer: 'offer', fieldMatch: 'fieldMatch', frenchOk: 'french' }
     fc.assert(fc.property(arbProfile, fc.constantFrom(...FIELDS), (p, field) => {
@@ -562,6 +638,14 @@ describe('随机性质(fast-check,失败会 shrink 出最小反例)', () => {
     }), { numRuns: 300 })
   })
 
+  it('tierBasis:随机档案下也守「在读 + 经验型等待期」这一条', () => {
+    fc.assert(fc.property(arbProfile, (p) => {
+      const bad: string[] = []
+      tierBasisProps(p, pathVerdict(p, data), bad)
+      expect(bad.join(' / ')).toBe('')          // join 而不是 toEqual([]):反例内容要能直接读出来
+    }), { numRuns: 400 })
+  })
+
   it('无关输入零影响:通道没声明的闸,字段怎么摇判定都逐字节相同', () => {
     fc.assert(fc.property(arbProfile, fc.constantFrom(...EXCLUSIVE_FIELDS), arbProfile, (p, axis, q) => {
       const moved = { ...p, [axis.field]: q[axis.field] }
@@ -569,8 +653,8 @@ describe('随机性质(fast-check,失败会 shrink 出最小反例)', () => {
       const b = pathVerdict(moved, data)
       for (const spec of PATHWAYS) {
         if (readableFields(spec).has(axis.field)) continue
-        expect(JSON.stringify(byKey(b, spec.key)), `${spec.key} 不该读 ${String(axis.field)}`)
-          .toBe(JSON.stringify(byKey(a, spec.key)))
+        expect(fingerprint(byKey(b, spec.key)), `${spec.key} 不该读 ${String(axis.field)}`)
+          .toBe(fingerprint(byKey(a, spec.key)))
       }
     }), { numRuns: 300 })
   })
@@ -686,9 +770,9 @@ describe('金标:逐条钉死判据', () => {
       expCanadaMonths: 0, expForeignMonths: 60, foreignExpSelfEmployed: false,
     })
     const list = pathVerdict(overseas, data)
-    expect(list.filter((v) => v.verdict === 'open' && !v.blockedBy).map((v) => v.key)).toEqual([])
+    expect(list.filter((v) => v.verdict === 'viable' && !v.blockedBy).map((v) => v.key)).toEqual([])
     // 而且每条「open」都得说得出被什么挡着 —— 挡他的是 offer 与境内身份,不是别的
-    for (const v of list.filter((x) => x.verdict === 'open')) {
+    for (const v of list.filter((x) => x.verdict === 'viable')) {
       expect(['offer', 'statusInCanada', 'credentialCanada'], `${v.key} 的 blockedBy`).toContain(v.blockedBy)
     }
   })

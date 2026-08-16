@@ -88,6 +88,25 @@
       "factor": "experience"
     },
     {
+      "stream": "AAIP Alberta Opportunity Stream",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 12,
+      "valueText": "",
+      "unit": "months",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "windowMonths=18",
+      "label": "24 months of full-time work experience in your current occupation in Canada or abroad within the last 30 months (alternatively 12 months in Alberta within the last 18 months)",
+      "section": "Work experience requirements",
+      "url": "https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility",
+      "factor": "experience",
+      "appliesCondition": "ab-local-experience"
+    },
+    {
       "stream": "AAIP (job offer & employer requirements, all streams)",
       "subject": "employer",
       "op": ">=",

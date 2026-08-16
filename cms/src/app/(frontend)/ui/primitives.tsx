@@ -23,9 +23,9 @@ const BTN_KIND: Record<string, React.CSSProperties> = {
   ghost: { background: 'none', color: UI.primary, border: 'none', padding: 0 },
   danger: { background: UI.danger, color: '#fff', border: 'none' },
 }
-export function Button({ kind = 'primary', sm, lg, disabled, onClick, href, target, title, style: styleOverride, children }: {
+export function Button({ kind = 'primary', sm, lg, disabled, onClick, href, target, title, style: styleOverride, className, children }: {
   kind?: 'primary' | 'pro' | 'secondary' | 'ai' | 'ghost' | 'danger'; sm?: boolean; lg?: boolean; disabled?: boolean
-  onClick?: () => void; href?: string; target?: string; title?: string; style?: React.CSSProperties; children: React.ReactNode
+  onClick?: () => void; href?: string; target?: string; title?: string; style?: React.CSSProperties; className?: string; children: React.ReactNode
 }) {
   const style: React.CSSProperties = {
     fontSize: sm ? 12.5 : lg ? 14 : 13, fontWeight: 600, cursor: disabled ? 'default' : 'pointer',
@@ -35,8 +35,8 @@ export function Button({ kind = 'primary', sm, lg, disabled, onClick, href, targ
     ...(disabled && kind === 'primary' && { background: '#93c5fd' }),
     ...styleOverride,
   }
-  if (href && !disabled) return <a href={href} target={target} rel={target ? 'noreferrer' : undefined} title={title} style={style}>{children}</a>
-  return <button disabled={disabled} onClick={onClick} title={title} style={style}>{children}</button>
+  if (href && !disabled) return <a href={href} target={target} rel={target ? 'noreferrer' : undefined} title={title} className={className} style={style}>{children}</a>
+  return <button disabled={disabled} onClick={onClick} title={title} className={className} style={style}>{children}</button>
 }
 
 // 站内行内动作钮的唯一样式(职位板一路用下来的那枚药丸钮)。08-10 Frank 点名把把脉页的

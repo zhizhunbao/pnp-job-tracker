@@ -15,8 +15,9 @@ import {
   type DesignatedEmployerRow, type OccupationRow, type PathwayVerdict,
   type VerdictData, type VerdictDrawRow, type VerdictProfile,
 } from '@/lib/pathVerdict'
+import { PATHWAYS } from '@/lib/pathways'
 import type { Requirement } from '@/lib/rules'
-import type { ScoreFactor } from '@/lib/pnpSelfScore'
+import { scoreProvince, type ScoreFactor } from '@/lib/pnpSelfScore'
 import type { EeGridRow } from '@/lib/crsEstimate'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -66,7 +67,9 @@ describe('mart 实况', () => {
     // 2026-08-09 批B AIP 36 行入库后更新:门槛表 259 → 300(264 既有 + 36 AIP);
     // 2026-08-14 L2-09 用例横测补 RCIP 语言 3 行(TEER 档 CLB 6/5/4)→ 303
     // 2026-08-15 FCIP 立成通道,补它自己的 3 行(1,560 小时 / 指定雇主 offer / NCLC 5 法语)→ 306
-    expect(data.requirements).toHaveLength(306)
+    // 2026-08-15 #320:AAIP 补一条「或款」——近 18 个月内在阿省满 12 个月(24 那行保留)→ 307
+    expect(data.requirements).toHaveLength(307)
+    expect(data.requirements.filter((r) => r.appliesCondition === 'ab-local-experience')).toHaveLength(1)
     expect(data.requirements.filter((r) => r.program === 'FCIP')).toHaveLength(3)
     expect(data.requirements.filter((r) => r.program === 'AIP')).toHaveLength(36)
     expect(data.requirements.filter((r) => r.program === 'RCIP' && r.factor === 'language')).toHaveLength(3)
@@ -181,9 +184,12 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
     expect(nl.reasons.some((r) => r.key === 'pv.gate.fieldMatch.unknown')).toBe(true)
   })
 
-  it('tier0 = NL 国际毕业生(官方明说不设经验门槛)', () => {
-    const nl = byKey(run(nlProfile), 'NL-intl-grad')
-    expect(nl.verdict).toBe('open')
+  // 2026-08-15 #317:C01 是**安省**院校毕业生 → 官方另一条政策(先在 NL 干满 12 个月)对他生效,
+  // 所以这条线对他不再是 tier0。tier0 那句金标改由**本省院校**毕业生守(官方原意就是这么分的):
+  // 「不设工作经验门槛」与「省外来路要先干满一年」是并列的两条,不是一条。
+  it('tier0 = NL 本省院校毕业生(官方明说不设经验门槛)', () => {
+    const nl = byKey(run({ ...nlProfile, studyProvince: 'NL' }), 'NL-intl-grad')
+    expect(nl.verdict).toBe('viable')
     expect(nl.tier).toBe(0)
     // 文案 2026-08-11 收短成「不要工作经验」;守的规矩没变:op=none 必须说成**官方没有这条门槛**,
     // 不能说成「本站没查到」—— 两者在用户那里意思相反。官方原句仍挂在这条理由上(下一行断言)。
@@ -207,7 +213,7 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
 
   it('tier2 = NS、SK-offer、RCIP、MB-swm(12 个月)', () => {
     for (const k of ['NS-sw', 'SK-offer', 'RCIP', 'MB-swm']) {
-      expect(byKey(list, k).verdict, k).toBe('open')
+      expect(byKey(list, k).verdict, k).toBe('viable')
       expect(tierOf(k), k).toBe(2)
     }
     // RCIP 自雇不计:官方原句在库里,拿它说话
@@ -216,13 +222,13 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
   })
 
   it('tier3 = AB Opportunity、BC Skilled Worker、BC Build(24 个月)', () => {
-    expect(byKey(list, 'AB-opportunity').verdict).toBe('open')
+    expect(byKey(list, 'AB-opportunity').verdict).toBe('viable')
     expect(tierOf('AB-opportunity')).toBe(3)
     // BC 两条 08-12 白天还是 needs-info(指南没进 crawl → 境内/学历两类闸 unknown);当晚直提官方
     // Program Guide PDF 逐节读完(§3.1-3.13 通用 + §4.1 技术工人),两类闸都落实 → **自动翻回 open**。
     // 这正是当时留的话:「补上指南就自动翻回 open」—— 判定跟着数据走,没有一行代码为它开特例。
     for (const k of ['BC-sw', 'BC-build']) {
-      expect(byKey(list, k).verdict, k).toBe('open')
+      expect(byKey(list, k).verdict, k).toBe('viable')
       expect(byKey(list, k).availability, k).toBe('ok')
     }
     // BC Build 是定向抽选:72310 在定向清单上、抽选线 97 摆出来但不冒充成「你的分」
@@ -421,7 +427,7 @@ describe('金标 ③:AIP 门槛已入库,判得了', () => {
   it('AIP = open + ok + tier2;1,560 小时按官方自写的「1 年」折成 12 个月', () => {
     // 2026-08-09 批B AIP 36 行入库后更新(原断言:needs-info + not-collected + 禁止出现 1,560)
     const aip = byKey(run(), 'AIP')
-    expect(aip.verdict).toBe('open')
+    expect(aip.verdict).toBe('viable')
     expect(aip.availability).toBe('ok')
     expect(aip.tier).toBe(2)
     expect(aip.score, 'AIP 没有自评估分器 → 不给分').toBeUndefined()
@@ -503,7 +509,7 @@ describe('金标 ④:SK Employment Offer 不受 OID/EE 那张 243 条清单约�
   })
   it('SK-offer 判定里没有任何清单型排除', () => {
     const sk = byKey(run(), 'SK-offer')
-    expect(sk.verdict).toBe('open')
+    expect(sk.verdict).toBe('viable')
     expect(sk.reasons.filter((r) => r.kind === 'excluded')).toHaveLength(0)
   })
   it('OID/EE 清单里的职业不会把 Employment Offer 通道判死(拿清单里的一条真码试)', () => {
@@ -551,7 +557,7 @@ describe('反事实:在曼省同一雇主攒满 12 个月之后', () => {
   it('MB-swm:估分仍是 695(外省学习那 −100 跟着他走),tier 从 2 掉到 0', () => {
     expect(byKey(run(), 'MB-swm').tier).toBe(2)
     const mb = byKey(run(after), 'MB-swm')
-    expect(mb.verdict).toBe('open')
+    expect(mb.verdict).toBe('viable')
     expect(mb.tier).toBe(0)
     expect(mb.score?.value).toBe(695)
     expect(mb.score?.ceiling).toBe(715)
@@ -585,12 +591,22 @@ describe('红线不变量', () => {
     }
   })
 
-  it('每一条 quote 都逐字来自数据行(代码里没有手写的「官方原句」)', () => {
-    // 允许的 quote 池:门槛行的 valueText / label、分值表行的 label、清单行按数据字段拼出的串
+  it('每一条 quote 都逐字来自数据行或策略文件的声明(判定代码里没有手写的「官方原句」)', () => {
+    // 允许的 quote 池:门槛行的 valueText / label、分值表行的 label、清单行按数据字段拼出的串,
+    // 外加**策略文件声明**的那几条(gates / fieldMatchExemption / outOfProvinceGrad ——
+    // 既有形态,每条都带 url+fetched,举得出证)。红线没松:判定层 .ts 里仍不许现编官方句子。
     const pool = new Set<string>()
     for (const r of data.requirements) { if (r.valueText) pool.add(r.valueText.trim()); if (r.label) pool.add(r.label.trim()) }
     for (const f of data.scoreFactors) if (f.label) pool.add(f.label.trim())
     for (const o of data.occupations) pool.add(`${o.stream} — ${o.noc} ${o.name}`)
+    for (const spec of PATHWAYS) {
+      for (const g of Object.values(spec.gates ?? {})) {
+        const q = (g as { quote?: string }).quote
+        if (q) pool.add(q.trim())
+      }
+      if (spec.fieldMatchExemption) pool.add(spec.fieldMatchExemption.quote.trim())
+      if (spec.outOfProvinceGrad) pool.add(spec.outOfProvinceGrad.quote.trim())
+    }
     const quotes = allReasons.map((r) => r.quote).filter(Boolean) as string[]
     expect(quotes.length).toBeGreaterThan(10)
     for (const q of quotes) expect(pool.has(q), `这句 quote 不在数据里:${q}`).toBe(true)
@@ -624,7 +640,7 @@ describe('红线不变量', () => {
   it('excluded 不带 tier;open 一定有 tier', () => {
     for (const v of list) {
       if (v.verdict === 'excluded') expect(v.tier).toBeNull()
-      if (v.verdict === 'open') expect(v.tier).not.toBeNull()
+      if (v.verdict === 'viable') expect(v.tier).not.toBeNull()
     }
   })
 
@@ -645,6 +661,196 @@ describe('红线不变量', () => {
     expect(fact.text).toContain('639')
     expect(fact.text).toContain('3 家')
     expect(fact.quote, 'NL 雇主名录不是官方条文,不许伪装成 quote').toBeUndefined()
+  })
+})
+
+// ── #317 NL 省外院校毕业生:官方另一条并列门槛(先在 NL 干满 12 个月)────────────
+//
+// 病灶(2026-08-15 实拍):阿省毕业、刚拿 PGWP 的人在 NL 国际毕业生这条线上判出 tier=0,
+// 读起来像「拿到 PGWP 就能走」。库里 NL 只有一行 `experience op='none'`(官方确实不设**工作经验**
+// 门槛),而官方另有一页只管非本省来路:先在 NL 全职干满 12 个月才可能被邀。两条是并列的。
+// 出处:gov.nl.ca/immigration/processing-applications-from-individuals-who-previously-resided-…(2025-07-16 生效)
+
+describe('#317 NL 省外院校毕业生:12 个月本省在职门槛', () => {
+  const nlGrad = (over: Partial<VerdictProfile> = {}): VerdictProfile => ({
+    ...C01, canadaStudy: true, permit: 'pgwp', status: 'pgwp', hasOffer: true, fieldMatch: true,
+    province: 'NL', studyProvince: 'NL', ...over,
+  })
+
+  it('NL 本省院校毕业生:tier 不变(官方对他确实不设经验门槛)', () => {
+    const v = byKey(run(nlGrad()), 'NL-intl-grad')
+    expect(v.verdict).toBe('viable')
+    expect(v.tier).toBe(0)
+    expect(v.reasons.some((r) => String(r.key).startsWith('pv.oopGrad')), '本省毕业不该出这条门槛').toBe(false)
+  })
+
+  it('省外院校毕业生:tier≥2,缺口理由带官方原句与出处', () => {
+    const v = byKey(run(nlGrad({ studyProvince: 'AB' })), 'NL-intl-grad')
+    expect(v.tier as number).toBeGreaterThanOrEqual(2)
+    const gap = v.reasons.find((r) => String(r.key).startsWith('pv.oopGrad'))
+    expect(gap, '省外毕业必须摆出这条门槛').toBeTruthy()
+    expect(gap!.kind).toBe('gap')
+    expect(gap!.text).toContain('12 个月')
+    expect(gap!.quote).toContain('12 consecutive months of full-time employment')
+    expect(gap!.evidence?.url).toContain('gov.nl.ca')
+    expect(gap!.evidence?.fetched).toBeTruthy()
+  })
+
+  it('省外毕业 + 已在 NL 干满 12 个月 ⇒ 这条达标,tier 回到 0', () => {
+    const v = byKey(run(nlGrad({ studyProvince: 'AB', expCanadaMonths: 12, province: 'NL' })), 'NL-intl-grad')
+    expect(v.reasons.find((r) => String(r.key).startsWith('pv.oopGrad'))!.kind).toBe('met')
+    expect(v.tier).toBe(0)
+  })
+
+  it('经验攒在别省不算 NL 在职(与同雇主在职时长同一把尺子)', () => {
+    const v = byKey(run(nlGrad({ studyProvince: 'AB', expCanadaMonths: 24, province: 'AB' })), 'NL-intl-grad')
+    expect(v.reasons.find((r) => String(r.key).startsWith('pv.oopGrad'))!.key).toBe('pv.oopGrad.need')
+    expect(v.tier).toBe(2)
+  })
+
+  it('没答学历省 ⇒ 判不了,点名要 studyProvince(不猜他在哪读的书)', () => {
+    const v = byKey(run(nlGrad({ studyProvince: null, fieldMatch: true })), 'NL-intl-grad')
+    expect(v.verdict).toBe('needs-info')
+    expect(v.missingSlots ?? []).toContain('studyProvince')
+    expect(v.reasons.some((r) => r.key === 'pv.oopGrad.condUnknown')).toBe(true)
+    expect(v.availability, '这是他没答,不是本站没收录').toBe('ok')
+  })
+
+  it('没答本省在职月数 ⇒ 判不了,不当成 0 也不当成够了', () => {
+    const v = byKey(run(nlGrad({ studyProvince: 'AB', expCanadaMonths: null })), 'NL-intl-grad')
+    expect(v.reasons.find((r) => String(r.key).startsWith('pv.oopGrad'))!.key).toBe('pv.oopGrad.unknown')
+    expect(v.verdict).toBe('needs-info')
+    expect(v.missingSlots ?? []).toContain('expCanadaMonths')
+  })
+})
+
+// ── #319 tier 的起算点:在读学生的「再攒 N 个月」要等毕业拿到工签才开始走 ──────────
+
+describe('#319 tierBasis:在读学生的经验型 tier 从毕业后起算', () => {
+  const student: VerdictProfile = {
+    ...C01, status: 'study', permit: 'study', province: 'AB', studyProvince: 'AB',
+    canadaStudy: true, hasOffer: true, clb: 7, expCanadaMonths: 0, expForeignMonths: 0,
+    foreignExpSelfEmployed: false, fieldMatch: true, frenchOk: true,
+  }
+
+  it('在读 + 经验型 tier ⇒ after-study(阿省机会通道的 24 个月不是从今天起算)', () => {
+    const ab = byKey(run(student), 'AB-opportunity')
+    expect(ab.tier as number).toBeGreaterThan(0)
+    expect(ab.tierBasis).toBe('after-study')
+  })
+
+  it('同一份档案改成在职 ⇒ 全部回到 now(判据是处境,不是通道)', () => {
+    const worker: VerdictProfile = { ...student, status: 'worker', permit: 'work' }
+    for (const v of run(worker)) expect(v.tierBasis, v.key).toBe('now')
+  })
+
+  it('tier=0 的通道不谈起算点;excluded 也不谈', () => {
+    for (const v of run(student)) {
+      if (v.tier === 0 || v.tier == null) expect(v.tierBasis, v.key).toBe('now')
+      if (v.verdict === 'excluded') expect(v.tierBasis, v.key).toBe('now')
+    }
+  })
+
+  it('居住型 tier 不受影响:搬过去当天就在计时(NB 的 6 个月居住)', () => {
+    // 人在纽省在读:工作经验门槛已达标(6 个月),只剩居住那条 → tier 来自居住 → now
+    const nb = byKey(run({ ...student, province: 'NB', studyProvince: 'NB', expCanadaMonths: 6 }), 'NB-sw')
+    expect(nb.tierBasis).toBe('now')
+  })
+})
+
+// ── #320 AAIP 或款:近 18 个月内在阿省满 12 个月(24 那行仍在)──────────────────
+
+describe('#320 AAIP「或款」:阿省本地经验 12 个月', () => {
+  const abBase: VerdictProfile = {
+    ...C01, province: 'AB', hasOffer: true, permit: 'work', status: 'worker',
+    expCanadaMonths: 12, expForeignMonths: 0, foreignExpSelfEmployed: false,
+  }
+
+  it('现居阿省 + 12 个月加拿大经验 ⇒ 经验缺口 0(条件行覆盖通用 24 行)', () => {
+    const ab = byKey(run(abBase), 'AB-opportunity')
+    expect(ab.tier).toBe(0)
+    const met = ab.reasons.find((r) => r.key === 'pv.exp.work.ok')
+    expect(met, '12 个月那行要判成达标').toBeTruthy()
+    expect(met!.text).toContain('12 个月')
+    expect(met!.quote).toContain('12 months in Alberta')
+  })
+
+  it('同一份档案换到别省 ⇒ 仍按 24 个月判,差 12', () => {
+    const on = byKey(run({ ...abBase, province: 'ON' }), 'AB-opportunity')
+    expect(on.reasons.some((r) => r.key === 'pv.exp.work.short' && /24 个月,差 12 个月/.test(r.text))).toBe(true)
+    expect(on.tier).toBe(2)
+  })
+
+  it('阿省本地那档只认加拿大经验:海外 24 个月顶不上(现居阿省也不行)', () => {
+    const foreign = byKey(run({ ...abBase, expCanadaMonths: 0, expForeignMonths: 24 }), 'AB-opportunity')
+    expect(foreign.reasons.some((r) => r.key === 'pv.exp.work.ok'), '境外经验不是阿省经验').toBe(false)
+    expect(foreign.tier as number).toBeGreaterThan(0)
+  })
+
+  it('没答现居省 ⇒ 退回通用 24 行,并如实说「另有一档判不了」', () => {
+    const unknown = byKey(run({ ...abBase, province: null }), 'AB-opportunity')
+    expect(unknown.reasons.some((r) => r.key === 'pv.condUnknown')).toBe(true)
+    expect(unknown.reasons.some((r) => /24 个月/.test(r.text))).toBe(true)
+  })
+
+  it('没答加拿大学历不影响这条条件的判定(它与学历无关)', () => {
+    const noEdu = byKey(run({ ...abBase, canadaStudy: null }), 'AB-opportunity')
+    expect(noEdu.reasons.some((r) => r.key === 'pv.exp.work.ok')).toBe(true)
+    expect(noEdu.reasons.some((r) => r.key === 'pv.condUnknown'), '条件判得了就不该说判不了').toBe(false)
+  })
+})
+
+// ── #301 通用省估分:能无损映射的省才接,接不上的如实不接 ────────────────────────
+
+describe('#301 官方分值表接线', () => {
+  const abScored: VerdictProfile = {
+    ...C01, province: 'AB', hasOffer: true, permit: 'work', status: 'worker',
+    expCanadaMonths: 12, expForeignMonths: 0, foreignExpSelfEmployed: false,
+  }
+
+  it('AB 接上 AAIP Worker EOI:估分带官方出处,下界≤上界,线来自 pnp_draws', () => {
+    const ab = byKey(run(abScored), 'AB-opportunity')
+    expect(ab.score, 'AB 分值表 30 行在库,必答档位全映射得出 → 该给分').toBeTruthy()
+    expect(ab.score!.system).toContain('AAIP')
+    expect(ab.score!.evidence.url).toContain('alberta.ca')
+    expect(ab.score!.evidence.fetched).toBeTruthy()
+    expect(ab.score!.value).toBeLessThanOrEqual(ab.score!.ceiling as number)
+    // 加分项本站问不到 → 下界,必须自报
+    expect(ab.score!.partial).toBe(true)
+    // 线只许来自抽选行
+    const line = data.draws.filter((d) => d.province === 'AB' && d.kind === 'draw' && d.score != null
+      && /Alberta Opportunity/i.test(d.stream)).sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1))[0]
+    expect(ab.score!.refLine).toBe(line.score)
+  })
+
+  it('分值一分不许编:估分等于官方行加出来的数(拿 pnpSelfScore 独立算一遍对账)', () => {
+    const ab = byKey(run(abScored), 'AB-opportunity')
+    const own = scoreProvince(
+      data.scoreFactors, 'AB',
+      { edu: 'diploma2y', expRecent: 1, expOlder: 0, clb1: 6, clb2: 0, age: 40 },
+      { offer: { pts: data.scoreFactors.find((f) => f.province === 'AB' && f.factor === 'offer' && f.kind === 'row')!.points ?? 0, matched: '', source: 'profile' } },
+      {}, new Set(['education', 'language', 'age', 'workMonths']),
+    )!
+    expect(ab.score!.value).toBe(own.total)
+  })
+
+  it('缺必需槽就不给分(宁缺不编:没考语言的人不许被兜到最低档白捡分)', () => {
+    for (const field of ['clb', 'age', 'edu', 'expCanadaMonths', 'hasOffer'] as const) {
+      const v = byKey(run({ ...abScored, [field]: null }), 'AB-opportunity')
+      expect(v.score, `缺 ${field} 还给分`).toBeUndefined()
+    }
+  })
+
+  it('接不上的省一律不给分:ON/BC/SK/NL(原因见 provinceGridScore 的注释)', () => {
+    for (const key of ['ON-workforce', 'BC-sw', 'BC-build', 'SK-offer', 'NL-intl-grad']) {
+      expect(byKey(run(abScored), key).score, `${key} 不该有估分`).toBeUndefined()
+    }
+  })
+
+  it('下界不许把人判死:AB 的 ceiling 是真上界(加分项按满分),不触发分数鸿沟', () => {
+    const ab = byKey(run(abScored), 'AB-opportunity')
+    expect(ab.verdict).not.toBe('excluded')
+    expect(ab.score!.ceiling as number).toBeGreaterThanOrEqual(ab.score!.refLine as number)
   })
 })
 

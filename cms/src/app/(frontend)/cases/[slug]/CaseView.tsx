@@ -124,7 +124,9 @@ export function CaseView({ caseId, label, question, answer }: {
   const flatTiers = answer.tiers.flatMap((g) => g.rows)
   let rank = 0
   return (
-    <div style={{ background: UI.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
+    <div className="caseWrap" style={{ background: UI.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
+      {/* #300 触控靶:640 断点下 summary 实测 23px,指头点不准;只扩点击区不动桌面版式 */}
+      <style>{`@media(max-width:640px){.caseWrap summary{min-height:44px;display:flex;align-items:center}}`}</style>
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="pathways" />
       <div style={{ flex: '1 0 auto' }}>
         <PageShell pad="1rem 1.25rem 40px">

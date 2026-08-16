@@ -1396,8 +1396,10 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 /* #200:职位名下挂 NOC 官方职业名译名(岗位名看不懂时靠这条;英文界面出英文官方名) */
                 note={nz && nz.toLowerCase() !== (j.title || '').toLowerCase() ? nz : undefined}
                 /* 点公司名=开公司弹框(2026-07-22 Frank「其他弹框都很清晰」:与职位/分类一致,不特殊化;
-                   #182 手机直跳页退役——弹框里有「打开完整页」进深页);stop 保整卡进职位详情不被抢 */
-                company={j.company ? { text: j.company, onClick: stop(() => open('company', j.company)) } : undefined}
+                   #182 手机直跳页退役——弹框里有「打开完整页」进深页);stop 保整卡进职位详情不被抢。
+                   #315:补真 href(=该公司筛选页,与雇主资质卡「该雇主在招职位」同链)——左键 preventDefault
+                   照旧弹框,中键/新标签/键盘/爬虫拿到真链接,<a> 不再是无 href 的假按钮 */
+                company={j.company ? { text: j.company, href: `/jobs?q=${encodeURIComponent(j.company)}`, onClick: (e) => { e.preventDefault(); e.stopPropagation(); open('company', j.company) } } : undefined}
                 /* 担保档徽章 08-10 下放胶囊排(见上 chips)—— 公司名行回归干净一行 */
                 /* #175:薪资退出可点集合——写死的 pointer+onClick 摘除(看着能点点了没反应比不能点更糟) */
                 /* 只认 salaryText,**不兜底回原文**:原来写 (salaryText || salary),于是清洗产物为空时

@@ -170,7 +170,15 @@ describe('金标 C01:一句话进 → 不编数字的路径裁决', () => {
     // NL 2026-08-12 起是「判不了」:门槛清单里 NL 国际毕业生的 job offer 是硬闸(官方原句在
     // gateManifest),而**对话链没有「有没有 offer」这个槽** → 缺答案就不许说「当天能递」。
     // 这正是本次口径改动要的:不知道就说不知道。ON 仍是 tier1(它的缺口是可积累的经验)。
-    expect(v.some((f) => f.label.includes('NL ') && f.label.includes(T.vNeedsInfo)), 'NL 应是判不了').toBe(true)
+    // 2026-08-15 #317 起 NL 对**省外院校**毕业生另有一条硬要求(先在 NL 全职干满 12 个月,官方原句
+    // 在策略文件里)。C01 是安省毕业 → NL 的等待期从 0 抬到 12 个月,于是它不再压在判不了那几行的
+    // 最前面,facts 里可以不出现。断言随之改成「出现就必须还是判不了,且绝不许说成 tier0 当天能递」——
+    // 这正是这条改动要防的那句话。
+    const nl = v.filter((f) => f.label.includes('NL '))
+    expect(nl.some((f) => f.label.includes(T.vTier[0])), 'NL 不许再对省外毕业生说「当天就能递」').toBe(false)
+    for (const f of nl.filter((x) => x.unit === 'path')) {
+      expect(f.label.includes(T.vNeedsInfo) || f.label.includes(T.vWhy), `NL 这行形态不对:${f.label}`).toBe(true)
+    }
     // ON Workforce 同理:官方原句「offers eligible skilled foreign workers with a qualifying job offer」——
     // offer 是硬闸,对话链问不到 → 判不了。tier 仍按可积累项算,只是不再对外说「3-6 个月就能走」。
     expect(v.some((f) => f.label.includes('ON ') && f.label.includes(T.vNeedsInfo)), 'ON 应是判不了').toBe(true)

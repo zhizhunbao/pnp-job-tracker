@@ -41,7 +41,8 @@ export const UNSURE_BAND = 9
 
 // 精确档(2026-08-13 语言合一:基础卷直接问精确 CLB,官方分值表不再追问第二遍)。
 // index = 选项 value;1「还没考」= 没有分,不传。**不用 CLB 数字当 value**:9 会撞 UNSURE_BAND。
-const CLB = [0, 0, 4, 5, 6, 7, 8, 9, 10]
+// export:估分段推导双语加分(PnpScoreCard #305)按同一把梯子读英语档,不许另抄一份。
+export const CLB = [0, 0, 4, 5, 6, 7, 8, 9, 10]
 const EXP = [0, 0, 6, 18, 30]          // a1「没有」= 0 个月,是答案不是缺答
 // a4「先看哪个够得着」= 不限省。**海洋四省挂 5 不挂 4**:4 已经在生产用了,改它的含义会把
 // 已存档案里的「不限省」静默变成「海洋四省」(2026-08-03 加这一档时的取舍——显示顺序看 choices 数组,与值无关)。
@@ -57,6 +58,11 @@ const TOTAL_EXP = [0, 0, 6, 12, 24, 36, 48, 60]
 // B1-4 PGWP:课程时长档下界 / 层级(引擎只对 master 有特例,其余按时长档)
 const STUDY_MONTHS = [0, 4, 8, 12, 24]
 const STUDY_LEVEL = ['', 'college', 'bachelor', 'master', 'doctorate']
+// 学制年数档(2026-08-15 #316):index=选项 value → 整年数。「不到 1 年」= 0 整年,是答案不是缺答;
+// 档取下界(同 CLB/经验口径)。四档而不是三档:消费端的阈值有 ≥1 / ≥2 / ≥3 三道
+// (crsEstimate 学习加分 1 年与 3 年分档;pathVerdict/ mbEoiEstimate 要 ≥2、≥3),并成「1 年及以下」
+// 就得在 0 和 1 之间替他挑一头 —— 拆开就不用猜。
+const EDU_YEARS = [0, 0, 1, 2, 3]
 // statusInCanada 拆闸(2026-08-15):许可类型档。学签在读不问(处境题已说明持学签),
 // 境外不问(没有加拿大许可可答)—— 见各题 visible。
 const PERMIT = ['', 'study', 'pgwp', 'work', 'none']
@@ -343,6 +349,28 @@ export const FIELDS: Record<string, FieldDef> = {
         { value: 'NL', text: l('Newfoundland and Labrador', '纽芬兰 Newfoundland', '뉴펀들랜드') },
         { value: 'PE', text: l('Prince Edward Island', '爱德华王子岛 PEI', '프린스에드워드아일랜드') },
         { value: 'TERR', text: l('Territories', '三个领地 Territories', '준주 지역') },
+      ],
+    },
+  },
+  // 学制年数(2026-08-15 #316):全站此前从没问过,后果是三处官方条款恒判不了 ——
+  // ON「近 3 年安省院校毕业只要 3 个月经验」那行要 ≥2 年学制才适用(pathVerdict conditionHolds),
+  // MB 学历分按 1/2/3+ 年分档(pathVerdict mbEduOf、mbEoiEstimate mbEduYears),
+  // CRS 加拿大学习加分分 1-2 年与 3 年+ 两档(crsEstimate)。消费端全按**年**收,这里给整年数。
+  // 只问有加拿大学历的人(与 fieldMatchBand/eduProv 同闸):海外学历不喂这三处条款,问了挂不上结论。
+  eduYearsBand: {
+    engineKey: 'eduYears',
+    unlocks: ['rpt.g.basics'],
+    tier: 'free',
+    visible: (a) => a.canadaEduBand === 1,
+    toAnswer: (b: number, all) => (all.canadaEduBand === 1 && b && b !== UNSURE_BAND ? EDU_YEARS[b] : undefined),
+    q: {
+      title: l('How long was that program?', '这个学历的学制几年?', '그 과정은 몇 년제인가요?'),
+      choices: [
+        { value: 1, text: l('Under 1 year', '不到 1 年', '1년 미만') },
+        { value: 2, text: l('1 year', '1 年', '1년') },
+        { value: 3, text: l('2 years', '2 年', '2년') },
+        { value: 4, text: l('3 years or more', '3 年及以上', '3년 이상') },
+        { value: 9, text: l('Not sure', '不清楚', '잘 모르겠음') },
       ],
     },
   },

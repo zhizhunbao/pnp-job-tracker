@@ -4,6 +4,7 @@
 // 居中弹框直接用 <Modal>; 支持 header 拖拽移动 (draggable) 和 放大全屏/还原 (resizable)。
 import { useEffect, useRef, useState } from 'react'
 
+import { useLang } from '../LangProvider'
 import { useOverlayClose } from './overlay'
 
 // 窄屏判定(E8-03,单一来源):≤640px 弹窗一律全屏。弹窗都是水合后才开,惰性初值直接读 matchMedia 无水合差异。
@@ -55,6 +56,7 @@ export function Modal({ onClose, size = 'md', z = 50, pad = true, vh = 85, dragg
   children: React.ReactNode
 }) {
   const ov = useOverlayClose(onClose)
+  const [, , t] = useLang()   // #314:全屏钮的 title/aria-label 原是写死中文,英韩界面属性残留中文
   const narrow = useIsNarrow()
   const [maximized, setMaximized] = useState(false)
   const [pos, setPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
@@ -116,8 +118,8 @@ export function Modal({ onClose, size = 'md', z = 50, pad = true, vh = 85, dragg
           {actions}
           {resizable && !narrow && (
             <button onClick={() => { setMaximized(!maximized); setPos({ x: 0, y: 0 }) }}
-              aria-label={maximized ? '还原' : '全屏展开'}
-              title={maximized ? '还原尺寸' : '全屏展开'}
+              aria-label={t(maximized ? 'cw.restore' : 'cw.max')}
+              title={t(maximized ? 'cw.restore' : 'cw.max')}
               style={iconBtnS}>
               {maximized ? (
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7"/></svg>

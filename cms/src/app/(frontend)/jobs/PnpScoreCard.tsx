@@ -15,7 +15,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { QuizChecks, QuizChoices, QuizNav, QuizSub, QuizTitle } from '../quiz/QuizUI'
 import type { Lang, TFn } from './i18n'
 import { officialLabel as label } from '@/lib/officialLabels'
-import { pullAndMerge, readScoreAnswers, writeAnswers, writeScoreAnswers, type ScoreAnswers } from '@/lib/answers'
+import { pullAndMerge, readAnswers, readScoreAnswers, writeAnswers, writeScoreAnswers, type ScoreAnswers } from '@/lib/answers'
+import { CLB } from '@/lib/fields'
 import { DEFAULT_PROFILE, EDU_KEYS, scoreProvince, streamMatches, type DrawRow, type EduKey, type ScoreFactor, type SelfProfile } from '@/lib/pnpSelfScore'
 
 // 打分是**关于你这个人**的功能,不绑某一个岗位(Frank 2026-07-27「应该单独弄个功能吧,
@@ -39,6 +40,12 @@ const guessArea = (city: string): number => {
 
 // 年龄下拉的选项档(打分按选中值算,预填吸附也以此为准 —— 两处必须同一张表)
 const AGES = [17, 19, 25, 30, 34, 38, 42, 45, 48, 52]
+
+// #304 offer 前提因子族:这些因子在官方表里全以「有 offer」为前提(AB 的 offer/offerSector/
+// offerArea/regulated、SK 的 offer)。闸门只认**基础卷**的 hasJobOffer(ctx.hasOffer):
+// true=开;false/没答(undefined)=关 —— 没答不等于有。关闸时整族不出题、勾选不计分;
+// 存量勾选留在档里不删,基础卷改回「有」即恢复参与。按键族识别,别的省加同名因子自动生效。
+const OFFER_PREMISE = new Set(['offer', 'offerSector', 'offerArea', 'regulated'])
 
 // 分值卡学历档 → 字段库 eduBand(fields.ts EDU 阶梯:1 高中 / 2 大专或证书 / 3 本科 / 4 硕 / 5 博)。
 // tradeCert/cert1y/diploma2y 在字段库里同属「大专或证书」一档 —— 判定引擎按 eduBand 消费,
@@ -196,7 +203,8 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   const [wage, setWage] = useState<number>(() => Math.round(ctx.hourly ?? 0))
   // 保守默认:知道城市才猜地区,否则默认 Area 1(0 分)—— 不许用有利默认把分数吹上去
   const [areaI, setAreaI] = useState<number>(() => (ctx.city ? guessArea(ctx.city) : 0))
-  // 基础卷答过(ctx.hasOffer 有值)以基础卷为准;没答过才落回分值卡自问的存档
+  // 基础卷答过(ctx.hasOffer 有值)以基础卷为准;存档兜底只剩历史答案(#304 起分值卡不再自问,
+  // 且闸门只认基础卷的「有」—— 这个 state 只在开闸后供结果区勾选框撤销用)
   const [hasOffer, setHasOffer] = useState<boolean>(() => (ctx.hasOffer !== undefined ? !!ctx.hasOffer : readScoreAnswers().hasOffer ?? false))
   // offer 是否**真答过**(存档有值/本次点过):没答过不把默认 false 写进档 —— 写了,
   // schema 升级后的挂载写就成了「新答案」,会以新者胜的名义把服务端档顶掉
@@ -259,6 +267,47 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
     const allowed = limits?.[k]
     return allowed ? all.filter((n) => allowed.includes(n)) : all
   }
+  // #304 闸门取值:基础卷说「有 offer」才开(ctx.hasOffer===true);hasOffer 状态在开闸时
+  // 由 ctx 初始化,留着它是让(将退役的)独立估分页的勾选仍能撤销 —— 关闸时它说什么都不算
+  const offerYes = ctx.hasOffer === true && hasOffer
+  // #305 基础卷答案(每轮渲染现读:答案改了,父级重渲即取到新值)—— 推导只从这里取,不问第二遍
+  const basics = readAnswers()
+  /** #305:能从基础卷答案推导的加分项不再出题 —— 返回 null=推不出(照旧出题);
+   *  返回 map=该因子逐行的勾选值(seq → 是否成立),直接进算分并回显为已填。推导规则逐因子:
+   *  - eduLocationCanada(学历完成地):canadaEduBand=2(无加拿大学历)→ 本省/外省两行皆否;
+   *    =1 且 eduProv 已答 → eduProv 是本省命中「本省完成」行,否则命中「外省完成」行(按行文
+   *    another province 识别行,不赌行序);canadaEduBand 没答/不清楚、eduProv 没答 → 推不出。
+   *  - workLocationCanada(加拿大经验所在地):expBand=1(加拿大经验「没有」=0 个月)→
+   *    「本省/外省 ≥6 个月加拿大经验」必然全否;有经验时不知道攒在哪省、够不够 6 个月 → 推不出。
+   *  - language 双语加分(行文含 both English and French,门槛分从官方行文解析,如 AB 的 4):
+   *    法语侧由 frenchBand 判 —— 1=NCLC 5 四项(门槛 ≤5 时达标)、2=不会/没到 NCLC 5(按不满足计,
+   *    硬约束⑤:不许用有利默认把分数吹上去);英语侧由基础卷精确 CLB 档判(1「还没考」=CLB 0)。
+   *    任一侧没答、门槛解析不出、门槛 >5(frenchBand 判不动)→ 推不出,照旧出题。 */
+  const deriveBonus = (prov: string, factor: string, rows: ScoreFactor[]): Record<number, boolean> | null => {
+    if (factor === 'eduLocationCanada') {
+      if (basics.canadaEduBand === 2) return Object.fromEntries(rows.map((r) => [r.seq, false]))
+      if (basics.canadaEduBand === 1 && basics.eduProv)
+        return Object.fromEntries(rows.map((r) => [r.seq,
+          /another province/i.test(r.label) ? basics.eduProv !== prov : basics.eduProv === prov]))
+      return null
+    }
+    if (factor === 'workLocationCanada') {
+      return basics.expBand === 1 ? Object.fromEntries(rows.map((r) => [r.seq, false])) : null
+    }
+    if (factor === 'language' && rows.length === 1 && /both english and french/i.test(rows[0].label)) {
+      const th = /(?:CLB|NCLC)[^0-9]*(\d+)/i.exec(rows[0].label)
+      if (!th) return null
+      const n = Number(th[1])
+      if (basics.frenchBand === 2) return { [rows[0].seq]: false }
+      if (basics.frenchBand !== 1 || n > 5 || !basics.clbBand) return null
+      return { [rows[0].seq]: (CLB[basics.clbBand] ?? 0) >= n }
+    }
+    return null
+  }
+  // 推导产物:算分用的勾选覆盖(推导值优先于存量勾选)+ 条件格回显(已填态与既有一致)
+  const derivedTicks: Record<string, boolean> = {}
+  const derivedEcho: { key: string; prov: string; label: string; value: string }[] = []
+  const bonusWord = t('ps.bonusOf', { prov: '' }).trim()
   const addChoices = (key: string, title: string, choices: ExtraChoice[], sub?: string, echoLabel?: string) => {
     if (choices.length > 1) extraQuestions.push({ key, title, sub, choices, echoLabel })
   }
@@ -316,29 +365,40 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   // 标题只能写成「以下哪些符合你的情况」,**这个问句没有主语**,Frank 自己都没看懂。
   // 现在标题就是组名、小注是省名(恒显示),一屏内的几条必定同源。
   for (const prov of provinces) {
+    // 「手上的 offer」只归基础卷问(2026-08-15 #304,收掉此前 ctx 没答时的自问兜底):
+    // 答「有」→ offer 行直接计分;答「没有」或没答 → 不计分也不再追问 —— 没答不等于有。
+    // offer 前提族(OFFER_PREMISE)同闸:关闸时整族不出题,分母(已答 n/N)随之变小。
     const groups: { factor: string; rows: ScoreFactor[] }[] = []
-    const offer = factors.find((f) => f.province === prov && f.factor === 'offer' && f.kind === 'row')
-    // 基础卷答过「手上的 offer」就不再问(2026-08-14 offer 合一,与语言/经验同批):
-    // ctx.hasOffer 有值 = 答过(有/没有都算),答案直接进算分;undefined = 没答或「不清楚」,照问
-    if (offer && ctx.hasOffer === undefined) groups.push({ factor: 'offer', rows: [offer] })
     const bonus = factors.filter((f) => f.province === prov && f.kind === 'bonus').filter(rowApplies)
+      .filter((f) => offerYes || !OFFER_PREMISE.has(f.factor))
     for (const name of Array.from(new Set(bonus.map((b) => b.factor)))) {
       groups.push({ factor: name, rows: bonus.filter((b) => b.factor === name) })
     }
     for (const g of groups) {
+      // #305:推得出的因子不出题 —— 推导值进算分(derivedTicks),条件格回显为已填(derivedEcho,
+      // 格式与答过的题一致:单行=是/否,多行=命中的官方行文;点格不再有题可进,改答案回基础卷改)
+      const derived = deriveBonus(prov, g.factor, g.rows)
+      if (derived) {
+        for (const [seq, on] of Object.entries(derived)) derivedTicks[`${prov}:${g.factor}:${seq}`] = on
+        const hit = g.rows.filter((r) => derived[r.seq])
+        derivedEcho.push(g.rows.length === 1
+          ? { key: `${prov}:${g.factor}:0`, prov, label: `${bonusWord} ${label(g.rows[0].label, lang)}`,
+            value: t(hit.length ? 'ps.yes' : 'ps.no') }
+          : { key: `${prov}:${g.factor}:0`, prov, label: `${bonusWord} ${t('ps.f.' + g.factor) || g.factor}`,
+            value: hit.length ? hit.map((r) => label(r.label, lang)).join(lang === 'zh' ? '、' : ', ') : t('ps.no') })
+        continue
+      }
       // 现有最大的组是 3 条;这道闸是给以后加省的数据留的,别让某个省一屏冒出 8 条
       for (let i = 0; i < g.rows.length; i += 4) {
         const chunk = g.rows.slice(i, i + 4)
-        const isOffer = g.factor === 'offer'
-        const tickKey = (r: ScoreFactor) => (isOffer ? `${prov}:offer` : `${prov}:${r.factor}:${r.seq}`)
-        const isOn = (r: ScoreFactor) => (isOffer ? hasOffer : !!ticks[tickKey(r)])
+        const tickKey = (r: ScoreFactor) => `${prov}:${r.factor}:${r.seq}`
+        const isOn = (r: ScoreFactor) => !!ticks[tickKey(r)]
         // 官方原文「…, or」= 与上一条二选一(xorPrev)。把连成一串的 xor 归成同一簇:
         // 勾上一条就把同簇的另一条放下 —— 算分本来就只取簇内最大的那条,UI 放任两个都勾
         // 等于显示与口径分叉(用户勾了 8 和 6,以为 14,实际只算 8)
         const cluster: number[] = []
         chunk.forEach((r, idx) => cluster.push(idx === 0 ? 0 : (r.xorPrev ? cluster[idx - 1] : cluster[idx - 1] + 1)))
         const setOn = (r: ScoreFactor, on: boolean) => {
-          if (isOffer) { answerHasOffer(on); return }
           const mine = cluster[chunk.indexOf(r)]
           setTicks((m) => {
             const next = { ...m, [tickKey(r)]: on }
@@ -394,9 +454,9 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
     // 同时是档位题和加分勾选,没这个前缀两个格子同名。bonus 题的 key 恒为 省:因素:批 三段。
     const short = q.echoLabel || q.title
     const isBonus = q.key.split(':').length === 3
-    const bonusWord = t('ps.bonusOf', { prov: '' }).trim()
     return { key: q.key, prov: provOfKey(q.key), label: isBonus ? `${bonusWord} ${short}` : short, value, filled }
-  })
+    // #305:推导出的因子不占题,但格子照摆、恒为已填 —— 值来自基础卷答案,已填态与答过的题同一副样式
+  }).concat(derivedEcho.map((r) => ({ ...r, filled: true })))
   const echoSig = JSON.stringify(echoRows)
   useEffect(() => {
     onQuestionnaireAnswers?.(JSON.parse(echoSig) as { key: string; prov: string; label: string; value: string; filled: boolean }[])
@@ -445,6 +505,12 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
     return () => { dead = true }
   }, [ctx.noc])
 
+  // 算分用的**有效**勾选:#305 推导值优先于存量勾选(推导来自基础卷答案 = 他亲口答的);
+  // #304 关闸时 offer 前提族的勾选一律不计分 —— 存量不删,只是不参与,基础卷改回「有」就恢复。
+  // memo 依赖用签名串(effTicks 每轮渲染都是新引用,直接进依赖等于 memo 失效)。
+  const effTicks: Record<string, boolean> = { ...ticks, ...derivedTicks }
+  if (!offerYes) for (const k of Object.keys(effTicks)) { if (OFFER_PREMISE.has(k.split(':')[1] || '')) effTicks[k] = false }
+  const effSig = JSON.stringify(effTicks)
   const scores = useMemo(() => provinces.map((prov) => {
     const mine = factors.filter((f) => f.province === prov)
     const overrides: Record<string, { pts: number; matched: string; source: 'profile' | 'job' | 'tick' }> = {}
@@ -465,7 +531,8 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
     }
     const offerRows = mine.filter((f) => f.factor === 'offer' && f.kind === 'row')
     if (offerRows.length) {
-      overrides.offer = { pts: hasOffer ? (offerRows[0].points ?? 0) : 0, matched: offerRows[0].label, source: 'tick' }
+      // #304:offer 行只认基础卷的「有」(offerYes);没答/答没有 → 0 分,不再有自问兜底
+      overrides.offer = { pts: offerYes ? (offerRows[0].points ?? 0) : 0, matched: offerRows[0].label, source: 'tick' }
     }
     for (const name of Array.from(new Set(mine.filter((f) => f.kind === 'row').map((f) => f.factor)))) {
       // 这些因素已有 profile/job 映射;其余因素由用户直接选择官方档位。
@@ -495,8 +562,10 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
       const hit = mine.find((f) => f.factor === name && f.kind === 'row' && f.seq === answer)
       if (hit) overrides[name] = { pts: hit.points ?? 0, matched: hit.label, source: 'profile' }
     }
-    return scoreProvince(factors, prov, profile, overrides, ticks)
-  }).filter(Boolean) as NonNullable<ReturnType<typeof scoreProvince>>[], [provinces, factors, profile, ticks, wage, areaI, hasOffer, rowAnswers, ctx.noc, ctx.teer])
+    return scoreProvince(factors, prov, profile, overrides, effTicks)
+    // effTicks 以签名串 effSig 代入依赖(理由见其声明处)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }).filter(Boolean) as NonNullable<ReturnType<typeof scoreProvince>>[], [provinces, factors, profile, effSig, wage, areaI, offerYes, rowAnswers, ctx.noc, ctx.teer])
 
   // 手风琴展开态:目标省默认开;'__closed' = 全收起(点开着的行就是收起)
   const [openProv, setOpenProv] = useState<string | null>(null)
@@ -505,7 +574,11 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   const resolvedOpen = openProv === '__closed' ? ''
     : (openProv ?? (scores.some((x) => x.province === ctx.province) ? ctx.province! : scores[0].province))
 
+  // 结果区的加分勾选清单与算分同口径:#304 关闸时 offer 前提族不摆(勾了也不计分=摆着骗人);
+  // #305 推导出的因子不摆(值由基础卷答案定,勾选框改不动它)
   const bonusOf = (prov: string) => factors.filter((f) => f.province === prov && f.kind === 'bonus')
+    .filter((f) => offerYes || !OFFER_PREMISE.has(f.factor))
+    .filter((f) => !(`${prov}:${f.factor}:${f.seq}` in derivedTicks))
 
   const asking = !!(inputs && targetMode && showQuestionnaire)
   // 结果区(含标题)在答完之前整块不出:各省估分是自愿的第二段,没答就该只留外层那个入口,
@@ -638,7 +711,9 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
       {scores.map((s) => {
         const open = s.province === (resolvedOpen || scores[0].province)
         const list = bonusOf(s.province)
-        const offerRow = factors.find((f) => f.province === s.province && f.factor === 'offer' && f.kind === 'row')
+        // #304:offer 勾选框只在基础卷答了「有 offer」时摆(闸门与算分同口径,没答不等于有)
+        const offerRow = ctx.hasOffer === true
+          ? factors.find((f) => f.province === s.province && f.factor === 'offer' && f.kind === 'row') : undefined
         const { line } = scoreAnchor(s, draws, streams[s.province] || '')
         const gap = line == null ? null : line - s.total
         return (

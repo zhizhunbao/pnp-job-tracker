@@ -212,6 +212,21 @@ export function toEngineAnswers(a: Answers): Record<string, unknown> {
 // (pullAndMerge / push 的响应)才置位,匿名用户不多发一次请求。写失败静默,下次改动自然重试。
 const META_KEY = 'o2p_answers_meta_v1'   // { updatedAt: ISO } = 本地档最后真改动时刻(合并比新旧用)
 
+// #311 登录迹象(2026-08-15):匿名用户每个消费页挂载都无条件 GET /api/account/answers,
+// 一页一条 console 401。payload-token 是 httpOnly,前端 document.cookie 根本读不到它 ——
+// 所以由同步这层自己维护一枚 JS 可读的伴随 cookie 当「登录过的迹象」:
+//   置位 = 任一同步请求 200(邮箱登录走 AuthForm 的 pullAndMerge(true);Google 走回调 Set-Cookie);
+//   清除 = 吃到 401。没有迹象 → 挂载时不发请求,匿名 401 消失。
+// 取舍:迹象可能比会话活得久(登出/会话过期不清它)→ 那台浏览器多吃**一次** 401 后自动清位,
+// 可接受;反过来(把登录用户误判成匿名,答案档永不同步)不可接受。
+const LI_COOKIE = 'o2p_li'               // 改名要连 api/auth/google/callback 的 Set-Cookie 一起改
+const hasLoginTrace = (): boolean => {
+  try { return typeof document !== 'undefined' && new RegExp(`(?:^|;\\s*)${LI_COOKIE}=1`).test(document.cookie) } catch { return false }
+}
+const setLoginTrace = (on: boolean): void => {
+  try { document.cookie = `${LI_COOKIE}=${on ? '1' : ''}; path=/; max-age=${on ? 31536000 : 0}; samesite=lax` } catch { /* ignore */ }
+}
+
 let loggedIn: boolean | null = null      // null=登录态未知(push 不发);pullAndMerge 探明后才开闸
 let syncTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -233,14 +248,17 @@ function touched(): void {
 }
 
 async function pushToServer(): Promise<void> {
+  // 同规则(#311):没有登录迹象不发 —— 调用点都闸在 loggedIn===true 后面,这里是兜底
+  if (!hasLoginTrace()) return
   try {
     const r = await fetch('/api/account/answers', {
       method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ basic: readAnswers(), score: readScoreAnswers() }),
     })
-    if (r.status === 401) { loggedIn = false; return }
+    if (r.status === 401) { loggedIn = false; setLoginTrace(false); return }
     if (!r.ok) return                     // 静默:答案还在本地,下次改动重试
     loggedIn = true
+    setLoginTrace(true)
     const d = await r.json().catch(() => null)
     // 与服务端对表:本地时刻换成服务端 updatedAt,此后拉档不会把同一份内容再覆一遍
     if (typeof d?.updatedAt === 'string') writeMeta(d.updatedAt)
@@ -258,15 +276,21 @@ function applyServer(doc: { basic?: unknown; score?: unknown; updatedAt: string 
 }
 
 /** 拉服务端档并与本地合并(登录成功回调、消费页挂载时调)。返回 true = 本地被服务端覆盖,
- *  调用方需重建 state。未登录(401)/失败一律 false,页面行为与从前完全一致。 */
-export async function pullAndMerge(): Promise<boolean> {
+ *  调用方需重建 state。未登录(401)/失败一律 false,页面行为与从前完全一致。
+ *  afterLogin=true 只给 AuthForm 登录成功后那一调:此刻会话刚建立、迹象 cookie 还没置位,
+ *  必须绕过迹象闸发这第一枪(200 回来迹象即置位,后续挂载全走闸)。 */
+export async function pullAndMerge(afterLogin = false): Promise<boolean> {
   if (typeof window === 'undefined') return false
+  // #311:没有任何登录迹象 → 不发请求(匿名挂载零请求零 401)。迹象过期/已登出的残留
+  // 会在下面吃一次 401 后清位,下一个页面起恢复零请求。
+  if (!afterLogin && !hasLoginTrace()) return false
   try {
     const localAt = readMetaAt()
     const r = await fetch('/api/account/answers', { credentials: 'include' })
-    if (r.status === 401) { loggedIn = false; return false }
+    if (r.status === 401) { loggedIn = false; setLoginTrace(false); return false }
     if (!r.ok) return false
     loggedIn = true
+    setLoginTrace(true)
     const doc = (await r.json().catch(() => null))?.answers
     const serverAt = typeof doc?.updatedAt === 'string' ? (Date.parse(doc.updatedAt) || 0) : 0
     // 拉档途中用户又答了题 → 本地为准,这轮不覆盖(touched 已排好同步)

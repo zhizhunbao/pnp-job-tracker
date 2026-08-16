@@ -23,6 +23,32 @@ export type FieldMatchExemption = {
   url: string
 }
 
+/**
+ * 省外院校毕业生的额外在职门槛(2026-08-15 #317)。
+ *
+ * 病灶:NL 国际毕业生这条线在库里只有一行 `experience op='none'`(官方确实不设**工作经验**门槛),
+ * 于是一个阿省毕业、刚拿 PGWP 的人在这条线上判出 tier=0 —— 读起来像「拿到 PGWP 就能走」。
+ * 而官方另有一条**只管非本省来路**的政策:先在本省干满一年才可能被邀。两条是并列条款,
+ * 缺了后者不是「官方没有」,是我们只读了一页。
+ *
+ * 🔴 与 types 顶部边界一(门槛数字仍在库里)的关系:这条**尚未入 pnp_requirements**(欠账:
+ *    该由 etl/pnp/build_nl_req.py 抓成一行 `factor=experience, appliesCondition=grad-other-province`)。
+ *    在入库之前按策略文件既有形态(gates 的 quote 例外)如实声明,判定层据此判;
+ *    行一旦入库,这里删掉即可 —— 判定层挑行的路径不变。
+ * 🔴 四态口径:这是「官方有、且我们举得出证」的 ok 态,**不是** not-collected;
+ *    quote/url/effective 三样缺一不可,举不出证就别写这个字段。
+ */
+export type OutOfProvinceGrad = {
+  /** 官方要求的本省全职在职月数(官方原句里那个数,不许自己换算) */
+  months: number
+  /** 官方原句(引用,永不翻译) */
+  quote: string
+  url: string
+  fetched: string
+  /** 官方页自报的生效日 */
+  effective?: string
+}
+
 /** 展示层要的通道特性(2026-08-15 C 批:把前端那 11 处 `key === 'AIP'` 收成字段)。
  *  🔴 边界:这里只放**这条通道与别人不一样的地方**,颜色/间距/排版仍归前端 ——
  *  前端读字段、不认 key,否则拆完还是散的,只是散得好看一点。 */
@@ -83,6 +109,9 @@ export type PathwayStrategy = {
 
   /** 专业对口闸的例外(只有声明了 gates.fieldMatch 的通道才用得上) */
   fieldMatchExemption?: FieldMatchExemption
+
+  /** 省外院校毕业生的**额外在职门槛**(2026-08-15 #317) */
+  outOfProvinceGrad?: OutOfProvinceGrad
 
   /** 展示层特性(缺省即「普通省提名通道」的那套) */
   ui?: PathwayUi

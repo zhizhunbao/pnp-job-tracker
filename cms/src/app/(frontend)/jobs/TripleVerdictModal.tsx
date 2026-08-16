@@ -41,6 +41,9 @@ type TvWire = {
   ok: boolean
   noc: string | null
   nocName: string | null
+  // #326:NOC 职业名中/韩译(服务端 tripleWire 带下;旧缓存响应可能没有 → 可选)
+  nocTitleZh?: string | null
+  nocTitleKo?: string | null
   teer: number | null
   province: string
   conclusion?: TvConclusion
@@ -289,11 +292,13 @@ function VRow({ state, label, main, sub }: { state: string; label: string; main:
 /** 事实瓦片(职位名/雇主/地点/职业代码/职业层级):与判定瓦片同族,只是不配状态色。
  *  解剖与 VRow **逐值相同**(2026-08-14 Frank「英文和中文一行也没对齐」——先前内边距/字号/行高
  *  各差一点,同一行里事实瓦片与判定瓦片基线错位) */
-function FactTile({ label, value }: { label: string; value: string }) {
+function FactTile({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div style={{ minWidth: 0, background: '#f8fafc', border: '1px solid #eef2f7', borderRadius: 9, padding: '7px 10px 8px' }}>
       <div style={{ color: '#9ca3af', fontSize: 11, lineHeight: 1.35, marginBottom: 2 }}>{label}</div>
       <div title={value} style={{ color: '#374151', fontSize: 13, fontWeight: 600, lineHeight: 1.5, wordBreak: 'break-word' }}>{value}</div>
+      {/* 灰字小注(#326 帖面原名):形态照 VRow 的 sub,一字不改 —— 同族瓦片一个长相 */}
+      {sub ? <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.55, marginTop: 2, wordBreak: 'break-word' }}>{sub}</div> : null}
     </div>
   )
 }
@@ -412,7 +417,14 @@ export function TripleVerdictPanel({ job, lang, profileComplete = false, refresh
         {/* 事实瓦片与判定瓦片同一副四列栅格**流式续排**(2026-08-14 Frank「为什么这个三个卡片一行」——
             先前两组各自起行,3+2;并进一个栅格后 4+1,与申请人条件卡同节奏) */}
         <div className="tvAnswers" style={{ marginTop: 4 }}>
-          <FactTile label={t('tv.f.title')} value={job.title} />
+          {/* #326:zh/ko 界面主文案=NOC 职业名对应语言(帖面标题无逐帖译文,官方职业名库里现成),
+              帖面英文原名降灰注;en 界面/无译名照旧原名做主文案。标签仍是「职位名」。 */}
+          {(() => {
+            const nl = (lang === 'zh' ? d?.nocTitleZh : lang === 'ko' ? d?.nocTitleKo : '') || ''
+            return nl && nl.toLowerCase() !== (job.title || '').toLowerCase()
+              ? <FactTile label={t('tv.f.title')} value={nl} sub={job.title} />
+              : <FactTile label={t('tv.f.title')} value={job.title} />
+          })()}
           <FactTile label={t('tv.f.noc')} value={d?.noc ? `NOC ${d.noc}` : '—'} />
           <FactTile label={t('tv.f.teer')} value={d?.teer == null ? '—' : `TEER ${d.teer}`} />
           {rowTiles(occRows)}

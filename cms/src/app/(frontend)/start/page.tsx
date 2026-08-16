@@ -15,7 +15,7 @@ import { normalizeProfile } from '@/lib/match'
 import { loadOccStats, loadProvExtra } from '../stats/lib'
 import { PROVS } from '../stats/shared'
 import { StartView, type HomeStats } from './StartView'
-import { fetchSponsorEmployers } from '@/lib/sponsorEmployers'
+import { buildSponsorBoards, fetchSponsorEmployers, SE_SSR_ROWS } from '@/lib/sponsorEmployers'
 
 export const dynamic = 'force-dynamic'
 
@@ -124,32 +124,16 @@ async function loadHomeStats(pool: any, payload: any): Promise<Omit<HomeStats, '
   for (const r of sponsorRows) for (const n of r.nocs ?? []) nocSet.add(n)
   const nocCat: Record<string, { broad: string; mid: string; fine: string }> = {}
   for (const o of occRows) if (o.broad && nocSet.has(o.noc) && !nocCat[o.noc]) nocCat[o.noc] = { broad: o.broad, mid: o.mid ?? '', fine: o.fine ?? '' }
-  // Frank 08-08 三分表:对应三类人——没工签→LMIA、有工签→PNP 担保记录(省清单命中,二拍撤 LMIA 维)、想去海洋省→AIP
-  type SR = (typeof sponsorRows)[number]
-  // Frank 08-08「不要只显示 50 条」:货架页下架后橱窗即货架本体,三表全量装填客户端翻页。
-  // 瘦身:cities 表格不渲不筛,置空;nocs 留着供职业筛(实测独立体积 0.10MB,gzip 后可忽略)
-  const seSlice = (rows: typeof sponsorRows, keep: (r: SR) => boolean, order?: (a: SR, b: SR) => number) => {
-    // 缓存行全站共享:filter 产新数组供排序,map 产新对象供瘦身,均不动缓存
-    const hit = rows.filter(keep)
-    if (order) hit.sort(order)
-    return { top: hit.map((r) => ({ ...r, cities: [] })), total: hit.length }
-  }
+  // Frank 08-08 三分表:对应三类人——没工签→LMIA、有工签→PNP 担保记录(省清单命中,二拍撤 LMIA 维)、想去海洋省→AIP。
+  // #313(LCP 7.15s 真因):三表全量(16,430 行)序列化进 RSC payload 把 SSR 文档撑到 6.92MB ——
+  // 「全量可翻页」拍板不动,只换运输方式:SSR 只带每表前 SE_SSR_ROWS 行 + total,挂载后
+  // StartView 拉 /api/sponsor-employers 换全量(手法照本页 occ 大表的 /api/market-stats 先例)。
+  // 三表构建(筛选+排序)下沉 lib/sponsorEmployers.buildSponsorBoards,与 API 路由共用一份,不 fork。
+  const boards = buildSponsorBoards(sponsorRows)
+  const ssrSlice = (b: typeof boards.lmia) => ({ top: b.top.slice(0, SE_SSR_ROWS), total: b.total })
   return {
     total: proof?.total || null, named: proof?.named || null,
-    sponsor: {
-      // LMIA 表按新近度排(Frank 08-08「按最近 LMIA 数排前面」,与 #278 新近度主轴同拍):最近一季→近半年→近一年→在招
-      lmia: seSlice(sponsorRows, (r) => r.lmiaPositions > 0, (a, b) => b.lmia1q - a.lmia1q || b.lmia2q - a.lmia2q || b.lmia4q - a.lmia4q || b.openJobs - a.openJobs),
-      // #285 三灯默认序(Frank 08-08「投了入职了有什么用」终态,PNP 表=named 视图):
-      // 灯①雇主资格(达标 0 → 待核/公共部门 1 → 差项 2:差项=对照官方门槛明确不够,投递优先级垫底,
-      // 与列内 VERDICT_RANK「信息量大先看」不同轴)→ 灯②有担保行为记录(LMIA 获批或 AIP 指定)→ 在招数。
-      // 灯③职业紧缺=named 视图准入条件,行行全亮不参与排序;全 unknown(判定列未激活)时自然退化为 记录→在招。
-      named: seSlice(sponsorRows, (r) => r.named, (a, b) => {
-        const prio = (r: SR) => (r.verdict.state === 'met' ? 0 : r.verdict.state === 'short' ? 2 : 1)
-        const rec = (r: SR) => (r.lmiaPositions > 0 || r.aip ? 1 : 0)
-        return prio(a) - prio(b) || rec(b) - rec(a) || b.openJobs - a.openJobs
-      }),
-      aip: seSlice(sponsorRows, (r) => r.aip),
-    },
+    sponsor: { lmia: ssrSlice(boards.lmia), named: ssrSlice(boards.named), aip: ssrSlice(boards.aip) },
     occOpts,
     catMids,
     pulse: { new14, days },

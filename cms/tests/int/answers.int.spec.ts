@@ -118,6 +118,20 @@ describe('档位 → 引擎输入', () => {
     expect(toEngineAnswers(base({ status: 'studying', pgwpBand: 2 })).pgwpMonthsLeft).toBe(9)
   })
 
+  // #316 学制年数(2026-08-15):档位 → 整年数,消费端(pathVerdict/mbEoiEstimate/crsEstimate)按年收。
+  // 只对「有加拿大学历」的人生效 —— 学历闸没过,残留答案不许进引擎(与 permitBand 同款防串)
+  it('学制年数档 → 引擎 eduYears(整年):不到 1 年=0 是答案;不清楚/没过学历闸不传', () => {
+    const with316 = (canadaEduBand: number, eduYearsBand: number) =>
+      toEngineAnswers({ ...base({ canadaEduBand }), eduYearsBand } as Answers).eduYears
+    expect(with316(1, 4)).toBe(3)            // 3 年及以上 → 3(下界,与 CLB/经验同口径)
+    expect(with316(1, 3)).toBe(2)            // 2 年 → 2(pathVerdict ≥2 / mbEduYears 2 档吃这个)
+    expect(with316(1, 2)).toBe(1)
+    expect(with316(1, 1)).toBe(0)            // 「不到 1 年」= 0 整年,是答案不是缺答
+    expect(with316(1, 9)).toBeUndefined()    // 不清楚
+    expect(with316(2, 4)).toBeUndefined()    // 没有加拿大学历 → 残留答案不传
+    expect(with316(0, 4)).toBeUndefined()
+  })
+
   // statusInCanada 拆闸(2026-08-15):许可/现居省两题只对境内处境生效
   it('许可/现居省档 → 引擎输入;境外答案残留不传(改处境后旧答案不许跟着进引擎)', () => {
     const out = toEngineAnswers(base({ status: 'jobhunting', permitBand: 2, resProv: 'MB' }))
@@ -141,6 +155,15 @@ describe('题级显隐(fieldsOf 过滤)', () => {
     // 不传答案 = 全量清单(服务端/静态场景不误裁)
     expect(fieldsOf('pr', 'basic')).toEqual(expect.arrayContaining(['permitBand', 'resProv']))
   })
+
+  // #316:学制年数与 fieldMatch/eduProv 同闸 —— 只对「有加拿大学历」的人出,而且排在 eduProv 后面
+  it('学制年数题只对「有加拿大学历」的人出,题序紧跟学历省', () => {
+    const names = (a: Answers) => fieldsOf('pr', 'basic', 0, a)
+    const withEdu = names(base({ canadaEduBand: 1 }))
+    expect(withEdu.indexOf('eduYearsBand')).toBe(withEdu.indexOf('eduProv') + 1)
+    expect(names(base({ canadaEduBand: 2 }))).not.toContain('eduYearsBand')
+    expect(names(base())).not.toContain('eduYearsBand')
+  })
 })
 
 // 服务端答案档同步(答案入库绑账号 2026-08-15):合并规则=新者胜。fetch 用素对象桩
@@ -148,6 +171,17 @@ describe('题级显隐(fieldsOf 过滤)', () => {
 describe('服务端答案档同步', () => {
   const iso = (offsetMs: number) => new Date(Date.now() + offsetMs).toISOString()
   const res = (status: number, body: unknown) => ({ status, ok: status >= 200 && status < 300, json: async () => body })
+  // #311 登录迹象闸:payload-token 是 httpOnly 读不到,answers 层用伴随 cookie o2p_li 当迹象,
+  // 没有迹象挂载不发请求(匿名每页一条 console 401 的病根)。登录态用例先种上迹象。
+  beforeEach(() => { document.cookie = 'o2p_li=1; path=/' })
+
+  it('匿名(无登录迹象)→ 挂载不发请求,console 零 401', async () => {
+    document.cookie = 'o2p_li=; path=/; max-age=0'
+    const fetchSpy = vi.fn(async () => res(401, {}))
+    vi.stubGlobal('fetch', fetchSpy)
+    expect(await pullAndMerge()).toBe(false)
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
 
   it('服务端档更新 → 覆盖本地(清浏览器/换设备答案回得来)', async () => {
     const doc = {

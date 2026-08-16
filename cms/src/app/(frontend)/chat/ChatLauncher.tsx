@@ -432,7 +432,7 @@ export function ChatLauncher() {
           松手后压掉那一次 click;拖过 = 改用 left/top 定位并隐藏轻提示(提示条会把 dock
           向左撑宽,钳制口径就不再是那颗 56px 的钮)。 */}
       {!open && (
-        <div ref={dock} className="clDock"
+        <div ref={dock} className={`clDock${/^\/(cases|plan)(\/|$)/.test(path) ? ' clNarrowOff' : ''}`}
           style={dockPos ? { left: dockPos.x, top: dockPos.y, right: 'auto', bottom: 'auto' } : bottom}
           onPointerDown={startDockDrag}>
           {/* 走查 #298:提示胶囊在手机上是 210×56 的一块,钉在视口底部**永远盖住正文最后一行**
@@ -514,6 +514,10 @@ export function ChatLauncher() {
 // env(safe-area-inset-bottom):iPhone 底部横条,不加会被横条压住半个钮。
 const CSS = `
 /* touch-action:none = 手指按在启动器上就是要拖它,不让浏览器抢去当滚动(拖动手感的前提) */
+/* 走查 #298 终态:评估/处境两条动线的手机端连圆球也不出 —— 56×56 fixed 在 375 视口永久盖住
+   右下角内容,而顾问在这两条新动线上本就不导流(advisor-quality-gate);职位页照旧。
+   面板本身不受影响:页面里的「问 AI」入口 dispatch o2p:chat-open 仍能打开。 */
+@media(max-width:640px){.clNarrowOff{display:none!important}}
 .clDock{--clB:16px;position:fixed;right:16px;bottom:calc(var(--clB) + env(safe-area-inset-bottom,0px));
   z-index:40;display:flex;align-items:center;gap:8px;max-width:calc(100vw - 32px);touch-action:none}
 .clBtn{width:56px;height:56px;flex:none;border-radius:50%;border:none;background:${UI.primary};color:#fff;

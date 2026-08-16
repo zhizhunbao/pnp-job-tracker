@@ -61,8 +61,8 @@ function AccountLite({ t, acct }: { t: TFn; acct: AcctState }) {
   return (
     <>
       {/* P1 换装(2026-07-19):登录=ghost,注册=primary sm——与 /jobs AccountArea 同规格 */}
-      <Button kind="ghost" sm onClick={() => setAuth('login')}>{t('nav.login')}</Button>
-      <Button kind="primary" sm onClick={() => setAuth('register')}>{t('nav.register')}</Button>
+      <Button kind="ghost" sm className="shTapY" onClick={() => setAuth('login')}>{t('nav.login')}</Button>
+      <Button kind="primary" sm className="shTapY" onClick={() => setAuth('register')}>{t('nav.register')}</Button>
       {auth && <AuthModal t={t} mode={auth} onClose={() => setAuth('')} onDone={() => window.location.reload()} />}
     </>
   )
@@ -127,13 +127,15 @@ function MobileDrawer({ t, active, onClose }: { t: TFn; active?: string; onClose
       }
     }
   }, [])
+  // #300:抽屉条目/二级链触控靶抬到 ≥44(真实高度,成列小控件 ::after 会被邻行抢点——第 27 轮教训);
+  // 抽屉只在 ≤640 汉堡后出现,桌面零影响
   const item = (href: string, label: React.ReactNode, cur: boolean): React.CSSProperties => ({
-    display: 'block', padding: '10px 12px', borderRadius: 9, fontSize: 14, textDecoration: 'none',
+    display: 'flex', alignItems: 'center', minHeight: 44, boxSizing: 'border-box', padding: '10px 12px', borderRadius: 9, fontSize: 14, textDecoration: 'none',
     background: cur ? '#eff6ff' : '#f9fafb', border: `1px solid ${cur ? '#bfdbfe' : '#e5e7eb'}`,
     color: cur ? '#1d4ed8' : '#374151', fontWeight: cur ? 600 : 400,
   })
-  const sub: React.CSSProperties = { display: 'block', padding: '7px 8px', margin: '0 6px 0 16px', borderRadius: 8, fontSize: 13, color: '#4b5563', textDecoration: 'none' }
-  const grpBtn: React.CSSProperties = { width: '100%', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', borderRadius: 9, fontSize: 14, background: '#f9fafb', border: '1px solid #e5e7eb', color: '#374151', cursor: 'pointer' }
+  const sub: React.CSSProperties = { display: 'flex', alignItems: 'center', minHeight: 44, boxSizing: 'border-box', padding: '7px 8px', margin: '0 6px 0 16px', borderRadius: 8, fontSize: 13, color: '#4b5563', textDecoration: 'none' }
+  const grpBtn: React.CSSProperties = { width: '100%', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: 44, boxSizing: 'border-box', padding: '10px 12px', borderRadius: 9, fontSize: 14, background: '#f9fafb', border: '1px solid #e5e7eb', color: '#374151', cursor: 'pointer' }
   const grp = (key: string, label: React.ReactNode, children: { href: string; label: React.ReactNode; active?: boolean }[]) => (
     <>
       <button onClick={() => setOpenGrp((g) => (g === key ? '' : key))} style={grpBtn}>
@@ -153,7 +155,7 @@ function MobileDrawer({ t, active, onClose }: { t: TFn; active?: string; onClose
         style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: '68%', maxWidth: 280, background: '#fff', borderRight: '1px solid #e5e7eb', padding: '0 12px', overflowY: 'auto', animation: 'drwSlide .24s cubic-bezier(.4,0,.2,1)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 2px 10px' }}>
           <span style={{ fontSize: 16, fontWeight: 700, color: '#111827' }}>🍁 Offer2PR</span>
-          <button onClick={onClose} aria-label={t('nav.menu')} style={{ width: 32, height: 32, border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', color: '#374151', cursor: 'pointer', fontSize: 14 }}>✕</button>
+          <button onClick={onClose} aria-label={t('nav.menu')} style={{ width: 44, height: 44, border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', color: '#374151', cursor: 'pointer', fontSize: 14 }}>✕</button>
         </div>
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 20 }}>
           <a href="/" style={item('/', t('detail.crumbHome'), !active)}>{t('detail.crumbHome')}</a>
@@ -228,7 +230,7 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
           {/* D 件:窄屏汉堡(桌面藏);抽屉替代窄屏平铺导航 */}
           <button className="shBurger" onClick={() => setDrawer(true)} aria-label={t('nav.menu')}
             style={{ display: 'none', width: 34, height: 34, border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', color: '#374151', cursor: 'pointer', fontSize: 15, flexShrink: 0 }}>☰</button>
-          <a href="/" style={{ fontSize: 17, fontWeight: 700, color: '#111827', textDecoration: 'none', whiteSpace: 'nowrap' }}>🍁 Offer2PR</a>
+          <a href="/" className="shTapY" style={{ fontSize: 17, fontWeight: 700, color: '#111827', textDecoration: 'none', whiteSpace: 'nowrap' }}>🍁 Offer2PR</a>
           <span className="shTagline" style={{ fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('tagline')}</span>
         </div>
         {/* 方案 A(2026-07-17 用户拍板,与 /jobs 顶栏同款):导航/操作两组+竖线分隔;窄屏竖线隐藏。
@@ -237,7 +239,13 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
         {/* ≥1351(标语在显)整条禁折行、右组禁压缩:flex 换行按内容假想宽算,不会先压标语再折 ——
             英文导航长,浏览器宁可把整排导航折下去(2026-07-31 Frank 实拍 EN 折两行);
             改成弹性全给标语(自带省略号),导航永一行。<1350 标语已藏,原折行策略照旧。 */}
-        <style>{`@media (max-width:640px){.shDivider{display:none}.shNav{display:none !important}.shBurger{display:inline-block !important}}
+        {/* #300(第 38 轮):顶栏触控靶补 ≥44(37 轮前的顶栏豁免翻案)。汉堡直接撑箱到 44;
+            语言钮/登录/注册/logo 视觉不动,::after 只**纵向**撑热区(横向不撑——成排邻钮
+            横向热区互抢,第 27 轮教训);全部只在 ≤640 生效,桌面一像素不动。 */}
+        <style>{`@media (max-width:640px){.shDivider{display:none}.shNav{display:none !important}.shBurger{display:inline-block !important;width:44px !important;height:44px !important}
+          .shTapY{position:relative}
+          .shTapY::after{content:'';position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:44px}
+          .shLangWrap button{min-height:44px}}
           @media (max-width:1350px){.shTagline{display:none}}
           @media (min-width:1351px){.shBar{flex-wrap:nowrap !important}.shRight{flex-wrap:nowrap !important;flex-shrink:0}}`}</style>
         <div className="shRight" style={{ display: 'flex', alignItems: 'center', gap: 12, maxWidth: '100%', flexWrap: 'wrap' }}>
@@ -268,7 +276,8 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
           </div>
           <span className="shDivider" style={{ width: 1, height: 16, background: '#e5e7eb' }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <div style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
+            {/* 语言钮组 overflow:hidden 会把 ::after 热区裁掉(375 探针实证)——组内改真实 min-height,仅 ≤640 */}
+            <div className="shLangWrap" style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
               {LANGS.map((l) => (
                 <button key={l.code} onClick={() => setLang(l.code)}
                   style={{ border: 'none', padding: '3px 9px', fontSize: 12.5, cursor: 'pointer', background: lang === l.code ? '#2563eb' : '#fff', color: lang === l.code ? '#fff' : '#6b7280' }}>{l.label}</button>

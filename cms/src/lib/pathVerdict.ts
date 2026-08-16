@@ -24,7 +24,7 @@
 import { evaluateRequirements, teerHit, type Requirement, type RuleProfile, type RuleResult } from './rules'
 import { estimateCrs, type CrsEstimateProfile, type EeGridRow } from './crsEstimate'
 import { estimateMbEoi, type MbEduKey, type MbProfile } from './mbEoiEstimate'
-import { streamMatches, type ScoreFactor } from './pnpSelfScore'
+import { gridStreamOf, scoreProvince, streamMatches, type ScoreFactor, type SelfProfile } from './pnpSelfScore'
 import type { EduKey } from './pnpSelfScore'
 // 只 import type:编译期擦除,不给 chatTools(它拉着 match/planTimeline/reportFacts)加运行时边。
 import type { Availability, Evidence } from './chatTools'
@@ -104,8 +104,18 @@ export type PathwayVerdict = {
   key: string                        // 'FED-EE' / 'ON-workforce' / 'MB-swm' / 'SK-offer' / 'AIP' / ...
   province: string                   // 'FED' 或省码
   stream: string                     // 官方通道名
-  verdict: 'excluded' | 'open' | 'needs-info'
+  /** #308(2026-08-15 深夜改名):原值 'viable' 人人误读成「能走」—— 它只表示「没有判不了的项」,
+   *  差一道闸也是它(靠 blockedBy 区分)。改 'viable'(仍需看 blockedBy/tier 才知道差什么) */
+  verdict: 'excluded' | 'viable' | 'needs-info'
   tier: 0 | 1 | 2 | 3 | null         // offer 后等多久:0=Day0 / 1=3-6月 / 2=12月 / 3=24月;excluded=null
+  /**
+   * tier 的**起算点**(2026-08-15 #319)。`now` = 从今天起算;`after-study` = 毕业拿到工签之后才开始算。
+   * 在读学生(学签)不许全职上班 —— 他的「再攒 12 个月经验」一天都还没开始,写成从今天起算是假话。
+   * 引擎判据:处境=在读 且 该通道的 tier 来自**经验/在职**门槛(居住门槛不算:搬过去当天就在计时)。
+   * excluded / tier=0 一律 `now`(没有等待期就没有起算点问题)。
+   * 消费端契约:随行下发,措辞层自己决定怎么说(「毕业后再 12 个月」vs「12 个月」)。
+   */
+  tierBasis: 'now' | 'after-study'
   /** 被**攒时间补不了**的门槛卡住(语言差档 / 自雇经历不计 / 门槛清单里明确不满足的那类闸)。
    *  不是 excluded —— 考一次试、找一份 offer 就能过,但**现在**走不了。先前这类缺口只生成一条理由、
    *  不进 gaps,于是 tier=0 + verdict=open,CLB 4 的厨师也能把联邦 EE 顶到方案第一位
@@ -122,6 +132,12 @@ export type PathwayVerdict = {
   score?: {
     system: string; value: number; ceiling: number | null
     refLine: number | null; refLabel: string; evidence: Evidence
+    /**
+     * true = 这个分是**下界**:官方表里有几块分本站问不到(阿省的「亲属在阿省」「岗位在指定社区」
+     * 这类加分项),按已上线打分卡的默认口径记 0。所以 `value < refLine` **不等于**够不着线 ——
+     * 排序/措辞层要按下界读(ceiling 那一侧仍是真上界:加分项全按满分算出来的)。
+     */
+    partial?: boolean
   }
   availability: Availability
 }
@@ -251,6 +267,19 @@ const maxClbIn = (labels: string[]): number | null => {
  */
 const conditionHolds = (cond: string, p: VerdictProfile, province: string): boolean | null => {
   if (!cond) return true
+  // 🔴 与学历无关的条件必须**在** canadaStudy 守卫之前分发:AB 那条量的是「经验攒在哪个省」,
+  //    卡在学历守卫后面会让「没答有没有加拿大学历」的档案连它都判不了(2026-08-15 数据侧实测点名)。
+  if (cond === 'ab-local-experience') {
+    // 官方原句:「24 个月境内外经验(或**近 18 个月内在阿省 12 个月**)」——条件是「这段经验发生在阿省」。
+    // 本站档案**没有「经验所在省」这一槽**,只有现居省 + 加拿大经验月数,所以这里是**近似**:
+    //   现居阿省 ⇒ 认他的加拿大经验攒在阿省(在阿省生活的人,加拿大受雇经历多半也在阿省);
+    //   现居别省 ⇒ false(保守:不拿别省经验去够阿省那 12 个月,退回通用 24 个月那行);
+    //   没答现居省 ⇒ null(判不了,退回 24 那行 + 摆一条「另有一档判不了」)。
+    // 近似的代价压在**只对现居阿省的人放宽**这一侧:放宽错了他还有 24 个月那条兜底,不会因此被判死。
+    // 口径配套见 pickGate 的 PROVINCE_LOCAL_EXP:挑中这行时可计月数换成加拿大经验(境外经验不算阿省经验)。
+    if (p.province == null) return null
+    return p.province === province
+  }
   if (p.canadaStudy == null) return null
   if (cond === 'recent-on-graduate') {
     // 官方:近 3 年安省院校毕业 + 2 年制以上文凭/研究生证书/硕博。本站档案没有毕业日期槽,
@@ -282,6 +311,10 @@ const reqsOf = (spec: PathwaySpec, all: Requirement[]): Requirement[] =>
   all.filter((r) => r.province === spec.reqProvince
     && (spec.reqPrograms ? spec.reqPrograms.includes(r.program) : true)
     && (spec.reqStream ? spec.reqStream.test(r.stream) : true))
+
+/** 把可计经验限制在**本省攒的**那些条件(挑中这类行时,境外经验不进分子)。
+ *  与 conditionHolds 里对应分支成对出现:那边判「这行适不适用」,这边定「用哪把尺子量」。 */
+const PROVINCE_LOCAL_EXP = new Set<string>(['ab-local-experience'])
 
 /** 该通道认可的可计经验月数(null=判不了)。employerTenure 口径另算,见 pickGate。 */
 function countableMonths(spec: PathwaySpec, p: VerdictProfile, selfEmpExcluded: boolean): number | null {
@@ -331,7 +364,11 @@ function pickGate(spec: PathwaySpec, rows: Requirement[], p: VerdictProfile, sel
 
   const tenure = picked?.basis === 'employerTenure'
   let have: number | null
-  if (tenure) {
+  if (picked && PROVINCE_LOCAL_EXP.has(picked.appliesCondition || '')) {
+    // 「近 18 个月内在阿省满 12 个月」这类条件行量的是**本省攒的**经验 —— 境外经验不许进这把尺子
+    //(通用 24 个月那行才认境内外)。省内/省外的近似口径与 conditionHolds 同一条,见那里的注释。
+    have = p.expCanadaMonths == null ? null : p.province === spec.reqProvince ? p.expCanadaMonths : 0
+  } else if (tenure) {
     // 口径隔离(rules.ts 同款):这类行量的是「在**这家**雇主连续全职干了多久」,不是同职业总经验。
     // 加拿大经验为 0 时可以确定在职时长也是 0(没在加拿大受雇过);>0 且现居就是本省时,
     // 用它作**上界**(可能分散在几家雇主 → 措辞层要点明);在别省攒的经验对本省雇主在职时长记 0。
@@ -367,6 +404,99 @@ function refDraw(spec: PathwaySpec, draws: VerdictDrawRow[]): VerdictDrawRow | n
     if (hit) return hit
   }
   return spec.drawFallbackProvinceWide ? (scored[0] ?? null) : null
+}
+
+// ── 通用省估分(#301,2026-08-15)────────────────────────────────────────────
+//
+// CRS(联邦)与 MPNP(曼省)各有专用估分器;其余省的官方分值表 pnp_score_factors 里也躺着
+// (AB/BC/NL/ON/SK 六省 222 行),`/pathways` 打分卡早就在用 —— 但那张卡是**人肉勾**出来的:
+// 时薪、岗位地区、亲属在本省这些格子由用户自己填。判定层手上只有一份档案,填不出那些格子。
+//
+// 🔴 所以这里的门槛定得很硬:**该省官方表里每一条 `kind='row'`(必答档位)的因素都要能从档案
+//    无损映射出来**,少一条就整省不接 —— 缺的那块不是「按 0 算」能糊过去的,它会把分算成假的。
+//    加分项(`kind='bonus'`,用户自己勾的那些)按已上线打分卡的默认口径记 0,并把 `partial` 打上:
+//    value 是**下界**,ceiling 才是把加分项全按满分算出来的**真上界**(下界不许拿去判「够不着线」,
+//    上界才准 —— scoreGulf 这条硬伤判据靠的正是上界)。
+// 🔴 分值一分不许编:全部来自 scoreProvince 挑中的官方行,本文件只负责「档案怎么喂进去」。
+//
+// 眼下真接得上的只有 AB(AAIP Worker EOI):
+//   ON 的必答档位有 岗位 TEER/职业类别/时薪/安省经验/年收入/身份/加拿大学历/地区 八块,档案答不出;
+//   BC 的 SIRS 200 分里时薪 55 + 地区 25 来自**岗位**,判定层没有岗位;
+//   SK/NL 把经验拆成「近 5 年 / 6-10 年前」两档,本站只问了总月数,拆出来就是编;
+//   NL 那张表还自报是 Express Entry Skilled Worker 那条线的,与本站注册的国际毕业生不是同一条。
+// 这几条如实不接,不拿半张表凑一个数出来。
+
+/** 能从 VerdictProfile 无损喂出来的官方因素(值仍由 pnpSelfScore 按官方标签解析) */
+const GRID_AUTO_FACTORS = new Set(['education', 'language', 'age', 'work', 'workMonths'])
+
+/** 通用省估分。接不上(库里没表 / 表不是这条线的 / 有必答档位映射不出 / 档案缺必需槽)一律 undefined。 */
+function provinceGridScore(
+  spec: PathwaySpec, p: VerdictProfile, factors: ScoreFactor[], draw: VerdictDrawRow | null,
+): PathwayVerdict['score'] | undefined {
+  const all = factors.filter((f) => f.province === spec.reqProvince)
+  if (!all.length) return undefined
+  const head = all[0]
+  // 表自报了通道名就得对得上这条线(NL 那张是 EE Skilled Worker 的表,不许挂到国际毕业生上)
+  const gridStream = gridStreamOf(head.system)
+  if (gridStream && !streamMatches(gridStream, spec.stream)) return undefined
+
+  const names = Array.from(new Set(all.map((f) => f.factor)))
+  const only = new Set<string>()
+  let partial = false
+  for (const name of names) {
+    const hasRows = all.some((f) => f.factor === name && f.kind === 'row')
+    if (!hasRows) { partial = true; continue }              // 纯加分项 → 不勾=0(与打分卡默认同口径)
+    if (name === 'offer') { if (p.hasOffer == null) return undefined; continue }
+    if (!GRID_AUTO_FACTORS.has(name)) return undefined      // 有必答档位却喂不出输入 → 整省不接
+    only.add(name)
+  }
+  if (!only.size) return undefined
+  if (all.some((f) => f.kind === 'bonus')) partial = true
+
+  // 必需槽:缺一个就不给分(宁缺不编 —— 未答项在 pickByThreshold 那里会被兜到最低档白捡分)
+  if (only.has('education') && p.edu == null) return undefined
+  if (only.has('language') && p.clb == null) return undefined
+  if (only.has('age') && p.age == null) return undefined
+  const wantsExp = only.has('work') || only.has('workMonths')
+  if (wantsExp && (p.expCanadaMonths == null || p.expForeignMonths == null)) return undefined
+
+  // 档案 → SelfProfile。经验只喂**总量**(近 5 年 / 6-10 年前那种拆分本站没问,拆了就是编;
+  // 需要拆分的省在上面就被 GRID_AUTO_FACTORS 挡掉了)。第二官方语言同理:没有这一槽 → 按不加分算。
+  const months = (p.expCanadaMonths ?? 0) + (p.expForeignMonths ?? 0)
+  const self: SelfProfile = {
+    edu: (p.edu ?? 'highschool') as EduKey, expRecent: months / 12, expOlder: 0,
+    clb1: p.clb ?? 0, clb2: 0, age: p.age ?? 0,
+  }
+  const offerRow = all.find((f) => f.factor === 'offer' && f.kind === 'row')
+  type Override = { pts: number; matched: string; source: 'profile' | 'job' | 'tick' }
+  const ovOf = (has: boolean): Record<string, Override> => (offerRow
+    ? { offer: { pts: has ? (offerRow.points ?? 0) : 0, matched: offerRow.label, source: 'profile' } }
+    : {})
+
+  const now = scoreProvince(factors, spec.reqProvince, self, ovOf(p.hasOffer === true), {}, only)
+  if (!now) return undefined
+  // 上界:语言拉到官方最高档 + 加分项**全部按满分**(官方档位自己封顶)。
+  // 少算加分项的「上界」是假上界,拿它判分数鸿沟会把够得着的人判死 —— 那正是四态口径最忌的那种错。
+  const maxClb = maxClbIn(all.filter((f) => f.factor === 'language' && f.kind === 'row').map((f) => f.label))
+  const ticks: Record<string, boolean> = {}
+  const seen = new Map<string, number>()
+  for (const f of all) {
+    if (f.kind !== 'bonus') continue
+    const i = seen.get(f.factor) ?? 0
+    ticks[`${spec.reqProvince}:${f.factor}:${i}`] = true
+    seen.set(f.factor, i + 1)
+  }
+  const top = scoreProvince(factors, spec.reqProvince, { ...self, clb1: maxClb ?? self.clb1 }, ovOf(true), ticks, only)
+
+  return {
+    system: head.system, value: now.total, ceiling: top ? top.total : null,
+    refLine: draw?.score ?? null,
+    refLabel: draw
+      ? `本站问得到的因子算出的估分(加分项未计);对照最近一轮 ${draw.stream}(${draw.drawDate})`
+      : '本站问得到的因子算出的估分(加分项未计);本站未收录可对照的抽选线',
+    evidence: evOfFactor(head),
+    ...(partial ? { partial: true } : {}),
+  }
 }
 
 const EDU_TO_MB: Record<EduKey, MbEduKey> = {
@@ -449,7 +579,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
       text: `本站尚未收录 ${spec.stream} 的门槛条文`,
       key: 'pv.noReq', params: { stream: spec.stream },
     })
-    return { key: spec.key, province: spec.province, stream: spec.stream, verdict: 'needs-info', tier: null, reasons, availability: 'not-collected' }
+    return { key: spec.key, province: spec.province, stream: spec.stream, verdict: 'needs-info', tier: null, tierBasis: 'now', reasons, availability: 'not-collected' }
   }
 
   const selfEmpRows = rows.filter((r) => r.factor === 'workSelfEmployed' || r.factor === 'experienceExcluded')
@@ -568,26 +698,46 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   // 缺槽判不出 gap 时,把 need 记进 gaps —— needs-info 的 tier 因此是「最坏情况的上界」
   // (按 0 经验 / 0 居住算)。这就是 §4.5 说的 **tier 潜力**:NL(need=0)最坏也是 tier0,
   // ON(3-6 月)最坏 tier1 —— 排序按它,缺槽的通道才不会全挤成一堆无差别的 0。
-  const gaps: number[] = []
+  // 每个缺口记下**它是哪一类**:经验/在职类的等待要等到「毕业拿到工签之后」才开始走(tierBasis,#319),
+  // 居住类不用 —— 搬过去当天就在计时。只记一个 max 数字时这个区别丢了,前端只能一律读成「从今天起算」。
+  const gaps: { months: number; kind: 'work' | 'residence' }[] = []
   if (!gate.picked && !gate.teerUnknown) {
     reasons.push({ kind: 'needs-info', text: `本站尚未收录 ${spec.stream} 的工作经验门槛条文`,
       key: 'pv.noExpReq', params: { stream: spec.stream } })
   }
   // 行在库里、只是不知道他哪一档 TEER → 点名让他补职业,**不许说成本站没收录**
   if (gate.teerUnknown) missingSlots.push('noc')
-  if (gate.gap != null) gaps.push(gate.gap)
-  else if (gate.need != null) gaps.push(gate.need)
+  if (gate.gap != null) gaps.push({ months: gate.gap, kind: 'work' })
+  else if (gate.need != null) gaps.push({ months: gate.need, kind: 'work' })
   if (gate.have == null && gate.picked && gate.need !== 0) missingSlots.push('expCanadaMonths')
   const res = residenceGap(spec, rows, p)
   if (res) {
-    if (res.gap != null) gaps.push(res.gap)
-    else { gaps.push(res.need); missingSlots.push('province') }
+    if (res.gap != null) gaps.push({ months: res.gap, kind: 'residence' })
+    else { gaps.push({ months: res.need, kind: 'residence' }); missingSlots.push('province') }
   }
+
+  // ── ③b 省外院校毕业生的额外在职门槛(#317)────────────────────────────────────
+  // 官方并列条款:本省院校毕业生走 op='none'(不设经验门槛),**省外**院校毕业生要先在本省干满 N 个月。
+  // 条件判不了(没答学历省/有没有加拿大学历)→ 判不了,不猜;条件不成立(本省毕业)→ 这条不适用。
+  const oop = spec.outOfProvinceGrad
+  const oopHolds = oop ? conditionHolds('grad-other-province', p, spec.reqProvince) : false
+  let oopHave: number | null = null
+  if (oop && oopHolds) {
+    // 量的是「在本省全职在职多久」,与 employerTenure 同一把尺子:别省攒的经验对本省记 0
+    oopHave = p.expCanadaMonths == null ? null
+      : p.expCanadaMonths === 0 ? 0
+        : p.province === spec.reqProvince ? p.expCanadaMonths : 0
+    gaps.push({ months: oopHave == null ? oop.months : Math.max(0, oop.months - oopHave), kind: 'work' })
+    if (oopHave == null) missingSlots.push('expCanadaMonths')
+  }
+  if (oop && oopHolds === null) missingSlots.push('studyProvince')
 
   // ── ④ 估分 + 参照线 ──────────────────────────────────────────────────────
   const draw = refDraw(spec, data.draws)
   let score: PathwayVerdict['score'] | undefined
   try {
+  // 没有专用估分器的省:能无损映射就走官方分值表(#301),接不上一律 undefined(不编)
+  if (!spec.scorer) score = provinceGridScore(spec, p, data.scoreFactors, draw)
   if (spec.scorer === 'CRS' && p.age != null && p.clb != null && p.edu != null) {
     const crsProfile: CrsEstimateProfile = {
       age: p.age, married: p.married, clb: p.clb, edu: p.edu, eduYears: p.eduYears,
@@ -745,6 +895,31 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
       quote: quoteOfReq(res.row), evidence: evOfReq(res.row),
     })
   }
+  // 省外院校毕业生的额外在职门槛(#317)。条文出处在策略文件里(gates 的 quote 例外同一条口子:
+  // 官方原句 + url + 生效日三样齐全才准声明),不是代码里手写的官方口径。
+  if (oop && oopHolds !== false) {
+    const state = oopHolds === null ? 'condUnknown'
+      : oopHave == null ? 'unknown'
+        : oopHave >= oop.months ? 'ok'
+          : oopHave === 0 ? 'need' : 'short'
+    const ev: Evidence = { url: oop.url, fetched: oop.fetched, label: spec.stream, ...(oop.effective ? { effective: oop.effective } : {}) }
+    reasons.push({
+      kind: state === 'ok' ? 'met' : state === 'need' || state === 'short' ? 'gap' : 'needs-info',
+      text: state === 'condUnknown'
+        ? '省外院校毕业生另有一档在职门槛,档案缺学习省份'
+        : state === 'unknown'
+          ? `省外院校毕业:先在本省全职工作满 ${oop.months} 个月,档案缺本省在职月数`
+          : state === 'ok'
+            ? `省外院校毕业:先在本省全职工作满 ${oop.months} 个月 达标`
+            : state === 'need'
+              ? `省外院校毕业:先在本省全职工作满 ${oop.months} 个月`
+              : `省外院校毕业:先在本省全职工作满 ${oop.months} 个月,差 ${oop.months - (oopHave as number)} 个月`,
+      key: `pv.oopGrad.${state}`,
+      params: { n: oop.months, short: state === 'short' ? oop.months - (oopHave as number) : 0 },
+      quote: oop.quote, evidence: ev,
+    })
+  }
+
   for (const r of selfEmpRows) {
     if (p.foreignExpSelfEmployed !== true) continue
     blockedBy = blockedBy ?? 'selfEmployed'
@@ -851,11 +1026,14 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
       key: keyOf('gap'), evidence: ev })
   }
 
-  const tier: PathwayVerdict['tier'] = excluded ? null : tierOfMonths(gaps.length ? Math.max(...gaps) : 0)
+  // 最大的那个缺口定 tier;并列时**经验类优先**当代表(它决定 tierBasis,居住类没有起算点问题)
+  const worst = gaps.reduce<{ months: number; kind: 'work' | 'residence' } | null>(
+    (a, b) => (a == null || b.months > a.months || (b.months === a.months && b.kind === 'work') ? b : a), null)
+  const tier: PathwayVerdict['tier'] = excluded ? null : tierOfMonths(worst?.months ?? 0)
   // 三值折叠:清单里每一类闸都 met 才是 open;有 unknown 就是「判不了」;有明确不满足的闸 → blockedBy 兜住
   //(rank 里 blockedBy 排在无阻碍的 open 之后,标签另写 —— 与语言差档同一套语义)。
   const needsInfo = !excluded && (!gate.picked || gate.gap == null || missingSlots.length > 0 || manifestUnknown)
-  const verdict: PathwayVerdict['verdict'] = excluded ? 'excluded' : needsInfo ? 'needs-info' : 'open'
+  const verdict: PathwayVerdict['verdict'] = excluded ? 'excluded' : needsInfo ? 'needs-info' : 'viable'
   // 清单缺条文 = 本站未收录,与「查不到门槛行」同属 not-collected(对用户是「规则待核对」不是「你不行」)。
   // **excluded 时不改 availability**:硬伤是判出来的结论,不是「我们没数据」——两者混在一起就成了
   // 「因为没数据所以排除你」,那是拿缺口当判据(四态不合并的老规矩)。
@@ -864,9 +1042,19 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   const availability: Availability = (!gate.picked && !gate.teerUnknown) || (!excluded && manifestNoSource) ? 'not-collected' : 'ok'
   void manifestGap
 
+  // #319 起算点:在读学生的「再攒 N 个月」不是从今天算,是**毕业拿到工签之后**才开始 ——
+  // 学签在读不许全职上班,这 N 个月一天都攒不了。判据四件:处境=在读 + 许可不是已经在工作的那两种
+  // + 真的有等待期(下发的 tier > 0,库缺行被抹成 null 的那种不谈起算点)
+  // + 这段等待来自经验/在职门槛(居住门槛不吃这条:人搬过去当天就在计时)。
+  const outTier: PathwayVerdict['tier'] = verdict === 'needs-info' && !gate.picked ? null : tier
+  const studying = p.status === 'study' && (p.permit == null || p.permit === 'study')
+  const tierBasis: PathwayVerdict['tierBasis'] =
+    studying && !excluded && outTier != null && outTier > 0 && worst?.kind === 'work' && worst.months > 0
+      ? 'after-study' : 'now'
+
   return {
     key: spec.key, province: spec.province, stream: spec.stream,
-    verdict, tier: verdict === 'needs-info' && !gate.picked ? null : tier,
+    verdict, tier: outTier, tierBasis,
     ...(blockedBy && !excluded ? { blockedBy } : {}),
     ...(missingSlots.length && !excluded ? { missingSlots: Array.from(new Set(missingSlots)) } : {}),
     reasons, ...(score ? { score } : {}), availability,
@@ -995,12 +1183,12 @@ export function pathLevers(profile: VerdictProfile, data: VerdictData, opts: { c
     const after = pathVerdict({ ...profile, noc: downNoc, teer: 5 }, data)
     const byKey = new Map(after.map((v) => [v.key, v]))
     // 「接 TEER 5 岗会掉档」问的是**职业等级**这一件事,与「你今天够不够格」无关 ——
-    // 原来只看 verdict==='open',门槛清单上线后大量通道落 needs-info(缺 offer 答案),
+    // 原来只看 verdict==='viable',门槛清单上线后大量通道落 needs-info(缺 offer 答案),
     // 这条杠杆会整条消失(2026-08-12 实撞)。改成**前后对比谁变差了**:
     // 档次 open(无阻碍) < open(被卡住) < needs-info < excluded,同档再比 tier。
     // 前后两次跑的是同一份档案,清单那三类闸的贡献一样,差出来的只会是 TEER 带来的。
     const vRank = (v?: PathwayVerdict) =>
-      v == null ? 9 : v.verdict === 'open' ? (v.blockedBy ? 1 : 0) : v.verdict === 'needs-info' ? 2 : 3
+      v == null ? 9 : v.verdict === 'viable' ? (v.blockedBy ? 1 : 0) : v.verdict === 'needs-info' ? 2 : 3
     const worse = (b: PathwayVerdict) => {
       const a = byKey.get(b.key)
       if (vRank(a) !== vRank(b)) return vRank(a) > vRank(b)

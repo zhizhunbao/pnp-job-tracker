@@ -11,9 +11,10 @@ build_ab_req — AB(AAIP Alberta Opportunity Stream)的**门槛**。
         —— 33102 那条走 appliesNoc,引擎按「最具体的那行胜出」自动盖过通用档(同 ON 技工低档的机制)
   经验  24 个月(近 30 个月内,加拿大境内外都算)
 
-**只收 24 个月那条,不收「阿省境内 12 个月」那条**:官方两条是「或」的关系,但本站问的经验是
-「同职业总经验(境内外)」——拿境内 12 个月的门槛去比一个境内外合计的数,会把门槛说低,
-说低比不说更危险(用户会据此决定跳不跳槽)。境内那条写进 label 陈述,不作判定阈值。
+**经验两条「或」款各落一行(#320,2026-08-15)**:通用行 24 个月(近 30 个月,境内外都算);
+替代行 12 个月(近 18 个月,**只算阿省境内**)挂 `appliesCondition='ab-local-experience'` ——
+引擎侧条件成立(阿省经验 ≥12 个月)才拿 12 行判,判不了条件就回落 24 行,不会把门槛说低
+(照 MB SWM `grad-other-province` 的既有条件行机制)。两行同一句官方原文、同一出处。
 
 **没抓的**:学历(高中及以上,与本站题库口径对不上)、最低收入(AOS 官方**不设**家庭收入门槛 ——
 全国只有 BC 发布了收入表,别省一律没有,这本身是结论,不是缺口)。
@@ -138,15 +139,20 @@ def main() -> None:
     else:
         problems.append("33102 的单独语言档没解析到")
 
-    # ── 经验:只收「境内外都算」那条(见文件头)────────────────────────────────
+    # ── 经验:两条「或」款各一行(见文件头,#320)──────────────────────────────
     any_ = RE_EXP_ANY.search(txt)
     ab = RE_EXP_AB.search(txt)
     if any_ and ab:
+        # 官方是同一句里的两个「或」款 → label 同句;12 行靠 appliesCondition 区分,窗口期写进 basis
+        exp_label = (f"{any_.group(1)} months of full-time work experience in your current occupation "
+                     f"in Canada or abroad within the last {any_.group(2)} months "
+                     f"(alternatively {ab.group(1)} months in Alberta within the last {ab.group(2)} months)")
         reqs.append(req(factor="experience", value=int(any_.group(1)), unit="months",
-                        section="Work experience requirements",
-                        label=f"{any_.group(1)} months of full-time work experience in your current occupation "
-                              f"in Canada or abroad within the last {any_.group(2)} months "
-                              f"(alternatively {ab.group(1)} months in Alberta within the last {ab.group(2)} months)"))
+                        section="Work experience requirements", label=exp_label))
+        reqs.append(req(factor="experience", value=int(ab.group(1)), unit="months",
+                        appliesCondition="ab-local-experience",
+                        basis=f"windowMonths={ab.group(2)}",
+                        section="Work experience requirements", label=exp_label))
     else:
         problems.append("工作经验门槛没解析到(境内外 24 个月 / 阿省 12 个月两条须同时在)")
 

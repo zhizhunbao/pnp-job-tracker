@@ -8,6 +8,10 @@ const NL_URL = 'https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-an
 const NL_CATEGORY = 'https://www.gov.nl.ca/immigration/international-graduate-category'
 /** 资格政策页(比上面两页细,专业对口那条出自这里) */
 const NL_POLICY = 'https://www.gov.nl.ca/immigration/4-international-graduate-category-eligibility-criteria'
+/** 省外来路的额外在职门槛出自这一页(2026-08-15 从 data/crawl/nl-imm 的 html_cache 里现取,不是凭印象) */
+const NL_PREV_PT = 'https://www.gov.nl.ca/immigration/processing-applications-from-individuals-who-previously-resided-in-another-canadian-province-or-territory'
+/** nl-imm 那轮 crawl 的抓取日(manifest.crawled_at) */
+const NL_FETCHED = '2026-08-15'
 
 export const NL_INTL_GRAD: PathwayStrategy = {
   key: 'NL-intl-grad',
@@ -41,5 +45,17 @@ export const NL_INTL_GRAD: PathwayStrategy = {
     teers: [0, 1, 2, 3],
     url: NL_POLICY,
     quote: 'Memorial University or College of the North Atlantic graduates are permitted to hold a position that is not directly related to their field of study provided the applicant’s position meets all of the following criteria: NOC code requires a post-secondary degree or diploma; Corresponds to NOC TEER 0, 1, 2 or 3 occupation or TEER 4 (in-demand) occupation;',
+  },
+  // 省外院校毕业生:先在 NL 全职干满 12 个月才可能被邀(2026-08-15 #317)。
+  // 官方这条写的是「先前住在别的省/地区」,不是「在别的省读的书」—— 但在别省念完书的人**必然**
+  // 先住过那个省,所以「加拿大学历 + 学习省≠NL」是这条政策的充分条件,判定层据此判(不反推:
+  // 学习省=NL 的人这条不适用,学习省没答就判不了,不猜)。
+  // 库里 NL 只有一行 `experience op='none'`(官方确实不设工作经验门槛),这条是并列的另一件事。
+  outOfProvinceGrad: {
+    months: 12,
+    url: NL_PREV_PT,
+    fetched: NL_FETCHED,
+    effective: '2025-07-16',
+    quote: 'NLPNP and AIP applicants who have resided in another PT prior to arriving in Newfoundland and Labrador must demonstrate a minimum 12 consecutive months of full-time employment in Newfoundland and Labrador before they may be considered for nomination under the NLPNP or endorsement under the AIP.',
   },
 }

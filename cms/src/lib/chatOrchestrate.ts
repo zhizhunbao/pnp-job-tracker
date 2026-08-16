@@ -1514,7 +1514,7 @@ export function verdictFacts(r: VerdictResult, lang: ChatLang): Fact[] {
   }
 
   const excluded = r.pathways.filter((v) => v.verdict === 'excluded')
-  const open = r.pathways.filter((v) => v.verdict === 'open')
+  const open = r.pathways.filter((v) => v.verdict === 'viable')
   const needs = r.pathways.filter((v) => v.verdict === 'needs-info')
 
   for (const v of excluded.slice(0, VERDICT_EXCLUDED_SHOWN)) {

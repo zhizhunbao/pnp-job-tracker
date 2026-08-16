@@ -22,7 +22,7 @@ import { SK_OFFER } from './sk-offer'
 import type { PathwayStrategy, PathwayUi } from './types'
 import type { GateKey, GateRule } from '../gateManifest'
 
-export type { PathwayStrategy, PathwayUi, FieldMatchExemption } from './types'
+export type { PathwayStrategy, PathwayUi, FieldMatchExemption, OutOfProvinceGrad } from './types'
 
 /** 13 条通道,顺序 = 判定层的注册表原序(见文件头注释,别随手改) */
 export const PATHWAYS: PathwayStrategy[] = [

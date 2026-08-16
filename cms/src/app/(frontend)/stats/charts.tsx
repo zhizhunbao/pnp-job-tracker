@@ -319,23 +319,23 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels, firstSc
           四行药丸 → **常用一行 + 更多筛选折叠**,与职位板筛选区同一套语言(#59 拍板的形态)。
           原生 select 不用药丸:四组都是单选,药丸横铺白占竖向空间(效果图 Frank 过目后实施)。 */}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', margin: '8px 0 0' }}>
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('mkt.search')}
+        <input className="mktCtl" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('mkt.search')}
           style={{ height: 32, border: '1px solid #e5e7eb', borderRadius: 8, padding: '0 10px', fontSize: 12.5, width: 190 }} />
         <span style={ctlLb}>{t('mkt.x')}</span>
-        <select value={xKey} onChange={(e) => setXKey(e.target.value as 'occ' | 'prov' | 'city')} style={selS}>
+        <select className="mktCtl" value={xKey} onChange={(e) => setXKey(e.target.value as 'occ' | 'prov' | 'city')} style={selS}>
           <option value="occ">{t('mkt.x.occ')}</option><option value="prov">{t('mkt.x.prov')}</option><option value="city">{t('mkt.x.city')}</option>
         </select>
         <span style={ctlLb}>{t('mkt.g')}</span>
-        <select value={g} onChange={(e) => setGrp(e.target.value as 'none' | 'prov' | 'broad' | 'teer')} style={selS}>
+        <select className="mktCtl" value={g} onChange={(e) => setGrp(e.target.value as 'none' | 'prov' | 'broad' | 'teer')} style={selS}>
           {([['none', t('mkt.g.none')], ['prov', t('mkt.g.prov')], ['broad', t('mkt.g.broad')], ['teer', 'TEER']] as const).map(([k, lb]) => (
             <option key={k} value={k} disabled={!legal(k)}>{lb}</option>   /* 退化组合仍然置灰,不画退化图 */
           ))}
         </select>
         <span style={ctlLb}>{t('mkt.sort')}</span>
-        <select value={sortBy} onChange={(e) => setSortBy(e.target.value as 'jobs' | 'med')} style={selS}>
+        <select className="mktCtl" value={sortBy} onChange={(e) => setSortBy(e.target.value as 'jobs' | 'med')} style={selS}>
           <option value="jobs">{t('stats.openJobs')}</option><option value="med">{medName}</option>
         </select>
-        <span style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 8, overflow: 'hidden', height: 32 }}>
+        <span className="mktCtl" style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 8, overflow: 'hidden', height: 32 }}>
           {([['desc', t('mkt.sort.desc')], ['asc', t('mkt.sort.asc')]] as const).map(([k, lb]) => (
             <button key={k} onClick={() => setSortDir(k as 'desc' | 'asc')}
               style={{ border: 'none', padding: '0 10px', fontSize: 12.5, cursor: 'pointer',
@@ -343,41 +343,41 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels, firstSc
                 fontWeight: sortDir === k ? 600 : 400 }}>{lb}</button>
           ))}
         </span>
-        <button onClick={() => setMore((v) => !v)} style={{ height: 32, border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', fontSize: 12.5, color: '#374151', padding: '0 11px', cursor: 'pointer' }}>
+        <button className="mktCtl" onClick={() => setMore((v) => !v)} style={{ height: 32, border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', fontSize: 12.5, color: '#374151', padding: '0 11px', cursor: 'pointer' }}>
           {t('mkt.more')}{chan !== 'all' || y2 !== 'wage' || minJobs !== 5 || fBroad || fMid || fFine ? <span style={{ display: 'inline-block', background: '#2563eb', color: '#fff', borderRadius: 999, fontSize: 10.5, padding: '0 5px', marginLeft: 5 }}>{(chan !== 'all' ? 1 : 0) + (y2 !== 'wage' ? 1 : 0) + (minJobs !== 5 ? 1 : 0) + (fBroad ? 1 : 0) + (fMid ? 1 : 0) + (fFine ? 1 : 0)}</span> : null}
         </button>
       </div>
       {more && (
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 10, paddingTop: 10, borderTop: '1px dashed #e5e7eb' }}>
           <span style={ctlLb}>{t('mkt.chan')}</span>
-          <select value={chan} onChange={(e) => setChan(e.target.value as 'all' | 'pnp' | 'ee')} style={selS} disabled={xKey !== 'occ'}>
+          <select className="mktCtl" value={chan} onChange={(e) => setChan(e.target.value as 'all' | 'pnp' | 'ee')} style={selS} disabled={xKey !== 'occ'}>
             <option value="all">{t('mkt.chan.all')}</option>
             <option value="pnp">{t('mkt.chan.pnp')}</option>
             <option value="ee">{t('mkt.chan.ee')}</option>
           </select>
           <span style={ctlLb}>{t('mkt.y2')}</span>
-          <select value={y2} onChange={(e) => setY2(e.target.value as 'wage' | 'posted' | 'off')} style={selS}>
+          <select className="mktCtl" value={y2} onChange={(e) => setY2(e.target.value as 'wage' | 'posted' | 'off')} style={selS}>
             <option value="wage">{t('stats.medWage')}</option>
             <option value="posted">{t('stats.medSalary')}</option>
             <option value="off">{t('mkt.y2.off')}</option>
           </select>
           <span style={ctlLb}>{t('mkt.broad')}</span>
-          <select value={fBroad} onChange={(e) => { setFBroad(e.target.value); setFMid(''); setFFine('') }} style={selS} disabled={xKey !== 'occ'}>
+          <select className="mktCtl" value={fBroad} onChange={(e) => { setFBroad(e.target.value); setFMid(''); setFFine('') }} style={selS} disabled={xKey !== 'occ'}>
             <option value="">{t('mkt.cat.all')}</option>
             {broads.map((b) => <option key={b} value={b}>{t('broad.' + b) || b}</option>)}
           </select>
           <span style={ctlLb}>{t('mkt.mid')}</span>
-          <select value={fMid} onChange={(e) => { setFMid(e.target.value); setFFine('') }} style={selS} disabled={xKey !== 'occ'}>
+          <select className="mktCtl" value={fMid} onChange={(e) => { setFMid(e.target.value); setFFine('') }} style={selS} disabled={xKey !== 'occ'}>
             <option value="">{t('mkt.cat.all')}</option>
             {mids.map((m) => <option key={m} value={m}>{m}</option>)}
           </select>
           <span style={ctlLb}>{t('mkt.fine')}</span>
-          <select value={fFine} onChange={(e) => setFFine(e.target.value)} style={selS} disabled={xKey !== 'occ'}>
+          <select className="mktCtl" value={fFine} onChange={(e) => setFFine(e.target.value)} style={selS} disabled={xKey !== 'occ'}>
             <option value="">{t('mkt.cat.all')}</option>
             {fines.map((f) => <option key={f} value={f}>{f}</option>)}
           </select>
           <span style={ctlLb}>{t('mkt.minJobs')}</span>
-          <select value={minJobs} onChange={(e) => setMinJobs(Number(e.target.value))} style={selS}>
+          <select className="mktCtl" value={minJobs} onChange={(e) => setMinJobs(Number(e.target.value))} style={selS}>
             {[1, 5, 10, 20, 50].map((n) => <option key={n} value={n}>{n}</option>)}
           </select>
           {xKey !== 'occ' ? <span style={{ fontSize: 11.5, color: '#9ca3af' }}>{t('mkt.chan.occOnly')}</span> : null}
@@ -394,7 +394,8 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels, firstSc
         </button>
         <EChart option={opt} height={fs ? Math.max(320, vh - 24) : 420} />
       </div>
-      <style>{'@media(min-width:900px){.mktFs{display:none}}'}</style>
+      {/* #300(第 38 轮):全屏钮手机触控靶 ≥44;控件行 .mktCtl 的 44 规则在全局 styles.css 640 块(单一来源) */}
+      <style>{'@media(min-width:900px){.mktFs{display:none}}@media(max-width:640px){.mktFs{min-height:44px;min-width:44px}}'}</style>
       <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6, lineHeight: 1.6 }}>{t('mkt.note')}</div>
     </div>
   )

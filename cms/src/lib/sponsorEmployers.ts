@@ -13,6 +13,8 @@ import { employerVerdict, type EmployerFacts, type EmployerVerdict } from './emp
 import type { Requirement } from './rules'
 
 export const SE_PAGE_SIZE = 100
+// #313:把脉页橱窗三分表 SSR 每表只带前 50 行(桌面 10/页 → 首 5 页秒开),全量走 /api/sponsor-employers 懒取
+export const SE_SSR_ROWS = 50
 
 export type SponsorEmployerRow = {
   name: string; slug: string; industry: string; aliasZh: string; aliasKo: string
@@ -128,6 +130,32 @@ export async function fetchSponsorEmployers(pool: any): Promise<SponsorEmployerR
   // 只有冷启动第一请求真正等)
   if (cache) { void inflight.catch(() => {}); return cache.rows }
   return inflight
+}
+
+// ── #313 把脉页橱窗三分表(lmia/named/aip)构建 ─────────────────────────────
+// 逻辑原样自 start/page.tsx 下沉(单一来源):SSR(切前 50 行)与 /api/sponsor-employers(全量)共用。
+// 排序拍板不动:LMIA 按新近度(Frank 08-08「按最近 LMIA 数排前面」),named 按 #285 三灯默认序,AIP 保持聚合序。
+// 瘦身照旧:cities 表格不渲不筛,置空;nocs 留着供职业筛。
+export type SponsorBoardData = { top: SponsorEmployerRow[]; total: number }
+export type SponsorBoards = { lmia: SponsorBoardData; named: SponsorBoardData; aip: SponsorBoardData }
+export function buildSponsorBoards(rows: SponsorEmployerRow[]): SponsorBoards {
+  type SR = SponsorEmployerRow
+  const pick = (keep: (r: SR) => boolean, order?: (a: SR, b: SR) => number): SponsorBoardData => {
+    // 缓存行全站共享:filter 产新数组供排序,map 产新对象供瘦身,均不动缓存
+    const hit = rows.filter(keep)
+    if (order) hit.sort(order)
+    return { top: hit.map((r) => ({ ...r, cities: [] })), total: hit.length }
+  }
+  return {
+    lmia: pick((r) => r.lmiaPositions > 0, (a, b) => b.lmia1q - a.lmia1q || b.lmia2q - a.lmia2q || b.lmia4q - a.lmia4q || b.openJobs - a.openJobs),
+    // #285 三灯默认序:灯①雇主资格(达标→待核/公共→差项)→ 灯②担保行为记录 → 在招数
+    named: pick((r) => r.named, (a, b) => {
+      const prio = (r: SR) => (r.verdict.state === 'met' ? 0 : r.verdict.state === 'short' ? 2 : 1)
+      const rec = (r: SR) => (r.lmiaPositions > 0 || r.aip ? 1 : 0)
+      return prio(a) - prio(b) || rec(b) - rec(a) || b.openJobs - a.openJobs
+    }),
+    aip: pick((r) => r.aip),
+  }
 }
 
 /** 进程内筛选+排序(全量,B3 导出与页面共用;缓存行是共享的,绝不原地排序——先浅拷贝) */

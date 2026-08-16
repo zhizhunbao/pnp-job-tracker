@@ -272,6 +272,11 @@ function occupationRows(job: TripleJob, occs: OccupationRow[], provReqs: Require
     // NL 的 nl-priority 是「优先处理表」(官方明说不在表上不等于不能申请,且只给职位名无 NOC 码),不构成定向清单。
     const OCC_LIST_NONE: Record<string, { url: string; fetched: string }> = {
       NL: { url: 'https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/international-graduate', fetched: '2026-08-12' },
+      // ON(2026-08-15 #322 查证,crawl 缓存举证):旧定向通道已死 ——「this stream was closed as of
+      // May 30, 2026, as part of the OINP redesign」(In-Demand Skills 页);新制单一通道明说全职业
+      // ——「…with a qualifying job offer and work experience in any National Occupational
+      // Classification (NOC) occupation」。所以 ON 是「官方无定向清单」,不是「本站未收录」。
+      ON: { url: 'https://www.ontario.ca/page/ontario-workforce-priority-stream', fetched: '2026-08-15' },
     }
     const lists = namedLists(job.province, occs)
     const only = lists.length === 1 ? lists[0] : null
@@ -557,7 +562,7 @@ function conclude(job: TripleJob, rows: TripleRow[], compare: TripleCompareRow[]
     .filter((x): x is { c: TripleCompareRow; v: PathwayVerdict } => !!x.v)
 
   // ① 能走的:open 且没被闸卡住。并列时取 tier 最小(pathVerdict 的排序语义,本层不重排)
-  const open = mine.filter((x) => x.v.verdict === 'open' && !x.v.blockedBy)
+  const open = mine.filter((x) => x.v.verdict === 'viable' && !x.v.blockedBy)
     .sort((a, b) => (a.c.tier ?? 9) - (b.c.tier ?? 9))
   if (open.length) {
     const top = open[0]

@@ -148,7 +148,8 @@ export function RankingView({ slug, items, slugs = [] }: { slug: string; items: 
           sub={t('rank.bnSub')} stats={[{ v: boards.length, label: t('rank.bnBoards') }, { v: items.length, label: t('rank.bnRows') }]} />
         {/* 榜单导航(E9-02 分类榜矩阵):只列当前有数据的榜;当前榜加粗黑。
             #61(2026-07-19 Frank 拍板「就是那个意思」):从页底挪到页头下方——导航是切换入口不是脚注 */}
-        <style>{'@media (max-width:640px){.rkTabs a,.rkTabs span{min-height:40px;display:inline-flex;align-items:center}}'}</style>
+        {/* #300(第 38 轮):40 → 44 触控靶站规下限 */}
+        <style>{'@media (max-width:640px){.rkTabs a,.rkTabs span{min-height:44px;display:inline-flex;align-items:center}}'}</style>
         <div className="rkTabs" style={{ margin: '0 0 12px', fontSize: 12.5, display: 'flex', flexWrap: 'wrap', gap: '6px 14px' }}>
           {/* #210(第 26 轮):当前榜原来也是链到自己的 <a>(点不动的链接,同 #205 页签)→ 当前榜=span。
               与页头同名不算废话:这是「你在哪一榜」的定位,删了反而不知道站在哪 */}

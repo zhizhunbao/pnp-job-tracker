@@ -38,6 +38,10 @@ export type TripleWire = {
   jobId: number
   noc: string | null
   nocName: string | null
+  // #326:NOC 职业名中/韩译(noc_descriptions.title_zh/title_ko)——zh/ko 界面「职位名」瓦片
+  // 主文案用它,帖面英文原名降灰注(帖面标题无逐帖译文,职业官方名是库里现成的三语)
+  nocTitleZh: string | null
+  nocTitleKo: string | null
   teer: number | null
   province: string
   conclusion: TripleCard['conclusion']
@@ -78,7 +82,8 @@ export async function buildTripleWire(id: number, answers: ClientAnswers): Promi
   const { rows: jr } = await pool.query(
     `SELECT j.id, j.title, j.noc, j.teer, j.province, j.city, j.pnp_eligible, j.pnp_stream,
             j.ee_category, j.aip, j.employment_term, j.employment_hours, j.company_id,
-            c.name AS company_name, nd.title AS noc_title
+            c.name AS company_name, nd.title AS noc_title,
+            nd.title_zh AS noc_title_zh, nd.title_ko AS noc_title_ko
        FROM jobs j
        LEFT JOIN companies c ON c.id = j.company_id
        LEFT JOIN noc_descriptions nd ON nd.noc = j.noc
@@ -220,6 +225,7 @@ export async function buildTripleWire(id: number, answers: ClientAnswers): Promi
   return {
     ok: true,
     jobId: card.jobId, noc: card.noc, nocName: card.nocName, teer: card.teer, province: card.province,
+    nocTitleZh: r.noc_title_zh ?? null, nocTitleKo: r.noc_title_ko ?? null,
     // 结论句恒免费:它与同一页上免费的「你的初步方案」同源(都来自 pathVerdict),
     // 锁在这里等于把已经免费给出的东西再收一次钱。逐项差值仍走 paid 行的锁。
     conclusion: card.conclusion,
