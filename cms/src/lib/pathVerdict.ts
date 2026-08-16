@@ -84,6 +84,14 @@ export type VerdictProfile = {
   /** 持的许可(2026-08-15 statusInCanada 拆闸):study=学签 / pgwp / work=其他工签 / none=访客或已过期。
    *  null = 没答 → 工签/PGWP 类闸落「判不了」,不拿 inCanada 冒充有工签(学签在读被 AB 放行的那个病)。 */
   permit: 'study' | 'pgwp' | 'work' | 'none' | null
+  /** 用户在分值卡上**直选的官方档位**,键 `省:因素` → 该档 seq(2026-08-16)。
+   *  没有它,凡是「必答档位喂不出档案」的省(BC 的工作地区、ON 的年收入…)一律整省不接 ——
+   *  可用户明明在页面上答了,只是从没上行过。 */
+  scoreRows?: Record<string, number>
+  /** 时薪(加元/小时):BC SIRS 按整元计分(floor-15),满分 55,占 200 分里的大头 */
+  wage?: number | null
+  /** BC 工作地区档(0=大温 / 1=Squamish 等 / 2=其余):官方 area 行的下标 */
+  areaI?: number | null
   /** 用户在分值卡上勾中的加分项,键 `省:因素:批`(2026-08-16 Frank「把加分项做成正式答案字段」)。
    *  先前这一侧恒空 ⇒ 带加分项的省估分永远是「全 0 下界」⇒ 恒落「取决于加分项」。
    *  没勾的仍按 0 —— value 因此**仍是下界**,「够得着」照旧是不会翻案的硬结论。 */
@@ -448,12 +456,40 @@ function provinceGridScore(
 
   const names = Array.from(new Set(all.map((f) => f.factor)))
   const only = new Set<string>()
+  // 用户直选的官方档位 → override(2026-08-16「先解决 BC」):与分值卡客户端同一套口径。
+  // 先前这里是「喂不出就整省不接」,可用户在页面上明明答了 —— 只是从没上行过。
+  const picked: Record<string, { pts: number; matched: string; source: 'job' }> = {}
+  const pickRow = (factor: string) => {
+    const seq = p.scoreRows?.[`${spec.reqProvince}:${factor}`]
+    if (seq == null) return null
+    return all.find((f) => f.factor === factor && f.kind === 'row' && f.seq === seq) ?? null
+  }
   let partial = false
   for (const name of names) {
     const hasRows = all.some((f) => f.factor === name && f.kind === 'row')
-    if (!hasRows) { partial = true; continue }              // 纯加分项 → 不勾=0(与打分卡默认同口径)
+    // 纯规则因素(BC 时薪:每整元 1 分)—— 用户填了就按官方规则算,没填才当 0 并标下界
+    if (!hasRows) {
+      const rule = all.find((f) => f.factor === name && f.kind === 'rule')
+      if (name === 'wage' && rule && p.wage != null) {
+        let cfg: { floorAt?: number; capAt?: number } = {}
+        try { cfg = JSON.parse(rule.rule || '{}') } catch { /* 规则串坏了就按官方默认 */ }
+        const floorAt = cfg.floorAt ?? 16, capAt = cfg.capAt ?? 70
+        const pts = p.wage < floorAt ? 0 : Math.min(Math.floor(Math.min(p.wage, capAt)) - 15, rule.factorMax ?? 55)
+        picked[name] = { pts, matched: `$${p.wage}/hr`, source: 'job' }
+        continue
+      }
+      partial = true; continue                              // 纯加分项 → 不勾=0(与打分卡默认同口径)
+    }
     if (name === 'offer') { if (p.hasOffer == null) return undefined; continue }
-    if (!GRID_AUTO_FACTORS.has(name)) return undefined      // 有必答档位却喂不出输入 → 整省不接
+    if (!GRID_AUTO_FACTORS.has(name)) {
+      // BC 工作地区单列:它由 areaI 直接给下标(分值卡同款),其余因素认 scoreRows 里的 seq
+      const row = name === 'area' && spec.reqProvince === 'BC' && p.areaI != null
+        ? all.filter((f) => f.factor === 'area' && f.kind === 'row')[p.areaI] ?? null
+        : pickRow(name)
+      if (!row) return undefined                            // 用户也没答 → 整省仍不接,不猜
+      picked[name] = { pts: row.points ?? 0, matched: row.label, source: 'job' }
+      continue
+    }
     only.add(name)
   }
   if (!only.size) return undefined
@@ -482,7 +518,7 @@ function provinceGridScore(
   // 勾选只取**本省**的键:别省的勾进来会被 scoreProvince 忽略,但先滤一道免得越界
   const ownTicks: Record<string, boolean> = {}
   for (const [k, v] of Object.entries(p.scoreTicks ?? {})) if (v && k.startsWith(`${spec.reqProvince}:`)) ownTicks[k] = true
-  const now = scoreProvince(factors, spec.reqProvince, self, ovOf(p.hasOffer === true), ownTicks, only)
+  const now = scoreProvince(factors, spec.reqProvince, self, { ...ovOf(p.hasOffer === true), ...picked }, ownTicks, only)
   if (!now) return undefined
   // 上界:语言拉到官方最高档 + 加分项**全部按满分**(官方档位自己封顶)。
   // 少算加分项的「上界」是假上界,拿它判分数鸿沟会把够得着的人判死 —— 那正是四态口径最忌的那种错。
@@ -495,7 +531,7 @@ function provinceGridScore(
     ticks[`${spec.reqProvince}:${f.factor}:${i}`] = true
     seen.set(f.factor, i + 1)
   }
-  const top = scoreProvince(factors, spec.reqProvince, { ...self, clb1: maxClb ?? self.clb1 }, ovOf(true), ticks, only)
+  const top = scoreProvince(factors, spec.reqProvince, { ...self, clb1: maxClb ?? self.clb1 }, { ...ovOf(true), ...picked }, ticks, only)
 
   return {
     system: head.system, value: now.total, ceiling: top ? top.total : null,

@@ -160,6 +160,10 @@ export type ScoreAnswers = {
   profile: Partial<SelfProfile>
   /** 基础卷没答 offer 时分值卡自问的那道;基础卷答过(ctx.hasOffer 有值)以基础卷为准 */
   hasOffer?: boolean
+  /** 时薪(加元/小时)与 BC 工作地区档。2026-08-16 补:先前只活在分值卡的 state 里,
+   *  刷新即丢,更谈不上上行 —— 而 BC SIRS 200 分里这两样占 80 分,服务端拿不到就整省算不出。 */
+  wage?: number
+  areaI?: number
 }
 const SCORE_EMPTY: ScoreAnswers = { ticks: {}, rowAnswers: {}, extraAnswered: {}, profile: {} }
 

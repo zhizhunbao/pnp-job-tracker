@@ -204,9 +204,11 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   // 分值卡答案持久化(2026-08-15 Frank「学历以下的字段都有这个问题」):此前三个 map 只活在
   // state,刷新全丢。初始从 lib/answers 读档,变更即写回(键=用户自身条件,跨岗位跨页面通用)
   const [ticks, setTicks] = useState<Record<string, boolean>>(() => readScoreAnswers().ticks)
-  const [wage, setWage] = useState<number>(() => Math.round(ctx.hourly ?? 0))
+  // 存档优先于岗位语境:用户自己填过就以他的为准(岗位时薪只是没填时的预填)
+  const [wage, setWage] = useState<number>(() => readScoreAnswers().wage ?? Math.round(ctx.hourly ?? 0))
   // 保守默认:知道城市才猜地区,否则默认 Area 1(0 分)—— 不许用有利默认把分数吹上去
-  const [areaI, setAreaI] = useState<number>(() => (ctx.city ? guessArea(ctx.city) : 0))
+  // 同上:存档 > 按岗位城市猜。guessArea 只是没答时的预填,用户选过就以他的为准
+  const [areaI, setAreaI] = useState<number>(() => readScoreAnswers().areaI ?? (ctx.city ? guessArea(ctx.city) : 0))
   // 基础卷答过(ctx.hasOffer 有值)以基础卷为准;存档兜底只剩历史答案(#304 起分值卡不再自问,
   // 且闸门只认基础卷的「有」—— 这个 state 只在开闸后供结果区勾选框撤销用)
   const [hasOffer, setHasOffer] = useState<boolean>(() => (ctx.hasOffer !== undefined ? !!ctx.hasOffer : readScoreAnswers().hasOffer ?? false))
@@ -233,7 +235,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   }
   const [extraAnswered, setExtraAnswered] = useState<Record<string, boolean>>(() => healExtra(readScoreAnswers()))
   // offer 没真答过就不入档(offerTouched),理由见其声明处
-  useEffect(() => { writeScoreAnswers({ ticks, rowAnswers, extraAnswered, profile: profAns, ...(offerTouched ? { hasOffer } : {}) }) }, [ticks, rowAnswers, extraAnswered, profAns, hasOffer, offerTouched])
+  useEffect(() => { writeScoreAnswers({ ticks, rowAnswers, extraAnswered, profile: profAns, wage, areaI, ...(offerTouched ? { hasOffer } : {}) }) }, [ticks, rowAnswers, extraAnswered, profAns, wage, areaI, hasOffer, offerTouched])
   // 答案档入库(2026-08-15):挂载时拉服务端档合并(新者胜;未登录 401 无感)。必须排在
   // 上面持久化 effect 之后:同内容回写不记时刻(writeScoreAnswers 语义比对),拉档才不会被
   // 挂载即写误判成「本地更新」。拉回来有变化 → 答案 state 全量重建(含 profile 值),照旧防抖同步。

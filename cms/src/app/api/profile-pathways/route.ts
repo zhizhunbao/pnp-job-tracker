@@ -86,7 +86,10 @@ const finite = (v: unknown): number | null => {
 }
 
 export async function POST(req: Request) {
-  const body = await req.json().catch(() => null) as { answers?: Record<string, unknown>; ticks?: Record<string, unknown> } | null
+  const body = await req.json().catch(() => null) as {
+    answers?: Record<string, unknown>; ticks?: Record<string, unknown>
+    rows?: Record<string, unknown>; wage?: unknown; areaI?: unknown
+  } | null
   const answers = body?.answers
   if (!answers || typeof answers !== 'object') return Response.json({ error: 'answers required' }, { status: 400 })
 
@@ -100,6 +103,21 @@ export async function POST(req: Request) {
     ticks[k] = true
     if (Object.keys(ticks).length >= 64) break
   }
+
+  // 用户在分值卡上直选的官方档位(2026-08-16):键 `省:因素`,值 = 该档的 seq。
+  // 同一条信任边界:形状不对丢掉、总量封顶 —— 它直接决定得几分,放任自由文本进来等于让请求方写分。
+  const ROW_KEY = /^[A-Z]{2}:[A-Za-z][A-Za-z0-9]{0,23}$/
+  const scoreRows: Record<string, number> = {}
+  for (const [k, v] of Object.entries(body?.rows ?? {})) {
+    const n = Number(v)
+    if (!ROW_KEY.test(k) || !Number.isInteger(n) || n < 0 || n > 99) continue
+    scoreRows[k] = n
+    if (Object.keys(scoreRows).length >= 64) break
+  }
+  const wageNum = Number(body?.wage)
+  const wage = Number.isFinite(wageNum) && wageNum > 0 && wageNum < 1000 ? wageNum : null
+  const areaNum = Number(body?.areaI)
+  const areaI = Number.isInteger(areaNum) && areaNum >= 0 && areaNum <= 20 ? areaNum : null
 
   const nocs = Array.isArray(answers.nocs) ? answers.nocs.map(String).filter((n) => /^\d{5}$/.test(n)) : []
   const noc = nocs[0] || (/^\d{5}$/.test(String(answers.noc ?? '')) ? String(answers.noc) : '')
@@ -144,6 +162,9 @@ export async function POST(req: Request) {
     canadaStudy: typeof answers.canadaStudy === 'boolean' ? answers.canadaStudy : null,
     // 用户勾中的加分项(2026-08-16):进 provinceGridScore 的 now 那一侧。校验过的键才到这
     scoreTicks: ticks,
+    // 用户直选的官方档位 + 时薪 + BC 地区档:先前服务端一律收不到,于是 BC 这类
+    // 「必答档位要岗位侧数据」的省整省算不出分(页面上明明算得出)
+    scoreRows, wage, areaI,
   }
 
   const [data, comp, occRows, pilotQuota] = await Promise.all([getVerdictData(), competitionByProvince(), fetchOccCompetition(nocs.length ? nocs : [noc]), fetchPilotQuota()])

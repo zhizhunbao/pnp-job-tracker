@@ -171,3 +171,56 @@ describe('加分项勾选进估分', () => {
     else expect(lineStateOf(after!)).not.toBe('below')
   })
 })
+
+// ── BC 从「整省不接」到能算(2026-08-16 Frank「先解决 BC」)────────────────────
+// 病灶:BC 的 SIRS 必答档位里 wage(55 分)与 area(25 分)来自**岗位**,判定层手上只有档案 ⇒
+// 整省 return undefined。可用户在分值卡上明明填了时薪、选了地区 —— 只是从没上行到服务端。
+describe('BC:时薪与地区上行后能算分', () => {
+  const data: VerdictData = {
+    requirements: mart<Requirement>('pnp_requirements'),
+    occupations: mart<OccupationRow>('pnp_occupations'),
+    draws: mart<VerdictDrawRow>('pnp_draws'),
+    scoreFactors: mart<ScoreFactor>('pnp_score_factors'),
+    eeGrid: mart<EeGridRow>('ee_points_grid'),
+    designatedEmployers: mart<DesignatedEmployerRow>('designated_employers'),
+  }
+  const base: VerdictProfile = {
+    age: 30, married: false, clb: 8, edu: 'bachelor', eduYears: 4, canadaStudy: true, studyProvince: 'BC',
+    noc: '72310', teer: 2, expCanadaMonths: 36, expForeignMonths: 24, foreignExpSelfEmployed: false,
+    hasOffer: true, inCanada: true, status: 'work', province: 'BC', permit: 'work',
+    fieldMatch: true, frenchOk: null,
+  }
+  const bc = (p: VerdictProfile) => pathVerdict(p, data).find((v) => v.province === 'BC' && v.score)?.score ?? null
+
+  it('不给时薪/地区:整省仍不接(不猜)', () => {
+    expect(bc(base)).toBeNull()
+  })
+
+  it('给了就能算,且分随时薪单调上升', () => {
+    const low = bc({ ...base, wage: 25, areaI: 0 })
+    const high = bc({ ...base, wage: 50, areaI: 0 })
+    expect(low?.value).toBeTypeOf('number')
+    expect(high!.value).toBeGreaterThan(low!.value)
+    // 官方规则:每整元 1 分(floor-15),$25 → 10 分、$50 → 35 分,差 25
+    expect(high!.value - low!.value).toBe(25)
+  })
+
+  it('地区档按官方分值走:Area 3(其余地区)高于 Area 1(大温)', () => {
+    const metro = bc({ ...base, wage: 30, areaI: 0 })      // Area 1 = 0 分
+    const rest = bc({ ...base, wage: 30, areaI: 2 })       // Area 3 = 15 分
+    expect(rest!.value - metro!.value).toBe(15)
+  })
+
+  it('时薪低于官方起薪线记 0 分,不给负分', () => {
+    const under = bc({ ...base, wage: 12, areaI: 0 })
+    const at = bc({ ...base, wage: 16, areaI: 0 })
+    expect(under!.value).toBeLessThanOrEqual(at!.value)
+    expect(under!.value).toBeGreaterThanOrEqual(0)
+  })
+
+  it('算出来的分能进三态判定(不再恒 unknown)', () => {
+    const s = bc({ ...base, wage: 60, areaI: 2 })
+    expect(s).not.toBeNull()
+    expect(['above', 'below', 'unknown']).toContain(lineStateOf(s!))
+  })
+})

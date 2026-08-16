@@ -181,6 +181,9 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
   const [scoreTables, setScoreTables] = useState<ScoreTables | null>(null)
   // 加分项勾选(分值卡的 localStorage 存档):随请求上行,服务端按它算分。挂载与每次答题回报时同步
   const [scoreTicks, setScoreTicks] = useState<Record<string, boolean>>({})
+  // 用户在分值卡上**直选的官方档位**(BC 工作地区、ON 各档…)与时薪。它们和加分项同病:
+  // 页面上算得出分,服务端却收不到 —— BC SIRS 200 分里时薪 55 + 地区 25 全卡在这儿
+  const [scoreRowsAns, setScoreRowsAns] = useState<{ rowAnswers: Record<string, number>; wage?: number; areaI?: number }>({ rowAnswers: {} })
   // 该职业分省竞争面:按 NOC 懒取(省级那张表随页面 SSR,这张要等他答完职业才知道查谁)
   const [occComp, setOccComp] = useState<OccCompetitionRow[] | null>(null)
   // 分省竞争表的职业切换(2026-08-14 Frank「需要分职业吧」):默认第一职业,选了就看谁;
@@ -230,10 +233,17 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
       window.history.replaceState(null, '', u.pathname + u.search + u.hash)
     }
     setReady(true)
-    setScoreTicks(readScoreAnswers().ticks ?? {})
+    const sa = readScoreAnswers()
+    setScoreTicks(sa.ticks ?? {})
+    setScoreRowsAns({ rowAnswers: sa.rowAnswers ?? {}, wage: sa.wage, areaI: sa.areaI })
     track('dp-open', { job: tvJob ? '1' : '0' })
     // 登录态拉服务端答案档(清了浏览器/换设备答案还在;未登录 401 无感):有变化才重建
-    pullAndMerge().then((changed) => { if (changed) { refreshFromStore(); setScoreTicks(readScoreAnswers().ticks ?? {}) } }).catch(() => { /* 静默 */ })
+    pullAndMerge().then((changed) => {
+      if (!changed) return
+      refreshFromStore()
+      const a = readScoreAnswers()
+      setScoreTicks(a.ticks ?? {}); setScoreRowsAns({ rowAnswers: a.rowAnswers ?? {}, wage: a.wage, areaI: a.areaI })
+    }).catch(() => { /* 静默 */ })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -290,6 +300,7 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
   // 在 AB 也只有 46 分对线 53)。这里把它接上:签名进重算边界,值随请求上行。
   // 仍是**下界**(没勾的按 0),所以「够得着」照旧是不会翻案的硬结论。
   const tickSig = Object.keys(scoreTicks).filter((k) => scoreTicks[k]).sort().join(',')
+  const rowSig = JSON.stringify([scoreRowsAns.rowAnswers, scoreRowsAns.wage, scoreRowsAns.areaI])
 
   // 岗位与雇主只在第二层三项判定里使用。输入键用于修改答案后原地重算。
   const pathInputKey = JSON.stringify([
@@ -303,7 +314,7 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
     bands.fieldMatchBand, bands.eduProv,
     // 加分项勾选(2026-08-16 Frank 拍第 1 条:「把加分项做成正式答案字段」)——
     // 勾了不进 key = 用户勾满了分数纹丝不动,正是这次要修的那个病
-    tickSig,
+    tickSig, rowSig,
   ])
   useEffect(() => {
     // 职业档粗筛(2026-08-15):有职业就跑 —— 引擎对没答的题落「判不了」不当障碍,答满后同一请求自动升级个人档
@@ -312,7 +323,8 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
     setProfilePaths(null)
     fetch('/api/profile-pathways', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
-      body: JSON.stringify({ answers: toEngineAnswers(bands), ticks: scoreTicks }),
+      body: JSON.stringify({ answers: toEngineAnswers(bands), ticks: scoreTicks,
+        rows: scoreRowsAns.rowAnswers, wage: scoreRowsAns.wage, areaI: scoreRowsAns.areaI }),
     })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => { if (!ctrl.signal.aborted) {
@@ -514,8 +526,9 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
   const onScoreAnswers = useCallback((rows: { key: string; prov: string; label: string; value: string; filled: boolean }[]) => {
     setScoreEcho(rows)
     setBands(readAnswers())
-    // 加分项的勾选同步上来(2026-08-16):不同步 = 用户勾满了初评那张表的分还是老样子
-    setScoreTicks(readScoreAnswers().ticks ?? {})
+    // 勾选与直选档位同步上来(2026-08-16):不同步 = 用户答满了初评那张表的分还是老样子
+    const a = readScoreAnswers()
+    setScoreTicks(a.ticks ?? {}); setScoreRowsAns({ rowAnswers: a.rowAnswers ?? {}, wage: a.wage, areaI: a.areaI })
   }, [])
 
   // 估分答完 = 整卷答完,收框显示各省结果(结果在「申请人条件」卡内)
