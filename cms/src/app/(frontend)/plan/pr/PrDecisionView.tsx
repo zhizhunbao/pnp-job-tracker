@@ -20,6 +20,7 @@ import { QuizStyle, QuizTitle, pickL, type L } from '../../quiz/QuizUI'
 import { QuizForm } from '../QuizForm'
 import { BANNER_IMGS, PageBanner, PageShell, UI } from '../../ui/primitives'
 import { DataTable } from '../../ui/DataTable'
+import { JobCard } from '../../ui/JobCard'
 import { TripleVerdictPanel } from '../../jobs/TripleVerdictModal'
 import { ConditionGrid } from '../../jobs/ConditionGrid'
 import { PnpScoreCard } from '../../jobs/PnpScoreCard'
@@ -796,24 +797,26 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                         <style>{`.dpPlanCards{display:grid;gap:8px}@media(max-width:640px){.dpPlanTbl{display:none}}@media(min-width:641px){.dpPlanCards{display:none}}`}</style>
                         {/* #324 共有缺项行 2026-08-16 Frank「都删掉」:不渲染说明行,共有项直接不出现 ——
                             列里只剩行间差异,空就空着(竞争/在招两列本来就是主信号) */}
+                        {/* 手机卡=全站唯一那套 JobCard(2026-08-16 Frank「后面的卡片改成前面的风格」;
+                            与 [[jobtable-is-the-standard]] 同一条:卡片形态别处不自造)。
+                            槽位对齐职位卡的骨:左列身份(省份/在招)、右列数字(名额竞争)、胶囊排、底部动作。 */}
                         <div className="dpPlanCards">
                           {rows.map((r) => (
-                            <div key={r.rowKey} style={{ border: `1px solid ${UI.hairline}`, borderRadius: 10, padding: '10px 12px', background: r.top ? '#f8fbff' : '#fff' }}>
-                              <div style={{ display: 'flex', alignItems: 'baseline', gap: 7 }}>
-                                <span style={{ fontSize: 12, color: UI.text3, fontVariantNumeric: 'tabular-nums' }}>{r.extra ? '·' : r.index + 1}</span>
-                                {/* 制度归属已并进名字小括号(08-15「标签去掉 统一改成后面小括号」),边框小标撤销 */}
-                                <b style={{ fontSize: 13.5, color: '#111827', minWidth: 0 }}>{r.routeName}</b>
-                                <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 600, flexShrink: 0 }}>{compCell(r)}</span>
-                              </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 4, flexWrap: 'wrap' }}>
-                                <span style={{ fontSize: 11.5, color: UI.text3 }}>{r.province}</span>
-                                {r.extra ? <span style={{ fontSize: 11, color: '#1d4ed8', background: '#eff6ff', borderRadius: 999, padding: '1px 7px' }}>{t('dp.planJobProvRow')}</span> : null}
-                                {!planCoarse ? <>{gapPills(r).map(pillSpan)}{(() => { const p = timePill(r); return p ? pillSpan(p) : null })()}</> : null}
-                                <span style={{ marginLeft: 'auto', fontSize: 12.5 }}>{jobsCell(r)}</span>
-                              </div>
-                              {/* 操作钮(手机=卡片底行;三改拆双钮) */}
-                              {r.jobsHref || r.empHref ? (
-                                <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+                            <JobCard key={r.rowKey}
+                              title={{ text: r.extra ? r.routeName : `${r.index + 1}. ${r.routeName}` }}
+                              company={{ text: r.province }}
+                              // 竞争/名额状态是中性事实,压掉职位卡薪资位的绿色(那绿是「钱多是好事」的语义)
+                              salary={<span style={{ color: UI.text, fontWeight: 600 }}>{compCell(r)}</span>}
+                              location={<span style={{ color: UI.text2 }}>{t('dp.planOpen')} {r.jobsN == null ? '—' : t('dp.planJobsN', { n: r.jobsN })}</span>}
+                              date={r.extra ? <span style={{ color: '#1d4ed8', background: '#eff6ff', borderRadius: 999, padding: '1px 7px' }}>{t('dp.planJobProvRow')}</span> : undefined}
+                              chips={(() => {
+                                if (planCoarse) return undefined
+                                const p = timePill(r)
+                                const all = [...gapPills(r), ...(p ? [p] : [])]
+                                return all.length ? <>{all.map(pillSpan)}</> : undefined
+                              })()}
+                              footer={r.jobsHref || r.empHref ? (
+                                <span style={{ display: 'flex', gap: 8 }}>
                                   {r.jobsHref ? (
                                     <a href={r.jobsHref} onClick={() => track('dp-act-jobs', { key: r.rowKey })}
                                       style={{ display: 'inline-block', background: UI.primary, color: '#fff', borderRadius: 8, padding: '6px 14px', fontSize: 12.5, fontWeight: 600, textDecoration: 'none' }}>
@@ -826,9 +829,8 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                                       {t('dp.actEmp')}
                                     </a>
                                   ) : null}
-                                </div>
-                              ) : null}
-                            </div>
+                                </span>
+                              ) : undefined} />
                           ))}
                         </div>
                         <div className="dpPlanTbl">
