@@ -726,7 +726,12 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       if (!r.blocked) return [...dataPill, ...fieldPill]
                       const out: Pill[] = []
                       const push = (g: string) => {
-                        if (famOf(g) === 'offer') return
+                        // 普通 offer 在「还差」列显裸值「offer」灰囊(2026-08-16 复盘:整列剥掉后
+                        // 「还差 —」读起来像啥都不缺,比重复还误导);专门化变体照旧 warn
+                        if (famOf(g) === 'offer') {
+                          if (!out.some((p) => p.text === t('dp.gapOffer'))) out.push({ text: t('dp.gapOffer'), tone: 'mute' })
+                          return
+                        }
                         const text = t(`dp.why.gap.${g}`)
                         if (!out.some((p) => p.text === text)) out.push({ text, tone: 'warn' })
                       }

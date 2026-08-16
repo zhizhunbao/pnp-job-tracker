@@ -26,7 +26,7 @@ import { BROAD_SLUGS } from '../stats/shared'   // 大类的行业顺序(镜像 
 import { useOverlayClose } from './overlay'
 import { CARD, iconBtnS, Modal, SCRIM, useIsNarrow } from './Modal'
 import { ResumeMatchModal } from './ResumeMatchModal'   // G3 简历对照(入口在 ApplyBar)
-import { TvEntryCard, TV_PILL } from './TripleVerdictModal'   // #287 批D:判定卡入口(卡片/胶囊;判定本体已迁 /plan/pr)
+import { TvEntryCard } from './TripleVerdictModal'   // 判定入口只剩详情页/公司弹框卡片(逐行 pill 2026-08-16 撤)
 import { match as matchJob, matchRank, hasProfile, normalizeProfile, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
 import type { CompanyDetail, SimilarEmployer } from '@/lib/jobsSql'   // E8-11 B1:公司域同源数据形状(type-only,不拉服务端码)
 import { lmiaWageClass, isExemptSector } from '@/lib/lmiaStatus'
@@ -1183,11 +1183,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                               style={{ ...actBtn, whiteSpace: 'nowrap', ...(saved[String(j.id)] ? { color: '#b45309', borderColor: '#fde68a', background: '#fffbeb' } : {}) }}>
                               {saved[String(j.id)] ? t('sj.saved') : t('sj.save')}
                             </button>
-                            {/* #287 批D:判定卡入口(桌面行,与收藏同列)——真 <a>,中键可新开 */}
-                            <a href={`/plan/pr?job=${j.id}`} onClick={(e) => { e.stopPropagation(); track('tv-entry', { kind: 'table' }) }}
-                              style={{ ...actBtn, whiteSpace: 'nowrap', color: '#1d4ed8', borderColor: '#bfdbfe', background: '#eff6ff', textDecoration: 'none', display: 'inline-block' }}>
-                              {t('tv.head')}
-                            </a>
+                            {/* 逐行判定入口 2026-08-16 Frank 拍板撤(「不应该每个岗位都加一个…按钮,
+                                应该先评估,通过评估再跳到对应的工作」)—— 动线反过来:/plan/pr 评估
+                                → 初评表操作列「去投递」落到岗;详情页/公司弹框的入口保留(已选中岗才判) */}
                           </span>
                         </td>
                       )
@@ -1384,8 +1382,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 : j.lmiaPositions ? chip('#ccfbf1', '#0f766e', 'LMIA ✓' + j.lmiaPositions, 'lmia') : null,
               // GAP1③:红旗 chip —— 白投预警比正面信号更值得占位
               j.eligibilityFlag ? chip('#fee2e2', '#b91c1c', t('cell.elig.' + j.eligibilityFlag), 'eligibility') : null,
-              // #287 批D:判定卡入口 pill(蓝系动作钮,胶囊排尾;效果图 se287-entry-board)
-              <a key="tv" href={`/plan/pr?job=${j.id}`} onClick={stop(() => track('tv-entry', { kind: 'board' }))} style={{ ...TV_PILL, textDecoration: 'none' }}>{t('tv.head')}</a>,
+              // 逐行判定入口 pill 2026-08-16 随桌面行一并撤(动线=先评估后跳岗,见上)
             ].filter(Boolean)
             return (
               <JobCard key={j.id}
