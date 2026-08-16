@@ -151,7 +151,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   /** 逐题答案回显(2026-08-13 Frank:「全都算成基本信息」)—— 分值表的题与基础卷一视同仁,
    *  页面把它们摆进同一片条件格子。没答的 filled=false,值留空由页面写「待填写」;
    *  key 供「点哪格进哪题」回跳(focusQuestion);prov=''为全省共用,其余按省分 tab。 */
-  onQuestionnaireAnswers?: (rows: { key: string; prov: string; label: string; value: string; filled: boolean }[]) => void
+  onQuestionnaireAnswers?: (rows: { key: string; prov: string; label: string; value: string; filled: boolean; noQuestion?: boolean }[]) => void
   /** 点条件格直达那道题:nonce 变一次跳一次(只传 key 的话,点同一格第二次就不动了) */
   focusQuestion?: { key: string; nonce: number } | null
 }) {
@@ -257,7 +257,9 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   // 时薪是 BC 每整元计分，不能粗暴切区间，所以仍是单题数字输入。
   const extraQuestions: ExtraQuestion[] = []
   // 省名**恒显示**,不再只在多省时出:只选一个省时整屏找不到「BC」两个字,用户不知道这题在问谁的规矩
-  const scopedSub = (province: string) => t('prov.' + province) || province
+  // 2026-08-16 Frank「为什么显示两个阿尔伯塔」+「加分项 去掉」:弹框头已经写着段落名与省名,
+  // 题目小注再写一遍省名/「加分项」就是重复。留空 —— 需要语境时看头部。
+  const scopedSub = (_province: string) => undefined
   // 行级适用范围:官方给了 NOC 清单的行,不在清单里就**不问**。
   // 实例:BC「执业资格 +5」原文写明只对 11 类职业成立(牙助/幼教/护理助理/技工…),
   // 干软件的被问到这一条既多点一次、又误导(2026-08-11 Frank 点名)。清单在数据层展开好,
@@ -391,9 +393,9 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
         for (const [seq, on] of Object.entries(derived)) derivedTicks[`${prov}:${g.factor}:${seq}`] = on
         const hit = g.rows.filter((r) => derived[r.seq])
         derivedEcho.push(g.rows.length === 1
-          ? { key: `${prov}:${g.factor}:0`, prov, label: `${bonusWord} ${label(g.rows[0].label, lang)}`,
+          ? { key: `${prov}:${g.factor}:0`, prov, label: label(g.rows[0].label, lang),
             value: t(hit.length ? 'ps.yes' : 'ps.no') }
-          : { key: `${prov}:${g.factor}:0`, prov, label: `${bonusWord} ${t('ps.f.' + g.factor) || g.factor}`,
+          : { key: `${prov}:${g.factor}:0`, prov, label: t('ps.f.' + g.factor) || g.factor,
             value: hit.length ? hit.map((r) => label(r.label, lang)).join(lang === 'zh' ? '、' : ', ') : t('ps.no') })
         continue
       }
@@ -422,12 +424,12 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
           addChoices(screenKey, t('ps.q.meet', { condition: label(r.label, lang) }), [
             { key: 'yes', text: t('ps.yes'), active: isOn(r), apply: () => setOn(r, true) },
             { key: 'no', text: t('ps.no'), active: !isOn(r), apply: () => setOn(r, false) },
-          ], t('ps.bonusOf', { prov: t('prov.' + prov) || prov }), label(r.label, lang))
+          ], undefined, label(r.label, lang))
         } else {
           extraQuestions.push({
             key: screenKey,
             title: t('ps.f.' + g.factor) || g.factor,
-            sub: t('ps.bonusOf', { prov: t('prov.' + prov) || prov }),
+
             checks: chunk.map((r) => ({
               key: tickKey(r), text: label(r.label, lang), pts: r.points,
               on: isOn(r), toggle: (on: boolean) => setOn(r, on),
@@ -469,7 +471,9 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
       && provOfKey(o.key) === prov && (o.echoLabel || o.title) === short)
     return { key: q.key, prov, label: clash ? `${bonusWord} ${short}` : short, value, filled }
     // #305:推导出的因子不占题,但格子照摆、恒为已填 —— 值来自基础卷答案,已填态与答过的题同一副样式
-  }).concat(derivedEcho.map((r) => ({ ...r, filled: true })))
+  // #305 推导格:值来自基础卷,**没有对应的题** —— 标 noQuestion,展示层据此不给点(点了也只会
+  //  停在第一题,那正是 2026-08-16 Frank 撞见的现象之一;要改就回基础卷改那道题)
+  }).concat(derivedEcho.map((r) => ({ ...r, filled: true, noQuestion: true })))
   const echoSig = JSON.stringify(echoRows)
   useEffect(() => {
     onQuestionnaireAnswers?.(JSON.parse(echoSig) as { key: string; prov: string; label: string; value: string; filled: boolean }[])
@@ -768,12 +772,15 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
         )
       })}
 
+      {/* 2026-08-16 Frank「这部分废话删掉」:「按官方分值表自算,非资格认定」撤 —— 同一句在这页
+          出现好几处,而卡名与官方出处链接本来就说明了它是自算。生效日期并进出处那一行,不单占一行。 */}
       <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 8, lineHeight: 1.7 }}>
-        <div>{t('ps.note')}</div>
-        <div>{scores.map((s) => `${s.province} ${s.guideEffective ? t('ps.eff', { d: s.guideEffective }) : t('ps.asof', { d: s.fetched })}`).join('、')}</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 2 }}>
           {scores.map((s) => (
-            <a key={s.province} href={s.url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{s.province} {t('ps.official')}</a>
+            <a key={s.province} href={s.url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>
+              {s.province} {t('ps.official')}
+              <span style={{ color: '#9ca3af' }}> {s.guideEffective ? t('ps.eff', { d: s.guideEffective }) : t('ps.asof', { d: s.fetched })}</span>
+            </a>
           ))}
         </div>
       </div>

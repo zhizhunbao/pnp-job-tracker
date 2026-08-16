@@ -607,6 +607,11 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
     track('dp-quiz-edit')
     setFormAtEnd(false)
     if (key && key.includes(':')) {
+      // 2026-08-16 Frank「为什么点哪个弹框都弹出第一个问题」:分值卡如今只出**当前页签省**的题,
+      // 点的若是别省的格子,那道题根本不在题单里 → findIndex 落空 → 停在第一题。
+      // 所以点格先把段落切到那道题所在的省,再定位。
+      const p = key.split(':')[0]
+      if (/^[A-Z]{2}$/.test(p)) setScoreProv(p)
       setQuizFocus('')
       setScoreFocus((f) => ({ key, nonce: (f?.nonce ?? 0) + 1 }))
       setQuizOpen(true); setOccStep(false); setProvinceStep(false); setScoreStep(true)

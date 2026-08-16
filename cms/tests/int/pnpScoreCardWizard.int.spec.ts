@@ -89,7 +89,9 @@ describe('PnpScoreCard target questionnaire', () => {
       await clickNext(container)
     }
     expect(container.textContent).toContain('与该省的关联')
-    expect(container.textContent).toContain('纽芬兰与拉布拉多省 加分项')
+    // 2026-08-16 Frank「加分项 去掉」+「为什么显示两个阿尔伯塔」:题目小注里的省名与「加分项」
+    // 都撤了 —— 弹框头已经写着段落名与省名,再写一遍是重复
+    expect(container.textContent).not.toContain('加分项')
     expect(container.querySelectorAll('.qzItem input[type="checkbox"]')).toHaveLength(3)
 
     await act(async () => root.unmount())
