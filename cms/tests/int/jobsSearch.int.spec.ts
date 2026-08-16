@@ -16,6 +16,10 @@ describe('搜索词拆分', () => {
   it('空串 → 没有词', () => {
     expect(splitQ('   ')).toEqual([])
   })
+  it('省全名不拆开:拆了哪个词都不是省,只能靠公司名瞎撞', () => {
+    expect(splitQ('carpenter nova scotia')).toEqual(['carpenter', 'nova scotia'])
+    expect(splitQ('newfoundland and labrador cook')).toEqual(['newfoundland and labrador', 'cook'])
+  })
 })
 
 describe('buildJobsWhere:q 多词', () => {
@@ -40,6 +44,14 @@ describe('buildJobsWhere:q 多词', () => {
     const mix = buildJobsWhere({ q: 'ON cook' })
     expect(mix.sql).toContain('j.province ILIKE $1')
     expect(mix.sql).not.toContain('j.province ILIKE $2')
+  })
+
+  it('省全名翻成省码:库里存 ON,不翻译则「carpenter ontario」永远 0 条', () => {
+    const w = buildJobsWhere({ q: 'carpenter ontario' })
+    expect(w.params).toEqual(['%carpenter%', '%ontario%', 'ON'])
+    expect(w.sql).toContain('j.province = $3')
+    // 省名那一组仍带 ILIKE 分支:公司名「Ontario Steel」照样命中
+    expect(w.sql).toContain('j.title ILIKE $2')
   })
 
   it('公司名预查按词各一组:第 i 组喂给第 i 个词', () => {

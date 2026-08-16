@@ -1030,16 +1030,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               右端=更新时间+字段钮(#56 拍板延续)。市/区、中/小类仍是省/大类的联动下级,只在折叠区出现。 ═══ */}
           <div className="jtCtl" style={filtRow}>
             <input className="jtSearch" placeholder={t('search.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} enterKeyHint="search" style={{ ...ctrl, flex: '0 1 260px', minWidth: 160 }} />
-            {/* 职业胶囊(2026-08-16 「查岗位应该带着条件查」「要支持多个职位类别」):从初评表带 noc=码,码 …
-                这里显人话名(取自当前结果行的 NOC 译名,查不到就显码),点 ✕ 撤掉 —— 先前是把码塞进搜索框,
-                页面看着像在搜一串数字(代码不裸奔) */}
-            {fNoc && (
-              <span style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', gap: 8, background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8', fontSize: 12.5, fontWeight: 600 }}>
-                {fNocLabel}
-                <button onClick={() => setFNoc('')} aria-label={t('clear')}
-                  style={{ border: 'none', background: 'none', color: '#1d4ed8', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
-              </span>
-            )}
+            {/* 职业胶囊已移到下方「已选」行(2026-08-16 Frank「这个已经筛选的条件不应该放到这里吧」) */}
             {/* 2026-08-16 Frank「这个没有完全国际化」:省下拉的选项一直是英文全名(筛选值就是它,深链/保存的
                 筛选都靠它),中文界面看着半中半英 —— 挂上既有的 provName 显示层,**值不动**:labelOf 只管显示。
                 同日续:出**界面语言的省名就够**(localeOnly),「Ontario(安大略省)」在下拉里是一行说两遍 */}
@@ -1061,29 +1052,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               style={{ height: 38, ...(matchView ? { background: '#eff6ff', borderColor: '#2563eb', color: '#1d4ed8', fontWeight: 600 } : { color: '#374151' }) }}>
               {matchView ? t('mv.exit') : t('mv.entry')}
             </Button>
-            {anyFilter && <Button kind="secondary" onClick={clearAll} style={{ height: 38, color: '#b91c1c' }}>{t('clear')}</Button>}
-            {/* 保存此筛选(E5-03;D1 2026-07-19 降免费):登录即可存,免费 2/Pro 5——免费触上限才弹升级 */}
-            {anyFilter && plan.loggedIn && (
-              <button
-                onClick={async () => {
-                  const name = window.prompt(t('ss.name'))
-                  if (!name) return
-                  const filters = { q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fPilot, fStatus, fOrigin, fScore, fSal, fVs, fEmp, fElig }
-                  track('save-search')
-                  const r = await fetch('/api/saved-searches', {
-                    method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, filters, lang }),
-                  }).catch(() => null)
-                  if (r?.ok) { alert(t('ss.saved')); return }
-                  let limitHit = false
-                  try { limitHit = /limit/i.test(JSON.stringify(await r?.json())) } catch { /* 非 JSON,走 generic */ }
-                  if (limitHit && !plan.isPro) setUpsell('ss')  // 免费位(2)用满 → 升级框「Pro 可存 5 个」
-                  else alert(t('ss.err'))
-                }}
-                style={{ ...ctrl, cursor: 'pointer', background: '#eef2ff', color: '#3730a3' }}>
-                <IconSave /> {t('ss.save')}
-              </button>
-            )}
+            {/* 「清除筛选」「保存此筛选」已移到下方「已选」行:它们是对**这套条件**的操作,和输入控件不同类 */}
             {/* 更新时间 + 字段(10):不是筛选,但 2026-08-16 PNP/年薪 下沉后这一行腾出了地方 ——
                 Frank「这个能放到一行吗」→ 回到本行右端(marginLeft:auto 顶到最右),不再单占一条。
                 #202:更新时间不进 jtHideNarrow,手机端(卡片视图)随 flexWrap 落到下方仍看得见心跳。 */}
@@ -1141,6 +1110,51 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   <input type="checkbox" checked={fElig === 'ok'} onChange={(e) => setFElig(e.target.checked ? 'ok' : '')} />{t('eligOnly')}
                 </label>
               </div>
+            </div>
+          )}
+          {/* ═══「已选」行(2026-08-16 效果图过目后 Frank「可以」)═══
+              上面那行是**输入区**(我要找什么),这一行是**状态区**(现在框住了什么)+ 对这套条件的操作。
+              先前混在一行:条件名一长就把行顶爆(「木匠」还行,「信息系统专家」直接换行,Frank 实拍)。
+              规矩:**只放没有自己控件的条件** —— 省/大类的当前值在各自下拉上写着,不在这儿复读一遍
+              (同屏说两遍「安大略省」是噪音)。今天归这行的只有职业(NOC)一种,将来的隐形筛选也进这里。 */}
+          {anyFilter && (
+            <div className="jtCtl" style={filtRow}>
+              {fNoc && <span style={filtLabel}>{t('filter.picked')}</span>}
+              {/* 职业胶囊:值是 NOC 码(精确),显示的是人话名(代码不裸奔);✕ 撤掉本条 */}
+              {fNoc && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 28, padding: '0 10px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', fontSize: 12.5, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                  {fNocLabel}
+                  <button onClick={() => setFNoc('')} aria-label={t('clear')}
+                    style={{ border: 'none', background: 'none', color: '#60a5fa', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
+                </span>
+              )}
+              <span style={{ marginLeft: 'auto', display: 'inline-flex', gap: 8 }}>
+                <button onClick={clearAll} style={{ ...pickedBtn, color: '#b91c1c' }}>{t('clear')}</button>
+                {/* 保存此筛选(E5-03;D1 2026-07-19 降免费):登录即可存,免费 2/Pro 5——免费触上限才弹升级。
+                    2026-08-16 Frank「保存此筛选没有必要吧」→ 留:它是「简化操作才收费」那条定价原则的落点
+                    (下次一键回到这套条件),但它是对**条件**的操作,归这一行,不再占输入行的地方。 */}
+                {plan.loggedIn && (
+                  <button
+                    onClick={async () => {
+                      const name = window.prompt(t('ss.name'))
+                      if (!name) return
+                      const filters = { q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fPilot, fStatus, fOrigin, fScore, fSal, fVs, fEmp, fElig }
+                      track('save-search')
+                      const r = await fetch('/api/saved-searches', {
+                        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, filters, lang }),
+                      }).catch(() => null)
+                      if (r?.ok) { alert(t('ss.saved')); return }
+                      let limitHit = false
+                      try { limitHit = /limit/i.test(JSON.stringify(await r?.json())) } catch { /* 非 JSON,走 generic */ }
+                      if (limitHit && !plan.isPro) setUpsell('ss')  // 免费位(2)用满 → 升级框「Pro 可存 5 个」
+                      else alert(t('ss.err'))
+                    }}
+                    style={{ ...pickedBtn, background: '#eef2ff', color: '#3730a3', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <IconSave /> {t('ss.save')}
+                  </button>
+                )}
+              </span>
             </div>
           )}
         </div>
@@ -4396,6 +4410,8 @@ const gradeColor = (g: number | null | undefined) => (
 const ctrl: React.CSSProperties = { height: 38, boxSizing: 'border-box', padding: '0 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 14, color: '#1f2937', background: '#fff' }
 const filtRow: React.CSSProperties = { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }
 const filtLabel: React.CSSProperties = { fontSize: 12, color: '#9ca3af', minWidth: 28, whiteSpace: 'nowrap' }
+// 「已选」行的操作钮:比输入控件(38)矮一号,读起来是「对上面那套条件动手」,不是又一个筛选入口
+const pickedBtn: React.CSSProperties = { height: 30, padding: '0 10px', border: '1px solid #e5e7eb', borderRadius: 6, background: '#fff', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }
 // 联动下拉:上级选了,下级选项随之收窄;当前值不在选项里也保留显示
 // 宽度贴当前选中值(2026-07-17 用户拍板「不要有空白」;沿革:07-07 曾统一封顶 150 治「按最长选项撑宽」,
 // 但短值如「全部省」仍剩大段空白):镜像文本按选中值占位、select 叠满其上——选短值不留空白,

@@ -39,12 +39,27 @@ export type JobsWhere = { sql: string; params: unknown[]; skipped: string[] }
  * 用户一打空格就归零,而「木匠 多伦多」正是人本能会打的。改成按空格拆词、**词间 AND**(每词自己跨列 OR)。
  * 封顶 4 词:再多是滥用,每多一词就多一组位图 OR,平白拖慢(词数上限不报错,截断即可——搜索不是表单)。
  */
-export const splitQ = (q: string): string[] => q.trim().split(/\s+/).filter(Boolean).slice(0, 4)
-
 /** 省全名 → 省码(小写索引):库里 province 存 2 字码,搜「carpenter ontario」若不翻译必然 0 条 */
 const PROV_BY_LOWER: Record<string, string> = Object.fromEntries(
   Object.entries(PROV_CODE).map(([name, code]) => [name.toLowerCase(), code]),
 )
+/** 省名最长几个词:Newfoundland and Labrador / Prince Edward Island = 3 */
+const PROV_MAX_WORDS = Math.max(...Object.keys(PROV_BY_LOWER).map((n) => n.split(' ').length))
+
+export const splitQ = (q: string): string[] => {
+  const raw = q.trim().split(/\s+/).filter(Boolean)
+  const out: string[] = []
+  // 省全名先粘回去:「nova scotia」拆成两个词后哪个都不是省,只能靠公司名瞎撞
+  for (let i = 0; i < raw.length;) {
+    let take = 1
+    for (let n = Math.min(PROV_MAX_WORDS, raw.length - i); n >= 2; n--) {
+      if (PROV_BY_LOWER[raw.slice(i, i + n).join(' ').toLowerCase()]) { take = n; break }
+    }
+    out.push(raw.slice(i, i + take).join(' '))
+    i += take
+  }
+  return out.slice(0, 4)
+}
 
 /** q 搜索公司名分支预解析:不限 LIMIT 保语义等价(全量 2 万公司的极端泛词也就 ~2 万 int,ANY 哈希扛得住)。
  *  多词:**逐词各查一组**(与 jobs 侧一样词间 AND),返回 number[][],下标与 splitQ 对齐 */
