@@ -962,6 +962,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           /* 搜索框手机端整行独占(顶栏搜索带已退役,搜索归筛选区首格) */
           .jtSearch{flex:1 0 100% !important;height:40px}
           .jtHideNarrow{display:none !important}
+          /* 匹配切换手机端走窄屏入口条(jtOnlyNarrow),筛选行那颗藏起来,两处不同时出现 */
+          .jtWideOnly{display:none !important}
           .jtTableWrap{display:none !important}
           .jtCards{display:flex}
           .jtOnlyNarrow{display:flex}
@@ -1044,6 +1046,12 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               {t('filter.more')}
               {foldActive > 0 && <span style={{ background: '#2563eb', color: '#fff', borderRadius: 999, fontSize: 10.5, padding: '0 6px', lineHeight: '15px' }}>{foldActive}</span>}
               <span style={{ fontSize: 10, color: '#9ca3af' }}>{fDrawer ? '▲' : '▼'}</span>
+            </Button>
+            {/* 我的匹配(2026-08-16 顶栏改「职位」后):切换落回板内 —— 它是这块板的一个视图,不是一个页面。
+                桌面在这条筛选行,手机走下面那条窄屏入口条(jtOnlyNarrow),两处不同时出现 */}
+            <Button kind="secondary" className="jtWideOnly" onClick={toggleMatchView}
+              style={{ height: 38, ...(matchView ? { background: '#eff6ff', borderColor: '#2563eb', color: '#1d4ed8', fontWeight: 600 } : { color: '#374151' }) }}>
+              {matchView ? t('mv.exit') : t('mv.entry')}
             </Button>
             {anyFilter && <Button kind="secondary" onClick={clearAll} style={{ height: 38, color: '#b91c1c' }}>{t('clear')}</Button>}
             {/* 保存此筛选(E5-03;D1 2026-07-19 降免费):登录即可存,免费 2/Pro 5——免费触上限才弹升级 */}

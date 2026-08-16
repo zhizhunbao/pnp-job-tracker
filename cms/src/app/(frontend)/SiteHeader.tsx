@@ -17,7 +17,7 @@ import { Avatar } from './Avatar'
 import { AccountMenu } from './AccountMenu'
 import { PricingModal } from './jobs/PricingModal'
 import { Button } from './ui/primitives'
-import { IconTarget, IconChart, IconCompass, IconNews, IconUsers } from './Icons'
+import { IconTarget, IconChart, IconClipboard, IconCompass, IconNews, IconUsers } from './Icons'
 
 // 登录弹框就地开(2026-08-09 Frank「为什么要跳到 jobtable 页面再弹框」):AuthModal 按需载
 // (点开才下载那份 JS,手法同 ChatLauncher),header 常驻包不背它
@@ -161,7 +161,10 @@ function MobileDrawer({ t, active, onClose }: { t: TFn; active?: string; onClose
           <a href="/" style={item('/', t('detail.crumbHome'), !active)}>{t('detail.crumbHome')}</a>
           {/* E13-03:开始规划 / 榜单 / 地区统计 三项合一为「就业把脉」(/start) */}
           <a href="/start" style={item('/start', '', active === 'start' || active === 'stats' || active === 'rank')}>{t('pulse.entry')}</a>
-          <a href="/?view=match" style={item('/?view=match', '', active === 'match')}>{t('mv.entry')}</a>
+          {/* 2026-08-16 Frank「我的匹配 名字是不是换成职位更好」:顶栏是名词并列(职位/雇主),
+              而且先前**没有职位板入口** —— 首页就是职位板,从二级页只能点 logo 回去。
+              「我的匹配」降为板内视图切换(它本来就是板的一个视图,不是一个页面) */}
+          <a href="/" style={item('/', '', active === 'jobs' || active === 'match')}>{t('nav.jobs')}</a>
           <a href="/plan/pr" style={item('/plan/pr', '', active === 'pathways')}>{t('plan.pr.title')}</a>
           {/* 「雇主」一级项 2026-08-16 挂回(Frank「header 需要加一个雇主的 title 吧」+ 拍板叫「雇主」):
               08-08 摘的是那个已下架的货架页;今天有了真雇主板(指定名录 + 在招雇主,带筛选),入口该回来。
@@ -188,7 +191,7 @@ function MobileDrawer({ t, active, onClose }: { t: TFn; active?: string; onClose
 
 export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, accountArea, loggedIn }: {
   lang: Lang; setLang: (l: Lang) => void; t: TFn
-  active?: 'rank' | 'stats' | 'account' | 'pathways' | 'news' | 'employers' | 'start' | 'match'
+  active?: 'rank' | 'stats' | 'account' | 'pathways' | 'news' | 'employers' | 'start' | 'match' | 'jobs'
   sticky?: boolean
   matchButton?: { active: boolean; onClick: () => void }
   accountArea?: React.ReactNode
@@ -260,9 +263,7 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
             {/* E13-03(2026-08-06 三页合一):开始规划 / 榜单 / 地区统计 三项 → 一项「就业把脉」;
                 /rankings/[slug] 与 /stats/[prov] 页面仍在(SEO 与下钻落点),只是不再各占一格顶栏 */}
             <a href="/start" style={{ ...nav, color: active === 'start' || active === 'stats' || active === 'rank' ? '#2563eb' : '#6b7280', fontWeight: active === 'start' || active === 'stats' || active === 'rank' ? 700 : 400 }}><IconChart /> {t('pulse.entry')}</a>
-            {matchButton
-              ? <button onClick={matchButton.onClick} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: matchButton.active ? '#2563eb' : '#6b7280', fontWeight: matchButton.active ? 700 : 400, cursor: 'pointer', whiteSpace: 'nowrap' }}><IconTarget /> {t('mv.entry')}</button>
-              : <a href="/?view=match" style={{ ...nav, color: active === 'match' ? '#2563eb' : '#6b7280', fontWeight: active === 'match' ? 700 : 400 }}><IconTarget /> {t('mv.entry')}</a>}
+            <a href="/" style={{ ...nav, color: active === 'jobs' || active === 'match' ? '#2563eb' : '#6b7280', fontWeight: active === 'jobs' || active === 'match' ? 700 : 400 }}><IconClipboard /> {t('nav.jobs')}</a>
             {/* 判定合一批2:/pathways 301 并入决策页,导航项改指 /plan/pr、label=拿 PR 评估(active 键沿用) */}
             <a href="/plan/pr" style={{ ...nav, color: active === 'pathways' ? '#2563eb' : '#6b7280', fontWeight: active === 'pathways' ? 700 : 400 }}><IconCompass /> {t('plan.pr.title')}</a>
             <a href="/employers/designated" style={{ ...nav, color: active === 'employers' ? '#2563eb' : '#6b7280', fontWeight: active === 'employers' ? 700 : 400 }}><IconUsers /> {t('nav.employers')}</a>
