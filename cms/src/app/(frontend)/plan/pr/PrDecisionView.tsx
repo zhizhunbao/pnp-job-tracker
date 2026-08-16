@@ -1325,8 +1325,9 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
               </div>
               {/* 每格可点、直达那道题;省专属题按省分 tab(ConditionGrid,与带岗态判定卡②共用) */}
               <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${UI.hairline}` }}>
+                {/* 只留共用题:省专属题=估分题,已随结论并进「估分与抽选线」那张卡(2026-08-16) */}
                 <ConditionGrid rows={conditionSummary} provLabel={provDisp} ariaLabel={t('dp.prov')} idPrefix="dpCond"
-                  onTile={(key) => startQuiz(key)} />
+                  only="shared" onTile={(key) => startQuiz(key)} />
                 {/* 选了却没有页签的省要说清楚为什么(2026-08-15 Frank「这个为什么没有新斯科舍」):
                     不说 = 看着像我们漏了。两句话意思相反,分开写:官方按 EOI 酌情选人不打分(带原句)
                     vs 本站还没收录该省的表。铁律见 CLAUDE.md「官方不公布是需要举证的断言」。 */}
@@ -1357,7 +1358,12 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
               <ScoreLineCard t={t} rows={profilePaths ?? []} draws={lineDraws}
                 provinces={scoreLineProvinces} provDisp={provDisp}
                 done={scoreDone} total={scoreTotal} onEdit={() => (quizComplete ? openScoreStep() : startQuiz())}
-                onPickProv={() => startQuiz('prov')} gridProvinces={scoreTables ? factorProvinces : null}>
+                onPickProv={() => startQuiz('prov')} gridProvinces={scoreTables ? factorProvinces : null}
+                pendingOf={(p) => conditionSummary.filter((r) => r.prov === p && !r.filled).length}
+                tiles={(p) => (
+                  <ConditionGrid rows={conditionSummary} provLabel={provDisp} ariaLabel={t('dp.prov')}
+                    idPrefix="slCond" province={p} onTile={(key) => startQuiz(key)} />
+                )}>
                 {quizSection}
               </ScoreLineCard>
             )}

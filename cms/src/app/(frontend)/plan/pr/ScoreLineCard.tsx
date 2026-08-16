@@ -40,7 +40,7 @@ export const recentDraws = (draws: DrawRow[], province: string): DrawRow[] =>
     .slice(0, N_DRAWS)
 
 export function ScoreLineCard({
-  t, rows, draws, provinces, provDisp, done, total, onEdit, onPickProv, gridProvinces, children,
+  t, rows, draws, provinces, provDisp, done, total, onEdit, onPickProv, gridProvinces, tiles, pendingOf, children,
 }: {
   t: (k: string, p?: Record<string, string | number>) => string
   /** 服务端下发的通道行(每省取分最高的一行代表);客户端不算分 */
@@ -59,6 +59,11 @@ export function ScoreLineCard({
   /** 分值表状态:null=还没取到(基础卷没答满时压根不取)。
    *  没有它就分不清「本站没有这个省的表」和「你还没答完基础卷」—— 两句话在用户那儿意思相反 */
   gridProvinces: string[] | null
+  /** 该省估分题的格子(2026-08-16 合卡):由父组件按当前页签省渲染 —— 它们就是这一段的答案面,
+   *  先前留在「申请人条件」卡里,与结论隔着一张卡 */
+  tiles?: (province: string) => React.ReactNode
+  /** 该省还欠几道估分题(页签角标) */
+  pendingOf?: (province: string) => number
   /** 问卷弹框壳 + 分值卡实例(常驻,不搬树 —— 搬容器 = 重挂 = 答案清零) */
   children?: React.ReactNode
 }) {
@@ -141,14 +146,23 @@ export function ScoreLineCard({
           说明和加省的入口;末位那颗是改省份,多选就在那儿改 */}
       {provinces.length > 0 ? (
         <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${UI.hairline}`, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {provinces.map((p) => (
-            <button key={p} onClick={() => setActive(p)} style={TAB(p === prov)}>{provDisp(p)}</button>
-          ))}
+          {provinces.map((p) => {
+            const n = pendingOf?.(p) ?? 0
+            return (
+              <button key={p} onClick={() => setActive(p)} style={TAB(p === prov)}>
+                {provDisp(p)}
+                {n > 0 ? <span style={{ marginLeft: 6, fontVariantNumeric: 'tabular-nums', opacity: 0.75 }}>{n}</span> : null}
+              </button>
+            )
+          })}
           <button onClick={onPickProv} style={{ ...TAB(false), color: UI.text3, borderStyle: 'dashed' }}>{t('sl.editProv')}</button>
         </div>
       ) : null}
 
       {banner}
+
+      {/* 该省估分题的格子:每格可点直达那道题(与「申请人条件」里的格子同一种东西同一个长相) */}
+      {prov && tiles ? <div style={{ marginTop: 12 }}>{tiles(prov)}</div> : null}
 
       {list.length > 0 ? (
         <>

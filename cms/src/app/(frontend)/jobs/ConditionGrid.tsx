@@ -12,13 +12,18 @@ export type ConditionRow = {
   warn?: string
 }
 
-export function ConditionGrid({ rows, provLabel, onTile, ariaLabel, idPrefix }: {
+export function ConditionGrid({ rows, provLabel, onTile, ariaLabel, idPrefix, only, province }: {
   rows: ConditionRow[]
   provLabel: (code: string) => string
   /** 点哪格进哪题(带 key 直达) */
   onTile: (key: string) => void
   ariaLabel: string
   idPrefix: string
+  /** 只渲哪半张(2026-08-16 Frank「这两部分应该合到一个 section」):省专属题就是估分题,
+   *  它该跟估分结论同处一卡,而不是留在「申请人条件」里 —— 于是这里能按 shared/prov 切开。 */
+  only?: 'shared' | 'prov'
+  /** 指定省时不出自己的省页签(调用方已经有一排了,嵌两层 tabs 是重) */
+  province?: string
 }) {
   const shared = rows.filter((r) => !r.prov)
   const provs = Array.from(new Set(rows.filter((r) => r.prov).map((r) => r.prov)))
@@ -51,11 +56,20 @@ export function ConditionGrid({ rows, provLabel, onTile, ariaLabel, idPrefix }: 
     </button>
   )
 
+  const GRID_CSS = '.cgGrid{display:grid;gap:8px;grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:640px){.cgGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}'
+
+  // 调用方自己有省页签:只渲该省的格子,不再嵌一层 tabs
+  if (province) {
+    const mine = rows.filter((r) => r.prov === province)
+    if (!mine.length) return null
+    return <><style>{GRID_CSS}</style><div className="cgGrid">{mine.map(tile)}</div></>
+  }
+
   return (
     <>
-      <style>{'.cgGrid{display:grid;gap:8px;grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:640px){.cgGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}'}</style>
-      <div className="cgGrid">{shared.map(tile)}</div>
-      {provs.length > 0 && (
+      <style>{GRID_CSS}</style>
+      {only !== 'prov' ? <div className="cgGrid">{shared.map(tile)}</div> : null}
+      {only !== 'shared' && provs.length > 0 && (
         <>
           <div style={{ margin: '12px 0 10px' }}>
             <Tabs ariaLabel={ariaLabel} idPrefix={idPrefix} value={active} onChange={setTab}
