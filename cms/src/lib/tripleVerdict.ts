@@ -384,14 +384,15 @@ function employerRows(job: TripleJob, company: TripleCompany, ev: EmployerVerdic
       ...(src ? { quote: quoteOfReq(src), evidence: evOfReq(src) } : {}),
     })
   }
-  // 年营业额(2026-08-14 Frank「需要加一个年收入的卡片」):门槛行在库的省(ON/AB)才出;
+  // 年营业额(2026-08-14 Frank「需要加一个年收入的卡片」;2026-08-16「这个缺一个营业额吧」→
+  // **恒显**,不再只在门槛行在库的省出 —— 同一张卡格子集不齐会被读成漏渲):
   // 公司营业额无源(08-10 拍板永久结案,不重启抓数)→ 恒 unknown,前端按「未收录」渲染
-  if (ev.revenue) {
+  {
     const src = reqOf('empRevenue')
     out.push({
       gate: 'employer', tier: 'free', key: 'tv.emp.revenue', state: 'unknown',
-      params: { need: ev.revenue.need ?? '', name: company.name, prov: job.province },
-      label: `employer revenue: need ${ev.revenue.need ?? '?'} CAD/yr, company revenue permanently uncollected`,
+      params: { need: ev.revenue?.need ?? '', name: company.name, prov: job.province },
+      label: `employer revenue: need ${ev.revenue?.need ?? '?'} CAD/yr, company revenue permanently uncollected`,
       ...(src ? { quote: quoteOfReq(src), evidence: evOfReq(src) } : {}),
     })
   }

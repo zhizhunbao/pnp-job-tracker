@@ -268,8 +268,9 @@ const GHOST_SM: React.CSSProperties = {
 function VRow({ state, label, main, sub }: { state: string; label: string; main: string; sub?: string }) {
   const ic = ICON[state] ?? ICON.info
   // 结论文字按状态配色(2026-08-13 Frank:「瓦片那种风格不是很清晰吗?还可以给瓦片的文字配色」);
-  // 中性初筛(coarse)不配灰 —— 结论是主文案,#9ca3af 当主文案就是没墨了,退回深灰
-  const color = state === 'coarse' ? '#374151' : ic.fg
+  // 中性初筛(coarse)不配灰 —— 结论是主文案,#9ca3af 当主文案就是没墨了,退回深灰。
+  // info 态 2026-08-16 Frank「感叹号去掉 颜色去掉」:摆事实不报警,深灰无符号(符号见下面的跳过表)
+  const color = state === 'coarse' || state === 'info' ? '#374151' : ic.fg
   return (
     // 判定瓦片 = 与事实瓦片同一套解剖(Frank 拍板瓦片式):灰标签在上、加粗结论在下、说明降级,
     // 与事实瓦片同一副四列栅格(Frank:「不需要这么长」)。区别只有一处:结论带状态色 +
@@ -279,9 +280,9 @@ function VRow({ state, label, main, sub }: { state: string; label: string; main:
     <div style={{ minWidth: 0, background: '#f8fafc', border: '1px solid #eef2f7', borderRadius: 9, padding: '7px 10px 8px' }}>
       <div style={{ color: '#9ca3af', fontSize: 11, lineHeight: 1.35, marginBottom: 2 }}>{label}</div>
       <div style={{ fontSize: 13, fontWeight: 600, color, lineHeight: 1.5 }}>
-        {/* 中性点与问号不渲染(2026-08-13 Frank:「前面不需要问号吧」——未知态的措辞本身就写着
-            未收录/暂未匹配,灰色又兜着,? 纯属再说一遍);✓/!/✗ 留着,那是扫读信号 */}
-        {ic.ch !== '•' && ic.ch !== '?' ? <span aria-hidden style={{ marginRight: 5 }}>{ic.ch}</span> : null}
+        {/* 中性点/问号/信息号不渲染(2026-08-13「前面不需要问号吧」+ 2026-08-16「感叹号去掉」——
+            事实态措辞自解释,符号是再说一遍);✓/!/✗ 留着,那是判定行的扫读信号 */}
+        {ic.ch !== '•' && ic.ch !== '?' && ic.ch !== 'i' ? <span aria-hidden style={{ marginRight: 5 }}>{ic.ch}</span> : null}
         {main}
       </div>
       {sub ? <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.55, marginTop: 2 }}>{sub}</div> : null}
