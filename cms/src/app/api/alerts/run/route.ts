@@ -110,6 +110,16 @@ export async function GET(req: NextRequest) {
   const dry = !MAIL_ENABLED || req.nextUrl.searchParams.get('dry') === '1'
   // ?preview=weekly:只渲染第一封档案版周报的 HTML 返回,不发信不写库 —— 走查时能直接看邮件长什么样
   const preview = req.nextUrl.searchParams.get('preview') || ''
+  // 静默时段(2026-08-16 Frank「晚上不要给我用户发邮件」):多伦多时间 20:00–08:00 之外整轮不发、
+  // **游标不回写**(lastAlertAt/lastNotifiedAt 原地不动)→ 下一个白天窗口的触发自然补发,一封不丢。
+  // 用户主要在加拿大,东部时间当全体近似;窗口可用 ALERT_QUIET_START/END(小时,ET)覆盖;?force=1 走查用
+  const qs = Number(process.env.ALERT_QUIET_START ?? 20)   // 起=晚上 8 点
+  const qe = Number(process.env.ALERT_QUIET_END ?? 8)      // 止=早上 8 点
+  const etHour = Number(new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Toronto', hour: 'numeric', hour12: false }).format(new Date()))
+  const inQuiet = qs > qe ? (etHour >= qs || etHour < qe) : (etHour >= qs && etHour < qe)
+  if (inQuiet && !dry && !preview && req.nextUrl.searchParams.get('force') !== '1') {
+    return NextResponse.json({ ok: true, deferred: true, quietHours: `${qs}:00–${qe}:00 America/Toronto`, etHour })
+  }
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
   const now = new Date().toISOString()
