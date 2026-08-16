@@ -96,7 +96,7 @@ let memScore: ScoreAnswers | null = null
 
 /** 丢掉手上这份运行态。**换账号必须调** —— 内存是模块级的,不清就会把上一个人的答案
  *  带给下一个登录的人(先前 localStorage 时代同病,只是没人注意)。测试也用它隔离用例。 */
-export function resetAnswersMemory(): void { mem = null; memScore = null; dirty = false; retryN = 0 }
+export function resetAnswersMemory(): void { mem = null; memScore = null; dirty = false; retryN = 0; hydrated = false }
 
 function save(a: Answers): void {
   const before = mem ? JSON.stringify(normalize(mem)) : ''
@@ -242,6 +242,10 @@ let syncTimer: ReturnType<typeof setTimeout> | null = null
 let retryTimer: ReturnType<typeof setTimeout> | null = null
 let retryN = 0
 let dirty = false                        // 有改动还没推成功 —— 离开页面时靠它决定要不要 beacon
+// 🔴 拉过服务端档没有。**没拉过就一个字节都不许推** —— 内存此刻是空的,推上去等于拿空档
+// 覆盖用户真答过的整份档案(2026-08-16 实撞:Frank 刷新后页面 0/11,而库里 845 字节完好,
+// 差一步就被空档盖掉)。同理没拉过档时不许让「挂载写默认值」算成用户改动。
+let hydrated = false
 
 /** 浏览器里的旧档:搬完家就删,此后一个字节都不再往里写 */
 function dropLegacy(): void {
@@ -255,6 +259,7 @@ const payload = () => JSON.stringify({ basic: readAnswers(), score: readScoreAns
 
 // 写档触点:排一次短防抖(连点选项时不至于每答一下发一次),并挂上离开页面的兜底
 function touched(): void {
+  if (!hydrated) return                  // 还没拉过档:这不是用户的改动,是页面在自我初始化
   dirty = true
   if (loggedIn !== true || typeof window === 'undefined') return
   armLeaveGuard()
@@ -277,6 +282,7 @@ function armLeaveGuard(): void {
 
 async function pushToServer(): Promise<void> {
   if (!hasLoginTrace()) return
+  if (!hydrated) return                  // 见 hydrated 处的红字:没拉过档不许推
   try {
     const r = await fetch('/api/account/answers', {
       method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' },
@@ -321,14 +327,19 @@ export async function pullAndMerge(afterLogin = false): Promise<boolean> {
       const local = readAnswers(); const localScore = readScoreAnswers()
       if (answeredBasics(local) || Object.keys(localScore.extraAnswered).length) {
         mem = local; memScore = localScore
+        hydrated = true                  // 手上这份就是真相 → 开闸,把它送上去
         await pushToServer()
+      } else {
+        hydrated = true
       }
       return false
     }
-    // 拉档途中用户又答了题 → 以他刚答的为准,这轮不覆盖(touched 已排好同步)
-    if (dirty) return false
+    // 拉档途中用户又答了题 → 以他刚答的为准,这轮不覆盖(touched 已排好同步)。
+    // 注意 dirty 只在 hydrated 之后才置位,所以「挂载时的初始化写」不会误伤这一判断
+    if (dirty) { hydrated = true; return false }
     mem = normalize(doc.basic ?? {})
     memScore = normalizeScore(doc.score ?? {})
+    hydrated = true
     dropLegacy()
     return true
   } catch { return false }

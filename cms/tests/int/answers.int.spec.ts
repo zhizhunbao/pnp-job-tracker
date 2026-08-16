@@ -227,10 +227,24 @@ describe('服务端答案档同步', () => {
 
   it('刚答过题还没推上去 → 这轮拉档不覆盖(不许把人刚答的顶掉)', async () => {
     resetAnswersMemory()
-    writeAnswers({ status: 'working' })    // dirty=true,防抖还没到
     vi.stubGlobal('fetch', vi.fn(async () => res(200, { answers: { basic: base({ status: 'studying' }), score: {}, updatedAt: iso(0) } })))
-    expect(await pullAndMerge()).toBe(false)
+    await pullAndMerge()                   // ① 页面挂载先拉档(用户能答题必然在这之后)
+    writeAnswers({ status: 'working' })    // ② 他答了一题,防抖还没到
+    expect(await pullAndMerge()).toBe(false)   // ③ 第二次拉档不许把 ② 顶掉
     expect(readAnswers().status).toBe('working')
+  })
+
+  // 🔴 2026-08-16 实撞:Frank 刷新后页面 0/11,而库里 845 字节完好 —— 差一步就被空档盖掉。
+  // 根因是「还没拉档就把空内存推上去」。这条钉死:没拉过档,一个字节都不许发。
+  it('没拉过档 → 任何写入都不推(不许拿空内存覆盖用户的真档案)', async () => {
+    resetAnswersMemory()
+    const methods: string[] = []
+    vi.stubGlobal('fetch', vi.fn(async (_u: unknown, init?: { method?: string }) => {
+      methods.push(init?.method || 'GET'); return res(200, { ok: true, updatedAt: iso(0) })
+    }))
+    writeAnswers({ status: 'working' })
+    await new Promise((r) => setTimeout(r, 1200))   // 越过 800ms 防抖
+    expect(methods).not.toContain('PUT')
   })
 
   it('未登录 401 → 本地照旧,一切静默', async () => {

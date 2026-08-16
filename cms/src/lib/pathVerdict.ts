@@ -84,6 +84,10 @@ export type VerdictProfile = {
   /** 持的许可(2026-08-15 statusInCanada 拆闸):study=学签 / pgwp / work=其他工签 / none=访客或已过期。
    *  null = 没答 → 工签/PGWP 类闸落「判不了」,不拿 inCanada 冒充有工签(学签在读被 AB 放行的那个病)。 */
   permit: 'study' | 'pgwp' | 'work' | 'none' | null
+  /** 用户在分值卡上答过的**条件值**(近 5 年经验 / 6-10 年经验 / 第二语言 CLB…)。
+   *  档案只问了总经验、只问了第一语言 —— 拆分与第二语言**不许由档案推**(那是编数);
+   *  但用户自己答了就该用。**只收他真答过的项**(调用方按 extraAnswered 过滤)。 */
+  scoreProfile?: Partial<SelfProfile>
   /** 用户在分值卡上**直选的官方档位**,键 `省:因素` → 该档 seq(2026-08-16)。
    *  没有它,凡是「必答档位喂不出档案」的省(BC 的工作地区、ON 的年收入…)一律整省不接 ——
    *  可用户明明在页面上答了,只是从没上行过。 */
@@ -441,7 +445,14 @@ function refDraw(spec: PathwaySpec, draws: VerdictDrawRow[]): VerdictDrawRow | n
 // 这几条如实不接,不拿半张表凑一个数出来。
 
 /** 能从 VerdictProfile 无损喂出来的官方因素(值仍由 pnpSelfScore 按官方标签解析) */
-const GRID_AUTO_FACTORS = new Set(['education', 'language', 'age', 'work', 'workMonths'])
+const GRID_AUTO_FACTORS = new Set(['education', 'language', 'language1', 'age', 'work', 'workMonths'])
+
+/** 「档案推不出、但用户可以自己答」的因素 → 它要的那一槽。
+ *  答了就交给 AUTO_PICK 按官方档位匹配;没答仍整省不接 —— 拆分经验/第二语言由档案推就是编数
+ *  (SK/NL 的 work5+work610、ON/SK 的 language2 卡的都是这一条)。 */
+const ASKABLE_FACTORS: Record<string, keyof SelfProfile> = {
+  work5: 'expRecent', work610: 'expOlder', language2: 'clb2',
+}
 
 /** 通用省估分。接不上(库里没表 / 表不是这条线的 / 有必答档位映射不出 / 档案缺必需槽)一律 undefined。 */
 function provinceGridScore(
@@ -481,6 +492,9 @@ function provinceGridScore(
       partial = true; continue                              // 纯加分项 → 不勾=0(与打分卡默认同口径)
     }
     if (name === 'offer') { if (p.hasOffer == null) return undefined; continue }
+    // 用户自己答过的那几样:交给 AUTO_PICK 按官方档位匹配(值在下面并进 self)
+    const slot = ASKABLE_FACTORS[name]
+    if (slot && p.scoreProfile?.[slot] != null) { only.add(name); continue }
     if (!GRID_AUTO_FACTORS.has(name)) {
       // BC 工作地区单列:它由 areaI 直接给下标(分值卡同款),其余因素认 scoreRows 里的 seq
       const row = name === 'area' && spec.reqProvince === 'BC' && p.areaI != null
@@ -508,6 +522,8 @@ function provinceGridScore(
   const self: SelfProfile = {
     edu: (p.edu ?? 'highschool') as EduKey, expRecent: months / 12, expOlder: 0,
     clb1: p.clb ?? 0, clb2: 0, age: p.age ?? 0,
+    // 用户在分值卡上真答过的覆盖档案推导值(拆分经验、第二语言这类档案给不出的)
+    ...(p.scoreProfile ?? {}),
   }
   const offerRow = all.find((f) => f.factor === 'offer' && f.kind === 'row')
   type Override = { pts: number; matched: string; source: 'profile' | 'job' | 'tick' }
