@@ -467,7 +467,11 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
   // 选了、但分值卡里没有页签的省(本站有表的六省:AB/BC/MB/NL/ON/SK)
   const scoreFactors = scoreTables?.factors ?? []
   const scoreDraws = scoreTables?.draws ?? []
-  const targetFactors = scoreFactors.filter((f) => scoredProvinces.includes(f.province))
+  // 2026-08-16 Frank「后面三个弹框为什么是曼尼托巴的问题」:分值卡先前按**所有**有表的省出题,
+  // 于是在 BC 页签点「算分」,答完 BC 接着弹 AB/MB。估分卡已经有省页签,题就该跟着它走。
+  const [scoreProv, setScoreProv] = useState('')
+  const activeScoreProv = scoredProvinces.includes(scoreProv) ? scoreProv : scoredProvinces[0] || ''
+  const targetFactors = scoreFactors.filter((f) => f.province === activeScoreProv)
   const scoreContextProvince = tvJob?.province || scoredProvinces[0] || selectedProvinces[0] || ''
   // 分值表按所选省懒取:答完题(或带岗进来)才发这一次请求,没答的人一个字节都不用背。
   // 服务端 getScoreTables 有 10 分钟单件缓存,这里不做客户端缓存 —— 一次页面生命周期最多问一次。
@@ -1304,14 +1308,21 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
                   }}><IconRefresh /></button>
                 <button onClick={closeQuiz} aria-label="close" style={iconBtnS}>×</button>
               </div>
+              {/* 头随**当前段**走(2026-08-16 Frank「这个回答的是估分的问题,应该不是你的条件的问题了」):
+                  基础段=申请人条件,估分段=估分与抽选线 + 省名;计数与进度条也各算各的,
+                  不再拿两段合计的 23/36 去描述用户眼前这一段 */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingRight: 84, marginBottom: 12 }}>
-                <h2 style={{ ...H2, margin: 0 }}>{t('dp.quiz')}</h2>
-                {countPills}
+                <h2 style={{ ...H2, margin: 0 }}>{scoreStep ? t('sl.title') : t('dp.quiz')}</h2>
+                {scoreStep && scoreProv ? <span style={{ fontSize: 12.5, color: UI.text3 }}>{provDisp(scoreProv)}</span> : null}
+                {scoreStep ? (
+                  <span style={{ ...COUNT_PILL, background: scoreLeft === 0 ? '#eff6ff' : UI.bg, color: scoreLeft === 0 ? UI.primary : UI.text3 }}>
+                    {t('dp.basicCount', { done: scoreDone, total: scoreTotal })}
+                  </span>
+                ) : basicPill}
               </div>
-              {/* 进度条归弹框头,一条杠走完 17 项(分值卡自己不画) */}
-              <div aria-label={`${doneAll}/${totalAll}`}
+              <div aria-label={scoreStep ? `${scoreDone}/${scoreTotal}` : `${stepDone}/${stepTotal}`}
                 style={{ height: 4, borderRadius: 999, background: UI.hairline, overflow: 'hidden', margin: '0 0 18px' }}>
-                <div style={{ width: `${Math.round((doneAll / Math.max(totalAll, 1)) * 100)}%`,
+                <div style={{ width: `${Math.round(((scoreStep ? scoreDone : stepDone) / Math.max(scoreStep ? scoreTotal : stepTotal, 1)) * 100)}%`,
                   height: '100%', borderRadius: 999, background: UI.primary, transition: 'width .2s' }} />
               </div>
             </>
@@ -1431,7 +1442,7 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
               <ScoreLineCard t={t} lang={lang} rows={profilePaths ?? []} draws={lineDraws}
                 provinces={scoreLineProvinces} provDisp={provDisp}
                 done={scoreDone} total={scoreTotal} onEdit={() => (quizComplete ? openScoreStep() : startQuiz())}
-                onPickProv={() => startQuiz('prov')} gridProvinces={scoreTables ? factorProvinces : null}
+                onPickProv={() => startQuiz('prov')} gridProvinces={scoreTables ? factorProvinces : null} onProv={setScoreProv}
                 pendingOf={(p) => scoreRows.filter((r) => r.prov === p && !r.filled).length}
                 noGridNote={(p) => {
                   // 两句话意思相反,分开写:官方按 EOI 酌情选人不打分(带原句出处)vs 本站还没收录。

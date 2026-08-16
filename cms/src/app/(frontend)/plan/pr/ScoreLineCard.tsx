@@ -9,7 +9,7 @@
 //   ② 你的估分 —— 下界/上界两个数,来自服务端与排序同源的 row.score(客户端不算分)。
 //   ③ 一行结论 —— 走 lib/scoreLine 的三态:够得着 / 够不着 / 取决于加分项。
 //      **只到「够不够线」为止**:不许延伸成「多久能被捞」「概率多大」(禁概率红线)。
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { DataTable } from '../../ui/DataTable'
 import { Tabs } from '../../ui/Tabs'
@@ -35,7 +35,7 @@ export const recentDraws = (draws: DrawRow[], province: string): DrawRow[] =>
     .slice(0, N_DRAWS)
 
 export function ScoreLineCard({
-  t, lang, rows, draws, provinces, provDisp, done, total, onEdit, onPickProv, gridProvinces, tiles, pendingOf, noGridNote, children,
+  t, lang, rows, draws, provinces, provDisp, done, total, onEdit, onPickProv, gridProvinces, tiles, pendingOf, noGridNote, onProv, children,
 }: {
   t: (k: string, p?: Record<string, string | number>) => string
   /** 通道名的中文灰注只在 zh 界面出(官方原名是事实,译名是辅助,不许盖掉原名) */
@@ -61,6 +61,8 @@ export function ScoreLineCard({
   tiles?: (province: string) => React.ReactNode
   /** 该省还欠几道估分题(页签角标) */
   pendingOf?: (province: string) => number
+  /** 当前页签省上报:估分弹框只出这个省的题(先前分值卡按所有有表的省出题,BC 答完接着弹 MB) */
+  onProv?: (province: string) => void
   /** 该省没有分值表时的说明(举证口径:官方不打分 vs 本站未收录,两句意思相反)。
    *  2026-08-16 从「申请人条件」卡搬来 —— 省的语境在这张卡,说明就该在这儿 */
   noGridNote?: (province: string) => React.ReactNode
@@ -69,6 +71,7 @@ export function ScoreLineCard({
 }) {
   const [active, setActive] = useState(provinces[0] ?? '')
   const prov = provinces.includes(active) ? active : provinces[0] ?? ''
+  useEffect(() => { if (prov) onProv?.(prov) }, [prov, onProv])
 
   const row = prov ? rows.find((r) => r.province === prov && r.score) ?? null : null
   const score = row?.score ?? null

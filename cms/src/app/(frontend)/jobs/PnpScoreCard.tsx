@@ -89,7 +89,8 @@ type ExtraQuestion = {
    *  档位化的代价 2026-08-16 算过:每 $1 一档 = 56 项下拉;每 $5 一档按下界取值,
    *  BC 那 55 分里最多低估 4 分,等于把人的分算低了(Frank「有必要按 1 一个档位吗」→ 撤回)。 */
   number?: { value: number; set: (value: number) => void }
-  /** 条件格子回显用的短名。单条加分项的 title 是整句问句(「你是否符合:…」),摆进格子要的是条件本身 */
+  /** 条件格子回显用的短名。2026-08-16 起单条加分项的 title 就是条件本身(前缀「你是否符合」
+   *  被 Frank 去掉了 —— 下面两颗钮已经是「是/否」,再套一句问法是废话);这里保留给别处覆写 */
   echoLabel?: string
 }
 type ProvinceScore = NonNullable<ReturnType<typeof scoreProvince>>
