@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { PnpScoreCard } from '@/app/(frontend)/jobs/PnpScoreCard'
 import type { TFn } from '@/app/(frontend)/jobs/i18n'
 import type { ScoreFactor } from '@/lib/pnpSelfScore'
+import { resetAnswersMemory } from '@/lib/answers'
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true
 
@@ -52,7 +53,7 @@ afterEach(() => {
   vi.restoreAllMocks()
   // 分值卡答案持久化(3db5d0d)后组件初始 state 从 localStorage 读档:不清盘,
   // 上一个用例答的题会漏进下一个用例的 done 计数(实撞:done 期望 0 收到 3)
-  localStorage.clear()
+  localStorage.clear(); resetAnswersMemory()
 })
 
 const clickNext = async (container: HTMLElement) => {

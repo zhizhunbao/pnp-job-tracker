@@ -24,6 +24,10 @@ export async function GET() {
   return Response.json({ answers: (doc as { answers?: unknown } | null)?.answers ?? null })
 }
 
+/** 离开页面时的兜底推送走这条(2026-08-16):sendBeacon 只能 POST,而它送的和 PUT 一模一样。
+ *  没有它,「答完最后一题就关页面」那一下会丢 —— 先前是靠 localStorage 兜的,现在缓存撤了。 */
+export const POST = (req: Request) => PUT(req)
+
 export async function PUT(req: Request) {
   const user = await getUser(await headers()).catch(() => null)
   if (!user) return Response.json({ error: 'auth' }, { status: 401 })

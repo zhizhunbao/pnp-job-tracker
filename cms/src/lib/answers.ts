@@ -84,44 +84,52 @@ function migrate(): Answers | null {
     totalExpBand: totalV2(num(p?.totalExpBand)),
     crsBand: num(p?.crsBand), pgwpBand: num(p?.pgwpBand),
   }
-  save(merged)
   try { localStorage.removeItem(OLD_QUIZ); localStorage.removeItem(OLD_PR) } catch { /* ignore */ }
   return merged
 }
 
+// 运行态住内存(2026-08-16 Frank「用缓存就是这么麻烦」——**服务端 users.answers 是唯一真相**)。
+// 先前本地一份、服务端一份,靠 updatedAt 比新旧裁决,出问题时说不清是哪份在起作用
+// (Frank 实撞:填了时薪刷新回 $0)。现在浏览器里只留一份**待搬家的旧档**,搬完即删。
+let mem: Answers | null = null
+let memScore: ScoreAnswers | null = null
+
+/** 丢掉手上这份运行态。**换账号必须调** —— 内存是模块级的,不清就会把上一个人的答案
+ *  带给下一个登录的人(先前 localStorage 时代同病,只是没人注意)。测试也用它隔离用例。 */
+export function resetAnswersMemory(): void { mem = null; memScore = null; dirty = false; retryN = 0 }
+
 function save(a: Answers): void {
-  try {
-    const s = JSON.stringify(a)
-    // 内容没变不算「新答案」:不记时刻不排同步 —— 挂载即写的 effect 若把本地时间戳
-    // 顶到最新,另一台设备答的服务端档就永远拉不回来(新者胜的「新」必须是真改动)
-    if (localStorage.getItem(ANSWERS_KEY) === s) return
-    localStorage.setItem(ANSWERS_KEY, s)
-    touched()
-  } catch { /* 无痕模式写不进也不能崩页面 */ }
+  const before = mem ? JSON.stringify(normalize(mem)) : ''
+  mem = a
+  if (JSON.stringify(normalize(a)) !== before) touched()      // 语义真变了才排同步
+}
+
+function normalize(cur: any): Answers {
+  return {
+    ...EMPTY, ...cur,
+    nocs: arr(cur.nocs), provs: arr(cur.provs),
+    clbBand: cur.bandsV2 ? num(cur.clbBand) : (CLB_V2_MAP[num(cur.clbBand)] ?? 0), bandsV2: true,
+    expBand: num(cur.expBand), provBand: num(cur.provBand),
+    crsBand: num(cur.crsBand), pgwpBand: num(cur.pgwpBand),
+    eduBand: num(cur.eduBand), ageBand: num(cur.ageBand),
+    totalExpBand: cur.bandsV2 ? num(cur.totalExpBand) : totalV2(num(cur.totalExpBand)),
+    offerBand: num(cur.offerBand), canadaEduBand: num(cur.canadaEduBand),
+    permitBand: num(cur.permitBand), resProv: typeof cur.resProv === 'string' ? cur.resProv : '',
+    fieldMatchBand: num(cur.fieldMatchBand), eduProv: typeof cur.eduProv === 'string' ? cur.eduProv : '',
+    frenchBand: num(cur.frenchBand),
+    // 2026-08-15 Frank 实拍「学历下面的内容填完一刷新就没了」:这俩跟进题(就读时长/层级)
+    // 写入一直正常,是**读取路径漏了字段** → 每次刷新被归零。逐字段重建的清单必须与 Answers 全量对齐
+    studyMonthsBand: num(cur.studyMonthsBand), studyLevelBand: num(cur.studyLevelBand),
+  }
 }
 
 export function readAnswers(): Answers {
-  if (typeof localStorage === 'undefined') return { ...EMPTY }
-  const cur = parse(localStorage.getItem(ANSWERS_KEY))
-  if (cur) {
-    return {
-      ...EMPTY, ...cur,
-      nocs: arr(cur.nocs), provs: arr(cur.provs),
-      clbBand: cur.bandsV2 ? num(cur.clbBand) : (CLB_V2_MAP[num(cur.clbBand)] ?? 0), bandsV2: true,
-      expBand: num(cur.expBand), provBand: num(cur.provBand),
-      crsBand: num(cur.crsBand), pgwpBand: num(cur.pgwpBand),
-      eduBand: num(cur.eduBand), ageBand: num(cur.ageBand),
-      totalExpBand: cur.bandsV2 ? num(cur.totalExpBand) : totalV2(num(cur.totalExpBand)),
-      offerBand: num(cur.offerBand), canadaEduBand: num(cur.canadaEduBand),
-      permitBand: num(cur.permitBand), resProv: typeof cur.resProv === 'string' ? cur.resProv : '',
-      fieldMatchBand: num(cur.fieldMatchBand), eduProv: typeof cur.eduProv === 'string' ? cur.eduProv : '',
-      frenchBand: num(cur.frenchBand),
-      // 2026-08-15 Frank 实拍「学历下面的内容填完一刷新就没了」:这俩跟进题(就读时长/层级)
-      // 写入一直正常,是**读取路径漏了字段** → 每次刷新被归零。逐字段重建的清单必须与 Answers 全量对齐
-      studyMonthsBand: num(cur.studyMonthsBand), studyLevelBand: num(cur.studyLevelBand),
-    }
-  }
-  return migrate() ?? { ...EMPTY }
+  if (mem) return normalize(mem)
+  // 还没拉过服务端档 → 看浏览器里有没有待搬家的旧档(老用户平滑过渡;搬家在 pullAndMerge 里做)
+  const legacy = typeof localStorage !== 'undefined' ? parse(localStorage.getItem(ANSWERS_KEY)) : null
+  if (legacy) return normalize(legacy)
+  const old = typeof localStorage !== 'undefined' ? migrate() : null
+  return old ? normalize(old) : { ...EMPTY }
 }
 
 // 写入即同步目标省的两种表示 —— 只写一边会让另一个入口重新问一遍(那正是收敛掉的病)
@@ -136,10 +144,10 @@ export function writeAnswers(patch: Partial<Answers>): Answers {
 // 重置(Frank 2026-07-31「答题给一个重置的功能」):把这份答案整份丢掉,回到从没答过的状态。
 // 连 done 一起清 —— 留着它职位板就不再问三问了,那不叫重置。
 export function clearAnswers(): Answers {
-  try { localStorage.removeItem(ANSWERS_KEY); localStorage.removeItem(SCORE_ANSWERS_KEY) } catch { /* ignore */ }
-  // 重置也是一次「新答案」:记时刻并立即推空档 —— 走防抖的话换页就丢,下次拉档旧答案
-  // 又回来了(重置=没重置)。未登录照旧只动浏览器。
-  writeMeta(new Date().toISOString())
+  mem = { ...EMPTY }
+  memScore = { ...SCORE_EMPTY }
+  dropLegacy()
+  // 重置立即推空档,不走防抖 —— 换页就丢的话,下次拉档旧答案又回来了(重置=没重置)
   if (loggedIn === true) void pushToServer()
   return { ...EMPTY }
 }
@@ -167,29 +175,29 @@ export type ScoreAnswers = {
 }
 const SCORE_EMPTY: ScoreAnswers = { ticks: {}, rowAnswers: {}, extraAnswered: {}, profile: {} }
 
-export function readScoreAnswers(): ScoreAnswers {
-  if (typeof localStorage === 'undefined') return { ...SCORE_EMPTY }
-  const cur = parse(localStorage.getItem(SCORE_ANSWERS_KEY))
+function normalizeScore(cur: any): ScoreAnswers {
   if (!cur || typeof cur !== 'object') return { ...SCORE_EMPTY }
   const rec = (v: unknown) => (v && typeof v === 'object' ? (v as Record<string, never>) : {})
+  const n = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined)
   return {
     ticks: rec(cur.ticks), rowAnswers: rec(cur.rowAnswers), extraAnswered: rec(cur.extraAnswered),
     profile: rec(cur.profile) as Partial<SelfProfile>,
     ...(typeof cur.hasOffer === 'boolean' ? { hasOffer: cur.hasOffer } : {}),
+    ...(n(cur.wage) !== undefined ? { wage: n(cur.wage) } : {}),
+    ...(n(cur.areaI) !== undefined ? { areaI: n(cur.areaI) } : {}),
   }
 }
 
+export function readScoreAnswers(): ScoreAnswers {
+  if (memScore) return normalizeScore(memScore)
+  const legacy = typeof localStorage !== 'undefined' ? parse(localStorage.getItem(SCORE_ANSWERS_KEY)) : null
+  return normalizeScore(legacy)
+}
+
 export function writeScoreAnswers(a: ScoreAnswers): void {
-  try {
-    const s = JSON.stringify(a)
-    if (localStorage.getItem(SCORE_ANSWERS_KEY) === s) return   // 同 save():没变不记时刻
-    // schema 升级的挂载写(旧档补上空 profile 等新字段)不算「新答案」:按归一化读数再比一道,
-    // 语义没变就只落盘不记时刻 —— 记了,这台设备的旧答案会以「更新」的名义顶掉服务端档
-    const before = JSON.stringify(readScoreAnswers())
-    localStorage.setItem(SCORE_ANSWERS_KEY, s)
-    if (JSON.stringify(readScoreAnswers()) === before) return
-    touched()
-  } catch { /* 无痕模式写不进也不能崩页面 */ }
+  const before = JSON.stringify(readScoreAnswers())
+  memScore = a
+  if (JSON.stringify(normalizeScore(a)) !== before) touched()  // 语义真变了才排同步
 }
 
 // 答过三问没有(职位板判断弹不弹、拿 PR 判断要不要拉起选职业)
@@ -209,106 +217,119 @@ export function toEngineAnswers(a: Answers): Record<string, unknown> {
   return out
 }
 
-// ── 服务端答案档同步(2026-08-15 答案入库绑账号)──────────────────────────────
-// dp.authGate 承诺「注册后答案自动存档」,这一层把它变成真的:登录态每次真改动防抖 2s
-// 推 /api/account/answers;登录成功/消费页挂载时拉服务端档与本地合并 —— 谁的 updatedAt
-// 新听谁的,本地无档直接取服务端。未登录一切照旧只写浏览器:loggedIn 只有摸过服务端
-// (pullAndMerge / push 的响应)才置位,匿名用户不多发一次请求。写失败静默,下次改动自然重试。
-const META_KEY = 'o2p_answers_meta_v1'   // { updatedAt: ISO } = 本地档最后真改动时刻(合并比新旧用)
+// ── 服务端答案档同步 ────────────────────────────────────────────────────────
+// 2026-08-16 重做(Frank「用缓存就是这么麻烦」):**服务端 users.answers 是唯一真相**,
+// 浏览器只剩内存运行态。先前是本地一份、服务端一份靠 updatedAt 比新旧,合并规则本身成了 bug 源。
+//
+// 丢答案的两个窗口(先前靠 localStorage 兜)在这里正面堵死:
+//   ① PUT 失败 → 退避重试(2/6/18s),不再「等用户下次改动」
+//   ② 防抖窗口内离开页面 → pagehide/隐藏时 sendBeacon 强推(与埋点同一招,页面跳走也送得出去)
+// 未登录不发请求(答题必须先登录,注册闸 2026-08-14 起就在);登录成功那一刻若内存里已有答案,
+// 拉档时发现服务端空 → 立即推上去,注册闸承诺的「答案自动存档」照旧兑现。
 
-// #311 登录迹象(2026-08-15):匿名用户每个消费页挂载都无条件 GET /api/account/answers,
-// 一页一条 console 401。payload-token 是 httpOnly,前端 document.cookie 根本读不到它 ——
-// 所以由同步这层自己维护一枚 JS 可读的伴随 cookie 当「登录过的迹象」:
-//   置位 = 任一同步请求 200(邮箱登录走 AuthForm 的 pullAndMerge(true);Google 走回调 Set-Cookie);
-//   清除 = 吃到 401。没有迹象 → 挂载时不发请求,匿名 401 消失。
-// 取舍:迹象可能比会话活得久(登出/会话过期不清它)→ 那台浏览器多吃**一次** 401 后自动清位,
-// 可接受;反过来(把登录用户误判成匿名,答案档永不同步)不可接受。
+// #311 登录迹象:payload-token 是 httpOnly,前端读不到 —— 由同步这层维护一枚 JS 可读的伴随 cookie。
+// 置位 = 任一同步请求 200;清除 = 吃到 401。没有迹象 → 挂载不发请求(匿名零 401)。
 const LI_COOKIE = 'o2p_li'               // 改名要连 api/auth/google/callback 的 Set-Cookie 一起改
 const hasLoginTrace = (): boolean => {
-  try { return typeof document !== 'undefined' && new RegExp(`(?:^|;\\s*)${LI_COOKIE}=1`).test(document.cookie) } catch { return false }
+  try { return typeof document !== 'undefined' && new RegExp(`(?:^|;\s*)${LI_COOKIE}=1`).test(document.cookie) } catch { return false }
 }
 const setLoginTrace = (on: boolean): void => {
   try { document.cookie = `${LI_COOKIE}=${on ? '1' : ''}; path=/; max-age=${on ? 31536000 : 0}; samesite=lax` } catch { /* ignore */ }
 }
 
-let loggedIn: boolean | null = null      // null=登录态未知(push 不发);pullAndMerge 探明后才开闸
+let loggedIn: boolean | null = null      // null=登录态未知(push 不发);拉档探明后才开闸
 let syncTimer: ReturnType<typeof setTimeout> | null = null
+let retryTimer: ReturnType<typeof setTimeout> | null = null
+let retryN = 0
+let dirty = false                        // 有改动还没推成功 —— 离开页面时靠它决定要不要 beacon
 
-const readMetaAt = (): number => {
-  if (typeof localStorage === 'undefined') return 0
-  const t = Date.parse(parse(localStorage.getItem(META_KEY))?.updatedAt ?? '')
-  return Number.isFinite(t) ? t : 0
-}
-function writeMeta(iso: string): void {
-  try { localStorage.setItem(META_KEY, JSON.stringify({ updatedAt: iso })) } catch { /* ignore */ }
+/** 浏览器里的旧档:搬完家就删,此后一个字节都不再往里写 */
+function dropLegacy(): void {
+  try {
+    localStorage.removeItem(ANSWERS_KEY); localStorage.removeItem(SCORE_ANSWERS_KEY)
+    localStorage.removeItem('o2p_answers_meta_v1')
+  } catch { /* ignore */ }
 }
 
-// 写档触点(save / writeScoreAnswers 内容真变时调):记时刻 + 排防抖同步
+const payload = () => JSON.stringify({ basic: readAnswers(), score: readScoreAnswers() })
+
+// 写档触点:排一次短防抖(连点选项时不至于每答一下发一次),并挂上离开页面的兜底
 function touched(): void {
-  writeMeta(new Date().toISOString())
+  dirty = true
   if (loggedIn !== true || typeof window === 'undefined') return
+  armLeaveGuard()
   if (syncTimer) clearTimeout(syncTimer)
-  syncTimer = setTimeout(() => { syncTimer = null; void pushToServer() }, 2000)
+  syncTimer = setTimeout(() => { syncTimer = null; void pushToServer() }, 800)
+}
+
+let guarded = false
+function armLeaveGuard(): void {
+  if (guarded || typeof window === 'undefined') return
+  guarded = true
+  const flush = () => {
+    if (!dirty || loggedIn !== true) return
+    // sendBeacon 只能 POST —— 端点同时收 PUT 与 POST(见 api/account/answers)
+    try { navigator.sendBeacon?.('/api/account/answers', new Blob([payload()], { type: 'application/json' })) } catch { /* ignore */ }
+  }
+  window.addEventListener('pagehide', flush)
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush() })
 }
 
 async function pushToServer(): Promise<void> {
-  // 同规则(#311):没有登录迹象不发 —— 调用点都闸在 loggedIn===true 后面,这里是兜底
   if (!hasLoginTrace()) return
   try {
     const r = await fetch('/api/account/answers', {
       method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ basic: readAnswers(), score: readScoreAnswers() }),
+      body: payload(),
     })
-    if (r.status === 401) { loggedIn = false; setLoginTrace(false); return }
-    if (!r.ok) return                     // 静默:答案还在本地,下次改动重试
+    if (r.status === 401) { loggedIn = false; setLoginTrace(false); dirty = false; return }
+    if (!r.ok) { scheduleRetry(); return }
     loggedIn = true
     setLoginTrace(true)
-    const d = await r.json().catch(() => null)
-    // 与服务端对表:本地时刻换成服务端 updatedAt,此后拉档不会把同一份内容再覆一遍
-    if (typeof d?.updatedAt === 'string') writeMeta(d.updatedAt)
-  } catch { /* 网络失败静默,下次改动重试 */ }
+    dirty = false
+    retryN = 0
+    dropLegacy()                          // 服务端已收下 → 浏览器里那份旧档再无用处
+  } catch { scheduleRetry() }
 }
 
-// 服务端档 → 本地(直写 localStorage,不走 save 的 touched:拉回来的不是「新答案」)。
-// 形状不在这归一 —— readAnswers/readScoreAnswers 的读侧防御本来就要兜坏数据。
-function applyServer(doc: { basic?: unknown; score?: unknown; updatedAt: string }): void {
-  try {
-    if (doc.basic && typeof doc.basic === 'object') localStorage.setItem(ANSWERS_KEY, JSON.stringify({ ...EMPTY, ...doc.basic }))
-    if (doc.score && typeof doc.score === 'object') localStorage.setItem(SCORE_ANSWERS_KEY, JSON.stringify(doc.score))
-    writeMeta(doc.updatedAt)
-  } catch { /* ignore */ }
+/** 退避重试:2s → 6s → 18s,三次不成就等下次改动(再拖下去也多半是会话没了) */
+function scheduleRetry(): void {
+  if (retryN >= 3 || retryTimer) return
+  const wait = 2000 * 3 ** retryN
+  retryN += 1
+  retryTimer = setTimeout(() => { retryTimer = null; void pushToServer() }, wait)
 }
 
-/** 拉服务端档并与本地合并(登录成功回调、消费页挂载时调)。返回 true = 本地被服务端覆盖,
- *  调用方需重建 state。未登录(401)/失败一律 false,页面行为与从前完全一致。
- *  afterLogin=true 只给 AuthForm 登录成功后那一调:此刻会话刚建立、迹象 cookie 还没置位,
- *  必须绕过迹象闸发这第一枪(200 回来迹象即置位,后续挂载全走闸)。 */
+/** 拉服务端档(登录成功回调、消费页挂载时调)。返回 true = 内存被服务端档换过,调用方需重建 state。
+ *  不再「合并」——服务端就是真相;只有两种例外会反向推:服务端空档、或本地还有没搬家的旧档。
+ *  afterLogin=true 给 AuthForm 登录成功后那一调:此刻迹象 cookie 还没置位,必须绕过迹象闸。 */
 export async function pullAndMerge(afterLogin = false): Promise<boolean> {
   if (typeof window === 'undefined') return false
-  // #311:没有任何登录迹象 → 不发请求(匿名挂载零请求零 401)。迹象过期/已登出的残留
-  // 会在下面吃一次 401 后清位,下一个页面起恢复零请求。
   if (!afterLogin && !hasLoginTrace()) return false
   try {
-    const localAt = readMetaAt()
     const r = await fetch('/api/account/answers', { credentials: 'include' })
     if (r.status === 401) { loggedIn = false; setLoginTrace(false); return false }
     if (!r.ok) return false
     loggedIn = true
     setLoginTrace(true)
+    armLeaveGuard()
     const doc = (await r.json().catch(() => null))?.answers
-    const serverAt = typeof doc?.updatedAt === 'string' ? (Date.parse(doc.updatedAt) || 0) : 0
-    // 拉档途中用户又答了题 → 本地为准,这轮不覆盖(touched 已排好同步)
-    if (readMetaAt() !== localAt) return false
-    const hasLocal = !!(localStorage.getItem(ANSWERS_KEY) || localStorage.getItem(SCORE_ANSWERS_KEY))
-    if (!serverAt) {
-      // 服务端无档:把浏览器里已答的旧答案立即送上去(注册闸兑现;等防抖的话跳页就丢)
-      if (hasLocal) await pushToServer()
+    const serverHas = !!(doc && typeof doc === 'object' && (doc.basic || doc.score))
+    // 服务端还没有档:把手上这份(内存里刚答的 / 浏览器里待搬家的旧档)立刻送上去 ——
+    // 注册闸承诺「注册后答案自动存档」,等防抖的话跳页就丢
+    if (!serverHas) {
+      const local = readAnswers(); const localScore = readScoreAnswers()
+      if (answeredBasics(local) || Object.keys(localScore.extraAnswered).length) {
+        mem = local; memScore = localScore
+        await pushToServer()
+      }
       return false
     }
-    // 新者胜:本地无档/从没记过时刻 → localAt=0,自然落进「服务端新」;
-    // 重置过(键已删但 meta 更新)→ localAt 更新,走下面的推平,不许旧档还魂
-    if (serverAt > localAt) { applyServer(doc); return true }
-    if (localAt > serverAt) await pushToServer()   // 本地新(如另一台答的还没同步):推平
-    return false
+    // 拉档途中用户又答了题 → 以他刚答的为准,这轮不覆盖(touched 已排好同步)
+    if (dirty) return false
+    mem = normalize(doc.basic ?? {})
+    memScore = normalizeScore(doc.score ?? {})
+    dropLegacy()
+    return true
   } catch { return false }
 }

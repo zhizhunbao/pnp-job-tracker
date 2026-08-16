@@ -2,7 +2,7 @@
 // 锁死三件事:① 老答案迁得过来(丢了=让用户重答,红线);② 目标省两种表示始终同步
 // (只写一边 → 另一个入口会重新问一遍,那正是这次收敛掉的病);③ 档位→引擎输入的换算与重构前逐字一致。
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { ANSWERS_KEY, answeredBasics, pullAndMerge, readAnswers, readScoreAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
+import { ANSWERS_KEY, answeredBasics, pullAndMerge, readAnswers, readScoreAnswers, toEngineAnswers, writeAnswers, type Answers , resetAnswersMemory } from '@/lib/answers'
 import { DECISIONS, batchLeadsFree, fieldsOf, KNOWN_NO_FREE_LEAD } from '@/lib/decisions'
 import { FIELDS } from '@/lib/fields'
 
@@ -11,7 +11,7 @@ const OLD_PR = 'plan_pr_v1'
 const base = (p: Partial<Answers> = {}): Answers =>
   ({ status: '', nocs: [], provs: [], clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0, eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0, canadaEduBand: 0, permitBand: 0, resProv: '', fieldMatchBand: 0, eduProv: '', frenchBand: 0, studyMonthsBand: 0, studyLevelBand: 0, bandsV2: true, ...p })
 
-beforeEach(() => localStorage.clear())
+beforeEach(() => { localStorage.clear(); resetAnswersMemory() })
 
 describe('旧 key 迁移', () => {
   it('两个旧 key 合并进新 key,旧 key 迁完即删', () => {
@@ -24,7 +24,8 @@ describe('旧 key 迁移', () => {
     expect(a.clbBand).toBe(2)
     expect(localStorage.getItem(OLD_QUIZ)).toBeNull()
     expect(localStorage.getItem(OLD_PR)).toBeNull()
-    expect(JSON.parse(localStorage.getItem(ANSWERS_KEY)!).expBand).toBe(3)
+    // 2026-08-16 起答案不再落 localStorage(服务端唯一真相):迁移的结果直接从门面读
+    expect(a.expBand).toBe(3)
   })
 
   it('只答过三问也迁得过来,目标省档位从省份数组推出来', () => {
@@ -196,19 +197,40 @@ describe('服务端答案档同步', () => {
     expect(readScoreAnswers().ticks['edu:BC']).toBe(true)
   })
 
-  it('本地档更新 → 本地不动,整档推给服务端', async () => {
+  // 2026-08-16 缓存撤了之后不再有「本地比服务端新」这种状态 —— 改动立即推,服务端就是真相。
+  // 剩下唯一的反向推:服务端还没有档,而手上这份已经答过(注册闸承诺「注册后答案自动存档」)
+  it('服务端空档 + 手上有答案 → 立即推上去(不等防抖)', async () => {
     writeAnswers({ status: 'studying' })
     const methods: string[] = []
     vi.stubGlobal('fetch', vi.fn(async (_url: unknown, init?: { method?: string; body?: string }) => {
       methods.push(init?.method || 'GET')
-      if ((init?.method || 'GET') === 'GET')
-        return res(200, { answers: { basic: base(), score: {}, updatedAt: iso(-60_000) } })
-      expect(JSON.parse(init!.body!).basic.status).toBe('studying')   // 推上去的是本地这份
+      if ((init?.method || 'GET') === 'GET') return res(200, { answers: null })
+      expect(JSON.parse(init!.body!).basic.status).toBe('studying')   // 推上去的是手上这份
       return res(200, { ok: true, updatedAt: iso(0) })
     }))
     expect(await pullAndMerge()).toBe(false)
     expect(readAnswers().status).toBe('studying')
     expect(methods).toContain('PUT')
+  })
+
+  it('新页面挂载:服务端有档 → 直接以它为准,不再比新旧', async () => {
+    writeAnswers({ status: 'working' })
+    resetAnswersMemory()                   // = 换台设备/刷新页面,手上没有未推送的改动
+    vi.stubGlobal('fetch', vi.fn(async (_url: unknown, init?: { method?: string }) => (
+      (init?.method || 'GET') === 'GET'
+        ? res(200, { answers: { basic: base({ status: 'studying' }), score: {}, updatedAt: iso(-60_000) } })
+        : res(200, { ok: true, updatedAt: iso(0) })
+    )))
+    expect(await pullAndMerge()).toBe(true)
+    expect(readAnswers().status).toBe('studying')
+  })
+
+  it('刚答过题还没推上去 → 这轮拉档不覆盖(不许把人刚答的顶掉)', async () => {
+    resetAnswersMemory()
+    writeAnswers({ status: 'working' })    // dirty=true,防抖还没到
+    vi.stubGlobal('fetch', vi.fn(async () => res(200, { answers: { basic: base({ status: 'studying' }), score: {}, updatedAt: iso(0) } })))
+    expect(await pullAndMerge()).toBe(false)
+    expect(readAnswers().status).toBe('working')
   })
 
   it('未登录 401 → 本地照旧,一切静默', async () => {

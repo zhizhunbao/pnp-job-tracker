@@ -102,6 +102,15 @@ const NOC_TITLE_CACHE: Record<string, string> = {}
 // 已经问过的码(不论问到没问到)。失败不重试:同一个码问一次拿不到名字,再问十次也一样。
 const NOC_TITLE_TRIED = new Set<string>()
 
+/** 只把**用户真答过**的那几样交出去(2026-08-16 实撞:时薪与地区在卡里还写着「待填写」,
+ *  服务端却按默认值 $0/大温 算出了 45 分 —— 默认值当答案就是替他编分,CLAUDE.md 红线)。
+ *  分值卡自己有 extraAnswered 标记谁答过,这里照它过滤。 */
+const pickAnswered = (a: { rowAnswers?: Record<string, number>; extraAnswered?: Record<string, boolean>; wage?: number; areaI?: number }) => ({
+  rowAnswers: a.rowAnswers ?? {},
+  ...(a.extraAnswered?.['job:wage'] ? { wage: a.wage } : {}),
+  ...(a.extraAnswered?.['job:bcArea'] ? { areaI: a.areaI } : {}),
+})
+
 // 分值卡 profile 段的题 → 它对应官方表里的哪个因素。共用题(prov='')先前在**每个**省页签下都摆,
 // 于是 BC 页签下冒出一格「第二语言 CLB」(那是 SK/ON 表才有的 language2)——2026-08-16 Frank 实拍。
 const PROFILE_FACTOR: Record<string, string[]> = {
@@ -235,14 +244,14 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
     setReady(true)
     const sa = readScoreAnswers()
     setScoreTicks(sa.ticks ?? {})
-    setScoreRowsAns({ rowAnswers: sa.rowAnswers ?? {}, wage: sa.wage, areaI: sa.areaI })
+    setScoreRowsAns(pickAnswered(sa))
     track('dp-open', { job: tvJob ? '1' : '0' })
     // 登录态拉服务端答案档(清了浏览器/换设备答案还在;未登录 401 无感):有变化才重建
     pullAndMerge().then((changed) => {
       if (!changed) return
       refreshFromStore()
       const a = readScoreAnswers()
-      setScoreTicks(a.ticks ?? {}); setScoreRowsAns({ rowAnswers: a.rowAnswers ?? {}, wage: a.wage, areaI: a.areaI })
+      setScoreTicks(a.ticks ?? {}); setScoreRowsAns(pickAnswered(a))
     }).catch(() => { /* 静默 */ })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -528,7 +537,7 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
     setBands(readAnswers())
     // 勾选与直选档位同步上来(2026-08-16):不同步 = 用户答满了初评那张表的分还是老样子
     const a = readScoreAnswers()
-    setScoreTicks(a.ticks ?? {}); setScoreRowsAns({ rowAnswers: a.rowAnswers ?? {}, wage: a.wage, areaI: a.areaI })
+    setScoreTicks(a.ticks ?? {}); setScoreRowsAns(pickAnswered(a))
   }, [])
 
   // 估分答完 = 整卷答完,收框显示各省结果(结果在「申请人条件」卡内)
