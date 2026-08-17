@@ -8,6 +8,12 @@
 // 已在 SectionTabs 用 color-mix 替掉,以后也别再写。
 //
 // 每迁完一个组件文件,它对 UI 的引用随之消失;等引用归零,本文件删除。
+// E12-08 通道档色阶(1-5):5/4 绿深浅、3 默认、2 琥珀、1/缺 灰(scoreColor 0-100 版随加权分退役)。
+// 移民通道档与公司担保档共用同一套档色 —— 都是「1-5 档」,一个值一种颜色只该定义一次。
+export const gradeColor = (g: number | null | undefined) => (
+  g == null ? '#9ca3af' : g >= 5 ? '#166534' : g >= 4 ? '#15803d' : g >= 3 ? '#374151' : g >= 2 ? '#b45309' : '#9ca3af'
+)
+
 export const UI = {
   primary: 'var(--primary)', primaryDeep: 'var(--primary-deep)',
   danger: 'var(--danger)', warn: 'var(--warn)', ok: 'var(--ok)',

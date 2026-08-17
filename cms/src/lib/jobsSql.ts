@@ -2,7 +2,7 @@
 // 路由/页面/提醒只调函数、不写裸 SQL(E10-01 收拢;Frank「所有职位 SQL 拆一个文件」)。
 // 列名是 Payload snake_case(老坑 5):改 Jobs schema 只动这里。
 import { match, matchRank, type MatchDims, type MatchJob, type MatchProfile, NO_LIST_PROVINCES } from './match'
-import type { JobRow } from '@/app/(frontend)/jobs/JobsTable'
+import type { JobRow } from '@/app/(frontend)/jobs/types'   // 形状住类型文件,不再反向依赖 'use client' 组件
 
 const iso = (v: any) => (v instanceof Date ? v.toISOString() : (v ?? ''))
 const num = (v: any) => (v == null ? null : Number(v)) // pg numeric 返回字符串,转回数字
