@@ -19,9 +19,9 @@ import { newsPublisher, newsRegionName, NEWS_REGIONS, type NewsCard, type NewsCo
 function NewsShell({ children }: { children: (t: TFn, lang: Lang) => React.ReactNode }) {
   const [lang, setLang, t] = useLang()
   return (
-    <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
+    <div className="nwShell">
       <Header lang={lang} setLang={setLang} t={t} active="news" />
-      <div style={{ flex: 1 }}>{children(t, lang)}</div>
+      <div className="nwMain">{children(t, lang)}</div>
       <Footer t={t} />
     </div>
   )
@@ -39,7 +39,7 @@ const tileBg = (r: string) => { const [a, b] = TILE[r] || ['#374151', '#6b7280']
 
 function RegionTag({ t, region }: { t: TFn; region: string }) {
   const fed = region === 'federal'
-  return <span style={{ background: fed ? '#fee2e2' : '#eef2ff', color: fed ? '#b91c1c' : '#3730a3', borderRadius: 6, padding: '1px 7px', fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap' }}>{regionLabel(t, region)}</span>
+  return <span className={fed ? 'nwRegion fed' : 'nwRegion'}>{regionLabel(t, region)}</span>
 }
 
 // AI 重要度徽标(P1d;P1f 收窄):只给 5 分挂红「重要」——琥珀「关注」档 Frank 拍板删(没用)。
@@ -50,8 +50,7 @@ function ImpBadge({ t, lang, importance, note }: { t: TFn; lang: string; importa
   // 非中文界面只挂口径声明,不拿中文当国际文案;要真给三语,得在数据层把 note 翻好(翻译管线另立项)。
   // 顺手:原来两截用「·」拼(属性也是 UI 文案,no-dot 硬规矩),改成一行一条。
   const tip = [lang === 'zh' ? note : '', t('news.aiScore')].filter(Boolean).join('\n')
-  return <span title={tip}
-    style={{ background: '#dc2626', color: '#fff', borderRadius: 6, padding: '1px 7px', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' }}>{t('news.imp')}</span>
+  return <span className="nwImp" title={tip}>{t('news.imp')}</span>
 }
 
 // 省份地标图路径(本站静态,来源见 public/img/regions/SOURCES.md;致谢挂 title——Frank 2026-07-18「水印去掉」,
@@ -77,17 +76,16 @@ function ListTile({ region }: { region: string }) {
   if (dead) {
     // 缺图兜底=v4 淡色字标;副行一行内截断(联邦全名 96px 宽折三行撑破定高的教训)
     return (
-      <div style={{ width: 96, minWidth: 96, height: 64, borderRadius: 8, background: bg, color: fg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontWeight: 700, overflow: 'hidden' }}>
-        <div style={{ fontSize: region === 'federal' ? 17 : 20, lineHeight: 1.2 }}>{region === 'federal' ? 'IRCC' : region}</div>
-        <div style={{ fontSize: 9.5, fontWeight: 500, opacity: 0.75, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 88 }}>{region === 'federal' ? 'Canada' : newsRegionName(region)}</div>
+      <div className="nwTile fallback" style={{ '--tbg': bg, '--tfg': fg } as React.CSSProperties}>
+        <div className={region === 'federal' ? 'nwTileCode fed' : 'nwTileCode'}>{region === 'federal' ? 'IRCC' : region}</div>
+        <div className="nwTileSub">{region === 'federal' ? 'Canada' : newsRegionName(region)}</div>
       </div>
     )
   }
   return (
-    <div style={{ width: 96, minWidth: 96, height: 64, borderRadius: 8, overflow: 'hidden' }}>
+    <div className="nwTile">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={regionImg(region)} alt="" title={IMG_CREDIT} onError={() => setDead(true)}
-        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+      <img className="nwTileImg" src={regionImg(region)} alt="" title={IMG_CREDIT} onError={() => setDead(true)} />
     </div>
   )
 }
@@ -105,20 +103,20 @@ function HeroImage({ s }: { s: NewsHero }) {
   const [dead, setDead] = useState(false)
   if (dead) {
     return (
-      <div style={{ height: 300, background: tileBg(s.region), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: 'rgba(255,255,255,.9)', fontWeight: 800, fontSize: 38, letterSpacing: 2, textTransform: 'uppercase' }}>{s.region === 'federal' ? 'IRCC' : newsRegionName(s.region)}</span>
+      <div className="nwHero fallback" style={{ '--tile': tileBg(s.region) } as React.CSSProperties}>
+        <span className="nwHeroCode">{s.region === 'federal' ? 'IRCC' : newsRegionName(s.region)}</span>
       </div>
     )
   }
   return (
-    <div style={{ height: 300, position: 'relative', overflow: 'hidden' }}>
+    <div className="nwHero">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={regionImg(s.region)} alt="" title={IMG_CREDIT}
         onError={() => setDead(true)}
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(17,24,39,0) 45%, rgba(17,24,39,.55))' }} />
+        className="nwHeroImg" />
+      <div className="nwHeroScrim" />
       {/* 角标水印已删(Frank 2026-07-18);Commons 致谢=img title 悬停 + SOURCES.md */}
-      <span style={{ position: 'absolute', left: 16, bottom: 10, color: '#fff', fontWeight: 700, fontSize: 14, letterSpacing: 1.5, textShadow: '0 1px 4px rgba(0,0,0,.6)', textTransform: 'uppercase' }}>{s.region === 'federal' ? 'Canada' : newsRegionName(s.region)}</span>
+      <span className="nwHeroTag">{s.region === 'federal' ? 'Canada' : newsRegionName(s.region)}</span>
     </div>
   )
 }
@@ -138,55 +136,52 @@ function FeaturedGrid({ t, lang, slides }: { t: TFn; lang: Lang; slides: NewsHer
   const side = slides.filter((_, i) => i !== idx % n).slice(0, 4)
   const aiSum = lang === 'zh' ? hero.summaryZh : lang === 'ko' ? hero.summaryKo : null
   const summary = (aiSum || hero.excerpt || '') as string
-  const arrow: React.CSSProperties = { position: 'absolute', top: '50%', transform: 'translateY(-50%)', width: 30, height: 30, borderRadius: '50%', border: 'none', background: 'rgba(17,24,39,.45)', color: '#fff', fontSize: 15, cursor: 'pointer', lineHeight: 1, zIndex: 2 }
   const step = (d: number) => (e: React.MouseEvent) => { e.preventDefault(); setIdx((i) => (i + d + n) % n) }
   return (
-    <div className="nwTop" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 14, marginBottom: 8 }}>
-      <a href={`/news/${hero.slug}`} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
-        style={{ position: 'relative', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, overflow: 'hidden', textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column' }}>
+    <div className="nwTop">
+      <a className="nwBig" href={`/news/${hero.slug}`} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
         {/* 图区包一层相对定位:箭头/圆点锚在图内;图定高,与右列的高度差由下方文字区吸收 */}
-        <div style={{ position: 'relative' }}>
+        <div className="nwBigImg">
           <HeroImage key={hero.slug} s={hero} />
           {n > 1 && (<>
-            <button aria-label="prev" onClick={step(-1)} style={{ ...arrow, left: 10 }}>‹</button>
-            <button aria-label="next" onClick={step(1)} style={{ ...arrow, right: 10 }}>›</button>
+            <button className="nwArrow prev" aria-label="prev" onClick={step(-1)}>‹</button>
+            <button className="nwArrow next" aria-label="next" onClick={step(1)}>›</button>
             {/* #212(第 26 轮体检续):圆点原来钮就是那颗 8×8 的点 —— 钮改透明热区(手机 40×40),视觉点挪进内层 span */}
-            <span className="nwDots" style={{ position: 'absolute', left: 0, right: 0, bottom: 10, display: 'flex', justifyContent: 'center', gap: 6, zIndex: 2 }}>
+            <span className="nwDots">
               {slides.map((s, i) => (
-                <button key={s.slug} aria-label={`slide ${i + 1}`}
-                  onClick={(e) => { e.preventDefault(); setIdx(i) }}
-                  style={{ width: 8, height: 8, border: 'none', padding: 0, background: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: i === idx % n ? '#fff' : 'rgba(255,255,255,.45)' }} />
+                <button key={s.slug} className="nwDot" aria-label={`slide ${i + 1}`}
+                  onClick={(e) => { e.preventDefault(); setIdx(i) }}>
+                  <span className={i === idx % n ? 'nwDotIn on' : 'nwDotIn'} />
                 </button>
               ))}
             </span>
           </>)}
         </div>
-        <div style={{ padding: '14px 18px 16px', flex: 1, minHeight: 176 }}>{/* 176=最长文案实测(徽标行+2行标题+2行摘要+padding)——整卡高度轮播恒定 */}
-          <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 11.5, color: '#9ca3af', marginBottom: 6, flexWrap: 'wrap' }}>
+        <div className="nwBigBody">
+          <div className="nwMeta">
             {/* #205:原为裸档「重要 5/5」(禁裸 X/5,#132 同规矩)——与列表统一走 ImpBadge,理由与口径挂 title */}
             <ImpBadge t={t} lang={lang} importance={hero.importance} note={hero.importanceNote} />
             <RegionTag t={t} region={hero.region} />
-            <span style={{ fontVariantNumeric: 'tabular-nums' }}>{hero.date}</span>
+            <span className="nwNum">{hero.date}</span>
           </div>
-          <div style={{ fontSize: 19, fontWeight: 700, lineHeight: 1.35, marginBottom: 8, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{hero.title}</div>
+          <div className="nwBigTitle">{hero.title}</div>
           {summary && (
-            <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.7, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-              {!!aiSum && <span style={{ border: '1px solid #d1d5db', borderRadius: 4, padding: '0 5px', fontSize: 10.5, marginRight: 6, color: '#9ca3af' }}>{t('news.aiSum')}</span>}
+            <div className="nwBigSum">
+              {!!aiSum && <span className="nwAiTag">{t('news.aiSum')}</span>}
               {summary}
             </div>
           )}
         </div>
       </a>
-      <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, padding: '6px 16px 10px' }}>
-        <h3 style={{ fontSize: 12.5, color: '#9ca3af', fontWeight: 600, margin: '10px 0 4px', letterSpacing: 0.5 }}>{t('news.topTitle')}</h3>
+      <div className="nwSide">
+        <h3 className="nwSideH">{t('news.topTitle')}</h3>
         {side.map((s, i) => (
-          <a key={s.slug} href={`/news/${s.slug}`} className="rowHover" style={{ display: 'block', padding: '10px 0', borderTop: i ? '1px solid #f3f4f6' : 'none', textDecoration: 'none', color: 'inherit' }}>
-            <div style={{ fontSize: 13.5, fontWeight: 600, lineHeight: 1.45, color: '#111827', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{s.title}</div>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 11.5, color: '#9ca3af', marginTop: 3 }}>
+          <a key={s.slug} href={`/news/${s.slug}`} className={i ? 'rowHover nwSideItem sep' : 'rowHover nwSideItem'}>
+            <div className="nwSideTitle">{s.title}</div>
+            <div className="nwSideMeta">
               <ImpBadge t={t} lang={lang} importance={s.importance} note={s.importanceNote} />
               <RegionTag t={t} region={s.region} />
-              <span style={{ fontVariantNumeric: 'tabular-nums' }}>{s.date.slice(5)}</span>
+              <span className="nwNum">{s.date.slice(5)}</span>
             </div>
           </a>
         ))}
@@ -196,7 +191,7 @@ function FeaturedGrid({ t, lang, slides }: { t: TFn; lang: Lang; slides: NewsHer
 }
 
 // ── 列表 /news(v4 头版式):页头+筛选 → 头条网格(1大+4小) → 按日分组单列时间线,全页 1100 单轨 ──
-export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; hero: NewsHero[]; cmtCounts: Record<string, number> }) {
+export function News({ items, hero, cmtCounts }: { items: NewsCard[]; hero: NewsHero[]; cmtCounts: Record<string, number> }) {
   const [region, setRegion] = useState('')
   // 「只看重要」筛选已删(Frank 2026-07-18「这个去掉」);重要度徽标/头条梯队保留
   return (
@@ -215,11 +210,6 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
       const chip = chipStyle   // P3 chips 归并(#114):与 primitives 同款,本地副本退役
       return (
         <>
-          {/* v4:头条网格窄屏折单列;#212(第 26 轮体检续):手机触控靶——省份 chips、轮播箭头与圆点热区 ≥40 */}
-          <style>{`@media (max-width:760px){.nwTop{grid-template-columns:1fr !important}}
-            @media (max-width:640px){
-              .nwDots{gap:0 !important}.nwDots button{width:40px !important;height:40px !important}
-              .nwTop button[aria-label='prev'],.nwTop button[aria-label='next']{width:40px !important;height:40px !important}}`}</style>
           {/* 正文轨=Shell 1320(Frank 2026-07-18 宽度统一拍板),原 1100 单轨退役 */}
           <Shell pad="1rem 1.25rem 32px">
             {/* 页头=Banner 图版(2026-07-31 banner 统一:上距全站 1rem、补 news 图组,原 marginTop:16 包层撤) */}
@@ -229,35 +219,33 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
               { href: '/news', label: t('tl.tabNews'), active: true },
               { href: '/timeline', label: t('tl.title') },
             ]} />
-            <div className="nwChips" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '10px 0 14px' }}>
+            <div className="nwChips">
               <button className="tapPad" style={chip(!region)} onClick={() => setRegion('')}>{t('chart.all')}</button>
               {present.map((r) => <button key={r} className="tapPad" style={chip(region === r)} onClick={() => setRegion(r)}>{regionLabel(t, r)}</button>)}
             </div>
             {/* 头条区:1 大 + 4 小(大卡轮播);筛选态下不显(看筛选结果为主) */}
             {!region && <FeaturedGrid t={t} lang={lang} slides={hero} />}
-            {!shown.length && <div style={{ color: '#9ca3af', fontSize: 13.5, marginTop: 16 }}>{t('news.empty')}</div>}
+            {!shown.length && <div className="nwEmpty">{t('news.empty')}</div>}
             {byDay.map(([day, rows]) => (
               <div key={day}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: '#9ca3af', margin: '16px 0 8px', fontVariantNumeric: 'tabular-nums' }}>
-                  {day}<span style={{ flex: 1, height: 1, background: '#e5e7eb' }} />
+                <div className="nwDay">
+                  {day}<span className="nwDayLine" />
                 </div>
                 {rows.map((n) => (
-                  <a key={n.slug} href={`/news/${n.slug}`} className="cardHover"
-                    style={{ ...CARD_SHELL, display: 'flex', gap: 14, padding: '12px 14px', marginBottom: 10, textDecoration: 'none', color: 'inherit', alignItems: 'flex-start', height: 128, boxSizing: 'border-box', overflow: 'hidden' }}>
-                    {/* 行定高 128(Frank:「卡片的宽度和高度也应该是固定的」);标题 2 行/摘要 1 行截断,脚钉底 */}
+                  <a key={n.slug} href={`/news/${n.slug}`} className="cardHover nwRow" style={CARD_SHELL}>
                     <ListTile region={n.region} />
-                    <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: 4, height: '100%' }}>
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 11.5, color: '#9ca3af', flexWrap: 'wrap', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                    <div className="nwRowBody">
+                      <div className="nwRowMeta">
                         <RegionTag t={t} region={n.region} />
                         <ImpBadge t={t} lang={lang} importance={n.importance} note={n.importanceNote} />
-                        <span style={{ fontVariantNumeric: 'tabular-nums' }}>{n.date}</span>
-                        {n.region === 'QC' && <span style={{ color: '#b45309' }}>{t('news.qcNote')}</span>}
+                        <span className="nwNum">{n.date}</span>
+                        {n.region === 'QC' && <span className="nwQc">{t('news.qcNote')}</span>}
                       </div>
-                      <div style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{n.title}</div>
-                      {n.excerpt && <div style={{ fontSize: 12.5, color: '#6b7280', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{n.excerpt}</div>}
-                      <div style={{ display: 'flex', gap: 14, fontSize: 11.5, color: '#9ca3af', marginTop: 'auto' }}>
+                      <div className="nwRowTitle">{n.title}</div>
+                      {n.excerpt && <div className="nwRowExcerpt">{n.excerpt}</div>}
+                      <div className="nwRowFoot">
                         {COMMENTS_ON && <span>💬 {t('news.cmt.n', { n: cmtCounts[n.slug] || 0 })}</span>}
-                        <span style={{ color: '#2563eb' }}>{t('news.read')}</span>
+                        <span className="nwRead">{t('news.read')}</span>
                       </div>
                     </div>
                   </a>
@@ -278,21 +266,21 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
 const COMMENTS_ON = true
 function CommentRow({ cm, t, loggedIn, onReply, replying }: { cm: NewsComment; t: TFn; loggedIn: boolean; onReply?: () => void; replying?: boolean }) {
   const av = (
-    <span style={{ width: 30, height: 30, borderRadius: '50%', background: cm.official ? '#2563eb' : '#6366f1', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>{(cm.authorName || '?')[0].toUpperCase()}</span>
+    <span className={cm.official ? 'nwCmtAv official' : 'nwCmtAv'}>{(cm.authorName || '?')[0].toUpperCase()}</span>
   )
   return (
-    <div style={{ display: 'flex', gap: 10, padding: '10px 0', fontSize: 13 }}>
+    <div className="nwCmt">
       {av}
-      <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 2 }}>
-          <span style={{ color: cm.official ? '#1d4ed8' : '#6b7280', fontWeight: 600 }}>{cm.authorName}</span>
-          {cm.official && <span style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 6px', borderRadius: 6, background: '#eff6ff', color: '#1d4ed8' }}>{t('news.cmt.official')}</span>}
-          {cm.pinned && <span style={{ marginLeft: 4, fontSize: 10.5, padding: '1px 6px', borderRadius: 6, background: '#fffbeb', color: '#92400e' }}>{t('news.cmt.pinnedTag')}</span>}
-          <span style={{ marginLeft: 8 }}>{cm.date}</span>
+      <div className="nwCmtMain">
+        <div className="nwCmtHead">
+          <span className={cm.official ? 'nwCmtName official' : 'nwCmtName'}>{cm.authorName}</span>
+          {cm.official && <span className="nwCmtTag">{t('news.cmt.official')}</span>}
+          {cm.pinned && <span className="nwCmtTag pinned">{t('news.cmt.pinnedTag')}</span>}
+          <span className="nwCmtDate">{cm.date}</span>
         </div>
-        <div style={{ whiteSpace: 'pre-wrap', overflowWrap: 'break-word' }}>{cm.body}</div>
+        <div className="nwCmtText">{cm.body}</div>
         {loggedIn && onReply && (
-          <button onClick={onReply} style={{ border: 'none', background: 'none', padding: '2px 0 0', fontSize: 12, color: replying ? '#1d4ed8' : '#2563eb', fontWeight: replying ? 700 : 400, cursor: 'pointer' }}>{t('news.cmt.reply')}</button>
+          <button className={replying ? 'nwCmtReply on' : 'nwCmtReply'} onClick={onReply}>{t('news.cmt.reply')}</button>
         )}
       </div>
     </div>
@@ -327,23 +315,21 @@ function CommentsSection({ t, slug, comments, loggedIn }: { t: TFn; slug: string
     const rs = replies.get(top.id) || []
     const open = rs.length <= 3 || expanded.has(top.id)
     return (
-      <div key={top.id} style={top.pinned ? { background: '#f8faff', border: '1px solid #e0e7ff', borderRadius: 12, padding: '0 14px', marginBottom: 6 } : { borderTop: '1px solid #f3f4f6' }}>
+      <div key={top.id} className={top.pinned ? 'nwThread pinned' : 'nwThread'}>
         <CommentRow cm={top} t={t} loggedIn={loggedIn} onReply={() => { setReplyTo(replyTo === top.id ? null : top.id); setReplyBody('') }} replying={replyTo === top.id} />
         {replyTo === top.id && (
-          <div style={{ margin: '0 0 10px 40px' }}>
+          <div className="nwReplyBox">
             <textarea value={replyBody} onChange={(e) => { setReplyBody(e.target.value); if (state === 'sent' || state === 'err') setState('idle') }}
-              maxLength={1000} rows={2} placeholder={t('news.cmt.replyPh')} autoFocus
-              style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #e5e7eb', borderRadius: 8, padding: '7px 10px', fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }} />
-            <button onClick={submitReply} disabled={!replyBody.trim() || state === 'busy'}
-              style={{ marginTop: 4, background: replyBody.trim() && state !== 'busy' ? '#2563eb' : '#93c5fd', color: '#fff', border: 'none', borderRadius: 8, padding: '4px 14px', fontSize: 12.5, fontWeight: 600, cursor: replyBody.trim() ? 'pointer' : 'default' }}>{t('news.cmt.send')}</button>
+              maxLength={1000} rows={2} placeholder={t('news.cmt.replyPh')} autoFocus className="nwTextarea sm" />
+            <button className="nwSend sm" onClick={submitReply} disabled={!replyBody.trim() || state === 'busy'}>{t('news.cmt.send')}</button>
           </div>
         )}
         {rs.length > 0 && (
-          <div style={{ margin: '0 0 4px 40px', borderLeft: '2px solid #f3f4f6', paddingLeft: 12 }}>
+          <div className="nwReplies">
             {open && rs.map((r) => <CommentRow key={r.id} cm={r} t={t} loggedIn={false} />)}
             {rs.length > 3 && (
               <button onClick={() => setExpanded((s) => { const n = new Set(s); if (n.has(top.id)) n.delete(top.id); else n.add(top.id); return n })}
-                style={{ border: 'none', background: 'none', padding: '2px 0 8px', fontSize: 12.5, color: '#2563eb', cursor: 'pointer' }}>
+                className="nwExpand">
                 {open ? t('news.cmt.collapse') : t('news.cmt.expand', { n: rs.length })}
               </button>
             )}
@@ -353,22 +339,20 @@ function CommentsSection({ t, slug, comments, loggedIn }: { t: TFn; slug: string
     )
   }
   return (
-    <section id="comments" style={{ ...CARD_SHELL, padding: '16px 18px', marginTop: 16 }}>
-      <h3 style={{ fontSize: 14.5, margin: '0 0 10px' }}>{t('news.cmt.title', { n: comments.length })}</h3>
+    <section id="comments" className="nwCmtSec" style={CARD_SHELL}>
+      <h3 className="nwCmtTitle">{t('news.cmt.title', { n: comments.length })}</h3>
       {loggedIn ? (
-        <div style={{ marginBottom: 12 }}>
+        <div className="nwCmtForm">
           <textarea value={body} onChange={(e) => { setBody(e.target.value); if (state === 'sent' || state === 'err') setState('idle') }}
-            maxLength={1000} rows={3} placeholder={t('news.cmt.ph')}
-            style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #e5e7eb', borderRadius: 8, padding: '9px 12px', fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 6 }}>
-            <button onClick={submit} disabled={!body.trim() || state === 'busy'}
-              style={{ background: body.trim() && state !== 'busy' ? '#2563eb' : '#93c5fd', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600, cursor: body.trim() ? 'pointer' : 'default' }}>{t('news.cmt.send')}</button>
-            {state === 'sent' && <span style={{ fontSize: 12.5, color: '#15803d' }}>{t('news.cmt.sent')}</span>}
-            {state === 'err' && <span style={{ fontSize: 12.5, color: '#b91c1c' }}>{t('news.cmt.err')}</span>}
+            maxLength={1000} rows={3} placeholder={t('news.cmt.ph')} className="nwTextarea" />
+          <div className="nwCmtActions">
+            <button className="nwSend" onClick={submit} disabled={!body.trim() || state === 'busy'}>{t('news.cmt.send')}</button>
+            {state === 'sent' && <span className="nwOk">{t('news.cmt.sent')}</span>}
+            {state === 'err' && <span className="nwErr">{t('news.cmt.err')}</span>}
           </div>
         </div>
       ) : (
-        <a href="/?login=1" style={{ display: 'block', border: '1px solid #e5e7eb', borderRadius: 8, padding: '9px 12px', color: '#2563eb', fontSize: 13, textDecoration: 'none', marginBottom: 12 }}>{t('news.cmt.login')}</a>
+        <a className="nwLoginLink" href="/?login=1">{t('news.cmt.login')}</a>
       )}
       {tops.map(thread)}
     </section>
@@ -378,7 +362,7 @@ function CommentsSection({ t, slug, comments, loggedIn }: { t: TFn; slug: string
 // ── 详情页 /news/[slug]:居中,官方版式,段内换行保真,对照翻译,评论区 ──
 const withBreaks = (p: string) => p.split('\n').map((ln, j, arr) => <span key={j}>{ln}{j < arr.length - 1 && <br />}</span>)
 
-export function NewsDetailView({ row, comments, loggedIn }: { row: NewsRow; comments: NewsComment[]; loggedIn: boolean }) {
+export function NewsDetail({ row, comments, loggedIn }: { row: NewsRow; comments: NewsComment[]; loggedIn: boolean }) {
   // 段落=\n\n 分隔;段内 \n(联系人块等)渲染为换行(P1c 保真)
   const paras = useMemo(() => row.bodyEn.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean), [row.bodyEn])
   const [zh, setZh] = useState(false)
@@ -427,59 +411,58 @@ export function NewsDetailView({ row, comments, loggedIn }: { row: NewsRow; comm
       return (
       // 外轨=Shell 1320(宽度统一拍板);阅读列 860 居中保行长可读
       <Shell pad="18px 1.25rem 32px">
-      <div style={{ maxWidth: 860, margin: '0 auto' }}>
-        <div style={{ marginBottom: 12 }}><BackLink href="/news" label={t('news.back')} /></div>
-        <article style={{ ...CARD_SHELL, padding: '22px 26px' }}>
-          <div style={{ fontSize: 11.5, color: '#9ca3af', display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap' }}>
+      <div className="nwRead860">
+        <div className="nwBack"><BackLink href="/news" label={t('news.back')} /></div>
+        <article className="nwArticle" style={CARD_SHELL}>
+          <div className="nwDetMeta">
             <RegionTag t={t} region={row.region} />
             <ImpBadge t={t} lang={lang} importance={row.importance} note={row.importanceNote} />
             <span>{t('news.published', { d: row.date })}</span>
           </div>
-          <h1 style={{ fontSize: 21, margin: '8px 0 4px', lineHeight: 1.4 }}>{row.title}</h1>
+          <h1 className="nwDetTitle">{row.title}</h1>
           {/* 转载姿势四件套:©+非官方声明(一行)+ 原文链 + 日期(上方 meta 行);底部不再重复原文钮(P1c) */}
-          <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 12, display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap' }}>
+          <div className="nwDetSrc">
             <span>
               {t('news.copy', { who: newsPublisher(row.region) })}
-              {' · '}<a href={row.url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{t('news.official')}</a>
+              {' · '}<a className="nwLink" href={row.url} target="_blank" rel="noreferrer">{t('news.official')}</a>
             </span>
             {/* AI 速读钮(P1f):没生成过才显钮;生成后常驻速读框 */}
             {!summary && (
-              <button disabled={sumState === 'busy'} onClick={() => fetchSum(lang)}
-                style={{ border: '1px solid #e5e7eb', background: '#fff', color: '#2563eb', borderRadius: 999, padding: '2px 10px', fontSize: 11.5, cursor: sumState === 'busy' ? 'wait' : 'pointer', whiteSpace: 'nowrap' }}>
+              <button className="nwPill" disabled={sumState === 'busy'} onClick={() => fetchSum(lang)}>
                 {sumState === 'busy' ? t('news.sumBusy') : `⚡ ${t('news.aiSum')}`}
               </button>
             )}
-            {sumState === 'err' && <span style={{ color: '#b91c1c', fontSize: 11.5 }}>{t('news.trErr')}</span>}
+            {sumState === 'err' && <span className="nwErr">{t('news.trErr')}</span>}
             {lang !== 'en' && (
               <button disabled={trState === 'busy'}
                 onClick={() => { if (zh) setZh(false); else if (trans) setZh(true); else fetchTrans(lang as 'zh' | 'ko') }}
-                style={{ border: '1px solid ' + (zh ? '#2563eb' : '#e5e7eb'), background: zh ? '#eef2ff' : '#fff', color: '#2563eb', borderRadius: 999, padding: '2px 10px', fontSize: 11.5, cursor: trState === 'busy' ? 'wait' : 'pointer', whiteSpace: 'nowrap' }}>
+                className={zh ? 'nwPill on' : 'nwPill'}>
                 {trState === 'busy' ? t('news.trBusy') : zh ? t('news.trOff') : t('news.trOn')}
               </button>
             )}
-            {trState === 'err' && <span style={{ color: '#b91c1c', fontSize: 11.5 }}>{t('news.trErr')}</span>}
+            {trState === 'err' && <span className="nwErr">{t('news.trErr')}</span>}
           </div>
-          {row.region === 'QC' && <div style={{ fontSize: 12, color: '#b45309', background: '#fffbeb', borderRadius: 8, padding: '6px 10px', marginBottom: 12 }}>{t('news.qcNote')}</div>}
+          {row.region === 'QC' && <div className="nwQcNote">{t('news.qcNote')}</div>}
           {/* AI 速读框(P1f):生成后常驻正文上方 */}
           {summary && (
-            <div style={{ background: '#eff6ff', border: '1px solid #dbeafe', borderRadius: 10, padding: '10px 14px', marginBottom: 12 }}>
-              <div style={{ fontSize: 11, color: '#3b82f6', fontWeight: 600, marginBottom: 4 }}>⚡ {t('news.aiSum')} <span style={{ color: '#9ca3af', fontWeight: 400 }}>· {t('news.aiGen')}</span></div>
-              <div style={{ fontSize: 13.5, color: '#1e40af', lineHeight: 1.7 }}>{summary}</div>
+            <div className="nwSum">
+              <div className="nwSumHead">⚡ {t('news.aiSum')} <span className="nwSumGen">· {t('news.aiGen')}</span></div>
+              <div className="nwSumBody">{summary}</div>
             </div>
           )}
-          {zh && <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 10 }}>{t('news.aiNote')}</div>}
-          <div style={{ fontSize: 14, lineHeight: 1.75, color: '#374151', marginTop: 4 }}>
+          {zh && <div className="nwAiNote">{t('news.aiNote')}</div>}
+          <div className="nwBody">
             {paras.map((p, i) => (
-              <div key={i} style={{ margin: '0 0 12px' }}>
-                <p style={{ margin: 0 }}>{withBreaks(p)}</p>
+              <div key={i} className="nwPara">
+                <p>{withBreaks(p)}</p>
                 {zh && zhParas[i] && (
-                  <p style={{ margin: '4px 0 0', padding: '4px 0 4px 12px', borderLeft: '3px solid #dbeafe', color: '#1e40af', fontSize: 13.5 }}>{withBreaks(zhParas[i])}</p>
+                  <p className="nwTrans">{withBreaks(zhParas[i])}</p>
                 )}
               </div>
             ))}
             {/* 译文段落多于原文的尾部兜底(不吞) */}
             {zh && zhParas.length > paras.length && zhParas.slice(paras.length).map((p, i) => (
-              <p key={`z${i}`} style={{ margin: '4px 0 12px', padding: '4px 0 4px 12px', borderLeft: '3px solid #dbeafe', color: '#1e40af', fontSize: 13.5 }}>{withBreaks(p)}</p>
+              <p key={`z${i}`} className="nwTrans tail">{withBreaks(p)}</p>
             ))}
           </div>
         </article>{/* 底部深链钮已删(Frank 2026-07-18:「不需要」);找岗入口=顶栏/省页块 */}

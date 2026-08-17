@@ -495,3 +495,143 @@ button:not(:disabled):hover {
 .secTab { font-size: 12.5px; padding: 5px 14px; border-radius: 9px 9px 0 0; text-decoration: none; border: 1px solid var(--border); border-bottom: none; background: var(--bg); color: var(--text2); cursor: pointer; }
 /* #205(第 26 轮体检):当前页签是 span 不是 a —— 看着像链接点不动是 bug */
 .secTab.on { background: #fff; color: var(--tab); font-weight: 700; border-color: color-mix(in srgb, var(--tab) 33.33%, transparent); cursor: default; }
+
+/* ===================================================
+   11. 资讯 News(列表 + 详情 + 评论)
+   2026-08-17 从 news/News.tsx 迁出(原 NewsView.tsx)。
+   数据驱动的色(一省一色的图块与渐变)经 --tile / --tbg / --tfg
+   自定义属性从 tsx 传入 —— 值本身是数据,规则留在这里。
+===================================================== */
+.nwShell { background: var(--bg); min-height: 100vh; display: flex; flex-direction: column; font-family: system-ui, sans-serif; color: #1f2937; }
+.nwMain { flex: 1; }
+
+/* 地区标 + AI 重要度徽标(只给 5 分挂红「重要」,琥珀「关注」档 Frank 拍板删) */
+.nwRegion { background: #eef2ff; color: #3730a3; border-radius: 6px; padding: 1px 7px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+.nwRegion.fed { background: #fee2e2; color: #b91c1c; }
+.nwImp { background: var(--danger); color: #fff; border-radius: 6px; padding: 1px 7px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+
+/* 列表左侧地标图块(缺图退淡色字标;#206:NB/NL/PE 无图退联邦通用图,不拿别省照片冒充) */
+.nwTile { width: 96px; min-width: 96px; height: 64px; border-radius: 8px; overflow: hidden; }
+.nwTile.fallback { background: var(--tbg); color: var(--tfg); display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 700; }
+.nwTileCode { font-size: 20px; line-height: 1.2; }
+.nwTileCode.fed { font-size: 17px; }
+/* 副行一行内截断:联邦全名 96px 宽会折三行撑破定高 */
+.nwTileSub { font-size: 9.5px; font-weight: 500; opacity: .75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 88px; }
+.nwTileImg { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* 头条大图定高 300(2026-07-19 Frank「图片不一样大小到现在都没解决」——
+   此前 flex:1 弹性吃高度差,每张 slide 文字行数不同,图就忽大忽小;
+   高度差改由下方文字区吸收,图恒定) */
+.nwHero { height: 300px; position: relative; overflow: hidden; }
+.nwHero.fallback { background: var(--tile); display: flex; align-items: center; justify-content: center; }
+.nwHeroCode { color: rgba(255, 255, 255, .9); font-weight: 800; font-size: 38px; letter-spacing: 2px; text-transform: uppercase; }
+.nwHeroImg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.nwHeroScrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(17, 24, 39, 0) 45%, rgba(17, 24, 39, .55)); }
+.nwHeroTag { position: absolute; left: 16px; bottom: 10px; color: #fff; font-weight: 700; font-size: 14px; letter-spacing: 1.5px; text-shadow: 0 1px 4px rgba(0, 0, 0, .6); text-transform: uppercase; }
+
+/* 头条区:1 大 + 4 小 */
+.nwTop { display: grid; grid-template-columns: 1.6fr 1fr; gap: 14px; margin-bottom: 8px; }
+.nwBig { position: relative; background: #fff; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; text-decoration: none; color: inherit; display: flex; flex-direction: column; }
+.nwBigImg { position: relative; }
+.nwArrow { position: absolute; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; border: none; background: rgba(17, 24, 39, .45); color: #fff; font-size: 15px; cursor: pointer; line-height: 1; z-index: 2; }
+.nwArrow.prev { left: 10px; }
+.nwArrow.next { right: 10px; }
+.nwDots { position: absolute; left: 0; right: 0; bottom: 10px; display: flex; justify-content: center; gap: 6px; z-index: 2; }
+/* #212(第 26 轮体检续):钮改透明热区,视觉点挪进内层 span,手机撑 40 */
+.nwDot { width: 8px; height: 8px; border: none; padding: 0; background: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+.nwDotIn { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, .45); }
+.nwDotIn.on { background: #fff; }
+/* 176=最长文案实测(徽标行 + 2 行标题 + 2 行摘要 + padding),整卡高度轮播恒定 */
+.nwBigBody { padding: 14px 18px 16px; flex: 1; min-height: 176px; }
+.nwMeta { display: flex; gap: 8px; align-items: baseline; font-size: 11.5px; color: var(--text3); margin-bottom: 6px; flex-wrap: wrap; }
+.nwNum { font-variant-numeric: tabular-nums; }
+.nwBigTitle { font-size: 19px; font-weight: 700; line-height: 1.35; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.nwBigSum { font-size: 13px; color: var(--text2); line-height: 1.7; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.nwAiTag { border: 1px solid #d1d5db; border-radius: 4px; padding: 0 5px; font-size: 10.5px; margin-right: 6px; color: var(--text3); }
+.nwSide { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 6px 16px 10px; }
+.nwSideH { font-size: 12.5px; color: var(--text3); font-weight: 600; margin: 10px 0 4px; letter-spacing: .5px; }
+.nwSideItem { display: block; padding: 10px 0; text-decoration: none; color: inherit; }
+.nwSideItem.sep { border-top: 1px solid var(--hairline); }
+.nwSideTitle { font-size: 13.5px; font-weight: 600; line-height: 1.45; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.nwSideMeta { display: flex; gap: 8px; align-items: baseline; font-size: 11.5px; color: var(--text3); margin-top: 3px; }
+
+/* 按日分组的时间线列表。行定高 128(Frank「卡片的宽度和高度也应该是固定的」):
+   标题 2 行、摘要 1 行截断,脚钉底 */
+.nwChips { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 14px; }
+.nwEmpty { color: var(--text3); font-size: 13.5px; margin-top: 16px; }
+.nwDay { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text3); margin: 16px 0 8px; font-variant-numeric: tabular-nums; }
+.nwDayLine { flex: 1; height: 1px; background: var(--border); }
+.nwRow { display: flex; gap: 14px; padding: 12px 14px; margin-bottom: 10px; text-decoration: none; color: inherit; align-items: flex-start; height: 128px; box-sizing: border-box; overflow: hidden; }
+.nwRowBody { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 4px; height: 100%; }
+.nwRowMeta { display: flex; gap: 8px; align-items: baseline; font-size: 11.5px; color: var(--text3); flex-wrap: wrap; white-space: nowrap; overflow: hidden; }
+.nwRowTitle { font-size: 15px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.nwRowExcerpt { font-size: 12.5px; color: var(--text2); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.nwRowFoot { display: flex; gap: 14px; font-size: 11.5px; color: var(--text3); margin-top: auto; }
+.nwRead { color: var(--primary); }
+.nwQc { color: var(--warn); }
+
+/* 评论区(F 件 v2):计数头 + 官方置顶楼 + 楼中楼一层 */
+.nwCmtSec { padding: 16px 18px; margin-top: 16px; }
+.nwCmtTitle { font-size: 14.5px; margin: 0 0 10px; }
+.nwCmtForm { margin-bottom: 12px; }
+.nwTextarea { width: 100%; box-sizing: border-box; border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; font-size: 13px; font-family: inherit; resize: vertical; }
+.nwTextarea.sm { padding: 7px 10px; }
+.nwCmtActions { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
+.nwSend { background: var(--primary); color: #fff; border: none; border-radius: 8px; padding: 6px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.nwSend.sm { margin-top: 4px; padding: 4px 14px; font-size: 12.5px; }
+.nwSend:disabled { background: #93c5fd; cursor: default; }
+.nwOk { font-size: 12.5px; color: var(--ok); }
+.nwErr { font-size: 12.5px; color: #b91c1c; }
+.nwLoginLink { display: block; border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; color: var(--primary); font-size: 13px; text-decoration: none; margin-bottom: 12px; }
+.nwThread { border-top: 1px solid var(--hairline); }
+.nwThread.pinned { border-top: none; background: #f8faff; border: 1px solid #e0e7ff; border-radius: 12px; padding: 0 14px; margin-bottom: 6px; }
+.nwCmt { display: flex; gap: 10px; padding: 10px 0; font-size: 13px; }
+.nwCmtAv { width: 30px; height: 30px; border-radius: 50%; background: #6366f1; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.nwCmtAv.official { background: var(--primary); }
+.nwCmtMain { min-width: 0; flex: 1; }
+.nwCmtHead { font-size: 11.5px; color: var(--text3); margin-bottom: 2px; }
+.nwCmtName { color: var(--text2); font-weight: 600; }
+.nwCmtName.official { color: #1d4ed8; }
+.nwCmtTag { margin-left: 6px; font-size: 10.5px; padding: 1px 6px; border-radius: 6px; background: #eff6ff; color: #1d4ed8; }
+.nwCmtTag.pinned { margin-left: 4px; background: #fffbeb; color: #92400e; }
+.nwCmtDate { margin-left: 8px; }
+.nwCmtText { white-space: pre-wrap; overflow-wrap: break-word; }
+.nwCmtReply { border: none; background: none; padding: 2px 0 0; font-size: 12px; color: var(--primary); font-weight: 400; cursor: pointer; }
+.nwCmtReply.on { color: #1d4ed8; font-weight: 700; }
+.nwReplyBox { margin: 0 0 10px 40px; }
+.nwReplies { margin: 0 0 4px 40px; border-left: 2px solid var(--hairline); padding-left: 12px; }
+.nwExpand { border: none; background: none; padding: 2px 0 8px; font-size: 12.5px; color: var(--primary); cursor: pointer; }
+
+/* 详情页:外轨 Shell 1320,阅读列 860 居中保行长可读 */
+.nwRead860 { max-width: 860px; margin: 0 auto; }
+.nwBack { margin-bottom: 12px; }
+.nwArticle { padding: 22px 26px; }
+.nwDetMeta { font-size: 11.5px; color: var(--text3); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.nwDetTitle { font-size: 21px; margin: 8px 0 4px; line-height: 1.4; }
+.nwDetSrc { font-size: 11.5px; color: var(--text3); margin-bottom: 12px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.nwLink { color: var(--primary); text-decoration: none; }
+.nwPill { border: 1px solid var(--border); background: #fff; color: var(--primary); border-radius: 999px; padding: 2px 10px; font-size: 11.5px; cursor: pointer; white-space: nowrap; }
+.nwPill.on { border-color: var(--primary); background: #eef2ff; }
+.nwPill:disabled { cursor: wait; }
+.nwQcNote { font-size: 12px; color: var(--warn); background: #fffbeb; border-radius: 8px; padding: 6px 10px; margin-bottom: 12px; }
+.nwSum { background: #eff6ff; border: 1px solid #dbeafe; border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; }
+.nwSumHead { font-size: 11px; color: #3b82f6; font-weight: 600; margin-bottom: 4px; }
+.nwSumGen { color: var(--text3); font-weight: 400; }
+.nwSumBody { font-size: 13.5px; color: #1e40af; line-height: 1.7; }
+.nwAiNote { font-size: 11.5px; color: var(--text3); margin-bottom: 10px; }
+.nwBody { font-size: 14px; line-height: 1.75; color: #374151; margin-top: 4px; }
+.nwPara { margin: 0 0 12px; }
+.nwPara > p { margin: 0; }
+/* 对照译文:段对段贴在原文下,左侧蓝条区分 */
+.nwTrans { margin: 4px 0 0; padding: 4px 0 4px 12px; border-left: 3px solid #dbeafe; color: #1e40af; font-size: 13.5px; }
+.nwTrans.tail { margin: 4px 0 12px; }
+
+/* v4 头条网格窄屏折单列;#212 手机触控靶:轮播箭头与圆点热区抬到 40 */
+@media (max-width: 760px) {
+  .nwTop { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .nwDots { gap: 0; }
+  .nwDot { width: 40px; height: 40px; }
+  .nwArrow { width: 40px; height: 40px; }
+}

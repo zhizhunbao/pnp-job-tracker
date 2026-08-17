@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getUser } from '@/lib/entitlement'
-import { NewsDetailView } from '../NewsView'
+import { NewsDetail } from '../News'
 import { newsRegionName, type NewsComment, type NewsRow } from '../shared'
 
 export const dynamic = 'force-dynamic'
@@ -59,5 +59,5 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
       .then((r: { rows: NewsComment[] }) => r.rows)
       .catch(() => []))
   const user = await getUser(await headers())
-  return <NewsDetailView row={row} comments={comments} loggedIn={!!user} />
+  return <NewsDetail row={row} comments={comments} loggedIn={!!user} />
 }

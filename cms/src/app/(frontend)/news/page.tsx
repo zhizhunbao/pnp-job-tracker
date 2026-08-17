@@ -3,7 +3,7 @@
 // 护栏:任一查询失败 → 对应块留空(宁可留空,页面不 500;comments 表未建时同理)。
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { NewsListView } from './NewsView'
+import { News } from './News'
 import type { NewsCard, NewsHero } from './shared'
 
 export const dynamic = 'force-dynamic'
@@ -37,5 +37,5 @@ export default async function NewsPage() {
     .then((r: { rows: { slug: string; n: number }[] }) => Object.fromEntries(r.rows.map((x) => [x.slug, x.n])))
     .catch(() => ({}))
   const [items, hero, cmtCounts] = await Promise.all([itemsP, heroP, cmtP])
-  return <NewsListView items={items} hero={hero} cmtCounts={cmtCounts} />
+  return <News items={items} hero={hero} cmtCounts={cmtCounts} />
 }
