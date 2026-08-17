@@ -18,6 +18,7 @@ import path from 'path'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
+import { dbOf, type DbClient } from '@/lib/database'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -31,7 +32,7 @@ const isoDate = (s?: string) => {
 }
 
 type Row = Record<string, unknown>
-type PgClient = { query: (sql: string, params?: unknown[]) => Promise<{ rows: any[]; rowCount: number | null }> ; release: () => void }
+type PgClient = DbClient   // 形状归 lib/database 管;本文件的事务体照旧不动(它已有 BEGIN/COMMIT/ROLLBACK/finally release)
 
 // 分批多行 INSERT(可带 ON CONFLICT 子句);返回 RETURNING 的行(未写 RETURNING 则为空)
 async function insertBatch(client: PgClient, table: string, cols: string[], rows: Row[], suffix = ''): Promise<any[]> {
@@ -208,7 +209,7 @@ export async function GET(req: Request) {
   ]
 
   // 单连接 + 单事务:任一步失败整体回滚,不再有半写状态(老逐行版没有原子性)
-  const client: PgClient = await (payload.db as any).pool.connect()
+  const client: PgClient = await dbOf(payload).connect()
   let closed = 0
   let closedDead = 0   // 实测判死立即下架的条数(与上面「本次未见+30天」那条分开计,好在响应里看清谁在干活)
   try {

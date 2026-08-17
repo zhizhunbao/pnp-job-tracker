@@ -5,11 +5,9 @@ export async function register() {
   if (process.env.NEXT_RUNTIME !== 'nodejs') return
   setTimeout(async () => {
     try {
-      const { getPayload } = await import('payload')
-      const { default: config } = await import('@/payload.config')
+      const { getDb } = await import('@/lib/database')
       const { getTopNocsCached } = await import('@/lib/quizTop')
-      const payload = await getPayload({ config: await config })
-      await getTopNocsCached((payload.db as { pool?: unknown }).pool, 24)
+      await getTopNocsCached(await getDb(), 24)
     } catch { /* 预热失败:第一位访客回到冷路径,行为同预热前 */ }
   }, 5000)
 }

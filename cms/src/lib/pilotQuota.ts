@@ -86,7 +86,7 @@ export function aggregatePilotQuota(rows: PilotQuotaCommunityRow[]): PilotQuotaA
   return [...groups.values()].sort((a, b) => a.province.localeCompare(b.province) || a.type.localeCompare(b.type))
 }
 
-type Pool = { query: (q: string, v?: unknown[]) => Promise<{ rows: Record<string, unknown>[] }> }
+import type { Db as Pool } from './database'   // 连接形状单一来源(原先这行结构类型在两个 lib 里各抄一份)
 
 const communityRow = (r: Record<string, unknown>): PilotQuotaCommunityRow => ({
   community: String(r.community ?? ''),
