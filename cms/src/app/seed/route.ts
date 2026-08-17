@@ -18,7 +18,7 @@ import path from 'path'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { dbOf, type DbClient } from '@/lib/database'
+import { dbOf, type DbClient } from '@/lib/db/database'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -32,7 +32,7 @@ const isoDate = (s?: string) => {
 }
 
 type Row = Record<string, unknown>
-type PgClient = DbClient   // 形状归 lib/database 管;本文件的事务体照旧不动(它已有 BEGIN/COMMIT/ROLLBACK/finally release)
+type PgClient = DbClient   // 形状归 lib/db/database 管;本文件的事务体照旧不动(它已有 BEGIN/COMMIT/ROLLBACK/finally release)
 
 // 分批多行 INSERT(可带 ON CONFLICT 子句);返回 RETURNING 的行(未写 RETURNING 则为空)
 async function insertBatch(client: PgClient, table: string, cols: string[], rows: Row[], suffix = ''): Promise<any[]> {

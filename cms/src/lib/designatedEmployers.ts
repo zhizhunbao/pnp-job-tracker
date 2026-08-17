@@ -10,8 +10,8 @@
 //   筛选/分页全在进程内纯函数做(好测,且不需要为每种筛选组合建索引);
 //   SSR 只带第一页 EMP_SSR_ROWS 行 + total,换筛选/翻页走 /api/employers 懒取。
 // 只要求「能查」不要求「能借连接」:本文件的函数只 query,别让签名去要 connect。
-// 真值在 lib/database(08-17 起连接形状单一来源);这里原样再导出,两个既有 import 点不必改。
-import type { Db } from './database'
+// 真值在 lib/db/database(08-17 起连接形状单一来源);这里原样再导出,两个既有 import 点不必改。
+import type { Db } from './db/database'
 export type Pool = Db
 
 export type DesignatedEmployerRow = {

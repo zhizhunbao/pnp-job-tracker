@@ -2,7 +2,8 @@
 // 路由/页面/提醒只调函数、不写裸 SQL(E10-01 收拢;Frank「所有职位 SQL 拆一个文件」)。
 // 列名是 Payload snake_case(老坑 5):改 Jobs schema 只动这里。
 import { match, matchRank, type MatchDims, type MatchJob, type MatchProfile, NO_LIST_PROVINCES } from './match'
-import type { JobRow } from '@/app/(frontend)/jobs/types'   // 形状住类型文件,不再反向依赖 'use client' 组件
+import type { JobRow } from '@/app/(frontend)/jobs/types'
+import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射   // 形状住类型文件,不再反向依赖 'use client' 组件
 
 const iso = (v: any) => (v instanceof Date ? v.toISOString() : (v ?? ''))
 const num = (v: any) => (v == null ? null : Number(v)) // pg numeric 返回字符串,转回数字
@@ -67,7 +68,7 @@ export async function resolveQCompanyIds(pool: any, filters: Record<string, unkn
   const terms = splitQ(typeof filters.q === 'string' ? filters.q : '')
   if (!terms.length) return filters
   const ids = await Promise.all(terms.map(async (t) => {
-    const { rows } = await pool.query(`SELECT id FROM companies WHERE name ILIKE $1`, [`%${t}%`])   // 不转义:与 jobs 侧 ILIKE 分支同口径
+    const { rows } = await pool.query(SQL.COMPANY_IDS_BY_NAME, [`%${t}%`])   // 不转义:与 jobs 侧 ILIKE 分支同口径
     return rows.map((r: any) => Number(r.id))
   }))
   return { ...filters, qCompanyIds: ids }
@@ -96,7 +97,7 @@ export function buildJobsWhere(filters: Record<string, unknown>, startIndex = 1)
     const pre = Array.isArray(filters.qCompanyIds) ? (filters.qCompanyIds as unknown[]) : null
     const ids = pre ? (Array.isArray(pre[i]) ? pre[i] as number[] : []) : null
     if (ids) { if (ids.length) branches.push(`j.company_id = ANY(${param(ids)})`) }
-    else branches.push(`j.company_id IN (SELECT id FROM companies WHERE name ILIKE ${ph})`)   // 未预查回退(语义同,慢)
+    else branches.push(SQL.companyIdInByName(ph))   // 未预查回退(语义同,慢)
     conds.push(`(${branches.join(' OR ')})`)
   }
 
@@ -198,7 +199,7 @@ export function orderByClause(sortKey?: string, dir?: string, pro = true): strin
   const d = dir === 'asc' ? 'ASC' : 'DESC'
   const fresh = 'j.first_seen DESC NULLS LAST, j.id DESC'
   const tail = col === 'j.date_posted' ? fresh : `j.date_posted DESC NULLS LAST, ${fresh}`
-  return `ORDER BY ${col} ${d} NULLS LAST, ${tail}`
+  return SQL.orderBy(col, d, tail)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -211,16 +212,9 @@ export const mapPnpOcc = (r: any) => ({ province: r.province, stream: r.stream, 
 export const pnpOnly = <T extends { program?: string }>(rows: T[]): T[] => rows.filter((r) => (r.program || 'PNP') === 'PNP')
 export const mapEeCat = (r: any) => ({ category: r.category, label: r.label, noc: r.noc, teer: typeof r.teer === 'number' ? r.teer : null, title: r.title, url: r.url, fetched: r.fetched, drawCrs: typeof r.drawCrs === 'number' ? r.drawCrs : null, drawDate: r.drawDate ?? '', drawSize: typeof r.drawSize === 'number' ? r.drawSize : null })
 
-const JOB_COLUMNS = `j.id, j.title, c.name AS company_name, c.slug AS company_slug, c.address AS company_address, c.description AS company_description, c.sectors AS company_sectors,
-  c.website AS company_website, c.website_source,
-  c.lmia_positions, c.lmia_lmias, c.lmia_last_quarter, c.lmia_streams, c.lmia_positions_skilled, c.sponsor_grade,
-  j.noc, j.category, j.teer, j.broad, j.mid, j.fine, j.accessibility, j.score, j.grade_channel, j.pnp_eligible, j.pnp_stream, j.ee_category, j.aip, j.pilot, j.pilot_community, j.pilot_employer, j.pilot_occ,
-  j.employment_term, j.employment_hours, j.certificates, j.education, j.eligibility_flag, j.eligibility_quote,
-  j.country, j.province, j.city, j.district, j.address, j.region,
-  j.apply_url, j.official_url, j.salary, j.salary_annual, j.salary_text,
-  j.wage_med_hourly, j.wage_med_annual, j.wage_low_hourly, j.wage_low_annual, j.wage_high_hourly, j.wage_high_annual, j.wage_year,
-  j.source, j.source_label, j.origin, j.date_posted, j.first_seen, j.last_seen, j.status, j.closed_at`
-const JOB_FROM = `FROM jobs j LEFT JOIN companies c ON c.id = j.company_id`
+const JOB_COLUMNS = SQL.JOB_COLUMNS
+const JOB_FROM = SQL.JOB_FROM
+const DEDUPE_COND = SQL.DEDUPE_COND
 
 // 行映射(不含 match;match 由调用方按人/序算好传入)。Pro 列(工资中位三件套)免费用户置空 —— 不进浏览器。
 export function mapJobRow(j: any, pro: boolean, matchLevel: JobRow['match']): JobRow {
@@ -321,8 +315,7 @@ export type JobsListOpts = { pro: boolean; profile: MatchProfile; profileOk: boo
 /** 一次性取前 limit 行:page.tsx SSR 首屏 50 行用(筛选/翻页走 /api/jobs 分页;E10-01 P5 已删旧 /api/jobs-data blob 端点)。 */
 export async function fetchJobRows(pool: any, { pro, profile, profileOk, matchDims, limit }: JobsListOpts): Promise<{ jobs: JobRow[]; updatedAt: string; matchHigh: number; matchMid: number }> {
   const { rows } = await pool.query(
-    `SELECT ${JOB_COLUMNS} ${JOB_FROM}
-     ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT $1`, [limit])
+    SQL.JOB_ROWS_LATEST, [limit])
   const m = makeMatcher(profile, profileOk, matchDims)
   const jobs = rows.map((j: any) => mapJobRow(j, pro, m.of(j)))
   // 原来取「前 50 行的最大 last_seen」→ 比全站还旧(首屏行未必是最近被确认的那批),与 /api/jobs 口径也不一致
@@ -350,12 +343,12 @@ export async function checkedAt(pool: any): Promise<string> {
   if (updCache && now - updCache.ts < COUNT_TTL) return updCache.v
   let v = ''
   try {
-    const r = await pool.query('SELECT last_seed FROM etl_heartbeat WHERE id = 1')
+    const r = await pool.query(SQL.ETL_HEARTBEAT)
     v = iso(r.rows[0]?.last_seed)
   } catch (e: any) {
     if (e?.code !== '42P01') throw e
   }
-  if (!v) v = iso((await pool.query('SELECT max(last_seen) AS upd FROM jobs')).rows[0]?.upd)
+  if (!v) v = iso((await pool.query(SQL.JOBS_MAX_LAST_SEEN)).rows[0]?.upd)
   updCache = { v, ts: now }
   return v
 }
@@ -364,7 +357,6 @@ export async function checkedAt(pool: any): Promise<string> {
 // #125(批C,Frank「不要有重复」):同 公司×岗名×城市 多帖(多源聚合/同岗重发,open 里 ~1900 行)只显最新。
 // 判定在 ETL(09_build_mart 标 isDup,行保留仅展示隐藏,统计/榜单口径不动);此处只剩布尔过滤——
 // 请求路径反连接实测 5.8s(0.1 vCPU)不可用,预计算是唯一出路。列未落地期(部署时序)42703 由调用方降级兜底
-const DEDUPE_COND = `coalesce(j.is_dup, false) = false`
 
 export async function fetchJobsPage(
   pool: any, { pro, profile, profileOk, matchDims, filters, sort, page, pageSize }: JobsPageOpts,
@@ -376,8 +368,8 @@ export async function fetchJobsPage(
   const cntKey = w.sql + '|' + JSON.stringify(w.params)
   const cachedCnt = countCache.get(cntKey)
   const run = async (cond: string) => Promise.all([
-    pool.query(`SELECT ${JOB_COLUMNS} ${JOB_FROM} WHERE ${w.sql} AND ${cond} ${order} LIMIT ${limPh} OFFSET ${offPh}`, [...w.params, pageSize, page * pageSize]),
-    cachedCnt && now - cachedCnt.ts < COUNT_TTL ? null : pool.query(`SELECT count(*)::int n ${JOB_FROM} WHERE ${w.sql} AND ${cond}`, w.params),
+    pool.query(SQL.jobsPage(w.sql, cond, order, limPh, offPh), [...w.params, pageSize, page * pageSize]),
+    cachedCnt && now - cachedCnt.ts < COUNT_TTL ? null : pool.query(SQL.jobsPageCount(w.sql, cond), w.params),
     checkedAt(pool),   // 全局新鲜度(与筛选无关;自带 30s 缓存)
   ])
   let listRes, cntRes, upd
@@ -433,11 +425,9 @@ export async function fetchMatchPage(
   const CAND_CAP = 12000  // 候选封顶:按新鲜度取最近 N 个候选,防全表 TS 计算失控(足够覆盖真实匹配)
   const [candRes, updRes] = await Promise.all([
     pool.query(
-      `SELECT ${JOB_COLUMNS} ${JOB_FROM}
-       WHERE (COALESCE(j.pnp_eligible,false) OR COALESCE(j.ee_category,'') <> '' OR j.noc = ANY($1) OR LEFT(j.noc,4) = ANY($2) OR LEFT(j.noc,3) = ANY($3))
-       ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT $4`,
+      SQL.MATCH_PAGE,
       [nocs, noc4, noc3, CAND_CAP]),
-    pool.query(`SELECT max(last_seen) AS upd FROM jobs`),
+    pool.query(SQL.JOBS_MAX_LAST_SEEN),
   ])
   let matchHigh = 0, matchMid = 0
   const hits: { j: any; level: 'high' | 'mid' }[] = []
@@ -478,7 +468,7 @@ export async function fetchJobById(
   pool: any, id: number, { pro, profile, profileOk, matchDims }: Omit<JobsListOpts, 'limit'>,
 ): Promise<JobRow | null> {
   if (!Number.isFinite(id)) return null
-  const { rows } = await pool.query(`SELECT ${JOB_COLUMNS} ${JOB_FROM} WHERE j.id = $1 LIMIT 1`, [id])
+  const { rows } = await pool.query(SQL.JOB_BY_ID, [id])
   if (!rows.length) return null
   const m = makeMatcher(profile, profileOk, matchDims)
   // 详情页单岗:免费 cap 以 0 号位判(建档免费用户在详情页能看本岗匹配级——单岗不构成枚举面)
@@ -496,17 +486,11 @@ export async function fetchRelatedJobs(
   pool: any,
   job: { id: string | number; company: string; province: string; noc: string; fine?: string; mid?: string; broad?: string },
 ): Promise<{ sameCompany: RelatedJob[]; sameOcc: RelatedJob[]; fallbackLevel: 'fine' | 'mid' | 'broad' | null }> {
-  const REL_COLS = `j.id, j.title, c.name AS company_name, j.city, j.province, j.salary, j.salary_text`
   const [co, occ] = await Promise.all([
     job.company ? pool.query(
-      `SELECT ${REL_COLS} ${JOB_FROM}
-       WHERE c.name = $1 AND j.id <> $2 AND COALESCE(j.status,'open') <> 'closed'
-       ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT 3`, [job.company, job.id]) : { rows: [] },
+      SQL.RELATED_SAME_COMPANY, [job.company, job.id]) : { rows: [] },
     job.noc && job.province ? pool.query(
-      `SELECT ${REL_COLS} ${JOB_FROM}
-       WHERE j.province = $1 AND LEFT(j.noc, 4) = LEFT($2, 4) AND j.id <> $3
-         AND COALESCE(c.name,'') <> $4 AND COALESCE(j.status,'open') <> 'closed'
-       ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT 3`, [job.province, job.noc, job.id, job.company || '']) : { rows: [] },
+      SQL.RELATED_SAME_OCC, [job.province, job.noc, job.id, job.company || '']) : { rows: [] },
   ])
   const sameCompany = co.rows.map(mapRelated)
   const sameOcc = occ.rows.map(mapRelated)
@@ -517,7 +501,7 @@ export async function fetchRelatedJobs(
     .filter(([, v]) => v && v !== '未分类')
   if (!levels.length) return { sameCompany, sameOcc, fallbackLevel: null }
   const { rows } = await pool.query(
-    `SELECT ${levels.map(([lv], i) => `EXISTS(SELECT 1 FROM jobs WHERE province = $1 AND ${lv} = $${i + 2} AND COALESCE(status,'open') <> 'closed') AS ${lv}_has`).join(', ')}`,
+    SQL.levelHasJobs(levels.map(([lv]) => lv)),
     [job.province, ...levels.map(([, v]) => v)],
   )
   const hit = levels.find(([lv]) => rows[0]?.[`${lv}_has`])
@@ -534,10 +518,7 @@ export async function fetchTotalAndProof(pool: any): Promise<{ total: number; na
   if (tpCache && Date.now() - tpCache.ts < TP_TTL) return tpCache.v
   // 副标题总数与列表同口径(#125 后修+#136):去重+排除已下架,与默认列表 WHERE 一致
   const OPEN_COND = `COALESCE(j.status,'open') <> 'closed'`
-  const q = (cond: string) => pool.query(`SELECT count(*) FILTER (WHERE ${cond})::int AS n,
-    count(*) FILTER (WHERE status = 'open' AND pnp_stream IS NOT NULL AND pnp_stream <> '')::int AS named,
-    (SELECT count(*)::int FROM companies WHERE lmia_positions > 0) AS lmia
-    FROM jobs j`)
+  const q = (cond: string) => pool.query(SQL.totalAndProof(cond))
   let rows
   try {
     ;({ rows } = await q(`${DEDUPE_COND} AND ${OPEN_COND}`))
@@ -571,37 +552,30 @@ export async function fetchCompanyBySlug(pool: any, slug: string): Promise<Compa
 }
 /** E8-11 B1:job id → 同一份 CompanyDetail(公司弹框同源;按 jobs.company_id 解析,同名公司/无 slug 公司也不串)。 */
 export async function fetchCompanyByJobId(pool: any, jobId: number): Promise<CompanyDetail | null> {
-  const detail = await fetchCompanyWhere(pool, 'c.id = (SELECT company_id FROM jobs WHERE id = $1 LIMIT 1)', jobId)
+  const detail = await fetchCompanyWhere(pool, SQL.COMPANY_BY_JOB_ID_COND, jobId)
   // #199(Frank「有精确地址就优先显数据库的」):公司表 address 常空;从点进来的这条职位取精确地址(带街号/邮编)兜底
   if (detail && !detail.address) {
-    const { rows } = await pool.query('SELECT address FROM jobs WHERE id = $1 LIMIT 1', [jobId]).catch(() => ({ rows: [] }))
+    const { rows } = await pool.query(SQL.JOB_ADDRESS_BY_ID, [jobId]).catch(() => ({ rows: [] }))
     if (rows[0]?.address) detail.address = String(rows[0].address)
   }
   return detail
 }
 async function fetchCompanyWhere(pool: any, where: string, param: unknown): Promise<CompanyDetail | null> {
   const { rows } = await pool.query(
-    `SELECT c.id, c.name, c.slug, c.website, c.website_source, c.industry, c.sectors, c.alias_zh, c.alias_ko, c.wiki_url,
-            c.sponsor_grade, c.score_detail, c.ai_brief, c.ai_website, c.ai_sources, c.ai_fetched, c.description, c.address, c.region,
-            c.lmia_positions, c.lmia_lmias, c.lmia_last_quarter, c.lmia_streams, c.lmia_positions_skilled
-     FROM companies c WHERE ${where} LIMIT 1`, [param])
+    SQL.companyDetail(where), [param])
   const c = rows[0]
   if (!c) return null
   // NOC 译名 join(#151 口径,前端按界面语言取)——治「工作名不知道啥意思」,用官方职业名作对照
   const jr = await pool.query(
-    `SELECT j.id, j.title, j.city, j.province, j.grade_channel, j.noc, j.teer, j.date_posted, j.salary, j.salary_text,
-            nd.title AS noc_title, nd.title_zh AS noc_title_zh, nd.title_ko AS noc_title_ko
-     FROM jobs j LEFT JOIN noc_descriptions nd ON nd.noc = j.noc
-     WHERE j.company_id = $1 AND COALESCE(j.status,'open') <> 'closed'
-     ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT 50`, [c.id])   // #198:上限 30→50,让「展开其余」内联展开(不再跳转搜索页)
+    SQL.COMPANY_OPEN_JOBS, [c.id])   // #198:上限 30→50,让「展开其余」内联展开(不再跳转搜索页)
   const cntRes = await pool.query(
-    `SELECT count(*)::int n FROM jobs WHERE company_id = $1 AND COALESCE(status,'open') <> 'closed'`, [c.id])
+    SQL.COMPANY_OPEN_COUNT, [c.id])
   let sources: string[] = []
   try { sources = JSON.parse(c.ai_sources || '[]') } catch { /* ignore */ }
   // #286 获批职业拆分:单独容缺查询(列没建/没灌 → 空数组,弹框整块不渲;不并主 SELECT 防 42703 掀整个弹框)
   let lmiaNocs: NonNullable<CompanyDetail['lmiaNocs']> = []
   try {
-    const nr = await pool.query(`SELECT lmia_nocs FROM companies WHERE id = $1`, [c.id])
+    const nr = await pool.query(SQL.COMPANY_LMIA_NOCS, [c.id])
     const raw = nr.rows[0]?.lmia_nocs
     const dict = typeof raw === 'string' ? JSON.parse(raw) : raw
     if (dict && typeof dict === 'object') {
@@ -609,7 +583,7 @@ async function fetchCompanyWhere(pool: any, where: string, param: unknown): Prom
         .filter(([noc, n]) => /^\d{5}$/.test(noc) && n > 0).sort((a, b) => b[1] - a[1])
       if (entries.length) {
         const nd = await pool.query(
-          `SELECT noc, title, title_zh, title_ko FROM noc_descriptions WHERE noc = ANY($1)`,
+          SQL.NOC_TITLES_BY_CODES,
           [entries.map(([noc]) => noc)]).then((r: any) => r.rows).catch(() => [])
         const nm = new Map<string, any>(nd.map((r: any) => [String(r.noc), r]))
         lmiaNocs = entries.map(([noc, positions]) => {
@@ -642,11 +616,7 @@ export type SimilarEmployer = { slug: string; name: string; industry: string; sp
 export async function fetchSimilarEmployers(pool: any, opts: { province: string; industry: string; excludeSlug: string }): Promise<SimilarEmployer[]> {
   if (!opts.province || !opts.industry) return []
   const { rows } = await pool.query(
-    `SELECT c.slug, c.name, c.industry, c.sponsor_grade, count(j.id)::int open_count
-     FROM companies c JOIN jobs j ON j.company_id = c.id AND COALESCE(j.status,'open') <> 'closed'
-     WHERE c.region = $1 AND c.industry = $2 AND c.slug <> $3 AND c.slug IS NOT NULL AND c.slug <> ''
-     GROUP BY c.id, c.slug, c.name, c.industry, c.sponsor_grade
-     ORDER BY c.sponsor_grade DESC NULLS LAST, count(j.id) DESC LIMIT 6`,
+    SQL.SIMILAR_EMPLOYERS,
     [opts.province, opts.industry, opts.excludeSlug])
   return rows.map((r: any) => ({ slug: r.slug, name: r.name || '', industry: r.industry || '', sponsorGrade: num(r.sponsor_grade), openCount: r.open_count ?? 0 }))
 }
@@ -657,10 +627,7 @@ export type AlertHit = { id: number; title: string; city: string; province: stri
 export async function fetchAlertHits(pool: any, filters: Record<string, unknown>, since: string): Promise<{ rows: AlertHit[]; skipped: string[] }> {
   const w = buildJobsWhere(await resolveQCompanyIds(pool, filters), 2)   // $1 留给 since
   const { rows } = await pool.query(
-    `SELECT j.id, j.title, j.city, j.province, j.salary_text, c.name AS company_name
-     ${JOB_FROM}
-     WHERE j.status = 'open' AND j.first_seen > $1 AND ${w.sql}
-     ORDER BY j.grade_channel DESC NULLS LAST, j.date_posted DESC NULLS LAST LIMIT 20`, [since, ...w.params])
+    SQL.alertHits(w.sql), [since, ...w.params])
   return { rows, skipped: w.skipped }
 }
 
@@ -686,32 +653,18 @@ export async function fetchQuizFacts(pool: any, noc: string): Promise<QuizFacts 
   if (!/^\d{5}$/.test(noc)) return null
   const [tot, prov, stream, desc, spon] = await Promise.all([
     pool.query(
-      `SELECT count(*)::int open,
-              count(*) FILTER (WHERE j.pnp_eligible)::int eligible,
-              count(*) FILTER (WHERE j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')::int named,
-              max(j.teer) teer,
-              percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual) med
-       FROM jobs j WHERE j.status = 'open' AND j.noc = $1`, [noc]),
+      SQL.QUIZ_FACTS_TOTALS, [noc]),
     pool.query(
-      `SELECT j.province, count(*)::int n, count(*) FILTER (WHERE j.pnp_eligible)::int eligible
-       FROM jobs j WHERE j.status = 'open' AND j.noc = $1 AND j.province <> ''
-       GROUP BY j.province ORDER BY count(*) DESC`, [noc]),
+      SQL.QUIZ_FACTS_BY_PROV, [noc]),
     pool.query(
-      `SELECT j.pnp_stream stream, count(*)::int n
-       FROM jobs j WHERE j.status = 'open' AND j.noc = $1 AND j.pnp_stream IS NOT NULL AND j.pnp_stream <> ''
-       GROUP BY j.pnp_stream ORDER BY count(*) DESC LIMIT 4`, [noc]),
+      SQL.QUIZ_FACTS_STREAMS, [noc]),
     // 职业名取 NOC 官方名(noc_descriptions),不能拿某个岗位的标题冒充职业名
-    pool.query(`SELECT COALESCE(title,'') title, COALESCE(title_zh,'') title_zh, COALESCE(title_zh_short,'') title_zh_short,
-              COALESCE(title_ko_short,'') title_ko_short, COALESCE(title_en_short,'') title_en_short
-       FROM noc_descriptions WHERE noc = $1 LIMIT 1`, [noc]),
+    pool.query(SQL.NOC_TITLE_ONE, [noc]),
     // 雇主线索的**家数**(M1:把锁区铺到人真正落地的详情页)。
     // WHERE 必须与 reportFacts 的名单口径**逐字一致**:清单式省认具名通道,不公布清单的省(ON)认粗筛可提名 ——
     // 两处对不上,详情页说「有 23 家」、报告里名单却是另一批,用户第一眼就抓到我们数不准(2026-08-01 已撞过一次)。
     pool.query(
-      `SELECT count(DISTINCT j.company_id)::int n FROM jobs j
-       WHERE COALESCE(j.status,'open') <> 'closed' AND j.noc = $1 AND j.company_id IS NOT NULL
-         AND ((j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')
-              OR (j.province = ANY($2::text[]) AND COALESCE(j.pnp_eligible, false)))`,
+      SQL.NOC_EMPLOYER_COUNT,
       [noc, [...NO_LIST_PROVINCES]]).catch(() => ({ rows: [] })),
   ])
   const t = tot.rows[0] || {}
@@ -737,8 +690,7 @@ export async function fetchNocOpenCounts(pool: any, nocs: string[]): Promise<Rec
   const list = nocs.filter((n) => /^\d{5}$/.test(n))
   if (!list.length) return {}
   const { rows } = await pool.query(
-    `SELECT j.noc, count(*)::int n, count(*) FILTER (WHERE j.pnp_eligible)::int eligible
-     FROM jobs j WHERE j.status = 'open' AND j.noc = ANY($1) GROUP BY j.noc`, [list])
+    SQL.NOC_OPEN_COUNTS, [list])
   const out: Record<string, { open: number; eligible: number }> = {}
   for (const r of rows) out[r.noc] = { open: r.n, eligible: r.eligible }
   return out
@@ -755,9 +707,7 @@ export async function fetchTopNocs(pool: any, limit = 24): Promise<{ noc: string
   // 一次索引扫描,不再 GROUP BY、更不再 percentile_cont(旧实现带中位数的 200 行实测 3.2s,
   // 慢到只能靠缓存兜 + 前端分两次拉,用户看到的就是「一点一点刷出来」)。口径见 docs/sql/noc-openings.sql。
   const hit = await pool.query(
-    `SELECT noc, title, title_zh, title_zh_short, title_ko_short, title_en_short, broad,
-            open::int open, eligible::int eligible, median_salary
-       FROM noc_openings ORDER BY open DESC, noc LIMIT $1`, [n],
+    SQL.BROAD_NOCS, [n],
   ).catch(() => null)
   if (hit?.rows?.length) {
     return hit.rows.map((r: any) => ({
@@ -770,15 +720,7 @@ export async function fetchTopNocs(pool: any, limit = 24): Promise<{ noc: string
   // 大清单(按大类浏览)不要中位薪资:percentile_cont 是这条查询的大头,控件里也用不到那个数。
   const withMed = n <= 24
   const { rows } = await pool.query(
-    `SELECT j.noc, COALESCE(d.title, '') title, COALESCE(d.title_zh, '') title_zh, COALESCE(d.title_zh_short, '') title_zh_short,
-            COALESCE(d.title_ko_short, '') title_ko_short, COALESCE(d.title_en_short, '') title_en_short,
-            COALESCE(mode() WITHIN GROUP (ORDER BY j.broad), '') broad,
-            count(*)::int open, count(*) FILTER (WHERE j.pnp_eligible)::int eligible
-            ${withMed ? ', percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual) med' : ''}
-     FROM jobs j JOIN noc_descriptions d ON d.noc = j.noc
-     WHERE j.status = 'open' AND j.noc <> ''
-     GROUP BY j.noc, d.title, d.title_zh, d.title_zh_short, d.title_ko_short, d.title_en_short
-     ORDER BY count(*) DESC LIMIT $1`, [n])
+    SQL.searchNocByTitle(withMed ? ', percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual) med' : ''), [n])
   return rows.map((r: any) => ({ noc: r.noc, title: r.title, titleZh: r.title_zh, titleZhShort: r.title_zh_short, titleKoShort: r.title_ko_short, titleEnShort: r.title_en_short, broad: r.broad, open: r.open, eligible: r.eligible, medianSalary: num(r.med) }))
 }
 
@@ -786,13 +728,7 @@ export async function fetchTopNocs(pool: any, limit = 24): Promise<{ noc: string
 export async function fetchBroadNocs(pool: any, broad: string, limit = 60): Promise<{ noc: string; title: string; titleZh: string; titleZhShort: string; titleKoShort: string; titleEnShort: string; broad: string; open: number; eligible: number }[]> {
   const n = Math.min(Math.max(limit, 1), 80)
   const { rows } = await pool.query(
-    `SELECT j.noc, COALESCE(d.title, '') title, COALESCE(d.title_zh, '') title_zh, COALESCE(d.title_zh_short, '') title_zh_short,
-            COALESCE(d.title_ko_short, '') title_ko_short, COALESCE(d.title_en_short, '') title_en_short,
-            $1::text broad, count(*)::int open, count(*) FILTER (WHERE j.pnp_eligible)::int eligible
-     FROM jobs j JOIN noc_descriptions d ON d.noc = j.noc
-     WHERE j.status = 'open' AND j.noc <> '' AND j.broad = $1
-     GROUP BY j.noc, d.title, d.title_zh, d.title_zh_short, d.title_ko_short, d.title_en_short
-     ORDER BY count(*) DESC LIMIT $2`, [broad, n])
+    SQL.NOC_SEARCH_FALLBACK, [broad, n])
   return rows.map((r: any) => ({ noc: r.noc, title: r.title, titleZh: r.title_zh, titleZhShort: r.title_zh_short, titleKoShort: r.title_ko_short, titleEnShort: r.title_en_short, broad: r.broad, open: r.open, eligible: r.eligible }))
 }
 
@@ -801,10 +737,6 @@ export async function searchNocByTitle(pool: any, q: string): Promise<{ noc: str
   const s = q.trim()
   if (s.length < 2) return []
   const { rows } = await pool.query(
-    `SELECT d.noc, COALESCE(d.title,'') title, COALESCE(d.title_zh,'') title_zh, COALESCE(d.title_zh_short,'') title_zh_short,
-            COALESCE(d.title_ko_short,'') title_ko_short, COALESCE(d.title_en_short,'') title_en_short
-     FROM noc_descriptions d
-     WHERE d.title ILIKE $1 OR d.title_zh ILIKE $1
-     ORDER BY length(COALESCE(d.title,'')) LIMIT 8`, [`%${s}%`])
+    SQL.NOC_BY_TITLE_LIKE, [`%${s}%`])
   return rows.map((r: any) => ({ noc: r.noc, title: r.title, titleZh: r.title_zh, titleZhShort: r.title_zh_short, titleKoShort: r.title_ko_short, titleEnShort: r.title_en_short }))
 }

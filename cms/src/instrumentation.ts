@@ -5,7 +5,7 @@ export async function register() {
   if (process.env.NEXT_RUNTIME !== 'nodejs') return
   setTimeout(async () => {
     try {
-      const { getDb } = await import('@/lib/database')
+      const { getDb } = await import('@/lib/db/database')
       const { getTopNocsCached } = await import('@/lib/quizTop')
       await getTopNocsCached(await getDb(), 24)
     } catch { /* 预热失败:第一位访客回到冷路径,行为同预热前 */ }
