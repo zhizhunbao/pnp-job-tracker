@@ -4,6 +4,7 @@
 import type { MetadataRoute } from 'next'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 // 同 jobs/sitemap.ts:force-dynamic 避免构建期烘焙查库失败(sitemap 访问频次极低)。
 export const dynamic = 'force-dynamic'
@@ -12,8 +13,7 @@ const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com').replac
 export const CO_SHARD_SIZE = 5000
 
 // 「有在招岗的公司」——列表与计数必须同一套条件,否则片数和内容对不上
-const CO_FROM = `FROM companies c JOIN jobs j ON j.company_id = c.id
-   WHERE COALESCE(j.status,'open') <> 'closed' AND c.slug IS NOT NULL AND c.slug <> ''`
+const CO_FROM = SQL.CO_SITEMAP_FROM
 
 async function pool() {
   const payload = await getPayload({ config: await config })
@@ -23,7 +23,7 @@ async function pool() {
 /** 有岗公司数 → 需要几片。库不可达时回落 1 片,绝不 0 片。 */
 export async function companyShardCount(): Promise<number> {
   try {
-    const { rows } = await (await pool()).query(`SELECT count(DISTINCT c.id)::int AS n ${CO_FROM}`)
+    const { rows } = await (await pool()).query(SQL.coSitemapCount(CO_FROM))
     return Math.max(1, Math.ceil((rows[0]?.n ?? 0) / CO_SHARD_SIZE))
   } catch (e) { console.error('[companies-sitemap] count', e); return 1 }
 }
@@ -37,9 +37,7 @@ export default async function sitemap({ id }: { id: number | Promise<number | st
   if (!Number.isFinite(shard)) return []
   try {
     const { rows } = await (await pool()).query(
-      `SELECT c.slug, max(j.last_seen) AS last_seen ${CO_FROM}
-       GROUP BY c.id, c.slug
-       ORDER BY c.id ASC LIMIT $1 OFFSET $2`, [CO_SHARD_SIZE, shard * CO_SHARD_SIZE])
+      SQL.coSitemapPage(CO_FROM), [CO_SHARD_SIZE, shard * CO_SHARD_SIZE])
     return rows.map((r: any) => ({
       url: `${SITE}/companies/${r.slug}`,
       lastModified: r.last_seen ? new Date(r.last_seen) : new Date(),

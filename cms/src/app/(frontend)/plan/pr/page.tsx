@@ -12,6 +12,7 @@ import config from '@/payload.config'
 import { getScoreTables } from '@/lib/scoreTables'
 import { buildTripleWire, type TripleWire } from '@/lib/tripleWire'
 import { Decision, type TvJob } from './Decision'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
 
@@ -33,9 +34,7 @@ export default async function PlanPrPage({ searchParams }: { searchParams: Promi
     const pool = (payload.db as { pool?: { query: (q: string, v?: unknown[]) => Promise<{ rows: Record<string, unknown>[] }> } }).pool
     if (pool) {
       const { rows } = await pool.query(
-        `SELECT j.id, j.title, j.noc, j.teer, COALESCE(j.pnp_stream,'') AS pnp_stream,
-                COALESCE(c.name,'') AS company, COALESCE(j.city,'') AS city, COALESCE(j.province,'') AS province
-         FROM jobs j LEFT JOIN companies c ON c.id = j.company_id WHERE j.id = $1 LIMIT 1`, [jobId],
+        SQL.PR_PLAN_JOBS, [jobId],
       ).catch(() => ({ rows: [] as Record<string, unknown>[] }))
       if (rows.length) {
         const r = rows[0]

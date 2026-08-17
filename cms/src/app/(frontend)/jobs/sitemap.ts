@@ -12,6 +12,7 @@
 import type { MetadataRoute } from 'next'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 // 生产坑(2026-07-20 首跑):sitemap 路由默认构建期静态烘焙——Render 构建容器查库失败 → 空片被烘死。
 // force-dynamic=请求时现查(sitemap 访问频次极低,动态查无压力)。
@@ -29,7 +30,7 @@ async function pool() {
 /** 在招岗数 → 需要几片。库不可达时回落 1 片(空片无害),绝不 0 片(0 片 = 整个 sitemap 消失)。 */
 export async function jobShardCount(): Promise<number> {
   try {
-    const { rows } = await (await pool()).query(`SELECT count(*)::int AS n FROM jobs WHERE ${ACTIVE}`)
+    const { rows } = await (await pool()).query(SQL.jobsSitemapCount(ACTIVE))
     return Math.max(1, Math.ceil((rows[0]?.n ?? 0) / SHARD_SIZE))
   } catch (e) { console.error('[jobs-sitemap] count', e); return 1 }
 }
@@ -44,8 +45,7 @@ export default async function sitemap({ id }: { id: number | Promise<number | st
   if (!Number.isFinite(shard)) return []
   try {
     const { rows } = await (await pool()).query(
-      `SELECT id, last_seen FROM jobs WHERE ${ACTIVE}
-       ORDER BY id ASC LIMIT $1 OFFSET $2`, [SHARD_SIZE, shard * SHARD_SIZE])
+      SQL.jobsSitemapPage(ACTIVE), [SHARD_SIZE, shard * SHARD_SIZE])
     return rows.map((r: any) => ({
       url: `${SITE}/jobs/${r.id}`,
       lastModified: r.last_seen ? new Date(r.last_seen) : new Date(),

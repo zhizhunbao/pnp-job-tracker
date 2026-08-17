@@ -629,4 +629,110 @@ export const JD_STATE_BY_URL = `SELECT id, employment_term, employment_hours, jd
 
 // ── app/api/jdformat/route.ts ──
 
+/* ══════════════════════════════════════════════════════════════════════════
+   19) 新闻与评论
+   ══════════════════════════════════════════════════════════════════════════ */
 
+// ── app/(frontend)/news/page.tsx ──
+
+export const NEWS_LIST = `SELECT region, title, date, slug, og_image AS "ogImage", excerpt,
+                   importance, importance_note AS "importanceNote"
+            FROM news ORDER BY date DESC, id ASC LIMIT 60`
+
+export const NEWS_LIST_REGION = `SELECT region, title, date, slug, og_image AS "ogImage", excerpt,
+                   importance, importance_note AS "importanceNote", summary_zh AS "summaryZh", summary_ko AS "summaryKo"
+            FROM news WHERE importance IS NOT NULL ORDER BY importance DESC, date DESC LIMIT 5`
+
+export const NEWS_COMMENT_COUNTS = `SELECT news_slug AS slug, count(*)::int AS n FROM comments WHERE status = 'approved' GROUP BY news_slug`
+
+// ── app/(frontend)/news/[slug]/page.tsx ──
+
+export const newsBySlug = (a1: string) => `SELECT region, title, date, slug, url, og_image AS "ogImage", body_en AS "bodyEn", body_zh AS "bodyZh", body_ko AS "bodyKo",
+            summary_zh AS "summaryZh", summary_ko AS "summaryKo", ${a1} AS "summaryEn",
+            importance, importance_note AS "importanceNote", citation, fetched, '' AS excerpt
+     FROM news WHERE slug = $1 LIMIT 1`
+
+export const NEWS_COMMENTS_THREADED = `SELECT c.id, c.parent_id AS "parentId", COALESCE(c.pinned,false) AS pinned,
+                   (u.role = 'admin') AS official, c.author_name AS "authorName", c.body,
+                   to_char(c.created_at, 'YYYY-MM-DD') AS date
+            FROM comments c LEFT JOIN users u ON u.id = c.user_id
+            WHERE c.news_slug = $1 AND c.status = 'approved' ORDER BY c.created_at ASC LIMIT 200`
+
+export const NEWS_COMMENTS_FLAT = `SELECT c.id, NULL AS "parentId", false AS pinned, (u.role = 'admin') AS official,
+                     c.author_name AS "authorName", c.body, to_char(c.created_at, 'YYYY-MM-DD') AS date
+              FROM comments c LEFT JOIN users u ON u.id = c.user_id
+              WHERE c.news_slug = $1 AND c.status = 'approved' ORDER BY c.created_at ASC LIMIT 200`
+
+// ── app/(frontend)/jobs/page.tsx ──
+
+export const NEWS_SLIM_60 = `SELECT region, title, date, slug FROM news ORDER BY date DESC, id ASC LIMIT 60`
+
+/* ══════════════════════════════════════════════════════════════════════════
+   20) 站点地图(分片)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+// ── app/(frontend)/jobs/sitemap.ts ──
+
+export const jobsSitemapCount = (a1: string) => `SELECT count(*)::int AS n FROM jobs WHERE ${a1}`
+
+export const jobsSitemapPage = (a1: string) => `SELECT id, last_seen FROM jobs WHERE ${a1}
+       ORDER BY id ASC LIMIT $1 OFFSET $2`
+
+// ── app/(frontend)/companies/sitemap.ts ──
+
+export const CO_SITEMAP_FROM = `FROM companies c JOIN jobs j ON j.company_id = c.id
+   WHERE COALESCE(j.status,'open') <> 'closed' AND c.slug IS NOT NULL AND c.slug <> ''`
+
+export const coSitemapCount = (a1: string) => `SELECT count(DISTINCT c.id)::int AS n ${a1}`
+
+export const coSitemapPage = (a1: string) => `SELECT c.slug, max(j.last_seen) AS last_seen ${a1}
+       GROUP BY c.id, c.slug
+       ORDER BY c.id ASC LIMIT $1 OFFSET $2`
+
+/* ══════════════════════════════════════════════════════════════════════════
+   21) 漏斗看板(/funnel)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+// ── app/(frontend)/funnel/page.tsx ──
+
+export const FUNNEL_EVENTS = `SELECT event, prop,
+              COALESCE(sum(n) FILTER (WHERE day > CURRENT_DATE - 30), 0)::int d30,
+              COALESCE(sum(n) FILTER (WHERE day > CURRENT_DATE - 7),  0)::int d7,
+              COALESCE(sum(n) FILTER (WHERE day = CURRENT_DATE - 1),  0)::int d1
+       FROM funnel_events GROUP BY event, prop`
+
+export const FUNNEL_USERS = `SELECT count(pro_until)::int pro,
+                   count(*) FILTER (WHERE stripe_sessions IS NOT NULL AND stripe_sessions::text NOT IN ('[]','null','""'))::int stripe
+            FROM users`
+
+/* ══════════════════════════════════════════════════════════════════════════
+   22) 详情页 SSR / OG 图 / 初评表
+   ══════════════════════════════════════════════════════════════════════════ */
+
+// ── app/(frontend)/jobs/[id]/page.tsx ──
+
+export const JD_BY_JOB_ID = `SELECT description FROM jobs WHERE id = $1 LIMIT 1`
+
+export const JOB_META_BY_ID = `SELECT j.title, c.name AS company, j.city, j.province, j.salary_text, j.status FROM jobs j
+     LEFT JOIN companies c ON c.id = j.company_id WHERE j.id = $1 LIMIT 1`
+
+// ── app/(frontend)/jobs/[id]/opengraph-image.tsx ──
+
+export const JOB_OG_BY_ID = `SELECT j.title, c.name AS company, j.city, j.province, j.salary_text, j.salary, j.pnp_eligible, j.teer FROM jobs j
+       LEFT JOIN companies c ON c.id = j.company_id WHERE j.id = $1 LIMIT 1`
+
+// ── app/(frontend)/plan/pr/page.tsx ──
+
+export const PR_PLAN_JOBS = `SELECT j.id, j.title, j.noc, j.teer, COALESCE(j.pnp_stream,'') AS pnp_stream,
+                COALESCE(c.name,'') AS company, COALESCE(j.city,'') AS city, COALESCE(j.province,'') AS province
+         FROM jobs j LEFT JOIN companies c ON c.id = j.company_id WHERE j.id = $1 LIMIT 1`
+
+// ── app/(frontend)/start/page.tsx ──
+
+export const NOC_ALL_TITLES = `SELECT noc, title, COALESCE(title_zh, '') AS title_zh FROM noc_descriptions ORDER BY title`
+
+export const PNP_DRAWS_RECENT = `SELECT * FROM pnp_draws
+      WHERE (score IS NOT NULL OR invitations IS NOT NULL) AND COALESCE(draw_date,'') <> ''
+      ORDER BY draw_date DESC LIMIT 400`
+
+export const NEWS_RECENT_80 = `SELECT * FROM news ORDER BY date DESC, id DESC LIMIT 80`

@@ -9,6 +9,7 @@ import config from '@/payload.config'
 import { getUser } from '@/lib/entitlement'
 import { CHAT_STEPS, DECISION_STEPS, FUNNEL_STEPS, LEGACY_STEPS, chatRates, decisionRates, stepRates } from '@/lib/funnel'
 import { Funnel, type FunnelRow } from './Funnel'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
 
@@ -33,11 +34,7 @@ export default async function FunnelPage() {
   const pool = (payload.db as any).pool
   const raw: { event: string; prop: string; d30: number; d7: number; d1: number }[] = await pool
     .query(
-      `SELECT event, prop,
-              COALESCE(sum(n) FILTER (WHERE day > CURRENT_DATE - 30), 0)::int d30,
-              COALESCE(sum(n) FILTER (WHERE day > CURRENT_DATE - 7),  0)::int d7,
-              COALESCE(sum(n) FILTER (WHERE day = CURRENT_DATE - 1),  0)::int d1
-       FROM funnel_events GROUP BY event, prop`,
+      SQL.FUNNEL_EVENTS,
     )
     .then((r: any) => r.rows.map((x: any) => ({ event: x.event, prop: x.prop ?? '', d30: Number(x.d30 ?? 0), d7: Number(x.d7 ?? 0), d1: Number(x.d1 ?? 0) })))
     .catch(() => [])   // 表还没建 → 空页面照常渲染(说「还没有任何计数」),不 500
@@ -68,9 +65,7 @@ export default async function FunnelPage() {
   // 信号用 stripe_sessions(webhook 拨 proUntil 时写的 session id),**不用 stripe_customer_id**:
   // 2026-08-01 实核 92 个用户里那一列一个都没有,拿它当付费信号会永远显示 0 = 假数。
   const { pro, stripe } = await pool
-    .query(`SELECT count(pro_until)::int pro,
-                   count(*) FILTER (WHERE stripe_sessions IS NOT NULL AND stripe_sessions::text NOT IN ('[]','null','""'))::int stripe
-            FROM users`)
+    .query(SQL.FUNNEL_USERS)
     .then((r: any) => ({ pro: Number(r.rows[0]?.pro ?? 0), stripe: Number(r.rows[0]?.stripe ?? 0) }))
     .catch(() => ({ pro: 0, stripe: 0 }))
 

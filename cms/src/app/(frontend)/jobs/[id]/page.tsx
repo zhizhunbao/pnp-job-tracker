@@ -11,6 +11,7 @@ import { FREE_MATCH_JOBS_PER_DAY } from '@/lib/plan'
 import { hasProfile, normalizeProfile } from '@/lib/match'
 import { fetchJobById, fetchRelatedJobs } from '@/lib/jobsSql'
 import Job from './Job'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
 
@@ -26,7 +27,7 @@ const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com').replac
 async function fetchJdText(id: number, pool: any): Promise<string> {
   if (!Number.isFinite(id)) return ''
   try {
-    const { rows } = await pool.query(`SELECT description FROM jobs WHERE id = $1 LIMIT 1`, [id])
+    const { rows } = await pool.query(SQL.JD_BY_JOB_ID, [id])
     return String(rows[0]?.description || '').trim()
   } catch {
     return ''   // 取不到就退拼装串,不因为 SEO 增强把整页拖挂
@@ -39,8 +40,7 @@ async function fetchMetaRow(id: number) {
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
   const { rows } = await pool.query(
-    `SELECT j.title, c.name AS company, j.city, j.province, j.salary_text, j.status FROM jobs j
-     LEFT JOIN companies c ON c.id = j.company_id WHERE j.id = $1 LIMIT 1`, [id])
+    SQL.JOB_META_BY_ID, [id])
   return rows[0] || null
 }
 

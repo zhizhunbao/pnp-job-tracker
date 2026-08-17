@@ -7,6 +7,7 @@ import config from '@/payload.config'
 import { getUser } from '@/lib/entitlement'
 import { NewsDetail } from '../News'
 import { newsRegionName, type NewsComment, type NewsRow } from '../shared'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
 
@@ -14,10 +15,7 @@ async function loadRow(slug: string): Promise<NewsRow | null> {
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
   const q = (withEn: boolean) => pool.query(
-    `SELECT region, title, date, slug, url, og_image AS "ogImage", body_en AS "bodyEn", body_zh AS "bodyZh", body_ko AS "bodyKo",
-            summary_zh AS "summaryZh", summary_ko AS "summaryKo", ${withEn ? 'summary_en' : 'NULL'} AS "summaryEn",
-            importance, importance_note AS "importanceNote", citation, fetched, '' AS excerpt
-     FROM news WHERE slug = $1 LIMIT 1`, [slug])
+    SQL.newsBySlug(withEn ? 'summary_en' : 'NULL'), [slug])
   // schema 容错(P1f 事故教训:引用未建列把全部详情页打成 404):summary_en 缺列时退回 NULL 版,DDL 到位自动启用
   return q(true)
     .then((r: { rows: NewsRow[] }) => r.rows[0] ?? null)
@@ -45,17 +43,10 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
   // (顶层=置顶先、再时间倒序;楼内回复保持时间正序)。parent_id/pinned 列缺(DDL 未跑)时回退老查询。
   const pool = (payload.db as any).pool
   const comments: NewsComment[] = await pool
-    .query(`SELECT c.id, c.parent_id AS "parentId", COALESCE(c.pinned,false) AS pinned,
-                   (u.role = 'admin') AS official, c.author_name AS "authorName", c.body,
-                   to_char(c.created_at, 'YYYY-MM-DD') AS date
-            FROM comments c LEFT JOIN users u ON u.id = c.user_id
-            WHERE c.news_slug = $1 AND c.status = 'approved' ORDER BY c.created_at ASC LIMIT 200`, [slug])
+    .query(SQL.NEWS_COMMENTS_THREADED, [slug])
     .then((r: { rows: NewsComment[] }) => r.rows)
     .catch(() => pool
-      .query(`SELECT c.id, NULL AS "parentId", false AS pinned, (u.role = 'admin') AS official,
-                     c.author_name AS "authorName", c.body, to_char(c.created_at, 'YYYY-MM-DD') AS date
-              FROM comments c LEFT JOIN users u ON u.id = c.user_id
-              WHERE c.news_slug = $1 AND c.status = 'approved' ORDER BY c.created_at ASC LIMIT 200`, [slug])
+      .query(SQL.NEWS_COMMENTS_FLAT, [slug])
       .then((r: { rows: NewsComment[] }) => r.rows)
       .catch(() => []))
   const user = await getUser(await headers())

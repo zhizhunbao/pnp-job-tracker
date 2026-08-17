@@ -3,6 +3,7 @@
 import { ImageResponse } from 'next/og'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
@@ -15,8 +16,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
     const payload = await getPayload({ config: await config })
     const pool = (payload.db as any).pool
     const res = await pool.query(
-      `SELECT j.title, c.name AS company, j.city, j.province, j.salary_text, j.salary, j.pnp_eligible, j.teer FROM jobs j
-       LEFT JOIN companies c ON c.id = j.company_id WHERE j.id = $1 LIMIT 1`, [Number(id)])
+      SQL.JOB_OG_BY_ID, [Number(id)])
     r = res.rows[0] || null
   } catch { /* 查库失败 → 兜底品牌图 */ }
 

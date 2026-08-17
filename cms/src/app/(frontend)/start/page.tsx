@@ -16,6 +16,7 @@ import { loadOccStats, loadProvExtra } from '../stats/lib'
 import { PROVS } from '../stats/shared'
 import { Pulse, type HomeStats } from './Pulse'
 import { buildSponsorBoards, fetchSponsorEmployers, SE_SSR_ROWS } from '@/lib/sponsorEmployers'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
 
@@ -67,7 +68,7 @@ function withDrawHistory(rows: RawDraw[], limit: number): HomeStats['draws'] {
 let occCache: { ts: number; rows: { noc: string; title: string; titleZh: string }[] } | null = null
 async function occOptions(pool: any) {
   if (occCache && Date.now() - occCache.ts < 3600_000) return occCache.rows
-  const { rows } = await pool.query(`SELECT noc, title, COALESCE(title_zh, '') AS title_zh FROM noc_descriptions ORDER BY title`).catch(() => ({ rows: [] }))
+  const { rows } = await pool.query(SQL.NOC_ALL_TITLES).catch(() => ({ rows: [] }))
   occCache = { ts: Date.now(), rows: rows.map((r: any) => ({ noc: r.noc, title: r.title ?? '', titleZh: r.title_zh ?? '' })) }
   return occCache.rows
 }
@@ -94,12 +95,10 @@ async function loadHomeStats(pool: any, payload: any): Promise<Omit<HomeStats, '
     // 但冷解读要按通道回看 12 期 —— 多取一批只在服务端用完即丢,不进 HTML
     // #280:SELECT *(不点名 stream_zh)—— 同 news.title_zh 的容缺手法:DDL 没跑前该列不存在,
     // 点名会整块炸(catch 吞掉会连累score/invitations 一起消失);* 容缺列,400 行无压力
-    pool.query(`SELECT * FROM pnp_draws
-      WHERE (score IS NOT NULL OR invitations IS NOT NULL) AND COALESCE(draw_date,'') <> ''
-      ORDER BY draw_date DESC LIMIT 400`).then((r: any) => r.rows as RawDraw[]).catch(() => []),
+    pool.query(SQL.PNP_DRAWS_RECENT).then((r: any) => r.rows as RawDraw[]).catch(() => []),
     // 多取几条再按标题去重(同题新闻隔日重抓会出重复行);前端 Top N 下拉再切
     // SELECT *:title_zh 列(E13-06)可能还没加,点名会整块炸;* 容缺列,80 行无压力
-    pool.query(`SELECT * FROM news ORDER BY date DESC, id DESC LIMIT 80`)
+    pool.query(SQL.NEWS_RECENT_80)
       .then((r: any) => r.rows as any[]).catch(() => []),
     loadProvExtra().catch(() => ({})),      // 省卡:IRCC 学签/工签/PNP 拿到 PR + 难度档(与 /stats 索引页同源)
     // B2+ 雇主橱窗:复用进程内聚合缓存(同进程同一份,零额外查询);挂了只丢橱窗

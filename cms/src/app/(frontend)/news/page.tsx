@@ -5,6 +5,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { News } from './News'
 import type { NewsCard, NewsHero } from './shared'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
 
@@ -19,21 +20,17 @@ export default async function NewsPage() {
   const pool = (payload.db as any).pool
   // excerpt=mart 清洗产物(P1c);importance=AI 重要度(P1d,徽标+只看重要)
   const itemsP = pool
-    .query(`SELECT region, title, date, slug, og_image AS "ogImage", excerpt,
-                   importance, importance_note AS "importanceNote"
-            FROM news ORDER BY date DESC, id ASC LIMIT 60`)
+    .query(SQL.NEWS_LIST)
     .then((r: { rows: NewsCard[] }) => r.rows.map((n) => ({ ...n, importance: n.importance == null ? null : Number(n.importance) })))
     .catch(() => [])
   // banner TOP5(v3 拍板):重要度降序、同分新的在前;摘要用中文速读(summaryZh,EN/KO 界面退 excerpt)
   const heroP = pool
-    .query(`SELECT region, title, date, slug, og_image AS "ogImage", excerpt,
-                   importance, importance_note AS "importanceNote", summary_zh AS "summaryZh", summary_ko AS "summaryKo"
-            FROM news WHERE importance IS NOT NULL ORDER BY importance DESC, date DESC LIMIT 5`)
+    .query(SQL.NEWS_LIST_REGION)
     .then((r: { rows: NewsHero[] }) => r.rows.map((n) => ({ ...n, importance: Number(n.importance) })))
     .catch(() => [])
   // 评论数(approved 才计;comments 表未建/空 → 全 0)
   const cmtP = pool
-    .query(`SELECT news_slug AS slug, count(*)::int AS n FROM comments WHERE status = 'approved' GROUP BY news_slug`)
+    .query(SQL.NEWS_COMMENT_COUNTS)
     .then((r: { rows: { slug: string; n: number }[] }) => Object.fromEntries(r.rows.map((x) => [x.slug, x.n])))
     .catch(() => ({}))
   const [items, hero, cmtCounts] = await Promise.all([itemsP, heroP, cmtP])

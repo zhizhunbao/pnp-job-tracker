@@ -10,6 +10,7 @@ import { getUser, isPro } from '@/lib/entitlement'
 import { FREE_MATCH_JOBS_PER_DAY } from '@/lib/plan'
 import { normalizeProfile, hasProfile } from '@/lib/match'
 import { fetchJobRows, fetchJobsPage, fetchTotalAndProof } from '@/lib/jobsSql'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 // 首屏行数(2026-07-05 用户拍板):SSR 只带最近 N 行秒开,全量 /api/jobs-data 后台拉(拉完筛选/搜索照旧)
 const FIRST_SCREEN_ROWS = 50
@@ -36,7 +37,7 @@ const SSR_DIMS_TTL = 10 * 60_000
 // 移到 /api/dims 后台拉(首屏减 ~1.25MB);它们只在筛选下拉/顾问弹窗用,晚到无碍。
 async function loadDims(payload: Awaited<ReturnType<typeof getPayload>>, pool: any) {
   // 官方移民新闻瘦行(E12-06,PNP 弹框「本省最新公告」):只取 4 列不带正文;表缺/查询失败 → 空(宁可留空)
-  const newsRowsP = pool.query(`SELECT region, title, date, slug FROM news ORDER BY date DESC, id ASC LIMIT 60`)
+  const newsRowsP = pool.query(SQL.NEWS_SLIM_60)
     .then((r: any) => r.rows as { region: string; title: string; date: string; slug: string }[])
     .catch(() => [])
   const [provDocs, nocDocs, srcDocs, expDocs, pnpDocs, pnpDrawDocs, eeDocs, fieldSrcDocs] = await Promise.all([
