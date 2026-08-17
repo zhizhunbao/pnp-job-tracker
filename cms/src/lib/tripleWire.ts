@@ -114,7 +114,7 @@ export async function buildTripleWire(id: number, answers: ClientAnswers): Promi
         sector: f.sector ?? null,
       }
     }
-    const nr = await pool.query(SQL.COMPANY_LMIA_NOCS_2, [r.company_id])
+    const nr = await pool.query(SQL.COMPANY_LMIA_NOCS, [r.company_id])
       .catch(() => ({ rows: [] as any[] }))
     const raw = nr.rows[0]?.lmia_nocs
     try {

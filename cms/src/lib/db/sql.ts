@@ -458,7 +458,6 @@ export const TRIPLE_WIRE_JOB = `SELECT j.id, j.title, j.noc, j.teer, j.province,
 
 export const COMPANY_REGISTRY_FACTS = `SELECT founded_year, registry_status, staff_est, staff_est_src, sector FROM companies WHERE id = $1`
 
-export const COMPANY_LMIA_NOCS_2 = `SELECT lmia_nocs FROM companies WHERE id = $1`
 
 // ── caseFacts.ts ──
 
@@ -781,3 +780,78 @@ export const JD_FORMATTED_BY_URL = `SELECT jd_formatted FROM jobs WHERE apply_ur
 export const COMPANY_BRIEF_BY_NAME = `SELECT ai_brief FROM companies WHERE lower(name) = lower($1) AND ai_brief IS NOT NULL LIMIT 1`
 
 export const JOB_APPLY_URL_BY_ID = `SELECT apply_url FROM jobs WHERE id = $1 LIMIT 1`
+
+/* ══════════════════════════════════════════════════════════════════════════
+   25) AI 顾问的事实取数(chatTools)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+// ── lib/chatTools.ts ──
+
+export const PNP_OCCUPATIONS_FLAT = `SELECT province, stream, label, type, noc, url, fetched FROM pnp_occupations`
+
+export const PNP_DRAWS_BY_PROV = `SELECT province, draw_date, stream, score, scale, invitations, url, fetched, label
+     FROM pnp_draws WHERE province = $1 AND COALESCE(draw_date,'') <> ''
+     ORDER BY draw_date DESC`
+
+export const PNP_OPS_METRICS = `SELECT metric, scope, scope_kind, to_jsonb(t) ->> 'stream_key' AS stream_key,
+            label, value, value_text, unit, as_of, period, url, fetched, section
+     FROM pnp_ops_stats t WHERE province = $1 AND COALESCE(url,'') <> ''
+     ORDER BY metric, seq, scope`
+
+export const EE_CATEGORIES_BY_NOC = `SELECT category, label, teer, draw_crs, draw_date, draw_size, url, fetched FROM ee_categories WHERE noc = $1`
+
+export const PERMIT_RULES = `SELECT program, stream, factor, op, value, value_text, unit, basis, label, section, url, page_url, fetched, effective
+     FROM pnp_requirements WHERE province = 'FED' AND program = $1 ORDER BY seq`
+
+export const EE_POINTS_GRID = `SELECT grid, section, section_label, kind, table_no, heading, factor, criterion,
+            column_label, points, points_text, seq, url, fetched
+     FROM ee_points_grid
+     WHERE grid = $1
+       AND ($2 = '' OR section = $2)
+       AND ($3 = '' OR kind = $3)
+       AND ($4 = '' OR factor ILIKE '%' || $4 || '%')
+       AND ($5 = '' OR criterion ILIKE '%' || $5 || '%')
+     ORDER BY seq
+     LIMIT $6`
+
+export const PNP_REQUIREMENTS_ALL = `SELECT province, program, stream, subject, factor, op, value, value_text, unit,
+                   applies_teer, applies_noc, excludes_noc, applies_area,
+                   to_jsonb(q) ->> 'applies_condition' AS applies_condition,
+                   applies_family_size, basis, label, section, seq, effective, url, page_url, fetched
+            FROM pnp_requirements q ORDER BY province, seq`
+
+export const PNP_OCCUPATIONS_FULL = `SELECT province, stream, label, program, type, applies_to, noc, name, gta_restricted, url, fetched
+            FROM pnp_occupations`
+
+export const PNP_DRAWS_FULL = `SELECT province, label, scale, kind, draw_date, stream, score, invitations, note, url, fetched
+            FROM pnp_draws WHERE COALESCE(draw_date,'') <> '' ORDER BY draw_date DESC`
+
+
+export const EE_POINTS_GRID_2 = `SELECT grid, section, section_label, kind, table_no, heading, factor, criterion,
+                   column_label, points, points_text, seq, url, fetched
+            FROM ee_points_grid ORDER BY seq`
+
+export const DESIGNATED_BY_PROV_2 = `SELECT name, province, location, is_tech, source, nocs, url, fetched
+            FROM designated_employers WHERE province = 'NL'`
+
+/* ══════════════════════════════════════════════════════════════════════════
+   26) 顾问的职业码识别(chatOrchestrate)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+// ── lib/chatOrchestrate.ts ──
+
+export const NOC_BY_TITLE_SIMILARITY = `SELECT j.noc, max(similarity(j.title, $1)) AS sim, count(*) AS n
+     FROM jobs j WHERE j.noc IS NOT NULL AND j.noc <> '' AND similarity(j.title, $1) > 0.4
+     GROUP BY j.noc ORDER BY sim DESC, n DESC LIMIT 1`
+
+export const NOC_BY_DESC_SIMILARITY = `SELECT noc FROM noc_descriptions WHERE similarity(title, $1) > 0.4 ORDER BY similarity(title, $1) DESC LIMIT 1`
+
+export const NOC_TITLE_BY_CODE = `SELECT title FROM noc_descriptions WHERE noc = $1 LIMIT 1`
+
+export const NOC_LIST_WITH_TITLES = `SELECT d.noc, COALESCE(d.title, '') title, COALESCE(d.title_zh_short, '') zh,
+              COALESCE(d.title_ko_short, '') ko, COALESCE(d.title_en_short, '') en, count(*)::int n
+       FROM noc_descriptions d JOIN jobs j ON j.noc = d.noc AND j.status = 'open'
+       WHERE d.noc NOT LIKE '0%' AND (d.requirements ILIKE $1 OR d.title ILIKE $1)
+       GROUP BY d.noc, d.title, d.title_zh_short, d.title_ko_short, d.title_en_short
+       HAVING count(*) >= 5
+       ORDER BY count(*) DESC LIMIT $2`

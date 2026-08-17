@@ -29,6 +29,7 @@ import { EDU_KEYS, systemShort, type EduKey } from './pnpSelfScore'
 import type { PlanStep } from './planTimeline'
 import { completeText, LlmError, type ChatMessage } from './llm'
 import { parseLlmJson } from './resumeMatch'
+import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 // ── 契约(前端按这个写,别改)────────────────────────────────────────────────
 
@@ -620,19 +621,17 @@ export async function resolveNoc(pool: any, occEn: string): Promise<{ noc: strin
   const q = occEn.trim().slice(0, 80)
   if (q.length < 3) return null
   const { rows } = await pool.query(
-    `SELECT j.noc, max(similarity(j.title, $1)) AS sim, count(*) AS n
-     FROM jobs j WHERE j.noc IS NOT NULL AND j.noc <> '' AND similarity(j.title, $1) > 0.4
-     GROUP BY j.noc ORDER BY sim DESC, n DESC LIMIT 1`, [q]).catch(() => ({ rows: [] }))
+    SQL.NOC_BY_TITLE_SIMILARITY, [q]).catch(() => ({ rows: [] }))
   let noc = String(rows[0]?.noc ?? '')
   if (!/^\d{5}$/.test(noc)) {
     // 兜底:官方 NOC 类名(在招岗位里没这个工种时仍能认出来,如冷门职业)
     const { rows: d } = await pool.query(
-      `SELECT noc FROM noc_descriptions WHERE similarity(title, $1) > 0.4 ORDER BY similarity(title, $1) DESC LIMIT 1`, [q],
+      SQL.NOC_BY_DESC_SIMILARITY, [q],
     ).catch(() => ({ rows: [] }))
     noc = String(d[0]?.noc ?? '')
   }
   if (!/^\d{5}$/.test(noc)) return null
-  const { rows: t } = await pool.query(`SELECT title FROM noc_descriptions WHERE noc = $1 LIMIT 1`, [noc]).catch(() => ({ rows: [] }))
+  const { rows: t } = await pool.query(SQL.NOC_TITLE_BY_CODE, [noc]).catch(() => ({ rows: [] }))
   return { noc, title: String(t[0]?.title ?? '') }
 }
 
@@ -723,13 +722,7 @@ export async function suggestOccupations(pool: any, field: string, lang: ChatLan
   const run = async (q: string) => {
     const like = `%${q.replace(/[%_\\]/g, '\\$&')}%`
     const { rows } = await pool.query(
-      `SELECT d.noc, COALESCE(d.title, '') title, COALESCE(d.title_zh_short, '') zh,
-              COALESCE(d.title_ko_short, '') ko, COALESCE(d.title_en_short, '') en, count(*)::int n
-       FROM noc_descriptions d JOIN jobs j ON j.noc = d.noc AND j.status = 'open'
-       WHERE d.noc NOT LIKE '0%' AND (d.requirements ILIKE $1 OR d.title ILIKE $1)
-       GROUP BY d.noc, d.title, d.title_zh_short, d.title_ko_short, d.title_en_short
-       HAVING count(*) >= 5
-       ORDER BY count(*) DESC LIMIT $2`, [like, limit + 2]).catch(() => ({ rows: [] }))
+      SQL.NOC_LIST_WITH_TITLES, [like, limit + 2]).catch(() => ({ rows: [] }))
     // 垫底那条不是候选,是噪音:「读 IT」的官方要求文本会连带命中「图书档案技术员」(8 个岗,榜首 112)。
     // 判据用**相对量**不用绝对量 —— 冷门专业整行都小,写死一个门槛会把它的真候选一起砍掉。
     const top = Number(rows[0]?.n ?? 0)

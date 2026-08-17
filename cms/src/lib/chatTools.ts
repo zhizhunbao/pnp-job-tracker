@@ -28,6 +28,7 @@ import { evaluateRequirements, type Requirement, type ReqSubject, type RuleProfi
 import type { ScoreFactor } from './pnpSelfScore'
 import type { EeGridRow } from './crsEstimate'
 import { checkedAt } from './jobsSql'
+import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 // ── 公共类型 ────────────────────────────────────────────────────────────────
 
@@ -263,7 +264,7 @@ export type CoverageResult = { noc: string; provinces: ProvCoverage[] }
 export async function lookupCoverage(pool: any, args: { noc: string; provs?: string[] }): Promise<CoverageResult> {
   const noc = (args.noc || '').trim()
   const { rows } = await pool.query(
-    `SELECT province, stream, label, type, noc, url, fetched FROM pnp_occupations`,
+    SQL.PNP_OCCUPATIONS_FLAT,
   ).catch(() => ({ rows: [] }))
   const dims: MatchDims = {
     pnpOccupations: rows.map((r: any) => ({ province: r.province ?? '', label: r.label ?? '', type: r.type ?? '', noc: r.noc ?? '', url: r.url ?? '', fetched: r.fetched ?? '' })),
@@ -433,9 +434,7 @@ export async function lookupDraws(pool: any, args: { prov: string; limit?: numbe
   // 不再在 SQL 里 LIMIT:窗口(最早一轮 / 总轮数)要按**全部**记录算,limit 只截最终 rows。
   // pnp_draws 全表百行量级,一次取完比多跑一条 count 查询便宜。
   const { rows } = await pool.query(
-    `SELECT province, draw_date, stream, score, scale, invitations, url, fetched, label
-     FROM pnp_draws WHERE province = $1 AND COALESCE(draw_date,'') <> ''
-     ORDER BY draw_date DESC`, [province],
+    SQL.PNP_DRAWS_BY_PROV, [province],
   ).catch(() => ({ rows: [] }))
   const kept = (rows ?? []).filter((r: any) => !!r.url)   // 无出处的抽选行不返回(铁律 ①)
   const evOf = (r: any): Evidence => ({ url: r.url, fetched: r.fetched ?? '', label: r.label ?? '' })
@@ -582,10 +581,7 @@ export async function lookupOps(pool: any, args: { prov: string }): Promise<OpsR
   const { rows } = await pool.query(
     // stream_key 走 to_jsonb 取:列缺失时返回 NULL 而不是 42703。additive 列上生产**之前**这段代码
     // 也能照常查(否则整表查询报错 → 全省回落 not-collected,DDL/push 谁先谁后就成了线上开关)。
-    `SELECT metric, scope, scope_kind, to_jsonb(t) ->> 'stream_key' AS stream_key,
-            label, value, value_text, unit, as_of, period, url, fetched, section
-     FROM pnp_ops_stats t WHERE province = $1 AND COALESCE(url,'') <> ''
-     ORDER BY metric, seq, scope`, [province],
+    SQL.PNP_OPS_METRICS, [province],
   ).catch(() => ({ rows: [] }))
   const metrics: OpsMetric[] = (rows ?? []).map((r: any) => ({
     key: r.metric ?? '', scope: r.scope ?? '', scopeKind: r.scope_kind ?? '',
@@ -635,7 +631,7 @@ export async function lookupEE(pool: any, args: { noc: string }): Promise<EeResu
   const noc = (args.noc || '').trim()
   if (!/^\d{5}$/.test(noc)) return { noc, availability: 'not-collected', matched: false, rows: [], note: '职业码不是 5 位 NOC,查不了' }
   const { rows } = await pool.query(
-    `SELECT category, label, teer, draw_crs, draw_date, draw_size, url, fetched FROM ee_categories WHERE noc = $1`, [noc],
+    SQL.EE_CATEGORIES_BY_NOC, [noc],
   ).catch(() => ({ rows: null }))
   if (rows == null) return { noc, availability: 'not-collected', matched: false, rows: [], note: '本站 EE 类别表暂不可用' }
   const out = rows
@@ -698,8 +694,7 @@ export async function lookupPermit(pool: any, args: { program?: string; factor?:
   const program = (args.program || 'PGWP').trim()
   const factor = (args.factor || '').trim()
   const { rows } = await pool.query(
-    `SELECT program, stream, factor, op, value, value_text, unit, basis, label, section, url, page_url, fetched, effective
-     FROM pnp_requirements WHERE province = 'FED' AND program = $1 ORDER BY seq`, [program],
+    SQL.PERMIT_RULES, [program],
   ).catch(() => ({ rows: [] }))
   const all: PermitRule[] = (rows ?? [])
     .filter((r: any) => !!(r.url || r.page_url))          // 无出处的规则不返回(铁律 ①)
@@ -790,16 +785,7 @@ export async function lookupCrs(pool: any, args: CrsLookupArgs): Promise<CrsResu
   const criterion = (args.criterion || '').trim()
   const limit = Math.min(Math.max(args.limit ?? 240, 1), 240)
   const result = await pool.query(
-    `SELECT grid, section, section_label, kind, table_no, heading, factor, criterion,
-            column_label, points, points_text, seq, url, fetched
-     FROM ee_points_grid
-     WHERE grid = $1
-       AND ($2 = '' OR section = $2)
-       AND ($3 = '' OR kind = $3)
-       AND ($4 = '' OR factor ILIKE '%' || $4 || '%')
-       AND ($5 = '' OR criterion ILIKE '%' || $5 || '%')
-     ORDER BY seq
-     LIMIT $6`, [grid, section, kind, factor, criterion, limit],
+    SQL.EE_POINTS_GRID, [grid, section, kind, factor, criterion, limit],
   ).catch(() => null)
   if (!result) return { grid, availability: 'not-collected', rows: [], note: `本站 ${grid} 官方计分表暂不可用` }
   const rows: CrsRow[] = (result.rows ?? [])
@@ -1082,25 +1068,14 @@ export async function loadVerdictData(pool: any): Promise<VerdictData> {
   const [reqRows, occRows, drawRows, factorRows, gridRows, empRows] = await Promise.all([
     // applies_condition 走 to_jsonb 取(同 reportFacts):列缺失时返回 NULL 而不是 42703 —— 
     // additive 列上生产**之前**这段也能照常查,不让 DDL/push 谁先谁后变成线上开关
-    rowsOf(`SELECT province, program, stream, subject, factor, op, value, value_text, unit,
-                   applies_teer, applies_noc, excludes_noc, applies_area,
-                   to_jsonb(q) ->> 'applies_condition' AS applies_condition,
-                   applies_family_size, basis, label, section, seq, effective, url, page_url, fetched
-            FROM pnp_requirements q ORDER BY province, seq`),
-    rowsOf(`SELECT province, stream, label, program, type, applies_to, noc, name, gta_restricted, url, fetched
-            FROM pnp_occupations`),
-    rowsOf(`SELECT province, label, scale, kind, draw_date, stream, score, invitations, note, url, fetched
-            FROM pnp_draws WHERE COALESCE(draw_date,'') <> '' ORDER BY draw_date DESC`),
-    rowsOf(`SELECT province, system, factor, kind, seq, label, points, xor_prev, rule,
-                   factor_max, factor_group, group_max, pass_mark, max_total, guide_effective, url, fetched
-            FROM pnp_score_factors ORDER BY province, factor, seq`),
-    rowsOf(`SELECT grid, section, section_label, kind, table_no, heading, factor, criterion,
-                   column_label, points, points_text, seq, url, fetched
-            FROM ee_points_grid ORDER BY seq`),
+    rowsOf(SQL.PNP_REQUIREMENTS_ALL),
+    rowsOf(SQL.PNP_OCCUPATIONS_FULL),
+    rowsOf(SQL.PNP_DRAWS_FULL),
+    rowsOf(SQL.PNP_SCORE_FACTORS),
+    rowsOf(SQL.EE_POINTS_GRID_2),
     // 指定雇主名录 3476 行里,pathVerdict 只读 NL 那一段(NLPNP 的 supporting fact:
     // 「名录里有几家申报过这个 NOC」,分母也是 NL 自己那 639 家)。整表拉回来纯属浪费带宽。
-    rowsOf(`SELECT name, province, location, is_tech, source, nocs, url, fetched
-            FROM designated_employers WHERE province = 'NL'`),
+    rowsOf(SQL.DESIGNATED_BY_PROV_2),
   ])
 
   const data: VerdictData = {
