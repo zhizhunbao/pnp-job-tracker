@@ -5,6 +5,7 @@
 import { NO_LIST_PROVINCES } from './match'   // 不公布清单的省(ON):雇主线索改用粗筛可提名口径
 import type { ScoreFactor } from './pnpSelfScore'
 import type { Requirement } from './rules'
+import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 
 // ── 事实契约(判定合一批2:report.ts 引擎退役,类型搬回事实层自己家)────────────
 export type OccProvFacts = { province: string; open: number; named: number; apprentice?: number; medianWage?: number | null }
@@ -73,31 +74,23 @@ export async function assembleOccStats(pool: any, noc: string): Promise<OccStats
     medianWage: num(r.median_wage_annual), medianPosted: num(r.median_salary_annual),
   })
   const cols = 's.noc, s.province, s.title_en, s.title_zh, s.title_zh_short, d.title_ko, s.teer, s.broad, s.mid, s.fine, s.open_jobs, s.named_jobs, s.median_wage_annual, s.median_salary_annual'
-  const from = 'FROM stats_occupation s LEFT JOIN noc_descriptions d ON d.noc = s.noc'   // 韩文名的家在 noc_descriptions
+  const from = SQL.OCC_STATS_FROM   // 韩文名的家在 noc_descriptions
   try {
     const [mine, peers, sponsors, sponsorRows] = await Promise.all([
-      pool.query(`SELECT ${cols} ${from} WHERE s.noc = $1`, [noc]),
+      pool.query(SQL.occStatsOne(cols, from), [noc]),
       // 相邻职业(Frank 2026-07-31「干 IT 可能同时适合大数据/AI/全栈/cloud」)。
       // **按 NOC 官方编码层级取,不用本站的中文分类** —— 实测本站 mid='IT' 是个杂物桶(52 个职业里
       // 塞着景观园艺技师、化学技术员、地质学家、生物学家),fine 也有同样的兜底脏值(#126 另账);
       // 而 NOC 2021 的码本身就是层级:前 3 位=minor group(21234 的 212x 就是「工程与 IT 专业」),
       // 前 4 位=unit group。官方层级不受我们自己的错标影响,这才是「相关职业」的可靠依据。
       pool.query(
-        `SELECT ${cols}, CASE WHEN left(s.noc,4) = left($1,4) THEN 1 ELSE 2 END AS kin
-         ${from}
-         WHERE s.province = 'all' AND s.noc <> $1 AND left(s.noc,3) = left($1,3)
-         ORDER BY kin, s.open_jobs DESC NULLS LAST LIMIT 8`, [noc]),
+        SQL.occStatsKin(cols, from), [noc]),
       // 计数与下面的名单**必须同一个 WHERE**(2026-08-01 实撞:计数只算具名、名单还收了 ON 的粗筛可提名岗,
       // 结果「有 83 家」与名单里的 ON 雇主对不上号)
       // B2-2(2026-08-03):同一个 WHERE 里顺手数「其中几家有 ESDC LMIA 获批记录」——
       // 「历史上真办过外籍招聘」是比「发过可提名岗」硬一档的证据,免费层这句 aha 因此更有分量
       pool.query(
-        `SELECT count(DISTINCT j.company_id)::int n,
-                count(DISTINCT j.company_id) FILTER (WHERE COALESCE(co.lmia_positions, 0) > 0)::int lmia_n
-         FROM jobs j JOIN companies co ON co.id = j.company_id
-         WHERE COALESCE(j.status,'open') <> 'closed' AND j.noc = $1
-           AND ((j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')
-                OR (j.province = ANY($2::text[]) AND COALESCE(j.pnp_eligible, false)))`, [noc, [...NO_LIST_PROVINCES]])
+        SQL.OCC_EMPLOYER_COUNTS, [noc, [...NO_LIST_PROVINCES]])
         .catch(() => ({ rows: [] })),
       // 雇主线索名单:按雇主聚合,挂上公司级的 LMIA / AIP 事实。
       // **两种口径都要收**(2026-08-01 实撞:ON 一条都出不来):
@@ -106,21 +99,7 @@ export async function assembleOccStats(pool: any, noc: string): Promise<OccStats
       // 两个数分开存,显示层各说各的话 —— 把 ON 的岗说成「命中清单」就是撒谎。
       // 排序=命中岗多的在前,同数看谁最近还在发(「还在招」比「历史上招过」有用)。
       pool.query(
-        `SELECT co.name, co.slug, co.is_designated_employer aip, co.lmia_positions, co.lmia_last_quarter,
-                count(*) FILTER (WHERE j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')::int named,
-                count(*) FILTER (WHERE COALESCE(j.pnp_eligible, false))::int eligible,
-                (array_agg(j.province ORDER BY j.date_posted DESC NULLS LAST))[1] province,
-                (array_agg(j.city      ORDER BY j.date_posted DESC NULLS LAST))[1] city,
-                max(j.date_posted)::text last_posted
-         FROM jobs j JOIN companies co ON co.id = j.company_id
-         WHERE COALESCE(j.status,'open') <> 'closed' AND j.noc = $1
-           AND ((j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')
-                OR (j.province = ANY($2::text[]) AND COALESCE(j.pnp_eligible, false)))
-         GROUP BY co.id, co.name, co.slug, co.is_designated_employer, co.lmia_positions, co.lmia_last_quarter
-         ORDER BY named DESC, eligible DESC,
-                  (COALESCE(co.lmia_positions, 0) > 0) DESC,
-                  max(j.date_posted) DESC NULLS LAST
-         LIMIT ${SPONSOR_CAP}`, [noc, [...NO_LIST_PROVINCES]]).catch(() => ({ rows: [] })),
+        SQL.occTopEmployers(SPONSOR_CAP), [noc, [...NO_LIST_PROVINCES]]).catch(() => ({ rows: [] })),
     ])
     const rows: OccStat[] = mine.rows.map(row)
     return {
@@ -146,46 +125,31 @@ export async function assembleReportFacts(pool: any, noc: string): Promise<Repor
   const num = (v: any) => (v == null ? null : Number(v))
   const [prov, draws, scoreProv, head, reqs, wages, diff] = await Promise.all([
     pool.query(
-      `SELECT province, count(*)::int open,
-              count(*) FILTER (WHERE pnp_stream IS NOT NULL AND pnp_stream <> '')::int named,
-              count(*) FILTER (WHERE apprentice_friendly)::int apprentice
-       FROM jobs WHERE COALESCE(status,'open') <> 'closed' AND noc = $1 AND COALESCE(province,'') <> ''
-       GROUP BY province`, [noc]),
+      SQL.PROV_OPEN_BY_PROV, [noc]),
     // 省抽选(FED=联邦轮次在引擎里走 EE 独立信号,这里不带);近 120 行足够覆盖各省近 6 次
     pool.query(
       // scale=分制名(SIRS/WEOI/MPNP EOI):PnpDraws collection 自己写着「展示必须带 scale」——
       // 各省分制互不相通,报告摆区间时要印进句子(2026-08-04)
-      `SELECT province, draw_date, stream, score, scale, invitations FROM pnp_draws
-       WHERE score IS NOT NULL AND COALESCE(draw_date,'') <> '' AND province <> 'FED'
-       ORDER BY draw_date DESC LIMIT 120`).catch(() => ({ rows: [] })),
+      SQL.PNP_DRAWS_SCORED).catch(() => ({ rows: [] })),
     // 官方分值表整张取回(120 行级):换省对照节(L2-08)要按行匹档位,不只要省名 ——
     // 省名由这张表派生,原先那条 SELECT DISTINCT 撤掉,少一次往返
     pool.query(
-      `SELECT province, system, factor, kind, seq, label, points, xor_prev, rule,
-              factor_max, factor_group, group_max, pass_mark, max_total, guide_effective, url, fetched
-       FROM pnp_score_factors ORDER BY province, factor, seq`).catch(() => ({ rows: [] })),
+      SQL.PNP_SCORE_FACTORS).catch(() => ({ rows: [] })),
     // 职业名=NOC 官方名(不拿岗位标题冒充);teer 优先统计表,缺行退 NOC 码第 2 位(2021 版编码即 TEER,结构事实)
     pool.query(
-      `SELECT COALESCE(s.title_en, d.title, '') title, s.teer
-       FROM noc_descriptions d LEFT JOIN stats_occupation s ON s.noc = d.noc AND s.province = 'all'
-       WHERE d.noc = $1 LIMIT 1`, [noc]).catch(() => ({ rows: [] })),
+      SQL.NOC_TITLE_TEER, [noc]).catch(() => ({ rows: [] })),
     // 官方门槛(规则引擎输入):全表也就几十行,整张取回,按省的筛选交给引擎(纯函数好测)
     pool.query(
       // applies_condition 走 to_jsonb 取:列缺失时返回 NULL 而不是 42703 —— additive 列上生产**之前**
       // 这段代码也能照常查(否则整表查询报错 → 门槛全省回落「本站未收录」,DDL/push 谁先谁后成了线上开关)
-      `SELECT province, program, stream, subject, factor, op, value, value_text, unit,
-              applies_teer, applies_noc, excludes_noc, applies_area,
-              to_jsonb(q) ->> 'applies_condition' AS applies_condition,
-              applies_family_size, basis, label, section, effective, url, page_url, fetched
-       FROM pnp_requirements q ORDER BY province, seq`).catch(() => ({ rows: [] })),
+      SQL.PNP_REQUIREMENTS).catch(() => ({ rows: [] })),
     // 最低收入门槛的对照基准=该职业在该省的 ESDC 官方中位年薪(岗位自带的事实,不问用户)
     pool.query(
-      `SELECT province, median_wage_annual FROM stats_occupation WHERE noc = $1 AND province <> 'all'`, [noc])
+      SQL.OCC_MEDIAN_BY_PROV, [noc])
       .catch(() => ({ rows: [] })),
     // 省难度(E12-07;与 /stats DifficultyCard、地点弹框同一行 broad='all',不 fork 口径)
     pool.query(
-      `SELECT province, difficulty FROM stats
-       WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL`)
+      SQL.PROV_DIFFICULTY)
       .catch(() => ({ rows: [] })),
   ])
   const h = head.rows[0] ?? {}

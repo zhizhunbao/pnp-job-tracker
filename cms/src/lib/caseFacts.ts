@@ -8,6 +8,7 @@
 // 案例库 `caseLibrary.ts` 里仍然只有画像与问题。
 import { CASES } from './caseLibrary'
 import { pathVerdict, type PathwayVerdict, type VerdictData, type VerdictProfile } from './pathVerdict'
+import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 
 export type CaseAnswer = {
   /** 他点名问的那条通道(中介推的那个省)—— 摆在最前面 */
@@ -83,9 +84,7 @@ export async function caseAnswer(slug: string, data: VerdictData, sql: Sql): Pro
 
   // 一次查两列:该职业各省在招岗数 n,其中官方标了带训/不要经验的 t(apprentice_friendly,05e)
   const byProv = await sql(
-    `SELECT province, count(*)::int n, count(*) FILTER (WHERE apprentice_friendly)::int t
-     FROM jobs WHERE noc = $1 AND status <> 'closed'
-     GROUP BY province`, [spec.profile.noc],
+    SQL.CASE_PROV_COUNTS, [spec.profile.noc],
   ).then((r) => r.rows as { province: string; n: number; t: number }[]).catch(() => [])
   const openings: CaseAnswer['openings'] = {}
   for (const r of byProv) openings[r.province] = { n: Number(r.n), t: Number(r.t) }
@@ -126,11 +125,7 @@ export async function caseAnswer(slug: string, data: VerdictData, sql: Sql): Pro
  */
 async function opsByProvince(sql: Sql): Promise<Record<string, OpsFacts>> {
   const rows = await sql(
-    `SELECT DISTINCT ON (province, metric) province, metric, value, period, as_of, url
-     FROM pnp_ops_stats
-     WHERE metric IN ('allocation','nominations_ytd','refusals_ytd','laa_ytd','applications_received_ytd','eoi_pool_total')
-       AND (scope IS NULL OR scope = '' OR scope = 'Skilled Worker')
-     ORDER BY province, metric, COALESCE(as_of, period) DESC`,
+    SQL.PNP_OPS_STATS,
   ).then((r) => r.rows as { province: string; metric: string; value: number | null; period: string; as_of: string; url: string }[])
     .catch(() => [] as { province: string; metric: string; value: number | null; period: string; as_of: string; url: string }[])
 

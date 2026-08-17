@@ -12,6 +12,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { fetchTopNocs } from './jobsSql'
 import type { DrawRow, ScoreFactor } from './pnpSelfScore'
+import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 
 /** SSR 事实区一行:每省最近一轮有分数线或邀请数的抽选。
  *  🔴 invitations 必须带出来:这张表的入选条件就是「有分数线**或**有邀请数」,
@@ -139,8 +140,7 @@ async function load(): Promise<Tables> {
   const competition: ProvCompetition[] = []
   if (pool) {
     const { rows } = await pool.query(
-      `SELECT province, difficulty, fetched FROM stats
-        WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL`,
+      SQL.PROV_DIFFICULTY_FETCHED,
     ).catch(() => ({ rows: [] as Record<string, unknown>[] }))
     for (const r of rows) {
       const raw = r.difficulty
@@ -164,7 +164,7 @@ async function load(): Promise<Tables> {
     }
     // 新发学签流量:与竞争比同一次取(provinces 维度表的 info jsonb,ETL 09 已写好)
     const MONTH: Record<string, string> = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' }
-    const { rows: provRows } = await pool.query('SELECT code, info FROM provinces')
+    const { rows: provRows } = await pool.query(SQL.PROVINCES_INFO)
       .catch(() => ({ rows: [] as Record<string, unknown>[] }))
     const flowOf: Record<string, ProvCompetition['flow']> = {}
     const seriesOf: Record<string, ProvCompetition['series']> = {}

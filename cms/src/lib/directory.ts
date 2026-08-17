@@ -1,6 +1,7 @@
 // 实体名录读取(B4-01):/employers 与 /occupations 的 SQL 层(照 lib/rankings 模式,零计算只 SELECT)。
 // 语义红线循 E6-02:LMIA=「雇过外国人的历史事实」≠「能担保」;AIP 指定=「已注册」≠「有配额」。
 
+import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 export const DIR_PAGE_SIZE = 100
 
 export type AipRow = { name: string; province: string; location: string; isTech: boolean }
@@ -14,11 +15,10 @@ export async function fetchAipEmployers(pool: any, { q, prov, page }: { q: strin
   const args: any[] = []
   if (q) { args.push(like(q)); cond.push(`name ILIKE $${args.length}`) }
   if (prov) { args.push(prov); cond.push(`province = $${args.length}`) }
-  const where = cond.length ? `WHERE ${cond.join(' AND ')}` : ''
-  const { rows: [{ n }] } = await pool.query(`SELECT COUNT(*)::int AS n FROM designated_employers ${where}`, args)
+  const where = cond.length ? SQL.dirWhere(cond.join(' AND ')) : ''
+  const { rows: [{ n }] } = await pool.query(SQL.dirCountDesignated(where), args)
   const { rows } = await pool.query(
-    `SELECT name, province, location, is_tech FROM designated_employers ${where}
-     ORDER BY name ASC LIMIT ${DIR_PAGE_SIZE} OFFSET ${Math.max(0, page) * DIR_PAGE_SIZE}`, args)
+    SQL.dirPageDesignated(where, DIR_PAGE_SIZE, Math.max(0, page) * DIR_PAGE_SIZE), args)
   const items: AipRow[] = rows.map((r: any) => ({ name: r.name ?? '', province: r.province ?? '', location: r.location ?? '', isTech: !!r.is_tech }))
   return { items, total: n as number }
 }
@@ -27,12 +27,11 @@ export async function fetchLmiaEmployers(pool: any, { q, page }: { q: string; pa
   const cond = [`lmia_positions > 0`]
   const args: any[] = []
   if (q) { args.push(like(q)); cond.push(`name ILIKE $${args.length}`) }
-  const where = `WHERE ${cond.join(' AND ')}`
-  const { rows: [{ n }] } = await pool.query(`SELECT COUNT(*)::int AS n FROM companies ${where}`, args)
+  const where = SQL.dirWhereCo(cond.join(' AND '))
+  const { rows: [{ n }] } = await pool.query(SQL.dirCountCompanies(where), args)
   // B4-02:技能股(High Wage/GTS)优先排序——农业/低薪股大户(果园/农场)沉底,与担保雇主榜口径一致
   const { rows } = await pool.query(
-    `SELECT name, region, website, lmia_positions, lmia_positions_skilled, lmia_streams, lmia_last_quarter, industry, alias_zh, alias_ko, wiki_url, sponsor_grade FROM companies ${where}
-     ORDER BY COALESCE(lmia_positions_skilled, 0) DESC, lmia_positions DESC, name ASC LIMIT ${DIR_PAGE_SIZE} OFFSET ${Math.max(0, page) * DIR_PAGE_SIZE}`, args)
+    SQL.dirPageCompanies(where, DIR_PAGE_SIZE, Math.max(0, page) * DIR_PAGE_SIZE), args)
   const items: LmiaRow[] = rows.map((r: any) => ({
     name: r.name ?? '', region: r.region ?? '', website: r.website ?? '',
     lmiaPositions: Number(r.lmia_positions) || 0, lmiaPositionsSkilled: r.lmia_positions_skilled == null ? null : Number(r.lmia_positions_skilled),
@@ -46,7 +45,7 @@ export async function fetchLmiaEmployers(pool: any, { q, page }: { q: string; pa
 
 export async function fetchOccupations(pool: any): Promise<OccRow[]> {
   const { rows } = await pool.query(
-    `SELECT province, stream, label, type, noc, name, url, fetched FROM pnp_occupations ORDER BY province ASC, stream ASC, noc ASC`)
+    SQL.PNP_OCCUPATIONS_ALL)
   return rows.map((r: any) => ({
     province: r.province ?? '', stream: r.stream ?? '', label: r.label ?? '', type: r.type ?? '',
     noc: r.noc ?? '', name: r.name ?? '', url: r.url ?? '', fetched: (r.fetched ?? '').slice?.(0, 10) ?? '',

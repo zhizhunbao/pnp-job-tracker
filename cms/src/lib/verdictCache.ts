@@ -7,6 +7,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { loadVerdictData } from './chatTools'
 import type { DesignatedEmployerRow, VerdictData } from './pathVerdict'
+import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 
 let cache: { at: number; data: VerdictData } | null = null
 const TTL = 10 * 60_000
@@ -37,8 +38,7 @@ export async function getDesignatedEmployers(province: string): Promise<Designat
 
   const payload = await getPayload({ config: await config })
   const res = await (payload.db as any).pool.query(
-    `SELECT name, province, location, is_tech, source, nocs, url, fetched
-       FROM designated_employers WHERE province = $1`,
+    SQL.DESIGNATED_BY_PROV,
     [prov],
   ).catch(() => null)
   if (!res) return []

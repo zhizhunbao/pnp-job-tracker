@@ -12,6 +12,7 @@
 // 只要求「能查」不要求「能借连接」:本文件的函数只 query,别让签名去要 connect。
 // 真值在 lib/db/database(08-17 起连接形状单一来源);这里原样再导出,两个既有 import 点不必改。
 import type { Db } from './db/database'
+import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 export type Pool = Db
 
 export type DesignatedEmployerRow = {
@@ -182,9 +183,7 @@ let inflight: Promise<DesignatedEmployerRow[]> | null = null
 
 async function loadAllDesignated(pool: Pool): Promise<DesignatedEmployerRow[]> {
   const { rows } = await pool.query(
-    `SELECT name, province, location, source, nocs, url, fetched
-       FROM designated_employers
-      ORDER BY location ASC, name ASC`,
+    SQL.DESIGNATED_ALL,
   ).catch(() => ({ rows: [] as Record<string, unknown>[] }))
   return rows.map((r) => ({
     name: String(r.name ?? ''),
@@ -214,13 +213,7 @@ export async function fetchAllDesignated(pool: Pool): Promise<DesignatedEmployer
 export async function fetchHiringEmployers(pool: Pool, opts: { province: string; noc: string }): Promise<HiringEmployerRow[]> {
   if (!/^[A-Z]{2}$/.test(opts.province) || !/^\d{5}$/.test(opts.noc)) return []
   const { rows } = await pool.query(
-    `SELECT c.name AS name, j.province AS province,
-            MIN(COALESCE(j.city, '')) AS location, COUNT(*)::int AS n
-       FROM jobs j JOIN companies c ON c.id = j.company_id
-      WHERE j.status = 'open' AND j.province = $1 AND j.noc = $2 AND COALESCE(c.name, '') <> ''
-      GROUP BY c.name, j.province
-      ORDER BY n DESC, c.name ASC
-      LIMIT 300`, [opts.province, opts.noc],
+    SQL.HIRING_EMPLOYERS, [opts.province, opts.noc],
   ).catch(() => ({ rows: [] as Record<string, unknown>[] }))
   return rows.map((r) => ({
     name: String(r.name ?? ''),
@@ -235,10 +228,7 @@ export async function fetchNocTitles(pool: Pool, codes: string[]): Promise<Emplo
   const list = codes.filter((c) => /^\d{5}$/.test(c)).slice(0, 500)
   if (!list.length) return {}
   const { rows } = await pool.query(
-    `SELECT s.noc AS noc, COALESCE(s.title_en, '') AS en,
-            COALESCE(s.title_zh_short, s.title_zh, '') AS zh, COALESCE(d.title_ko, '') AS ko
-       FROM stats_occupation s LEFT JOIN noc_descriptions d ON d.noc = s.noc
-      WHERE s.province = 'all' AND s.noc = ANY($1)`, [list],
+    SQL.NOC_TITLES_FOR_EMPLOYERS, [list],
   ).catch(() => ({ rows: [] as Record<string, unknown>[] }))
   const out: EmployerPage['nocTitles'] = {}
   for (const r of rows) {

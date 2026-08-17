@@ -20,6 +20,7 @@ import {
   type TripleCard, type TripleCompany, type TripleJob, type TripleProfile,
 } from '@/lib/tripleVerdict'
 import type { EmployerFacts } from '@/lib/employerVerdict'
+import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 
 /** 下行行:免费行给全,付费行对非 Pro 只留 gate/tier/key */
 export type TripleWireRow = {
@@ -80,14 +81,7 @@ export async function buildTripleWire(id: number, answers: ClientAnswers): Promi
   const pool = (payload.db as any).pool
 
   const { rows: jr } = await pool.query(
-    `SELECT j.id, j.title, j.noc, j.teer, j.province, j.city, j.pnp_eligible, j.pnp_stream,
-            j.ee_category, j.aip, j.employment_term, j.employment_hours, j.company_id,
-            c.name AS company_name, nd.title AS noc_title,
-            nd.title_zh AS noc_title_zh, nd.title_ko AS noc_title_ko
-       FROM jobs j
-       LEFT JOIN companies c ON c.id = j.company_id
-       LEFT JOIN noc_descriptions nd ON nd.noc = j.noc
-      WHERE j.id = $1 LIMIT 1`,
+    SQL.TRIPLE_WIRE_JOB,
     [id],
   )
   const r = jr[0]
@@ -107,7 +101,7 @@ export async function buildTripleWire(id: number, answers: ClientAnswers): Promi
   let lmiaNocs: Record<string, number> | null = null
   if (r.company_id != null) {
     const fr = await pool.query(
-      `SELECT founded_year, registry_status, staff_est, staff_est_src, sector FROM companies WHERE id = $1`,
+      SQL.COMPANY_REGISTRY_FACTS,
       [r.company_id],
     ).catch(() => ({ rows: [] as any[] }))
     const f = fr.rows[0]
@@ -120,7 +114,7 @@ export async function buildTripleWire(id: number, answers: ClientAnswers): Promi
         sector: f.sector ?? null,
       }
     }
-    const nr = await pool.query(`SELECT lmia_nocs FROM companies WHERE id = $1`, [r.company_id])
+    const nr = await pool.query(SQL.COMPANY_LMIA_NOCS_2, [r.company_id])
       .catch(() => ({ rows: [] as any[] }))
     const raw = nr.rows[0]?.lmia_nocs
     try {

@@ -11,6 +11,7 @@
 
 import { employerVerdict, type EmployerFacts, type EmployerVerdict } from './employerVerdict'
 import type { Requirement } from './rules'
+import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 
 export const SE_PAGE_SIZE = 100
 // #313:把脉页橱窗三分表 SSR 每表只带前 50 行(桌面 10/页 → 首 5 页秒开),全量走 /api/sponsor-employers 懒取
@@ -47,7 +48,7 @@ let inflight: Promise<SponsorEmployerRow[]> | null = null
 const FACT_COLS = ['founded_year', 'registry_status', 'staff_est', 'staff_est_src', 'sector']
 async function probeFactCols(pool: any): Promise<string[]> {
   return pool.query(
-    `SELECT column_name FROM information_schema.columns WHERE table_name = 'companies' AND column_name = ANY($1)`,
+    SQL.COMPANIES_HAS_COLUMNS,
     [FACT_COLS],
   ).then((r: any) => r.rows.map((x: any) => String(x.column_name))).catch(() => [])
 }
@@ -56,7 +57,7 @@ async function probeFactCols(pool: any): Promise<string[]> {
 // 只取判定用得到的列;Requirement 其余字段判定不读,给空值占位即可(与 R() 测试 fixture 同一惯例)。
 async function loadEmployerReqs(pool: any): Promise<Requirement[]> {
   const rows = await pool.query(
-    `SELECT province, factor, op, value, unit, applies_area FROM pnp_requirements WHERE subject = 'employer'`,
+    SQL.PNP_REQ_EMPLOYER,
   ).then((r: any) => r.rows).catch(() => [])
   return rows.map((r: any): Requirement => ({
     province: r.province ?? '', program: 'PNP', stream: '', subject: 'employer', factor: r.factor ?? '',
@@ -72,27 +73,7 @@ async function loadAll(pool: any): Promise<SponsorEmployerRow[]> {
   const factGroup = factCols.length ? `, ${factCols.map((c) => `c.${c}`).join(', ')}` : ''
   const [{ rows }, employerReqs] = await Promise.all([
     // 在招口径与职位板同源(jobsSql #136):COALESCE(status,'open') <> 'closed'
-    pool.query(`
-    SELECT c.name, c.slug, c.industry, c.alias_zh, c.alias_ko, c.sponsor_grade,
-      c.lmia_positions, c.lmia_positions_skilled, c.lmia_last_quarter, c.lmia_streams,
-      c.lmia_positions_4q, c.lmia_positions_2q, c.lmia_positions_1q${factSelect},
-      COUNT(*)::int AS open_jobs,
-      COUNT(*) FILTER (WHERE j.aip)::int AS open_jobs_aip,
-      COALESCE(ARRAY_AGG(DISTINCT j.province) FILTER (WHERE j.aip AND COALESCE(j.province, '') <> ''), '{}') AS provs_aip,
-      BOOL_OR(j.aip) AS aip,
-      BOOL_OR(COALESCE(j.pnp_stream, '') <> '') AS named,
-      COALESCE(ARRAY_AGG(DISTINCT j.pnp_stream) FILTER (WHERE COALESCE(j.pnp_stream, '') <> ''), '{}') AS streams,
-      COALESCE(ARRAY_AGG(DISTINCT j.noc) FILTER (WHERE COALESCE(j.noc, '') <> ''), '{}') AS nocs,
-      COALESCE(ARRAY_AGG(DISTINCT j.province) FILTER (WHERE COALESCE(j.province, '') <> ''), '{}') AS provs,
-      COALESCE(ARRAY_AGG(DISTINCT j.city) FILTER (WHERE COALESCE(j.city, '') <> ''), '{}') AS cities,
-      COALESCE((ARRAY_AGG(j.city ORDER BY j.id) FILTER (WHERE COALESCE(j.city, '') <> ''))[1], '') AS city
-    FROM jobs j JOIN companies c ON c.id = j.company_id
-    WHERE COALESCE(j.status, 'open') <> 'closed'
-    GROUP BY c.id, c.name, c.slug, c.industry, c.alias_zh, c.alias_ko, c.sponsor_grade,
-      c.lmia_positions, c.lmia_positions_skilled, c.lmia_last_quarter, c.lmia_streams,
-      c.lmia_positions_4q, c.lmia_positions_2q, c.lmia_positions_1q${factGroup}
-    HAVING BOOL_OR(j.aip) OR BOOL_OR(COALESCE(j.pnp_stream, '') <> '') OR COALESCE(c.lmia_positions, 0) > 0
-    ORDER BY open_jobs DESC, c.name ASC`),
+    pool.query(SQL.sponsorEmployers(factSelect, factGroup)),
     loadEmployerReqs(pool),
   ])
   return rows.map((r: any): SponsorEmployerRow => {

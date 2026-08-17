@@ -5,6 +5,7 @@
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
+import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 
 export type OccCompetitionRow = {
   province: string
@@ -44,33 +45,19 @@ export async function fetchOccCompetition(nocInput: string | string[]): Promise<
   const [occ, comp, aip, rcip, fcip] = await Promise.all([
     // 实时在招(与落地页同一条谓词:status=open ∧ 省 ∧ noc ∈ 档案职业);统计列另取快照
     pool.query(
-      `SELECT j.province AS province, COUNT(*)::int AS open_jobs,
-              COALESCE(SUM(s.new30d), 0)::int AS new30d,
-              ROUND(AVG(s.avg_days_open)::numeric, 1) AS avg_days_open
-         FROM jobs j
-         LEFT JOIN stats_occupation s ON s.noc = j.noc AND s.province = j.province
-        WHERE COALESCE(j.status, 'open') <> 'closed' AND COALESCE(j.is_dup, false) = false AND j.noc = ANY($1) AND COALESCE(j.province, '') <> ''
-        GROUP BY j.province
-        ORDER BY open_jobs DESC`, [nocs],
+      SQL.OCC_COMPETITION_BY_PROV, [nocs],
     ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
     pool.query(
-      `SELECT province, difficulty FROM stats
-        WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL`,
+      SQL.PROV_DIFFICULTY_2,
     ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
     pool.query(
-      `SELECT province, COUNT(*)::int AS n FROM jobs
-        WHERE COALESCE(status, 'open') <> 'closed' AND COALESCE(is_dup, false) = false AND COALESCE(aip, false) = true AND noc = ANY($1) AND province <> ''
-        GROUP BY province`, [nocs],
+      SQL.PROV_OPEN_COUNT, [nocs],
     ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
     pool.query(
-      `SELECT province, COUNT(*)::int AS n FROM jobs
-        WHERE COALESCE(status, 'open') <> 'closed' AND COALESCE(is_dup, false) = false AND COALESCE(pilot, '') LIKE '%RCIP%' AND noc = ANY($1) AND province <> ''
-        GROUP BY province`, [nocs],
+      SQL.PROV_OPEN_COUNT_NOC4, [nocs],
     ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
     pool.query(
-      `SELECT province, COUNT(*)::int AS n FROM jobs
-        WHERE COALESCE(status, 'open') <> 'closed' AND COALESCE(is_dup, false) = false AND COALESCE(pilot, '') LIKE '%FCIP%' AND noc = ANY($1) AND province <> ''
-        GROUP BY province`, [nocs],
+      SQL.PROV_OPEN_COUNT_BROAD, [nocs],
     ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
   ])
 

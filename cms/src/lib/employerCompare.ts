@@ -5,6 +5,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { match, normalizeProfile, hasProfile, type MatchDims, type MatchJob, type MatchProfile } from './match'
 import { CMP_MAX, type CompareRow } from './employerCompareShared'
+import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 
 export { CMP_MAX }
 export type { CompareRow }
@@ -19,9 +20,7 @@ export async function compareEmployers(names: string[], profileRaw: unknown, dim
   const lower = clean.map((n) => n.toLowerCase())
 
   const { rows: cos } = await pool.query(
-    `SELECT id, name, industry, alias_zh, alias_ko, wiki_url, website, ai_brief, ai_website,
-            lmia_positions, lmia_positions_skilled, lmia_last_quarter
-       FROM companies WHERE lower(name) = ANY($1)`, [lower])
+    SQL.COMPANIES_FOR_COMPARE, [lower])
   const p = normalizeProfile(profileRaw as any)
   const withMatch = !!dims && hasProfile(p)
 
@@ -31,8 +30,7 @@ export async function compareEmployers(names: string[], profileRaw: unknown, dim
     if (!c) continue   // 不在库的名字直接跳过(入口只来自库内行,正常不会发生)
     // 在库开放岗聚合 + 匹配用字段(封顶 400 行,防超大雇主拖垮)
     const { rows: js } = await pool.query(
-      `SELECT noc, province, pnp_eligible, pnp_stream, ee_category, salary_annual, wage_med_annual, score, aip
-         FROM jobs WHERE company_id = $1 AND status != 'closed' LIMIT 400`, [c.id])
+      SQL.COMPANY_JOBS_FOR_COMPARE, [c.id])
     const provCount: Record<string, number> = {}
     let named = 0, aip = false
     const scores: number[] = [], sals: number[] = []
@@ -73,7 +71,7 @@ export async function compareEmployers(names: string[], profileRaw: unknown, dim
   const provs = [...new Set(out.map((r) => r.mainProvince).filter(Boolean))]
   if (provs.length) {
     const { rows: ds } = await pool.query(
-      `SELECT province, difficulty FROM stats WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND province = ANY($1) AND difficulty IS NOT NULL`, [provs])
+      SQL.PROV_DIFFICULTY_ANY, [provs])
     for (const r of out) {
       const d = ds.find((x: any) => x.province === r.mainProvince)?.difficulty
       const obj = typeof d === 'string' ? JSON.parse(d || 'null') : d

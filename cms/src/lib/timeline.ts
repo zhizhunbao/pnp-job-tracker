@@ -1,6 +1,7 @@
 // 政策时间线读取(C6-01):三路在库事件源合并 + 抽选节奏统计。零 schema 改动,SQL 只 SELECT。
 // 诚实红线循 E6-04:省分数带分制标注(≠CRS);节奏只报历史统计不预测下一次(伪权威红线)。
 
+import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 export type TlEvent = {
   date: string                       // YYYY-MM-DD
   prov: string                       // 两字省码;'' = 联邦
@@ -30,11 +31,10 @@ const day = (v: any): string => {
 
 export async function fetchTimeline(pool: any): Promise<{ events: TlEvent[]; cadence: TlCadence[]; eeCadence: { category: string; label: string; last: string; daysSince: number }[] }> {
   const [draws, ee, news] = await Promise.all([
-    pool.query(`SELECT province, kind, draw_date, stream, score, scale, invitations, note, label, url FROM pnp_draws`),
+    pool.query(SQL.PNP_DRAWS_ALL),
     // 各类别最新一期抽选(类别多 NOC 行共享同一期,按 category 去重)
-    pool.query(`SELECT DISTINCT ON (category) category, label, draw_crs, draw_date, draw_size, url FROM ee_categories
-                WHERE draw_date IS NOT NULL AND draw_date <> '' ORDER BY category`),
-    pool.query(`SELECT region, title, date, slug, importance, url FROM news ORDER BY date DESC LIMIT 90`),
+    pool.query(SQL.EE_CATEGORIES_LATEST),
+    pool.query(SQL.NEWS_RECENT),
   ])
   const today = new Date().toISOString().slice(0, 10)
   const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000)

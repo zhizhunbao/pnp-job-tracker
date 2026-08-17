@@ -87,6 +87,7 @@ export function aggregatePilotQuota(rows: PilotQuotaCommunityRow[]): PilotQuotaA
 }
 
 import type { Db as Pool } from './db/database'   // 连接形状单一来源(原先这行结构类型在两个 lib 里各抄一份)
+import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 
 const communityRow = (r: Record<string, unknown>): PilotQuotaCommunityRow => ({
   community: String(r.community ?? ''),
@@ -114,11 +115,7 @@ export async function fetchPilotQuota(): Promise<PilotQuotaAgg[]> {
   const p = await pool()
   if (!p) return []
   const res = await p.query(
-    `SELECT community, province, type, first_come, first_come_quote, first_come_url,
-            per_intake, per_intake_quote, per_intake_url,
-            remaining, remaining_quote, remaining_url, as_of
-       FROM pilot_quota
-      WHERE COALESCE(noc, '') = ''`,
+    SQL.PILOT_QUOTA_COMMUNITIES,
   ).catch(() => ({ rows: [] as Record<string, unknown>[] }))
   return aggregatePilotQuota(res.rows.map(communityRow))
 }
@@ -134,14 +131,10 @@ export async function fetchPilotQuotaDetail(community?: string): Promise<{
   const params = community ? [community] : []
   const [comm, occ] = await Promise.all([
     p.query(
-      `SELECT community, province, type, first_come, first_come_quote, first_come_url,
-              per_intake, per_intake_quote, per_intake_url,
-              remaining, remaining_quote, remaining_url, as_of
-         FROM pilot_quota WHERE COALESCE(noc, '') = ''${cond} ORDER BY community`, params,
+      SQL.pilotQuotaCommunities(cond), params,
     ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
     p.query(
-      `SELECT community, province, type, noc, status, quote, url, as_of
-         FROM pilot_quota WHERE COALESCE(noc, '') <> ''${cond} ORDER BY community, noc`, params,
+      SQL.pilotQuotaOccupations(cond), params,
     ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
   ])
   return {

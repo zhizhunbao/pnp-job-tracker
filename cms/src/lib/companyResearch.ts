@@ -4,6 +4,7 @@
  * 红线:查不到如实回 null(反编);同名并发合流;掉线/超时静默降级由 friendChat 兜。
  */
 import { friendChat } from './friendLlm'
+import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 
 export type CompanyResearch = { brief: string; website: string; sources: string[]; fetched: string }
 
@@ -28,13 +29,13 @@ const inflight = new Map<string, Promise<CompanyResearch | null>>()
 // 按公司名取缓存行;不在 companies 的雇主(Job Bank 大量)懒建最小行给缓存落脚,source 标 ai-lazy
 export async function companyRow(pool: any, name: string): Promise<{ id: number; cached: CompanyResearch | null } | null> {
   const { rows } = await pool.query(
-    'SELECT id, ai_brief, ai_website, ai_sources, ai_fetched FROM companies WHERE lower(name) = lower($1) LIMIT 1',
+    SQL.COMPANY_AI_BRIEF,
     [name],
   )
   let row = rows[0]
   if (!row) {
     const ins = await pool.query(
-      `INSERT INTO companies (name, source, updated_at, created_at) VALUES ($1, 'ai-lazy', now(), now()) RETURNING id`,
+      SQL.COMPANY_INSERT_LAZY,
       [name],
     ).catch(() => null)
     if (!ins?.rows?.[0]) return null
@@ -75,7 +76,7 @@ async function investigate(pool: any, id: number, name: string): Promise<Company
   // 命中回填别名/知名列(COALESCE 不覆盖已有值);没命中/失败不重试——一家公司一生一次,宁缺勿滥。
   if (wd) {
     await pool.query(
-      'UPDATE companies SET alias_zh = COALESCE(alias_zh, $1), alias_ko = COALESCE(alias_ko, $2), wiki_url = COALESCE(wiki_url, $3) WHERE id = $4',
+      SQL.COMPANY_UPDATE_ALIASES,
       [wd.zh || null, wd.ko || null, wd.wiki, id],
     ).catch(() => {})
   }
@@ -87,7 +88,7 @@ async function investigate(pool: any, id: number, name: string): Promise<Company
   if (!brief || /NOT_FOUND/.test(brief) || brief.length < 20 || brief.length > 900) return null
   const sources = r.sources
   await pool.query(
-    'UPDATE companies SET ai_brief = $1, ai_website = $2, ai_sources = $3, ai_fetched = now() WHERE id = $4',
+    SQL.COMPANY_UPDATE_AI_BRIEF,
     [brief, website || null, JSON.stringify(sources), id],
   )
   return { brief, website, sources, fetched: new Date().toISOString().slice(0, 10) }

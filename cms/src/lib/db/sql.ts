@@ -213,3 +213,290 @@ export const QUIZ_FACTS_BY_PROV = `SELECT j.province, count(*)::int n, count(*) 
 export const QUIZ_FACTS_STREAMS = `SELECT j.pnp_stream stream, count(*)::int n
        FROM jobs j WHERE j.status = 'open' AND j.noc = $1 AND j.pnp_stream IS NOT NULL AND j.pnp_stream <> ''
        GROUP BY j.pnp_stream ORDER BY count(*) DESC LIMIT 4`
+
+/* ══════════════════════════════════════════════════════════════════════════
+   8) 统计 / 难度 / 职业报告
+   ══════════════════════════════════════════════════════════════════════════ */
+
+// ── reportFacts.ts ──
+
+export const occStatsOne = (a1: string, a2: string) => `SELECT ${a1} ${a2} WHERE s.noc = $1`
+
+export const occStatsKin = (a1: string, a2: string) => `SELECT ${a1}, CASE WHEN left(s.noc,4) = left($1,4) THEN 1 ELSE 2 END AS kin
+         ${a2}
+         WHERE s.province = 'all' AND s.noc <> $1 AND left(s.noc,3) = left($1,3)
+         ORDER BY kin, s.open_jobs DESC NULLS LAST LIMIT 8`
+
+export const OCC_EMPLOYER_COUNTS = `SELECT count(DISTINCT j.company_id)::int n,
+                count(DISTINCT j.company_id) FILTER (WHERE COALESCE(co.lmia_positions, 0) > 0)::int lmia_n
+         FROM jobs j JOIN companies co ON co.id = j.company_id
+         WHERE COALESCE(j.status,'open') <> 'closed' AND j.noc = $1
+           AND ((j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')
+                OR (j.province = ANY($2::text[]) AND COALESCE(j.pnp_eligible, false)))`
+
+export const occTopEmployers = (a1: string | number) => `SELECT co.name, co.slug, co.is_designated_employer aip, co.lmia_positions, co.lmia_last_quarter,
+                count(*) FILTER (WHERE j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')::int named,
+                count(*) FILTER (WHERE COALESCE(j.pnp_eligible, false))::int eligible,
+                (array_agg(j.province ORDER BY j.date_posted DESC NULLS LAST))[1] province,
+                (array_agg(j.city      ORDER BY j.date_posted DESC NULLS LAST))[1] city,
+                max(j.date_posted)::text last_posted
+         FROM jobs j JOIN companies co ON co.id = j.company_id
+         WHERE COALESCE(j.status,'open') <> 'closed' AND j.noc = $1
+           AND ((j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')
+                OR (j.province = ANY($2::text[]) AND COALESCE(j.pnp_eligible, false)))
+         GROUP BY co.id, co.name, co.slug, co.is_designated_employer, co.lmia_positions, co.lmia_last_quarter
+         ORDER BY named DESC, eligible DESC,
+                  (COALESCE(co.lmia_positions, 0) > 0) DESC,
+                  max(j.date_posted) DESC NULLS LAST
+         LIMIT ${a1}`
+
+export const PROV_OPEN_BY_PROV = `SELECT province, count(*)::int open,
+              count(*) FILTER (WHERE pnp_stream IS NOT NULL AND pnp_stream <> '')::int named,
+              count(*) FILTER (WHERE apprentice_friendly)::int apprentice
+       FROM jobs WHERE COALESCE(status,'open') <> 'closed' AND noc = $1 AND COALESCE(province,'') <> ''
+       GROUP BY province`
+
+export const PNP_DRAWS_SCORED = `SELECT province, draw_date, stream, score, scale, invitations FROM pnp_draws
+       WHERE score IS NOT NULL AND COALESCE(draw_date,'') <> '' AND province <> 'FED'
+       ORDER BY draw_date DESC LIMIT 120`
+
+export const PNP_SCORE_FACTORS = `SELECT province, system, factor, kind, seq, label, points, xor_prev, rule,
+              factor_max, factor_group, group_max, pass_mark, max_total, guide_effective, url, fetched
+       FROM pnp_score_factors ORDER BY province, factor, seq`
+
+export const NOC_TITLE_TEER = `SELECT COALESCE(s.title_en, d.title, '') title, s.teer
+       FROM noc_descriptions d LEFT JOIN stats_occupation s ON s.noc = d.noc AND s.province = 'all'
+       WHERE d.noc = $1 LIMIT 1`
+
+export const PNP_REQUIREMENTS = `SELECT province, program, stream, subject, factor, op, value, value_text, unit,
+              applies_teer, applies_noc, excludes_noc, applies_area,
+              to_jsonb(q) ->> 'applies_condition' AS applies_condition,
+              applies_family_size, basis, label, section, effective, url, page_url, fetched
+       FROM pnp_requirements q ORDER BY province, seq`
+
+export const OCC_MEDIAN_BY_PROV = `SELECT province, median_wage_annual FROM stats_occupation WHERE noc = $1 AND province <> 'all'`
+
+export const PROV_DIFFICULTY = `SELECT province, difficulty FROM stats
+       WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL`
+
+// ── occCompetition.ts ──
+
+export const OCC_COMPETITION_BY_PROV = `SELECT j.province AS province, COUNT(*)::int AS open_jobs,
+              COALESCE(SUM(s.new30d), 0)::int AS new30d,
+              ROUND(AVG(s.avg_days_open)::numeric, 1) AS avg_days_open
+         FROM jobs j
+         LEFT JOIN stats_occupation s ON s.noc = j.noc AND s.province = j.province
+        WHERE COALESCE(j.status, 'open') <> 'closed' AND COALESCE(j.is_dup, false) = false AND j.noc = ANY($1) AND COALESCE(j.province, '') <> ''
+        GROUP BY j.province
+        ORDER BY open_jobs DESC`
+
+export const PROV_DIFFICULTY_2 = `SELECT province, difficulty FROM stats
+        WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL`
+
+export const PROV_OPEN_COUNT = `SELECT province, COUNT(*)::int AS n FROM jobs
+        WHERE COALESCE(status, 'open') <> 'closed' AND COALESCE(is_dup, false) = false AND COALESCE(aip, false) = true AND noc = ANY($1) AND province <> ''
+        GROUP BY province`
+
+export const PROV_OPEN_COUNT_NOC4 = `SELECT province, COUNT(*)::int AS n FROM jobs
+        WHERE COALESCE(status, 'open') <> 'closed' AND COALESCE(is_dup, false) = false AND COALESCE(pilot, '') LIKE '%RCIP%' AND noc = ANY($1) AND province <> ''
+        GROUP BY province`
+
+export const PROV_OPEN_COUNT_BROAD = `SELECT province, COUNT(*)::int AS n FROM jobs
+        WHERE COALESCE(status, 'open') <> 'closed' AND COALESCE(is_dup, false) = false AND COALESCE(pilot, '') LIKE '%FCIP%' AND noc = ANY($1) AND province <> ''
+        GROUP BY province`
+
+// ── scoreTables.ts ──
+
+export const PROV_DIFFICULTY_FETCHED = `SELECT province, difficulty, fetched FROM stats
+        WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL`
+
+// ── 补:单引号写的两条 ──
+/** 职业统计的 FROM(韩文名的家在 noc_descriptions,故 LEFT JOIN) */
+export const OCC_STATS_FROM = `FROM stats_occupation s LEFT JOIN noc_descriptions d ON d.noc = s.noc`
+
+export const PROVINCES_INFO = `SELECT code, info FROM provinces`
+
+/* ══════════════════════════════════════════════════════════════════════════
+   9) 雇主 —— 官方名录 / 在招 / 担保
+   ══════════════════════════════════════════════════════════════════════════ */
+
+// ── directory.ts ──
+
+export const dirWhere = (a1: string) => `WHERE ${a1}`
+
+export const dirCountDesignated = (a1: string) => `SELECT COUNT(*)::int AS n FROM designated_employers ${a1}`
+
+export const dirPageDesignated = (a1: string, a2: string | number, a3: string | number) => `SELECT name, province, location, is_tech FROM designated_employers ${a1}
+     ORDER BY name ASC LIMIT ${a2} OFFSET ${a3}`
+
+export const dirWhereCo = (a1: string) => `WHERE ${a1}`
+
+export const dirCountCompanies = (a1: string) => `SELECT COUNT(*)::int AS n FROM companies ${a1}`
+
+export const dirPageCompanies = (a1: string, a2: string | number, a3: string | number) => `SELECT name, region, website, lmia_positions, lmia_positions_skilled, lmia_streams, lmia_last_quarter, industry, alias_zh, alias_ko, wiki_url, sponsor_grade FROM companies ${a1}
+     ORDER BY COALESCE(lmia_positions_skilled, 0) DESC, lmia_positions DESC, name ASC LIMIT ${a2} OFFSET ${a3}`
+
+export const PNP_OCCUPATIONS_ALL = `SELECT province, stream, label, type, noc, name, url, fetched FROM pnp_occupations ORDER BY province ASC, stream ASC, noc ASC`
+
+// ── designatedEmployers.ts ──
+
+export const DESIGNATED_ALL = `SELECT name, province, location, source, nocs, url, fetched
+       FROM designated_employers
+      ORDER BY location ASC, name ASC`
+
+export const HIRING_EMPLOYERS = `SELECT c.name AS name, j.province AS province,
+            MIN(COALESCE(j.city, '')) AS location, COUNT(*)::int AS n
+       FROM jobs j JOIN companies c ON c.id = j.company_id
+      WHERE j.status = 'open' AND j.province = $1 AND j.noc = $2 AND COALESCE(c.name, '') <> ''
+      GROUP BY c.name, j.province
+      ORDER BY n DESC, c.name ASC
+      LIMIT 300`
+
+export const NOC_TITLES_FOR_EMPLOYERS = `SELECT s.noc AS noc, COALESCE(s.title_en, '') AS en,
+            COALESCE(s.title_zh_short, s.title_zh, '') AS zh, COALESCE(d.title_ko, '') AS ko
+       FROM stats_occupation s LEFT JOIN noc_descriptions d ON d.noc = s.noc
+      WHERE s.province = 'all' AND s.noc = ANY($1)`
+
+// ── sponsorEmployers.ts ──
+
+export const COMPANIES_HAS_COLUMNS = `SELECT column_name FROM information_schema.columns WHERE table_name = 'companies' AND column_name = ANY($1)`
+
+export const PNP_REQ_EMPLOYER = `SELECT province, factor, op, value, unit, applies_area FROM pnp_requirements WHERE subject = 'employer'`
+
+export const sponsorEmployers = (a1: string, a2: string) => `
+    SELECT c.name, c.slug, c.industry, c.alias_zh, c.alias_ko, c.sponsor_grade,
+      c.lmia_positions, c.lmia_positions_skilled, c.lmia_last_quarter, c.lmia_streams,
+      c.lmia_positions_4q, c.lmia_positions_2q, c.lmia_positions_1q${a1},
+      COUNT(*)::int AS open_jobs,
+      COUNT(*) FILTER (WHERE j.aip)::int AS open_jobs_aip,
+      COALESCE(ARRAY_AGG(DISTINCT j.province) FILTER (WHERE j.aip AND COALESCE(j.province, '') <> ''), '{}') AS provs_aip,
+      BOOL_OR(j.aip) AS aip,
+      BOOL_OR(COALESCE(j.pnp_stream, '') <> '') AS named,
+      COALESCE(ARRAY_AGG(DISTINCT j.pnp_stream) FILTER (WHERE COALESCE(j.pnp_stream, '') <> ''), '{}') AS streams,
+      COALESCE(ARRAY_AGG(DISTINCT j.noc) FILTER (WHERE COALESCE(j.noc, '') <> ''), '{}') AS nocs,
+      COALESCE(ARRAY_AGG(DISTINCT j.province) FILTER (WHERE COALESCE(j.province, '') <> ''), '{}') AS provs,
+      COALESCE(ARRAY_AGG(DISTINCT j.city) FILTER (WHERE COALESCE(j.city, '') <> ''), '{}') AS cities,
+      COALESCE((ARRAY_AGG(j.city ORDER BY j.id) FILTER (WHERE COALESCE(j.city, '') <> ''))[1], '') AS city
+    FROM jobs j JOIN companies c ON c.id = j.company_id
+    WHERE COALESCE(j.status, 'open') <> 'closed'
+    GROUP BY c.id, c.name, c.slug, c.industry, c.alias_zh, c.alias_ko, c.sponsor_grade,
+      c.lmia_positions, c.lmia_positions_skilled, c.lmia_last_quarter, c.lmia_streams,
+      c.lmia_positions_4q, c.lmia_positions_2q, c.lmia_positions_1q${a2}
+    HAVING BOOL_OR(j.aip) OR BOOL_OR(COALESCE(j.pnp_stream, '') <> '') OR COALESCE(c.lmia_positions, 0) > 0
+    ORDER BY open_jobs DESC, c.name ASC`
+
+// ── verdictCache.ts ──
+
+export const DESIGNATED_BY_PROV = `SELECT name, province, location, is_tech, source, nocs, url, fetched
+       FROM designated_employers WHERE province = $1`
+
+// ── employerCompare.ts ──
+
+export const COMPANIES_FOR_COMPARE = `SELECT id, name, industry, alias_zh, alias_ko, wiki_url, website, ai_brief, ai_website,
+            lmia_positions, lmia_positions_skilled, lmia_last_quarter
+       FROM companies WHERE lower(name) = ANY($1)`
+
+export const COMPANY_JOBS_FOR_COMPARE = `SELECT noc, province, pnp_eligible, pnp_stream, ee_category, salary_annual, wage_med_annual, score, aip
+         FROM jobs WHERE company_id = $1 AND status != 'closed' LIMIT 400`
+
+export const PROV_DIFFICULTY_ANY = `SELECT province, difficulty FROM stats WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND province = ANY($1) AND difficulty IS NOT NULL`
+
+/* ══════════════════════════════════════════════════════════════════════════
+   10) 试点(RCIP/FCIP)名额
+   ══════════════════════════════════════════════════════════════════════════ */
+
+// ── pilotQuota.ts ──
+
+export const PILOT_QUOTA_COMMUNITIES = `SELECT community, province, type, first_come, first_come_quote, first_come_url,
+            per_intake, per_intake_quote, per_intake_url,
+            remaining, remaining_quote, remaining_url, as_of
+       FROM pilot_quota
+      WHERE COALESCE(noc, '') = ''`
+
+export const pilotQuotaCommunities = (a1: string) => `SELECT community, province, type, first_come, first_come_quote, first_come_url,
+              per_intake, per_intake_quote, per_intake_url,
+              remaining, remaining_quote, remaining_url, as_of
+         FROM pilot_quota WHERE COALESCE(noc, '') = ''${a1} ORDER BY community`
+
+export const pilotQuotaOccupations = (a1: string) => `SELECT community, province, type, noc, status, quote, url, as_of
+         FROM pilot_quota WHERE COALESCE(noc, '') <> ''${a1} ORDER BY community, noc`
+
+/* ══════════════════════════════════════════════════════════════════════════
+   11) 抽选 / 时间线 / 榜单
+   ══════════════════════════════════════════════════════════════════════════ */
+
+// ── timeline.ts ──
+
+export const PNP_DRAWS_ALL = `SELECT province, kind, draw_date, stream, score, scale, invitations, note, label, url FROM pnp_draws`
+
+export const EE_CATEGORIES_LATEST = `SELECT DISTINCT ON (category) category, label, draw_crs, draw_date, draw_size, url FROM ee_categories
+                WHERE draw_date IS NOT NULL AND draw_date <> '' ORDER BY category`
+
+export const NEWS_RECENT = `SELECT region, title, date, slug, importance, url FROM news ORDER BY date DESC LIMIT 90`
+
+// ── rankings.ts ──
+
+export const RANKING_SLUGS_ALL = `SELECT DISTINCT slug FROM rankings`
+
+export const RANKING_ROWS = `SELECT slug, rank, kind, external_id, title, company, company_slug, city, province, noc, teer, score,
+            salary_text, salary_annual, pnp_stream, ee_category, date_posted, apply_url, official_url,
+            open_jobs, named_jobs, avg_score, lmia_positions, lmia_quarter
+     FROM rankings WHERE slug = $1 ORDER BY rank ASC`
+
+/* ══════════════════════════════════════════════════════════════════════════
+   12) 判定与案例
+   ══════════════════════════════════════════════════════════════════════════ */
+
+// ── tripleWire.ts ──
+
+export const TRIPLE_WIRE_JOB = `SELECT j.id, j.title, j.noc, j.teer, j.province, j.city, j.pnp_eligible, j.pnp_stream,
+            j.ee_category, j.aip, j.employment_term, j.employment_hours, j.company_id,
+            c.name AS company_name, nd.title AS noc_title,
+            nd.title_zh AS noc_title_zh, nd.title_ko AS noc_title_ko
+       FROM jobs j
+       LEFT JOIN companies c ON c.id = j.company_id
+       LEFT JOIN noc_descriptions nd ON nd.noc = j.noc
+      WHERE j.id = $1 LIMIT 1`
+
+export const COMPANY_REGISTRY_FACTS = `SELECT founded_year, registry_status, staff_est, staff_est_src, sector FROM companies WHERE id = $1`
+
+export const COMPANY_LMIA_NOCS_2 = `SELECT lmia_nocs FROM companies WHERE id = $1`
+
+// ── caseFacts.ts ──
+
+export const CASE_PROV_COUNTS = `SELECT province, count(*)::int n, count(*) FILTER (WHERE apprentice_friendly)::int t
+     FROM jobs WHERE noc = $1 AND status <> 'closed'
+     GROUP BY province`
+
+export const PNP_OPS_STATS = `SELECT DISTINCT ON (province, metric) province, metric, value, period, as_of, url
+     FROM pnp_ops_stats
+     WHERE metric IN ('allocation','nominations_ytd','refusals_ytd','laa_ytd','applications_received_ytd','eoi_pool_total')
+       AND (scope IS NULL OR scope = '' OR scope = 'Skilled Worker')
+     ORDER BY province, metric, COALESCE(as_of, period) DESC`
+
+/* ══════════════════════════════════════════════════════════════════════════
+   13) 公司调研 / JD 正文
+   ══════════════════════════════════════════════════════════════════════════ */
+
+// ── companyResearch.ts ──
+
+export const COMPANY_INSERT_LAZY = `INSERT INTO companies (name, source, updated_at, created_at) VALUES ($1, 'ai-lazy', now(), now()) RETURNING id`
+
+// ── jobDescription.ts ──
+
+
+
+// ── jdLazyFetch.ts ──
+
+// ── 补:单引号写的五条 ──
+export const COMPANY_AI_BRIEF = `SELECT id, ai_brief, ai_website, ai_sources, ai_fetched FROM companies WHERE lower(name) = lower($1) LIMIT 1`
+
+/** 别名/维基只在原值为空时补,不覆盖已有(COALESCE 挡住) */
+export const COMPANY_UPDATE_ALIASES = `UPDATE companies SET alias_zh = COALESCE(alias_zh, $1), alias_ko = COALESCE(alias_ko, $2), wiki_url = COALESCE(wiki_url, $3) WHERE id = $4`
+
+export const COMPANY_UPDATE_AI_BRIEF = `UPDATE companies SET ai_brief = $1, ai_website = $2, ai_sources = $3, ai_fetched = now() WHERE id = $4`
+
+export const JD_BY_APPLY_URL = `SELECT description FROM jobs WHERE apply_url = $1 AND description IS NOT NULL LIMIT 1`
+
+/** 懒抓到的正文回写:只填空,不覆盖已有(WHERE description IS NULL) */
+export const JD_UPDATE_BY_APPLY_URL = `UPDATE jobs SET description = $1 WHERE apply_url = $2 AND description IS NULL`
