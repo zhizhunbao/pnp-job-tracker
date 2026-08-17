@@ -3,7 +3,7 @@
 import { useState } from 'react'
 
 import { QuizNav, QuizSub, QuizTitle } from './QuizUI'
-import { UI } from '../ui/primitives'
+import { UI } from '../ui'
 import type { TFn } from '../jobs/i18n'
 
 export const CANADA_PROVINCES = ['BC', 'AB', 'SK', 'MB', 'ON', 'QC', 'NB', 'NS', 'PE', 'NL'] as const

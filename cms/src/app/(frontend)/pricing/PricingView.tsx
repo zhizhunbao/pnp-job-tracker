@@ -5,9 +5,9 @@ import { useEffect, useState } from 'react'
 import { useLang } from '../LangProvider'
 import { AuthModal } from '../jobs/AuthForm'
 import { PricingCard, type PriceCaps } from '../jobs/PricingModal'
-import { SiteHeader } from '../SiteHeader'
-import { SiteFooter } from '../SiteFooter'
-import { PageShell } from '../ui/primitives'
+import { Header } from '../Header'
+import { Footer } from '../Footer'
+import { Shell } from '../ui'
 import { track } from '@/lib/track'
 
 // 来路白名单(低基数,与 lib/funnel 的 PROP_OK 同口径):报告锁区 CTA 带 ?from=rpt-<卡>,其余算直达
@@ -29,10 +29,10 @@ export function PricingView({ loggedIn, pro, caps }: { loggedIn: boolean; pro: b
   return (
     <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
       {/* 全站共享顶栏/页脚(2026-07-16 用户拍板统一 header/footer) */}
-      <SiteHeader lang={lang} setLang={setLangSaved} t={t} />
+      <Header lang={lang} setLang={setLangSaved} t={t} />
 
-      {/* #67 宽度统一:外轨 PageShell 1320;三卡内容轨 1000 居中(#64 三卡比旧对照表宽,760 挤不下) */}
-      <PageShell pad="2.5rem 1.25rem 32px">
+      {/* #67 宽度统一:外轨 Shell 1320;三卡内容轨 1000 居中(#64 三卡比旧对照表宽,760 挤不下) */}
+      <Shell pad="2.5rem 1.25rem 32px">
         <div style={{ maxWidth: 1000, margin: '0 auto' }}>
           <h1 style={{ fontSize: 24, margin: 0, textAlign: 'center' }}>{t('price.title')}</h1>
           <p style={{ fontSize: 13.5, color: '#6b7280', textAlign: 'center', margin: '8px 0 24px' }}>{t('price.sub')}</p>
@@ -44,9 +44,9 @@ export function PricingView({ loggedIn, pro, caps }: { loggedIn: boolean; pro: b
           </a>
           <PricingCard t={t} loggedIn={loggedIn} pro={pro} caps={caps} onRegister={() => setAuth(true)} />
         </div>
-      </PageShell>
+      </Shell>
       {auth && <AuthModal t={t} mode="register" onClose={() => setAuth(false)} onDone={() => window.location.reload()} />}
-      <SiteFooter t={t} />
+      <Footer t={t} />
     </div>
   )
 }

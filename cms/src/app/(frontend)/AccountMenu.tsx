@@ -11,8 +11,8 @@ import { Avatar } from './Avatar'
 import { IconClipboard, IconCompass, IconSave, IconSettings, IconStar, IconTarget, IconUser } from './Icons'
 import type { TFn } from './jobs/i18n'
 
-/** 账户区定宽槽:与 SiteHeader 的 ACCT_SLOT_W 同值。两处差 1px,登录态导航整排就平移 1px
- *  (2026-07-31 实撞过 52px 错位)—— 常量留在 SiteHeader,这里按值对齐避免循环 import。 */
+/** 账户区定宽槽:与 Header 的 ACCT_SLOT_W 同值。两处差 1px,登录态导航整排就平移 1px
+ *  (2026-07-31 实撞过 52px 错位)—— 常量留在 Header,这里按值对齐避免循环 import。 */
 const SLOT_W = 32
 
 const menuItem: React.CSSProperties = { display: 'block', width: '100%', textAlign: 'left', padding: '4px 12px', fontSize: 12.5, color: '#374151', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap', boxSizing: 'border-box', lineHeight: 1.7 }

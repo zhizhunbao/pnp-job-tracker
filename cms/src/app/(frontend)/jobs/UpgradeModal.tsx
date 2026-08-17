@@ -9,7 +9,7 @@ import { track } from '@/lib/track'
 import { IconStar } from '../Icons'
 import { PricingModal, PRICE } from './PricingModal'
 import { AuthModal } from './AuthForm'
-import { Button, Notice } from '../ui/primitives'
+import { Button, Notice } from '../ui'
 
 // 统一升级钮 UpgradeCta(⓪ 2026-07-19 Frank 批「升级 Pro 按钮单独设计」):⭐ 实心棕 pro 型,
 // 全站升级入口从裸文字链换装到这;已登录=开升级弹框,未登录=开注册框(行为与原各处一致)。

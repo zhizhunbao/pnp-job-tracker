@@ -3,9 +3,9 @@
 // 诚实红线:省分数带分制标注(≠CRS);节奏=历史统计,不预测下一次(tl.note 写死)。
 import { useMemo, useState, type KeyboardEvent } from 'react'
 import { useLang } from '../LangProvider'
-import { SiteHeader } from '../SiteHeader'
-import { SiteFooter } from '../SiteFooter'
-import { BANNER_IMGS, PageBanner, PageShell, SectionTabs, SectionTitle, Tag, UI, chipStyle } from '../ui/primitives'
+import { Header } from '../Header'
+import { Footer } from '../Footer'
+import { BANNER_IMGS, Banner, Shell, SectionTabs, Title, Tag, UI, chipStyle } from '../ui'
 import { IconNews } from '../Icons'
 import type { TlCadence, TlEvent } from '@/lib/timeline'
 
@@ -38,9 +38,9 @@ export function TimelineView({ events, cadence, eeCadence }: {
   const provTag = (p: string) => p ? <Tag variant="region">{p}</Tag> : <Tag variant="federal">{t('tl.fed')}</Tag>
   return (
     <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
-      <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="news" />
-      <PageShell pad="1rem 1.25rem 32px">
-        <PageBanner module="news" icon={<IconNews />} title={t('tl.title')} sub={t('tl.sub')} images={BANNER_IMGS.news} />
+      <Header lang={lang} setLang={setLangSaved} t={t} active="news" />
+      <Shell pad="1rem 1.25rem 32px">
+        <Banner module="news" icon={<IconNews />} title={t('tl.title')} sub={t('tl.sub')} images={BANNER_IMGS.news} />
         {/* 2026-07-19 Frank 批提案:统一二级 tab 条(与 /news 互为切换) */}
         <SectionTabs color="#0f766e" tabs={[
           { href: '/news', label: t('tl.tabNews') },
@@ -48,7 +48,7 @@ export function TimelineView({ events, cadence, eeCadence }: {
         ]} />
 
         {/* 抽选节奏(个人化钩 v1:省×流 距今/平均间隔;EE=距今) */}
-        <SectionTitle>{t('tl.cadence')}</SectionTitle>
+        <Title>{t('tl.cadence')}</Title>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 10, marginBottom: 8 }}>
           {cadence.map((c) => (
             <div key={c.prov + c.stream} {...cardClick(c.prov, c.stream)} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '10px 12px', fontSize: 12.5, cursor: 'pointer' }}>
@@ -76,7 +76,7 @@ export function TimelineView({ events, cadence, eeCadence }: {
         </div>
 
         {/* 筛选 chips(手动切省/类型时清掉节奏卡带入的流过滤,避免空结果) */}
-        <div id="tl-events" style={{ scrollMarginTop: 12 }}><SectionTitle>{t('tl.events')}</SectionTitle></div>
+        <div id="tl-events" style={{ scrollMarginTop: 12 }}><Title>{t('tl.events')}</Title></div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '0 0 6px' }}>
           <button style={chipStyle(!fProv)} onClick={() => { setFProv(''); setFStream('') }}>{t('all.prov')}</button>
           <button style={chipStyle(fProv === 'FED')} onClick={() => { setFProv('FED'); setFStream('') }}>{t('tl.fed')}</button>
@@ -113,8 +113,8 @@ export function TimelineView({ events, cadence, eeCadence }: {
           ))}
           {!shown.length && <div style={{ color: '#9ca3af', fontSize: 13, padding: '18px 0' }}>{t('tl.empty')}</div>}
         </div>
-      </PageShell>
-      <SiteFooter t={t} />
+      </Shell>
+      <Footer t={t} />
     </div>
   )
 }

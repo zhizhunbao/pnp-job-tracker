@@ -7,9 +7,9 @@ import { LANGS } from '../../jobs/i18n'
 import { useLang } from '../../LangProvider'
 import { CompanyBody, provName } from '../../jobs/JobsTable'
 import type { CompanyDetail, SimilarEmployer } from '@/lib/jobsSql'
-import { SiteHeader } from '../../SiteHeader'
-import { SiteFooter } from '../../SiteFooter'
-import { CARD_SHELL, Notice, PageShell } from '../../ui/primitives'
+import { Header } from '../../Header'
+import { Footer } from '../../Footer'
+import { CARD_SHELL, Notice, Shell } from '../../ui'
 import { goBackOr } from '../../BackLink'
 
 const aLink: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
@@ -21,8 +21,8 @@ export default function CompanyDetailView({ company, similar = [], loggedIn }: {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f9fafb' }}>
-      <SiteHeader lang={lang} setLang={setLang} t={t} loggedIn={loggedIn} />
-      <PageShell pad="14px 1.25rem 32px">
+      <Header lang={lang} setLang={setLang} t={t} loggedIn={loggedIn} />
+      <Shell pad="14px 1.25rem 32px">
         <div style={{ maxWidth: 860, margin: '0 auto' }}>
           {/* 面包屑:职位板 › 省 › 公司(「公司」无独立索引页,不做死链;省作可点筛选) */}
           <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8, lineHeight: 1.7 }}>
@@ -47,8 +47,8 @@ export default function CompanyDetailView({ company, similar = [], loggedIn }: {
           {!company.jobs.length ? <Notice kind="info">{t('co.notFound')}</Notice> : null}
           {/* 底部返回删(Frank 走查#18):返回统一到头卡右上角 */}
         </div>
-      </PageShell>
-      <SiteFooter t={t} />
+      </Shell>
+      <Footer t={t} />
     </div>
   )
 }

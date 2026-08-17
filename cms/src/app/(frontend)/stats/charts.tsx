@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow, type OccRow, type CityRow } from './shared'
 import type { TFn } from '../jobs/i18n'
-import { CARD_SHELL } from '../ui/primitives'
+import { CARD_SHELL } from '../ui'
 
 type ChartInst = { setOption: (o: object, notMerge?: boolean) => void; resize: () => void; clear: () => void; dispose: () => void; on: (ev: string, cb: (e: { dataIndex: number }) => void) => void }
 
@@ -394,7 +394,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels, firstSc
         </button>
         <EChart option={opt} height={fs ? Math.max(320, vh - 24) : 420} />
       </div>
-      {/* #300(第 38 轮):全屏钮手机触控靶 ≥44;控件行 .mktCtl 的 44 规则在全局 styles.css 640 块(单一来源) */}
+      {/* #300(第 38 轮):全屏钮手机触控靶 ≥44;控件行 .mktCtl 的 44 规则在全局 main.css 640 块(单一来源) */}
       <style>{'@media(min-width:900px){.mktFs{display:none}}@media(max-width:640px){.mktFs{min-height:44px;min-width:44px}}'}</style>
       <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6, lineHeight: 1.6 }}>{t('mkt.note')}</div>
     </div>

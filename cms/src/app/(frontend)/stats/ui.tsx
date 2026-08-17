@@ -3,10 +3,10 @@
 import { useState } from 'react'
 import { type Lang, type TFn } from '../jobs/i18n'
 import { IconPaperclip } from '../Icons'
-import { SiteHeader } from '../SiteHeader'
-import { SiteFooter } from '../SiteFooter'
+import { Header } from '../Header'
+import { Footer } from '../Footer'
 import type { StatRow, SrcRow } from './shared'
-import { CARD_SHELL } from '../ui/primitives'
+import { CARD_SHELL } from '../ui'
 export type { StatRow, SrcRow } from './shared'
 
 // useLang 已搬到 ../LangProvider(状态进 context,初值由服务端 cookie 定 → 首帧不再闪中文);
@@ -14,14 +14,14 @@ export type { StatRow, SrcRow } from './shared'
 export { useLang } from '../LangProvider'
 
 export function StatsShell({ lang, setLang, t, children }: { lang: Lang; setLang: (l: Lang) => void; t: TFn; children: React.ReactNode }) {
-  // 顶栏换全站共享 SiteHeader(2026-07-11 用户指出子页 header 与 /jobs 样式不一致)
+  // 顶栏换全站共享 Header(2026-07-11 用户指出子页 header 与 /jobs 样式不一致)
   return (
     <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
-      <SiteHeader lang={lang} setLang={setLang} t={t} active="stats" />
+      <Header lang={lang} setLang={setLang} t={t} active="stats" />
       {/* #67 宽度统一(2026-07-19):1100 → 1320 与头轨/职位板同宽 */}
       {/* banner 统一(2026-07-31):上距全站 1rem(原 2rem 各页不齐),底距保持 2rem */}
       <div style={{ maxWidth: 1320, margin: '1rem auto 2rem', padding: '0 1.25rem', width: '100%', boxSizing: 'border-box' }}>{children}</div>
-      <SiteFooter t={t} />
+      <Footer t={t} />
     </div>
   )
 }

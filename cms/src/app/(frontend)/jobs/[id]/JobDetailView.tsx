@@ -8,9 +8,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { LANGS } from '../i18n'
 import { useLang } from '../../LangProvider'
 import { catName, JobBody, JobMiniRow, nocLocalTitle, provName, registerCatLabels, type JobRow, type NocDesc, type Plan } from '../JobsTable'
-import { SiteHeader } from '../../SiteHeader'
-import { SiteFooter } from '../../SiteFooter'
-import { CARD_MD, PageShell } from '../../ui/primitives'
+import { Header } from '../../Header'
+import { Footer } from '../../Footer'
+import { CARD_MD, Shell } from '../../ui'
 import { goBackOr } from '../../BackLink'
 import { track } from '@/lib/track'
 import type { RelatedJob } from '@/lib/jobsSql'
@@ -70,8 +70,8 @@ export default function JobDetailView({ job, plan, dims, related }: {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f9fafb' }}>
-      <SiteHeader lang={lang} setLang={setLang} t={t} loggedIn={plan.loggedIn} />
-      <PageShell pad="14px 1.25rem 32px">
+      <Header lang={lang} setLang={setLang} t={t} loggedIn={plan.loggedIn} />
+      <Shell pad="14px 1.25rem 32px">
         <div style={{ maxWidth: 860, margin: '0 auto' }}>
           {/* 面包屑(壳):职位板 › 省 › 大类 › 中类 › 小类;末段「本岗」由 H1 承担不重复 */}
           <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8, lineHeight: 1.7 }}>
@@ -141,8 +141,8 @@ export default function JobDetailView({ job, plan, dims, related }: {
               成了「有 aha 没去处」的孤儿。组件文件保留(照答题卡摘入口先例);卡位由 C6 通道卡接手(见上)。 */}
 
         </div>
-      </PageShell>
-      <SiteFooter t={t} />
+      </Shell>
+      <Footer t={t} />
     </div>
   )
 }

@@ -11,7 +11,7 @@
 //   ④ 文案铁律:零逗号、省名不裸码、禁口语腔(通道名全走 i18n jpw.p.* 人话名)。
 import { useEffect, useRef, useState } from 'react'
 
-import { UI } from '../../ui/primitives'
+import { UI } from '../../ui'
 import type { TFn } from '../i18n'
 import { track } from '@/lib/track'
 

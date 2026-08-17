@@ -4,7 +4,7 @@
 // 省专属题按省分组进真选项卡(ui/Tabs,badge=该省还没答几题)。
 // 摘要卡与带岗态判定卡②共用本组件 —— 同一种东西一个长相。
 import { useState } from 'react'
-import { Tabs, TabPanel } from '../ui/Tabs'
+import { Tabs, TabPanel } from '../ui'
 
 export type ConditionRow = {
   key: string; prov: string; label: string; value: string; filled: boolean

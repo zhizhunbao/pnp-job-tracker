@@ -3,8 +3,8 @@
 // i18n.ts 只管 UI 壳 —— 法务长文不进全局字典。文案为模板级自拟,不构成法律意见(收入后请专业审阅,backlog)。
 import { type Lang } from '../jobs/i18n'
 import { useLang } from '../LangProvider'
-import { SiteHeader } from '../SiteHeader'
-import { SiteFooter } from '../SiteFooter'
+import { Header } from '../Header'
+import { Footer } from '../Footer'
 
 // 公开支持邮箱(删号/异议下架/退款申请都走它):正式域名定了换 env 即可
 export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'wangsansi9527@gmail.com'
@@ -18,7 +18,7 @@ export function LegalShell({ docs, icon }: { docs: Record<Lang, LegalDoc>; icon?
   return (
     <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
       {/* 全站共享顶栏/页脚(2026-07-16 用户拍板统一 header/footer) */}
-      <SiteHeader lang={lang} setLang={setLangSaved} t={t} />
+      <Header lang={lang} setLang={setLangSaved} t={t} />
       <div style={{ maxWidth: 720, margin: '2.5rem auto', padding: '1.75rem 2rem', border: '1px solid #e5e7eb', borderRadius: 10, background: '#fff' }}>
         <h1 style={{ fontSize: 21, margin: '0 0 4px' }}>{icon}{icon ? ' ' : null}{doc.title}</h1>
         <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 18 }}>{doc.updated}</div>
@@ -35,7 +35,7 @@ export function LegalShell({ docs, icon }: { docs: Record<Lang, LegalDoc>; icon?
           </section>
         ))}
       </div>
-      <SiteFooter t={t} />
+      <Footer t={t} />
     </div>
   )
 }

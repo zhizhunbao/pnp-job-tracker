@@ -11,9 +11,9 @@
 //      **只到「够不够线」为止**:不许延伸成「多久能被捞」「概率多大」(禁概率红线)。
 import { useEffect, useState } from 'react'
 
-import { DataTable } from '../../ui/DataTable'
-import { Tabs } from '../../ui/Tabs'
-import { UI } from '../../ui/primitives'
+import { Table } from '../../ui'
+import { Tabs } from '../../ui'
+import { UI } from '../../ui'
 import { lineStateOf, type LineState } from '@/lib/scoreLine'
 import type { DrawRow } from '@/lib/pnpSelfScore'
 
@@ -208,7 +208,7 @@ export function ScoreLineCard({
             ))}
           </div>
           <div className="slTbl">
-            <DataTable<DrawRow> rows={list} rowKey={(d, i) => `${d.drawDate}:${i}`} bare
+            <Table<DrawRow> rows={list} rowKey={(d, i) => `${d.drawDate}:${i}`} bare
               cols={[
                 { key: 'date', label: t('sl.date'), width: '18%', nowrap: true, sort: (d) => d.drawDate,
                   render: (d) => <span style={{ fontVariantNumeric: 'tabular-nums', color: UI.text2, fontSize: 12.5 }}>{d.drawDate}</span> },

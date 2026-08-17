@@ -11,7 +11,7 @@
 import { useEffect, useState } from 'react'
 
 import { makeT, reqStreamDisplay, streamDisplay, type Lang, type TFn } from './i18n'
-import { CARD_MD, CARD_SHELL } from '../ui/primitives'
+import { CARD_MD, CARD_SHELL } from '../ui'
 import { ConditionGrid } from './ConditionGrid'
 import { track } from '@/lib/track'
 import { readAnswers, toEngineAnswers } from '@/lib/answers'

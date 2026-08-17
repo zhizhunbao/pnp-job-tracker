@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { TFn } from '../jobs/i18n'
 import { IconTarget } from '../Icons'
-import { Button, Notice, chipStyle } from '../ui/primitives'
+import { Button, Notice, chipStyle } from '../ui'
 import { POPULAR_NOCS, CLB_OPTS, CRS_OPTS, PGWP_OPTS, clbActive, crsActive, pgwpActive, type Opt } from './profileOptions'
 
 type NocOpt = { noc: string; title: string }

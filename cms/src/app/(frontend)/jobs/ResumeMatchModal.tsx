@@ -7,8 +7,8 @@ import { useEffect, useRef, useState } from 'react'
 
 import { Modal, ModalTitle } from './Modal'
 import { useLang } from '../LangProvider'
-import { LockedRows, UI } from '../ui/primitives'
-import { DataTable } from '../ui/DataTable'
+import { LockedRows, UI } from '../ui'
+import { Table } from '../ui'
 import { track } from '@/lib/track'
 
 type Row = { req: string; hit: boolean; note: string }
@@ -102,8 +102,8 @@ export function ResumeMatchModal({ jobId, jd, loggedIn, onClose }: {
         </div>
       ) : res ? (
         <div style={{ marginTop: 12 }}>
-          {/* 2026-08-11(Frank「都改成一套」):自造裸 <table> → 公共 DataTable(bare=弹框自己就是白底) */}
-          <DataTable<{ req: string; hit: boolean; note: string }> rows={res.visible} rowKey={(_r, i) => String(i)} bare
+          {/* 2026-08-11(Frank「都改成一套」):自造裸 <table> → 公共 Table(bare=弹框自己就是白底) */}
+          <Table<{ req: string; hit: boolean; note: string }> rows={res.visible} rowKey={(_r, i) => String(i)} bare
             cols={[
               { key: 'req', label: t('rm.colReq'), width: '42%', render: (r) => r.req },
               { key: 'res', label: t('rm.colRes'), render: (r) => <span style={{ color: r.hit ? UI.ok : UI.danger }}>{(r.hit ? '✓ ' : '✗ ') + r.note}</span> },

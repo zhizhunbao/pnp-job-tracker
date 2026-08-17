@@ -9,8 +9,8 @@ import { Fragment, useState, useEffect, useLayoutEffect, useRef, useCallback } f
 
 import { dropProvPrefix, streamDisplay } from '../../jobs/i18n'
 import { useLang } from '../../LangProvider'
-import { SiteHeader } from '../../SiteHeader'
-import { SiteFooter } from '../../SiteFooter'
+import { Header } from '../../Header'
+import { Footer } from '../../Footer'
 import { quizToProfile } from '../../quiz/EntryQuiz'
 import { AuthModal } from '../../jobs/AuthForm'
 import { OccPicker } from '../../quiz/OccPicker'
@@ -18,9 +18,9 @@ import { ProvincePicker } from '../../quiz/ProvincePicker'
 import { POPULAR_NOCS } from '../../account/profileOptions'
 import { QuizStyle, QuizTitle, pickL, type L } from '../../quiz/QuizUI'
 import { QuizForm } from '../QuizForm'
-import { BANNER_IMGS, PageBanner, PageShell, UI } from '../../ui/primitives'
-import { DataTable } from '../../ui/DataTable'
-import { JobCard } from '../../ui/JobCard'
+import { BANNER_IMGS, Banner, Shell, UI } from '../../ui'
+import { Table } from '../../ui'
+import { JobCard } from '../../ui'
 import { TripleVerdictPanel } from '../../jobs/TripleVerdictModal'
 import { ConditionGrid } from '../../jobs/ConditionGrid'
 import { ScoreLineCard, recentDraws } from './ScoreLineCard'
@@ -843,7 +843,7 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
                       const stateText = row.belowLine && row.score?.refLine != null
                         ? t('dp.planBelowLine', { v: row.score.value, line: row.score.refLine })
                         : t(stateKey)
-                      // 区域线拆省后同 key 多行 → rowKey 带省码去重(React key / DataTable rowKey / 埋点共用)
+                      // 区域线拆省后同 key 多行 → rowKey 带省码去重(React key / Table rowKey / 埋点共用)
                       return { rowKey: regionProvincesOf(row.key) && /^[A-Z]{2}$/.test(row.province) ? `${row.key}:${row.province}` : row.key, index, province, routeName, top: index === 0 && !row.blockedBy && !row.belowLine,
                         ratio: row.competition?.ratio ?? null, pilotQuota: row.pilotQuota ?? null, stateText, afterOk, openOk, jobsHref, jobsN, empHref,
                         seeJobsKey: ui.seeJobsKey ?? 'dp.planSeeJobsAip',
@@ -1013,7 +1013,7 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
                           ))}
                         </div>
                         <div className="dpPlanTbl">
-                          <DataTable<PlanRow> rows={rows} rowKey={(r) => r.rowKey} bare
+                          <Table<PlanRow> rows={rows} rowKey={(r) => r.rowKey} bare
                             cols={[
                               { key: 'rank', label: '#', width: '5%', render: rank },
                               { key: 'path', label: t('dp.planPath'), width: planCoarse ? '43%' : '23%', render: (r) => (
@@ -1169,7 +1169,7 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
         ))}
       </div>
       <div className="dpCompTbl">
-        <DataTable<ProvCompetition> rows={competition} rowKey={(r) => r.province} bare
+        <Table<ProvCompetition> rows={competition} rowKey={(r) => r.province} bare
           cols={[
             { key: 'province', label: t('dp.prov'), width: '24%', sort: (r) => provDisp(r.province), render: (r) => (
               <span style={{ display: 'flex', alignItems: 'baseline', gap: 6, minWidth: 0 }}>
@@ -1259,7 +1259,7 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
                   ))}
                 </div>
                 <div className="dpOccTbl">
-                  <DataTable<OccCompetitionRow> rows={occComp} rowKey={(r) => r.province} bare
+                  <Table<OccCompetitionRow> rows={occComp} rowKey={(r) => r.province} bare
                     cols={[
                       { key: 'province', label: t('dp.prov'), width: '28%', sort: (r) => provDisp(r.province), render: (r) => (
                         <span style={{ display: 'flex', alignItems: 'baseline', gap: 6, minWidth: 0 }}>
@@ -1394,12 +1394,12 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
 
   return (
     <div style={{ background: UI.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
-      <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="pathways" />
+      <Header lang={lang} setLang={setLangSaved} t={t} active="pathways" />
       <div style={{ flex: '1 0 auto' }}>
-        <PageShell pad="1rem 1.25rem 40px">
+        <Shell pad="1rem 1.25rem 40px">
           <div style={{ width: '100%' }}>
-            {/* PR 评估是顶栏一级页:banner 与全部卡片统一使用 PageShell 1320px 页面轨,不放历史返回按钮。 */}
-            <PageBanner module="pathways" title={t('plan.pr.title')} sub={t('dp.sub')} images={BANNER_IMGS.pathways} />
+            {/* PR 评估是顶栏一级页:banner 与全部卡片统一使用 Shell 1320px 页面轨,不放历史返回按钮。 */}
+            <Banner module="pathways" title={t('plan.pr.title')} sub={t('dp.sub')} images={BANNER_IMGS.pathways} />
 
             {/* 我的评估条件摘要卡片。
                 **带岗进来时整张不出**(2026-08-12 B2/A3,Frank 实拍指「重复」):判定卡里已经有
@@ -1539,10 +1539,10 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
                     </div>
                   ))}
                 </div>
-                {/* 2026-08-11(Frank「都改成一套」):自造裸 <table> → 公共 DataTable(bare=已在 CARD 内)。
+                {/* 2026-08-11(Frank「都改成一套」):自造裸 <table> → 公共 Table(bare=已在 CARD 内)。
                     列宽照旧写死(27/27/30/16),省名可截断而灰码永不截的处理留在 render 里 */}
                 <div className="dpDrawTbl">
-                  <DataTable<typeof overview[number]> rows={overview} rowKey={(r) => r.province} bare
+                  <Table<typeof overview[number]> rows={overview} rowKey={(r) => r.province} bare
                     cols={[
                       { key: 'prov', label: t('dp.prov'), width: '24%', sort: (r) => provDisp(r.province), render: (r) => (
                         <span title={provDisp(r.province)} style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
@@ -1569,9 +1569,9 @@ export function PrDecisionView({ overview, drawsRecent = [], competition = [], t
             {/* 2026-08-11 Frank 撤:页尾「看在招岗 / 问 AI 顾问」两个钮,与方案卡的「查看详细行动方案」一起。
                 顾问不再从本页导流(见记忆 advisor-quality-gate);看在招岗的入口在方案卡下面的「验证具体岗位」。 */}
           </div>
-        </PageShell>
+        </Shell>
       </div>
-      <SiteFooter t={t} />
+      <Footer t={t} />
     </div>
   )
 }

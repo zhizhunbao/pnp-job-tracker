@@ -1,16 +1,16 @@
 'use client'
-// 公共 DataTable(组件统一 P2 头件,2026-07-19 Frank:「所有页面都用同一个 table 组件」)——
+// 公共 Table(组件统一 P2 头件,2026-07-19 Frank:「所有页面都用同一个 table 组件」)——
 // 简单表统一壳:jobs 主表同款观感(表头可排序 ↑↓ 态、拖列宽、行 hover、白卡圆角描边容器);
 // jobs 主表是独立重器(服务端排序/冻结列/字段面板)不并入,只对齐视觉 token(G 节拍板)。
 // 排序=客户端(简单表数据已全量在手);列用配置声明,render 缺省取 r[key]。
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { UI } from './primitives'
+import { UI } from './tokens'
 
-// 翻页行(总数 + ‹ x/y ›):DataTable 内置页脚用,OccBoard 手机卡片列表也复用同一个
-export function DTPager({ page, max, note, onPage }: {
+// 翻页行(总数 + ‹ x/y ›):Table 内置页脚用,OccBoard 手机卡片列表也复用同一个
+export function Pager({ page, max, note, onPage }: {
   page: number; max: number; note?: React.ReactNode; onPage: (p: number) => void
 }) {
-  // #276 手机触控靶:padding 移交 .dtPagerBtn(styles.css),桌面值原样,手机断点单独抬 ≥44px
+  // #276 手机触控靶:padding 移交 .dtPagerBtn(main.css),桌面值原样,手机断点单独抬 ≥44px
   const btn = (disabled: boolean): React.CSSProperties => ({
     border: `1px solid ${UI.border}`, borderRadius: 6, background: '#fff',
     fontSize: 13, lineHeight: '18px', fontFamily: 'inherit',
@@ -30,7 +30,7 @@ export function DTPager({ page, max, note, onPage }: {
   )
 }
 
-export type DTCol<T> = {
+export type Col<T> = {
   key: string
   label: React.ReactNode
   render?: (r: T) => React.ReactNode
@@ -39,12 +39,12 @@ export type DTCol<T> = {
   thTip?: string                            // 表头 hover 提示(如「技能类获批」口径)
   // 下面两个是 2026-08-11「全站表格并成一套」时补的通用能力 —— 原先五张裸 <table> 各自实现:
   width?: string                            // 显式列宽(百分比):给了就不进自动量宽锁列(抽选表这类固定版式)
-  className?: string                        // 列级 class:窄屏藏列等交给 styles.css(漏斗表 .fnCol)
+  className?: string                        // 列级 class:窄屏藏列等交给 main.css(漏斗表 .fnCol)
   align?: 'left' | 'right'                  // 数字列右对齐(漏斗/抽选表);缺省左
 }
 
-export function DataTable<T>({ cols, rows, rowKey, empty, header, minWidth, pageSize, footerNote, foot, bare }: {
-  cols: DTCol<T>[]; rows: T[]; rowKey: (r: T, i: number) => string; empty?: React.ReactNode
+export function Table<T>({ cols, rows, rowKey, empty, header, minWidth, pageSize, footerNote, foot, bare }: {
+  cols: Col<T>[]; rows: T[]; rowKey: (r: T, i: number) => string; empty?: React.ReactNode
   header?: React.ReactNode                  // 卡内表格上方的头行(如 occupations 的通道标题行)
   minWidth?: number                         // 窄屏横滚而非挤成竖排(stats 第 2 轮 #10)
   pageSize?: number                         // 传了才分页:先全量排序再切页,页脚出总数+翻页
@@ -119,7 +119,7 @@ export function DataTable<T>({ cols, rows, rowKey, empty, header, minWidth, page
         </tr></thead>
         <tbody>
           {/* E8-08 hover 规范(Frank「可点才有态」):行本身不可点 → 行 hover 摘除(原 #f9fafb 全行态误导);
-              行内链接/钮的 hover 由 styles.css 全局规则(a:hover 加深)接管 */}
+              行内链接/钮的 hover 由 main.css 全局规则(a:hover 加深)接管 */}
           {paged.map((r, i) => {
             const k = rowKey(r, i)
             return (
@@ -134,7 +134,7 @@ export function DataTable<T>({ cols, rows, rowKey, empty, header, minWidth, page
       {rows.length === 0 && <div style={{ padding: '24px 16px', color: UI.text3, fontSize: 13, textAlign: 'center' }}>{empty}</div>}
       {pageSize != null && rows.length > 0 && (
         <div style={{ padding: '8px 12px', borderTop: `1px solid ${UI.hairline}` }}>
-          <DTPager page={p} max={maxPage} note={footerNote} onPage={setPage} />
+          <Pager page={p} max={maxPage} note={footerNote} onPage={setPage} />
         </div>
       )}
     </div>

@@ -16,14 +16,14 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { eeKeyDisplay, makeT, drawStreamNote, streamDisplay, type Lang, type TFn } from '../jobs/i18n'
 import { useLang } from '../LangProvider'
-import { SiteHeader } from '../SiteHeader'
-import { SiteFooter } from '../SiteFooter'
+import { Header } from '../Header'
+import { Footer } from '../Footer'
 import { MarketChart, useMarketStats } from '../stats/charts'
 import { BROAD_SLUGS, PROVS, PROV_NAME, type OccRow, type ProvExtra, type StatRow } from '../stats/shared'
 import { shortOcc } from '../quiz/EntryQuiz'
-import { JobCard } from '../ui/JobCard'
-import { DataTable, DTPager, type DTCol } from '../ui/DataTable'
-import { BANNER_IMGS, Chip, PageBanner, PageShell, Tag, UI } from '../ui/primitives'
+import { JobCard } from '../ui'
+import { Table, Pager, type Col } from '../ui'
+import { BANNER_IMGS, Chip, Banner, Shell, Tag, UI } from '../ui'
 import { track } from '@/lib/track'
 import { SponsorCard, sponsorEmployerCols, hasVerdictSignal, type SponsorKind } from '../employers/SponsorEmployersView'
 import type { SponsorEmployerRow } from '@/lib/sponsorEmployers'
@@ -104,9 +104,9 @@ const secH: React.CSSProperties = { margin: '0 0 6px', fontWeight: 700, display:
 const moreA: React.CSSProperties = { fontSize: 13, fontWeight: 600, color: UI.primary, textDecoration: 'none', whiteSpace: 'nowrap' }
 const hmRight: React.CSSProperties = { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }
 
-// 全宽色带 + PageShell 内轨(全站统一 1320 正文轨)
+// 全宽色带 + Shell 内轨(全站统一 1320 正文轨)
 function Band({ bg, id, children }: { bg?: string; id?: string; children: React.ReactNode }) {
-  return <div className="plBand" id={id} style={{ background: bg, scrollMarginTop: 52 }}><PageShell pad="0 1.25rem">{children}</PageShell></div>
+  return <div className="plBand" id={id} style={{ background: bg, scrollMarginTop: 52 }}><Shell pad="0 1.25rem">{children}</Shell></div>
 }
 
 // 分区标题(08-10 Frank「所有的展开和关闭按钮都删了」:折叠开关连同 localStorage 记忆一并撤,分区恒展开)。
@@ -146,7 +146,7 @@ function SbSel({ value, onChange, all, options }: {
   )
 }
 
-// 雇主橱窗单表(Frank 08-08「加分页」+「每表加筛选条件」+「按逻辑重新设计」):桌面 DataTable 翻页(10/页),
+// 雇主橱窗单表(Frank 08-08「加分页」+「每表加筛选条件」+「按逻辑重新设计」):桌面 Table 翻页(10/页),
 // 手机卡 5/页;全量已在客户端 → 筛选纯前端,控件一行等高 30 照职位板站规(#282 教训)。
 // 每表按人群逻辑配筛选(职业筛 08-08 Frank「大类种类小类联动过滤要加上」;08-09 Frank「全部小类呢?」
 //   补上真·小类一级——此前把「职业」下拉错当小类,从中类直接跳职业。现为大类→中类→小类→职业四级联动,
@@ -260,11 +260,11 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: 
   return (
     <>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '0 0 10px' }}>{controls}</div>
-      <div className="plTable"><DataTable<SponsorEmployerRow> rows={shown} cols={sponsorEmployerCols(t, lang, kind, showVerdict)} rowKey={(r) => r.name} pageSize={10} footerNote={note} empty={t('se.empty')} /></div>
+      <div className="plTable"><Table<SponsorEmployerRow> rows={shown} cols={sponsorEmployerCols(t, lang, kind, showVerdict)} rowKey={(r) => r.name} pageSize={10} footerNote={note} empty={t('se.empty')} /></div>
       <div className="plCards">
         {shown.slice(p * PAGE, (p + 1) * PAGE).map((r) => <SponsorCard key={r.name} r={r} lang={lang} t={t} kind={kind} showVerdict={showVerdict} />)}
         {shown.length === 0 && <div style={{ padding: '18px 12px', color: '#9ca3af', fontSize: 13, textAlign: 'center' }}>{t('se.empty')}</div>}
-        <div style={{ padding: '2px 2px 0' }}><DTPager page={Math.min(p, maxPage - 1)} max={maxPage} note={note} onPage={setP} /></div>
+        <div style={{ padding: '2px 2px 0' }}><Pager page={Math.min(p, maxPage - 1)} max={maxPage} note={note} onPage={setP} /></div>
       </div>
     </>
   )
@@ -294,7 +294,7 @@ function TopN({ v, on, max }: { v: number; on: (n: number) => void; max: number 
 }
 
 // ── 职业榜(S2/S3/S4 共用一套形态)────────────────────────────────
-// 桌面 DataTable(全站公共表件,百分比自适应不横滚)/ ≤900 JobCard 列表(全站唯一那张卡)。
+// 桌面 Table(全站公共表件,百分比自适应不横滚)/ ≤900 JobCard 列表(全站唯一那张卡)。
 // 变化量口径 = **近 14 天新发环比 mom14d**(契约 v3):下架信号与 30 天窗都不可靠 →
 // 净流失类数字与措辞一律不上前端,判决语只说「14 天新发在萎缩/腰斩」这类拿新发数就能对账的话,
 // 且文案里必须带窗口(不许只写「环比」让人当成月环比)。
@@ -347,7 +347,7 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
       </span>
     )
   }
-  // 手机卡片列表的页态(桌面表格的页态在 DataTable 里,俩视图同刻只显示一个,各翻各的)
+  // 手机卡片列表的页态(桌面表格的页态在 Table 里,俩视图同刻只显示一个,各翻各的)
   const [page, setPage] = useState(0)
   useEffect(() => { setPage(0) }, [rows])
   const maxPage = Math.max(1, Math.ceil(rows.length / pageSize))
@@ -363,7 +363,7 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
   const momCell = (o: OccRow) => (o.mom14d == null ? null
     : <span style={{ color: flatDelta ? UI.text : momColor(o.mom14d), fontWeight: 700, whiteSpace: 'nowrap' }}>{pctSigned(o.mom14d)}</span>)
 
-  const cols: DTCol<OccRow>[] = [
+  const cols: Col<OccRow>[] = [
     {
       key: 'occ', label: t('pulse.col.occ'), sort: (o) => occMain(o, lang),
       // Frank 08-06「职业名字要显示完整,右面有很多空间」:不截断不省略,长名自然折行
@@ -427,7 +427,7 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
 
   return (
     <>
-      <div className="plTable"><DataTable<OccRow> rows={rows} cols={cols} rowKey={(o) => o.noc} pageSize={pageSize} footerNote={totalNote} /></div>
+      <div className="plTable"><Table<OccRow> rows={rows} cols={cols} rowKey={(o) => o.noc} pageSize={pageSize} footerNote={totalNote} /></div>
       {/* ≤900 卡片:左列身份(职业名/可提名省份)、右列数字(新发环比)——与职位板同一张 JobCard。
           薪资偏离只留桌面表:375 上两个百分数并排谁是谁得猜 —— 宁可少一个数,不给会读错的数 */}
       <div className="plCards">
@@ -465,7 +465,7 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
           )
         })}
         <div style={{ padding: '2px 2px 0' }}>
-          <DTPager page={p} max={maxPage} note={totalNote} onPage={setPage} />
+          <Pager page={p} max={maxPage} note={totalNote} onPage={setPage} />
         </div>
       </div>
     </>
@@ -663,7 +663,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
           .plNums b{font-size:32px}
           .plNums span,.plNums i{font-size:12.5px}
           .plTable{display:block}.plCards{display:none}
-          .plDrawTable{display:block}.plDrawCards{display:none}   /* 抽选表并入公共 DataTable 后这里是包裹 div,不再是 <table> */
+          .plDrawTable{display:block}.plDrawCards{display:none}   /* 抽选表并入公共 Table 后这里是包裹 div,不再是 <table> */
           .plBtn{padding:13px 28px;font-size:15px}
           .plCta{flex-direction:row;align-items:center}
           .plCta .plBtn{flex:0 0 auto;padding:12px 28px}
@@ -673,12 +673,12 @@ export function StartView({ stats }: { stats: HomeStats }) {
           .plMoreA{min-height:auto}
           .plNavRow{padding:9px 0}
         }`}</style>
-      <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="start" />
+      <Header lang={lang} setLang={setLangSaved} t={t} active="start" />
       {/* 二级导航条(08-08 Frank):分区锚点直跳;粘顶,375 横向滚动。
           2026-08-09 Frank「这个地方的高亮也不对啊」:原先五个锚点永远灰、属主永远蓝=看着像永远停在第一项。
           现加滚动跟随(当前分区的锚点亮蓝),属主前缀改深色粗体——蓝色只有一个语义:你现在在哪 */}
       <div style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', borderBottom: `1px solid ${UI.border}` }}>
-        <PageShell pad="0 1.25rem">
+        <Shell pad="0 1.25rem">
           <div className="plNavRow" style={{ display: 'flex', gap: 16, overflowX: 'auto', fontSize: 12.5, whiteSpace: 'nowrap', alignItems: 'center' }}>
             {/* 归属设计(Frank 08-08「二级标题应该只属于这个一级标题」):条首挂一级项「就业把脉」作属主 */}
             <span style={{ fontWeight: 700, color: UI.text, flexShrink: 0 }}>{t('pulse.entry')}</span>
@@ -689,18 +689,18 @@ export function StartView({ stats }: { stats: HomeStats }) {
               <a key={id} href={'#' + id} className="plNavA" style={{ color: navSec === id ? UI.primary : '#6b7280', textDecoration: 'none', fontWeight: navSec === id ? 700 : 600, flexShrink: 0 }}>{label}</a>
             ))}
           </div>
-        </PageShell>
+        </Shell>
       </div>
       <main style={{ flex: '1 0 auto' }}>
 
         {/* ── S1 判决区:动态冷脸标题 + 四脉象卡(banner 下方——毛玻璃合并版试过一轮,
             Frank 08-06「还是放下来吧」;副题口号已删,调性靠数字自己立) ── */}
         <div className="plBand plHero">
-          <PageShell pad="0 1.25rem">
+          <Shell pad="0 1.25rem">
             {/* banner 口号 08-07 Frank 拍板删(「你的下一步,用数据算出来」);图上叠页名 08-09 Frank
                 「这个文字是不是应该删了」→ 切 #267 方案B:视觉纯图,H1 文字 sr-only 保留(裸删=#267
                 空 H1 复发,SEO/无障碍双输);页 <title> 不受影响 */}
-            <PageBanner module="home" tall title={<span className="plSrOnly">{t('pulse.entry')}</span>} images={BANNER_IMGS.home} />
+            <Banner module="home" tall title={<span className="plSrOnly">{t('pulse.entry')}</span>} images={BANNER_IMGS.home} />
             {pulseCards.length > 0 && (
               <div className="plNums">
                 {pulseCards.map((c) => (
@@ -712,7 +712,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
                 ))}
               </div>
             )}
-          </PageShell>
+          </Shell>
         </div>
 
         {/* ── 在招担保雇主橱窗三分表(Frank 08-08:按人群拆+分页——每表 50 行,桌面 10/页,手机卡 5/页;
@@ -786,7 +786,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
         )}
 
         {/* ── S4a 分省概览(Frank 08-06「省卡改表格吧 拆两个section」):
-            桌面=可排序 DataTable(10 省 × 混量纲指标,表格才排得动),手机=原省卡(站规「电脑表格手机卡片」)。
+            桌面=可排序 Table(10 省 × 混量纲指标,表格才排得动),手机=原省卡(站规「电脑表格手机卡片」)。
             表格行不可点(E8-08 站规「可点才有态」),切省统一走 S4b 的 chips;手机卡片保留点卡切省。 ── */}
         {(market === null || provRows.length > 0) && (
           <Band id="pl-prov">
@@ -796,7 +796,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
             )}
             {provRows.length > 0 && (<>
             <div className="plTable">
-              <DataTable<StatRow>
+              <Table<StatRow>
                 rows={provRows}
                 rowKey={(r) => r.province}
                 cols={[
@@ -928,10 +928,10 @@ export function StartView({ stats }: { stats: HomeStats }) {
                 <Sec id="s5" title={t('pulse.s5')}
                   right={<><TopN v={drawsN} on={setDrawsN} max={stats.draws.length} /><a href="/plan/pr" className="plMoreA" style={moreA}>{t('plan.pr.title')}</a></>}>
                 <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
-                  {/* 2026-08-11(Frank「都改成一套」):自造裸 <table> → 公共 DataTable(bare=外面这层就是卡壳)。
+                  {/* 2026-08-11(Frank「都改成一套」):自造裸 <table> → 公共 Table(bare=外面这层就是卡壳)。
                       列宽照旧写死(冷解读吃最宽一列,它是这张表的结论);百分比固定布局永不横滚 */}
                   <div className="plDrawTable">
-                    <DataTable<typeof stats.draws[number]> rows={stats.draws.slice(0, drawsN)} rowKey={(_r, i) => String(i)} bare
+                    <Table<typeof stats.draws[number]> rows={stats.draws.slice(0, drawsN)} rowKey={(_r, i) => String(i)} bare
                       cols={[
                         { key: 'date', label: t('home.dr.date'), width: '12%', render: (r) => ymd(r.date) },
                         { key: 'prog', label: t('home.dr.prog'), width: '8%', render: (r) => <Tag>{r.province === 'FED' ? 'EE' : r.province}</Tag> },
@@ -999,7 +999,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
 
         {/* ── S6 职位板入口(文案承接判决)────────────────────────────────────── */}
         <div className="plBand" style={{ background: 'linear-gradient(100deg,#eff6ff,#dbeafe)' }}>
-          <PageShell pad="0 1.25rem">
+          <Shell pad="0 1.25rem">
             <div className="plCta">
               <span style={{ flex: 1 }}>
                 <span style={{ fontSize: 17, fontWeight: 700, color: UI.primaryDeep, display: 'block', marginBottom: 4 }}>{t('pulse.s6.t')}</span>
@@ -1007,12 +1007,12 @@ export function StartView({ stats }: { stats: HomeStats }) {
               </span>
               <a className="plBtn" style={{ background: UI.primary, color: '#fff' }} href="/" onClick={() => track('landing_cta_browse')}>{t('home.ctaBrowse')}</a>
             </div>
-          </PageShell>
+          </Shell>
         </div>
 
         {/* S7 订阅/分享区与页尾口径说明 2026-08-06 Frank 拍板都删(半空色带只挂一个折叠钮=版面噪音) */}
       </main>
-      <SiteFooter t={t} />
+      <Footer t={t} />
     </div>
   )
 }

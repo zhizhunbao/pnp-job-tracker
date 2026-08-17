@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react'
 import type { TFn } from './i18n'
 import { Modal } from './Modal'
-import { Button } from '../ui/primitives'
+import { Button } from '../ui'
 import { IconCheck, IconStar } from '../Icons'
 import { AuthModal } from './AuthForm'
 import { track } from '@/lib/track'

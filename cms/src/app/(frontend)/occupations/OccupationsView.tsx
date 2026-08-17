@@ -3,10 +3,10 @@
 // 口径红线:清单命中=粗筛信号,非资格认定(dir.occ.note)。
 import { streamDisplay } from '../jobs/i18n'
 import { useLang } from '../LangProvider'
-import { SiteHeader } from '../SiteHeader'
-import { SiteFooter } from '../SiteFooter'
-import { BANNER_IMGS, PageBanner, PageShell, SectionTitle, Tag, UI } from '../ui/primitives'
-import { DataTable } from '../ui/DataTable'
+import { Header } from '../Header'
+import { Footer } from '../Footer'
+import { BANNER_IMGS, Banner, Shell, Title, Tag, UI } from '../ui'
+import { Table } from '../ui'
 import { IconClipboard } from '../Icons'
 import type { OccRow } from '@/lib/directory'
 
@@ -25,9 +25,9 @@ export function OccupationsView({ rows }: { rows: OccRow[] }) {
 
   return (
     <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
-      <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="employers" />
-      <PageShell pad="1rem 1.25rem 32px">
-        <PageBanner module="jobs" icon={<IconClipboard />} title={t('dir.occ.title')} sub={t('dir.occ.sub')} images={BANNER_IMGS.jobs} />
+      <Header lang={lang} setLang={setLangSaved} t={t} active="employers" />
+      <Shell pad="1rem 1.25rem 32px">
+        <Banner module="jobs" icon={<IconClipboard />} title={t('dir.occ.title')} sub={t('dir.occ.sub')} images={BANNER_IMGS.jobs} />
         <div style={{ fontSize: 12.5, color: '#6b7280', margin: '0 0 6px', lineHeight: 1.6 }}>{t('dir.occ.note')}</div>
         {/* 省锚点导航 */}
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', margin: '0 0 8px', fontSize: 12.5 }}>
@@ -35,11 +35,11 @@ export function OccupationsView({ rows }: { rows: OccRow[] }) {
         </div>
         {provs.map((p) => (
           <section key={p.prov} id={`prov-${p.prov}`}>
-            <SectionTitle>{t('pr.' + p.prov)} <Tag variant="region">{p.prov}</Tag></SectionTitle>
+            <Title>{t('pr.' + p.prov)} <Tag variant="region">{p.prov}</Tag></Title>
             {p.streams.map((s) => (
-              // 组件统一 P2 余批(#110):通道表换公共 DataTable(排序/拖宽/hover 同 jobs 观感),通道标题走 header 槽
+              // 组件统一 P2 余批(#110):通道表换公共 Table(排序/拖宽/hover 同 jobs 观感),通道标题走 header 槽
               <div key={s.stream} style={{ margin: '0 0 14px' }}>
-                <DataTable<OccRow> rows={s.occ} rowKey={(r) => r.noc} header={
+                <Table<OccRow> rows={s.occ} rowKey={(r) => r.noc} header={
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', padding: '10px 12px 6px' }}>
                     <span style={{ fontSize: 13.5, fontWeight: 700 }}>{streamDisplay(t, s.stream) || s.label || s.stream}</span>
                     <span style={{ fontSize: 12, color: '#9ca3af' }}>{s.occ.length} NOC</span>
@@ -55,8 +55,8 @@ export function OccupationsView({ rows }: { rows: OccRow[] }) {
             ))}
           </section>
         ))}
-      </PageShell>
-      <SiteFooter t={t} />
+      </Shell>
+      <Footer t={t} />
     </div>
   )
 }

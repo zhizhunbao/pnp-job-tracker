@@ -3,11 +3,11 @@
 // RankingTable = 内容单一来源(E8-02):页面版与 /jobs 榜单弹窗共用,不许 fork。
 import { streamDisplay, eeDisplay, type TFn } from '../jobs/i18n'
 import { useLang } from '../LangProvider'
-import { SiteHeader } from '../SiteHeader'
-import { SiteFooter } from '../SiteFooter'
-import { BANNER_IMGS, Card, CardAction, CardKV, PageBanner } from '../ui/primitives'
-import { JobCard } from '../ui/JobCard'
-import { DataTable } from '../ui/DataTable'
+import { Header } from '../Header'
+import { Footer } from '../Footer'
+import { BANNER_IMGS, Card, CardAction, CardKV, Banner } from '../ui'
+import { JobCard } from '../ui'
+import { Table } from '../ui'
 import { IconChart } from '../Icons'
 import { BROAD_SLUGS, slugToBroad } from '../stats/shared'
 
@@ -80,13 +80,13 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
       <div style={{ fontSize: 12.5, color: '#9ca3af', margin: '6px 0 4px' }}>{t('rank.updated', { d: updated })}</div>
       {/* #198(Frank「删掉」周榜口径注):note 为空则整行不渲(空键=已删) */}
       {(() => { const nk = slug.startsWith('daily-top') ? 'rank.note.daily-top' : 'rank.note.' + slug; const nv = t(nk); return nv && nv !== nk ? <div style={{ fontSize: 12.5, color: '#6b7280', marginBottom: 16 }}>{nv}</div> : null })()}
-      {/* 组件统一 P2 余批(#110):换公共 DataTable;E8-08 #121:≤640 换域卡(CSS 双渲染) */}
+      {/* 组件统一 P2 余批(#110):换公共 Table;E8-08 #121:≤640 换域卡(CSS 双渲染) */}
       <div className="tcCards">
         {items.map((r) => isCompany ? <RankCompanyCard key={r.rank} r={r} t={t} showNamed={showNamed} /> : <RankJobCard key={r.rank} r={r} t={t} />)}
       </div>
       <div className="tcTableWrap">
       {isCompany ? (
-        <DataTable<RankRow> rows={items} rowKey={(r) => String(r.rank)} cols={[
+        <Table<RankRow> rows={items} rowKey={(r) => String(r.rank)} cols={[
           { key: 'rank', label: '#', nowrap: true, sort: (r) => r.rank, render: (r) => <span style={{ color: '#9ca3af' }}>{r.rank}</span> },
           // #199(Frank「多余的跳转都删掉」):公司名 ↗ 官网外链撤,纯文字
           { key: 'company', label: t('rank.col.company'), sort: (r) => r.company.toLowerCase(), render: (r) => <span style={{ fontWeight: 600 }}>{r.company}</span> },
@@ -102,7 +102,7 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
           { key: 'go', label: '', nowrap: true, render: (r) => <a href={`/?q=${encodeURIComponent(r.company)}`} style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a> },
         ]} />
       ) : (
-        <DataTable<RankRow> rows={items} rowKey={(r) => String(r.rank)} cols={[
+        <Table<RankRow> rows={items} rowKey={(r) => String(r.rank)} cols={[
           { key: 'rank', label: '#', nowrap: true, sort: (r) => r.rank, render: (r) => <span style={{ color: '#9ca3af' }}>{r.rank}</span> },
           { key: 'title', label: t('col.title'), sort: (r) => r.title.toLowerCase(), render: (r) => <span style={{ fontWeight: 600, display: 'inline-block', maxWidth: 320 }}>{r.applyUrl ? <a href={r.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{r.title}</a> : r.title}</span> },
           { key: 'company', label: t('col.company'), sort: (r) => r.company.toLowerCase(), render: (r) => <>{r.company}</> },
@@ -138,13 +138,13 @@ export function RankingView({ slug, items, slugs = [] }: { slug: string; items: 
 
   return (
     <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
-      {/* 顶栏换全站共享 SiteHeader(2026-07-11 用户指出子页 header 与 /jobs 样式不一致) */}
-      <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="rank" />
+      {/* 顶栏换全站共享 Header(2026-07-11 用户指出子页 header 与 /jobs 样式不一致) */}
+      <Header lang={lang} setLang={setLangSaved} t={t} active="rank" />
 
       {/* #67 宽度统一:1100 → 1320 与头轨/职位板同宽 */}
       <div style={{ maxWidth: 1320, width: '100%', boxSizing: 'border-box', margin: '1rem auto 2rem', padding: '0 1.25rem' }}>
-        {/* 页头=PageBanner(#65 五模块统一浅色带,榜单=金) */}
-        <PageBanner module="rank" icon={<IconChart />} title={rankTitle(t, slug)} images={BANNER_IMGS.rank}
+        {/* 页头=Banner(#65 五模块统一浅色带,榜单=金) */}
+        <Banner module="rank" icon={<IconChart />} title={rankTitle(t, slug)} images={BANNER_IMGS.rank}
           sub={t('rank.bnSub')} stats={[{ v: boards.length, label: t('rank.bnBoards') }, { v: items.length, label: t('rank.bnRows') }]} />
         {/* 榜单导航(E9-02 分类榜矩阵):只列当前有数据的榜;当前榜加粗黑。
             #61(2026-07-19 Frank 拍板「就是那个意思」):从页底挪到页头下方——导航是切换入口不是脚注 */}
@@ -161,7 +161,7 @@ export function RankingView({ slug, items, slugs = [] }: { slug: string; items: 
         </div>
         <RankingTable slug={slug} items={items} t={t} />
       </div>
-      <SiteFooter t={t} />
+      <Footer t={t} />
     </div>
   )
 }

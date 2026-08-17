@@ -1,7 +1,7 @@
 'use client'
 // 雇主板(2026-08-16 Frank「这个雇主页面是不是应该参考 jobtables 页面整体创建。要加上筛选条件」)。
 // 站规 jobtable-is-the-standard:形态一律照职位板 —— 常用一行(搜索/口径/省/制度)+「更多筛选」折叠、
-// 桌面 DataTable / ≤640 JobCard 卡片流(全站唯一卡片件)、DTPager 翻页。两个入口合并成本组件一套版式。
+// 桌面 Table / ≤640 JobCard 卡片流(全站唯一卡片件)、Pager 翻页。两个入口合并成本组件一套版式。
 //
 // 🔴 性能(#313 同款):名录 6,680 行不进 SSR payload —— SSR 只给第一页 + total,
 //    换筛选/翻页打 /api/employers 懒取;失败保底继续显示手上这一页,不白屏。
@@ -15,15 +15,15 @@ import {
 import { pickName } from '@/lib/occName'
 import { BackLink } from '../BackLink'
 import { useLang } from '../LangProvider'
-import { SiteFooter } from '../SiteFooter'
-import { SiteHeader } from '../SiteHeader'
-import { DataTable, DTPager, type DTCol } from '../ui/DataTable'
-import { JobCard } from '../ui/JobCard'
-import { Button, PageShell, UI } from '../ui/primitives'
+import { Footer } from '../Footer'
+import { Header } from '../Header'
+import { Table, Pager, type Col } from '../ui'
+import { JobCard } from '../ui'
+import { Button, Shell, UI } from '../ui'
 import type { Lang, TFn } from '../jobs/i18n'
 
 // 下拉:职位板 Sel 同规格(高 38、圆角 6、镜像文本贴宽不留空白);className=sbCtl 拿到既有的
-// 手机断点 min-height:44 触控靶(styles.css #276),不新造一套 CSS
+// 手机断点 min-height:44 触控靶(main.css #276),不新造一套 CSS
 const ctrl: React.CSSProperties = { height: 38, boxSizing: 'border-box', padding: '0 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 14, color: '#1f2937', background: '#fff', fontFamily: 'inherit' }
 const filtRow: React.CSSProperties = { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }
 const filtLabel: React.CSSProperties = { fontSize: 12, color: UI.text3, minWidth: 28, whiteSpace: 'nowrap' }
@@ -130,7 +130,7 @@ export function EmployersBoardView({ initial, initialFilters }: { initial: Emplo
 
   // 名录出处列:本批一行都没有 url 就整列不出(容缺先例同 hasVerdictSignal —— 不渲染一列全「—」)
   const hasList = data.rows.some((r) => r.url)
-  const cols: DTCol<EmployerRow>[] = designated
+  const cols: Col<EmployerRow>[] = designated
     ? [
         { key: 'name', label: t('de.colName'), width: hasList ? '34%' : '37%', sort: (r) => r.name.toLowerCase(), render: (r) => <a href={jobsHref(r.name)} title={t('rank.viewJobs')} style={{ color: UI.primary, textDecoration: 'none', fontWeight: 600 }}>{r.name}</a> },
         { key: 'where', label: t('de.colWhere'), width: hasList ? '22%' : '24%', sort: (r) => r.where || provName(t, r.province), render: (r) => <>{r.where || provName(t, r.province)}</> },
@@ -155,9 +155,9 @@ export function EmployersBoardView({ initial, initialFilters }: { initial: Emplo
 
   return (
     <div style={{ background: UI.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
-      <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="employers" />
+      <Header lang={lang} setLang={setLangSaved} t={t} active="employers" />
       <div style={{ flex: '1 0 auto' }}>
-        <PageShell pad="1rem 1.25rem 40px">
+        <Shell pad="1rem 1.25rem 40px">
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, margin: '0 0 12px' }}>
             <h1 style={{ flex: 1, minWidth: 0, fontSize: 22, fontWeight: 700, color: '#111827', margin: 0, lineHeight: 1.45 }}>{title}</h1>
             <BackLink href="/plan/pr" label={t('de.back')} />
@@ -211,7 +211,7 @@ export function EmployersBoardView({ initial, initialFilters }: { initial: Emplo
             <div style={{ minHeight: 220, ...(loading ? { opacity: 0.45, pointerEvents: 'none', transition: 'opacity .2s' } : {}) }}>
               {/* 桌面表格 / 手机卡片,两套 DOM 各渲各的(站规:电脑用表格、手机用卡片) */}
               <div className="empTable">
-                <DataTable<EmployerRow> rows={data.rows} cols={cols} rowKey={(r) => `${r.where}:${r.name}`} empty={empty} bare
+                <Table<EmployerRow> rows={data.rows} cols={cols} rowKey={(r) => `${r.where}:${r.name}`} empty={empty} bare
                   header={<div style={{ display: 'flex', alignItems: 'baseline', gap: 10, padding: '2px 2px 8px' }}><span style={{ fontSize: 13.5, fontWeight: 700 }}>{note}</span></div>} />
               </div>
               <div className="empCards">
@@ -234,7 +234,7 @@ export function EmployersBoardView({ initial, initialFilters }: { initial: Emplo
               </div>
               {data.total > 0 && (
                 <div style={{ padding: '10px 2px 0', borderTop: `1px solid ${UI.hairline}`, marginTop: 8 }}>
-                  <DTPager page={Math.min(f.page, maxPage - 1)} max={maxPage} onPage={(p) => setF((prev) => ({ ...prev, page: p }))} />
+                  <Pager page={Math.min(f.page, maxPage - 1)} max={maxPage} onPage={(p) => setF((prev) => ({ ...prev, page: p }))} />
                 </div>
               )}
             </div>
@@ -242,9 +242,9 @@ export function EmployersBoardView({ initial, initialFilters }: { initial: Emplo
             {/* 口径注(保留类文案,一句):被指定 ≠ 在招 */}
             <div style={{ marginTop: 10, fontSize: 12, color: UI.text3, lineHeight: 1.6 }}>{t('de.note')}</div>
           </div>
-        </PageShell>
+        </Shell>
       </div>
-      <SiteFooter t={t} />
+      <Footer t={t} />
       <style>{`
         .empTable{display:none}
         .empCards{display:flex;flex-direction:column;gap:8px}

@@ -1,5 +1,5 @@
 'use client'
-// 处境页(样板 C01)。骨架照职位详情页:PageShell 轨 + 右上返回 + H1 + 白卡。
+// 处境页(样板 C01)。骨架照职位详情页:Shell 轨 + 右上返回 + H1 + 白卡。
 //
 // 版式顺序由 Frank 2026-08-11 定死:**他问的那个省 → 为什么 → 由易到难的替代 → 走不通的 → 第一步**。
 // 上一版做成「四块无主的事实」,被点名「列一堆信息,用户看了有什么用」—— 摆事实不等于给答案。
@@ -7,9 +7,9 @@
 import { BackLink } from '../../BackLink'
 import { dropProvPrefix } from '../../jobs/i18n'
 import { useLang } from '../../LangProvider'
-import { SiteFooter } from '../../SiteFooter'
-import { SiteHeader } from '../../SiteHeader'
-import { PageShell, UI } from '../../ui/primitives'
+import { Footer } from '../../Footer'
+import { Header } from '../../Header'
+import { Shell, UI } from '../../ui'
 import type { CaseAnswer, OpsFacts } from '@/lib/caseFacts'
 import type { L3 } from '@/lib/caseLibrary'
 import type { PathwayVerdict, VerdictReason } from '@/lib/pathVerdict'
@@ -127,9 +127,9 @@ export function CaseView({ caseId, label, question, answer }: {
     <div className="caseWrap" style={{ background: UI.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
       {/* #300 触控靶:640 断点下 summary 实测 23px,指头点不准;只扩点击区不动桌面版式 */}
       <style>{`@media(max-width:640px){.caseWrap summary{min-height:44px;display:flex;align-items:center}}`}</style>
-      <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="pathways" />
+      <Header lang={lang} setLang={setLangSaved} t={t} active="pathways" />
       <div style={{ flex: '1 0 auto' }}>
-        <PageShell pad="1rem 1.25rem 40px">
+        <Shell pad="1rem 1.25rem 40px">
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, margin: '0 0 12px' }}>
             <h1 style={{ flex: 1, minWidth: 0, fontSize: 22, fontWeight: 700, color: '#111827', margin: 0, lineHeight: 1.45 }}>{pick(label)}</h1>
             <BackLink href="/plan/pr" label={t('case.back')} />
@@ -207,9 +207,9 @@ export function CaseView({ caseId, label, question, answer }: {
           </div>
 
           <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.7 }}>{t('case.note')}</div>
-        </PageShell>
+        </Shell>
       </div>
-      <SiteFooter t={t} />
+      <Footer t={t} />
     </div>
   )
 }

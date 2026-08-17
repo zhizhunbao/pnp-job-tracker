@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react'
 import type { TFn } from './i18n'
 import { Modal } from './Modal'
-import { Button, Notice } from '../ui/primitives'
+import { Button, Notice } from '../ui'
 import { pullAndMerge, readAnswers } from '@/lib/answers'
 import { fieldsOf, missingFields } from '@/lib/decisions'
 

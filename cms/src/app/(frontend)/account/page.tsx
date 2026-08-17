@@ -7,14 +7,14 @@ import { useEffect, useState } from 'react'
 import { useLang } from '../LangProvider'
 import { useIsNarrow } from '../jobs/Modal'
 import { IconStar, IconUser } from '../Icons'
-import { SiteHeader } from '../SiteHeader'
-import { SiteFooter } from '../SiteFooter'
+import { Header } from '../Header'
+import { Footer } from '../Footer'
 import { ProfileForm, type ProfileValue } from './ProfileForm'
 import { SavedSearchList } from './SavedSearchList'
 import { SavedJobsList } from './SavedJobsList'
 import { ResumeArchive } from './ResumeArchive'
 import { Avatar } from '../Avatar'
-import { Button, CARD_SHELL, Notice } from '../ui/primitives'
+import { Button, CARD_SHELL, Notice } from '../ui'
 
 // profile 上的简历存档两键(E11-08)只在本页读显示,不进 ProfileForm 的表单值 → 就地扩类型,不动 ProfileValue
 type ProfileWithResume = ProfileValue & { resumeText?: string | null; resumeSavedAt?: string | null }
@@ -99,7 +99,7 @@ export default function AccountPage() {
   return (
     <div style={{ background: 'linear-gradient(160deg,#f8fafc 0%,#eef2ff 55%,#f8fafc 100%)', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
       {/* 全站共享顶栏/页脚(2026-07-16 用户拍板统一 header/footer);账户在本页为当前态不再链自己 */}
-      <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="account" />
+      <Header lang={lang} setLang={setLangSaved} t={t} active="account" />
 
       {!checked ? null : me ? (
         // sidebar + 内容区(2026-07-16 用户拍板「我的账户需要一个 sidebar」;此前的四卡分离演进):
@@ -180,7 +180,7 @@ export default function AccountPage() {
         // 未登录:回首页弹登录框(不渲染独立登录页)
         <RedirectToLogin />
       )}
-      <SiteFooter t={t} />
+      <Footer t={t} />
     </div>
   )
 }

@@ -3,9 +3,9 @@
 // curated 常量(非 ETL);红线=宁缺毋滥,失效宁可不列。链接=可点卡片(整卡跳官方页)。
 import { useMemo, useState } from 'react'
 import { useLang } from '../LangProvider'
-import { SiteHeader } from '../SiteHeader'
-import { SiteFooter } from '../SiteFooter'
-import { BANNER_IMGS, PageBanner } from '../ui/primitives'
+import { Header } from '../Header'
+import { Footer } from '../Footer'
+import { BANNER_IMGS, Banner } from '../ui'
 import { RES } from './data'
 
 export function ResourcesView() {
@@ -25,9 +25,9 @@ export function ResourcesView() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f9fafb' }}>
       {/* resTile 自有 hover 退役 → 全站 cardHover token(hover统一-20260731,值相同零视觉变化) */}
-      <SiteHeader lang={lang} setLang={setLangSaved} t={t} />
+      <Header lang={lang} setLang={setLangSaved} t={t} />
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1rem 1.25rem 1.5rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
-        <PageBanner module="pathways" title={t('res.title')} sub={t('res.sub')} images={BANNER_IMGS.pathways} />
+        <Banner module="pathways" title={t('res.title')} sub={t('res.sub')} images={BANNER_IMGS.pathways} />
 
         {/* 顶部搜索框(Frank「上面带一个文本框搜索」) */}
         <div style={{ margin: '14px 0' }}>
@@ -56,7 +56,7 @@ export function ResourcesView() {
         ))}
 
       </div>
-      <SiteFooter t={t} maxWidth={1320} />
+      <Footer t={t} maxWidth={1320} />
     </div>
   )
 }

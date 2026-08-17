@@ -5,11 +5,11 @@
 import { useState } from 'react'
 import { type TFn } from '../../jobs/i18n'
 import { useLang } from '../../LangProvider'
-import { SiteHeader } from '../../SiteHeader'
-import { SiteFooter } from '../../SiteFooter'
+import { Header } from '../../Header'
+import { Footer } from '../../Footer'
 import { BackLink } from '../../BackLink'
-import { Button, CARD_SHELL, Card, CardKV, Notice, PageShell, Tag, UI } from '../../ui/primitives'
-import { DataTable } from '../../ui/DataTable'
+import { Button, CARD_SHELL, Card, CardKV, Notice, Shell, Tag, UI } from '../../ui'
+import { Table } from '../../ui'
 import { PricingModal } from '../../jobs/PricingModal'
 import { IconScale, IconStar } from '../../Icons'
 import { CMP_KEY, type CompareRow } from '@/lib/employerCompareShared'
@@ -58,8 +58,8 @@ export function CompareEmployersView({ names, rows, pro, loggedIn }: {
 
   return (
     <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
-      <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="employers" />
-      <PageShell pad="2rem 1.25rem 32px">
+      <Header lang={lang} setLang={setLangSaved} t={t} active="employers" />
+      <Shell pad="2rem 1.25rem 32px">
         <div style={{ marginBottom: 8 }}><BackLink href="/employers" label={t('dir.title')} /></div>
         <h1 style={{ fontSize: 22, margin: '0 0 6px' }}><IconScale /> {t('ce.title')}</h1>
         <div style={{ fontSize: 12.5, color: '#6b7280', margin: '0 0 12px', lineHeight: 1.6 }}>{t('ce.note')}</div>
@@ -73,9 +73,9 @@ export function CompareEmployersView({ names, rows, pro, loggedIn }: {
               <li>{t('ce.v3')}</li>
             </ul>
             <div style={{ ...CARD_SHELL, position: 'relative', overflow: 'hidden', maxWidth: 680 }}>
-              {/* 2026-08-11(Frank「都改成一套」):自造裸 <table> → 公共 DataTable(bare=外面这层就是卡壳)。
+              {/* 2026-08-11(Frank「都改成一套」):自造裸 <table> → 公共 Table(bare=外面这层就是卡壳)。
                   这张是**转置**表(指标当行、公司当列)且是模糊假数据的付费诱导样例 —— 行=指标,列=三家公司 */}
-              <DataTable<[string, string[]]> bare rowKey={(r) => r[0]}
+              <Table<[string, string[]]> bare rowKey={(r) => r[0]}
                 rows={[[t('dir.col.skilled'), ['168', '52', '9']], [t('rank.col.openJobs'), ['24', '11', '37']], [t('stats.named'), ['12', '3', '0']], [t('ce.provDiff'), ['ON', 'AB', 'SK']]]}
                 cols={[
                   { key: 'metric', label: '', nowrap: true, render: (r) => <span style={{ color: '#9ca3af' }}>{r[0]}</span> },
@@ -111,7 +111,7 @@ export function CompareEmployersView({ names, rows, pro, loggedIn }: {
               })}
             </div>
             <div className="tcTableWrap">
-            <DataTable<Dim> rows={dims} rowKey={(d) => d.key} minWidth={560} cols={[
+            <Table<Dim> rows={dims} rowKey={(d) => d.key} minWidth={560} cols={[
               { key: 'dim', label: '', nowrap: true, render: (d) => <span title={d.tip} style={{ color: '#9ca3af', ...(d.tip ? { textDecoration: 'underline dotted #d1d5db' } : {}) }}>{d.label}</span> },
               ...rows.map((r, i) => ({
                 key: `e${i}`,
@@ -128,8 +128,8 @@ export function CompareEmployersView({ names, rows, pro, loggedIn }: {
             </div>
           </>
         )}
-      </PageShell>
-      <SiteFooter t={t} />
+      </Shell>
+      <Footer t={t} />
     </div>
   )
 }

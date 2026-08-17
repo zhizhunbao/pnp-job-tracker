@@ -9,11 +9,11 @@ const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : use
 import { makeT, streamDisplay, eeDisplay, eeKeyDisplay, LANGS, COLS_COOKIE, type Lang, type TFn } from './i18n'
 import { useLang } from '../LangProvider'
 import { IconChart, IconCheck, IconClipboard, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconNews, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
-import { SiteHeader } from '../SiteHeader'
+import { Header } from '../Header'
 import { AccountMenu } from '../AccountMenu'
-import { BANNER_IMGS, Button, CARD_MD, Notice, PageBanner, PILL_BTN } from '../ui/primitives'
-import { JobCard } from '../ui/JobCard'   // 全站唯一那张职位卡(2026-08-02 拍板);landing 职位榜吃的是同一张
-import { SiteFooter } from '../SiteFooter'
+import { BANNER_IMGS, Button, CARD_MD, Notice, Banner, PILL_BTN } from '../ui'
+import { JobCard } from '../ui'   // 全站唯一那张职位卡(2026-08-02 拍板);landing 职位榜吃的是同一张
+import { Footer } from '../Footer'
 import { Avatar } from '../Avatar'
 import { AuthModal } from './AuthForm'
 import { UpgradeCta, UpgradeModal } from './UpgradeModal'
@@ -990,11 +990,13 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         /* 量宽时把列宽拖拽条藏掉:它是 position:absolute;right:0,量内容的 Range 会把它算进去,
            于是每个表头都被量成「整列宽」(实测 vs 中位表头量出 132px,真实文字只要 56px) */
         .jtMeasure .colResize{display:none !important}`}</style>
-      {/* 顶栏=全站统一 SiteHeader(#65 header 合一,2026-07-18 Frank 拍板;内联头退役,1320 头轨全站一致)。
+      {/* 顶栏=全站统一 Header(#65 header 合一,2026-07-18 Frank 拍板;内联头退役,1320 头轨全站一致)。
           /jobs 特有件走 props:matchButton 切换态 + 完整 AccountArea(plan 下拉/弹框)。
-          差异认账:未登录点「我的账户」由弹框改为 /account 302 回 /?login=1(终点同为登录框)。 */}
-      <SiteHeader lang={lang} setLang={setLangSaved} t={t} sticky loggedIn={plan.loggedIn}
-        active={initialMatchView || matchView ? 'match' : undefined}
+          差异认账:未登录点「我的账户」由弹框改为 /account 302 回 /?login=1(终点同为登录框)。
+          active:首页就是职位板 —— 原来不传,于是「职位」那项永远不亮(2026-08-17 Frank
+          「切换到职位的时候,职位没有高亮」);板内切到「我的匹配」视图时才改标 match。 */}
+      <Header lang={lang} setLang={setLangSaved} t={t} sticky loggedIn={plan.loggedIn}
+        active={initialMatchView || matchView ? 'match' : 'jobs'}
         matchButton={{ active: initialMatchView || matchView, onClick: toggleMatchView }}
         accountArea={<AccountArea t={t} plan={plan} />}
         />{/* Frank 2026-07-26「搜索框怎么跑 banner 上面去了」「怎么所有页面都加了这个搜索框」:
@@ -1002,9 +1004,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       {/* 榜单/统计弹窗已退役(2026-07-11 用户拍板顶栏改跳转页面);/stats 页「看职位」?prov=&broad= 回流照旧 */}
       {/* 价值横幅退役(#65 收尾,Frank:「不需要两个蓝条」)——建档 CTA 并进下方 Jobs 页头右槽 */}
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1rem 1.25rem 1.5rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
-        {/* 页头=PageBanner(#65/#66 五模块统一浅色带,职位板=蓝)。标题数字口径不变:
+        {/* 页头=Banner(#65/#66 五模块统一浅色带,职位板=蓝)。标题数字口径不变:
             库内真实总数(第 15 轮 #34)/筛选匹配态只报命中数(第 17 轮 #42);证言行(第 5 轮 #14)作 sub */}
-        <PageBanner module="jobs" title="Jobs" images={BANNER_IMGS.jobs}
+        <Banner module="jobs" title="Jobs" images={BANNER_IMGS.jobs}
           sub={<>
             {anyFilter || matchView ? t('subtitle.hits', { n: total }) : t('subtitle.count', { n: total })}
             {/* #170(Frank 批,实测证据):这行证言在 375px 上是 nowrap+省略号 —— 后半截被直接切掉,
@@ -1504,8 +1506,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         {/* 匹配全放开(Frank 2026-07-21):匹配不再限额 → 底部「升级看全量」升级卡退役;
             升级动力改由表内 Pro 数据列(vs中位/工资中位)打码承担 */}
       </div>
-      {/* footer:全站共享 SiteFooter(2026-07-16 用户拍板统一 header/footer) */}
-      <SiteFooter t={t} maxWidth={1320} />
+      {/* footer:全站共享 Footer(2026-07-16 用户拍板统一 header/footer) */}
+      <Footer t={t} maxWidth={1320} />
 
       {popup && <AdvisorModal group={popup.group} field={popup.srcField} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} news={dims.news} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} onOpenJob={(x) => setActModal({ kind: 'desc', job: x })} />}
       {actModal && <ActModal job={actModal.job} lang={lang} plan={plan} nocDesc={dims.nocDescriptions} onClose={() => setActModal(null)} />}
@@ -2403,7 +2405,7 @@ export function CompanyGradesView({ detail, t, hideSponsor }: { detail: CoGradeD
   const fameParts = fm ? [fm.v?.wiki ? t('gr.co.fm.wiki') : '', fm.v?.provs >= 2 ? t('gr.co.fm.provs', { n: fm.v.provs }) : '', fm.v?.open ? t(fm.v.open === 1 ? 'gr.co.fm.open1' : 'gr.co.fm.open', { n: fm.v.open }) : ''].filter(Boolean) : []
   return (
     <>
-      {/* 字号/行高/色显式定在 ul(不靠继承):(frontend)/styles.css 的 body 白字 18px 会吃掉裸继承的 li
+      {/* 字号/行高/色显式定在 ul(不靠继承):(frontend)/main.css 的 body 白字 18px 会吃掉裸继承的 li
           (公司详情页实测中招;弹框有 13px 包裹层侥幸没事)——组件自带底座,两处上下文同渲 */}
       <div style={{ fontSize: 13, color: '#374151' }}>
         <FactGrid cols={3}>
@@ -4060,7 +4062,7 @@ const applyEmailOf = (text: string): string => {
 function ApplyBar({ job, email, emailDone, t, plan, onPage }: { job: JobRow; email: string; emailDone: boolean; t: TFn; plan: Plan; onPage?: boolean }) {
   const [stage, setStage] = useState<'idle' | 'auth' | 'intent'>('idle')
   // 整页窄屏投递栏跑偏(Frank 2026-08-05 实拍):sticky bottom 只在**父容器盒内**吸底,整页版的
-  // 父级是白卡,卡下面还有 ~150px 的 SiteFooter —— 滚进页脚段,栏就跟着卡边上滑(弹框里滚动容器
+  // 父级是白卡,卡下面还有 ~150px 的 Footer —— 滚进页脚段,栏就跟着卡边上滑(弹框里滚动容器
   // 就是父级,没这回事)。窄屏整页改 fixed 常驻视口底(页脚那一屏浮在其上),占位 div 补回文档流高度;
   // 桌面整页维持 sticky 原样(卡居中 1320,fixed 全宽会破卡片版式,且桌面没有这条投诉)。
   const narrow = useIsNarrow()

@@ -11,7 +11,7 @@ import { useState } from 'react'
 
 import { IconCheck, IconClipboard, IconThumbDown, IconThumbUp } from '../Icons'
 import { useLang } from '../LangProvider'
-import { UI } from '../ui/primitives'
+import { UI } from '../ui'
 import { track } from '@/lib/track'
 
 // 后端契约(POST /api/chat 200 体)——由 api/chat/route.ts 定,这里只照抄形状,不自行扩展

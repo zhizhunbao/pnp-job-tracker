@@ -9,10 +9,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { type Lang, type TFn } from '../jobs/i18n'
 import { useLang } from '../stats/ui'
-import { SiteHeader } from '../SiteHeader'
-import { SiteFooter } from '../SiteFooter'
+import { Header } from '../Header'
+import { Footer } from '../Footer'
 import { BackLink } from '../BackLink'
-import { BANNER_IMGS, CARD_SHELL, PageBanner, PageShell, SectionTabs, chipStyle } from '../ui/primitives'
+import { BANNER_IMGS, CARD_SHELL, Banner, Shell, SectionTabs, chipStyle } from '../ui'
 import { IconNews } from '../Icons'
 import { newsPublisher, newsRegionName, NEWS_REGIONS, type NewsCard, type NewsComment, type NewsHero, type NewsRow } from './shared'
 
@@ -20,9 +20,9 @@ function NewsShell({ children }: { children: (t: TFn, lang: Lang) => React.React
   const [lang, setLang, t] = useLang()
   return (
     <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
-      <SiteHeader lang={lang} setLang={setLang} t={t} active="news" />
+      <Header lang={lang} setLang={setLang} t={t} active="news" />
       <div style={{ flex: 1 }}>{children(t, lang)}</div>
-      <SiteFooter t={t} />
+      <Footer t={t} />
     </div>
   )
 }
@@ -220,11 +220,11 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
             @media (max-width:640px){
               .nwDots{gap:0 !important}.nwDots button{width:40px !important;height:40px !important}
               .nwTop button[aria-label='prev'],.nwTop button[aria-label='next']{width:40px !important;height:40px !important}}`}</style>
-          {/* 正文轨=PageShell 1320(Frank 2026-07-18 宽度统一拍板),原 1100 单轨退役 */}
-          <PageShell pad="1rem 1.25rem 32px">
-            {/* 页头=PageBanner 图版(2026-07-31 banner 统一:上距全站 1rem、补 news 图组,原 marginTop:16 包层撤) */}
+          {/* 正文轨=Shell 1320(Frank 2026-07-18 宽度统一拍板),原 1100 单轨退役 */}
+          <Shell pad="1rem 1.25rem 32px">
+            {/* 页头=Banner 图版(2026-07-31 banner 统一:上距全站 1rem、补 news 图组,原 marginTop:16 包层撤) */}
             {/* 2026-07-19 Frank 批提案:二级导航=统一 SectionTabs(公告|时间线),右槽链接退役 */}
-            <PageBanner module="news" icon={<IconNews />} title={t('news.title')} images={BANNER_IMGS.news} />
+            <Banner module="news" icon={<IconNews />} title={t('news.title')} images={BANNER_IMGS.news} />
             <SectionTabs color="#0f766e" tabs={[
               { href: '/news', label: t('tl.tabNews'), active: true },
               { href: '/timeline', label: t('tl.title') },
@@ -264,7 +264,7 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
                 ))}
               </div>
             ))}
-          </PageShell>
+          </Shell>
         </>
       )
     }}</NewsShell>
@@ -425,8 +425,8 @@ export function NewsDetailView({ row, comments, loggedIn }: { row: NewsRow; comm
       const zhParas = (trans || '').split(/\n{2,}/).map((p) => p.trim()).filter(Boolean)
       const summary = sumCache[lang]
       return (
-      // 外轨=PageShell 1320(宽度统一拍板);阅读列 860 居中保行长可读
-      <PageShell pad="18px 1.25rem 32px">
+      // 外轨=Shell 1320(宽度统一拍板);阅读列 860 居中保行长可读
+      <Shell pad="18px 1.25rem 32px">
       <div style={{ maxWidth: 860, margin: '0 auto' }}>
         <div style={{ marginBottom: 12 }}><BackLink href="/news" label={t('news.back')} /></div>
         <article style={{ ...CARD_SHELL, padding: '22px 26px' }}>
@@ -485,7 +485,7 @@ export function NewsDetailView({ row, comments, loggedIn }: { row: NewsRow; comm
         </article>{/* 底部深链钮已删(Frank 2026-07-18:「不需要」);找岗入口=顶栏/省页块 */}
         {COMMENTS_ON && <CommentsSection t={t} slug={row.slug} comments={comments} loggedIn={loggedIn} />}
       </div>
-      </PageShell>
+      </Shell>
       )
     }}</NewsShell>
   )

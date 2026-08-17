@@ -1,8 +1,10 @@
 import React from 'react'
-import './styles.css'
+import './main.css'
 import { LangProvider } from './LangProvider'
+import { SessionProvider } from './SessionProvider'
 import { ChatLauncher } from './chat/ChatLauncher'
 import { ssrLang } from '@/lib/lang.server'
+import { ssrHasSession } from '@/lib/auth.server'
 
 // 站点默认 metadata(各页 generateMetadata 覆盖);E7-02:umami 轻量 analytics(无 cookie,env 未设=本地不注入)
 export const metadata = {
@@ -38,6 +40,9 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   // 界面语言在这里读**一次**(cookie → Accept-Language),往下靠 LangProvider 的 context 分发:
   // 各页 page.tsx 不必传 prop,各视图不必自己读 localStorage —— 首帧就是对的语言,不再闪一下中文。
   const lang = await ssrLang()
+  // 登录态同样在这里读**一次**(cookie 里有没有会话票据),往下靠 SessionProvider 分发:
+  // header 的账户区首帧就按终态占宽,不再「先 32px 占位、水合后撑到 84px」把导航拽偏。
+  const hasSession = await ssrHasSession()
 
   return (
     // html lang 原来写死 'en':页面出中韩文时对搜索引擎/读屏器都是错的语种声明,跟着一起修
@@ -48,11 +53,13 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
       </head>
       <body>
         <LangProvider initial={lang}>
-          <main>{children}</main>
-          {/* 右下角对话挂件:挂在 layout = 全站可用(67.5% 的会话只看一页,入口=出口=职位详情页,
-              把对话放到流量真正在的地方)。放在 <main> 外:它是浮层不是页面内容,读屏器按顺序读到最后;
-              在 LangProvider 内:壳文案跟全站同一份语言状态。/start 自己判断不显示(那页有内联 ChatBox)。 */}
-          <ChatLauncher />
+          <SessionProvider initial={hasSession}>
+            <main>{children}</main>
+            {/* 右下角对话挂件:挂在 layout = 全站可用(67.5% 的会话只看一页,入口=出口=职位详情页,
+                把对话放到流量真正在的地方)。放在 <main> 外:它是浮层不是页面内容,读屏器按顺序读到最后;
+                在 LangProvider 内:壳文案跟全站同一份语言状态。/start 自己判断不显示(那页有内联 ChatBox)。 */}
+            <ChatLauncher />
+          </SessionProvider>
         </LangProvider>
       </body>
     </html>

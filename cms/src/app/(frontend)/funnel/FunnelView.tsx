@@ -2,15 +2,15 @@
 // 漏斗五个数的显示层(主线 M2 / E7-05)。**内部页**:数据由服务端组件鉴权后传进来,这里零业务逻辑。
 // 文案只有中文 —— 这页只给 Frank 看,不是产品页面,翻三语是浪费。
 import { useLang } from '../LangProvider'
-import { SiteHeader } from '../SiteHeader'
-import { SiteFooter } from '../SiteFooter'
-import { PageShell, UI } from '../ui/primitives'
-import { DataTable } from '../ui/DataTable'
+import { Header } from '../Header'
+import { Footer } from '../Footer'
+import { Shell, UI } from '../ui'
+import { Table } from '../ui'
 import { goBackOr } from '../BackLink'
 
 export type FunnelRow = { step: string; label: string; d30: number; d7: number; d1: number; rate: number | null }
 
-// 尾行(foot 槽)自己排版:它是 colSpan 合并行,不走列模型;对齐 DataTable 的单元格 token
+// 尾行(foot 槽)自己排版:它是 colSpan 合并行,不走列模型;对齐 Table 的单元格 token
 const TD: React.CSSProperties = { padding: '9px 12px', fontSize: 13, color: '#374151', borderBottom: `1px solid ${UI.hairline}`, fontVariantNumeric: 'tabular-nums' }
 
 export function FunnelView({ rows, pro, stripe, byEntry, byPricing = [] }: {
@@ -25,8 +25,8 @@ export function FunnelView({ rows, pro, stripe, byEntry, byPricing = [] }: {
       {/* 手机上砍掉「7 天/昨天」两列:375 宽下五列会把步骤名折成「① 打开职/位详情」——
           趋势在手机上不是重点,30 天与转化率才是。表本身仍在 overflow-x 容器里,页面不横滚 */}
       <style>{`@media(max-width:640px){.fnCol{display:none}}`}</style>
-      <SiteHeader lang={lang} setLang={setLangSaved} t={t} />
-      <PageShell>
+      <Header lang={lang} setLang={setLangSaved} t={t} />
+      <Shell>
         <div style={{ background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, padding: '16px 18px' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
             <div>
@@ -36,10 +36,10 @@ export function FunnelView({ rows, pro, stripe, byEntry, byPricing = [] }: {
             <button onClick={() => goBackOr('/')} style={{ marginLeft: 'auto', border: `1px solid ${UI.border}`, background: '#fff', color: UI.text2, borderRadius: 8, padding: '6px 13px', fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>返回</button>
           </div>
 
-          {/* 2026-08-11(Frank「都改成一套」):这张表原是自造的裸 <table> —— 换公共 DataTable(bare=已在白卡内)。
+          {/* 2026-08-11(Frank「都改成一套」):这张表原是自造的裸 <table> —— 换公共 Table(bare=已在白卡内)。
               尾行「⑥ 真实付费」带 colSpan,走新加的 foot 槽;窄屏藏两列仍用 .fnCol(列级 className) */}
           <div style={{ marginTop: 14 }}>
-            <DataTable<FunnelRow> rows={rows} rowKey={(r) => r.step} bare
+            <Table<FunnelRow> rows={rows} rowKey={(r) => r.step} bare
               cols={[
                 { key: 'label', label: '步骤', nowrap: true, render: (r) => r.label },
                 { key: 'd30', label: '30 天', align: 'right', render: (r) => <b>{r.d30}</b> },
@@ -75,8 +75,8 @@ export function FunnelView({ rows, pro, stripe, byEntry, byPricing = [] }: {
           </div>
           {empty && <div style={{ marginTop: 12, fontSize: 13, color: '#b45309' }}>还没有任何计数 —— 表刚建好,或事件还没打到生产。</div>}
         </div>
-      </PageShell>
-      <SiteFooter t={t} />
+      </Shell>
+      <Footer t={t} />
     </>
   )
 }

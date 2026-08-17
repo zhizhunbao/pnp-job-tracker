@@ -40,7 +40,7 @@ import { Component, useCallback, useEffect, useRef, useState, type ReactNode } f
 
 import { IconChat, IconMaximize, IconMinimize, IconMinus, IconRefresh } from '../Icons'
 import { useLang } from '../LangProvider'
-import { UI } from '../ui/primitives'
+import { UI } from '../ui'
 import { track } from '@/lib/track'
 
 // 懒加载:挂件挂在全站 layout 上,不该让每个页面都背对话那份 JS —— 第一次点开才下载。

@@ -1,0 +1,397 @@
+/* ===================================================
+   全站样式表(唯一一份)
+   分段见下方各横幅;组件里只留真·动态的内联样式,
+   凡是不随状态变的值一律搬到这里(2026-08-17 起)。
+===================================================== */
+
+/* ===================================================
+   1. 底座与排版
+===================================================== */
+:root {
+  --font-mono: 'Roboto Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* 底座与站点实际一致(白底站,Payload 模板黑底白字默认已废)——
+   裸继承的组件(如 #190 公司评分 li)从这里取色/字号,不再隐形。
+   html font-size 仅作 rem 基准,冻结 18px 避免全站 rem padding 位移。 */
+html {
+  font-size: 18px;
+
+  background: #f9fafb;
+  -webkit-font-smoothing: antialiased;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+
+  margin: 0;
+  color: #1f2937;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+h1 {
+  margin: 40px 0;
+  font-size: 64px;
+  line-height: 70px;
+  font-weight: bold;
+
+  @media (max-width: 1024px) {
+    margin: 24px 0;
+    font-size: 42px;
+    line-height: 42px;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 38px;
+    line-height: 38px;
+  }
+
+  @media (max-width: 400px) {
+    font-size: 32px;
+    line-height: 32px;
+  }
+}
+
+p {
+  margin: 24px 0;
+
+  @media (max-width: 1024px) {
+    margin: calc(var(--base) * 0.75) 0;
+  }
+}
+
+a {
+  color: currentColor;
+
+  &:focus {
+    opacity: 0.8;
+    outline: none;
+  }
+
+  &:active {
+    opacity: 0.7;
+    outline: none;
+  }
+}
+
+svg {
+  vertical-align: middle;
+}
+
+/* ===================================================
+   2. 交互态:hover / focus
+===================================================== */
+
+/* E8-08 #121 hover 高亮规范(Frank:「hover 要有高亮,用户才知道哪些能点」)——
+   可点必有态:链接 hover 统一加深(filter 不受 inline textDecoration:none 影响,全站零改动生效);
+   按钮 hover 轻微变暗;禁用钮无态。不可点元素(纯文本/灰注)本就无 cursor 无 hover。 */
+a:hover {
+  filter: brightness(0.75);
+}
+button:not(:disabled):hover {
+  filter: brightness(0.94);
+}
+
+/* 焦点态统一(2026-08-15 Frank「这三个按钮样式怎么不一样」):竞争卡 2024/2025/2026 三个
+   chip 代码完全同源,那圈黑框是**浏览器默认焦点环** —— 全站从没定义过 focus 样式,键盘焦点
+   一律借 Chrome 的黑白双环,落在未选中的 chip 上就成了第三种样式。
+   🔴 不许用 outline:none 了事(可访问性红线,键盘用户就此看不见焦点在哪):改成与设计系统同色的
+   蓝环 + 2px 外偏移,与「已选中」的浅蓝底实心态天然区分。:where() 保持零特异性,组件想覆盖照旧能覆盖。 */
+:where(a, button, summary, [role='button'], [tabindex]):focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* hover 统一 token(2026-07-31 Frank「现在 hover 看着是灰色的」→ docs/design/hover统一-20260731.md 落地):
+   块状链接(整行/整卡是 <a>)不再整块变暗发灰 —— 行=底色高亮、卡=蓝框+浅底,内容原样;
+   filter:none 挡掉全局 a:hover 变暗;!important 压行内 background/border(resTile 同款手法)。
+   铁律不变:只有能点的才挂这两个类,不可点的不挂。文字链接/按钮仍走上面的全局规范。 */
+.rowHover:hover {
+  background: #f8fafc !important;
+  filter: none;
+}
+.cardHover:hover {
+  border-color: #bfdbfe !important;
+  background: #f8faff !important;
+  filter: none;
+}
+
+/* ===================================================
+   3. 响应式:表 ⇄ 卡
+===================================================== */
+
+/* E8-08 表卡双形态切换:桌面=表格,≤640=卡片(CSS 双渲染零水合差异,jtCards 同手法) */
+.tcCards {
+  display: none;
+}
+@media (max-width: 640px) {
+  .tcTableWrap {
+    display: none;
+  }
+  .tcCards {
+    display: block;
+  }
+}
+
+/* ===================================================
+   4. Payload 模板遗留(疑似死代码)
+   .home / .links / .codeLink / .admin / .docs 全套来自
+   Payload 起手模板;全站 tsx 里 grep 不到任何一处引用
+   (2026-08-17 查)。删之前要确认 admin 侧没在用。
+===================================================== */
+.home {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 100vh;
+  padding: 45px;
+  max-width: 1024px;
+  margin: 0 auto;
+  overflow: hidden;
+
+  @media (max-width: 400px) {
+    padding: 24px;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+
+    h1 {
+      text-align: center;
+    }
+  }
+
+  .links {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    a {
+      text-decoration: none;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .admin {
+      color: rgb(0, 0, 0);
+      background: rgb(1000, 1000, 1000);
+      border: 1px solid rgb(0, 0, 0);
+    }
+
+    .docs {
+      color: rgb(1000, 1000, 1000);
+      background: rgb(0, 0, 0);
+      border: 1px solid rgb(1000, 1000, 1000);
+    }
+  }
+
+  .footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    @media (max-width: 1024px) {
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    .codeLink {
+      text-decoration: none;
+      padding: 0 0.5rem;
+      background: rgb(60, 60, 60);
+      border-radius: 4px;
+    }
+  }
+}
+
+/* ===================================================
+   5. 控件基准值(桌面态)
+===================================================== */
+
+/* #276:桌面态基准值(原内联样式搬出,数值不变)——DTPager 按钮 padding、SponsorBoard 筛选控件 height、
+   Sec 折叠箭头 padding/margin,三处手机断点覆写见下方 640px 媒体块,桌面走这里的默认值 */
+.dtPagerBtn {
+  padding: 2px 10px;
+}
+
+.sbCtl {
+  /* 30→38(2026-08-09 Frank「这两部分样式怎么不一样」):对齐职位板筛选控件规格(JobsTable ctrl),
+     手机断点的 min-height 44 触控靶不变 */
+  height: 38px;
+}
+
+/* ===================================================
+   6. 手机触控靶 ≥44(≤640 断点)
+===================================================== */
+
+/* #212(第 26 轮)手机触控靶:**只扩可点范围,不改视觉**
+   教训(Frank 2026-07-26 三连反馈「别换行」「语言钮怎么这么大」「用户下拉怎么这么大」):
+   靠 padding/min-height 撑热区 = 控件真的变大、版式被挤走。正确姿势是伪元素向外撑,
+   不占布局、不改一个像素的视觉。顶栏整条已按 Frank 拍板豁免(不加热区)。 */
+@media (max-width: 640px) {
+  .tapPad {
+    position: relative;
+  }
+
+  .tapPad::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  /* 第 27 轮实测:伪元素热区**会被相邻元素抢点**(elementFromPoint 命中的是邻居,不是本元素)——
+     页脚法务链、新闻地区筛选这类成排小控件,光靠 ::after 点不中。这几处改用真实内边距把自身撑到 ≥36,
+     版式代价只有几像素(页脚与筛选行本就有余量);顶栏仍按 Frank 拍板豁免,不加高。 */
+  .sfLinks a.tapPad {
+    padding: 9px 0;
+    display: inline-block;
+  }
+
+  .nwChips button.tapPad {
+    min-height: 36px;
+  }
+
+  /* #217(第 27 轮体检判真):命中测试不达标的四处 —— /stats 三个下拉 28px 高、
+     「更多(剩 N 个)」按钮 29px、匹配视图同款。撑到 40 只影响手机,桌面一像素不动。 */
+  .stCtl select {
+    min-height: 40px;
+  }
+
+  .jtMore button {
+    min-height: 40px;
+  }
+
+  /* #276(第 34 轮体检):DTPager ‹›(20px 高)/ /start 三分表筛选控件(30px)/
+     Sec 折叠箭头(更小)三处触控靶不足 44px——同款手法,只手机断点抬,字号/桌面态不动。 */
+  .dtPagerBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 2px 14px;
+  }
+
+  .sbCtl {
+    min-height: 44px;
+  }
+
+  /* #300(第 38 轮):统计主图控件行 / TopN 下拉 / 省内职业榜省下拉(28-32px)——
+     手机断点抬 ≥44(min-height 压过行内 height:30/32),桌面一像素不动 */
+  .mktCtl {
+    min-height: 44px;
+  }
+}
+
+/* ===================================================
+   7. 顶栏 SiteHeader
+   2026-08-17 从组件里迁出(Frank「代码里全是 css 样式不
+   消耗 token 吗」——消耗:实测内联样式占全部 tsx 字节
+   11.3%,而这些值从不随状态变,每读一次组件就白付一次)。
+   原来还有两段 <style> 标签挂在组件返回值里、每次渲染重新
+   注入,一并收在这里。留在 tsx 的只剩真·动态的部分:
+   高亮态一律走 .on 修饰类,不再写 三元 × 每个属性。
+===================================================== */
+.shHeader { background: #fff; border-bottom: 1px solid #e5e7eb; }
+.shHeader.isSticky { position: sticky; top: 0; z-index: 30; }
+
+.shBar { max-width: 1320px; margin: 0 auto; padding: 10px 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.shBrand { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.shLogo { font-size: 17px; font-weight: 700; color: #111827; text-decoration: none; white-space: nowrap; }
+.shTagline { font-size: 12px; color: #9ca3af; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shBurger { display: none; width: 34px; height: 34px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; color: #374151; cursor: pointer; font-size: 15px; flex-shrink: 0; }
+
+.shRight { display: flex; align-items: center; gap: 12px; max-width: 100%; flex-wrap: wrap; }
+.shNav { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.shDivider { width: 1px; height: 16px; background: #e5e7eb; }
+.shAcct { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+/* 导航项与下拉触发器共用一套字形,当前页加 .on —— 原本是每个属性各写一遍三元 */
+.shNavLink { text-decoration: none; font-size: 12.5px; color: #6b7280; white-space: nowrap; }
+.shNavLink.on { color: #2563eb; font-weight: 700; }
+.shDropBtn { border: none; background: none; padding: 0; font-size: 12.5px; cursor: pointer; white-space: nowrap; color: #6b7280; font-weight: 400; }
+.shDropBtn.on { color: #2563eb; font-weight: 700; }
+.shDropCaret { font-size: 10px; color: #9ca3af; }
+.shDropPanel { position: absolute; top: calc(100% + 6px); left: -10px; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, .12); padding: 4px 0; z-index: 40; min-width: 168px; display: block; }
+.shDropItem { display: block; padding: 6px 14px; font-size: 12.5px; text-decoration: none; white-space: nowrap; color: #374151; }
+.shDropItem.on { color: #1d4ed8; background: #eff6ff; font-weight: 600; }
+.shDropWrap { position: relative; display: inline-flex; }
+
+/* 2026-08-16 Frank「怎么给我拉长了」:真实 min-height 撑高被点名 → 回视觉 25px */
+.shLangWrap { display: inline-flex; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden; }
+.shLangBtn { border: none; padding: 3px 9px; font-size: 12.5px; cursor: pointer; background: #fff; color: #6b7280; }
+.shLangBtn.on { background: #2563eb; color: #fff; }
+/* 账户槽:与 SiteHeader 的 ACCT_SLOT_W / AccountMenu 的 SLOT_W 同值(32) */
+.shAcctSlot { display: inline-block; width: 32px; height: 28px; }
+/* 有会话但身份未到时的中性占位圆,尺寸同真头像 28 —— 不能让 Avatar 拿空 email 兜底成「?」 */
+.shAcctDot { display: inline-block; width: 28px; height: 28px; border-radius: 50%; background: #e5e7eb; }
+
+/* 窄屏抽屉(D 件)。平移动画 Frank 2026-07-23 拍板 */
+@keyframes drwFade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes drwSlide { from { transform: translateX(-100%) } to { transform: translateX(0) } }
+.shDrawerMask { position: fixed; inset: 0; background: rgba(17, 24, 39, .28); z-index: 60; animation: drwFade .18s ease; }
+.shDrawer { position: absolute; top: 0; bottom: 0; left: 0; width: 68%; max-width: 280px; background: #fff; border-right: 1px solid #e5e7eb; padding: 0 12px; overflow-y: auto; animation: drwSlide .24s cubic-bezier(.4, 0, .2, 1); }
+.shDrawerHead { display: flex; align-items: center; justify-content: space-between; padding: 13px 2px 10px; }
+.shDrawerBrand { font-size: 16px; font-weight: 700; color: #111827; }
+.shDrawerClose { width: 44px; height: 44px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; color: #374151; cursor: pointer; font-size: 14px; }
+.shDrawerNav { display: flex; flex-direction: column; gap: 8px; padding-bottom: 20px; }
+/* #300:抽屉条目触控靶 ≥44 真实高度(成列小控件 ::after 会被邻行抢点——第 27 轮教训) */
+.shDrawerItem { display: flex; align-items: center; min-height: 44px; box-sizing: border-box; padding: 10px 12px; border-radius: 9px; font-size: 14px; text-decoration: none; background: #f9fafb; border: 1px solid #e5e7eb; color: #374151; font-weight: 400; }
+.shDrawerItem.on { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; font-weight: 600; }
+.shDrawerGrpBtn { width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center; min-height: 44px; box-sizing: border-box; padding: 10px 12px; border-radius: 9px; font-size: 14px; background: #f9fafb; border: 1px solid #e5e7eb; color: #374151; cursor: pointer; }
+.shDrawerChev { color: #9ca3af; }
+.shDrawerSub { display: flex; align-items: center; min-height: 44px; box-sizing: border-box; padding: 7px 8px; margin: 0 6px 0 16px; border-radius: 8px; font-size: 13px; color: #4b5563; text-decoration: none; }
+.shDrawerSub.on { color: #1d4ed8; background: #eff6ff; font-weight: 600; }
+
+/* ≥1351(标语在显)整条禁折行、右组禁压缩:flex 换行按内容假想宽算,不会先压标语再折 ——
+   英文导航长,浏览器宁可把整排导航折下去(2026-07-31 Frank 实拍 EN 折两行)。 */
+@media (min-width: 1351px) {
+  .shBar { flex-wrap: nowrap !important; }
+  .shRight { flex-wrap: nowrap !important; flex-shrink: 0; }
+}
+@media (max-width: 1350px) { .shTagline { display: none } }
+/* #300(第 38 轮):顶栏触控靶补 ≥44。汉堡直接撑箱到 44;语言钮/登录/注册/logo 视觉不动,
+   ::after 只**纵向**撑热区(横向不撑——成排邻钮横向热区互抢,第 27 轮教训);只在 ≤640 生效。 */
+@media (max-width: 640px) {
+  .shDivider { display: none }
+  .shNav { display: none !important }
+  .shBurger { display: inline-block !important; width: 44px !important; height: 44px !important }
+  .shTapY { position: relative }
+  .shTapY::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); height: 44px }
+  .shLangWrap { overflow: visible !important }
+  .shLangWrap button { position: relative }
+  .shLangWrap button::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); height: 44px }
+  .shLangWrap button:first-child { border-top-left-radius: 5px; border-bottom-left-radius: 5px }
+  .shLangWrap button:last-child { border-top-right-radius: 5px; border-bottom-right-radius: 5px }
+}

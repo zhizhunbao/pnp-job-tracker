@@ -1,10 +1,10 @@
 'use client'
 // 全站共享页脚(2026-07-16 用户拍板「所有页面都应该用同一个 header 和 footer」):
-// 从 /jobs 内联 footer 抽出,免责 + 法务四链 + 版权,窄屏自动换行。与 SiteHeader 配对使用。
+// 从 /jobs 内联 footer 抽出,免责 + 法务四链 + 版权,窄屏自动换行。与 Header 配对使用。
 import type { TFn } from './jobs/i18n'
 
 // 默认轨 1320(2026-07-30):与头轨/全站容器同宽(Frank「每个页面宽度一样」)
-export function SiteFooter({ t, maxWidth = 1320 }: { t: TFn; maxWidth?: number }) {
+export function Footer({ t, maxWidth = 1320 }: { t: TFn; maxWidth?: number }) {
   // #79 免责已压短;资料库三链收进顶栏「资料库 ▾」(2026-07-19 Frank 批方案 A)→ 页脚回单行:免责+法务+©
   return (
     <footer style={{ borderTop: '1px solid #e5e7eb', background: '#fafafa', flexShrink: 0, marginTop: 'auto' }}>

@@ -9,6 +9,8 @@
 //   · 窄屏横向可滚动,**永不换行**(换行的选项卡会把下面的内容顶得跳来跳去)
 import { useRef } from 'react'
 
+import { UI } from './tokens'
+
 export type TabItem = {
   key: string
   label: string
@@ -97,6 +99,31 @@ export function TabPanel({ tabKey, active, idPrefix = 'tab', children }: {
       style={active ? undefined : { display: 'none' }}
     >
       {children}
+    </div>
+  )
+}
+
+// ── SectionTabs(模块二级 tab 条,2026-07-19 Frank 批「二级模块统一样式」)──
+// 用在模块页 banner 正下方(如 移民动态:最新公告|时间线);圆角上沿,当前页高亮模块色。
+export function SectionTabs({ tabs, color = UI.primary }: {
+  tabs: { href: string; label: React.ReactNode; active?: boolean }[]; color?: string
+}) {
+  return (
+    <div className="uiTabs" style={{ display: 'flex', gap: 6, margin: '-6px 0 14px', borderBottom: `2px solid ${color}22` }}>
+      {/* #205(第 26 轮体检):当前页签原来也是 <a> 只是不给 href —— 看着像链接点不动。当前页=span,别的才是链接 */}
+      {tabs.map((tb) => {
+        const Tag = (tb.active ? 'span' : 'a') as 'a'
+        return (
+        <Tag key={tb.href} href={tb.active ? undefined : tb.href} className={tb.active ? undefined : 'tapPad'}
+          style={{
+            fontSize: 12.5, padding: '5px 14px', borderRadius: '9px 9px 0 0', textDecoration: 'none',
+            border: '1px solid', borderBottom: 'none',
+            ...(tb.active
+              ? { background: '#fff', color, fontWeight: 700, borderColor: `${color}55` }
+              : { background: UI.bg, color: UI.text2, borderColor: UI.border, cursor: 'pointer' }),
+          }}>{tb.label}</Tag>
+        )
+      })}
     </div>
   )
 }

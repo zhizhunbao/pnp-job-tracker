@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { TFn } from './i18n'
 import { Modal } from './Modal'
-import { Button, chipStyle } from '../ui/primitives'
+import { Button, chipStyle } from '../ui'
 import { hasProfile, normalizeProfile, type MatchProfile } from '@/lib/match'
 import {
   POPULAR_NOCS, CLB_OPTS, CRS_OPTS, PGWP_OPTS, clbActive, crsActive, pgwpActive, type Opt,

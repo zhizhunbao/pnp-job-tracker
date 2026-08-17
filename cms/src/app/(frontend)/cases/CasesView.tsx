@@ -1,12 +1,12 @@
 'use client'
 // 常见案例索引页(2026-08-13 Frank:「这个是不是放到其他页面比较好」——16 条处境在决策页占了
-// 大半屏,决策页要的是动线不是阅览室)。骨架照 /resources:SiteHeader + 1320 轨 + banner + 白卡。
+// 大半屏,决策页要的是动线不是阅览室)。骨架照 /resources:Header + 1320 轨 + banner + 白卡。
 // 行形态原样搬决策页那张卡(08-11 Frank 连拍四刀后的终态):一行一条不折叠,
 // 做了事实层的才有「完整案例」按钮 —— 答不了就不假装能答。
 import { useLang } from '../LangProvider'
-import { SiteHeader } from '../SiteHeader'
-import { SiteFooter } from '../SiteFooter'
-import { BANNER_IMGS, PageBanner, UI } from '../ui/primitives'
+import { Header } from '../Header'
+import { Footer } from '../Footer'
+import { BANNER_IMGS, Banner, UI } from '../ui'
 import { CASES, type L3 } from '@/lib/caseLibrary'
 import { track } from '@/lib/track'
 
@@ -16,9 +16,9 @@ export function CasesView() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: UI.bg, fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
-      <SiteHeader lang={lang} setLang={setLangSaved} t={t} />
+      <Header lang={lang} setLang={setLangSaved} t={t} />
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1rem 1.25rem 40px', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
-        <PageBanner module="pathways" title={t('dp.cases')} images={BANNER_IMGS.pathways} />
+        <Banner module="pathways" title={t('dp.cases')} images={BANNER_IMGS.pathways} />
         <div style={{ background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, padding: '14px 16px', marginTop: 10 }}>
           {CASES.map((c) => (
             <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
@@ -36,7 +36,7 @@ export function CasesView() {
           ))}
         </div>
       </div>
-      <SiteFooter t={t} maxWidth={1320} />
+      <Footer t={t} maxWidth={1320} />
     </div>
   )
 }
