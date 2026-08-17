@@ -736,3 +736,48 @@ export const PNP_DRAWS_RECENT = `SELECT * FROM pnp_draws
       ORDER BY draw_date DESC LIMIT 400`
 
 export const NEWS_RECENT_80 = `SELECT * FROM news ORDER BY date DESC, id DESC LIMIT 80`
+
+/* ══════════════════════════════════════════════════════════════════════════
+   23) 翻译 / 摘要缓存(按界面语言选列)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+// ── app/api/news-translate/route.ts ──
+
+export const newsBodyForTranslate = (a1: string) => `SELECT body_en AS en, ${a1} AS cached FROM news WHERE slug = $1 LIMIT 1`
+
+export const newsSetTranslation = (a1: string) => `UPDATE news SET ${a1} = $1 WHERE slug = $2`
+
+// ── app/api/news-summarize/route.ts ──
+
+export const newsForSummary = (a1: string) => `SELECT title, body_en AS en, ${a1} AS cached FROM news WHERE slug = $1 LIMIT 1`
+
+export const newsSetSummary = (a1: string) => `UPDATE news SET ${a1} = $1 WHERE slug = $2`
+
+/* ══════════════════════════════════════════════════════════════════════════
+   24) 埋点与零散查询
+   ══════════════════════════════════════════════════════════════════════════ */
+
+// ── app/api/track/route.ts ──
+
+export const FUNNEL_EVENT_UPSERT = `INSERT INTO funnel_events (day, event, prop, n) VALUES (CURRENT_DATE, $1, $2, 1)
+       ON CONFLICT (day, event, prop) DO UPDATE SET n = funnel_events.n + 1`
+
+// ── app/api/statsfine/route.ts ──
+
+export const fineCounts = (a1: string | number) => `SELECT fine, count(*)::int AS n FROM jobs
+     WHERE status = 'open' AND province = $1 AND broad = $2 AND mid = $3
+       AND fine IS NOT NULL AND fine <> '' AND fine <> '未分类'
+     GROUP BY fine ORDER BY n DESC LIMIT ${a1}`
+
+// ── app/api/province/route.ts ──
+
+export const PROV_DIFFICULTY_ONE = `SELECT difficulty FROM stats WHERE province = $1 AND broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL LIMIT 1`
+
+// ── 补:单引号写的四条 ──
+export const NOC_DUTIES_BY_CODE = `SELECT duties, requirements FROM noc_descriptions WHERE noc = $1 LIMIT 1`
+
+export const JD_FORMATTED_BY_URL = `SELECT jd_formatted FROM jobs WHERE apply_url = $1 LIMIT 1`
+
+export const COMPANY_BRIEF_BY_NAME = `SELECT ai_brief FROM companies WHERE lower(name) = lower($1) AND ai_brief IS NOT NULL LIMIT 1`
+
+export const JOB_APPLY_URL_BY_ID = `SELECT apply_url FROM jobs WHERE id = $1 LIMIT 1`

@@ -9,6 +9,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { checkLimit, ipOf } from '@/lib/rateLimit'
 import { translateLinesAligned, translateReady } from '@/lib/lineTranslate'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -40,7 +41,7 @@ export async function POST(req: Request) {
 
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
-  const r = await pool.query('SELECT duties, requirements FROM noc_descriptions WHERE noc = $1 LIMIT 1', [noc])
+  const r = await pool.query(SQL.NOC_DUTIES_BY_CODE, [noc])
   const row = r.rows[0]
   if (!row || (!row.duties && !row.requirements)) return Response.json({ ok: false, error: 'not found' }, { status: 404 })
 

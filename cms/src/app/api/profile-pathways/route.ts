@@ -14,6 +14,7 @@ import { regionProvincesOf, uiOf } from '@/lib/pathways'
 import { pickOutside, rankRows, type RankCtx } from '@/lib/planRank'
 import { isAboveLine, isBelowLine } from '@/lib/scoreLine'
 import { getVerdictData } from '@/lib/verdictCache'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -62,8 +63,7 @@ async function competitionByProvince(): Promise<Record<string, ProvinceCompetiti
     const pool = (payload.db as { pool?: { query: (q: string) => Promise<{ rows: Record<string, unknown>[] }> } }).pool
     if (!pool) return out
     const { rows } = await pool.query(
-      `SELECT province, difficulty FROM stats
-        WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL`,
+      SQL.PROV_DIFFICULTY,
     )
     for (const r of rows) {
       const raw = r.difficulty

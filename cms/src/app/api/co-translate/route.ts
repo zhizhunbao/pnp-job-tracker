@@ -8,6 +8,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { checkLimit, ipOf } from '@/lib/rateLimit'
 import { translateLinesAligned, translateReady } from '@/lib/lineTranslate'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
 
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
-  const r = await pool.query('SELECT ai_brief FROM companies WHERE lower(name) = lower($1) AND ai_brief IS NOT NULL LIMIT 1', [name])
+  const r = await pool.query(SQL.COMPANY_BRIEF_BY_NAME, [name])
   const brief = r.rows[0]?.ai_brief
   if (!brief) return Response.json({ ok: false, error: 'not found' }, { status: 404 })
 

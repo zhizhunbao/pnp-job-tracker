@@ -8,6 +8,7 @@
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { isLocalHost, toFunnelHit } from '@/lib/funnel'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -29,8 +30,7 @@ export async function POST(req: Request) {
     const payload = await getPayload({ config: await config })
     const pool = (payload.db as any).pool
     await pool.query(
-      `INSERT INTO funnel_events (day, event, prop, n) VALUES (CURRENT_DATE, $1, $2, 1)
-       ON CONFLICT (day, event, prop) DO UPDATE SET n = funnel_events.n + 1`,
+      SQL.FUNNEL_EVENT_UPSERT,
       [hit.event, hit.prop],
     )
   } catch { /* 表还没建 / 库抖动:埋点丢一次比页面报错强 */ }

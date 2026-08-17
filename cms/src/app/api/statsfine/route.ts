@@ -6,6 +6,7 @@
 import { NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -24,10 +25,7 @@ export async function GET(req: NextRequest) {
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
   const { rows } = await pool.query(
-    `SELECT fine, count(*)::int AS n FROM jobs
-     WHERE status = 'open' AND province = $1 AND broad = $2 AND mid = $3
-       AND fine IS NOT NULL AND fine <> '' AND fine <> '未分类'
-     GROUP BY fine ORDER BY n DESC LIMIT ${MAX_FINE_ROWS}`,
+    SQL.fineCounts(MAX_FINE_ROWS),
     [prov, broad, mid])
   return Response.json({ rows })
 }

@@ -18,6 +18,7 @@ import { jobDescription } from '@/lib/jobDescription'
 import { completeText, LlmError } from '@/lib/llm'
 import { patchProfile, type ProfilePatch } from '@/lib/profile'
 import { DAILY_FREE, gateMatch, matchPrompt, MIN_RESUME, normalizeRows, parseLlmJson } from '@/lib/resumeMatch'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -40,7 +41,7 @@ export async function POST(req: Request) {
   if (jd.length < 40 && body?.jobId != null) {
     try {
       const payload = await getPayload({ config: await config })
-      const { rows } = await (payload.db as any).pool.query('SELECT apply_url FROM jobs WHERE id = $1 LIMIT 1', [body.jobId])
+      const { rows } = await (payload.db as any).pool.query(SQL.JOB_APPLY_URL_BY_ID, [body.jobId])
       if (rows[0]?.apply_url) jd = (await jobDescription(rows[0].apply_url)).trim()
     } catch { /* 兜底失败走 noJd */ }
   }

@@ -9,6 +9,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { contentTag } from '@/lib/friendLlm'
 import { checkLimit, ipOf } from '@/lib/rateLimit'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -44,7 +45,7 @@ export async function POST(req: Request) {
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
   const col = lang === 'zh' ? 'body_zh' : 'body_ko'
-  const r = await pool.query(`SELECT body_en AS en, ${col} AS cached FROM news WHERE slug = $1 LIMIT 1`, [slug])
+  const r = await pool.query(SQL.newsBodyForTranslate(col), [slug])
   const row = r.rows[0]
   if (!row?.en) return Response.json({ ok: false, error: 'not found' }, { status: 404 })
   if (row.cached) return Response.json({ ok: true, body: row.cached, cached: true })
@@ -76,7 +77,7 @@ export async function POST(req: Request) {
     const out = String((await resp.json()).translated_text || '')
     const body = parseNumbered(out, paras.length)
     if (!body) throw new Error('paragraph alignment failed')
-    await pool.query(`UPDATE news SET ${col} = $1 WHERE slug = $2`, [body, slug])
+    await pool.query(SQL.newsSetTranslation(col), [body, slug])
     return Response.json({ ok: true, body, cached: false })
   } catch (e) {
     return Response.json({ ok: false, error: (e as Error).message }, { status: 502 })

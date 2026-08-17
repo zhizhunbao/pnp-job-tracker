@@ -6,6 +6,7 @@
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -18,6 +19,6 @@ export async function GET(req: Request) {
   const doc = prov.docs[0] as { info?: unknown } | undefined
   if (!doc) return Response.json({ ok: false }, { status: 404 })
   const { rows } = await (payload.db as any).pool.query(
-    `SELECT difficulty FROM stats WHERE province = $1 AND broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL LIMIT 1`, [code])
+    SQL.PROV_DIFFICULTY_ONE, [code])
   return Response.json({ ok: true, info: doc.info ?? null, difficulty: rows[0]?.difficulty ?? null })
 }

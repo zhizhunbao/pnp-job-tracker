@@ -7,6 +7,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { refPrompt } from '@/lib/friendLlm'
 import { checkLimit, ipOf } from '@/lib/rateLimit'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -36,7 +37,7 @@ export async function POST(req: Request) {
   const col = COL[lang]
   let r
   try {
-    r = await pool.query(`SELECT title, body_en AS en, ${col} AS cached FROM news WHERE slug = $1 LIMIT 1`, [slug])
+    r = await pool.query(SQL.newsForSummary(col), [slug])
   } catch {
     // schema 容错:summary_en 列未建(DDL4 未跑)时英文速读暂不可用,不炸 500
     return Response.json({ ok: false, error: 'column not ready' }, { status: 503 })
@@ -61,7 +62,7 @@ export async function POST(req: Request) {
     if (!resp.ok) throw new Error(`upstream ${resp.status}`)
     const summary = String((await resp.json()).answer || '').replace(/\*\*(.+?)\*\*/g, '$1').replace(/^#+\s*/gm, '').trim()
     if (summary.length < 10) throw new Error('empty summary')
-    await pool.query(`UPDATE news SET ${col} = $1 WHERE slug = $2`, [summary, slug])
+    await pool.query(SQL.newsSetSummary(col), [summary, slug])
     return Response.json({ ok: true, summary, cached: false })
   } catch (e) {
     return Response.json({ ok: false, error: (e as Error).message }, { status: 502 })
