@@ -1,7 +1,7 @@
 'use client'
 // Chip(筛选,可点):默认 / 选中 / 强调红。
 // chipStyle 单独导出是因为有调用方要把它摊进自己的 style(整行筛选带),不只用组件形态。
-import { UI } from './tokens'
+import { UI } from './colors'
 
 export function chipStyle(active: boolean, hot = false): React.CSSProperties {
   return {

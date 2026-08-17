@@ -2,7 +2,7 @@
 // 全站按钮的单一来源。新增按钮一律从这拿,不许散装内联(#65)。
 // 按钮统一 P1(2026-07-19 Frank「所有能点的按钮都要统一设计」):pro(⭐付费入口)/ai(AI 功能靛蓝)/lg 档/style 透传。
 // 颜色语义:蓝=普通行动,棕=付费,靛=AI 功能,红=危险,灰字=弱操作(ghost + color 覆盖)。
-import { UI } from './tokens'
+import { UI } from './colors'
 
 const BTN_KIND: Record<string, React.CSSProperties> = {
   primary: { background: UI.primary, color: '#fff', border: 'none' },

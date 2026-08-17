@@ -234,12 +234,9 @@ button:not(:disabled):hover {
    5. 控件基准值(桌面态)
 ===================================================== */
 
-/* #276:桌面态基准值(原内联样式搬出,数值不变)——DTPager 按钮 padding、SponsorBoard 筛选控件 height、
-   Sec 折叠箭头 padding/margin,三处手机断点覆写见下方 640px 媒体块,桌面走这里的默认值 */
-.dtPagerBtn {
-  padding: 2px 10px;
-}
-
+/* #276:桌面态基准值(原内联样式搬出,数值不变)——SponsorBoard 筛选控件 height、
+   Sec 折叠箭头 padding/margin,手机断点覆写见下方 640px 媒体块,桌面走这里的默认值。
+   (翻页钮的基准值 2026-08-17 随表格一起并进第 8 段的 .pagerBtn) */
 .sbCtl {
   /* 30→38(2026-08-09 Frank「这两部分样式怎么不一样」):对齐职位板筛选控件规格(JobsTable ctrl),
      手机断点的 min-height 44 触控靶不变 */
@@ -295,7 +292,7 @@ button:not(:disabled):hover {
 
   /* #276(第 34 轮体检):DTPager ‹›(20px 高)/ /start 三分表筛选控件(30px)/
      Sec 折叠箭头(更小)三处触控靶不足 44px——同款手法,只手机断点抬,字号/桌面态不动。 */
-  .dtPagerBtn {
+  .pagerBtn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -395,3 +392,79 @@ button:not(:disabled):hover {
   .shLangWrap button:first-child { border-top-left-radius: 5px; border-bottom-left-radius: 5px }
   .shLangWrap button:last-child { border-top-right-radius: 5px; border-bottom-right-radius: 5px }
 }
+
+/* ===================================================
+   8. 表格 Table + 翻页 Pager
+   2026-08-17 从 ui/Table.tsx 迁出。两处顺手用 CSS 原生能力
+   替掉了 JS 判断:列分隔线走 :not(:last-child)(原来在渲染里
+   算 ci < cols.length-1),翻页钮禁用态走 :disabled(原来是个
+   返回样式对象的 btn(disabled) 函数)。
+===================================================== */
+.tbl { overflow: auto; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; }
+.tbl.bare { background: none; border: 0; border-radius: 0; }   /* 已嵌在调用方白卡里,不套第二层描边 */
+.tblTable { width: 100%; border-collapse: collapse; }
+
+.tblTh { text-align: left; padding: 9px 12px; font-size: 12.5px; color: #6b7280; font-weight: 600; white-space: nowrap; border-bottom: 1px solid #e5e7eb; background: #fafafa; position: relative; }
+.tblTh:not(:last-child) { border-right: 1px solid #e5e7eb; }
+.tblTh.sortable { cursor: pointer; }
+.tblTh.tip { text-decoration: underline dotted #d1d5db; }      /* 表头 hover 提示(如「技能类获批」口径) */
+.tblSortHint { color: #d1d5db; }                                /* 可排序但未排序时的 ⇅ */
+/* 拖列宽的抓手:贴在 th 右缘的一条 6px 透明带 */
+.tblGrip { position: absolute; right: 0; top: 0; bottom: 0; width: 6px; cursor: col-resize; }
+
+.tblTd { padding: 9px 12px; font-size: 13px; color: #374151; border-bottom: 1px solid #f3f4f6; }
+.tblTd:not(:last-child) { border-right: 1px solid #f3f4f6; }
+.tblTd.nowrap { white-space: nowrap; }
+/* 数字列右对齐 + 等宽数字(漏斗表、抽选表):右对齐后同位数在列里能上下对齐着比 */
+.tblTh.right, .tblTd.right { text-align: right; }
+.tblTd.right { font-variant-numeric: tabular-nums; }
+
+.tblEmpty { padding: 24px 16px; color: #9ca3af; font-size: 13px; text-align: center; }
+.tblFoot { padding: 8px 12px; border-top: 1px solid #f3f4f6; }
+
+.pager { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: #6b7280; }
+.pagerNav { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.pagerNum { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pagerBtn { border: 1px solid #e5e7eb; border-radius: 6px; background: #fff; font-size: 13px; line-height: 18px; font-family: inherit; color: #6b7280; cursor: pointer; padding: 2px 10px; }
+.pagerBtn:disabled { color: #d1d5db; cursor: default; }
+
+/* ===================================================
+   9. 卡片 Card
+   2026-08-17 从 ui/Card.tsx 迁出。**未迁**:CARD_SHELL / CARD_MD
+   两个导出的样式对象还有 25 处调用方用 {...CARD_SHELL, padding} 摊开写,
+   要连同调用方一起改,留给下一批 —— 现在把它们变成类会造出两份同样的值。
+===================================================== */
+
+/* 职位卡(手机形态)—— 左列=身份(公司、地点),右列=数字(薪资、时间);
+   右列右对齐后在卡片流里连成一条竖线,手指下滑只走右边就能比(#148 拍板) */
+.jcard { border: 1px solid #e5e7eb; border-radius: 12px; padding: 10px 12px; background: #fff; }
+.jcardTop { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.jcardTitle { font-size: 14.5px; min-width: 0; }      /* 蓝字 14.5 **不加粗**:蓝色已说明可点,再加粗是同一件事说两遍 */
+.jcardAct { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+.jcardNote { font-size: 11.5px; color: #9ca3af; margin-top: 1px; line-height: 1.4; }
+.jcardRow { margin-top: 2px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.jcardL { min-width: 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.jcardR { flex-shrink: 0; text-align: right; }
+.jcardCo { font-size: 12.5px; }
+.jcardPay { font-size: 13px; color: #15803d; font-weight: 700; white-space: nowrap; }
+.jcardLoc { font-size: 12.5px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jcardDate { font-size: 12.5px; color: #9ca3af; white-space: nowrap; }
+.jcardChips { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.jcardFoot { margin-top: 6px; font-size: 11px; color: #9ca3af; }
+.jcardLink { color: #2563eb; text-decoration: none; cursor: pointer; }
+
+/* 卡内键值区(两列 grid,wide 独占行)与操作行 */
+.cardKV { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; margin-top: 6px; }
+.cardKV .wide { grid-column: 1 / -1; }
+.cardKVk { font-size: 11.5px; color: #9ca3af; }
+.cardKVv { font-size: 13px; color: #374151; }
+.cardAct { margin-top: 6px; font-size: 12.5px; }
+
+/* 升级卡 + 打码锁区。⚠️ 与上面的卡不是一套皮:琥珀 CTA,不用白卡壳 */
+.proCard { display: flex; align-items: center; gap: 10px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 10px 12px; margin-top: 12px; }
+/* n≥4 时悬浮在打码区正中(n<4 卡放码尾,卡不许盖住超过一半的码,Frank 拍) */
+.proCard.overlay { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); margin: 0; width: max-content; max-width: 92%; box-shadow: 0 4px 14px rgba(0, 0, 0, .08); }
+.proCardText { flex: 1; min-width: 0; font-size: 13px; color: #92400e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.proCardBtn { flex: none; background: #2563eb; color: #fff; font-size: 13px; font-weight: 600; padding: 7px 13px; border-radius: 8px; border: none; cursor: pointer; white-space: nowrap; }
+.lockRows { position: relative; margin-top: 6px; }
+.lockRow { filter: blur(5px); user-select: none; color: #9ca3af; font-size: 13.5px; padding: 7px 0; border-bottom: 1px solid #f3f4f6; }

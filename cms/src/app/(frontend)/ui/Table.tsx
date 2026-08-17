@@ -4,31 +4,7 @@
 // jobs 主表是独立重器(服务端排序/冻结列/字段面板)不并入,只对齐视觉 token(G 节拍板)。
 // 排序=客户端(简单表数据已全量在手);列用配置声明,render 缺省取 r[key]。
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { UI } from './tokens'
-
-// 翻页行(总数 + ‹ x/y ›):Table 内置页脚用,OccBoard 手机卡片列表也复用同一个
-export function Pager({ page, max, note, onPage }: {
-  page: number; max: number; note?: React.ReactNode; onPage: (p: number) => void
-}) {
-  // #276 手机触控靶:padding 移交 .dtPagerBtn(main.css),桌面值原样,手机断点单独抬 ≥44px
-  const btn = (disabled: boolean): React.CSSProperties => ({
-    border: `1px solid ${UI.border}`, borderRadius: 6, background: '#fff',
-    fontSize: 13, lineHeight: '18px', fontFamily: 'inherit',
-    color: disabled ? '#d1d5db' : UI.text2, cursor: disabled ? 'default' : 'pointer',
-  })
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12.5, color: UI.text2 }}>
-      {note != null && <span>{note}</span>}
-      {max > 1 && (
-        <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <button aria-label="‹" className="dtPagerBtn" disabled={page === 0} onClick={() => onPage(Math.max(0, page - 1))} style={btn(page === 0)}>‹</button>
-          <span style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{page + 1} / {max}</span>
-          <button aria-label="›" className="dtPagerBtn" disabled={page >= max - 1} onClick={() => onPage(Math.min(max - 1, page + 1))} style={btn(page >= max - 1)}>›</button>
-        </span>
-      )}
-    </div>
-  )
-}
+import { Pager } from './Pager'
 
 export type Col<T> = {
   key: string
@@ -100,20 +76,22 @@ export function Table<T>({ cols, rows, rowKey, empty, header, minWidth, pageSize
     const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up) }
     window.addEventListener('pointermove', move); window.addEventListener('pointerup', up)
   }
-  const th: React.CSSProperties = { textAlign: 'left', padding: '9px 12px', fontSize: 12.5, color: UI.text2, fontWeight: 600, whiteSpace: 'nowrap', borderBottom: `1px solid ${UI.border}`, background: '#fafafa', position: 'relative' }
-  const td: React.CSSProperties = { padding: '9px 12px', fontSize: 13, color: '#374151', borderBottom: `1px solid ${UI.hairline}` }
+  // 样式全在 main.css 第 8 段;这里只拼「哪些修饰类开着」。列分隔线由 :not(:last-child) 管 ——
+  // 原来是渲染时算 ci < cols.length - 1,现在 CSS 自己知道谁是最后一列。
+  const cls = (base: string, ...mods: (string | false | undefined)[]) =>
+    [base, ...mods.filter(Boolean)].join(' ')
   return (
-    <div style={bare ? { overflow: 'auto' } : { background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'auto' }}>
+    <div className={bare ? 'tbl bare' : 'tbl'}>
       {header}
-      <table ref={tableRef} style={{ width: '100%', minWidth, borderCollapse: 'collapse', tableLayout: pct ? 'fixed' : 'auto' }}>
+      <table ref={tableRef} className="tblTable" style={{ minWidth, tableLayout: pct ? 'fixed' : 'auto' }}>
         <thead><tr>
-          {cols.map((c, ci) => (
-            <th key={c.key} ref={(el) => { thRefs.current[c.key] = el }} title={c.thTip} className={c.className}
+          {cols.map((c) => (
+            <th key={c.key} ref={(el) => { thRefs.current[c.key] = el }} title={c.thTip}
+              className={cls('tblTh', c.sort && 'sortable', c.thTip && 'tip', c.align === 'right' && 'right', c.className)}
               onClick={c.sort ? () => setSort((s) => (s?.key === c.key ? (s.dir === -1 ? { key: c.key, dir: 1 } : null) : { key: c.key, dir: -1 })) : undefined}
-              style={{ ...th, width: widths[c.key] ?? pct?.[c.key] ?? c.width, cursor: c.sort ? 'pointer' : undefined, ...(c.align === 'right' ? { textAlign: 'right' } : {}), ...(ci < cols.length - 1 ? { borderRight: '1px solid #e5e7eb' } : {}), ...(c.thTip ? { textDecoration: 'underline dotted #d1d5db' } : {}) }}>
-              {c.label}{sort?.key === c.key ? (sort.dir === -1 ? ' ▼' : ' ▲') : c.sort ? <span style={{ color: '#d1d5db' }}> ⇅</span> : null}
-              <span onPointerDown={(e) => startResize(e, c.key)} onClick={(e) => e.stopPropagation()}
-                style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 6, cursor: 'col-resize' }} />
+              style={{ width: widths[c.key] ?? pct?.[c.key] ?? c.width }}>
+              {c.label}{sort?.key === c.key ? (sort.dir === -1 ? ' ▼' : ' ▲') : c.sort ? <span className="tblSortHint"> ⇅</span> : null}
+              <span className="tblGrip" onPointerDown={(e) => startResize(e, c.key)} onClick={(e) => e.stopPropagation()} />
             </th>
           ))}
         </tr></thead>
@@ -124,16 +102,20 @@ export function Table<T>({ cols, rows, rowKey, empty, header, minWidth, pageSize
             const k = rowKey(r, i)
             return (
               <tr key={k}>
-                {cols.map((c, ci) => <td key={c.key} className={c.className} style={{ ...td, ...(c.align === 'right' ? { textAlign: 'right', fontVariantNumeric: 'tabular-nums' } : {}), ...(ci < cols.length - 1 ? { borderRight: '1px solid #f3f4f6' } : {}), ...(c.nowrap ? { whiteSpace: 'nowrap' } : {}) }}>{c.render ? c.render(r) : String((r as any)[c.key] ?? '—')}</td>)}
+                {cols.map((c) => (
+                  <td key={c.key} className={cls('tblTd', c.align === 'right' && 'right', c.nowrap && 'nowrap', c.className)}>
+                    {c.render ? c.render(r) : String((r as any)[c.key] ?? '—')}
+                  </td>
+                ))}
               </tr>
             )
           })}
           {foot}
         </tbody>
       </table>
-      {rows.length === 0 && <div style={{ padding: '24px 16px', color: UI.text3, fontSize: 13, textAlign: 'center' }}>{empty}</div>}
+      {rows.length === 0 && <div className="tblEmpty">{empty}</div>}
       {pageSize != null && rows.length > 0 && (
-        <div style={{ padding: '8px 12px', borderTop: `1px solid ${UI.hairline}` }}>
+        <div className="tblFoot">
           <Pager page={p} max={maxPage} note={footerNote} onPage={setPage} />
         </div>
       )}

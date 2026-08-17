@@ -1,5 +1,5 @@
 'use client'
-import { UI } from './tokens'
+import { UI } from './colors'
 
 // ── Title(二级标题:文字+右延细线;右槽可挂「更多 →」)──────
 export function Title({ right, children }: { right?: React.ReactNode; children: React.ReactNode }) {

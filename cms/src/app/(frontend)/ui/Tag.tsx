@@ -1,6 +1,6 @@
 'use client'
 // Tag(状态,不可点):省 / 联邦 / 重要 / 关注 / 通过 / Pro。
-import { UI } from './tokens'
+import { UI } from './colors'
 
 const TAG_VARIANT: Record<string, React.CSSProperties> = {
   region: { background: '#eef2ff', color: '#3730a3' },
