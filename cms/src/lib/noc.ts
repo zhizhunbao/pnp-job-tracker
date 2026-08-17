@@ -4,8 +4,11 @@
 import type { Lang, TFn } from '@/app/(frontend)/jobs/i18n'
 import type { NocDesc } from '@/app/(frontend)/jobs/types'
 
-// 中/小分类的英韩名跟着 noc_categories 维度表下发(2026-08-03 换官方分类那批),
-// 由 registerCatLabels 在取到维度后灌进来;显示层不再自己攒翻译表。
+// 中/小分类显示名(值仍是数据层中文,筛选/查询语义不变)。
+// 2026-08-03 起**名字住维度表**:分类换成 NOC 官方层级(89 个中类 + 162 个小类)之后,
+// 再靠 i18n 里人肉维护 cat.* 就是等着英文界面冒中文(#247 那类事故)——
+// noc_categories 每行自带 mid_en/mid_ko/fine_en/fine_ko,页面拿到 dims 时登记一次。
+// 登记表查不到才退回老路:cat.* → broad.*(老值仍在库里) → 原值。
 const CAT_L10N: Record<string, { en?: string; ko?: string }> = {}
 
 export function registerCatLabels(rows: { broad?: string; mid?: string; fine?: string; broadEn?: string; broadKo?: string; midEn?: string; midKo?: string; fineEn?: string; fineKo?: string }[]): void {

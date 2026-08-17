@@ -2,7 +2,7 @@ import { cookies, headers } from 'next/headers'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import JobsTable, { BANNER_COOKIE } from './JobsTable'
+import Jobs, { BANNER_COOKIE } from './Jobs'
 import { COLS_COOKIE } from './i18n'
 import { COLW_COOKIE, DEFAULT_COLW_SEED, parseColWidthSeed, type ColWidthSeed } from './colWidths.shared'
 import { parseJobFilters, toSearchParams } from './filters.shared'
@@ -143,7 +143,7 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
   }
   // 推荐横幅槽位预判内联脚本随推荐条一并删除(2026-07-31):没有横幅就没有 CLS 要防
   return <>
-    <JobsTable jobs={jobs} updatedAt={updatedAt} dims={dims} initialCols={initialCols} initialColW={initialColW} plan={plan}
+    <Jobs jobs={jobs} updatedAt={updatedAt} dims={dims} initialCols={initialCols} initialColW={initialColW} plan={plan}
       initialBanner={initialBanner} totalCount={totalCount} proof={proof} initialFilters={filters}
       initialMatchView={initialMatchView} deferFull />
   </>
