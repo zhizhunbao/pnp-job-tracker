@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 // 联邦 Express Entry 官方计分表(G9)— ETL(mart)写入,前端/人工只读。给决策引擎当事实表用,
-// **不是** /jobs 的筛选维度(别接进 JobsTable dims)。
+// **不是** /jobs 的筛选维度(别接进 Jobs dims)。
 // 与 pnp_* 四表分工:occupations=在不在清单、score_factors=省提名能打几分、requirements=先要满足什么
 //（含 province='FED' 的 CEC/FSW/FST 资格门槛,那 23 条走 pnp_requirements,不在本表）、本表=联邦这一格官方给几分。
 //

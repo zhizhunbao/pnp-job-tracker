@@ -7,7 +7,7 @@ import { ANSWERS_KEY, answeredBasics, readAnswers, toEngineAnswers, type Answers
 
 // 记忆键收敛到 lib/answers 一个 key(2026-07-31 统一题库):三问与拿 PR 的答案同住一份,
 // 处境与目标省不再各存一份。本文件不再直接碰 localStorage,读写都过门面。
-export const QUIZ_KEY = ANSWERS_KEY       // 兼容导出:JobsTable 仍按名引它做「答过没有」的判定
+export const QUIZ_KEY = ANSWERS_KEY       // 兼容导出:Jobs 仍按名引它做「答过没有」的判定
 
 export type QuizAnswers = { status: string; nocs: string[]; provs: string[] }
 export type QuizFacts = {
@@ -26,7 +26,7 @@ export function readQuiz(): (QuizAnswers & { done?: boolean }) | null {
   return { status: a.status, nocs: a.nocs, provs: a.provs, ...(a.done ? { done: true } : {}) }
 }
 
-// 三问答案 → 档案落库(注册成功后由宿主调;原内联在 JobsTable,2026-07-30 随组件提级抽到这——
+// 三问答案 → 档案落库(注册成功后由宿主调;原内联在职位板页面,2026-07-30 随组件提级抽到这——
 // jobs 与 /start 两个宿主同一份落库逻辑,不复制)。
 // #107 同类保险丝(空白覆盖真档案):三问只管三个字段,**先读回既有档案再合并**,
 // 语言分/CRS/PGWP 这些三问没问的一律原样带回,不能被整组 PATCH 抹掉。

@@ -38,7 +38,7 @@ const ALIAS: Record<string, FunnelStep> = {
   // 而且按真实频次排好序。prop 是 good|bad(低基数枚举,不收自由文本 —— 那要动隐私页)。
   'chat-feedback': 'chat-feedback',
   // 雇主线漏斗(B5,2026-08-08):PNP 弹框打开(分母)→ 点了「该公司在招职位」(分子)。
-  // 调用点早就在打(JobsTable AdvisorModal / SponsorLeadCard),只是没进白名单 → 一直只有 umami 那条腿,
+  // 调用点早就在打(jobs/Advisor 的 AdvisorModal / jobs/Pnp 的 SponsorLeadCard),只是没进白名单 → 一直只有 umami 那条腿,
   // 广告拦截器一挡就读不出数;三个都是站内既有名,原样收进来,不用改调用点。
   'modal-pnp': 'modal-pnp',
   'pnp-employer-click': 'pnp-employer-click',

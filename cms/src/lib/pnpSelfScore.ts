@@ -15,7 +15,7 @@
 //      所以 UI 必须把命中的官方原文标签显出来,让用户自己核对;
 //   ④ 组上限(SK FACTOR I=80 / II=30)按官方封顶,任何勾选组合都不会算出超过官方的分。
 
-// 官方分值表一行(pnp_score_factors 维度表)。**类型定在这里**,不从 JobsTable 取 ——
+// 官方分值表一行(pnp_score_factors 维度表)。**类型定在这里**,不从 jobs/types 取 ——
 // 打分是「关于你这个人」的功能(挂在 /pathways),跟职位板没有依赖关系。
 export type ScoreFactor = {
   province: string; system: string; factor: string; kind: string; seq: number
@@ -23,7 +23,7 @@ export type ScoreFactor = {
   factorMax: number | null; factorGroup: string; groupMax: number | null; passMark: number | null
   maxTotal: number | null; guideEffective: string; fetched: string; url: string
 }
-// 省抽选事实(pnp_draws 的用得着的几列;与 JobsTable.PnpDraw 结构兼容)
+// 省抽选事实(pnp_draws 的用得着的几列;与 jobs/types 的 PnpDraw 结构兼容)
 export type DrawRow = {
   province: string; kind: string; drawDate: string; stream: string; score: number | null
   /** 通道名的中文灰注(ETL 已译,86/145 行有)。**只在 zh 界面出** —— en/ko 不读:

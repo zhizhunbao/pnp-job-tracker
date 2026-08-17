@@ -77,7 +77,7 @@ const NAT_MIN_OPEN = 30   // 省级榜门槛(S4)沿用
 // 小样本环比仍被 mom14d 的 prev<5→null 守着,不出噪音数
 const PROV_MIN_OPEN = 10
 
-// 难度档药丸配色(与 JobsTable DIFF_TAG / 原 /stats 索引页省卡同值)
+// 难度档药丸配色(与 jobs/Advisor DIFF_TAG / 原 /stats 索引页省卡同值)
 const DIFF_COLORS: Record<string, { bg: string; fg: string; bd: string }> = {
   easy: { bg: '#dcfce7', fg: '#166534', bd: '#bbf7d0' },
   mid: { bg: '#fef9c3', fg: '#854d0e', bd: '#fde68a' },
@@ -125,12 +125,12 @@ function Sec({ title, right, children, sub }: { id?: string; title: React.ReactN
   )
 }
 
-// 筛选控件统一样式(2026-08-09 Frank「这两部分样式怎么不一样」):对齐职位板 JobsTable ctrl 规格
+// 筛选控件统一样式(2026-08-09 Frank「这两部分样式怎么不一样」):对齐 ui 的 ctrl 规格(08-17 起 ctrl 已提进 ui/Button,本页可直接 import)
 // (38 高 radius6 字号 14;高度走 .sbCtl,手机 44 触控靶不变)
 const SB_CTL: React.CSSProperties = { border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', fontSize: 14, color: '#1f2937', padding: '0 10px' }
 // select 的固有宽度=**最长选项**文本,闭合态永远被撑到上限(Frank 08-09 两连「太宽了/怎么还是这么宽」,
 // maxWidth 硬压治标不治本)——照职位板 Sel 的镜像手法:流内占宽的是当前选中项的隐形镜像,select 绝对
-// 定位铺满壳(弹出的选项列表浏览器仍按全文排,不吃这个宽);不 import JobsTable.Sel 免把重器拖进本页包
+// 定位铺满壳(弹出的选项列表浏览器仍按全文排,不吃这个宽);不 import Jobs.Sel 免把整个职位板拖进本页包
 function SbSel({ value, onChange, all, options }: {
   value: string; onChange: (v: string) => void; all: string; options: { v: string; label: string }[]
 }) {
@@ -150,7 +150,7 @@ function SbSel({ value, onChange, all, options }: {
 // 手机卡 5/页;全量已在客户端 → 筛选纯前端,控件一行等高 30 照职位板站规(#282 教训)。
 // 每表按人群逻辑配筛选(职业筛 08-08 Frank「大类种类小类联动过滤要加上」;08-09 Frank「全部小类呢?」
 //   补上真·小类一级——此前把「职业」下拉错当小类,从中类直接跳职业。现为大类→中类→小类→职业四级联动,
-//   形态/词汇与职位板 JobsTable 的 broad/mid/fine 一致;职业下拉按雇主数排序的既有逻辑不变):
+//   形态/词汇与职位板的 broad/mid/fine 一致;职业下拉按雇主数排序的既有逻辑不变):
 //   lmia(没工签找肯办 LMIA 的雇主):职业(大类→中类→小类→职业)→ 省 → 只看技能类(治农业季节工霸榜)→ 搜名;
 //   named(有工签打包省提名):省(省提名绑省,居首)→ 清单 → 职业(大类→中类→小类→职业)→ 搜名;
 //   aip(奔大西洋):省 → 职业(大类→中类→小类→职业)→ 搜名。
@@ -181,7 +181,7 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: 
   // 判断要不要出这一列——公司事实列 B3 还没建 DDL 前全行 unknown,列压根不进 cols(容缺先例同担保率列)
   const showVerdict = kind === 'named' && hasVerdictSignal(rows)
   // 省下拉只显本语言全名(Frank 08-08「全部省那么宽吗」——双语并排把控件撑到 460px,单语即窄);
-  // 不引 JobsTable.provName 免把重器拖进本页包
+  // 本地实现省名(08-17 起 provName 已下沉 lib/location,是个零依赖叶子,想换 import 随时可换)
   const provLabel = (c: string) => { const loc = t('prov.' + c); return loc && loc !== 'prov.' + c ? loc : PROV_NAME[c] || c }
   const provSel = (
     <SbSel key="prov" value={fProv} onChange={setFProv} all={t('all.prov')}
@@ -191,7 +191,7 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: 
     <SbSel key="stream" value={fStream} onChange={setFStream} all={t('se.allStreams')}
       options={streamOpts.map((s) => ({ v: s, label: streamDisplay(t, s) }))} />
   ) : null
-  // 职业筛三级联动(08-08 Frank「大类种类小类联动过滤要加上」,与职位板 JobsTable 同套形态):
+  // 职业筛三级联动(08-08 Frank「大类种类小类联动过滤要加上」,与职位板同套形态):
   // 大类/中类=纯点选、选项只列本表真实存在的分类(小样本橱窗表不比全量职位板,摆满 89 个中类全是死选项);
   // 大类沿用职位板顺序(BROAD_SLUGS/etl/noc_buckets),中类英韩名来自 noc_categories(catMids)。
   const broadOpts = useMemo(() => {

@@ -218,7 +218,7 @@ function lockLabel(t: TFn, key: string): string {
   return t('tv.k.person')
 }
 
-// ── 样式(token 与 JobsTable MODAL_CARD / primitives 同源)────────────────────
+// ── 样式(token 与 jobs/Facts MODAL_CARD 同源)────────────────────
 const CARD: React.CSSProperties = CARD_MD   // 白卡壳全站一份(ui/primitives),这里只留个本地别名
 const CARD_HEAD: React.CSSProperties = { fontSize: 13.5, fontWeight: 700, color: '#111827', marginBottom: 6 }
 /** 卡标题:与 Decision 的 H2 同一档(16/700)—— 全页所有卡标题一个字号 */

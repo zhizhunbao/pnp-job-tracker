@@ -1,7 +1,7 @@
 // 轻量 i18n:中/英/韩。无第三方库 —— 一份按 key 的字典 + 带 {var} 插值的 t()。
 // 作用域:/jobs 页 UI 外壳(列名/筛选/按钮/状态/大分类/经验)+ AI 顾问的 UI 壳(advisor.*)。
 // AI 顾问正文不在这里:所有字段都由 /api/advisor 大模型按所选语言生成(无三语长文要维护)。
-// NOC 中/小分类名:数据值是中文(etl/noc.py 单一来源,有限集),显示层经 cat.* 翻译(缺键退 broad.* 再退原值,见 JobsTable catName)。
+// NOC 中/小分类名:数据值是中文(etl/noc.py 单一来源,有限集),显示层经 cat.* 翻译(缺键退 broad.* 再退原值,见 lib/noc catName)。
 import { pathwayNames } from '@/lib/pathways'
 
 export type Lang = 'zh' | 'en' | 'ko'
@@ -3300,7 +3300,7 @@ export function makeT(lang: Lang): TFn {
     if (vars) for (const k of Object.keys(vars)) s = s.split(`{${k}}`).join(String(vars[k]))
     return s
   }
-  // 语言挂在 t 上:分类名这类**来自维度表**的显示名要按语言取列(见 JobsTable catName),
+  // 语言挂在 t 上:分类名这类**来自维度表**的显示名要按语言取列(见 lib/noc catName),
   // 而调用点拿到的往往只有 t —— 挂一个只读字段比给几十处调用签名多传一个参数便宜
   t.lang = lang
   return t

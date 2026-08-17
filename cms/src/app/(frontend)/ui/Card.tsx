@@ -4,7 +4,7 @@
 // ①Card 卡壳(白卡描边 r12,右上操作位走 position:absolute 自摆)②CardKV 键值区(两列 grid,wide 独占行)③CardAction 操作行。
 //
 // 白卡壳(2026-08-11 Frank「都改成一套」):**全站唯一一份**描边+圆角+白底。
-// 原先散在 10 处:JobsTable.MODAL_CARD / TripleVerdictModal.CARD / 详情页 sec 三份逐字符相同,
+// 原先散在 10 处:jobs/Facts.MODAL_CARD / TripleVerdictModal.CARD / 详情页 sec 三份逐字符相同,
 // 加上 news/stats/account/公司页 的内联写法。padding 各页不同(密度不同)所以留在调用方,
 // 壳本身不许再抄一遍;12/16 这档最常用,直接给成 CARD_MD。
 import React from 'react'

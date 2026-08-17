@@ -73,7 +73,7 @@ async function occOptions(pool: any) {
 }
 
 // 职业筛联动(大类→中类→小类→职业,08-08 Frank「大类种类小类联动过滤要加上」;小类一级 08-09 补,
-// Frank「全部小类呢?」)的中/小类英韩名——与职位板 JobsTable 同一张 noc_categories 维度表
+// Frank「全部小类呢?」)的中/小类英韩名——与职位板同一张 noc_categories 维度表
 // (一行=一个小类,1h 进程缓存);大类沿用既有 i18n `broad.*` 键(27 个已全译,不必再查)。
 let catCache: { ts: number; rows: { broad: string; mid: string; midEn: string; midKo: string; fine: string; fineEn: string; fineKo: string }[] } | null = null
 async function catOptions(payload: any) {

@@ -4,10 +4,10 @@
 // 2026-08-03 Frank「之前选了条件,刷新页面会先抖一下选全部,然后才显示筛选后的结果」的根治:
 // 原来只有客户端读 URL —— SSR 一律渲「未筛选的最近 50 行 + 下拉全是全部」,浏览器先把这一帧画出来,
 // 等 JS 水合才把筛选塞进 state(下拉这才变),再打一次 /api/jobs 才换行,于是抖两段。
-// 现在 page.tsx 在 SSR 就按同一套参数查库、并把筛选当作初值传给 JobsTable → 首帧即终态,水合零差异。
+// 现在 page.tsx 在 SSR 就按同一套参数查库、并把筛选当作初值传给 Jobs → 首帧即终态,水合零差异。
 //
 // 参数名沿用既有深链(q/prov/broad/mid/fine 三方在用,不能改),新增的取短名。
-// ⚠️ 新增筛选键四处同步:本表 + buildJobsWhere(lib/jobsSql)+ 前端 state(JobsTable.fState)
+// ⚠️ 新增筛选键四处同步:本表 + buildJobsWhere(lib/jobsSql)+ 前端 state(Jobs.fState)
 //   + /api/jobs 的 FILTER_KEYS。
 
 import { PROV_NAMES } from '@/lib/location'
