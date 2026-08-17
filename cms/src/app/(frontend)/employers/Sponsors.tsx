@@ -1,5 +1,5 @@
 'use client'
-// 在招担保雇主·三分表共用列组与手机卡(唯一消费方=把脉页 Start 橱窗)。
+// 在招担保雇主·三分表共用列组与手机卡(唯一消费方=把脉页 Pulse 橱窗)。
 // 货架页 Sponsors Frank 08-08 拍板下架(/employers 308 → /start),本文件只剩共享渲染件。
 // 红线:凭证=历史事实/官方名录,非担保承诺。
 import { type Lang, type TFn } from '../jobs/i18n'

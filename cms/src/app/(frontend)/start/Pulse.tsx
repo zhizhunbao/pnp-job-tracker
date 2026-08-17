@@ -1,5 +1,5 @@
 'use client'
-// E13-03 把脉首页视图(/start)——「开始规划 + 榜单 + 地区统计」三合一。
+// E13-03 把脉首页视图 Pulse(路由仍是 /start —— URL 是 SEO 资产,不随组件改名动)——「开始规划 + 榜单 + 地区统计」三合一。
 // 规格 = docs/implementation/E13-把脉首页/00_总设计与口径.md §4 的 S1-S7,一区一事、全宽色带交替:
 //   S1 判决区(动态冷脸标题 + 三脉象卡)/ S2 劝退榜 / S3 真香榜 / S4 省份照妖镜 /
 //   S5 抽选尺子(抽选表 + 冷解读 + 政策动态)/ S6 职位板入口 / S7 订阅与分享。
@@ -472,7 +472,7 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
   )
 }
 
-export function Start({ stats }: { stats: HomeStats }) {
+export function Pulse({ stats }: { stats: HomeStats }) {
   const [lang, setLangSaved, t] = useLang()
   // 主图四份数据(occ 含 E13-03 派生列)挂载后拉;null=加载中 → 依赖它的区渲占位高度,不出空壳
   const market = useMarketStats()
