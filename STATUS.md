@@ -16,8 +16,32 @@
 >   内联样式 1422→1265)。这是支线,不推进掏钱,但每次改动都在给后续打折。
 > - **工作区未提交**:`data/`、`etl/` 若干(非本轮产出,一直躺着);`cms/` 侧已全部提交并上线。
 > - **最紧未结项**:① Search Console 定性(待 Frank);② JSON-LD 缺 `validThrough`/`directApply`(与富结果展现资格挂钩,
->   而富结果是最大入口);③ CSS 迁移剩 1265 处,大头 `JobsTable.tsx` 381(建议先拆那个 4444 行文件);
+>   而富结果是最大入口);③ CSS 迁移剩 1265 处,原大头 `JobsTable.tsx` 381 —— **文件已于 08-17 晚拆完**
+>   (见下方「08-17 晚场」),那 381 处现散在 `Jobs.tsx`/`Advisor.tsx`/`Pnp.tsx` 等,迁移本身尚未开始;
 >   ④ 批 D 欠账②(真 Pro 号生产验判定卡直渲,待 Frank 亲手)。展开见下方交接 + 记忆 `next-session-status`。
+>
+> **📍 2026-08-17 晚场:拆 JobsTable —— 4446 → 1035 行(`a7cf463e` / `74290c8b` / `73ff509d`,已上线验讫)**
+> - **顺序是 Frank 定的:先拆文件,再迁样式**(反过来=给马上要拆掉的代码搬样式)。**样式尚未动,381 处原封不动**。
+> - **拆法按关注点,不按体积**:`types.ts`(形状)、`Facts.tsx`(事实卡原语,叶子)、`Pnp.tsx`、`Company.tsx`、
+>   `Jd.tsx`、`Advisor.tsx`(弹框全家)、`Lock.tsx`(打码锁区)、`Table.tsx`(列定义 + 列偏好 + `cellOf` 单元格渲染);
+>   地点/来源/NOC/时间四组工具下沉 `lib/`(`location` `source` `noc` `time`),`ctrl`/`link`/`gradeColor` 进 `ui/`。
+>   依赖图核过是 **DAG 无环**。`JobsTable` → `Jobs`(它不是一张表,是整个职位板页面)。
+> - **修好一条倒置**:`lib/jobsSql.ts` 原先从 `JobsTable.tsx`(一个 `'use client'` 组件)import `JobRow` ——
+>   服务端模块反向依赖客户端组件,只因类型恰好定在那儿。类型下沉 `jobs/types.ts` 后没了。
+> - **`jobs/Table.tsx` 没有并进 `ui/Table.tsx`**(旧拍板照旧):那个是简单表统一壳,职位主表是另一套机器。
+> - **打码锁组没进 `ui/Card.tsx`**(与 Frank 原方案的唯一出入,理由已报):`LockFoot` 要 `UpgradeCta`,
+>   那条链拖着 `UpgradeModal → AuthModal + Stripe + track`;`ui/` 现在是零外部依赖的叶子,并进去等于
+>   每个 import `ui` 的页面都背上整套登录与支付。要合并,得先把 CTA 改成插槽 prop。
+> - **顺带清掉 12 个已证实的死代码符号**(全 src 引用数=1):`locDisplay`+渥太华社区表、`searchHay`+`accLabel`+`teerOf`、
+>   `vsPct`/`okSal`/`okVs`、`TZ_PROV`、`PAGE_ROWS`、`ORIGIN_LABEL`、`UpgradeCard`、`fieldSrcUrls`+`DERIVED_SRC_FIELDS`;
+>   另清两处孤儿注释、改 21 处指向已消失文件的指路注释。
+> - **顺带修**:`/jobs/[id]` 没给 `Header` 传 `active`,看职位详情时顶栏「职位」不高亮(首页那处上一轮已修)。
+> - **验收**:`tsc` 全绿;五路由 200;1440×900 与 375 探针 **本地 vs 生产逐行一致**
+>   (含逐列可点数 `{发布时间:0 操作:0 其余各 50}`、`jcell=450/jcellAct=400`、首行十格文字与颜色)。
+>   ⚠️ 首轮测出的 1px/0.667px 差是**量测端 DPR 1.0 vs 1.5 的伪影**,不是回归 —— 两边统一到 1.5 后归零。
+> - **下一步(Frank 08-17 追加,顺序他定)**:① `lib/database.ts` 统一连接管理(现 `payload.db as ...` 散在 **60 处**,
+>   其中 **50 处是 `as any`**);② `lib/sql.ts` **真·一个文件装全部** ~150 条查询(已就「2500 行 vs 不许攒 main.js」
+>   提过一次异议,Frank 重申,照做);③ 才轮到那 381 处 CSS 迁移。
 >
 > **📍 2026-08-17 全天:用户数据盘点 + 三个真 bug + 前端命名与 CSS 大重构(`80d1d861` → `4972425d`,6 提交已上线验讫)**
 >
