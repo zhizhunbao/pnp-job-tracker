@@ -9,6 +9,22 @@
 ===================================================== */
 :root {
   --font-mono: 'Roboto Mono', monospace;
+
+  /* 全站配色的**唯一真值**(2026-08-17 从 ui/colors.ts 搬来,Frank「不应该迁移到 main.css 里吗」)。
+     tsx 侧的 UI.primary 之类现在只是 'var(--primary)' 的映射,值不再有第二份。
+     原则不变(#65,2026-07-18 拍板):现有色收口不发明新色;改一处全站换装。 */
+  --primary: #2563eb;
+  --primary-deep: #1e40af;
+  --danger: #dc2626;
+  --warn: #b45309;
+  --ok: #15803d;
+  --text: #111827;
+  --text2: #6b7280;
+  --text3: #9ca3af;
+  --border: #e5e7eb;
+  --hairline: #f3f4f6;
+  --bg: #f9fafb;
+  --card: #fff;
 }
 
 * {
@@ -468,3 +484,14 @@ button:not(:disabled):hover {
 .proCardBtn { flex: none; background: #2563eb; color: #fff; font-size: 13px; font-weight: 600; padding: 7px 13px; border-radius: 8px; border: none; cursor: pointer; white-space: nowrap; }
 .lockRows { position: relative; margin-top: 6px; }
 .lockRow { filter: blur(5px); user-select: none; color: #9ca3af; font-size: 13.5px; padding: 7px 0; border-bottom: 1px solid #f3f4f6; }
+
+/* ===================================================
+   10. 二级 tab 条 SectionTabs
+   模块页 banner 正下方那条(如 资讯:最新公告 | 时间线)。
+   模块色由调用方经 --tab 传入,透明度用 color-mix 算 ——
+   原来是 `${color}22` 拼十六进制,那种写法挡住了颜色变量化。
+===================================================== */
+.secTabs { display: flex; gap: 6px; margin: -6px 0 14px; border-bottom: 2px solid color-mix(in srgb, var(--tab) 13.33%, transparent); }
+.secTab { font-size: 12.5px; padding: 5px 14px; border-radius: 9px 9px 0 0; text-decoration: none; border: 1px solid var(--border); border-bottom: none; background: var(--bg); color: var(--text2); cursor: pointer; }
+/* #205(第 26 轮体检):当前页签是 span 不是 a —— 看着像链接点不动是 bug */
+.secTab.on { background: #fff; color: var(--tab); font-weight: 700; border-color: color-mix(in srgb, var(--tab) 33.33%, transparent); cursor: default; }

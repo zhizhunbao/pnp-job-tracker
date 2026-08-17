@@ -17,12 +17,17 @@ import { useSsrSession } from './SessionProvider'
 import { Avatar } from './Avatar'
 import { AccountMenu } from './AccountMenu'
 import { PricingModal } from './jobs/PricingModal'
-import { Button, cx } from './ui'
+import { Button } from './ui'
 import { IconTarget, IconChart, IconClipboard, IconCompass, IconNews, IconUsers } from './Icons'
 
 // 登录弹框就地开(2026-08-09 Frank「为什么要跳到 jobtable 页面再弹框」):AuthModal 按需载
 // (点开才下载那份 JS,手法同 ChatLauncher),header 常驻包不背它
 const AuthModal = dynamic(() => import('./jobs/AuthForm').then((m) => m.AuthModal), { ssr: false })
+
+/** 类名 + 当前态:cx('shNavLink', isActive) → "shNavLink on"。
+ *  样式迁进 main.css 后,tsx 里剩的只有「这一项亮不亮」这个布尔,不再逐属性写三元。
+ *  只有本文件用它 —— 曾经单独成 ui/cx.ts,一个模块一个消费者、名字还是行话,收回来了。 */
+const cx = (base: string, on?: boolean): string => (on ? base + ' on' : base)
 
 type AcctState = { state: 'loading' | 'out' | 'in'; u: { email: string; displayName: string | null; avatar: string | null; pro: boolean } }
 

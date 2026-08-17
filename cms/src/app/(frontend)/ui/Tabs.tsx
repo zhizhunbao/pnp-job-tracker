@@ -109,19 +109,13 @@ export function SectionTabs({ tabs, color = UI.primary }: {
   tabs: { href: string; label: React.ReactNode; active?: boolean }[]; color?: string
 }) {
   return (
-    <div className="uiTabs" style={{ display: 'flex', gap: 6, margin: '-6px 0 14px', borderBottom: `2px solid ${color}22` }}>
+    <div className="secTabs" style={{ '--tab': color } as React.CSSProperties}>
       {/* #205(第 26 轮体检):当前页签原来也是 <a> 只是不给 href —— 看着像链接点不动。当前页=span,别的才是链接 */}
       {tabs.map((tb) => {
         const Tag = (tb.active ? 'span' : 'a') as 'a'
         return (
-        <Tag key={tb.href} href={tb.active ? undefined : tb.href} className={tb.active ? undefined : 'tapPad'}
-          style={{
-            fontSize: 12.5, padding: '5px 14px', borderRadius: '9px 9px 0 0', textDecoration: 'none',
-            border: '1px solid', borderBottom: 'none',
-            ...(tb.active
-              ? { background: '#fff', color, fontWeight: 700, borderColor: `${color}55` }
-              : { background: UI.bg, color: UI.text2, borderColor: UI.border, cursor: 'pointer' }),
-          }}>{tb.label}</Tag>
+          <Tag key={tb.href} href={tb.active ? undefined : tb.href}
+            className={tb.active ? 'secTab on' : 'secTab tapPad'}>{tb.label}</Tag>
         )
       })}
     </div>
