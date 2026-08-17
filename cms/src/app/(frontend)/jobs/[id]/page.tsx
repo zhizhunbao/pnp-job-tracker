@@ -16,6 +16,23 @@ export const dynamic = 'force-dynamic'
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com').replace(/\/$/, '')
 
+// JD 正文瘦查询,只给 JSON-LD 用(列表/详情的分层管线一律不带 description,见 jobsSql JOB_COLUMNS)。
+// 2026-08-17:Google 的 JobPosting 规范里 description **必填**且要求「完整职位描述」,而这里一直塞的是
+// 标题拼公司拼地点的 60 来字回声 —— 库里 46,315 个在架岗有 38,854 个存着真正文(81% 超 300 字),
+// 从来没进过页面。当天 Search Console 实测:富结果占全部搜索曝光 94%,曝光自 7-24 峰值 7,861
+// 连跌三周到 1,102(−86%)。**空壳描述是目前最强的解释,也是最便宜的修法。**
+// 不触发懒抓(lazy-first 铁律 #123):库里有就用,没有照旧退回原来的拼装串 —— 爬虫来一次抓一次
+// 等于批量预抓,既慢又打别人的站。
+async function fetchJdText(id: number, pool: any): Promise<string> {
+  if (!Number.isFinite(id)) return ''
+  try {
+    const { rows } = await pool.query(`SELECT description FROM jobs WHERE id = $1 LIMIT 1`, [id])
+    return String(rows[0]?.description || '').trim()
+  } catch {
+    return ''   // 取不到就退拼装串,不因为 SEO 增强把整页拖挂
+  }
+}
+
 // metadata 用瘦查询(不走分层管线;只取公开列)
 async function fetchMetaRow(id: number) {
   if (!Number.isFinite(id)) return null
@@ -97,6 +114,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
   }
 
   // JobPosting JSON-LD(Google 求职富结果):只放公开事实,缺值不编(validThrough 仅 closed 岗给真实下架时间)
+  const jdText = await fetchJdText(id, pool)
   const empType = job.employmentHours === 'part' ? 'PART_TIME'
     : job.employmentTerm && job.employmentTerm !== 'permanent' ? 'TEMPORARY'
     : job.employmentHours === 'full' ? 'FULL_TIME' : undefined
@@ -110,11 +128,18 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
     jobLocation: { '@type': 'Place', address: { '@type': 'PostalAddress', ...(job.city ? { addressLocality: job.city } : {}), ...(job.province ? { addressRegion: job.province } : {}), addressCountry: 'CA' } },
     ...(job.salaryAnnual != null ? { baseSalary: { '@type': 'MonetaryAmount', currency: 'CAD', value: { '@type': 'QuantitativeValue', value: job.salaryAnnual, unitText: 'YEAR' } } } : {}),
     ...(job.applyUrl ? { url: job.applyUrl } : {}),
-    description: `${job.title} — ${job.company || ''} (${[job.city, job.province].filter(Boolean).join(', ')})`,
+    // 库里有真正文就用真的(封顶 12000:懒抓 MAX_LEN 是 15000,这里留点页面重量余地);
+    // 没有才退回原来那串拼装 —— 空着不行,description 是规范里的必填项,缺了整条 JobPosting 作废。
+    description: jdText.slice(0, 12000) || `${job.title} — ${job.company || ''} (${[job.city, job.province].filter(Boolean).join(', ')})`,
   }
 
   return <>
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+    {/* ⚠️ JSON.stringify **不转义 `<`**,而这里走 dangerouslySetInnerHTML —— 正文是从雇主站抓来的
+        第三方内容,里面一旦出现 `</script>` 就会提前闭合脚本、后面的字符当 HTML 解析(XSS)。
+        把 `<` 全部转成 Unicode 转义序列:JSON 解析出来是同一个字符,却再也拼不出闭合标签。
+        信任边界不上砧板(CLAUDE.md)。 */}
+    <script type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
     <Job job={job} plan={plan} dims={dims} related={related} />
   </>
 }
