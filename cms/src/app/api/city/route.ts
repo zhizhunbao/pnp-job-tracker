@@ -8,6 +8,7 @@
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -23,39 +24,27 @@ export async function GET(req: Request) {
   const open = `COALESCE(j.status,'open') = 'open'`
   const [agg, broads, dli, aip, dist] = await Promise.all([
     pool.query(
-      `SELECT COUNT(*)::int AS open_jobs,
-              COUNT(*) FILTER (WHERE j.date_posted >= NOW() - INTERVAL '7 day')::int AS new7d,
-              percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual) AS med_salary
-       FROM jobs j WHERE j.city = $1 AND j.province = $2 AND ${open}`, [city, prov]),
+      SQL.cityTotals(open), [city, prov]),
     pool.query(
-      `SELECT j.broad, COUNT(*)::int AS n FROM jobs j
-       WHERE j.city = $1 AND j.province = $2 AND ${open} AND j.broad IS NOT NULL AND j.broad <> '未分类'
-       GROUP BY j.broad ORDER BY n DESC LIMIT 3`, [city, prov]),
+      SQL.cityByBroad(open), [city, prov]),
     pool.query(
-      `SELECT name, is_public FROM dli WHERE city = $1 AND province = $2 ORDER BY is_public DESC NULLS LAST, name LIMIT 4`, [city, prov]),
+      SQL.CITY_DLI, [city, prov]),
     pool.query(
-      `SELECT COUNT(*)::int AS n FROM designated_employers WHERE province = $2 AND location ILIKE '%' || $1 || '%'`, [city, prov]),
+      SQL.CITY_DESIGNATED_COUNT, [city, prov]),
     district
       ? pool.query(
-        `SELECT COUNT(*)::int AS open_jobs,
-                COUNT(*) FILTER (WHERE j.date_posted >= NOW() - INTERVAL '7 day')::int AS new7d,
-                percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual) AS med_salary
-         FROM jobs j WHERE j.district = $3 AND j.city = $1 AND j.province = $2 AND ${open}`, [city, prov, district])
+        SQL.districtTotals(open), [city, prov, district])
       : Promise.resolve(null),
   ])
   const [dliCount, distBroads, distEmployers] = await Promise.all([
-    pool.query(`SELECT COUNT(*)::int AS n FROM dli WHERE city = $1 AND province = $2`, [city, prov]),
+    pool.query(SQL.CITY_DLI_COUNT, [city, prov]),
     district
       ? pool.query(
-        `SELECT j.broad, COUNT(*)::int AS n FROM jobs j
-         WHERE j.district = $3 AND j.city = $1 AND j.province = $2 AND ${open} AND j.broad IS NOT NULL AND j.broad <> '未分类'
-         GROUP BY j.broad ORDER BY n DESC LIMIT 3`, [city, prov, district])
+        SQL.districtByBroad(open), [city, prov, district])
       : Promise.resolve(null),
     district
       ? pool.query(
-        `SELECT c.name, c.slug, COUNT(*)::int AS n FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
-         WHERE j.district = $3 AND j.city = $1 AND j.province = $2 AND ${open} AND c.name IS NOT NULL
-         GROUP BY c.name, c.slug ORDER BY n DESC, c.name LIMIT 4`, [city, prov, district])
+        SQL.districtEmployers(open), [city, prov, district])
       : Promise.resolve(null),
   ])
   const a = agg.rows[0] || {}

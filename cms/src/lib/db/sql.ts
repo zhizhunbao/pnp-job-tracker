@@ -290,8 +290,6 @@ export const OCC_COMPETITION_BY_PROV = `SELECT j.province AS province, COUNT(*):
         GROUP BY j.province
         ORDER BY open_jobs DESC`
 
-export const PROV_DIFFICULTY_2 = `SELECT province, difficulty FROM stats
-        WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL`
 
 export const PROV_OPEN_COUNT = `SELECT province, COUNT(*)::int AS n FROM jobs
         WHERE COALESCE(status, 'open') <> 'closed' AND COALESCE(is_dup, false) = false AND COALESCE(aip, false) = true AND noc = ANY($1) AND province <> ''
@@ -500,3 +498,135 @@ export const JD_BY_APPLY_URL = `SELECT description FROM jobs WHERE apply_url = $
 
 /** 懒抓到的正文回写:只填空,不覆盖已有(WHERE description IS NULL) */
 export const JD_UPDATE_BY_APPLY_URL = `UPDATE jobs SET description = $1 WHERE apply_url = $2 AND description IS NULL`
+
+/* ══════════════════════════════════════════════════════════════════════════
+   14) 统计页(/stats)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+// ── app/(frontend)/stats/lib.ts ──
+
+export const statsByMid = (a1: string) => `SELECT province, broad, mid, open_jobs, new7d, median_wage_annual, median_salary_annual,
+              named_jobs, stream_labels, aip_jobs, top_cities, fetched, difficulty
+       FROM stats ${a1} ORDER BY open_jobs DESC NULLS LAST`
+
+export const statsByBroad = (a1: string) => `SELECT province, broad, open_jobs, new7d, median_wage_annual, median_salary_annual,
+              named_jobs, stream_labels, aip_jobs, top_cities, fetched
+       FROM stats ${a1} ORDER BY open_jobs DESC NULLS LAST`
+
+
+export const STATS_OCC_HAS_COLUMNS = `SELECT column_name FROM information_schema.columns WHERE table_name = 'stats_occupation' AND column_name = ANY($1)`
+
+export const statsOccupations = (a1: string, a2: string) => `SELECT ${a1}${a2}
+       FROM stats_occupation s LEFT JOIN noc_descriptions d ON d.noc = s.noc
+       ORDER BY s.open_jobs DESC NULLS LAST`
+
+export const CITY_STATS = `SELECT s.city, s.province, c.name_zh, c.name_ko, s.open_jobs, s.new7d, s.median_wage_annual, s.median_salary_annual, s.salary_n, s.named_jobs
+       FROM stats_city s LEFT JOIN cities c ON c.name = s.city AND c.province = s.province
+       ORDER BY s.open_jobs DESC NULLS LAST LIMIT $1`
+
+export const PNP_NOCS_DISTINCT = `SELECT DISTINCT noc FROM pnp_occupations WHERE noc <> '' AND COALESCE(program,'PNP') = 'PNP'`
+
+export const EE_NOCS_DISTINCT = `SELECT DISTINCT noc FROM ee_categories WHERE noc <> ''`
+
+/* ══════════════════════════════════════════════════════════════════════════
+   15) 城市 / 社区页
+   ══════════════════════════════════════════════════════════════════════════ */
+
+// ── app/api/city/route.ts ──
+
+export const cityTotals = (a1: string) => `SELECT COUNT(*)::int AS open_jobs,
+              COUNT(*) FILTER (WHERE j.date_posted >= NOW() - INTERVAL '7 day')::int AS new7d,
+              percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual) AS med_salary
+       FROM jobs j WHERE j.city = $1 AND j.province = $2 AND ${a1}`
+
+export const cityByBroad = (a1: string) => `SELECT j.broad, COUNT(*)::int AS n FROM jobs j
+       WHERE j.city = $1 AND j.province = $2 AND ${a1} AND j.broad IS NOT NULL AND j.broad <> '未分类'
+       GROUP BY j.broad ORDER BY n DESC LIMIT 3`
+
+export const CITY_DLI = `SELECT name, is_public FROM dli WHERE city = $1 AND province = $2 ORDER BY is_public DESC NULLS LAST, name LIMIT 4`
+
+export const CITY_DESIGNATED_COUNT = `SELECT COUNT(*)::int AS n FROM designated_employers WHERE province = $2 AND location ILIKE '%' || $1 || '%'`
+
+export const districtTotals = (a1: string) => `SELECT COUNT(*)::int AS open_jobs,
+                COUNT(*) FILTER (WHERE j.date_posted >= NOW() - INTERVAL '7 day')::int AS new7d,
+                percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual) AS med_salary
+         FROM jobs j WHERE j.district = $3 AND j.city = $1 AND j.province = $2 AND ${a1}`
+
+export const CITY_DLI_COUNT = `SELECT COUNT(*)::int AS n FROM dli WHERE city = $1 AND province = $2`
+
+export const districtByBroad = (a1: string) => `SELECT j.broad, COUNT(*)::int AS n FROM jobs j
+         WHERE j.district = $3 AND j.city = $1 AND j.province = $2 AND ${a1} AND j.broad IS NOT NULL AND j.broad <> '未分类'
+         GROUP BY j.broad ORDER BY n DESC LIMIT 3`
+
+export const districtEmployers = (a1: string) => `SELECT c.name, c.slug, COUNT(*)::int AS n FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
+         WHERE j.district = $3 AND j.city = $1 AND j.province = $2 AND ${a1} AND c.name IS NOT NULL
+         GROUP BY c.name, c.slug ORDER BY n DESC, c.name LIMIT 4`
+
+/* ══════════════════════════════════════════════════════════════════════════
+   16) 邮件提醒
+   ══════════════════════════════════════════════════════════════════════════ */
+
+// ── app/api/alerts/run/route.ts ──
+
+export const ALERT_JOBS = `SELECT j.id, j.title, j.city, j.province, j.salary_text, j.noc, j.teer, j.pnp_eligible, j.pnp_stream,
+              j.ee_category, j.salary_annual, j.wage_med_annual, j.score, c.name AS company_name
+       FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
+       WHERE j.status = 'open' AND j.first_seen > $1 ORDER BY j.score DESC NULLS LAST LIMIT 2000`
+
+export const alertOccStats = (a1: string) => `SELECT count(*)::int n, count(*) FILTER (WHERE j.pnp_eligible)::int elig,
+                percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual) med
+         FROM jobs j WHERE j.status = 'open' AND j.date_posted >= $1 AND j.noc = ANY($2)${a1}`
+
+export const alertSampleJobs = (a1: string) => `SELECT j.title, COALESCE(c.name,'') company, COALESCE(j.salary_text,'') sal
+         FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
+         WHERE j.status = 'open' AND j.date_posted >= $1 AND j.noc = ANY($2)${a1}
+         ORDER BY j.salary_annual DESC NULLS LAST LIMIT 3`
+
+export const ALERT_NOC_TITLE = `SELECT COALESCE(title_zh, '') zh, COALESCE(title, '') en FROM noc_descriptions WHERE noc = ANY($1) LIMIT 2`
+
+export const ALERT_JOBS_BY_IDS = `SELECT id, status, province, broad FROM jobs WHERE id = ANY($1::int[])`
+
+export const alertNewCount = (a1: string) => `SELECT count(*)::int AS n FROM jobs WHERE status = 'open' AND date_posted >= $1 AND (${a1})`
+
+/* ══════════════════════════════════════════════════════════════════════════
+   17) 职业竞争度(API)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+// ── app/api/occ-competition/route.ts ──
+
+export const OCC_COMP_BY_PROV = `SELECT province, open_jobs, new30d, avg_days_open
+         FROM stats_occupation
+        WHERE noc = $1 AND province <> 'all' AND COALESCE(open_jobs, 0) > 0
+        ORDER BY open_jobs DESC`
+
+
+export const OCC_AIP_BY_PROV = `SELECT province, COUNT(*)::int AS n FROM jobs
+        WHERE status = 'open' AND COALESCE(aip, false) = true AND noc = $1 AND province <> ''
+        GROUP BY province`
+
+export const OCC_RCIP_BY_PROV = `SELECT province, COUNT(*)::int AS n FROM jobs
+        WHERE status = 'open' AND COALESCE(pilot, '') LIKE '%RCIP%' AND noc = $1 AND province <> ''
+        GROUP BY province`
+
+export const OCC_FCIP_BY_PROV = `SELECT province, COUNT(*)::int AS n FROM jobs
+        WHERE status = 'open' AND COALESCE(pilot, '') LIKE '%FCIP%' AND noc = $1 AND province <> ''
+        GROUP BY province`
+
+/* ══════════════════════════════════════════════════════════════════════════
+   18) JD 整理回写
+   ══════════════════════════════════════════════════════════════════════════ */
+
+// ── app/api/jdformat/route.ts ──
+export const JD_SET_FORMATTED = `UPDATE jobs SET jd_formatted = $1, jd_formatted_at = now() WHERE id = $2`
+
+/** 只在原值为空时补雇佣形态,不覆盖已解析出的值 */
+export const JD_SET_EMP_TERM = `UPDATE jobs SET employment_term = $1 WHERE id = $2 AND (employment_term IS NULL OR employment_term = '')`
+
+export const JD_SET_EMP_HOURS = `UPDATE jobs SET employment_hours = $1 WHERE id = $2 AND (employment_hours IS NULL OR employment_hours = '')`
+
+export const JD_STATE_BY_URL = `SELECT id, employment_term, employment_hours, jd_formatted FROM jobs WHERE apply_url = $1 LIMIT 1`
+
+
+// ── app/api/jdformat/route.ts ──
+
+

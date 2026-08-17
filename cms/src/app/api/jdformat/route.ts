@@ -11,6 +11,7 @@ import { getUser } from '@/lib/entitlement'
 import { freeGate } from '@/lib/freeQuota'
 import { friendChat, friendLlmReady } from '@/lib/friendLlm'
 import { jobDescription, scrubPii } from '@/lib/jobDescription'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -64,13 +65,13 @@ async function generate(pool: any, row: { id: number; description: string; emplo
   console.log(`[jdformat] job=${row.id} src=${src.length}ch cached=${r.cached} valid=${ok}`)
   if (!ok) return null
   out = scrubPii(out)
-  await pool.query('UPDATE jobs SET jd_formatted = $1, jd_formatted_at = now() WHERE id = $2', [out, row.id])
+  await pool.query(SQL.JD_SET_FORMATTED, [out, row.id])
   // 顺带补缺失的职位类型字段(只补空,不覆盖官方标注)
   if (term && TERM_ENUM.has(term) && !row.employment_term) {
-    await pool.query('UPDATE jobs SET employment_term = $1 WHERE id = $2 AND (employment_term IS NULL OR employment_term = \'\')', [term, row.id])
+    await pool.query(SQL.JD_SET_EMP_TERM, [term, row.id])
   }
   if (hrs && HOURS_ENUM.has(hrs) && !row.employment_hours) {
-    await pool.query('UPDATE jobs SET employment_hours = $1 WHERE id = $2 AND (employment_hours IS NULL OR employment_hours = \'\')', [hrs, row.id])
+    await pool.query(SQL.JD_SET_EMP_HOURS, [hrs, row.id])
   }
   return out
 }
@@ -87,7 +88,7 @@ export async function POST(req: NextRequest) {
   // 整理版永远不生成。而懒抓帖正是长帖(原站正文 8-11k,JB 直发帖只有 2-4k),于是表现为「长的会失败」。
   // 修:改走 jobDescription 同一入口(内含懒抓;lazyFetchJd 有单飞,与并发的 jobtext 共用一次抓取不重复打原站)。
   const { rows } = await pool.query(
-    'SELECT id, employment_term, employment_hours, jd_formatted FROM jobs WHERE apply_url = $1 LIMIT 1', [url])
+    SQL.JD_STATE_BY_URL, [url])
   const row = rows[0]
   if (!row) return new Response(null, { status: 204 })
   if (row.jd_formatted) return new Response(row.jd_formatted, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })

@@ -48,7 +48,7 @@ export async function fetchOccCompetition(nocInput: string | string[]): Promise<
       SQL.OCC_COMPETITION_BY_PROV, [nocs],
     ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
     pool.query(
-      SQL.PROV_DIFFICULTY_2,
+      SQL.PROV_DIFFICULTY,
     ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
     pool.query(
       SQL.PROV_OPEN_COUNT, [nocs],

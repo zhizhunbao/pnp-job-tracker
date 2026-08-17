@@ -13,6 +13,7 @@ import { NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -48,33 +49,23 @@ export async function GET(req: NextRequest) {
 
   const [occ, comp, aip, rcip, fcip] = await Promise.all([
     pool.query(
-      `SELECT province, open_jobs, new30d, avg_days_open
-         FROM stats_occupation
-        WHERE noc = $1 AND province <> 'all' AND COALESCE(open_jobs, 0) > 0
-        ORDER BY open_jobs DESC`, [noc],
+      SQL.OCC_COMP_BY_PROV, [noc],
     ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
     pool.query(
-      `SELECT province, difficulty FROM stats
-        WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL`,
+      SQL.PROV_DIFFICULTY,
     ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
     // AIP 指定雇主在招的本职业岗:走 idx_jobs_noc,口径与列表页 fAip=yes 同一条(COALESCE(aip,false))
     pool.query(
-      `SELECT province, COUNT(*)::int AS n FROM jobs
-        WHERE status = 'open' AND COALESCE(aip, false) = true AND noc = $1 AND province <> ''
-        GROUP BY province`, [noc],
+      SQL.OCC_AIP_BY_PROV, [noc],
     ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
     // RCIP 试点社区在招的本职业岗:LIKE 口径与列表页 fPilot=RCIP 同一条(pilot 列可双标 RCIP/FCIP)
     pool.query(
-      `SELECT province, COUNT(*)::int AS n FROM jobs
-        WHERE status = 'open' AND COALESCE(pilot, '') LIKE '%RCIP%' AND noc = $1 AND province <> ''
-        GROUP BY province`, [noc],
+      SQL.OCC_RCIP_BY_PROV, [noc],
     ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
     // FCIP 同款(2026-08-15 FCIP 立成通道):Sudbury/Timmins 两地双标,所以两个数会重叠 ——
     // 那是事实不是重复计数,两条 pilot 在同一个城市各有各的社区名单与名额
     pool.query(
-      `SELECT province, COUNT(*)::int AS n FROM jobs
-        WHERE status = 'open' AND COALESCE(pilot, '') LIKE '%FCIP%' AND noc = $1 AND province <> ''
-        GROUP BY province`, [noc],
+      SQL.OCC_FCIP_BY_PROV, [noc],
     ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
   ])
 

@@ -13,6 +13,7 @@ import { sendMail, MAIL_ENABLED, unsubToken } from '@/lib/mailer'
 import { loadMatchDims } from '@/lib/matchDims'
 import { match, normalizeProfile, hasProfile, type MatchJob } from '@/lib/match'
 import { ALERT_MATCH_LEVEL } from '@/lib/plan'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -142,10 +143,7 @@ export async function GET(req: NextRequest) {
     out.usersChecked++
     const since = u.lastAlertAt || new Date(Date.now() - 36 * 3600_000).toISOString()  // 首轮只回看 36h,不倒灌历史
     const { rows } = await pool.query(
-      `SELECT j.id, j.title, j.city, j.province, j.salary_text, j.noc, j.teer, j.pnp_eligible, j.pnp_stream,
-              j.ee_category, j.salary_annual, j.wage_med_annual, j.score, c.name AS company_name
-       FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
-       WHERE j.status = 'open' AND j.first_seen > $1 ORDER BY j.score DESC NULLS LAST LIMIT 2000`, [since])
+      SQL.ALERT_JOBS, [since])
     // 目标省的岗排前面(2026-08-03 Frank「该按用户地理推」):偏好不是资格(07-21 拍板),
     // 外省对口岗不排除,只往后放;stable sort 保住组内原 score 序
     const inTarget = (j: any) => (profile.targetProvinces.includes((j.province || '').toUpperCase()) ? 0 : 1)
@@ -213,18 +211,13 @@ export async function GET(req: NextRequest) {
       const provCond = provs.length ? ' AND j.province = ANY($3)' : ''
       const params: any[] = provs.length ? [cut7, nocs, provs] : [cut7, nocs]
       const { rows: agg } = await pool.query(
-        `SELECT count(*)::int n, count(*) FILTER (WHERE j.pnp_eligible)::int elig,
-                percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual) med
-         FROM jobs j WHERE j.status = 'open' AND j.date_posted >= $1 AND j.noc = ANY($2)${provCond}`, params)
+        SQL.alertOccStats(provCond), params)
       const st = { newN: agg[0]?.n || 0, eligN: agg[0]?.elig || 0, medSal: agg[0]?.med == null ? null : Number(agg[0].med) }
       if (!st.newN) continue                               // 本周零新增=没内容,不硬发
       const { rows: top3 } = await pool.query(
-        `SELECT j.title, COALESCE(c.name,'') company, COALESCE(j.salary_text,'') sal
-         FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
-         WHERE j.status = 'open' AND j.date_posted >= $1 AND j.noc = ANY($2)${provCond}
-         ORDER BY j.salary_annual DESC NULLS LAST LIMIT 3`, params)
+        SQL.alertSampleJobs(provCond), params)
       const { rows: nameRows } = await pool.query(
-        `SELECT COALESCE(title_zh, '') zh, COALESCE(title, '') en FROM noc_descriptions WHERE noc = ANY($1) LIMIT 2`, [nocs])
+        SQL.ALERT_NOC_TITLE, [nocs])
       // 职业名与范围按**邮件语言**取 —— 英文/韩文邮件里塞中文职业名,与 #216 是同一类漏
       const dimsOf = (L: 'zh' | 'en' | 'ko') => {
         const names = nameRows.map((r: any) => (L === 'zh' ? r.zh || r.en : r.en || r.zh)).filter(Boolean)
@@ -253,7 +246,7 @@ export async function GET(req: NextRequest) {
     out.weeklyChecked++
     const ids = sj.docs.map((d: any) => (typeof d.job === 'object' ? d.job?.id : d.job)).filter((x: any) => x != null)
     const { rows: jrows } = ids.length
-      ? await pool.query(`SELECT id, status, province, broad FROM jobs WHERE id = ANY($1::int[])`, [ids])
+      ? await pool.query(SQL.ALERT_JOBS_BY_IDS, [ids])
       : { rows: [] as any[] }
     const st = new Map<string, { status?: string; province?: string; broad?: string }>(jrows.map((r: any) => [String(r.id), r]))
     const items = sj.docs.slice(0, 20).map((d: any) => {
@@ -266,7 +259,7 @@ export async function GET(req: NextRequest) {
     if (pairs.length) {
       const conds = pairs.map((_: any, i: number) => `(province = $${i * 2 + 2} AND broad = $${i * 2 + 3})`).join(' OR ')
       const params = [cut7, ...pairs.flatMap((r: any) => [r.province, r.broad])]
-      const { rows: cr } = await pool.query(`SELECT count(*)::int AS n FROM jobs WHERE status = 'open' AND date_posted >= $1 AND (${conds})`, params)
+      const { rows: cr } = await pool.query(SQL.alertNewCount(conds), params)
       newN = cr[0]?.n || 0
     }
     const openN = items.filter((x) => x.open).length

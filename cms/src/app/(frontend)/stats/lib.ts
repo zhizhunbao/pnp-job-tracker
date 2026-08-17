@@ -2,6 +2,7 @@
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import type { StatRow, SrcRow, ProvExtra, ProvVol, OccRow, CityRow } from './shared'
+import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 // withMid=true 才带中类行(仅图表下钻用);默认只回大类层——既有页面(省页/对比/表格)口径不变不重复计数。
 // 缺列容错(E12-06 教训):mid 列 DDL 未落地时自动降级为无 mid 查询,行回退 mid='all',页面照常。
@@ -12,15 +13,11 @@ export async function loadStats(where = '', params: any[] = [], opts?: { withMid
   let rows: any[]
   try {
     rows = (await (payload.db as any).pool.query(
-      `SELECT province, broad, mid, open_jobs, new7d, median_wage_annual, median_salary_annual,
-              named_jobs, stream_labels, aip_jobs, top_cities, fetched, difficulty
-       FROM stats ${opts?.withMid ? where : baseCond} ORDER BY open_jobs DESC NULLS LAST`, params)).rows
+      SQL.statsByMid(opts?.withMid ? where : baseCond), params)).rows
   } catch (e: any) {
     if (e?.code !== '42703') throw e  // 42703=列不存在 → 降级;其余照抛
     rows = (await (payload.db as any).pool.query(
-      `SELECT province, broad, open_jobs, new7d, median_wage_annual, median_salary_annual,
-              named_jobs, stream_labels, aip_jobs, top_cities, fetched
-       FROM stats ${where} ORDER BY open_jobs DESC NULLS LAST`, params)).rows
+      SQL.statsByBroad(where), params)).rows
   }
   return rows.map((r: any) => ({
     province: r.province ?? '', broad: r.broad ?? '', mid: r.mid ?? 'all',
@@ -38,12 +35,12 @@ export async function loadProvExtra(): Promise<Record<string, ProvExtra>> {
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
   const out: Record<string, ProvExtra> = {}
-  for (const r of (await pool.query('SELECT code, info FROM provinces')).rows) {
+  for (const r of (await pool.query(SQL.PROVINCES_INFO)).rows) {
     let info: ProvVol | null = null
     try { info = typeof r.info === 'string' ? JSON.parse(r.info) : r.info } catch { /* 保留 null */ }
     out[r.code] = { info, tier: null }
   }
-  for (const r of (await pool.query(`SELECT province, difficulty FROM stats WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL`)).rows) {
+  for (const r of (await pool.query(SQL.PROV_DIFFICULTY)).rows) {
     const d = typeof r.difficulty === 'string' ? (() => { try { return JSON.parse(r.difficulty) } catch { return null } })() : r.difficulty
     if (out[r.province]) out[r.province].tier = d?.tier ?? null
     else out[r.province] = { info: null, tier: d?.tier ?? null }
@@ -76,14 +73,12 @@ export async function loadOccStats(): Promise<OccRow[]> {
   const WANT = ['new14d', 'new14d_prev', 'mom14d', 'avg_days_open', 'pulse_score', 'pnp_provs', 'channel_tier', 'dead_provs', 'pnp_provs_cond', 'sponsor_pos_q', 'sponsor_pos_skilled_q', 'jvws_vac_q', 'sponsor_rate']
   const pool = (payload.db as any).pool
   const have: string[] = await pool.query(
-    `SELECT column_name FROM information_schema.columns WHERE table_name = 'stats_occupation' AND column_name = ANY($1)`, [WANT],
+    SQL.STATS_OCC_HAS_COLUMNS, [WANT],
   ).then((r: any) => r.rows.map((x: any) => String(x.column_name))).catch(() => [])
   const extra = have.length ? `, ${have.map((c) => `s.${c}`).join(', ')}` : ''
   let rows: any[]
   try {
-    rows = (await pool.query(`SELECT ${BASE}${extra}
-       FROM stats_occupation s LEFT JOIN noc_descriptions d ON d.noc = s.noc
-       ORDER BY s.open_jobs DESC NULLS LAST`)).rows
+    rows = (await pool.query(SQL.statsOccupations(BASE, extra))).rows
   } catch (e: any) {
     if (e?.code !== '42P01' && e?.code !== '42703') throw e
     return []
@@ -114,9 +109,7 @@ export async function loadCityStats(limit = 400): Promise<CityRow[]> {
   try {
     const rows = (await (payload.db as any).pool.query(
       // 城市译名同样借 cities 维度表(48 个主要城市有中/韩名,小镇留空 → 前端回退英文原名)
-      `SELECT s.city, s.province, c.name_zh, c.name_ko, s.open_jobs, s.new7d, s.median_wage_annual, s.median_salary_annual, s.salary_n, s.named_jobs
-       FROM stats_city s LEFT JOIN cities c ON c.name = s.city AND c.province = s.province
-       ORDER BY s.open_jobs DESC NULLS LAST LIMIT $1`, [limit])).rows
+      SQL.CITY_STATS, [limit])).rows
     return rows.map((r: any) => ({
       city: r.city ?? '', cityZh: r.name_zh ?? '', cityKo: r.name_ko ?? '',
       province: r.province ?? '', openJobs: num(r.open_jobs), new7d: num(r.new7d),
@@ -140,8 +133,8 @@ export async function loadChannelNocs(): Promise<{ pnp: string[]; ee: string[] }
     catch (e: any) { if (e?.code === '42P01' || e?.code === '42703') return []; throw e }
   }
   const [pnp, ee] = await Promise.all([
-    one(`SELECT DISTINCT noc FROM pnp_occupations WHERE noc <> '' AND COALESCE(program,'PNP') = 'PNP'`),
-    one(`SELECT DISTINCT noc FROM ee_categories WHERE noc <> ''`),
+    one(SQL.PNP_NOCS_DISTINCT),
+    one(SQL.EE_NOCS_DISTINCT),
   ])
   return { pnp, ee }
 }
