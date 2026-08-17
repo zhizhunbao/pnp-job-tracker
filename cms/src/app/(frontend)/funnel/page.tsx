@@ -8,7 +8,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getUser } from '@/lib/entitlement'
 import { CHAT_STEPS, DECISION_STEPS, FUNNEL_STEPS, LEGACY_STEPS, chatRates, decisionRates, stepRates } from '@/lib/funnel'
-import { FunnelView, type FunnelRow } from './FunnelView'
+import { Funnel, type FunnelRow } from './Funnel'
 
 export const dynamic = 'force-dynamic'
 
@@ -74,5 +74,5 @@ export default async function FunnelPage() {
     .then((r: any) => ({ pro: Number(r.rows[0]?.pro ?? 0), stripe: Number(r.rows[0]?.stripe ?? 0) }))
     .catch(() => ({ pro: 0, stripe: 0 }))
 
-  return <FunnelView rows={rows} pro={pro} stripe={stripe} byEntry={byEntry} byPricing={byPricing} />
+  return <Funnel rows={rows} pro={pro} stripe={stripe} byEntry={byEntry} byPricing={byPricing} />
 }

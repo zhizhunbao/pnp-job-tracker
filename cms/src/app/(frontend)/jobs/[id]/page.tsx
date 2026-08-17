@@ -10,7 +10,7 @@ import { getUser, isPro } from '@/lib/entitlement'
 import { FREE_MATCH_JOBS_PER_DAY } from '@/lib/plan'
 import { hasProfile, normalizeProfile } from '@/lib/match'
 import { fetchJobById, fetchRelatedJobs } from '@/lib/jobsSql'
-import JobDetailView from './JobDetailView'
+import Job from './Job'
 
 export const dynamic = 'force-dynamic'
 
@@ -115,6 +115,6 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
 
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-    <JobDetailView job={job} plan={plan} dims={dims} related={related} />
+    <Job job={job} plan={plan} dims={dims} related={related} />
   </>
 }

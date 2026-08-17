@@ -13,7 +13,7 @@ import { track } from '@/lib/track'
 // 来路白名单(低基数,与 lib/funnel 的 PROP_OK 同口径):报告锁区 CTA 带 ?from=rpt-<卡>,其余算直达
 const FROM_OK = /^[a-z0-9-]{1,24}$/
 
-export function PricingView({ loggedIn, pro, caps }: { loggedIn: boolean; pro: boolean; caps: PriceCaps }) {
+export function Pricing({ loggedIn, pro, caps }: { loggedIn: boolean; pro: boolean; caps: PriceCaps }) {
   const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
   // 漏斗第 4 步(2026-08-03 量数才发现):这一页**从来没有发过 `pricing-open`** ——
   // 先前只有 PricingModal/UpgradeModal 在 mount 时发,而站内唯一直链 /pricing 的入口正是

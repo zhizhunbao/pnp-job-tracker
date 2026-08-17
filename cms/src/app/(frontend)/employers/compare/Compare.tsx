@@ -20,7 +20,7 @@ const DIFF_TAG: Record<string, 'ok' | 'warn' | 'federal'> = { easy: 'ok', mid: '
 
 type Dim = { key: string; label: React.ReactNode; tip?: string; render: (r: CompareRow) => React.ReactNode }
 
-export function CompareEmployersView({ names, rows, pro, loggedIn }: {
+export function Compare({ names, rows, pro, loggedIn }: {
   names: string[]; rows: CompareRow[]; pro: boolean; loggedIn: boolean
 }) {
   const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定

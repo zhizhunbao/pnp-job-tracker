@@ -6,7 +6,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getUser } from '@/lib/entitlement'
 import { fetchCompanyBySlug, fetchSimilarEmployers } from '@/lib/jobsSql'
-import CompanyDetailView from './CompanyDetailView'
+import Company from './Company'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,7 +39,7 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
 
   if (!company) {
     // slug 拼错/公司被清:给个最小壳走 View 的 Notice(不 404 —— 已收录 slug 保留可访问)
-    return <CompanyDetailView company={{
+    return <Company company={{
       name: slug, slug, website: '', websiteSource: '', industry: '', sectors: '', aliasZh: '', aliasKo: '',
       wikiUrl: '', sponsorGrade: null, scoreDetail: null, aiBrief: '', aiWebsite: '', aiSources: [], aiFetched: '',
       description: '', address: '', province: '',
@@ -63,6 +63,6 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
 
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-    <CompanyDetailView company={company} similar={similar} loggedIn={!!user} />
+    <Company company={company} similar={similar} loggedIn={!!user} />
   </>
 }

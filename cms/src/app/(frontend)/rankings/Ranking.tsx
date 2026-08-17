@@ -129,7 +129,7 @@ const rankTitle = (t: TFn, slug: string): string => {
   return t('rank.title.daily-top') + (zh ? '　' + t('broad.' + zh) : '')
 }
 
-export function RankingView({ slug, items, slugs = [] }: { slug: string; items: RankRow[]; slugs?: string[] }) {
+export function Ranking({ slug, items, slugs = [] }: { slug: string; items: RankRow[]; slugs?: string[] }) {
   const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
   // 有数据的榜单清单(导航与 banner 数字块共用)
   // B2:sponsor-likely 摘出榜单 tab(路由 301 → /employers?sort=skilled,担保雇主页承接)

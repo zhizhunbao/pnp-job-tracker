@@ -1,6 +1,6 @@
 'use client'
 // 隐私政策(E4-02)。文案模板级自拟,不构成法律意见。
-import { LegalShell, type LegalDoc } from '../LegalShell'
+import { Legal, type LegalDoc } from '../Legal'
 import { IconLock } from '../../Icons'
 import type { Lang } from '../../jobs/i18n'
 
@@ -115,4 +115,4 @@ const docs: Record<Lang, LegalDoc> = {
   },
 }
 
-export default function PrivacyPage() { return <LegalShell docs={docs} icon={<IconLock />} /> }
+export default function PrivacyPage() { return <Legal docs={docs} icon={<IconLock />} /> }

@@ -74,7 +74,7 @@ function nocCell(r: EmployerRow, f: EmployerFilters, titles: EmployerPage['nocTi
 
 const jobsHref = (name: string) => `/jobs?q=${encodeURIComponent(name)}`
 
-export function EmployersBoardView({ initial, initialFilters }: { initial: EmployerPage; initialFilters: EmployerFilters }) {
+export function Employers({ initial, initialFilters }: { initial: EmployerPage; initialFilters: EmployerFilters }) {
   const [lang, setLangSaved, t] = useLang()
   const [f, setF] = useState<EmployerFilters>(initialFilters)
   const [data, setData] = useState<EmployerPage>(initial)

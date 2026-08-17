@@ -1,6 +1,6 @@
 'use client'
 // 关于页(E4-02)。复用法务外壳。
-import { LegalShell, type LegalDoc } from '../legal/LegalShell'
+import { Legal, type LegalDoc } from '../legal/Legal'
 import type { Lang } from '../jobs/i18n'
 
 const docs: Record<Lang, LegalDoc> = {
@@ -60,4 +60,4 @@ const docs: Record<Lang, LegalDoc> = {
   },
 }
 
-export default function AboutPage() { return <LegalShell docs={docs} /> }
+export default function AboutPage() { return <Legal docs={docs} /> }

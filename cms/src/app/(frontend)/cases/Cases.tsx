@@ -10,7 +10,7 @@ import { BANNER_IMGS, Banner, UI } from '../ui'
 import { CASES, type L3 } from '@/lib/caseLibrary'
 import { track } from '@/lib/track'
 
-export function CasesView() {
+export function Cases() {
   const [lang, setLangSaved, t] = useLang()
   const pickL3 = (l: L3) => l[lang as keyof L3] || l.zh
 

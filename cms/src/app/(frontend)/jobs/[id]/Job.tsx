@@ -25,7 +25,7 @@ type Dims = { nocDesc: NocDesc[]; nocCategories: CatLabel[] }
 const aLink: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
 const sec: React.CSSProperties = CARD_MD   // 白卡壳全站一份(ui/primitives),这里只留个本地别名
 
-export default function JobDetailView({ job, plan, dims, related }: {
+export default function Job({ job, plan, dims, related }: {
   job: JobRow; plan: Plan; dims: Dims
   related: { sameCompany: RelatedJob[]; sameOcc: RelatedJob[]; fallbackLevel: 'fine' | 'mid' | 'broad' | null }
 }) {

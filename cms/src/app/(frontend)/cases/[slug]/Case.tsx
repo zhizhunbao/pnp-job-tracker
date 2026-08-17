@@ -22,7 +22,7 @@ const TONE: Record<VerdictReason['kind'], string> = { met: UI.ok, gap: '#b45309'
 const HEAD_N = 5
 const SUMMARY: React.CSSProperties = { padding: '10px 0 2px', color: UI.primary, fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }
 
-export function CaseView({ caseId, label, question, answer }: {
+export function Case({ caseId, label, question, answer }: {
   caseId: string
   label: L3
   question: L3

@@ -1,7 +1,7 @@
 'use client'
 // 服务条款(E4-02):含时长包付费与退款口径(D5/用户拍板:7 天内未滥用可退)、数据来源、雇主异议下架机制。
 // 文案模板级自拟,不构成法律意见。
-import { LegalShell, type LegalDoc } from '../LegalShell'
+import { Legal, type LegalDoc } from '../Legal'
 import { IconClipboard } from '../../Icons'
 import type { Lang } from '../../jobs/i18n'
 
@@ -107,4 +107,4 @@ const docs: Record<Lang, LegalDoc> = {
   },
 }
 
-export default function TermsPage() { return <LegalShell docs={docs} icon={<IconClipboard />} /> }
+export default function TermsPage() { return <Legal docs={docs} icon={<IconClipboard />} /> }

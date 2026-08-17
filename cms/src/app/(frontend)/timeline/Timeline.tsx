@@ -9,7 +9,7 @@ import { BANNER_IMGS, Banner, Shell, SectionTabs, Title, Tag, UI, chipStyle } fr
 import { IconNews } from '../Icons'
 import type { TlCadence, TlEvent } from '@/lib/timeline'
 
-export function TimelineView({ events, cadence, eeCadence }: {
+export function Timeline({ events, cadence, eeCadence }: {
   events: TlEvent[]; cadence: TlCadence[]
   eeCadence: { category: string; label: string; last: string; daysSince: number }[]
 }) {

@@ -10,7 +10,7 @@ import { Table } from '../ui'
 import { IconClipboard } from '../Icons'
 import type { OccRow } from '@/lib/directory'
 
-export function OccupationsView({ rows }: { rows: OccRow[] }) {
+export function Occupations({ rows }: { rows: OccRow[] }) {
   const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
 
   // 省→通道 两级分组(数据已按 province/stream/noc 排序)

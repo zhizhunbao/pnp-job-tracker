@@ -4,7 +4,7 @@ import { headers } from 'next/headers'
 import { getUser, isPro } from '@/lib/entitlement'
 import { loadMatchDims } from '@/lib/matchDims'
 import { compareEmployers, type CompareRow } from '@/lib/employerCompare'
-import { CompareEmployersView } from './CompareEmployersView'
+import { Compare } from './Compare'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,5 +23,5 @@ export default async function CompareEmployersPage({ searchParams }: { searchPar
     const dims = await loadMatchDims().catch(() => null)
     rows = await compareEmployers(names, (user as any)?.profile, dims)
   }
-  return <CompareEmployersView names={names} rows={rows} pro={pro} loggedIn={!!user} />
+  return <Compare names={names} rows={rows} pro={pro} loggedIn={!!user} />
 }

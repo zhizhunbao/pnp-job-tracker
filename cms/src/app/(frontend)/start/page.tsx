@@ -4,7 +4,7 @@
 // /api/market-stats,刷新必闪一次骨架占位——Frank「中间两个数为什么会闪」);occ 大表本身仍不进 HTML。
 // 净值卡(在架存量差)按契约 v3 **本批不做** —— 排水期的存量下跌是数据清洗不是市场收缩(后置 E13-04)。
 // 红线:数字全部来自库内聚合查询,不写死;单项查询失败 → 该行/该块整条不渲染,绝不显示 0。
-// SSR 瘦身照旧:职业大表(occ ~3400 行,含 E13-03 派生列)不进 HTML,由 StartView 挂载后拉 /api/market-stats。
+// SSR 瘦身照旧:职业大表(occ ~3400 行,含 E13-03 派生列)不进 HTML,由 Start 挂载后拉 /api/market-stats。
 import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 
@@ -14,7 +14,7 @@ import { checkedAt, fetchTotalAndProof } from '@/lib/jobsSql'
 import { normalizeProfile } from '@/lib/match'
 import { loadOccStats, loadProvExtra } from '../stats/lib'
 import { PROVS } from '../stats/shared'
-import { StartView, type HomeStats } from './StartView'
+import { Start, type HomeStats } from './Start'
 import { buildSponsorBoards, fetchSponsorEmployers, SE_SSR_ROWS } from '@/lib/sponsorEmployers'
 
 export const dynamic = 'force-dynamic'
@@ -110,7 +110,7 @@ async function loadHomeStats(pool: any, payload: any): Promise<Omit<HomeStats, '
     // 挂了只丢中间两卡与分类联动,页面照常
     loadOccStats().catch(() => []),
   ])
-  // S1 中间两卡:occ 全国行聚合成两个标量(逻辑原样自 StartView.pulseCards 下沉;缺列/缺数=null,卡整张不出)
+  // S1 中间两卡:occ 全国行聚合成两个标量(逻辑原样自 Start.pulseCards 下沉;缺列/缺数=null,卡整张不出)
   const natOcc = occRows.filter((o) => (o.province || '').toLowerCase() === 'all')
   const news14 = natOcc.map((o) => o.new14d).filter((v): v is number => v != null)
   const new14 = news14.length ? news14.reduce((a, b) => a + b, 0) : null
@@ -127,7 +127,7 @@ async function loadHomeStats(pool: any, payload: any): Promise<Omit<HomeStats, '
   // Frank 08-08 三分表:对应三类人——没工签→LMIA、有工签→PNP 担保记录(省清单命中,二拍撤 LMIA 维)、想去海洋省→AIP。
   // #313(LCP 7.15s 真因):三表全量(16,430 行)序列化进 RSC payload 把 SSR 文档撑到 6.92MB ——
   // 「全量可翻页」拍板不动,只换运输方式:SSR 只带每表前 SE_SSR_ROWS 行 + total,挂载后
-  // StartView 拉 /api/sponsor-employers 换全量(手法照本页 occ 大表的 /api/market-stats 先例)。
+  // Start 拉 /api/sponsor-employers 换全量(手法照本页 occ 大表的 /api/market-stats 先例)。
   // 三表构建(筛选+排序)下沉 lib/sponsorEmployers.buildSponsorBoards,与 API 路由共用一份,不 fork。
   const boards = buildSponsorBoards(sponsorRows)
   const ssrSlice = (b: typeof boards.lmia) => ({ top: b.top.slice(0, SE_SSR_ROWS), total: b.total })
@@ -163,5 +163,5 @@ export default async function StartPage() {
   const user = await getUser(await headers()).catch(() => null)
   const target = normalizeProfile((user as any)?.profile).targetProvinces.find((p) => PROVS.includes(p))
   const upd = await checkedAt(pool).catch(() => '')
-  return <StartView stats={{ ...homeCache.v, provPreset: target || '', checkedAt: upd }} />
+  return <Start stats={{ ...homeCache.v, provPreset: target || '', checkedAt: upd }} />
 }

@@ -10,7 +10,7 @@ import { CASES, type L3 } from '@/lib/caseLibrary'
 import { CASE_PAGES, caseAnswer } from '@/lib/caseFacts'
 import { ssrLang } from '@/lib/lang.server'
 import { getVerdictData } from '@/lib/verdictCache'
-import { CaseView } from './CaseView'
+import { Case } from './Case'
 
 // 🔴 **不要加回 generateStaticParams**(2026-08-11 实撞):它与 force-dynamic 同时存在时,
 // 这一页会在**构建期**被预渲染,之后无论库里怎么变、页面都停在部署那一刻 ——
@@ -50,5 +50,5 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
   if (!answer) notFound()
 
   // 三语原样传下去,由视图按当前语言取 —— 服务端这里定死一种,切语言就切不动了
-  return <CaseView caseId={entry.id} label={entry.label} question={entry.q} answer={answer} />
+  return <Case caseId={entry.id} label={entry.label} question={entry.q} answer={answer} />
 }

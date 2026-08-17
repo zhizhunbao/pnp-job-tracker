@@ -1,7 +1,7 @@
 // 政策时间线页(C6-01):SSR 三查合并(照 rankings 模式);SEO=generateMetadata。
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { TimelineView } from './TimelineView'
+import { Timeline } from './Timeline'
 import { fetchTimeline } from '@/lib/timeline'
 
 export const dynamic = 'force-dynamic'
@@ -18,5 +18,5 @@ export default async function TimelinePage() {
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
   const data = await fetchTimeline(pool)
-  return <TimelineView {...data} />
+  return <Timeline {...data} />
 }

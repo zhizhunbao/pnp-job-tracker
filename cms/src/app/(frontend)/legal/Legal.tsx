@@ -11,7 +11,7 @@ export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'wangsansi
 
 export type LegalDoc = { title: string; updated: string; sections: { h: string; body: string[] }[] }
 
-export function LegalShell({ docs, icon }: { docs: Record<Lang, LegalDoc>; icon?: React.ReactNode }) {
+export function Legal({ docs, icon }: { docs: Record<Lang, LegalDoc>; icon?: React.ReactNode }) {
   const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
   const doc = docs[lang]
 

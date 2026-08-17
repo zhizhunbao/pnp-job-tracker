@@ -1,7 +1,7 @@
 // 紧缺职业清单页(B4-01):SSR 直查 pnp_occupations(183 行,一页展示);SEO 主体=generateMetadata。
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { OccupationsView } from './OccupationsView'
+import { Occupations } from './Occupations'
 import { fetchOccupations } from '@/lib/directory'
 
 export const dynamic = 'force-dynamic'
@@ -18,5 +18,5 @@ export default async function OccupationsPage() {
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
   const rows = await fetchOccupations(pool)
-  return <OccupationsView rows={rows} />
+  return <Occupations rows={rows} />
 }

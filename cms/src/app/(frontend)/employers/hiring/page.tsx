@@ -2,7 +2,7 @@
 // 入口契约不变:/employers/hiring?prov=SK&noc=72310 仍直达并预置筛选(初评表「查雇主」的落点)。
 // 口径:该省该职业正在招人的雇主,来自本站每日职位库(不是官方名录)。
 import { employersBoardProps } from '../board'
-import { EmployersBoardView } from '../EmployersBoardView'
+import { Employers } from '../Employers'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,5 +17,5 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 
 export default async function HiringEmployersPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const props = await employersBoardProps(await searchParams, 'hiring')
-  return <EmployersBoardView {...props} />
+  return <Employers {...props} />
 }

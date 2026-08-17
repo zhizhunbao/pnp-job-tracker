@@ -150,7 +150,7 @@ const gateChip = (pathKey: string, blocked: string): string => {
   return r.need === 'required' && r.asks ? `statusInCanada.${r.asks}` : 'statusInCanada'
 }
 
-export function PrDecisionView({ overview, drawsRecent = [], competition = [], tvJob, topNocs, initialVerdict }: {
+export function Decision({ overview, drawsRecent = [], competition = [], tvJob, topNocs, initialVerdict }: {
   overview: OverviewDraw[]; tvJob: TvJob | null
   /** 每省近 6 轮有分数的抽选(SSR 直出)。估分卡的线**不许**等答完题才有 ——
    *  懒取那份(scoreTables)只在答满全卷后才发请求,于是「选了省却看不到线」(2026-08-16 生产实撞) */

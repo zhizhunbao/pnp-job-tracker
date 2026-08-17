@@ -2,7 +2,7 @@
 // 内链职责从 /plan/pr 挪来(2026-08-13):处境详情页要被爬到,靠这一页 + 顶栏资料库入口。
 import type { Metadata } from 'next'
 import { CASES } from '@/lib/caseLibrary'
-import { CasesView } from './CasesView'
+import { Cases } from './Cases'
 
 export const metadata: Metadata = {
   title: '加拿大移民常见案例 — 真实处境与判定结论 | Offer2PR',
@@ -21,6 +21,6 @@ const itemList = {
 export default function CasesIndexPage() {
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }} />
-    <CasesView />
+    <Cases />
   </>
 }

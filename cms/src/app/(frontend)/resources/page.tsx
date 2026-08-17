@@ -1,7 +1,7 @@
 // 官方资源导航页(E4-05):SEO 落地页 + 把散落全站的官方链接归拢一页。纯静态 curated,零业务逻辑。
 import type { Metadata } from 'next'
 import { RES } from './data'
-import { ResourcesView } from './ResourcesView'
+import { Resources } from './Resources'
 
 export const metadata: Metadata = {
   title: '加拿大移民官方资源导航 — IRCC/省提名/工资/LMIA 官方入口 | Offer2PR',
@@ -21,6 +21,6 @@ const itemList = {
 export default function ResourcesPage() {
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }} />
-    <ResourcesView />
+    <Resources />
   </>
 }

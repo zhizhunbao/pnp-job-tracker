@@ -2426,7 +2426,7 @@ export function CompanyGradesView({ detail, t, hideSponsor }: { detail: CoGradeD
 // 弹框(CompanyPanel)与 /companies/[slug] 页面渲同一组件、吃同一份 CompanyDetail(免额度,与页面同口径)。
 // 排版=JD 扁平基准(FLAT_*);顺序循 #192:身份→担保→简介→在招→相似→雇主信号(判断殿后)。
 // 红线:分类/职位弹框不碰(Frank「这两个现在做的我很满意」)。
-// 通道/担保档色阶(与列表「通道」列同源;从 CompanyDetailView 收编)
+// 通道/担保档色阶(与列表「通道」列同源;从 Company 收编)
 const chColor = (g: number | null) => (g == null ? '#9ca3af' : g >= 5 ? '#166534' : g >= 4 ? '#15803d' : g >= 3 ? '#374151' : g >= 2 ? '#b45309' : '#9ca3af')
 // LMIA 股别串解析(「High Wage 58 · Low Wage 1008」→ 逐股;技能股=High Wage/GTS/PR,match.ts 口径,前端只展示不判定)
 function parseCoStreams(streams: string, t: TFn): { label: string; count: string; skilled: boolean }[] {

@@ -14,7 +14,7 @@ import { goBackOr } from '../../BackLink'
 
 const aLink: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
 
-export default function CompanyDetailView({ company, similar = [], loggedIn }: { company: CompanyDetail; similar?: SimilarEmployer[]; loggedIn: boolean }) {
+export default function Company({ company, similar = [], loggedIn }: { company: CompanyDetail; similar?: SimilarEmployer[]; loggedIn: boolean }) {
   const [lang, setLang, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
   const alias = lang === 'zh' ? company.aliasZh : lang === 'ko' ? company.aliasKo : ''   // #151 口径:界面语言译名作灰注,英文界面不出
   const provFull = company.province ? provName(t, company.province) : ''

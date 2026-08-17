@@ -3,7 +3,7 @@
 import { getPayload } from 'payload'
 import { notFound, permanentRedirect } from 'next/navigation'
 import config from '@/payload.config'
-import { RankingView } from '../RankingView'
+import { Ranking } from '../Ranking'
 import { fetchRankingRows, fetchRankingSlugs, RANKING_SLUGS } from '@/lib/rankings'
 
 export const dynamic = 'force-dynamic'
@@ -44,5 +44,5 @@ export default async function RankingPage({ params }: { params: Promise<{ slug: 
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
   const [items, slugs] = await Promise.all([fetchRankingRows(pool, slug), fetchRankingSlugs(pool)])
-  return <RankingView slug={slug} items={items} slugs={slugs} />
+  return <Ranking slug={slug} items={items} slugs={slugs} />
 }

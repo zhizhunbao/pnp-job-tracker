@@ -221,7 +221,7 @@ function lockLabel(t: TFn, key: string): string {
 // ── 样式(token 与 JobsTable MODAL_CARD / primitives 同源)────────────────────
 const CARD: React.CSSProperties = CARD_MD   // 白卡壳全站一份(ui/primitives),这里只留个本地别名
 const CARD_HEAD: React.CSSProperties = { fontSize: 13.5, fontWeight: 700, color: '#111827', marginBottom: 6 }
-/** 卡标题:与 PrDecisionView 的 H2 同一档(16/700)—— 全页所有卡标题一个字号 */
+/** 卡标题:与 Decision 的 H2 同一档(16/700)—— 全页所有卡标题一个字号 */
 const CARD_TITLE: React.CSSProperties = { fontSize: 16, fontWeight: 700, color: '#111827' }
 // 一段一张卡,每张自包含(Frank 2026-08-12:「section 分多个卡片,每个卡片都是自包含的」)——
 // 卡内自带标题与出处,读到哪一张都不必回头看上一张。

@@ -13,7 +13,7 @@ export type FunnelRow = { step: string; label: string; d30: number; d7: number; 
 // 尾行(foot 槽)自己排版:它是 colSpan 合并行,不走列模型;对齐 Table 的单元格 token
 const TD: React.CSSProperties = { padding: '9px 12px', fontSize: 13, color: '#374151', borderBottom: `1px solid ${UI.hairline}`, fontVariantNumeric: 'tabular-nums' }
 
-export function FunnelView({ rows, pro, stripe, byEntry, byPricing = [] }: {
+export function Funnel({ rows, pro, stripe, byEntry, byPricing = [] }: {
   rows: FunnelRow[]; pro: number; stripe: number
   byEntry: { prop: string; n: number }[]; byPricing?: { prop: string; n: number }[]
 }) {

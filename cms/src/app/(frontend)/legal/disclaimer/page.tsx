@@ -1,6 +1,6 @@
 'use client'
 // 免责声明全文(E4-02,替换 E4-01 占位)。文案模板级自拟,不构成法律意见。
-import { LegalShell, type LegalDoc } from '../LegalShell'
+import { Legal, type LegalDoc } from '../Legal'
 import { IconScale } from '../../Icons'
 import type { Lang } from '../../jobs/i18n'
 
@@ -82,4 +82,4 @@ const docs: Record<Lang, LegalDoc> = {
   },
 }
 
-export default function DisclaimerPage() { return <LegalShell docs={docs} icon={<IconScale />} /> }
+export default function DisclaimerPage() { return <Legal docs={docs} icon={<IconScale />} /> }

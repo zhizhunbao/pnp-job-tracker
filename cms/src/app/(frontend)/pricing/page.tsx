@@ -3,14 +3,14 @@
 import { headers } from 'next/headers'
 import { getUser, isPro } from '@/lib/entitlement'
 import { FREE_ADVISOR_TRIES, FREE_JOBTEXT_TRIES, FREE_MATCH_JOBS_PER_DAY, PRO_ADVISOR_DAILY } from '@/lib/plan'
-import { PricingView } from './PricingView'
+import { Pricing } from './Pricing'
 
 export const dynamic = 'force-dynamic'
 
 export default async function PricingPage() {
   const user = await getUser(await headers())
   return (
-    <PricingView
+    <Pricing
       loggedIn={!!user}
       pro={isPro(user)}
       caps={{ advisor: FREE_ADVISOR_TRIES, jobtext: FREE_JOBTEXT_TRIES, match: FREE_MATCH_JOBS_PER_DAY, proAdvisor: PRO_ADVISOR_DAILY }}

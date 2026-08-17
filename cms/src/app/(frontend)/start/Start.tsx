@@ -25,7 +25,7 @@ import { JobCard } from '../ui'
 import { Table, Pager, type Col } from '../ui'
 import { BANNER_IMGS, Chip, Banner, Shell, Tag, UI } from '../ui'
 import { track } from '@/lib/track'
-import { SponsorCard, sponsorEmployerCols, hasVerdictSignal, type SponsorKind } from '../employers/SponsorEmployersView'
+import { SponsorCard, sponsorEmployerCols, hasVerdictSignal, type SponsorKind } from '../employers/Sponsors'
 import type { SponsorEmployerRow } from '@/lib/sponsorEmployers'
 
 // 抽选行 + 冷解读三标量(近 12 期同通道的期数/最低/最高,服务端算好,见 start/page.tsx)
@@ -472,7 +472,7 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
   )
 }
 
-export function StartView({ stats }: { stats: HomeStats }) {
+export function Start({ stats }: { stats: HomeStats }) {
   const [lang, setLangSaved, t] = useLang()
   // 主图四份数据(occ 含 E13-03 派生列)挂载后拉;null=加载中 → 依赖它的区渲占位高度,不出空壳
   const market = useMarketStats()

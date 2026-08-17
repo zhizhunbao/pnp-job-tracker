@@ -11,7 +11,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getScoreTables } from '@/lib/scoreTables'
 import { buildTripleWire, type TripleWire } from '@/lib/tripleWire'
-import { PrDecisionView, type TvJob } from './PrDecisionView'
+import { Decision, type TvJob } from './Decision'
 
 export const dynamic = 'force-dynamic'
 
@@ -66,5 +66,5 @@ export default async function PlanPrPage({ searchParams }: { searchParams: Promi
     if (wire && !('error' in wire)) initialVerdict = wire
   }
 
-  return <PrDecisionView overview={overview} drawsRecent={drawsRecent} competition={competition} tvJob={tvJob} topNocs={topNocs} initialVerdict={initialVerdict} />
+  return <Decision overview={overview} drawsRecent={drawsRecent} competition={competition} tvJob={tvJob} topNocs={topNocs} initialVerdict={initialVerdict} />
 }
