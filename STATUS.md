@@ -17,8 +17,33 @@
 > - **工作区未提交**:`data/`、`etl/` 若干(非本轮产出,一直躺着);`cms/` 侧已全部提交并上线。
 > - **最紧未结项**:① Search Console 定性(待 Frank);② JSON-LD 缺 `validThrough`/`directApply`(与富结果展现资格挂钩,
 >   而富结果是最大入口);③ CSS 迁移剩 1265 处,原大头 `JobsTable.tsx` 381 —— **文件已于 08-17 晚拆完**
->   (见下方「08-17 晚场」),那 381 处现散在 `Jobs.tsx`/`Advisor.tsx`/`Pnp.tsx` 等,迁移本身尚未开始;
+>   (见下方「08-17 晚场」),那 381 处现散在 `Jobs.tsx`/`Advisor.tsx`/`Pnp.tsx` 等,迁移本身尚未开始
+>   —— **这是眼下唯一还欠的支线活**(数据层已于当晚收尾,见「08-17 深夜」);
 >   ④ 批 D 欠账②(真 Pro 号生产验判定卡直渲,待 Frank 亲手)。展开见下方交接 + 记忆 `next-session-status`。
+>
+> **📍 2026-08-17 深夜:建 lib/db/ + 全站 SQL 收拢(`de1cdcf6` → `4eeae2cb`,8 提交已上线验讫)**
+> - **形态是 Frank 四次收敛定的**(先说「真·一个文件装全部」→「建 db 目录」→「sql.ts 只放纯 sql」
+>   →「crud 都放 database.ts」→ 最后两句「不能做成通用的吗」「database.ts 怎么里面有 sql」点破):
+>   - `lib/db/database.ts`(141 行)= 连接 + **通用** CRUD。**不认识任何一张表,不含一句业务 SQL**。
+>     `Db/DbClient/DbPool`、`dbOf`/`dbOrNull`/`getDb`、`select`/`selectOne`/`selectValue`/`execute`、
+>     `withTransaction`、`insertMany`(唯一生成 SQL 处,且是通用骨架,表名列名是入参)。
+>   - `lib/db/sql.ts`(915 行 / 171 条 / **27 个编号段**)= 全部 SQL,不碰连接不做映射。
+>     大写常量=固定语句(值走 `$1/$2`),小写函数=模板(**只拼结构**,值仍走占位符)。
+>   - 域文件只剩取数与映射,顶部统一 `import * as SQL from …/db/sql`。
+> - **中途我做岔过一次**:把 810 行职位 CRUD 连同 SQL 整体搬进 database.ts(906 行、满肚子 `FROM jobs`),
+>   被上面两句点破后**整个回退重做**。没提交过,回退干净。
+> - **收拢结果**:全站 190 处 `query()` / 47 文件 → **剩 8 行 / 4 文件**,每条都站得住:
+>   seed 的现拼片段 4(按表名/列清单生成的**机制**,不是语句)、`insertMany` 骨架 1、
+>   **假阳性 3**(api/resume 的提示词、jobs/i18n 的键名与英文文案)。
+> - **当场抓出 4 组逐字重复**:`PROV_DIFFICULTY` 散在 **5 个文件**里各抄一份;
+>   `PROVINCES_INFO`/`COMPANY_LMIA_NOCS`/`PNP_SCORE_FACTORS` 各两份。**这是收拢最实在的回报**。
+> - **假阳性共 9 处,全是英文 LLM 提示词与 UI 文案**(含 "FROM FACTS"、"from IRCC"、`se.col.where`)——
+>   剥离清单必须**人工点名**,别拿 `\bSELECT\b` 一把梭。手法固化在 `scratchpad/liftsql.py`
+>   (插值自动变模板参数,SQL 文本零重打);**它只扫反引号,单引号写的会漏**,每批必须剥完再全量重扫。
+> - **⚠️ 唯一没验的:`seed` 没实跑**(生产灌库器,无 dry-run)。只有 tsc + 逐条 assert + 事务体未改三道保险。
+>   Frank 下次手动打带 token 的 `/seed` 时看一眼响应 counts,那才算真验过。
+> - **换版硬信号用 `/api/version`**(返回 `RENDER_GIT_COMMIT`)。我这轮先拿首页 JS chunk 哈希当指纹,
+>   对**纯服务端改动必然失效**(客户端 chunk 根本不变),白报了一次「NO CHANGE」。别再犯。
 >
 > **📍 2026-08-17 晚场:拆 JobsTable —— 4446 → 1035 行(`a7cf463e` / `74290c8b` / `73ff509d`,已上线验讫)**
 > - **顺序是 Frank 定的:先拆文件,再迁样式**(反过来=给马上要拆掉的代码搬样式)。**样式尚未动,381 处原封不动**。
