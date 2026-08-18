@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react'
 
 import { IconCompass } from '../Icons'
-import { CARD_MD, ctrl, PILL_BTN } from '../ui'
+
 import { LockedText } from './Lock'
 import { AuthModal } from './AuthForm'
 import { Modal, useIsNarrow } from './Modal'
@@ -450,7 +450,6 @@ function ApplyBar({ job, email, emailDone, t, plan, onPage }: { job: JobRow; ema
   )
 }
 
-
 // ── 操作列弹框:职位描述快看(读真实抓取正文;公司信息已并入顾问公司弹窗,C1)────
 // ── E8-11 B2(Frank「以弹框为准,job 只留 job 相关」):职位域唯一骨架 JobBody ──
 // JD 弹框正文原样抽出(行为零变化,红线:弹框内容 Frank 已满意),/jobs/[id] 页面同渲。
@@ -547,18 +546,18 @@ const hostOf = (u: string) => { try { return new URL(u).host.replace(/^www\./, '
           AI 速读(点了才生成,不点不烧)+ 打开完整页(仅弹框;页面自己就是完整页) */}
       <div className="jdActs">
         {status !== 'loading' && lang !== 'en' && fmt && !showOrig ? (
-          <button onClick={toggleTrans} disabled={transStatus === 'loading'} className={transStatus === 'loading' ? 'jdPill busy' : 'jdPill'} style={PILL_BTN}>
+          <button onClick={toggleTrans} disabled={transStatus === 'loading'} className={`${transStatus === 'loading' ? 'jdPill busy' : 'jdPill'} pill`}>
             {transStatus === 'loading' ? t('cat.translating') : transStatus === 'error' ? t('cat.transErr') : showTrans ? t('cat.hideZh') : t('cat.showZh')}
           </button>
         ) : null}
         {/* AI 速读=常驻折叠开关(Frank 2026-07-22「按钮怎么没了」「可以折叠的」):点开点收都是它,
             不再点一次就消失;内容 jdAdvCache 缓存,收起再开秒回不重烧额度。▾=展开 ▸=收起 */}
-        {status !== 'loading' && <button onClick={() => { if (!aiOn) track('ai-read-jd'); setAiOn((v) => !v) }} style={{ ...PILL_BTN, ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>}
-        {inModal ? <a href={`/jobs/${job.id}`} target="_blank" rel="noreferrer" className="jdPill link" style={PILL_BTN}>{t('detail.openFull')} ↗</a> : null}
+        {status !== 'loading' && <button onClick={() => { if (!aiOn) track('ai-read-jd'); setAiOn((v) => !v) }} className="pill" style={{ ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>}
+        {inModal ? <a href={`/jobs/${job.id}`} target="_blank" rel="noreferrer" className="jdPill asLink pill">{t('detail.openFull')} ↗</a> : null}
       </div>
       {/* AI 速读卡(点了才出;置顶=点完不用往下翻,与分类弹框同规范;jdRead=纯 JD 速读不带移民解读) */}
       {aiOn && (
-        <div style={CARD_MD}>
+        <div className="cardMd">
           <JdAdvisorSection job={job} lang={lang} plan={plan} title={t('cat.aiRead')} field="jdRead" />
         </div>
       )}

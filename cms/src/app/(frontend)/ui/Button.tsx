@@ -29,13 +29,7 @@ export function Button({ kind = 'primary', sm, lg, disabled, onClick, href, targ
   return <button disabled={disabled} onClick={onClick} title={title} className={className} style={style}>{children}</button>
 }
 
-// 站内行内动作钮的唯一样式(职位板一路用下来的那枚药丸钮)。08-10 Frank 点名把把脉页的
-// 「看在招岗 →」并过来 → 从 JobsTable 内的私有常量提到这里作单一来源,两边同 import。
-export const PILL_BTN: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 999, padding: '5px 13px', fontSize: 12.5, background: '#fff', color: '#374151', cursor: 'pointer', fontWeight: 600 }
-
-// 下面两枚同样是「可点件的样式」,08-17 拆 JobsTable 时按 PILL_BTN 的先例提上来 ——
-// 原本是那个 4446 行文件的私有常量,拆开后 5 个文件都要用,再留在页面文件里就成了反向依赖。
-// 输入控件(下拉/搜索框/小钮)统一规格:高 38 是全站筛选行的基准高度,别处对齐它。
-export const ctrl: React.CSSProperties = { height: 38, boxSizing: 'border-box', padding: '0 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 14, color: '#1f2937', background: '#fff' }
-// 站内蓝链(无下划线)。
-export const link: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
+// 三个可点件的外形 2026-08-18 迁进 main.css 第 5 段(.pill / .field / .link):
+// 它们原先是内联的样式对象,压过一切 —— 正是那 32 处内联样式里一批的成因
+// (`{...ctrl, paddingRight:38}` 这种要盖掉对象自带的值)。变成类之后调用点写 className,
+// 那一处的几何微调仍走内联,方向就对了。`ctrl` 顺带改名 `.field`(见 CSS 第 5 段注释)。

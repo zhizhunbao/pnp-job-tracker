@@ -11,11 +11,11 @@ import React from 'react'
 
 import { UI } from './colors'
 
-export const CARD_SHELL: React.CSSProperties = { background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12 }
-export const CARD_MD: React.CSSProperties = { ...CARD_SHELL, padding: '12px 16px', marginBottom: 14 }
+// 白卡壳 2026-08-18 迁进 main.css 第 9 段(.card / .cardMd):调用点写 className,
+// padding 各页密度不同的那几处走内联(内联盖类)。
 
 export function Card({ style, children }: { style?: React.CSSProperties; children: React.ReactNode }) {
-  return <div style={{ ...CARD_SHELL, padding: '10px 12px', marginBottom: 8, position: 'relative', ...style }}>{children}</div>
+  return <div className="card" style={{ padding: '10px 12px', marginBottom: 8, position: 'relative', ...style }}>{children}</div>
 }
 
 export function CardKV({ items }: { items: { k: React.ReactNode; v: React.ReactNode; wide?: boolean }[] }) {

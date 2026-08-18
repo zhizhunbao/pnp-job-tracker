@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react'
 
 import { IconCompass, IconMap } from '../Icons'
-import { CARD_MD, gradeColor, Grid, link, PILL_BTN, Row } from '../ui'
+import { gradeColor, Grid, Row } from '../ui'
 import { JD_ZH_LINE, JdAdvisorSection, isJdNone } from './Jd'
 import { SponsorLeadCard } from './Pnp'
 import { TvEntryCard } from './TripleVerdictModal'
@@ -35,8 +35,7 @@ export function CompanyBriefCards({ brief, website, fetched, t, trans, flat, sou
   // 7-21 撤的只是裸 URL 平铺)。对齐 JD「看原文」的收纳法:声明行挂「看来源 ▾」折叠钮,点开一行一条,默认不脏版面。
   const [showSrc, setShowSrc] = useState(false)
   if (!brief) return null
-  const wrapCls = flat ? 'flatSec' : ''                       // 扁平态=类;卡壳态仍是 CARD_MD 对象(随 CARD_MD 留下一批)
-  const wrapSty = flat ? undefined : CARD_MD
+  const wrapCls = flat ? 'flatSec' : 'cardMd'                       // 扁平态=类;卡壳态仍是 CARD_MD 对象(随 CARD_MD 留下一批)
   const head = flat ? 'flatHead' : 'mcardHead'            // 两态都是类名了
   const srcList = (sources || []).filter((u) => /^https?:\/\//i.test(u))
   {/* 检索日期=空格灰注(W 规矩禁「·」杂糅,与剩余次数注同款) */}
@@ -53,7 +52,7 @@ export function CompanyBriefCards({ brief, website, fetched, t, trans, flat, sou
   )
   const site = website ? (
     <div className={'coSite ' + (flat ? 'flatBody' : '')}>
-      <a href={website} target="_blank" rel="noreferrer" className="coSiteLink" style={link}>{website}</a>
+      <a href={website} target="_blank" rel="noreferrer" className="coSiteLink link">{website}</a>
       <span className="coSiteNote">{t('fact.aiSite')}</span>
     </div>
   ) : null
@@ -96,7 +95,7 @@ export function CompanyBriefCards({ brief, website, fetched, t, trans, flat, sou
   // bare(#197):只出内容体,合并进「公司」块(标题/AI声明/官网由调用方处理)
   if (bare) return bodyNode
   return (
-    <div className={wrapCls} style={wrapSty}>
+    <div className={wrapCls}>
       <div className={head}>{t('fact.coIntro')}</div>
       {attribution}
       {bodyNode}
@@ -234,7 +233,7 @@ export function JobMiniRow({ id, title, sub, salaryText, city, onOpen, target }:
       <span className="coJobL">
         {onOpen
           ? <button onClick={onOpen} className="coJobBtn">{title}</button>
-          : <a href={`/jobs/${id}`} target={target} rel="noreferrer" className="coJobLink" style={link}>{title}</a>}
+          : <a href={`/jobs/${id}`} target={target} rel="noreferrer" className="coJobLink link">{title}</a>}
         {sub ? <div className="coJobSub">{sub}</div> : null}
       </span>
       <span className="coJobR">
@@ -245,7 +244,6 @@ export function JobMiniRow({ id, title, sub, salaryText, city, onOpen, target }:
     </div>
   )
 }
-
 
 export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo, onOpenJob, resolveJob, afterSponsor }: {
   company: CompanyDetail; similar: SimilarEmployer[]; t: TFn; lang: Lang; showTrans?: boolean; hideTopInfo?: boolean
@@ -301,15 +299,15 @@ export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo,
       {!hideTopInfo ? <CompanyTopInfo company={company} t={t} /> : null}
       {/* 基本信息卡(#197 合并):身份(官网/地址)+ 简介同卡;标题「基本信息」与在招/担保卡同款(Frank 2026-07-24) */}
       {(hasId || hasDesc || briefCached || company.name) && (
-        <div style={CARD_MD}>
+        <div className="cardMd">
           <div className="mcardHead">{t('co.basic')}
             {hideTopInfo && isGovCompany(company.name) ? <span className="coBadge gov inHead">{t('co.gov')}</span> : null}
             {hideTopInfo && company.wikiUrl ? <a href={company.wikiUrl} target="_blank" rel="noreferrer" className="coBadge wiki inHead">{t('co.wellKnown')} ↗</a> : null}</div>
           <div>
             {/* 公司名称(Frank 2026-07-24「一直显示方便用户看」):一律显示——有中文别名显别名,否则显原名(标题会截断长名,这行给全名) */}
             <Row k={t('co.name')}>{(lang === 'zh' ? company.aliasZh : lang === 'ko' ? company.aliasKo : '') || company.name}</Row>
-            {company.website ? <Row k={t('act.site')}><a href={company.website} target="_blank" rel="noreferrer" className="coSiteLink" style={link}>{company.website}</a></Row> : null}
-            {showAddrRow && addr ? <Row k={t('act.addr')}><a href={mapsUrl(addr)} target="_blank" rel="noreferrer" className="coLink12" style={link}><IconMap /> {addr}</a></Row> : null}
+            {company.website ? <Row k={t('act.site')}><a href={company.website} target="_blank" rel="noreferrer" className="coSiteLink link">{company.website}</a></Row> : null}
+            {showAddrRow && addr ? <Row k={t('act.addr')}><a href={mapsUrl(addr)} target="_blank" rel="noreferrer" className="coLink12 link"><IconMap /> {addr}</a></Row> : null}
             {/* 行业/知名已上提到 §7 了解行(名下),此处不再重复 */}
             {company.website && company.websiteSource === 'searched' ? <div className="coSiteSearched">{t('fact.siteSearched')}</div> : null}
           </div>
@@ -331,7 +329,7 @@ export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo,
       )}
       {/* 担保记录深块(#184 收编;#197 移到合并块之后;有记录/AIP 才出) */}
       {showSponsor && (
-        <div style={CARD_MD}>
+        <div className="cardMd">
           {/* #200(Frank「这个废话不用加」):担保记录副标题(历史事实,非能担保判定)撤——彩底结论句已含参考限度 */}
           <div className="mcardHead">{t('gr.dim.coSponsor')}</div>
           <div>
@@ -383,7 +381,7 @@ export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo,
       {afterSponsor}
       {/* ④ 在招职位(富行=NOC 对照+薪资+通道档,#184 口径;弹框内点职位叠开 JD 弹框) */}
       {company.jobs.length ? (
-        <div style={CARD_MD}>
+        <div className="cardMd">
           <div className="mcardHead">{t('co.openJobs')} ({company.openCount})</div>
           <div>
             {(allJobs ? company.jobs : company.jobs.slice(0, 8)).map((j) => {
@@ -403,19 +401,19 @@ export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo,
             {!allJobs && company.jobs.length > 8 ? (
               <button onClick={() => setAllJobs(true)} className="coShowAll">{t('act.showAll', { n: company.jobs.length - 8 })}</button>
             ) : allJobs && company.openCount > company.jobs.length ? (
-              <div className="coShowAllBoard"><a href={`/?q=${encodeURIComponent(company.name)}`} target={extTarget} rel="noreferrer" className="coLink12" style={link}>{t('act.showAllBoard', { n: company.openCount - company.jobs.length })}</a></div>
+              <div className="coShowAllBoard"><a href={`/?q=${encodeURIComponent(company.name)}`} target={extTarget} rel="noreferrer" className="coLink12 link">{t('act.showAllBoard', { n: company.openCount - company.jobs.length })}</a></div>
             ) : null}
           </div>
         </div>
       ) : null}
       {/* ⑤ 相似雇主(同省同行业按担保档;弹框白赚) */}
       {similar.length ? (
-        <div style={CARD_MD}>
+        <div className="cardMd">
           <div className="mcardHead">{t('co.similar')}<span className="coSimSub">{t('co.similarSub')}</span></div>
           <div>
             {similar.map((e) => (
               <div key={e.slug} className="coSimRow">
-                <a href={`/companies/${e.slug}`} target={extTarget} rel="noreferrer" className="coSimName" style={link}>{e.name}</a>
+                <a href={`/companies/${e.slug}`} target={extTarget} rel="noreferrer" className="coSimName link">{e.name}</a>
                 <span className="coSimMeta">
                   {e.sponsorGrade != null ? <span style={{ color: chColor(e.sponsorGrade) }}>{t('gr.sp.' + e.sponsorGrade)}</span> : null}
                   {e.openCount ? <span className="coSimOpen">{t('co.openJobs')} {e.openCount}</span> : null}
@@ -427,7 +425,7 @@ export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo,
       ) : null}
       {/* ⑥ 雇主信号(#192 殿后;担保维让给上方深块 hideSponsor,不重复) */}
       {company.scoreDetail ? (
-        <div style={CARD_MD}>
+        <div className="cardMd">
           <div className="mcardHead">{t('co.grades')}</div>
           <div><CompanyGradesView detail={company.scoreDetail} t={t} hideSponsor={showSponsor} /></div>
         </div>
@@ -467,14 +465,14 @@ export function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: { job: JobRow
       {/* 行业行已挪到弹框页眉(名下副标,Frank「改成职位这种」);知名章在基本信息卡题旁 */}
       <div className="coActs">
         {canTrans ? (
-          <button onClick={() => setShowTrans((v) => !v)} style={{ ...PILL_BTN, ...(showTrans ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}>{showTrans ? t('cat.hideZh') : t('cat.showZh')}</button>
+          <button onClick={() => setShowTrans((v) => !v)} className="pill" style={{ ...(showTrans ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}>{showTrans ? t('cat.hideZh') : t('cat.showZh')}</button>
         ) : null}
-        <button onClick={() => { if (!aiOn) track('ai-read-cat'); setAiOn((v) => !v) }} style={{ ...PILL_BTN, ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>
-        {slug ? <a href={`/companies/${slug}`} target="_blank" rel="noreferrer" className="coPillLink" style={PILL_BTN}>{t('detail.openFull')} ↗</a> : null}
+        <button onClick={() => { if (!aiOn) track('ai-read-cat'); setAiOn((v) => !v) }} className="pill" style={{ ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>
+        {slug ? <a href={`/companies/${slug}`} target="_blank" rel="noreferrer" className="coPillLink pill">{t('detail.openFull')} ↗</a> : null}
       </div>
       {/* AI 速读(点了才出,置顶;coRead=公司级接地速读,不联网不凭名字编)——弹框壳独有,页面不带 */}
       {aiOn && (
-        <div style={{ ...CARD_MD, fontSize: 13, lineHeight: 1.75, color: '#374151' }}>
+        <div className="cardMd" style={{ fontSize: 13, lineHeight: 1.75, color: '#374151' }}>
           <JdAdvisorSection job={job} lang={lang} plan={plan} title={t('cat.aiRead')} field="coRead" />
         </div>
       )}

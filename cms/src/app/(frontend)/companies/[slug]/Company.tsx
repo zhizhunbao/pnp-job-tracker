@@ -10,7 +10,7 @@ import { provName } from '@/lib/location'
 import type { CompanyDetail, SimilarEmployer } from '@/lib/jobsSql'
 import { Header } from '../../Header'
 import { Footer } from '../../Footer'
-import { CARD_SHELL, Notice, Shell } from '../../ui'
+import { Notice, Shell } from '../../ui'
 import { goBackOr } from '../../BackLink'
 
 const aLink: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
@@ -34,7 +34,7 @@ export default function Company({ company, similar = [], loggedIn }: { company: 
 
           {/* #200(Frank「还分卡片,类似类别」):CompanyBody 各段改回卡片 → 详情页不再套外层白卡(禁卡套卡);
               H1 单独一张头卡,下面 CompanyBody 卡片自铺(与弹框同源) */}
-          <div style={{ ...CARD_SHELL, position: 'relative', padding: '14px 16px', marginBottom: 14 }}>
+          <div className="card" style={{ position: 'relative', padding: '14px 16px', marginBottom: 14 }}>
             {/* 返回(Frank 走查#18):右上角、浏览器返回(与详情页统一);2026-07-28 同走 goBackOr —— 公司页
                 也是弹框里 target="_blank" 打开的,新标签页里裸 history.back() 是空操作 */}
             <button onClick={() => goBackOr('/?back=1')}

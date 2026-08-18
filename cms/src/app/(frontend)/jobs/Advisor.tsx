@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { IconCompass, IconMap, IconMaximize, IconMinimize } from '../Icons'
-import { CARD_MD, ctrl, Grid, link, PILL_BTN, Row } from '../ui'
+import { Grid, Row } from '../ui'
 // FactsBox 只有本文件用 —— 2026-08-17 从退役的 jobs/Facts 收回宿主(一处用的东西不该住在共享叶子里)
 function FactsBox({ children, note }: { children: React.ReactNode; note?: React.ReactNode }) {
   // Frank 走查#8:去掉卡片底部横线(borderBottom+paddingBottom 退役);组间留白靠 marginBottom
@@ -134,7 +134,7 @@ function GroupFactsSection(props: Omit<Parameters<typeof FieldFactsSection>[0], 
         // 壳卡退役——再包一层就是卡中卡;标题由判定卡自持(#173 每卡必有 title 不破)
         <FieldFactsSection key={k} field={k} job={job} lang={lang} {...rest} />
       ) : (
-        <div key={k} style={CARD_MD}>
+        <div key={k} className="cardMd">
           {/* 分类卡标题人话化:col.noc 是列名「NOC」,当卡标题裸奔(#176 实测抓到);批A 薪资两卡同理 */}
           <div className="mcardHead">{k === 'noc' ? t('grp.category') : k === 'salary' ? t('sal.cardPosted') : k === 'wageMedHr' ? t('sal.cardEsdc') : t('col.' + k)}</div>
           <FieldFactsSection field={k} job={job} lang={lang} {...rest} />
@@ -263,7 +263,7 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
         {depth >= 3 && <Row k={t('col.city')}>{L.city}</Row>}
         {depth >= 4 && <Row k={t('col.district')}>{L.district}</Row>}
         {depth >= 5 && <Row k={t('col.address')}>{job.address}</Row>}
-        {mapQ ? <Row k={t('fact.map')}><a href={mapsUrl(mapQ)} target="_blank" rel="noreferrer" className="advMapLink" style={link}><IconMap /> {t('fact.mapView')}({mapQ})↗</a></Row> : null}
+        {mapQ ? <Row k={t('fact.map')}><a href={mapsUrl(mapQ)} target="_blank" rel="noreferrer" className="advMapLink link"><IconMap /> {t('fact.mapView')}({mapQ})↗</a></Row> : null}
         {field === 'province' && job.province === 'QC' && <Row k={t('col.pnp')}>{t('pnplist.qc')}</Row>}
         {provStreams > 0 && <Row k={t('col.pnp')}>{t('fact.provStreams', { n: provStreams })}</Row>}
         {field === 'province' && job.province && <PnpDrawsBlock province={job.province} lang={lang} draws={pnpDraws} limit={1} />}
@@ -360,7 +360,6 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
   }
   return null  // title/company/noc-职责/aip/score 等依赖 Part B 抓取或 wiring,后续填
 }
-
 
 // ── AI 顾问弹框 ────────────────────────────────────────────────
 // 所有字段都走本地大模型流式生成(按所选语言);前端只给极简头部 + 链接,正文由模型生成。
@@ -503,14 +502,13 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
     { f: 'fine', k: t('col.fine'), v: job.fine && job.fine !== '未分类' && job.fine !== job.mid ? catName(t, job.fine) : null },
   ]
 
-  const btn = PILL_BTN
   // 逐行 duties/requirements;中文对照开 → **逐句对照**:英文行下跟译文行(noc-translate 按行编号对位,行数恒等)
   const listBlock = (title: string, en?: string, zh?: string) => {
     const items = (en || '').split('\n').map((s) => s.trim()).filter(Boolean)
     if (!items.length) return null
     const zhItems = showTrans && zh ? zh.split('\n').map((s) => s.trim()).filter(Boolean) : []
     return (
-      <div style={CARD_MD}>
+      <div className="cardMd">
         {/* #191 对齐:抓取日期全角括号退役 → 空格灰注(与公司简介检索日期同款) */}
         <div className="mcardHead">{title}{noc?.fetched ? <span className="advFetched">{noc.fetched}</span> : null}</div>
         <ul className="advDuties">
@@ -531,16 +529,16 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
       {/* 两钮:中文对照(英文界面无需=不出)+ AI 速读(点前只是一枚钮,不烧额度) */}
       <div className="advActsRow">
         {lang !== 'en' && (
-          <button onClick={toggleTrans} disabled={transStatus === 'loading'} className={transStatus === 'loading' ? 'advPillBusy' : undefined} style={btn}>
+          <button onClick={toggleTrans} disabled={transStatus === 'loading'} className={transStatus === 'loading' ? 'pill advPillBusy' : 'pill'}>
             {transStatus === 'loading' ? t('cat.translating') : transStatus === 'error' ? t('cat.transErr') : showTrans ? t('cat.hideZh') : t('cat.showZh')}
           </button>
         )}
-        <button onClick={toggleAi} style={{ ...btn, ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>
+        <button onClick={toggleAi} className="pill" style={{ ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>
       </div>
 
       {/* AI 速读卡(点了才出;置顶=点完不用往下翻;#A:常驻开关收起时隐藏不清 state) */}
       {aiOn && aiStatus !== 'idle' && (
-        <div style={CARD_MD}>
+        <div className="cardMd">
           <div className="mcardHead"><IconCompass /> {t('cat.aiRead')}</div>
           {aiStatus === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} />
             : aiStatus === 'limited' ? <LockedText t={t} loggedIn={plan.loggedIn} msg={t('advisor.limit429')} ctaLabel={!plan.loggedIn ? t('advisor.limitCta') : undefined} />
@@ -551,7 +549,7 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
       )}
 
       {/* 卡①:职业分类(点击字段该行高亮) */}
-      <div style={CARD_MD}>
+      <div className="cardMd">
         <div className="mcardHead">{t('grp.category')}</div>
         {rows.filter((r) => r.v != null).map((r, i) => {
           const on = r.f === srcField
@@ -571,7 +569,6 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
     </>
   )
 }
-
 
 const DIFF_TAG: Record<string, { bg: string; fg: string; bd: string }> = {
   easy: { bg: '#dcfce7', fg: '#166534', bd: '#bbf7d0' }, mid: { bg: '#fef3c7', fg: '#b45309', bd: '#fde68a' }, tight: { bg: '#eef2ff', fg: '#3730a3', bd: '#e0e7ff' },
@@ -606,7 +603,6 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
 
   const isQc = job.province === 'QC'
   const num = (n: number) => Number(n).toLocaleString()
-  const card: React.CSSProperties = CARD_MD
 
   // AI 解读(Frank 2026-07-23「AI 解读呢?」):分类弹框 AI 速读同款——点了才生成、流式、统一额度池;
   // 事实块=面板同源数字(provRead 按省缓存 / cityRead 按市|区缓存),模型被禁越出事实(advisor 路由 GROUNDING_RULES)。
@@ -713,15 +709,15 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
           中文对照(地点内容现本地化,为「以后加英文」占位)/ AI 速读 / 打开完整页(=该省地区统计页,地点弹框有专属 SEO 页) */}
       {job.province && (
         <div className="advActs2">
-          {lang !== 'en' && <button onClick={() => setShowZh((v) => !v)} style={{ ...PILL_BTN, ...(showZh ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}>{showZh ? t('cat.hideZh') : t('cat.showZh')}</button>}
-          {factsReady && <button onClick={toggleAi} style={{ ...PILL_BTN, ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>}
-          <a href={`/stats/${job.province.toLowerCase()}`} target="_blank" rel="noreferrer" className="advPillLink" style={PILL_BTN}>{t('detail.openFull')} ↗</a>
+          {lang !== 'en' && <button onClick={() => setShowZh((v) => !v)} className="pill" style={{ ...(showZh ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}>{showZh ? t('cat.hideZh') : t('cat.showZh')}</button>}
+          {factsReady && <button onClick={toggleAi} className="pill" style={{ ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>}
+          <a href={`/stats/${job.province.toLowerCase()}`} target="_blank" rel="noreferrer" className="advPillLink pill">{t('detail.openFull')} ↗</a>
         </div>
       )}
 
       {/* AI 解读卡(点了才出;置顶=点完不用往下翻;开关收起时隐藏不清 state) */}
       {aiOn && aiStatus !== 'idle' && (
-        <div style={card}>
+        <div className="cardMd">
           <div className="mcardHead"><IconCompass /> {t('cat.aiRead')}</div>
           {aiStatus === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} />
             : aiStatus === 'limited' ? <LockedText t={t} loggedIn={plan.loggedIn} msg={t('advisor.limit429')} ctaLabel={!plan.loggedIn ? t('advisor.limitCta') : undefined} />
@@ -730,7 +726,7 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
             : <div className="advAi">{renderAI(ai.split('❓')[0])}{aiStatus === 'streaming' && <span className="advCaret">▋</span>}</div>}
         </div>
       )}
-      <div style={card}>
+      <div className="cardMd">
         <div className="mcardHead">{t('grp.location')}</div>
         {locRows.filter((r) => r.v).map((r, i) => {
           const on = r.f === srcField
@@ -747,7 +743,7 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
 
       {/* ── 省级卡组(仅点省进来;Frank「点省看省,点市看市」)────────── */}
       {level === 'province' && d?.tier && (
-        <div style={card}>
+        <div className="cardMd">
           <div className="mcardHead advCardHeadRow">
             {t('diff.title')}
             <span className="advDiff" style={{ '--dbg': DIFF_TAG[d.tier]?.bg, '--dfg': DIFF_TAG[d.tier]?.fg, '--dbd': DIFF_TAG[d.tier]?.bd } as React.CSSProperties}>{t('diff.' + d.tier)}</span>
@@ -773,7 +769,7 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
       )}
 
       {level === 'province' && volRows.length > 0 && (
-        <div style={card}>
+        <div className="cardMd">
           <div className="mcardHead">{t('loc.vol')} <span className="advGnote m">{t('loc.volTag')}</span></div>
           <div className="advVol">
             {/* Frank 2026-07-26「每列都保证左对齐」:数值列原为右对齐,与其他卡不一致 */}
@@ -790,15 +786,15 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
 
       {/* ④⑤ 复用既有块;块自身无数据返回 null → 外层卡也不渲(不出空壳) */}
       {level === 'province' && job.province && !isQc && pnpDraws.some((x) => x.province === job.province) && (
-        <div style={card}><PnpDrawsBlock province={job.province} lang={lang} draws={pnpDraws} limit={3} /></div>
+        <div className="cardMd"><PnpDrawsBlock province={job.province} lang={lang} draws={pnpDraws} limit={3} /></div>
       )}
       {level === 'province' && job.province && news.some((n) => n.region === job.province) && (
-        <div style={card}><NewsLatestBlock province={job.province} lang={lang} news={news} /></div>
+        <div className="cardMd"><NewsLatestBlock province={job.province} lang={lang} news={news} /></div>
       )}
 
       {/* ── 市级卡组(点市/区进来;/api/city 现算,本站口径)────────── */}
       {level === 'city' && cityInfo && (
-        <div style={card}>
+        <div className="cardMd">
           <div className="mcardHead">{t('loc.cityJobs')} <span className="advGnote m">{L.city}</span></div>
           {([
             [t('loc.openJobs'), num(cityInfo.openJobs)],
@@ -814,7 +810,7 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
         </div>
       )}
       {level === 'city' && cityInfo && cityInfo.dli.count > 0 && (
-        <div style={card}>
+        <div className="cardMd">
           <div className="mcardHead">{t('loc.dli')} <span className="advGnote m">{t('loc.dliN', { n: cityInfo.dli.count })}</span></div>
           {cityInfo.dli.top.map((s, i) => (
             <div key={i} className="advKv tight">
@@ -830,7 +826,7 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
         const aipList = desigEmp.filter((e) => e.province === job.province && (e.location || '').toLowerCase().includes((job.city || '').toLowerCase()))
         if (!aipList.length) return null
         return (
-          <div style={card}>
+          <div className="cardMd">
             <div className="mcardHead">{t('loc.aip')} <span className="advGnote m">{t('loc.aipN', { n: aipList.length })}</span></div>
             <div className="advList">
               {aipList.map((e, i) => (
@@ -846,7 +842,7 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
 
       {/* ── 区级卡组(点区进来;Frank「点区看区的信息」)────────── */}
       {level === 'district' && cityInfo?.district && (
-        <div style={card}>
+        <div className="cardMd">
           <div className="mcardHead">{t('loc.distJobs')} <span className="advGnote m">{L.district}</span></div>
           {([
             [t('loc.openJobs'), num(cityInfo.district.openJobs)],
@@ -862,7 +858,7 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
         </div>
       )}
       {level === 'district' && cityInfo?.district && cityInfo.district.topEmployers.length > 0 && (
-        <div style={card}>
+        <div className="cardMd">
           <div className="mcardHead">{t('loc.distEmployers')}</div>
           {cityInfo.district.topEmployers.map((e, i) => (
             <div key={i} className="advKv tight">
@@ -877,7 +873,6 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
     </>
   )
 }
-
 
 // E8-10:入参从 24 值的 field 改为 3 值的 group;field 保留仅用于「打开时锚到哪一节」,不再参与内容分支。
 export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, fieldSources, onClose, onOpenJob }: { group: FieldGroup; field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onClose: () => void; onOpenJob?: (j: JobRow) => void }) {
@@ -1022,9 +1017,9 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
               AI 速读 / 打开完整页 = 前置占位(灰显 disabled,待该弹框接入 AI/专属页后点亮)。 */}
           {group !== 'category' && group !== 'location' && group !== 'company' && (
             <div className="advActs2">
-              {lang !== 'en' && <button onClick={() => { if (!showZh) track('imm-translate'); setShowZh((v) => !v) }} style={{ ...PILL_BTN, ...(showZh ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}>{showZh ? t('cat.hideZh') : t('cat.showZh')}</button>}
-              <button disabled title={t('cat.aiRead')} className="advPillOff" style={PILL_BTN}><IconCompass /> {t('cat.aiRead')}</button>
-              <button disabled title={t('detail.openFull')} className="advPillOff" style={PILL_BTN}>{t('detail.openFull')}</button>
+              {lang !== 'en' && <button onClick={() => { if (!showZh) track('imm-translate'); setShowZh((v) => !v) }} className="pill" style={{ ...(showZh ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}>{showZh ? t('cat.hideZh') : t('cat.showZh')}</button>}
+              <button disabled title={t('cat.aiRead')} className="advPillOff pill"><IconCompass /> {t('cat.aiRead')}</button>
+              <button disabled title={t('detail.openFull')} className="advPillOff pill">{t('detail.openFull')}</button>
             </div>
           )}
           {group === 'immigration' && <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} nocDesc={nocDesc} />}
@@ -1042,7 +1037,7 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
           {/* #174:AI 解读收进自己的卡(每卡必有 title)——只有移民组会请求 AI,
               职位/公司组(status 直置 done、text 空)不渲,免得出一张空卡孤儿标题 */}
           {AI_ADVISOR_ON && group === 'immigration' && (
-            <div style={CARD_MD}>
+            <div className="cardMd">
               <div className="mcardHead"><IconCompass /> {t('advisor.tag')}</div>
               {status === 'upgrade' ? (
                 <LockedText t={t} loggedIn={plan.loggedIn} />
@@ -1074,7 +1069,6 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
     </div>
   )
 }
-
 
 export function ActModal({ job, lang, plan, nocDesc, onClose }: { job: JobRow; lang: Lang; plan: Plan; nocDesc: NocDesc[]; onClose: () => void }) {
   // C1 后只剩 JD 快看;E8-11 B2:正文抽为 JobBody(与 /jobs/[id] 页面同源),本组件只剩浮层壳。
@@ -1119,7 +1113,6 @@ export function ActModal({ job, lang, plan, nocDesc, onClose }: { job: JobRow; l
     </div>
   )
 }
-
 
 // ── 按字段类型生成顾问解读(基于该行数据;无需 API) ─────────────
 // AI 顾问头部:标签(三语,复用列名)+ 上下文标题 + 链接;正文全部由 /api/advisor 大模型按所选语言生成。

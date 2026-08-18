@@ -14,7 +14,7 @@ import { SavedSearchList } from './SavedSearchList'
 import { SavedJobsList } from './SavedJobsList'
 import { ResumeArchive } from './ResumeArchive'
 import { Avatar } from '../Avatar'
-import { Button, CARD_SHELL, Notice } from '../ui'
+import { Button, Notice } from '../ui'
 
 // profile 上的简历存档两键(E11-08)只在本页读显示,不进 ProfileForm 的表单值 → 就地扩类型,不动 ProfileValue
 type ProfileWithResume = ProfileValue & { resumeText?: string | null; resumeSavedAt?: string | null }
@@ -29,7 +29,6 @@ function RedirectToLogin() {
 }
 
 // H 卡片规格(#114 E-I 批):页面内卡片一律平面描边,阴影只给弹框/下拉
-const card: React.CSSProperties = { ...CARD_SHELL, padding: '1.6rem 1.9rem' }
 const btn: React.CSSProperties = { width: '100%', padding: '10px 0', fontSize: 14, fontWeight: 600, border: 'none', borderRadius: 9, cursor: 'pointer', marginTop: 14 }
 
 type Sec = 'overview' | 'profile' | 'favs' | 'sjobs' | 'saved' | 'buy'
@@ -105,7 +104,7 @@ export default function AccountPage() {
         // sidebar + 内容区(2026-07-16 用户拍板「我的账户需要一个 sidebar」;此前的四卡分离演进):
         // 左=节导航(概览/移民档案/邮件提醒/升级 Pro)+ 退出登录,右=选中节的卡;窄屏 sidebar 变顶部横排
         <div style={{ maxWidth: 860, width: '100%', margin: '2.5rem auto', display: 'flex', flexDirection: narrow ? 'column' : 'row', gap: 16, alignItems: 'flex-start', boxSizing: 'border-box', padding: '0 1rem', flex: '1 0 auto' }}>
-          <aside style={{ ...card, padding: '0.7rem', width: narrow ? '100%' : 190, flexShrink: 0, display: 'flex', flexDirection: narrow ? 'row' : 'column', gap: 2, flexWrap: 'wrap', boxSizing: 'border-box' }}>
+          <aside className="card" style={{ padding: '0.7rem', width: narrow ? '100%' : 190, flexShrink: 0, display: 'flex', flexDirection: narrow ? 'row' : 'column', gap: 2, flexWrap: 'wrap', boxSizing: 'border-box' }}>
             {/* sidebar 标签复用各节标题键,裁掉括号说明(「升级 Pro(一次性时长包…)」进侧栏太长) */}
             {([['overview', t('acct.title')], ['profile', t('prof.title')], ['favs', t('fav.title')], ['sjobs', t('sj.title')], ['saved', t('ss.title')], ['buy', t('acct.buyTitle')]] as [Sec, string][]).map(([k, label]) => (
               <button key={k} onClick={() => setSec(k)}
@@ -118,7 +117,7 @@ export default function AccountPage() {
             {/* 组件统一 P2(#113):退出登录=ghost 灰(危险性弱操作,B映射) */}
             <Button kind="ghost" onClick={logout} style={{ textAlign: 'left', padding: '8px 12px', fontSize: 13.5, fontWeight: 400, color: '#9ca3af', whiteSpace: 'nowrap' }}>{t('acct.logout')}</Button>
           </aside>
-          <main style={{ ...card, flex: 1, minWidth: 0, width: narrow ? '100%' : undefined, boxSizing: 'border-box' }}>
+          <main className="card" style={{ flex: 1, minWidth: 0, width: narrow ? '100%' : undefined, boxSizing: 'border-box' }}>
             {sec === 'overview' && (<>
               <h1 style={{ fontSize: 18, margin: '0 0 14px' }}>{t('acct.title')}</h1>
               {payOk && <Notice kind="ok" style={{ marginBottom: 12 }}>{t('acct.payOk')}</Notice>}

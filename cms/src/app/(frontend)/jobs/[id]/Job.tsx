@@ -14,7 +14,7 @@ import { catName, nocLocalTitle, registerCatLabels } from '@/lib/noc'
 import { provName } from '@/lib/location'
 import { Header } from '../../Header'
 import { Footer } from '../../Footer'
-import { CARD_MD, Shell } from '../../ui'
+import { Shell } from '../../ui'
 import { goBackOr } from '../../BackLink'
 import { track } from '@/lib/track'
 import type { RelatedJob } from '@/lib/jobsSql'
@@ -27,7 +27,6 @@ type CatLabel = {
 type Dims = { nocDesc: NocDesc[]; nocCategories: CatLabel[] }
 
 const aLink: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
-const sec: React.CSSProperties = CARD_MD   // 白卡壳全站一份(ui/primitives),这里只留个本地别名
 
 export default function Job({ job, plan, dims, related }: {
   job: JobRow; plan: Plan; dims: Dims
@@ -86,7 +85,7 @@ export default function Job({ job, plan, dims, related }: {
           </div>
 
           {/* 整页一张白卡:H1(职位名 + 译名对照,SEO 壳)+ JobBody(与 JD 弹框同源) */}
-          <div style={{ ...sec, position: 'relative' }}>
+          <div className="cardMd" style={{ position: 'relative' }}>
             {/* 返回(Frank 走查#18,2026-07-25):右上角文字钮,直接走浏览器返回——保留滚动位置与筛选状态,
                 不重拉数据(比 ?back=1 快照更省);文案缩到「返回」。
                 2026-07-28:改走 goBackOr —— 新标签页(站内「打开完整页」一律 _blank)无处可回时落职位板,
@@ -116,7 +115,7 @@ export default function Job({ job, plan, dims, related }: {
               分组小标题代替逐行标注(同一组三行都写「同省同职业」是重复文案);行内两段:岗名蓝链一行,
               公司与城市灰字第二行,不折行超长省略——手机 375 也是一行一条。 */}
           {job.status === 'closed' && (related.sameCompany.length || related.sameOcc.length || fallbackHref) ? (
-            <div style={sec}>
+            <div className="cardMd">
               <div style={{ fontSize: 13.5, fontWeight: 700, color: '#111827', marginBottom: 6 }}>{t('detail.related')}</div>
               {/* 行形态不自造:与公司弹框「在招职位」同一个 JobMiniRow(左岗名右薪资城市)。
                   分组小标题代替逐行标注(同一组三行都写「同省同职业」是重复文案);

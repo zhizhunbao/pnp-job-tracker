@@ -77,7 +77,6 @@ async function getDimsCached(payload: Awaited<ReturnType<typeof getPayload>>, po
   return dims
 }
 
-
 export default async function JobsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const payload = await getPayload({ config: await config })
 

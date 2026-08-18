@@ -22,7 +22,6 @@ export type RankRow = {
   lmiaPositions: number | null; lmiaQuarter: string  // #21(第 17 轮):第一排序键上榜可见
 }
 
-
 // ── E8-08 #121 手机域卡(按逻辑拆):公司榜卡 / 职位榜卡——#排名进标题行,数字语义色与桌面列一致 ──
 function RankCompanyCard({ r, t, showNamed }: { r: RankRow; t: TFn; showNamed: boolean }) {
   return (

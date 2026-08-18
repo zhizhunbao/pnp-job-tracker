@@ -41,7 +41,6 @@ const guessArea = (city: string): number => {
 // 年龄下拉的选项档(打分按选中值算,预填吸附也以此为准 —— 两处必须同一张表)
 const AGES = [17, 19, 25, 30, 34, 38, 42, 45, 48, 52]
 
-
 // #304 offer 前提因子族:这些因子在官方表里全以「有 offer」为前提(AB 的 offer/offerSector/
 // offerArea/regulated、SK 的 offer)。闸门只认**基础卷**的 hasJobOffer(ctx.hasOffer):
 // true=开;false/没答(undefined)=关 —— 没答不等于有。关闸时整族不出题、勾选不计分;

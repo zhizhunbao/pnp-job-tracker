@@ -125,7 +125,6 @@ const EDU_OF: Record<number, 'highschool' | 'diploma2y' | 'bachelor' | 'master' 
   { 1: 'highschool', 2: 'diploma2y', 3: 'bachelor', 4: 'master', 5: 'doctorate' }
 const AGE_OF: Record<number, number | undefined> = { 1: 23, 2: 28, 3: 33, 4: 38, 5: 43 }
 
-
 /** 官方**没有公布**分值表的省(举证责任在我们:一个 URL + 一句原句,同 gateManifest 的规矩)。
  *  不在这张表里的缺省一律按「本站未收录」说 —— 两句话在用户那儿意思相反,不许拿一句混着用。
  *
@@ -1512,7 +1511,6 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
                 无岗态它已上移到「可行通道初评」上面 */}
             {tvJob ? occCompCard : null}
             {tvJob ? competitionCard : null}
-
 
             {/* SSR 事实区:各省最近一轮抽选(纯事实;爬虫不看顺序,人看时它只是参考,放主干之后) */}
             {overview.length > 0 && (

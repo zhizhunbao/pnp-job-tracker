@@ -11,7 +11,7 @@
 import { useEffect, useState } from 'react'
 
 import { makeT, reqStreamDisplay, streamDisplay, type Lang, type TFn } from '@/lib/i18n'
-import { CARD_MD, CARD_SHELL } from '../ui'
+
 import { ConditionGrid } from './ConditionGrid'
 import { track } from '@/lib/track'
 import { readAnswers, toEngineAnswers } from '@/lib/answers'
@@ -64,7 +64,7 @@ export const TV_PILL: React.CSSProperties = {
 /** 弹框/详情页的入口卡:标题(详情页)或卡头(弹框)+ 主按钮,零解释句 */
 export function TvEntryCard({ t, lg, onOpen }: { t: TFn; lg?: boolean; onOpen: () => void }) {
   return (
-    <div style={{ ...CARD_SHELL, padding: lg ? '14px 16px' : '12px 16px', margin: lg ? '12px 0 0' : '0 0 14px' }}>
+    <div className="card" style={{ padding: lg ? '14px 16px' : '12px 16px', margin: lg ? '12px 0 0' : '0 0 14px' }}>
       <div style={{ fontSize: lg ? 14.5 : 13.5, fontWeight: 700, color: '#111827', marginBottom: lg ? 10 : 8 }}>
         {t(lg ? 'tv.entryTitle' : 'tv.head')}
       </div>
@@ -205,7 +205,6 @@ function rowText(t: TFn, row: TvRow): { main: string; sub?: string; icon?: strin
   }
 }
 
-
 /** 锁行/无档案行的行名(付费行只带 key 时的关别标签) */
 function lockLabel(t: TFn, key: string): string {
   if (key === 'tv.person.language') return t('tv.k.language')
@@ -218,8 +217,7 @@ function lockLabel(t: TFn, key: string): string {
   return t('tv.k.person')
 }
 
-// ── 样式(token 与 ui/Card 的 CARD_MD 同源)────────────────────
-const CARD: React.CSSProperties = CARD_MD   // 白卡壳全站一份(ui/primitives),这里只留个本地别名
+// ── 样式 ──────────────────────
 const CARD_HEAD: React.CSSProperties = { fontSize: 13.5, fontWeight: 700, color: '#111827', marginBottom: 6 }
 /** 卡标题:与 Decision 的 H2 同一档(16/700)—— 全页所有卡标题一个字号 */
 const CARD_TITLE: React.CSSProperties = { fontSize: 16, fontWeight: 700, color: '#111827' }
@@ -228,7 +226,7 @@ const CARD_TITLE: React.CSSProperties = { fontSize: 16, fontWeight: 700, color: 
 // **必须在模块级**:先前定义在组件体内,每次渲染都是一个新的组件类型,React 按类型对不上就把
 // 整棵子树卸了重挂 —— 纯展示内容看不出来,但估分卡(scoreSlot)挂进来后每次重挂 = 答案清零。
 const Card = ({ title, action, children }: { title?: React.ReactNode; action?: React.ReactNode; children: React.ReactNode }) => (
-  <div style={{ ...CARD, padding: '14px 18px 12px', margin: '0 0 10px' }}>
+  <div className="card" style={{ padding: '14px 18px 12px', margin: '0 0 10px' }}>
     {/* 卡头:标题左、动作右上角(全站按钮同一款,不再是行内蓝链接) */}
     {title || action ? (
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
@@ -467,7 +465,7 @@ export function TripleVerdictPanel({ job, lang, profileComplete = false, refresh
 
       {/* 加载占位(铁律:加载区必占位)。SSR 进来时 d 已经有值,这块根本不出 */}
       {!d && !err ? (
-        <div style={{ ...CARD, padding: '14px 18px' }} aria-hidden>
+        <div className="card" style={{ padding: '14px 18px' }} aria-hidden>
           {[0, 1, 2].map((i) => <div key={i} style={{ height: 12, borderRadius: 4, background: '#f1f3f5', margin: '14px 0' }} />)}
         </div>
       ) : null}

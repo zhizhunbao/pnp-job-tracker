@@ -12,7 +12,7 @@ import { Footer } from '../Footer'
 import { AccountMenu } from '../AccountMenu'
 import { useLang } from '../LangProvider'
 import { IconLock, IconSave, IconSettings, IconTarget } from '../Icons'
-import { BANNER_IMGS, Banner, Button, JobCard, ctrl, gradeColor, link } from '../ui'
+import { BANNER_IMGS, Banner, Button, JobCard, gradeColor } from '../ui'
 import { BROAD_SLUGS } from '../stats/shared'   // 大类的行业顺序(镜像 etl/noc_buckets.BROADS)
 import { quizToProfile, readQuiz } from '../quiz/EntryQuiz'   // 答案读写与落档(弹框本体已退役,2026-07-31 统一答题)
 import { ActModal, AdvisorModal } from './Advisor'
@@ -529,8 +529,6 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dq, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fPilot, fStatus, fOrigin, fScore, fSal, fVs, fEmp, fElig, sort, matchView, page])
 
-
-
   return (
     <div className="jbPage">
       {/* 顶栏=全站统一 Header(#65 header 合一,2026-07-18 Frank 拍板;内联头退役,1320 头轨全站一致)。
@@ -565,7 +563,6 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
             同屏另有三个同义入口(顶栏注册钮 / 顶栏「我的匹配」/ 手机整行「我的匹配」),
             它是第四个、且全站唯一没埋点的转化入口 —— 带没带来注册无从判断,还是 #165 的病灶。 */}
 
-
         {/* 三问细带已移出职位板(2026-07-31 Frank「我觉得放在这不合适,应该放到我的档案里面」):
             答案的家是档案页 —— 职位板只管找工作,不再在列表上方常驻一条「你上次填了什么」。 */}
         <div className="jbFilters">
@@ -574,7 +571,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
               窄屏抽屉(jtDrawerToggle)一并退役——一行+折叠对窄屏同样成立,靠 flexWrap 自然换行。
               右端=更新时间+字段钮(#56 拍板延续)。市/区、中/小类仍是省/大类的联动下级,只在折叠区出现。 ═══ */}
           <div className="jtCtl">
-            <input className="jtSearch" placeholder={t('search.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} enterKeyHint="search" style={ctrl} />
+            <input className="jtSearch field" placeholder={t('search.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} enterKeyHint="search" />
             {/* 职业胶囊已移到下方「已选」行(2026-08-16 Frank「这个已经筛选的条件不应该放到这里吧」) */}
             {/* 2026-08-16 Frank「这个没有完全国际化」:省下拉的选项一直是英文全名(筛选值就是它,深链/保存的
                 筛选都靠它),中文界面看着半中半英 —— 挂上既有的 provName 显示层,**值不动**:labelOf 只管显示。
@@ -647,11 +644,11 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
                 <Sel value={fEmp} onChange={setFEmp} opts={['full', 'part', 'gig']} all={t('all.emp')} labelOf={(v) => t('emp.' + v)} />
                 <Sel value={fSal} onChange={setFSal} opts={['ge100', '80', '60', 'u60']} all={t('all.sal')} labelOf={(v) => t('sal.' + v)} />
                 <Sel value={fVs} onChange={setFVs} opts={['above', 'above20', 'below']} all={t('all.vs')} labelOf={(v) => t('vs.' + v)} />
-                <label className={directOnly ? 'jtCheck on' : 'jtCheck'} style={ctrl} title={t('directOnly.tip')}>
+                <label className={`${directOnly ? 'jtCheck on' : 'jtCheck'} field`} title={t('directOnly.tip')}>
                   <input type="checkbox" checked={directOnly} onChange={(e) => setDirectOnly(e.target.checked)} />{t('directOnly')}
                 </label>
                 {/* GAP1③:排除 JD 明确不担保/须 PR 的岗(红旗=数据层检测;未检出=通过,非担保保证) */}
-                <label className={fElig ? 'jtCheck on' : 'jtCheck'} style={ctrl} title={t('eligOnly.tip')}>
+                <label className={`${fElig ? 'jtCheck on' : 'jtCheck'} field`} title={t('eligOnly.tip')}>
                   <input type="checkbox" checked={fElig === 'ok'} onChange={(e) => setFElig(e.target.checked ? 'ok' : '')} />{t('eligOnly')}
                 </label>
               </div>
@@ -800,7 +797,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
                           open(k, typeof node === 'string' ? node : (k === 'salary' ? (j.salaryText || '') : ''))
                         }}>
                           {href
-                            ? <a href={href} target="_blank" rel="noreferrer" style={link} onClick={(e) => e.stopPropagation()}>{node}</a>
+                            ? <a href={href} target="_blank" rel="noreferrer" className="link" onClick={(e) => e.stopPropagation()}>{node}</a>
                             : node}
                         </td>
                       )
@@ -830,13 +827,12 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
             // #175:不可点的 chip 连 onClick 也摘(stopPropagation 会吞整卡点击=点了没反应)
             // 胶囊统一规格(08-10 Frank「所有胶囊的风格可以改成一样的吗」):几何对齐 TV_PILL
             // (12px/圆角 999/1px 边框),语义色保留;边框色按底色配同族浅一档,别再一半色块一半胶囊
-            const CHIP_BORDER: Record<string, string> = {
-              '#f3f4f6': '#e5e7eb', '#fef3c7': '#fde68a', '#fee2e2': '#fecaca', '#dbeafe': '#bfdbfe',
-              '#ffedd5': '#fed7aa', '#f3e8ff': '#e9d5ff', '#ccfbf1': '#99f6e4', '#eff6ff': '#bfdbfe',
-            }
-            const chip = (bg: string, fg: string, txt: string, k: ColKey, tip?: string) => (
-              <span key={k} title={tip} onClick={cellActionable(k) ? stop(() => open(k, txt)) : undefined} className={cellActionable(k) ? 'jtChip act' : 'jtChip'}
-                style={{ '--cbg': bg, '--cfg': fg, '--cbd': CHIP_BORDER[bg] || bg } as React.CSSProperties}>{txt}</span>
+            // 胶囊的配色是**语义**不是数据:可提名=琥珀、不受理=红、EE=蓝、试点=天蓝…
+            // 所以传语义名,三个色值(底/字/框)在 main.css 第 14 段一处定死 —— 2026-08-18 从
+            // 「调用点传裸 hex + 一张 bg→border 查表」改过来:原先同一种胶囊的三个色分散在两处。
+            const chip = (tone: string, txt: string, k: ColKey, tip?: string) => (
+              <span key={k} title={tip} onClick={cellActionable(k) ? stop(() => open(k, txt)) : undefined}
+                className={cellActionable(k) ? `jtChip act tone-${tone}` : `jtChip tone-${tone}`}>{txt}</span>
             )
             // Frank 走查:发布当天显示 1 天 → new Date('YYYY-MM-DD') 按 UTC 午夜解析,EDT 晚上 Date.now() 已跨 UTC 次日差 1 天;改按本地午夜解析(+'T00:00:00')
             const days = j.datePosted && (j.status || 'open') !== 'closed' ? Math.max(0, Math.floor((Date.now() - new Date(j.datePosted.slice(0, 10) + 'T00:00:00').getTime()) / 86400000)) : null
@@ -854,26 +850,26 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
             const eeDorm = !!j.eeCategory && eeIsDormant(eeLast)
             const chips = [
               // #214 回滚(Frank 2026-07-26「直接改回用 teer 不行么」):卡上显示回 TEER 码,人话档名退到 title
-              anyRoute && j.teer != null ? chip('#f3f4f6', '#6b7280', `TEER ${j.teer}`, 'teer', t('teer.tip', { n: j.teer, l: t('teer.' + j.teer) })) : null,
+              anyRoute && j.teer != null ? chip('gray', `TEER ${j.teer}`, 'teer', t('teer.tip', { n: j.teer, l: t('teer.' + j.teer) })) : null,
               // 批A 追拍(Frank「可提名和可省提名有什么区别」):命中具名清单显清单名(BC 医疗),通用才显「可提名」
-              anyRoute && j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? streamDisplay(t, j.pnpStream) : t('cell.pnpSkilledProv', { p: j.province }), 'pnp')
-                : anyRoute && pnpExcl ? chip('#fee2e2', '#b91c1c', aipBlocked ? t('cell.blockedBoth') : t('cell.pnpExcl'), 'pnp') : null,
+              anyRoute && j.pnpEligible ? chip('amber', j.pnpStream ? streamDisplay(t, j.pnpStream) : t('cell.pnpSkilledProv', { p: j.province }), 'pnp')
+                : anyRoute && pnpExcl ? chip('red', aipBlocked ? t('cell.blockedBoth') : t('cell.pnpExcl'), 'pnp') : null,
               anyRoute && j.eeCategory ? (eeDorm
-                ? chip('#f3f4f6', '#6b7280', 'EE ' + eeDisplay(t, j.eeCategory) + t('ee.lastDraw', { d: eeLast.slice(0, 7) || '—' }), 'ee', t('ee.dormantTip', { d: eeLast.slice(0, 7) || '—' }))
-                : chip('#dbeafe', '#1e40af', 'EE ' + eeDisplay(t, j.eeCategory), 'ee')) : null,
+                ? chip('gray', 'EE ' + eeDisplay(t, j.eeCategory) + t('ee.lastDraw', { d: eeLast.slice(0, 7) || '—' }), 'ee', t('ee.dormantTip', { d: eeLast.slice(0, 7) || '—' }))
+                : chip('blue', 'EE ' + eeDisplay(t, j.eeCategory), 'ee')) : null,
               // Frank 2026-07-26「不符合清单 职业不受理 需要两个胶囊吗」:两条都命中排除时只出一枚「本省不受理」
-              anyRoute && aipBlocked && !pnpExcl ? chip('#fee2e2', '#b91c1c', t('cell.aipBlocked'), 'aip')
-                : anyRoute && j.aip ? chip('#ffedd5', '#9a3412', t('cell.aipYes'), 'aip') : null,
+              anyRoute && aipBlocked && !pnpExcl ? chip('red', t('cell.aipBlocked'), 'aip')
+                : anyRoute && j.aip ? chip('orange', t('cell.aipYes'), 'aip') : null,
               // 试点社区胶囊(E6-11):值=类型缩写,社区名/口径进弹框
-              anyRoute && j.pilot ? chip('#e0f2fe', '#075985', j.pilot, 'pilot') : null,
-              anyRoute && isQc ? chip('#f3e8ff', '#7c3aed', 'QC', 'province') : null,
+              anyRoute && j.pilot ? chip('sky', j.pilot, 'pilot') : null,
+              anyRoute && isQc ? chip('purple', 'QC', 'province') : null,
               // 担保档下放胶囊排(08-10 Frank「这个也放到下面」):公司名旁徽章退役,与 #145 的 LMIA chip 合一 ——
               // 有档显档名(Has LMIA record 等),无档但有 LMIA 数才显数;AIP-only 三档照旧不显(AIP 胶囊已在)
               j.sponsorGrade != null && !(j.sponsorGrade === 3 && !j.lmiaPositions && j.aip)
-                ? chip('#eff6ff', '#1d4ed8', t('gr.sp.' + j.sponsorGrade), 'lmia', t('gr.sponsorTip'))
-                : j.lmiaPositions ? chip('#ccfbf1', '#0f766e', 'LMIA ✓' + j.lmiaPositions, 'lmia') : null,
+                ? chip('indigo', t('gr.sp.' + j.sponsorGrade), 'lmia', t('gr.sponsorTip'))
+                : j.lmiaPositions ? chip('teal', 'LMIA ✓' + j.lmiaPositions, 'lmia') : null,
               // GAP1③:红旗 chip —— 白投预警比正面信号更值得占位
-              j.eligibilityFlag ? chip('#fee2e2', '#b91c1c', t('cell.elig.' + j.eligibilityFlag), 'eligibility') : null,
+              j.eligibilityFlag ? chip('red', t('cell.elig.' + j.eligibilityFlag), 'eligibility') : null,
               // 逐行判定入口 pill 2026-08-16 随桌面行一并撤(动线=先评估后跳岗,见上)
             ].filter(Boolean)
             return (
@@ -976,8 +972,8 @@ function Sel({ value, onChange, opts, all, labelOf }: { value: string; onChange:
     <span className="jtSel">
       {/* 2026-08-16 Frank「最后一个字都被挡住了一半」:28px 不够 —— 原生 select 左 padding 10 +
           自绘箭头区 ~20,镜像只留 28 差 2-6px,末字被箭头压半个;38 = 10+20+8 余量 */}
-      <span aria-hidden style={{ ...ctrl, display: 'block', visibility: 'hidden', paddingRight: 38, whiteSpace: 'nowrap', overflow: 'hidden', border: '1px solid transparent' }}>{shown}</span>
-      <select value={value} onChange={(e) => onChange(e.target.value)} style={{ ...ctrl, position: 'absolute', inset: 0, width: '100%' }}>
+      <span aria-hidden className="field" style={{ display: 'block', visibility: 'hidden', paddingRight: 38, whiteSpace: 'nowrap', overflow: 'hidden', border: '1px solid transparent' }}>{shown}</span>
+      <select value={value} onChange={(e) => onChange(e.target.value)} className="field" style={{ position: 'absolute', inset: 0, width: '100%' }}>
         <option value="">{all}</option>
         {list.map((o) => <option key={o} value={o}>{labelOf ? labelOf(o) : o}</option>)}
       </select>

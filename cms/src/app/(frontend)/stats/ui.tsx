@@ -6,7 +6,7 @@ import { IconPaperclip } from '../Icons'
 import { Header } from '../Header'
 import { Footer } from '../Footer'
 import type { StatRow, SrcRow } from './shared'
-import { CARD_SHELL } from '../ui'
+
 export type { StatRow, SrcRow } from './shared'
 
 // useLang 已搬到 ../LangProvider(状态进 context,初值由服务端 cookie 定 → 首帧不再闪中文);
@@ -43,7 +43,7 @@ export function MetricCards({ r, t }: { r: StatRow; t: TFn }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, margin: '14px 0' }}>
       {cards.map(([k, v]) => (
-        <div key={k} style={{ ...CARD_SHELL, padding: '12px 14px' }}>
+        <div key={k} className="card" style={{ padding: '12px 14px' }}>
           <div style={{ fontSize: 11.5, color: '#9ca3af' }}>{k}</div>
           <div style={{ fontSize: 20, fontWeight: 700, color: '#111827', marginTop: 4 }}>{v}</div>
         </div>

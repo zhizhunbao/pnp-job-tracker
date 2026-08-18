@@ -8,7 +8,7 @@ import { useLang } from '../../LangProvider'
 import { Header } from '../../Header'
 import { Footer } from '../../Footer'
 import { BackLink } from '../../BackLink'
-import { Button, CARD_SHELL, Card, CardKV, Notice, Shell, Tag, UI } from '../../ui'
+import { Button, Card, CardKV, Notice, Shell, Tag, UI } from '../../ui'
 import { Table } from '../../ui'
 import { PricingModal } from '../../jobs/PricingModal'
 import { IconScale, IconStar } from '../../Icons'
@@ -72,7 +72,7 @@ export function Compare({ names, rows, pro, loggedIn }: {
               <li>{t('ce.v2')}</li>
               <li>{t('ce.v3')}</li>
             </ul>
-            <div style={{ ...CARD_SHELL, position: 'relative', overflow: 'hidden', maxWidth: 680 }}>
+            <div className="card" style={{ position: 'relative', overflow: 'hidden', maxWidth: 680 }}>
               {/* 2026-08-11(Frank「都改成一套」):自造裸 <table> → 公共 Table(bare=外面这层就是卡壳)。
                   这张是**转置**表(指标当行、公司当列)且是模糊假数据的付费诱导样例 —— 行=指标,列=三家公司 */}
               <Table<[string, string[]]> bare rowKey={(r) => r[0]}

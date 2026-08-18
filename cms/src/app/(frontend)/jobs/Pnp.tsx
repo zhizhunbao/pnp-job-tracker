@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { IconCheck, IconTarget, IconWarn, IconX } from '../Icons'
-import { CARD_MD, Grid, PILL_BTN } from '../ui'
+import { Grid } from '../ui'
 import { TvEntryCard } from './TripleVerdictModal'
 import { eeDisplay, eeKeyDisplay, makeT, streamDisplay, type Lang, type TFn } from '@/lib/i18n'
 import type { EeCat, EeOcc, JobRow, NewsSlim, NocDesc, Plan, PnpDraw, PnpOcc, PnpStream } from './types'
@@ -30,7 +30,6 @@ export const STREAM_REFORM: Record<string, { since: string; rules: [string, stri
       ['pnpdraws.on.k3', 'pnpdraws.on.v3'], ['pnpdraws.on.k4', 'pnpdraws.on.v4']],
   },
 }
-
 
 export function PnpDrawsBlock({ province, lang, draws, limit }: { province: string; lang: Lang; draws: PnpDraw[]; limit?: number }) {
   // limit(C2 走查拍板):省弹窗只留最近 1 条摘要(全量归 PNP 弹窗),消跨弹窗重复
@@ -91,7 +90,6 @@ export function PnpDrawsBlock({ province, lang, draws, limit }: { province: stri
   )
 }
 
-
 // 本省最新公告行(E12-06):最新 1-2 条官方新闻标题,链 /news/[slug];无数据整块不出现。
 // 只摆标题+日期(事实),不解读——详情页自带 ©四件套与原文链。
 export function NewsLatestBlock({ province, lang, news }: { province: string; lang: Lang; news: NewsSlim[] }) {
@@ -114,7 +112,6 @@ export function NewsLatestBlock({ province, lang, news }: { province: string; la
   )
 }
 
-
 // ── B1 在招担保雇主 · 弹框雇主线入口(docs/implementation/在招担保雇主/01_B1)──────
 // 凭证行(AIP 指定/LMIA 获批)有据才出,无凭证整行不出不写「无」。
 // 「看该职业的全部担保雇主」链随货架页下架摘除(Frank 08-08)→ company 态无内容可渲,整卡不出。
@@ -124,21 +121,20 @@ export function SponsorLeadCard({ job, t, src }: { job: JobRow; t: TFn; src: 'pn
   if (!hasCred) return null
 
   return (
-    <div style={CARD_MD}>
+    <div className="cardMd">
       <div className="mcardHead">{t('spl.head')}</div>
       {job.aip ? <div className="pnpSplRow">{t('spl.aip')}</div> : null}
       {lmiaN > 0 ? <div className="pnpSplRow">{lmiaN === 1 ? t('spl.lmia1') : t('spl.lmia', { n: lmiaN })}</div> : null}
       {/* Frank 2026-08-08「按钮风格保持一致」:裸链改站内既有 PILL_BTN(与「打开完整页 ↗」同款;↗=新开页惯例) */}
       {job.company ? (
         <div className="pnpSplActs">
-          <a href={'/?q=' + encodeURIComponent(job.company)} target="_blank" rel="noreferrer" className="pnpPillLink" style={PILL_BTN}
+          <a href={'/?q=' + encodeURIComponent(job.company)} target="_blank" rel="noreferrer" className="pnpPillLink pill"
             onClick={() => track('pnp-employer-click', { kind: src })}>{t('spl.coJobs')} ↗</a>
         </div>
       ) : null}
     </div>
   )
 }
-
 
 export function PnpListSection({ job, lang, occ, draws, news, profileClb, nocDesc = [], showZh = true }: { job: JobRow; lang: Lang; occ: PnpOcc[]; draws: PnpDraw[]; news: NewsSlim[]; profileClb?: number | null; nocDesc?: NocDesc[]; showZh?: boolean }) {
   const t = makeT(lang)
@@ -180,7 +176,7 @@ export function PnpListSection({ job, lang, occ, draws, news, profileClb, nocDes
       {/* 拆多卡(2026-07-25 用户「乱,拆成多个卡片」):原单卡四块堆叠(判定+抽选+公告+清单)挤成一团;
           改 判定/本省最近抽选/本省最新公告/每条通道清单 各一张 CARD_MD——
           同 E8-12 省弹框「每块一卡」先例;块自身无数据返回 null → 外层卡不渲(不出空壳) */}
-      <div style={CARD_MD}>
+      <div className="cardMd">
         <div className="mcardHead">{t('col.pnp')}</div>
         <div>{verdictPill}</div>
         {genericWhy ? <div className="pnpWhy">{genericWhy}</div> : null}
@@ -194,11 +190,11 @@ export function PnpListSection({ job, lang, occ, draws, news, profileClb, nocDes
       {/* E12-09 自评打分已迁到「移民路径」页(Frank 2026-07-27「应该单独弄个功能吧,不应该放到 pnp 弹框里面」)。
           它算的是**你这个人**够不够分,跟看哪一个岗没关系;这里连跳转链也不留(#198/#199「多余的跳转都删掉」)。 */}
       {!isQc && job.province && draws.some((d) => d.province === job.province) ? (
-        <div style={CARD_MD}><PnpDrawsBlock province={job.province} lang={lang} draws={draws} /></div>
+        <div className="cardMd"><PnpDrawsBlock province={job.province} lang={lang} draws={draws} /></div>
       ) : null}
       {/* 本省最新公告(E12-06);QC 也显——MIFI 部委新闻,资格口径由 /news 声明 */}
       {job.province && news.some((n) => n.region === job.province) ? (
-        <div style={CARD_MD}><NewsLatestBlock province={job.province} lang={lang} news={news} /></div>
+        <div className="cardMd"><NewsLatestBlock province={job.province} lang={lang} news={news} /></div>
       ) : null}
       {/* #125 → 2026-07-25 Frank 收紧「不覆盖就不用显示」:命中 → 只展示命中的清单;被排除 → 只展示排除清单;
           都没有 → 清单整体不渲(原全量铺浏览语境退役)——判定行已说清结论,不相干的清单只是噪音 */}
@@ -216,7 +212,7 @@ export function PnpListSection({ job, lang, occ, draws, news, profileClb, nocDes
         const shown = open ? sorted : sorted.filter((o) => o.noc === noc)
         const rows = shown.length ? shown : sorted.slice(0, 1)   // 兜底:即便无命中也至少显 1 条
         return (
-        <div key={fk} style={CARD_MD}>
+        <div key={fk} className="cardMd">
           {/* Frank 走查#14:清单头改纯 title(不再作折叠开关);开关移到列表末尾 */}
           <div className="mcardHead">
             {streamDisplay(t, s.label)}
@@ -249,7 +245,6 @@ export function PnpListSection({ job, lang, occ, draws, news, profileClb, nocDes
     </>
   )
 }
-
 
 // ── 联邦 EE 类别抽选区(点 EE 字段时显示)──────────────────────
 // 与 PnpListSection 同理:清单来自 DB 维度表(ee-categories,经 props 传入),全国单一源。
@@ -297,7 +292,7 @@ function FederalRoundsCard({ t, draws }: { t: TFn; draws: PnpDraw[] }) {
   if (!fed.length) return null
   const rows = open ? fed : fed.slice(0, FED_SHOW)
   return (
-    <div style={CARD_MD}>
+    <div className="cardMd">
       <div className="mcardHead">{t('eefed.title')}</div>
       <div className="pnpFedHead">
         {t('eefed.mixHead', { n: fed.length })}
@@ -329,7 +324,6 @@ function FederalRoundsCard({ t, draws }: { t: TFn; draws: PnpDraw[] }) {
     </div>
   )
 }
-
 
 export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], showZh = true }: { job: JobRow; lang: Lang; cats: EeOcc[]; draws?: PnpDraw[]; nocDesc?: NocDesc[]; showZh?: boolean }) {
   const t = makeT(lang)
@@ -378,7 +372,7 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
   // 判定卡 / 最近抽选卡 / 类别清单卡;块无数据整卡不出(无空壳)
   return (
     <>
-      <div style={CARD_MD}>
+      <div className="cardMd">
         <div className="mcardHead">{t('col.ee')}</div>
         <div className={hit.length ? 'pnpEeVerdict on' : 'pnpEeVerdict'}>
           {hit.length ? <><IconCheck /> {t('eelist.in', { noc, cats: hit.map((c) => eeDisplay(t, c.label)).join('/') })}</> : t('eelist.out')}
@@ -393,7 +387,7 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
         ) : null}
       </div>
       {drawsCats.length ? (
-        <div style={CARD_MD}>
+        <div className="cardMd">
           <div className="mcardHead">{t('eelist.drawsTitle')}</div>
           {drawsCats.map((c, ci) => {
             const hist = histOf.get(c.key) || []
@@ -426,7 +420,7 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
       {/* E6-10:联邦抽选近况(全类型真轮次)。原来这里只有一句写死的口径注,现在给活数据 */}
       <FederalRoundsCard t={t} draws={draws} />
       {shown.length ? (
-        <div style={CARD_MD}>
+        <div className="cardMd">
           {/* Frank 走查#16:「类别清单」标签删——类别名(如「医疗社服 37 个职业」)本身即 title(下方粗体名行承担) */}
           {shown.map((c, ci) => {
             const listOpen = foldOpen[c.key] ?? true   // 一律默认展开(「每个职位怎么没了」),想收再点头折
@@ -461,7 +455,6 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
     </>
   )
 }
-
 
 // 公司名归一(镜像 etl/clean/05c_flag_aip.py 的 norm_name)—— 用于把岗位公司名匹配回 AIP 指定雇主记录
 const AIP_SUFFIX = /\b(inc|incorporated|ltd|limited|llp|llc|corp|corporation|co|company|enr|ltee|ltée|holdings?|group|services?|enterprises?)\b\.?/gi
@@ -517,7 +510,6 @@ function pnpMatchOf(job: JobRow, occ: PnpOcc[]): { streams: PnpStream[]; matched
 // 通道档=PNP/EE/AIP 三列已逐条直判、薪资质量=vs 中位列、雇佣质量=雇佣列，三行全是重复
 // （一条信息只出现一次）。档位数据照常入库（排序/筛选仍用），只是不再单独占一个弹框与一枚按钮；
 // 唯一调用方没了，/api/scoredetail 同批下架（免费额度池少一个消费端，池子本身不变）。
-
 
 // ── 对我意味着什么(E5-00 §3.5,FieldFactsSection 同级)────────────
 // 依据链在弹框端用同一 match() 重算(lib/match.ts 纯函数,与服务端列一致);每条结论指回维度记录。
@@ -626,7 +618,7 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
   return (
     /* 壳=页面统一卡规范(白底 #e5e7eb 描边 r12,详情页 sec 同款;Frank「一个页面统一风格」)——
        老弹框灰壳退役;卡里分组用灰内卡(白壳配灰内卡,不再白套白) */
-    <div style={CARD_MD}>
+    <div className="cardMd">
       {/* #C 一致性:换用统一卡常量(值与原手写完全一致) */}
       <div className="mcardHead">
         <IconTarget /> {t('rm.title')}

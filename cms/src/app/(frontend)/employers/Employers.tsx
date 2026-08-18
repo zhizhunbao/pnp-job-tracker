@@ -24,7 +24,6 @@ import type { Lang, TFn } from '@/lib/i18n'
 
 // 下拉:职位板 Sel 同规格(高 38、圆角 6、镜像文本贴宽不留空白);className=sbCtl 拿到既有的
 // 手机断点 min-height:44 触控靶(main.css #276),不新造一套 CSS
-const ctrl: React.CSSProperties = { height: 38, boxSizing: 'border-box', padding: '0 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 14, color: '#1f2937', background: '#fff', fontFamily: 'inherit' }
 const filtRow: React.CSSProperties = { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }
 const filtLabel: React.CSSProperties = { fontSize: 12, color: UI.text3, minWidth: 28, whiteSpace: 'nowrap' }
 
@@ -35,8 +34,8 @@ function Sel({ value, onChange, opts, all, labelOf }: {
   const shown = value ? (labelOf ? labelOf(value) : value) : all
   return (
     <span style={{ position: 'relative', display: 'inline-block', maxWidth: 170 }}>
-      <span aria-hidden style={{ ...ctrl, display: 'block', visibility: 'hidden', paddingRight: 38, whiteSpace: 'nowrap', overflow: 'hidden', border: '1px solid transparent' }}>{shown}</span>
-      <select className="sbCtl" value={value} onChange={(e) => onChange(e.target.value)} style={{ ...ctrl, position: 'absolute', inset: 0, width: '100%' }}>
+      <span aria-hidden className="field" style={{ display: 'block', visibility: 'hidden', paddingRight: 38, whiteSpace: 'nowrap', overflow: 'hidden', border: '1px solid transparent' }}>{shown}</span>
+      <select className="sbCtl field" value={value} onChange={(e) => onChange(e.target.value)} style={{ position: 'absolute', inset: 0, width: '100%' }}>
         <option value="">{all}</option>
         {list.map((o) => <option key={o} value={o}>{labelOf ? labelOf(o) : o}</option>)}
       </select>
@@ -167,8 +166,8 @@ export function Employers({ initial, initialFilters }: { initial: EmployerPage; 
             {/* 常用一行:搜索 / 口径 / 省 / 制度 + 更多筛选折叠(激活计数徽标)——职位板同一套 */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
               <div style={filtRow}>
-                <input className="sbCtl" placeholder={t('de.qPh')} value={qDraft} onChange={(e) => setQDraft(e.target.value)} enterKeyHint="search"
-                  style={{ ...ctrl, flex: '0 1 240px', minWidth: 150 }} />
+                <input className="sbCtl field" placeholder={t('de.qPh')} value={qDraft} onChange={(e) => setQDraft(e.target.value)} enterKeyHint="search"
+                  style={{ flex: '0 1 240px', minWidth: 150 }} />
                 <Sel value={f.mode} onChange={(v) => set({ mode: (v || 'designated') as EmployerFilters['mode'], program: v === 'hiring' ? '' : f.program, city: '' })}
                   opts={['designated', 'hiring']} all={t('de.mode')} labelOf={(v) => t('de.mode.' + v)} />
                 <Sel value={f.prov} onChange={(v) => set({ prov: v, city: '' })} opts={data.facets.provs} all={t('all.prov')} labelOf={(c) => provName(t, c)} />

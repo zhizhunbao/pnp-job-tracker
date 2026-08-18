@@ -250,6 +250,22 @@ button:not(:disabled):hover {
    5. 控件基准值(桌面态)
 ===================================================== */
 
+/* 三个可点件的基准外形(2026-08-18 从 ui/Button.tsx 的样式对象迁来)。
+   **必须住在早段**:它们原先是内联的,压过一切;变成类之后要让下面的组件段
+   (第 14/15/16/17/18 段)能自然覆写 —— 比如 `.advPillOff` 的 cursor:default
+   先前得靠 `!important` 才压得过 PILL_BTN 内联进来的 pointer,现在按源序就赢了。
+   ⚠️ `.field` 原名 `ctrl`:那个名字既说不出装什么,又和 AbortController 的
+   通用变量名撞车(全站 60 处 `ctrl` 里大多数是 `ctrl.abort()`/`ctrl.signal`)。 */
+
+/* 输入控件(下拉/搜索框/勾选块)统一规格:高 38 是全站筛选行的基准高度,别处对齐它 */
+.field { height: 38px; box-sizing: border-box; padding: 0 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; color: #1f2937; background: var(--card); }
+
+/* 站内行内动作钮(职位板一路用下来的那枚药丸钮;08-10 Frank 点名把脉页并过来) */
+.pill { border: 1px solid var(--border); border-radius: 999px; padding: 5px 13px; font-size: 12.5px; background: var(--card); color: #374151; cursor: pointer; font-weight: 600; }
+
+/* 站内蓝链(无下划线) */
+.link { color: var(--primary); text-decoration: none; }
+
 /* #276:桌面态基准值(原内联样式搬出,数值不变)——SponsorBoard 筛选控件 height、
    Sec 折叠箭头 padding/margin,手机断点覆写见下方 640px 媒体块,桌面走这里的默认值。
    (翻页钮的基准值 2026-08-17 随表格一起并进第 8 段的 .pagerBtn) */
@@ -446,10 +462,16 @@ button:not(:disabled):hover {
 
 /* ===================================================
    9. 卡片 Card
-   2026-08-17 从 ui/Card.tsx 迁出。**未迁**:CARD_SHELL / CARD_MD
-   两个导出的样式对象还有 25 处调用方用 {...CARD_SHELL, padding} 摊开写,
-   要连同调用方一起改,留给下一批 —— 现在把它们变成类会造出两份同样的值。
+   2026-08-17 从 ui/Card.tsx 迁出;2026-08-18 补上 CARD_SHELL / CARD_MD
+   两个样式对象(连同 25 处调用方一起改)—— 白卡壳全站唯一一份就在这儿。
+   分界:`.card` 只管描边+圆角+白底,padding 各页密度不同留给调用方;
+   `.cardMd` 是最常用的那一档(12/16 + 下边距 14),21 处直接用它。
 ===================================================== */
+
+/* 白卡壳:全站唯一一份描边+圆角+白底。原先散在 10 处逐字符抄写 */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; }
+/* 最常用的一档:弹框里的分节卡 */
+.cardMd { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; margin-bottom: 14px; }
 
 /* 职位卡(手机形态)—— 左列=身份(公司、地点),右列=数字(薪资、时间);
    右列右对齐后在卡片流里连成一条竖线,手指下滑只走右边就能比(#148 拍板) */
@@ -818,6 +840,18 @@ button:not(:disabled):hover {
    语义色是数据(一个字段一套色),经 --cbg/--cfg/--cbd 传入 */
 .jtChip { font-size: 12px; padding: 2px 12px; border-radius: 999px; white-space: nowrap; background: var(--cbg); color: var(--cfg); border: 1px solid var(--cbd); cursor: default; }
 .jtChip.act { cursor: pointer; }
+
+/* 胶囊的语义色(2026-08-18 从 Jobs.tsx 迁来):一种语义一条,底/字/框三个值住一处。
+   先前是调用点传裸 hex + 一张 bg→border 查表把第三个值补出来 —— 改一种颜色要动三个地方。 */
+.jtChip.tone-gray    { --cbg: #f3f4f6; --cfg: #6b7280; --cbd: #e5e7eb; }
+.jtChip.tone-amber   { --cbg: #fef3c7; --cfg: #92400e; --cbd: #fde68a; }
+.jtChip.tone-red     { --cbg: #fee2e2; --cfg: #b91c1c; --cbd: #fecaca; }
+.jtChip.tone-blue    { --cbg: #dbeafe; --cfg: #1e40af; --cbd: #bfdbfe; }
+.jtChip.tone-orange  { --cbg: #ffedd5; --cfg: #9a3412; --cbd: #fed7aa; }
+.jtChip.tone-purple  { --cbg: #f3e8ff; --cfg: #7c3aed; --cbd: #e9d5ff; }
+.jtChip.tone-teal    { --cbg: #ccfbf1; --cfg: #0f766e; --cbd: #99f6e4; }
+.jtChip.tone-indigo  { --cbg: #eff6ff; --cfg: #1d4ed8; --cbd: #bfdbfe; }
+.jtChip.tone-sky     { --cbg: #e0f2fe; --cfg: #075985; --cbd: #e0f2fe; }
 .jtCardLink { color: #2563eb; text-decoration: none; }
 .jtCardSep { color: #9ca3af; }
 .jtStar { border: none; background: none; padding: 0; cursor: pointer; font-size: 16px; line-height: 1; color: #c4c9d4; }
@@ -909,7 +943,7 @@ button:not(:disabled):hover {
 .jdClosed { background: #fef3c7; border: 1px solid #fde68a; border-radius: 8px; padding: 6px 10px; margin: 2px 0 10px; font-size: 12.5px; color: #92400e; }
 .jdActs { display: flex; gap: 8px; margin: 2px 0 12px; flex-wrap: wrap; }
 .jdPill.busy { opacity: .6; }                              /* 翻译在途 */
-.jdPill.link { text-decoration: none; display: inline-block; }
+.jdPill.asLink { text-decoration: none; display: inline-block; }   /* 2026-08-18 由 .link 改名:裸 .link 让给真正的站内蓝链 */
 .jdMuted { color: #9ca3af; }
 .jdMuted.m4 { margin: 4px 0; }
 .jdMuted.m4b { margin: 4px 0 10px; }
@@ -1195,7 +1229,7 @@ button:not(:disabled):hover {
  /* 占位禁用钮:PILL_BTN 带着 cursor:pointer 从行内进来,类压不过它 ——
    同 .rowHover 那处的手法,用 !important 压行内(见第 2 段注释)。
    两个调用点都是 <button disabled>,不会误伤可点的钮。 */
-.advPillOff { opacity: .4; cursor: default !important; }
+.advPillOff { opacity: .4; cursor: default; }   /* 2026-08-18 撤 !important:PILL_BTN 从内联变成第 5 段的 .pill,按源序这里就压得过 */
 .advPillBusy { opacity: .6; }
 .advNote { margin: 0; font-size: 14px; color: #9ca3af; }
 .advNote.sm { font-size: 13px; }

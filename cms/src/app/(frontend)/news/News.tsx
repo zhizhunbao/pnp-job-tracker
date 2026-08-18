@@ -12,7 +12,7 @@ import { useLang } from '../stats/ui'
 import { Header } from '../Header'
 import { Footer } from '../Footer'
 import { BackLink } from '../BackLink'
-import { BANNER_IMGS, CARD_SHELL, Banner, Shell, SectionTabs, chipStyle } from '../ui'
+import { BANNER_IMGS, Banner, Shell, SectionTabs, chipStyle } from '../ui'
 import { IconNews } from '../Icons'
 import { newsPublisher, newsRegionName, NEWS_REGIONS, type NewsCard, type NewsComment, type NewsHero, type NewsRow } from './shared'
 
@@ -232,7 +232,7 @@ export function News({ items, hero, cmtCounts }: { items: NewsCard[]; hero: News
                   {day}<span className="nwDayLine" />
                 </div>
                 {rows.map((n) => (
-                  <a key={n.slug} href={`/news/${n.slug}`} className="cardHover nwRow" style={CARD_SHELL}>
+                  <a key={n.slug} href={`/news/${n.slug}`} className="cardHover nwRow card">
                     <ListTile region={n.region} />
                     <div className="nwRowBody">
                       <div className="nwRowMeta">
@@ -339,7 +339,7 @@ function CommentsSection({ t, slug, comments, loggedIn }: { t: TFn; slug: string
     )
   }
   return (
-    <section id="comments" className="nwCmtSec" style={CARD_SHELL}>
+    <section id="comments" className="nwCmtSec card">
       <h3 className="nwCmtTitle">{t('news.cmt.title', { n: comments.length })}</h3>
       {loggedIn ? (
         <div className="nwCmtForm">
@@ -413,7 +413,7 @@ export function NewsDetail({ row, comments, loggedIn }: { row: NewsRow; comments
       <Shell pad="18px 1.25rem 32px">
       <div className="nwRead860">
         <div className="nwBack"><BackLink href="/news" label={t('news.back')} /></div>
-        <article className="nwArticle" style={CARD_SHELL}>
+        <article className="nwArticle card">
           <div className="nwDetMeta">
             <RegionTag t={t} region={row.region} />
             <ImpBadge t={t} lang={lang} importance={row.importance} note={row.importanceNote} />
