@@ -10,17 +10,17 @@
 import type { Lang } from '../i18n'
 import type { Answers } from './answers'
 
-export type Tier = 'free' | 'pro'
+type Tier = 'free' | 'pro'
 /** 题面/选项的三语文本。2026-08-17 从 { default; 'zh-cn'; ko } 换成全站同一套 Lang ——
  *  先前那套是 SurveyJS 留下的键名,撤掉框架后没跟着改;两套并存的代价见 resumeMatch 的 LANG_NAME。 */
 export type L = Record<Lang, string>
-export type Question = {
+type Question = {
   title: L
   choices: { value: number | string; text: L }[]
   // 选项过滤(目前只有一处:加拿大经验不得超过总经验)。先前是框架的字符串表达式,现在是普通函数
   choiceVisible?: (a: Answers, v: number) => boolean
 }
-export type FieldDef = {
+type FieldDef = {
   engineKey?: string                                   // /api/report answers 的键名(缺省=字段名)
   q: Question
   unlocks: string[]
@@ -40,7 +40,7 @@ const l = (en: string, zh: string, ko: string): L => ({ zh, en, ko })
 // 「不清楚」的统一档位值(2026-08-12 Frank「每个选项都应该给一个不清楚的」)。
 // 它是**答过的**(计数与 missingFields 认它),但 toAnswer 一律回 undefined —— 引擎拿 null
 // 落「判不了」,而不是被折成某个他没说过的答案。三值折叠里的 unknown 就该由用户显式说得出口。
-export const UNSURE_BAND = 9
+const UNSURE_BAND = 9
 
 // 精确档(2026-08-13 语言合一:基础卷直接问精确 CLB,官方分值表不再追问第二遍)。
 // index = 选项 value;1「还没考」= 没有分,不传。**不用 CLB 数字当 value**:9 会撞 UNSURE_BAND。
@@ -51,7 +51,7 @@ export const NCLC = [0, 0, 4, 5, 6, 7, 8]
 const EXP = [0, 0, 6, 18, 30]          // a1「没有」= 0 个月,是答案不是缺答
 // a4「先看哪个够得着」= 不限省。**海洋四省挂 5 不挂 4**:4 已经在生产用了,改它的含义会把
 // 已存档案里的「不限省」静默变成「海洋四省」(2026-08-03 加这一档时的取舍——显示顺序看 choices 数组,与值无关)。
-export const PROVS: string[][] = [[], ['BC'], ['ON'], ['AB', 'SK', 'MB'], [], ['NS', 'NB', 'PE', 'NL']]
+const PROVS: string[][] = [[], ['BC'], ['ON'], ['AB', 'SK', 'MB'], [], ['NS', 'NB', 'PE', 'NL']]
 const CRS = [0, 0, 380, 425, 480]      // a1「没算过」= 不传,引擎照旧出「没填 CRS」
 const PGWP = [0, 4, 9, 18, 30]
 // 官方分值表要的三样(题库扩充 20260802):学历阶梯 / 年龄取区间中点 / 同职业总经验(含海外)

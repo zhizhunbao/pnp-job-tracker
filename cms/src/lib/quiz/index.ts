@@ -12,20 +12,25 @@
 //    从桶取会让 index → fields → index 成环。tsc 未必报,vitest 会以「测试根本没跑起来」
 //    的形式表现出来(40 passed 而实际 41 个文件,08-18 实踩)。
 //    fields ↔ answers 今天就是环,但一个方向是 type-only、运行时擦掉,所以成立 —— 别动它。
+//
+// 桶外还有两个 export:`provsFromBand` / `bandFromProvs`(fields.ts)。它们只有 answers.ts 一个
+// 消费者,**故意不进这张表** —— 导出是给同模块邻居用的,不是对外接口。同理,零消费者的
+// `Tier`/`Question`/`FieldDef`/`UNSURE_BAND`/`PROVS`/`SCORE_ANSWERS_KEY`/`Decision` 已去掉 export,
+// 代码没删,只是不再对外(CLAUDE.md:只有一个消费者的东西不该导出,更不该住进共享叶子)。
 
 // ── 题:字段库 ──────────────────────────────────────────────────────────────
-export type { Tier, L, Question, FieldDef } from './fields'
-export { UNSURE_BAND, CLB, NCLC, PROVS, FIELDS, provsFromBand, bandFromProvs } from './fields'
+export type { L } from './fields'
+export { CLB, NCLC, FIELDS } from './fields'
 
 // ── 答:答案存储(唯一读写口,页面不直接碰 localStorage)────────────────────
 export type { Answers, ScoreAnswers } from './answers'
 export {
-  ANSWERS_KEY, SCORE_ANSWERS_KEY, EMPTY,
+  ANSWERS_KEY, EMPTY,
   readAnswers, writeAnswers, clearAnswers, resetAnswersMemory,
   readScoreAnswers, writeScoreAnswers,
   answeredBasics, toEngineAnswers, pullAndMerge,
 } from './answers'
 
 // ── 判:每个决定要哪些字段 ──────────────────────────────────────────────────
-export type { Stage, Decision } from './decisions'
+export type { Stage } from './decisions'
 export { DECISIONS, fieldsOf, missingFields, batchLeadsFree, KNOWN_NO_FREE_LEAD } from './decisions'

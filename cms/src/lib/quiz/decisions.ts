@@ -5,7 +5,7 @@ import { FIELDS } from './fields'
 import type { Answers } from './answers'
 
 export type Stage = 'basic' | 'explore'
-export type Decision = {
+type Decision = {
   basic: string[]          // 答满即出报告(粗版,confidence 低)
   explore: string[][]      // 探索题按批推进,一批一屏组
 }

@@ -163,7 +163,7 @@ export function clearAnswers(): Answers {
 // 基础 8 题一直走上面的 ANSWERS_KEY,而分值卡的勾选/逐题答案只活在组件 state → 刷新全丢。
 // 同一原则:这里是唯一读写口。键是 `${prov}:${factor}` / tick 的 `${factor}:${seq}`,
 // 都是用户自身条件(外省经历/亲属/本省学历…),跨岗位跨页面通用,与具体职位无关。
-export const SCORE_ANSWERS_KEY = 'o2p_score_answers_v1'
+const SCORE_ANSWERS_KEY = 'o2p_score_answers_v1'
 export type ScoreAnswers = {
   ticks: Record<string, boolean>
   rowAnswers: Record<string, number>
