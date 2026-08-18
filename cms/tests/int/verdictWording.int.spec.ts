@@ -13,7 +13,7 @@ import { fileURLToPath } from 'url'
 import path from 'path'
 import { describe, expect, it } from 'vitest'
 
-import { makeT } from '@/app/(frontend)/jobs/i18n'
+import { makeT } from '@/lib/i18n'
 import {
   pathVerdict,
   type DesignatedEmployerRow, type OccupationRow,

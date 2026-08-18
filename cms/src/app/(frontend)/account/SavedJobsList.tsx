@@ -3,7 +3,7 @@
 // 数据=Payload REST /api/saved-jobs(access 本人);title/company 用快照,岗位下架后仍可读。
 // #62A:variant='favs' = 「我的收藏」独立节——同一份收藏数据的纯列表视图(无状态下拉/周报开关)。
 import { useEffect, useState } from 'react'
-import type { makeT } from '../jobs/i18n'
+import type { makeT } from '@/lib/i18n'
 
 type Row = { id: number | string; title?: string; company?: string; status?: string }
 const STATUSES = ['wish', 'applied', 'interview', 'offer'] as const

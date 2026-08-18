@@ -10,10 +10,10 @@
  * 金标场景:noc=72310 木匠、ON 毕业、expMonths=0、目标省 MB(中介推的)、对照 BC/SK/NS。
  */
 import { describe, expect, it } from 'vitest'
+import { LBL } from '@/lib/i18n'
 import { lookupPlan, type DrawsResult, type Evidence, type OpsResult, type PlanResult, type ProvThresholds, type ThresholdRow, type ThresholdsResult } from '@/lib/chatTools'
 import {
-  factSheet, findEnglishUnits, findForeignScript, findHedges, findLeaks, findWordNumbers, isPlanQuestion, LBL,
-  planFacts, sayFact,
+  factSheet, findEnglishUnits, findForeignScript, findHedges, findLeaks, findWordNumbers, isPlanQuestion, planFacts, sayFact,
 } from '@/lib/chatOrchestrate'
 import { buildPlan, type PlanPathInput } from '@/lib/planTimeline'
 import { evaluateRequirements, type Requirement, type RuleProfile } from '@/lib/rules'

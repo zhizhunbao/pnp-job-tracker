@@ -5,7 +5,7 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { PnpScoreCard } from '@/app/(frontend)/jobs/PnpScoreCard'
-import type { TFn } from '@/app/(frontend)/jobs/i18n'
+import type { TFn } from '@/lib/i18n'
 import type { ScoreFactor } from '@/lib/pnpSelfScore'
 import { resetAnswersMemory } from '@/lib/answers'
 

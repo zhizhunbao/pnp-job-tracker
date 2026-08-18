@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest'
 import { pickExamples, profileMemories, exampleKind, type ChatProfile } from '@/app/(frontend)/chat/chatExamples'
 import { literalNoc } from '@/lib/chatOrchestrate'
-import { makeT } from '@/app/(frontend)/jobs/i18n'
+import { makeT } from '@/lib/i18n'
 
 const en = makeT('en')
 const zh = makeT('zh')

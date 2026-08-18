@@ -28,11 +28,12 @@
  * 多轮记忆不落库:history 由前端传(设计 §九「v1 不做多轮长记忆」)。
  */
 import { headers } from 'next/headers'
+import type { Lang } from '@/lib/i18n'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { logChat, threadId } from '@/lib/chatLog'
-import { ChatError, chatProfileContext, orchestrate, profileFill, type ChatLang, type ChatResult, type ChatStep, type ChatTurn } from '@/lib/chatOrchestrate'
+import { ChatError, chatProfileContext, orchestrate, profileFill, type ChatResult, type ChatStep, type ChatTurn } from '@/lib/chatOrchestrate'
 import { getUser } from '@/lib/entitlement'
 import { freeGate } from '@/lib/freeQuota'
 import { patchProfile } from '@/lib/profile'
@@ -40,7 +41,7 @@ import { patchProfile } from '@/lib/profile'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-const LANGS: ChatLang[] = ['zh', 'en', 'ko']
+const LANGS: Lang[] = ['zh', 'en', 'ko']
 const enc = new TextEncoder()
 const sse = (o: unknown) => enc.encode(`data: ${JSON.stringify(o)}\n\n`)
 
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
   let body: any = null
   try { body = await req.json() } catch { /* 落到下面的校验 */ }
   const text = typeof body?.text === 'string' ? body.text.trim() : ''
-  const lang: ChatLang = LANGS.includes(body?.lang) ? body.lang : 'en'
+  const lang: Lang = LANGS.includes(body?.lang) ? body.lang : 'en'
   const history: ChatTurn[] = (Array.isArray(body?.history) ? body.history : [])
     .filter((h: any) => (h?.role === 'user' || h?.role === 'assistant') && typeof h?.content === 'string')
     .slice(-6)

@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react'
 
 import { QuizChoices, QuizNav, QuizTitle, pickL, type L } from '../quiz/QuizUI'
-import type { Lang, TFn } from '../jobs/i18n'
+import type { Lang, TFn } from '@/lib/i18n'
 import { FIELDS } from '@/lib/fields'
 import { fieldsOf, type Stage } from '@/lib/decisions'
 import type { Answers } from '@/lib/answers'

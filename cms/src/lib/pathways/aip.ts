@@ -9,7 +9,6 @@ export const AIP: PathwayStrategy = {
   key: 'AIP',
   province: 'FED',
   stream: 'Atlantic Immigration Program',
-  name: { zh: '大西洋移民计划(AIP)', en: 'Atlantic Immigration Program', ko: '대서양 이민 프로그램(AIP)' },
   regionProvinces: ['NB', 'NS', 'PE', 'NL'],
   reqProvince: 'FED',
   reqPrograms: ['AIP'],

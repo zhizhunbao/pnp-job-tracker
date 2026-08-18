@@ -11,8 +11,8 @@
  *      只为把一串追问串起来;两个人问同一句话会撞进同一个 thread,这是有意的取舍(§7①)。
  */
 import { createHash } from 'node:crypto'
-
-import type { ChatLang, ChatResult, ChatTurn } from './chatOrchestrate'
+import type { Lang } from './i18n'
+import type { ChatResult, ChatTurn } from './chatOrchestrate'
 
 const Q_CAP = 2000      // 入口本来就按 MAX_TEXT=1200 截过,这里只是兜底
 const A_CAP = 8000
@@ -34,7 +34,7 @@ export const turnOf = (history: ChatTurn[] = []): number =>
 
 export type ChatLogRow = {
   text: string
-  lang: ChatLang
+  lang: Lang
   history?: ChatTurn[]
   result?: ChatResult
   err?: string

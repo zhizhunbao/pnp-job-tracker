@@ -11,7 +11,6 @@ export const MB_SWM: PathwayStrategy = {
   key: 'MB-swm',
   province: 'MB',
   stream: 'MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM)',
-  name: { zh: '曼尼托巴省 技术工人通道', en: 'Manitoba Skilled Worker', ko: '매니토바주 기술인력 통로' },
   reqProvince: 'MB',
   reqStream: /skilled worker in manitoba/i,
   drawStream: 'MPNP Skilled Worker Stream',

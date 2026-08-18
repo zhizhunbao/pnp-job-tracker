@@ -71,15 +71,17 @@ export type PathwayUi = {
   seeJobsKey?: string
 }
 
+/** 通道的 key 全集 —— **加一条通道必须先在这里登记**。
+ *  登记之后 `lib/i18n/report.ts` 的通道名那块会立刻报缺这一条,写完三语名才编得过。
+ *  (2026-08-17:名字搬进 i18n 时补的护栏 —— 否则漏补名字就是页面上冒个裸键 `jpw.p.XX`。) */
+export type PathwayKey = 'AB-opportunity' | 'AIP' | 'BC-build' | 'BC-sw' | 'FCIP' | 'FED-EE' | 'MB-swm' | 'NB-sw' | 'NL-intl-grad' | 'NS-sw' | 'ON-workforce' | 'PE-sw' | 'RCIP' | 'SK-offer'
+
 export type PathwayStrategy = {
-  key: string
+  key: PathwayKey
   /** 'FED' 或省码(判定结果里的 province) */
   province: string
   /** 官方通道名(英文原名,判定卡与日志用) */
   stream: string
-  /** 页面显示名三语(2026-08-15 从 i18n 的 jpw.p.<key> 搬进来:一条通道的名字也是它自己的事)。
-   *  i18n 字典在装载时把它摊回 `jpw.p.<key>` 键,调用方照旧 t(),不必改一处。 */
-  name: { zh: string; en: string; ko: string }
   /** 联邦区域线覆盖哪几个省(AIP/RCIP)。判定是联邦一份,但在招岗/指定雇主/试点社区是省的事 →
    *  展示层按 目标省∩这几个省 拆行(不限省=全拆)。非区域线不填。 */
   regionProvinces?: readonly string[]

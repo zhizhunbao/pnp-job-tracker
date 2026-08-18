@@ -4,7 +4,7 @@
 // 保存走 Payload 自带 REST PATCH /api/users/:id(update 已限 selfOrAdmin;profile 无字段锁=本人可改)。
 // 数据完整性:返回用户已填精确值(clb/crs/pgwp)未主动改档时原值保留(state 初值=精确值,不点不覆盖)。
 import { useEffect, useMemo, useState } from 'react'
-import type { TFn } from '../jobs/i18n'
+import type { TFn } from '@/lib/i18n'
 import { IconTarget } from '../Icons'
 import { Button, Notice, chipStyle } from '../ui'
 import { POPULAR_NOCS, CLB_OPTS, CRS_OPTS, PGWP_OPTS, clbActive, crsActive, pgwpActive, type Opt } from './profileOptions'

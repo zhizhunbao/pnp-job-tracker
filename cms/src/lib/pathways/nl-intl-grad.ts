@@ -17,7 +17,6 @@ export const NL_INTL_GRAD: PathwayStrategy = {
   key: 'NL-intl-grad',
   province: 'NL',
   stream: 'NLPNP International Graduate Category',
-  name: { zh: '纽芬兰省 国际毕业生类别', en: 'Newfoundland International Graduate', ko: '뉴펀들랜드주 국제 졸업생 부문' },
   reqProvince: 'NL',
   reqStream: /international graduate/i,
   countsForeign: false,

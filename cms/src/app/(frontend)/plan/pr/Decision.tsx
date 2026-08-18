@@ -7,7 +7,7 @@
 // 判定/分数全来自确定性层,本页不算一个数。
 import { Fragment, useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 
-import { dropProvPrefix, streamDisplay } from '../../jobs/i18n'
+import { dropProvPrefix, streamDisplay } from '@/lib/i18n'
 import { useLang } from '../../LangProvider'
 import { Header } from '../../Header'
 import { Footer } from '../../Footer'

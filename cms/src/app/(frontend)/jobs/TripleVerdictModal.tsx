@@ -10,7 +10,7 @@
 // 两块同屏名字打架 —— 这一关是**判定**(你这边达不达标),不是又一个输入面。
 import { useEffect, useState } from 'react'
 
-import { makeT, reqStreamDisplay, streamDisplay, type Lang, type TFn } from './i18n'
+import { makeT, reqStreamDisplay, streamDisplay, type Lang, type TFn } from '@/lib/i18n'
 import { CARD_MD, CARD_SHELL } from '../ui'
 import { ConditionGrid } from './ConditionGrid'
 import { track } from '@/lib/track'

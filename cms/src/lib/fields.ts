@@ -7,10 +7,13 @@
 // 铁律:挂不上任何结论的字段不入库。
 // 2026-08-03:题面原先是 SurveyJS 的题 JSON(type/name/isRequired 全是给框架看的),
 // 撤掉框架后收成本站自己的最小形状 —— 全部是必答单选,类型与必答不用逐题再声明一遍。
+import type { Lang } from './i18n'
 import type { Answers } from './answers'
 
 export type Tier = 'free' | 'pro'
-export type L = { default: string; 'zh-cn': string; ko: string }
+/** 题面/选项的三语文本。2026-08-17 从 { default; 'zh-cn'; ko } 换成全站同一套 Lang ——
+ *  先前那套是 SurveyJS 留下的键名,撤掉框架后没跟着改;两套并存的代价见 resumeMatch 的 LANG_NAME。 */
+export type L = Record<Lang, string>
 export type Question = {
   title: L
   choices: { value: number | string; text: L }[]
@@ -28,7 +31,7 @@ export type FieldDef = {
   visible?: (a: Answers) => boolean
 }
 
-const l = (en: string, zh: string, ko: string): L => ({ default: en, 'zh-cn': zh, ko })
+const l = (en: string, zh: string, ko: string): L => ({ zh, en, ko })
 
 // 档 → 引擎输入(原先散在 PlanPrView 顶部的五张表,收拢到字段自己身上)
 // 语言:问**实测档位**,不问自评(2026-08-02 Frank「我选的是英语流利,为什么显示 CLB 9」)——

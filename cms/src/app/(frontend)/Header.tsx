@@ -12,7 +12,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import dynamic from 'next/dynamic'
-import { LANGS, type Lang, type TFn } from './jobs/i18n'
+import { LANGS, type Lang, type TFn } from '@/lib/i18n'
 import { useSsrSession } from './SessionProvider'
 import { Avatar } from './Avatar'
 import { AccountMenu } from './AccountMenu'

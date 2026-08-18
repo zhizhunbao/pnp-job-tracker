@@ -16,7 +16,7 @@ import { Button, UI } from '../ui'
 import { shortOcc } from './EntryQuiz'
 import { BROAD_SLUGS } from '../stats/shared'
 import { pickName } from '@/lib/occName'
-import type { TFn } from '../jobs/i18n'
+import type { TFn } from '@/lib/i18n'
 
 type Cand = { noc: string; title: string; titleZh: string; titleZhShort?: string; titleKoShort?: string; titleEnShort?: string }
 type Top = Cand & { open: number; broad?: string }

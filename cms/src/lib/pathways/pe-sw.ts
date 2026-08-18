@@ -10,7 +10,6 @@ export const PE_SW: PathwayStrategy = {
   key: 'PE-sw',
   province: 'PE',
   stream: 'PEI PNP Workforce — Skilled Worker / Occupations in Demand',
-  name: { zh: '爱德华王子岛省 在需职业通道', en: 'PEI Occupations in Demand', ko: '프린스에드워드아일랜드주 수요 직업 통로' },
   reqProvince: 'PE',
   reqStream: /pei pnp workforce/i,
   countsForeign: true,

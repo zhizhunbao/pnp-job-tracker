@@ -10,7 +10,6 @@ export const AB_OPPORTUNITY: PathwayStrategy = {
   key: 'AB-opportunity',
   province: 'AB',
   stream: 'AAIP Alberta Opportunity Stream',
-  name: { zh: '阿尔伯塔省 机会通道', en: 'Alberta Opportunity Stream', ko: '앨버타주 기회 통로' },
   reqProvince: 'AB',
   reqStream: /alberta opportunity/i,
   drawStream: 'Alberta Opportunity Stream',

@@ -14,11 +14,10 @@ import {
   commercialClaimLabel,
   findEnglishUnits, findFactCopied, findFactDump, findHedges, findForeignScript, findLeaks, findMergedStates,
   findMixedStates, findSameOpening, findShoutedWords, findUnbackedCoverage, findWordNumbers, guardAnswer, isMoneyTalk, isSelfStatement,
-  LABEL_CAP, LBL, literalNoc, localizeUnits, makeSentenceGate, mergeFollowupSlots, missingClaimLines, normalizeSlots, MONEY_WHY, otherClaimLabel,
-  PROMISE_WHY, sayFact, stripMd, studyFieldOf, tidy,
-  type ChatLang, type Fact, type OccOption,
+  LABEL_CAP, literalNoc, localizeUnits, makeSentenceGate, mergeFollowupSlots, missingClaimLines, normalizeSlots, otherClaimLabel,
+  sayFact, stripMd, studyFieldOf, tidy, type Fact, type OccOption,
 } from '@/lib/chatOrchestrate'
-import { makeT } from '@/app/(frontend)/jobs/i18n'
+import { makeT, type Lang, LBL, MONEY_WHY, PROMISE_WHY } from '@/lib/i18n'
 
 // 金标原话(设计《案例库-问题与结果先行-20260803》C01)
 const C01 = '我亚岗昆木匠毕业,还没工作,中介说曼省有合作公司让我去曼省,要收 2 万'
@@ -43,16 +42,16 @@ const AVAIL_SENTENCE_SAMPLE_ALL = {
     'not-applicable': '해당 없음: 이 주는 주정부 이민 제도 밖입니다',
   },
 } as const
-const AVAIL_SENTENCE_SAMPLE: Record<ChatLang, string> = {
+const AVAIL_SENTENCE_SAMPLE: Record<Lang, string> = {
   zh: AVAIL_SENTENCE_SAMPLE_ALL.zh['not-published'],
   en: AVAIL_SENTENCE_SAMPLE_ALL.en['not-published'],
   ko: AVAIL_SENTENCE_SAMPLE_ALL.ko['not-published'],
 }
 // 两条状态不同的主张(兜底清单里也得各说各的)
-const CLAIM_LEAD: Record<ChatLang, string> = {
+const CLAIM_LEAD: Record<Lang, string> = {
   zh: '有人跟你说「要收 2 万」——', en: 'You were told "they charge 20k" — ', ko: '「2만을 받는다」라고 들으셨습니다 — ',
 }
-const CLAIM_LEAD2: Record<ChatLang, string> = {
+const CLAIM_LEAD2: Record<Lang, string> = {
   zh: '有人跟你说「曼省有合作公司」——', en: 'You were told "there is a partner company in MB" — ', ko: '「MB에 협력 회사가 있다」라고 들으셨습니다 — ',
 }
 
@@ -281,7 +280,7 @@ describe('答复见客检查(不连模型)', () => {
   // 连模型的测试只能测「这一次」(实测同一道题换三个指纹:v1 红 v2 绿 v3 绿),所以这条**不连模型**。
   it('降级清单三语都见客:没有英文内部标签、没有内部码', () => {
     // 按 collectFacts 的拼法造一份 facts(标签词汇全取自同一张 LBL 表)
-    const sheetFacts = (lang: ChatLang): Fact[] => {
+    const sheetFacts = (lang: Lang): Fact[] => {
       const T = LBL[lang]
       const ev = { url: 'https://immigratemanitoba.com/x', fetched: '2026-08-04' }
       const mk = (tool: string, label: string, value: number | null, valueText: string, unit: string): Fact =>
@@ -537,13 +536,13 @@ describe('答复见客检查(不连模型)', () => {
   //    320 帽只会从尾巴上砍,而尾巴恰恰是**我们自己写的见客文案**;该截的是长度不可控的原话。
   it('主张行超长时截的是原话,解释句一个字不少', () => {
     // 测试是第二双眼睛:引导词照 lib 的样子独立写一遍,不 import 过来自己核对自己
-    const LEAD: Record<ChatLang, [string, string, string]> = {
+    const LEAD: Record<Lang, [string, string, string]> = {
       zh: ['你听到的「', '」这句话', '——'],
       en: ['On what you were told ("', '")', ': '],
       ko: ['「', '」라고 들으신 건', ' — '],
     }
     // 用户可以说很长 —— 原话长度不可控,正是这条规则存在的理由
-    const LONG: Record<ChatLang, string> = {
+    const LONG: Record<Lang, string> = {
       // 都带上金额:otherClaimLabel 那一路要走**收费**分岔(没提钱的主张不许挂金额解释,那是另一条测试守的)
       zh: '中介说他在曼省有合作公司,还说包 offer 包提名,要收我 2 万块。'.repeat(3),
       en: 'the agent says they have a partner company in Manitoba and a guaranteed nomination for 20000 dollars. '.repeat(3),
@@ -633,7 +632,7 @@ describe('逐句门控(一句过了才发给前端)', () => {
     f({ tool: 'lookupThresholds', label: 'MB requirement experience (applicant)', value: 12, valueText: '', unit: 'months' }),
   ]
   /** 一个字一个字喂(比真 SSE 的分块更狠:任何一块都可能停在词中间),收下每一次放行的增量。 */
-  const drip = (raw: string, lang: ChatLang, facts = gateFacts, echo = '') => {
+  const drip = (raw: string, lang: Lang, facts = gateFacts, echo = '') => {
     const gate = makeSentenceGate(facts, lang, echo)
     const out: string[] = []
     const seen: string[] = []                 // 每一次放行之后「已经见客」的全文
@@ -690,7 +689,7 @@ describe('逐句门控(一句过了才发给前端)', () => {
   it('断句中英文都成立:每一次放行都不在词/数字中间断', () => {
     const zh = '曼省学徒岗有 3 个。BC 有 15 个。雇主要求经验满 12 个月。'
     const en = 'MB has 3 openings. BC has 15 openings.\n- BC apprentice openings: 15 jobs\nThe employer requires 12 months of experience.'
-    for (const [raw, lang] of [[zh, 'zh'], [en, 'en']] as [string, ChatLang][]) {
+    for (const [raw, lang] of [[zh, 'zh'], [en, 'en']] as [string, Lang][]) {
       const r = drip(raw, lang)
       const final = clampAnswer(localizeUnits(tidy(raw), lang), lang)
       expect(r.blocked).toEqual([])

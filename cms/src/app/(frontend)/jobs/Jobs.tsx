@@ -23,7 +23,8 @@ import { PricingModal } from './PricingModal'
 import { OnboardingWizard, OB_SEEN_KEY } from './OnboardingWizard'
 import { useColWidths, type ColWidthSeed } from './colWidths'   // 列宽唯一控制点(刷新/筛选/拖竖线共用一套规则)
 import { filterSig, URL_TO_FILTER, DIRECT_URL_KEY, type JobFilters } from './filters.shared'   // URL↔筛选映射(与 SSR 共用)
-import { COLS_COOKIE, eeDisplay, streamDisplay, type TFn } from './i18n'
+import { eeDisplay, streamDisplay, type TFn } from '@/lib/i18n'
+import { COLS_COOKIE } from './columns.shared'
 import type { ColKey, Dims, FieldGroup, JobRow, Plan } from './types'
 import { PROV_NAMES, mapQuery, mapsUrl, parseLoc, provName } from '@/lib/location'
 import { FIELD_GROUP, COLUMNS, DEFAULT_COLS, NOWRAP_COLS, PREF_KEY, PRO_COLS, cellActionable, cellActive, cellOf, writeColsCookie } from './Table'

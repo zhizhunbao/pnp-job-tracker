@@ -44,8 +44,8 @@ vi.mock('@/lib/llm', () => ({
   }),
 }))
 
-import { makeT } from '@/app/(frontend)/jobs/i18n'
-import { guardAnswer, orchestrate, type ChatLang } from '@/lib/chatOrchestrate'
+import { makeT, type Lang } from '@/lib/i18n'
+import { guardAnswer, orchestrate } from '@/lib/chatOrchestrate'
 
 const NS_GUIDE = 'https://liveinnovascotia.com/sites/default/files/2026-02/Guide-NSNP-Skilled-Worker-English.pdf'
 const NS_LIST = 'https://liveinnovascotia.com/critical-vacancies'
@@ -103,7 +103,7 @@ class Preset2Pool {
   }
 }
 
-const PRESETS: { lang: ChatLang; expected: string }[] = [
+const PRESETS: { lang: Lang; expected: string }[] = [
   { lang: 'zh', expected: '新斯科舍的餐厅给了我厨师 offer,老板说帮我办,可信吗?' },
   { lang: 'en', expected: 'A Nova Scotia restaurant gave me a cook offer and says it will help with the nomination. Can I trust that?' },
   { lang: 'ko', expected: '노바스코샤 식당에서 요리사 오퍼를 받았고 고용주가 주정부 지명을 도와준다고 합니다. 믿어도 될까요?' },

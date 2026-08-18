@@ -12,7 +12,7 @@
 //      没有「读方向」(档案槽不作抽槽输入)—— 句里无职业的首轮提问必撞 noOcc 闸(D1 只放行用法类问句)。
 //      occ 解析不出 → 候选整条跳过,由②档句子补位(②档句句自带职业)。档案读方向归批C 判定层再议。
 import { POPULAR_NOCS } from '../account/profileOptions'
-import type { TFn } from '../jobs/i18n'
+import type { TFn } from '@/lib/i18n'
 
 export type ChatProfile = {
   currentStatus?: string | null

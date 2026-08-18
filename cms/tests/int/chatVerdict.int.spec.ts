@@ -14,6 +14,8 @@
  *   ④ guardAnswer 放行含裁决数字的答复、拦下编造的数字。
  */
 import fs from 'fs'
+import { LBL } from '@/lib/i18n'
+import type { Lang } from '@/lib/i18n'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -26,9 +28,8 @@ vi.mock('@/lib/llm', () => ({
 }))
 
 import {
-  filledProfileSlots, findForeignScript, guardAnswer, isPathQuestion, LBL, MIN_PROFILE_SLOTS,
-  normalizeSlots, orchestrate, verdictFollowups, verdictProfileOf,
-  type ChatLang, type Fact, type Slots,
+  filledProfileSlots, findForeignScript, guardAnswer, isPathQuestion, MIN_PROFILE_SLOTS,
+  normalizeSlots, orchestrate, verdictFollowups, verdictProfileOf, type Fact, type Slots,
 } from '@/lib/chatOrchestrate'
 import { lookupVerdict } from '@/lib/chatTools'
 
@@ -254,7 +255,7 @@ describe('金标 C01:一句话进 → 不编数字的路径裁决', () => {
   })
 
   it('三语的裁决名目都是用户语言(降级清单直接印这些字)', async () => {
-    for (const lang of ['zh', 'en', 'ko'] as ChatLang[]) {
+    for (const lang of ['zh', 'en', 'ko'] as Lang[]) {
       const T = LBL[lang]
       for (const s of [T.vScope, T.vPaths, T.vExcluded, T.vNeedsInfo, T.vWhy, T.vScore, T.vCeiling, T.vRefLine, ...T.vTier]) {
         expect(s.length, `${lang} 的裁决名目缺了`).toBeGreaterThan(3)
@@ -293,7 +294,7 @@ describe('缺槽 → 反问那几个槽,一个裁决数字都不出', () => {
   it('反问只问缺的那几个(已经说过的不再问一遍)', () => {
     const s = normalizeSlots({ age: 40, clb: 6 }) as Slots
     expect(verdictFollowups(s, 'zh')).toEqual([LBL.zh.vAsk.edu, LBL.zh.vAsk.married, LBL.zh.vAsk.canadaStudy])
-    for (const lang of ['zh', 'en', 'ko'] as ChatLang[]) {
+    for (const lang of ['zh', 'en', 'ko'] as Lang[]) {
       for (const q of verdictFollowups(normalizeSlots({}) as Slots, lang)) {
         expect(findForeignScript(q, lang), `${lang} 的反问句掺了别的语言:${q}`).toEqual([])
       }
@@ -424,7 +425,7 @@ describe('lookupVerdict(薄封装)', () => {
 
 describe('ON 语言免考行:年限不许渲成豁免等级', () => {
   const Q = '安省对木匠的语言要求是多少?(NOC 72310)'
-  it.each(['zh', 'en', 'ko'] as ChatLang[])('%s:整句「毕业 3 年内免考」,旧模板不再接 years', async (lang) => {
+  it.each(['zh', 'en', 'ko'] as Lang[])('%s:整句「毕业 3 年内免考」,旧模板不再接 years', async (lang) => {
     const pool = new FakePool()
     H.slots = BARE_SLOTS.replace('"provs":[]', '"provs":["ON"]')
     const r = await orchestrate(pool, { text: Q, lang })

@@ -9,7 +9,6 @@ export const RCIP: PathwayStrategy = {
   key: 'RCIP',
   province: 'FED',
   stream: 'Rural Community Immigration Pilot',
-  name: { zh: '乡村社区移民试点(RCIP)', en: 'Rural Community Immigration Pilot', ko: '농촌 지역 이민 시범(RCIP)' },
   regionProvinces: ['BC', 'AB', 'SK', 'MB', 'ON', 'NS'],
   reqProvince: 'FED',
   reqPrograms: ['RCIP'],

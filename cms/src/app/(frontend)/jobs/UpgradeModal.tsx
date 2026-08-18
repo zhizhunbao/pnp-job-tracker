@@ -3,7 +3,7 @@
 // 仅在已登录上下文渲染(未登录的升级入口先走 AuthModal 注册)。
 // 价格展示走 NEXT_PUBLIC_PRICE_DISPLAY(与 /pricing 同源,构建期内联);Checkout 复用 /api/billing/checkout。
 import { useEffect, useState } from 'react'
-import type { TFn } from './i18n'
+import type { TFn } from '@/lib/i18n'
 import { Modal } from './Modal'
 import { track } from '@/lib/track'
 import { IconStar } from '../Icons'

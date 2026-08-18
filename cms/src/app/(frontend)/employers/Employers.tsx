@@ -20,7 +20,7 @@ import { Header } from '../Header'
 import { Table, Pager, type Col } from '../ui'
 import { JobCard } from '../ui'
 import { Button, Shell, UI } from '../ui'
-import type { Lang, TFn } from '../jobs/i18n'
+import type { Lang, TFn } from '@/lib/i18n'
 
 // 下拉:职位板 Sel 同规格(高 38、圆角 6、镜像文本贴宽不留空白);className=sbCtl 拿到既有的
 // 手机断点 min-height:44 触控靶(main.css #276),不新造一套 CSS

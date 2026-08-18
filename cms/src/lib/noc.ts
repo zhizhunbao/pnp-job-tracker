@@ -1,7 +1,7 @@
 // NOC 分类的**显示**层:分类名取译、职业名译名、大分类配色。
 // 分类名/层级(broad/mid/fine/teer)由 ETL(etl/noc.py → mart)算好存在 job 字段上,
 // 前端不再用 NOC 码现算 —— 单一来源在数据层,这里只负责怎么显示。
-import type { Lang, TFn } from '@/app/(frontend)/jobs/i18n'
+import type { Lang, TFn } from '@/lib/i18n'
 import type { NocDesc } from '@/app/(frontend)/jobs/types'
 
 // 中/小分类显示名(值仍是数据层中文,筛选/查询语义不变)。

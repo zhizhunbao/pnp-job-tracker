@@ -12,7 +12,6 @@ export const NB_SW: PathwayStrategy = {
   key: 'NB-sw',
   province: 'NB',
   stream: 'New Brunswick Skilled Worker stream(NB Experience pathway)',
-  name: { zh: '新不伦瑞克省 技术工人通道', en: 'New Brunswick Skilled Worker', ko: '뉴브런즈윅주 기술인력 통로' },
   reqProvince: 'NB',
   reqStream: /new brunswick skilled worker/i,
   drawStream: 'Skilled Worker (NB Experience)',

@@ -7,12 +7,11 @@ import { useLang } from '../LangProvider'
 import { Header } from '../Header'
 import { Footer } from '../Footer'
 import { BANNER_IMGS, Banner, UI } from '../ui'
-import { CASES, type L3 } from '@/lib/caseLibrary'
+import { CASES } from '@/lib/caseLibrary'
 import { track } from '@/lib/track'
 
 export function Cases() {
   const [lang, setLangSaved, t] = useLang()
-  const pickL3 = (l: L3) => l[lang as keyof L3] || l.zh
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: UI.bg, fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
@@ -24,7 +23,7 @@ export function Cases() {
             <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
               borderTop: `1px solid ${UI.hairline}`, padding: '10px 0' }}>
               <span style={{ minWidth: 0, flex: 1, fontSize: 13.5, fontWeight: 600, color: '#111827', lineHeight: 1.5 }}>
-                {pickL3(c.label)}
+                {t(`case.${c.id}.label`)}
               </span>
               {c.page && (
                 <a href={`/cases/${c.page}`} onClick={() => track('cases-index-page', { id: c.id })}

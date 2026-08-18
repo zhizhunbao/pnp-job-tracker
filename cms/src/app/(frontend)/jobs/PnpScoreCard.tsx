@@ -13,8 +13,8 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { QuizChecks, QuizChoices, QuizNav, QuizSub, QuizTitle } from '../quiz/QuizUI'
-import type { Lang, TFn } from './i18n'
-import { officialLabel as label } from '@/lib/officialLabels'
+import type { Lang, TFn } from '@/lib/i18n'
+import { officialLabel as label } from '@/lib/i18n'
 import { pullAndMerge, readAnswers, readScoreAnswers, writeAnswers, writeScoreAnswers, type ScoreAnswers } from '@/lib/answers'
 import { CLB, NCLC } from '@/lib/fields'
 import { DEFAULT_PROFILE, EDU_KEYS, scoreProvince, streamMatches, type DrawRow, type EduKey, type ScoreFactor, type SelfProfile } from '@/lib/pnpSelfScore'

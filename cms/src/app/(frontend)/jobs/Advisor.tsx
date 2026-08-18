@@ -23,7 +23,7 @@ import { EeCategorySection, MeansForMe, NewsLatestBlock, PnpDrawsBlock, PnpListS
 import { LockedText } from './Lock'
 import { CARD, SCRIM, iconBtnS, useIsNarrow } from './Modal'
 import { useOverlayClose } from './overlay'
-import { makeT, streamDisplay, type Lang, type TFn } from './i18n'
+import { makeT, streamDisplay, type Lang, type TFn } from '@/lib/i18n'
 import type { ColKey, DesigEmp, EeOcc, FieldGroup, FieldSource, JobRow, NewsSlim, NocDesc, Plan, PnpDraw, PnpOcc, ProvInfo } from './types'
 import { isExemptSector, lmiaWageClass } from '@/lib/lmiaStatus'
 import { mapQuery, mapsUrl, parseLoc } from '@/lib/location'

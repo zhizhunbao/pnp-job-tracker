@@ -12,7 +12,7 @@
 // 每个 import ui 的页面都背上整套登录与支付。要合并,得先把 CTA 改成插槽 prop 让本件退化成纯样式件。
 import { IconLock } from '../Icons'
 import { UpgradeCta } from './UpgradeModal'
-import type { TFn } from './i18n'
+import type { TFn } from '@/lib/i18n'
 
 const MASK_TEXT = ['████████████████████████████████', '██████████████████████████', '███████████████████████████████████', '████████████████████']
 

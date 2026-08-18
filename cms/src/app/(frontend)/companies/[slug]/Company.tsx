@@ -3,7 +3,7 @@
 // 骨架与公司弹框同一组件同一份 CompanyDetail(改一处两边生效);排版随弹框换 JD 扁平——
 // 原「一节一卡」多卡壳退役,整页一张白卡容器(#187「先只改弹框」的另一半在此收口)。
 // 三条铁律(E8-09 §1)不变:一页一域、一条信息一个家、公司页全事实层免费。
-import { LANGS } from '../../jobs/i18n'
+import { LANGS } from '@/lib/i18n'
 import { useLang } from '../../LangProvider'
 import { CompanyBody } from '../../jobs/Company'   // 公司身体与职位板弹框同源(拆分前住在 JobsTable 里)
 import { provName } from '@/lib/location'

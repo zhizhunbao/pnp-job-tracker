@@ -3,7 +3,7 @@
 // 弹框·首访自动弹:登录后无档案首次到 /jobs 弹一次(可关/不再弹);横幅「建档案」也手动开。
 // 一步一问、零打字点选(复用 account/profileOptions)、每项可跳过、进度可见、价值前置;末步保存→整页跳 ?view=match 让 SSR 亮匹配。
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { TFn } from './i18n'
+import type { TFn } from '@/lib/i18n'
 import { Modal } from './Modal'
 import { Button, chipStyle } from '../ui'
 import { hasProfile, normalizeProfile, type MatchProfile } from '@/lib/match'

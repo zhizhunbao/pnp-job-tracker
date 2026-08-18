@@ -5,13 +5,12 @@
 // 上一版做成「四块无主的事实」,被点名「列一堆信息,用户看了有什么用」—— 摆事实不等于给答案。
 // 每条路径下面挂的是判定核给的理由(met/gap/excluded),官方原句原样摆,页面不改写、不加戏。
 import { BackLink } from '../../BackLink'
-import { dropProvPrefix } from '../../jobs/i18n'
+import { dropProvPrefix } from '@/lib/i18n'
 import { useLang } from '../../LangProvider'
 import { Footer } from '../../Footer'
 import { Header } from '../../Header'
 import { Shell, UI } from '../../ui'
 import type { CaseAnswer, OpsFacts } from '@/lib/caseFacts'
-import type { L3 } from '@/lib/caseLibrary'
 import type { PathwayVerdict, VerdictReason } from '@/lib/pathVerdict'
 import { track } from '@/lib/track'
 
@@ -22,14 +21,8 @@ const TONE: Record<VerdictReason['kind'], string> = { met: UI.ok, gap: '#b45309'
 const HEAD_N = 5
 const SUMMARY: React.CSSProperties = { padding: '10px 0 2px', color: UI.primary, fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }
 
-export function Case({ caseId, label, question, answer }: {
-  caseId: string
-  label: L3
-  question: L3
-  answer: CaseAnswer
-}) {
+export function Case({ caseId, answer }: { caseId: string; answer: CaseAnswer }) {
   const [lang, setLangSaved, t] = useLang()
-  const pick = (l: L3) => l[lang as keyof L3] || l.zh
   // 判定核给的理由:有 pv.* 键就走措辞层,没有(将来新加漏挂的)退回中文原句 —— 宁可露一句中文,不露键名
   const say = (r: VerdictReason) => (r.key ? t(r.key, r.params) : r.text)
   const provOf = (code: string) => { const full = t('prov.' + code); return full === 'prov.' + code ? code : full }
@@ -131,7 +124,7 @@ export function Case({ caseId, label, question, answer }: {
       <div style={{ flex: '1 0 auto' }}>
         <Shell pad="1rem 1.25rem 40px">
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, margin: '0 0 12px' }}>
-            <h1 style={{ flex: 1, minWidth: 0, fontSize: 22, fontWeight: 700, color: '#111827', margin: 0, lineHeight: 1.45 }}>{pick(label)}</h1>
+            <h1 style={{ flex: 1, minWidth: 0, fontSize: 22, fontWeight: 700, color: '#111827', margin: 0, lineHeight: 1.45 }}>{t(`case.${caseId}.label`)}</h1>
             <BackLink href="/plan/pr" label={t('case.back')} />
           </div>
 
@@ -139,7 +132,7 @@ export function Case({ caseId, label, question, answer }: {
               引号跟着语言走:中文用「」,英韩用弯引号(英文句子外面套一对全角方头括号是明显的中文味) */}
           <div style={{ ...CARD, background: '#f8fbff', borderColor: '#dbeafe' }}>
             <div style={{ color: '#111827', fontSize: 16, fontWeight: 600, lineHeight: 1.65 }}>
-              {lang === 'zh' ? `「${pick(question)}」` : `“${pick(question)}”`}
+              {lang === 'zh' ? `「${t(`case.${caseId}.q`)}」` : `“${t(`case.${caseId}.q`)}”`}
             </div>
           </div>
 

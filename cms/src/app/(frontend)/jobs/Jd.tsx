@@ -11,7 +11,7 @@ import { AuthModal } from './AuthForm'
 import { Modal, useIsNarrow } from './Modal'
 import { OnboardingWizard, OB_SEEN_KEY } from './OnboardingWizard'
 import { ResumeMatchModal } from './ResumeMatchModal'   // G3 简历对照(入口在 ApplyBar)
-import { makeT, type Lang, type TFn } from './i18n'
+import { makeT, type Lang, type TFn } from '@/lib/i18n'
 import type { JobRow, NocDesc, Plan } from './types'
 import { hasProfile, normalizeProfile, type MatchProfile } from '@/lib/match'
 import { blockedSrc } from '@/lib/source'
@@ -287,15 +287,14 @@ export const SUG_MARK = '❓'
 // 建议问题长度红线(2026-07-11 用户拍板「不要太长」):>60 字裁到首个问号;还收不住 → 弃用退罐头
 // #49(第 19 轮):#44 的 prompt 约束(雇主用「这家公司」指代)模型不稳定遵守,缓存换血即复发
 // (「TABOCHE TECHNOLOGY过去是否…」「ERA是否…」实拍)——前端兜底:占位里把公司名(含去后缀核心名)统一替换成指代词
-const SUG_GENERIC: Record<Lang, string> = { zh: '这家公司', en: 'this company', ko: '이 회사' }
 const scrubCompany = (q: string, company?: string, lang: Lang = 'zh'): string => {
   if (!company) return q
-  const generic = SUG_GENERIC[lang]
+  const generic = makeT(lang)('jd.sugGeneric')
   const core = company.replace(/\b(incorporated|inc|ltd|limited|llp|llc|corp|corporation|co)\.?\s*$/i, '').trim()
   for (const n of [...new Set([company.trim(), core])].sort((a, b) => b.length - a.length)) {
     if (n.length >= 3) q = q.replace(new RegExp(n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), generic)
   }
-  return q.replace(new RegExp(`(${SUG_GENERIC[lang]})(的?\\s*\\1)+`, 'g'), '$1')  // 相邻重复合一
+  return q.replace(new RegExp(`(${generic})(的?\\s*\\1)+`, 'g'), '$1')  // 相邻重复合一
 }
 const capSug = (q: string, company?: string, lang?: Lang): string => {
   q = scrubCompany(q.replace(/\*{2,}/g, ''), company, lang)  // 剥 **(#43)+ 公司名指代(#49)

@@ -3,10 +3,11 @@
 // 只给**有事实层**的处境出页(CASE_PAGES 白名单)—— 剩下 15 条只有问题、没有事实,
 // 出成页就是空壳,被索引反而拉低整站质量。有一条算一条。
 import { notFound } from 'next/navigation'
+import { makeT } from '@/lib/i18n'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { CASES, type L3 } from '@/lib/caseLibrary'
+import { CASES } from '@/lib/caseLibrary'
 import { CASE_PAGES, caseAnswer } from '@/lib/caseFacts'
 import { ssrLang } from '@/lib/lang.server'
 import { getVerdictData } from '@/lib/verdictCache'
@@ -28,8 +29,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   // 语言跟站里同一套判据(cookie → Accept-Language):爬虫不带 cookie、Accept-Language 多为 en,
   // 正是本站 88% 的流量所在,标题写死中文等于把英文搜索结果拱手让人。
   const lang = await ssrLang()
-  const t = (l: L3) => l[lang] || l.zh
-  return { title: `${t(entry.q)} | Offer2PR`, description: `${t(entry.label)}。${t(entry.q)}` }
+  const t = makeT(lang)
+  const q = t(`case.${entry.id}.q`)
+  return { title: `${q} | Offer2PR`, description: `${t(`case.${entry.id}.label`)}。${q}` }
 }
 
 export default async function CasePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -49,6 +51,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
   const answer = await caseAnswer(slug, data, sql).catch(() => null)
   if (!answer) notFound()
 
-  // 三语原样传下去,由视图按当前语言取 —— 服务端这里定死一种,切语言就切不动了
-  return <Case caseId={entry.id} label={entry.label} question={entry.q} answer={answer} />
+  // 只传 id:标题与原话在 i18n 里(case.<id>.*),由视图按当前语言取 ——
+  // 服务端这里定死一种,切语言就切不动了
+  return <Case caseId={entry.id} answer={answer} />
 }

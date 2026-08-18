@@ -3,7 +3,7 @@
 // 免费=⑤价值时刻先例(价值点+模糊示例+升级钮,真值不出服务端);Pro=全维度+「与我的匹配」计数行。
 // 红线:摆事实高亮差异不下结论;LMIA=历史事实≠担保(ce.note);缺数「—」不猜。
 import { useState } from 'react'
-import { type TFn } from '../../jobs/i18n'
+import { type TFn } from '@/lib/i18n'
 import { useLang } from '../../LangProvider'
 import { Header } from '../../Header'
 import { Footer } from '../../Footer'

@@ -1,7 +1,7 @@
 'use client'
 // 已保存筛选管理(E5-03):列表+删除。数据走 Payload REST(access 已限本人)。
 import { useEffect, useState } from 'react'
-import type { TFn } from '../jobs/i18n'
+import type { TFn } from '@/lib/i18n'
 import { IconMail } from '../Icons'
 
 type SS = { id: string | number; name: string; lastNotifiedAt?: string | null }

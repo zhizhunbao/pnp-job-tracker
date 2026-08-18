@@ -5,7 +5,7 @@
 //   省提名/EE 卡、相关职位 —— 一条信息一个家,移民信号在移民弹框,公司在公司弹框/页。
 import { useEffect, useMemo, useState } from 'react'
 
-import { LANGS } from '../i18n'
+import { LANGS } from '@/lib/i18n'
 import { useLang } from '../../LangProvider'
 import { JobBody } from '../Jd'                    // 正文身体:整页与弹框渲的是同一棵树
 import { JobMiniRow } from '../Company'

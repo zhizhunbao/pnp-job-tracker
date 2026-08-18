@@ -7,12 +7,13 @@
  * 库或朋友模型任一不可用 → 整组 skip(照 chatTools.int.spec.ts 惯例)。
  */
 import pg from 'pg'
+import { LBL, MONEY_WHY, PROMISE_WHY } from '@/lib/i18n'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import {
   findEnglishUnits, findForeignScript, findHedges, findLeaks, findMergedStates, findMixedStates,
   findSameOpening, findShoutedWords, findWordNumbers, guardAnswer,
-  LABEL_CAP, LBL, MONEY_WHY, orchestrate, PROMISE_WHY, resolveNoc, suggestOccupations,
+  LABEL_CAP, orchestrate, resolveNoc, suggestOccupations,
   type Fact,
 } from '@/lib/chatOrchestrate'
 import { friendLlmReady } from '@/lib/friendLlm'

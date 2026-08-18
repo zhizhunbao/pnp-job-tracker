@@ -3,7 +3,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import Jobs, { BANNER_COOKIE } from './Jobs'
-import { COLS_COOKIE } from './i18n'
+import { COLS_COOKIE } from './columns.shared'
 import { COLW_COOKIE, DEFAULT_COLW_SEED, parseColWidthSeed, type ColWidthSeed } from './colWidths.shared'
 import { parseJobFilters, toSearchParams } from './filters.shared'
 import { getUser, isPro } from '@/lib/entitlement'

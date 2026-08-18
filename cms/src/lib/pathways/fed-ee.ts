@@ -10,7 +10,6 @@ export const FED_EE: PathwayStrategy = {
   key: 'FED-EE',
   province: 'FED',
   stream: 'Express Entry(CEC / FSW / FST)',
-  name: { zh: '联邦 快速通道(EE)', en: 'Federal Express Entry', ko: '연방 Express Entry' },
   reqProvince: 'FED',
   reqPrograms: ['CEC', 'FSW', 'FST'],
   drawStream: 'Canadian Experience Class',

@@ -7,7 +7,7 @@
 // 缩略图 og 图优先,缺图用省色块默认图(程序生成,一省一固定色,联邦=IRCC 红)。
 // 转载姿势四件套(E4-03 框架):© 出处方 · 非官方声明 · 原文链接 ↗ · 官方发布日期。
 import { useEffect, useMemo, useState } from 'react'
-import { type Lang, type TFn } from '../jobs/i18n'
+import { type Lang, type TFn } from '@/lib/i18n'
 import { useLang } from '../stats/ui'
 import { Header } from '../Header'
 import { Footer } from '../Footer'

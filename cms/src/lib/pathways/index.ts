@@ -22,7 +22,7 @@ import { SK_OFFER } from './sk-offer'
 import type { PathwayStrategy, PathwayUi } from './types'
 import type { GateKey, GateRule } from '../gateManifest'
 
-export type { PathwayStrategy, PathwayUi, FieldMatchExemption, OutOfProvinceGrad } from './types'
+export type { PathwayStrategy, PathwayUi, FieldMatchExemption, OutOfProvinceGrad, PathwayKey } from './types'
 
 /** 13 条通道,顺序 = 判定层的注册表原序(见文件头注释,别随手改) */
 export const PATHWAYS: PathwayStrategy[] = [
@@ -42,7 +42,7 @@ export const PATHWAYS: PathwayStrategy[] = [
   PE_SW,
 ]
 
-const BY_KEY = new Map(PATHWAYS.map((p) => [p.key, p]))
+const BY_KEY = new Map<string, PathwayStrategy>(PATHWAYS.map((p) => [p.key, p]))
 
 export const pathwayOf = (key: string): PathwayStrategy | undefined => BY_KEY.get(key)
 
@@ -54,11 +54,6 @@ export const gateOf = (key: string, gate: GateKey): GateRule =>
 /** 专业对口闸的例外(没有 = 这条通道不给例外) */
 export const fieldMatchExemptionOf = (key: string): PathwayStrategy['fieldMatchExemption'] =>
   BY_KEY.get(key)?.fieldMatchExemption
-
-/** 三语通道名 → i18n 字典条目(`jpw.p.<key>`)。字典在装载时摊开它,
- *  调用方照旧 `t('jpw.p.AIP')` —— 名字的**来源**是策略文件,i18n 只是取用口。 */
-export const pathwayNames = (lang: 'zh' | 'en' | 'ko'): Record<string, string> =>
-  Object.fromEntries(PATHWAYS.map((p) => [`jpw.p.${p.key}`, p.name[lang]]))
 
 /** 联邦区域线覆盖的省(AIP/RCIP);非区域线返回 undefined —— 调用方据此判断「要不要拆省」 */
 export const regionProvincesOf = (key: string): readonly string[] | undefined => BY_KEY.get(key)?.regionProvinces

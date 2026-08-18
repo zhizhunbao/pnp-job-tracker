@@ -4,7 +4,7 @@
 // E11-03 后端凭据到位并实测后才配 env → 钮自动亮,只上 Google 一枚,LinkedIn/FB 不做)。
 // 全走 Payload 自带 REST(httpOnly cookie),特权字段由 Users collection 字段级锁保护。
 import { useEffect, useState } from 'react'
-import type { TFn } from './i18n'
+import type { TFn } from '@/lib/i18n'
 import { Modal } from './Modal'
 import { Button, Notice } from '../ui'
 import { pullAndMerge, readAnswers } from '@/lib/answers'

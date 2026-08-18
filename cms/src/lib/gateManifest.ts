@@ -32,26 +32,4 @@ export type GateRule =
   | { need: 'notRequired'; basis: 'absent'; url: string; fetched: string; note?: string }
   | { need: 'unknown'; why: 'no-source' | 'criteria-elsewhere'; url?: string; fetched?: string; note?: string }
 
-/** 三类闸的人话名(题面与结论共用一份,前端不另写) */
-export const GATE_LABEL: Record<GateKey, { zh: string; en: string; ko: string }> = {
-  offer: { zh: 'job offer', en: 'job offer', ko: '잡 오퍼' },
-  statusInCanada: { zh: '境内身份', en: 'status in Canada', ko: '캐나다 체류 신분' },
-  credentialCanada: { zh: '加拿大学历', en: 'Canadian credential', ko: '캐나다 학력' },
-  // 2026-08-15 第四类闸(Frank「毕业生干厨师靠谱吗?跨专业了怎么弄」):NL 国际毕业生官方要求
-  // 岗位与所学专业相关。先前只是一枚灰提醒胶囊,答不上就当没有障碍 —— 与工签闸同一种病,收成真闸。
-  fieldMatch: { zh: '专业对口', en: 'field of study match', ko: '전공 일치' },
-  // 2026-08-15 第五类闸:FCIP 要 NCLC 5 **法语**四项。站里那道语言题问的是 CLB(英语的尺子),
-  // 拿它当 NCLC 用 = 把不会法语的人判成达标再推去法语社区,故单开一闸、单问一题。
-  french: { zh: '法语(NCLC 5)', en: 'French NCLC 5', ko: '프랑스어 NCLC 5' },
-}
 
-/** statusInCanada 按 asks 拆开后的人话名(结论文案用它,不再统称「境内身份」) */
-export const ASK_LABEL: Record<StatusAsk, { zh: string; en: string; ko: string }> = {
-  workPermit: { zh: '有效工签', en: 'work permit', ko: '유효한 취업 허가' },
-  // 拉丁缩写**括起来**(同 french 的「法语(NCLC 5)」):闸名会与「判不了」直接连写,
-  // 裸的 `毕业工签 PGWP` 拼出来是「毕业工签 PGWP判不了」,措辞层那份带空格,两边逐字对不上
-  // ——2026-08-15 夜判定矩阵测试实撞,与「NCLC 5判不了」同一个病
-  pgwp: { zh: '毕业工签(PGWP)', en: 'PGWP', ko: 'PGWP' },
-  provResidence: { zh: '在该省居住', en: 'residence in the province', ko: '해당 주 거주' },
-  provEmployment: { zh: '在该省在职', en: 'employment in the province', ko: '해당 주 재직' },
-}

@@ -9,7 +9,7 @@ import { CARD_MD, gradeColor, Grid, link, PILL_BTN, Row } from '../ui'
 import { JD_ZH_LINE, JdAdvisorSection, isJdNone } from './Jd'
 import { SponsorLeadCard } from './Pnp'
 import { TvEntryCard } from './TripleVerdictModal'
-import { makeT, type Lang, type TFn } from './i18n'
+import { makeT, type Lang, type TFn } from '@/lib/i18n'
 import type { CoGradeDetail, JobRow, Plan } from './types'
 import type { CompanyDetail, SimilarEmployer } from '@/lib/jobsSql'   // E8-11 B1:公司域同源数据形状(type-only,不拉服务端码)
 import { mapsUrl, provName } from '@/lib/location'

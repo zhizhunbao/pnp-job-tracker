@@ -9,12 +9,13 @@
 // 选项用**原生 radio**:同名 radio 的方向键切换、Tab 焦点、读屏播报全是浏览器自带的,
 // 自绘控件反而要一条条补回来(可访问性是 CLAUDE.md 里不上砧板的四样之一)。
 import { Button, UI } from '../ui'
-import type { Lang } from '../jobs/i18n'
+import type { Lang } from '@/lib/i18n'
+import type { L } from '@/lib/fields'
 
-// 三语文本对象(字段库里题干/选项的原生形状:加一门语言=加一个键)
-export type L = { default: string; 'zh-cn': string; ko: string }
-export const pickL = (x: L | string, lang: Lang): string =>
-  typeof x === 'string' ? x : (lang === 'zh' ? x['zh-cn'] : lang === 'ko' ? x.ko : x.default)
+// 题面/选项的三语文本 —— 形状跟着**字段库**走(lib/fields 的 L),这里只负责按当前语言取。
+// 2026-08-17:先前这里另抄了一份一模一样的 type L,两份定义各活各的,是真重复。
+export type { L } from '@/lib/fields'
+export const pickL = (x: L | string, lang: Lang): string => (typeof x === 'string' ? x : x[lang])
 
 // 进度文字:三句住这里(先前是覆盖 SurveyJS 的 questionsProgressText;
 // 「已答 0/2 题」那套考试口吻 2026-07-31 被 Frank 点名,改成建档口吻)

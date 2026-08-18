@@ -12,6 +12,7 @@
  * fixture 边界:数据库返回行、LLM I/O、payload 实例与鉴权 —— 判定逻辑一行都没复刻。
  */
 import { describe, expect, it, vi, beforeEach } from 'vitest'
+import type { Lang } from '@/lib/i18n'
 
 // ── fixture 边界 ────────────────────────────────────────────────────────────
 const H = vi.hoisted(() => ({
@@ -46,7 +47,7 @@ vi.mock('@/lib/entitlement', () => ({
 }))
 vi.mock('@/lib/profile', () => ({ patchProfile: H.patch }))
 
-import { ChatError, buildFollowups, chatProfileContext, mergeRememberedSlots, normalizeSlots, slotAskOptions, isFollowupTurn, isUsageQuestion, metaTopicOf, orchestrate, profileFill, type ChatLang, type ChatTurn, type MetaTopic, type Slots } from '@/lib/chatOrchestrate'
+import { ChatError, buildFollowups, chatProfileContext, mergeRememberedSlots, normalizeSlots, slotAskOptions, isFollowupTurn, isUsageQuestion, metaTopicOf, orchestrate, profileFill, type ChatTurn, type MetaTopic, type Slots } from '@/lib/chatOrchestrate'
 import { findForeignScript, findLeaks, findShoutedWords, findWordNumbers } from '@/lib/chatOrchestrate'
 import { completeText } from '@/lib/llm'
 import { POST } from '@/app/api/chat/route'
@@ -79,7 +80,7 @@ beforeEach(() => {
 describe('D1 用法类问句(chat_logs 实录原文)', () => {
   // /start 三张表的「问一句」CTA 预填句(i18n `se.ask.lmia|named|aip` 三语)。
   // 前两句带 ✅ 的正是生产实录里抛 noOcc 的那两条原文。
-  const CTA: [ChatLang, string][] = [
+  const CTA: [Lang, string][] = [
     ['zh', 'LMIA 获批雇主的表对我找工作移民有什么用?'],          // ✅ chat_logs #51/#53/#55
     ['zh', 'AIP 指定雇主是什么?对我有用吗?'],                    // ✅ chat_logs #54
     ['zh', '在招岗命中紧缺清单的雇主,对我意味着什么?'],
@@ -148,7 +149,7 @@ describe('D1 用法类问句(chat_logs 实录原文)', () => {
 
 // ── meta:问对话本身的话也不撞 noOcc ────────────────────────────────────────
 describe('meta 问句(chat_logs #160「为什么没有选项给我」)', () => {
-  const META: [ChatLang, string, MetaTopic][] = [
+  const META: [Lang, string, MetaTopic][] = [
     ['zh', '为什么没有选项给我', 'options'],                     // ✅ chat_logs #160 原文
     ['zh', '选项呢', 'options'],
     ['zh', '你能做什么', 'capability'],

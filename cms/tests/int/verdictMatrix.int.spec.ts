@@ -35,7 +35,7 @@ import path from 'path'
 import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 
-import { makeT } from '@/app/(frontend)/jobs/i18n'
+import { makeT } from '@/lib/i18n'
 import {
   blockCost, pathVerdict,
   type DesignatedEmployerRow, type OccupationRow, type PathwayVerdict,

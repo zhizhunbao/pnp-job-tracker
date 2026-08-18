@@ -30,6 +30,12 @@ import type { PlanStep } from './planTimeline'
 import { completeText, LlmError, type ChatMessage } from './llm'
 import { parseLlmJson } from './resumeMatch'
 import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
+import type { Lang } from './i18n'
+import {
+  ASK_OCC, AVAIL_SENTENCE, CLAIM_LEAD, FED_FACTOR, FOLLOWUPS, LBL, META_ANSWER, MONEY_WHY,
+  OCC_PICK, PROMISE_WHY, SAVED_LBL, SAVED_TAIL, SHEET_HEAD, STEP, USAGE_ASK, USAGE_WHAT,
+  latinTail, type LabelDict,
+} from './i18n/chat'
 
 // ── 契约(前端按这个写,别改)────────────────────────────────────────────────
 
@@ -75,7 +81,6 @@ export type Slots = {
   /** 在哪个省读的(两位省码) */
   studyProvince?: string | null
 }
-export type ChatLang = 'zh' | 'en' | 'ko'
 export type ChatTurn = { role: 'user' | 'assistant'; content: string }
 /** `degraded` = 这段「答复」其实是**原始事实清单**(出口校验两次都没过 → factSheet)。
  *  前端据此换一种排版(ChatAnswer.cbSheet):清单要排成清单,不能跟正常答复长一个样。
@@ -121,73 +126,6 @@ export type ChatStepPhase = 'read' | 'occ' | 'tool' | 'write'
 export type ChatStep = { phase: ChatStepPhase; text: string }
 export type OnStep = (s: ChatStep) => void
 
-type StepDict = {
-  read: string
-  occ: (occ: string) => string
-  jobs: (n: number) => string
-  coverage: (n: number) => string
-  thresholds: (provs: string) => string
-  draws: (prov: string) => string
-  ops: (prov: string) => string
-  ee: string
-  permit: (program: string) => string
-  crs: (grid: string) => string
-  plan: (provs: string) => string
-  verdict: (n: number) => string
-  claims: (n: number) => string
-  write: string
-}
-/** 轨迹文案的**单一来源**(三语,和 LBL/AVAIL_SENTENCE 同一层)。前端只渲染,不再自己拼字。 */
-export const STEP: Record<ChatLang, StepDict> = {
-  zh: {
-    read: '读懂你的问题',
-    occ: (o) => `认出职业:${o}`,
-    jobs: (n) => `查在招岗位:${n} 条`,
-    coverage: (n) => `查职业清单:${n} 个省`,
-    thresholds: (p) => `查官方门槛:${p}`,
-    draws: (p) => `查抽选记录:${p}`,
-    ops: (p) => `查运营统计:${p}`,
-    ee: '查联邦 EE 通道',
-    permit: (p) => `查联邦规则:${p}`,
-    crs: (g) => `查联邦计分表:${g}`,
-    plan: (p) => `算时间线:${p}`,
-    verdict: (n) => `逐条比对官方门槛:${n} 条通道`,
-    claims: (n) => `核对别人跟你说的:${n} 条`,
-    write: '正在组织答复',
-  },
-  en: {
-    read: 'Reading your question',
-    occ: (o) => `Occupation identified: ${o}`,
-    jobs: (n) => `Open postings checked: ${n} rows`,
-    coverage: (n) => `Occupation lists checked: ${n} provinces`,
-    thresholds: (p) => `Official requirements checked: ${p}`,
-    draws: (p) => `Draw history checked: ${p}`,
-    ops: (p) => `Operational stats checked: ${p}`,
-    ee: 'Federal Express Entry categories checked',
-    permit: (p) => `Federal rules checked: ${p}`,
-    crs: (g) => `Federal points grid checked: ${g}`,
-    plan: (p) => `Timeline worked out: ${p}`,
-    verdict: (n) => `Official requirements compared: ${n} streams`,
-    claims: (n) => `What you were told: ${n} claims checked`,
-    write: 'Writing the reply',
-  },
-  ko: {
-    read: '질문 파악 중',
-    occ: (o) => `직업 확인: ${o}`,
-    jobs: (n) => `채용 공고 조회: ${n}건`,
-    coverage: (n) => `직업 목록 조회: ${n}개 주`,
-    thresholds: (p) => `공식 요건 조회: ${p}`,
-    draws: (p) => `추첨 기록 조회: ${p}`,
-    ops: (p) => `운영 통계 조회: ${p}`,
-    ee: '연방 EE 카테고리 조회',
-    permit: (p) => `연방 규정 조회: ${p}`,
-    crs: (g) => `연방 점수표 조회: ${g}`,
-    plan: (p) => `소요 기간 산출: ${p}`,
-    verdict: (n) => `공식 요건 대조: ${n}개 통로`,
-    claims: (n) => `들으신 내용 대조: ${n}건`,
-    write: '답변 작성 중',
-  },
-}
 
 export const MIN_TEXT = 4          // 少于这个字数问不出东西(「你好」不该烧一次模型调用)
 export const MAX_TEXT = 1200       // 输入侧封顶(#102 账单教训)
@@ -379,7 +317,7 @@ export function crsLookups(text: string): CrsLookupArgs[] {
   return out
 }
 
-const LANG_NAME: Record<ChatLang, string> = { zh: 'Simplified Chinese', en: 'English', ko: 'Korean' }
+const LANG_NAME: Record<Lang, string> = { zh: 'Simplified Chinese', en: 'English', ko: 'Korean' }
 
 /**
  * 🔴 **主张 = 转述别人说的话;自述家庭/自身状况不是主张**(2026-08-06 实测中文:
@@ -716,7 +654,7 @@ export type OccOption = { noc: string; title: string; label: string }
  *   ① 官方 NOC 说明的入职要求(或职业名本身)点名了这个专业;② 这个职业现在真有在招岗位。
  * 管理类(NOC 0xxxx)排除:一个刚毕业的人问「读 IT 能做什么」,答「高级商务经理」是噪音不是答案。
  */
-export async function suggestOccupations(pool: any, field: string, lang: ChatLang, limit = 3): Promise<OccOption[]> {
+export async function suggestOccupations(pool: any, field: string, lang: Lang, limit = 3): Promise<OccOption[]> {
   const term = fieldSearchTerm(field)
   if (term.length < 3) return []
   const run = async (q: string) => {
@@ -744,26 +682,7 @@ export async function suggestOccupations(pool: any, field: string, lang: ChatLan
 }
 /** 反问文案(三语,和 LBL/AVAIL_SENTENCE 同一层:见客的话在数据层写死,不过模型)。 */
 // 中文里拉丁词两侧留空格(全站排版惯例),中文专业名后面不留 —— 「IT 是专业」对,「护理 是专业」不对
-const latinTail = (f: string) => (/[A-Za-z0-9]$/.test(f) ? `${f} ` : f)
-const ASK_OCC: Record<ChatLang, (field: string, opts: string[]) => string> = {
-  zh: (f, o) => `${latinTail(f)}是专业,不是能直接查的职业。本站数据里对得上的职业有:${o.join('、')}。你想按哪一个查?`,
-  en: (f, o) => `${f} is a field of study, not an occupation we can look up. In our data it points to these occupations: ${o.join(', ')}. Which one should we use?`,
-  // 「는/은」的选择跟专业名末字的收音走,而专业名是用户给的 —— 用破折号绕开,省得写出一句韩语病句
-  ko: (f, o) => `${f} — 전공이지 바로 조회할 수 있는 직업이 아닙니다. 본 사이트 데이터에서 연결되는 직업은 ${o.join(', ')}입니다. 어느 쪽으로 조회할까요?`,
-}
-/**
- * 追问 chip:点一下就把职业说清楚。**5 位码写在 chip 里**(站规的「人话名 + 代码小注」)——
- * 下一轮 SLOT_SYSTEM 那条「用户literally 打出了 5 位数字才填 noc」于是成立,职业**一字不差**地落回
- * 我们查出来的那一条。不写码的话下一轮走 pg_trgm 相似度:2026-08-06 实测,给的是
- * Information systems specialists(21222),回来落到了隔壁的 Business systems specialists(21221)——
- * 摆出去的和查回来的不是同一个职业,那是我们自己制造的一次错位。
- */
-const OCC_PICK: Record<ChatLang, (o: OccOption) => string> = {
-  zh: (o) => `按${o.label}(NOC ${o.noc})查`,
-  en: (o) => `Look it up for ${o.title} (NOC ${o.noc})`,
-  ko: (o) => `${o.label}(NOC ${o.noc}) 기준으로 조회해 주세요`,
-}
-export const askOccupation = (field: string, opts: OccOption[], lang: ChatLang): ChatResult => ({
+export const askOccupation = (field: string, opts: OccOption[], lang: Lang): ChatResult => ({
   answer: ASK_OCC[lang](field, opts.map((o) => o.label)),
   slots: { noc: null, occText: field, provs: [], expMonths: null, status: null, claims: [] },
   facts: [],
@@ -797,40 +716,15 @@ export const isUsageQuestion = (text: string): boolean => {
     && (USAGE_INTENT_RE.test(s) || USAGE_INTENT_EN_RE.test(s) || USAGE_INTENT_KO_RE.test(s))
 }
 
-type UsageTopic = 'lmia' | 'aip' | 'employer'
+export type UsageTopic = 'lmia' | 'aip' | 'employer'
 const usageTopicOf = (text: string): UsageTopic =>
   (/LMIA/i.test(text) ? 'lmia' : /\bAIP\b/i.test(text) ? 'aip' : 'employer')
-/** 用法答复的文案(三语,和 ASK_OCC / AVAIL_SENTENCE 同一层:见客的话在数据层写死,不过模型)。
- *  只说这张表**是什么**,不说任何数字 —— 这一轮一个工具都没查,没有 facts 就没有数可说。 */
-const USAGE_WHAT: Record<ChatLang, Record<UsageTopic, string>> = {
-  zh: {
-    lmia: 'LMIA 获批雇主指这家雇主为外籍雇员申请过劳动力市场影响评估并获批,也就是它办过这套手续。',
-    aip: 'AIP 指定雇主指经省政府指定、可按大西洋移民试点雇用外籍雇员的雇主。',
-    employer: '本站的雇主表按职业排:同一个职业下有哪些雇主在招、雇主在哪个省、该省清单收没收这个职业。',
-  },
-  en: {
-    lmia: 'An LMIA-approved employer is one that has applied for and received a Labour Market Impact Assessment for a foreign worker, so it has been through that process before.',
-    aip: 'An AIP designated employer is one designated by a provincial government to hire foreign workers under the Atlantic Immigration Program.',
-    employer: 'Our employer tables are organised by occupation: which employers are hiring for it, which province they are in, and whether that province lists the occupation.',
-  },
-  ko: {
-    lmia: 'LMIA 승인 고용주는 외국인 근로자를 위해 노동시장영향평가를 신청해 승인받은 고용주, 즉 그 절차를 거쳐 본 고용주입니다.',
-    aip: 'AIP 지정 고용주는 대서양 이민 프로그램으로 외국인 근로자를 채용하도록 주정부가 지정한 고용주입니다.',
-    employer: '본 사이트의 고용주 표는 직업 기준입니다: 어떤 고용주가 그 직업을 채용 중인지, 어느 주에 있는지, 그 주 목록에 해당 직업이 있는지.',
-  },
-}
-/** 答完用法就把话头递回职业:这一步不做,用户下一句照样撞 noOcc。 */
-const USAGE_ASK: Record<ChatLang, string> = {
-  zh: '告诉我你的职业或 NOC 码,我按这个职业查哪些雇主在招、哪些省的清单收了它。',
-  en: 'Tell us your occupation or NOC code, and we will check which employers are hiring for it and which provinces list it.',
-  ko: '직업이나 NOC 코드를 알려 주시면 해당 직업을 채용 중인 고용주와 그 직업을 목록에 올린 주를 조회해 드립니다.',
-}
 /**
  * 用法类问句的 guide 型答复:形态照 askOccupation(自己写死的话 + 空 facts + 不进模型),
  * **不是**一条新的答复形态。slots 原样带出去(省份/身份这些他已经说过的,下一轮 context 还接得住),
  * 但 noc 一定是 null —— 这一轮确实没认出职业,不许在这儿假装认出来了。
  */
-export const answerUsage = (text: string, lang: ChatLang, slots: Omit<Slots, 'noc'> & { noc: string | null }): ChatResult => ({
+export const answerUsage = (text: string, lang: Lang, slots: Omit<Slots, 'noc'> & { noc: string | null }): ChatResult => ({
   answer: `${USAGE_WHAT[lang][usageTopicOf(text)]}${lang === 'en' ? ' ' : ''}${USAGE_ASK[lang]}`,
   slots: { ...slots, noc: null },
   facts: [],
@@ -866,30 +760,8 @@ export const metaTopicOf = (text: string): MetaTopic | null => {
   return (Object.keys(META_RE) as MetaTopic[]).find((k) => META_RE[k].test(s)) ?? null
 }
 
-/**
- * 三格各一条整句(和 USAGE_WHAT 同一层:见客的话写死在数据层,不过模型)。
- * 每条自带把话头递回职业那半句 —— 不共用 USAGE_ASK,共用了三条里就有两条在同屏复述同一句。
- * 一个工具都没查,所以一个数字都不许出现。
- */
-const META_ANSWER: Record<ChatLang, Record<MetaTopic, string>> = {
-  zh: {
-    options: '选项按你说的职业生成,这一轮没认出职业就没有。说出职业名或 NOC 码,选项会跟着出来。',
-    capability: '我按职业查在招岗位、省提名清单收录、官方门槛和联邦 EE 分数线。说出职业名或 NOC 码就能开始。',
-    howto: '直接说职业名或 NOC 码,再补省份、经验和语言成绩,结果会更贴你的情况。',
-  },
-  en: {
-    options: 'The options come from the occupation you name, so there are none until we have it. Tell us your occupation or NOC code and they will appear.',
-    capability: 'We look up job openings, provincial list coverage, official thresholds and federal Express Entry cut-offs for one occupation. Tell us your occupation or NOC code to start.',
-    howto: 'Name your occupation or NOC code first, then add your province, experience and language scores for a closer answer.',
-  },
-  ko: {
-    options: '선택지는 말씀하신 직업으로 만들어지므로 직업을 알기 전에는 나오지 않습니다. 직업명이나 NOC 코드를 알려 주시면 함께 나옵니다.',
-    capability: '직업 기준으로 채용 중인 일자리, 주 목록 등재 여부, 공식 요건, 연방 Express Entry 커트라인을 조회합니다. 직업명이나 NOC 코드를 알려 주세요.',
-    howto: '직업명이나 NOC 코드를 먼저 알려 주시고, 주와 경력, 어학 점수를 더해 주시면 결과가 더 정확해집니다.',
-  },
-}
 /** 形态照 answerUsage 一字不差:写死的话 + 空 facts + 不进模型 + noc 一定是 null。 */
-export const answerMeta = (topic: MetaTopic, lang: ChatLang, slots: Omit<Slots, 'noc'> & { noc: string | null }): ChatResult => ({
+export const answerMeta = (topic: MetaTopic, lang: Lang, slots: Omit<Slots, 'noc'> & { noc: string | null }): ChatResult => ({
   answer: META_ANSWER[lang][topic],
   slots: { ...slots, noc: null },
   facts: [],
@@ -898,72 +770,6 @@ export const answerMeta = (topic: MetaTopic, lang: ChatLang, slots: Omit<Slots, 
 
 // ── 第二步:调工具 → 压平成 Fact[] ─────────────────────────────────────────
 
-/**
- * 🔴 四态 → **用户语言的成句说法**,在数据层就写死(清洗下沉,CLAUDE.md 那条铁律的同一个道理)。
- *
- * 为什么不让模型自己转述:2026-08-04 实测,把英文枚举丢给它翻译,它会把两条**状态不同**的主张
- * 揉成一句 ——「关于中介收 2 万及所谓合作公司的说法,本站未收集此类数据」:
- * 「收 2 万」确实是本站没收录,但「曼省有合作公司」是**官方根本不公布**这类名单。
- * 合并 = 撒谎,而且撒的正是中介最爱钻的那个空子(用户以为「你们没查到」,实际是「谁承诺都没有官方依据」)。
- * 所以句子由我们写好,模型只负责照抄 —— 括号里那半句是防合并的锚点,别删。
- */
-const AVAIL_SENTENCE: Record<ChatLang, Record<Availability, string>> = {
-  zh: {
-    ok: 'ok',
-    'not-published': '官方不公布这项数据(不是本站没查到)',
-    'not-collected': '本站尚未收录这项数据(不是官方没有)',
-    'not-applicable': '不适用:该省不走省提名这套制度',
-  },
-  en: {
-    ok: 'ok',
-    'not-published': 'the government does not publish this (not that we failed to find it)',
-    'not-collected': 'our site has not indexed this yet (not that the government has none)',
-    'not-applicable': 'not applicable: this province is outside the provincial nominee system',
-  },
-  ko: {
-    ok: 'ok',
-    'not-published': '정부가 공개하지 않는 항목입니다(본 사이트가 못 찾은 것이 아닙니다)',
-    'not-collected': '본 사이트가 아직 수집하지 않았습니다(정부에 자료가 없다는 뜻이 아닙니다)',
-    'not-applicable': '해당 없음: 이 주는 주정부 이민 제도 밖입니다',
-  },
-}
-/**
- * 主张行 = [前缀, 连接词]:拼出来是**一句能整句照抄的第二人称话**
- * (「有人跟你说「中介说曼省有合作公司」——官方不公布这项数据(不是本站没查到)」)。
- * 第一版把四态只塞进 valueText、label 留英文速记,模型照样把两条揉成一句;
- * 做成成品句之后它才肯一条一句地抄。findMergedStates 靠 unit==='claim' 认行,不靠这两个字。
- */
-// ⚠️ 英文那条 2026-08-04 生产实录断在这儿:`You were told "…" our site has not indexed this yet` ——
-// 破折号被模型抄丢了,两个分句直接怼一起,读起来是病句。改成**冒号收口**:即使模型只抄了词,
-// 「On what you were told ("X"): the government does not publish this」本身就是一句完整的话,不靠标点续命。
-const CLAIM_LEAD: Record<ChatLang, [string, string, string]> = {   // [开头, 收尾, 接四态的连接]
-  // 「有人跟你说「X」」是记录口吻,不是说话口吻;照抄出去就是一句公文。改成「你听到的「X」这句话——…」,
-  // 整句抄下来读起来就是 Frank 要的那个调子(「老板口头说帮你办,这句话本身没法核实——…」)。
-  // 连接词保持中性:availability='ok' 的主张接的是「这条可以拿下面的官方数字对照」,不能预设「核不了」。
-  zh: ['你听到的「', '」这句话', '——'],
-  en: ['On what you were told ("', '")', ': '],
-  ko: ['「', '」라고 들으신 건', ' — '],
-}
-/** 私人报价是交易条件,不是一项政府数据。见客时直接回答它能不能证明结果,不套 Availability。 */
-export const MONEY_WHY: Record<ChatLang, string> = {
-  zh: '报价本身不能证明对方承诺的结果能办成;真正可核的是下面的官方清单和门槛',
-  en: 'A quoted fee does not prove that the promised outcome will happen; check the published lists and requirements below instead',
-  ko: '제시된 수수료만으로 약속한 결과가 이루어진다는 뜻은 아닙니다. 아래의 공식 목록과 요건을 확인해야 합니다',
-}
-/**
- * 私人承诺的解释句 —— **见客文案的单一来源在这一层**,不在工具层。
- *
- * C1 的 `PRIVATE_PROMISE_WHY` 是中文硬编码(它那层的 `checkClaims` 签名里根本没有 lang,
- * 硬塞进去等于把语言关注点下沉到不该管它的层)。工具层给的**稳定标识**是 `topic === 'private-promise'`,
- * 见客的话由这里按用户语言出 —— 和 AVAIL_SENTENCE / LBL 一个道理。88% 是英文流量,这条尤其不能凑合。
- *
- * 私人销售承诺不是一项待查的政府数据。这里直接回答「能不能当保证」,再把读者带回真正可核的门槛。
- */
-export const PROMISE_WHY: Record<ChatLang, string> = {
-  zh: '这类私人承诺不能当作官方保证;真正可核的是下面的官方清单和门槛',
-  en: 'A private promise is not an official guarantee; check the published lists and requirements below instead',
-  ko: '이런 사적인 약속은 공식 보장이 아닙니다. 아래의 공식 목록과 요건을 확인해야 합니다',
-}
 
 /** fact.label 的硬帽(见 fact():prompt 预算、降级清单、前端出处表共用同一个上限)。 */
 export const LABEL_CAP = 320
@@ -985,16 +791,16 @@ export function claimLabel(lead: string, text: string, close: string, rest: stri
   const room = Math.max(MIN_QUOTE, Math.min(QUOTE_CAP, cap - (lead.length + close.length + rest.length)))
   return `${lead}${text.length > room ? `${text.slice(0, room - 1)}…` : text}${close}${rest}`
 }
-const sepOf = (l: ChatLang) => (l === 'en' ? '. ' : '。')
+const sepOf = (l: Lang) => (l === 'en' ? '. ' : '。')
 /** 报价走交易判断;真正未收录的普通主张才走 Availability。 */
-export function otherClaimLabel(text: string, lang: ChatLang): string {
+export function otherClaimLabel(text: string, lang: Lang): string {
   const [lead, close, dash] = CLAIM_LEAD[lang]
   const money = isMoneyTalk(text)
   return claimLabel(lead, text, close, `${dash}${money ? MONEY_WHY[lang] : AVAIL_SENTENCE[lang]['not-collected']}`)
 }
 
 /** 收费与包办话术合成一条结论,避免同一问答连续念两遍“无法核实”。 */
-export function commercialClaimLabel(texts: string[], lang: ChatLang): string {
+export function commercialClaimLabel(texts: string[], lang: Lang): string {
   const [lead, close, dash] = CLAIM_LEAD[lang]
   const unique = [...new Set(texts.map((x) => x.trim()).filter(Boolean))]
   const joiner = lang === 'en' ? '; ' : lang === 'ko' ? '; ' : ';'
@@ -1009,10 +815,10 @@ export function commercialClaimLabel(texts: string[], lang: ChatLang): string {
  * 工具层语言中立是对的 —— 所以这里定规矩:**C1 的中文注只给中文用户看**,en/ko 一律不带。
  * 代价是英文答复少一句取证注(四态成句已经把「不公布 vs 没收录」说清了);收益是不出中英夹生。
  */
-const zhOnly = (s: string | undefined, lang: ChatLang) => (lang === 'zh' ? (s ?? '') : '')
+const zhOnly = (s: string | undefined, lang: Lang) => (lang === 'zh' ? (s ?? '') : '')
 
 /** 出口回读用:模型会换个说法(「未收集」不是「未收录」),所以按**语义标记**认,不按原句认。 */
-export const AVAIL_MARKERS: Record<ChatLang, Record<Exclude<Availability, 'ok'>, string[]>> = {
+export const AVAIL_MARKERS: Record<Lang, Record<Exclude<Availability, 'ok'>, string[]>> = {
   zh: {
     // 私人承诺那句(PROMISE_WHY)不含「不公布」三个字,但它就是 not-published 的意思,而且说得更透
     'not-published': ['不公布', '不发布', '未公布', '未发布', '不对外公布', '不披露', '没有任何一级政府公布', '谁也核不了'],
@@ -1042,265 +848,10 @@ export const AVAIL_MARKERS: Record<ChatLang, Record<Exclude<Availability, 'ok'>,
  * 为什么 missingClaimLines 原来放行:它只在主张带四态时才要求答复复述状态,而商业话术那行没有四态,
  * 于是「提到了这条主张」就算过 —— 判断说成什么样都行。这里给它补上该有的那把尺。
  */
-export const VERDICT_MARKERS: Record<ChatLang, string[]> = {
+export const VERDICT_MARKERS: Record<Lang, string[]> = {
   zh: ['不能当作', '不能证明', '不是官方保证', '不等于官方', '不构成官方', '并不保证', '没有官方效力'],
   en: ['not an official guarantee', 'does not prove', 'do not prove', 'does not guarantee', 'no official standing', 'is not official'],
   ko: ['공식 보장이 아', '증명하지 않', '보장하지 않', '공식적인 효력이 없'],
-}
-/**
- * 🔴 fact 的 label 也按用户语言成句(和 AVAIL_SENTENCE 同一个做法)。
- *
- * 为什么必须在**数据层**做:label 有两个下游 —— 喂模型的 FACTS 块,和 guard 失败时的**降级清单**。
- * 降级清单是我们自己写的字,英文 label 直接就是见客事故(2026-08-04 实测红过一次:
- * 用户看到「apprentice-friendly openings for NOC 72310」「index scope note」)。
- * 把英文 label 丢给下游各自想办法 = 每个下游都得自己翻一遍,漏一个就露一次。
- *
- * factor 那几条尤其要连主语一起写死:实测模型把 empYears「雇主经营年限」读成「申请人要 3 年经验」,
- * 一句话把结论说反 —— 主语必须长在标签里。
- *
- * 🔴 2026-08-05 改形状(Frank:「现在这回答不像人话」):门槛类 label 从**字段名**改成**半句话**。
- * 病根不在 RULE 而在喂进去的形状 —— `X 要求申请人要达到的语言等级(CLB) = 5 CLB` 是一行表格,
- * **给它表格它就还你表格**(生产实录整段答复就是逐行念字段名)。现在 label 写成一句话的前半截,
- * 值接上去就是完整的一句(`NS 要求申请人的语言达到` + `5 CLB`),模型抄到的已经是人话。
- * 同一个字典还要撑住**出处表**(前端左列 label、右列数值)—— 半句话在表里读作「名目」,
- * 在 prompt 里读作「句子」,一份文案两处都成立,不必养两套词表(养了必分叉)。
- * 计数类(岗位数/池子/抽选)保持「名目」形态,由 factLine 用冒号接值 —— `=` 一律不进 prompt。
- */
-type LabelDict = {
-  apprOpenings: string; apprSub: string; openPostings: string; qcOutside: string; indexNote: string; checked: string
-  listIn: string; listEx: string; occList: string; officialReq: string; claimOk: string
-  /** 查过了但一条都没命中(availability='ok' 却没有行):不是「不公布」也不是「没收录」 */
-  noneFound: string
-  pass: string; fail: string; unknown: string; short: string
-  drawCut: string; drawInv: string; draws: string; opsStats: string
-  eeCat: string; eeAll: string; unsaid: string
-  federalRule: string; federalGap: string; crsPoint: string; fswPoint: string
-  opsKeys: Record<string, string>
-  /** 半句话:`${省码} ${factor}` + 值 = 一句完整的话。主语(申请人 / 雇主)必须长在里面。 */
-  factor: Record<string, string>
-  /** op='none' = 官方明说这条通道**不设**这项门槛。与 factor 分开:两句话意思相反,共用模板就会说反。 */
-  factorNone: Record<string, string>
-  /** languageExempt 且 unit=years:值是**毕业年限**不是语言等级(ON 那行 value=3 unit=years)——
-   *  套 factor 模板会拼出「豁免语言的等级是 3 years」,年限被读成等级。整句在这儿拼好,值嵌句中。 */
-  exemptYears: (n: number) => string
-  /**
-   * 时间线(lookupPlan)。全是**名目**形态(sayFact 用冒号接值),不是半句话 ——
-   * 一条路上可能有两段同类,名目里必须写清是哪一段,不然读者对不上号。
-   *  planGap:门槛缺口按因素分(key='' 是认不出因素时的兜底);
-   *  planTotal / planLower:**两个不同的东西**,措辞必须让人一眼看出区别 ——
-   *    total=全段都有官方数据的合计;lower=还有段算不出,这只是下界(红线:下界不许冒充总数)。
-   *  faster:三语语序不同,拼接交给各自的函数(同 STEP 的做法),别拿一个模板硬套。
-   */
-  planGap: Record<string, string>
-  planDraw: string
-  /** 🔴 抽选段的 0 有两种意思,见 planStepLabel:这一条是「官方明示不进池」的那种 0 */
-  planNoDraw: string
-  planProc: string
-  planTotal: string
-  planLower: string
-  planNone: string
-  /** 口径注(同 indexNote 的位置):**这条线不算什么** —— 不写清楚,12.5 个月会被读成「12.5 个月拿 PR」 */
-  planScope: string
-  faster: (fast: string, slow: string, atLeast: boolean) => string
-  /**
-   * 路径裁决(C5c lookupVerdict)。全是**半句话或名目**,值/官方原句由 sayFact 接上去。
-   * 🔴 `vTier` 那四句**一个数字都不许有**:tier 是「gap 落在哪个区间」的分档
-   * (0=没有缺口 / ≤6 月 / ≤12 月 / >12 月),写成「还要 12 个月」是给一个区间编了一个精度。
-   * 真实的月数在通道自己的 gap 理由里(带官方原句与出处),那才是能报的数。
-   */
-  vScope: string
-  vPaths: string
-  vExcluded: string
-  vNeedsInfo: string
-  vTier: [string, string, string, string]
-  vWhy: string
-  vScore: string
-  vCeiling: string
-  vRefLine: string
-  vLeverClb: (target: number) => string
-  vLeverTeer: string
-  /** 缺槽反问(三语;followups 是见客文案,同 FOLLOWUPS 一层)。status 不在 PROFILE_SLOTS 里:
-   *  它不参与触发计数,只在裁决已出、身份还不明时点名问(NL 这类通道的前提是有效工签,§4.5)。 */
-  vAsk: Record<ProfileSlot | 'status', string>
-}
-export const LBL: Record<ChatLang, LabelDict> = {
-  zh: {
-    apprOpenings: '现在可带学徒的在招岗位', apprSub: '其中雇主写明不要经验的在招岗位', openPostings: '现在的在招岗位', qcOutside: '(魁省不走省提名)',
-    indexNote: '索引口径说明:0 表示本站当前索引里没有,不代表该省没有空缺', checked: '查询时间',
-    listIn: '的官方职业清单收了', listEx: '的官方职业清单排除了', occList: '的官方职业清单', officialReq: '的官方门槛',
-    claimOk: '这条可以拿下面的官方数字对照', noneFound: '本站查过了,这一项没有命中的记录',
-    pass: '已达标', fail: '未达标', unknown: '未判定(没拿到你的情况)', short: '还差',
-    drawCut: '最近一轮抽选的最低分数线', drawInv: '最近一轮抽选发出的邀请数', draws: '的抽选记录', opsStats: '的运营统计',
-    eeCat: '联邦 EE 通道', eeAll: '联邦 EE 通道', unsaid: '官方清单也收了这个职业、但对方没提过的省',
-    federalRule: '官方规则', federalGap: '官方原文没有接上的一步', crsPoint: 'CRS 官方计分档', fswPoint: 'FSW 67 分官方计分档',
-    opsKeys: { eoi_pool_total: '的 EOI 池子现有人数', eoi_pool: '的 EOI 池内人数', allocation: '今年的提名名额', remaining: '今年剩余的提名名额', nominations_ytd: '今年已经发出的提名数', processing_weeks: '官方公布的处理周期' },
-    factor: {
-      language: '要求申请人的语言达到', languageExempt: '规定申请人可以豁免语言的等级是',
-      experience: '要求申请人的工作经验满', income: '要求申请人家庭的收入达到', wage: '要求这份工作至少给到',
-      empYears: '要求雇主(不是申请人)已经营满', empRevenue: '要求雇主(不是申请人)的年营业额至少', empStaff: '要求雇主(不是申请人)至少有员工',
-    },
-    factorNone: { experience: '这条通道不设工作经验门槛', language: '这条通道不要求先交语言成绩' },
-    // 「免」只免这条通道的**入池门槛**(2026-08-09 Frank「OINP 新系统也有语言打分啊」):EOI 排位仍计
-    // 语言分(pnp_score_factors ON language CLB6=4…CLB9+=15 在库,判定/规划场景各自出行),措辞不许扩大成「语言无用」
-    exemptYears: (n) => `省内认可院校毕业 ${n} 年内免交语言成绩也可入池`,
-    planGap: {
-      '': '补齐官方门槛要多久', experience: '补齐经验门槛要多久', language: '补齐语言门槛要多久',
-      income: '补齐收入门槛要多久', wage: '补齐工资门槛要多久',
-    },
-    planDraw: '官方开一轮抽选的平均间隔', planNoDraw: '这条通道不用等抽选(官方明示不进池)', planProc: '官方公布的处理时长(折成月)',
-    planTotal: '这条路各段合计', planLower: '这条路只把算得出的几段相加(还有段算不出,这是下界不是总数)',
-    planNone: '这条路要多久',
-    planScope: '时间线口径:只算门槛缺口、官方开一轮的间隔、官方公布的处理时长;签证、体检、找到雇主要多久都不在里面',
-    faster: (f, s, at) => `${f} 比 ${s} ${at ? '至少快多少' : '快多少'}`,
-    vScope: '路径判定的口径:逐条通道拿官方门槛与你的情况对照,这是粗筛,不是资格认定;各省还有自己的清单与细则',
-    vPaths: '路径判定',
-    vExcluded: '这条通道现在走不通',
-    vNeedsInfo: '这条通道判不了',
-    vTier: [
-      '拿到 offer 当天就能递,没有还要攒的门槛',
-      '拿到 offer 之后还要再攒不到半年',
-      '拿到 offer 之后还要再攒不到一年',
-      '拿到 offer 之后还要再攒一年以上',
-    ],
-    vWhy: '判定依据',
-    vScore: '你在这条通道的估分',
-    vCeiling: '把语言拉到官方最高档之后的上界',
-    vRefLine: '最近一轮抽选的最低分',
-    vLeverClb: (t) => `语言提到 CLB ${t} 之后,官方分值表上能多拿的分`,
-    vLeverTeer: '改接 TEER 5 的岗之后会掉档的通道数',
-    // 反问文案是**问句**(和 ASK_OCC 一样:缺了判定必需的东西就当面问,不拿默认值顶上)
-    vAsk: {
-      age: '你今年多少岁?',
-      married: '配偶会不会跟你一起申请?',
-      clb: '你的语言考到 CLB 几?',
-      edu: '你的最高学历是什么?',
-      canadaStudy: '你在加拿大读过书吗?',
-      eduYears: '你读的课程是几年制?',
-      studyProvince: '你在哪个省读的书?',
-      expMonths: '你有多少个月的工作经验?',
-      status: '你现在有有效的工签吗(比如 PGWP)?',
-    },
-  },
-  en: {
-    apprOpenings: 'apprentice-friendly openings right now', apprSub: 'of those postings, the ones where the employer states no experience is needed', openPostings: 'open postings right now', qcOutside: '(QC is outside PNP)',
-    indexNote: 'index note: 0 means nothing in our index right now, not that the province has none', checked: 'checked',
-    // ⚠️ 「officially excludes」曾经写作 EXCLUDES —— **我们自己的 label 里用大写做强调,模型照抄进答复**
-    // (2026-08-06 实测同一个病:RULE 0 里的 WE 原样进了英文首句)。见客文案里一律不用大写强调。
-    listIn: 'officially lists', listEx: 'officially excludes', occList: 'official occupation list', officialReq: 'official requirements',
-    claimOk: 'we do have official numbers to check this against, see the figures below',
-    noneFound: 'we did check this record — this occupation simply does not appear in it',
-    pass: 'met', fail: 'not met', unknown: 'not judged (your situation not given)', short: 'short by',
-    drawCut: 'latest draw cutoff', drawInv: 'invitations in the latest draw', draws: 'draw history', opsStats: 'operational stats',
-    eeCat: 'federal EE category', eeAll: 'federal EE categories',
-    federalRule: 'official rule', federalGap: 'step the official wording does not connect',
-    crsPoint: 'official CRS points row', fswPoint: 'official FSW 67-point row',
-    // 这句会被整句抄进答复,写成能直接当句子用的形状(旧版「provinces whose … but nobody mentioned」抄出来不成句)
-    unsaid: 'other provinces whose official lists also cover this occupation, which nobody mentioned',
-    opsKeys: { eoi_pool_total: 'EOI pool size right now', eoi_pool: 'EOI pool size right now', allocation: 'nomination allocation for the year', remaining: 'nomination allocation still left', nominations_ytd: 'nominations issued so far this year', processing_weeks: 'processing time the province publishes' },
-    factor: {
-      language: 'requires the applicant to reach a language level of', languageExempt: 'lets the applicant skip the language test at a level of',
-      experience: 'requires the applicant to have work experience of', income: 'requires the applicant household income of at least',
-      wage: 'requires this job to pay at least', empYears: 'requires the employer, not the applicant, to have been in business for',
-      empRevenue: 'requires the employer, not the applicant, to have annual revenue of at least', empStaff: 'requires the employer, not the applicant, to have staff of at least',
-    },
-    factorNone: { experience: 'sets no minimum work-experience requirement', language: 'requires no language test up front' },
-    exemptYears: (n) => `accepts registration without a language test if the applicant graduated from an eligible institution in the province within the last ${n} years`,
-    planGap: {
-      '': 'how long it takes to close the gap to the official requirement', experience: 'how long it takes to close the work experience gap',
-      language: 'how long it takes to close the language gap', income: 'how long it takes to close the household income gap',
-      wage: 'how long it takes to close the pay gap',
-    },
-    planDraw: 'average gap between one official draw round and the next',
-    planNoDraw: 'no draw to wait for on this stream, the official page says so', planProc: 'processing time the province publishes, put into months',
-    planTotal: 'the whole path added up', planLower: 'only the segments that can be worked out, added up (a floor, not a total)',
-    planNone: 'how long this path takes',
-    planScope: 'what this timeline counts: the gap to the official requirement, how often the province opens a round, and the '
-      + 'processing time it publishes — a visa, a medical or the time it takes to find an employer are not in it',
-    faster: (f, s, at) => `how much faster ${f} is than ${s}${at ? ', at the very least' : ''}`,
-    vScope: 'what this path ruling is: every stream checked line by line against the official requirements on file — '
-      + 'a first-pass sort, not an eligibility decision; each province still has its own lists and fine print',
-    vPaths: 'path ruling',
-    vExcluded: 'is closed on the official requirements',
-    vNeedsInfo: 'cannot be ruled on',
-    vTier: [
-      'can be filed the day a job offer is in hand, with nothing left to build up',
-      'still needs under half a year of building up after a job offer',
-      'still needs under a year of building up after a job offer',
-      'still needs over a year of building up after a job offer',
-    ],
-    vWhy: 'the official wording behind that ruling',
-    vScore: 'the estimated score on this stream',
-    vCeiling: 'the ceiling once language is taken to the top official band',
-    vRefLine: 'the cutoff in the latest draw',
-    vLeverClb: (t) => `points gained on the official grid by taking language to CLB ${t}`,
-    vLeverTeer: 'streams that drop out if the job taken is a TEER 5 one',
-    vAsk: {
-      age: 'How old are you?',
-      married: 'Would a spouse or partner come along on the application?',
-      clb: 'What CLB level did you reach?',
-      edu: 'What is your highest completed education?',
-      canadaStudy: 'Did you study in Canada?',
-      eduYears: 'How many years does your programme run?',
-      studyProvince: 'Which province did you study in?',
-      expMonths: 'How many months of work experience do you have?',
-      status: 'Do you hold a valid work permit right now (a PGWP, for example)?',
-    },
-  },
-  ko: {
-    apprOpenings: '현재 견습 가능 채용 공고', apprSub: '그중 고용주가 경력 무관이라고 밝힌 공고', openPostings: '현재 채용 공고', qcOutside: '(퀘벡은 주정부 이민 대상 아님)',
-    indexNote: '색인 안내: 0은 현재 본 사이트 색인에 없다는 뜻이며 해당 주에 공석이 없다는 뜻이 아닙니다', checked: '조회 시각',
-    listIn: '공식 직업 목록에 들어 있는 직업', listEx: '공식 직업 목록에서 제외된 직업', occList: '공식 직업 목록', officialReq: '공식 요건',
-    claimOk: '이 건은 아래 공식 수치와 대조할 수 있습니다', noneFound: '조회했으나 이 직업에 해당하는 기록이 없습니다',
-    pass: '충족', fail: '미충족', unknown: '판정 불가(본인 상황 미제공)', short: '부족분',
-    drawCut: '최근 추첨 커트라인', drawInv: '최근 추첨 초청 건수', draws: '추첨 기록', opsStats: '운영 통계',
-    eeCat: '연방 EE 카테고리', eeAll: '연방 EE 카테고리', unsaid: '공식 목록에 이 직업이 있으나 상대가 말하지 않은 주',
-    federalRule: '공식 규정', federalGap: '공식 문구가 연결하지 않은 단계',
-    crsPoint: 'CRS 공식 점수 항목', fswPoint: 'FSW 67점 공식 항목',
-    opsKeys: { eoi_pool_total: 'EOI 풀 전체 인원', eoi_pool: 'EOI 풀 인원', allocation: '올해 지명 배정', remaining: '남은 지명 배정', nominations_ytd: '올해 누적 지명', processing_weeks: '주정부가 공개한 처리 기간' },
-    factor: {
-      language: '요건 — 신청인의 언어 등급은', languageExempt: '요건 — 언어 면제 기준 등급(신청인)은',
-      experience: '요건 — 신청인의 경력은', income: '요건 — 신청인 가구 소득은', wage: '요건 — 이 일자리의 최저 임금은',
-      empYears: '요건 — 고용주(신청인 아님)의 사업 운영 기간은', empRevenue: '요건 — 고용주(신청인 아님)의 연 매출은', empStaff: '요건 — 고용주(신청인 아님)의 직원 수는',
-    },
-    factorNone: { experience: '이 통로는 경력 요건이 없습니다', language: '이 통로는 사전 어학 성적을 요구하지 않습니다' },
-    exemptYears: (n) => `주 내 인정 교육기관 졸업 후 ${n}년 이내면 어학 성적 없이 등록할 수 있습니다`,
-    planGap: {
-      '': '공식 요건을 채우는 데 걸리는 기간', experience: '경력 요건을 채우는 데 걸리는 기간', language: '언어 요건을 채우는 데 걸리는 기간',
-      income: '소득 요건을 채우는 데 걸리는 기간', wage: '임금 요건을 채우는 데 걸리는 기간',
-    },
-    planDraw: '공식 추첨 한 회차 사이의 평균 간격', planNoDraw: '이 통로는 추첨 대기가 없음(공식 명시)', planProc: '주정부가 공개한 처리 기간(개월 환산)',
-    planTotal: '이 경로 전체 구간 합계', planLower: '산출 가능한 구간만 합한 값(총계가 아니라 하한)',
-    planNone: '이 경로에 걸리는 기간',
-    planScope: '이 기간에 포함되는 것: 요건까지의 부족분, 주정부가 추첨을 여는 주기, 공개된 처리 기간 — 비자·건강검진·고용주를 찾는 기간은 빠져 있습니다',
-    faster: (f, s, at) => `${f}가 ${s}보다 빠른 기간${at ? '(최소치)' : ''}`,
-    vScope: '경로 판정 기준: 각 통로를 수집된 공식 요건과 한 줄씩 대조한 결과입니다. 1차 선별일 뿐 자격 판정이 아니며, 주마다 별도의 목록과 세부 규정이 있습니다',
-    vPaths: '경로 판정',
-    vExcluded: '이 상황에서는 막혀 있습니다',
-    vNeedsInfo: '판정할 수 없습니다',
-    vTier: [
-      '오퍼를 받은 당일에 신청 가능(더 쌓을 요건 없음)',
-      '오퍼 이후 반년 미만을 더 쌓아야 함',
-      '오퍼 이후 한 해 미만을 더 쌓아야 함',
-      '오퍼 이후 한 해 넘게 더 쌓아야 함',
-    ],
-    vWhy: '판정 근거가 된 공식 문구',
-    vScore: '이 통로에서의 예상 점수',
-    vCeiling: '언어를 공식 최고 등급까지 올렸을 때의 상한',
-    vRefLine: '최근 추첨의 커트라인',
-    vLeverClb: (t) => `언어를 CLB ${t}까지 올릴 때 공식 점수표에서 더 받는 점수`,
-    vLeverTeer: 'TEER 5 일자리로 바꾸면 빠지는 통로 수',
-    vAsk: {
-      age: '연세가 어떻게 되시나요?',
-      married: '배우자도 함께 신청하나요?',
-      clb: '언어 점수는 CLB 몇 등급인가요?',
-      edu: '최종 학력은 무엇인가요?',
-      canadaStudy: '캐나다에서 공부한 적이 있나요?',
-      eduYears: '과정 기간은 몇 년인가요?',
-      studyProvince: '어느 주에서 공부하셨나요?',
-      expMonths: '경력은 몇 개월인가요?',
-      status: '지금 유효한 취업 허가(예: PGWP)가 있나요?',
-    },
-  },
 }
 
 /**
@@ -1347,7 +898,7 @@ const fact = (tool: string, label: string, value: number | null, valueText: stri
  * 把「一个类别都不在」说成了「都能走」,**意思正好说反**(2026-08-05 实测 C06 英文)。
  * 中文侥幸没错是因为 C1 的中文 note 补了后半句,en/ko 没有 note → 只剩一个 `ok`。所以在这里就换成人话。
  */
-const statusFact = (tool: string, label: string, av: Availability, note: string, url: string, lang: ChatLang) =>
+const statusFact = (tool: string, label: string, av: Availability, note: string, url: string, lang: Lang) =>
   fact(tool, label, null, `${av === 'ok' ? LBL[lang].noneFound : AVAIL_SENTENCE[lang][av]}${note ? ` — ${note}` : ''}`, 'status', { url, fetched: '' })
 
 // ── 时间线 → Fact[](C3 buildPlan 的答案怎么摆给模型)────────────────────────
@@ -1380,7 +931,7 @@ const planStepLabel = (s: PlanStep, T: LabelDict): string =>
  *  ② `A = B` 换成 `A:B` —— RULE 5b 明令答复里不许出现 `=`,而 basis 里那个等号会被模型照抄,
  *     出口的 findFactDump 当场判违规,白烧一次重试(降级清单更是直接把它印给用户看)。
  */
-const plainly = (s: string, lang: ChatLang) => localizeUnits(s, lang).replace(/\s=\s/g, ':')
+const plainly = (s: string, lang: Lang) => localizeUnits(s, lang).replace(/\s=\s/g, ':')
 
 /**
  * 时间线 → facts。**一个数都不在这里算**:月数、下界、快慢差全是 buildPlan 已经定好的字段,
@@ -1388,7 +939,7 @@ const plainly = (s: string, lang: ChatLang) => localizeUnits(s, lang).replace(/\
  * 算不出的段照样出一行(statusFact:官方不公布 / 本站未收录)—— 那正是「多久」这个问题最该说清的一半:
  * 少说一段,读者就会把下界当成总数。
  */
-export function planFacts(r: PlanResult, lang: ChatLang): Fact[] {
+export function planFacts(r: PlanResult, lang: Lang): Fact[] {
   const T = LBL[lang]
   const out: Fact[] = []
   if (r.availability !== 'ok') {
@@ -1449,7 +1000,7 @@ export const VERDICT_CLB_TARGET = 8
 const drawEvidenceOf = (v: PathwayVerdict) =>
   v.reasons.find((r) => /\(\d{4}-\d{2}-\d{2}/.test(r.evidence?.label ?? ''))?.evidence
 
-export function verdictFacts(r: VerdictResult, lang: ChatLang): Fact[] {
+export function verdictFacts(r: VerdictResult, lang: Lang): Fact[] {
   const T = LBL[lang]
   if (r.availability !== 'ok') {
     return [statusFact('lookupVerdict', T.vPaths, r.availability, zhOnly(r.note, lang), '', lang)]
@@ -1605,7 +1156,7 @@ export function verdictProfileOf(slots: Slots, teer: number | null): VerdictProf
 }
 
 /** 缺槽反问:按 PROFILE_SLOTS 的顺序问最要紧的几个(问句是本层写死的三语文案,不过模型)。 */
-export function verdictFollowups(slots: Slots, lang: ChatLang, limit = 3): string[] {
+export function verdictFollowups(slots: Slots, lang: Lang, limit = 3): string[] {
   return PROFILE_SLOTS.filter((k) => slots[k] == null).slice(0, limit).map((k) => LBL[lang].vAsk[k])
 }
 
@@ -1614,8 +1165,8 @@ export function verdictFollowups(slots: Slots, lang: ChatLang, limit = 3): strin
  * 三张选项写死三语 —— label/consequence 是 UI 文案(零逗号);sendText 是用户口吻整句,
  * 发出去走既有抽槽(status 词表:student/graduated/working…),**不塞任何用户没说过的事实**。
  */
-export function permitOptions(lang: ChatLang): NonNullable<ChatResult['options']> {
-  const O: Record<ChatLang, NonNullable<ChatResult['options']>> = {
+export function permitOptions(lang: Lang): NonNullable<ChatResult['options']> {
+  const O: Record<Lang, NonNullable<ChatResult['options']>> = {
     zh: {
       reason: '先确认工签——它决定最快的通道对你开不开',
       items: [
@@ -1657,15 +1208,15 @@ const PROV_ZH: Record<string, [zh: string, en: string, ko: string]> = {
   NB: ['新不伦瑞克', 'New Brunswick', '뉴브런즈윅'], NL: ['纽芬兰', 'Newfoundland and Labrador', '뉴펀들랜드'],
   PE: ['爱德华王子岛', 'Prince Edward Island', '프린스에드워드아일랜드'],
 }
-const provWord = (code: string, lang: ChatLang): string | null => {
+const provWord = (code: string, lang: Lang): string | null => {
   const row = PROV_ZH[code]
   return row ? row[lang === 'zh' ? 0 : lang === 'en' ? 1 : 2] : null
 }
 export function slotAskOptions(
-  slots: Slots, facts: Fact[], lang: ChatLang, known: ProfileKnown = {},
+  slots: Slots, facts: Fact[], lang: Lang, known: ProfileKnown = {},
 ): ChatResult['options'] | undefined {
   if (slots.status == null && !known.status) {
-    const O: Record<ChatLang, NonNullable<ChatResult['options']>> = {
+    const O: Record<Lang, NonNullable<ChatResult['options']>> = {
       zh: { slotKey: 'status', reason: '记下你现在的身份——通道按它挑', items: [
         { label: '学签在读', consequence: '按毕业后时间线算', sendText: '我还在读书(持学签)' },
         { label: '持工签在工作或找工', consequence: '按在加经验通道算', sendText: '我持工签在加拿大' },
@@ -1691,7 +1242,7 @@ export function slotAskOptions(
       .sort((a, b) => (b.f.value ?? 0) - (a.f.value ?? 0))
       .slice(0, 3)
     if (top.length >= 2) {
-      const REASON: Record<ChatLang, string> = {
+      const REASON: Record<Lang, string> = {
         zh: '目标省定一个——门槛和清单按省答', en: 'Pick a target province — requirements and lists are answered per province',
         ko: '목표 주를 하나 정하세요 · 요건과 목록은 주별로 답합니다',
       }
@@ -1707,7 +1258,7 @@ export function slotAskOptions(
     }
   }
   if (slots.clb == null && !known.clb) {
-    const REASON: Record<ChatLang, string> = {
+    const REASON: Record<Lang, string> = {
       zh: '语言到哪档了——各省线按它比对', en: 'Note your language level — provincial lines are compared against it',
       ko: '언어 등급을 기록하세요 · 주별 기준선과 비교합니다',
     }
@@ -1722,7 +1273,7 @@ export function slotAskOptions(
   // 每一轮答完都有下一张建档卡。sendText 全部落在 SLOT_SYSTEM 词表的档位上(edu 七档取最常见三档,
   // 其余走卡自带的自行输入;年龄/几年制/读书省是数字与省名,没法三选,不硬造档位——归反问/自行输入)
   if (slots.edu == null && !known.edu) {
-    const O: Record<ChatLang, NonNullable<ChatResult['options']>> = {
+    const O: Record<Lang, NonNullable<ChatResult['options']>> = {
       zh: { slotKey: 'edu', reason: '记下最高学历——联邦和多数省按它给分', items: [
         { label: '两年制大专', consequence: '按大专档计分', sendText: '我的最高学历是两年制大专' },
         { label: '本科', consequence: '按本科档计分', sendText: '我的最高学历是本科' },
@@ -1742,7 +1293,7 @@ export function slotAskOptions(
     return O[lang]
   }
   if (slots.expMonths == null && !known.expMonths) {
-    const O: Record<ChatLang, NonNullable<ChatResult['options']>> = {
+    const O: Record<Lang, NonNullable<ChatResult['options']>> = {
       zh: { slotKey: 'expMonths', reason: '记下工作经验——通道门槛按月数比对', items: [
         { label: '还没有工作经验', consequence: '按零经验通道算', sendText: '我还没有工作经验' },
         { label: '满一年', consequence: '按 12 个月比对门槛', sendText: '我有 12 个月工作经验' },
@@ -1762,7 +1313,7 @@ export function slotAskOptions(
     return O[lang]
   }
   if (slots.married == null && !known.married) {
-    const O: Record<ChatLang, NonNullable<ChatResult['options']>> = {
+    const O: Record<Lang, NonNullable<ChatResult['options']>> = {
       zh: { slotKey: 'married', reason: '记下配偶随行与否——联邦计分表按它分单双', items: [
         { label: '单身', consequence: '按单人分表算', sendText: '我单身' },
         { label: '配偶随行', consequence: '按随行分表算', sendText: '我已婚,配偶会一起申请' },
@@ -1782,7 +1333,7 @@ export function slotAskOptions(
     return O[lang]
   }
   if (slots.canadaStudy == null && !known.canadaStudy) {
-    const O: Record<ChatLang, NonNullable<ChatResult['options']>> = {
+    const O: Record<Lang, NonNullable<ChatResult['options']>> = {
       zh: { slotKey: 'canadaStudy', reason: '记下是否在加拿大读过书——毕业生通道按它开关', items: [
         { label: '在加拿大读过书', consequence: '毕业生通道可判', sendText: '我在加拿大读过书' },
         { label: '学历都在境外', consequence: '按境外学历通道算', sendText: '我的学历都是在境外读的' },
@@ -1801,35 +1352,9 @@ export function slotAskOptions(
   return undefined
 }
 
-const FED_FACTOR: Record<ChatLang, Record<string, string>> = {
-  zh: {
-    pgwpLength: '工签长度分档', pgwpCombine: '多个课程合并规则', pgwpOnce: '一生可申请次数',
-    pgwpWindow: '毕业后申请窗口', pgwpMinProgram: '课程最短长度', pgwpLanguage: '语言门槛',
-    workTeer: '合资格工作所属 TEER', workHours: '工作经验时数', workLocation: '工作经验地点',
-    workSelfEmployed: '自雇及全日制学生期间工作是否计入', workRecency: '工作经验有效期',
-    workNocGroups: '合资格 NOC 组别', passMark: '入池资格分数线', proofOfFunds: '资金证明规则',
-    jobOfferOrCertificate: '工作邀请或技工资格证规则', residence: '计划居住地', language: '语言门槛', education: '教育要求',
-  },
-  en: {
-    pgwpLength: 'permit length band', pgwpCombine: 'combining programs', pgwpOnce: 'lifetime application limit',
-    pgwpWindow: 'application window after graduation', pgwpMinProgram: 'minimum program length', pgwpLanguage: 'language requirement',
-    workTeer: 'eligible work TEER', workHours: 'work-experience hours', workLocation: 'location of work experience',
-    workSelfEmployed: 'whether self-employment and full-time-student work count', workRecency: 'work-experience recency',
-    workNocGroups: 'eligible NOC groups', passMark: 'eligibility pass mark', proofOfFunds: 'proof-of-funds rule',
-    jobOfferOrCertificate: 'job-offer or trade-certificate rule', residence: 'intended residence', language: 'language requirement', education: 'education requirement',
-  },
-  ko: {
-    pgwpLength: '취업 허가 기간 구간', pgwpCombine: '여러 과정 합산 규정', pgwpOnce: '평생 신청 가능 횟수',
-    pgwpWindow: '졸업 후 신청 기간', pgwpMinProgram: '최소 과정 기간', pgwpLanguage: '언어 요건',
-    workTeer: '인정 경력의 TEER', workHours: '경력 시간', workLocation: '경력 취득 장소',
-    workSelfEmployed: '자영업·전일제 학생 경력 인정 여부', workRecency: '경력 인정 기간',
-    workNocGroups: '해당 NOC 그룹', passMark: '자격 통과 점수', proofOfFunds: '정착 자금 증빙 규정',
-    jobOfferOrCertificate: '잡오퍼 또는 기능 자격증 규정', residence: '거주 예정지', language: '언어 요건', education: '학력 요건',
-  },
-}
 
 /** lookupPermit 的真返回 → 对话 facts。rule 的数字与原句共用同一条 evidence；null 只摆原文,不补 0。 */
-export function federalRuleFacts(results: PermitResult[], lang: ChatLang): Fact[] {
+export function federalRuleFacts(results: PermitResult[], lang: Lang): Fact[] {
   const T = LBL[lang]
   const out: Fact[] = []
   for (const r of results) {
@@ -1854,7 +1379,7 @@ export function federalRuleFacts(results: PermitResult[], lang: ChatLang): Fact[
 }
 
 /** lookupCrs 的真返回 → 对话 facts。两套 grid 的名字长在每一行里,不让模型把分值混加。 */
-export function crsFacts(results: CrsResult[], lang: ChatLang): Fact[] {
+export function crsFacts(results: CrsResult[], lang: Lang): Fact[] {
   const T = LBL[lang]
   const out: Fact[] = []
   for (const r of results) {
@@ -1880,7 +1405,7 @@ export function crsFacts(results: CrsResult[], lang: ChatLang): Fact[] {
  * `lang`:四态在这一层就写成用户语言的成句(AVAIL_SENTENCE),模型只照抄不翻译。
  */
 export async function collectFacts(
-  pool: any, slots: Slots, teerHint?: number | null, lang: ChatLang = 'en', onStep?: OnStep,
+  pool: any, slots: Slots, teerHint?: number | null, lang: Lang = 'en', onStep?: OnStep,
   opts: {
     plan?: boolean; federalPrograms?: FederalRuleProgram[]; crs?: CrsLookupArgs[]; allProvs?: boolean
     /** 路径裁决(C5c)。触发判据在 orchestrate:问的是「走哪条路」且档案槽够用 —— 纯函数判,不问模型。 */
@@ -2148,7 +1673,7 @@ export async function collectFacts(
  * 摆进 prompt 是对的(模型要靠它分清「不公布」和「没收录」),摆进见客清单就是 Frank 说的
  * 「一坨 - 标签: 值 — 一长串 note,note 里还夹着括号里的括号」。状态那半句一个字不动,砍的是后面的注。
  */
-export function sayFact(f: Fact, lang: ChatLang, opts: { brief?: boolean } = {}): string {
+export function sayFact(f: Fact, lang: Lang, opts: { brief?: boolean } = {}): string {
   if (f.unit === 'status') {
     const v = opts.brief ? f.valueText.split(' — ')[0] : f.valueText
     return `${f.label}: ${v}`
@@ -2170,10 +1695,10 @@ export function sayFact(f: Fact, lang: ChatLang, opts: { brief?: boolean } = {})
   const note = f.value != null && f.valueText ? f.valueText : ''
   return note ? `${head}(${note})` : head
 }
-const factLine = (f: Fact, lang: ChatLang) => `- ${sayFact(f, lang)}`
+const factLine = (f: Fact, lang: Lang) => `- ${sayFact(f, lang)}`
 
 /** facts → 紧凑文本(预算内逐条塞,塞不下就停;尾部优先级最低,砍掉不影响主线)。 */
-export function factsBlock(facts: Fact[], budget = PROMPT_BUDGET, lang: ChatLang = 'en'): string {
+export function factsBlock(facts: Fact[], budget = PROMPT_BUDGET, lang: Lang = 'en'): string {
   const lines: string[] = []
   let used = 0
   for (let i = 0; i < facts.length; i++) {
@@ -2286,7 +1811,7 @@ export function mergeRememberedSlots(
  * 这类答案不需要模型发挥：四条决定性官方 facts 齐全时，直接交付「结论 → 原因 → 条件 → 风险」。
  * 好处不只是文风稳定，还省掉一轮 10–15 秒的合成调用；缺任一条事实就返回空，照常走 LLM，不拿旧规则硬答。
  */
-export function buildPgwpCombineAnswer(facts: Fact[], lang: ChatLang, userEvidence = ''): string {
+export function buildPgwpCombineAnswer(facts: Fact[], lang: Lang, userEvidence = ''): string {
   const permit = facts.find((f) => f.tool === 'lookupPermit' && /If your program was (\d+) years? or more/i.test(f.valueText))
   const combine = facts.find((f) => f.tool === 'lookupPermit' && /combines? the length of each program/i.test(f.valueText))
   const minimum = facts.find((f) => f.tool === 'lookupPermit' && /at least (\d+) months? long/i.test(f.valueText))
@@ -2377,7 +1902,7 @@ export function factsFingerprint(facts: Fact[]): string {
 }
 
 export function synthMessages(
-  facts: Fact[], userText: string, lang: ChatLang,
+  facts: Fact[], userText: string, lang: Lang,
   opts: {
     zeroExp: boolean; hasClaims: boolean; hasVerdict?: boolean; occ: string
     forbid?: string[]; banned?: string[]; sameOpen?: string[]; history?: ChatTurn[]
@@ -2676,7 +2201,7 @@ function cjkInteger(raw: string): number | null {
 }
 
 /** 中文数量词只有在 facts / 用户原话里有同单位证据时才放行，不能让「36 个月」替「3 个岗位」背书。 */
-export function findWordNumbers(answer: string, lang: ChatLang, facts: Fact[] = [], echo = ''): string[] {
+export function findWordNumbers(answer: string, lang: Lang, facts: Fact[] = [], echo = ''): string[] {
   if (lang === 'en') return []
   const allowed = allowedUnitPairs(facts, echo)
   const out: string[] = []
@@ -2741,7 +2266,7 @@ const UNIT_WORDS = 'jobs?|openings?|postings?|years?|months?|weeks?|days?|points
 // 专名护栏:「Job Bank」是来源名(RULE 6 准许保留英文原名),不是单位词 —— 别把它译成「岗位 Bank」
 const NOT_PROPER = '(?!\\s*Bank)'
 // num = 直接跟在数字后面(自带量词);bare = 跟在中文/韩文量词后面(量词已经写过了,不能再带一个)
-const UNIT_TEXT: Record<Exclude<ChatLang, 'en'>, { num: Record<string, string>; bare: Record<string, string> }> = {
+const UNIT_TEXT: Record<Exclude<Lang, 'en'>, { num: Record<string, string>; bare: Record<string, string> }> = {
   zh: {
     num: { job: '个岗位', opening: '个岗位', posting: '个岗位', year: '年', month: '个月', week: '周', day: '天', point: '分', people: '人', person: '人', invitation: '个邀请', spot: '个名额', nomination: '个提名' },
     bare: { job: '岗位', opening: '岗位', posting: '岗位', year: '年', month: '月', week: '周', day: '天', point: '分', people: '人', person: '人', invitation: '邀请', spot: '名额', nomination: '提名' },
@@ -2755,7 +2280,7 @@ const UNIT_TEXT: Record<Exclude<ChatLang, 'en'>, { num: Record<string, string>; 
  * 「3 jobs」→「3 个岗位」、「3个Job」→「3个岗位」。只动单位词,不碰数字(guard 的账一分不变)。
  * 第二条规则是实测出来的:模型会自己补中文量词再抄英文单位(「15个Job」),只认「数字+单位」会漏。
  */
-export function localizeUnits(answer: string, lang: ChatLang): string {
+export function localizeUnits(answer: string, lang: Lang): string {
   if (lang === 'en') return answer
   const { num, bare } = UNIT_TEXT[lang]
   const key = (w: string) => w.toLowerCase().replace(/s$/, '')
@@ -2788,12 +2313,12 @@ function factsEnglish(facts: Fact[]): string[] {
  * 而 88% 的流量是英文 —— C1 的 note/why 全是中文硬编码,漏一句用户就当页面坏了。
  * 判据不用词表:英文答复里出现**任何** CJK/韩文字符即违规(官方专名都是拉丁字母,没有例外)。
  */
-const SCRIPT_RE: Record<ChatLang, RegExp | null> = {
+const SCRIPT_RE: Record<Lang, RegExp | null> = {
   en: /[぀-ヿ一-鿿가-힯]+/g,   // 英文答复里不该有任何汉字/假名/韩文
   zh: /[가-힯]+/g,                              // 中文答复里不该有韩文
   ko: /[一-鿿]{2,}/g,                           // 韩文答复里不该有成串汉字
 }
-export function findForeignScript(answer: string, lang: ChatLang): string[] {
+export function findForeignScript(answer: string, lang: Lang): string[] {
   const re = SCRIPT_RE[lang]
   if (!re) return []
   const out: string[] = []
@@ -2802,7 +2327,7 @@ export function findForeignScript(answer: string, lang: ChatLang): string[] {
 }
 
 /** localizeUnits 之后还剩的英文速记 = 整句抄了 FACTS 的标签,得重写(en 答复不查这条)。 */
-export function findEnglishUnits(answer: string, lang: ChatLang, facts: Fact[] = []): string[] {
+export function findEnglishUnits(answer: string, lang: Lang, facts: Fact[] = []): string[] {
   if (lang === 'en') return []
   let s = localizeUnits(answer, lang)
   for (const name of factsEnglish(facts)) s = s.split(name).join(' ')
@@ -2832,7 +2357,7 @@ function claimKeys(text: string): string[] {
   }
   return [...keys]
 }
-const saysState = (s: string, lang: ChatLang, av: Exclude<Availability, 'ok'>) =>
+const saysState = (s: string, lang: Lang, av: Exclude<Availability, 'ok'>) =>
   AVAIL_MARKERS[lang][av].some((m) => s.toLowerCase().includes(m.toLowerCase()))
 
 /**
@@ -2852,7 +2377,7 @@ const SENT_SPLIT = /(?<=[。！？；!?;\n])|(?<=\.)(?=\s)/
  * ⓐⓑ 只盯主张行(claim),这句里两条都是四态行(status),整个漏了过去 —— 所以这条判据**不看是哪条 fact**,
  * 只看一句话里出现了几种状态说法。这是那条红线最后一道机械网。
  */
-export function findMixedStates(answer: string, lang: ChatLang): string[] {
+export function findMixedStates(answer: string, lang: Lang): string[] {
   const AVS = ['not-published', 'not-collected', 'not-applicable'] as const
   const out: string[] = []
   for (const sent of answer.split(SENT_SPLIT)) {
@@ -3040,7 +2565,7 @@ const coverKeys = (text: string): string[] => {
   for (const w of text.toLowerCase().match(/[a-z][a-z']{3,}/g) ?? []) keys.add(w)
   return [...keys]
 }
-export function missingClaimLines(answer: string, facts: Fact[], lang: ChatLang): string[] {
+export function missingClaimLines(answer: string, facts: Fact[], lang: Lang): string[] {
   const out: string[] = []
   const low = answer.toLowerCase()
   for (const f of facts.filter((x) => x.unit === 'claim')) {
@@ -3082,14 +2607,14 @@ export function missingClaimLines(answer: string, facts: Fact[], lang: ChatLang)
  */
 const PROV_IN_TEXT = new RegExp(
   `(?:\\b(?:${[...ALL_PROVS].join('|')})\\b|${Object.keys(PROV_ALIAS).filter((k) => /[^\x20-\x7f]/.test(k)).join('|')})`, 'g')
-const COVERAGE_WORD: Record<ChatLang, RegExp> = {
+const COVERAGE_WORD: Record<Lang, RegExp> = {
   zh: /清单|列表|在需|收录|收了|列入|名单/,
   en: /\blist(?:s|ed|ing)?\b|in-demand|in demand/i,
   ko: /목록|리스트|수요\s*직업/,
 }
 /** 子句:比句子更细,免得同一句里的两个省互相牵连。`\.\s` 收英文句点(小数点后面没空格,不误伤 $1,590.00)。 */
 const CLAUSE_SPLIT = /[。；;!?！？\n]+|[,，、]|\.\s+/
-export function findUnbackedCoverage(answer: string, facts: Fact[], lang: ChatLang): string[] {
+export function findUnbackedCoverage(answer: string, facts: Fact[], lang: Lang): string[] {
   const backed = new Set(facts
     .filter((f) => f.tool === 'lookupCoverage' && f.unit === 'list')
     .map((f) => f.label.slice(0, 2)))
@@ -3142,7 +2667,7 @@ export function findAlienProvinces(answer: string, facts: Fact[], echo = '', slo
   return [...new Set(out)].slice(0, 3)
 }
 
-export function findMergedStates(answer: string, facts: Fact[], lang: ChatLang): string[] {
+export function findMergedStates(answer: string, facts: Fact[], lang: Lang): string[] {
   const claims = facts
     .map((f) => ({ f, m: CLAIM_TEXT_RE.exec(f.label) }))
     .filter((x) => x.f.unit === 'claim' && x.m)
@@ -3213,7 +2738,7 @@ export function findFactDump(answer: string, facts: Fact[]): string[] {
 // 连着三句都以省份起头 = 在按省念表,不管念的是哪个省。
 const PROV_OPEN = new RegExp(
   `^(?:${[...ALL_PROVS, ...Object.keys(PROV_ALIAS)].map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})(?![A-Za-z])`, 'i')
-const openKey = (s: string, lang: ChatLang): string => {
+const openKey = (s: string, lang: Lang): string => {
   const t = s.trim().replace(/^[^\p{L}\p{N}]+/u, '')
   if (PROV_OPEN.test(t)) return 'PROV'
   return lang === 'en' ? t.toLowerCase().split(/\s+/).slice(0, 2).join(' ') : t.slice(0, 4)
@@ -3228,7 +2753,7 @@ export const BULLET_LINE = /^\s*-\s+/
  * 收窄而不是放弃:散文句之间照旧连着三句同开头就抓 —— 「在念表格」这道红线一个字没松,
  * 只是**列表形态不算它的射程**;列表还顺带把前后两句的连号打断(隔着一份清单的两句不叫「连着」)。
  */
-export function findSameOpening(answer: string, lang: ChatLang): string[] {
+export function findSameOpening(answer: string, lang: Lang): string[] {
   const sents = answer.split(SENT_SPLIT).map((s) => s.trim()).filter(Boolean)
   const out: string[] = []
   let run = 1
@@ -3249,7 +2774,7 @@ export function findSameOpening(answer: string, lang: ChatLang): string[] {
 //   ① 频率概化(通常/往往/一般来说):facts 只给单个官方数,任何「一般怎样」都是模型自己的经验;
 //   ② 概率与竞争评价(竞争激烈/可能较低/大概率):本站从不算胜率,出现即凭空;
 //   ③ 行动劝告(建议尽快/最好尽早):红线里写死了不给建议,劝一句就变成了顾问。
-const HEDGE_WORDS: Record<ChatLang, string[]> = {
+const HEDGE_WORDS: Record<Lang, string[]> = {
   zh: ['通常', '一般来说', '一般而言', '往往', '大多数情况', '普遍', '众所周知', '按惯例',
     '竞争激烈', '竞争很激烈', '难度较大', '相对容易', '大概率', '可能性较大', '可能较低', '可能较高', '概率较低', '概率较高',
     '建议您尽快', '建议尽快', '最好尽早', '应尽快', '建议', '务必', '轻信'],
@@ -3290,7 +2815,7 @@ export function findShoutedWords(answer: string, facts: Fact[] = []): string[] {
 }
 
 /** 留痕用,不拦(误杀正常表述比漏一句推断更贵)。 */
-export function findHedges(answer: string, lang: ChatLang): string[] {
+export function findHedges(answer: string, lang: Lang): string[] {
   const low = answer.toLowerCase()
   return HEDGE_WORDS[lang].filter((w) => low.includes(w.toLowerCase())).slice(0, 8)
 }
@@ -3304,7 +2829,7 @@ export function findHedges(answer: string, lang: ChatLang): string[] {
  *   ① 是最后一句;② 句里带劝告/推断词;③ **句里一个数字都没有**(facts 的值全是数字,没数字就没事实)。
  * 句子中间的推断照旧只留痕不动 —— 那种得靠 prompt 治,删了会把整句话删残。
  */
-export function dropTrailingHedge(s: string, lang: ChatLang): { text: string; dropped: string[] } {
+export function dropTrailingHedge(s: string, lang: Lang): { text: string; dropped: string[] } {
   // 🔴 **空白段不能 filter 掉再 join** —— 那正是 2026-08-06 实测中文 C01 的病根:
   //    模型交回来的排版是对的(`…而非省份选择。\n\n- MB、SK、NS…`),按 `\n` 切完,那两个只含换行的
   //    part 被 `.filter(p => p.trim())` 丢掉,`join('')` 一拼,**空行就没了** —— 第一条项目粘回上一句,
@@ -3326,7 +2851,7 @@ export function dropTrailingHedge(s: string, lang: ChatLang): { text: string; dr
 }
 
 // ── ✂️ 出口截断:长度与句数都得回来自己收 ──
-const LEN_CAP: Record<ChatLang, number> = { zh: 600, ko: 700, en: 1400 }
+const LEN_CAP: Record<Lang, number> = { zh: 600, ko: 700, en: 1400 }
 /**
  * RULE 7 写着「至多 N 句」,模型该写十六句照写十六句(2026-08-04 实录:一省一句摞了八行岗位数)。
  * 句数上限做成**机械的**:多出来的句子按定义是清单尾巴 —— 剧本要求的内容全在前 N 行里。
@@ -3339,7 +2864,7 @@ const LEN_CAP: Record<ChatLang, number> = { zh: 600, ko: 700, en: 1400 }
  */
 const SENT_CAP = 11
 /** 按句截断:宁可少说一句,不许留半句。字数与句数**两条都收**;整句都塞不下才硬切(极端情况)。 */
-export function clampAnswer(s: string, lang: ChatLang, cap = LEN_CAP[lang], sentCap = SENT_CAP): string {
+export function clampAnswer(s: string, lang: Lang, cap = LEN_CAP[lang], sentCap = SENT_CAP): string {
   const t = s.trim()
   const parts = t.split(SENT_SPLIT)      // 断句口径见 SENT_SPLIT(全站一份,别在这儿另写一条)
   if (t.length <= cap && parts.filter((p) => p.trim()).length <= sentCap) return t
@@ -3377,7 +2902,7 @@ const SENT_END = /(?:[。！？；!?;\n]|(?<!\d)\.)$/
  * 而**还在写的那一段**只认「已经带着数字」就放行 —— 数字只会越加越多不会消失,带数字的段它砍不动;
  * 一个数字都还没有的在写段一律压着,免得后面冒出一句「建议尽快…」时已经发出去了。
  */
-function holdTail(s: string, lang: ChatLang): string {
+function holdTail(s: string, lang: Lang): string {
   const parts = s.split(SENT_SPLIT)
   let n = parts.length
   if (n && !SENT_END.test(parts[n - 1].trimEnd())) n--                 // ① 在途的半句
@@ -3400,7 +2925,7 @@ function holdTail(s: string, lang: ChatLang): string {
  * 外加 2026-08-09 新增的两道确定性硬拦(闸A 归因 / 闸B 派生数单位),它们也都是一句就能判的。
  * `slots` = 用户真给过的槽,闸A 的输入;不给 = 闸A 不生效(见 findUngroundedClaims)。
  */
-export function sentenceBlockers(text: string, facts: Fact[], lang: ChatLang, echo = '', slots?: Partial<Slots> | null): string[] {
+export function sentenceBlockers(text: string, facts: Fact[], lang: Lang, echo = '', slots?: Partial<Slots> | null): string[] {
   return [
     ...guardAnswer(text, facts, echo).bad,
     ...findLeaks(text),
@@ -3428,7 +2953,7 @@ export type SentenceGate = {
  * 流的那一稿走的是**和整段完全同一条流水线**(tidy → localizeUnits → clampAnswer),
  * 只是每次喂进去的是「到目前为止」的原文 —— 所以流出去的字与最终答复逐字相同,不是另做一份。
  */
-export function makeSentenceGate(facts: Fact[], lang: ChatLang, echo = '', slots?: Partial<Slots> | null): SentenceGate {
+export function makeSentenceGate(facts: Fact[], lang: Lang, echo = '', slots?: Partial<Slots> | null): SentenceGate {
   let out = ''
   return {
     get released() { return out },
@@ -3450,21 +2975,9 @@ export function makeSentenceGate(facts: Fact[], lang: ChatLang, echo = '', slots
   }
 }
 
-/**
- * 降级清单的开场白。**诚实和可读同时做到**(2026-08-05 Frank 实测:
- * 原话是「模型这次没能守住『只用查到的数字』这条线,所以…」—— 用户不关心我们的 guard 叫什么,
- * 那是在跟他讲我们的内部工程)。改法不是把它藏起来假装成正常答复,而是**只说与他有关的那一半**:
- * 这一次给的是原始事实、不是组织好的答复,而且每条带出处。他据此知道该怎么读下面这张清单,
- * 至于为什么只有事实,那是我们的事。
- */
-const SHEET_HEAD: Record<ChatLang, string> = {
-  zh: '这次我只给你查到的官方事实,每条都带出处:',
-  en: 'This time I am giving you only the official facts we looked up, each with its source:',
-  ko: '이번에는 조회한 공식 자료만 그대로 드립니다. 각 항목에 출처가 있습니다:',
-}
 // 降级清单也是见客文案:四态码换人话(四态句子只有 AVAIL_SENTENCE 一个来源)、单位换用户语言。
 // label 仍是英文速记 —— 那是原料不是话术,降级本来就是「给你看我查到了什么」。
-const dropCodes = (s: string, lang: ChatLang) => s
+const dropCodes = (s: string, lang: Lang) => s
   .replace(/NOT-(PUBLISHED|COLLECTED|APPLICABLE)(\s*\([^)]*\))?/gi, (_m, k: string) => AVAIL_SENTENCE[lang][`not-${k.toLowerCase()}` as Availability])
   .replace(/\bN-A(\s*\([^)]*\))?/g, AVAIL_SENTENCE[lang]['not-applicable'])
 
@@ -3473,7 +2986,7 @@ const dropCodes = (s: string, lang: ChatLang) => s
  * 兜底原则 —— 中/韩界面里,**认不出的英文单位一律不印**(标签已经把意思说清了:
  * 「MB 年内已提名: 2673」不比「2673 nominations」少一个字的信息)。缩写(CRS/CLB)照留。
  */
-function unitText(unit: string, lang: ChatLang): string {
+function unitText(unit: string, lang: Lang): string {
   if (!unit || lang === 'en') return unit
   if (!/[a-z]/i.test(unit)) return unit                       // 本来就不是英文
   if (/^[A-Z]{2,5}$/.test(unit)) return unit                  // CRS / CLB 这类站内通用缩写
@@ -3491,7 +3004,7 @@ function unitText(unit: string, lang: ChatLang): string {
  * 再加 brief:砍掉四态行后面的取证注(见 sayFact)。条数从 20 收到 14 —— 再多没人读得完。
  */
 const SHEET_ORDER: Record<string, number> = { claim: 0, status: 3 }
-export function factSheet(facts: Fact[], lang: ChatLang): string {
+export function factSheet(facts: Fact[], lang: Lang): string {
   // 与 prompt 用同一个 sayFact:降级清单和喂模型的材料是同一批话,两处各写各的迟早分叉
   const lines = facts
     .filter((f) => f.unit !== 'note')
@@ -3509,44 +3022,11 @@ export function factSheet(facts: Fact[], lang: ChatLang): string {
 //    picked?」—— 本站红线是不算概率,等于亲手把用户领到我们不答的地方去)。所以不再用固定三句,
 //    而是**按这次真查到了什么**生成:某个工具这轮拿回了带数字的 fact,才推它对应的那句。
 //    证书、时长、胜算这类库里没有的,一律不推。
-type FollowKey = 'unsaid' | 'jobs' | 'thresholds' | 'coverage' | 'draws' | 'ops' | 'ee'
-// 🔵 2026-08-09 Frank:「接着问怎么也是固定的?不应该根据对话生成吗」。改法=**确定性个性化**,
-//    不是 LLM 现编(自由生成的追问会造出「本站未收录」的死路 chip——递出去的话头必须保证答得上,
-//    这条底线不动)。模板织入**用户自己的职业叫法**(slots.occText:护士/PSW,不用英文长官名):
-//    有槽=「护士还有哪些省的官方清单收?」,无槽=原通用句。chip 点出去自带职业词,追问轮更接得稳。
-const FOLLOWUPS: Record<ChatLang, Record<FollowKey, (occ?: string) => string>> = {
-  zh: {
-    unsaid: (o) => o ? `还有哪些省的官方清单收了${o}?` : '还有哪些省的官方清单收了我这个职业?',
-    jobs: (o) => o ? `现在哪个省${o}的在招岗位最多?` : '现在哪个省这个职业的在招岗位最多?',
-    thresholds: () => '这些省的官方门槛具体要求什么?',
-    coverage: (o) => o ? `${o}被哪些官方清单排除了?` : '我这个职业被哪些官方清单排除了?',
-    draws: () => '最近一轮抽选的分数线是多少?',
-    ops: () => '这个省今年的提名名额还剩多少?',
-    ee: (o) => o ? `联邦 EE 通道收了${o}吗?` : '联邦 EE 通道收了我这个职业吗?',
-  },
-  en: {
-    unsaid: (o) => o ? `Which other provinces list ${o} officially?` : 'Which other provinces list my occupation officially?',
-    jobs: (o) => o ? `Which province has the most open postings for ${o}?` : 'Which province has the most open postings for this occupation?',
-    thresholds: () => 'What exactly do these provinces require on paper?',
-    coverage: (o) => o ? `Which official lists exclude ${o}?` : 'Which official lists exclude my occupation?',
-    draws: () => 'What was the cutoff in the latest draw?',
-    ops: () => 'How much of this year’s nomination allocation is left?',
-    ee: (o) => o ? `Do the federal Express Entry categories cover ${o}?` : 'Do the federal Express Entry categories cover my occupation?',
-  },
-  ko: {
-    unsaid: (o) => o ? `다른 어느 주가 ${o}을(를) 공식 목록에 올려두었나요?` : '다른 어느 주가 제 직업을 공식 목록에 올려두었나요?',
-    jobs: (o) => o ? `지금 어느 주에 ${o} 공고가 가장 많나요?` : '지금 어느 주에 이 직업 공고가 가장 많나요?',
-    thresholds: () => '이 주들의 공식 요건은 구체적으로 무엇인가요?',
-    coverage: (o) => o ? `어느 공식 목록이 ${o}을(를) 제외했나요?` : '어느 공식 목록이 제 직업을 제외했나요?',
-    draws: () => '최근 추첨의 커트라인은 얼마였나요?',
-    ops: () => '이 주의 올해 지명 배정은 얼마나 남았나요?',
-    ee: (o) => o ? `연방 EE 카테고리에 ${o}이(가) 포함되나요?` : '연방 EE 카테고리에 제 직업이 포함되나요?',
-  },
-}
+export type FollowKey = 'unsaid' | 'jobs' | 'thresholds' | 'coverage' | 'draws' | 'ops' | 'ee'
 /** 这次真拿到了数据的工具 → 对应的追问;顺序即优先级,最多三条。拿不到数据的一条都不推。
  *  `asked` = 用户刚问的那句:同一句不再推给他(点了 chip 又看见同一个 chip,像没反应)。
  *  `occ` = 用户自己的职业叫法(slots.occText),织进模板;超长或空 → 回落通用句。 */
-export function buildFollowups(facts: Fact[], lang: ChatLang, asked = '', occ = ''): string[] {
+export function buildFollowups(facts: Fact[], lang: Lang, asked = '', occ = ''): string[] {
   const o = occ.trim().length >= 2 && occ.trim().length <= 20 ? occ.trim() : undefined
   const has = (tool: string, ok: (f: Fact) => boolean) => facts.some((f) => f.tool === tool && ok(f))
   const num = (f: Fact) => f.value != null
@@ -3614,33 +3094,12 @@ export type ChatProfilePatch = {
 }
 /** 抽槽 status → 档案分型 slug(lib/match.ts 的 CurrentStatus)。**对不上的一律不映射**。 */
 const STATUS_SLUG: Record<string, string> = { student: 'studying', working: 'working', abroad: 'overseas' }
-/** 尾行里那几个字段的人话名(三语;数字/省码原样跟在后面)。 */
-const SAVED_LBL: Record<ChatLang, { occ: string; clb: string; prov: string; status: Record<string, string> }> = {
-  zh: {
-    occ: '职业 NOC', clb: 'CLB', prov: '目标省',
-    status: { studying: '身份 在读', working: '身份 在职', overseas: '身份 在境外' },
-  },
-  en: {
-    occ: 'occupation NOC', clb: 'CLB', prov: 'target province',
-    status: { studying: 'status studying', working: 'status working', overseas: 'status outside Canada' },
-  },
-  ko: {
-    occ: '직업 NOC', clb: 'CLB', prov: '희망 주',
-    status: { studying: '신분 재학', working: '신분 재직', overseas: '신분 해외' },
-  },
-}
-/** 尾行:一行、不解释、不口语(文案四闸)。枚举用顿号(全站禁「·」)。 */
-const SAVED_TAIL: Record<ChatLang, (items: string[]) => string> = {
-  zh: (i) => `已存入档案:${i.join('、')}(账户页可改)`,
-  en: (i) => `Saved to your profile: ${i.join(', ')} (editable in your account).`,
-  ko: (i) => `프로필에 저장했습니다: ${i.join(', ')} (계정 페이지에서 수정 가능)`,
-}
 /** 现值算不算「空」:null/undefined/空串/空数组算空,其余一律当用户已有值,绝不覆盖。 */
 const emptyField = (v: unknown): boolean =>
   v == null || v === '' || (Array.isArray(v) && v.length === 0)
 
 export function profileFill(
-  slots: Slots, current: unknown, lang: ChatLang,
+  slots: Slots, current: unknown, lang: Lang,
 ): { patch: ChatProfilePatch; tail: string } | null {
   const cur = (current && typeof current === 'object' ? current : {}) as Record<string, unknown>
   const patch: ChatProfilePatch = {}
@@ -3677,13 +3136,13 @@ export function profileFill(
  */
 export async function orchestrate(
   rawPool: any, input: {
-    text: string; lang: ChatLang; history?: ChatTurn[]; context?: unknown
+    text: string; lang: Lang; history?: ChatTurn[]; context?: unknown
     profileContext?: unknown; profileKnown?: ProfileKnown
   },
   opts?: { onStep?: OnStep; onDelta?: (s: string) => void; onReset?: () => void },
 ): Promise<ChatResult> {
   const text = (input.text || '').trim().slice(0, MAX_TEXT)
-  const lang: ChatLang = (['zh', 'en', 'ko'] as const).includes(input.lang) ? input.lang : 'en'
+  const lang: Lang = (['zh', 'en', 'ko'] as const).includes(input.lang) ? input.lang : 'en'
   // 🔵 D2:首轮仍是四字门;我们刚问完一句(history 里有 assistant 轮)时短答放行 —— 见 isFollowupTurn。
   //    空串永远拦:那不是短答,是没答。
   // 🔵 四字门是按英文字符数定的 —— 中/韩双字就是一个完整职业(「护士」「厨师」「목수」),

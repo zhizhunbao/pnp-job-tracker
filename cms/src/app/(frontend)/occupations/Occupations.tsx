@@ -1,7 +1,7 @@
 'use client'
 // 紧缺职业清单视图(B4-01):183 行按 省→通道 分组一页展示;行级官方来源链+抓取日(既有 url/fetched 列)。
 // 口径红线:清单命中=粗筛信号,非资格认定(dir.occ.note)。
-import { streamDisplay } from '../jobs/i18n'
+import { streamDisplay } from '@/lib/i18n'
 import { useLang } from '../LangProvider'
 import { Header } from '../Header'
 import { Footer } from '../Footer'

@@ -6,6 +6,7 @@
  * 也不静态复刻职业解析、私人承诺识别、事实装配或出口校验。
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { PROMISE_WHY } from '@/lib/i18n'
 
 vi.mock('@/lib/llm', () => ({
   LlmError: class LlmError extends Error {},
@@ -67,10 +68,10 @@ vi.mock('@/lib/llm', () => ({
   }),
 }))
 
-import { makeT, type Lang } from '@/app/(frontend)/jobs/i18n'
+import { makeT, type Lang } from '@/lib/i18n'
 import { checkClaims, type Claim } from '@/lib/chatTools'
 import {
-  guardAnswer, normalizeSlots, orchestrate, PROMISE_WHY, type ChatLang, type ChatResult,
+  guardAnswer, normalizeSlots, orchestrate, type ChatResult,
 } from '@/lib/chatOrchestrate'
 import { completeText } from '@/lib/llm'
 
@@ -170,7 +171,7 @@ describe('首页预设问题 3（三语真实编排 + fixture I/O）', () => {
   it.each(['zh', 'en', 'ko'] as const)('%s：预设完整经过编排、事实装配、合成与出口', async (lang) => {
     const preset = makeT(lang)('chat.ex3')
     const pool = new PresetPool()
-    const result: ChatResult = await orchestrate(pool, { text: preset, lang: lang as ChatLang })
+    const result: ChatResult = await orchestrate(pool, { text: preset, lang: lang as Lang })
 
     expect(result.degraded).not.toBe(true)
     expect(result.slots).toMatchObject({ noc: '72310', provs: ['MB'] })

@@ -8,7 +8,7 @@
 // 各视图只用 useLang(),不再自己 useState/读 localStorage。
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
-import { LANG_COOKIE, LANG_KEY, makeT, parseLang, saveLang, type Lang, type TFn } from './jobs/i18n'
+import { LANG_COOKIE, LANG_KEY, makeT, parseLang, saveLang, type Lang, type TFn } from '@/lib/i18n'
 
 const Ctx = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({ lang: 'zh', setLang: () => {} })
 

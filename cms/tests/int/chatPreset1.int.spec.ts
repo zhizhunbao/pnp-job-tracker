@@ -49,7 +49,7 @@ vi.mock('@/lib/llm', () => ({
   }),
 }))
 
-import { makeT, type Lang } from '@/app/(frontend)/jobs/i18n'
+import { makeT, type Lang } from '@/lib/i18n'
 import { guardAnswer, orchestrate } from '@/lib/chatOrchestrate'
 
 const NOC = '21232'

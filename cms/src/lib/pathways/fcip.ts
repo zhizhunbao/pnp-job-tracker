@@ -18,7 +18,6 @@ export const FCIP_PATHWAY: PathwayStrategy = {
   key: 'FCIP',
   province: 'FED',
   stream: 'Francophone Community Immigration Pilot',
-  name: { zh: '法语社区移民试点(FCIP)', en: 'Francophone Community Immigration Pilot', ko: '프랑스어 커뮤니티 이민 시범(FCIP)' },
   // 六个社区落在这四个省(pilot_communities 实数,2026-08-15)
   regionProvinces: ['NB', 'ON', 'MB', 'BC'],
   reqProvince: 'FED',

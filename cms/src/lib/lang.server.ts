@@ -4,7 +4,7 @@
 // 单独成文件是因为 next/headers 只能在服务端 import;判据本身仍在 jobs/i18n.ts 一处,这里不复制规则。
 import { cookies, headers } from 'next/headers'
 
-import { LANG_COOKIE, langFromAccept, parseLang, type Lang } from '@/app/(frontend)/jobs/i18n'
+import { LANG_COOKIE, langFromAccept, parseLang, type Lang } from '@/lib/i18n'
 
 export async function ssrLang(): Promise<Lang> {
   try {

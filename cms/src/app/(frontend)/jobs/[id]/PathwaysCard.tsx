@@ -12,7 +12,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { UI } from '../../ui'
-import type { TFn } from '../i18n'
+import type { TFn } from '@/lib/i18n'
 import { track } from '@/lib/track'
 
 type Row = {

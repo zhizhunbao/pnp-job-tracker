@@ -28,7 +28,8 @@ import { gridStreamOf, scoreProvince, streamMatches, type ScoreFactor, type Self
 import type { EduKey } from './pnpSelfScore'
 // 只 import type:编译期擦除,不给 chatTools(它拉着 match/planTimeline/reportFacts)加运行时边。
 import type { Availability, Evidence } from './chatTools'
-import { ASK_LABEL, GATE_LABEL, type GateKey, type StatusAsk } from './gateManifest'
+import { type GateKey, type StatusAsk } from './gateManifest'
+import { askLabels, gateLabels } from './i18n'
 import { fieldMatchExemptionOf, gateOf, PATHWAYS, type PathwayStrategy } from './pathways'
 
 /** 门槛清单里参与裁决的三类闸(顺序=理由的展示顺序) */
@@ -1066,7 +1067,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
       if (OPT_IN_GATES.has(g)) continue                          // 选配闸没声明 = 没扫过这类条款,跳过
       manifestUnknown = true
       manifestNoSource = true
-      reasons.push({ kind: 'needs-info', text: `本站尚未收录 ${spec.stream} 的${GATE_LABEL[g].zh}门槛条文`,
+      reasons.push({ kind: 'needs-info', text: `本站尚未收录 ${spec.stream} 的${gateLabels[g].zh}门槛条文`,
         key: `pv.gate.${g}.notCollected`, params: { stream: spec.stream },
         ...(rule.url ? { evidence: { url: rule.url, fetched: rule.fetched ?? '', label: spec.stream } } : {}) })
       continue
@@ -1074,7 +1075,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
     const asks = g === 'statusInCanada' ? rule.asks : undefined
     const have = asks ? statusGateAnswer(asks) : answerOf[g]
     // 文案与 i18n key 按 asks 细分:判的是工签就说工签,不再统称「境内身份」(文案跟判据必须对得上)
-    const what = asks ? ASK_LABEL[asks].zh : GATE_LABEL[g].zh
+    const what = asks ? askLabels[asks].zh : gateLabels[g].zh
     const keyOf = (state: string) => `pv.gate.${g}${asks ? `.${asks}` : ''}.${state}`
     const ev = { url: rule.url, fetched: rule.fetched, label: spec.stream }
     if (have == null) {                                          // 有闸,但用户没答 → 判不了
