@@ -43,7 +43,7 @@ export type MbEduKey =
   | 'tradeCert'
   | 'none'
 
-export type MbAdaptInput = {
+type MbAdaptInput = {
   demand: boolean                        // 曼省持续就业6月+长期offer,或战略计划 ITA(二选一即满分,不叠加)
   closeRelative: boolean                 // 曼省有直系亲属(200)
   priorMbWork6moPlus: boolean            // 曾在曼省 authorized 工作 6 月+(100)
@@ -64,8 +64,8 @@ export type MbProfile = {
   riskForeignStudy: boolean              // 有外省学习经历(-100)
 }
 
-export type MbScorePart = { factor: string; pts: number; max: number | null; matched: string }
-export type MbEoiScore = {
+type MbScorePart = { factor: string; pts: number; max: number | null; matched: string }
+type MbEoiScore = {
   province: 'MB'; system: string; maxTotal: number
   url: string; guideEffective: string; fetched: string
   parts: MbScorePart[]; total: number

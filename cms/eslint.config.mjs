@@ -7,6 +7,17 @@
 import nextCoreWebVitals from 'eslint-config-next/core-web-vitals'
 import nextTypeScript from 'eslint-config-next/typescript'
 
+// 带桶的模块(`lib/<名>/index.ts`)—— 下面那道边界闸认这三个,加新桶就加这里一行。
+const BARRELS = ['i18n', 'pathways', 'quiz']
+const ABSOLUTE = BARRELS.map((m) => `**/lib/${m}/*`)
+const SIBLING = BARRELS.flatMap((m) => [`./${m}/*`, `../${m}/*`])
+const barrelOnly = (group) => ({
+  'no-restricted-imports': [
+    'error',
+    { patterns: [{ group, message: '从桶取:@/lib/i18n 而不是 @/lib/i18n/chat。桶没转发的名字,去桶的 index.ts 补一行转发。' }] },
+  ],
+})
+
 const eslintConfig = [
   ...nextCoreWebVitals,
   ...nextTypeScript,
@@ -41,6 +52,29 @@ const eslintConfig = [
         },
       ],
     },
+  },
+  {
+    // ── 模块边界(2026-08-18):一个模块 = 一个目录 + index.ts 桶,**外部一律从桶取**
+    // (CLAUDE.md「代码组织约定」)。桶就是这个项目的头文件 —— 绕过去点具体文件,
+    // 桶写的那份「对外是什么」当场作废,而编译器不会有任何意见。
+    //
+    // 立这条时存量绕过是 **0** 处(唯一那处 chatOrchestrate → './i18n/chat' 同一轮收掉了),
+    // 所以它是**保险不是救火**:拦的是明天新写的那一行。正因为存量是 0,才敢直接给 error ——
+    // 上面那批 react-hooks 降 warn 是因为「73 条一次性红着,结果只会是没人再跑 lint」。
+    //
+    // 不管 lib/db:那边是 `import * as SQL from './db/sql'` 的命名空间形态(48 处),
+    // 调用点写 `SQL.foo()` 自解释,是设计如此,不是绕过。
+    rules: barrelOnly(ABSOLUTE),
+  },
+  {
+    // lib/ 里的兄弟相对路径是同一件事的另一种写法(`./i18n/chat`),上一条的 `**/lib/…` 匹配不到它。
+    // ⚠️ 这里必须把 ABSOLUTE 一起带上:flat config 同名规则是**后一块整个覆盖前一块**,
+    //    不是合并 —— 只写相对那几条,src/lib 下的 `@/lib/quiz/fields` 就没人管了(实测漏过)。
+    // 相对模式只在 src/lib 下生效,因为 app 那边有个同名的 quiz **页面**目录
+    //    (`app/(frontend)/jobs/Jobs.tsx` 正当地引 `../quiz/EntryQuiz`),全局开会误伤。
+    // 模块**自己目录内**的相对引用(lib/i18n/index.ts → './chat')不在此列,那是模块内部。
+    files: ['src/lib/**/*.{ts,tsx}'],
+    rules: barrelOnly([...ABSOLUTE, ...SIBLING]),
   },
   {
     ignores: ['.next/', 'src/payload-types.ts', 'src/payload-generated-schema.ts'],

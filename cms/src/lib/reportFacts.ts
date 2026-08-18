@@ -8,13 +8,13 @@ import type { Requirement } from './rules'
 import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 
 // ── 事实契约(判定合一批2:report.ts 引擎退役,类型搬回事实层自己家)────────────
-export type OccProvFacts = { province: string; open: number; named: number; apprentice?: number; medianWage?: number | null }
+type OccProvFacts = { province: string; open: number; named: number; apprentice?: number; medianWage?: number | null }
 // scale = 该轮抽选用的**分制名**(pnp_draws.scale:BC=SIRS / AB=WEOI / MB=MPNP EOI)。
 // 各省分制互不相通(AB 52–65 与 MB 632–825 不是一把尺),摆区间必须带它,否则读起来像数据错乱。
-export type ReportDraw = { province: string; drawDate: string; stream: string; score: number | null; invitations?: number | null; scale?: string | null }
+type ReportDraw = { province: string; drawDate: string; stream: string; score: number | null; invitations?: number | null; scale?: string | null }
 // 省移民难度(E12-07 stats.difficulty):tier 三档=04e 产出(easy/mid/tight);comp=国际生存量÷提名配额
-export type ProvDifficulty = { province: string; tier: string; comp: number | null; asOf?: string }
-export type ReportFacts = {
+type ProvDifficulty = { province: string; tier: string; comp: number | null; asOf?: string }
+type ReportFacts = {
   noc: string
   title: string                     // NOC 官方名(noc_descriptions,不拿岗位标题冒充)
   teer: number | null
@@ -37,14 +37,14 @@ const EMPTY: ReportFacts = { noc: '', title: '', teer: null, byProv: [], draws: 
 
 // 职业级统计(卡①找工作 / 卡⑥职业规划共用):stats_occupation 是 mart 算好的表,这里只 SELECT。
 // 缺表容错同 loadOccStats 先例(42P01/42703 → 回空,报告少两条结论,页面不炸)。
-export type OccStat = {
+type OccStat = {
   noc: string; province: string; titleEn: string; titleZh: string; titleKo: string; teer: number | null; broad: string; mid: string; fine: string
   open: number; named: number; medianWage: number | null; medianPosted: number | null
 }
 // 雇主线索一行(锁区正文):**全是可核验的事实**,一条推断都不放 ——
 // 「这家发过命中省提名清单的岗」「近两年 ESDC 批过多少 LMIA」「是不是 AIP 指定雇主」「最近还在发」。
 // 红线:不出现「这家好签/容易担保」这类判断,雇主愿不愿意担保只有雇主自己知道。
-export type Sponsor = {
+type Sponsor = {
   name: string; slug: string
   named: number            // 命中具名清单通道的在招岗数(清单式省:BC/SK/MB/NS/AB)
   eligible: number         // 粗筛可提名的在招岗数(**不公布清单的省**只有这个口径,见下面 WHERE 的说明)
@@ -53,7 +53,7 @@ export type Sponsor = {
   lmiaPositions: number | null; lmiaQuarter: string   // ESDC 正面 LMIA 历史(公司级,E6-02)
   aip: boolean             // AIP 指定雇主名单在册
 }
-export type OccStats = {
+type OccStats = {
   self: OccStat | null            // 全国行(province='all')
   byProv: OccStat[]               // 该职业各省行
   peers: OccStat[]                // 相邻职业(NOC 官方 minor group 同门,全国行,按在招降序)

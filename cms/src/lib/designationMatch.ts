@@ -50,7 +50,7 @@ export function employerNameSegments(name: string): string[] {
   return parts.length ? parts : [name || '']
 }
 
-export type DesignationMatch<T> = {
+type DesignationMatch<T> = {
   /** 唯一命中的那一行;**null = 没认出(count=0)或多配(count≥2,不点名法人)** */
   row: T | null
   /** 完全匹配的法人数:0 / 1 / N */

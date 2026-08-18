@@ -6,7 +6,7 @@
 
 // 用户分型(E11-04,§2.5 A–E):稳定 slug,枚举单一来源。前后端 + advisor + 未来 E11-05/E12 都引这一处。
 export type CurrentStatus = 'overseas' | 'studying' | 'working' | 'jobhunting' | 'pr'
-export const CURRENT_STATUSES: CurrentStatus[] = ['overseas', 'studying', 'working', 'jobhunting', 'pr']
+const CURRENT_STATUSES: CurrentStatus[] = ['overseas', 'studying', 'working', 'jobhunting', 'pr']
 
 export type MatchProfile = {
   nocCodes: string[]
@@ -35,11 +35,11 @@ export type MatchJob = {
   lmiaPositionsSkilled?: number | null
 }
 
-export type PnpOccDim = { province: string; label: string; type: string; noc: string; url: string; fetched: string }
-export type EeCatDim = { category: string; label: string; noc: string; drawCrs: number | null; drawDate: string; url: string; fetched: string }
+type PnpOccDim = { province: string; label: string; type: string; noc: string; url: string; fetched: string }
+type EeCatDim = { category: string; label: string; noc: string; drawCrs: number | null; drawDate: string; url: string; fetched: string }
 export type MatchDims = { pnpOccupations: PnpOccDim[]; eeCategories: EeCatDim[] }
 
-export type MatchVerdict = 'pass' | 'warn' | 'fail' | 'na'
+type MatchVerdict = 'pass' | 'warn' | 'fail' | 'na'
 export type MatchReason = {
   rule: 'noc' | 'prov' | 'ee' | 'teer' | 'wage' | 'lmia'
   verdict: MatchVerdict
@@ -47,8 +47,8 @@ export type MatchReason = {
   params: Record<string, string | number>
   source?: { label: string; url: string; fetched: string }
 }
-export type MatchLevel = 'high' | 'mid' | 'low' | 'na'
-export type MatchResult = { level: MatchLevel; score: number; reasons: MatchReason[] }
+type MatchLevel = 'high' | 'mid' | 'low' | 'na'
+type MatchResult = { level: MatchLevel; score: number; reasons: MatchReason[] }
 
 // ── 省清单覆盖判定(单一来源;报告/匹配/统计共用)────────────────────────
 // 「某省 0 命中」有四种不同含义,混为一谈=报告撒谎(2026-07-30 报告原型暴露):

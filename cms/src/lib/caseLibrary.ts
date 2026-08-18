@@ -5,7 +5,7 @@
 // 2026-08-11 Frank 二拍撤掉 `preset`(一键代入):它把案例主人公的画像写进用户自己的答案,
 // 答过题的人一点就丢。要恢复看这次提交的父版本。
 
-export type CaseEntry = {
+type CaseEntry = {
   id: string
   /** 处境页 slug —— 只有做了事实层的才填。**这里是 slug 的唯一来源**:
       服务端 `caseFacts.CASE_PAGES` 按它建白名单,决策页按它决定给不给「完整案例」钮。

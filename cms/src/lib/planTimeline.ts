@@ -61,7 +61,7 @@ const NOT_TIME_CONVERTIBLE: Record<string, string> = {
 // ── 类型 ────────────────────────────────────────────────────────────────────
 
 /** 一段的性质:gap=还缺什么(补齐要多久) / draw=然后要等多久(官方开一轮的间隔) / processing=递交后官方处理多久 */
-export type PlanStepKind = 'gap' | 'draw' | 'processing'
+type PlanStepKind = 'gap' | 'draw' | 'processing'
 
 export type PlanStep = {
   kind: PlanStepKind
@@ -80,9 +80,9 @@ export type PlanStep = {
 }
 
 /** 判不了的门槛(缺你的信息、或缺雇主材料)。**不是时间线的一段**,不计月数,但要摆出来。 */
-export type PlanBlocker = { factor: string; subject: string; need: number | null; unit: string; why: string; evidence: Evidence }
+type PlanBlocker = { factor: string; subject: string; need: number | null; unit: string; why: string; evidence: Evidence }
 
-export type PlanPath = {
+type PlanPath = {
   province: string
   stream: string
   steps: PlanStep[]
@@ -106,12 +106,12 @@ export type PlanPath = {
  *             → 「至少快 N 个月」成立(真实差只会更大)。
  * 其余情况一律不生成 —— 含 unknown 段的两条路互相比大小是没有意义的(红线 ①)。
  */
-export type PlanComparison = { fasterProvince: string; slowerProvince: string; monthsDelta: number; kind: 'exact' | 'atLeast'; basis: string }
+type PlanComparison = { fasterProvince: string; slowerProvince: string; monthsDelta: number; kind: 'exact' | 'atLeast'; basis: string }
 
 /** 官方规费(IRCC PR-fees 等,带出处)。 */
-export type PlanCost = { label: string; amount: number; unit: string; evidence: Evidence }
+type PlanCost = { label: string; amount: number; unit: string; evidence: Evidence }
 /** 别人报的价(中介/朋友)。**原样带回,不核实、不换算、永不与 officialCosts 相减**(红线 ③)。 */
-export type QuotedCost = { label: string; amount: number | null; unit: string; text: string; source: string }
+type QuotedCost = { label: string; amount: number | null; unit: string; text: string; source: string }
 
 export type Plan = {
   noc: string
@@ -145,7 +145,7 @@ export type PlanPathInput = {
   processingScope?: string
 }
 
-export type PlanInput = {
+type PlanInput = {
   thresholds: ThresholdsResult          // 职业/TEER/各省门槛(lookupThresholds)
   paths: PlanPathInput[]
   officialCosts?: PlanCost[]

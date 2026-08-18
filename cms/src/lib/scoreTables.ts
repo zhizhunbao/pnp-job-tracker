@@ -17,14 +17,14 @@ import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取�
 /** SSR 事实区一行:每省最近一轮有分数线或邀请数的抽选。
  *  🔴 invitations 必须带出来:这张表的入选条件就是「有分数线**或**有邀请数」,
  *  只带分数线的话,靠邀请数入选的那几行会显示成一整行「—」——把它入选的那个事实藏了(2026-08-12 Frank 实拍)。 */
-export type OverviewDraw = { province: string; drawDate: string; stream: string; score: number | null; invitations: number | null }
+type OverviewDraw = { province: string; drawDate: string; stream: string; score: number | null; invitations: number | null }
 
 // 只收 13 省区码 —— pnp_draws 里还有联邦轮(province='FED'),那是 EE 不是省提名,不进这张表
 const PROVS = new Set(['ON', 'BC', 'AB', 'QC', 'MB', 'SK', 'NS', 'NB', 'NL', 'PE', 'NT', 'YT', 'NU'])
 const TTL = 10 * 60_000
 
 /** 热门职业一行(fetchTopNocs 的返回,读 ETL 聚合表 noc_openings) */
-export type TopNoc = Awaited<ReturnType<typeof fetchTopNocs>>[number]
+type TopNoc = Awaited<ReturnType<typeof fetchTopNocs>>[number]
 
 /**
  * 各省名额竞争(E12-07 `stats.difficulty`,来源 IRCC 开放数据):

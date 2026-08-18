@@ -7,7 +7,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 
-export type OccCompetitionRow = {
+type OccCompetitionRow = {
   province: string
   openJobs: number
   new30d: number | null

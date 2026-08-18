@@ -23,7 +23,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 
 /** collection 里声明过的 profile 键(单一来源:`collections/Users.ts` 的 profile group)。 */
-export const PROFILE_KEYS = [
+const PROFILE_KEYS = [
   'currentStatus',
   'nocCodes',
   'clb',

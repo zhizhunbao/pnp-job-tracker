@@ -26,7 +26,7 @@ const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : use
  */
 
 /** 一列量到的宽度(含单元格内边距)。word=最长的那个词,列再窄也不能把词拦腰断开 */
-export type ColMeasure = { head: number; word: number; p90: number; max: number }
+type ColMeasure = { head: number; word: number; p90: number; max: number }
 
 type Alloc = { key: string; head: number; word: number; p90: number; max: number; pinned?: number }
 
@@ -74,7 +74,7 @@ function takerOf(donors: number[], w: number[], maxes?: number[]): number {
 /**
  * 纯函数:按 ①②③ 把 avail 像素分给各列。返回整数像素,和恒等于 avail(除非表头都放不下)。
  */
-export function allocateColWidths(cols: Alloc[], avail: number): Record<string, number> {
+function allocateColWidths(cols: Alloc[], avail: number): Record<string, number> {
   const out: Record<string, number> = {}
   if (!cols.length) return out
   const flex: Alloc[] = []
@@ -127,7 +127,7 @@ export function allocateColWidths(cols: Alloc[], avail: number): Record<string, 
 export { COLW_COOKIE, parseColWidthSeed, type ColWidthSeed } from './colWidths.shared'
 import { COLW_COOKIE, type ColWidthSeed } from './colWidths.shared'
 
-export type ColWidths = {
+type ColWidths = {
   /** 有宽度可下没:量到了 or 有 cookie 种子。没有就先让浏览器 auto 布局顶一帧 */
   ready: boolean
   /** colgroup 用:量到了给像素,只有种子时给百分比(服务端渲染就能定版式,水合不再抻一下) */

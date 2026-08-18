@@ -2,10 +2,10 @@
 // 语义红线循 E6-02:LMIA=「雇过外国人的历史事实」≠「能担保」;AIP 指定=「已注册」≠「有配额」。
 
 import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
-export const DIR_PAGE_SIZE = 100
+const DIR_PAGE_SIZE = 100
 
-export type AipRow = { name: string; province: string; location: string; isTech: boolean }
-export type LmiaRow = { name: string; region: string; website: string; lmiaPositions: number; lmiaPositionsSkilled: number | null; lmiaStreams: string; lmiaLastQuarter: string; industry: string; aliasZh: string; aliasKo: string; wiki: string; sponsorGrade: number | null }
+type AipRow = { name: string; province: string; location: string; isTech: boolean }
+type LmiaRow = { name: string; region: string; website: string; lmiaPositions: number; lmiaPositionsSkilled: number | null; lmiaStreams: string; lmiaLastQuarter: string; industry: string; aliasZh: string; aliasKo: string; wiki: string; sponsorGrade: number | null }
 export type OccRow = { province: string; stream: string; label: string; type: string; noc: string; name: string; url: string; fetched: string }
 
 const like = (q: string) => `%${q.replace(/[%_\\]/g, (c) => '\\' + c)}%`

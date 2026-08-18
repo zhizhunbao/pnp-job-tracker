@@ -197,10 +197,10 @@ import type { Availability } from '@/lib/chatTools'
 import type { FollowKey, MetaTopic, OccOption, ProfileSlot, UsageTopic } from '@/lib/chatOrchestrate'
 
 /** 拉丁字母/数字结尾的字段名后面补个空格再接中文(「Java是专业」→「Java 是专业」)*/
-export const latinTail = (f: string): string => (/[A-Za-z0-9]$/.test(f) ? `${f} ` : f)
+const latinTail = (f: string): string => (/[A-Za-z0-9]$/.test(f) ? `${f} ` : f)
 import type { Lang } from './index'
 
-export type StepDict = {
+type StepDict = {
   read: string
   occ: (occ: string) => string
   jobs: (n: number) => string

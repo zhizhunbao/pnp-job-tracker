@@ -1181,7 +1181,7 @@ export function pathVerdict(profile: VerdictProfile, data: VerdictData): Pathway
 // 经验门槛月数(排序键)、门槛口径(同雇主在职时长另标)、清单点名/排除、availability。
 // 有档案时详情卡不走这条 —— 直接用上面 pathVerdict 的序(设计 §五「双态」)。
 
-export type JobPathwayRow = {
+type JobPathwayRow = {
   key: string
   province: string
   stream: string

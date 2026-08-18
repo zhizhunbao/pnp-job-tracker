@@ -2,7 +2,7 @@
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 
-export type SessionUser = {
+type SessionUser = {
   id: string | number
   email: string
   role?: 'user' | 'admin'

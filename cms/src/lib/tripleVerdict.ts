@@ -84,13 +84,13 @@ export type TripleProfile = VerdictProfile & {
 
 // ── 出参 ────────────────────────────────────────────────────────────────────
 
-export type TripleGate = 'occupation' | 'employer' | 'person'
+type TripleGate = 'occupation' | 'employer' | 'person'
 /** design §5:三关事实 free,比路结论+差值+下一步 paid */
-export type TripleTier = 'free' | 'paid'
+type TripleTier = 'free' | 'paid'
 /** pass=达标 / gap=差某项 / excluded=硬伤 / unknown=判不了(缺槽或库缺行) / info=摆事实不判定 */
-export type TripleState = 'pass' | 'gap' | 'excluded' | 'unknown' | 'info'
+type TripleState = 'pass' | 'gap' | 'excluded' | 'unknown' | 'info'
 
-export type TripleRow = {
+type TripleRow = {
   gate: TripleGate
   tier: TripleTier
   /** i18n 键(批D 配三语文案);本层不写死任何 UI 句子 */
@@ -107,8 +107,8 @@ export type TripleRow = {
 }
 
 /** 比路一行:为什么这条线在比路里 + pathVerdict 给它的裁决 */
-export type TripleCompareRole = 'current' | 'aip' | 'target'
-export type TripleCompareRow = {
+type TripleCompareRole = 'current' | 'aip' | 'target'
+type TripleCompareRow = {
   key: string
   province: string
   stream: string
@@ -132,8 +132,8 @@ export type TripleCompareRow = {
  * 🔴 免费/付费口径**没有变**:这几条通道的裁决在同一页的「你的初步方案」上本来就是免费的,
  *    这里只是把「这份岗所在省那条」摘出来说成一句人话。逐项差值(差几分/差几个月)仍在付费位。
  */
-export type TripleConclusionKind = 'ok' | 'blocked' | 'needs-info' | 'excluded' | 'not-collected'
-export type TripleConclusion = {
+type TripleConclusionKind = 'ok' | 'blocked' | 'needs-info' | 'excluded' | 'not-collected'
+type TripleConclusion = {
   kind: TripleConclusionKind
   key: string
   params: Record<string, string | number | boolean | string[]>

@@ -23,7 +23,7 @@ import type { EmployerFacts } from '@/lib/employerVerdict'
 import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 
 /** 下行行:免费行给全,付费行对非 Pro 只留 gate/tier/key */
-export type TripleWireRow = {
+type TripleWireRow = {
   gate: string
   tier: string
   key: string

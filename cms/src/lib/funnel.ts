@@ -11,7 +11,7 @@
  * `docs/design/对话即产品-20260803.md` §六:两形态的转化对照才是撤旧页的判据,
  * 塞进同一条链会把两套口径搅成一锅。 */
 export const FUNNEL_STEPS = ['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click', 'chat-open', 'chat-answer', 'chat-feedback', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs', 'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done'] as const
-export type FunnelStep = (typeof FUNNEL_STEPS)[number]
+type FunnelStep = (typeof FUNNEL_STEPS)[number]
 
 // 站内既有的埋点名 → 漏斗步骤(调用点一个都不用改名;umami 那边照旧用原名,两套口径互不干扰)。
 // 2026-08-02 收口:详情页的 `jd-report-open`(点了「看报告」)**不再算第 2 步** ——
@@ -64,7 +64,7 @@ const SOURCE: Record<string, string> = {
   'upgrade-open': 'upgrade', 'pricing-open': 'pricing',
 }
 
-export type FunnelHit = { event: FunnelStep; prop: string }
+type FunnelHit = { event: FunnelStep; prop: string }
 
 /**
  * 站内埋点名(+ 可选分组)→ 入库的一行;不在白名单的返回 null(静默丢弃,不报错)。

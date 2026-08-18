@@ -28,7 +28,7 @@ export type PilotQuotaCommunityRow = {
 }
 
 /** 社区 × NOC 满额行(noc 非空;官网明文才有) */
-export type PilotQuotaOccRow = {
+type PilotQuotaOccRow = {
   community: string
   province: string
   type: string

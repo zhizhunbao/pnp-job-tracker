@@ -8,7 +8,7 @@ import {
   type EmployerFilters, type EmployerMode, type EmployerPage, type Pool,
 } from '@/lib/designatedEmployers'
 
-export type SP = Record<string, string | string[] | undefined>
+type SP = Record<string, string | string[] | undefined>
 
 export async function employersBoardProps(sp: SP, mode: EmployerMode): Promise<{ initial: EmployerPage; initialFilters: EmployerFilters }> {
   const get = (k: string) => { const v = sp[k]; return Array.isArray(v) ? v[0] : v }

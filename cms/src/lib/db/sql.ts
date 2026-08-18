@@ -30,7 +30,7 @@ export const JOB_COLUMNS = `j.id, j.title, c.name AS company_name, c.slug AS com
 export const JOB_FROM = `FROM jobs j LEFT JOIN companies c ON c.id = j.company_id`
 
 /** 相似/相关职位用的瘦列清单 */
-export const REL_COLS = `j.id, j.title, c.name AS company_name, j.city, j.province, j.salary, j.salary_text`
+const REL_COLS = `j.id, j.title, c.name AS company_name, j.city, j.province, j.salary, j.salary_text`
 
 /** 去重:同一岗多渠道重复发布时只留一条 */
 export const DEDUPE_COND = `coalesce(j.is_dup, false) = false`

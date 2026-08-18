@@ -30,7 +30,7 @@
                                  必须导出,index.ts 才装得进 PATHWAYS 数组),基本不动。
 
 ────────────────────────────────────────────────────────────────────────────
-🔴 四个坑(初版全踩过,每个都让「在用的」变成「死的」):
+🔴 八个坑(全踩过;⑤⑥⑦ 是 08-18 动手那天被 tsc 抓出来的,⑧ 是同一天被 eslint 抓出来的):
 
 ① **SRC 必须是绝对路径。** 下面 resolve() 对相对 import 用了 .resolve()(返回绝对),
    若 SRC 是相对的,导出表的键(相对)与解析结果(绝对)永远对不上 →
@@ -45,6 +45,23 @@
 
 ④ **桶转发不是声明。** `export {...} from '...'` 记成 index.ts 自己的导出,
    会把叶子文件的名字在桶上再算一遍(而桶自己当然没人从它这儿单独引)。
+
+⑤ **SKIP_DIRS 只管导出侧,不许管消费侧。** collections/*.ts 是 Payload 的 schema,
+   它们的**导出**是框架约定(不统计),但它们的 **import 照样算数** ——
+   两边共用一个 keep() 时,只被 collection 引用的常量全成死代码(实测 4 个:
+   SAVED_JOBS_CAP / FREE_SAVED_SEARCHES / PRO_SAVED_SEARCHES,以及 database.getDb)。
+
+⑥ **DYN 的内层不能是 `[^}]*`。** 那样外层函数的 `{` 会当起点把整段吞掉,
+   嵌套块里的**第一个**解构动态 import 于是解析不出名字。恶心在**同一个文件只错一半** ——
+   instrumentation.ts 第 8 行的 getDb 丢了,第 9 行的 getTopNocsCached 因为从新位置重新起手反而对。
+
+⑦ **next/dynamic 的取名形态** `import('./X').then((m) => m.Y)` 要单独一条。
+   .tsx 那轮会大量踩到(ChatBox、AuthModal 都是这么加载的)。
+
+⑧ **local 计数要剥注释、要拒成员访问。** 前七个坑都让「在用的」变成「死的」,这个反过来 ——
+   注释里提一句(database.ts「要兜底的用 dbOrNull」)、或 `SQL.JOB_COLUMNS` 被 `\b` 吃掉后半截,
+   都会让**已经没人用的**看着还活着,于是混进「零风险」那批(实测 2 个:dbOrNull / withTransaction)。
+   tsc 抓不到 —— 去掉 export 它照样绿;要 eslint 的 unused 才亮。
 
 ⚠️ 验收方法(别拿 grep 验 grep):抽样后逐条**跨行**复核 ——
    多行 import 逐行 grep 抓不到;而全文 grep 又会把**同名不同模块**的算成一个
@@ -85,7 +102,9 @@ def rel(p):
 ts_files = [p for p in SRC.rglob('*.ts') if keep(p)]
 # 坑③:tests/ 在 src 之外,不加进来则只被测试引用的导出全被误判成死代码
 TESTS = SRC.parent / 'tests'
-all_files = (ts_files + [p for p in SRC.rglob('*.tsx') if keep(p)]
+# 坑⑤:消费面不许套 keep() —— SKIP_DIRS 是「谁的导出不统计」,不是「谁的 import 不算数」。
+# collections/*.ts 照样 import lib/,挡掉它们 = 只被 collection 引用的常量全成死代码(实测 4 个)。
+all_files = (list(SRC.rglob('*.ts')) + list(SRC.rglob('*.tsx'))
              + (list(TESTS.rglob('*.ts')) + list(TESTS.rglob('*.tsx')) if TESTS.exists() else []))
 
 # ── 1 · 收导出 ───────────────────────────────────────────────────────────────
@@ -116,7 +135,12 @@ IMP = re.compile(
     r"import\s+(?:type\s+)?(?:\{([^}]*)\}|\*\s+as\s+([A-Za-z_$][\w$]*)|([A-Za-z_$][\w$]*))?"
     r"\s*(?:,\s*\{([^}]*)\})?\s*from\s*['\"]([^'\"]+)['\"]")
 REEXP = re.compile(r"export\s+(?:type\s+)?\{([^}]*)\}\s*from\s*['\"]([^'\"]+)['\"]")
-DYN = re.compile(r"\{([^}]*)\}\s*=\s*await\s+import\s*\(['\"]([^'\"]+)['\"]\)")
+# 坑⑥:内层必须是 [^{}]* —— 用 [^}]* 时,外层函数的 `{` 会当起点把整段吞进来,
+# 于是嵌套块里的**第一个**解构动态 import 解析不出名字(instrumentation.ts 的 getDb 就这么丢的,
+# 而它下一行的 getTopNocsCached 因为从新位置重新起手反而对了 —— 这种「同一文件对一半」最难看出来)。
+DYN = re.compile(r"\{([^{}]*)\}\s*=\s*await\s+import\s*\(['\"]([^'\"]+)['\"]\)")
+# 坑⑦:next/dynamic 的取名形态 —— import('./X').then((m) => m.Y)。.tsx 那轮会大量踩到。
+THEN = re.compile(r"import\s*\(['\"]([^'\"]+)['\"]\)\s*\.\s*then\s*\(\s*\(?\s*(\w+)\s*\)?\s*=>\s*(\w+)\.(\w+)")
 
 
 def resolve(spec, frm):
@@ -152,6 +176,10 @@ for p in all_files:
         if ns:  # import * as NS —— 按 NS.name 的实际点用计数,不算全量消费
             for hit in set(re.findall(r'\b' + re.escape(ns) + r'\.([A-Za-z_$][\w$]*)', src)):
                 consumers[(tgt, hit)].add(p)
+    for spec, _p, _o, name in THEN.findall(src):  # dynamic(() => import('./X').then(m => m.Y))
+        tgt = resolve(spec, p)
+        if tgt and tgt != p:
+            consumers[(tgt, name)].add(p)
     for names_, spec in DYN.findall(src):  # const { X } = await import('...')
         tgt = resolve(spec, p)
         if tgt:
@@ -173,10 +201,14 @@ for p in all_files:
 cache = {}
 
 
+# 坑⑧:算「本文件还用不用它」必须先剥注释、且不认 `X.name` 的成员访问。
+COMMENT = re.compile(r'/\*.*?\*/|(?<!:)//[^\n]*', re.S)
+
+
 def local_uses(p, n):
     if p not in cache:
-        cache[p] = p.read_text(encoding='utf-8', errors='ignore')
-    return len(re.findall(r'\b' + re.escape(n) + r'\b', cache[p])) - 1
+        cache[p] = COMMENT.sub('', p.read_text(encoding='utf-8', errors='ignore'))
+    return len(re.findall(r'(?<![.\w$])' + re.escape(n) + r'\b', cache[p])) - 1
 
 
 rows = []

@@ -17,7 +17,7 @@
 // 本文件按 ee_points_grid 的真实行走(不许为了凑 185 而硬编 47),married 金标断言的是 **183**,
 // 并在测试里把这处偏差写清楚,不是本文件的 bug。single/199 完全吻合,原样保留为硬断言。
 
-export type EduKeyLite =
+type EduKeyLite =
   | 'doctorate' | 'master' | 'bachelor' | 'tradeCert' | 'diploma2y' | 'cert1y' | 'highschool'
 
 /** VerdictProfile(C5 契约,lib/pathVerdict.ts)的子集 —— 本文件只消费这几个字段,类型在这里自己声明。 */
@@ -50,9 +50,9 @@ export type EeGridRow = {
   fetched: string
 }
 
-export type Evidence = { url: string; fetched: string; label?: string }
+type Evidence = { url: string; fetched: string; label?: string }
 
-export type EstimateItem = {
+type EstimateItem = {
   factor: string                 // 内部键,如 'age' / 'edu' / 'lang1'
   label: string                  // 人话短名
   points: number                 // 官方行抄来的分(needs-info/未命中档时为 0)
@@ -61,7 +61,7 @@ export type EstimateItem = {
   status: 'matched' | 'zero' | 'needs-info'   // matched=命中且>0;zero=命中但官方档=0或确定不适用;needs-info=缺输入/查不到能用的行
 }
 
-export type EstimateResult = {
+type EstimateResult = {
   total: number
   breakdown: EstimateItem[]
   withSpouse: boolean

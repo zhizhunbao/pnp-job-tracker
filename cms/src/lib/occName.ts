@@ -6,7 +6,7 @@
 // 短名从哪来:ETL `clean/04g_short_noc_titles.py`(本地模型压缩 + 撞车检测 + 人工裁决表)
 // → `noc_descriptions.title_{zh,ko,en}_short`。**官方英文 title 一个字都不动**,短名是另外的列。
 // 前端不做截断 —— 截字符串是清洗,清洗归数据层(CLAUDE.md)。
-export type OccNameRow = {
+type OccNameRow = {
   title?: string          // NOC 官方英文名(引用依据)
   titleZh?: string
   titleKo?: string

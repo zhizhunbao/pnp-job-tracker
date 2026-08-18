@@ -33,7 +33,7 @@ export function catName(t: TFn, v: string): string {
 export const nocLocalTitle = (n: NocDesc | null | undefined, lang: Lang): string =>
   (lang === 'zh' ? n?.titleZh : lang === 'ko' ? n?.titleKo : '') || ''
 
-export type Cat = { bg: string; fg: string }
+type Cat = { bg: string; fg: string }
 const NA: Cat = { bg: '#fafafa', fg: '#9ca3af' }
 // 同一行业族共用色相(蓝=办公室、青=钱与法、天蓝紫=科技、绿紫=人、粉=文体、
 // 黄=卖、橙=吃住、红灰=蓝领、青柠=运、土色=一二产),扫一眼能按族分堆。

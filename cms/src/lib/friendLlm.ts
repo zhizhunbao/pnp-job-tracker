@@ -40,7 +40,7 @@ export const friendLlmReady = () => Boolean(BASE && KEY)
 /** 网关硬上限:messages 里所有 content 的字符数之和(2026-08-04 实测 19970 通 / 25000 报 400)。 */
 export const FRIEND_INPUT_MAX = 20000
 /** 上游 max_tokens 封顶(不传默认 4096)。 */
-export const FRIEND_MAX_TOKENS = 8192
+const FRIEND_MAX_TOKENS = 8192
 
 export type FriendErrCode =
   | 'offline'      // 未配置 env / 连不上 / DNS 挂了(旧链也没救)
@@ -58,7 +58,7 @@ export class FriendLlmError extends Error {
   }
 }
 
-export type FriendResult = {
+type FriendResult = {
   answer: string
   sources: string[]
   cached: boolean
@@ -93,7 +93,7 @@ export const contentTag = (s: string): string => alpha7(fnv1a(s, 0x811c9dc5)) + 
 export const refPrompt = (prompt: string, system?: string): string =>
   `[ref:${contentTag(prompt + '|' + (system ?? ''))}]\n${prompt}`
 
-export type FriendChatOpts = {
+type FriendChatOpts = {
   prompt: string
   system?: string
   /** 联网搜索:/v1 不支持 → 强制走旧 /api/chat(见文件头) */

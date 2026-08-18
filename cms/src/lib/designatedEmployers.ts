@@ -15,7 +15,7 @@ import type { Db } from './db/database'
 import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 export type Pool = Db
 
-export type DesignatedEmployerRow = {
+type DesignatedEmployerRow = {
   name: string
   province: string
   /** 社区/城市(RCIP/FCIP 的名录按社区发,AIP 按省) */
@@ -28,7 +28,7 @@ export type DesignatedEmployerRow = {
   fetched: string
 }
 
-export type HiringEmployerRow = { name: string; province: string; location: string; openJobs: number }
+type HiringEmployerRow = { name: string; province: string; location: string; openJobs: number }
 
 export const EMP_PAGE_SIZE = 50
 /** SSR 只带第一页(#313:全量整包进 RSC payload 是 LCP 的真凶) */
@@ -64,7 +64,7 @@ export type EmployerRow = {
   url: string
 }
 
-export type EmployerFacets = { provs: string[]; programs: string[]; cities: string[]; nocs: string[] }
+type EmployerFacets = { provs: string[]; programs: string[]; cities: string[]; nocs: string[] }
 export type EmployerPage = {
   mode: EmployerMode
   rows: EmployerRow[]
@@ -197,7 +197,7 @@ async function loadAllDesignated(pool: Pool): Promise<DesignatedEmployerRow[]> {
 }
 
 /** 整表进程内缓存(6,680 行 × 7 短字段);过期先回旧值、后台刷新,冷启动第一请求才真等 */
-export async function fetchAllDesignated(pool: Pool): Promise<DesignatedEmployerRow[]> {
+async function fetchAllDesignated(pool: Pool): Promise<DesignatedEmployerRow[]> {
   if (cache && Date.now() - cache.ts < TTL) return cache.rows
   if (!inflight) inflight = loadAllDesignated(pool)
     .then((rows) => { cache = { ts: Date.now(), rows }; return rows })
@@ -210,7 +210,7 @@ export async function fetchAllDesignated(pool: Pool): Promise<DesignatedEmployer
  * 在招雇主:该省该职业正在招人的雇主,数据来自本站每日职位库(不是官方名录)。
  * 省+职业**两个都得有**才查 —— 少一个就是全省 GROUP BY 全表,那是站级聚合,禁每请求现算。
  */
-export async function fetchHiringEmployers(pool: Pool, opts: { province: string; noc: string }): Promise<HiringEmployerRow[]> {
+async function fetchHiringEmployers(pool: Pool, opts: { province: string; noc: string }): Promise<HiringEmployerRow[]> {
   if (!/^[A-Z]{2}$/.test(opts.province) || !/^\d{5}$/.test(opts.noc)) return []
   const { rows } = await pool.query(
     SQL.HIRING_EMPLOYERS, [opts.province, opts.noc],
@@ -224,7 +224,7 @@ export async function fetchHiringEmployers(pool: Pool, opts: { province: string;
 }
 
 /** 职业人话名(站规:代码不裸奔)。查不到就不返回该码,展示层原样显示 5 位码 */
-export async function fetchNocTitles(pool: Pool, codes: string[]): Promise<EmployerPage['nocTitles']> {
+async function fetchNocTitles(pool: Pool, codes: string[]): Promise<EmployerPage['nocTitles']> {
   const list = codes.filter((c) => /^\d{5}$/.test(c)).slice(0, 500)
   if (!list.length) return {}
   const { rows } = await pool.query(

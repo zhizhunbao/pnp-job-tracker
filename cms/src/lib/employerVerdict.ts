@@ -22,11 +22,11 @@ export type EmployerFacts = {
   sector: string | null           // 'public' = 公共部门,直接整体旁路,不与私企同一套门槛硬判
 }
 
-export type EvidenceKind = 'official' | 'estimate' | 'missing'
-export type ItemVerdict = 'pass' | 'fail' | 'unknown'
-export type EmployerVerdictFactor = 'years' | 'staff'
+type EvidenceKind = 'official' | 'estimate' | 'missing'
+type ItemVerdict = 'pass' | 'fail' | 'unknown'
+type EmployerVerdictFactor = 'years' | 'staff'
 
-export type EmployerVerdictItem = {
+type EmployerVerdictItem = {
   factor: EmployerVerdictFactor | 'revenue'
   verdict: ItemVerdict
   need: number | null      // 官方门槛(来自 pnp_requirements,恒 official,已换算成统一单位)

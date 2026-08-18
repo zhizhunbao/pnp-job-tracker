@@ -13,7 +13,7 @@ import { employerVerdict, type EmployerFacts, type EmployerVerdict } from './emp
 import type { Requirement } from './rules'
 import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 
-export const SE_PAGE_SIZE = 100
+const SE_PAGE_SIZE = 100
 // #313:把脉页橱窗三分表 SSR 每表只带前 50 行(桌面 10/页 → 首 5 页秒开),全量走 /api/sponsor-employers 懒取
 export const SE_SSR_ROWS = 50
 
@@ -36,7 +36,7 @@ export type SponsorEmployerRow = {
   verdict: EmployerVerdict
 }
 
-export type SponsorFilters = { f: '' | 'aip' | 'lmia' | 'named'; prov: string; city: string; noc: string; q: string; sort: 'open' | 'skilled'; page: number }
+type SponsorFilters = { f: '' | 'aip' | 'lmia' | 'named'; prov: string; city: string; noc: string; q: string; sort: 'open' | 'skilled'; page: number }
 
 const TTL = 10 * 60_000
 let cache: { ts: number; rows: SponsorEmployerRow[] } | null = null
@@ -117,7 +117,7 @@ export async function fetchSponsorEmployers(pool: any): Promise<SponsorEmployerR
 // 逻辑原样自 start/page.tsx 下沉(单一来源):SSR(切前 50 行)与 /api/sponsor-employers(全量)共用。
 // 排序拍板不动:LMIA 按新近度(Frank 08-08「按最近 LMIA 数排前面」),named 按 #285 三灯默认序,AIP 保持聚合序。
 // 瘦身照旧:cities 表格不渲不筛,置空;nocs 留着供职业筛。
-export type SponsorBoardData = { top: SponsorEmployerRow[]; total: number }
+type SponsorBoardData = { top: SponsorEmployerRow[]; total: number }
 export type SponsorBoards = { lmia: SponsorBoardData; named: SponsorBoardData; aip: SponsorBoardData }
 export function buildSponsorBoards(rows: SponsorEmployerRow[]): SponsorBoards {
   type SR = SponsorEmployerRow

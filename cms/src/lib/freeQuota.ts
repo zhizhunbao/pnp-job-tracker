@@ -8,7 +8,7 @@ import { checkLimit, ipOf, usedToday } from './rateLimit'
 import { isPro } from './entitlement'
 import { FREE_DAILY_TRIES } from './plan'
 
-export const ANON_DAILY_TRIES = Number(process.env.ANON_DAILY_TRIES || 10)
+const ANON_DAILY_TRIES = Number(process.env.ANON_DAILY_TRIES || 10)
 
 /** 统一闸:免费登录超池 → 402(前端升级卡);匿名超 IP 池 → 429;放行时给剩余数(headers 直接展开进响应)。 */
 export function freeGate(user: any, req: { headers: Headers }): { block?: Response; left: number | null; headers: Record<string, string> } {

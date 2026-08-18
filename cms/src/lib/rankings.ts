@@ -4,7 +4,7 @@ import type { RankRow } from '@/app/(frontend)/rankings/Ranking'
 import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 
 // 每日分类榜(E9-02):大类 slug 段与 etl/10_build_rankings BROAD_SLUG 镜像,勿单改
-export const DAILY_BROADS = ['tech', 'health', 'trades', 'service', 'business', 'education', 'manufacturing', 'resources', 'arts', 'management'] as const
+const DAILY_BROADS = ['tech', 'health', 'trades', 'service', 'business', 'education', 'manufacturing', 'resources', 'arts', 'management'] as const
 export const RANKING_SLUGS = new Set(['weekly-top', 'sponsor-likely', 'daily-top', ...DAILY_BROADS.map((b) => `daily-top-${b}`)])
 
 /** 当前实际有数据的榜 slug(大类榜岗不够当天不出榜——导航只显示存在的) */

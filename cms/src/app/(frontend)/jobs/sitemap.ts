@@ -19,7 +19,7 @@ import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管�
 export const dynamic = 'force-dynamic'
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com').replace(/\/$/, '')
-export const SHARD_SIZE = 5000
+const SHARD_SIZE = 5000
 const ACTIVE = `COALESCE(status,'open') <> 'closed'`
 
 async function pool() {

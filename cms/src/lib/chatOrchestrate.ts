@@ -30,12 +30,11 @@ import type { PlanStep } from './planTimeline'
 import { completeText, LlmError, type ChatMessage } from './llm'
 import { parseLlmJson } from './resumeMatch'
 import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
-import type { Lang } from './i18n'
 import {
   ASK_OCC, AVAIL_SENTENCE, CLAIM_LEAD, FED_FACTOR, FOLLOWUPS, LBL, META_ANSWER, MONEY_WHY,
   OCC_PICK, PROMISE_WHY, SAVED_LBL, SAVED_TAIL, SHEET_HEAD, STEP, USAGE_ASK, USAGE_WHAT,
-  latinTail, type LabelDict,
-} from './i18n/chat'
+  type LabelDict, type Lang,
+} from './i18n'
 
 // ── 契约(前端按这个写,别改)────────────────────────────────────────────────
 
@@ -51,8 +50,8 @@ export type Fact = {
 }
 /** 'other' = 主张不属于任何官方数据工具管得着的题目(中介收费这类)—— 不硬塞给某张表去“核”。
  *  收费是交易条件,私人承诺有自己的 'private-promise' 桶;两者在见客层合成一条“不能证明结果”的判断。 */
-export type SlotClaimTopic = ClaimTopic | 'other'
-export type SlotClaim = { text: string; topic: SlotClaimTopic; province?: string }
+type SlotClaimTopic = ClaimTopic | 'other'
+type SlotClaim = { text: string; topic: SlotClaimTopic; province?: string }
 /**
  * C5c 起多了**档案槽**(age / married / clb / edu + 两个附带项 eduYears / studyProvince / canadaStudy):
  * 判定层 `pathVerdict` 要的就是这几样。全部**可选**且默认 null —— 两条理由,都不是图省事:
@@ -90,7 +89,7 @@ export type ChatTurn = { role: 'user' | 'assistant'; content: string }
  * 需要决定才弹;点选=以用户身份把 sendText 发出去(气泡进对话流,引擎照常抽槽+继承 context);
  * 推荐位带理由。label/consequence 是 UI 文案(零逗号铁律),sendText 是用户口吻的一句话。
  */
-export type ChatOption = { label: string; consequence?: string; sendText: string; recommended?: boolean }
+type ChatOption = { label: string; consequence?: string; sendText: string; recommended?: boolean }
 export type ChatResult = {
   answer: string; slots: Slots; facts: Fact[]; followups: string[]
   /** 弹选项卡时才有:reason 是推荐理由行,options ≤3(第 4 张「自己说」由前端固定给)。
@@ -100,10 +99,10 @@ export type ChatResult = {
   degraded?: boolean
 }
 /** 档案里已有值的槽(route 从 users.profile 算好传进来)——已有的不再点选追问,手填优先。 */
-export type ProfileKnown = { status?: boolean; provs?: boolean; clb?: boolean; edu?: boolean; expMonths?: boolean; married?: boolean; canadaStudy?: boolean }
+type ProfileKnown = { status?: boolean; provs?: boolean; clb?: boolean; edu?: boolean; expMonths?: boolean; married?: boolean; canadaStudy?: boolean }
 // busy = 模型那头等不来字(停摆闸响/上游超时)。**不降级成事实清单**(2026-08-09 Frank 拍板
 // 「不用降级 就显示稍后再试,系统繁忙」):等太久之后再塞一张表格,读的人只会更烦。
-export type ChatErrorCode = 'tooShort' | 'noOcc' | 'llm' | 'guard' | 'busy'
+type ChatErrorCode = 'tooShort' | 'noOcc' | 'llm' | 'guard' | 'busy'
 export class ChatError extends Error {
   code: ChatErrorCode
   slots?: Slots
@@ -122,13 +121,13 @@ export class ChatError extends Error {
 //      正因为如此它不必过 guard;哪天有人把 LLM 的话塞进 step,这条豁免立刻失效。
 //   ② 可以带**工具返回的数字**(条数、省码):它们按构造就带 evidence,是已核过的事实。
 //   ③ **必须诚实**:只在真的开始/完成那一步时才发,不许为了好看编造进度、不许加假延时、不许预告没做的事。
-export type ChatStepPhase = 'read' | 'occ' | 'tool' | 'write'
+type ChatStepPhase = 'read' | 'occ' | 'tool' | 'write'
 export type ChatStep = { phase: ChatStepPhase; text: string }
-export type OnStep = (s: ChatStep) => void
+type OnStep = (s: ChatStep) => void
 
 
-export const MIN_TEXT = 4          // 少于这个字数问不出东西(「你好」不该烧一次模型调用)
-export const MAX_TEXT = 1200       // 输入侧封顶(#102 账单教训)
+const MIN_TEXT = 4          // 少于这个字数问不出东西(「你好」不该烧一次模型调用)
+const MAX_TEXT = 1200       // 输入侧封顶(#102 账单教训)
 const PROMPT_BUDGET = 4200         // 送 friend 的 user prompt 字符预算(留 1800 余量给 6000 硬上限)
 const MAX_FACTS = 40               // facts 上限:再多前端也读不完,prompt 也塞不下
 /**
@@ -196,7 +195,7 @@ const normTopic = (raw: unknown): SlotClaimTopic => (TOPICS.includes(String(raw 
 
 // ── 联邦规则 / 计分题路由(纯函数,不交给模型猜)───────────────────────────────
 
-export type FederalRuleProgram = 'PGWP' | 'CEC' | 'FSW' | 'FST'
+type FederalRuleProgram = 'PGWP' | 'CEC' | 'FSW' | 'FST'
 const FEDERAL_PROGRAM_RE: Record<FederalRuleProgram, RegExp> = {
   PGWP: /\bPGWP\b|post[- ]graduation work permit|毕业后工签|毕业工签|졸업 후 취업 허가/i,
   CEC: /\bCEC\b|Canadian Experience Class|加拿大经验类|加拿大经验类别|캐나다 경험 이민/i,
@@ -355,7 +354,7 @@ export const isMoneyTalk = (text: string): boolean => MONEY_RE.test(text)
 
 // ── 第一步:抽槽位(模型只做「听懂」,不许下任何结论)────────────────────────
 
-export const SLOT_SYSTEM = [
+const SLOT_SYSTEM = [
   'You turn one message from a would-be immigrant into slots. Reply with ONLY one JSON object, no prose, no markdown fence.',
   'SHAPE: {"occ_en":"","noc":null,"provs":[],"exp_months":null,"status":null,"age":null,"married":null,"clb":null,'
     + '"edu":null,"edu_years":null,"canada_study":null,"study_prov":null,"claims":[{"text":"","topic":"","province":null}]}',
@@ -505,7 +504,7 @@ export function normalizeSlots(raw: any): Omit<Slots, 'noc'> & { noc: string | n
 }
 
 /** 判定层要的**档案槽**(不含职业/省份:那两样另有各自的红线)。缺槽计数与反问都只数这几个。 */
-export const PROFILE_SLOTS = ['age', 'clb', 'edu', 'married', 'canadaStudy', 'expMonths', 'eduYears', 'studyProvince'] as const
+const PROFILE_SLOTS = ['age', 'clb', 'edu', 'married', 'canadaStudy', 'expMonths', 'eduYears', 'studyProvince'] as const
 export type ProfileSlot = (typeof PROFILE_SLOTS)[number]
 /** 有值的档案槽(`married: false`、`expMonths: 0` 都算**有值** —— 它们是判定,不是缺失)。 */
 export const filledProfileSlots = (s: Partial<Slots>): ProfileSlot[] =>
@@ -724,7 +723,7 @@ const usageTopicOf = (text: string): UsageTopic =>
  * **不是**一条新的答复形态。slots 原样带出去(省份/身份这些他已经说过的,下一轮 context 还接得住),
  * 但 noc 一定是 null —— 这一轮确实没认出职业,不许在这儿假装认出来了。
  */
-export const answerUsage = (text: string, lang: Lang, slots: Omit<Slots, 'noc'> & { noc: string | null }): ChatResult => ({
+const answerUsage = (text: string, lang: Lang, slots: Omit<Slots, 'noc'> & { noc: string | null }): ChatResult => ({
   answer: `${USAGE_WHAT[lang][usageTopicOf(text)]}${lang === 'en' ? ' ' : ''}${USAGE_ASK[lang]}`,
   slots: { ...slots, noc: null },
   facts: [],
@@ -761,7 +760,7 @@ export const metaTopicOf = (text: string): MetaTopic | null => {
 }
 
 /** 形态照 answerUsage 一字不差:写死的话 + 空 facts + 不进模型 + noc 一定是 null。 */
-export const answerMeta = (topic: MetaTopic, lang: Lang, slots: Omit<Slots, 'noc'> & { noc: string | null }): ChatResult => ({
+const answerMeta = (topic: MetaTopic, lang: Lang, slots: Omit<Slots, 'noc'> & { noc: string | null }): ChatResult => ({
   answer: META_ANSWER[lang][topic],
   slots: { ...slots, noc: null },
   facts: [],
@@ -818,7 +817,7 @@ export function commercialClaimLabel(texts: string[], lang: Lang): string {
 const zhOnly = (s: string | undefined, lang: Lang) => (lang === 'zh' ? (s ?? '') : '')
 
 /** 出口回读用:模型会换个说法(「未收集」不是「未收录」),所以按**语义标记**认,不按原句认。 */
-export const AVAIL_MARKERS: Record<Lang, Record<Exclude<Availability, 'ok'>, string[]>> = {
+const AVAIL_MARKERS: Record<Lang, Record<Exclude<Availability, 'ok'>, string[]>> = {
   zh: {
     // 私人承诺那句(PROMISE_WHY)不含「不公布」三个字,但它就是 not-published 的意思,而且说得更透
     'not-published': ['不公布', '不发布', '未公布', '未发布', '不对外公布', '不披露', '没有任何一级政府公布', '谁也核不了'],
@@ -848,7 +847,7 @@ export const AVAIL_MARKERS: Record<Lang, Record<Exclude<Availability, 'ok'>, str
  * 为什么 missingClaimLines 原来放行:它只在主张带四态时才要求答复复述状态,而商业话术那行没有四态,
  * 于是「提到了这条主张」就算过 —— 判断说成什么样都行。这里给它补上该有的那把尺。
  */
-export const VERDICT_MARKERS: Record<Lang, string[]> = {
+const VERDICT_MARKERS: Record<Lang, string[]> = {
   zh: ['不能当作', '不能证明', '不是官方保证', '不等于官方', '不构成官方', '并不保证', '没有官方效力'],
   en: ['not an official guarantee', 'does not prove', 'do not prove', 'does not guarantee', 'no official standing', 'is not official'],
   ko: ['공식 보장이 아', '증명하지 않', '보장하지 않', '공식적인 효력이 없'],
@@ -989,7 +988,7 @@ const VERDICT_EXCLUDED_SHOWN = 3
 const VERDICT_OPEN_SHOWN = 3
 const VERDICT_NEEDS_SHOWN = 2
 /** 语言杠杆问的是「提到哪一档」。这个数同时喂给 pathLevers 与见客标签 —— 两处各写一个迟早对不上。 */
-export const VERDICT_CLB_TARGET = 8
+const VERDICT_CLB_TARGET = 8
 
 /**
  * 抽选线那个数的出处是**抽选页**,不是分值表。pathVerdict 没把它单列出来,但它留了一个
@@ -1000,7 +999,7 @@ export const VERDICT_CLB_TARGET = 8
 const drawEvidenceOf = (v: PathwayVerdict) =>
   v.reasons.find((r) => /\(\d{4}-\d{2}-\d{2}/.test(r.evidence?.label ?? ''))?.evidence
 
-export function verdictFacts(r: VerdictResult, lang: Lang): Fact[] {
+function verdictFacts(r: VerdictResult, lang: Lang): Fact[] {
   const T = LBL[lang]
   if (r.availability !== 'ok') {
     return [statusFact('lookupVerdict', T.vPaths, r.availability, zhOnly(r.note, lang), '', lang)]
@@ -1165,7 +1164,7 @@ export function verdictFollowups(slots: Slots, lang: Lang, limit = 3): string[] 
  * 三张选项写死三语 —— label/consequence 是 UI 文案(零逗号);sendText 是用户口吻整句,
  * 发出去走既有抽槽(status 词表:student/graduated/working…),**不塞任何用户没说过的事实**。
  */
-export function permitOptions(lang: Lang): NonNullable<ChatResult['options']> {
+function permitOptions(lang: Lang): NonNullable<ChatResult['options']> {
   const O: Record<Lang, NonNullable<ChatResult['options']>> = {
     zh: {
       reason: '先确认工签——它决定最快的通道对你开不开',
@@ -1354,7 +1353,7 @@ export function slotAskOptions(
 
 
 /** lookupPermit 的真返回 → 对话 facts。rule 的数字与原句共用同一条 evidence；null 只摆原文,不补 0。 */
-export function federalRuleFacts(results: PermitResult[], lang: Lang): Fact[] {
+function federalRuleFacts(results: PermitResult[], lang: Lang): Fact[] {
   const T = LBL[lang]
   const out: Fact[] = []
   for (const r of results) {
@@ -1379,7 +1378,7 @@ export function federalRuleFacts(results: PermitResult[], lang: Lang): Fact[] {
 }
 
 /** lookupCrs 的真返回 → 对话 facts。两套 grid 的名字长在每一行里,不让模型把分值混加。 */
-export function crsFacts(results: CrsResult[], lang: Lang): Fact[] {
+function crsFacts(results: CrsResult[], lang: Lang): Fact[] {
   const T = LBL[lang]
   const out: Fact[] = []
   for (const r of results) {
@@ -1769,7 +1768,7 @@ const PLAYBOOK_PGWP_COMBINE =
 const PGWP_COMBINE_TEXT_RE =
   /(?:多个|两|2|两个).{0,16}(?:课程|项目|program)|合并|combine|(?:3|三)\s*年.{0,8}PGWP|PGWP.{0,8}(?:3|三)\s*年/i
 
-export function isPgwpCombineQuestion(text: string, history?: ChatTurn[]): boolean {
+function isPgwpCombineQuestion(text: string, history?: ChatTurn[]): boolean {
   return PGWP_COMBINE_TEXT_RE.test([...(history ?? []).filter((h) => h.role === 'user').map((h) => h.content), text].join('\n'))
 }
 
@@ -1878,7 +1877,7 @@ export const isPlanQuestion = (text: string) => PLAN_RE.test(text)
 const ODDS_RE = /\bodds\b|\bchances?\b|probabilit|likelihood|how likely|概率|几率|機率|胜算|勝算|被抽中的可能|多大机会|확률|가능성이 (?:얼마|어느)|뽑힐/i
 /** 「找到工作的机会」问的是岗位不是抽选池:带这些词就不走概率剧本(否则会把一句抽选池的话答给找工作的人)。 */
 const JOBWORD_RE = /\bjobs?\b|\bposting|\bwork\b|\bhir(?:e|ing)|\bemploy|岗位|職位|工作|就业|就業|일자리|취업/i
-export const isOddsQuestion = (text: string) => ODDS_RE.test(text) && !JOBWORD_RE.test(text)
+const isOddsQuestion = (text: string) => ODDS_RE.test(text) && !JOBWORD_RE.test(text)
 /** 「他问的是抽选/名额/等多久吗」:只有问到了,那两个工具的四态行才是答案而不是管道内情。 */
 const DRAW_TOPIC_RE =
   // ⚠️ 「提名 / nomination」不收:满大街的问题都带这两个字(「中介说包省提名」),收了等于没过滤
@@ -1890,7 +1889,7 @@ const DRAW_TOPIC_RE =
  * 库里数字变了(本站日更!)或换了个省,缓存照样把**上一次那段答复**还给你。
  * 头上放一个只由 facts 决定的标记,数据一变缓存键就变。**纯字母**:掺不进 guard 的数字账。
  */
-export function factsFingerprint(facts: Fact[]): string {
+function factsFingerprint(facts: Fact[]): string {
   let h = 2166136261
   for (const f of facts) {
     const s = `${f.label}|${f.value}|${f.valueText}`
@@ -2707,7 +2706,7 @@ export function findMergedStates(answer: string, facts: Fact[], lang: Lang): str
 // 那不是在背清单,那正是我们要求的形状。其余 label(计数/清单/四态)照旧算 —— 那些是**名目**不是话,
 // 三条名目被原样搬进答复仍然是「在念表格」,红线一个字没松。
 /** ⓐ `=` 的形状 —— **一句就能判**,所以它进得了逐句门(见 sentenceBlockers)。 */
-export function findFactEq(answer: string): string[] {
+function findFactEq(answer: string): string[] {
   for (const m of answer.matchAll(/[^\s=]{0,24}\s=\s[^\s=]{0,12}/g)) return [m[0].trim()]
   return []
 }
@@ -2744,7 +2743,7 @@ const openKey = (s: string, lang: Lang): string => {
   return lang === 'en' ? t.toLowerCase().split(/\s+/).slice(0, 2).join(' ') : t.slice(0, 4)
 }
 /** 行首 `- `(答复里唯一允许的列表记号,与前端 ChatText 同一个判据)。 */
-export const BULLET_LINE = /^\s*-\s+/
+const BULLET_LINE = /^\s*-\s+/
 /**
  * 🔴 **列表项不进这道检查**(2026-08-06,RULE 5 松绑同批):项目符号里句式相近**正是列表的用处** ——
  * 「- 这个省要求雇主经营满 3 年 / - 要求你语言到 CLB 5」读起来是一份对齐的清单,不是在念表格。
@@ -2941,7 +2940,7 @@ export function sentenceBlockers(text: string, facts: Fact[], lang: Lang, echo =
   ].slice(0, 8)
 }
 
-export type SentenceGate = {
+type SentenceGate = {
   /** 已经放行出去的那截(处理后的文本 —— 前端收到的就是它,一字不差)。 */
   readonly released: string
   /** 又收到一段模型原文(累计) → 这次能放行的增量('' = 还不能)。blocked 非空 = 撞了门,调用方必须停流。 */
@@ -3053,7 +3052,7 @@ export function buildFollowups(facts: Fact[], lang: Lang, asked = '', occ = ''):
  * 三类永不进出处:`note`(索引口径是**注意事项**不是来源)、`claim`(那是别人说的话,不是官方出处)、
  * 没有 URL 的(点不开的东西列出来只是噪音)。
  */
-export function citeFacts(answer: string, facts: Fact[]): Fact[] {
+function citeFacts(answer: string, facts: Fact[]): Fact[] {
   const nums = new Set<string>()
   for (const m of answer.matchAll(NUM_RE)) nums.add(normNum(m[0]))
   const low = answer.toLowerCase()
@@ -3086,7 +3085,7 @@ export function citeFacts(answer: string, facts: Fact[]): Fact[] {
  *   ③ **匿名不存**:登录判定在路由层(这里拿不到 user,也不该拿到)。
  * 返回 null = 这轮没有可补的,调用方一个字都不必说(尾行只在真写了的时候出现)。
  */
-export type ChatProfilePatch = {
+type ChatProfilePatch = {
   currentStatus?: string
   nocCodes?: string[]
   clb?: number

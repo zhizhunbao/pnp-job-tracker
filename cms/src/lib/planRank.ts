@@ -34,7 +34,7 @@ export type RankCtx = {
   homeProvs: ReadonlySet<string>
 }
 
-export const bandOf = (row: RankableRow): string =>
+const bandOf = (row: RankableRow): string =>
   `${row.availability !== 'ok' ? 'y' : 'a'}|${row.belowLine ? 'z' : 'a'}|${row.verdict}|${row.blockedBy ?? ''}|${row.tier ?? ''}`
 
 type Decorated<T> = { row: T; i: number; band: number; n: number | null; home: boolean; ratio: number }
@@ -76,7 +76,7 @@ export function rankRows<T extends RankableRow>(rows: T[], ctx: RankCtx): T[] {
   return decorate(rows, ctx).sort(cmp).map((d) => d.row)
 }
 
-export type OutsidePick<T> = {
+type OutsidePick<T> = {
   row: T
   /** 场内第一名(给措辞层摆对照:两边的竞争比与档位都要如实说,#303) */
   insideBest: T | null

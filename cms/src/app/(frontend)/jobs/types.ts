@@ -131,9 +131,9 @@ export type PnpStream = { stream: string; label: string; type: string; url: stri
 // 一个联邦 EE 类别 + 它涵盖的职业(由 EeOcc 行按 category 聚合出来)
 export type EeCat = { key: string; label: string; drawCrs: number | null; drawDate: string; drawSize: number | null; occupations: { noc: string; teer: number | null; title: string }[] }
 
-export type CoGradeDim = { g: number; v: any } | null
+type CoGradeDim = { g: number; v: any } | null
 export type CoGradeDetail = { sponsor?: CoGradeDim; active?: CoGradeDim; salary?: CoGradeDim; fame?: CoGradeDim } | null
 
 // 省级 IRCC 体量事实(地点弹框):留学生/临时外劳/IMP 存量 + PNP 落地 + 提名配额
-export type ProvInfoNum = { n: number; year: string }
+type ProvInfoNum = { n: number; year: string }
 export type ProvInfo = { study?: ProvInfoNum; tfwp?: ProvInfoNum; imp?: ProvInfoNum; pnpPr?: ProvInfoNum; alloc?: { y2026?: number | null; y2025?: number | null } }

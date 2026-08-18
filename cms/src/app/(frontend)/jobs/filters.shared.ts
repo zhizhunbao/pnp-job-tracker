@@ -10,10 +10,9 @@
 // ⚠️ 新增筛选键四处同步:本表 + buildJobsWhere(lib/jobsSql)+ 前端 state(Jobs.fState)
 //   + /api/jobs 的 FILTER_KEYS。
 
-import { PROV_NAMES } from '@/lib/location'
 /** 省码 → 省全名。真值住 lib/location(省名是地点域的事,那儿的 provName/parseLoc 也吃它);
- *  筛选值一律用全名(fProv/深链/保存的筛选都依赖它),故这里原样再导出给筛选侧,调用点不必改。 */
-export { PROV_NAMES }
+ *  筛选值一律用全名(fProv/深链/保存的筛选都依赖它)。 */
+import { PROV_NAMES } from '@/lib/location'
 
 /** URL 短名 → 筛选键(筛选键 = 前端 state 名 = buildJobsWhere 的键,三者同名,不必再各翻译一遍) */
 export const URL_TO_FILTER: Record<string, string> = {

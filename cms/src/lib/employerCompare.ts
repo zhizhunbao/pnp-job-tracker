@@ -7,7 +7,6 @@ import { match, normalizeProfile, hasProfile, type MatchDims, type MatchJob, typ
 import { CMP_MAX, type CompareRow } from './employerCompareShared'
 import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 
-export { CMP_MAX }
 export type { CompareRow }
 
 const teerOf = (noc: string) => (noc && noc.length === 5 && /\d/.test(noc[1]) ? Number(noc[1]) : null)

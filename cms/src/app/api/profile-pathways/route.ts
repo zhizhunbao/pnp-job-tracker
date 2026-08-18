@@ -54,7 +54,7 @@ export const splitRegionalByProvince = <T extends { key: string; province: strin
  *    9 个省同口径 —— 所以它可以排序,也应该排序(Frank 2026-08-12:「竞争肯定是要排序的」
  *    「很多人不知道竞争激烈程度,我们有这个数据并且是最新的就有这个能力」)。
  */
-export type ProvinceCompetition = { ratio: number; tier: string; pool: number; quota: number; quotaYear: number }
+type ProvinceCompetition = { ratio: number; tier: string; pool: number; quota: number; quotaYear: number }
 
 async function competitionByProvince(): Promise<Record<string, ProvinceCompetition>> {
   const out: Record<string, ProvinceCompetition> = {}

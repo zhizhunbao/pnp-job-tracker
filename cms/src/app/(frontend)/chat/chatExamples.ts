@@ -23,7 +23,7 @@ export type ChatProfile = {
   pgwpMonthsLeft?: number | null
 }
 
-export type ExampleItem = { key: string; params?: Record<string, string | number> }
+type ExampleItem = { key: string; params?: Record<string, string | number> }
 
 const ANON: ExampleItem[] = [{ key: 'chat.ex1' }, { key: 'chat.ex2' }, { key: 'chat.ex3' }]
 const REG: ExampleItem[] = [{ key: 'chat.ex.reg1' }, { key: 'chat.ex.reg2' }, { key: 'chat.ex.reg3' }]

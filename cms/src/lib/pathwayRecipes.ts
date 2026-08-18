@@ -4,9 +4,9 @@
 // 不可达已弃用,换 canada.ca 官方页);NOC 码逐条对照 data/mart/noc_descriptions.json 核验;lastReviewed=人工核对日。
 import type { CurrentStatus } from './match'
 
-export type PathwaySource = { label: string; url: string }
-export type PathwayStep = { key: string; sourceIdx?: number }   // key=i18n(pw.<id>.s*);sourceIdx 指向本配方 sources
-export type PathwayRecipe = {
+type PathwaySource = { label: string; url: string }
+type PathwayStep = { key: string; sourceIdx?: number }   // key=i18n(pw.<id>.s*);sourceIdx 指向本配方 sources
+type PathwayRecipe = {
   id: 'direct' | 'hcw' | 'health' | 'trades' | 'study' | 'aip-trades'
   audience: CurrentStatus[]        // 分型 §2.5(E 已 PR 纯找工不硬塞移民路径)
   nocPrefixes: string[] | null     // 职业分支限定(前缀);null=不限职业

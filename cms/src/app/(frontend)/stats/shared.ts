@@ -12,7 +12,7 @@ export type StatRow = {
 }
 export type SrcRow = { field: string; publisher: string; url: string; fetched: string }
 // 批B(#133):省卡 IRCC 体量(provinces.info jsonb 透传,与 E8-12 省弹框同源同口径)
-export type ProvVolNum = { n: number; year: string }
+type ProvVolNum = { n: number; year: string }
 export type ProvVol = { study?: ProvVolNum; tfwp?: ProvVolNum; imp?: ProvVolNum; pnpPr?: ProvVolNum }
 export type ProvExtra = { info: ProvVol | null; tier: string | null }
 

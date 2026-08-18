@@ -249,8 +249,8 @@ export async function lookupThresholds(
 
 // ── ② lookupCoverage:省职业清单覆盖(match.ts 五态 × pnp_occupations)────────────
 
-export type CoverageHit = { stream: string; label: string; type: string; evidence: Evidence }
-export type ProvCoverage = {
+type CoverageHit = { stream: string; label: string; type: string; evidence: Evidence }
+type ProvCoverage = {
   province: string
   coverage: ProvListCoverage      // listed / partial / exclusion / uncovered / qc(复用 match.ts 单一来源)
   availability: Availability
@@ -258,7 +258,7 @@ export type ProvCoverage = {
   excluded: boolean               // 命中的是排除清单(官方点名不受理)
   note: string
 }
-export type CoverageResult = { noc: string; provinces: ProvCoverage[] }
+type CoverageResult = { noc: string; provinces: ProvCoverage[] }
 
 /** 「哪个省的清单收了我」。ON 这类省返回 not-published(官方制度性不公布清单),**不是空清单**。 */
 export async function lookupCoverage(pool: any, args: { noc: string; provs?: string[] }): Promise<CoverageResult> {
@@ -309,7 +309,7 @@ export async function lookupCoverage(pool: any, args: { noc: string; provs?: str
 
 // ── ③ lookupJobs:在招岗位计数(jobs mart)──────────────────────────────────
 
-export type JobsRow = {
+type JobsRow = {
   province: string
   open: number
   named: number          // 命中具名省提名通道的在招数
@@ -317,7 +317,7 @@ export type JobsRow = {
   medianWage: number | null
   evidence: Evidence
 }
-export type JobsResult = {
+type JobsResult = {
   noc: string
   availability: Availability
   scope: string          // 口径:本站索引,不是该省全部空缺
@@ -367,7 +367,7 @@ export async function lookupJobs(
 
 // ── ④ lookupDraws:省抽选史(pnp_draws)──────────────────────────────────────
 
-export type DrawRow = {
+type DrawRow = {
   province: string
   drawDate: string
   stream: string
@@ -377,7 +377,7 @@ export type DrawRow = {
   evidence: Evidence
 }
 /** 本站收录的抽选窗口。**「多久没开过」的分母** —— 没有它,「0 轮」就分不清是停了还是我们没抓。 */
-export type DrawWindow = {
+type DrawWindow = {
   from: string           // 本站收录的最早一轮(窗口更早的轮次不在库里)
   to: string             // 最近一轮 —— 计时终点用它,不是「今天」(见 monthsBetween)
   rounds: number         // 窗口内总轮数
@@ -388,7 +388,7 @@ export type DrawWindow = {
  * 案例 C02 §4-4 的原型:「联邦常规轮次 480~530」——常规(general)轮次在本站 56 轮的窗口里
  * 一次都没出现,而 CEC 12 轮全在 507–518。返回空数组会让上层以为「没数据」,于是它照抄了中介的数。
  */
-export type DrawStreamStat = {
+type DrawStreamStat = {
   /** 分类键 = **库里已有的字段**(FED 是 label:cec/pnp/french/trade…;省级退回官方轮次名)。本层不给轮次归类,认不出就原样返回追问的那个词 */
   key: string
   stream: string         // 官方轮次名原文(该类最近一轮的写法)
@@ -524,7 +524,7 @@ export async function lookupDraws(pool: any, args: { prov: string; limit?: numbe
 
 // ── ⑤ lookupOps:官方运营统计(处理时长 / 配额 / 池内人数 / 池分布)────────────────
 
-export type OpsMetric = {
+type OpsMetric = {
   /**
    * metric 词表(ETL 只产这些):
    *   AB  allocation / issued / remaining / to_process / assessing_up_to / eoi_pool(_total)
@@ -609,7 +609,7 @@ export async function lookupOps(pool: any, args: { prov: string }): Promise<OpsR
 
 // ── ⑥ lookupEE:联邦 EE 类别(ee_categories)─────────────────────────────────
 
-export type EeRow = {
+type EeRow = {
   category: string
   label: string
   teer: number | null
@@ -618,7 +618,7 @@ export type EeRow = {
   drawSize: number | null
   evidence: Evidence
 }
-export type EeResult = {
+type EeResult = {
   noc: string
   availability: Availability
   matched: boolean            // false 且 availability='ok' = 查过全表,这个职业不在任何类别里
@@ -651,7 +651,7 @@ export async function lookupEE(pool: any, args: { noc: string }): Promise<EeResu
 
 // ── ⑦ lookupPermit:联邦工签规则(pnp_requirements 的 FED 行)────────────────────
 
-export type PermitRule = {
+type PermitRule = {
   program: string        // PGWP / PR-fees …(库里的 program 字段,原样带出)
   stream: string         // 官方分档:masters / short / long / degree / college;'' = 不分档的通则
   factor: string         // pgwpLength / pgwpCombine / pgwpOnce / pgwpWindow / pgwpMinProgram / pgwpLanguage
@@ -666,7 +666,7 @@ export type PermitRule = {
 }
 
 /** 官方规则之间确有明确断层时才登记；不能把同一官方页面「工签有效期」下连续列出的分档误拆成断层。 */
-export type PermitGap = {
+type PermitGap = {
   kind: 'not-written'    // 官方原文没写这一跳。**不是「不允许」也不是「允许」** —— 只有 IRCC 能填这个空
   between: string[]      // 断层两端各自的官方事实(factor 或 factor|stream)
   claim: string          // 民间常见的那条推论(原样写出来,好让上层点名说「这一条没有官方依据」)
@@ -734,8 +734,8 @@ export async function lookupPermit(pool: any, args: { program?: string; factor?:
 
 // ── ⑧ lookupCrs:联邦计分表(ee_points_grid)──────────────────────────────────
 
-export type CrsGrid = 'CRS' | 'FSW67'
-export type CrsRow = {
+type CrsGrid = 'CRS' | 'FSW67'
+type CrsRow = {
   grid: CrsGrid
   section: string
   sectionLabel: string
@@ -828,7 +828,7 @@ export async function lookupCrs(pool: any, args: CrsLookupArgs): Promise<CrsResu
 export type ClaimTopic = 'coverage' | 'thresholds' | 'jobs' | 'draws' | 'ops' | 'ee' | 'private-promise'
 /** 中介/朋友的一句话。text 原样带回(不改写别人的话);topic/province 由编排层从自然语言里抽。 */
 export type Claim = { text: string; topic: ClaimTopic; province?: string }
-export type ClaimCheck = {
+type ClaimCheck = {
   claim: Claim
   bucket: 'checked' | 'uncheckable'
   availability: Availability
@@ -836,8 +836,8 @@ export type ClaimCheck = {
   why?: string            // uncheckable 时说清是"官方不公布"还是"本站没收录"
 }
 /** 第三格:他没说的 —— 同一个职业,本站查得到但这些主张一个字没提的省 */
-export type UnsaidItem = { province: string; facts: ProvCoverage }
-export type ClaimsResult = { noc: string; checked: ClaimCheck[]; uncheckable: ClaimCheck[]; unsaid: UnsaidItem[] }
+type UnsaidItem = { province: string; facts: ProvCoverage }
+type ClaimsResult = { noc: string; checked: ClaimCheck[]; uncheckable: ClaimCheck[]; unsaid: UnsaidItem[] }
 
 /**
  * 私人承诺的判据 = **原话**,不是编排层给的 topic。

@@ -32,7 +32,7 @@ export const PROV_NAME: Record<string, string> = Object.fromEntries(
 // ③ 剩余分支配 pg_trgm GIN(docs/sql/search-trgm-indexes.sql,生产 DDL)→ 位图 OR 走索引。
 const SEARCH_COLS = ['j.title', 'j.city', 'j.district', 'j.noc', 'j.source_label']
 
-export type JobsWhere = { sql: string; params: unknown[]; skipped: string[] }
+type JobsWhere = { sql: string; params: unknown[]; skipped: string[] }
 
 /**
  * 搜索词拆分(2026-08-16 Frank「文本框可以搜索多个条件 用空格隔开可以吗」)。
@@ -64,7 +64,7 @@ export const splitQ = (q: string): string[] => {
 
 /** q 搜索公司名分支预解析:不限 LIMIT 保语义等价(全量 2 万公司的极端泛词也就 ~2 万 int,ANY 哈希扛得住)。
  *  多词:**逐词各查一组**(与 jobs 侧一样词间 AND),返回 number[][],下标与 splitQ 对齐 */
-export async function resolveQCompanyIds(pool: any, filters: Record<string, unknown>): Promise<Record<string, unknown>> {
+async function resolveQCompanyIds(pool: any, filters: Record<string, unknown>): Promise<Record<string, unknown>> {
   const terms = splitQ(typeof filters.q === 'string' ? filters.q : '')
   if (!terms.length) return filters
   const ids = await Promise.all(terms.map(async (t) => {
@@ -193,7 +193,7 @@ const PRO_SORTS = new Set<string>([])
 // date_posted 只有日期没时间,于是**当天最早抓到的那批一整天钉在榜首**,晚上新抓的岗反沉到当天最底
 // (实测:榜首是 08:31 那批,19:31 的新岗在后面)。改用 first_seen DESC=最新发现的在前:
 // 仍是纯时间序不掺分数(#127 意图不变),但榜单随每小时抓取真正滚动起来。
-export function orderByClause(sortKey?: string, dir?: string, pro = true): string {
+function orderByClause(sortKey?: string, dir?: string, pro = true): string {
   const key = sortKey && (pro || !PRO_SORTS.has(sortKey)) ? sortKey : undefined
   const col = (key && SORT_COLUMNS[key]) || 'j.date_posted'
   const d = dir === 'asc' ? 'ASC' : 'DESC'
@@ -217,7 +217,7 @@ const JOB_FROM = SQL.JOB_FROM
 const DEDUPE_COND = SQL.DEDUPE_COND
 
 // 行映射(不含 match;match 由调用方按人/序算好传入)。Pro 列(工资中位三件套)免费用户置空 —— 不进浏览器。
-export function mapJobRow(j: any, pro: boolean, matchLevel: JobRow['match']): JobRow {
+function mapJobRow(j: any, pro: boolean, matchLevel: JobRow['match']): JobRow {
   return {
     match: matchLevel,
     id: j.id,
@@ -310,7 +310,7 @@ function makeMatcher(profile: MatchProfile, profileOk: boolean, matchDims: Match
 // 3) 查询函数(路由/页面/提醒只调这些,不写裸 SQL)
 // ═══════════════════════════════════════════════════════════════════════════
 
-export type JobsListOpts = { pro: boolean; profile: MatchProfile; profileOk: boolean; matchDims: MatchDims; limit: number }
+type JobsListOpts = { pro: boolean; profile: MatchProfile; profileOk: boolean; matchDims: MatchDims; limit: number }
 
 /** 一次性取前 limit 行:page.tsx SSR 首屏 50 行用(筛选/翻页走 /api/jobs 分页;E10-01 P5 已删旧 /api/jobs-data blob 端点)。 */
 export async function fetchJobRows(pool: any, { pro, profile, profileOk, matchDims, limit }: JobsListOpts): Promise<{ jobs: JobRow[]; updatedAt: string; matchHigh: number; matchMid: number }> {
@@ -323,7 +323,7 @@ export async function fetchJobRows(pool: any, { pro, profile, profileOk, matchDi
   return { jobs, updatedAt, matchHigh: m.high(), matchMid: m.mid() }
 }
 
-export type JobsPageOpts = {
+type JobsPageOpts = {
   pro: boolean; profile: MatchProfile; profileOk: boolean; matchDims: MatchDims
   filters: Record<string, unknown>; sort?: { key?: string; dir?: string }; page: number; pageSize: number
 }
@@ -391,7 +391,7 @@ export async function fetchJobsPage(
   return { jobs, total, updatedAt }
 }
 
-export type MatchPageOpts = {
+type MatchPageOpts = {
   pro: boolean; profile: MatchProfile; matchDims: MatchDims; page: number; pageSize: number
   sort?: { key?: string; dir?: string }
 }
@@ -531,7 +531,7 @@ export async function fetchTotalAndProof(pool: any): Promise<{ total: number; na
 }
 
 // ── E8-09 B:公司详情页 /companies/[slug] 数据(零新抓取:companies 行 + 该司在招岗聚合) ──
-export type CompanyJobRow = { id: number; title: string; city: string; province: string; gradeChannel: number | null; noc: string; nocTitle: string; nocTitleZh: string; nocTitleKo: string; teer: number | null; salaryText: string; datePosted: string }
+type CompanyJobRow = { id: number; title: string; city: string; province: string; gradeChannel: number | null; noc: string; nocTitle: string; nocTitleZh: string; nocTitleKo: string; teer: number | null; salaryText: string; datePosted: string }
 export type CompanyDetail = {
   name: string; slug: string; website: string; websiteSource: string; industry: string; sectors: string
   aliasZh: string; aliasKo: string; wikiUrl: string; sponsorGrade: number | null
@@ -621,7 +621,7 @@ export async function fetchSimilarEmployers(pool: any, opts: { province: string;
   return rows.map((r: any) => ({ slug: r.slug, name: r.name || '', industry: r.industry || '', sponsorGrade: num(r.sponsor_grade), openCount: r.open_count ?? 0 }))
 }
 
-export type AlertHit = { id: number; title: string; city: string; province: string; salary_text: string; company_name: string }
+type AlertHit = { id: number; title: string; city: string; province: string; salary_text: string; company_name: string }
 
 /** 邮件提醒命中查询(E5-03):某条保存筛选自 since 起的新岗(status=open ∩ first_seen>since ∩ filters)。原在 alerts/run 裸 SQL,收编于此。 */
 export async function fetchAlertHits(pool: any, filters: Record<string, unknown>, since: string): Promise<{ rows: AlertHit[]; skipped: string[] }> {
@@ -636,7 +636,7 @@ export async function fetchAlertHits(pool: any, filters: Record<string, unknown>
 // 铁律:毫秒级、纯库内聚合、不碰 AI —— 用户答完三题不能盯着转圈。
 // 口径与列表一致(status='open' + pnp_eligible + pnp_stream),不另起一套判定。
 // ═══════════════════════════════════════════════════════════════════════════
-export type QuizFacts = {
+type QuizFacts = {
   noc: string; teer: number | null; title: string
   titleZh: string
   titleZhShort: string   // 窄位显示名(ETL 04g 产出;「注册护士和注册精神科护士」→「注册护士」)

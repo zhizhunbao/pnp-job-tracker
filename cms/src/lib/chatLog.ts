@@ -32,7 +32,7 @@ export function threadId(text: string, history: ChatTurn[] = []): string {
 export const turnOf = (history: ChatTurn[] = []): number =>
   history.filter((h) => h.role === 'user').length + 1
 
-export type ChatLogRow = {
+type ChatLogRow = {
   text: string
   lang: Lang
   history?: ChatTurn[]

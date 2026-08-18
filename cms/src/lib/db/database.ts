@@ -35,7 +35,7 @@ export type Db = {
 /** 事务用的独占连接。**用完必须 release** —— 别自己 connect,走 withTransaction。 */
 export type DbClient = Db & { release: () => void }
 /** 连接池:能直接查,也能借出独占连接。 */
-export type DbPool = Db & { connect: () => Promise<DbClient> }
+type DbPool = Db & { connect: () => Promise<DbClient> }
 
 function poolOf(payload: unknown): DbPool | null {
   const db = (payload as { db?: { pool?: DbPool } } | null)?.db
@@ -54,7 +54,7 @@ export function dbOf(payload: unknown): DbPool {
 }
 
 /** 同上但取不到给 null:留给「查不到就退空态」的少数调用点。 */
-export function dbOrNull(payload: unknown): DbPool | null {
+function dbOrNull(payload: unknown): DbPool | null {
   return poolOf(payload)
 }
 
@@ -71,13 +71,13 @@ export async function getDb(): Promise<DbPool> {
 // db 省略 = 自己 getDb();页面/路由手里已有池时传进来,省一次 getPayload。
 
 /** 查多行。行类型按查询声明:`select<JobRow>(SQL.JOBS_PAGE, params)` */
-export async function select<R = Record<string, unknown>>(sql: string, params?: unknown[], db?: Db): Promise<R[]> {
+async function select<R = Record<string, unknown>>(sql: string, params?: unknown[], db?: Db): Promise<R[]> {
   const d = db ?? (await getDb())
   return (await d.query(sql, params)).rows as R[]
 }
 
 /** 查一行,没有给 null(别再各处写 `rows[0] ?? null`) */
-export async function selectOne<R = Record<string, unknown>>(sql: string, params?: unknown[], db?: Db): Promise<R | null> {
+async function selectOne<R = Record<string, unknown>>(sql: string, params?: unknown[], db?: Db): Promise<R | null> {
   return (await select<R>(sql, params, db))[0] ?? null
 }
 
@@ -99,7 +99,7 @@ export async function execute(sql: string, params?: unknown[], db?: Db): Promise
  * 单连接 + 单事务:回调抛错整体 ROLLBACK,**连接一定归还**(finally release)。
  * seed 灌库靠它保证原子性 —— 失败留半写状态是老逐行版的病。
  */
-export async function withTransaction<T>(fn: (client: DbClient) => Promise<T>, pool?: DbPool): Promise<T> {
+async function withTransaction<T>(fn: (client: DbClient) => Promise<T>, pool?: DbPool): Promise<T> {
   const p = pool ?? (await getDb())
   const client = await p.connect()
   try {

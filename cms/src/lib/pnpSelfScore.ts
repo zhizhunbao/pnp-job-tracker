@@ -161,7 +161,7 @@ const AUTO_PICK: Record<string, (rows: ScoreFactor[], p: SelfProfile) => ScoreFa
   workMonths: (rows, p) => pickByThreshold(rows, monthsOf, (p.expRecent + p.expOlder) * 12),
 }
 
-export type ScorePart = {
+type ScorePart = {
   factor: string
   pts: number
   max: number
@@ -170,7 +170,7 @@ export type ScorePart = {
   source: 'profile' | 'job' | 'tick'   // 分数从哪来:你填的条件 / 本岗自动算 / 你自己勾的
 }
 
-export type ProvinceScore = {
+type ProvinceScore = {
   province: string
   system: string
   maxTotal: number

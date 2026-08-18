@@ -16,7 +16,7 @@ import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管�
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-export const JD_MARKS = ['ROLE', 'REQS', 'PAY', 'WORKHOURS', 'APPLY'] as const
+const JD_MARKS = ['ROLE', 'REQS', 'PAY', 'WORKHOURS', 'APPLY'] as const
 const TERM_ENUM = new Set(['permanent', 'term', 'casual', 'seasonal'])
 const HOURS_ENUM = new Set(['full', 'part'])
 
