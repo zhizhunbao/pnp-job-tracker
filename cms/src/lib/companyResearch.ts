@@ -22,7 +22,6 @@ Output plain text with EXACTLY these section markers, each on its own line: [WHA
 If a section is not supported by the results, write exactly: (not stated)
 If the results are unclear or about a different company, reply exactly: NOT_FOUND
 Finally on its own line output [SITE]=<official website url or NONE>. No other commentary.`
-export const CO_MARKS = ['WHAT', 'BASE', 'SIZE', 'FOUNDED', 'NOTE'] as const
 
 const inflight = new Map<string, Promise<CompanyResearch | null>>()
 

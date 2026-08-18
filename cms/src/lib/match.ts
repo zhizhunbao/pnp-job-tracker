@@ -5,7 +5,7 @@
 // v1 不用 clb/pgwpMonthsLeft 评分(档案存着,advisor 事实可见);规则升级时先改 fixture 快照测试。
 
 // 用户分型(E11-04,§2.5 A–E):稳定 slug,枚举单一来源。前后端 + advisor + 未来 E11-05/E12 都引这一处。
-export type CurrentStatus = 'overseas' | 'studying' | 'working' | 'jobhunting' | 'pr'
+type CurrentStatus = 'overseas' | 'studying' | 'working' | 'jobhunting' | 'pr'
 const CURRENT_STATUSES: CurrentStatus[] = ['overseas', 'studying', 'working', 'jobhunting', 'pr']
 
 export type MatchProfile = {

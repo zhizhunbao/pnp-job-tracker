@@ -1,7 +1,7 @@
 'use client'
 
 // 界面语言的**客户端唯一状态**。原来 17 个视图各抄一份
-//   useState('zh') + useEffect(() => setLang(initialLang())) + setLangSaved
+//   useState('zh') + useEffect(() => setLang(读 localStorage / 浏览器语言)) + setLangSaved
 // —— 初值写死中文、水合后才读偏好,所以英韩用户每次刷新都先闪一帧中文
 // (2026-08-03 Frank「英文版本和韩语版本在刷新的时候为什么会先切换到中文」)。
 // 现在初值由服务端 ssrLang() 从 cookie/Accept-Language 算好,经 layout 传进来 → 首帧即终态。

@@ -220,36 +220,6 @@ export const QUIZ_FACTS_STREAMS = `SELECT j.pnp_stream stream, count(*)::int n
 
 // ── reportFacts.ts ──
 
-export const occStatsOne = (a1: string, a2: string) => `SELECT ${a1} ${a2} WHERE s.noc = $1`
-
-export const occStatsKin = (a1: string, a2: string) => `SELECT ${a1}, CASE WHEN left(s.noc,4) = left($1,4) THEN 1 ELSE 2 END AS kin
-         ${a2}
-         WHERE s.province = 'all' AND s.noc <> $1 AND left(s.noc,3) = left($1,3)
-         ORDER BY kin, s.open_jobs DESC NULLS LAST LIMIT 8`
-
-export const OCC_EMPLOYER_COUNTS = `SELECT count(DISTINCT j.company_id)::int n,
-                count(DISTINCT j.company_id) FILTER (WHERE COALESCE(co.lmia_positions, 0) > 0)::int lmia_n
-         FROM jobs j JOIN companies co ON co.id = j.company_id
-         WHERE COALESCE(j.status,'open') <> 'closed' AND j.noc = $1
-           AND ((j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')
-                OR (j.province = ANY($2::text[]) AND COALESCE(j.pnp_eligible, false)))`
-
-export const occTopEmployers = (a1: string | number) => `SELECT co.name, co.slug, co.is_designated_employer aip, co.lmia_positions, co.lmia_last_quarter,
-                count(*) FILTER (WHERE j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')::int named,
-                count(*) FILTER (WHERE COALESCE(j.pnp_eligible, false))::int eligible,
-                (array_agg(j.province ORDER BY j.date_posted DESC NULLS LAST))[1] province,
-                (array_agg(j.city      ORDER BY j.date_posted DESC NULLS LAST))[1] city,
-                max(j.date_posted)::text last_posted
-         FROM jobs j JOIN companies co ON co.id = j.company_id
-         WHERE COALESCE(j.status,'open') <> 'closed' AND j.noc = $1
-           AND ((j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')
-                OR (j.province = ANY($2::text[]) AND COALESCE(j.pnp_eligible, false)))
-         GROUP BY co.id, co.name, co.slug, co.is_designated_employer, co.lmia_positions, co.lmia_last_quarter
-         ORDER BY named DESC, eligible DESC,
-                  (COALESCE(co.lmia_positions, 0) > 0) DESC,
-                  max(j.date_posted) DESC NULLS LAST
-         LIMIT ${a1}`
-
 export const PROV_OPEN_BY_PROV = `SELECT province, count(*)::int open,
               count(*) FILTER (WHERE pnp_stream IS NOT NULL AND pnp_stream <> '')::int named,
               count(*) FILTER (WHERE apprentice_friendly)::int apprentice
@@ -308,10 +278,7 @@ export const PROV_OPEN_COUNT_BROAD = `SELECT province, COUNT(*)::int AS n FROM j
 export const PROV_DIFFICULTY_FETCHED = `SELECT province, difficulty, fetched FROM stats
         WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL`
 
-// ── 补:单引号写的两条 ──
-/** 职业统计的 FROM(韩文名的家在 noc_descriptions,故 LEFT JOIN) */
-export const OCC_STATS_FROM = `FROM stats_occupation s LEFT JOIN noc_descriptions d ON d.noc = s.noc`
-
+// ── 补:单引号写的那条 ──
 export const PROVINCES_INFO = `SELECT code, info FROM provinces`
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -319,20 +286,6 @@ export const PROVINCES_INFO = `SELECT code, info FROM provinces`
    ══════════════════════════════════════════════════════════════════════════ */
 
 // ── directory.ts ──
-
-export const dirWhere = (a1: string) => `WHERE ${a1}`
-
-export const dirCountDesignated = (a1: string) => `SELECT COUNT(*)::int AS n FROM designated_employers ${a1}`
-
-export const dirPageDesignated = (a1: string, a2: string | number, a3: string | number) => `SELECT name, province, location, is_tech FROM designated_employers ${a1}
-     ORDER BY name ASC LIMIT ${a2} OFFSET ${a3}`
-
-export const dirWhereCo = (a1: string) => `WHERE ${a1}`
-
-export const dirCountCompanies = (a1: string) => `SELECT COUNT(*)::int AS n FROM companies ${a1}`
-
-export const dirPageCompanies = (a1: string, a2: string | number, a3: string | number) => `SELECT name, region, website, lmia_positions, lmia_positions_skilled, lmia_streams, lmia_last_quarter, industry, alias_zh, alias_ko, wiki_url, sponsor_grade FROM companies ${a1}
-     ORDER BY COALESCE(lmia_positions_skilled, 0) DESC, lmia_positions DESC, name ASC LIMIT ${a2} OFFSET ${a3}`
 
 export const PNP_OCCUPATIONS_ALL = `SELECT province, stream, label, type, noc, name, url, fetched FROM pnp_occupations ORDER BY province ASC, stream ASC, noc ASC`
 
@@ -410,14 +363,6 @@ export const PILOT_QUOTA_COMMUNITIES = `SELECT community, province, type, first_
             remaining, remaining_quote, remaining_url, as_of
        FROM pilot_quota
       WHERE COALESCE(noc, '') = ''`
-
-export const pilotQuotaCommunities = (a1: string) => `SELECT community, province, type, first_come, first_come_quote, first_come_url,
-              per_intake, per_intake_quote, per_intake_url,
-              remaining, remaining_quote, remaining_url, as_of
-         FROM pilot_quota WHERE COALESCE(noc, '') = ''${a1} ORDER BY community`
-
-export const pilotQuotaOccupations = (a1: string) => `SELECT community, province, type, noc, status, quote, url, as_of
-         FROM pilot_quota WHERE COALESCE(noc, '') <> ''${a1} ORDER BY community, noc`
 
 /* ══════════════════════════════════════════════════════════════════════════
    11) 抽选 / 时间线 / 榜单

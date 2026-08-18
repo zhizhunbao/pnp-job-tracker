@@ -44,8 +44,6 @@ export const PATHWAYS: PathwayStrategy[] = [
 
 const BY_KEY = new Map<string, PathwayStrategy>(PATHWAYS.map((p) => [p.key, p]))
 
-export const pathwayOf = (key: string): PathwayStrategy | undefined => BY_KEY.get(key)
-
 /** 某条通道的某一类闸。**没登记 = 本站未收录**(unknown),与「官方不要求」意思相反,不许混
  *  —— 举证责任在我们:notRequired 也要么带官方原句、要么带「读过这一页、页上没有」的 basis。 */
 export const gateOf = (key: string, gate: GateKey): GateRule =>

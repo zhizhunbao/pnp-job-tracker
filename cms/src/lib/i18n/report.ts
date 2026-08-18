@@ -1,8 +1,11 @@
 // 文案 · 判定与报告 —— 结论侧说的每一句话。
 // 消费方:plan/pr 的 Decision、TripleVerdictModal、PnpScoreCard、ScoreLineCard、cases/[slug]。
 // 与 jobs.ts 的分界:这里是**判定出来的结论**,jobs.ts 是**职位板本身**(列名/筛选/单元格)。
-// `pv.*` / `pw.*` 没有静态调用点 —— key 由 lib/pathVerdict.ts、lib/pathwayRecipes.ts 产出,
+// `pv.*` / `pw.*` 没有静态调用点 —— key 由 lib/pathVerdict.ts、lib/pathways/ 产出,
 // 显示端 `t(key, params)` 现拼;所以按**产出方**归在这里,不按调用点。
+// ⚠️ 2026-08-18:`pw.*` 里**通道名那部分**(pathwayNames)还活着,但当年由 lib/pathwayRecipes.ts
+// 产出的那批(pw.steps/pw.gaps/pw.forYou 等,旧 /pathways 方案卡的正文)随该文件一起没了产出方。
+// 没删:动态拼键,tsc/eslint 都证不了死,要人对着页面核一遍再动。
 import type { GateKey, StatusAsk } from '@/lib/gateManifest'
 import type { PathwayKey } from '@/lib/pathways'
 import type { Domain, Lang } from './index'

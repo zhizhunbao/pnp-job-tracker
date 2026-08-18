@@ -11,9 +11,6 @@
 // 源:https://www.canada.ca/en/employment-social-development/services/foreign-workers/median-wage.html
 //     https://www.canada.ca/en/employment-social-development/services/foreign-workers/refusal.html
 
-export const LMIA_REFUSAL_SOURCE = 'https://www.canada.ca/en/employment-social-development/services/foreign-workers/refusal.html'
-export const LMIA_THRESHOLD_ASOF = '2026-04'  // 门槛表生效月份(季度核对时更新)
-
 // 省/地区 → 中位时薪门槛(CAD/hr);工资 ≥ 门槛 = 高薪类(不受低薪冻结)。抓自 canada.ca median-wage 页。
 const PROV_MEDIAN_HOURLY: Record<string, number> = {
   AB: 35.40, BC: 34.62, MB: 30.00, NB: 28.85, NL: 31.20, NT: 47.09,

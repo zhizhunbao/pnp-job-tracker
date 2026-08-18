@@ -34,17 +34,6 @@ export type Domain<Z extends Record<string, string>> = Record<Lang, Record<keyof
 
 // ── 首访判语与落盘 ──────────────────────────────────────────────────────────
 export const LANG_KEY = 'jobs.lang'
-// 首访语言跟浏览器走(2026-07-24 Frank「很多外国人访问」+83% 跳出实证;backlog 早有记):
-// 存过偏好=用户显式选过,照旧;没存过=按 navigator.language 判 zh/ko,其余一律 en。
-// 检测结果**不落 localStorage**(显式切换才持久化,浏览器语言变了下次自然跟着变)。
-// 红线:不许按 IP 判(加拿大华人 IP=加拿大会被错切英文,浏览器语言才是本人信号)。
-export const initialLang = (): Lang => {
-  try {
-    const s = parseLang(localStorage.getItem(LANG_KEY))
-    if (s) return s
-    return langFromAccept(navigator.language)
-  } catch { return 'zh' }
-}
 // ── 语言也走 cookie(2026-08-03 Frank「英韩版刷新为什么先闪中文」):
 // 原来只存 localStorage —— 服务端读不到,于是 SSR 一律渲中文,浏览器先画中文那一帧,
 // 等水合后才换语言。cookie 服务端读得到 → 首帧就是对的(同列偏好 COLS_COOKIE 的老路)。

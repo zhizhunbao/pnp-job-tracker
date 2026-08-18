@@ -27,19 +27,6 @@ export type PilotQuotaCommunityRow = {
   asOf: string
 }
 
-/** 社区 × NOC 满额行(noc 非空;官网明文才有) */
-type PilotQuotaOccRow = {
-  community: string
-  province: string
-  type: string
-  noc: string
-  /** 'full' = 官网明文该职业满额/不再收 */
-  status: string
-  quote: string
-  url: string
-  asOf: string
-}
-
 export type PilotQuotaAgg = {
   province: string
   /** RCIP | FCIP(身兼两制的社区计入两组 —— 名额状态出自同一社区官方页) */
@@ -120,34 +107,3 @@ export async function fetchPilotQuota(): Promise<PilotQuotaAgg[]> {
   return aggregatePilotQuota(res.rows.map(communityRow))
 }
 
-/** 逐社区明细(后续详情用):社区级名额状态 + 该社区官网明文满额的 NOC 行 */
-export async function fetchPilotQuotaDetail(community?: string): Promise<{
-  communities: PilotQuotaCommunityRow[]
-  occupations: PilotQuotaOccRow[]
-}> {
-  const p = await pool()
-  if (!p) return { communities: [], occupations: [] }
-  const cond = community ? ' AND community = $1' : ''
-  const params = community ? [community] : []
-  const [comm, occ] = await Promise.all([
-    p.query(
-      SQL.pilotQuotaCommunities(cond), params,
-    ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
-    p.query(
-      SQL.pilotQuotaOccupations(cond), params,
-    ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
-  ])
-  return {
-    communities: comm.rows.map(communityRow),
-    occupations: occ.rows.map((r) => ({
-      community: String(r.community ?? ''),
-      province: String(r.province ?? ''),
-      type: String(r.type ?? ''),
-      noc: String(r.noc ?? ''),
-      status: String(r.status ?? ''),
-      quote: String(r.quote ?? ''),
-      url: String(r.url ?? ''),
-      asOf: String(r.as_of ?? ''),
-    })),
-  }
-}

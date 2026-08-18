@@ -13,7 +13,6 @@ import { employerVerdict, type EmployerFacts, type EmployerVerdict } from './emp
 import type { Requirement } from './rules'
 import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 
-const SE_PAGE_SIZE = 100
 // #313:把脉页橱窗三分表 SSR 每表只带前 50 行(桌面 10/页 → 首 5 页秒开),全量走 /api/sponsor-employers 懒取
 export const SE_SSR_ROWS = 50
 
@@ -152,9 +151,3 @@ export function applySponsorFilters(all: SponsorEmployerRow[], f: Omit<SponsorFi
   return rows
 }
 
-/** 页面用:筛选+翻页 */
-export function filterSponsorEmployers(all: SponsorEmployerRow[], f: SponsorFilters): { items: SponsorEmployerRow[]; total: number } {
-  const rows = applySponsorFilters(all, f)
-  const page = Math.max(0, f.page)
-  return { items: rows.slice(page * SE_PAGE_SIZE, (page + 1) * SE_PAGE_SIZE), total: rows.length }
-}

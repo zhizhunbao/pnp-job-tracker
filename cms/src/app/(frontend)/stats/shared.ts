@@ -26,16 +26,6 @@ export const BROAD_SLUGS: [string, string][] = [
   ['mining', '矿业'], ['manufacturing', '制造'],
 ]
 export const slugToBroad = (s: string) => BROAD_SLUGS.find(([k]) => k === s)?.[1]
-// 大类英文名(第 11 轮 #29:SSR <title> 不许中英混杂;与客户端 i18n 'broad.*' EN 值保持一致)
-export const BROAD_EN: Record<string, string> = {
-  '管理层': 'Management', '商务': 'Business', '行政': 'Administration', '文员': 'Office clerks', '金融': 'Finance',
-  '会计': 'Accounting', '法律': 'Legal', 'IT': 'IT', '工程': 'Engineering', '科学': 'Science',
-  '医疗': 'Healthcare', '教育': 'Education', '社会服务': 'Social services', '艺术': 'Arts', '体育': 'Sport',
-  '销售': 'Sales', '零售': 'Retail', '餐饮': 'Food service', '住宿': 'Hospitality', '生活服务': 'Personal services',
-  '技工': 'Trades', '建筑': 'Construction', '运输': 'Transport', '物流': 'Logistics', '农业': 'Agriculture',
-  '矿业': 'Mining', '制造': 'Manufacturing',
-}
-export const broadToSlug = (b: string) => BROAD_SLUGS.find(([, v]) => v === b)?.[0]
 export const PROVS = ['ON', 'BC', 'AB', 'SK', 'MB', 'QC', 'NS', 'NB', 'NL', 'PE']
 export const PROV_NAME: Record<string, string> = {
   ON: 'Ontario', BC: 'British Columbia', AB: 'Alberta', SK: 'Saskatchewan', MB: 'Manitoba', QC: 'Quebec',

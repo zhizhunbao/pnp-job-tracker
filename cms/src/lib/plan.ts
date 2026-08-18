@@ -13,17 +13,6 @@ export const PRO_ADVISOR_DAILY = Number(process.env.PRO_ADVISOR_DAILY || 200)
 // 免费层档案匹配:每日仅列表前 N 岗出匹配(激活钩子,E5-00)
 export const FREE_MATCH_JOBS_PER_DAY = Number(process.env.FREE_MATCH_JOBS_PER_DAY || 10)
 
-// Pro 专属列(服务端 SELECT 源头裁掉,数据不到浏览器;前端在这些列位显示锁标+升级引导)
-// 2026-07-25 Frank「先都显示出来,之后 umami 加事件,访问多的功能再加 Pro」:vs 中位三件套放开
-// (量化用量后再定收费面);match 留列表语义不变(免费额度逻辑在 jobsSql/match,另一条线)
-const PRO_COLUMNS = ['match'] as const
-export type ProColumn = (typeof PRO_COLUMNS)[number]
-export const isProColumn = (k: string): boolean => (PRO_COLUMNS as readonly string[]).includes(k)
-
-// 简历解析次数/日(E11-07;解析免费=转化杠杆,限次防滥用——付费仍在匹配列,不在这)
-export const FREE_RESUME_TRIES = FREE_DAILY_TRIES
-
-export const FREE_SCOREDETAIL_TRIES = FREE_DAILY_TRIES
 // 保存筛选上限(E5-03;D1 2026-07-19 拍板降免费——留存钩不设 Pro 闸,闸改在「更多保存位」:免费 2 / Pro 5)
 export const PRO_SAVED_SEARCHES = Number(process.env.PRO_SAVED_SEARCHES || 5)
 export const FREE_SAVED_SEARCHES = Number(process.env.FREE_SAVED_SEARCHES || 2)

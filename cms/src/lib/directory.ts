@@ -1,47 +1,9 @@
-// 实体名录读取(B4-01):/employers 与 /occupations 的 SQL 层(照 lib/rankings 模式,零计算只 SELECT)。
-// 语义红线循 E6-02:LMIA=「雇过外国人的历史事实」≠「能担保」;AIP 指定=「已注册」≠「有配额」。
+// 实体名录读取(B4-01):/occupations 的 SQL 层(照 lib/rankings 模式,零计算只 SELECT)。
+// AIP/LMIA 两张雇主表的读函数 2026-08-18 删除(零调用点;/employers 的数据走 employers/board.ts)。
 
 import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
-const DIR_PAGE_SIZE = 100
 
-type AipRow = { name: string; province: string; location: string; isTech: boolean }
-type LmiaRow = { name: string; region: string; website: string; lmiaPositions: number; lmiaPositionsSkilled: number | null; lmiaStreams: string; lmiaLastQuarter: string; industry: string; aliasZh: string; aliasKo: string; wiki: string; sponsorGrade: number | null }
 export type OccRow = { province: string; stream: string; label: string; type: string; noc: string; name: string; url: string; fetched: string }
-
-const like = (q: string) => `%${q.replace(/[%_\\]/g, (c) => '\\' + c)}%`
-
-export async function fetchAipEmployers(pool: any, { q, prov, page }: { q: string; prov: string; page: number }) {
-  const cond: string[] = []
-  const args: any[] = []
-  if (q) { args.push(like(q)); cond.push(`name ILIKE $${args.length}`) }
-  if (prov) { args.push(prov); cond.push(`province = $${args.length}`) }
-  const where = cond.length ? SQL.dirWhere(cond.join(' AND ')) : ''
-  const { rows: [{ n }] } = await pool.query(SQL.dirCountDesignated(where), args)
-  const { rows } = await pool.query(
-    SQL.dirPageDesignated(where, DIR_PAGE_SIZE, Math.max(0, page) * DIR_PAGE_SIZE), args)
-  const items: AipRow[] = rows.map((r: any) => ({ name: r.name ?? '', province: r.province ?? '', location: r.location ?? '', isTech: !!r.is_tech }))
-  return { items, total: n as number }
-}
-
-export async function fetchLmiaEmployers(pool: any, { q, page }: { q: string; page: number }) {
-  const cond = [`lmia_positions > 0`]
-  const args: any[] = []
-  if (q) { args.push(like(q)); cond.push(`name ILIKE $${args.length}`) }
-  const where = SQL.dirWhereCo(cond.join(' AND '))
-  const { rows: [{ n }] } = await pool.query(SQL.dirCountCompanies(where), args)
-  // B4-02:技能股(High Wage/GTS)优先排序——农业/低薪股大户(果园/农场)沉底,与担保雇主榜口径一致
-  const { rows } = await pool.query(
-    SQL.dirPageCompanies(where, DIR_PAGE_SIZE, Math.max(0, page) * DIR_PAGE_SIZE), args)
-  const items: LmiaRow[] = rows.map((r: any) => ({
-    name: r.name ?? '', region: r.region ?? '', website: r.website ?? '',
-    lmiaPositions: Number(r.lmia_positions) || 0, lmiaPositionsSkilled: r.lmia_positions_skilled == null ? null : Number(r.lmia_positions_skilled),
-    lmiaStreams: r.lmia_streams ?? '', lmiaLastQuarter: r.lmia_last_quarter ?? '',
-    // 雇主 D(2026-07-19):行业=在库岗大类多数派;别名=Wikidata 官方标签;wiki 非空=知名
-    industry: r.industry ?? '', aliasZh: r.alias_zh ?? '', aliasKo: r.alias_ko ?? '', wiki: r.wiki_url ?? '',
-    sponsorGrade: r.sponsor_grade ?? null,   // E12-08:担保档(1-5;裸「知名」Tag 退役,档位承接)
-  }))
-  return { items, total: n as number }
-}
 
 export async function fetchOccupations(pool: any): Promise<OccRow[]> {
   const { rows } = await pool.query(
