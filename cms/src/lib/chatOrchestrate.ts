@@ -3744,7 +3744,7 @@ export async function orchestrate(
   if (!typed) {
     const bare = bareNocCandidates(text)
     if (bare.length) {
-      const { rows } = await pool.query(`SELECT noc FROM noc_descriptions WHERE noc = ANY($1)`, [bare])
+      const { rows } = await pool.query(SQL.NOC_CODES_EXIST, [bare])
         .catch(() => ({ rows: [] as { noc: string }[] }))
       const real = new Set(rows.map((r: { noc: string }) => String(r.noc)))
       typed = bare.find((n) => real.has(n)) ?? null

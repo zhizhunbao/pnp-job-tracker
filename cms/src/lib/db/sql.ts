@@ -855,3 +855,61 @@ export const NOC_LIST_WITH_TITLES = `SELECT d.noc, COALESCE(d.title, '') title, 
        GROUP BY d.noc, d.title, d.title_zh_short, d.title_ko_short, d.title_en_short
        HAVING count(*) >= 5
        ORDER BY count(*) DESC LIMIT $2`
+
+/* ══════════════════════════════════════════════════════════════════════════
+   27) 灌库(seed)—— 只收**固定语句**
+   ══════════════════════════════════════════════════════════════════════════ */
+// ⚠️ 这里没有 seed 的全部 SQL:按表名/列清单**现拼**的那些(DELETE FROM ${table}、
+//    ON CONFLICT DO UPDATE SET 的列差子句、临时表)留在 app/seed/route.ts —— 它们是
+//    随数据形状生成的**机制**,不是可以摆在这儿读的语句;搬过来只会变成一堆看不懂的碎片。
+//    通用的批量 INSERT 骨架在 ./database.ts 的 insertMany。
+
+export const NEWS_UNLOCK_ALL = `DELETE FROM payload_locked_documents_rels WHERE news_id IS NOT NULL`
+
+export const NEWS_DELETE_MISSING = `DELETE FROM news WHERE NOT (slug = ANY($1))`
+
+export const CLOSE_DEAD_EXT = `UPDATE jobs SET status='closed', closed_at=COALESCE(jobs.closed_at, d.closed_at), updated_at=$1
+           FROM dead_ext d WHERE d.external_id = jobs.external_id AND jobs.status='open'`
+
+export const CLOSE_STALE = `UPDATE jobs SET status='closed', closed_at=$1, updated_at=$1
+         WHERE status='open' AND date_posted < $2
+           AND NOT EXISTS (SELECT 1 FROM seen_ext s WHERE s.external_id = jobs.external_id)`
+
+export const MARK_DUPS = `UPDATE jobs SET is_dup = x.dup FROM (
+      SELECT id, (row_number() OVER (PARTITION BY company_id, lower(title), coalesce(city, '')
+        ORDER BY date_posted DESC NULLS LAST, id DESC) > 1) AS dup
+      FROM jobs WHERE status = 'open') x
+      WHERE jobs.id = x.id AND jobs.is_dup IS DISTINCT FROM x.dup`
+
+export const CLEAR_DUPS_CLOSED = `UPDATE jobs SET is_dup = false WHERE status <> 'open' AND is_dup`
+
+export const HEARTBEAT_UPSERT = `INSERT INTO etl_heartbeat (id, last_seed) VALUES (1, now())
+      ON CONFLICT (id) DO UPDATE SET last_seed = now()`
+
+// ── 补:单引号写的几条 ──
+export const SEED_STATE_ALL = `SELECT name, hash FROM seed_state`
+
+export const SEED_STATE_UPSERT = `INSERT INTO seed_state (name, hash) VALUES ($1,$2) ON CONFLICT (name) DO UPDATE SET hash=EXCLUDED.hash`
+
+/** 表还没建(DDL 未跑)→ 该表本轮跳过,计 -3 */
+export const TABLE_EXISTS = `SELECT to_regclass($1) AS t`
+
+export const RESET_UNLOCK_JOBS_COMPANIES = `DELETE FROM payload_locked_documents_rels WHERE jobs_id IS NOT NULL OR companies_id IS NOT NULL`
+
+export const RESET_DELETE_JOBS = `DELETE FROM jobs`
+
+export const RESET_DELETE_COMPANIES = `DELETE FROM companies`
+
+export const COMPANIES_IDS_BY_SLUGS = `SELECT id, slug FROM companies WHERE slug = ANY($1)`
+
+export const SEEN_EXT_INSERT = `INSERT INTO seen_ext (external_id) SELECT unnest($1::text[])`
+
+/** 顾问侧:校验一批 NOC 码在库里是否存在 */
+export const NOC_CODES_EXIST = `SELECT noc FROM noc_descriptions WHERE noc = ANY($1)`
+
+// ── seed 的两张临时表(固定语句;ON COMMIT DROP 随事务清理) ──
+/** 实测判死、需立即下架的岗;主键让反连接走索引探测,下架从超时降到秒级 */
+export const TEMP_DEAD_EXT = `CREATE TEMP TABLE dead_ext (external_id text PRIMARY KEY, closed_at timestamptz) ON COMMIT DROP`
+
+/** 本轮抓到的全部 external_id,用于「本次未见」反连接 */
+export const TEMP_SEEN_EXT = `CREATE TEMP TABLE seen_ext (external_id text PRIMARY KEY) ON COMMIT DROP`

@@ -19,6 +19,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { dbOf, type DbClient } from '@/lib/db/database'
+import * as SQL from '@/lib/db/sql'   // 固定语句在那儿;按列现拼的片段仍在本文件
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -217,9 +218,9 @@ export async function GET(req: Request) {
     // #118 表级哈希态(响应计数:-1=本轮无上传跳过,-2=内容与上轮一致跳过,-3=表还没建/DDL 未跑)
     await client.query('CREATE TABLE IF NOT EXISTS seed_state (name text PRIMARY KEY, hash text NOT NULL)')
     const prevHash: Record<string, string> = {}
-    for (const r of (await client.query('SELECT name, hash FROM seed_state')).rows) prevHash[r.name] = r.hash
+    for (const r of (await client.query(SQL.SEED_STATE_ALL)).rows) prevHash[r.name] = r.hash
     const markState = (name: string, hash: string) =>
-      client.query('INSERT INTO seed_state (name, hash) VALUES ($1,$2) ON CONFLICT (name) DO UPDATE SET hash=EXCLUDED.hash', [name, hash])
+      client.query(SQL.SEED_STATE_UPSERT, [name, hash])
 
     // ── 维度表:清空 + 批量插入(先清 locked_documents_rels 关联列,B7 教训:漏了会整事务炸) ──
     for (const [file, table, cols, map] of dims) {
@@ -229,7 +230,7 @@ export async function GET(req: Request) {
       // -3 = **表还没建**(DDL 与部署有先后)。seed 整个跑在一个事务里,撞 42P01 会让**这一轮全部回滚** ——
       // 一张新表的 SQL 还没在生产跑,就能把每小时一次的灌库整个停掉。to_regclass 查不到只返回 null,
       // 不抛错、也不污染事务(2026-08-12 随 noc_openings 新表一并加的闸)。
-      if (!(await client.query('SELECT to_regclass($1) AS t', [table])).rows[0]?.t) { counts[table] = -3; continue }
+      if (!(await client.query(SQL.TABLE_EXISTS, [table])).rows[0]?.t) { counts[table] = -3; continue }
       const hash = martHash(file)
       if (prevHash[table] === hash) { counts[table] = -2; continue }   // -2 = 内容与上轮一致,整表免重灌
       const rows = (await mart(file)).map(map).filter((d) => Object.values(d).some((v) => v !== undefined && v !== null && v !== ''))
@@ -274,8 +275,8 @@ export async function GET(req: Request) {
       const newsUpdate = newsCols.filter((c) => !['slug', 'created_at'].includes(c)).map((c) => `${c}=EXCLUDED.${c}`).join(',')
       const staleClear = ['body_zh', 'body_ko', 'summary_zh', 'summary_ko', 'summary_en']
         .map((c) => `${c}=CASE WHEN news.body_en IS DISTINCT FROM EXCLUDED.body_en THEN NULL ELSE news.${c} END`).join(',')
-      await client.query(`DELETE FROM payload_locked_documents_rels WHERE news_id IS NOT NULL`)
-      if (newsRows.length) await client.query(`DELETE FROM news WHERE NOT (slug = ANY($1))`, [newsRows.map((r) => r.slug)])
+      await client.query(SQL.NEWS_UNLOCK_ALL)
+      if (newsRows.length) await client.query(SQL.NEWS_DELETE_MISSING, [newsRows.map((r) => r.slug)])
       await insertBatch(client, 'news', newsCols, newsRows,
         `ON CONFLICT (slug) DO UPDATE SET ${staleClear}, ${newsUpdate}`)
       await markState('news', martHash('news'))
@@ -283,9 +284,9 @@ export async function GET(req: Request) {
     } else { counts.news = -1 }
 
     if (reset) {
-      await client.query('DELETE FROM payload_locked_documents_rels WHERE jobs_id IS NOT NULL OR companies_id IS NOT NULL')
-      await client.query('DELETE FROM jobs')
-      await client.query('DELETE FROM companies')
+      await client.query(SQL.RESET_UNLOCK_JOBS_COMPANIES)
+      await client.query(SQL.RESET_DELETE_JOBS)
+      await client.query(SQL.RESET_DELETE_COMPANIES)
     }
 
     // ── 事实表:companies 批量 upsert(按 slug),RETURNING 建 slug→id 映射给 jobs 关联 ──
@@ -330,7 +331,7 @@ export async function GET(req: Request) {
     const companyId: Record<string, number> = {}
     await insertBatch(client, 'companies', companyCols, companyRows,
       `ON CONFLICT (slug) DO UPDATE SET ${companyUpdate} WHERE ${companyChanged}`)
-    for (const r of (await client.query('SELECT id, slug FROM companies WHERE slug = ANY($1)',
+    for (const r of (await client.query(SQL.COMPANIES_IDS_BY_SLUGS,
       [companyRows.map((r) => r.slug)])).rows) companyId[r.slug] = r.id
     counts.companies = companyRows.length
 
@@ -413,12 +414,11 @@ export async function GET(req: Request) {
         .filter((r: any) => r?.externalId && !seen.has(r.externalId) && seen.add(r.externalId))
         .map((r: any) => ({ external_id: r.externalId, closed_at: r.closedAt || now }))
       if (deadRows.length > 0) {
-        await client.query('CREATE TEMP TABLE dead_ext (external_id text PRIMARY KEY, closed_at timestamptz) ON COMMIT DROP')
+        await client.query(SQL.TEMP_DEAD_EXT)
         await insertBatch(client, 'dead_ext', ['external_id', 'closed_at'], deadRows)
         await client.query('ANALYZE dead_ext')
         const r = await client.query(
-          `UPDATE jobs SET status='closed', closed_at=COALESCE(jobs.closed_at, d.closed_at), updated_at=$1
-           FROM dead_ext d WHERE d.external_id = jobs.external_id AND jobs.status='open'`, [now])
+          SQL.CLOSE_DEAD_EXT, [now])
         closedDead = r.rowCount ?? 0
       }
     }
@@ -450,15 +450,13 @@ export async function GET(req: Request) {
       // 原 `NOT (external_id = ANY($seenIds))`:5.2 万元素数组对每个候选行线性搜(≈ 待检行 × 5.2万),
       // 库涨到 5 万岗后超线性变慢 → seed 整轮撞 180s 超时(mart 已传但灌不进库)。
       // 临时表主键让反连接走索引/哈希探测,下架从超时降到秒级;ON COMMIT DROP 随本事务清理。
-      await client.query('CREATE TEMP TABLE seen_ext (external_id text PRIMARY KEY) ON COMMIT DROP')
+      await client.query(SQL.TEMP_SEEN_EXT)
       // 单列表灌 5 万行走 unnest 一条语句(原 insertBatch 300 行/句 ≈ 164 次往返;并入 seen_ids 后名单从
       // 3.4 万涨到 4.9 万,别把往返数也一起涨)。数组参数只占 1 个占位符,不碰 65535 上限。
-      await client.query('INSERT INTO seen_ext (external_id) SELECT unnest($1::text[])', [seenIds])
+      await client.query(SQL.SEEN_EXT_INSERT, [seenIds])
       await client.query('ANALYZE seen_ext')  // 临时表无自动统计,喂给规划器选反连接计划
       const r = await client.query(
-        `UPDATE jobs SET status='closed', closed_at=$1, updated_at=$1
-         WHERE status='open' AND date_posted < $2
-           AND NOT EXISTS (SELECT 1 FROM seen_ext s WHERE s.external_id = jobs.external_id)`,
+        SQL.CLOSE_STALE,
         [now, cutoff])
       closed = r.rowCount ?? 0
     }
@@ -466,18 +464,13 @@ export async function GET(req: Request) {
     // #125(批C 修正):重复(同 公司×岗名×城市)跨轮累积在 DB——同岗重发 externalId 会换,单轮 mart
     // 快照内每岗唯一,ETL 侧标记恒 0(首跑实锤)→ 改本事务内窗口全量重算(open ~42k 行实测 ~6s,
     // 每轮一次服务端,非请求路径;IS DISTINCT FROM 守卫只写真变化的行)。保最新:date_posted 新者,同日 id 大者
-    await client.query(`UPDATE jobs SET is_dup = x.dup FROM (
-      SELECT id, (row_number() OVER (PARTITION BY company_id, lower(title), coalesce(city, '')
-        ORDER BY date_posted DESC NULLS LAST, id DESC) > 1) AS dup
-      FROM jobs WHERE status = 'open') x
-      WHERE jobs.id = x.id AND jobs.is_dup IS DISTINCT FROM x.dup`)
-    await client.query(`UPDATE jobs SET is_dup = false WHERE status <> 'open' AND is_dup`)
+    await client.query(SQL.MARK_DUPS)
+    await client.query(SQL.CLEAR_DUPS_CLOSED)
 
     // 2026-07-26:ETL 心跳 —— 每轮 seed 成功都写一笔,前端「最近核对」读它(docs/sql/etl-heartbeat.sql)。
     // 与 max(last_seen) 的区别:数据没变也照样动,回答的是「刚核对过官方来源」而不是「数据变过」。
     // 表未落地(部署时序)→ 42P01 忽略,不能让心跳把整轮灌库回滚。
-    await client.query(`INSERT INTO etl_heartbeat (id, last_seed) VALUES (1, now())
-      ON CONFLICT (id) DO UPDATE SET last_seed = now()`).catch((e: any) => {
+    await client.query(SQL.HEARTBEAT_UPSERT).catch((e: any) => {
       if (e?.code !== '42P01') throw e
     })
 
