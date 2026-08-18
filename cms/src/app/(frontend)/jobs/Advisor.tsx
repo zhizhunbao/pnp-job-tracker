@@ -6,8 +6,17 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { IconCompass, IconMap, IconMaximize, IconMinimize } from '../Icons'
-import { PILL_BTN, ctrl, link } from '../ui'
-import { FG_K, FG_N, FG_V, FactGrid, FactRow, FactsBox, MODAL_CARD, MODAL_CARD_HEAD } from './Facts'
+import { CARD_MD, ctrl, Grid, link, PILL_BTN, Row } from '../ui'
+// FactsBox 只有本文件用 —— 2026-08-17 从退役的 jobs/Facts 收回宿主(一处用的东西不该住在共享叶子里)
+function FactsBox({ children, note }: { children: React.ReactNode; note?: React.ReactNode }) {
+  // Frank 走查#8:去掉卡片底部横线(borderBottom+paddingBottom 退役);组间留白靠 marginBottom
+  return (
+    <div className="factsBox">
+      {children}
+      {note ? <div className="factsNote">{note}</div> : null}
+    </div>
+  )
+}
 import { CompanyAiSection, CompanyPanel } from './Company'
 import { JdTextView, JobBody, NocDutiesView, SUG_MARK, extractSug, fetchJobText, renderAI } from './Jd'
 import { EeCategorySection, MeansForMe, NewsLatestBlock, PnpDrawsBlock, PnpListSection, STREAM_REFORM, VerdictPill, aipBlockOf, aipVerdictOf, normName } from './Pnp'
@@ -41,16 +50,16 @@ function TitleFacts({ job, lang, loggedIn }: { job: JobRow; lang: Lang; loggedIn
     <FactsBox>
       {/* 雇佣形态 + 入职要求(E6-06/E6-07A):详情页结构化标注原文,零 LLM。
           J1(2026-07-19 Frank):工时/雇佣期拆两行(禁「·」杂糅);未标注显灰字不再整行消失;证书一行一条 */}
-      <FactRow k={t('col.empHours')}>{job.employmentHours ? t('emp.' + job.employmentHours) : <span style={{ color: '#9ca3af' }}>{t('fact.unstated')}</span>}</FactRow>
-      <FactRow k={t('col.empTerm')}>{job.employmentTerm ? t('term.' + job.employmentTerm) : <span style={{ color: '#9ca3af' }}>{t('fact.unstated')}</span>}</FactRow>
-      <FactRow k={t('fact.edu')}>{job.education || null}</FactRow>
-      <FactRow k={t('fact.cert')}>{job.certificates?.length ? <>{job.certificates.map((c, i) => <div key={i}>{c}</div>)}</> : null}</FactRow>
+      <Row k={t('col.empHours')}>{job.employmentHours ? t('emp.' + job.employmentHours) : <span className="advMuted">{t('fact.unstated')}</span>}</Row>
+      <Row k={t('col.empTerm')}>{job.employmentTerm ? t('term.' + job.employmentTerm) : <span className="advMuted">{t('fact.unstated')}</span>}</Row>
+      <Row k={t('fact.edu')}>{job.education || null}</Row>
+      <Row k={t('fact.cert')}>{job.certificates?.length ? <>{job.certificates.map((c, i) => <div key={i}>{c}</div>)}</> : null}</Row>
       {/* 职位字段只做职位的事(07-06 用户拍板):职位名已在弹窗标题,NOC/TEER 归分类弹窗 —— 这里就是真实 JD */}
-      <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: (job.employmentHours || job.education || job.certificates?.length) ? 8 : 0 }}>{t('fact.jdExcerpt')}</div>
-      {limited ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('jd.busy')}</div>
-        : jd === null ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.loadingText')}</div>
+      <div className={'advExcerptHead' + ((job.employmentHours || job.education || job.certificates?.length) ? ' gap' : '')}>{t('fact.jdExcerpt')}</div>
+      {limited ? <div className="advExcerpt">{t('jd.busy')}</div>
+        : jd === null ? <div className="advExcerpt">{t('act.loadingText')}</div>
         : jd ? <JdTextView text={jd} />
-        : <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>
+        : <div className="advExcerpt">
             {/* 空态解释原因(第 9 轮 #26);原帖链接不再内联(2026-07-11 用户指出与下方来源行重复,来源行=同一 applyUrl) */}
             {blockedSrc(job) ? t('act.noTextBlocked', { src: blockedSrc(job) }) : t('act.noText')}
           </div>}
@@ -125,9 +134,9 @@ function GroupFactsSection(props: Omit<Parameters<typeof FieldFactsSection>[0], 
         // 壳卡退役——再包一层就是卡中卡;标题由判定卡自持(#173 每卡必有 title 不破)
         <FieldFactsSection key={k} field={k} job={job} lang={lang} {...rest} />
       ) : (
-        <div key={k} style={MODAL_CARD}>
+        <div key={k} style={CARD_MD}>
           {/* 分类卡标题人话化:col.noc 是列名「NOC」,当卡标题裸奔(#176 实测抓到);批A 薪资两卡同理 */}
-          <div style={MODAL_CARD_HEAD}>{k === 'noc' ? t('grp.category') : k === 'salary' ? t('sal.cardPosted') : k === 'wageMedHr' ? t('sal.cardEsdc') : t('col.' + k)}</div>
+          <div className="mcardHead">{k === 'noc' ? t('grp.category') : k === 'salary' ? t('sal.cardPosted') : k === 'wageMedHr' ? t('sal.cardEsdc') : t('col.' + k)}</div>
           <FieldFactsSection field={k} job={job} lang={lang} {...rest} />
         </div>
       ))}
@@ -165,17 +174,17 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
     const blocked = aipBlockOf(job, pnpOcc)
     return (
       <FactsBox>
-        <FactRow k={t('fact.verdict')}>
+        <Row k={t('fact.verdict')}>
           {blocked ? <VerdictPill tone="fail">{t(v === 'on' ? 'ch.aip.onBlocked' : 'ch.aip.blocked')}</VerdictPill>
             : <VerdictPill tone={v === 'on' ? 'ok' : 'na'}>{t('ch.aip.' + v)}</VerdictPill>}
-        </FactRow>
+        </Row>
         {blocked ? (
-          <FactRow k={streamDisplay(t, blocked.label)}>
+          <Row k={streamDisplay(t, blocked.label)}>
             {t('fact.aipBlockedHit', { name: blocked.occupations.find((o) => o.noc === job.noc)?.name || job.noc, noc: job.noc })}
-          </FactRow>
+          </Row>
         ) : null}
         {matches.map((e, i) => (
-          <FactRow key={i} k={e.name}>{[e.location, e.province, e.isTech ? t('fact.aipTech') : null].filter(Boolean).join('、')}</FactRow>
+          <Row key={i} k={e.name}>{[e.location, e.province, e.isTech ? t('fact.aipTech') : null].filter(Boolean).join('、')}</Row>
         ))}
       </FactsBox>
     )
@@ -188,16 +197,16 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
     const on = !!job.pilot
     return (
       <FactsBox note={t('fact.pilotGate')}>
-        <FactRow k={t('fact.verdict')}>
+        <Row k={t('fact.verdict')}>
           <VerdictPill tone={on ? 'ok' : 'na'}>{t(on ? 'ch.pilot.on' : 'ch.pilot.na')}</VerdictPill>
-        </FactRow>
-        {on ? <FactRow k={job.pilotCommunity || job.city}>{job.pilot}</FactRow> : null}
+        </Row>
+        {on ? <Row k={job.pilotCommunity || job.city}>{job.pilot}</Row> : null}
         {/* 批B:雇主已获社区指定(强一级信号)。只做正向展示 —— false 可能只是名单未公布,不写反话 */}
-        {on && job.pilotEmployer ? <FactRow k={job.company}>{t('fact.pilotEmp')}</FactRow> : null}
+        {on && job.pilotEmployer ? <Row k={job.company}>{t('fact.pilotEmp')}</Row> : null}
         {/* 批C 尾巴:职业 × 社区在收清单。no 可写(RCIP 制度要求 offer 职业在清单内,官方清单为据);
             '' = 判不了(岗无 NOC/清单无 NOC),照红线不硬判 */}
         {on && job.pilotOcc ? (
-          <FactRow k={`NOC ${job.noc}`}>{t(job.pilotOcc === 'yes' ? 'fact.pilotOccYes' : 'fact.pilotOccNo')}</FactRow>
+          <Row k={`NOC ${job.noc}`}>{t(job.pilotOcc === 'yes' ? 'fact.pilotOccYes' : 'fact.pilotOccNo')}</Row>
         ) : null}
       </FactsBox>
     )
@@ -206,8 +215,8 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
   if (field === 'eligibility') {  // GAP1③:红旗 + JD 命中原句(可核验);「—」口径=未检出≠保证担保
     return (
       <FactsBox note={t('fact.eligNote')}>
-        <FactRow k={t('fact.elig')}>{job.eligibilityFlag ? t('cell.elig.' + job.eligibilityFlag) : '—'}</FactRow>
-        {job.eligibilityQuote ? <FactRow k={t('fact.eligQuote')}>“{job.eligibilityQuote}”</FactRow> : null}
+        <Row k={t('fact.elig')}>{job.eligibilityFlag ? t('cell.elig.' + job.eligibilityFlag) : '—'}</Row>
+        {job.eligibilityQuote ? <Row k={t('fact.eligQuote')}>“{job.eligibilityQuote}”</Row> : null}
       </FactsBox>
     )
   }
@@ -222,14 +231,14 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
       : null                                                                          // 缺工资/门槛:不猜
     return (
       <FactsBox note={t('fact.lmiaNote')}>
-        <FactRow k={t('col.lmia')}>{job.lmiaPositions ? t('cell.lmiaYes', { n: job.lmiaPositions, q: job.lmiaLastQuarter }) : '—'}</FactRow>
-        <FactRow k={t('fact.lmiaStreams')}>{job.lmiaStreams || null}</FactRow>
-        <FactRow k={t('col.company')}>{job.company}</FactRow>
+        <Row k={t('col.lmia')}>{job.lmiaPositions ? t('cell.lmiaYes', { n: job.lmiaPositions, q: job.lmiaLastQuarter }) : '—'}</Row>
+        <Row k={t('fact.lmiaStreams')}>{job.lmiaStreams || null}</Row>
+        <Row k={t('col.company')}>{job.company}</Row>
         {feasible && (
-          <FactRow k={t('lmia.route')}>
+          <Row k={t('lmia.route')}>
             {/* #106:LMIA 官方来源外链撤(归拢到 /resources) */}
-            <span style={{ color: feasible.tone, fontWeight: 500 }}>{feasible.txt}</span>
-          </FactRow>
+            <span className="advBold" style={{ color: feasible.tone, fontWeight: 500 }}>{feasible.txt}</span>
+          </Row>
         )}
       </FactsBox>
     )
@@ -249,14 +258,14 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
         : field === 'district' && !L.district ? t('fact.noDistrictNote') : undefined}>
         {/* 省弹窗不再摆「国家 Canada」凑数行(2026-07-12 用户反馈「说明没看懂」——重复行是噪音);
             地图行给明确标签「地图 · 在 Google 地图查看」,不再用裸图标当行名+重复地名当链接文案 */}
-        {field !== 'province' && <FactRow k={t('col.country')}>{L.country || 'Canada'}</FactRow>}
-        {depth >= 2 && <FactRow k={t('col.province')}>{L.prov}</FactRow>}
-        {depth >= 3 && <FactRow k={t('col.city')}>{L.city}</FactRow>}
-        {depth >= 4 && <FactRow k={t('col.district')}>{L.district}</FactRow>}
-        {depth >= 5 && <FactRow k={t('col.address')}>{job.address}</FactRow>}
-        {mapQ ? <FactRow k={t('fact.map')}><a href={mapsUrl(mapQ)} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}><IconMap /> {t('fact.mapView')}({mapQ})↗</a></FactRow> : null}
-        {field === 'province' && job.province === 'QC' && <FactRow k={t('col.pnp')}>{t('pnplist.qc')}</FactRow>}
-        {provStreams > 0 && <FactRow k={t('col.pnp')}>{t('fact.provStreams', { n: provStreams })}</FactRow>}
+        {field !== 'province' && <Row k={t('col.country')}>{L.country || 'Canada'}</Row>}
+        {depth >= 2 && <Row k={t('col.province')}>{L.prov}</Row>}
+        {depth >= 3 && <Row k={t('col.city')}>{L.city}</Row>}
+        {depth >= 4 && <Row k={t('col.district')}>{L.district}</Row>}
+        {depth >= 5 && <Row k={t('col.address')}>{job.address}</Row>}
+        {mapQ ? <Row k={t('fact.map')}><a href={mapsUrl(mapQ)} target="_blank" rel="noreferrer" className="advMapLink" style={link}><IconMap /> {t('fact.mapView')}({mapQ})↗</a></Row> : null}
+        {field === 'province' && job.province === 'QC' && <Row k={t('col.pnp')}>{t('pnplist.qc')}</Row>}
+        {provStreams > 0 && <Row k={t('col.pnp')}>{t('fact.provStreams', { n: provStreams })}</Row>}
         {field === 'province' && job.province && <PnpDrawsBlock province={job.province} lang={lang} draws={pnpDraws} limit={1} />}
       </FactsBox>
     )
@@ -270,14 +279,14 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
     const K = (n: number) => `$${Math.round(n / 1000)}K`
     if (field === 'salary') return (
       <FactsBox>
-        <FactRow k={t('col.salary')}>{job.salaryText || job.salary}</FactRow>
-        <FactRow k={<span title={t('fact.salYrNote')}>{t('col.salaryYr')}</span>}>{a != null ? `${K(a)}/yr` : null}</FactRow>
+        <Row k={t('col.salary')}>{job.salaryText || job.salary}</Row>
+        <Row k={<span title={t('fact.salYrNote')}>{t('col.salaryYr')}</span>}>{a != null ? `${K(a)}/yr` : null}</Row>
       </FactsBox>
     )
     if (field === 'vsMedian') return (
       <FactsBox note={mHr == null && mYr == null ? t('fact.noMedian') : undefined}>
-        <FactRow k={t('sal.esdcMed')}>{mYr != null ? `${K(mYr)}/yr` : mHr != null ? `$${mHr}/hr` : null}</FactRow>
-        <FactRow k={t('fact.verdict')}>{vs != null ? <VerdictPill tone={vs >= 0 ? 'ok' : 'warn'}>{t(vs >= 0 ? 'sal.above' : 'sal.below', { p: Math.abs(vs) })}</VerdictPill> : null}</FactRow>
+        <Row k={t('sal.esdcMed')}>{mYr != null ? `${K(mYr)}/yr` : mHr != null ? `$${mHr}/hr` : null}</Row>
+        <Row k={t('fact.verdict')}>{vs != null ? <VerdictPill tone={vs >= 0 ? 'ok' : 'warn'}>{t(vs >= 0 ? 'sal.above' : 'sal.below', { p: Math.abs(vs) })}</VerdictPill> : null}</Row>
       </FactsBox>
     )
     // ESDC 表卡(挂 wageMedHr 键):三档 × 时薪 + 折算年薪两列(Frank 2026-07-26「换算成年薪,同时显示,多一列」)。
@@ -285,16 +294,17 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
     const bands: [string, number | null, number | null][] = [
       [t('sal.low'), lHr, lYr], [t('sal.med'), mHr, mYr], [t('sal.high'), hHr, hYr],
     ]
+    // 首行是表头(整行走注格样式)—— 同一列在不同行里角色不同,所以角色类按格写不按列位派
     const cells: React.ReactNode[] = [
-      <span key="h0" style={FG_N} />, <span key="h1" style={FG_N}>{t('sal.hrCol')}</span>, <span key="h2" style={FG_N}>{t('col.salaryYr')}</span>,
+      <span key="h0" className="gridN" />, <span key="h1" className="gridN">{t('sal.hrCol')}</span>, <span key="h2" className="gridN">{t('col.salaryYr')}</span>,
     ]
     for (const [k, h, y] of bands) {
       if (h == null && y == null) continue
-      cells.push(<span key={k + 'k'} style={FG_K}>{k}</span>,
-        <span key={k + 'h'} style={FG_V}>{h != null ? `$${h}/hr` : '—'}</span>,
-        <span key={k + 'y'} style={FG_V}>{y != null ? `${K(y)}/yr` : '—'}</span>)
+      cells.push(<span key={k + 'k'} className="gridK">{k}</span>,
+        <span key={k + 'h'} className="gridV">{h != null ? `$${h}/hr` : '—'}</span>,
+        <span key={k + 'y'} className="gridV">{y != null ? `${K(y)}/yr` : '—'}</span>)
     }
-    return <FactsBox><FactGrid cols={3}>{cells}</FactGrid></FactsBox>
+    return <FactsBox><Grid cols={3}>{cells}</Grid></FactsBox>
   }
   if (CLS_FIELDS.has(field)) {
     // 点哪级只看哪级(含上级路径,07-06 用户点名:大分类弹窗不该混进中/小分类):
@@ -303,14 +313,14 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
     return (
       <FactsBox>
         {field === 'noc' ? <>
-          <FactRow k={t('col.noc')}>{job.noc}</FactRow>
-          {noc?.title ? <FactRow k={t('fact.nocTitle')}>{noc.title}</FactRow> : null}
+          <Row k={t('col.noc')}>{job.noc}</Row>
+          {noc?.title ? <Row k={t('fact.nocTitle')}>{noc.title}</Row> : null}
         </> : null}
-        {(field === 'noc' || field === 'teer') && <FactRow k={t('col.teer')}>{job.teer != null ? `TEER ${job.teer} (${t('teer.' + job.teer)})` : null}</FactRow>}
-        {(field === 'noc' || depth >= 1) && <FactRow k={t('col.broad')}>{job.broad && job.broad !== '未分类' ? catName(t, job.broad) : null}</FactRow>}
-        {(field === 'noc' || depth >= 2) && <FactRow k={t('col.mid')}>{job.mid && job.mid !== '未分类' ? catName(t, job.mid) : null}</FactRow>}
+        {(field === 'noc' || field === 'teer') && <Row k={t('col.teer')}>{job.teer != null ? `TEER ${job.teer} (${t('teer.' + job.teer)})` : null}</Row>}
+        {(field === 'noc' || depth >= 1) && <Row k={t('col.broad')}>{job.broad && job.broad !== '未分类' ? catName(t, job.broad) : null}</Row>}
+        {(field === 'noc' || depth >= 2) && <Row k={t('col.mid')}>{job.mid && job.mid !== '未分类' ? catName(t, job.mid) : null}</Row>}
         {/* 官方层级里有 36 个中类只有一个小类(两级同名)——那时小类不再重复一遍,留空 */}
-        {(field === 'noc' || depth >= 3) && <FactRow k={t('col.fine')}>{job.fine && job.fine !== '未分类' && job.fine !== job.mid ? catName(t, job.fine) : null}</FactRow>}
+        {(field === 'noc' || depth >= 3) && <Row k={t('col.fine')}>{job.fine && job.fine !== '未分类' && job.fine !== job.mid ? catName(t, job.fine) : null}</Row>}
         {field === 'noc' && <NocDutiesView noc={noc} lang={lang} />}
       </FactsBox>
     )
@@ -319,15 +329,15 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
     // 来源/渠道/发布各看各的一行(07-06 用户拍板);口径注三者共用
     return (
       <FactsBox>
-        {field === 'source' && <FactRow k={t('col.source')}>{job.sourceLabel || job.source}</FactRow>}
-        {field === 'origin' && <FactRow k={t('col.origin')}>{(() => { const v = t('origin.' + job.origin); return v.startsWith('origin.') ? job.origin : v })()}</FactRow>}
-        {field === 'direct' && <FactRow k={t('col.direct')}>{isDirect(job) ? t('fact.firstParty') : t('fact.repost')}</FactRow>}
+        {field === 'source' && <Row k={t('col.source')}>{job.sourceLabel || job.source}</Row>}
+        {field === 'origin' && <Row k={t('col.origin')}>{(() => { const v = t('origin.' + job.origin); return v.startsWith('origin.') ? job.origin : v })()}</Row>}
+        {field === 'direct' && <Row k={t('col.direct')}>{isDirect(job) ? t('fact.firstParty') : t('fact.repost')}</Row>}
       </FactsBox>
     )
   }
   if (field === 'accessibility') {
-    // 未知时显式写「未知(帖内未写)」——acc.unknown 的列值是「—」会被 FactRow 隐藏,弹窗只剩孤零零一句口径注(文案审计)
-    return <FactsBox note={t('fact.accNote')}><FactRow k={t('col.accessibility')}>{job.accessibility && job.accessibility !== 'unknown' ? t('acc.' + job.accessibility) : t('acc.none')}</FactRow></FactsBox>
+    // 未知时显式写「未知(帖内未写)」——acc.unknown 的列值是「—」会被 Row 隐藏,弹窗只剩孤零零一句口径注(文案审计)
+    return <FactsBox note={t('fact.accNote')}><Row k={t('col.accessibility')}>{job.accessibility && job.accessibility !== 'unknown' ? t('acc.' + job.accessibility) : t('acc.none')}</Row></FactsBox>
   }
   if (TIME_FIELDS.has(field)) {
     // 时间四字段各看各的(07-06 用户拍板):状态/下架互为语境成对出现;发布带首次收录;抓取单独。
@@ -335,16 +345,16 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
     const isStatusish = field === 'status' || field === 'closedAt'
     return (
       <FactsBox>
-        {isStatusish && <FactRow k={t('col.status')}>{t(job.status === 'closed' ? 'cell.closed' : 'cell.open')}</FactRow>}
-        {field === 'datePosted' && <FactRow k={t('col.datePosted')}>{day(job.datePosted)}</FactRow>}
+        {isStatusish && <Row k={t('col.status')}>{t(job.status === 'closed' ? 'cell.closed' : 'cell.open')}</Row>}
+        {field === 'datePosted' && <Row k={t('col.datePosted')}>{day(job.datePosted)}</Row>}
         {/* 挂帖时长(痛点盘点 P0 零抓取项):新鲜度信号,弹窗只在客户端开,无水合差异 */}
         {field === 'datePosted' && job.datePosted && (job.status || 'open') !== 'closed' && (() => {
           const d = Math.max(0, Math.floor((Date.now() - new Date(job.datePosted).getTime()) / 86400000))
-          return <FactRow k={t('fact.daysUp')}>{t('fact.daysUpVal', { n: d })}</FactRow>
+          return <Row k={t('fact.daysUp')}>{t('fact.daysUpVal', { n: d })}</Row>
         })()}
-        {field === 'datePosted' && <FactRow k={t('col.firstSeen')}>{day(job.firstSeen)}</FactRow>}
-        {field === 'lastSeen' && <FactRow k={t('col.lastSeen')}>{day(job.lastSeen)}</FactRow>}
-        {isStatusish && <FactRow k={t('col.closedAt')}>{job.closedAt ? day(job.closedAt) : null}</FactRow>}
+        {field === 'datePosted' && <Row k={t('col.firstSeen')}>{day(job.firstSeen)}</Row>}
+        {field === 'lastSeen' && <Row k={t('col.lastSeen')}>{day(job.lastSeen)}</Row>}
+        {isStatusish && <Row k={t('col.closedAt')}>{job.closedAt ? day(job.closedAt) : null}</Row>}
       </FactsBox>
     )
   }
@@ -500,15 +510,15 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
     if (!items.length) return null
     const zhItems = showTrans && zh ? zh.split('\n').map((s) => s.trim()).filter(Boolean) : []
     return (
-      <div style={MODAL_CARD}>
+      <div style={CARD_MD}>
         {/* #191 对齐:抓取日期全角括号退役 → 空格灰注(与公司简介检索日期同款) */}
-        <div style={MODAL_CARD_HEAD}>{title}{noc?.fetched ? <span style={{ fontSize: 11.5, fontWeight: 400, color: '#9ca3af', marginLeft: 8 }}>{noc.fetched}</span> : null}</div>
-        <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12.5, color: '#4b5563', lineHeight: 1.6 }}>
+        <div className="mcardHead">{title}{noc?.fetched ? <span className="advFetched">{noc.fetched}</span> : null}</div>
+        <ul className="advDuties">
           {items.map((d, i) => (
             <li key={i}>
               {d}
               {/* 同文=该行没翻到(#181 部分容错保留英文)→ 不重复渲 */}
-              {zhItems[i] && zhItems[i] !== d ? <div style={{ margin: '2px 0 4px', padding: '1px 0 1px 10px', borderLeft: '3px solid #dbeafe', color: '#1e40af' }}>{zhItems[i]}</div> : null}
+              {zhItems[i] && zhItems[i] !== d ? <div className="advZh">{zhItems[i]}</div> : null}
             </li>
           ))}
         </ul>
@@ -519,9 +529,9 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
   return (
     <>
       {/* 两钮:中文对照(英文界面无需=不出)+ AI 速读(点前只是一枚钮,不烧额度) */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+      <div className="advActsRow">
         {lang !== 'en' && (
-          <button onClick={toggleTrans} disabled={transStatus === 'loading'} style={{ ...btn, opacity: transStatus === 'loading' ? 0.6 : 1 }}>
+          <button onClick={toggleTrans} disabled={transStatus === 'loading'} className={transStatus === 'loading' ? 'advPillBusy' : undefined} style={btn}>
             {transStatus === 'loading' ? t('cat.translating') : transStatus === 'error' ? t('cat.transErr') : showTrans ? t('cat.hideZh') : t('cat.showZh')}
           </button>
         )}
@@ -530,25 +540,25 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
 
       {/* AI 速读卡(点了才出;置顶=点完不用往下翻;#A:常驻开关收起时隐藏不清 state) */}
       {aiOn && aiStatus !== 'idle' && (
-        <div style={MODAL_CARD}>
-          <div style={MODAL_CARD_HEAD}><IconCompass /> {t('cat.aiRead')}</div>
+        <div style={CARD_MD}>
+          <div className="mcardHead"><IconCompass /> {t('cat.aiRead')}</div>
           {aiStatus === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} />
             : aiStatus === 'limited' ? <LockedText t={t} loggedIn={plan.loggedIn} msg={t('advisor.limit429')} ctaLabel={!plan.loggedIn ? t('advisor.limitCta') : undefined} />
-            : aiStatus === 'error' ? <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('cat.aiErr')}</p>
-            : aiStatus === 'loading' ? <p style={{ margin: 0, fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
-            : <div style={{ fontSize: 14, lineHeight: 1.7, color: '#374151' }}>{renderAI(ai.split('❓')[0])}{aiStatus === 'streaming' && <span style={{ color: '#9ca3af' }}>▋</span>}</div>}
+            : aiStatus === 'error' ? <p className="advNote sm">{t('cat.aiErr')}</p>
+            : aiStatus === 'loading' ? <p className="advNote">{t('advisor.loading')}</p>
+            : <div className="advAi">{renderAI(ai.split('❓')[0])}{aiStatus === 'streaming' && <span className="advCaret">▋</span>}</div>}
         </div>
       )}
 
       {/* 卡①:职业分类(点击字段该行高亮) */}
-      <div style={MODAL_CARD}>
-        <div style={MODAL_CARD_HEAD}>{t('grp.category')}</div>
+      <div style={CARD_MD}>
+        <div className="mcardHead">{t('grp.category')}</div>
         {rows.filter((r) => r.v != null).map((r, i) => {
           const on = r.f === srcField
           return (
-            <div key={i} style={{ display: 'flex', gap: 10, padding: '3px 6px', margin: '0 -6px', borderRadius: 6, fontSize: 13, background: on ? '#eff6ff' : undefined }}>
-              <span style={{ minWidth: 88, color: on ? '#2563eb' : '#9ca3af', flexShrink: 0, fontWeight: on ? 600 : 400 }}>{r.k}</span>
-              <span style={{ flex: 1, color: '#374151', wordBreak: 'break-word' }}>{r.v}</span>
+            <div key={i} className={on ? 'advKv hl on' : 'advKv hl'}>
+              <span className="advKvK w88">{r.k}</span>
+              <span className="advKvV brk">{r.v}</span>
             </div>
           )
         })}
@@ -596,8 +606,7 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
 
   const isQc = job.province === 'QC'
   const num = (n: number) => Number(n).toLocaleString()
-  const gnote: React.CSSProperties = { color: '#9ca3af', fontSize: 12, fontWeight: 400 }
-  const card: React.CSSProperties = MODAL_CARD
+  const card: React.CSSProperties = CARD_MD
 
   // AI 解读(Frank 2026-07-23「AI 解读呢?」):分类弹框 AI 速读同款——点了才生成、流式、统一额度池;
   // 事实块=面板同源数字(provRead 按省缓存 / cityRead 按市|区缓存),模型被禁越出事实(advisor 路由 GROUNDING_RULES)。
@@ -687,8 +696,8 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
   // Frank 走查#6:体量卡改三列对齐(标签 | 数值 | 年份注)——数值单列右对齐,故拆出 note 独立字段
   const volRows: { k: React.ReactNode; v: React.ReactNode; note: React.ReactNode }[] = []
   if (info?.study) volRows.push({ k: t('loc.study'), v: num(info.study.n), note: t('loc.asOf', { y: info.study.year }) })
-  if (info?.tfwp) volRows.push({ k: <>{t('loc.tfwp')} <span style={{ ...gnote, fontSize: 11 }}>TFWP</span></>, v: num(info.tfwp.n), note: t('loc.asOf', { y: info.tfwp.year }) })
-  if (info?.imp) volRows.push({ k: <>{t('loc.imp')} <span style={{ ...gnote, fontSize: 11 }}>{t('loc.impNote')}</span></>, v: num(info.imp.n), note: t('loc.asOf', { y: info.imp.year }) })
+  if (info?.tfwp) volRows.push({ k: <>{t('loc.tfwp')} <span className="advGnote s">TFWP</span></>, v: num(info.tfwp.n), note: t('loc.asOf', { y: info.tfwp.year }) })
+  if (info?.imp) volRows.push({ k: <>{t('loc.imp')} <span className="advGnote s">{t('loc.impNote')}</span></>, v: num(info.imp.n), note: t('loc.asOf', { y: info.imp.year }) })
   if (!isQc && info?.alloc && (info.alloc.y2026 != null || info.alloc.y2025 != null)) {
     const a = info.alloc
     volRows.push({ k: t('loc.alloc'),
@@ -703,33 +712,33 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
       {/* 顶部钮行(Frank 走查#2「只要弹框就直接显示这三个按钮」):三钮统一——
           中文对照(地点内容现本地化,为「以后加英文」占位)/ AI 速读 / 打开完整页(=该省地区统计页,地点弹框有专属 SEO 页) */}
       {job.province && (
-        <div style={{ display: 'flex', gap: 8, margin: '2px 0 12px', flexWrap: 'wrap' }}>
+        <div className="advActs2">
           {lang !== 'en' && <button onClick={() => setShowZh((v) => !v)} style={{ ...PILL_BTN, ...(showZh ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}>{showZh ? t('cat.hideZh') : t('cat.showZh')}</button>}
           {factsReady && <button onClick={toggleAi} style={{ ...PILL_BTN, ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>}
-          <a href={`/stats/${job.province.toLowerCase()}`} target="_blank" rel="noreferrer" style={{ ...PILL_BTN, textDecoration: 'none', display: 'inline-block' }}>{t('detail.openFull')} ↗</a>
+          <a href={`/stats/${job.province.toLowerCase()}`} target="_blank" rel="noreferrer" className="advPillLink" style={PILL_BTN}>{t('detail.openFull')} ↗</a>
         </div>
       )}
 
       {/* AI 解读卡(点了才出;置顶=点完不用往下翻;开关收起时隐藏不清 state) */}
       {aiOn && aiStatus !== 'idle' && (
         <div style={card}>
-          <div style={MODAL_CARD_HEAD}><IconCompass /> {t('cat.aiRead')}</div>
+          <div className="mcardHead"><IconCompass /> {t('cat.aiRead')}</div>
           {aiStatus === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} />
             : aiStatus === 'limited' ? <LockedText t={t} loggedIn={plan.loggedIn} msg={t('advisor.limit429')} ctaLabel={!plan.loggedIn ? t('advisor.limitCta') : undefined} />
-            : aiStatus === 'error' ? <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('cat.aiErr')}</p>
-            : aiStatus === 'loading' ? <p style={{ margin: 0, fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
-            : <div style={{ fontSize: 14, lineHeight: 1.7, color: '#374151' }}>{renderAI(ai.split('❓')[0])}{aiStatus === 'streaming' && <span style={{ color: '#9ca3af' }}>▋</span>}</div>}
+            : aiStatus === 'error' ? <p className="advNote sm">{t('cat.aiErr')}</p>
+            : aiStatus === 'loading' ? <p className="advNote">{t('advisor.loading')}</p>
+            : <div className="advAi">{renderAI(ai.split('❓')[0])}{aiStatus === 'streaming' && <span className="advCaret">▋</span>}</div>}
         </div>
       )}
       <div style={card}>
-        <div style={MODAL_CARD_HEAD}>{t('grp.location')}</div>
+        <div className="mcardHead">{t('grp.location')}</div>
         {locRows.filter((r) => r.v).map((r, i) => {
           const on = r.f === srcField
           return (
-            <div key={i} style={{ display: 'flex', gap: 10, padding: '3px 6px', margin: '0 -6px', borderRadius: 6, fontSize: 13, background: on ? '#eff6ff' : undefined }}>
-              <span style={{ minWidth: 64, color: on ? '#2563eb' : '#9ca3af', flexShrink: 0, fontWeight: on ? 600 : 400 }}>{r.k}</span>
-              <span style={{ flex: 1, color: '#374151', wordBreak: 'break-word' }}>
-                {r.map ? <a href={mapsUrl(mapQuery(r.f, job))} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{r.v}</a> : r.v}
+            <div key={i} className={on ? 'advKv hl on' : 'advKv hl'}>
+              <span className="advKvK w64">{r.k}</span>
+              <span className="advKvV brk">
+                {r.map ? <a href={mapsUrl(mapQuery(r.f, job))} target="_blank" rel="noreferrer" className="advLink">{r.v}</a> : r.v}
               </span>
             </div>
           )
@@ -739,12 +748,12 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
       {/* ── 省级卡组(仅点省进来;Frank「点省看省,点市看市」)────────── */}
       {level === 'province' && d?.tier && (
         <div style={card}>
-          <div style={{ ...MODAL_CARD_HEAD, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div className="mcardHead advCardHeadRow">
             {t('diff.title')}
-            <span style={{ fontSize: 11.5, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: DIFF_TAG[d.tier]?.bg, color: DIFF_TAG[d.tier]?.fg, border: `1px solid ${DIFF_TAG[d.tier]?.bd}` }}>{t('diff.' + d.tier)}</span>
+            <span className="advDiff" style={{ '--dbg': DIFF_TAG[d.tier]?.bg, '--dfg': DIFF_TAG[d.tier]?.fg, '--dbd': DIFF_TAG[d.tier]?.bd } as React.CSSProperties}>{t('diff.' + d.tier)}</span>
           </div>
           {/* Frank 2026-07-26 走查:三列(标签 | 值 | 注)跨行对齐,每列左对齐 —— 原来一行一整句,读不快也对不齐 */}
-          <FactGrid cols={3}>
+          <Grid cols={3}>
             {[
               comp && [t('diff.k.comp'), t('diff.v.comp', { v: comp.value }), t('diff.compNote', { pool: num(comp.pool), quota: num(comp.quota), y: comp.quotaYear, py: comp.asOf ?? '' })],
               trend && [t('diff.k.trend'), pctS(trend.value), ''],
@@ -756,26 +765,26 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
               score && [t('diff.k.score'), t('diff.v.score', { s: score.latestScore }), t('diff.n.score', { p: score.value, sc: score.scale || '—' })],
             ].filter(Boolean).flatMap((r, i) => {
               const [k, v, n] = r as string[]
-              return [<span key={i + 'k'} style={FG_K}>{k}</span>, <span key={i + 'v'} style={{ ...FG_V, fontWeight: 600 }}>{v}</span>, <span key={i + 'n'} style={FG_N}>{n}</span>]
+              return [<span key={i + 'k'} className="gridK">{k}</span>, <span key={i + 'v'} className="gridV advBold">{v}</span>, <span key={i + 'n'} className="gridN">{n}</span>]
             })}
-          </FactGrid>
+          </Grid>
           {/* Frank 走查#3:「口径:竞争基数=…」整句删(粗口径已在数字旁,长解释=废话) */}
         </div>
       )}
 
       {level === 'province' && volRows.length > 0 && (
         <div style={card}>
-          <div style={MODAL_CARD_HEAD}>{t('loc.vol')} <span style={{ ...gnote, fontSize: 11.5, marginLeft: 8 }}>{t('loc.volTag')}</span></div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'max-content max-content 1fr', columnGap: 12, rowGap: 4, fontSize: 13, alignItems: 'baseline' }}>
+          <div className="mcardHead">{t('loc.vol')} <span className="advGnote m">{t('loc.volTag')}</span></div>
+          <div className="advVol">
             {/* Frank 2026-07-26「每列都保证左对齐」:数值列原为右对齐,与其他卡不一致 */}
             {volRows.flatMap((r, i) => [
-              <span key={i + 'k'} style={{ color: '#9ca3af' }}>{r.k}</span>,
-              <span key={i + 'v'} style={{ ...FG_V, fontWeight: 600 }}>{r.v}</span>,
-              <span key={i + 'n'} style={{ ...gnote }}>{r.note}</span>,
+              <span key={i + 'k'} className="advMuted">{r.k}</span>,
+              <span key={i + 'v'} className="gridV advBold">{r.v}</span>,
+              <span key={i + 'n'} className="advGnote">{r.note}</span>,
             ])}
           </div>
           {/* Frank 走查#4:非 QC 的「来源:IRCC 开放数据…」删(footer 已统一声明);QC 独立体系说明是实义,保留 */}
-          {isQc && <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 8, lineHeight: 1.6 }}>{t('loc.qc')}</div>}
+          {isQc && <div className="advQc">{t('loc.qc')}</div>}
         </div>
       )}
 
@@ -790,27 +799,27 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
       {/* ── 市级卡组(点市/区进来;/api/city 现算,本站口径)────────── */}
       {level === 'city' && cityInfo && (
         <div style={card}>
-          <div style={MODAL_CARD_HEAD}>{t('loc.cityJobs')} <span style={{ ...gnote, fontSize: 11.5, marginLeft: 8 }}>{L.city}</span></div>
+          <div className="mcardHead">{t('loc.cityJobs')} <span className="advGnote m">{L.city}</span></div>
           {([
             [t('loc.openJobs'), num(cityInfo.openJobs)],
             [t('loc.new7d'), num(cityInfo.new7d)],
             ...(cityInfo.medSalary != null ? [[t('loc.medSal'), `$${Math.round(cityInfo.medSalary / 1000)}K/yr`]] : []),
             ...(cityInfo.topBroads.length ? [[t('loc.topBroads'), cityInfo.topBroads.map((b) => `${t('broad.' + b.broad)} ${num(b.n)}`).join('、')]] : []),
           ] as [string, string][]).map(([k, v], i) => (
-            <div key={i} style={{ display: 'flex', gap: 10, padding: '3px 6px', margin: '0 -6px', fontSize: 13 }}>
-              <span style={{ minWidth: 128, color: '#9ca3af', flexShrink: 0 }}>{k}</span>
-              <span style={{ flex: 1, color: '#374151' }}>{v}</span>
+            <div key={i} className="advKv">
+              <span className="advKvK w128">{k}</span>
+              <span className="advKvV">{v}</span>
             </div>
           ))}
         </div>
       )}
       {level === 'city' && cityInfo && cityInfo.dli.count > 0 && (
         <div style={card}>
-          <div style={MODAL_CARD_HEAD}>{t('loc.dli')} <span style={{ ...gnote, fontSize: 11.5, marginLeft: 8 }}>{t('loc.dliN', { n: cityInfo.dli.count })}</span></div>
+          <div className="mcardHead">{t('loc.dli')} <span className="advGnote m">{t('loc.dliN', { n: cityInfo.dli.count })}</span></div>
           {cityInfo.dli.top.map((s, i) => (
-            <div key={i} style={{ display: 'flex', gap: 8, padding: '3px 6px', margin: '0 -6px', fontSize: 13, alignItems: 'baseline' }}>
-              <span style={{ flex: 1, color: '#374151', minWidth: 0 }}>{s.name}</span>
-              {s.isPublic && <span style={gnote}>{t('loc.dliPublic')}</span>}
+            <div key={i} className="advKv tight">
+              <span className="advKvV advListName">{s.name}</span>
+              {s.isPublic && <span className="advGnote">{t('loc.dliPublic')}</span>}
             </div>
           ))}
         </div>
@@ -822,12 +831,12 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
         if (!aipList.length) return null
         return (
           <div style={card}>
-            <div style={MODAL_CARD_HEAD}>{t('loc.aip')} <span style={{ ...gnote, fontSize: 11.5, marginLeft: 8 }}>{t('loc.aipN', { n: aipList.length })}</span></div>
-            <div style={{ display: 'grid', rowGap: 2 }}>
+            <div className="mcardHead">{t('loc.aip')} <span className="advGnote m">{t('loc.aipN', { n: aipList.length })}</span></div>
+            <div className="advList">
               {aipList.map((e, i) => (
-                <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 13, color: '#374151' }}>
-                  <span style={{ flex: 1, minWidth: 0 }}>{e.name}</span>
-                  {e.isTech && <span style={{ fontSize: 11, color: '#9ca3af', whiteSpace: 'nowrap' }}>{t('fact.aipTech')}</span>}
+                <div key={i} className="advListRow">
+                  <span className="advListName">{e.name}</span>
+                  {e.isTech && <span className="advListTag">{t('fact.aipTech')}</span>}
                 </div>
               ))}
             </div>
@@ -838,29 +847,29 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
       {/* ── 区级卡组(点区进来;Frank「点区看区的信息」)────────── */}
       {level === 'district' && cityInfo?.district && (
         <div style={card}>
-          <div style={MODAL_CARD_HEAD}>{t('loc.distJobs')} <span style={{ ...gnote, fontSize: 11.5, marginLeft: 8 }}>{L.district}</span></div>
+          <div className="mcardHead">{t('loc.distJobs')} <span className="advGnote m">{L.district}</span></div>
           {([
             [t('loc.openJobs'), num(cityInfo.district.openJobs)],
             [t('loc.new7d'), num(cityInfo.district.new7d)],
             ...(cityInfo.district.medSalary != null ? [[t('loc.medSal'), `$${Math.round(cityInfo.district.medSalary / 1000)}K/yr`]] : []),
             ...(cityInfo.district.topBroads.length ? [[t('loc.topBroads'), cityInfo.district.topBroads.map((b) => `${t('broad.' + b.broad)} ${num(b.n)}`).join('、')]] : []),
           ] as [string, string][]).map(([k, v], i) => (
-            <div key={i} style={{ display: 'flex', gap: 10, padding: '3px 6px', margin: '0 -6px', fontSize: 13 }}>
-              <span style={{ minWidth: 128, color: '#9ca3af', flexShrink: 0 }}>{k}</span>
-              <span style={{ flex: 1, color: '#374151' }}>{v}</span>
+            <div key={i} className="advKv">
+              <span className="advKvK w128">{k}</span>
+              <span className="advKvV">{v}</span>
             </div>
           ))}
         </div>
       )}
       {level === 'district' && cityInfo?.district && cityInfo.district.topEmployers.length > 0 && (
         <div style={card}>
-          <div style={MODAL_CARD_HEAD}>{t('loc.distEmployers')}</div>
+          <div className="mcardHead">{t('loc.distEmployers')}</div>
           {cityInfo.district.topEmployers.map((e, i) => (
-            <div key={i} style={{ display: 'flex', gap: 8, padding: '3px 6px', margin: '0 -6px', fontSize: 13, alignItems: 'baseline' }}>
+            <div key={i} className="advKv tight">
               {e.slug
-                ? <a href={`/companies/${e.slug}`} style={{ flex: 1, minWidth: 0, color: '#2563eb', textDecoration: 'none' }}>{e.name}</a>
-                : <span style={{ flex: 1, minWidth: 0, color: '#374151' }}>{e.name}</span>}
-              <span style={gnote}>{t('loc.nJobs', { n: num(e.n) })}</span>
+                ? <a href={`/companies/${e.slug}`} className="advLink advListName">{e.name}</a>
+                : <span className="advKvV advListName">{e.name}</span>}
+              <span className="advGnote">{t('loc.nJobs', { n: num(e.n) })}</span>
             </div>
           ))}
         </div>
@@ -966,11 +975,11 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
   const iconBtn = iconBtnS
 
   return (
-    <div {...overlayClose} style={{ ...SCRIM, zIndex: 50 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ ...CARD, ...panel, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div {...overlayClose} className="advScrim" style={SCRIM}>
+      <div onClick={(e) => e.stopPropagation()} className="advPanel" style={{ ...CARD, ...panel }}>
         {/* 标题栏 = 拖动手柄 */}
-        <div onPointerDown={startDrag} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '16px 20px 10px', cursor: full ? 'default' : 'move', userSelect: 'none', flexShrink: 0 }}>
-          <div style={{ minWidth: 0 }}>
+        <div onPointerDown={startDrag} className={full ? 'advHead full' : 'advHead'}>
+          <div className="advHeadL">
             {/* 标题后不挂「思考中」后缀(Frank 2026-07-18);流式等待态由正文区「努力思考中」占位承担 */}
             {/* E8-10 S6:页眉改「分组名」、大标题改**岗位/公司名** —— 收编前取的是被点单元格的值,
                 于是点「通道」列开出来的弹框标题写着「技能岗」:一个胶囊的值当不了一屏内容的标题。
@@ -981,11 +990,11 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
                 「职位描述」同款。「AI 顾问」标只留移民弹框(唯一真在流式生成顾问内容的;#176 分类零 AI,
                 公司弹框的 AI 段 #167⑨ 已撤、只剩检索卡,挂「AI 顾问」名不副实)。 */}
             {/* #189 公司组额度注已随 E8-11 B1 退役:公司数据走 /api/company 免额度(与页面同口径),没烧池无可显 */}
-            <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}>{group !== 'immigration' || !AI_ADVISOR_ON
+            <div className="advKicker">{group !== 'immigration' || !AI_ADVISOR_ON
               ? t('grp.' + group)
-              : <><IconCompass /> {t('advisor.tag')}<span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('grp.' + group)}</span>{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}</>}
+              : <><IconCompass /> {t('advisor.tag')}<span className="advKickerSub">{t('grp.' + group)}</span>{freeLeft != null ? <span className="advKickerSub">{t('advisor.left', { n: freeLeft })}</span> : null}</>}
               {/* #185:公司弹框「打开完整页」移入正文顶部钮行(与职位弹框同款),页眉不再重复 */}</div>
-            <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{group === 'company' ? (job.company || title || a.title) : (job.title || title || a.title)}</h3>
+            <h3 className="advTitle">{group === 'company' ? (job.company || title || a.title) : (job.title || title || a.title)}</h3>
             {/* 公司名下的中文行业行删除(Frank 2026-07-24「公司名下面的中文还是删掉」;了解公司改靠知名/政府章) */}
             {/* Frank 2026-07-26「所有弹框的 job 名称下面都应该有中文翻译,像点击 job 弹框一样」:
                 岗位名弹框补 NOC 界面语译名(与职位弹框 ActModal 同一函数、同一「与英文标题相同则不重复」规则);
@@ -993,17 +1002,17 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
             {group !== 'company' && (() => {
               const zh = nocLocalTitle(nocDesc.find((d) => d.noc === job.noc) || null, lang)
               return zh && zh.toLowerCase() !== (job.title || '').toLowerCase()
-                ? <div style={{ fontSize: 12.5, color: '#9ca3af', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{zh}</div>
+                ? <div className="advSub">{zh}</div>
                 : null
             })()}
           </div>
-          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+          <div className="advWinActs">
             {!narrow && <button onClick={toggleFull} title={t(full ? 'advisor.exitFull' : 'advisor.full')} style={iconBtn}>{full ? <IconMinimize /> : <IconMaximize />}</button>}
-            <button onClick={onClose} style={{ ...iconBtn, fontSize: 16 }}>×</button>
+            <button onClick={onClose} style={iconBtn}>×</button>
           </div>
         </div>
         {/* 正文(可滚动):上半真实清单 + 下半 AI 建议 */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 20px' }}>
+        <div className="advBody">
           {/* 对我意味着什么(E5-00):个人相关性放最上;依据链同源 match()。
               #161(Frank「公司显示这些信息也不合适吧」):公司面板不渲 —— 表里七个维度里
               职业方向/所在省/省提名粗筛/EE/技能层级/薪资 全是**岗位级**事实,挂在「Agilent Technologies」
@@ -1012,10 +1021,10 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
               那三个自带钮栏)统一摆三按钮栏。中文对照即时可用(pnp/ee 有译文;余为「以后加英文」占位);
               AI 速读 / 打开完整页 = 前置占位(灰显 disabled,待该弹框接入 AI/专属页后点亮)。 */}
           {group !== 'category' && group !== 'location' && group !== 'company' && (
-            <div style={{ display: 'flex', gap: 8, margin: '2px 0 12px', flexWrap: 'wrap' }}>
+            <div className="advActs2">
               {lang !== 'en' && <button onClick={() => { if (!showZh) track('imm-translate'); setShowZh((v) => !v) }} style={{ ...PILL_BTN, ...(showZh ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}>{showZh ? t('cat.hideZh') : t('cat.showZh')}</button>}
-              <button disabled title={t('cat.aiRead')} style={{ ...PILL_BTN, opacity: 0.4, cursor: 'default' }}><IconCompass /> {t('cat.aiRead')}</button>
-              <button disabled title={t('detail.openFull')} style={{ ...PILL_BTN, opacity: 0.4, cursor: 'default' }}>{t('detail.openFull')}</button>
+              <button disabled title={t('cat.aiRead')} className="advPillOff" style={PILL_BTN}><IconCompass /> {t('cat.aiRead')}</button>
+              <button disabled title={t('detail.openFull')} className="advPillOff" style={PILL_BTN}>{t('detail.openFull')}</button>
             </div>
           )}
           {group === 'immigration' && <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} nocDesc={nocDesc} />}
@@ -1033,33 +1042,33 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
           {/* #174:AI 解读收进自己的卡(每卡必有 title)——只有移民组会请求 AI,
               职位/公司组(status 直置 done、text 空)不渲,免得出一张空卡孤儿标题 */}
           {AI_ADVISOR_ON && group === 'immigration' && (
-            <div style={MODAL_CARD}>
-              <div style={MODAL_CARD_HEAD}><IconCompass /> {t('advisor.tag')}</div>
+            <div style={CARD_MD}>
+              <div className="mcardHead"><IconCompass /> {t('advisor.tag')}</div>
               {status === 'upgrade' ? (
                 <LockedText t={t} loggedIn={plan.loggedIn} />
               ) : status === 'limited' ? (
                 /* #175:429 黄条退役 → 打码+锁行(转化靠失去感,不靠警示框) */
                 <LockedText t={t} loggedIn={plan.loggedIn} msg={t('advisor.limit429')} ctaLabel={!plan.loggedIn ? t('advisor.limitCta') : undefined} />
               ) : status === 'loading' ? (
-                <p style={{ margin: 0, fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
+                <p className="advNote">{t('advisor.loading')}</p>
               ) : status === 'error' ? (
                 /* 2026-07-25 用户:解析失败要能重试——error 态文案(unavail/offline 已在 text 里)后挂重试钮 */
-                <p style={{ margin: 0, fontSize: 14, color: '#9ca3af' }}>
+                <p className="advNote">
                   {text}
-                  <button onClick={() => setTick((n) => n + 1)} style={{ border: 'none', background: 'none', padding: 0, marginLeft: 8, color: '#2563eb', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>{t('ai.retry')}</button>
+                  <button onClick={() => setTick((n) => n + 1)} className="advRetry">{t('ai.retry')}</button>
                 </p>
               ) : (
-                <div style={{ fontSize: 14, lineHeight: 1.7, color: '#374151' }}>{renderAI(text)}{status === 'streaming' && <span style={{ color: '#9ca3af' }}>▋</span>}</div>
+                <div className="advAi">{renderAI(text)}{status === 'streaming' && <span className="advCaret">▋</span>}</div>
               )}
             </div>
           )}
           {/* 来源行已随事实块走(FieldFactsSection 内,紧跟内容、在 AI 区之前)—— 底部不再重复 */}
         </div>
         {/* 八方向拉伸手柄(透明边条+角块;右下角保留视觉提示三角) */}
-        {!full && <div style={{ position: 'absolute', right: 0, bottom: 0, width: 18, height: 18, pointerEvents: 'none', background: 'linear-gradient(135deg, transparent 50%, #cbd5e1 50%)' }} />}
+        {!full && <div className="advGrip" />}
         {!full && PANEL_EDGES.map((h) => (
           <div key={h.dir} onPointerDown={(e) => startResize(e, h.dir)}
-            style={{ position: 'absolute', cursor: h.cursor, ...h.style }} />
+            className="advHandle" style={{ cursor: h.cursor, ...h.style }} />
         ))}
       </div>
     </div>
@@ -1078,33 +1087,33 @@ export function ActModal({ job, lang, plan, nocDesc, onClose }: { job: JobRow; l
   const [freeLeft, setFreeLeft] = useState<number | null>(null)  // 第 5 轮 #16:试用额度可见化(JobBody 回传)
   useEffect(() => { track('modal-jd', { kind: 'modal' }) }, [])  // #129 埋点 + 漏斗第 1 步(kind 分开弹框与整页)
   return (
-    <div {...overlayClose} style={{ ...SCRIM, zIndex: 50 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ ...CARD, ...panel, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div {...overlayClose} className="advScrim" style={SCRIM}>
+      <div onClick={(e) => e.stopPropagation()} className="advPanel" style={{ ...CARD, ...panel }}>
         {/* 标题栏 = 拖动手柄(与顾问弹框同款) */}
-        <div onPointerDown={startDrag} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '16px 20px 8px', cursor: full ? 'default' : 'move', userSelect: 'none', flexShrink: 0 }}>
-          <div style={{ minWidth: 0 }}>
+        <div onPointerDown={startDrag} className={full ? 'advHead tight full' : 'advHead tight'}>
+          <div className="advHeadL">
             {/* 页眉与其余弹框统一灰(Frank 2026-07-21;「打开完整页」在 JobBody 胶囊钮行) */}
-            <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}>
-              {t('act.descTitle')}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}
+            <div className="advKicker">
+              {t('act.descTitle')}{freeLeft != null ? <span className="advKickerSub">{t('advisor.left', { n: freeLeft })}</span> : null}
             </div>
-            <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.title || '—'}</h3>
-            {nocZh && nocZh.toLowerCase() !== (job.title || '').toLowerCase() ? <div style={{ fontSize: 12.5, color: '#9ca3af', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nocZh}</div> : null}
+            <h3 className="advTitle">{job.title || '—'}</h3>
+            {nocZh && nocZh.toLowerCase() !== (job.title || '').toLowerCase() ? <div className="advSub">{nocZh}</div> : null}
           </div>
-          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }} onPointerDown={(e) => e.stopPropagation()}>
+          <div className="advWinActs" onPointerDown={(e) => e.stopPropagation()}>
             {!narrow && <button onClick={toggleFull} title={t(full ? 'advisor.exitFull' : 'advisor.full')} style={iconBtnS}>{full ? <IconMinimize /> : <IconMaximize />}</button>}
-            <button onClick={onClose} style={{ ...iconBtnS, fontSize: 16 }}>×</button>
+            <button onClick={onClose} style={iconBtnS}>×</button>
           </div>
         </div>
         {/* 2026-07-25 用户「穿墙」:底部原 20px padding 在 sticky 投递栏下方留缝,滚动到底 JD 从缝里透出卡片圆角外 → 底 padding 归 0,底部留白改由投递栏自带 */}
         {/* Frank 走查#22:滚动容器改 flex 列,让投递栏 marginTop:auto 在内容短时也贴底 */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 0', fontSize: 14, lineHeight: 1.7, color: '#374151', display: 'flex', flexDirection: 'column' }}>
+        <div className="advBody jd">
           <JobBody job={job} lang={lang} plan={plan} inModal onFreeLeft={setFreeLeft} />
         </div>
         {/* 八方向拉伸手柄(透明边条+角块;右下角保留视觉提示三角) */}
-        {!full && <div style={{ position: 'absolute', right: 0, bottom: 0, width: 18, height: 18, pointerEvents: 'none', background: 'linear-gradient(135deg, transparent 50%, #cbd5e1 50%)' }} />}
+        {!full && <div className="advGrip" />}
         {!full && PANEL_EDGES.map((h) => (
           <div key={h.dir} onPointerDown={(e) => startResize(e, h.dir)}
-            style={{ position: 'absolute', cursor: h.cursor, ...h.style }} />
+            className="advHandle" style={{ cursor: h.cursor, ...h.style }} />
         ))}
       </div>
     </div>

@@ -5,8 +5,7 @@
 import { useEffect, useState } from 'react'
 
 import { IconCompass } from '../Icons'
-import { PILL_BTN, ctrl } from '../ui'
-import { MODAL_CARD } from './Facts'
+import { CARD_MD, ctrl, PILL_BTN } from '../ui'
 import { LockedText } from './Lock'
 import { AuthModal } from './AuthForm'
 import { Modal, useIsNarrow } from './Modal'
@@ -25,8 +24,8 @@ export function NocDutiesView({ noc, lang }: { noc: NocDesc | null; lang: Lang }
   if (!noc || (!noc.duties && !noc.requirements)) return null
   const block = (label: string, text: string) => text ? (
     <>
-      <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{label}{noc.fetched ? `(${noc.fetched})` : ''}</div>
-      <ul style={{ margin: '3px 0 0', paddingLeft: 18, fontSize: 12.5, color: '#4b5563', lineHeight: 1.55 }}>
+      <div className="jdNocHead">{label}{noc.fetched ? `(${noc.fetched})` : ''}</div>
+      <ul className="jdNocList">
         {text.split('\n').filter(Boolean).map((d, i) => <li key={i}>{d}</li>)}
       </ul>
     </>
@@ -93,19 +92,19 @@ export function JdTextView({ text, max = 4000 }: { text: string; max?: number })
     .filter((function () { let prev = ''; return (l: string) => { if (!l) return true; const dup = l === prev && l.length <= 80; prev = l; return !dup } })())
   // 保真轨保留空行作段距;行首「• 」保留(数据层给的列表符),只在猜测轨剥
   const renderLine = (l: string, i: number) => {
-    if (!l) return <div key={i} style={{ height: 6 }} />
-    if (l.startsWith('• ')) return <div key={i} style={{ paddingLeft: 22, textIndent: -8 }}>{l}</div>
+    if (!l) return <div key={i} className="jdGap" />
+    if (l.startsWith('• ')) return <div key={i} className="jdBullet">{l}</div>
     const low = l.toLowerCase()
-    if (JD_TOP_HEADS.has(low)) return <div key={i} style={{ marginTop: i ? 12 : 0, fontSize: 14, fontWeight: 700, color: '#111827' }}>{l}</div>
-    if (JD_SUB_HEADS.has(low)) return <div key={i} style={{ marginTop: i ? 8 : 0, fontWeight: 700, color: '#374151' }}>{l}</div>
+    if (JD_TOP_HEADS.has(low)) return <div key={i} className="jdH1">{l}</div>
+    if (JD_SUB_HEADS.has(low)) return <div key={i} className="jdH2">{l}</div>
     const bare = l.match(/^([A-Z][A-Za-z ()/#&'-]{1,40}):$/)  // 裸标签行(如 "Benefits:")→ 小节头
-    if (bare) return <div key={i} style={{ marginTop: i ? 8 : 0, fontWeight: 700, color: '#374151' }}>{bare[1]}</div>
+    if (bare) return <div key={i} className="jdH2">{bare[1]}</div>
     const m = l.match(/^([A-Z][A-Za-z ()/#&'-]{1,40}):\s*(.+)$/)
-    if (m) return <div key={i} style={{ paddingLeft: 14 }}><strong style={{ color: '#374151' }}>{m[1]}:</strong> {m[2]}</div>
-    return <div key={i} style={{ paddingLeft: 14 }}>{l}</div>
+    if (m) return <div key={i} className="jdIndent"><strong className="jdLabel">{m[1]}:</strong> {m[2]}</div>
+    return <div key={i} className="jdIndent">{l}</div>
   }
   return (
-    <div style={{ margin: '4px 0 0', fontSize: 12.5, color: '#4b5563', lineHeight: 1.6 }}>
+    <div className="jdRaw">
       {lines.map(renderLine)}
     </div>
   )
@@ -128,13 +127,14 @@ const JD_NONE_RE = /^\(?\s*(not|none|n\/a)(\s+(stated|specified|mentioned|provid
 const JD_NONE_LOOSE = /^\(?\s*(not|none|no)\s+(stated|specified|mentioned|provided|available|applicable|listed|information)\b/i
 // 先剥「- 」bullet 前缀再判(#186:变体常以「- (not stated)」bullet 形式混在有内容的节里)
 export const isJdNone = (s?: string) => { const b = (s || '').trim().replace(/^-\s*/, ''); return !b || JD_NONE_RE.test(b) || (b.length < 50 && JD_NONE_LOOSE.test(b)) }
-export const JD_ZH_LINE: React.CSSProperties = { margin: '2px 0 4px', padding: '1px 0 1px 10px', borderLeft: '3px solid #dbeafe', color: '#1e40af', fontWeight: 400 }
+// 值在 main.css 第 15 段。要改字号/上距就 className={JD_ZH_LINE} + style={{...}} —— 行内压得过类。
+export const JD_ZH_LINE = 'jdZh'
 export function JdFormattedView({ text, t, fallbackPay, applyUrl, applyEmail, underTitle, trans }: { text: string; t: TFn; fallbackPay?: string; applyUrl?: string; applyEmail?: string; underTitle?: boolean; trans?: string }) {
   const SECS: [string, string][] = [['ROLE', 'act.f.role'], ['REQS', 'act.f.reqs'], ['PAY', 'act.f.pay'], ['WORKHOURS', 'act.f.hours'], ['APPLY', 'act.f.apply']]
   const secs = jdParseSecs(text)
   const tSecs = trans ? jdParseSecs(trans) : null
   return (
-    <div style={{ fontSize: 13, lineHeight: 1.75, color: '#374151' }}>
+    <div className="jdFmt">
       {SECS.map(([m, key]) => {
         const body = (secs[m] || '').trim()
         const rawEn = body.split('\n').map((s) => s.trim()).filter(Boolean)
@@ -145,16 +145,16 @@ export function JdFormattedView({ text, t, fallbackPay, applyUrl, applyEmail, un
         const pairs = rawEn.map((en, i) => ({ en, zh: rawZh[i] })).filter((p) => !isJdNone(p.en))
         const lines = pairs.map((p) => p.en)
         const none = lines.length === 0
-        const zh = (i: number) => { const z = pairs[i]?.zh; return z && z !== lines[i] && !isJdNone(z) ? <div style={JD_ZH_LINE}>{z.replace(/^-\s*/, '')}</div> : null }
+        const zh = (i: number) => { const z = pairs[i]?.zh; return z && z !== lines[i] && !isJdNone(z) ? <div className={JD_ZH_LINE}>{z.replace(/^-\s*/, '')}</div> : null }
         const hasBullets = lines.some((l) => l.startsWith('- '))
         return (
-          <div key={m} style={{ marginBottom: 8 }}>
+          <div key={m} className="jdSec">
             {/* #155(Frank「这两个字也是重复的」):首节 ROLE 的小标题「这活干什么」紧贴大标题「职位描述」,
                 两行说同一件事 —— 首节不出小标题,正文直接跟在「职位描述」下面;其余四节照旧有小标题分区。
                 #161(Frank「这个地方缺 title 吧」):#155 的作用域开大了 —— 该组件另有一个容器(ActModal)
                 上方只有「✨ AI 整理…」一行灰注、**没有大标题**,砍掉首节小标题后正文就裸奔了。
                 改成按容器决定:underTitle=紧跟大标题(详情页)才省略,默认照常出小标题。 */}
-            {m === 'ROLE' && underTitle ? null : <div style={{ fontWeight: 700, color: '#111827' }}>{t(key)}</div>}
+            {m === 'ROLE' && underTitle ? null : <div className="jdSecHead">{t(key)}</div>}
             {/* #125(Frank「重复」):「怎么投」整节文本直接渲成官方原帖链接——一处内容一处链接,
                 不再额外附按钮行(与底部合规来源行重复);「Click Here」类废句自身变成可点出口 */}
             {m === 'APPLY' && applyUrl ? (
@@ -162,24 +162,24 @@ export function JdFormattedView({ text, t, fallbackPay, applyUrl, applyEmail, un
                  → 原先整条裸 URL 换短链文案(URL 又长又丑还与下方投递栏重复,出处仍是同一官方原帖) */
               none
                 ? (applyEmail
-                  ? <div style={{ paddingLeft: 14, overflowWrap: 'anywhere' }}>{applyEmail}</div>
-                  : <div style={{ paddingLeft: 14 }}><a href={applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{t('act.seeOfficial')}</a></div>)
+                  ? <div className="jdIndent wrap">{applyEmail}</div>
+                  : <div className="jdIndent"><a href={applyUrl} target="_blank" rel="noreferrer" className="jdLink">{t('act.seeOfficial')}</a></div>)
                 : <>
-                    {applyEmail && <div style={{ paddingLeft: 14, overflowWrap: 'anywhere' }}>{applyEmail}</div>}
-                    {lines.map((l, i) => <div key={i} style={{ paddingLeft: 14 }}><a href={applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{l.replace(/^-\s*/, '')} ↗</a>{zh(i)}</div>)}
+                    {applyEmail && <div className="jdIndent wrap">{applyEmail}</div>}
+                    {lines.map((l, i) => <div key={i} className="jdIndent"><a href={applyUrl} target="_blank" rel="noreferrer" className="jdLink">{l.replace(/^-\s*/, '')} ↗</a>{zh(i)}</div>)}
                   </>
             ) : /* #123c(Frank「每个职位都有薪资吧」):原帖正文没写薪资但帖面字段有 → 兜底显示帖面薪资+来源灰注
                 (仍是搬运原帖信息——JB 列表字段也是雇主自报,非编造) */
             none && m === 'PAY' && fallbackPay ? (
-              <div style={{ paddingLeft: 14 }}>{fallbackPay}</div>
-            ) : none ? <div style={{ paddingLeft: 14, color: '#9ca3af' }}>{t('act.f.none')}</div>
+              <div className="jdIndent">{fallbackPay}</div>
+            ) : none ? <div className="jdIndent none">{t('act.f.none')}</div>
               : <>
                   {/* Frank 2026-07-31「整理后的怎么薪资没显示」:模型抄了福利漏了钱数(#123c 只管整节空)——
                       PAY 节一行都不含数字=视为缺薪资,帖面薪资字段照 #123c 口径顶到节首(真数不靠 LLM 抄) */}
                   {m === 'PAY' && fallbackPay && !lines.some((l) => /[$€£]\s?\d|\d[\d,]{2,}/.test(l)) &&
-                    <div style={{ paddingLeft: 14 }}>{fallbackPay}</div>}
-                  {hasBullets ? <ul style={{ margin: 0, paddingLeft: 30 }}>{lines.map((l, i) => <li key={i}>{l.replace(/^-\s*/, '')}{zh(i)}</li>)}</ul>
-                    : lines.map((l, i) => <div key={i} style={{ paddingLeft: 14 }}>{l}{zh(i)}</div>)}
+                    <div className="jdIndent">{fallbackPay}</div>}
+                  {hasBullets ? <ul className="jdBullets">{lines.map((l, i) => <li key={i}>{l.replace(/^-\s*/, '')}{zh(i)}</li>)}</ul>
+                    : lines.map((l, i) => <div key={i} className="jdIndent">{l}{zh(i)}</div>)}
                 </>}
           </div>
         )
@@ -237,22 +237,22 @@ export function JdAdvisorSection({ job, lang, plan, title, field = 'title' }: { 
        详情页包进独立 sec 卡、JD 弹框包分隔线段——间隔样式归消费方。
        标题=卡标题级(每卡必有 title);「·」杂糅退役——剩余次数改空格灰注 */
     <div>
-      <div style={{ fontSize: 13.5, fontWeight: 700, color: '#111827', marginBottom: 6 }}>
-        <IconCompass /> {title || t('advisor.tag')}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: 11.5, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}
+      <div className="jdAdvHead">
+        <IconCompass /> {title || t('advisor.tag')}{freeLeft != null ? <span className="jdAdvLeft">{t('advisor.left', { n: freeLeft })}</span> : null}
       </div>
       {status === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} />
         : status === 'limited' ? (
           /* #175:429 黄条退役 → 打码+锁行(限额内容不留空白也不占黄条,失去感靠打码传达) */
           <LockedText t={t} loggedIn={plan.loggedIn} msg={t('advisor.limit429')} ctaLabel={!plan.loggedIn ? t('advisor.limitCta') : undefined} />
         )
-        : status === 'loading' ? <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('advisor.loading')}</p>
+        : status === 'loading' ? <p className="jdAdvNote">{t('advisor.loading')}</p>
         : status === 'error' ? (
-          <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>
+          <p className="jdAdvNote">
             {t('advisor.unavail')}
-            <button onClick={() => setTick((n) => n + 1)} style={{ border: 'none', background: 'none', padding: 0, marginLeft: 8, color: '#2563eb', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>{t('ai.retry')}</button>
+            <button onClick={() => setTick((n) => n + 1)} className="jdRetry">{t('ai.retry')}</button>
           </p>
         )
-        : <div style={{ fontSize: 13.5, lineHeight: 1.7, color: '#374151' }}>{renderAI(text)}{status === 'streaming' && <span style={{ color: '#9ca3af' }}>▋</span>}</div>}
+        : <div className="jdAdvBody">{renderAI(text)}{status === 'streaming' && <span className="jdCaret">▋</span>}</div>}
     </div>
   )
 }
@@ -403,25 +403,20 @@ function ApplyBar({ job, email, emailDone, t, plan, onPage }: { job: JobRow; ema
       {/* 2026-07-25 用户:全宽大蓝钮「太吓人」→ 右对齐紧凑钮;同日「复制要点」钮撤除,只留投递单钮;
           底 padding 14px = 吸底栏自带留白(容器底 padding 已归 0,补「穿墙」) */}
       {/* 占位:fixed 抽离文档流后补回高度,免得来源行被压住 */}
-      {fixedBar && <div style={{ height: 63 }} />}
-      <div style={fixedBar
-        ? { position: 'fixed', left: 0, right: 0, bottom: 0, background: '#fff', borderTop: '1px solid #e5e7eb',
-            padding: '10px 16px calc(14px + env(safe-area-inset-bottom))', display: 'flex', gap: 8, justifyContent: 'flex-end', zIndex: 40 }
-        : { position: 'sticky', bottom: 0, background: '#fff', borderTop: '1px solid #e5e7eb', marginTop: 'auto', padding: '10px 0 14px', display: 'flex', gap: 8, justifyContent: 'flex-end', zIndex: 5 }}>
+      {fixedBar && <div className="jdBarPad" />}
+      <div className={fixedBar ? 'jdBar fixed' : 'jdBar'}>
         {/* G3 简历对照:AI 靛蓝钮(色语义:靛=AI 功能),在投递钮左侧;下架岗照给(改简历不受岗位死活影响) */}
-        <button onClick={openMatch}
-          style={{ background: '#eef2ff', color: '#4338ca', border: '1px solid #c7d2fe', borderRadius: 8, padding: '9px 14px', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+        <button onClick={openMatch} className="jdBtnMatch">
           {t('rm.btn')}
         </button>
         {/* 已下架岗(2026-08-03):主钮还写「前往投递」等于继续把人往死链上送 —— 降级成灰色的「查看官方页」。
             不直接禁掉:closed 有一部分来自「本次未见+30天」的推断(非逐帖实测),留个口子让用户自己核。 */}
         {job.status === 'closed' ? (
-          <a href={job.applyUrl} target="_blank" rel="noreferrer"
-            style={{ background: '#f3f4f6', color: '#6b7280', border: '1px solid #d1d5db', borderRadius: 8, padding: '9px 18px', fontSize: 13.5, fontWeight: 600, textDecoration: 'none' }}>
+          <a href={job.applyUrl} target="_blank" rel="noreferrer" className="jdBtnClosed">
             {t('act.seeOfficial')}
           </a>
         ) : (
-          <button onClick={onApply} style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}>
+          <button onClick={onApply} className="jdBtnApply">
             {/* applyhow 在途时用中性「投递」占位——别先显「前往投递」再闪成「邮件投递」(Frank 问「为什么有的是前往有的是邮箱」,闪变加剧困惑) */}
             {email ? t('apply.email') : emailDone ? t('apply.web') : t('apply.plain')}
           </button>
@@ -429,7 +424,7 @@ function ApplyBar({ job, email, emailDone, t, plan, onPage }: { job: JobRow; ema
       </div>
       {matchJd != null && (matchJd
         ? <ResumeMatchModal jobId={job.id} jd={matchJd} loggedIn={plan.loggedIn || authed} onClose={() => setMatchJd(null)} />
-        : <Modal onClose={() => setMatchJd(null)} size="sm"><div style={{ fontSize: 13.5, color: '#6b7280', paddingTop: 8 }}>{t('rm.noJd')}</div></Modal>)}
+        : <Modal onClose={() => setMatchJd(null)} size="sm"><div className="jdNoJd">{t('rm.noJd')}</div></Modal>)}
       {stage === 'auth' && (
         /* returnTo 一律指本岗详情页(Frank「登录没有弹出之前的 job」):列表弹框里发起的 Google 登录,
            回跳「当前页」=列表,弹框状态不在 URL 里回不来——详情页挂着 ApplyBar,续投机制自动接手 */
@@ -545,56 +540,56 @@ const hostOf = (u: string) => { try { return new URL(u).host.replace(/^www\./, '
           Google 招聘富结果把人直接送到详情页,他不经列表、看不到「状态」列,点了申请才撞过期页。
           文案 detail.closedNote 早就写好了,一直没人挂上去。弹框与整页同源,挂这一处两边都有。 */}
       {job.status === 'closed' ? (
-        <div style={{ background: '#fef3c7', border: '1px solid #fde68a', borderRadius: 8, padding: '6px 10px', margin: '2px 0 10px', fontSize: 12.5, color: '#92400e' }}>
+        <div className="jdClosed">
           {t('detail.closedNote')}
         </div>
       ) : null}
       {/* 顶部钮行(2026-07-21 Frank「参考类别」):中文对照(英文界面不出;整理版在屏才可翻)+
           AI 速读(点了才生成,不点不烧)+ 打开完整页(仅弹框;页面自己就是完整页) */}
-      <div style={{ display: 'flex', gap: 8, margin: '2px 0 12px', flexWrap: 'wrap' }}>
+      <div className="jdActs">
         {status !== 'loading' && lang !== 'en' && fmt && !showOrig ? (
-          <button onClick={toggleTrans} disabled={transStatus === 'loading'} style={{ ...PILL_BTN, opacity: transStatus === 'loading' ? 0.6 : 1 }}>
+          <button onClick={toggleTrans} disabled={transStatus === 'loading'} className={transStatus === 'loading' ? 'jdPill busy' : 'jdPill'} style={PILL_BTN}>
             {transStatus === 'loading' ? t('cat.translating') : transStatus === 'error' ? t('cat.transErr') : showTrans ? t('cat.hideZh') : t('cat.showZh')}
           </button>
         ) : null}
         {/* AI 速读=常驻折叠开关(Frank 2026-07-22「按钮怎么没了」「可以折叠的」):点开点收都是它,
             不再点一次就消失;内容 jdAdvCache 缓存,收起再开秒回不重烧额度。▾=展开 ▸=收起 */}
         {status !== 'loading' && <button onClick={() => { if (!aiOn) track('ai-read-jd'); setAiOn((v) => !v) }} style={{ ...PILL_BTN, ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>}
-        {inModal ? <a href={`/jobs/${job.id}`} target="_blank" rel="noreferrer" style={{ ...PILL_BTN, textDecoration: 'none', display: 'inline-block' }}>{t('detail.openFull')} ↗</a> : null}
+        {inModal ? <a href={`/jobs/${job.id}`} target="_blank" rel="noreferrer" className="jdPill link" style={PILL_BTN}>{t('detail.openFull')} ↗</a> : null}
       </div>
       {/* AI 速读卡(点了才出;置顶=点完不用往下翻,与分类弹框同规范;jdRead=纯 JD 速读不带移民解读) */}
       {aiOn && (
-        <div style={MODAL_CARD}>
+        <div style={CARD_MD}>
           <JdAdvisorSection job={job} lang={lang} plan={plan} title={t('cat.aiRead')} field="jdRead" />
         </div>
       )}
-      {status === 'loading' ? <p style={{ color: '#9ca3af' }}>{t('act.loadingText')}</p>
+      {status === 'loading' ? <p className="jdMuted">{t('act.loadingText')}</p>
         : status === 'limited' ? (   /* #201:JD 已免费;429=宽松防滥用闸偶发,素文案不引流 Pro */
-          <p style={{ color: '#9ca3af', margin: '4px 0' }}>{t('jd.busy')}</p>
+          <p className="jdMuted m4">{t('jd.busy')}</p>
         )
         : status === 'empty' ? (
           <div>
-            <p style={{ color: '#9ca3af', margin: '4px 0 10px' }}>{blockedSrc(job) ? t('act.noTextBlocked', { src: blockedSrc(job) }) : t('act.noText')}</p>
-            {job.applyUrl && <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ display: 'inline-block', background: '#2563eb', color: '#fff', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>{t('act.seeOfficial')}</a>}
+            <p className="jdMuted m4b">{blockedSrc(job) ? t('act.noTextBlocked', { src: blockedSrc(job) }) : t('act.noText')}</p>
+            {job.applyUrl && <a href={job.applyUrl} target="_blank" rel="noreferrer" className="jdEmptyBtn">{t('act.seeOfficial')}</a>}
           </div>
         )
           : (
             <>
               {/* J3:整理版默认在上,原文一键切换;生成中/没有整理版 → 原文照旧 */}
               {fmt ? (
-                <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 6 }} title={t('act.aiNote')}>
+                <div className="jdAiNote" title={t('act.aiNote')}>
                   ✨ {t('act.ai')}
-                  <button onClick={() => setShowOrig((o) => !o)} style={{ border: 'none', background: 'none', padding: 0, marginLeft: 8, color: '#2563eb', cursor: 'pointer', fontSize: 11.5, fontWeight: 600 }}>{showOrig ? t('act.seeFmt') : t('act.seeOrig')}</button>
+                  <button onClick={() => setShowOrig((o) => !o)} className="jdAiBtn">{showOrig ? t('act.seeFmt') : t('act.seeOrig')}</button>
                 </div>
               ) : fmt === undefined ? (
-                <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 6 }}>✨ {t('act.aiWorking')}</div>
+                <div className="jdAiNote">✨ {t('act.aiWorking')}</div>
               ) : fmtWhy === 'notext' ? null : (
                 /* fmt=null:按 fmtWhy 分说——额度用完(重试无用,不给钮)/生成失败(可重试);无正文不出失败行(空态自己解释) */
-                <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 6 }}>
+                <div className="jdAiNote">
                   ✨ {fmtWhy === 'quota' ? t('act.aiQuota') : t('act.aiFail')}
-                  {fmtWhy === 'fail' && <button onClick={() => loadFmt()} style={{ border: 'none', background: 'none', padding: 0, marginLeft: 8, color: '#2563eb', cursor: 'pointer', fontSize: 11.5, fontWeight: 600 }}>{t('ai.retry')}</button>}
+                  {fmtWhy === 'fail' && <button onClick={() => loadFmt()} className="jdAiBtn">{t('ai.retry')}</button>}
                   {/* Frank 走查#20:额度用完时,匿名用户补一句登录提额说明(登录态额度更高;登录入口在页头) */}
-                  {fmtWhy === 'quota' && !plan.loggedIn && <span style={{ marginLeft: 8 }}>{t('act.aiQuotaLogin')}</span>}
+                  {fmtWhy === 'quota' && !plan.loggedIn && <span className="jdQuotaLogin">{t('act.aiQuotaLogin')}</span>}
                 </div>
               )}
               {fmt && !showOrig ? <JdFormattedView text={fmt} t={t} fallbackPay={job.salaryText || job.salary || undefined} applyUrl={job.applyUrl || undefined} applyEmail={applyEmail || undefined} trans={showTrans && trans ? trans : undefined} /> : <JdTextView text={text} max={4000} />}
@@ -603,10 +598,10 @@ const hostOf = (u: string) => { try { return new URL(u).host.replace(/^www\./, '
       {/* 底部来源行(republish 合规)只在整理版**没渲出**时兜底(#167③;2026-07-21 Frank
           「去掉 source 链接」)——整理版在屏时「怎么投」整节已链官方原帖,出处不丢 */}
       {job.applyUrl && !(status === 'done' && fmt && !showOrig) && status !== 'empty' && (
-        <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f3f4f6', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
+        <div className="jdSrc">
           {/* #239(第 30 轮体检):原来整条 URL 直铺,375 上折两行又长又丑(#110 只治了详情页「怎么投」)。
               改显**域名**——出处照样看得见、点得开,合规不受影响,行内一行放得下。 */}
-          {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{hostOf(job.applyUrl)} ↗</a>
+          {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" className="jdSrcLink">{hostOf(job.applyUrl)} ↗</a>
         </div>
       )}
       {/* E9-04 投递栏:正文之后常驻(弹框与页面同渲;sticky 吸底)。
@@ -621,9 +616,9 @@ const hostOf = (u: string) => { try { return new URL(u).host.replace(/^www\./, '
 // 纯文本渲染,模型写的 **加粗** 不会变粗只碍眼;流式期间跨帧的孤 * 下一帧凑齐即消,无需处理边界)
 export function renderAI(text: string): React.ReactNode {
   return text.replace(/\*{2,}/g, '').split(/(【[^】]+】)/g).map((seg, i) => {
-    if (/^【[^】]+】$/.test(seg)) return <strong key={i} style={{ display: 'block', marginTop: i ? 10 : 0, marginBottom: 2, color: '#111827' }}>{seg}</strong>
+    if (/^【[^】]+】$/.test(seg)) return <strong key={i} className="jdAiH" style={{ marginTop: i ? 10 : 0 }}>{seg}</strong>
     const body = seg.replace(/^\n+/, '').replace(/\n+$/, '').replace(/\n{3,}/g, '\n\n')  // 去段首尾空行+压多余空行,免大空隙
-    return body ? <span key={i} style={{ whiteSpace: 'pre-wrap' }}>{body}</span> : null
+    return body ? <span key={i} className="jdAiP">{body}</span> : null
   })
 }
 

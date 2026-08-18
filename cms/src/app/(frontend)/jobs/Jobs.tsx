@@ -3,7 +3,7 @@
 //
 // 2026-08-17 拆分:本文件原 4446 行,里头塞着 20+ 个与职位板无关的渲染件(公司卡、JD 解析、
 // 省提名事实块、顾问弹框…),/jobs/[id] 与 /companies/[slug] 反过来从这儿 import 身体渲染器。
-// 现按关注点各归其位:./types(形状)、./Facts(事实原语)、./Pnp、./Company、./Jd、./Advisor、
+// 现按关注点各归其位:./types(形状)、./Pnp、./Company、./Jd、./Advisor、
 // ./Lock,地点/来源/NOC 三组工具下沉 @/lib。本文件只剩「这一页」自己的事。
 import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
@@ -91,7 +91,7 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
   }
   // Pro 钮不进 header(#65,Frank:「没有意义」)——升级入口=横幅/升级卡/用户菜单/定价页,四处都在
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+    <span className="jtAcct">
       {plan.loggedIn ? (
         // 用户按钮+下拉(2026-07-16 拍板)。菜单本体 2026-08-15 抽成全站共用的 AccountMenu ——
         // 二级页头像先前是直达 /account,同一个头像两种行为(Frank 实拍),收敛成一个组件
@@ -441,10 +441,8 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
           boxShadow: `inset -1px 0 0 ${line}` + (key === lastFrozen ? ', 3px 0 5px -3px rgba(0,0,0,.18)' : '') }
       : {}
   // ── 单元格排版:跟着列宽走,不再另设最小宽(最小宽会把表撑出容器 = 横滚,Frank「不需要滚动条」)
-  const cellPad = '6px'   // 格距 12→6:省下的宽度全给文本列,「Saskatchewan」不再被拦腰断词
-  // 固定布局下长英文值(NS Critical Vacancies / Occupation not accepted)会溢出压到隔壁列:
-  // 格内容一律不许越界,放不下的词才断行(anywhere 会把 $3000/2wk 断成 2w/k)。
-  const cellClip: React.CSSProperties = { overflow: 'hidden', overflowWrap: 'break-word' }
+  //    格距(7px 6px)、越界裁剪、断词规则都在 main.css 的 .jtTd —— 格子里唯一还内联的是
+  //    cellOf 返回的逐格判定色与冻结列的 sticky 偏移,那两样是算出来的,不是样式。
   // 这几列的值是**短语**不是原子值(AIP「Occupation not accepted」、LMIA、资格、匹配),
   // 中文短、英文长 —— 让它们在本列内换行,别再挤隔壁。
   const WRAP_COLS = new Set<ColKey>(['aip', 'pilot', 'lmia', 'eligibility', 'match'])
@@ -533,43 +531,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
 
 
   return (
-    <div style={{ background: '#fff', color: '#1f2937', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column' }}>
-      <style>{`.jcellAct:hover{background:#eff6ff !important}
-        .colResize:hover{background:#93c5fd}
-        .colResize:active{background:#3b82f6}
-        .jtCards{display:none}
-        .jtOnlyNarrow{display:none}
-        /* #268:桌面态原样吃外层 PnpDrawsBlock 4 列网格(见下 @media 覆写) */
-        .pnpDrawRow{display:contents}
-        @media (max-width:640px){
-          /* #212(第 26 轮体检续):筛选行下拉/按钮 38px 手机点不稳,统一 40(桌面维持 38);
-             卡上星标 13×16、「显示更多」29 高同理——热区撑到 40,图标字号不动 */
-          .jtCtl select,.jtCtl button,.jtCtl input{min-height:40px}
-          .jtStar{min-width:40px;min-height:40px;display:inline-flex;align-items:center;justify-content:center;margin:-8px -8px -8px 0}
-          /* 星标热区靠负 margin 抵消,视觉不变;其余小靶一律走全局 .tapPad(伪元素扩热区) */
-          /* 搜索框手机端整行独占(顶栏搜索带已退役,搜索归筛选区首格) */
-          .jtSearch{flex:1 0 100% !important;height:40px}
-          .jtHideNarrow{display:none !important}
-          /* 匹配切换手机端走窄屏入口条(jtOnlyNarrow),筛选行那颗藏起来,两处不同时出现 */
-          .jtWideOnly{display:none !important}
-          .jtTableWrap{display:none !important}
-          .jtCards{display:flex}
-          .jtOnlyNarrow{display:flex}
-          /* #268(375 弹框「最近抽选」卡流名截断):行改两层——流名整行(不截断,自然折行),
-             日期/分数/邀请数落次行灰字。grid-area 重排,不依赖 DOM 顺序(桌面顺序仍是 date/stream/score/inv,
-             靠 display:contents 吃外层网格,两处互不干扰) */
-          .pnpDrawRow{display:grid;grid-column:1/-1;grid-template-columns:auto auto 1fr;grid-template-areas:"stream stream stream" "date score inv";column-gap:8px;row-gap:2px;padding:6px 10px}
-          .pnpDrawRow .pdStream{grid-area:stream;white-space:normal !important;overflow:visible !important;text-overflow:clip !important;overflow-wrap:break-word;padding-left:0 !important}
-          .pnpDrawRow .pdDate{grid-area:date;padding-left:0 !important;text-align:left !important}
-          .pnpDrawRow .pdScore{grid-area:score;text-align:left !important}
-          .pnpDrawRow .pdInv{grid-area:inv;padding-right:0 !important;text-align:left !important}
-        }
-        @media (max-width:1350px){.jtTagline{display:none}}
-        /* 量自然宽用(见 measureNatural):整表临时不折行、按内容撑开,量完立刻摘掉 —— 只存在一帧,不进画面 */
-        .jtMeasure td,.jtMeasure th{white-space:nowrap !important;overflow:visible !important}
-        /* 量宽时把列宽拖拽条藏掉:它是 position:absolute;right:0,量内容的 Range 会把它算进去,
-           于是每个表头都被量成「整列宽」(实测 vs 中位表头量出 132px,真实文字只要 56px) */
-        .jtMeasure .colResize{display:none !important}`}</style>
+    <div className="jbPage">
       {/* 顶栏=全站统一 Header(#65 header 合一,2026-07-18 Frank 拍板;内联头退役,1320 头轨全站一致)。
           /jobs 特有件走 props:matchButton 切换态 + 完整 AccountArea(plan 下拉/弹框)。
           差异认账:未登录点「我的账户」由弹框改为 /account 302 回 /?login=1(终点同为登录框)。
@@ -583,7 +545,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
           E8-07 C 顶栏搜索带全站退役,搜索回到筛选区第一格(banner 之下),手机整行独占 */}
       {/* 榜单/统计弹窗已退役(2026-07-11 用户拍板顶栏改跳转页面);/stats 页「看职位」?prov=&broad= 回流照旧 */}
       {/* 价值横幅退役(#65 收尾,Frank:「不需要两个蓝条」)——建档 CTA 并进下方 Jobs 页头右槽 */}
-      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1rem 1.25rem 1.5rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
+      <div className="jbMain">
         {/* 页头=Banner(#65/#66 五模块统一浅色带,职位板=蓝)。标题数字口径不变:
             库内真实总数(第 15 轮 #34)/筛选匹配态只报命中数(第 17 轮 #42);证言行(第 5 轮 #14)作 sub */}
         <Banner module="jobs" title="Jobs" images={BANNER_IMGS.jobs}
@@ -593,7 +555,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
                 也就是说「N 家雇主有外劳雇佣记录」这条**手机用户从来没看见过**,而手机是主要流量。
                 横幅手机高只有 104px,硬塞挤爆 → 窄屏整条隐藏(与数字胶囊 .pbStat 同一条媒体查询),
                 只留「N 个职位」;证言是说服性内容,在首屏抢不过职位数。 */}
-            {proof && (proof.named > 0 || proof.lmia > 0) && <span className="pbProof" style={{ marginLeft: 10 }}>{t('subtitle.proof', { named: proof.named, lmia: proof.lmia })}</span>}
+            {proof && (proof.named > 0 || proof.lmia > 0) && <span className="pbProof">{t('subtitle.proof', { named: proof.named, lmia: proof.lmia })}</span>}
           </>}
           />
         {/* 横幅右槽「免费建档案,看每份工作对你的匹配度」CTA 已删(2026-08-02 Frank:「删掉」)。
@@ -605,13 +567,13 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
 
         {/* 三问细带已移出职位板(2026-07-31 Frank「我觉得放在这不合适,应该放到我的档案里面」):
             答案的家是档案页 —— 职位板只管找工作,不再在列表上方常驻一条「你上次填了什么」。 */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '1rem 0' }}>
+        <div className="jbFilters">
           {/* ═══ #59 筛选区重设计(2026-07-18 效果图过目后 Frank「可以」):5 行 label+下拉收成
               「常用一行(搜索/省/大类;PNP/年薪 08-16 下沉)+ 更多筛选折叠(激活计数徽标)」;07-07 行序拍板与
               窄屏抽屉(jtDrawerToggle)一并退役——一行+折叠对窄屏同样成立,靠 flexWrap 自然换行。
               右端=更新时间+字段钮(#56 拍板延续)。市/区、中/小类仍是省/大类的联动下级,只在折叠区出现。 ═══ */}
-          <div className="jtCtl" style={filtRow}>
-            <input className="jtSearch" placeholder={t('search.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} enterKeyHint="search" style={{ ...ctrl, flex: '0 1 260px', minWidth: 160 }} />
+          <div className="jtCtl">
+            <input className="jtSearch" placeholder={t('search.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} enterKeyHint="search" style={ctrl} />
             {/* 职业胶囊已移到下方「已选」行(2026-08-16 Frank「这个已经筛选的条件不应该放到这里吧」) */}
             {/* 2026-08-16 Frank「这个没有完全国际化」:省下拉的选项一直是英文全名(筛选值就是它,深链/保存的
                 筛选都靠它),中文界面看着半中半英 —— 挂上既有的 provName 显示层,**值不动**:labelOf 只管显示。
@@ -623,35 +585,35 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
                 常用一行只留 搜索/省/大类 + 更多筛选;选了什么不会藏起来 —— foldActive 徽标把它们算进计数 */}
             {/* P1 换装:secondary 型(激活态浅蓝底描边蓝);高度 38 与同行下拉对齐 */}
             <Button kind="secondary" onClick={() => setFDrawer((o) => !o)}
-              style={{ height: 38, display: 'inline-flex', alignItems: 'center', gap: 5, color: '#374151', ...(fDrawer || foldActive ? { background: '#eff6ff', borderColor: '#2563eb', color: '#1d4ed8' } : {}) }}>
+              className={'jtBtn38 row' + (fDrawer || foldActive ? ' on' : '')}>
               {t('filter.more')}
-              {foldActive > 0 && <span style={{ background: '#2563eb', color: '#fff', borderRadius: 999, fontSize: 10.5, padding: '0 6px', lineHeight: '15px' }}>{foldActive}</span>}
-              <span style={{ fontSize: 10, color: '#9ca3af' }}>{fDrawer ? '▲' : '▼'}</span>
+              {foldActive > 0 && <span className="jtFoldN">{foldActive}</span>}
+              <span className="jtFoldCaret">{fDrawer ? '▲' : '▼'}</span>
             </Button>
             {/* 我的匹配(2026-08-16 顶栏改「职位」后):切换落回板内 —— 它是这块板的一个视图,不是一个页面。
                 桌面在这条筛选行,手机走下面那条窄屏入口条(jtOnlyNarrow),两处不同时出现 */}
-            <Button kind="secondary" className="jtWideOnly" onClick={toggleMatchView}
-              style={{ height: 38, ...(matchView ? { background: '#eff6ff', borderColor: '#2563eb', color: '#1d4ed8', fontWeight: 600 } : { color: '#374151' }) }}>
+            <Button kind="secondary" onClick={toggleMatchView}
+              className={'jtWideOnly jtBtn38' + (matchView ? ' on bold' : '')}>
               {matchView ? t('mv.exit') : t('mv.entry')}
             </Button>
             {/* 「清除筛选」「保存此筛选」已移到下方「已选」行:它们是对**这套条件**的操作,和输入控件不同类 */}
             {/* 更新时间 + 字段(10):不是筛选,但 2026-08-16 PNP/年薪 下沉后这一行腾出了地方 ——
                 Frank「这个能放到一行吗」→ 回到本行右端(marginLeft:auto 顶到最右),不再单占一条。
                 #202:更新时间不进 jtHideNarrow,手机端(卡片视图)随 flexWrap 落到下方仍看得见心跳。 */}
-            {updatedAt && <span style={{ color: '#9ca3af', fontSize: 12, whiteSpace: 'nowrap', marginLeft: 'auto' }}>{t('updated', { t: fmtLocal(updatedAt) })}</span>}
-            <div ref={colRef} className="jtHideNarrow" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Button kind="secondary" onClick={() => setColOpen((o) => !o)} style={{ height: 38, display: 'inline-flex', alignItems: 'center', color: '#374151' }}><IconSettings style={{ marginRight: 5 }} />{t('fields', { n: shown.length })}</Button>
+            {updatedAt && <span className="jtUpdated">{t('updated', { t: fmtLocal(updatedAt) })}</span>}
+            <div ref={colRef} className="jtHideNarrow jtColWrap">
+              <Button kind="secondary" onClick={() => setColOpen((o) => !o)} className="jtBtn38 row"><IconSettings style={{ marginRight: 5 }} />{t('fields', { n: shown.length })}</Button>
               {colOpen && (
-                <div style={colPanel}>
-                  <div style={{ display: 'flex', gap: 6, padding: '2px 4px 6px', borderBottom: '1px solid #f3f4f6', marginBottom: 4 }}>
-                    <button onClick={mainCols} style={{ ...colBtn, fontWeight: 600, color: '#2563eb', borderColor: '#bfdbfe' }}>{t('fields.main')}</button>
-                    <button onClick={selectAllCols} style={colBtn}>{t('fields.all')}</button>
-                    <button onClick={invertCols} style={colBtn}>{t('fields.invert')}</button>
-                    {cw.hasManual && <button onClick={cw.reset} style={colBtn}>{t('fields.resetW')}</button>}
+                <div className="jtColPanel">
+                  <div className="jtColHead">
+                    <button onClick={mainCols} className="jtColBtn main">{t('fields.main')}</button>
+                    <button onClick={selectAllCols} className="jtColBtn">{t('fields.all')}</button>
+                    <button onClick={invertCols} className="jtColBtn">{t('fields.invert')}</button>
+                    {cw.hasManual && <button onClick={cw.reset} className="jtColBtn">{t('fields.resetW')}</button>}
                   </div>
                   {/* match 列是「我的匹配」视图专属(E5-05),勾了也不出列——不进选择器(第 2 轮 #11) */}
                   {COLUMNS.filter((c) => c.key !== 'match').map((c) => (
-                    <label key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 6px', fontSize: 13, color: c.always ? '#9ca3af' : '#1f2937', cursor: c.always ? 'default' : 'pointer' }}>
+                    <label key={c.key} className={c.always ? 'jtColOpt fixed' : 'jtColOpt'}>
                       <input type="checkbox" checked={c.always || visible.includes(c.key)} disabled={c.always} onChange={() => toggleCol(c.key)} />
                       {t('col.' + c.key)}{c.always ? t('fields.fixed') : ''}
                     </label>
@@ -662,20 +624,20 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
           </div>
           {/* #59 折叠区:低频筛选(市/区、中/小类、AIP/类型/对比中位/直发);state 全保留=老保存筛选照常生效 */}
           {fDrawer && (
-            <div style={{ border: '1px dashed #d1d5db', borderRadius: 8, padding: '10px 12px', background: '#fafafa', display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div className="jtCtl" style={filtRow}>
-                <span style={filtLabel}>{t('filter.geo')}</span>
+            <div className="jtFold">
+              <div className="jtCtl">
+                <span className="jtFiltLabel">{t('filter.geo')}</span>
                 <Sel value={fCity} onChange={(v) => { setFCity(v); setFDistrict('') }} opts={cityOpts} all={t('all.city')} />
                 <Sel value={fDistrict} onChange={setFDistrict} opts={distOpts} all={t('all.district')} />
               </div>
-              <div className="jtCtl" style={filtRow}>
-                <span style={filtLabel}>{t('filter.cat')}</span>
+              <div className="jtCtl">
+                <span className="jtFiltLabel">{t('filter.cat')}</span>
                 <Sel value={fMid} onChange={(v) => { setFMid(v); setFFine('') }} opts={midOpts} all={t('all.mid')} labelOf={catLabel} />
                 <Sel value={fFine} onChange={setFFine} opts={fineOpts} all={t('all.fine')} labelOf={catLabel} />
               </div>
               {/* gig=兼职∪casual∪seasonal(E6-06);未标注岗选类型自然不命中,与「未分类」同一诚实口径 */}
-              <div className="jtCtl" style={filtRow}>
-                <span style={filtLabel}>{t('filter.other')}</span>
+              <div className="jtCtl">
+                <span className="jtFiltLabel">{t('filter.other')}</span>
                 {/* PNP / 年薪:原在常用一行,2026-08-16 下沉至此(方案 B);年薪排到「对比中位」旁,两条薪资维度同处 */}
                 <Sel value={fPnp} onChange={setFPnp} opts={['yes', 'no']} all={t('all.pnp')} labelOf={(v) => t('opt.' + v)} />
                 <Sel value={fAip} onChange={setFAip} opts={['yes', 'no']} all={t('all.aip')} labelOf={(v) => t('opt.' + v)} />
@@ -684,11 +646,11 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
                 <Sel value={fEmp} onChange={setFEmp} opts={['full', 'part', 'gig']} all={t('all.emp')} labelOf={(v) => t('emp.' + v)} />
                 <Sel value={fSal} onChange={setFSal} opts={['ge100', '80', '60', 'u60']} all={t('all.sal')} labelOf={(v) => t('sal.' + v)} />
                 <Sel value={fVs} onChange={setFVs} opts={['above', 'above20', 'below']} all={t('all.vs')} labelOf={(v) => t('vs.' + v)} />
-                <label style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: directOnly ? '#eef2ff' : '#fff', whiteSpace: 'nowrap' }} title={t('directOnly.tip')}>
+                <label className={directOnly ? 'jtCheck on' : 'jtCheck'} style={ctrl} title={t('directOnly.tip')}>
                   <input type="checkbox" checked={directOnly} onChange={(e) => setDirectOnly(e.target.checked)} />{t('directOnly')}
                 </label>
                 {/* GAP1③:排除 JD 明确不担保/须 PR 的岗(红旗=数据层检测;未检出=通过,非担保保证) */}
-                <label style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: fElig ? '#eef2ff' : '#fff', whiteSpace: 'nowrap' }} title={t('eligOnly.tip')}>
+                <label className={fElig ? 'jtCheck on' : 'jtCheck'} style={ctrl} title={t('eligOnly.tip')}>
                   <input type="checkbox" checked={fElig === 'ok'} onChange={(e) => setFElig(e.target.checked ? 'ok' : '')} />{t('eligOnly')}
                 </label>
               </div>
@@ -700,18 +662,18 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
               规矩:**只放没有自己控件的条件** —— 省/大类的当前值在各自下拉上写着,不在这儿复读一遍
               (同屏说两遍「安大略省」是噪音)。今天归这行的只有职业(NOC)一种,将来的隐形筛选也进这里。 */}
           {anyFilter && (
-            <div className="jtCtl" style={filtRow}>
-              {fNoc && <span style={filtLabel}>{t('filter.picked')}</span>}
+            <div className="jtCtl">
+              {fNoc && <span className="jtFiltLabel">{t('filter.picked')}</span>}
               {/* 职业胶囊:值是 NOC 码(精确),显示的是人话名(代码不裸奔);✕ 撤掉本条 */}
               {fNoc && (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 28, padding: '0 10px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', fontSize: 12.5, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                <span className="jtNocPill">
                   {fNocLabel}
                   <button onClick={() => setFNoc('')} aria-label={t('clear')}
-                    style={{ border: 'none', background: 'none', color: '#60a5fa', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
+                    className="jtNocX">×</button>
                 </span>
               )}
-              <span style={{ marginLeft: 'auto', display: 'inline-flex', gap: 8 }}>
-                <button onClick={clearAll} style={{ ...pickedBtn, color: '#b91c1c' }}>{t('clear')}</button>
+              <span className="jtPickedAct">
+                <button onClick={clearAll} className="jtPicked danger">{t('clear')}</button>
                 {/* 保存此筛选(E5-03;D1 2026-07-19 降免费):登录即可存,免费 2/Pro 5——免费触上限才弹升级。
                     2026-08-16 Frank「保存此筛选没有必要吧」→ 留:它是「简化操作才收费」那条定价原则的落点
                     (下次一键回到这套条件),但它是对**条件**的操作,归这一行,不再占输入行的地方。 */}
@@ -732,7 +694,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
                       if (limitHit && !plan.isPro) setUpsell('ss')  // 免费位(2)用满 → 升级框「Pro 可存 5 个」
                       else alert(t('ss.err'))
                     }}
-                    style={{ ...pickedBtn, background: '#eef2ff', color: '#3730a3', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    className="jtPicked save">
                     <IconSave /> {t('ss.save')}
                   </button>
                 )}
@@ -745,55 +707,52 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
             手机上它折进侧滑抽屉首屏不可见,注册 teaser 卖匹配入口却要拉抽屉。CSS 断点显隐(SSR 安全零闪),
             行为=既有 toggleMatchView 三态;匹配视图激活时让位给下方状态条 */}
         {!matchView && (
-          <button className="jtOnlyNarrow" onClick={toggleMatchView}
-            style={{ width: '100%', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', borderRadius: 9, padding: '9px 0', fontSize: 13.5, fontWeight: 600, marginBottom: 8, cursor: 'pointer' }}>
+          <button className="jtOnlyNarrow jtMvEntry" onClick={toggleMatchView}>
             <IconTarget /> {t('mv.entry')}
           </button>
         )}
         {/* 匹配视图状态条(E5-05):说明口径 + 退出;免费限额提示(D1=B) */}
         {matchView && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', background: '#eff6ff', border: '1px solid #dbeafe', borderRadius: 8, padding: '7px 12px', marginBottom: 8, fontSize: 12.5 }}>
+          <div className="jtMvBar">
             {/* 只报「高」(第 6 轮 #23):中匹配门槛宽、数字动辄数千,报出来像灌水,反而稀释高匹配的可信度 */}
             {/* 匹配全放开(Frank 2026-07-21):不再报「免费仅前 N」封顶——只留「今日 N 个高匹配」纯信息 */}
-            <span style={{ color: '#1e40af', flex: 1, minWidth: 200 }}><IconTarget /> {t('mv.on')}{matchTotals && matchTotals.high > 0 ? ` · ${t('mv.today', { h: matchTotals.high })}` : ''}</span>
-            <button onClick={toggleMatchView} style={{ border: 'none', background: 'none', padding: 0, color: '#6b7280', cursor: 'pointer', fontSize: 12.5 }}>{t('mv.exit')} ×</button>
+            <span className="jtMvText"><IconTarget /> {t('mv.on')}{matchTotals && matchTotals.high > 0 ? ` · ${t('mv.today', { h: matchTotals.high })}` : ''}</span>
+            <button onClick={toggleMatchView} className="jtMvExit">{t('mv.exit')} ×</button>
           </div>
         )}
         {/* 字段选择+更新时间在筛选行右端(2026-07-11 拍板「这两个放到一行」,08-16 复核仍成立) */}
         {/* #83(Frank「点我的匹配先跳医疗再跳科技」):整表换血(第 0 页在拉)期间旧行原样挂着零提示,
             视觉像跳两次——换血中表格/卡片半透明+顶部「更新中」条,数据回来再恢复 */}
         {loading && page === 0 && (
-          <div style={{ fontSize: 12.5, color: '#2563eb', padding: '4px 2px', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ width: 10, height: 10, border: '2px solid #bfdbfe', borderTopColor: '#2563eb', borderRadius: '50%', display: 'inline-block', animation: 'jtspin .7s linear infinite' }} />
+          <div className="jtLoading">
+            <span className="jtSpin" />
             {t('loading')}
-            <style>{`@keyframes jtspin{to{transform:rotate(360deg)}}`}</style>
           </div>
         )}
-        <div className="jtTableWrap" style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto', ...(loading && page === 0 && { opacity: 0.45, pointerEvents: 'none', transition: 'opacity .2s' }) }}>
-          <table style={{ width: cw.tableWidth, minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: cw.ready ? 'fixed' : 'auto' }}>
+        <div className={'jtTableWrap' + (loading && page === 0 ? ' dim' : '')}>
+          <table className={cw.ready ? 'jtTable fixed' : 'jtTable'} style={{ width: cw.tableWidth }}>
             {/* 列宽全部来自 useColWidths(表头宽优先→内容宽其次→和恒等于容器宽);还没量到时不下 colgroup,
                 让浏览器 auto 布局顶一帧,量完(绘制前)即换成算好的像素 */}
             {cw.ready && <colgroup>{shown.map((c) => <col key={c.key} style={{ width: cw.width(c.key) }} />)}</colgroup>}
             <thead>
-              <tr ref={headRowRef} style={{ textAlign: 'left', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+              <tr ref={headRowRef} className="jtHeadRow">
                 {shown.map((c, idx) => {
                   const active = sort.key === c.key
                   const isLast = idx === shown.length - 1
                   const handle = (  // 列右缘竖线:拖动钉死本列宽(其余列照同一套规则重分)/ 双击该列回归自动
-                    <span className="colResize" onMouseDown={(e) => cw.startResize(e, c.key)} onClick={(e) => e.stopPropagation()} onDoubleClick={(e) => { e.stopPropagation(); cw.autoFit(c.key) }} title={t('resize.tip')}
-                      style={{ position: 'absolute', top: 0, right: 0, width: 13, height: '100%', cursor: 'col-resize', zIndex: 2 }} />
+                    <span className="colResize" onMouseDown={(e) => cw.startResize(e, c.key)} onClick={(e) => e.stopPropagation()} onDoubleClick={(e) => { e.stopPropagation(); cw.autoFit(c.key) }} title={t('resize.tip')} />
                   )
                   if (c.key === 'actions') return (  // 操作列:普通末列,不排序
-                    <th key={c.key} style={{ padding: `8px ${cellPad}`, color: '#374151', fontWeight: 600, whiteSpace: 'nowrap', userSelect: 'none', position: 'relative' }}>
+                    <th key={c.key} className="jtTh">
                       {t('col.actions')}{handle}
                     </th>
                   )
                   // 年薪列表头收短成「年薪」后,折算口径挂表头 title(悬停才出,不占版面)
                   return (
                     <th key={c.key} onClick={() => toggleSort(c.key)} title={c.key === 'salaryYr' ? t('fact.salYrNote') : t('th.tip')}
-                      style={{ padding: `8px ${cellPad}`, color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb', overflow: 'hidden', ...frozenStyle(c.key, '#f9fafb', '#e5e7eb') }}>{/* Frank 走查#23:表头完全显示——去省略截断;#23b(2026-07-26「header 的宽度不要变」):一律不折行,
+                      className={active ? 'jtTh sortable on' : 'jtTh sortable'} style={frozenStyle(c.key, '#f9fafb', '#e5e7eb')}>{/* Frank 走查#23:表头完全显示——去省略截断;#23b(2026-07-26「header 的宽度不要变」):一律不折行,
                           表头挤不下就把标签本身收短(如「年薪(折算)」→「年薪」,折算口径挂 title),不靠换行救 */}
-                      {t('col.' + c.key)}<span style={{ color: active ? '#2563eb' : '#d1d5db', fontSize: 11 }}>{active ? (sort.dir === 'desc' ? ' ▼' : ' ▲') : ' ↕'}</span>{handle}
+                      {t('col.' + c.key)}<span className={active ? 'jtSortHint on' : 'jtSortHint'}>{active ? (sort.dir === 'desc' ? ' ▼' : ' ▲') : ' ↕'}</span>{handle}
                     </th>
                   )
                 })}
@@ -804,21 +763,21 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
                   ——自相矛盾。换血中改渲骨架行,数据回来再出真行。 */}
               {matchView && loading && page === 0
                 ? Array.from({ length: 8 }, (_, si) => (
-                    <tr key={'sk' + si}>{shown.map((c) => <td key={c.key} style={{ ...td, borderRight: '1px solid #f3f4f6' }}><span style={{ display: 'block', height: 12, borderRadius: 4, background: '#f1f3f5' }} /></td>)}</tr>
+                    <tr key={'sk' + si}>{shown.map((c) => <td key={c.key} className="jtSkelTd"><span className="jtSkelBar" /></td>)}</tr>
                   ))
                 : rows.map((j, i) => {
                 // 地点拆解与大分类配色随单元格渲染搬进 ./Table 的 cellOf(它俩只有格子在用)
                 const open = (field: ColKey, title: string) => openField(field, j, title)
                 return (
-                  <tr key={j.id} className="jrow" style={{ borderBottom: '1px solid #f3f4f6', background: i % 2 ? '#fcfcfd' : '#fff' }}>
+                  <tr key={j.id} className={i % 2 ? 'jrow alt' : 'jrow'}>
                     {shown.map((c, idx) => {
                       const k = c.key
                       const rowBg = i % 2 ? '#fcfcfd' : '#fff'
                       if (k === 'actions') return (  // 操作列:只剩收藏(2026-07-26:「移民通道」钮下架,内容归各字段)
-                        <td key={k} style={{ ...td, padding: `7px ${cellPad}` }}>
-                          <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                        <td key={k} className="jtTd">
+                          <span className="jtActCell">
                             <button onClick={(e) => { e.stopPropagation(); toggleSave(j) }}
-                              style={{ ...actBtn, whiteSpace: 'nowrap', ...(saved[String(j.id)] ? { color: '#b45309', borderColor: '#fde68a', background: '#fffbeb' } : {}) }}>
+                              className={saved[String(j.id)] ? 'jtActBtn on' : 'jtActBtn'}>
                               {saved[String(j.id)] ? t('sj.saved') : t('sj.save')}
                             </button>
                             {/* 逐行判定入口 2026-08-16 Frank 拍板撤(「不应该每个岗位都加一个…按钮,
@@ -830,7 +789,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
                       const { node, extra, href } = cellOf(k, j, cellCtx)
                       const act = cellActive(k, j, blockedKeys)
                       return (
-                        <td key={k} className={act ? 'jcell jcellAct' : 'jcell'} style={{ ...td, padding: `7px ${cellPad}`, ...extra, cursor: act ? 'pointer' : 'default', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', ...(NOWRAP_COLS.has(k) && !WRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...cellClip, ...frozenStyle(k, rowBg, '#f3f4f6') }} title={typeof node === 'string' ? node : undefined} onClick={() => {
+                        <td key={k} className={'jtTd ' + (act ? 'jcell jcellAct act' : 'jcell')} style={{ ...extra, ...(NOWRAP_COLS.has(k) && !WRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...frozenStyle(k, rowBg, '#f3f4f6') }} title={typeof node === 'string' ? node : undefined} onClick={() => {
                           if (!act) return
                           // 职位格=直开职位描述(2026-07-19 Frank:「点职位也能显示职位描述」);title 顾问弹框由 JD 框标题栏「AI 顾问」钮承接(同日报障回补)
                           if (k === 'title') { setActModal({ kind: 'desc', job: j }); return }
@@ -849,8 +808,8 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
                 )
               })}
               {rows.length === 0 && (
-                <tr><td colSpan={shown.length} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>
-                  {matchView ? <>{t('mv.empty')} <a href="/account" style={{ color: '#2563eb', textDecoration: 'none' }}>{t('mv.editProfile')}</a></> : t('empty')}
+                <tr><td colSpan={shown.length} className="jtEmpty">
+                  {matchView ? <>{t('mv.empty')} <a href="/account" className="jtEmptyLink">{t('mv.editProfile')}</a></> : t('empty')}
                 </td></tr>
               )}
             </tbody>
@@ -861,7 +820,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
             拍板:免费限额外的岗不显示匹配位(不放锁标,卡片寸土寸金);中位/渠道/NOC 码等低频字段留给弹窗。
             2026-08-02(Frank「卡片也用 jobtable 的卡片」「以后这个定死」):版式抽到 ui/JobCard 由全站共用,
             这里只负责喂数据与交互(弹框/星标/胶囊可点),长相由组件定 —— landing 职位榜吃的是同一张卡。 */}
-        <div className="jtCards" style={{ flexDirection: 'column', gap: 8, ...(loading && page === 0 && { opacity: 0.45, pointerEvents: 'none' }) }}>
+        <div className={'jtCards' + (loading && page === 0 ? ' dim' : '')}>
           {rows.map((j) => {
             const open = (field: ColKey, title: string) => openField(field, j, title)  // 与表格行同一签名
             // #129(Frank「卡片本身点不进去」):整卡可点=进详情页;卡内既有交互(弹框/收藏/chips)stopPropagation 保持原行为
@@ -875,7 +834,8 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
               '#ffedd5': '#fed7aa', '#f3e8ff': '#e9d5ff', '#ccfbf1': '#99f6e4', '#eff6ff': '#bfdbfe',
             }
             const chip = (bg: string, fg: string, txt: string, k: ColKey, tip?: string) => (
-              <span key={k} title={tip} onClick={cellActionable(k) ? stop(() => open(k, txt)) : undefined} style={{ fontSize: 12, padding: '2px 12px', borderRadius: 999, background: bg, color: fg, border: `1px solid ${CHIP_BORDER[bg] || bg}`, cursor: cellActionable(k) ? 'pointer' : 'default', whiteSpace: 'nowrap' }}>{txt}</span>
+              <span key={k} title={tip} onClick={cellActionable(k) ? stop(() => open(k, txt)) : undefined} className={cellActionable(k) ? 'jtChip act' : 'jtChip'}
+                style={{ '--cbg': bg, '--cfg': fg, '--cbd': CHIP_BORDER[bg] || bg } as React.CSSProperties}>{txt}</span>
             )
             // Frank 走查:发布当天显示 1 天 → new Date('YYYY-MM-DD') 按 UTC 午夜解析,EDT 晚上 Date.now() 已跨 UTC 次日差 1 天;改按本地午夜解析(+'T00:00:00')
             const days = j.datePosted && (j.status || 'open') !== 'closed' ? Math.max(0, Math.floor((Date.now() - new Date(j.datePosted.slice(0, 10) + 'T00:00:00').getTime()) / 86400000)) : null
@@ -938,10 +898,10 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
                    <a href> 语义保留给爬虫/长按新开对应层级地图 */
                 location={L.city ? (
                   <>
-                    <a href={mapsUrl(mapQuery('city', j))} target="_blank" rel="noreferrer" onClick={(e) => { e.preventDefault(); e.stopPropagation(); open('city', L.city) }} style={{ color: '#2563eb', textDecoration: 'none' }}>{L.city}</a>
+                    <a href={mapsUrl(mapQuery('city', j))} target="_blank" rel="noreferrer" onClick={(e) => { e.preventDefault(); e.stopPropagation(); open('city', L.city) }} className="jtCardLink">{L.city}</a>
                     {j.province ? <>
-                      <span style={{ color: '#9ca3af' }}>, </span>
-                      <a href={mapsUrl(mapQuery('province', j))} target="_blank" rel="noreferrer" onClick={(e) => { e.preventDefault(); e.stopPropagation(); open('province', L.prov) }} style={{ color: '#2563eb', textDecoration: 'none' }}>{j.province}</a>
+                      <span className="jtCardSep">, </span>
+                      <a href={mapsUrl(mapQuery('province', j))} target="_blank" rel="noreferrer" onClick={(e) => { e.preventDefault(); e.stopPropagation(); open('province', L.prov) }} className="jtCardLink">{j.province}</a>
                     </> : null}
                   </>
                 ) : undefined}
@@ -949,8 +909,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
                 /* #167⑩(Frank「卡片胶囊应该统一放到一个位置吧」):胶囊都归卡底那排,右上角只留星标——它是按钮不是胶囊。
                    #52:收藏入口手机也要有(E9-01 闭环第一环),匿名点=注册框(与桌面 toggleSave 同一逻辑) */
                 action={
-                  <button className="jtStar" onClick={(e) => { e.stopPropagation(); toggleSave(j) }} aria-label={saved[String(j.id)] ? t('sj.saved') : t('sj.save')}
-                    style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', fontSize: 16, lineHeight: 1, color: saved[String(j.id)] ? '#b45309' : '#c4c9d4' }}>
+                  <button className={saved[String(j.id)] ? 'jtStar on' : 'jtStar'} onClick={(e) => { e.stopPropagation(); toggleSave(j) }} aria-label={saved[String(j.id)] ? t('sj.saved') : t('sj.save')}>
                     {saved[String(j.id)] ? '★' : '☆'}
                   </button>
                 }
@@ -963,16 +922,16 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
             )
           })}
           {rows.length === 0 && (
-            <div style={{ padding: 24, textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>
-              {matchView ? <>{t('mv.empty')} <a href="/account" style={{ color: '#2563eb', textDecoration: 'none' }}>{t('mv.editProfile')}</a></> : t('empty')}
+            <div className="jtEmptyCards">
+              {matchView ? <>{t('mv.empty')} <a href="/account" className="jtEmptyLink">{t('mv.editProfile')}</a></> : t('empty')}
             </div>
           )}
         </div>
         {/* 点击分页:不随滚动自动加载(用户拍板);按钮只报剩余条数——#42 同族,20000 载入护栏当分母像写死(2026-07-16 用户指出) */}
-        <div className="jtMore" style={{ textAlign: 'center', padding: '12px', fontSize: 12.5, color: '#9ca3af' }}>
+        <div className="jtMore">
           {rows.length === 0 ? ''
             : rows.length >= total ? t('allShown', { total })
-            : <Button kind="secondary" sm disabled={loading} onClick={() => setPage((p) => p + 1)} style={{ opacity: loading ? 0.6 : 1 }}>{loading ? '…' : t('loadMore', { n: total - rows.length })}</Button>}
+            : <Button kind="secondary" sm disabled={loading} onClick={() => setPage((p) => p + 1)} className={loading ? 'jtMoreBtn busy' : 'jtMoreBtn'}>{loading ? '…' : t('loadMore', { n: total - rows.length })}</Button>}
         </div>
         {/* 匹配全放开(Frank 2026-07-21):匹配不再限额 → 底部「升级看全量」升级卡退役;
             升级动力改由表内 Pro 数据列(vs中位/工资中位)打码承担 */}
@@ -1004,10 +963,6 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
 // ── 省提名清单区(点 PNP 字段时显示)────────────────────────────
 // 清单是权威「事实」,来自 DB 维度表(pnp-occupations,经 props 传入),绝不让 LLM 编。
 // 判定只用本岗既有字段(province/noc/teer)+ 清单比对,不在前端重算资格逻辑。
-const filtRow: React.CSSProperties = { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }
-const filtLabel: React.CSSProperties = { fontSize: 12, color: '#9ca3af', minWidth: 28, whiteSpace: 'nowrap' }
-// 「已选」行的操作钮:比输入控件(38)矮一号,读起来是「对上面那套条件动手」,不是又一个筛选入口
-const pickedBtn: React.CSSProperties = { height: 30, padding: '0 10px', border: '1px solid #e5e7eb', borderRadius: 6, background: '#fff', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }
 // 联动下拉:上级选了,下级选项随之收窄;当前值不在选项里也保留显示
 // 宽度贴当前选中值(2026-07-17 用户拍板「不要有空白」;沿革:07-07 曾统一封顶 150 治「按最长选项撑宽」,
 // 但短值如「全部省」仍剩大段空白):镜像文本按选中值占位、select 叠满其上——选短值不留空白,
@@ -1017,7 +972,7 @@ function Sel({ value, onChange, opts, all, labelOf }: { value: string; onChange:
   const shown = value ? (labelOf ? labelOf(value) : value) : all
   // select 的内在宽度=最长选项,放流内怎么都会撑满上限 → 镜像文本在流内定宽,select 绝对铺满不参与布局
   return (
-    <span style={{ position: 'relative', display: 'inline-block', maxWidth: 150 }}>
+    <span className="jtSel">
       {/* 2026-08-16 Frank「最后一个字都被挡住了一半」:28px 不够 —— 原生 select 左 padding 10 +
           自绘箭头区 ~20,镜像只留 28 差 2-6px,末字被箭头压半个;38 = 10+20+8 余量 */}
       <span aria-hidden style={{ ...ctrl, display: 'block', visibility: 'hidden', paddingRight: 38, whiteSpace: 'nowrap', overflow: 'hidden', border: '1px solid transparent' }}>{shown}</span>
@@ -1028,8 +983,3 @@ function Sel({ value, onChange, opts, all, labelOf }: { value: string; onChange:
     </span>
   )
 }
-const td: React.CSSProperties = { padding: '7px 12px', verticalAlign: 'top' }
-const colPanel: React.CSSProperties = { position: 'absolute', top: '110%', right: 0, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, boxShadow: '0 10px 30px rgba(0,0,0,.12)', padding: 8, zIndex: 20, minWidth: 210 }
-const colBtn: React.CSSProperties = { flex: 1, whiteSpace: 'nowrap', padding: '4px 8px', fontSize: 12.5, border: '1px solid #d1d5db', borderRadius: 5, background: '#f9fafb', color: '#374151', cursor: 'pointer' }
-// #E8-12 尾巴(Frank「移民价值这个按钮是不是太大了」):3×8/12 → 2×7/11.5,图标撤(每行都有一颗,轻一档)
-const actBtn: React.CSSProperties = { whiteSpace: 'nowrap', padding: '2px 7px', fontSize: 11.5, border: '1px solid #d1d5db', borderRadius: 5, background: '#fff', color: '#374151', cursor: 'pointer' }

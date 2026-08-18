@@ -749,7 +749,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
               {!targetMode && (list.length || offerRow) ? (
                 <div style={{ margin: '10px 0 8px' }}>
                   <div style={lbl}>{t('ps.bonus')}</div>
-                  {/* 一行两个事实(条目、+N)拆成列(同 FactGrid 规矩):外层 auto-fit 决定几列,
+                  {/* 一行两个事实(条目、+N)拆成列(同 ui/Grid 规矩):外层 auto-fit 决定几列,
                       条目内部 [勾选框 | 条目 | +N] 三列,+N 在同一列上对齐 */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '4px 16px' }}>
                     {offerRow ? (

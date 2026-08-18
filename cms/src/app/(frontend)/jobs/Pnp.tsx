@@ -5,8 +5,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { IconCheck, IconTarget, IconWarn, IconX } from '../Icons'
-import { PILL_BTN } from '../ui'
-import { FG_K, FactGrid, MODAL_CARD, MODAL_CARD_HEAD } from './Facts'
+import { CARD_MD, Grid, PILL_BTN } from '../ui'
 import { TvEntryCard } from './TripleVerdictModal'
 import { eeDisplay, eeKeyDisplay, makeT, streamDisplay, type Lang, type TFn } from './i18n'
 import type { EeCat, EeOcc, JobRow, NewsSlim, NocDesc, Plan, PnpDraw, PnpOcc, PnpStream } from './types'
@@ -47,25 +46,25 @@ export function PnpDrawsBlock({ province, lang, draws, limit }: { province: stri
   const src = rows[0]
   return (
     <div>
-      {/* Frank 走查#9:卡要正式 title(原小灰头提为 MODAL_CARD_HEAD);#G 去内层 marginBottom(外层卡已有底距) */}
-      <div style={MODAL_CARD_HEAD}>{reform ? t('pnpdraws.nowTitle') : t('pnpdraws.title', { label: src?.label })}</div>
+      {/* Frank 走查#9:卡要正式 title(原小灰头提为 'mcardHead');#G 去内层 marginBottom(外层卡已有底距) */}
+      <div className="mcardHead">{reform ? t('pnpdraws.nowTitle') : t('pnpdraws.title', { label: src?.label })}</div>
       {/* 改制省:列现行规则(项 | 内容 两列左对齐),不再铺已关闭通道的历史 */}
       {reform ? (
-        <div style={{ margin: '2px 0 6px' }}>
-          <FactGrid cols={2}>
+        <div className="pnpReform">
+          <Grid cols={2}>
             {reform.rules.flatMap(([k, v]) => [
-              <span key={k} style={FG_K}>{t(k)}</span>,
-              <span key={v} style={{ color: '#374151' }}>{t(v)}</span>,
+              <span key={k} className="gridK">{t(k)}</span>,
+              <span key={v} className="pnpRuleV">{t(v)}</span>,
             ])}
-          </FactGrid>
+          </Grid>
         </div>
       ) : null}
       {/* 2026-07-25 Frank 走查#12:抽选列表四列对齐(日期/流名/最低分/份邀请)——整块一个 grid,
           列宽跨行对齐(非逐行 flex);SIRS 口径脚注删(#11,「分数只与本省历史比」已是常识噪音)。
           notice 行跨全部列。 */}
-      <div style={{ border: '1px solid #f3f4f6', borderRadius: 8, display: rows.length ? 'grid' : 'none', gridTemplateColumns: 'max-content 1fr max-content max-content', alignItems: 'baseline', columnGap: 10, rowGap: 2, padding: '4px 0' }}>
+      <div className={rows.length ? 'pnpDraws' : 'pnpDraws empty'}>
         {rows.flatMap((d, i) => d.kind === 'notice' ? [
-          <div key={i + 'n'} style={{ gridColumn: '1 / -1', padding: '5px 10px', fontSize: 12.5, color: '#b45309', background: '#fffbeb' }}>
+          <div key={i + 'n'} className="pnpNotice">
             {/* #153:直接渲染抓到的官方通告原文(note),缺 note 才退回旧模板 */}
             <IconWarn /> {d.note ? `${d.drawDate} ${d.note}` : t('pnpdraws.notice', { date: d.drawDate })}
           </div>,
@@ -74,17 +73,17 @@ export function PnpDrawsBlock({ province, lang, draws, limit }: { province: stri
           // 包一层 .pnpDrawRow:桌面 display:contents 原样吃外层 4 列网格(逐行对齐效果不变),
           // ≤640px 改用 grid-template-areas 两行(流名整行不截断,日期/分数/邀请数落次行灰字)
           <div key={i} className="pnpDrawRow">
-            <span className="pdDate" style={{ paddingLeft: 10, fontVariantNumeric: 'tabular-nums', color: '#9ca3af', whiteSpace: 'nowrap', fontSize: 12.5, opacity: reform && d.drawDate < reform.since ? .55 : 1 }}>{d.drawDate}</span>
-            <span className="pdStream" style={{ minWidth: 0, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12.5, opacity: reform && d.drawDate < reform.since ? .55 : 1 }} title={d.note || d.stream}>
+            <span className={reform && d.drawDate < reform.since ? 'pdDate dim' : 'pdDate'}>{d.drawDate}</span>
+            <span className={reform && d.drawDate < reform.since ? 'pdStream dim' : 'pdStream'} title={d.note || d.stream}>
               {d.stream}
               {/* #280:zh 态英文流名+中文灰注(次行,块级子元素天然不受父 span 的 nowrap/ellipsis 约束);
                   streamZh 缺列/还没翻到 = 不出注,纯英文,不是报错 */}
               {lang === 'zh' && d.streamZh
-                ? <span style={{ display: 'block', fontSize: 11, color: '#9ca3af', whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip' }}>{d.streamZh}</span>
+                ? <span className="pdStreamZh">{d.streamZh}</span>
                 : null}
             </span>
-            <span className="pdScore" style={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'right', color: '#374151', fontSize: 12.5 }}>{d.score != null ? t('pnpdraws.min', { score: d.score }) : ''}</span>
-            <span className="pdInv" style={{ paddingRight: 10, color: '#6b7280', whiteSpace: 'nowrap', textAlign: 'right', fontSize: 12.5 }}>{d.invitations != null ? t('pnpdraws.inv', { n: d.invitations }) : ''}</span>
+            <span className="pdScore">{d.score != null ? t('pnpdraws.min', { score: d.score }) : ''}</span>
+            <span className="pdInv">{d.invitations != null ? t('pnpdraws.inv', { n: d.invitations }) : ''}</span>
           </div>,
         ])}
       </div>
@@ -102,12 +101,12 @@ export function NewsLatestBlock({ province, lang, news }: { province: string; la
   return (
     <div>
       {/* Frank 走查#9 卡要 title + #1 删「全部动态 →」跳转链接;#G 去内层 marginBottom */}
-      <div style={MODAL_CARD_HEAD}>{t('news.latest')}</div>
-      <div style={{ border: '1px solid #f3f4f6', borderRadius: 8 }}>
+      <div className="mcardHead">{t('news.latest')}</div>
+      <div className="pnpBox">
         {rows.map((n) => (
-          <div key={n.slug} style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '4px 10px', fontSize: 12.5 }}>
-            <span style={{ fontVariantNumeric: 'tabular-nums', color: '#9ca3af', whiteSpace: 'nowrap' }}>{n.date}</span>
-            <a href={`/news/${n.slug}`} style={{ flex: 1, minWidth: 0, color: '#2563eb', textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={n.title}>{n.title}</a>
+          <div key={n.slug} className="pnpNewsRow">
+            <span className="pnpNewsDate">{n.date}</span>
+            <a href={`/news/${n.slug}`} className="pnpNewsLink" title={n.title}>{n.title}</a>
           </div>
         ))}
       </div>
@@ -123,16 +122,16 @@ export function SponsorLeadCard({ job, t, src }: { job: JobRow; t: TFn; src: 'pn
   const lmiaN = job.lmiaPositions ?? 0
   const hasCred = src === 'pnp' && (job.aip || lmiaN > 0)
   if (!hasCred) return null
-  const row: React.CSSProperties = { fontSize: 13, lineHeight: 1.75, color: '#374151' }
+
   return (
-    <div style={MODAL_CARD}>
-      <div style={MODAL_CARD_HEAD}>{t('spl.head')}</div>
-      {job.aip ? <div style={row}>{t('spl.aip')}</div> : null}
-      {lmiaN > 0 ? <div style={row}>{lmiaN === 1 ? t('spl.lmia1') : t('spl.lmia', { n: lmiaN })}</div> : null}
+    <div style={CARD_MD}>
+      <div className="mcardHead">{t('spl.head')}</div>
+      {job.aip ? <div className="pnpSplRow">{t('spl.aip')}</div> : null}
+      {lmiaN > 0 ? <div className="pnpSplRow">{lmiaN === 1 ? t('spl.lmia1') : t('spl.lmia', { n: lmiaN })}</div> : null}
       {/* Frank 2026-08-08「按钮风格保持一致」:裸链改站内既有 PILL_BTN(与「打开完整页 ↗」同款;↗=新开页惯例) */}
       {job.company ? (
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
-          <a href={'/?q=' + encodeURIComponent(job.company)} target="_blank" rel="noreferrer" style={{ ...PILL_BTN, textDecoration: 'none', display: 'inline-block', whiteSpace: 'nowrap' }}
+        <div className="pnpSplActs">
+          <a href={'/?q=' + encodeURIComponent(job.company)} target="_blank" rel="noreferrer" className="pnpPillLink" style={PILL_BTN}
             onClick={() => track('pnp-employer-click', { kind: src })}>{t('spl.coJobs')} ↗</a>
         </div>
       ) : null}
@@ -179,14 +178,14 @@ export function PnpListSection({ job, lang, occ, draws, news, profileClb, nocDes
   return (
     <>
       {/* 拆多卡(2026-07-25 用户「乱,拆成多个卡片」):原单卡四块堆叠(判定+抽选+公告+清单)挤成一团;
-          改 判定/本省最近抽选/本省最新公告/每条通道清单 各一张 MODAL_CARD——
+          改 判定/本省最近抽选/本省最新公告/每条通道清单 各一张 CARD_MD——
           同 E8-12 省弹框「每块一卡」先例;块自身无数据返回 null → 外层卡不渲(不出空壳) */}
-      <div style={MODAL_CARD}>
-        <div style={MODAL_CARD_HEAD}>{t('col.pnp')}</div>
+      <div style={CARD_MD}>
+        <div className="mcardHead">{t('col.pnp')}</div>
         <div>{verdictPill}</div>
-        {genericWhy ? <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 6, lineHeight: 1.7 }}>{genericWhy}</div> : null}
+        {genericWhy ? <div className="pnpWhy">{genericWhy}</div> : null}
         {/* Frank「qc 没有对应的通道 也没有历史」:QC 不参加 PNP 是制度事实,不是缺数 —— 把它走的是什么说清 */}
-        {isQc ? <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 6, lineHeight: 1.7 }}>{t('ch.pnp.qcWhy')}</div> : null}
+        {isQc ? <div className="pnpWhy">{t('ch.pnp.qcWhy')}</div> : null}
       </div>
       {/* #287 批D:判定卡入口(设计 §5「modal-pnp 判定卡后」;效果图 se287-entry-pnp-modal) */}
       <TvEntryCard t={t} onOpen={() => { track('tv-entry', { kind: 'pnp' }); window.location.assign(`/plan/pr?job=${job.id}`) }} />
@@ -195,11 +194,11 @@ export function PnpListSection({ job, lang, occ, draws, news, profileClb, nocDes
       {/* E12-09 自评打分已迁到「移民路径」页(Frank 2026-07-27「应该单独弄个功能吧,不应该放到 pnp 弹框里面」)。
           它算的是**你这个人**够不够分,跟看哪一个岗没关系;这里连跳转链也不留(#198/#199「多余的跳转都删掉」)。 */}
       {!isQc && job.province && draws.some((d) => d.province === job.province) ? (
-        <div style={MODAL_CARD}><PnpDrawsBlock province={job.province} lang={lang} draws={draws} /></div>
+        <div style={CARD_MD}><PnpDrawsBlock province={job.province} lang={lang} draws={draws} /></div>
       ) : null}
       {/* 本省最新公告(E12-06);QC 也显——MIFI 部委新闻,资格口径由 /news 声明 */}
       {job.province && news.some((n) => n.region === job.province) ? (
-        <div style={MODAL_CARD}><NewsLatestBlock province={job.province} lang={lang} news={news} /></div>
+        <div style={CARD_MD}><NewsLatestBlock province={job.province} lang={lang} news={news} /></div>
       ) : null}
       {/* #125 → 2026-07-25 Frank 收紧「不覆盖就不用显示」:命中 → 只展示命中的清单;被排除 → 只展示排除清单;
           都没有 → 清单整体不渲(原全量铺浏览语境退役)——判定行已说清结论,不相干的清单只是噪音 */}
@@ -217,31 +216,29 @@ export function PnpListSection({ job, lang, occ, draws, news, profileClb, nocDes
         const shown = open ? sorted : sorted.filter((o) => o.noc === noc)
         const rows = shown.length ? shown : sorted.slice(0, 1)   // 兜底:即便无命中也至少显 1 条
         return (
-        <div key={fk} style={MODAL_CARD}>
+        <div key={fk} style={CARD_MD}>
           {/* Frank 走查#14:清单头改纯 title(不再作折叠开关);开关移到列表末尾 */}
-          <div style={MODAL_CARD_HEAD}>
+          <div className="mcardHead">
             {streamDisplay(t, s.label)}
-            <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 6, fontSize: 12 }}>{t('eelist.count', { n: s.occupations.length })}</span>
+            <span className="pnpCount">{t('eelist.count', { n: s.occupations.length })}</span>
           </div>
-          <div style={{ border: '1px solid #f3f4f6', borderRadius: 8 }}>
+          <div className="pnpBox">
             {rows.map((o) => {
               const hit = o.noc === noc
               const zh = showZh ? nocLocalTitle(nocRowOf.get(o.noc) || null, lang) : ''
               return (
-                <div key={o.noc + o.name} ref={hit ? matchRef : undefined}
-                  style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '4px 10px', fontSize: 12.5,
-                    background: hit ? '#fef3c7' : undefined, fontWeight: hit ? 600 : 400, color: hit ? '#92400e' : '#374151' }}>
-                  <span style={{ fontVariantNumeric: 'tabular-nums', color: hit ? '#92400e' : '#9ca3af' }}>{o.noc}</span>
-                  <span style={{ flex: 1 }}>{o.name}{zh && zh.toLowerCase() !== o.name.toLowerCase() ? <span style={{ display: 'block', fontSize: 11.5, color: '#9ca3af', fontWeight: 400 }}>{zh}</span> : null}</span>
-                  {hit && <span style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{t('pnplist.your')}</span>}
-                  {o.gtaRestricted && <span style={{ fontSize: 11, color: '#9ca3af', whiteSpace: 'nowrap' }}>{t('pnplist.gta')}</span>}
+                <div key={o.noc + o.name} ref={hit ? matchRef : undefined} className={hit ? 'pnpRow hit' : 'pnpRow'}>
+                  <span className="pnpNoc">{o.noc}</span>
+                  <span className="pnpFlex1">{o.name}{zh && zh.toLowerCase() !== o.name.toLowerCase() ? <span className="pnpZh">{zh}</span> : null}</span>
+                  {hit && <span className="pnpTagS">{t('pnplist.your')}</span>}
+                  {o.gtaRestricted && <span className="pnpTagS muted">{t('pnplist.gta')}</span>}
                 </div>
               )
             })}
           </div>
           {hidden.length > 0 && (
             <div onClick={() => setFoldOpen((m) => ({ ...m, [fk]: !open }))}
-              style={{ cursor: 'pointer', userSelect: 'none', marginTop: 6, fontSize: 12.5, color: '#2563eb' }}>
+              className="pnpFoldMore">
               {open ? t('pnplist.foldOther') : t('pnplist.showOther', { n: hidden.length })}
             </div>
           )}
@@ -300,9 +297,9 @@ function FederalRoundsCard({ t, draws }: { t: TFn; draws: PnpDraw[] }) {
   if (!fed.length) return null
   const rows = open ? fed : fed.slice(0, FED_SHOW)
   return (
-    <div style={MODAL_CARD}>
-      <div style={MODAL_CARD_HEAD}>{t('eefed.title')}</div>
-      <div style={{ fontSize: 12, color: '#374151' }}>
+    <div style={CARD_MD}>
+      <div className="mcardHead">{t('eefed.title')}</div>
+      <div className="pnpFedHead">
         {t('eefed.mixHead', { n: fed.length })}
         {buckets.map(([k, n], i) => (
           <span key={k}>{i ? t('sep') : ''}
@@ -312,23 +309,23 @@ function FederalRoundsCard({ t, draws }: { t: TFn; draws: PnpDraw[] }) {
           </span>
         ))}
       </div>
-      <div style={{ margin: '6px 0 0', border: '1px solid #f3f4f6', borderRadius: 8, overflow: 'hidden' }}>
+      <div className="pnpBox clip mt">
         {rows.map((d, i) => (
-          <div key={`${d.drawDate}-${d.label}-${i}`} style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '4px 10px', fontSize: 12, background: i % 2 ? '#fafafa' : undefined }}>
-            <span style={{ fontVariantNumeric: 'tabular-nums', color: '#6b7280', whiteSpace: 'nowrap' }}>{d.drawDate.slice(0, 10)}</span>
-            <span title={d.stream} style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600, color: FED_TYPE_COLOR[d.label] || '#b45309' }}>{eeKeyDisplay(t, d.label)}</span>
-            <span style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600, color: '#1f2937', whiteSpace: 'nowrap' }}>{t('eelist.crsN', { crs: d.score ?? '—' })}</span>
-            <span style={{ fontVariantNumeric: 'tabular-nums', color: '#6b7280', whiteSpace: 'nowrap' }}>{t('eefed.ita', { n: d.invitations ?? '—' })}</span>
+          <div key={`${d.drawDate}-${d.label}-${i}`} className="pnpFedRow">
+            <span className="pnpFedDate">{d.drawDate.slice(0, 10)}</span>
+            <span title={d.stream} className="pnpFedType" style={{ color: FED_TYPE_COLOR[d.label] || '#b45309' }}>{eeKeyDisplay(t, d.label)}</span>
+            <span className="pnpFedCrs">{t('eelist.crsN', { crs: d.score ?? '—' })}</span>
+            <span className="pnpFedIta">{t('eefed.ita', { n: d.invitations ?? '—' })}</span>
           </div>
         ))}
       </div>
       {fed.length > FED_SHOW ? (
         <button onClick={() => setOpen((v) => !v)}
-          style={{ border: 'none', background: 'none', padding: '6px 0 0', color: '#2563eb', cursor: 'pointer', fontSize: 12.5 }}>
+          className="pnpMoreBtn">
           {open ? `▴ ${t('eefed.less')}` : `▾ ${t('eefed.more', { n: fed.length - FED_SHOW })}`}
         </button>
       ) : null}
-      <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>{t('eefed.french')}</div>
+      <div className="pnpFedNote">{t('eefed.french')}</div>
     </div>
   )
 }
@@ -381,43 +378,42 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
   // 判定卡 / 最近抽选卡 / 类别清单卡;块无数据整卡不出(无空壳)
   return (
     <>
-      <div style={MODAL_CARD}>
-        <div style={MODAL_CARD_HEAD}>{t('col.ee')}</div>
-        <div style={{ fontSize: 13.5, fontWeight: 600, color: hit.length ? '#2563eb' : '#9ca3af' }}>
+      <div style={CARD_MD}>
+        <div className="mcardHead">{t('col.ee')}</div>
+        <div className={hit.length ? 'pnpEeVerdict on' : 'pnpEeVerdict'}>
           {hit.length ? <><IconCheck /> {t('eelist.in', { noc, cats: hit.map((c) => eeDisplay(t, c.label)).join('/') })}</> : t('eelist.out')}
         </div>
         {/* 2026-07-25 Frank「这两个应该是两行吧」:展开钮从结论行拆出,独立一行 */}
         {!hit.length && grouped.length ? (
-          <div style={{ marginTop: 6 }}>
-            <button onClick={() => setShowAllCats((v) => !v)}
-              style={{ border: 'none', background: 'none', padding: 0, color: '#2563eb', cursor: 'pointer', fontSize: 12.5 }}>
+          <div className="pnpMt6">
+            <button onClick={() => setShowAllCats((v) => !v)} className="pnpLinkBtn">
               {showAllCats ? '▴' : '▾'} {t('eelist.allCats', { n: grouped.length })}
             </button>
           </div>
         ) : null}
       </div>
       {drawsCats.length ? (
-        <div style={MODAL_CARD}>
-          <div style={MODAL_CARD_HEAD}>{t('eelist.drawsTitle')}</div>
+        <div style={CARD_MD}>
+          <div className="mcardHead">{t('eelist.drawsTitle')}</div>
           {drawsCats.map((c, ci) => {
             const hist = histOf.get(c.key) || []
             const histExpandable = hist.length > 1
             const histOpen = openCat === c.key
             return (
-              <div key={c.key} style={{ paddingTop: ci === 0 ? 0 : 8, borderTop: ci === 0 ? undefined : '1px solid #f3f4f6', marginTop: ci === 0 ? 0 : 8 }}>
-                {shown.length > 1 ? <div style={{ fontSize: 12.5, fontWeight: 700, color: '#111827' }}>{eeDisplay(t, c.label)}</div> : null}
+              <div key={c.key} className="pnpCat">
+                {shown.length > 1 ? <div className="pnpCatName">{eeDisplay(t, c.label)}</div> : null}
                 <div onClick={histExpandable ? () => setOpenCat(histOpen ? null : c.key) : undefined}
-                  style={{ fontSize: 12, color: '#6b7280', marginTop: 3, cursor: histExpandable ? 'pointer' : undefined, userSelect: 'none' }}>
+                  className={histExpandable ? 'pnpDrawLine clickable' : 'pnpDrawLine'}>
                   {t('eelist.draw', { crs: c.drawCrs ?? '—', date: c.drawDate, size: c.drawSize ?? '—' })}
-                  {histExpandable ? <span style={{ marginLeft: 6, color: '#2563eb' }}>{histOpen ? '▴' : '▾'} {t('eelist.hist', { n: hist.length })}</span> : null}
+                  {histExpandable ? <span className="pnpHistTog">{histOpen ? '▴' : '▾'} {t('eelist.hist', { n: hist.length })}</span> : null}
                 </div>
                 {histExpandable && histOpen ? (
-                  <div style={{ margin: '6px 0', border: '1px solid #f3f4f6', borderRadius: 8, overflow: 'hidden' }}>
+                  <div className="pnpBox clip my">
                     {hist.map((h, i) => (
-                      <div key={`${h.drawDate}-${i}`} style={{ display: 'flex', alignItems: 'baseline', gap: 10, padding: '4px 10px', fontSize: 12, background: i % 2 ? '#fafafa' : undefined }}>
-                        <span style={{ fontVariantNumeric: 'tabular-nums', color: '#6b7280', whiteSpace: 'nowrap' }}>{(h.drawDate || '').slice(0, 10)}</span>
-                        <span style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600, color: '#1f2937', whiteSpace: 'nowrap' }}>{t('eelist.crsN', { crs: h.score ?? '—' })}</span>
-                        <span style={{ flex: 1, color: '#6b7280', whiteSpace: 'nowrap' }}>{t('eelist.itaN', { n: h.invitations ?? '—' })}</span>
+                      <div key={`${h.drawDate}-${i}`} className="pnpHistRow">
+                        <span className="pnpFedDate">{(h.drawDate || '').slice(0, 10)}</span>
+                        <span className="pnpFedCrs">{t('eelist.crsN', { crs: h.score ?? '—' })}</span>
+                        <span className="pnpHistIta">{t('eelist.itaN', { n: h.invitations ?? '—' })}</span>
                       </div>
                     ))}
                   </div>
@@ -430,32 +426,28 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
       {/* E6-10:联邦抽选近况(全类型真轮次)。原来这里只有一句写死的口径注,现在给活数据 */}
       <FederalRoundsCard t={t} draws={draws} />
       {shown.length ? (
-        <div style={MODAL_CARD}>
+        <div style={CARD_MD}>
           {/* Frank 走查#16:「类别清单」标签删——类别名(如「医疗社服 37 个职业」)本身即 title(下方粗体名行承担) */}
           {shown.map((c, ci) => {
             const listOpen = foldOpen[c.key] ?? true   // 一律默认展开(「每个职位怎么没了」),想收再点头折
             return (
-              <div key={c.key} style={{ paddingTop: ci === 0 ? 0 : 8, borderTop: ci === 0 ? undefined : '1px solid #f3f4f6', marginTop: ci === 0 ? 0 : 8 }}>
-                <div onClick={() => setFoldOpen((m) => ({ ...m, [c.key]: !listOpen }))}
-                  style={{ display: 'flex', alignItems: 'baseline', gap: 6, cursor: 'pointer', userSelect: 'none' }}>
-                  <span style={{ fontSize: 13.5, fontWeight: 700, color: '#111827' }}>{eeDisplay(t, c.label)}</span>
-                  <span style={{ fontSize: 12, color: '#9ca3af' }}>{t('eelist.count', { n: c.occupations.length })}</span>
-                  <span style={{ marginLeft: 'auto', fontSize: 12, color: '#9ca3af' }}>{listOpen ? '▴' : '▾'}</span>
+              <div key={c.key} className="pnpCat">
+                <div onClick={() => setFoldOpen((m) => ({ ...m, [c.key]: !listOpen }))} className="pnpCatHead">
+                  <span className="pnpCatName lg">{eeDisplay(t, c.label)}</span>
+                  <span className="pnpCatN">{t('eelist.count', { n: c.occupations.length })}</span>
+                  <span className="pnpCatCaret">{listOpen ? '▴' : '▾'}</span>
                 </div>
                 {listOpen ? (
-                <div style={{ marginTop: 6 }}>
+                <div className="pnpMt6">
                   {c.occupations.map((o, oi) => {
                     const isHit = o.noc === noc
                     const zh = showZh ? nocLocalTitle(nocRowOf.get(o.noc) || null, lang) : ''
                     return (
-                      <div key={o.noc} ref={isHit ? matchRef : undefined}
-                        style={{ display: 'flex', alignItems: 'baseline', gap: 10, padding: '5px 8px', fontSize: 12.5, borderRadius: 6,
-                          borderTop: oi === 0 ? undefined : '1px solid #f9fafb',
-                          background: isHit ? '#dbeafe' : undefined, fontWeight: isHit ? 600 : 400, color: isHit ? '#1e40af' : '#374151' }}>
-                        <span style={{ fontVariantNumeric: 'tabular-nums', color: isHit ? '#1e40af' : '#9ca3af', flexShrink: 0 }}>{o.noc}</span>
-                        <span style={{ flex: 1 }}>{o.title}{zh && zh.toLowerCase() !== o.title.toLowerCase() ? <span style={{ display: 'block', fontSize: 11.5, color: '#9ca3af', fontWeight: 400 }}>{zh}</span> : null}</span>
-                        {o.teer != null && <span style={{ fontSize: 11, color: '#9ca3af' }}>T{o.teer}</span>}
-                        {isHit && <span style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{t('eelist.your')}</span>}
+                      <div key={o.noc} ref={isHit ? matchRef : undefined} className={isHit ? 'pnpOccRow hit' : 'pnpOccRow'}>
+                        <span className="pnpOccNoc">{o.noc}</span>
+                        <span className="pnpFlex1">{o.title}{zh && zh.toLowerCase() !== o.title.toLowerCase() ? <span className="pnpZh">{zh}</span> : null}</span>
+                        {o.teer != null && <span className="pnpTeer">T{o.teer}</span>}
+                        {isHit && <span className="pnpTagS">{t('eelist.your')}</span>}
                       </div>
                     )
                   })}
@@ -494,13 +486,8 @@ export function aipBlockOf(job: JobRow, occ: PnpOcc[]): PnpStream | null {
   return { stream: r.stream, label: r.label, type: r.type, url: r.url, fetched: r.fetched, occupations }
 }
 // 判定药丸(直判行统一件):ok 绿=能走 / warn 琥珀 / fail 红=排除 / na 灰=走不了
-const VERDICT_PILL: Record<'ok' | 'warn' | 'fail' | 'na', { bg: string; fg: string }> = {
-  ok: { bg: '#dcfce7', fg: '#15803d' }, warn: { bg: '#fef3c7', fg: '#b45309' },
-  fail: { bg: '#fee2e2', fg: '#b91c1c' }, na: { bg: '#f3f4f6', fg: '#6b7280' },
-}
 export function VerdictPill({ tone, children }: { tone: 'ok' | 'warn' | 'fail' | 'na'; children: React.ReactNode }) {
-  const c = VERDICT_PILL[tone]
-  return <span style={{ display: 'inline-block', padding: '1px 10px', borderRadius: 999, fontSize: 12.5, fontWeight: 600, background: c.bg, color: c.fg, whiteSpace: 'nowrap' }}>{children}</span>
+  return <span className={'pnpVerdict ' + tone}>{children}</span>
 }
 // PNP 命中计算(PnpListSection 与通道直判块两处共用;纯函数,改一处两边同变)
 function pnpMatchOf(job: JobRow, occ: PnpOcc[]): { streams: PnpStream[]; matched: PnpStream | null; excluded: boolean; excludedBy: PnpStream | null; hasInclusion: boolean } {
@@ -560,27 +547,26 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
   // 卡片化(E8-10 §3.5「逐条读判定 → 卡片」,双端统一;Frank 三拍:拆卡 / 值不换行不省略 / 英文在前中文灰注):
   // 依据链同源 match() reasons(1:1 映射,不另起炉灶);措辞红线照旧(只说符合与否)。
   if (!result) return null
-  const lvColor: Record<string, string> = { high: '#166534', mid: '#1e40af', low: '#6b7280', na: '#9ca3af' }
   const pf = plan.profile!
-  const noteS: React.CSSProperties = { color: '#9ca3af', fontSize: 11 }
+
   // #175(Frank「这种还是不要用括号了」):译名不再括号包,改灰注跟在英文后(头部卡
   // 「Esthetician…　美容师…」同款);省名同理,不再走 provName 的「En(译名)」字符串拼法
   const provCell = (c: string) => {
     const cc = (c || '').toUpperCase(); const en = PROV_NAMES[cc] || c
     const loc = t('prov.' + cc); const has = loc && loc !== 'prov.' + cc && loc !== en
-    return <>{en}{has ? <span style={noteS}>　{loc}</span> : null}</>
+    return <>{en}{has ? <span className="pnpNote">　{loc}</span> : null}</>
   }
   // NOC:英文官方名主文案 + 界面语言译名灰注(#147),NOC 码作同行行尾灰注——不另起行
   const nocCell = (c: string) => {
     const d = nocDesc.find((x) => x.noc === c); const loc = nocLocalTitle(d, lang)
-    return d?.title ? <>{d.title}{loc ? <span style={noteS}>　{loc}</span> : null} <span style={noteS}>NOC {c}</span></> : <>NOC {c}</>
+    return d?.title ? <>{d.title}{loc ? <span className="pnpNote">　{loc}</span> : null} <span className="pnpNote">NOC {c}</span></> : <>NOC {c}</>
   }
   // TEER 值同屏可能出现两次(省提名粗筛 / 技能层级),「0 最高,5 最低」灰注只随首次出现(一事只说一遍)
   let teerNoted = false
   const teerCell = () => {
     if (job.teer == null) return '—'
     const withNote = !teerNoted; teerNoted = true
-    return <>TEER {job.teer}{withNote && <> <span style={noteS}>{t('mm.job.teerNote')}</span></>}</>
+    return <>TEER {job.teer}{withNote && <> <span className="pnpNote">{t('mm.job.teerNote')}</span></>}</>
   }
   const salaryCell = job.salaryAnnual != null ? `$${Math.round(job.salaryAnnual / 1000)}K/yr` : t('mm.job.noSalary')
   type MMRow = { dim: string; jc: React.ReactNode; yc: React.ReactNode; verdict: 'pass' | 'warn' | 'fail' | 'na'; v: React.ReactNode; vTip?: string; src?: { label: string; url: string; fetched?: string } }
@@ -625,15 +611,12 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
     }
   }
   // 判定药丸:底色随判定(裸色字浮在白底上没有归属感);来源 ↗ 在药丸外
-  const PILL: Record<MMRow['verdict'], { bg: string; fg: string }> = {
-    pass: { bg: '#dcfce7', fg: '#15803d' }, warn: { bg: '#fef3c7', fg: '#b45309' }, fail: { bg: '#fee2e2', fg: '#dc2626' }, na: { bg: '#f3f4f6', fg: '#6b7280' },
-  }
   const vCell = (r: MMRow) => {
-    if (r.v === '—') return <span style={{ color: '#9ca3af' }}>—</span>
-    const pill = PILL[r.verdict]; const v = VERDICT_ICON[r.verdict]
+    if (r.v === '—') return <span className="pnpDash">—</span>
+    const v = VERDICT_ICON[r.verdict]
     return (
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
-        <span title={r.vTip} style={{ background: pill.bg, color: pill.fg, fontWeight: 600, fontSize: 11.5, padding: '2px 8px', borderRadius: 999, whiteSpace: 'nowrap' }}>
+      <span className="pnpVwrap">
+        <span title={r.vTip} className={'pnpVpill ' + r.verdict}>
           {v.icon} {r.v}{r.vTip ? ' ⓘ' : ''}
         </span>
         {/* #106:依据链官方来源 ↗ 外链撤(归拢到 /resources) */}
@@ -643,25 +626,25 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
   return (
     /* 壳=页面统一卡规范(白底 #e5e7eb 描边 r12,详情页 sec 同款;Frank「一个页面统一风格」)——
        老弹框灰壳退役;卡里分组用灰内卡(白壳配灰内卡,不再白套白) */
-    <div style={MODAL_CARD}>
+    <div style={CARD_MD}>
       {/* #C 一致性:换用统一卡常量(值与原手写完全一致) */}
-      <div style={MODAL_CARD_HEAD}>
+      <div className="mcardHead">
         <IconTarget /> {t('rm.title')}
-        <span style={{ marginLeft: 10, fontWeight: 600, color: lvColor[result.level] }}>{t('match.levelLine', { level: t('match.' + result.level) })}</span>
+        <span className={'pnpLevel ' + result.level}>{t('match.levelLine', { level: t('match.' + result.level) })}</span>
       </div>
       {/* 一维度一段,分隔线分组(Frank「不要卡片套卡片更清晰」——#172 的灰内卡铺平):
           维度名左、判定药丸右;「本岗 / 我的」标签列 max-content 自适应,
           值一行放全——长值窄屏悬挂缩进折行,永不截断省略 */}
-      <div style={{ marginTop: 4 }}>
+      <div className="pnpMt4">
         {rows.map((r, i) => (
-          <div key={i} style={{ padding: '7px 0', borderBottom: i === rows.length - 1 ? undefined : '1px solid #f3f4f6' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 11.5, color: '#6b7280', fontWeight: 600 }}>{r.dim}</span>
+          <div key={i} className="pnpMmRow">
+            <div className="pnpMmHead">
+              <span className="pnpMmDim">{r.dim}</span>
               {vCell(r)}
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'max-content minmax(0,1fr)', columnGap: 8, rowGap: 1, marginTop: 3, fontSize: 12.5, color: '#4b5563', lineHeight: 1.55 }}>
-              <span style={{ color: '#9ca3af' }}>{t('mm.col.job')}</span><span>{r.jc}</span>
-              {r.yc !== '—' && <><span style={{ color: '#9ca3af' }}>{t('mm.col.you')}</span><span>{r.yc}</span></>}
+            <div className="pnpMmKv">
+              <span className="pnpMmK">{t('mm.col.job')}</span><span>{r.jc}</span>
+              {r.yc !== '—' && <><span className="pnpMmK">{t('mm.col.you')}</span><span>{r.yc}</span></>}
             </div>
           </div>
         ))}

@@ -153,8 +153,8 @@ export function cellOf(k: ColKey, j: JobRow, cx: CellCtx): Cell {
         「这儿有个数」比一把锁更能让人判断值不值,和详情页 #130 同一套 */}
     node = (
       <button title={t('up.lockTip.' + k)} onClick={(e) => { e.stopPropagation(); onUpsell() }}
-        style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', color: '#b45309', font: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-        <span aria-hidden style={{ filter: 'blur(4px)', userSelect: 'none', color: '#4b5563' }}>{PRO_MASK[k] || '—'}</span>
+        className="jtLock">
+        <span aria-hidden className="jtLockMask">{PRO_MASK[k] || '—'}</span>
         <IconLock />
       </button>
     )
@@ -163,15 +163,13 @@ export function cellOf(k: ColKey, j: JobRow, cx: CellCtx): Cell {
   else if (k === 'match') {  // 与我的匹配(E5-00):高=绿 chip / 中=蓝 / 低=灰 / 不适用=浅;未建档→引导。
     // 匹配全放开(Frank 2026-07-21):所有岗都出真实档位,不再有「超额打码」档——收费只剩 Pro 数据列
     if (j.match) {
-      const M: Record<string, { bg: string; fg: string }> = { high: { bg: '#dcfce7', fg: '#166534' }, mid: { bg: '#dbeafe', fg: '#1e40af' }, low: { bg: '#f3f4f6', fg: '#6b7280' }, na: { bg: '#fafafa', fg: '#c4c4c8' } }
-      const c2 = M[j.match]
       // #207(第 26 轮体检):裸字「高/中/低」无口径 —— 挂 title 说清是什么的高低,点开仍是逐条依据链
-      node = <span title={t('match.tip')} style={{ background: c2.bg, color: c2.fg, fontWeight: 600, fontSize: 12, padding: '2px 8px', borderRadius: 6, whiteSpace: 'nowrap' }}>{t('match.' + j.match)}</span>
+      node = <span title={t('match.tip')} className={'jtMatch ' + j.match}>{t('match.' + j.match)}</span>
       Object.assign(extra, { whiteSpace: 'nowrap' })
     } else if (!plan.loggedIn || !plan.profileOk) {
-      node = <a href="/account" style={{ fontSize: 12, color: '#2563eb', textDecoration: 'none', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>{t('match.needProfile')} →</a>
+      node = <a href="/account" className="jtNeedProfile" onClick={(e) => e.stopPropagation()}>{t('match.needProfile')} →</a>
     } else {
-      node = <span style={{ color: '#d1d5db' }}>—</span>; Object.assign(extra, { whiteSpace: 'nowrap', textAlign: 'center' as const })
+      node = <span className="jtDash">—</span>; Object.assign(extra, { whiteSpace: 'nowrap', textAlign: 'center' as const })
     }
   }
   else if (k === 'score') { node = j.gradeChannel != null ? t('gr.ch.' + j.gradeChannel) : (j.score ?? '—'); Object.assign(extra, { fontWeight: 500, whiteSpace: 'nowrap', fontSize: 12.5, color: gradeColor(j.gradeChannel) }) }  // #132 档名人话化(Frank「X/5 看不懂」);旧库未回填退 0-100 旧分
@@ -206,7 +204,7 @@ export function cellOf(k: ColKey, j: JobRow, cx: CellCtx): Cell {
     const stream = j.pnpStream  // 命中省 inclusion 清单才有,别处看不到的真信号
     if (j.province === 'QC') { node = t('cell.pnpQc'); Object.assign(extra, { whiteSpace: 'normal', color: '#7c3aed', fontSize: 12.5 }) }
     else if (stream) {       // 强:省点名招 → 浅琥珀底色徽章(全列唯一加底色的一档)
-      node = <span style={{ background: '#fef3c7', color: '#b45309', fontWeight: 500, fontSize: 12, padding: '2px 8px', borderRadius: 6, display: 'inline-block' }}>{streamDisplay(t, stream)}</span>
+      node = <span className="jtStream">{streamDisplay(t, stream)}</span>
       Object.assign(extra, { whiteSpace: 'normal', overflowWrap: 'anywhere' })
     }
     // 中:可提名 —— 带上省码(Frank 2026-07-26「最好是显示 可哪个省的提名」):

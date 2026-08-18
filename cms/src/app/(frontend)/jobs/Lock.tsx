@@ -20,7 +20,7 @@ const MASK_TEXT = ['████████████████████
 // ctaLabel:未登录 429 场景的出路是「登录/注册」不是「升级 Pro」,文案随场景、行为同一个组件。
 export function LockFoot({ t, loggedIn, msg, ctaLabel }: { t: TFn; loggedIn: boolean; msg?: string; ctaLabel?: string }) {
   return (
-    <div style={{ marginTop: 6, fontSize: 11.5, color: '#9ca3af', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+    <div className="lkFoot">
       <IconLock />{msg || t('up.quota')}<UpgradeCta t={t} loggedIn={loggedIn} link label={ctaLabel} style={{ fontSize: 11.5 }} />
     </div>
   )
@@ -30,8 +30,8 @@ export function LockFoot({ t, loggedIn, msg, ctaLabel }: { t: TFn; loggedIn: boo
 // 黄条 Notice 退役,改打码假文本 + 锁行
 export function LockedText({ t, loggedIn, lines = 3, msg, ctaLabel }: { t: TFn; loggedIn: boolean; lines?: number; msg?: string; ctaLabel?: string }) {
   return (
-    <div style={{ marginTop: 4 }}>
-      <div aria-hidden style={{ filter: 'blur(4px)', userSelect: 'none', pointerEvents: 'none', fontSize: 12.5, lineHeight: 1.9, color: '#d1d5db', letterSpacing: -1 }}>
+    <div className="lkText">
+      <div aria-hidden className="lkMask">
         {MASK_TEXT.slice(0, lines).map((s, i) => <div key={i}>{s}</div>)}
       </div>
       <LockFoot t={t} loggedIn={loggedIn} msg={msg} ctaLabel={ctaLabel} />
