@@ -133,6 +133,23 @@
 >   说明「通用 CRUD 门面」这层从来没被采纳,域文件一律直接 `pool.query(SQL.x)`。记忆 `db-layer-shape` 已按现实改。
 > - **卷宗**:`docs/implementation/文案收拢/09_第2批死代码清除.md`。
 
+> **📍 2026-08-18 夜:`lib/chat/` 拆分设计出稿(只出设计,等点头)**
+> - **🔴 一个数决定了桶怎么设计**:`chatOrchestrate` 被外部 import 的 **76 个名字里,66 个只有测试在用**;
+>   生产侧只有 12 个(route 7 + i18n/chat 的 5 个类型)。
+>   → **桶只装 23 个生产契约**(7 值 + 16 类型,含 chatTools 被三个判定层取的 `Evidence`/`Availability` 那套),
+>   **测试直接点文件**,边界闸给 `tests/**` 开一个写明理由的口子。桶挂 89 个名字就不再是「看一眼知道对外是什么」。
+> - **拆之前先量边界**:新工具 `cms/scripts/section_graph.py`(配套 scan_exports.py —— 那个管跨文件,
+>   这个管**文件内跨段**)。26 个段横幅切开、剥注释统计跨段引用,**实测出两个环**
+>   (`facts↔guards`、`answer↔guards`),成因是 **10 个词表/上限/文本小件**放错了层;
+>   把其中 9 个下沉进新的 `wording.ts`,**两个环同时消失**,重算后有向无环、7 层。
+> - **形状**:`lib/chat/` 15 文件 + 桶 —— types / wording / normalize / steps / federal / slots / traces /
+>   facts / guards / answer / cards / followups / stream / orchestrate + tools(原 chatTools 整体搬入,不拆)+ log。
+>   **`tools.ts` 不拆也是量出来的**:`checkClaims` 一个人就引 6 个 lookup,拆十个文件只会让人多翻。
+>   **guards 按 🔴/🟡/🔵 拆三个**(539/179/166),那是作者自己的分类,只是落成文件。
+> - **⚠️ `tests/eval/*.eval.spec.ts` 不在默认 vitest run 里**(只 include `tests/int/**`),它们**打真模型** ——
+>   迁移只靠 tsc 保证它们编译得过,**别顺手跑**。
+> - **卷宗**:`docs/implementation/文案收拢/10_lib-chat拆分设计.md`(§9 三个待拍板问题,都带推荐默认值)。
+
 > **📍 2026-08-18 凌晨续二:题/答/判收进 `lib/quiz/`(本轮第四件,已完工并推送)**
 > - **`lib/{fields,answers,decisions}.ts` → `lib/quiz/{fields,answers,decisions,index}.ts`**,形状照 `lib/db/`。
 >   量得出来的收获:`Decision.tsx` 与 `QuizForm.tsx` 各**三行 import 并成一行**;
