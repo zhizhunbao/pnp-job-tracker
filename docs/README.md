@@ -52,3 +52,8 @@
 - 设计稿放 `design/`,效果图放 `assets/mockups/`;
 - 顶层新增文档必须回到本页登记一行,否则下一个人只能靠猜;
 - 纯文档提交带 `[skip render]`(别烧构建分钟)。
+  🔴 **但 Render 只看一次 push 里最顶上那个提交的消息** —— `[skip render]` 的 docs 提交压在
+  代码提交上面,**整次部署连底下的代码一起跳**(面板显示 `Deploy skipped for commit <head>`)。
+  **判据:这次 push 里只要有一个代码提交,HEAD 就不许带这个标记。**
+  2026-08-18 实踩第三次:8 个提交里 6 个是代码,HEAD 是带标记的工具提交 → 生产 9 个提交没换版。
+  验法用 `/api/version`(返回 `RENDER_GIT_COMMIT`),别拿页面指纹猜。
