@@ -104,7 +104,14 @@
 >   之前被坑⑧盖住。`withTransaction` 注释写着「seed 灌库靠它保证原子性」,**但不是功能断了** ——
 >   `seed/route.ts` 自带 `BEGIN/COMMIT/ROLLBACK`,它是**第二份实现没人采纳**。两条都没删,按规矩人核。
 > - **卷宗**:`docs/implementation/文案收拢/08_过度导出第1批与模块边界闸.md`。
-> - **没做**:第 2 批(22 个真死候选)、`lib/chat/` 拆分、`LANG_NAME` 那个是非题(会改线上行为,**仍等点头**)。
+> - **🔴 第 2 批那四面红旗查完了:四个都不是功能失效**(查法是 `git log -S`「它是被什么改动断掉的」):
+>   `initialLang` 被 `51be2bab` 语言服务端化取代(那条「跟浏览器走不许按 IP」的拍板仍由 `langFromAccept` 在执行);
+>   两个免费额度常量是 #124 统一池后的**别名**,闸由 `freeGate` + `FREE_DAILY_TRIES` 真在跑;
+>   `PATHWAY_RECIPES` 是 `3ef467af`「第二/三套引擎退役」时**主动下线**,继任者是 `lib/pathways/`;
+>   `ProColumn/isProColumn` 是重复的那份(活的是 `Table.tsx:57` 的 `PRO_COLS`)。
+>   **→ 第 2 批 22 个全部退化成「删不删」,没有「修不修」。删是真删代码,等点头。**
+> - **生产已换版**:`/api/version` → `adabc4f8`(2026-08-18 下午确认)。
+> - **没做**:第 2 批的删除动作、`lib/chat/` 拆分、`LANG_NAME` 那个是非题(会改线上行为,**仍等点头**)。
 
 > **📍 2026-08-18 凌晨续二:题/答/判收进 `lib/quiz/`(本轮第四件,已完工并推送)**
 > - **`lib/{fields,answers,decisions}.ts` → `lib/quiz/{fields,answers,decisions,index}.ts`**,形状照 `lib/db/`。
