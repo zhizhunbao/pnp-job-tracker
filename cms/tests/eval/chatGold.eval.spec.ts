@@ -10,12 +10,12 @@ import pg from 'pg'
 import { LBL, MONEY_WHY, PROMISE_WHY } from '@/lib/i18n'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
-import {
-  findEnglishUnits, findForeignScript, findHedges, findLeaks, findMergedStates, findMixedStates,
-  findSameOpening, findShoutedWords, findWordNumbers, guardAnswer,
-  LABEL_CAP, orchestrate, resolveNoc, suggestOccupations,
-  type Fact,
-} from '@/lib/chatOrchestrate'
+import { LABEL_CAP } from '@/lib/chat/facts'
+import { findEnglishUnits, findForeignScript, findLeaks, findMergedStates, findWordNumbers, guardAnswer } from '@/lib/chat/guards'
+import { orchestrate } from '@/lib/chat/orchestrate'
+import { resolveNoc, suggestOccupations } from '@/lib/chat/slots'
+import { findHedges, findMixedStates, findSameOpening, findShoutedWords } from '@/lib/chat/traces'
+import type { Fact } from '@/lib/chat/types'
 import { friendLlmReady } from '@/lib/friendLlm'
 
 const URI = process.env.DATABASE_URI || ''

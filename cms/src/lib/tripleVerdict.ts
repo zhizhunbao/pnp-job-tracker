@@ -5,7 +5,7 @@
 // 复用件(只调用,不修改):
 //   职业关 = job 行的 08_score 口径字段(pnpStream / pnpEligible / teer / aip)+ pnp_occupations 具名清单
 //   雇主关 = employerVerdict(#284)+ designated_employers 名录行 + companies.lmia_nocs(#286)
-//   个人关 = rules.evaluateRequirements(与 report.requirementLines / chatTools.lookupThresholds 同一套挑行口径:
+//   个人关 = rules.evaluateRequirements(与 report.requirementLines / lib/chat/tools.lookupThresholds 同一套挑行口径:
 //            「该省全部门槛行 → 引擎」),比路 = pathVerdict(C5)的 13 通道注册表与 tier 语义
 //
 // 四条铁律(照抄上游,不新立):
@@ -25,7 +25,7 @@ import {
 } from './pathVerdict'
 import { evaluateRequirements, type Requirement, type RuleProfile, type RuleResult } from './rules'
 // 只 import type(同 pathVerdict):编译期擦除,不给消费端加运行时边。
-import type { Availability, Evidence } from './chatTools'
+import type { Availability, Evidence } from './chat'
 
 // ── 入参 ────────────────────────────────────────────────────────────────────
 
@@ -621,7 +621,7 @@ function conclude(job: TripleJob, rows: TripleRow[], compare: TripleCompareRow[]
 
 /**
  * 岗 × 雇主 × 档案 → 一张判定卡的结构化行(纯函数;门槛/清单/名录行与公司事实由调用方查好传入)。
- * @param data 与 chatTools.loadVerdictData 同一个 VerdictData(判定层六张表),不另起数据面。
+ * @param data 与 lib/chat/tools.loadVerdictData 同一个 VerdictData(判定层六张表),不另起数据面。
  */
 export function tripleVerdict(
   job: TripleJob,

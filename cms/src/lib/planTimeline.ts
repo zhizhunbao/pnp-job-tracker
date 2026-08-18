@@ -28,7 +28,7 @@
  *  ④ **只出结构化 Plan,不生成自然语言。** 措辞归上层(渲染/LLM 复述),计算归这里。
  *     所有 basis/why 字段是**算术的说明**(「12 个月 − 已有 0 个月」),不是给用户读的成品文案。
  */
-import type { Availability, DrawsResult, Evidence, OpsResult, ProvThresholds, ThresholdRow, ThresholdsResult } from './chatTools'
+import type { Availability, DrawsResult, Evidence, OpsResult, ProvThresholds, ThresholdRow, ThresholdsResult } from './chat'
 
 // ── 换算常量(只此一处)──────────────────────────────────────────────────────
 // 月长取 365.25/12 = 30.4375:周 → 月、天 → 月都走它。四舍五入到 0.1 个月,

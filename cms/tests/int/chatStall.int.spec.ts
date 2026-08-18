@@ -56,7 +56,7 @@ vi.mock('@/lib/llm', () => {
   }
 })
 
-import { ChatError, orchestrate } from '@/lib/chatOrchestrate'
+import { ChatError, orchestrate } from '@/lib/chat/orchestrate'
 
 const CARPENTER = '72310'
 const JOB_ROWS = [

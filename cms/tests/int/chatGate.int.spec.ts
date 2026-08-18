@@ -47,8 +47,15 @@ vi.mock('@/lib/entitlement', () => ({
 }))
 vi.mock('@/lib/profile', () => ({ patchProfile: H.patch }))
 
-import { ChatError, buildFollowups, chatProfileContext, mergeRememberedSlots, normalizeSlots, slotAskOptions, isFollowupTurn, isUsageQuestion, metaTopicOf, orchestrate, profileFill, type ChatTurn, type MetaTopic, type Slots } from '@/lib/chatOrchestrate'
-import { findForeignScript, findLeaks, findShoutedWords, findWordNumbers } from '@/lib/chatOrchestrate'
+import { chatProfileContext, mergeRememberedSlots } from '@/lib/chat/answer'
+import { slotAskOptions } from '@/lib/chat/cards'
+import { buildFollowups, profileFill } from '@/lib/chat/followups'
+import { ChatError, orchestrate } from '@/lib/chat/orchestrate'
+import { type MetaTopic, isUsageQuestion, metaTopicOf, normalizeSlots } from '@/lib/chat/slots'
+import { isFollowupTurn } from '@/lib/chat/steps'
+import type { ChatTurn, Slots } from '@/lib/chat/types'
+import { findForeignScript, findLeaks, findWordNumbers } from '@/lib/chat/guards'
+import { findShoutedWords } from '@/lib/chat/traces'
 import { completeText } from '@/lib/llm'
 import { POST } from '@/app/api/chat/route'
 

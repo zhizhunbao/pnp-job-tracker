@@ -2,7 +2,7 @@
 // 契约照抄 docs/implementation/C5-判定层pathVerdict-20260805.md §三(定稿,不许改形状);
 // 通道知识的人肉核对版见 docs/design/案例C01-马龙木匠路径-路径分析-20260805.md §二/§三/§九。
 //
-// 总红线(与 chatTools.ts 同一条):**判定、数字、出处一律从这一层出,LLM 只组稿**。
+// 总红线(与 lib/chat/tools.ts 同一条):**判定、数字、出处一律从这一层出,LLM 只组稿**。
 // 本文件自己的四条铁律:
 //   ① reasons 里的 `quote` 只许来自数据行的 valueText / label / note —— 代码里**一句手写的「官方原句」都不许有**。
 //      PNP 门槛行的 valueText 多为空,官方原文落在 label(见 rules.ts 的 Requirement.label 注释),故 quote = valueText || label。
@@ -26,8 +26,8 @@ import { estimateCrs, type CrsEstimateProfile, type EeGridRow } from './crsEstim
 import { estimateMbEoi, type MbEduKey, type MbProfile } from './mbEoiEstimate'
 import { gridStreamOf, scoreProvince, streamMatches, type ScoreFactor, type SelfProfile } from './pnpSelfScore'
 import type { EduKey } from './pnpSelfScore'
-// 只 import type:编译期擦除,不给 chatTools(它拉着 match/planTimeline/reportFacts)加运行时边。
-import type { Availability, Evidence } from './chatTools'
+// 只 import type:编译期擦除,不给 lib/chat/tools(它拉着 match/planTimeline/reportFacts)加运行时边。
+import type { Availability, Evidence } from './chat'
 import { type GateKey, type StatusAsk } from './gateManifest'
 import { askLabels, gateLabels } from './i18n'
 import { fieldMatchExemptionOf, gateOf, PATHWAYS, type PathwayStrategy } from './pathways'
@@ -105,7 +105,7 @@ export type VerdictProfile = {
 
 export type VerdictReason = {
   kind: 'excluded' | 'gap' | 'met' | 'needs-info'
-  /** 中文成句。**留着不动**:chatOrchestrate 拿它喂模型(zhOnly),多处测试也钉着这些措辞。 */
+  /** 中文成句。**留着不动**:lib/chat/facts 拿它喂模型(zhOnly),多处测试也钉着这些措辞。 */
   text: string
   /** 措辞层(2026-08-11):`pv.*` i18n 键 + 参数,显示端 `t(key, params)` 自己拼。
       为什么不直接把 text 翻三份:这些句子是**按数据拼出来的**(门槛几个月、差几档、清单叫什么),
@@ -900,7 +900,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
     reasons.push({
       kind: 'gap',
       // 对照的是**哪一轮抽选**:这里拿 draw 的官方通道名与日期,不用 score.refLabel ——
-      // refLabel 是中文拼的展示串(chatOrchestrate 那边也是 zhOnly 包着用),塞进英文句子就成了半中半英。
+      // refLabel 是中文拼的展示串(lib/chat/facts 那边也是 zhOnly 包着用),塞进英文句子就成了半中半英。
       text: `估分 ${score.value},语言拉满上界 ${score.ceiling},对照 ${draw?.stream ?? score.refLabel} ${draw?.drawDate ?? ''} 的 ${score.refLine} 分`,
       key: 'pv.scoreGulf',
       params: {

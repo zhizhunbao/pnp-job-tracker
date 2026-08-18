@@ -45,7 +45,8 @@ vi.mock('@/lib/llm', () => ({
 }))
 
 import { makeT, type Lang } from '@/lib/i18n'
-import { guardAnswer, orchestrate } from '@/lib/chatOrchestrate'
+import { guardAnswer } from '@/lib/chat/guards'
+import { orchestrate } from '@/lib/chat/orchestrate'
 
 const NS_GUIDE = 'https://liveinnovascotia.com/sites/default/files/2026-02/Guide-NSNP-Skilled-Worker-English.pdf'
 const NS_LIST = 'https://liveinnovascotia.com/critical-vacancies'

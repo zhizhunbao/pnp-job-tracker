@@ -1,7 +1,11 @@
 // 文案 · 对话与 AI 顾问的**见客文案**。
 // 🔴 红线:**给模型看的提示词不在这里**(system/instructions 归 prompts.ts)——
 //    用户永远看不到它们,也不需要翻译。别把「给人看的」和「给模型看的」混进一个抽屉。
-import type { Domain } from './index'
+import type { Domain, Lang } from './index'
+// 🔴 只从对话模块引**类型**(编译期擦除)。引任何一个值都会成环:
+//    index → chat → lib/chat → index/chat,实撞过 —— PNP_PROVINCES 初始化时是 undefined。
+import type { Availability } from '@/lib/chat'
+import type { FollowKey, MetaTopic, OccOption, ProfileSlot, UsageTopic } from '@/lib/chat'
 
 const zh = {
   'advisor.left': '免费今日剩 {n} 次',
@@ -187,18 +191,13 @@ const ko: Record<keyof typeof zh, string> = {
 export const chat: Domain<typeof zh> = { zh, en, ko }
 
 // ── 对话与顾问的见客文案 ────────────────────────────────────────────────────
-// 2026-08-17 从 lib/chatOrchestrate.ts 搬来。那边留下的是**编排逻辑**与
+// 2026-08-17 从对话编排层搬来(那边 08-18 拆成了 lib/chat/)。那边留下的是**编排逻辑**与
 // **模型输出的检测器**(HEDGE_WORDS / SCRIPT_RE / COVERAGE_WORD / AVAIL_MARKERS / VERDICT_MARKERS)——
 // 那几样按语言分叉但不是文案,是校验规则,搬进来会让这个文件变成什么都能塞的抽屉。
 // 提示词(SLOT_SYSTEM 等)同理:给模型看的,归 prompts.ts。
-import type { Availability } from '@/lib/chatTools'
-// 🔴 只从 chatOrchestrate 引**类型**(编译期擦除)。引任何一个值都会成环:
-//    index → chat → chatOrchestrate → index/chat,实撞过 —— PNP_PROVINCES 初始化时是 undefined。
-import type { FollowKey, MetaTopic, OccOption, ProfileSlot, UsageTopic } from '@/lib/chatOrchestrate'
 
 /** 拉丁字母/数字结尾的字段名后面补个空格再接中文(「Java是专业」→「Java 是专业」)*/
 const latinTail = (f: string): string => (/[A-Za-z0-9]$/.test(f) ? `${f} ` : f)
-import type { Lang } from './index'
 
 type StepDict = {
   read: string

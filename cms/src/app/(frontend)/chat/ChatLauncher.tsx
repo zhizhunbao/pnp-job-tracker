@@ -31,7 +31,7 @@
 //
 // 与 ChatBox 的边界:壳只传 compact / autoFocus 两个 prop,**不覆盖它的任何类名**
 // (2026-08-04 傍晚拆掉了原来那套 .cbCard/.cbThread 父级覆盖 —— 它的类名一改就静默退化成卡中卡)。
-// 「用户正在看哪个岗」的上下文透传要动 chatOrchestrate,本轮不做,Frank 单独排。
+// 「用户正在看哪个岗」的上下文透传要动 lib/chat,本轮不做,Frank 单独排。
 //
 // 壳只管开合与避让,一句文案都不生成:正文、结论、出处全在 ChatBox / 服务端工具层。
 import dynamic from 'next/dynamic'

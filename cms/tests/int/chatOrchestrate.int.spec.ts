@@ -9,14 +9,16 @@
  */
 import { describe, expect, it } from 'vitest'
 
-import {
-  askOccupation, asksWhichProvince, claimLabel, clampAnswer, collectFacts, dropTrailingHedge, factsBlock, factSheet, fieldSearchTerm,
-  commercialClaimLabel,
-  findEnglishUnits, findFactCopied, findFactDump, findHedges, findForeignScript, findLeaks, findMergedStates,
-  findMixedStates, findSameOpening, findShoutedWords, findUnbackedCoverage, findWordNumbers, guardAnswer, isMoneyTalk, isSelfStatement,
-  LABEL_CAP, literalNoc, localizeUnits, makeSentenceGate, mergeFollowupSlots, missingClaimLines, normalizeSlots, otherClaimLabel,
-  sayFact, stripMd, studyFieldOf, tidy, type Fact, type OccOption,
-} from '@/lib/chatOrchestrate'
+import { factsBlock, sayFact } from '@/lib/chat/answer'
+import { collectFacts } from '@/lib/chat/cards'
+import { LABEL_CAP, claimLabel, commercialClaimLabel, otherClaimLabel } from '@/lib/chat/facts'
+import { asksWhichProvince, isMoneyTalk, isSelfStatement } from '@/lib/chat/federal'
+import { findEnglishUnits, findFactCopied, findFactDump, findForeignScript, findLeaks, findMergedStates, findUnbackedCoverage, findWordNumbers, guardAnswer, missingClaimLines, tidy } from '@/lib/chat/guards'
+import { type OccOption, askOccupation, fieldSearchTerm, literalNoc, mergeFollowupSlots, normalizeSlots, studyFieldOf } from '@/lib/chat/slots'
+import { clampAnswer, factSheet, makeSentenceGate } from '@/lib/chat/stream'
+import { dropTrailingHedge, findHedges, findMixedStates, findSameOpening, findShoutedWords } from '@/lib/chat/traces'
+import type { Fact } from '@/lib/chat/types'
+import { localizeUnits, stripMd } from '@/lib/chat/wording'
 import { makeT, type Lang, LBL, MONEY_WHY, PROMISE_WHY } from '@/lib/i18n'
 
 // 金标原话(设计《案例库-问题与结果先行-20260803》C01)

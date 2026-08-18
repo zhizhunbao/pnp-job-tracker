@@ -11,10 +11,12 @@
  */
 import { describe, expect, it } from 'vitest'
 import { LBL } from '@/lib/i18n'
-import { lookupPlan, type DrawsResult, type Evidence, type OpsResult, type PlanResult, type ProvThresholds, type ThresholdRow, type ThresholdsResult } from '@/lib/chatTools'
-import {
-  factSheet, findEnglishUnits, findForeignScript, findHedges, findLeaks, findWordNumbers, isPlanQuestion, planFacts, sayFact,
-} from '@/lib/chatOrchestrate'
+import { lookupPlan, type DrawsResult, type Evidence, type OpsResult, type PlanResult, type ProvThresholds, type ThresholdRow, type ThresholdsResult } from '@/lib/chat/tools'
+import { isPlanQuestion, sayFact } from '@/lib/chat/answer'
+import { planFacts } from '@/lib/chat/facts'
+import { findEnglishUnits, findForeignScript, findLeaks, findWordNumbers } from '@/lib/chat/guards'
+import { factSheet } from '@/lib/chat/stream'
+import { findHedges } from '@/lib/chat/traces'
 import { buildPlan, type PlanPathInput } from '@/lib/planTimeline'
 import { evaluateRequirements, type Requirement, type RuleProfile } from '@/lib/rules'
 

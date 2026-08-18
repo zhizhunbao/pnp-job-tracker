@@ -21,11 +21,12 @@ vi.mock('@/lib/llm', () => ({
   }),
 }))
 
-import { lookupCrs, lookupPermit } from '@/lib/chatTools'
-import {
-  buildPgwpCombineAnswer, collectFacts, crsLookups, federalRulePrograms, federalRuleProgramsForTurn, orchestrate, synthMessages,
-  type ChatTurn, type Fact, type Slots,
-} from '@/lib/chatOrchestrate'
+import { lookupCrs, lookupPermit } from '@/lib/chat/tools'
+import { buildPgwpCombineAnswer, synthMessages } from '@/lib/chat/answer'
+import { collectFacts } from '@/lib/chat/cards'
+import { crsLookups, federalRulePrograms, federalRuleProgramsForTurn } from '@/lib/chat/federal'
+import { orchestrate } from '@/lib/chat/orchestrate'
+import type { ChatTurn, Fact, Slots } from '@/lib/chat/types'
 
 const URL = 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/test.html'
 const rule = (program: string, factor: string, value: number | null) => ({

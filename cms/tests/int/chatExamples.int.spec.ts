@@ -2,7 +2,7 @@
 // 真人 33102 档案锚定案例见 docs/design/一键三合一判定-20260809.md §2(找工中/CLB 6/PGWP 剩 18 个月/目标省 BC)。
 import { describe, expect, it } from 'vitest'
 import { pickExamples, profileMemories, exampleKind, type ChatProfile } from '@/app/(frontend)/chat/chatExamples'
-import { literalNoc } from '@/lib/chatOrchestrate'
+import { literalNoc } from '@/lib/chat/slots'
 import { makeT } from '@/lib/i18n'
 
 const en = makeT('en')

@@ -50,7 +50,8 @@ vi.mock('@/lib/llm', () => ({
 }))
 
 import { makeT, type Lang } from '@/lib/i18n'
-import { guardAnswer, orchestrate } from '@/lib/chatOrchestrate'
+import { guardAnswer } from '@/lib/chat/guards'
+import { orchestrate } from '@/lib/chat/orchestrate'
 
 const NOC = '21232'
 const TITLE = 'Software developers and programmers'

@@ -5,7 +5,7 @@
 // 没有 facts / evidence / followups —— 而这三样正是本站与通用聊天的全部区别,
 // 套进去等于把「每个数字都能点回官方原页」降级成一段纯文本。所以只抄形态,自己渲。
 //
-// 红线(与 chatTools 同口径,不许放松):`value === null` 是官方隐私抑制(如 "Less than 10"),
+// 红线(与 lib/chat/tools 同口径,不许放松):`value === null` 是官方隐私抑制(如 "Less than 10"),
 // 渲 valueText 原文,**永不折成 0 或「暂无」** —— 折了就是替官方编了个数字。
 import { useState } from 'react'
 
@@ -18,11 +18,11 @@ import { track } from '@/lib/track'
 export type Fact = {
   tool: string; label: string; value: number | null; valueText: string; unit: string
   evidence: { url: string; fetched: string; label?: string; section?: string }
-  cited?: boolean       // 服务端回读答复打的标(chatOrchestrate.citeFacts):这条答复真用到了吗
+  cited?: boolean       // 服务端回读答复打的标(lib/chat/followups.citeFacts):这条答复真用到了吗
 }
-// degraded = 服务端出口校验两次没过,`answer` 其实是**一句说明 + 一张原始事实清单**(chatOrchestrate.factSheet)。
+// degraded = 服务端出口校验两次没过,`answer` 其实是**一句说明 + 一张原始事实清单**(lib/chat/stream.factSheet)。
 // 不许假装成正常答复,也不许拿它当报错 —— 它是我们真查到的东西,只是没被组织成一段话。
-/** C6 选项卡(服务端 chatOrchestrate.ChatOption):需要决定才有;第 4 张「自己说」由前端固定给 */
+/** C6 选项卡(服务端 lib/chat/types.ChatOption):需要决定才有;第 4 张「自己说」由前端固定给 */
 export type AnswerOption = { label: string; consequence?: string; sendText: string; recommended?: boolean }
 export type Answer = {
   answer: string; slots?: Record<string, unknown>; facts?: Fact[]; followups?: string[]

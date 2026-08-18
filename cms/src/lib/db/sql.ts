@@ -727,10 +727,10 @@ export const COMPANY_BRIEF_BY_NAME = `SELECT ai_brief FROM companies WHERE lower
 export const JOB_APPLY_URL_BY_ID = `SELECT apply_url FROM jobs WHERE id = $1 LIMIT 1`
 
 /* ══════════════════════════════════════════════════════════════════════════
-   25) AI 顾问的事实取数(chatTools)
+   25) AI 顾问的事实取数(lib/chat/tools)
    ══════════════════════════════════════════════════════════════════════════ */
 
-// ── lib/chatTools.ts ──
+// ── lib/chat/tools.ts ──
 
 export const PNP_OCCUPATIONS_FLAT = `SELECT province, stream, label, type, noc, url, fetched FROM pnp_occupations`
 
@@ -780,10 +780,10 @@ export const DESIGNATED_BY_PROV_2 = `SELECT name, province, location, is_tech, s
             FROM designated_employers WHERE province = 'NL'`
 
 /* ══════════════════════════════════════════════════════════════════════════
-   26) 顾问的职业码识别(chatOrchestrate)
+   26) 顾问的职业码识别(lib/chat)
    ══════════════════════════════════════════════════════════════════════════ */
 
-// ── lib/chatOrchestrate.ts ──
+// ── lib/chat/slots.ts + orchestrate.ts ──
 
 export const NOC_BY_TITLE_SIMILARITY = `SELECT j.noc, max(similarity(j.title, $1)) AS sim, count(*) AS n
      FROM jobs j WHERE j.noc IS NOT NULL AND j.noc <> '' AND similarity(j.title, $1) > 0.4

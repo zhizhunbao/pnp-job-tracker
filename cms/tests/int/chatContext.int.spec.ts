@@ -21,7 +21,8 @@ vi.mock('@/lib/llm', () => ({
   }),
 }))
 
-import { orchestrate, type ChatTurn } from '@/lib/chatOrchestrate'
+import { orchestrate } from '@/lib/chat/orchestrate'
+import type { ChatTurn } from '@/lib/chat/types'
 
 class ContextPool {
   calls: { sql: string; params: unknown[] }[] = []

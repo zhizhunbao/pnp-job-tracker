@@ -46,7 +46,7 @@ const FAULT_KEY: Record<Fault, string> = {
 // 重试有意义的才给重试钮:limit(额度用完)重试只会再撞一次,guard(答复没对上出处)重试也是同一份事实;
 // busy 恰恰相反——模型那头刚才在冷启/排队,过一会儿再问多半就答上了(实测热身后 4-11s)
 const RETRYABLE: Fault[] = ['llm', 'net', 'busy']
-const MAX_TEXT = 1200   // 对齐服务端 chatOrchestrate.MAX_TEXT(超了是**静默截断**,不拦用户看不出后半截没被读)
+const MAX_TEXT = 1200   // 对齐服务端 lib/chat/steps.MAX_TEXT(超了是**静默截断**,不拦用户看不出后半截没被读)
                         // 常量不 import:那模块是服务端的(带 pg pool),拖进客户端包不值
 
 const sourceName = (url: string): string => {

@@ -17,10 +17,12 @@ vi.mock('@/lib/llm', () => ({
     (messages[0]?.content?.includes('You turn one message') ? H.slots : H.answer)),
 }))
 
-import {
-  bareNocCandidates, findAlienProvinces, isSelfStatement, normalizeSlots, orchestrate, sentenceBlockers,
-  type Fact, type Slots,
-} from '@/lib/chatOrchestrate'
+import { isSelfStatement } from '@/lib/chat/federal'
+import { findAlienProvinces } from '@/lib/chat/guards'
+import { orchestrate } from '@/lib/chat/orchestrate'
+import { bareNocCandidates, normalizeSlots } from '@/lib/chat/slots'
+import { sentenceBlockers } from '@/lib/chat/stream'
+import type { Fact, Slots } from '@/lib/chat/types'
 
 const f = (over: Partial<Fact>): Fact => ({
   tool: 'lookupJobs', label: 'NL 在招岗位', value: 3, valueText: '', unit: 'jobs',

@@ -107,7 +107,7 @@ const zh = {
   'dp.start': '开始评估', 'dp.resume': '继续作答', 'ps.bonus': '加分项',
   'dp.basicCount': '已答 {done}/{total}',
   // ── 判定核措辞层(pv.*,2026-08-11)。中文与 pathVerdict.ts 的 reason.text **逐字一致**:
-  // 那边的 text 留给 chatOrchestrate 喂模型与测试断言,这边给显示端。改一处必须两处一起改。
+  // 那边的 text 留给 lib/chat/facts 喂模型与测试断言,这边给显示端。改一处必须两处一起改。
   // 官方原句(reason.quote)永不进这里 —— 引用不翻译。
   'pv.noReq': '本站尚未收录 {stream} 的门槛条文',
   'pv.occIneligible': '{noc} 在「{stream}」这张不合格清单上',

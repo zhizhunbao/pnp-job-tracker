@@ -10,7 +10,7 @@
  *       busy(503)= 合成等不来字(停摆闸响);不发事实清单,前端出「系统繁忙,稍后再试」+重试钮
  *
  * 🔵 **正文按句流**(2026-08-08 拍板;旧口径「只流轨迹」的理由——「出口校验整段才跑」——已被拆掉):
- *    一句过了逐句门(数字回查 facts / 内部码 / 语言混用 / 两态揉一句)才发,判据见 lib/chatOrchestrate
+ *    一句过了逐句门(数字回查 facts / 内部码 / 语言混用 / 两态揉一句)才发,判据见 lib/chat/guards
  *    的 makeSentenceGate。撞了门 → `{"reset":true}` 撤回已发的那截,再走重试/降级,最终整段照旧由
  *    `{answer,…}` 那条事件定稿(前端一律以它为准)。轨迹事件仍全是我们自己构造的字符串(STEP)。
  *
@@ -20,10 +20,10 @@
  *    就照今天的 JSON 回。限流头两条路都在 Response 建立时给(流开了加不上)。
  *
  * 🔵 **登录用户的槽回填档案**(D3,2026-08-09):一轮抽出来的高置信槽**只补空**写进 users.profile,
- *    答复末尾加一行告知(判定与文案在 lib/chatOrchestrate 的 profileFill,本路由只负责登录判定与写库)。
+ *    答复末尾加一行告知(判定与文案在 lib/chat/followups 的 profileFill,本路由只负责登录判定与写库)。
  *    匿名一个字都不存;写库失败当无事发生,答复照旧。
  *
- * 本路由**只管鉴权/限流/错误码/传输形状**,三步流水线全在 lib/chatOrchestrate(可单测,不碰网络鉴权)。
+ * 本路由**只管鉴权/限流/错误码/传输形状**,三步流水线全在 lib/chat(可单测,不碰网络鉴权)。
  * 本批不做付费闸(设计 §五 Frank 未拍板):全部免费,匿名按 IP、登录按账号,只防滥用。
  * 多轮记忆不落库:history 由前端传(设计 §九「v1 不做多轮长记忆」)。
  */
@@ -32,8 +32,8 @@ import type { Lang } from '@/lib/i18n'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { logChat, threadId } from '@/lib/chatLog'
-import { ChatError, chatProfileContext, orchestrate, profileFill, type ChatResult, type ChatStep, type ChatTurn } from '@/lib/chatOrchestrate'
+import { logChat, threadId } from '@/lib/chat'
+import { ChatError, chatProfileContext, orchestrate, profileFill, type ChatResult, type ChatStep, type ChatTurn } from '@/lib/chat'
 import { getUser } from '@/lib/entitlement'
 import { freeGate } from '@/lib/freeQuota'
 import { patchProfile } from '@/lib/profile'

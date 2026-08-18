@@ -27,11 +27,13 @@ vi.mock('@/lib/llm', () => ({
     (messages[0]?.content?.includes('turn one message') ? H.slots : H.answer)),
 }))
 
-import {
-  filledProfileSlots, findForeignScript, guardAnswer, isPathQuestion, MIN_PROFILE_SLOTS,
-  normalizeSlots, orchestrate, verdictFollowups, verdictProfileOf, type Fact, type Slots,
-} from '@/lib/chatOrchestrate'
-import { lookupVerdict } from '@/lib/chatTools'
+import { verdictFollowups, verdictProfileOf } from '@/lib/chat/facts'
+import { MIN_PROFILE_SLOTS, isPathQuestion } from '@/lib/chat/federal'
+import { findForeignScript, guardAnswer } from '@/lib/chat/guards'
+import { orchestrate } from '@/lib/chat/orchestrate'
+import { filledProfileSlots, normalizeSlots } from '@/lib/chat/slots'
+import type { Fact, Slots } from '@/lib/chat/types'
+import { lookupVerdict } from '@/lib/chat/tools'
 
 // ── mart → 「数据库行」(camelCase → seed 白名单的 snake_case)─────────────────
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

@@ -69,10 +69,11 @@ vi.mock('@/lib/llm', () => ({
 }))
 
 import { makeT, type Lang } from '@/lib/i18n'
-import { checkClaims, type Claim } from '@/lib/chatTools'
-import {
-  guardAnswer, normalizeSlots, orchestrate, type ChatResult,
-} from '@/lib/chatOrchestrate'
+import { checkClaims, type Claim } from '@/lib/chat/tools'
+import { guardAnswer } from '@/lib/chat/guards'
+import { orchestrate } from '@/lib/chat/orchestrate'
+import { normalizeSlots } from '@/lib/chat/slots'
+import type { ChatResult } from '@/lib/chat/types'
 import { completeText } from '@/lib/llm'
 
 const IDOL = 'https://immigratemanitoba.com/mpnp/idol/'

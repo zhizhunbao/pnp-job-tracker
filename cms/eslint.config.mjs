@@ -8,7 +8,7 @@ import nextCoreWebVitals from 'eslint-config-next/core-web-vitals'
 import nextTypeScript from 'eslint-config-next/typescript'
 
 // 带桶的模块(`lib/<名>/index.ts`)—— 下面那道边界闸认这三个,加新桶就加这里一行。
-const BARRELS = ['i18n', 'pathways', 'quiz']
+const BARRELS = ['chat', 'i18n', 'pathways', 'quiz']
 const ABSOLUTE = BARRELS.map((m) => `**/lib/${m}/*`)
 const SIBLING = BARRELS.flatMap((m) => [`./${m}/*`, `../${m}/*`])
 const barrelOnly = (group) => ({
@@ -75,6 +75,16 @@ const eslintConfig = [
     // 模块**自己目录内**的相对引用(lib/i18n/index.ts → './chat')不在此列,那是模块内部。
     files: ['src/lib/**/*.{ts,tsx}'],
     rules: barrelOnly([...ABSOLUTE, ...SIBLING]),
+  },
+  {
+    // ── 测试是例外,而且只有测试(2026-08-18 拆 lib/chat 时立)──────────────────
+    // 判定层的测试要测的**就是模块内部的判定件**(穷举输入断言性质,见 verdictAnswer/guards 那批用例):
+    // lib/chat 对外 76 个名字里 66 个只有测试在用。两条路只能选一条 ——
+    //   ① 桶把这 66 个也导出:桶就不再是「看一眼知道对外是什么」,这条约定当场作废;
+    //   ② 测试直接点文件:桶保持 23 个生产契约,内部件只有测试够得着。
+    // 选②。测试不是运行时消费者,它绕过桶**不会**让生产代码的对外面失控;反过来才会。
+    files: ['tests/**/*.{ts,tsx}'],
+    rules: { 'no-restricted-imports': 'off' },
   },
   {
     ignores: ['.next/', 'src/payload-types.ts', 'src/payload-generated-schema.ts'],

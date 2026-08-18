@@ -14,7 +14,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import {
   checkClaims, lookupCoverage, lookupDraws, lookupEE, lookupJobs, lookupOps, lookupPermit, lookupThresholds,
   PNP_PROVINCES,
-} from '@/lib/chatTools'
+} from '@/lib/chat/tools'
 
 const URI = process.env.DATABASE_URI || ''
 const CARPENTER = '72310'   // C01 木匠(亚岗昆木工毕业,ON,0 经验)

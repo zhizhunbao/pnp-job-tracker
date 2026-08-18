@@ -24,10 +24,10 @@ vi.mock('@/lib/llm', () => ({
     (messages[0]?.content?.includes('You turn one message') ? H.slots : H.answer)),
 }))
 
-import {
-  findUngroundedClaims, findUnitMismatch, guardAnswer, orchestrate, sentenceBlockers,
-  type Fact, type Slots,
-} from '@/lib/chatOrchestrate'
+import { findUngroundedClaims, findUnitMismatch, guardAnswer } from '@/lib/chat/guards'
+import { orchestrate } from '@/lib/chat/orchestrate'
+import { sentenceBlockers } from '@/lib/chat/stream'
+import type { Fact, Slots } from '@/lib/chat/types'
 
 const emptySlots = (over: Partial<Slots> = {}): Slots =>
   ({ noc: '33102', occText: 'nurse aide', provs: [], expMonths: null, status: null, claims: [], ...over })

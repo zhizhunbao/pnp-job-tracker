@@ -7,8 +7,8 @@
  */
 import { describe, expect, it, vi } from 'vitest'
 
-import { logChat, threadId, turnOf } from '@/lib/chatLog'
-import type { ChatResult, ChatTurn } from '@/lib/chatOrchestrate'
+import { logChat, threadId, turnOf } from '@/lib/chat/log'
+import type { ChatResult, ChatTurn } from '@/lib/chat/types'
 
 const flush = () => new Promise((r) => setImmediate(r))
 

@@ -12,23 +12,23 @@
  *
  * 形状照 reportFacts.ts:纯函数 + 显式 pool 入参,无全局状态、无 LLM 调用。
  */
-import { NO_LIST_PROVINCES, provListCoverage, type MatchDims, type ProvListCoverage } from './match'
+import { NO_LIST_PROVINCES, provListCoverage, type MatchDims, type ProvListCoverage } from '../match'
 // ⚠️ 单向依赖:planTimeline 只 `import type` 本文件(编译期擦除),所以这条运行时的边不成环。
 // 要往回加一个**值**引用之前先想清楚:那会变成真的循环依赖。
-import { buildPlan, type Plan, type PlanPathInput } from './planTimeline'
+import { buildPlan, type Plan, type PlanPathInput } from '../planTimeline'
 // ⚠️ 这条边只能是**单向**的:pathVerdict 对本文件只 `import type`(编译期擦除),
 // 所以这里拿它的**值**(pathVerdict/pathLevers)不成环。往 pathVerdict 里加一个指回本文件的值引用之前先想清楚。
 import {
   pathLevers, pathVerdict,
   type DesignatedEmployerRow, type OccupationRow, type PathwayVerdict,
   type VerdictData, type VerdictDrawRow, type VerdictLever, type VerdictProfile,
-} from './pathVerdict'
-import { assembleReportFacts } from './reportFacts'
-import { evaluateRequirements, type Requirement, type ReqSubject, type RuleProfile, type RuleVerdict } from './rules'
-import type { ScoreFactor } from './pnpSelfScore'
-import type { EeGridRow } from './crsEstimate'
-import { checkedAt } from './jobsSql'
-import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
+} from '../pathVerdict'
+import { assembleReportFacts } from '../reportFacts'
+import { evaluateRequirements, type Requirement, type ReqSubject, type RuleProfile, type RuleVerdict } from '../rules'
+import type { ScoreFactor } from '../pnpSelfScore'
+import type { EeGridRow } from '../crsEstimate'
+import { checkedAt } from '../jobsSql'
+import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 // ── 公共类型 ────────────────────────────────────────────────────────────────
 
@@ -851,7 +851,7 @@ export const PRIVATE_PROMISE =
 
 /**
  * availability='ok' 时的 why:**一句结论**,不超过一行。
- * 消费端(chatOrchestrate 的 fact())把 why 截到 110 字 —— 原来 ops 的 why 直接引 OPS_POLICY.note
+ * 消费端(facts.ts 的 fact())把 why 截到 110 字 —— 原来 ops 的 why 直接引 OPS_POLICY.note
  * (实测 200+ 字),截完是半句话。完整的官方原文注留在 facts 里(coverage.note / ops.note …),
  * 前端出处用那一份,这里只回一句"能对照,数字在上面"。
  */
