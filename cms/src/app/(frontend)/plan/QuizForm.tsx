@@ -2,15 +2,13 @@
 // 答题器(一屏一题)—— 2026-08-03 撤掉 SurveyJS 后自己出的那 ~100 行。
 // 它替掉的是 1.43 MB JS + 306 KB CSS 的框架,而框架真正在干的活只有这些:
 // 单选题渲染、必答拦住下一步、一条「加拿大经验不得超过总经验」的选项过滤、翻页导航、值变更回调。
-// 题目本身照旧住 lib/fields.ts(字段库=单一来源),取哪几道照旧走 lib/decisions.ts —— 这里只管翻页与版式,
+// 题目本身照旧住 lib/quiz/fields.ts(字段库=单一来源),取哪几道照旧走 lib/quiz/decisions.ts —— 这里只管翻页与版式,
 // 而版式全部来自 quiz/QuizUI(与选工作页共用同一套,Frank「保证所有答题页面一致」)。
 import { useEffect, useState } from 'react'
 
 import { QuizChoices, QuizNav, QuizTitle, pickL, type L } from '../quiz/QuizUI'
 import type { Lang, TFn } from '@/lib/i18n'
-import { FIELDS } from '@/lib/fields'
-import { fieldsOf, type Stage } from '@/lib/decisions'
-import type { Answers } from '@/lib/answers'
+import { FIELDS, fieldsOf, type Answers, type Stage } from '@/lib/quiz'
 
 export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplete, doneKey, onBack, onStepChange, startAtEnd = false, startAt, finishLabel, onFinish }: {
   decision: string

@@ -10,11 +10,11 @@
 // 自绘控件反而要一条条补回来(可访问性是 CLAUDE.md 里不上砧板的四样之一)。
 import { Button, UI } from '../ui'
 import type { Lang } from '@/lib/i18n'
-import type { L } from '@/lib/fields'
+import type { L } from '@/lib/quiz'
 
-// 题面/选项的三语文本 —— 形状跟着**字段库**走(lib/fields 的 L),这里只负责按当前语言取。
+// 题面/选项的三语文本 —— 形状跟着**字段库**走(lib/quiz/fields 的 L),这里只负责按当前语言取。
 // 2026-08-17:先前这里另抄了一份一模一样的 type L,两份定义各活各的,是真重复。
-export type { L } from '@/lib/fields'
+export type { L } from '@/lib/quiz'
 export const pickL = (x: L | string, lang: Lang): string => (typeof x === 'string' ? x : x[lang])
 
 // 进度文字:三句住这里(先前是覆盖 SurveyJS 的 questionsProgressText;

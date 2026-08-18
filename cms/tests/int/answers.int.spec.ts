@@ -2,9 +2,7 @@
 // 锁死三件事:① 老答案迁得过来(丢了=让用户重答,红线);② 目标省两种表示始终同步
 // (只写一边 → 另一个入口会重新问一遍,那正是这次收敛掉的病);③ 档位→引擎输入的换算与重构前逐字一致。
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { ANSWERS_KEY, answeredBasics, pullAndMerge, readAnswers, readScoreAnswers, toEngineAnswers, writeAnswers, type Answers , resetAnswersMemory } from '@/lib/answers'
-import { DECISIONS, batchLeadsFree, fieldsOf, KNOWN_NO_FREE_LEAD } from '@/lib/decisions'
-import { FIELDS } from '@/lib/fields'
+import { ANSWERS_KEY, DECISIONS, FIELDS, KNOWN_NO_FREE_LEAD, answeredBasics, batchLeadsFree, fieldsOf, pullAndMerge, readAnswers, readScoreAnswers, resetAnswersMemory, toEngineAnswers, writeAnswers, type Answers } from '@/lib/quiz'
 
 const OLD_QUIZ = 'jobs_quiz_v1'
 const OLD_PR = 'plan_pr_v1'
@@ -169,7 +167,7 @@ describe('题级显隐(fieldsOf 过滤)', () => {
 })
 
 // 服务端答案档同步(答案入库绑账号 2026-08-15):合并规则=新者胜。fetch 用素对象桩
-// (jsdom 不保证有 Response),只摸 status/ok/json 三样 —— 与 lib/answers 的用面一致。
+// (jsdom 不保证有 Response),只摸 status/ok/json 三样 —— 与 lib/quiz/answers 的用面一致。
 describe('服务端答案档同步', () => {
   const iso = (offsetMs: number) => new Date(Date.now() + offsetMs).toISOString()
   const res = (status: number, body: unknown) => ({ status, ok: status >= 200 && status < 300, json: async () => body })

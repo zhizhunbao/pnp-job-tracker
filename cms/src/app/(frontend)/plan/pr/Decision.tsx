@@ -27,9 +27,7 @@ import { ScoreLineCard, recentDraws } from './ScoreLineCard'
 import { PnpScoreCard } from '../../jobs/PnpScoreCard'
 import { iconBtnS, SCRIM, CARD as OVERLAY_CARD, useIsNarrow } from '../../jobs/Modal'
 import { IconRefresh } from '../../Icons'
-import { EMPTY, clearAnswers, pullAndMerge, readAnswers, readScoreAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
-import { fieldsOf, missingFields } from '@/lib/decisions'
-import { FIELDS, NCLC } from '@/lib/fields'
+import { EMPTY, FIELDS, NCLC, clearAnswers, fieldsOf, missingFields, pullAndMerge, readAnswers, readScoreAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/quiz'
 import { gateOf, regionProvincesOf, uiOf } from '@/lib/pathways'
 import { pickName } from '@/lib/occName'
 import { track } from '@/lib/track'
@@ -119,7 +117,7 @@ const PROFILE_FACTOR: Record<string, string[]> = {
   'profile:expRecent': ['work', 'work5', 'workMonths'], 'profile:expOlder': ['work610'],
 }
 
-// 基础卷的档 → 分值卡口径(index = 选项 value,与 lib/fields.ts 的 EDU/AGE 同一张表;
+// 基础卷的档 → 分值卡口径(index = 选项 value,与 lib/quiz/fields.ts 的 EDU/AGE 同一张表;
 // 学历/年龄 2026-08-16 收回基础卷后,值由这里带进分值卡,不再让人答第二遍)
 const EDU_OF: Record<number, 'highschool' | 'diploma2y' | 'bachelor' | 'master' | 'doctorate' | undefined> =
   { 1: 'highschool', 2: 'diploma2y', 3: 'bachelor', 4: 'master', 5: 'doctorate' }
@@ -163,7 +161,7 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
 }) {
   const [lang, setLangSaved, t] = useLang()
 
-  // 答题态(wiring 同 PlanPrView 基本卷:职业=第 1 页,其余翻页;答案唯一来源 lib/answers)
+  // 答题态(wiring 同 PlanPrView 基本卷:职业=第 1 页,其余翻页;答案唯一来源 lib/quiz/answers)
   const [bands, setBands] = useState<Answers>(EMPTY)
   const [noc, setNoc] = useState('')
   const [occStep, setOccStep] = useState(true)

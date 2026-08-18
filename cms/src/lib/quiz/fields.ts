@@ -7,7 +7,7 @@
 // 铁律:挂不上任何结论的字段不入库。
 // 2026-08-03:题面原先是 SurveyJS 的题 JSON(type/name/isRequired 全是给框架看的),
 // 撤掉框架后收成本站自己的最小形状 —— 全部是必答单选,类型与必答不用逐题再声明一遍。
-import type { Lang } from './i18n'
+import type { Lang } from '../i18n'
 import type { Answers } from './answers'
 
 export type Tier = 'free' | 'pro'

@@ -7,8 +7,7 @@ import { useEffect, useState } from 'react'
 import type { TFn } from '@/lib/i18n'
 import { Modal } from './Modal'
 import { Button, Notice } from '../ui'
-import { pullAndMerge, readAnswers } from '@/lib/answers'
-import { fieldsOf, missingFields } from '@/lib/decisions'
+import { fieldsOf, missingFields, pullAndMerge, readAnswers } from '@/lib/quiz'
 
 const GOOGLE_ON = !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
 const GoogleG = () => (

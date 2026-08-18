@@ -3,7 +3,7 @@
  * 注册闸文案 dp.authGate「注册后答案自动存档」,存的就是这里:users.answers
  * (jsonb,列由 docs/sql/account-answers.sql 手写添加,不走 DB_PUSH)。
  * GET = 取本人档(未登录 401);PUT = 整档覆盖,body={basic,score},服务端补 updatedAt。
- * 合并判新旧(新者胜)在客户端 lib/answers.ts —— 本端点只做存取,不做裁决。
+ * 合并判新旧(新者胜)在客户端 lib/quiz/answers.ts —— 本端点只做存取,不做裁决。
  * 红线:答案是用户隐私,只回本人 —— id 一律取自 cookie 鉴权结果,不收任何参数。
  */
 import { headers } from 'next/headers'

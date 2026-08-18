@@ -15,8 +15,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { QuizChecks, QuizChoices, QuizNav, QuizSub, QuizTitle } from '../quiz/QuizUI'
 import type { Lang, TFn } from '@/lib/i18n'
 import { officialLabel as label } from '@/lib/i18n'
-import { pullAndMerge, readAnswers, readScoreAnswers, writeAnswers, writeScoreAnswers, type ScoreAnswers } from '@/lib/answers'
-import { CLB, NCLC } from '@/lib/fields'
+import { CLB, NCLC, pullAndMerge, readAnswers, readScoreAnswers, writeAnswers, writeScoreAnswers, type ScoreAnswers } from '@/lib/quiz'
 import { DEFAULT_PROFILE, EDU_KEYS, scoreProvince, streamMatches, type DrawRow, type EduKey, type ScoreFactor, type SelfProfile } from '@/lib/pnpSelfScore'
 
 // 打分是**关于你这个人**的功能,不绑某一个岗位(Frank 2026-07-27「应该单独弄个功能吧,
@@ -202,7 +201,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
     if (k === 'age') { const a = v as number; writeAnswers({ ageBand: a <= 24 ? 1 : a <= 30 ? 2 : a <= 35 ? 3 : a <= 40 ? 4 : 5 }) }
   }
   // 分值卡答案持久化(2026-08-15 Frank「学历以下的字段都有这个问题」):此前三个 map 只活在
-  // state,刷新全丢。初始从 lib/answers 读档,变更即写回(键=用户自身条件,跨岗位跨页面通用)
+  // state,刷新全丢。初始从 lib/quiz/answers 读档,变更即写回(键=用户自身条件,跨岗位跨页面通用)
   const [ticks, setTicks] = useState<Record<string, boolean>>(() => readScoreAnswers().ticks)
   // 存档优先于岗位语境:用户自己填过就以他的为准(岗位时薪只是没填时的预填)
   const [wage, setWage] = useState<number>(() => readScoreAnswers().wage ?? Math.round(ctx.hourly ?? 0))

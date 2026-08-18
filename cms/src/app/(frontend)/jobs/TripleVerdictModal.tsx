@@ -14,7 +14,7 @@ import { makeT, reqStreamDisplay, streamDisplay, type Lang, type TFn } from '@/l
 
 import { ConditionGrid } from './ConditionGrid'
 import { track } from '@/lib/track'
-import { readAnswers, toEngineAnswers } from '@/lib/answers'
+import { readAnswers, toEngineAnswers } from '@/lib/quiz'
 
 // ── wire(与 /api/triple-verdict 的响应一一对应)─────────────────────────────
 type TvEv = { url?: string; fetched?: string; label?: string }

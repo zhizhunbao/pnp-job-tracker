@@ -3,9 +3,9 @@
 // 四选一的题归 /plan/* 的 SurveyJS 答题器,选职业归 quiz/OccPicker,弹框问卷不再存在)。
 // 这里只剩三样还有人用的东西:读答案(readQuiz)、注册后落档(quizToProfile)、职业名砍尾(shortOcc)。
 import { OB_SEEN_KEY } from '../jobs/OnboardingWizard'
-import { ANSWERS_KEY, answeredBasics, readAnswers, toEngineAnswers, type Answers } from '@/lib/answers'
+import { ANSWERS_KEY, answeredBasics, readAnswers, toEngineAnswers, type Answers } from '@/lib/quiz'
 
-// 记忆键收敛到 lib/answers 一个 key(2026-07-31 统一题库):三问与拿 PR 的答案同住一份,
+// 记忆键收敛到 lib/quiz/answers 一个 key(2026-07-31 统一题库):三问与拿 PR 的答案同住一份,
 // 处境与目标省不再各存一份。本文件不再直接碰 localStorage,读写都过门面。
 export const QUIZ_KEY = ANSWERS_KEY       // 兼容导出:Jobs 仍按名引它做「答过没有」的判定
 

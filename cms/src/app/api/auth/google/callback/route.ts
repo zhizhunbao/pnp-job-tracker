@@ -93,7 +93,7 @@ export async function GET(req: Request): Promise<Response> {
     headers: [
       ['Location', `${SITE}${rt}`],
       ['Set-Cookie', `${cookiePrefix}-token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${tokenExpiration}${secure}`],
-      // #311 登录迹象(与 lib/answers.ts 的 LI_COOKIE 同名):token 是 httpOnly,前端读不到 ——
+      // #311 登录迹象(与 lib/quiz/answers.ts 的 LI_COOKIE 同名):token 是 httpOnly,前端读不到 ——
       // OAuth 是整页跳转、没有客户端登录回调,这里不种迹象的话 Google 用户的答案档同步永远不开闸
       ['Set-Cookie', `o2p_li=1; Path=/; SameSite=Lax; Max-Age=${tokenExpiration}${secure}`],
       ['Set-Cookie', CLEAR_STATE],
