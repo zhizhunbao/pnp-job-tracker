@@ -54,6 +54,11 @@
 - 纯文档提交带 `[skip render]`(别烧构建分钟)。
   🔴 **但 Render 只看一次 push 里最顶上那个提交的消息** —— `[skip render]` 的 docs 提交压在
   代码提交上面,**整次部署连底下的代码一起跳**(面板显示 `Deploy skipped for commit <head>`)。
-  **判据:这次 push 里只要有一个代码提交,HEAD 就不许带这个标记。**
+  **判据①:这次 push 里只要有一个代码提交,HEAD 就不许带这个标记。**
   2026-08-18 实踩第三次:8 个提交里 6 个是代码,HEAD 是带标记的工具提交 → 生产 9 个提交没换版。
-  验法用 `/api/version`(返回 `RENDER_GIT_COMMIT`),别拿页面指纹猜。
+  🔴 **判据②(实踩第四次补的):Render 对整条 commit message 做子串匹配,不区分你是在**用**它
+  还是在**说**它。** 那次救回部署的提交,标题写的是「只看 push 的 HEAD ——
+  压在代码提交上面会跳过整次部署」,里头必须出现那六个字符 → **救回的提交把自己跳过了。**
+  所以规矩不是「HEAD 不许带」,是 **commit message 里不许出现该字面量** ——
+  要描述它就写「跳过标记」,别写标记本身。(写进**文件**里没事,Render 只读 commit message。)
+  验法用 `/api/version`(返回 `RENDER_GIT_COMMIT`),别拿页面指纹或 CSS 字节数猜(误报过两次)。
