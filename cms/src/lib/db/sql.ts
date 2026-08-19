@@ -377,6 +377,17 @@ export const EE_CATEGORIES_LATEST = `SELECT DISTINCT ON (category) category, lab
 
 export const NEWS_RECENT = `SELECT region, title, date, slug, importance, url FROM news ORDER BY date DESC LIMIT 90`
 
+// ── lib/jobs/dims.ts(档案匹配吃的两张清单)──
+// 🔴 **口径写在 WHERE 里**:省提名匹配只吃 `program='PNP'` 的清单行 —— AIP 背书是另一条路,
+//    混进来会让「命中/被排除」判在错的项目上(同 lib/jobs/queries.ts 的 pnpOnly,那条注释 2026 年就写下了)。
+//    2026-08-18 前这一路走的是 Payload Local API 且**没有这道滤**,于是 advisor 与 alerts 的匹配
+//    比职位板多认了一批 AIP 行(职位板那条路一直有 pnpOnly)。同一件事两条路、两个口径,就是这么来的。
+
+export const MATCH_PNP_OCCUPATIONS = `SELECT province, label, type, noc, url, fetched
+     FROM pnp_occupations WHERE COALESCE(program, 'PNP') = 'PNP'`
+
+export const MATCH_EE_CATEGORIES = `SELECT category, label, noc, draw_crs, draw_date, url, fetched FROM ee_categories`
+
 // ── rankings.ts ──
 
 export const RANKING_SLUGS_ALL = `SELECT DISTINCT slug FROM rankings`
@@ -428,7 +439,7 @@ export const COMPANY_INSERT_LAZY = `INSERT INTO companies (name, source, updated
 
 
 
-// ── jdLazyFetch.ts ──
+// ── jobs/jdFetch.ts ──
 
 // ── 补:单引号写的五条 ──
 export const COMPANY_AI_BRIEF = `SELECT id, ai_brief, ai_website, ai_sources, ai_fetched FROM companies WHERE lower(name) = lower($1) LIMIT 1`
