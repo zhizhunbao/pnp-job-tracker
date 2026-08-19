@@ -126,6 +126,29 @@ Frank 拍的方向:**以 agent 为主,情况由 agent 自己判断**;库里查�
 - 抓到的正文落 `html_cache/`(和 crawl 役同一个目录)——
   **chat 的长尾抓取自动变成数据线「下次该洗什么」的线索**。高频出现的就该进 ETL 变成正式库表。
 
+### 🔴 现抓**不靠 Pi**,而且这个站早就有
+
+别把「用 Pi」和「能现抓」联在一起 —— 我们装的 `pi-ai` + `pi-agent-core` 里
+**一个内置工具都没有**(`AgentTool` 是个空壳让你填 `execute`)。现抓在 `pi-web-access` 这类
+**插件**里,而插件挂在 `pi-coding-agent`(13.7MB CLI 机壳)上。用 Pi 的理由只有三件:
+**循环、参数校验、provider 统一**,抓网页不在其中。
+
+**而站里早就有一版,带白名单**:`lib/llm.ts:157` 的 `webFetchTool()` —— 公司调查(E6-03)一直在用,
+2026-07-05 冒烟实测过:
+
+```ts
+tools: [{ type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 1,
+          allowed_domains: [u.hostname], max_content_tokens: … }]
+```
+
+`max_uses: 1` + **域名锁到那一个 host** + 输入侧封顶。第 ② 层照这个样子扩白名单就行,**一个插件都不需要**。
+
+顺带:`pi-web-access` 那类插件**恰恰不守第 4 条**(抓回来就交给模型自由使用),装了反而要花力气拦它。
+
+**真正难的从来不是「抓」**(Node 里就是一个 `fetch`),是这四条 —— 没有任何插件会替我们守:
+① 白名单;② 解析(HTML → 正文,crawl 役的解析器与 `html_cache/` 已有);③ 出处标注;
+④ **不许它产出 Fact**(数字仍旧只从库来,`guardAnswer` 自动兜住)。
+
 ### 为什么不让 agent 直接写 SQL
 
 三条,前两条是硬的:① 一行原始 SQL 结果**没有 evidence**;② **口径不在 schema 里,在 lookup 的代码里**
