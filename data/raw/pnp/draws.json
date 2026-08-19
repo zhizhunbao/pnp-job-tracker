@@ -1,6 +1,6 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-08-15",
+  "fetched": "2026-08-18",
   "provinces": {
     "BC": {
       "label": "BC PNP Skills Immigration",
@@ -445,6 +445,13 @@
       "scale": null,
       "url": "https://www.gov.nl.ca/immigration/invitations-to-apply-updates/",
       "draws": [
+        {
+          "date": "2026-08-18",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 122",
+          "score": null,
+          "invitations": 122
+        },
         {
           "date": "2026-08-10",
           "stream": "NLPNP + AIP (ITA batch)",
