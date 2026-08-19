@@ -63,3 +63,17 @@ cms/dev.log
 /docs/assets/mockups/生产-*
 # 会话草稿目录(临时截图/中间产物)
 /scratchpad/
+
+# ── .claude/ 的本机状态(2026-08-18 补:先前只靠**仓库外**的两处排除挡着 ——
+#    全局 ~/.config/git/ignore 挡 settings.local.json、.git/info/exclude 挡 worktrees/。
+#    换台机器或别人克隆,这两样立刻变成待提交文件,所以把排除搬进仓库)
+#    跟踪的只有共享工具:launch.json 与 skills/(dd、iterate-audit 的脚本)。
+/.claude/settings.local.json
+/.claude/worktrees/
+/.claude/checkpoints/
+/.claude/mailbox/
+/.claude/routines/.state/
+/.claude/scheduled_tasks.json
+/.claude/scheduled_tasks.lock
+/.claude/agent-registry.json
+/.claude/agent-memory-local/
