@@ -170,6 +170,83 @@
 >   生产 `/` `/plan/pr` `/employers` 200,`GET /api/chat` **405 不是 500**(路由模块真加载起来了)。
 > - **卷宗**:同上 §10「落地记录」。**没做**:测试文件名没跟着改;eval 用例只由 tsc 保证编译得过(它们打真模型)。
 
+> **📍 2026-08-18 夜六:朋友网关加上了 tools(实测通过)但**继续用 Haiku**;chat 补 Pro 个人日帽**
+> - **朋友当天就加上了透传**,本机实测:`tool_choice` 给 `required` 与 `auto` 都回 `finish_reason=tool_calls`,
+>   函数名与参数都对。**但没切** —— Frank 拍板继续用 Haiku,两个理由都是实测:
+>   ① 🔴 **思考型模型,`reasoning` 单独字段且吃 token**:required 那次 **807 个 completion tokens** 才吐出工具调用。
+>      planner 现在 `MAX_TOKENS=512`,**切过去会一个工具都不调**,而且现象与「网关不透传」**长得一模一样**
+>      (第一版冒烟用 300 → 四条全是 `finish=length`、content 空、`tool_calls=0`)。要切先把它抬到 ~2000,
+>      否则会二次误判成「他没加」。
+>   ② 🔴 **慢**:5.2s(auto)/ **10.0s**(required),Haiku 1.4s;而 `TIMEOUT_MS=12000`,10 秒离超时只剩 2 秒。
+> - **chat 的三层帽补齐**(Frank「chat 部分,每个用户给限额」):匿名按 IP、免费登录按账号
+>   (这两层 `freeGate` 早就有),**Pro 此前是敞开的** —— 而每一轮都真调模型。新增 `PRO_CHAT_DAILY`
+>   (`lib/plan.ts`,默认 200,同 `PRO_ADVISOR_DAILY` 的口径:防滥用不是卖点),路由里紧跟 `freeGate` 判一次,
+>   超了回既有的 `{error:'limit'}` + 429 —— **前端一个字都不用改**(`ChatBox` 早有 `limit` 分支且不给重试钮)。
+> - 改动 3 个文件、约 12 行;tsc 0、vitest 699/694/5 逐条相同、eslint 561/1。
+
+> **📍 2026-08-18 夜五:`lib/jobs/` 落地(清单出完当场开工,纯搬家)**
+> - Frank 两条拍板结掉清单里的两个决定:**「lib 下面只包含 ts,tsx 都放到 frontend 下面的 jobs」**
+>   (复核:`src/lib` 本来就 0 个 `.tsx`)+ **「函数和类型都搬过来 lib,展示的都留在原地」**。
+> - **形状**:`lib/jobs/{index 35 · queries 742(原 jobsSql 原样改名) · match 317 · dims 21 · jd 32 · jdFetch 151 · types 121}`。
+>   一个文件都没切;`jd`/`jdFetch` **没合并**(搬家与合并分开做),但 `lazyFetchJd` 不上桶(唯一消费者是 `jd.ts`)。
+> - **🔴 类型只有一个家:`app/(frontend)/jobs/types.ts` 整个删掉**(139 行 16 个形状全进 `lib/jobs/types.ts`)。
+>   第一版按「数据 / 展示」分了家,Frank 当场问「frontend jobs 下面怎么还有 types.ts」——
+>   **形状分两处,「去哪找」本身就成了一件要记的事**。分类还在,只是在同一个文件里分段。
+>   **职位相关的 lib 反向 import app 从 4 处清到 0**;全站只剩 1 处且与职位无关
+>   (`rankings.ts` 从 `Ranking.tsx` 取 `RankRow` —— 和 JobRow 当年同款倒置,没治,单独一件事)。
+> - **桶 60 个名字**(44 函数/常量 + 16 形状)。比 chat 的 23 大得多,但量过
+>   **25/25、13/13 都真有模块外消费者**,没有一个是过度导出 —— 职位域是主干,对外面就是这么大。
+> - **🔴 抢修记录**:收口那步的正则写成「所有 `from './types'`」,而 chat/pathways/quiz **各自都有 types.ts**
+>   —— 一跑就把 28 个文件指到了职位桶上,tsc 当场红。靠 `git diff` 逐对只回滚**模块说明符**修回来
+>   (不能整行还原:那些行里有本轮真改动)。**批量改 import 的正则必须锚定完整路径。**
+> - 对外 import 行 **40 → 33**(`api/advisor` 4 行并 1、`api/alerts/run` 3 行并 1;类型分家又给 7 个页面各加回一行)。
+>   `eslint` 的 `BARRELS` 加 `'jobs'`,**绕过桶 0 处**;app 同名的 `(frontend)/jobs/` 页面目录没误伤(同 quiz 那条)。
+> - **注释里的旧路径 21 处一次改全**(`lib/jobsSql` → `lib/jobs/queries` 等)—— `lib/quiz` 那轮的教训。
+> - **验收**:tsc 0;vitest 699/694/5 **按用例全名逐条相同**;eslint **561/1** 与基线同。51 文件 +391/−424,
+>   `git mv` 认出 rename。纯结构搬家不动渲染,没跑探针。
+> - **卷宗**:`13_lib-jobs模块清单.md` §6。**没做**:`lib/location.ts` 仍从 app 取 `ColKey` ——
+>   它整个是「显示层住在 lib」,真要清干净是把它搬去 frontend,单独一件事。
+
+> **📍 2026-08-18 夜四:`lib/jobs/` 模块清单 + `lib/db/database.ts` 的注释订正**
+> - **起因**:Frank 问「jobsSql 一堆查询函数,是不是需要数据访问层 / service 层 / job 目录」。
+>   前两问答案是**都已经有了** —— `lib/db/`(sql.ts 45 个文件在用)+ `jobsSql.ts` 自称 DAL;
+>   service 就是 `lib/` 那 60 个域文件(**20,926 行 vs 30 个 API 路由合计 3,231 行**)。
+> - **第三问用 06 号那把尺子量**(同时引 ≥2 个成员的调用点数,`lib/chat` 当初是 7):
+>   **职位族 15**(成立,能少写 19 行 import;最强一对 jobsSql+match 同现 7 次)、
+>   **雇主族 1**、**职业族 0**(后两个不成立,同 06 号那四个)。清单:`13_lib-jobs模块清单.md`。
+>   建议形状 `lib/jobs/{queries(原 jobsSql 原样改名不切) · match · dims · jd · source · index}`;
+>   `location`/`lmiaStatus` 不进(location 与 noc 同现 5 次,是全站地点单一来源)。**未开工,等两个决定**:
+>   桶要转发 44 个名字接不接受、`JobRow` 搬不搬进来(现在 lib 反向依赖 app)。
+> - **🔴 顺带扒出并已修:`lib/db/database.ts` 的注释在说谎。** 它写着「取池收成这里之后只剩本文件一处」,
+>   实际 `dbOf`/`getDb` 全站只有 **2 个**运行时消费者,`(payload.db as any).pool` 仍在 **40 个文件 49 处**;
+>   `Db` 的注释还指着一组**已经不存在**的 `select<R>()` 助手 —— 它们在第 2 批死代码清除(`ba057f84`)里
+>   按「零消费者」删了,而**零消费者的原因正是调用点从没迁过来**;「通用 CRUD」段只剩一条横幅罩着零行代码。
+>   **本轮只改注释说实话**(10 行,tsc 0 / eslint 0),那 49 处要不要迁是另一件事。
+>   教训:**收拢做了一半就写「已收拢」,下一个人会照着注释以为不用管** —— 注释是决策记录,记错比不记贵。
+
+> **📍 2026-08-18 夜三:`collectFacts` 从「一个整体」拆成「按工具」(纯重构,行为零变化)**
+> - **为什么先做它**:三层形状(库里的 lookup 出 Fact / 官方页现抓只出文字 / 记缺口)全建在
+>   「**每个工具能自己出 Fact**」上。原先七种返回由 `cards.ts` 里 200 行统一摆开,
+>   agent 想单独调一个 `lookupDraws` 拿一条带出处的事实做不到 —— 摆事实和「这轮调哪几个」焊在一起。
+> - **形状:摆事实归 `facts.ts`(一个工具一段),编排归 `collectFacts`。** 不新建文件 ——
+>   `facts.ts` 本来就是「摆」的那一半,而且已住着同形状的 `planFacts`/`verdictFacts`。
+>   新增 `jobsFacts` / `coverageFacts` / `thresholdsFacts` / `drawsFacts` / `opsFacts` / `eeFacts` /
+>   `claimsFacts`,`federalRuleFacts`/`crsFacts` 原样搬家。`cards.ts` **465 → 271**,`facts.ts` 374 → 653。
+> - **组装段 167 行变成一张表**,顺序即优先级一眼看得见(超预算从尾巴砍)。
+>   `script = {noc, zeroExp, provs, claims}` 统一传,**各渲染器只在签名里声明自己真用到的字段**。
+> - **🔴 口径跟着代码整段搬**,一条都没留在调用点(「计数与名单必须同一个 WHERE」那条教训);
+>   evidence 一直是 `fact()` 的必填参数,没碰。调用点现在只剩「调不调、摆哪一格」的理由。
+> - **零变化怎么证的(不是「测试过了」四个字)**:① 两边剥成去注释的代码行、套上已知改名再逐块对拍,
+>   只有三处写法变化语义相同(`ee` 的 `for…push`→`.map`、`claims` 的 `if(claims)`→早返回、
+>   `OPS_KEYS` 提到模块级);② vitest **按用例全名比集合**——699 条逐条相同,新增失败 0;
+>   ③ eslint 输出**逐字 diff**,全文只差一个行号(`pool: any` 220→174)。tsc 0。
+> - **门槛那段行变量 `r` 改叫 `row`**:函数参数现在也叫 `r`(整份返回),两个 `r` 套着读要数括号。
+>   除此之外一个标识符都没改。
+> - **十个渲染器一个都没上桶** —— `lib/agent` 只能从 `@/lib/chat` 桶取(边界闸),
+>   等下一步真接线时再加;没有消费者的名字不进桶。
+> - **卷宗**:`docs/implementation/文案收拢/12_collectFacts按工具拆分.md`。
+>   **没做(下一步,合计不到 60 行)**:联邦题信号接线 / `profileContext` 传给 agent / 工具集补 `lookupPermit`。
+
 > **📍 2026-08-18 夜二:`lib/agent/` 对话兜底接 Pi(已提交,**默认关**)**
 > - **判据是实测**:`chat_logs` 198 轮里 **41 轮(20.7%)抛 `noOcc`**,用户拿到的是「请提供 NOC」。
 >   手写路由是 **13 个意图谓词 + 53 条正则**,而组合是乘法 —— 枚举税的账单。日均 6.6 轮。

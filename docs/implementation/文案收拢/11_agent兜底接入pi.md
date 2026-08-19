@@ -35,7 +35,18 @@
 🔴 **朋友那个网关不做 tool calling,而且是静默忽略**:`tools` 按 OpenAI 格式发出去了(`onPayload` 实证)、
 HTTP 200、只回文本;连 `tool_choice: "required"` 都当没看见(按规范不支持就该回 400)。
 **是网关不透传,不是模型不会** —— 同一个模型在 Ollama 上就调对了。
-→ 待办:给朋友一页最小复现,请他在 `/v1/chat/completions` 上透传 `tools` + `tool_choice`。他透传了,planner 换一行 model 就切回零成本。
+→ ~~待办:给朋友一页最小复现~~ **他 2026-08-18 当天就加上了,本机实测透传成功**:
+`tool_choice` 给 `required` 与 `auto` 都回 `finish_reason=tool_calls`,函数名与参数都对
+(`search_occupations({"query":"front-end developer"})`)。
+
+**但没有切过去 —— Frank 拍板继续用 Haiku**,两个实测理由:
+
+- 🔴 **它是思考型模型,`reasoning` 是单独字段而且吃 token**:required 那次烧了 **807 个 completion tokens**
+  才吐出工具调用。planner 现在 `MAX_TOKENS = 512` —— **直接切过去会一个工具都不调**,
+  而且现象与「网关不透传」**长得一模一样**(第一版冒烟用 300:四条全是 `finish=length`、content 空、
+  `tool_calls=0`)。哪天真要切,先把 `MAX_TOKENS` 抬到 ~2000,否则会误判成「他没加」。
+- 🔴 **慢**:5.2s(auto)/ **10.0s**(required),Haiku 1.4s。而 planner 的 `TIMEOUT_MS = 12000` ——
+  10 秒离超时只剩 2 秒,而这个兜底的前提就是「不许拖慢反问」。
 
 顺带:没有工具时,那个网关自信地答「截至目前(**2024年**),BC PNP 并没有针对特定 NOC 设定统一门槛」——
 年份错、结论编。**这正是本产品存在的理由**,也是「数字只能来自工具层」这条不能松的原因。
@@ -160,6 +171,8 @@ agent 写 SQL 会把这些静默搞错,而错出来的数字长得完全正常;�
 ---
 
 ## 7 · 下一步第一件(两条路都要走)
+
+**✅ 2026-08-18 已完工** —— 卷宗 `12_collectFacts按工具拆分.md`(纯重构,三道闸与基线逐条相同)。
 
 **把 `collectFacts` 从「一个整体」拆成「按工具」。** 现在它是按槽位一次 `Promise.all` 调七个 lookup
 再统一摆 facts(`cards.ts` 219 起约 200 行)。上面三层全建在它上面 ——
