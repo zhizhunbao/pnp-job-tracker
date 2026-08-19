@@ -26,7 +26,6 @@ export type { MetaTopic, OccOption, ProfileSlot, UsageTopic } from './slots'
 export { loadVerdictData } from './tools'
 export type { Availability, DrawsResult, Evidence, OpsResult, PlanResult, ProvThresholds, ThresholdRow, ThresholdsResult } from './tools'
 
-// ── 给 lib/agent 的:兜底解析要查职业候选(2026-08-18)────────────────────────
-//    省码那半 2026-08-19 撤了:agent 改从 `lib/location` 取 —— **域之间不互相取常量**,
-//    省码是全站口径,该住共享叶子,不该由对话域转发给兜底域。
-export { suggestOccupations } from './slots'
+// ── 曾经为 lib/agent 开的口子,2026-08-19 全撤 ────────────────────────────────
+//    省码改从 `lib/location` 取(共享叶子),查候选改由 agent 自己走 `lib/db/sql` ——
+//    **域之间不互相取常量,也不互相借取数函数**;跨域只剩「路由把 resolveByAgent 注进 orchestrate」这一条。

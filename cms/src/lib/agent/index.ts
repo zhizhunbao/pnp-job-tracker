@@ -1,10 +1,9 @@
-// 对话兜底模块的桶 —— **对外只有两个名字**。
-//
-// 为什么单独存在:`lib/chat` 是三步流水线(听懂 → 取数 → 说人话),它的路由是**枚举出来的**
-// (13 个意图谓词 + 53 条正则);枚举不到的那些,实测占 20.7%(198 轮里 41 轮抛 noOcc,
-// 用户拿到的是「请提供 NOC」)。这个模块只接管那一格 —— 在放弃之前让模型**查一次库**再说。
-//
-// 边界:它**只补槽位**。事实、合成、出口闸全在 lib/chat,一行不动;
-// 它挂了、超时了、被 env 关着,流水线的行为与从前逐字相同。
+/**
+ * 对话兜底模块的桶 —— **浏览器也能跑的那半**:只有类型,擦掉之后是空的。
+ * 要连库的那半在 `./server`(它拉着 pi 的循环与 SQL,不许进浏览器包)。
+ *
+ * @author Frank
+ * @time 2026-08-18 20:38:09
+ */
 
-export { agentFallbackOn, resolveByAgent } from './functions'
+export type { AgentSlots, ResolveByAgentIn, ResolveByAgentOut } from './types'

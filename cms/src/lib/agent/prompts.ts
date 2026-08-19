@@ -1,9 +1,17 @@
-// 给模型看的字(不进 i18n:用户看不到、不需要翻译)。这一层只干一件事:放弃之前先查一次库
-// —— 盲猜抽槽实测 198 轮栽 41 轮(20.7%)。不并进 constants:改动频率差一个量级,且是另一种介质。
-// 🔴 红线靠代码兜,不靠这里的字:text 一律丢掉只取工具调用;NOC/省码过 NOC_RE/PROVS;事实一条不由它产。
+/**
+ * 对话兜底给模型看的字(不进 i18n:用户看不到,也不需要翻译);红线由代码校验,不由这里保证。
+ *
+ * @author Frank
+ * @time 2026-08-18 20:38:09
+ */
 
-import { TOOLS } from './constants'   // 工具名只在那儿写一遍,这里插值取 —— 两处对不上模型就调空
+import { TOOLS } from './constants'
 
+// =========================================================================
+// 1. 系统提示
+// =========================================================================
+
+// 系统提示:只让它抽槽位,不许它答用户。
 export const RESOLVE_SYSTEM = `You turn a Canadian-immigration question into lookup slots. You do NOT answer the user.
 
 Your only job: figure out which occupation (5-digit NOC code) the user is talking about, and which provinces.
@@ -19,6 +27,10 @@ Rules:
 export const SEARCH_RESULT_HINT =
   `Pick the single best NOC from these candidates and call ${TOOLS.setSlots.name}. If none fits, call ${TOOLS.giveUp.name}.`
 
+// =========================================================================
+// 2. 工具说明
+// =========================================================================
+
 // 三个工具的自我介绍与参数说明 —— 模型全靠这几句决定调谁、怎么填。
 export const TOOL_DESC = {
   search: "Search this site's occupation table by job title or field of study (English or Chinese). "
@@ -29,7 +41,7 @@ export const TOOL_DESC = {
   setSlotsProvinces: 'Two-letter province codes the user mentioned, e.g. ["BC","ON"]',
   setSlotsReason: 'One short line: why this NOC / why none is needed',
   giveUp: 'No plausible occupation can be found. The pipeline will fall back to asking the user.',
-} as const
+}
 
 // 工具执行完回给模型的话。它读完就决定下一步,所以「为什么不收」要说清。
 export const TOOL_REPLY = {
@@ -37,4 +49,4 @@ export const TOOL_REPLY = {
   rejected: 'Rejected: that NOC is not in the search results. Falling back.',
   recorded: 'Recorded.',
   gaveUp: 'Gave up: ',
-} as const
+}

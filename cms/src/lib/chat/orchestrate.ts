@@ -53,7 +53,7 @@ export async function orchestrate(
      *  🔴 **本模块不许 import lib/agent** —— 方向只能是 agent → chat。
      *  反过来接一条边,桶里的运行时值就进了初始化顺序的赌局:实撞过两次,
      *  两次都是 PNP_PROVINCES 在初始化时 undefined(见 lib/i18n/chat.ts 顶上那条)。 */
-    rescueOcc?: (pool: any, text: string, lang: Lang) => Promise<{ noc: string | null; provs: string[] } | null>
+    rescueOcc?: (input: { pool: any; text: string; lang: Lang }) => Promise<{ noc: string | null; provs: string[] } | null>
   },
   opts?: { onStep?: OnStep; onDelta?: (s: string) => void; onReset?: () => void },
 ): Promise<ChatResult> {
@@ -164,7 +164,7 @@ export async function orchestrate(
     // 🔴 放弃之前的最后一格：让 lib/agent 查一次库（默认 env 关着）。
     //    实测这一格占全部轮次的 20.7%（198 轮里 41 轮），用户拿到的是「请提供 NOC」。
     //    它只补槽位、不产事实；超时/出错/没把握一律回落到下面这一行，行为与从前逐字相同。
-    const rescued = input.rescueOcc ? await input.rescueOcc(pool, text, lang) : null
+    const rescued = input.rescueOcc ? await input.rescueOcc({ pool, text, lang }) : null
     if (!rescued?.noc) throw new ChatError('noOcc', 'occupation not resolved', { ...draft, noc: null })
     hit = { noc: rescued.noc, title: '' }
     rescuedProvs = rescued.provs

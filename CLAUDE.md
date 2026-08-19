@@ -1,12 +1,34 @@
-# CLAUDE.md — pnp-job-tracker 核心理念
+# CLAUDE.md — pnp-job-tracker 设计宪法
 
-> 这是项目的「设计宪法」，每个 session 自动加载。**当前状态/进度看 [STATUS.md](STATUS.md)，产品需求看 [prd.md](prd.md)。**
+> 本文件定义 AI 编程代理在本项目工作时必须遵守的行为准则与长期约定,每个 session 自动加载。
+> **当前状态/进度看 [STATUS.md](STATUS.md),产品需求看 [prd.md](prd.md)。**
 > **开工前先对一眼 [主线与支线](docs/主线与支线-20260801.md)**(判据:能不能把「有人真的掏钱」往前推一格);文档去哪找看 [docs/README.md](docs/README.md)。
-> 本文件只放长期不变的理念与约定;具体进度、数字、待办不要写这里(会过时)。
+> 这里只放**长期不变**的理念与约定;具体进度、数字、待办不要写这里(会过时)。
 
-## 工程理念:Ponytail(有纪律的极简主义)
+---
+
+## 原则 1:编码前先思考
+
+- 需求**模糊时不要写代码,先提问** —— 但提问有配额,见下面「提问与假设的规矩」。
+- 动手前**明确列出你的假设**,并**一句话复述执行范围**:只做被点名的对象,宁窄勿宽;提案未逐条点头 = 未批准。
+- 先答三个定位问题:
+  1. 这是[主线](docs/主线与支线-20260801.md)哪一格?推不推进「有人真的掏钱」?(支线也做,但你得知道自己在做支线)
+  2. 动的是**数据层 `etl/`** 还是**展示层 `cms/`**?—— 清洗、换算、分类类需求几乎全属数据层(见下「清洗下沉到数据层」)。
+  3. 落在 **raw → clean → mart → DB → 页面** 哪一层?改错层 = 下游全体白干。
+- 动 UI/动线前先找现成形态抄(职位板是全站基准),别新造一套;新动线/新组件先出效果图等点头。
+
+**提问与假设的规矩**(猜错的代价归你,多问一句的代价归我):
+
+- **要问就只问「答错了得推翻重做」的**,最多 3 个,每个自带推荐默认值——我能一句「都行」结掉。搜一分钟能查到的(测试框架、目录结构、既有约定)不算问题,是你该做的功课。
+- **说假设就说可证伪的**,最多 5 条。「输入 <10k 行、能全塞内存」算;「代码要可维护」不算。凑数的假设不如不写。
+
+---
+
+## 原则 2:简单优先 —— Ponytail 决策阶梯
+
 > 参考 https://github.com/DietrichGebert/ponytail —— **「最好的代码是你从没写过的代码」**。
 > 动手写任何代码前,先过这道**决策阶梯**:
+>
 > 1. 这功能**需要存在**吗?(YAGNI,不臆测需求)
 > 2. **标准库**能搞定吗?
 > 3. 有**原生/平台特性**吗?
@@ -17,26 +39,94 @@
 > **但这几样永不上砧板:信任边界校验、数据丢失处理、安全、可访问性、数据完整性。**
 > 在本项目的体现:① 清洗宁可留空也不瞎猜(如邮编 FSA 只映射高置信社区);② 不为「可能用得上」加字段/脚本/依赖;③ 改动越小越好,先复用 04c/_paths 等既有结构再考虑新建。
 
-**提问与假设的规矩**(猜错的代价归你,多问一句的代价归我):
-- **要问就只问「答错了得推翻重做」的**,最多 3 个,每个自带推荐默认值——我能一句「都行」结掉。搜一分钟能查到的(测试框架、目录结构、既有约定)不算问题,是你该做的功课。
-- **说假设就说可证伪的**,最多 5 条。「输入 <10k 行、能全塞内存」算;「代码要可维护」不算。凑数的假设不如不写。
+---
 
-## 这是什么
+## 原则 3:只做外科手术式的修改
+
+- **只改被要求的部分。** 不顺手重构、不「改进」邻居代码;看不顺眼的另立批次,别夹带。
+- **不许删既有注释** —— 本仓库的决策记录就挂在常量与分段正上方(带日期、带人、带理由),删注释 = 删掉「当初为什么」。
+- 不随手改 import 顺序、空行、格式(格式归 Ruff / Prettier)。
+- **不动的代码就不要碰。** 提交后必看 `git show --stat`:并行 session 会往索引里 add 东西,别代人提交在建代码。
+
+---
+
+## 原则 4:目标驱动执行
+
+- 开工前**先定成功标准**,且是可验证的那种(某页某列显示什么、某表多少行、tsc 绿)。
+- 写完**自己验**,别让 Frank 当 QA:
+  - **代码闸**:`npx tsc --noEmit` 零错、`npm run lint` 零新增错、`npx vitest run` 无新增红。
+  - **页面闸**:先 375px 手机再桌面(小红书是纯手机流量),排版验收**英文优先**(88% 流量);文案过四闸(不重复、不口语、术语统一、不解释)。
+  - **生产闸**:**push ≠ 上线** —— 收口要拉本轮新增路由确认换版。
+- 说「完成」之前确认真按预期跑通;没跑通、跳过了哪步,照实说。
+- **出错不静默**:`catch` 里必须留痕,不许 fallback 成默认值悄悄降级;清洗宁可留空也不瞎猜。
+
+---
+
+## 项目上下文
+
+### 这是什么
+
 **PNP Job Tracker** —— 每日更新的**全加拿大全职业职位板**,带移民价值视角:能走「雇主 offer → 省提名(PNP)」的岗打 `pnpEligible` 状态标记(不再只 focus PNP,PNP 只是其中一个信号)。
 **Job Bank 已覆盖全 10 省全职业**(含 QC;每日抓最新增量);ATS(Kanata 科技公司)仍 Ottawa。数据按 国→省→市→区 分层,不写死地域。
 全国单文件:`raw/jobbank/postings.json`(province 作字段,posting_id 增量去重)。
 
-## 架构:两段式,数据层和展示层严格分离
+### 架构:两段式,数据层和展示层严格分离
+
 ```
 etl/ (Python: 抓取 → 清洗 → 评分, 写 data/) ──> cms/ (Payload + Next.js + Postgres) ──> /jobs 公开页
 ```
+
 - `etl/` 编号顺序执行,`etl/_paths.py` 是**唯一的路径真相来源**(任何脚本不写死路径)。
 - **分层(数据仓库式)**:raw(抽取) → clean/(清洗,按字段) → **mart(集市层,`09_build_mart.py` 产出 data/mart/ 最终表,列对齐 DB)** → load(seed)。
 - `cms/src/app/seed/route.ts` 是**纯加载器**:只读 `data/mart/*.json`(每文件=一张表)→ 灌库,不做拼装/清洗。不带 `?reset=1` = 增量对账(本次没出现的岗 → status=closed)。
 - **DB 表**:事实表 jobs/companies;维度表 provinces/cities/districts/noc_categories/sources/experience_levels/designated_employers(AIP)。Payload 仍管 schema/admin。
 - **分类/标签也在数据层算**:NOC 大/中/小分类+TEER 在 `etl/noc.py`(单一来源)→ 存 job 字段 + noc_categories 维度;来源显示标签(JB→Job Bank)在 mart 洗 → job.sourceLabel + sources 维度。前端只读字段、筛选选项读维度表(颜色等纯显示留前端)。
 
-## 核心理念:清洗下沉到数据层(最重要的一条)
+### 目录结构
+
+```
+pnp-job-tracker/
+├── etl/                            # ── 数据层(Python):抓取 → 清洗 → 评分 → mart ──
+│   ├── _paths.py                   #   **唯一的路径真相来源**;data/ 布局写在它的模块头注释里
+│   ├── _scrape_base.py             #   抓取公共件(重试、限速、落盘)
+│   ├── NN_*.py                     #   主流水线,编号即执行顺序(04 ATS,05/05b Job Bank,08 评分,09 mart)
+│   ├── clean/                      #   **所有清洗脚本**,一个关注点一个(04b 薪资抽取,04c 地点,04d 薪资归一,05x JB 解析与旗标)
+│   ├── sources/<源>/__init__.py    #   源注册表:一子目录 = 一个「役」,META 声明 method/interval/seed/steps
+│   ├── auto_update.py              #   调度:自动发现 sources/ 里的役并按 META 跑
+│   ├── pnp/                        #   各省 PNP 事实构建(build_<省> 与 _req/_points/_stats)
+│   ├── crawl/                      #   官方站 URL 探索 + 站点地图 diff(政策雷达,只产 data/crawl/)
+│   ├── news/                       #   各省与 IRCC 官方新闻抓取
+│   ├── pilot_extractors/           #   试点社区(RCIP/FCIP/AIP)分区抽取
+│   ├── noc.py, noc_buckets.py      #   NOC 分类与 TEER 的**单一来源**
+│   ├── build_*.py                  #   单源事实表(lmia、wages、dli、ee、pgwp、fees、pilot…)
+│   └── audit_*.py, check_*.py      #   自查役(口径审计、新鲜度、部署核对)
+├── data/                           # ── 分层数据(布局真相在 _paths.py)──
+│   ├── raw/<源>/[<日期>/]          #   extract:原始 HTML/文件,不解析
+│   ├── processed/                  #   transform:清洗后的当前态(累积去重)
+│   ├── crawl/<slug>/manifest.json  #   URL 清单(全文在 html_cache/)—— **找官方数据先 grep 这里**
+│   └── mart/                       #   load:列对齐 DB 的最终表,**一文件 = 一张表**
+├── cms/                            # ── 展示层(Next 16 + Payload 3 + Postgres)──
+│   ├── src/collections/            #   Payload collection = 表 schema(事实表、维度表、用户侧)
+│   ├── src/app/seed/route.ts       #   **纯加载器**:只读 data/mart/*.json → 灌库
+│   ├── src/app/api/                #   服务端接口,一功能一目录
+│   ├── src/app/(frontend)/         #   公开页,一路由一目录
+│   │   ├── main.css                #     全站样式唯一入口(分段 + 类)
+│   │   ├── ui/                     #     通用组件桶(Shell/Table/Card…),外部只从 ../ui 取
+│   │   └── jobs/                   #     职位板 —— 全站卡片与表格的形态基准
+│   ├── src/lib/                    #   领域模块:**一域一目录 + index.ts 桶**
+│   │   ├── db/                     #     database.ts(通用 CRUD,零业务)+ sql.ts(纯 SQL,编号分段)
+│   │   ├── i18n/                   #     **给人看的文案唯一的家**(三语,按域分文件)
+│   │   ├── jobs/ score/ verdict/   #     判定与评分域(还有 employers/plan/stats/quota/pathways/quiz)
+│   │   ├── agent/ chat/ llm/       #     对话:prompts.ts(给模型看的,不进 i18n)、编排、模型提供方
+│   │   └── resume/                 #     简历解析与匹配
+│   └── tests/                      #   int(vitest)、e2e(playwright)、eval(评测批)、cases
+├── docker/                         # 无人值守:一役一 service(jobbank/pnp/crawl/ee/news/ircc/build/backup/cms)
+├── docs/                           # 先读 docs/README.md 路标;design/ 方案,implementation/ 卷宗,sql/ 生产 DDL
+└── pyproject.toml                  # Python 依赖(uv)与 Ruff 配置
+```
+
+### 核心理念:清洗下沉到数据层(最重要的一条)
+
 **"脏活在脚本里干完,seed 只入库,前端只显示。"**
 
 1. **所有清洗脚本统一放 `etl/clean/`**(04b 抽薪资 / 04c 地点 / 04d 薪资归一)。其余 scrape/build/score 留在 `etl/`。
@@ -48,18 +138,25 @@ etl/ (Python: 抓取 → 清洗 → 评分, 写 data/) ──> cms/ (Payload + N
 4. 每个清洗步只做一件事:**读原始抓取字段 → 写回干净的结构化字段**。同一脚本对所有来源生效(ATS 和 Job Bank 都过同一套地点清洗)。
 5. **seed 只入库不清洗;前端只显示不清洗。** 发现前端在做清洗/换算(如已下沉的 `parseSalary` 年薪折算),那是技术债 —— 应下沉成清洗脚本。
 
+---
+
 ## 数据约定
 
 - **铁律:URL → 数据 → SQL,顺序不许倒**(2026-08-04 立)。找官方数据先 grep `data/crawl/<slug>/manifest.json`(crawl 役周更,全文在 `html_cache/`),**禁止凭印象猜 URL**;抓下来先落 raw/mart,再进库,消费端只读库。
 - **「官方不公布」是需要举证的断言,不是默认值。** 举证 = 一个 URL + 一句官方原句(quote-anchored)。举不出来只能落「本站未收录」。
   两者在用户那里意思相反:*本站未收录* = 我们的问题,他该去官网看;*官方不公布* = **官方的问题**,他该警惕任何敢承诺时间的人。搞反 = 拿假前提教用户防中介。
   踩过:`OPS_POLICY.MB.published=false` 凭「爬完 324 页没看见」就写下「官方不发处理时长」,而它发在年报 §9 与月度数据页里;BC 同款。抓不到(如 PE 挡在 WAF 后)一律 `not-collected`。
+- **补全数据与保鲜永远是主线**(2026-08-03 拍板):缺数据当场去抓,别对用户说一句「本站未收录」了事。
+- **公司级数据一律懒查询,禁批量预抓**(Frank 铁律):存量队列项执行前先过一遍懒化透镜。
 - **地点**:大渥太华的各社区(Kanata/Nepean/Orléans…)是「区」,统一 `city=Ottawa`;Orléans 合并(含 Orleans South)。精确地址需含街号,否则 `address` 留空。社区判定:文本社区名优先,文本没写但地址带邮编时用**高置信郊区 FSA 兜底**(central Ottawa 不猜,留空)。
 - **来源真相**:Job Bank 自己聚合 indeed/Talent 等 → 统一显示「Job Bank」;`source` 字段保留原始板。
   `origin`(jobbank/ats/directory)是**发布渠道**,不代表雇主真假;中介已按公司名过滤。
 - **评分 / PNP**:NOC → TEER 分类 → 每 TEER 评分(08_score)。`pnpEligible` = TEER 0-3 或在紧缺低TEER通道清单;**排除式省(AB;ON 2026-06 改制后排除集为空=全职业可)TEER 0-5 默认可、排除清单内不可** —— **粗筛信号,非资格认定**(各省有自己的职业清单/语言/工资要求;QC 走自己的体系不属 PNP)。未匹配 NOC 的岗标「未分类」,不硬塞。
 
+---
+
 ## 代码组织约定(2026-08-17 立)
+
 > 判据只有一条:**读的人要能少翻。** 下面每条都是这条的推论。
 
 - **文件名说「装什么」,不说「是什么构造」。** `colors.ts` / `columns.ts` / `prompts.ts` 行;
@@ -90,13 +187,15 @@ etl/ (Python: 抓取 → 清洗 → 评分, 写 data/) ──> cms/ (Payload + N
   段内小节仍用单行 `// ── 名 ────`;一级段本身翻不完时才往下切 `N.1`(为两行代码盖房子是浪费)。
   ```
   // =========================================================================
-  // 2. 职位 —— 列表 / 分页 / 匹配
+  // 2. 职位
   // =========================================================================
   ```
+
   用 `//` 不用 `/* */`:每行独立,删一段不会留下半个块注释。
   用 `N.` 不用 `N)`:`1.1` 接得上、`1)` 接不上。样板 `lib/db/sql.ts`(27 段)、`lib/agent/constants.ts`(3 段)。
 
 **什么值得收拢成「单一来源」**
+
 - 判据是**有没有重复**,不是整不整齐。`sql.ts` 那次值得,因为收拢当场抓出 4 组逐字重复;
   查不出重复的,收拢只有代价没有回报。
 - 只有**另一种介质**混在代码里才值得整体搬走:SQL(`lib/db/sql.ts`)、CSS(`main.css`)、
@@ -112,14 +211,75 @@ etl/ (Python: 抓取 → 清洗 → 评分, 写 data/) ──> cms/ (Payload + N
 - **提示词不是文案。** 给模型看的(system/instructions)用户永远看不到、也不需要翻译,
   它归 `prompts.ts`,不进 i18n。别把「给人看的」和「给模型看的」混进一个抽屉。
 
+### 域内文件的标准形态(2026-08-19 立,样板 `cms/src/lib/agent/`)
+
+> 上面「文件名不许说构造」那条**只管顶层与共享叶子**。进了一个已经说清领域的目录,
+> 按构造分文件反而是最好定位的 —— 一个域最多这七个文件,新写的域照抄:
+>
+> `constants.ts` 常量 / `prompts.ts` 给模型看的字 / `schemas.ts` 运行时校验(TypeBox 等)
+> / `types.ts` 类型 / `functions.ts` 只有函数 / `index.ts` + `server.ts` 两个门
+
+- **`functions.ts` 里不许有变量** —— 顶层只有 `function`。常量归 `constants.ts`,
+  形状归 `types.ts`;要拼一个复杂对象(带库类型的那种)就写个构建函数,别放成常量。
+- **`constants.ts` 最多到 JSON** —— 标量、字符串表、正则。带库泛型的结构(如 pi 的 `Model<…>`)
+  拆成标量常量 + `functions.ts` 里一个构建函数。
+- **文件头一个 `/** */` 块**:一句话说明 + `@author` + `@time`(到时分秒,取该文件的 git 创建时刻)。
+  段横幅底下**不放多行说明块**;每个函数、每个 type 上方**一行**注释,紧贴声明不留空行。
+- **函数一律 `function 名()` 声明式,不许匿名函数** —— 内联回调要么提成具名函数,
+  要么改成 `for` 循环(`.map(f)`/`.filter(f)` 传具名函数可以)。
+- **一个函数一个参数,入参与返回值都用自己的 type**(`XxxIn` / `XxxOut`,住 `types.ts`)。
+  库定死签名的除外(如 pi 的 `execute(toolCallId, args)`),**要在那一行上方标明是外部规定**。
+- **不许 `any` / `unknown`,不许 `as` 强转,不许对象展开 `...`** —— 字段写全。
+  库类型在 `types.ts` 里起本地名字(`TranscriptMessage = AgentMessage`),签名里不出现外部类型。
+  拆不掉的 `as` 要在那一行写清为什么(实测:全模块最后只剩一个,是库的逆变对不上)。
+  `as const` **不是强转**,是把字面量窄化 —— 只在靠比对字面量做类型窄化时才用,别顺手加。
+- **不许成员变量 / 共享可变状态。** 唯一例外:**外部库回调把结果交回来**这种接缝
+  (库调我们、返回值只回给库),且必须在类型上写明特批与理由。样板 `lib/agent/types.ts` 的 `Inbox`。
+- **`try/catch` 只加在真会抛的地方**:I/O、外部调用、模块入口那道网。**纯函数不许套** ——
+  catch 里返回兜底值会把「异常」变成「假事实」(`cleanProvs` 出错返回 `[]` = 用户没提省),
+  而异常冒到入口 → 回落原路才是对的。实测一轮:27 个 catch 里只有 3 个够得着。
+- **日志字面量与异常信息进 `constants.ts`**,代码里只拼变量;出错留痕走同一个 `logFailure`。
+- **域之间不互相取常量,也不互相借取数函数** —— 共享叶子(`lib/location`、`lib/db/sql`)例外。
+  跨域只留一条边:上层把函数注进去(样板:路由把 `resolveByAgent` 注给 `orchestrate`)。
+
+---
+
 ## 展示约定
+
 - 站点定位是**日更职位板**:默认排序「发布时间最新在前」;同日岗保持 Job Bank 原序(入库序,#127 拍板)——**旧 0-100 分不再参与任何排序**,通道档(1-5)只在用户点「通道」列时作主键。列顺序**发布时间第一、评分(通道)最后**。
 - 评分、`vs 工资中位` 等移民价值维度是这个站和普通招聘站的差异点,优先保护。
+- **新页骨架照职位详情页**:`Shell` 套壳(不自造容器)+ 右上角返回 + H1 + 白卡;卡片与表格一律用职位板那套形态,别处不自造。
+- **文案**:一行放得下就不折行,不写废话;多信息不用「·」「/」杂糅,一行一条;名字不截断,加载区必占位。
+  解释类文案默认删,只留四类(法律免责、「≠ 资格认定」、tooltip、空态引导)。代码不裸奔 —— 人话名做主文案,代码(NOC 码、省码、TEER)当灰字小注。
 - **收费原则(2026-08-14 拍板,取代「事实免费结论收费」):简化用户操作的才收费。**
   事实与结论一律免费展示(结论是转化的诱饵,藏着没人知道值钱);付费买的是**代劳与自动化**
   (盯梢提醒、一键生成、对照代查、预填代办)。答题前注册闸是它的地基:身份先留下,「自动帮你做」才有落点。
 
+---
+
+## 技术栈与闸门
+
+**数据层(Python)**
+
+- Python 3.11+,包管理 **uv**(`.venv/`);Ruff `line-length = 120`、`target-version = "py311"`。
+- 抓取用 httpx + BeautifulSoup/lxml;PDF 用 pymupdf,XLSX 用 openpyxl,日志用 loguru;有头浏览器兜底装 `.[browser]`(playwright)。
+- 路径一律 `pathlib`,且从 `_paths.py` 取 —— 不写死、不用 `os.path.join`。**依赖只有一处真相:`pyproject.toml`**,别只写进 Dockerfile。
+- **加新源 = 在 `etl/sources/<源>/__init__.py` 定义 META**(method / interval / seed / steps),`auto_update` 自动发现;别去改调度器。
+- 批量翻译走本地模型,不烧外部付费 API。
+
+**展示层(TypeScript)**
+
+- Next 16 App Router(`output: 'standalone'`)+ React 19 + Payload 3(管 schema/admin)+ Postgres;TS `strict`。
+- 测试:vitest(`tests/int`)+ playwright(`tests/e2e`),评测批走 `vitest.eval`。**判定层测试**穷举输入断言性质 + 手写金标 + 变异探针,**禁快照矩阵**。
+- **`lib/<域>/` 两个门**:`index` = 浏览器也能跑的那半,`server` = 要连库的那半。混进一个桶会把连接池打进浏览器包(tsc 全绿、build 才炸);标了 `'use client'` 的文件对 `/server` 只许 `import type`。闸在 `cms/eslint.config.mjs`,**加新桶或新 server 门要同步加行**。
+- 动态加载的文件要在 `next.config.ts` 的 `outputFileTracingIncludes` 里点名(standalone 不会自动带)。
+- 站级聚合禁每请求现算(走 TTL 缓存);**上新筛选参数必查索引** —— 热筛选列缺索引会打爆连接池,直接生产 500。
+- 生产加列/建表:`docs/sql/` 手写 DDL 先行(dev 默认不推 schema)。新维度表别忘了给 `payload_locked_documents_rels` 补列,否则 seed 500 且无 body。
+
+---
+
 ## 跑起来
+
 ```bash
 # ⚠️ 本地 dev **直连正式库**(07-04 拍板;07-16 起正式库=Render Postgres,cms/.env 已配;Supabase 已退役)
 cd cms && npm run dev                            # 开发:localhost:3000(读写的就是生产!测试号用 @test.local)
@@ -129,3 +289,30 @@ cd cms && npm run dev                            # 开发:localhost:3000(读写�
 # 改了 Jobs collection 字段 → 必须重启 dev server(Payload 同步 schema)再重灌
 # 完整重跑 ETL: 04 → clean/04b → clean/04c → clean/04d → 05 → 05b → 08 (走 _paths,顺序见 STATUS.md)
 ```
+
+⚠️ 本机只准起**一个** dev 实例(多开会打爆连接池,曾致生产 500);验完即关。
+
+---
+
+## 禁止事项 (Do NOT)
+
+- 未被要求的重构;顺手改格式、import 顺序;**删既有注释**(尤其带日期的决策记录)
+- 凭印象猜官方 URL(先 grep `data/crawl/<slug>/manifest.json`)
+- 无举证就写「官方不公布」(举证 = URL + 官方原句;举不出来只能写「本站未收录」)
+- 在前端或 seed 里做清洗/换算/分类(下沉到 `etl/clean/`);让消费端绕过 DB 直读 raw 或直连外部源
+- 脚本里写死路径,或不从 `_paths.py` 取
+- 在 `lib/` 顶层或共享叶子新建 `constants.ts` / `utils.ts` / `json.ts` 这类按构造命名的文件
+  (**域内七件套是例外,见「域内文件的标准形态」**);给非模块目录随手配一个 `types.ts`
+- 在 `functions.ts` 里放变量;在 `constants.ts` 里放 JSON 装不下的结构
+- 写匿名函数、`any` / `unknown`、`as` 强转、对象展开 `...`;给纯函数套 `try/catch`
+- 用成员变量传结果(外部库回调那一个接缝除外,且要写明理由)
+- 给只有一个消费者的东西加导出,或把它塞进共享叶子
+- 把带注释的常量搬成 `.json`(注释就是决策记录,搬走等于丢掉)
+- 给人看的文案散在 `lib/i18n/` 之外;给模型看的 prompt 混进 i18n
+- 不从桶 import(`@/lib/i18n/chat` ✗ → `@/lib/i18n` ✓);`index` 桶里混服务端依赖;`'use client'` 文件对 `/server` 做值导入
+- 自造页面容器或表格形态(用 `Shell` 与职位板那套);新页面缺右上角返回
+- 批量预抓公司级数据(公司级一律懒查询)
+- 未经协商添加新依赖
+- 用 fallback / 默认值静默降级;`catch` 里不留痕
+- 把「已上线」「已收款」当既成事实(push ≠ 上线,拉路由验过再说)
+- 碰生产库的破坏性操作(`?reset=1`、`DB_PUSH` 提示删列)—— 一律停下问 Frank
