@@ -7,7 +7,7 @@ import { useLang } from '../LangProvider'
 import { Header } from '../Header'
 import { Footer } from '../Footer'
 import { BANNER_IMGS, Banner, UI } from '../ui'
-import { CASES } from '@/lib/caseLibrary'
+import { CASES } from '@/lib/verdict'
 import { track } from '@/lib/track'
 
 export function Cases() {

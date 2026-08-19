@@ -8,7 +8,7 @@ import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { getUser, isPro } from '@/lib/entitlement'
+import { getUser, isPro } from '@/lib/quota/server'
 import { dbOf } from '@/lib/db/database'
 import { hasProfile, normalizeProfile, type MatchDims } from '@/lib/jobs'
 import { fetchJobsPage, fetchMatchPage, loadMatchDims } from '@/lib/jobs/server'

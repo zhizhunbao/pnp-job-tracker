@@ -9,8 +9,8 @@
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { getScoreTables } from '@/lib/scoreTables'
-import { buildTripleWire, type TripleWire } from '@/lib/tripleWire'
+import { getScoreTables } from '@/lib/score/server'
+import { buildTripleWire, type TripleWire } from '@/lib/verdict/server'
 import { Decision, type TvJob } from './Decision'
 import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 

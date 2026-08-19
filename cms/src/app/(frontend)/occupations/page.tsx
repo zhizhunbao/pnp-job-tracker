@@ -2,7 +2,7 @@
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { Occupations } from './Occupations'
-import { fetchOccupations } from '@/lib/directory'
+import { fetchOccupations } from '@/lib/employers/server'
 
 export const dynamic = 'force-dynamic'
 

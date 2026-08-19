@@ -1,7 +1,7 @@
 // G3 简历对照——纯函数层(免费闸/JSON 收口/形状校验)。LLM 本体不测(网络),测的是它两侧的护栏。
 import { describe, it, expect } from 'vitest'
-import { CLAMP, FREE_ROWS, GATEWAY_MAX, gateMatch, matchPrompt, normalizeRows, parseLlmJson, promptChars, type MatchRow } from '@/lib/resumeMatch'
-import { FRIEND_INPUT_MAX } from '@/lib/friendLlm'
+import { CLAMP, FREE_ROWS, GATEWAY_MAX, gateMatch, matchPrompt, normalizeRows, parseLlmJson, promptChars, type MatchRow } from '@/lib/resume/match'
+import { FRIEND_INPUT_MAX } from '@/lib/llm/friend'
 
 const row = (hit: boolean, i: number): MatchRow => ({ req: `req${i}`, hit, note: `note${i}` })
 

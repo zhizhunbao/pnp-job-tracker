@@ -8,7 +8,7 @@ import { Footer } from '../Footer'
 import { BANNER_IMGS, Banner, Shell, Title, Tag, UI } from '../ui'
 import { Table } from '../ui'
 import { IconClipboard } from '../Icons'
-import type { OccRow } from '@/lib/directory'
+import type { OccRow } from '@/lib/employers'
 
 export function Occupations({ rows }: { rows: OccRow[] }) {
   const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定

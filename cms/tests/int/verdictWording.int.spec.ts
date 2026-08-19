@@ -18,10 +18,10 @@ import {
   pathVerdict,
   type DesignatedEmployerRow, type OccupationRow,
   type VerdictData, type VerdictDrawRow, type VerdictProfile,
-} from '@/lib/pathVerdict'
+} from '@/lib/verdict/pathVerdict'
 import type { Requirement } from '@/lib/rules'
-import type { ScoreFactor } from '@/lib/pnpSelfScore'
-import type { EeGridRow } from '@/lib/crsEstimate'
+import type { ScoreFactor } from '@/lib/score/pnpSelfScore'
+import type { EeGridRow } from '@/lib/score/crsEstimate'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const mart = <T>(name: string): T[] =>

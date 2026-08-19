@@ -8,7 +8,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { fetchBroadNocs, fetchNocOpenCounts, fetchQuizFacts, searchNocByTitle } from '@/lib/jobs/server'
-import { getTopNocsCached } from '@/lib/quizTop'
+import { getTopNocsCached } from '@/lib/quiz/server'
 
 // 热门清单缓存挪进 lib/quizTop(SWR + 启动预热共用一份;冷启动首访 8.4s 的账见那边注释)
 const TOP_TTL = 10 * 60_000

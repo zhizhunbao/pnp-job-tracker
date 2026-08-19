@@ -1,5 +1,5 @@
 import type { Access, CollectionConfig, PayloadRequest } from 'payload'
-import { SAVED_JOBS_CAP } from '../lib/plan'
+import { SAVED_JOBS_CAP } from '../lib/quota'
 
 // 我的求职(E9-01 最小求职看板,2026-07-16):收藏岗位+状态标记(想投/已投/面试中/offer)。
 // **对免费用户开放**——它是行动环+免费留存钩子,不是付费功能(区别于 saved-searches=Pro)。

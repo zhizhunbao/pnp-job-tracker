@@ -3,7 +3,7 @@
 // 重复的根不是 UI,是没有字段单一来源。这里是唯一的读写口:页面不再直接碰 localStorage。
 // 老答案是用户唯一的资产,丢了等于让他重答 —— 所以首次读盘时把两个旧 key 合并进新 key 再删旧 key。
 import { FIELDS, bandFromProvs, provsFromBand } from './fields'
-import type { SelfProfile } from '../pnpSelfScore'
+import type { SelfProfile } from '../score'
 
 export const ANSWERS_KEY = 'o2p_answers_v1'
 const OLD_QUIZ = 'jobs_quiz_v1'      // 三问:{ status, nocs, provs, done }

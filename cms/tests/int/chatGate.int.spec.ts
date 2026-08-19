@@ -41,7 +41,7 @@ vi.mock('@/payload.config', () => ({ default: Promise.resolve({}) }))
 vi.mock('payload', () => ({
   getPayload: async () => ({ db: { pool: new FakePool() }, create: async () => ({}) }),
 }))
-vi.mock('@/lib/entitlement', () => ({
+vi.mock('@/lib/quota/entitlement', () => ({
   getUser: async () => H.user,
   isPro: () => false,
 }))

@@ -249,7 +249,7 @@ export const OCC_MEDIAN_BY_PROV = `SELECT province, median_wage_annual FROM stat
 export const PROV_DIFFICULTY = `SELECT province, difficulty FROM stats
        WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL`
 
-// ── occCompetition.ts ──
+// ── score/occCompetition.ts ──
 
 export const OCC_COMPETITION_BY_PROV = `SELECT j.province AS province, COUNT(*)::int AS open_jobs,
               COALESCE(SUM(s.new30d), 0)::int AS new30d,
@@ -273,7 +273,7 @@ export const PROV_OPEN_COUNT_BROAD = `SELECT province, COUNT(*)::int AS n FROM j
         WHERE COALESCE(status, 'open') <> 'closed' AND COALESCE(is_dup, false) = false AND COALESCE(pilot, '') LIKE '%FCIP%' AND noc = ANY($1) AND province <> ''
         GROUP BY province`
 
-// ── scoreTables.ts ──
+// ── score/scoreTables.ts ──
 
 export const PROV_DIFFICULTY_FETCHED = `SELECT province, difficulty, fetched FROM stats
         WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL`
@@ -285,11 +285,11 @@ export const PROVINCES_INFO = `SELECT code, info FROM provinces`
    9) 雇主 —— 官方名录 / 在招 / 担保
    ══════════════════════════════════════════════════════════════════════════ */
 
-// ── directory.ts ──
+// ── employers/directory.ts ──
 
 export const PNP_OCCUPATIONS_ALL = `SELECT province, stream, label, type, noc, name, url, fetched FROM pnp_occupations ORDER BY province ASC, stream ASC, noc ASC`
 
-// ── designatedEmployers.ts ──
+// ── employers/designatedEmployers.ts ──
 
 export const DESIGNATED_ALL = `SELECT name, province, location, source, nocs, url, fetched
        FROM designated_employers
@@ -308,7 +308,7 @@ export const NOC_TITLES_FOR_EMPLOYERS = `SELECT s.noc AS noc, COALESCE(s.title_e
        FROM stats_occupation s LEFT JOIN noc_descriptions d ON d.noc = s.noc
       WHERE s.province = 'all' AND s.noc = ANY($1)`
 
-// ── sponsorEmployers.ts ──
+// ── employers/sponsorEmployers.ts ──
 
 export const COMPANIES_HAS_COLUMNS = `SELECT column_name FROM information_schema.columns WHERE table_name = 'companies' AND column_name = ANY($1)`
 
@@ -336,12 +336,12 @@ export const sponsorEmployers = (a1: string, a2: string) => `
     HAVING BOOL_OR(j.aip) OR BOOL_OR(COALESCE(j.pnp_stream, '') <> '') OR COALESCE(c.lmia_positions, 0) > 0
     ORDER BY open_jobs DESC, c.name ASC`
 
-// ── verdictCache.ts ──
+// ── verdict/verdictCache.ts ──
 
 export const DESIGNATED_BY_PROV = `SELECT name, province, location, is_tech, source, nocs, url, fetched
        FROM designated_employers WHERE province = $1`
 
-// ── employerCompare.ts ──
+// ── employers/employerCompare.ts ──
 
 export const COMPANIES_FOR_COMPARE = `SELECT id, name, industry, alias_zh, alias_ko, wiki_url, website, ai_brief, ai_website,
             lmia_positions, lmia_positions_skilled, lmia_last_quarter
@@ -368,7 +368,7 @@ export const PILOT_QUOTA_COMMUNITIES = `SELECT community, province, type, first_
    11) 抽选 / 时间线 / 榜单
    ══════════════════════════════════════════════════════════════════════════ */
 
-// ── timeline.ts ──
+// ── plan/timeline.ts ──
 
 export const PNP_DRAWS_ALL = `SELECT province, kind, draw_date, stream, score, scale, invitations, note, label, url FROM pnp_draws`
 
@@ -401,7 +401,7 @@ export const RANKING_ROWS = `SELECT slug, rank, kind, external_id, title, compan
    12) 判定与案例
    ══════════════════════════════════════════════════════════════════════════ */
 
-// ── tripleWire.ts ──
+// ── verdict/tripleWire.ts ──
 
 export const TRIPLE_WIRE_JOB = `SELECT j.id, j.title, j.noc, j.teer, j.province, j.city, j.pnp_eligible, j.pnp_stream,
             j.ee_category, j.aip, j.employment_term, j.employment_hours, j.company_id,
@@ -415,7 +415,7 @@ export const TRIPLE_WIRE_JOB = `SELECT j.id, j.title, j.noc, j.teer, j.province,
 export const COMPANY_REGISTRY_FACTS = `SELECT founded_year, registry_status, staff_est, staff_est_src, sector FROM companies WHERE id = $1`
 
 
-// ── caseFacts.ts ──
+// ── verdict/caseFacts.ts ──
 
 export const CASE_PROV_COUNTS = `SELECT province, count(*)::int n, count(*) FILTER (WHERE apprentice_friendly)::int t
      FROM jobs WHERE noc = $1 AND status <> 'closed'
@@ -431,7 +431,7 @@ export const PNP_OPS_STATS = `SELECT DISTINCT ON (province, metric) province, me
    13) 公司调研 / JD 正文
    ══════════════════════════════════════════════════════════════════════════ */
 
-// ── companyResearch.ts ──
+// ── employers/companyResearch.ts ──
 
 export const COMPANY_INSERT_LAZY = `INSERT INTO companies (name, source, updated_at, created_at) VALUES ($1, 'ai-lazy', now(), now()) RETURNING id`
 
@@ -458,7 +458,7 @@ export const JD_UPDATE_BY_APPLY_URL = `UPDATE jobs SET description = $1 WHERE ap
    14) 统计页(/stats)
    ══════════════════════════════════════════════════════════════════════════ */
 
-// ── app/(frontend)/stats/lib.ts ──
+// ── stats/server.ts ──
 
 export const statsByMid = (a1: string) => `SELECT province, broad, mid, open_jobs, new7d, median_wage_annual, median_salary_annual,
               named_jobs, stream_labels, aip_jobs, top_cities, fetched, difficulty

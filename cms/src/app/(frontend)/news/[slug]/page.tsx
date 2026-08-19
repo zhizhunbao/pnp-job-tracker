@@ -4,7 +4,7 @@ import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { getUser } from '@/lib/entitlement'
+import { getUser } from '@/lib/quota/server'
 import { NewsDetail } from '../News'
 import { newsRegionName, type NewsComment, type NewsRow } from '../shared'
 import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装

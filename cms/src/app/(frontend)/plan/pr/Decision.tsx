@@ -31,8 +31,8 @@ import { EMPTY, FIELDS, NCLC, clearAnswers, fieldsOf, missingFields, pullAndMerg
 import { gateOf, regionProvincesOf, uiOf } from '@/lib/pathways'
 import { pickName } from '@/lib/occName'
 import { track } from '@/lib/track'
-import type { DrawRow, ScoreFactor, SelfProfile } from '@/lib/pnpSelfScore'
-import type { ProvCompetition } from '@/lib/scoreTables'
+import type { DrawRow, ScoreFactor, SelfProfile } from '@/lib/score'
+import type { ProvCompetition } from '@/lib/score/server'
 import type { OccCompetitionRow } from '@/app/api/occ-competition/route'
 
 /** 形状与 `lib/scoreTables.ts` 的同名类型对齐(那边是产出方,这里是消费方) */

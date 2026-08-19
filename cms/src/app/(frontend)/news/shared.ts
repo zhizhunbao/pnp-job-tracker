@@ -1,5 +1,5 @@
 // 移民动态共享常量/类型(E12-06)—— 非 client 模块:服务端页面(generateMetadata/SQL)与客户端视图共用(老坑 6)。
-import { PROV_NAME } from '../stats/shared'
+import { PROV_NAME } from '@/lib/stats'
 
 export type NewsCard = {
   region: string; title: string; date: string; slug: string

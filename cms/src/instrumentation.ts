@@ -6,7 +6,7 @@ export async function register() {
   setTimeout(async () => {
     try {
       const { getDb } = await import('@/lib/db/database')
-      const { getTopNocsCached } = await import('@/lib/quizTop')
+      const { getTopNocsCached } = await import('@/lib/quiz/server')
       await getTopNocsCached(await getDb(), 24)
     } catch { /* 预热失败:第一位访客回到冷路径,行为同预热前 */ }
   }, 5000)

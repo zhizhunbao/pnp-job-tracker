@@ -2,7 +2,7 @@
 // 引擎不碰库、这里不做判定 —— 单一职责;查询口径全部与既有页面同源:
 //   byProv 的 named 与职位板 pnp_stream 口径同、draws 与 /pathways 抽选块同表、
 //   scoreProvinces=pnp_score_factors 实际覆盖的省(BC/SK),不写死。
-import type { ScoreFactor } from './pnpSelfScore'
+import type { ScoreFactor } from './score'
 import type { Requirement } from './rules'
 import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 

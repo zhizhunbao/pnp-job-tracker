@@ -4,8 +4,8 @@
 // 用户看得见、能删改,LLM 链路(/api/resume-match)一条不加。
 import { NextRequest } from 'next/server'
 
-import { getUser } from '@/lib/entitlement'
-import { extractText, RESUME_MAX_BYTES } from '@/lib/resumeExtract'
+import { getUser } from '@/lib/quota/server'
+import { extractText, RESUME_MAX_BYTES } from '@/lib/resume'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

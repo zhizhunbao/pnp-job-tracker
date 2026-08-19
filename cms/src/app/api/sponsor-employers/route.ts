@@ -10,7 +10,7 @@
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { buildSponsorBoards, fetchSponsorEmployers, type SponsorBoards } from '@/lib/sponsorEmployers'
+import { buildSponsorBoards, fetchSponsorEmployers, type SponsorBoards } from '@/lib/employers/server'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'

@@ -8,7 +8,7 @@
  */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { FRIEND_INPUT_MAX, FriendLlmError, friendChatOrThrow } from '@/lib/friendLlm'
+import { FRIEND_INPUT_MAX, FriendLlmError, friendChatOrThrow } from '@/lib/llm/friend'
 
 type Call = { url: string; body: any; headers: Record<string, string> }
 

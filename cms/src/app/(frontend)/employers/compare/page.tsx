@@ -1,9 +1,10 @@
 // 多雇主对比页(D3 / E5-06):SSR gate——Pro 才聚合真值;免费/匿名=示例模糊态(真数据不出服务端)。
 // 入口=名录行/公司弹框「+ 对比」(localStorage 选择,URL ?names=a|b|c 落地);sitemap 不收录(Pro 页无 SEO 价值)。
 import { headers } from 'next/headers'
-import { getUser, isPro } from '@/lib/entitlement'
+import { getUser, isPro } from '@/lib/quota/server'
 import { loadMatchDims } from '@/lib/jobs/server'
-import { compareEmployers, type CompareRow } from '@/lib/employerCompare'
+import type { CompareRow } from '@/lib/employers'
+import { compareEmployers } from '@/lib/employers/server'
 import { Compare } from './Compare'
 
 export const dynamic = 'force-dynamic'

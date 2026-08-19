@@ -51,8 +51,9 @@ export const cellActionable = (k: ColKey): boolean => {
   return d != null && d !== 'none'
 }
 
-// Pro 专属列(与 lib/plan.ts PRO_COLUMNS 一致;免费用户列位打码,真值本就没进浏览器)
-// 2026-07-25 Frank「先都显示出来」:vs 中位三件套随 lib/plan PRO_COLUMNS 放开,锁只剩 match 语义位
+// Pro 专属列(免费用户列位打码,真值本就没进浏览器)。**单一来源就是下面这个 PRO_COLS** ——
+// 2026-07-25 Frank「先都显示出来」放开 vs 中位三件套后,锁只剩 match 语义位;
+// 原先配套的 lib/plan.PRO_COLUMNS 那时就退役了,这两行一直还指着它(08-19 改名 quota.ts 时顺手清)。
 export const PRO_COLS = new Set<ColKey>(['match'])
 // #152 锁位统一打码(Frank「应该给他打上马赛克那种」;#130 详情页先例推广到表格):
 // 每列一个**写死的假占位数**,blur 掉——传达「这儿有个数」比一把锁更能说明值多少。

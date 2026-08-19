@@ -7,10 +7,9 @@ import { makeT } from '@/lib/i18n'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { CASES } from '@/lib/caseLibrary'
-import { CASE_PAGES, caseAnswer } from '@/lib/caseFacts'
+import { CASES } from '@/lib/verdict'
+import { CASE_PAGES, caseAnswer, getVerdictData } from '@/lib/verdict/server'
 import { ssrLang } from '@/lib/lang.server'
-import { getVerdictData } from '@/lib/verdictCache'
 import { Case } from './Case'
 
 // 🔴 **不要加回 generateStaticParams**(2026-08-11 实撞):它与 force-dynamic 同时存在时,

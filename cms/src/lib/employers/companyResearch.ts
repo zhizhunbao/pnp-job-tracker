@@ -1,0 +1,135 @@
+/**
+ * 公司联网调查共享层(#107):K 懒探索(/api/companyinfo)与顾问公司初判(/api/advisor)同源,
+ * 一家公司全站只查一次,缓存=companies.ai_* 四列(永久)。
+ * 红线:查不到如实回 null(反编);同名并发合流;掉线/超时静默降级由 friendChat 兜。
+ */
+import { friendChat } from '../llm'
+import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
+
+export type CompanyResearch = { brief: string; website: string; sources: string[]; fetched: string }
+
+// #158(Frank「这部分也按 job 的结构来比较好吧,也是属于 AI 整理的范畴吧」):公司简介原先是一段散文,
+// 与 JD 五节整理版(J2)不是一套语言。改成同款**固定标记分节**——搬运不发挥、缺项写 (not stated)、
+// 查不到整条 NOT_FOUND。2026-07-21 Frank「公司的信息需要增强」:三节 → 五节(+成立时间/要点),
+// 仍全白名单制,每节都可 (not stated),不给模型自由发挥的口子。
+const SYSTEM = `You are a factual company researcher. Use ONLY the web search results.
+Output plain text with EXACTLY these section markers, each on its own line: [WHAT] [BASE] [SIZE] [FOUNDED] [NOTE]
+- [WHAT]: 1-2 sentences on what the company does / what it sells.
+- [BASE]: where it is based (city, province) — one short line.
+- [SIZE]: employee count or scale ONLY if the results state it.
+- [FOUNDED]: founding year ONLY if the results state it — one short line.
+- [NOTE]: ONE fact a job seeker would care about that the results state (parent company, stock listing, major brands/products, main clients) — one short line.
+If a section is not supported by the results, write exactly: (not stated)
+If the results are unclear or about a different company, reply exactly: NOT_FOUND
+Finally on its own line output [SITE]=<official website url or NONE>. No other commentary.`
+
+const inflight = new Map<string, Promise<CompanyResearch | null>>()
+
+// 按公司名取缓存行;不在 companies 的雇主(Job Bank 大量)懒建最小行给缓存落脚,source 标 ai-lazy
+export async function companyRow(pool: any, name: string): Promise<{ id: number; cached: CompanyResearch | null } | null> {
+  const { rows } = await pool.query(
+    SQL.COMPANY_AI_BRIEF,
+    [name],
+  )
+  let row = rows[0]
+  if (!row) {
+    const ins = await pool.query(
+      SQL.COMPANY_INSERT_LAZY,
+      [name],
+    ).catch(() => null)
+    if (!ins?.rows?.[0]) return null
+    row = { id: ins.rows[0].id, ai_brief: null }
+  }
+  let cached: CompanyResearch | null = null
+  // 旧版缓存懒升级(2026-07-21 五节改版):三节/散文格式的存量 brief 视为过期 → 当没缓存,
+  // 下次打开这家公司自动重查一次(一家一次,lazy-first 不批量重跑)
+  if (row.ai_brief && row.ai_brief.includes('[FOUNDED]')) {
+    let sources: string[] = []
+    try { sources = JSON.parse(row.ai_sources || '[]') } catch { /* ignore */ }
+    cached = { brief: row.ai_brief, website: row.ai_website || '', sources, fetched: String(row.ai_fetched || '').slice(0, 10) }
+  }
+  return { id: row.id, cached }
+}
+
+export async function investigateCompany(pool: any, id: number, name: string): Promise<CompanyResearch | null> {
+  let p = inflight.get(name)
+  if (!p) {
+    p = investigate(pool, id, name).finally(() => inflight.delete(name))
+    inflight.set(name, p)
+  }
+  return p
+}
+
+async function investigate(pool: any, id: number, name: string): Promise<CompanyResearch | null> {
+  const [r, wd] = await Promise.all([
+    friendChat({
+      prompt: `Company: ${name} (Canada). What does this company do?`,
+      system: SYSTEM,
+      webSearch: true,
+      searchQuery: `${name} company Canada`,
+      timeoutMs: 60_000,
+    }),
+    wikidataLookup(name),
+  ])
+  // Wikidata 懒查回填(2026-07-20 Frank 拍板批量退役「公司详情全懒」):调查同时并行查一次,
+  // 命中回填别名/知名列(COALESCE 不覆盖已有值);没命中/失败不重试——一家公司一生一次,宁缺勿滥。
+  if (wd) {
+    await pool.query(
+      SQL.COMPANY_UPDATE_ALIASES,
+      [wd.zh || null, wd.ko || null, wd.wiki, id],
+    ).catch(() => {})
+  }
+  if (!r) return null
+  const brief = r.answer.replace(/\[SITE\]=[^\n]*/g, '').trim()
+  const site = r.answer.match(/\[SITE\]=\s*(\S+)/)?.[1] || ''
+  const website = /^https?:\/\/\S+$/i.test(site) ? site : ''
+  // 校验同 J2 范式:整条 NOT_FOUND 拒收;分节齐不齐不强求(缺节前端跳过),但至少要有 [WHAT]
+  if (!brief || /NOT_FOUND/.test(brief) || brief.length < 20 || brief.length > 900) return null
+  const sources = r.sources
+  await pool.query(
+    SQL.COMPANY_UPDATE_AI_BRIEF,
+    [brief, website || null, JSON.stringify(sources), id],
+  )
+  return { brief, website, sources, fetched: new Date().toISOString().slice(0, 10) }
+}
+
+// ── Wikidata 严格名称匹配(移植 etl/clean/_enrich_company_facts.py,批量脚本退役后这是唯一查询点)──
+// 门槛与批量版一致:en 标签/别名归一后全等 + 有英文维基条目才算知名;不机翻,别名只收官方跨语言标签。
+const WD = 'https://www.wikidata.org/w/api.php'
+const SUFFIX = /\b(incorporated|inc|ltd|limited|llp|llc|corp|corporation|co|company|ltee|ltée|group|holdings?)\b\.?/gi
+const norm = (s: string) => s.toLowerCase().replace(/[.,]/g, ' ').replace(SUFFIX, ' ').replace(/\s+/g, ' ').trim()
+
+async function wdGet(params: Record<string, string>, signal: AbortSignal): Promise<any> {
+  const r = await fetch(WD + '?' + new URLSearchParams({ ...params, format: 'json' }), {
+    signal, headers: { 'User-Agent': 'offer2pr-company-facts/1.0 (lazy enrichment; contact via site)' },
+  })
+  if (!r.ok) throw new Error(String(r.status))
+  return r.json()
+}
+
+async function wikidataLookup(name: string): Promise<{ zh: string; ko: string; wiki: string } | null> {
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), 10_000)
+  try {
+    const hits = (await wdGet({ action: 'wbsearchentities', search: name, language: 'en', type: 'item', limit: '3' }, ctrl.signal)).search || []
+    const ids: string[] = hits.map((h: any) => h.id).filter(Boolean)
+    if (!ids.length) return null
+    const ents = (await wdGet({ action: 'wbgetentities', ids: ids.join('|'), props: 'labels|aliases|sitelinks', languages: 'en|zh|zh-cn|zh-hans|ko' }, ctrl.signal)).entities || {}
+    const target = norm(name)
+    for (const id of ids) {
+      const e = ents[id] || {}
+      const labels = e.labels || {}
+      const names = [labels.en?.value || '', ...(e.aliases?.en || []).map((a: any) => a?.value || '')]
+      if (!names.some((x: string) => x && norm(x) === target)) continue
+      const title = e.sitelinks?.enwiki?.title
+      if (!title) continue // 无英文维基条目=不算知名,别名也不收(与批量版同门槛)
+      // #279:zh 裸标签常是 zh-TW/zh-HK 繁体 → 优先简体变体;都没有才退 zh(ETL 侧同款取序,见 _enrich_shelf_aliases)
+      return { zh: labels['zh-cn']?.value || labels['zh-hans']?.value || labels.zh?.value || '', ko: labels.ko?.value || '', wiki: 'https://en.wikipedia.org/wiki/' + encodeURIComponent(title.replace(/ /g, '_')) }
+    }
+    return null
+  } catch {
+    return null // 超时/掉线静默,不重试(下次这家公司永不再查——ai_brief 已缓存就不会再进 investigate)
+  } finally {
+    clearTimeout(timer)
+  }
+}

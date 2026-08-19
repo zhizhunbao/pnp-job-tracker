@@ -2,7 +2,7 @@
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { Timeline } from './Timeline'
-import { fetchTimeline } from '@/lib/timeline'
+import { fetchTimeline } from '@/lib/plan/server'
 
 export const dynamic = 'force-dynamic'
 

@@ -14,7 +14,7 @@ import { IconCheck, IconSearch, IconX } from '../Icons'
 import { QuizNav, QuizStyle, QuizTitle } from './QuizUI'
 import { Button, UI } from '../ui'
 import { shortOcc } from './EntryQuiz'
-import { BROAD_SLUGS } from '../stats/shared'
+import { BROAD_SLUGS } from '@/lib/stats'
 import { pickName } from '@/lib/occName'
 import type { TFn } from '@/lib/i18n'
 

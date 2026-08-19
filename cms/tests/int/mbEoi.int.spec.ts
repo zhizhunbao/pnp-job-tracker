@@ -11,8 +11,8 @@ import fs from 'fs'
 import { fileURLToPath } from 'url'
 import path from 'path'
 import { describe, expect, it } from 'vitest'
-import { estimateMbEoi, type MbProfile } from '@/lib/mbEoiEstimate'
-import type { ScoreFactor } from '@/lib/pnpSelfScore'
+import { estimateMbEoi, type MbProfile } from '@/lib/score/mbEoiEstimate'
+import type { ScoreFactor } from '@/lib/score/pnpSelfScore'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const martPath = path.resolve(__dirname, '../../../data/mart/pnp_score_factors.json')

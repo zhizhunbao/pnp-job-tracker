@@ -2,7 +2,7 @@
 // 给前端「职位描述」弹框用。只读、无大模型、不再扫 .md 文件(去掉运行时文件依赖)。
 import { NextRequest } from 'next/server'
 import { jobDescription } from '@/lib/jobs/server'
-import { checkLimit, ipOf } from '@/lib/rateLimit'
+import { checkLimit, ipOf } from '@/lib/quota/server'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

@@ -1,7 +1,7 @@
 'use client'
 // 定价弹窗(E8-02,2026-07-06 用户拍板「定价也是弹窗」):对照表+按钮三态与 /pricing 页同一份代码
 // (PricingCard,不许 fork)。/pricing 页保留供直链/SEO/Stripe 回跳,站内入口一律开本弹窗。
-// caps 用 lib/plan.ts 常量(客户端 bundle 取默认值;若哪天用 env 改分层数字,记得 NEXT_PUBLIC 化或改走 props)。
+// caps 用 lib/quota.ts 常量(客户端 bundle 取默认值;若哪天用 env 改分层数字,记得 NEXT_PUBLIC 化或改走 props)。
 import { useEffect, useState } from 'react'
 import type { TFn } from '@/lib/i18n'
 import { Modal } from './Modal'
@@ -9,7 +9,7 @@ import { Button } from '../ui'
 import { IconCheck, IconStar } from '../Icons'
 import { AuthModal } from './AuthForm'
 import { track } from '@/lib/track'
-import { FREE_ADVISOR_TRIES, FREE_JOBTEXT_TRIES, FREE_MATCH_JOBS_PER_DAY, PRO_ADVISOR_DAILY } from '@/lib/plan'
+import { FREE_ADVISOR_TRIES, FREE_JOBTEXT_TRIES, FREE_MATCH_JOBS_PER_DAY, PRO_ADVISOR_DAILY } from '@/lib/quota'
 
 export type PriceCaps = { advisor: number; jobtext: number; match: number; proAdvisor: number }
 export const CLIENT_CAPS: PriceCaps = { advisor: FREE_ADVISOR_TRIES, jobtext: FREE_JOBTEXT_TRIES, match: FREE_MATCH_JOBS_PER_DAY, proAdvisor: PRO_ADVISOR_DAILY }

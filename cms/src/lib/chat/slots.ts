@@ -4,7 +4,7 @@
 // 消歧那半边的理由:专业名(如「计算机」)不是能直接查的职业,但它**不许是死路** ——
 // 给候选让用户点,比让他重说一遍强。
 import { PRIVATE_PROMISE } from './tools'
-import { EDU_KEYS, type EduKey } from '../pnpSelfScore'
+import { EDU_KEYS, type EduKey } from '../score'
 import { ASK_OCC, type Lang, META_ANSWER, OCC_PICK, USAGE_ASK, USAGE_WHAT } from '../i18n'
 import * as SQL from '../db/sql'
 import { isSelfStatement } from './federal'

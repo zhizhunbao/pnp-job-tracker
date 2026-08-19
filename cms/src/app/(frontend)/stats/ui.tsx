@@ -5,9 +5,9 @@ import { type Lang, type TFn } from '@/lib/i18n'
 import { IconPaperclip } from '../Icons'
 import { Header } from '../Header'
 import { Footer } from '../Footer'
-import type { StatRow, SrcRow } from './shared'
+import type { StatRow, SrcRow } from '@/lib/stats'
 
-export type { StatRow, SrcRow } from './shared'
+export type { StatRow, SrcRow } from '@/lib/stats'
 
 // useLang 已搬到 ../LangProvider(状态进 context,初值由服务端 cookie 定 → 首帧不再闪中文);
 // 这里原样再导出,stats/news 那几处 import 不动。

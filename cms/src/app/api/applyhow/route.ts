@@ -3,7 +3,7 @@
 // 复刻 JSF partial POST(render=@all)→ 从 How to apply 块抽邮箱。进程内缓存,零批量预抓(lazy-first)。
 // 只认 jobbank.gc.ca 职位页(白名单防 SSRF);其他来源(ATS 原站)邮箱走前端对 jobtext 的正则,不进这里。
 import { NextRequest } from 'next/server'
-import { checkLimit, ipOf } from '@/lib/rateLimit'
+import { checkLimit, ipOf } from '@/lib/quota/server'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

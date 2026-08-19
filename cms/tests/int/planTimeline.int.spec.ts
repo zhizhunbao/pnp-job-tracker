@@ -17,7 +17,7 @@ import { planFacts } from '@/lib/chat/facts'
 import { findEnglishUnits, findForeignScript, findLeaks, findWordNumbers } from '@/lib/chat/guards'
 import { factSheet } from '@/lib/chat/stream'
 import { findHedges } from '@/lib/chat/traces'
-import { buildPlan, type PlanPathInput } from '@/lib/planTimeline'
+import { buildPlan, type PlanPathInput } from '@/lib/plan/planTimeline'
 import { evaluateRequirements, type Requirement, type RuleProfile } from '@/lib/rules'
 
 // ── fixture 工具 ────────────────────────────────────────────────────────────

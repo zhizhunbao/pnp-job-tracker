@@ -4,8 +4,8 @@
 import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { getUser, isPro } from '@/lib/entitlement'
-import { applySponsorFilters, fetchSponsorEmployers } from '@/lib/sponsorEmployers'
+import { getUser, isPro } from '@/lib/quota/server'
+import { applySponsorFilters, fetchSponsorEmployers } from '@/lib/employers/server'
 
 export const dynamic = 'force-dynamic'
 

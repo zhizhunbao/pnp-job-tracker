@@ -17,8 +17,8 @@
 // 没有任何复刻件/桩件。VerdictData 用冻结行组装(不读 mart:AIP 那 36 行是 08-09 批B 直接进库的,
 // mart 还没跟上;拿 mart 当输入这个金标就验不到「AIP 行入库后比路翻案」)。
 import { describe, expect, it } from 'vitest'
-import { tripleVerdict, type TripleCompany, type TripleJob, type TripleProfile } from '@/lib/tripleVerdict'
-import type { DesignatedEmployerRow, OccupationRow, VerdictData } from '@/lib/pathVerdict'
+import { tripleVerdict, type TripleCompany, type TripleJob, type TripleProfile } from '@/lib/verdict/tripleVerdict'
+import type { DesignatedEmployerRow, OccupationRow, VerdictData } from '@/lib/verdict/pathVerdict'
 import type { Requirement } from '@/lib/rules'
 
 // 判定卡里的一切相对时间都锚死在这一年(company.founded_year=1969 → 经营 57 年)

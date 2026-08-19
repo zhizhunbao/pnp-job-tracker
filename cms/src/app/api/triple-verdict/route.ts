@@ -3,7 +3,7 @@
  * **本文件只剩路由外壳**:组装与付费闸都在 `lib/tripleWire.ts`(同一份 wire 也给 /plan/pr 的 SSR 首屏用,
  * 两处走同一条口径 —— 一处改口径另一处跟不上,是最容易静默漂的那种 bug)。
  */
-import { buildTripleWire, type ClientAnswers } from '@/lib/tripleWire'
+import { buildTripleWire, type ClientAnswers } from '@/lib/verdict/server'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'

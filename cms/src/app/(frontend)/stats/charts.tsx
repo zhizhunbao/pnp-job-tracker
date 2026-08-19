@@ -3,7 +3,7 @@
 // E13-03(2026-08-06):按省/按大类的预设四图与自定义区(StatsCharts)随 /stats 索引页退役一并删 ——
 // 主图折进把脉首页 S4(默认收起)。红线不变:计数类可跨省求和,中位数不做跨省合并。
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow, type OccRow, type CityRow } from './shared'
+import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow, type OccRow, type CityRow } from '@/lib/stats'
 import type { TFn } from '@/lib/i18n'
 
 type ChartInst = { setOption: (o: object, notMerge?: boolean) => void; resize: () => void; clear: () => void; dispose: () => void; on: (ev: string, cb: (e: { dataIndex: number }) => void) => void }

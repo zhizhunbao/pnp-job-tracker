@@ -11,7 +11,7 @@ import config from '@/payload.config'
 import { match, normalizeProfile, hasProfile, type MatchJob } from '@/lib/jobs'
 import { fetchAlertHits, loadMatchDims } from '@/lib/jobs/server'
 import { sendMail, MAIL_ENABLED, unsubToken } from '@/lib/mailer'
-import { ALERT_MATCH_LEVEL } from '@/lib/plan'
+import { ALERT_MATCH_LEVEL } from '@/lib/quota'
 import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const runtime = 'nodejs'

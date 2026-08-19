@@ -5,7 +5,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { describe, expect, it } from 'vitest'
 
-import { scoreProvince, type ScoreFactor, type SelfProfile } from '@/lib/pnpSelfScore'
+import { scoreProvince, type ScoreFactor, type SelfProfile } from '@/lib/score/pnpSelfScore'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const martPath = path.resolve(__dirname, '../../../data/mart/pnp_score_factors.json')

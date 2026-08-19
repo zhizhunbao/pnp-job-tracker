@@ -7,8 +7,8 @@
  *    → VerdictData 进程内缓存 10 分钟(同 /api/quiz topCache 手法;Render 单实例,重启即失效)。
  *    卡片端另有「进视口才请求」的懒取(同 OccReportCard),两道一起把 DB 压力钉死。
  */
-import { jobPathways } from '@/lib/pathVerdict'
-import { getVerdictData } from '@/lib/verdictCache'
+import { jobPathways } from '@/lib/verdict'
+import { getVerdictData } from '@/lib/verdict/server'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'

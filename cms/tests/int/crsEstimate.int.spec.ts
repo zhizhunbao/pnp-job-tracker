@@ -15,7 +15,7 @@ import fs from 'fs'
 import { fileURLToPath } from 'url'
 import path from 'path'
 import { describe, expect, it } from 'vitest'
-import { estimateCrs, estimateFsw67, type CrsEstimateProfile, type EeGridRow } from '@/lib/crsEstimate'
+import { estimateCrs, estimateFsw67, type CrsEstimateProfile, type EeGridRow } from '@/lib/score/crsEstimate'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const martPath = path.resolve(__dirname, '../../../data/mart/ee_points_grid.json')

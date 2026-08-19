@@ -19,7 +19,7 @@
  * 才喂模型:工具返回的整坨 JSON 一次就能把额度撑爆(resume-match 真简历事故同一个坑)。
  */
 import { LlmError, completeText } from '../llm'
-import { parseLlmJson } from '../resumeMatch'
+import { parseLlmJson } from '../resume'
 import { LBL, type Lang, STEP } from '../i18n'
 import * as SQL from '../db/sql'
 import { buildPgwpCombineAnswer, isOddsQuestion, isPgwpCombineQuestion, isPlanQuestion, mergeRememberedSlots, synthMessages } from './answer'

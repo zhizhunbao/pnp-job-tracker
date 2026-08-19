@@ -14,11 +14,11 @@ import {
   jobPathways, pathVerdict, pathLevers,
   type DesignatedEmployerRow, type OccupationRow, type PathwayVerdict,
   type VerdictData, type VerdictDrawRow, type VerdictProfile,
-} from '@/lib/pathVerdict'
+} from '@/lib/verdict/pathVerdict'
 import { PATHWAYS } from '@/lib/pathways'
 import type { Requirement } from '@/lib/rules'
-import { scoreProvince, type ScoreFactor } from '@/lib/pnpSelfScore'
-import type { EeGridRow } from '@/lib/crsEstimate'
+import { scoreProvince, type ScoreFactor } from '@/lib/score/pnpSelfScore'
+import type { EeGridRow } from '@/lib/score/crsEstimate'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const mart = <T>(name: string): T[] =>

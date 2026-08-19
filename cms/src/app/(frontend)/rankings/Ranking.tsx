@@ -9,7 +9,7 @@ import { BANNER_IMGS, Card, CardAction, CardKV, Banner } from '../ui'
 import { JobCard } from '../ui'
 import { Table } from '../ui'
 import { IconChart } from '../Icons'
-import { BROAD_SLUGS, slugToBroad } from '../stats/shared'
+import { BROAD_SLUGS, slugToBroad } from '@/lib/stats'
 
 export type RankRow = {
   rank: number; kind: string; externalId: string
@@ -120,7 +120,7 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
   )
 }
 
-// 每日分类榜(E9-02):slug 段 → 大类 zh。slug 表只有一份(stats/shared 的 BROAD_SLUGS,
+// 每日分类榜(E9-02):slug 段 → 大类 zh。slug 表只有一份(lib/stats 的 BROAD_SLUGS,
 // 它自己镜像 etl/noc_buckets.SLUGS),这里不再抄一遍。
 const rankTitle = (t: TFn, slug: string): string => {
   if (!slug.startsWith('daily-top')) return t('rank.title.' + slug)

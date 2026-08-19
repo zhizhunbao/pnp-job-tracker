@@ -7,7 +7,7 @@ import { Header } from '../Header'
 import { Footer } from '../Footer'
 import { BANNER_IMGS, Banner, Shell, SectionTabs, Title, Tag, UI, chipStyle } from '../ui'
 import { IconNews } from '../Icons'
-import type { TlCadence, TlEvent } from '@/lib/timeline'
+import type { TlCadence, TlEvent } from '@/lib/plan/server'
 
 export function Timeline({ events, cadence, eeCadence }: {
   events: TlEvent[]; cadence: TlCadence[]

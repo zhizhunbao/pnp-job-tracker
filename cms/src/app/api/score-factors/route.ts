@@ -5,7 +5,7 @@
  * 而只有答完题、且目标省有表的人才看得到。改成点开估分那一刻再要,按省过滤。
  * 数据走 getScoreTables 的进程内单件缓存,不新增每请求查询。
  */
-import { getScoreTables } from '@/lib/scoreTables'
+import { getScoreTables } from '@/lib/score/server'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'

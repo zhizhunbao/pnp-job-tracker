@@ -2,7 +2,7 @@
 // 内链职责从 /plan/pr 挪来(2026-08-13):处境详情页要被爬到,靠这一页 + 顶栏资料库入口。
 import { makeT } from '@/lib/i18n'
 import type { Metadata } from 'next'
-import { CASES } from '@/lib/caseLibrary'
+import { CASES } from '@/lib/verdict'
 import { Cases } from './Cases'
 
 export const metadata: Metadata = {

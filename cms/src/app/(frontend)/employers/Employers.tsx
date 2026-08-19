@@ -11,7 +11,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   EMP_PROGRAMS, type EmployerFilters, type EmployerPage, type EmployerRow,
-} from '@/lib/designatedEmployers'
+} from '@/lib/employers'
 import { pickName } from '@/lib/occName'
 import { BackLink } from '../BackLink'
 import { useLang } from '../LangProvider'

@@ -3,7 +3,7 @@
 // WeChat Pay 待 Dashboard 确认开通后设 STRIPE_WECHAT_PAY=1 启用(Stripe 要求 client:web)。
 import { NextRequest, NextResponse } from 'next/server'
 import type Stripe from 'stripe'
-import { getUser } from '@/lib/entitlement'
+import { getUser } from '@/lib/quota/server'
 import { getStripe } from '@/lib/stripe'
 
 const PLANS: Record<string, { days: number; priceEnv: string }> = {

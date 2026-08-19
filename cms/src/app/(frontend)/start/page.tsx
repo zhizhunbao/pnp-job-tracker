@@ -9,13 +9,13 @@ import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { getUser } from '@/lib/entitlement'
+import { getUser } from '@/lib/quota/server'
 import { normalizeProfile } from '@/lib/jobs'
 import { checkedAt, fetchTotalAndProof } from '@/lib/jobs/server'
-import { loadOccStats, loadProvExtra } from '../stats/lib'
-import { PROVS } from '../stats/shared'
+import { loadOccStats, loadProvExtra } from '@/lib/stats/server'
+import { PROVS } from '@/lib/stats'
 import { Pulse, type HomeStats } from './Pulse'
-import { buildSponsorBoards, fetchSponsorEmployers, SE_SSR_ROWS } from '@/lib/sponsorEmployers'
+import { buildSponsorBoards, fetchSponsorEmployers, SE_SSR_ROWS } from '@/lib/employers/server'
 import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
@@ -105,7 +105,7 @@ async function loadHomeStats(pool: any, payload: any): Promise<Omit<HomeStats, '
     fetchSponsorEmployers(pool).catch(() => []),
     occOptions(pool).catch(() => []),
     catOptions(payload).catch(() => []),
-    // S1 两标量 + noc→分类映射的原料(单一真相源 stats/lib.loadOccStats,同 /api/market-stats);
+    // S1 两标量 + noc→分类映射的原料(单一真相源 lib/stats/server.loadOccStats,同 /api/market-stats);
     // 挂了只丢中间两卡与分类联动,页面照常
     loadOccStats().catch(() => []),
   ])

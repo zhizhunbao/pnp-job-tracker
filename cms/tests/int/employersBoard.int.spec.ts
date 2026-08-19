@@ -9,7 +9,7 @@ import {
   _resetDesignatedCache, applyEmployerFilters, employerFacets, EMP_PAGE_SIZE, fmtFetched,
   loadEmployerPage, nocList, nocMatches, normalizeEmployerFilters, pageSlice,
   programMatches, toEmployerRow, type EmployerFilters, type EmployerRow,
-} from '@/lib/designatedEmployers'
+} from '@/lib/employers/designatedEmployers'
 
 const F = (p: Partial<EmployerFilters> = {}): EmployerFilters =>
   ({ mode: 'designated', program: '', prov: '', city: '', noc: '', q: '', page: 0, ...p })

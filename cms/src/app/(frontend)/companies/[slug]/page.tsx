@@ -4,7 +4,7 @@ import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { getUser } from '@/lib/entitlement'
+import { getUser } from '@/lib/quota/server'
 import { fetchCompanyBySlug, fetchSimilarEmployers } from '@/lib/jobs/server'
 import Company from './Company'
 

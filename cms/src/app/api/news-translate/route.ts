@@ -7,8 +7,8 @@
  */
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { contentTag } from '@/lib/friendLlm'
-import { checkLimit, ipOf } from '@/lib/rateLimit'
+import { contentTag } from '@/lib/llm'
+import { checkLimit, ipOf } from '@/lib/quota/server'
 import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'

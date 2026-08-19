@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   employerNameSegments, matchDesignation, normalizeEmployerName,
-} from '@/lib/designationMatch'
+} from '@/lib/verdict/designationMatch'
 
 type Row = { name: string; source?: string }
 const R = (...names: string[]): Row[] => names.map((name) => ({ name, source: 'AIP' }))

@@ -19,14 +19,14 @@ import { useLang } from '../LangProvider'
 import { Header } from '../Header'
 import { Footer } from '../Footer'
 import { MarketChart, useMarketStats } from '../stats/charts'
-import { BROAD_SLUGS, PROVS, PROV_NAME, type OccRow, type ProvExtra, type StatRow } from '../stats/shared'
+import { BROAD_SLUGS, PROVS, PROV_NAME, type OccRow, type ProvExtra, type StatRow } from '@/lib/stats'
 import { shortOcc } from '../quiz/EntryQuiz'
 import { JobCard } from '../ui'
 import { Table, Pager, type Col } from '../ui'
 import { BANNER_IMGS, Chip, Banner, Shell, Tag, UI } from '../ui'
 import { track } from '@/lib/track'
 import { SponsorCard, sponsorEmployerCols, hasVerdictSignal, type SponsorKind } from '../employers/Sponsors'
-import type { SponsorEmployerRow } from '@/lib/sponsorEmployers'
+import type { SponsorEmployerRow } from '@/lib/employers'
 
 // 抽选行 + 冷解读三标量(近 12 期同通道的期数/最低/最高,服务端算好,见 start/page.tsx)
 export type PulseDraw = {

@@ -6,7 +6,7 @@
 //    这里一旦出现常量,那条反向边立刻变成真环 —— 实撞过:PNP_PROVINCES 初始化时是 undefined。
 //    (ChatError 是类=运行时值,所以它住 orchestrate.ts,不住这儿。)
 import { type ClaimTopic } from './tools'
-import { type EduKey } from '../pnpSelfScore'
+import { type EduKey } from '../score'
 
 // ── 契约(前端按这个写,别改)────────────────────────────────────────────────
 

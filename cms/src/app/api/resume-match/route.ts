@@ -13,11 +13,11 @@ import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { getUser, isPro } from '@/lib/entitlement'
+import { getUser, isPro } from '@/lib/quota/server'
 import { jobDescription } from '@/lib/jobs/server'
 import { completeText, LlmError } from '@/lib/llm'
 import { patchProfile, type ProfilePatch } from '@/lib/profile'
-import { DAILY_FREE, gateMatch, matchPrompt, MIN_RESUME, normalizeRows, parseLlmJson } from '@/lib/resumeMatch'
+import { DAILY_FREE, gateMatch, matchPrompt, MIN_RESUME, normalizeRows, parseLlmJson } from '@/lib/resume'
 import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'

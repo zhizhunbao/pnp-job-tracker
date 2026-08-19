@@ -12,7 +12,7 @@ import { Button, Card, CardKV, Notice, Shell, Tag, UI } from '../../ui'
 import { Table } from '../../ui'
 import { PricingModal } from '../../jobs/PricingModal'
 import { IconScale, IconStar } from '../../Icons'
-import { CMP_KEY, type CompareRow } from '@/lib/employerCompareShared'
+import { CMP_KEY, type CompareRow } from '@/lib/employers'
 
 const money = (v: number | null) => (v != null ? `$${Math.round(v / 1000)}K` : null)
 const dash = <span style={{ color: '#9ca3af' }}>—</span>

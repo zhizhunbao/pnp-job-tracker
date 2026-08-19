@@ -16,7 +16,7 @@ import { QuizChecks, QuizChoices, QuizNav, QuizSub, QuizTitle } from '../quiz/Qu
 import type { Lang, TFn } from '@/lib/i18n'
 import { officialLabel as label } from '@/lib/i18n'
 import { CLB, NCLC, pullAndMerge, readAnswers, readScoreAnswers, writeAnswers, writeScoreAnswers, type ScoreAnswers } from '@/lib/quiz'
-import { DEFAULT_PROFILE, EDU_KEYS, scoreProvince, streamMatches, type DrawRow, type EduKey, type ScoreFactor, type SelfProfile } from '@/lib/pnpSelfScore'
+import { DEFAULT_PROFILE, EDU_KEYS, scoreProvince, streamMatches, type DrawRow, type EduKey, type ScoreFactor, type SelfProfile } from '@/lib/score'
 
 // 打分是**关于你这个人**的功能,不绑某一个岗位(Frank 2026-07-27「应该单独弄个功能吧,
 // 不应该放到 pnp 弹框里面」)—— 所以只收一个轻量语境:职业(拿该省在招数)、目标省(排序)、

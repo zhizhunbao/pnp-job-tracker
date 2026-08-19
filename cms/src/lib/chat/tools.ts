@@ -16,18 +16,17 @@ import { NO_LIST_PROVINCES, provListCoverage, type MatchDims, type ProvListCover
 import { checkedAt } from '../jobs/server'
 // ⚠️ 单向依赖:planTimeline 只 `import type` 本文件(编译期擦除),所以这条运行时的边不成环。
 // 要往回加一个**值**引用之前先想清楚:那会变成真的循环依赖。
-import { buildPlan, type Plan, type PlanPathInput } from '../planTimeline'
+import { buildPlan, type Plan, type PlanPathInput } from '../plan'
 // ⚠️ 这条边只能是**单向**的:pathVerdict 对本文件只 `import type`(编译期擦除),
 // 所以这里拿它的**值**(pathVerdict/pathLevers)不成环。往 pathVerdict 里加一个指回本文件的值引用之前先想清楚。
 import {
   pathLevers, pathVerdict,
   type DesignatedEmployerRow, type OccupationRow, type PathwayVerdict,
   type VerdictData, type VerdictDrawRow, type VerdictLever, type VerdictProfile,
-} from '../pathVerdict'
+} from '../verdict'
 import { assembleReportFacts } from '../reportFacts'
 import { evaluateRequirements, type Requirement, type ReqSubject, type RuleProfile, type RuleVerdict } from '../rules'
-import type { ScoreFactor } from '../pnpSelfScore'
-import type { EeGridRow } from '../crsEstimate'
+import type { EeGridRow, ScoreFactor } from '../score'
 import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 // ── 公共类型 ────────────────────────────────────────────────────────────────

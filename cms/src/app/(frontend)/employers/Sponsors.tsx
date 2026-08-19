@@ -5,7 +5,7 @@
 import { type Lang, type TFn } from '@/lib/i18n'
 import { track } from '@/lib/track'
 import { Card, CardKV, UI } from '../ui'
-import { type SponsorEmployerRow } from '@/lib/sponsorEmployers'
+import { type SponsorEmployerRow } from '@/lib/employers'
 
 // 所在地统一省维度(Frank 08-08「怎么有的显示省有的显示市」:单省带市名造成两种粒度混排)——
 // 1-3 省列两字码,≥4 省收「N 省」;市级细节归公司弹框

@@ -40,12 +40,12 @@ import {
   blockCost, pathVerdict,
   type DesignatedEmployerRow, type OccupationRow, type PathwayVerdict,
   type VerdictData, type VerdictDrawRow, type VerdictProfile,
-} from '@/lib/pathVerdict'
+} from '@/lib/verdict/pathVerdict'
 import { gateOf, PATHWAYS, type PathwayStrategy } from '@/lib/pathways'
 import type { GateKey, StatusAsk } from '@/lib/gateManifest'
 import type { Requirement } from '@/lib/rules'
-import type { EduKey, ScoreFactor } from '@/lib/pnpSelfScore'
-import type { EeGridRow } from '@/lib/crsEstimate'
+import type { EduKey, ScoreFactor } from '@/lib/score/pnpSelfScore'
+import type { EeGridRow } from '@/lib/score/crsEstimate'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const mart = <T>(name: string): T[] =>

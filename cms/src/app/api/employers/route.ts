@@ -11,7 +11,7 @@
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { EMP_PAGE_SIZE, loadEmployerPage, normalizeEmployerFilters, type Pool } from '@/lib/designatedEmployers'
+import { EMP_PAGE_SIZE, loadEmployerPage, normalizeEmployerFilters, type Pool } from '@/lib/employers/server'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'

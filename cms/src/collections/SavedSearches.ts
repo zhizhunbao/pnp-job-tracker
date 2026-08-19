@@ -1,5 +1,5 @@
 import { APIError, type Access, type CollectionConfig, type PayloadRequest } from 'payload'
-import { FREE_SAVED_SEARCHES, PRO_SAVED_SEARCHES } from '../lib/plan'
+import { FREE_SAVED_SEARCHES, PRO_SAVED_SEARCHES } from '../lib/quota'
 
 // 保存的筛选(E5-03;D1 2026-07-19 降免费):登录即可存(留存钩),上限分档 免费 2/Pro 5——闸在「更多保存位」。
 // access=本人+admin;创建时 hook 强制 user=req.user(不可代存);上限在 beforeChange 按档卡。

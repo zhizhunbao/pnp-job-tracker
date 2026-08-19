@@ -13,7 +13,7 @@ import { AccountMenu } from '../AccountMenu'
 import { useLang } from '../LangProvider'
 import { IconLock, IconSave, IconSettings, IconTarget } from '../Icons'
 import { BANNER_IMGS, Banner, Button, JobCard, gradeColor } from '../ui'
-import { BROAD_SLUGS } from '../stats/shared'   // 大类的行业顺序(镜像 etl/noc_buckets.BROADS)
+import { BROAD_SLUGS } from '@/lib/stats'   // 大类的行业顺序(镜像 etl/noc_buckets.BROADS)
 import { quizToProfile, readQuiz } from '../quiz/EntryQuiz'   // 答案读写与落档(弹框本体已退役,2026-07-31 统一答题)
 import { ActModal, AdvisorModal } from './Advisor'
 import { eeIsDormant, eeLastDraw } from './Pnp'
