@@ -69,6 +69,10 @@ cms/dev.log
 #    被提交进了公开仓库(faf1b8b3)。文件自己的注释写着「本文件已 gitignore,勿提交」——
 #    而当初那条规则只写了 .claude/ 那份路径,.agents/ 这份复制品从来没被挡住。
 #    教训:**按目录整体忽略,别按单个文件点名** —— 点名的规则挡不住复制品。
-/.claude/
 /.agents/
 /.vscode/
+# .claude 只放行 skills/(走查脚本是共享工具,要跟着仓库走);其余全是本机状态
+/.claude/*
+!/.claude/skills/
+# 🔴 但口令文件永不放行 —— 它在 .claude/ 与 .agents/ 各有一份,而当初正是「只点名一份」把另一份漏了出去
+/.claude/skills/**/credentials*.json
