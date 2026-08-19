@@ -170,6 +170,28 @@
 >   生产 `/` `/plan/pr` `/employers` 200,`GET /api/chat` **405 不是 500**(路由模块真加载起来了)。
 > - **卷宗**:同上 §10「落地记录」。**没做**:测试文件名没跟着改;eval 用例只由 tsc 保证编译得过(它们打真模型)。
 
+> **📍 2026-08-18 夜二:`lib/agent/` 对话兜底接 Pi(已提交,**默认关**)**
+> - **判据是实测**:`chat_logs` 198 轮里 **41 轮(20.7%)抛 `noOcc`**,用户拿到的是「请提供 NOC」。
+>   手写路由是 **13 个意图谓词 + 53 条正则**,而组合是乘法 —— 枚举税的账单。日均 6.6 轮。
+> - **只用 Pi 的引擎不用机壳**:`pi-ai`(provider + 工具声明)+ `pi-agent-core`(`runAgentLoop`:
+>   循环/批量执行/**参数按 schema 校验**/terminate);**不要 `pi-coding-agent`**(13.7MB CLI 机壳,
+>   5524 个插件全是给写代码的 agent 用的)。手写循环换成它之后 planner **118 → 80 行**,八条语料结果逐条相同。
+> - **🔴 Spike:朋友那个 ngrok 网关不做 tool calling,而且是静默忽略** —— tools 按 OpenAI 格式发出去了、
+>   200 回来只有文本,连 `tool_choice:"required"` 都当没看见。**是网关不透传,不是模型不会**
+>   (同一个 qwen3.6 在家里 Ollama 上工具全调对)。**待办:给朋友一页最小复现**,他透传了 planner 换一行就切回零成本。
+> - **🔴 两个坑都是「tsc 全绿但坏了」**:① `PNP_PROVINCES is not iterable` —— chat→agent→chat 成环,
+>   **同一个常量第二次栽**;修法是**倒转依赖方向**(`rescueOcc` 由路由注入,lib/chat 不认识 lib/agent)。
+>   ② 第一次 build exit 0,但 **standalone 产物里一个 `@earendil-works` 都没有**(通配子路径 + 动态 import,
+>   追踪器抓不到)→ 上线即 `MODULE_NOT_FOUND`;`outputFileTracingIncludes` 点名后 16M 进产物(130M → **146M**)。
+> - **实测命中 2/8**;没救到的四条各有原因(工具集窄、没传 `profileContext`),不是循环的锅。
+> - **🔴 谈定的下一步形状(三层,新 session 接)**:① 库里的 lookup 出 Fact 带出处过闸(**数字只走这条**);
+>   ② 官方页现抓(白名单)**只出文字不出 Fact**(长尾解释走这条);③ 都不行 = 照实说 + 缺口进队列。
+>   分界是**「数字 / 文字」不是「ETL / chat」**,而且**不用改闸就能自动执行** ——
+>   `guardAnswer` 判的正是「数字能不能在 facts 里找到」,现抓网页里的数字天然过不了闸。
+>   现抓的正文落 `html_cache/`,**chat 的长尾抓取自动变成数据线「下次该洗什么」的线索**。
+> - **下一步第一件**:把 `collectFacts` 从「一个整体」拆成「按工具」(`cards.ts` 219 起约 200 行)—— 三层都建在它上面。
+> - **卷宗**:`docs/implementation/文案收拢/11_agent兜底接入pi.md`。
+
 > **📍 2026-08-18 凌晨续二:题/答/判收进 `lib/quiz/`(本轮第四件,已完工并推送)**
 > - **`lib/{fields,answers,decisions}.ts` → `lib/quiz/{fields,answers,decisions,index}.ts`**,形状照 `lib/db/`。
 >   量得出来的收获:`Decision.tsx` 与 `QuizForm.tsx` 各**三行 import 并成一行**;
