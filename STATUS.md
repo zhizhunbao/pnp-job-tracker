@@ -170,6 +170,28 @@
 >   生产 `/` `/plan/pr` `/employers` 200,`GET /api/chat` **405 不是 500**(路由模块真加载起来了)。
 > - **卷宗**:同上 §10「落地记录」。**没做**:测试文件名没跟着改;eval 用例只由 tsc 保证编译得过(它们打真模型)。
 
+> **📍 2026-08-18 夜七:🔴 `lib/jobs` 的桶把连接池打进了浏览器包(build 才炸)+ 首屏八张表改走 db 层**
+> - **🔴 `d26f8717` 那笔是坏的,而且只有 `npm run build` 抓得到**:在那个提交上 build **exit 1**,
+>   一屏 `Can't resolve 'fs/promises' / 'net' / 'tls'`;dev 打开 `/jobs` 探针只数出 **1 个元素**(没渲出来)。
+>   **我当时只跑了 tsc / vitest / eslint** —— 那三道闸没有一道管「哪些模块会被打进浏览器包」。
+> - **病因:桶不挑食,浏览器挑食。** `queries`/`dims`/`jd` 的依赖链挂着 `payload` 与 `@/payload.config`,
+>   而 `Table.tsx`/`Pnp.tsx`/`OnboardingWizard.tsx` 是 `'use client'`、只要 `match` 与 `source` ——
+>   从同一个桶取,整条服务端链就进了客户端包。
+> - **修法:一个模块两个门**(Next 标准做法):`@/lib/jobs`(match/source/形状,客户端也安全)
+>   与 `@/lib/jobs/server`(queries/dims/jd,要连库)。eslint 放行 `lib/jobs/server`,
+>   **放行模式必须排在 group 最后** —— 同组内后面的覆盖前面的,夹中间会被相对模式重新拦住(实撞三处)。
+> - **验收清单从此加一条:结构性改动必须跑 `npm run build`。**
+> - **首屏八张维度表改走 db 层**(Frank「扫吧,先从 jobs/page.tsx 开始」):八条语句进 `db/sql.ts`,
+>   装配搬进 `queries.ts` 的 `fetchSsrDims(pool)`,页面只剩 TTL 缓存五行;取池换 `dbOf`。
+>   🔴 **numeric 列回来是字符串**(teer/score/invitations/draw_crs/draw_size)——
+>   原来的 `typeof x === 'number'` 一换路就把它们静默判成 null(抽选线、TEER 档整列消失且不报错),全改 `num()`。
+> - **验收**:`/jobs @1440` 渲染 A/B 对 `cafe8043`(lib/jobs 之前)**2117/2117 计算样式 + 几何全绿**;
+>   build ✓;tsc 0;vitest 699/694/5 逐条相同;eslint **555/1(比基线少 6)**。
+> - ⚠️ 两个探针坑各踩一次:① 同一份代码自己比自己 2067 vs 2117(维度缓存 + /api/dims 并入的时序)——
+>   先自己比自己再比前后;② `git checkout <旧提交> -- src` **只恢复不删除**,改名前的旧文件留在工作区,
+>   eslint 平白多 51 条 —— 数字对不上先查僵尸文件。
+> - **卷宗**:`13_lib-jobs模块清单.md` §7 §8。**没做**:其余 7 个走 Local API 的文件(名单在 §1 那条)。
+
 > **📍 2026-08-18 夜六:朋友网关加上了 tools(实测通过)但**继续用 Haiku**;chat 补 Pro 个人日帽**
 > - **朋友当天就加上了透传**,本机实测:`tool_choice` 给 `required` 与 `auto` 都回 `finish_reason=tool_calls`,
 >   函数名与参数都对。**但没切** —— Frank 拍板继续用 Haiku,两个理由都是实测:

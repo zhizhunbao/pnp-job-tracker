@@ -169,3 +169,58 @@ lib/jobs/
 `types.ts`** —— 一跑就把 28 个文件的 `./types` 指到了职位桶上。`tsc` 当场红,靠 `git diff` 逐对
 (旧行、新行)只回滚**模块说明符**修回来(不能整行还原:那些行里有本轮真改动,如 `facts.ts` 的 `SlotClaim`)。
 教训:**批量改 import 的正则必须锚定完整路径**,`./types` 这种在带桶的仓库里是通配符不是标识符。
+
+---
+
+## 7 · 🔴 事故与修复:桶把连接池打进了浏览器包(`npm run build` 才炸)
+
+**`d26f8717` 那个提交是坏的** —— 我当时只跑了 tsc / vitest / eslint,**没跑 `npm run build`**。
+实测:在那个提交上 `npm run build` **exit 1**,一屏 `Module not found: Can't resolve 'fs/promises' / 'net' / 'tls' / 'child_process'`;
+dev 起来打开 `/jobs`,探针只数出 **1 个元素**(页面根本没渲出来)。
+
+**病因是桶不挑食,而浏览器挑食**:`queries` / `dims` / `jd` 的依赖链上挂着 `payload` 与 `@/payload.config`
+(连接池、集合配置),而 `Table.tsx` / `Pnp.tsx` / `OnboardingWizard.tsx` 是 `'use client'` 组件、
+只要 `match` 与 `source`。收成一个桶之后,这三个客户端组件从桶取一个字符串函数,
+打包器就把整条服务端链拉进了**浏览器**包。
+
+**修法:一个模块两个门**(Next 的标准做法,不是我们发明的)——
+
+| 门 | 装什么 | 谁从这儿取 |
+|---|---|---|
+| `@/lib/jobs` | `match` · `source` · 全部形状 | 客户端组件 + 服务端都行 |
+| `@/lib/jobs/server` | `queries` · `dims` · `jd`(要连库) | 只有服务端(页面 / 路由 / 提醒) |
+
+`eslint.config.mjs` 放行 `lib/jobs/server`,**放行模式必须排在整个 group 的最后** ——
+同组内后面的模式覆盖前面的,夹在中间会被相对模式重新拦住(实撞:三个文件照旧报错)。
+
+### 教训(写进验收清单)
+
+- **结构性改动的验收必须包含 `npm run build`。** tsc 只看类型、vitest 只跑 Node 侧、
+  eslint 只看源码 —— **「哪些模块会被打进浏览器包」这件事,三道闸一个都不管**。
+- **服务端/客户端的分界优先于「一个模块一个桶」。** 混着 `payload` 依赖的模块必须分门,
+  不是风格问题,是运行环境问题。
+- 顺带:`git checkout <旧提交> -- src` 会把**改名前的旧文件**留在工作区(checkout 只恢复不删除),
+  eslint 因此多出 51 条警告 —— 数字对不上先查有没有僵尸文件,别急着找新警告。
+
+---
+
+## 8 · `jobs/page.tsx` 的八张维度表改走 db 层(扫的第一个)
+
+Frank:「扫吧,先从 jobs/page.tsx 开始」。那一页原来一半走 SQL(news)、一半走
+`payload.find`(八张表),而 `/api/jobs` 读的是同样的表。
+
+- 八条语句进 `db/sql.ts`(`DIMS_*`),装配整段搬进 `lib/jobs/queries.ts` 的 `fetchSsrDims(pool)`;
+  页面只剩 10 分钟 TTL 缓存那五行。取池顺手换成 `dbOf(payload)`(49 个 `as any` 少一个)。
+- 🔴 **numeric 列回来是字符串**(实测 `teer` / `score` / `invitations` / `draw_crs` / `draw_size`):
+  Local API 那边是数字,所以原来写的 `typeof x === 'number' ? x : null` 一换路就会把这些值
+  **静默判成 null** —— 抽选分数线、TEER 档整列消失,还不报错。全部改走 `num()`。
+- 列名用 `AS "camelCase"` 对齐,好让 `mapPnpOcc` / `mapEeCat` 一套映射同时喂两条路。
+- 排序照抄原来的 `sort`;没给 sort 的用 `ORDER BY id`(实测这八张表 `created_at` 全表同值,
+  按创建时间排等于全是并列,id 序才是可复现的那个)。
+
+**验收**:`/jobs @1440` 渲染 A/B(对面是 `lib/jobs` 之前的 `cafe8043`,同一个 dev)——
+**计算样式 2117/2117、几何 2117/2117 全绿**;`npm run build` ✓;tsc 0;
+vitest 699/694/5 逐条相同;eslint 555/1(比基线**少 6 条**:page.tsx −11、queries.ts +5)。
+
+⚠️ 探针的老坑又踩了一次:第一次 after 快照 2067、第二次 2117 —— **同一份代码自己比自己就有差**
+(维度缓存 + `/api/dims` 后台并入的时序)。按脚本头部第 4 条,先自己比自己再比前后。
