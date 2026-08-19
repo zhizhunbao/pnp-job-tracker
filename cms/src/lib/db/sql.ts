@@ -10,12 +10,12 @@
 //
 // 列名是 Payload 的 snake_case(老坑 5):改 collection 字段要同步这里。
 //
-// 分段:1) 片段  2) 职位列表/分页/匹配  3) 职位单条与相关  4) 公司  5) 职业(NOC)
-//       6) 站级数字与提醒  7) 答题事实数
+// 分段:1. 片段  2. 职位列表/分页/匹配  3. 职位单条与相关  4. 公司  5. 职业(NOC)
+//       6. 站级数字与提醒  7. 答题事实数  8. 统计/难度/职业报告  9. 雇主
 
-/* ══════════════════════════════════════════════════════════════════════════
-   1) 片段 —— 多条语句共用的列清单与条件,单独命名以免各处再抄一遍
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 1. 片段 —— 多条语句共用的列清单与条件,单独命名以免各处再抄一遍
+// =========================================================================
 
 export const JOB_COLUMNS = `j.id, j.title, c.name AS company_name, c.slug AS company_slug, c.address AS company_address, c.description AS company_description, c.sectors AS company_sectors,
   c.website AS company_website, c.website_source,
@@ -35,9 +35,9 @@ const REL_COLS = `j.id, j.title, c.name AS company_name, j.city, j.province, j.s
 /** 去重:同一岗多渠道重复发布时只留一条 */
 export const DEDUPE_COND = `coalesce(j.is_dup, false) = false`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   2) 职位 —— 列表 / 分页 / 匹配
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 2. 职位 —— 列表 / 分页 / 匹配
+// =========================================================================
 
 /** 首屏最近 N 行(SSR 秒开用) */
 export const JOB_ROWS_LATEST = `SELECT ${JOB_COLUMNS} ${JOB_FROM}
@@ -65,9 +65,9 @@ export const companyIdInByName = (placeholder: string) =>
 
 export const COMPANY_IDS_BY_NAME = `SELECT id FROM companies WHERE name ILIKE $1`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   3) 职位 —— 单条与相关职位
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 3. 职位 —— 单条与相关职位
+// =========================================================================
 
 export const JOB_BY_ID = `SELECT ${JOB_COLUMNS} ${JOB_FROM} WHERE j.id = $1 LIMIT 1`
 
@@ -90,9 +90,9 @@ export const RELATED_SAME_OCC = `SELECT ${REL_COLS} ${JOB_FROM}
 export const levelHasJobs = (levels: readonly string[]) =>
   `SELECT ${levels.map((lv, i) => `EXISTS(SELECT 1 FROM jobs WHERE province = $1 AND ${lv} = $${i + 2} AND COALESCE(status,'open') <> 'closed') AS ${lv}_has`).join(', ')}`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   4) 公司
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 4. 公司
+// =========================================================================
 
 /** cond 二选一:按 slug,或按「这条岗属于哪家公司」的子查询(见 COMPANY_BY_JOB_ID_COND) */
 export const companyDetail = (cond: string) =>
@@ -120,9 +120,9 @@ export const SIMILAR_EMPLOYERS = `SELECT c.slug, c.name, c.industry, c.sponsor_g
      GROUP BY c.id, c.slug, c.name, c.industry, c.sponsor_grade
      ORDER BY c.sponsor_grade DESC NULLS LAST, count(j.id) DESC LIMIT 6`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   5) 职业(NOC)
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 5. 职业(NOC)
+// =========================================================================
 
 export const NOC_TITLES_BY_CODES = `SELECT noc, title, title_zh, title_ko FROM noc_descriptions WHERE noc = ANY($1)`
 
@@ -171,9 +171,9 @@ export const NOC_BY_TITLE_LIKE = `SELECT d.noc, COALESCE(d.title,'') title, COAL
      WHERE d.title ILIKE $1 OR d.title_zh ILIKE $1
      ORDER BY length(COALESCE(d.title,'')) LIMIT 8`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   6) 站级数字 —— 总量 / 证明数 / 新鲜度 / 邮件提醒
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 6. 站级数字 —— 总量 / 证明数 / 新鲜度 / 邮件提醒
+// =========================================================================
 
 /** cond = 统计口径的 WHERE 片段(在架/去重等) */
 export const totalAndProof = (cond: string) =>
@@ -195,9 +195,9 @@ export const alertHits = (where: string) =>
      WHERE j.status = 'open' AND j.first_seen > $1 AND ${where}
      ORDER BY j.grade_channel DESC NULLS LAST, j.date_posted DESC NULLS LAST LIMIT 20`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   7) 答题三问的事实数(某职业:在架量 / 可提名量 / 具名通道 / 中位薪资 / 省分布)
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 7. 答题三问的事实数(某职业:在架量 / 可提名量 / 具名通道 / 中位薪资 / 省分布)
+// =========================================================================
 
 export const QUIZ_FACTS_TOTALS = `SELECT count(*)::int open,
               count(*) FILTER (WHERE j.pnp_eligible)::int eligible,
@@ -214,9 +214,9 @@ export const QUIZ_FACTS_STREAMS = `SELECT j.pnp_stream stream, count(*)::int n
        FROM jobs j WHERE j.status = 'open' AND j.noc = $1 AND j.pnp_stream IS NOT NULL AND j.pnp_stream <> ''
        GROUP BY j.pnp_stream ORDER BY count(*) DESC LIMIT 4`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   8) 统计 / 难度 / 职业报告
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 8. 统计 / 难度 / 职业报告
+// =========================================================================
 
 // ── chat/reportFacts.ts ──
 
@@ -281,9 +281,9 @@ export const PROV_DIFFICULTY_FETCHED = `SELECT province, difficulty, fetched FRO
 // ── 补:单引号写的那条 ──
 export const PROVINCES_INFO = `SELECT code, info FROM provinces`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   9) 雇主 —— 官方名录 / 在招 / 担保
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 9. 雇主 —— 官方名录 / 在招 / 担保
+// =========================================================================
 
 // ── employers/directory.ts ──
 
@@ -352,9 +352,9 @@ export const COMPANY_JOBS_FOR_COMPARE = `SELECT noc, province, pnp_eligible, pnp
 
 export const PROV_DIFFICULTY_ANY = `SELECT province, difficulty FROM stats WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND province = ANY($1) AND difficulty IS NOT NULL`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   10) 试点(RCIP/FCIP)名额
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 10. 试点(RCIP/FCIP)名额
+// =========================================================================
 
 // ── pathways/pilotQuota.ts ──
 
@@ -364,9 +364,9 @@ export const PILOT_QUOTA_COMMUNITIES = `SELECT community, province, type, first_
        FROM pilot_quota
       WHERE COALESCE(noc, '') = ''`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   11) 抽选 / 时间线 / 榜单
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 11. 抽选 / 时间线 / 榜单
+// =========================================================================
 
 // ── plan/timeline.ts ──
 
@@ -397,9 +397,9 @@ export const RANKING_ROWS = `SELECT slug, rank, kind, external_id, title, compan
             open_jobs, named_jobs, avg_score, lmia_positions, lmia_quarter
      FROM rankings WHERE slug = $1 ORDER BY rank ASC`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   12) 判定与案例
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 12. 判定与案例
+// =========================================================================
 
 // ── verdict/tripleWire.ts ──
 
@@ -427,9 +427,9 @@ export const PNP_OPS_STATS = `SELECT DISTINCT ON (province, metric) province, me
        AND (scope IS NULL OR scope = '' OR scope = 'Skilled Worker')
      ORDER BY province, metric, COALESCE(as_of, period) DESC`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   13) 公司调研 / JD 正文
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 13. 公司调研 / JD 正文
+// =========================================================================
 
 // ── employers/companyResearch.ts ──
 
@@ -454,9 +454,9 @@ export const JD_BY_APPLY_URL = `SELECT description FROM jobs WHERE apply_url = $
 /** 懒抓到的正文回写:只填空,不覆盖已有(WHERE description IS NULL) */
 export const JD_UPDATE_BY_APPLY_URL = `UPDATE jobs SET description = $1 WHERE apply_url = $2 AND description IS NULL`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   14) 统计页(/stats)
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 14. 统计页(/stats)
+// =========================================================================
 
 // ── stats/server.ts ──
 
@@ -483,9 +483,9 @@ export const PNP_NOCS_DISTINCT = `SELECT DISTINCT noc FROM pnp_occupations WHERE
 
 export const EE_NOCS_DISTINCT = `SELECT DISTINCT noc FROM ee_categories WHERE noc <> ''`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   15) 城市 / 社区页
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 15. 城市 / 社区页
+// =========================================================================
 
 // ── app/api/city/route.ts ──
 
@@ -517,9 +517,9 @@ export const districtEmployers = (a1: string) => `SELECT c.name, c.slug, COUNT(*
          WHERE j.district = $3 AND j.city = $1 AND j.province = $2 AND ${a1} AND c.name IS NOT NULL
          GROUP BY c.name, c.slug ORDER BY n DESC, c.name LIMIT 4`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   16) 邮件提醒
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 16. 邮件提醒
+// =========================================================================
 
 // ── app/api/alerts/run/route.ts ──
 
@@ -543,9 +543,9 @@ export const ALERT_JOBS_BY_IDS = `SELECT id, status, province, broad FROM jobs W
 
 export const alertNewCount = (a1: string) => `SELECT count(*)::int AS n FROM jobs WHERE status = 'open' AND date_posted >= $1 AND (${a1})`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   17) 职业竞争度(API)
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 17. 职业竞争度(API)
+// =========================================================================
 
 // ── app/api/occ-competition/route.ts ──
 
@@ -567,9 +567,9 @@ export const OCC_FCIP_BY_PROV = `SELECT province, COUNT(*)::int AS n FROM jobs
         WHERE status = 'open' AND COALESCE(pilot, '') LIKE '%FCIP%' AND noc = $1 AND province <> ''
         GROUP BY province`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   18) JD 整理回写
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 18. JD 整理回写
+// =========================================================================
 
 // ── app/api/jdformat/route.ts ──
 export const JD_SET_FORMATTED = `UPDATE jobs SET jd_formatted = $1, jd_formatted_at = now() WHERE id = $2`
@@ -584,9 +584,9 @@ export const JD_STATE_BY_URL = `SELECT id, employment_term, employment_hours, jd
 
 // ── app/api/jdformat/route.ts ──
 
-/* ══════════════════════════════════════════════════════════════════════════
-   19) 新闻与评论
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 19. 新闻与评论
+// =========================================================================
 
 // ── app/(frontend)/news/page.tsx ──
 
@@ -659,9 +659,9 @@ export const DIMS_EE_CATEGORIES = `SELECT category, label, noc, teer, title, url
 export const DIMS_FIELD_SOURCES = `SELECT field, kind, publisher, url, title, description, status, fetched, note
      FROM field_sources ORDER BY id LIMIT 200`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   20) 站点地图(分片)
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 20. 站点地图(分片)
+// =========================================================================
 
 // ── app/(frontend)/jobs/sitemap.ts ──
 
@@ -681,9 +681,9 @@ export const coSitemapPage = (a1: string) => `SELECT c.slug, max(j.last_seen) AS
        GROUP BY c.id, c.slug
        ORDER BY c.id ASC LIMIT $1 OFFSET $2`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   21) 漏斗看板(/funnel)
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 21. 漏斗看板(/funnel)
+// =========================================================================
 
 // ── app/(frontend)/funnel/page.tsx ──
 
@@ -697,9 +697,9 @@ export const FUNNEL_USERS = `SELECT count(pro_until)::int pro,
                    count(*) FILTER (WHERE stripe_sessions IS NOT NULL AND stripe_sessions::text NOT IN ('[]','null','""'))::int stripe
             FROM users`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   22) 详情页 SSR / OG 图 / 初评表
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 22. 详情页 SSR / OG 图 / 初评表
+// =========================================================================
 
 // ── app/(frontend)/jobs/[id]/page.tsx ──
 
@@ -729,9 +729,9 @@ export const PNP_DRAWS_RECENT = `SELECT * FROM pnp_draws
 
 export const NEWS_RECENT_80 = `SELECT * FROM news ORDER BY date DESC, id DESC LIMIT 80`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   23) 翻译 / 摘要缓存(按界面语言选列)
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 23. 翻译 / 摘要缓存(按界面语言选列)
+// =========================================================================
 
 // ── app/api/news-translate/route.ts ──
 
@@ -745,9 +745,9 @@ export const newsForSummary = (a1: string) => `SELECT title, body_en AS en, ${a1
 
 export const newsSetSummary = (a1: string) => `UPDATE news SET ${a1} = $1 WHERE slug = $2`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   24) 埋点与零散查询
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 24. 埋点与零散查询
+// =========================================================================
 
 // ── app/api/track/route.ts ──
 
@@ -774,9 +774,9 @@ export const COMPANY_BRIEF_BY_NAME = `SELECT ai_brief FROM companies WHERE lower
 
 export const JOB_APPLY_URL_BY_ID = `SELECT apply_url FROM jobs WHERE id = $1 LIMIT 1`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   25) AI 顾问的事实取数(lib/chat/tools)
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 25. AI 顾问的事实取数(lib/chat/tools)
+// =========================================================================
 
 // ── lib/chat/tools.ts ──
 
@@ -827,9 +827,9 @@ export const EE_POINTS_GRID_2 = `SELECT grid, section, section_label, kind, tabl
 export const DESIGNATED_BY_PROV_2 = `SELECT name, province, location, is_tech, source, nocs, url, fetched
             FROM designated_employers WHERE province = 'NL'`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   26) 顾问的职业码识别(lib/chat)
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 26. 顾问的职业码识别(lib/chat)
+// =========================================================================
 
 // ── lib/chat/slots.ts + orchestrate.ts ──
 
@@ -849,9 +849,9 @@ export const NOC_LIST_WITH_TITLES = `SELECT d.noc, COALESCE(d.title, '') title, 
        HAVING count(*) >= 5
        ORDER BY count(*) DESC LIMIT $2`
 
-/* ══════════════════════════════════════════════════════════════════════════
-   27) 灌库(seed)—— 只收**固定语句**
-   ══════════════════════════════════════════════════════════════════════════ */
+// =========================================================================
+// 27. 灌库(seed)—— 只收**固定语句**
+// =========================================================================
 // ⚠️ 这里没有 seed 的全部 SQL:按表名/列清单**现拼**的那些(DELETE FROM ${table}、
 //    ON CONFLICT DO UPDATE SET 的列差子句、临时表)留在 app/seed/route.ts —— 它们是
 //    随数据形状生成的**机制**,不是可以摆在这儿读的语句;搬过来只会变成一堆看不懂的碎片。
