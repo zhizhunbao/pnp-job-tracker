@@ -55,3 +55,11 @@ cms/dev.log
 
 # 政策雷达产物(crawl 役时更再生成:manifest/changes/html_cache,후자上千文件)
 /data/crawl/
+
+# ── 截图与草稿:哪些不入 git(2026-08-18 清点:已跟踪位图 1212 个 / 145.7 MB,.git 已 230 MB)──
+# 走查与 A/B 探针截图:用完即弃,没有任何文档引用(设计文档要留的效果图不带这两个前缀 ——
+# 实测已跟踪的 302 张 mockups 里 0 张匹配,所以这条只拦新的,不动老的)
+/docs/assets/mockups/本地-*
+/docs/assets/mockups/生产-*
+# 会话草稿目录(临时截图/中间产物)
+/scratchpad/
