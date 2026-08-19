@@ -202,9 +202,11 @@ d('对话工具层(生产库只读)', () => {
 
     // ── C02 §4-4:「联邦常规轮次 480~530」的证伪(2026-08-04 起 lookupDraws 收 FED)──────
     // FED 56 行一直躺在同一张 pnp_draws 里,只是没人查得到。这三条守住案例里那两句话:
-    //   ① CEC 12 轮的分数线区间(507–518,下限比中介说的 480 高 27 分);
+    //   ① CEC 那几轮的分数线区间(2026-08-04 实测 12 轮 507–518,下限比中介说的 480 高 27 分);
+    //      🔴 轮数与区间**都不写死**:每开一轮就变(08-18 新开一轮,12→13、上界 518→523,当场炸)。
+    //      断言改成守不变量 —— 区间罩得住取回来的轮次 + 下限确实压不到 480。
     //   ② 常规(general)轮次**不是空数组,是停了** —— 空数组会让上层以为「没数据」照抄中介的数。
-    it('FED CEC:最近 12 轮的分数线区间取得到(库里实测 507–518),分制是 CRS', async () => {
+    it('FED CEC:最近这些轮的分数线区间取得到(下限压不到中介说的 480),分制是 CRS', async () => {
       const r = await lookupDraws(pool, { prov: 'FED', stream: 'cec' })
       expect(r.availability).toBe('ok')
       expect(r.scale).toBe('CRS')
@@ -214,9 +216,13 @@ d('对话工具层(生产库只读)', () => {
       const cec = r.streams!.find((s) => s.key === 'cec')!
       expect(cec, 'FED 抽选按库里的 label 分类,cec 这一类没出来').toBeTruthy()
       expect(cec.availability).toBe('ok')
-      expect(cec.rounds).toBe(12)
-      expect(cec.scoreLow).toBe(507)
-      expect(cec.scoreHigh).toBe(518)
+      expect(cec.rounds).toBeGreaterThanOrEqual(12)                        // 只增不减(新开一轮就 +1)
+      // 区间是**窗口内全部** CEC 轮次的 min/max,而 rows 只截了最近 limit 轮 —— 前者必须罩得住后者。
+      const seen = r.rows.map((x) => x.score).filter((v): v is number => v != null)
+      expect(seen.length).toBeGreaterThan(0)
+      expect(cec.scoreLow!).toBeLessThanOrEqual(Math.min(...seen))
+      expect(cec.scoreHigh!).toBeGreaterThanOrEqual(Math.max(...seen))
+      expect(cec.scoreLow!, 'C02 §4-4 的证伪就靠这条:下限压不到中介说的 480').toBeGreaterThan(480)
       expect(cec.scale).toBe('CRS')
       expect(cec.sinceIsWindowStart).toBe(false)           // 有轮次 → 说的是「上一轮就是这天」,不是「至少」
       expect(cec.lastDrawDate).toMatch(/^\d{4}-\d{2}-\d{2}$/)
