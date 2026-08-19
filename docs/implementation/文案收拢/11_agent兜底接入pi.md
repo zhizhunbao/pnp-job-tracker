@@ -66,6 +66,7 @@ HTTP 200、只回文本;连 `tool_choice: "required"` 都当没看见(按规范�
 ```
 lib/agent/  index.ts(桶,2 个名字)  planner.ts(80)  tools.ts(92)  prompts.ts(25)
 ```
+> ⚠️ 这是第一版的目录。2026-08-19 已改成域内七件套,见 §9 —— 本节其余内容(为什么用 pi、采信归我们)照旧成立。
 
 我们只剩三件:工具干什么、**采信判据**、失败一律回落反问。
 🔴 **校验归它,采信归我们**:schema 过了不等于内容可信 —— NOC 必须出现在 `search_occupations`
@@ -194,3 +195,77 @@ agent 写 SQL 会把这些静默搞错,而错出来的数字长得完全正常;�
 
 要真开:提交上线 → Render 设 `AGENT_FALLBACK=1`(`ANTHROPIC_API_KEY` 已有)。
 **建议先把三条补完再开**:现在开的话 20.7% 里只有四分之一能救回来,剩下的照旧反问还多花一次调用。
+
+---
+
+## 9 · 2026-08-19:域内七件套定型(Frank 逐条定的形状,`lib/agent` 是全站样板)
+
+规矩本身已进 [CLAUDE.md](../../../CLAUDE.md) 的「域内文件的标准形态」,这里只记**为什么**与**实撞**。
+
+### 9.1 文件分工
+
+```
+lib/agent/  constants.ts(90)  prompts.ts(52)  schemas.ts(24)  types.ts(176)
+            functions.ts(414)  index.ts(9,纯类型)  server.ts(9)
+```
+
+- **`schemas.ts` 为什么单独一个文件**:它既不是「给模型看的字」(`prompts.ts` 全文只有字符串、
+  零值导入),也不是 JSON 常量(`Type.Object(…)` 是构造调用)。一份 schema **同时喂三方** ——
+  模型(description 进工具声明)、pi(execute 之前按它校验)、编译器(`Static<typeof …>` 反推入参)。
+  判据一句话:**打包后还在 JS 里的是 schema,打包时被擦掉的是 type。**
+- **`functions.ts` 顶层零变量**;`constants.ts` 最多到 JSON —— `MODEL` 那个带库泛型的对象拆成
+  11 个标量常量 + `model()` 构建函数。
+- **两个门**:`server.ts` 只导出 `resolveByAgent`;`index.ts` 只有类型(擦掉是空文件)。
+  eslint `BARRELS` 补 agent、`ALLOW` 补三条,合成用例验过 `client-no-server-values` 真会响。
+
+### 9.2 🔴 中途走错一次:取结果机制不能赌库的字段
+
+「工具不写外部状态」推到底,是让三个 `execute` 把结果塞进 `AgentToolResult.details`,
+循环跑完从 `runAgentLoop` 返回的 transcript 里读回来。tsc 全绿、build 全绿、699 个测试全绿 ——
+**但这条路要赌 pi 一定把 `details` 原样保留到返回的消息数组里**,而我们只是从 `.d.ts` 上读到它有那个字段。
+赌输的样子不是报错,是 `claimIn` 永远返回 null、兜底永远交回反问,**而它默认关着,没人会撞见**。
+
+已改回 `Inbox` 收件箱,并定成规矩:**我们自己的代码一律不用成员变量,唯一例外是外部库回调
+把结果交回来这一个接缝**(库调我们、返回值只回给库),且要在类型上写明特批与理由。
+
+采信仍旧只在入口做一次(`execute` 只记账)—— 这是这轮唯一保留的结构性改动,红线不散进三个回调。
+
+### 9.3 try/catch 27 → 3
+
+一度按「每个函数都要 try/catch」铺了 27 个,当场发现两件事:
+① 24 个够不着(字符串 trim、数组遍历不会抛);
+② **catch 里返回兜底值会把「异常」变成「假事实」** —— `cleanProvs` 出错返回 `[]`,
+下游读到的是「用户没提任何省」;而异常冒到入口 → 回落反问才是对的。
+现在只留三处:查库、调模型、入口那道网。
+
+### 9.4 跨域依赖归零
+
+- `OccOption` 不再从 `lib/chat` 取,本域自己声明 `Candidate`(只要 `noc`/`title`)。
+- `suggestOccupations` 不再借用:候选查询自己走 `lib/db/sql` 的 `NOC_LIST_WITH_TITLES`;
+  chat 的桶撤掉专为 agent 开的口子。跨域只剩**一条边**:路由把 `resolveByAgent` 注给 `orchestrate`。
+- ⚠️ 搬迁时把对话域那条**噪音过滤**一起带过来了(榜首 10% 以下丢掉)。它不是整洁问题:
+  白名单就是采信的依据,而 chat 那边的注释记着实撞 —— 「读 IT」的官方要求文本会连带命中
+  「图书档案技术员」(8 个岗,榜首 112)。不带过来,模型就能从噪音里挑一个真码,我们还会采信它。
+
+### 9.5 测试(新增 20 条,`cms/tests/int/agentTools.int.spec.ts`)
+
+不连库(假 pool 就够,库里有什么归 chatTools 那组连生产只读的测)。四组:
+
+| 组 | 测什么 |
+|---|---|
+| `cleanProvs` | 九省+QC 穷举、大小写空格、认不出就丢、性质(输出必是省码表子集) |
+| `acceptNoc` | 候选里有才收;**变异探针**:候选里的码改一位必须拒;形状不对/null/白名单为空 |
+| 收件箱 | 照 pi 的调用形状手动调 `execute(toolCallId, args)`,断言三把工具各自把结果交回收件箱;两趟互不串台 |
+| 噪音过滤 | 两向都测:砍掉噪音、留住冷门(判据是相对量不是绝对量);库抛错 → 当没候选 |
+
+**§9.2 那条路没有任何测试盖着,是这一批最该补的一件** —— 现在补上了。
+
+### 9.6 验收
+
+| 项 | 值 |
+|---|---|
+| `npm run build` | ✓ |
+| `tsc --noEmit` | **0** |
+| eslint | `src/lib/agent` **0 problems**(连 `any` warning 都没了) |
+| vitest | **41 文件 / 719 全过**(699 + 新增 20) |
+| 生产 | `AGENT_FALLBACK` 仍默认关,行为与从前逐字相同 |
