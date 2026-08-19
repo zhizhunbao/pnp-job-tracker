@@ -24,7 +24,8 @@
  *    匿名一个字都不存;写库失败当无事发生,答复照旧。
  *
  * 本路由**只管鉴权/限流/错误码/传输形状**,三步流水线全在 lib/chat(可单测,不碰网络鉴权)。
- * 本批不做付费闸(设计 §五 Frank 未拍板):全部免费,匿名按 IP、登录按账号,只防滥用。
+ * 不做付费闸(设计 §五 Frank 未拍板):功能全部免费。**三层帽只防滥用**——匿名按 IP、免费登录按账号
+ * (两者都在 freeGate 的统一池里)、Pro 按 PRO_CHAT_DAILY(2026-08-18 Frank 点名补的,此前 Pro 敞开)。
  * 多轮记忆不落库:history 由前端传(设计 §九「v1 不做多轮长记忆」)。
  */
 import { headers } from 'next/headers'
@@ -35,8 +36,10 @@ import config from '@/payload.config'
 import { logChat, threadId } from '@/lib/chat'
 import { ChatError, chatProfileContext, orchestrate, profileFill, type ChatResult, type ChatStep, type ChatTurn } from '@/lib/chat'
 import { resolveByAgent } from '@/lib/agent'
-import { getUser } from '@/lib/entitlement'
+import { getUser, isPro } from '@/lib/entitlement'
 import { freeGate } from '@/lib/freeQuota'
+import { checkLimit } from '@/lib/rateLimit'
+import { PRO_CHAT_DAILY } from '@/lib/plan'
 import { patchProfile } from '@/lib/profile'
 
 export const dynamic = 'force-dynamic'
@@ -72,6 +75,11 @@ export async function POST(req: Request) {
   // 免费池(匿名 IP / 登录账号);本批不设付费墙,402 也当限流处理,前端一个 'limit' 分支就够
   const g = freeGate(user, req as any)
   if (g.block) return Response.json({ error: 'limit' }, { status: 429 })
+  // Pro 个人日帽(2026-08-18 Frank「chat 部分,每个用户给限额」):freeGate 只帽住免费与匿名,
+  // **Pro 在这条路上原本是敞开的**,而每一轮都真调模型。同 advisor 的 PRO_ADVISOR_DAILY:防滥用,不是卖点。
+  if (user && isPro(user) && !checkLimit([[`chat:pro:${user.id}`, PRO_CHAT_DAILY]])) {
+    return Response.json({ error: 'limit' }, { status: 429 })
+  }
 
   // 真实错误只回 @test.local(standalone-dynamic-loads 探针惯例);对外只给错误码,不泄内部话术
   const dbg = String((user as any)?.email || '').endsWith('@test.local')

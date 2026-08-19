@@ -10,6 +10,10 @@ export const FREE_ADVISOR_TRIES = FREE_DAILY_TRIES
 export const FREE_JOBTEXT_TRIES = FREE_DAILY_TRIES
 // Pro 用户:advisor 个人日上限(防滥用,不是卖点限制)
 export const PRO_ADVISOR_DAILY = Number(process.env.PRO_ADVISOR_DAILY || 200)
+// Pro 用户:对话个人日上限(2026-08-18 Frank「chat 部分,每个用户给限额」)。
+// 免费与匿名早就有帽(freeGate:登录 FREE_DAILY_TRIES / 匿名 ANON_DAILY_TRIES),**只有 Pro 是敞开的**——
+// 而 chat 每轮都真调模型(合成 + 可能的兜底解析),敞着就是敞着一条花钱的路。同 advisor 的口径:防滥用,不是卖点。
+export const PRO_CHAT_DAILY = Number(process.env.PRO_CHAT_DAILY || 200)
 // 免费层档案匹配:每日仅列表前 N 岗出匹配(激活钩子,E5-00)
 export const FREE_MATCH_JOBS_PER_DAY = Number(process.env.FREE_MATCH_JOBS_PER_DAY || 10)
 
@@ -18,5 +22,5 @@ export const PRO_SAVED_SEARCHES = Number(process.env.PRO_SAVED_SEARCHES || 5)
 export const FREE_SAVED_SEARCHES = Number(process.env.FREE_SAVED_SEARCHES || 2)
 // 我的求职收藏上限(E9-01;免费开放,防灌爆)
 export const SAVED_JOBS_CAP = Number(process.env.SAVED_JOBS_CAP || 200)
-// 匹配版提醒:达到该 level 才进邮件(E5-03;high=规则分≥60,见 lib/match.ts)
+// 匹配版提醒:达到该 level 才进邮件(E5-03;high=规则分≥60,见 lib/jobs/match.ts)
 export const ALERT_MATCH_LEVEL = (process.env.ALERT_MATCH_LEVEL || 'high') as 'high' | 'mid'
