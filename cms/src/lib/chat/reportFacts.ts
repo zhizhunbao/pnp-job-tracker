@@ -1,10 +1,15 @@
-// 报告 facts 组装层(L2-01 施工件):SQL 聚合 → ReportFacts,喂 lib/report.ts 纯函数引擎。
-// 引擎不碰库、这里不做判定 —— 单一职责;查询口径全部与既有页面同源:
-//   byProv 的 named 与职位板 pnp_stream 口径同、draws 与 /pathways 抽选块同表、
-//   scoreProvinces=pnp_score_factors 实际覆盖的省(BC/SK),不写死。
-import type { ScoreFactor } from './score'
-import type { Requirement } from './rules'
-import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
+// 报告 facts 组装层(L2-01 施工件):SQL 聚合 → ReportFacts。取数与映射,不做判定 —— 单一职责;
+// 查询口径全部与既有页面同源:byProv 的 named 与职位板 pnp_stream 口径同、draws 与 /pathways
+// 抽选块同表、scoreProvinces=pnp_score_factors 实际覆盖的省(BC/SK),不写死。
+//
+// **为什么住在 chat/**(2026-08-19 从 lib/ 顶层搬来):唯一的消费者是同目录的 tools.ts
+// —— 它原先喂的 lib/report.ts 纯函数引擎早已退役,顶层那个位置只剩历史。
+// 只有一个消费者的东西不该住共享叶子;同理它**不上 chat 的桶**:这是模块内件,不是对外接口。
+// 当天它没能进 verdict/(域上更像那边),是因为那会造出 chat → verdict → chat 的运行时环
+// (见 lib/verdict/server.ts 顶注);搬到消费者身边,一条新边都不加。
+import type { ScoreFactor } from '../score'
+import type { Requirement } from '../rules'
+import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 
 // ── 事实契约(判定合一批2:report.ts 引擎退役,类型搬回事实层自己家)────────────
 type OccProvFacts = { province: string; open: number; named: number; apprentice?: number; medianWage?: number | null }

@@ -26,7 +26,7 @@ import {
   estimateCrs, estimateMbEoi, gridStreamOf, scoreProvince, streamMatches,
   type CrsEstimateProfile, type EduKey, type EeGridRow, type MbEduKey, type MbProfile, type ScoreFactor, type SelfProfile,
 } from '../score'
-// 只 import type:编译期擦除,不给 lib/chat/tools(它拉着 match/planTimeline/reportFacts)加运行时边。
+// 只 import type:编译期擦除,不给 lib/chat/tools(它拉着 match/planTimeline/同目录 reportFacts)加运行时边。
 import type { Availability, Evidence } from '../chat'
 import { type GateKey, type StatusAsk } from '../gateManifest'
 import { askLabels, gateLabels } from '../i18n'

@@ -10,10 +10,10 @@
 export { buildTripleWire } from './tripleWire'
 export type { ClientAnswers, TripleWire } from './tripleWire'
 export { getVerdictData } from './verdictCache'
-// 🔴 reportFacts **不在这个桶里**(2026-08-19 实撞):它唯一的消费者是 `lib/chat/tools.ts`,
-//    而本桶里的 `verdictCache` 反过来要 chat 的 `loadVerdictData`(值,不是类型)——
-//    两者同桶就把「chat → verdict → chat」焊成一个运行时环,
+// 🔴 reportFacts **不在这个桶里,现在住 `lib/chat/reportFacts.ts`**(2026-08-19 实撞后定案):
+//    它唯一的消费者是 `lib/chat/tools.ts`,而本桶里的 `verdictCache` 反过来要 chat 的
+//    `loadVerdictData`(值,不是类型)—— 两者同桶就把「chat → verdict → chat」焊成一个运行时环,
 //    表现是 `chat/normalize.ts` 初始化时 `PNP_PROVINCES is not iterable`(同 lib/chat/types.ts 记的那次)。
-//    所以它留在 lib/ 顶层;该不该搬进 chat/(它更像 chat 的私产)归下一批判断。
+//    搬到消费者身边则一条新边都不加。**这条教训通用:桶的边界要看运行时值依赖的方向,不只看域归属。**
 export { CASE_PAGES, caseAnswer } from './caseFacts'
 export type { CaseAnswer, OpsFacts } from './caseFacts'

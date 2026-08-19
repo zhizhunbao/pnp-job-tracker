@@ -218,7 +218,7 @@ export const QUIZ_FACTS_STREAMS = `SELECT j.pnp_stream stream, count(*)::int n
    8) 统计 / 难度 / 职业报告
    ══════════════════════════════════════════════════════════════════════════ */
 
-// ── reportFacts.ts ──
+// ── chat/reportFacts.ts ──
 
 export const PROV_OPEN_BY_PROV = `SELECT province, count(*)::int open,
               count(*) FILTER (WHERE pnp_stream IS NOT NULL AND pnp_stream <> '')::int named,

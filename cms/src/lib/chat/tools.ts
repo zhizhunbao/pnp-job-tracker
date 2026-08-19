@@ -2,7 +2,7 @@
  * 对话工具层 v1(设计《对话即产品-20260803》§三,C1 批)。
  *
  * 总红线:LLM 只负责听懂与说人话,**判定、数字、出处一律从这里出**。
- * 这一层是既有资产(rules.ts / match.ts / reportFacts.ts / mart 表)的**薄封装**,不新造判定逻辑。
+ * 这一层是既有资产(rules.ts / match.ts / 同目录 reportFacts.ts / mart 表)的**薄封装**,不新造判定逻辑。
  *
  * 三条自己的铁律:
  *   ① 每个数字都挂 evidence{url, fetched, ...} —— 拿不到出处的数字**宁可不返回**;
@@ -24,7 +24,7 @@ import {
   type DesignatedEmployerRow, type OccupationRow, type PathwayVerdict,
   type VerdictData, type VerdictDrawRow, type VerdictLever, type VerdictProfile,
 } from '../verdict'
-import { assembleReportFacts } from '../reportFacts'
+import { assembleReportFacts } from './reportFacts'
 import { evaluateRequirements, type Requirement, type ReqSubject, type RuleProfile, type RuleVerdict } from '../rules'
 import type { EeGridRow, ScoreFactor } from '../score'
 import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与组装

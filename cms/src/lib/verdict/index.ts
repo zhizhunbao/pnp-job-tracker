@@ -5,7 +5,7 @@
 //    · tripleVerdict   组装器。自称「零新判定逻辑」,只把职业关/雇主关/你这边三关拼成一张卡
 //    · employerVerdict 雇主关。单独一关,sponsorEmployers 也吃它
 //
-// 🔴 **取数那半在 `./server`**(tripleWire / verdictCache / reportFacts / caseFacts 要连库)——
+// 🔴 **取数那半在 `./server`**(tripleWire / verdictCache / caseFacts 要连库)——
 //    分界不是风格,是**运行环境**:能在浏览器跑的进这里,要连库的进 `./server`。
 //    `Cases.tsx` 是 `'use client'` 且取的是**值**(CASES),混一个桶就会把连接池整条链
 //    拉进浏览器包 —— tsc 全绿,build 才炸(lib/jobs 08-18 实撞)。
