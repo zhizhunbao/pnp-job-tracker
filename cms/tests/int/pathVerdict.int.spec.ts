@@ -33,6 +33,16 @@ const data: VerdictData = {
   designatedEmployers: mart<DesignatedEmployerRow>('designated_employers'),
 }
 
+// 最近一轮 CEC 的分数线**会漂**(联邦每两周开一轮:07-21 收 516,08-18 就成了 523)——
+// 写死那个数,测的是「抓取役今天跑没跑」,不是判定层挑没挑对那一轮(2026-08-19 实炸)。
+// 所以这条参照线从同一份 fixture 现推(FED 里日期最新的那轮 CEC),断言的是**接线**:
+// refDraw 认的是 CEC 这条流、且取最新一轮。金标里真正不许动的数(CRS 199)照旧写死。
+const CEC = [...data.draws]
+  .filter((d) => d.province === 'FED' && d.kind === 'draw' && d.score != null && /Canadian Experience Class/i.test(d.stream))
+  .sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1))[0]
+if (!CEC?.score) throw new Error('data/mart/pnp_draws.json 里没有带分线的 CEC 轮次,fixture 塌了')
+const CEC_LINE = CEC.score as number
+
 const C01: VerdictProfile = {
   age: 40,
   married: false,                 // 配偶在中国、不随行申请 → CRS 走 without-spouse 表
@@ -113,7 +123,7 @@ describe('金标 ①:排除两条,各带官方 quote', () => {
     expect(list.filter((v) => v.verdict === 'excluded').map((v) => v.key).sort()).toEqual(['FED-EE'])
   })
 
-  it('FED-EE:零经验进不了池(CEC/FSW/FST 三条门槛各带原句)+ CRS 199 对照 CEC 516,差距补不上', () => {
+  it('FED-EE:零经验进不了池(CEC/FSW/FST 三条门槛各带原句)+ CRS 199 对照最近一轮 CEC,差距补不上', () => {
     const fed = byKey(list, 'FED-EE')
     expect(fed.verdict).toBe('excluded')
     expect(fed.tier).toBeNull()
@@ -126,12 +136,12 @@ describe('金标 ①:排除两条,各带官方 quote', () => {
     // 估分与参照线
     expect(fed.score?.system).toBe('CRS')
     expect(fed.score?.value).toBe(199)                                     // 配偶不随行(单身表)
-    expect(fed.score?.refLine).toBe(516)                                   // 最近一轮 CEC
+    expect(fed.score?.refLine).toBe(CEC_LINE)                              // 最近一轮 CEC(fixture 现推)
     expect(fed.score?.refLabel).toContain('Canadian Experience Class')
     expect(fed.score?.evidence.url).toBeTruthy()
     // 「补不齐」= 语言拉到官方最高档的上界仍够不着这条线
     expect(fed.score!.ceiling).not.toBeNull()
-    expect(fed.score!.ceiling as number).toBeLessThan(516)
+    expect(fed.score!.ceiling as number).toBeLessThan(CEC_LINE)
   })
 
   it('FED-EE:配偶随行(已婚表)= 183,与 C5a-1 的修正值一致', () => {

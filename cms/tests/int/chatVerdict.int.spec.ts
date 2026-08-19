@@ -7,7 +7,7 @@
  * 的 snake_case 列名喂回去:mart 改版这里立刻炸,而不是让金标断言去猜。
  *
  * 四条金标(实施文档 C5c 验收):
- *   ① C01 档案一句话进 → facts 里有 FED-EE 排除(CRS 199 对照 CEC 516)、NL tier0、ON tier1、
+ *   ① C01 档案一句话进 → facts 里有 FED-EE 排除(CRS 199 对照最近一轮 CEC)、NL tier0、ON tier1、
  *      MB 三条 warning;AIP 自 2026-08-09 批B 灌入 36 行门槛后已判得了,不再是四态里的「本站未收录」;
  *   ② 缺槽(只说职业)→ followups 反问那几个槽,facts 里一个裁决数字都没有;
  *   ③ 普通职位问法**不触发** lookupVerdict(按它独占的那张表计数);
@@ -56,6 +56,19 @@ const DRAWS = snake(mart('pnp_draws'))
 const FACTORS = snake(mart('pnp_score_factors'))
 const GRID = snake(mart('ee_points_grid'))
 const EMP = snake(mart('designated_employers')).filter((r) => r.province === 'NL')
+
+/**
+ * 最近一轮 CEC 的分数线**会漂**(联邦每两周开一轮:07-21 收 516,08-18 就成了 523)——
+ * 写死那个数,测的是「抓取役今天跑没跑」,不是裁决有没有把那一轮摆出来(2026-08-19 实炸)。
+ * 同 pathVerdict.int.spec.ts:从同一份 fixture 现推(FED 里日期最新的那轮 CEC)。
+ */
+const CEC_LINE: number = (() => {
+  const hit = DRAWS
+    .filter((d) => d.province === 'FED' && d.kind === 'draw' && d.score != null && /Canadian Experience Class/i.test(d.stream))
+    .sort((a, b) => (a.draw_date < b.draw_date ? 1 : -1))[0]
+  if (!hit?.score) throw new Error('data/mart/pnp_draws.json 里没有带分线的 CEC 轮次,fixture 塌了')
+  return Number(hit.score)
+})()
 
 const CARPENTER = '72310'
 const JOB_ROWS = [
@@ -152,7 +165,7 @@ describe('金标 C01:一句话进 → 不编数字的路径裁决', () => {
   let pool: FakePool
   beforeEach(() => { pool = new FakePool(); H.slots = C01_SLOTS; H.answer = '判定结果在下面,每条都带官方出处。' })
 
-  it('facts 里有 FED-EE 排除(CRS 199 对照 CEC 516)、NL tier0、ON tier1、MB 三条 warning、AIP 已入库', async () => {
+  it('facts 里有 FED-EE 排除(CRS 199 对照最近一轮 CEC)、NL tier0、ON tier1、MB 三条 warning、AIP 已入库', async () => {
     const r = await orchestrate(pool, { text: C01_TEXT, lang: 'zh' })
     const v = verdictFacts(r.facts)
     expect(v.length, '裁决 facts 没接进来').toBeGreaterThan(8)
@@ -164,9 +177,9 @@ describe('金标 C01:一句话进 → 不编数字的路径裁决', () => {
     expect(fed.some((f) => f.label.includes(T.vExcluded)), 'FED-EE 应判排除').toBe(true)
     expect(fed.some((f) => f.valueText.trim().length > 0), '排除的理由必须带官方原句').toBe(true)
     expect(fed.some((f) => f.value === 199 && f.unit === 'points'), 'CRS 估分 199(配偶不随行)').toBe(true)
-    expect(fed.some((f) => f.value === 516), '最近一轮 CEC 的 516 要摆出来').toBe(true)
+    expect(fed.some((f) => f.value === CEC_LINE), '最近一轮 CEC 的分线要摆出来').toBe(true)
     // 抽选线那个数的出处必须是抽选页,不是分值表
-    const ref = fed.find((f) => f.value === 516)!
+    const ref = fed.find((f) => f.value === CEC_LINE)!
     expect(ref.evidence.url).toBeTruthy()
     expect(ref.evidence.url).not.toBe(fed.find((f) => f.value === 199)!.evidence.url)
 
@@ -252,7 +265,7 @@ describe('金标 C01:一句话进 → 不编数字的路径裁决', () => {
     }
     // 中文没了,但数字与官方原句一条不少
     expect(v.some((f) => f.value === 199)).toBe(true)
-    expect(v.some((f) => f.value === 516)).toBe(true)
+    expect(v.some((f) => f.value === CEC_LINE)).toBe(true)
     expect(said(v)).toContain('Studies in another province')
   })
 
@@ -362,8 +375,8 @@ describe('guardAnswer 对裁决数字的账', () => {
     facts = verdictFacts((await orchestrate(pool, { text: C01_TEXT, lang: 'zh' })).facts)
   })
 
-  it('裁决算出来的数(199 / 516 / 695 / 715 / 632)照抄放行', () => {
-    const g = guardAnswer('你现在的估分 199,对照最近一轮的 516;曼省算下来 695,语言拉满 715,那一轮的线是 632。', facts)
+  it('裁决算出来的数(199 / CEC 线 / 695 / 715 / 632)照抄放行', () => {
+    const g = guardAnswer(`你现在的估分 199,对照最近一轮的 ${CEC_LINE};曼省算下来 695,语言拉满 715,那一轮的线是 632。`, facts)
     expect(g.ok, `被误伤:${g.bad.join(',')}`).toBe(true)
   })
 
