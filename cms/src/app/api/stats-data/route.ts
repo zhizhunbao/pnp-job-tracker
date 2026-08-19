@@ -4,7 +4,7 @@
 import { headers } from 'next/headers'
 
 import { getUser, isPro } from '@/lib/entitlement'
-import { normalizeProfile } from '@/lib/match'
+import { normalizeProfile } from '@/lib/jobs'
 import { loadStats, loadStatSources } from '@/app/(frontend)/stats/lib'
 
 export const dynamic = 'force-dynamic'

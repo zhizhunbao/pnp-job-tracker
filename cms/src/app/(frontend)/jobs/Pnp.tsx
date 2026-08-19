@@ -8,9 +8,8 @@ import { IconCheck, IconTarget, IconWarn, IconX } from '../Icons'
 import { Grid } from '../ui'
 import { TvEntryCard } from './TripleVerdictModal'
 import { eeDisplay, eeKeyDisplay, makeT, streamDisplay, type Lang, type TFn } from '@/lib/i18n'
-import type { EeCat, EeOcc, JobRow, NewsSlim, NocDesc, Plan, PnpDraw, PnpOcc, PnpStream } from './types'
+import { type Plan, type EeCat, type EeOcc, type JobRow, type NewsSlim, type NocDesc, type PnpDraw, type PnpOcc, type PnpStream, match as matchJob, type MatchJob, type MatchReason } from '@/lib/jobs'
 import { PROV_NAMES, provName } from '@/lib/location'
-import { match as matchJob, type MatchJob, type MatchReason } from '@/lib/match'
 import { nocLocalTitle } from '@/lib/noc'
 import { track } from '@/lib/track'
 
@@ -512,7 +511,7 @@ function pnpMatchOf(job: JobRow, occ: PnpOcc[]): { streams: PnpStream[]; matched
 // 唯一调用方没了，/api/scoredetail 同批下架（免费额度池少一个消费端，池子本身不变）。
 
 // ── 对我意味着什么(E5-00 §3.5,FieldFactsSection 同级)────────────
-// 依据链在弹框端用同一 match() 重算(lib/match.ts 纯函数,与服务端列一致);每条结论指回维度记录。
+// 依据链在弹框端用同一 match() 重算(lib/jobs/match.ts 纯函数,与服务端列一致);每条结论指回维度记录。
 // 措辞红线:只说「符合/不符合公开清单条件」「高于/低于抽选线」,永不说「你能/不能移民」;块底带免责短句。
 const VERDICT_ICON: Record<string, { icon: React.ReactNode; color: string }> = {
   pass: { icon: <IconCheck />, color: '#15803d' }, warn: { icon: <IconWarn />, color: '#b45309' }, fail: { icon: <IconX />, color: '#dc2626' }, na: { icon: '·', color: '#9ca3af' },

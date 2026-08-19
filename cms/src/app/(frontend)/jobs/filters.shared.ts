@@ -7,7 +7,7 @@
 // 现在 page.tsx 在 SSR 就按同一套参数查库、并把筛选当作初值传给 Jobs → 首帧即终态,水合零差异。
 //
 // 参数名沿用既有深链(q/prov/broad/mid/fine 三方在用,不能改),新增的取短名。
-// ⚠️ 新增筛选键四处同步:本表 + buildJobsWhere(lib/jobsSql)+ 前端 state(Jobs.fState)
+// ⚠️ 新增筛选键四处同步:本表 + buildJobsWhere(lib/jobs/queries)+ 前端 state(Jobs.fState)
 //   + /api/jobs 的 FILTER_KEYS。
 
 /** 省码 → 省全名。真值住 lib/location(省名是地点域的事,那儿的 provName/parseLoc 也吃它);

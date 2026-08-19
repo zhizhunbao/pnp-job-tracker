@@ -1,22 +1,14 @@
-// 职位域的共享形状 —— 职位板、详情页、公司页、服务端取数四方共用的同一份类型。
-// **纯类型,零运行时**:`lib/jobsSql.ts` 以前从 JobsTable.tsx(一个 'use client' 组件)取 JobRow,
-// 服务端模块反向依赖客户端组件,只因类型恰好定在那儿。类型下沉到这里,那条倒置就没了。
-import type { MatchProfile } from '@/lib/match'
+// 职位域的**全部形状** —— 库里一行长什么样(JobRow、几张维度表的行、由它们聚合出来的两种视图),
+// 外加页面「怎么摆」的三个(ColKey / FieldGroup / Plan)。
+//
+// 为什么全在这儿(2026-08-18 Frank「函数和类型都搬过来 lib」「frontend jobs 下面怎么还有 types.ts」):
+// 数据形状是 `queries.ts` 的行映射**产出**的东西(fetchJobRows / mapPnpOcc / mapEeCat)——
+// **类型跟着产出方走**,依赖方向才是单向的 app → lib;而形状一旦分两处,「去哪找」本身就成了一件要记的事,
+// 所以页面那边一个类型文件都不留。
+//
+// **纯类型,零运行时**(同它的前身:更早以前 lib 反向 import 一个 `use client` 组件,只因类型定在那儿)。
 
-// 分层态(E3-05/E5-00,服务端 page.tsx 传入):gate 在服务端已生效,这里只做展示引导
-export type Plan = {
-  isPro: boolean
-  loggedIn: boolean
-  profileOk: boolean
-  profile: MatchProfile | null
-  freeMatchCap: number
-  // #84(Frank「刷新头像闪一下?」):身份四件 SSR 直传——原客户端事后拉 /api/users/me,
-  // 拉回前 Avatar 名字为空兜底成紫「?」,每次刷新闪一下;SSR 本就认识用户,直接带下来零闪
-  email?: string | null
-  displayName?: string | null
-  avatar?: string | null
-  proUntil?: string
-}
+import type { MatchProfile } from './match'
 
 export type JobRow = {
   id: string | number
@@ -87,15 +79,6 @@ export type JobRow = {
   closedAt: string
 }
 
-// 主表列名全集。列的显示顺序/默认可见/表头文案在 ./Table.tsx,这里只定「有哪些列」——
-// 因为它同时是**字段名**:顾问弹框按字段开(openField)、字段来源按字段查,都拿它当键。
-export type ColKey = 'score' | 'match' | 'pnp' | 'ee' | 'aip' | 'pilot' | 'lmia' | 'eligibility' | 'broad' | 'mid' | 'fine' | 'teer' | 'empHours' | 'empTerm' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
-
-// E8-10 弹框三合一(2026-07-21 Frank 拍板「统一设计,统一改」):24 个字段收成 3 个弹框,
-// 对应用户真正会问的三件事(这家靠谱吗 / 这活干什么给多少 / 这岗对我有没有用)。
-// 后续 #176 拆出 category,E8-12 拆出 location,2026-07-25 五连拍再拆 pnp/ee/aip/pilot/salary。
-export type FieldGroup = 'company' | 'immigration' | 'category' | 'location' | 'pnp' | 'ee' | 'aip' | 'pilot' | 'salary'
-
 // E8-07:维度行类型 export 给详情页(SSR 取数按同一形状传入)
 // program:PNP(省提名,默认)/ AIP(大西洋移民试点背书)—— 两条路分开判(E6-09;NB 两套官方清单)
 export type PnpOcc = { province: string; stream: string; label: string; type: string; program?: string; noc: string; name: string; gtaRestricted: boolean; url: string; fetched: string }
@@ -137,3 +120,30 @@ export type CoGradeDetail = { sponsor?: CoGradeDim; active?: CoGradeDim; salary?
 // 省级 IRCC 体量事实(地点弹框):留学生/临时外劳/IMP 存量 + PNP 落地 + 提名配额
 type ProvInfoNum = { n: number; year: string }
 export type ProvInfo = { study?: ProvInfoNum; tfwp?: ProvInfoNum; imp?: ProvInfoNum; pnpPr?: ProvInfoNum; alloc?: { y2026?: number | null; y2025?: number | null } }
+
+// ══ 展示形状 ══ 下面三个说的是「怎么摆」,库里没有对应的一行;它们只被页面消费。
+
+// 分层态(E3-05/E5-00,服务端 page.tsx 传入):gate 在服务端已生效,这里只做展示引导
+export type Plan = {
+  isPro: boolean
+  loggedIn: boolean
+  profileOk: boolean
+  profile: MatchProfile | null
+  freeMatchCap: number
+  // #84(Frank「刷新头像闪一下?」):身份四件 SSR 直传——原客户端事后拉 /api/users/me,
+  // 拉回前 Avatar 名字为空兜底成紫「?」,每次刷新闪一下;SSR 本就认识用户,直接带下来零闪
+  email?: string | null
+  displayName?: string | null
+  avatar?: string | null
+  proUntil?: string
+}
+
+
+// 主表列名全集。列的显示顺序/默认可见/表头文案在 ./Table.tsx,这里只定「有哪些列」——
+// 因为它同时是**字段名**:顾问弹框按字段开(openField)、字段来源按字段查,都拿它当键。
+export type ColKey = 'score' | 'match' | 'pnp' | 'ee' | 'aip' | 'pilot' | 'lmia' | 'eligibility' | 'broad' | 'mid' | 'fine' | 'teer' | 'empHours' | 'empTerm' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
+
+// E8-10 弹框三合一(2026-07-21 Frank 拍板「统一设计,统一改」):24 个字段收成 3 个弹框,
+// 对应用户真正会问的三件事(这家靠谱吗 / 这活干什么给多少 / 这岗对我有没有用)。
+// 后续 #176 拆出 category,E8-12 拆出 location,2026-07-25 五连拍再拆 pnp/ee/aip/pilot/salary。
+export type FieldGroup = 'company' | 'immigration' | 'category' | 'location' | 'pnp' | 'ee' | 'aip' | 'pilot' | 'salary'

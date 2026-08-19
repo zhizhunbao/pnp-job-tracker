@@ -1,7 +1,7 @@
 // 地点:省码/省名、岗位地点拆解、地图查询串。全站单一来源。
 // 地点本身已由清洗脚本(etl/clean/04c)规范化进库,这里只做**显示**层的取用与拼串,不再解析。
 import type { TFn } from '@/lib/i18n'
-import type { ColKey, JobRow } from '@/app/(frontend)/jobs/types'
+import type { ColKey, JobRow } from './jobs'
 
 /** 省码 → 省全名。筛选值一律用全名(fProv/深链/保存的筛选都依赖它);jobs/filters.shared 再导出给筛选侧。 */
 export const PROV_NAMES: Record<string, string> = {

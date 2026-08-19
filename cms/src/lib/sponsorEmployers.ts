@@ -71,7 +71,7 @@ async function loadAll(pool: any): Promise<SponsorEmployerRow[]> {
   const factSelect = factCols.length ? `, ${factCols.map((c) => `c.${c}`).join(', ')}` : ''
   const factGroup = factCols.length ? `, ${factCols.map((c) => `c.${c}`).join(', ')}` : ''
   const [{ rows }, employerReqs] = await Promise.all([
-    // 在招口径与职位板同源(jobsSql #136):COALESCE(status,'open') <> 'closed'
+    // 在招口径与职位板同源(lib/jobs/queries #136):COALESCE(status,'open') <> 'closed'
     pool.query(SQL.sponsorEmployers(factSelect, factGroup)),
     loadEmployerReqs(pool),
   ])

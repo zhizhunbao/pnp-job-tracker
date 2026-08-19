@@ -1,7 +1,7 @@
 // 读「真实抓取的职位描述文本」:从 DB jobs.description 取(mart 按 applyUrl 灌入)。
 // 给前端「职位描述」弹框用。只读、无大模型、不再扫 .md 文件(去掉运行时文件依赖)。
 import { NextRequest } from 'next/server'
-import { jobDescription } from '@/lib/jobDescription'
+import { jobDescription } from '@/lib/jobs'
 import { checkLimit, ipOf } from '@/lib/rateLimit'
 
 export const runtime = 'nodejs'

@@ -7,7 +7,7 @@ import { LANGS } from '@/lib/i18n'
 import { useLang } from '../../LangProvider'
 import { CompanyBody } from '../../jobs/Company'   // 公司身体与职位板弹框同源(拆分前住在 JobsTable 里)
 import { provName } from '@/lib/location'
-import type { CompanyDetail, SimilarEmployer } from '@/lib/jobsSql'
+import { type CompanyDetail, type SimilarEmployer } from '@/lib/jobs'
 import { Header } from '../../Header'
 import { Footer } from '../../Footer'
 import { Notice, Shell } from '../../ui'

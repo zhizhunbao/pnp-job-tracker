@@ -10,7 +10,7 @@
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { fetchTopNocs } from './jobsSql'
+import { fetchTopNocs } from './jobs'
 import type { DrawRow, ScoreFactor } from './pnpSelfScore'
 import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 

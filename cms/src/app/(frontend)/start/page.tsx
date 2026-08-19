@@ -10,8 +10,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { getUser } from '@/lib/entitlement'
-import { checkedAt, fetchTotalAndProof } from '@/lib/jobsSql'
-import { normalizeProfile } from '@/lib/match'
+import { checkedAt, fetchTotalAndProof, normalizeProfile } from '@/lib/jobs'
 import { loadOccStats, loadProvExtra } from '../stats/lib'
 import { PROVS } from '../stats/shared'
 import { Pulse, type HomeStats } from './Pulse'
@@ -28,7 +27,7 @@ export const metadata = {
 
 // 聚合进程内缓存(手法照 jobs/page.tsx 的 ssrDimsCache):判决证据/抽选/政策/省卡全是与用户无关的
 // 聚合数,10 分钟陈旧完全可接受;Render 单实例,进程缓存即全局缓存。
-// checkedAt 与「用户档案省」不进缓存(前者 jobsSql 自带 30s,后者是逐用户的)。
+// checkedAt 与「用户档案省」不进缓存(前者 lib/jobs/queries 自带 30s,后者是逐用户的)。
 let homeCache: { v: Omit<HomeStats, 'checkedAt' | 'provPreset'>; ts: number } | null = null
 const HOME_TTL = 10 * 60_000
 

@@ -2,12 +2,12 @@
  * GET /api/quiz — 入口三问的两个只读端点(付费漏斗重设计-20260726)。
  *   ?q=厨师          → 第 2 题的职业搜索(NOC 候选 ≤8)
  *   ?noc=63200       → 答完三题的**免费结果**(该职业在招/可提名/命中清单/按省分布/中位薪资)
- * 匿名可用(结果本就免费,注册闸在结果之后);SQL 一律在 lib/jobsSql,本文件只做参数与形状。
+ * 匿名可用(结果本就免费,注册闸在结果之后);SQL 一律在 lib/jobs/queries,本文件只做参数与形状。
  */
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { fetchBroadNocs, fetchNocOpenCounts, fetchQuizFacts, searchNocByTitle } from '@/lib/jobsSql'
+import { fetchBroadNocs, fetchNocOpenCounts, fetchQuizFacts, searchNocByTitle } from '@/lib/jobs'
 import { getTopNocsCached } from '@/lib/quizTop'
 
 // 热门清单缓存挪进 lib/quizTop(SWR + 启动预热共用一份;冷启动首访 8.4s 的账见那边注释)

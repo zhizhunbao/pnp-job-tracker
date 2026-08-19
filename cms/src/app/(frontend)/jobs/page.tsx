@@ -8,8 +8,7 @@ import { COLW_COOKIE, DEFAULT_COLW_SEED, parseColWidthSeed, type ColWidthSeed } 
 import { parseJobFilters, toSearchParams } from './filters.shared'
 import { getUser, isPro } from '@/lib/entitlement'
 import { FREE_MATCH_JOBS_PER_DAY } from '@/lib/plan'
-import { normalizeProfile, hasProfile } from '@/lib/match'
-import { fetchJobRows, fetchJobsPage, fetchTotalAndProof } from '@/lib/jobsSql'
+import { normalizeProfile, hasProfile, fetchJobRows, fetchJobsPage, fetchTotalAndProof } from '@/lib/jobs'
 import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 // 首屏行数(2026-07-05 用户拍板):SSR 只带最近 N 行秒开,全量 /api/jobs-data 后台拉(拉完筛选/搜索照旧)
@@ -93,13 +92,13 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
   const profile = normalizeProfile((user as any)?.profile)
   const profileOk = hasProfile(profile)
 
-  // 列表查询在 lib/jobsSql.ts(与 /api/jobs-data 共用);首屏只取 FIRST_SCREEN_ROWS 行 + 总数
+  // 列表查询在 lib/jobs/queries.ts(与 /api/jobs-data 共用);首屏只取 FIRST_SCREEN_ROWS 行 + 总数
   const pool = (payload.db as any).pool
 
   const dims = await getDimsCached(payload, pool)
 
-  // 首屏 50 行 + 总数(E10-01 P3:筛选/翻页由客户端打 /api/jobs 分页,同一查询层 jobsSql 同序)
-  // 匹配只吃省提名清单(AIP 背书清单是另一条路,见 lib/jobsSql.pnpOnly);展示维度仍是全量
+  // 首屏 50 行 + 总数(E10-01 P3:筛选/翻页由客户端打 /api/jobs 分页,同一查询层 lib/jobs/queries 同序)
+  // 匹配只吃省提名清单(AIP 背书清单是另一条路,见 lib/jobs/queries.pnpOnly);展示维度仍是全量
   const matchDims = { pnpOccupations: dims.pnpOccupations.filter((r) => r.program === 'PNP'), eeCategories: dims.eeCategories }
   // 差异化证言数字(第 5 轮 #14):省提名清单命中岗 + 有外劳记录雇主数 —— 首屏 3 秒讲清与聚合站的区别
   // 有筛选就走 fetchJobsPage(与 /api/jobs 同一条查询路径 → SSR 与水合后客户端逐行一致,不会换一次内容);

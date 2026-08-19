@@ -1,7 +1,7 @@
 // 匹配规则快照测试(E5-00 §3.6):固定 fixture 档案 × 抽样岗位,锁死 level/score/依据链。
 // 规则改动 → 这里必然红 → 有意识地更新快照,不静默漂移。纯函数,不需要 DB。
 import { describe, it, expect } from 'vitest'
-import { match, normalizeProfile, hasProfile, matchRank, type MatchDims, type MatchJob } from '@/lib/match'
+import { match, normalizeProfile, hasProfile, matchRank, type MatchDims, type MatchJob } from '@/lib/jobs'
 
 // ── fixture 维度(形状与 page.tsx dims 一致,数据虚构但结构真实) ──
 const dims: MatchDims = {

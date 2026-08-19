@@ -9,7 +9,7 @@ import { LANGS } from '@/lib/i18n'
 import { useLang } from '../../LangProvider'
 import { JobBody } from '../Jd'                    // 正文身体:整页与弹框渲的是同一棵树
 import { JobMiniRow } from '../Company'
-import type { JobRow, NocDesc, Plan } from '../types'
+import { type Plan, type JobRow, type NocDesc, type RelatedJob } from '@/lib/jobs'
 import { catName, nocLocalTitle, registerCatLabels } from '@/lib/noc'
 import { provName } from '@/lib/location'
 import { Header } from '../../Header'
@@ -17,7 +17,6 @@ import { Footer } from '../../Footer'
 import { Shell } from '../../ui'
 import { goBackOr } from '../../BackLink'
 import { track } from '@/lib/track'
-import type { RelatedJob } from '@/lib/jobsSql'
 
 // dims 收窄:B2 后页面只用 nocDesc(职位名译名对照);其余维度(pnp/ee/新闻…)随移民卡砍一并不用
 type CatLabel = {

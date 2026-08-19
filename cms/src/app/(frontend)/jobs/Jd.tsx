@@ -12,9 +12,7 @@ import { Modal, useIsNarrow } from './Modal'
 import { OnboardingWizard, OB_SEEN_KEY } from './OnboardingWizard'
 import { ResumeMatchModal } from './ResumeMatchModal'   // G3 简历对照(入口在 ApplyBar)
 import { makeT, type Lang, type TFn } from '@/lib/i18n'
-import type { JobRow, NocDesc, Plan } from './types'
-import { hasProfile, normalizeProfile, type MatchProfile } from '@/lib/match'
-import { blockedSrc } from '@/lib/source'
+import { type Plan, type JobRow, type NocDesc, hasProfile, normalizeProfile, type MatchProfile, blockedSrc } from '@/lib/jobs'
 import { track } from '@/lib/track'
 
 // 职位事实块:标题 + 匹配 NOC + 抓取的 JD 正文摘录(走 /api/jobtext,同 ActModal desc;列表 SQL 不带 description)

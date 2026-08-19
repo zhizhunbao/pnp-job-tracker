@@ -2,7 +2,7 @@
 // 入口=名录行/公司弹框「+ 对比」(localStorage 选择,URL ?names=a|b|c 落地);sitemap 不收录(Pro 页无 SEO 价值)。
 import { headers } from 'next/headers'
 import { getUser, isPro } from '@/lib/entitlement'
-import { loadMatchDims } from '@/lib/matchDims'
+import { loadMatchDims } from '@/lib/jobs'
 import { compareEmployers, type CompareRow } from '@/lib/employerCompare'
 import { Compare } from './Compare'
 

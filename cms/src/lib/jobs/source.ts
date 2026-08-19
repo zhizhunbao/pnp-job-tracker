@@ -1,6 +1,6 @@
 // 岗位来源:Job Bank 渠道(含它聚合的 indeed/talent 等)统一显示「Job Bank」;是否雇主直发;原站是否拦抓取。
 // `origin`(jobbank/ats/directory)是**发布渠道**,不代表雇主真假 —— 中介已按公司名过滤。
-import type { JobRow } from '@/app/(frontend)/jobs/types'
+import type { JobRow } from './types'
 
 // #136/#137(Frank 问「外链是 Indeed 就没办法了吗」「为什么不能转载」):这些原站对我们的请求返回 403
 // (实测连首页都 403 = 有意拦截)。不绕过——那是规避访问控制。文案只陈述实测到的事实「该站拒绝本站自动读取」,

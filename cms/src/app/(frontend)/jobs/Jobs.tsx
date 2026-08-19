@@ -25,12 +25,11 @@ import { useColWidths, type ColWidthSeed } from './colWidths'   // 列宽唯一�
 import { filterSig, URL_TO_FILTER, DIRECT_URL_KEY, type JobFilters } from './filters.shared'   // URL↔筛选映射(与 SSR 共用)
 import { eeDisplay, streamDisplay, type TFn } from '@/lib/i18n'
 import { COLS_COOKIE } from './columns.shared'
-import type { ColKey, Dims, FieldGroup, JobRow, Plan } from './types'
+import { type ColKey, type FieldGroup, type Plan, type Dims, type JobRow, isDirect, sourceLabel } from '@/lib/jobs'
 import { PROV_NAMES, mapQuery, mapsUrl, parseLoc, provName } from '@/lib/location'
 import { FIELD_GROUP, COLUMNS, DEFAULT_COLS, NOWRAP_COLS, PREF_KEY, PRO_COLS, cellActionable, cellActive, cellOf, writeColsCookie } from './Table'
 import { fmtLocal, fmtLocalSec } from '@/lib/time'
 import { catName, colorOf, nocLocalTitle, registerCatLabels } from '@/lib/noc'
-import { isDirect, sourceLabel } from '@/lib/source'
 import { track } from '@/lib/track'   // #129 功能级 umami 埋点
 
 // 读 localStorage 偏好(列/语言)用「绘制前」生效,避免 SSR 默认值闪一下再切到保存值。

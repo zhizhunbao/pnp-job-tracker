@@ -2,11 +2,12 @@
 // 路由/页面/提醒只调函数、不写裸 SQL(E10-01 收拢;Frank「所有职位 SQL 拆一个文件」)。
 // 列名是 Payload snake_case(老坑 5):改 Jobs schema 只动这里。
 import { match, matchRank, type MatchDims, type MatchJob, type MatchProfile, NO_LIST_PROVINCES } from './match'
-import type { JobRow } from '@/app/(frontend)/jobs/types'
-import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射   // 形状住类型文件,不再反向依赖 'use client' 组件
+import type { JobRow } from './types'
+import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与映射   // 形状住类型文件,不再反向依赖 'use client' 组件
 
-const iso = (v: any) => (v instanceof Date ? v.toISOString() : (v ?? ''))
-const num = (v: any) => (v == null ? null : Number(v)) // pg numeric 返回字符串,转回数字
+// 库里的 timestamp 回来是 Date、numeric 回来是字符串 —— 两个都得归一(dims.ts 走同一对,别各写一份)
+export const iso = (v: any) => (v instanceof Date ? v.toISOString() : (v ?? ''))
+export const num = (v: any) => (v == null ? null : Number(v)) // pg numeric 返回字符串,转回数字
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 1) 筛选/排序 → SQL 片段(E5-03 邮件提醒 + E10-01 列表 共用的单一 WHERE 真相)

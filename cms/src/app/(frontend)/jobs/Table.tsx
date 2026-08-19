@@ -11,10 +11,9 @@ import { fmtLocalSec } from '@/lib/time'
 import { eeDisplay, streamDisplay, type TFn } from '@/lib/i18n'
 import { COLS_COOKIE } from './columns.shared'
 import { eeIsDormant, eeLastDraw } from './Pnp'
-import type { ColKey, EeOcc, FieldGroup, JobRow, Plan } from './types'
+import { type ColKey, type FieldGroup, type Plan, type EeOcc, type JobRow, isDirect, sourceLabel } from '@/lib/jobs'
 import { mapQuery, mapsUrl, parseLoc } from '@/lib/location'
 import { catName, colorOf } from '@/lib/noc'
-import { isDirect, sourceLabel } from '@/lib/source'
 
 // 三档:并(→三个弹框之一)、图(直连地图)、无(不可点)。
 // 原设计还有一档「注=悬停小注」,2026-07-21 Frank 拍板不做 —— 它与「无」行为完全一致,

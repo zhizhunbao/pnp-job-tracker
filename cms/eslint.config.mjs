@@ -8,7 +8,7 @@ import nextCoreWebVitals from 'eslint-config-next/core-web-vitals'
 import nextTypeScript from 'eslint-config-next/typescript'
 
 // 带桶的模块(`lib/<名>/index.ts`)—— 下面那道边界闸认这三个,加新桶就加这里一行。
-const BARRELS = ['chat', 'i18n', 'pathways', 'quiz']
+const BARRELS = ['chat', 'i18n', 'jobs', 'pathways', 'quiz']
 const ABSOLUTE = BARRELS.map((m) => `**/lib/${m}/*`)
 const SIBLING = BARRELS.flatMap((m) => [`./${m}/*`, `../${m}/*`])
 const barrelOnly = (group) => ({

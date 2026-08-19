@@ -24,11 +24,10 @@ import { LockedText } from './Lock'
 import { CARD, SCRIM, iconBtnS, useIsNarrow } from './Modal'
 import { useOverlayClose } from './overlay'
 import { makeT, streamDisplay, type Lang, type TFn } from '@/lib/i18n'
-import type { ColKey, DesigEmp, EeOcc, FieldGroup, FieldSource, JobRow, NewsSlim, NocDesc, Plan, PnpDraw, PnpOcc, ProvInfo } from './types'
+import { type ColKey, type FieldGroup, type Plan, type DesigEmp, type EeOcc, type FieldSource, type JobRow, type NewsSlim, type NocDesc, type PnpDraw, type PnpOcc, type ProvInfo, blockedSrc, isDirect, sourceLabel } from '@/lib/jobs'
 import { isExemptSector, lmiaWageClass } from '@/lib/lmiaStatus'
 import { mapQuery, mapsUrl, parseLoc } from '@/lib/location'
 import { catName, nocLocalTitle } from '@/lib/noc'
-import { blockedSrc, isDirect, sourceLabel } from '@/lib/source'
 import { track } from '@/lib/track'
 
 function TitleFacts({ job, lang, loggedIn }: { job: JobRow; lang: Lang; loggedIn: boolean }) {

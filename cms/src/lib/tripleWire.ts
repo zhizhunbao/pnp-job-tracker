@@ -95,7 +95,7 @@ export async function buildTripleWire(id: number, answers: ClientAnswers): Promi
   }
 
   // 公司事实(B3 五列可能不在 → 整查询失败折全 null,employerVerdict 落 unknown 不编;
-  // lmia_nocs 单独一查,列缺不拖垮主体 —— jobsSql 同款容错)
+  // lmia_nocs 单独一查,列缺不拖垮主体 —— lib/jobs/queries 同款容错)
   const companyName: string = r.company_name ?? ''
   let facts: EmployerFacts = { foundedYear: null, registryStatus: null, staffEst: null, staffEstSrc: null, sector: null }
   let lmiaNocs: Record<string, number> | null = null

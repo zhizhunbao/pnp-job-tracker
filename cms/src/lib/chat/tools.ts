@@ -12,7 +12,7 @@
  *
  * 形状照 reportFacts.ts:纯函数 + 显式 pool 入参,无全局状态、无 LLM 调用。
  */
-import { NO_LIST_PROVINCES, provListCoverage, type MatchDims, type ProvListCoverage } from '../match'
+import { NO_LIST_PROVINCES, provListCoverage, type MatchDims, type ProvListCoverage, checkedAt } from '../jobs'
 // ⚠️ 单向依赖:planTimeline 只 `import type` 本文件(编译期擦除),所以这条运行时的边不成环。
 // 要往回加一个**值**引用之前先想清楚:那会变成真的循环依赖。
 import { buildPlan, type Plan, type PlanPathInput } from '../planTimeline'
@@ -27,7 +27,6 @@ import { assembleReportFacts } from '../reportFacts'
 import { evaluateRequirements, type Requirement, type ReqSubject, type RuleProfile, type RuleVerdict } from '../rules'
 import type { ScoreFactor } from '../pnpSelfScore'
 import type { EeGridRow } from '../crsEstimate'
-import { checkedAt } from '../jobsSql'
 import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 // ── 公共类型 ────────────────────────────────────────────────────────────────
@@ -258,7 +257,7 @@ type ProvCoverage = {
   excluded: boolean               // 命中的是排除清单(官方点名不受理)
   note: string
 }
-type CoverageResult = { noc: string; provinces: ProvCoverage[] }
+export type CoverageResult = { noc: string; provinces: ProvCoverage[] }
 
 /** 「哪个省的清单收了我」。ON 这类省返回 not-published(官方制度性不公布清单),**不是空清单**。 */
 export async function lookupCoverage(pool: any, args: { noc: string; provs?: string[] }): Promise<CoverageResult> {
@@ -317,7 +316,7 @@ type JobsRow = {
   medianWage: number | null
   evidence: Evidence
 }
-type JobsResult = {
+export type JobsResult = {
   noc: string
   availability: Availability
   scope: string          // 口径:本站索引,不是该省全部空缺
@@ -618,7 +617,7 @@ type EeRow = {
   drawSize: number | null
   evidence: Evidence
 }
-type EeResult = {
+export type EeResult = {
   noc: string
   availability: Availability
   matched: boolean            // false 且 availability='ok' = 查过全表,这个职业不在任何类别里
@@ -837,7 +836,7 @@ type ClaimCheck = {
 }
 /** 第三格:他没说的 —— 同一个职业,本站查得到但这些主张一个字没提的省 */
 type UnsaidItem = { province: string; facts: ProvCoverage }
-type ClaimsResult = { noc: string; checked: ClaimCheck[]; uncheckable: ClaimCheck[]; unsaid: UnsaidItem[] }
+export type ClaimsResult = { noc: string; checked: ClaimCheck[]; uncheckable: ClaimCheck[]; unsaid: UnsaidItem[] }
 
 /**
  * 私人承诺的判据 = **原话**,不是编排层给的 topic。

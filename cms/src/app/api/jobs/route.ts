@@ -9,8 +9,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { getUser, isPro } from '@/lib/entitlement'
-import { hasProfile, normalizeProfile, type MatchDims } from '@/lib/match'
-import { fetchJobsPage, fetchMatchPage, mapEeCat, mapPnpOcc, pnpOnly } from '@/lib/jobsSql'
+import { hasProfile, normalizeProfile, type MatchDims, fetchJobsPage, fetchMatchPage, mapEeCat, mapPnpOcc, pnpOnly } from '@/lib/jobs'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -32,7 +31,7 @@ async function getMatchDimsCached(payload: Awaited<ReturnType<typeof getPayload>
   dimsCache = { dims, ts: Date.now() }
   return dims
 }
-// ⚠️ 新增筛选键三处同步:buildJobsWhere(jobsSql)+ 前端 state + 本白名单(#73 排序白名单同款教训,fElig 漏过一回)
+// ⚠️ 新增筛选键三处同步:buildJobsWhere(lib/jobs/queries)+ 前端 state + 本白名单(#73 排序白名单同款教训,fElig 漏过一回)
 const FILTER_KEYS = ['q', 'fNoc', 'fProv', 'fCity', 'fDistrict', 'fBroad', 'fMid', 'fFine', 'fTeer',
   'fSource', 'fAcc', 'fPnp', 'fAip', 'fPilot', 'fStatus', 'fOrigin', 'fScore', 'fSal', 'fVs', 'fEmp', 'fElig'] as const
 

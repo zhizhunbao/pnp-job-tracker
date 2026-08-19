@@ -37,7 +37,7 @@ import type { OccCompetitionRow } from '@/app/api/occ-competition/route'
 
 /** 形状与 `lib/scoreTables.ts` 的同名类型对齐(那边是产出方,这里是消费方) */
 export type OverviewDraw = { province: string; drawDate: string; stream: string; score: number | null; invitations: number | null }
-/** 热门职业一行(与 lib/jobsSql.fetchTopNocs 的返回对齐) */
+/** 热门职业一行(与 lib/jobs/queries.fetchTopNocs 的返回对齐) */
 export type TopNoc = {
   noc: string; title: string; titleZh: string; titleZhShort: string; titleKoShort: string
   titleEnShort: string; broad: string; open: number; eligible: number; medianSalary: number | null

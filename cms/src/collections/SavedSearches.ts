@@ -36,7 +36,7 @@ export const SavedSearches: CollectionConfig = {
   fields: [
     { name: 'user', type: 'relationship', relationTo: 'users', required: true, index: true },
     { name: 'name', type: 'text', required: true },
-    { name: 'filters', type: 'json', admin: { description: '/jobs 前端筛选 state 原样(jobsSql 解释)' } },
+    { name: 'filters', type: 'json', admin: { description: '/jobs 前端筛选 state 原样(lib/jobs/queries 解释)' } },
     { name: 'lang', type: 'text', admin: { description: '存时的界面语言(zh/en/ko),发信用' } },
     { name: 'lastNotifiedAt', type: 'date', admin: { description: '上次发信游标(alerts run 回写,防重复通知)' } },
   ],

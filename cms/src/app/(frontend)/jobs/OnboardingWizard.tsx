@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { TFn } from '@/lib/i18n'
 import { Modal } from './Modal'
 import { Button, chipStyle } from '../ui'
-import { hasProfile, normalizeProfile, type MatchProfile } from '@/lib/match'
+import { hasProfile, normalizeProfile, type MatchProfile } from '@/lib/jobs'
 import {
   POPULAR_NOCS, CLB_OPTS, CRS_OPTS, PGWP_OPTS, clbActive, crsActive, pgwpActive, type Opt,
 } from '../account/profileOptions'

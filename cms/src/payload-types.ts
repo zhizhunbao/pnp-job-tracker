@@ -1731,7 +1731,7 @@ export interface SavedSearch {
   user: number | User;
   name: string;
   /**
-   * /jobs 前端筛选 state 原样(jobsSql 解释)
+   * /jobs 前端筛选 state 原样(lib/jobs/queries 解释)
    */
   filters?:
     | {

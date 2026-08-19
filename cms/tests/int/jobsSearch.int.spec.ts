@@ -4,7 +4,7 @@
 // 不连库:跑得起 SQL 的验证在 API 实测,这里保证语义不被后人改歪。
 import { describe, it, expect } from 'vitest'
 
-import { buildJobsWhere, splitQ } from '@/lib/jobsSql'
+import { buildJobsWhere, splitQ } from '@/lib/jobs'
 
 describe('搜索词拆分', () => {
   it('按空格拆,吃掉多余空白', () => {

@@ -8,8 +8,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getUser, isPro } from '@/lib/entitlement'
 import { FREE_MATCH_JOBS_PER_DAY } from '@/lib/plan'
-import { hasProfile, normalizeProfile } from '@/lib/match'
-import { fetchJobById, fetchRelatedJobs } from '@/lib/jobsSql'
+import { hasProfile, normalizeProfile, fetchJobById, fetchRelatedJobs } from '@/lib/jobs'
 import Job from './Job'
 import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
@@ -17,7 +16,7 @@ export const dynamic = 'force-dynamic'
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com').replace(/\/$/, '')
 
-// JD 正文瘦查询,只给 JSON-LD 用(列表/详情的分层管线一律不带 description,见 jobsSql JOB_COLUMNS)。
+// JD 正文瘦查询,只给 JSON-LD 用(列表/详情的分层管线一律不带 description,见 lib/jobs/queries JOB_COLUMNS)。
 // 2026-08-17:Google 的 JobPosting 规范里 description **必填**且要求「完整职位描述」,而这里一直塞的是
 // 标题拼公司拼地点的 60 来字回声 —— 库里 46,315 个在架岗有 38,854 个存着真正文(81% 超 300 字),
 // 从来没进过页面。当天 Search Console 实测:富结果占全部搜索曝光 94%,曝光自 7-24 峰值 7,861

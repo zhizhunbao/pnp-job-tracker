@@ -10,8 +10,7 @@ import { JD_ZH_LINE, JdAdvisorSection, isJdNone } from './Jd'
 import { SponsorLeadCard } from './Pnp'
 import { TvEntryCard } from './TripleVerdictModal'
 import { makeT, type Lang, type TFn } from '@/lib/i18n'
-import type { CoGradeDetail, JobRow, Plan } from './types'
-import type { CompanyDetail, SimilarEmployer } from '@/lib/jobsSql'   // E8-11 B1:公司域同源数据形状(type-only,不拉服务端码)
+import { type Plan, type CoGradeDetail, type JobRow, type CompanyDetail, type SimilarEmployer } from '@/lib/jobs'
 import { mapsUrl, provName } from '@/lib/location'
 import { track } from '@/lib/track'
 

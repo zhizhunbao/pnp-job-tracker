@@ -5,7 +5,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { getUser } from '@/lib/entitlement'
-import { fetchCompanyBySlug, fetchSimilarEmployers } from '@/lib/jobsSql'
+import { fetchCompanyBySlug, fetchSimilarEmployers } from '@/lib/jobs'
 import Company from './Company'
 
 export const dynamic = 'force-dynamic'

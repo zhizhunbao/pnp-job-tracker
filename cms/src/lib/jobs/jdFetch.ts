@@ -6,7 +6,7 @@
 // 失败=负缓存 10 分钟防连点重抓;单飞防并发重复抓。非 JB 的 applyUrl(ATS 帖)直接走 ② 的通用抽取。
 // 下轮 seed 不会冲掉:seed 的 description 已改 COALESCE(mart 为空保留旧值)。
 
-import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
+import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
 const MIN_LEN = 300          // 短于此=没抓到(导航残渣不入库,宁缺勿滥)
 const MAX_LEN = 15000        // 正文封顶(前端 JdTextView max=4000,富余给顾问上下文)

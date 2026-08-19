@@ -82,7 +82,7 @@ type ChatProfilePatch = {
   clb?: number
   targetProvinces?: string[]
 }
-/** 抽槽 status → 档案分型 slug(lib/match.ts 的 CurrentStatus)。**对不上的一律不映射**。 */
+/** 抽槽 status → 档案分型 slug(lib/jobs/match.ts 的 CurrentStatus)。**对不上的一律不映射**。 */
 const STATUS_SLUG: Record<string, string> = { student: 'studying', working: 'working', abroad: 'overseas' }
 /** 现值算不算「空」:null/undefined/空串/空数组算空,其余一律当用户已有值,绝不覆盖。 */
 const emptyField = (v: unknown): boolean =>

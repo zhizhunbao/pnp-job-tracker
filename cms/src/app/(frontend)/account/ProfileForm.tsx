@@ -20,7 +20,7 @@ export type ProfileValue = {
 }
 
 const PROVS = ['ON', 'BC', 'AB', 'SK', 'MB', 'NS', 'NB', 'NL', 'PE'] // QC 走自己的体系,不进目标省
-// 分型(E11-04):slug 单一来源在 lib/match.ts;这里只列 UI 顺序(§2.5 A–E),标签走 i18n prof.st.*
+// 分型(E11-04):slug 单一来源在 lib/jobs/match.ts;这里只列 UI 顺序(§2.5 A–E),标签走 i18n prof.st.*
 const STATUS_SLUGS = ['overseas', 'studying', 'working', 'jobhunting', 'pr'] as const
 
 const inputS: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '7px 10px', fontSize: 13.5, border: '1px solid #d1d5db', borderRadius: 6, marginTop: 4 }
