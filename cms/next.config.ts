@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     '/api/resume-extract': ['./node_modules/pdfjs-dist/**/*'],
     '/api/resume': ['./node_modules/pdfjs-dist/**/*'],
+    // pi(lib/agent 的兜底解析):provider 实现走 `exports` 通配子路径 + 动态 import,
+    // 追踪器**抓不到** —— 2026-08-18 实测:build 全绿、standalone/node_modules 里一个 @earendil-works 都没有,
+    // 上线就是 MODULE_NOT_FOUND。不点名就漏,这是本仓第二次栽在同一件事上(pdfjs-dist 是第一次)。
+    '/api/chat': ['./node_modules/@earendil-works/**/*'],
   },
   // E13-03 三页合一 + 08-06 Frank 追加拍板「完整统计都删掉,与首页重复」:
   // /stats 全家(索引/compare/省页/省×大类)退役 → 通配 301 到把脉首页(S4 已承载省级内容)。

@@ -25,3 +25,7 @@ export type { MetaTopic, OccOption, ProfileSlot, UsageTopic } from './slots'
 // ── 证据契约:pathVerdict / planTimeline / tripleVerdict / verdictCache 要的 ──
 export { loadVerdictData } from './tools'
 export type { Availability, DrawsResult, Evidence, OpsResult, PlanResult, ProvThresholds, ThresholdRow, ThresholdsResult } from './tools'
+
+// ── 给 lib/agent 的:兜底解析要查职业候选、要认省码(2026-08-18)──────────────
+export { suggestOccupations } from './slots'
+export { PNP_PROVINCES } from './tools'

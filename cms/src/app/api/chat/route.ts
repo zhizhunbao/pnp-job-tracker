@@ -34,6 +34,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { logChat, threadId } from '@/lib/chat'
 import { ChatError, chatProfileContext, orchestrate, profileFill, type ChatResult, type ChatStep, type ChatTurn } from '@/lib/chat'
+import { resolveByAgent } from '@/lib/agent'
 import { getUser } from '@/lib/entitlement'
 import { freeGate } from '@/lib/freeQuota'
 import { patchProfile } from '@/lib/profile'
@@ -138,7 +139,10 @@ export async function POST(req: Request) {
       const payload = await getPayload({ config: await config })
       pl = payload
       return { ok: await orchestrate(
-        (payload.db as any).pool, { text, lang, history, context, profileContext, profileKnown },
+        // rescueOcc:抽不出职业码时让 lib/agent 查一次库再说(默认 env 关着)。
+        // 组合放在路由层 —— lib/chat 不认识 lib/agent,依赖方向只有一条。
+        (payload.db as any).pool,
+        { text, lang, history, context, profileContext, profileKnown, rescueOcc: resolveByAgent },
         { onStep, onDelta, onReset },
       ) }
     } catch (err) { return { err } }
