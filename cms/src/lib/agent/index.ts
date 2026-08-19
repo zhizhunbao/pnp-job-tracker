@@ -7,4 +7,4 @@
 // 边界:它**只补槽位**。事实、合成、出口闸全在 lib/chat,一行不动;
 // 它挂了、超时了、被 env 关着,流水线的行为与从前逐字相同。
 
-export { agentFallbackOn, resolveByAgent } from './planner'
+export { agentFallbackOn, resolveByAgent } from './functions'

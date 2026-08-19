@@ -8,12 +8,12 @@
  *
  * 断言分四类:金标数字、三态(有数据 / 官方不公布 / 本站未收录)、evidence 全覆盖、工具不下结论。
  */
+import { PNP_PROVINCES } from '@/lib/location'
 import pg from 'pg'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import {
   checkClaims, lookupCoverage, lookupDraws, lookupEE, lookupJobs, lookupOps, lookupPermit, lookupThresholds,
-  PNP_PROVINCES,
 } from '@/lib/chat/tools'
 
 const URI = process.env.DATABASE_URI || ''

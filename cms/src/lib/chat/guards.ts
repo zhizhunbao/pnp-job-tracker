@@ -6,7 +6,8 @@
 // 与 traces.ts 的分界:这边**拦下重来**,那边只**记一笔放行**。
 import { type Availability } from './tools'
 import { AVAIL_SENTENCE, type Lang, MONEY_WHY, PROMISE_WHY } from '../i18n'
-import { ALL_PROVS, PROV_ALIAS, normProv } from './normalize'
+import { ALL_PROVS } from '../location'
+import { PROV_ALIAS, normProv } from './normalize'
 import { CLAIM_TEXT_RE, SENT_SPLIT, claimKeys, saysState } from './traces'
 import type { Fact, Slots } from './types'
 import { AVAIL_MARKERS, NOT_PROPER, UNIT_WORDS, VERDICT_MARKERS, localizeUnits, stripMd } from './wording'

@@ -27,6 +27,7 @@ import {
 import { assembleReportFacts } from './reportFacts'
 import { evaluateRequirements, type Requirement, type ReqSubject, type RuleProfile, type RuleVerdict } from '../rules'
 import type { EeGridRow, ScoreFactor } from '../score'
+import { PNP_PROVINCES } from '../location'   // 省码是全站口径,住共享叶子(2026-08-19 从本文件搬走)
 import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 // ── 公共类型 ────────────────────────────────────────────────────────────────
@@ -55,7 +56,6 @@ export type Evidence = {
 export type Availability = 'ok' | 'not-published' | 'not-collected' | 'not-applicable'
 
 /** 九省 = PNP 省(QC 走自己的体系,不属 PNP;与 ProfileForm/OnboardingWizard 的目标省同一套) */
-export const PNP_PROVINCES = ['ON', 'BC', 'AB', 'SK', 'MB', 'NS', 'NB', 'NL', 'PE']
 
 const upper = (s: string) => (s || '').trim().toUpperCase()
 const provList = (provs?: string[]) => (provs?.length ? Array.from(new Set(provs.map(upper).filter(Boolean))) : PNP_PROVINCES)

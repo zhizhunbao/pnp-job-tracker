@@ -4,7 +4,8 @@
 // 说不上违规、但值得知道的毛病。留痕进日志,不影响这次答复。
 import { type Availability } from './tools'
 import { type Lang } from '../i18n'
-import { ALL_PROVS, PROV_ALIAS } from './normalize'
+import { ALL_PROVS } from '../location'
+import { PROV_ALIAS } from './normalize'
 import type { Fact } from './types'
 import { AVAIL_MARKERS, HEDGE_WORDS } from './wording'
 

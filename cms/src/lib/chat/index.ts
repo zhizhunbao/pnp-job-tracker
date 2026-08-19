@@ -26,6 +26,7 @@ export type { MetaTopic, OccOption, ProfileSlot, UsageTopic } from './slots'
 export { loadVerdictData } from './tools'
 export type { Availability, DrawsResult, Evidence, OpsResult, PlanResult, ProvThresholds, ThresholdRow, ThresholdsResult } from './tools'
 
-// ── 给 lib/agent 的:兜底解析要查职业候选、要认省码(2026-08-18)──────────────
+// ── 给 lib/agent 的:兜底解析要查职业候选(2026-08-18)────────────────────────
+//    省码那半 2026-08-19 撤了:agent 改从 `lib/location` 取 —— **域之间不互相取常量**,
+//    省码是全站口径,该住共享叶子,不该由对话域转发给兜底域。
 export { suggestOccupations } from './slots'
-export { PNP_PROVINCES } from './tools'

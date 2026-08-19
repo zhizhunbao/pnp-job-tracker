@@ -3,6 +3,16 @@
 import type { TFn } from '@/lib/i18n'
 import type { ColKey, JobRow } from './jobs'
 
+/** 有 PNP 的九省。**顺序只是声明顺序**,不是排名 —— 别拿前几个当默认(chat/cards.ts:224 那条教训)。 */
+export const PNP_PROVINCES = ['ON', 'BC', 'AB', 'SK', 'MB', 'NS', 'NB', 'NL', 'PE']
+
+/** 认得出的省码:九省 + QC(魁省走自己的体系,不属 PNP,但用户会提、模型会给)。
+ *  2026-08-19 从 `chat/normalize.ts` 搬来 —— 它在 chat 与 agent 里各写了一遍同一行,
+ *  而省码是**全站口径**,不该由某个域拥有(域之间不互相取常量;共享叶子才是它的家)。
+ *  ⚠️ 顺带治了一个老雷:它原先住 `chat/tools.ts`(1141 行、依赖一大串),
+ *  三处文件头注释记着它「初始化时 undefined / is not iterable」。本文件零运行时 import,不会有那问题。 */
+export const ALL_PROVS = new Set([...PNP_PROVINCES, 'QC'])
+
 /** 省码 → 省全名。筛选值一律用全名(fProv/深链/保存的筛选都依赖它);jobs/filters.shared 再导出给筛选侧。 */
 export const PROV_NAMES: Record<string, string> = {
   ON: 'Ontario', BC: 'British Columbia', AB: 'Alberta', QC: 'Quebec', MB: 'Manitoba', SK: 'Saskatchewan',

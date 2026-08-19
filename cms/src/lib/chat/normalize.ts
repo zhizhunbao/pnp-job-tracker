@@ -2,7 +2,8 @@
 //
 // 红线:**认不出就丢** —— 宁可少一个省,不许把 NB 当 NS。模型给的字符串一律不可信,
 // 两位码直接用,省名/中文别名查表,其余丢掉。
-import { type ClaimTopic, PNP_PROVINCES } from './tools'
+import { ALL_PROVS } from '../location'   // 省码表的家在共享叶子,本域不再自留一份
+import type { ClaimTopic } from './tools'
 import type { SlotClaimTopic } from './types'
 
 // ── 小工具 ──────────────────────────────────────────────────────────────────
@@ -34,7 +35,6 @@ export const PROV_ALIAS: Record<string, string> = {
   'PRINCE EDWARD ISLAND': 'PE', PEI: 'PE', 爱德华王子岛: 'PE',
   QUEBEC: 'QC', 魁省: 'QC', 魁北克: 'QC',
 }
-export const ALL_PROVS = new Set([...PNP_PROVINCES, 'QC'])
 /** 模型输出不可信:两位码直接用,省名/中文别名查表,认不出就丢(宁可少一个省,不许把 NB 当 NS)。 */
 export function normProv(raw: unknown): string | null {
   const s = String(raw ?? '').trim().toUpperCase()

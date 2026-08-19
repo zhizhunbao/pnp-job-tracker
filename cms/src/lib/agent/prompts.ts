@@ -1,25 +1,40 @@
-// 给模型看的提示词 —— **用户永远看不到,也不需要翻译**(CLAUDE.md:提示词不是文案,不进 lib/i18n)。
-//
-// 这一层只做一件事:**在流水线放弃之前,先查一次库**。
-// 现在的抽槽(SLOT_SYSTEM)是一次性盲猜,猜不中职业码就反问用户「请提供 NOC」——
-// 实测 198 轮里 41 轮(20.7%)栽在这儿。差别不在模型多聪明,在于**它有没有机会先查一下**。
-//
-// 🔴 红线写进提示词只是第一道;真正兜住的是代码:
-//    ① 这一层**永远不产出见客文字** —— 它的 text 我们直接丢掉,只取工具调用
-//    ② 它给出的 NOC / 省码一律过校验(五位数字 / 九省表),编的过不了
-//    ③ 事实一条都不由它产生 —— 它只补槽位,facts 仍旧由 collectFacts 从工具层取
+// 给模型看的字(不进 i18n:用户看不到、不需要翻译)。这一层只干一件事:放弃之前先查一次库
+// —— 盲猜抽槽实测 198 轮栽 41 轮(20.7%)。不并进 constants:改动频率差一个量级,且是另一种介质。
+// 🔴 红线靠代码兜,不靠这里的字:text 一律丢掉只取工具调用;NOC/省码过 NOC_RE/PROVS;事实一条不由它产。
+
+import { TOOLS } from './constants'   // 工具名只在那儿写一遍,这里插值取 —— 两处对不上模型就调空
 
 export const RESOLVE_SYSTEM = `You turn a Canadian-immigration question into lookup slots. You do NOT answer the user.
 
 Your only job: figure out which occupation (5-digit NOC code) the user is talking about, and which provinces.
 
 Rules:
-- Use search_occupations to look up candidate NOC codes by job title or field of study. Never invent a NOC code.
-- Call set_slots exactly once when you are confident, with the NOC you picked from search results.
-- If the question does not depend on an occupation (federal permit/CRS/scoring questions, or a question about how this site works), call set_slots with noc = null and say why in "reason".
-- If you cannot find a plausible occupation, call give_up. Do not guess.
+- Use ${TOOLS.search.name} to look up candidate NOC codes by job title or field of study. Never invent a NOC code.
+- Call ${TOOLS.setSlots.name} exactly once when you are confident, with the NOC you picked from search results.
+- If the question does not depend on an occupation (federal permit/CRS/scoring questions, or a question about how this site works), call ${TOOLS.setSlots.name} with noc = null and say why in "reason".
+- If you cannot find a plausible occupation, call ${TOOLS.giveUp.name}. Do not guess.
 - Never write an answer for the user. Text you write is discarded.`
 
-/** 工具执行完之后,回给模型的一句话(它只需要知道候选长什么样)。 */
+// 工具执行完之后,回给模型的一句话(它只需要知道候选长什么样)。
 export const SEARCH_RESULT_HINT =
-  'Pick the single best NOC from these candidates and call set_slots. If none fits, call give_up.'
+  `Pick the single best NOC from these candidates and call ${TOOLS.setSlots.name}. If none fits, call ${TOOLS.giveUp.name}.`
+
+// 三个工具的自我介绍与参数说明 —— 模型全靠这几句决定调谁、怎么填。
+export const TOOL_DESC = {
+  search: "Search this site's occupation table by job title or field of study (English or Chinese). "
+    + 'Returns candidate 5-digit NOC codes with their official titles. Use this before deciding on a NOC — never invent one.',
+  searchQuery: 'Job title or field of study, e.g. "software developer" / "会计"',
+  setSlots: 'Record the resolved slots. Call once you are confident, or with noc=null for questions that do not depend on an occupation.',
+  setSlotsNoc: `5-digit NOC taken from ${TOOLS.search.name} results, or null`,
+  setSlotsProvinces: 'Two-letter province codes the user mentioned, e.g. ["BC","ON"]',
+  setSlotsReason: 'One short line: why this NOC / why none is needed',
+  giveUp: 'No plausible occupation can be found. The pipeline will fall back to asking the user.',
+} as const
+
+// 工具执行完回给模型的话。它读完就决定下一步,所以「为什么不收」要说清。
+export const TOOL_REPLY = {
+  noCandidates: 'No candidates found.',
+  rejected: 'Rejected: that NOC is not in the search results. Falling back.',
+  recorded: 'Recorded.',
+  gaveUp: 'Gave up: ',
+} as const
