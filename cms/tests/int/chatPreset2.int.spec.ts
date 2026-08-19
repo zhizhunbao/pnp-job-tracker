@@ -9,8 +9,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('@/lib/llm', () => ({
-  LlmError: class LlmError extends Error {},
-  completeText: vi.fn(async (messages: { role: string; content: string }[]) => {
+  completeText: vi.fn(async ({ messages }: { messages: { role: string; content: string }[] }) => {
     const system = messages[0]?.content ?? ''
     const user = messages[1]?.content ?? ''
     if (system.includes('You turn one message from a would-be immigrant into slots')) {

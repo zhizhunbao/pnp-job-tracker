@@ -7,7 +7,8 @@ import config from '@/payload.config'
 import { getUser } from '@/lib/quota/server'
 import { FREE_DAILY_TRIES } from '@/lib/quota'
 import { freeGate } from '@/lib/quota/server'
-import { completeText, LlmError } from '@/lib/llm'
+import { isLlmError } from '@/lib/error'
+import { completeText } from '@/lib/llm'
 import { extractText, RESUME_MAX_BYTES } from '@/lib/resume'
 
 export const runtime = 'nodejs'
@@ -70,13 +71,16 @@ export async function POST(req: NextRequest) {
 
   let data: any
   try {
-    const raw = await completeText([
-      { role: 'system', content: EXTRACT_SYSTEM },
-      { role: 'user', content: text.slice(0, MAX_CHARS) },
-    ], { maxTokens: 500 })
+    const raw = await completeText({
+      messages: [
+        { role: 'system', content: EXTRACT_SYSTEM },
+        { role: 'user', content: text.slice(0, MAX_CHARS) },
+      ],
+      maxTokens: 500,
+    })
     data = parseJson(raw)
   } catch (e) {
-    if (e instanceof LlmError) return Response.json({ error: 'llm', freeLeft }, { status: 502 })
+    if (e instanceof Error && isLlmError(e)) return Response.json({ error: 'llm', freeLeft }, { status: 502 })
     throw e
   }
   if (!data || !Array.isArray(data.titles)) return Response.json({ error: 'llm', freeLeft }, { status: 502 })

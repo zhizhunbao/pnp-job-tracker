@@ -31,13 +31,14 @@ const H = vi.hoisted(() => ({
 const CLEAN_DRAFT = '木工这行的情况看下面。木工这行的口径写在出处里。木工这行的其他省也一样。'
 
 vi.mock('@/lib/llm', () => {
-  class LlmError extends Error {
-    constructor(msg: string, public code?: string) { super(msg); this.name = 'LlmError' }
+  // 桩也不用 class:身份挂 name,和 lib/error 的约定一致
+  function llmFail(msg: string, code: string): Error {
+    return Object.assign(new Error(msg), { name: 'LlmError', code })
   }
-  const timeout = () => new LlmError('模型服务响应超时,请稍后再试。', 'timeout')
+  const timeout = () => llmFail('模型服务响应超时,请稍后再试。', 'timeout')
   return {
-    LlmError,
-    completeText: vi.fn(async (messages: { content: string }[], opts: any) => {
+    completeText: vi.fn(async (opts: { messages: { content: string }[]; stallMs?: number; provider?: string }) => {
+      const messages = opts.messages
       // 抽槽那一发:SLOT_SYSTEM 里那句 "turn one message" 是它的指纹
       if (messages[0]?.content?.includes('turn one message')) {
         H.slotOpts.push(opts)
@@ -45,7 +46,7 @@ vi.mock('@/lib/llm', () => {
       }
       H.synthOpts.push(opts)
       if (H.mode === 'stall') throw timeout()
-      if (H.mode === 'offline') throw new LlmError('无法连接本地模型服务,请稍后再试。', 'offline')
+      if (H.mode === 'offline') throw llmFail('无法连接本地模型服务,请稍后再试。', 'offline')
       // 第一稿硬拦全过、只是连着三句同一个开头(软重写)→ 进第二轮;第二轮再停摆
       if (H.mode === 'stall-2nd') {
         if (H.synthOpts.length === 1) return CLEAN_DRAFT

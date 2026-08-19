@@ -8,8 +8,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@/lib/llm', () => ({
-  LlmError: class LlmError extends Error {},
-  completeText: vi.fn(async (messages: { content: string }[]) => {
+  completeText: vi.fn(async ({ messages }: { messages: { content: string }[] }) => {
     if (messages[0]?.content?.includes('turn one message')) {
       // 生产回归里故意模拟抽槽幻觉：联邦政策追问即使被塞成厨师，也不能启动职业工具。
       if (messages.at(-1)?.content?.includes('大家都是这么说的 两个一年 能换 3 年')) {

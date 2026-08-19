@@ -15,7 +15,8 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getUser, isPro } from '@/lib/quota/server'
 import { jobDescription } from '@/lib/jobs/server'
-import { completeText, LlmError } from '@/lib/llm'
+import { isLlmError } from '@/lib/error'
+import { completeText } from '@/lib/llm'
 import { patchProfile, type ProfilePatch } from '@/lib/profile'
 import { DAILY_FREE, gateMatch, matchPrompt, MIN_RESUME, normalizeRows, parseLlmJson } from '@/lib/resume'
 import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
@@ -66,13 +67,14 @@ export async function POST(req: Request) {
     // ✅ 2026-08-04:撤掉 JD 2800 / 简历 3100 的切法 —— 那是上游 6000 字符上限时代的止血
     //    (Frank 真简历实测必败的根因)。新端点上限 20000,预算见 resumeMatch 顶部,这里按 CLAMP 走。
     // temperature 压到 0.1:要的是稳定的 JSON 与可复现的判定,不要发挥。
-    text = await completeText(matchPrompt(jd, resume, lang, pro), {
+    text = await completeText({
+      messages: matchPrompt(jd, resume, lang, pro),
       maxTokens: pro ? 1600 : 900, provider: 'friend', temperature: 0.1,
       onMeta: (m) => { meta = m },
     })
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
-    const code = e instanceof LlmError ? e.code : undefined
+    const code = e instanceof Error && isLlmError(e) ? e.code : undefined
     // 错误码各说各话(2026-08-03 Frank 实撞「什么都报稍后再试」):
     // tooLong = 用户输入太长,重试没用要删内容;busy = 上游超时,重试有用;llm = 其余(含鉴权/请求格式,
     // 都是我们这侧的运维问题,对用户统一说「稍后再试」,细节只进日志)。

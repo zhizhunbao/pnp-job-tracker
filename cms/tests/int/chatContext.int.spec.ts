@@ -2,8 +2,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('@/lib/llm', () => ({
-  LlmError: class LlmError extends Error {},
-  completeText: vi.fn(async (messages: { content: string }[]) => {
+  completeText: vi.fn(async ({ messages }: { messages: { content: string }[] }) => {
     const system = messages[0]?.content ?? ''
     const user = messages.at(-1)?.content ?? ''
     if (system.includes('turn one message')) {

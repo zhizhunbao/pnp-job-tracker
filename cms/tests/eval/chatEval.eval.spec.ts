@@ -19,7 +19,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { ChatError, orchestrate } from '@/lib/chat/orchestrate'
 import { sentenceBlockers } from '@/lib/chat/stream'
 import type { ChatResult, ChatTurn } from '@/lib/chat/types'
-import { friendLlmReady } from '@/lib/llm/friend'
+import { friendLlmReady } from '@/lib/llm'
 import { checkCards, DISEASE_CARDS, type CardHit } from '../cases/diseaseCards'
 
 type EvalCase = {

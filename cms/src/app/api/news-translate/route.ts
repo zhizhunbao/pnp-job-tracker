@@ -63,7 +63,7 @@ export async function POST(req: Request) {
   // 修法同 lineTranslate:开头加一行 `[ref:<内容指纹>]`——纯字母不含数字,parseNumbered 的 `\[(\d+)\]`
   // 匹配不到,整行落在 split 的 parts[0] 被丢弃,编号解析零改动(缺号拒收那条红线不动)。
   const numbered = paras.map((p, i) => `[${i + 1}] ${p}`).join('\n\n')
-  const payloadText = `[ref:${contentTag(`${numbered}|${lang}`)}]\n${numbered}`
+  const payloadText = `[ref:${contentTag({ text: `${numbered}|${lang}` })}]\n${numbered}`
 
   const ctl = new AbortController()
   const timer = setTimeout(() => ctl.abort(), 90_000)

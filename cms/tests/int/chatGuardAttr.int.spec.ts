@@ -19,8 +19,7 @@ const H = vi.hoisted(() => ({
   answer: '',
 }))
 vi.mock('@/lib/llm', () => ({
-  LlmError: class LlmError extends Error {},
-  completeText: vi.fn(async (messages: { content: string }[]) =>
+  completeText: vi.fn(async ({ messages }: { messages: { content: string }[] }) =>
     (messages[0]?.content?.includes('You turn one message') ? H.slots : H.answer)),
 }))
 

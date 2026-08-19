@@ -25,8 +25,7 @@ const H = vi.hoisted(() => ({
 }))
 
 vi.mock('@/lib/llm', () => ({
-  LlmError: class LlmError extends Error {},
-  completeText: vi.fn(async (messages: { content: string }[]) => {
+  completeText: vi.fn(async ({ messages }: { messages: { content: string }[] }) => {
     const system = messages[0]?.content ?? ''
     const user = messages.at(-1)?.content ?? ''
     if (system.includes('You turn one message from a would-be immigrant into slots')) {

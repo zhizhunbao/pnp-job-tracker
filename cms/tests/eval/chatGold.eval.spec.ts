@@ -16,7 +16,7 @@ import { orchestrate } from '@/lib/chat/orchestrate'
 import { resolveNoc, suggestOccupations } from '@/lib/chat/slots'
 import { findHedges, findMixedStates, findSameOpening, findShoutedWords } from '@/lib/chat/traces'
 import type { Fact } from '@/lib/chat/types'
-import { friendLlmReady } from '@/lib/llm/friend'
+import { friendLlmReady } from '@/lib/llm'
 
 const URI = process.env.DATABASE_URI || ''
 const CARPENTER = '72310'

@@ -22,8 +22,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const H = vi.hoisted(() => ({ slots: '{}', answer: '判定结果在下面,每条都带官方出处。' }))
 vi.mock('@/lib/llm', () => ({
-  LlmError: class LlmError extends Error {},
-  completeText: vi.fn(async (messages: { content: string }[]) =>
+  completeText: vi.fn(async ({ messages }: { messages: { content: string }[] }) =>
     (messages[0]?.content?.includes('turn one message') ? H.slots : H.answer)),
 }))
 

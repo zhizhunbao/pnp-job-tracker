@@ -8,7 +8,8 @@ import { match, normalizeProfile, hasProfile, reasonEn, statusEn, type MatchDims
 import { jobDescription, PROV_NAME, loadMatchDims } from '@/lib/jobs/server'
 import { checkLimit } from '@/lib/quota/server'
 import { freeGate } from '@/lib/quota/server'
-import { streamChat, LlmError, type ChatMessage } from '@/lib/llm'
+import { isLlmError } from '@/lib/error'
+import { streamChat, type ChatMessage } from '@/lib/llm'
 import { friendLlmReady } from '@/lib/llm'
 import { companyRow, investigateCompany, type CompanyResearch } from '@/lib/employers/server'
 import { getUser, isPro } from '@/lib/quota/server'
@@ -412,9 +413,9 @@ export async function POST(req: NextRequest) {
   try {
     // E6-03:公司初判且有官网 → anthropic 后端声明 web_fetch(现场抓官网 grounding;ollama 忽略)
     const fetchUrl = field === 'company' && !isChat ? job.officialUrl : undefined
-    upstream = await streamChat(ollamaMessages as ChatMessage[], { maxTokens: numPredict, fetchUrl })
+    upstream = await streamChat({ messages: ollamaMessages as ChatMessage[], maxTokens: numPredict, fetchUrl })
   } catch (e) {
-    return new Response(e instanceof LlmError ? e.message : '大模型不可用。', { status: 502 })
+    return new Response(e instanceof Error && isLlmError(e) ? e.message : '大模型不可用。', { status: 502 })
   }
 
   // 透传文本增量,顺便累积进缓存(初判才缓存,对话每轮唯一)。

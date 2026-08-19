@@ -35,7 +35,7 @@ async function translateFormatted(text: string, lang: string, signal: AbortSigna
     jobs.push({ idx, prefix, body: l })
   })
   if (!jobs.length) return { text, full: true }
-  const translated = await translateLinesAligned(jobs.map((j) => j.body), lang, signal)
+  const translated = await translateLinesAligned({ lines: jobs.map((j) => j.body), lang, signal })
   if (translated.every((t) => t == null)) throw new Error('translate unavailable')
   const result = [...lines]
   let full = true

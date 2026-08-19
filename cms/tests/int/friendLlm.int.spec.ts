@@ -8,7 +8,8 @@
  */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { FRIEND_INPUT_MAX, FriendLlmError, friendChatOrThrow } from '@/lib/llm/friend'
+import { isGatewayError } from '@/lib/error'
+import { FRIEND_INPUT_MAX, friendChatOrThrow } from '@/lib/llm'
 
 type Call = { url: string; body: any; headers: Record<string, string> }
 
@@ -72,7 +73,7 @@ describe('friendLlm 错误码映射(各说各话的地基)', () => {
     it(`${type} → ${code},且**不回退**(旧链只会换个说法再失败一次)`, async () => {
       const calls = stubFetch([{ status, body: errBody(type) }])
       const e = await friendChatOrThrow({ prompt: 'hi' }).catch((x) => x)
-      expect(e).toBeInstanceOf(FriendLlmError)
+      expect(e instanceof Error && isGatewayError(e)).toBe(true)
       expect(e.code).toBe(code)
       expect(calls).toHaveLength(1)
     })
@@ -156,7 +157,7 @@ describe('friendLlm 停摆看门狗', () => {
   it('响应头一直不来 → stallMs 到点报 timeout,且**不回退旧链**(旧链只会再卡一次)', async () => {
     const calls = stubHang()
     const e = await friendChatOrThrow({ prompt: 'hi', stallMs: 60, timeoutMs: 5_000, onDelta: () => {} }).catch((x) => x)
-    expect(e).toBeInstanceOf(FriendLlmError)
+    expect(e instanceof Error && isGatewayError(e)).toBe(true)
     expect(e.code).toBe('timeout')
     expect(e.message).toMatch(/stalled 60ms/)
     expect(calls).toHaveLength(1)
@@ -166,7 +167,7 @@ describe('friendLlm 停摆看门狗', () => {
     stubStream([{ text: '安省', delay: 5 }, { text: '目前', delay: 5 }], false)
     const got: string[] = []
     const e = await friendChatOrThrow({ prompt: 'hi', stallMs: 80, timeoutMs: 5_000, onDelta: (c) => got.push(c) }).catch((x) => x)
-    expect(e).toBeInstanceOf(FriendLlmError)
+    expect(e instanceof Error && isGatewayError(e)).toBe(true)
     expect(e.code).toBe('timeout')
     expect(e.message).toMatch(/^stream stalled 80ms after 4ch/)   // 已经吐出来的字数留在错误里,便于对账
     expect(got).toEqual(['安省', '目前'])                          // 停摆之前流出去的照旧算数

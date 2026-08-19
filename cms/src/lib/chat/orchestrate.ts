@@ -18,7 +18,8 @@
  * ⚠️ 朋友服务(qwen3.6)prompt 上限 6000 字符(实测 400,system 不占额),所以 facts **先压平再压缩**
  * 才喂模型:工具返回的整坨 JSON 一次就能把额度撑爆(resume-match 真简历事故同一个坑)。
  */
-import { LlmError, completeText } from '../llm'
+import { isLlmError } from '../error'
+import { completeText } from '../llm'
 import { parseLlmJson } from '../resume'
 import { LBL, type Lang, STEP } from '../i18n'
 import * as SQL from '../db/sql'
@@ -77,19 +78,22 @@ export async function orchestrate(
   let raw: string
   try {
     const hist = (input.history ?? []).slice(-6).map((h) => `${h.role}: ${h.content.slice(0, h.role === 'assistant' ? 320 : 240)}`).join('\n')
-    raw = await completeText([
-      { role: 'system', content: SLOT_SYSTEM },
-      { role: 'user', content: (hist ? `EARLIER:\n${hist}\n\nNOW: ` : '') + text },
-    ], { maxTokens: 400, provider: 'friend', ...(SYNTH_STALL_MS > 0 ? { stallMs: SYNTH_STALL_MS } : {}) })
+    raw = await completeText({
+      messages: [
+        { role: 'system', content: SLOT_SYSTEM },
+        { role: 'user', content: (hist ? `EARLIER:\n${hist}\n\nNOW: ` : '') + text },
+      ],
+      maxTokens: 400, provider: 'friend', ...(SYNTH_STALL_MS > 0 ? { stallMs: SYNTH_STALL_MS } : {}),
+    })
   } catch (e) {
     // 🔴 **抽槽这一发也要装闸**(2026-08-09 生产实录 chat_logs 20:29 那条:整轮 47.9s 才报 busy ——
     //    合成只占其中 25s,前面 23s 卡在这儿没人管)。它是第一发,冷启/排队最先砸的就是它。
     //    等不来字 → 同样报「系统繁忙」:这时连职业都还没认出来,没有任何东西可降级。
-    if (e instanceof LlmError && e.code === 'timeout') {
+    if (e instanceof Error && isLlmError(e) && e.code === 'timeout') {
       console.log(`[chat] slots timeout (stallMs=${SYNTH_STALL_MS}) → busy (${e.message.slice(0, 120)})`)
       throw new ChatError('busy', `slot extraction timed out: ${e.message}`)
     }
-    throw new ChatError('llm', e instanceof LlmError ? e.message : String(e))
+    throw new ChatError('llm', e instanceof Error && isLlmError(e) ? e.message : String(e))
   }
   const parsed = parseLlmJson(raw)
   if (!parsed) throw new ChatError('llm', `slot parse failed: ${raw.slice(0, 160)}`)
@@ -237,9 +241,9 @@ export async function orchestrate(
       const t0 = Date.now()
       let ttft = 0
       let acc = ''
-      const raw2 = await completeText(
-        synthMessages(facts, text, lang, { ...synOpts, ...(attempt ? { forbid: bad, banned, sameOpen } : {}) }),
-        { maxTokens: 900, provider: 'friend', ...(SYNTH_STALL_MS > 0 ? { stallMs: SYNTH_STALL_MS } : {}), onDelta: (chunk) => {
+      const raw2 = await completeText({
+        messages: synthMessages(facts, text, lang, { ...synOpts, ...(attempt ? { forbid: bad, banned, sameOpen } : {}) }),
+        maxTokens: 900, provider: 'friend', ...(SYNTH_STALL_MS > 0 ? { stallMs: SYNTH_STALL_MS } : {}), onDelta: (chunk) => {
           if (!ttft) ttft = Date.now() - t0
           if (!live || gateBad.length) return
           acc += chunk
@@ -250,14 +254,14 @@ export async function orchestrate(
             console.log(`[chat] sentence gate blocked noc=${slots.noc} lang=${lang} hits=${r.blocked.join(',')}`)
             if (streamed) { opts?.onReset?.(); streamed = false }   // 已经发出去的那截作废:让前端清屏,别读半段
           } else if (r.text) { streamed = true; opts!.onDelta!(r.text) }
-        } },
-      )
+        },
+      })
       console.log(`[chat] synth attempt=${attempt + 1} noc=${slots.noc} ttft=${ttft}ms total=${Date.now() - t0}ms out=${raw2.length}ch`)
       const cleaned = dropTrailingHedge(clampAnswer(localizeUnits(tidy(raw2), lang), lang), lang)
       if (cleaned.dropped.length) console.log(`[chat] dropped trailing advice noc=${slots.noc} sentences=${JSON.stringify(cleaned.dropped)}`)
       answer = cleaned.text
     } catch (e) {
-      const code = e instanceof LlmError ? e.code : undefined
+      const code = e instanceof Error && isLlmError(e) ? e.code : undefined
       const why = e instanceof Error ? e.message.slice(0, 120) : String(e)
       // 报码不报数:timeout 可能是停摆闸(stallMs)、也可能是硬上限或上游 504 —— 别在日志里替它猜是哪一个
       if (code === 'timeout') {
@@ -276,7 +280,7 @@ export async function orchestrate(
         console.log(`[chat] synth failed attempt=${attempt + 1} noc=${slots.noc} → fact sheet (${why})`)
         answer = ''; bad = []; break
       }
-      throw new ChatError('llm', e instanceof LlmError ? e.message : String(e))
+      throw new ChatError('llm', e instanceof Error && isLlmError(e) ? e.message : String(e))
     }
     // 🔴 **哪一道检查、第几次** —— 逐道具名(2026-08-05 Frank:降级率是根因指标,修呈现只是化妆)。
     //    原来六道检查被并成 leaks/units 两坨,日志里看得见「撞了」看不见「撞的是谁」,

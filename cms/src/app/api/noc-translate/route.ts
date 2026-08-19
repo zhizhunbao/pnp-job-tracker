@@ -24,7 +24,7 @@ const cache = new Map<string, { duties: string; requirements: string }>()
 async function translateLines(text: string, lang: string, signal: AbortSignal): Promise<{ text: string; full: boolean }> {
   const lines = text.split('\n').map((s) => s.trim()).filter(Boolean)
   if (!lines.length) return { text: '', full: true }
-  const translated = await translateLinesAligned(lines, lang, signal)
+  const translated = await translateLinesAligned({ lines, lang, signal })
   if (translated.every((t) => t == null)) throw new Error('translate unavailable')
   return { text: lines.map((l, i) => translated[i] || l).join('\n'), full: translated.every((t) => t != null) }
 }

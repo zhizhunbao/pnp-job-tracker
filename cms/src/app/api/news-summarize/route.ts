@@ -57,7 +57,7 @@ export async function POST(req: Request) {
       headers: { 'Content-Type': 'application/json', 'X-API-Key': KEY },
       // 首行 [ref:内容指纹] 同 friendChat:上游按 prompt 前 2000 字符做缓存键(2026-08-04 串答事故),
       // 本端点是**直连**没走 friendChat,自己钉一遍——正文只有前 ~1750 字符进键,两篇开头相近的稿会串。
-      body: JSON.stringify({ prompt: refPrompt(`${instr}\n\n标题:${row.title}\n\n正文:\n${String(row.en).slice(0, 8000)}`, system), web_search: false, system }),
+      body: JSON.stringify({ prompt: refPrompt({ prompt: `${instr}\n\n标题:${row.title}\n\n正文:\n${String(row.en).slice(0, 8000)}`, salt: system }), web_search: false, system }),
     })
     if (!resp.ok) throw new Error(`upstream ${resp.status}`)
     const summary = String((await resp.json()).answer || '').replace(/\*\*(.+?)\*\*/g, '$1').replace(/^#+\s*/gm, '').trim()

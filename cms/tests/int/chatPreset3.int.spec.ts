@@ -9,8 +9,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { PROMISE_WHY } from '@/lib/i18n'
 
 vi.mock('@/lib/llm', () => ({
-  LlmError: class LlmError extends Error {},
-  completeText: vi.fn(async (messages: { role: string; content: string }[]) => {
+  completeText: vi.fn(async ({ messages }: { messages: { role: string; content: string }[] }) => {
     const system = messages[0]?.content ?? ''
     const user = messages.at(-1)?.content ?? ''
     if (system.includes('turn one message')) {
@@ -212,8 +211,8 @@ describe('首页预设问题 3（三语真实编排 + fixture I/O）', () => {
     // 两次真实模型边界调用：第一遍抽槽位，第二遍由真实 synthMessages 生成提示并进入出口。
     const calls = vi.mocked(completeText).mock.calls
     expect(calls).toHaveLength(2)
-    expect(calls[0][0][0].content).toContain('turn one message')
-    expect(calls[1][0][1].content).toContain('CLAIM LINES')
-    expect(calls[1][0][1].content).toContain('NOC 72310')
+    expect(calls[0][0].messages[0].content).toContain('turn one message')
+    expect(calls[1][0].messages[1].content).toContain('CLAIM LINES')
+    expect(calls[1][0].messages[1].content).toContain('NOC 72310')
   })
 })
