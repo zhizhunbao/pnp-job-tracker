@@ -64,16 +64,11 @@ cms/dev.log
 # 会话草稿目录(临时截图/中间产物)
 /scratchpad/
 
-# ── .claude/ 的本机状态(2026-08-18 补:先前只靠**仓库外**的两处排除挡着 ——
-#    全局 ~/.config/git/ignore 挡 settings.local.json、.git/info/exclude 挡 worktrees/。
-#    换台机器或别人克隆,这两样立刻变成待提交文件,所以把排除搬进仓库)
-#    跟踪的只有共享工具:launch.json 与 skills/(dd、iterate-audit 的脚本)。
-/.claude/settings.local.json
-/.claude/worktrees/
-/.claude/checkpoints/
-/.claude/mailbox/
-/.claude/routines/.state/
-/.claude/scheduled_tasks.json
-/.claude/scheduled_tasks.lock
-/.claude/agent-registry.json
-/.claude/agent-memory-local/
+# ── 助手/编辑器的本地目录一律不入 git(2026-08-19 Frank 点名)──────────────
+# 🔴 直接起因:.agents/skills/iterate-audit/credentials.local.json **带着生产测试号的明文口令**
+#    被提交进了公开仓库(faf1b8b3)。文件自己的注释写着「本文件已 gitignore,勿提交」——
+#    而当初那条规则只写了 .claude/ 那份路径,.agents/ 这份复制品从来没被挡住。
+#    教训:**按目录整体忽略,别按单个文件点名** —— 点名的规则挡不住复制品。
+/.claude/
+/.agents/
+/.vscode/
