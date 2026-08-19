@@ -10,6 +10,11 @@ import nextTypeScript from 'eslint-config-next/typescript'
 // 带桶的模块(`lib/<名>/index.ts`)—— 下面那道边界闸认这三个,加新桶就加这里一行。
 const BARRELS = ['chat', 'i18n', 'jobs', 'pathways', 'quiz']
 const ABSOLUTE = BARRELS.map((m) => `**/lib/${m}/*`)
+// jobs 是唯一有**两个门**的模块(index=客户端也安全的那半、server=要连库的那半;
+// 理由见 lib/jobs/index.ts 顶上那段:混着 payload 依赖的桶会把连接池打进浏览器包)。
+// 🔴 放行必须排在整个 group 的**最后** —— 同组内后面的模式覆盖前面的,
+//    夹在中间会被后来的相对模式重新拦住(实撞:tools.ts/quizTop.ts/scoreTables.ts 三处照旧报错)。
+const ALLOW = ['!**/lib/jobs/server', '!./jobs/server', '!../jobs/server']
 const SIBLING = BARRELS.flatMap((m) => [`./${m}/*`, `../${m}/*`])
 const barrelOnly = (group) => ({
   'no-restricted-imports': [
@@ -64,7 +69,7 @@ const eslintConfig = [
     //
     // 不管 lib/db:那边是 `import * as SQL from './db/sql'` 的命名空间形态(48 处),
     // 调用点写 `SQL.foo()` 自解释,是设计如此,不是绕过。
-    rules: barrelOnly(ABSOLUTE),
+    rules: barrelOnly([...ABSOLUTE, ...ALLOW]),
   },
   {
     // lib/ 里的兄弟相对路径是同一件事的另一种写法(`./i18n/chat`),上一条的 `**/lib/…` 匹配不到它。
@@ -74,7 +79,7 @@ const eslintConfig = [
     //    (`app/(frontend)/jobs/Jobs.tsx` 正当地引 `../quiz/EntryQuiz`),全局开会误伤。
     // 模块**自己目录内**的相对引用(lib/i18n/index.ts → './chat')不在此列,那是模块内部。
     files: ['src/lib/**/*.{ts,tsx}'],
-    rules: barrelOnly([...ABSOLUTE, ...SIBLING]),
+    rules: barrelOnly([...ABSOLUTE, ...SIBLING, ...ALLOW]),
   },
   {
     // ── 测试是例外,而且只有测试(2026-08-18 拆 lib/chat 时立)──────────────────

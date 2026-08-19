@@ -2,7 +2,7 @@
 // 路由/页面/提醒只调函数、不写裸 SQL(E10-01 收拢;Frank「所有职位 SQL 拆一个文件」)。
 // 列名是 Payload snake_case(老坑 5):改 Jobs schema 只动这里。
 import { match, matchRank, type MatchDims, type MatchJob, type MatchProfile, NO_LIST_PROVINCES } from './match'
-import type { JobRow } from './types'
+import type { Dims, JobRow, NewsSlim } from './types'
 import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与映射   // 形状住类型文件,不再反向依赖 'use client' 组件
 
 // 库里的 timestamp 回来是 Date、numeric 回来是字符串 —— 两个都得归一(dims.ts 走同一对,别各写一份)
@@ -211,7 +211,10 @@ function orderByClause(sortKey?: string, dir?: string, pro = true): string {
 export const mapPnpOcc = (r: any) => ({ province: r.province, stream: r.stream, label: r.label, type: r.type, program: r.program || 'PNP', noc: r.noc, name: r.name, gtaRestricted: !!r.gtaRestricted, url: r.url, fetched: r.fetched })
 // 省提名匹配只吃 program=PNP 的清单:AIP 背书是另一条路,混进来会让「命中/被排除」判在错的项目上(E6-09)
 export const pnpOnly = <T extends { program?: string }>(rows: T[]): T[] => rows.filter((r) => (r.program || 'PNP') === 'PNP')
-export const mapEeCat = (r: any) => ({ category: r.category, label: r.label, noc: r.noc, teer: typeof r.teer === 'number' ? r.teer : null, title: r.title, url: r.url, fetched: r.fetched, drawCrs: typeof r.drawCrs === 'number' ? r.drawCrs : null, drawDate: r.drawDate ?? '', drawSize: typeof r.drawSize === 'number' ? r.drawSize : null })
+// 🔴 数字一律走 num():库里 numeric 回来是**字符串**,而 Payload 的 Local API 回来是数字 ——
+//    原来这里写的是 `typeof x === 'number'`,换成 SQL 那条路就会把 teer/drawCrs/drawSize 静默判成 null。
+//    num() 对两条路都对(数字原样、字符串转数、null 还是 null),一套映射才喂得了两条路。
+export const mapEeCat = (r: any) => ({ category: r.category, label: r.label, noc: r.noc, teer: num(r.teer), title: r.title, url: r.url, fetched: r.fetched, drawCrs: num(r.drawCrs), drawDate: r.drawDate ?? '', drawSize: num(r.drawSize) })
 
 const JOB_COLUMNS = SQL.JOB_COLUMNS
 const JOB_FROM = SQL.JOB_FROM
@@ -310,6 +313,54 @@ function makeMatcher(profile: MatchProfile, profileOk: boolean, matchDims: Match
 // ═══════════════════════════════════════════════════════════════════════════
 // 3) 查询函数(路由/页面/提醒只调这些,不写裸 SQL)
 // ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * 首屏维度(2026-08-18 从 `jobs/page.tsx` 搬下来,同时把 Payload Local API 换成 db 层)。
+ *
+ * 为什么搬:页面里原来一半走 SQL(news)一半走 `payload.find`(八张表),而 `/api/jobs` 读的是同样的表 ——
+ * **同一份数据两条路、两套行映射**,口径迟早分叉(`dims.ts` 那次已经分叉过一回:AIP 行混进省提名清单)。
+ * 现在维度行映射只有这一处,列表与首屏共用同一把尺。
+ *
+ * SSR 瘦身照旧(2026-07-17):cities / districts / designatedEmployers / nocDescriptions 这四张大表
+ * 首屏不带(约 1.25MB),客户端从 `/api/dims` 后台拉了再并进来 —— 它们只在筛选下拉与顾问弹框里用,晚到无碍。
+ */
+export type SsrDims = Dims & { news: NewsSlim[] }
+export async function fetchSsrDims(pool: any): Promise<SsrDims> {
+  const q = (sql: string): Promise<any[]> => pool.query(sql).then((r: any) => (r?.rows ?? []) as any[]).catch(() => [] as any[])
+  // 官方移民新闻瘦行(E12-06,PNP 弹框「本省最新公告」):只取 4 列不带正文;表缺/查询失败 → 空(宁可留空)
+  const [prov, noc, src, exp, pnp, draws, ee, fieldSrc, news] = await Promise.all([
+    q(SQL.DIMS_PROVINCES), q(SQL.DIMS_NOC_CATEGORIES), q(SQL.DIMS_SOURCES), q(SQL.DIMS_EXPERIENCE_LEVELS),
+    q(SQL.DIMS_PNP_OCCUPATIONS), q(SQL.DIMS_PNP_DRAWS), q(SQL.DIMS_EE_CATEGORIES), q(SQL.DIMS_FIELD_SOURCES),
+    q(SQL.NEWS_SLIM_60),
+  ])
+  return {
+    provinces: prov.map((r) => ({ code: r.code, name: r.name })),
+    cities: [],          // SSR 瘦身:客户端从 /api/dims 拉后并入
+    districts: [],       // 同上
+    nocCategories: noc.map((r) => ({
+      broad: r.broad, mid: r.mid, fine: r.fine, teer: num(r.teer),
+      broadEn: r.broadEn ?? '', broadKo: r.broadKo ?? '',
+      midEn: r.midEn ?? '', midKo: r.midKo ?? '', fineEn: r.fineEn ?? '', fineKo: r.fineKo ?? '',
+    })),
+    sources: src.map((r) => ({ name: r.name })),
+    experienceLevels: exp.map((r) => ({ name: r.name })),
+    pnpOccupations: pnp.map(mapPnpOcc),
+    pnpDraws: draws.map((r) => ({
+      province: r.province, kind: r.kind, drawDate: r.drawDate ?? '', stream: r.stream ?? '',
+      streamZh: r.streamZh ?? '', score: num(r.score), scale: r.scale ?? '', invitations: num(r.invitations),
+      note: r.note ?? '', label: r.label ?? '', url: r.url ?? '', fetched: r.fetched ?? '',
+    })),
+    eeCategories: ee.map(mapEeCat),
+    designatedEmployers: [],  // SSR 瘦身:客户端从 /api/dims 拉后并入
+    nocDescriptions: [],      // 同上(788KB 大头)
+    fieldSources: fieldSrc.map((r) => ({
+      field: r.field ?? '', kind: r.kind ?? '', publisher: r.publisher ?? '', url: r.url ?? '',
+      title: r.title ?? '', description: r.description ?? '', status: r.status ?? '',
+      fetched: r.fetched ?? '', note: r.note ?? '',
+    })),
+    news: news.map((r) => ({ region: r.region, title: r.title, date: r.date, slug: r.slug })),
+  }
+}
 
 type JobsListOpts = { pro: boolean; profile: MatchProfile; profileOk: boolean; matchDims: MatchDims; limit: number }
 

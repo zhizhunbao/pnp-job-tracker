@@ -1,31 +1,22 @@
-// 职位域的桶 —— **对外只有这些**。
+// 职位域的桶 —— **客户端也安全的那半**:匹配规则、来源标签、全部形状。
 //
-// 为什么单独存在:职位是这个站的主干,取数/匹配/JD/来源四件先前平铺在 lib/ 顶层,
+// 为什么单独存在:职位是这个站的主干,匹配/来源/形状先前平铺在 lib/ 顶层,
 // 一个调用点常要写三四行 import(`api/advisor` 写了 4 行)。收成一个模块之后外部只认这一个入口。
 //
-// 名字比别的桶多(44 个),不是松:`queries` 25 个导出、`match` 13 个,**每一个都真有模块外的消费者**
-// (量过:25/25、13/13,没有一个是过度导出)—— 职位域本来就是站的主干,对外面就是这么大。
-// 唯一没上桶的是 `jdFetch` 的 `lazyFetchJd`:它只有 `jd.ts` 一个消费者,留在模块内。
+// 🔴 **取数那半在 `./server`**,不在这儿(2026-08-18 实撞):`queries` / `dims` / `jd` 的依赖链上
+//    挂着 `payload` 与 `@/payload.config`,而 `Table.tsx` / `Pnp.tsx` 这些 `'use client'` 组件只要
+//    `match` 与 `source`。混在一个桶里,打包器会把连接池、集合配置整条链拉进**浏览器**包,
+//    一屏 `Can't resolve 'fs/promises' / 'net' / 'tls'`,页面直接渲不出来 —— 而 tsc 全绿,build 才炸。
+//    分界不是风格,是**运行环境**:能在浏览器跑的进这里,要连库的进 `./server`。
 //
-// 🔴 外部一律从这里取(eslint 边界闸盯着);模块内部四个文件之间走相对路径,**不从这个桶取**
+// 🔴 外部一律从这两个门取(eslint 边界闸盯着);模块内部文件之间走相对路径,**不从桶取**
 //    —— 桶反过来引成员、成员再引桶,那是环(`lib/quiz` 立的规矩)。
-
-// ── 取数:SQL 走 ../db/sql,这里只有取数与行映射 ────────────────────────────
-export {
-  PROV_NAME, buildJobsWhere, checkedAt, fetchAlertHits, fetchBroadNocs, fetchCompanyByJobId,
-  fetchCompanyBySlug, fetchJobById, fetchJobRows, fetchJobsPage, fetchMatchPage, fetchNocOpenCounts,
-  fetchQuizFacts, fetchRelatedJobs, fetchSimilarEmployers, fetchTopNocs, fetchTotalAndProof,
-  mapEeCat, mapPnpOcc, pnpOnly, searchNocByTitle, splitQ,
-} from './queries'
-export type { CompanyDetail, RelatedJob, SimilarEmployer } from './queries'
 
 // ── 匹配:档案 × 岗位的规则引擎(付费墙头牌,规则只住这一处)────────────────
 export { NO_LIST_PROVINCES, hasProfile, match, matchRank, normalizeProfile, provListCoverage, reasonEn, statusEn } from './match'
 export type { MatchDims, MatchJob, MatchProfile, MatchReason, ProvListCoverage } from './match'
-export { loadMatchDims } from './dims'
 
-// ── JD 正文与来源标签 ───────────────────────────────────────────────────────
-export { jobDescription, scrubPii } from './jd'
+// ── 来源标签(Job Bank 聚合的那些渠道统一显示成一个名字)────────────────────
 export { blockedSrc, isDirect, sourceLabel } from './source'
 
 // ── 形状:职位域的类型只有这一个家(库里一行 + 页面「怎么摆」的那三个)────────

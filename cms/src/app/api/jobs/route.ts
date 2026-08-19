@@ -9,7 +9,8 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { getUser, isPro } from '@/lib/entitlement'
-import { hasProfile, normalizeProfile, type MatchDims, fetchJobsPage, fetchMatchPage, mapEeCat, mapPnpOcc, pnpOnly } from '@/lib/jobs'
+import { hasProfile, normalizeProfile, type MatchDims } from '@/lib/jobs'
+import { fetchJobsPage, fetchMatchPage, mapEeCat, mapPnpOcc, pnpOnly } from '@/lib/jobs/server'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'

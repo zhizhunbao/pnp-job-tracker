@@ -622,6 +622,43 @@ export const NEWS_COMMENTS_FLAT = `SELECT c.id, NULL AS "parentId", false AS pin
 
 export const NEWS_SLIM_60 = `SELECT region, title, date, slug FROM news ORDER BY date DESC, id ASC LIMIT 60`
 
+// 首屏的八张维度表(2026-08-18 从 Payload Local API 换过来:同一个页面一半走 SQL 一半走 Local API,
+// 而 /api/jobs 读同样的表 —— 两条路两套映射,口径迟早分叉,lib/jobs/dims.ts 那次已经分叉过一回)。
+//
+// 🔴 **numeric 列回来是字符串**(实测:teer / score / invitations / draw_crs / draw_size)。
+//    Local API 那边它们是数字,所以调用点原来写的 `typeof x === 'number' ? x : null` 一换路
+//    就会把这些值**静默判成 null**(抽选分数线、TEER 档整列消失,还不报错)。数字一律经 num() 归一。
+// 🔴 列名 `AS "camelCase"` 对齐 Local API 的字段名 —— 这样 lib/jobs 的 mapPnpOcc / mapEeCat
+//    一套映射同时喂两条路,不用各写一份(那正是分叉的起点)。
+// 排序照抄原来 payload.find 的 sort;它没给 sort 的用 `ORDER BY id`(实测这八张表 created_at 全表同值,
+// 按创建时间排等于全是并列,id 序才是可复现的那个)。
+
+export const DIMS_PROVINCES = `SELECT code, name FROM provinces ORDER BY name LIMIT 100`
+
+export const DIMS_NOC_CATEGORIES = `SELECT broad, mid, fine, teer,
+       broad_en AS "broadEn", broad_ko AS "broadKo", mid_en AS "midEn", mid_ko AS "midKo",
+       fine_en AS "fineEn", fine_ko AS "fineKo"
+     FROM noc_categories ORDER BY id LIMIT 1000`
+
+export const DIMS_SOURCES = `SELECT name FROM sources ORDER BY name LIMIT 200`
+
+export const DIMS_EXPERIENCE_LEVELS = `SELECT name FROM experience_levels ORDER BY id LIMIT 50`
+
+export const DIMS_PNP_OCCUPATIONS = `SELECT province, stream, label, type, program, noc, name,
+       gta_restricted AS "gtaRestricted", url, fetched
+     FROM pnp_occupations ORDER BY id LIMIT 5000`
+
+export const DIMS_PNP_DRAWS = `SELECT province, kind, draw_date AS "drawDate", stream, stream_zh AS "streamZh",
+       score, scale, invitations, note, label, url, fetched
+     FROM pnp_draws ORDER BY draw_date DESC, id LIMIT 200`
+
+export const DIMS_EE_CATEGORIES = `SELECT category, label, noc, teer, title, url, fetched,
+       draw_crs AS "drawCrs", draw_date AS "drawDate", draw_size AS "drawSize"
+     FROM ee_categories ORDER BY id LIMIT 2000`
+
+export const DIMS_FIELD_SOURCES = `SELECT field, kind, publisher, url, title, description, status, fetched, note
+     FROM field_sources ORDER BY id LIMIT 200`
+
 /* ══════════════════════════════════════════════════════════════════════════
    20) 站点地图(分片)
    ══════════════════════════════════════════════════════════════════════════ */

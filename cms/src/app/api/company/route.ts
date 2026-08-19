@@ -4,7 +4,7 @@
 import { NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { fetchCompanyByJobId, fetchSimilarEmployers } from '@/lib/jobs'
+import { fetchCompanyByJobId, fetchSimilarEmployers } from '@/lib/jobs/server'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

@@ -8,7 +8,8 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getUser, isPro } from '@/lib/entitlement'
 import { FREE_MATCH_JOBS_PER_DAY } from '@/lib/plan'
-import { hasProfile, normalizeProfile, fetchJobById, fetchRelatedJobs } from '@/lib/jobs'
+import { hasProfile, normalizeProfile } from '@/lib/jobs'
+import { fetchJobById, fetchRelatedJobs } from '@/lib/jobs/server'
 import Job from './Job'
 import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 

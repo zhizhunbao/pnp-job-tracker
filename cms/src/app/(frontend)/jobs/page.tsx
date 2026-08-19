@@ -8,8 +8,9 @@ import { COLW_COOKIE, DEFAULT_COLW_SEED, parseColWidthSeed, type ColWidthSeed } 
 import { parseJobFilters, toSearchParams } from './filters.shared'
 import { getUser, isPro } from '@/lib/entitlement'
 import { FREE_MATCH_JOBS_PER_DAY } from '@/lib/plan'
-import { normalizeProfile, hasProfile, fetchJobRows, fetchJobsPage, fetchTotalAndProof } from '@/lib/jobs'
-import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
+import { normalizeProfile, hasProfile } from '@/lib/jobs'
+import { fetchJobRows, fetchJobsPage, fetchSsrDims, fetchTotalAndProof, type SsrDims } from '@/lib/jobs/server'
+import { dbOf } from '@/lib/db/database'
 
 // 首屏行数(2026-07-05 用户拍板):SSR 只带最近 N 行秒开,全量 /api/jobs-data 后台拉(拉完筛选/搜索照旧)
 const FIRST_SCREEN_ROWS = 50
@@ -27,51 +28,12 @@ export const metadata = {
 // 当时只治了排序那条路,没治首页。串行实测旁证:同为动态页的 /pricing TTFB 0.13s,职位板 1.6~3.4s。
 // 维度表随 seed 小时级更新,10 分钟陈旧完全可接受;Render 单实例,进程缓存即全局缓存。
 // **只缓存与用户无关的维度**:职位行/总数/更新时间照常每次现查(页头「更新时间」不能陈旧)。
-type SsrDims = Awaited<ReturnType<typeof loadDims>>
 let ssrDimsCache: { dims: SsrDims; ts: number } | null = null
 const SSR_DIMS_TTL = 10 * 60_000
 
-// 与用户无关的维度装配(原来内联在 JobsPage 里,2026-07-28 抽出来只为套缓存,查询本身一字未改)。
-// SSR 首屏只取小维度(2026-07-17 瘦身):cities/districts/designated_employers/noc_descriptions 这 4 张大表
-// 移到 /api/dims 后台拉(首屏减 ~1.25MB);它们只在筛选下拉/顾问弹窗用,晚到无碍。
-async function loadDims(payload: Awaited<ReturnType<typeof getPayload>>, pool: any) {
-  // 官方移民新闻瘦行(E12-06,PNP 弹框「本省最新公告」):只取 4 列不带正文;表缺/查询失败 → 空(宁可留空)
-  const newsRowsP = pool.query(SQL.NEWS_SLIM_60)
-    .then((r: any) => r.rows as { region: string; title: string; date: string; slug: string }[])
-    .catch(() => [])
-  const [provDocs, nocDocs, srcDocs, expDocs, pnpDocs, pnpDrawDocs, eeDocs, fieldSrcDocs] = await Promise.all([
-    payload.find({ collection: 'provinces', limit: 100, depth: 0, sort: 'name' }),
-    payload.find({ collection: 'noc-categories', limit: 1000, depth: 0 }),
-    payload.find({ collection: 'sources', limit: 200, depth: 0, sort: 'name' }),
-    payload.find({ collection: 'experience-levels', limit: 50, depth: 0 }),
-    payload.find({ collection: 'pnp-occupations', limit: 5000, depth: 0 }),
-    payload.find({ collection: 'pnp-draws', limit: 200, depth: 0, sort: '-drawDate' }),
-    payload.find({ collection: 'ee-categories', limit: 2000, depth: 0 }),
-    payload.find({ collection: 'field-sources', limit: 200, depth: 0 }),
-  ])
-  const dims = {
-    provinces: provDocs.docs.map((p: any) => ({ code: p.code, name: p.name })),
-    cities: [],          // SSR 瘦身:客户端从 /api/dims 拉后并入
-    districts: [],       // 同上
-    nocCategories: nocDocs.docs.map((c: any) => ({ broad: c.broad, mid: c.mid, fine: c.fine, teer: typeof c.teer === 'number' ? c.teer : null,
-      broadEn: c.broadEn ?? '', broadKo: c.broadKo ?? '',
-      midEn: c.midEn ?? '', midKo: c.midKo ?? '', fineEn: c.fineEn ?? '', fineKo: c.fineKo ?? '' })),
-    sources: srcDocs.docs.map((s: any) => ({ name: s.name })),
-    experienceLevels: expDocs.docs.map((e: any) => ({ name: e.name })),
-    pnpOccupations: pnpDocs.docs.map((r: any) => ({ province: r.province, stream: r.stream, label: r.label, type: r.type, program: r.program || 'PNP', noc: r.noc, name: r.name, gtaRestricted: !!r.gtaRestricted, url: r.url, fetched: r.fetched })),
-    pnpDraws: pnpDrawDocs.docs.map((r: any) => ({ province: r.province, kind: r.kind, drawDate: r.drawDate ?? '', stream: r.stream ?? '', streamZh: r.streamZh ?? '', score: typeof r.score === 'number' ? r.score : null, scale: r.scale ?? '', invitations: typeof r.invitations === 'number' ? r.invitations : null, note: r.note ?? '', label: r.label ?? '', url: r.url ?? '', fetched: r.fetched ?? '' })),
-    eeCategories: eeDocs.docs.map((r: any) => ({ category: r.category, label: r.label, noc: r.noc, teer: typeof r.teer === 'number' ? r.teer : null, title: r.title, url: r.url, fetched: r.fetched, drawCrs: typeof r.drawCrs === 'number' ? r.drawCrs : null, drawDate: r.drawDate ?? '', drawSize: typeof r.drawSize === 'number' ? r.drawSize : null })),
-    designatedEmployers: [],  // SSR 瘦身:客户端从 /api/dims 拉后并入
-    nocDescriptions: [],      // 同上(788KB 大头)
-    fieldSources: fieldSrcDocs.docs.map((r: any) => ({ field: r.field ?? '', kind: r.kind ?? '', publisher: r.publisher ?? '', url: r.url ?? '', title: r.title ?? '', description: r.description ?? '', status: r.status ?? '', fetched: r.fetched ?? '', note: r.note ?? '' })),
-    news: await newsRowsP,
-  }
-  return dims
-}
-
-async function getDimsCached(payload: Awaited<ReturnType<typeof getPayload>>, pool: any): Promise<SsrDims> {
+async function getDimsCached(pool: any): Promise<SsrDims> {
   if (ssrDimsCache && Date.now() - ssrDimsCache.ts < SSR_DIMS_TTL) return ssrDimsCache.dims
-  const dims = await loadDims(payload, pool)
+  const dims = await fetchSsrDims(pool)
   ssrDimsCache = { dims, ts: Date.now() }
   return dims
 }
@@ -93,9 +55,9 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
   const profileOk = hasProfile(profile)
 
   // 列表查询在 lib/jobs/queries.ts(与 /api/jobs-data 共用);首屏只取 FIRST_SCREEN_ROWS 行 + 总数
-  const pool = (payload.db as any).pool
+  const pool = dbOf(payload)
 
-  const dims = await getDimsCached(payload, pool)
+  const dims = await getDimsCached(pool)
 
   // 首屏 50 行 + 总数(E10-01 P3:筛选/翻页由客户端打 /api/jobs 分页,同一查询层 lib/jobs/queries 同序)
   // 匹配只吃省提名清单(AIP 背书清单是另一条路,见 lib/jobs/queries.pnpOnly);展示维度仍是全量

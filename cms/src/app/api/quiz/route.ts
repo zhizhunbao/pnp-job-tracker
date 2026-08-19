@@ -7,7 +7,7 @@
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { fetchBroadNocs, fetchNocOpenCounts, fetchQuizFacts, searchNocByTitle } from '@/lib/jobs'
+import { fetchBroadNocs, fetchNocOpenCounts, fetchQuizFacts, searchNocByTitle } from '@/lib/jobs/server'
 import { getTopNocsCached } from '@/lib/quizTop'
 
 // 热门清单缓存挪进 lib/quizTop(SWR + 启动预热共用一份;冷启动首访 8.4s 的账见那边注释)

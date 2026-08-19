@@ -12,7 +12,8 @@
  *
  * 形状照 reportFacts.ts:纯函数 + 显式 pool 入参,无全局状态、无 LLM 调用。
  */
-import { NO_LIST_PROVINCES, provListCoverage, type MatchDims, type ProvListCoverage, checkedAt } from '../jobs'
+import { NO_LIST_PROVINCES, provListCoverage, type MatchDims, type ProvListCoverage } from '../jobs'
+import { checkedAt } from '../jobs/server'
 // ⚠️ 单向依赖:planTimeline 只 `import type` 本文件(编译期擦除),所以这条运行时的边不成环。
 // 要往回加一个**值**引用之前先想清楚:那会变成真的循环依赖。
 import { buildPlan, type Plan, type PlanPathInput } from '../planTimeline'

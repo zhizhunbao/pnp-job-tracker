@@ -14,7 +14,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { getUser, isPro } from '@/lib/entitlement'
-import { jobDescription } from '@/lib/jobs'
+import { jobDescription } from '@/lib/jobs/server'
 import { completeText, LlmError } from '@/lib/llm'
 import { patchProfile, type ProfilePatch } from '@/lib/profile'
 import { DAILY_FREE, gateMatch, matchPrompt, MIN_RESUME, normalizeRows, parseLlmJson } from '@/lib/resumeMatch'
