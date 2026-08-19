@@ -8,7 +8,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { describe, expect, it } from 'vitest'
 
-import { aggregatePilotQuota, type PilotQuotaCommunityRow } from '@/lib/pilotQuota'
+import { aggregatePilotQuota, type PilotQuotaCommunityRow } from '@/lib/pathways/pilotQuota'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const martPath = path.resolve(__dirname, '../../../data/mart/pilot_quota.json')

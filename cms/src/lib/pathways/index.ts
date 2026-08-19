@@ -5,6 +5,10 @@
 //
 // **顺序即注册表原序**:pathVerdict 在同档内按它保持稳定次序(「编个次序出来等于替用户拿主意」),
 // 挪动这里的顺序会改变同档通道的先后,不是纯排版。
+//
+// 🔴 **要连库的那半在 `./server`**(眼下只有 RCIP/FCIP 的社区名额状态 pilotQuota)——
+//    分界不是风格,是运行环境:这里是纯数据、浏览器也能跑,而 `plan/pr/Decision.tsx` 是
+//    `'use client'` 且取的是**值**;那半 import payload,混一个桶就把连接池打进浏览器包。
 import { AB_OPPORTUNITY } from './ab-opportunity'
 import { AIP } from './aip'
 import { BC_BUILD } from './bc-build'

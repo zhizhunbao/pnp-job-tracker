@@ -8,7 +8,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { fetchOccCompetition } from '@/lib/score/server'
-import { fetchPilotQuota, type PilotQuotaAgg } from '@/lib/pilotQuota'
+import { fetchPilotQuota, type PilotQuotaAgg } from '@/lib/pathways/server'
 import { pathVerdict, type VerdictProfile } from '@/lib/verdict'
 import { regionProvincesOf, uiOf } from '@/lib/pathways'
 import { pickOutside, rankRows, type RankCtx } from '@/lib/plan'

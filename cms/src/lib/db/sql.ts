@@ -356,7 +356,7 @@ export const PROV_DIFFICULTY_ANY = `SELECT province, difficulty FROM stats WHERE
    10) 试点(RCIP/FCIP)名额
    ══════════════════════════════════════════════════════════════════════════ */
 
-// ── pilotQuota.ts ──
+// ── pathways/pilotQuota.ts ──
 
 export const PILOT_QUOTA_COMMUNITIES = `SELECT community, province, type, first_come, first_come_quote, first_come_url,
             per_intake, per_intake_quote, per_intake_url,

@@ -1,5 +1,8 @@
 // RCIP/FCIP 社区名额状态取数(旧账立项 2026-08-15):
 // build_pilot_quota.py 周更 raw → mart/pilot_quota → 本文件聚合,供 profile-pathways 给区域线行附名额状态。
+// 2026-08-19 从 lib/ 顶层搬进本域:「RCIP 的名额状态在哪查」该和 rcip.ts / fcip.ts 一个抽屉。
+// 🔴 走 `./server` 那扇门,不上 index.ts —— 本文件 import payload,而 index.ts 有 'use client' 消费者
+//    (plan/pr/Decision.tsx 取 uiOf 的值);混一个桶就是把连接池打进浏览器包。
 // 🔴 空 = 官网没写,不是没有限额:quotaSum 只对官网写了数的社区求和,一个都没有 = null(禁 `?? 0`)。
 // SQL 走 payload.db.pool 直查(照 lib/occCompetition.ts 的形态);聚合本体是纯函数,单测不连库。
 import { getPayload } from 'payload'
@@ -73,8 +76,8 @@ export function aggregatePilotQuota(rows: PilotQuotaCommunityRow[]): PilotQuotaA
   return [...groups.values()].sort((a, b) => a.province.localeCompare(b.province) || a.type.localeCompare(b.type))
 }
 
-import type { Db as Pool } from './db/database'   // 连接形状单一来源(原先这行结构类型在两个 lib 里各抄一份)
-import * as SQL from './db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
+import type { Db as Pool } from '../db/database'   // 连接形状单一来源(原先这行结构类型在两个 lib 里各抄一份)
+import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 
 const communityRow = (r: Record<string, unknown>): PilotQuotaCommunityRow => ({
   community: String(r.community ?? ''),
