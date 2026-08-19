@@ -37,6 +37,14 @@
    "asOf": "2026-08-14"
   },
   {
+   "perIntake": 60,
+   "perIntakeQuote": "05 How applications are processed We are authorized to issue up to 60 candidate recommendations for the Northeast BC – Peace Liard region in the 2026 intake year.",
+   "perIntakeUrl": "https://www.nebcimmigration.ca/employers",
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "asOf": "2026-08-14"
+  },
+  {
    "firstCome": true,
    "firstComeQuote": "Per intake period, SED will issue up to 5 recommendations on a first come, first served basis.",
    "firstComeUrl": "https://steinbachedc.com/rcip",
@@ -62,6 +70,22 @@
    "community": "Thunder Bay, ON",
    "province": "ON",
    "asOf": "2026-08-14"
+  },
+  {
+   "perIntake": 3,
+   "perIntakeQuote": "We will issue three (3) allocations per month to ensure we are spreading our allocations out over the year, with the opportunity for excess allocations to be utilized at the end of the year.",
+   "perIntakeUrl": "https://claresholm-rcip.ca/",
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "asOf": "2026-08-16"
+  },
+  {
+   "perIntake": 75,
+   "perIntakeQuote": "Approximately 75 Community Recommendations may be issued per intake, subject to remaining allocations, application quality, program priorities, and review outcomes.",
+   "perIntakeUrl": "https://westkootenayimmigration.ca/may-2026-rcip-intake-update/",
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "asOf": "2026-08-16"
   }
  ],
  "occupations": [
@@ -100,6 +124,15 @@
    "asOf": "2026-08-14",
    "url": "https://nbrcip.ca",
    "quote": "team has determined that the community’s current needs for Security Guards (NOC 64410) and Administrative Assistants (NOC 13110) have been successfully met."
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "noc": "62010",
+   "status": "full",
+   "asOf": "2026-08-14",
+   "url": "https://www.nebcimmigration.ca/post/may-2026-candidate-intake-update",
+   "quote": "Important notice for Retail Sales Supervisor applicants (NOC 62010) We have reached the cap imposed by Immigration, Refugees and Citizenship Canada (IRCC) on recommendations for the Retail Sales Supervisor occupation (NOC 62010)."
   }
  ]
 }
