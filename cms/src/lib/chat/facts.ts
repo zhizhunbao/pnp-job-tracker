@@ -6,7 +6,7 @@
 import { type Availability, type ClaimsResult, type CoverageResult, type CrsResult, type DrawsResult,
   type EeResult, type JobsResult, type OpsResult, type PermitResult, PRIVATE_PROMISE, type PlanResult,
   type ThresholdsResult, type VerdictResult } from './tools'
-import { type PathwayVerdict, type VerdictProfile, type VerdictReason } from '../verdict'
+import { type PathwayVerdict, type VerdictProfile, type VerdictReason } from '../ruling'
 import { systemShort } from '../score'
 import { type PlanStep } from '../plan'
 import { AVAIL_SENTENCE, CLAIM_LEAD, FED_FACTOR, LBL, type LabelDict, type Lang, MONEY_WHY, PROMISE_WHY } from '../i18n'

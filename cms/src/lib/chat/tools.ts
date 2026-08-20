@@ -23,7 +23,7 @@ import {
   pathLevers, pathVerdict,
   type DesignatedEmployerRow, type OccupationRow, type PathwayVerdict,
   type VerdictData, type VerdictDrawRow, type VerdictLever, type VerdictProfile,
-} from '../verdict'
+} from '../ruling'
 import { assembleReportFacts } from './reportFacts'
 import { evaluateRequirements, type Requirement, type ReqSubject, type RuleProfile, type RuleVerdict } from '../rules'
 import type { EeGridRow, ScoreFactor } from '../score'
@@ -1133,8 +1133,8 @@ export async function lookupVerdict(
   }
   return {
     availability: 'ok',
-    pathways: pathVerdict(profile, data),
-    levers: pathLevers(profile, data, opts),
+    pathways: pathVerdict({ profile: profile, data: data }),
+    levers: pathLevers({ profile: profile, data: data, opts: opts }),
     scope: VERDICT_SCOPE,
     note: '每条通道的排除理由都带官方原句;库里缺门槛行的通道标 needs-info(本站未收录),不拿别处的记忆填',
   }

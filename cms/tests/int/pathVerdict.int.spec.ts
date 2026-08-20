@@ -11,10 +11,27 @@ import { fileURLToPath } from 'url'
 import path from 'path'
 import { describe, expect, it } from 'vitest'
 import {
-  jobPathways, pathVerdict, pathLevers,
+  jobPathways as rulingJobPathways, pathVerdict as rulingPathVerdict, pathLevers as rulingPathLevers,
   type DesignatedEmployerRow, type OccupationRow, type PathwayVerdict,
   type VerdictData, type VerdictDrawRow, type VerdictProfile,
-} from '@/lib/verdict/pathVerdict'
+} from '@/lib/ruling'
+import type { PathLeverOpts } from '@/lib/ruling'
+
+/** 垫片:金标沿用位置参数,判定域收对象参数(换实现时用例一个字不动) */
+function pathVerdict(profile: VerdictProfile, data: VerdictData) {
+  return rulingPathVerdict({ profile: profile, data: data })
+}
+
+/** 垫片:同上 */
+function jobPathways(noc: string | null, teer: number | null, data: VerdictData) {
+  return rulingJobPathways({ noc: noc, teer: teer, data: data })
+}
+
+/** 垫片:同上 */
+function pathLevers(profile: VerdictProfile, data: VerdictData, opts: PathLeverOpts = {}) {
+  return rulingPathLevers({ profile: profile, data: data, opts: opts })
+}
+
 import { PATHWAYS } from '@/lib/pathways'
 import type { Requirement } from '@/lib/rules'
 import { scoreProvince, type ScoreFactor } from '@/lib/score/pnpSelfScore'

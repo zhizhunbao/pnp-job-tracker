@@ -7,8 +7,8 @@
  *    → VerdictData 进程内缓存 10 分钟(同 /api/quiz topCache 手法;Render 单实例,重启即失效)。
  *    卡片端另有「进视口才请求」的懒取(同 OccReportCard),两道一起把 DB 压力钉死。
  */
-import { jobPathways } from '@/lib/verdict'
-import { getVerdictData } from '@/lib/verdict/server'
+import { jobPathways } from '@/lib/ruling'
+import { getVerdictData } from '@/lib/rulingServer'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -20,9 +20,9 @@ export async function GET(req: Request) {
   const teerRaw = Number(sp.get('teer'))
   const teer = Number.isInteger(teerRaw) && teerRaw >= 0 && teerRaw <= 5 ? teerRaw : null
 
-  // 缓存单件抽到 lib/verdictCache(批D):/api/triple-verdict 与本路由共用同一份 VerdictData
+  // 缓存单件住 lib/rulingServer(它要连 payload,不属于判定域):/api/triple-verdict 与本路由共用同一份
   const data = await getVerdictData()
   // 门槛表空(库还没灌)= 本站缺口 → 空名单,卡片整卡不渲,不出空壳
   if (!data.requirements.length) return Response.json({ rows: [] })
-  return Response.json({ rows: jobPathways(noc, teer, data) })
+  return Response.json({ rows: jobPathways({ noc: noc, teer: teer, data: data }) })
 }

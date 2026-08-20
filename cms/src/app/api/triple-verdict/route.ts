@@ -1,9 +1,10 @@
 /**
  * GET/POST /api/triple-verdict?job=<id> — #287 一键三合一判定卡(批D)。
- * **本文件只剩路由外壳**:组装与付费闸都在 `lib/tripleWire.ts`(同一份 wire 也给 /plan/pr 的 SSR 首屏用,
+ * **本文件只剩路由外壳**:组装与付费闸都在判定域(同一份 wire 也给 /plan/pr 的 SSR 首屏用,
  * 两处走同一条口径 —— 一处改口径另一处跟不上,是最容易静默漂的那种 bug)。
  */
-import { buildTripleWire, type ClientAnswers } from '@/lib/verdict/server'
+import { tripleWireOf } from '@/lib/rulingServer'
+import type { ClientAnswers } from '@/lib/ruling/server'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
 }
 
 async function respond(id: number, answers: ClientAnswers) {
-  const wire = await buildTripleWire(id, answers)
+  const wire = await tripleWireOf(id, answers)
   return 'error' in wire
     ? Response.json({ error: wire.error }, { status: wire.status })
     : Response.json(wire)

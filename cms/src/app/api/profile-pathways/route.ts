@@ -9,11 +9,11 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { fetchOccCompetition } from '@/lib/score/server'
 import { fetchPilotQuota, type PilotQuotaAgg } from '@/lib/pathways/server'
-import { pathVerdict, type VerdictProfile } from '@/lib/verdict'
+import { pathVerdict, type VerdictProfile } from '@/lib/ruling'
 import { regionProvincesOf, uiOf } from '@/lib/pathways'
 import { pickOutside, rankRows, type RankCtx } from '@/lib/plan'
 import { isAboveLine, isBelowLine } from '@/lib/score'
-import { getVerdictData } from '@/lib/verdict/server'
+import { getVerdictData } from '@/lib/rulingServer'
 import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
@@ -171,12 +171,12 @@ export async function POST(req: Request) {
   // RCIP/FCIP 名额状态(2026-08-16 Frank「不是有比名额竞争更准确的数据吗」):社区官网 quote-anchored,
   // 按 省×制度 聚合,挂给区域线行 —— 展示层用语义单一的 remainingSum/perIntakeSum,不上混算的 quotaSum
   const quotaByKey = new Map<string, PilotQuotaAgg>(pilotQuota.map((q) => [`${q.province}|${q.type}`, q]))
-  const all = pathVerdict(profile, data)
+  const all = pathVerdict({ profile: profile, data: data })
   // 反事实(L2-09):明确没 offer 的档案,把 hasOffer=true 代入重跑一次 —— 被 offer 卡住的行
   // 附上「拿到该省 offer 之后的世界」:立刻分出「即可申请」和「拿了 offer 还差语言/学历」的省,
   // 这是「该押哪个省找工作」的直接依据。答案缺 offer(null)不算「没有」,不跑。
   const afterByKey = profile.hasOffer === false
-    ? new Map(pathVerdict({ ...profile, hasOffer: true }, data).map((v) => [v.key, v]))
+    ? new Map(pathVerdict({ profile: { ...profile, hasOffer: true }, data }).map((v) => [v.key, v]))
     : null
 
   // 2026-08-15 Frank「能够得到就排前面,够不到就排后面」:估分与最近抽选线比,够得着的提前、

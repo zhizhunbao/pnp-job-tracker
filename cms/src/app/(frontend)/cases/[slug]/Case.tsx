@@ -10,8 +10,8 @@ import { useLang } from '../../LangProvider'
 import { Footer } from '../../Footer'
 import { Header } from '../../Header'
 import { Shell, UI } from '../../ui'
-import type { CaseAnswer, OpsFacts } from '@/lib/verdict/server'
-import type { PathwayVerdict, VerdictReason } from '@/lib/verdict'
+import type { CaseAnswer, OpsFacts } from '@/lib/ruling/server'
+import type { PathwayVerdict, VerdictReason } from '@/lib/ruling'
 import { track } from '@/lib/track'
 
 const CARD: React.CSSProperties = { background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, padding: '16px 18px', margin: '0 0 10px' }

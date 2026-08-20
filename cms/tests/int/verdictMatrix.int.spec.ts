@@ -36,11 +36,17 @@ import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 
 import { makeT } from '@/lib/i18n'
-import {
-  blockCost, pathVerdict,
-  type DesignatedEmployerRow, type OccupationRow, type PathwayVerdict,
-  type VerdictData, type VerdictDrawRow, type VerdictProfile,
-} from '@/lib/verdict/pathVerdict'
+import { blockCost, pathVerdict as rulingPathVerdict } from '@/lib/ruling/functions'
+import type {
+  DesignatedEmployerRow, OccupationRow, PathwayVerdict,
+  VerdictData, VerdictDrawRow, VerdictProfile,
+} from '@/lib/ruling'
+
+/** 垫片:金标沿用位置参数,判定域收对象参数(换实现时用例一个字不动) */
+function pathVerdict(profile: VerdictProfile, data: VerdictData) {
+  return rulingPathVerdict({ profile: profile, data: data })
+}
+
 import { gateOf, PATHWAYS, type PathwayStrategy } from '@/lib/pathways'
 import type { GateKey, StatusAsk } from '@/lib/gateManifest'
 import type { Requirement } from '@/lib/rules'

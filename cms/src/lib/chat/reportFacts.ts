@@ -6,7 +6,7 @@
 // —— 它原先喂的 lib/report.ts 纯函数引擎早已退役,顶层那个位置只剩历史。
 // 只有一个消费者的东西不该住共享叶子;同理它**不上 chat 的桶**:这是模块内件,不是对外接口。
 // 当天它没能进 verdict/(域上更像那边),是因为那会造出 chat → verdict → chat 的运行时环
-// (见 lib/verdict/server.ts 顶注);搬到消费者身边,一条新边都不加。
+// (见 lib/ruling/server.ts 顶注);搬到消费者身边,一条新边都不加。
 import type { ScoreFactor } from '../score'
 import type { Requirement } from '../rules'
 import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与映射

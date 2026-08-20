@@ -111,7 +111,7 @@ export const COMPANY_OPEN_JOBS = `SELECT j.id, j.title, j.city, j.province, j.gr
 
 export const COMPANY_OPEN_COUNT = `SELECT count(*)::int n FROM jobs WHERE company_id = $1 AND COALESCE(status,'open') <> 'closed'`
 
-export const COMPANY_LMIA_NOCS = `SELECT lmia_nocs FROM companies WHERE id = $1`
+export const COMPANY_LMIA_NOCS = `SELECT lmia_nocs::text FROM companies WHERE id = $1`
 
 /** 同区同行业、按担保档与在招量排的相似雇主 */
 export const SIMILAR_EMPLOYERS = `SELECT c.slug, c.name, c.industry, c.sponsor_grade, count(j.id)::int open_count

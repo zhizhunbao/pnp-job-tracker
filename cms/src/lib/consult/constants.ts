@@ -724,3 +724,8 @@ export const HAS_DIGIT = /\d/
  * 往 prompt 里带几轮历史。够看出「这一轮已经说过什么」,又不至于把上下文撑大。
  */
 export const HISTORY_TURNS = 6
+
+/**
+ * 数字串里的千分位逗号 —— 「1,560」这种官方写法要先去掉才 parse 得动。
+ */
+export const THOUSANDS_COMMA = /,/g

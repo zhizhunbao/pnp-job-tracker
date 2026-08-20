@@ -25,14 +25,12 @@ import * as SQL from '../db/sql'
 import { evaluateRequirements } from '../rules'
 import type { Requirement, RuleProfile } from '../rules'
 import {
-
   API, AUTH_HEADER, AVAIL, BASE, BEARER, BOLD_RE, CONTEXT_WINDOW, EARLIER_HEAD, EN, EN_UNIT_WORDS, FAIL_MSG,
-  FULL_STOP, GATE, GUARD_RETRIES, HAS_DIGIT, HEADING_RE, HISTORY_CAP, HISTORY_TURNS, INELIGIBLE,
-  INTERNAL_WORDS, JOBS_LINK, KEY, LABEL, LANG_NAME, LEAD_MARK, LEN_CAP, LIKE_ANY, LIKE_ESCAPE, LIKE_SPECIAL,
-  MARKUP, MAX_FACTS, MAX_QUERY, MAX_TOKENS, MESSAGE_UPDATE, MODEL_ID, NL, NOC_RE, NOISE_RATIO, NOW_HEAD,
-  NO_KEY_PLACEHOLDER, NUMBERED_RE, NUM_RE, PROVIDER, PROVS, QC, ROLE, SAID, SAMPLING, SEARCH_LIMIT, SEP,
-  SHEET_CAP, SPACE, STAR_RE, SUBJECT, TABLE_RE, TIMEOUT_MS, TOOL_LABEL, TOOL_NAME, TRAILING_ZEROS, UNIT, V1,
-  WORD_EDGE,
+  FULL_STOP, GATE, GUARD_RETRIES, HAS_DIGIT, HEADING_RE, HISTORY_CAP, HISTORY_TURNS, INELIGIBLE, INTERNAL_WORDS,
+  JOBS_LINK, KEY, LABEL, LANG_NAME, LEAD_MARK, LEN_CAP, LIKE_ANY, LIKE_ESCAPE, LIKE_SPECIAL, MARKUP, MAX_FACTS,
+  MAX_QUERY, MAX_TOKENS, MESSAGE_UPDATE, MODEL_ID, NL, NO_KEY_PLACEHOLDER, NOC_RE, NOISE_RATIO, NOW_HEAD, NUM_RE,
+  NUMBERED_RE, PROVIDER, PROVS, QC, ROLE, SAID, SAMPLING, SEARCH_LIMIT, SEP, SHEET_CAP, SPACE, STAR_RE, SUBJECT,
+  TABLE_RE, THOUSANDS_COMMA, TIMEOUT_MS, TOOL_LABEL, TOOL_NAME, TRAILING_ZEROS, UNIT, V1, WORD_EDGE,
 } from './constants'
 import {
   PROFILE_HEAD, PROFILE_NONE, REPLY_LANGUAGE_HEAD, RETRY_BULLET, RETRY_COLON, RETRY_COMMA, RETRY_HEAD,
@@ -468,7 +466,7 @@ function thresholdsFacts(r: ThresholdsFactsIn): ThresholdsFactsOut {
  * @returns 规范形态。
  */
 function normNum(raw: NormNumIn): NormNumOut {
-  const s = raw.replace(/,/g, '')
+  const s = raw.replace(THOUSANDS_COMMA, '')
   return s.includes(SAID.stop) ? s.replace(TRAILING_ZEROS, '') : s
 }
 
@@ -686,6 +684,7 @@ function say(text: SayIn): SayOut {
  * @param box 这一趟的收件箱。
  * @returns 交给模型的工具表。
  */
+// eslint-disable-next-line local/function-length -- 工具表:12 把工具的 execute 各自闭包着库连接与收件箱,拆开就得把这两样显式传一大串,反而更绕
 function makeTools(input: MakeToolsIn): MakeToolsOut {
   const { run, box } = input
   /**

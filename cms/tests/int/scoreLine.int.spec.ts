@@ -10,9 +10,15 @@ import { describe, expect, it } from 'vitest'
 import { isAboveLine, isBelowLine, lineStateOf, marginOf, type ScoreVsLine } from '@/lib/score/scoreLine'
 import { rankRows, type RankableRow, type RankCtx } from '@/lib/plan/planRank'
 import {
-  pathVerdict, type DesignatedEmployerRow, type OccupationRow,
+  pathVerdict as rulingPathVerdict, type DesignatedEmployerRow, type OccupationRow,
   type VerdictData, type VerdictDrawRow, type VerdictProfile,
-} from '@/lib/verdict/pathVerdict'
+} from '@/lib/ruling'
+
+/** 垫片:金标沿用位置参数,判定域收对象参数(换实现时用例一个字不动) */
+function pathVerdict(profile: VerdictProfile, data: VerdictData) {
+  return rulingPathVerdict({ profile: profile, data: data })
+}
+
 import type { Requirement } from '@/lib/rules'
 import type { ScoreFactor } from '@/lib/score/pnpSelfScore'
 import type { EeGridRow } from '@/lib/score/crsEstimate'

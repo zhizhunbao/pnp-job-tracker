@@ -1,7 +1,16 @@
 // 雇主省提名门槛判定单测(design/雇主省提名门槛判定-20260808.md B4)。纯函数,不需要 DB。
 // 六类锁死:达标 / 差年限 / 缺员工数 / 公共部门 / 营业额省(恒旁证不进 state)/ 门槛缺省份。
 import { describe, it, expect } from 'vitest'
-import { employerVerdict, type EmployerFacts } from '@/lib/verdict/employerVerdict'
+import { employerVerdict as rulingEmployerVerdict } from '@/lib/ruling'
+import type { EmployerFacts, ReqRow } from '@/lib/ruling'
+
+/** 垫片:金标沿用位置参数,判定域收对象参数(换实现时用例一个字不动) */
+function employerVerdict(
+  facts: EmployerFacts, province: string, reqs: ReqRow[], nowYear = new Date().getFullYear(),
+) {
+  return rulingEmployerVerdict({ facts: facts, province: province, reqs: reqs, nowYear: nowYear })
+}
+
 import type { Requirement } from '@/lib/rules'
 
 const R = (o: Partial<Requirement>): Requirement => ({

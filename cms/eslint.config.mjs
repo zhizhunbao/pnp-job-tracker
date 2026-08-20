@@ -10,9 +10,9 @@ import nextCoreWebVitals from 'eslint-config-next/core-web-vitals'
 import nextTypeScript from 'eslint-config-next/typescript'
 
 // 带桶的模块(`lib/<名>/index.ts`)—— 下面那道边界闸认这几个,加新桶就加这里一行。
-const BARRELS = ['agent', 'chat', 'i18n', 'jobs', 'pathways', 'quiz', 'score', 'verdict', 'employers', 'plan', 'stats', 'quota', 'llm', 'resume']
+const BARRELS = ['agent', 'chat', 'i18n', 'jobs', 'pathways', 'quiz', 'ruling', 'score', 'employers', 'plan', 'stats', 'quota', 'llm', 'resume']
 const ABSOLUTE = BARRELS.map((m) => `**/lib/${m}/*`)
-// jobs / score / verdict / employers / plan / quiz / stats / quota / pathways 有**两个门**(index=客户端也安全的那半、server=要连库的那半;
+// jobs / score / ruling / employers / plan / quiz / stats / quota / pathways 有**两个门**(index=客户端也安全的那半、server=要连库的那半;
 // 理由见 lib/jobs/index.ts 顶上那段:混着 payload 依赖的桶会把连接池打进浏览器包)。
 // 每加一个 server 门,下面 ALLOW 里补三条(绝对 + 两种相对),否则模块自己的服务端半边被闸拦住。
 // 🔴 放行必须排在整个 group 的**最后** —— 同组内后面的模式覆盖前面的,
@@ -20,7 +20,7 @@ const ABSOLUTE = BARRELS.map((m) => `**/lib/${m}/*`)
 const ALLOW = [
   '!**/lib/jobs/server', '!./jobs/server', '!../jobs/server',
   '!**/lib/score/server', '!./score/server', '!../score/server',
-  '!**/lib/verdict/server', '!./verdict/server', '!../verdict/server',
+  '!**/lib/ruling/server', '!./ruling/server', '!../ruling/server',
   '!**/lib/employers/server', '!./employers/server', '!../employers/server',
   '!**/lib/plan/server', '!./plan/server', '!../plan/server',
   '!**/lib/quiz/server', '!./quiz/server', '!../quiz/server',
@@ -45,6 +45,17 @@ const barrelOnly = (group) => ({
 // 没有现成规则能做这件事:`no-restricted-imports` 的 allowTypeImports 无法只对 'use client' 生效,
 // 而 flat config 的 files glob 选不了「文件内容里有没有那行指令」—— 只能自己写。
 const SERVER_DOOR = /(^|\/)lib\/[A-Za-z]+\/server$/
+    // 取一个声明正上方的 JSDoc。
+    // ⚠️ 要先跳过 `// eslint-disable-next-line …`:指令也是注释,不跳过就会把「写了 disable 的声明」
+    //    误判成「没写 JSDoc」——2026-08-20 加 doc-every-function 时当场撞见 5 个假阳性。
+    function docAbove(src, node) {
+      const before = src.getCommentsBefore(node)
+      let i = before.length - 1
+      while (i >= 0 && before[i].type === 'Line' && /^\s*eslint-/.test(before[i].value)) i -= 1
+      const doc = before[i]
+      return doc && doc.type === 'Block' && doc.value.startsWith('*') ? doc : null
+    }
+
 const localRules = {
   rules: {
     // 入参与返回值都要用**自己的具名 type**(`XxxIn` / `XxxOut`,住 `types.ts`)。
@@ -159,12 +170,18 @@ const localRules = {
             if (!documented(node)) context.report({ node, messageId: 'member', data: { name: keyName(node) } })
           },
           Property(node) {
-            // 只管**导出的常量表**里的键:函数里就地拼的对象不在此列(它是实现细节,不是约定)
+            // 只管**导出的常量表**里的键:函数里就地拼的对象不在此列(它是实现细节,不是约定);
+            // 数组里的一行同理 —— `CASES = [{ id, page }, …]` 那是**数据**,形状由它的 type 说清,
+            // 逐行逐字段再写一遍 JSDoc 只是噪音(2026-08-20 迁 caseLibrary 时实撞 32 条)。
             let p = node.parent
             let depth = 0
-            while (p && depth < 6) {
+            let objects = 0
+            while (p && depth < 8) {
               if (p.type === 'ExportNamedDeclaration') break
+              if (p.type === 'ArrayExpression') return
               if (p.type === 'FunctionDeclaration' || p.type === 'ArrowFunctionExpression') return
+              if (p.type === 'ObjectExpression') objects += 1
+              if (objects > 1) return                        // 嵌套一层往下是数据,不是约定
               p = p.parent
               depth += 1
             }
@@ -245,9 +262,8 @@ const localRules = {
         return {
           FunctionDeclaration(node) {
             const anchor = node.parent?.type === 'ExportNamedDeclaration' ? node.parent : node
-            const before = src.getCommentsBefore(anchor)
-            const doc = before[before.length - 1]
-            if (!doc || doc.type !== 'Block' || !doc.value.startsWith('*')) return
+            const doc = docAbove(src, anchor)
+            if (!doc) return
             const name = node.id?.name ?? '(匿名)'
             if (node.params.length && !doc.value.includes('@param')) {
               context.report({ node, messageId: 'tag', data: { name, tag: '@param' } })
@@ -312,11 +328,21 @@ const localRules = {
         }
         return {
           Literal(node) {
+            // 正则也是常量(`constants.ts` 的文件头写着「标量、字符串表、正则」),
+            // 但它的 `value` 是 RegExp 不是 string,第一版就这么漏过去了(2026-08-20 Frank 实拍)。
+            if (node.regex) {
+              context.report({ node, messageId: 'bare', data: { text: `/${node.regex.pattern}/` } })
+              return
+            }
             if (typeof node.value !== 'string' || node.value === '') return
             const p = node.parent
             if (p?.type === 'ImportDeclaration' || p?.type === 'ExportNamedDeclaration') return
             if (p?.type === 'Property' && p.key === node) return
             if (p?.type === 'MemberExpression' && p.property === node) return
+            // `typeof x === 'string'` 的右边是**语言构造**,不是文案:它永远不会被翻译、
+            // 永远不会改,收进 `constants.ts` 只是把一句读得懂的判断换成一次跳转(2026-08-20 立)。
+            if (p?.type === 'BinaryExpression'
+              && p.left?.type === 'UnaryExpression' && p.left.operator === 'typeof') return
             if (inTypePosition(node)) return
             context.report({ node, messageId: 'bare', data: { text: JSON.stringify(node.value).slice(0, 28) } })
           },
@@ -325,6 +351,89 @@ const localRules = {
             // 纯空白的模板段是排版(`${a} ${b}`),不是内容
             if (!text.trim()) return
             context.report({ node, messageId: 'bare', data: { text: JSON.stringify(text).slice(0, 28) } })
+          },
+        }
+      },
+    },
+
+    // 同一个模块拆成好几行 import,读的人得把散在各处的名字自己拼回去,还看不出「到底依赖了它几样」。
+    // 2026-08-20 Frank 实拍:`ruling/types.ts` 里 `'../score'` 摞了 3 行、`'../rules'` 摞了 2 行 ——
+    // 每次加类型顺手补一行,谁都没回头合并。
+    // ⚠️ 只拦**同一种**的:值导入与 `import type` 分开写是对的(前者进运行时,后者编译期就没了),
+    //    那正是「这个域到底在运行时依赖谁」一眼能看出来的原因。
+    'no-split-import': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          split: '`{{ src }}` 已经在上面 import 过了(同为 {{ kind }})。合并成一行 —— 一个模块一行,才看得出依赖了它几样。',
+        },
+      },
+      create(context) {
+        const seen = new Set()
+        return {
+          ImportDeclaration(node) {
+            const kind = node.importKind === 'type' ? '仅类型' : '值导入'
+            const key = `${kind}|${node.source.value}`
+            if (seen.has(key)) {
+              context.report({ node, messageId: 'split', data: { src: String(node.source.value), kind } })
+              return
+            }
+            seen.add(key)
+          },
+        }
+      },
+    },
+
+    // 裸数字看不出它是什么:`parts.length === 2` 的 2 是「区间只有两个端点」,
+    // `?? 9` 的 9 是「排序沉底」,`- 15` 的 15 是 BC 官方那条「每整元 1 分」的起算点。
+    // 名字就是它们的说明书,而说明书的家是 `constants.ts`(2026-08-20 Frank 实拍立)。
+    // 只放行 0 / 1 / -1:它们是「空、一个、倒序」这类语言级的量,起名反而更难读。
+    // ⚠️ 只管 `functions.ts` —— `constants.ts` 本来就是放数的地方。
+    'no-magic-number': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          magic: '裸数字 `{{ n }}` 看不出是什么。挪进 `constants.ts` 给它一个名字和一块 JSDoc。',
+        },
+      },
+      create(context) {
+        if (!/functions\.ts$/.test(context.filename ?? '')) return {}
+        return {
+          Literal(node) {
+            if (typeof node.value !== 'number') return
+            if (node.value === 0 || node.value === 1) return
+            const neg = node.parent?.type === 'UnaryExpression' && node.parent.operator === '-'
+            if (neg && node.value === 1) return
+            if (node.parent?.type === 'VariableDeclarator') return          // 就地起名的不算
+            context.report({ node, messageId: 'magic', data: { n: String(node.value) } })
+          },
+        }
+      },
+    },
+
+    // 一个函数超过 60 行,读的人就得翻屏 —— 翻过去的那一刻,前半段的变量已经记不住了。
+    // 60 不是拍脑袋:2026-08-20 立这条时,五个定型域的 88 个函数里最长的 57 行,第二 57、第三 56,
+    // 唯一越线的是 `lib/consult` 的 makeTools(112,见那里就地写的理由)。
+    // 也就是说它拦的是**明天新长出来的那一个**,今天一个都不误伤 —— 这正是立闸门的时机。
+    // ⚠️ 数的是**声明到收尾的物理行**,注释也算:注释多到让函数翻屏,一样该拆。
+    'function-length': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          long:
+            '`{{ name }}` 有 {{ n }} 行,超过 60 行。拆成几个各自说得清一件事的函数;'
+            + '真拆不动的(闭包变量一拆就得显式传一大串)写 eslint-disable 并在 `--` 后面说明为什么。',
+        },
+      },
+      create(context) {
+        return {
+          FunctionDeclaration(node) {
+            const n = node.loc.end.line - node.loc.start.line + 1
+            if (n <= 60) return
+            context.report({ node, messageId: 'long', data: { name: node.id?.name ?? '(匿名)', n: String(n) } })
           },
         }
       },
@@ -529,10 +638,97 @@ const localRules = {
             if (!d) return
             const name = named(d)
             if (!name) return
-            const before = src.getCommentsBefore(node)
-            const doc = before[before.length - 1]
-            const ok = doc && doc.type === 'Block' && doc.value.startsWith('*')
-            if (!ok) context.report({ node, messageId: 'missing', data: { name } })
+            if (!docAbove(src, node)) context.report({ node, messageId: 'missing', data: { name } })
+          },
+        }
+      },
+    },
+
+    // 🔴 `doc-every-export` 只盯**导出的**声明,而宪法说的是「每个声明都要有注释,一个不落」——
+    // 中间那一大截(非导出的函数)于是一道闸都没有。2026-08-20 Frank 实拍:`ruling` 定型、四道闸全绿,
+    // 可 `evaluateOne` 这条主流水线头上一块注释都没有,10 个非导出函数集体漏网。
+    // 顶层函数是**读的人第一眼落到的东西**,导不导出与「要不要说清它是什么」无关。
+    'doc-every-function': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          missing:
+            '`{{ name }}` 正上方没有 JSDoc。顶层函数一个不落都要有(导不导出无关)——'
+            + '说清它是什么、为什么这么定,再加 `@param` / `@returns`。',
+        },
+      },
+      create(context) {
+        const src = context.sourceCode ?? context.getSourceCode()
+        return {
+          FunctionDeclaration(node) {
+            if (node.parent?.type !== 'Program') return          // 导出的那半交给 doc-every-export
+            if (docAbove(src, node)) return
+            context.report({ node, messageId: 'missing', data: { name: node.id?.name ?? '(匿名)' } })
+          },
+        }
+      },
+    },
+
+    // 🔴 常量文件与形状文件都**不许 import**(2026-08-20 Frank 实拍:「常量为什么要依赖 type」)。
+    //
+    // · `constants.ts` 装的是 JSON 装得下的东西(标量、字符串表、正则)—— 它不需要任何人。
+    //   一旦给某张表加个 `Record<EduBand, MbEduBand>` 这样的注解,常量文件就被拴在了形状文件上,
+    //   而那种注解本来就该拆成「标量常量 + `functions.ts` 里一个取值函数」(宪法同条)。
+    // · `types.ts` 装的是**本域自己的**形状。Frank 2026-08-20:「直接就新建,然后自己依赖自己直接用,
+    //   所有的域都这么做。之后所有域都重构完毕之后,再考虑不同域之间重复的问题,和不同域的边界问题。」
+    //   只声明自己真正读的那几格:下层多一个字段不必跟着改,真读不到会当场 tsc 红。
+    //
+    // 于是一个域的依赖只剩一条边:`functions.ts` → 别人。看一眼那个文件的 import 就知道它压在谁身上。
+    'no-import-in-leaf': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          leaf: '`{{ file }}` 不许 import。常量只装 JSON 装得下的东西,形状由本域自己声明 —— 要依赖别人,只能在 `functions.ts` 里。',
+        },
+      },
+      create(context) {
+        const m = /(constants|types)\.ts$/.exec(context.filename ?? '')
+        if (!m) return {}
+        return {
+          ImportDeclaration(node) {
+            context.report({ node, messageId: 'leaf', data: { file: `${m[1]}.ts` } })
+          },
+        }
+      },
+    },
+
+    // 🔴 函数体里不许有注释(2026-08-20 Frank 实拍 `gateManifest` 立):
+    // 挂在语句上的说明块**没有主人** —— 它解释的那件事本身就该是一个函数,注释就该是那个函数的 JSDoc。
+    // 三种去处,一个都不许丢(带日期、带原话、带官方原句的决策记录只能**搬**,不能删):
+    //   ① 和别处的 JSDoc 重复 → 删(记录已经挂在那个声明上了);
+    //   ② 解释一个能独立成步骤的事 → 拆成函数,注释变它的 JSDoc;
+    //   ③ 解释某一个 return / 分支为什么返回这个值 → 进所属函数的 `@returns`,写成一张口径表。
+    // 实测:`lib/ruling` 按这三档清了 142 条,一个一行函数都没多出来,最长的函数反而从 57 行降到 51。
+    // 放行的只有 eslint / ts 指令 —— 那是给工具看的,不是给人看的。
+    'no-comment-in-function': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          inside:
+            '`{{ name }}` 的函数体里有注释。要解释就把那件事拆成函数、注释写成它的 JSDoc;'
+            + '只解释某个返回值的,进 `@returns`;和别处重复的直接删。',
+        },
+      },
+      create(context) {
+        const src = context.sourceCode ?? context.getSourceCode()
+        function directive(c) {
+          return /^\s*(eslint-|@ts-|ts-expect-error|ts-ignore)/.test(c.value)
+        }
+        return {
+          FunctionDeclaration(node) {
+            if (!node.body) return
+            for (const c of src.getCommentsInside(node.body)) {
+              if (directive(c)) continue
+              context.report({ node: c, messageId: 'inside', data: { name: node.id?.name ?? '(匿名)' } })
+            }
           },
         }
       },
@@ -658,6 +854,7 @@ const eslintConfig = [
       'local/doc-multiline': 'error',
       'local/no-section-dashes': 'error',
       'local/doc-every-export': 'error',
+      'local/doc-every-function': 'error',
       // 写法
       'local/no-unknown-type': 'error',
       'local/no-object-spread': 'error',
@@ -672,9 +869,27 @@ const eslintConfig = [
       'local/jsdoc-tags': 'error',
       'local/no-new-error': 'error',
       'local/no-bare-strings': 'error',
+      'local/function-length': 'error',
       // 这两条内置规则够用,不自己造:全局是 warn(存量欠账本),定型域收紧成 error
       '@typescript-eslint/no-explicit-any': 'error',
       'no-console': 'error',
+    },
+  },
+  {
+    // ── 函数体里不许有注释:只对**已经清完存量**的域开(2026-08-20)────────────────
+    // 判定域这一轮把存量逐条清完了,所以它先进名单;别的域清完一个加一个 —— 与上面那张名单同一个规矩。
+    //   · no-comment-in-function:另外五个域还有 34 条(llm 24 / consult 7 / agent 2 / error 1);
+    //   · no-magic-number:另外五个域还有 6 处(consult 3 / llm 3);
+    //   · no-split-import:另外五个域还有 3 处(consult 2 / i18n 1);
+    //   · no-import-in-leaf:constants 还有 3 处(consult 2 / agent 1),
+    //     types 还有 16 处(consult 8 / agent 5 / llm 1 / pathways 1 / jobs 1)。
+    files: ['src/lib/ruling/**/*.ts'],
+    plugins: { local: localRules },
+    rules: {
+      'local/no-comment-in-function': 'error',
+      'local/no-magic-number': 'error',
+      'local/no-split-import': 'error',
+      'local/no-import-in-leaf': 'error',
     },
   },
   {

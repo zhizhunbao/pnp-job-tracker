@@ -9,7 +9,7 @@
 // (#280/E14-02 容缺先例),没探到的字段整行按「缺」处理,判定自然全落 unknown,不会报错。
 // 门槛省 = r.provs[0](与既有 where 列同一取法:雇主表一行没有单一地址,只能挑一个代表省)。
 
-import { employerVerdict, type EmployerFacts, type EmployerVerdict } from '../verdict'
+import { employerVerdict, type EmployerFacts, type EmployerVerdict } from '../ruling'
 import type { Requirement } from '../rules'
 import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 
@@ -96,7 +96,9 @@ async function loadAll(pool: any): Promise<SponsorEmployerRow[]> {
       lmiaLastQuarter: r.lmia_last_quarter ?? '',
       lmia4q: Number(r.lmia_positions_4q) || 0, lmia2q: Number(r.lmia_positions_2q) || 0, lmia1q: Number(r.lmia_positions_1q) || 0,
       streams: r.streams ?? [],
-      verdict: employerVerdict(facts, province, employerReqs),
+      verdict: employerVerdict({
+        facts: facts, province: province, reqs: employerReqs, nowYear: new Date().getFullYear(),
+      }),
     }
   })
 }
