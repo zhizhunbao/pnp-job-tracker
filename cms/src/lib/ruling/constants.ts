@@ -585,3 +585,11 @@ export const PV_KEY = {
   selfEmp: 'pv.selfEmp',
 
 }
+
+/**
+ * 联邦语言门槛行里「按 TEER 分档」的子通道名,如 `teer-0-3`。
+ *
+ * 认不出这个形状的行(`first-official` / `speaking-listening` / `reading-writing`)是**该子通道通用**,
+ * 一律适用;认得出但不知道 TEER,则一条都挑不出来 —— 那是实话,不是缺陷。
+ */
+export const TEER_STREAM = /^teer-([\d-]+)$/

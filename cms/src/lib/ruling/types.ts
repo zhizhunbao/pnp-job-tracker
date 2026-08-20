@@ -16,6 +16,8 @@ import type { EduKey, EeGridRow, ScoreFactor } from '../score'
 import type { Requirement } from '../rules'
 import type { SelfProfile } from '../score'
 import type { PathwayStrategy } from '../pathways'
+import type { MbEduKey, MbProfile } from '../score'
+import type { RuleProfile } from '../rules'
 import type { GateKey } from '../gateManifest'
 
 // =========================================================================
@@ -1965,3 +1967,448 @@ export type BlockCostIn = string | undefined
  * `blockCost` 的返回:这道闸有多难拆。
  */
 export type BlockCostOut = number
+
+/**
+ * `pathLevers` 的入参。
+ */
+export type PathLeversIn = {
+  /**
+   * `pathLevers` 的 profile。
+   */
+  profile: VerdictProfile
+
+  /**
+   * `pathLevers` 的 data。
+   */
+  data: VerdictData
+
+  /**
+   * `pathLevers` 的 opts。
+   */
+  opts: { clbTarget?: number; teerDowngradeNoc?: string }
+}
+
+/**
+ * `pathLevers` 的返回。
+ */
+export type PathLeversOut = VerdictLever[]
+
+/**
+ * `jobPathways` 的入参。
+ */
+export type JobPathwaysIn = {
+  /**
+   * `jobPathways` 的 noc。
+   */
+  noc: string | null
+
+  /**
+   * `jobPathways` 的 teer。
+   */
+  teer: number | null
+
+  /**
+   * `jobPathways` 的 data。
+   */
+  data: VerdictData
+}
+
+/**
+ * `jobPathways` 的返回。
+ */
+export type JobPathwaysOut = JobPathwayRow[]
+
+/**
+ * `pathVerdict` 的入参。
+ */
+export type PathVerdictIn = {
+  /**
+   * `pathVerdict` 的 profile。
+   */
+  profile: VerdictProfile
+
+  /**
+   * `pathVerdict` 的 data。
+   */
+  data: VerdictData
+}
+
+/**
+ * `pathVerdict` 的返回。
+ */
+export type PathVerdictOut = PathwayVerdict[]
+
+/**
+ * `evaluateOne` 的入参。
+ */
+export type EvaluateOneIn = {
+  /**
+   * `evaluateOne` 的 spec。
+   */
+  spec: PathwaySpec
+
+  /**
+   * `evaluateOne` 的 p。
+   */
+  p: VerdictProfile
+
+  /**
+   * `evaluateOne` 的 data。
+   */
+  data: VerdictData
+}
+
+/**
+ * `evaluateOne` 的返回。
+ */
+export type EvaluateOneOut = PathwayVerdict
+
+/**
+ * `fedLangApplies` 的入参。
+ */
+export type FedLangAppliesIn = {
+  /**
+   * `fedLangApplies` 的 r。
+   */
+  r: Requirement
+
+  /**
+   * `fedLangApplies` 的 teer。
+   */
+  teer: number | null
+}
+
+/**
+ * `fedLangApplies` 的返回。
+ */
+export type FedLangAppliesOut = boolean
+
+/**
+ * `ruleProfileOf` 的入参。
+ */
+export type RuleProfileOfIn = {
+  /**
+   * `ruleProfileOf` 的 p。
+   */
+  p: VerdictProfile
+
+  /**
+   * `ruleProfileOf` 的 total。
+   */
+  total: number | null
+}
+
+/**
+ * `ruleProfileOf` 的返回。
+ */
+export type RuleProfileOfOut = RuleProfile
+
+/**
+ * `mbProfileOf` 的入参。
+ */
+export type MbProfileOfIn = {
+  /**
+   * `mbProfileOf` 的 p。
+   */
+  p: VerdictProfile
+
+  /**
+   * `mbProfileOf` 的 workMonths。
+   */
+  workMonths: number
+
+  /**
+   * `mbProfileOf` 的 clb。
+   */
+  clb: number
+}
+
+/**
+ * `mbProfileOf` 的返回。
+ */
+export type MbProfileOfOut = MbProfile
+
+/**
+ * `mbEduOf` 的入参。
+ */
+export type MbEduOfIn = {
+  /**
+   * `mbEduOf` 的 edu。
+   */
+  edu: EduKey
+
+  /**
+   * `mbEduOf` 的 years。
+   */
+  years: number | null
+}
+
+/**
+ * `mbEduOf` 的返回。
+ */
+export type MbEduOfOut = MbEduKey
+
+/**
+ * `refDraw` 的入参。
+ */
+export type RefDrawIn = {
+  /**
+   * `refDraw` 的 spec。
+   */
+  spec: PathwaySpec
+
+  /**
+   * `refDraw` 的 draws。
+   */
+  draws: VerdictDrawRow[]
+}
+
+/**
+ * `refDraw` 的返回。
+ */
+export type RefDrawOut = VerdictDrawRow | null
+
+/**
+ * `residenceGap` 的入参。
+ */
+export type ResidenceGapIn = {
+  /**
+   * `residenceGap` 的 spec。
+   */
+  spec: PathwaySpec
+
+  /**
+   * `residenceGap` 的 rows。
+   */
+  rows: Requirement[]
+
+  /**
+   * `residenceGap` 的 p。
+   */
+  p: VerdictProfile
+}
+
+/**
+ * `residenceGap` 的返回。
+ */
+export type ResidenceGapOut = { row: Requirement; need: number; gap: number | null } | null
+
+/**
+ * `pickGate` 的入参。
+ */
+export type PickGateIn = {
+  /**
+   * `pickGate` 的 spec。
+   */
+  spec: PathwaySpec
+
+  /**
+   * `pickGate` 的 rows。
+   */
+  rows: Requirement[]
+
+  /**
+   * `pickGate` 的 p。
+   */
+  p: VerdictProfile
+
+  /**
+   * `pickGate` 的 selfEmpExcluded。
+   */
+  selfEmpExcluded: boolean
+}
+
+/**
+ * `pickGate` 的返回。
+ */
+export type PickGateOut = GateEval
+
+/**
+ * `countableMonths` 的入参。
+ */
+export type CountableMonthsIn = {
+  /**
+   * `countableMonths` 的 spec。
+   */
+  spec: PathwaySpec
+
+  /**
+   * `countableMonths` 的 p。
+   */
+  p: VerdictProfile
+
+  /**
+   * `countableMonths` 的 selfEmpExcluded。
+   */
+  selfEmpExcluded: boolean
+}
+
+/**
+ * `countableMonths` 的返回。
+ */
+export type CountableMonthsOut = number | null
+
+/**
+ * `conditionHolds` 的入参。
+ */
+export type ConditionHoldsIn = {
+  /**
+   * `conditionHolds` 的 cond。
+   */
+  cond: string
+
+  /**
+   * `conditionHolds` 的 p。
+   */
+  p: VerdictProfile
+
+  /**
+   * `conditionHolds` 的 province。
+   */
+  province: string
+}
+
+/**
+ * `conditionHolds` 的返回。
+ */
+export type ConditionHoldsOut = boolean | null
+
+/**
+ * `maxClbIn` 的入参。
+ */
+export type MaxClbInIn = {
+  /**
+   * `maxClbIn` 的 labels。
+   */
+  labels: string[]
+}
+
+/**
+ * `maxClbIn` 的返回。
+ */
+export type MaxClbInOut = number | null
+
+/**
+ * `tierOfMonths` 的入参。
+ */
+export type TierOfMonthsIn = {
+  /**
+   * `tierOfMonths` 的 m。
+   */
+  m: number
+}
+
+/**
+ * `tierOfMonths` 的返回。
+ */
+export type TierOfMonthsOut = 0 | 1 | 2 | 3
+
+/**
+ * `monthsOfReq` 的入参。
+ */
+export type MonthsOfReqIn = {
+  /**
+   * `monthsOfReq` 的 r。
+   */
+  r: Requirement
+}
+
+/**
+ * `monthsOfReq` 的返回。
+ */
+export type MonthsOfReqOut = number | null
+
+/**
+ * `basisParam` 的入参。
+ */
+export type BasisParamIn = {
+  /**
+   * `basisParam` 的 basis。
+   */
+  basis: string
+
+  /**
+   * `basisParam` 的 key。
+   */
+  key: string
+}
+
+/**
+ * `basisParam` 的返回。
+ */
+export type BasisParamOut = string | null
+
+/**
+ * `evOfFactor` 的入参。
+ */
+export type EvOfFactorIn = {
+  /**
+   * `evOfFactor` 的 f。
+   */
+  f: ScoreFactor
+}
+
+/**
+ * `evOfFactor` 的返回。
+ */
+export type EvOfFactorOut = Evidence
+
+/**
+ * `evOfDraw` 的入参。
+ */
+export type EvOfDrawIn = {
+  /**
+   * `evOfDraw` 的 d。
+   */
+  d: VerdictDrawRow
+}
+
+/**
+ * `evOfDraw` 的返回。
+ */
+export type EvOfDrawOut = Evidence
+
+/**
+ * `evOfOcc` 的入参。
+ */
+export type EvOfOccIn = {
+  /**
+   * `evOfOcc` 的 r。
+   */
+  r: OccupationRow
+}
+
+/**
+ * `evOfOcc` 的返回。
+ */
+export type EvOfOccOut = Evidence
+
+/**
+ * `quoteOfReq` 的入参。
+ */
+export type QuoteOfReqIn = {
+  /**
+   * `quoteOfReq` 的 r。
+   */
+  r: Requirement
+}
+
+/**
+ * `quoteOfReq` 的返回。
+ */
+export type QuoteOfReqOut = string
+
+/**
+ * `evOfReq` 的入参。
+ */
+export type EvOfReqIn = {
+  /**
+   * `evOfReq` 的 r。
+   */
+  r: Requirement
+}
+
+/**
+ * `evOfReq` 的返回。
+ */
+export type EvOfReqOut = Evidence

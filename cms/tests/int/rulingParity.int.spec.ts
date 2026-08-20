@@ -94,11 +94,11 @@ describe.skipIf(!LIVE)('ruling 与 verdict 结果对拍', () => {
       { ...base, noc: '72310', teer: 2, clb: 8, expCanadaMonths: 36, hasOffer: true, inCanada: true, province: 'MB', fieldMatch: true, frenchOk: false, permit: 'study' },
     ]
     for (const [i, p] of profiles.entries()) {
-      expect(JSON.stringify(freshPath(p, data)), `档案 ${i}`).toBe(JSON.stringify(oldPath(p, data)))
-      expect(JSON.stringify(freshLevers(p, data, { clbTarget: 8 })), `杠杆 ${i}`).toBe(JSON.stringify(oldLevers(p, data, { clbTarget: 8 })))
+      expect(JSON.stringify(freshPath({ profile: p, data })), `档案 ${i}`).toBe(JSON.stringify(oldPath(p, data)))
+      expect(JSON.stringify(freshLevers({ profile: p, data, opts: { clbTarget: 8 } })), `杠杆 ${i}`).toBe(JSON.stringify(oldLevers(p, data, { clbTarget: 8 })))
     }
     for (const [noc, teer] of [['72310', 2], ['21232', 1], ['33102', 3], [null, null]] as const) {
-      expect(JSON.stringify(freshJobs(noc, teer, data)), `职业 ${noc}`).toBe(JSON.stringify(oldJobs(noc, teer, data)))
+      expect(JSON.stringify(freshJobs({ noc, teer, data })), `职业 ${noc}`).toBe(JSON.stringify(oldJobs(noc, teer, data)))
     }
     console.log(`PATHVERDICT_OK profiles=${profiles.length}`)
   }, 300_000)

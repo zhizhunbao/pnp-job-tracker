@@ -61,15 +61,37 @@
 
 ## 4 · 还剩什么(接手从这儿起)
 
-### 4.1 `functions.ts` 的 499 条闸门违规
+### 4.0 🔴 接手前必读:对拍抓到过一次真事故
+
+签名迁移(箭头改具名 + 收成一个对象参数)时,批量重命名把**正则字面量里的标识符**也改了:
+
+```ts
+const m = /^teer-([\d-]+)$/.exec(...)      // 老
+const m = /^input.teer-([\d-]+)$/.exec(...) // 被改坏的
+```
+
+那条正则再也匹配不上,AIP / RCIP 的语言分支当场走错 ——
+多报了 `clb` 缺槽、少了「本站尚未收录…语言门槛条文」那条理由。
+**`tsc` 全绿、`eslint` 全绿,只有对拍抓得住。** 已改成 `TEER_STREAM` 常量。
+
+**结论:每改一批就跑一次 `tests/int/rulingParity`,别攒着一起验。**
+批量重命名的三个已知盲区:① 正则/字符串字面量;② 对象字面量的**键**(`{ rows: [] }`);
+③ **简写属性**(`{ clb }` / `{ ...X, noc, teer }`)。前两个能用负向断言挡,第三个挡不住,只能靠对拍。
+
+### 4.1 `functions.ts` 的 474 条闸门违规
 
 | 规则 | 条数 | 备注 |
 |---|---|---|
 | `no-bare-strings` | 247 | **其中 64 个是中文句子片段** —— 遗留的 `VerdictReason.text`。按宪法该住 `lib/i18n`,但类型注释写着「留着不动:多处测试钉着这些措辞」。**照 14 号处理 `FRIEND_MSG` 的先例:这轮只收位置不搬文案**,进 `constants.ts` 并标成技术债 |
-| `no-arrow-function` | 102 | 20 个箭头小工具 + `evaluateOne`(500 行)里的内联回调。提成具名时**别改语义**,对拍是网 |
-| `typed-signature` | 40 | 入参/返回要 `XxxIn` / `XxxOut`,且必须是本域声明的 |
-| `functions-file-no-variables` | 20 | 顶层常量还没挪完 |
-| 其余 | 90 | 对象展开、JSDoc 标签、分类横线 |
+| `no-arrow-function` | **89** | 顶层 13 个已改完;剩的全是 `evaluateOne` 里的内联回调 |
+| `jsdoc-tags` / `doc-every-member` | 58 | 改成具名函数后才暴露出来的 |
+| `no-object-spread` | 18 | 字段写全 |
+| `typed-signature` | **5** | 已从 72 清到 5 |
+| 其余 | 35 | 分类横线、单行 JSDoc、顶层变量 |
+
+⚠️ **改箭头会让总数先涨后落**:箭头函数本来躲在 `typed-signature` / `jsdoc-tags` / `one-parameter`
+三条闸外面,改成 `function` 才被查到(实测 102 → 89 的同时 typed-signature 40 → 72)。
+那是真实暴露,不是倒退。
 
 ⚠️ 已清的 155 条里踩过两个坑,接手别再踩:
 - **类型位置的字面量不能替**(`source: 'job'` 在类型注解里,换成 `FACTOR.job` 会被当成命名空间);
@@ -84,6 +106,16 @@
 | `tripleWire` | 230 | 要连库 |
 | `tripleVerdict` | 696 | 纯判定;**`evOfReq` / `quoteOfReq` 与 `pathVerdict` 逐字重复,迁的时候收拢** |
 
+### 4.2b 还没加的一条闸:函数长度
+
+140 个函数里**只有 3 个超过 60 行**,第四名就掉到 55 —— 所以 60 行是条不误伤的线:
+
+| 行 | 函数 | 判断 |
+|---|---|---|
+| **498** | `ruling/functions.ts` 的 `evaluateOne` | **真该拆**。里面按因素分了七八段(语言/经验/居住/清单/闸/抽选/分数),每段都能独立成函数。拆它是改结构、风险最高的一种 —— 但对拍网抓得住(见 §4.0) |
+| 112 | `consult/functions.ts` 的 `makeTools` | **建议豁免并写明理由**:它是工具表,12 把工具的 `execute` 要闭包 `db` 与收件箱,拆开就得把闭包变量显式传,反而更绕 |
+| 75 | `ruling/functions.ts` 的 `pathLevers` | 两根杠杆各一段,拆得动 |
+
 ### 4.3 收口
 
 1. 开 `index.ts` / `server.ts` 两个门
@@ -97,10 +129,14 @@
 ## 5 · 验收
 
 - [x] `npx tsc --noEmit` 零错
-- [x] 六个域(`consult` / `ruling` / `agent` / `llm` / `error` / `log`)eslint **零 error 零 warning**
-- [x] `npx vitest run` **719 条全绿**
-- [x] `npm run dupcheck` 零重复
+- [x] 五个域(`consult` / `agent` / `llm` / `error` / `log`)eslint **零 error 零 warning**
+- [ ] `ruling` 还剩 **474 条**(它是这一批的主战场,其余五域已清完)
+- [x] `npx vitest run` **723 条全绿**(含对拍探针 4 条)
+- [x] `npm run dupcheck` —— **过渡期报 10 组是正常的**:`ruling` 与 `verdict` 并存,
+      两边同一段 `evaluateOne` 逐字重复。**删掉老域之后它会自动归零**;
+      在那之前别为它做任何收拢(那两份注定只活一份)
 - [x] 对拍探针 4/4
-- [ ] `functions.ts` 的 499 条清零
+- [ ] `functions.ts` 的 474 条清零(见 §4.1;开工前先读 §4.0)
+- [ ] 加函数长度闸并拆 `evaluateOne`(见 §4.2b)
 - [ ] 换消费者 + 删老域
 - [ ] `npm run build` ✓ / push 后拉 `/api/version` 确认换版

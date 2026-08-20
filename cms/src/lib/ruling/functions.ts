@@ -26,19 +26,26 @@ import {
   AB_LOCAL_EXP, AMP, AND_WORD, BASIS, BLOCK_COST, CONDITION, EMP_FACTOR, EMP_KEY, EMP_STATE, EMP_UNIT,
   EVIDENCE_KIND, FACTOR, FACTOR_ROW, FED, GATE_KEYS, GRID, INDEMAND, ITEM, MONTHS, MONTHS_PER_YEAR,
   NAME_KEEP, NO_BLOCK_COST, OA_SPLIT, OPT_IN_GATES, PERMIT, PV_KEY, REASON, SECTOR_PUBLIC, SPACE, SUBJECT,
-  TIER_BASIS, UNKNOWN_BLOCK_COST, VERDICT,
+  TEER_STREAM, TIER_BASIS, UNKNOWN_BLOCK_COST, VERDICT,
 } from './constants'
 import type {
 
-  Availability, BlockCostIn, BlockCostOut, CaseTier, Cell, EmpAcc, EmpRowsOfIn, EmpRowsOfOut,
+  Availability, BasisParamIn, BasisParamOut, BlockCostIn, BlockCostOut, CaseTier, Cell, ConditionHoldsIn,
+  ConditionHoldsOut, CountableMonthsIn, CountableMonthsOut, EmpAcc, EmpRowsOfIn, EmpRowsOfOut,
   EmployerNameSegmentsIn, EmployerNameSegmentsOut, EmployerVerdictIn, EmployerVerdictItem,
-  EmployerVerdictOut, Evidence, GateEval, ItemVerdict, JobPathwayRow, LeverGain, LoadVerdictTablesIn,
-  LoadVerdictTablesOut, MatchDesignationIn, MatchDesignationOut, NameRow, NamedList,
+  EmployerVerdictOut, EvOfDrawIn, EvOfDrawOut, EvOfFactorIn, EvOfFactorOut, EvOfOccIn, EvOfOccOut,
+  EvOfReqIn, EvOfReqOut, EvaluateOneIn, EvaluateOneOut, Evidence, FedLangAppliesIn, FedLangAppliesOut,
+  GateEval, ItemVerdict, JobPathwayRow, JobPathwaysIn, JobPathwaysOut, LeverGain, LoadVerdictTablesIn,
+  LoadVerdictTablesOut, MatchDesignationIn, MatchDesignationOut, MaxClbInIn, MaxClbInOut, MbEduOfIn,
+  MbEduOfOut, MbProfileOfIn, MbProfileOfOut, MonthsOfReqIn, MonthsOfReqOut, NameRow, NamedList,
   NormalizeEmployerNameIn, NormalizeEmployerNameOut, NumOfIn, NumOfOut, OccupationRow, OpeningCount,
-  PathwayScore, PathwaySpec, PathwayVerdict, PushItemIn, PushItemOut, Queryable, Row, RowsOfIn, RowsOfOut,
-  SqlResult, StrOfIn, StrOfOut, SwallowOut, TeerScope, ToDesignatedOut, ToDrawOut, ToEeGridOut,
-  ToOccupationOut, ToRequirementOut, ToRowIn, ToScoreFactorOut, TrainableRow, UniversalValueIn,
-  UniversalValueOut, VerdictData, VerdictDrawRow, VerdictLever, VerdictProfile, VerdictReason,
+  PathLeversIn, PathLeversOut, PathVerdictIn, PathVerdictOut, PathwayScore, PathwaySpec, PathwayVerdict,
+  PickGateIn, PickGateOut, PushItemIn, PushItemOut, Queryable, QuoteOfReqIn, QuoteOfReqOut, RefDrawIn,
+  RefDrawOut, ResidenceGapIn, ResidenceGapOut, Row, RowsOfIn, RowsOfOut, RuleProfileOfIn, RuleProfileOfOut,
+  SqlResult, StrOfIn, StrOfOut, SwallowOut, TeerScope, TierOfMonthsIn, TierOfMonthsOut, ToDesignatedOut,
+  ToDrawOut, ToEeGridOut, ToOccupationOut, ToRequirementOut, ToRowIn, ToScoreFactorOut, TrainableRow,
+  UniversalValueIn, UniversalValueOut, VerdictData, VerdictDrawRow, VerdictLever, VerdictProfile,
+  VerdictReason,
 } from './types'
 
 /**
@@ -425,47 +432,59 @@ function blockCost(block: BlockCostIn): BlockCostOut {
 // 🔵 形状全部住 types.ts;`Availability` / `Evidence` 用**本域自己那份**,不再从对话域借。
 // ── 小工具 ──────────────────────────────────────────────────────────────────
 
-const evOfReq = (r: Requirement): Evidence => ({
-  url: r.url, fetched: r.fetched, label: r.label, section: r.section, effective: r.effective,
-})
+function evOfReq(input: EvOfReqIn): EvOfReqOut {
+  return {
+    url: input.r.url, fetched: input.r.fetched, label: input.r.label, section: input.r.section, effective: input.r.effective,
+  }
+}
 /** quote 的唯一来源:官方原文优先取 valueText(联邦页),PNP 页的原文落在 label。 */
-const quoteOfReq = (r: Requirement): string => (r.valueText || r.label || '').trim()
+function quoteOfReq(input: QuoteOfReqIn): QuoteOfReqOut {
+  return (input.r.valueText || input.r.label || '').trim()
+}
 
-const evOfOcc = (r: OccupationRow): Evidence => ({ url: r.url, fetched: r.fetched, label: `${r.stream} — ${r.noc} ${r.name}` })
-const evOfDraw = (d: VerdictDrawRow): Evidence => ({
-  url: d.url, fetched: d.fetched, label: `${d.stream}(${d.drawDate}${d.note ? ' · ' + d.note : ''})`,
-})
-const evOfFactor = (f: ScoreFactor): Evidence => ({ url: f.url, fetched: f.fetched, label: f.system, effective: f.guideEffective })
+function evOfOcc(input: EvOfOccIn): EvOfOccOut {
+  return { url: input.r.url, fetched: input.r.fetched, label: `${input.r.stream} — ${input.r.noc} ${input.r.name}` }
+}
+function evOfDraw(input: EvOfDrawIn): EvOfDrawOut {
+  return {
+    url: input.d.url, fetched: input.d.fetched, label: `${input.d.stream}(${input.d.drawDate}${input.d.note ? ' · ' + input.d.note : ''})`,
+  }
+}
+function evOfFactor(input: EvOfFactorIn): EvOfFactorOut {
+  return { url: input.f.url, fetched: input.f.fetched, label: input.f.system, effective: input.f.guideEffective }
+}
 
 /** `windowYears=3;minYears=1;hoursPerWeek=30` → 取一个键的值 */
-const basisParam = (basis: string, key: string): string | null => {
-  for (const kv of (basis || '').split(';')) {
+function basisParam(input: BasisParamIn): BasisParamOut {
+  for (const kv of (input.basis || '').split(';')) {
     const i = kv.indexOf('=')
-    if (i > 0 && kv.slice(0, i).trim() === key) return kv.slice(i + 1).trim()
+    if (i > 0 && kv.slice(0, i).trim() === input.key) return kv.slice(i + 1).trim()
   }
   return null
 }
 
 /** 门槛行 → 月数。op=PERMIT.none = 官方明说这条通道不设门槛 → 0 个月(**不是**「没查到」)。 */
-const monthsOfReq = (r: Requirement): number | null => {
-  if (r.op === PERMIT.none) return 0
-  if (r.value == null) return null
-  if (r.unit === 'months') return r.value
-  if (r.unit === 'years') return r.value * 12
-  if (r.unit === 'hours') {
-    const y = basisParam(r.basis, 'minYears')          // 1,560 小时 = 官方自己写的「1 年」,不拿小时数除工时猜
+function monthsOfReq(input: MonthsOfReqIn): MonthsOfReqOut {
+  if (input.r.op === PERMIT.none) return 0
+  if (input.r.value == null) return null
+  if (input.r.unit === 'months') return input.r.value
+  if (input.r.unit === 'years') return input.r.value * 12
+  if (input.r.unit === 'hours') {
+    const y = basisParam({ basis: input.r.basis, key: 'minYears' })          // 1,560 小时 = 官方自己写的「1 年」,不拿小时数除工时猜
     return y ? Number(y) * 12 : null
   }
   return null
 }
 
 /** offer 到手后还要等多久:0=Day0 / 1=3-6 月 / 2=12 月 / 3=24 月 */
-const tierOfMonths = (m: number): 0 | 1 | 2 | 3 => (m <= 0 ? 0 : m <= 6 ? 1 : m <= 12 ? 2 : 3)
+function tierOfMonths(input: TierOfMonthsIn): TierOfMonthsOut {
+  return (input.m <= 0 ? 0 : input.m <= 6 ? 1 : input.m <= 12 ? 2 : 3)
+}
 
 /** 标签里的最高 CLB 档(天花板估分用;档位从官方标签自己解析,不写死) */
-const maxClbIn = (labels: string[]): number | null => {
+function maxClbIn(input: MaxClbInIn): MaxClbInOut {
   let max: number | null = null
-  for (const l of labels) {
+  for (const l of input.labels) {
     const m = /clb\s*(?:level\s*)?(\d+)/i.exec(l || '')
     if (m) { const v = Number(m[1]); if (max == null || v > max) max = v }
   }
@@ -476,11 +495,11 @@ const maxClbIn = (labels: string[]): number | null => {
  * 非地域适用条件是否成立。返回 null = 判不了(缺槽)——**不猜**。
  * 官方口径:带条件的那一行是通用条款的**例外**,条件成立时它覆盖通用行(同 rules.ts nocScore 的「最具体优先」)。
  */
-const conditionHolds = (cond: string, p: VerdictProfile, province: string): boolean | null => {
-  if (!cond) return true
+function conditionHolds(input: ConditionHoldsIn): ConditionHoldsOut {
+  if (!input.cond) return true
   // 🔴 与学历无关的条件必须**在** canadaStudy 守卫之前分发:AB 那条量的是「经验攒在哪个省」,
   //    卡在学历守卫后面会让「没答有没有加拿大学历」的档案连它都判不了(2026-08-15 数据侧实测点名)。
-  if (cond === AB_LOCAL_EXP) {
+  if (input.cond === AB_LOCAL_EXP) {
     // 官方原句:「24 个月境内外经验(或**近 18 个月内在阿省 12 个月**)」——条件是「这段经验发生在阿省」。
     // 本站档案**没有「经验所在省」这一槽**,只有现居省 + 加拿大经验月数,所以这里是**近似**:
     //   现居阿省 ⇒ 认他的加拿大经验攒在阿省(在阿省生活的人,加拿大受雇经历多半也在阿省);
@@ -488,21 +507,21 @@ const conditionHolds = (cond: string, p: VerdictProfile, province: string): bool
     //   没答现居省 ⇒ null(判不了,退回 24 那行 + 摆一条「另有一档判不了」)。
     // 近似的代价压在**只对现居阿省的人放宽**这一侧:放宽错了他还有 24 个月那条兜底,不会因此被判死。
     // 口径配套见 pickGate 的 PROVINCE_LOCAL_EXP:挑中这行时可计月数换成加拿大经验(境外经验不算阿省经验)。
-    if (p.province == null) return null
-    return p.province === province
+    if (input.p.province == null) return null
+    return input.p.province === input.province
   }
-  if (p.canadaStudy == null) return null
-  if (cond === 'recent-on-graduate') {
+  if (input.p.canadaStudy == null) return null
+  if (input.cond === 'recent-on-graduate') {
     // 官方:近 3 年安省院校毕业 + 2 年制以上文凭/研究生证书/硕博。本站档案没有毕业日期槽,
     // 只用「加拿大学历 + 学习省 + 学制年数」判 —— 判不了就返回 null(缺槽),不按「大概是」放行。
-    if (p.canadaStudy !== true) return false
-    if (p.studyProvince == null || p.eduYears == null) return null
-    return p.studyProvince === province && p.eduYears >= 2
+    if (input.p.canadaStudy !== true) return false
+    if (input.p.studyProvince == null || input.p.eduYears == null) return null
+    return input.p.studyProvince === input.province && input.p.eduYears >= 2
   }
-  if (cond === CONDITION.gradOtherProvince) {
-    if (p.canadaStudy !== true) return false
-    if (p.studyProvince == null) return null
-    return p.studyProvince !== province
+  if (input.cond === CONDITION.gradOtherProvince) {
+    if (input.p.canadaStudy !== true) return false
+    if (input.p.studyProvince == null) return null
+    return input.p.studyProvince !== input.province
   }
   return null                                          // 不认识的条件 → 判不了
 }
@@ -527,27 +546,27 @@ const reqsOf = (spec: PathwaySpec, all: Requirement[]): Requirement[] =>
 const PROVINCE_LOCAL_EXP = new Set<string>([AB_LOCAL_EXP])
 
 /** 该通道认可的可计经验月数(null=判不了)。employerTenure 口径另算,见 pickGate。 */
-function countableMonths(spec: PathwaySpec, p: VerdictProfile, selfEmpExcluded: boolean): number | null {
-  const can = p.expCanadaMonths
-  if (!spec.countsForeign) return can
-  const foreign = selfEmpExcluded && p.foreignExpSelfEmployed === true ? 0 : p.expForeignMonths
+function countableMonths(input: CountableMonthsIn): CountableMonthsOut {
+  const can = input.p.expCanadaMonths
+  if (!input.spec.countsForeign) return can
+  const foreign = input.selfEmpExcluded && input.p.foreignExpSelfEmployed === true ? 0 : input.p.expForeignMonths
   if (can == null || foreign == null) return null
   return can + foreign
 }
 
 
-function pickGate(spec: PathwaySpec, rows: Requirement[], p: VerdictProfile, selfEmpExcluded: boolean): GateEval {
-  const expRows = rows.filter((r) => (r.factor === 'experience' || r.factor === 'workHours') && r.subject === SUBJECT.applicant)
-  const gateRows = expRows.filter((r) => teerHit(r, p.teer))
+function pickGate(input: PickGateIn): PickGateOut {
+  const expRows = input.rows.filter((r) => (r.factor === 'experience' || r.factor === 'workHours') && r.subject === SUBJECT.applicant)
+  const gateRows = expRows.filter((r) => teerHit(r, input.p.teer))
   if (!gateRows.length) {
     return { rows: [], picked: null, need: null, have: null, gap: null, tenure: false, unknownCond: [],
-      teerUnknown: expRows.length > 0 && p.teer == null }
+      teerUnknown: expRows.length > 0 && input.p.teer == null }
   }
 
   const unknownCond: Requirement[] = []
   const applicable: Requirement[] = []
   for (const r of gateRows) {
-    const ok = conditionHolds(r.appliesCondition || '', p, spec.reqProvince)
+    const ok = conditionHolds({ cond: r.appliesCondition || '', p: input.p, province: input.spec.reqProvince })
     if (ok === null) { unknownCond.push(r); continue }
     if (ok) applicable.push(r)
   }
@@ -555,25 +574,25 @@ function pickGate(spec: PathwaySpec, rows: Requirement[], p: VerdictProfile, sel
   const conditional = applicable.filter((r) => (r.appliesCondition || '') !== '')
   const pool = conditional.length ? conditional : applicable
   // 联邦三子通道并列(CEC/FSW/FST 任一达标即可入池)→ 取门槛最低的那条当 picked
-  const withMonths = pool.map((r) => ({ r, m: monthsOfReq(r) })).filter((x): x is { r: Requirement; m: number } => x.m != null)
+  const withMonths = pool.map((r) => ({ r, m: monthsOfReq({ r: r }) })).filter((x): x is { r: Requirement; m: number } => x.m != null)
   const picked = withMonths.length ? withMonths.reduce((a, b) => (b.m < a.m ? b : a)).r : (pool[0] ?? null)
-  const need = picked ? monthsOfReq(picked) : null
+  const need = picked ? monthsOfReq({ r: picked }) : null
 
   const tenure = picked?.basis === BASIS.employerTenure
   let have: number | null
   if (picked && PROVINCE_LOCAL_EXP.has(picked.appliesCondition || '')) {
     // 「近 18 个月内在阿省满 12 个月」这类条件行量的是**本省攒的**经验 —— 境外经验不许进这把尺子
     //(通用 24 个月那行才认境内外)。省内/省外的近似口径与 conditionHolds 同一条,见那里的注释。
-    have = p.expCanadaMonths == null ? null : p.province === spec.reqProvince ? p.expCanadaMonths : 0
+    have = input.p.expCanadaMonths == null ? null : input.p.province === input.spec.reqProvince ? input.p.expCanadaMonths : 0
   } else if (tenure) {
     // 口径隔离(rules.ts 同款):这类行量的是「在**这家**雇主连续全职干了多久」,不是同职业总经验。
     // 加拿大经验为 0 时可以确定在职时长也是 0(没在加拿大受雇过);>0 且现居就是本省时,
     // 用它作**上界**(可能分散在几家雇主 → 措辞层要点明);在别省攒的经验对本省雇主在职时长记 0。
-    if (p.expCanadaMonths == null) have = null
-    else if (p.expCanadaMonths === 0) have = 0
-    else have = p.province === spec.reqProvince ? p.expCanadaMonths : 0
+    if (input.p.expCanadaMonths == null) have = null
+    else if (input.p.expCanadaMonths === 0) have = 0
+    else have = input.p.province === input.spec.reqProvince ? input.p.expCanadaMonths : 0
   } else {
-    have = countableMonths(spec, p, selfEmpExcluded)
+    have = countableMonths({ spec: input.spec, p: input.p, selfEmpExcluded: input.selfEmpExcluded })
   }
   // 🔴 need=0(op=PERMIT.none:官方明说不设门槛)时 gap 恒 0,**不看 have**:一道不存在的闸不许因为
   //    「缺经验月数」把通道拖成 needs-info(2026-08-06 §4.5:NL 正是这么被挤出第一轮答复的)。
@@ -582,25 +601,25 @@ function pickGate(spec: PathwaySpec, rows: Requirement[], p: VerdictProfile, sel
 }
 
 /** 居住门槛(NB 的「过去 6 个月住在 NB」)。现居省不是本省 → 0 个月,是本省 → 判不了时长(缺槽)。 */
-function residenceGap(spec: PathwaySpec, rows: Requirement[], p: VerdictProfile): { row: Requirement; need: number; gap: number | null } | null {
-  const row = rows.find((r) => r.factor === FACTOR.residence && r.subject === SUBJECT.applicant)
+function residenceGap(input: ResidenceGapIn): ResidenceGapOut {
+  const row = input.rows.find((r) => r.factor === FACTOR.residence && r.subject === SUBJECT.applicant)
   if (!row) return null
-  const need = monthsOfReq(row)
+  const need = monthsOfReq({ r: row })
   if (need == null) return null
-  if (p.province == null) return { row, need, gap: null }
-  return { row, need, gap: p.province === spec.reqProvince ? null : need }
+  if (input.p.province == null) return { row, need, gap: null }
+  return { row, need, gap: input.p.province === input.spec.reqProvince ? null : need }
 }
 
 /** 抽选参照线:先按通道名匹配;匹配不上且该省允许(MB 单池单分制)才退回全省最近一轮有分线的抽选。 */
-function refDraw(spec: PathwaySpec, draws: VerdictDrawRow[]): VerdictDrawRow | null {
-  const scored = draws
-    .filter((d) => d.province === (spec.province === FED ? FED : spec.reqProvince) && d.kind === FACTOR.draw && d.score != null)
+function refDraw(input: RefDrawIn): RefDrawOut {
+  const scored = input.draws
+    .filter((d) => d.province === (input.spec.province === FED ? FED : input.spec.reqProvince) && d.kind === FACTOR.draw && d.score != null)
     .sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1))
-  if (spec.drawStream) {
-    const hit = scored.find((d) => streamMatches(d.stream, spec.drawStream as string))
+  if (input.spec.drawStream) {
+    const hit = scored.find((d) => streamMatches(d.stream, input.spec.drawStream as string))
     if (hit) return hit
   }
-  return spec.drawFallbackProvinceWide ? (scored[0] ?? null) : null
+  return input.spec.drawFallbackProvinceWide ? (scored[0] ?? null) : null
 }
 
 // ── 通用省估分(#301,2026-08-15)────────────────────────────────────────────
@@ -717,7 +736,7 @@ function provinceGridScore(
   if (!now) return undefined
   // 上界:语言拉到官方最高档 + 加分项**全部按满分**(官方档位自己封顶)。
   // 少算加分项的「上界」是假上界,拿它判分数鸿沟会把够得着的人判死 —— 那正是四态口径最忌的那种错。
-  const maxClb = maxClbIn(all.filter((f) => f.factor === FACTOR.language && f.kind === FACTOR_ROW).map((f) => f.label))
+  const maxClb = maxClbIn({ labels: all.filter((f) => f.factor === FACTOR.language && f.kind === FACTOR_ROW).map((f) => f.label) })
   const ticks: Record<string, boolean> = {}
   const seen = new Map<string, number>()
   for (const f of all) {
@@ -737,7 +756,7 @@ function provinceGridScore(
     refLabel: draw
       ? `本站问得到的因子算出的估分(加分项未计);对照最近一轮 ${draw.stream}(${draw.drawDate})`
       : '本站问得到的因子算出的估分(加分项未计);本站未收录可对照的抽选线',
-    evidence: evOfFactor(head),
+    evidence: evOfFactor({ f: head }),
     ...(partial ? { partial: true } : {}),
   }
 }
@@ -746,45 +765,47 @@ const EDU_TO_MB: Record<EduKey, MbEduKey> = {
   doctorate: 'masterOrDoctorate', master: 'masterOrDoctorate', bachelor: 'oneProgram3yPlus',
   tradeCert: 'tradeCert', diploma2y: 'oneProgram2y', cert1y: 'oneYearProgram', highschool: PERMIT.none,
 }
-const mbEduOf = (edu: EduKey, years: number | null): MbEduKey => {
-  if (edu === 'diploma2y' || edu === 'bachelor') {
-    if (years == null) return EDU_TO_MB[edu]
-    return years >= 3 ? 'oneProgram3yPlus' : years >= 2 ? 'oneProgram2y' : 'oneYearProgram'
+function mbEduOf(input: MbEduOfIn): MbEduOfOut {
+  if (input.edu === 'diploma2y' || input.edu === 'bachelor') {
+    if (input.years == null) return EDU_TO_MB[input.edu]
+    return input.years >= 3 ? 'oneProgram3yPlus' : input.years >= 2 ? 'oneProgram2y' : 'oneYearProgram'
   }
-  return EDU_TO_MB[edu]
+  return EDU_TO_MB[input.edu]
 }
 
 /** MPNP EOI 档案映射。workMonths 传的是「门槛达成态」(见调用处注释),不是今天的月数。 */
-function mbProfileOf(p: VerdictProfile, workMonths: number, clb: number): MbProfile {
+function mbProfileOf(input: MbProfileOfIn): MbProfileOfOut {
   return {
-    clb,
+    clb: input.clb,
     secondLangClb5Plus: false,                        // 档案无「第二官方语言」槽 → 不猜,按不加分算
-    age: p.age as number,
-    workMonthsSameOcc: workMonths,
+    age: input.p.age as number,
+    workMonthsSameOcc: input.workMonths,
     employerLicenseRecognized: false,                 // 同上,不猜
-    edu: mbEduOf(p.edu as EduKey, p.eduYears),
+    edu: mbEduOf({ edu: input.p.edu as EduKey, years: input.p.eduYears }),
     adapt: {
       demand: true,                                   // SWM 的门槛本身就是「曼省持续就业 + 长期 offer」,达标即触发该档
       closeRelative: false, priorMbWork6moPlus: false,
-      mbEduYears: p.canadaStudy === true && p.studyProvince === 'MB' ? ((p.eduYears ?? 0) >= 2 ? 2 : 1) : 0,
+      mbEduYears: input.p.canadaStudy === true && input.p.studyProvince === 'MB' ? ((input.p.eduYears ?? 0) >= 2 ? 2 : 1) : 0,
       closeFriendOrDistantRelative: false, regionalOutsideWinnipeg: false,
     },
-    riskForeignWork: (p.expCanadaMonths ?? 0) > 0 && p.province !== 'MB',
-    riskForeignStudy: p.canadaStudy === true && p.studyProvince != null && p.studyProvince !== 'MB',
+    riskForeignWork: (input.p.expCanadaMonths ?? 0) > 0 && input.p.province !== 'MB',
+    riskForeignStudy: input.p.canadaStudy === true && input.p.studyProvince != null && input.p.studyProvince !== 'MB',
   }
 }
 
-const ruleProfileOf = (p: VerdictProfile, total: number | null): RuleProfile => ({
-  noc: p.noc ?? undefined,
-  teer: p.teer,
-  clb: p.clb,
-  canadianExpMonths: p.expCanadaMonths,
-  totalExpMonths: total,
-  familySize: null,
-  annualIncome: null,
-  incomeIsOccMedian: false,
-  area: null,
-})
+function ruleProfileOf(input: RuleProfileOfIn): RuleProfileOfOut {
+  return {
+    noc: input.p.noc ?? undefined,
+    teer: input.p.teer,
+    clb: input.p.clb,
+    canadianExpMonths: input.p.expCanadaMonths,
+    totalExpMonths: input.total,
+    familySize: null,
+    annualIncome: null,
+    incomeIsOccMedian: false,
+    area: null,
+  }
+}
 
 /**
  * 联邦三子通道的语言行:appliesTeer 是空的,TEER 档写在 stream 键里(teer-0-1 / teer-2-3 / teer-0-3 / teer-4)。
@@ -796,22 +817,22 @@ const ruleProfileOf = (p: VerdictProfile, total: number | null): RuleProfile => 
  *    改法:恰好两个数字 = 闭区间展开(两元枚举形态天然兼容,既有判定零变化);
  *    三个及以上数字仍按枚举读(库里目前没有这种写法,不为它猜区间语义)。
  */
-const fedLangApplies = (r: Requirement, teer: number | null): boolean => {
-  const m = /^teer-([\d-]+)$/.exec(r.stream || '')
+function fedLangApplies(input: FedLangAppliesIn): FedLangAppliesOut {
+  const m = TEER_STREAM.exec(input.r.stream || '')
   if (!m) return true                                  // first-official / speaking-listening / reading-writing:该子通道通用
-  if (teer == null) return false
+  if (input.teer == null) return false
   const parts = m[1].split('-').map(Number)
   if (parts.length === 2) {
     const [lo, hi] = parts[0] <= parts[1] ? parts : [parts[1], parts[0]]
-    return teer >= lo && teer <= hi
+    return input.teer >= lo && input.teer <= hi
   }
-  return parts.includes(teer)
+  return parts.includes(input.teer)
 }
 
 // ── 主函数 ──────────────────────────────────────────────────────────────────
 
-function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): PathwayVerdict {
-  const rows = reqsOf(spec, data.requirements)
+function evaluateOne(input: EvaluateOneIn): EvaluateOneOut {
+  const rows = reqsOf(input.spec, input.data.requirements)
   const reasons: VerdictReason[] = []
   const missingSlots: string[] = []
 
@@ -819,38 +840,38 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   if (!rows.length) {
     reasons.push({
       kind: REASON.needsInfo,
-      text: `本站尚未收录 ${spec.stream} 的门槛条文`,
-      key: PV_KEY.noReq, params: { stream: spec.stream },
+      text: `本站尚未收录 ${input.spec.stream} 的门槛条文`,
+      key: PV_KEY.noReq, params: { stream: input.spec.stream },
     })
-    return { key: spec.key, province: spec.province, stream: spec.stream, verdict: REASON.needsInfo, tier: null, tierBasis: TIER_BASIS.now, reasons, availability: 'not-collected' }
+    return { key: input.spec.key, province: input.spec.province, stream: input.spec.stream, verdict: REASON.needsInfo, tier: null, tierBasis: TIER_BASIS.now, reasons, availability: 'not-collected' }
   }
 
   const selfEmpRows = rows.filter((r) => r.factor === 'workSelfEmployed' || r.factor === 'experienceExcluded')
   const selfEmpExcluded = selfEmpRows.length > 0
-  const gate = pickGate(spec, rows, p, selfEmpExcluded)
+  const gate = pickGate({ spec: input.spec, rows: rows, p: input.p, selfEmpExcluded: selfEmpExcluded })
 
   // ── ① 职业清单 ────────────────────────────────────────────────────────────
   // 排除清单命中 = 硬伤;定向/在需清单只是信号(**不在清单 ≠ 不合格**),除非该通道明文要求在清单(PE OID)。
   let listExcluded = false
-  if (p.noc) {
-    const ineligible = data.occupations.filter((o) => o.province === spec.reqProvince && o.type === 'ineligible' && o.noc === p.noc)
+  if (input.p.noc) {
+    const ineligible = input.data.occupations.filter((o) => o.province === input.spec.reqProvince && o.type === 'ineligible' && o.noc === input.p.noc)
       // appliesTo 先过滤:SK 那 152 条只服务 OID/EE 子类,管不着 Employment Offer
-      .filter((o) => !o.appliesTo || o.appliesTo.toLowerCase().includes('employment offer') === /employment offer/i.test(spec.stream))
+      .filter((o) => !o.appliesTo || o.appliesTo.toLowerCase().includes('employment offer') === /employment offer/i.test(input.spec.stream))
     for (const o of ineligible) {
       listExcluded = true
       reasons.push({
         kind: REASON.excluded,
-        text: `${p.noc} 在「${o.stream}」这张不合格清单上`,
-        key: PV_KEY.occIneligible, params: { noc: p.noc, stream: o.stream },
+        text: `${input.p.noc} 在「${o.stream}」这张不合格清单上`,
+        key: PV_KEY.occIneligible, params: { noc: input.p.noc, stream: o.stream },
         quote: `${o.stream} — ${o.noc} ${o.name}`,   // 全部来自数据行字段(stream/noc/name),没有一个字是手写的
-        evidence: evOfOcc(o),
+        evidence: evOfOcc({ r: o }),
       })
     }
-    const indemand = data.occupations.filter((o) => o.province === spec.reqProvince && o.type === INDEMAND && o.noc === p.noc)
+    const indemand = input.data.occupations.filter((o) => o.province === input.spec.reqProvince && o.type === INDEMAND && o.noc === input.p.noc)
     for (const o of indemand) {
       reasons.push({
-        kind: REASON.met, text: `${p.noc} ${o.name} 在「${o.stream}」清单上`,
-        key: PV_KEY.occListed, params: { noc: p.noc, name: o.name, stream: o.stream }, evidence: evOfOcc(o),
+        kind: REASON.met, text: `${input.p.noc} ${o.name} 在「${o.stream}」清单上`,
+        key: PV_KEY.occListed, params: { noc: input.p.noc, name: o.name, stream: o.stream }, evidence: evOfOcc({ r: o }),
       })
     }
     // 明文要求「必须在清单上」的通道(PE 的 Occupations in Demand 子通道)。
@@ -859,22 +880,22 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
     //    its named NOC list」。Skilled Worker 那条走的是 TEER 0-3 + 24 个月,与清单无关。
     //    先前不分档:一个 TEER 3 的 PE 岗、三类闸全达标、经验也够,只因为不在那 8 个 NOC 里就整条判 excluded。
     //    判据用**门槛行自己的 appliesTeer**(不写死 0-3):清单外的 TEER 有别的子通道收,就不许拿清单判死。
-    const listTeerCovered = spec.listRequired
-      ? rows.some((r) => r.subject === SUBJECT.applicant && r.factor === FACTOR.experience && !!r.appliesTeer && teerHit(r, p.teer))
+    const listTeerCovered = input.spec.listRequired
+      ? rows.some((r) => r.subject === SUBJECT.applicant && r.factor === FACTOR.experience && !!r.appliesTeer && teerHit(r, input.p.teer))
       : false
-    if (spec.listRequired && !listTeerCovered) {
-      const list = data.occupations.filter((o) => o.province === spec.listRequired!.province && o.type === INDEMAND
-        && spec.listRequired!.streamRe.test(o.stream))
-      const onList = list.some((o) => o.noc === p.noc)
+    if (input.spec.listRequired && !listTeerCovered) {
+      const list = input.data.occupations.filter((o) => o.province === input.spec.listRequired!.province && o.type === INDEMAND
+        && input.spec.listRequired!.streamRe.test(o.stream))
+      const onList = list.some((o) => o.noc === input.p.noc)
       if (list.length && !onList) {
         listExcluded = true
         const anchor = rows.find((r) => r.factor === FACTOR.experience) ?? rows[0]
         reasons.push({
           kind: REASON.excluded,
-          text: `${p.noc} 不在 ${list[0].stream} 清单上,12 个月子通道对本职业关闭`,
-          key: PV_KEY.occNotOnList, params: { noc: p.noc, stream: list[0].stream },
-          quote: quoteOfReq(anchor),               // 官方原文自己写明 OID 子通道「limited to its named NOC list」
-          evidence: evOfReq(anchor),
+          text: `${input.p.noc} 不在 ${list[0].stream} 清单上,12 个月子通道对本职业关闭`,
+          key: PV_KEY.occNotOnList, params: { noc: input.p.noc, stream: list[0].stream },
+          quote: quoteOfReq({ r: anchor }),               // 官方原文自己写明 OID 子通道「limited to its named NOC list」
+          evidence: evOfReq({ r: anchor }),
         })
       }
     }
@@ -885,30 +906,30 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   // ── ② 语言 ───────────────────────────────────────────────────────────────
   let blockedBy: PathwayVerdict['blockedBy']
   let langRowsSeen = 0
-  if (spec.reqPrograms) {
+  if (input.spec.reqPrograms) {
     // 联邦:三子通道各自一套语言行,逐条摆
-    for (const prog of spec.reqPrograms) {
-      for (const r of rows.filter((x) => x.program === prog && x.factor === FACTOR.language && fedLangApplies(x, p.teer))) {
+    for (const prog of input.spec.reqPrograms) {
+      for (const r of rows.filter((x) => x.program === prog && x.factor === FACTOR.language && fedLangApplies({ r: x, teer: input.p.teer }))) {
         langRowsSeen += 1
-        if (p.clb == null) { missingSlots.push('clb'); continue }
-        const ok = r.value == null || p.clb >= r.value
+        if (input.p.clb == null) { missingSlots.push('clb'); continue }
+        const ok = r.value == null || input.p.clb >= r.value
         if (!ok) blockedBy = blockedBy ?? FACTOR.language
         reasons.push({
           kind: ok ? REASON.met : REASON.gap,
-          text: `${prog} 语言门槛 CLB ${r.value}${ok ? ' 达标' : `,差 ${(r.value as number) - (p.clb as number)} 档`}`,
+          text: `${prog} 语言门槛 CLB ${r.value}${ok ? ' 达标' : `,差 ${(r.value as number) - (input.p.clb as number)} 档`}`,
           key: ok ? PV_KEY.fedLangOk : PV_KEY.fedLangGap,
-          params: { prog, clb: r.value ?? 0, short: ok ? 0 : (r.value as number) - (p.clb as number) },
-          quote: quoteOfReq(r), evidence: evOfReq(r),
+          params: { prog, clb: r.value ?? 0, short: ok ? 0 : (r.value as number) - (input.p.clb as number) },
+          quote: quoteOfReq({ r: r }), evidence: evOfReq({ r: r }),
         })
       }
     }
     if (!langRowsSeen) {
-      reasons.push({ kind: REASON.needsInfo, text: `本站尚未收录 ${spec.stream} 的语言门槛条文`,
-        key: PV_KEY.noLangReq, params: { stream: spec.stream } })
+      reasons.push({ kind: REASON.needsInfo, text: `本站尚未收录 ${input.spec.stream} 的语言门槛条文`,
+        key: PV_KEY.noLangReq, params: { stream: input.spec.stream } })
     }
   } else {
     const langRows = rows.filter((r) => r.subject === SUBJECT.applicant)
-    const results: RuleResult[] = evaluateRequirements(langRows, ruleProfileOf(p, countableMonths(spec, p, selfEmpExcluded)))
+    const results: RuleResult[] = evaluateRequirements(langRows, ruleProfileOf({ p: input.p, total: countableMonths({ spec: input.spec, p: input.p, selfEmpExcluded: selfEmpExcluded }) }))
     const lang = results.find((r) => r.factor === FACTOR.language)
     if (lang) {
       if (lang.verdict === 'unknown') {
@@ -932,8 +953,8 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
         })
       }
     } else {
-      reasons.push({ kind: REASON.needsInfo, text: `本站尚未收录 ${spec.stream} 的语言门槛条文 —— 不等于这条通道不要求语言`,
-        key: PV_KEY.noLangReqSoft, params: { stream: spec.stream } })
+      reasons.push({ kind: REASON.needsInfo, text: `本站尚未收录 ${input.spec.stream} 的语言门槛条文 —— 不等于这条通道不要求语言`,
+        key: PV_KEY.noLangReqSoft, params: { stream: input.spec.stream } })
     }
   }
 
@@ -945,15 +966,15 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   // 居住类不用 —— 搬过去当天就在计时。只记一个 max 数字时这个区别丢了,前端只能一律读成「从今天起算」。
   const gaps: { months: number; kind: 'work' | 'residence' }[] = []
   if (!gate.picked && !gate.teerUnknown) {
-    reasons.push({ kind: REASON.needsInfo, text: `本站尚未收录 ${spec.stream} 的工作经验门槛条文`,
-      key: PV_KEY.noExpReq, params: { stream: spec.stream } })
+    reasons.push({ kind: REASON.needsInfo, text: `本站尚未收录 ${input.spec.stream} 的工作经验门槛条文`,
+      key: PV_KEY.noExpReq, params: { stream: input.spec.stream } })
   }
   // 行在库里、只是不知道他哪一档 TEER → 点名让他补职业,**不许说成本站没收录**
   if (gate.teerUnknown) missingSlots.push('noc')
   if (gate.gap != null) gaps.push({ months: gate.gap, kind: 'work' })
   else if (gate.need != null) gaps.push({ months: gate.need, kind: 'work' })
   if (gate.have == null && gate.picked && gate.need !== 0) missingSlots.push('expCanadaMonths')
-  const res = residenceGap(spec, rows, p)
+  const res = residenceGap({ spec: input.spec, rows: rows, p: input.p })
   if (res) {
     if (res.gap != null) gaps.push({ months: res.gap, kind: FACTOR.residence })
     else { gaps.push({ months: res.need, kind: FACTOR.residence }); missingSlots.push('province') }
@@ -962,37 +983,37 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   // ── ③b 省外院校毕业生的额外在职门槛(#317)────────────────────────────────────
   // 官方并列条款:本省院校毕业生走 op=PERMIT.none(不设经验门槛),**省外**院校毕业生要先在本省干满 N 个月。
   // 条件判不了(没答学历省/有没有加拿大学历)→ 判不了,不猜;条件不成立(本省毕业)→ 这条不适用。
-  const oop = spec.outOfProvinceGrad
-  const oopHolds = oop ? conditionHolds(CONDITION.gradOtherProvince, p, spec.reqProvince) : false
+  const oop = input.spec.outOfProvinceGrad
+  const oopHolds = oop ? conditionHolds({ cond: CONDITION.gradOtherProvince, p: input.p, province: input.spec.reqProvince }) : false
   let oopHave: number | null = null
   if (oop && oopHolds) {
     // 量的是「在本省全职在职多久」,与 employerTenure 同一把尺子:别省攒的经验对本省记 0
-    oopHave = p.expCanadaMonths == null ? null
-      : p.expCanadaMonths === 0 ? 0
-        : p.province === spec.reqProvince ? p.expCanadaMonths : 0
+    oopHave = input.p.expCanadaMonths == null ? null
+      : input.p.expCanadaMonths === 0 ? 0
+        : input.p.province === input.spec.reqProvince ? input.p.expCanadaMonths : 0
     gaps.push({ months: oopHave == null ? oop.months : Math.max(0, oop.months - oopHave), kind: 'work' })
     if (oopHave == null) missingSlots.push('expCanadaMonths')
   }
   if (oop && oopHolds === null) missingSlots.push('studyProvince')
 
   // ── ④ 估分 + 参照线 ──────────────────────────────────────────────────────
-  const draw = refDraw(spec, data.draws)
+  const draw = refDraw({ spec: input.spec, draws: input.data.draws })
   let score: PathwayVerdict['score'] | undefined
   try {
   // 没有专用估分器的省:能无损映射就走官方分值表(#301),接不上一律 undefined(不编)
-  if (!spec.scorer) score = provinceGridScore(spec, p, data.scoreFactors, draw)
-  if (spec.scorer === GRID.crs && p.age != null && p.clb != null && p.edu != null) {
+  if (!input.spec.scorer) score = provinceGridScore(input.spec, input.p, input.data.scoreFactors, draw)
+  if (input.spec.scorer === GRID.crs && input.p.age != null && input.p.clb != null && input.p.edu != null) {
     const crsProfile: CrsEstimateProfile = {
-      age: p.age, married: p.married, clb: p.clb, edu: p.edu, eduYears: p.eduYears,
-      canadaStudy: p.canadaStudy,
-      expCanadaMonths: p.expCanadaMonths,
+      age: input.p.age, married: input.p.married, clb: input.p.clb, edu: input.p.edu, eduYears: input.p.eduYears,
+      canadaStudy: input.p.canadaStudy,
+      expCanadaMonths: input.p.expCanadaMonths,
       // 自雇经验多数通道不计 → 上游把 expForeignMonths 折成 0 的口径在这里也照用
-      expForeignMonths: selfEmpExcluded && p.foreignExpSelfEmployed === true ? 0 : p.expForeignMonths,
+      expForeignMonths: selfEmpExcluded && input.p.foreignExpSelfEmployed === true ? 0 : input.p.expForeignMonths,
     }
-    const now = estimateCrs(crsProfile, data.eeGrid)
-    const maxClb = maxClbIn(data.eeGrid.filter((r) => r.grid === GRID.crs && /first official language/i.test(r.heading)).map((r) => r.criterion))
-    const ceil = maxClb == null ? null : estimateCrs({ ...crsProfile, clb: maxClb }, data.eeGrid).total
-    const head = data.eeGrid.find((r) => r.grid === GRID.crs)
+    const now = estimateCrs(crsProfile, input.data.eeGrid)
+    const maxClb = maxClbIn({ labels: input.data.eeGrid.filter((r) => r.grid === GRID.crs && /first official language/i.test(r.heading)).map((r) => r.criterion) })
+    const ceil = maxClb == null ? null : estimateCrs({ ...crsProfile, clb: maxClb }, input.data.eeGrid).total
+    const head = input.data.eeGrid.find((r) => r.grid === GRID.crs)
     score = {
       system: GRID.crs, value: now.total, ceiling: ceil,
       refLine: draw?.score ?? null,
@@ -1000,45 +1021,45 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
       evidence: head ? { url: head.url, fetched: head.fetched, label: 'Comprehensive Ranking System(官方分值表)' } : { url: '', fetched: '' },
     }
   }
-  if (spec.scorer === 'MB' && p.age != null && p.clb != null && p.edu != null && data.scoreFactors.some((f) => f.province === 'MB')) {
+  if (input.spec.scorer === 'MB' && input.p.age != null && input.p.clb != null && input.p.edu != null && input.data.scoreFactors.some((f) => f.province === 'MB')) {
     // 估的是**门槛达成态**:MPNP SWM 的门槛本身就是「在曼省同一雇主连续全职 N 个月 + 长期 offer」,
     // 所以按「攒够那 N 个月」算分才是这条路走通时的分 —— refLabel/reasons 里点明这一点,不装成今天的分。
     const workMonths = Math.max(gate.have ?? 0, gate.need ?? 0)
-    const mbNow = estimateMbEoi(data.scoreFactors, mbProfileOf(p, workMonths, p.clb))
-    const maxClb = maxClbIn(data.scoreFactors.filter((f) => f.province === 'MB' && f.factor === FACTOR.language && f.kind === FACTOR_ROW).map((f) => f.label))
-    const ceil = maxClb == null ? null : estimateMbEoi(data.scoreFactors, mbProfileOf(p, workMonths, maxClb)).total
-    const head = data.scoreFactors.find((f) => f.province === 'MB') as ScoreFactor
+    const mbNow = estimateMbEoi(input.data.scoreFactors, mbProfileOf({ p: input.p, workMonths: workMonths, clb: input.p.clb }))
+    const maxClb = maxClbIn({ labels: input.data.scoreFactors.filter((f) => f.province === 'MB' && f.factor === FACTOR.language && f.kind === FACTOR_ROW).map((f) => f.label) })
+    const ceil = maxClb == null ? null : estimateMbEoi(input.data.scoreFactors, mbProfileOf({ p: input.p, workMonths: workMonths, clb: maxClb })).total
+    const head = input.data.scoreFactors.find((f) => f.province === 'MB') as ScoreFactor
     score = {
       system: mbNow.system, value: mbNow.total, ceiling: ceil,
       refLine: draw?.score ?? null,
       refLabel: draw
         ? `攒够门槛后的估分;对照最近一轮有分线的抽选 ${draw.stream}(${draw.drawDate}${draw.note ? ' · ' + draw.note : ''})`
         : '攒够门槛后的估分;本站未收录可对照的抽选线',
-      evidence: evOfFactor(head),
+      evidence: evOfFactor({ f: head }),
     }
     // 三条 warning(C01 §二曼省节):外省学习 −100 / 再叠外省工作 −100 / 天花板与抽选线对照
-    const riskRows = data.scoreFactors.filter((f) => f.province === 'MB' && f.factor === 'risk' && f.kind === FACTOR.bonus)
+    const riskRows = input.data.scoreFactors.filter((f) => f.province === 'MB' && f.factor === 'risk' && f.kind === FACTOR.bonus)
     const studyRow = riskRows.find((f) => /studies in another province/i.test(f.label))
     const workRow = riskRows.find((f) => /work experience in another province/i.test(f.label))
-    const base = mbProfileOf(p, workMonths, p.clb)
+    const base = mbProfileOf({ p: input.p, workMonths: workMonths, clb: input.p.clb })
     if (base.riskForeignStudy && studyRow) {
       reasons.push({
         kind: REASON.gap,
         text: `外省学习倒扣 ${Math.abs(studyRow.points ?? 0)} 分,全国唯一,已计入 ${mbNow.total} 分`,
         key: PV_KEY.mbStudyDeduct, params: { pts: Math.abs(studyRow.points ?? 0), total: mbNow.total },
-        quote: studyRow.label, evidence: evOfFactor(studyRow),
+        quote: studyRow.label, evidence: evOfFactor({ f: studyRow }),
       })
     }
     if (!base.riskForeignWork && workRow) {
-      const worse = estimateMbEoi(data.scoreFactors, { ...base, riskForeignWork: true }).total
+      const worse = estimateMbEoi(input.data.scoreFactors, { ...base, riskForeignWork: true }).total
       reasons.push({
         kind: REASON.gap,
         text: `外省工作经历再扣 ${Math.abs(workRow.points ?? 0)} 分,降至 ${worse} 分`,
         key: PV_KEY.mbWorkDeduct, params: { pts: Math.abs(workRow.points ?? 0), total: worse },
-        quote: workRow.label, evidence: evOfFactor(workRow),
+        quote: workRow.label, evidence: evOfFactor({ f: workRow }),
       })
     }
-    const mbScored = data.draws.filter((d) => d.province === 'MB' && d.kind === FACTOR.draw && d.score != null)
+    const mbScored = input.data.draws.filter((d) => d.province === 'MB' && d.kind === FACTOR.draw && d.score != null)
       .sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1))
     if (mbScored.length) {
       // 这串会当参数进三语句子 → 分隔符必须是语言中立的半角符号。原来用「、」和「·」,
@@ -1048,7 +1069,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
         kind: REASON.gap,
         text: `估分 ${mbNow.total},语言拉满上界 ${ceil ?? '—'},最近抽选 ${lines}`,
         key: PV_KEY.mbScore, params: { score: mbNow.total, ceiling: ceil ?? '—', lines },
-        evidence: evOfDraw(mbScored[0]),
+        evidence: evOfDraw({ d: mbScored[0] }),
       })
     }
   }
@@ -1064,7 +1085,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
       text: `${draw.drawDate} 最近一轮最低邀请分 ${draw.score}${draw.scale ? ` ${draw.scale} 分制` : ''}`,
       key: draw.scale ? PV_KEY.drawLineScaled : PV_KEY.drawLine,
       params: { date: draw.drawDate, score: draw.score ?? 0, scale: draw.scale ?? '' },
-      evidence: evOfDraw(draw),
+      evidence: evOfDraw({ d: draw }),
     })
   }
 
@@ -1083,7 +1104,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
         score: score.value, ceiling: score.ceiling ?? 0, line: score.refLine ?? 0,
         stream: draw?.stream ?? score.refLabel, date: draw?.drawDate ?? '',
       },
-      evidence: draw ? evOfDraw(draw) : score.evidence,
+      evidence: draw ? evOfDraw({ d: draw }) : score.evidence,
     })
   }
 
@@ -1092,7 +1113,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   //   · 清单型排除(PE):经验差距是**另一件事**,仍按可积累的 gap 摆(C01 金标「24 月另列 gap」)。
   const hardKind: VerdictReason['kind'] = scoreGulf ? REASON.excluded : REASON.gap
   for (const r of gate.rows) {
-    const need = monthsOfReq(r)
+    const need = monthsOfReq({ r: r })
     if (need == null) continue
     // need=0 = 官方明说无门槛 → 恒达标(缺经验月数也一样:一道不存在的闸没有「判不了」)
     const met = need === 0 || (gate.have != null && gate.have >= need)
@@ -1114,7 +1135,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
       key: r.op === PERMIT.none ? PV_KEY.expNone : `pv.exp.${r.basis === BASIS.employerTenure ? 'tenure' : 'work'}.${
         gate.have == null ? 'unknown' : met ? 'ok' : gate.have === 0 ? 'need' : 'short'}`,
       params: { n: need, short: gate.have == null || met ? 0 : need - gate.have },
-      quote: quoteOfReq(r), evidence: evOfReq(r),
+      quote: quoteOfReq({ r: r }), evidence: evOfReq({ r: r }),
     })
   }
   for (const r of gate.unknownCond) {
@@ -1122,7 +1143,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
       kind: REASON.needsInfo,
       text: '另有一档门槛判不了,档案缺判定所需信息',
       key: PV_KEY.condUnknown,
-      quote: quoteOfReq(r), evidence: evOfReq(r),
+      quote: quoteOfReq({ r: r }), evidence: evOfReq({ r: r }),
     })
   }
   if (res) {
@@ -1135,7 +1156,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
           : `居住门槛 ${res.need} 个月,差 ${res.gap} 个月`,
       key: res.gap == null ? PV_KEY.resUnknown : res.gap === res.need ? PV_KEY.resNeed : PV_KEY.resShort,
       params: { n: res.need, short: res.gap ?? 0 },
-      quote: quoteOfReq(res.row), evidence: evOfReq(res.row),
+      quote: quoteOfReq({ r: res.row }), evidence: evOfReq({ r: res.row }),
     })
   }
   // 省外院校毕业生的额外在职门槛(#317)。条文出处在策略文件里(gates 的 quote 例外同一条口子:
@@ -1145,7 +1166,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
       : oopHave == null ? 'unknown'
         : oopHave >= oop.months ? 'ok'
           : oopHave === 0 ? 'need' : 'short'
-    const ev: Evidence = { url: oop.url, fetched: oop.fetched, label: spec.stream, ...(oop.effective ? { effective: oop.effective } : {}) }
+    const ev: Evidence = { url: oop.url, fetched: oop.fetched, label: input.spec.stream, ...(oop.effective ? { effective: oop.effective } : {}) }
     reasons.push({
       kind: state === 'ok' ? REASON.met : state === 'need' || state === 'short' ? REASON.gap : REASON.needsInfo,
       text: state === 'condUnknown'
@@ -1164,20 +1185,20 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   }
 
   for (const r of selfEmpRows) {
-    if (p.foreignExpSelfEmployed !== true) continue
+    if (input.p.foreignExpSelfEmployed !== true) continue
     blockedBy = blockedBy ?? 'selfEmployed'
-    reasons.push({ kind: REASON.gap, text: '自雇经历不计入工作经验', key: PV_KEY.selfEmp, quote: quoteOfReq(r), evidence: evOfReq(r) })
+    reasons.push({ kind: REASON.gap, text: '自雇经历不计入工作经验', key: PV_KEY.selfEmp, quote: quoteOfReq({ r: r }), evidence: evOfReq({ r: r }) })
   }
 
   // NL:指定雇主名录里申报过这个 NOC 的雇主数(supporting fact)
-  if (spec.reqProvince === 'NL' && p.noc) {
-    const hits = data.designatedEmployers.filter((e) => e.province === 'NL' && (e.nocs || '').split(',').map((s) => s.trim()).includes(p.noc as string))
+  if (input.spec.reqProvince === 'NL' && input.p.noc) {
+    const hits = input.data.designatedEmployers.filter((e) => e.province === 'NL' && (e.nocs || '').split(',').map((s) => s.trim()).includes(input.p.noc as string))
     const src = hits.find((e) => e.url && e.fetched)
     reasons.push({
       kind: hits.length ? REASON.met : REASON.gap,
-      text: `${data.designatedEmployers.filter((e) => e.province === 'NL').length} 家 NL 指定雇主中 ${hits.length} 家申报过 ${p.noc}`,
+      text: `${input.data.designatedEmployers.filter((e) => e.province === 'NL').length} 家 NL 指定雇主中 ${hits.length} 家申报过 ${input.p.noc}`,
       key: PV_KEY.nlDesignated,
-      params: { total: data.designatedEmployers.filter((e) => e.province === 'NL').length, hits: hits.length, noc: p.noc },
+      params: { total: input.data.designatedEmployers.filter((e) => e.province === 'NL').length, hits: hits.length, noc: input.p.noc },
       // mart 的 designated_employers 行不带 url/fetched(见类型注释的数据缺口)→ 挂不上就不挂,不借别的页的出处充数
       ...(src ? { evidence: { url: src.url as string, fetched: src.fetched as string, label: 'NLPNP designated employers' } } : {}),
     })
@@ -1196,56 +1217,56 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   // 专业对口:答「对口」即达标;答「不对口」时看该通道给不给本省院校的例外
   //(NL:Memorial/CNA 毕业生 + 岗位 TEER 0-3 可不对口;TEER 4/5 要对紧缺清单 → 判不了)
   const fieldMatchAnswer = (): boolean | null => {
-    if (p.fieldMatch !== false) return p.fieldMatch          // true=达标;null=没答→判不了
-    const ex = fieldMatchExemptionOf(spec.key)
+    if (input.p.fieldMatch !== false) return input.p.fieldMatch          // true=达标;null=没答→判不了
+    const ex = fieldMatchExemptionOf(input.spec.key)
     if (!ex) return false                                     // 没有例外条款 → 不对口就是缺口
-    if (p.studyProvince == null) return null                  // 不知道在哪读的书 → 判不了
-    if (p.studyProvince !== ex.studyProvince) return false    // 省外院校:官方明写要**直接**相关
-    return p.teer == null ? null : (ex.teers.includes(p.teer) ? true : null)
+    if (input.p.studyProvince == null) return null                  // 不知道在哪读的书 → 判不了
+    if (input.p.studyProvince !== ex.studyProvince) return false    // 省外院校:官方明写要**直接**相关
+    return input.p.teer == null ? null : (ex.teers.includes(input.p.teer) ? true : null)
   }
   const answerOf: Record<GateKey, boolean | null> = {
-    offer: p.hasOffer, statusInCanada: p.inCanada, credentialCanada: p.canadaStudy,
+    offer: input.p.hasOffer, statusInCanada: input.p.inCanada, credentialCanada: input.p.canadaStudy,
     fieldMatch: fieldMatchAnswer(),
-    french: p.frenchOk,
+    french: input.p.frenchOk,
   }
   // statusInCanada 按 asks 取答案(2026-08-15 拆闸):「境内身份」底下其实是三种官方要求,
   // inCanada 只答得了「人在不在加拿大」—— 拿它过工签闸,学签在读全被 AB/PE 放行;
   // 拿它过 NB/MB 的「住在/受雇于该省」,安省居民照样被放行。境外(inCanada=false)四种问法都是「没有」。
   const statusGateAnswer = (asks: StatusAsk | undefined): boolean | null => {
-    if (!asks) return p.inCanada                                 // 未标注 = 旧口径兜底
-    if (p.inCanada === false) return false
+    if (!asks) return input.p.inCanada                                 // 未标注 = 旧口径兜底
+    if (input.p.inCanada === false) return false
     // 2026-08-16 Frank「这个上面的问题也没问,你是否有工签啊?」:**许可只认许可题的答案**。
     // 先前由处境推(在读→学签、在工作→有工签),推出来的却是「差工签/已达标」这种结论性判定 ——
     // 两个方向都是没问就替他认定。境内一律问那道题(fields.permitBand 同日改成 inCanada),没答=判不了。
-    const permit = p.permit
+    const permit = input.p.permit
     switch (asks) {
       case 'workPermit':
         return permit ? permit === PERMIT.pgwp || permit === 'work' : null
       case PERMIT.pgwp:
         return permit ? permit === PERMIT.pgwp : null                 // 封闭/开放工签都不是 PGWP,不许充数
       case 'provResidence':
-        return p.province == null ? null : p.province === spec.reqProvince
+        return input.p.province == null ? null : input.p.province === input.spec.reqProvince
       case 'provEmployment': {
-        if (p.province == null) return null
-        if (p.province !== spec.reqProvince) return false
-        if (p.status === 'worker') return true                   // 处境明说在工作
-        if (p.status === PERMIT.study || p.status === 'other') return false  // 读书/找工作=明说不在职
+        if (input.p.province == null) return null
+        if (input.p.province !== input.spec.reqProvince) return false
+        if (input.p.status === 'worker') return true                   // 处境明说在工作
+        if (input.p.status === PERMIT.study || input.p.status === 'other') return false  // 读书/找工作=明说不在职
         // pgwp/没答说明不了在不在职 → 看本省在职月数(tenure 口径本来就只认本省攒的):
         // 攒过 = 在职过这家雇主;0 = 没在本省受雇过;没答 = 判不了
-        return p.expCanadaMonths == null ? null : p.expCanadaMonths > 0
+        return input.p.expCanadaMonths == null ? null : input.p.expCanadaMonths > 0
       }
     }
   }
   for (const g of GATE_KEYS) {
-    const rule = gateOf(spec.key, g)
+    const rule = gateOf(input.spec.key, g)
     if (rule.need === 'notRequired') continue                    // 没这道闸
     if (rule.need === 'unknown') {                               // 本站未收录 ≠ 官方不要求
       if (OPT_IN_GATES.has(g)) continue                          // 选配闸没声明 = 没扫过这类条款,跳过
       manifestUnknown = true
       manifestNoSource = true
-      reasons.push({ kind: REASON.needsInfo, text: `本站尚未收录 ${spec.stream} 的${gateLabels[g].zh}门槛条文`,
-        key: `pv.gate.${g}.notCollected`, params: { stream: spec.stream },
-        ...(rule.url ? { evidence: { url: rule.url, fetched: rule.fetched ?? '', label: spec.stream } } : {}) })
+      reasons.push({ kind: REASON.needsInfo, text: `本站尚未收录 ${input.spec.stream} 的${gateLabels[g].zh}门槛条文`,
+        key: `pv.gate.${g}.notCollected`, params: { stream: input.spec.stream },
+        ...(rule.url ? { evidence: { url: rule.url, fetched: rule.fetched ?? '', label: input.spec.stream } } : {}) })
       continue
     }
     const asks = g === 'statusInCanada' ? rule.asks : undefined
@@ -1253,7 +1274,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
     // 文案与 i18n key 按 asks 细分:判的是工签就说工签,不再统称「境内身份」(文案跟判据必须对得上)
     const what = asks ? askLabels[asks].zh : gateLabels[g].zh
     const keyOf = (state: string) => `pv.gate.${g}${asks ? `.${asks}` : ''}.${state}`
-    const ev = { url: rule.url, fetched: rule.fetched, label: spec.stream }
+    const ev = { url: rule.url, fetched: rule.fetched, label: input.spec.stream }
     if (have == null) {                                          // 有闸,但用户没答 → 判不了
       manifestUnknown = true
       missingSlots.push(g)
@@ -1273,7 +1294,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   // 最大的那个缺口定 tier;并列时**经验类优先**当代表(它决定 tierBasis,居住类没有起算点问题)
   const worst = gaps.reduce<{ months: number; kind: 'work' | 'residence' } | null>(
     (a, b) => (a == null || b.months > a.months || (b.months === a.months && b.kind === 'work') ? b : a), null)
-  const tier: PathwayVerdict['tier'] = excluded ? null : tierOfMonths(worst?.months ?? 0)
+  const tier: PathwayVerdict['tier'] = excluded ? null : tierOfMonths({ m: worst?.months ?? 0 })
   // 三值折叠:清单里每一类闸都 met 才是 open;有 unknown 就是「判不了」;有明确不满足的闸 → blockedBy 兜住
   //(rank 里 blockedBy 排在无阻碍的 open 之后,标签另写 —— 与语言差档同一套语义)。
   const needsInfo = !excluded && (!gate.picked || gate.gap == null || missingSlots.length > 0 || manifestUnknown)
@@ -1291,7 +1312,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   // + 真的有等待期(下发的 tier > 0,库缺行被抹成 null 的那种不谈起算点)
   // + 这段等待来自经验/在职门槛(居住门槛不吃这条:人搬过去当天就在计时)。
   const outTier: PathwayVerdict['tier'] = verdict === REASON.needsInfo && !gate.picked ? null : tier
-  const studying = p.status === PERMIT.study && (p.permit == null || p.permit === PERMIT.study)
+  const studying = input.p.status === PERMIT.study && (input.p.permit == null || input.p.permit === PERMIT.study)
   const tierBasis: PathwayVerdict['tierBasis'] =
     studying && !excluded && outTier != null && outTier > 0 && worst?.kind === 'work' && worst.months > 0
       ? TIER_BASIS.afterStudy : TIER_BASIS.now
@@ -1301,7 +1322,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   const tierFullTime = worst?.kind === 'work' && /full[\s-]?time/i.test(gate.picked?.label ?? '')
 
   return {
-    key: spec.key, province: spec.province, stream: spec.stream,
+    key: input.spec.key, province: input.spec.province, stream: input.spec.stream,
     verdict, tier: outTier, tierBasis, ...(tierFullTime ? { tierFullTime: true } : {}),
     ...(blockedBy && !excluded ? { blockedBy } : {}),
     ...(missingSlots.length && !excluded ? { missingSlots: Array.from(new Set(missingSlots)) } : {}),
@@ -1316,8 +1337,8 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
  * → excluded 沉底(tier 恒 null → 注册表原序)。
  * **同 tier 不再排序**(v1 没有配额/竞争度入参,按注册表原序保持稳定 —— 编个次序出来等于替用户拿主意)。
  */
-export function pathVerdict(profile: VerdictProfile, data: VerdictData): PathwayVerdict[] {
-  const out = REGISTRY.map((spec, i) => ({ v: evaluateOne(spec, profile, data), i }))
+export function pathVerdict(input: PathVerdictIn): PathVerdictOut {
+  const out = REGISTRY.map((spec, i) => ({ v: evaluateOne({ spec: spec, p: input.profile, data: input.data }), i }))
   // 四档:现在就能走 → 被硬门槛卡住(考试能补,但**现在**走不了) → 缺档案判不了 → 排除。
   // 先前只有三档,「差 3 档语言」和「全部达标」并列 tier0,谁在注册表里靠前谁第一。
   // 2026-08-12 二拍(Frank 实拍:「纽芬兰那个需要学历,为什么还排在前面?」):
@@ -1330,10 +1351,10 @@ export function pathVerdict(profile: VerdictProfile, data: VerdictData): Pathway
   // 阿省机会通道因为「差工签」被排到差 offer 的路之后,而他毕业拿 PGWP 基本是既定事实,
   // offer 才是真要去抢的那一样)。**只降到与 offer 同级、不越过它**:PGWP 仍需毕业+申请,
   // 不是今天就有。判据要三件同时成立 —— 在本省读书 + 学历在本省 + 这条路要的是工签(不是 PGWP 本身)。
-  const pgwpExpected = profile.status === PERMIT.study && profile.canadaStudy === true
+  const pgwpExpected = input.profile.status === PERMIT.study && input.profile.canadaStudy === true
   const workPermitSoon = (v: PathwayVerdict): boolean =>
     pgwpExpected && v.blockedBy === 'statusInCanada'
-    && profile.studyProvince != null && profile.studyProvince === v.province
+    && input.profile.studyProvince != null && input.profile.studyProvince === v.province
     && gateOf(v.key, 'statusInCanada').need === 'required'
     && (gateOf(v.key, 'statusInCanada') as { asks?: string }).asks === 'workPermit'
   const obstacle = (v: PathwayVerdict): number =>
@@ -1365,28 +1386,28 @@ const EMPTY_PROFILE: VerdictProfile = {
 }
 
 /** 排序:可判的按经验门槛升序 → 门槛未收录 → 清单排除沉底;同档按注册表原序(与卡片效果图一致)。 */
-export function jobPathways(noc: string | null, teer: number | null, data: VerdictData): JobPathwayRow[] {
-  const p: VerdictProfile = { ...EMPTY_PROFILE, noc, teer }
+export function jobPathways(input: JobPathwaysIn): JobPathwaysOut {
+  const p: VerdictProfile = { ...EMPTY_PROFILE, noc: input.noc, teer: input.teer }
   const out = REGISTRY.map((spec, i) => {
-    const rows = reqsOf(spec, data.requirements)
+    const rows = reqsOf(spec, input.data.requirements)
     // 清单判定与 evaluateOne ① 同口径(那边还要造 quote/evidence,这里只要布尔,不共函数)
     let listedIn = false
     let excludedByList = false
-    if (noc) {
-      excludedByList = data.occupations.some((o) => o.province === spec.reqProvince && o.type === 'ineligible' && o.noc === noc
+    if (input.noc) {
+      excludedByList = input.data.occupations.some((o) => o.province === spec.reqProvince && o.type === 'ineligible' && o.noc === input.noc
         && (!o.appliesTo || o.appliesTo.toLowerCase().includes('employment offer') === /employment offer/i.test(spec.stream)))
-      listedIn = data.occupations.some((o) => o.province === spec.reqProvince && o.type === INDEMAND && o.noc === noc)
+      listedIn = input.data.occupations.some((o) => o.province === spec.reqProvince && o.type === INDEMAND && o.noc === input.noc)
       if (spec.listRequired) {
-        const list = data.occupations.filter((o) => o.province === spec.listRequired!.province && o.type === INDEMAND
+        const list = input.data.occupations.filter((o) => o.province === spec.listRequired!.province && o.type === INDEMAND
           && spec.listRequired!.streamRe.test(o.stream))
-        if (list.length && !list.some((o) => o.noc === noc)) excludedByList = true
+        if (list.length && !list.some((o) => o.noc === input.noc)) excludedByList = true
       }
     }
     if (!rows.length) {
       return { row: { key: spec.key, province: spec.province, stream: spec.stream, months: null, tenure: false, listedIn, excludedByList, availability: 'not-collected' as Availability }, i }
     }
     const selfEmpExcluded = rows.some((r) => r.factor === 'workSelfEmployed' || r.factor === 'experienceExcluded')
-    const gate = pickGate(spec, rows, p, selfEmpExcluded)
+    const gate = pickGate({ spec: spec, rows: rows, p: p, selfEmpExcluded: selfEmpExcluded })
     return {
       row: {
         key: spec.key, province: spec.province, stream: spec.stream,
@@ -1406,15 +1427,15 @@ export function jobPathways(noc: string | null, teer: number | null, data: Verdi
  * @param clbTarget 语言目标档(默认 8:雅思一次提两档是最常见的可行目标)。**分值仍全部查表**,
  *                  这里给的只是「问哪一档」的场景参数,不是官方数字。
  */
-export function pathLevers(profile: VerdictProfile, data: VerdictData, opts: { clbTarget?: number; teerDowngradeNoc?: string } = {}): VerdictLever[] {
+export function pathLevers(input: PathLeversIn): PathLeversOut {
   const levers: VerdictLever[] = []
 
   // ① 接低 TEER 的岗(如 75110 construction trades helpers and labourers,TEER 5)会毁掉哪些通道 ——
   //    不写死结论:拿改过 TEER 的同一份档案重跑一遍注册表,看哪几条从 open 掉出来。
-  const downNoc = opts.teerDowngradeNoc ?? '75110'
-  if (profile.teer != null && profile.teer < 5 && profile.noc) {
-    const before = pathVerdict(profile, data)
-    const after = pathVerdict({ ...profile, noc: downNoc, teer: 5 }, data)
+  const downNoc = input.opts.teerDowngradeNoc ?? '75110'
+  if (input.profile.teer != null && input.profile.teer < 5 && input.profile.noc) {
+    const before = pathVerdict({ profile: input.profile, data: input.data })
+    const after = pathVerdict({ profile: { ...input.profile, noc: downNoc, teer: 5 }, data: input.data })
     const byKey = new Map(after.map((v) => [v.key, v]))
     // 「接 TEER 5 岗会掉档」问的是**职业等级**这一件事,与「你今天够不够格」无关 ——
     // 原来只看 verdict===VERDICT.viable,门槛清单上线后大量通道落 needs-info(缺 offer 答案),
@@ -1429,7 +1450,7 @@ export function pathLevers(profile: VerdictProfile, data: VerdictData, opts: { c
       return (a?.tier ?? 9) > (b.tier ?? 9)
     }
     const affected = before.filter((v) => v.verdict !== REASON.excluded && worse(v)).map((v) => v.key)
-    const teerRows = data.requirements.filter((r) => r.factor === FACTOR.experience && r.appliesTeer && !teerHit(r, 5))
+    const teerRows = input.data.requirements.filter((r) => r.factor === FACTOR.experience && r.appliesTeer && !teerHit(r, 5))
     if (affected.length) {
       levers.push({
         key: 'teer-downgrade',
@@ -1438,42 +1459,42 @@ export function pathLevers(profile: VerdictProfile, data: VerdictData, opts: { c
         reasons: teerRows.slice(0, 4).map((r) => ({
           kind: REASON.excluded,
           text: `${r.province} ${r.stream}:该门槛只认 TEER ${r.appliesTeer}`,
-          quote: quoteOfReq(r), evidence: evOfReq(r),
+          quote: quoteOfReq({ r: r }), evidence: evOfReq({ r: r }),
         })),
       })
     }
   }
 
   // ② 语言提档:同一套官方分值表查两次,报差值(ON 单行=总分;MB 四项各查一次,走 mbEoiEstimate)
-  const target = opts.clbTarget ?? 8
-  if (profile.clb != null && profile.clb < target) {
+  const target = input.opts.clbTarget ?? 8
+  if (input.profile.clb != null && input.profile.clb < target) {
     const gains: NonNullable<VerdictLever['gains']>[number][] = []
-    const onRows = data.scoreFactors.filter((f) => f.province === 'ON' && f.factor === FACTOR.language && f.kind === FACTOR_ROW)
+    const onRows = input.data.scoreFactors.filter((f) => f.province === 'ON' && f.factor === FACTOR.language && f.kind === FACTOR_ROW)
     const pickOn = (clb: number): ScoreFactor | null => {
-      const scored = onRows.map((f) => ({ f, th: maxClbIn([f.label]) })).filter((x): x is { f: ScoreFactor; th: number } => x.th != null)
+      const scored = onRows.map((f) => ({ f, th: maxClbIn({ labels: [f.label] }) })).filter((x): x is { f: ScoreFactor; th: number } => x.th != null)
       const ok = scored.filter((x) => x.th <= clb)
       return ok.length ? ok.reduce((a, b) => (b.th > a.th ? b : a)).f : null
     }
-    const onFrom = pickOn(profile.clb), onTo = pickOn(target)
+    const onFrom = pickOn(input.profile.clb), onTo = pickOn(target)
     if (onFrom && onTo) {
       gains.push({
         province: 'ON', system: onFrom.system, from: onFrom.points ?? 0, to: onTo.points ?? 0,
-        delta: (onTo.points ?? 0) - (onFrom.points ?? 0), evidence: evOfFactor(onTo),
+        delta: (onTo.points ?? 0) - (onFrom.points ?? 0), evidence: evOfFactor({ f: onTo }),
       })
     }
-    if (data.scoreFactors.some((f) => f.province === 'MB') && profile.age != null && profile.edu != null) {
-      const mbGate = data.requirements.filter((r) => r.province === 'MB' && /skilled worker in manitoba/i.test(r.stream) && r.factor === FACTOR.experience)
-      const need = Math.max(...mbGate.map((r) => monthsOfReq(r) ?? 0), 0)
-      const work = Math.max(profile.expCanadaMonths ?? 0, need)
-      const from = estimateMbEoi(data.scoreFactors, mbProfileOf(profile, work, profile.clb))
-      const to = estimateMbEoi(data.scoreFactors, mbProfileOf(profile, work, target))
-      const head = data.scoreFactors.find((f) => f.province === 'MB') as ScoreFactor
-      gains.push({ province: 'MB', system: from.system, from: from.total, to: to.total, delta: to.total - from.total, evidence: evOfFactor(head) })
+    if (input.data.scoreFactors.some((f) => f.province === 'MB') && input.profile.age != null && input.profile.edu != null) {
+      const mbGate = input.data.requirements.filter((r) => r.province === 'MB' && /skilled worker in manitoba/i.test(r.stream) && r.factor === FACTOR.experience)
+      const need = Math.max(...mbGate.map((r) => monthsOfReq({ r: r }) ?? 0), 0)
+      const work = Math.max(input.profile.expCanadaMonths ?? 0, need)
+      const from = estimateMbEoi(input.data.scoreFactors, mbProfileOf({ p: input.profile, workMonths: work, clb: input.profile.clb }))
+      const to = estimateMbEoi(input.data.scoreFactors, mbProfileOf({ p: input.profile, workMonths: work, clb: target }))
+      const head = input.data.scoreFactors.find((f) => f.province === 'MB') as ScoreFactor
+      gains.push({ province: 'MB', system: from.system, from: from.total, to: to.total, delta: to.total - from.total, evidence: evOfFactor({ f: head }) })
     }
     if (gains.length) {
       levers.push({
         key: 'clb-boost',
-        text: `语言从 CLB ${profile.clb} 提到 CLB ${target}:${gains.map((g) => `${g.province} +${g.delta}`).join('、')}`,
+        text: `语言从 CLB ${input.profile.clb} 提到 CLB ${target}:${gains.map((g) => `${g.province} +${g.delta}`).join('、')}`,
         gains,
       })
     }
