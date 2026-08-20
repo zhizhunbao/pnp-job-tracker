@@ -14,9 +14,9 @@
 export { chatProfileContext } from './answer'
 export { profileFill } from './followups'
 export { logChat, threadId } from './log'
-export { ChatError, orchestrate } from './orchestrate'
+export { orchestrate } from './orchestrate'
 export type { ChatStep } from './steps'
-export type { ChatResult, ChatTurn } from './types'
+export type { ChatResult, ChatTurn, Slots } from './types'
 
 // ── 反向取:lib/i18n/chat 的三语字典按这几个键分叉(全 type-only,运行时无环)──
 export type { FollowKey } from './followups'

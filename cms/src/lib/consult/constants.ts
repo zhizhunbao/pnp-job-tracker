@@ -1,0 +1,726 @@
+/**
+ * 对话域的参数:后端地址与模型、采样、采信白名单、几处截断上限与 prompt 的结构锚点。
+ *
+ * 🔵 **失败与留痕不在这儿**:造错在 `lib/error`,日志字面量在 `lib/log`(全站各只有一处);
+ * 给模型看的字在 `prompts.ts`。这里只放 JSON 装得下的东西 —— 标量、字符串表、正则。
+ *
+ * @author Frank
+ * @time 2026-08-19 21:42:05
+ */
+
+import { ALL_PROVS } from '../location'
+import type { Lang } from '../i18n'
+
+// =========================================================================
+// 1. 后端与模型
+// =========================================================================
+
+/**
+ * 网关地址。生产(Render)在云上打不到局域网,只能走这条隧道;
+ * 本机开发把 `CHAT_LLM_BASE` 指到 `http://192.168.1.150:11434` 就直连那台盒子(同一台机器,少一层包装)。
+ */
+export const BASE = (process.env.CHAT_LLM_BASE || process.env.TRANSLATE_API_BASE || '').replace(/\/$/, '')
+
+/**
+ * 网关的钥匙。直连局域网时没有鉴权,留空即可。
+ */
+export const KEY = process.env.CHAT_LLM_KEY ?? process.env.TRANSLATE_API_KEY ?? ''
+
+/**
+ * 没有钥匙时给 pi 的占位。
+ *
+ * pi 不管后端认不认都要一个非空 `apiKey`(缺了当场抛 `No API key for provider`),
+ * 而直连局域网那台裸 Ollama **根本没有鉴权**。占位只喂给 pi,不会发出去 ——
+ * `Authorization` 头只在真有钥匙时才挂(见 `model()` 末尾那行)。
+ */
+export const NO_KEY_PLACEHOLDER = 'local'
+
+/**
+ * 模型名。经包装的那个门叫 `qwen3.6`,裸 Ollama 那个门叫 `qwen3.6:latest`。
+ */
+export const MODEL_ID = process.env.CHAT_LLM_MODEL || process.env.TRANSLATE_API_MODEL || 'qwen3.6'
+
+/**
+ * 模型的上下文窗口。qwen3.6 是 262144;经包装那个门另有字符上限,那是包装层的配置不是模型的。
+ */
+export const CONTEXT_WINDOW = 262_144
+
+/**
+ * 单发输出上限。答复本身还有出口按句截断兜着,这里只防跑飞。
+ */
+export const MAX_TOKENS = 1200
+
+/**
+ * 一趟循环的总预算。超了就掐断报「系统繁忙」——旧链的看门狗是 15 秒,
+ * 但那盯的是单发合成;工具循环是多轮,预算按整趟算。
+ */
+export const TIMEOUT_MS = Number(process.env.CHAT_PI_TIMEOUT_MS ?? 45_000)
+
+/**
+ * 直接塞进请求体的采样参数。
+ *
+ * 走 `samplingParams` 而不是 pi 自己的 thinkingLevel:pi 在 thinking 判定为 off 时
+ * **根本不发** `reasoning_effort` 字段(见 openai-completions.js 的 `clampedReasoning === "off" ? undefined`),
+ * 而 qwen 的默认恰恰是**开着思考** —— 不发等于不关,只有把这个键直接塞进 body 才真的关掉。
+ * (另两条路实测都不行:`think:false` 是 Ollama 原生 `/api/chat` 专用,`/v1` 不认;
+ * `chat_template_kwargs.enable_thinking` 会把正文整个吃空。)
+ */
+export const SAMPLING = {
+  /**
+   * 🔴 关掉思维链。实测同一套四工具循环:开思考 11.4 秒、关掉 **4.6 秒**,而且少绕一轮。
+   */
+  reasoning_effort: 'none',
+
+  /**
+   * 🔴 **温度必须是 0,这是正确性问题不是风格问题。**
+   *
+   * 实测(同一份真实请求体重复 6 次):默认温度下**只有 2/6 真的调了工具**,
+   * 另外 4 次它直接编 —— 而且编得像真的:「我查询了数据库,目前没有找到与"木匠"完全匹配的职位代码」、
+   * 「安大略省目前有 132 个木匠职位的空缺」(那个数是凭空来的)。温度置 0 之后 **6/6**。
+   *
+   * 为什么会这样:system prompt 里全是「不许说没查到的东西」这类约束,模型在采样时
+   * 有一定概率走上「扮演一个查过的助手」而不是「真去调工具」。这不是 prompt 写坏了 ——
+   * 前 13 块逐块加上去都能调,是**采样的随机性**。工具派发不需要创造性,0 才是对的。
+   */
+  temperature: 0,
+}
+
+// =========================================================================
+// 2. 采信与截断
+// =========================================================================
+
+/**
+ * 认得出的省码。
+ *
+ * 直接用共享叶子的表,不在本域再抄一份 —— 省码的家是 `lib/location`(宪法:共享叶子例外)。
+ */
+export const PROVS = ALL_PROVS
+
+/**
+ * 职业码就是五位数字。模型给别的形状一律不采信。
+ */
+export const NOC_RE = /^\d{5}$/
+
+/**
+ * 一次检索最多回几个候选。
+ */
+export const SEARCH_LIMIT = 8
+
+/**
+ * 榜首这个比例以下的候选当噪音丢掉 —— 它们是被官方要求文本连带捞出来的,进了白名单就是给模型递错答案。
+ */
+export const NOISE_RATIO = 0.1
+
+/**
+ * 检索词截断。实测模型爱把整句话塞进来。
+ */
+export const MAX_QUERY = 60
+
+/**
+ * 一趟最多攒多少条事实。再多前端也读不完。
+ */
+export const MAX_FACTS = 40
+
+// =========================================================================
+// 3. prompt 的结构锚点
+// =========================================================================
+
+/**
+ * 语种在 prompt 里的名字。
+ */
+export const LANG_NAME: Record<Lang, string> = {
+  /**
+   * 简体中文。写全称不写 `Chinese` —— 后者会让模型在简繁之间摇摆。
+   */
+  zh: 'Simplified Chinese',
+
+  /**
+   * 英文。
+   */
+  en: 'English',
+
+  /**
+   * 韩文。
+   */
+  ko: 'Korean',
+}
+
+/**
+ * 历史那一段的段名。大写是结构锚点,出口的 findLeaks 逐个盯着它们别漏进答复。
+ */
+export const EARLIER_HEAD = 'EARLIER (already read by this person — do not repeat any of it):'
+
+/**
+ * 用户这一句的段名。
+ */
+export const NOW_HEAD = 'NOW: '
+
+/**
+ * 换行。写成常量是因为它要拼进模板串,而模板串里直接敲换行会把缩进也带进 prompt。
+ */
+export const NL = '\n'
+
+/**
+ * 历史每轮截多少字。留够看得出「这一轮已经说过什么」,又不至于把上下文撑大。
+ */
+export const HISTORY_CAP = 320
+
+// =========================================================================
+// 4. 出口闸
+// =========================================================================
+
+/**
+ * 行首的排版记号:项目符号或一两位序号。数字回读要先把它抹掉,否则序号会被当成一个凭空的数。
+ */
+export const LEAD_MARK = /^\s*[-\d]{1,3}[.)、]?\s*/
+
+/**
+ * 从答复里抠数字用的。千分位与小数点都算在一个数里面。
+ */
+export const NUM_RE = /\d+(?:[.,]\d+)*/g
+
+/**
+ * 内部枚举与字段名 —— **一个都不许出现在答复里**。
+ * 2026-08-04 事故:兜底把英文内部标签原样吐给了用户。
+ */
+export const INTERNAL_WORDS = [
+  'not-published', 'not-collected', 'not-applicable', 'availability', 'evidence',
+  'valueText', 'fetched', 'lookup_', 'search_occupations', 'assess_pathways', 'check_claims',
+]
+
+/**
+ * 中/韩答复里不许出现的英文单位速记。数据是英文的,话不能是。
+ */
+export const EN_UNIT_WORDS = [
+  'jobs', 'openings', 'postings', 'years', 'months', 'weeks', 'days', 'points',
+  'invitations', 'spots', 'cutoff', 'requires', 'nominations',
+]
+
+/**
+ * 出口闸最多重试几次。撞了改一次还撞,就降级成事实清单 —— 再让模型重写只是多等一轮。
+ */
+export const GUARD_RETRIES = 1
+
+/**
+ * 见客答复的字数上限,按语种。中文信息密度高,同样的意思字更少。
+ */
+export const LEN_CAP: Record<Lang, number> = {
+  /**
+   * 中文信息密度高,同样的意思字更少。
+   */
+  zh: 600,
+
+  /**
+   * 韩文比中文松一点。
+   */
+  ko: 700,
+
+  /**
+   * 英文一个词就好几个字符,上限要放到中文的两倍多才等价。
+   */
+  en: 1400,
+}
+
+// =========================================================================
+// 5. 字面量(functions.ts 里不许有裸字符串)
+// =========================================================================
+
+/**
+ * 工具名。**只在这里写一遍** —— 注册工具、给事实打 `tool` 标记、出口闸的内部词黑名单,
+ * 三处用的必须是同一个字符串;各写各的,改一处就会剩下两处对不上。
+ */
+export const TOOL_NAME = {
+  /**
+   * 查职业候选。
+   */
+  search: 'search_occupations',
+
+  /**
+   * 在招岗位。
+   */
+  jobs: 'lookup_jobs',
+
+  /**
+   * 省提名清单收录。
+   */
+  coverage: 'lookup_coverage',
+
+  /**
+   * 省提名门槛条文。
+   */
+  thresholds: 'lookup_thresholds',
+}
+
+/**
+ * 轨迹里给人看的工具名。
+ */
+export const TOOL_LABEL = {
+  /**
+   * 查职业候选。
+   */
+  search: '查职业',
+
+  /**
+   * 在招岗位。
+   */
+  jobs: '在招岗位',
+
+  /**
+   * 省提名清单收录。
+   */
+  coverage: '清单收录',
+
+  /**
+   * 省提名门槛条文。
+   */
+  thresholds: '省提名门槛',
+}
+
+/**
+ * 四态的字面量。**判定与渲染共用这一份** —— 见 `types.ts` 的 `Availability`。
+ */
+export const AVAIL = {
+  /**
+   * 有值。
+   */
+  ok: 'ok',
+
+  /**
+   * 官方不公布。**这是官方的问题** —— 举不出 URL 与原句就不许用它。
+   */
+  notPublished: 'not-published',
+
+  /**
+   * 本站未收录。**这是我们的问题**,是举不出证时唯一能落的那一档。
+   */
+  notCollected: 'not-collected',
+
+  /**
+   * 这一项对它不适用。
+   */
+  notApplicable: 'not-applicable',
+} as const
+
+/**
+ * 消息角色与内容块种类。**我们只产 user** —— 见 `firstPrompt` 上面那段。
+ */
+export const ROLE = {
+  /**
+   * 用户轮。
+   */
+  user: 'user',
+
+  /**
+   * 助手轮,由 pi 产。
+   */
+  assistant: 'assistant',
+
+  /**
+   * 工具回执轮。
+   */
+  toolResult: 'toolResult',
+
+  /**
+   * 文本内容块。工具回执与答复正文都是它。
+   */
+  text: 'text',
+} as const
+
+/**
+ * 事实的单位。`status` 与 `threshold` 是两个特殊值:前者是四态行,后者是门槛行。
+ */
+export const UNIT = {
+  /**
+   * 在招岗位数。
+   */
+  jobs: 'jobs',
+
+  /**
+   * 通道条数。
+   */
+  streams: 'streams',
+
+  /**
+   * 四态行,没有数值。
+   */
+  status: 'status',
+
+  /**
+   * 门槛行,官方没给单位时用它兜底。
+   */
+  threshold: 'threshold',
+} as const
+
+/**
+ * 拼字符串用的分隔符。**收在一处**,免得同一种分隔在三个函数里写成三个样子。
+ */
+export const SEP = {
+  /**
+   * 一条事实里「说明」与「值」之间。
+   */
+  colon: ': ',
+
+  /**
+   * 多个通道名之间。
+   */
+  semi: '; ',
+
+  /**
+   * 见客引文里「省」与「内容」之间。全角间隔号,中英文都不难看。
+   */
+  dot: ' · ',
+
+  /**
+   * 候选清单里「码」与「职业名」之间。
+   */
+  dash: ' — ',
+
+  /**
+   * 项目符号。**前端只认行首这两个字符**,换成别的会原样见客。
+   */
+  bullet: '- ',
+
+  /**
+   * 事实清单里的逗号。
+   */
+  comma: ', ',
+
+  /**
+   * 该有值却没有。
+   */
+  none: '-',
+}
+
+/**
+ * 门槛条文里「这条管谁」。
+ */
+export const SUBJECT = {
+  /**
+   * 管申请人。
+   */
+  applicant: 'applicant',
+
+  /**
+   * 管雇主。**这两个搞混,句子本身就是假的**(「你要开满一年」vs「雇主要开满一年」)。
+   */
+  employer: 'employer',
+} as const
+
+/**
+ * 联邦那一批门槛行的省码。它们不是省,是「联邦」,按省分组时要先剔掉。
+ */
+export const FED = 'FED'
+
+/**
+ * 魁省走自己的体系,不属 PNP —— 门槛与清单都不摆它。
+ */
+export const QC = 'QC'
+
+/**
+ * `LIKE` 检索时要转义的特殊字符。
+ */
+export const LIKE_SPECIAL = /[%_\\]/g
+
+/**
+ * 清单里「明确排除」那一类的标记值。
+ */
+export const INELIGIBLE = 'ineligible'
+
+/**
+ * `LIKE` 检索的转义替换串。反斜杠加原字符 —— 写成常量是因为它在模板串里极容易被转义吃掉。
+ */
+export const LIKE_ESCAPE = '\$&'
+
+/**
+ * `LIKE` 的通配符,前后各一个 = 子串匹配。
+ */
+export const LIKE_ANY = '%'
+
+// =========================================================================
+// 6. 协议与出口闸的字面量
+// =========================================================================
+
+/**
+ * pi 认的协议名。局域网直连与经隧道两个门说的都是它。
+ */
+export const API = 'openai-completions'
+
+/**
+ * pi 认的提供方名。网关是 OpenAI 兼容的,所以报这个。
+ */
+export const PROVIDER = 'openai'
+
+/**
+ * OpenAI 兼容端点的路径前缀。
+ */
+export const V1 = '/v1'
+
+/**
+ * 鉴权头的前缀,后面接钥匙。
+ */
+export const BEARER = 'Bearer '
+
+/**
+ * 鉴权头的名字。
+ */
+export const AUTH_HEADER = 'Authorization'
+
+/**
+ * pi 事件里我们唯一订阅的那一种:助手消息又长了一截。
+ */
+export const MESSAGE_UPDATE = 'message_update'
+
+/**
+ * 四道出口闸的名字。日志按它具名 —— 「撞的是谁」要看得见。
+ */
+export const GATE = {
+  /**
+   * 答复里有溯不到出处的数字。**这一道是「不许编数字」唯一的执行件。**
+   */
+  ungrounded: 'ungroundedNumber',
+
+  /**
+   * 内部枚举或字段名漏进了答复。
+   */
+  internal: 'internalWord',
+
+  /**
+   * 中/韩答复里夹了英文单位速记。
+   */
+  englishUnit: 'englishUnit',
+
+  /**
+   * 用了前端渲染不出来的排版记号。
+   */
+  markup: 'rawMarkup',
+}
+
+/**
+ * 前端渲染不出来的排版记号 —— 出现即原样见客。
+ */
+export const MARKUP = {
+  /**
+   * 加粗。
+   */
+  bold: '**',
+
+  /**
+   * 星号项目符号。前端只认 `- `。
+   */
+  star: '* bullet',
+
+  /**
+   * 标题。
+   */
+  heading: '#',
+
+  /**
+   * 表格竖线。
+   */
+  pipe: '|',
+
+  /**
+   * 编号列表。它还会撞数字闸的行首白名单。
+   */
+  numbered: 'numbered list',
+}
+
+/**
+ * 事实说明里的固定措辞。**给模型看的英文**,不是见客文案。
+ */
+export const LABEL = {
+  /**
+   * 在招岗位那条的中段。
+   */
+  openPostings: ' open postings for ',
+
+  /**
+   * 职业码的括号,前半。
+   */
+  nocOpen: ' (NOC ',
+
+  /**
+   * 职业码的括号,后半。
+   */
+  nocClose: ')',
+
+  /**
+   * 见客引文里的职业码。
+   */
+  nocDot: ' · NOC ',
+
+  /**
+   * 清单收录那条。
+   */
+  provList: ' provincial occupation list for NOC ',
+
+  /**
+   * 收录它的通道。
+   */
+  streamsListing: ' streams listing NOC ',
+
+  /**
+   * 排除它的通道。
+   */
+  streamsExcluding: ' streams that exclude NOC ',
+
+  /**
+   * 门槛那条。
+   */
+  requirements: ' provincial nominee requirements for NOC ',
+
+  /**
+   * 门槛判定里「因素」与「官方原文」之间。
+   */
+  dash: ' — ',
+
+  /**
+   * 分档之间的连接号(不是减号,是短横)。
+   */
+  range: '–',
+}
+
+/**
+ * 出处链接的两段。指向本站的职位板,不是官方页 —— 在招数是我们自己的统计。
+ */
+export const JOBS_LINK = {
+  /**
+   * 前半,后面接职业码。
+   */
+  head: '/jobs?noc=',
+
+  /**
+   * 后半,后面接省码。
+   */
+  prov: '&prov=',
+}
+
+/**
+ * 已知档案那一段里各项的措辞。
+ */
+export const SAID = {
+  /**
+   * 职业码。
+   */
+  noc: 'occupation NOC ',
+
+  /**
+   * 他自己说的职业名,前半。
+   */
+  occOpen: 'job title "',
+
+  /**
+   * 接上一条收尾。
+   */
+  occClose: '"',
+
+  /**
+   * 省份。
+   */
+  provs: 'provinces ',
+
+  /**
+   * 工作经验。
+   */
+  exp: ' months of work experience',
+
+  /**
+   * 现在的身份。
+   */
+  status: 'current status ',
+
+  /**
+   * 一项说完的句号。
+   */
+  stop: '.',
+}
+
+/**
+ * 抛错时的技术留痕措辞。只有 `@test.local` 的探针看得到。
+ */
+export const FAIL_MSG = {
+  /**
+   * 整趟循环超时,后面接毫秒数。
+   */
+  timeout: 'chat loop timed out after ',
+
+  /**
+   * 接上一条的单位。
+   */
+  ms: 'ms',
+
+  /**
+   * env 没配。
+   */
+  noBase: 'consult llm base not configured',
+
+  /**
+   * 撞了闸又没有事实可降级,后面接撞了哪几道。
+   */
+  noFacts: 'no facts to fall back on: ',
+}
+
+/**
+ * 英文的语种码。出口闸对英文答复不查「夹英文」那一项。
+ */
+export const EN = 'en'
+
+/**
+ * 拼单词边界的正则片段。查英文速记时要整词匹配,免得 `days` 命中 `nowadays`。
+ */
+export const WORD_EDGE = '\b'
+
+/**
+ * 中文句号。按句截断时它和英文句点一样是断点。
+ */
+export const FULL_STOP = '。'
+
+/**
+ * 小数末尾的零。数字回读比对前要抹掉,`31264.0` 与 `31264` 是同一个数。
+ */
+export const TRAILING_ZEROS = /\.0+$/
+
+/**
+ * 加粗记号。
+ */
+export const BOLD_RE = /\*\*/
+
+/**
+ * 星号项目符号(行首)。
+ */
+export const STAR_RE = /(?:^|\n)\s*\*\s/
+
+/**
+ * 标题(行首)。
+ */
+export const HEADING_RE = /(?:^|\n)\s*#/
+
+/**
+ * 表格竖线。
+ */
+export const TABLE_RE = /\|/
+
+/**
+ * 编号列表(行首)。
+ */
+export const NUMBERED_RE = /(?:^|\n)\s*\d+\.\s/
+
+/**
+ * 一个空格。数字回读把行首序号抹成它 —— 抹成空串会把前后两个词粘在一起,粘出新的"数字"。
+ */
+export const SPACE = ' '
+
+/**
+ * 降级清单最多列几条。再多没人读得完,而清单的意义是"能溯源",不是"全都给"。
+ */
+export const SHEET_CAP = 14
+
+/**
+ * 有没有数字。行首记号是序号还是项目符号,靠它分。
+ */
+export const HAS_DIGIT = /\d/
+
+/**
+ * 往 prompt 里带几轮历史。够看出「这一轮已经说过什么」,又不至于把上下文撑大。
+ */
+export const HISTORY_TURNS = 6

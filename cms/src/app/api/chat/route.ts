@@ -34,7 +34,8 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { logChat, threadId } from '@/lib/chat'
-import { ChatError, chatProfileContext, orchestrate, profileFill, type ChatResult, type ChatStep, type ChatTurn } from '@/lib/chat'
+import { chatProfileContext, orchestrate, profileFill, type ChatResult, type ChatStep, type ChatTurn, type Slots } from '@/lib/chat'
+import { isChatError } from '@/lib/error'
 import { resolveByAgent } from '@/lib/agent/server'
 import { getUser, isPro } from '@/lib/quota/server'
 import { freeGate } from '@/lib/quota/server'
@@ -84,7 +85,7 @@ export async function POST(req: Request) {
   // 真实错误只回 @test.local(standalone-dynamic-loads 探针惯例);对外只给错误码,不泄内部话术
   const dbg = String((user as any)?.email || '').endsWith('@test.local')
   const fail = (e: unknown) => {
-    if (e instanceof ChatError) {
+    if (e instanceof Error && isChatError<Slots>(e)) {
       // busy = 模型那头等不来字 → 503(它是「现在忙,过会儿再来」,不是 502「上游给了个坏回答」)
       const status = e.code === 'tooShort' || e.code === 'noOcc' ? 400 : e.code === 'busy' ? 503 : 502
       console.log(`[chat] ${e.code}: ${e.message.slice(0, 200)}`)
@@ -115,7 +116,7 @@ export async function POST(req: Request) {
   const t0 = Date.now()
   const log = (d: Done) => logChat(pl, {
     text, lang, history, ms: Date.now() - t0,
-    ...('ok' in d ? { result: d.ok } : { err: d.err instanceof ChatError ? d.err.code : 'llm' }),
+    ...('ok' in d ? { result: d.ok } : { err: d.err instanceof Error && isChatError<Slots>(d.err) ? d.err.code : 'llm' }),
   })
 
   /**

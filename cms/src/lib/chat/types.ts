@@ -4,7 +4,7 @@
 // 🔴 **本文件只放类型,一个运行时值都不许有。** lib/i18n/chat.ts 反向取其中 5 个
 //    (FollowKey / MetaTopic / OccOption / ProfileSlot / UsageTopic)靠的是 `import type` 编译期擦除;
 //    这里一旦出现常量,那条反向边立刻变成真环 —— 实撞过:PNP_PROVINCES 初始化时是 undefined。
-//    (ChatError 是类=运行时值,所以它住 orchestrate.ts,不住这儿。)
+//    (失败已经不是类了:`chatError` / `isChatError` 在 lib/error,2026-08-19 搬走。)
 import { type ClaimTopic } from './tools'
 import { type EduKey } from '../score'
 

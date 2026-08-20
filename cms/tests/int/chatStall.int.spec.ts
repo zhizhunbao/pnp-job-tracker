@@ -7,7 +7,7 @@
  *
  * 被测链路是真的:orchestrate → collectFacts;只有「数据库返回什么行」和「模型的死活」是 fixture。
  * 四条金标:
- *   ① 合成停摆 → 抛 ChatError('busy'),**不返回事实清单**;
+ *   ① 合成停摆 → 抛 chatError('busy'),**不返回事实清单**;
  *   ② 上一稿本来就干净、只是重写那稿停摆 → 把干净那稿发出去(手里有能用的答复还报错是纯亏);
  *   ③ 不是等待的失败(掉线/上游炸)照旧降级发清单 —— 这条没被 busy 顺手改掉;
  *   ④ 契约:合成那一发真把 stallMs 发给了传输层(数值可 env 调,但「有没有装看门狗」不许悄悄回归)。
@@ -57,7 +57,9 @@ vi.mock('@/lib/llm', () => {
   }
 })
 
-import { ChatError, orchestrate } from '@/lib/chat/orchestrate'
+import { orchestrate } from '@/lib/chat/orchestrate'
+import { isChatError } from '@/lib/error'
+import type { Slots } from '@/lib/chat/types'
 
 const CARPENTER = '72310'
 const JOB_ROWS = [
@@ -90,7 +92,7 @@ describe('合成停摆 → 系统繁忙', () => {
   it('① 停摆 → 报 busy,不发事实清单(Frank 08-09 拍板)', async () => {
     H.mode = 'stall'
     const e = await ask(pool).catch((x) => x)
-    expect(e).toBeInstanceOf(ChatError)
+    expect(e instanceof Error && isChatError<Slots>(e)).toBe(true)
     expect(e.code).toBe('busy')
     expect(e.slots?.noc).toBe(CARPENTER)         // 槽带出去:留痕与前端上下文都要它
     expect(H.synthOpts).toHaveLength(1)          // 等不来就不再补一刀:重试只会再等一次

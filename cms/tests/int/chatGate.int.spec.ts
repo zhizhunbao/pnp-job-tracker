@@ -49,7 +49,7 @@ vi.mock('@/lib/profile', () => ({ patchProfile: H.patch }))
 import { chatProfileContext, mergeRememberedSlots } from '@/lib/chat/answer'
 import { slotAskOptions } from '@/lib/chat/cards'
 import { buildFollowups, profileFill } from '@/lib/chat/followups'
-import { ChatError, orchestrate } from '@/lib/chat/orchestrate'
+import { orchestrate } from '@/lib/chat/orchestrate'
 import { type MetaTopic, isUsageQuestion, metaTopicOf, normalizeSlots } from '@/lib/chat/slots'
 import { isFollowupTurn } from '@/lib/chat/steps'
 import type { ChatTurn, Slots } from '@/lib/chat/types'

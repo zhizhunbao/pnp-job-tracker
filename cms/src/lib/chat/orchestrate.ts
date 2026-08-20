@@ -18,7 +18,7 @@
  * ⚠️ 朋友服务(qwen3.6)prompt 上限 6000 字符(实测 400,system 不占额),所以 facts **先压平再压缩**
  * 才喂模型:工具返回的整坨 JSON 一次就能把额度撑爆(resume-match 真简历事故同一个坑)。
  */
-import { isLlmError } from '../error'
+import { chatError, isLlmError } from '../error'
 import { completeText } from '../llm'
 import { parseLlmJson } from '../resume'
 import { LBL, type Lang, STEP } from '../i18n'
@@ -67,7 +67,7 @@ export async function orchestrate(
   //    CJK 文本 ≥2 字即放行进抽槽:真是「你好」这类寒暄,后面 noOcc/候选路照旧接得住。
   const cjkOk = text.length >= 2 && /[㐀-鿿가-힣]/.test(text)
   if (!text || (text.length < MIN_TEXT && !cjkOk && !isFollowupTurn(input.history))) {
-    throw new ChatError('tooShort', 'input too short')
+    throw chatError({ code: 'tooShort', msg: 'input too short' })
   }
   const pool = memoPool(rawPool)
   const onStep = opts?.onStep
@@ -91,12 +91,12 @@ export async function orchestrate(
     //    等不来字 → 同样报「系统繁忙」:这时连职业都还没认出来,没有任何东西可降级。
     if (e instanceof Error && isLlmError(e) && e.code === 'timeout') {
       console.log(`[chat] slots timeout (stallMs=${SYNTH_STALL_MS}) → busy (${e.message.slice(0, 120)})`)
-      throw new ChatError('busy', `slot extraction timed out: ${e.message}`)
+      throw chatError({ code: 'busy', msg: `slot extraction timed out: ${e.message}` })
     }
-    throw new ChatError('llm', e instanceof Error && isLlmError(e) ? e.message : String(e))
+    throw chatError({ code: 'llm', msg: e instanceof Error && isLlmError(e) ? e.message : String(e) })
   }
   const parsed = parseLlmJson(raw)
-  if (!parsed) throw new ChatError('llm', `slot parse failed: ${raw.slice(0, 160)}`)
+  if (!parsed) throw chatError({ code: 'llm', msg: `slot parse failed: ${raw.slice(0, 160)}` })
   // 登录档案跨刷新可用；同一会话的上一轮比档案新；本轮用户明确说的值优先级最高。
   let merged = mergeRememberedSlots(
     normalizeSlots(parsed), input.history?.length ? input.context : null, input.profileContext, text,
@@ -169,7 +169,7 @@ export async function orchestrate(
     //    实测这一格占全部轮次的 20.7%（198 轮里 41 轮），用户拿到的是「请提供 NOC」。
     //    它只补槽位、不产事实；超时/出错/没把握一律回落到下面这一行，行为与从前逐字相同。
     const rescued = input.rescueOcc ? await input.rescueOcc({ pool, text, lang }) : null
-    if (!rescued?.noc) throw new ChatError('noOcc', 'occupation not resolved', { ...draft, noc: null })
+    if (!rescued?.noc) throw chatError({ code: 'noOcc', msg: 'occupation not resolved', slots: { ...draft, noc: null } })
     hit = { noc: rescued.noc, title: '' }
     rescuedProvs = rescued.provs
     console.log(`[chat] agent rescued noOcc → noc=${hit.noc} provs=${rescuedProvs.join(',') || '-'}`)
@@ -272,7 +272,7 @@ export async function orchestrate(
           answer = passed; bad = []; banned = []; break
         }
         console.log(`[chat] synth timeout (stallMs=${SYNTH_STALL_MS}) attempt=${attempt + 1} noc=${slots.noc} → busy (${why})`)
-        throw new ChatError('busy', `synthesis timed out: ${why}`, slots)
+        throw chatError({ code: 'busy', msg: `synthesis timed out: ${why}`, slots })
       }
       // 掉线/上游炸了这类**不是等待**的失败照旧降级:facts 已经查到了,给清单比给错误页强。
       // 哪一稿挂了都算(原来只认第一稿,重写那稿挂了就整轮抛错)。
@@ -280,7 +280,7 @@ export async function orchestrate(
         console.log(`[chat] synth failed attempt=${attempt + 1} noc=${slots.noc} → fact sheet (${why})`)
         answer = ''; bad = []; break
       }
-      throw new ChatError('llm', e instanceof Error && isLlmError(e) ? e.message : String(e))
+      throw chatError({ code: 'llm', msg: e instanceof Error && isLlmError(e) ? e.message : String(e) })
     }
     // 🔴 **哪一道检查、第几次** —— 逐道具名(2026-08-05 Frank:降级率是根因指标,修呈现只是化妆)。
     //    原来六道检查被并成 leaks/units 两坨,日志里看得见「撞了」看不见「撞的是谁」,
@@ -369,7 +369,7 @@ export async function orchestrate(
     answer = passed; bad = []; banned = []
   }
   if (bad.length || banned.length || !answer) {
-    if (!facts.length) throw new ChatError('guard', 'no facts to fall back on', slots)
+    if (!facts.length) throw chatError({ code: 'guard', msg: 'no facts to fall back on', slots })
     degraded = true
     console.log(`[chat] degraded to fact sheet noc=${slots.noc} lang=${lang} facts=${facts.length} `
       + `reason=${firedLast.join(',') || (answer ? 'unknown' : 'no-answer')} bad=${bad.join(',')}`)
@@ -415,14 +415,4 @@ export async function orchestrate(
   const followups = federalRulesOnly ? []
     : [...askSlots, ...buildFollowups(facts, lang, text, slots.occText)].slice(0, 3)
   return { answer, slots, facts: out, followups, ...(options ? { options } : {}), ...(degraded ? { degraded: true } : {}) }
-}
-
-// busy = 模型那头等不来字(停摆闸响/上游超时)。**不降级成事实清单**(2026-08-09 Frank 拍板
-// 「不用降级 就显示稍后再试,系统繁忙」):等太久之后再塞一张表格,读的人只会更烦。
-type ChatErrorCode = 'tooShort' | 'noOcc' | 'llm' | 'guard' | 'busy'
-
-export class ChatError extends Error {
-  code: ChatErrorCode
-  slots?: Slots
-  constructor(code: ChatErrorCode, msg: string, slots?: Slots) { super(msg); this.name = 'ChatError'; this.code = code; this.slots = slots }
 }

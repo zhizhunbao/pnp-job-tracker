@@ -16,7 +16,9 @@ import path from 'node:path'
 import pg from 'pg'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
-import { ChatError, orchestrate } from '@/lib/chat/orchestrate'
+import { orchestrate } from '@/lib/chat/orchestrate'
+import { isChatError } from '@/lib/error'
+import type { Slots } from '@/lib/chat/types'
 import { sentenceBlockers } from '@/lib/chat/stream'
 import type { ChatResult, ChatTurn } from '@/lib/chat/types'
 import { friendLlmReady } from '@/lib/llm'
@@ -68,7 +70,7 @@ suite('对话评测批跑(答上率/降级率/病例卡)', () => {
         try {
           r = await orchestrate(pool, { text, lang: c.lang, ...(history.length ? { history: [...history] } : {}) })
         } catch (e) {
-          err = e instanceof ChatError ? e.code : `throw:${String((e as Error)?.message).slice(0, 80)}`
+          err = e instanceof Error && isChatError<Slots>(e) ? e.code : `throw:${String((e as Error)?.message).slice(0, 80)}`
         }
         const residual = r ? sentenceBlockers(r.answer, r.facts, c.lang, text, r.slots) : []
         const cardHits = r
