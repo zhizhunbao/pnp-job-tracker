@@ -56,7 +56,17 @@ export type Inbox = {
 /**
  * 一个职业候选:兜底只认这两样,别的字段(label 之类)归对话域自己管。
  */
-export type Candidate = { noc: string; title: string }
+export type Candidate = {
+  /**
+   * 五位职业码。**采信白名单认的就是它** —— 不在候选里的码一律不采信。
+   */
+  noc: string
+
+  /**
+   * 官方职业名(英文)。只用来摆给模型挑,不进见客答复。
+   */
+  title: string
+}
 
 /**
  * pi 分配的本次工具调用 id —— 我们不用,但签名里必须收。
@@ -94,17 +104,42 @@ export type AgentSlots = {
 /**
  * 三个工具回给**模型**的结构化附件 —— 给我们自己的那份走收件箱(见上面 Inbox)。
  */
-export type SearchDetails = { candidates: Candidate[] }
+export type SearchDetails = {
+  /**
+   * 这一次检索真返回的候选。给模型看的是它渲染出来的行;我们自己那份走收件箱。
+   */
+  candidates: Candidate[]
+}
 
 /**
  * 模型填的槽位,**还没采信** —— 字段名与 schema 对齐。
  */
-export type SlotsClaim = { noc: string | null; provinces?: string[]; reason?: string }
+export type SlotsClaim = {
+  /**
+   * 模型填的职业码。**允许 null** —— 它说不上来时该老实交回,而不是编一个。
+   */
+  noc: string | null
+
+  /**
+   * 模型认为用户提过的省码。白名单过滤在 `cleanProvs`,这里只是原样收着。
+   */
+  provinces?: string[]
+
+  /**
+   * 一句「为什么挑它」。只进日志,不给用户看。
+   */
+  reason?: string
+}
 
 /**
  * give_up 的回执:模型自己交回反问。
  */
-export type GiveUpDetails = { gaveUp: true }
+export type GiveUpDetails = {
+  /**
+   * 恒为 true。写成字面量类型而不是 boolean:这个回执只在「交回」时存在,没有 false 的情形。
+   */
+  gaveUp: true
+}
 
 /**
  * search 的入参:模型拼的检索词。从 schema 推,不手抄 —— 手抄会变成两份真相。
@@ -163,7 +198,12 @@ export type AgentTools = [SearchTool, SetSlotsTool, GiveUpTool]
 /**
  * 待规范化的省码:模型给的原样字符串。
  */
-export type UpperTrimIn = { prov: string }
+export type UpperTrimIn = {
+  /**
+   * 模型给的原样字符串,可能带空格、可能是小写。
+   */
+  prov: string
+}
 
 /**
  * 规范化后的省码:去空格、转大写。
@@ -173,7 +213,12 @@ export type UpperTrimOut = string
 /**
  * 待核对的省码,已规范化。
  */
-export type IsKnownProvIn = { prov: string }
+export type IsKnownProvIn = {
+  /**
+   * 已经去空格、转大写的省码。**没规范化过就别进来** —— 白名单是逐字比对的。
+   */
+  prov: string
+}
 
 /**
  * 认不认得出这个省码。
@@ -183,7 +228,12 @@ export type IsKnownProvOut = boolean
 /**
  * 模型给的整串省码,可能压根没给。
  */
-export type CleanProvsIn = { raw: string[] | undefined }
+export type CleanProvsIn = {
+  /**
+   * 模型给的整串省码。**可以是 undefined** —— 它压根没提省份是正常输入,不是错误。
+   */
+  raw: string[] | undefined
+}
 
 /**
  * 认得出的那些省码,认不出的已丢掉(不猜)。
@@ -193,7 +243,17 @@ export type CleanProvsOut = string[]
 /**
  * 拿一个 NOC 去比对搜索真实返回的候选。
  */
-export type InCandidatesIn = { candidates: Candidate[]; noc: string }
+export type InCandidatesIn = {
+  /**
+   * 这一趟检索真返回的候选,当白名单用。
+   */
+  candidates: Candidate[]
+
+  /**
+   * 要比对的那个职业码。
+   */
+  noc: string
+}
 
 /**
  * 这个 NOC 在不在候选里。
@@ -203,7 +263,17 @@ export type InCandidatesOut = boolean
 /**
  * 模型挑的 NOC(可能是 null)+ 这一轮搜到的全部候选。
  */
-export type AcceptNocIn = { raw: string | null; candidates: Candidate[] }
+export type AcceptNocIn = {
+  /**
+   * 模型填的码,可能是 null(它自己承认解不出来)。
+   */
+  raw: string | null
+
+  /**
+   * 这一轮搜到的全部候选。**采信只认这个集合** —— 库外的码一概不认。
+   */
+  candidates: Candidate[]
+}
 
 /**
  * 采信通过的 NOC;null = 形状不对或不在候选里,不收。
@@ -217,7 +287,22 @@ export type AcceptNocOut = string | null
 /**
  * 拼一条工具回执:给模型看的文字 + 给我们自己读的 details + 这一步要不要收工。
  */
-export type SayIn<T> = { text: string; details: T; stop: boolean }
+export type SayIn<T> = {
+  /**
+   * 给模型看的文字。它下一轮读到的就是这一段。
+   */
+  text: string
+
+  /**
+   * 给我们自己读的结构化附件。**不进模型上下文**,只用于记账与调试。
+   */
+  details: T
+
+  /**
+   * 这一步要不要收工。true → pi 拿到就结束循环,不再多问一轮。
+   */
+  stop: boolean
+}
 
 /**
  * 拼好的工具回执。
@@ -227,7 +312,17 @@ export type SayOut<T> = AgentToolResult<T>
 /**
  * 查职业候选要的东西:连接和检索词(不要语言 —— 候选只取 noc/title,三语职业名归对话域)。
  */
-export type SearchCandidatesIn = { pool: Db; query: string }
+export type SearchCandidatesIn = {
+  /**
+   * 库连接。
+   */
+  pool: Db
+
+  /**
+   * 模型拼的检索词。进来之后还会截到 `MAX_QUERY_CHARS` —— 它爱把整句话塞进来。
+   */
+  query: string
+}
 
 /**
  * 查到的候选;查不动就是空数组(错已留痕)。
@@ -237,7 +332,12 @@ export type SearchCandidatesOut = Promise<Candidate[]>
 /**
  * 要渲染成一行的那个候选。
  */
-export type CandidateLineIn = { hit: Candidate }
+export type CandidateLineIn = {
+  /**
+   * 要渲染成一行的那个候选。
+   */
+  hit: Candidate
+}
 
 /**
  * 渲染好的一行:`NOC — 职业名`。
@@ -247,7 +347,12 @@ export type CandidateLineOut = string
 /**
  * 这一次搜到的全部候选。
  */
-export type SearchReplyIn = { hits: Candidate[] }
+export type SearchReplyIn = {
+  /**
+   * 这一次搜到的全部候选。**空数组是有意义的输入** —— 那时回的是「一个都没有」。
+   */
+  hits: Candidate[]
+}
 
 /**
  * 回给模型的那段话:候选清单,或者「一个都没有」。
@@ -257,22 +362,52 @@ export type SearchReplyOut = string
 /**
  * 查候选那把工具要的:连接 + 收件箱(候选要攒起来当采信白名单)。
  */
-export type SearchToolIn = { pool: Db; out: Inbox }
+export type SearchToolIn = {
+  /**
+   * 库连接。
+   */
+  pool: Db
+
+  /**
+   * 这一趟的收件箱。候选要攒进去当采信白名单,所以这把工具非要它不可。
+   */
+  out: Inbox
+}
 
 /**
  * 记槽位那把工具要的:只要收件箱。
  */
-export type SetSlotsToolIn = { out: Inbox }
+export type SetSlotsToolIn = {
+  /**
+   * 这一趟的收件箱。这把工具只记账,不读库,所以只要它。
+   */
+  out: Inbox
+}
 
 /**
  * 交回反问那把工具要的:只要收件箱。
  */
-export type GiveUpToolIn = { out: Inbox }
+export type GiveUpToolIn = {
+  /**
+   * 这一趟的收件箱。交回反问也只是记一个标记,不读库。
+   */
+  out: Inbox
+}
 
 /**
  * makeTools 原样转交下去的那份入参。
  */
-export type MakeToolsIn = { pool: Db; out: Inbox }
+export type MakeToolsIn = {
+  /**
+   * 库连接,原样转交给查候选那把工具。
+   */
+  pool: Db
+
+  /**
+   * 这一趟的收件箱,三把工具共用同一个。
+   */
+  out: Inbox
+}
 
 /**
  * 造好的三把工具。
@@ -301,7 +436,32 @@ export type IgnoreEventsOut = void
 /**
  * 跑一趟循环要的全部东西:连接、用户原话、密钥、超时信号、收件箱。
  */
-export type RunLoopIn = { pool: Db; text: string; apiKey: string; signal: AbortSignal; out: Inbox }
+export type RunLoopIn = {
+  /**
+   * 库连接。
+   */
+  pool: Db
+
+  /**
+   * 用户原话。进循环前会截到 `MAX_INPUT_CHARS`。
+   */
+  text: string
+
+  /**
+   * 模型密钥。到这一层时已经确认非空(env 没配就根本不会走到这儿)。
+   */
+  apiKey: string
+
+  /**
+   * 超时信号。到点掐断 —— 兜底不许拖慢反问。
+   */
+  signal: AbortSignal
+
+  /**
+   * 这一趟的收件箱。循环的产出全从它带出来,不靠返回值。
+   */
+  out: Inbox
+}
 
 /**
  * 跑完了没有;false = 出错或超时(已留痕,当它没发生过)。结果不走返回值,走收件箱。
@@ -317,9 +477,88 @@ export type AgentFallbackOnOut = boolean
  * 兜底入口的入参 —— lib/chat/orchestrate 的 rescueOcc 按这个形状注入。
  * `lang` 是那份契约带来的,兜底本身用不上(候选只取 noc/title),原样收着不往下传。
  */
-export type ResolveByAgentIn = { pool: Db; text: string; lang: Lang }
+export type ResolveByAgentIn = {
+  /**
+   * 库连接。
+   */
+  pool: Db
+
+  /**
+   * 用户原话。
+   */
+  text: string
+
+  /**
+   * 语种。**兜底本身用不上它**(候选只取 noc/title),收着是因为注入契约带着它 —— 不往下传。
+   */
+  lang: Lang
+}
 
 /**
  * 解出来的槽位 + 这趟花了多少毫秒;null = agent 也没辙,调用方照旧反问。
  */
-export type ResolveByAgentOut = Promise<(AgentSlots & { ms: number }) | null>
+export type ResolveByAgentOut = Promise<(AgentSlots & AgentTiming) | null>
+
+/**
+ * 这一趟花了多少毫秒。单独一个类型,免得在返回类型里就地写一个内联对象。
+ */
+export type AgentTiming = {
+  /**
+   * 毫秒。只进日志 —— 它是判断「兜底值不值得开着」的唯一指标。
+   */
+  ms: number
+}
+
+// =========================================================================
+// 严格签名:每个函数的入参与返回都要有自己的名字(2026-08-20 Frank 拍板)
+// =========================================================================
+
+/**
+ * `onTimeout` 的返回。
+ */
+export type OnTimeoutOut = void
+
+/**
+ * `searchTool` 的返回。
+ */
+export type SearchToolOut = SearchTool
+
+/**
+ * `executeSearch` 的入参。
+ */
+export type ExecuteSearchIn = SearchArgs
+
+/**
+ * `executeSearch` 的返回。
+ */
+export type ExecuteSearchOut = SearchExecOut
+
+/**
+ * `setSlotsTool` 的返回。
+ */
+export type SetSlotsToolOut = SetSlotsTool
+
+/**
+ * `executeSetSlots` 的入参。
+ */
+export type ExecuteSetSlotsIn = SetSlotsArgs
+
+/**
+ * `executeSetSlots` 的返回。
+ */
+export type ExecuteSetSlotsOut = SetSlotsExecOut
+
+/**
+ * `giveUpTool` 的返回。
+ */
+export type GiveUpToolOut = GiveUpTool
+
+/**
+ * `executeGiveUp` 的入参。
+ */
+export type ExecuteGiveUpIn = GiveUpArgs
+
+/**
+ * `executeGiveUp` 的返回。
+ */
+export type ExecuteGiveUpOut = GiveUpExecOut

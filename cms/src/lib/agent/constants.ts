@@ -115,17 +115,47 @@ export const TOOLS = {
   /**
    * 查职业候选。模型拿检索词进来,我们回库里真有在招岗位的 NOC。
    */
-  search:   { name: 'search_occupations', label: '查职业候选' },
+  search: {
+    /**
+     * 给模型看的工具名。**改它等于换一把工具**,提示词里的插值会跟着走。
+     */
+    name: 'search_occupations',
+
+    /**
+     * 轨迹里给人看的中文名。
+     */
+    label: '查职业候选',
+  },
 
   /**
    * 记下槽位。模型认为想清楚了就调它,带 terminate 收工。
    */
-  setSlots: { name: 'set_slots',          label: '记下槽位' },
+  setSlots: {
+    /**
+     * 给模型看的工具名。
+     */
+    name: 'set_slots',
+
+    /**
+     * 轨迹里给人看的中文名。
+     */
+    label: '记下槽位',
+  },
 
   /**
    * 交回反问。模型自己承认解不出来,比硬猜一个码强。
    */
-  giveUp:   { name: 'give_up',            label: '交回反问' },
+  giveUp: {
+    /**
+     * 给模型看的工具名。
+     */
+    name: 'give_up',
+
+    /**
+     * 轨迹里给人看的中文名。
+     */
+    label: '交回反问',
+  },
 }
 
 // =========================================================================
@@ -162,4 +192,73 @@ export const LIKE_SPECIAL = /[%_\\]/g
  * pi 的 harness 往 AgentMessage 里塞了 4 种非 LLM 消息(bashExecution 等),只有这三个 role 能进模型。
  * 🔴 必须 `as const`:代码里靠**比对这三个字面量**让编译器自己窄化类型,退成 string 就白写了。
  */
-export const ROLE = { user: 'user', assistant: 'assistant', toolResult: 'toolResult' } as const
+export const ROLE = {
+  /**
+   * 用户说的那一轮。**我们只产这一种** —— 助手轮带一整套模型元数据,编不出来。
+   */
+  user: 'user',
+
+  /**
+   * 模型说的那一轮,由 pi 产。
+   */
+  assistant: 'assistant',
+
+  /**
+   * 工具回执那一轮。
+   */
+  toolResult: 'toolResult',
+
+  /**
+   * 文本内容块。工具回执与模型输入声明都用它。
+   */
+  text: 'text',
+} as const
+
+// =========================================================================
+// 5. 字面量(functions.ts 里不许有裸字符串)
+// =========================================================================
+
+/**
+ * 换行。写成常量是因为它要拼进模板串,而模板串里直接敲换行会把缩进也带进 prompt。
+ */
+export const NL = '\n'
+
+/**
+ * 候选清单里「码」与「职业名」之间。
+ */
+export const DASH = ' — '
+
+/**
+ * `LIKE` 的通配符,前后各一个 = 子串匹配。
+ */
+export const LIKE_ANY = '%'
+
+/**
+ * `LIKE` 检索的转义替换串。反斜杠加原字符。
+ */
+export const LIKE_ESCAPE = '\$&'
+
+/**
+ * 兜底那条路的开关值。env 等于它才算开。
+ */
+export const FALLBACK_ON = '1'
+
+/**
+ * 留痕里的几个占位。
+ */
+export const SHOWN = {
+  /**
+   * 没解出职业码时日志里印的字。**印 `null` 不印空**,否则读日志的人分不清「没解出来」和「字段丢了」。
+   */
+  noNoc: 'null',
+
+  /**
+   * 省码之间的分隔。
+   */
+  comma: ',',
+
+  /**
+   * 一个省都没有。
+   */
+  none: '-',
+}

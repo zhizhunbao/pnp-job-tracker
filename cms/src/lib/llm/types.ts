@@ -217,12 +217,22 @@ export type V1Choice = {
   /**
    * 流式:这一块的增量
    */
-  delta?: { content?: string }
+  delta?: {
+    /**
+     * 这一块的正文增量。**空串不是缺字段** —— 思考期间它一直是空串,按真值判会漏计。
+     */
+    content?: string
+  }
 
   /**
    * 非流式:整段答案
    */
-  message?: { content?: string }
+  message?: {
+    /**
+     * 整段答案。
+     */
+    content?: string
+  }
 
   /**
    * 为什么停(stop / length …),只进日志
@@ -242,13 +252,28 @@ export type V1Response = {
   /**
    * token 用量,只进日志
    */
-  usage?: { prompt_tokens?: number; completion_tokens?: number }
+  usage?: {
+    /**
+     * 送进去多少 token。
+     */
+    prompt_tokens?: number
+
+    /**
+     * 拿回来多少 token。
+     */
+    completion_tokens?: number
+  }
 }
 
 /**
  * 旧链的一条来源:上游给对象就取 url,给字符串就用它自己。
  */
-export type LegacySource = string | { url?: string }
+export type LegacySource = string | {
+  /**
+   * 来源地址。上游给对象时取这一格;给字符串时整个就是地址。
+   */
+  url?: string
+}
 
 /**
  * 旧链的回包。它的字段名和新链完全不同。
@@ -278,12 +303,27 @@ export type LegacyResponse = {
 /**
  * /api/translate 的回包。
  */
-export type TranslateResponse = { translated_text?: string }
+export type TranslateResponse = {
+  /**
+   * 译文。上游没译出来时这一格缺席,调用方按空处理。
+   */
+  translated_text?: string
+}
 
 /**
  * Ollama /api/chat 的回包(非流式)。
  */
-export type OllamaResponse = { message?: { content?: string } }
+export type OllamaResponse = {
+  /**
+   * 回包里的那条助手消息。
+   */
+  message?: {
+    /**
+     * 正文。
+     */
+    content?: string
+  }
+}
 
 /**
  * 发给 Ollama 的请求体。
@@ -312,7 +352,17 @@ export type OllamaRequest = {
   /**
    * 采样温度与输出上限,Ollama 收在这一层
    */
-  options: { temperature: number; num_predict: number }
+  options: {
+    /**
+     * 采样温度。
+     */
+    temperature: number
+
+    /**
+     * 输出上限。Ollama 的名字不叫 max_tokens,收在这一层。
+     */
+    num_predict: number
+  }
 }
 
 // =========================================================================
@@ -617,7 +667,12 @@ export type GatewayMessagesOut = GatewayMessage[]
 /**
  * charCount 的入参。上游按所有 content 的字符数之和算,所以要整个数组。
  */
-export type CharCountIn = { messages: GatewayMessage[] }
+export type CharCountIn = {
+  /**
+   * 整个消息数组。**不能只数最后一条** —— 上游按所有 content 的字符数之和算上限。
+   */
+  messages: GatewayMessage[]
+}
 
 /**
  * 所有 content 的字符数之和。超过上限就在本地拦下,不发出去。
@@ -627,7 +682,12 @@ export type CharCountOut = number
 /**
  * sourceUrl 的入参。旧链给的来源可能是对象也可能是字符串。
  */
-export type SourceUrlIn = { source: LegacySource }
+export type SourceUrlIn = {
+  /**
+   * 旧链给的一条来源,可能是对象也可能是字符串。
+   */
+  source: LegacySource
+}
 
 /**
  * 取出来的 URL。取不到就返回空串,调用方会把空串丢掉。
@@ -637,7 +697,27 @@ export type SourceUrlOut = string
 /**
  * sendV1 的入参。stream 由调用方定:空答案原地重来那次,要的正是同样的 body 但不要流。
  */
-export type SendV1In = { call: FriendChatIn; messages: GatewayMessage[]; stream: boolean; watch: Watch }
+export type SendV1In = {
+  /**
+   * 调用方那一份原始入参,里面有模型名、上限、停摆阈值。
+   */
+  call: FriendChatIn
+
+  /**
+   * 已经拼好的消息数组。
+   */
+  messages: GatewayMessage[]
+
+  /**
+   * 走不走流。**由调用方定** —— 空答案原地重来那次,要的正是同样的 body 但不要流。
+   */
+  stream: boolean
+
+  /**
+   * 这一趟的看门狗。
+   */
+  watch: Watch
+}
 
 /**
  * 原始响应。
@@ -651,7 +731,12 @@ export type SendV1Out = Promise<Response>
 /**
  * friend 通道要的两段:system 合并成一段,其余合并成 prompt。
  */
-export type SplitMessagesIn = { messages: ChatMessage[] }
+export type SplitMessagesIn = {
+  /**
+   * 调用方给的整串消息。system 会被合并成一段,其余合并成 prompt。
+   */
+  messages: ChatMessage[]
+}
 
 /**
  * 拆出来的两段。一条 system 都没有时是 undefined,这个字段就不发。
@@ -671,7 +756,12 @@ export type SplitMessagesOut = {
 /**
  * anthropic 通道要的两段:system 拆到顶层参数,其余留在 messages。
  */
-export type SystemOfIn = { messages: ChatMessage[] }
+export type SystemOfIn = {
+  /**
+   * 调用方给的整串消息。system 要拆到顶层参数,其余留在 messages。
+   */
+  messages: ChatMessage[]
+}
 
 /**
  * 合并后的 system。一条都没有时是空串,空串不会进请求。
@@ -681,7 +771,12 @@ export type SystemOfOut = string
 /**
  * turnsOf 的入参。
  */
-export type TurnsOfIn = { messages: ChatMessage[] }
+export type TurnsOfIn = {
+  /**
+   * 调用方给的整串消息。取出非 system 的那些当对话轮。
+   */
+  messages: ChatMessage[]
+}
 
 /**
  * 除 system 之外的轮次,顺序不变。
@@ -691,7 +786,12 @@ export type TurnsOfOut = AnthropicTurn[]
 /**
  * textOf 的入参。
  */
-export type TextOfIn = { blocks: AnthropicBlock[] }
+export type TextOfIn = {
+  /**
+   * SDK 回的内容块。里面混着 text 与工具块,只取前者。
+   */
+  blocks: AnthropicBlock[]
+}
 
 /**
  * 回包里所有文本块拼起来。其余的块(工具调用等)丢掉。
@@ -701,7 +801,12 @@ export type TextOfOut = string
 /**
  * webFetchTool 的入参。没给 URL 就不声明这把工具。
  */
-export type WebFetchToolIn = { fetchUrl?: string }
+export type WebFetchToolIn = {
+  /**
+   * 要抓的地址。**没给就不声明这把工具** —— 声明一把用不上的工具会让模型去调它。
+   */
+  fetchUrl?: string
+}
 
 /**
  * 声明好的工具。URL 没给或不合法时返回 null,这时的行为和没有 URL 完全一样。
@@ -785,7 +890,12 @@ export type TranslateReadyOut = boolean
 /**
  * stripMd 的入参。
  */
-export type StripMdIn = { text: string }
+export type StripMdIn = {
+  /**
+   * 待清理的正文。
+   */
+  text: string
+}
 
 /**
  * 去掉加粗与标题记号之后的正文。
@@ -795,7 +905,12 @@ export type StripMdOut = string
 /**
  * parseNumbered 的入参。
  */
-export type ParseNumberedIn = { text: string }
+export type ParseNumberedIn = {
+  /**
+   * 上游回的整段编号文本。
+   */
+  text: string
+}
 
 /**
  * 编号 → 译文;缺号/空段就是缺,不抛
@@ -805,7 +920,12 @@ export type ParseNumberedOut = Map<number, string>
 /**
  * numberLines 的入参。
  */
-export type NumberLinesIn = { lines: string[] }
+export type NumberLinesIn = {
+  /**
+   * 要逐行编号的原文。行数就是编号的上限,回来对不上就是没对齐。
+   */
+  lines: string[]
+}
 
 /**
  * 编好号的一整段,行与行之间用换行分开。
@@ -889,7 +1009,12 @@ export type Fnv1aOut = number
 /**
  * alpha7 的入参。
  */
-export type Alpha7In = { n: number }
+export type Alpha7In = {
+  /**
+   * 要转成七位字母的那个数。
+   */
+  n: number
+}
 
 /**
  * 7 个字母。
@@ -899,7 +1024,12 @@ export type Alpha7Out = string
 /**
  * contentTag 的入参。
  */
-export type ContentTagIn = { text: string }
+export type ContentTagIn = {
+  /**
+   * 要算指纹的正文。
+   */
+  text: string
+}
 
 /**
  * 14 个字母的指纹。只用字母不带数字,免得被防幻觉校验误伤。
@@ -926,3 +1056,56 @@ export type RefPromptIn = {
  */
 export type RefPromptOut = string
 
+// =========================================================================
+// 严格签名:每个函数的入参与返回都要有自己的名字(2026-08-20 Frank 拍板)
+// =========================================================================
+
+/**
+ * `emptyText` 的返回。
+ */
+export type EmptyTextOut = string
+
+/**
+ * `nullJson` 的返回。
+ */
+export type NullJsonOut = null
+
+/**
+ * `ignore` 的返回。
+ */
+export type IgnoreOut = void
+
+/**
+ * `arm` 的返回。
+ */
+export type ArmOut = void
+
+/**
+ * `onText` 的入参。
+ */
+export type OnTextIn = string
+
+/**
+ * `onText` 的返回。
+ */
+export type OnTextOut = void
+
+/**
+ * `onEnd` 的返回。
+ */
+export type OnEndOut = void
+
+/**
+ * `onError` 的返回。
+ */
+export type OnErrorOut = void
+
+/**
+ * `makeWatch` 的返回。
+ */
+export type MakeWatchOut = Watch
+
+/**
+ * `onError` 的入参。
+ */
+export type OnErrorIn = Error

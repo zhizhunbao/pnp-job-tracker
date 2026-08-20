@@ -41,4 +41,9 @@ export const SET_SLOTS_PARAMS = Type.Object({
 /**
  * give_up 的参数:一句「为什么放弃」,可不填。
  */
-export const GIVE_UP_PARAMS = Type.Object({ reason: Type.Optional(Type.String()) })
+export const GIVE_UP_PARAMS = Type.Object({
+  /**
+   * 一句「为什么放弃」,可不填。只进日志 —— 它是判断「兜底为什么不生效」的唯一线索。
+   */
+  reason: Type.Optional(Type.String()),
+})

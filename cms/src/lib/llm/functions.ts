@@ -9,32 +9,33 @@
 
 import Anthropic from '@anthropic-ai/sdk'
 import {
-  ERR_DEFAULT, FRIEND_MSG, LLM_MSG, TRANSLATE_TIMEOUT, UPSTREAM_HEAD, gatewayError, gatewayErrorOf,
-  isGatewayError, llmError, translateError,
+  ERR_DEFAULT, FRIEND_CODE, FRIEND_MSG, GATEWAY_MSG, LLM_MSG, TRANSLATE_CODE, TRANSLATE_TIMEOUT,
+  UPSTREAM_HEAD, gatewayError, gatewayErrorOf, isGatewayError, llmError, translateError,
 } from '@/lib/error'
 import { LLM_FN, LLM_LOG, LOG_MSG_MAX, log } from '@/lib/log'
 import {
-  ALPHA_BASE, ALPHA_LEN, ALPHA_ZERO, ANTHROPIC_MODEL,
+  ALPHA_BASE, ALPHA_LEN, ALPHA_ZERO, ANTHROPIC_MODEL, BACKEND, BLOCK_TEXT, CACHE_HIT,
   FNV_PRIME, FNV_SEED_A, FNV_SEED_B, FRIEND_CALL_TIMEOUT_MS, FRIEND_INPUT_MAX, FRIEND_MAX_TOKENS,
   FRIEND_STREAM_TEMP, GATEWAY_BASE, GATEWAY_KEY, GATEWAY_MODEL, GATEWAY_TIMEOUT_MS, HEADER,
   LEGACY_SOURCE_MAX, MD_BOLD, MD_HEADING, MD_STARS,
-  NUMBERED_SPLIT, NUMBER_HEAD, NUMBER_TAIL, OLLAMA_COMPLETE_TEMP, OLLAMA_MODEL, OLLAMA_STREAM_TEMP,
+  KEEP_GROUP1, NUMBERED_SPLIT, NUMBER_HEAD, NUMBER_TAIL, OLLAMA_COMPLETE_TEMP, OLLAMA_MODEL,
+  OLLAMA_STREAM_TEMP, PARA, POST, PROTOCOL, ROLE, STALL, STOP_REFUSAL, STREAM_EVENT, VIA,
   OLLAMA_URL, PATH_LEGACY, PATH_OLLAMA, PATH_TRANSLATE, PATH_V1, PROVIDER, REF_HEAD, REF_SALT_SEP, REF_TAIL,
   SSE_BLOCK_SEP, SSE_DATA, SSE_DATA_LEN, SSE_DONE, SSE_LINE_SEP, TRANSLATE_CHUNK, TRANSLATE_SOURCE,
   TRANSLATE_TRIES, WEB_FETCH,
 } from './constants'
 import type {
-  Alpha7In, Alpha7Out, AnthropicMessage, AnthropicParams, AnthropicStreamIn, AnthropicStreamParams,
+  Alpha7In, Alpha7Out, AnthropicMessage, AnthropicParams, AnthropicStreamIn, AnthropicStreamParams, ArmOut,
   BackendStreamIn, BackendStreamOut, CharCountIn, CharCountOut, CompleteBackendIn, CompleteBackendOut,
-  CompleteFriendIn, CompleteTextIn, CompleteTextOut, ContentTagIn, ContentTagOut, Fnv1aIn, Fnv1aOut,
-  FriendChatIn, FriendChatMaybeOut, FriendChatOut, FriendLlmReadyOut, FriendResult,
-  GatewayMessage, GatewayMessagesIn, GatewayMessagesOut, LegacyRequest, LegacyResponse,
-  MakeWatchIn, NumberLinesIn, NumberLinesOut,
-  OllamaRequest, OllamaResponse, ParseNumberedIn, ParseNumberedOut, PostJsonIn, PostJsonOut, ReadV1SseIn,
-  ReadV1SseOut, RefPromptIn, RefPromptOut, SendV1In, SendV1Out, SourceUrlIn, SourceUrlOut, SplitMessagesIn,
+  CompleteFriendIn, CompleteTextIn, CompleteTextOut, ContentTagIn, ContentTagOut, EmptyTextOut, Fnv1aIn,
+  Fnv1aOut, FriendChatIn, FriendChatMaybeOut, FriendChatOut, FriendLlmReadyOut, FriendResult, GatewayMessage,
+  GatewayMessagesIn, GatewayMessagesOut, IgnoreOut, LegacyRequest, LegacyResponse, MakeWatchIn, MakeWatchOut,
+  NullJsonOut, NumberLinesIn, NumberLinesOut, OllamaRequest, OllamaResponse, OnEndOut, OnErrorIn, OnErrorOut,
+  OnTextIn, OnTextOut, ParseNumberedIn, ParseNumberedOut, PostJsonIn, PostJsonOut, ReadV1SseIn, ReadV1SseOut,
+  RefPromptIn, RefPromptOut, SendV1In, SendV1Out, SourceUrlIn, SourceUrlOut, SplitMessagesIn,
   SplitMessagesOut, StreamChatIn, StreamChatOut, StripMdIn, StripMdOut, SystemOfIn, SystemOfOut, TextOfIn,
   TextOfOut, TranslateChunkIn, TranslateChunkOut, TranslateLinesIn, TranslateLinesOut, TranslateReadyOut,
-  TranslateResponse, TurnsOfIn, TurnsOfOut, V1Choice, V1Request, V1Response, Watch, WatchWhy, WebFetchToolIn,
+  TranslateResponse, TurnsOfIn, TurnsOfOut, V1Choice, V1Request, V1Response, WatchWhy, WebFetchToolIn,
   WebFetchToolOut,
 } from './types'
 
@@ -47,7 +48,7 @@ import type {
  *
  * @returns 空串。
  */
-function emptyText(): string {
+function emptyText(): EmptyTextOut {
   return ''
 }
 
@@ -56,7 +57,7 @@ function emptyText(): string {
  *
  * @returns null。
  */
-function nullJson(): null {
+function nullJson(): NullJsonOut {
   return null
 }
 
@@ -65,7 +66,7 @@ function nullJson(): null {
  *
  * @returns 什么都不做。
  */
-function ignore(): void {
+function ignore(): IgnoreOut {
   return
 }
 
@@ -141,16 +142,16 @@ export function refPrompt(input: RefPromptIn): RefPromptOut {
  * @param input 两个闸的毫秒数;停摆闸不传就不装。
  * @returns 看门狗。整通请求收尾时必须调它的 stop()。
  */
-function makeWatch(input: MakeWatchIn): Watch {
+function makeWatch(input: MakeWatchIn): MakeWatchOut {
   const ctrl = new AbortController()
   let cause: WatchWhy = null
-  const hard = setTimeout(function onHard() { cause ??= 'timeout'; ctrl.abort() }, input.timeoutMs)
+  const hard = setTimeout(function onHard() { cause ??= FRIEND_CODE.timeout; ctrl.abort() }, input.timeoutMs)
   let soft: ReturnType<typeof setTimeout> | null = null
   // 给停摆闸上弦。每有动静重上一次;没配 stallMs 时它什么都不做。
-  function arm(): void {
+  function arm(): ArmOut {
     if (!input.stallMs || input.stallMs <= 0) return
     if (soft) clearTimeout(soft)
-    soft = setTimeout(function onSoft() { cause ??= 'stall'; ctrl.abort() }, input.stallMs)
+    soft = setTimeout(function onSoft() { cause ??= STALL; ctrl.abort() }, input.stallMs)
   }
   arm()
   return {
@@ -158,7 +159,7 @@ function makeWatch(input: MakeWatchIn): Watch {
     kick: arm,
     stop() { clearTimeout(hard); if (soft) clearTimeout(soft) },
     why() { return cause },
-    label() { return cause === 'stall' ? `stalled ${input.stallMs}ms` : `aborted after ${input.timeoutMs}ms` },
+    label() { return cause === STALL ? `${GATEWAY_MSG.stalled}${input.stallMs}${GATEWAY_MSG.ms}` : `${GATEWAY_MSG.aborted}${input.timeoutMs}${GATEWAY_MSG.ms}` },
   }
 }
 
@@ -181,15 +182,15 @@ async function postJson(input: PostJsonIn): PostJsonOut {
   for (const name of Object.keys(input.extraHeaders)) headers[name] = input.extraHeaders[name]
   try {
     return await fetch(`${GATEWAY_BASE}${input.path}`, {
-      method: 'POST',
+      method: POST,
       headers,
       body: JSON.stringify(input.body),
       signal: input.watch.signal,
     })
   } catch (e) {
     // abort 与网络错都落这;分开报码,调用方才能「各说各话」(超时可重试 / 掉线别重试)
-    if (input.watch.signal.aborted) throw gatewayError({ msg: input.watch.label(), code: 'timeout' })
-    throw gatewayError({ msg: `network: ${e instanceof Error ? e.message : String(e)}`, code: 'offline' })
+    if (input.watch.signal.aborted) throw gatewayError({ msg: input.watch.label(), code: FRIEND_CODE.timeout })
+    throw gatewayError({ msg: `${GATEWAY_MSG.network}${e instanceof Error ? e.message : String(e)}`, code: FRIEND_CODE.offline })
   }
 }
 
@@ -216,7 +217,7 @@ async function readV1Sse(input: ReadV1SseIn): ReadV1SseOut {
     } catch (e) {
       // 看门狗掐断的流 → 报 timeout(和「一直没等到响应头」同码,调用方一条路降级)
       if (input.watch.signal.aborted) {
-        throw gatewayError({ msg: `stream ${input.watch.label()} after ${out.length}ch`, code: 'timeout' })
+        throw gatewayError({ msg: `${GATEWAY_MSG.stream}${input.watch.label()}${GATEWAY_MSG.after}${out.length}${GATEWAY_MSG.ch}`, code: FRIEND_CODE.timeout })
       }
       throw e
     }
@@ -263,8 +264,8 @@ export function friendLlmReady(): FriendLlmReadyOut {
  */
 function gatewayMessages(input: GatewayMessagesIn): GatewayMessagesOut {
   const messages: GatewayMessage[] = []
-  if (input.system) messages.push({ role: 'system', content: input.system })
-  messages.push({ role: 'user', content: input.prompt })
+  if (input.system) messages.push({ role: ROLE.system, content: input.system })
+  messages.push({ role: ROLE.user, content: input.prompt })
   return messages
 }
 
@@ -310,7 +311,7 @@ async function chatV1(input: FriendChatIn): FriendChatOut {
   // 信任边界校验:超限本地就拦(省一趟网络,且能报出确切字符数)——别等上游 400 再猜
   const chars = charCount({ messages })
   if (chars > FRIEND_INPUT_MAX) {
-    throw gatewayError({ msg: `input ${chars} chars > gateway max ${FRIEND_INPUT_MAX}`, code: 'tooLong' })
+    throw gatewayError({ msg: `${GATEWAY_MSG.input}${chars}${GATEWAY_MSG.overMax}${FRIEND_INPUT_MAX}`, code: FRIEND_CODE.tooLong })
   }
   let watch = makeWatch({ timeoutMs: input.timeoutMs ?? GATEWAY_TIMEOUT_MS, stallMs: input.stallMs })
 
@@ -346,7 +347,7 @@ async function chatV1(input: FriendChatIn): FriendChatOut {
   } finally {
     watch.stop()
   }
-  if (!answer) throw gatewayError({ msg: `empty choices (x-cache=${xCache ?? LLM_LOG.none})`, code: 'empty' })
+  if (!answer) throw gatewayError({ msg: `${GATEWAY_MSG.emptyChoices}${xCache ?? LLM_LOG.none}${GATEWAY_MSG.parenEnd}`, code: FRIEND_CODE.empty })
   const usage = body?.usage
   log({
     tag: LLM_LOG.tag,
@@ -355,7 +356,7 @@ async function chatV1(input: FriendChatIn): FriendChatOut {
       + `${LLM_LOG.slash}${usage?.completion_tokens ?? LLM_LOG.missing}`
       + `${LLM_LOG.finish}${body?.choices?.[0]?.finish_reason ?? LLM_LOG.missing}`,
   })
-  return { answer, sources: [], cached: xCache === 'HIT', via: 'v1', xCache }
+  return { answer, sources: [], cached: xCache === CACHE_HIT, via: VIA.v1, xCache }
 }
 
 /**
@@ -365,6 +366,9 @@ async function chatV1(input: FriendChatIn): FriendChatOut {
  * @returns URL;取不到就是空串。
  */
 function sourceUrl(input: SourceUrlIn): SourceUrlOut {
+  // `typeof x === '…'` 的右边必须是字面量:换成常量 TS 就不做类型窄化了(下一行取 .url 会当场报错)。
+  // 这是语言限制,不是偷懒。
+  // eslint-disable-next-line local/no-bare-strings -- 见上
   if (typeof input.source === 'string') return input.source
   return String(input.source?.url || '')
 }
@@ -393,7 +397,7 @@ async function chatLegacy(input: FriendChatIn): FriendChatOut {
     watch.stop()
   }
   const answer = String(body?.answer ?? '').trim()
-  if (!answer) throw gatewayError({ msg: 'empty answer', code: 'empty' })
+  if (!answer) throw gatewayError({ msg: GATEWAY_MSG.emptyAnswer, code: FRIEND_CODE.empty })
   const sources: string[] = []
   if (Array.isArray(body?.sources)) {
     for (const one of body.sources) {
@@ -406,7 +410,7 @@ async function chatLegacy(input: FriendChatIn): FriendChatOut {
     text: `${LLM_LOG.legacyOk}${body?.cached === true}${LLM_LOG.in}${input.prompt.length}${LLM_LOG.ch}`
       + `${LLM_LOG.out}${answer.length}${LLM_LOG.ch}${LLM_LOG.webSearch}${body?.web_search_used === true}`,
   })
-  return { answer, sources, cached: body?.cached === true, via: 'legacy', xCache: null }
+  return { answer, sources, cached: body?.cached === true, via: VIA.legacy, xCache: null }
 }
 
 /**
@@ -418,13 +422,13 @@ async function chatLegacy(input: FriendChatIn): FriendChatOut {
  * @returns 这一趟的结果。失败一律抛 GatewayFailure(带码)。
  */
 export async function friendChatOrThrow(input: FriendChatIn): FriendChatOut {
-  if (!friendLlmReady()) throw gatewayError({ msg: 'TRANSLATE_API_BASE/KEY not configured', code: 'offline' })
+  if (!friendLlmReady()) throw gatewayError({ msg: GATEWAY_MSG.notConfigured, code: FRIEND_CODE.offline })
   if (input.webSearch) return chatLegacy(input)
   try {
     return await chatV1(input)
   } catch (e) {
     const code = e instanceof Error && isGatewayError(e) ? e.code : ERR_DEFAULT
-    if (code !== 'upstream' && code !== 'offline') throw e
+    if (code !== FRIEND_CODE.upstream && code !== FRIEND_CODE.offline) throw e
     // 留痕:回退是异常态,不能静默发生(下次排查得看得见走的哪条链)
     const why = e instanceof Error ? e.message.slice(0, LOG_MSG_MAX) : ''
     log({ tag: LLM_LOG.tag, text: `${LLM_LOG.v1FailHead}${code}${LLM_LOG.paren}${why}${LLM_LOG.parenEnd}${LLM_LOG.v1FailTail}` })
@@ -471,10 +475,10 @@ function splitMessages(input: SplitMessagesIn): SplitMessagesOut {
   const systems: string[] = []
   const turns: string[] = []
   for (const m of input.messages) {
-    if (m.role === 'system') systems.push(m.content)
+    if (m.role === ROLE.system) systems.push(m.content)
     else turns.push(m.content)
   }
-  return { system: systems.join('\n\n') || undefined, prompt: turns.join('\n\n') }
+  return { system: systems.join(PARA) || undefined, prompt: turns.join(PARA) }
 }
 
 /**
@@ -485,8 +489,8 @@ function splitMessages(input: SplitMessagesIn): SplitMessagesOut {
  */
 function systemOf(input: SystemOfIn): SystemOfOut {
   const systems: string[] = []
-  for (const m of input.messages) if (m.role === 'system') systems.push(m.content)
-  return systems.join('\n\n')
+  for (const m of input.messages) if (m.role === ROLE.system) systems.push(m.content)
+  return systems.join(PARA)
 }
 
 /**
@@ -497,7 +501,7 @@ function systemOf(input: SystemOfIn): SystemOfOut {
  */
 function turnsOf(input: TurnsOfIn): TurnsOfOut {
   const turns: TurnsOfOut = []
-  for (const m of input.messages) if (m.role !== 'system') turns.push({ role: m.role, content: m.content })
+  for (const m of input.messages) if (m.role !== ROLE.system) turns.push({ role: m.role, content: m.content })
   return turns
 }
 
@@ -509,7 +513,7 @@ function turnsOf(input: TurnsOfIn): TurnsOfOut {
  */
 function textOf(input: TextOfIn): TextOfOut {
   let out = ''
-  for (const block of input.blocks) if (block.type === 'text') out += block.text
+  for (const block of input.blocks) if (block.type === BLOCK_TEXT) out += block.text
   return out
 }
 
@@ -523,7 +527,7 @@ function webFetchTool(input: WebFetchToolIn): WebFetchToolOut {
   if (!input.fetchUrl) return null
   try {
     const u = new URL(input.fetchUrl)
-    if (u.protocol !== 'http:' && u.protocol !== 'https:') return null
+    if (u.protocol !== PROTOCOL.http && u.protocol !== PROTOCOL.https) return null
     return {
       type: WEB_FETCH.type,
       name: WEB_FETCH.name,
@@ -569,7 +573,7 @@ async function ollamaStream(input: BackendStreamIn): BackendStreamOut {
   }
   try {
     upstream = await fetch(`${OLLAMA_URL}${PATH_OLLAMA}`, {
-      method: 'POST',
+      method: POST,
       headers: { [HEADER.contentType]: HEADER.json },
       body: JSON.stringify(body),
     })
@@ -626,20 +630,20 @@ async function anthropicStream(input: AnthropicStreamIn): BackendStreamOut {
   return new ReadableStream({
     start(controller) {
       // 三个回调的签名是 SDK 定的(库外部规定),我们只把它们提成具名函数。
-      function onText(text: string): void {
+      function onText(text: OnTextIn): OnTextOut {
         controller.enqueue(encoder.encode(text))
       }
       // 上游说完了,关流。
-      function onEnd(): void {
+      function onEnd(): OnEndOut {
         controller.close()
       }
       // 上游报错时,翻成见客话术再关流。
-      function onError(e: Error): void {
+      function onError(e: OnErrorIn): OnErrorOut {
         controller.error(llmError({ msg: `${LLM_MSG.anthropicHead}${e instanceof Error ? e.message : e}` }))
       }
-      stream.on('text', onText)
-      stream.on('end', onEnd)
-      stream.on('error', onError)
+      stream.on(STREAM_EVENT.text, onText)
+      stream.on(STREAM_EVENT.end, onEnd)
+      stream.on(STREAM_EVENT.error, onError)
     },
     cancel() { stream.abort() },
   })
@@ -653,8 +657,8 @@ async function anthropicStream(input: AnthropicStreamIn): BackendStreamOut {
  * @returns 文本增量的字节流,三个后端形状一致。
  */
 export function streamChat(input: StreamChatIn): StreamChatOut {
-  if (PROVIDER === 'friend') return friendStream({ messages: input.messages, maxTokens: input.maxTokens })
-  if (PROVIDER === 'anthropic') return anthropicStream(input)
+  if (PROVIDER === BACKEND.friend) return friendStream({ messages: input.messages, maxTokens: input.maxTokens })
+  if (PROVIDER === BACKEND.anthropic) return anthropicStream(input)
   return ollamaStream({ messages: input.messages, maxTokens: input.maxTokens })
 }
 
@@ -709,7 +713,7 @@ async function completeAnthropic(input: CompleteBackendIn): CompleteBackendOut {
   } catch (e) {
     throw llmError({ msg: `${LLM_MSG.anthropicHead}${e instanceof Error ? e.message : e}` })
   }
-  if (res.stop_reason === 'refusal') throw llmError({ msg: LLM_MSG.refusal })
+  if (res.stop_reason === STOP_REFUSAL) throw llmError({ msg: LLM_MSG.refusal })
   return textOf({ blocks: res.content })
 }
 
@@ -727,7 +731,7 @@ async function completeOllama(input: CompleteBackendIn): CompleteBackendOut {
   }
   try {
     r = await fetch(`${OLLAMA_URL}${PATH_OLLAMA}`, {
-      method: 'POST', headers: { [HEADER.contentType]: HEADER.json },
+      method: POST, headers: { [HEADER.contentType]: HEADER.json },
       body: JSON.stringify(body),
     })
   } catch { throw llmError({ msg: LLM_MSG.ollamaOffline }) }
@@ -746,8 +750,8 @@ async function completeOllama(input: CompleteBackendIn): CompleteBackendOut {
  */
 export function completeText(input: CompleteTextIn): CompleteTextOut {
   const prov = input.provider || PROVIDER
-  if (prov === 'friend') return completeFriend(input)
-  if (prov === 'anthropic') return completeAnthropic({ messages: input.messages, maxTokens: input.maxTokens })
+  if (prov === BACKEND.friend) return completeFriend(input)
+  if (prov === BACKEND.anthropic) return completeAnthropic({ messages: input.messages, maxTokens: input.maxTokens })
   return completeOllama({ messages: input.messages, maxTokens: input.maxTokens })
 }
 
@@ -771,7 +775,7 @@ export function translateReady(): TranslateReadyOut {
  * @returns 去掉加粗与标题记号之后的正文。
  */
 function stripMd(input: StripMdIn): StripMdOut {
-  return input.text.replace(MD_BOLD, '$1').replace(MD_HEADING, '').replace(MD_STARS, '')
+  return input.text.replace(MD_BOLD, KEEP_GROUP1).replace(MD_HEADING, '').replace(MD_STARS, '')
 }
 
 /**
@@ -813,7 +817,7 @@ async function translateChunk(input: TranslateChunkIn): TranslateChunkOut {
   for (let attempt = 0; attempt < TRANSLATE_TRIES; attempt++) {
     try {
       const resp = await fetch(`${GATEWAY_BASE}${PATH_TRANSLATE}`, {
-        method: 'POST', signal: input.signal,
+        method: POST, signal: input.signal,
         headers: { [HEADER.contentType]: HEADER.json, [HEADER.apiKey]: GATEWAY_KEY },
         body: JSON.stringify({
           text: refPrompt({ prompt: numbered, salt: input.lang }),
@@ -821,12 +825,12 @@ async function translateChunk(input: TranslateChunkIn): TranslateChunkOut {
           target_lang: input.lang,
         }),
       })
-      if (!resp.ok) throw translateError({ msg: `${UPSTREAM_HEAD}${resp.status}`, code: 'upstream' })
+      if (!resp.ok) throw translateError({ msg: `${UPSTREAM_HEAD}${resp.status}`, code: TRANSLATE_CODE.upstream })
       const parsed: TranslateResponse = await resp.json()
       const m = parseNumbered({ text: String(parsed.translated_text || '') })
       if (m.size) return m
     } catch {
-      if (input.signal.aborted) throw translateError({ msg: TRANSLATE_TIMEOUT, code: 'timeout' })
+      if (input.signal.aborted) throw translateError({ msg: TRANSLATE_TIMEOUT, code: TRANSLATE_CODE.timeout })
     }
   }
   return null

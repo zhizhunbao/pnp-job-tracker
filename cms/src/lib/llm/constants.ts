@@ -350,3 +350,123 @@ export const SSE_DATA_LEN = 5
  * 上游发完时的收尾行,它不是内容。
  */
 export const SSE_DONE = '[DONE]'
+
+// =========================================================================
+// 5. 字面量(functions.ts 里不许有裸字符串)
+// =========================================================================
+
+/**
+ * HTTP 方法。三条链发的都是 POST。
+ */
+export const POST = 'POST'
+
+/**
+ * 消息角色。`system` 在三个后端的待遇各不相同(friend 合并成一段、anthropic 拆到顶层参数),
+ * 所以判它的地方有好几处 —— 更要收在一个名字下。
+ */
+export const ROLE = {
+  /**
+   * 系统提示。
+   */
+  system: 'system',
+
+  /**
+   * 用户轮。
+   */
+  user: 'user',
+} as const
+
+/**
+ * 内容块的种类。SDK 回的块里混着工具块,只取文本那一种。
+ */
+export const BLOCK_TEXT = 'text'
+
+/**
+ * 段与段之间。friend 那条链把多轮压成一段 prompt,用它分隔。
+ */
+export const PARA = '\n\n'
+
+/**
+ * 走的是哪条链 —— 只进日志与返回值,给排查用。
+ */
+export const VIA = {
+  /**
+   * 主通道,OpenAI 兼容端点。
+   */
+  v1: 'v1',
+
+  /**
+   * 回退的旧链。
+   */
+  legacy: 'legacy',
+} as const
+
+/**
+ * 上游 `x-cache` 头命中缓存时的值。
+ */
+export const CACHE_HIT = 'HIT'
+
+/**
+ * 三个后端的名字。`LLM_PROVIDER` 与调用方的 `provider` 参数认的都是它们。
+ */
+export const BACKEND = {
+  /**
+   * 朋友的网关。
+   */
+  friend: 'friend',
+
+  /**
+   * 云模型。
+   */
+  anthropic: 'anthropic',
+}
+
+/**
+ * 联网抓取只放行这两种协议。别的一律不抓 —— 那是信任边界。
+ */
+export const PROTOCOL = {
+  /**
+   * 明文。
+   */
+  http: 'http:',
+
+  /**
+   * 加密。
+   */
+  https: 'https:',
+}
+
+/**
+ * SDK 的流事件名。
+ */
+export const STREAM_EVENT = {
+  /**
+   * 又来了一段正文。
+   */
+  text: 'text',
+
+  /**
+   * 流完了。
+   */
+  end: 'end',
+
+  /**
+   * 流炸了。
+   */
+  error: 'error',
+} as const
+
+/**
+ * 模型自己拒答时上游给的停止原因。**不是我们这侧的错。**
+ */
+export const STOP_REFUSAL = 'refusal'
+
+/**
+ * 去 markdown 时保留第一个捕获组。
+ */
+export const KEEP_GROUP1 = '$1'
+
+/**
+ * 停摆(不是硬超时)。看门狗用它区分两种掐断,报给用户的话也不一样。
+ */
+export const STALL = 'stall'

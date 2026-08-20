@@ -11,21 +11,24 @@ import type { StreamFn } from '@earendil-works/pi-agent-core'
 import { AGENT_FN, AGENT_LOG, log } from '@/lib/log'
 import { NOC_LIST_WITH_TITLES } from '../db/sql'
 import {
-  COST_CACHE_READ, COST_CACHE_WRITE, COST_INPUT, COST_OUTPUT, LIKE_SPECIAL, MAX_INPUT_CHARS,
+  COST_CACHE_READ, COST_CACHE_WRITE, COST_INPUT, COST_OUTPUT, DASH, FALLBACK_ON, LIKE_ANY,
+  LIKE_ESCAPE, LIKE_SPECIAL, MAX_INPUT_CHARS,
   MAX_QUERY_CHARS, MAX_REASON_CHARS, MAX_TOKENS, MODEL_API, MODEL_BASE_URL, MODEL_CONTEXT_WINDOW, MODEL_ID,
-  MODEL_NAME, MODEL_PROVIDER, MODEL_REASONING, NOC_RE, NOISE_RATIO, PROVS, ROLE, SEARCH_LIMIT, TIMEOUT_MS,
+  MODEL_NAME, MODEL_PROVIDER, MODEL_REASONING, NL, NOC_RE, NOISE_RATIO, PROVS, ROLE, SEARCH_LIMIT,
+  SHOWN, TIMEOUT_MS,
   TOOLS,
 } from './constants'
 import { RESOLVE_SYSTEM, SEARCH_RESULT_HINT, TOOL_DESC, TOOL_REPLY } from './prompts'
 import { GIVE_UP_PARAMS, SEARCH_PARAMS, SET_SLOTS_PARAMS } from './schemas'
 import type {
+
   AcceptNocIn, AcceptNocOut, AgentFallbackOnOut, Candidate, CandidateLineIn, CandidateLineOut, CleanProvsIn,
-  CleanProvsOut, GiveUpArgs, GiveUpExecOut, GiveUpTool, GiveUpToolIn, IgnoreEventsOut, InCandidatesIn,
-  InCandidatesOut, Inbox, IsKnownProvIn, IsKnownProvOut, MakeToolsIn, MakeToolsOut,
-  ModelOut, PassThroughMessagesIn, PassThroughMessagesOut, ResolveByAgentIn, ResolveByAgentOut, RunLoopIn,
-  RunLoopOut, SayIn, SayOut, SearchArgs, SearchCandidatesIn, SearchCandidatesOut, SearchDetails, SearchExecOut,
-  SearchReplyIn, SearchReplyOut, SearchTool, SearchToolIn, SetSlotsArgs, SetSlotsExecOut, SetSlotsTool,
-  SetSlotsToolIn, ToolCallId, TranscriptMessage, UpperTrimIn, UpperTrimOut,
+  CleanProvsOut, ExecuteGiveUpIn, ExecuteGiveUpOut, ExecuteSearchIn, ExecuteSearchOut, ExecuteSetSlotsIn,
+  ExecuteSetSlotsOut, GiveUpToolIn, GiveUpToolOut, IgnoreEventsOut, InCandidatesIn, InCandidatesOut, Inbox,
+  IsKnownProvIn, IsKnownProvOut, MakeToolsIn, MakeToolsOut, ModelOut, OnTimeoutOut, PassThroughMessagesIn,
+  PassThroughMessagesOut, ResolveByAgentIn, ResolveByAgentOut, RunLoopIn, RunLoopOut, SayIn, SayOut,
+  SearchCandidatesIn, SearchCandidatesOut, SearchDetails, SearchReplyIn, SearchReplyOut, SearchToolIn,
+  SearchToolOut, SetSlotsToolIn, SetSlotsToolOut, ToolCallId, TranscriptMessage, UpperTrimIn, UpperTrimOut,
 } from './types'
 
 // =========================================================================
@@ -101,7 +104,7 @@ export function acceptNoc(input: AcceptNocIn): AcceptNocOut {
  * @returns pi 认的工具回执。
  */
 function say<T>(input: SayIn<T>): SayOut<T> {
-  return { content: [{ type: 'text', text: input.text }], details: input.details, terminate: input.stop }
+  return { content: [{ type: ROLE.text, text: input.text }], details: input.details, terminate: input.stop }
 }
 
 /**
@@ -114,7 +117,7 @@ function say<T>(input: SayIn<T>): SayOut<T> {
  */
 async function searchCandidates(input: SearchCandidatesIn): SearchCandidatesOut {
   try {
-    const like = `%${input.query.replace(LIKE_SPECIAL, '\\$&')}%`
+    const like = `${LIKE_ANY}${input.query.replace(LIKE_SPECIAL, LIKE_ESCAPE)}${LIKE_ANY}`
     const { rows } = await input.pool.query(NOC_LIST_WITH_TITLES, [like, SEARCH_LIMIT])
     const top = Number(rows[0]?.n ?? 0)
     const hits: Candidate[] = []
@@ -137,7 +140,7 @@ async function searchCandidates(input: SearchCandidatesIn): SearchCandidatesOut 
  * @returns `NOC — 职业名` 这一行。
  */
 function candidateLine(input: CandidateLineIn): CandidateLineOut {
-  return `${input.hit.noc} — ${input.hit.title}`
+  return `${input.hit.noc}${DASH}${input.hit.title}`
 }
 
 /**
@@ -150,7 +153,7 @@ function searchReply(input: SearchReplyIn): SearchReplyOut {
   if (!input.hits.length) return TOOL_REPLY.noCandidates
   const lines: string[] = []
   for (const hit of input.hits) lines.push(candidateLine({ hit }))
-  return `${SEARCH_RESULT_HINT}\n${lines.join('\n')}`
+  return `${SEARCH_RESULT_HINT}${NL}${lines.join(NL)}`
 }
 
 /**
@@ -159,11 +162,16 @@ function searchReply(input: SearchReplyIn): SearchReplyOut {
  * @param input 库连接与这一趟的收件箱。
  * @returns 查职业候选那把工具。
  */
-function searchTool(input: SearchToolIn): SearchTool {
+function searchTool(input: SearchToolIn): SearchToolOut {
   /**
+   * 查一次候选,攒进收件箱,并把清单回给模型。
+   *
    * ⚠️ 两个参数是 pi 定的(它按位置传 toolCallId、args),第一位我们用不上。
+   *
+   * @param args 模型拼的检索词。
+   * @returns 候选清单,或者一句「一个都没有」。
    */
-  async function executeSearch(_id: ToolCallId, args: SearchArgs): SearchExecOut {
+  async function executeSearch(_id: ToolCallId, args: ExecuteSearchIn): ExecuteSearchOut {
     const query = args.query.trim().slice(0, MAX_QUERY_CHARS)
     const hits = await searchCandidates({ pool: input.pool, query })
     for (const hit of hits) input.out.candidates.push(hit)
@@ -182,11 +190,16 @@ function searchTool(input: SearchToolIn): SearchTool {
  * @param input 这一趟的收件箱。
  * @returns 记下槽位那把工具。
  */
-function setSlotsTool(input: SetSlotsToolIn): SetSlotsTool {
+function setSlotsTool(input: SetSlotsToolIn): SetSlotsToolOut {
   /**
+   * 记下模型填的槽位,并收工。
+   *
    * 只记账不判断:采信统一在 §4 做 —— 在回调里判,等于把红线散进三个地方。
+   *
+   * @param args 模型填的槽位,还没采信。
+   * @returns 一句「记下了」,带 terminate。
    */
-  async function executeSetSlots(_id: ToolCallId, args: SetSlotsArgs): SetSlotsExecOut {
+  async function executeSetSlots(_id: ToolCallId, args: ExecuteSetSlotsIn): ExecuteSetSlotsOut {
     input.out.claim = args
     return say({ text: TOOL_REPLY.recorded, details: args, stop: true })
   }
@@ -202,11 +215,14 @@ function setSlotsTool(input: SetSlotsToolIn): SetSlotsTool {
  * @param input 这一趟的收件箱。
  * @returns 交回反问那把工具。
  */
-function giveUpTool(input: GiveUpToolIn): GiveUpTool {
+function giveUpTool(input: GiveUpToolIn): GiveUpToolOut {
   /**
    * 模型自己交回反问 —— 记下来就收工。
+   *
+   * @param args 模型给的放弃理由,可不填。
+   * @returns 一句「放弃了」,带 terminate。
    */
-  async function executeGiveUp(_id: ToolCallId, args: GiveUpArgs): GiveUpExecOut {
+  async function executeGiveUp(_id: ToolCallId, args: ExecuteGiveUpIn): ExecuteGiveUpOut {
     input.out.gaveUp = true
     const text = `${TOOL_REPLY.gaveUp}${args.reason ?? ''}`.slice(0, MAX_REASON_CHARS)
     return say({ text, details: { gaveUp: true }, stop: true })
@@ -271,7 +287,7 @@ function model(): ModelOut {
     provider: MODEL_PROVIDER,
     baseUrl: MODEL_BASE_URL,
     reasoning: MODEL_REASONING,
-    input: ['text'],
+    input: [ROLE.text],
     contextWindow: MODEL_CONTEXT_WINDOW,
     maxTokens: MAX_TOKENS,
     cost: { input: COST_INPUT, output: COST_OUTPUT, cacheRead: COST_CACHE_READ, cacheWrite: COST_CACHE_WRITE },
@@ -313,7 +329,7 @@ async function runLoop(input: RunLoopIn): RunLoopOut {
  * @returns 这条兜底路开没开。
  */
 function agentFallbackOn(): AgentFallbackOnOut {
-  return process.env.AGENT_FALLBACK === '1'
+  return process.env.AGENT_FALLBACK === FALLBACK_ON
 }
 
 /**
@@ -335,8 +351,10 @@ export async function resolveByAgent(input: ResolveByAgentIn): ResolveByAgentOut
 
     /**
      * 到点就掐断 —— 兜底不许拖慢反问。
+     *
+     * @returns 没有返回值。
      */
-    function onTimeout(): void {
+    function onTimeout(): OnTimeoutOut {
       ac.abort()
     }
     const timer = setTimeout(onTimeout, TIMEOUT_MS)
@@ -360,8 +378,8 @@ export async function resolveByAgent(input: ResolveByAgentIn): ResolveByAgentOut
 
     const provs = cleanProvs({ raw: out.claim.provinces })
     const reason = (out.claim.reason ?? '').slice(0, MAX_REASON_CHARS)
-    const shownNoc = noc ?? 'null'
-    const shownProvs = provs.join(',') || '-'
+    const shownNoc = noc ?? SHOWN.noNoc
+    const shownProvs = provs.join(SHOWN.comma) || SHOWN.none
     log({ tag: AGENT_LOG.tag, text: `${AGENT_LOG.resolved}${shownNoc}${AGENT_LOG.provs}${shownProvs}${AGENT_LOG.ms}${ms}${AGENT_LOG.reason}${reason}` })
     return { noc, provs, reason, ms }
   } catch (e) {

@@ -15,7 +15,12 @@
 /**
  * 一个失败:原生 Error 加上域自己的错误码。Code 允许含 undefined,因为有的域的码是可选的。
  */
-export type Failure<Code extends string | undefined> = Error & { code: Code }
+export type Failure<Code extends string | undefined> = Error & {
+  /**
+   * 域自己的错误码。允许含 undefined,因为有的域的码是可选的(老抛点没有码)。
+   */
+  code: Code
+}
 
 /**
  * `fail` 的入参。
@@ -58,12 +63,17 @@ export type HasNameIn = {
 export type HasNameOut = boolean
 
 /**
+ * `fail` 的返回:一个原生 Error,带上身份与错误码。
+ */
+export type FailOut<Code extends string | undefined> = Failure<Code>
+
+/**
  * 造一个失败。堆栈是真的,所以留痕里看得见抛点。
  *
  * @param input 身份、消息、错误码。
  * @returns 一个原生 Error,带上这三样。
  */
-export function fail<Code extends string | undefined>(input: FailIn<Code>): Failure<Code> {
+export function fail<Code extends string | undefined>(input: FailIn<Code>): FailOut<Code> {
   return Object.assign(new Error(input.msg), { name: input.name, code: input.code })
 }
 
@@ -111,12 +121,22 @@ export type FriendErrCode =
 /**
  * 见客的失败。它的 message 会原样进 HTTP 响应体,用户逐字读得到。
  */
-export type LlmFailure = Error & { code?: FriendErrCode }
+export type LlmFailure = Error & {
+  /**
+   * 错误码。**可选** —— 三个后端的老抛点没有码,路由那时按兜底处理。
+   */
+  code?: FriendErrCode
+}
 
 /**
  * 网关层的失败。它的 message 是技术留痕,只进日志;错误码一定有。
  */
-export type GatewayFailure = Error & { code: FriendErrCode }
+export type GatewayFailure = Error & {
+  /**
+   * 错误码。**一定有** —— 网关层的失败全从 `gatewayErrorOf` 出来,那儿认不出也会落到兜底码。
+   */
+  code: FriendErrCode
+}
 
 /**
  * `llmError` 的入参。
@@ -149,14 +169,24 @@ export type GatewayErrorIn = {
 }
 
 /**
+ * `llmError` 的返回:见客的失败。
+ */
+export type LlmErrorOut = LlmFailure
+
+/**
  * 造一个见客的失败。码透到路由层,让「各说各话」成立。
  *
  * @param input 给用户看的话与可选的错误码。
  * @returns 见客的失败。
  */
-export function llmError(input: LlmErrorIn): LlmFailure {
+export function llmError(input: LlmErrorIn): LlmErrorOut {
   return fail({ name: ERR_NAME.llm, msg: input.msg, code: input.code })
 }
+
+/**
+ * `gatewayError` 的返回:网关层的失败。
+ */
+export type GatewayErrorOut = GatewayFailure
 
 /**
  * 造一个网关层的失败。出口那一层再把码翻成给用户看的话。
@@ -164,7 +194,7 @@ export function llmError(input: LlmErrorIn): LlmFailure {
  * @param input 技术留痕与错误码。
  * @returns 网关层的失败。
  */
-export function gatewayError(input: GatewayErrorIn): GatewayFailure {
+export function gatewayError(input: GatewayErrorIn): GatewayErrorOut {
   return fail({ name: ERR_NAME.gateway, msg: input.msg, code: input.code })
 }
 
@@ -195,7 +225,22 @@ export type GatewayErrorBody = {
   /**
    * 新链的标准结构。type 与 code 认哪个都行,message 只进留痕。
    */
-  error?: { type?: string; code?: string; message?: string }
+  error?: {
+    /**
+     * 上游给的错误种类。认它的表是 `ERR_BY_TYPE`。
+     */
+    type?: string
+
+    /**
+     * 有些上游把种类放在这一格。两个都认,先 type 后 code。
+     */
+    code?: string
+
+    /**
+     * 上游的说明。**只进留痕**,不进见客话术。
+     */
+    message?: string
+  }
 
   /**
    * 旧链的结构。超长报的就是这一句。
@@ -252,7 +297,30 @@ export const ERR_BY_TYPE: Record<string, FriendErrCode> = {
  * 认不出 type 时,按 HTTP 状态兜底。
  */
 export const ERR_BY_STATUS: Record<number, FriendErrCode> = {
-  400: 'badRequest', 401: 'authKey', 403: 'authKey', 502: 'upstream', 504: 'timeout',
+  /**
+   * 我们发的 body 不对,属于我们这侧的 bug。
+   */
+  400: 'badRequest',
+
+  /**
+   * 钥匙不对。运维问题,重试没用。
+   */
+  401: 'authKey',
+
+  /**
+   * 也归钥匙:上游对「无权」与「钥匙错」分不清,对用户是同一句话。
+   */
+  403: 'authKey',
+
+  /**
+   * 上游模型炸了。它和 offline 是仅有的两种值得回退旧链的失败。
+   */
+  502: 'upstream',
+
+  /**
+   * 上游自己等超时了。
+   */
+  504: 'timeout',
 }
 
 /**
@@ -277,12 +345,17 @@ export const LEGACY_TOO_LONG_TYPE = 'context_length_exceeded'
 export const ERR_MSG_MAX = 200
 
 /**
+ * `gatewayErrorOf` 的返回:认好码的网关失败。
+ */
+export type GatewayErrorOfOut = GatewayFailure
+
+/**
  * 把上游回包认成我们的错误码。认不出的按 HTTP 状态兜底。
  *
  * @param input HTTP 状态与原始回包正文。
  * @returns 认好码的网关失败。
  */
-export function gatewayErrorOf(input: GatewayErrorOfIn): GatewayFailure {
+export function gatewayErrorOf(input: GatewayErrorOfIn): GatewayErrorOfOut {
   let type = ''
   let message = ''
   try {
@@ -328,7 +401,12 @@ export type TranslateErrCode = 'upstream' | 'timeout'
 /**
  * 翻译链的失败。它只进日志和重试判断,不会给用户看到。
  */
-export type TranslateFailure = Error & { code: TranslateErrCode }
+export type TranslateFailure = Error & {
+  /**
+   * 上游炸了还是我们掐的。只进日志与重试判断,不给用户看。
+   */
+  code: TranslateErrCode
+}
 
 /**
  * `translateError` 的入参。
@@ -346,6 +424,11 @@ export type TranslateErrorIn = {
 }
 
 /**
+ * `translateError` 的返回:翻译链的失败。
+ */
+export type TranslateErrorOut = TranslateFailure
+
+/**
  * 造一个翻译链的失败。
  *
  * 只有造没有判:这条链的失败没人按码分流,路由一律当「翻不了」处理。零消费者的判定函数不写。
@@ -353,7 +436,7 @@ export type TranslateErrorIn = {
  * @param input 留痕与错误码。
  * @returns 翻译链的失败。
  */
-export function translateError(input: TranslateErrorIn): TranslateFailure {
+export function translateError(input: TranslateErrorIn): TranslateErrorOut {
   return fail({ name: TRANSLATE_ERR_NAME, msg: input.msg, code: input.code })
 }
 
@@ -437,4 +520,252 @@ export const LLM_MSG = {
    * 模型自己拒答,不是我们这侧的错。
    */
   refusal: '模型拒绝了本次请求',
+}
+
+// =========================================================================
+// 5. 对话域(lib/chat)
+// =========================================================================
+
+/**
+ * 对话编排失败的身份。名字沿用旧类名 `ChatError`,因为 chat_logs 的 err 列与生产日志都是靠它认的。
+ */
+export const CHAT_ERR_NAME = 'ChatError'
+
+/**
+ * 对话编排的五种失败。路由按它分 HTTP 状态,见 api/chat。
+ */
+export type ChatErrCode =
+  | 'tooShort'   // 输入短到不成一句话(四字门;CJK 两字即放行,见 orchestrate 的 cjkOk)
+  | 'noOcc'      // 依赖职业的问题拿不到 5 位 NOC —— 绝不猜职业码,反问
+  | 'llm'        // 模型那头给了个用不了的回答:抽槽解析不出,或抽槽/合成自己炸了
+  | 'guard'      // 出口校验没过,手里又没有 facts 可降级
+  | 'busy'       // 模型那头等不来字(停摆闸响 / 上游超时)。**不降级成事实清单**
+                 // (2026-08-09 Frank 拍板「不用降级 就显示稍后再试,系统繁忙」):
+                 // 等太久之后再塞一张表格,读的人只会更烦。
+
+/**
+ * 对话编排的失败。
+ *
+ * 🔴 槽位的形状 `Slots` 是**调用方带进来的类型参数**,本文件一个字都不认识它 ——
+ * `lib/error` 是共享叶子,反过来 import `lib/chat` 就是叶子依赖域,方向是倒的
+ * (2026-08-19 Frank 当场驳回)。域自己在调用点把 `Slots` 填进来,叶子只管机制。
+ */
+export type ChatFailure<Slots> = Error & {
+  /**
+   * 哪一种。
+   */
+  code: ChatErrCode
+
+  /**
+   * 抛这一下之前已经解出来的槽位。路由把它原样回给前端,让下一轮不用从头再问一遍
+   * (只有 noOcc / busy / guard 三处带得出来,另两种失败发生时还什么都没解出来)。
+   */
+  slots?: Slots
+}
+
+/**
+ * `chatError` 的入参。
+ */
+export type ChatErrorIn<Slots> = {
+  /**
+   * 哪一种。
+   */
+  code: ChatErrCode
+
+  /**
+   * 技术留痕。只有 `@test.local` 的探针请求看得到它,对外只给错误码。
+   */
+  msg: string
+
+  /**
+   * 已经解出来的槽位,没有就不传。
+   */
+  slots?: Slots
+}
+
+/**
+ * `chatError` 的返回:对话编排的失败。
+ */
+export type ChatErrorOut<Slots> = ChatFailure<Slots>
+
+/**
+ * 造一个对话编排的失败。
+ *
+ * @param input 错误码、留痕、可选的槽位。
+ * @returns 对话编排的失败。
+ */
+export function chatError<Slots>(input: ChatErrorIn<Slots>): ChatErrorOut<Slots> {
+  return Object.assign(fail({ name: CHAT_ERR_NAME, msg: input.msg, code: input.code }), { slots: input.slots })
+}
+
+/**
+ * 判它是不是对话编排的失败。调用方先用 `instanceof Error` 收窄,再交给它,
+ * 并在这一行把自己的槽位类型填进去(`isChatError<Slots>(e)`)。
+ *
+ * @param err catch 里接住、已经收窄成 Error 的那个。
+ * @returns 是不是对话编排的那一种。
+ */
+export function isChatError<Slots>(err: Error): err is ChatFailure<Slots> {
+  return hasName({ err, name: CHAT_ERR_NAME })
+}
+
+/**
+ * 对话编排的错误码字面量。
+ *
+ * 🔵 域里不许写裸字符串,而错误码的家本来就是这里 —— 抛错那一行从这张表取,
+ * 免得 `'busy'` 在三个 throw 点各写一遍,改一处剩两处对不上。
+ */
+export const CHAT_CODE = {
+  /**
+   * 输入短到不成一句话。
+   */
+  tooShort: 'tooShort',
+
+  /**
+   * 依赖职业却拿不到 5 位 NOC。
+   */
+  noOcc: 'noOcc',
+
+  /**
+   * 模型那头给了个用不了的回答。
+   */
+  llm: 'llm',
+
+  /**
+   * 出口校验没过,手里又没有 facts 可降级。
+   */
+  guard: 'guard',
+
+  /**
+   * 模型那头等不来字。**不降级成事实清单**(2026-08-09 Frank 拍板)。
+   */
+  busy: 'busy',
+} as const
+
+/**
+ * 网关的错误码字面量。
+ *
+ * 🔵 错误码的家就是这里 —— 域里抛错那一行从这张表取,免得 `'timeout'` 在四个 throw 点各写一遍。
+ * 类型是上面的 `FriendErrCode`,这张表是它的值。
+ */
+export const FRIEND_CODE = {
+  /**
+   * 未配置 env / 连不上 / DNS 挂了。
+   */
+  offline: 'offline',
+
+  /**
+   * 输入超上限。**重试没用,得删内容。**
+   */
+  tooLong: 'tooLong',
+
+  /**
+   * 我们这侧 abort 或上游 504。
+   */
+  timeout: 'timeout',
+
+  /**
+   * 上游模型炸了。
+   */
+  upstream: 'upstream',
+
+  /**
+   * key 错/缺。运维问题。
+   */
+  authKey: 'authKey',
+
+  /**
+   * 我们发的 body 不对,是 bug。
+   */
+  badRequest: 'badRequest',
+
+  /**
+   * 200 但答案是空串。**空答案绝不交出去。**
+   */
+  empty: 'empty',
+} as const
+
+/**
+ * 翻译链的错误码字面量。
+ */
+export const TRANSLATE_CODE = {
+  /**
+   * 上游非 200。只在重试循环里当控制流,不会离开函数。
+   */
+  upstream: 'upstream',
+
+  /**
+   * 我们这侧掐断。这个会冒到路由。
+   */
+  timeout: 'timeout',
+} as const
+
+/**
+ * 网关层的技术留痕措辞。**只进日志**,不给用户看(见客话术是上面的 `FRIEND_MSG`)。
+ */
+export const GATEWAY_MSG = {
+  /**
+   * 停摆闸响了,后面接毫秒数。
+   */
+  stalled: 'stalled ',
+
+  /**
+   * 硬超时,后面接毫秒数。
+   */
+  aborted: 'aborted after ',
+
+  /**
+   * 上面两条的单位。
+   */
+  ms: 'ms',
+
+  /**
+   * 连不上,后面接原因。
+   */
+  network: 'network: ',
+
+  /**
+   * 流到一半断了,后面接看门狗的话。
+   */
+  stream: 'stream ',
+
+  /**
+   * 接上一条,后面接已经收到多少字符。
+   */
+  after: ' after ',
+
+  /**
+   * 字符的单位。
+   */
+  ch: 'ch',
+
+  /**
+   * 本地预检发现输入超长,后面接实际字符数。
+   */
+  input: 'input ',
+
+  /**
+   * 接上一条,后面接上限。
+   */
+  overMax: ' chars > gateway max ',
+
+  /**
+   * 回包里一个 choice 都没有,后面接 x-cache。
+   */
+  emptyChoices: 'empty choices (x-cache=',
+
+  /**
+   * 接上一条收尾。
+   */
+  parenEnd: ')',
+
+  /**
+   * 旧链回了 200 但答案是空的。
+   */
+  emptyAnswer: 'empty answer',
+
+  /**
+   * env 没配。
+   */
+  notConfigured: 'TRANSLATE_API_BASE/KEY not configured',
 }
