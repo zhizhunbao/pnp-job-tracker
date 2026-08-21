@@ -4,7 +4,7 @@
 import type { MetadataRoute } from 'next'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
+import { SQL } from '@/lib/db'   // SQL 文本全在那儿,本文件只管取数与组装
 
 // 同 jobs/sitemap.ts:force-dynamic 避免构建期烘焙查库失败(sitemap 访问频次极低)。
 export const dynamic = 'force-dynamic'

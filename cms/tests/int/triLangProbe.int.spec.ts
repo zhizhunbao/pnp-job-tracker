@@ -13,7 +13,7 @@
 //   CHAT_LLM_BASE=http://192.168.1.150:11434 CHAT_LLM_MODEL=<tag> CHAT_LLM_KEY= \
 //     npx vitest run tests/int/triLangProbe.int.spec.ts
 import { describe, expect, it } from 'vitest'
-import { getDb } from '@/lib/db/database'
+import { getDb } from '@/lib/db/server'
 import { consult } from '@/lib/consult/server'
 import type { Profile } from '@/lib/consult'
 

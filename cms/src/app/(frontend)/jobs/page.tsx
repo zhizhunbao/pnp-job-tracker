@@ -10,7 +10,7 @@ import { getUser, isPro } from '@/lib/quota/server'
 import { FREE_MATCH_JOBS_PER_DAY } from '@/lib/quota'
 import { normalizeProfile, hasProfile } from '@/lib/jobs'
 import { fetchJobRows, fetchJobsPage, fetchSsrDims, fetchTotalAndProof, type SsrDims } from '@/lib/jobs/server'
-import { dbOf } from '@/lib/db/database'
+import { dbOf } from '@/lib/db/server'
 
 // 首屏行数(2026-07-05 用户拍板):SSR 只带最近 N 行秒开,全量 /api/jobs-data 后台拉(拉完筛选/搜索照旧)
 const FIRST_SCREEN_ROWS = 50

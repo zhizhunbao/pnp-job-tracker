@@ -5,7 +5,7 @@
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
+import { SQL } from '../db'   // SQL 文本全在那儿,本文件只管取数与映射
 
 type OccCompetitionRow = {
   province: string

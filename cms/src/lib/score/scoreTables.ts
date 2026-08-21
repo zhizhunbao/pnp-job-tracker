@@ -12,7 +12,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { fetchTopNocs } from '@/lib/jobs/server'
 import type { DrawRow, ScoreFactor } from '../points'
-import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
+import { SQL } from '../db'   // SQL 文本全在那儿,本文件只管取数与映射
 
 /** SSR 事实区一行:每省最近一轮有分数线或邀请数的抽选。
  *  🔴 invitations 必须带出来:这张表的入选条件就是「有分数线**或**有邀请数」,

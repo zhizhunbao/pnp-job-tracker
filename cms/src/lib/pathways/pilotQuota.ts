@@ -76,8 +76,7 @@ export function aggregatePilotQuota(rows: PilotQuotaCommunityRow[]): PilotQuotaA
   return [...groups.values()].sort((a, b) => a.province.localeCompare(b.province) || a.type.localeCompare(b.type))
 }
 
-import type { Db as Pool } from '../db/database'   // 连接形状单一来源(原先这行结构类型在两个 lib 里各抄一份)
-import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
+import { SQL, type Db as Pool } from '../db'   // 连接形状与 SQL 文本的单一来源;本文件只管取数与映射
 
 const communityRow = (r: Record<string, unknown>): PilotQuotaCommunityRow => ({
   community: String(r.community ?? ''),

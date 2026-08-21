@@ -19,7 +19,7 @@ import { isLlmError } from '@/lib/error'
 import { completeText } from '@/lib/llm'
 import { patchProfile, type ProfilePatch } from '@/lib/profile'
 import { DAILY_FREE, gateMatch, matchPrompt, MIN_RESUME, normalizeRows, parseLlmJson } from '@/lib/resume'
-import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
+import { SQL } from '@/lib/db'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'

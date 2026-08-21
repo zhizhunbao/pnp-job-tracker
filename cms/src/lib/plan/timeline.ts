@@ -1,7 +1,7 @@
 // 政策时间线读取(C6-01):三路在库事件源合并 + 抽选节奏统计。零 schema 改动,SQL 只 SELECT。
 // 诚实红线循 E6-04:省分数带分制标注(≠CRS);节奏只报历史统计不预测下一次(伪权威红线)。
 
-import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
+import { SQL } from '../db'   // SQL 文本全在那儿,本文件只管取数与映射
 export type TlEvent = {
   date: string                       // YYYY-MM-DD
   prov: string                       // 两字省码;'' = 联邦

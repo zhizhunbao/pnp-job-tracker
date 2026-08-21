@@ -8,8 +8,8 @@
 //
 // 为什么用 `getDb()` 而不是让调用方传池:这个函数是**自带缓存的单件**(advisor / alerts 各调各的,
 // 手里不一定有池);`getDb()` 正是为这种「手里没有 payload 实例」的调用点准备的(它按 config 记忆化,不多开连接)。
-import { getDb } from '../db/database'
-import * as SQL from '../db/sql'
+import { getDb } from '../db/server'
+import { SQL } from '../db'
 import { iso, num } from './queries'
 import type { MatchDims } from './match'
 

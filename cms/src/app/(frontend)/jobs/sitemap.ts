@@ -12,7 +12,7 @@
 import type { MetadataRoute } from 'next'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
+import { SQL } from '@/lib/db'   // SQL 文本全在那儿,本文件只管取数与组装
 
 // 生产坑(2026-07-20 首跑):sitemap 路由默认构建期静态烘焙——Render 构建容器查库失败 → 空片被烘死。
 // force-dynamic=请求时现查(sitemap 访问频次极低,动态查无压力)。

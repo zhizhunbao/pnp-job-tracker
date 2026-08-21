@@ -4,7 +4,7 @@
  * 红线:查不到如实回 null(反编);同名并发合流;掉线/超时静默降级由 friendChat 兜。
  */
 import { friendChat } from '../llm'
-import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
+import { SQL } from '../db'   // SQL 文本全在那儿,本文件只管取数与映射
 
 export type CompanyResearch = { brief: string; website: string; sources: string[]; fetched: string }
 

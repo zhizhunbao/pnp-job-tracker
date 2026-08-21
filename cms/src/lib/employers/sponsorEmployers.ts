@@ -12,7 +12,7 @@
 import { employerVerdict } from '../ruling/server'
 import type { EmployerFacts, EmployerVerdict } from '../ruling'
 import type { Requirement } from '../gauge'
-import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
+import { SQL } from '../db'   // SQL 文本全在那儿,本文件只管取数与映射
 
 // #313:把脉页橱窗三分表 SSR 每表只带前 50 行(桌面 10/页 → 首 5 页秒开),全量走 /api/sponsor-employers 懒取
 export const SE_SSR_ROWS = 50

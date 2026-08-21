@@ -7,10 +7,10 @@
 // 预填的码一进来就相等 → teer 一路 null → teerHit 挑不出行 → 语言要求从事实里消失。
 // 这里钉住那条因果链的两端:① 72310 的 teer 库里查得到;② teer=null 时 teerHit 拒绝该行。
 import { describe, expect, it } from 'vitest'
-import { getDb } from '@/lib/db/database'
+import { getDb } from '@/lib/db/server'
 import { teerHit } from '@/lib/gauge'
 import type { Requirement } from '@/lib/gauge'
-import * as SQL from '@/lib/db/sql'
+import { SQL } from '@/lib/db'
 
 // BC 那条语言行的适用范围,照库里的原样
 const TEER_SCOPED = { appliesTeer: '2,3,4,5' } as Requirement

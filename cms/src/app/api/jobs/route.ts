@@ -9,7 +9,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { getUser, isPro } from '@/lib/quota/server'
-import { dbOf } from '@/lib/db/database'
+import { dbOf } from '@/lib/db/server'
 import { hasProfile, normalizeProfile, type MatchDims } from '@/lib/jobs'
 import { fetchJobsPage, fetchMatchPage, loadMatchDims } from '@/lib/jobs/server'
 

@@ -18,7 +18,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
 
-import { getDb } from '@/lib/db/database'
+import { getDb } from '@/lib/db/server'
 import { consult } from '@/lib/consult/server'
 import type { Fact as ConsultFact } from '@/lib/consult'
 import { isChatError } from '@/lib/error'

@@ -10,7 +10,7 @@ import { runAgentLoop } from '@earendil-works/pi-agent-core'
 import type { StreamFn } from '@earendil-works/pi-agent-core'
 import { AGENT_FN, AGENT_LOG, log } from '@/lib/log'
 import { cleanProvs } from '../location'
-import { NOC_LIST_WITH_TITLES } from '../db/sql'
+import { SQL } from '../db'
 import {
   COST_CACHE_READ, COST_CACHE_WRITE, COST_INPUT, COST_OUTPUT, DASH, FALLBACK_ON, LIKE_ANY, LIKE_ESCAPE,
   LIKE_SPECIAL, MAX_INPUT_CHARS, MAX_QUERY_CHARS, MAX_REASON_CHARS, MAX_TOKENS, MODEL_API, MODEL_BASE_URL,
@@ -80,7 +80,7 @@ function say<T>(input: SayIn<T>): SayOut<T> {
 async function searchCandidates(input: SearchCandidatesIn): SearchCandidatesOut {
   try {
     const like = `${LIKE_ANY}${input.query.replace(LIKE_SPECIAL, LIKE_ESCAPE)}${LIKE_ANY}`
-    const { rows } = await input.pool.query(NOC_LIST_WITH_TITLES, [like, SEARCH_LIMIT])
+    const { rows } = await input.pool.query(SQL.NOC_LIST_WITH_TITLES, [like, SEARCH_LIMIT])
     const top = Number(rows[0]?.n ?? 0)
     const hits: Candidate[] = []
     for (const r of rows) {

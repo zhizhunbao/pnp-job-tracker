@@ -1,7 +1,7 @@
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { lazyFetchJd } from './jdFetch'
-import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
+import { SQL } from '../db'   // SQL 文本全在那儿,本文件只管取数与映射
 
 // 按 applyUrl 取真实 JD 正文(DB jobs.description,mart 灌入)。jobtext + advisor 共用,
 // 去掉运行时扫 .md 文件 → 上云不再依赖 data/ 文件在场。走 pg pool 轻量查询(绕开 Payload 读管线)。

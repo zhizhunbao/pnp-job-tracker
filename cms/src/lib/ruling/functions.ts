@@ -15,8 +15,8 @@
 import { log, RULING_LOG } from '../log'
 import { headers } from 'next/headers'
 
-import { getDb } from '../db/database'
-import * as SQL from '../db/sql'
+import { getDb } from '../db/server'
+import { SQL } from '../db'
 import { getUser, isPro } from '../quota/server'
 import {
   byCostAsc, byCountDesc, byDrawDateDesc, byListRankThenMonths, byNumberAsc, byObstacleThenTier, byOpeningsDesc, byTierAsc,

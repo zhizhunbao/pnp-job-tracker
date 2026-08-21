@@ -2,7 +2,7 @@
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import type { StatRow, SrcRow, ProvExtra, ProvVol, OccRow, CityRow } from './index'
-import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
+import { SQL } from '../db'   // SQL 文本全在那儿,本文件只管取数与组装
 
 // withMid=true 才带中类行(仅图表下钻用);默认只回大类层——既有页面(省页/对比/表格)口径不变不重复计数。
 // 缺列容错(E12-06 教训):mid 列 DDL 未落地时自动降级为无 mid 查询,行回退 mid='all',页面照常。

@@ -10,7 +10,7 @@
 //     那是 `lastDraftOf` 修掉的病:pi 被 abort 时正常返回不抛,`: ''` 把它咽了。
 //     现在同样两条抛 busy(路由 → 503)。**回归判据就是这条:超时必须抛,不许返回空。**
 import { describe, expect, it } from 'vitest'
-import { getDb } from '@/lib/db/database'
+import { getDb } from '@/lib/db/server'
 import { consult } from '@/lib/consult/server'
 
 const LIVE = Boolean(process.env.CHAT_LLM_BASE)

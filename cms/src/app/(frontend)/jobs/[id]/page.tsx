@@ -11,7 +11,7 @@ import { FREE_MATCH_JOBS_PER_DAY } from '@/lib/quota'
 import { hasProfile, normalizeProfile } from '@/lib/jobs'
 import { fetchJobById, fetchRelatedJobs } from '@/lib/jobs/server'
 import Job from './Job'
-import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
+import { SQL } from '@/lib/db'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
 

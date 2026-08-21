@@ -16,7 +16,7 @@ import { loadOccStats, loadProvExtra } from '@/lib/stats/server'
 import { PROVS } from '@/lib/stats'
 import { Pulse, type HomeStats } from './Pulse'
 import { buildSponsorBoards, fetchSponsorEmployers, SE_SSR_ROWS } from '@/lib/employers/server'
-import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
+import { SQL } from '@/lib/db'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
 

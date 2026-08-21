@@ -3,7 +3,7 @@
 // 列名是 Payload snake_case(老坑 5):改 Jobs schema 只动这里。
 import { match, matchRank, type MatchDims, type MatchJob, type MatchProfile, NO_LIST_PROVINCES } from './match'
 import type { Dims, JobRow, NewsSlim } from './types'
-import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与映射   // 形状住类型文件,不再反向依赖 'use client' 组件
+import { SQL } from '../db'   // SQL 文本全在那儿,本文件只管取数与映射   // 形状住类型文件,不再反向依赖 'use client' 组件
 
 // 库里的 timestamp 回来是 Date、numeric 回来是字符串 —— 两个都得归一(dims.ts 走同一对,别各写一份)
 export const iso = (v: any) => (v instanceof Date ? v.toISOString() : (v ?? ''))

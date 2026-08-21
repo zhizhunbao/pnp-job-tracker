@@ -6,7 +6,7 @@
 //   A 只给 history、profile 空  → 模型自己从上文重新认职业
 //   B history + profile.noc 带上 → 调用方尽了责
 import { describe, it } from 'vitest'
-import { getDb } from '@/lib/db/database'
+import { getDb } from '@/lib/db/server'
 import { consult } from '@/lib/consult/server'
 import type { Profile, Turn } from '@/lib/consult'
 

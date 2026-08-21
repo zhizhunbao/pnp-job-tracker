@@ -7,7 +7,7 @@
  *   ③ 说了职业的问题照旧查得出数,且数字来自工具。
  */
 import { describe, expect, it } from 'vitest'
-import { getDb } from '@/lib/db/database'
+import { getDb } from '@/lib/db/server'
 import { consult } from '@/lib/consult/functions'
 import type { Profile } from '@/lib/consult/types'
 

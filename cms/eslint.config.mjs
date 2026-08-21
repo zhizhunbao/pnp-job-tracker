@@ -10,7 +10,7 @@ import nextCoreWebVitals from 'eslint-config-next/core-web-vitals'
 import nextTypeScript from 'eslint-config-next/typescript'
 
 // 带桶的模块(`lib/<名>/index.ts`)—— 下面那道边界闸认这几个,加新桶就加这里一行。
-const BARRELS = ['agent', 'consult', 'i18n', 'jobs', 'pathways', 'gauge', 'points', 'quiz', 'ruling', 'score', 'employers', 'plan', 'stats', 'quota', 'llm', 'resume']
+const BARRELS = ['agent', 'consult', 'db', 'i18n', 'jobs', 'pathways', 'gauge', 'points', 'quiz', 'ruling', 'score', 'employers', 'plan', 'stats', 'quota', 'llm', 'resume']
 const ABSOLUTE = BARRELS.map((m) => `**/lib/${m}/*`)
 // jobs / score / ruling / employers / plan / quiz / stats / quota / pathways 有**两个门**(index=客户端也安全的那半、server=要连库的那半;
 // 理由见 lib/jobs/index.ts 顶上那段:混着 payload 依赖的桶会把连接池打进浏览器包)。
@@ -29,6 +29,7 @@ const ALLOW = [
   '!**/lib/pathways/server', '!./pathways/server', '!../pathways/server',
   '!**/lib/agent/server', '!./agent/server', '!../agent/server',
   '!**/lib/consult/server', '!./consult/server', '!../consult/server',
+  '!**/lib/db/server', '!./db/server', '!../db/server',
 ]
 const SIBLING = BARRELS.flatMap((m) => [`./${m}/*`, `../${m}/*`])
 const barrelOnly = (group) => ({
@@ -329,6 +330,11 @@ const localRules = {
             const cut = Math.max(full.lastIndexOf('/'), full.lastIndexOf(String.fromCharCode(92)))
             const name = full.slice(cut + 1)
             if (!name || ALLOWED.includes(name)) return
+            // 唯一的第十个名字:lib/db/sql.ts —— 宪法特批的「另一种介质」(SQL 文本整体搬走的家),
+            // 文件名就是内容说明,改叫 constants.ts 反而埋信号。只认 db 这一处,别的域不许借这个名。
+            const parent = full.slice(0, cut)
+            const cut2 = Math.max(parent.lastIndexOf('/'), parent.lastIndexOf(String.fromCharCode(92)))
+            if (name === 'sql.ts' && parent.slice(cut2 + 1) === 'db') return
             context.report({ node, messageId: 'bad', data: { allowed: ALLOWED.join(' / '), name } })
           },
         }
@@ -981,7 +987,7 @@ const eslintConfig = [
     //   · no-split-import:另外五个域还有 3 处(consult 2 / i18n 1);
     //   · no-import-in-leaf:constants 还有 3 处(consult 2 / agent 1),
     //     types 还有 16 处(consult 8 / agent 5 / llm 1 / pathways 1 / jobs 1)。
-    files: ['src/lib/consult/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/db/**/*.ts'],
     plugins: { local: localRules },
     rules: { 'local/domain-file-names': 'error' },
   },

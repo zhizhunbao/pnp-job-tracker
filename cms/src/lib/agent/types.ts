@@ -7,7 +7,7 @@
 
 import type { AgentMessage, AgentTool, AgentToolResult } from '@earendil-works/pi-agent-core'
 import type { Message, Model, Static } from '@earendil-works/pi-ai'
-import type { Db } from '../db/database'
+import type { Db } from '../db'
 import type { Lang } from '@/lib/i18n'
 import type { GIVE_UP_PARAMS, SEARCH_PARAMS, SET_SLOTS_PARAMS } from './schemas'
 

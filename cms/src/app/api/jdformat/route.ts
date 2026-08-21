@@ -11,7 +11,7 @@ import { getUser } from '@/lib/quota/server'
 import { freeGate } from '@/lib/quota/server'
 import { friendChat, friendLlmReady } from '@/lib/llm'
 import { jobDescription, scrubPii } from '@/lib/jobs/server'
-import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
+import { SQL } from '@/lib/db'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

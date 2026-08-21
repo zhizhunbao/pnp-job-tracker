@@ -7,7 +7,7 @@ import { makeT } from '@/lib/i18n'
 
 import { CASES } from '@/lib/ruling'
 import { caseAnswer, casePages, getVerdictData } from '@/lib/ruling/server'
-import { getDb } from '@/lib/db/database'
+import { getDb } from '@/lib/db/server'
 import { ssrLang } from '@/lib/lang.server'
 import { Case } from './Case'
 
