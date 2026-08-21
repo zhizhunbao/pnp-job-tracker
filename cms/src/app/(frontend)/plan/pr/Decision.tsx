@@ -31,7 +31,7 @@ import { EMPTY, FIELDS, NCLC, clearAnswers, fieldsOf, missingFields, pullAndMerg
 import { gateOf, regionProvincesOf, uiOf } from '@/lib/pathways'
 import { pickName } from '@/lib/occName'
 import { track } from '@/lib/track'
-import type { DrawRow, ScoreFactor, SelfProfile } from '@/lib/score'
+import type { DrawRow, ScoreFactor, SelfProfile } from '@/lib/points'
 import type { ProvCompetition } from '@/lib/score/server'
 import type { OccCompetitionRow } from '@/app/api/occ-competition/route'
 

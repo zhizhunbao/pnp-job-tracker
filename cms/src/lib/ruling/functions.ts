@@ -22,8 +22,8 @@ import {
   byCostAsc, byCountDesc, byDrawDateDesc, byListRankThenMonths, byNumberAsc, byObstacleThenTier, byOpeningsDesc, byTierAsc,
 } from './callbacks'
 import { CACHE } from './variables'
-import { evaluateRequirements, teerHit } from '../rules'
-import { estimateCrs, estimateMbEoi, gridStreamOf, scoreProvince, streamMatches } from '../score'
+import { evaluateRequirements, teerHit } from '../gauge'
+import { estimateCrs, estimateMbEoi, gridStreamOf, scoreProvince, streamMatches } from '../points'
 import { askLabels, gateLabels } from '../i18n'
 import { fieldMatchExemptionOf, gateOf, PATHWAYS } from '../pathways'
 import {
@@ -414,7 +414,7 @@ function pushItem(input: PushItemIn): PushItemOut {
  * ③ 判定 = **对照官方公布门槛**,不是省官方认证;
  * ④ **公共部门雇主**(卫生局/市政/学区)不在企业注册库里 → 整体旁路成 `public`,不硬判。
  *
- * 🔵 **不复用 `lib/rules` 的 `employerBar()`**:那个是按**单一已知地点**分档取值的(GTA 内外 / 大温内外…),
+ * 🔵 **不复用 `lib/gauge` 的 `employerBar()`**:那个是按**单一已知地点**分档取值的(GTA 内外 / 大温内外…),
  * 而本函数服务的雇主一行可能横跨多市、没有单一地址,判不出该按哪档 —— 所以只吃**不分区**的通用门槛
  * (`appliesArea` 全空,如 AB 三项);分档省份(BC / ON / NL)雇员数天然留空,**不瞎猜该套哪个档**。
  *
@@ -588,7 +588,11 @@ function maxClbIn(input: MaxClbInIn): MaxClbInOut {
   let max: number | null = null
   for (const l of input.labels) {
     const m = CLB_IN_LABEL.exec(l || '')
-    if (m) { const v = Number(m[1]); if (max == null || v > max) max = v }
+    if (m) {
+      const [, clb] = m
+      const v = Number(clb)
+      if (max == null || v > max) max = v
+    }
   }
   return max
 }
@@ -807,7 +811,7 @@ function pickGate(input: PickGateIn): PickGateOut {
     expRows.push(r)
   }
   const gateRows: ReqRow[] = []
-  for (const r of expRows) if (teerHit(r, input.p.teer)) gateRows.push(r)
+  for (const r of expRows) if (teerHit({ r: r, teer: input.p.teer })) gateRows.push(r)
   if (!gateRows.length) {
     return { rows: [], picked: null, need: null, have: null, gap: null, tenure: false, unknownCond: [],
       teerUnknown: expRows.length > 0 && input.p.teer == null }
@@ -864,7 +868,7 @@ function refDraw(input: RefDrawIn): RefDrawOut {
   scored.sort(byDrawDateDesc)
   const stream = input.spec.drawStream
   if (stream) {
-    for (const d of scored) if (streamMatches(d.stream, stream)) return d
+    for (const d of scored) if (streamMatches({ drawStream: d.stream, gridStream: stream })) return d
   }
   return input.spec.drawFallbackProvinceWide ? (scored[0] ?? null) : null
 }
@@ -1055,9 +1059,13 @@ function gridCeiling(input: GridCeilingIn): GridCeilingOut {
     edu: input.self.edu, expRecent: input.self.expRecent, expOlder: input.self.expOlder,
     clb1: maxClb ?? input.self.clb1, clb2: input.self.clb2, age: input.self.age,
   }
-  const top = scoreProvince(input.factors, input.spec.reqProvince, topSelf,
-    mergeOverrides({ base: offerOverride({ row: input.offerRow, has: true }), extra: input.picked }),
-    ticks, input.only)
+  const top = scoreProvince({
+    factors: input.factors, province: input.spec.reqProvince, profile: topSelf,
+    overrides: mergeOverrides({
+      base: offerOverride({ row: input.offerRow, has: true }), extra: input.picked,
+    }),
+    ticks: ticks, only: input.only,
+  })
   return top ? top.total : null
 }
 
@@ -1098,7 +1106,7 @@ function gridSelfProfile(input: GridSelfProfileIn): GridSelfProfileOut {
  */
 function gridMatchesStream(input: GridMatchesStreamIn): GridMatchesStreamOut {
   const gridStream = gridStreamOf(input.head.system)
-  return !gridStream || streamMatches(gridStream, input.spec.stream)
+  return !gridStream || streamMatches({ drawStream: gridStream, gridStream: input.spec.stream })
 }
 
 /**
@@ -1181,9 +1189,13 @@ function provinceGridScore(input: ProvinceGridScoreIn): ProvinceGridScoreOut {
   for (const f of all) if (f.factor === SCORE_FACTOR.offer && f.kind === FACTOR_ROW) { offerRow = f; break }
 
   const ownTicks = ownTicksOf({ p: input.p, province: input.spec.reqProvince })
-  const now = scoreProvince(input.factors, input.spec.reqProvince, self,
-    mergeOverrides({ base: offerOverride({ row: offerRow, has: input.p.hasOffer === true }), extra: picked }),
-    ownTicks, only)
+  const now = scoreProvince({
+    factors: input.factors, province: input.spec.reqProvince, profile: self,
+    overrides: mergeOverrides({
+      base: offerOverride({ row: offerRow, has: input.p.hasOffer === true }), extra: picked,
+    }),
+    ticks: ownTicks, only: only,
+  })
   if (!now) return undefined
   const ceiling = gridCeiling({
     all: all, factors: input.factors, spec: input.spec, self: self, offerRow: offerRow,
@@ -1289,10 +1301,11 @@ function fedLangApplies(input: FedLangAppliesIn): FedLangAppliesOut {
   const m = TEER_STREAM.exec(input.r.stream || '')
   if (!m) return true
   if (input.teer == null) return false
-  const parts = m[1].split(SEP.hyphen).map(Number)
+  const [, spec] = m
+  const parts = spec.split(SEP.hyphen).map(Number)
   if (parts.length === TEER_RANGE_PARTS) {
-    const [lo, hi] = parts[0] <= parts[1] ? parts : [parts[1], parts[0]]
-    return input.teer >= lo && input.teer <= hi
+    const [first, second] = parts
+    return input.teer >= Math.min(first, second) && input.teer <= Math.max(first, second)
   }
   return parts.includes(input.teer)
 }
@@ -1390,7 +1403,7 @@ function listRequiredReason(input: ListRequiredReasonIn): ListRequiredReasonOut 
   if (input.spec.listRequired) {
     for (const r of input.rows) {
       if (r.subject !== SUBJECT.applicant || r.factor !== FACTOR.experience) continue
-      if (!r.appliesTeer || !teerHit(r, input.p.teer)) continue
+      if (!r.appliesTeer || !teerHit({ r: r, teer: input.p.teer })) continue
       listTeerCovered = true
       break
     }
@@ -1527,7 +1540,13 @@ function pnpLanguageReasons(input: PnpLanguageReasonsIn): PnpLanguageReasonsOut 
   let blockedBy: BlockedBy
   const langRows: ReqRow[] = []
   for (const r of input.rows) if (r.subject === SUBJECT.applicant) langRows.push(r)
-  const results: EngineResult[] = evaluateRequirements(langRows, ruleProfileOf({ p: input.p, total: countableMonths({ spec: input.spec, p: input.p, selfEmpExcluded: input.selfEmpExcluded }) }))
+  const results: EngineResult[] = evaluateRequirements({
+    reqs: langRows,
+    profile: ruleProfileOf({
+      p: input.p,
+      total: countableMonths({ spec: input.spec, p: input.p, selfEmpExcluded: input.selfEmpExcluded }),
+    }),
+  })
   let lang: EngineResult | null = null
   for (const r of results) if (r.factor === FACTOR.language) { lang = r; break }
   if (lang) {
@@ -1650,7 +1669,7 @@ function crsScore(input: CrsScoreIn): CrsScoreOut {
     expCanadaMonths: input.p.expCanadaMonths,
     expForeignMonths: input.selfEmpExcluded && input.p.foreignExpSelfEmployed === true ? 0 : input.p.expForeignMonths,
   }
-  const now = estimateCrs(crsProfile, input.data.eeGrid)
+  const now = estimateCrs({ profile: crsProfile, rows: input.data.eeGrid })
   const crsLangLabels: string[] = []
   for (const r of input.data.eeGrid) {
     if (r.grid !== GRID.crs || !FIRST_OFFICIAL_LANGUAGE.test(r.heading)) continue
@@ -1662,7 +1681,8 @@ function crsScore(input: CrsScoreIn): CrsScoreOut {
     eduYears: crsProfile.eduYears, canadaStudy: crsProfile.canadaStudy,
     expCanadaMonths: crsProfile.expCanadaMonths, expForeignMonths: crsProfile.expForeignMonths,
   }
-  const ceil = ceilProfile == null ? null : estimateCrs(ceilProfile, input.data.eeGrid).total
+  const ceil = ceilProfile == null ? null
+    : estimateCrs({ profile: ceilProfile, rows: input.data.eeGrid }).total
   let head: EeRow | null = null
   for (const r of input.data.eeGrid) if (r.grid === GRID.crs) { head = r; break }
   const score: PathwayScore = {
@@ -1707,7 +1727,7 @@ function mbWarnings(input: MbWarningsIn): MbWarningsOut {
       workMonthsSameOcc: base.workMonthsSameOcc, employerLicenseRecognized: base.employerLicenseRecognized,
       edu: base.edu, adapt: base.adapt, riskForeignWork: true, riskForeignStudy: base.riskForeignStudy,
     }
-    const worse = estimateMbEoi(input.data.scoreFactors, worseProfile).total
+    const worse = estimateMbEoi({ factors: input.data.scoreFactors, profile: worseProfile }).total
     reasons.push({
       kind: REASON.gap,
       text: `${PV_TEXT.mbWorkDeductHead}${Math.abs(workRow.points ?? 0)}${PV_TEXT.mbWorkDeductMid}${worse}${PV_TEXT.points}`,
@@ -1752,14 +1772,20 @@ function mbScore(input: MbScoreIn): MbScoreOut {
     return { score: undefined, reasons: reasons }
   }
   const workMonths = Math.max(input.gate.have ?? 0, input.gate.need ?? 0)
-  const mbNow = estimateMbEoi(input.data.scoreFactors, mbProfileOf({ p: input.p, workMonths: workMonths, clb: input.p.clb }))
+  const mbNow = estimateMbEoi({
+    factors: input.data.scoreFactors,
+    profile: mbProfileOf({ p: input.p, workMonths: workMonths, clb: input.p.clb }),
+  })
   const mbLangLabels: string[] = []
   for (const f of input.data.scoreFactors) {
     if (f.province !== PROV.MB || f.factor !== FACTOR.language || f.kind !== FACTOR_ROW) continue
     mbLangLabels.push(f.label)
   }
   const maxClb = maxClbIn({ labels: mbLangLabels })
-  const ceil = maxClb == null ? null : estimateMbEoi(input.data.scoreFactors, mbProfileOf({ p: input.p, workMonths: workMonths, clb: maxClb })).total
+  const ceil = maxClb == null ? null : estimateMbEoi({
+    factors: input.data.scoreFactors,
+    profile: mbProfileOf({ p: input.p, workMonths: workMonths, clb: maxClb }),
+  }).total
   const score: PathwayScore = {
     system: mbNow.system, value: mbNow.total, ceiling: ceil,
     refLine: input.draw?.score ?? null,
@@ -2920,7 +2946,7 @@ function cardRuleProfile(input: CardRuleProfileIn): CardRuleProfileOut {
 function personRows(input: PersonRowsIn): PersonRowsOut {
   const rp = cardRuleProfile({ job: input.job, profile: input.profile })
   const out: TripleRow[] = []
-  for (const r of evaluateRequirements(input.provReqs, rp)) {
+  for (const r of evaluateRequirements({ reqs: input.provReqs, profile: rp })) {
     if (r.subject !== SUBJECT.applicant) continue
     const slots = r.verdict === ITEM.unknown ? SLOTS_OF_FACTOR[r.factor] : undefined
     out.push({
@@ -4167,7 +4193,7 @@ function teerDowngradeLever(input: TeerDowngradeLeverIn): TeerDowngradeLeverOut 
     }
     const teerRows: ReqRow[] = []
     for (const r of input.data.requirements) {
-      if (r.factor !== FACTOR.experience || !r.appliesTeer || teerHit(r, TEER_LOWEST)) continue
+      if (r.factor !== FACTOR.experience || !r.appliesTeer || teerHit({ r: r, teer: TEER_LOWEST })) continue
       teerRows.push(r)
     }
     if (affected.length) {
@@ -4224,8 +4250,14 @@ function clbBoostLever(input: ClbBoostLeverIn): ClbBoostLeverOut {
         if (m > need) need = m
       }
       const work = Math.max(input.profile.expCanadaMonths ?? 0, need)
-      const from = estimateMbEoi(input.data.scoreFactors, mbProfileOf({ p: input.profile, workMonths: work, clb: input.profile.clb }))
-      const to = estimateMbEoi(input.data.scoreFactors, mbProfileOf({ p: input.profile, workMonths: work, clb: target }))
+      const from = estimateMbEoi({
+        factors: input.data.scoreFactors,
+        profile: mbProfileOf({ p: input.profile, workMonths: work, clb: input.profile.clb }),
+      })
+      const to = estimateMbEoi({
+        factors: input.data.scoreFactors,
+        profile: mbProfileOf({ p: input.profile, workMonths: work, clb: target }),
+      })
       gains.push({
         province: PROV.MB, system: from.system, from: from.total, to: to.total,
         delta: to.total - from.total, evidence: evOfFactor({ f: mbHead }),

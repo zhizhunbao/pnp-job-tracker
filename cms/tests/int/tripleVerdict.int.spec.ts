@@ -34,7 +34,7 @@ function tripleVerdict(
 }
 
 import type { DesignatedEmployerRow, OccupationRow, VerdictData } from '@/lib/ruling/server'
-import type { Requirement } from '@/lib/rules'
+import type { Requirement } from '@/lib/gauge'
 
 // 判定卡里的一切相对时间都锚死在这一年(company.founded_year=1969 → 经营 57 年)
 const NOW_YEAR = 2026

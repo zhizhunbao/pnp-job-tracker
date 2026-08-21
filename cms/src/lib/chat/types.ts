@@ -6,7 +6,7 @@
 //    这里一旦出现常量,那条反向边立刻变成真环 —— 实撞过:PNP_PROVINCES 初始化时是 undefined。
 //    (失败已经不是类了:`chatError` / `isChatError` 在 lib/error,2026-08-19 搬走。)
 import { type ClaimTopic } from './tools'
-import { type EduKey } from '../score'
+import { type EduKey } from '../points'
 
 // ── 契约(前端按这个写,别改)────────────────────────────────────────────────
 

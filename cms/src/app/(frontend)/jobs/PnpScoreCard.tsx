@@ -16,7 +16,7 @@ import { QuizChecks, QuizChoices, QuizNav, QuizSub, QuizTitle } from '../quiz/Qu
 import type { Lang, TFn } from '@/lib/i18n'
 import { officialLabel as label } from '@/lib/i18n'
 import { CLB, NCLC, pullAndMerge, readAnswers, readScoreAnswers, writeAnswers, writeScoreAnswers, type ScoreAnswers } from '@/lib/quiz'
-import { DEFAULT_PROFILE, EDU_KEYS, scoreProvince, streamMatches, type DrawRow, type EduKey, type ScoreFactor, type SelfProfile } from '@/lib/score'
+import { defaultProfile, EDU_KEYS, scoreProvince, streamMatches, type DrawRow, type EduKey, type ScoreFactor, type SelfProfile } from '@/lib/points'
 
 // 打分是**关于你这个人**的功能,不绑某一个岗位(Frank 2026-07-27「应该单独弄个功能吧,
 // 不应该放到 pnp 弹框里面」)—— 所以只收一个轻量语境:职业(拿该省在招数)、目标省(排序)、
@@ -96,9 +96,9 @@ type ProvinceScore = NonNullable<ReturnType<typeof scoreProvince>>
 const scoreAnchor = (s: ProvinceScore, draws: DrawRow[], matchedStream: string) => {
   const gridStream = /\(([^)]+)\)\s*$/.exec(s.system)?.[1] ?? ''
   const scored = draws.filter((d) => d.province === s.province && d.kind !== 'notice' && d.score != null)
-    .filter((d) => !gridStream || streamMatches(d.stream, gridStream))
+    .filter((d) => !gridStream || streamMatches({ drawStream: d.stream, gridStream }))
     .sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1))
-  const latest = scored.find((d) => streamMatches(d.stream, matchedStream))
+  const latest = scored.find((d) => streamMatches({ drawStream: d.stream, gridStream: matchedStream }))
   const line = latest?.score ?? s.passMark ?? null
   const hasOtherStreamDraws = !scored.length && draws.some((d) => d.province === s.province && d.kind !== 'notice' && d.score != null)
   const range = line == null && scored.length
@@ -173,7 +173,8 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   const splitWork = factors.some((f) => f.factor === 'work5' || f.factor === 'work610')
 
   const [profile, setProfile] = useState<SelfProfile>(() => {
-    const p = { ...DEFAULT_PROFILE, clb1: profileClb ?? DEFAULT_PROFILE.clb1, ...initial }
+    const base = defaultProfile()
+    const p = { ...base, clb1: profileClb ?? base.clb1, ...initial }
     // 预填年龄吸附到下拉选项(答题档位给的是 33 这类档中值,不在选项表里 select 会显示成第一项,
     // 显示与打分口径就分叉了 —— 吸最近项,显示=实际用的值)
     if (initial?.age != null) p.age = AGES.reduce((b, a) => (Math.abs(a - initial.age!) < Math.abs(b - initial.age!) ? a : b))
@@ -190,7 +191,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   })
   // 「你的条件」答案的**值**也入档(2026-08-15 Frank「选的是本科一刷新就变成高中」根治):
   // 上一轮只持久化了 ticks/rowAnswers/extraAnswered 三个 map,profile 的值仍是易失 state ——
-  // 刷新后回 DEFAULT_PROFILE('highschool')却顶着「已答」标记,等于替他改了答案
+  // 刷新后回 defaultProfile()('highschool')却顶着「已答」标记,等于替他改了答案
   const [profAns, setProfAns] = useState<Partial<SelfProfile>>(() => readScoreAnswers().profile)
   const set = <K extends keyof SelfProfile>(k: K, v: SelfProfile[K]) => {
     setProfile((p) => ({ ...p, [k]: v }))
@@ -577,7 +578,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
       const hit = mine.find((f) => f.factor === name && f.kind === 'row' && f.seq === answer)
       if (hit) overrides[name] = { pts: hit.points ?? 0, matched: hit.label, source: 'profile' }
     }
-    return scoreProvince(factors, prov, profile, overrides, effTicks)
+    return scoreProvince({ factors, province: prov, profile, overrides, ticks: effTicks })
     // effTicks 以签名串 effSig 代入依赖(理由见其声明处)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }).filter(Boolean) as NonNullable<ReturnType<typeof scoreProvince>>[], [provinces, factors, profile, effSig, wage, areaI, offerYes, rowAnswers, ctx.noc, ctx.teer])

@@ -49,9 +49,8 @@ function pathVerdict(profile: VerdictProfile, data: VerdictData) {
 
 import { gateOf, PATHWAYS, type PathwayStrategy } from '@/lib/pathways'
 import type { GateKey, StatusAsk } from '@/lib/gateManifest'
-import type { Requirement } from '@/lib/rules'
-import type { EduKey, ScoreFactor } from '@/lib/score/pnpSelfScore'
-import type { EeGridRow } from '@/lib/score/crsEstimate'
+import type { Requirement } from '@/lib/gauge'
+import type { EduKey, EeGridRow, ScoreFactor } from '@/lib/points'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const mart = <T>(name: string): T[] =>

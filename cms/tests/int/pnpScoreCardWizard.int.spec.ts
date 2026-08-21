@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { PnpScoreCard } from '@/app/(frontend)/jobs/PnpScoreCard'
 import type { TFn } from '@/lib/i18n'
-import type { ScoreFactor } from '@/lib/score/pnpSelfScore'
+import type { ScoreFactor } from '@/lib/points'
 import { resetAnswersMemory } from '@/lib/quiz'
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true

@@ -10,7 +10,7 @@ import nextCoreWebVitals from 'eslint-config-next/core-web-vitals'
 import nextTypeScript from 'eslint-config-next/typescript'
 
 // 带桶的模块(`lib/<名>/index.ts`)—— 下面那道边界闸认这几个,加新桶就加这里一行。
-const BARRELS = ['agent', 'chat', 'i18n', 'jobs', 'pathways', 'quiz', 'ruling', 'score', 'employers', 'plan', 'stats', 'quota', 'llm', 'resume']
+const BARRELS = ['agent', 'chat', 'i18n', 'jobs', 'pathways', 'gauge', 'points', 'quiz', 'ruling', 'score', 'employers', 'plan', 'stats', 'quota', 'llm', 'resume']
 const ABSOLUTE = BARRELS.map((m) => `**/lib/${m}/*`)
 // jobs / score / ruling / employers / plan / quiz / stats / quota / pathways 有**两个门**(index=客户端也安全的那半、server=要连库的那半;
 // 理由见 lib/jobs/index.ts 顶上那段:混着 payload 依赖的桶会把连接池打进浏览器包)。
@@ -416,6 +416,33 @@ const localRules = {
     // 名字就是它们的说明书,而说明书的家是 `constants.ts`(2026-08-20 Frank 实拍立)。
     // 只放行 0 / 1 / -1:它们是「空、一个、倒序」这类语言级的量,起名反而更难读。
     // ⚠️ 只管 `functions.ts` —— `constants.ts` 本来就是放数的地方。
+    // ── 禁止按位置取值(2026-08-20 Frank 立)────────────────────────────────
+    // `m[2]` 读不出那是上界还是别的什么;`clb[3]` 读不出那是口语还是听力。
+    // 更糟的是**写错不报错** —— 只会算出一个看起来很合理的错值。
+    // 有名字的结构就用名字:正则用具名捕获组 + 本域自己的 type,固定几项用具名对象。
+    // ⚠️ 放行 `[0]`:那是同构列表的「第一个」,不是对有名字的结构按位置取
+    //    (`rows[0]?.factorMax` 里每一行都同构,第一行不代表某个特定的东西)。
+    //    变量下标(`list[i]`)也放行 —— 那本来就是遍历。
+    'no-literal-index': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          idx: '不许按位置取值 `[{{ n }}]`。有名字的结构就用名字:正则用具名捕获组配本域的 type,固定几项用具名对象。',
+        },
+      },
+      create(context) {
+        return {
+          MemberExpression(node) {
+            if (!node.computed || node.property?.type !== 'Literal') return
+            const v = node.property.value
+            if (typeof v !== 'number' || v === 0) return
+            context.report({ node: node.property, messageId: 'idx', data: { n: String(v) } })
+          },
+        }
+      },
+    },
+
     'no-magic-number': {
       meta: {
         type: 'suggestion',
@@ -873,7 +900,7 @@ const eslintConfig = [
     // 域定型一个就往这里加一个。
     // 域每定型一个就往这张名单里加一个。2026-08-19 当天 `agent` / `llm` / `error` / `log`
     // 的 91 条存量(多数是写成一行的 type,属性没各自的注释)已经逐条补完,所以它们也在里面。
-    files: ['src/lib/consult/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error.ts', 'src/lib/log.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error.ts', 'src/lib/log.ts'],
     plugins: { local: localRules },
     rules: {
       // 注释的形状
@@ -909,7 +936,7 @@ const eslintConfig = [
     //   · no-split-import:另外五个域还有 3 处(consult 2 / i18n 1);
     //   · no-import-in-leaf:constants 还有 3 处(consult 2 / agent 1),
     //     types 还有 16 处(consult 8 / agent 5 / llm 1 / pathways 1 / jobs 1)。
-    files: ['src/lib/consult/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts'],
     plugins: { local: localRules },
     rules: { 'local/domain-file-names': 'error' },
   },
@@ -923,9 +950,10 @@ const eslintConfig = [
     rules: { 'local/one-parameter': 'off', 'local/typed-signature': 'off' },
   },
   {
-    files: ['src/lib/ruling/**/*.ts'],
+    files: ['src/lib/ruling/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts'],
     plugins: { local: localRules },
     rules: {
+      'local/no-literal-index': 'error',
       'local/no-comment-in-function': 'error',
       'local/no-magic-number': 'error',
       'local/no-split-import': 'error',

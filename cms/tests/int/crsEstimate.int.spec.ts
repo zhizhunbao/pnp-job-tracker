@@ -15,7 +15,21 @@ import fs from 'fs'
 import { fileURLToPath } from 'url'
 import path from 'path'
 import { describe, expect, it } from 'vitest'
-import { estimateCrs, estimateFsw67, type CrsEstimateProfile, type EeGridRow } from '@/lib/score/crsEstimate'
+import {
+  estimateCrs as pointsCrs, estimateFsw67 as pointsFsw,
+  type CrsProfile, type EeGridRow,
+} from '@/lib/points'
+
+/** 垫片:金标沿用位置参数,分值域收对象参数(换实现时用例一个字不动) */
+function estimateCrs(profile: CrsProfile, rows: EeGridRow[]) {
+  return pointsCrs({ profile: profile, rows: rows })
+}
+
+/** 垫片:同上 */
+function estimateFsw67(profile: CrsProfile, rows: EeGridRow[]) {
+  return pointsFsw({ profile: profile, rows: rows })
+}
+
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const martPath = path.resolve(__dirname, '../../../data/mart/ee_points_grid.json')
@@ -38,7 +52,7 @@ describe('ee_points_grid 实况(改版会先在这里炸,而不是在金标断�
 
 // 案例 C01:马龙,40 岁,已婚配偶在中国(不随行申请)/ 单身表对照,CLB6 四项同,
 // Algonquin 两年制 Ontario College Diploma(加拿大学历),加拿大经验 0,海外经验(自雇)不计入。
-const goldBase = (married: boolean): CrsEstimateProfile => ({
+const goldBase = (married: boolean): CrsProfile => ({
   age: 40,
   married,
   clb: 6,
@@ -99,7 +113,7 @@ describe('estimateCrs · CRS 排名分', () => {
   })
 
   it('age/clb/edu 缺档 → 对应因子 needs-info,不瞎猜、不参与总分', () => {
-    const blank: CrsEstimateProfile = { age: null, married: false, clb: null, edu: null, eduYears: null, canadaStudy: null, expCanadaMonths: null, expForeignMonths: null }
+    const blank: CrsProfile = { age: null, married: false, clb: null, edu: null, eduYears: null, canadaStudy: null, expCanadaMonths: null, expForeignMonths: null }
     const r = estimateCrs(blank, allRows)
     expect(part(r, 'age').status).toBe('needs-info')
     expect(part(r, 'edu').status).toBe('needs-info')

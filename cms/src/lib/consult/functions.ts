@@ -22,8 +22,8 @@ import type { Message, Model } from '@earendil-works/pi-ai'
 import { chatError, CHAT_CODE } from '../error'
 import { CHAT_FN, CHAT_LOG, GATE_LOG, log } from '../log'
 import * as SQL from '../db/sql'
-import { evaluateRequirements } from '../rules'
-import type { Requirement, RuleProfile } from '../rules'
+import { evaluateRequirements } from '../gauge'
+import type { Requirement, RuleProfile } from '../gauge'
 import {
   API, AUTH_HEADER, AVAIL, BASE, BEARER, BOLD_RE, CONTEXT_WINDOW, EARLIER_HEAD, EN, EN_UNIT_WORDS, FAIL_MSG,
   FULL_STOP, GATE, GUARD_RETRIES, HAS_DIGIT, HEADING_RE, HISTORY_CAP, HISTORY_TURNS, INELIGIBLE, INTERNAL_WORDS,
@@ -282,7 +282,7 @@ async function lookupThresholds(input: LookupThresholdsIn): LookupThresholdsOut 
       out.push({ prov, availability: AVAIL.notCollected, results: [] })
       continue
     }
-    out.push({ prov, availability: AVAIL.ok, results: evaluateRequirements(reqs, profile) })
+    out.push({ prov, availability: AVAIL.ok, results: evaluateRequirements({ reqs: reqs, profile: profile }) })
   }
   return { noc: input.noc, teer: input.teer, rows: out }
 }

@@ -568,9 +568,12 @@ export type MbAdapt = {
  */
 export type MbEoiProfile = {
   /**
-   * 单一数 = 四项同档;数组 = 阅读/写作/听力/口语分别给。
+   * 语言(四项同档)。
+   *
+   * 分值域那边还认「四项各给一档」的形状,但**判定域从来只喂单一数** ——
+   * 本域只声明自己真正用的那一格(宪法「形状由本域自己声明,只声明真读的那几格」)。
    */
-  clb: number | [number, number, number, number]
+  clb: number
 
   /**
    * 第二官方语言总体 CLB≥5(一次性 +25,不按项乘)。

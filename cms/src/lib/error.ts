@@ -769,3 +769,40 @@ export const GATEWAY_MSG = {
    */
   notConfigured: 'TRANSLATE_API_BASE/KEY not configured',
 }
+
+// =========================================================================
+// N. 分值域(lib/points)
+// =========================================================================
+
+/**
+ * `lib/points` 造错、判错、留痕要用的全部字面量。
+ */
+export const POINTS_ERR = {
+  /**
+   * 身份。曼省 EOI 的官方表少了必须有的行时抛它。
+   *
+   * 🔴 **少一行就抛,不静默补 0** —— 官方表改版是要人去改抓取脚本的事,
+   * 悄悄算出一个少了几百分的结果,比报错难查得多。
+   */
+  name: 'PointsError',
+
+  /**
+   * 曼省表少了某一行,后面接是哪一行。
+   */
+  rowMissingHead: 'MB score row missing for ',
+
+  /**
+   * 接在上一句后面的提示。
+   */
+  rowMissingTail: '(检查 pnp_score_factors 是否改版)',
+
+  /**
+   * 曼省年龄表里没有这个岁数的档,后面接岁数。
+   */
+  noAgeRowHead: 'no MB age row for age=',
+
+  /**
+   * 官方表里一条曼省的行都没有。
+   */
+  noMbRows: 'no MB rows in pnp_score_factors',
+} as const

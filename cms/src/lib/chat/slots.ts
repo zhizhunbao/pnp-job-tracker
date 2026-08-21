@@ -4,7 +4,7 @@
 // 消歧那半边的理由:专业名(如「计算机」)不是能直接查的职业,但它**不许是死路** ——
 // 给候选让用户点,比让他重说一遍强。
 import { PRIVATE_PROMISE } from './tools'
-import { EDU_KEYS, type EduKey } from '../score'
+import { EDU_KEYS, type EduKey } from '../points'
 import { ASK_OCC, type Lang, META_ANSWER, OCC_PICK, USAGE_ASK, USAGE_WHAT } from '../i18n'
 import * as SQL from '../db/sql'
 import { isSelfStatement } from './federal'
@@ -156,7 +156,7 @@ export function normalizeSlots(raw: any): Omit<Slots, 'noc'> & { noc: string | n
     married: boolSlot(raw?.married),
     // CLB 官方档位到 10 为止(10 以上仍按 10 计分),12 只是留个余量;0 不是一个档
     clb: numSlot(raw?.clb, 1, 12),
-    edu: (EDU_KEYS as string[]).includes(eduRaw) ? (eduRaw as EduKey) : null,
+    edu: EDU_KEYS.some((k) => k === eduRaw) ? (eduRaw as EduKey) : null,
     eduYears: numSlot(raw?.eduYears ?? raw?.edu_years, 0.5, 12, false),
     canadaStudy: boolSlot(raw?.canadaStudy ?? raw?.canada_study),
     studyProvince: normProv(raw?.studyProvince ?? raw?.study_prov),

@@ -11,7 +11,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { fetchTopNocs } from '@/lib/jobs/server'
-import type { DrawRow, ScoreFactor } from './pnpSelfScore'
+import type { DrawRow, ScoreFactor } from '../points'
 import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 
 /** SSR 事实区一行:每省最近一轮有分数线或邀请数的抽选。

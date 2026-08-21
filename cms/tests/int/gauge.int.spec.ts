@@ -5,7 +5,26 @@
 //   · 加拿大经验不够**不等于**总经验不够(官方要的是境内外都算)→ 只能 unknown;
 //   · 收入表家庭人数/居住区域未知时,只有「最低那档都够不到」才敢判 fail(下界推理)。
 import { describe, it, expect } from 'vitest'
-import { areaOfPlace, employerBar, evaluateRequirements, type Requirement } from '@/lib/rules'
+import {
+  areaOfPlace as gaugeArea, employerBar as gaugeBar, evaluateRequirements as gaugeEvaluate,
+  type Requirement, type RuleProfile,
+} from '@/lib/gauge'
+
+/** 垫片:金标沿用位置参数,量尺域收对象参数(换实现时用例一个字不动) */
+function evaluateRequirements(reqs: Requirement[], profile: RuleProfile) {
+  return gaugeEvaluate({ reqs: reqs, profile: profile })
+}
+
+/** 垫片:同上 */
+function areaOfPlace(province: string, city: string, district = '') {
+  return gaugeArea({ province: province, city: city, district: district })
+}
+
+/** 垫片:同上 */
+function employerBar(reqs: Requirement[], province: string, area: string) {
+  return gaugeBar({ reqs: reqs, province: province, area: area })
+}
+
 
 
 // 真实抓取值(bc-req.json 2026-06-10 版):CLB 4 / 1 人家庭 $31,264(大温)与 $26,057(其余)/ 24 个月 / 雇主 1 年 · 5 人 · 3 人

@@ -33,9 +33,24 @@ function pathLevers(profile: VerdictProfile, data: VerdictData, opts: PathLeverO
 }
 
 import { PATHWAYS } from '@/lib/pathways'
-import type { Requirement } from '@/lib/rules'
-import { scoreProvince, type ScoreFactor } from '@/lib/score/pnpSelfScore'
-import type { EeGridRow } from '@/lib/score/crsEstimate'
+import type { Requirement } from '@/lib/gauge'
+import {
+  scoreProvince as pointsScore,
+  type EeGridRow, type ScoreFactor, type ScoreOverride, type SelfProfile,
+} from '@/lib/points'
+
+/** 垫片:金标沿用位置参数,分值域收对象参数(换实现时用例一个字不动) */
+function scoreProvince(
+  factors: ScoreFactor[], province: string, profile: SelfProfile,
+  overrides: Record<string, ScoreOverride> = {}, ticks: Record<string, boolean> = {},
+  only?: Set<string>,
+) {
+  return pointsScore({
+    factors: factors, province: province, profile: profile,
+    overrides: overrides, ticks: ticks, only: only,
+  })
+}
+
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const mart = <T>(name: string): T[] =>

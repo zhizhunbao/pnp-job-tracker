@@ -25,8 +25,8 @@ import {
   type VerdictData, type VerdictDrawRow, type VerdictLever, type VerdictProfile,
 } from '../ruling/server'
 import { assembleReportFacts } from './reportFacts'
-import { evaluateRequirements, type Requirement, type ReqSubject, type RuleProfile, type RuleVerdict } from '../rules'
-import type { EeGridRow, ScoreFactor } from '../score'
+import { evaluateRequirements, type Requirement, type ReqSubject, type RuleProfile, type RuleVerdict } from '../gauge'
+import type { EeGridRow, ScoreFactor } from '../points'
 import { PNP_PROVINCES } from '../location'   // 省码是全站口径,住共享叶子(2026-08-19 从本文件搬走)
 import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
@@ -213,7 +213,7 @@ export async function lookupThresholds(
       incomeIsOccMedian: args.profile?.annualIncome == null,
       area: args.profile?.area ?? null,
     }
-    const rows = evaluateRequirements(reqs, p)
+    const rows = evaluateRequirements({ reqs: reqs, profile: p })
       .map((r): ThresholdRow => {
         const source = reqs.find((q) => q.label === r.evidence.label && q.url === r.evidence.url)
         const evidence: Evidence = {

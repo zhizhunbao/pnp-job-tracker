@@ -7,7 +7,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { describe, expect, it } from 'vitest'
-import { isAboveLine, isBelowLine, lineStateOf, marginOf, type ScoreVsLine } from '@/lib/score/scoreLine'
+import { isAboveLine, isBelowLine, lineStateOf, marginOf, type ScoreVsLine } from '@/lib/points'
 import { rankRows, type RankableRow, type RankCtx } from '@/lib/plan/planRank'
 import {
   pathVerdict as rulingPathVerdict, type DesignatedEmployerRow, type OccupationRow,
@@ -19,9 +19,8 @@ function pathVerdict(profile: VerdictProfile, data: VerdictData) {
   return rulingPathVerdict({ profile: profile, data: data })
 }
 
-import type { Requirement } from '@/lib/rules'
-import type { ScoreFactor } from '@/lib/score/pnpSelfScore'
-import type { EeGridRow } from '@/lib/score/crsEstimate'
+import type { Requirement } from '@/lib/gauge'
+import type { EeGridRow, ScoreFactor } from '@/lib/points'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const mart = <T>(name: string): T[] =>

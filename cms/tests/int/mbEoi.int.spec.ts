@@ -11,8 +11,13 @@ import fs from 'fs'
 import { fileURLToPath } from 'url'
 import path from 'path'
 import { describe, expect, it } from 'vitest'
-import { estimateMbEoi, type MbProfile } from '@/lib/score/mbEoiEstimate'
-import type { ScoreFactor } from '@/lib/score/pnpSelfScore'
+import { estimateMbEoi as pointsMb, type MbProfile, type ScoreFactor } from '@/lib/points'
+
+/** 垫片:金标沿用位置参数,分值域收对象参数(换实现时用例一个字不动) */
+function estimateMbEoi(factors: ScoreFactor[], profile: MbProfile) {
+  return pointsMb({ factors: factors, profile: profile })
+}
+
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const martPath = path.resolve(__dirname, '../../../data/mart/pnp_score_factors.json')
@@ -139,7 +144,9 @@ describe('适应性:connection(≤200)+ regional(≤50) 可叠、与 demand(500)
 describe('语言按单项 CLB 计分(四项可各自不同档)', () => {
   it('四项不同档时逐项相加,不是取平均或取最低', () => {
     // 阅读CLB8(25) + 写作CLB6(20) + 听力CLB7(22) + 口语CLB4(12) = 79
-    const r = estimateMbEoi(allFactors, { ...goldBase(), clb: [8, 6, 7, 4] })
+    const r = estimateMbEoi(allFactors, {
+      ...goldBase(), clb: { reading: 8, writing: 6, listening: 7, speaking: 4 },
+    })
     expect(r.parts.find((x) => x.factor === 'language')!.pts).toBe(79)
   })
   it('第二官方语言 CLB≥5 一次性加 25,不按项乘', () => {

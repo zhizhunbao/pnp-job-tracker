@@ -12,7 +12,7 @@ import { fetchPilotQuota, type PilotQuotaAgg } from '@/lib/pathways/server'
 import type { VerdictProfile } from '@/lib/ruling'
 import { regionProvincesOf, uiOf } from '@/lib/pathways'
 import { pickOutside, rankRows, type RankCtx } from '@/lib/plan'
-import { isAboveLine, isBelowLine } from '@/lib/score'
+import { isAboveLine, isBelowLine } from '@/lib/points'
 import { getVerdictData, pathVerdict } from '@/lib/ruling/server'
 import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 

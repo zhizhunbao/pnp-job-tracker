@@ -18,7 +18,13 @@ import { findEnglishUnits, findForeignScript, findLeaks, findWordNumbers } from 
 import { factSheet } from '@/lib/chat/stream'
 import { findHedges } from '@/lib/chat/traces'
 import { buildPlan, type PlanPathInput } from '@/lib/plan/planTimeline'
-import { evaluateRequirements, type Requirement, type RuleProfile } from '@/lib/rules'
+import { evaluateRequirements as gaugeEvaluate, type Requirement, type RuleProfile } from '@/lib/gauge'
+
+/** 垫片:金标沿用位置参数,量尺域收对象参数(换实现时用例一个字不动) */
+function evaluateRequirements(reqs: Requirement[], profile: RuleProfile) {
+  return gaugeEvaluate({ reqs: reqs, profile: profile })
+}
+
 
 // ── fixture 工具 ────────────────────────────────────────────────────────────
 

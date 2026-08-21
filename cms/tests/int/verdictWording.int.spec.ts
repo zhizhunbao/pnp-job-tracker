@@ -25,9 +25,8 @@ function pathVerdict(profile: VerdictProfile, data: VerdictData) {
   return rulingPathVerdict({ profile: profile, data: data })
 }
 
-import type { Requirement } from '@/lib/rules'
-import type { ScoreFactor } from '@/lib/score/pnpSelfScore'
-import type { EeGridRow } from '@/lib/score/crsEstimate'
+import type { Requirement } from '@/lib/gauge'
+import type { EeGridRow, ScoreFactor } from '@/lib/points'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const mart = <T>(name: string): T[] =>

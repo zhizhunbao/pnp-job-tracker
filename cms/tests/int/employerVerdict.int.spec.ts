@@ -11,7 +11,7 @@ function employerVerdict(
   return rulingEmployerVerdict({ facts: facts, province: province, reqs: reqs, nowYear: nowYear })
 }
 
-import type { Requirement } from '@/lib/rules'
+import type { Requirement } from '@/lib/gauge'
 
 const R = (o: Partial<Requirement>): Requirement => ({
   province: 'AB', program: 'PNP', stream: '', subject: 'employer', factor: '', op: '>=', value: null,
