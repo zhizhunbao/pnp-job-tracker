@@ -494,6 +494,59 @@ const localRules = {
       },
     },
 
+    // ── 禁 `?`(2026-08-21 Frank 拍板「禁止用 ?」)────────────────────────────────
+    // 设计讨论定案:`?:` 是「写的人省 10 秒,后面所有读的人每次都得防一手」的坏交换;
+    // 终态 = 字段全声明、可空显式 `| null`、构造处格格交代 —— 拿 TS 当强类型语言用。
+    // 两种形态一把抓:`?:` 可选属性/可选参数、`?.` 可选链。
+    // 豁免:① `to*` 命名的行映射/采信函数体内(边界收窄本来就要摸「可能没有」);
+    //      ② 描述**别人家对象**的形状挂逐行 disable 并写明理由(pi 的事件、Payload 的内部结构);
+    //      ③ tsx 不管(React props 的 `?` 是框架惯例)。
+    // 开闸:consult=error,全站其余 .ts=warn(整改清单),迁完一域升一个。
+    'no-optional': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          prop:
+            '`{{ name }}?` 可选属性/参数 —— 字段要全声明,可空写成 `{{ name }}: T | null`,'
+            + '构造处显式给 null。描述外部对象的形状要豁免就逐行 disable 并写明是谁家的。',
+          chain:
+            '`?.` 可选链 —— 自家数据每格都该保证存在(顶多是 null):直接取,或显式 if/报错。'
+            + '边界摸别人家对象的,收进 `to*` 采信/映射函数里。',
+        },
+      },
+      create(context) {
+        function inMapper(node) {
+          let cur = node.parent
+          while (cur) {
+            if ((cur.type === 'FunctionDeclaration' || cur.type === 'FunctionExpression') &&
+                cur.id?.name?.startsWith('to')) return true
+            cur = cur.parent
+          }
+          return false
+        }
+        return {
+          TSPropertySignature(node) {
+            if (!node.optional) return
+            const name = node.key?.name ?? node.key?.value ?? '(计算键)'
+            context.report({ node, messageId: 'prop', data: { name } })
+          },
+          Identifier(node) {
+            // 可选参数 `(x?: T)`:只看真在参数位上的
+            if (!node.optional) return
+            const p = node.parent
+            const isParam = p && (p.type === 'FunctionDeclaration' || p.type === 'FunctionExpression' ||
+              p.type === 'ArrowFunctionExpression' || p.type === 'TSFunctionType' || p.type === 'TSMethodSignature')
+            if (isParam) context.report({ node, messageId: 'prop', data: { name: node.name } })
+          },
+          ChainExpression(node) {
+            if (inMapper(node)) return
+            context.report({ node, messageId: 'chain' })
+          },
+        }
+      },
+    },
+
     'no-magic-number': {
       meta: {
         type: 'suggestion',
@@ -1040,7 +1093,16 @@ const eslintConfig = [
       'local/no-magic-number': 'error',
       'local/no-split-import': 'error',
       'local/no-inline-coercion': 'error',
+      'local/no-optional': 'error',
     },
+  },
+  {
+    // ── 禁 `?`:全站 warn = 整改清单(2026-08-21 Frank「禁止用 ?」,consult 先清零)──
+    // db 整层豁免:它是边界(poolOf 摸 Payload 内部、PayloadWithPool 描述别人家对象)。
+    files: ['src/**/*.ts'],
+    ignores: ['src/lib/consult/**', 'src/lib/db/**'],
+    plugins: { local: localRules },
+    rules: { 'local/no-optional': 'warn' },
   },
   {
     // ── 边界收窄成语:全站 warn = 整改清单(2026-08-21,设计见 默认值架构 卷宗 §5)──

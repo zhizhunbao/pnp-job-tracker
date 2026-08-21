@@ -87,14 +87,14 @@ export type Fact = {
   evidence: Evidence
 
   /**
-   * 没有值时,四态里的哪一种。有值时不填。
+   * 没有值时,四态里的哪一种;有值时 null。
    */
-  availability?: Availability
+  availability: Availability | null
 
   /**
-   * 答复真的用到了这条吗(答复落地后回读打的标)。前端出处区只列 true 的。
+   * 答复真的用到了这条吗(citeFacts 回读打的标);还没回读时 null。前端出处区只列 true 的。
    */
-  cited?: boolean
+  cited: boolean | null
 }
 
 // =========================================================================
@@ -612,14 +612,14 @@ export type RunIn = {
   history: Turn[]
 
   /**
-   * 工具轨迹回调,不传就不发。
+   * 工具轨迹回调;不要就显式给 null(禁 `?`:缺席也要写出来)。
    */
-  onStep?: (text: string) => void
+  onStep: ((text: string) => void) | null
 
   /**
-   * 正文增量回调,不传就整段落地才给。
+   * 正文增量回调;null = 整段落地才给。
    */
-  onDelta?: (chunk: string) => void
+  onDelta: ((chunk: string) => void) | null
 }
 
 /**
@@ -638,34 +638,35 @@ export type Turn = {
 }
 
 /**
- * 用户自己说过的档案。**每一项都可选且默认不存在** ——
- * 缺一个 ≠ 有一个默认值(「按单身算」会直接换一张 CRS 分表)。
+ * 用户自己说过的档案。**每格必填、可空显式 null**(2026-08-21 Frank 禁 `?`):
+ * 「不知道」也要逐格写 null —— 缺一个 ≠ 有一个默认值(「按单身算」会直接换一张 CRS 分表),
+ * 现在连「忘了写」这条路也焊死了。一无所知的档案用 `EMPTY_PROFILE`。
  */
 export type Profile = {
   /**
-   * 五位职业码。
+   * 五位职业码;没说就 null。
    */
-  noc?: string | null
+  noc: string | null
 
   /**
-   * 他自己说的职业名。
+   * 他自己说的职业名;没说就 null。
    */
-  occText?: string | null
+  occText: string | null
 
   /**
-   * 他提过的省份,两位码。
+   * 他提过的省份,两位码;没提就空数组。
    */
-  provs?: string[]
+  provs: string[]
 
   /**
-   * 工作经验月数。
+   * 工作经验月数;没说就 null。
    */
-  expMonths?: number | null
+  expMonths: number | null
 
   /**
-   * 现在的身份。
+   * 现在的身份;没说就 null。
    */
-  status?: string | null
+  status: string | null
 }
 
 /**
@@ -1531,6 +1532,7 @@ export type OnEventIn = {
   /**
    * 那一刻的助手消息(累积形态),只有部分事件带它。
    */
+  // eslint-disable-next-line local/no-optional -- pi 的事件形状:缺席字段由库定,不是我们的契约
   message?: AgentMessage
 }
 
@@ -2499,5 +2501,6 @@ export type ToolArgs = {
   /**
    * 模型填的职业码;这把工具不带码时没有这一格。
    */
+  // eslint-disable-next-line local/no-optional -- 模型经 pi 交来的工具入参:带不带码由那把工具的 schema 定
   noc?: string
 }

@@ -10,8 +10,9 @@ import { describe, expect, it } from 'vitest'
 import { getDb } from '@/lib/db/server'
 import { consult } from '@/lib/consult/functions'
 import type { Profile } from '@/lib/consult/types'
+import { EMPTY_PROFILE } from '@/lib/consult'
 
-const EMPTY: Profile = {}
+const EMPTY: Profile = EMPTY_PROFILE
 
 // 🔴 打真库 + 真模型,**默认不跑**:全量 vitest 不该依赖局域网那台盒子在线。
 //    要跑就显式给地址:
@@ -19,7 +20,7 @@ const EMPTY: Profile = {}
 const LIVE = Boolean(process.env.CHAT_LLM_BASE)
 
 describe.skipIf(!LIVE)('pi 工具循环(打真库 + 真模型)', () => {
-  const cases: { name: string; text: string; profile?: Profile }[] = [
+  const cases: { name: string; text: string; profile?: Partial<Profile> }[] = [
     { name: '① meta:你能做什么(旧链 busy 超时)', text: '你能做什么' },
     { name: '② CRS:我 480 稳吗(旧链 noOcc)', text: '我 480 稳吗?' },
     { name: '③ 乱输入:LMIA ??????(旧链 noOcc,占了 41 次里的 18 次)', text: 'LMIA ??????????????????' },
@@ -39,6 +40,7 @@ describe.skipIf(!LIVE)('pi 工具循环(打真库 + 真模型)', () => {
         profile: { ...EMPTY, ...(c.profile ?? {}) },
         history: [],
         onStep: (s: string) => { steps.push(s.slice(0, 24)) },
+        onDelta: null,
       })
       const secs = ((Date.now() - t0) / 1000).toFixed(1)
       console.log(`\n${'='.repeat(70)}\n${c.name}\n问: ${c.text}`)

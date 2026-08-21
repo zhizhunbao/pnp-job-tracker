@@ -290,7 +290,7 @@ async function searchOccupations(input: SearchOccupationsIn): SearchOccupationsO
   const like = `${LIKE_ANY}${input.query.replace(LIKE_SPECIAL, LIKE_ESCAPE)}${LIKE_ANY}`
   const { rows } = await input.db.query(SQL.NOC_LIST_WITH_TITLES, [like, SEARCH_LIMIT])
   const all = rows.map(toNocHit)
-  const top = all[0]?.n ?? 0
+  const top = all.length ? all[0].n : 0
   const hits: Candidate[] = []
   for (const hit of all) {
     if (hit.noc && hit.title && hit.n >= top * NOISE_RATIO) hits.push({ noc: hit.noc, title: hit.title })
@@ -542,6 +542,7 @@ function fact(input: FactIn): FactOut {
   return {
     tool: input.tool, label: input.label, quote: input.quote, value: input.value,
     valueText: input.valueText, unit: input.unit, evidence: input.evidence,
+    availability: null, cited: null,
   }
 }
 
@@ -554,7 +555,7 @@ function fact(input: FactIn): FactOut {
 function statusFact(input: StatusFactIn): StatusFactOut {
   return {
     tool: input.tool, label: input.label, quote: input.quote, value: null, valueText: '', unit: UNIT.status,
-    evidence: input.evidence, availability: input.availability,
+    evidence: input.evidence, availability: input.availability, cited: null,
   }
 }
 
@@ -635,7 +636,7 @@ function coverageFacts(r: CoverageFactsIn): CoverageFactsOut {
  * @returns 值的展示形态。
  */
 function tierText(res: TierTextIn): TierTextOut {
-  if (res.tiers?.length) {
+  if (res.tiers && res.tiers.length) {
     const parts: string[] = []
     for (const t of res.tiers) parts.push(`${t.area}${SEP.colon}${t.value ?? SEP.none}${res.unit ? ` ${res.unit}` : ''}`)
     return parts.join(SEP.semi)
@@ -912,13 +913,13 @@ function verdictFacts(rows: VerdictFactsIn): VerdictFactsOut {
     for (const r of p.reasons) {
       if (r.kind === REASON_EXCLUDED && r.quote) {
         quote = `${p.province}${SEP.dot}${r.quote}`
-        evidence = { url: r.evidence?.url ?? '', fetched: r.evidence?.fetched ?? '' }
+        evidence = r.evidence ? { url: r.evidence.url, fetched: r.evidence.fetched } : evidence
         break
       }
     }
     const tier = p.tier == null ? '' : `${LABEL.tierHead}${TIER_TEXT[p.tier]}`
     const blocked = p.blockedBy ? `${LABEL.blockedBy}${p.blockedBy}` : ''
-    const missing = p.missingSlots?.length ? `${LABEL.missing}${p.missingSlots.join(SEP.comma)}` : ''
+    const missing = p.missingSlots && p.missingSlots.length ? `${LABEL.missing}${p.missingSlots.join(SEP.comma)}` : ''
     out.push(fact({
       tool: TOOL_NAME.verdict,
       label: `${p.province}${SPACE}${p.stream}${LABEL.verdictHead}${p.verdict}${tier}${blocked}${missing}`,
@@ -1215,7 +1216,7 @@ function makeToolGates(input: MakeToolGatesIn): MakeToolGatesOut {
 
   async function beforeToolCall(ctx: BeforeToolCallIn): BeforeToolCallOut {
     const args = ctx.args as ToolArgs
-    const noc = typeof args?.noc === 'string' ? args.noc.trim() : ''
+    const noc = args && typeof args.noc === 'string' ? args.noc.trim() : ''
     if (!noc) return undefined
     if (noc === box.noc) return undefined
     for (const c of box.candidates) if (c.noc === noc) return undefined
@@ -1255,7 +1256,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
   const { run, box } = input
 
   function step(key: StepIn): StepOut {
-    run.onStep?.(CONSULT_STEP[run.lang][key] ?? key)
+    if (run.onStep) run.onStep(CONSULT_STEP[run.lang][key] ?? key)
   }
 
   async function nocOf(raw: NocOfIn): NocOfOut {
@@ -1266,7 +1267,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
       const tt = toTitleTeer(rows[0])
       box.title = tt.title
       box.teer = tt.teer
-      run.onStep?.(CONSULT_STEP_OCC[run.lang](box.title || ok))
+      if (run.onStep) run.onStep(CONSULT_STEP_OCC[run.lang](box.title || ok))
     }
     return box.noc
   }
@@ -1304,7 +1305,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
     if (!noc) return say(TOOL_REPLY.needNoc)
     step(TOOL_NAME.thresholds)
     const r = await lookupThresholds({
-      db: run.db, noc, teer: box.teer, provs: cleanProvs({ raw: args.provs }), expMonths: run.profile.expMonths ?? null,
+      db: run.db, noc, teer: box.teer, provs: cleanProvs({ raw: args.provs }), expMonths: run.profile.expMonths,
     })
     return take({ box, facts: thresholdsFacts(r) })
   }
@@ -1341,7 +1342,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
 
   async function execPoints(_id: string, args: ExecPointsIn): ExecPointsOut {
     step(TOOL_NAME.points)
-    const r = await lookupPoints({ db: run.db, grid: args.grid, section: args.section?.trim() ?? '' })
+    const r = await lookupPoints({ db: run.db, grid: args.grid, section: args.section === undefined ? '' : args.section.trim() })
     return take({ box, facts: pointsFacts(r) })
   }
 
@@ -1430,7 +1431,7 @@ function systemOf(input: RunIn): SystemOfOut {
   const p = input.profile
   if (p.noc) said.push(`${SAID.noc}${p.noc}`)
   if (p.occText) said.push(`${SAID.occOpen}${p.occText}${SAID.occClose}`)
-  if (p.provs?.length) said.push(`${SAID.provs}${p.provs.join(SEP.comma)}`)
+  if (p.provs.length) said.push(`${SAID.provs}${p.provs.join(SEP.comma)}`)
   if (p.expMonths != null) said.push(`${p.expMonths}${SAID.exp}`)
   if (p.status) said.push(`${SAID.status}${p.status}`)
   const profile = said.length ? `${PROFILE_HEAD}${said.join(SEP.semi)}` : PROFILE_NONE
@@ -1586,7 +1587,7 @@ function hardHits(input: HardHitsIn): HardHitsOut {
  * @returns 收件箱;没有预填的码时 `title`/`teer` 留空,由 `nocOf` 后补。
  */
 async function boxFor(input: BoxForIn): BoxForOut {
-  const noc = input.profile.noc ?? null
+  const noc = input.profile.noc
   if (!noc) return { facts: [], candidates: [], noc: null, title: '', teer: null }
   const { rows } = await input.db.query(SQL.NOC_TITLE_TEER, [noc])
   const tt = toTitleTeer(rows[0])

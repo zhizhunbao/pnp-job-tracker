@@ -12,6 +12,7 @@
 import { describe, expect, it } from 'vitest'
 import { getDb } from '@/lib/db/server'
 import { consult } from '@/lib/consult/server'
+import { EMPTY_PROFILE } from '@/lib/consult'
 
 const LIVE = Boolean(process.env.CHAT_LLM_BASE)
 
@@ -35,7 +36,7 @@ describe.skipIf(!LIVE)('日志回放:当初撞 noOcc 的真问题', () => {
       let err = ''
       let out = { answer: '', facts: [] as unknown[], noc: null as string | null, degraded: false }
       try {
-        out = await consult({ db, text, lang: 'zh', profile: {}, history: [] })
+        out = await consult({ db, text, lang: 'zh', profile: EMPTY_PROFILE, history: [], onStep: null, onDelta: null })
       } catch (e) {
         err = e instanceof Error ? `${e.name}/${e.message}` : String(e)
       }

@@ -11,6 +11,10 @@
  * @time 2026-08-21 01:05:00
  */
 
+export {
+  EMPTY_PROFILE,
+} from './constants'
+
 export type {
   Availability, ConsultIn, ConsultOut, Fact, GateHit, Profile, RunIn, RunOut, Turn,
 } from './types'

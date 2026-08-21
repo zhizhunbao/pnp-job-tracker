@@ -20,6 +20,7 @@ import { afterAll, describe, expect, it } from 'vitest'
 
 import { getDb } from '@/lib/db/server'
 import { consult } from '@/lib/consult/server'
+import { EMPTY_PROFILE } from '@/lib/consult'
 import type { Fact as ConsultFact } from '@/lib/consult'
 import { isChatError } from '@/lib/error'
 import { checkCards, type CardHit } from '../cases/diseaseCards'
@@ -60,7 +61,7 @@ async function runTurn(db: any, text: string, lang: 'zh' | 'en' | 'ko', history:
   let err: string | null = null
   let out = { answer: '', facts: [] as ConsultFact[], noc: null as string | null, degraded: false }
   try {
-    out = await consult({ db, text, lang, profile: {}, history })
+    out = await consult({ db, text, lang, profile: EMPTY_PROFILE, history, onStep: null, onDelta: null })
   } catch (e) {
     err = e instanceof Error && isChatError<null>(e) ? e.code : `throw:${String((e as Error)?.message).slice(0, 80)}`
   }

@@ -14,6 +14,7 @@
 //     npx vitest run tests/int/triLangProbe.int.spec.ts
 import { describe, expect, it } from 'vitest'
 import { getDb } from '@/lib/db/server'
+import { EMPTY_PROFILE } from '@/lib/consult'
 import { consult } from '@/lib/consult/server'
 import type { Profile } from '@/lib/consult'
 
@@ -24,7 +25,7 @@ const MODEL = process.env.CHAT_LLM_MODEL ?? '(默认)'
 const HANGUL = /[가-힯]/
 const HANZI = /[一-鿿]/
 
-type Ask = { lang: 'zh' | 'en' | 'ko'; text: string; profile?: Profile }
+type Ask = { lang: 'zh' | 'en' | 'ko'; text: string; profile?: Partial<Profile> }
 
 // 同一个问题的三语版本 —— 问的是同一件事,答案该是同一批事实。
 const ASKS: Ask[] = [
@@ -43,8 +44,9 @@ describe.skipIf(!LIVE)(`三语横评(${MODEL})`, () => {
       const steps: string[] = []
       const t0 = Date.now()
       const r = await consult({
-        db, text: a.text, lang: a.lang, profile: a.profile ?? {}, history: [],
+        db, text: a.text, lang: a.lang, profile: { ...EMPTY_PROFILE, ...(a.profile ?? {}) }, history: [],
         onStep: (s: string) => { steps.push(s.slice(0, 24)) },
+        onDelta: null,
       })
       const secs = ((Date.now() - t0) / 1000).toFixed(1)
 

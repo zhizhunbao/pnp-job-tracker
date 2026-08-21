@@ -148,6 +148,7 @@ export async function POST(req: Request) {
         const r = await consult({
           db: (payload.db as any).pool, text, lang, profile, history,
           onStep: (s: string) => { steps.push(s); send({ step: s }) },
+          onDelta: null,
         })
         // 见客 label 用 quote(引文):consult 的 label 是给模型看的英文说明,永不见客
         const facts = r.facts.map((f): Fact => ({
@@ -156,7 +157,7 @@ export async function POST(req: Request) {
         }))
         const ok: ChatOut = {
           answer: r.answer,
-          slots: { noc: r.noc, occText: '', provs: profile.provs ?? [], expMonths: profile.expMonths ?? null, status: profile.status ?? null, claims: [] },
+          slots: { noc: r.noc, occText: '', provs: profile.provs, expMonths: profile.expMonths, status: profile.status, claims: [] },
           facts,
           followups: [],
           degraded: r.degraded,

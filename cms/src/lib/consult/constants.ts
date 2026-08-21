@@ -108,7 +108,7 @@ export const MAX_TOKENS = 1200
  * 会把后面几发连坐成 busy(级联实拍:R09 超时 → R10 排队 40s → R11/R12 连环 busy)。
  * 120s 让长尾「慢但答上」,不再产僵尸 —— 前端等待态有轨迹与秒数陪着。
  */
-export const TIMEOUT_MS = Number(process.env.CHAT_PI_TIMEOUT_MS ?? 120_000)
+export const TIMEOUT_MS = process.env.CHAT_PI_TIMEOUT_MS === undefined ? 120_000 : Number(process.env.CHAT_PI_TIMEOUT_MS)
 
 /**
  * 直接塞进请求体的采样参数。
@@ -190,6 +190,37 @@ export const KIND_SUMMARY = 'summary'
  * CRS 分表名。`lookupPoints` 按它决定「不给 section 时取不取 summary」。
  */
 export const GRID_CRS = 'CRS'
+
+/**
+ * 一无所知的档案:每格显式 null(Profile 禁 `?` 后,「什么都没说」也要逐格交代)。
+ * 只给测试与「匿名冷启动」用;登录用户的档案由路由逐格映射。
+ */
+export const EMPTY_PROFILE = {
+  /**
+   * 没说职业码。
+   */
+  noc: null,
+
+  /**
+   * 没说职业名。
+   */
+  occText: null,
+
+  /**
+   * 没提省份。
+   */
+  provs: [] as string[],
+
+  /**
+   * 没说经验。
+   */
+  expMonths: null,
+
+  /**
+   * 没说身份。
+   */
+  status: null,
+}
 
 /**
  * 一次最多对几条主张。中介一口气吹十条时,前几条对完模型就有话答了。
