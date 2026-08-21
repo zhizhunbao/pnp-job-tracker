@@ -1,0 +1,2258 @@
+{
+ "day": "2026-08-21",
+ "cases": [
+  {
+   "id": "R01",
+   "note": "预设句·软件开发毕业留下",
+   "hard": false,
+   "pass": true,
+   "problems": [],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "安省大专毕业,做软件开发,还没工作,毕业后能留下吗?",
+     "ms": 71092,
+     "err": null,
+     "degraded": false,
+     "noc": "21232",
+     "facts": 24,
+     "answer": "毕业后能否留下主要取决于你的课程时长和语言成绩，因为联邦政策允许大专毕业生直接申请工作许可。如果你的安省大专课程满2年，你可以拿到最长36个月的毕业工签；如果课程在8个月到不足2年之间，工签长度会和课程一样长。申请时你需要满足英语CLB 5的要求，并且必须在成绩单确认后的180天内提交申请，一生只能申请一次。\n\n在没有工作offer的情况下，安省提名项目目前无法直接递交，因为该省的毕业生通道要求你必须先拿到雇主的工作邀请或进入联邦快速通道池。如果你后续找到软件开发的工作，雇主需要满足在大多伦多地区经营满3年且年营收至少1000000加元、其他区域500000加元、最少250000加元的条件，并且工作地点需雇佣至少5名（GTA内）或3名（GTA外）加拿大公民或永久居民。\n\n联邦快速通道方面，软件开发职业（NOC 21232）目前不在任何类别抽选名单上，只能走普通池抽签。你可以利用毕业工签在安省积累本地工作经验后再评估其他路径。",
+     "residual": [],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R02",
+   "note": "软件开发四轮追问链(含 D2 短答放行)",
+   "hard": false,
+   "pass": true,
+   "problems": [],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "安省大专毕业,做软件开发,还没工作,毕业后能留下吗?",
+     "ms": 69409,
+     "err": null,
+     "degraded": false,
+     "noc": "21232",
+     "facts": 24,
+     "answer": "毕业后能否留下主要取决于你的课程时长和语言成绩，因为联邦政策允许大专毕业生直接申请工作许可。如果你的安省大专课程满2年，你可以拿到最长36个月的毕业工签；如果课程在8个月到不足2年之间，工签长度会和课程一样长。申请时你需要满足英语CLB 5的要求，并且必须在成绩单确认后的180天内提交申请，一生只能申请一次。\n\n在没有工作offer的情况下，安省提名项目目前无法直接递交，因为该省的毕业生通道要求你必须先拿到雇主的工作邀请或进入联邦快速通道池。如果你后续找到软件开发的工作，雇主需要满足在大多伦多地区经营满3年且年营收至少1000000加元、其他区域500000加元、最少250000加元的条件，并且工作地点需雇佣至少5名（GTA内）或3名（GTA外）加拿大公民或永久居民。\n\n联邦快速通道方面，软件开发职业（NOC 21232）目前不在任何类别抽选名单上，只能走普通池抽签。你可以利用毕业工签在安省积累本地工作经验后再评估其他路径。",
+     "residual": [],
+     "cardHits": []
+    },
+    {
+     "text": "现在哪个省这个职业的在招岗位最多?",
+     "ms": 15031,
+     "err": null,
+     "degraded": false,
+     "noc": "21232",
+     "facts": 10,
+     "answer": "目前安省的软件开发岗位最多，有52个职位。其次是魁北克省（QC），有13个。阿尔伯塔省（AB）和不列颠哥伦比亚省（BC）各有5个。",
+     "residual": [],
+     "cardHits": []
+    },
+    {
+     "text": "这个省今年的提名名额还剩多少?",
+     "ms": 14294,
+     "err": null,
+     "degraded": false,
+     "noc": "21232",
+     "facts": 7,
+     "answer": "安省目前不公布软件开发职业今年的剩余提名名额。各省的省提名项目配额通常由省政府动态分配，实时数据并不对外公开。如果您需要确认当前的具体配额情况，建议直接查阅安省移民官网的最新公告或联系官方渠道获取更新。",
+     "residual": [],
+     "cardHits": []
+    },
+    {
+     "text": "其他省有机会吗",
+     "ms": 30440,
+     "err": null,
+     "degraded": false,
+     "noc": "21232",
+     "facts": 31,
+     "answer": "其他省确实有机会。BC省、AB省、SK省、MB省以及NS、NB、NL、PE和QC省的提名清单均包含该职业。其中BC省近期通过Innovate: High Economic Impact类别持续发放邀请，AB省则设有专门的Alberta Express Entry Stream – Accelerated Tech Pathway并定期抽选。该职业目前未进入联邦快速通道的定向抽选名单，因此省提名是更直接的路径。",
+     "residual": [],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R03",
+   "note": "预设句·NS 厨师 offer 老板帮办可信吗",
+   "hard": false,
+   "pass": true,
+   "problems": [],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "新斯科舍的餐厅给了我厨师 offer,老板说帮我办,可信吗?",
+     "ms": 42465,
+     "err": null,
+     "degraded": false,
+     "noc": "63200",
+     "facts": 25,
+     "answer": "新斯科舍省确实将厨师列入了省提名职业清单，但老板能否帮你办理取决于他是否满足官方硬性指标。根据规定，雇主必须在新斯科舍省经营至少两年，且你本人需要在过去五年内拥有12个月（共1560小时）的相关带薪工作经验，同时达到CLB 5的语言水平。你需要先确认这家餐厅的开业时间是否已满两年，如果未满则无法通过该渠道申请。",
+     "residual": [],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R04",
+   "note": "预设句·中介包曼省木匠 offer(K06 主张对账)",
+   "hard": false,
+   "pass": true,
+   "problems": [],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "中介说能包曼省木匠 offer 和省提名,可信吗?",
+     "ms": 43045,
+     "err": null,
+     "degraded": false,
+     "noc": "72310",
+     "facts": 14,
+     "answer": "中介承诺的“包offer和省提名”无法兑现，也不存在官方认可的保底结果。曼省木匠（NOC 72310）确实被列入省提名紧缺职业清单，但你要满足政府明确的硬性门槛：雇主必须实际经营满三年才能招人申请；你需要先持工签在曼省为该公司全职工作满六个月以上，才有资格递交省提名；语言成绩需达到CLB 5。官方记录里没有任何机构能承诺包过或保录，这类说法属于私人营销话术，无法核实也无法作为办理依据。",
+     "residual": [],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R05",
+   "note": "预设句英文·Ontario software grad",
+   "hard": false,
+   "pass": true,
+   "problems": [],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "Ontario college grad, software dev, no job yet — can I stay?",
+     "ms": 34932,
+     "err": null,
+     "degraded": false,
+     "noc": "21232",
+     "facts": 19,
+     "answer": "Yes, you can stay through a Post-Graduation Work Permit (PGWP), but your time in Canada is strictly limited by its expiry date. The permit length depends on your study program duration: if it was two years or more, you get three years; otherwise, it matches your program length (minimum eight months). You must apply within 180 days of receiving your completion confirmation and meet a CLB 5 language requirement for college graduates. \n\nWhile Ontario currently lists 52 open postings for software developers, finding employment is necessary to extend your stay or transition to permanent residence once the PGWP expires. Without a job offer, you cannot simply remain in the country after that permit ends unless you qualify for another pathway.\n\nKey conditions to keep working legally:\n- Your study program must have been at least eight months long.\n- You can only receive one PGWP in your lifetime.\n- The permit allows you to work for any employer without an LMIA.",
+     "residual": [],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R06",
+   "note": "厨师阿省两年经验申省提名",
+   "hard": false,
+   "pass": true,
+   "problems": [],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "我是厨师,在阿省工作两年了,现在申请省提名来得及吗?",
+     "ms": 34044,
+     "err": null,
+     "degraded": true,
+     "noc": "62200",
+     "facts": 39,
+     "answer": "- ON · NOC 62200\n- BC · NOC 62200\n- AB · NOC 62200\n- SK · NOC 62200\n- MB · NOC 62200\n- NS · NOC 62200\n- NB · Atlantic Immigration Program (NB) — occupations not being considered for endorsement; NB Skilled Worker stream / NB Express Entry stream — occupations not being considered (EOI/ITA): Atlantic Immigration Program (NB) — occupations not being considered for endorsement; NB Skilled Worker stream / NB Express Entry stream — occupations not being considered (EOI/ITA)\n- NL · NOC 62200\n- PE · NOC 62200\n- QC · NOC 62200\n- AB · 2026-08-12 · Dedicated Health Care Pathway – Express Entry: 60 WEOI\n- AB · 2026-08-11 · Rural Renewal Stream: 51 WEOI\n- AB · 2026-08-07 · Alberta Express Entry Stream – Priority Sectors (Agriculture): 55 WEOI\n- AB · 2026-08-06 · Alberta Express Entry Stream – Accelerated Tech Pathway: 60 WEOI",
+     "residual": [],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R07",
+   "note": "木匠曼省萨省对比(两省点名)",
+   "hard": false,
+   "pass": false,
+   "problems": [
+    "err=llm(期望答上)"
+   ],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "我是木匠,在安省刚毕业没经验,曼省和萨省哪个好走?",
+     "ms": 59439,
+     "err": "llm",
+     "degraded": false,
+     "noc": null,
+     "facts": 0,
+     "answer": "",
+     "residual": [],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R08",
+   "note": "木匠零经验哪省不要经验",
+   "hard": false,
+   "pass": true,
+   "problems": [],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "我是木匠,刚从加拿大的学院毕业拿了工签,一点工作经验都没有,哪个省的省提名不要求工作经验?",
+     "ms": 15404,
+     "err": null,
+     "degraded": false,
+     "noc": "72310",
+     "facts": 40,
+     "answer": "纽芬兰与拉布拉多省（NL）的省提名类别不设最低工作经验要求。该类别仅要求你持有剩余有效期至少4个月的工签，拿到一份每周工作30小时以上、为期12个月的全职工作offer，且年龄在21至59岁之间。其他省份如安大略、BC省、阿尔伯塔、萨斯喀彻温、曼尼托巴和新不伦瑞克均明确要求至少数月到两年的工作经验。",
+     "residual": [],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R09",
+   "note": "C01 全档案+PGWP 补充轮(K12 探针:tier0 须点名)",
+   "hard": false,
+   "pass": false,
+   "problems": [
+    "答复未命中 /纽芬兰|NL/"
+   ],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "我今年40岁,已婚,配偶在国内不随行,CLB6,在安省读了两年制木工大专刚毕业,还没有工作经验,想知道我走哪条路能拿PR?",
+     "ms": 36060,
+     "err": null,
+     "degraded": false,
+     "noc": null,
+     "facts": 14,
+     "answer": "目前系统无法直接给出确切路径，因为评估需要补充几项关键信息。你提到刚毕业且还没有工作经验，而绝大多数省提名或联邦通道都要求至少拥有一份加拿大本地工作offer或累计满一定时长的加拿大工作经验。系统还需要确认你的具体职业代码（木工对应72310）、是否持有有效工签、以及能否获得雇主担保。\n\n- 你目前持有的签证类型及是否允许全职工作\n- 毕业后是否已找到相关职位或拿到书面录用通知\n- 未来一年内的具体计划（继续读书、积累本地经验或寻找雇主）\n\n提供这些信息后，系统会立即为你匹配可走的通道。",
+     "residual": [
+      "72310"
+     ],
+     "cardHits": []
+    },
+    {
+     "text": "补充:我刚拿到3年的PGWP工签。这样的话我走哪条路最快?",
+     "ms": 54685,
+     "err": null,
+     "degraded": false,
+     "noc": null,
+     "facts": 28,
+     "answer": "你目前无法直接走联邦快速通道，最快且最稳妥的路径是先以木工身份找到对口工作，积累满一年加拿大本地经验后再申请。近期联邦CEC通道的抽签分数线在516到523分之间，而你40岁、CLB6且尚未有本地工作经验的当前分数远低于此线。\n\n拥有三年工签是你最大的时间优势。你需要立即以NOC 72310（木工）的身份求职，拿到安省雇主担保后走省提名通道，或工作满12个月后直接递交CEC申请。省提名获批后可直接获得入围资格，整体周期通常比等待联邦常规抽签更可控。\n\n- 优先锁定安省对口职位，利用工签剩余时间积累经验\n- 经验满一年后立即提交CEC或安省毕业生类省提名\n- 保持CLB6以上成绩并持续更新简历以匹配雇主需求",
+     "residual": [
+      "40",
+      "72310",
+      "6:clb"
+     ],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R10",
+   "note": "PGWP 自述一句话档案(K05 探针:自述不进 claims)",
+   "hard": false,
+   "pass": true,
+   "problems": [],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "本人 40 岁,配偶不随行,语言 CLB6,安省两年制大专毕业,手里的 PGWP 还有效,没有工作经验,想干木工 NOC 72310,哪条移民路最快?",
+     "ms": 64668,
+     "err": null,
+     "degraded": false,
+     "noc": "72310",
+     "facts": 33,
+     "answer": "你目前零工作经验且四十岁，联邦快速通道（EE）的最低入围分数也在三百六十八分以上，你的当前条件无法直接通过联邦技术或经验类移民获批。最快的路径是先用有效的毕业工签（PGWP）在加拿大找到一份符合雇主资质的工作，随后走安省提名项目（OINP）。\n\n根据官方记录，安省对木工（NOC 72310）的雇主门槛如下：\n- 企业必须持续经营至少三年\n- 雇主年收入需达到五十万至一百万加元不等（具体取决于所在区域）\n- 工作地点需雇佣至少三名全职加拿大公民或永久居民\n\n你安省两年制大专毕业且持有有效工签，符合联邦对大专毕业生申请工签的最低语言要求（CLB 5），目前可以合法打工。你需要先锁定一份满足上述雇主条件的木工职位，拿到正式录用通知后，安省的提名通道才会对你开放。",
+     "residual": [
+      "三名"
+     ],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R11",
+   "note": "基础句+点选卡自述轮(K05 探针)",
+   "hard": false,
+   "pass": true,
+   "problems": [],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "本人 40 岁,配偶不随行,CLB6,安省两年制大专,零经验想干木工 NOC 72310,该走哪条路?",
+     "ms": 35863,
+     "err": null,
+     "degraded": false,
+     "noc": "72310",
+     "facts": 40,
+     "answer": "你的安省两年制大专学历可以直接申请最长三年的工签（PGWP），这是你现在最可行的起步路径。联邦规定大专毕业生申请该工签只需达到CLB 5，你的CLB 6已经满足要求，且工签有效期与学制相同，满三年。\n\n拿到工签后，你可以先积累工作经验。安省雇主优先通道对木工（NOC 72310）的要求是申请人需达到CLB 5，且作为安省应届毕业生，必须在递交申请前12个月内拥有至少3个月的全职带薪工作经验。你目前零经验，需要先通过工签找到工作并满足这3个月的时长要求。\n\n其他省份的提名项目通常也要求雇主担保或本地工作经验。你可以先利用三年工签在加拿大合法工作积累经验，之后再根据当时的政策评估省提名或联邦快速通道的资格。",
+     "residual": [
+      "clb:联邦规定大专毕业生申请该工签只需达到CLB 5，你的CLB 6已经满足要求，且工"
+     ],
+     "cardHits": [
+      {
+       "card": "K01",
+       "detail": "闸A 残留:clb:联邦规定大专毕业生申请该工签只需达到CLB 5，你的CLB 6已经满足要求，且工"
+      }
+     ]
+    },
+    {
+     "text": "我持有有效的 PGWP 工签",
+     "ms": 122605,
+     "err": null,
+     "degraded": true,
+     "noc": "72310",
+     "facts": 40,
+     "answer": "- ON · NOC 72310\n- BC · BC PNP Build: construction trades targeted ITA: BC PNP Build: construction trades targeted ITA\n- AB · NOC 72310\n- SK · NOC 72310\n- MB · MPNP In-Demand Occupations List: MPNP In-Demand Occupations List\n- NS · Nova Scotia Critical Vacancies: Nova Scotia Critical Vacancies\n- NB · NOC 72310\n- NL · NOC 72310\n- PE · NOC 72310\n- QC · NOC 72310\n- ON · CLB 5 in all four proficiencies (TEER 0-3, listed skilled trades: NOC groups 72, 73, 82, 83, 93, 6320, 62200; excluding 726, 932): 5 CLB\n- ON · If you are a recent Ontario graduate, at least 3 months of consecutive, paid full-time work experience in the job offer employment position within the 12 months before the date you made your application: recent-on-graduate: 3 months; : 6 months\n- ON · No language test required if you graduated from an eligible Ontario institution within the last 3 years (2-year+ postsecondary credential, Ontario College Graduate Certificate, Master's or PhD): 3 years\n- ON · The offered wage must meet or exceed the median wage level for the occupation in the Ontario employment region (low wage level allowed for recent Ontario graduates in TEER 0-3): unknown",
+     "residual": [],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R12",
+   "note": "D1 用法句·LMIA 表有什么用(确定性 guide 分支)",
+   "hard": true,
+   "pass": true,
+   "problems": [],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "LMIA 获批雇主的表对我找工作移民有什么用?",
+     "ms": 35127,
+     "err": null,
+     "degraded": false,
+     "noc": null,
+     "facts": 0,
+     "answer": "这份名单的核心作用是帮你锁定那些已经拿到政府许可、愿意且能够直接为你办理工作签证的雇主。有了LMIA批准书，你申请的工签就不会因为“找不到本地人”被拒；拿到工签入境后，积累的工作经历能直接满足后续转永居所需的境内工作经验要求。你可以把名单当作筛选目标公司的过滤器，优先投递这些已经走完审批流程的岗位，能大幅缩短从找工作到拿身份的时间。",
+     "residual": [],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R13",
+   "note": "D1 用法句·AIP 指定雇主是什么",
+   "hard": true,
+   "pass": true,
+   "problems": [],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "AIP 指定雇主是什么?对我有用吗?",
+     "ms": 33840,
+     "err": null,
+     "degraded": false,
+     "noc": null,
+     "facts": 0,
+     "answer": "指定雇主是指在该移民项目覆盖的地区内获得政府授权、能够直接雇佣外籍员工并协助其办理手续的企业。该途径是否对您有用，取决于您的职业类别、语言水平以及过往工作经验是否符合当地的具体标准。由于系统目前尚未记录您的个人资料，如果您能提供具体的职业名称，我可以为您查询相关的省提名覆盖情况或当前工作机会。",
+     "residual": [],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R14",
+   "note": "D1 用法句·命中紧缺清单意味着什么",
+   "hard": true,
+   "pass": true,
+   "problems": [],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "在招岗命中紧缺清单的雇主,对我意味着什么?",
+     "ms": 33693,
+     "err": null,
+     "degraded": false,
+     "noc": null,
+     "facts": 0,
+     "answer": "这意味着该职位属于该省急需的职业列表，通常能为你省去雇主工签（LMIA）的环节，并可能提供一条更直接的省提名移民通道。不同省份的具体政策差异很大，有的要求你已有工作offer，有的则允许你在境外直接申请。请告诉我具体的省份和职业名称，以便我为你查询准确的政策要求和当前状态。",
+     "residual": [],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R15",
+   "note": "首轮短答「没工作」= noOcc 引导给职业(CJK≥2 修复后不再 tooShort;#52 实录是修复前行为)",
+   "hard": true,
+   "pass": true,
+   "problems": [],
+   "oldOnly": [
+    "老链期望 err=noOcc,新链实得 llm"
+   ],
+   "turns": [
+    {
+     "text": "没工作",
+     "ms": 51604,
+     "err": "llm",
+     "degraded": false,
+     "noc": null,
+     "facts": 0,
+     "answer": "",
+     "residual": [],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R16",
+   "note": "「护士」二字冷启动(K11 复验:CJK≥2 放行)",
+   "hard": false,
+   "pass": true,
+   "problems": [],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "护士",
+     "ms": 38926,
+     "err": null,
+     "degraded": false,
+     "noc": null,
+     "facts": 0,
+     "answer": "您提到的“护士”在加拿大职业分类中对应以下几个代码：\n\n- 31301 — Registered nurses and registered psychiatric nurses\n- 32101 — Licensed practical nurses\n- 31302 — Nurse practitioners\n- 33102 — Nurse aides, orderlies and patient service associates\n\n请告诉我您具体指哪一个，或者您想了解关于该职业的什么信息（例如找工作、移民要求等）。",
+     "residual": [
+      "31301",
+      "32101",
+      "31302",
+      "33102"
+     ],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R17",
+   "note": "33102 锚句·PGWP 18 个月来得及吗",
+   "hard": false,
+   "pass": true,
+   "problems": [],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "I am a PSW (NOC 33102) with 18 months left on my PGWP — is there still time to make it?",
+     "ms": 52500,
+     "err": null,
+     "degraded": false,
+     "noc": "33102",
+     "facts": 40,
+     "answer": "Your occupation (NOC 33102) appears on provincial nominee lists in Ontario, British Columbia, Alberta, Saskatchewan, Manitoba, Nova Scotia, New Brunswick, Newfoundland and Labrador, Prince Edward Island, and Quebec. \n\nBritish Columbia publishes a processing time of roughly three months for the application stage plus one month after nomination. Federal Express Entry and most other provincial streams show an estimated wait of about twelve months from offer to decision. With eighteen months remaining on your PGWP, you have enough runway for faster-processing provincial routes like BC, but federal or slower provincial streams would likely push past your permit expiry unless you secure a bridge work permit or extend your stay.\n\nEligibility for Canadian Experience Class or provincial skilled worker streams depends on two details not yet in your file: your exact number of months of full-time Canadian work experience and your current CLB language score. Without those, I cannot confirm which specific pathways you qualify for right now. \n\n- Check your PGWP expiry date against the processing timelines above to see which provinces fit your window.\n- Gather your IELTS/CELPIP results and calculate your total Canadian work months to verify CEC or provincial eligibility.",
+     "residual": [
+      "crs:Eligibility for Canadian Experience Clas"
+     ],
+     "cardHits": [
+      {
+       "card": "K01",
+       "detail": "闸A 残留:crs:Eligibility for Canadian Experience Clas"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "R18",
+   "note": "裸码开头句(K08 方差探针:33102 不许抄成 31102)",
+   "hard": false,
+   "pass": true,
+   "problems": [],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "33102 (PSW) — does this have a shot in British Columbia?",
+     "ms": 16385,
+     "err": null,
+     "degraded": false,
+     "noc": "33102",
+     "facts": 25,
+     "answer": "Yes, Personal Support Worker (NOC 33102) is actively nominated in British Columbia through two main routes. The province runs targeted health-care draws under the BC PNP Care stream, with a recent Care: Health draw on August 6, 2026 inviting 124 candidates. Federally, this occupation falls under the Express Entry healthcare category draw that has issued invitations with a cutoff of 475 CRS points.\n\nTo qualify through the BC PNP Care stream you must meet these official requirements:\n- Two years of full-time skilled work experience in TEER 0, 1, 2, or 3 within the last ten years\n- An employer who has operated in B.C. for at least one year and employs at least five indeterminate full-time staff in Metro Vancouver (or three elsewhere)\n- A minimum family income threshold of $31,264 CAD for a single applicant in the Metro Vancouver Regional District",
+     "residual": [],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R19",
+   "note": "电工 PGWP 12 个月选省",
+   "hard": false,
+   "pass": true,
+   "problems": [],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "I am an electrician with 12 months left on my PGWP — which province should I push for?",
+     "ms": 30563,
+     "err": null,
+     "degraded": false,
+     "noc": "72201",
+     "facts": 40,
+     "answer": "Electricians (NOC 72200) are listed on the occupation lists for almost every province, including Ontario, Saskatchewan, Manitoba, Nova Scotia, New Brunswick, Newfoundland and Labrador, Prince Edward Island, Quebec, British Columbia, and Alberta. \n\nBritish Columbia stands out because it has a dedicated \"Build\" stream specifically for construction trades like electricians, and its official processing time for applications is 3 months. This timeline fits well within your 12-month PGWP window.\n\nOther provinces also cover this occupation but do not publish their processing times here, making BC's speed the only verifiable advantage among them. You will need to ensure your work permit remains valid until you submit your permanent residence application or have a plan to extend it while waiting for a nomination.",
+     "residual": [],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R20",
+   "note": "卡车司机 BC 两年经验",
+   "hard": false,
+   "pass": true,
+   "problems": [],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "I am a truck driver targeting BC with two years of experience — can I apply for PNP?",
+     "ms": 24849,
+     "err": null,
+     "degraded": false,
+     "noc": "73300",
+     "facts": 14,
+     "answer": "Transport truck drivers (NOC 73300) are included on the British Columbia Provincial Nominee Program occupation list, and your two years of experience satisfies their work history rule. \n\nTo move forward with an application, you will need a job offer from an employer who meets specific criteria:\n- The employer must have operated in British Columbia for at least one year.\n- The employer must employ at least five full-time staff members if located in the Metro Vancouver area, or three full-time staff members elsewhere in the province.",
+     "residual": [],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R21",
+   "note": "厨师四轮追问链(清单/岗位/分数线)",
+   "hard": false,
+   "pass": false,
+   "problems": [
+    "err=llm(期望答上)"
+   ],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "新斯科舍的餐厅给了我厨师 offer,老板说帮我办,可信吗?",
+     "ms": 41982,
+     "err": null,
+     "degraded": false,
+     "noc": "63200",
+     "facts": 25,
+     "answer": "新斯科舍省确实将厨师列入了省提名职业清单，但老板能否帮你办理取决于他是否满足官方硬性指标。根据规定，雇主必须在新斯科舍省经营至少两年，且你本人需要在过去五年内拥有12个月（共1560小时）的相关带薪工作经验，同时达到CLB 5的语言水平。你需要先确认这家餐厅的开业时间是否已满两年，如果未满则无法通过该渠道申请。",
+     "residual": [],
+     "cardHits": []
+    },
+    {
+     "text": "还有哪些省的官方清单收了我这个职业?",
+     "ms": 28545,
+     "err": null,
+     "degraded": false,
+     "noc": "62200",
+     "facts": 20,
+     "answer": "除了新斯科舍省，以下省份的省提名职业清单也收录了厨师类职位：\n- 安大略 (ON)\n- 不列颠哥伦比亚 (BC)\n- 阿尔伯塔 (AB)\n- 萨斯喀彻温 (SK)\n- 曼尼托巴 (MB)\n- 纽芬兰与拉布拉多 (NL)\n- 爱德华王子岛 (PE)\n- 魁北克 (QC)\n\n新不伦瑞克省的部分类别目前不考虑该职业。",
+     "residual": [],
+     "cardHits": []
+    },
+    {
+     "text": "现在哪个省这个职业的在招岗位最多?",
+     "ms": 22572,
+     "err": null,
+     "degraded": false,
+     "noc": "62200",
+     "facts": 20,
+     "answer": "安大略省（ON）的厨师类在招岗位数量目前位居第一。系统显示，安大略省针对 Cooks（63200）有 596 个开放职位，其次是 BC 省的 531 个；而在 Chefs（62200）类别中，BC 省以 302 个职位领先，安大略省为 247 个。",
+     "residual": [],
+     "cardHits": []
+    },
+    {
+     "text": "最近一轮抽选的分数线是多少?",
+     "ms": 77779,
+     "err": "llm",
+     "degraded": false,
+     "noc": null,
+     "facts": 0,
+     "answer": "",
+     "residual": [],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R22",
+   "note": "口语短句「厨师在安省有戏么」+追问「打分能排上吗」",
+   "hard": false,
+   "pass": true,
+   "problems": [],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "厨师在安省有戏么",
+     "ms": 52372,
+     "err": null,
+     "degraded": false,
+     "noc": "63200",
+     "facts": 40,
+     "answer": "厨师在安省确实有机会，具体取决于你的职业分类。\n\n对于 Chef (NOC 62200)，安省提名项目将其列入职业清单，目前数据库中有 247 个开放职位。\n\n对于 Cooks (NOC 63200)，工作机会更多，有 596 个开放职位，但安省提名列表未包含该职业。",
+     "residual": [],
+     "cardHits": []
+    },
+    {
+     "text": "打分能排上吗",
+     "ms": 31205,
+     "err": null,
+     "degraded": false,
+     "noc": "63200",
+     "facts": 12,
+     "answer": "Express Entry 类别筛选中不包含厨师（NOC 62200）或 Cooks（NOC 63200），因此无法通过该途径按分数入选。\n\n安省提名项目（OINP）的雇主担保类近期分数线较低，在 57 到 87 分之间。这些分数通常对应持有有效工作邀请的申请人。",
+     "residual": [
+      "62200"
+     ],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R23",
+   "note": "木匠口语「哪些省有戏」",
+   "hard": false,
+   "pass": true,
+   "problems": [],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "我是木匠,想知道哪些省有戏",
+     "ms": 12116,
+     "err": null,
+     "degraded": false,
+     "noc": "72310",
+     "facts": 10,
+     "answer": "木匠这个职业在加拿大几乎所有省份的提名清单里都有位置。\n\n- 安大略省 (ON)\n- 不列颠哥伦比亚省 (BC)\n- 阿尔伯塔省 (AB)\n- 萨斯喀彻温省 (SK)\n- 曼尼托巴省 (MB)\n- 新斯科舍省 (NS)\n- 新不伦瑞克省 (NB)\n- 纽芬兰与拉布拉多省 (NL)\n- 爱德华王子岛省 (PE)\n- 魁北克省 (QC)",
+     "residual": [],
+     "cardHits": []
+    }
+   ]
+  },
+  {
+   "id": "R24",
+   "note": "用法句→中介句→点选卡建档两轮(全链)",
+   "hard": false,
+   "pass": false,
+   "problems": [
+    "第 3 轮 err=llm,后续轮未跑",
+    "err=llm(期望答上)"
+   ],
+   "oldOnly": [],
+   "turns": [
+    {
+     "text": "LMIA 获批雇主的表对我找工作移民有什么用?",
+     "ms": 35043,
+     "err": null,
+     "degraded": false,
+     "noc": null,
+     "facts": 0,
+     "answer": "这份名单的核心作用是帮你锁定那些已经拿到政府许可、愿意且能够直接为你办理工作签证的雇主。有了LMIA批准书，你申请的工签就不会因为“找不到本地人”被拒；拿到工签入境后，积累的工作经历能直接满足后续转永居所需的境内工作经验要求。你可以把名单当作筛选目标公司的过滤器，优先投递这些已经走完审批流程的岗位，能大幅缩短从找工作到拿身份的时间。",
+     "residual": [],
+     "cardHits": []
+    },
+    {
+     "text": "中介说能包曼省木匠 offer 和省提名,可信吗?",
+     "ms": 24924,
+     "err": null,
+     "degraded": false,
+     "noc": "72310",
+     "facts": 35,
+     "answer": "曼省官方规定明确要求你必须在当地公司连续全职工作满六个月后，才有资格获得省提名，中介承诺的“包offer和提名”不符合这一硬性门槛。\n\n根据曼省移民局的官方要求，木匠（NOC 72310）虽然确实在紧缺职业名单内，但申请省提名的核心条件是：你必须先持有有效工签在曼省当地企业连续全职工作至少六个月，之后公司才会向你提供长期全职工作并支持你申请提名。此外，雇主本身必须在当地持续经营满三年才能具备资格。\n\n这意味着所谓的“直接包下”并不存在，官方流程强制要求你先在当地实际工作满半年。中介的说法忽略了这一关键的时间与经历门槛，建议你谨慎对待此类承诺。",
+     "residual": [],
+     "cardHits": []
+    },
+    {
+     "text": "我还在读书(持学签)",
+     "ms": 48485,
+     "err": "llm",
+     "degraded": false,
+     "noc": null,
+     "facts": 0,
+     "answer": "",
+     "residual": [],
+     "cardHits": []
+    }
+   ]
+  }
+ ],
+ "prod": [
+  {
+   "question": "LMIA 获批雇主的表对我找工作移民有什么用?",
+   "lang": "en",
+   "oldN": 16,
+   "oldOkN": 12,
+   "oldErrs": "busy,noOcc",
+   "oldAvgMs": 5842,
+   "turn": {
+    "text": "LMIA 获批雇主的表对我找工作移民有什么用?",
+    "ms": 96478,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 23,
+    "answer": "I do not have access to an \"LMIA approved employer list\" or information on its specific utility. However, regarding the value of a valid job offer for immigration programs:\n\n- For the Federal Skilled Worker Program (FSW), having a valid job offer from an employer in Canada waives the proof of funds requirement.\n- For the Federal Skilled Trades Program (FST), you must have a valid job offer of full-time employment for at least one year or a certificate of qualification in your skilled trade.",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "安省大专毕业,做软件开发,还没工作,毕业后能留下吗?",
+   "lang": "zh",
+   "oldN": 15,
+   "oldOkN": 15,
+   "oldErrs": "",
+   "oldAvgMs": 24829,
+   "turn": {
+    "text": "安省大专毕业,做软件开发,还没工作,毕业后能留下吗?",
+    "ms": 69385,
+    "err": null,
+    "degraded": false,
+    "noc": "21232",
+    "facts": 24,
+    "answer": "毕业后能否留下主要取决于你的课程时长和语言成绩，因为联邦政策允许大专毕业生直接申请工作许可。如果你的安省大专课程满2年，你可以拿到最长36个月的毕业工签；如果课程在8个月到不足2年之间，工签长度会和课程一样长。申请时你需要满足英语CLB 5的要求，并且必须在成绩单确认后的180天内提交申请，一生只能申请一次。\n\n在没有工作offer的情况下，安省提名项目目前无法直接递交，因为该省的毕业生通道要求你必须先拿到雇主的工作邀请或进入联邦快速通道池。如果你后续找到软件开发的工作，雇主需要满足在大多伦多地区经营满3年且年营收至少1000000加元、其他区域500000加元、最少250000加元的条件，并且工作地点需雇佣至少5名（GTA内）或3名（GTA外）加拿大公民或永久居民。\n\n联邦快速通道方面，软件开发职业（NOC 21232）目前不在任何类别抽选名单上，只能走普通池抽签。你可以利用毕业工签在安省积累本地工作经验后再评估其他路径。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "I am a carpenter in Ontario, how many jobs are open?",
+   "lang": "en",
+   "oldN": 7,
+   "oldOkN": 5,
+   "oldErrs": "busy",
+   "oldAvgMs": 21627,
+   "turn": {
+    "text": "I am a carpenter in Ontario, how many jobs are open?",
+    "ms": 6409,
+    "err": null,
+    "degraded": false,
+    "noc": "72310",
+    "facts": 10,
+    "answer": "There are currently 185 open job postings for carpenters in Ontario.",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "中介说能包曼省木匠 offer 和省提名,可信吗?",
+   "lang": "zh",
+   "oldN": 7,
+   "oldOkN": 5,
+   "oldErrs": "busy",
+   "oldAvgMs": 16193,
+   "turn": {
+    "text": "中介说能包曼省木匠 offer 和省提名,可信吗?",
+    "ms": 42797,
+    "err": null,
+    "degraded": false,
+    "noc": "72310",
+    "facts": 14,
+    "answer": "中介承诺的“包offer和省提名”无法兑现，也不存在官方认可的保底结果。曼省木匠（NOC 72310）确实被列入省提名紧缺职业清单，但你要满足政府明确的硬性门槛：雇主必须实际经营满三年才能招人申请；你需要先持工签在曼省为该公司全职工作满六个月以上，才有资格递交省提名；语言成绩需达到CLB 5。官方记录里没有任何机构能承诺包过或保录，这类说法属于私人营销话术，无法核实也无法作为办理依据。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "新斯科舍的餐厅给了我厨师 offer,老板说帮我办,可信吗?",
+   "lang": "zh",
+   "oldN": 6,
+   "oldOkN": 5,
+   "oldErrs": "busy",
+   "oldAvgMs": 24868,
+   "turn": {
+    "text": "新斯科舍的餐厅给了我厨师 offer,老板说帮我办,可信吗?",
+    "ms": 42579,
+    "err": null,
+    "degraded": false,
+    "noc": "63200",
+    "facts": 25,
+    "answer": "新斯科舍省确实将厨师列入了省提名职业清单，但老板能否帮你办理取决于他是否满足官方硬性指标。根据规定，雇主必须在新斯科舍省经营至少两年，且你本人需要在过去五年内拥有12个月（共1560小时）的相关带薪工作经验，同时达到CLB 5的语言水平。你需要先确认这家餐厅的开业时间是否已满两年，如果未满则无法通过该渠道申请。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "大家都是这么说的 两个一年 能换 3 年",
+   "lang": "zh",
+   "oldN": 5,
+   "oldOkN": 4,
+   "oldErrs": "noOcc",
+   "oldAvgMs": 6567,
+   "turn": {
+    "text": "大家都是这么说的 两个一年 能换 3 年",
+    "ms": 27403,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 9,
+    "answer": "你提到的“两个一年换三年”并不符合联邦规定，两段各一年的课程最多只能合并出两年的工签有效期。根据官方规则，完成多个课程时，只要每段学习时长都达到八个月以上且符合申请资格，时间可以相加计算。想要拿到三年的毕业后工签 (PGWP)，只有两种情况：\n- 你读的是硕士课程，只要满八个月即可直接申请三年工签。\n- 你的单门课程学习时长达到两年或以上。\n\n联邦还规定每人一生只能申请一次该工签，且必须在完成学业后的180天内提交申请。如果通过多段课程拼凑时长，语言成绩要求会按两段课程中较高的标准执行。",
+    "residual": [
+     "status:你提到的“两个一年换三年”并不符合联邦规定，两段各一年的课程最多只能合并出两年的"
+    ],
+    "cardHits": [
+     {
+      "card": "K01",
+      "detail": "闸A 残留:status:你提到的“两个一年换三年”并不符合联邦规定，两段各一年的课程最多只能合并出两年的"
+     }
+    ]
+   }
+  },
+  {
+   "question": "我是木匠,刚从加拿大的学院毕业拿了工签,一点工作经验都没有,哪个省的省提名不要求工作经验?",
+   "lang": "zh",
+   "oldN": 5,
+   "oldOkN": 5,
+   "oldErrs": "",
+   "oldAvgMs": 123863,
+   "turn": {
+    "text": "我是木匠,刚从加拿大的学院毕业拿了工签,一点工作经验都没有,哪个省的省提名不要求工作经验?",
+    "ms": 16600,
+    "err": null,
+    "degraded": false,
+    "noc": "72310",
+    "facts": 40,
+    "answer": "纽芬兰与拉布拉多省（NL）的省提名类别不设最低工作经验要求。你目前的情况符合该省份针对持有工签申请人的条件，只要你的工签还有至少4个月的有效期，并且雇主能提供一份每周工作30小时以上、为期至少12个月的全职工作offer即可。\n\n其他省份如安大略、BC省、阿尔伯塔省等都有明确的工作年限门槛（例如安大略要求近期毕业生至少有3个月经验，BC省和阿尔伯塔省通常要求2年），因此你目前无法申请那些省份的省提名。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "继续读还是直接找雇主?两个 1 年研文能换 3 年 PGWP 吗?",
+   "lang": "zh",
+   "oldN": 5,
+   "oldOkN": 5,
+   "oldErrs": "",
+   "oldAvgMs": 4942,
+   "turn": {
+    "text": "继续读还是直接找雇主?两个 1 年研文能换 3 年 PGWP 吗?",
+    "ms": 33623,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 9,
+    "answer": "两个1年制研文如果都满8个月且连续就读，累计时长达到24个月后就可以换发36个月的毕业工签。联邦规定允许将多段符合条件的学习时长合并计算，只要每段课程都满足最低8个月的要求，合并后总时长满24个月即可申请最长36个月的工签。\n\n至于继续读书还是直接找雇主，这取决于你的具体背景。请告诉我你的年龄、最高学历、工作年限、语言成绩以及目前的签证状态，我可以直接为你核对符合的移民路径。",
+    "residual": [
+     "clb:请告诉我你的年龄、最高学历、工作年限、语言成绩以及目前的签证状态，我可以直接为你"
+    ],
+    "cardHits": [
+     {
+      "card": "K01",
+      "detail": "闸A 残留:clb:请告诉我你的年龄、最高学历、工作年限、语言成绩以及目前的签证状态，我可以直接为你"
+     }
+    ]
+   }
+  },
+  {
+   "question": "AIP 指定雇主是什么?对我有用吗?",
+   "lang": "zh",
+   "oldN": 4,
+   "oldOkN": 3,
+   "oldErrs": "noOcc",
+   "oldAvgMs": 5448,
+   "turn": {
+    "text": "AIP 指定雇主是什么?对我有用吗?",
+    "ms": 33594,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "指定雇主是指在该移民项目覆盖的地区内获得政府授权、能够直接雇佣外籍员工并协助其办理手续的企业。该途径是否对您有用，取决于您的职业类别、语言水平以及过往工作经验是否符合当地的具体标准。由于系统目前尚未记录您的个人资料，如果您能提供具体的职业名称，我可以为您查询相关的省提名覆盖情况或当前工作机会。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "两个 1 年的课程可以申请 3 年的 PGWP 吧",
+   "lang": "zh",
+   "oldN": 4,
+   "oldOkN": 4,
+   "oldErrs": "",
+   "oldAvgMs": 1998,
+   "turn": {
+    "text": "两个 1 年的课程可以申请 3 年的 PGWP 吧",
+    "ms": 10848,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 9,
+    "answer": "两个 1 年的课程加起来如果总时长达到 2 年，是可以申请 3 年 PGWP 的。\n\n根据联邦规定，如果你修读了多门课程，只要每门课都符合资格（至少 8 个月），它们的时长可以合并计算。一旦合并后的总时长达到 2 年或以上，你就有资格获得最长 3 年的工签。\n\n不过你需要满足以下几个硬性条件：\n- 每门课程必须至少 8 个月长（魁北克省课程需满 900 小时）。\n- 你的语言成绩必须达到较高那一门课程的入学要求（大学学位毕业生需 CLB 7，学院/理工学院毕业生需 CLB 5）。\n- 你必须在最后一门课毕业后 180 天内提交申请。\n- 一生只能申请一次 PGWP，如果你之前已经拿过工签，就不能再申请了。",
+    "residual": [
+     "clb:- 你的语言成绩必须达到较高那一门课程的入学要求（大学学位毕业生需 CLB 7，"
+    ],
+    "cardHits": [
+     {
+      "card": "K01",
+      "detail": "闸A 残留:clb:- 你的语言成绩必须达到较高那一门课程的入学要求（大学学位毕业生需 CLB 7，"
+     }
+    ]
+   }
+  },
+  {
+   "question": "为什么没有选项给我",
+   "lang": "zh",
+   "oldN": 4,
+   "oldOkN": 2,
+   "oldErrs": "busy,noOcc",
+   "oldAvgMs": 7162,
+   "turn": {
+    "text": "为什么没有选项给我",
+    "ms": 28392,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "你还没提供个人背景信息，所以我无法为你匹配具体的移民或工作选项。要生成可操作的路线，我需要你补充以下几项内容：\n- 你的职业名称（例如护士、软件工程师、卡车司机）\n- 最高学历及毕业院校类型\n- 最近一次雅思或思培语言考试成绩\n- 年龄和累计全职工作经验年限\n- 是否已有加拿大境内工作offer或省提名意向省份\n\n把这些信息发给我后，我会直接对照官方数据为你列出符合条件的路径。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "护士",
+   "lang": "zh",
+   "oldN": 4,
+   "oldOkN": 2,
+   "oldErrs": "tooShort",
+   "oldAvgMs": 4727,
+   "turn": {
+    "text": "护士",
+    "ms": 27344,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "“护士”在加拿大对应多个不同的职业分类，具体取决于您的学历和工作内容。以下是主要的几个选项：\n\n- 注册护士 (Registered nurses, NOC 31301)\n- 实用护士 (Licensed practical nurses, NOC 32101)\n- 执业护士 (Nurse practitioners, NOC 31302)\n- 护理员/护工 (Nurse aides, NOC 33102)\n\n请告诉我您具体关注哪一个职业，以便我为您查询相关的职位或移民要求。",
+    "residual": [
+     "31301",
+     "32101",
+     "31302",
+     "33102"
+    ],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "现在哪个省这个职业的在招岗位最多?",
+   "lang": "zh",
+   "oldN": 4,
+   "oldOkN": 4,
+   "oldErrs": "",
+   "oldAvgMs": 9405,
+   "turn": {
+    "text": "现在哪个省这个职业的在招岗位最多?",
+    "ms": 48056,
+    "err": "llm",
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "33102 (PSW) — does this have a shot in British Columbia?",
+   "lang": "en",
+   "oldN": 3,
+   "oldOkN": 3,
+   "oldErrs": "",
+   "oldAvgMs": 6815,
+   "turn": {
+    "text": "33102 (PSW) — does this have a shot in British Columbia?",
+    "ms": 17934,
+    "err": null,
+    "degraded": false,
+    "noc": "33102",
+    "facts": 20,
+    "answer": "Yes, Personal Support Worker (NOC 33102) has a clear path in British Columbia. The province lists this occupation under its BC PNP Care streams, specifically the health targeted ITA and Health Authority streams. \n\nThere are currently 21 open job postings for this role in BC right now. If you are targeting provincial nomination through BC, you would need to apply through those specific health-focused streams rather than the general expression of interest pool.",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "AIP 指定雇主是什么?",
+   "lang": "zh",
+   "oldN": 3,
+   "oldOkN": 3,
+   "oldErrs": "",
+   "oldAvgMs": 10026,
+   "turn": {
+    "text": "AIP 指定雇主是什么?",
+    "ms": 19382,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "大西洋移民计划（AIP）中的“指定雇主”是指获得加拿大联邦政府授权，能够在大西洋四省合法招聘外籍工人的企业。这些雇主必须通过省级审核，承诺提供长期工作机会并为工人提供生活安置支持。我的工具主要提供具体职业的省提名门槛、职位空缺数量及各省处理时间等数据。如果你需要查询某个省份的指定雇主名单、相关职业的移民要求或当前招聘情况，请告诉我具体的省份和职业名称。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "I am a carpenter, what does BC require for a provincial nomination?",
+   "lang": "en",
+   "oldN": 3,
+   "oldOkN": 1,
+   "oldErrs": "llm",
+   "oldAvgMs": 9100,
+   "turn": {
+    "text": "I am a carpenter, what does BC require for a provincial nomination?",
+    "ms": 8752,
+    "err": null,
+    "degraded": false,
+    "noc": "72310",
+    "facts": 5,
+    "answer": "For a carpenter (NOC 72310), British Columbia requires you to have two years of full-time skilled work experience within the last ten years, along with a language score of CLB 4 in all four competencies.\n\nThe employer must have operated in B.C. for at least one year and employ at least five indeterminate, full-time staff inside Metro Vancouver (or three outside that region). You also need to show a minimum family income of $31,264 CAD if you are applying through the Metro Vancouver Regional District.",
+    "residual": [
+     "72310"
+    ],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "我 40 岁,已婚但太太不随行,CLB6,在安省读的两年制大专,零经验想做木工(NOC 72310),走哪条路?",
+   "lang": "zh",
+   "oldN": 3,
+   "oldOkN": 3,
+   "oldErrs": "",
+   "oldAvgMs": 9337,
+   "turn": {
+    "text": "我 40 岁,已婚但太太不随行,CLB6,在安省读的两年制大专,零经验想做木工(NOC 72310),走哪条路?",
+    "ms": 54769,
+    "err": null,
+    "degraded": false,
+    "noc": "72310",
+    "facts": 33,
+    "answer": "你目前零经验，无法直接走联邦快速通道或各省提名移民，因为这两类都要求至少一年加拿大本地工作经验。你现在最可行的第一步是申请毕业工签（PGWP）。你在安省读完两年制大专，符合联邦规定，可以拿到三年有效期的工签；你的CLB6也满足大专毕业生的最低语言要求（CLB5）。\n\n在这三年工签期间，你可以以木工身份在加拿大合法工作并积累受薪经验。满一年技术工作经验后，你即可申请联邦经验类移民（CEC）或各省提名项目。目前所有省份的省提名清单中均包含木工（NOC 72310），具体选择取决于你届时所在省份及雇主情况。\n\n- 工签期间需保持全职或等同时数的受薪技术工作，以满足后续移民的语言与经验门槛\n- 若希望缩短等待时间，可在持工签期间寻找提供LMIA担保的雇主，直接走省提名雇主通道\n- 所有省份均将木工列入省提名职业清单，无需担心职业不符问题",
+    "residual": [
+     "clb:你的CLB6也满足大专毕业生的最低语言要求（CLB5）。"
+    ],
+    "cardHits": [
+     {
+      "card": "K01",
+      "detail": "闸A 残留:clb:你的CLB6也满足大专毕业生的最低语言要求（CLB5）。"
+     }
+    ]
+   }
+  },
+  {
+   "question": "我单身",
+   "lang": "zh",
+   "oldN": 3,
+   "oldOkN": 3,
+   "oldErrs": "",
+   "oldAvgMs": 11748,
+   "turn": {
+    "text": "我单身",
+    "ms": 3463,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "你好！我是加拿大移民求职助手。我可以帮你查询职业代码、各省省提名要求、联邦快速通道分数、工签政策等信息。如果你有具体的问题，比如想了解某个职业的移民路径或申请条件，请告诉我详细信息，我会为你查找官方数据。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "按我的情况判一判走哪条路最快",
+   "lang": "zh",
+   "oldN": 3,
+   "oldOkN": 2,
+   "oldErrs": "noOcc",
+   "oldAvgMs": 11013,
+   "turn": {
+    "text": "按我的情况判一判走哪条路最快",
+    "ms": 31937,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 14,
+    "answer": "目前无法判断哪条路最快，因为系统里没有你的个人档案信息。要评估资格和速度，我需要你提供以下关键数据：\n- 你的职业代码（NOC）或具体职位\n- 语言成绩（CLB）\n- 在加拿大的工作经验月数\n- 目标省份\n- 是否持有工作邀请或目前在加拿大的身份\n\n请补充这些信息，我才能帮你查询具体的路径和等待时间。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "33102 (PSW) — is there a realistic path in British Columbia for me?",
+   "lang": "en",
+   "oldN": 2,
+   "oldOkN": 2,
+   "oldErrs": "",
+   "oldAvgMs": 3707,
+   "turn": {
+    "text": "33102 (PSW) — is there a realistic path in British Columbia for me?",
+    "ms": 30763,
+    "err": null,
+    "degraded": false,
+    "noc": "33102",
+    "facts": 24,
+    "answer": "British Columbia includes this occupation in its provincial nominee program through the Care stream, which covers both the health targeted ITA and Health Authority streams. \n\nTo qualify under BC PNP rules, you must have two years of full-time skilled work experience in TEER 0, 1, 2, or 3 within the last ten years. The sponsoring employer is required to have operated in British Columbia for at least one year and maintain a minimum staff size of five indeterminate full-time employees inside Metro Vancouver, or three outside that region. \n\nThe current job market shows 21 open postings across the province for this occupation. If you are applying as a single person, the official minimum family income requirement is $31,264 CAD annually in the Metro Vancouver Regional District.",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "? CRS 480 ????",
+   "lang": "zh",
+   "oldN": 2,
+   "oldOkN": 2,
+   "oldErrs": "",
+   "oldAvgMs": 17566,
+   "turn": {
+    "text": "? CRS 480 ????",
+    "ms": 27900,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 30,
+    "answer": "你的综合排名系统（CRS）分数为 480 分，在最近的联邦抽签中属于特定类别的竞争力区间。根据最新数据：\n- 法语能力专项抽签的分数线介于 382 至 391 分之间。\n- 运输职业专项抽签的分数线为 470 分。\n- 加拿大经验类（CEC）一般抽签的分数线目前为 516 至 523 分。\n- 省提名项目（PNP）抽签的分数线在 760 至 768 分之间。\n\n如果你的分数是 480，你可以重点关注法语专项或特定职业类别的抽签。此外，获得省提名会直接为你增加 600 分。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "I am a PSW (NOC 33102) with 18 months left on my PGWP — is there still time to make this work?",
+   "lang": "en",
+   "oldN": 2,
+   "oldOkN": 2,
+   "oldErrs": "",
+   "oldAvgMs": 10427,
+   "turn": {
+    "text": "I am a PSW (NOC 33102) with 18 months left on my PGWP — is there still time to make this work?",
+    "ms": 40030,
+    "err": null,
+    "degraded": false,
+    "noc": "33102",
+    "facts": 11,
+    "answer": "You have viable pathways open right now, and your remaining PGWP time is enough to pursue either federal or provincial routes. \n\nUnder Express Entry, your occupation qualifies for the Healthcare category draw, which recently set a cutoff at 475 CRS points. For provincial nominations, your job title appears on the nominee occupation lists in Ontario, British Columbia, Alberta, Saskatchewan, Manitoba, Nova Scotia, New Brunswick, Newfoundland and Labrador, Prince Edward Island, and Quebec. \n\nProcessing times vary by province and specific stream, so you will need to compare each province's official wait time against your 18-month window to see which options align with your timeline. You can check current processing times on the official immigration websites for the provinces that interest you most.",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "I am a PSW (NOC 33102) with CLB 6 targeting British Columbia — what am I still missing?",
+   "lang": "en",
+   "oldN": 2,
+   "oldOkN": 2,
+   "oldErrs": "",
+   "oldAvgMs": 5980,
+   "turn": {
+    "text": "I am a PSW (NOC 33102) with CLB 6 targeting British Columbia — what am I still missing?",
+    "ms": 45889,
+    "err": null,
+    "degraded": false,
+    "noc": "33102",
+    "facts": 14,
+    "answer": "You must meet four specific criteria for the BC PNP Care: health targeted ITA / Health Authority stream that covers your occupation.\n\n- Two years of full-time skilled work experience in a TEER 0, 1, 2, or 3 role within the last ten years\n- A minimum family income of $31,264 CAD for one person in the Metro Vancouver Regional District\n- An employer that has operated in British Columbia for at least one year\n- An employer with at least five indeterminate full-time employees in BC if you are inside Metro Vancouver, or three employees elsewhere\n\nThe provincial guidelines do not publish a specific CLB threshold for this stream, so your CLB 6 may be sufficient depending on the exact sub-stream rules. You will need to verify the language requirement directly against the current program guide before applying.",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "NOC 21232(软件开发)在 新斯科舍 有戏吗?",
+   "lang": "zh",
+   "oldN": 2,
+   "oldOkN": 0,
+   "oldErrs": "busy",
+   "oldAvgMs": 19872,
+   "turn": {
+    "text": "NOC 21232(软件开发)在 新斯科舍 有戏吗?",
+    "ms": 15968,
+    "err": null,
+    "degraded": false,
+    "noc": "21232",
+    "facts": 23,
+    "answer": "新斯科舍省确实把软件开发者和程序员（NOC 21232）列入了省级提名计划，你可以通过该省的提名项目申请移民。\n\n你需要满足以下官方要求：\n- 语言成绩达到CLB 5或同等水平\n- 过去五年内拥有至少12个月（1560小时）的相关带薪工作经验\n- 雇主必须在新斯科舍省运营满两年\n\n目前新斯科舍省有2个该职业的开放职位。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "what can you do",
+   "lang": "en",
+   "oldN": 2,
+   "oldOkN": 1,
+   "oldErrs": "busy",
+   "oldAvgMs": 7585,
+   "turn": {
+    "text": "what can you do",
+    "ms": 6421,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "I can look up job titles and their NOC codes, find current job postings by province, check which provinces nominate specific occupations, verify official provincial nominee requirements, show recent draw cutoffs and processing times, and assess eligibility for federal programs like Express Entry or PGWP.",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "其他省有机会吗",
+   "lang": "zh",
+   "oldN": 2,
+   "oldOkN": 2,
+   "oldErrs": "",
+   "oldAvgMs": 11362,
+   "turn": {
+    "text": "其他省有机会吗",
+    "ms": 47850,
+    "err": "llm",
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "我 40 岁,已婚但太太不随行,CLB6,在安省读的两年制大专,持有效 PGWP 工签,零经验想做木工(NOC 72310),走哪条路?",
+   "lang": "zh",
+   "oldN": 2,
+   "oldOkN": 2,
+   "oldErrs": "",
+   "oldAvgMs": 8645,
+   "turn": {
+    "text": "我 40 岁,已婚但太太不随行,CLB6,在安省读的两年制大专,持有效 PGWP 工签,零经验想做木工(NOC 72310),走哪条路?",
+    "ms": 81435,
+    "err": null,
+    "degraded": false,
+    "noc": "72310",
+    "facts": 25,
+    "answer": "你目前零经验且语言为CLB 6，联邦技工类EE通道和各省省提名都不适合直接申请。联邦技工类别抽签的CRS cutoff是477，你的年龄、学历和语言组合无法达到该分数线。各省虽然都将木工列入职业清单，但省提名项目普遍要求雇主提供有效的工作录用信，零经验很难获得此类支持。你持有的PGWP工签允许你在加拿大合法工作，但这本身不直接转为永居身份。\n\n需要核实的条件如下\n- 联邦快速通道CEC类别要求过去三年内拥有至少一年加拿大境内技术工作经验，你目前不符合。\n- 安省、BC省、阿尔伯塔省、萨斯喀彻温省、曼尼托巴省、新斯科舍省、新不伦瑞克省、纽芬兰与拉布拉多省及爱德华王子岛省的省提名清单均包含NOC 72310，但均需匹配对应省份的雇主offer。\n- PGWP工签到期后若未获得永居身份，需重新申请工作许可或学签以维持合法身份。",
+    "residual": [
+     "cutoff",
+     "三年",
+     "crs:联邦技工类别抽签的CRS cutoff是477，你的年龄、学历和语言组合无法达到"
+    ],
+    "cardHits": [
+     {
+      "card": "K01",
+      "detail": "闸A 残留:crs:联邦技工类别抽签的CRS cutoff是477，你的年龄、学历和语言组合无法达到"
+     }
+    ]
+   }
+  },
+  {
+   "question": "我今年40岁,已婚,配偶在国内不随行,CLB6,在安省读了两年制木工大专刚毕业,还没有工作经验,想知道我走哪条路能拿PR?",
+   "lang": "zh",
+   "oldN": 2,
+   "oldOkN": 2,
+   "oldErrs": "",
+   "oldAvgMs": 10741,
+   "turn": {
+    "text": "我今年40岁,已婚,配偶在国内不随行,CLB6,在安省读了两年制木工大专刚毕业,还没有工作经验,想知道我走哪条路能拿PR?",
+    "ms": 82607,
+    "err": null,
+    "degraded": false,
+    "noc": "72310",
+    "facts": 40,
+    "answer": "你目前最直接的路线是先拿工签积累本地经验，再走省提名或联邦技工类别。安省两年制大专毕业符合申请三年工签的条件，CLB6也满足CLB5的语言门槛，只需在毕业确认信出具后180天内递交。拿到工签后你需要在加拿大工作满一年才能申请联邦快速通道经验类或技工类别。目前联邦技工类别的抽分线是477分，以你40岁、CLB6且配偶不随行的条件，当前CRS分数距离该分数线还有差距。安省针对该职业的具体门槛政府未公开披露。\n\n你可以按以下顺序准备：\n- 毕业确认信出具后180天内递交三年工签申请，期间在加拿大全职工作积累至少一年本地经验\n- 工作经验满一年后进入联邦快速通道池，关注技工类别（477分）或经验类（516至523分）的抽选\n- 同步留意安省及BC、AB、SK、MB、NS等省的省提名清单，满足当地紧缺职业或雇主担保条件后递交申请",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "我持有有效的 PGWP 工签,想做木工 NOC 72310,该走哪条路合适?",
+   "lang": "zh",
+   "oldN": 2,
+   "oldOkN": 2,
+   "oldErrs": "",
+   "oldAvgMs": 5091,
+   "turn": {
+    "text": "我持有有效的 PGWP 工签,想做木工 NOC 72310,该走哪条路合适?",
+    "ms": 83564,
+    "err": "llm",
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "我是护理员(NOC 33102),在安省,CLB 6,这条路走得通吗?",
+   "lang": "zh",
+   "oldN": 2,
+   "oldOkN": 2,
+   "oldErrs": "",
+   "oldAvgMs": 9843,
+   "turn": {
+    "text": "我是护理员(NOC 33102),在安省,CLB 6,这条路走得通吗?",
+    "ms": 57216,
+    "err": null,
+    "degraded": false,
+    "noc": "44101",
+    "facts": 40,
+    "answer": "安省确实将护理员列入省提名职业清单，且你的CLB 6刚好达到该项目的官方语言门槛。能否获批主要取决于你是否满足其他硬性条件。\n\n根据安省官方要求，该项目对申请人的具体规定如下：\n- 语言成绩需四项均达到CLB 6\n- 工作经验方面，如果你是安省应届毕业生，需在提交申请前12个月内拥有至少3个月的连续全职工作经验；非应届生通常需满足6个月的要求（具体视你申请的类别而定）\n\n此外，该路径通常还需要有效的雇主担保或符合特定学历背景。如果你能提供目前的工作时长、是否持有安省学历以及是否有雇主支持，我可以帮你对照官方清单逐项核对。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "我是木匠,想知道哪些省有戏",
+   "lang": "zh",
+   "oldN": 2,
+   "oldOkN": 2,
+   "oldErrs": "",
+   "oldAvgMs": 10909,
+   "turn": {
+    "text": "我是木匠,想知道哪些省有戏",
+    "ms": 10486,
+    "err": null,
+    "degraded": false,
+    "noc": "72310",
+    "facts": 10,
+    "answer": "目前所有主要省份的提名项目都包含木匠（NOC 72310）这一职业，包括：安大略、不列颠哥伦比亚、阿尔伯塔、萨斯喀彻温、曼尼托巴、新斯科舍、新不伦瑞克、纽芬兰与拉布拉多、爱德华王子岛以及魁北克。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "我的语言成绩是 CLB 5",
+   "lang": "zh",
+   "oldN": 2,
+   "oldOkN": 2,
+   "oldErrs": "",
+   "oldAvgMs": 9871,
+   "turn": {
+    "text": "我的语言成绩是 CLB 5",
+    "ms": 47982,
+    "err": "llm",
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "曼省现在有多少木工岗位?",
+   "lang": "zh",
+   "oldN": 2,
+   "oldOkN": 2,
+   "oldErrs": "",
+   "oldAvgMs": 5836,
+   "turn": {
+    "text": "曼省现在有多少木工岗位?",
+    "ms": 6127,
+    "err": null,
+    "degraded": false,
+    "noc": "72310",
+    "facts": 10,
+    "answer": "曼省目前有 28 个木工岗位。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "???",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 18902,
+   "turn": {
+    "text": "???",
+    "ms": 8712,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "我是加拿大移民求职板的助手。我可以帮你查询职业代码、各省职位空缺、省提名要求、打分标准以及审理时间等信息。请告诉我你的具体需求或想查询的职业。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "? 480 ???",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 30749,
+   "turn": {
+    "text": "? 480 ???",
+    "ms": 6811,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "数据库里没有匹配到\"480\"这个职业。请告诉我你具体想找什么工作（比如“厨师”、“护士”或“软件工程师”），我会帮你查对应的信息。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "a",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 0,
+   "oldErrs": "tooShort",
+   "oldAvgMs": 0,
+   "turn": {
+    "text": "a",
+    "ms": 6908,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "这里没有具体的问题。我可以帮你查询职业代码、各省的移民项目要求、当前的职位空缺、抽签历史以及处理时间等信息。请告诉我你想了解的具体内容。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "cook 现在哪个省在招最多?",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 9205,
+   "turn": {
+    "text": "cook 现在哪个省在招最多?",
+    "ms": 17076,
+    "err": null,
+    "degraded": false,
+    "noc": "63200",
+    "facts": 10,
+    "answer": "目前安大略省（ON）的厨师职位招聘最多，共有 596 个开放岗位。不列颠哥伦比亚省（BC）有 531 个岗位。魁北克省（QC）、阿尔伯塔省（AB）、新斯科舍省（NS）和萨斯喀彻温省（SK）分别有 413、343、161 和 138 个岗位。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "cook 现在哪个省在招的岗位最多?",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 14422,
+   "turn": {
+    "text": "cook 现在哪个省在招的岗位最多?",
+    "ms": 15326,
+    "err": null,
+    "degraded": false,
+    "noc": "63200",
+    "facts": 10,
+    "answer": "安大略省目前招聘的厨师岗位最多，共有 596 个开放职位。不列颠哥伦比亚省紧随其后，有 531 个。魁北克省和阿尔伯塔省的岗位数量分别为 413 和 343 个。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "I am an electrician with 12 months left on my PGWP — which province should I push for now?",
+   "lang": "en",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 12954,
+   "turn": {
+    "text": "I am an electrician with 12 months left on my PGWP — which province should I push for now?",
+    "ms": 33220,
+    "err": null,
+    "degraded": false,
+    "noc": "72200",
+    "facts": 40,
+    "answer": "Newfoundland and Labrador is your strongest option right now because its rules explicitly accept a Post-Graduation Work Permit with at least four months remaining, paired with a 12-month job offer at 30 or more hours per week. You would also need to be between 21 and 59 years old, and you do not need to meet any minimum language score or work-experience threshold for this category.\n\nOther provinces have experience or tenure hurdles that would delay your application until you have worked longer in Canada:\n- Manitoba and New Brunswick both require six months of continuous full-time employment with the supporting employer before you can apply.\n- Saskatchewan requires one year of paid work experience in the occupation within the past ten years.\n- Alberta requires 24 months of full-time experience, or alternatively 12 months specifically in Alberta within the last 18 months.\n- British Columbia requires two years of skilled work experience within the last ten years.\n- Ontario generally requires recent graduate status plus three months of consecutive paid work with the employer within the 12 months before applying, alongside strict employer revenue and staff minimums.\n\nYour immediate step is securing a job offer in Newfoundland that meets the 30-hour weekly threshold for at least 12 months, then submitting through the provincial nominee route before your permit expires.",
+    "residual": [
+     "59:yr"
+    ],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "I am a PSW (NOC 33102) in Ontario with CLB 6 — is this path workable?",
+   "lang": "en",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 5821,
+   "turn": {
+    "text": "I am a PSW (NOC 33102) in Ontario with CLB 6 — is this path workable?",
+    "ms": 42214,
+    "err": null,
+    "degraded": false,
+    "noc": "33102",
+    "facts": 29,
+    "answer": "Your path is only workable if you secure a compliant job offer in Ontario first, because your current CLB 6 score falls well below the 475 CRS cutoff shown for recent healthcare category draws. Provincial nomination can eventually boost your ranking, but the employer must qualify independently of your language score before they can even issue an offer.\n\nOntario requires the hiring business to be active for at least three years and maintain gross annual revenue between $250,000 and $1,000,000 depending on the region. The workplace must also employ at least three full-time staff outside the Greater Toronto Area or five inside it. The offered wage must meet or exceed the median wage for your specific employment region, though recent Ontario graduates in TEER 0 to 3 roles may qualify under low-wage rules.\n\nSince CLB 6 does not clear federal Express Entry thresholds on its own, your route depends entirely on finding an employer who meets those revenue and staffing rules and is willing to sponsor you through the Ontario Provincial Nominee Program. Once nominated, your CRS score would increase significantly, making federal processing viable regardless of your current language level.",
+    "residual": [
+     "crs:Once nominated, your CRS score would inc"
+    ],
+    "cardHits": [
+     {
+      "card": "K01",
+      "detail": "闸A 残留:crs:Once nominated, your CRS score would inc"
+     }
+    ]
+   }
+  },
+  {
+   "question": "I am a truck driver targeting BC with two years of experience — can I apply for a nomination?",
+   "lang": "en",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 9507,
+   "turn": {
+    "text": "I am a truck driver targeting BC with two years of experience — can I apply for a nomination?",
+    "ms": 24938,
+    "err": null,
+    "degraded": false,
+    "noc": "73300",
+    "facts": 14,
+    "answer": "Yes, transport truck drivers are listed on the British Columbia provincial occupation list, and your two years of experience meets their requirement for two years of full-time skilled work experience within the last ten years. \n\nTo proceed with a nomination, you will also need an employer in B.C. who has operated in the province for at least one year. That employer must have at least five permanent, full-time staff if they are located inside Metro Vancouver, or three permanent, full-time staff if they are outside that area.",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "LMIA 获批雇主的表怎么用?",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 0,
+   "oldErrs": "busy",
+   "oldAvgMs": 15009,
+   "turn": {
+    "text": "LMIA 获批雇主的表怎么用?",
+    "ms": 33003,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "目前无法提供关于 LMIA 获批雇主表的具体使用指南或官方查询步骤。如果您有具体的职业名称（例如“护士”、“卡车司机”），我可以帮您查询对应的 NOC 代码、职位空缺情况以及哪些省份的省提名政策覆盖该职业。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "NOC 21232(软件开发)在 阿尔伯塔 有戏吗?",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 14031,
+   "turn": {
+    "text": "NOC 21232(软件开发)在 阿尔伯塔 有戏吗?",
+    "ms": 60488,
+    "err": null,
+    "degraded": false,
+    "noc": "21232",
+    "facts": 40,
+    "answer": "阿尔伯塔省确实将软件开发（NOC 21232）列入了 AAIP Accelerated Tech Pathway 通道。该省目前共有 5 个相关的开放招聘名额。政府没有公布该职业的具体省提名要求。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "Ontario college grad, software dev, no job yet — can I stay?",
+   "lang": "en",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 15682,
+   "turn": {
+    "text": "Ontario college grad, software dev, no job yet — can I stay?",
+    "ms": 34763,
+    "err": null,
+    "degraded": false,
+    "noc": "21232",
+    "facts": 19,
+    "answer": "Yes, you can stay through a Post-Graduation Work Permit (PGWP), but your time in Canada is strictly limited by its expiry date. The permit length depends on your study program duration: if it was two years or more, you get three years; otherwise, it matches your program length (minimum eight months). You must apply within 180 days of receiving your completion confirmation and meet a CLB 5 language requirement for college graduates. \n\nWhile Ontario currently lists 52 open postings for software developers, finding employment is necessary to extend your stay or transition to permanent residence once the PGWP expires. Without a job offer, you cannot simply remain in the country after that permit ends unless you qualify for another pathway.\n\nKey conditions to keep working legally:\n- Your study program must have been at least eight months long.\n- You can only receive one PGWP in your lifetime.\n- The permit allows you to work for any employer without an LMIA.",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "Sun Dentistry Richmond No. 3 Road 这份工作能帮我拿身份吗?",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 0,
+   "oldErrs": "busy",
+   "oldAvgMs": 15006,
+   "turn": {
+    "text": "Sun Dentistry Richmond No. 3 Road 这份工作能帮我拿身份吗?",
+    "ms": 41055,
+    "err": null,
+    "degraded": false,
+    "noc": "31110",
+    "facts": 17,
+    "answer": "这份工作对应的职业代码是31110（牙医）。能否通过这份工作拿到身份，取决于雇主是否满足BC省的硬性要求以及你自身的条件。\n\nBC省对担保该职业的私营雇主有明确标准。雇主必须在BC省运营至少一年，且在Metro Vancouver地区（包括Richmond）必须拥有至少五名全职永久员工。如果你申请省提名，还需要在过去十年内拥有两年全职技术工作经验。\n\n在联邦层面，牙医属于医疗类别快速通道。最近一次该类抽签的邀请分数为475分。这意味着你需要通过工签积累加拿大经验，并达到相应的CRS分数才能被邀请。\n\n建议你直接要求Sun Dentistry提供其符合BC省雇主资质的证明，特别是员工人数和运营年限，以确认该职位是否真的具备担保资格。",
+    "residual": [
+     "五名",
+     "十年"
+    ],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "why are there no options for me",
+   "lang": "en",
+   "oldN": 1,
+   "oldOkN": 0,
+   "oldErrs": "busy",
+   "oldAvgMs": 15006,
+   "turn": {
+    "text": "why are there no options for me",
+    "ms": 48301,
+    "err": "llm",
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "你好啊,在吗",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 0,
+   "oldErrs": "noOcc",
+   "oldAvgMs": 12215,
+   "turn": {
+    "text": "你好啊,在吗",
+    "ms": 3842,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "你好，我在。我可以帮你查询加拿大的职业代码、各省提名项目的具体要求、当前的职位空缺以及移民申请的进度和分数信息。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "你能做什么",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 0,
+   "oldErrs": "busy",
+   "oldAvgMs": 15014,
+   "turn": {
+    "text": "你能做什么",
+    "ms": 4363,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "我可以帮你查询加拿大移民相关的职位代码、各省的提名要求、具体的职业空缺以及各类项目的官方处理时间和分数线。你只需要告诉我你想了解的具体职业或省份，我就能提供对应的官方数据。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "厨师在安省有戏么",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 8749,
+   "turn": {
+    "text": "厨师在安省有戏么",
+    "ms": 52084,
+    "err": null,
+    "degraded": false,
+    "noc": "63200",
+    "facts": 40,
+    "answer": "厨师在安省确实有机会，具体取决于你的职业分类。\n\n对于 Chef (NOC 62200)，安省提名项目将其列入职业清单，目前数据库中有 247 个开放职位。\n\n对于 Cooks (NOC 63200)，工作机会更多，有 596 个开放职位，但安省提名列表未包含该职业。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "去哪个省",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 14962,
+   "turn": {
+    "text": "去哪个省",
+    "ms": 48012,
+    "err": "llm",
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "在招岗命中紧缺清单的雇主,对我意味着什么?",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 1915,
+   "turn": {
+    "text": "在招岗命中紧缺清单的雇主,对我意味着什么?",
+    "ms": 34074,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "这意味着该职位属于该省急需的职业列表，通常能为你省去雇主工签（LMIA）的环节，并可能提供一条更直接的省提名移民通道。不同省份的具体政策差异很大，有的要求你已有工作offer，有的则允许你在境外直接申请。请告诉我具体的省份和职业名称，以便我为你查询准确的政策要求和当前状态。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "外省也能走 nl吗",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 50601,
+   "turn": {
+    "text": "外省也能走 nl吗",
+    "ms": 36873,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "能否走纽芬兰与拉布拉多省提名（NL PNP）取决于你的具体职业和申请类别。请提供你的具体职业或目前的工作/学历情况，我可以直接调取官方文件帮你核对资格。",
+    "residual": [
+     "NL:能否走纽芬兰与拉布拉多省提名（NL PNP）取决于你的具体职业和申请类别"
+    ],
+    "cardHits": [
+     {
+      "card": "K03",
+      "detail": "答复提及 NL,facts 与问句均无此省"
+     }
+    ]
+   }
+  },
+  {
+   "question": "我 480 稳吗?",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 0,
+   "oldErrs": "noOcc",
+   "oldAvgMs": 9799,
+   "turn": {
+    "text": "我 480 稳吗?",
+    "ms": 26501,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 10,
+    "answer": "480 分能否通过取决于你申请的具体抽签类别，因为不同类别的分数线差距非常大。\n\n最近的联邦抽签数据显示，常规英语类（如经验类）的分数线在 516 到 523 分之间，省提名类别的分数线高达 760 分以上，而法语类分数则在 382 到 399 分左右。\n\n如果你的背景符合运输职业或法语类要求，480 分目前高于截止线；但如果是普通英语类申请，这个分数还不足以入围。",
+    "residual": [
+     "480:pt"
+    ],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "我可以说用语言是吧发送",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 171631,
+   "turn": {
+    "text": "我可以说用语言是吧发送",
+    "ms": 17975,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "你的句子不太完整，我无法直接核对。如果你需要确认某个移民项目、工签申请或特定职业的语言成绩要求，请提供具体的省份、职业名称或项目名称，我会根据官方数据为你列出准确标准。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "我在加拿大读过书",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 10772,
+   "turn": {
+    "text": "我在加拿大读过书",
+    "ms": 7845,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "你在加拿大读过书，这通常与毕业后工签（PGWP）或联邦经验类（CEC）移民途径相关。请告诉我你具体想了解哪方面的信息，例如工签申请、移民资格或省份要求？",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "我持有有效的 PGWP 工签",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 17327,
+   "turn": {
+    "text": "我持有有效的 PGWP 工签",
+    "ms": 70655,
+    "err": "llm",
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "我是厨师,在阿省工作两年了,现在申请省提名来得及吗?",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 8317,
+   "turn": {
+    "text": "我是厨师,在阿省工作两年了,现在申请省提名来得及吗?",
+    "ms": 28663,
+    "err": null,
+    "degraded": false,
+    "noc": "62200",
+    "facts": 40,
+    "answer": "厨师（NOC 63200）目前在阿省省提名职业清单中，你可以继续申请。\n\n你已经在阿省工作两年，符合阿省对申请人至少 24 个月全职工作经验的要求（或者在阿省境内工作满 12 个月）。\n\n你需要确认你的雇主是否满足以下条件：\n- 在阿省连续运营满 2 个完整财年；\n- 最近一个财年的总收入至少为 400,000 加元；\n- 雇佣至少 3 名全职员工。\n\n近期阿省针对 Priority Sectors (Agriculture) 的抽签分数线约为 55 WEOI，如果你的职位属于该类别，需关注此分数线以评估竞争力。",
+    "residual": [
+     "63200"
+    ],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "我是厨师,持工签在 BC,CLB 7,本科毕业,有 24 个月工作经验,单身,学历都在境外读的,现在有哪些岗?",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 18541,
+   "turn": {
+    "text": "我是厨师,持工签在 BC,CLB 7,本科毕业,有 24 个月工作经验,单身,学历都在境外读的,现在有哪些岗?",
+    "ms": 66334,
+    "err": null,
+    "degraded": false,
+    "noc": "62200",
+    "facts": 30,
+    "answer": "BC省目前针对厨师职业共有 302 个开放岗位。这些岗位分布在餐饮、酒店及各类商业机构中，具体职位详情和申请方式需要您直接查看招聘平台的最新信息。如果您后续需要了解省提名或联邦通道的具体要求，可以随时告诉我。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "我是厨师,持工签在 BC,语言 CLB 7,现在这行有哪些岗?",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 13538,
+   "turn": {
+    "text": "我是厨师,持工签在 BC,语言 CLB 7,现在这行有哪些岗?",
+    "ms": 39029,
+    "err": null,
+    "degraded": false,
+    "noc": "63200",
+    "facts": 26,
+    "answer": "目前厨师（NOC 63200）在加拿大各省的职位空缺数量分别为：安大略省596个，BC省531个，魁北克省413个，阿尔伯塔省343个，新斯科舍省161个，萨斯喀彻温省138个，曼尼托巴省112个，新不伦瑞克省80个，纽芬兰与拉布拉多省46个，爱德华王子岛省18个。\n\n你目前在BC省持工签且语言达到CLB 7，满足BC省提名（BC PNP）对厨师职业的语言要求（CLB 4）。该省还要求申请人过去十年内拥有两年全职熟练工作经验，且雇主需在BC运营至少一年并在当地有相应数量的全职员工。",
+    "residual": [
+     "十年"
+    ],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "我是木匠,在安省刚毕业没经验,曼省和萨省哪个好走?",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 21943,
+   "turn": {
+    "text": "我是木匠,在安省刚毕业没经验,曼省和萨省哪个好走?",
+    "ms": 60113,
+    "err": "llm",
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "我的最高学历是本科",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 11725,
+   "turn": {
+    "text": "我的最高学历是本科",
+    "ms": 3349,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "你好！我是加拿大移民求职板的助手。我可以帮你查询职业对应的 NOC 代码、各省的提名要求、最新招聘情况、移民项目门槛等信息。如果你有具体的职业、省份或移民路径问题，随时告诉我。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "我的最高学历是硕士",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 8988,
+   "turn": {
+    "text": "我的最高学历是硕士",
+    "ms": 6979,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "我可以帮你查询职业代码、各省移民要求、分数标准或签证政策。请告诉我你具体想了解什么？",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "我的语言成绩是 CLB 6",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 11638,
+   "turn": {
+    "text": "我的语言成绩是 CLB 6",
+    "ms": 27652,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 40,
+    "answer": "联邦技术移民 (FSW) 要求申请人的四项语言成绩均至少达到 CLB 7，你的 CLB 6 成绩不符合该项目的直接申请资格。在 Express Entry (EE) 系统中，CLB 6 会对应一定的 CRS 排名分数，但能否入选取决于你的年龄、学历和工作经验等综合得分。如果你能提供职业、年龄和学历等信息，我可以帮你查看其他可能的移民路径。",
+    "residual": [
+     "exp:在 Express Entry (EE) 系统中，CLB 6 会对应一定的 CR",
+     "7:clb"
+    ],
+    "cardHits": [
+     {
+      "card": "K01",
+      "detail": "闸A 残留:exp:在 Express Entry (EE) 系统中，CLB 6 会对应一定的 CR"
+     }
+    ]
+   }
+  },
+  {
+   "question": "我的语言成绩是 CLB 7",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 15572,
+   "turn": {
+    "text": "我的语言成绩是 CLB 7",
+    "ms": 60157,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 40,
+    "answer": "在联邦技术工人（FSW）评估中，你的 CLB 7 成绩在每个语言技能（听、说、读、写）中各得 4 分。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "我还在读书(持学签)",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 10773,
+   "turn": {
+    "text": "我还在读书(持学签)",
+    "ms": 17104,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "我主要提供职业对应的省提名要求、招聘情况、移民打分和工签政策查询。你持学签的话，我可以帮你查毕业后工签 (PGWP) 的规定，或者具体的职业在哪些省份有名额。请告诉我你想了解的具体职业或问题。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "我还没有工作经验",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 13176,
+   "turn": {
+    "text": "我还没有工作经验",
+    "ms": 47982,
+    "err": "llm",
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "我这个职业被哪些官方清单排除了?",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 5477,
+   "turn": {
+    "text": "我这个职业被哪些官方清单排除了?",
+    "ms": 48155,
+    "err": "llm",
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "打分能排上吗",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 8471,
+   "turn": {
+    "text": "打分能排上吗",
+    "ms": 17448,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 40,
+    "answer": "目前的联邦快速通道（EE）分数线因抽选类别不同差异很大。省提名（PNP）专项最近两轮 cutoff 在 760 到 768 CRS，加拿大经验类（CEC）在 516 到 523 CRS，法语专项在 382 到 399 CRS，运输类为 470 CRS。\n\n要判断你能否排上，需要你先提供具体的个人背景信息。请告诉我你的年龄、最高学历、雅思或思培（CELPIP）成绩、以及受保护的工作经验年限。拿到这些数据后，才能对照官方打分表算出你的实际排名分数。",
+    "residual": [
+     "cutoff",
+     "exp:请告诉我你的年龄、最高学历、雅思或思培（CELPIP）成绩、以及受保护的工作经验"
+    ],
+    "cardHits": [
+     {
+      "card": "K01",
+      "detail": "闸A 残留:exp:请告诉我你的年龄、最高学历、雅思或思培（CELPIP）成绩、以及受保护的工作经验"
+     }
+    ]
+   }
+  },
+  {
+   "question": "按我已经填写的条件，把最适合的 PR 路径拆成具体步骤和先后顺序。",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 0,
+   "oldErrs": "noOcc",
+   "oldAvgMs": 11860,
+   "turn": {
+    "text": "按我已经填写的条件，把最适合的 PR 路径拆成具体步骤和先后顺序。",
+    "ms": 22911,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 14,
+    "answer": "目前系统里没有检测到您的个人资料，无法为您拆分具体的 PR 路径和步骤。为了帮您判断哪条路最适合，我需要您提供以下关键信息：\n\n- 您的职业（NOC 代码或具体职位名称）\n- 语言成绩（CLB 分数）\n- 在加拿大的工作经验月数\n- 您想申请的省份\n- 是否已经拿到雇主的工作 Offer\n- 您目前在加拿大的身份（如学生、工签持有者等）\n\n请补充这些信息，我就能为您列出详细的步骤。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "最近一轮抽选的分数线是多少?",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 9389,
+   "turn": {
+    "text": "最近一轮抽选的分数线是多少?",
+    "ms": 24850,
+    "err": null,
+    "degraded": true,
+    "noc": null,
+    "facts": 20,
+    "answer": "- FED · 2026-08-19 · French-Language proficiency 2026-Version 2: 382 CRS\n- FED · 2026-08-18 · Canadian Experience Class: 523 CRS\n- FED · 2026-08-17 · Provincial Nominee Program: 760 CRS\n- FED · 2026-08-07 · Transport Occupations, 2026-Version 2: 470 CRS\n- FED · 2026-08-06 · French-Language proficiency 2026-Version 2: 391 CRS\n- FED · 2026-08-05 · Canadian Experience Class: 516 CRS\n- FED · 2026-08-04 · Provincial Nominee Program: 768 CRS\n- FED · 2026-07-23 · Skilled Military Recruits, 2026-Version 1: 368 CRS\n- FED · 2026-07-22 · French-Language proficiency 2026-Version 2: 399 CRS\n- FED · 2026-07-21 · Canadian Experience Class: 516 CRS\n- FED · 2026-08-19 · French-Language proficiency 2026-Version 2: 382 CRS\n- FED · 2026-08-18 · Canadian Experience Class: 523 CRS\n- FED · 2026-08-17 · Provincial Nominee Program: 760 CRS\n- FED · 2026-08-07 · Transport Occupations, 2026-Version 2: 470 CRS",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "本人 40 岁,配偶不随行,CLB6,安省两年制大专,零经验想干木工 NOC 72310,该走哪条路?",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 8483,
+   "turn": {
+    "text": "本人 40 岁,配偶不随行,CLB6,安省两年制大专,零经验想干木工 NOC 72310,该走哪条路?",
+    "ms": 107828,
+    "err": null,
+    "degraded": false,
+    "noc": "72310",
+    "facts": 40,
+    "answer": "你的情况目前无法直接匹配任何一条移民通道。系统评估显示所有路径都缺少你的加拿大工作经验月数和工作邀请状态，无法锁定具体通道。安省对木工（NOC 72310）的官方门槛明确要求申请人必须持有雇主的工作邀请，并具备至少3到6个月的连续全职工作经验。你目前的零经验状态不符合该省的现行规定。\n\n安省对该职位的语言要求为四项均达到CLB 5。如果你毕业于安省合格院校且毕业未满三年，可豁免语言考试，你的两年制大专符合这一豁免条件。但工作经验和雇主邀请仍是硬性门槛。\n\n你需要先获得安省相关职位的正式工作邀请，并积累规定时长的本地全职经验后，才能进入申请流程。目前无法为你锁定具体路径。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "本人 40 岁,配偶不随行,语言 CLB6,安省两年制大专毕业,手里的 PGWP 还有效,没有工作经验,想干木工 NOC 72310,哪条移民路最快?",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 7733,
+   "turn": {
+    "text": "本人 40 岁,配偶不随行,语言 CLB6,安省两年制大专毕业,手里的 PGWP 还有效,没有工作经验,想干木工 NOC 72310,哪条移民路最快?",
+    "ms": 78269,
+    "err": null,
+    "degraded": false,
+    "noc": "72310",
+    "facts": 40,
+    "answer": "你的情况最快走安省雇主担保移民，但必须先拿到符合资质的木工全职工作offer并实际工作满3个月。联邦技术移民和加拿大经验类移民都要求至少一年工作经验，你目前没有工作经验无法申请；技工类别的EE抽签分数线为477分，你的条件也无法达到。\n\n安省对木工（NOC 72310）的语言要求是CLB 5，你的CLB 6已经达标。作为安省两年制大专毕业生，你在语言测试上还有豁免资格。该省雇主必须经营满三年，且根据所在地区不同，年营收需达到500,000至1,000,000加元，并雇佣至少3名或5名全职加拿大公民或永久居民。\n\n你手里的有效PGWP允许你合法全职工作。最快的具体步骤是：先找到符合上述资质的安省雇主拿到offer，入职后连续工作满三个月，随后直接提交安省提名申请。其他省份如BC省、阿尔伯塔省也收录了木工职业，但同样需要先获得当地雇主的工作邀请才能启动流程。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "没工作",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 0,
+   "oldErrs": "tooShort",
+   "oldAvgMs": 0,
+   "turn": {
+    "text": "没工作",
+    "ms": 48211,
+    "err": "llm",
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "现在哪个省carpenter的在招岗位最多?",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 9050,
+   "turn": {
+    "text": "现在哪个省carpenter的在招岗位最多?",
+    "ms": 15919,
+    "err": null,
+    "degraded": false,
+    "noc": "72310",
+    "facts": 10,
+    "answer": "不列颠哥伦比亚省（BC）的木匠在招岗位最多，共有 302 个职位。其次是阿尔伯塔省（AB），有 188 个职位，安大略省（ON）有 185 个职位。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "补充:我刚拿到3年的PGWP工签。这样的话我走哪条路最快?",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 10353,
+   "turn": {
+    "text": "补充:我刚拿到3年的PGWP工签。这样的话我走哪条路最快?",
+    "ms": 47801,
+    "err": "llm",
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "还有哪些省的官方清单收了我这个职业?",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 8724,
+   "turn": {
+    "text": "还有哪些省的官方清单收了我这个职业?",
+    "ms": 9027,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "请告诉我您的具体职业名称，以便我为您查询哪些省份的官方清单收录了该职业。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "这个怎么用",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 0,
+   "oldErrs": "busy",
+   "oldAvgMs": 15003,
+   "turn": {
+    "text": "这个怎么用",
+    "ms": 4635,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "这是一个加拿大移民求职助手，主要用来帮你查职业对应的 NOC 代码、各省的职位空缺、省提名要求以及联邦抽签分数线等信息。你只需要告诉我你想找的工作名称或关心的省份，我就能提供具体的官方数据。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "这个省今年的提名名额还剩多少?",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 13182,
+   "turn": {
+    "text": "这个省今年的提名名额还剩多少?",
+    "ms": 14413,
+    "err": null,
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "目前系统无法提供各省实时的提名名额剩余数量。如果您能提供具体的省份代码或名称，我可以为您查询该省的职位空缺、提名要求或最近的抽签分数线。",
+    "residual": [],
+    "cardHits": []
+   }
+  },
+  {
+   "question": "这些省的官方门槛具体要求什么?",
+   "lang": "zh",
+   "oldN": 1,
+   "oldOkN": 1,
+   "oldErrs": "",
+   "oldAvgMs": 12471,
+   "turn": {
+    "text": "这些省的官方门槛具体要求什么?",
+    "ms": 47987,
+    "err": "llm",
+    "degraded": false,
+    "noc": null,
+    "facts": 0,
+    "answer": "",
+    "residual": [],
+    "cardHits": []
+   }
+  }
+ ]
+}
