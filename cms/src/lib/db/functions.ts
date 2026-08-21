@@ -39,9 +39,13 @@ export function count(x: number | string | boolean | null): number {
  * `Number('')` 是 **0** —— 空串折成 0 正是这个词要防的「替官方编数」)。
  */
 export function numOrNull(x: number | string | boolean | null): number | null {
-  if (x == null || x === '') return null
+  if (x == null || x === '') {
+return null
+}
   const n = Number(x)
-  if (Number.isFinite(n)) return n
+  if (Number.isFinite(n)) {
+return n
+}
   return null
 }
 
@@ -51,7 +55,9 @@ export function numOrNull(x: number | string | boolean | null): number | null {
  * (2026-08-21 收拢 ruling 词对时补的第五个词;语义表见默认值架构卷宗。)
  */
 export function textOrNull(x: string | number | boolean | null): string | null {
-  if (x == null) return null
+  if (x == null) {
+return null
+}
   return String(x)
 }
 
@@ -71,6 +77,8 @@ export function show(x: number | null): string {
  * 由调用方(`server.ts` 的 dbOf)决定,本文件是纯函数不造错。
  */
 export function poolOf(payload: PayloadWithPool): DbPool | null {
-  if (payload.db == null || payload.db.pool == null) return null
+  if (payload.db == null || payload.db.pool == null) {
+return null
+}
   return payload.db.pool
 }

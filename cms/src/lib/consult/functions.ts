@@ -104,7 +104,9 @@ function model(): ModelOut {
     cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
     samplingParams: SAMPLING,
   }
-  if (KEY) m.headers = { [AUTH_HEADER]: `${BEARER}${KEY}` }
+  if (KEY) {
+m.headers = { [AUTH_HEADER]: `${BEARER}${KEY}` }
+}
   return m
 }
 
@@ -123,8 +125,12 @@ function model(): ModelOut {
  */
 function provOf(raw: ProvOfIn): ProvOfOut {
   const p = raw.trim().toUpperCase()
-  if (p === FED) return p
-  if (PROVS.has(p)) return p
+  if (p === FED) {
+return p
+}
+  if (PROVS.has(p)) {
+return p
+}
   return null
 }
 
@@ -161,7 +167,9 @@ function toProvOpen(r: ToProvOpenIn): ToProvOpenOut {
  * @returns 收窄后的对象。
  */
 function toTitleTeer(rows: ToTitleTeerIn): ToTitleTeerOut {
-  if (!rows.length) return { title: '', teer: null }
+  if (!rows.length) {
+return { title: '', teer: null }
+}
   return { title: text(rows[0].title), teer: numOrNull(rows[0].teer) }
 }
 
@@ -295,10 +303,14 @@ async function searchOccupations(input: SearchOccupationsIn): SearchOccupationsO
   const { rows } = await input.db.query(SQL.NOC_LIST_WITH_TITLES, [like, SEARCH_LIMIT])
   const all = rows.map(toNocHit)
   let top = 0
-  if (all.length) top = all[0].n
+  if (all.length) {
+top = all[0].n
+}
   const hits: Candidate[] = []
   for (const hit of all) {
-    if (hit.noc && hit.title && hit.n >= top * NOISE_RATIO) hits.push({ noc: hit.noc, title: hit.title })
+    if (hit.noc && hit.title && hit.n >= top * NOISE_RATIO) {
+hits.push({ noc: hit.noc, title: hit.title })
+}
   }
   return hits
 }
@@ -318,9 +330,13 @@ async function lookupJobs(input: LookupJobsIn): LookupJobsOut {
     input.db.query(SQL.NOC_TITLE_TEER, [input.noc]),
   ])
   const byProv = new Map<string, JobsRow>()
-  for (const prov of PROVS) byProv.set(prov, { prov, open: 0, named: 0 })
+  for (const prov of PROVS) {
+byProv.set(prov, { prov, open: 0, named: 0 })
+}
   for (const r of counts.rows.map(toProvOpen)) {
-    if (byProv.has(r.prov)) byProv.set(r.prov, r)
+    if (byProv.has(r.prov)) {
+byProv.set(r.prov, r)
+}
   }
   const rows = Array.from(byProv.values()).sort(byOpenDesc)
   const tt = toTitleTeer(title.rows)
@@ -341,16 +357,23 @@ async function lookupCoverage(input: LookupCoverageIn): LookupCoverageOut {
   const { rows } = await input.db.query(SQL.PNP_OCCUPATIONS_FLAT, [])
   const byProv = new Map<string, CoverageRow>()
   for (const r of rows.map(toOccFlat)) {
-    if (!PROVS.has(r.province) || r.noc !== input.noc) continue
+    if (!PROVS.has(r.province) || r.noc !== input.noc) {
+continue
+}
     const row = byProv.get(r.province) ?? blankCoverage(r.province)
-    if (r.type === INELIGIBLE) row.excluded.push(r.stream)
-    else row.streams.push(r.stream)
+    if (r.type === INELIGIBLE) {
+row.excluded.push(r.stream)
+} else {
+row.streams.push(r.stream)
+}
     row.availability = AVAIL.ok
     row.evidence = { url: r.url, fetched: r.fetched }
     byProv.set(r.province, row)
   }
   const out: CoverageRow[] = []
-  for (const prov of PROVS) out.push(byProv.get(prov) ?? blankCoverage(prov))
+  for (const prov of PROVS) {
+out.push(byProv.get(prov) ?? blankCoverage(prov))
+}
   return { noc: input.noc, rows: out }
 }
 
@@ -372,7 +395,9 @@ function blankCoverage(prov: BlankCoverageIn): BlankCoverageOut {
  * @returns applicant 或 employer。
  */
 function subjectOf(raw: SubjectOfIn): SubjectOfOut {
-  if (text(raw) === SUBJECT.employer) return SUBJECT.employer
+  if (text(raw) === SUBJECT.employer) {
+return SUBJECT.employer
+}
   return SUBJECT.applicant
 }
 
@@ -426,13 +451,17 @@ async function lookupThresholds(input: LookupThresholdsIn): LookupThresholdsOut 
   const byProv = new Map<string, Requirement[]>()
   for (const row of rows) {
     const req = toRequirement(row)
-    if (!PROVS.has(req.province) || req.province === QC) continue
+    if (!PROVS.has(req.province) || req.province === QC) {
+continue
+}
     const got = byProv.get(req.province) ?? []
     got.push(req)
     byProv.set(req.province, got)
   }
   let want = Array.from(byProv.keys()).sort()
-  if (input.provs.length) want = input.provs
+  if (input.provs.length) {
+want = input.provs
+}
   const profile: RuleProfile = {
     noc: input.noc,
     teer: input.teer,
@@ -469,8 +498,12 @@ async function lookupDraws(input: LookupDrawsIn): LookupDrawsOut {
   const { rows } = await input.db.query(SQL.PNP_DRAWS_BY_PROV, [input.prov])
   const out: DrawRow[] = []
   for (const r of rows.map(toDrawRow)) {
-    if (!r.evidence.url) continue
-    if (out.length >= DRAW_LIMIT) break
+    if (!r.evidence.url) {
+continue
+}
+    if (out.length >= DRAW_LIMIT) {
+break
+}
     out.push(r)
   }
   return { prov: input.prov, rows: out }
@@ -503,7 +536,9 @@ async function lookupEe(input: LookupEeIn): LookupEeOut {
   const { rows } = await input.db.query(SQL.EE_CATEGORIES_BY_NOC, [input.noc])
   const out: EeRow[] = []
   for (const r of rows.map(toEeRow)) {
-    if (r.evidence.url) out.push(r)
+    if (r.evidence.url) {
+out.push(r)
+}
   }
   return { noc: input.noc, rows: out }
 }
@@ -521,7 +556,9 @@ async function lookupPermit(input: LookupPermitIn): LookupPermitOut {
   const { rows } = await input.db.query(SQL.PERMIT_RULES, [input.program])
   const out: PermitRow[] = []
   for (const r of rows.map(toPermitRow)) {
-    if (r.evidence.url) out.push(r)
+    if (r.evidence.url) {
+out.push(r)
+}
   }
   return { program: input.program, rows: out }
 }
@@ -538,11 +575,15 @@ async function lookupPermit(input: LookupPermitIn): LookupPermitOut {
  */
 async function lookupPoints(input: LookupPointsIn): LookupPointsOut {
   let kind = ''
-  if (!input.section && input.grid === GRID_CRS) kind = KIND_SUMMARY
+  if (!input.section && input.grid === GRID_CRS) {
+kind = KIND_SUMMARY
+}
   const { rows } = await input.db.query(SQL.EE_POINTS_GRID, [input.grid, input.section, kind, '', '', POINTS_LIMIT])
   const out: PointsRow[] = []
   for (const r of rows.map(toPointsRow)) {
-    if (r.evidence.url) out.push(r)
+    if (r.evidence.url) {
+out.push(r)
+}
   }
   return { grid: input.grid, rows: out }
 }
@@ -561,7 +602,9 @@ async function lookupPoints(input: LookupPointsIn): LookupPointsOut {
  * @returns 那一段;不出就空串。
  */
 function seg(input: SegIn): SegOut {
-  if (!input.when) return ''
+  if (!input.when) {
+return ''
+}
   return input.text
 }
 
@@ -573,7 +616,9 @@ function seg(input: SegIn): SegOut {
  * @returns 四态之一。
  */
 function emptyAvailability(prov: EmptyAvailabilityIn): EmptyAvailabilityOut {
-  if (prov === QC) return AVAIL.notApplicable
+  if (prov === QC) {
+return AVAIL.notApplicable
+}
   return AVAIL.notCollected
 }
 
@@ -684,10 +729,14 @@ function tierText(res: TierTextIn): TierTextOut {
   const unitTail = seg({ when: Boolean(res.unit), text: `${SPACE}${res.unit}` })
   if (res.tiers && res.tiers.length) {
     const parts: string[] = []
-    for (const t of res.tiers) parts.push(`${t.area}${SEP.colon}${t.value ?? SEP.none}${unitTail}`)
+    for (const t of res.tiers) {
+parts.push(`${t.area}${SEP.colon}${t.value ?? SEP.none}${unitTail}`)
+}
     return parts.join(SEP.semi)
   }
-  if (res.need == null) return res.verdict
+  if (res.need == null) {
+return res.verdict
+}
   const low = seg({ when: res.needLow != null && res.needLow !== res.need, text: `${res.needLow}${LABEL.range}` })
   return `${low}${res.need}${unitTail}`
 }
@@ -790,8 +839,11 @@ function opsFacts(r: OpsFactsIn): OpsFactsOut {
   for (const row of r.rows) {
     const scope = seg({ when: row.scope !== '', text: `${LABEL.parenOpen}${row.scope}${LABEL.nocClose}` })
     let when = ''
-    if (row.asOf !== '') when = `${LABEL.asOf}${row.asOf}`
-    else if (row.period !== '') when = `${SPACE}${row.period}`
+    if (row.asOf !== '') {
+when = `${LABEL.asOf}${row.asOf}`
+} else if (row.period !== '') {
+when = `${SPACE}${row.period}`
+}
     out.push(fact({
       tool: TOOL_NAME.ops,
       label: `${r.prov}${LABEL.opsHead}${row.label}${scope}${when}`,
@@ -917,7 +969,9 @@ function pointsFacts(r: PointsFactsIn): PointsFactsOut {
  * @returns 词表里的词,或 null。
  */
 function statusWordOf(said: StatusWordOfIn): StatusWordOfOut {
-  if (STATUS_WORDS.includes(said)) return said
+  if (STATUS_WORDS.includes(said)) {
+return said
+}
   return null
 }
 
@@ -974,15 +1028,21 @@ function verdictFacts(rows: VerdictFactsIn): VerdictFactsOut {
     for (const r of p.reasons) {
       if (r.kind === REASON_EXCLUDED && r.quote) {
         quote = `${p.province}${SEP.dot}${r.quote}`
-        if (r.evidence) evidence = { url: r.evidence.url, fetched: r.evidence.fetched }
+        if (r.evidence) {
+evidence = { url: r.evidence.url, fetched: r.evidence.fetched }
+}
         break
       }
     }
     let tier = ''
-    if (p.tier != null) tier = `${LABEL.tierHead}${TIER_TEXT[p.tier]}`
+    if (p.tier != null) {
+tier = `${LABEL.tierHead}${TIER_TEXT[p.tier]}`
+}
     const blocked = seg({ when: Boolean(p.blockedBy), text: `${LABEL.blockedBy}${p.blockedBy}` })
     let missing = ''
-    if (p.missingSlots && p.missingSlots.length) missing = `${LABEL.missing}${p.missingSlots.join(SEP.comma)}`
+    if (p.missingSlots && p.missingSlots.length) {
+missing = `${LABEL.missing}${p.missingSlots.join(SEP.comma)}`
+}
     out.push(fact({
       tool: TOOL_NAME.verdict,
       label: `${p.province}${SPACE}${p.stream}${LABEL.verdictHead}${p.verdict}${tier}${blocked}${missing}`,
@@ -1008,7 +1068,9 @@ function verdictFacts(rows: VerdictFactsIn): VerdictFactsOut {
  */
 function normNum(raw: NormNumIn): NormNumOut {
   const s = raw.replace(THOUSANDS_COMMA, '')
-  if (s.includes(SAID.stop)) return s.replace(TRAILING_ZEROS, '')
+  if (s.includes(SAID.stop)) {
+return s.replace(TRAILING_ZEROS, '')
+}
   return s
 }
 
@@ -1023,12 +1085,22 @@ function normNum(raw: NormNumIn): NormNumOut {
  */
 function allowedNumbers(input: AllowedNumbersIn): AllowedNumbersOut {
   const ok = new Set<string>()
-  for (const c of input.codes) if (c) ok.add(normNum(c))
+  for (const c of input.codes) {
+if (c) {
+ok.add(normNum(c))
+}
+}
   for (const f of input.facts) {
-    if (f.value != null) ok.add(normNum(String(f.value)))
-    for (const m of `${f.valueText} ${f.label}`.matchAll(NUM_RE)) ok.add(normNum(m[0]))
+    if (f.value != null) {
+ok.add(normNum(String(f.value)))
+}
+    for (const m of `${f.valueText} ${f.label}`.matchAll(NUM_RE)) {
+ok.add(normNum(m[0]))
+}
   }
-  for (const m of input.echo.matchAll(NUM_RE)) ok.add(normNum(m[0]))
+  for (const m of input.echo.matchAll(NUM_RE)) {
+ok.add(normNum(m[0]))
+}
   return ok
 }
 
@@ -1039,7 +1111,9 @@ function allowedNumbers(input: AllowedNumbersIn): AllowedNumbersOut {
  * @returns 它是序号就抹成空白(那个数是排版不是事实),是项目符号就原样留下。
  */
 function blankIfNumbered(mark: BlankIfNumberedIn): BlankIfNumberedOut {
-  if (HAS_DIGIT.test(mark)) return SPACE
+  if (HAS_DIGIT.test(mark)) {
+return SPACE
+}
   return mark
 }
 
@@ -1059,7 +1133,9 @@ function findUngroundedNumbers(input: NumberCheckIn): FindUngroundedNumbersOut {
     const body = line.replace(LEAD_MARK, blankIfNumbered)
     for (const m of body.matchAll(NUM_RE)) {
       const n = normNum(m[0])
-      if (!ok.has(n) && !bad.includes(n)) bad.push(n)
+      if (!ok.has(n) && !bad.includes(n)) {
+bad.push(n)
+}
     }
   }
   return bad
@@ -1074,7 +1150,11 @@ function findUngroundedNumbers(input: NumberCheckIn): FindUngroundedNumbersOut {
 function findInternalWords(answer: FindInternalWordsIn): FindInternalWordsOut {
   const low = answer.toLowerCase()
   const bad: string[] = []
-  for (const w of INTERNAL_WORDS) if (low.includes(w)) bad.push(w)
+  for (const w of INTERNAL_WORDS) {
+if (low.includes(w)) {
+bad.push(w)
+}
+}
   return bad
 }
 
@@ -1085,10 +1165,16 @@ function findInternalWords(answer: FindInternalWordsIn): FindInternalWordsOut {
  * @returns 撞到的词;英文答复永远是空。
  */
 function findEnglishUnits(input: AnswerLangIn): FindEnglishUnitsOut {
-  if (input.lang === EN) return []
+  if (input.lang === EN) {
+return []
+}
   const low = input.answer.toLowerCase()
   const bad: string[] = []
-  for (const w of EN_UNIT_WORDS) if (new RegExp(`${WORD_EDGE}${w}${WORD_EDGE}`).test(low)) bad.push(w)
+  for (const w of EN_UNIT_WORDS) {
+if (new RegExp(`${WORD_EDGE}${w}${WORD_EDGE}`).test(low)) {
+bad.push(w)
+}
+}
   return bad
 }
 
@@ -1100,11 +1186,21 @@ function findEnglishUnits(input: AnswerLangIn): FindEnglishUnitsOut {
  */
 function findRawMarkup(answer: FindRawMarkupIn): FindRawMarkupOut {
   const bad: string[] = []
-  if (BOLD_RE.test(answer)) bad.push(MARKUP.bold)
-  if (STAR_RE.test(answer)) bad.push(MARKUP.star)
-  if (HEADING_RE.test(answer)) bad.push(MARKUP.heading)
-  if (TABLE_RE.test(answer)) bad.push(MARKUP.pipe)
-  if (NUMBERED_RE.test(answer)) bad.push(MARKUP.numbered)
+  if (BOLD_RE.test(answer)) {
+bad.push(MARKUP.bold)
+}
+  if (STAR_RE.test(answer)) {
+bad.push(MARKUP.star)
+}
+  if (HEADING_RE.test(answer)) {
+bad.push(MARKUP.heading)
+}
+  if (TABLE_RE.test(answer)) {
+bad.push(MARKUP.pipe)
+}
+  if (NUMBERED_RE.test(answer)) {
+bad.push(MARKUP.numbered)
+}
   return bad
 }
 
@@ -1118,7 +1214,9 @@ function firstLineOf(input: FirstLineOfIn): FirstLineOfOut {
   const head = input.answer.trim().split(NL)[0] ?? ''
   const stop = head.indexOf(FULL_STOP)
   let line = head
-  if (stop >= 0) line = head.slice(0, stop + 1)
+  if (stop >= 0) {
+line = head.slice(0, stop + 1)
+}
   return line.slice(0, FIRST_LINE_CAP).trim()
 }
 
@@ -1139,9 +1237,15 @@ function firstLineOf(input: FirstLineOfIn): FirstLineOfOut {
 function findRestatedOpening(input: FindRestatedOpeningIn): FindRestatedOpeningOut {
   const line = firstLineOf({ answer: input.answer })
   const bad: string[] = []
-  if (!line) return bad
-  if (OPENING_COLON.test(line)) bad.push(line.slice(-OPENING_SAMPLE))
-  if (AS_FOLLOWS.test(line)) bad.push(line.slice(-OPENING_SAMPLE))
+  if (!line) {
+return bad
+}
+  if (OPENING_COLON.test(line)) {
+bad.push(line.slice(-OPENING_SAMPLE))
+}
+  if (AS_FOLLOWS.test(line)) {
+bad.push(line.slice(-OPENING_SAMPLE))
+}
   return bad
 }
 
@@ -1160,7 +1264,11 @@ function runGates(input: RunGatesIn): RunGatesOut {
     { gate: GATE.markup, hits: findRawMarkup(input.answer) },
     { gate: GATE.opening, hits: findRestatedOpening({ answer: input.answer }) },
   ]
-  for (const c of checks) if (c.hits.length) fired.push(c)
+  for (const c of checks) {
+if (c.hits.length) {
+fired.push(c)
+}
+}
   return fired
 }
 
@@ -1172,11 +1280,15 @@ function runGates(input: RunGatesIn): RunGatesOut {
  */
 function clampAnswer(input: AnswerLangIn): ClampAnswerOut {
   const cap = LEN_CAP[input.lang]
-  if (input.answer.length <= cap) return input.answer
+  if (input.answer.length <= cap) {
+return input.answer
+}
   const cut = input.answer.slice(0, cap)
   const stop = Math.max(cut.lastIndexOf(FULL_STOP), cut.lastIndexOf(SAID.stop), cut.lastIndexOf(NL))
   let kept = cut
-  if (stop > cap * CUT_MIN_RATIO) kept = cut.slice(0, stop + 1)
+  if (stop > cap * CUT_MIN_RATIO) {
+kept = cut.slice(0, stop + 1)
+}
   return kept.trim()
 }
 
@@ -1190,7 +1302,9 @@ function clampAnswer(input: AnswerLangIn): ClampAnswerOut {
  */
 function factSheet(facts: FactSheetIn): FactSheetOut {
   const lines: string[] = []
-  for (const f of facts.slice(0, SHEET_CAP)) lines.push(`${SEP.bullet}${f.quote}${seg({ when: f.valueText !== '', text: `${SEP.colon}${f.valueText}` })}`)
+  for (const f of facts.slice(0, SHEET_CAP)) {
+lines.push(`${SEP.bullet}${f.quote}${seg({ when: f.valueText !== '', text: `${SEP.colon}${f.valueText}` })}`)
+}
   return lines.join(NL)
 }
 
@@ -1202,9 +1316,15 @@ function factSheet(facts: FactSheetIn): FactSheetOut {
  */
 function codesOf(box: CodesOfIn): CodesOfOut {
   const out: string[] = []
-  if (box.noc) out.push(box.noc)
-  if (box.teer != null) out.push(String(box.teer))
-  for (const c of box.candidates) out.push(c.noc)
+  if (box.noc) {
+out.push(box.noc)
+}
+  if (box.teer != null) {
+out.push(String(box.teer))
+}
+  for (const c of box.candidates) {
+out.push(c.noc)
+}
   return out
 }
 
@@ -1243,14 +1363,18 @@ function citeFacts(input: CiteFactsIn): CiteFactsOut {
 function take(input: TakeIn): TakeOut {
   const room = MAX_FACTS - input.box.facts.length
   let kept: Fact[] = []
-  if (room > 0) kept = input.facts.slice(0, room)
+  if (room > 0) {
+kept = input.facts.slice(0, room)
+}
   const lines: string[] = []
   for (const f of kept) {
     input.box.facts.push(f)
     lines.push(`${SEP.bullet}${f.label}${seg({ when: f.valueText !== '', text: `${SEP.colon}${f.valueText}` })}`)
   }
   let reply = TOOL_REPLY.empty
-  if (lines.length) reply = lines.join(NL)
+  if (lines.length) {
+reply = lines.join(NL)
+}
   return { content: [{ type: ROLE.text, text: reply }], details: { n: kept.length }, terminate: false }
 }
 
@@ -1288,10 +1412,20 @@ function makeToolGates(input: MakeToolGatesIn): MakeToolGatesOut {
   async function beforeToolCall(ctx: BeforeToolCallIn): BeforeToolCallOut {
     const args = ctx.args as ToolArgs
     let noc = ''
-    if (args && typeof args.noc === 'string') noc = args.noc.trim()
-    if (!noc) return undefined
-    if (noc === box.noc) return undefined
-    for (const c of box.candidates) if (c.noc === noc) return undefined
+    if (args && typeof args.noc === 'string') {
+noc = args.noc.trim()
+}
+    if (!noc) {
+return undefined
+}
+    if (noc === box.noc) {
+return undefined
+}
+    for (const c of box.candidates) {
+if (c.noc === noc) {
+return undefined
+}
+}
     log({ tag: CHAT_LOG.tag, text: `${GATE_LOG.blocked}${noc}` })
     return { block: true, reason: BLOCK_UNKNOWN_NOC }
   }
@@ -1328,7 +1462,9 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
   const { run, box } = input
 
   function step(key: StepIn): StepOut {
-    if (run.onStep) run.onStep(CONSULT_STEP[run.lang][key] ?? key)
+    if (run.onStep) {
+run.onStep(CONSULT_STEP[run.lang][key] ?? key)
+}
   }
 
   async function nocOf(raw: NocOfIn): NocOfOut {
@@ -1339,7 +1475,9 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
       const tt = toTitleTeer(rows)
       box.title = tt.title
       box.teer = tt.teer
-      if (run.onStep) run.onStep(CONSULT_STEP_OCC[run.lang](box.title || ok))
+      if (run.onStep) {
+run.onStep(CONSULT_STEP_OCC[run.lang](box.title || ok))
+}
     }
     return box.noc
   }
@@ -1347,7 +1485,9 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
   async function execSearch(_id: string, args: ExecSearchIn): ExecSearchOut {
     step(TOOL_NAME.search)
     const hits = await searchOccupations({ db: run.db, query: args.query.trim().slice(0, MAX_QUERY) })
-    if (!hits.length) return say(TOOL_REPLY.noCandidates)
+    if (!hits.length) {
+return say(TOOL_REPLY.noCandidates)
+}
     const lines: string[] = []
     for (const hit of hits) {
       box.candidates.push(hit)
@@ -1358,7 +1498,9 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
 
   async function execJobs(_id: string, args: ExecJobsIn): ExecJobsOut {
     const noc = await nocOf(args.noc)
-    if (!noc) return say(TOOL_REPLY.needNoc)
+    if (!noc) {
+return say(TOOL_REPLY.needNoc)
+}
     step(TOOL_NAME.jobs)
     const r = await lookupJobs({ db: run.db, noc })
     return take({ box, facts: jobsFacts(r) })
@@ -1366,7 +1508,9 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
 
   async function execCoverage(_id: string, args: ExecCoverageIn): ExecCoverageOut {
     const noc = await nocOf(args.noc)
-    if (!noc) return say(TOOL_REPLY.needNoc)
+    if (!noc) {
+return say(TOOL_REPLY.needNoc)
+}
     step(TOOL_NAME.coverage)
     const r = await lookupCoverage({ db: run.db, noc })
     return take({ box, facts: coverageFacts(r) })
@@ -1374,7 +1518,9 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
 
   async function execThresholds(_id: string, args: ExecThresholdsIn): ExecThresholdsOut {
     const noc = await nocOf(args.noc)
-    if (!noc) return say(TOOL_REPLY.needNoc)
+    if (!noc) {
+return say(TOOL_REPLY.needNoc)
+}
     step(TOOL_NAME.thresholds)
     const r = await lookupThresholds({
       db: run.db, noc, teer: box.teer, provs: cleanProvs({ raw: args.provs }), expMonths: run.profile.expMonths,
@@ -1384,7 +1530,9 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
 
   async function execDraws(_id: string, args: ExecDrawsIn): ExecDrawsOut {
     const prov = provOf(args.prov)
-    if (!prov) return say(TOOL_REPLY.badProv)
+    if (!prov) {
+return say(TOOL_REPLY.badProv)
+}
     step(TOOL_NAME.draws)
     const r = await lookupDraws({ db: run.db, prov })
     return take({ box, facts: drawsFacts(r) })
@@ -1392,7 +1540,9 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
 
   async function execOps(_id: string, args: ExecOpsIn): ExecOpsOut {
     const prov = provOf(args.prov)
-    if (!prov || prov === FED) return say(TOOL_REPLY.badProv)
+    if (!prov || prov === FED) {
+return say(TOOL_REPLY.badProv)
+}
     step(TOOL_NAME.ops)
     const r = await lookupOps({ db: run.db, prov })
     return take({ box, facts: opsFacts(r) })
@@ -1400,7 +1550,9 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
 
   async function execEe(_id: string, args: ExecEeIn): ExecEeOut {
     const noc = await nocOf(args.noc)
-    if (!noc) return say(TOOL_REPLY.needNoc)
+    if (!noc) {
+return say(TOOL_REPLY.needNoc)
+}
     step(TOOL_NAME.ee)
     const r = await lookupEe({ db: run.db, noc })
     return take({ box, facts: eeFacts(r) })
@@ -1415,7 +1567,9 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
   async function execPoints(_id: string, args: ExecPointsIn): ExecPointsOut {
     step(TOOL_NAME.points)
     let section = ''
-    if (args.section !== undefined) section = args.section.trim()
+    if (args.section !== undefined) {
+section = args.section.trim()
+}
     const r = await lookupPoints({ db: run.db, grid: args.grid, section })
     return take({ box, facts: pointsFacts(r) })
   }
@@ -1429,12 +1583,16 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
 
   async function execClaims(_id: string, args: ExecClaimsIn): ExecClaimsOut {
     const noc = await nocOf(args.noc)
-    if (!noc) return say(TOOL_REPLY.needNoc)
+    if (!noc) {
+return say(TOOL_REPLY.needNoc)
+}
     step(TOOL_NAME.claims)
     const lines: string[] = []
     for (const raw of args.claims.slice(0, CLAIMS_CAP)) {
       const text = raw.trim().slice(0, CLAIM_TEXT_CAP)
-      if (!text) continue
+      if (!text) {
+continue
+}
       if (PRIVATE_PROMISE.test(text)) {
         lines.push(`${SEP.bullet}${text}${LABEL.dash}${TOOL_REPLY.claimPrivate}`)
         if (box.facts.length < MAX_FACTS) {
@@ -1450,7 +1608,9 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
       }
       lines.push(`${SEP.bullet}${text}${LABEL.dash}${TOOL_REPLY.claimCheckable}`)
     }
-    if (!lines.length) return say(TOOL_REPLY.empty)
+    if (!lines.length) {
+return say(TOOL_REPLY.empty)
+}
     return say(lines.join(NL))
   }
 
@@ -1503,13 +1663,25 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
 function systemOf(input: RunIn): SystemOfOut {
   const said: string[] = []
   const p = input.profile
-  if (p.noc) said.push(`${SAID.noc}${p.noc}`)
-  if (p.occText) said.push(`${SAID.occOpen}${p.occText}${SAID.occClose}`)
-  if (p.provs.length) said.push(`${SAID.provs}${p.provs.join(SEP.comma)}`)
-  if (p.expMonths != null) said.push(`${p.expMonths}${SAID.exp}`)
-  if (p.status) said.push(`${SAID.status}${p.status}`)
+  if (p.noc) {
+said.push(`${SAID.noc}${p.noc}`)
+}
+  if (p.occText) {
+said.push(`${SAID.occOpen}${p.occText}${SAID.occClose}`)
+}
+  if (p.provs.length) {
+said.push(`${SAID.provs}${p.provs.join(SEP.comma)}`)
+}
+  if (p.expMonths != null) {
+said.push(`${p.expMonths}${SAID.exp}`)
+}
+  if (p.status) {
+said.push(`${SAID.status}${p.status}`)
+}
   let profile = PROFILE_NONE
-  if (said.length) profile = `${PROFILE_HEAD}${said.join(SEP.semi)}`
+  if (said.length) {
+profile = `${PROFILE_HEAD}${said.join(SEP.semi)}`
+}
   return `${SYSTEM_RULES}${NL}${NL}${REPLY_LANGUAGE_HEAD}${LANG_NAME[input.lang]}${NL}${NL}${profile}`
 }
 
@@ -1525,10 +1697,16 @@ function systemOf(input: RunIn): SystemOfOut {
  */
 function firstPrompt(input: FirstPromptIn): FirstPromptOut {
   const lines: string[] = []
-  if (input.history.length) lines.push(EARLIER_HEAD)
-  for (const turn of input.history.slice(-HISTORY_TURNS)) lines.push(`${turn.role}${SEP.colon}${turn.content.slice(0, HISTORY_CAP)}`)
+  if (input.history.length) {
+lines.push(EARLIER_HEAD)
+}
+  for (const turn of input.history.slice(-HISTORY_TURNS)) {
+lines.push(`${turn.role}${SEP.colon}${turn.content.slice(0, HISTORY_CAP)}`)
+}
   let earlier = ''
-  if (lines.length) earlier = `${lines.join(NL)}${NL}${NL}${NOW_HEAD}`
+  if (lines.length) {
+earlier = `${lines.join(NL)}${NL}${NL}${NOW_HEAD}`
+}
   const message: AgentMessage = {
     role: ROLE.user,
     content: [{ type: ROLE.text, text: earlier + input.text }],
@@ -1544,9 +1722,15 @@ function firstPrompt(input: FirstPromptIn): FirstPromptOut {
  * @returns 正文;这条不是助手正文就返回空串。
  */
 function textOf(message: TextOfIn): TextOfOut {
-  if (message.role !== ROLE.assistant) return ''
+  if (message.role !== ROLE.assistant) {
+return ''
+}
   const parts: string[] = []
-  for (const block of message.content) if (block.type === ROLE.text) parts.push(block.text)
+  for (const block of message.content) {
+if (block.type === ROLE.text) {
+parts.push(block.text)
+}
+}
   return parts.join('')
 }
 
@@ -1567,10 +1751,16 @@ function lastDraftOf(input: LastDraftOfIn): LastDraftOfOut {
   const drafts: string[] = []
   for (const m of input.messages) {
     const t = textOf(m)
-    if (t) drafts.push(t)
+    if (t) {
+drafts.push(t)
+}
   }
-  if (input.aborted) throw chatError({ code: CHAT_CODE.busy, msg: `${FAIL_MSG.timeout}${TIMEOUT_MS}${FAIL_MSG.ms}` })
-  if (!drafts.length) throw chatError({ code: CHAT_CODE.llm, msg: FAIL_MSG.emptyDraft })
+  if (input.aborted) {
+throw chatError({ code: CHAT_CODE.busy, msg: `${FAIL_MSG.timeout}${TIMEOUT_MS}${FAIL_MSG.ms}` })
+}
+  if (!drafts.length) {
+throw chatError({ code: CHAT_CODE.llm, msg: FAIL_MSG.emptyDraft })
+}
   return drafts[drafts.length - 1]
 }
 
@@ -1598,9 +1788,13 @@ async function draftOnce(input: DraftOnceIn): DraftOnceOut {
   const sent = { n: 0 }
 
   function onEvent(event: OnEventIn): OnEventOut {
-    if (event.type !== MESSAGE_UPDATE || !event.message || !run.onDelta) return
+    if (event.type !== MESSAGE_UPDATE || !event.message || !run.onDelta) {
+return
+}
     const full = textOf(event.message)
-    if (full.length <= sent.n) return
+    if (full.length <= sent.n) {
+return
+}
     run.onDelta(full.slice(sent.n))
     sent.n = full.length
   }
@@ -1621,9 +1815,13 @@ async function draftOnce(input: DraftOnceIn): DraftOnceOut {
     return lastDraftOf({ messages: messages, aborted: ac.signal.aborted })
   } catch (e) {
     let why = String(e)
-    if (e instanceof Error) why = e.message.slice(0, ERR_CAP)
+    if (e instanceof Error) {
+why = e.message.slice(0, ERR_CAP)
+}
     log({ tag: CHAT_LOG.tag, text: `${CHAT_FN.runChatLoop}${CHAT_LOG.failedTail}${why}` })
-    if (ac.signal.aborted) throw chatError({ code: CHAT_CODE.busy, msg: `${FAIL_MSG.timeout}${TIMEOUT_MS}${FAIL_MSG.ms}` })
+    if (ac.signal.aborted) {
+throw chatError({ code: CHAT_CODE.busy, msg: `${FAIL_MSG.timeout}${TIMEOUT_MS}${FAIL_MSG.ms}` })
+}
     throw chatError({ code: CHAT_CODE.llm, msg: why })
   } finally {
     clearTimeout(timer)
@@ -1641,7 +1839,9 @@ async function draftOnce(input: DraftOnceIn): DraftOnceOut {
 function hardHits(input: HardHitsIn): HardHitsOut {
   const out: GateHit[] = []
   for (const h of input.fired) {
-    if (HARD_GATES.includes(h.gate)) out.push(h)
+    if (HARD_GATES.includes(h.gate)) {
+out.push(h)
+}
   }
   return out
 }
@@ -1665,7 +1865,9 @@ function hardHits(input: HardHitsIn): HardHitsOut {
  */
 async function boxFor(input: BoxForIn): BoxForOut {
   const noc = input.profile.noc
-  if (!noc) return { facts: [], candidates: [], noc: null, title: '', teer: null }
+  if (!noc) {
+return { facts: [], candidates: [], noc: null, title: '', teer: null }
+}
   const { rows } = await input.db.query(SQL.NOC_TITLE_TEER, [noc])
   const tt = toTitleTeer(rows)
   return { facts: [], candidates: [], noc: noc, title: tt.title, teer: tt.teer }
@@ -1681,7 +1883,9 @@ async function boxFor(input: BoxForIn): BoxForOut {
  * @returns 过完闸的答复、标好 `cited` 的事实、采信的职业码、是不是降级来的。
  */
 export async function consult(input: ConsultIn): ConsultOut {
-  if (!BASE) throw chatError({ code: CHAT_CODE.llm, msg: FAIL_MSG.noBase })
+  if (!BASE) {
+throw chatError({ code: CHAT_CODE.llm, msg: FAIL_MSG.noBase })
+}
   const box: Inbox = await boxFor({ db: input.db, profile: input.profile })
   const echo = input.history.filter(isUserTurn).map(contentOf).concat(input.text).join(NL)
   const t0 = Date.now()
@@ -1690,10 +1894,14 @@ export async function consult(input: ConsultIn): ConsultOut {
   let fired: GateHit[] = []
   for (let attempt = 0; attempt <= GUARD_RETRIES; attempt += 1) {
     let extra = ''
-    if (fired.length) extra = `${NL}${NL}${retryNote(fired)}`
+    if (fired.length) {
+extra = `${NL}${NL}${retryNote(fired)}`
+}
     answer = clampAnswer({ answer: await draftOnce({ run: input, box, extra }), lang: input.lang })
     fired = runGates({ answer, facts: box.facts, echo, lang: input.lang, codes: codesOf(box) })
-    if (!fired.length) break
+    if (!fired.length) {
+break
+}
     log({
       tag: CHAT_LOG.tag,
       text: `${GATE_LOG.hit}${attempt + 1} ${fired.map(gateLabel).join(GATE_LOG.comma)}${GATE_LOG.noc}${box.noc ?? GATE_LOG.none}`,
@@ -1703,7 +1911,9 @@ export async function consult(input: ConsultIn): ConsultOut {
   const hard = hardHits({ fired: fired })
   const degraded = hard.length > 0
   if (degraded) {
-    if (!box.facts.length) throw chatError({ code: CHAT_CODE.guard, msg: `${FAIL_MSG.noFacts}${hard.map(gateLabel).join(GATE_LOG.comma)}` })
+    if (!box.facts.length) {
+throw chatError({ code: CHAT_CODE.guard, msg: `${FAIL_MSG.noFacts}${hard.map(gateLabel).join(GATE_LOG.comma)}` })
+}
     answer = factSheet(box.facts)
   }
   const facts = citeFacts({ answer, facts: box.facts })
@@ -1755,7 +1965,13 @@ function gateLabel(hit: GateLabelIn): GateLabelOut {
  */
 function retryNote(fired: RetryNoteIn): RetryNoteOut {
   const lines = [RETRY_HEAD]
-  for (const hit of fired) lines.push(`${RETRY_BULLET}${hit.gate}${RETRY_COLON}${hit.hits.join(RETRY_COMMA)}`)
-  for (const hit of fired) if (hit.gate === GATE.opening) lines.push(RETRY_OPENING)
+  for (const hit of fired) {
+lines.push(`${RETRY_BULLET}${hit.gate}${RETRY_COLON}${hit.hits.join(RETRY_COMMA)}`)
+}
+  for (const hit of fired) {
+if (hit.gate === GATE.opening) {
+lines.push(RETRY_OPENING)
+}
+}
   return lines.join(NL)
 }

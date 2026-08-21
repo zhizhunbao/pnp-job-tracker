@@ -46,8 +46,12 @@ export function byDrawDateDesc(a: VerdictDrawRow, b: VerdictDrawRow): number {
  * @returns 负数 = a 排在前面。
  */
 export function byObstacleThenTier(a: RankedVerdict, b: RankedVerdict): number {
-  if (a.obstacle !== b.obstacle) return a.obstacle - b.obstacle
-  if (a.tier !== b.tier) return a.tier - b.tier
+  if (a.obstacle !== b.obstacle) {
+return a.obstacle - b.obstacle
+}
+  if (a.tier !== b.tier) {
+return a.tier - b.tier
+}
   return a.i - b.i
 }
 
@@ -61,8 +65,12 @@ export function byObstacleThenTier(a: RankedVerdict, b: RankedVerdict): number {
  * @returns 负数 = a 排在前面。
  */
 export function byListRankThenMonths(a: RankedJobRow, b: RankedJobRow): number {
-  if (a.rank !== b.rank) return a.rank - b.rank
-  if (a.months !== b.months) return a.months - b.months
+  if (a.rank !== b.rank) {
+return a.rank - b.rank
+}
+  if (a.months !== b.months) {
+return a.months - b.months
+}
   return a.i - b.i
 }
 

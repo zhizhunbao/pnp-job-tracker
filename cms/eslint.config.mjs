@@ -594,10 +594,10 @@ const localRules = {
       },
     },
 
-    // 一个函数超过 60 行,读的人就得翻屏 —— 翻过去的那一刻,前半段的变量已经记不住了。
-    // 60 不是拍脑袋:2026-08-20 立这条时,五个定型域的 88 个函数里最长的 57 行,第二 57、第三 56,
-    // 唯一越线的是 `lib/consult` 的 makeTools(112,见那里就地写的理由)。
-    // 也就是说它拦的是**明天新长出来的那一个**,今天一个都不误伤 —— 这正是立闸门的时机。
+    // 一个函数超过 75 行,读的人就得翻屏 —— 翻过去的那一刻,前半段的变量已经记不住了。
+    // 原线 60(2026-08-20 立,当时五个定型域最长 57,拦「明天新长出来的那一个」,零误伤);
+    // 2026-08-21 提到 75:同日「大括号 + 括号体换行」两道令把同样的逻辑机械涨行 ~25%
+    //(ruling 六个 61-67 行的函数全是被展开顶过线的,复杂度没变)。前提变了闸跟着调,判定日期留着。
     // ⚠️ 数的是**声明到收尾的物理行**,注释也算:注释多到让函数翻屏,一样该拆。
     'function-length': {
       meta: {
@@ -605,7 +605,7 @@ const localRules = {
         schema: [],
         messages: {
           long:
-            '`{{ name }}` 有 {{ n }} 行,超过 60 行。拆成几个各自说得清一件事的函数;'
+            '`{{ name }}` 有 {{ n }} 行,超过 75 行。拆成几个各自说得清一件事的函数;'
             + '真拆不动的(闭包变量一拆就得显式传一大串)写 eslint-disable 并在 `--` 后面说明为什么。',
         },
       },
@@ -613,7 +613,9 @@ const localRules = {
         return {
           FunctionDeclaration(node) {
             const n = node.loc.end.line - node.loc.start.line + 1
-            if (n <= 60) return
+            if (n <= 75) {
+              return
+            }
             context.report({ node, messageId: 'long', data: { name: node.id?.name ?? '(匿名)', n: String(n) } })
           },
         }
@@ -1021,6 +1023,17 @@ const localRules = {
   },
 }
 
+/**
+ * 已重构(定型)的域 —— 2026-08-21 Frank:「先改 lib 下我已经重构过的 domain,其他的先别动,
+ * 以后都先只检查已重构过的代码」。新立的写法闸(四禁/感叹号/??/大括号/函数内注释)一律只查这张名单;
+ * 未重构区域连 warn 清单都不出 —— 噪音会淹掉真该改的。域重构完一个,往这里加一个。
+ * (app/seed/route.ts 是例外:它今晚跟着 unknown 批迁完了,它的 unknown 闸单独一块保留。)
+ */
+const REFACTORED = [
+  'src/lib/consult/**/*.ts', 'src/lib/db/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/gauge/**/*.ts',
+  'src/lib/points/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error.ts', 'src/lib/log.ts',
+]
+
 const eslintConfig = [
   ...nextCoreWebVitals,
   ...nextTypeScript,
@@ -1208,7 +1221,7 @@ const eslintConfig = [
   },
   {
     // ── 禁三目:全站 warn = 整改清单(2026-08-21,consult 先清零)──────────────────
-    files: ['src/**/*.ts'],
+    files: REFACTORED,
     ignores: ['src/lib/consult/**', 'src/lib/db/functions.ts'],
     plugins: { local: localRules },
     rules: { 'local/no-ternary-branch': 'warn' },
@@ -1217,39 +1230,39 @@ const eslintConfig = [
     // ── 禁 `?`:全站 warn = 整改清单(2026-08-21 Frank「禁止用 ?」,consult 先清零)──
     // db 原本整层豁免,2026-08-21 晚 Frank「? 也不允许」后收回:剩 3 处真边界
     // (PayloadWithPool 描述别人家对象、pg 的 params 签名)进清单,迁移时逐行特批或改掉。
-    files: ['src/**/*.ts'],
+    files: REFACTORED,
     ignores: ['src/lib/consult/**'],
     plugins: { local: localRules },
     rules: { 'local/no-optional': 'warn' },
   },
   {
-    // ── 禁 unknown:全站 warn = 整改清单(2026-08-21,db 词汇表带头违规被 Frank 抓包)──
-    // 定型域名单里早就是 error(上面那块,ignores 要跟它逐一对齐,别把 error 盖成 warn);
-    // 词汇表当初拿「pg 的行是 any,这里是信任边界」当理由收 unknown —— 行形状(XxxDbRow)
-    // 落地后理由已过时:调用方全走类型化的行,该收成显式联合(text: string|number|null 等),
-    // 收紧后还能把没走行形状、拿原始行直喂的调用方当场揪红。
-    files: ['src/**/*.ts'],
-    ignores: ['src/lib/consult/**', 'src/lib/gauge/**', 'src/lib/points/**', 'src/lib/ruling/**', 'src/lib/agent/**', 'src/lib/llm/**', 'src/lib/error.ts', 'src/lib/log.ts', 'src/lib/db/**', 'src/app/seed/route.ts'],
-    plugins: { local: localRules },
-    rules: { 'local/no-unknown-type': 'warn' },
+    // ── 控制语句一律大括号 + 括号体必须换行(2026-08-21 Frank 三连:「if/else 都要大括号」
+    //    「for 也要」「还要换行的」):curly 'all' 管 if/else/for/while/do;brace-style 1tbs
+    //    + allowSingleLine:false 把 `if (x) {return y}` 这种单行块拆开。两条都可 --fix,
+    //    直接全站 error:auto-fix 一遍就清零,不值得留 warn 清单。
+    files: REFACTORED,
+    rules: {
+      curly: ['error', 'all'],
+      'brace-style': ['error', '1tbs', { allowSingleLine: false }],
+    },
   },
   {
     // ── 禁 `!x` 与后缀 `x!`:全站 warn = 整改清单(2026-08-21 Frank「禁止用感叹号」)──
     // 比较基准同场拍板:默认 `===`,唯一例外 `== null` / `!= null`(一次命中 null 与 undefined)。
-    files: ['src/**/*.ts'],
+    files: REFACTORED,
     plugins: { local: localRules },
     rules: { 'local/no-bang': 'warn' },
   },
   {
     // ── 禁 `??` / `??=`:全站 warn = 整改清单(2026-08-21 Frank 实看 agent 后补禁)──
-    files: ['src/**/*.ts'],
+    files: REFACTORED,
     plugins: { local: localRules },
     rules: { 'local/no-nullish': 'warn' },
   },
   {
     // ── 函数内注释:全站 warn = 整改清单(2026-08-21 Frank 实看 agent 的 2 条欠账后补)──
     // ruling/gauge/points/consult 已清零升 error(各自的块),ignores 逐一对齐别盖降。
-    files: ['src/**/*.ts'],
+    files: REFACTORED,
     ignores: ['src/lib/ruling/**', 'src/lib/gauge/**', 'src/lib/points/**', 'src/lib/consult/**'],
     plugins: { local: localRules },
     rules: { 'local/no-comment-in-function': 'warn' },
@@ -1257,7 +1270,7 @@ const eslintConfig = [
   {
     // ── 禁 undefined 出现在类型里:全站 warn = 整改清单(2026-08-21 Frank「都不允许」)──
     // consult 与 db 已清零升 error(各自的块);其余按清单清,清完一个域升一个。
-    files: ['src/**/*.ts'],
+    files: REFACTORED,
     ignores: ['src/lib/consult/**', 'src/lib/db/**'],
     plugins: { local: localRules },
     rules: { 'local/no-undefined-type': 'warn' },
@@ -1265,8 +1278,8 @@ const eslintConfig = [
   {
     // ── 边界收窄成语:全站 warn = 整改清单(2026-08-21,设计见 默认值架构 卷宗 §5)──
     // consult 已迁完(上面那块 error 守着);其余域按清单一点一点改,迁完一个升一个 error。
-    files: ['src/**/*.ts', 'src/**/*.tsx'],
-    ignores: ['src/lib/consult/**', 'src/lib/db/database.ts'],
+    files: REFACTORED,
+    ignores: ['src/lib/consult/**'],
     plugins: { local: localRules },
     rules: { 'local/no-inline-coercion': 'warn' },
   },

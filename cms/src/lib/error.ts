@@ -364,7 +364,9 @@ export function gatewayErrorOf(input: GatewayErrorOfIn): GatewayErrorOfOut {
     message = String(parsed?.error?.message || '')
     if (!type) {
       const detail = String(parsed?.detail || '')
-      if (LEGACY_TOO_LONG.test(detail)) { type = LEGACY_TOO_LONG_TYPE; message = detail }
+      if (LEGACY_TOO_LONG.test(detail)) {
+ type = LEGACY_TOO_LONG_TYPE; message = detail 
+}
     }
   } catch {
     /* 非 JSON 回包,下面按状态兜底 */

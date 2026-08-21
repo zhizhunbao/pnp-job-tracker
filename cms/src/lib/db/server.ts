@@ -33,7 +33,9 @@ import type { DbPool, PayloadWithPool } from './types'
  */
 export function dbOf(payload: PayloadWithPool): DbPool {
   const pool = poolOf(payload)
-  if (!pool) throw new Error('database: payload.db.pool 不存在 —— 数据库没连上,或 payload 用的不是 postgres adapter')
+  if (!pool) {
+throw new Error('database: payload.db.pool 不存在 —— 数据库没连上,或 payload 用的不是 postgres adapter')
+}
   return pool
 }
 
