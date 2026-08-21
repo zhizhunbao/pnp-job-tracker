@@ -2544,6 +2544,7 @@ export type ToolBlock = {
 /**
  * `beforeToolCall` 的返回:要拦就给回执;放行给 undefined。
  */
+// eslint-disable-next-line local/no-undefined-type -- pi 的钩子契约:放行 = undefined,库定的不是我们的
 export type BeforeToolCallOut = Promise<ToolBlock | undefined>
 
 /**

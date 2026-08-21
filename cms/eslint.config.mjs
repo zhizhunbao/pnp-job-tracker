@@ -665,6 +665,25 @@ const localRules = {
       },
     },
 
+    // undefined 是 JS 自己的「没有」(数组越界、缺属性、没 return),null 才是我们契约里的「没有」。
+    // 两种「没有」并存,每个读值的人都要想两次(2026-08-21 Frank「any unknown undefined 都不允许」)。
+    // 只查**类型位置**:运行时的 `x !== undefined` 判断是在边界收语言值,那是收窄不是传播。
+    // 外部库定死的形状(pi 的 beforeToolCall 放行=undefined)逐行 disable 写理由。
+    'no-undefined-type': {
+      meta: {
+        type: 'problem',
+        schema: [],
+        messages: {
+          undef:
+            '不许 `undefined` 出现在类型里。契约里的「没有」用 `| null`;'
+            + '语言给的 undefined(数组越界、缺属性)在拿到的那一行当场收掉。',
+        },
+      },
+      create(context) {
+        return { TSUndefinedKeyword(node) { context.report({ node, messageId: 'undef' }) } }
+      },
+    },
+
     // 对象展开会让「这个对象有哪些字段」变成运行时才知道的事,读的人翻不出来;
     // 加字段时也不会有人提醒你新字段要不要跟着走。字段写全,多几行换看得见。
     'no-object-spread': {
@@ -1093,6 +1112,8 @@ const eslintConfig = [
     // 只开注释那几道:sql.ts 174 条已 1:1 配齐。全套严闸(typed-signature/one-parameter/
     // no-arrow 等)要动 sql.ts 的 30 个箭头模板函数与词汇表签名 —— 那是 db 定型批的手术,
     // 到时再把 db 挪进上面的大名单。
+    // 2026-08-21 晚 Frank「any unknown undefined 都不允许,所有代码」:db 当天清零,三道直接
+    // error。rows: any[] 是唯一幸存者,挂着逐行特批牌(泛型装不出运行时保证,理由在声明上)。
     files: ['src/lib/db/**/*.ts'],
     plugins: { local: localRules },
     rules: {
@@ -1101,7 +1122,17 @@ const eslintConfig = [
       'local/doc-every-export': 'error',
       'local/doc-every-function': 'error',
       'local/doc-every-member': 'error',
+      'local/no-unknown-type': 'error',
+      'local/no-undefined-type': 'error',
+      '@typescript-eslint/no-explicit-any': 'error',
     },
+  },
+  {
+    // ── seed 是 raw JSON → DB 的边界,unknown 已清零(MartValue 照实声明),先锁这一道 ──
+    // any 还有存量(out: any[] 等),留在全站 warn 清单里,清完再升。
+    files: ['src/app/seed/route.ts'],
+    plugins: { local: localRules },
+    rules: { 'local/no-unknown-type': 'error' },
   },
   {
     // ── consult 定型进闸(2026-08-21,Frank 实拍「怎么有函数内注释没检查出来」)────────
@@ -1119,6 +1150,7 @@ const eslintConfig = [
       'local/no-inline-coercion': 'error',
       'local/no-optional': 'error',
       'local/no-ternary-branch': 'error',
+      'local/no-undefined-type': 'error',
     },
   },
   {
@@ -1130,9 +1162,10 @@ const eslintConfig = [
   },
   {
     // ── 禁 `?`:全站 warn = 整改清单(2026-08-21 Frank「禁止用 ?」,consult 先清零)──
-    // db 整层豁免:它是边界(poolOf 摸 Payload 内部、PayloadWithPool 描述别人家对象)。
+    // db 原本整层豁免,2026-08-21 晚 Frank「? 也不允许」后收回:剩 3 处真边界
+    // (PayloadWithPool 描述别人家对象、pg 的 params 签名)进清单,迁移时逐行特批或改掉。
     files: ['src/**/*.ts'],
-    ignores: ['src/lib/consult/**', 'src/lib/db/**'],
+    ignores: ['src/lib/consult/**'],
     plugins: { local: localRules },
     rules: { 'local/no-optional': 'warn' },
   },
@@ -1143,9 +1176,17 @@ const eslintConfig = [
     // 落地后理由已过时:调用方全走类型化的行,该收成显式联合(text: string|number|null 等),
     // 收紧后还能把没走行形状、拿原始行直喂的调用方当场揪红。
     files: ['src/**/*.ts'],
-    ignores: ['src/lib/consult/**', 'src/lib/gauge/**', 'src/lib/points/**', 'src/lib/ruling/**', 'src/lib/agent/**', 'src/lib/llm/**', 'src/lib/error.ts', 'src/lib/log.ts'],
+    ignores: ['src/lib/consult/**', 'src/lib/gauge/**', 'src/lib/points/**', 'src/lib/ruling/**', 'src/lib/agent/**', 'src/lib/llm/**', 'src/lib/error.ts', 'src/lib/log.ts', 'src/lib/db/**', 'src/app/seed/route.ts'],
     plugins: { local: localRules },
     rules: { 'local/no-unknown-type': 'warn' },
+  },
+  {
+    // ── 禁 undefined 出现在类型里:全站 warn = 整改清单(2026-08-21 Frank「都不允许」)──
+    // consult 与 db 已清零升 error(各自的块);其余按清单清,清完一个域升一个。
+    files: ['src/**/*.ts'],
+    ignores: ['src/lib/consult/**', 'src/lib/db/**'],
+    plugins: { local: localRules },
+    rules: { 'local/no-undefined-type': 'warn' },
   },
   {
     // ── 边界收窄成语:全站 warn = 整改清单(2026-08-21,设计见 默认值架构 卷宗 §5)──

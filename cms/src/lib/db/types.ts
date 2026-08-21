@@ -19,9 +19,10 @@ export type QueryResult = {
   rows: any[]
 
   /**
-   * 命中行数。可选:真 pg 结果一定带,但只读 rows 的调用点与单测假池不该被逼着造一个。
+   * 命中行数。null 是 pg 定的(部分语句它就给 null);原先还挂着 `?` 让这格「可以不存在」,
+   * 两种「没有」并存 —— 2026-08-21 Frank 抓包后摘掉:假池也逐格交代,写 `rowCount: null`。
    */
-  rowCount?: number | null
+  rowCount: number | null
 }
 
 /**

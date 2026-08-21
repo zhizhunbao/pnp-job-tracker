@@ -145,7 +145,8 @@ function fakePool(handler: (sql: string, params?: unknown[]) => QRows) {
   const seen: { sql: string; params?: unknown[] }[] = []
   return {
     seen,
-    pool: { query: (sql: string, params?: unknown[]) => { seen.push({ sql, params }); return Promise.resolve(handler(sql, params)) } },
+    // rowCount 在出口统一补 null:QueryResult 摘掉 `?` 后假池也逐格交代(2026-08-21)
+    pool: { query: (sql: string, params?: unknown[]) => { seen.push({ sql, params }); return Promise.resolve({ rows: handler(sql, params).rows, rowCount: null }) } },
   }
 }
 

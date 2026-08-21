@@ -26,7 +26,8 @@ function emptyInbox(): Inbox {
 
 // 假池:只回喂进去的行,不碰库。
 function poolOf(rows: Record<string, unknown>[]) {
-  return { query: async () => ({ rows }) }
+  // rowCount 逐格交代:QueryResult 摘掉 `?` 后假池不再许缺格(2026-08-21)
+  return { query: async () => ({ rows, rowCount: null }) }
 }
 
 // ── 1. 省码采信:认得出的留下,认不出的丢掉 ──────────────────────────────────

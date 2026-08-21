@@ -298,6 +298,26 @@ pnp-job-tracker/
   库定死签名的除外(如 pi 的 `execute(toolCallId, args)`),**要在那一行上方标明是外部规定**。
 - **不许 `any` / `unknown`,不许对象展开 `...`** —— 字段写全。
   库类型在 `types.ts` 里起本地名字(`TranscriptMessage = AgentMessage`),签名里不出现外部类型。
+- **🔴 `any` / `unknown` / `undefined` / `?` 四样全禁,全站**(2026-08-21 Frank 拍板,Java 风格定案):
+  - **`?:` 与 `?.` 禁**:字段全声明,「没有」显式写 `| null`,「不知道」也逐格交代
+    (一无所知的档案用 `EMPTY_PROFILE` 这样的常量,不靠缺席);取值不用 `?.`,写显式 if。
+  - **`undefined` 不进契约**:它是 JS 自己的「没有」(数组越界、缺属性),null 才是我们的「没有」;
+    两种「没有」并存,读值的人要想两次。语言接缝在拿到的那一行当场收
+    (样板:`toTitleTeer` 收整个结果集、零行显式落空,不收 `Row | undefined`)。
+  - **`unknown` 不许往下传**:信任边界当场收窄成显式联合
+    (样板:词汇表 `text(x: string | number | null)`;seed 的 mart 值照实声明 `MartValue`)。
+  - **唯一的豁免形态是逐行 `eslint-disable` + 理由**(外部库/模型定死的形状:pi 的事件、
+    TypeBox 的 Optional、pg 的签名),不设整层豁免 —— 特批牌挂在那一行上,greppable。
+  - 闸:`no-optional` / `no-undefined-type` / `no-unknown-type` / `no-explicit-any`,
+    迁完的域 error、其余全站 warn 当清单,清完一个域升一个(eslint.config.mjs)。
+- **🔴 禁三目**(2026-08-21 Frank 拍板:三目是人手写代码省事用的,AI 写代码统一 if/else):
+  流程位改 if/else;值位置提成具名小函数(那一格的概念顺带得一个名字,如 `subjectOf`);
+  「x 有值才拼这段」用 `seg({when, text})` 这类小件 —— 条件显式写,文本只许纯拼接,
+  会炸的取值(`.join`、按索引)写 if。唯一特区:`lib/db/functions.ts` 默认值词汇表;tsx 暂缓。
+  闸 `no-ternary-branch`,同上滚动升级。
+- **默认值词汇表只有四个词**(`lib/db`:`text`/`count`/`numOrNull`/`show`,2026-08-21 定):
+  每格空值决策用词的选择说话;🔴 官方可空的数值必须 `numOrNull` 保 null —— 折 0 = 替官方编数,
+  这类列上看见 `count()` 就是 bug。加新词先写清语义差进默认值架构卷宗。
 - **`as` 允许,但先问它在补什么。** 实测(2026-08-19,`lib/agent`)四个 `as` 里**三个是
   「本该写注解的地方拿断言顶了」**,补上注解后**零代价**拆掉:`] as AgentTool[]`(三把工具各带
   自己的 schema 泛型后数组本身就合法)、`'text' as const`(函数补返回类型,字面量自己就窄)、
@@ -427,6 +447,8 @@ cd cms && npm run dev                            # 开发:localhost:3000(读写�
 - 在 `types.ts` / `constants.ts` 里 import(形状本域自己声明,依赖只走 `functions.ts`)
 - **没数出重复就抽公共**(先数消费者:只有一个的不是公共);把**行为**复制一份当「自己声明」
 - 写匿名函数、`any` / `unknown`、`as unknown as X` 双重断言、对象展开 `...`;给纯函数套 `try/catch`
+- 写三目(词汇表 `lib/db/functions.ts` 与 tsx 除外);契约里用 `?:` / `?.` / `| undefined`
+  (外部库定死的形状逐行 disable 写理由,不设整层豁免)
 - 写 `class`(外部库要求的垫片除外);在域里写 `console.log` 或造错误(去 `lib/log` / `lib/error`)
 - 声明上没有注释,或写成单行 `/** … */`;type 的属性、常量表的键漏注释
 - 函数的 JSDoc 里逐条复述入参字段(那归 `XxxIn` 的属性);注释正文里出现 `*/`
