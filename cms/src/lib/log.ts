@@ -319,6 +319,13 @@ export const GATE_LOG = {
   hit: 'gate hit attempt=',
 
   /**
+   * 拦下一次工具调用,后面接被拦的那个码。
+   *
+   * 拦住不等于没发生 —— 模型编码这件事本身要看得见,不然只会在留痕里表现为「多调了一次搜索」。
+   */
+  blocked: 'tool blocked: unknown noc=',
+
+  /**
    * 这一趟认下来的职业码。
    */
   noc: ' noc=',

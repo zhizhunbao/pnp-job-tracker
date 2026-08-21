@@ -36,9 +36,36 @@ export const KEY = process.env.CHAT_LLM_KEY ?? process.env.TRANSLATE_API_KEY ?? 
 export const NO_KEY_PLACEHOLDER = 'local'
 
 /**
- * 模型名。经包装的那个门叫 `qwen3.6`,裸 Ollama 那个门叫 `qwen3.6:latest`。
+ * 模型名。经包装的那个门与裸 Ollama 那个门的 tag 写法不同(后者带 `:latest`)。
+ *
+ * 🔴 2026-08-21 从 `qwen3.6` 换成 `glm-4.7-flash`,判据是三语探针实测,不是榜单:
+ *
+ * | | qwen3.6 | gemma4:31b | glm-4.7-flash |
+ * |---|---|---|---|
+ * | 韩文两条 | **全报错** —— 一把工具不调,直接编出 `72301`(真码 72310) | 1 干净 1 降级 | 1 干净 1 降级 |
+ * | 三语六条总耗时 | (两条挂了) | 223s | **36s** |
+ * | 英文完整度 | 泛泛 | 好 | **最全**(语言+经验+收入两档+雇主) |
+ *
+ * 韩文那两条不是文风问题:模型编的码被数字闸拦住 → 没有事实可回退 → 用户拿到的是错误页。
+ * 换模型是目前唯一有实测支撑的修法(提示词迭代三轮、加闸、加 `beforeToolCall` 都治不了它 ——
+ * 挂点守的是「调用」,而它根本不调)。
+ *
+ * ⚠️ **网关的 `/v1/models` 只列 `qwen3.6`,但那是个静态清单,不是能力清单** ——
+ * 我据此判过一次「生产用不了 glm」,是错的:真打 `/v1/chat/completions` 传 `glm-4.7-flash`
+ * 直接 200 有回答(2026-08-21 实测)。**别拿列表接口当结论,要打真接口。**
+ *
+ * 经生产网关的三语实测(六条全过、零报错):zh/en/ko 各两条,两条降级成事实清单
+ * (ko 목수、en 护士)—— 降级难看但不是假话,而 qwen3.6 在韩文那两条是**直接报错**。
+ *
+ * ⚠️ 复现(走自家那条门):`CHAT_LLM_BASE=$TRANSLATE_API_BASE CHAT_LLM_KEY=$TRANSLATE_API_KEY`
+ * `CHAT_LLM_MODEL=glm-4.7-flash npx vitest run tests/int/triLangProbe.int.spec.ts`
+ *
+ * 🔴 **生产走的就是这条默认路径** —— `TRANSLATE_API_BASE`,朋友的服务器经 ngrok 暴露出来的 API。
+ * 上面那张横评表就是**经它**跑出来的,不是只在局域网里试过:六条全过、零报错。
+ * 局域网直连(`CHAT_LLM_BASE=http://192.168.1.150:11434`)只是本机开发少一层包装,
+ * 两道门后面是同一台盒子、同一批模型。
  */
-export const MODEL_ID = process.env.CHAT_LLM_MODEL || process.env.TRANSLATE_API_MODEL || 'qwen3.6'
+export const MODEL_ID = process.env.CHAT_LLM_MODEL || process.env.TRANSLATE_API_MODEL || 'glm-4.7-flash'
 
 /**
  * 模型的上下文窗口。qwen3.6 是 262144;经包装那个门另有字符上限,那是包装层的配置不是模型的。
@@ -488,6 +515,16 @@ export const GATE = {
    * 用了前端渲染不出来的排版记号。
    */
   markup: 'rawMarkup',
+
+  /**
+   * 第一句只是把问题复述了一遍。
+   *
+   * 🔴 2026-08-20 Frank 实拍:「回答还要说人话」。三轮提示词只治住了公文体
+   * (「申请人需」→「你需要」),开头那句治不住 —— 模型照旧写
+   * 「BC省提名对木匠(NOC 72310)有具体的硬性要求,你需要满足以下条件才能申请:」。
+   * 按项目自己的原则「**能让闸门管的,就别写规则管**」,提示词说一遍,执行交给这道闸。
+   */
+  opening: 'restatedOpening',
 }
 
 /**
@@ -724,3 +761,34 @@ export const HISTORY_TURNS = 6
  * 数字串里的千分位逗号 —— 「1,560」这种官方写法要先去掉才 parse 得动。
  */
 export const THOUSANDS_COMMA = /,/g
+
+/**
+ * 第一句以冒号收尾 —— 那是「下面开始列」,不是回答。中英文两种冒号都认。
+ */
+export const OPENING_COLON = /[::]\s*$/
+
+/**
+ * 「……如下」这类预告句。
+ */
+export const AS_FOLLOWS = /(如下|以下条件|下列条件|as follows)/
+
+/**
+ * 第一句的长度上限 —— 超过这么长还没有句号,就按整行当第一句看。
+ */
+export const FIRST_LINE_CAP = 120
+
+/**
+ * 回喂给模型时,首句那道闸只贴末尾这么多字 —— 让它认出是哪一句,不必整句复读。
+ */
+export const OPENING_SAMPLE = 24
+
+/**
+ * 撞了两次还不过就**降级**成事实清单的那几道闸 —— 它们拦的是**假话**。
+ *
+ * 🔴 2026-08-20 实拍出来的分界:给「首句复述」也按这个待遇,结果两次改不掉之后
+ * 降级成了一行英文事实清单 —— 比原来那句笨拙的中文**更糟**。
+ * 判据由此定死:**这一条不改会不会让用户信到假的东西**。
+ *   · 会 → 硬闸(编数字、内部码、夹英文单位、见客的排版记号)→ 降级;
+ *   · 不会,只是难看 → 软闸 → 重写两次;还不行就**留着模型那一版**,记一笔,别把答案换掉。
+ */
+export const HARD_GATES = ['ungroundedNumber', 'internalWord', 'englishUnit', 'rawMarkup']

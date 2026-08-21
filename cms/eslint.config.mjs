@@ -155,10 +155,11 @@ const localRules = {
       },
       create(context) {
         const src = context.sourceCode ?? context.getSourceCode()
+        // 用共享的 docAbove:它会跳过 `eslint-` 指令行再找 JSDoc。
+        // 🔴 2026-08-20 给 doc-every-function / doc-every-export / jsdoc-tags 修过这个盲点,
+        //    **漏了这一条** —— 属性上挂一行 eslint-disable,它就看不见上面的注释了(08-21 实撞)。
         function documented(node) {
-          const before = src.getCommentsBefore(node)
-          const doc = before[before.length - 1]
-          return Boolean(doc) && doc.type === 'Block' && doc.value.startsWith('*')
+          return Boolean(docAbove(src, node))
         }
         function keyName(node) {
           const k = node.key

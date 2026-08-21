@@ -27,33 +27,36 @@ import * as SQL from '../db/sql'
 import { evaluateRequirements } from '../gauge'
 import type { Requirement, RuleProfile } from '../gauge'
 import {
-  API, AUTH_HEADER, AVAIL, BASE, BEARER, BOLD_RE, CONTEXT_WINDOW, EARLIER_HEAD, EN, EN_UNIT_WORDS, FAIL_MSG,
-  FULL_STOP, GATE, GUARD_RETRIES, HAS_DIGIT, HEADING_RE, HISTORY_CAP, HISTORY_TURNS, INELIGIBLE, INTERNAL_WORDS,
-  JOBS_LINK, KEY, LABEL, LANG_NAME, LEAD_MARK, LEN_CAP, LIKE_ANY, LIKE_ESCAPE, LIKE_SPECIAL, MARKUP, MAX_FACTS,
-  MAX_QUERY, MAX_TOKENS, MESSAGE_UPDATE, MODEL_ID, NL, NOISE_RATIO, NOW_HEAD, NO_KEY_PLACEHOLDER, NUMBERED_RE,
-  NUM_RE, PROVIDER, PROVS, QC, ROLE, SAID, SAMPLING, SEARCH_LIMIT, SEP, SHEET_CAP, SPACE, STAR_RE, SUBJECT,
-  TABLE_RE, THOUSANDS_COMMA, TIMEOUT_MS, TOOL_LABEL, TOOL_NAME, TRAILING_ZEROS, UNIT, V1, WORD_EDGE,
+  API, AS_FOLLOWS, AUTH_HEADER, AVAIL, BASE, BEARER, BOLD_RE, CONTEXT_WINDOW, EARLIER_HEAD, EN, EN_UNIT_WORDS,
+  FAIL_MSG, FIRST_LINE_CAP, FULL_STOP, GATE, GUARD_RETRIES, HARD_GATES, HAS_DIGIT, HEADING_RE, HISTORY_CAP,
+  HISTORY_TURNS, INELIGIBLE, INTERNAL_WORDS, JOBS_LINK, KEY, LABEL, LANG_NAME, LEAD_MARK, LEN_CAP, LIKE_ANY,
+  LIKE_ESCAPE, LIKE_SPECIAL, MARKUP, MAX_FACTS, MAX_QUERY, MAX_TOKENS, MESSAGE_UPDATE, MODEL_ID, NL,
+  NOISE_RATIO, NOW_HEAD, NO_KEY_PLACEHOLDER, NUMBERED_RE, NUM_RE, OPENING_COLON, OPENING_SAMPLE, PROVIDER,
+  PROVS, QC, ROLE, SAID, SAMPLING, SEARCH_LIMIT, SEP, SHEET_CAP, SPACE, STAR_RE, SUBJECT, TABLE_RE,
+  THOUSANDS_COMMA, TIMEOUT_MS, TOOL_LABEL, TOOL_NAME, TRAILING_ZEROS, UNIT, V1, WORD_EDGE,
 } from './constants'
 import {
-  PROFILE_HEAD, PROFILE_NONE, REPLY_LANGUAGE_HEAD, RETRY_BULLET, RETRY_COLON, RETRY_COMMA, RETRY_HEAD,
-  SYSTEM_RULES, TOOL_DESC, TOOL_REPLY,
+  BLOCK_UNKNOWN_NOC, PROFILE_HEAD, PROFILE_NONE, REPLY_LANGUAGE_HEAD, RETRY_BULLET, RETRY_COLON, RETRY_COMMA,
+  RETRY_HEAD, RETRY_OPENING, SYSTEM_RULES, TOOL_DESC, TOOL_REPLY,
 } from './prompts'
 import { NOC_PARAMS, NOC_PROVS_PARAMS, SEARCH_PARAMS } from './schemas'
 import { byOpenDesc } from './callbacks'
 import type {
-  AllowedNumbersIn, AllowedNumbersOut, AnswerLangIn, BlankCoverageIn, BlankCoverageOut, BlankIfNumberedIn,
-  BlankIfNumberedOut, Candidate, CiteFactsIn, CiteFactsOut, ClampAnswerOut, CodesOfIn, CodesOfOut, ConsultIn,
-  ConsultOut, ContentOfIn, ContentOfOut, CoverageFactsIn, CoverageFactsOut, CoverageRow, DraftOnceIn,
-  DraftOnceOut, ExecCoverageIn, ExecCoverageOut, ExecJobsIn, ExecJobsOut, ExecSearchIn, ExecSearchOut,
-  ExecThresholdsIn, ExecThresholdsOut, Fact, FactIn, FactOut, FactSheetIn, FactSheetOut, FindEnglishUnitsOut,
-  FindInternalWordsIn, FindInternalWordsOut, FindRawMarkupIn, FindRawMarkupOut, FindUngroundedNumbersOut,
-  FirstPromptIn, FirstPromptOut, GateHit, GateLabelIn, GateLabelOut, Inbox, IsUserTurnIn, IsUserTurnOut,
-  JobsFactsIn, JobsFactsOut, JobsRow, LookupCoverageIn, LookupCoverageOut, LookupJobsIn, LookupJobsOut,
-  LookupThresholdsIn, LookupThresholdsOut, MakeToolsIn, MakeToolsOut, ModelOut, NocOfIn, NocOfOut, NormNumIn,
-  NormNumOut, NumberCheckIn, OnEventIn, OnEventOut, OnTimeoutOut, RetryNoteIn, RetryNoteOut, RunGatesIn,
-  RunGatesOut, RunIn, SayIn, SayOut, SearchOccupationsIn, SearchOccupationsOut, StatusFactIn, StatusFactOut,
-  StepIn, StepOut, SystemOfOut, TakeIn, TakeOut, TextOfIn, TextOfOut, ThresholdsFactsIn, ThresholdsFactsOut,
-  ThresholdsRow, TierTextIn, TierTextOut, ToRequirementIn, ToRequirementOut, Tool,
+  AllowedNumbersIn, AllowedNumbersOut, AnswerLangIn, BeforeToolCallIn, BeforeToolCallOut, BlankCoverageIn,
+  BlankCoverageOut, BlankIfNumberedIn, BlankIfNumberedOut, Candidate, CiteFactsIn, CiteFactsOut, ClampAnswerOut,
+  CodesOfIn, CodesOfOut, ConsultIn, ConsultOut, ContentOfIn, ContentOfOut, CoverageFactsIn, CoverageFactsOut,
+  CoverageRow, DraftOnceIn, DraftOnceOut, ExecCoverageIn, ExecCoverageOut, ExecJobsIn, ExecJobsOut,
+  ExecSearchIn, ExecSearchOut, ExecThresholdsIn, ExecThresholdsOut, Fact, FactIn, FactOut, FactSheetIn,
+  FactSheetOut, FindEnglishUnitsOut, FindInternalWordsIn, FindInternalWordsOut, FindRawMarkupIn,
+  FindRawMarkupOut, FindRestatedOpeningIn, FindRestatedOpeningOut, FindUngroundedNumbersOut, FirstLineOfIn,
+  FirstLineOfOut, FirstPromptIn, FirstPromptOut, GateHit, GateLabelIn, GateLabelOut, HardHitsIn, HardHitsOut,
+  Inbox, IsUserTurnIn, IsUserTurnOut, JobsFactsIn, JobsFactsOut, JobsRow, LookupCoverageIn, LookupCoverageOut,
+  LookupJobsIn, LookupJobsOut, LookupThresholdsIn, LookupThresholdsOut, MakeToolGatesIn, MakeToolGatesOut,
+  MakeToolsIn, MakeToolsOut, ModelOut, NocOfIn, NocOfOut, NormNumIn, NormNumOut, NumberCheckIn, OnEventIn,
+  OnEventOut, OnTimeoutOut, RetryNoteIn, RetryNoteOut, RunGatesIn, RunGatesOut, RunIn, SayIn, SayOut,
+  SearchOccupationsIn, SearchOccupationsOut, StatusFactIn, StatusFactOut, StepIn, StepOut, SystemOfOut, TakeIn,
+  TakeOut, TextOfIn, TextOfOut, ThresholdsFactsIn, ThresholdsFactsOut, ThresholdsRow, TierTextIn, TierTextOut,
+  ToRequirementIn, ToRequirementOut, Tool, ToolArgs,
 } from './types'
 
 // =========================================================================
@@ -76,7 +79,9 @@ function model(): ModelOut {
     input: [ROLE.text],
     contextWindow: CONTEXT_WINDOW,
     maxTokens: MAX_TOKENS,
-    // 自家网关不按 token 计费,填 0 是照实说,不是省事
+    // 这四个 0 是照实说,不是省事:两道门(局域网直连、朋友服务器经 ngrok 暴露的那个)
+    // 都不按 token 计费。⚠️ 哪天换成按量收费的云 API,这里就成了假话 —— pi 拿它记账,
+    // 填 0 等于把花掉的钱报成零;那时要填真实单价,而且单价随模型变,得跟着 MODEL_ID 走。
     cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
     samplingParams: SAMPLING,
   }
@@ -524,6 +529,42 @@ function findRawMarkup(answer: FindRawMarkupIn): FindRawMarkupOut {
 }
 
 /**
+ * 整段答复的第一句 —— 到第一个换行或第一个句号为止。
+ *
+ * @param input 整段答复。
+ * @returns 第一句;整段没有断句记号时按长度截。
+ */
+function firstLineOf(input: FirstLineOfIn): FirstLineOfOut {
+  const head = input.answer.trim().split(NL)[0] ?? ''
+  const stop = head.indexOf(FULL_STOP)
+  const line = stop >= 0 ? head.slice(0, stop + 1) : head
+  return line.slice(0, FIRST_LINE_CAP).trim()
+}
+
+/**
+ * 第一句只是把问题复述了一遍。
+ *
+ * 判据两条,都是**看得见摸得着的形状**,不猜语义:
+ *   ① 以冒号收尾 —— 那句话在说「下面开始列」,不是在回答;
+ *   ② 带「如下 / 以下条件 / as follows」这类预告词。
+ *
+ * 🔴 为什么是闸不是提示词:三轮提示词迭代(说人话 → 独立成条 → 并进 RULE 0)都没治住,
+ * 而这两条形状用正则一眼认得出。提示词负责说一遍,执行交给这里 ——
+ * 撞了就把话回喂给模型重写,两次不过降级成事实清单,和别的闸一个待遇。
+ *
+ * @param input 整段答复。
+ * @returns 撞到的毛病;第一句没问题则空。
+ */
+function findRestatedOpening(input: FindRestatedOpeningIn): FindRestatedOpeningOut {
+  const line = firstLineOf({ answer: input.answer })
+  const bad: string[] = []
+  if (!line) return bad
+  if (OPENING_COLON.test(line)) bad.push(line.slice(-OPENING_SAMPLE))
+  if (AS_FOLLOWS.test(line)) bad.push(line.slice(-OPENING_SAMPLE))
+  return bad
+}
+
+/**
  * 跑完全部出口闸。
  *
  * @param input 答复、事实、用户原话、语种。
@@ -536,6 +577,7 @@ function runGates(input: RunGatesIn): RunGatesOut {
     { gate: GATE.internal, hits: findInternalWords(input.answer) },
     { gate: GATE.englishUnit, hits: findEnglishUnits({ answer: input.answer, lang: input.lang }) },
     { gate: GATE.markup, hits: findRawMarkup(input.answer) },
+    { gate: GATE.opening, hits: findRestatedOpening({ answer: input.answer }) },
   ]
   for (const c of checks) if (c.hits.length) fired.push(c)
   return fired
@@ -634,6 +676,43 @@ function take(input: TakeIn): TakeOut {
  */
 function say(text: SayIn): SayOut {
   return { content: [{ type: ROLE.text, text }], details: { n: 0 }, terminate: false }
+}
+
+
+/**
+ * 这一趟的工具挂点 —— **接的是 pi 自己的 `beforeToolCall`**,不是我们另造的一层。
+ *
+ * 🔴 2026-08-20 实测的病:韩文问「저는 목수입니다」,模型**一把工具没调**就写出 `72301`
+ * (真码 72310,两位调了个个儿)。出口的数字闸拦住了,但那时已经无事实可回退 → 用户拿到报错。
+ * RULE 9 早就写着「职业码只能来自 search_occupations 的结果」——**那是求它,这里是拦它**:
+ * 码不在这一趟搜出来的候选里,这次调用根本不发生,理由回给模型,它还能在循环里自己补一次搜索。
+ *
+ * 判据只有一条:**这个码,我们这一趟给它看过吗**。看过 = 候选里有,或档案本来就带着。
+ *
+ * @param input 这一趟的收件箱。
+ * @returns pi 要的两个挂点。
+ */
+function makeToolGates(input: MakeToolGatesIn): MakeToolGatesOut {
+  const box = input.box
+
+  /**
+   * 工具调用发出之前过一道。两个参数是 pi 定死的签名(外部规定)。
+   *
+   * @param ctx pi 给的上下文:哪一把工具、校验过的入参。
+   * @returns 要拦就给 `block` 与理由;放行给 undefined。
+   */
+  async function beforeToolCall(ctx: BeforeToolCallIn): BeforeToolCallOut {
+    // 信任边界的第一行:收窄成本域自己的形状,下面一个字都不再碰 `unknown`
+    const args = ctx.args as ToolArgs
+    const noc = typeof args?.noc === 'string' ? args.noc.trim() : ''
+    if (!noc) return undefined
+    if (noc === box.noc) return undefined
+    for (const c of box.candidates) if (c.noc === noc) return undefined
+    log({ tag: CHAT_LOG.tag, text: `${GATE_LOG.blocked}${noc}` })
+    return { block: true, reason: BLOCK_UNKNOWN_NOC }
+  }
+
+  return { beforeToolCall: beforeToolCall }
 }
 
 /**
@@ -857,7 +936,11 @@ async function draftOnce(input: DraftOnceIn): DraftOnceOut {
     const messages = await runAgentLoop(
       [firstPrompt(run)],
       { systemPrompt: systemOf(run) + extra, messages: [], tools: makeTools({ run, box }) },
-      { model: model(), apiKey: KEY || NO_KEY_PLACEHOLDER, maxTokens: MAX_TOKENS, convertToLlm: passThroughMessages },
+      {
+        model: model(), apiKey: KEY || NO_KEY_PLACEHOLDER, maxTokens: MAX_TOKENS,
+        convertToLlm: passThroughMessages,
+        beforeToolCall: makeToolGates({ box: box }).beforeToolCall,
+      },
       onEvent,
       ac.signal,
       // pi 的 StreamFn 要通吃所有 Api,而这个 stream 锁死 openai-completions —— 逆变对不上,只能断言
@@ -877,6 +960,22 @@ async function draftOnce(input: DraftOnceIn): DraftOnceOut {
   } finally {
     clearTimeout(timer)
   }
+}
+
+/**
+ * 撞到的闸里,哪几道拦的是「假话」。
+ *
+ * 只有这几道值得把答案整段换掉 —— 见 `HARD_GATES` 的注释。
+ *
+ * @param input 这一轮撞到的全部闸。
+ * @returns 其中的硬闸;没有则空。
+ */
+function hardHits(input: HardHitsIn): HardHitsOut {
+  const out: GateHit[] = []
+  for (const h of input.fired) {
+    if (HARD_GATES.includes(h.gate)) out.push(h)
+  }
+  return out
 }
 
 /**
@@ -904,9 +1003,11 @@ export async function consult(input: ConsultIn): ConsultOut {
     })
   }
 
-  const degraded = fired.length > 0
+  // 只有硬闸(拦假话的那几道)才值得把整段换成事实清单;软闸没过只是难看,留着模型那一版。
+  const hard = hardHits({ fired: fired })
+  const degraded = hard.length > 0
   if (degraded) {
-    if (!box.facts.length) throw chatError({ code: CHAT_CODE.guard, msg: `${FAIL_MSG.noFacts}${fired.map(gateLabel).join(GATE_LOG.comma)}` })
+    if (!box.facts.length) throw chatError({ code: CHAT_CODE.guard, msg: `${FAIL_MSG.noFacts}${hard.map(gateLabel).join(GATE_LOG.comma)}` })
     answer = factSheet(box.facts)
   }
   const facts = citeFacts({ answer, facts: box.facts })
@@ -957,5 +1058,7 @@ function gateLabel(hit: GateLabelIn): GateLabelOut {
 function retryNote(fired: RetryNoteIn): RetryNoteOut {
   const lines = [RETRY_HEAD]
   for (const hit of fired) lines.push(`${RETRY_BULLET}${hit.gate}${RETRY_COLON}${hit.hits.join(RETRY_COMMA)}`)
+  // 光报「你违反了哪一条」对首句那道闸没用(实拍两次重写都没改掉)—— 带上怎么改。
+  for (const hit of fired) if (hit.gate === GATE.opening) lines.push(RETRY_OPENING)
   return lines.join(NL)
 }

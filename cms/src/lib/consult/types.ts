@@ -1234,3 +1234,117 @@ export type ConsultOut = Promise<RunOut>
  * `gateLabel` 的入参。
  */
 export type GateLabelIn = GateHit
+
+/**
+ * `findRestatedOpening` 的入参。
+ */
+export type FindRestatedOpeningIn = {
+  /**
+   * 模型写出来的整段答复。
+   */
+  answer: string
+}
+
+/**
+ * `findRestatedOpening` 的返回:撞到的毛病;第一句没问题则空。
+ */
+export type FindRestatedOpeningOut = string[]
+
+/**
+ * `firstLineOf` 的入参。
+ */
+export type FirstLineOfIn = {
+  /**
+   * 整段答复。
+   */
+  answer: string
+}
+
+/**
+ * `firstLineOf` 的返回。
+ */
+export type FirstLineOfOut = string
+
+/**
+ * `hardHits` 的入参。
+ */
+export type HardHitsIn = {
+  /**
+   * 这一轮撞到的全部闸。
+   */
+  fired: GateHit[]
+}
+
+/**
+ * `hardHits` 的返回:其中拦「假话」的那几道。
+ */
+export type HardHitsOut = GateHit[]
+
+/**
+ * `makeToolGates` 的入参。
+ */
+export type MakeToolGatesIn = {
+  /**
+   * 这一趟的收件箱 —— **每请求一个**,闭包在挂点里。
+   *
+   * 🔴 它**不许**挪进 `variables.ts`:那儿装的是进程级单件,两个人同时提问会串号,
+   * 而出口闸只查「这个数在不在 facts 里」,查不出「这个 facts 是不是这个人的」。
+   */
+  box: Inbox
+}
+
+/**
+ * `makeToolGates` 的返回:pi 要的那几个挂点。
+ */
+export type MakeToolGatesOut = {
+  /**
+   * 工具调用发出之前过一道。
+   */
+  beforeToolCall: (ctx: BeforeToolCallIn) => BeforeToolCallOut
+}
+
+/**
+ * `beforeToolCall` 的入参 —— **形状由 pi 定死**,本域只声明真读的那两格。
+ */
+export type BeforeToolCallIn = {
+  /**
+   * 校验过的工具入参。
+   *
+   * 🔴 这里的 `unknown` 是**信任边界上收进来的**,不是往下传的:pi 不认识我们的 schema,
+   * 它就是这么交过来的,而**逆变让我们没法要求更窄**(声明成 `ToolArgs` 时,函数根本装不进
+   * pi 的 config —— 2026-08-20 tsc 当场拦下)。挂点在第一行就把它收窄成 `ToolArgs`,
+   * 真不是这个形状,读到的是 undefined,照样放行。
+   */
+  // eslint-disable-next-line local/no-unknown-type -- pi 定死交过来就是 unknown;逆变不许我们要求更窄,收窄在挂点第一行
+  args: unknown
+}
+
+/**
+ * 拦下一次工具调用时给 pi 的回执。
+ */
+export type ToolBlock = {
+  /**
+   * 拦不拦。给 true 这次调用就不发生。
+   */
+  block: boolean
+
+  /**
+   * 为什么拦 —— **回给模型看的**,要说清该怎么办。
+   */
+  reason: string
+}
+
+/**
+ * `beforeToolCall` 的返回:要拦就给回执;放行给 undefined。
+ */
+export type BeforeToolCallOut = Promise<ToolBlock | undefined>
+
+/**
+ * 工具入参里本域真正要查的那一格。
+ */
+export type ToolArgs = {
+  /**
+   * 模型填的职业码;这把工具不带码时没有这一格。
+   */
+  noc?: string
+}

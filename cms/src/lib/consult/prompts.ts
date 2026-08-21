@@ -25,7 +25,12 @@ const ROLE_LINE =
   + "'s question, call them, and then say the answer in plain language."
 
 /**
- * 先答这个人担心什么,再谈材料。
+ * 先答这个人担心什么,再谈材料;第一句就得带上他还不知道的事实。
+ *
+ * 🔴 2026-08-20 第二轮实拍:加了「说人话」之后公文体没了(「申请人需」→「你需要」),
+ * 但开头仍旧是「BC省提名对木匠(NOC 72310)的要求如下:」—— 一句话把他刚问的原样复述一遍,
+ * 还带着冒号和裸码。**「第一句写什么」归这条管**(它 outranks everything),
+ * 所以禁令写在这儿,并把那句失败原文直接抄进提示词当反例。
  *
  * 2026-08-04 生产实录:这一步的目标曾经是「把材料组织成人话」,于是模型按材料顺序背 ——
  * 问「值不值」答的是清单与门槛,追问「概率多大」回来的还是那批清单,两轮几乎一字不差。
@@ -33,7 +38,9 @@ const ROLE_LINE =
 const RULE_ANSWER_THE_WORRY =
   'RULE 0 (outranks everything else): you are answering one person, not filling in a form. Work out what they are actually '
   + 'worried about or trying to decide, and make your first sentence speak to that. Tool results are raw material, not an '
-  + 'outline — never walk down them in order, and leave out everything that does not bear on the worry.'
+  + 'outline — never walk down them in order, and leave out everything that does not bear on the worry. When you are '
+  + 'reporting what the tools came back with, the first sentence carries a fact they did not have — it is never a '
+  + 'restatement of the question and never ends in a colon (no 如下, no "the requirements for X are as follows").'
 
 /**
  * 每个数字都必须能在工具结果或用户原话里逐字找到。
@@ -149,13 +156,37 @@ const RULE_NOC =
   + 'knowledge, and never pass one to another tool unless that search returned it.'
 
 /**
+ * 说人话。
+ *
+ * 🔴 2026-08-20 Frank 实拍:打真模型跑出来的这一段 ——
+ * 「BC省提名对木匠(NOC 72310)的具体要求如下:语言成绩需达到四项能力各CLB 4级。
+ *   申请人家庭年收入需至少为31,264加元。」
+ * 数字全对、出处全在,但没人这么说话。三个毛病一次犯全:
+ *   ① **公文体** —— 「需达到」「需至少为」「申请人」当主语;
+ *   ② **开头复述问题** ——「……的具体要求如下」把他刚问的话又说了一遍(文案四闸的「不重复」);
+ *   ③ **代码裸奔** —— `NOC 72310` 站在正文里,而宪法写的是「人话名做主文案,代码当灰字小注」。
+ *
+ * ⚠️ 说人话 **不等于** 口语化。四闸里「不口语」那条照旧:不加语气词、不客套、不写「哦」「呢」。
+ * 要的是「一个懂行的人当面跟你讲」,不是「一份公文」,也不是「一个热情的客服」。
+ */
+const RULE_PLAIN =
+  'RULE 5b (hard): write the way one person explains something to another who just asked, not the way a form, a notice or '
+  + 'a government circular is written. Three things this rules out. (a) Never open by restating the question: no "the '
+  + 'requirements for X are as follows", no "regarding your question about". The first sentence must already carry the '
+  + 'answer. (b) Address the reader as you, and let the reader be the subject of the sentence — never "the applicant". In '
+  + 'Chinese: write 你要 / 你得, not 申请人需 / 应 / 须 / 需至少为, and never end an opening line with 如下. (c) A code never '
+  + 'carries a sentence. RULE 6 lets you keep the letters NOC, CLB, TEER, PNP — it does not let a code stand in the main '
+  + 'text. Name the job or the place in words; a five-digit code appears at most once, in brackets, and never in the first '
+  + 'sentence. Being plain is not being chatty: no filler particles, no pleasantries, no "I hope this helps".'
+
+/**
  * 循环的 system prompt。语言与已知档案由 `chatSystem` 拼在后面。
  */
 export const SYSTEM_RULES = [
   // 🔴 「什么时候调工具」排在最前:实测把它压在第 8 条时,模型一把工具没调就先反问了。
   //    先说清「默认就是调」,后面那些「怎么写这段话」的规则才有机会用上。
   ROLE_LINE, RULE_WHEN_TO_CALL, RULE_NO_PRETENDING, RULE_NOC,
-  RULE_ANSWER_THE_WORRY, RULE_NUMBERS, RULE_STATES, RULE_NO_INVENTION,
+  RULE_ANSWER_THE_WORRY, RULE_NUMBERS, RULE_STATES, RULE_NO_INVENTION, RULE_PLAIN,
   RULE_FORMAT, RULE_NO_TRANSCRIBE, RULE_LANGUAGE, RULE_LENGTH,
 ].join('\n\n')
 
@@ -342,6 +373,15 @@ export const TOOL_REPLY = {
 export const RETRY_HEAD = 'Your previous reply broke these rules. Rewrite it without them:'
 
 /**
+ * 首句那道闸的改法。
+ *
+ * 🔴 光报「你违反了 restatedOpening」没用 —— 实拍两次重写都没改掉。
+ * 报错要带**怎么改**:把第一句直接换成结论本身。
+ */
+export const RETRY_OPENING =
+  'For restatedOpening: delete your whole first line and start with the answer itself. Example: instead of "BC 省提名对木匠的要求如下:" write "木匠在 BC 要两年全职经验,语言到 CLB 4".'
+
+/**
  * 黑名单每一行的开头。
  */
 export const RETRY_BULLET = '- '
@@ -355,3 +395,13 @@ export const RETRY_COLON = ': '
  * 撞到的多条内容之间。
  */
 export const RETRY_COMMA = ', '
+
+/**
+ * 拦下一次工具调用时,回给模型的理由。
+ *
+ * 🔴 它是**给模型看的字**,所以住这儿不进 i18n。话要说清「为什么拦」和「该怎么办」——
+ * 只说「不许」它会再编一个码。
+ */
+export const BLOCK_UNKNOWN_NOC =
+  'Blocked: that NOC code did not come from a search_occupations result in this conversation, so it may be wrong. '
+  + 'Call search_occupations with the job title first, then use a code from what it returns.'
