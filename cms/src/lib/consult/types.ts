@@ -15,7 +15,8 @@ import type { TSchema } from '@earendil-works/pi-ai'
 import type { Db } from '../db/database'
 import type { RuleResult } from '../gauge'
 import type { Lang } from '../i18n'
-import type { NOC_PARAMS, NOC_PROVS_PARAMS, SEARCH_PARAMS } from './schemas'
+import type { PathwayVerdict, VerdictProfile } from '../ruling'
+import type { CLAIMS_PARAMS, CRS_PARAMS, NOC_PARAMS, NOC_PROVS_PARAMS, PERMIT_PARAMS, PROV_PARAMS, SEARCH_PARAMS, VERDICT_PARAMS } from './schemas'
 
 // =========================================================================
 // 1. 事实(工具产出的唯一形态)
@@ -190,6 +191,323 @@ export type CoverageResult = {
    * 各省一行。**没收录的省也要在**,否则模型只看得见好消息。
    */
   rows: CoverageRow[]
+}
+
+/**
+ * 一轮抽选。省级 EOI 与联邦 Express Entry 共这一个形状,分制不同靠 `scale` 说话。
+ */
+export type DrawRow = {
+  /**
+   * 两位省码;联邦轮次是 `FED`。
+   */
+  prov: string
+
+  /**
+   * 抽选日期,`YYYY-MM-DD`。
+   */
+  date: string
+
+  /**
+   * 官方轮次名(CEC / French / 省级通道名)。
+   */
+  stream: string
+
+  /**
+   * 分制名。**FED 是 CRS,各省的 SIRS/EOI 与它互不相通** —— 摆分数必须带上它。
+   */
+  scale: string
+
+  /**
+   * 这一轮的分数线。官方没公布分数的轮次是 null,不许折成 0。
+   */
+  score: number | null
+
+  /**
+   * 邀请人数。官方没公布时是 null。
+   */
+  invitations: number | null
+
+  /**
+   * 出处。
+   */
+  evidence: Evidence
+}
+
+/**
+ * 抽选记录的查询结果。
+ */
+export type DrawsResult = {
+  /**
+   * 查的哪个省;联邦是 `FED`。
+   */
+  prov: string
+
+  /**
+   * 近几轮,按日期从新到旧,已截到 `DRAW_LIMIT`。空数组 = 本站没收录这个省的抽选。
+   */
+  rows: DrawRow[]
+}
+
+/**
+ * 一条官方运营统计(处理时长 / 配额 / 池内人数……)。
+ */
+export type OpsRow = {
+  /**
+   * 指标名(ETL 词表:processing_weeks / allocation / sirs_pool …)。内部码,不见客。
+   */
+  key: string
+
+  /**
+   * 适用范围(通道名 / 行业 / 分数段;省级为空串)。
+   */
+  scope: string
+
+  /**
+   * 官方原文。
+   */
+  label: string
+
+  /**
+   * 数值。**官方的隐私抑制值(「Less than 10」)与纯文本游标恒 null,不许折成 0** ——
+   * 折成 0 就是替官方编了个数字。
+   */
+  value: number | null
+
+  /**
+   * value 为 null 时的官方原文;有值时是它的展示形态。
+   */
+  valueText: string
+
+  /**
+   * 官方发布的单位,**不换算**(SK 发周、BC 发月、MB 发天)。
+   */
+  unit: string
+
+  /**
+   * 官方口径日;没有就空串。
+   */
+  asOf: string
+
+  /**
+   * 统计期(如 `2026Q2`);没有就空串。
+   */
+  period: string
+
+  /**
+   * 出处。
+   */
+  evidence: Evidence
+}
+
+/**
+ * 运营统计的查询结果。
+ */
+export type OpsResult = {
+  /**
+   * 查的哪个省。
+   */
+  prov: string
+
+  /**
+   * 库里有出处的每一行。空数组 = 本站未收录,**不是「官方不公布」**。
+   */
+  rows: OpsRow[]
+}
+
+/**
+ * 一条 EE 类别命中:这个职业在哪个类别抽选清单里,该类别最近一轮长什么样。
+ */
+export type EeRow = {
+  /**
+   * 类别键(ETL 归好的:health / trade / french …)。
+   */
+  category: string
+
+  /**
+   * 类别的官方名。
+   */
+  label: string
+
+  /**
+   * 该类别最近一次类别抽选的最低 CRS;本站无该类别抽选记录时 null。
+   */
+  drawCrs: number | null
+
+  /**
+   * 那一轮的日期;没有就空串。
+   */
+  drawDate: string
+
+  /**
+   * 那一轮邀请了多少人;没有就 null。
+   */
+  drawSize: number | null
+
+  /**
+   * 出处。
+   */
+  evidence: Evidence
+}
+
+/**
+ * EE 类别的查询结果。
+ */
+export type EeResult = {
+  /**
+   * 查的哪个职业码。
+   */
+  noc: string
+
+  /**
+   * 命中的类别。**空数组 = 查过全表、不在任何类别里** —— 这是结论不是缺数,
+   * 事实层要把这句话摆出来,不许让「没有行」被读成「没查到」。
+   */
+  rows: EeRow[]
+}
+
+/**
+ * 一条联邦项目规则(PGWP 时长分档 / CEC 经验要求……)。
+ */
+export type PermitRow = {
+  /**
+   * 项目名(PGWP / CEC / FSW / FST)。
+   */
+  program: string
+
+  /**
+   * 官方分档(masters / short / long …);空串 = 不分档的通则。
+   */
+  stream: string
+
+  /**
+   * 因素名(pgwpLength / pgwpCombine …)。内部码,不见客。
+   */
+  factor: string
+
+  /**
+   * 比较符;`rule` = 这是条规则不是道门槛,别拿 value 去比大小。
+   */
+  op: string
+
+  /**
+   * 阈值。`rule` 行与「跟课程一样长」这类没有绝对数的行恒 null,**不许 `?? 0`**。
+   */
+  value: number | null
+
+  /**
+   * 官方原句(quote-anchored,ETL 每轮验证它仍在页面上)。引用一律用这句。
+   */
+  valueText: string
+
+  /**
+   * 单位(months / days / CLB …)。
+   */
+  unit: string
+
+  /**
+   * 口径速记。说这一行之前先看它 —— 口径不同,话就是假的。
+   */
+  basis: string
+
+  /**
+   * 这条规则管什么(官方页面上的条目名)。
+   */
+  label: string
+
+  /**
+   * 出处。
+   */
+  evidence: Evidence
+}
+
+/**
+ * 联邦规则的查询结果。
+ */
+export type PermitResult = {
+  /**
+   * 查的哪个项目。
+   */
+  program: string
+
+  /**
+   * 库里有出处的每一行。空数组 = 本站未收录这个项目的条款。
+   */
+  rows: PermitRow[]
+}
+
+/**
+ * 官方计分表的一行(一档几分)。
+ */
+export type PointsRow = {
+  /**
+   * 哪套分(CRS / FSW67)。**两套官方定义的分,不许混、不许相加。**
+   */
+  grid: string
+
+  /**
+   * 节号。
+   */
+  section: string
+
+  /**
+   * 节名(官方原文)。
+   */
+  sectionLabel: string
+
+  /**
+   * summary(小结行)还是 detail(逐档行)。
+   */
+  kind: string
+
+  /**
+   * 表头(官方原文)。
+   */
+  heading: string
+
+  /**
+   * 因素名。
+   */
+  factor: string
+
+  /**
+   * 档位描述(官方原文,如年龄段)。
+   */
+  criterion: string
+
+  /**
+   * 列名(单身/已婚两列这类)。
+   */
+  columnLabel: string
+
+  /**
+   * 这一档的分。官方写 n/a / Not eligible 时恒 null,原文在 pointsText,**不许折成 0**。
+   */
+  points: number | null
+
+  /**
+   * points 为 null 时的官方原文;有值时是它的展示形态。
+   */
+  pointsText: string
+
+  /**
+   * 出处。
+   */
+  evidence: Evidence
+}
+
+/**
+ * 计分表的查询结果。
+ */
+export type PointsResult = {
+  /**
+   * 哪套分。
+   */
+  grid: string
+
+  /**
+   * 取回的档位行。空数组 = 这组筛选下本站没有行。
+   */
+  rows: PointsRow[]
 }
 
 // =========================================================================
@@ -850,7 +1168,16 @@ export type OnEventIn = {
  *
  * 每把工具的参数 schema 各不相同,所以这里是个联合数组,不是同一个 `Tool<P>`。
  */
-export type MakeToolsOut = (Tool<typeof SEARCH_PARAMS> | Tool<typeof NOC_PARAMS> | Tool<typeof NOC_PROVS_PARAMS>)[]
+export type MakeToolsOut = (
+  | Tool<typeof SEARCH_PARAMS>
+  | Tool<typeof NOC_PARAMS>
+  | Tool<typeof NOC_PROVS_PARAMS>
+  | Tool<typeof PROV_PARAMS>
+  | Tool<typeof PERMIT_PARAMS>
+  | Tool<typeof CRS_PARAMS>
+  | Tool<typeof VERDICT_PARAMS>
+  | Tool<typeof CLAIMS_PARAMS>
+)[]
 
 // =========================================================================
 // 严格签名:每个函数的入参与返回都要有自己的名字(2026-08-20 Frank 拍板)
@@ -1199,6 +1526,261 @@ export type ExecThresholdsIn = Static<typeof NOC_PROVS_PARAMS>
  * `execThresholds` 的返回。
  */
 export type ExecThresholdsOut = Promise<Reply>
+
+/**
+ * `provOf` 的入参:模型填的省码原文。
+ */
+export type ProvOfIn = string
+
+/**
+ * `provOf` 的返回:白名单里的省码(或 FED);认不出就空串。
+ */
+export type ProvOfOut = string
+
+/**
+ * `lookupDraws` 的入参。
+ */
+export type LookupDrawsIn = {
+  /**
+   * 库连接。
+   */
+  db: Db
+
+  /**
+   * 两位省码或 `FED`,已过白名单。
+   */
+  prov: string
+}
+
+/**
+ * `lookupDraws` 的返回。
+ */
+export type LookupDrawsOut = Promise<DrawsResult>
+
+/**
+ * `drawsFacts` 的入参。
+ */
+export type DrawsFactsIn = DrawsResult
+
+/**
+ * `drawsFacts` 的返回。
+ */
+export type DrawsFactsOut = Fact[]
+
+/**
+ * `execDraws` 的入参。
+ */
+export type ExecDrawsIn = Static<typeof PROV_PARAMS>
+
+/**
+ * `execDraws` 的返回。
+ */
+export type ExecDrawsOut = Promise<Reply>
+
+/**
+ * `lookupOps` 的入参。
+ */
+export type LookupOpsIn = {
+  /**
+   * 库连接。
+   */
+  db: Db
+
+  /**
+   * 两位省码,已过白名单。
+   */
+  prov: string
+}
+
+/**
+ * `lookupOps` 的返回。
+ */
+export type LookupOpsOut = Promise<OpsResult>
+
+/**
+ * `opsFacts` 的入参。
+ */
+export type OpsFactsIn = OpsResult
+
+/**
+ * `opsFacts` 的返回。
+ */
+export type OpsFactsOut = Fact[]
+
+/**
+ * `execOps` 的入参。
+ */
+export type ExecOpsIn = Static<typeof PROV_PARAMS>
+
+/**
+ * `execOps` 的返回。
+ */
+export type ExecOpsOut = Promise<Reply>
+
+/**
+ * `lookupEe` 的入参。
+ */
+export type LookupEeIn = NocQueryIn
+
+/**
+ * `lookupEe` 的返回。
+ */
+export type LookupEeOut = Promise<EeResult>
+
+/**
+ * `eeFacts` 的入参。
+ */
+export type EeFactsIn = EeResult
+
+/**
+ * `eeFacts` 的返回。
+ */
+export type EeFactsOut = Fact[]
+
+/**
+ * `execEe` 的入参。
+ */
+export type ExecEeIn = Static<typeof NOC_PARAMS>
+
+/**
+ * `execEe` 的返回。
+ */
+export type ExecEeOut = Promise<Reply>
+
+/**
+ * `lookupPermit` 的入参。
+ */
+export type LookupPermitIn = {
+  /**
+   * 库连接。
+   */
+  db: Db
+
+  /**
+   * 项目名,schema 已收窄到四个联邦项目。
+   */
+  program: string
+}
+
+/**
+ * `lookupPermit` 的返回。
+ */
+export type LookupPermitOut = Promise<PermitResult>
+
+/**
+ * `permitFacts` 的入参。
+ */
+export type PermitFactsIn = PermitResult
+
+/**
+ * `permitFacts` 的返回。
+ */
+export type PermitFactsOut = Fact[]
+
+/**
+ * `execPermit` 的入参。
+ */
+export type ExecPermitIn = Static<typeof PERMIT_PARAMS>
+
+/**
+ * `execPermit` 的返回。
+ */
+export type ExecPermitOut = Promise<Reply>
+
+/**
+ * `lookupPoints` 的入参。
+ */
+export type LookupPointsIn = {
+  /**
+   * 库连接。
+   */
+  db: Db
+
+  /**
+   * 哪套分,schema 已收窄到 CRS / FSW67。
+   */
+  grid: string
+
+  /**
+   * 只看某一节;空串 = 不筛节(CRS 那时只取 summary 行)。
+   */
+  section: string
+}
+
+/**
+ * `lookupPoints` 的返回。
+ */
+export type LookupPointsOut = Promise<PointsResult>
+
+/**
+ * `pointsFacts` 的入参。
+ */
+export type PointsFactsIn = PointsResult
+
+/**
+ * `pointsFacts` 的返回。
+ */
+export type PointsFactsOut = Fact[]
+
+/**
+ * `execPoints` 的入参。
+ */
+export type ExecPointsIn = Static<typeof CRS_PARAMS>
+
+/**
+ * `execPoints` 的返回。
+ */
+export type ExecPointsOut = Promise<Reply>
+
+/**
+ * `verdictProfileOf` 的入参。
+ */
+export type VerdictProfileOfIn = {
+  /**
+   * 这一趟的收件箱 —— 职业码与 TEER 从这儿取(已过采信)。
+   */
+  box: Inbox
+
+  /**
+   * 调用方给的档案。**只搬真有的槽,缺的原样 null** —— 缺一个槽 ≠ 有一个默认值。
+   */
+  profile: Profile
+}
+
+/**
+ * `verdictProfileOf` 的返回:判定引擎认的档案形状(裁决域声明的,本域只是装配)。
+ */
+export type VerdictProfileOfOut = VerdictProfile
+
+/**
+ * `verdictFacts` 的入参:裁决引擎排好序的通道判定。
+ */
+export type VerdictFactsIn = PathwayVerdict[]
+
+/**
+ * `verdictFacts` 的返回。
+ */
+export type VerdictFactsOut = Fact[]
+
+/**
+ * `execVerdict` 的入参(空对象 —— 这把工具不收参数,档案从收件箱与档案槽闭包取)。
+ */
+export type ExecVerdictIn = Static<typeof VERDICT_PARAMS>
+
+/**
+ * `execVerdict` 的返回。
+ */
+export type ExecVerdictOut = Promise<Reply>
+
+/**
+ * `execClaims` 的入参。
+ */
+export type ExecClaimsIn = Static<typeof CLAIMS_PARAMS>
+
+/**
+ * `execClaims` 的返回。
+ */
+export type ExecClaimsOut = Promise<Reply>
 
 /**
  * `firstPrompt` 的入参。

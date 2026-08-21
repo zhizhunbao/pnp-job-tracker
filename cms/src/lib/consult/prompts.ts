@@ -251,9 +251,13 @@ export const TOOL_DESC = {
     + 'they ask what a province requires of them or of an employer.',
 
   /**
-   * 抽签记录。
+   * 抽签记录。2026-08-21 补 FED 一句:生产实测「我 480 稳吗」这类 CRS 分数问题,
+   * 答案在联邦轮次的分数线里,不说清 FED 模型就没有一把工具够得着它。
    */
-  draws: 'The most recent provincial nominee draw for one province: date, cutoff score and how many were invited.',
+  draws:
+    'Recent invitation rounds (draws) for one province, or for federal Express Entry with prov "FED": date, stream, '
+    + 'cutoff score and how many were invited. Use FED whenever they ask about a CRS score or Express Entry cutoffs. '
+    + 'Needs no occupation.',
 
   /**
    * 官方处理时长。
@@ -261,9 +265,12 @@ export const TOOL_DESC = {
   ops: 'The official processing time a province publishes, for one province.',
 
   /**
-   * Express Entry 相关事实。
+   * Express Entry 相关事实。2026-08-21 按工具真实返回改准:它查的是类别抽选清单,
+   * 不是「哪些联邦项目合格」—— 描述说错,模型就会拿它答资格问题。
    */
-  ee: 'Express Entry facts for this occupation: which federal programs it is eligible for.',
+  ee:
+    'Whether this occupation is on any Express Entry category-based draw list, and the latest cutoff of each matching '
+    + 'category. Category draws invite by category with their own cutoffs, separate from general rounds.',
 
   /**
    * 联邦工签与项目规则。
@@ -358,6 +365,20 @@ export const TOOL_REPLY = {
    */
   verdictNeedsProfile:
     'Not enough of this person\'s profile is known to assess pathways. Ask them one short question about what is missing.',
+
+  /**
+   * 这条主张是私人承诺。官方表里没有它的对应事实,查了也只会答非所问 ——
+   * 所以不查,直接判「核不了」,并说清它不能当官方保证。
+   */
+  claimPrivate:
+    'PRIVATE PROMISE: no official record can confirm a partner company, inside channel or guaranteed outcome. '
+    + 'Tell the user plainly that this promise is not an official guarantee and cannot be verified.',
+
+  /**
+   * 这条主张能对账。事实要靠数据工具拿,这里只判类别。
+   */
+  claimCheckable:
+    'CHECKABLE: verify it against tool results (occupation lists, thresholds, draws, postings) before repeating any part of it.',
 }
 
 // =========================================================================

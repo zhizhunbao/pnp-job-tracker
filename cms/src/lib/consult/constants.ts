@@ -74,12 +74,24 @@ export const CONTEXT_WINDOW = 262_144
 
 /**
  * 单发输出上限。答复本身还有出口按句截断兜着,这里只防跑飞。
+ *
+ * 🔴 2026-08-21 从 1200 降到 700,判据是分步计时探针实测:那台盒子解码慢,
+ * 1200 token 的终答一发就要 25 秒上下,而见客上限只有 zh 600 / en 1400 字 ——
+ * 多出来的那截生成完也会被 `clampAnswer` 截掉,纯粹在烧超时预算。
+ * 700 token ≈ zh 600 字 / en 1600 字符,与见客上限对齐。
  */
-export const MAX_TOKENS = 1200
+export const MAX_TOKENS = 700
 
 /**
  * 一趟循环的总预算。超了就掐断报「系统繁忙」——旧链的看门狗是 15 秒,
  * 但那盯的是单发合成;工具循环是多轮,预算按整趟算。
+ *
+ * ⚠️ 2026-08-21 实测两条运维事实,改这个数之前先读:
+ *   ① **被掐断的请求在盒子上不会立刻死**(`stream:false` 的一路死不掉,流式的也要拖几秒),
+ *      单队列的 Ollama 会让后续请求全排在僵尸后面 —— 生产日志里「快慢随机」的 45s 超时
+ *      就是自己上一轮的僵尸堵的。**预算越紧、掐得越勤,队列被自己污染得越狠**;
+ *      治本是让最坏一趟跑得进预算(补对口工具、压 MAX_TOKENS),不是把这个数改小。
+ *   ② 同一条问题局域网直连 4.6s、经隧道约 +1.7s/轮 —— 隧道慢是固定开销,不是抖动。
  */
 export const TIMEOUT_MS = Number(process.env.CHAT_PI_TIMEOUT_MS ?? 45_000)
 
@@ -142,6 +154,67 @@ export const MAX_QUERY = 60
  * 一趟最多攒多少条事实。再多前端也读不完。
  */
 export const MAX_FACTS = 40
+
+/**
+ * 抽选记录最多带几轮。近十轮足够看出分数区间与节奏,再多是往上下文里灌水。
+ */
+export const DRAW_LIMIT = 10
+
+/**
+ * 计分表一次最多取几行。CRS 的 summary 全表 20 行;detail 166 行没人读得完,靠 section 筛。
+ */
+export const POINTS_LIMIT = 40
+
+/**
+ * 计分表的「小结行」种类值。CRS 不给 section 时默认只取它 —— detail 166 行会把上下文灌爆;
+ * FSW67 库里没有 summary 行(实查 2026-08-21),只能取 detail 靠 LIMIT 兜。
+ */
+export const KIND_SUMMARY = 'summary'
+
+/**
+ * CRS 分表名。`lookupPoints` 按它决定「不给 section 时取不取 summary」。
+ */
+export const GRID_CRS = 'CRS'
+
+/**
+ * 一次最多对几条主张。中介一口气吹十条时,前几条对完模型就有话答了。
+ */
+export const CLAIMS_CAP = 6
+
+/**
+ * 每条主张截多少字。原话要进事实清单当引文,太长会把清单撑爆。
+ */
+export const CLAIM_TEXT_CAP = 160
+
+/**
+ * tier 档位 → offer 之后大约等多久(裁决引擎的档位语义:0=Day0 / 1=3-6月 / 2=12月 / 3=24月)。
+ * 数字要出现在 label 里,数字闸才认它们有出处。
+ */
+export const TIER_TEXT: string[] = ['no extra wait', '3-6 months', 'about 12 months', 'about 24 months']
+
+/**
+ * 裁决理由里「官方明说不行」那一类的标记值。挑见客引文时只认它 —— excluded 必带官方原句。
+ */
+export const REASON_EXCLUDED = 'excluded'
+
+/**
+ * 判定引擎认得的身份词(`VerdictProfile.status` 的词表)。
+ * 档案槽里**正好是这几个**才透传,其余一律 null —— 喂一个引擎不认识的词,
+ * 它会走「不是在读」之类的反向分支,比「没答」更糟。
+ */
+export const STATUS_WORDS = ['pgwp', 'study', 'worker', 'other']
+
+/**
+ * 私人承诺的判据 = **原话**,不是模型给的分类。
+ *
+ * 🔵 2026-08-21 从 lib/chat/tools.ts 原样搬进来(chat 将删,幸存件先搬 —— 17 号卷宗 §0):
+ * 「合作公司 / 内部渠道 / 保 offer / 认识人」这类私人承诺,库里**根本没有对应的官方事实**,
+ * 硬查一张不相干的表再把结果当答复,等于替中介的承诺背书(2026-08-04 实录:
+ * 「曼省有合作公司」被归到运营统计,答出来是「MPNP 发不发月度报表」)。
+ * 只收**承诺私人关系/内部通道/打包票**的词;「两个月就下来」这类能对账的事实主张不许被吃掉。
+ */
+export const PRIVATE_PROMISE =
+  /合作(公司|企业|雇主|单位|关系)|内部(渠道|名额|指标|关系|价)|内推名额|走关系|有关系|认识(人|领导|移民官)|特殊渠道|绿色通道|(?:老板|雇主).{0,12}(?:帮|协助).{0,8}(?:办|申请|提名|手续)|包(过|下来|拿)|包.{0,12}(offer|提名|省提名|pr\b)|保(过|证过|证拿|证能|你拿|你过)|包?保\s*offer|保证.{0,12}(offer|提名|批)|partner(ed|ship)? (compan|employer|firm)|inside (track|channel|connection)|guarantee\w*.{0,40}\b(offer|nomination|pr\b|approval)|(?:employer|boss|restaurant).{0,40}(?:help|handle|support).{0,30}(?:apply|application|nomination|paperwork|process)|보장.{0,20}(오퍼|지명|승인)|(오퍼|지명|승인).{0,30}보장|(고용주|사장).{0,30}(도와|돕|지원|처리).{0,20}(신청|절차|지명)?|특별 (경로|채널)|내부 (경로|채널)|special (channel|access)|connections? (at|with|inside)/i
 
 // =========================================================================
 // 3. prompt 的结构锚点
@@ -271,6 +344,41 @@ export const TOOL_NAME = {
    * 省提名门槛条文。
    */
   thresholds: 'lookup_thresholds',
+
+  /**
+   * 抽选记录(省级 EOI 与联邦 Express Entry 轮次共一把,靠 prov 区分,FED = 联邦)。
+   */
+  draws: 'lookup_draws',
+
+  /**
+   * 官方运营统计(处理时长 / 配额 / 池内人数)。
+   */
+  ops: 'lookup_ops',
+
+  /**
+   * 联邦 EE 类别抽选清单。
+   */
+  ee: 'lookup_ee',
+
+  /**
+   * 联邦项目规则(PGWP / CEC / FSW / FST)。
+   */
+  permit: 'lookup_permit',
+
+  /**
+   * 官方计分表(CRS / FSW67)。
+   */
+  points: 'lookup_points',
+
+  /**
+   * 路径裁决(读我们自己存的档案,不收参数)。
+   */
+  verdict: 'assess_pathways',
+
+  /**
+   * 主张对账(中介/朋友的话 vs 官方记录)。
+   */
+  claims: 'check_claims',
 }
 
 /**
@@ -296,6 +404,41 @@ export const TOOL_LABEL = {
    * 省提名门槛条文。
    */
   thresholds: '省提名门槛',
+
+  /**
+   * 抽选记录。
+   */
+  draws: '抽选记录',
+
+  /**
+   * 官方运营统计。
+   */
+  ops: '处理时长与配额',
+
+  /**
+   * 联邦 EE 类别。
+   */
+  ee: '联邦类别',
+
+  /**
+   * 联邦项目规则。
+   */
+  permit: '联邦规则',
+
+  /**
+   * 官方计分表。
+   */
+  points: '官方分表',
+
+  /**
+   * 路径裁决。
+   */
+  verdict: '路径判定',
+
+  /**
+   * 主张对账。
+   */
+  claims: '主张对账',
 }
 
 /**
@@ -371,6 +514,16 @@ export const UNIT = {
    * 门槛行,官方没给单位时用它兜底。
    */
   threshold: 'threshold',
+
+  /**
+   * 分数行(抽选分数线、计分表档位)。
+   */
+  points: 'points',
+
+  /**
+   * 判定行(路径裁决的结论,不是官方数字)。
+   */
+  verdict: 'verdict',
 } as const
 
 /**
@@ -610,6 +763,101 @@ export const LABEL = {
    * 分档之间的连接号(不是减号,是短横)。
    */
   range: '–',
+
+  /**
+   * 抽选那条的中段,前接省码、后接日期。
+   */
+  drawRound: ' draw ',
+
+  /**
+   * 分数线,前接轮次名。
+   */
+  cutoff: ' cutoff ',
+
+  /**
+   * 邀请数的后缀。
+   */
+  invited: ' invited',
+
+  /**
+   * 抽选记录整批的说明尾(statusFact 用)。
+   */
+  drawsList: ' draw records',
+
+  /**
+   * 运营统计那条的中段。
+   */
+  opsHead: ' official operational stat — ',
+
+  /**
+   * 运营统计整批的说明尾(statusFact 用)。
+   */
+  opsList: ' operational stats',
+
+  /**
+   * 统计口径日的前缀。
+   */
+  asOf: ' as of ',
+
+  /**
+   * EE 类别那条的开头,后接类别名。
+   */
+  eeHead: 'EE category ',
+
+  /**
+   * EE 类别那条的中段,后接该类别最近一轮的日期。
+   */
+  eeLast: ' last category draw ',
+
+  /**
+   * 这个职业不在任何 EE 类别里(查过全表,是结论不是缺数)。
+   */
+  eeNone: ' is not on any Express Entry category-based draw list (full table checked)',
+
+  /**
+   * 联邦规则那条的中段。
+   */
+  permitHead: ' federal rule — ',
+
+  /**
+   * 联邦规则整批的说明尾(statusFact 用),前接项目名。
+   */
+  permitList: ' federal rules',
+
+  /**
+   * 计分表那条的中段。
+   */
+  pointsHead: ' points — ',
+
+  /**
+   * 计分表整批的说明尾(statusFact 用),前接分表名。
+   */
+  pointsList: ' points table rows',
+
+  /**
+   * 路径裁决那条的中段,前接「省 通道」、后接结论词。
+   */
+  verdictHead: ' — pathway verdict: ',
+
+  /**
+   * offer 之后大约要等多久,后接 `TIER_TEXT` 的档位话。
+   */
+  tierHead: ', wait after offer about ',
+
+  /**
+   * 卡住这条路的那道闸,后接闸名。
+   */
+  blockedBy: ', blocked by ',
+
+  /**
+   * 判不了时缺哪几个档案槽,后接槽名清单。
+   */
+  missing: ', missing profile answers: ',
+
+  /**
+   * 主张那条的开头,后接用户转述的原话。
+   */
+  claimHead: 'claim reported by the user — ',
 }
 
 /**
