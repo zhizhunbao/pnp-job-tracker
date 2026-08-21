@@ -107,8 +107,12 @@ export const MAX_TOKENS = 1200
  * 评测第四跑(glm 链)实测中位 12.4s,但偶发长跑 40-70s;45s 预算下一次超时的僵尸
  * 会把后面几发连坐成 busy(级联实拍:R09 超时 → R10 排队 40s → R11/R12 连环 busy)。
  * 120s 让长尾「慢但答上」,不再产僵尸 —— 前端等待态有轨迹与秒数陪着。
+ *
+ * 原先带 `CHAT_PI_TIMEOUT_MS` 环境变量开关,2026-08-21 Frank 拍板删掉:没有任何环境在设它
+ * (逃生口是 45s 时代评测批用的,120s 成默认后连评测都不需要了)。要改预算改这行 ——
+ * 代码是自己的,没人设的开关只是多一条要解释的岔路。
  */
-export const TIMEOUT_MS = process.env.CHAT_PI_TIMEOUT_MS === undefined ? 120_000 : Number(process.env.CHAT_PI_TIMEOUT_MS)
+export const TIMEOUT_MS = 120_000
 
 /**
  * 直接塞进请求体的采样参数。
