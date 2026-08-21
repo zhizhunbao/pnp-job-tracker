@@ -293,6 +293,12 @@ export const TOOL_DESC = {
   crsGrid: '"CRS" for the ranking score, "FSW67" for the 67-point eligibility score.',
 
   /**
+   * 节号。烟测实撞(2026-08-21):没有词表时模型填 'age' 之类,查空后无限重打同一把工具
+   * 直到 120s 超时 —— 节号必须是库里真有的那几个,整表就别填。
+   */
+  crsSection: 'CRS section: A=core/human capital, B=spouse, C=skill transferability, D=additional points. Omit for the full table. Always omit for FSW67.',
+
+  /**
    * 时间线。
    */
   plan: 'The step-by-step timeline for one to three provinces: what happens in what order and how long each official step takes.',

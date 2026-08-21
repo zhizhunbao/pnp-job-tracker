@@ -80,9 +80,15 @@ export const CRS_PARAMS = Type.Object({
   grid: Type.Union([Type.Literal('CRS'), Type.Literal('FSW67')], { description: TOOL_DESC.crsGrid }),
 
   /**
-   * 只看某一节,不填 = 整张表。
+   * 只看某一节,不填 = 整张表。枚举锁死成库里真有的节号(CRS 的 A–D;FSW67 单节不筛)——
+   * 自由字符串时模型填 'age' 之类,查空后无限重打同一把工具直到超时(2026-08-21 烟测实撞)。
    */
-  section: Type.Optional(Type.String()),
+  section: Type.Optional(
+    Type.Union(
+      [Type.Literal('A'), Type.Literal('B'), Type.Literal('C'), Type.Literal('D')],
+      { description: TOOL_DESC.crsSection },
+    ),
+  ),
 })
 
 /**
