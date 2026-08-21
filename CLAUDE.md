@@ -310,6 +310,12 @@ pnp-job-tracker/
     TypeBox 的 Optional、pg 的签名),不设整层豁免 —— 特批牌挂在那一行上,greppable。
   - 闸:`no-optional` / `no-undefined-type` / `no-unknown-type` / `no-explicit-any`,
     迁完的域 error、其余全站 warn 当清单,清完一个域升一个(eslint.config.mjs)。
+- **🔴 禁 `!x` 与后缀 `x!`,禁 `??` / `??=`**(2026-08-21 Frank 同日追加,闸 `no-bang` / `no-nullish`):
+  - `!x` 把「x 是哪一种没有」折进一个布尔 —— 判空写 `== null`,空串 `=== ''`,
+    空数组 `.length === 0`,布尔 `=== false`;`x!` 非空断言和 `as unknown as X` 同罪(把编译器闭嘴)。
+  - `a ?? b` 是折叠写法,展开写:`let v = b; if (a != null) v = a`;读库值走词汇表。
+  - **比较基准:默认 `===` / `!==`;唯一例外 `== null` / `!= null`**(一次命中 null 与 undefined,
+    语言接缝产生的 undefined 一网打尽)。`!=`/`!==` 不属于「感叹号禁令」,它们是显式比较。
 - **🔴 禁三目**(2026-08-21 Frank 拍板:三目是人手写代码省事用的,AI 写代码统一 if/else):
   流程位改 if/else;值位置提成具名小函数(那一格的概念顺带得一个名字,如 `subjectOf`);
   「x 有值才拼这段」用 `seg({when, text})` 这类小件 —— 条件显式写,文本只许纯拼接,

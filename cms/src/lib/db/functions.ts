@@ -54,6 +54,6 @@ export function show(x: number | null): string {
  * 由调用方(`server.ts` 的 dbOf)决定,本文件是纯函数不造错。
  */
 export function poolOf(payload: PayloadWithPool): DbPool | null {
-  if (!payload.db || !payload.db.pool) return null
+  if (payload.db == null || payload.db.pool == null) return null
   return payload.db.pool
 }

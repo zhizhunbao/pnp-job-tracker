@@ -665,6 +665,59 @@ const localRules = {
       },
     },
 
+    // `!x` 把「x 是 null/undefined/''/0/false 里的哪一种没有」全折进一个布尔,读的人要回头
+    // 查 x 的类型才知道这行到底在判什么(2026-08-21 Frank「禁止用感叹号」,Java 风格:比较写显式)。
+    // 一并禁 TS 的后缀 `x!`(非空断言)—— 它和 `as unknown as X` 一样是把编译器闭嘴的写法。
+    // `!==` / `!=` 不在此列:那是比较运算符,本身就是显式写法。
+    'no-bang': {
+      meta: {
+        type: 'problem',
+        schema: [],
+        messages: {
+          bang:
+            '不许 `!x`。判空写 `== null`,空串写 `=== \'\'`,空数组写 `.length === 0`,'
+            + '布尔写 `=== false` —— 把「哪一种没有」写出来。',
+          nonnull:
+            '不许后缀 `x!`(非空断言)—— 它把编译器闭嘴。真知道非空就先 if 收窄,'
+            + '编译器自己会认。',
+        },
+      },
+      create(context) {
+        return {
+          UnaryExpression(node) {
+            if (node.operator === '!') context.report({ node, messageId: 'bang' })
+          },
+          TSNonNullExpression(node) { context.report({ node, messageId: 'nonnull' }) },
+        }
+      },
+    },
+
+    // `a ?? b` 是把「a 没有就用 b」折进一个运算符 —— 和三目、`?.` 同一路:写起来省,读起来要
+    // 展开脑内翻译(2026-08-21 Frank 补禁,当初禁 `?` 时它被放行,实看 agent 域后收回)。
+    // 显式写法:`let v = b; if (a != null) v = a`;读库值走词汇表(text/count/numOrNull)。
+    // `??=` 一并禁。
+    'no-nullish': {
+      meta: {
+        type: 'problem',
+        schema: [],
+        messages: {
+          nullish:
+            '不许 `??` / `??=`。写显式:`let v = 默认; if (x != null) v = x`;'
+            + '库里读出来的值走词汇表(text/count/numOrNull)。',
+        },
+      },
+      create(context) {
+        return {
+          LogicalExpression(node) {
+            if (node.operator === '??') context.report({ node, messageId: 'nullish' })
+          },
+          AssignmentExpression(node) {
+            if (node.operator === '??=') context.report({ node, messageId: 'nullish' })
+          },
+        }
+      },
+    },
+
     // undefined 是 JS 自己的「没有」(数组越界、缺属性、没 return),null 才是我们契约里的「没有」。
     // 两种「没有」并存,每个读值的人都要想两次(2026-08-21 Frank「any unknown undefined 都不允许」)。
     // 只查**类型位置**:运行时的 `x !== undefined` 判断是在边界收语言值,那是收窄不是传播。
@@ -1179,6 +1232,27 @@ const eslintConfig = [
     ignores: ['src/lib/consult/**', 'src/lib/gauge/**', 'src/lib/points/**', 'src/lib/ruling/**', 'src/lib/agent/**', 'src/lib/llm/**', 'src/lib/error.ts', 'src/lib/log.ts', 'src/lib/db/**', 'src/app/seed/route.ts'],
     plugins: { local: localRules },
     rules: { 'local/no-unknown-type': 'warn' },
+  },
+  {
+    // ── 禁 `!x` 与后缀 `x!`:全站 warn = 整改清单(2026-08-21 Frank「禁止用感叹号」)──
+    // 比较基准同场拍板:默认 `===`,唯一例外 `== null` / `!= null`(一次命中 null 与 undefined)。
+    files: ['src/**/*.ts'],
+    plugins: { local: localRules },
+    rules: { 'local/no-bang': 'warn' },
+  },
+  {
+    // ── 禁 `??` / `??=`:全站 warn = 整改清单(2026-08-21 Frank 实看 agent 后补禁)──
+    files: ['src/**/*.ts'],
+    plugins: { local: localRules },
+    rules: { 'local/no-nullish': 'warn' },
+  },
+  {
+    // ── 函数内注释:全站 warn = 整改清单(2026-08-21 Frank 实看 agent 的 2 条欠账后补)──
+    // ruling/gauge/points/consult 已清零升 error(各自的块),ignores 逐一对齐别盖降。
+    files: ['src/**/*.ts'],
+    ignores: ['src/lib/ruling/**', 'src/lib/gauge/**', 'src/lib/points/**', 'src/lib/consult/**'],
+    plugins: { local: localRules },
+    rules: { 'local/no-comment-in-function': 'warn' },
   },
   {
     // ── 禁 undefined 出现在类型里:全站 warn = 整改清单(2026-08-21 Frank「都不允许」)──
