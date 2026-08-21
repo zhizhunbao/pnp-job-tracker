@@ -5152,24 +5152,14 @@ export type PathwayFactsOut = {
 }
 
 /**
- * `numOf` 的入参:库里那一格。
+ * `subjectOf` 的入参:库里的 subject 列那一格。
  */
-export type NumOfIn = Cell
+export type SubjectOfIn = Cell
 
 /**
- * `numOf` 的返回:数字,或者 null(**不折成 0** —— 官方的 n/a 与「0 分」是两回事)。
+ * `subjectOf` 的返回:门槛行的两个合法主语之一。
  */
-export type NumOfOut = number | null
-
-/**
- * `strOf` 的入参:库里那一格。
- */
-export type StrOfIn = Cell
-
-/**
- * `strOf` 的返回:字符串,空回空串。
- */
-export type StrOfOut = string
+export type SubjectOfOut = 'applicant' | 'employer'
 
 /**
  * `rowsOf` 的入参。

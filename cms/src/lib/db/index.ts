@@ -13,7 +13,7 @@
  */
 
 export {
-  count, numOrNull, poolOf, show, text,
+  count, numOrNull, poolOf, show, text, textOrNull,
 } from './functions'
 
 export * as SQL from './sql'
