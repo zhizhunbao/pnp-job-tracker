@@ -68,19 +68,28 @@ export function areaOfPlace(input: AreaOfPlaceIn): AreaOfPlaceOut {
     if (matchesAny({ names: names, list: ON_LISTED })) {
       return AREA.onListedCd
     }
-    return names.length ? AREA.outsideGta : AREA.unknown
+    if (names.length > 0) {
+      return AREA.outsideGta
+    }
+    return AREA.unknown
   }
   if (input.province === AREA_PROV.bc) {
     if (matchesAny({ names: names, list: METRO_VAN })) {
       return AREA.metroVancouver
     }
-    return names.length ? AREA.restOfBc : AREA.unknown
+    if (names.length > 0) {
+      return AREA.restOfBc
+    }
+    return AREA.unknown
   }
   if (input.province === AREA_PROV.nl) {
     if (matchesAny({ names: names, list: ST_JOHNS })) {
       return AREA.stJohns
     }
-    return names.length ? AREA.restOfNl : AREA.unknown
+    if (names.length > 0) {
+      return AREA.restOfNl
+    }
+    return AREA.unknown
   }
   return AREA.unknown
 }
@@ -136,16 +145,26 @@ export function employerBar(input: EmployerBarIn): EmployerBarOut {
       rows.push(r)
     }
   }
+  const revenueRow = barRow({
+    rows: rows, factor: FACTOR.empRevenue, areas: revenueAreas({ area: input.area }),
+  })
+  let revenue: number | null = null
+  if (revenueRow != null) {
+    revenue = revenueRow.value
+  }
+  const staffRow = barRow({
+    rows: rows, factor: FACTOR.empStaff, areas: staffAreas({ area: input.area }),
+  })
+  let staff: number | null = null
+  if (staffRow != null) {
+    staff = staffRow.value
+  }
   return {
     years: yearsOf({
       row: barRow({ rows: rows, factor: FACTOR.empYears, areas: [AREA.unknown] }),
     }),
-    revenue: barRow({
-      rows: rows, factor: FACTOR.empRevenue, areas: revenueAreas({ area: input.area }),
-    })?.value ?? null,
-    staff: barRow({
-      rows: rows, factor: FACTOR.empStaff, areas: staffAreas({ area: input.area }),
-    })?.value ?? null,
+    revenue: revenue,
+    staff: staff,
   }
 }
 
@@ -191,7 +210,10 @@ function staffAreas(input: AreasForIn): AreasForOut {
   if (input.area === AREA.onListedCd) {
     return [AREA.outsideGta]
   }
-  return input.area ? [input.area] : []
+  if (input.area !== '') {
+    return [input.area]
+  }
+  return []
 }
 
 /**
@@ -213,7 +235,10 @@ function revenueAreas(input: AreasForIn): AreasForOut {
   if (input.area === AREA.outsideGta) {
     return []
   }
-  return input.area ? [input.area] : []
+  if (input.area !== '') {
+    return [input.area]
+  }
+  return []
 }
 
 /**
@@ -224,10 +249,13 @@ function revenueAreas(input: AreasForIn): AreasForOut {
  */
 function yearsOf(input: YearsOfIn): YearsOfOut {
   const row = input.row
-  if (!row || row.value == null) {
+  if (row == null || row.value == null) {
     return null
   }
-  return row.unit === UNIT.months ? row.value / MONTHS_PER_YEAR : row.value
+  if (row.unit === UNIT.months) {
+    return row.value / MONTHS_PER_YEAR
+  }
+  return row.value
 }
 
 // =========================================================================
@@ -243,7 +271,7 @@ function yearsOf(input: YearsOfIn): YearsOfOut {
  * @returns 适用则 true。
  */
 export function teerHit(input: TeerHitIn): TeerHitOut {
-  if (!input.r.appliesTeer) {
+  if (input.r.appliesTeer === '') {
     return true
   }
   if (input.teer == null) {
@@ -276,10 +304,10 @@ function nocScore(input: NocScoreIn): NocScoreOut {
     }
   }
   const inc = prefixList({ text: input.r.appliesNoc || '' })
-  if (!inc.length) {
+  if (inc.length === 0) {
     return NOC_GENERIC
   }
-  if (!noc) {
+  if (noc == null || noc === '') {
     return NOC_MISS
   }
   const hits: string[] = []
@@ -289,7 +317,10 @@ function nocScore(input: NocScoreIn): NocScoreOut {
     }
   }
   hits.sort(byLengthDesc)
-  return hits.length ? hits[0].length : NOC_MISS
+  if (hits.length === 0) {
+    return NOC_MISS
+  }
+  return hits[0].length
 }
 
 /**
@@ -394,27 +425,33 @@ function languageResult(input: FactorIn): FactorOneOut {
     rows: rowsOfFactor({ reqs: input.reqs, factor: FACTOR.language, subject: SUBJECT.applicant }),
     profile: input.profile,
   })
-  if (!lang) {
+  if (lang == null) {
     return null
   }
   const clb = input.profile.clb
   if (lang.op === OP.none) {
     return {
       factor: FACTOR.language, subject: SUBJECT.applicant, verdict: ITEM.pass, need: null,
-      needLow: null, have: clb, short: null, unit: lang.unit, evidence: evidenceOf({ r: lang }),
+      needLow: null, have: clb, short: null, unit: lang.unit, basis: null, tiers: null, evidence: evidenceOf({ r: lang }),
     }
   }
   if (clb == null || lang.value == null) {
     return {
       factor: FACTOR.language, subject: SUBJECT.applicant, verdict: ITEM.unknown, need: lang.value,
-      needLow: null, have: clb, short: null, unit: lang.unit, evidence: evidenceOf({ r: lang }),
+      needLow: null, have: clb, short: null, unit: lang.unit, basis: null, tiers: null, evidence: evidenceOf({ r: lang }),
     }
   }
   const ok = clb >= lang.value
+  let verdict: RuleResult['verdict'] = ITEM.fail
+  let short: number | null = lang.value - clb
+  if (ok) {
+    verdict = ITEM.pass
+    short = null
+  }
   return {
-    factor: FACTOR.language, subject: SUBJECT.applicant, verdict: ok ? ITEM.pass : ITEM.fail,
-    need: lang.value, needLow: null, have: clb, short: ok ? null : lang.value - clb,
-    unit: lang.unit, evidence: evidenceOf({ r: lang }),
+    factor: FACTOR.language, subject: SUBJECT.applicant, verdict: verdict,
+    need: lang.value, needLow: null, have: clb, short: short,
+    unit: lang.unit, basis: null, tiers: null, evidence: evidenceOf({ r: lang }),
   }
 }
 
@@ -427,7 +464,7 @@ function languageResult(input: FactorIn): FactorOneOut {
 function pickLanguageRow(input: PickLanguageRowIn): PickLanguageRowOut {
   const scored: ScoredRow[] = []
   for (const r of input.rows) {
-    if (!teerHit({ r: r, teer: input.profile.teer })) {
+    if (teerHit({ r: r, teer: input.profile.teer }) === false) {
       continue
     }
     const s = nocScore({ r: r, noc: input.profile.noc })
@@ -436,7 +473,10 @@ function pickLanguageRow(input: PickLanguageRowIn): PickLanguageRowOut {
     }
   }
   scored.sort(byScoreDesc)
-  return scored.length ? scored[0].r : null
+  if (scored.length === 0) {
+    return null
+  }
+  return scored[0].r
 }
 
 /**
@@ -455,26 +495,45 @@ function pickLanguageRow(input: PickLanguageRowIn): PickLanguageRowOut {
  */
 function incomeResult(input: FactorIn): FactorOneOut {
   const rows = rowsOfFactor({ reqs: input.reqs, factor: FACTOR.income, subject: SUBJECT.applicant })
-  if (!rows.length) {
+  if (rows.length === 0) {
     return null
   }
   const p = input.profile
-  const size = p.familySize ?? DEFAULT_FAMILY_SIZE
+  let size: number = DEFAULT_FAMILY_SIZE
+  if (p.familySize != null) {
+    size = p.familySize
+  }
   const metro = pickIncomeRow({ rows: rows, area: AREA.metroVancouver, size: size })
   const rest = pickIncomeRow({ rows: rows, area: AREA.restOfBc, size: size })
-  const row = p.area ? pickIncomeRow({ rows: rows, area: p.area, size: size }) ?? metro ?? rest : metro ?? rest
-  if (!row) {
+  const areaKnown = p.area != null && p.area !== ''
+  let row = metro
+  if (row == null) {
+    row = rest
+  }
+  if (areaKnown) {
+    const byArea = pickIncomeRow({ rows: rows, area: p.area as string, size: size })
+    if (byArea != null) {
+      row = byArea
+    }
+  }
+  if (row == null) {
     return null
   }
-  const hi = p.area ? row.value : (metro?.value ?? row.value)
-  const lo = p.area ? null : (rest?.value ?? null)
+  let hi = row.value
+  if (areaKnown === false && metro != null && metro.value != null) {
+    hi = metro.value
+  }
+  let lo: number | null = null
+  if (areaKnown === false && rest != null) {
+    lo = rest.value
+  }
   const judged = incomeVerdict({
     have: p.annualIncome, hi: hi, lo: lo, sizeKnown: p.familySize != null,
   })
   return {
     factor: FACTOR.income, subject: SUBJECT.applicant, verdict: judged.verdict, need: hi,
     needLow: lo, have: p.annualIncome, short: judged.short, unit: row.unit,
-    evidence: evidenceOf({ r: row }),
+    basis: null, tiers: null, evidence: evidenceOf({ r: row }),
   }
 }
 
@@ -514,7 +573,10 @@ function incomeVerdict(input: IncomeVerdictIn): IncomeVerdictOut {
   if (have == null || hi == null) {
     return { verdict: ITEM.unknown, short: null }
   }
-  const floor = input.lo ?? hi
+  let floor = hi
+  if (input.lo != null) {
+    floor = input.lo
+  }
   if (have < floor) {
     return { verdict: ITEM.fail, short: floor - have }
   }
@@ -542,16 +604,19 @@ function tenureResult(input: FactorIn): FactorOneOut {
       rows.push(r)
     }
   }
-  if (!rows.length) {
+  if (rows.length === 0) {
     return null
   }
   rows.sort(byValueAsc)
-  const tiers = tiersOfCondition({ rows: rows })
+  let tiers: RuleResult['tiers'] = tiersOfCondition({ rows: rows })
+  if (rows.length <= 1) {
+    tiers = null
+  }
   return {
     factor: FACTOR.experience, subject: SUBJECT.applicant, basis: BASIS.employerTenure,
     verdict: ITEM.unknown, need: rows[0].value, needLow: null, have: null, short: null,
     unit: rows[0].unit,
-    tiers: rows.length > 1 ? tiers : undefined,
+    tiers: tiers,
     evidence: evidenceOf({ r: rows[0] }),
   }
 }
@@ -578,6 +643,7 @@ function tiersOfCondition(input: TiersOfIn): TiersOfOut {
  *
  * 分 TEER 的经验门槛按 TEER 挑行(PE:Skilled Worker 通道 24 个月只对 TEER 0-3 ——
  * TEER 4/5 的 Critical Worker 官方给了「2 年经验**或**相关学历」的替代路径,当硬门槛会误判)。
+ * 差额里的 `as number` 是既有断言原样保留:判 fail 的前提就是 have 非空(experienceVerdict 的判据)。
  *
  * @param input 该省的门槛行与他的情况。
  * @returns 那一行;没有可判的经验行则 null。
@@ -589,7 +655,7 @@ function experienceResult(input: FactorIn): FactorOneOut {
       exp = r; break 
     }
   }
-  if (!exp) {
+  if (exp == null) {
     return null
   }
   const p = input.profile
@@ -603,11 +669,15 @@ function experienceResult(input: FactorIn): FactorOneOut {
   const verdict = experienceVerdict({
     have: have, need: exp.value, totalAnswered: p.totalExpMonths != null,
   })
+  let short: number | null = null
+  if (verdict === ITEM.fail) {
+    short = exp.value - (have as number)
+  }
   return {
     factor: FACTOR.experience, subject: SUBJECT.applicant, verdict: verdict, need: exp.value,
     needLow: null, have: have,
-    short: verdict === ITEM.fail ? exp.value - (have as number) : null,
-    unit: exp.unit, evidence: evidenceOf({ r: exp }),
+    short: short,
+    unit: exp.unit, basis: null, tiers: null, evidence: evidenceOf({ r: exp }),
   }
 }
 
@@ -624,10 +694,16 @@ function experienceResult(input: FactorIn): FactorOneOut {
  */
 function noExperienceBar(input: NoExperienceBarIn): NoExperienceBarOut {
   const p = input.profile
+  let have: number | null = null
+  if (p.totalExpMonths != null) {
+    have = p.totalExpMonths
+  } else if (p.canadianExpMonths != null) {
+    have = p.canadianExpMonths
+  }
   return {
     factor: FACTOR.experience, subject: SUBJECT.applicant, verdict: ITEM.pass, need: null,
-    needLow: null, have: p.totalExpMonths ?? p.canadianExpMonths ?? null, short: null,
-    unit: input.row.unit, evidence: evidenceOf({ r: input.row }),
+    needLow: null, have: have, short: null,
+    unit: input.row.unit, basis: null, tiers: null, evidence: evidenceOf({ r: input.row }),
   }
 }
 
@@ -682,7 +758,10 @@ function experienceVerdict(input: ExperienceVerdictIn): ExperienceVerdictOut {
   if (input.have >= input.need) {
     return ITEM.pass
   }
-  return input.totalAnswered ? ITEM.fail : ITEM.unknown
+  if (input.totalAnswered) {
+    return ITEM.fail
+  }
+  return ITEM.unknown
 }
 
 /**
@@ -698,13 +777,13 @@ function languageExemptResult(input: FactorIn): FactorOneOut {
     reqs: input.reqs, factor: FACTOR.languageExempt, subject: SUBJECT.applicant,
   })
   for (const r of rows) {
-    if (!teerHit({ r: r, teer: input.profile.teer })) {
+    if (teerHit({ r: r, teer: input.profile.teer }) === false) {
       continue
     }
     return {
       factor: FACTOR.languageExempt, subject: SUBJECT.applicant, verdict: ITEM.unknown,
       need: r.value, needLow: null, have: null, short: null, unit: r.unit,
-      evidence: evidenceOf({ r: r }),
+      basis: null, tiers: null, evidence: evidenceOf({ r: r }),
     }
   }
   return null
@@ -721,14 +800,18 @@ function languageExemptResult(input: FactorIn): FactorOneOut {
  */
 function wageResult(input: FactorIn): FactorOneOut {
   const rows = rowsOfFactor({ reqs: input.reqs, factor: FACTOR.wage, subject: SUBJECT.applicant })
-  const wage = rows[0]
-  if (!wage) {
+  if (rows.length === 0) {
     return null
+  }
+  const wage = rows[0]
+  let need = wage.value
+  if (wage.basis === BASIS.occMedian) {
+    need = input.profile.annualIncome
   }
   return {
     factor: FACTOR.wage, subject: SUBJECT.applicant, verdict: ITEM.unknown,
-    need: wage.basis === BASIS.occMedian ? input.profile.annualIncome : wage.value,
-    needLow: null, have: null, short: null, unit: wage.unit, evidence: evidenceOf({ r: wage }),
+    need: need,
+    needLow: null, have: null, short: null, unit: wage.unit, basis: null, tiers: null, evidence: evidenceOf({ r: wage }),
   }
 }
 
@@ -745,13 +828,13 @@ function employerYearsResult(input: FactorIn): FactorOneOut {
   const rows = rowsOfFactor({
     reqs: input.reqs, factor: FACTOR.empYears, subject: SUBJECT.employer,
   })
-  const row = rows[0]
-  if (!row) {
+  if (rows.length === 0) {
     return null
   }
+  const row = rows[0]
   return {
     factor: FACTOR.empYears, subject: SUBJECT.employer, verdict: ITEM.unknown, need: row.value,
-    needLow: null, have: null, short: null, unit: row.unit, evidence: evidenceOf({ r: row }),
+    needLow: null, have: null, short: null, unit: row.unit, basis: null, tiers: null, evidence: evidenceOf({ r: row }),
   }
 }
 
@@ -774,14 +857,18 @@ function employerTieredResults(input: FactorIn): FactorManyOut {
         rows.push(r)
       }
     }
-    if (!rows.length) {
+    if (rows.length === 0) {
       continue
     }
     rows.sort(byValueDesc)
+    let needLow: number | null = null
+    if (rows.length > 1) {
+      needLow = rows[rows.length - 1].value
+    }
     out.push({
       factor: factor, subject: SUBJECT.employer, verdict: ITEM.unknown, need: rows[0].value,
-      needLow: rows.length > 1 ? rows[rows.length - 1].value : null,
-      have: null, short: null, unit: rows[0].unit, evidence: evidenceOf({ r: rows[0] }),
+      needLow: needLow,
+      have: null, short: null, unit: rows[0].unit, basis: null, evidence: evidenceOf({ r: rows[0] }),
       tiers: tiersOfArea({ rows: rows }),
     })
   }

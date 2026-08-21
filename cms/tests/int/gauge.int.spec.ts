@@ -30,7 +30,7 @@ function employerBar(reqs: Requirement[], province: string, area: string) {
 // 真实抓取值(bc-req.json 2026-06-10 版):CLB 4 / 1 人家庭 $31,264(大温)与 $26,057(其余)/ 24 个月 / 雇主 1 年 · 5 人 · 3 人
 const R = (o: Partial<Requirement>): Requirement => ({
   province: 'BC', program: 'PNP', stream: 'BC PNP Skills Immigration (all streams)', subject: 'applicant',
-  factor: '', op: '>=', value: null, valueText: '', unit: '', appliesTeer: '', appliesArea: '', familySize: null,
+  factor: '', op: '>=', value: null, valueText: '', unit: '', appliesTeer: '', appliesNoc: '', excludesNoc: '', appliesCondition: '', appliesArea: '', familySize: null,
   basis: '', label: 'official text', section: '', effective: '2026-06-10',
   url: 'https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-si-program-guide-pdf', pageUrl: '', fetched: '2026-07-31', ...o,
 })

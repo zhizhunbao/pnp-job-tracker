@@ -73,14 +73,14 @@ export type Requirement = {
   appliesTeer: string
 
   /**
-   * NOC 码前缀白名单(ON 技工低档语言门槛);空 = 不分职业。
+   * NOC 码前缀白名单(ON 技工低档语言门槛);空串 = 不分职业(2026-08-21 四禁:`?` 退役,缺席显式)。
    */
-  appliesNoc?: string
+  appliesNoc: string
 
   /**
-   * NOC 码前缀排除表(官方原文的 excluding Sub-Major Group …)。
+   * NOC 码前缀排除表(官方原文的 excluding Sub-Major Group …);空串 = 不排除。
    */
-  excludesNoc?: string
+  excludesNoc: string
 
   /**
    * 适用哪个官方分档区域;空 = 全省。
@@ -94,7 +94,7 @@ export type Requirement = {
    * 混一个非地理值进去,按区域挑行的收入表 / 雇主雇员数迟早挑到不该挑的行。
    * 本站题库还没问「你在哪个省读的书」→ 引擎不拿它做判定,只把两档一起摆出来。
    */
-  appliesCondition?: string
+  appliesCondition: string
 
   /**
    * 最低收入表专用:这一行对应几口之家。
@@ -214,9 +214,9 @@ export type RuleResult = {
    *
    * 🔴 消费端**必须**看这一格:同一个 `factor='experience'`,`basis='employerTenure'`
    * 量的是「在这家雇主干了多久」,拿「N 个月技术工作经验(境内外都算)」那套话术去讲它,
-   * 句子本身就是假的。
+   * 句子本身就是假的。没有口径标注就 null(2026-08-21 四禁:`?` 退役,缺席显式)。
    */
-  basis?: string
+  basis: string | null
 
   /**
    * 达标 / 不达标 / 判不了。
@@ -251,9 +251,9 @@ export type RuleResult = {
   /**
    * 分档因素的完整档位(ON 营业额 GTA / 指定普查区 / 其余三档)。
    *
-   * 区域名各省各叫各的,**原样带出去**给显示层。
+   * 区域名各省各叫各的,**原样带出去**给显示层。不分档就 null。
    */
-  tiers?: AreaTier[]
+  tiers: AreaTier[] | null
 
   /**
    * 出处。

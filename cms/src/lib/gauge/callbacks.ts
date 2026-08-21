@@ -43,7 +43,15 @@ export function byScoreDesc(a: ScoredRow, b: ScoredRow): number {
  * @returns 负数 = a 排在前面。
  */
 export function byValueAsc(a: Requirement, b: Requirement): number {
-  return (a.value ?? 0) - (b.value ?? 0)
+  let av = 0
+  if (a.value != null) {
+    av = a.value
+  }
+  let bv = 0
+  if (b.value != null) {
+    bv = b.value
+  }
+  return av - bv
 }
 
 /**
@@ -54,5 +62,13 @@ export function byValueAsc(a: Requirement, b: Requirement): number {
  * @returns 负数 = a 排在前面。
  */
 export function byValueDesc(a: Requirement, b: Requirement): number {
-  return (b.value ?? 0) - (a.value ?? 0)
+  let av = 0
+  if (a.value != null) {
+    av = a.value
+  }
+  let bv = 0
+  if (b.value != null) {
+    bv = b.value
+  }
+  return bv - av
 }

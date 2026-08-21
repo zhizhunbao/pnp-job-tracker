@@ -130,8 +130,8 @@ const PROFILE: TripleProfile = {
 // 大西洋毕业生豁免 4 / 学历+ECA 6 / 语言时效 1 / 资金 11 / 经验附则 3)当前无消费端读取,不进 fixture 充数。
 const R = (o: Partial<Requirement>): Requirement => ({
   province: '', program: '', stream: '', subject: 'applicant', factor: '', op: '>=', value: null,
-  valueText: '', unit: '', appliesTeer: '', appliesArea: '', familySize: null, basis: '', label: '',
-  section: '', effective: '', url: '', pageUrl: '', fetched: '', appliesCondition: '',
+  valueText: '', unit: '', appliesTeer: '', appliesNoc: '', excludesNoc: '', appliesCondition: '', appliesArea: '', familySize: null, basis: '', label: '',
+  section: '', effective: '', url: '', pageUrl: '', fetched: '',
   ...o,
 })
 

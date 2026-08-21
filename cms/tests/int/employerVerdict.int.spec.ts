@@ -15,7 +15,7 @@ import type { Requirement } from '@/lib/gauge'
 
 const R = (o: Partial<Requirement>): Requirement => ({
   province: 'AB', program: 'PNP', stream: '', subject: 'employer', factor: '', op: '>=', value: null,
-  valueText: '', unit: '', appliesTeer: '', appliesArea: '', familySize: null, basis: '', label: 'official text',
+  valueText: '', unit: '', appliesTeer: '', appliesNoc: '', excludesNoc: '', appliesCondition: '', appliesArea: '', familySize: null, basis: '', label: 'official text',
   section: '', effective: '', url: 'https://example.gov/req', pageUrl: '', fetched: '2026-08-08', ...o,
 })
 

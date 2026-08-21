@@ -108,12 +108,12 @@ export type ReqRow = {
   /**
    * NOC 码前缀白名单(ON 技工低档语言门槛);空 = 不分职业。
    */
-  appliesNoc?: string
+  appliesNoc: string
 
   /**
    * NOC 码前缀排除表(官方原文的 excluding Sub-Major Group …)。
    */
-  excludesNoc?: string
+  excludesNoc: string
 
   /**
    * 管哪个行政区(metro-vancouver / gta …);空 = 全省。
@@ -125,7 +125,7 @@ export type ReqRow = {
    * 与 `appliesArea` 分开是因为那一列存的是**官方枚举的行政区**,混一个非地理值进去,
    * 按区域挑行的收入表迟早挑到不该挑的行。
    */
-  appliesCondition?: string
+  appliesCondition: string
 
   /**
    * 最低收入表专用的家庭人数档。

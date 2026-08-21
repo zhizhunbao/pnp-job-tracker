@@ -72,7 +72,7 @@ import type {
  */
 function oneGroupOf(input: MatchIn): OneGroupOut {
   const m = input.re.exec(input.text)
-  if (!m?.groups) {
+  if (m == null || m.groups == null) {
     return null
   }
   return m.groups as OneGroup
@@ -86,7 +86,7 @@ function oneGroupOf(input: MatchIn): OneGroupOut {
  */
 function rangeGroupOf(input: MatchIn): RangeGroupOut {
   const m = input.re.exec(input.text)
-  if (!m?.groups) {
+  if (m == null || m.groups == null) {
     return null
   }
   return m.groups as RangeGroup
@@ -100,7 +100,7 @@ function rangeGroupOf(input: MatchIn): RangeGroupOut {
  */
 function wordGroupOf(input: MatchIn): WordGroupOut {
   const m = input.re.exec(input.text)
-  if (!m?.groups) {
+  if (m == null || m.groups == null) {
     return null
   }
   return m.groups as WordGroup
@@ -119,7 +119,7 @@ function wordGroupOf(input: MatchIn): WordGroupOut {
 function streamWords(s: StreamWordsIn): StreamWordsOut {
   const out: string[] = []
   for (const w of (s || '').toLowerCase().replace(NON_ALPHA, SEP.space).split(SEP.space)) {
-    if (w.length > STREAM_WORD_MIN && !STREAM_STOP.includes(w as typeof STREAM_STOP[number])) {
+    if (w.length > STREAM_WORD_MIN && STREAM_STOP.includes(w as typeof STREAM_STOP[number]) === false) {
       out.push(w)
     }
   }
@@ -141,11 +141,11 @@ function streamWords(s: StreamWordsIn): StreamWordsOut {
 export function streamMatches(input: StreamMatchesIn): StreamMatchesOut {
   const a = streamWords(input.drawStream)
   const b = streamWords(input.gridStream)
-  if (!a.length || !b.length) {
+  if (a.length === 0 || b.length === 0) {
     return false
   }
   for (const w of a) {
-    if (!b.includes(w)) {
+    if (b.includes(w) === false) {
       return false
     }
   }
@@ -159,7 +159,11 @@ export function streamMatches(input: StreamMatchesIn): StreamMatchesOut {
  * @returns 通道名;没自报则空。
  */
 export function gridStreamOf(system: SystemIn): SystemOut {
-  return oneGroupOf({ re: GRID_STREAM, text: system })?.n ?? ''
+  const hit = oneGroupOf({ re: GRID_STREAM, text: system })
+  if (hit == null || hit.n == null) {
+    return ''
+  }
+  return hit.n
 }
 
 /**
@@ -198,7 +202,10 @@ function yearsOf(label: LabelIn): LabelNumOut {
     return Number(at.n)
   }
   const any = oneGroupOf({ re: YEARS_ANY, text: label })
-  return any ? Number(any.n) : null
+  if (any == null) {
+    return null
+  }
+  return Number(any.n)
 }
 
 /**
@@ -213,7 +220,10 @@ function monthsOf(label: LabelIn): LabelNumOut {
     return 0
   }
   const m = oneGroupOf({ re: MONTHS_ANY, text: label })
-  return m ? Number(m.n) : null
+  if (m == null) {
+    return null
+  }
+  return Number(m.n)
 }
 
 /**
@@ -228,7 +238,10 @@ function clbOf(label: LabelIn): LabelNumOut {
     return 0
   }
   const m = oneGroupOf({ re: CLB_ANY, text: label })
-  return m ? Number(m.n) : null
+  if (m == null) {
+    return null
+  }
+  return Number(m.n)
 }
 
 /**
@@ -242,7 +255,7 @@ function clbOf(label: LabelIn): LabelNumOut {
 function eduRankOf(label: LabelIn): LabelNumOut {
   let low: number | null = null
   for (const one of EDU_LADDER) {
-    if (!one.re.test(label)) {
+    if (one.re.test(label) === false) {
       continue
     }
     if (low == null || one.rank < low) {
@@ -277,7 +290,10 @@ function ageRangeOf(label: LabelIn): AgeRangeOut {
     return { from: Number(span.low), to: Number(span.high) }
   }
   const exact = oneGroupOf({ re: AGE_ONE, text: label })
-  return exact ? { from: Number(exact.n), to: Number(exact.n) } : null
+  if (exact == null) {
+    return null
+  }
+  return { from: Number(exact.n), to: Number(exact.n) }
 }
 
 // =========================================================================
@@ -300,7 +316,7 @@ function pickByThreshold(input: PickByThresholdIn): PickOut {
       scored.push({ r: r, th: th })
     }
   }
-  if (!scored.length) {
+  if (scored.length === 0) {
     return null
   }
   let best: ThresholdRow | null = null
@@ -308,11 +324,14 @@ function pickByThreshold(input: PickByThresholdIn): PickOut {
     if (x.th > input.want) {
       continue
     }
-    if (!best || x.th > best.th) {
+    if (best == null || x.th > best.th) {
       best = x
     }
   }
-  return best ? best.r : null
+  if (best == null) {
+    return null
+  }
+  return best.r
 }
 
 /**
@@ -418,14 +437,14 @@ export function scoreProvince(input: ScoreProvinceIn): ScoreProvinceOut {
       all.push(f)
     }
   }
-  if (!all.length) {
+  if (all.length === 0) {
     return null
   }
   const head = all[0]
 
   const names: string[] = []
   for (const f of all) {
-    if (!names.includes(f.factor)) {
+    if (names.includes(f.factor) === false) {
       names.push(f.factor)
     }
   }
@@ -438,10 +457,16 @@ export function scoreProvince(input: ScoreProvinceIn): ScoreProvinceOut {
   }
 
   const total = totalOf({ parts: parts, all: all })
+  let maxTotal = 0
+  let capped = total
+  if (head.maxTotal != null) {
+    maxTotal = head.maxTotal
+    capped = Math.min(total, head.maxTotal)
+  }
   return {
-    province: input.province, system: head.system, maxTotal: head.maxTotal ?? 0,
-    passMark: head.passMark ?? null, url: head.url, guideEffective: head.guideEffective,
-    fetched: head.fetched, parts: parts, total: Math.min(total, head.maxTotal ?? total),
+    province: input.province, system: head.system, maxTotal: maxTotal,
+    passMark: head.passMark, url: head.url, guideEffective: head.guideEffective,
+    fetched: head.fetched, parts: parts, total: capped,
   }
 }
 
@@ -464,8 +489,14 @@ function factorPart(input: FactorPartIn): FactorPartOut {
   }
   const rows = rowsOf({ rows: mine, kind: KIND.row })
   const bonusRows = rowsOf({ rows: mine, kind: KIND.bonus })
-  const group = mine[0]?.factorGroup || ''
-  const max = mine[0]?.factorMax ?? 0
+  let group = ''
+  let max = 0
+  if (mine.length > 0) {
+    group = mine[0].factorGroup || ''
+    if (mine[0].factorMax != null) {
+      max = mine[0].factorMax
+    }
+  }
 
   const ov = input.overrides[input.name]
   let pts = 0
@@ -476,18 +507,24 @@ function factorPart(input: FactorPartIn): FactorPartOut {
     pts = ov.pts
     matched = ov.matched
     source = ov.source
-  } else if (hasAutoPick(auto) && rows.length && (!input.only || input.only.has(input.name))) {
+  } else if (hasAutoPick(auto) && rows.length > 0 && (input.only == null || input.only.has(input.name))) {
     const hit = autoPick(auto)
-    pts = hit?.points ?? 0
-    matched = hit?.label ?? ''
-  } else if (rows.length) {
+    if (hit != null) {
+      if (hit.points != null) {
+        pts = hit.points
+      }
+      matched = hit.label
+    }
+  } else if (rows.length > 0) {
     source = SOURCE.tick
   }
-  if (bonusRows.length) {
+  if (bonusRows.length > 0) {
     pts += bonusPoints({
       list: bonusRows, prefix: `${input.province}${TICK_SEP}${input.name}`, ticks: input.ticks,
     })
-    source = ov ? source : SOURCE.tick
+    if (ov == null) {
+      source = SOURCE.tick
+    }
   }
   return {
     factor: input.name, pts: Math.min(pts, max || pts), max: max, matched: matched,
@@ -524,15 +561,24 @@ function totalOf(input: TotalOfIn): TotalOfOut {
   const groups = new Map<string, number>()
   let total = 0
   for (const p of input.parts) {
-    if (!p.group) {
+    if (p.group === '') {
       total += p.pts
       continue
     }
-    groups.set(p.group, (groups.get(p.group) ?? 0) + p.pts)
+    let cur = 0
+    const seen = groups.get(p.group)
+    if (seen != null) {
+      cur = seen
+    }
+    groups.set(p.group, cur + p.pts)
   }
   for (const [g, sum] of groups) {
     const cap = groupCap({ all: input.all, group: g })
-    total += cap == null ? sum : Math.min(sum, cap)
+    if (cap == null) {
+      total += sum
+    } else {
+      total += Math.min(sum, cap)
+    }
   }
   return total
 }
@@ -546,7 +592,7 @@ function totalOf(input: TotalOfIn): TotalOfOut {
 function groupCap(input: GroupCapIn): GroupCapOut {
   for (const f of input.all) {
     if (f.factorGroup === input.group) {
-      return f.groupMax ?? null
+      return f.groupMax
     }
   }
   return null
@@ -567,9 +613,16 @@ export function bonusPoints(input: BonusPointsIn): BonusPointsOut {
   let inGroup = false
   for (let i = 0; i < list.length; i += 1) {
     const b = list[i]
-    const on = !!input.ticks[`${input.prefix}${TICK_SEP}${i}`]
-    const mine = on ? (b.points ?? 0) : 0
-    if (list[i + 1]?.xorPrev) {
+    const on = Boolean(input.ticks[`${input.prefix}${TICK_SEP}${i}`])
+    let bPts = 0
+    if (b.points != null) {
+      bPts = b.points
+    }
+    let mine = 0
+    if (on) {
+      mine = bPts
+    }
+    if (i + 1 < list.length && list[i + 1].xorPrev) {
       inGroup = true
       groupBest = Math.max(groupBest, mine)
       continue
@@ -587,7 +640,7 @@ export function bonusPoints(input: BonusPointsIn): BonusPointsOut {
       inGroup = false
     }
     if (on) {
-      sum += b.points ?? 0
+      sum += bPts
     }
   }
   return sum + groupBest
@@ -718,7 +771,10 @@ function eeYearsRangeOf(label: LabelIn): RangeOut {
  * @returns 整年数;没答则 null。
  */
 function monthsToYears(months: MonthsToYearsIn): MonthsToYearsOut {
-  return months == null ? null : Math.floor(months / MONTHS_PER_YEAR)
+  if (months == null) {
+    return null
+  }
+  return Math.floor(months / MONTHS_PER_YEAR)
 }
 
 /**
@@ -785,10 +841,14 @@ function needsInfoItem(input: NeedsInfoItemIn): EstimateItemOut {
  * @returns 那一项。
  */
 function hitItem(input: HitItemIn): EstimateItemOut {
+  let status: EstimateItem['status'] = ITEM_STATUS.zero
+  if (input.points > 0) {
+    status = ITEM_STATUS.matched
+  }
   return estimateItem({
     factor: input.factor, label: input.label, points: input.points, matched: input.matched,
     evidence: eeEvidenceOf({ r: input.r }),
-    status: input.points > 0 ? ITEM_STATUS.matched : ITEM_STATUS.zero,
+    status: status,
   })
 }
 
@@ -806,11 +866,14 @@ function pickBestTier(input: PickBestTierIn): PickBestTierOut {
     if (x.th > input.want) {
       continue
     }
-    if (!best || x.th > best.th) {
+    if (best == null || x.th > best.th) {
       best = x
     }
   }
-  return best ? best.r : null
+  if (best == null) {
+    return null
+  }
+  return best.r
 }
 
 // =========================================================================
@@ -867,7 +930,11 @@ function pickEduRow(input: PickEduRowIn): PickByRangeOut {
   const special = input.specialOf({ edu: input.edu })
   if (special) {
     for (const r of input.cand) {
-      if (special.test(input.trimCriterion ? r.criterion.trim() : r.criterion)) {
+      let crit = r.criterion
+      if (input.trimCriterion) {
+        crit = r.criterion.trim()
+      }
+      if (special.test(crit)) {
         return r
       }
     }
@@ -905,11 +972,15 @@ function pickAgeCrs(input: PickerIn): EstimateItemOut {
     }
   }
   const hit = pickByRange({ rows: cand, want: age, rangeOf: eeAgeRangeOf })
-  if (!hit) {
+  if (hit == null) {
     return needsInfoItem({ factor: EE_KEY.age, label: EE_LABEL.age })
   }
+  let pts = 0
+  if (hit.points != null) {
+    pts = hit.points
+  }
   return hitItem({
-    factor: EE_KEY.age, label: EE_LABEL.age, r: hit, points: hit.points ?? 0,
+    factor: EE_KEY.age, label: EE_LABEL.age, r: hit, points: pts,
     matched: `${hit.criterion}${SEP.slash}${hit.columnLabel}`,
   })
 }
@@ -922,7 +993,7 @@ function pickAgeCrs(input: PickerIn): EstimateItemOut {
  */
 function pickEduCrs(input: PickerIn): EstimateItemOut {
   const edu = input.profile.edu
-  if (!edu) {
+  if (edu == null) {
     return needsInfoItem({ factor: EE_KEY.edu, label: EE_LABEL.edu })
   }
   const cand: EeGridRow[] = []
@@ -936,11 +1007,15 @@ function pickEduCrs(input: PickerIn): EstimateItemOut {
     cand: cand, edu: edu, eduYears: input.profile.eduYears,
     specialOf: crsEduSpecial, yearsOf: crsEduYearsOf, trimCriterion: false,
   })
-  if (!hit) {
+  if (hit == null) {
     return needsInfoItem({ factor: EE_KEY.edu, label: EE_LABEL.edu })
   }
+  let pts = 0
+  if (hit.points != null) {
+    pts = hit.points
+  }
   return hitItem({
-    factor: EE_KEY.edu, label: EE_LABEL.edu, r: hit, points: hit.points ?? 0,
+    factor: EE_KEY.edu, label: EE_LABEL.edu, r: hit, points: pts,
     matched: `${hit.criterion}${SEP.slash}${hit.columnLabel}`,
   })
 }
@@ -966,15 +1041,22 @@ function pickLang1Crs(input: PickerIn): EstimateItemOut {
     }
   }
   const hit = pickByRange({ rows: cand, want: clb, rangeOf: eeClbRangeOf })
-  if (!hit) {
+  if (hit == null) {
     return needsInfoItem({ factor: EE_KEY.clb, label: EE_LABEL.clb })
   }
-  const per = hit.points ?? 0
+  let per = 0
+  if (hit.points != null) {
+    per = hit.points
+  }
+  let status: EstimateItem['status'] = ITEM_STATUS.zero
+  if (per > 0) {
+    status = ITEM_STATUS.matched
+  }
   return estimateItem({
     factor: EE_KEY.clb, label: EE_LABEL.clb, points: per * LANG_ABILITIES,
     matched: `${hit.criterion}${SEP.timesAbilitiesSlash}${hit.columnLabel}`,
     evidence: eeEvidenceOf({ r: hit }),
-    status: per > 0 ? ITEM_STATUS.matched : ITEM_STATUS.zero,
+    status: status,
   })
 }
 
@@ -989,7 +1071,11 @@ function pickCanadaExpCrs(input: PickerIn): EstimateItemOut {
   if (months == null) {
     return needsInfoItem({ factor: EE_KEY.expCanada, label: EE_LABEL.expCanada })
   }
-  const years = monthsToYears(months) ?? 0
+  let years = 0
+  const yearsOrNull = monthsToYears(months)
+  if (yearsOrNull != null) {
+    years = yearsOrNull
+  }
   const cand: EeGridRow[] = []
   for (const r of input.rows) {
     if (r.section === EE_SECTION.core && r.factor === EE_FACTOR.crsCanadaExp
@@ -998,11 +1084,15 @@ function pickCanadaExpCrs(input: PickerIn): EstimateItemOut {
     }
   }
   const hit = pickByRange({ rows: cand, want: years, rangeOf: eeYearsRangeOf })
-  if (!hit) {
+  if (hit == null) {
     return needsInfoItem({ factor: EE_KEY.expCanada, label: EE_LABEL.expCanada })
   }
+  let pts = 0
+  if (hit.points != null) {
+    pts = hit.points
+  }
   return hitItem({
-    factor: EE_KEY.expCanada, label: EE_LABEL.expCanada, r: hit, points: hit.points ?? 0,
+    factor: EE_KEY.expCanada, label: EE_LABEL.expCanada, r: hit, points: pts,
     matched: `${hit.criterion}${SEP.slash}${hit.columnLabel}`,
   })
 }
@@ -1048,7 +1138,7 @@ function pickCanadaStudyBonus(input: PickerIn): EstimateItemOut {
   if (study == null) {
     return needsInfoItem({ factor: key, label: label })
   }
-  if (!study) {
+  if (study === false) {
     return estimateItem({
       factor: key, label: label, points: 0, matched: EE_NOTE.noCanadaStudy, evidence: null,
       status: ITEM_STATUS.zero,
@@ -1066,10 +1156,14 @@ function pickCanadaStudyBonus(input: PickerIn): EstimateItemOut {
     }
   }
   const hit = pickStudyTier({ cand: cand, years: years })
-  if (!hit) {
+  if (hit == null) {
     return needsInfoItem({ factor: key, label: label })
   }
-  return hitItem({ factor: key, label: label, r: hit, points: hit.points ?? 0, matched: hit.criterion })
+  let pts = 0
+  if (hit.points != null) {
+    pts = hit.points
+  }
+  return hitItem({ factor: key, label: label, r: hit, points: pts, matched: hit.criterion })
 }
 
 /**
@@ -1126,14 +1220,18 @@ function comboTierOf(input: ComboTierOfIn): ComboTierOfOut {
  */
 function comboItem(input: ComboItemIn): EstimateItemOut {
   const hit = pickBestTier({ scored: input.scored, want: input.want })
-  if (!hit) {
+  if (hit == null) {
     return estimateItem({
       factor: input.key, label: input.label, points: 0, matched: EE_NOTE.belowTier,
       evidence: null, status: ITEM_STATUS.zero,
     })
   }
+  let pts = 0
+  if (hit.points != null) {
+    pts = hit.points
+  }
   return hitItem({
-    factor: input.key, label: input.label, r: hit, points: hit.points ?? 0,
+    factor: input.key, label: input.label, r: hit, points: pts,
     matched: `${hit.criterion}${SEP.slash}${hit.columnLabel}`,
   })
 }
@@ -1147,7 +1245,7 @@ function comboItem(input: ComboItemIn): EstimateItemOut {
  * @returns 那一项。
  */
 function pickEduComboCrs(input: EduComboIn): EstimateItemOut {
-  if (!input.edu) {
+  if (input.edu == null) {
     return needsInfoItem({ factor: input.key, label: input.label })
   }
   if (input.want == null) {
@@ -1159,7 +1257,7 @@ function pickEduComboCrs(input: EduComboIn): EstimateItemOut {
     if (r.section !== EE_SECTION.combo || r.kind !== EE_KIND_DETAIL) {
       continue
     }
-    if (r.factor !== input.factor || !tierRe.test(r.criterion)) {
+    if (r.factor !== input.factor || tierRe.test(r.criterion) === false) {
       continue
     }
     const th = comboSubTier({ columnLabel: r.columnLabel })
@@ -1183,18 +1281,22 @@ function pickForeignComboCrs(input: ForeignComboIn): EstimateItemOut {
   if (input.want == null) {
     return needsInfoItem({ factor: input.key, label: input.label })
   }
-  const years = monthsToYears(input.expForeignMonths) ?? 0
+  let years = 0
+  const yearsOrNull = monthsToYears(input.expForeignMonths)
+  if (yearsOrNull != null) {
+    years = yearsOrNull
+  }
   const scored: TierRow[] = []
   for (const r of input.rows) {
     if (r.section !== EE_SECTION.combo || r.kind !== EE_KIND_DETAIL) {
       continue
     }
     const head = r.heading.toLowerCase()
-    if (!head.includes(EE_HEAD_FOREIGN_EXP) || !head.includes(input.headingHas)) {
+    if (head.includes(EE_HEAD_FOREIGN_EXP) === false || head.includes(input.headingHas) === false) {
       continue
     }
     const rg = eeYearsRangeOf(r.criterion)
-    if (!rg || years < rg.from || years > rg.to) {
+    if (rg == null || years < rg.from || years > rg.to) {
       continue
     }
     const th = comboSubTier({ columnLabel: r.columnLabel })
@@ -1249,7 +1351,10 @@ function sumPoints(input: SumPointsIn): SumPointsOut {
 export function estimateCrs(input: EstimateIn): EstimateOut {
   const p = input.profile
   const withSpouse = p.married === true
-  const spouseCol = withSpouse ? EE_COL_WITH_SPOUSE : EE_COL_WITHOUT_SPOUSE
+  let spouseCol = EE_COL_WITHOUT_SPOUSE
+  if (withSpouse) {
+    spouseCol = EE_COL_WITH_SPOUSE
+  }
   const rows: EeGridRow[] = []
   for (const r of input.rows) {
     if (r.grid === GRID.crs) {
@@ -1368,11 +1473,15 @@ function pickAgeFsw(input: FswPickerIn): EstimateItemOut {
   }
   const cand = fswRowsOf({ rows: input.rows, factor: EE_FACTOR.age })
   const hit = pickByRange({ rows: cand, want: age, rangeOf: eeAgeRangeOf })
-  if (!hit) {
+  if (hit == null) {
     return needsInfoItem({ factor: EE_KEY.age, label: EE_LABEL.age })
   }
+  let pts = 0
+  if (hit.points != null) {
+    pts = hit.points
+  }
   return hitItem({
-    factor: EE_KEY.age, label: EE_LABEL.age, r: hit, points: hit.points ?? 0,
+    factor: EE_KEY.age, label: EE_LABEL.age, r: hit, points: pts,
     matched: hit.criterion,
   })
 }
@@ -1385,7 +1494,7 @@ function pickAgeFsw(input: FswPickerIn): EstimateItemOut {
  */
 function pickEduFsw(input: FswPickerIn): EstimateItemOut {
   const edu = input.profile.edu
-  if (!edu) {
+  if (edu == null) {
     return needsInfoItem({ factor: EE_KEY.edu, label: EE_LABEL.edu })
   }
   const cand = fswRowsOf({ rows: input.rows, factor: EE_FACTOR.fswEdu })
@@ -1393,11 +1502,15 @@ function pickEduFsw(input: FswPickerIn): EstimateItemOut {
     cand: cand, edu: edu, eduYears: input.profile.eduYears,
     specialOf: fswEduSpecial, yearsOf: fswEduYearsOf, trimCriterion: true,
   })
-  if (!hit) {
+  if (hit == null) {
     return needsInfoItem({ factor: EE_KEY.edu, label: EE_LABEL.edu })
   }
+  let pts = 0
+  if (hit.points != null) {
+    pts = hit.points
+  }
   return hitItem({
-    factor: EE_KEY.edu, label: EE_LABEL.edu, r: hit, points: hit.points ?? 0,
+    factor: EE_KEY.edu, label: EE_LABEL.edu, r: hit, points: pts,
     matched: hit.criterion,
   })
 }
@@ -1420,14 +1533,21 @@ function pickLang1Fsw(input: FswPickerIn): EstimateItemOut {
     }
   }
   const hit = pickByRange({ rows: cand, want: clb, rangeOf: eeClbRangeOf })
-  if (!hit) {
+  if (hit == null) {
     return needsInfoItem({ factor: EE_KEY.clb, label: EE_LABEL.clb })
   }
-  const per = hit.points ?? 0
+  let per = 0
+  if (hit.points != null) {
+    per = hit.points
+  }
+  let status: EstimateItem['status'] = ITEM_STATUS.zero
+  if (per > 0) {
+    status = ITEM_STATUS.matched
+  }
   return estimateItem({
     factor: EE_KEY.clb, label: EE_LABEL.clb, points: per * LANG_ABILITIES,
     matched: `${hit.criterion}${SEP.timesAbilities}`, evidence: eeEvidenceOf({ r: hit }),
-    status: per > 0 ? ITEM_STATUS.matched : ITEM_STATUS.zero,
+    status: status,
   })
 }
 
@@ -1448,14 +1568,18 @@ function pickExpFsw(input: FswPickerIn): EstimateItemOut {
   const years = Math.floor((can + foreign) / MONTHS_PER_YEAR)
   const cand = fswRowsOf({ rows: input.rows, factor: EE_FACTOR.fswExp })
   const hit = pickByRange({ rows: cand, want: years, rangeOf: eeYearsRangeOf })
-  if (!hit) {
+  if (hit == null) {
     return estimateItem({
       factor: EE_KEY.exp, label: EE_LABEL.exp, points: 0, matched: EE_NOTE.underOneYear,
       evidence: null, status: ITEM_STATUS.zero,
     })
   }
+  let pts = 0
+  if (hit.points != null) {
+    pts = hit.points
+  }
   return hitItem({
-    factor: EE_KEY.exp, label: EE_LABEL.exp, r: hit, points: hit.points ?? 0,
+    factor: EE_KEY.exp, label: EE_LABEL.exp, r: hit, points: pts,
     matched: hit.criterion,
   })
 }
@@ -1473,10 +1597,10 @@ function pickAdaptabilityFsw(input: FswPickerIn): AdaptOut {
   let studyRow: EeGridRow | null = null
   let workRow: EeGridRow | null = null
   for (const r of cand) {
-    if (!studyRow && EE_CRIT_PAST_STUDY.test(r.criterion.trim())) {
+    if (studyRow == null && EE_CRIT_PAST_STUDY.test(r.criterion.trim())) {
       studyRow = r
     }
-    if (!workRow && EE_CRIT_PAST_WORK.test(r.criterion.trim())) {
+    if (workRow == null && EE_CRIT_PAST_WORK.test(r.criterion.trim())) {
       workRow = r
     }
   }
@@ -1506,14 +1630,22 @@ function adaptStudyItem(input: AdaptItemIn): EstimateItemOut {
   if (p.canadaStudy == null || p.eduYears == null) {
     return needsInfoItem({ factor: key, label: label })
   }
-  if (!p.canadaStudy || p.eduYears < FSW_ADAPT_STUDY_YEARS || !row) {
+  if (p.canadaStudy === false || p.eduYears < FSW_ADAPT_STUDY_YEARS || row == null) {
+    let matched = ''
+    if (row != null) {
+      matched = EE_NOTE.underTwoStudyYears
+    }
     return estimateItem({
-      factor: key, label: label, points: 0, matched: row ? EE_NOTE.underTwoStudyYears : '',
+      factor: key, label: label, points: 0, matched: matched,
       evidence: null, status: ITEM_STATUS.zero,
     })
   }
+  let pts = 0
+  if (row.points != null) {
+    pts = row.points
+  }
   return hitItem({
-    factor: key, label: label, r: row, points: row.points ?? 0,
+    factor: key, label: label, r: row, points: pts,
     matched: row.criterion.slice(0, MATCHED_MAX),
   })
 }
@@ -1532,14 +1664,22 @@ function adaptWorkItem(input: AdaptItemIn): EstimateItemOut {
   if (months == null) {
     return needsInfoItem({ factor: key, label: label })
   }
-  if (months < FSW_ADAPT_WORK_MONTHS || !row) {
+  if (months < FSW_ADAPT_WORK_MONTHS || row == null) {
+    let matched = ''
+    if (row != null) {
+      matched = EE_NOTE.underOneWorkYear
+    }
     return estimateItem({
-      factor: key, label: label, points: 0, matched: row ? EE_NOTE.underOneWorkYear : '',
+      factor: key, label: label, points: 0, matched: matched,
       evidence: null, status: ITEM_STATUS.zero,
     })
   }
+  let pts = 0
+  if (row.points != null) {
+    pts = row.points
+  }
   return hitItem({
-    factor: key, label: label, r: row, points: row.points ?? 0,
+    factor: key, label: label, r: row, points: pts,
     matched: row.criterion.slice(0, MATCHED_MAX),
   })
 }
@@ -1606,15 +1746,21 @@ export function estimateFsw67(input: EstimateIn): EstimateOut {
  * @returns 三态。
  */
 export function lineStateOf(score: ScoreLineIn): LineStateOut {
-  const line = score?.refLine
-  if (line == null || !Number.isFinite(line)) {
+  if (score == null) {
     return LINE.unknown
   }
-  const low = score?.value
+  const line = score.refLine
+  if (line == null || Number.isFinite(line) === false) {
+    return LINE.unknown
+  }
+  const low = score.value
   if (low != null && Number.isFinite(low) && low >= line) {
     return LINE.above
   }
-  const top = score?.ceiling ?? score?.value ?? null
+  let top = score.value
+  if (score.ceiling != null) {
+    top = score.ceiling
+  }
   if (top != null && Number.isFinite(top) && top < line) {
     return LINE.below
   }
@@ -1653,8 +1799,11 @@ export function marginOf(score: ScoreLineIn): MarginOut {
   if (lineStateOf(score) !== LINE.above) {
     return null
   }
-  const value = score?.value
-  const line = score?.refLine
+  if (score == null) {
+    return null
+  }
+  const value = score.value
+  const line = score.refLine
   if (value == null || line == null) {
     return null
   }
@@ -1707,6 +1856,8 @@ function needRow(input: NeedRowIn): NeedRowOut {
  * 曼省语言单档:阈值取标签里的「CLB N」,就近取「≤ 你的值」里最高的那档。
  *
  * 一档都够不到时退到**最低档**(官方表的最低档本身就是给低分段的,不是没有分)。
+ * 返回行上的 `as ScoreFactor` 是既有断言原样保留:官方语言档位行为空的表进不了这条流水线,
+ * best 只在空表时才是 null。
  *
  * @param input 语言档位行与这一项的 CLB。
  * @returns 这一项得几分与命中的那一行。
@@ -1715,8 +1866,11 @@ function mbLangPick(input: MbLangPickIn): MbLangPickOut {
   const scored: MbThresholdRow[] = []
   for (const r of input.rows) {
     const hit = oneGroupOf({ re: MB_CLB, text: r.label })
-    const th = Number(hit?.n)
-    if (!Number.isNaN(th)) {
+    if (hit == null) {
+      continue
+    }
+    const th = Number(hit.n)
+    if (Number.isNaN(th) === false) {
       scored.push({ r: r, th: th })
     }
   }
@@ -1725,18 +1879,26 @@ function mbLangPick(input: MbLangPickIn): MbLangPickOut {
     if (x.th > input.clb) {
       continue
     }
-    if (!best || x.th > best.th) {
+    if (best == null || x.th > best.th) {
       best = x
     }
   }
-  if (!best) {
+  if (best == null) {
     for (const x of scored) {
-      if (!best || x.th < best.th) {
+      if (best == null || x.th < best.th) {
         best = x
       }
     }
   }
-  return { pts: best?.r.points ?? 0, row: best?.r as ScoreFactor }
+  let pts = 0
+  if (best != null && best.r.points != null) {
+    pts = best.r.points
+  }
+  let bestRow: ScoreFactor | null = null
+  if (best != null) {
+    bestRow = best.r
+  }
+  return { pts: pts, row: bestRow as ScoreFactor }
 }
 
 /**
@@ -1782,7 +1944,7 @@ function mbWorkYearsOf(label: LabelIn): MbWorkYearsOut {
     return 0
   }
   const m = wordGroupOf({ re: MB_WORK_WORD, text: label.trim() })
-  if (!m) {
+  if (m == null) {
     return null
   }
   const word = m.word.toLowerCase()
@@ -1817,18 +1979,22 @@ function mbWorkPick(input: MbWorkPickIn): MbRowOut {
     if (x.th > input.years) {
       continue
     }
-    if (!best || x.th > best.th) {
+    if (best == null || x.th > best.th) {
       best = x
     }
   }
-  if (!best) {
+  if (best == null) {
     for (const x of scored) {
-      if (!best || x.th < best.th) {
+      if (best == null || x.th < best.th) {
         best = x
       }
     }
   }
-  return best?.r as ScoreFactor
+  let bestRow: ScoreFactor | null = null
+  if (best != null) {
+    bestRow = best.r
+  }
+  return bestRow as ScoreFactor
 }
 
 /**
@@ -1892,16 +2058,30 @@ function mbLanguagePart(input: MbPartIn): MbPartOut {
     pts += one.pts
     hits.push(one.row)
   }
-  const lang2 = mbRowsOf({ rows: input.rows, factor: MB_FACTOR.language, kind: KIND.bonus })[0]
-  const second = input.profile.secondLangClb5Plus && lang2
-  if (second) {
-    pts += lang2.points ?? 0
+  const lang2Rows = mbRowsOf({ rows: input.rows, factor: MB_FACTOR.language, kind: KIND.bonus })
+  let secondNote = ''
+  if (input.profile.secondLangClb5Plus && lang2Rows.length > 0) {
+    const lang2 = lang2Rows[0]
+    if (lang2.points != null) {
+      pts += lang2.points
+    }
+    secondNote = `${MB_JOIN.plus}${lang2.label}`
   }
-  const max = langRows[0]?.factorMax ?? null
+  let max: number | null = null
+  if (langRows.length > 0) {
+    max = langRows[0].factorMax
+  }
+  let capped = pts
+  if (max != null) {
+    capped = Math.min(pts, max)
+  }
+  let firstHitLabel = ''
+  if (hits.length > 0 && hits[0] != null) {
+    firstHitLabel = hits[0].label
+  }
   return {
-    factor: MB_FACTOR.language, pts: Math.min(pts, max ?? pts), max: max,
-    matched: `${hits[0]?.label ?? ''}${MB_JOIN.times}${bands.length}`
-      + `${second ? `${MB_JOIN.plus}${lang2.label}` : ''}`,
+    factor: MB_FACTOR.language, pts: capped, max: max,
+    matched: `${firstHitLabel}${MB_JOIN.times}${bands.length}${secondNote}`,
   }
 }
 
@@ -1914,8 +2094,16 @@ function mbLanguagePart(input: MbPartIn): MbPartOut {
 function mbAgePart(input: MbPartIn): MbPartOut {
   const rows = mbRowsOf({ rows: input.rows, factor: MB_FACTOR.age, kind: KIND.row })
   const row = mbAgePick({ rows: rows, age: input.profile.age })
+  let pts = 0
+  if (row.points != null) {
+    pts = row.points
+  }
+  let max: number | null = null
+  if (rows.length > 0) {
+    max = rows[0].factorMax
+  }
   return {
-    factor: MB_FACTOR.age, pts: row.points ?? 0, max: rows[0]?.factorMax ?? null,
+    factor: MB_FACTOR.age, pts: pts, max: max,
     matched: row.label,
   }
 }
@@ -1931,16 +2119,30 @@ function mbWorkPart(input: MbPartIn): MbPartOut {
   const row = mbWorkPick({
     rows: rows, years: Math.floor(input.profile.workMonthsSameOcc / MONTHS_PER_YEAR),
   })
-  let pts = row.points ?? 0
-  const bonus = mbRowsOf({ rows: input.rows, factor: MB_FACTOR.work, kind: KIND.bonus })[0]
-  const licensed = input.profile.employerLicenseRecognized && bonus
-  if (licensed) {
-    pts += bonus.points ?? 0
+  let pts = 0
+  if (row.points != null) {
+    pts = row.points
   }
-  const max = rows[0]?.factorMax ?? null
+  const bonusRows = mbRowsOf({ rows: input.rows, factor: MB_FACTOR.work, kind: KIND.bonus })
+  let licensedNote = ''
+  if (input.profile.employerLicenseRecognized && bonusRows.length > 0) {
+    const bonus = bonusRows[0]
+    if (bonus.points != null) {
+      pts += bonus.points
+    }
+    licensedNote = `${MB_JOIN.plus}${bonus.label}`
+  }
+  let max: number | null = null
+  if (rows.length > 0) {
+    max = rows[0].factorMax
+  }
+  let capped = pts
+  if (max != null) {
+    capped = Math.min(pts, max)
+  }
   return {
-    factor: MB_FACTOR.work, pts: Math.min(pts, max ?? pts), max: max,
-    matched: `${row.label}${licensed ? `${MB_JOIN.plus}${bonus.label}` : ''}`,
+    factor: MB_FACTOR.work, pts: capped, max: max,
+    matched: `${row.label}${licensedNote}`,
   }
 }
 
@@ -1956,8 +2158,16 @@ function mbEduPart(input: MbPartIn): MbPartOut {
     rows: rows, re: mbEduReOf({ edu: input.profile.edu }),
     ctx: `${MB_FACTOR.education}${MB_CTX_SEP}${input.profile.edu}`,
   })
+  let pts = 0
+  if (row.points != null) {
+    pts = row.points
+  }
+  let max: number | null = null
+  if (rows.length > 0) {
+    max = rows[0].factorMax
+  }
   return {
-    factor: MB_FACTOR.education, pts: row.points ?? 0, max: rows[0]?.factorMax ?? null,
+    factor: MB_FACTOR.education, pts: pts, max: max,
     matched: row.label,
   }
 }
@@ -1979,33 +2189,61 @@ function mbAdaptPart(input: MbPartIn): MbPartOut {
   const connHits: string[] = []
   for (const one of mbConnectionPicks({ adapt: adapt })) {
     const r = needRow({ rows: connRows, re: one.re, ctx: one.ctx })
-    connPts += r.points ?? 0
+    if (r.points != null) {
+      connPts += r.points
+    }
     connHits.push(r.label)
   }
-  const connMax = connRows[0]?.factorMax ?? null
-  connPts = Math.min(connPts, connMax ?? connPts)
+  let connMax: number | null = null
+  if (connRows.length > 0) {
+    connMax = connRows[0].factorMax
+  }
+  if (connMax != null) {
+    connPts = Math.min(connPts, connMax)
+  }
 
   const demandRows = mbRowsOf({ rows: input.rows, factor: MB_FACTOR.adaptDemand, kind: KIND.row })
-  const demandPts = adapt.demand ? mbMaxPoints({ rows: demandRows }) : 0
+  let demandPts = 0
+  if (adapt.demand) {
+    demandPts = mbMaxPoints({ rows: demandRows })
+  }
   const regionalRows = mbRowsOf({
     rows: input.rows, factor: MB_FACTOR.adaptRegional, kind: KIND.row,
   })
-  const regionalPts = adapt.regionalOutsideWinnipeg ? (regionalRows[0]?.points ?? 0) : 0
+  let regionalPts = 0
+  if (adapt.regionalOutsideWinnipeg && regionalRows.length > 0 && regionalRows[0].points != null) {
+    regionalPts = regionalRows[0].points
+  }
 
-  const groupMax = connRows[0]?.groupMax ?? demandRows[0]?.groupMax ?? regionalRows[0]?.groupMax ?? null
+  let groupMax: number | null = null
+  if (connRows.length > 0 && connRows[0].groupMax != null) {
+    groupMax = connRows[0].groupMax
+  } else if (demandRows.length > 0 && demandRows[0].groupMax != null) {
+    groupMax = demandRows[0].groupMax
+  } else if (regionalRows.length > 0 && regionalRows[0].groupMax != null) {
+    groupMax = regionalRows[0].groupMax
+  }
   const sum = connPts + demandPts + regionalPts
   const notes: string[] = []
-  for (const one of [
-    connHits.join(MB_JOIN.semi),
-    adapt.demand ? MB_NOTE.demand : '',
-    adapt.regionalOutsideWinnipeg ? (regionalRows[0]?.label ?? '') : '',
-  ]) {
+  let demandNote = ''
+  if (adapt.demand) {
+    demandNote = MB_NOTE.demand
+  }
+  let regionalNote = ''
+  if (adapt.regionalOutsideWinnipeg && regionalRows.length > 0) {
+    regionalNote = regionalRows[0].label
+  }
+  for (const one of [connHits.join(MB_JOIN.semi), demandNote, regionalNote]) {
     if (one) {
       notes.push(one)
     }
   }
+  let capped = sum
+  if (groupMax != null) {
+    capped = Math.min(sum, groupMax)
+  }
   return {
-    factor: MB_FACTOR.adaptability, pts: groupMax == null ? sum : Math.min(sum, groupMax),
+    factor: MB_FACTOR.adaptability, pts: capped,
     max: groupMax, matched: notes.join(MB_JOIN.plus),
   }
 }
@@ -2048,7 +2286,10 @@ function mbConnectionPicks(input: MbConnectionPicksIn): MbConnectionPicksOut {
 function mbMaxPoints(input: MbMaxPointsIn): MbMaxPointsOut {
   let top = -Infinity
   for (const r of input.rows) {
-    const p = r.points ?? 0
+    let p = 0
+    if (r.points != null) {
+      p = r.points
+    }
     if (p > top) {
       top = p
     }
@@ -2071,7 +2312,10 @@ function mbRiskPart(input: MbPartIn): MbPartOut {
   let pts = bonusPoints({
     list: rows, prefix: prefix, ticks: mbRiskTicks({ rows: rows, profile: input.profile }),
   })
-  const floor = rows[0]?.factorMax ?? null
+  let floor: number | null = null
+  if (rows.length > 0) {
+    floor = rows[0].factorMax
+  }
   if (floor != null) {
     pts = Math.max(pts, floor)
   }
@@ -2127,7 +2371,7 @@ export function estimateMbEoi(input: EstimateMbEoiIn): EstimateMbEoiOut {
       rows.push(f)
     }
   }
-  if (!rows.length) {
+  if (rows.length === 0) {
     throw fail({ name: POINTS_ERR.name, msg: POINTS_ERR.noMbRows, code: undefined })
   }
   const head = rows[0]
@@ -2140,9 +2384,15 @@ export function estimateMbEoi(input: EstimateMbEoiIn): EstimateMbEoiOut {
   for (const p of parts) {
     raw += p.pts
   }
+  let maxTotal = 0
+  let capped = raw
+  if (head.maxTotal != null) {
+    maxTotal = head.maxTotal
+    capped = Math.min(raw, head.maxTotal)
+  }
   return {
-    province: MB, system: head.system, maxTotal: head.maxTotal ?? 0, url: head.url,
+    province: MB, system: head.system, maxTotal: maxTotal, url: head.url,
     guideEffective: head.guideEffective, fetched: head.fetched, parts: parts,
-    total: head.maxTotal == null ? raw : Math.min(raw, head.maxTotal),
+    total: capped,
   }
 }

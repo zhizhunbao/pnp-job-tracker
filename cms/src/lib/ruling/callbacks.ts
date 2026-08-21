@@ -32,7 +32,10 @@ import type {
  * @returns 负数 = a 排在前面。
  */
 export function byDrawDateDesc(a: VerdictDrawRow, b: VerdictDrawRow): number {
-  return a.drawDate < b.drawDate ? 1 : -1
+  if (a.drawDate < b.drawDate) {
+    return 1
+  }
+  return -1
 }
 
 /**
@@ -93,7 +96,15 @@ export function byNumberAsc(a: number, b: number): number {
  * @returns 负数 = a 排在前面。
  */
 export function byTierAsc(a: MyPathway, b: MyPathway): number {
-  return (a.c.tier ?? SINK.tier) - (b.c.tier ?? SINK.tier)
+  let aTier: number = SINK.tier
+  if (a.c.tier != null) {
+    aTier = a.c.tier
+  }
+  let bTier: number = SINK.tier
+  if (b.c.tier != null) {
+    bTier = b.c.tier
+  }
+  return aTier - bTier
 }
 
 /**
