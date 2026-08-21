@@ -2066,9 +2066,9 @@ export type ToPointsRowOut = PointsRow
 export type ProvOfIn = string
 
 /**
- * `provOf` 的返回:白名单里的省码(或 FED);认不出就空串。
+ * `provOf` 的返回:白名单里的省码(或 FED);认不出就 null(显式「没有」,不用空串当暗号)。
  */
-export type ProvOfOut = string
+export type ProvOfOut = string | null
 
 /**
  * `lookupDraws` 的入参。

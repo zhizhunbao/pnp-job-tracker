@@ -122,7 +122,8 @@ function model(): ModelOut {
 function provOf(raw: ProvOfIn): ProvOfOut {
   const p = raw.trim().toUpperCase()
   if (p === FED) return p
-  return PROVS.has(p) ? p : ''
+  if (PROVS.has(p)) return p
+  return null
 }
 
 // =========================================================================
