@@ -1137,6 +1137,17 @@ const eslintConfig = [
     rules: { 'local/no-optional': 'warn' },
   },
   {
+    // ── 禁 unknown:全站 warn = 整改清单(2026-08-21,db 词汇表带头违规被 Frank 抓包)──
+    // 定型域名单里早就是 error(上面那块,ignores 要跟它逐一对齐,别把 error 盖成 warn);
+    // 词汇表当初拿「pg 的行是 any,这里是信任边界」当理由收 unknown —— 行形状(XxxDbRow)
+    // 落地后理由已过时:调用方全走类型化的行,该收成显式联合(text: string|number|null 等),
+    // 收紧后还能把没走行形状、拿原始行直喂的调用方当场揪红。
+    files: ['src/**/*.ts'],
+    ignores: ['src/lib/consult/**', 'src/lib/gauge/**', 'src/lib/points/**', 'src/lib/ruling/**', 'src/lib/agent/**', 'src/lib/llm/**', 'src/lib/error.ts', 'src/lib/log.ts'],
+    plugins: { local: localRules },
+    rules: { 'local/no-unknown-type': 'warn' },
+  },
+  {
     // ── 边界收窄成语:全站 warn = 整改清单(2026-08-21,设计见 默认值架构 卷宗 §5)──
     // consult 已迁完(上面那块 error 守着);其余域按清单一点一点改,迁完一个升一个 error。
     files: ['src/**/*.ts', 'src/**/*.tsx'],
