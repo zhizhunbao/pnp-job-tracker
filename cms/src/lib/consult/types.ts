@@ -9,11 +9,9 @@
  */
 
 import type { AgentMessage, AgentTool, AgentToolResult } from '@earendil-works/pi-agent-core'
-import type { Model, Static } from '@earendil-works/pi-ai'
-import type { Requirement } from '../gauge'
-import type { TSchema } from '@earendil-works/pi-ai'
+import type { Model, Static, TSchema } from '@earendil-works/pi-ai'
+import type { Requirement, RuleResult } from '../gauge'
 import type { Db } from '../db/database'
-import type { RuleResult } from '../gauge'
 import type { Lang } from '../i18n'
 import type { PathwayVerdict, VerdictProfile } from '../ruling'
 import type { CLAIMS_PARAMS, CRS_PARAMS, NOC_PARAMS, NOC_PROVS_PARAMS, PERMIT_PARAMS, PROV_PARAMS, SEARCH_PARAMS, VERDICT_PARAMS } from './schemas'

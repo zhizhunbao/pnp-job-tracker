@@ -963,6 +963,21 @@ const eslintConfig = [
     },
   },
   {
+    // ── consult 定型进闸(2026-08-21,Frank 实拍「怎么有函数内注释没检查出来」)────────
+    // 五道里只开四道:`no-import-in-leaf` 不开 —— consult 与 agent 一样是**包 pi 的域**,
+    // types.ts 里的 `Model<…>` / `AgentTool<…>` / `Static<…>` 是外部库的泛型形状,自声明不了;
+    // 这批债和 agent 的那 5 处同挂在上面 domain-file-names 名单的注释里,等外部库形状的
+    // 统一解法一起清,别拿 eslint-disable 一行行糊。
+    files: ['src/lib/consult/**/*.ts'],
+    plugins: { local: localRules },
+    rules: {
+      'local/no-literal-index': 'error',
+      'local/no-comment-in-function': 'error',
+      'local/no-magic-number': 'error',
+      'local/no-split-import': 'error',
+    },
+  },
+  {
     // ── 测试是例外,而且只有测试(2026-08-18 拆 lib/chat 时立)──────────────────
     // 判定层的测试要测的**就是模块内部的判定件**(穷举输入断言性质,见 verdictAnswer/guards 那批用例):
     // lib/chat 对外 76 个名字里 66 个只有测试在用。两条路只能选一条 ——

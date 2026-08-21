@@ -29,7 +29,7 @@ import { evaluateRequirements } from '../gauge'
 import type { Requirement, RuleProfile } from '../gauge'
 import {
   API, AS_FOLLOWS, AUTH_HEADER, AVAIL, BASE, BEARER, BOLD_RE, CLAIMS_CAP, CLAIM_TEXT_CAP, CONTEXT_WINDOW,
-  DRAW_LIMIT, EARLIER_HEAD, EN, EN_UNIT_WORDS, FAIL_MSG, FED, FIRST_LINE_CAP, FULL_STOP, GATE, GRID_CRS,
+  CUT_MIN_RATIO, DATE_LEN, DRAW_LIMIT, EARLIER_HEAD, EN, EN_UNIT_WORDS, ERR_CAP, FAIL_MSG, FED, FIRST_LINE_CAP, FULL_STOP, GATE, GRID_CRS,
   GUARD_RETRIES, HARD_GATES, HAS_DIGIT, HEADING_RE, HISTORY_CAP, HISTORY_TURNS, INELIGIBLE, INTERNAL_WORDS,
   JOBS_LINK, KEY, KIND_SUMMARY, LABEL, LANG_NAME, LEAD_MARK, LEN_CAP, LIKE_ANY, LIKE_ESCAPE, LIKE_SPECIAL,
   MARKUP, MAX_FACTS, MAX_QUERY, MAX_TOKENS, MESSAGE_UPDATE, MODEL_ID, NL, NOISE_RATIO, NOW_HEAD,
@@ -75,6 +75,13 @@ import type {
 /**
  * 这一趟用哪个模型。协议锁 openai-completions —— 局域网直连与经隧道两个门说的都是它。
  *
+ * cost 的四个 0 是照实说,不是省事:两道门(局域网直连、朋友服务器经 ngrok 暴露的那个)
+ * 都不按 token 计费。⚠️ 哪天换成按量收费的云 API,这四个 0 就成了假话 —— pi 拿它记账,
+ * 填 0 等于把花掉的钱报成零;那时要填真实单价,而且单价随模型变,得跟着 MODEL_ID 走。
+ *
+ * 鉴权头只在真有钥匙时才挂:直连局域网那台裸 Ollama 没有鉴权,
+ * 挂一个空的 `Authorization` 反而会被某些网关当成鉴权失败。
+ *
  * @returns 模型描述符。
  */
 function model(): ModelOut {
@@ -88,13 +95,9 @@ function model(): ModelOut {
     input: [ROLE.text],
     contextWindow: CONTEXT_WINDOW,
     maxTokens: MAX_TOKENS,
-    // 这四个 0 是照实说,不是省事:两道门(局域网直连、朋友服务器经 ngrok 暴露的那个)
-    // 都不按 token 计费。⚠️ 哪天换成按量收费的云 API,这里就成了假话 —— pi 拿它记账,
-    // 填 0 等于把花掉的钱报成零;那时要填真实单价,而且单价随模型变,得跟着 MODEL_ID 走。
     cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
     samplingParams: SAMPLING,
   }
-  // 直连局域网那台裸 Ollama 没有鉴权,没钥匙就不挂这个头(挂个空的会被某些网关当成鉴权失败)
   if (KEY) m.headers = { [AUTH_HEADER]: `${BEARER}${KEY}` }
   return m
 }
@@ -305,7 +308,7 @@ async function lookupDraws(input: LookupDrawsIn): LookupDrawsOut {
     if (out.length >= DRAW_LIMIT) break
     out.push({
       prov: input.prov,
-      date: String(r.draw_date ?? '').slice(0, 10),
+      date: String(r.draw_date ?? '').slice(0, DATE_LEN),
       stream: String(r.stream ?? ''),
       scale: String(r.scale ?? ''),
       score: r.score == null ? null : Number(r.score),
@@ -362,7 +365,7 @@ async function lookupEe(input: LookupEeIn): LookupEeOut {
       category: String(r.category ?? ''),
       label: String(r.label ?? ''),
       drawCrs: r.draw_crs == null ? null : Number(r.draw_crs),
-      drawDate: String(r.draw_date ?? '').slice(0, 10),
+      drawDate: String(r.draw_date ?? '').slice(0, DATE_LEN),
       drawSize: r.draw_size == null ? null : Number(r.draw_size),
       evidence: { url: String(r.url ?? ''), fetched: String(r.fetched ?? '') },
     })
@@ -554,7 +557,7 @@ function tierText(res: TierTextIn): TierTextOut {
  * 门槛判定 → 事实。**一条门槛一条事实**,官方原文当说明,阈值当数值。
  *
  * 判不出来的(TEER 不知道 / 用户侧的值没有)照样给出来 —— 「这条要看你的语言分」本身就是答案,
- * 压掉它等于替用户假设了一个值。
+ * 压掉它等于替用户假设了一个值。`quote` 用官方原文原样带出:降级清单只许印它。
  *
  * @param r 查询结果。
  * @returns 事实清单。
@@ -575,8 +578,7 @@ function thresholdsFacts(r: ThresholdsFactsIn): ThresholdsFactsOut {
     for (const res of row.results) {
       out.push(fact({
         tool: TOOL_NAME.thresholds,
-        label: `${row.prov} ${res.subject} ${res.factor}${res.basis ? `${LABEL.nocOpen.slice(0, 2)}${res.basis}${LABEL.nocClose}` : ''}${LABEL.dash}${res.evidence.label}`,
-        // 官方原文原样带出:降级清单只许印它
+        label: `${row.prov} ${res.subject} ${res.factor}${res.basis ? `${LABEL.parenOpen}${res.basis}${LABEL.nocClose}` : ''}${LABEL.dash}${res.evidence.label}`,
         quote: `${row.prov}${SEP.dot}${res.evidence.label}`,
         value: res.need,
         valueText: tierText(res),
@@ -644,7 +646,7 @@ function opsFacts(r: OpsFactsIn): OpsFactsOut {
   }
   const out: Fact[] = []
   for (const row of r.rows) {
-    const scope = row.scope ? `${LABEL.nocOpen.slice(0, 2)}${row.scope}${LABEL.nocClose}` : ''
+    const scope = row.scope ? `${LABEL.parenOpen}${row.scope}${LABEL.nocClose}` : ''
     const when = row.asOf ? `${LABEL.asOf}${row.asOf}` : row.period ? `${SPACE}${row.period}` : ''
     out.push(fact({
       tool: TOOL_NAME.ops,
@@ -673,7 +675,7 @@ function eeFacts(r: EeFactsIn): EeFactsOut {
     return [statusFact({
       tool: TOOL_NAME.ee,
       label: `${SAID.noc}${r.noc}${LABEL.eeNone}`,
-      quote: `${LABEL.eeHead.slice(0, 2)}${LABEL.nocDot}${r.noc}`,
+      quote: `${LABEL.ee}${LABEL.nocDot}${r.noc}`,
       availability: AVAIL.notApplicable,
       evidence: { url: '', fetched: '' },
     })]
@@ -715,8 +717,8 @@ function permitFacts(r: PermitFactsIn): PermitFactsOut {
   }
   const out: Fact[] = []
   for (const row of r.rows) {
-    const tier = row.stream ? `${LABEL.nocOpen.slice(0, 2)}${row.stream}${LABEL.nocClose}` : ''
-    const basis = row.basis ? `${LABEL.nocOpen.slice(0, 2)}${row.basis}${LABEL.nocClose}` : ''
+    const tier = row.stream ? `${LABEL.parenOpen}${row.stream}${LABEL.nocClose}` : ''
+    const basis = row.basis ? `${LABEL.parenOpen}${row.basis}${LABEL.nocClose}` : ''
     out.push(fact({
       tool: TOOL_NAME.permit,
       label: `${row.program}${tier}${LABEL.permitHead}${row.label || row.factor}${basis}`,
@@ -748,7 +750,7 @@ function pointsFacts(r: PointsFactsIn): PointsFactsOut {
   }
   const out: Fact[] = []
   for (const row of r.rows) {
-    const col = row.columnLabel ? `${LABEL.nocOpen.slice(0, 2)}${row.columnLabel}${LABEL.nocClose}` : ''
+    const col = row.columnLabel ? `${LABEL.parenOpen}${row.columnLabel}${LABEL.nocClose}` : ''
     out.push(fact({
       tool: TOOL_NAME.points,
       label: `${row.grid}${LABEL.pointsHead}${row.sectionLabel || row.heading}${LABEL.dash}${row.criterion || row.factor}${col}`,
@@ -851,15 +853,16 @@ function normNum(raw: NormNumIn): NormNumOut {
 }
 
 /**
- * 这一趟允许出现的所有数字:事实里的 + 用户自己写的。
+ * 这一趟允许出现的所有数字:事实里的 + 用户自己写的 + 我们自己给过它的码。
+ *
+ * 🔴 `codes` 那一份不能省:职业码与 TEER 是**我们自己查出来给它的**,不是它编的 ——
+ * 漏掉这一条,模型每写一次「NOC 72310」都会被判成编造,整轮降级(实撞)。
  *
  * @param input 事实清单与用户原话。
  * @returns 允许的数字集合。
  */
 function allowedNumbers(input: AllowedNumbersIn): AllowedNumbersOut {
   const ok = new Set<string>()
-  // 🔴 职业码与 TEER 是**我们自己查出来给它的**,不是它编的 —— 漏掉这一条,
-  //    模型每写一次「NOC 72310」都会被判成编造,整轮降级(实撞)。
   for (const c of input.codes) if (c) ok.add(normNum(c))
   for (const f of input.facts) {
     if (f.value != null) ok.add(normNum(String(f.value)))
@@ -1010,7 +1013,7 @@ function clampAnswer(input: AnswerLangIn): ClampAnswerOut {
   if (input.answer.length <= cap) return input.answer
   const cut = input.answer.slice(0, cap)
   const stop = Math.max(cut.lastIndexOf(FULL_STOP), cut.lastIndexOf(SAID.stop), cut.lastIndexOf(NL))
-  return (stop > cap * 0.5 ? cut.slice(0, stop + 1) : cut).trim()
+  return (stop > cap * CUT_MIN_RATIO ? cut.slice(0, stop + 1) : cut).trim()
 }
 
 /**
@@ -1105,20 +1108,17 @@ function say(text: SayIn): SayOut {
  *
  * 判据只有一条:**这个码,我们这一趟给它看过吗**。看过 = 候选里有,或档案本来就带着。
  *
+ * 里面那支 `beforeToolCall` 的签名(ctx 一参、返回拦不拦)是 pi 定死的(外部规定);
+ * 它的第一行就是信任边界:把 pi 交来的 `unknown` 收窄成本域自己的 `ToolArgs`,
+ * 往下一个字都不再碰 `unknown`。
+ *
  * @param input 这一趟的收件箱。
  * @returns pi 要的两个挂点。
  */
 function makeToolGates(input: MakeToolGatesIn): MakeToolGatesOut {
   const box = input.box
 
-  /**
-   * 工具调用发出之前过一道。两个参数是 pi 定死的签名(外部规定)。
-   *
-   * @param ctx pi 给的上下文:哪一把工具、校验过的入参。
-   * @returns 要拦就给 `block` 与理由;放行给 undefined。
-   */
   async function beforeToolCall(ctx: BeforeToolCallIn): BeforeToolCallOut {
-    // 信任边界的第一行:收窄成本域自己的形状,下面一个字都不再碰 `unknown`
     const args = ctx.args as ToolArgs
     const noc = typeof args?.noc === 'string' ? args.noc.trim() : ''
     if (!noc) return undefined
@@ -1134,33 +1134,33 @@ function makeToolGates(input: MakeToolGatesIn): MakeToolGatesOut {
 /**
  * 造这一趟的全部工具。每把的 `execute` 里都闭包着库连接与收件箱。
  *
+ * 里面的嵌套件按闸的规矩不再各挂 JSDoc,共同的规矩集中写在这儿:
+ *   · 每支 `exec*` 的两个参数是 pi 定死的(按位置传 toolCallId、args),第一位我们用不上;
+ *   · `step` 的轨迹只在这一步**真的开始打了**才发 —— 采信没过就不该让用户看到「正在查」;
+ *   · 带职业码的工具(jobs/coverage/thresholds/ee/claims)先过 `nocOf` 采信,拿不到回「先去搜」;
+ *     带省码的(draws/ops)先过 `provOf`,ops 不收 FED(联邦处理时长本站未收录);
+ *     program 与 grid 由 schema 的字面量联合收窄,进来就不必再采信。
+ *
+ * 🔴 `nocOf` **采信的同时把 TEER 一起定下来**。实撞:TEER 原来是 `lookup_jobs` 的副产品,
+ * 于是只问门槛不问岗位的那一轮 `teer` 是 null,而分 TEER 的条款(BC 对 TEER 2-5 要 CLB 4)
+ * 在 `teerHit` 里一条都挑不出来 —— 语言要求整条静默消失,答复看起来还很完整。
+ *
+ * `execClaims` 把私人承诺**同时落进收件箱**:降级清单里也要有「这条核不了」这一行
+ * (用户原话当引文,他自己的话可以见客)。
+ *
+ * 末尾的工具表:每把各带自己的 schema 泛型,数组本身就合法 —— 不需要断言。
+ *
  * @param input 跑这一趟要的东西。
- * @param box 这一趟的收件箱。
  * @returns 交给模型的工具表。
  */
-// eslint-disable-next-line local/function-length -- 工具表:12 把工具的 execute 各自闭包着库连接与收件箱,拆开就得把这两样显式传一大串,反而更绕
+// eslint-disable-next-line local/function-length -- 工具表:11 把工具的 execute 各自闭包着库连接与收件箱,拆开就得把这两样显式传一大串,反而更绕
 function makeTools(input: MakeToolsIn): MakeToolsOut {
   const { run, box } = input
-  /**
-   * 轨迹:这一步真的开始打了才发。
-   *
-   * @param text 这一步在做什么。
-   * @returns 没有返回值。
-   */
+
   function step(text: StepIn): StepOut {
     run.onStep?.(text)
   }
 
-  /**
-   * 拿已经采信的职业码;拿不到就回 null,调用方回一句「先去搜」。
-   *
-   * 🔴 **采信的同时把 TEER 一起定下来**。实撞:TEER 原来是 `lookup_jobs` 的副产品,
-   * 于是只问门槛不问岗位的那一轮 `teer` 是 null,而分 TEER 的条款(BC 对 TEER 2-5 要 CLB 4)
-   * 在 `teerHit` 里一条都挑不出来 —— 语言要求整条静默消失,答复看起来还很完整。
-   *
-   * @param raw 模型填的码。
-   * @returns 采信下来的码;拿不到就是 null。
-   */
   async function nocOf(raw: NocOfIn): NocOfOut {
     const ok = acceptNoc({ raw: raw, candidates: box.candidates })
     if (ok && ok !== box.noc) {
@@ -1172,14 +1172,6 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
     return box.noc
   }
 
-  /**
-   * 查职业候选。
-   *
-   * ⚠️ 两个参数是 pi 定的(它按位置传 toolCallId、args),第一位我们用不上。
-   *
-   * @param args 模型拼的检索词。
-   * @returns 候选清单,或者一句「一个都没有」。
-   */
   async function execSearch(_id: string, args: ExecSearchIn): ExecSearchOut {
     step(TOOL_DESC.search)
     const hits = await searchOccupations({ db: run.db, query: args.query.trim().slice(0, MAX_QUERY) })
@@ -1192,12 +1184,6 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
     return say(`${TOOL_REPLY.candidatesHead}${NL}${lines.join(NL)}`)
   }
 
-  /**
-   * 在招岗位。
-   *
-   * @param args 模型填的职业码。
-   * @returns 各省在招数的事实回执。
-   */
   async function execJobs(_id: string, args: ExecJobsIn): ExecJobsOut {
     const noc = await nocOf(args.noc)
     if (!noc) return say(TOOL_REPLY.needNoc)
@@ -1206,12 +1192,6 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
     return take({ box, facts: jobsFacts(r) })
   }
 
-  /**
-   * 清单收录。
-   *
-   * @param args 模型填的职业码。
-   * @returns 各省收录情况的事实回执。
-   */
   async function execCoverage(_id: string, args: ExecCoverageIn): ExecCoverageOut {
     const noc = await nocOf(args.noc)
     if (!noc) return say(TOOL_REPLY.needNoc)
@@ -1220,12 +1200,6 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
     return take({ box, facts: coverageFacts(r) })
   }
 
-  /**
-   * 省提名门槛。要看哪几个省由模型说,认不出的省码丢掉;不给就看全部省。
-   *
-   * @param args 模型填的职业码与省份。
-   * @returns 各省门槛的事实回执。
-   */
   async function execThresholds(_id: string, args: ExecThresholdsIn): ExecThresholdsOut {
     const noc = await nocOf(args.noc)
     if (!noc) return say(TOOL_REPLY.needNoc)
@@ -1236,12 +1210,6 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
     return take({ box, facts: thresholdsFacts(r) })
   }
 
-  /**
-   * 抽选记录。省级 EOI 与联邦 Express Entry 共这一把,`prov=FED` 走联邦。
-   *
-   * @param args 模型填的省码。
-   * @returns 近几轮抽选的事实回执。
-   */
   async function execDraws(_id: string, args: ExecDrawsIn): ExecDrawsOut {
     const prov = provOf(args.prov)
     if (!prov) return say(TOOL_REPLY.badProv)
@@ -1250,12 +1218,6 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
     return take({ box, facts: drawsFacts(r) })
   }
 
-  /**
-   * 官方运营统计。
-   *
-   * @param args 模型填的省码。
-   * @returns 处理时长 / 配额 / 池内人数的事实回执。
-   */
   async function execOps(_id: string, args: ExecOpsIn): ExecOpsOut {
     const prov = provOf(args.prov)
     if (!prov || prov === FED) return say(TOOL_REPLY.badProv)
@@ -1264,12 +1226,6 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
     return take({ box, facts: opsFacts(r) })
   }
 
-  /**
-   * 联邦 EE 类别。
-   *
-   * @param args 模型填的职业码。
-   * @returns 类别命中情况的事实回执。
-   */
   async function execEe(_id: string, args: ExecEeIn): ExecEeOut {
     const noc = await nocOf(args.noc)
     if (!noc) return say(TOOL_REPLY.needNoc)
@@ -1278,37 +1234,18 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
     return take({ box, facts: eeFacts(r) })
   }
 
-  /**
-   * 联邦项目规则。program 由 schema 收窄到四个联邦项目,这里不再采信。
-   *
-   * @param args 模型填的项目名。
-   * @returns 官方条款的事实回执。
-   */
   async function execPermit(_id: string, args: ExecPermitIn): ExecPermitOut {
     step(TOOL_DESC.permit)
     const r = await lookupPermit({ db: run.db, program: args.program })
     return take({ box, facts: permitFacts(r) })
   }
 
-  /**
-   * 官方计分表。grid 由 schema 收窄到 CRS / FSW67,这里不再采信。
-   *
-   * @param args 模型填的分表名与节号。
-   * @returns 档位分值的事实回执。
-   */
   async function execPoints(_id: string, args: ExecPointsIn): ExecPointsOut {
     step(TOOL_DESC.crs)
     const r = await lookupPoints({ db: run.db, grid: args.grid, section: args.section?.trim() ?? '' })
     return take({ box, facts: pointsFacts(r) })
   }
 
-  /**
-   * 路径裁决。**不收模型的参数**:档案从收件箱与档案槽闭包取,判定全在 `lib/ruling`,
-   * 这里只装配 —— 喂它哪份档案正是本层的职责,喂错一格它照样判得出结果。
-   *
-   * @param _args 空对象(schema 定死不收参数)。
-   * @returns 各通道判定的事实回执。
-   */
   async function execVerdict(_id: string, _args: ExecVerdictIn): ExecVerdictOut {
     step(TOOL_DESC.verdict)
     const data = await loadVerdictTables(run.db)
@@ -1316,14 +1253,6 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
     return take({ box, facts: verdictFacts(rows) })
   }
 
-  /**
-   * 主张对账:按**原话**先判「私人承诺 / 能对账」。私人承诺不查任何表 ——
-   * 库里根本没有对应的官方事实,硬查一张不相干的表等于替中介背书;
-   * 能对账的让模型拿数据工具的结果去对,这里只判类别。
-   *
-   * @param args 模型转述的职业码与各条主张原话。
-   * @returns 每条主张的类别判定;私人承诺同时落一条事实(用户原话当引文)。
-   */
   async function execClaims(_id: string, args: ExecClaimsIn): ExecClaimsOut {
     const noc = await nocOf(args.noc)
     if (!noc) return say(TOOL_REPLY.needNoc)
@@ -1334,7 +1263,6 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
       if (!text) continue
       if (PRIVATE_PROMISE.test(text)) {
         lines.push(`${SEP.bullet}${text}${LABEL.dash}${TOOL_REPLY.claimPrivate}`)
-        // 落进收件箱:降级清单里也要有「这条核不了」这一行(用户原话当引文,他自己的话可以见客)
         if (box.facts.length < MAX_FACTS) {
           box.facts.push(statusFact({
             tool: TOOL_NAME.claims,
@@ -1352,7 +1280,6 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
     return say(lines.join(NL))
   }
 
-  // 每把工具各带自己的 schema 泛型,数组本身就合法 —— 不需要断言
   const search: Tool<typeof SEARCH_PARAMS> = {
     name: TOOL_NAME.search, label: TOOL_LABEL.search, description: TOOL_DESC.search, parameters: SEARCH_PARAMS, execute: execSearch,
   }
@@ -1474,33 +1401,26 @@ function lastDraftOf(input: LastDraftOfIn): LastDraftOfOut {
 /**
  * 跑一趟 pi 循环,拿模型写的稿子。
  *
+ * 里面的嵌套件按闸的规矩不再各挂 JSDoc,要点写在这儿:
+ *   · `onTimeout` 到点掐断 —— 多轮循环没有单发看门狗,预算按**整趟**算;
+ *   · `onEvent` 只管正文增量(工具轨迹在各 execute 里发过了)。
+ *     ⚠️ 思考期间 `content` 是**空串**不是缺字段,按真值判会漏计;
+ *   · 末参那句 `streamSimple as StreamFn` 是跨边界断言:pi 的 StreamFn 要通吃所有 Api,
+ *     而这个 stream 锁死 openai-completions —— 逆变对不上,只能断言(宪法「跨边界的断言留着」)。
+ *
  * @param input 跑这一趟要的东西。
- * @param box 这一趟的收件箱。
- * @param extra 重试时追加的一段话(告诉它上一稿撞了什么),第一稿是空串。
  * @returns 模型写的稿子。
  */
 async function draftOnce(input: DraftOnceIn): DraftOnceOut {
   const { run, box, extra } = input
   const ac = new AbortController()
 
-  /**
-   * 到点掐断:多轮循环没有单发看门狗,预算按整趟算。
-   *
-   * @returns 没有返回值。
-   */
   function onTimeout(): OnTimeoutOut {
     ac.abort()
   }
   const timer = setTimeout(onTimeout, TIMEOUT_MS)
   const sent = { n: 0 }
 
-  /**
-   * 事件回调:工具轨迹在各 execute 里发过了,这里只管正文增量。
-   * ⚠️ 思考期间 `content` 是**空串**不是缺字段,按真值判会漏计。
-   *
-   * @param event pi 抛出来的一个事件。
-   * @returns 没有返回值。
-   */
   function onEvent(event: OnEventIn): OnEventOut {
     if (event.type !== MESSAGE_UPDATE || !event.message || !run.onDelta) return
     const full = textOf(event.message)
@@ -1520,12 +1440,11 @@ async function draftOnce(input: DraftOnceIn): DraftOnceOut {
       },
       onEvent,
       ac.signal,
-      // pi 的 StreamFn 要通吃所有 Api,而这个 stream 锁死 openai-completions —— 逆变对不上,只能断言
       streamSimple as StreamFn,
     )
     return lastDraftOf({ messages: messages, aborted: ac.signal.aborted })
   } catch (e) {
-    const why = e instanceof Error ? e.message.slice(0, 160) : String(e)
+    const why = e instanceof Error ? e.message.slice(0, ERR_CAP) : String(e)
     log({ tag: CHAT_LOG.tag, text: `${CHAT_FN.runChatLoop}${CHAT_LOG.failedTail}${why}` })
     if (ac.signal.aborted) throw chatError({ code: CHAT_CODE.busy, msg: `${FAIL_MSG.timeout}${TIMEOUT_MS}${FAIL_MSG.ms}` })
     throw chatError({ code: CHAT_CODE.llm, msg: why })
@@ -1583,6 +1502,9 @@ async function boxFor(input: BoxForIn): BoxForOut {
 /**
  * 答一个问题:跑工具循环,过出口闸,撞了重写一次,再撞就降级成事实清单。
  *
+ * 降级只认**硬闸**(拦假话的那几道):软闸没过只是难看,留着模型那一版,
+ * 换成一行英文事实清单反而更糟(2026-08-20 实拍,见 `HARD_GATES` 的注释)。
+ *
  * @param input 库连接、用户原话、语种、档案、历史与两个回调。
  * @returns 过完闸的答复、标好 `cited` 的事实、采信的职业码、是不是降级来的。
  */
@@ -1605,7 +1527,6 @@ export async function consult(input: ConsultIn): ConsultOut {
     })
   }
 
-  // 只有硬闸(拦假话的那几道)才值得把整段换成事实清单;软闸没过只是难看,留着模型那一版。
   const hard = hardHits({ fired: fired })
   const degraded = hard.length > 0
   if (degraded) {
@@ -1654,13 +1575,14 @@ function gateLabel(hit: GateLabelIn): GateLabelOut {
 /**
  * 重写时追加给模型的那段话:点名上一稿撞了什么,并把违规内容列成黑名单。
  *
+ * 首句那道闸额外带上**怎么改**:光报「你违反了哪一条」对它没用(实拍两次重写都没改掉)。
+ *
  * @param fired 撞到的每一道闸。
  * @returns 追加进 system prompt 的那段话。
  */
 function retryNote(fired: RetryNoteIn): RetryNoteOut {
   const lines = [RETRY_HEAD]
   for (const hit of fired) lines.push(`${RETRY_BULLET}${hit.gate}${RETRY_COLON}${hit.hits.join(RETRY_COMMA)}`)
-  // 光报「你违反了哪一条」对首句那道闸没用(实拍两次重写都没改掉)—— 带上怎么改。
   for (const hit of fired) if (hit.gate === GATE.opening) lines.push(RETRY_OPENING)
   return lines.join(NL)
 }

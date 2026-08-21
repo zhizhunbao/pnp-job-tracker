@@ -182,6 +182,21 @@ export const GRID_CRS = 'CRS'
 export const CLAIMS_CAP = 6
 
 /**
+ * `YYYY-MM-DD` 的长度。库里的日期列带时间尾巴,见客与比对都只要这十位。
+ */
+export const DATE_LEN = 10
+
+/**
+ * 留痕里错误信息的截断长度。整段堆栈进日志没人读,头一截足够定位。
+ */
+export const ERR_CAP = 160
+
+/**
+ * 按句截断时,断点至少要落在上限的这个比例之后 —— 再靠前就把答复砍没了,不如硬截。
+ */
+export const CUT_MIN_RATIO = 0.5
+
+/**
  * 每条主张截多少字。原话要进事实清单当引文,太长会把清单撑爆。
  */
 export const CLAIM_TEXT_CAP = 160
@@ -858,6 +873,17 @@ export const LABEL = {
    * 主张那条的开头,后接用户转述的原话。
    */
   claimHead: 'claim reported by the user — ',
+
+  /**
+   * 通用的括号前半(带前导空格)。职业码专用的那对是 `nocOpen`/`nocClose`,
+   * 这对给分档、口径、范围这类补注用;后半共用 `nocClose`。
+   */
+  parenOpen: ' (',
+
+  /**
+   * EE 的缩写,见客引文里当前缀用(`EE · NOC 12345`)。
+   */
+  ee: 'EE',
 }
 
 /**
