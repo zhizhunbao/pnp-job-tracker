@@ -365,8 +365,8 @@ export function gatewayErrorOf(input: GatewayErrorOfIn): GatewayErrorOfOut {
     if (!type) {
       const detail = String(parsed?.detail || '')
       if (LEGACY_TOO_LONG.test(detail)) {
- type = LEGACY_TOO_LONG_TYPE; message = detail 
-}
+        type = LEGACY_TOO_LONG_TYPE; message = detail 
+      }
     }
   } catch {
     /* 非 JSON 回包,下面按状态兜底 */
@@ -542,8 +542,8 @@ export type ChatErrCode =
   | 'llm'        // 模型那头给了个用不了的回答:抽槽解析不出,或抽槽/合成自己炸了
   | 'guard'      // 出口校验没过,手里又没有 facts 可降级
   | 'busy'       // 模型那头等不来字(停摆闸响 / 上游超时)。**不降级成事实清单**
-                 // (2026-08-09 Frank 拍板「不用降级 就显示稍后再试,系统繁忙」):
-                 // 等太久之后再塞一张表格,读的人只会更烦。
+// (2026-08-09 Frank 拍板「不用降级 就显示稍后再试,系统繁忙」):
+// 等太久之后再塞一张表格,读的人只会更烦。
 
 /**
  * 对话编排的失败。

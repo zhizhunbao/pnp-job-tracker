@@ -73,8 +73,8 @@ import type {
 function oneGroupOf(input: MatchIn): OneGroupOut {
   const m = input.re.exec(input.text)
   if (!m?.groups) {
-return null
-}
+    return null
+  }
   return m.groups as OneGroup
 }
 
@@ -87,8 +87,8 @@ return null
 function rangeGroupOf(input: MatchIn): RangeGroupOut {
   const m = input.re.exec(input.text)
   if (!m?.groups) {
-return null
-}
+    return null
+  }
   return m.groups as RangeGroup
 }
 
@@ -101,8 +101,8 @@ return null
 function wordGroupOf(input: MatchIn): WordGroupOut {
   const m = input.re.exec(input.text)
   if (!m?.groups) {
-return null
-}
+    return null
+  }
   return m.groups as WordGroup
 }
 
@@ -120,8 +120,8 @@ function streamWords(s: StreamWordsIn): StreamWordsOut {
   const out: string[] = []
   for (const w of (s || '').toLowerCase().replace(NON_ALPHA, SEP.space).split(SEP.space)) {
     if (w.length > STREAM_WORD_MIN && !STREAM_STOP.includes(w as typeof STREAM_STOP[number])) {
-out.push(w)
-}
+      out.push(w)
+    }
   }
   return out
 }
@@ -142,13 +142,13 @@ export function streamMatches(input: StreamMatchesIn): StreamMatchesOut {
   const a = streamWords(input.drawStream)
   const b = streamWords(input.gridStream)
   if (!a.length || !b.length) {
-return false
-}
+    return false
+  }
   for (const w of a) {
-if (!b.includes(w)) {
-return false
-}
-}
+    if (!b.includes(w)) {
+      return false
+    }
+  }
   return true
 }
 
@@ -188,15 +188,15 @@ export function systemShort(system: SystemIn): SystemOut {
  */
 function yearsOf(label: LabelIn): LabelNumOut {
   if (NO_EXPERIENCE.test(label)) {
-return 0
-}
+    return 0
+  }
   if (LESS_THAN_HEAD.test(label)) {
-return 0
-}
+    return 0
+  }
   const at = oneGroupOf({ re: AT_LEAST, text: label })
   if (at) {
-return Number(at.n)
-}
+    return Number(at.n)
+  }
   const any = oneGroupOf({ re: YEARS_ANY, text: label })
   return any ? Number(any.n) : null
 }
@@ -210,8 +210,8 @@ return Number(at.n)
  */
 function monthsOf(label: LabelIn): LabelNumOut {
   if (LESS_THAN_ANY.test(label)) {
-return 0
-}
+    return 0
+  }
   const m = oneGroupOf({ re: MONTHS_ANY, text: label })
   return m ? Number(m.n) : null
 }
@@ -225,8 +225,8 @@ return 0
  */
 function clbOf(label: LabelIn): LabelNumOut {
   if (CLB_ZERO.test(label)) {
-return 0
-}
+    return 0
+  }
   const m = oneGroupOf({ re: CLB_ANY, text: label })
   return m ? Number(m.n) : null
 }
@@ -243,11 +243,11 @@ function eduRankOf(label: LabelIn): LabelNumOut {
   let low: number | null = null
   for (const one of EDU_LADDER) {
     if (!one.re.test(label)) {
-continue
-}
+      continue
+    }
     if (low == null || one.rank < low) {
-low = one.rank
-}
+      low = one.rank
+    }
   }
   return low
 }
@@ -262,20 +262,20 @@ low = one.rank
 function ageRangeOf(label: LabelIn): AgeRangeOut {
   const under = oneGroupOf({ re: AGE_LESS_THAN, text: label })
   if (under) {
-return { from: 0, to: Number(under.n) - 1 }
-}
+    return { from: 0, to: Number(under.n) - 1 }
+  }
   const older = oneGroupOf({ re: AGE_AND_OLDER, text: label })
   if (older) {
-return { from: Number(older.n), to: AGE_MAX }
-}
+    return { from: Number(older.n), to: AGE_MAX }
+  }
   const above = oneGroupOf({ re: AGE_MORE_THAN, text: label })
   if (above) {
-return { from: Number(above.n) + 1, to: AGE_MAX }
-}
+    return { from: Number(above.n) + 1, to: AGE_MAX }
+  }
   const span = rangeGroupOf({ re: AGE_RANGE, text: label })
   if (span) {
-return { from: Number(span.low), to: Number(span.high) }
-}
+    return { from: Number(span.low), to: Number(span.high) }
+  }
   const exact = oneGroupOf({ re: AGE_ONE, text: label })
   return exact ? { from: Number(exact.n), to: Number(exact.n) } : null
 }
@@ -297,20 +297,20 @@ function pickByThreshold(input: PickByThresholdIn): PickOut {
   for (const r of input.rows) {
     const th = input.thresholdOf(r.label)
     if (th != null) {
-scored.push({ r: r, th: th })
-}
+      scored.push({ r: r, th: th })
+    }
   }
   if (!scored.length) {
-return null
-}
+    return null
+  }
   let best: ThresholdRow | null = null
   for (const x of scored) {
     if (x.th > input.want) {
-continue
-}
+      continue
+    }
     if (!best || x.th > best.th) {
-best = x
-}
+      best = x
+    }
   }
   return best ? best.r : null
 }
@@ -325,8 +325,8 @@ function pickByAge(input: PickByAgeIn): PickOut {
   for (const r of input.rows) {
     const range = ageRangeOf(r.label)
     if (range && input.age >= range.from && input.age <= range.to) {
-return r
-}
+      return r
+    }
   }
   return null
 }
@@ -369,8 +369,8 @@ function autoPick(input: AutoPickIn): PickOut {
     return pickByThreshold({ rows: rows, thresholdOf: clbOf, want: p.clb2 })
   }
   if (input.factor === AUTO_FACTOR.age) {
-return pickByAge({ rows: rows, age: p.age })
-}
+    return pickByAge({ rows: rows, age: p.age })
+  }
   return null
 }
 
@@ -382,10 +382,10 @@ return pickByAge({ rows: rows, age: p.age })
  */
 function hasAutoPick(input: AutoPickIn): HasAutoPickOut {
   for (const name of Object.values(AUTO_FACTOR)) {
-if (name === input.factor) {
-return true
-}
-}
+    if (name === input.factor) {
+      return true
+    }
+  }
   return false
 }
 
@@ -414,21 +414,21 @@ export function defaultProfile(): DefaultProfileOut {
 export function scoreProvince(input: ScoreProvinceIn): ScoreProvinceOut {
   const all: ScoreFactor[] = []
   for (const f of input.factors) {
-if (f.province === input.province) {
-all.push(f)
-}
-}
+    if (f.province === input.province) {
+      all.push(f)
+    }
+  }
   if (!all.length) {
-return null
-}
+    return null
+  }
   const head = all[0]
 
   const names: string[] = []
   for (const f of all) {
-if (!names.includes(f.factor)) {
-names.push(f.factor)
-}
-}
+    if (!names.includes(f.factor)) {
+      names.push(f.factor)
+    }
+  }
   const parts: ScorePart[] = []
   for (const name of names) {
     parts.push(factorPart({
@@ -458,10 +458,10 @@ names.push(f.factor)
 function factorPart(input: FactorPartIn): FactorPartOut {
   const mine: ScoreFactor[] = []
   for (const f of input.all) {
-if (f.factor === input.name) {
-mine.push(f)
-}
-}
+    if (f.factor === input.name) {
+      mine.push(f)
+    }
+  }
   const rows = rowsOf({ rows: mine, kind: KIND.row })
   const bonusRows = rowsOf({ rows: mine, kind: KIND.bonus })
   const group = mine[0]?.factorGroup || ''
@@ -504,10 +504,10 @@ mine.push(f)
 function rowsOf(input: RowsOfIn): RowsOfOut {
   const out: ScoreFactor[] = []
   for (const r of input.rows) {
-if (r.kind === input.kind) {
-out.push(r)
-}
-}
+    if (r.kind === input.kind) {
+      out.push(r)
+    }
+  }
   return out
 }
 
@@ -545,10 +545,10 @@ function totalOf(input: TotalOfIn): TotalOfOut {
  */
 function groupCap(input: GroupCapIn): GroupCapOut {
   for (const f of input.all) {
-if (f.factorGroup === input.group) {
-return f.groupMax ?? null
-}
-}
+    if (f.factorGroup === input.group) {
+      return f.groupMax ?? null
+    }
+  }
   return null
 }
 
@@ -587,8 +587,8 @@ export function bonusPoints(input: BonusPointsIn): BonusPointsOut {
       inGroup = false
     }
     if (on) {
-sum += b.points ?? 0
-}
+      sum += b.points ?? 0
+    }
   }
   return sum + groupBest
 }
@@ -610,32 +610,32 @@ function eeAgeRangeOf(label: LabelIn): RangeOut {
   const s = label.trim()
   const under = oneGroupOf({ re: EE_AGE_UNDER, text: s })
   if (under) {
-return { from: 0, to: Number(under.n) - 1 }
-}
+    return { from: 0, to: Number(under.n) - 1 }
+  }
   const orLess = oneGroupOf({ re: EE_AGE_OR_LESS, text: s })
   if (orLess) {
-return { from: 0, to: Number(orLess.n) }
-}
+    return { from: 0, to: Number(orLess.n) }
+  }
   const orMore = oneGroupOf({ re: EE_AGE_OR_MORE, text: s })
   if (orMore) {
-return { from: Number(orMore.n), to: EE_AGE_MAX }
-}
+    return { from: Number(orMore.n), to: EE_AGE_MAX }
+  }
   const older = oneGroupOf({ re: EE_AGE_AND_OLDER, text: s })
   if (older) {
-return { from: Number(older.n), to: EE_AGE_MAX }
-}
+    return { from: Number(older.n), to: EE_AGE_MAX }
+  }
   const span = rangeGroupOf({ re: EE_AGE_RANGE, text: s })
   if (span) {
-return { from: Number(span.low), to: Number(span.high) }
-}
+    return { from: Number(span.low), to: Number(span.high) }
+  }
   const exact = oneGroupOf({ re: EE_AGE_EXACT, text: s })
   if (exact) {
-return { from: Number(exact.n), to: Number(exact.n) }
-}
+    return { from: Number(exact.n), to: Number(exact.n) }
+  }
   const bare = oneGroupOf({ re: EE_AGE_BARE, text: s })
   if (bare) {
-return { from: Number(bare.n), to: Number(bare.n) }
-}
+    return { from: Number(bare.n), to: Number(bare.n) }
+  }
   return null
 }
 
@@ -653,28 +653,28 @@ function eeClbRangeOf(label: LabelIn): RangeOut {
   const s = label.trim()
   const below = oneGroupOf({ re: EE_CLB_BELOW, text: s })
   if (below) {
-return { from: 0, to: Number(below.n) - 1 }
-}
+    return { from: 0, to: Number(below.n) - 1 }
+  }
   const orMore = oneGroupOf({ re: EE_CLB_OR_MORE, text: s })
   if (orMore) {
-return { from: Number(orMore.n), to: EE_CLB_MAX }
-}
+    return { from: Number(orMore.n), to: EE_CLB_MAX }
+  }
   const atLeast = oneGroupOf({ re: EE_CLB_AT_LEAST, text: s })
   if (atLeast) {
-return { from: Number(atLeast.n), to: EE_CLB_MAX }
-}
+    return { from: Number(atLeast.n), to: EE_CLB_MAX }
+  }
   const orLess = oneGroupOf({ re: EE_CLB_OR_LESS, text: s })
   if (orLess) {
-return { from: 0, to: Number(orLess.n) }
-}
+    return { from: 0, to: Number(orLess.n) }
+  }
   const span = rangeGroupOf({ re: EE_CLB_RANGE, text: s })
   if (span) {
-return { from: Number(span.low), to: Number(span.high) }
-}
+    return { from: Number(span.low), to: Number(span.high) }
+  }
   const exact = oneGroupOf({ re: EE_CLB_ONE, text: s })
   if (exact) {
-return { from: Number(exact.n), to: Number(exact.n) }
-}
+    return { from: Number(exact.n), to: Number(exact.n) }
+  }
   return null
 }
 
@@ -690,24 +690,24 @@ return { from: Number(exact.n), to: Number(exact.n) }
 function eeYearsRangeOf(label: LabelIn): RangeOut {
   const s = label.trim()
   if (EE_YEARS_NONE.test(s)) {
-return { from: 0, to: 0 }
-}
+    return { from: 0, to: 0 }
+  }
   const span = rangeGroupOf({ re: EE_YEARS_RANGE, text: s })
   if (span) {
-return { from: Number(span.low), to: Number(span.high) }
-}
+    return { from: Number(span.low), to: Number(span.high) }
+  }
   const either = rangeGroupOf({ re: EE_YEARS_OR, text: s })
   if (either) {
-return { from: Number(either.low), to: Number(either.high) }
-}
+    return { from: Number(either.low), to: Number(either.high) }
+  }
   const orMore = oneGroupOf({ re: EE_YEARS_OR_MORE, text: s })
   if (orMore) {
-return { from: Number(orMore.n), to: EE_YEARS_MAX }
-}
+    return { from: Number(orMore.n), to: EE_YEARS_MAX }
+  }
   const exact = oneGroupOf({ re: EE_YEARS_ONE, text: s })
   if (exact) {
-return { from: Number(exact.n), to: Number(exact.n) }
-}
+    return { from: Number(exact.n), to: Number(exact.n) }
+  }
   return null
 }
 
@@ -731,8 +731,8 @@ function pickByRange(input: PickByRangeIn): PickByRangeOut {
   for (const r of input.rows) {
     const rg = input.rangeOf(r.criterion)
     if (rg && input.want >= rg.from && input.want <= rg.to) {
-return r
-}
+      return r
+    }
   }
   return null
 }
@@ -804,11 +804,11 @@ function pickBestTier(input: PickBestTierIn): PickBestTierOut {
   let best: TierRow | null = null
   for (const x of input.scored) {
     if (x.th > input.want) {
-continue
-}
+      continue
+    }
     if (!best || x.th > best.th) {
-best = x
-}
+      best = x
+    }
   }
   return best ? best.r : null
 }
@@ -827,14 +827,14 @@ best = x
  */
 function crsEduYearsOf(criterion: LabelIn): EduYearsOut {
   if (CRS_EDU_YEARS.one.test(criterion)) {
-return PROGRAM_YEARS.one
-}
+    return PROGRAM_YEARS.one
+  }
   if (CRS_EDU_YEARS.two.test(criterion)) {
-return PROGRAM_YEARS.two
-}
+    return PROGRAM_YEARS.two
+  }
   if (CRS_EDU_YEARS.three.test(criterion)) {
-return PROGRAM_YEARS.three
-}
+    return PROGRAM_YEARS.three
+  }
   return null
 }
 
@@ -846,14 +846,14 @@ return PROGRAM_YEARS.three
  */
 function crsEduSpecial(input: EduSpecialOfIn): EduSpecialOfOut {
   if (input.edu === EDU.doctorate) {
-return CRS_EDU_SPECIAL.doctorate
-}
+    return CRS_EDU_SPECIAL.doctorate
+  }
   if (input.edu === EDU.master) {
-return CRS_EDU_SPECIAL.master
-}
+    return CRS_EDU_SPECIAL.master
+  }
   if (input.edu === EDU.highschool) {
-return CRS_EDU_SPECIAL.highschool
-}
+    return CRS_EDU_SPECIAL.highschool
+  }
   return null
 }
 
@@ -868,20 +868,20 @@ function pickEduRow(input: PickEduRowIn): PickByRangeOut {
   if (special) {
     for (const r of input.cand) {
       if (special.test(input.trimCriterion ? r.criterion.trim() : r.criterion)) {
-return r
-}
+        return r
+      }
     }
     return null
   }
   if (input.eduYears == null) {
-return null
-}
+    return null
+  }
   const scored: TierRow[] = []
   for (const r of input.cand) {
     const y = input.yearsOf(r.criterion)
     if (y != null) {
-scored.push({ r: r, th: y })
-}
+      scored.push({ r: r, th: y })
+    }
   }
   return pickBestTier({ scored: scored, want: input.eduYears })
 }
@@ -895,19 +895,19 @@ scored.push({ r: r, th: y })
 function pickAgeCrs(input: PickerIn): EstimateItemOut {
   const age = input.profile.age
   if (age == null) {
-return needsInfoItem({ factor: EE_KEY.age, label: EE_LABEL.age })
-}
+    return needsInfoItem({ factor: EE_KEY.age, label: EE_LABEL.age })
+  }
   const cand: EeGridRow[] = []
   for (const r of input.rows) {
     if (r.section === EE_SECTION.core && r.factor === EE_FACTOR.age && r.kind === EE_KIND_DETAIL
       && input.spouseCol.test(r.columnLabel)) {
-cand.push(r)
-}
+      cand.push(r)
+    }
   }
   const hit = pickByRange({ rows: cand, want: age, rangeOf: eeAgeRangeOf })
   if (!hit) {
-return needsInfoItem({ factor: EE_KEY.age, label: EE_LABEL.age })
-}
+    return needsInfoItem({ factor: EE_KEY.age, label: EE_LABEL.age })
+  }
   return hitItem({
     factor: EE_KEY.age, label: EE_LABEL.age, r: hit, points: hit.points ?? 0,
     matched: `${hit.criterion}${SEP.slash}${hit.columnLabel}`,
@@ -923,22 +923,22 @@ return needsInfoItem({ factor: EE_KEY.age, label: EE_LABEL.age })
 function pickEduCrs(input: PickerIn): EstimateItemOut {
   const edu = input.profile.edu
   if (!edu) {
-return needsInfoItem({ factor: EE_KEY.edu, label: EE_LABEL.edu })
-}
+    return needsInfoItem({ factor: EE_KEY.edu, label: EE_LABEL.edu })
+  }
   const cand: EeGridRow[] = []
   for (const r of input.rows) {
     if (r.section === EE_SECTION.core && r.factor === EE_FACTOR.crsEdu && r.kind === EE_KIND_DETAIL
       && input.spouseCol.test(r.columnLabel)) {
-cand.push(r)
-}
+      cand.push(r)
+    }
   }
   const hit = pickEduRow({
     cand: cand, edu: edu, eduYears: input.profile.eduYears,
     specialOf: crsEduSpecial, yearsOf: crsEduYearsOf, trimCriterion: false,
   })
   if (!hit) {
-return needsInfoItem({ factor: EE_KEY.edu, label: EE_LABEL.edu })
-}
+    return needsInfoItem({ factor: EE_KEY.edu, label: EE_LABEL.edu })
+  }
   return hitItem({
     factor: EE_KEY.edu, label: EE_LABEL.edu, r: hit, points: hit.points ?? 0,
     matched: `${hit.criterion}${SEP.slash}${hit.columnLabel}`,
@@ -956,19 +956,19 @@ return needsInfoItem({ factor: EE_KEY.edu, label: EE_LABEL.edu })
 function pickLang1Crs(input: PickerIn): EstimateItemOut {
   const clb = input.profile.clb
   if (clb == null) {
-return needsInfoItem({ factor: EE_KEY.clb, label: EE_LABEL.clb })
-}
+    return needsInfoItem({ factor: EE_KEY.clb, label: EE_LABEL.clb })
+  }
   const cand: EeGridRow[] = []
   for (const r of input.rows) {
     if (r.section === EE_SECTION.core && r.factor === EE_FACTOR.crsLang && r.kind === EE_KIND_DETAIL
       && EE_HEAD_FIRST_LANG.test(r.heading) && input.spouseCol.test(r.columnLabel)) {
-cand.push(r)
-}
+      cand.push(r)
+    }
   }
   const hit = pickByRange({ rows: cand, want: clb, rangeOf: eeClbRangeOf })
   if (!hit) {
-return needsInfoItem({ factor: EE_KEY.clb, label: EE_LABEL.clb })
-}
+    return needsInfoItem({ factor: EE_KEY.clb, label: EE_LABEL.clb })
+  }
   const per = hit.points ?? 0
   return estimateItem({
     factor: EE_KEY.clb, label: EE_LABEL.clb, points: per * LANG_ABILITIES,
@@ -987,20 +987,20 @@ return needsInfoItem({ factor: EE_KEY.clb, label: EE_LABEL.clb })
 function pickCanadaExpCrs(input: PickerIn): EstimateItemOut {
   const months = input.profile.expCanadaMonths
   if (months == null) {
-return needsInfoItem({ factor: EE_KEY.expCanada, label: EE_LABEL.expCanada })
-}
+    return needsInfoItem({ factor: EE_KEY.expCanada, label: EE_LABEL.expCanada })
+  }
   const years = monthsToYears(months) ?? 0
   const cand: EeGridRow[] = []
   for (const r of input.rows) {
     if (r.section === EE_SECTION.core && r.factor === EE_FACTOR.crsCanadaExp
       && r.kind === EE_KIND_DETAIL && input.spouseCol.test(r.columnLabel)) {
-cand.push(r)
-}
+      cand.push(r)
+    }
   }
   const hit = pickByRange({ rows: cand, want: years, rangeOf: eeYearsRangeOf })
   if (!hit) {
-return needsInfoItem({ factor: EE_KEY.expCanada, label: EE_LABEL.expCanada })
-}
+    return needsInfoItem({ factor: EE_KEY.expCanada, label: EE_LABEL.expCanada })
+  }
   return hitItem({
     factor: EE_KEY.expCanada, label: EE_LABEL.expCanada, r: hit, points: hit.points ?? 0,
     matched: `${hit.criterion}${SEP.slash}${hit.columnLabel}`,
@@ -1016,18 +1016,18 @@ return needsInfoItem({ factor: EE_KEY.expCanada, label: EE_LABEL.expCanada })
 function pickStudyTier(input: PickStudyTierIn): PickByRangeOut {
   if (input.years >= CRS_STUDY_LONG_YEARS) {
     for (const r of input.cand) {
-if (EE_CRIT_STUDY_LONG.test(r.criterion)) {
-return r
-}
-}
+      if (EE_CRIT_STUDY_LONG.test(r.criterion)) {
+        return r
+      }
+    }
     return null
   }
   if (input.years >= CRS_STUDY_SHORT_YEARS) {
     for (const r of input.cand) {
-if (EE_CRIT_STUDY_SHORT.test(r.criterion)) {
-return r
-}
-}
+      if (EE_CRIT_STUDY_SHORT.test(r.criterion)) {
+        return r
+      }
+    }
     return null
   }
   return null
@@ -1046,8 +1046,8 @@ function pickCanadaStudyBonus(input: PickerIn): EstimateItemOut {
   const label = EE_LABEL.canadaStudyBonus
   const study = input.profile.canadaStudy
   if (study == null) {
-return needsInfoItem({ factor: key, label: label })
-}
+    return needsInfoItem({ factor: key, label: label })
+  }
   if (!study) {
     return estimateItem({
       factor: key, label: label, points: 0, matched: EE_NOTE.noCanadaStudy, evidence: null,
@@ -1056,19 +1056,19 @@ return needsInfoItem({ factor: key, label: label })
   }
   const years = input.profile.eduYears
   if (years == null) {
-return needsInfoItem({ factor: key, label: label })
-}
+    return needsInfoItem({ factor: key, label: label })
+  }
   const cand: EeGridRow[] = []
   for (const r of input.rows) {
     if (r.section === EE_SECTION.extra && r.kind === EE_KIND_DETAIL
       && EE_CRIT_CANADA_STUDY.test(r.criterion)) {
-cand.push(r)
-}
+      cand.push(r)
+    }
   }
   const hit = pickStudyTier({ cand: cand, years: years })
   if (!hit) {
-return needsInfoItem({ factor: key, label: label })
-}
+    return needsInfoItem({ factor: key, label: label })
+  }
   return hitItem({ factor: key, label: label, r: hit, points: hit.points ?? 0, matched: hit.criterion })
 }
 
@@ -1081,17 +1081,17 @@ return needsInfoItem({ factor: key, label: label })
 function comboSubTier(input: ComboSubTierIn): ComboSubTierOut {
   const s = input.columnLabel
   if (CRS_SUB_TIER.clb9.test(s)) {
-return SUB_TIER_VALUE.clb9
-}
+    return SUB_TIER_VALUE.clb9
+  }
   if (CRS_SUB_TIER.clb7.test(s)) {
-return SUB_TIER_VALUE.clb7
-}
+    return SUB_TIER_VALUE.clb7
+  }
   if (CRS_SUB_TIER.years2.test(s)) {
-return SUB_TIER_VALUE.years2
-}
+    return SUB_TIER_VALUE.years2
+  }
   if (CRS_SUB_TIER.year1.test(s)) {
-return SUB_TIER_VALUE.year1
-}
+    return SUB_TIER_VALUE.year1
+  }
   return null
 }
 
@@ -1103,14 +1103,14 @@ return SUB_TIER_VALUE.year1
  */
 function comboTierOf(input: ComboTierOfIn): ComboTierOfOut {
   if (input.edu === EDU.doctorate) {
-return CRS_COMBO_TIER.doctorate
-}
+    return CRS_COMBO_TIER.doctorate
+  }
   if (input.edu === EDU.master) {
-return CRS_COMBO_TIER.master
-}
+    return CRS_COMBO_TIER.master
+  }
   if (input.edu === EDU.highschool) {
-return CRS_COMBO_TIER.highschool
-}
+    return CRS_COMBO_TIER.highschool
+  }
   return CRS_COMBO_TIER.other
 }
 
@@ -1148,24 +1148,24 @@ function comboItem(input: ComboItemIn): EstimateItemOut {
  */
 function pickEduComboCrs(input: EduComboIn): EstimateItemOut {
   if (!input.edu) {
-return needsInfoItem({ factor: input.key, label: input.label })
-}
+    return needsInfoItem({ factor: input.key, label: input.label })
+  }
   if (input.want == null) {
-return needsInfoItem({ factor: input.key, label: input.label })
-}
+    return needsInfoItem({ factor: input.key, label: input.label })
+  }
   const tierRe = comboTierOf({ edu: input.edu })
   const scored: TierRow[] = []
   for (const r of input.rows) {
     if (r.section !== EE_SECTION.combo || r.kind !== EE_KIND_DETAIL) {
-continue
-}
+      continue
+    }
     if (r.factor !== input.factor || !tierRe.test(r.criterion)) {
-continue
-}
+      continue
+    }
     const th = comboSubTier({ columnLabel: r.columnLabel })
     if (th != null) {
-scored.push({ r: r, th: th })
-}
+      scored.push({ r: r, th: th })
+    }
   }
   return comboItem({ scored: scored, want: input.want, key: input.key, label: input.label })
 }
@@ -1178,29 +1178,29 @@ scored.push({ r: r, th: th })
  */
 function pickForeignComboCrs(input: ForeignComboIn): EstimateItemOut {
   if (input.expForeignMonths == null) {
-return needsInfoItem({ factor: input.key, label: input.label })
-}
+    return needsInfoItem({ factor: input.key, label: input.label })
+  }
   if (input.want == null) {
-return needsInfoItem({ factor: input.key, label: input.label })
-}
+    return needsInfoItem({ factor: input.key, label: input.label })
+  }
   const years = monthsToYears(input.expForeignMonths) ?? 0
   const scored: TierRow[] = []
   for (const r of input.rows) {
     if (r.section !== EE_SECTION.combo || r.kind !== EE_KIND_DETAIL) {
-continue
-}
+      continue
+    }
     const head = r.heading.toLowerCase()
     if (!head.includes(EE_HEAD_FOREIGN_EXP) || !head.includes(input.headingHas)) {
-continue
-}
+      continue
+    }
     const rg = eeYearsRangeOf(r.criterion)
     if (!rg || years < rg.from || years > rg.to) {
-continue
-}
+      continue
+    }
     const th = comboSubTier({ columnLabel: r.columnLabel })
     if (th != null) {
-scored.push({ r: r, th: th })
-}
+      scored.push({ r: r, th: th })
+    }
   }
   return comboItem({ scored: scored, want: input.want, key: input.key, label: input.label })
 }
@@ -1217,10 +1217,10 @@ scored.push({ r: r, th: th })
 function needsInfoOf(input: NeedsInfoOfIn): NeedsInfoOfOut {
   const out: string[] = []
   for (const b of input.breakdown) {
-if (b.status === ITEM_STATUS.needsInfo) {
-out.push(b.factor)
-}
-}
+    if (b.status === ITEM_STATUS.needsInfo) {
+      out.push(b.factor)
+    }
+  }
   return out
 }
 
@@ -1233,8 +1233,8 @@ out.push(b.factor)
 function sumPoints(input: SumPointsIn): SumPointsOut {
   let total = 0
   for (const b of input.breakdown) {
-total += b.points
-}
+    total += b.points
+  }
   return total
 }
 
@@ -1252,10 +1252,10 @@ export function estimateCrs(input: EstimateIn): EstimateOut {
   const spouseCol = withSpouse ? EE_COL_WITH_SPOUSE : EE_COL_WITHOUT_SPOUSE
   const rows: EeGridRow[] = []
   for (const r of input.rows) {
-if (r.grid === GRID.crs) {
-rows.push(r)
-}
-}
+    if (r.grid === GRID.crs) {
+      rows.push(r)
+    }
+  }
   const one: PickerIn = { rows: rows, profile: p, spouseCol: spouseCol }
 
   const breakdown: EstimateItem[] = [
@@ -1303,20 +1303,20 @@ rows.push(r)
  */
 function fswEduYearsOf(criterion: LabelIn): EduYearsOut {
   if (FSW_EDU_PLUS.test(criterion)) {
-return null
-}
+    return null
+  }
   if (FSW_EDU_YEARS.one.test(criterion)) {
-return PROGRAM_YEARS.one
-}
+    return PROGRAM_YEARS.one
+  }
   if (FSW_EDU_YEARS.two.test(criterion)) {
-return PROGRAM_YEARS.two
-}
+    return PROGRAM_YEARS.two
+  }
   if (FSW_EDU_YEARS.three.test(criterion)) {
-return PROGRAM_YEARS.three
-}
+    return PROGRAM_YEARS.three
+  }
   if (FSW_EDU_YEARS.four.test(criterion)) {
-return PROGRAM_YEARS.four
-}
+    return PROGRAM_YEARS.four
+  }
   return null
 }
 
@@ -1328,14 +1328,14 @@ return PROGRAM_YEARS.four
  */
 function fswEduSpecial(input: EduSpecialOfIn): EduSpecialOfOut {
   if (input.edu === EDU.doctorate) {
-return FSW_EDU_SPECIAL.doctorate
-}
+    return FSW_EDU_SPECIAL.doctorate
+  }
   if (input.edu === EDU.master) {
-return FSW_EDU_SPECIAL.master
-}
+    return FSW_EDU_SPECIAL.master
+  }
   if (input.edu === EDU.highschool) {
-return FSW_EDU_SPECIAL.highschool
-}
+    return FSW_EDU_SPECIAL.highschool
+  }
   return null
 }
 
@@ -1348,10 +1348,10 @@ return FSW_EDU_SPECIAL.highschool
 function fswRowsOf(input: FswRowsOfIn): FswRowsOfOut {
   const out: EeGridRow[] = []
   for (const r of input.rows) {
-if (r.factor === input.factor) {
-out.push(r)
-}
-}
+    if (r.factor === input.factor) {
+      out.push(r)
+    }
+  }
   return out
 }
 
@@ -1364,13 +1364,13 @@ out.push(r)
 function pickAgeFsw(input: FswPickerIn): EstimateItemOut {
   const age = input.profile.age
   if (age == null) {
-return needsInfoItem({ factor: EE_KEY.age, label: EE_LABEL.age })
-}
+    return needsInfoItem({ factor: EE_KEY.age, label: EE_LABEL.age })
+  }
   const cand = fswRowsOf({ rows: input.rows, factor: EE_FACTOR.age })
   const hit = pickByRange({ rows: cand, want: age, rangeOf: eeAgeRangeOf })
   if (!hit) {
-return needsInfoItem({ factor: EE_KEY.age, label: EE_LABEL.age })
-}
+    return needsInfoItem({ factor: EE_KEY.age, label: EE_LABEL.age })
+  }
   return hitItem({
     factor: EE_KEY.age, label: EE_LABEL.age, r: hit, points: hit.points ?? 0,
     matched: hit.criterion,
@@ -1386,16 +1386,16 @@ return needsInfoItem({ factor: EE_KEY.age, label: EE_LABEL.age })
 function pickEduFsw(input: FswPickerIn): EstimateItemOut {
   const edu = input.profile.edu
   if (!edu) {
-return needsInfoItem({ factor: EE_KEY.edu, label: EE_LABEL.edu })
-}
+    return needsInfoItem({ factor: EE_KEY.edu, label: EE_LABEL.edu })
+  }
   const cand = fswRowsOf({ rows: input.rows, factor: EE_FACTOR.fswEdu })
   const hit = pickEduRow({
     cand: cand, edu: edu, eduYears: input.profile.eduYears,
     specialOf: fswEduSpecial, yearsOf: fswEduYearsOf, trimCriterion: true,
   })
   if (!hit) {
-return needsInfoItem({ factor: EE_KEY.edu, label: EE_LABEL.edu })
-}
+    return needsInfoItem({ factor: EE_KEY.edu, label: EE_LABEL.edu })
+  }
   return hitItem({
     factor: EE_KEY.edu, label: EE_LABEL.edu, r: hit, points: hit.points ?? 0,
     matched: hit.criterion,
@@ -1411,18 +1411,18 @@ return needsInfoItem({ factor: EE_KEY.edu, label: EE_LABEL.edu })
 function pickLang1Fsw(input: FswPickerIn): EstimateItemOut {
   const clb = input.profile.clb
   if (clb == null) {
-return needsInfoItem({ factor: EE_KEY.clb, label: EE_LABEL.clb })
-}
+    return needsInfoItem({ factor: EE_KEY.clb, label: EE_LABEL.clb })
+  }
   const cand: EeGridRow[] = []
   for (const r of input.rows) {
     if (r.factor === EE_FACTOR.fswLang && r.columnLabel === EE_COL_SPEAKING) {
-cand.push(r)
-}
+      cand.push(r)
+    }
   }
   const hit = pickByRange({ rows: cand, want: clb, rangeOf: eeClbRangeOf })
   if (!hit) {
-return needsInfoItem({ factor: EE_KEY.clb, label: EE_LABEL.clb })
-}
+    return needsInfoItem({ factor: EE_KEY.clb, label: EE_LABEL.clb })
+  }
   const per = hit.points ?? 0
   return estimateItem({
     factor: EE_KEY.clb, label: EE_LABEL.clb, points: per * LANG_ABILITIES,
@@ -1474,11 +1474,11 @@ function pickAdaptabilityFsw(input: FswPickerIn): AdaptOut {
   let workRow: EeGridRow | null = null
   for (const r of cand) {
     if (!studyRow && EE_CRIT_PAST_STUDY.test(r.criterion.trim())) {
-studyRow = r
-}
+      studyRow = r
+    }
     if (!workRow && EE_CRIT_PAST_WORK.test(r.criterion.trim())) {
-workRow = r
-}
+      workRow = r
+    }
   }
   return [
     adaptStudyItem({ row: studyRow, profile: input.profile }),
@@ -1504,8 +1504,8 @@ function adaptStudyItem(input: AdaptItemIn): EstimateItemOut {
   const p = input.profile
   const row = input.row
   if (p.canadaStudy == null || p.eduYears == null) {
-return needsInfoItem({ factor: key, label: label })
-}
+    return needsInfoItem({ factor: key, label: label })
+  }
   if (!p.canadaStudy || p.eduYears < FSW_ADAPT_STUDY_YEARS || !row) {
     return estimateItem({
       factor: key, label: label, points: 0, matched: row ? EE_NOTE.underTwoStudyYears : '',
@@ -1530,8 +1530,8 @@ function adaptWorkItem(input: AdaptItemIn): EstimateItemOut {
   const months = input.profile.expCanadaMonths
   const row = input.row
   if (months == null) {
-return needsInfoItem({ factor: key, label: label })
-}
+    return needsInfoItem({ factor: key, label: label })
+  }
   if (months < FSW_ADAPT_WORK_MONTHS || !row) {
     return estimateItem({
       factor: key, label: label, points: 0, matched: row ? EE_NOTE.underOneWorkYear : '',
@@ -1556,10 +1556,10 @@ return needsInfoItem({ factor: key, label: label })
 export function estimateFsw67(input: EstimateIn): EstimateOut {
   const rows: EeGridRow[] = []
   for (const r of input.rows) {
-if (r.grid === GRID.fsw67) {
-rows.push(r)
-}
-}
+    if (r.grid === GRID.fsw67) {
+      rows.push(r)
+    }
+  }
   const one: FswPickerIn = { rows: rows, profile: input.profile }
 
   const breakdown: EstimateItem[] = [
@@ -1570,8 +1570,8 @@ rows.push(r)
     pickExpFsw(one),
   ]
   for (const item of pickAdaptabilityFsw(one)) {
-breakdown.push(item)
-}
+    breakdown.push(item)
+  }
   return {
     total: sumPoints({ breakdown: breakdown }), breakdown: breakdown,
     withSpouse: input.profile.married === true,
@@ -1608,16 +1608,16 @@ breakdown.push(item)
 export function lineStateOf(score: ScoreLineIn): LineStateOut {
   const line = score?.refLine
   if (line == null || !Number.isFinite(line)) {
-return LINE.unknown
-}
+    return LINE.unknown
+  }
   const low = score?.value
   if (low != null && Number.isFinite(low) && low >= line) {
-return LINE.above
-}
+    return LINE.above
+  }
   const top = score?.ceiling ?? score?.value ?? null
   if (top != null && Number.isFinite(top) && top < line) {
-return LINE.below
-}
+    return LINE.below
+  }
   return LINE.unknown
 }
 
@@ -1651,13 +1651,13 @@ export function isBelowLine(score: ScoreLineIn): LineSideOut {
  */
 export function marginOf(score: ScoreLineIn): MarginOut {
   if (lineStateOf(score) !== LINE.above) {
-return null
-}
+    return null
+  }
   const value = score?.value
   const line = score?.refLine
   if (value == null || line == null) {
-return null
-}
+    return null
+  }
   return value - line
 }
 
@@ -1674,10 +1674,10 @@ return null
 function mbRowsOf(input: MbRowsOfIn): RowsOfOut {
   const out: ScoreFactor[] = []
   for (const r of input.rows) {
-if (r.factor === input.factor && r.kind === input.kind) {
-out.push(r)
-}
-}
+    if (r.factor === input.factor && r.kind === input.kind) {
+      out.push(r)
+    }
+  }
   return out
 }
 
@@ -1692,10 +1692,10 @@ out.push(r)
  */
 function needRow(input: NeedRowIn): NeedRowOut {
   for (const r of input.rows) {
-if (input.re.test(r.label)) {
-return r
-}
-}
+    if (input.re.test(r.label)) {
+      return r
+    }
+  }
   throw fail({
     name: POINTS_ERR.name,
     msg: `${POINTS_ERR.rowMissingHead}${input.ctx}${POINTS_ERR.rowMissingTail}`,
@@ -1717,24 +1717,24 @@ function mbLangPick(input: MbLangPickIn): MbLangPickOut {
     const hit = oneGroupOf({ re: MB_CLB, text: r.label })
     const th = Number(hit?.n)
     if (!Number.isNaN(th)) {
-scored.push({ r: r, th: th })
-}
+      scored.push({ r: r, th: th })
+    }
   }
   let best: MbThresholdRow | null = null
   for (const x of scored) {
     if (x.th > input.clb) {
-continue
-}
+      continue
+    }
     if (!best || x.th > best.th) {
-best = x
-}
+      best = x
+    }
   }
   if (!best) {
     for (const x of scored) {
-if (!best || x.th < best.th) {
-best = x
-}
-}
+      if (!best || x.th < best.th) {
+        best = x
+      }
+    }
   }
   return { pts: best?.r.points ?? 0, row: best?.r as ScoreFactor }
 }
@@ -1750,21 +1750,21 @@ function mbAgePick(input: MbAgePickIn): MbRowOut {
     const older = oneGroupOf({ re: MB_AGE_OR_OLDER, text: r.label })
     if (older) {
       if (input.age >= Number(older.n)) {
-return r
-}
+        return r
+      }
       continue
     }
     const span = rangeGroupOf({ re: MB_AGE_RANGE, text: r.label })
     if (span) {
       if (input.age >= Number(span.low) && input.age <= Number(span.high)) {
-return r
-}
+        return r
+      }
       continue
     }
     const single = oneGroupOf({ re: MB_AGE_BARE, text: r.label.trim() })
     if (single && input.age === Number(single.n)) {
-return r
-}
+      return r
+    }
   }
   throw fail({
     name: POINTS_ERR.name, msg: `${POINTS_ERR.noAgeRowHead}${input.age}`, code: undefined,
@@ -1779,22 +1779,22 @@ return r
  */
 function mbWorkYearsOf(label: LabelIn): MbWorkYearsOut {
   if (MB_WORK_LESS.test(label)) {
-return 0
-}
+    return 0
+  }
   const m = wordGroupOf({ re: MB_WORK_WORD, text: label.trim() })
   if (!m) {
-return null
-}
+    return null
+  }
   const word = m.word.toLowerCase()
   if (word === WORD.one) {
-return WORD_NUM.one
-}
+    return WORD_NUM.one
+  }
   if (word === WORD.two) {
-return WORD_NUM.two
-}
+    return WORD_NUM.two
+  }
   if (word === WORD.three) {
-return WORD_NUM.three
-}
+    return WORD_NUM.three
+  }
   return WORD_NUM.four
 }
 
@@ -1809,24 +1809,24 @@ function mbWorkPick(input: MbWorkPickIn): MbRowOut {
   for (const r of input.rows) {
     const t = mbWorkYearsOf(r.label)
     if (t != null) {
-scored.push({ r: r, th: t })
-}
+      scored.push({ r: r, th: t })
+    }
   }
   let best: MbThresholdRow | null = null
   for (const x of scored) {
     if (x.th > input.years) {
-continue
-}
+      continue
+    }
     if (!best || x.th > best.th) {
-best = x
-}
+      best = x
+    }
   }
   if (!best) {
     for (const x of scored) {
-if (!best || x.th < best.th) {
-best = x
-}
-}
+      if (!best || x.th < best.th) {
+        best = x
+      }
+    }
   }
   return best?.r as ScoreFactor
 }
@@ -1839,23 +1839,23 @@ best = x
  */
 function mbEduReOf(input: MbEduReOfIn): MbEduReOfOut {
   if (input.edu === MB_EDU.masterOrDoctorate) {
-return MB_EDU_RE.masterOrDoctorate
-}
+    return MB_EDU_RE.masterOrDoctorate
+  }
   if (input.edu === MB_EDU.twoPrograms2yPlus) {
-return MB_EDU_RE.twoPrograms2yPlus
-}
+    return MB_EDU_RE.twoPrograms2yPlus
+  }
   if (input.edu === MB_EDU.oneProgram3yPlus) {
-return MB_EDU_RE.oneProgram3yPlus
-}
+    return MB_EDU_RE.oneProgram3yPlus
+  }
   if (input.edu === MB_EDU.oneProgram2y) {
-return MB_EDU_RE.oneProgram2y
-}
+    return MB_EDU_RE.oneProgram2y
+  }
   if (input.edu === MB_EDU.oneYearProgram) {
-return MB_EDU_RE.oneYearProgram
-}
+    return MB_EDU_RE.oneYearProgram
+  }
   if (input.edu === MB_EDU.tradeCert) {
-return MB_EDU_RE.tradeCert
-}
+    return MB_EDU_RE.tradeCert
+  }
   return MB_EDU_RE.none
 }
 
@@ -1868,8 +1868,8 @@ return MB_EDU_RE.tradeCert
 function mbBands(input: MbBandsIn): MbBandsOut {
   const one = input.clb
   if (typeof one === 'number') {
-return [one, one, one, one]
-}
+    return [one, one, one, one]
+  }
   return [one.reading, one.writing, one.listening, one.speaking]
 }
 
@@ -1895,8 +1895,8 @@ function mbLanguagePart(input: MbPartIn): MbPartOut {
   const lang2 = mbRowsOf({ rows: input.rows, factor: MB_FACTOR.language, kind: KIND.bonus })[0]
   const second = input.profile.secondLangClb5Plus && lang2
   if (second) {
-pts += lang2.points ?? 0
-}
+    pts += lang2.points ?? 0
+  }
   const max = langRows[0]?.factorMax ?? null
   return {
     factor: MB_FACTOR.language, pts: Math.min(pts, max ?? pts), max: max,
@@ -1935,8 +1935,8 @@ function mbWorkPart(input: MbPartIn): MbPartOut {
   const bonus = mbRowsOf({ rows: input.rows, factor: MB_FACTOR.work, kind: KIND.bonus })[0]
   const licensed = input.profile.employerLicenseRecognized && bonus
   if (licensed) {
-pts += bonus.points ?? 0
-}
+    pts += bonus.points ?? 0
+  }
   const max = rows[0]?.factorMax ?? null
   return {
     factor: MB_FACTOR.work, pts: Math.min(pts, max ?? pts), max: max,
@@ -2001,8 +2001,8 @@ function mbAdaptPart(input: MbPartIn): MbPartOut {
     adapt.regionalOutsideWinnipeg ? (regionalRows[0]?.label ?? '') : '',
   ]) {
     if (one) {
-notes.push(one)
-}
+      notes.push(one)
+    }
   }
   return {
     factor: MB_FACTOR.adaptability, pts: groupMax == null ? sum : Math.min(sum, groupMax),
@@ -2023,19 +2023,19 @@ function mbConnectionPicks(input: MbConnectionPicksIn): MbConnectionPicksOut {
   const out: MbPick[] = []
   const head = MB_FACTOR.adaptConnection + MB_CTX_SEP
   if (a.closeRelative) {
-out.push({ re: MB_ADAPT_RE.closeRelative, ctx: head + MB_CTX.closeRelative })
-}
+    out.push({ re: MB_ADAPT_RE.closeRelative, ctx: head + MB_CTX.closeRelative })
+  }
   if (a.priorMbWork6moPlus) {
-out.push({ re: MB_ADAPT_RE.priorWork, ctx: head + MB_CTX.priorWork })
-}
+    out.push({ re: MB_ADAPT_RE.priorWork, ctx: head + MB_CTX.priorWork })
+  }
   if (a.mbEduYears === MB_EDU_TWO_YEARS) {
-out.push({ re: MB_ADAPT_RE.edu2y, ctx: head + MB_CTX.edu2y })
-} else if (a.mbEduYears === MB_EDU_ONE_YEAR) {
-out.push({ re: MB_ADAPT_RE.edu1y, ctx: head + MB_CTX.edu1y })
-}
+    out.push({ re: MB_ADAPT_RE.edu2y, ctx: head + MB_CTX.edu2y })
+  } else if (a.mbEduYears === MB_EDU_ONE_YEAR) {
+    out.push({ re: MB_ADAPT_RE.edu1y, ctx: head + MB_CTX.edu1y })
+  }
   if (a.closeFriendOrDistantRelative) {
-out.push({ re: MB_ADAPT_RE.friend, ctx: head + MB_CTX.friend })
-}
+    out.push({ re: MB_ADAPT_RE.friend, ctx: head + MB_CTX.friend })
+  }
   return out
 }
 
@@ -2050,8 +2050,8 @@ function mbMaxPoints(input: MbMaxPointsIn): MbMaxPointsOut {
   for (const r of input.rows) {
     const p = r.points ?? 0
     if (p > top) {
-top = p
-}
+      top = p
+    }
   }
   return top
 }
@@ -2073,15 +2073,15 @@ function mbRiskPart(input: MbPartIn): MbPartOut {
   })
   const floor = rows[0]?.factorMax ?? null
   if (floor != null) {
-pts = Math.max(pts, floor)
-}
+    pts = Math.max(pts, floor)
+  }
   const notes: string[] = []
   if (input.profile.riskForeignWork) {
-notes.push(MB_NOTE.foreignWork)
-}
+    notes.push(MB_NOTE.foreignWork)
+  }
   if (input.profile.riskForeignStudy) {
-notes.push(MB_NOTE.foreignStudy)
-}
+    notes.push(MB_NOTE.foreignStudy)
+  }
   return {
     factor: MB_FACTOR.risk, pts: pts, max: floor, matched: notes.join(MB_JOIN.plus),
   }
@@ -2099,11 +2099,11 @@ function mbRiskTicks(input: MbRiskTicksIn): MbRiskTicksOut {
   for (let i = 0; i < input.rows.length; i += 1) {
     const label = input.rows[i].label
     if (MB_RISK_RE.foreignWork.test(label) && input.profile.riskForeignWork) {
-ticks[`${prefix}${i}`] = true
-}
+      ticks[`${prefix}${i}`] = true
+    }
     if (MB_RISK_RE.foreignStudy.test(label) && input.profile.riskForeignStudy) {
-ticks[`${prefix}${i}`] = true
-}
+      ticks[`${prefix}${i}`] = true
+    }
   }
   return ticks
 }
@@ -2123,10 +2123,10 @@ ticks[`${prefix}${i}`] = true
 export function estimateMbEoi(input: EstimateMbEoiIn): EstimateMbEoiOut {
   const rows: ScoreFactor[] = []
   for (const f of input.factors) {
-if (f.province === MB) {
-rows.push(f)
-}
-}
+    if (f.province === MB) {
+      rows.push(f)
+    }
+  }
   if (!rows.length) {
     throw fail({ name: POINTS_ERR.name, msg: POINTS_ERR.noMbRows, code: undefined })
   }
@@ -2138,8 +2138,8 @@ rows.push(f)
   ]
   let raw = 0
   for (const p of parts) {
-raw += p.pts
-}
+    raw += p.pts
+  }
   return {
     province: MB, system: head.system, maxTotal: head.maxTotal ?? 0, url: head.url,
     guideEffective: head.guideEffective, fetched: head.fetched, parts: parts,

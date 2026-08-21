@@ -40,12 +40,12 @@ export function count(x: number | string | boolean | null): number {
  */
 export function numOrNull(x: number | string | boolean | null): number | null {
   if (x == null || x === '') {
-return null
-}
+    return null
+  }
   const n = Number(x)
   if (Number.isFinite(n)) {
-return n
-}
+    return n
+  }
   return null
 }
 
@@ -56,8 +56,8 @@ return n
  */
 export function textOrNull(x: string | number | boolean | null): string | null {
   if (x == null) {
-return null
-}
+    return null
+  }
   return String(x)
 }
 
@@ -78,7 +78,7 @@ export function show(x: number | null): string {
  */
 export function poolOf(payload: PayloadWithPool): DbPool | null {
   if (payload.db == null || payload.db.pool == null) {
-return null
-}
+    return null
+  }
   return payload.db.pool
 }

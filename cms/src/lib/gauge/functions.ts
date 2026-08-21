@@ -63,23 +63,23 @@ export function areaOfPlace(input: AreaOfPlaceIn): AreaOfPlaceOut {
   const names = placeNames({ city: input.city, district: input.district })
   if (input.province === AREA_PROV.on) {
     if (matchesAny({ names: names, list: GTA })) {
-return AREA.gta
-}
+      return AREA.gta
+    }
     if (matchesAny({ names: names, list: ON_LISTED })) {
-return AREA.onListedCd
-}
+      return AREA.onListedCd
+    }
     return names.length ? AREA.outsideGta : AREA.unknown
   }
   if (input.province === AREA_PROV.bc) {
     if (matchesAny({ names: names, list: METRO_VAN })) {
-return AREA.metroVancouver
-}
+      return AREA.metroVancouver
+    }
     return names.length ? AREA.restOfBc : AREA.unknown
   }
   if (input.province === AREA_PROV.nl) {
     if (matchesAny({ names: names, list: ST_JOHNS })) {
-return AREA.stJohns
-}
+      return AREA.stJohns
+    }
     return names.length ? AREA.restOfNl : AREA.unknown
   }
   return AREA.unknown
@@ -95,8 +95,8 @@ function placeNames(input: PlaceNamesIn): PlaceNamesOut {
   const out: string[] = []
   for (const one of [normalizeName(input.district), normalizeName(input.city)]) {
     if (one) {
-out.push(one)
-}
+      out.push(one)
+    }
   }
   return out
 }
@@ -109,10 +109,10 @@ out.push(one)
  */
 function matchesAny(input: MatchesAnyIn): MatchesAnyOut {
   for (const one of input.names) {
-if (input.list.includes(one)) {
-return true
-}
-}
+    if (input.list.includes(one)) {
+      return true
+    }
+  }
   return false
 }
 
@@ -133,8 +133,8 @@ export function employerBar(input: EmployerBarIn): EmployerBarOut {
   const rows: Requirement[] = []
   for (const r of input.reqs) {
     if (r.province === input.province && r.subject === SUBJECT.employer) {
-rows.push(r)
-}
+      rows.push(r)
+    }
   }
   return {
     years: yearsOf({
@@ -161,20 +161,20 @@ rows.push(r)
 function barRow(input: BarRowIn): BarRowOut {
   const rs: Requirement[] = []
   for (const r of input.rows) {
-if (r.factor === input.factor) {
-rs.push(r)
-}
-}
+    if (r.factor === input.factor) {
+      rs.push(r)
+    }
+  }
   for (const r of rs) {
-if (input.areas.includes(r.appliesArea)) {
-return r
-}
-}
+    if (input.areas.includes(r.appliesArea)) {
+      return r
+    }
+  }
   for (const r of rs) {
-if (r.appliesArea === AREA.unknown) {
-return r
-}
-}
+    if (r.appliesArea === AREA.unknown) {
+      return r
+    }
+  }
   return null
 }
 
@@ -189,8 +189,8 @@ return r
  */
 function staffAreas(input: AreasForIn): AreasForOut {
   if (input.area === AREA.onListedCd) {
-return [AREA.outsideGta]
-}
+    return [AREA.outsideGta]
+  }
   return input.area ? [input.area] : []
 }
 
@@ -205,14 +205,14 @@ return [AREA.outsideGta]
  */
 function revenueAreas(input: AreasForIn): AreasForOut {
   if (input.area === AREA.onListedCd) {
-return [AREA.onListedCd]
-}
+    return [AREA.onListedCd]
+  }
   if (input.area === AREA.gta) {
-return [AREA.gta]
-}
+    return [AREA.gta]
+  }
   if (input.area === AREA.outsideGta) {
-return []
-}
+    return []
+  }
   return input.area ? [input.area] : []
 }
 
@@ -225,8 +225,8 @@ return []
 function yearsOf(input: YearsOfIn): YearsOfOut {
   const row = input.row
   if (!row || row.value == null) {
-return null
-}
+    return null
+  }
   return row.unit === UNIT.months ? row.value / MONTHS_PER_YEAR : row.value
 }
 
@@ -244,15 +244,15 @@ return null
  */
 export function teerHit(input: TeerHitIn): TeerHitOut {
   if (!input.r.appliesTeer) {
-return true
-}
+    return true
+  }
   if (input.teer == null) {
-return false
-}
+    return false
+  }
   for (const one of input.r.appliesTeer.split(LIST_SEP)) {
     if (Number(one.trim()) === input.teer) {
-return true
-}
+      return true
+    }
   }
   return false
 }
@@ -271,23 +271,23 @@ function nocScore(input: NocScoreIn): NocScoreOut {
   const noc = input.noc
   const ex = prefixList({ text: input.r.excludesNoc || '' })
   for (const p of ex) {
-if (noc && noc.startsWith(p)) {
-return NOC_MISS
-}
-}
+    if (noc && noc.startsWith(p)) {
+      return NOC_MISS
+    }
+  }
   const inc = prefixList({ text: input.r.appliesNoc || '' })
   if (!inc.length) {
-return NOC_GENERIC
-}
+    return NOC_GENERIC
+  }
   if (!noc) {
-return NOC_MISS
-}
+    return NOC_MISS
+  }
   const hits: string[] = []
   for (const p of inc) {
-if (noc.startsWith(p)) {
-hits.push(p)
-}
-}
+    if (noc.startsWith(p)) {
+      hits.push(p)
+    }
+  }
   hits.sort(byLengthDesc)
   return hits.length ? hits[0].length : NOC_MISS
 }
@@ -303,8 +303,8 @@ function prefixList(input: PrefixListIn): PrefixListOut {
   for (const one of input.text.split(LIST_SEP)) {
     const t = one.trim()
     if (t) {
-out.push(t)
-}
+      out.push(t)
+    }
   }
   return out
 }
@@ -332,8 +332,8 @@ function rowsOfFactor(input: RowsOfFactorIn): RowsOfFactorOut {
   const out: Requirement[] = []
   for (const r of input.reqs) {
     if (r.factor === input.factor && r.subject === input.subject) {
-out.push(r)
-}
+      out.push(r)
+    }
   }
   return out
 }
@@ -363,8 +363,8 @@ export function evaluateRequirements(input: EvaluateRequirementsIn): EvaluateReq
   pushOne({ out: out, row: wageResult(one) })
   pushOne({ out: out, row: employerYearsResult(one) })
   for (const row of employerTieredResults(one)) {
-out.push(row)
-}
+    out.push(row)
+  }
   return out
 }
 
@@ -376,8 +376,8 @@ out.push(row)
  */
 function pushOne(input: PushOneIn): PushOneOut {
   if (input.row) {
-input.out.push(input.row)
-}
+    input.out.push(input.row)
+  }
 }
 
 /**
@@ -395,8 +395,8 @@ function languageResult(input: FactorIn): FactorOneOut {
     profile: input.profile,
   })
   if (!lang) {
-return null
-}
+    return null
+  }
   const clb = input.profile.clb
   if (lang.op === OP.none) {
     return {
@@ -428,12 +428,12 @@ function pickLanguageRow(input: PickLanguageRowIn): PickLanguageRowOut {
   const scored: ScoredRow[] = []
   for (const r of input.rows) {
     if (!teerHit({ r: r, teer: input.profile.teer })) {
-continue
-}
+      continue
+    }
     const s = nocScore({ r: r, noc: input.profile.noc })
     if (s >= 0) {
-scored.push({ r: r, s: s })
-}
+      scored.push({ r: r, s: s })
+    }
   }
   scored.sort(byScoreDesc)
   return scored.length ? scored[0].r : null
@@ -456,16 +456,16 @@ scored.push({ r: r, s: s })
 function incomeResult(input: FactorIn): FactorOneOut {
   const rows = rowsOfFactor({ reqs: input.reqs, factor: FACTOR.income, subject: SUBJECT.applicant })
   if (!rows.length) {
-return null
-}
+    return null
+  }
   const p = input.profile
   const size = p.familySize ?? DEFAULT_FAMILY_SIZE
   const metro = pickIncomeRow({ rows: rows, area: AREA.metroVancouver, size: size })
   const rest = pickIncomeRow({ rows: rows, area: AREA.restOfBc, size: size })
   const row = p.area ? pickIncomeRow({ rows: rows, area: p.area, size: size }) ?? metro ?? rest : metro ?? rest
   if (!row) {
-return null
-}
+    return null
+  }
   const hi = p.area ? row.value : (metro?.value ?? row.value)
   const lo = p.area ? null : (rest?.value ?? null)
   const judged = incomeVerdict({
@@ -487,13 +487,13 @@ return null
 function pickIncomeRow(input: PickIncomeRowIn): PickIncomeRowOut {
   for (const r of input.rows) {
     if (r.appliesArea === input.area && r.familySize === input.size) {
-return r
-}
+      return r
+    }
   }
   for (const r of input.rows) {
     if (r.appliesArea === input.area && r.familySize === DEFAULT_FAMILY_SIZE) {
-return r
-}
+      return r
+    }
   }
   return null
 }
@@ -512,15 +512,15 @@ function incomeVerdict(input: IncomeVerdictIn): IncomeVerdictOut {
   const have = input.have
   const hi = input.hi
   if (have == null || hi == null) {
-return { verdict: ITEM.unknown, short: null }
-}
+    return { verdict: ITEM.unknown, short: null }
+  }
   const floor = input.lo ?? hi
   if (have < floor) {
-return { verdict: ITEM.fail, short: floor - have }
-}
+    return { verdict: ITEM.fail, short: floor - have }
+  }
   if (have >= hi && input.sizeKnown) {
-return { verdict: ITEM.pass, short: null }
-}
+    return { verdict: ITEM.pass, short: null }
+  }
   return { verdict: ITEM.unknown, short: null }
 }
 
@@ -539,12 +539,12 @@ function tenureResult(input: FactorIn): FactorOneOut {
   const rows: Requirement[] = []
   for (const r of experienceRows(input)) {
     if (r.basis === BASIS.employerTenure && r.value != null) {
-rows.push(r)
-}
+      rows.push(r)
+    }
   }
   if (!rows.length) {
-return null
-}
+    return null
+  }
   rows.sort(byValueAsc)
   const tiers = tiersOfCondition({ rows: rows })
   return {
@@ -565,8 +565,8 @@ return null
 function tiersOfCondition(input: TiersOfIn): TiersOfOut {
   const out: AreaTier[] = []
   for (const r of input.rows) {
-out.push({ area: r.appliesCondition || '', value: r.value })
-}
+    out.push({ area: r.appliesCondition || '', value: r.value })
+  }
   return out
 }
 
@@ -586,19 +586,19 @@ function experienceResult(input: FactorIn): FactorOneOut {
   let exp: Requirement | null = null
   for (const r of experienceRows(input)) {
     if (r.basis !== BASIS.employerTenure) {
- exp = r; break 
-}
+      exp = r; break 
+    }
   }
   if (!exp) {
-return null
-}
+    return null
+  }
   const p = input.profile
   if (exp.op === OP.none) {
-return noExperienceBar({ row: exp, profile: p })
-}
+    return noExperienceBar({ row: exp, profile: p })
+  }
   if (exp.value == null) {
-return null
-}
+    return null
+  }
   const have = expMonths({ profile: p })
   const verdict = experienceVerdict({
     have: have, need: exp.value, totalAnswered: p.totalExpMonths != null,
@@ -643,10 +643,10 @@ function experienceRows(input: FactorIn): RowsOfFactorOut {
     reqs: input.reqs, factor: FACTOR.experience, subject: SUBJECT.applicant,
   })
   for (const r of rows) {
-if (teerHit({ r: r, teer: input.profile.teer })) {
-out.push(r)
-}
-}
+    if (teerHit({ r: r, teer: input.profile.teer })) {
+      out.push(r)
+    }
+  }
   return out
 }
 
@@ -660,11 +660,11 @@ function expMonths(input: ExpMonthsIn): ExpMonthsOut {
   let out: number | null = null
   for (const v of [input.profile.totalExpMonths, input.profile.canadianExpMonths]) {
     if (v == null) {
-continue
-}
+      continue
+    }
     if (out == null || v > out) {
-out = v
-}
+      out = v
+    }
   }
   return out
 }
@@ -677,11 +677,11 @@ out = v
  */
 function experienceVerdict(input: ExperienceVerdictIn): ExperienceVerdictOut {
   if (input.have == null) {
-return ITEM.unknown
-}
+    return ITEM.unknown
+  }
   if (input.have >= input.need) {
-return ITEM.pass
-}
+    return ITEM.pass
+  }
   return input.totalAnswered ? ITEM.fail : ITEM.unknown
 }
 
@@ -699,8 +699,8 @@ function languageExemptResult(input: FactorIn): FactorOneOut {
   })
   for (const r of rows) {
     if (!teerHit({ r: r, teer: input.profile.teer })) {
-continue
-}
+      continue
+    }
     return {
       factor: FACTOR.languageExempt, subject: SUBJECT.applicant, verdict: ITEM.unknown,
       need: r.value, needLow: null, have: null, short: null, unit: r.unit,
@@ -723,8 +723,8 @@ function wageResult(input: FactorIn): FactorOneOut {
   const rows = rowsOfFactor({ reqs: input.reqs, factor: FACTOR.wage, subject: SUBJECT.applicant })
   const wage = rows[0]
   if (!wage) {
-return null
-}
+    return null
+  }
   return {
     factor: FACTOR.wage, subject: SUBJECT.applicant, verdict: ITEM.unknown,
     need: wage.basis === BASIS.occMedian ? input.profile.annualIncome : wage.value,
@@ -747,8 +747,8 @@ function employerYearsResult(input: FactorIn): FactorOneOut {
   })
   const row = rows[0]
   if (!row) {
-return null
-}
+    return null
+  }
   return {
     factor: FACTOR.empYears, subject: SUBJECT.employer, verdict: ITEM.unknown, need: row.value,
     needLow: null, have: null, short: null, unit: row.unit, evidence: evidenceOf({ r: row }),
@@ -770,13 +770,13 @@ function employerTieredResults(input: FactorIn): FactorManyOut {
     const rows: Requirement[] = []
     const all = rowsOfFactor({ reqs: input.reqs, factor: factor, subject: SUBJECT.employer })
     for (const r of all) {
-if (r.value != null) {
-rows.push(r)
-}
-}
+      if (r.value != null) {
+        rows.push(r)
+      }
+    }
     if (!rows.length) {
-continue
-}
+      continue
+    }
     rows.sort(byValueDesc)
     out.push({
       factor: factor, subject: SUBJECT.employer, verdict: ITEM.unknown, need: rows[0].value,
@@ -797,7 +797,7 @@ continue
 function tiersOfArea(input: TiersOfIn): TiersOfOut {
   const out: AreaTier[] = []
   for (const r of input.rows) {
-out.push({ area: r.appliesArea, value: r.value })
-}
+    out.push({ area: r.appliesArea, value: r.value })
+  }
   return out
 }

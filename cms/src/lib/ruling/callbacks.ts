@@ -47,11 +47,11 @@ export function byDrawDateDesc(a: VerdictDrawRow, b: VerdictDrawRow): number {
  */
 export function byObstacleThenTier(a: RankedVerdict, b: RankedVerdict): number {
   if (a.obstacle !== b.obstacle) {
-return a.obstacle - b.obstacle
-}
+    return a.obstacle - b.obstacle
+  }
   if (a.tier !== b.tier) {
-return a.tier - b.tier
-}
+    return a.tier - b.tier
+  }
   return a.i - b.i
 }
 
@@ -66,11 +66,11 @@ return a.tier - b.tier
  */
 export function byListRankThenMonths(a: RankedJobRow, b: RankedJobRow): number {
   if (a.rank !== b.rank) {
-return a.rank - b.rank
-}
+    return a.rank - b.rank
+  }
   if (a.months !== b.months) {
-return a.months - b.months
-}
+    return a.months - b.months
+  }
   return a.i - b.i
 }
 

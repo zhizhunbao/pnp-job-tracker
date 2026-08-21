@@ -1247,6 +1247,9 @@ const eslintConfig = [
       // 比较基准(2026-08-21 同场拍板):默认 ===/!==,唯一例外 == null / != null。
       // 内置规则正好有这个形状:'always' + null: 'ignore'。
       eqeqeq: ['error', 'always', { null: 'ignore' }],
+      // brace-style 的 fixer 只插大括号不管缩进,展开出来的块体顶在 0 列(Frank 实看抓包)——
+      // indent 补这一刀,同样可 --fix。SwitchCase:1:case 相对 switch 缩一层。
+      indent: ['error', 2, { SwitchCase: 1 }],
     },
   },
   {

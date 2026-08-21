@@ -146,36 +146,36 @@ function makeWatch(input: MakeWatchIn): MakeWatchOut {
   const ctrl = new AbortController()
   let cause: WatchWhy = null
   const hard = setTimeout(function onHard() {
- cause ??= FRIEND_CODE.timeout; ctrl.abort() 
-}, input.timeoutMs)
+    cause ??= FRIEND_CODE.timeout; ctrl.abort() 
+  }, input.timeoutMs)
   let soft: ReturnType<typeof setTimeout> | null = null
   // 给停摆闸上弦。每有动静重上一次;没配 stallMs 时它什么都不做。
   function arm(): ArmOut {
     if (!input.stallMs || input.stallMs <= 0) {
-return
-}
+      return
+    }
     if (soft) {
-clearTimeout(soft)
-}
+      clearTimeout(soft)
+    }
     soft = setTimeout(function onSoft() {
- cause ??= STALL; ctrl.abort() 
-}, input.stallMs)
+      cause ??= STALL; ctrl.abort() 
+    }, input.stallMs)
   }
   arm()
   return {
     signal: ctrl.signal,
     kick: arm,
     stop() {
- clearTimeout(hard); if (soft) {
-clearTimeout(soft)
-} 
-},
+      clearTimeout(hard); if (soft) {
+        clearTimeout(soft)
+      } 
+    },
     why() {
- return cause 
-},
+      return cause 
+    },
     label() {
- return cause === STALL ? `${GATEWAY_MSG.stalled}${input.stallMs}${GATEWAY_MSG.ms}` : `${GATEWAY_MSG.aborted}${input.timeoutMs}${GATEWAY_MSG.ms}` 
-},
+      return cause === STALL ? `${GATEWAY_MSG.stalled}${input.stallMs}${GATEWAY_MSG.ms}` : `${GATEWAY_MSG.aborted}${input.timeoutMs}${GATEWAY_MSG.ms}` 
+    },
   }
 }
 
@@ -196,8 +196,8 @@ async function postJson(input: PostJsonIn): PostJsonOut {
     [HEADER.auth]: HEADER.bearer + GATEWAY_KEY,
   }
   for (const name of Object.keys(input.extraHeaders)) {
-headers[name] = input.extraHeaders[name]
-}
+    headers[name] = input.extraHeaders[name]
+  }
   try {
     return await fetch(`${GATEWAY_BASE}${input.path}`, {
       method: POST,
@@ -208,8 +208,8 @@ headers[name] = input.extraHeaders[name]
   } catch (e) {
     // abort 与网络错都落这;分开报码,调用方才能「各说各话」(超时可重试 / 掉线别重试)
     if (input.watch.signal.aborted) {
-throw gatewayError({ msg: input.watch.label(), code: FRIEND_CODE.timeout })
-}
+      throw gatewayError({ msg: input.watch.label(), code: FRIEND_CODE.timeout })
+    }
     throw gatewayError({ msg: `${GATEWAY_MSG.network}${e instanceof Error ? e.message : String(e)}`, code: FRIEND_CODE.offline })
   }
 }
@@ -242,28 +242,28 @@ async function readV1Sse(input: ReadV1SseIn): ReadV1SseOut {
       throw e
     }
     if (done) {
-break
-}
+      break
+    }
     buf += dec.decode(value, { stream: true })
     const blocks = buf.split(SSE_BLOCK_SEP)
     buf = blocks.pop() ?? ''
     for (const block of blocks) {
       for (const line of block.split(SSE_LINE_SEP)) {
         if (!line.startsWith(SSE_DATA)) {
-continue
-}
+          continue
+        }
         const raw = line.slice(SSE_DATA_LEN).trim()
         if (!raw || raw === SSE_DONE) {
-continue
-}
+          continue
+        }
         try {
           const parsed: V1Response = JSON.parse(raw)
           const choice: V1Choice | undefined = parsed?.choices?.[0]
           const t = String(choice?.delta?.content ?? choice?.message?.content ?? '')
           // 有真内容才算「出声」:心跳行/空 delta 不喂看门狗,否则一个还在心跳但不出字的流能吊住我们一辈子
           if (t) {
- out += t; input.onDelta?.(t); input.watch.kick() 
-}
+            out += t; input.onDelta?.(t); input.watch.kick() 
+          }
         } catch { /* 半块/心跳行:跳过 */ }
       }
     }
@@ -293,8 +293,8 @@ export function friendLlmReady(): FriendLlmReadyOut {
 function gatewayMessages(input: GatewayMessagesIn): GatewayMessagesOut {
   const messages: GatewayMessage[] = []
   if (input.system) {
-messages.push({ role: ROLE.system, content: input.system })
-}
+    messages.push({ role: ROLE.system, content: input.system })
+  }
   messages.push({ role: ROLE.user, content: input.prompt })
   return messages
 }
@@ -308,8 +308,8 @@ messages.push({ role: ROLE.system, content: input.system })
 function charCount(input: CharCountIn): CharCountOut {
   let n = 0
   for (const m of input.messages) {
-n += m.content.length
-}
+    n += m.content.length
+  }
   return n
 }
 
@@ -322,14 +322,14 @@ n += m.content.length
 function sendV1(input: SendV1In): SendV1Out {
   const body: V1Request = { model: GATEWAY_MODEL, messages: input.messages }
   if (input.stream) {
-body.stream = true
-}
+    body.stream = true
+  }
   if (input.call.maxTokens) {
-body.max_tokens = Math.min(input.call.maxTokens, FRIEND_MAX_TOKENS)
-}
+    body.max_tokens = Math.min(input.call.maxTokens, FRIEND_MAX_TOKENS)
+  }
   if (input.call.temperature != null) {
-body.temperature = input.call.temperature
-}
+    body.temperature = input.call.temperature
+  }
   const extraHeaders: Record<string, string> = {}
   if (input.call.noCache) {
     body.cache = false
@@ -360,8 +360,8 @@ async function chatV1(input: FriendChatIn): FriendChatOut {
   try {
     let res = await sendV1({ call: input, messages, stream: Boolean(input.onDelta), watch })
     if (!res.ok) {
-throw gatewayErrorOf({ status: res.status, body: await res.text().catch(emptyText) })
-}
+      throw gatewayErrorOf({ status: res.status, body: await res.text().catch(emptyText) })
+    }
     xCache = res.headers.get(HEADER.xCache)
     // 兜底①:要了流,上游却回 JSON(命中网关缓存时可能直接吐整段)—— 按一次性解,onDelta 补发一次。
     // 兜底②:流解出来是空的 —— **绝不把空答案交出去**,原地非流式重来一次(数据丢失处理不上砧板)。
@@ -375,8 +375,8 @@ throw gatewayErrorOf({ status: res.status, body: await res.text().catch(emptyTex
         watch = makeWatch({ timeoutMs: input.timeoutMs ?? GATEWAY_TIMEOUT_MS, stallMs: input.stallMs })
         res = await sendV1({ call: input, messages, stream: false, watch })
         if (!res.ok) {
-throw gatewayErrorOf({ status: res.status, body: await res.text().catch(emptyText) })
-}
+          throw gatewayErrorOf({ status: res.status, body: await res.text().catch(emptyText) })
+        }
         xCache = res.headers.get(HEADER.xCache)
         body = await res.json().catch(nullJson)
         answer = String(body?.choices?.[0]?.message?.content ?? '').trim()
@@ -385,15 +385,15 @@ throw gatewayErrorOf({ status: res.status, body: await res.text().catch(emptyTex
       body = await res.json().catch(nullJson)
       answer = String(body?.choices?.[0]?.message?.content ?? '').trim()
       if (answer) {
-input.onDelta?.(answer)
-}
+        input.onDelta?.(answer)
+      }
     }
   } finally {
     watch.stop()
   }
   if (!answer) {
-throw gatewayError({ msg: `${GATEWAY_MSG.emptyChoices}${xCache ?? LLM_LOG.none}${GATEWAY_MSG.parenEnd}`, code: FRIEND_CODE.empty })
-}
+    throw gatewayError({ msg: `${GATEWAY_MSG.emptyChoices}${xCache ?? LLM_LOG.none}${GATEWAY_MSG.parenEnd}`, code: FRIEND_CODE.empty })
+  }
   const usage = body?.usage
   log({
     tag: LLM_LOG.tag,
@@ -415,8 +415,8 @@ function sourceUrl(input: SourceUrlIn): SourceUrlOut {
   // `typeof x === '…'` 的右边必须是字面量:换成常量 TS 就不做类型窄化了(下一行取 .url 会当场报错)。
   // 这是语言限制,不是偷懒。
   if (typeof input.source === 'string') {
-return input.source
-}
+    return input.source
+  }
   return String(input.source?.url || '')
 }
 
@@ -434,34 +434,34 @@ async function chatLegacy(input: FriendChatIn): FriendChatOut {
   try {
     const req: LegacyRequest = { prompt: refPrompt({ prompt: input.prompt, salt: input.system ?? '' }) }
     if (input.system) {
-req.system = input.system
-}
+      req.system = input.system
+    }
     if (input.webSearch) {
-req.web_search = true
-}
+      req.web_search = true
+    }
     if (input.searchQuery) {
-req.search_query = input.searchQuery
-}
+      req.search_query = input.searchQuery
+    }
     const extraHeaders: Record<string, string> = { [HEADER.apiKey]: GATEWAY_KEY }
     const res = await postJson({ path: PATH_LEGACY, body: req, extraHeaders, watch })
     if (!res.ok) {
-throw gatewayErrorOf({ status: res.status, body: await res.text().catch(emptyText) })
-}
+      throw gatewayErrorOf({ status: res.status, body: await res.text().catch(emptyText) })
+    }
     body = await res.json().catch(nullJson)
   } finally {
     watch.stop()
   }
   const answer = String(body?.answer ?? '').trim()
   if (!answer) {
-throw gatewayError({ msg: GATEWAY_MSG.emptyAnswer, code: FRIEND_CODE.empty })
-}
+    throw gatewayError({ msg: GATEWAY_MSG.emptyAnswer, code: FRIEND_CODE.empty })
+  }
   const sources: string[] = []
   if (Array.isArray(body?.sources)) {
     for (const one of body.sources) {
       const url = sourceUrl({ source: one })
       if (url && sources.length < LEGACY_SOURCE_MAX) {
-sources.push(url)
-}
+        sources.push(url)
+      }
     }
   }
   log({
@@ -482,18 +482,18 @@ sources.push(url)
  */
 export async function friendChatOrThrow(input: FriendChatIn): FriendChatOut {
   if (!friendLlmReady()) {
-throw gatewayError({ msg: GATEWAY_MSG.notConfigured, code: FRIEND_CODE.offline })
-}
+    throw gatewayError({ msg: GATEWAY_MSG.notConfigured, code: FRIEND_CODE.offline })
+  }
   if (input.webSearch) {
-return chatLegacy(input)
-}
+    return chatLegacy(input)
+  }
   try {
     return await chatV1(input)
   } catch (e) {
     const code = e instanceof Error && isGatewayError(e) ? e.code : ERR_DEFAULT
     if (code !== FRIEND_CODE.upstream && code !== FRIEND_CODE.offline) {
-throw e
-}
+      throw e
+    }
     // 留痕:回退是异常态,不能静默发生(下次排查得看得见走的哪条链)
     const why = e instanceof Error ? e.message.slice(0, LOG_MSG_MAX) : ''
     log({ tag: LLM_LOG.tag, text: `${LLM_LOG.v1FailHead}${code}${LLM_LOG.paren}${why}${LLM_LOG.parenEnd}${LLM_LOG.v1FailTail}` })
@@ -541,10 +541,10 @@ function splitMessages(input: SplitMessagesIn): SplitMessagesOut {
   const turns: string[] = []
   for (const m of input.messages) {
     if (m.role === ROLE.system) {
-systems.push(m.content)
-} else {
-turns.push(m.content)
-}
+      systems.push(m.content)
+    } else {
+      turns.push(m.content)
+    }
   }
   return { system: systems.join(PARA) || undefined, prompt: turns.join(PARA) }
 }
@@ -558,10 +558,10 @@ turns.push(m.content)
 function systemOf(input: SystemOfIn): SystemOfOut {
   const systems: string[] = []
   for (const m of input.messages) {
-if (m.role === ROLE.system) {
-systems.push(m.content)
-}
-}
+    if (m.role === ROLE.system) {
+      systems.push(m.content)
+    }
+  }
   return systems.join(PARA)
 }
 
@@ -574,10 +574,10 @@ systems.push(m.content)
 function turnsOf(input: TurnsOfIn): TurnsOfOut {
   const turns: TurnsOfOut = []
   for (const m of input.messages) {
-if (m.role !== ROLE.system) {
-turns.push({ role: m.role, content: m.content })
-}
-}
+    if (m.role !== ROLE.system) {
+      turns.push({ role: m.role, content: m.content })
+    }
+  }
   return turns
 }
 
@@ -590,10 +590,10 @@ turns.push({ role: m.role, content: m.content })
 function textOf(input: TextOfIn): TextOfOut {
   let out = ''
   for (const block of input.blocks) {
-if (block.type === BLOCK_TEXT) {
-out += block.text
-}
-}
+    if (block.type === BLOCK_TEXT) {
+      out += block.text
+    }
+  }
   return out
 }
 
@@ -605,13 +605,13 @@ out += block.text
  */
 function webFetchTool(input: WebFetchToolIn): WebFetchToolOut {
   if (!input.fetchUrl) {
-return null
-}
+    return null
+  }
   try {
     const u = new URL(input.fetchUrl)
     if (u.protocol !== PROTOCOL.http && u.protocol !== PROTOCOL.https) {
-return null
-}
+      return null
+    }
     return {
       type: WEB_FETCH.type,
       name: WEB_FETCH.name,
@@ -620,8 +620,8 @@ return null
       max_content_tokens: WEB_FETCH.maxContentTokens,
     }
   } catch {
- return null 
-}
+    return null 
+  }
 }
 
 /**
@@ -637,8 +637,8 @@ async function friendStream(input: BackendStreamIn): BackendStreamOut {
     prompt, system, timeoutMs: FRIEND_CALL_TIMEOUT_MS, maxTokens: input.maxTokens, temperature: FRIEND_STREAM_TEMP,
   })
   if (!r) {
-throw llmError({ msg: LLM_MSG.friendOffline })
-}
+    throw llmError({ msg: LLM_MSG.friendOffline })
+  }
   return new ReadableStream({
     start(controller) {
       controller.enqueue(new TextEncoder().encode(r.answer))
@@ -680,27 +680,27 @@ async function ollamaStream(input: BackendStreamIn): BackendStreamOut {
     async pull(controller) {
       const { done, value } = await reader.read()
       if (done) {
- controller.close(); return 
-}
+        controller.close(); return 
+      }
       buf += decoder.decode(value, { stream: true })
       const lines = buf.split(SSE_LINE_SEP)
       buf = lines.pop() || ''
       for (const line of lines) {
         if (!line.trim()) {
-continue
-}
+          continue
+        }
         try {
           const parsed: OllamaResponse = JSON.parse(line)
           const delta = parsed?.message?.content || ''
           if (delta) {
-controller.enqueue(encoder.encode(delta))
-}
+            controller.enqueue(encoder.encode(delta))
+          }
         } catch { /* 跳过不完整行 */ }
       }
     },
     cancel() {
- reader.cancel().catch(ignore) 
-},
+      reader.cancel().catch(ignore) 
+    },
   })
 }
 
@@ -719,12 +719,12 @@ async function anthropicStream(input: AnthropicStreamIn): BackendStreamOut {
     messages: turnsOf({ messages: input.messages }),
   }
   if (system) {
-params.system = system
-}
+    params.system = system
+  }
   const tool = webFetchTool({ fetchUrl: input.fetchUrl })
   if (tool) {
-params.tools = [tool]
-}
+    params.tools = [tool]
+  }
   const stream = client.messages.stream(params)
   const encoder = new TextEncoder()
   return new ReadableStream({
@@ -746,8 +746,8 @@ params.tools = [tool]
       stream.on(STREAM_EVENT.error, onError)
     },
     cancel() {
- stream.abort() 
-},
+      stream.abort() 
+    },
   })
 }
 
@@ -760,11 +760,11 @@ params.tools = [tool]
  */
 export function streamChat(input: StreamChatIn): StreamChatOut {
   if (PROVIDER === BACKEND.friend) {
-return friendStream({ messages: input.messages, maxTokens: input.maxTokens })
-}
+    return friendStream({ messages: input.messages, maxTokens: input.maxTokens })
+  }
   if (PROVIDER === BACKEND.anthropic) {
-return anthropicStream(input)
-}
+    return anthropicStream(input)
+  }
   return ollamaStream({ messages: input.messages, maxTokens: input.maxTokens })
 }
 
@@ -785,19 +785,19 @@ async function completeFriend(input: CompleteFriendIn): CompleteBackendOut {
     prompt, system, timeoutMs: FRIEND_CALL_TIMEOUT_MS, maxTokens: input.maxTokens, temperature: input.temperature,
   }
   if (input.onDelta) {
-call.onDelta = input.onDelta
-}
+    call.onDelta = input.onDelta
+  }
   if (input.stallMs) {
-call.stallMs = input.stallMs
-}
+    call.stallMs = input.stallMs
+  }
   let r: FriendResult
   try {
     r = await friendChatOrThrow(call)
   } catch (e) {
     // 网关的码翻成给用户看的话;认不出的按「连不上」说(路由再决定 HTTP 状态,见 api/resume-match)
     if (e instanceof Error && isGatewayError(e)) {
-throw llmError({ msg: FRIEND_MSG[e.code], code: e.code })
-}
+      throw llmError({ msg: FRIEND_MSG[e.code], code: e.code })
+    }
     throw llmError({ msg: LLM_MSG.friendOffline })
   }
   input.onMeta?.({ cached: r.cached, via: r.via, xCache: r.xCache })
@@ -819,8 +819,8 @@ async function completeAnthropic(input: CompleteBackendIn): CompleteBackendOut {
     messages: turnsOf({ messages: input.messages }),
   }
   if (system) {
-params.system = system
-}
+    params.system = system
+  }
   let res: AnthropicMessage
   try {
     res = await client.messages.create(params)
@@ -828,8 +828,8 @@ params.system = system
     throw llmError({ msg: `${LLM_MSG.anthropicHead}${e instanceof Error ? e.message : e}` })
   }
   if (res.stop_reason === STOP_REFUSAL) {
-throw llmError({ msg: LLM_MSG.refusal })
-}
+    throw llmError({ msg: LLM_MSG.refusal })
+  }
   return textOf({ blocks: res.content })
 }
 
@@ -851,11 +851,11 @@ async function completeOllama(input: CompleteBackendIn): CompleteBackendOut {
       body: JSON.stringify(body),
     })
   } catch {
- throw llmError({ msg: LLM_MSG.ollamaOffline }) 
-}
+    throw llmError({ msg: LLM_MSG.ollamaOffline }) 
+  }
   if (!r.ok) {
-throw llmError({ msg: `${LLM_MSG.ollamaStatusHead}${r.status}${LLM_MSG.ollamaStatusTail}` })
-}
+    throw llmError({ msg: `${LLM_MSG.ollamaStatusHead}${r.status}${LLM_MSG.ollamaStatusTail}` })
+  }
   const parsed: OllamaResponse = await r.json()
   return parsed?.message?.content ?? ''
 }
@@ -871,11 +871,11 @@ throw llmError({ msg: `${LLM_MSG.ollamaStatusHead}${r.status}${LLM_MSG.ollamaSta
 export function completeText(input: CompleteTextIn): CompleteTextOut {
   const prov = input.provider || PROVIDER
   if (prov === BACKEND.friend) {
-return completeFriend(input)
-}
+    return completeFriend(input)
+  }
   if (prov === BACKEND.anthropic) {
-return completeAnthropic({ messages: input.messages, maxTokens: input.maxTokens })
-}
+    return completeAnthropic({ messages: input.messages, maxTokens: input.maxTokens })
+  }
   return completeOllama({ messages: input.messages, maxTokens: input.maxTokens })
 }
 
@@ -914,8 +914,8 @@ function parseNumbered(input: ParseNumberedIn): ParseNumberedOut {
   for (let i = 1; i + 1 < parts.length + 1; i += 2) {
     const t = stripMd({ text: parts[i + 1] ?? '' }).trim()
     if (t) {
-d.set(Number(parts[i]), t)
-}
+      d.set(Number(parts[i]), t)
+    }
   }
   return d
 }
@@ -929,8 +929,8 @@ d.set(Number(parts[i]), t)
 function numberLines(input: NumberLinesIn): NumberLinesOut {
   const out: string[] = []
   for (let j = 0; j < input.lines.length; j++) {
-out.push(`${NUMBER_HEAD}${j + 1}${NUMBER_TAIL}${input.lines[j]}`)
-}
+    out.push(`${NUMBER_HEAD}${j + 1}${NUMBER_TAIL}${input.lines[j]}`)
+  }
   return out.join(SSE_LINE_SEP)
 }
 
@@ -954,17 +954,17 @@ async function translateChunk(input: TranslateChunkIn): TranslateChunkOut {
         }),
       })
       if (!resp.ok) {
-throw translateError({ msg: `${UPSTREAM_HEAD}${resp.status}`, code: TRANSLATE_CODE.upstream })
-}
+        throw translateError({ msg: `${UPSTREAM_HEAD}${resp.status}`, code: TRANSLATE_CODE.upstream })
+      }
       const parsed: TranslateResponse = await resp.json()
       const m = parseNumbered({ text: String(parsed.translated_text || '') })
       if (m.size) {
-return m
-}
+        return m
+      }
     } catch {
       if (input.signal.aborted) {
-throw translateError({ msg: TRANSLATE_TIMEOUT, code: TRANSLATE_CODE.timeout })
-}
+        throw translateError({ msg: TRANSLATE_TIMEOUT, code: TRANSLATE_CODE.timeout })
+      }
     }
   }
   return null
@@ -990,8 +990,8 @@ export async function translateLinesAligned(input: TranslateLinesIn): TranslateL
       for (let j = 0; j < chunk.length; j++) {
         const t = got.get(j + 1)
         if (t) {
-out[i + j] = t
-}
+          out[i + j] = t
+        }
       }
     }
   }

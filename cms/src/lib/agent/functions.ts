@@ -40,10 +40,10 @@ import type {
  */
 function inCandidates(input: InCandidatesIn): InCandidatesOut {
   for (const c of input.candidates) {
-if (c.noc === input.noc) {
-return true
-}
-}
+    if (c.noc === input.noc) {
+      return true
+    }
+  }
   return false
 }
 
@@ -56,8 +56,8 @@ return true
 export function acceptNoc(input: AcceptNocIn): AcceptNocOut {
   const noc = (input.raw ?? '').trim()
   if (!NOC_RE.test(noc)) {
-return null
-}
+    return null
+  }
   return inCandidates({ candidates: input.candidates, noc }) ? noc : null
 }
 
@@ -93,8 +93,8 @@ async function searchCandidates(input: SearchCandidatesIn): SearchCandidatesOut 
       const noc = String(r.noc ?? '')
       const title = String(r.title ?? '')
       if (noc && title && Number(r.n ?? 0) >= top * NOISE_RATIO) {
-hits.push({ noc, title })
-}
+        hits.push({ noc, title })
+      }
     }
     return hits
   } catch (e) {
@@ -121,12 +121,12 @@ function candidateLine(input: CandidateLineIn): CandidateLineOut {
  */
 function searchReply(input: SearchReplyIn): SearchReplyOut {
   if (!input.hits.length) {
-return TOOL_REPLY.noCandidates
-}
+    return TOOL_REPLY.noCandidates
+  }
   const lines: string[] = []
   for (const hit of input.hits) {
-lines.push(candidateLine({ hit }))
-}
+    lines.push(candidateLine({ hit }))
+  }
   return `${SEARCH_RESULT_HINT}${NL}${lines.join(NL)}`
 }
 
@@ -149,8 +149,8 @@ function searchTool(input: SearchToolIn): SearchToolOut {
     const query = args.query.trim().slice(0, MAX_QUERY_CHARS)
     const hits = await searchCandidates({ pool: input.pool, query })
     for (const hit of hits) {
-input.out.candidates.push(hit)
-}
+      input.out.candidates.push(hit)
+    }
     const details: SearchDetails = { candidates: hits }
     return say({ text: searchReply({ hits }), details, stop: false })
   }
@@ -237,8 +237,8 @@ export function passThroughMessages(ms: PassThroughMessagesIn): PassThroughMessa
   const kept: PassThroughMessagesOut = []
   for (const m of ms) {
     if (m.role === ROLE.user || m.role === ROLE.assistant || m.role === ROLE.toolResult) {
-kept.push(m)
-}
+      kept.push(m)
+    }
   }
   return kept
 }
@@ -323,8 +323,8 @@ export async function resolveByAgent(input: ResolveByAgentIn): ResolveByAgentOut
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY
     if (!agentFallbackOn() || !apiKey) {
-return null
-}
+      return null
+    }
 
     const t0 = Date.now()
     const ac = new AbortController()
@@ -343,8 +343,8 @@ return null
     const ok = await runLoop({ pool: input.pool, text: input.text, apiKey, signal: ac.signal, out })
     clearTimeout(timer)
     if (!ok) {
-return null
-}
+      return null
+    }
 
     const ms = Date.now() - t0
     if (out.gaveUp || !out.claim) {

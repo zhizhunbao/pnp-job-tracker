@@ -115,8 +115,8 @@ import type {
  */
 function subjectOf(v: SubjectOfIn): SubjectOfOut {
   if (text(v) === SUBJECT.employer) {
-return SUBJECT.employer
-}
+    return SUBJECT.employer
+  }
   return SUBJECT.applicant
 }
 
@@ -139,8 +139,8 @@ function swallow(): SwallowOut {
 async function rowsOf(input: RowsOfIn): RowsOfOut {
   const res = await input.db.query(input.sql).catch(swallow)
   if (res == null) {
-return []
-}
+    return []
+  }
   return res.rows
 }
 
@@ -299,12 +299,12 @@ export function employerNameSegments(name: EmployerNameSegmentsIn): EmployerName
   for (const raw of (name || '').split(OA_SPLIT)) {
     const part = raw.trim()
     if (part) {
-parts.push(part)
-}
+      parts.push(part)
+    }
   }
   if (parts.length === 0) {
-return [name || '']
-}
+    return [name || '']
+  }
   return parts
 }
 
@@ -340,8 +340,8 @@ return [name || '']
 export function matchDesignation(input: MatchDesignationIn): MatchDesignationOut {
   const target = normalizeEmployerName(input.companyName)
   if (target === '') {
-return { row: null, count: 0, source: '' }
-}
+    return { row: null, count: 0, source: '' }
+  }
 
   const hits: NameRow[] = []
   for (const row of input.rows) {
@@ -353,27 +353,27 @@ return { row: null, count: 0, source: '' }
     }
   }
   if (hits.length === 0) {
-return { row: null, count: 0, source: '' }
-}
+    return { row: null, count: 0, source: '' }
+  }
 
   const sources = new Set<string>()
   for (const row of hits) {
     let one = ''
     if (row.source != null) {
-one = row.source.trim()
-}
+      one = row.source.trim()
+    }
     if (one) {
-sources.add(one)
-}
+      sources.add(one)
+    }
   }
   let source = ''
   if (sources.size === 1) {
-source = Array.from(sources)[0]
-}
+    source = Array.from(sources)[0]
+  }
   let row: NameRow | null = null
   if (hits.length === 1) {
-row = hits[0]
-}
+    row = hits[0]
+  }
   return { row, count: hits.length, source }
 }
 
@@ -391,8 +391,8 @@ function empRowsOf(input: EmpRowsOfIn): EmpRowsOfOut {
   const out: ReqRow[] = []
   for (const r of input.reqs) {
     if (r.province === input.province && r.subject === SUBJECT.employer && r.factor === input.factor) {
-out.push(r)
-}
+      out.push(r)
+    }
   }
   return out
 }
@@ -411,24 +411,24 @@ function pushItem(input: PushItemIn): PushItemOut {
   let short: number | null = null
   if (input.need != null && input.have != null) {
     if (input.have >= input.need) {
-verdict = ITEM.pass
-} else {
-verdict = ITEM.fail
-}
+      verdict = ITEM.pass
+    } else {
+      verdict = ITEM.fail
+    }
     if (verdict === ITEM.fail) {
-short = input.need - input.have
-}
+      short = input.need - input.have
+    }
   }
   if (verdict === ITEM.fail) {
-input.acc.failed.push(input.factor)
-}
+    input.acc.failed.push(input.factor)
+  }
   if (verdict === ITEM.unknown) {
-input.acc.missing.push(input.factor)
-}
+    input.acc.missing.push(input.factor)
+  }
   let evidence = input.evidence
   if (input.have == null) {
-evidence = EVIDENCE_KIND.missing
-}
+    evidence = EVIDENCE_KIND.missing
+  }
   input.acc.items.push({
     factor: input.factor, verdict, need: input.need, have: input.have, short,
     unit: input.unit, evidence,
@@ -465,13 +465,13 @@ export function employerVerdict(input: EmployerVerdictIn): EmployerVerdictOut {
     if (yearsRow.value != null) {
       needYears = yearsRow.value
       if (yearsRow.unit === MONTHS) {
-needYears = yearsRow.value / MONTHS_PER_YEAR
-}
+        needYears = yearsRow.value / MONTHS_PER_YEAR
+      }
     }
     let haveYears: number | null = null
     if (input.facts.foundedYear != null) {
-haveYears = input.nowYear - input.facts.foundedYear
-}
+      haveYears = input.nowYear - input.facts.foundedYear
+    }
     pushItem({ acc, factor: EMP_KEY.years, need: needYears, have: haveYears, unit: EMP_UNIT.years, evidence: EVIDENCE_KIND.official })
   }
 
@@ -494,12 +494,12 @@ haveYears = input.nowYear - input.facts.foundedYear
 
   let state: EmployerVerdictOut['state'] = EMP_STATE.met
   if (acc.items.length === 0) {
-state = EMP_STATE.unknown
-} else if (acc.failed.length > 0) {
-state = EMP_STATE.short
-} else if (acc.missing.length > 0) {
-state = EMP_STATE.unknown
-}
+    state = EMP_STATE.unknown
+  } else if (acc.failed.length > 0) {
+    state = EMP_STATE.short
+  } else if (acc.missing.length > 0) {
+    state = EMP_STATE.unknown
+  }
   return { state, items: acc.items, revenue, failed: acc.failed, missing: acc.missing }
 }
 
@@ -511,10 +511,10 @@ state = EMP_STATE.unknown
  */
 function universalValue(rows: UniversalValueIn): UniversalValueOut {
   for (const r of rows) {
-if (r.appliesArea === '') {
-return r.value
-}
-}
+    if (r.appliesArea === '') {
+      return r.value
+    }
+  }
   return null
 }
 
@@ -526,12 +526,12 @@ return r.value
  */
 export function blockCost(block: BlockCostIn): BlockCostOut {
   if (block == null || block === '') {
-return NO_BLOCK_COST
-}
+    return NO_BLOCK_COST
+  }
   const cost = BLOCK_COST[block]
   if (cost == null) {
-return UNKNOWN_BLOCK_COST
-}
+    return UNKNOWN_BLOCK_COST
+  }
   return cost
 }
 
@@ -578,8 +578,8 @@ function evOfOcc(input: EvOfOccIn): EvOfOccOut {
 function evOfDraw(input: EvOfDrawIn): EvOfDrawOut {
   let note = ''
   if (input.d.note !== '') {
-note = SEP.midDot + input.d.note
-}
+    note = SEP.midDot + input.d.note
+  }
   return {
     url: input.d.url, fetched: input.d.fetched, label: `${input.d.stream}${SEP.parenL}${input.d.drawDate}${note}${SEP.parenR}`,
   }
@@ -604,8 +604,8 @@ function basisParam(input: BasisParamIn): BasisParamOut {
   for (const kv of (input.basis || '').split(SEP.semicolon)) {
     const i = kv.indexOf(SEP.eq)
     if (i > 0 && kv.slice(0, i).trim() === input.key) {
-return kv.slice(i + 1).trim()
-}
+      return kv.slice(i + 1).trim()
+    }
   }
   return null
 }
@@ -618,22 +618,22 @@ return kv.slice(i + 1).trim()
  */
 function monthsOfReq(input: MonthsOfReqIn): MonthsOfReqOut {
   if (input.r.op === PERMIT.none) {
-return 0
-}
+    return 0
+  }
   if (input.r.value == null) {
-return null
-}
+    return null
+  }
   if (input.r.unit === MONTHS) {
-return input.r.value
-}
+    return input.r.value
+  }
   if (input.r.unit === REQ_UNIT.years) {
-return input.r.value * MONTHS_PER_YEAR
-}
+    return input.r.value * MONTHS_PER_YEAR
+  }
   if (input.r.unit === REQ_UNIT.hours) {
     const y = basisParam({ basis: input.r.basis, key: BASIS_MIN_YEARS })
     if (y == null || y === '') {
-return null
-}
+      return null
+    }
     return Number(y) * MONTHS_PER_YEAR
   }
   return null
@@ -647,14 +647,14 @@ return null
  */
 function tierOfMonths(input: TierOfMonthsIn): TierOfMonthsOut {
   if (input.m <= 0) {
-return TIER.now
-}
+    return TIER.now
+  }
   if (input.m <= TIER_BOUND.months6) {
-return TIER.months6
-}
+    return TIER.months6
+  }
   if (input.m <= TIER_BOUND.months12) {
-return TIER.months12
-}
+    return TIER.months12
+  }
   return TIER.beyond
 }
 
@@ -672,8 +672,8 @@ function maxClbIn(input: MaxClbInIn): MaxClbInOut {
       const [, clb] = m
       const v = Number(clb)
       if (max == null || v > max) {
-max = v
-}
+        max = v
+      }
     }
   }
   return max
@@ -695,8 +695,8 @@ max = v
  */
 function localExperienceHolds(input: LocalExperienceHoldsIn): LocalExperienceHoldsOut {
   if (input.p.province == null) {
-return null
-}
+    return null
+  }
   return input.p.province === input.province
 }
 
@@ -711,11 +711,11 @@ return null
  */
 function recentGraduateHolds(input: RecentGraduateHoldsIn): RecentGraduateHoldsOut {
   if (input.p.canadaStudy !== true) {
-return false
-}
+    return false
+  }
   if (input.p.studyProvince == null || input.p.eduYears == null) {
-return null
-}
+    return null
+  }
   return input.p.studyProvince === input.province && input.p.eduYears >= ON_GRAD_MIN_YEARS
 }
 
@@ -727,11 +727,11 @@ return null
  */
 function otherProvinceGraduateHolds(input: OtherProvinceGraduateHoldsIn): OtherProvinceGraduateHoldsOut {
   if (input.p.canadaStudy !== true) {
-return false
-}
+    return false
+  }
   if (input.p.studyProvince == null) {
-return null
-}
+    return null
+  }
   return input.p.studyProvince !== input.province
 }
 
@@ -748,17 +748,17 @@ return null
  */
 function conditionHolds(input: ConditionHoldsIn): ConditionHoldsOut {
   if (input.cond === '') {
-return true
-}
+    return true
+  }
   if (input.cond === AB_LOCAL_EXP) {
-return localExperienceHolds({ p: input.p, province: input.province })
-}
+    return localExperienceHolds({ p: input.p, province: input.province })
+  }
   if (input.p.canadaStudy == null) {
-return null
-}
+    return null
+  }
   if (input.cond === RECENT_ON_GRADUATE) {
-return recentGraduateHolds({ p: input.p, province: input.province })
-}
+    return recentGraduateHolds({ p: input.p, province: input.province })
+  }
   if (input.cond === CONDITION.gradOtherProvince) {
     return otherProvinceGraduateHolds({ p: input.p, province: input.province })
   }
@@ -774,11 +774,11 @@ return recentGraduateHolds({ p: input.p, province: input.province })
 function mergeOverrides(input: MergeOverridesIn): MergeOverridesOut {
   const out: Record<string, ScoreOverride> = {}
   for (const [k, v] of Object.entries(input.base)) {
-out[k] = v
-}
+    out[k] = v
+  }
   for (const [k, v] of Object.entries(input.extra)) {
-out[k] = v
-}
+    out[k] = v
+  }
   return out
 }
 
@@ -812,14 +812,14 @@ function reqsOf(input: ReqsOfIn): ReqsOfOut {
   const out: ReqRow[] = []
   for (const r of input.all) {
     if (r.province !== input.spec.reqProvince) {
-continue
-}
+      continue
+    }
     if (input.spec.reqPrograms && !input.spec.reqPrograms.includes(r.program)) {
-continue
-}
+      continue
+    }
     if (input.spec.reqStream && !input.spec.reqStream.test(r.stream)) {
-continue
-}
+      continue
+    }
     out.push(r)
   }
   return out
@@ -834,15 +834,15 @@ continue
 function countableMonths(input: CountableMonthsIn): CountableMonthsOut {
   const can = input.p.expCanadaMonths
   if (input.spec.countsForeign !== true) {
-return can
-}
+    return can
+  }
   let foreign = input.p.expForeignMonths
   if (input.selfEmpExcluded && input.p.foreignExpSelfEmployed === true) {
-foreign = 0
-}
+    foreign = 0
+  }
   if (can == null || foreign == null) {
-return null
-}
+    return null
+  }
   return can + foreign
 }
 
@@ -859,13 +859,13 @@ return null
 function mostSpecificRows(input: MostSpecificRowsIn): MostSpecificRowsOut {
   const conditional: ReqRow[] = []
   for (const r of input.applicable) {
-if ((r.appliesCondition || '') !== '') {
-conditional.push(r)
-}
-}
+    if ((r.appliesCondition || '') !== '') {
+      conditional.push(r)
+    }
+  }
   if (conditional.length === 0) {
-return input.applicable
-}
+    return input.applicable
+  }
   return conditional
 }
 
@@ -882,18 +882,18 @@ function lowestMonthsRow(input: LowestMonthsRowIn): LowestMonthsRowOut {
   for (const r of input.pool) {
     const m = monthsOfReq({ r: r })
     if (m == null) {
-continue
-}
+      continue
+    }
     if (lowest == null || m < lowest.m) {
-lowest = { r: r, m: m }
-}
+      lowest = { r: r, m: m }
+    }
   }
   if (lowest != null) {
-return lowest.r
-}
+    return lowest.r
+  }
   if (input.pool.length === 0) {
-return null
-}
+    return null
+  }
   return input.pool[0]
 }
 
@@ -914,23 +914,23 @@ function haveMonthsOf(input: HaveMonthsOfIn): HaveMonthsOfOut {
   const local = input.p.province === input.spec.reqProvince
   if (input.picked != null && PROVINCE_LOCAL_EXP.has(input.picked.appliesCondition || '')) {
     if (input.p.expCanadaMonths == null) {
-return null
-}
+      return null
+    }
     if (local) {
-return input.p.expCanadaMonths
-}
+      return input.p.expCanadaMonths
+    }
     return 0
   }
   if (input.tenure) {
     if (input.p.expCanadaMonths == null) {
-return null
-}
+      return null
+    }
     if (input.p.expCanadaMonths === 0) {
-return 0
-}
+      return 0
+    }
     if (local) {
-return input.p.expCanadaMonths
-}
+      return input.p.expCanadaMonths
+    }
     return 0
   }
   return countableMonths({ spec: input.spec, p: input.p, selfEmpExcluded: input.selfEmpExcluded })
@@ -954,19 +954,19 @@ function pickGate(input: PickGateIn): PickGateOut {
   const expRows: ReqRow[] = []
   for (const r of input.rows) {
     if (r.factor !== FACTOR.experience && r.factor !== REQ_FACTOR.workHours) {
-continue
-}
+      continue
+    }
     if (r.subject !== SUBJECT.applicant) {
-continue
-}
+      continue
+    }
     expRows.push(r)
   }
   const gateRows: ReqRow[] = []
   for (const r of expRows) {
-if (teerHit({ r: r, teer: input.p.teer })) {
-gateRows.push(r)
-}
-}
+    if (teerHit({ r: r, teer: input.p.teer })) {
+      gateRows.push(r)
+    }
+  }
   if (gateRows.length === 0) {
     return { rows: [], picked: null, need: null, have: null, gap: null, tenure: false, unknownCond: [],
       teerUnknown: expRows.length > 0 && input.p.teer == null }
@@ -977,18 +977,18 @@ gateRows.push(r)
   for (const r of gateRows) {
     const ok = conditionHolds({ cond: r.appliesCondition || '', p: input.p, province: input.spec.reqProvince })
     if (ok === null) {
- unknownCond.push(r); continue 
-}
+      unknownCond.push(r); continue 
+    }
     if (ok) {
-applicable.push(r)
-}
+      applicable.push(r)
+    }
   }
   const pool = mostSpecificRows({ applicable: applicable })
   const picked = lowestMonthsRow({ pool: pool })
   let need: number | null = null
   if (picked != null) {
-need = monthsOfReq({ r: picked })
-}
+    need = monthsOfReq({ r: picked })
+  }
   const tenure = picked != null && picked.basis === BASIS.employerTenure
   const have = haveMonthsOf({
     spec: input.spec, p: input.p, picked: picked, tenure: tenure, selfEmpExcluded: input.selfEmpExcluded,
@@ -996,10 +996,10 @@ need = monthsOfReq({ r: picked })
   let gap: number | null = null
   if (need != null) {
     if (need === 0) {
-gap = 0
-} else if (have != null) {
-gap = Math.max(0, need - have)
-}
+      gap = 0
+    } else if (have != null) {
+      gap = Math.max(0, need - have)
+    }
   }
   return { rows: pool, picked, need, have, gap, tenure, unknownCond, teerUnknown: false }
 }
@@ -1014,22 +1014,22 @@ function residenceGap(input: ResidenceGapIn): ResidenceGapOut {
   let row: ReqRow | null = null
   for (const r of input.rows) {
     if (r.factor === FACTOR.residence && r.subject === SUBJECT.applicant) {
- row = r; break 
-}
+      row = r; break 
+    }
   }
   if (row == null) {
-return null
-}
+    return null
+  }
   const need = monthsOfReq({ r: row })
   if (need == null) {
-return null
-}
+    return null
+  }
   if (input.p.province == null) {
-return { row, need, gap: null }
-}
+    return { row, need, gap: null }
+  }
   if (input.p.province === input.spec.reqProvince) {
-return { row, need, gap: null }
-}
+    return { row, need, gap: null }
+  }
   return { row, need, gap: need }
 }
 
@@ -1044,24 +1044,24 @@ function refDraw(input: RefDrawIn): RefDrawOut {
   const scored: VerdictDrawRow[] = []
   for (const d of input.draws) {
     if (d.province === wantProvince && d.kind === FACTOR.draw && d.score != null) {
-scored.push(d)
-}
+      scored.push(d)
+    }
   }
   scored.sort(byDrawDateDesc)
   const stream = input.spec.drawStream
   if (stream) {
     for (const d of scored) {
-if (streamMatches({ drawStream: d.stream, gridStream: stream })) {
-return d
-}
-}
+      if (streamMatches({ drawStream: d.stream, gridStream: stream })) {
+        return d
+      }
+    }
   }
   if (input.spec.drawFallbackProvinceWide !== true) {
-return null
-}
+    return null
+  }
   if (scored.length === 0) {
-return null
-}
+    return null
+  }
   return scored[0]
 }
 
@@ -1073,16 +1073,16 @@ return null
  */
 function pickScoreRow(input: PickScoreRowIn): PickScoreRowOut {
   if (input.p.scoreRows == null) {
-return null
-}
+    return null
+  }
   const seq = input.p.scoreRows[`${input.province}${SEP.colon}${input.factor}`]
   if (seq == null) {
-return null
-}
+    return null
+  }
   for (const f of input.all) {
     if (f.factor === input.factor && f.kind === FACTOR_ROW && f.seq === seq) {
-return f
-}
+      return f
+    }
   }
   return null
 }
@@ -1095,12 +1095,12 @@ return f
  */
 function offerOverride(input: OfferOverrideIn): OfferOverrideOut {
   if (input.row == null) {
-return {}
-}
+    return {}
+  }
   let pts = 0
   if (input.has && input.row.points != null) {
-pts = input.row.points
-}
+    pts = input.row.points
+  }
   return { offer: { pts, matched: input.row.label, source: SOURCE_PROFILE } }
 }
 
@@ -1115,8 +1115,8 @@ function factorNames(input: FactorNamesIn): FactorNamesOut {
   const seen = new Set<string>()
   for (const f of input.all) {
     if (seen.has(f.factor)) {
-continue
-}
+      continue
+    }
     seen.add(f.factor)
     names.push(f.factor)
   }
@@ -1153,20 +1153,20 @@ function wagePoints(input: WagePointsIn): WagePointsOut {
   const cfg = parseWageRule({ rule: input.rule.rule })
   let floorAt: number = WAGE_RULE_DEFAULT.floorAt
   if (cfg.floorAt != null) {
-floorAt = cfg.floorAt
-}
+    floorAt = cfg.floorAt
+  }
   let capAt: number = WAGE_RULE_DEFAULT.capAt
   if (cfg.capAt != null) {
-capAt = cfg.capAt
-}
+    capAt = cfg.capAt
+  }
   if (input.wage < floorAt) {
-return 0
-}
+    return 0
+  }
   const pts = Math.floor(Math.min(input.wage, capAt)) - WAGE_RULE_DEFAULT.base
   let factorMax: number = WAGE_RULE_DEFAULT.factorMax
   if (input.rule.factorMax != null) {
-factorMax = input.rule.factorMax
-}
+    factorMax = input.rule.factorMax
+  }
   return Math.min(pts, factorMax)
 }
 
@@ -1182,8 +1182,8 @@ function gridRowFor(input: GridRowForIn): GridRowForOut {
   if (input.name === SCORE_FACTOR.area && input.spec.reqProvince === PROV.BC && input.p.areaI != null) {
     const row = input.areaRows[input.p.areaI]
     if (row == null) {
-return null
-}
+      return null
+    }
     return row
   }
   return pickScoreRow({ all: input.all, p: input.p, province: input.spec.reqProvince, factor: input.name })
@@ -1201,8 +1201,8 @@ return null
 function askableSlot(input: AskableSlotIn): AskableSlotOut {
   for (const [factor, slot] of Object.entries(ASKABLE_FACTORS)) {
     if (factor === input.name) {
-return slot
-}
+      return slot
+    }
   }
   return null
 }
@@ -1225,25 +1225,25 @@ function pickGridFactors(input: PickGridFactorsIn): PickGridFactorsOut {
   const picked: Record<string, PickedFactor> = {}
   const areaRows: ScoreRow[] = []
   for (const f of input.all) {
-if (f.factor === SCORE_FACTOR.area && f.kind === FACTOR_ROW) {
-areaRows.push(f)
-}
-}
+    if (f.factor === SCORE_FACTOR.area && f.kind === FACTOR_ROW) {
+      areaRows.push(f)
+    }
+  }
   let partial = false
   for (const name of factorNames({ all: input.all })) {
     let hasRows = false
     for (const f of input.all) {
-if (f.factor === name && f.kind === FACTOR_ROW) {
- hasRows = true; break 
-}
-}
+      if (f.factor === name && f.kind === FACTOR_ROW) {
+        hasRows = true; break 
+      }
+    }
     if (!hasRows) {
       let rule: ScoreRow | null = null
       for (const f of input.all) {
-if (f.factor === name && f.kind === KIND_RULE) {
- rule = f; break 
-}
-}
+        if (f.factor === name && f.kind === KIND_RULE) {
+          rule = f; break 
+        }
+      }
       if (name === SCORE_FACTOR.wage && rule && input.p.wage != null) {
         const pts = wagePoints({ rule: rule, wage: input.p.wage })
         picked[name] = { pts, matched: `${SEP.dollar}${input.p.wage}${SEP.perHour}`, source: FACTOR.job }
@@ -1253,31 +1253,31 @@ if (f.factor === name && f.kind === KIND_RULE) {
       continue
     }
     if (name === SCORE_FACTOR.offer) {
- if (input.p.hasOffer == null) {
-return undefined;
-} continue 
-}
+      if (input.p.hasOffer == null) {
+        return undefined;
+      } continue 
+    }
     const slot = askableSlot({ name: name })
     if (slot && input.p.scoreProfile?.[slot] != null) {
- only.add(name); continue 
-}
+      only.add(name); continue 
+    }
     if (!GRID_AUTO_FACTORS.has(name)) {
       const row = gridRowFor({ all: input.all, areaRows: areaRows, p: input.p, spec: input.spec, name: name })
       if (!row) {
-return undefined
-}
+        return undefined
+      }
       picked[name] = { pts: row.points ?? 0, matched: row.label, source: FACTOR.job }
       continue
     }
     only.add(name)
   }
   if (!only.size) {
-return undefined
-}
+    return undefined
+  }
   for (const f of input.all) {
     if (f.kind !== FACTOR.bonus) {
-continue
-}
+      continue
+    }
     partial = true
     break
   }
@@ -1295,17 +1295,17 @@ continue
 function gridCeiling(input: GridCeilingIn): GridCeilingOut {
   const langLabels: string[] = []
   for (const f of input.all) {
-if (f.factor === FACTOR.language && f.kind === FACTOR_ROW) {
-langLabels.push(f.label)
-}
-}
+    if (f.factor === FACTOR.language && f.kind === FACTOR_ROW) {
+      langLabels.push(f.label)
+    }
+  }
   const maxClb = maxClbIn({ labels: langLabels })
   const ticks: Record<string, boolean> = {}
   const seen = new Map<string, number>()
   for (const f of input.all) {
     if (f.kind !== FACTOR.bonus) {
-continue
-}
+      continue
+    }
     const i = seen.get(f.factor) ?? 0
     ticks[`${input.spec.reqProvince}${SEP.colon}${f.factor}${SEP.colon}${i}`] = true
     seen.set(f.factor, i + 1)
@@ -1375,14 +1375,14 @@ function gridMatchesStream(input: GridMatchesStreamIn): GridMatchesStreamOut {
  */
 function hasRequiredSlots(input: HasRequiredSlotsIn): HasRequiredSlotsOut {
   if (input.only.has(FACTOR.education) && input.p.edu == null) {
-return false
-}
+    return false
+  }
   if (input.only.has(FACTOR.language) && input.p.clb == null) {
-return false
-}
+    return false
+  }
   if (input.only.has(FACTOR.age) && input.p.age == null) {
-return false
-}
+    return false
+  }
   const wantsExp = input.only.has(FACTOR.work) || input.only.has(FACTOR.workMonths)
   return !(wantsExp && (input.p.expCanadaMonths == null || input.p.expForeignMonths == null))
 }
@@ -1399,10 +1399,10 @@ function ownTicksOf(input: OwnTicksOfIn): OwnTicksOfOut {
   const ownTicks: Record<string, boolean> = {}
   const prefix = `${input.province}${SEP.colon}`
   for (const [k, v] of Object.entries(input.p.scoreTicks ?? {})) {
-if (v && k.startsWith(prefix)) {
-ownTicks[k] = true
-}
-}
+    if (v && k.startsWith(prefix)) {
+      ownTicks[k] = true
+    }
+  }
   return ownTicks
 }
 
@@ -1437,37 +1437,37 @@ ownTicks[k] = true
 function provinceGridScore(input: ProvinceGridScoreIn): ProvinceGridScoreOut {
   const all: ScoreRow[] = []
   for (const f of input.factors) {
-if (f.province === input.spec.reqProvince) {
-all.push(f)
-}
-}
+    if (f.province === input.spec.reqProvince) {
+      all.push(f)
+    }
+  }
   if (!all.length) {
-return undefined
-}
+    return undefined
+  }
   const head = all[0]
   if (!gridMatchesStream({ head: head, spec: input.spec })) {
-return undefined
-}
+    return undefined
+  }
 
   const grid = pickGridFactors({ all: all, p: input.p, spec: input.spec })
   if (!grid) {
-return undefined
-}
+    return undefined
+  }
   const picked = grid.picked
   const only = grid.only
   const partial = grid.partial
 
   if (!hasRequiredSlots({ only: only, p: input.p })) {
-return undefined
-}
+    return undefined
+  }
 
   const self = gridSelfProfile({ p: input.p })
   let offerRow: ScoreRow | null = null
   for (const f of all) {
-if (f.factor === SCORE_FACTOR.offer && f.kind === FACTOR_ROW) {
- offerRow = f; break 
-}
-}
+    if (f.factor === SCORE_FACTOR.offer && f.kind === FACTOR_ROW) {
+      offerRow = f; break 
+    }
+  }
 
   const ownTicks = ownTicksOf({ p: input.p, province: input.spec.reqProvince })
   const now = scoreProvince({
@@ -1478,8 +1478,8 @@ if (f.factor === SCORE_FACTOR.offer && f.kind === FACTOR_ROW) {
     ticks: ownTicks, only: only,
   })
   if (!now) {
-return undefined
-}
+    return undefined
+  }
   const ceiling = gridCeiling({
     all: all, factors: input.factors, spec: input.spec, self: self, offerRow: offerRow,
     picked: picked, only: only,
@@ -1508,11 +1508,11 @@ return undefined
 function mbEduOf(input: MbEduOfIn): MbEduOfOut {
   if (input.edu === EDU.diploma2y || input.edu === EDU.bachelor) {
     if (input.years == null) {
-return EDU_TO_MB[input.edu]
-}
+      return EDU_TO_MB[input.edu]
+    }
     if (input.years >= MB_EDU_YEARS.threeYear) {
-return MB_EDU.oneProgram3yPlus
-}
+      return MB_EDU.oneProgram3yPlus
+    }
     return input.years >= MB_EDU_YEARS.twoYear ? MB_EDU.oneProgram2y : MB_EDU.oneYearProgram
   }
   return EDU_TO_MB[input.edu]
@@ -1587,11 +1587,11 @@ function ruleProfileOf(input: RuleProfileOfIn): RuleProfileOfOut {
 function fedLangApplies(input: FedLangAppliesIn): FedLangAppliesOut {
   const m = TEER_STREAM.exec(input.r.stream || '')
   if (!m) {
-return true
-}
+    return true
+  }
   if (input.teer == null) {
-return false
-}
+    return false
+  }
   const [, spec] = m
   const parts = spec.split(SEP.hyphen).map(Number)
   if (parts.length === TEER_RANGE_PARTS) {
@@ -1614,18 +1614,18 @@ return false
  */
 function fieldMatchAnswer(input: FieldMatchAnswerIn): FieldMatchAnswerOut {
   if (input.p.fieldMatch !== false) {
-return input.p.fieldMatch
-}
+    return input.p.fieldMatch
+  }
   const ex = fieldMatchExemptionOf(input.specKey)
   if (!ex) {
-return false
-}
+    return false
+  }
   if (input.p.studyProvince == null) {
-return null
-}
+    return null
+  }
   if (input.p.studyProvince !== ex.studyProvince) {
-return false
-}
+    return false
+  }
   return input.p.teer == null ? null : (ex.teers.includes(input.p.teer) ? true : null)
 }
 
@@ -1650,11 +1650,11 @@ return false
 function statusGateAnswer(input: StatusGateAnswerIn): StatusGateAnswerOut {
   const asks = input.asks
   if (!asks) {
-return input.p.inCanada
-}
+    return input.p.inCanada
+  }
   if (input.p.inCanada === false) {
-return false
-}
+    return false
+  }
   const permit = input.p.permit
   switch (asks) {
     case GATE_ASK.workPermit:
@@ -1665,17 +1665,17 @@ return false
       return input.p.province == null ? null : input.p.province === input.reqProvince
     case GATE_ASK.provEmployment: {
       if (input.p.province == null) {
-return null
-}
+        return null
+      }
       if (input.p.province !== input.reqProvince) {
-return false
-}
+        return false
+      }
       if (input.p.status === STATUS.worker) {
-return true
-}
+        return true
+      }
       if (input.p.status === PERMIT.study || input.p.status === STATUS.other) {
-return false
-}
+        return false
+      }
       return input.p.expCanadaMonths == null ? null : input.p.expCanadaMonths > 0
     }
   }
@@ -1710,17 +1710,17 @@ function listRequiredReason(input: ListRequiredReasonIn): ListRequiredReasonOut 
   let listExcluded = false
   const noc = input.p.noc
   if (!noc) {
-return { reasons: reasons, listExcluded: listExcluded }
-}
+    return { reasons: reasons, listExcluded: listExcluded }
+  }
   let listTeerCovered = false
   if (input.spec.listRequired) {
     for (const r of input.rows) {
       if (r.subject !== SUBJECT.applicant || r.factor !== FACTOR.experience) {
-continue
-}
+        continue
+      }
       if (!r.appliesTeer || !teerHit({ r: r, teer: input.p.teer })) {
-continue
-}
+        continue
+      }
       listTeerCovered = true
       break
     }
@@ -1730,27 +1730,27 @@ continue
     const list: OccupationRow[] = []
     for (const o of input.data.occupations) {
       if (o.province !== required.province || o.type !== INDEMAND) {
-continue
-}
+        continue
+      }
       if (!required.streamRe.test(o.stream)) {
-continue
-}
+        continue
+      }
       list.push(o)
     }
     let onList = false
     for (const o of list) {
-if (o.noc === noc) {
- onList = true; break 
-}
-}
+      if (o.noc === noc) {
+        onList = true; break 
+      }
+    }
     if (list.length && !onList) {
       listExcluded = true
       let anchor: ReqRow = input.rows[0]
       for (const r of input.rows) {
-if (r.factor === FACTOR.experience) {
- anchor = r; break 
-}
-}
+        if (r.factor === FACTOR.experience) {
+          anchor = r; break 
+        }
+      }
       reasons.push({
         kind: REASON.excluded,
         text: `${noc}${PV_TEXT.notOnListMid}${list[0].stream}${PV_TEXT.oidClosedTail}`,
@@ -1781,12 +1781,12 @@ function occupationListReasons(input: OccupationListReasonsIn): OccupationListRe
     const ineligible: OccupationRow[] = []
     for (const o of input.data.occupations) {
       if (o.province !== input.spec.reqProvince || o.type !== OCC_INELIGIBLE || o.noc !== input.p.noc) {
-continue
-}
+        continue
+      }
       if (o.appliesTo && o.appliesTo.toLowerCase().includes(APPLIES_OFFER)
         !== EMPLOYMENT_OFFER_STREAM.test(input.spec.stream)) {
-continue
-}
+        continue
+      }
       ineligible.push(o)
     }
     for (const o of ineligible) {
@@ -1802,8 +1802,8 @@ continue
     const indemand: OccupationRow[] = []
     for (const o of input.data.occupations) {
       if (o.province !== input.spec.reqProvince || o.type !== INDEMAND || o.noc !== input.p.noc) {
-continue
-}
+        continue
+      }
       indemand.push(o)
     }
     for (const o of indemand) {
@@ -1816,11 +1816,11 @@ continue
       spec: input.spec, p: input.p, data: input.data, rows: input.rows,
     })
     for (const one of must.reasons) {
-reasons.push(one)
-}
+      reasons.push(one)
+    }
     if (must.listExcluded) {
-listExcluded = true
-}
+      listExcluded = true
+    }
   } else {
     missingSlots.push(SLOT.noc)
   }
@@ -1843,19 +1843,19 @@ function fedLanguageReasons(input: FedLanguageReasonsIn): FedLanguageReasonsOut 
   for (const prog of input.spec.reqPrograms ?? []) {
     for (const r of input.rows) {
       if (r.program !== prog || r.factor !== FACTOR.language) {
-continue
-}
+        continue
+      }
       if (!fedLangApplies({ r: r, teer: input.p.teer })) {
-continue
-}
+        continue
+      }
       langRowsSeen += 1
       if (input.p.clb == null) {
- missingSlots.push(SLOT.clb); continue 
-}
+        missingSlots.push(SLOT.clb); continue 
+      }
       const ok = r.value == null || input.p.clb >= r.value
       if (!ok) {
-blockedBy = blockedBy ?? FACTOR.language
-}
+        blockedBy = blockedBy ?? FACTOR.language
+      }
       reasons.push({
         kind: ok ? REASON.met : REASON.gap,
         text: `${prog}${PV_TEXT.fedLangMid}${r.value}${ok ? PV_TEXT.metTail : `${PV_TEXT.shortBy}${(r.value as number) - (input.p.clb as number)}${PV_TEXT.bands}`}`,
@@ -1887,10 +1887,10 @@ function pnpLanguageReasons(input: PnpLanguageReasonsIn): PnpLanguageReasonsOut 
   let blockedBy: BlockedBy
   const langRows: ReqRow[] = []
   for (const r of input.rows) {
-if (r.subject === SUBJECT.applicant) {
-langRows.push(r)
-}
-}
+    if (r.subject === SUBJECT.applicant) {
+      langRows.push(r)
+    }
+  }
   const results: EngineResult[] = evaluateRequirements({
     reqs: langRows,
     profile: ruleProfileOf({
@@ -1900,10 +1900,10 @@ langRows.push(r)
   })
   let lang: EngineResult | null = null
   for (const r of results) {
-if (r.factor === FACTOR.language) {
- lang = r; break 
-}
-}
+    if (r.factor === FACTOR.language) {
+      lang = r; break 
+    }
+  }
   if (lang) {
     if (lang.verdict === ITEM.unknown) {
       missingSlots.push(SLOT.clb)
@@ -1967,23 +1967,23 @@ function experienceGaps(input: ExperienceGapsIn): ExperienceGapsOut {
       key: PV_KEY.noExpReq, params: { stream: input.spec.stream } })
   }
   if (input.gate.teerUnknown) {
-missingSlots.push(SLOT.noc)
-}
+    missingSlots.push(SLOT.noc)
+  }
   if (input.gate.gap != null) {
-gaps.push({ months: input.gate.gap, kind: FACTOR.work })
-} else if (input.gate.need != null) {
-gaps.push({ months: input.gate.need, kind: FACTOR.work })
-}
+    gaps.push({ months: input.gate.gap, kind: FACTOR.work })
+  } else if (input.gate.need != null) {
+    gaps.push({ months: input.gate.need, kind: FACTOR.work })
+  }
   if (input.gate.have == null && input.gate.picked && input.gate.need !== 0) {
-missingSlots.push(SLOT.expCanadaMonths)
-}
+    missingSlots.push(SLOT.expCanadaMonths)
+  }
   const res = residenceGap({ spec: input.spec, rows: input.rows, p: input.p })
   if (res) {
     if (res.gap != null) {
-gaps.push({ months: res.gap, kind: FACTOR.residence })
-} else {
- gaps.push({ months: res.need, kind: FACTOR.residence }); missingSlots.push(SLOT.province) 
-}
+      gaps.push({ months: res.gap, kind: FACTOR.residence })
+    } else {
+      gaps.push({ months: res.need, kind: FACTOR.residence }); missingSlots.push(SLOT.province) 
+    }
   }
   return { reasons: reasons, missingSlots: missingSlots, gaps: gaps, res: res }
 }
@@ -2012,12 +2012,12 @@ function outOfProvinceGradGap(input: OutOfProvinceGradGapIn): OutOfProvinceGradG
         : input.p.province === input.spec.reqProvince ? input.p.expCanadaMonths : 0
     gaps.push({ months: oopHave == null ? oop.months : Math.max(0, oop.months - oopHave), kind: FACTOR.work })
     if (oopHave == null) {
-missingSlots.push(SLOT.expCanadaMonths)
-}
+      missingSlots.push(SLOT.expCanadaMonths)
+    }
   }
   if (oop && oopHolds === null) {
-missingSlots.push(SLOT.studyProvince)
-}
+    missingSlots.push(SLOT.studyProvince)
+  }
   return { missingSlots: missingSlots, gaps: gaps, oop: oop, oopHolds: oopHolds, oopHave: oopHave }
 }
 
@@ -2031,11 +2031,11 @@ missingSlots.push(SLOT.studyProvince)
  */
 function crsScore(input: CrsScoreIn): CrsScoreOut {
   if (input.spec.scorer !== GRID.crs) {
-return undefined
-}
+    return undefined
+  }
   if (input.p.age == null || input.p.clb == null || input.p.edu == null) {
-return undefined
-}
+    return undefined
+  }
   const crsProfile: CrsProfile = {
     age: input.p.age, married: input.p.married, clb: input.p.clb, edu: input.p.edu, eduYears: input.p.eduYears,
     canadaStudy: input.p.canadaStudy,
@@ -2046,8 +2046,8 @@ return undefined
   const crsLangLabels: string[] = []
   for (const r of input.data.eeGrid) {
     if (r.grid !== GRID.crs || !FIRST_OFFICIAL_LANGUAGE.test(r.heading)) {
-continue
-}
+      continue
+    }
     crsLangLabels.push(r.criterion)
   }
   const maxClb = maxClbIn({ labels: crsLangLabels })
@@ -2060,10 +2060,10 @@ continue
     : estimateCrs({ profile: ceilProfile, rows: input.data.eeGrid }).total
   let head: EeRow | null = null
   for (const r of input.data.eeGrid) {
-if (r.grid === GRID.crs) {
- head = r; break 
-}
-}
+    if (r.grid === GRID.crs) {
+      head = r; break 
+    }
+  }
   const score: PathwayScore = {
     system: GRID.crs, value: now.total, ceiling: ceil,
     refLine: input.draw?.score ?? null,
@@ -2088,14 +2088,14 @@ function mbWarnings(input: MbWarningsIn): MbWarningsOut {
   let workRow: ScoreRow | null = null
   for (const f of input.data.scoreFactors) {
     if (f.province !== PROV.MB || f.factor !== SCORE_FACTOR.risk || f.kind !== FACTOR.bonus) {
-continue
-}
+      continue
+    }
     if (studyRow == null && MB_RISK_STUDY.test(f.label)) {
-studyRow = f
-}
+      studyRow = f
+    }
     if (workRow == null && MB_RISK_WORK.test(f.label)) {
-workRow = f
-}
+      workRow = f
+    }
   }
   const base = mbProfileOf({ p: input.p, workMonths: input.workMonths, clb: input.clb })
   if (base.riskForeignStudy && studyRow) {
@@ -2123,15 +2123,15 @@ workRow = f
   const mbScored: VerdictDrawRow[] = []
   for (const d of input.data.draws) {
     if (d.province === PROV.MB && d.kind === FACTOR.draw && d.score != null) {
-mbScored.push(d)
-}
+      mbScored.push(d)
+    }
   }
   mbScored.sort(byDrawDateDesc)
   if (mbScored.length) {
     const drawParts: string[] = []
     for (const d of mbScored) {
-drawParts.push(`${d.score} ${d.drawDate}${d.note ? SPACE + d.note : ''}`)
-}
+      drawParts.push(`${d.score} ${d.drawDate}${d.note ? SPACE + d.note : ''}`)
+    }
     const lines = drawParts.join(SEP.commaSpace)
     reasons.push({
       kind: REASON.gap,
@@ -2156,13 +2156,13 @@ function mbScore(input: MbScoreIn): MbScoreOut {
   const reasons: VerdictReason[] = []
   let mbHead: ScoreRow | null = null
   for (const f of input.data.scoreFactors) {
-if (f.province === PROV.MB) {
- mbHead = f; break 
-}
-}
+    if (f.province === PROV.MB) {
+      mbHead = f; break 
+    }
+  }
   if (input.spec.scorer !== PROV.MB || !mbHead) {
-return { score: undefined, reasons: reasons }
-}
+    return { score: undefined, reasons: reasons }
+  }
   if (input.p.age == null || input.p.clb == null || input.p.edu == null) {
     return { score: undefined, reasons: reasons }
   }
@@ -2174,8 +2174,8 @@ return { score: undefined, reasons: reasons }
   const mbLangLabels: string[] = []
   for (const f of input.data.scoreFactors) {
     if (f.province !== PROV.MB || f.factor !== FACTOR.language || f.kind !== FACTOR_ROW) {
-continue
-}
+      continue
+    }
     mbLangLabels.push(f.label)
   }
   const maxClb = maxClbIn({ labels: mbLangLabels })
@@ -2194,8 +2194,8 @@ continue
   for (const one of mbWarnings({
     p: input.p, data: input.data, workMonths: workMonths, clb: input.p.clb, mbTotal: mbNow.total, ceil: ceil,
   })) {
-reasons.push(one)
-}
+    reasons.push(one)
+  }
   return { score: score, reasons: reasons }
 }
 
@@ -2216,21 +2216,21 @@ function scoreAndRefLine(input: ScoreAndRefLineIn): ScoreAndRefLineOut {
   let score: MaybeScore
   try {
     if (!input.spec.scorer) {
-score = provinceGridScore({ spec: input.spec, p: input.p, factors: input.data.scoreFactors, draw: draw })
-}
+      score = provinceGridScore({ spec: input.spec, p: input.p, factors: input.data.scoreFactors, draw: draw })
+    }
     const crs = crsScore({
       spec: input.spec, p: input.p, data: input.data, draw: draw, selfEmpExcluded: input.selfEmpExcluded,
     })
     if (crs) {
-score = crs
-}
+      score = crs
+    }
     const mb = mbScore({ spec: input.spec, p: input.p, data: input.data, gate: input.gate, draw: draw })
     if (mb.score) {
-score = mb.score
-}
+      score = mb.score
+    }
     for (const one of mb.reasons) {
-reasons.push(one)
-}
+      reasons.push(one)
+    }
   } catch {
     score = undefined
     reasons.push({ kind: REASON.needsInfo, text: PV_TEXT.noScoreBand, key: PV_KEY.noScoreBand })
@@ -2294,8 +2294,8 @@ function experienceReasons(input: ExperienceReasonsIn): ExperienceReasonsOut {
   for (const r of input.gate.rows) {
     const need = monthsOfReq({ r: r })
     if (need == null) {
-continue
-}
+      continue
+    }
     const met = need === 0 || (input.gate.have != null && input.gate.have >= need)
     const gateName = r.basis === BASIS.employerTenure ? PV_TEXT.tenureGate : PV_TEXT.expGate
     reasons.push({
@@ -2407,22 +2407,22 @@ function nlDesignatedReason(input: NlDesignatedReasonIn): NlDesignatedReasonOut 
     let src: DesignatedEmployerRow | null = null
     for (const e of input.data.designatedEmployers) {
       if (e.province !== PROV.NL) {
-continue
-}
+        continue
+      }
       nlTotal += 1
       let declared = false
       for (const one of (e.nocs || '').split(SEP.comma)) {
-if (one.trim() === noc) {
- declared = true; break 
-}
-}
+        if (one.trim() === noc) {
+          declared = true; break 
+        }
+      }
       if (!declared) {
-continue
-}
+        continue
+      }
       nlHits += 1
       if (src == null && e.url && e.fetched) {
-src = e
-}
+        src = e
+      }
     }
     reasons.push({
       kind: nlHits ? REASON.met : REASON.gap,
@@ -2456,21 +2456,21 @@ function verdictReasons(input: VerdictReasonsIn): VerdictReasonsOut {
 
   const hardKind: VerdictReason['kind'] = scoreGulf ? REASON.excluded : REASON.gap
   for (const one of experienceReasons({ gate: input.gate, hardKind: hardKind })) {
-reasons.push(one)
-}
+    reasons.push(one)
+  }
   for (const one of residenceReason({ res: input.res, hardKind: hardKind })) {
-reasons.push(one)
-}
+    reasons.push(one)
+  }
   for (const one of oopGradReason({
     spec: input.spec, oop: input.oop, oopHolds: input.oopHolds, oopHave: input.oopHave,
   })) {
-reasons.push(one)
-}
+    reasons.push(one)
+  }
 
   for (const r of input.selfEmpRows) {
     if (input.p.foreignExpSelfEmployed !== true) {
-continue
-}
+      continue
+    }
     blockedBy = blockedBy ?? BLOCKED_BY.selfEmployed
     reasons.push({ kind: REASON.gap, text: PV_TEXT.selfEmpExcluded, key: PV_KEY.selfEmp, quote: quoteOfReq({ r: r }), evidence: evOfReq({ r: r }) })
   }
@@ -2543,8 +2543,8 @@ function worstGap(input: WorstGapIn): WorstGapOut {
  */
 function foldTriState(input: FoldTriStateIn): FoldTriStateOut {
   if (input.excluded) {
-return REASON.excluded
-}
+    return REASON.excluded
+  }
   const needsInfo = !input.gate.picked || input.gate.gap == null
     || input.missingSlots.length > 0 || input.manifestUnknown
   return needsInfo ? REASON.needsInfo : VERDICT.viable
@@ -2564,11 +2564,11 @@ return REASON.excluded
  */
 function availabilityOf(input: AvailabilityOfIn): AvailabilityOfOut {
   if (!input.gate.picked && !input.gate.teerUnknown) {
-return AVAIL.notCollected
-}
+    return AVAIL.notCollected
+  }
   if (!input.excluded && input.manifestNoSource) {
-return AVAIL.notCollected
-}
+    return AVAIL.notCollected
+  }
   return AVAIL.ok
 }
 
@@ -2587,14 +2587,14 @@ function tierBasisOf(input: TierBasisOfIn): TierBasisOfOut {
   const studying = input.p.status === PERMIT.study
     && (input.p.permit == null || input.p.permit === PERMIT.study)
   if (!studying || input.excluded) {
-return TIER_BASIS.now
-}
+    return TIER_BASIS.now
+  }
   if (input.outTier == null || input.outTier <= 0) {
-return TIER_BASIS.now
-}
+    return TIER_BASIS.now
+  }
   if (input.worst?.kind !== FACTOR.work || input.worst.months <= 0) {
-return TIER_BASIS.now
-}
+    return TIER_BASIS.now
+  }
   return TIER_BASIS.afterStudy
 }
 
@@ -2609,8 +2609,8 @@ return TIER_BASIS.now
  */
 function tierFullTimeOf(input: TierFullTimeOfIn): TierFullTimeOfOut {
   if (input.worst?.kind !== FACTOR.work) {
-return false
-}
+    return false
+  }
   return FULL_TIME_IN_LABEL.test(input.gate.picked?.label ?? '')
 }
 
@@ -2663,42 +2663,42 @@ function pathwayFacts(input: PathwayFactsIn): PathwayFactsOut {
   const selfEmpExcluded = input.selfEmpExcluded
   const lists = occupationListReasons({ spec: input.spec, p: input.p, data: input.data, rows: rows })
   for (const one of lists.reasons) {
-reasons.push(one)
-}
+    reasons.push(one)
+  }
   for (const one of lists.missingSlots) {
-missingSlots.push(one)
-}
+    missingSlots.push(one)
+  }
   const listExcluded = lists.listExcluded
 
   const lang = languageReasons({ spec: input.spec, p: input.p, rows: rows, selfEmpExcluded: selfEmpExcluded })
   for (const one of lang.reasons) {
-reasons.push(one)
-}
+    reasons.push(one)
+  }
   for (const one of lang.missingSlots) {
-missingSlots.push(one)
-}
+    missingSlots.push(one)
+  }
   const blockedBy = lang.blockedBy
 
   const exp = experienceGaps({ spec: input.spec, p: input.p, rows: rows, gate: gate })
   for (const one of exp.reasons) {
-reasons.push(one)
-}
+    reasons.push(one)
+  }
   for (const one of exp.missingSlots) {
-missingSlots.push(one)
-}
+    missingSlots.push(one)
+  }
   const gaps: TierGap[] = []
   for (const one of exp.gaps) {
-gaps.push(one)
-}
+    gaps.push(one)
+  }
   const res = exp.res
 
   const oopGap = outOfProvinceGradGap({ spec: input.spec, p: input.p })
   for (const one of oopGap.missingSlots) {
-missingSlots.push(one)
-}
+    missingSlots.push(one)
+  }
   for (const one of oopGap.gaps) {
-gaps.push(one)
-}
+    gaps.push(one)
+  }
   const oop = oopGap.oop
   const oopHolds = oopGap.oopHolds
   const oopHave = oopGap.oopHave
@@ -2707,8 +2707,8 @@ gaps.push(one)
     spec: input.spec, p: input.p, data: input.data, gate: gate, selfEmpExcluded: selfEmpExcluded,
   })
   for (const one of scored.reasons) {
-reasons.push(one)
-}
+    reasons.push(one)
+  }
   const score = scored.score
   const draw = scored.draw
   return {
@@ -2753,12 +2753,12 @@ function gateManifest(input: GateManifestIn): GateManifestOut {
   for (const g of GATE_KEYS) {
     const rule = gateOf(input.spec.key, g)
     if (rule.need === GATE_NEED.notRequired) {
-continue
-}
+      continue
+    }
     if (rule.need === GATE_NEED.unknown) {
       if (OPT_IN_GATES.has(g)) {
-continue
-}
+        continue
+      }
       manifestUnknown = true
       manifestNoSource = true
       reasons.push({ kind: REASON.needsInfo, text: `${PV_TEXT.notCollectedHead}${input.spec.stream}${PV_TEXT.of}${gateLabels[g].zh}${PV_TEXT.reqDoc}`,
@@ -2813,14 +2813,14 @@ function evaluateOne(input: EvaluateOneIn): EvaluateOneOut {
   const missingSlots: string[] = []
 
   if (!rows.length) {
-return notCollectedVerdict({ spec: input.spec })
-}
+    return notCollectedVerdict({ spec: input.spec })
+  }
 
   const selfEmpRows: ReqRow[] = []
   for (const r of rows) {
     if (r.factor === REQ_FACTOR.workSelfEmployed || r.factor === REQ_FACTOR.experienceExcluded) {
-selfEmpRows.push(r)
-}
+      selfEmpRows.push(r)
+    }
   }
   const selfEmpExcluded = selfEmpRows.length > 0
   const gate = pickGate({ spec: input.spec, rows: rows, p: input.p, selfEmpExcluded: selfEmpExcluded })
@@ -2830,11 +2830,11 @@ selfEmpRows.push(r)
     selfEmpExcluded: selfEmpExcluded,
   })
   for (const one of facts.reasons) {
-reasons.push(one)
-}
+    reasons.push(one)
+  }
   for (const one of facts.missingSlots) {
-missingSlots.push(one)
-}
+    missingSlots.push(one)
+  }
   let blockedBy = facts.blockedBy
 
   const verdicts = verdictReasons({
@@ -2844,18 +2844,18 @@ missingSlots.push(one)
     listExcluded: facts.listExcluded, blockedBy: blockedBy,
   })
   for (const one of verdicts.reasons) {
-reasons.push(one)
-}
+    reasons.push(one)
+  }
   const excluded = verdicts.excluded
   blockedBy = verdicts.blockedBy
 
   const manifest = gateManifest({ spec: input.spec, p: input.p, blockedBy: blockedBy })
   for (const one of manifest.reasons) {
-reasons.push(one)
-}
+    reasons.push(one)
+  }
   for (const one of manifest.missingSlots) {
-missingSlots.push(one)
-}
+    missingSlots.push(one)
+  }
   blockedBy = manifest.blockedBy
   const manifestUnknown = manifest.manifestUnknown
   const manifestNoSource = manifest.manifestNoSource
@@ -2883,17 +2883,17 @@ missingSlots.push(one)
  */
 function obstacleRank(input: ObstacleRankIn): ObstacleRankOut {
   if (input.v.verdict === REASON.excluded) {
-return RANK.excluded
-}
+    return RANK.excluded
+  }
   if (workPermitSoon({ v: input.v, profile: input.profile })) {
-return RANK.offer
-}
+    return RANK.offer
+  }
   if (input.v.blockedBy) {
-return RANK[input.v.blockedBy] ?? RANK.unknown
-}
+    return RANK[input.v.blockedBy] ?? RANK.unknown
+  }
   if (input.v.verdict === REASON.needsInfo) {
-return RANK.unknown
-}
+    return RANK.unknown
+  }
   return RANK.none
 }
 
@@ -2911,14 +2911,14 @@ return RANK.unknown
 function workPermitSoon(input: WorkPermitSoonIn): WorkPermitSoonOut {
   const pgwpExpected = input.profile.status === PERMIT.study && input.profile.canadaStudy === true
   if (!pgwpExpected || input.v.blockedBy !== BLOCKED_BY.statusInCanada) {
-return false
-}
+    return false
+  }
   if (input.profile.studyProvince == null || input.profile.studyProvince !== input.v.province) {
-return false
-}
+    return false
+  }
   if (gateOf(input.v.key, BLOCKED_BY.statusInCanada).need !== GATE_NEED.required) {
-return false
-}
+    return false
+  }
   return (gateOf(input.v.key, 'statusInCanada') as GateAsks).asks === GATE_ASK.workPermit
 }
 
@@ -2931,8 +2931,8 @@ return false
 function selfEmpExcludedIn(input: SelfEmpExcludedInIn): SelfEmpExcludedInOut {
   for (const r of input.rows) {
     if (r.factor === REQ_FACTOR.workSelfEmployed || r.factor === REQ_FACTOR.experienceExcluded) {
-return true
-}
+      return true
+    }
   }
   return false
 }
@@ -2945,11 +2945,11 @@ return true
  */
 function jobRowRank(input: JobRowRankIn): JobRowRankOut {
   if (input.row.excludedByList) {
-return JOB_ROW_RANK.excludedByList
-}
+    return JOB_ROW_RANK.excludedByList
+  }
   if (input.row.availability !== AVAIL.ok || input.row.months == null) {
-return JOB_ROW_RANK.notCollected
-}
+    return JOB_ROW_RANK.notCollected
+  }
   return JOB_ROW_RANK.ok
 }
 
@@ -2975,8 +2975,8 @@ function quoteOfOcc(input: QuoteOfOccIn): QuoteOfOccOut {
  */
 function totalExpMonths(input: TotalExpMonthsIn): TotalExpMonthsOut {
   if (input.p.expCanadaMonths == null || input.p.expForeignMonths == null) {
-return null
-}
+    return null
+  }
   return input.p.expCanadaMonths + input.p.expForeignMonths
 }
 
@@ -2996,25 +2996,25 @@ function teerScopes(input: TeerScopesIn): TeerScopesOut {
   const by = new Map<string, TeerScopeAcc>()
   for (const r of input.provReqs) {
     if (r.subject !== SUBJECT.applicant || !r.appliesTeer) {
-continue
-}
+      continue
+    }
     const teers: number[] = []
     for (const one of r.appliesTeer.split(SEP.comma)) {
       const n = Number(one.trim())
       if (Number.isInteger(n)) {
-teers.push(n)
-}
+        teers.push(n)
+      }
     }
     if (!teers.length) {
-continue
-}
+      continue
+    }
     const cur = by.get(r.stream) ?? { teers: new Set<number>(), row: r, span: 0 }
     for (const n of teers) {
-cur.teers.add(n)
-}
+      cur.teers.add(n)
+    }
     if (teers.length > cur.span) {
- cur.row = r; cur.span = teers.length 
-}
+      cur.row = r; cur.span = teers.length 
+    }
     by.set(r.stream, cur)
   }
   const out: TeerScope[] = []
@@ -3034,8 +3034,8 @@ function namedLists(input: NamedListsIn): NamedListsOut {
   const by = new Map<string, NamedList>()
   for (const o of input.occs) {
     if (o.province !== input.province || o.type !== INDEMAND) {
-continue
-}
+      continue
+    }
     const cur = by.get(o.label)
     if (cur) {
       cur.count += 1
@@ -3056,8 +3056,8 @@ function occExcludedRows(input: OccExcludedRowsIn): OccExcludedRowsOut {
   const out: TripleRow[] = []
   for (const o of input.mine) {
     if (o.type !== OCC_INELIGIBLE) {
-continue
-}
+      continue
+    }
     out.push({
       gate: GATE_OF.occupation, tier: TIER_OF.free, key: TV_OCC.excluded, state: CARD_STATE.excluded,
       params: {
@@ -3105,8 +3105,8 @@ function occListedRows(input: OccListedRowsIn): OccListedRowsOut {
 function occListNoneFor(input: OccListNoneForIn): OccListNoneForOut {
   for (const [prov, src] of Object.entries(OCC_LIST_NONE)) {
     if (prov === input.province) {
-return src
-}
+      return src
+    }
   }
   return null
 }
@@ -3137,8 +3137,8 @@ function occNoListRow(input: OccNoListRowIn): OccNoListRowOut {
   const only = lists.length === 1 ? lists[0] : null
   const labels: string[] = []
   for (const l of lists) {
-labels.push(l.label)
-}
+    labels.push(l.label)
+  }
   return {
     gate: GATE_OF.occupation, tier: TIER_OF.free, key: TV_OCC.notListed,
     state: lists.length ? CARD_STATE.info : CARD_STATE.unknown,
@@ -3177,18 +3177,18 @@ function occTeerRow(input: OccTeerRowIn): OccTeerRowOut {
   if (input.job.teer != null) {
     for (const s of scopes) {
       if (s.teers.includes(input.job.teer)) {
-continue
-}
+        continue
+      }
       outScope = s
       break
     }
   }
   const teerText: string[] = []
   if (outScope) {
-for (const n of outScope.teers) {
-teerText.push(String(n))
-}
-}
+    for (const n of outScope.teers) {
+      teerText.push(String(n))
+    }
+  }
   const coarse = input.job.pnpEligible ? TV_LABEL.coarsePass : TV_LABEL.coarseFail
   const tail = outScope
     ? `${TV_LABEL.onFileMid}${outScope.stream}${TV_LABEL.coversMid}${outScope.teers.join(SEP.comma)}`
@@ -3227,24 +3227,24 @@ function occupationRows(input: OccupationRowsIn): OccupationRowsOut {
   if (input.job.noc) {
     for (const o of input.occs) {
       if (o.noc === input.job.noc && o.province === input.job.province) {
-mine.push(o)
-}
+        mine.push(o)
+      }
     }
   }
   const listed: OccupationRow[] = []
   for (const o of mine) {
-if (o.type === INDEMAND) {
-listed.push(o)
-}
-}
+    if (o.type === INDEMAND) {
+      listed.push(o)
+    }
+  }
 
   const out: TripleRow[] = []
   for (const one of occExcludedRows({ job: input.job, mine: mine, nocName: nocName })) {
-out.push(one)
-}
+    out.push(one)
+  }
   for (const one of occListedRows({ job: input.job, listed: listed, nocName: nocName })) {
-out.push(one)
-}
+    out.push(one)
+  }
   if (!listed.length) {
     out.push(occNoListRow({ job: input.job, occs: input.occs, nocName: nocName }))
   }
@@ -3261,11 +3261,11 @@ out.push(one)
 function empReqOf(input: EmpReqOfIn): EmpReqOfOut {
   for (const r of input.reqs) {
     if (r.province !== input.province || r.subject !== SUBJECT.employer) {
-continue
-}
+      continue
+    }
     if (r.factor === input.factor) {
-return r
-}
+      return r
+    }
   }
   return null
 }
@@ -3298,8 +3298,8 @@ function empDesignationRow(input: EmpDesignationRowIn): EmpDesignationRowOut {
     }
   }
   if (!AIP_PROVINCES.has(input.job.province)) {
-return null
-}
+    return null
+  }
   if (input.company.designationMatches >= DESIGNATION_MULTI) {
     return {
       gate: GATE_OF.employer, tier: TIER_OF.free, key: TV_EMP.designatedMulti, state: CARD_STATE.info,
@@ -3376,13 +3376,13 @@ function empRevenueRow(input: EmpRevenueRowIn): EmpRevenueRowOut {
  */
 function empStaffFactRow(input: EmpStaffFactRowIn): EmpStaffFactRowOut {
   for (const i of input.ev.items) {
-if (i.factor === EMP_KEY.staff) {
-return null
-}
-}
+    if (i.factor === EMP_KEY.staff) {
+      return null
+    }
+  }
   if (input.company.facts.staffEst == null) {
-return null
-}
+    return null
+  }
   return {
     gate: GATE_OF.employer, tier: TIER_OF.free, key: TV_EMP.staffFact, state: CARD_STATE.info,
     params: {
@@ -3402,8 +3402,8 @@ return null
  */
 function empPublicSectorRow(input: EmpPublicSectorRowIn): EmpPublicSectorRowOut {
   if (input.ev.state !== EMP_STATE.public) {
-return null
-}
+    return null
+  }
   return {
     gate: GATE_OF.employer, tier: TIER_OF.free, key: TV_EMP.publicSector, state: CARD_STATE.info,
     params: { name: input.company.name },
@@ -3444,20 +3444,20 @@ function employerRows(input: EmployerRowsIn): EmployerRowsOut {
   const out: TripleRow[] = []
   const designation = empDesignationRow({ job: input.job, company: input.company })
   if (designation) {
-out.push(designation)
-}
+    out.push(designation)
+  }
   for (const one of empThresholdRows(input)) {
-out.push(one)
-}
+    out.push(one)
+  }
   out.push(empRevenueRow(input))
   const staff = empStaffFactRow({ job: input.job, company: input.company, ev: input.ev })
   if (staff) {
-out.push(staff)
-}
+    out.push(staff)
+  }
   const publicSector = empPublicSectorRow({ company: input.company, ev: input.ev })
   if (publicSector) {
-out.push(publicSector)
-}
+    out.push(publicSector)
+  }
   out.push(empNextStepRow({ job: input.job, company: input.company }))
   return out
 }
@@ -3502,8 +3502,8 @@ function personRows(input: PersonRowsIn): PersonRowsOut {
   const out: TripleRow[] = []
   for (const r of evaluateRequirements({ reqs: input.provReqs, profile: rp })) {
     if (r.subject !== SUBJECT.applicant) {
-continue
-}
+      continue
+    }
     const slots = r.verdict === ITEM.unknown ? SLOTS_OF_FACTOR[r.factor] : undefined
     out.push({
       gate: GATE_OF.person, tier: TIER_OF.paid, key: `${TV_PERSON_PREFIX}${r.factor}`,
@@ -3565,14 +3565,14 @@ function crossProvinceRows(input: CrossProvinceRowsIn): CrossProvinceRowsOut {
   }
   for (const prov of input.profile.targetProvinces) {
     if (prov === input.job.province) {
-continue
-}
+      continue
+    }
     const hits: OccupationRow[] = []
     if (input.job.noc) {
       for (const o of input.occs) {
         if (o.noc === input.job.noc && o.province === prov && o.type === INDEMAND) {
-hits.push(o)
-}
+          hits.push(o)
+        }
       }
     }
     if (!hits.length) {
@@ -3621,22 +3621,22 @@ hits.push(o)
 function compareRows(input: CompareRowsIn): CompareRowsOut {
   const targets = new Set<string>()
   for (const p of input.profile.targetProvinces) {
-if (p !== input.job.province) {
-targets.add(p)
-}
-}
+    if (p !== input.job.province) {
+      targets.add(p)
+    }
+  }
   const aipDesignated = input.company.designation?.source === AIP_SOURCE
   const rows: TripleCompareRow[] = []
   let rank = 0
   for (const v of input.paths) {
     let role: TripleCompareRole | null = null
     if (v.key === AIP_SOURCE) {
-role = aipDesignated ? COMPARE_ROLE.aip : null
-} else if (v.province === input.job.province) {
-role = COMPARE_ROLE.current
-} else if (targets.has(v.province)) {
-role = COMPARE_ROLE.target
-}
+      role = aipDesignated ? COMPARE_ROLE.aip : null
+    } else if (v.province === input.job.province) {
+      role = COMPARE_ROLE.current
+    } else if (targets.has(v.province)) {
+      role = COMPARE_ROLE.target
+    }
     if (role) {
       rows.push({
         key: v.key, province: v.province, stream: v.stream, role: role,
@@ -3648,18 +3648,18 @@ role = COMPARE_ROLE.target
   let min: number | null = null
   for (const r of rows) {
     if (!judgeableRow({ row: r })) {
-continue
-}
+      continue
+    }
     if (min == null || (r.tier as number) < min) {
-min = r.tier as number
-}
+      min = r.tier as number
+    }
   }
   if (min != null) {
     for (const r of rows) {
-if (judgeableRow({ row: r }) && r.tier === min) {
-r.fastest = true
-}
-}
+      if (judgeableRow({ row: r }) && r.tier === min) {
+        r.fastest = true
+      }
+    }
   }
   return rows
 }
@@ -3672,11 +3672,11 @@ r.fastest = true
  */
 function judgeableRow(input: JudgeableRowIn): JudgeableRowOut {
   if (input.row.role === COMPARE_ROLE.target) {
-return false
-}
+    return false
+  }
   if (input.row.availability !== AVAIL.ok) {
-return false
-}
+    return false
+  }
   return input.row.verdict !== REASON.excluded && input.row.tier != null
 }
 
@@ -3689,17 +3689,17 @@ return false
 function myPathways(input: MyPathwaysIn): MyPathwaysOut {
   const byKey = new Map<string, PathwayVerdict>()
   for (const p of input.paths) {
-byKey.set(p.key, p)
-}
+    byKey.set(p.key, p)
+  }
   const out: MyPathway[] = []
   for (const c of input.compare) {
     if (c.role === COMPARE_ROLE.target || c.availability !== AVAIL.ok) {
-continue
-}
+      continue
+    }
     const v = byKey.get(c.key)
     if (v) {
-out.push({ c: c, v: v })
-}
+      out.push({ c: c, v: v })
+    }
   }
   return out
 }
@@ -3756,10 +3756,10 @@ function conclude(input: ConcludeIn): ConcludeOut {
  */
 function excludedRow(input: ExcludedRowIn): ExcludedRowOut {
   for (const r of input.rows) {
-if (r.key === TV_OCC.excluded) {
-return r
-}
-}
+    if (r.key === TV_OCC.excluded) {
+      return r
+    }
+  }
   return null
 }
 
@@ -3772,13 +3772,13 @@ return r
 function concludeOpen(input: ConcludeOpenIn): ConcludeOpenOut {
   const open: MyPathway[] = []
   for (const x of input.mine) {
-if (x.v.verdict === VERDICT.viable && !x.v.blockedBy) {
-open.push(x)
-}
-}
+    if (x.v.verdict === VERDICT.viable && !x.v.blockedBy) {
+      open.push(x)
+    }
+  }
   if (!open.length) {
-return null
-}
+    return null
+  }
   open.sort(byTierAsc)
   const top = open[0]
   return {
@@ -3801,21 +3801,21 @@ return null
 function concludeBlocked(input: ConcludeBlockedIn): ConcludeBlockedOut {
   const blocked: RankedBlock[] = []
   for (const x of input.mine) {
-if (x.v.blockedBy) {
-blocked.push({ x: x, cost: blockCost(x.v.blockedBy) })
-}
-}
+    if (x.v.blockedBy) {
+      blocked.push({ x: x, cost: blockCost(x.v.blockedBy) })
+    }
+  }
   if (!blocked.length) {
-return null
-}
+    return null
+  }
   blocked.sort(byCostAsc)
   const top = blocked[0].x
   let need = 0
   if (top.v.blockedBy === FACTOR.language) {
     for (const r of top.v.reasons) {
       if (r.key !== PV_KEY_LANG_GAP) {
-continue
-}
+        continue
+      }
       need = Number(r.params?.clb ?? 0)
       break
     }
@@ -3843,27 +3843,27 @@ continue
 function concludeNeedsInfo(input: ConcludeNeedsInfoIn): ConcludeNeedsInfoOut {
   const needs: MyPathway[] = []
   for (const x of input.mine) {
-if (x.v.verdict === REASON.needsInfo) {
-needs.push(x)
-}
-}
+    if (x.v.verdict === REASON.needsInfo) {
+      needs.push(x)
+    }
+  }
   if (!needs.length) {
-return null
-}
+    return null
+  }
   const seen = new Set<string>()
   const slots: string[] = []
   for (const x of needs) {
     for (const s of x.v.missingSlots ?? []) {
       if (seen.has(s)) {
-continue
-}
+        continue
+      }
       seen.add(s)
       slots.push(s)
     }
   }
   if (!slots.length) {
-return null
-}
+    return null
+  }
   return {
     kind: SUM_KIND.needsInfo, key: TV_SUM.needsInfo, pathway: needs[0].c.key,
     params: { slots: slots, route: needs[0].c.key, prov: input.job.province, count: needs.length },
@@ -3909,11 +3909,11 @@ function fastestRow(input: FastestRowIn): FastestRowOut {
   let tier: number | null = null
   for (const c of input.compare) {
     if (!c.fastest) {
-continue
-}
+      continue
+    }
     if (!keys.length) {
-tier = c.tier
-}
+      tier = c.tier
+    }
     keys.push(c.key)
   }
   const tied = keys.length > 1
@@ -3943,13 +3943,13 @@ function notCollectedRow(input: NotCollectedRowIn): NotCollectedRowOut {
   const routes: string[] = []
   for (const c of input.compare) {
     if (c.role === COMPARE_ROLE.target || c.availability === AVAIL.ok) {
-continue
-}
+      continue
+    }
     routes.push(c.key)
   }
   if (!routes.length) {
-return null
-}
+    return null
+  }
   return {
     gate: GATE_OF.person, tier: TIER_OF.free, key: TV_YOU.notCollected, state: CARD_STATE.unknown,
     params: { routes: routes, prov: input.job.province },
@@ -3969,8 +3969,8 @@ function cardFollowups(input: CardFollowupsIn): CardFollowupsOut {
   for (const r of input.rows) {
     for (const s of r.followups ?? []) {
       if (seen.has(s)) {
-continue
-}
+        continue
+      }
       seen.add(s)
       out.push(s)
     }
@@ -3993,10 +3993,10 @@ export function tripleVerdict(input: TripleVerdictIn): TripleVerdictOut {
   const nowYear = input.nowYear ?? new Date().getFullYear()
   const provReqs: ReqRow[] = []
   for (const r of input.data.requirements) {
-if (r.province === input.job.province) {
-provReqs.push(r)
-}
-}
+    if (r.province === input.job.province) {
+      provReqs.push(r)
+    }
+  }
   const emp = employerVerdict({
     facts: input.company.facts, province: input.job.province,
     reqs: input.data.requirements, nowYear: nowYear,
@@ -4010,8 +4010,8 @@ provReqs.push(r)
   for (const one of employerRows({
     job: input.job, company: input.company, ev: emp, reqs: input.data.requirements,
   })) {
-rows.push(one)
-}
+    rows.push(one)
+  }
   for (const one of personRows({ job: input.job, profile: input.profile, provReqs: provReqs })) {
     rows.push(one)
   }
@@ -4019,8 +4019,8 @@ rows.push(one)
   for (const one of crossProvinceRows({
     job: input.job, profile: input.profile, occs: input.data.occupations,
   })) {
-rows.push(one)
-}
+    rows.push(one)
+  }
 
   const compare = compareRows({
     job: input.job, company: input.company, profile: input.profile, paths: paths,
@@ -4039,8 +4039,8 @@ rows.push(one)
   }
   const notCollected = notCollectedRow({ job: input.job, compare: compare })
   if (notCollected) {
-rows.push(notCollected)
-}
+    rows.push(notCollected)
+  }
 
   return {
     jobId: input.job.id, conclusion: conclusion,
@@ -4062,8 +4062,8 @@ rows.push(notCollected)
  */
 function answerNum(input: AnswerNumIn): AnswerNumOut {
   if (input.v == null) {
-return null
-}
+    return null
+  }
   const n = Number(input.v)
   return Number.isFinite(n) ? n : null
 }
@@ -4096,8 +4096,8 @@ function tripleJobOf(input: TripleJobOfIn): TripleJobOfOut {
 function employerFactsOf(input: EmployerFactsOfIn): EmployerFactsOfOut {
   const f = input.row
   if (!f) {
-return { foundedYear: null, registryStatus: null, staffEst: null, staffEstSrc: null, sector: null }
-}
+    return { foundedYear: null, registryStatus: null, staffEst: null, staffEstSrc: null, sector: null }
+  }
   return {
     foundedYear: numOrNull(f.founded_year),
     registryStatus: text(f.registry_status),
@@ -4118,17 +4118,17 @@ return { foundedYear: null, registryStatus: null, staffEst: null, staffEstSrc: n
  */
 function lmiaNocsOf(input: LmiaNocsOfIn): LmiaNocsOfOut {
   if (!input.raw) {
-return null
-}
+    return null
+  }
   const dict = parseNocDict({ text: input.raw })
   if (!dict) {
-return null
-}
+    return null
+  }
   const out: Record<string, number> = {}
   for (const [k, v] of Object.entries(dict)) {
     if (NOC_CODE.test(k) && Number(v) > 0) {
-out[k] = Number(v)
-}
+      out[k] = Number(v)
+    }
   }
   return out
 }
@@ -4252,10 +4252,10 @@ function provinceOf(input: ProvinceOfIn): ProvinceOfOut {
 function permitOf(input: PermitOfIn): PermitOfOut {
   const s = String(input.v ?? '')
   for (const k of PERMIT_KINDS) {
-if (k === s) {
-return k
-}
-}
+    if (k === s) {
+      return k
+    }
+  }
   return null
 }
 
@@ -4268,12 +4268,12 @@ return k
 function firstNoc(input: FirstNocIn): FirstNocOut {
   const fromProfile = input.up.nocCodes
   if (Array.isArray(fromProfile) && fromProfile.length) {
-return String(fromProfile[0])
-}
+    return String(fromProfile[0])
+  }
   const fromAnswers = input.answers.nocs
   if (Array.isArray(fromAnswers) && fromAnswers.length) {
-return String(fromAnswers[0])
-}
+    return String(fromAnswers[0])
+  }
   return answerText({ v: input.answers.noc })
 }
 
@@ -4291,8 +4291,8 @@ function targetProvincesOf(input: TargetProvincesOfIn): TargetProvincesOfOut {
     : Array.isArray(fromAnswers) ? fromAnswers : []
   const out: string[] = []
   for (const p of list) {
-out.push(String(p))
-}
+    out.push(String(p))
+  }
   return out
 }
 
@@ -4342,8 +4342,8 @@ export async function buildTripleWire(input: BuildTripleWireIn): BuildTripleWire
   }
   const found = await oneRow({ db: input.db, sql: SQL.TRIPLE_WIRE_JOB, params: [input.id] })
   if (!found) {
-return { error: WIRE_ERR.notFound, status: HTTP.notFound }
-}
+    return { error: WIRE_ERR.notFound, status: HTTP.notFound }
+  }
 
   const job = tripleJobOf({ row: found })
   const company = await tripleCompanyOf({
@@ -4409,13 +4409,13 @@ async function tripleCompanyOf(input: TripleCompanyOfIn): TripleCompanyOfOut {
  */
 function designatedRow(input: DesignatedRowIn): DesignatedRowOut {
   if (!input.hit) {
-return null
-}
+    return null
+  }
   for (const row of input.rows) {
-if (row === input.hit) {
-return row
-}
-}
+    if (row === input.hit) {
+      return row
+    }
+  }
   return null
 }
 
@@ -4493,8 +4493,8 @@ export function casePages(): CasePagesOut {
   for (const c of CASES) {
     const spec = profiles[c.id]
     if (!c.page || !spec) {
-continue
-}
+      continue
+    }
     out[c.page] = { caseId: c.id, askedKey: spec.askedKey, profile: spec.profile }
   }
   return out
@@ -4516,14 +4516,14 @@ continue
 export async function caseAnswer(input: CaseAnswerIn): CaseAnswerOut {
   const spec = casePages()[input.slug]
   if (!spec) {
-return null
-}
+    return null
+  }
 
   const byProv = await provCounts({ db: input.db, noc: spec.profile.noc ?? '' })
   const openings: Record<string, OpeningCount> = {}
   for (const r of byProv) {
-openings[r.province] = { n: r.n, t: r.t }
-}
+    openings[r.province] = { n: r.n, t: r.t }
+  }
 
   const all = pathVerdict({ profile: spec.profile, data: input.data })
   const rest: PathwayVerdict[] = []
@@ -4531,28 +4531,28 @@ openings[r.province] = { n: r.n, t: r.t }
   let asked: PathwayVerdict | null = null
   for (const v of all) {
     if (v.key === spec.askedKey) {
-asked = v
-}
+      asked = v
+    }
     if (v.verdict === REASON.excluded) {
-excluded.push(v)
-} else if (v.key !== spec.askedKey) {
-rest.push(v)
-}
+      excluded.push(v)
+    } else if (v.key !== spec.askedKey) {
+      rest.push(v)
+    }
   }
 
   const tiers: CaseTier[] = []
   for (const t of CASE_TIERS) {
     const rows = tierRows({ rest: rest, tier: t, openings: openings })
     if (rows.length) {
-tiers.push({ tier: t, rows: rows })
-}
+      tiers.push({ tier: t, rows: rows })
+    }
   }
 
   const trainable = trainableRows({ rows: byProv })
   let trainableTotal = 0
   for (const x of trainable) {
-trainableTotal += x.n
-}
+    trainableTotal += x.n
+  }
 
   return {
     asked: asked, tiers: tiers, excluded: excluded,
@@ -4599,15 +4599,15 @@ function tierRows(input: TierRowsIn): TierRowsOut {
   const ranked: RankedPathway[] = []
   for (const v of input.rest) {
     if (v.tier !== input.tier) {
-continue
-}
+      continue
+    }
     ranked.push({ v: v, n: input.openings[v.province]?.n ?? NO_PROVINCE_RANK })
   }
   ranked.sort(byOpeningsDesc)
   const out: PathwayVerdict[] = []
   for (const x of ranked) {
-out.push(x.v)
-}
+    out.push(x.v)
+  }
   return out
 }
 
@@ -4622,10 +4622,10 @@ out.push(x.v)
 function trainableRows(input: TrainableRowsIn): TrainableRowsOut {
   const out: TrainableRow[] = []
   for (const r of input.rows) {
-if (r.t > 0) {
-out.push({ province: r.province, n: r.t })
-}
-}
+    if (r.t > 0) {
+      out.push({ province: r.province, n: r.t })
+    }
+  }
   out.sort(byCountDesc)
   return out
 }
@@ -4650,15 +4650,15 @@ async function opsByProvince(input: OpsByProvinceIn): OpsByProvinceOut {
     const prov = text(r.province)
     const metric = text(r.metric)
     if (value == null || !prov) {
-continue
-}
+      continue
+    }
     const cur = out[prov] ?? {}
     out[prov] = cur
     applyOpsRow({ facts: cur, metric: metric, value: value })
     applyOpsPeriod({ facts: cur, metric: metric, period: text(r.period) || text(r.as_of) || '' })
     if (!cur.url) {
-cur.url = text(r.url)
-}
+      cur.url = text(r.url)
+    }
   }
   return out
 }
@@ -4674,18 +4674,18 @@ cur.url = text(r.url)
 function applyOpsRow(input: ApplyOpsRowIn): ApplyOpsRowOut {
   const f = input.facts
   if (input.metric === OPS_METRIC.allocation) {
-f.allocation = input.value
-} else if (input.metric === OPS_METRIC.nominated) {
-f.nominated = input.value
-} else if (input.metric === OPS_METRIC.refused) {
-f.refused = input.value
-} else if (input.metric === OPS_METRIC.invited) {
-f.invited = input.value
-} else if (input.metric === OPS_METRIC.received) {
-f.received = input.value
-} else if (input.metric === OPS_METRIC.poolTotal) {
-f.poolTotal = input.value
-}
+    f.allocation = input.value
+  } else if (input.metric === OPS_METRIC.nominated) {
+    f.nominated = input.value
+  } else if (input.metric === OPS_METRIC.refused) {
+    f.refused = input.value
+  } else if (input.metric === OPS_METRIC.invited) {
+    f.invited = input.value
+  } else if (input.metric === OPS_METRIC.received) {
+    f.received = input.value
+  } else if (input.metric === OPS_METRIC.poolTotal) {
+    f.poolTotal = input.value
+  }
 }
 
 /**
@@ -4701,15 +4701,15 @@ f.poolTotal = input.value
 function applyOpsPeriod(input: ApplyOpsPeriodIn): ApplyOpsPeriodOut {
   const f = input.facts
   if (!input.period) {
-return
-}
+    return
+  }
   if (input.metric === OPS_METRIC.poolTotal) {
-f.poolPeriod = input.period
-} else if (input.metric === OPS_METRIC.allocation) {
-f.allocPeriod = f.allocPeriod || input.period
-} else {
-f.ytdPeriod = f.ytdPeriod || input.period
-}
+    f.poolPeriod = input.period
+  } else if (input.metric === OPS_METRIC.allocation) {
+    f.allocPeriod = f.allocPeriod || input.period
+  } else {
+    f.ytdPeriod = f.ytdPeriod || input.period
+  }
 }
 
 /**
@@ -4741,8 +4741,8 @@ export function pathVerdict(input: PathVerdictIn): PathVerdictOut {
   ranked.sort(byObstacleThenTier)
   const out: PathwayVerdict[] = []
   for (const one of ranked) {
-out.push(one.v)
-}
+    out.push(one.v)
+  }
   return out
 }
 
@@ -4787,16 +4787,16 @@ export function jobPathways(input: JobPathwaysIn): JobPathwaysOut {
     if (input.noc) {
       for (const o of input.data.occupations) {
         if (o.province !== spec.reqProvince || o.noc !== input.noc) {
-continue
-}
+          continue
+        }
         if (o.type === OCC_INELIGIBLE
           && (!o.appliesTo
             || o.appliesTo.toLowerCase().includes(APPLIES_OFFER) === EMPLOYMENT_OFFER_STREAM.test(spec.stream))) {
           excludedByList = true
         }
         if (o.type === INDEMAND) {
-listedIn = true
-}
+          listedIn = true
+        }
       }
       const required = spec.listRequired
       if (required) {
@@ -4804,19 +4804,19 @@ listedIn = true
         let onList = false
         for (const o of input.data.occupations) {
           if (o.province !== required.province || o.type !== INDEMAND) {
-continue
-}
+            continue
+          }
           if (!required.streamRe.test(o.stream)) {
-continue
-}
+            continue
+          }
           listed += 1
           if (o.noc === input.noc) {
-onList = true
-}
+            onList = true
+          }
         }
         if (listed && !onList) {
-excludedByList = true
-}
+          excludedByList = true
+        }
       }
     }
     const gate = rows.length
@@ -4834,8 +4834,8 @@ excludedByList = true
   ranked.sort(byListRankThenMonths)
   const out: JobPathwayRow[] = []
   for (const one of ranked) {
-out.push(one.row)
-}
+    out.push(one.row)
+  }
   return out
 }
 
@@ -4847,8 +4847,8 @@ out.push(one.row)
  */
 function verdictRank(input: VerdictRankIn): VerdictRankOut {
   if (input.v == null) {
-return VERDICT_RANK.absent
-}
+    return VERDICT_RANK.absent
+  }
   if (input.v.verdict === VERDICT.viable) {
     return input.v.blockedBy ? VERDICT_RANK.blocked : VERDICT_RANK.open
   }
@@ -4870,8 +4870,8 @@ function gotWorse(input: GotWorseIn): GotWorseOut {
   const rankBefore = verdictRank({ v: input.before })
   const rankAfter = verdictRank({ v: input.after })
   if (rankAfter !== rankBefore) {
-return rankAfter > rankBefore
-}
+    return rankAfter > rankBefore
+  }
   return (input.after?.tier ?? SINK.tier) > (input.before.tier ?? SINK.tier)
 }
 
@@ -4886,11 +4886,11 @@ function pickOnLangRow(input: PickOnLangRowIn): PickOnLangRowOut {
   for (const f of input.rows) {
     const th = maxClbIn({ labels: [f.label] })
     if (th == null || th > input.clb) {
-continue
-}
+      continue
+    }
     if (best == null || th > best.th) {
-best = { f: f, th: th }
-}
+      best = { f: f, th: th }
+    }
   }
   return best ? best.f : null
 }
@@ -4911,23 +4911,23 @@ function teerDowngradeLever(input: TeerDowngradeLeverIn): TeerDowngradeLeverOut 
     const after = pathVerdict({ profile: profileWithNoc({ p: input.profile, noc: downNoc, teer: TEER_LOWEST }), data: input.data })
     const byKey = new Map<string, PathwayVerdict>()
     for (const v of after) {
-byKey.set(v.key, v)
-}
+      byKey.set(v.key, v)
+    }
     const affected: string[] = []
     for (const v of before) {
       if (v.verdict === REASON.excluded) {
-continue
-}
+        continue
+      }
       if (!gotWorse({ before: v, after: byKey.get(v.key) })) {
-continue
-}
+        continue
+      }
       affected.push(v.key)
     }
     const teerRows: ReqRow[] = []
     for (const r of input.data.requirements) {
       if (r.factor !== FACTOR.experience || !r.appliesTeer || teerHit({ r: r, teer: TEER_LOWEST })) {
-continue
-}
+        continue
+      }
       teerRows.push(r)
     }
     if (affected.length) {
@@ -4964,8 +4964,8 @@ function clbBoostLever(input: ClbBoostLeverIn): ClbBoostLeverOut {
     const onRows: ScoreRow[] = []
     for (const f of input.data.scoreFactors) {
       if (f.province === PROV.ON && f.factor === FACTOR.language && f.kind === FACTOR_ROW) {
-onRows.push(f)
-}
+        onRows.push(f)
+      }
     }
     const onFrom = pickOnLangRow({ rows: onRows, clb: input.profile.clb })
     const onTo = pickOnLangRow({ rows: onRows, clb: target })
@@ -4977,23 +4977,23 @@ onRows.push(f)
     }
     let mbHead: ScoreRow | null = null
     for (const f of input.data.scoreFactors) {
-if (f.province === PROV.MB) {
- mbHead = f; break 
-}
-}
+      if (f.province === PROV.MB) {
+        mbHead = f; break 
+      }
+    }
     if (mbHead && input.profile.age != null && input.profile.edu != null) {
       let need = 0
       for (const r of input.data.requirements) {
         if (r.province !== PROV.MB || r.factor !== FACTOR.experience) {
-continue
-}
+          continue
+        }
         if (!MB_SWM_STREAM.test(r.stream)) {
-continue
-}
+          continue
+        }
         const m = monthsOfReq({ r: r }) ?? 0
         if (m > need) {
-need = m
-}
+          need = m
+        }
       }
       const work = Math.max(input.profile.expCanadaMonths ?? 0, need)
       const from = estimateMbEoi({
@@ -5012,8 +5012,8 @@ need = m
     if (gains.length) {
       const parts: string[] = []
       for (const g of gains) {
-parts.push(`${g.province}${SEP.plus}${g.delta}`)
-}
+        parts.push(`${g.province}${SEP.plus}${g.delta}`)
+      }
       levers.push({
         key: LEVER.clbBoost,
         text: `${PV_TEXT.clbFromHead}${input.profile.clb}${PV_TEXT.clbToMid}${target}${SEP.colon}${parts.join(SEP.enumComma)}`,
@@ -5073,23 +5073,23 @@ export async function getVerdictData(): GetVerdictDataOut {
 export async function getDesignatedEmployers(input: GetDesignatedEmployersIn): GetDesignatedEmployersOut {
   const prov = (input.province || '').trim()
   if (!prov) {
-return []
-}
+    return []
+  }
   const hit = CACHE.byProvince.get(prov)
   if (hit && Date.now() - hit.at <= TTL) {
-return hit.rows
-}
+    return hit.rows
+  }
 
   const db = await getDb()
   const res = await db.query(SQL.DESIGNATED_BY_PROV, [prov]).catch(nullResult)
   if (!res) {
-return []
-}
+    return []
+  }
 
   const rows: DesignatedEmployerRow[] = []
   for (const d of res.rows) {
-rows.push(directoryRow({ row: d }))
-}
+    rows.push(directoryRow({ row: d }))
+  }
   CACHE.byProvince.set(prov, { at: Date.now(), rows })
   return rows
 }
