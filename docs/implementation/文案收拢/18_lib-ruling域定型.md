@@ -152,7 +152,7 @@ const m = /^input.teer-([\d-]+)$/.exec(...) // 被改坏的
 `eslint-disable-next-line local/function-length -- …` 与理由(12 把工具的 `execute` 各自闭包着
 库连接与收件箱,拆开就得把这两样显式传一大串)。
 
-### 4.2c 🔴 拆的过程中撞见的**可疑判定逻辑**(还没动,留给下一批)
+### 4.2c 🔴 拆的过程中撞见的**可疑判定逻辑**(还没动)—— **仍未查,见 [19 号 §5.4](19_lib-gauge与lib-points域定型.md)**
 
 `evaluateOne` 里算出来的 `manifestGap`(「有这道闸、他明确答了没有」)**一次都没进裁决** ——
 底下跟着一行 `void manifestGap`。`verdict` 只看 `manifestUnknown`,`availability` 只看 `manifestNoSource`,
@@ -198,7 +198,7 @@ const m = /^input.teer-([\d-]+)$/.exec(...) // 被改坏的
 🔴 **只管形状,不管行为**:`rules` / `score` / `i18n` 的函数不许复制 —— 实测消费者
 `score` 14 个文件、`rules` 9 个,复制一份等于给全站口径开个岔。判据见 CLAUDE.md 同日补的那条。
 
-### 4.2f `gateManifest` 该并回 `pathways`(收口时一起做)
+### 4.2f `gateManifest` 该并回 `pathways`(收口时一起做)—— **仍未做,见 [19 号 §5.3](19_lib-gauge与lib-points域定型.md)**
 
 实测消费者:`pathways` 2 个文件 + `i18n` 1 + `verdict` 1。删掉将死的 `verdict` 之后,
 36 行的它只剩 `pathways` 一个真消费者 —— 而 `gates` 本来就是通道声明里的一个字段。
