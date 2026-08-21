@@ -21,7 +21,7 @@ import { streamSimple } from '@earendil-works/pi-ai/api/openai-completions'
 import type { Model } from '@earendil-works/pi-ai'
 import { acceptNoc, passThroughMessages } from '../agent/server'
 import { loadVerdictTables, pathVerdict } from '../ruling/server'
-import { CONSULT_STEP, STEP } from '../i18n'
+import { CONSULT_STEP, CONSULT_STEP_OCC } from '../i18n'
 import { cleanProvs } from '../location'
 import { chatError, CHAT_CODE } from '../error'
 import { CHAT_FN, CHAT_LOG, GATE_LOG, log } from '../log'
@@ -1142,7 +1142,7 @@ function makeToolGates(input: MakeToolGatesIn): MakeToolGatesOut {
  *   · 每支 `exec*` 的两个参数是 pi 定死的(按位置传 toolCallId、args),第一位我们用不上;
  *   · `step` 的轨迹只在这一步**真的开始打了**才发 —— 采信没过就不该让用户看到「正在查」;
  *     入参是**工具名**,见客一行按 `run.lang` 从 `CONSULT_STEP` 取(轨迹是给人看的字,归 lib/i18n);
- *     `nocOf` 采信成功那一拍额外发 `STEP.occ(职业名)` —— 那一刻职业名已在手,是最有信息量的一条;
+ *     `nocOf` 采信成功那一拍额外发 `CONSULT_STEP_OCC(职业名)` —— 那一刻职业名已在手,是最有信息量的一条;
  *   · 带职业码的工具(jobs/coverage/thresholds/ee/claims)先过 `nocOf` 采信,拿不到回「先去搜」;
  *     带省码的(draws/ops)先过 `provOf`,ops 不收 FED(联邦处理时长本站未收录);
  *     program 与 grid 由 schema 的字面量联合收窄,进来就不必再采信。
@@ -1174,7 +1174,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
       const { rows } = await run.db.query(SQL.NOC_TITLE_TEER, [ok])
       box.title = String(rows[0]?.title ?? '')
       box.teer = rows[0]?.teer == null ? null : Number(rows[0].teer)
-      run.onStep?.(STEP[run.lang].occ(box.title || ok))
+      run.onStep?.(CONSULT_STEP_OCC[run.lang](box.title || ok))
     }
     return box.noc
   }

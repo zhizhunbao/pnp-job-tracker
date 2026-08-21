@@ -2,8 +2,13 @@
 // 真人 33102 档案锚定案例见 docs/design/一键三合一判定-20260809.md §2(找工中/CLB 6/PGWP 剩 18 个月/目标省 BC)。
 import { describe, expect, it } from 'vitest'
 import { pickExamples, profileMemories, exampleKind, type ChatProfile } from '@/app/(frontend)/chat/chatExamples'
-import { literalNoc } from '@/lib/chat/slots'
 import { makeT } from '@/lib/i18n'
+
+// literalNoc 原是 lib/chat/slots 的正则(2026-08-21 旧域整删,测试本地内联):
+// 「NOC 字样打头的五位码」—— 模板句必须带 NOC 前缀,裸码开头曾被抽槽模型抄错(生产实撞 31102)。
+// 新链没有抽槽层,但这条守的是**前端模板的形状**,与链无关,留着。
+const NOC_IN_TEXT = /(?:^|[^0-9])NOC\s*[:：#]?\s*(\d{5})(?![0-9])/i
+const literalNoc = (text: string): string | null => NOC_IN_TEXT.exec(text || '')?.[1] ?? null
 
 const en = makeT('en')
 const zh = makeT('zh')

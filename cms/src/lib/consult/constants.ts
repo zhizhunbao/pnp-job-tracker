@@ -102,8 +102,13 @@ export const MAX_TOKENS = 1200
  *      就是自己上一轮的僵尸堵的。**预算越紧、掐得越勤,队列被自己污染得越狠**;
  *      治本是让最坏一趟跑得进预算(补对口工具、压 MAX_TOKENS),不是把这个数改小。
  *   ② 同一条问题局域网直连 4.6s、经隧道约 +1.7s/轮 —— 隧道慢是固定开销,不是抖动。
+ *
+ * 🔴 2026-08-21 从 45s 提到 120s(Frank 拍板「超时加到 120s,不就没有超时问题了吗」):
+ * 评测第四跑(glm 链)实测中位 12.4s,但偶发长跑 40-70s;45s 预算下一次超时的僵尸
+ * 会把后面几发连坐成 busy(级联实拍:R09 超时 → R10 排队 40s → R11/R12 连环 busy)。
+ * 120s 让长尾「慢但答上」,不再产僵尸 —— 前端等待态有轨迹与秒数陪着。
  */
-export const TIMEOUT_MS = Number(process.env.CHAT_PI_TIMEOUT_MS ?? 45_000)
+export const TIMEOUT_MS = Number(process.env.CHAT_PI_TIMEOUT_MS ?? 120_000)
 
 /**
  * 直接塞进请求体的采样参数。

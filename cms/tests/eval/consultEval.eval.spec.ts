@@ -10,8 +10,7 @@
  *   · expectErr(tooShort/noOcc)是老链编排闸的产物,新链把「要不要职业」交给模型分 ——
  *     这类期望只记录不计分(新链答上了算赢,不算「没按预期报错」);
  *   · hard 档一律**记录不拦**:这是新链的首轮基线,没有「已收的账」可回归;
- *   · residual 借老链的 sentenceBlockers 当第二双眼(它只读答复与事实,不依赖编排),
- *     P5 删老链时随 chatEval 一起收敛。
+ *   · residual(老链逐句门当第二眼)已随 lib/chat 删除暂停;新链逐句门批補上后接回。
  *
  * 串行 + 单文件:别并发打爆朋友的服务与生产池(prod-pool-wedge 教训)。
  */
@@ -23,8 +22,6 @@ import { getDb } from '@/lib/db/database'
 import { consult } from '@/lib/consult/server'
 import type { Fact as ConsultFact } from '@/lib/consult'
 import { isChatError } from '@/lib/error'
-import { sentenceBlockers } from '@/lib/chat/stream'
-import type { Slots } from '@/lib/chat/types'
 import { checkCards, type CardHit } from '../cases/diseaseCards'
 
 type EvalCase = {
@@ -65,10 +62,11 @@ async function runTurn(db: any, text: string, lang: 'zh' | 'en' | 'ko', history:
   try {
     out = await consult({ db, text, lang, profile: {}, history })
   } catch (e) {
-    err = e instanceof Error && isChatError<Slots>(e) ? e.code : `throw:${String((e as Error)?.message).slice(0, 80)}`
+    err = e instanceof Error && isChatError<null>(e) ? e.code : `throw:${String((e as Error)?.message).slice(0, 80)}`
   }
-  const slots: Slots = { noc: out.noc, occText: '', provs: [], expMonths: null, status: null, claims: [] }
-  const residual = err ? [] : sentenceBlockers(out.answer, out.facts, lang, text, slots)
+  // 逐句门(sentenceBlockers)2026-08-21 随 lib/chat 整域删除 —— K01(归因残留)暂无仪器,
+  // 新链自建逐句门的批补上后再接回;residual 先恒空,报告里该列自然归零。
+  const residual: string[] = []
   const cardHits = err
     ? []
     : checkCards({

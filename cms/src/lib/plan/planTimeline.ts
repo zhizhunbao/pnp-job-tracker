@@ -28,7 +28,122 @@
  *  ④ **只出结构化 Plan,不生成自然语言。** 措辞归上层(渲染/LLM 复述),计算归这里。
  *     所有 basis/why 字段是**算术的说明**(「12 个月 − 已有 0 个月」),不是给用户读的成品文案。
  */
-import type { Availability, DrawsResult, Evidence, OpsResult, ProvThresholds, ThresholdRow, ThresholdsResult } from '../chat'
+// ── 输入形状:本域自声明(2026-08-21,lib/chat 整域删除时自 chat/tools.ts 原样搬入)──
+// 这些是三个 lookup 返回值的形状;lookup 本体已随旧链删除,新链的 lookup_plan 适配批
+// 会按同样的形状喂 buildPlan(喂错一张表它照样算得出数 —— 形状即契约,别顺手精简字段)。
+
+/** 四态,一步都不许合并(not-published=官方的问题;not-collected=本站的问题)。 */
+export type Availability = 'ok' | 'not-published' | 'not-collected' | 'not-applicable'
+
+/** 出处。fetched 是本站抓取日,不是「今天」。 */
+export type Evidence = {
+  url: string
+  fetched: string
+  label?: string
+  section?: string
+  effective?: string
+}
+
+/** 一条门槛行的判定结果(判定出自门槛引擎,本层不改)。 */
+export type ThresholdRow = {
+  factor: string
+  subject: 'applicant' | 'employer'
+  /** 官方通道原名。一个省的规则可能来自多条互不等价的通道,消费端必须据此避免把门槛硬拼成一条路。 */
+  stream?: string
+  /** 阈值口径。basis='employerTenure' 量的是「在这家雇主连续全职多久」,用错话术句子本身就是假的。 */
+  basis?: string
+  verdict: 'pass' | 'fail' | 'unknown'
+  need: number | null
+  needLow: number | null
+  have: number | null
+  short: number | null
+  unit: string
+  /** 分档因素的完整档位,每档挂自己那一行的官方原文。 */
+  tiers?: { area: string; value: number | null; evidence: Evidence }[]
+  evidence: Evidence
+}
+
+/** 一个省的门槛判定。 */
+export type ProvThresholds = {
+  province: string
+  availability: Availability
+  rows: ThresholdRow[]
+  note?: string
+}
+
+/** 门槛查询结果。 */
+export type ThresholdsResult = {
+  noc: string
+  title: string
+  teer: number | null
+  provinces: ProvThresholds[]
+}
+
+/** 一轮抽选。 */
+export type DrawRow = {
+  province: string
+  drawDate: string
+  stream: string
+  score: number | null
+  scale: string
+  invitations: number | null
+  evidence: Evidence
+}
+
+/** 本站收录的抽选窗口(计时终点用 to,不是「今天」)。 */
+export type DrawWindow = { from: string; to: string; rounds: number }
+
+/** 一类轮次的小结(空数组与「这类轮次停了」是两件事)。 */
+export type DrawStreamStat = {
+  key: string
+  stream: string
+  scale: string
+  rounds: number
+  lastDrawDate: string
+  since: string
+  sinceIsWindowStart: boolean
+  monthsSince: number | null
+  scoreLow: number | null
+  scoreHigh: number | null
+  availability: Availability
+  note: string
+  evidence: Evidence
+}
+
+/** 抽选查询结果。 */
+export type DrawsResult = {
+  province: string
+  availability: Availability
+  rows: DrawRow[]
+  note?: string
+  scale?: string
+  window?: DrawWindow
+  streams?: DrawStreamStat[]
+}
+
+/** 一条官方运营统计。value=null 是官方的隐私抑制/不适用,不是 0。 */
+export type OpsMetric = {
+  key: string
+  scope: string
+  scopeKind: string
+  streamKey: string
+  label: string
+  value: number | null
+  valueText: string
+  unit: string
+  asOf: string
+  period: string
+  evidence: Evidence
+}
+
+/** 运营统计查询结果。 */
+export type OpsResult = {
+  province: string
+  availability: Availability
+  officialUrl: string
+  note: string
+  metrics: OpsMetric[]
+}
 
 // ── 换算常量(只此一处)──────────────────────────────────────────────────────
 // 月长取 365.25/12 = 30.4375:周 → 月、天 → 月都走它。四舍五入到 0.1 个月,

@@ -87,9 +87,8 @@ export { legalDocs, type LegalDoc } from './legal'
 export { officialLabel, officialLabels, gateLabels, askLabels } from './report'
 // ── 官方资源导航(name/url 是身份、use 是三语文案,整条住一起,见 site.ts)──
 export { RES, type Res } from './site'
-// ── 对话与顾问的见客文案(整块,不走 t();编排逻辑与检测器仍在 lib/chat)──
+// ── 对话轨迹的见客文案(整块,不走 t();消费者是 lib/consult 的 step)──
+// 旧链的 15 个文案块(FOLLOWUPS/LBL/STEP…)2026-08-21 随 lib/chat 整域一起删了。
 export {
-  ASK_OCC, AVAIL_SENTENCE, CLAIM_LEAD, CONSULT_STEP, FED_FACTOR, FOLLOWUPS, LBL, META_ANSWER, MONEY_WHY,
-  OCC_PICK, PROMISE_WHY, SAVED_LBL, SAVED_TAIL, SHEET_HEAD, STEP, USAGE_ASK, USAGE_WHAT,
-  type LabelDict,
+  CONSULT_STEP, CONSULT_STEP_OCC,
 } from './chat'
