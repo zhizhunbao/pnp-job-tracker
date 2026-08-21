@@ -14,8 +14,8 @@
 //     npx vitest run tests/int/triLangProbe.int.spec.ts
 import { describe, expect, it } from 'vitest'
 import { getDb } from '@/lib/db/database'
-import { consult } from '@/lib/consult/functions'
-import type { Profile } from '@/lib/consult/types'
+import { consult } from '@/lib/consult/server'
+import type { Profile } from '@/lib/consult'
 
 const LIVE = Boolean(process.env.CHAT_LLM_BASE)
 const MODEL = process.env.CHAT_LLM_MODEL ?? '(默认)'

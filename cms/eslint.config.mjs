@@ -10,7 +10,7 @@ import nextCoreWebVitals from 'eslint-config-next/core-web-vitals'
 import nextTypeScript from 'eslint-config-next/typescript'
 
 // 带桶的模块(`lib/<名>/index.ts`)—— 下面那道边界闸认这几个,加新桶就加这里一行。
-const BARRELS = ['agent', 'chat', 'i18n', 'jobs', 'pathways', 'gauge', 'points', 'quiz', 'ruling', 'score', 'employers', 'plan', 'stats', 'quota', 'llm', 'resume']
+const BARRELS = ['agent', 'chat', 'consult', 'i18n', 'jobs', 'pathways', 'gauge', 'points', 'quiz', 'ruling', 'score', 'employers', 'plan', 'stats', 'quota', 'llm', 'resume']
 const ABSOLUTE = BARRELS.map((m) => `**/lib/${m}/*`)
 // jobs / score / ruling / employers / plan / quiz / stats / quota / pathways 有**两个门**(index=客户端也安全的那半、server=要连库的那半;
 // 理由见 lib/jobs/index.ts 顶上那段:混着 payload 依赖的桶会把连接池打进浏览器包)。
@@ -28,6 +28,7 @@ const ALLOW = [
   '!**/lib/quota/server', '!./quota/server', '!../quota/server',
   '!**/lib/pathways/server', '!./pathways/server', '!../pathways/server',
   '!**/lib/agent/server', '!./agent/server', '!../agent/server',
+  '!**/lib/consult/server', '!./consult/server', '!../consult/server',
 ]
 const SIBLING = BARRELS.flatMap((m) => [`./${m}/*`, `../${m}/*`])
 const barrelOnly = (group) => ({
