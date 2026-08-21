@@ -50,6 +50,8 @@ describe.skipIf(!LIVE)('追问:上一轮的内容记不记得住', () => {
       console.log(`  轮2 「${s.follow}」 → noc=${t2.noc ?? '-'} 事实${t2.facts.length} 降级=${t2.degraded}`)
       console.log(`  → ${t2.answer.slice(0, 200).replace(/\n/g, ' ⏎ ')}`)
       console.log(`  ⇒ 职业带下来了吗:${t2.noc === t1.noc && t1.noc ? '是' : '否'}`)
+      console.log('  轮2 拿到的事实:')
+      for (const f of t2.facts) console.log(`    [${f.tool}] ${f.label} = ${f.valueText}${f.availability ? ` (${f.availability})` : ''}  cited=${f.cited ?? false}`)
     }, 300_000)
   }
 })

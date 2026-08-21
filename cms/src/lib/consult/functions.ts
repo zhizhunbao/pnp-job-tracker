@@ -43,20 +43,21 @@ import { NOC_PARAMS, NOC_PROVS_PARAMS, SEARCH_PARAMS } from './schemas'
 import { byOpenDesc } from './callbacks'
 import type {
   AllowedNumbersIn, AllowedNumbersOut, AnswerLangIn, BeforeToolCallIn, BeforeToolCallOut, BlankCoverageIn,
-  BlankCoverageOut, BlankIfNumberedIn, BlankIfNumberedOut, Candidate, CiteFactsIn, CiteFactsOut, ClampAnswerOut,
-  CodesOfIn, CodesOfOut, ConsultIn, ConsultOut, ContentOfIn, ContentOfOut, CoverageFactsIn, CoverageFactsOut,
-  CoverageRow, DraftOnceIn, DraftOnceOut, ExecCoverageIn, ExecCoverageOut, ExecJobsIn, ExecJobsOut,
-  ExecSearchIn, ExecSearchOut, ExecThresholdsIn, ExecThresholdsOut, Fact, FactIn, FactOut, FactSheetIn,
-  FactSheetOut, FindEnglishUnitsOut, FindInternalWordsIn, FindInternalWordsOut, FindRawMarkupIn,
-  FindRawMarkupOut, FindRestatedOpeningIn, FindRestatedOpeningOut, FindUngroundedNumbersOut, FirstLineOfIn,
-  FirstLineOfOut, FirstPromptIn, FirstPromptOut, GateHit, GateLabelIn, GateLabelOut, HardHitsIn, HardHitsOut,
-  Inbox, IsUserTurnIn, IsUserTurnOut, JobsFactsIn, JobsFactsOut, JobsRow, LastDraftOfIn, LastDraftOfOut,
-  LookupCoverageIn, LookupCoverageOut, LookupJobsIn, LookupJobsOut, LookupThresholdsIn, LookupThresholdsOut,
-  MakeToolGatesIn, MakeToolGatesOut, MakeToolsIn, MakeToolsOut, ModelOut, NocOfIn, NocOfOut, NormNumIn,
-  NormNumOut, NumberCheckIn, OnEventIn, OnEventOut, OnTimeoutOut, RetryNoteIn, RetryNoteOut, RunGatesIn,
-  RunGatesOut, RunIn, SayIn, SayOut, SearchOccupationsIn, SearchOccupationsOut, StatusFactIn, StatusFactOut,
-  StepIn, StepOut, SystemOfOut, TakeIn, TakeOut, TextOfIn, TextOfOut, ThresholdsFactsIn, ThresholdsFactsOut,
-  ThresholdsRow, TierTextIn, TierTextOut, ToRequirementIn, ToRequirementOut, Tool, ToolArgs,
+  BlankCoverageOut, BlankIfNumberedIn, BlankIfNumberedOut, BoxForIn, BoxForOut, Candidate, CiteFactsIn,
+  CiteFactsOut, ClampAnswerOut, CodesOfIn, CodesOfOut, ConsultIn, ConsultOut, ContentOfIn, ContentOfOut,
+  CoverageFactsIn, CoverageFactsOut, CoverageRow, DraftOnceIn, DraftOnceOut, ExecCoverageIn, ExecCoverageOut,
+  ExecJobsIn, ExecJobsOut, ExecSearchIn, ExecSearchOut, ExecThresholdsIn, ExecThresholdsOut, Fact, FactIn,
+  FactOut, FactSheetIn, FactSheetOut, FindEnglishUnitsOut, FindInternalWordsIn, FindInternalWordsOut,
+  FindRawMarkupIn, FindRawMarkupOut, FindRestatedOpeningIn, FindRestatedOpeningOut, FindUngroundedNumbersOut,
+  FirstLineOfIn, FirstLineOfOut, FirstPromptIn, FirstPromptOut, GateHit, GateLabelIn, GateLabelOut, HardHitsIn,
+  HardHitsOut, Inbox, IsUserTurnIn, IsUserTurnOut, JobsFactsIn, JobsFactsOut, JobsRow, LastDraftOfIn,
+  LastDraftOfOut, LookupCoverageIn, LookupCoverageOut, LookupJobsIn, LookupJobsOut, LookupThresholdsIn,
+  LookupThresholdsOut, MakeToolGatesIn, MakeToolGatesOut, MakeToolsIn, MakeToolsOut, ModelOut, NocOfIn,
+  NocOfOut, NormNumIn, NormNumOut, NumberCheckIn, OnEventIn, OnEventOut, OnTimeoutOut, RetryNoteIn,
+  RetryNoteOut, RunGatesIn, RunGatesOut, RunIn, SayIn, SayOut, SearchOccupationsIn, SearchOccupationsOut,
+  StatusFactIn, StatusFactOut, StepIn, StepOut, SystemOfOut, TakeIn, TakeOut, TextOfIn, TextOfOut,
+  ThresholdsFactsIn, ThresholdsFactsOut, ThresholdsRow, TierTextIn, TierTextOut, ToRequirementIn,
+  ToRequirementOut, Tool, ToolArgs,
 } from './types'
 
 // =========================================================================
@@ -998,6 +999,36 @@ function hardHits(input: HardHitsIn): HardHitsOut {
 }
 
 /**
+ * 造这一趟的收件箱。
+ *
+ * 🔴 **调用方给了 `profile.noc`,就必须当场把 `title`/`teer` 一起查出来** ——
+ * 光有码是个半拉身份。`nocOf` 只在「模型挑的码与手上这个不同」时才补那两格,
+ * 而预填的码一进来就已经相等,那个分支永远不走,`teer` 一路 `null` 到底。
+ * 门槛行是按 TEER 划适用范围的(`lib/gauge` 的 `teerHit`:分 TEER 又不知道 TEER
+ * = 这一行根本挑不出来),于是整条语言要求**从事实里消失**,模型看不见它,
+ * 就写出「官方并未列出语言分数线」—— 而库里明明有「TEER 2/3/4/5 四项各 CLB 4」那一行。
+ * 「官方不公布」是需要举证的断言,不是默认值(CLAUDE.md 数据约定),这是最重的一类错。
+ *
+ * 2026-08-21 实测同一句「木匠在 BC 对语言有什么要求」:不给 profile 答「四项各 CLB 4」,
+ * 给了 `profile.noc` 答「官方并未列出」——两个都 `degraded=false`、都过了全部出口闸。
+ *
+ * @param input 库连接与调用方给的档案。
+ * @returns 收件箱;没有预填的码时 `title`/`teer` 留空,由 `nocOf` 后补。
+ */
+async function boxFor(input: BoxForIn): BoxForOut {
+  const noc = input.profile.noc ?? null
+  if (!noc) return { facts: [], candidates: [], noc: null, title: '', teer: null }
+  const { rows } = await input.db.query(SQL.NOC_TITLE_TEER, [noc])
+  return {
+    facts: [],
+    candidates: [],
+    noc: noc,
+    title: String(rows[0]?.title ?? ''),
+    teer: rows[0]?.teer == null ? null : Number(rows[0].teer),
+  }
+}
+
+/**
  * 答一个问题:跑工具循环,过出口闸,撞了重写一次,再撞就降级成事实清单。
  *
  * @param input 库连接、用户原话、语种、档案、历史与两个回调。
@@ -1005,7 +1036,7 @@ function hardHits(input: HardHitsIn): HardHitsOut {
  */
 export async function consult(input: ConsultIn): ConsultOut {
   if (!BASE) throw chatError({ code: CHAT_CODE.llm, msg: FAIL_MSG.noBase })
-  const box: Inbox = { facts: [], candidates: [], noc: input.profile.noc ?? null, title: '', teer: null }
+  const box: Inbox = await boxFor({ db: input.db, profile: input.profile })
   const echo = input.history.filter(isUserTurn).map(contentOf).concat(input.text).join(NL)
   const t0 = Date.now()
 

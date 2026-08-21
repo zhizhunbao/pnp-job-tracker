@@ -1241,6 +1241,26 @@ export type LastDraftOfIn = {
 export type LastDraftOfOut = string
 
 /**
+ * `boxFor` 的入参。
+ */
+export type BoxForIn = {
+  /**
+   * 库连接。
+   */
+  db: Db
+
+  /**
+   * 调用方给的档案 —— 只读 `noc` 那一格。
+   */
+  profile: Profile
+}
+
+/**
+ * `boxFor` 的返回:这一趟的收件箱。
+ */
+export type BoxForOut = Promise<Inbox>
+
+/**
  * `consult` 的入参。
  */
 export type ConsultIn = RunIn
