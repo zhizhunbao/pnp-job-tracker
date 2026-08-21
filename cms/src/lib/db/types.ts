@@ -9,21 +9,49 @@
  */
 
 /**
+ * 一次查询的结果面。
+ */
+export type QueryResult = {
+  /**
+   * 行。any 是照实说:运行时保证只能靠域里的行映射函数,泛型装不出来。
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  rows: any[]
+
+  /**
+   * 命中行数。可选:真 pg 结果一定带,但只读 rows 的调用点与单测假池不该被逼着造一个。
+   */
+  rowCount?: number | null
+}
+
+/**
+ * payload 实例在本层眼里的最小形状 —— 只为摸到池,别的字段一概不认识。
+ */
+export type PayloadWithPool = {
+  /**
+   * payload 的 db adapter。
+   */
+  db?: {
+    /**
+     * postgres adapter 挂的连接池。用别的 adapter 时没有这一格 —— dbOf 会抛人话。
+     */
+    pool?: DbPool
+  }
+}
+
+/**
  * 能执行 SQL 的连接。
  *
  * **故意不做成泛型方法**:写成 `query<R>(…): Promise<{rows: R[]}>` 等于承诺「你挑 R,我还你 R[]」,
  * 那么单测里固定形状的假池(`() => ({ rows: Record<string, unknown>[] })`)就永远满足不了它 ——
  * 实测 employersBoard 单测直接编不过。行的形状与默认值按「一条 SQL 一个行形状 + 一个映射函数」
  * 在消费它的域里收(docs/implementation/默认值架构-20260821.md),本层不撒谎也不代劳。
- *
- * rowCount 可选:真 pg 结果一定带,但只读 rows 的调用点与假池不该被逼着造一个。
  */
 export type Db = {
   /**
-   * 跑一条语句。rows 是 any:运行时保证只能靠域里的行映射函数,泛型装不出来。
+   * 跑一条语句。
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  query: (sql: string, params?: unknown[]) => Promise<{ rows: any[]; rowCount?: number | null }>
+  query: (sql: string, params?: unknown[]) => Promise<QueryResult>
 }
 
 /**

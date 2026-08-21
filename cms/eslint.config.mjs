@@ -1012,6 +1012,21 @@ const eslintConfig = [
     },
   },
   {
+    // ── db 的注释闸(2026-08-21,Frank「每个 sql 上面也都需要 jsdoc」)────────────────
+    // 只开注释那几道:sql.ts 174 条已 1:1 配齐。全套严闸(typed-signature/one-parameter/
+    // no-arrow 等)要动 sql.ts 的 30 个箭头模板函数与词汇表签名 —— 那是 db 定型批的手术,
+    // 到时再把 db 挪进上面的大名单。
+    files: ['src/lib/db/**/*.ts'],
+    plugins: { local: localRules },
+    rules: {
+      'local/doc-multiline': 'error',
+      'local/no-section-dashes': 'off',
+      'local/doc-every-export': 'error',
+      'local/doc-every-function': 'error',
+      'local/doc-every-member': 'error',
+    },
+  },
+  {
     // ── consult 定型进闸(2026-08-21,Frank 实拍「怎么有函数内注释没检查出来」)────────
     // 五道里只开四道:`no-import-in-leaf` 不开 —— consult 与 agent 一样是**包 pi 的域**,
     // types.ts 里的 `Model<…>` / `AgentTool<…>` / `Static<…>` 是外部库的泛型形状,自声明不了;

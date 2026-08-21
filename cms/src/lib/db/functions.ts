@@ -10,7 +10,7 @@
  * @time 2026-08-21 15:20:30
  */
 
-import type { DbPool } from './types'
+import type { DbPool, PayloadWithPool } from './types'
 
 /**
  * 库里的脏字符串 → 干净字符串,空值落空串。显示与拼接的兜底,永远无害。
@@ -48,6 +48,5 @@ export function show(x: number | null): string {
  * 从 payload 形状的对象里摸池;摸不到回 null,抛不抛由调用方(`server.ts` 的 dbOf)决定。
  */
 export function poolOf(payload: unknown): DbPool | null {
-  const db = (payload as { db?: { pool?: DbPool } } | null)?.db
-  return db?.pool ?? null
+  return (payload as PayloadWithPool | null)?.db?.pool ?? null
 }
