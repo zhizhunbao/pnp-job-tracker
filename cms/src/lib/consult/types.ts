@@ -757,6 +757,379 @@ export type ThresholdsResult = {
 }
 
 /**
+ * 检索候选查询(`SQL.NOC_LIST_WITH_TITLES`)的一行原始列。
+ *
+ * 🔴 行形状的通则(2026-08-21 Frank 拍板「query 该返回处理完默认值的 type 对象」):
+ * **每条 SQL 一个行形状 + 一个映射函数**,收窄与默认值只在映射函数里做一次,
+ * 调用处拿到的就是干净对象。默认值逐格判 —— 脏字符串收成空串可以,
+ * **官方可空的数值必须保 null**(隐私抑制值、没公布的分数,折成 0 就是替官方编数)。
+ * 列全声明成可空,因为库里就可空;`Db.query` 本身不加泛型 —— TS 类型运行时不存在,
+ * 编解码只能靠映射函数这种真代码。
+ */
+export type NocSearchRow = {
+  /**
+   * 五位职业码。
+   */
+  noc: string | null
+
+  /**
+   * 职业名。
+   */
+  title: string | null
+
+  /**
+   * 在招岗位数(排序与噪音过滤按它)。
+   */
+  n: number | string | null
+}
+
+/**
+ * 各省在招数查询(`SQL.PROV_OPEN_BY_PROV`)的一行原始列。
+ */
+export type ProvOpenRow = {
+  /**
+   * 两位省码。
+   */
+  province: string | null
+
+  /**
+   * 在招总数。
+   */
+  open: number | string | null
+
+  /**
+   * 其中带省提名通道标记的。
+   */
+  named: number | string | null
+}
+
+/**
+ * 职业名与 TEER 查询(`SQL.NOC_TITLE_TEER`)的一行原始列。
+ * 三处消费(lookupJobs / nocOf / boxFor)共用同一个映射,口径不再各写各的。
+ */
+export type TitleTeerRow = {
+  /**
+   * 职业名。
+   */
+  title: string | null
+
+  /**
+   * TEER。**库里没有就是 null,不猜**(分 TEER 的条款那时一条都挑不出来,那是实话)。
+   */
+  teer: number | string | null
+}
+
+/**
+ * 清单收录查询(`SQL.PNP_OCCUPATIONS_FLAT`)的一行原始列。
+ */
+export type OccFlatRow = {
+  /**
+   * 两位省码。
+   */
+  province: string | null
+
+  /**
+   * 五位职业码。
+   */
+  noc: string | null
+
+  /**
+   * 官方通道名。
+   */
+  stream: string | null
+
+  /**
+   * 本站短名(通道名缺失时的兜底显示)。
+   */
+  label: string | null
+
+  /**
+   * 收录类型;`ineligible` = 明确排除。
+   */
+  type: string | null
+
+  /**
+   * 出处页。
+   */
+  url: string | null
+
+  /**
+   * 本站抓取日。
+   */
+  fetched: string | null
+}
+
+/**
+ * 抽选记录查询(`SQL.PNP_DRAWS_BY_PROV`)的一行原始列。
+ */
+export type DrawDbRow = {
+  /**
+   * 两位省码;联邦是 `FED`。
+   */
+  province: string | null
+
+  /**
+   * 抽选日期(库里带时间尾巴,映射时截到十位)。
+   */
+  draw_date: string | null
+
+  /**
+   * 官方轮次名。
+   */
+  stream: string | null
+
+  /**
+   * 分制名。
+   */
+  scale: string | null
+
+  /**
+   * 分数线。**官方没公布就是 null,不折 0。**
+   */
+  score: number | string | null
+
+  /**
+   * 邀请人数。**官方没公布就是 null,不折 0。**
+   */
+  invitations: number | string | null
+
+  /**
+   * 出处页。
+   */
+  url: string | null
+
+  /**
+   * 本站抓取日。
+   */
+  fetched: string | null
+}
+
+/**
+ * 运营统计查询(`SQL.PNP_OPS_METRICS`)的一行原始列。
+ */
+export type OpsDbRow = {
+  /**
+   * 指标名(ETL 词表)。
+   */
+  metric: string | null
+
+  /**
+   * 适用范围。
+   */
+  scope: string | null
+
+  /**
+   * 官方原文。
+   */
+  label: string | null
+
+  /**
+   * 数值。**官方的隐私抑制值与纯文本游标就是 null,不折 0** —— 原文在 value_text。
+   */
+  value: number | string | null
+
+  /**
+   * value 为 null 时的官方原文。
+   */
+  value_text: string | null
+
+  /**
+   * 官方发布的单位,不换算。
+   */
+  unit: string | null
+
+  /**
+   * 官方口径日。
+   */
+  as_of: string | null
+
+  /**
+   * 统计期。
+   */
+  period: string | null
+
+  /**
+   * 出处页。
+   */
+  url: string | null
+
+  /**
+   * 本站抓取日。
+   */
+  fetched: string | null
+}
+
+/**
+ * EE 类别查询(`SQL.EE_CATEGORIES_BY_NOC`)的一行原始列。
+ */
+export type EeDbRow = {
+  /**
+   * 类别键。
+   */
+  category: string | null
+
+  /**
+   * 类别官方名。
+   */
+  label: string | null
+
+  /**
+   * 该类别最近一轮的最低 CRS。**本站无记录就是 null,不折 0。**
+   */
+  draw_crs: number | string | null
+
+  /**
+   * 那一轮的日期。
+   */
+  draw_date: string | null
+
+  /**
+   * 那一轮邀请人数。**没有就是 null。**
+   */
+  draw_size: number | string | null
+
+  /**
+   * 出处页。
+   */
+  url: string | null
+
+  /**
+   * 本站抓取日。
+   */
+  fetched: string | null
+}
+
+/**
+ * 联邦规则查询(`SQL.PERMIT_RULES`)的一行原始列。
+ */
+export type PermitDbRow = {
+  /**
+   * 项目名。
+   */
+  program: string | null
+
+  /**
+   * 官方分档。
+   */
+  stream: string | null
+
+  /**
+   * 因素名。
+   */
+  factor: string | null
+
+  /**
+   * 比较符;`rule` = 是条规则不是道门槛。
+   */
+  op: string | null
+
+  /**
+   * 阈值。**`rule` 行与没有绝对数的行就是 null,不折 0。**
+   */
+  value: number | string | null
+
+  /**
+   * 官方原句(quote-anchored)。
+   */
+  value_text: string | null
+
+  /**
+   * 单位。
+   */
+  unit: string | null
+
+  /**
+   * 口径速记。
+   */
+  basis: string | null
+
+  /**
+   * 条目名。
+   */
+  label: string | null
+
+  /**
+   * 条文页。
+   */
+  url: string | null
+
+  /**
+   * 所属页面(url 缺失时的出处兜底)。
+   */
+  page_url: string | null
+
+  /**
+   * 本站抓取日。
+   */
+  fetched: string | null
+}
+
+/**
+ * 计分表查询(`SQL.EE_POINTS_GRID`)的一行原始列。
+ */
+export type PointsDbRow = {
+  /**
+   * 哪套分。
+   */
+  grid: string | null
+
+  /**
+   * 节号。
+   */
+  section: string | null
+
+  /**
+   * 节名。
+   */
+  section_label: string | null
+
+  /**
+   * summary 还是 detail。
+   */
+  kind: string | null
+
+  /**
+   * 表头。
+   */
+  heading: string | null
+
+  /**
+   * 因素名。
+   */
+  factor: string | null
+
+  /**
+   * 档位描述。
+   */
+  criterion: string | null
+
+  /**
+   * 列名。
+   */
+  column_label: string | null
+
+  /**
+   * 这一档的分。**官方写 n/a 就是 null,原文在 points_text,不折 0。**
+   */
+  points: number | string | null
+
+  /**
+   * points 为 null 时的官方原文。
+   */
+  points_text: string | null
+
+  /**
+   * 出处页。
+   */
+  url: string | null
+
+  /**
+   * 本站抓取日。
+   */
+  fetched: string | null
+}
+
+/**
  * 库里一行门槛条文的原始形状(`SQL.PNP_REQUIREMENTS_ALL` 的列)。
  *
  * 🔴 **每一列都写出来,不用 `Record<string, unknown>`** —— 那等于把「这张表有哪些列」
@@ -1524,6 +1897,166 @@ export type ExecThresholdsIn = Static<typeof NOC_PROVS_PARAMS>
  * `execThresholds` 的返回。
  */
 export type ExecThresholdsOut = Promise<Reply>
+
+/**
+ * 一条检索命中(映射完默认值的干净行):候选 + 它的在招数(噪音过滤按 n)。
+ */
+export type NocHit = {
+  /**
+   * 五位职业码。
+   */
+  noc: string
+
+  /**
+   * 职业名。
+   */
+  title: string
+
+  /**
+   * 在招岗位数。
+   */
+  n: number
+}
+
+/**
+ * 职业名与 TEER(映射完默认值的干净行)。
+ */
+export type TitleTeer = {
+  /**
+   * 职业名;库里没有就空串。
+   */
+  title: string
+
+  /**
+   * TEER;库里没有就 null,不猜。
+   */
+  teer: number | null
+}
+
+/**
+ * 一条清单收录记录(映射完默认值的干净行)。
+ */
+export type OccFlat = {
+  /**
+   * 两位省码。
+   */
+  province: string
+
+  /**
+   * 五位职业码。
+   */
+  noc: string
+
+  /**
+   * 通道名(官方名缺失时落到本站短名)。
+   */
+  stream: string
+
+  /**
+   * 收录类型;`ineligible` = 明确排除。
+   */
+  type: string
+
+  /**
+   * 出处页。
+   */
+  url: string
+
+  /**
+   * 本站抓取日。
+   */
+  fetched: string
+}
+
+/**
+ * `toNocHit` 的入参。
+ */
+export type ToNocHitIn = NocSearchRow
+
+/**
+ * `toNocHit` 的返回。
+ */
+export type ToNocHitOut = NocHit
+
+/**
+ * `toProvOpen` 的入参。
+ */
+export type ToProvOpenIn = ProvOpenRow
+
+/**
+ * `toProvOpen` 的返回。
+ */
+export type ToProvOpenOut = JobsRow
+
+/**
+ * `toTitleTeer` 的入参。查询可能一行都没有,undefined 也交给映射统一收。
+ */
+export type ToTitleTeerIn = TitleTeerRow | undefined
+
+/**
+ * `toTitleTeer` 的返回。
+ */
+export type ToTitleTeerOut = TitleTeer
+
+/**
+ * `toOccFlat` 的入参。
+ */
+export type ToOccFlatIn = OccFlatRow
+
+/**
+ * `toOccFlat` 的返回。
+ */
+export type ToOccFlatOut = OccFlat
+
+/**
+ * `toDrawRow` 的入参。
+ */
+export type ToDrawRowIn = DrawDbRow
+
+/**
+ * `toDrawRow` 的返回。
+ */
+export type ToDrawRowOut = DrawRow
+
+/**
+ * `toOpsRow` 的入参。
+ */
+export type ToOpsRowIn = OpsDbRow
+
+/**
+ * `toOpsRow` 的返回。
+ */
+export type ToOpsRowOut = OpsRow
+
+/**
+ * `toEeRow` 的入参。
+ */
+export type ToEeRowIn = EeDbRow
+
+/**
+ * `toEeRow` 的返回。
+ */
+export type ToEeRowOut = EeRow
+
+/**
+ * `toPermitRow` 的入参。
+ */
+export type ToPermitRowIn = PermitDbRow
+
+/**
+ * `toPermitRow` 的返回。
+ */
+export type ToPermitRowOut = PermitRow
+
+/**
+ * `toPointsRow` 的入参。
+ */
+export type ToPointsRowIn = PointsDbRow
+
+/**
+ * `toPointsRow` 的返回。
+ */
+export type ToPointsRowOut = PointsRow
 
 /**
  * `provOf` 的入参:模型填的省码原文。

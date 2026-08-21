@@ -26,6 +26,7 @@ import { cleanProvs } from '../location'
 import { chatError, CHAT_CODE } from '../error'
 import { CHAT_FN, CHAT_LOG, GATE_LOG, log } from '../log'
 import * as SQL from '../db/sql'
+import { count, numOrNull, text } from '../db/database'
 import { evaluateRequirements } from '../gauge'
 import type { Requirement, RuleProfile } from '../gauge'
 import {
@@ -65,7 +66,10 @@ import type {
   PointsFactsOut, PointsRow, ProvOfIn, ProvOfOut, RetryNoteIn, RetryNoteOut, RunGatesIn, RunGatesOut, RunIn,
   SayIn, SayOut, SearchOccupationsIn, SearchOccupationsOut, StatusFactIn, StatusFactOut, StepIn, StepOut,
   SystemOfOut, TakeIn, TakeOut, TextOfIn, TextOfOut, ThresholdsFactsIn, ThresholdsFactsOut, ThresholdsRow,
-  TierTextIn, TierTextOut, ToRequirementIn, ToRequirementOut, Tool, ToolArgs, VerdictFactsIn, VerdictFactsOut,
+  TierTextIn, TierTextOut, ToDrawRowIn, ToDrawRowOut, ToEeRowIn, ToEeRowOut, ToNocHitIn, ToNocHitOut,
+  ToOccFlatIn, ToOccFlatOut, ToOpsRowIn, ToOpsRowOut, ToPermitRowIn, ToPermitRowOut, ToPointsRowIn,
+  ToPointsRowOut, ToProvOpenIn, ToProvOpenOut, ToRequirementIn, ToRequirementOut, ToTitleTeerIn,
+  ToTitleTeerOut, Tool, ToolArgs, VerdictFactsIn, VerdictFactsOut,
   VerdictProfileOfIn, VerdictProfileOfOut, ExecClaimsIn, ExecClaimsOut, ExecVerdictIn, ExecVerdictOut,
 } from './types'
 
@@ -127,6 +131,154 @@ function provOf(raw: ProvOfIn): ProvOfOut {
 // =========================================================================
 
 /**
+ * 检索行 → 干净命中。每格空值决策见 `lib/db` 的词汇表(text/count/numOrNull),
+ * 下面九个映射函数同此 —— 收窄只在映射里做一次,循环与调用处不再出现 `??`。
+ *
+ * @param r 原始行。
+ * @returns 收窄后的命中。
+ */
+function toNocHit(r: ToNocHitIn): ToNocHitOut {
+  return { noc: text(r.noc), title: text(r.title), n: count(r.n) }
+}
+
+/**
+ * 各省在招数行 → `JobsRow`。open/named 是计数,0 无害。
+ *
+ * @param r 原始行。
+ * @returns 收窄后的行。
+ */
+function toProvOpen(r: ToProvOpenIn): ToProvOpenOut {
+  return { prov: text(r.province), open: count(r.open), named: count(r.named) }
+}
+
+/**
+ * 职业名与 TEER 行 → 干净对象。查询可能一行都没有,undefined 也在这儿统一收。
+ * TEER 走 `numOrNull` —— 不知道就是 null,分 TEER 的条款那时一条都挑不出来,那是实话。
+ *
+ * @param r 原始行,可能不存在。
+ * @returns 收窄后的对象。
+ */
+function toTitleTeer(r: ToTitleTeerIn): ToTitleTeerOut {
+  return { title: text(r?.title), teer: numOrNull(r?.teer) }
+}
+
+/**
+ * 清单收录行 → 干净记录。通道名官方缺失时落到本站短名。
+ *
+ * @param r 原始行。
+ * @returns 收窄后的记录。
+ */
+function toOccFlat(r: ToOccFlatIn): ToOccFlatOut {
+  return {
+    province: text(r.province),
+    noc: text(r.noc),
+    stream: text(r.stream) || text(r.label),
+    type: text(r.type),
+    url: text(r.url),
+    fetched: text(r.fetched),
+  }
+}
+
+/**
+ * 抽选行 → `DrawRow`。分数线与邀请数走 `numOrNull` —— 官方没公布就是 null,不折 0。
+ *
+ * @param r 原始行。
+ * @returns 收窄后的行。
+ */
+function toDrawRow(r: ToDrawRowIn): ToDrawRowOut {
+  return {
+    prov: text(r.province),
+    date: text(r.draw_date).slice(0, DATE_LEN),
+    stream: text(r.stream),
+    scale: text(r.scale),
+    score: numOrNull(r.score),
+    invitations: numOrNull(r.invitations),
+    evidence: { url: text(r.url), fetched: text(r.fetched) },
+  }
+}
+
+/**
+ * 运营统计行 → `OpsRow`。value 走 `numOrNull` —— 隐私抑制值折成 0 就是替官方编数。
+ *
+ * @param r 原始行。
+ * @returns 收窄后的行。
+ */
+function toOpsRow(r: ToOpsRowIn): ToOpsRowOut {
+  return {
+    key: text(r.metric),
+    scope: text(r.scope),
+    label: text(r.label),
+    value: numOrNull(r.value),
+    valueText: text(r.value_text),
+    unit: text(r.unit),
+    asOf: text(r.as_of),
+    period: text(r.period),
+    evidence: { url: text(r.url), fetched: text(r.fetched) },
+  }
+}
+
+/**
+ * EE 类别行 → `EeRow`。分数线与邀请数走 `numOrNull`。
+ *
+ * @param r 原始行。
+ * @returns 收窄后的行。
+ */
+function toEeRow(r: ToEeRowIn): ToEeRowOut {
+  return {
+    category: text(r.category),
+    label: text(r.label),
+    drawCrs: numOrNull(r.draw_crs),
+    drawDate: text(r.draw_date).slice(0, DATE_LEN),
+    drawSize: numOrNull(r.draw_size),
+    evidence: { url: text(r.url), fetched: text(r.fetched) },
+  }
+}
+
+/**
+ * 联邦规则行 → `PermitRow`。value 走 `numOrNull`(`rule` 行本来就没有阈值);
+ * 出处页 url 缺失时落到所属页面 page_url。
+ *
+ * @param r 原始行。
+ * @returns 收窄后的行。
+ */
+function toPermitRow(r: ToPermitRowIn): ToPermitRowOut {
+  return {
+    program: text(r.program),
+    stream: text(r.stream),
+    factor: text(r.factor),
+    op: text(r.op),
+    value: numOrNull(r.value),
+    valueText: text(r.value_text),
+    unit: text(r.unit),
+    basis: text(r.basis),
+    label: text(r.label),
+    evidence: { url: text(r.url) || text(r.page_url), fetched: text(r.fetched) },
+  }
+}
+
+/**
+ * 计分表行 → `PointsRow`。points 走 `numOrNull` —— 官方写 n/a 就是 null,原文在 pointsText。
+ *
+ * @param r 原始行。
+ * @returns 收窄后的行。
+ */
+function toPointsRow(r: ToPointsRowIn): ToPointsRowOut {
+  return {
+    grid: text(r.grid),
+    section: text(r.section),
+    sectionLabel: text(r.section_label),
+    kind: text(r.kind),
+    heading: text(r.heading),
+    factor: text(r.factor),
+    criterion: text(r.criterion),
+    columnLabel: text(r.column_label),
+    points: numOrNull(r.points),
+    pointsText: text(r.points_text),
+    evidence: { url: text(r.url), fetched: text(r.fetched) },
+  }
+}
+
+/**
  * 查职业候选:库里**真有在招岗位**的 NOC。
  *
  * 榜首 `NOISE_RATIO` 以下的当噪音丢掉 —— 那些是被官方要求文本连带捞出来的,
@@ -138,12 +290,11 @@ function provOf(raw: ProvOfIn): ProvOfOut {
 async function searchOccupations(input: SearchOccupationsIn): SearchOccupationsOut {
   const like = `${LIKE_ANY}${input.query.replace(LIKE_SPECIAL, LIKE_ESCAPE)}${LIKE_ANY}`
   const { rows } = await input.db.query(SQL.NOC_LIST_WITH_TITLES, [like, SEARCH_LIMIT])
-  const top = Number(rows[0]?.n ?? 0)
+  const all = rows.map(toNocHit)
+  const top = all[0]?.n ?? 0
   const hits: Candidate[] = []
-  for (const r of rows) {
-    const noc = String(r.noc ?? '')
-    const title = String(r.title ?? '')
-    if (noc && title && Number(r.n ?? 0) >= top * NOISE_RATIO) hits.push({ noc, title })
+  for (const hit of all) {
+    if (hit.noc && hit.title && hit.n >= top * NOISE_RATIO) hits.push({ noc: hit.noc, title: hit.title })
   }
   return hits
 }
@@ -164,13 +315,12 @@ async function lookupJobs(input: LookupJobsIn): LookupJobsOut {
   ])
   const byProv = new Map<string, JobsRow>()
   for (const prov of PROVS) byProv.set(prov, { prov, open: 0, named: 0 })
-  for (const r of counts.rows) {
-    const prov = String(r.province ?? '')
-    if (byProv.has(prov)) byProv.set(prov, { prov, open: Number(r.open ?? 0), named: Number(r.named ?? 0) })
+  for (const r of counts.rows.map(toProvOpen)) {
+    if (byProv.has(r.prov)) byProv.set(r.prov, r)
   }
   const rows = Array.from(byProv.values()).sort(byOpenDesc)
-  const head = title.rows[0]
-  return { noc: input.noc, title: String(head?.title ?? ''), teer: head?.teer == null ? null : Number(head.teer), rows }
+  const tt = toTitleTeer(title.rows[0])
+  return { noc: input.noc, title: tt.title, teer: tt.teer, rows }
 }
 
 /**
@@ -186,17 +336,14 @@ async function lookupJobs(input: LookupJobsIn): LookupJobsOut {
 async function lookupCoverage(input: LookupCoverageIn): LookupCoverageOut {
   const { rows } = await input.db.query(SQL.PNP_OCCUPATIONS_FLAT, [])
   const byProv = new Map<string, CoverageRow>()
-  for (const r of rows) {
-    const prov = String(r.province ?? '')
-    const noc = String(r.noc ?? '')
-    if (!PROVS.has(prov) || noc !== input.noc) continue
-    const row = byProv.get(prov) ?? blankCoverage(prov)
-    const stream = String(r.stream ?? r.label ?? '')
-    if (String(r.type ?? '') === INELIGIBLE) row.excluded.push(stream)
-    else row.streams.push(stream)
+  for (const r of rows.map(toOccFlat)) {
+    if (!PROVS.has(r.province) || r.noc !== input.noc) continue
+    const row = byProv.get(r.province) ?? blankCoverage(r.province)
+    if (r.type === INELIGIBLE) row.excluded.push(r.stream)
+    else row.streams.push(r.stream)
     row.availability = AVAIL.ok
-    row.evidence = { url: String(r.url ?? ''), fetched: String(r.fetched ?? '') }
-    byProv.set(prov, row)
+    row.evidence = { url: r.url, fetched: r.fetched }
+    byProv.set(r.province, row)
   }
   const out: CoverageRow[] = []
   for (const prov of PROVS) out.push(byProv.get(prov) ?? blankCoverage(prov))
@@ -223,28 +370,28 @@ function blankCoverage(prov: BlankCoverageIn): BlankCoverageOut {
  */
 function toRequirement(row: ToRequirementIn): ToRequirementOut {
   return {
-    province: String(row.province ?? ''),
-    program: String(row.program ?? ''),
-    stream: String(row.stream ?? ''),
-    subject: String(row.subject ?? '') === SUBJECT.employer ? SUBJECT.employer : SUBJECT.applicant,
-    factor: String(row.factor ?? ''),
-    op: String(row.op ?? ''),
-    value: row.value == null ? null : Number(row.value),
-    valueText: String(row.value_text ?? ''),
-    unit: String(row.unit ?? ''),
-    appliesTeer: String(row.applies_teer ?? ''),
-    appliesNoc: String(row.applies_noc ?? ''),
-    excludesNoc: String(row.excludes_noc ?? ''),
-    appliesArea: String(row.applies_area ?? ''),
-    appliesCondition: String(row.applies_condition ?? ''),
-    familySize: row.applies_family_size == null ? null : Number(row.applies_family_size),
-    basis: String(row.basis ?? ''),
-    label: String(row.label ?? ''),
-    section: String(row.section ?? ''),
-    effective: String(row.effective ?? ''),
-    url: String(row.url ?? ''),
-    pageUrl: String(row.page_url ?? ''),
-    fetched: String(row.fetched ?? ''),
+    province: text(row.province),
+    program: text(row.program),
+    stream: text(row.stream),
+    subject: text(row.subject) === SUBJECT.employer ? SUBJECT.employer : SUBJECT.applicant,
+    factor: text(row.factor),
+    op: text(row.op),
+    value: numOrNull(row.value),
+    valueText: text(row.value_text),
+    unit: text(row.unit),
+    appliesTeer: text(row.applies_teer),
+    appliesNoc: text(row.applies_noc),
+    excludesNoc: text(row.excludes_noc),
+    appliesArea: text(row.applies_area),
+    appliesCondition: text(row.applies_condition),
+    familySize: numOrNull(row.applies_family_size),
+    basis: text(row.basis),
+    label: text(row.label),
+    section: text(row.section),
+    effective: text(row.effective),
+    url: text(row.url),
+    pageUrl: text(row.page_url),
+    fetched: text(row.fetched),
   }
 }
 
@@ -304,18 +451,10 @@ async function lookupThresholds(input: LookupThresholdsIn): LookupThresholdsOut 
 async function lookupDraws(input: LookupDrawsIn): LookupDrawsOut {
   const { rows } = await input.db.query(SQL.PNP_DRAWS_BY_PROV, [input.prov])
   const out: DrawRow[] = []
-  for (const r of rows) {
-    if (!r.url) continue
+  for (const r of rows.map(toDrawRow)) {
+    if (!r.evidence.url) continue
     if (out.length >= DRAW_LIMIT) break
-    out.push({
-      prov: input.prov,
-      date: String(r.draw_date ?? '').slice(0, DATE_LEN),
-      stream: String(r.stream ?? ''),
-      scale: String(r.scale ?? ''),
-      score: r.score == null ? null : Number(r.score),
-      invitations: r.invitations == null ? null : Number(r.invitations),
-      evidence: { url: String(r.url ?? ''), fetched: String(r.fetched ?? '') },
-    })
+    out.push(r)
   }
   return { prov: input.prov, rows: out }
 }
@@ -331,21 +470,7 @@ async function lookupDraws(input: LookupDrawsIn): LookupDrawsOut {
  */
 async function lookupOps(input: LookupOpsIn): LookupOpsOut {
   const { rows } = await input.db.query(SQL.PNP_OPS_METRICS, [input.prov])
-  const out: OpsRow[] = []
-  for (const r of rows) {
-    out.push({
-      key: String(r.metric ?? ''),
-      scope: String(r.scope ?? ''),
-      label: String(r.label ?? ''),
-      value: r.value == null ? null : Number(r.value),
-      valueText: String(r.value_text ?? ''),
-      unit: String(r.unit ?? ''),
-      asOf: String(r.as_of ?? ''),
-      period: String(r.period ?? ''),
-      evidence: { url: String(r.url ?? ''), fetched: String(r.fetched ?? '') },
-    })
-  }
-  return { prov: input.prov, rows: out }
+  return { prov: input.prov, rows: rows.map(toOpsRow) }
 }
 
 /**
@@ -360,16 +485,8 @@ async function lookupOps(input: LookupOpsIn): LookupOpsOut {
 async function lookupEe(input: LookupEeIn): LookupEeOut {
   const { rows } = await input.db.query(SQL.EE_CATEGORIES_BY_NOC, [input.noc])
   const out: EeRow[] = []
-  for (const r of rows) {
-    if (!r.url) continue
-    out.push({
-      category: String(r.category ?? ''),
-      label: String(r.label ?? ''),
-      drawCrs: r.draw_crs == null ? null : Number(r.draw_crs),
-      drawDate: String(r.draw_date ?? '').slice(0, DATE_LEN),
-      drawSize: r.draw_size == null ? null : Number(r.draw_size),
-      evidence: { url: String(r.url ?? ''), fetched: String(r.fetched ?? '') },
-    })
+  for (const r of rows.map(toEeRow)) {
+    if (r.evidence.url) out.push(r)
   }
   return { noc: input.noc, rows: out }
 }
@@ -386,20 +503,8 @@ async function lookupEe(input: LookupEeIn): LookupEeOut {
 async function lookupPermit(input: LookupPermitIn): LookupPermitOut {
   const { rows } = await input.db.query(SQL.PERMIT_RULES, [input.program])
   const out: PermitRow[] = []
-  for (const r of rows) {
-    if (!r.url && !r.page_url) continue
-    out.push({
-      program: String(r.program ?? input.program),
-      stream: String(r.stream ?? ''),
-      factor: String(r.factor ?? ''),
-      op: String(r.op ?? ''),
-      value: r.value == null ? null : Number(r.value),
-      valueText: String(r.value_text ?? ''),
-      unit: String(r.unit ?? ''),
-      basis: String(r.basis ?? ''),
-      label: String(r.label ?? ''),
-      evidence: { url: String(r.url ?? r.page_url ?? ''), fetched: String(r.fetched ?? '') },
-    })
+  for (const r of rows.map(toPermitRow)) {
+    if (r.evidence.url) out.push(r)
   }
   return { program: input.program, rows: out }
 }
@@ -418,21 +523,8 @@ async function lookupPoints(input: LookupPointsIn): LookupPointsOut {
   const kind = !input.section && input.grid === GRID_CRS ? KIND_SUMMARY : ''
   const { rows } = await input.db.query(SQL.EE_POINTS_GRID, [input.grid, input.section, kind, '', '', POINTS_LIMIT])
   const out: PointsRow[] = []
-  for (const r of rows) {
-    if (!r.url) continue
-    out.push({
-      grid: String(r.grid ?? input.grid),
-      section: String(r.section ?? ''),
-      sectionLabel: String(r.section_label ?? ''),
-      kind: String(r.kind ?? ''),
-      heading: String(r.heading ?? ''),
-      factor: String(r.factor ?? ''),
-      criterion: String(r.criterion ?? ''),
-      columnLabel: String(r.column_label ?? ''),
-      points: r.points == null ? null : Number(r.points),
-      pointsText: String(r.points_text ?? ''),
-      evidence: { url: String(r.url ?? ''), fetched: String(r.fetched ?? '') },
-    })
+  for (const r of rows.map(toPointsRow)) {
+    if (r.evidence.url) out.push(r)
   }
   return { grid: input.grid, rows: out }
 }
@@ -1172,8 +1264,9 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
     if (ok && ok !== box.noc) {
       box.noc = ok
       const { rows } = await run.db.query(SQL.NOC_TITLE_TEER, [ok])
-      box.title = String(rows[0]?.title ?? '')
-      box.teer = rows[0]?.teer == null ? null : Number(rows[0].teer)
+      const tt = toTitleTeer(rows[0])
+      box.title = tt.title
+      box.teer = tt.teer
       run.onStep?.(CONSULT_STEP_OCC[run.lang](box.title || ok))
     }
     return box.noc
@@ -1497,13 +1590,8 @@ async function boxFor(input: BoxForIn): BoxForOut {
   const noc = input.profile.noc ?? null
   if (!noc) return { facts: [], candidates: [], noc: null, title: '', teer: null }
   const { rows } = await input.db.query(SQL.NOC_TITLE_TEER, [noc])
-  return {
-    facts: [],
-    candidates: [],
-    noc: noc,
-    title: String(rows[0]?.title ?? ''),
-    teer: rows[0]?.teer == null ? null : Number(rows[0].teer),
-  }
+  const tt = toTitleTeer(rows[0])
+  return { facts: [], candidates: [], noc: noc, title: tt.title, teer: tt.teer }
 }
 
 /**

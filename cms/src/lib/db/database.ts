@@ -43,6 +43,32 @@ export type DbClient = Db & { release: () => void }
 /** 连接池:能直接查,也能借出独占连接。 */
 type DbPool = Db & { connect: () => Promise<DbClient> }
 
+// ── 行值收窄:默认值词汇表(2026-08-21 Frank 立)────────────────────────────
+// 行映射函数里每一格的空值决策用**词的选择**说话,不再散写 `String(x ?? '')` 三元:
+// 哪格用哪个词是一格一判的语义决定,review 时看词就知道对错,红线变成 greppable。
+
+/**
+ * 库里的脏字符串 → 干净字符串,空值落空串。显示与拼接的兜底,永远无害。
+ */
+export function text(x: unknown): string {
+  return x == null ? '' : String(x)
+}
+
+/**
+ * 计数 → 数字,空值落 0。**只给「个数」类的列用** —— 「一个都没有」本身就是答案,0 无害。
+ */
+export function count(x: unknown): number {
+  return x == null ? 0 : Number(x)
+}
+
+/**
+ * 🔴 官方可空的数值 → 保 null。隐私抑制值(「Less than 10」)、没公布的分数线、
+ * `rule` 行的阈值 —— 折成 0 就是替官方编数。这类列上看见 `count()` 就是 bug。
+ */
+export function numOrNull(x: unknown): number | null {
+  return x == null ? null : Number(x)
+}
+
 function poolOf(payload: unknown): DbPool | null {
   const db = (payload as { db?: { pool?: DbPool } } | null)?.db
   return db?.pool ?? null
