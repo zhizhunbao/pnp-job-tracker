@@ -144,9 +144,10 @@ export type Requirement = {
  */
 export type RuleProfile = {
   /**
-   * 职业码。判「这个职业算不算官方列的技工」用(ON 语言分档)。
+   * 职业码;没答就 null(2026-08-21 四禁:`?` 与 undefined 不进契约,缺席显式写)。
+   * 判「这个职业算不算官方列的技工」用(ON 语言分档)。
    */
-  noc?: string
+  noc: string | null
 
   /**
    * TEER。分 TEER 的门槛行靠它挑。
@@ -516,7 +517,7 @@ export type NocScoreIn = {
   /**
    * 他的职业码;不知道则不传。
    */
-  noc?: string
+  noc: string | null
 }
 
 /**

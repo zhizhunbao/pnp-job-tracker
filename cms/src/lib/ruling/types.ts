@@ -340,9 +340,9 @@ export type EeRow = {
  */
 export type EngineProfile = {
   /**
-   * NOC 码 —— 判「这个职业算不算官方列的技工」用(ON 语言分档)。
+   * NOC 码;没答就 null(2026-08-21 四禁:缺席显式写)—— 判「这个职业算不算官方列的技工」用(ON 语言分档)。
    */
-  noc?: string
+  noc: string | null
 
   /**
    * TEER。

@@ -975,13 +975,18 @@ export const REQ_UNIT = {
 } as const
 
 /**
- * 本站学历档里判定要单独看年数的那两档。
+ * 本站学历档里判定要单独看年数的那两档,外加估分兜底用的最低档。
  */
 export const EDU = {
   /**
    * 本科。
    */
   bachelor: 'bachelor',
+
+  /**
+   * 高中 —— 通用省估分在「没答学历」时的保守兜底档(gridSelfProfile),不用于判定。
+   */
+  highschool: 'highschool',
 
   /**
    * 2 年制文凭。
