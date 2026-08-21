@@ -19,5 +19,5 @@ export {
 export * as SQL from './sql'
 
 export type {
-  Db, DbClient, DbPool, PayloadWithPool, QueryResult,
+  Db, DbClient, DbPool, PayloadWithPool, QueryResult, SqlParam,
 } from './types'

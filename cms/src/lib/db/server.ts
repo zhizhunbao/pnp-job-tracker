@@ -23,14 +23,15 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { poolOf } from './functions'
-import type { DbPool } from './types'
+import type { DbPool, PayloadWithPool } from './types'
 
 /**
  * 从已有的 payload 实例取池。取不到直接抛 —— 60 个调用点里只有 4 个做了 `if (!pool)` 兜底,
  * 其余 56 个是「拿到就 query」,池若为空它们会炸在 `Cannot read property 'query' of undefined`,
  * 谁也看不出是数据库没连上。宁可抛一句人话。
+ * 入参同 poolOf 收 `PayloadWithPool`(结构类型,Payload 实例天然满足),unknown 退役。
  */
-export function dbOf(payload: unknown): DbPool {
+export function dbOf(payload: PayloadWithPool): DbPool {
   const pool = poolOf(payload)
   if (!pool) throw new Error('database: payload.db.pool 不存在 —— 数据库没连上,或 payload 用的不是 postgres adapter')
   return pool

@@ -14,23 +14,27 @@ import type { DbPool, PayloadWithPool } from './types'
 
 /**
  * 库里的脏字符串 → 干净字符串,空值落空串。显示与拼接的兜底,永远无害。
+ * 入参收显式联合不收 unknown(2026-08-21 Frank 抓包):行形状(XxxDbRow)落地后
+ * 调用方全是类型化的列值,unknown 只剩「把整个对象塞进来」这种错没人拦。
  */
-export function text(x: unknown): string {
+export function text(x: string | number | null): string {
   return x == null ? '' : String(x)
 }
 
 /**
  * 计数 → 数字,空值落 0。**只给「个数」类的列用** —— 「一个都没有」本身就是答案,0 无害。
+ * 收 `string` 是因为 pg 的 numeric/bigint 按字符串交回来。
  */
-export function count(x: unknown): number {
+export function count(x: number | string | null): number {
   return x == null ? 0 : Number(x)
 }
 
 /**
  * 🔴 官方可空的数值 → 保 null。隐私抑制值(「Less than 10」)、没公布的分数线、
  * `rule` 行的阈值 —— 折成 0 就是替官方编数。这类列上看见 `count()` 就是 bug。
+ * 收 `string` 同 `count`:pg 的 numeric/bigint 按字符串交回来。
  */
-export function numOrNull(x: unknown): number | null {
+export function numOrNull(x: number | string | null): number | null {
   return x == null ? null : Number(x)
 }
 
@@ -45,8 +49,11 @@ export function show(x: number | null): string {
 }
 
 /**
- * 从 payload 形状的对象里摸池;摸不到回 null,抛不抛由调用方(`server.ts` 的 dbOf)决定。
+ * 从 payload 形状的对象里摸池。入参必须是真实例(调用方手里若可能没有,先自己判);
+ * 回 null 只表示一件事:这个实例不是 postgres adapter、身上没有池 —— 抛不抛人话
+ * 由调用方(`server.ts` 的 dbOf)决定,本文件是纯函数不造错。
  */
-export function poolOf(payload: unknown): DbPool | null {
-  return (payload as PayloadWithPool | null)?.db?.pool ?? null
+export function poolOf(payload: PayloadWithPool): DbPool | null {
+  if (!payload.db || !payload.db.pool) return null
+  return payload.db.pool
 }

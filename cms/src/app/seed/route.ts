@@ -19,7 +19,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { dbOf } from '@/lib/db/server'
-import { SQL, type DbClient } from '@/lib/db'   // 固定语句在那儿;按列现拼的片段仍在本文件
+import { SQL, type DbClient, type SqlParam } from '@/lib/db'   // 固定语句在那儿;按列现拼的片段仍在本文件
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -32,7 +32,10 @@ const isoDate = (s?: string) => {
   return isNaN(d.getTime()) ? null : d.toISOString()
 }
 
-type Row = Record<string, unknown>
+// mart 文件里一格的值:JSON 放得下的任意形(jsonb 列真会是对象/数组)。原先写 unknown,
+// 2026-08-21 禁 unknown 后照实声明 —— 本文件是 raw JSON → DB 的边界,值的真形状就是 JSON。
+type MartValue = string | number | boolean | null | MartValue[] | { [k: string]: MartValue }
+type Row = Record<string, MartValue>
 type PgClient = DbClient   // 形状归 lib/db 的 types 管;本文件的事务体照旧不动(它已有 BEGIN/COMMIT/ROLLBACK/finally release)
 
 // 分批多行 INSERT(可带 ON CONFLICT 子句);返回 RETURNING 的行(未写 RETURNING 则为空)
@@ -40,11 +43,13 @@ async function insertBatch(client: PgClient, table: string, cols: string[], rows
   const out: any[] = []
   for (let i = 0; i < rows.length; i += BATCH) {
     const chunk = rows.slice(i, i + BATCH)
-    const params: unknown[] = []
+    const params: MartValue[] = []
     const values = chunk
       .map((r, ri) => '(' + cols.map((c, ci) => { params.push(r[c] ?? null); return `$${ri * cols.length + ci + 1}` }).join(',') + ')')
       .join(',')
-    const res = await client.query(`INSERT INTO ${table} (${cols.join(',')}) VALUES ${values} ${suffix}`, params)
+    // 跨边界断言:jsonb 列的绑定值是对象/数组,不在 SqlParam 的标量联合里 —— pg 会按列类型
+    // 序列化收下。SqlParam 不为 seed 一个调用方扩容,断言留在边界这一行。
+    const res = await client.query(`INSERT INTO ${table} (${cols.join(',')}) VALUES ${values} ${suffix}`, params as SqlParam[])
     out.push(...res.rows)
   }
   return out
@@ -332,7 +337,7 @@ export async function GET(req: Request) {
     await insertBatch(client, 'companies', companyCols, companyRows,
       `ON CONFLICT (slug) DO UPDATE SET ${companyUpdate} WHERE ${companyChanged}`)
     for (const r of (await client.query(SQL.COMPANIES_IDS_BY_SLUGS,
-      [companyRows.map((r) => r.slug)])).rows) companyId[r.slug] = r.id
+      [Array.from(seenSlug)])).rows) companyId[r.slug] = r.id
     counts.companies = companyRows.length
 
     // ── 事实表:jobs 批量 upsert(按 external_id) ──

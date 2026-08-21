@@ -1991,9 +1991,10 @@ export type ToProvOpenIn = ProvOpenRow
 export type ToProvOpenOut = JobsRow
 
 /**
- * `toTitleTeer` 的入参。查询可能一行都没有,undefined 也交给映射统一收。
+ * `toTitleTeer` 的入参:整个结果集。零行由映射显式落空 —— 原先收 `TitleTeerRow | undefined`
+ * 让数组越界的 undefined 流进契约,2026-08-21 Frank 抓包后改收数组,undefined 不再出现。
  */
-export type ToTitleTeerIn = TitleTeerRow | undefined
+export type ToTitleTeerIn = TitleTeerRow[]
 
 /**
  * `toTitleTeer` 的返回。

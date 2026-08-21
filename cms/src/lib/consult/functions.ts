@@ -154,14 +154,15 @@ function toProvOpen(r: ToProvOpenIn): ToProvOpenOut {
 }
 
 /**
- * 职业名与 TEER 行 → 干净对象。查询可能一行都没有,undefined 也在这儿统一收。
- * TEER 走 `numOrNull` —— 不知道就是 null,分 TEER 的条款那时一条都挑不出来,那是实话。
+ * 职业名与 TEER 结果集 → 干净对象。零行在这儿显式落空(''/null),数组越界的 undefined
+ * 不进契约。TEER 走 `numOrNull` —— 不知道就是 null,分 TEER 的条款那时一条都挑不出来,那是实话。
  *
- * @param r 原始行,可能不存在。
+ * @param rows 查询结果集,可能为空。
  * @returns 收窄后的对象。
  */
-function toTitleTeer(r: ToTitleTeerIn): ToTitleTeerOut {
-  return { title: text(r?.title), teer: numOrNull(r?.teer) }
+function toTitleTeer(rows: ToTitleTeerIn): ToTitleTeerOut {
+  if (!rows.length) return { title: '', teer: null }
+  return { title: text(rows[0].title), teer: numOrNull(rows[0].teer) }
 }
 
 /**
@@ -322,7 +323,7 @@ async function lookupJobs(input: LookupJobsIn): LookupJobsOut {
     if (byProv.has(r.prov)) byProv.set(r.prov, r)
   }
   const rows = Array.from(byProv.values()).sort(byOpenDesc)
-  const tt = toTitleTeer(title.rows[0])
+  const tt = toTitleTeer(title.rows)
   return { noc: input.noc, title: tt.title, teer: tt.teer, rows }
 }
 
@@ -1335,7 +1336,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
     if (ok && ok !== box.noc) {
       box.noc = ok
       const { rows } = await run.db.query(SQL.NOC_TITLE_TEER, [ok])
-      const tt = toTitleTeer(rows[0])
+      const tt = toTitleTeer(rows)
       box.title = tt.title
       box.teer = tt.teer
       if (run.onStep) run.onStep(CONSULT_STEP_OCC[run.lang](box.title || ok))
@@ -1666,7 +1667,7 @@ async function boxFor(input: BoxForIn): BoxForOut {
   const noc = input.profile.noc
   if (!noc) return { facts: [], candidates: [], noc: null, title: '', teer: null }
   const { rows } = await input.db.query(SQL.NOC_TITLE_TEER, [noc])
-  const tt = toTitleTeer(rows[0])
+  const tt = toTitleTeer(rows)
   return { facts: [], candidates: [], noc: noc, title: tt.title, teer: tt.teer }
 }
 

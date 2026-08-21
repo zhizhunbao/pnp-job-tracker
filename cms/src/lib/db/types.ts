@@ -40,6 +40,13 @@ export type PayloadWithPool = {
 }
 
 /**
+ * 一个绑定参数($1…)。只列我们真往库里递的几种:文本、数字、布尔、null,
+ * 以及 `= ANY($n)` 用的文本/数字数组。想递别的(对象、Date)先问自己为什么 ——
+ * 原先这里是 `unknown[]`,什么都塞得进去,2026-08-21 Frank 抓包后收窄。
+ */
+export type SqlParam = string | number | boolean | null | string[] | number[]
+
+/**
  * 能执行 SQL 的连接。
  *
  * **故意不做成泛型方法**:写成 `query<R>(…): Promise<{rows: R[]}>` 等于承诺「你挑 R,我还你 R[]」,
@@ -49,9 +56,10 @@ export type PayloadWithPool = {
  */
 export type Db = {
   /**
-   * 跑一条语句。
+   * 跑一条语句。params 可省是 db 边界豁免:三分之一的语句是零参固定文本,
+   * pg 自己的签名也是这个形状。
    */
-  query: (sql: string, params?: unknown[]) => Promise<QueryResult>
+  query: (sql: string, params?: SqlParam[]) => Promise<QueryResult>
 }
 
 /**
