@@ -219,45 +219,50 @@ export const PROFILE_NONE =
 /**
  * 每把工具给模型看的说明。**动词开头,说清「什么时候用它」而不只是「它是什么」** ——
  * 实测模型挑工具几乎只读这一句。
+ *
+ * 🔴 **短是硬约束,不是文风**(2026-08-21 深夜,记录代理复放实锤):服务端(经网关的
+ * qwen3.6/Ollama)有一道**按字节**的上下文悬崖 —— 同一条英文问句,11 把工具配长描述
+ * 必挂(思考完不吐工具调用、`finish_reason=stop` 零正文),砍到 10 把或把描述截短就必好。
+ * /v1 传不进 num_ctx,盒子侧没调大之前,这里每一句都在挤同一条底线 —— 加新工具或
+ * 加长描述之前,先拿英文长问句(它的 prompt 最长)复放一轮。
  */
 export const TOOL_DESC = {
   /**
    * 查职业候选。它是所有职业相关工具的前置。
    */
   search:
-    'Find the five-digit NOC occupation code for a job title. Call this first whenever the question is about a specific '
-    + 'occupation. Returns only codes that actually have postings in our database.',
+    'Find the five-digit NOC code for a job title. Call it before any occupation tool. '
+    + 'Returns only codes with postings in our database.',
 
   /**
    * 检索词。实测模型爱把整句话塞进来,所以说清要的是职名。
    */
-  searchQuery: 'The job title to look up, two or three words, e.g. "carpenter" or "software developer". Not a whole sentence.',
+  searchQuery: 'Job title, two or three words, e.g. "carpenter". Not a whole sentence.',
 
   /**
    * 在招岗位。
    */
-  jobs: 'How many jobs are currently posted for this occupation, broken down by province.',
+  jobs: 'Current job postings for this occupation, by province.',
 
   /**
    * 省提名清单收录。
    */
-  coverage: 'Whether each province\'s provincial nominee occupation lists include this occupation.',
+  coverage: 'Whether each province\'s nominee occupation lists include this occupation.',
 
   /**
    * 省提名门槛条文。
    */
   thresholds:
-    'The official provincial nominee requirements for this occupation, per province, quoted from the source. Use this when '
-    + 'they ask what a province requires of them or of an employer.',
+    'Official provincial nominee requirements for this occupation, quoted from the source. '
+    + 'Use when they ask what a province requires of them or an employer.',
 
   /**
    * 抽签记录。2026-08-21 补 FED 一句:生产实测「我 480 稳吗」这类 CRS 分数问题,
    * 答案在联邦轮次的分数线里,不说清 FED 模型就没有一把工具够得着它。
    */
   draws:
-    'Recent invitation rounds (draws) for one province, or for federal Express Entry with prov "FED": date, stream, '
-    + 'cutoff score and how many were invited. Use FED whenever they ask about a CRS score or Express Entry cutoffs. '
-    + 'Needs no occupation.',
+    'Recent draws for one province, or federal Express Entry with prov "FED": date, stream, cutoff, invitations. '
+    + 'Use FED for CRS score and cutoff questions. Needs no occupation.',
 
   /**
    * 官方处理时长。
@@ -268,28 +273,24 @@ export const TOOL_DESC = {
    * Express Entry 相关事实。2026-08-21 按工具真实返回改准:它查的是类别抽选清单,
    * 不是「哪些联邦项目合格」—— 描述说错,模型就会拿它答资格问题。
    */
-  ee:
-    'Whether this occupation is on any Express Entry category-based draw list, and the latest cutoff of each matching '
-    + 'category. Category draws invite by category with their own cutoffs, separate from general rounds.',
+  ee: 'Express Entry category-based draw lists this occupation is on, with each category\'s latest cutoff.',
 
   /**
    * 联邦工签与项目规则。
    */
   permit:
-    'The federal rules for one program — PGWP, CEC, FSW or FST. Use this for questions about permit length, combining '
-    + 'programs, eligibility conditions. It does not need an occupation.',
+    'Federal rules for one program (PGWP, CEC, FSW or FST): permit length, combining programs, eligibility. '
+    + 'Needs no occupation.',
 
   /**
    * CRS / FSW67 分表。
    */
-  crs:
-    'The official points tables: CRS (the Express Entry ranking score) or FSW67 (the 67-point eligibility score). Use this '
-    + 'when they ask what a score is worth or how points are awarded. It does not need an occupation.',
+  crs: 'Official points tables: CRS (ranking score) or FSW67 (eligibility score). Needs no occupation.',
 
   /**
    * 分表名。
    */
-  crsGrid: 'Which table: "CRS" for the Express Entry ranking score, "FSW67" for the 67-point eligibility score.',
+  crsGrid: '"CRS" for the ranking score, "FSW67" for the 67-point eligibility score.',
 
   /**
    * 时间线。
@@ -300,31 +301,31 @@ export const TOOL_DESC = {
    * 路径裁决。它读的是我们自己存着的档案,不收模型给的条件。
    */
   verdict:
-    'Assess which immigration pathways this person qualifies for, using the profile we already hold. Use it when they ask '
-    + 'which path to take or whether they qualify. Takes no arguments — it reads our own stored profile, never your guesses.',
+    'Assess which pathways this person qualifies for. Use when they ask which path to take or whether they qualify. '
+    + 'Takes no arguments — it reads our stored profile, never your guesses.',
 
   /**
    * 主张对账。这是这个产品对中介话术的杀手锏。
    */
   claims:
-    'Check specific claims this person was told by someone else (an agent, an employer, a school) against official records. '
-    + 'Pass each claim as the user\'s own words. Use it whenever they report what somebody promised them.',
+    'Check what someone (agent, employer, school) told this person against official records. '
+    + 'Pass each claim in the user\'s own words.',
 
   /**
    * 一条主张。
    */
-  claimText: 'One thing this person was told, in their own words, e.g. "the agent said two thousand dollars guarantees a nomination".',
+  claimText: 'One claim, in the user\'s own words.',
 
   /**
    * 省码入参的统一说明。**实测这一句能把 `"Manitoba"` 治成 `"MB"`** ——
    * 但代码里的白名单照留:描述是求它,白名单才是拦它。
    */
-  prov: 'Two-letter province code, e.g. MB for Manitoba, BC for British Columbia.',
+  prov: 'Two-letter province code, e.g. MB.',
 
   /**
    * 职业码入参的统一说明。
    */
-  noc: 'The five-digit NOC code, exactly as search_occupations returned it.',
+  noc: 'Five-digit NOC code from search_occupations.',
 }
 
 // =========================================================================

@@ -33,6 +33,8 @@ import type { Lang } from '@/lib/i18n'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
+import { consult } from '@/lib/consult/server'
+import type { Profile as ConsultProfile } from '@/lib/consult'
 import { logChat, threadId } from '@/lib/chat'
 import { chatProfileContext, orchestrate, profileFill, type ChatResult, type ChatStep, type ChatTurn, type Slots } from '@/lib/chat'
 import { isChatError } from '@/lib/error'
@@ -118,6 +120,71 @@ export async function POST(req: Request) {
     text, lang, history, ms: Date.now() - t0,
     ...('ok' in d ? { result: d.ok } : { err: d.err instanceof Error && isChatError<Slots>(d.err) ? d.err.code : 'llm' }),
   })
+
+  // ── CHAT_PI=1:切到 lib/consult 的 pi 工具循环(17 号卷宗 §5 P3;默认关,旧链原样,可回退)──
+  // 与旧链的三点差异都是有意的:
+  //   ① 正文不逐字流:08-08 拍板「一句过了逐句门才发」,逐句门(makeSentenceGate)还在将死的
+  //      旧链里 —— 新链先只流轨迹、整段定稿,宁可少个打字机,不把没过闸的半稿亮给用户;
+  //   ② facts 的见客 label 用 consult 的 quote:consult 的 label 是给模型看的英文说明,
+  //      quote 才是可见客的引文(它的 Fact 注释写死了这条分工);
+  //   ③ 档案槽回填(D3 profileFill)暂不接:它吃旧链的整套 Slots 抽取,新链没有抽槽层,
+  //      等 P4 两链对跑后再折这笔账。
+  // 前置错误在新链只有网关没配一种(tooShort/noOcc 是旧链编排的闸,RULE 8 交给模型自己分了),
+  // 所以流直接开;错误一律走流内 {error} 事件,ChatBox 的 readSse 同一套分支照吃。
+  if (process.env.CHAT_PI === '1') {
+    const consultProfile: ConsultProfile = {
+      noc: typeof (context as { noc?: unknown } | undefined)?.noc === 'string'
+        ? (context as { noc: string }).noc
+        : Array.isArray(up.nocCodes) && typeof up.nocCodes[0] === 'string' ? up.nocCodes[0] : null,
+      occText: null,
+      provs: Array.isArray(up.targetProvinces) ? up.targetProvinces.filter((p: unknown): p is string => typeof p === 'string') : [],
+      // 总经验 = 两格相加(都是他自己报的数,不是官方数字);两格都没有才是 null
+      expMonths: up.expCanadaMonths == null && up.expForeignMonths == null
+        ? null
+        : Number(up.expCanadaMonths ?? 0) + Number(up.expForeignMonths ?? 0),
+      status: typeof up.currentStatus === 'string' ? up.currentStatus : null,
+    }
+    const steps: string[] = []
+    const stream = new ReadableStream<Uint8Array>({
+      async start(c) {
+        const send = (o: unknown) => { try { c.enqueue(sse(o)) } catch { /* 客户端已断开 */ } }
+        try {
+          const payload = await getPayload({ config: await config })
+          pl = payload
+          const r = await consult({
+            db: (payload.db as any).pool, text, lang, profile: consultProfile, history,
+            onStep: (s: string) => { steps.push(s); send({ step: s }) },
+          })
+          const facts = r.facts.map((f): ChatResult['facts'][number] => ({
+            tool: f.tool, label: f.quote || f.label, value: f.value, valueText: f.valueText,
+            unit: f.unit, evidence: f.evidence, cited: f.cited,
+          }))
+          const slots: Slots = {
+            noc: r.noc, occText: '', provs: consultProfile.provs ?? [],
+            expMonths: consultProfile.expMonths ?? null, status: consultProfile.status ?? null, claims: [],
+          }
+          const ok: ChatResult = { answer: r.answer, slots, facts, followups: [], degraded: r.degraded }
+          log({ ok })
+          console.log(`[chat] ok(pi) noc=${r.noc} facts=${r.facts.length} in=${text.length}ch`)
+          send({ ...ok, activity: steps, thread: threadId(text, history) })
+        } catch (err) {
+          log({ err })
+          send({ error: fail(err).body.error })
+        }
+        c.enqueue(enc.encode('data: [DONE]\n\n'))
+        c.close()
+      },
+    })
+    return new Response(stream, {
+      headers: {
+        ...g.headers,                                 // 限流头只能在这儿给(流开了就加不上)
+        'content-type': 'text/event-stream; charset=utf-8',
+        'cache-control': 'no-cache, no-transform',
+        'x-accel-buffering': 'no',
+        connection: 'keep-alive',
+      },
+    })
+  }
 
   /**
    * 🔵 **对话槽回填档案**(D3;设计 docs/design/对话闭环总设计-20260809.md §3 批A④)。

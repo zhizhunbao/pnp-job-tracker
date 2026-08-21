@@ -21,6 +21,7 @@ import { streamSimple } from '@earendil-works/pi-ai/api/openai-completions'
 import type { Model } from '@earendil-works/pi-ai'
 import { acceptNoc, passThroughMessages } from '../agent/server'
 import { loadVerdictTables, pathVerdict } from '../ruling/server'
+import { CONSULT_STEP, STEP } from '../i18n'
 import { cleanProvs } from '../location'
 import { chatError, CHAT_CODE } from '../error'
 import { CHAT_FN, CHAT_LOG, GATE_LOG, log } from '../log'
@@ -631,6 +632,9 @@ function drawsFacts(r: DrawsFactsIn): DrawsFactsOut {
  * `value` 为 null 的行(隐私抑制值、纯文本游标)照给 —— `valueText` 里是官方原文,
  * 压掉它等于把「Less than 10」这条信息整个丢掉。
  *
+ * 🔴 有值的行 `valueText` 必须**带上官方单位**:模型看到的是 `label: valueText` 一行,
+ * 裸数字它就自己配单位 —— 实撞:SIRS 池 150+ 分段 10 **件**被答成等待 10 **天**。
+ *
  * @param r 查询结果。
  * @returns 事实清单。
  */
@@ -653,7 +657,7 @@ function opsFacts(r: OpsFactsIn): OpsFactsOut {
       label: `${r.prov}${LABEL.opsHead}${row.label}${scope}${when}`,
       quote: `${r.prov}${SEP.dot}${row.label}`,
       value: row.value,
-      valueText: row.valueText || (row.value == null ? '' : String(row.value)),
+      valueText: row.valueText || (row.value == null ? '' : `${row.value}${row.unit ? `${SPACE}${row.unit}` : ''}`),
       unit: row.unit,
       evidence: row.evidence,
     }))
@@ -1137,6 +1141,8 @@ function makeToolGates(input: MakeToolGatesIn): MakeToolGatesOut {
  * 里面的嵌套件按闸的规矩不再各挂 JSDoc,共同的规矩集中写在这儿:
  *   · 每支 `exec*` 的两个参数是 pi 定死的(按位置传 toolCallId、args),第一位我们用不上;
  *   · `step` 的轨迹只在这一步**真的开始打了**才发 —— 采信没过就不该让用户看到「正在查」;
+ *     入参是**工具名**,见客一行按 `run.lang` 从 `CONSULT_STEP` 取(轨迹是给人看的字,归 lib/i18n);
+ *     `nocOf` 采信成功那一拍额外发 `STEP.occ(职业名)` —— 那一刻职业名已在手,是最有信息量的一条;
  *   · 带职业码的工具(jobs/coverage/thresholds/ee/claims)先过 `nocOf` 采信,拿不到回「先去搜」;
  *     带省码的(draws/ops)先过 `provOf`,ops 不收 FED(联邦处理时长本站未收录);
  *     program 与 grid 由 schema 的字面量联合收窄,进来就不必再采信。
@@ -1157,8 +1163,8 @@ function makeToolGates(input: MakeToolGatesIn): MakeToolGatesOut {
 function makeTools(input: MakeToolsIn): MakeToolsOut {
   const { run, box } = input
 
-  function step(text: StepIn): StepOut {
-    run.onStep?.(text)
+  function step(key: StepIn): StepOut {
+    run.onStep?.(CONSULT_STEP[run.lang][key] ?? key)
   }
 
   async function nocOf(raw: NocOfIn): NocOfOut {
@@ -1168,12 +1174,13 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
       const { rows } = await run.db.query(SQL.NOC_TITLE_TEER, [ok])
       box.title = String(rows[0]?.title ?? '')
       box.teer = rows[0]?.teer == null ? null : Number(rows[0].teer)
+      run.onStep?.(STEP[run.lang].occ(box.title || ok))
     }
     return box.noc
   }
 
   async function execSearch(_id: string, args: ExecSearchIn): ExecSearchOut {
-    step(TOOL_DESC.search)
+    step(TOOL_NAME.search)
     const hits = await searchOccupations({ db: run.db, query: args.query.trim().slice(0, MAX_QUERY) })
     if (!hits.length) return say(TOOL_REPLY.noCandidates)
     const lines: string[] = []
@@ -1187,7 +1194,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
   async function execJobs(_id: string, args: ExecJobsIn): ExecJobsOut {
     const noc = await nocOf(args.noc)
     if (!noc) return say(TOOL_REPLY.needNoc)
-    step(TOOL_DESC.jobs)
+    step(TOOL_NAME.jobs)
     const r = await lookupJobs({ db: run.db, noc })
     return take({ box, facts: jobsFacts(r) })
   }
@@ -1195,7 +1202,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
   async function execCoverage(_id: string, args: ExecCoverageIn): ExecCoverageOut {
     const noc = await nocOf(args.noc)
     if (!noc) return say(TOOL_REPLY.needNoc)
-    step(TOOL_DESC.coverage)
+    step(TOOL_NAME.coverage)
     const r = await lookupCoverage({ db: run.db, noc })
     return take({ box, facts: coverageFacts(r) })
   }
@@ -1203,7 +1210,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
   async function execThresholds(_id: string, args: ExecThresholdsIn): ExecThresholdsOut {
     const noc = await nocOf(args.noc)
     if (!noc) return say(TOOL_REPLY.needNoc)
-    step(TOOL_DESC.thresholds)
+    step(TOOL_NAME.thresholds)
     const r = await lookupThresholds({
       db: run.db, noc, teer: box.teer, provs: cleanProvs({ raw: args.provs }), expMonths: run.profile.expMonths ?? null,
     })
@@ -1213,7 +1220,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
   async function execDraws(_id: string, args: ExecDrawsIn): ExecDrawsOut {
     const prov = provOf(args.prov)
     if (!prov) return say(TOOL_REPLY.badProv)
-    step(TOOL_DESC.draws)
+    step(TOOL_NAME.draws)
     const r = await lookupDraws({ db: run.db, prov })
     return take({ box, facts: drawsFacts(r) })
   }
@@ -1221,7 +1228,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
   async function execOps(_id: string, args: ExecOpsIn): ExecOpsOut {
     const prov = provOf(args.prov)
     if (!prov || prov === FED) return say(TOOL_REPLY.badProv)
-    step(TOOL_DESC.ops)
+    step(TOOL_NAME.ops)
     const r = await lookupOps({ db: run.db, prov })
     return take({ box, facts: opsFacts(r) })
   }
@@ -1229,25 +1236,25 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
   async function execEe(_id: string, args: ExecEeIn): ExecEeOut {
     const noc = await nocOf(args.noc)
     if (!noc) return say(TOOL_REPLY.needNoc)
-    step(TOOL_DESC.ee)
+    step(TOOL_NAME.ee)
     const r = await lookupEe({ db: run.db, noc })
     return take({ box, facts: eeFacts(r) })
   }
 
   async function execPermit(_id: string, args: ExecPermitIn): ExecPermitOut {
-    step(TOOL_DESC.permit)
+    step(TOOL_NAME.permit)
     const r = await lookupPermit({ db: run.db, program: args.program })
     return take({ box, facts: permitFacts(r) })
   }
 
   async function execPoints(_id: string, args: ExecPointsIn): ExecPointsOut {
-    step(TOOL_DESC.crs)
+    step(TOOL_NAME.points)
     const r = await lookupPoints({ db: run.db, grid: args.grid, section: args.section?.trim() ?? '' })
     return take({ box, facts: pointsFacts(r) })
   }
 
   async function execVerdict(_id: string, _args: ExecVerdictIn): ExecVerdictOut {
-    step(TOOL_DESC.verdict)
+    step(TOOL_NAME.verdict)
     const data = await loadVerdictTables(run.db)
     const rows = pathVerdict({ profile: verdictProfileOf({ box, profile: run.profile }), data: data })
     return take({ box, facts: verdictFacts(rows) })
@@ -1256,7 +1263,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
   async function execClaims(_id: string, args: ExecClaimsIn): ExecClaimsOut {
     const noc = await nocOf(args.noc)
     if (!noc) return say(TOOL_REPLY.needNoc)
-    step(TOOL_DESC.claims)
+    step(TOOL_NAME.claims)
     const lines: string[] = []
     for (const raw of args.claims.slice(0, CLAIMS_CAP)) {
       const text = raw.trim().slice(0, CLAIM_TEXT_CAP)

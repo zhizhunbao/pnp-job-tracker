@@ -268,6 +268,56 @@ export const STEP: Record<Lang, StepDict> = {
   },
 }
 
+/**
+ * consult 新链(pi 工具循环)的轨迹一行 —— 键 = consult 的工具名(`TOOL_NAME` 的值)。
+ *
+ * 与上面 `STEP` 并存的原因:STEP 带参(条数/省名),而新链的轨迹在**取数开始前**发
+ * (「这一步真的开始打了才发」),那时参数还没有;措辞沿用 STEP 的术语体系。
+ * 采信出职业那一拍例外 —— 新链直接复用 `STEP.occ(职业名)`,那一刻职业名已经在手。
+ * P5 删老链时这两张表一起收敛。
+ */
+export const CONSULT_STEP: Record<Lang, Record<string, string>> = {
+  zh: {
+    search_occupations: '检索职业库',
+    lookup_jobs: '查在招岗位',
+    lookup_coverage: '查职业清单',
+    lookup_thresholds: '查官方门槛',
+    lookup_draws: '查抽选记录',
+    lookup_ops: '查运营统计',
+    lookup_ee: '查联邦 EE 类别',
+    lookup_permit: '查联邦规则',
+    lookup_points: '查联邦计分表',
+    assess_pathways: '逐条比对官方门槛',
+    check_claims: '核对别人跟你说的',
+  },
+  en: {
+    search_occupations: 'Searching occupations',
+    lookup_jobs: 'Checking open postings',
+    lookup_coverage: 'Checking occupation lists',
+    lookup_thresholds: 'Checking official requirements',
+    lookup_draws: 'Checking draw history',
+    lookup_ops: 'Checking operational stats',
+    lookup_ee: 'Checking Express Entry categories',
+    lookup_permit: 'Checking federal rules',
+    lookup_points: 'Checking the federal points grid',
+    assess_pathways: 'Comparing official requirements',
+    check_claims: 'Checking what you were told',
+  },
+  ko: {
+    search_occupations: '직업 검색',
+    lookup_jobs: '채용 공고 조회',
+    lookup_coverage: '직업 목록 조회',
+    lookup_thresholds: '공식 요건 조회',
+    lookup_draws: '추첨 기록 조회',
+    lookup_ops: '운영 통계 조회',
+    lookup_ee: '연방 EE 카테고리 조회',
+    lookup_permit: '연방 규정 조회',
+    lookup_points: '연방 점수표 조회',
+    assess_pathways: '공식 요건 대조',
+    check_claims: '들으신 내용 대조',
+  },
+}
+
 export const ASK_OCC: Record<Lang, (field: string, opts: string[]) => string> = {
   zh: (f, o) => `${latinTail(f)}是专业,不是能直接查的职业。本站数据里对得上的职业有:${o.join('、')}。你想按哪一个查?`,
   en: (f, o) => `${f} is a field of study, not an occupation we can look up. In our data it points to these occupations: ${o.join(', ')}. Which one should we use?`,
