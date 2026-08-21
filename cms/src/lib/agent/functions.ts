@@ -9,66 +9,28 @@ import { stream } from '@earendil-works/pi-ai/api/anthropic-messages'
 import { runAgentLoop } from '@earendil-works/pi-agent-core'
 import type { StreamFn } from '@earendil-works/pi-agent-core'
 import { AGENT_FN, AGENT_LOG, log } from '@/lib/log'
+import { cleanProvs } from '../location'
 import { NOC_LIST_WITH_TITLES } from '../db/sql'
 import {
-  COST_CACHE_READ, COST_CACHE_WRITE, COST_INPUT, COST_OUTPUT, DASH, FALLBACK_ON, LIKE_ANY,
-  LIKE_ESCAPE, LIKE_SPECIAL, MAX_INPUT_CHARS,
-  MAX_QUERY_CHARS, MAX_REASON_CHARS, MAX_TOKENS, MODEL_API, MODEL_BASE_URL, MODEL_CONTEXT_WINDOW, MODEL_ID,
-  MODEL_NAME, MODEL_PROVIDER, MODEL_REASONING, NL, NOC_RE, NOISE_RATIO, PROVS, ROLE, SEARCH_LIMIT,
-  SHOWN, TIMEOUT_MS,
-  TOOLS,
+  COST_CACHE_READ, COST_CACHE_WRITE, COST_INPUT, COST_OUTPUT, DASH, FALLBACK_ON, LIKE_ANY, LIKE_ESCAPE,
+  LIKE_SPECIAL, MAX_INPUT_CHARS, MAX_QUERY_CHARS, MAX_REASON_CHARS, MAX_TOKENS, MODEL_API, MODEL_BASE_URL,
+  MODEL_CONTEXT_WINDOW, MODEL_ID, MODEL_NAME, MODEL_PROVIDER, MODEL_REASONING, NL, NOC_RE, NOISE_RATIO, ROLE,
+  SEARCH_LIMIT, SHOWN, TIMEOUT_MS, TOOLS,
 } from './constants'
 import { RESOLVE_SYSTEM, SEARCH_RESULT_HINT, TOOL_DESC, TOOL_REPLY } from './prompts'
 import { GIVE_UP_PARAMS, SEARCH_PARAMS, SET_SLOTS_PARAMS } from './schemas'
 import type {
-
-  AcceptNocIn, AcceptNocOut, AgentFallbackOnOut, Candidate, CandidateLineIn, CandidateLineOut, CleanProvsIn,
-  CleanProvsOut, ExecuteGiveUpIn, ExecuteGiveUpOut, ExecuteSearchIn, ExecuteSearchOut, ExecuteSetSlotsIn,
-  ExecuteSetSlotsOut, GiveUpToolIn, GiveUpToolOut, IgnoreEventsOut, InCandidatesIn, InCandidatesOut, Inbox,
-  IsKnownProvIn, IsKnownProvOut, MakeToolsIn, MakeToolsOut, ModelOut, OnTimeoutOut, PassThroughMessagesIn,
-  PassThroughMessagesOut, ResolveByAgentIn, ResolveByAgentOut, RunLoopIn, RunLoopOut, SayIn, SayOut,
-  SearchCandidatesIn, SearchCandidatesOut, SearchDetails, SearchReplyIn, SearchReplyOut, SearchToolIn,
-  SearchToolOut, SetSlotsToolIn, SetSlotsToolOut, ToolCallId, TranscriptMessage, UpperTrimIn, UpperTrimOut,
+  AcceptNocIn, AcceptNocOut, AgentFallbackOnOut, Candidate, CandidateLineIn, CandidateLineOut, ExecuteGiveUpIn,
+  ExecuteGiveUpOut, ExecuteSearchIn, ExecuteSearchOut, ExecuteSetSlotsIn, ExecuteSetSlotsOut, GiveUpToolIn,
+  GiveUpToolOut, IgnoreEventsOut, InCandidatesIn, InCandidatesOut, Inbox, MakeToolsIn, MakeToolsOut, ModelOut,
+  OnTimeoutOut, PassThroughMessagesIn, PassThroughMessagesOut, ResolveByAgentIn, ResolveByAgentOut, RunLoopIn,
+  RunLoopOut, SayIn, SayOut, SearchCandidatesIn, SearchCandidatesOut, SearchDetails, SearchReplyIn,
+  SearchReplyOut, SearchToolIn, SearchToolOut, SetSlotsToolIn, SetSlotsToolOut, ToolCallId, TranscriptMessage,
 } from './types'
 
 // =========================================================================
 // 1. 采信校验
 // =========================================================================
-
-/**
- * 省码规范化:去空格、转大写。
- *
- * @param input 模型给的一个省码。
- * @returns 去掉空格、转成大写之后的省码。
- */
-function upperTrim(input: UpperTrimIn): UpperTrimOut {
-  return input.prov.trim().toUpperCase()
-}
-
-/**
- * 认不认得出这个省码 —— 认不出就丢,不猜。
- *
- * @param input 已经规范化过的省码。
- * @returns 认不认得出它。
- */
-function isKnownProv(input: IsKnownProvIn): IsKnownProvOut {
-  return PROVS.has(input.prov)
-}
-
-/**
- * 模型给的省码 → 认得出的留下,认不出的丢掉(不猜)。
- *
- * @param input 模型给的省码数组,可以是 undefined。
- * @returns 认得出的那些;认不出的直接丢掉,不猜。
- */
-export function cleanProvs(input: CleanProvsIn): CleanProvsOut {
-  const kept: CleanProvsOut = []
-  for (const raw of input.raw ?? []) {
-    const prov = upperTrim({ prov: raw })
-    if (isKnownProv({ prov })) kept.push(prov)
-  }
-  return kept
-}
 
 /**
  * 这个 NOC 在不在搜索真实返回的候选里。
@@ -257,7 +219,7 @@ export function makeTools(input: MakeToolsIn): MakeToolsOut {
  * @param ms 循环里流动的全部消息(签名由 pi 的 convertToLlm 定死)。
  * @returns 能喂给模型的那三种,顺序不变。
  */
-function passThroughMessages(ms: PassThroughMessagesIn): PassThroughMessagesOut {
+export function passThroughMessages(ms: PassThroughMessagesIn): PassThroughMessagesOut {
   const kept: PassThroughMessagesOut = []
   for (const m of ms) {
     if (m.role === ROLE.user || m.role === ROLE.assistant || m.role === ROLE.toolResult) kept.push(m)

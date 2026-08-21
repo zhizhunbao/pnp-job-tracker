@@ -10,7 +10,8 @@
  */
 import { describe, expect, it } from 'vitest'
 
-import { acceptNoc, cleanProvs, makeTools } from '@/lib/agent/functions'
+import { acceptNoc, makeTools } from '@/lib/agent/functions'
+import { cleanProvs } from '@/lib/location'
 import { TOOLS } from '@/lib/agent/constants'
 import type { Candidate, Inbox } from '@/lib/agent/types'
 import { ALL_PROVS } from '@/lib/location'
@@ -43,6 +44,13 @@ describe('cleanProvs', () => {
 
   it('混着给:只留认得出的那些,顺序不变', () => {
     expect(cleanProvs({ raw: ['bc', 'XX', 'on'] })).toEqual(['BC', 'ON'])
+  })
+
+  // 2026-08-20 收拢两份实现时定的口径:说两遍不是想去两次。
+  // 老 lib/agent 那份不去重、lib/consult 那份去重 —— 同一句话两条链给出不同的目标省清单。
+  it('同一个省说了几遍 → 只留一个(大小写不同也算同一个)', () => {
+    expect(cleanProvs({ raw: ['BC', 'BC'] })).toEqual(['BC'])
+    expect(cleanProvs({ raw: ['bc', ' BC ', 'ON'] })).toEqual(['BC', 'ON'])
   })
 
   it('压根没给 → 空数组,不报错', () => {

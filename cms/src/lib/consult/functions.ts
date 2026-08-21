@@ -18,7 +18,9 @@
 import { runAgentLoop } from '@earendil-works/pi-agent-core'
 import type { AgentMessage, StreamFn } from '@earendil-works/pi-agent-core'
 import { streamSimple } from '@earendil-works/pi-ai/api/openai-completions'
-import type { Message, Model } from '@earendil-works/pi-ai'
+import type { Model } from '@earendil-works/pi-ai'
+import { acceptNoc, passThroughMessages } from '../agent/server'
+import { cleanProvs } from '../location'
 import { chatError, CHAT_CODE } from '../error'
 import { CHAT_FN, CHAT_LOG, GATE_LOG, log } from '../log'
 import * as SQL from '../db/sql'
@@ -28,8 +30,8 @@ import {
   API, AUTH_HEADER, AVAIL, BASE, BEARER, BOLD_RE, CONTEXT_WINDOW, EARLIER_HEAD, EN, EN_UNIT_WORDS, FAIL_MSG,
   FULL_STOP, GATE, GUARD_RETRIES, HAS_DIGIT, HEADING_RE, HISTORY_CAP, HISTORY_TURNS, INELIGIBLE, INTERNAL_WORDS,
   JOBS_LINK, KEY, LABEL, LANG_NAME, LEAD_MARK, LEN_CAP, LIKE_ANY, LIKE_ESCAPE, LIKE_SPECIAL, MARKUP, MAX_FACTS,
-  MAX_QUERY, MAX_TOKENS, MESSAGE_UPDATE, MODEL_ID, NL, NO_KEY_PLACEHOLDER, NOC_RE, NOISE_RATIO, NOW_HEAD, NUM_RE,
-  NUMBERED_RE, PROVIDER, PROVS, QC, ROLE, SAID, SAMPLING, SEARCH_LIMIT, SEP, SHEET_CAP, SPACE, STAR_RE, SUBJECT,
+  MAX_QUERY, MAX_TOKENS, MESSAGE_UPDATE, MODEL_ID, NL, NOISE_RATIO, NOW_HEAD, NO_KEY_PLACEHOLDER, NUMBERED_RE,
+  NUM_RE, PROVIDER, PROVS, QC, ROLE, SAID, SAMPLING, SEARCH_LIMIT, SEP, SHEET_CAP, SPACE, STAR_RE, SUBJECT,
   TABLE_RE, THOUSANDS_COMMA, TIMEOUT_MS, TOOL_LABEL, TOOL_NAME, TRAILING_ZEROS, UNIT, V1, WORD_EDGE,
 } from './constants'
 import {
@@ -39,20 +41,19 @@ import {
 import { NOC_PARAMS, NOC_PROVS_PARAMS, SEARCH_PARAMS } from './schemas'
 import { byOpenDesc } from './callbacks'
 import type {
-  AcceptNocIn, AcceptNocOut, AllowedNumbersIn, AllowedNumbersOut, AnswerLangIn, BlankCoverageIn, BlankCoverageOut,
-  BlankIfNumberedIn, BlankIfNumberedOut, Candidate, CiteFactsIn, CiteFactsOut, ClampAnswerOut, CleanProvsIn,
-  CleanProvsOut, CodesOfIn, CodesOfOut, ConsultIn, ConsultOut, ContentOfIn, ContentOfOut, CoverageFactsIn,
-  CoverageFactsOut, CoverageRow, DraftOnceIn, DraftOnceOut, ExecCoverageIn, ExecCoverageOut, ExecJobsIn,
-  ExecJobsOut, ExecSearchIn, ExecSearchOut, ExecThresholdsIn, ExecThresholdsOut, Fact, FactIn, FactOut, FactSheetIn,
-  FactSheetOut, FindEnglishUnitsOut, FindInternalWordsIn, FindInternalWordsOut, FindRawMarkupIn, FindRawMarkupOut,
-  FindUngroundedNumbersOut, FirstPromptIn, FirstPromptOut, GateHit, GateLabelIn, GateLabelOut, Inbox, IsUserTurnIn,
-  IsUserTurnOut, JobsFactsIn, JobsFactsOut, JobsRow, LookupCoverageIn, LookupCoverageOut, LookupJobsIn,
-  LookupJobsOut, LookupThresholdsIn, LookupThresholdsOut, MakeToolsIn, MakeToolsOut, ModelOut, NocOfIn, NocOfOut,
-  NormNumIn, NormNumOut, NumberCheckIn, OnEventIn, OnEventOut, OnTimeoutOut, PassThroughMessagesIn,
-  PassThroughMessagesOut, RetryNoteIn, RetryNoteOut, RunGatesIn, RunGatesOut, RunIn, SayIn, SayOut,
-  SearchOccupationsIn, SearchOccupationsOut, StatusFactIn, StatusFactOut, StepIn, StepOut, SystemOfOut, TakeIn,
-  TakeOut, TextOfIn, TextOfOut, ThresholdsFactsIn, ThresholdsFactsOut, ThresholdsRow, TierTextIn, TierTextOut,
-  ToRequirementIn, ToRequirementOut, Tool,
+  AllowedNumbersIn, AllowedNumbersOut, AnswerLangIn, BlankCoverageIn, BlankCoverageOut, BlankIfNumberedIn,
+  BlankIfNumberedOut, Candidate, CiteFactsIn, CiteFactsOut, ClampAnswerOut, CodesOfIn, CodesOfOut, ConsultIn,
+  ConsultOut, ContentOfIn, ContentOfOut, CoverageFactsIn, CoverageFactsOut, CoverageRow, DraftOnceIn,
+  DraftOnceOut, ExecCoverageIn, ExecCoverageOut, ExecJobsIn, ExecJobsOut, ExecSearchIn, ExecSearchOut,
+  ExecThresholdsIn, ExecThresholdsOut, Fact, FactIn, FactOut, FactSheetIn, FactSheetOut, FindEnglishUnitsOut,
+  FindInternalWordsIn, FindInternalWordsOut, FindRawMarkupIn, FindRawMarkupOut, FindUngroundedNumbersOut,
+  FirstPromptIn, FirstPromptOut, GateHit, GateLabelIn, GateLabelOut, Inbox, IsUserTurnIn, IsUserTurnOut,
+  JobsFactsIn, JobsFactsOut, JobsRow, LookupCoverageIn, LookupCoverageOut, LookupJobsIn, LookupJobsOut,
+  LookupThresholdsIn, LookupThresholdsOut, MakeToolsIn, MakeToolsOut, ModelOut, NocOfIn, NocOfOut, NormNumIn,
+  NormNumOut, NumberCheckIn, OnEventIn, OnEventOut, OnTimeoutOut, RetryNoteIn, RetryNoteOut, RunGatesIn,
+  RunGatesOut, RunIn, SayIn, SayOut, SearchOccupationsIn, SearchOccupationsOut, StatusFactIn, StatusFactOut,
+  StepIn, StepOut, SystemOfOut, TakeIn, TakeOut, TextOfIn, TextOfOut, ThresholdsFactsIn, ThresholdsFactsOut,
+  ThresholdsRow, TierTextIn, TierTextOut, ToRequirementIn, ToRequirementOut, Tool,
 } from './types'
 
 // =========================================================================
@@ -87,35 +88,6 @@ function model(): ModelOut {
 // =========================================================================
 // 2. 采信(工具描述是求它填对,这一层才是拦它填错)
 // =========================================================================
-
-/**
- * 模型给的省码 → 认得出的留下,认不出的丢掉。**宁可少一个省,不许把 NB 当 NS。**
- *
- * @param raw 模型给的省码,可以缺省。
- * @returns 认得出的那些,去重保序。
- */
-function cleanProvs(raw: CleanProvsIn): CleanProvsOut {
-  const kept: string[] = []
-  for (const one of raw ?? []) {
-    const prov = one.trim().toUpperCase()
-    if (PROVS.has(prov) && !kept.includes(prov)) kept.push(prov)
-  }
-  return kept
-}
-
-/**
- * 模型挑的职业码只有在**这一趟检索真返回过**才算数 —— 它没法拿库外的码蒙混过去。
- *
- * @param box 这一趟的收件箱。
- * @param raw 模型填的码。
- * @returns 采信就返回那个码,不采信返回 null。
- */
-function acceptNoc(input: AcceptNocIn): AcceptNocOut {
-  const noc = (input.raw ?? '').trim()
-  if (!NOC_RE.test(noc)) return null
-  for (const c of input.box.candidates) if (c.noc === noc) return noc
-  return null
-}
 
 // =========================================================================
 // 3. 取数(SQL 文本全在 lib/db/sql,本段只管取数与定形)
@@ -695,7 +667,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
    * @returns 采信下来的码;拿不到就是 null。
    */
   async function nocOf(raw: NocOfIn): NocOfOut {
-    const ok = acceptNoc({ box, raw })
+    const ok = acceptNoc({ raw: raw, candidates: box.candidates })
     if (ok && ok !== box.noc) {
       box.noc = ok
       const { rows } = await run.db.query(SQL.NOC_TITLE_TEER, [ok])
@@ -764,7 +736,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
     if (!noc) return say(TOOL_REPLY.needNoc)
     step(TOOL_DESC.thresholds)
     const r = await lookupThresholds({
-      db: run.db, noc, teer: box.teer, provs: cleanProvs(args.provs), expMonths: run.profile.expMonths ?? null,
+      db: run.db, noc, teer: box.teer, provs: cleanProvs({ raw: args.provs }), expMonths: run.profile.expMonths ?? null,
     })
     return take({ box, facts: thresholdsFacts(r) })
   }
@@ -828,20 +800,6 @@ function firstPrompt(input: FirstPromptIn): FirstPromptOut {
     timestamp: Date.now(),
   }
   return message
-}
-
-/**
- * 我们只产 user 消息,pi harness 那几种非 LLM 消息一条都不会出现 —— 比对 role 让编译器自己窄化。
- *
- * @param ms 循环里流动的全部消息(签名由 pi 的 convertToLlm 定死)。
- * @returns 能喂给模型的那三种,顺序不变。
- */
-function passThroughMessages(ms: PassThroughMessagesIn): PassThroughMessagesOut {
-  const kept: Message[] = []
-  for (const m of ms) {
-    if (m.role === ROLE.user || m.role === ROLE.assistant || m.role === ROLE.toolResult) kept.push(m)
-  }
-  return kept
 }
 
 /**

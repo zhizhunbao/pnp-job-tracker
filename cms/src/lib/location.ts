@@ -52,3 +52,22 @@ export const mapQuery = (field: ColKey, j: JobRow): string => {
     : field === 'district' ? [L.district, L.city, L.prov].filter(Boolean).join(', ')
     : [j.address || L.district, L.city, L.prov].filter(Boolean).join(', ')
 }
+
+/**
+ * 模型给的省码 → 认得出的留下,认不出的丢掉(**不猜**),并且**去重**。
+ *
+ * 🔴 2026-08-20 收拢时发现两个域各有一份,而且**行为不一样**:
+ * `lib/agent` 那份不去重、`lib/consult` 那份去重 —— 同一句「BC 和 BC」两条链给出不同的
+ * 目标省清单。收成一份,口径取**去重**那一版:重复的省码进 `targetProvinces` 会重复计数、
+ * 出重复行,而「他说了两遍」不是「他想去两次」。
+ *
+ * 白名单是 `ALL_PROVS`(九个 PNP 省 + QC)—— 两边本来就都用它,这一层没岔。
+ */
+export function cleanProvs(input: { raw?: string[] }): string[] {
+  const kept: string[] = []
+  for (const one of input.raw ?? []) {
+    const prov = one.trim().toUpperCase()
+    if (ALL_PROVS.has(prov) && !kept.includes(prov)) kept.push(prov)
+  }
+  return kept
+}

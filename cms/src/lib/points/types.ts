@@ -1928,3 +1928,28 @@ export type RangeGroupOut = RangeGroup | null
  * `wordGroupOf` 的返回。
  */
 export type WordGroupOut = WordGroup | null
+
+/**
+ * `comboItem` 的入参。
+ */
+export type ComboItemIn = {
+  /**
+   * 带门槛的候选行。
+   */
+  scored: TierRow[]
+
+  /**
+   * 他自己的值。
+   */
+  want: number
+
+  /**
+   * 内部键。
+   */
+  key: string
+
+  /**
+   * 人话短名。
+   */
+  label: string
+}

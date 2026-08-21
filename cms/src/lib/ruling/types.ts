@@ -4481,11 +4481,6 @@ export type GateManifestOut = {
   blockedBy: BlockedBy
 
   /**
-   * 有闸、答案是「没有」→ 现在走不了,但可解决。
-   */
-  manifestGap: boolean
-
-  /**
    * 判不了(条文缺 **或** 答案缺,两者都进 needs-info)。
    */
   manifestUnknown: boolean
@@ -4974,11 +4969,6 @@ export type FoldVerdictIn = {
    * 门槛清单里有条文缺的闸 —— 只有这一种进 not-collected。
    */
   manifestNoSource: boolean
-
-  /**
-   * 门槛清单里有明确不满足的闸。**今天没进裁决**(靠 blockedBy 兜),留着待查。
-   */
-  manifestGap: boolean
 
   /**
    * 最难拆的那道障碍。

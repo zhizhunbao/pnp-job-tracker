@@ -36,7 +36,7 @@ import {
   SEP, SOURCE, STREAM_STOP, STREAM_WORD_MIN, SUB_TIER_VALUE, SYSTEM_TAIL, TICK_SEP, WORD, WORD_NUM, YEARS_ANY,
 } from './constants'
 import type {
-  AdaptItemIn, AdaptOut, AgeRangeOut, AutoPickIn, BonusPointsIn, BonusPointsOut, ComboSubTierIn,
+  AdaptItemIn, AdaptOut, AgeRangeOut, AutoPickIn, BonusPointsIn, BonusPointsOut, ComboItemIn, ComboSubTierIn,
   ComboSubTierOut, ComboTierOfIn, ComboTierOfOut, DefaultProfileOut, EduComboIn, EduSpecialOfIn,
   EduSpecialOfOut, EduYearsOut, EeEvidenceOfIn, EeEvidenceOfOut, EeGridRow, EstimateIn, EstimateItem,
   EstimateItemIn, EstimateItemOut, EstimateMbEoiIn, EstimateMbEoiOut, EstimateOut, FactorPartIn, FactorPartOut,
@@ -925,6 +925,30 @@ function comboTierOf(input: ComboTierOfIn): ComboTierOfOut {
 }
 
 /**
+ * 组合分定档:门槛不超过他的值里最高的那一档。
+ *
+ * 🔴 **一档都够不到是确定的 0,不是判不了** —— 缺输入才是判不了,那一步在调用方就挡掉了。
+ * 两个组合分(学历×、海外经验×)挑候选行的方式不同,但**定档与出行的方式一模一样**,
+ * 所以收在这儿(2026-08-20:dupcheck 报出这 8 行逐字重复才抽的,不是先设计出来的)。
+ *
+ * @param input 带门槛的候选行、他的值与键名。
+ * @returns 那一项。
+ */
+function comboItem(input: ComboItemIn): EstimateItemOut {
+  const hit = pickBestTier({ scored: input.scored, want: input.want })
+  if (!hit) {
+    return estimateItem({
+      factor: input.key, label: input.label, points: 0, matched: EE_NOTE.belowTier,
+      evidence: null, status: ITEM_STATUS.zero,
+    })
+  }
+  return hitItem({
+    factor: input.key, label: input.label, r: hit, points: hit.points ?? 0,
+    matched: `${hit.criterion}${SEP.slash}${hit.columnLabel}`,
+  })
+}
+
+/**
  * C 节:学历 ×(语言或加拿大经验)组合分。
  *
  * 🔴 缺输入 → 判不了;**输入给了但一档都够不到 → 确定的 0**,两者不能混为一谈。
@@ -943,17 +967,7 @@ function pickEduComboCrs(input: EduComboIn): EstimateItemOut {
     const th = comboSubTier({ columnLabel: r.columnLabel })
     if (th != null) scored.push({ r: r, th: th })
   }
-  const hit = pickBestTier({ scored: scored, want: input.want })
-  if (!hit) {
-    return estimateItem({
-      factor: input.key, label: input.label, points: 0, matched: EE_NOTE.belowTier,
-      evidence: null, status: ITEM_STATUS.zero,
-    })
-  }
-  return hitItem({
-    factor: input.key, label: input.label, r: hit, points: hit.points ?? 0,
-    matched: `${hit.criterion}${SEP.slash}${hit.columnLabel}`,
-  })
+  return comboItem({ scored: scored, want: input.want, key: input.key, label: input.label })
 }
 
 /**
@@ -976,17 +990,7 @@ function pickForeignComboCrs(input: ForeignComboIn): EstimateItemOut {
     const th = comboSubTier({ columnLabel: r.columnLabel })
     if (th != null) scored.push({ r: r, th: th })
   }
-  const hit = pickBestTier({ scored: scored, want: input.want })
-  if (!hit) {
-    return estimateItem({
-      factor: input.key, label: input.label, points: 0, matched: EE_NOTE.belowTier,
-      evidence: null, status: ITEM_STATUS.zero,
-    })
-  }
-  return hitItem({
-    factor: input.key, label: input.label, r: hit, points: hit.points ?? 0,
-    matched: `${hit.criterion}${SEP.slash}${hit.columnLabel}`,
-  })
+  return comboItem({ scored: scored, want: input.want, key: input.key, label: input.label })
 }
 
 /**

@@ -97,11 +97,6 @@ export const SAMPLING = {
 export const PROVS = ALL_PROVS
 
 /**
- * 职业码就是五位数字。模型给别的形状一律不采信。
- */
-export const NOC_RE = /^\d{5}$/
-
-/**
  * 一次检索最多回几个候选。
  */
 export const SEARCH_LIMIT = 8

@@ -9,7 +9,7 @@
  */
 
 import type { AgentMessage, AgentTool, AgentToolResult } from '@earendil-works/pi-agent-core'
-import type { Message, Model, Static } from '@earendil-works/pi-ai'
+import type { Model, Static } from '@earendil-works/pi-ai'
 import type { Requirement } from '../gauge'
 import type { TSchema } from '@earendil-works/pi-ai'
 import type { Db } from '../db/database'
@@ -559,21 +559,6 @@ export type ReqRow = {
 }
 
 /**
- * `acceptNoc` 的入参。
- */
-export type AcceptNocIn = {
-  /**
-   * 这一趟的收件箱,候选白名单在里面。
-   */
-  box: Inbox
-
-  /**
-   * 模型填的码。
-   */
-  raw: string
-}
-
-/**
  * `take` 的入参。
  */
 export type TakeIn = {
@@ -872,21 +857,6 @@ export type MakeToolsOut = (Tool<typeof SEARCH_PARAMS> | Tool<typeof NOC_PARAMS>
 // =========================================================================
 
 /**
- * `cleanProvs` 的入参。
- */
-export type CleanProvsIn = string[] | undefined
-
-/**
- * `cleanProvs` 的返回。
- */
-export type CleanProvsOut = string[]
-
-/**
- * `acceptNoc` 的返回。
- */
-export type AcceptNocOut = string | null
-
-/**
  * `jobsFacts` 的返回。
  */
 export type JobsFactsOut = Fact[]
@@ -940,16 +910,6 @@ export type CodesOfOut = string[]
  * `citeFacts` 的返回。
  */
 export type CiteFactsOut = Fact[]
-
-/**
- * `passThroughMessages` 的入参。
- */
-export type PassThroughMessagesIn = AgentMessage[]
-
-/**
- * `passThroughMessages` 的返回。
- */
-export type PassThroughMessagesOut = Message[]
 
 /**
  * `isUserTurn` 的入参。

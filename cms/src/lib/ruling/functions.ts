@@ -2286,7 +2286,6 @@ function gateManifest(input: GateManifestIn): GateManifestOut {
   const reasons: VerdictReason[] = []
   const missingSlots: string[] = []
   let blockedBy = input.blockedBy
-  let manifestGap = false
   let manifestUnknown = false
   let manifestNoSource = false
   const answerOf = gateAnswers({ spec: input.spec, p: input.p })
@@ -2320,14 +2319,13 @@ function gateManifest(input: GateManifestIn): GateManifestOut {
         key: gateKeyOf({ gate: g, asks: asks, state: REASON.met }), evidence: ev })
       continue
     }
-    manifestGap = true
     blockedBy = harderBlock({ gate: g, blockedBy: blockedBy })
     reasons.push({ kind: REASON.gap, text: `${PV_TEXT.gateGapHead}${what}${PV_TEXT.gateGapTail}`,
       key: gateKeyOf({ gate: g, asks: asks, state: REASON.gap }), evidence: ev })
   }
   return {
     reasons: reasons, missingSlots: missingSlots, blockedBy: blockedBy,
-    manifestGap: manifestGap, manifestUnknown: manifestUnknown, manifestNoSource: manifestNoSource,
+    manifestUnknown: manifestUnknown, manifestNoSource: manifestNoSource,
   }
 }
 
@@ -2382,12 +2380,11 @@ function evaluateOne(input: EvaluateOneIn): EvaluateOneOut {
   blockedBy = manifest.blockedBy
   const manifestUnknown = manifest.manifestUnknown
   const manifestNoSource = manifest.manifestNoSource
-  const manifestGap = manifest.manifestGap
 
   return foldVerdict({
     spec: input.spec, p: input.p, gaps: facts.gaps, excluded: excluded, gate: gate,
     missingSlots: missingSlots, manifestUnknown: manifestUnknown, manifestNoSource: manifestNoSource,
-    manifestGap: manifestGap, blockedBy: blockedBy, reasons: reasons, score: facts.score,
+    blockedBy: blockedBy, reasons: reasons, score: facts.score,
   })
 }
 

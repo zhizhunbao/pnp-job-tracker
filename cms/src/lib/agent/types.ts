@@ -196,51 +196,6 @@ export type AgentTools = [SearchTool, SetSlotsTool, GiveUpTool]
 // =========================================================================
 
 /**
- * 待规范化的省码:模型给的原样字符串。
- */
-export type UpperTrimIn = {
-  /**
-   * 模型给的原样字符串,可能带空格、可能是小写。
-   */
-  prov: string
-}
-
-/**
- * 规范化后的省码:去空格、转大写。
- */
-export type UpperTrimOut = string
-
-/**
- * 待核对的省码,已规范化。
- */
-export type IsKnownProvIn = {
-  /**
-   * 已经去空格、转大写的省码。**没规范化过就别进来** —— 白名单是逐字比对的。
-   */
-  prov: string
-}
-
-/**
- * 认不认得出这个省码。
- */
-export type IsKnownProvOut = boolean
-
-/**
- * 模型给的整串省码,可能压根没给。
- */
-export type CleanProvsIn = {
-  /**
-   * 模型给的整串省码。**可以是 undefined** —— 它压根没提省份是正常输入,不是错误。
-   */
-  raw: string[] | undefined
-}
-
-/**
- * 认得出的那些省码,认不出的已丢掉(不猜)。
- */
-export type CleanProvsOut = string[]
-
-/**
  * 拿一个 NOC 去比对搜索真实返回的候选。
  */
 export type InCandidatesIn = {
