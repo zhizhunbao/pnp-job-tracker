@@ -1244,6 +1244,9 @@ const eslintConfig = [
     rules: {
       curly: ['error', 'all'],
       'brace-style': ['error', '1tbs', { allowSingleLine: false }],
+      // 比较基准(2026-08-21 同场拍板):默认 ===/!==,唯一例外 == null / != null。
+      // 内置规则正好有这个形状:'always' + null: 'ignore'。
+      eqeqeq: ['error', 'always', { null: 'ignore' }],
     },
   },
   {
