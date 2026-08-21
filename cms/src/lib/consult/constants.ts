@@ -690,6 +690,11 @@ export const FAIL_MSG = {
    * 撞了闸又没有事实可降级,后面接撞了哪几道。
    */
   noFacts: 'no facts to fall back on: ',
+
+  /**
+   * 循环跑完了却一个字都没写出来(没超时、也没抛)。
+   */
+  emptyDraft: 'agent loop returned no text',
 }
 
 /**

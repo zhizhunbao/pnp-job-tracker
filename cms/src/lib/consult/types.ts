@@ -1221,6 +1221,26 @@ export type TextOfIn = AgentMessage
 export type DraftOnceOut = Promise<string>
 
 /**
+ * `lastDraftOf` 的入参。
+ */
+export type LastDraftOfIn = {
+  /**
+   * 循环跑完后的整串消息。
+   */
+  messages: AgentMessage[]
+
+  /**
+   * 这一趟是不是被超时掐断的 —— pi 掐断时正常返回,只能靠这一格认出来。
+   */
+  aborted: boolean
+}
+
+/**
+ * `lastDraftOf` 的返回:最后一段有字的正文。
+ */
+export type LastDraftOfOut = string
+
+/**
  * `consult` 的入参。
  */
 export type ConsultIn = RunIn

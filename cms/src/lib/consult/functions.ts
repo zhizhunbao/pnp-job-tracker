@@ -50,13 +50,13 @@ import type {
   FactSheetOut, FindEnglishUnitsOut, FindInternalWordsIn, FindInternalWordsOut, FindRawMarkupIn,
   FindRawMarkupOut, FindRestatedOpeningIn, FindRestatedOpeningOut, FindUngroundedNumbersOut, FirstLineOfIn,
   FirstLineOfOut, FirstPromptIn, FirstPromptOut, GateHit, GateLabelIn, GateLabelOut, HardHitsIn, HardHitsOut,
-  Inbox, IsUserTurnIn, IsUserTurnOut, JobsFactsIn, JobsFactsOut, JobsRow, LookupCoverageIn, LookupCoverageOut,
-  LookupJobsIn, LookupJobsOut, LookupThresholdsIn, LookupThresholdsOut, MakeToolGatesIn, MakeToolGatesOut,
-  MakeToolsIn, MakeToolsOut, ModelOut, NocOfIn, NocOfOut, NormNumIn, NormNumOut, NumberCheckIn, OnEventIn,
-  OnEventOut, OnTimeoutOut, RetryNoteIn, RetryNoteOut, RunGatesIn, RunGatesOut, RunIn, SayIn, SayOut,
-  SearchOccupationsIn, SearchOccupationsOut, StatusFactIn, StatusFactOut, StepIn, StepOut, SystemOfOut, TakeIn,
-  TakeOut, TextOfIn, TextOfOut, ThresholdsFactsIn, ThresholdsFactsOut, ThresholdsRow, TierTextIn, TierTextOut,
-  ToRequirementIn, ToRequirementOut, Tool, ToolArgs,
+  Inbox, IsUserTurnIn, IsUserTurnOut, JobsFactsIn, JobsFactsOut, JobsRow, LastDraftOfIn, LastDraftOfOut,
+  LookupCoverageIn, LookupCoverageOut, LookupJobsIn, LookupJobsOut, LookupThresholdsIn, LookupThresholdsOut,
+  MakeToolGatesIn, MakeToolGatesOut, MakeToolsIn, MakeToolsOut, ModelOut, NocOfIn, NocOfOut, NormNumIn,
+  NormNumOut, NumberCheckIn, OnEventIn, OnEventOut, OnTimeoutOut, RetryNoteIn, RetryNoteOut, RunGatesIn,
+  RunGatesOut, RunIn, SayIn, SayOut, SearchOccupationsIn, SearchOccupationsOut, StatusFactIn, StatusFactOut,
+  StepIn, StepOut, SystemOfOut, TakeIn, TakeOut, TextOfIn, TextOfOut, ThresholdsFactsIn, ThresholdsFactsOut,
+  ThresholdsRow, TierTextIn, TierTextOut, ToRequirementIn, ToRequirementOut, Tool, ToolArgs,
 } from './types'
 
 // =========================================================================
@@ -895,6 +895,30 @@ function textOf(message: TextOfIn): TextOfOut {
 }
 
 /**
+ * 从循环跑出来的整串消息里取最后一段正文;取不出来就抛,不返回空串。
+ *
+ * 🔴 **pi 被 abort 时是正常返回、不抛** —— 所以超时只能在这里认出来,
+ * `draftOnce` 的 `catch` 里那句 `ac.signal.aborted` 永远够不着。
+ * 2026-08-21 实测三条(「我 480 稳吗」「按我的情况判一判走哪条路最快」
+ * 「大家都是这么说的 两个一年 能换 3 年」)全是 45.0s、`out=0`、`degraded=false`:
+ * 原先写的是 `drafts.length ? … : ''`,把「一个字都没写出来」悄悄变成「答案是空字符串」,
+ * 用户看到一片空白,而四道出口闸一道都不响 —— 闸查的是「数字有没有出处」,空串一个数字都没有。
+ *
+ * @param input 循环产出的消息,以及这一趟是不是被掐断的。
+ * @returns 最后一段有字的正文。
+ */
+function lastDraftOf(input: LastDraftOfIn): LastDraftOfOut {
+  const drafts: string[] = []
+  for (const m of input.messages) {
+    const t = textOf(m)
+    if (t) drafts.push(t)
+  }
+  if (input.aborted) throw chatError({ code: CHAT_CODE.busy, msg: `${FAIL_MSG.timeout}${TIMEOUT_MS}${FAIL_MSG.ms}` })
+  if (!drafts.length) throw chatError({ code: CHAT_CODE.llm, msg: FAIL_MSG.emptyDraft })
+  return drafts[drafts.length - 1]
+}
+
+/**
  * 跑一趟 pi 循环,拿模型写的稿子。
  *
  * @param input 跑这一趟要的东西。
@@ -946,12 +970,7 @@ async function draftOnce(input: DraftOnceIn): DraftOnceOut {
       // pi 的 StreamFn 要通吃所有 Api,而这个 stream 锁死 openai-completions —— 逆变对不上,只能断言
       streamSimple as StreamFn,
     )
-    const drafts: string[] = []
-    for (const m of messages) {
-      const t = textOf(m)
-      if (t) drafts.push(t)
-    }
-    return drafts.length ? drafts[drafts.length - 1] : ''
+    return lastDraftOf({ messages: messages, aborted: ac.signal.aborted })
   } catch (e) {
     const why = e instanceof Error ? e.message.slice(0, 160) : String(e)
     log({ tag: CHAT_LOG.tag, text: `${CHAT_FN.runChatLoop}${CHAT_LOG.failedTail}${why}` })
