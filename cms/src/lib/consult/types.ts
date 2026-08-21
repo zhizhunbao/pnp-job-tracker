@@ -2061,6 +2061,57 @@ export type ToPointsRowIn = PointsDbRow
 export type ToPointsRowOut = PointsRow
 
 /**
+ * `seg` 的入参:一段可选文案。
+ */
+export type SegIn = {
+  /**
+   * 出不出这一段。条件由调用方**显式写**(`x !== ''` / `x !== null`),不靠隐式真值。
+   */
+  when: boolean
+
+  /**
+   * 出的话是什么。**只许纯拼接**:文本里不能有「条件不成立就会炸」的取值
+   * (`.join`、按索引取)—— 那种去写 if,`seg` 是拼字的不是守门的。
+   */
+  text: string
+}
+
+/**
+ * `seg` 的返回:那一段;不出就空串。
+ */
+export type SegOut = string
+
+/**
+ * `subjectOf` 的入参:库里的 subject 列。
+ */
+export type SubjectOfIn = string | null
+
+/**
+ * `subjectOf` 的返回:两个合法值之一。
+ */
+export type SubjectOfOut = 'applicant' | 'employer'
+
+/**
+ * `emptyAvailability` 的入参:两位省码。
+ */
+export type EmptyAvailabilityIn = string
+
+/**
+ * `emptyAvailability` 的返回:「一行都没有」时该落的那一态。
+ */
+export type EmptyAvailabilityOut = Availability
+
+/**
+ * `statusWordOf` 的入参:档案里的身份词原文。
+ */
+export type StatusWordOfIn = string
+
+/**
+ * `statusWordOf` 的返回:引擎词表里的词;不在表里就 null。
+ */
+export type StatusWordOfOut = string | null
+
+/**
  * `provOf` 的入参:模型填的省码原文。
  */
 export type ProvOfIn = string

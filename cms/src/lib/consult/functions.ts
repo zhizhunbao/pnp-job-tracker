@@ -63,7 +63,9 @@ import type {
   MakeToolsOut, ModelOut, NocOfIn, NocOfOut, NormNumIn, NormNumOut, NumberCheckIn, OnEventIn, OnEventOut,
   OnTimeoutOut, OpsFactsIn, OpsFactsOut, OpsRow, PermitFactsIn, PermitFactsOut, PermitRow, PointsFactsIn,
   PointsFactsOut, PointsRow, ProvOfIn, ProvOfOut, RetryNoteIn, RetryNoteOut, RunGatesIn, RunGatesOut, RunIn,
-  SayIn, SayOut, SearchOccupationsIn, SearchOccupationsOut, StatusFactIn, StatusFactOut, StepIn, StepOut,
+  SayIn, SayOut, SearchOccupationsIn, SearchOccupationsOut, SegIn, SegOut, StatusFactIn, StatusFactOut,
+  StatusWordOfIn, StatusWordOfOut, StepIn, StepOut, SubjectOfIn, SubjectOfOut, EmptyAvailabilityIn,
+  EmptyAvailabilityOut,
   SystemOfOut, TakeIn, TakeOut, TextOfIn, TextOfOut, ThresholdsFactsIn, ThresholdsFactsOut, ThresholdsRow,
   TierTextIn, TierTextOut, ToDrawRowIn, ToDrawRowOut, ToEeRowIn, ToEeRowOut, ToNocHitIn, ToNocHitOut,
   ToOccFlatIn, ToOccFlatOut, ToOpsRowIn, ToOpsRowOut, ToPermitRowIn, ToPermitRowOut, ToPointsRowIn,
@@ -291,7 +293,8 @@ async function searchOccupations(input: SearchOccupationsIn): SearchOccupationsO
   const like = `${LIKE_ANY}${input.query.replace(LIKE_SPECIAL, LIKE_ESCAPE)}${LIKE_ANY}`
   const { rows } = await input.db.query(SQL.NOC_LIST_WITH_TITLES, [like, SEARCH_LIMIT])
   const all = rows.map(toNocHit)
-  const top = all.length ? all[0].n : 0
+  let top = 0
+  if (all.length) top = all[0].n
   const hits: Candidate[] = []
   for (const hit of all) {
     if (hit.noc && hit.title && hit.n >= top * NOISE_RATIO) hits.push({ noc: hit.noc, title: hit.title })
@@ -361,6 +364,18 @@ function blankCoverage(prov: BlankCoverageIn): BlankCoverageOut {
 }
 
 /**
+ * 门槛行的 subject 列 → 两个合法值之一。不是 employer 的一律按 applicant 读 ——
+ * 这两个搞混,句子本身就是假的(「你要开满一年」vs「雇主要开满一年」)。
+ *
+ * @param raw 库里的 subject 列。
+ * @returns applicant 或 employer。
+ */
+function subjectOf(raw: SubjectOfIn): SubjectOfOut {
+  if (text(raw) === SUBJECT.employer) return SUBJECT.employer
+  return SUBJECT.applicant
+}
+
+/**
  * 库里一行门槛条文 → `lib/rules` 认的 `Requirement`。
  *
  * 只做列名映射,一个判定都不做 —— 判定是 `evaluateRequirements` 的活,本域不重写它。
@@ -373,7 +388,7 @@ function toRequirement(row: ToRequirementIn): ToRequirementOut {
     province: text(row.province),
     program: text(row.program),
     stream: text(row.stream),
-    subject: text(row.subject) === SUBJECT.employer ? SUBJECT.employer : SUBJECT.applicant,
+    subject: subjectOf(row.subject),
     factor: text(row.factor),
     op: text(row.op),
     value: numOrNull(row.value),
@@ -415,7 +430,8 @@ async function lookupThresholds(input: LookupThresholdsIn): LookupThresholdsOut 
     got.push(req)
     byProv.set(req.province, got)
   }
-  const want = input.provs.length ? input.provs : Array.from(byProv.keys()).sort()
+  let want = Array.from(byProv.keys()).sort()
+  if (input.provs.length) want = input.provs
   const profile: RuleProfile = {
     noc: input.noc,
     teer: input.teer,
@@ -520,7 +536,8 @@ async function lookupPermit(input: LookupPermitIn): LookupPermitOut {
  * @returns 档位行,按官方表序。
  */
 async function lookupPoints(input: LookupPointsIn): LookupPointsOut {
-  const kind = !input.section && input.grid === GRID_CRS ? KIND_SUMMARY : ''
+  let kind = ''
+  if (!input.section && input.grid === GRID_CRS) kind = KIND_SUMMARY
   const { rows } = await input.db.query(SQL.EE_POINTS_GRID, [input.grid, input.section, kind, '', '', POINTS_LIMIT])
   const out: PointsRow[] = []
   for (const r of rows.map(toPointsRow)) {
@@ -532,6 +549,32 @@ async function lookupPoints(input: LookupPointsIn): LookupPointsOut {
 // =========================================================================
 // 4. 事实渲染(取数结果 → Fact)
 // =========================================================================
+
+/**
+ * 一段可选文案:条件成立才出,不成立整段消失。
+ *
+ * 全站禁三目(2026-08-21 Frank 拍板)后,「x 有值才拼这段」collapses 到这一个小件 ——
+ * 条件由调用方显式写,文本只许纯拼接(会炸的取值去写 if,这里是拼字的不是守门的)。
+ *
+ * @param input 出不出、出什么。
+ * @returns 那一段;不出就空串。
+ */
+function seg(input: SegIn): SegOut {
+  if (!input.when) return ''
+  return input.text
+}
+
+/**
+ * 「一行都没有」的省该落哪一态:QC 是**不适用**(自有体系,不走这套抽选/清单),
+ * 其余省是**本站未收录** —— 不是「官方没有」,那句话需要举证。
+ *
+ * @param prov 两位省码。
+ * @returns 四态之一。
+ */
+function emptyAvailability(prov: EmptyAvailabilityIn): EmptyAvailabilityOut {
+  if (prov === QC) return AVAIL.notApplicable
+  return AVAIL.notCollected
+}
 
 /**
  * 造一条带数值的事实。
@@ -637,14 +680,15 @@ function coverageFacts(r: CoverageFactsIn): CoverageFactsOut {
  * @returns 值的展示形态。
  */
 function tierText(res: TierTextIn): TierTextOut {
+  const unitTail = seg({ when: Boolean(res.unit), text: `${SPACE}${res.unit}` })
   if (res.tiers && res.tiers.length) {
     const parts: string[] = []
-    for (const t of res.tiers) parts.push(`${t.area}${SEP.colon}${t.value ?? SEP.none}${res.unit ? ` ${res.unit}` : ''}`)
+    for (const t of res.tiers) parts.push(`${t.area}${SEP.colon}${t.value ?? SEP.none}${unitTail}`)
     return parts.join(SEP.semi)
   }
   if (res.need == null) return res.verdict
-  const low = res.needLow != null && res.needLow !== res.need ? `${res.needLow}${LABEL.range}` : ''
-  return `${low}${res.need}${res.unit ? ` ${res.unit}` : ''}`
+  const low = seg({ when: res.needLow != null && res.needLow !== res.need, text: `${res.needLow}${LABEL.range}` })
+  return `${low}${res.need}${unitTail}`
 }
 
 /**
@@ -672,7 +716,7 @@ function thresholdsFacts(r: ThresholdsFactsIn): ThresholdsFactsOut {
     for (const res of row.results) {
       out.push(fact({
         tool: TOOL_NAME.thresholds,
-        label: `${row.prov} ${res.subject} ${res.factor}${res.basis ? `${LABEL.parenOpen}${res.basis}${LABEL.nocClose}` : ''}${LABEL.dash}${res.evidence.label}`,
+        label: `${row.prov} ${res.subject} ${res.factor}${seg({ when: Boolean(res.basis), text: `${LABEL.parenOpen}${res.basis}${LABEL.nocClose}` })}${LABEL.dash}${res.evidence.label}`,
         quote: `${row.prov}${SEP.dot}${res.evidence.label}`,
         value: res.need,
         valueText: tierText(res),
@@ -700,7 +744,7 @@ function drawsFacts(r: DrawsFactsIn): DrawsFactsOut {
       tool: TOOL_NAME.draws,
       label: `${r.prov}${LABEL.drawsList}`,
       quote: r.prov,
-      availability: r.prov === QC ? AVAIL.notApplicable : AVAIL.notCollected,
+      availability: emptyAvailability(r.prov),
       evidence: { url: '', fetched: '' },
     })]
   }
@@ -711,7 +755,7 @@ function drawsFacts(r: DrawsFactsIn): DrawsFactsOut {
       label: `${row.prov}${LABEL.drawRound}${row.date}${SPACE}${row.stream}${SEP.comma}${row.invitations ?? SEP.none}${LABEL.invited}`,
       quote: `${row.prov}${SEP.dot}${row.date}${SEP.dot}${row.stream}`,
       value: row.score,
-      valueText: row.score == null ? '' : `${row.score}${SPACE}${row.scale}`,
+      valueText: seg({ when: row.score !== null, text: `${row.score}${SPACE}${row.scale}` }),
       unit: UNIT.points,
       evidence: row.evidence,
     }))
@@ -737,20 +781,22 @@ function opsFacts(r: OpsFactsIn): OpsFactsOut {
       tool: TOOL_NAME.ops,
       label: `${r.prov}${LABEL.opsList}`,
       quote: r.prov,
-      availability: r.prov === QC ? AVAIL.notApplicable : AVAIL.notCollected,
+      availability: emptyAvailability(r.prov),
       evidence: { url: '', fetched: '' },
     })]
   }
   const out: Fact[] = []
   for (const row of r.rows) {
-    const scope = row.scope ? `${LABEL.parenOpen}${row.scope}${LABEL.nocClose}` : ''
-    const when = row.asOf ? `${LABEL.asOf}${row.asOf}` : row.period ? `${SPACE}${row.period}` : ''
+    const scope = seg({ when: row.scope !== '', text: `${LABEL.parenOpen}${row.scope}${LABEL.nocClose}` })
+    let when = ''
+    if (row.asOf !== '') when = `${LABEL.asOf}${row.asOf}`
+    else if (row.period !== '') when = `${SPACE}${row.period}`
     out.push(fact({
       tool: TOOL_NAME.ops,
       label: `${r.prov}${LABEL.opsHead}${row.label}${scope}${when}`,
       quote: `${r.prov}${SEP.dot}${row.label}`,
       value: row.value,
-      valueText: row.valueText || (row.value == null ? '' : `${row.value}${row.unit ? `${SPACE}${row.unit}` : ''}`),
+      valueText: row.valueText || seg({ when: row.value !== null, text: `${row.value}${seg({ when: row.unit !== '', text: `${SPACE}${row.unit}` })}` }),
       unit: row.unit,
       evidence: row.evidence,
     }))
@@ -779,15 +825,16 @@ function eeFacts(r: EeFactsIn): EeFactsOut {
   }
   const out: Fact[] = []
   for (const row of r.rows) {
-    const last = row.drawDate
-      ? `${LABEL.eeLast}${row.drawDate}${SEP.comma}${row.drawSize ?? SEP.none}${LABEL.invited}`
-      : ''
+    const last = seg({
+      when: row.drawDate !== '',
+      text: `${LABEL.eeLast}${row.drawDate}${SEP.comma}${row.drawSize ?? SEP.none}${LABEL.invited}`,
+    })
     out.push(fact({
       tool: TOOL_NAME.ee,
       label: `${LABEL.eeHead}${row.category}${LABEL.dash}${row.label}${last}`,
       quote: `${row.category}${SEP.dot}${row.label}`,
       value: row.drawCrs,
-      valueText: row.drawCrs == null ? '' : `${row.drawCrs}${SPACE}${GRID_CRS}`,
+      valueText: seg({ when: row.drawCrs !== null, text: `${row.drawCrs}${SPACE}${GRID_CRS}` }),
       unit: UNIT.points,
       evidence: row.evidence,
     }))
@@ -814,8 +861,8 @@ function permitFacts(r: PermitFactsIn): PermitFactsOut {
   }
   const out: Fact[] = []
   for (const row of r.rows) {
-    const tier = row.stream ? `${LABEL.parenOpen}${row.stream}${LABEL.nocClose}` : ''
-    const basis = row.basis ? `${LABEL.parenOpen}${row.basis}${LABEL.nocClose}` : ''
+    const tier = seg({ when: row.stream !== '', text: `${LABEL.parenOpen}${row.stream}${LABEL.nocClose}` })
+    const basis = seg({ when: row.basis !== '', text: `${LABEL.parenOpen}${row.basis}${LABEL.nocClose}` })
     out.push(fact({
       tool: TOOL_NAME.permit,
       label: `${row.program}${tier}${LABEL.permitHead}${row.label || row.factor}${basis}`,
@@ -847,7 +894,7 @@ function pointsFacts(r: PointsFactsIn): PointsFactsOut {
   }
   const out: Fact[] = []
   for (const row of r.rows) {
-    const col = row.columnLabel ? `${LABEL.parenOpen}${row.columnLabel}${LABEL.nocClose}` : ''
+    const col = seg({ when: row.columnLabel !== '', text: `${LABEL.parenOpen}${row.columnLabel}${LABEL.nocClose}` })
     out.push(fact({
       tool: TOOL_NAME.points,
       label: `${row.grid}${LABEL.pointsHead}${row.sectionLabel || row.heading}${LABEL.dash}${row.criterion || row.factor}${col}`,
@@ -859,6 +906,18 @@ function pointsFacts(r: PointsFactsIn): PointsFactsOut {
     }))
   }
   return out
+}
+
+/**
+ * 档案身份词 → 引擎词表里的词;不在表里就 null。
+ * 喂一个引擎不认识的词,它会走「不是在读」之类的反向分支,比「没答」更糟。
+ *
+ * @param said 档案里的身份词原文。
+ * @returns 词表里的词,或 null。
+ */
+function statusWordOf(said: StatusWordOfIn): StatusWordOfOut {
+  if (STATUS_WORDS.includes(said)) return said
+  return null
 }
 
 /**
@@ -886,7 +945,7 @@ function verdictProfileOf(input: VerdictProfileOfIn): VerdictProfileOfOut {
     expCanadaMonths: null,
     expForeignMonths: null,
     foreignExpSelfEmployed: null,
-    status: STATUS_WORDS.includes(said) ? said : null,
+    status: statusWordOf(said),
     province: null,
     hasOffer: null,
     inCanada: null,
@@ -914,13 +973,15 @@ function verdictFacts(rows: VerdictFactsIn): VerdictFactsOut {
     for (const r of p.reasons) {
       if (r.kind === REASON_EXCLUDED && r.quote) {
         quote = `${p.province}${SEP.dot}${r.quote}`
-        evidence = r.evidence ? { url: r.evidence.url, fetched: r.evidence.fetched } : evidence
+        if (r.evidence) evidence = { url: r.evidence.url, fetched: r.evidence.fetched }
         break
       }
     }
-    const tier = p.tier == null ? '' : `${LABEL.tierHead}${TIER_TEXT[p.tier]}`
-    const blocked = p.blockedBy ? `${LABEL.blockedBy}${p.blockedBy}` : ''
-    const missing = p.missingSlots && p.missingSlots.length ? `${LABEL.missing}${p.missingSlots.join(SEP.comma)}` : ''
+    let tier = ''
+    if (p.tier != null) tier = `${LABEL.tierHead}${TIER_TEXT[p.tier]}`
+    const blocked = seg({ when: Boolean(p.blockedBy), text: `${LABEL.blockedBy}${p.blockedBy}` })
+    let missing = ''
+    if (p.missingSlots && p.missingSlots.length) missing = `${LABEL.missing}${p.missingSlots.join(SEP.comma)}`
     out.push(fact({
       tool: TOOL_NAME.verdict,
       label: `${p.province}${SPACE}${p.stream}${LABEL.verdictHead}${p.verdict}${tier}${blocked}${missing}`,
@@ -946,7 +1007,8 @@ function verdictFacts(rows: VerdictFactsIn): VerdictFactsOut {
  */
 function normNum(raw: NormNumIn): NormNumOut {
   const s = raw.replace(THOUSANDS_COMMA, '')
-  return s.includes(SAID.stop) ? s.replace(TRAILING_ZEROS, '') : s
+  if (s.includes(SAID.stop)) return s.replace(TRAILING_ZEROS, '')
+  return s
 }
 
 /**
@@ -976,7 +1038,8 @@ function allowedNumbers(input: AllowedNumbersIn): AllowedNumbersOut {
  * @returns 它是序号就抹成空白(那个数是排版不是事实),是项目符号就原样留下。
  */
 function blankIfNumbered(mark: BlankIfNumberedIn): BlankIfNumberedOut {
-  return HAS_DIGIT.test(mark) ? SPACE : mark
+  if (HAS_DIGIT.test(mark)) return SPACE
+  return mark
 }
 
 /**
@@ -1053,7 +1116,8 @@ function findRawMarkup(answer: FindRawMarkupIn): FindRawMarkupOut {
 function firstLineOf(input: FirstLineOfIn): FirstLineOfOut {
   const head = input.answer.trim().split(NL)[0] ?? ''
   const stop = head.indexOf(FULL_STOP)
-  const line = stop >= 0 ? head.slice(0, stop + 1) : head
+  let line = head
+  if (stop >= 0) line = head.slice(0, stop + 1)
   return line.slice(0, FIRST_LINE_CAP).trim()
 }
 
@@ -1110,7 +1174,9 @@ function clampAnswer(input: AnswerLangIn): ClampAnswerOut {
   if (input.answer.length <= cap) return input.answer
   const cut = input.answer.slice(0, cap)
   const stop = Math.max(cut.lastIndexOf(FULL_STOP), cut.lastIndexOf(SAID.stop), cut.lastIndexOf(NL))
-  return (stop > cap * CUT_MIN_RATIO ? cut.slice(0, stop + 1) : cut).trim()
+  let kept = cut
+  if (stop > cap * CUT_MIN_RATIO) kept = cut.slice(0, stop + 1)
+  return kept.trim()
 }
 
 /**
@@ -1123,7 +1189,7 @@ function clampAnswer(input: AnswerLangIn): ClampAnswerOut {
  */
 function factSheet(facts: FactSheetIn): FactSheetOut {
   const lines: string[] = []
-  for (const f of facts.slice(0, SHEET_CAP)) lines.push(`${SEP.bullet}${f.quote}${f.valueText ? `${SEP.colon}${f.valueText}` : ''}`)
+  for (const f of facts.slice(0, SHEET_CAP)) lines.push(`${SEP.bullet}${f.quote}${seg({ when: f.valueText !== '', text: `${SEP.colon}${f.valueText}` })}`)
   return lines.join(NL)
 }
 
@@ -1175,13 +1241,16 @@ function citeFacts(input: CiteFactsIn): CiteFactsOut {
  */
 function take(input: TakeIn): TakeOut {
   const room = MAX_FACTS - input.box.facts.length
-  const kept = room > 0 ? input.facts.slice(0, room) : []
+  let kept: Fact[] = []
+  if (room > 0) kept = input.facts.slice(0, room)
   const lines: string[] = []
   for (const f of kept) {
     input.box.facts.push(f)
-    lines.push(`${SEP.bullet}${f.label}${f.valueText ? `${SEP.colon}${f.valueText}` : ''}`)
+    lines.push(`${SEP.bullet}${f.label}${seg({ when: f.valueText !== '', text: `${SEP.colon}${f.valueText}` })}`)
   }
-  return { content: [{ type: ROLE.text, text: lines.length ? lines.join(NL) : TOOL_REPLY.empty }], details: { n: kept.length }, terminate: false }
+  let reply = TOOL_REPLY.empty
+  if (lines.length) reply = lines.join(NL)
+  return { content: [{ type: ROLE.text, text: reply }], details: { n: kept.length }, terminate: false }
 }
 
 /**
@@ -1217,7 +1286,8 @@ function makeToolGates(input: MakeToolGatesIn): MakeToolGatesOut {
 
   async function beforeToolCall(ctx: BeforeToolCallIn): BeforeToolCallOut {
     const args = ctx.args as ToolArgs
-    const noc = args && typeof args.noc === 'string' ? args.noc.trim() : ''
+    let noc = ''
+    if (args && typeof args.noc === 'string') noc = args.noc.trim()
     if (!noc) return undefined
     if (noc === box.noc) return undefined
     for (const c of box.candidates) if (c.noc === noc) return undefined
@@ -1343,7 +1413,9 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
 
   async function execPoints(_id: string, args: ExecPointsIn): ExecPointsOut {
     step(TOOL_NAME.points)
-    const r = await lookupPoints({ db: run.db, grid: args.grid, section: args.section === undefined ? '' : args.section.trim() })
+    let section = ''
+    if (args.section !== undefined) section = args.section.trim()
+    const r = await lookupPoints({ db: run.db, grid: args.grid, section })
     return take({ box, facts: pointsFacts(r) })
   }
 
@@ -1435,7 +1507,8 @@ function systemOf(input: RunIn): SystemOfOut {
   if (p.provs.length) said.push(`${SAID.provs}${p.provs.join(SEP.comma)}`)
   if (p.expMonths != null) said.push(`${p.expMonths}${SAID.exp}`)
   if (p.status) said.push(`${SAID.status}${p.status}`)
-  const profile = said.length ? `${PROFILE_HEAD}${said.join(SEP.semi)}` : PROFILE_NONE
+  let profile = PROFILE_NONE
+  if (said.length) profile = `${PROFILE_HEAD}${said.join(SEP.semi)}`
   return `${SYSTEM_RULES}${NL}${NL}${REPLY_LANGUAGE_HEAD}${LANG_NAME[input.lang]}${NL}${NL}${profile}`
 }
 
@@ -1453,7 +1526,8 @@ function firstPrompt(input: FirstPromptIn): FirstPromptOut {
   const lines: string[] = []
   if (input.history.length) lines.push(EARLIER_HEAD)
   for (const turn of input.history.slice(-HISTORY_TURNS)) lines.push(`${turn.role}${SEP.colon}${turn.content.slice(0, HISTORY_CAP)}`)
-  const earlier = lines.length ? `${lines.join(NL)}${NL}${NL}${NOW_HEAD}` : ''
+  let earlier = ''
+  if (lines.length) earlier = `${lines.join(NL)}${NL}${NL}${NOW_HEAD}`
   const message: AgentMessage = {
     role: ROLE.user,
     content: [{ type: ROLE.text, text: earlier + input.text }],
@@ -1545,7 +1619,8 @@ async function draftOnce(input: DraftOnceIn): DraftOnceOut {
     )
     return lastDraftOf({ messages: messages, aborted: ac.signal.aborted })
   } catch (e) {
-    const why = e instanceof Error ? e.message.slice(0, ERR_CAP) : String(e)
+    let why = String(e)
+    if (e instanceof Error) why = e.message.slice(0, ERR_CAP)
     log({ tag: CHAT_LOG.tag, text: `${CHAT_FN.runChatLoop}${CHAT_LOG.failedTail}${why}` })
     if (ac.signal.aborted) throw chatError({ code: CHAT_CODE.busy, msg: `${FAIL_MSG.timeout}${TIMEOUT_MS}${FAIL_MSG.ms}` })
     throw chatError({ code: CHAT_CODE.llm, msg: why })
@@ -1613,7 +1688,8 @@ export async function consult(input: ConsultIn): ConsultOut {
   let answer = ''
   let fired: GateHit[] = []
   for (let attempt = 0; attempt <= GUARD_RETRIES; attempt += 1) {
-    const extra = fired.length ? `${NL}${NL}${retryNote(fired)}` : ''
+    let extra = ''
+    if (fired.length) extra = `${NL}${NL}${retryNote(fired)}`
     answer = clampAnswer({ answer: await draftOnce({ run: input, box, extra }), lang: input.lang })
     fired = runGates({ answer, facts: box.facts, echo, lang: input.lang, codes: codesOf(box) })
     if (!fired.length) break

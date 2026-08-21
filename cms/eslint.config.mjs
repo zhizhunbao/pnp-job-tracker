@@ -547,6 +547,30 @@ const localRules = {
       },
     },
 
+    // ── 禁三目(2026-08-21 Frank 拍板)────────────────────────────────────────────
+    // 「三目省的是写的功夫,而写的成本现在是零;读的成本才是全部。」
+    // 流程位 → if/else;值位置(对象字面量的一格)→ 提成具名函数,概念顺带得名。
+    // 豁免:lib/db/functions.ts(词汇表四行 = 全站空值坍缩地,病灶清零的前提是药只此一份);
+    // tsx 不进 files(JSX 条件渲染是框架惯例)。
+    'no-ternary-branch': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          ternary:
+            '三目 —— 流程位改 if/else 一行一条出口;值位置提成具名小函数'
+            + '(那一格的概念顺带得一个名字)。词汇表(lib/db/functions.ts)是唯一特区。',
+        },
+      },
+      create(context) {
+        return {
+          ConditionalExpression(node) {
+            context.report({ node, messageId: 'ternary' })
+          },
+        }
+      },
+    },
+
     'no-magic-number': {
       meta: {
         type: 'suggestion',
@@ -1094,7 +1118,15 @@ const eslintConfig = [
       'local/no-split-import': 'error',
       'local/no-inline-coercion': 'error',
       'local/no-optional': 'error',
+      'local/no-ternary-branch': 'error',
     },
+  },
+  {
+    // ── 禁三目:全站 warn = 整改清单(2026-08-21,consult 先清零)──────────────────
+    files: ['src/**/*.ts'],
+    ignores: ['src/lib/consult/**', 'src/lib/db/functions.ts'],
+    plugins: { local: localRules },
+    rules: { 'local/no-ternary-branch': 'warn' },
   },
   {
     // ── 禁 `?`:全站 warn = 整改清单(2026-08-21 Frank「禁止用 ?」,consult 先清零)──
