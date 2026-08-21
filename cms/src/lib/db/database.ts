@@ -69,6 +69,16 @@ export function numOrNull(x: unknown): number | null {
   return x == null ? null : Number(x)
 }
 
+/**
+ * 出边界:干净的可空数值 → 显示串,null → ''。它是 `numOrNull` 的显示端配对 ——
+ * 「没公布」显示成空,由消费端拿官方原文补位;**不是**入边界收窄,别拿它洗脏行。
+ * (2026-08-21 加第四个词的理由:闸抓到 `pointsFacts` 的 `points == null ? '' : String(points)`,
+ * 语义与前三个词都不同 —— 前三个收进来,这个送出去。)
+ */
+export function show(x: number | null): string {
+  return x == null ? '' : String(x)
+}
+
 function poolOf(payload: unknown): DbPool | null {
   const db = (payload as { db?: { pool?: DbPool } } | null)?.db
   return db?.pool ?? null

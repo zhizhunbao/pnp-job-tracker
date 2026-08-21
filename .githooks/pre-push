@@ -1,0 +1,28 @@
+#!/bin/sh
+# push 前自动过 eslint(Frank 2026-08-21 拍板:「git push 之前先要过一遍 eslint,自动触发的」)。
+#
+# · 只查本次要推的 cms 内 .ts/.tsx/.mjs 改动 —— 全量 eslint 要几分钟,hook 里等不起;
+# · --quiet = 只有 error 拦 push;warning(如 no-inline-coercion 的整改清单)不拦;
+# · 🔴 禁 --no-verify 绕过(CLAUDE.md 站规):报错就修,修不了先别推。
+#
+# 生效需要一次性设置(每个 clone 一次):git config core.hooksPath .githooks
+
+upstream=$(git rev-parse --abbrev-ref '@{push}' 2>/dev/null || echo origin/main)
+changed=$(git diff --name-only "$upstream"..HEAD 2>/dev/null | grep -E '^cms/.*\.(ts|tsx|mjs)$')
+[ -z "$changed" ] && exit 0
+
+files=""
+for f in $changed; do
+  [ -f "$f" ] && files="$files ${f#cms/}"
+done
+[ -z "$files" ] && exit 0
+
+cd cms || exit 1
+echo "[pre-push] eslint $(echo $files | wc -w) 个改动文件…"
+npx eslint --quiet $files
+code=$?
+if [ $code -ne 0 ]; then
+  echo "[pre-push] eslint 有 error,push 已拦 —— 修完再推(禁 --no-verify)。"
+  exit $code
+fi
+echo "[pre-push] eslint 过闸。"

@@ -26,7 +26,7 @@ import { cleanProvs } from '../location'
 import { chatError, CHAT_CODE } from '../error'
 import { CHAT_FN, CHAT_LOG, GATE_LOG, log } from '../log'
 import * as SQL from '../db/sql'
-import { count, numOrNull, text } from '../db/database'
+import { count, numOrNull, show, text } from '../db/database'
 import { evaluateRequirements } from '../gauge'
 import type { Requirement, RuleProfile } from '../gauge'
 import {
@@ -852,7 +852,7 @@ function pointsFacts(r: PointsFactsIn): PointsFactsOut {
       label: `${row.grid}${LABEL.pointsHead}${row.sectionLabel || row.heading}${LABEL.dash}${row.criterion || row.factor}${col}`,
       quote: `${row.grid}${SEP.dot}${row.criterion || row.heading}`,
       value: row.points,
-      valueText: row.pointsText || (row.points == null ? '' : String(row.points)),
+      valueText: row.pointsText || show(row.points),
       unit: UNIT.points,
       evidence: row.evidence,
     }))

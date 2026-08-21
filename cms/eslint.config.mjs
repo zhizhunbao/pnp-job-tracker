@@ -445,6 +445,49 @@ const localRules = {
       },
     },
 
+    // ── 边界收窄成语只许在行映射函数与 lib/db 词汇表里出现(2026-08-21 Frank 拍板)──
+    // 设计:docs/implementation/默认值架构-20260821.md。三个成语 = `String(x ?? …)`、
+    // `Number(x ?? …)`、`x == null ? 字面量 : Number/String(x)` —— 它们是「库行没洗就地补」的形状;
+    // 普通的 `a ?? b` 可选回退不在射程里(那是正常 TS,不是边界收窄)。
+    // 开闸策略:已迁完的域 error,其余 warn = 整改清单,迁完一个升一个(Frank:「基于检查出来的内容一点一点改」)。
+    'no-inline-coercion': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          idiom:
+            '边界收窄成语。库行的空值处理收进 `to*` 行映射函数,用 lib/db 的词汇表'
+            + '(text / count / numOrNull,空值语义即 API)—— 业务代码拿到的该是洗完的对象。'
+            + '见 docs/implementation/默认值架构-20260821.md。',
+        },
+      },
+      create(context) {
+        // 词汇表自己的实现就是这三个成语的家,豁免
+        if (/lib[\\/]db[\\/]database\.ts$/.test(context.filename ?? '')) return {}
+        const nullish = (n) => n?.type === 'LogicalExpression' && n.operator === '??'
+        const wrapCall = (n) =>
+          n?.type === 'CallExpression' && n.callee?.type === 'Identifier' &&
+          (n.callee.name === 'String' || n.callee.name === 'Number')
+        return {
+          CallExpression(node) {
+            if (!wrapCall(node)) return
+            if (nullish(node.arguments[0])) context.report({ node, messageId: 'idiom' })
+          },
+          ConditionalExpression(node) {
+            const t = node.test
+            const eqNull =
+              t?.type === 'BinaryExpression' && (t.operator === '==' || t.operator === '===') &&
+              ((t.right?.type === 'Literal' && t.right.value === null) ||
+               (t.left?.type === 'Literal' && t.left.value === null))
+            if (!eqNull) return
+            if (wrapCall(node.consequent) || wrapCall(node.alternate)) {
+              context.report({ node, messageId: 'idiom' })
+            }
+          },
+        }
+      },
+    },
+
     'no-magic-number': {
       meta: {
         type: 'suggestion',
@@ -975,7 +1018,16 @@ const eslintConfig = [
       'local/no-comment-in-function': 'error',
       'local/no-magic-number': 'error',
       'local/no-split-import': 'error',
+      'local/no-inline-coercion': 'error',
     },
+  },
+  {
+    // ── 边界收窄成语:全站 warn = 整改清单(2026-08-21,设计见 默认值架构 卷宗 §5)──
+    // consult 已迁完(上面那块 error 守着);其余域按清单一点一点改,迁完一个升一个 error。
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    ignores: ['src/lib/consult/**', 'src/lib/db/database.ts'],
+    plugins: { local: localRules },
+    rules: { 'local/no-inline-coercion': 'warn' },
   },
   {
     // ── 测试是例外,而且只有测试(2026-08-18 拆 lib/chat 时立)──────────────────
