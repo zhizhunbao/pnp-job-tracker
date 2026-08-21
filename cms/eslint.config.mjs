@@ -200,7 +200,7 @@ const localRules = {
         type: 'suggestion',
         schema: [],
         messages: {
-          variable: '`functions.ts` 顶层只许有 function。`{{ name }}` 是变量 —— 标量/表/正则去 `constants.ts`,形状去 `types.ts`。',
+          variable: '`functions.ts` 顶层只许有 function。`{{ name }}` 是变量 —— 标量/表/正则去 `constants.ts`,形状去 `types.ts`,运行时状态去 `variables.ts`。',
         },
       },
       create(context) {
@@ -306,6 +306,32 @@ const localRules = {
     //
     // 放行的只有三种,都不是「内容」:空串(缺省值)、类型位置的字面量(`'user' | 'assistant'`)、
     // import 路径。对象的键也要放行 —— 键是结构不是内容,收进 constants 反而看不出这个对象长什么样。
+    // ── 域内只许有那九个文件(2026-08-20 Frank 立)────────────────────────────
+    // 「一个域最多这九个文件」是**能测的**,那就别只写在宪法里 —— 起个别的名字塞进来,
+    // 一年后没人记得当初为什么破例。要放的东西七个抽屉都装不下,说明它不属于这个域。
+    'domain-file-names': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          bad: '域里只许有这九个文件:{{ allowed }}。`{{ name }}` 不在其中 —— 装不下就说明它不属于这个域,别新起一个名字。',
+        },
+      },
+      create(context) {
+        const ALLOWED = ['constants.ts', 'variables.ts', 'prompts.ts', 'schemas.ts', 'types.ts',
+          'functions.ts', 'callbacks.ts', 'index.ts', 'server.ts']
+        return {
+          Program(node) {
+            const full = context.filename ?? ''
+            // 路径分隔符在 Windows 上是反斜杠 —— 用码点取,免得配置文件里出现转义
+            const cut = Math.max(full.lastIndexOf('/'), full.lastIndexOf(String.fromCharCode(92)))
+            const name = full.slice(cut + 1)
+            if (!name || ALLOWED.includes(name)) return
+            context.report({ node, messageId: 'bad', data: { allowed: ALLOWED.join(' / '), name } })
+          },
+        }
+      },
+    },
     'no-bare-strings': {
       meta: {
         type: 'suggestion',
@@ -883,6 +909,20 @@ const eslintConfig = [
     //   · no-split-import:另外五个域还有 3 处(consult 2 / i18n 1);
     //   · no-import-in-leaf:constants 还有 3 处(consult 2 / agent 1),
     //     types 还有 16 处(consult 8 / agent 5 / llm 1 / pathways 1 / jobs 1)。
+    files: ['src/lib/consult/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts'],
+    plugins: { local: localRules },
+    rules: { 'local/domain-file-names': 'error' },
+  },
+  {
+    // ── `callbacks.ts`:签名由外部库/语言定死的那几个(2026-08-20 Frank 立)────────
+    // 比较器的两参一返是 `Array.prototype.sort` 规定的,不是我们的选择。这两条对**这一个文件**
+    // 关掉,别处照旧 —— 于是 `functions.ts` 里「一个函数一个参数」**零例外**(一条规矩没有例外,
+    // 人才会信它),而「这个域有几处签名不归我们管」也一眼数得清。
+    // ⚠️ 只关这两条:注释、命名、不许匿名函数在这个文件里照旧管着。
+    files: ['src/lib/*/callbacks.ts'],
+    rules: { 'local/one-parameter': 'off', 'local/typed-signature': 'off' },
+  },
+  {
     files: ['src/lib/ruling/**/*.ts'],
     plugins: { local: localRules },
     rules: {

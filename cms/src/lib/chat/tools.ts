@@ -23,7 +23,7 @@ import {
   pathLevers, pathVerdict,
   type DesignatedEmployerRow, type OccupationRow, type PathwayVerdict,
   type VerdictData, type VerdictDrawRow, type VerdictLever, type VerdictProfile,
-} from '../ruling'
+} from '../ruling/server'
 import { assembleReportFacts } from './reportFacts'
 import { evaluateRequirements, type Requirement, type ReqSubject, type RuleProfile, type RuleVerdict } from '../rules'
 import type { EeGridRow, ScoreFactor } from '../score'

@@ -10,8 +10,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { getScoreTables } from '@/lib/score/server'
-import { tripleWireOf } from '@/lib/rulingServer'
-import type { TripleWire } from '@/lib/ruling/server'
+import { tripleWireOf, type TripleWire } from '@/lib/ruling/server'
 import { Decision, type TvJob } from './Decision'
 import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
@@ -59,7 +58,7 @@ export default async function PlanPrPage({ searchParams }: { searchParams: Promi
   if (tvJob) {
     let timer: ReturnType<typeof setTimeout> | undefined
     const wire = await Promise.race([
-      tripleWireOf(tvJob.id, null).catch(() => null),
+      tripleWireOf({ id: tvJob.id, answers: null }).catch(() => null),
       new Promise<null>((resolve) => { timer = setTimeout(() => resolve(null), 1500) }),
     ])
     if (timer) clearTimeout(timer)

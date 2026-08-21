@@ -9,7 +9,8 @@
 // (#280/E14-02 容缺先例),没探到的字段整行按「缺」处理,判定自然全落 unknown,不会报错。
 // 门槛省 = r.provs[0](与既有 where 列同一取法:雇主表一行没有单一地址,只能挑一个代表省)。
 
-import { employerVerdict, type EmployerFacts, type EmployerVerdict } from '../ruling'
+import { employerVerdict } from '../ruling/server'
+import type { EmployerFacts, EmployerVerdict } from '../ruling'
 import type { Requirement } from '../rules'
 import * as SQL from '../db/sql'   // SQL 文本全在那儿,本文件只管取数与映射
 

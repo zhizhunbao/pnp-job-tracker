@@ -20,7 +20,7 @@ import { describe, expect, it } from 'vitest'
 import {
   tripleVerdict as rulingTripleVerdict,
   type TripleCompany, type TripleJob, type TripleProfile,
-} from '@/lib/ruling'
+} from '@/lib/ruling/server'
 
 /** 垫片:金标沿用位置参数,判定域收对象参数(换实现时用例一个字不动) */
 function tripleVerdict(
@@ -33,7 +33,7 @@ function tripleVerdict(
   })
 }
 
-import type { DesignatedEmployerRow, OccupationRow, VerdictData } from '@/lib/ruling'
+import type { DesignatedEmployerRow, OccupationRow, VerdictData } from '@/lib/ruling/server'
 import type { Requirement } from '@/lib/rules'
 
 // 判定卡里的一切相对时间都锚死在这一年(company.founded_year=1969 → 经营 57 年)

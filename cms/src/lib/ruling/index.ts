@@ -2,8 +2,11 @@
  * 判定域的桶 —— **浏览器也能跑的那半**。
  *
  * 门里只有转发,一个函数都没有(宪法「两个门的域怎么摆」)。
- * 要连库的那半在 `./server`;分界不是风格,是**对外露哪几个名字** ——
- * `functions.ts` 本身不 import `payload`,连接池一律由调用方注进来。
+ *
+ * 🔴 **这个门一个函数都不转发**,只有案例清单与类型 —— 因为 `functions.ts` 现在自己去连库
+ * (`getDb`、`next/headers`),而 `Cases.tsx` 是 `'use client'` 且取的是**值**。
+ * 只要这个门碰一下 `functions.ts`,连接池就跟着进浏览器包(tsc 全绿、只有 `build` 才炸)。
+ * 判定函数一律走 `./server`。
  *
  * @author Frank
  * @time 2026-08-20 18:12:00
@@ -12,10 +15,6 @@
 export {
   CASES,
 } from './constants'
-
-export {
-  employerVerdict, jobPathways, matchDesignation, pathLevers, pathVerdict, tripleVerdict,
-} from './functions'
 
 export type {
   DesignatedEmployerRow, EmployerFacts, EmployerVerdict, NameRow, OccupationRow,

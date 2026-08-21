@@ -13,7 +13,15 @@
  */
 
 import { log, RULING_LOG } from '../log'
+import { headers } from 'next/headers'
+
+import { getDb } from '../db/database'
 import * as SQL from '../db/sql'
+import { getUser, isPro } from '../quota/server'
+import {
+  byCostAsc, byCountDesc, byDrawDateDesc, byListRankThenMonths, byNumberAsc, byObstacleThenTier, byOpeningsDesc, byTierAsc,
+} from './callbacks'
+import { CACHE } from './variables'
 import { evaluateRequirements, teerHit } from '../rules'
 import { estimateCrs, estimateMbEoi, gridStreamOf, scoreProvince, streamMatches } from '../score'
 import { askLabels, gateLabels } from '../i18n'
@@ -21,19 +29,19 @@ import { fieldMatchExemptionOf, gateOf, PATHWAYS } from '../pathways'
 import {
   AB_LOCAL_EXP, AIP_PROVINCES, AIP_SOURCE, AMP, AND_WORD, APPLIES_OFFER, ASKABLE_FACTORS, AVAIL, BASIS,
   BASIS_MIN_YEARS, BLOCKED_BY, BLOCK_COST, CARD_SLOT, CARD_STATE, CASES, CASE_C01, CASE_ID, CASE_TIERS,
-  CLB_IN_LABEL, CLB_TARGET_DEFAULT, COMPARE_ROLE, CONDITION, CRS_GRID_LABEL, DATE_LEN, DESIGNATION_MULTI, EDU,
-  EDU_TO_MB, EMPLOYMENT_OFFER_STREAM, EMPTY_JSON, EMP_FACTOR, EMP_KEY, EMP_STATE, EMP_UNIT, EVIDENCE_KIND,
-  EXP_BASIS, FACTOR, FACTOR_ROW, FED, FIRST_OFFICIAL_LANGUAGE, FULL_TIME_IN_LABEL, GATE_ASK, GATE_KEYS, GATE_NEED,
-  GATE_OF, GRID, GRID_AUTO_FACTORS, HTTP, INDEMAND, ITEM, JOB_ROW_RANK, KEY_PREFIX, KEY_SUFFIX_NOT_COLLECTED,
-  KIND_RULE, LEVER, MB_ADAPT_EDU_YEARS, MB_EDU, MB_EDU_YEARS, MB_RISK_STUDY, MB_RISK_WORK, MB_SWM_STREAM, MONTHS,
-  MONTHS_PER_YEAR, NAME_KEEP, NL_DESIGNATED_LABEL, NOC_CODE, NO_BLOCK_COST, NO_PROVINCE_RANK, OA_SPLIT,
-  OCC_INELIGIBLE, OCC_LIST_NONE, ON_GRAD_MIN_YEARS, OPS_METRIC, OPT_IN_GATES, PERMIT, PERMIT_KINDS, PROV,
+  CLB_IN_LABEL, CLB_TARGET_DEFAULT, COMPARE_ROLE, CONDITION, CRS_GRID_LABEL, DATE_LEN, DATE_LEN_DAY,
+  DESIGNATION_MULTI, EDU, EDU_TO_MB, EMPLOYMENT_OFFER_STREAM, EMPTY_JSON, EMP_FACTOR, EMP_KEY, EMP_STATE, EMP_UNIT,
+  EVIDENCE_KIND, EXP_BASIS, FACTOR, FACTOR_ROW, FED, FIRST_OFFICIAL_LANGUAGE, FULL_TIME_IN_LABEL, GATE_ASK,
+  GATE_KEYS, GATE_NEED, GATE_OF, GRID, GRID_AUTO_FACTORS, HTTP, INDEMAND, ITEM, JOB_ROW_RANK, KEY_PREFIX,
+  KEY_SUFFIX_NOT_COLLECTED, KIND_RULE, LEVER, MB_ADAPT_EDU_YEARS, MB_EDU, MB_EDU_YEARS, MB_RISK_STUDY, MB_RISK_WORK,
+  MB_SWM_STREAM, MONTHS, MONTHS_PER_YEAR, NAME_KEEP, NL_DESIGNATED_LABEL, NOC_CODE, NO_BLOCK_COST, NO_PROVINCE_RANK,
+  OA_SPLIT, OCC_INELIGIBLE, OCC_LIST_NONE, ON_GRAD_MIN_YEARS, OPS_METRIC, OPT_IN_GATES, PERMIT, PERMIT_KINDS, PROV,
   PROVINCE_CODE, PROVINCE_LOCAL_EXP, PV_KEY, PV_KEY_LANG_GAP, PV_TEXT, RANK, REASON, RECENT_ON_GRADUATE, REQ_FACTOR,
   REQ_UNIT, SCORE_FACTOR, SECTOR_PUBLIC, SEP, SINK, SLOT, SLOTS_OF_FACTOR, SOURCE_PROFILE, SPACE, STATE,
   STATE_OF_RULE, STATUS, STATUS_OF, STATUS_OVERSEAS, SUBJECT, SUM_KIND, TEER5_NOC, TEER_DIGIT, TEER_LOWEST,
-  TEER_RANGE_PARTS, TEER_REASONS_SHOWN, TEER_STREAM, TIER, TIER_BASIS, TIER_BOUND, TIER_OF, TV_EMP, TV_EMP_PREFIX,
-  TV_LABEL, TV_NEXT, TV_OCC, TV_PERSON, TV_PERSON_PREFIX, TV_SUM, TV_YOU, UNKNOWN_BLOCK_COST, VERDICT, VERDICT_RANK,
-  WAGE_RULE_DEFAULT, WIRE_ERR,
+  TEER_RANGE_PARTS, TEER_REASONS_SHOWN, TEER_STREAM, TIER, TIER_BASIS, TIER_BOUND, TIER_OF, TTL, TV_EMP,
+  TV_EMP_PREFIX, TV_LABEL, TV_NEXT, TV_OCC, TV_PERSON, TV_PERSON_PREFIX, TV_SUM, TV_YOU, UNKNOWN_BLOCK_COST,
+  VERDICT, VERDICT_RANK, WAGE_RULE_DEFAULT, WIRE_ERR,
 } from './constants'
 import type {
   AnswerBoolIn, AnswerBoolOut, AnswerNumIn, AnswerNumOut, AnswerTextIn, AnswerTextOut, ApplyOpsPeriodIn,
@@ -44,57 +52,58 @@ import type {
   CompareRowsIn, CompareRowsOut, ConcludeBlockedIn, ConcludeBlockedOut, ConcludeIn, ConcludeNeedsInfoIn,
   ConcludeNeedsInfoOut, ConcludeOpenIn, ConcludeOpenOut, ConcludeOut, ConditionHoldsIn, ConditionHoldsOut,
   CountableMonthsIn, CountableMonthsOut, CrossProvinceRowsIn, CrossProvinceRowsOut, CrsProfile, CrsScoreIn,
-  CrsScoreOut, DesignatedEmployerRow, DesignatedRowIn, DesignatedRowOut, EduBand, EeRow, EmpAcc,
-  EmpDesignationRowIn, EmpDesignationRowOut, EmpNextStepRowIn, EmpNextStepRowOut, EmpPublicSectorRowIn,
-  EmpPublicSectorRowOut, EmpReqOfIn, EmpReqOfOut, EmpRevenueRowIn, EmpRevenueRowOut, EmpRowsOfIn, EmpRowsOfOut,
-  EmpStaffFactRowIn, EmpStaffFactRowOut, EmpThresholdRowsIn, EmpThresholdRowsOut, EmployerFactsOfIn,
-  EmployerFactsOfOut, EmployerNameSegmentsIn, EmployerNameSegmentsOut, EmployerRowsIn, EmployerRowsOut,
-  EmployerVerdictIn, EmployerVerdictItem, EmployerVerdictOut, EmptyRowsOut, EngineResult, EvOfDrawIn, EvOfDrawOut,
-  EvOfFactorIn, EvOfFactorOut, EvOfOccIn, EvOfOccOut, EvOfReqIn, EvOfReqOut, EvaluateOneIn, EvaluateOneOut,
-  Evidence, ExcludedRowIn, ExcludedRowOut, ExperienceGapsIn, ExperienceGapsOut, ExperienceReasonsIn,
+  CrsScoreOut, DesignatedEmployerRow, DesignatedRowIn, DesignatedRowOut, DirectoryRowIn, DirectoryRowOut, EduBand,
+  EeRow, EmpAcc, EmpDesignationRowIn, EmpDesignationRowOut, EmpNextStepRowIn, EmpNextStepRowOut,
+  EmpPublicSectorRowIn, EmpPublicSectorRowOut, EmpReqOfIn, EmpReqOfOut, EmpRevenueRowIn, EmpRevenueRowOut,
+  EmpRowsOfIn, EmpRowsOfOut, EmpStaffFactRowIn, EmpStaffFactRowOut, EmpThresholdRowsIn, EmpThresholdRowsOut,
+  EmployerFactsOfIn, EmployerFactsOfOut, EmployerNameSegmentsIn, EmployerNameSegmentsOut, EmployerRowsIn,
+  EmployerRowsOut, EmployerVerdictIn, EmployerVerdictItem, EmployerVerdictOut, EmptyRowsOut, EngineResult,
+  EvOfDrawIn, EvOfDrawOut, EvOfFactorIn, EvOfFactorOut, EvOfOccIn, EvOfOccOut, EvOfReqIn, EvOfReqOut, EvaluateOneIn,
+  EvaluateOneOut, Evidence, ExcludedRowIn, ExcludedRowOut, ExperienceGapsIn, ExperienceGapsOut, ExperienceReasonsIn,
   ExperienceReasonsOut, FactorNamesIn, FactorNamesOut, FactorThreshold, FastestRowIn, FastestRowOut,
   FedLangAppliesIn, FedLangAppliesOut, FedLanguageReasonsIn, FedLanguageReasonsOut, FieldMatchAnswerIn,
   FieldMatchAnswerOut, FirstNocIn, FirstNocOut, FoldTriStateIn, FoldTriStateOut, FoldVerdictIn, FoldVerdictOut,
-  GateAnswersIn, GateAnswersOut, GateAsks, GateKeyOfIn, GateKeyOfOut, GateManifestIn, GateManifestOut, GotWorseIn,
-  GotWorseOut, GridCeilingIn, GridCeilingOut, GridMatchesStreamIn, GridMatchesStreamOut, GridProfile, GridRowForIn,
-  GridRowForOut, GridSelfProfileIn, GridSelfProfileOut, HarderBlockIn, HarderBlockOut, HasEnoughProfileIn,
-  HasEnoughProfileOut, HasRequiredSlotsIn, HasRequiredSlotsOut, HaveMonthsOfIn, HaveMonthsOfOut, ItemVerdict,
-  JobPathwayRow, JobPathwaysIn, JobPathwaysOut, JobRowRankIn, JobRowRankOut, JudgeableRowIn, JudgeableRowOut,
-  LanguageReasonsIn, LanguageReasonsOut, LeverGain, ListRequiredReasonIn, ListRequiredReasonOut, LmiaNocsOfIn,
-  LmiaNocsOfOut, LoadVerdictTablesIn, LoadVerdictTablesOut, LocalExperienceHoldsIn, LocalExperienceHoldsOut,
-  LowestMonthsRowIn, LowestMonthsRowOut, MatchDesignationIn, MatchDesignationOut, MaxClbInIn, MaxClbInOut,
-  MaybeScore, MbEduOfIn, MbEduOfOut, MbEoiProfile, MbProfileOfIn, MbProfileOfOut, MbScoreIn, MbScoreOut,
-  MbWarningsIn, MbWarningsOut, MergeOverridesIn, MergeOverridesOut, MonthsOfReqIn, MonthsOfReqOut,
-  MostSpecificRowsIn, MostSpecificRowsOut, MyPathway, MyPathwaysIn, MyPathwaysOut, NameRow, NamedList, NamedListsIn,
-  NamedListsOut, NlDesignatedReasonIn, NlDesignatedReasonOut, NormalizeEmployerNameIn, NormalizeEmployerNameOut,
-  NotCollectedRowIn, NotCollectedRowOut, NotCollectedVerdictIn, NotCollectedVerdictOut, NumOfIn, NumOfOut,
-  ObstacleRankIn, ObstacleRankOut, OccExcludedRowsIn, OccExcludedRowsOut, OccListNoneForIn, OccListNoneForOut,
-  OccListedRowsIn, OccListedRowsOut, OccNoListRowIn, OccNoListRowOut, OccTeerRowIn, OccTeerRowOut,
-  OccupationListReasonsIn, OccupationListReasonsOut, OccupationRow, OccupationRowsIn, OccupationRowsOut,
-  OfferOverrideIn, OfferOverrideOut, OneRowIn, OneRowOut, OopGradReasonIn, OopGradReasonOut, OpeningCount,
-  OpsByProvinceIn, OpsByProvinceOut, OpsFacts, OtherProvinceGraduateHoldsIn, OtherProvinceGraduateHoldsOut,
-  OutOfProvinceGradGapIn, OutOfProvinceGradGapOut, OwnTicksOfIn, OwnTicksOfOut, ParseNocDictIn, ParseNocDictOut,
-  ParseWageRuleIn, ParseWageRuleOut, PathLeversIn, PathLeversOut, PathVerdictIn, PathVerdictOut, PathwayFactsIn,
-  PathwayFactsOut, PathwayScore, PathwayVerdict, PermitOfIn, PermitOfOut, PersonRowsIn, PersonRowsOut, PickGateIn,
-  PickGateOut, PickGridFactorsIn, PickGridFactorsOut, PickOnLangRowIn, PickOnLangRowOut, PickScoreRowIn,
-  PickScoreRowOut, PickedFactor, PnpLanguageReasonsIn, PnpLanguageReasonsOut, ProfileOfOccupationIn,
-  ProfileOfOccupationOut, ProfileWithNocIn, ProfileWithNocOut, ProfileWithOfferIn, ProfileWithOfferOut,
-  ProvCountRow, ProvCountsIn, ProvCountsOut, ProvinceGridScoreIn, ProvinceGridScoreOut, ProvinceOfIn, ProvinceOfOut,
-  PushItemIn, PushItemOut, QuoteOfOccIn, QuoteOfOccOut, QuoteOfReqIn, QuoteOfReqOut, RankedJobRow, RankedPathway,
+  GateAnswersIn, GateAnswersOut, GateAsks, GateKeyOfIn, GateKeyOfOut, GateManifestIn, GateManifestOut,
+  GetDesignatedEmployersIn, GetDesignatedEmployersOut, GetVerdictDataOut, GotWorseIn, GotWorseOut, GridCeilingIn,
+  GridCeilingOut, GridMatchesStreamIn, GridMatchesStreamOut, GridProfile, GridRowForIn, GridRowForOut,
+  GridSelfProfileIn, GridSelfProfileOut, HarderBlockIn, HarderBlockOut, HasEnoughProfileIn, HasEnoughProfileOut,
+  HasRequiredSlotsIn, HasRequiredSlotsOut, HaveMonthsOfIn, HaveMonthsOfOut, ItemVerdict, JobPathwayRow,
+  JobPathwaysIn, JobPathwaysOut, JobRowRankIn, JobRowRankOut, JudgeableRowIn, JudgeableRowOut, LanguageReasonsIn,
+  LanguageReasonsOut, LeverGain, ListRequiredReasonIn, ListRequiredReasonOut, LmiaNocsOfIn, LmiaNocsOfOut,
+  LoadVerdictTablesIn, LoadVerdictTablesOut, LocalExperienceHoldsIn, LocalExperienceHoldsOut, LowestMonthsRowIn,
+  LowestMonthsRowOut, MatchDesignationIn, MatchDesignationOut, MaxClbInIn, MaxClbInOut, MaybeScore, MbEduOfIn,
+  MbEduOfOut, MbEoiProfile, MbProfileOfIn, MbProfileOfOut, MbScoreIn, MbScoreOut, MbWarningsIn, MbWarningsOut,
+  MergeOverridesIn, MergeOverridesOut, MonthsOfReqIn, MonthsOfReqOut, MostSpecificRowsIn, MostSpecificRowsOut,
+  MyPathway, MyPathwaysIn, MyPathwaysOut, NameRow, NamedList, NamedListsIn, NamedListsOut, NlDesignatedReasonIn,
+  NlDesignatedReasonOut, NormalizeEmployerNameIn, NormalizeEmployerNameOut, NotCollectedRowIn, NotCollectedRowOut,
+  NotCollectedVerdictIn, NotCollectedVerdictOut, NullResultOut, NullUserOut, NumOfIn, NumOfOut, ObstacleRankIn,
+  ObstacleRankOut, OccExcludedRowsIn, OccExcludedRowsOut, OccListNoneForIn, OccListNoneForOut, OccListedRowsIn,
+  OccListedRowsOut, OccNoListRowIn, OccNoListRowOut, OccTeerRowIn, OccTeerRowOut, OccupationListReasonsIn,
+  OccupationListReasonsOut, OccupationRow, OccupationRowsIn, OccupationRowsOut, OfferOverrideIn, OfferOverrideOut,
+  OneRowIn, OneRowOut, OopGradReasonIn, OopGradReasonOut, OpeningCount, OpsByProvinceIn, OpsByProvinceOut, OpsFacts,
+  OtherProvinceGraduateHoldsIn, OtherProvinceGraduateHoldsOut, OutOfProvinceGradGapIn, OutOfProvinceGradGapOut,
+  OwnTicksOfIn, OwnTicksOfOut, ParseNocDictIn, ParseNocDictOut, ParseWageRuleIn, ParseWageRuleOut, PathLeversIn,
+  PathLeversOut, PathVerdictIn, PathVerdictOut, PathwayFactsIn, PathwayFactsOut, PathwayScore, PathwayVerdict,
+  PermitOfIn, PermitOfOut, PersonRowsIn, PersonRowsOut, PickGateIn, PickGateOut, PickGridFactorsIn,
+  PickGridFactorsOut, PickOnLangRowIn, PickOnLangRowOut, PickScoreRowIn, PickScoreRowOut, PickedFactor,
+  PnpLanguageReasonsIn, PnpLanguageReasonsOut, ProfileOfOccupationIn, ProfileOfOccupationOut, ProfileSlotsIn,
+  ProfileSlotsOut, ProfileWithNocIn, ProfileWithNocOut, ProfileWithOfferIn, ProfileWithOfferOut, ProvCountRow,
+  ProvCountsIn, ProvCountsOut, ProvinceGridScoreIn, ProvinceGridScoreOut, ProvinceOfIn, ProvinceOfOut, PushItemIn,
+  PushItemOut, QuoteOfOccIn, QuoteOfOccOut, QuoteOfReqIn, QuoteOfReqOut, RankedBlock, RankedJobRow, RankedPathway,
   RankedVerdict, RecentGraduateHoldsIn, RecentGraduateHoldsOut, RefDrawIn, RefDrawOut, ReqMonths, ReqRow, ReqsOfIn,
   ReqsOfOut, ResidenceGapIn, ResidenceGapOut, ResidenceReasonIn, ResidenceReasonOut, RowsOfIn, RowsOfOut,
   RuleProfileOfIn, RuleProfileOfOut, ScoreAndRefLineIn, ScoreAndRefLineOut, ScoreGulfReasonIn, ScoreGulfReasonOut,
-  ScoreOverride, ScoreRow, SelfEmpExcludedInIn, SelfEmpExcludedInOut, StatusGateAnswerIn, StatusGateAnswerOut,
-  StrOfIn, StrOfOut, SwallowOut, TargetProvincesOfIn, TargetProvincesOfOut, TeerDowngradeLeverIn,
-  TeerDowngradeLeverOut, TeerScope, TeerScopeAcc, TeerScopesIn, TeerScopesOut, Tier, TierBasisOfIn, TierBasisOfOut,
-  TierFullTimeOfIn, TierFullTimeOfOut, TierGap, TierOfMonthsIn, TierOfMonthsOut, TierRowsIn, TierRowsOut, TimeRowIn,
-  TimeRowOut, ToDesignatedOut, ToDrawOut, ToEeGridOut, ToOccupationOut, ToRequirementOut, ToRowIn, ToScoreFactorOut,
-  TotalExpMonthsIn, TotalExpMonthsOut, TrainableRow, TrainableRowsIn, TrainableRowsOut, TripleCompanyOfIn,
-  TripleCompanyOfOut, TripleCompareRole, TripleCompareRow, TripleJobOfIn, TripleJobOfOut, TripleProfileOfIn,
-  TripleProfileOfOut, TripleRow, TripleVerdictIn, TripleVerdictOut, TripleWireRow, UniversalValueIn,
-  UniversalValueOut, VerdictDrawRow, VerdictLever, VerdictProfile, VerdictRankIn, VerdictRankOut, VerdictReason,
-  VerdictReasonsIn, VerdictReasonsOut, WagePointsIn, WagePointsOut, WireRowsIn, WireRowsOut, WorkPermitSoonIn,
-  WorkPermitSoonOut, WorstGapIn, WorstGapOut,
+  ScoreOverride, ScoreRow, SelfEmpExcludedInIn, SelfEmpExcludedInOut, SessionOfIn, SessionOfOut, SessionUser,
+  StatusGateAnswerIn, StatusGateAnswerOut, StrOfIn, StrOfOut, SwallowOut, TargetProvincesOfIn, TargetProvincesOfOut,
+  TeerDowngradeLeverIn, TeerDowngradeLeverOut, TeerScope, TeerScopeAcc, TeerScopesIn, TeerScopesOut, Tier,
+  TierBasisOfIn, TierBasisOfOut, TierFullTimeOfIn, TierFullTimeOfOut, TierGap, TierOfMonthsIn, TierOfMonthsOut,
+  TierRowsIn, TierRowsOut, TimeRowIn, TimeRowOut, ToDesignatedOut, ToDrawOut, ToEeGridOut, ToOccupationOut,
+  ToRequirementOut, ToRowIn, ToScoreFactorOut, TotalExpMonthsIn, TotalExpMonthsOut, TrainableRow, TrainableRowsIn,
+  TrainableRowsOut, TripleCompanyOfIn, TripleCompanyOfOut, TripleCompareRole, TripleCompareRow, TripleJobOfIn,
+  TripleJobOfOut, TripleProfileOfIn, TripleProfileOfOut, TripleRow, TripleVerdictIn, TripleVerdictOut,
+  TripleWireOfIn, TripleWireOfOut, TripleWireRow, UniversalValueIn, UniversalValueOut, VerdictDrawRow, VerdictLever,
+  VerdictProfile, VerdictRankIn, VerdictRankOut, VerdictReason, VerdictReasonsIn, VerdictReasonsOut, WagePointsIn,
+  WagePointsOut, WireRowsIn, WireRowsOut, WorkPermitSoonIn, WorkPermitSoonOut, WorstGapIn, WorstGapOut,
 } from './types'
 
 /**
@@ -838,20 +847,6 @@ function residenceGap(input: ResidenceGapIn): ResidenceGapOut {
   if (need == null) return null
   if (input.p.province == null) return { row, need, gap: null }
   return { row, need, gap: input.p.province === input.spec.reqProvince ? null : need }
-}
-
-/**
- * 抽选行按日期倒序 —— 最近一轮排在最前。
- *
- * 两个参数是 `Array.prototype.sort` 定死的签名(外部规定,不是本域「一个函数一个参数」的例外)。
- *
- * @param a 前一行。
- * @param b 后一行。
- * @returns 负数 = a 排在前面。
- */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 比较器的两参一返由 Array.prototype.sort 定死
-function byDrawDateDesc(a: VerdictDrawRow, b: VerdictDrawRow): number {
-  return a.drawDate < b.drawDate ? 1 : -1
 }
 
 /**
@@ -2412,23 +2407,6 @@ function workPermitSoon(input: WorkPermitSoonIn): WorkPermitSoonOut {
 }
 
 /**
- * 通道裁决按「障碍 → tier → 注册表原序」排。
- *
- * 两个参数是 `Array.prototype.sort` 定死的签名(外部规定)。名次在入表时就算好了,
- * 比较器只比数 —— 它不再认识档案,也就不必把档案闭包进来。
- *
- * @param a 前一条。
- * @param b 后一条。
- * @returns 负数 = a 排在前面。
- */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 比较器的两参一返由 Array.prototype.sort 定死
-function byObstacleThenTier(a: RankedVerdict, b: RankedVerdict): number {
-  if (a.obstacle !== b.obstacle) return a.obstacle - b.obstacle
-  if (a.tier !== b.tier) return a.tier - b.tier
-  return a.i - b.i
-}
-
-/**
  * 这条通道有没有「自雇不计入经验」那类门槛行。
  *
  * @param input 该通道的门槛行。
@@ -2451,22 +2429,6 @@ function jobRowRank(input: JobRowRankIn): JobRowRankOut {
   if (input.row.excludedByList) return JOB_ROW_RANK.excludedByList
   if (input.row.availability !== AVAIL.ok || input.row.months == null) return JOB_ROW_RANK.notCollected
   return JOB_ROW_RANK.ok
-}
-
-/**
- * 职业级通道行按「档 → 门槛月数 → 注册表原序」排。
- *
- * 两个参数是 `Array.prototype.sort` 定死的签名(外部规定)。
- *
- * @param a 前一行。
- * @param b 后一行。
- * @returns 负数 = a 排在前面。
- */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 比较器的两参一返由 Array.prototype.sort 定死
-function byListRankThenMonths(a: RankedJobRow, b: RankedJobRow): number {
-  if (a.rank !== b.rank) return a.rank - b.rank
-  if (a.months !== b.months) return a.months - b.months
-  return a.i - b.i
 }
 
 /**
@@ -2526,18 +2488,6 @@ function teerScopes(input: TeerScopesIn): TeerScopesOut {
     out.push({ stream: stream, teers: [...v.teers].sort(byNumberAsc), row: v.row })
   }
   return out
-}
-
-/**
- * 数字升序 —— 两个参数是 `Array.prototype.sort` 定死的签名(外部规定)。
- *
- * @param a 前一个。
- * @param b 后一个。
- * @returns 负数 = a 排在前面。
- */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 比较器的两参一返由 Array.prototype.sort 定死
-function byNumberAsc(a: number, b: number): number {
-  return a - b
 }
 
 /**
@@ -3227,11 +3177,11 @@ function concludeOpen(input: ConcludeOpenIn): ConcludeOpenOut {
  * @returns 那一句结论;没有被卡住的则 null。
  */
 function concludeBlocked(input: ConcludeBlockedIn): ConcludeBlockedOut {
-  const blocked: MyPathway[] = []
-  for (const x of input.mine) if (x.v.blockedBy) blocked.push(x)
+  const blocked: RankedBlock[] = []
+  for (const x of input.mine) if (x.v.blockedBy) blocked.push({ x: x, cost: blockCost(x.v.blockedBy) })
   if (!blocked.length) return null
-  blocked.sort(byBlockCostAsc)
-  const top = blocked[0]
+  blocked.sort(byCostAsc)
+  const top = blocked[0].x
   let need = 0
   if (top.v.blockedBy === FACTOR.language) {
     for (const r of top.v.reasons) {
@@ -3280,30 +3230,6 @@ function concludeNeedsInfo(input: ConcludeNeedsInfoIn): ConcludeNeedsInfoOut {
     label: `${TV_LABEL.sumNeedsInfoHead}${needs[0].c.key}${TV_LABEL.sumUndecidableMid}`
       + `${slots.join(SEP.comma)}`,
   }
-}
-
-/**
- * 按 tier 升序 —— 两个参数是 `Array.prototype.sort` 定死的签名(外部规定)。
- *
- * @param a 前一条。
- * @param b 后一条。
- * @returns 负数 = a 排在前面。
- */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 比较器的两参一返由 Array.prototype.sort 定死
-function byTierAsc(a: MyPathway, b: MyPathway): number {
-  return (a.c.tier ?? SINK.tier) - (b.c.tier ?? SINK.tier)
-}
-
-/**
- * 按「这道闸多难拆」升序 —— 最好拆的排最前(它就是「下一步该干什么」)。
- *
- * @param a 前一条。
- * @param b 后一条。
- * @returns 负数 = a 排在前面。
- */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 比较器的两参一返由 Array.prototype.sort 定死
-function byBlockCostAsc(a: MyPathway, b: MyPathway): number {
-  return blockCost(a.v.blockedBy) - blockCost(b.v.blockedBy)
 }
 
 /**
@@ -3776,7 +3702,7 @@ async function tripleCompanyOf(input: TripleCompanyOfIn): TripleCompanyOfOut {
   const nocsRow = cid == null
     ? null
     : await oneRow({ db: input.db, sql: SQL.COMPANY_LMIA_NOCS, params: [cid] })
-  const dir = name && input.province ? await input.designatedOf(input.province) : []
+  const dir = name && input.province ? await input.designatedOf({ province: input.province }) : []
   const hit = matchDesignation({ companyName: name, rows: dir })
   return {
     id: cid ?? 0,
@@ -3979,18 +3905,6 @@ function tierRows(input: TierRowsIn): TierRowsOut {
 }
 
 /**
- * 按在招岗数降序 —— 两个参数是 `Array.prototype.sort` 定死的签名(外部规定)。
- *
- * @param a 前一条。
- * @param b 后一条。
- * @returns 负数 = a 排在前面。
- */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 比较器的两参一返由 Array.prototype.sort 定死
-function byOpeningsDesc(a: RankedPathway, b: RankedPathway): number {
-  return b.n - a.n
-}
-
-/**
  * 第一步:这个职业「提供带训 / 不要经验」的在招岗按省分布,多的在前。
  *
  * 零经验的人先要的是「谁肯带」,不是选省。
@@ -4003,18 +3917,6 @@ function trainableRows(input: TrainableRowsIn): TrainableRowsOut {
   for (const r of input.rows) if (r.t > 0) out.push({ province: r.province, n: r.t })
   out.sort(byCountDesc)
   return out
-}
-
-/**
- * 按数量降序 —— 两个参数是 `Array.prototype.sort` 定死的签名(外部规定)。
- *
- * @param a 前一条。
- * @param b 后一条。
- * @returns 负数 = a 排在前面。
- */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 比较器的两参一返由 Array.prototype.sort 定死
-function byCountDesc(a: TrainableRow, b: TrainableRow): number {
-  return b.n - a.n
 }
 
 /**
@@ -4358,4 +4260,142 @@ export function pathLevers(input: PathLeversIn): PathLeversOut {
     levers.push(one)
   }
   return levers
+}
+
+// =========================================================================
+// 5. 自己去连库的那几支
+// =========================================================================
+
+/**
+ * 六张判定底表。TTL 内直接给缓存那一份。
+ *
+ * @returns 六张底表。
+ */
+export async function getVerdictData(): GetVerdictDataOut {
+  if (!CACHE.tables || Date.now() - CACHE.tables.at > TTL) {
+    CACHE.tables = { at: Date.now(), data: await loadVerdictTables(await getDb()) }
+  }
+  return CACHE.tables.data
+}
+
+/**
+ * 指定雇主名录**按省**的全量行(判定卡的雇主名字匹配用;`matchDesignation` 是纯函数,候选由这里喂)。
+ *
+ * 🔴 不能改用 `VerdictData.designatedEmployers` —— 那一份是 **NL 专用**(判定核拿它当
+ * 「NL 名录里有几家申报过这个 NOC」的分母),扩成四省会把那个分母一起改掉。
+ *
+ * 单省最大 NS 1,574 行约 60KB,四省全热也就约 200KB。查失败返回空 →
+ * 判定落「名录没认出」= **本站的缺口**,不写「未被指定」。
+ *
+ * @param input 两位省码。
+ * @returns 该省的名录行;省码为空或查失败则空。
+ */
+export async function getDesignatedEmployers(input: GetDesignatedEmployersIn): GetDesignatedEmployersOut {
+  const prov = (input.province || '').trim()
+  if (!prov) return []
+  const hit = CACHE.byProvince.get(prov)
+  if (hit && Date.now() - hit.at <= TTL) return hit.rows
+
+  const db = await getDb()
+  const res = await db.query(SQL.DESIGNATED_BY_PROV, [prov]).catch(nullResult)
+  if (!res) return []
+
+  const rows: DesignatedEmployerRow[] = []
+  for (const d of res.rows) rows.push(directoryRow({ row: d }))
+  CACHE.byProvince.set(prov, { at: Date.now(), rows })
+  return rows
+}
+
+/**
+ * 查挂了交回 null —— 给 `.catch()` 用的具名函数。**不缓存失败**。
+ *
+ * @returns null。
+ */
+function nullResult(): NullResultOut {
+  return null
+}
+
+/**
+ * 库里一行名录 → 判定认的那一行。
+ *
+ * @param input 库里那一行。
+ * @returns 判定认的那一行。
+ */
+function directoryRow(input: DirectoryRowIn): DirectoryRowOut {
+  const d = input.row
+  return {
+    name: String(d.name ?? ''),
+    province: String(d.province ?? ''),
+    location: String(d.location ?? ''),
+    isTech: !!d.is_tech,
+    source: String(d.source ?? ''),
+    nocs: String(d.nocs ?? ''),
+    url: d.url ? String(d.url) : undefined,
+    fetched: d.fetched ? String(d.fetched).slice(0, DATE_LEN_DAY) : undefined,
+  }
+}
+
+/**
+ * 判定卡的下行数据 —— `/api/triple-verdict` 与 `/plan/pr?job=` 的 SSR 首屏共用这一条口径。
+ *
+ * 本函数只负责把 `buildTripleWire` 要的东西凑齐:连接池、六张底表、按省取名录的函数,
+ * 以及**当前这个人**(登录态与 Pro 与否)。付费闸在 `buildTripleWire` 里,
+ * 两处调用都走同一道闸,SSR 不会多漏一行。
+ *
+ * 它存在的唯一理由是**两个调用点要抄同样八行**,不是为了好看。
+ *
+ * @param input 岗位号与浏览器本地那份答案。
+ * @returns 整张卡,或一句错误加 HTTP 码。
+ */
+export async function tripleWireOf(input: TripleWireOfIn): TripleWireOfOut {
+  const user = await getUser(await headers()).catch(nullUser)
+  return buildTripleWire({
+    db: await getDb(),
+    id: input.id,
+    answers: input.answers,
+    profile: profileSlots({ user: sessionOf({ user: user }) }),
+    loggedIn: !!user,
+    pro: isPro(user),
+    data: await getVerdictData(),
+    designatedOf: getDesignatedEmployers,
+  })
+}
+
+/**
+ * 这个人身上那组档案槽;没登录或没建过档则空袋。
+ *
+ * 🔴 这里有一个**跨边界的断言**,原因说清楚:`Users` 集合上确实挂着 `profile` 组,
+ * 但鉴权那层(`getUser`)的返回类型只声明了它自己要的那几格(id / email / 到期日),
+ * 没声明 `profile`。两个类型没有交集,TS 的弱类型检查会直接拦下来 —— 所以断言留着,
+ * 而且**只留在这一个函数里**:调用方拿到的已经是一袋档案槽,不必再认识鉴权那层的形状。
+ *
+ * @param input 当前这个人。
+ * @returns 那组档案槽;没有则空袋。
+ */
+function profileSlots(input: ProfileSlotsIn): ProfileSlotsOut {
+  return input.user?.profile ?? {}
+}
+
+/**
+ * 鉴权那层交回来的人 → 本域自己声明的那个形状。
+ *
+ * 🔴 **跨边界的断言,原因说清楚**:`Users` 集合上确实挂着 `profile` 组,但鉴权那层
+ * (`getUser`)的返回类型只声明了它自己要的那几格(id / email / 到期日),没声明 `profile`。
+ * 两个类型没有共同属性,TS 的弱类型检查会直接拦下来 —— 所以断言留着,
+ * 而且**只留在这一个函数里**:别处拿到的已经是本域的形状。
+ *
+ * @param input 鉴权那层交回来的人。
+ * @returns 本域认的那个人。
+ */
+function sessionOf(input: SessionOfIn): SessionOfOut {
+  return input.user as SessionUser
+}
+
+/**
+ * 解不出登录态时当没登录 —— 给 `.catch()` 用的具名函数。
+ *
+ * @returns null。
+ */
+function nullUser(): NullUserOut {
+  return null
 }

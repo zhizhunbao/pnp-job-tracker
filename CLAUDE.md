@@ -230,10 +230,33 @@ pnp-job-tracker/
 ### 域内文件的标准形态(2026-08-19 立,样板 `cms/src/lib/agent/`)
 
 > 上面「文件名不许说构造」那条**只管顶层与共享叶子**。进了一个已经说清领域的目录,
-> 按构造分文件反而是最好定位的 —— 一个域最多这七个文件,新写的域照抄:
+> 按构造分文件反而是最好定位的 —— 一个域最多这九个文件,新写的域照抄:
 >
-> `constants.ts` 常量 / `prompts.ts` 给模型看的字 / `schemas.ts` 运行时校验(TypeBox 等)
-> / `types.ts` 类型 / `functions.ts` 只有函数 / `index.ts` + `server.ts` 两个门
+> `constants.ts` 常量 / `variables.ts` 运行时状态 / `prompts.ts` 给模型看的字
+> / `schemas.ts` 运行时校验(TypeBox 等) / `types.ts` 类型 / `functions.ts` 只有函数
+> / `callbacks.ts` 签名归外部库管的函数 / `index.ts` + `server.ts` 两个门
+>
+> **只有这九个名字**,闸 `domain-file-names` 盯着(2026-08-20 Frank 立)。
+> 起个别的名字塞进来,一年后没人记得当初为什么破例;八个抽屉都装不下,
+> 说明那东西**不属于这个域**。
+
+- **`variables.ts` 是域里唯一能放变量的地方(2026-08-20 Frank 立)**。
+  `constants.ts` 装 JSON 装得下的死值、`types.ts` 装形状,两个都装不下**会变的东西**;
+  而 `functions.ts` 顶层只许有 `function`。没有这一格,状态就只能靠 `eslint-disable`
+  赖在函数堆里,理由散在各处没人管。摆成一个文件,**这个域一共有多少可变状态,一眼数得清**。
+  ⚠️ 写成**一个容器对象**,不是几个 `export let` —— `export let` 跨模块是只读活绑定,
+  别的文件里 `x = …` 当场编译错;改属性才合法,顺带逼着每一处写明「我在改哪一格状态」。
+  样板:`lib/ruling/variables.ts` 的 `CACHE`(两份跨路由单件 TTL 缓存)。
+- **`callbacks.ts` 装签名不归我们管的函数(2026-08-20 Frank 立)**。
+  「一个函数一个参数,入参与返回值都用自己的 type」是本域的铁律,而比较器的两参一返由
+  `Array.prototype.sort` 定死。摊在 `functions.ts` 里,这条例外就得靠一句句 `eslint-disable`
+  撑着 —— 实测立规前全站 9 处,**同一个决定逐字抄了 9 遍**,改一次要改 9 处,
+  还看不出一个域到底有多少处受制于外部。收成一个文件后闸只关一次
+  (只关 `one-parameter` 与 `typed-signature`,注释、命名、不许匿名函数照旧),
+  于是 `functions.ts` 里**零例外** —— **一条规矩没有例外,人才会信它**。
+  ⚠️ 门槛只有一条:**签名由外部库或语言定死**。「我懒得改」不算。
+  ⚠️ 它**不许 import `functions.ts`**(那就成环了)。比较器要用到的派生值由调用方先算好
+  挂在行上(样板:`RankedBlock` 的 `cost`),顺带也省掉 O(n log n) 次重复查表。
 
 - **两个门的域怎么摆(2026-08-20 立)**:`index` 与 `server` **都只是门,门里只有转发,不许有函数**。
   两个门要分开,是因为混着 `payload` 依赖的桶会把连接池打进浏览器包

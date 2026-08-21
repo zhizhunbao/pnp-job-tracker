@@ -37,23 +37,22 @@ import {
   SYSTEM_RULES, TOOL_DESC, TOOL_REPLY,
 } from './prompts'
 import { NOC_PARAMS, NOC_PROVS_PARAMS, SEARCH_PARAMS } from './schemas'
+import { byOpenDesc } from './callbacks'
 import type {
-
-  AcceptNocIn, AcceptNocOut, AllowedNumbersIn, AllowedNumbersOut, AnswerLangIn, BlankCoverageIn,
-  BlankCoverageOut, BlankIfNumberedIn, BlankIfNumberedOut, ByOpenDescIn, ByOpenDescOut, Candidate,
-  CiteFactsIn, CiteFactsOut, ClampAnswerOut, CleanProvsIn, CleanProvsOut, CodesOfIn, CodesOfOut, ConsultIn,
-  ConsultOut, ContentOfIn, ContentOfOut, CoverageFactsIn, CoverageFactsOut, CoverageRow, DraftOnceIn,
-  DraftOnceOut, ExecCoverageIn, ExecCoverageOut, ExecJobsIn, ExecJobsOut, ExecSearchIn, ExecSearchOut,
-  ExecThresholdsIn, ExecThresholdsOut, Fact, FactIn, FactOut, FactSheetIn, FactSheetOut, FindEnglishUnitsOut,
-  FindInternalWordsIn, FindInternalWordsOut, FindRawMarkupIn, FindRawMarkupOut, FindUngroundedNumbersOut,
-  FirstPromptIn, FirstPromptOut, GateHit, GateLabelIn, GateLabelOut, Inbox, IsUserTurnIn, IsUserTurnOut,
-  JobsFactsIn, JobsFactsOut, JobsRow, LookupCoverageIn, LookupCoverageOut, LookupJobsIn, LookupJobsOut,
-  LookupThresholdsIn, LookupThresholdsOut, MakeToolsIn, MakeToolsOut, ModelOut, NocOfIn, NocOfOut, NormNumIn,
-  NormNumOut, NumberCheckIn, OnEventIn, OnEventOut, OnTimeoutOut, PassThroughMessagesIn,
+  AcceptNocIn, AcceptNocOut, AllowedNumbersIn, AllowedNumbersOut, AnswerLangIn, BlankCoverageIn, BlankCoverageOut,
+  BlankIfNumberedIn, BlankIfNumberedOut, Candidate, CiteFactsIn, CiteFactsOut, ClampAnswerOut, CleanProvsIn,
+  CleanProvsOut, CodesOfIn, CodesOfOut, ConsultIn, ConsultOut, ContentOfIn, ContentOfOut, CoverageFactsIn,
+  CoverageFactsOut, CoverageRow, DraftOnceIn, DraftOnceOut, ExecCoverageIn, ExecCoverageOut, ExecJobsIn,
+  ExecJobsOut, ExecSearchIn, ExecSearchOut, ExecThresholdsIn, ExecThresholdsOut, Fact, FactIn, FactOut, FactSheetIn,
+  FactSheetOut, FindEnglishUnitsOut, FindInternalWordsIn, FindInternalWordsOut, FindRawMarkupIn, FindRawMarkupOut,
+  FindUngroundedNumbersOut, FirstPromptIn, FirstPromptOut, GateHit, GateLabelIn, GateLabelOut, Inbox, IsUserTurnIn,
+  IsUserTurnOut, JobsFactsIn, JobsFactsOut, JobsRow, LookupCoverageIn, LookupCoverageOut, LookupJobsIn,
+  LookupJobsOut, LookupThresholdsIn, LookupThresholdsOut, MakeToolsIn, MakeToolsOut, ModelOut, NocOfIn, NocOfOut,
+  NormNumIn, NormNumOut, NumberCheckIn, OnEventIn, OnEventOut, OnTimeoutOut, PassThroughMessagesIn,
   PassThroughMessagesOut, RetryNoteIn, RetryNoteOut, RunGatesIn, RunGatesOut, RunIn, SayIn, SayOut,
-  SearchOccupationsIn, SearchOccupationsOut, StatusFactIn, StatusFactOut, StepIn, StepOut, SystemOfOut,
-  TakeIn, TakeOut, TextOfIn, TextOfOut, ThresholdsFactsIn, ThresholdsFactsOut, ThresholdsRow, TierTextIn,
-  TierTextOut, ToRequirementIn, ToRequirementOut, Tool,
+  SearchOccupationsIn, SearchOccupationsOut, StatusFactIn, StatusFactOut, StepIn, StepOut, SystemOfOut, TakeIn,
+  TakeOut, TextOfIn, TextOfOut, ThresholdsFactsIn, ThresholdsFactsOut, ThresholdsRow, TierTextIn, TierTextOut,
+  ToRequirementIn, ToRequirementOut, Tool,
 } from './types'
 
 // =========================================================================
@@ -167,18 +166,6 @@ async function lookupJobs(input: LookupJobsIn): LookupJobsOut {
   const rows = Array.from(byProv.values()).sort(byOpenDesc)
   const head = title.rows[0]
   return { noc: input.noc, title: String(head?.title ?? ''), teer: head?.teer == null ? null : Number(head.teer), rows }
-}
-
-/**
- * 在招数从多到少。并列时按省码排,保证同一次查询连查两遍结果一模一样。
- *
- * @param a 左边那行。
- * @param b 右边那行。
- * @returns 排序比较值。
- */
-// eslint-disable-next-line local/one-parameter -- 比较器的两个参数是 Array.prototype.sort 定死的,不是我们的选择
-function byOpenDesc(a: ByOpenDescIn, b: ByOpenDescIn): ByOpenDescOut {
-  return b.open - a.open || a.prov.localeCompare(b.prov)
 }
 
 /**

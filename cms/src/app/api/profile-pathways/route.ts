@@ -9,11 +9,11 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { fetchOccCompetition } from '@/lib/score/server'
 import { fetchPilotQuota, type PilotQuotaAgg } from '@/lib/pathways/server'
-import { pathVerdict, type VerdictProfile } from '@/lib/ruling'
+import type { VerdictProfile } from '@/lib/ruling'
 import { regionProvincesOf, uiOf } from '@/lib/pathways'
 import { pickOutside, rankRows, type RankCtx } from '@/lib/plan'
 import { isAboveLine, isBelowLine } from '@/lib/score'
-import { getVerdictData } from '@/lib/rulingServer'
+import { getVerdictData, pathVerdict } from '@/lib/ruling/server'
 import * as SQL from '@/lib/db/sql'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'

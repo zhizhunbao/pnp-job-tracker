@@ -6217,7 +6217,7 @@ export type WireRowsOut = TripleWireRow[]
  * 🔴 名录扫描走跨路由的 TTL 缓存,而缓存要连 `payload`,那是路由层的基建、不属于本域
  * (宪法「带 `payload` 的进程内缓存不属于域」)。本域只声明「我需要这么一个函数」。
  */
-export type DesignatedLoader = (province: string) => Promise<DesignatedEmployerRow[]>
+export type DesignatedLoader = (input: GetDesignatedEmployersIn) => GetDesignatedEmployersOut
 
 /**
  * `buildTripleWire` 的入参。
@@ -6649,3 +6649,178 @@ export type AnswerTextIn = {
  * `answerText` 的返回。
  */
 export type AnswerTextOut = string | null
+
+// =========================================================================
+// 14. 自己去连库的那几支
+// =========================================================================
+
+/**
+ * `getVerdictData` 的返回。
+ */
+export type GetVerdictDataOut = Promise<VerdictData>
+
+/**
+ * `getDesignatedEmployers` 的入参。
+ */
+export type GetDesignatedEmployersIn = {
+  /**
+   * 两位省码。名录**按省**取 —— 跨省同名是两家公司。
+   */
+  province: string
+}
+
+/**
+ * `getDesignatedEmployers` 的返回。
+ */
+export type GetDesignatedEmployersOut = Promise<DesignatedEmployerRow[]>
+
+/**
+ * `directoryRow` 的入参。
+ */
+export type DirectoryRowIn = {
+  /**
+   * 库里那一行名录。
+   */
+  row: Row
+}
+
+/**
+ * `directoryRow` 的返回。
+ */
+export type DirectoryRowOut = DesignatedEmployerRow
+
+/**
+ * `tripleWireOf` 的入参。
+ */
+export type TripleWireOfIn = {
+  /**
+   * 岗位号。
+   */
+  id: number
+
+  /**
+   * 浏览器本地那份答案;SSR 时是 null(服务端读不到 localStorage)。
+   */
+  answers: ClientAnswers
+}
+
+/**
+ * `tripleWireOf` 的返回。
+ */
+export type TripleWireOfOut = Promise<TripleWireResult>
+
+/**
+ * `nullResult` 的返回。
+ */
+export type NullResultOut = null
+
+/**
+ * `nullUser` 的返回。
+ */
+export type NullUserOut = null
+
+/**
+ * 六张底表那一份缓存。
+ */
+export type TablesCache = {
+  /**
+   * 存进来的时刻。过了 TTL 就重取。
+   */
+  at: number
+
+  /**
+   * 六张底表。
+   */
+  data: VerdictData
+}
+
+/**
+ * 某个省的名录那一份缓存。
+ */
+export type DirectoryCache = {
+  /**
+   * 存进来的时刻。
+   */
+  at: number
+
+  /**
+   * 该省的名录行。
+   */
+  rows: DesignatedEmployerRow[]
+}
+
+/**
+ * `profileSlots` 的入参。
+ */
+export type ProfileSlotsIn = {
+  /**
+   * 当前这个人;没登录则 null。形状由鉴权那层定,本域只关心它身上挂没挂档案。
+   */
+  user: SessionUser
+}
+
+/**
+ * 鉴权那层交回来的人。**本域只声明自己真读的那一格**(有没有档案),
+ * 其余(id / email / 到期日)是那一层的事,不在这里跟着声明一遍。
+ */
+export type SessionUser = {
+  /**
+   * 用户身上那组档案槽;没建过档则没有这一格。
+   */
+  profile?: AnswerBag
+} | null
+
+/**
+ * `profileSlots` 的返回。
+ */
+export type ProfileSlotsOut = AnswerBag
+
+/**
+ * `sessionOf` 的入参。
+ */
+export type SessionOfIn = {
+  /**
+   * 鉴权那层交回来的人。形状归那一层管,本域不跟着声明一遍。
+   */
+  user: AuthUser
+}
+
+/**
+ * 鉴权那层交回来的那个人 —— 本域**不认识它的字段**,只负责把它转成自己的形状。
+ */
+export type AuthUser = object | null
+
+/**
+ * `sessionOf` 的返回。
+ */
+export type SessionOfOut = SessionUser
+
+/**
+ * 判定域的运行时状态。**这个域一共有多少可变的东西,就这张表上这几格。**
+ */
+export type RulingCache = {
+  /**
+   * 六张判定底表那一份;还没取过则 null。
+   */
+  tables: TablesCache | null
+
+  /**
+   * 指定雇主名录按省的那几份。查失败**不写进来** —— 不把一次抖动钉死 10 分钟。
+   */
+  byProvince: Map<string, DirectoryCache>
+}
+
+/**
+ * 一条被卡住的通道,配上「那道闸多难拆」—— 只为排序活着。
+ */
+export type RankedBlock = {
+  /**
+   * 那条通道(比路行与裁决配成的对)。
+   */
+  x: MyPathway
+
+  /**
+   * 那道闸的难度。**由调用方先算好**,比较器只做减法。
+   */
+  cost: number
+}

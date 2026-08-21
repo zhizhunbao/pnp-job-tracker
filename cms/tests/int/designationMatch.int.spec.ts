@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 import {
   employerNameSegments, matchDesignation as rulingMatchDesignation, normalizeEmployerName,
 } from '@/lib/ruling/functions'
-import type { NameRow } from '@/lib/ruling'
+import type { NameRow } from '@/lib/ruling/server'
 
 /** 垫片:金标沿用位置参数,判定域收对象参数(换实现时用例一个字不动) */
 function matchDesignation(companyName: string, rows: readonly NameRow[]) {

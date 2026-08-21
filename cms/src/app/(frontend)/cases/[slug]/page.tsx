@@ -6,8 +6,8 @@ import { notFound } from 'next/navigation'
 import { makeT } from '@/lib/i18n'
 
 import { CASES } from '@/lib/ruling'
-import { caseAnswer, casePages } from '@/lib/ruling/server'
-import { getPool, getVerdictData } from '@/lib/rulingServer'
+import { caseAnswer, casePages, getVerdictData } from '@/lib/ruling/server'
+import { getDb } from '@/lib/db/database'
 import { ssrLang } from '@/lib/lang.server'
 import { Case } from './Case'
 
@@ -39,7 +39,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
   if (!entry) notFound()
 
   // 结论全部来自判定核;算不出来就不出页(空壳页不该被索引)
-  const [db, data] = await Promise.all([getPool(), getVerdictData()])
+  const [db, data] = await Promise.all([getDb(), getVerdictData()])
   const answer = await caseAnswer({ slug, data, db }).catch(() => null)
   if (!answer) notFound()
 

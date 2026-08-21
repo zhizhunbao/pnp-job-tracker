@@ -368,7 +368,6 @@ async function chatV1(input: FriendChatIn): FriendChatOut {
 function sourceUrl(input: SourceUrlIn): SourceUrlOut {
   // `typeof x === '…'` 的右边必须是字面量:换成常量 TS 就不做类型窄化了(下一行取 .url 会当场报错)。
   // 这是语言限制,不是偷懒。
-  // eslint-disable-next-line local/no-bare-strings -- 见上
   if (typeof input.source === 'string') return input.source
   return String(input.source?.url || '')
 }

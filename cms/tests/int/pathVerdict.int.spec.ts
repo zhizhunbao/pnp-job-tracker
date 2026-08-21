@@ -14,8 +14,8 @@ import {
   jobPathways as rulingJobPathways, pathVerdict as rulingPathVerdict, pathLevers as rulingPathLevers,
   type DesignatedEmployerRow, type OccupationRow, type PathwayVerdict,
   type VerdictData, type VerdictDrawRow, type VerdictProfile,
-} from '@/lib/ruling'
-import type { PathLeverOpts } from '@/lib/ruling'
+} from '@/lib/ruling/server'
+import type { PathLeverOpts } from '@/lib/ruling/server'
 
 /** 垫片:金标沿用位置参数,判定域收对象参数(换实现时用例一个字不动) */
 function pathVerdict(profile: VerdictProfile, data: VerdictData) {
