@@ -13,11 +13,12 @@
 // =========================================================================
 
 /**
- * 一个失败:原生 Error 加上域自己的错误码。Code 允许含 undefined,因为有的域的码是可选的。
+ * 一个失败:原生 Error 加上域自己的错误码。Code 允许含 null,因为有的域的码是可选的
+ * (老抛点没有码;2026-08-21 四禁后「没有码」显式写 null,undefined 退役)。
  */
-export type Failure<Code extends string | undefined> = Error & {
+export type Failure<Code extends string | null> = Error & {
   /**
-   * 域自己的错误码。允许含 undefined,因为有的域的码是可选的(老抛点没有码)。
+   * 域自己的错误码。允许含 null,因为有的域的码是可选的(老抛点没有码)。
    */
   code: Code
 }
@@ -25,7 +26,7 @@ export type Failure<Code extends string | undefined> = Error & {
 /**
  * `fail` 的入参。
  */
-export type FailIn<Code extends string | undefined> = {
+export type FailIn<Code extends string | null> = {
   /**
    * 身份。判定认的就是它,取值见 ERR_NAME。
    */
@@ -65,7 +66,7 @@ export type HasNameOut = boolean
 /**
  * `fail` 的返回:一个原生 Error,带上身份与错误码。
  */
-export type FailOut<Code extends string | undefined> = Failure<Code>
+export type FailOut<Code extends string | null> = Failure<Code>
 
 /**
  * 造一个失败。堆栈是真的,所以留痕里看得见抛点。
@@ -73,7 +74,7 @@ export type FailOut<Code extends string | undefined> = Failure<Code>
  * @param input 身份、消息、错误码。
  * @returns 一个原生 Error,带上这三样。
  */
-export function fail<Code extends string | undefined>(input: FailIn<Code>): FailOut<Code> {
+export function fail<Code extends string | null>(input: FailIn<Code>): FailOut<Code> {
   return Object.assign(new Error(input.msg), { name: input.name, code: input.code })
 }
 
@@ -123,9 +124,9 @@ export type FriendErrCode =
  */
 export type LlmFailure = Error & {
   /**
-   * 错误码。**可选** —— 三个后端的老抛点没有码,路由那时按兜底处理。
+   * 错误码;老抛点没有码就 null,路由按兜底处理(2026-08-21 摘 `?`:缺席显式写)。
    */
-  code?: FriendErrCode
+  code: FriendErrCode | null
 }
 
 /**
@@ -148,9 +149,9 @@ export type LlmErrorIn = {
   msg: string
 
   /**
-   * 错误码。三个后端的老抛点没有码,路由按兜底处理。
+   * 错误码;老抛点没有码就 null,路由按兜底处理。
    */
-  code?: FriendErrCode
+  code: FriendErrCode | null
 }
 
 /**
@@ -225,26 +226,31 @@ export type GatewayErrorBody = {
   /**
    * 新链的标准结构。type 与 code 认哪个都行,message 只进留痕。
    */
+  // eslint-disable-next-line local/no-optional -- 上游回包形状:网关的 JSON 由上游定,缺席是事实
   error?: {
     /**
      * 上游给的错误种类。认它的表是 `ERR_BY_TYPE`。
      */
+    // eslint-disable-next-line local/no-optional -- 上游回包形状
     type?: string
 
     /**
      * 有些上游把种类放在这一格。两个都认,先 type 后 code。
      */
+    // eslint-disable-next-line local/no-optional -- 上游回包形状
     code?: string
 
     /**
      * 上游的说明。**只进留痕**,不进见客话术。
      */
+    // eslint-disable-next-line local/no-optional -- 上游回包形状
     message?: string
   }
 
   /**
    * 旧链的结构。超长报的就是这一句。
    */
+  // eslint-disable-next-line local/no-optional -- 上游回包形状(旧链)
   detail?: string
 }
 
@@ -352,6 +358,8 @@ export type GatewayErrorOfOut = GatewayFailure
 /**
  * 把上游回包认成我们的错误码。认不出的按 HTTP 状态兜底。
  *
+ * 非 JSON 回包解不动就跳过,按 HTTP 状态兜底认码。
+ *
  * @param input HTTP 状态与原始回包正文。
  * @returns 认好码的网关失败。
  */
@@ -360,19 +368,29 @@ export function gatewayErrorOf(input: GatewayErrorOfIn): GatewayErrorOfOut {
   let message = ''
   try {
     const parsed: GatewayErrorBody = JSON.parse(input.body)
-    type = String(parsed?.error?.type || parsed?.error?.code || '')
-    message = String(parsed?.error?.message || '')
-    if (!type) {
-      const detail = String(parsed?.detail || '')
-      if (LEGACY_TOO_LONG.test(detail)) {
-        type = LEGACY_TOO_LONG_TYPE; message = detail 
+    if (parsed.error != null) {
+      if (parsed.error.type != null) {
+        type = String(parsed.error.type)
+      } else if (parsed.error.code != null) {
+        type = String(parsed.error.code)
+      }
+      if (parsed.error.message != null) {
+        message = String(parsed.error.message)
       }
     }
-  } catch {
-    /* 非 JSON 回包,下面按状态兜底 */
-  }
+    if (type === '' && parsed.detail != null) {
+      const detail = String(parsed.detail)
+      if (LEGACY_TOO_LONG.test(detail)) {
+        type = LEGACY_TOO_LONG_TYPE
+        message = detail
+      }
+    }
+  } catch {}
   const code = ERR_BY_TYPE[type] || ERR_BY_STATUS[input.status] || ERR_DEFAULT
-  const tail = message ? `: ${message.slice(0, ERR_MSG_MAX)}` : ''
+  let tail = ''
+  if (message !== '') {
+    tail = `: ${message.slice(0, ERR_MSG_MAX)}`
+  }
   return gatewayError({ msg: `${input.status} ${type || 'http_error'}${tail}`, code })
 }
 
@@ -559,10 +577,10 @@ export type ChatFailure<Slots> = Error & {
   code: ChatErrCode
 
   /**
-   * 抛这一下之前已经解出来的槽位。路由把它原样回给前端,让下一轮不用从头再问一遍
-   * (只有 noOcc / busy / guard 三处带得出来,另两种失败发生时还什么都没解出来)。
+   * 抛这一下之前已经解出来的槽位;什么都没解出来就 null。路由把它原样回给前端,
+   * 让下一轮不用从头再问一遍(只有 noOcc / busy / guard 三处带得出来)。
    */
-  slots?: Slots
+  slots: Slots | null
 }
 
 /**
@@ -580,9 +598,9 @@ export type ChatErrorIn<Slots> = {
   msg: string
 
   /**
-   * 已经解出来的槽位,没有就不传。
+   * 已经解出来的槽位;没有就显式给 null。
    */
-  slots?: Slots
+  slots: Slots | null
 }
 
 /**

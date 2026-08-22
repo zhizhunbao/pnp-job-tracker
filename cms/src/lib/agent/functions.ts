@@ -54,11 +54,18 @@ function inCandidates(input: InCandidatesIn): InCandidatesOut {
  * @returns 采信就返回那个码,不采信返回 null。
  */
 export function acceptNoc(input: AcceptNocIn): AcceptNocOut {
-  const noc = (input.raw ?? '').trim()
-  if (!NOC_RE.test(noc)) {
+  let raw = ''
+  if (input.raw != null) {
+    raw = input.raw
+  }
+  const noc = raw.trim()
+  if (NOC_RE.test(noc) === false) {
     return null
   }
-  return inCandidates({ candidates: input.candidates, noc }) ? noc : null
+  if (inCandidates({ candidates: input.candidates, noc })) {
+    return noc
+  }
+  return null
 }
 
 // =========================================================================
@@ -87,18 +94,35 @@ async function searchCandidates(input: SearchCandidatesIn): SearchCandidatesOut 
   try {
     const like = `${LIKE_ANY}${input.query.replace(LIKE_SPECIAL, LIKE_ESCAPE)}${LIKE_ANY}`
     const { rows } = await input.pool.query(SQL.NOC_LIST_WITH_TITLES, [like, SEARCH_LIMIT])
-    const top = Number(rows[0]?.n ?? 0)
+    let top = 0
+    if (rows.length > 0 && rows[0].n != null) {
+      top = Number(rows[0].n)
+    }
     const hits: Candidate[] = []
     for (const r of rows) {
-      const noc = String(r.noc ?? '')
-      const title = String(r.title ?? '')
-      if (noc && title && Number(r.n ?? 0) >= top * NOISE_RATIO) {
+      let noc = ''
+      if (r.noc != null) {
+        noc = String(r.noc)
+      }
+      let title = ''
+      if (r.title != null) {
+        title = String(r.title)
+      }
+      let n = 0
+      if (r.n != null) {
+        n = Number(r.n)
+      }
+      if (noc && title && n >= top * NOISE_RATIO) {
         hits.push({ noc, title })
       }
     }
     return hits
   } catch (e) {
-    log({ tag: AGENT_LOG.tag, text: `${AGENT_FN.searchCandidates}${AGENT_LOG.failedTail}` + (e instanceof Error ? e.message : String(e)) })
+    let why = String(e)
+    if (e instanceof Error) {
+      why = e.message
+    }
+    log({ tag: AGENT_LOG.tag, text: `${AGENT_FN.searchCandidates}${AGENT_LOG.failedTail}${why}` })
     return []
   }
 }
@@ -120,7 +144,7 @@ function candidateLine(input: CandidateLineIn): CandidateLineOut {
  * @returns 回给模型的那段话;一个候选都没有时是「一个都没有」。
  */
 function searchReply(input: SearchReplyIn): SearchReplyOut {
-  if (!input.hits.length) {
+  if (input.hits.length === 0) {
     return TOOL_REPLY.noCandidates
   }
   const lines: string[] = []
@@ -131,20 +155,14 @@ function searchReply(input: SearchReplyIn): SearchReplyOut {
 }
 
 /**
- * 查候选那把工具 —— execute 写在里面,因为它要往这一趟的收件箱里攒候选。
+ * 查候选那把工具 —— execute 写在里面,因为它要往这一趟的收件箱里攒候选:
+ * 查一次候选,攒进收件箱,并把清单回给模型。execute 的两个参数是 pi 定的
+ * (它按位置传 toolCallId、args),第一位我们用不上。
  *
  * @param input 库连接与这一趟的收件箱。
  * @returns 查职业候选那把工具。
  */
 function searchTool(input: SearchToolIn): SearchToolOut {
-  /**
-   * 查一次候选,攒进收件箱,并把清单回给模型。
-   *
-   * ⚠️ 两个参数是 pi 定的(它按位置传 toolCallId、args),第一位我们用不上。
-   *
-   * @param args 模型拼的检索词。
-   * @returns 候选清单,或者一句「一个都没有」。
-   */
   async function executeSearch(_id: ToolCallId, args: ExecuteSearchIn): ExecuteSearchOut {
     const query = args.query.trim().slice(0, MAX_QUERY_CHARS)
     const hits = await searchCandidates({ pool: input.pool, query })
@@ -161,20 +179,13 @@ function searchTool(input: SearchToolIn): SearchToolOut {
 }
 
 /**
- * 记下槽位那把工具。
+ * 记下槽位那把工具:execute 记下模型填的槽位并收工。只记账不判断 ——
+ * 采信统一在 §4 做,在回调里判等于把红线散进三个地方。
  *
  * @param input 这一趟的收件箱。
  * @returns 记下槽位那把工具。
  */
 function setSlotsTool(input: SetSlotsToolIn): SetSlotsToolOut {
-  /**
-   * 记下模型填的槽位,并收工。
-   *
-   * 只记账不判断:采信统一在 §4 做 —— 在回调里判,等于把红线散进三个地方。
-   *
-   * @param args 模型填的槽位,还没采信。
-   * @returns 一句「记下了」,带 terminate。
-   */
   async function executeSetSlots(_id: ToolCallId, args: ExecuteSetSlotsIn): ExecuteSetSlotsOut {
     input.out.claim = args
     return say({ text: TOOL_REPLY.recorded, details: args, stop: true })
@@ -186,21 +197,19 @@ function setSlotsTool(input: SetSlotsToolIn): SetSlotsToolOut {
 }
 
 /**
- * 交回反问那把工具。
+ * 交回反问那把工具:execute 把模型自己交回的反问记下来就收工(放弃理由可不填)。
  *
  * @param input 这一趟的收件箱。
  * @returns 交回反问那把工具。
  */
 function giveUpTool(input: GiveUpToolIn): GiveUpToolOut {
-  /**
-   * 模型自己交回反问 —— 记下来就收工。
-   *
-   * @param args 模型给的放弃理由,可不填。
-   * @returns 一句「放弃了」,带 terminate。
-   */
   async function executeGiveUp(_id: ToolCallId, args: ExecuteGiveUpIn): ExecuteGiveUpOut {
     input.out.gaveUp = true
-    const text = `${TOOL_REPLY.gaveUp}${args.reason ?? ''}`.slice(0, MAX_REASON_CHARS)
+    let reason = ''
+    if (args.reason != null) {
+      reason = args.reason
+    }
+    const text = `${TOOL_REPLY.gaveUp}${reason}`.slice(0, MAX_REASON_CHARS)
     return say({ text, details: { gaveUp: true }, stop: true })
   }
   return {
@@ -275,6 +284,8 @@ function model(): ModelOut {
 /**
  * 🔴 兜底失败 = 当它没发生过:任何错都吞掉、回 false,不许把主路径带崩。
  * 但**不许静默** —— 吞掉之前必须留痕,否则下次排查只能靠人肉撞见。
+ * 尾参的 `stream as StreamFn` 是既有断言:pi-ai 的 stream 锁死 anthropic-messages,
+ * StreamFn 要通吃所有 Api —— 逆变对不上,只能断言(模型就是 anthropic)。
  *
  * @param input 库连接、用户原话、API key、超时信号、收件箱。
  * @returns 跑完了没有;出错吞掉回 false,留痕已经写过。
@@ -290,12 +301,15 @@ async function runLoop(input: RunLoopIn): RunLoopOut {
       { model: model(), apiKey: input.apiKey, maxTokens: MAX_TOKENS, convertToLlm: passThroughMessages },
       ignoreEvents,
       input.signal,
-      // pi-ai 的 stream 锁死 anthropic-messages,StreamFn 要通吃所有 Api —— 逆变对不上,只能断言(模型就是 anthropic)。
       stream as StreamFn,
     )
     return true
   } catch (e) {
-    log({ tag: AGENT_LOG.tag, text: `${AGENT_FN.runLoop}${AGENT_LOG.failedTail}` + (e instanceof Error ? e.message : String(e)) })
+    let why = String(e)
+    if (e instanceof Error) {
+      why = e.message
+    }
+    log({ tag: AGENT_LOG.tag, text: `${AGENT_FN.runLoop}${AGENT_LOG.failedTail}${why}` })
     return false
   }
 }
@@ -312,9 +326,10 @@ function agentFallbackOn(): AgentFallbackOnOut {
 
 /**
  * 用户原话 → 槽位;解不出来就回 null,调用方回到它原来的反问。
+ * 内层 `onTimeout` 到点就掐断 —— 兜底不许拖慢反问。
  * 🔴 这一层有两条不能破:**永不抛异常**(兜底把主路径搞崩,比兜底不生效更糟,所以最外面这道网什么都接);
  * **只补槽位不产事实**(它给的是「哪个职业、哪些省」,不是任何见客的数字或结论)。
- * 出错同样要留痕:catch 里吞掉之前先写一行。
+ * 出错同样要留痕:catch 里吞掉之前先写一行。模型编了一个候选里没有的码时不采信,回落反问。
  *
  * @param input 库连接、用户原话、语种。
  * @returns 解出来的槽位;解不出来、超时、env 关着都回 null。
@@ -322,18 +337,13 @@ function agentFallbackOn(): AgentFallbackOnOut {
 export async function resolveByAgent(input: ResolveByAgentIn): ResolveByAgentOut {
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY
-    if (!agentFallbackOn() || !apiKey) {
+    if (agentFallbackOn() === false || apiKey == null || apiKey === '') {
       return null
     }
 
     const t0 = Date.now()
     const ac = new AbortController()
 
-    /**
-     * 到点就掐断 —— 兜底不许拖慢反问。
-     *
-     * @returns 没有返回值。
-     */
     function onTimeout(): OnTimeoutOut {
       ac.abort()
     }
@@ -342,30 +352,41 @@ export async function resolveByAgent(input: ResolveByAgentIn): ResolveByAgentOut
     const out: Inbox = { candidates: [], claim: null, gaveUp: false }
     const ok = await runLoop({ pool: input.pool, text: input.text, apiKey, signal: ac.signal, out })
     clearTimeout(timer)
-    if (!ok) {
+    if (ok === false) {
       return null
     }
 
     const ms = Date.now() - t0
-    if (out.gaveUp || !out.claim) {
+    if (out.gaveUp || out.claim == null) {
       log({ tag: AGENT_LOG.tag, text: `${AGENT_LOG.noSlots}${out.gaveUp}${AGENT_LOG.ms}${ms}${AGENT_LOG.reask}` })
       return null
     }
 
     const noc = acceptNoc({ raw: out.claim.noc, candidates: out.candidates })
-    if (out.claim.noc !== null && !noc) {   // 编了一个候选里没有的码 —— 不采信,回落反问
+    if (out.claim.noc !== null && noc == null) {
       log({ tag: AGENT_LOG.tag, text: `${AGENT_LOG.rejected}${out.claim.noc}${AGENT_LOG.rejectedWhy}${AGENT_LOG.ms}${ms}${AGENT_LOG.reask}` })
       return null
     }
 
     const provs = cleanProvs({ raw: out.claim.provinces })
-    const reason = (out.claim.reason ?? '').slice(0, MAX_REASON_CHARS)
-    const shownNoc = noc ?? SHOWN.noNoc
+    let reasonRaw = ''
+    if (out.claim.reason != null) {
+      reasonRaw = out.claim.reason
+    }
+    const reason = reasonRaw.slice(0, MAX_REASON_CHARS)
+    let shownNoc: string = SHOWN.noNoc
+    if (noc != null) {
+      shownNoc = noc
+    }
     const shownProvs = provs.join(SHOWN.comma) || SHOWN.none
     log({ tag: AGENT_LOG.tag, text: `${AGENT_LOG.resolved}${shownNoc}${AGENT_LOG.provs}${shownProvs}${AGENT_LOG.ms}${ms}${AGENT_LOG.reason}${reason}` })
     return { noc, provs, reason, ms }
   } catch (e) {
-    log({ tag: AGENT_LOG.tag, text: `${AGENT_FN.resolveByAgent}${AGENT_LOG.failedTail}` + (e instanceof Error ? e.message : String(e)) })
+    let why = String(e)
+    if (e instanceof Error) {
+      why = e.message
+    }
+    log({ tag: AGENT_LOG.tag, text: `${AGENT_FN.resolveByAgent}${AGENT_LOG.failedTail}${why}` })
     return null
   }
 }

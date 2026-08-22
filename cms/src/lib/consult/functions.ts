@@ -1799,10 +1799,10 @@ function lastDraftOf(input: LastDraftOfIn): LastDraftOfOut {
     }
   }
   if (input.aborted) {
-    throw chatError({ code: CHAT_CODE.busy, msg: `${FAIL_MSG.timeout}${TIMEOUT_MS}${FAIL_MSG.ms}` })
+    throw chatError({ code: CHAT_CODE.busy, msg: `${FAIL_MSG.timeout}${TIMEOUT_MS}${FAIL_MSG.ms}`, slots: null })
   }
   if (drafts.length === 0) {
-    throw chatError({ code: CHAT_CODE.llm, msg: FAIL_MSG.emptyDraft })
+    throw chatError({ code: CHAT_CODE.llm, msg: FAIL_MSG.emptyDraft, slots: null })
   }
   return drafts[drafts.length - 1]
 }
@@ -1863,9 +1863,9 @@ async function draftOnce(input: DraftOnceIn): DraftOnceOut {
     }
     log({ tag: CHAT_LOG.tag, text: `${CHAT_FN.runChatLoop}${CHAT_LOG.failedTail}${why}` })
     if (ac.signal.aborted) {
-      throw chatError({ code: CHAT_CODE.busy, msg: `${FAIL_MSG.timeout}${TIMEOUT_MS}${FAIL_MSG.ms}` })
+      throw chatError({ code: CHAT_CODE.busy, msg: `${FAIL_MSG.timeout}${TIMEOUT_MS}${FAIL_MSG.ms}`, slots: null })
     }
-    throw chatError({ code: CHAT_CODE.llm, msg: why })
+    throw chatError({ code: CHAT_CODE.llm, msg: why, slots: null })
   } finally {
     clearTimeout(timer)
   }
@@ -1927,7 +1927,7 @@ async function boxFor(input: BoxForIn): BoxForOut {
  */
 export async function consult(input: ConsultIn): ConsultOut {
   if (BASE === '') {
-    throw chatError({ code: CHAT_CODE.llm, msg: FAIL_MSG.noBase })
+    throw chatError({ code: CHAT_CODE.llm, msg: FAIL_MSG.noBase, slots: null })
   }
   const box: Inbox = await boxFor({ db: input.db, profile: input.profile })
   const echo = input.history.filter(isUserTurn).map(contentOf).concat(input.text).join(NL)
@@ -1955,7 +1955,7 @@ export async function consult(input: ConsultIn): ConsultOut {
   const degraded = hard.length > 0
   if (degraded) {
     if (box.facts.length === 0) {
-      throw chatError({ code: CHAT_CODE.guard, msg: `${FAIL_MSG.noFacts}${hard.map(gateLabel).join(GATE_LOG.comma)}` })
+      throw chatError({ code: CHAT_CODE.guard, msg: `${FAIL_MSG.noFacts}${hard.map(gateLabel).join(GATE_LOG.comma)}`, slots: null })
     }
     answer = factSheet(box.facts)
   }

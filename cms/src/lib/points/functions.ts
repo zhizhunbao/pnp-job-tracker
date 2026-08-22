@@ -1848,7 +1848,7 @@ function needRow(input: NeedRowIn): NeedRowOut {
   throw fail({
     name: POINTS_ERR.name,
     msg: `${POINTS_ERR.rowMissingHead}${input.ctx}${POINTS_ERR.rowMissingTail}`,
-    code: undefined,
+    code: null,
   })
 }
 
@@ -1929,7 +1929,7 @@ function mbAgePick(input: MbAgePickIn): MbRowOut {
     }
   }
   throw fail({
-    name: POINTS_ERR.name, msg: `${POINTS_ERR.noAgeRowHead}${input.age}`, code: undefined,
+    name: POINTS_ERR.name, msg: `${POINTS_ERR.noAgeRowHead}${input.age}`, code: null,
   })
 }
 
@@ -2372,7 +2372,7 @@ export function estimateMbEoi(input: EstimateMbEoiIn): EstimateMbEoiOut {
     }
   }
   if (rows.length === 0) {
-    throw fail({ name: POINTS_ERR.name, msg: POINTS_ERR.noMbRows, code: undefined })
+    throw fail({ name: POINTS_ERR.name, msg: POINTS_ERR.noMbRows, code: null })
   }
   const head = rows[0]
   const one: MbPartIn = { rows: rows, profile: input.profile }

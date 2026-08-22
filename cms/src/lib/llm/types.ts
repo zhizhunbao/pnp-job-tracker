@@ -680,7 +680,42 @@ export type CharCountIn = {
 export type CharCountOut = number
 
 /**
- * sourceUrl 的入参。旧链给的来源可能是对象也可能是字符串。
+ * `v1AnswerOf` 的入参。
+ */
+export type V1AnswerOfIn = {
+  /**
+   * 解出来的 /v1 回包;解不出来时是 null。
+   */
+  body: V1Response | null
+}
+
+/**
+ * `v1AnswerOf` 的返回:正文;取不到就空串。
+ */
+export type V1AnswerOfOut = string
+
+/**
+ * `orText` 的入参。
+ */
+export type OrTextIn = {
+  /**
+   * 那一格文本;没有就 null。
+   */
+  v: string | null
+
+  /**
+   * 占位词。
+   */
+  fallback: string
+}
+
+/**
+ * `orText` 的返回:值本身或占位词。
+ */
+export type OrTextOut = string
+
+/**
+ * `sourceUrl` 的入参。
  */
 export type SourceUrlIn = {
   /**
