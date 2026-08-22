@@ -16,13 +16,14 @@ import { log, RULING_LOG } from '../log'
 import { headers } from 'next/headers'
 
 import { getDb } from '../db/server'
-import { count, numOrNull, SQL, text } from '../db'
+import { count, numOrNull, queryRowsOrEmpty, SQL, text } from '../db'
+import type { Db } from '../db'
 import { getUser, isPro } from '../quota/server'
 import {
   byCostAsc, byCountDesc, byDrawDateDesc, byListRankThenMonths, byNumberAsc, byObstacleThenTier, byOpeningsDesc, byTierAsc,
 } from './callbacks'
 import { CACHE } from './variables'
-import { directoryRow, employerFactsOf, lmiaNocsCellOf, passRow, toDesignated, toDraw, toEeGrid, toOccupation, toRequirement, toScoreFactor, tripleJobOf } from './rows'
+import { directoryRow, employerFactsOf, lmiaNocsCellOf, passRow, toDesignated, toDraw, toEeGrid, toOccupation, toOpsStat, toProvCount, toRequirement, toScoreFactor, tripleJobOf } from './rows'
 import { evaluateRequirements, teerHit } from '../gauge'
 import { estimateCrs, estimateMbEoi, gridStreamOf, scoreProvince, streamMatches } from '../points'
 import { askLabels, gateLabels } from '../i18n'
@@ -93,7 +94,7 @@ import type {
   ReqsOfOut, ResidenceGapIn, ResidenceGapOut, ResidenceReasonIn, ResidenceReasonOut, RowsOfIn, RowsOfOut,
   RuleProfileOfIn, RuleProfileOfOut, ScoreAndRefLineIn, ScoreAndRefLineOut, ScoreGulfReasonIn, ScoreGulfReasonOut,
   ScoreOverride, ScoreRow, SelfEmpExcludedInIn, SelfEmpExcludedInOut, SessionOfIn, SessionOfOut, SessionUser,
-  StatusGateAnswerIn, StatusGateAnswerOut, SwallowOut, TargetProvincesOfIn, TargetProvincesOfOut,
+  StatusGateAnswerIn, StatusGateAnswerOut, TargetProvincesOfIn, TargetProvincesOfOut,
   TeerDowngradeLeverIn, TeerDowngradeLeverOut, TeerScope, TeerScopeAcc, TeerScopesIn, TeerScopesOut, Tier,
   TierBasisOfIn, TierBasisOfOut, TierFullTimeOfIn, TierFullTimeOfOut, TierGap, TierOfMonthsIn, TierOfMonthsOut,
   TierRowsIn, TierRowsOut, TimeRowIn, TimeRowOut, TotalExpMonthsIn, TotalExpMonthsOut, TrainableRow, TrainableRowsIn,
@@ -104,31 +105,17 @@ import type {
 } from './types'
 
 /**
- * 查不动时把错吞掉 —— 提成具名函数,`.catch()` 里不写匿名回调。
- *
- * @returns 恒为 null,调用方据此落空数组。
- */
-function swallow(): SwallowOut {
-  return null
-}
-
-/**
- * 打一条 SQL 拿行并逐行过映射(`queryRows` 同款形态)。**查不动回空数组,不抛** ——
- * 判定层缺一张表要落成「本站未收录」,而不是整页 500;哪张表缺了,`pathVerdict` 自己会说。
+ * 打一条 SQL 拿行并逐行过映射 —— 一行转发 db 的 `queryRowsOrEmpty`(吞错留痕回空的策略在那儿)。
+ * 体内的 `as Db` 是跨形状断言:Queryable 是本域对「能查的东西」的自声明,与 db 的 Db
+ * 结构同型(Cell ⊂ SqlParam)—— db 缝的职责划界(Queryable 是否退役)待 Frank 拍,见宪法议题。
+ * **查不动回空数组,不抛**:判定层缺一张表要落成「本站未收录」,而不是整页 500;
+ * 哪张表缺了,`pathVerdict` 自己会说。
  *
  * @param input 能查的东西、SQL 与行映射函数。
  * @returns 映射完的行;查不动是空数组。
  */
 async function rowsOf<R>(input: RowsOfIn<R>): RowsOfOut<R> {
-  const res = await input.db.query(input.sql).catch(swallow)
-  if (res == null) {
-    return []
-  }
-  const out: R[] = []
-  for (const row of res.rows) {
-    out.push(input.map(row))
-  }
-  return out
+  return queryRowsOrEmpty({ db: input.db as Db, sql: input.sql, params: input.params, map: input.map })
 }
 
 /**
@@ -144,12 +131,12 @@ async function rowsOf<R>(input: RowsOfIn<R>): RowsOfOut<R> {
  */
 export async function loadVerdictTables(db: LoadVerdictTablesIn): LoadVerdictTablesOut {
   const [requirements, occupations, draws, scoreFactors, eeGrid, employers] = await Promise.all([
-    rowsOf({ db, sql: SQL.PNP_REQUIREMENTS_ALL, map: toRequirement }),
-    rowsOf({ db, sql: SQL.PNP_OCCUPATIONS_FULL, map: toOccupation }),
-    rowsOf({ db, sql: SQL.PNP_DRAWS_FULL, map: toDraw }),
-    rowsOf({ db, sql: SQL.PNP_SCORE_FACTORS, map: toScoreFactor }),
-    rowsOf({ db, sql: SQL.EE_POINTS_GRID_2, map: toEeGrid }),
-    rowsOf({ db, sql: SQL.DESIGNATED_BY_PROV_2, map: toDesignated }),
+    rowsOf({ db, sql: SQL.PNP_REQUIREMENTS_ALL, params: [], map: toRequirement }),
+    rowsOf({ db, sql: SQL.PNP_OCCUPATIONS_FULL, params: [], map: toOccupation }),
+    rowsOf({ db, sql: SQL.PNP_DRAWS_FULL, params: [], map: toDraw }),
+    rowsOf({ db, sql: SQL.PNP_SCORE_FACTORS, params: [], map: toScoreFactor }),
+    rowsOf({ db, sql: SQL.EE_POINTS_GRID_2, params: [], map: toEeGrid }),
+    rowsOf({ db, sql: SQL.DESIGNATED_BY_PROV_2, params: [], map: toDesignated }),
   ])
   return {
     requirements: requirements,
@@ -5151,21 +5138,7 @@ export async function caseAnswer(input: CaseAnswerIn): CaseAnswerOut {
  * @returns 每省一行;查挂了则空(页面照出,只是第一步那块没数)。
  */
 async function provCounts(input: ProvCountsIn): ProvCountsOut {
-  const res = await input.db.query(SQL.CASE_PROV_COUNTS, [input.noc]).catch(emptyRows)
-  const out: ProvCountRow[] = []
-  for (const r of res.rows) {
-    out.push({ province: text(r.province), n: count(r.n), t: count(r.t) })
-  }
-  return out
-}
-
-/**
- * 查挂了时交回来的空结果 —— 给 `.catch()` 用的具名函数。
- *
- * @returns 一份空结果。
- */
-function emptyRows(): EmptyRowsOut {
-  return { rows: [] }
+  return rowsOf({ db: input.db, sql: SQL.CASE_PROV_COUNTS, params: [input.noc], map: toProvCount })
 }
 
 /**
@@ -5230,24 +5203,21 @@ function trainableRows(input: TrainableRowsIn): TrainableRowsOut {
  * @returns 省码 → 官方运营数字;查挂了则空。
  */
 async function opsByProvince(input: OpsByProvinceIn): OpsByProvinceOut {
-  const res = await input.db.query(SQL.PNP_OPS_STATS).catch(emptyRows)
+  const stats = await rowsOf({ db: input.db, sql: SQL.PNP_OPS_STATS, params: [], map: toOpsStat })
   const out: Record<string, OpsFacts> = {}
-  for (const r of res.rows) {
-    const value = numOrNull(r.value)
-    const prov = text(r.province)
-    const metric = text(r.metric)
-    if (value == null || prov === '') {
+  for (const r of stats) {
+    if (r.value == null || r.province === '') {
       continue
     }
-    let cur = out[prov]
+    let cur = out[r.province]
     if (cur == null) {
       cur = {}
     }
-    out[prov] = cur
-    applyOpsRow({ facts: cur, metric: metric, value: value })
-    applyOpsPeriod({ facts: cur, metric: metric, period: text(r.period) || text(r.as_of) })
+    out[r.province] = cur
+    applyOpsRow({ facts: cur, metric: r.metric, value: r.value })
+    applyOpsPeriod({ facts: cur, metric: r.metric, period: r.period || r.asOf })
     if (cur.url == null || cur.url === '') {
-      cur.url = text(r.url)
+      cur.url = r.url
     }
   }
   return out
@@ -5731,26 +5701,23 @@ export async function getDesignatedEmployers(input: GetDesignatedEmployersIn): G
   }
 
   const db = await getDb()
-  const res = await db.query(SQL.DESIGNATED_BY_PROV, [prov]).catch(nullResult)
-  if (res == null) {
+  let rows: DesignatedEmployerRow[]
+  try {
+    const res = await db.query(SQL.DESIGNATED_BY_PROV, [prov])
+    rows = []
+    for (const d of res.rows) {
+      rows.push(directoryRow({ row: d }))
+    }
+  } catch (e) {
+    let why = String(e)
+    if (e instanceof Error) {
+      why = e.message
+    }
+    log({ tag: RULING_LOG.tag, text: `${RULING_LOG.directoryQueryFailed}${why}` })
     return []
-  }
-
-  const rows: DesignatedEmployerRow[] = []
-  for (const d of res.rows) {
-    rows.push(directoryRow({ row: d }))
   }
   CACHE.byProvince.set(prov, { at: Date.now(), rows })
   return rows
-}
-
-/**
- * 查挂了交回 null —— 给 `.catch()` 用的具名函数。**不缓存失败**。
- *
- * @returns null。
- */
-function nullResult(): NullResultOut {
-  return null
 }
 
 /**

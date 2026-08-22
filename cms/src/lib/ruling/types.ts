@@ -5176,6 +5176,11 @@ export type RowsOfIn<R> = {
   sql: string
 
   /**
+   * 绑定参数;零参语句显式给空数组。形状与 Queryable 的 params 一致(库标量数组)。
+   */
+  params: Cell[]
+
+  /**
    * 行映射函数:一行原始行 → 一行干净的 `R`(`queryRows` 同款形态;默认值决策全在它体内)。
    */
   map: (row: Row) => R
@@ -5185,11 +5190,6 @@ export type RowsOfIn<R> = {
  * `rowsOf` 的返回:映射完的行;查不动是空数组。
  */
 export type RowsOfOut<R> = Promise<R[]>
-
-/**
- * `swallow` 的返回:恒为 null。
- */
-export type SwallowOut = null
 
 /**
  * 各个 `toXxx` 映射函数的入参:库里的一行。
@@ -6832,3 +6832,48 @@ export type RankedBlock = {
    */
   cost: number
 }
+
+/**
+ * `toProvCount` 的返回:每省一行的计数。
+ */
+export type ToProvCountOut = ProvCountRow
+
+/**
+ * 一行官方运营统计(rows 映射后的干净形态)。
+ */
+export type OpsStatRow = {
+  /**
+   * 数值;官方隐私抑制/纯文本时 null,不折 0。
+   */
+  value: number | null
+
+  /**
+   * 两位省码。
+   */
+  province: string
+
+  /**
+   * 指标名(ETL 词表)。
+   */
+  metric: string
+
+  /**
+   * 统计期;没有就空串。
+   */
+  period: string
+
+  /**
+   * 官方口径日;没有就空串。
+   */
+  asOf: string
+
+  /**
+   * 出处页;没有就空串。
+   */
+  url: string
+}
+
+/**
+ * `toOpsStat` 的返回:干净的统计行。
+ */
+export type ToOpsStatOut = OpsStatRow

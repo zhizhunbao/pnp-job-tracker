@@ -366,6 +366,22 @@ export const GATE_LOG = {
 // =========================================================================
 
 /**
+ * db 域的日志字面量。
+ */
+export const DB_LOG = {
+  /**
+   * 这个域每一行日志的来源标签。
+   */
+  tag: 'db',
+
+  /**
+   * 取行查询挂了(queryRowsOrEmpty 的吞错口径:回空数组不抛,但必须留痕 ——
+   * 「这张表没数据」和「这条 SQL 一直在报错」在日志里必须分得开)。
+   */
+  rowsQueryFailed: 'rows query failed, falling back to empty: ',
+} as const
+
+/**
  * `lib/ruling` 写出去的全部字面量。
  */
 export const RULING_LOG = {
@@ -381,4 +397,9 @@ export const RULING_LOG = {
    * 否则「这家没数据」和「这条 SQL 一直在报错」在日志里长得一模一样。
    */
   companyQueryFailed: 'company facts query failed, falling back to unknown: ',
+
+  /**
+   * 指定雇主名录按省查挂了(失败不缓存,下一次重试)。
+   */
+  directoryQueryFailed: 'designated employers query failed, not cached: ',
 } as const

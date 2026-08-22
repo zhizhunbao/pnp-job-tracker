@@ -13,6 +13,7 @@
  * @time 2026-08-21 20:56:11
  */
 
+import { DB_LOG, log } from '../log'
 import type { QueryRowsIn } from './types'
 
 /**
@@ -101,4 +102,25 @@ export async function queryRows<R>(input: QueryRowsIn<R>): Promise<R[]> {
     out.push(input.map(row))
   }
   return out
+}
+
+/**
+ * `queryRows` 的吞错版:**查不动回空数组,不抛**,但必须留痕 —— 选它 = 选了
+ * 「缺一张表按『本站未收录』降级,不把整页拖成 500」这条口径(判定层的底表就是这么用的)。
+ * 「这张表没数据」和「这条 SQL 一直在报错」在日志里分得开,靠的就是这行留痕。
+ *
+ * @param input 能查的东西、SQL、绑定参数与行映射函数。
+ * @returns 映射完的行;查不动是空数组。
+ */
+export async function queryRowsOrEmpty<R>(input: QueryRowsIn<R>): Promise<R[]> {
+  try {
+    return await queryRows(input)
+  } catch (e) {
+    let why = String(e)
+    if (e instanceof Error) {
+      why = e.message
+    }
+    log({ tag: DB_LOG.tag, text: `${DB_LOG.rowsQueryFailed}${why}` })
+    return []
+  }
 }

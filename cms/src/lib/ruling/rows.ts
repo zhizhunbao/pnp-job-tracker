@@ -30,6 +30,8 @@ import type {
   ToScoreFactorOut,
   TripleJobOfIn,
   TripleJobOfOut,
+  ToOpsStatOut,
+  ToProvCountOut,
 } from './types'
 
 /**
@@ -217,5 +219,28 @@ export function directoryRow(input: DirectoryRowIn): DirectoryRowOut {
     nocs: text(d.nocs),
     url: url,
     fetched: fetched,
+  }
+}
+
+/**
+ * `CASE_PROV_COUNTS` 的一行 → 每省在招计数。两列都是个数,`count` 落 0 无害。
+ *
+ * @param row 库里的一行。
+ * @returns 每省一行的计数。
+ */
+export function toProvCount(row: ToRowIn): ToProvCountOut {
+  return { province: text(row.province), n: count(row.n), t: count(row.t) }
+}
+
+/**
+ * `PNP_OPS_STATS` 的一行 → 官方运营统计行。`value` 走 `numOrNull` —— 隐私抑制值折 0 就是替官方编数。
+ *
+ * @param row 库里的一行。
+ * @returns 干净的统计行。
+ */
+export function toOpsStat(row: ToRowIn): ToOpsStatOut {
+  return {
+    value: numOrNull(row.value), province: text(row.province), metric: text(row.metric),
+    period: text(row.period), asOf: text(row.as_of), url: text(row.url),
   }
 }
