@@ -16,18 +16,20 @@
  */
 
 import { runAgentLoop } from '@earendil-works/pi-agent-core'
-import type { AgentMessage, StreamFn } from '@earendil-works/pi-agent-core'
+import type { StreamFn } from '@earendil-works/pi-agent-core'
 import { streamSimple } from '@earendil-works/pi-ai/api/openai-completions'
 import type { Model } from '@earendil-works/pi-ai'
 import { acceptNoc, passThroughMessages } from '../agent/server'
+import type { TranscriptMessage } from '../agent'
 import { loadVerdictTables, pathVerdict } from '../ruling/server'
+import type { VerdictProfile } from '../ruling'
 import { CONSULT_STEP, CONSULT_STEP_OCC } from '../i18n'
 import { cleanProvs } from '../location'
 import { chatError, CHAT_CODE } from '../error'
 import { CHAT_FN, CHAT_LOG, GATE_LOG, log } from '../log'
 import { queryRows, show, SQL, text } from '../db'
 import { evaluateRequirements } from '../gauge'
-import type { Requirement, RuleProfile } from '../gauge'
+import type { Requirement, RuleProfile, RuleResult } from '../gauge'
 import {
   API, AS_FOLLOWS, AUTH_HEADER, AVAIL, BASE, BEARER, BOLD_RE, CLAIMS_CAP, CLAIM_TEXT_CAP, CONTEXT_WINDOW,
   CUT_MIN_RATIO, DRAW_LIMIT, EARLIER_HEAD, EN, EN_UNIT_WORDS, ERR_CAP, FAIL_MSG, FED, FIRST_LINE_CAP, FULL_STOP, GATE, GRID_CRS,
@@ -47,29 +49,23 @@ import { CLAIMS_PARAMS, CRS_PARAMS, NOC_PARAMS, NOC_PROVS_PARAMS, PERMIT_PARAMS,
 import { byOpenDesc } from './callbacks'
 import { toDrawRow, toEeRow, toNocHit, toOccFlat, toOpsRow, toPermitRow, toPointsRow, toProvOpen, toRequirement, toTitleTeer } from './rows'
 import type {
-  AllowedNumbersIn, AllowedNumbersOut, AnswerLangIn, BeforeToolCallIn, BeforeToolCallOut, BlankCoverageIn,
-  BlankCoverageOut, BlankIfNumberedIn, BlankIfNumberedOut, BoxForIn, BoxForOut, Candidate, CiteFactsIn,
-  CiteFactsOut, ClampAnswerOut, CodesOfIn, CodesOfOut, ConsultIn, ConsultOut, ContentOfIn, ContentOfOut,
-  CoverageFactsIn, CoverageFactsOut, CoverageRow, DraftOnceIn, DraftOnceOut, DrawRow, DrawsFactsIn,
-  DrawsFactsOut, EeFactsIn, EeFactsOut, EeRow, ExecCoverageIn, ExecCoverageOut, ExecDrawsIn, ExecDrawsOut,
-  ExecEeIn, ExecEeOut, ExecJobsIn, ExecJobsOut, ExecOpsIn, ExecOpsOut, ExecPermitIn, ExecPermitOut,
-  ExecPointsIn, ExecPointsOut, ExecSearchIn, ExecSearchOut, ExecThresholdsIn, ExecThresholdsOut, Fact, FactIn,
-  FactOut, FactSheetIn, FactSheetOut, FindEnglishUnitsOut, FindInternalWordsIn, FindInternalWordsOut,
-  FindRawMarkupIn, FindRawMarkupOut, FindRestatedOpeningIn, FindRestatedOpeningOut, FindUngroundedNumbersOut,
-  FirstLineOfIn, FirstLineOfOut, FirstPromptIn, FirstPromptOut, GateHit, GateLabelIn, GateLabelOut, HardHitsIn,
-  HardHitsOut, Inbox, IsUserTurnIn, IsUserTurnOut, JobsFactsIn, JobsFactsOut, JobsRow, LastDraftOfIn,
-  LastDraftOfOut, LookupCoverageIn, LookupCoverageOut, LookupDrawsIn, LookupDrawsOut, LookupEeIn, LookupEeOut,
-  LookupJobsIn, LookupJobsOut, LookupOpsIn, LookupOpsOut, LookupPermitIn, LookupPermitOut, LookupPointsIn,
-  LookupPointsOut, LookupThresholdsIn, LookupThresholdsOut, MakeToolGatesIn, MakeToolGatesOut, MakeToolsIn,
-  MakeToolsOut, ModelOut, NocOfIn, NocOfOut, NormNumIn, NormNumOut, NumberCheckIn, OnEventIn, OnEventOut,
-  OnTimeoutOut, OpsFactsIn, OpsFactsOut, PermitFactsIn, PermitFactsOut, PermitRow, PointsFactsIn,
-  PointsFactsOut, PointsRow, ProvOfIn, ProvOfOut, RetryNoteIn, RetryNoteOut, RunGatesIn, RunGatesOut, RunIn,
-  OrNone2In, OrNoneIn, OrNoneOut, SayIn, SayOut, SearchOccupationsIn, SearchOccupationsOut, SegIn, SegOut, StatusFactIn, StatusFactOut,
-  StatusWordOfIn, StatusWordOfOut, StepIn, StepOut, EmptyAvailabilityIn,
-  EmptyAvailabilityOut,
-  SystemOfOut, TakeIn, TakeOut, TextOfIn, TextOfOut, ThresholdsFactsIn, ThresholdsFactsOut, ThresholdsRow,
-  TierTextIn, TierTextOut, Tool, ToolArgs, VerdictFactsIn, VerdictFactsOut,
-  VerdictProfileOfIn, VerdictProfileOfOut, ExecClaimsIn, ExecClaimsOut, ExecVerdictIn, ExecVerdictOut,
+  NumberCheckIn, AllowedNumbersOut, AnswerLangIn, BeforeToolCallIn, BeforeToolCallOut, CoverageRow, BoxForIn,
+  BoxForOut, Candidate, CiteFactsIn, CiteFactsOut, Inbox, CodesOfOut, RunIn, ConsultOut, ContentOfIn,
+  CoverageResult, CoverageFactsOut, DraftOnceIn, DraftOnceOut, DrawRow, DrawsResult, DrawsFactsOut, EeResult,
+  EeFactsOut, EeRow, ExecCoverageIn, ExecCoverageOut, ExecDrawsIn, ExecDrawsOut, ExecEeIn, ExecEeOut,
+  ExecJobsIn, ExecJobsOut, ExecOpsIn, ExecOpsOut, ExecPermitIn, ExecPermitOut, ExecPointsIn, ExecPointsOut,
+  ExecSearchIn, ExecSearchOut, ExecThresholdsIn, ExecThresholdsOut, Fact, FactIn, FactSheetIn,
+  FindEnglishUnitsOut, FindInternalWordsOut, FindRawMarkupOut, FindRestatedOpeningIn, FindRestatedOpeningOut,
+  FindUngroundedNumbersOut, FirstLineOfIn, GateHit, HardHitsIn, HardHitsOut, IsUserTurnIn,
+  JobsResult, JobsFactsOut, JobsRow, LastDraftOfIn, NocQueryIn, LookupCoverageOut, LookupDrawsIn,
+  LookupDrawsOut, LookupEeOut, LookupJobsOut, LookupOpsIn, LookupOpsOut, LookupPermitIn, LookupPermitOut,
+  LookupPointsIn, LookupPointsOut, LookupThresholdsIn, LookupThresholdsOut, MakeToolGatesIn, MakeToolGatesOut,
+  MakeToolsIn, MakeToolsOut, ModelOut, NocOfOut, OnEventIn, OpsResult, OpsFactsOut, PermitResult,
+  PermitFactsOut, PermitRow, PointsResult, PointsFactsOut, PointsRow, ProvOfOut, RetryNoteIn, RunGatesIn,
+  RunGatesOut, OrNone2In, OrNoneIn, OrNoneOut, Reply, SearchOccupationsIn, SearchOccupationsOut, SegIn,
+  StatusFactIn, StatusWordOfOut, Availability, TakeIn, ThresholdsResult, ThresholdsFactsOut, ThresholdsRow,
+  Tool, ToolArgs, VerdictFactsIn, VerdictFactsOut, VerdictProfileOfIn,
+  ExecClaimsIn, ExecClaimsOut, ExecVerdictIn, ExecVerdictOut,
 } from './types'
 
 // =========================================================================
@@ -121,7 +117,7 @@ function model(): ModelOut {
  * @param raw 模型填的省码原文。
  * @returns 采信下来的省码;认不出就空串,调用方回一句「不认得」。
  */
-function provOf(raw: ProvOfIn): ProvOfOut {
+function provOf(raw: string): ProvOfOut {
   const p = raw.trim().toUpperCase()
   if (p === FED) {
     return p
@@ -170,7 +166,7 @@ async function searchOccupations(input: SearchOccupationsIn): SearchOccupationsO
  * @param input 库连接与职业码。
  * @returns 各省一行,按在招数从多到少。
  */
-async function lookupJobs(input: LookupJobsIn): LookupJobsOut {
+async function lookupJobs(input: NocQueryIn): LookupJobsOut {
   const [countRows, title] = await Promise.all([
     queryRows({ db: input.db, sql: SQL.PROV_OPEN_BY_PROV, params: [input.noc], map: toProvOpen }),
     input.db.query(SQL.NOC_TITLE_TEER, [input.noc]),
@@ -199,7 +195,7 @@ async function lookupJobs(input: LookupJobsIn): LookupJobsOut {
  * @param input 库连接与职业码。
  * @returns 各省一行,九个省一个不少。
  */
-async function lookupCoverage(input: LookupCoverageIn): LookupCoverageOut {
+async function lookupCoverage(input: NocQueryIn): LookupCoverageOut {
   const occRows = await queryRows({ db: input.db, sql: SQL.PNP_OCCUPATIONS_FLAT, params: [], map: toOccFlat })
   const byProv = new Map<string, CoverageRow>()
   for (const r of occRows) {
@@ -236,7 +232,7 @@ async function lookupCoverage(input: LookupCoverageIn): LookupCoverageOut {
  * @param prov 两位省码。
  * @returns 空白行。
  */
-function blankCoverage(prov: BlankCoverageIn): BlankCoverageOut {
+function blankCoverage(prov: string): CoverageRow {
   return { prov, streams: [], excluded: [], availability: AVAIL.notCollected, evidence: { url: '', fetched: '' } }
 }
 
@@ -341,7 +337,7 @@ async function lookupOps(input: LookupOpsIn): LookupOpsOut {
  * @param input 库连接与职业码。
  * @returns 命中的类别,各带该类别最近一轮的分数线。
  */
-async function lookupEe(input: LookupEeIn): LookupEeOut {
+async function lookupEe(input: NocQueryIn): LookupEeOut {
   const eeRows = await queryRows({ db: input.db, sql: SQL.EE_CATEGORIES_BY_NOC, params: [input.noc], map: toEeRow })
   const out: EeRow[] = []
   for (const r of eeRows) {
@@ -410,7 +406,7 @@ async function lookupPoints(input: LookupPointsIn): LookupPointsOut {
  * @param input 出不出、出什么。
  * @returns 那一段;不出就空串。
  */
-function seg(input: SegIn): SegOut {
+function seg(input: SegIn): string {
   if (input.when === false) {
     return ''
   }
@@ -450,7 +446,7 @@ function orNone2(input: OrNone2In): OrNoneOut {
  * @param prov 两位省码。
  * @returns 四态之一。
  */
-function emptyAvailability(prov: EmptyAvailabilityIn): EmptyAvailabilityOut {
+function emptyAvailability(prov: string): Availability {
   if (prov === QC) {
     return AVAIL.notApplicable
   }
@@ -463,7 +459,7 @@ function emptyAvailability(prov: EmptyAvailabilityIn): EmptyAvailabilityOut {
  * @param input 工具名、说明、数值、展示形态、单位、出处。
  * @returns 一条事实。
  */
-function fact(input: FactIn): FactOut {
+function fact(input: FactIn): Fact {
   return {
     tool: input.tool, label: input.label, quote: input.quote, value: input.value,
     valueText: input.valueText, unit: input.unit, evidence: input.evidence,
@@ -477,7 +473,7 @@ function fact(input: FactIn): FactOut {
  * @param input 工具名、说明、是四态里的哪一种、出处。
  * @returns 一条四态事实。
  */
-function statusFact(input: StatusFactIn): StatusFactOut {
+function statusFact(input: StatusFactIn): Fact {
   return {
     tool: input.tool, label: input.label, quote: input.quote, value: null, valueText: '', unit: UNIT.status,
     evidence: input.evidence, availability: input.availability, cited: null,
@@ -490,7 +486,7 @@ function statusFact(input: StatusFactIn): StatusFactOut {
  * @param r 查询结果。
  * @returns 事实清单。
  */
-function jobsFacts(r: JobsFactsIn): JobsFactsOut {
+function jobsFacts(r: JobsResult): JobsFactsOut {
   const out: Fact[] = []
   for (const row of r.rows) {
     out.push(fact({
@@ -512,7 +508,7 @@ function jobsFacts(r: JobsFactsIn): JobsFactsOut {
  * @param r 查询结果。
  * @returns 事实清单。
  */
-function coverageFacts(r: CoverageFactsIn): CoverageFactsOut {
+function coverageFacts(r: CoverageResult): CoverageFactsOut {
   const out: Fact[] = []
   for (const row of r.rows) {
     if (row.availability !== AVAIL.ok) {
@@ -560,7 +556,7 @@ function coverageFacts(r: CoverageFactsIn): CoverageFactsOut {
  * @param res 一条判定。
  * @returns 值的展示形态。
  */
-function tierText(res: TierTextIn): TierTextOut {
+function tierText(res: RuleResult): string {
   const unitTail = seg({ when: Boolean(res.unit), text: `${SPACE}${res.unit}` })
   if (res.tiers && res.tiers.length) {
     const parts: string[] = []
@@ -585,7 +581,7 @@ function tierText(res: TierTextIn): TierTextOut {
  * @param r 查询结果。
  * @returns 事实清单。
  */
-function thresholdsFacts(r: ThresholdsFactsIn): ThresholdsFactsOut {
+function thresholdsFacts(r: ThresholdsResult): ThresholdsFactsOut {
   const out: Fact[] = []
   for (const row of r.rows) {
     if (row.availability !== AVAIL.ok) {
@@ -623,7 +619,7 @@ function thresholdsFacts(r: ThresholdsFactsIn): ThresholdsFactsOut {
  * @param r 查询结果。
  * @returns 事实清单。
  */
-function drawsFacts(r: DrawsFactsIn): DrawsFactsOut {
+function drawsFacts(r: DrawsResult): DrawsFactsOut {
   if (r.rows.length === 0) {
     return [statusFact({
       tool: TOOL_NAME.draws,
@@ -660,7 +656,7 @@ function drawsFacts(r: DrawsFactsIn): DrawsFactsOut {
  * @param r 查询结果。
  * @returns 事实清单。
  */
-function opsFacts(r: OpsFactsIn): OpsFactsOut {
+function opsFacts(r: OpsResult): OpsFactsOut {
   if (r.rows.length === 0) {
     return [statusFact({
       tool: TOOL_NAME.ops,
@@ -701,7 +697,7 @@ function opsFacts(r: OpsFactsIn): OpsFactsOut {
  * @param r 查询结果。
  * @returns 事实清单。
  */
-function eeFacts(r: EeFactsIn): EeFactsOut {
+function eeFacts(r: EeResult): EeFactsOut {
   if (r.rows.length === 0) {
     return [statusFact({
       tool: TOOL_NAME.ee,
@@ -737,7 +733,7 @@ function eeFacts(r: EeFactsIn): EeFactsOut {
  * @param r 查询结果。
  * @returns 事实清单。
  */
-function permitFacts(r: PermitFactsIn): PermitFactsOut {
+function permitFacts(r: PermitResult): PermitFactsOut {
   if (r.rows.length === 0) {
     return [statusFact({
       tool: TOOL_NAME.permit,
@@ -770,7 +766,7 @@ function permitFacts(r: PermitFactsIn): PermitFactsOut {
  * @param r 查询结果。
  * @returns 事实清单。
  */
-function pointsFacts(r: PointsFactsIn): PointsFactsOut {
+function pointsFacts(r: PointsResult): PointsFactsOut {
   if (r.rows.length === 0) {
     return [statusFact({
       tool: TOOL_NAME.points,
@@ -803,7 +799,7 @@ function pointsFacts(r: PointsFactsIn): PointsFactsOut {
  * @param said 档案里的身份词原文。
  * @returns 词表里的词,或 null。
  */
-function statusWordOf(said: StatusWordOfIn): StatusWordOfOut {
+function statusWordOf(said: string): StatusWordOfOut {
   if (STATUS_WORDS.includes(said)) {
     return said
   }
@@ -820,7 +816,7 @@ function statusWordOf(said: StatusWordOfIn): StatusWordOfOut {
  * @param input 收件箱与调用方给的档案。
  * @returns 判定引擎认的档案,缺的槽全是 null。
  */
-function verdictProfileOf(input: VerdictProfileOfIn): VerdictProfileOfOut {
+function verdictProfileOf(input: VerdictProfileOfIn): VerdictProfile {
   const said = text(input.profile.status)
   return {
     age: null,
@@ -901,7 +897,7 @@ function verdictFacts(rows: VerdictFactsIn): VerdictFactsOut {
  * @param raw 从答复或事实里抠出来的数字串。
  * @returns 规范形态。
  */
-function normNum(raw: NormNumIn): NormNumOut {
+function normNum(raw: string): string {
   const s = raw.replace(THOUSANDS_COMMA, '')
   if (s.includes(SAID.stop)) {
     return s.replace(TRAILING_ZEROS, '')
@@ -918,7 +914,7 @@ function normNum(raw: NormNumIn): NormNumOut {
  * @param input 事实清单与用户原话。
  * @returns 允许的数字集合。
  */
-function allowedNumbers(input: AllowedNumbersIn): AllowedNumbersOut {
+function allowedNumbers(input: NumberCheckIn): AllowedNumbersOut {
   const ok = new Set<string>()
   for (const c of input.codes) {
     if (c) {
@@ -945,7 +941,7 @@ function allowedNumbers(input: AllowedNumbersIn): AllowedNumbersOut {
  * @param mark 匹配到的那一段。
  * @returns 它是序号就抹成空白(那个数是排版不是事实),是项目符号就原样留下。
  */
-function blankIfNumbered(mark: BlankIfNumberedIn): BlankIfNumberedOut {
+function blankIfNumbered(mark: string): string {
   if (HAS_DIGIT.test(mark)) {
     return SPACE
   }
@@ -982,7 +978,7 @@ function findUngroundedNumbers(input: NumberCheckIn): FindUngroundedNumbersOut {
  * @param answer 答复。
  * @returns 撞到的词。
  */
-function findInternalWords(answer: FindInternalWordsIn): FindInternalWordsOut {
+function findInternalWords(answer: string): FindInternalWordsOut {
   const low = answer.toLowerCase()
   const bad: string[] = []
   for (const w of INTERNAL_WORDS) {
@@ -1019,7 +1015,7 @@ function findEnglishUnits(input: AnswerLangIn): FindEnglishUnitsOut {
  * @param answer 答复。
  * @returns 撞到的记号。
  */
-function findRawMarkup(answer: FindRawMarkupIn): FindRawMarkupOut {
+function findRawMarkup(answer: string): FindRawMarkupOut {
   const bad: string[] = []
   if (BOLD_RE.test(answer)) {
     bad.push(MARKUP.bold)
@@ -1045,7 +1041,7 @@ function findRawMarkup(answer: FindRawMarkupIn): FindRawMarkupOut {
  * @param input 整段答复。
  * @returns 第一句;整段没有断句记号时按长度截。
  */
-function firstLineOf(input: FirstLineOfIn): FirstLineOfOut {
+function firstLineOf(input: FirstLineOfIn): string {
   const head = input.answer.trim().split(NL)[0]
   const stop = head.indexOf(FULL_STOP)
   let line = head
@@ -1113,7 +1109,7 @@ function runGates(input: RunGatesIn): RunGatesOut {
  * @param input 答复与语种。
  * @returns 截好的答复。
  */
-function clampAnswer(input: AnswerLangIn): ClampAnswerOut {
+function clampAnswer(input: AnswerLangIn): string {
   const cap = LEN_CAP[input.lang]
   if (input.answer.length <= cap) {
     return input.answer
@@ -1135,7 +1131,7 @@ function clampAnswer(input: AnswerLangIn): ClampAnswerOut {
  * @param facts 这一趟的事实。
  * @returns 事实清单。
  */
-function factSheet(facts: FactSheetIn): FactSheetOut {
+function factSheet(facts: FactSheetIn): string {
   const lines: string[] = []
   for (const f of facts.slice(0, SHEET_CAP)) {
     lines.push(`${SEP.bullet}${f.quote}${seg({ when: f.valueText !== '', text: `${SEP.colon}${f.valueText}` })}`)
@@ -1149,7 +1145,7 @@ function factSheet(facts: FactSheetIn): FactSheetOut {
  * @param box 这一趟的收件箱。
  * @returns 码的清单。
  */
-function codesOf(box: CodesOfIn): CodesOfOut {
+function codesOf(box: Inbox): CodesOfOut {
   const out: string[] = []
   if (box.noc) {
     out.push(box.noc)
@@ -1195,7 +1191,7 @@ function citeFacts(input: CiteFactsIn): CiteFactsOut {
  * @param facts 这一把工具产出的事实。
  * @returns pi 认的工具回执。
  */
-function take(input: TakeIn): TakeOut {
+function take(input: TakeIn): Reply {
   const room = MAX_FACTS - input.box.facts.length
   let kept: Fact[] = []
   if (room > 0) {
@@ -1219,7 +1215,7 @@ function take(input: TakeIn): TakeOut {
  * @param text 给模型看的那句话。
  * @returns pi 认的工具回执。
  */
-function say(text: SayIn): SayOut {
+function say(text: string): Reply {
   return { content: [{ type: ROLE.text, text }], details: { n: 0 }, terminate: false }
 }
 
@@ -1296,7 +1292,7 @@ function makeToolGates(input: MakeToolGatesIn): MakeToolGatesOut {
 function makeTools(input: MakeToolsIn): MakeToolsOut {
   const { run, box } = input
 
-  function step(key: StepIn): StepOut {
+  function step(key: string): void {
     if (run.onStep) {
       let stepText = CONSULT_STEP[run.lang][key]
       if (stepText == null) {
@@ -1306,7 +1302,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
     }
   }
 
-  async function nocOf(raw: NocOfIn): NocOfOut {
+  async function nocOf(raw: string): NocOfOut {
     const ok = acceptNoc({ raw: raw, candidates: box.candidates })
     if (ok && ok !== box.noc) {
       box.noc = ok
@@ -1499,7 +1495,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
  * @param input 跑这一趟要的东西。
  * @returns 完整的 system prompt。
  */
-function systemOf(input: RunIn): SystemOfOut {
+function systemOf(input: RunIn): string {
   const said: string[] = []
   const p = input.profile
   if (p.noc) {
@@ -1534,7 +1530,7 @@ function systemOf(input: RunIn): SystemOfOut {
  * @param input 用户原话与历史。
  * @returns pi 认的一条 user 消息。
  */
-function firstPrompt(input: FirstPromptIn): FirstPromptOut {
+function firstPrompt(input: RunIn): TranscriptMessage {
   const lines: string[] = []
   if (input.history.length) {
     lines.push(EARLIER_HEAD)
@@ -1546,7 +1542,7 @@ function firstPrompt(input: FirstPromptIn): FirstPromptOut {
   if (lines.length) {
     earlier = `${lines.join(NL)}${NL}${NL}${NOW_HEAD}`
   }
-  const message: AgentMessage = {
+  const message: TranscriptMessage = {
     role: ROLE.user,
     content: [{ type: ROLE.text, text: earlier + input.text }],
     timestamp: Date.now(),
@@ -1560,7 +1556,7 @@ function firstPrompt(input: FirstPromptIn): FirstPromptOut {
  * @param message 循环里的一条消息。
  * @returns 正文;这条不是助手正文就返回空串。
  */
-function textOf(message: TextOfIn): TextOfOut {
+function textOf(message: TranscriptMessage): string {
   if (message.role !== ROLE.assistant) {
     return ''
   }
@@ -1586,7 +1582,7 @@ function textOf(message: TextOfIn): TextOfOut {
  * @param input 循环产出的消息,以及这一趟是不是被掐断的。
  * @returns 最后一段有字的正文。
  */
-function lastDraftOf(input: LastDraftOfIn): LastDraftOfOut {
+function lastDraftOf(input: LastDraftOfIn): string {
   const drafts: string[] = []
   for (const m of input.messages) {
     const t = textOf(m)
@@ -1620,13 +1616,13 @@ async function draftOnce(input: DraftOnceIn): DraftOnceOut {
   const { run, box, extra } = input
   const ac = new AbortController()
 
-  function onTimeout(): OnTimeoutOut {
+  function onTimeout(): void {
     ac.abort()
   }
   const timer = setTimeout(onTimeout, TIMEOUT_MS)
   const sent = { n: 0 }
 
-  function onEvent(event: OnEventIn): OnEventOut {
+  function onEvent(event: OnEventIn): void {
     if (event.type !== MESSAGE_UPDATE || event.message == null || run.onDelta == null) {
       return
     }
@@ -1721,7 +1717,7 @@ async function boxFor(input: BoxForIn): BoxForOut {
  * @param input 库连接、用户原话、语种、档案、历史与两个回调。
  * @returns 过完闸的答复、标好 `cited` 的事实、采信的职业码、是不是降级来的。
  */
-export async function consult(input: ConsultIn): ConsultOut {
+export async function consult(input: RunIn): ConsultOut {
   if (BASE === '') {
     throw chatError({ code: CHAT_CODE.llm, msg: FAIL_MSG.noBase, slots: null })
   }
@@ -1770,7 +1766,7 @@ export async function consult(input: ConsultIn): ConsultOut {
  * @param turn 一轮对话。
  * @returns 是不是用户轮。
  */
-function isUserTurn(turn: IsUserTurnIn): IsUserTurnOut {
+function isUserTurn(turn: IsUserTurnIn): boolean {
   return turn.role === ROLE.user
 }
 
@@ -1780,7 +1776,7 @@ function isUserTurn(turn: IsUserTurnIn): IsUserTurnOut {
  * @param turn 一轮对话。
  * @returns 正文。
  */
-function contentOf(turn: ContentOfIn): ContentOfOut {
+function contentOf(turn: ContentOfIn): string {
   return turn.content
 }
 
@@ -1790,7 +1786,7 @@ function contentOf(turn: ContentOfIn): ContentOfOut {
  * @param hit 一道闸的判定结果。
  * @returns 日志里的一段。
  */
-function gateLabel(hit: GateLabelIn): GateLabelOut {
+function gateLabel(hit: GateHit): string {
   return `${hit.gate}${GATE_LOG.paren}${hit.hits.join(GATE_LOG.pipe)}${GATE_LOG.parenEnd}`
 }
 
@@ -1802,7 +1798,7 @@ function gateLabel(hit: GateLabelIn): GateLabelOut {
  * @param fired 撞到的每一道闸。
  * @returns 追加进 system prompt 的那段话。
  */
-function retryNote(fired: RetryNoteIn): RetryNoteOut {
+function retryNote(fired: RetryNoteIn): string {
   const lines = [RETRY_HEAD]
   for (const hit of fired) {
     lines.push(`${RETRY_BULLET}${hit.gate}${RETRY_COLON}${hit.hits.join(RETRY_COMMA)}`)

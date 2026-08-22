@@ -6,4 +6,4 @@
  * @time 2026-08-18 20:38:09
  */
 
-export type { AgentSlots, ResolveByAgentIn, ResolveByAgentOut } from './types'
+export type { AgentSlots, ResolveByAgentIn, ResolveByAgentOut, TranscriptMessage } from './types'

@@ -1631,121 +1631,6 @@ export type RetryNoteIn = GateHit[]
 // =========================================================================
 
 /**
- * `byOpenDesc` 的返回。
- */
-export type ByOpenDescOut = number
-
-/**
- * `blankCoverage` 的入参。
- */
-export type BlankCoverageIn = string
-
-/**
- * `tierText` 的返回。
- */
-export type TierTextOut = string
-
-/**
- * `normNum` 的入参。
- */
-export type NormNumIn = string
-
-/**
- * `normNum` 的返回。
- */
-export type NormNumOut = string
-
-/**
- * `blankIfNumbered` 的入参。
- */
-export type BlankIfNumberedIn = string
-
-/**
- * `blankIfNumbered` 的返回。
- */
-export type BlankIfNumberedOut = string
-
-/**
- * `findInternalWords` 的入参。
- */
-export type FindInternalWordsIn = string
-
-/**
- * `findRawMarkup` 的入参。
- */
-export type FindRawMarkupIn = string
-
-/**
- * `clampAnswer` 的返回。
- */
-export type ClampAnswerOut = string
-
-/**
- * `factSheet` 的返回。
- */
-export type FactSheetOut = string
-
-/**
- * `say` 的入参。
- */
-export type SayIn = string
-
-/**
- * `step` 的入参。
- */
-export type StepIn = string
-
-/**
- * `step` 的返回。
- */
-export type StepOut = void
-
-/**
- * `nocOf` 的入参。
- */
-export type NocOfIn = string
-
-/**
- * `systemOf` 的返回。
- */
-export type SystemOfOut = string
-
-/**
- * `textOf` 的返回。
- */
-export type TextOfOut = string
-
-/**
- * `onTimeout` 的返回。
- */
-export type OnTimeoutOut = void
-
-/**
- * `onEvent` 的返回。
- */
-export type OnEventOut = void
-
-/**
- * `isUserTurn` 的返回。
- */
-export type IsUserTurnOut = boolean
-
-/**
- * `contentOf` 的返回。
- */
-export type ContentOfOut = string
-
-/**
- * `gateLabel` 的返回。
- */
-export type GateLabelOut = string
-
-/**
- * `retryNote` 的返回。
- */
-export type RetryNoteOut = string
-
-/**
  * `model` 的返回。
  */
 export type ModelOut = Model<'openai-completions'>
@@ -1756,24 +1641,9 @@ export type ModelOut = Model<'openai-completions'>
 export type SearchOccupationsOut = Promise<Candidate[]>
 
 /**
- * `lookupJobs` 的入参。
- */
-export type LookupJobsIn = NocQueryIn
-
-/**
  * `lookupJobs` 的返回。
  */
 export type LookupJobsOut = Promise<JobsResult>
-
-/**
- * `byOpenDesc` 的入参。
- */
-export type ByOpenDescIn = JobsRow
-
-/**
- * `lookupCoverage` 的入参。
- */
-export type LookupCoverageIn = NocQueryIn
 
 /**
  * `lookupCoverage` 的返回。
@@ -1781,79 +1651,14 @@ export type LookupCoverageIn = NocQueryIn
 export type LookupCoverageOut = Promise<CoverageResult>
 
 /**
- * `blankCoverage` 的返回。
- */
-export type BlankCoverageOut = CoverageRow
-
-/**
- * `toRequirement` 的入参。
- */
-export type ToRequirementIn = ReqRow
-
-/**
- * `toRequirement` 的返回。
- */
-export type ToRequirementOut = Requirement
-
-/**
  * `lookupThresholds` 的返回。
  */
 export type LookupThresholdsOut = Promise<ThresholdsResult>
 
 /**
- * `fact` 的返回。
- */
-export type FactOut = Fact
-
-/**
- * `statusFact` 的返回。
- */
-export type StatusFactOut = Fact
-
-/**
- * `jobsFacts` 的入参。
- */
-export type JobsFactsIn = JobsResult
-
-/**
- * `coverageFacts` 的入参。
- */
-export type CoverageFactsIn = CoverageResult
-
-/**
- * `tierText` 的入参。
- */
-export type TierTextIn = RuleResult
-
-/**
- * `thresholdsFacts` 的入参。
- */
-export type ThresholdsFactsIn = ThresholdsResult
-
-/**
- * `allowedNumbers` 的入参。
- */
-export type AllowedNumbersIn = NumberCheckIn
-
-/**
  * `allowedNumbers` 的返回。
  */
 export type AllowedNumbersOut = Set<string>
-
-/**
- * `codesOf` 的入参。
- */
-export type CodesOfIn = Inbox
-
-/**
- * `take` 的返回。
- */
-export type TakeOut = Reply
-
-/**
- * `say` 的返回。
- */
-export type SayOut = Reply
 
 /**
  * `nocOf` 的返回。
@@ -1971,95 +1776,10 @@ export type OccFlat = {
 }
 
 /**
- * `toNocHit` 的入参。
- */
-export type ToNocHitIn = NocSearchRow
-
-/**
- * `toNocHit` 的返回。
- */
-export type ToNocHitOut = NocHit
-
-/**
- * `toProvOpen` 的入参。
- */
-export type ToProvOpenIn = ProvOpenRow
-
-/**
- * `toProvOpen` 的返回。
- */
-export type ToProvOpenOut = JobsRow
-
-/**
  * `toTitleTeer` 的入参:整个结果集。零行由映射显式落空 —— 原先收 `TitleTeerRow | undefined`
  * 让数组越界的 undefined 流进契约,2026-08-21 Frank 抓包后改收数组,undefined 不再出现。
  */
 export type ToTitleTeerIn = TitleTeerRow[]
-
-/**
- * `toTitleTeer` 的返回。
- */
-export type ToTitleTeerOut = TitleTeer
-
-/**
- * `toOccFlat` 的入参。
- */
-export type ToOccFlatIn = OccFlatRow
-
-/**
- * `toOccFlat` 的返回。
- */
-export type ToOccFlatOut = OccFlat
-
-/**
- * `toDrawRow` 的入参。
- */
-export type ToDrawRowIn = DrawDbRow
-
-/**
- * `toDrawRow` 的返回。
- */
-export type ToDrawRowOut = DrawRow
-
-/**
- * `toOpsRow` 的入参。
- */
-export type ToOpsRowIn = OpsDbRow
-
-/**
- * `toOpsRow` 的返回。
- */
-export type ToOpsRowOut = OpsRow
-
-/**
- * `toEeRow` 的入参。
- */
-export type ToEeRowIn = EeDbRow
-
-/**
- * `toEeRow` 的返回。
- */
-export type ToEeRowOut = EeRow
-
-/**
- * `toPermitRow` 的入参。
- */
-export type ToPermitRowIn = PermitDbRow
-
-/**
- * `toPermitRow` 的返回。
- */
-export type ToPermitRowOut = PermitRow
-
-/**
- * `toPointsRow` 的入参。
- */
-export type ToPointsRowIn = PointsDbRow
-
-/**
- * `toPointsRow` 的返回。
- */
-export type ToPointsRowOut = PointsRow
 
 /**
  * `seg` 的入参:一段可选文案。
@@ -2076,11 +1796,6 @@ export type SegIn = {
    */
   text: string
 }
-
-/**
- * `seg` 的返回:那一段;不出就空串。
- */
-export type SegOut = string
 
 /**
  * `orNone` 与 `orNone2` 的入参:官方可空的那一格。
@@ -2118,29 +1833,9 @@ export type SubjectOfIn = string | null
 export type SubjectOfOut = 'applicant' | 'employer'
 
 /**
- * `emptyAvailability` 的入参:两位省码。
- */
-export type EmptyAvailabilityIn = string
-
-/**
- * `emptyAvailability` 的返回:「一行都没有」时该落的那一态。
- */
-export type EmptyAvailabilityOut = Availability
-
-/**
- * `statusWordOf` 的入参:档案里的身份词原文。
- */
-export type StatusWordOfIn = string
-
-/**
  * `statusWordOf` 的返回:引擎词表里的词;不在表里就 null。
  */
 export type StatusWordOfOut = string | null
-
-/**
- * `provOf` 的入参:模型填的省码原文。
- */
-export type ProvOfIn = string
 
 /**
  * `provOf` 的返回:白名单里的省码(或 FED);认不出就 null(显式「没有」,不用空串当暗号)。
@@ -2166,11 +1861,6 @@ export type LookupDrawsIn = {
  * `lookupDraws` 的返回。
  */
 export type LookupDrawsOut = Promise<DrawsResult>
-
-/**
- * `drawsFacts` 的入参。
- */
-export type DrawsFactsIn = DrawsResult
 
 /**
  * `drawsFacts` 的返回。
@@ -2208,11 +1898,6 @@ export type LookupOpsIn = {
 export type LookupOpsOut = Promise<OpsResult>
 
 /**
- * `opsFacts` 的入参。
- */
-export type OpsFactsIn = OpsResult
-
-/**
  * `opsFacts` 的返回。
  */
 export type OpsFactsOut = Fact[]
@@ -2228,19 +1913,9 @@ export type ExecOpsIn = Static<typeof PROV_PARAMS>
 export type ExecOpsOut = Promise<Reply>
 
 /**
- * `lookupEe` 的入参。
- */
-export type LookupEeIn = NocQueryIn
-
-/**
  * `lookupEe` 的返回。
  */
 export type LookupEeOut = Promise<EeResult>
-
-/**
- * `eeFacts` 的入参。
- */
-export type EeFactsIn = EeResult
 
 /**
  * `eeFacts` 的返回。
@@ -2276,11 +1951,6 @@ export type LookupPermitIn = {
  * `lookupPermit` 的返回。
  */
 export type LookupPermitOut = Promise<PermitResult>
-
-/**
- * `permitFacts` 的入参。
- */
-export type PermitFactsIn = PermitResult
 
 /**
  * `permitFacts` 的返回。
@@ -2323,11 +1993,6 @@ export type LookupPointsIn = {
 export type LookupPointsOut = Promise<PointsResult>
 
 /**
- * `pointsFacts` 的入参。
- */
-export type PointsFactsIn = PointsResult
-
-/**
  * `pointsFacts` 的返回。
  */
 export type PointsFactsOut = Fact[]
@@ -2356,11 +2021,6 @@ export type VerdictProfileOfIn = {
    */
   profile: Profile
 }
-
-/**
- * `verdictProfileOf` 的返回:判定引擎认的档案形状(裁决域声明的,本域只是装配)。
- */
-export type VerdictProfileOfOut = VerdictProfile
 
 /**
  * `verdictFacts` 的入参:裁决引擎排好序的通道判定。
@@ -2393,21 +2053,6 @@ export type ExecClaimsIn = Static<typeof CLAIMS_PARAMS>
 export type ExecClaimsOut = Promise<Reply>
 
 /**
- * `firstPrompt` 的入参。
- */
-export type FirstPromptIn = RunIn
-
-/**
- * `firstPrompt` 的返回。
- */
-export type FirstPromptOut = AgentMessage
-
-/**
- * `textOf` 的入参。
- */
-export type TextOfIn = AgentMessage
-
-/**
  * `draftOnce` 的返回。
  */
 export type DraftOnceOut = Promise<string>
@@ -2426,11 +2071,6 @@ export type LastDraftOfIn = {
    */
   aborted: boolean
 }
-
-/**
- * `lastDraftOf` 的返回:最后一段有字的正文。
- */
-export type LastDraftOfOut = string
 
 /**
  * `boxFor` 的入参。
@@ -2453,19 +2093,9 @@ export type BoxForIn = {
 export type BoxForOut = Promise<Inbox>
 
 /**
- * `consult` 的入参。
- */
-export type ConsultIn = RunIn
-
-/**
  * `consult` 的返回。
  */
 export type ConsultOut = Promise<RunOut>
-
-/**
- * `gateLabel` 的入参。
- */
-export type GateLabelIn = GateHit
 
 /**
  * `findRestatedOpening` 的入参。
@@ -2491,11 +2121,6 @@ export type FirstLineOfIn = {
    */
   answer: string
 }
-
-/**
- * `firstLineOf` 的返回。
- */
-export type FirstLineOfOut = string
 
 /**
  * `hardHits` 的入参。

@@ -20,8 +20,8 @@ export {
 } from './functions'
 
 export type {
-  AnswerBag, CaseAnswer, CasePageSpec, ClientAnswers, DesignatedEmployerRow, DesignatedLoader,
-  EmployerFacts, EmployerVerdict, NameRow, OccupationRow, OpsFacts, PathLeverOpts, PathwayVerdict,
-  ReqRow, Row, TripleCard, TripleCompany, TripleJob, TripleProfile, TripleWire,
-  TripleWireResult, VerdictData, VerdictDrawRow, VerdictLever, VerdictProfile, VerdictReason,
+  AnswerBag, CaseAnswer, CasePageSpec, ClientAnswers, DesignatedEmployerRow, DesignatedLoader, EmployerFacts,
+  EmployerVerdict, NameRow, OccupationRow, OpsFacts, PathLeverOpts, PathwayVerdict, ReqRow, Row, TripleCard,
+  TripleCompany, TripleJob, TripleProfile, TripleWire, TripleWireResult, VerdictData, VerdictDrawRow,
+  VerdictLever, VerdictProfile, VerdictReason,
 } from './types'

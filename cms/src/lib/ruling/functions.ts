@@ -17,6 +17,7 @@ import { headers } from 'next/headers'
 
 import { getDb } from '../db/server'
 import { count, numOrNull, queryRowsOrEmpty, SQL, text } from '../db'
+import type { Db } from '../db'
 import { getUser, isPro } from '../quota/server'
 import {
   byCostAsc, byCountDesc, byDrawDateDesc, byListRankThenMonths, byNumberAsc, byObstacleThenTier, byOpeningsDesc, byTierAsc,
@@ -45,62 +46,57 @@ import {
 } from './constants'
 import type {
   AnswerBoolIn, AnswerBoolOut, AnswerNumIn, AnswerNumOut, AnswerTextIn, AnswerTextOut, ApplyOpsPeriodIn,
-  ApplyOpsPeriodOut, ApplyOpsRowIn, ApplyOpsRowOut, AskableSlotIn, AskableSlotOut, AvailabilityOfIn,
-  AvailabilityOfOut, BasisParamIn, BasisParamOut, BlockCostIn, BlockCostOut, BlockedBy, BoolOfIn, BoolOfOut,
-  BuildTripleWireIn, BuildTripleWireOut, CardFollowupsIn, CardFollowupsOut, CardRuleProfileIn, CardRuleProfileOut,
-  CaseAnswerIn, CaseAnswerOut, CasePagesOut, CaseProfilesOut, CaseTier, Cell, ClbBoostLeverIn, ClbBoostLeverOut,
-  CompareRowsIn, CompareRowsOut, ConcludeBlockedIn, ConcludeBlockedOut, ConcludeIn, ConcludeNeedsInfoIn,
-  ConcludeNeedsInfoOut, ConcludeOpenIn, ConcludeOpenOut, ConcludeOut, ConditionHoldsIn, ConditionHoldsOut,
-  CountableMonthsIn, CountableMonthsOut, CrossProvinceRowsIn, CrossProvinceRowsOut, CrsProfile, CrsScoreIn,
-  CrsScoreOut, DesignatedEmployerRow, DesignatedRowIn, DesignatedRowOut, EduBand,
-  EeRow, EmpAcc, EmpDesignationRowIn, EmpDesignationRowOut, EmpNextStepRowIn, EmpNextStepRowOut,
-  EmpPublicSectorRowIn, EmpPublicSectorRowOut, EmpReqOfIn, EmpReqOfOut, EmpRevenueRowIn, EmpRevenueRowOut,
-  EmpRowsOfIn, EmpRowsOfOut, EmpStaffFactRowIn, EmpStaffFactRowOut, EmpThresholdRowsIn, EmpThresholdRowsOut,
-  EmployerFactsOfOut, EmployerNameSegmentsIn, EmployerNameSegmentsOut, EmployerRowsIn,
-  EmployerRowsOut, EmployerVerdictIn, EmployerVerdictItem, EmployerVerdictOut, EngineResult,
-  EvOfDrawIn, EvOfDrawOut, EvOfFactorIn, EvOfFactorOut, EvOfOccIn, EvOfOccOut, EvOfReqIn, EvOfReqOut, EvaluateOneIn,
-  EvaluateOneOut, Evidence, ExcludedRowIn, ExcludedRowOut, ExperienceGapsIn, ExperienceGapsOut, ExperienceReasonsIn,
-  ExperienceReasonsOut, FactorNamesIn, FactorNamesOut, FactorThreshold, FastestRowIn, FastestRowOut,
-  FedLangAppliesIn, FedLangAppliesOut, FedLanguageReasonsIn, FedLanguageReasonsOut, FieldMatchAnswerIn,
-  FieldMatchAnswerOut, FirstNocIn, FirstNocOut, FoldTriStateIn, FoldTriStateOut, FoldVerdictIn, FoldVerdictOut,
-  GateAnswersIn, GateAnswersOut, GateAsks, GateKeyOfIn, GateKeyOfOut, GateManifestIn, GateManifestOut,
-  GetDesignatedEmployersIn, GetDesignatedEmployersOut, GetVerdictDataOut, GotWorseIn, GotWorseOut, GridCeilingIn,
-  GridCeilingOut, GridMatchesStreamIn, GridMatchesStreamOut, GridProfile, GridRowForIn, GridRowForOut,
-  GridSelfProfileIn, GridSelfProfileOut, HarderBlockIn, HarderBlockOut, HasEnoughProfileIn, HasEnoughProfileOut,
-  HasRequiredSlotsIn, HasRequiredSlotsOut, HaveMonthsOfIn, HaveMonthsOfOut, ItemVerdict, JobPathwayRow,
-  JobPathwaysIn, JobPathwaysOut, JobRowRankIn, JobRowRankOut, JudgeableRowIn, JudgeableRowOut, LanguageReasonsIn,
-  LanguageReasonsOut, LeverGain, ListRequiredReasonIn, ListRequiredReasonOut, LmiaNocsOfIn, LmiaNocsOfOut,
-  LoadVerdictTablesIn, LoadVerdictTablesOut, LocalExperienceHoldsIn, LocalExperienceHoldsOut, LowestMonthsRowIn,
-  LowestMonthsRowOut, MatchDesignationIn, MatchDesignationOut, MaxClbInIn, MaxClbInOut, MaybeScore, MbEduOfIn,
-  MbEduOfOut, MbEoiProfile, MbProfileOfIn, MbProfileOfOut, MbScoreIn, MbScoreOut, MbWarningsIn, MbWarningsOut,
-  MergeOverridesIn, MergeOverridesOut, MonthsOfReqIn, MonthsOfReqOut, MostSpecificRowsIn, MostSpecificRowsOut,
-  MyPathway, MyPathwaysIn, MyPathwaysOut, NameRow, NamedList, NamedListsIn, NamedListsOut, NlDesignatedReasonIn,
-  NlDesignatedReasonOut, NormalizeEmployerNameIn, NormalizeEmployerNameOut, NotCollectedRowIn, NotCollectedRowOut,
-  NotCollectedVerdictIn, NotCollectedVerdictOut, NullResultOut, NullUserOut, ObstacleRankIn, ObstacleRankOut, OccExcludedRowsIn, OccExcludedRowsOut, OccListNoneForIn, OccListNoneForOut, OccListedRowsIn,
-  OccListedRowsOut, OccNoListRowIn, OccNoListRowOut, OccTeerRowIn, OccTeerRowOut, OccupationListReasonsIn,
-  OccupationListReasonsOut, OccupationRow, OccupationRowsIn, OccupationRowsOut, OfferOverrideIn, OfferOverrideOut,
-  OneRowIn, OneRowOut, OopGradReasonIn, OopGradReasonOut, OpeningCount, OpsByProvinceIn, OpsByProvinceOut, OpsFacts,
-  OtherProvinceGraduateHoldsIn, OtherProvinceGraduateHoldsOut, OutOfProvinceGradGapIn, OutOfProvinceGradGapOut,
-  OwnTicksOfIn, OwnTicksOfOut, ParseNocDictIn, ParseNocDictOut, ParseWageRuleIn, ParseWageRuleOut, PathLeversIn,
-  PathLeversOut, PathVerdictIn, PathVerdictOut, PathwayFactsIn, PathwayFactsOut, PathwayScore, PathwayVerdict,
-  PermitOfIn, PermitOfOut, PersonRowsIn, PersonRowsOut, PickGateIn, PickGateOut, PickGridFactorsIn,
-  PickGridFactorsOut, PickOnLangRowIn, PickOnLangRowOut, PickScoreRowIn, PickScoreRowOut, PickedFactor,
-  PnpLanguageReasonsIn, PnpLanguageReasonsOut, ProfileOfOccupationIn, ProfileOfOccupationOut, ProfileSlotsIn,
-  ProfileSlotsOut, ProfileWithNocIn, ProfileWithNocOut, ProfileWithOfferIn, ProfileWithOfferOut, ProvCountRow,
-  ProvCountsIn, ProvCountsOut, ProvinceGridScoreIn, ProvinceGridScoreOut, ProvinceOfIn, ProvinceOfOut, PushItemIn,
-  PushItemOut, QuoteOfOccIn, QuoteOfOccOut, QuoteOfReqIn, QuoteOfReqOut, RankedBlock, RankedJobRow, RankedPathway,
-  RankedVerdict, RecentGraduateHoldsIn, RecentGraduateHoldsOut, RefDrawIn, RefDrawOut, ReqMonths, ReqRow, ReqsOfIn,
-  ReqsOfOut, ResidenceGapIn, ResidenceGapOut, ResidenceReasonIn, ResidenceReasonOut, RowsOfIn, RowsOfOut,
-  RuleProfileOfIn, RuleProfileOfOut, ScoreAndRefLineIn, ScoreAndRefLineOut, ScoreGulfReasonIn, ScoreGulfReasonOut,
-  ScoreOverride, ScoreRow, SelfEmpExcludedInIn, SelfEmpExcludedInOut, SessionOfIn, SessionOfOut, SessionUser,
-  StatusGateAnswerIn, StatusGateAnswerOut, TargetProvincesOfIn, TargetProvincesOfOut,
+  ApplyOpsRowIn, AskableSlotIn, AskableSlotOut, AvailabilityOfIn, Availability, BasisParamIn, BasisParamOut,
+  BlockCostIn, BlockedBy, BoolOfIn, BoolOfOut, BuildTripleWireIn, BuildTripleWireOut, CardFollowupsIn,
+  CardFollowupsOut, CardRuleProfileIn, EngineProfile, CaseAnswerIn, CaseAnswerOut, CasePagesOut,
+  CaseProfilesOut, CaseTier, Cell, ClbBoostLeverIn, ClbBoostLeverOut, CompareRowsIn, CompareRowsOut,
+  ConcludeBlockedIn, ConcludeBlockedOut, ConcludeIn, ConcludeNeedsInfoIn, ConcludeNeedsInfoOut, ConcludeOpenIn,
+  ConcludeOpenOut, TripleConclusion, ConditionHoldsIn, ConditionHoldsOut, CountableMonthsIn,
+  CountableMonthsOut, CrossProvinceRowsIn, CrossProvinceRowsOut, CrsProfile, CrsScoreIn, MaybeScore,
+  DesignatedEmployerRow, DesignatedRowIn, DesignatedRowOut, EduBand, EeRow, EmpAcc, EmpDesignationRowIn,
+  EmpDesignationRowOut, EmpNextStepRowIn, TripleRow, EmpPublicSectorRowIn, EmpPublicSectorRowOut, EmpReqOfIn,
+  EmpReqOfOut, EmpRevenueRowIn, EmpRowsOfIn, EmpRowsOfOut, EmpStaffFactRowIn, EmpStaffFactRowOut,
+  EmpThresholdRowsIn, EmpThresholdRowsOut, EmployerFacts, EmployerNameSegmentsOut, EmployerRowsIn,
+  EmployerRowsOut, EmployerVerdictIn, EmployerVerdictItem, EmployerVerdict, EngineResult, EvOfDrawIn, Evidence,
+  EvOfFactorIn, EvOfOccIn, EvOfReqIn, EvaluateOneIn, PathwayVerdict, ExcludedRowIn, ExcludedRowOut,
+  ExperienceGapsIn, ExperienceGapsOut, ExperienceReasonsIn, ExperienceReasonsOut, FactorNamesIn,
+  FactorNamesOut, FactorThreshold, FastestRowIn, FedLangAppliesIn, FedLanguageReasonsIn, LanguageReasonsOut,
+  FieldMatchAnswerIn, FieldMatchAnswerOut, FirstNocIn, FirstNocOut, FoldTriStateIn, FoldTriStateOut,
+  FoldVerdictIn, GateAnswersIn, GateAnswersOut, GateAsks, GateKeyOfIn, GateManifestIn, GateManifestOut,
+  GetDesignatedEmployersIn, GetDesignatedEmployersOut, GetVerdictDataOut, GotWorseIn, GridCeilingIn,
+  GridCeilingOut, GridMatchesStreamIn, GridProfile, GridRowForIn, GridRowForOut, GridSelfProfileIn,
+  HarderBlockIn, HarderBlockOut, HasEnoughProfileIn, HasRequiredSlotsIn, HaveMonthsOfIn, HaveMonthsOfOut,
+  ItemVerdict, JobPathwayRow, JobPathwaysIn, JobPathwaysOut, JobRowRankIn, JudgeableRowIn, LanguageReasonsIn,
+  LeverGain, ListRequiredReasonIn, ListRequiredReasonOut, LmiaNocsOfIn, LmiaNocsOfOut,
+  LoadVerdictTablesOut, LocalExperienceHoldsIn, LocalExperienceHoldsOut, LowestMonthsRowIn, LowestMonthsRowOut,
+  MatchDesignationIn, MatchDesignationOut, MaxClbInIn, MaxClbInOut, MbEduOfIn, MbEduBand, MbEoiProfile,
+  MbProfileOfIn, MbScoreIn, MbScoreOut, MbWarningsIn, MbWarningsOut, MergeOverridesIn, MergeOverridesOut,
+  MonthsOfReqIn, MonthsOfReqOut, MostSpecificRowsIn, MostSpecificRowsOut, MyPathway, MyPathwaysIn,
+  MyPathwaysOut, NameRow, NamedList, NamedListsIn, NamedListsOut, NlDesignatedReasonIn, NlDesignatedReasonOut,
+  NotCollectedRowIn, NotCollectedRowOut, NotCollectedVerdictIn, ObstacleRankIn, OccExcludedRowsIn,
+  OccExcludedRowsOut, OccListNoneForIn, OccListNoneForOut, OccListedRowsIn, OccListedRowsOut, OccNoListRowIn,
+  OccTeerRowIn, OccupationListReasonsIn, OccupationListReasonsOut, OccupationRow, OccupationRowsIn,
+  OccupationRowsOut, OfferOverrideIn, OfferOverrideOut, OneRowIn, OneRowOut, OopGradReasonIn, OopGradReasonOut,
+  OpeningCount, OpsByProvinceIn, OpsByProvinceOut, OpsFacts, OtherProvinceGraduateHoldsIn,
+  OtherProvinceGraduateHoldsOut, OutOfProvinceGradGapIn, OutOfProvinceGradGapOut, OwnTicksOfIn, OwnTicksOfOut,
+  ParseNocDictIn, ParseNocDictOut, ParseWageRuleIn, WageRule, PathLeversIn, PathLeversOut, PathVerdictIn,
+  PathVerdictOut, PathwayFactsIn, PathwayFactsOut, PathwayScore, PermitOfIn, PermitOfOut, PersonRowsIn,
+  PersonRowsOut, PickGateIn, GateEval, PickGridFactorsIn, PickGridFactorsOut, PickOnLangRowIn,
+  PickOnLangRowOut, PickScoreRowIn, PickScoreRowOut, PickedFactor, ProfileOfOccupationIn, VerdictProfile,
+  ProfileSlotsIn, AnswerBag, ProfileWithNocIn, ProfileWithOfferIn, ProvCountsIn, ProvCountsOut,
+  ProvinceGridScoreIn, ProvinceOfIn, ProvinceOfOut, PushItemIn, QuoteOfOccIn, QuoteOfReqIn, RankedBlock,
+  RankedJobRow, RankedPathway, RankedVerdict, RecentGraduateHoldsIn, RecentGraduateHoldsOut, RefDrawIn,
+  RefDrawOut, ReqMonths, ReqRow, ReqsOfIn, ReqsOfOut, ResidenceGapIn, ResidenceGapOut, ResidenceReasonIn,
+  ResidenceReasonOut, RowsOfIn, RowsOfOut, RuleProfileOfIn, ScoreAndRefLineIn, ScoreAndRefLineOut,
+  ScoreGulfReasonIn, ScoreGulfReasonOut, ScoreOverride, ScoreRow, SelfEmpExcludedInIn, SessionOfIn,
+  SessionUser, StatusGateAnswerIn, StatusGateAnswerOut, TargetProvincesOfIn, TargetProvincesOfOut,
   TeerDowngradeLeverIn, TeerDowngradeLeverOut, TeerScope, TeerScopeAcc, TeerScopesIn, TeerScopesOut, Tier,
-  TierBasisOfIn, TierBasisOfOut, TierFullTimeOfIn, TierFullTimeOfOut, TierGap, TierOfMonthsIn, TierOfMonthsOut,
-  TierRowsIn, TierRowsOut, TimeRowIn, TimeRowOut, TotalExpMonthsIn, TotalExpMonthsOut, TrainableRow, TrainableRowsIn,
-  TrainableRowsOut, TripleCompanyOfIn, TripleCompanyOfOut, TripleCompareRole, TripleCompareRow, TripleProfileOfIn, TripleProfileOfOut, TripleRow, TripleVerdictIn, TripleVerdictOut,
-  TripleWireOfIn, TripleWireOfOut, TripleWireRow, UniversalValueIn, UniversalValueOut, VerdictDrawRow, VerdictLever,
-  VerdictProfile, VerdictRankIn, VerdictRankOut, VerdictReason, VerdictReasonsIn, VerdictReasonsOut, WagePointsIn,
-  WagePointsOut, WireRowsIn, WireRowsOut, WorkPermitSoonIn, WorkPermitSoonOut, WorstGapIn, WorstGapOut,
+  TierBasisOfIn, TierBasisOfOut, TierFullTimeOfIn, TierGap, TierOfMonthsIn, TierOfMonthsOut, TierRowsIn,
+  TierRowsOut, TimeRowIn, TotalExpMonthsIn, TotalExpMonthsOut, TrainableRow, TrainableRowsIn, TrainableRowsOut,
+  TripleCompanyOfIn, TripleCompanyOfOut, TripleCompareRole, TripleCompareRow, TripleProfileOfIn, TripleProfile,
+  TripleVerdictIn, TripleCard, TripleWireOfIn, TripleWireOfOut, TripleWireRow, UniversalValueIn,
+  UniversalValueOut, VerdictDrawRow, VerdictLever, VerdictRankIn, VerdictReason, VerdictReasonsIn,
+  VerdictReasonsOut, WagePointsIn, WireRowsIn, WireRowsOut, WorkPermitSoonIn, WorstGapIn, WorstGapOut,
 } from './types'
 
 /**
@@ -126,7 +122,7 @@ async function rowsOf<R>(input: RowsOfIn<R>): RowsOfOut<R> {
  * @param db 能查的东西。
  * @returns 判定层六张底表。
  */
-export async function loadVerdictTables(db: LoadVerdictTablesIn): LoadVerdictTablesOut {
+export async function loadVerdictTables(db: Db): LoadVerdictTablesOut {
   const [requirements, occupations, draws, scoreFactors, eeGrid, employers] = await Promise.all([
     rowsOf({ db, sql: SQL.PNP_REQUIREMENTS_ALL, params: [], map: toRequirement }),
     rowsOf({ db, sql: SQL.PNP_OCCUPATIONS_FULL, params: [], map: toOccupation }),
@@ -158,7 +154,7 @@ export async function loadVerdictTables(db: LoadVerdictTablesIn): LoadVerdictTab
  * @param name 待归一的名字。
  * @returns 归一后的名字。
  */
-export function normalizeEmployerName(name: NormalizeEmployerNameIn): NormalizeEmployerNameOut {
+export function normalizeEmployerName(name: string): string {
   return (name || '').toLowerCase().replace(AMP, AND_WORD).replace(NAME_KEEP, SPACE).trim()
 }
 
@@ -168,7 +164,7 @@ export function normalizeEmployerName(name: NormalizeEmployerNameIn): NormalizeE
  * @param name 名录上那个名字。
  * @returns 可比的名段。
  */
-export function employerNameSegments(name: EmployerNameSegmentsIn): EmployerNameSegmentsOut {
+export function employerNameSegments(name: string): EmployerNameSegmentsOut {
   const parts: string[] = []
   for (const raw of (name || '').split(OA_SPLIT)) {
     const part = raw.trim()
@@ -280,7 +276,7 @@ function empRowsOf(input: EmpRowsOfIn): EmpRowsOfOut {
  * @param input 收集器、因素、门槛、公司侧的值、单位、证据性质。
  * @returns 没有返回值。
  */
-function pushItem(input: PushItemIn): PushItemOut {
+function pushItem(input: PushItemIn): void {
   let verdict: ItemVerdict = ITEM.unknown
   let short: number | null = null
   if (input.need != null && input.have != null) {
@@ -326,7 +322,7 @@ function pushItem(input: PushItemIn): PushItemOut {
  * @param input 公司事实、省码、门槛行、当前年份。
  * @returns 三态判定,含逐项与点名。
  */
-export function employerVerdict(input: EmployerVerdictIn): EmployerVerdictOut {
+export function employerVerdict(input: EmployerVerdictIn): EmployerVerdict {
   if (input.facts.sector === SECTOR_PUBLIC) {
     return { state: EMP_STATE.public, items: [], revenue: null, failed: [], missing: [] }
   }
@@ -366,7 +362,7 @@ export function employerVerdict(input: EmployerVerdictIn): EmployerVerdictOut {
     }
   }
 
-  let state: EmployerVerdictOut['state'] = EMP_STATE.met
+  let state: EmployerVerdict['state'] = EMP_STATE.met
   if (acc.items.length === 0) {
     state = EMP_STATE.unknown
   } else if (acc.failed.length > 0) {
@@ -398,7 +394,7 @@ function universalValue(rows: UniversalValueIn): UniversalValueOut {
  * @param block 闸的名字;没有闸就是 undefined。
  * @returns 代价;没有闸回 -1(排在最前),不认识的闸回 9(排在最后)。
  */
-export function blockCost(block: BlockCostIn): BlockCostOut {
+export function blockCost(block: BlockCostIn): number {
   if (block == null || block === '') {
     return NO_BLOCK_COST
   }
@@ -419,7 +415,7 @@ export function blockCost(block: BlockCostIn): BlockCostOut {
  * @param input 那一行门槛条文。
  * @returns 出处:官网 url、抓取日、标签、节号、生效日。
  */
-function evOfReq(input: EvOfReqIn): EvOfReqOut {
+function evOfReq(input: EvOfReqIn): Evidence {
   return {
     url: input.r.url, fetched: input.r.fetched, label: input.r.label, section: input.r.section, effective: input.r.effective,
   }
@@ -430,7 +426,7 @@ function evOfReq(input: EvOfReqIn): EvOfReqOut {
  * @param input 一行门槛条文。
  * @returns 官方原句;两处都空则空串。
  */
-function quoteOfReq(input: QuoteOfReqIn): QuoteOfReqOut {
+function quoteOfReq(input: QuoteOfReqIn): string {
   return (input.r.valueText || input.r.label || '').trim()
 }
 
@@ -440,7 +436,7 @@ function quoteOfReq(input: QuoteOfReqIn): QuoteOfReqOut {
  * @param input 那一行职业清单。
  * @returns 出处。
  */
-function evOfOcc(input: EvOfOccIn): EvOfOccOut {
+function evOfOcc(input: EvOfOccIn): Evidence {
   return { url: input.r.url, fetched: input.r.fetched, label: `${input.r.stream}${SEP.spacedDash}${input.r.noc} ${input.r.name}` }
 }
 /**
@@ -449,7 +445,7 @@ function evOfOcc(input: EvOfOccIn): EvOfOccOut {
  * @param input 那一轮抽选。
  * @returns 出处。
  */
-function evOfDraw(input: EvOfDrawIn): EvOfDrawOut {
+function evOfDraw(input: EvOfDrawIn): Evidence {
   let note = ''
   if (input.d.note !== '') {
     note = SEP.midDot + input.d.note
@@ -464,7 +460,7 @@ function evOfDraw(input: EvOfDrawIn): EvOfDrawOut {
  * @param input 那一行官方分值行。
  * @returns 出处。
  */
-function evOfFactor(input: EvOfFactorIn): EvOfFactorOut {
+function evOfFactor(input: EvOfFactorIn): Evidence {
   return { url: input.f.url, fetched: input.f.fetched, label: input.f.system, effective: input.f.guideEffective }
 }
 
@@ -662,7 +658,7 @@ function mergeOverrides(input: MergeOverridesIn): MergeOverridesOut {
  * @param input 原档案与要换上的 NOC / TEER。
  * @returns 换过职业的档案。
  */
-function profileWithNoc(input: ProfileWithNocIn): ProfileWithNocOut {
+function profileWithNoc(input: ProfileWithNocIn): VerdictProfile {
   return {
     age: input.p.age, married: input.p.married, clb: input.p.clb, edu: input.p.edu,
     eduYears: input.p.eduYears, canadaStudy: input.p.canadaStudy, studyProvince: input.p.studyProvince,
@@ -824,7 +820,7 @@ function haveMonthsOf(input: HaveMonthsOfIn): HaveMonthsOfOut {
  * @param input 通道声明、该通道的门槛行、档案与「自雇是否被排除」。
  * @returns 入池的行、挑中的那一行、要求月数、已攒月数、缺口,与两个说不清的旗标。
  */
-function pickGate(input: PickGateIn): PickGateOut {
+function pickGate(input: PickGateIn): GateEval {
   const expRows: ReqRow[] = []
   for (const r of input.rows) {
     if (r.factor !== FACTOR.experience && r.factor !== REQ_FACTOR.workHours) {
@@ -1009,7 +1005,7 @@ function factorNames(input: FactorNamesIn): FactorNamesOut {
  * @param input 那一行的规则串。
  * @returns 解出来的参数;串坏了或没有则空对象。
  */
-function parseWageRule(input: ParseWageRuleIn): ParseWageRuleOut {
+function parseWageRule(input: ParseWageRuleIn): WageRule {
   try {
     return JSON.parse(input.rule || EMPTY_JSON)
   } catch {
@@ -1026,7 +1022,7 @@ function parseWageRule(input: ParseWageRuleIn): ParseWageRuleOut {
  * @param input 那一行规则行与他填的时薪。
  * @returns 这一格记多少分。
  */
-function wagePoints(input: WagePointsIn): WagePointsOut {
+function wagePoints(input: WagePointsIn): number {
   const cfg = parseWageRule({ rule: input.rule.rule })
   let floorAt: number = WAGE_RULE_DEFAULT.floorAt
   if (cfg.floorAt != null) {
@@ -1229,7 +1225,7 @@ function gridCeiling(input: GridCeilingIn): GridCeilingOut {
  * @param input 判定档案。
  * @returns 喂给 scoreProvince 的那份档案。
  */
-function gridSelfProfile(input: GridSelfProfileIn): GridSelfProfileOut {
+function gridSelfProfile(input: GridSelfProfileIn): GridProfile {
   let months = 0
   if (input.p.expCanadaMonths != null) {
     months += input.p.expCanadaMonths
@@ -1285,7 +1281,7 @@ function gridSelfProfile(input: GridSelfProfileIn): GridSelfProfileOut {
  * @param input 表头那一行与要判的通道。
  * @returns 对得上则 true。
  */
-function gridMatchesStream(input: GridMatchesStreamIn): GridMatchesStreamOut {
+function gridMatchesStream(input: GridMatchesStreamIn): boolean {
   const gridStream = gridStreamOf(input.head.system)
   if (gridStream == null || gridStream === '') {
     return true
@@ -1302,7 +1298,7 @@ function gridMatchesStream(input: GridMatchesStreamIn): GridMatchesStreamOut {
  * @param input 要交给官方档位匹配的那几个因素名,与判定档案。
  * @returns 答齐了则 true。
  */
-function hasRequiredSlots(input: HasRequiredSlotsIn): HasRequiredSlotsOut {
+function hasRequiredSlots(input: HasRequiredSlotsIn): boolean {
   if (input.only.has(FACTOR.education) && input.p.edu == null) {
     return false
   }
@@ -1369,7 +1365,7 @@ function ownTicksOf(input: OwnTicksOfIn): OwnTicksOfOut {
  * @param input 通道声明、档案、全量分值行与参照抽选。
  * @returns 估分(含上界与参照线);接不上则 undefined。
  */
-function provinceGridScore(input: ProvinceGridScoreIn): ProvinceGridScoreOut {
+function provinceGridScore(input: ProvinceGridScoreIn): MaybeScore {
   const all: ScoreRow[] = []
   for (const f of input.factors) {
     if (f.province === input.spec.reqProvince) {
@@ -1448,7 +1444,7 @@ function provinceGridScore(input: ProvinceGridScoreIn): ProvinceGridScoreOut {
  * @param input 学历档与学制年数。
  * @returns MPNP 认的学历档。
  */
-function mbEduOf(input: MbEduOfIn): MbEduOfOut {
+function mbEduOf(input: MbEduOfIn): MbEduBand {
   if (input.edu === EDU.diploma2y || input.edu === EDU.bachelor) {
     if (input.years == null) {
       return EDU_TO_MB[input.edu]
@@ -1474,7 +1470,7 @@ function mbEduOf(input: MbEduOfIn): MbEduOfOut {
  * @param input 判定档案、语言档与门槛达成态。
  * @returns MPNP EOI 估分器要的那份档案。
  */
-function mbProfileOf(input: MbProfileOfIn): MbProfileOfOut {
+function mbProfileOf(input: MbProfileOfIn): MbEoiProfile {
   let mbEduYears: MbEoiProfile['adapt']['mbEduYears'] = 0
   if (input.p.canadaStudy === true && input.p.studyProvince === PROV.MB) {
     mbEduYears = 1
@@ -1509,7 +1505,7 @@ function mbProfileOf(input: MbProfileOfIn): MbProfileOfOut {
  * @param input 判定档案与已经算好的可计经验月数。
  * @returns 判定引擎认的档案。
  */
-function ruleProfileOf(input: RuleProfileOfIn): RuleProfileOfOut {
+function ruleProfileOf(input: RuleProfileOfIn): EngineProfile {
   return {
     noc: input.p.noc,
     teer: input.p.teer,
@@ -1538,7 +1534,7 @@ function ruleProfileOf(input: RuleProfileOfIn): RuleProfileOfOut {
  *   认不出 `teer-x-y` 这个形状的行(first-official / speaking-listening / reading-writing)
  *   是**该子通道通用**,一律适用。
  */
-function fedLangApplies(input: FedLangAppliesIn): FedLangAppliesOut {
+function fedLangApplies(input: FedLangAppliesIn): boolean {
   const m = TEER_STREAM.exec(input.r.stream || '')
   if (m == null) {
     return true
@@ -1662,7 +1658,7 @@ function statusGateAnswer(input: StatusGateAnswerIn): StatusGateAnswerOut {
  * @param input 闸名、问哪一样、状态。
  * @returns 那一句的 i18n key。
  */
-function gateKeyOf(input: GateKeyOfIn): GateKeyOfOut {
+function gateKeyOf(input: GateKeyOfIn): string {
   let asks = ''
   if (input.asks != null) {
     asks = `${SEP.dot}${input.asks}`
@@ -1815,7 +1811,7 @@ function occupationListReasons(input: OccupationListReasonsIn): OccupationListRe
  * @param input 通道声明、档案与该通道的门槛行。
  * @returns 语言类的理由、缺的槽,以及被语言卡住时的 blockedBy。
  */
-function fedLanguageReasons(input: FedLanguageReasonsIn): FedLanguageReasonsOut {
+function fedLanguageReasons(input: FedLanguageReasonsIn): LanguageReasonsOut {
   const reasons: VerdictReason[] = []
   const missingSlots: string[] = []
   let blockedBy: BlockedBy
@@ -1881,7 +1877,7 @@ function fedLanguageReasons(input: FedLanguageReasonsIn): FedLanguageReasonsOut 
  * @param input 通道声明、档案、该通道的门槛行与「自雇是否被排除」。
  * @returns 语言类的理由、缺的槽,以及被语言卡住时的 blockedBy。
  */
-function pnpLanguageReasons(input: PnpLanguageReasonsIn): PnpLanguageReasonsOut {
+function pnpLanguageReasons(input: LanguageReasonsIn): LanguageReasonsOut {
   const reasons: VerdictReason[] = []
   const missingSlots: string[] = []
   let blockedBy: BlockedBy
@@ -2058,7 +2054,7 @@ function outOfProvinceGradGap(input: OutOfProvinceGradGapIn): OutOfProvinceGradG
  * @param input 通道声明、档案、六张底表、参照的那一轮,与「自雇是否被排除」。
  * @returns CRS 估分;不是这条线或档案缺格则 undefined。
  */
-function crsScore(input: CrsScoreIn): CrsScoreOut {
+function crsScore(input: CrsScoreIn): MaybeScore {
   if (input.spec.scorer !== GRID.crs) {
     return undefined
   }
@@ -2701,7 +2697,7 @@ function gateAnswers(input: GateAnswersIn): GateAnswersOut {
  * @param input 要判的那条通道。
  * @returns 一条「本站尚未收录」的裁决。
  */
-function notCollectedVerdict(input: NotCollectedVerdictIn): NotCollectedVerdictOut {
+function notCollectedVerdict(input: NotCollectedVerdictIn): PathwayVerdict {
   const reasons: VerdictReason[] = []
   reasons.push({
     kind: REASON.needsInfo,
@@ -2761,7 +2757,7 @@ function foldTriState(input: FoldTriStateIn): FoldTriStateOut {
  * @param input 有没有硬伤、经验闸的评估、门槛清单缺不缺条文。
  * @returns `ok` 或 `not-collected`。
  */
-function availabilityOf(input: AvailabilityOfIn): AvailabilityOfOut {
+function availabilityOf(input: AvailabilityOfIn): Availability {
   if (input.gate.picked == null && input.gate.teerUnknown === false) {
     return AVAIL.notCollected
   }
@@ -2806,7 +2802,7 @@ function tierBasisOf(input: TierBasisOfIn): TierBasisOfOut {
  * @param input 最大的那个缺口与经验闸挑中的那一行。
  * @returns 官方原文里写了全职则 true。
  */
-function tierFullTimeOf(input: TierFullTimeOfIn): TierFullTimeOfOut {
+function tierFullTimeOf(input: TierFullTimeOfIn): boolean {
   if (input.worst == null || input.worst.kind !== FACTOR.work) {
     return false
   }
@@ -2825,7 +2821,7 @@ function tierFullTimeOf(input: TierFullTimeOfIn): TierFullTimeOfOut {
  * @param input 通道声明、档案与前面七段的产出。
  * @returns 这条通道的裁决。
  */
-function foldVerdict(input: FoldVerdictIn): FoldVerdictOut {
+function foldVerdict(input: FoldVerdictIn): PathwayVerdict {
   const worst = worstGap({ gaps: input.gaps })
   let tier: Tier = null
   if (input.excluded === false) {
@@ -2849,7 +2845,7 @@ function foldVerdict(input: FoldVerdictIn): FoldVerdictOut {
   const tierBasis = tierBasisOf({ p: input.p, excluded: input.excluded, outTier: outTier, worst: worst })
   const tierFullTime = tierFullTimeOf({ worst: worst, gate: input.gate })
 
-  const out: FoldVerdictOut = {
+  const out: PathwayVerdict = {
     key: input.spec.key, province: input.spec.province, stream: input.spec.stream,
     verdict, tier: outTier, tierBasis,
     reasons: input.reasons, score: input.score, availability: availability,
@@ -3048,7 +3044,7 @@ function gateManifest(input: GateManifestIn): GateManifestOut {
  * @param input 通道声明、判定档案与六张底表。
  * @returns 这条通道的裁决。
  */
-function evaluateOne(input: EvaluateOneIn): EvaluateOneOut {
+function evaluateOne(input: EvaluateOneIn): PathwayVerdict {
   const rows = reqsOf({ spec: input.spec, all: input.data.requirements })
   const reasons: VerdictReason[] = []
   const missingSlots: string[] = []
@@ -3122,7 +3118,7 @@ function evaluateOne(input: EvaluateOneIn): EvaluateOneOut {
  * @param input 一条通道的裁决与判定档案。
  * @returns 名次(越小越靠前)。
  */
-function obstacleRank(input: ObstacleRankIn): ObstacleRankOut {
+function obstacleRank(input: ObstacleRankIn): number {
   if (input.v.verdict === REASON.excluded) {
     return RANK.excluded
   }
@@ -3153,7 +3149,7 @@ function obstacleRank(input: ObstacleRankIn): ObstacleRankOut {
  * @param input 一条通道的裁决与判定档案。
  * @returns 这条通道的工签闸算不算「快到手了」。
  */
-function workPermitSoon(input: WorkPermitSoonIn): WorkPermitSoonOut {
+function workPermitSoon(input: WorkPermitSoonIn): boolean {
   const pgwpExpected = input.profile.status === PERMIT.study && input.profile.canadaStudy === true
   if (pgwpExpected === false || input.v.blockedBy !== BLOCKED_BY.statusInCanada) {
     return false
@@ -3173,7 +3169,7 @@ function workPermitSoon(input: WorkPermitSoonIn): WorkPermitSoonOut {
  * @param input 该通道的门槛行。
  * @returns 有则 true。
  */
-function selfEmpExcludedIn(input: SelfEmpExcludedInIn): SelfEmpExcludedInOut {
+function selfEmpExcludedIn(input: SelfEmpExcludedInIn): boolean {
   for (const r of input.rows) {
     if (r.factor === REQ_FACTOR.workSelfEmployed || r.factor === REQ_FACTOR.experienceExcluded) {
       return true
@@ -3188,7 +3184,7 @@ function selfEmpExcludedIn(input: SelfEmpExcludedInIn): SelfEmpExcludedInOut {
  * @param input 一行职业级事实。
  * @returns 名次(越小越靠前)。
  */
-function jobRowRank(input: JobRowRankIn): JobRowRankOut {
+function jobRowRank(input: JobRowRankIn): number {
   if (input.row.excludedByList) {
     return JOB_ROW_RANK.excludedByList
   }
@@ -3206,7 +3202,7 @@ function jobRowRank(input: JobRowRankIn): JobRowRankOut {
  * @param input 那一行职业清单。
  * @returns 官方原句。
  */
-function quoteOfOcc(input: QuoteOfOccIn): QuoteOfOccOut {
+function quoteOfOcc(input: QuoteOfOccIn): string {
   return `${input.o.stream}${SEP.spacedDash}${input.o.noc} ${input.o.name}`
 }
 
@@ -3371,7 +3367,7 @@ function occListNoneFor(input: OccListNoneForIn): OccListNoneForOut {
  * @param input 岗位与全量职业清单行。
  * @returns 那一行。
  */
-function occNoListRow(input: OccNoListRowIn): OccNoListRowOut {
+function occNoListRow(input: OccNoListRowIn): TripleRow {
   const lists = namedLists({ province: input.job.province, occs: input.occs })
   let nocText = ''
   if (input.job.noc != null) {
@@ -3418,7 +3414,7 @@ function occNoListRow(input: OccNoListRowIn): OccNoListRowOut {
     label = `${TV_LABEL.occHead}${nocLabel}${TV_LABEL.occNotOnMid}`
       + `${lists.length}${TV_LABEL.occNamedListsMid}${input.job.province}${TV_LABEL.occBindTail}`
   }
-  const row: OccNoListRowOut = {
+  const row: TripleRow = {
     gate: GATE_OF.occupation, tier: TIER_OF.free, key: TV_OCC.notListed,
     state: state,
     params: {
@@ -3448,7 +3444,7 @@ function occNoListRow(input: OccNoListRowIn): OccNoListRowOut {
  * @param input 岗位与该省的全量门槛行。
  * @returns 那一行。
  */
-function occTeerRow(input: OccTeerRowIn): OccTeerRowOut {
+function occTeerRow(input: OccTeerRowIn): TripleRow {
   const scopes = teerScopes({ provReqs: input.provReqs })
   let outScope: TeerScope | null = null
   if (input.job.teer != null) {
@@ -3495,7 +3491,7 @@ function occTeerRow(input: OccTeerRowIn): OccTeerRowOut {
   if (outScope != null) {
     scopeStream = outScope.stream
   }
-  const row: OccTeerRowOut = {
+  const row: TripleRow = {
     gate: GATE_OF.occupation, tier: TIER_OF.free, key: TV_OCC.teer,
     state: state,
     params: {
@@ -3682,7 +3678,7 @@ function empThresholdRows(input: EmpThresholdRowsIn): EmpThresholdRowsOut {
  * @param input 岗位、公司、雇主判定与全量门槛行。
  * @returns 那一行。
  */
-function empRevenueRow(input: EmpRevenueRowIn): EmpRevenueRowOut {
+function empRevenueRow(input: EmpRevenueRowIn): TripleRow {
   const src = empReqOf({ reqs: input.reqs, province: input.job.province, factor: EMP_FACTOR.revenue })
   let needParam: string | number = ''
   let needLabel: string | number = TV_LABEL.unknownValue
@@ -3690,7 +3686,7 @@ function empRevenueRow(input: EmpRevenueRowIn): EmpRevenueRowOut {
     needParam = input.ev.revenue.need
     needLabel = input.ev.revenue.need
   }
-  const row: EmpRevenueRowOut = {
+  const row: TripleRow = {
     gate: GATE_OF.employer, tier: TIER_OF.free, key: TV_EMP.revenue, state: CARD_STATE.unknown,
     params: { need: needParam, name: input.company.name, prov: input.job.province },
     label: `${TV_LABEL.empRevenueHead}${needLabel}`
@@ -3756,7 +3752,7 @@ function empPublicSectorRow(input: EmpPublicSectorRowIn): EmpPublicSectorRowOut 
  * @param input 岗位与公司。
  * @returns 那一行。
  */
-function empNextStepRow(input: EmpNextStepRowIn): EmpNextStepRowOut {
+function empNextStepRow(input: EmpNextStepRowIn): TripleRow {
   const d = input.company.designation
   let sameNoc = 0
   if (input.job.noc && input.company.lmiaNocs != null) {
@@ -3839,7 +3835,7 @@ function employerRows(input: EmployerRowsIn): EmployerRowsOut {
  * @param input 岗位与判定档案。
  * @returns 判定引擎认的档案。
  */
-function cardRuleProfile(input: CardRuleProfileIn): CardRuleProfileOut {
+function cardRuleProfile(input: CardRuleProfileIn): EngineProfile {
   return {
     noc: input.job.noc,
     teer: input.job.teer,
@@ -3929,7 +3925,7 @@ function personRows(input: PersonRowsIn): PersonRowsOut {
  * @param input 判定档案。
  * @returns 那一行;没答就挂 followups 点名要这一格。
  */
-function timeRow(input: TimeRowIn): TimeRowOut {
+function timeRow(input: TimeRowIn): TripleRow {
   const m = input.profile.permitMonthsLeft
   let left: string = TV_LABEL.unanswered
   let state: TripleRow['state'] = CARD_STATE.unknown
@@ -4097,7 +4093,7 @@ function compareRows(input: CompareRowsIn): CompareRowsOut {
  * @param input 比路里的一行。
  * @returns 够得着则 true。
  */
-function judgeableRow(input: JudgeableRowIn): JudgeableRowOut {
+function judgeableRow(input: JudgeableRowIn): boolean {
   if (input.row.role === COMPARE_ROLE.target) {
     return false
   }
@@ -4149,7 +4145,7 @@ function myPathways(input: MyPathwaysIn): MyPathwaysOut {
  * @param input 岗位、整卡的行、比路的行与 13 条通道的裁决。
  * @returns 那一句结论。
  */
-function conclude(input: ConcludeIn): ConcludeOut {
+function conclude(input: ConcludeIn): TripleConclusion {
   const excluded = excludedRow({ rows: input.rows })
   if (excluded) {
     let list = ''
@@ -4354,7 +4350,7 @@ function concludeNeedsInfo(input: ConcludeNeedsInfoIn): ConcludeNeedsInfoOut {
  * @param input 卡片用的判定档案。
  * @returns 判定核认的档案,`hasOffer` 恒 true。
  */
-function profileWithOffer(input: ProfileWithOfferIn): ProfileWithOfferOut {
+function profileWithOffer(input: ProfileWithOfferIn): VerdictProfile {
   return {
     age: input.p.age, married: input.p.married, clb: input.p.clb, edu: input.p.edu,
     eduYears: input.p.eduYears, canadaStudy: input.p.canadaStudy, studyProvince: input.p.studyProvince,
@@ -4374,7 +4370,7 @@ function profileWithOffer(input: ProfileWithOfferIn): ProfileWithOfferOut {
  * @param input 比路的那几行。
  * @returns 那一行;一条可判的都没有时说清是**门槛没收录**,不给结论。
  */
-function fastestRow(input: FastestRowIn): FastestRowOut {
+function fastestRow(input: FastestRowIn): TripleRow {
   const keys: string[] = []
   let tier: number | null = null
   for (const c of input.compare) {
@@ -4474,7 +4470,7 @@ function cardFollowups(input: CardFollowupsIn): CardFollowupsOut {
  * @param input 岗位、公司、判定档案、六张底表与「今年是哪年」。
  * @returns 一张判定卡。
  */
-export function tripleVerdict(input: TripleVerdictIn): TripleVerdictOut {
+export function tripleVerdict(input: TripleVerdictIn): TripleCard {
   let nowYear = new Date().getFullYear()
   if (input.nowYear != null) {
     nowYear = input.nowYear
@@ -4517,7 +4513,7 @@ export function tripleVerdict(input: TripleVerdictIn): TripleVerdictOut {
 
   const conclusion = conclude({ job: input.job, rows: rows, compare: compare, paths: paths })
   if (conclusion.gate) {
-    let route: NonNullable<ConcludeOut['params']>[string] = ''
+    let route: NonNullable<TripleConclusion['params']>[string] = ''
     if (conclusion.params.route != null) {
       route = conclusion.params.route
     }
@@ -4533,7 +4529,7 @@ export function tripleVerdict(input: TripleVerdictIn): TripleVerdictOut {
   if (notCollected) {
     rows.push(notCollected)
   }
-  let cardAvailability: TripleVerdictOut['availability'] = AVAIL.notCollected
+  let cardAvailability: TripleCard['availability'] = AVAIL.notCollected
   if (provReqs.length > 0) {
     cardAvailability = AVAIL.ok
   }
@@ -4631,7 +4627,7 @@ function parseNocDict(input: ParseNocDictIn): ParseNocDictOut {
  * @returns 判定卡认的档案。
  */
 // eslint-disable-next-line local/function-length -- 2026-08-21 四禁改写把 ?? 链展开顶线(77);逐槽合并本就是一张平表,拆开反而把「哪槽盖哪槽」拆散
-function tripleProfileOf(input: TripleProfileOfIn): TripleProfileOfOut {
+function tripleProfileOf(input: TripleProfileOfIn): TripleProfile {
   const up = input.up
   let a: NonNullable<TripleProfileOfIn['answers']> = {}
   if (input.answers != null) {
@@ -4914,7 +4910,7 @@ export async function buildTripleWire(input: BuildTripleWireIn): BuildTripleWire
 async function tripleCompanyOf(input: TripleCompanyOfIn): TripleCompanyOfOut {
   const name = text(input.row.company_name)
   const cid = numOrNull(input.row.company_id)
-  let facts: EmployerFactsOfOut = { foundedYear: null, registryStatus: null, staffEst: null, staffEstSrc: null, sector: null }
+  let facts: EmployerFacts = { foundedYear: null, registryStatus: null, staffEst: null, staffEstSrc: null, sector: null }
   if (cid != null) {
     const mapped = await oneRow({ db: input.db, sql: SQL.COMPANY_REGISTRY_FACTS, params: [cid], map: employerFactsOf })
     if (mapped != null) {
@@ -5010,7 +5006,7 @@ async function oneRow<R>(input: OneRowIn<R>): OneRowOut<R> {
  * @param input 判定卡认的那份档案。
  * @returns 够格则 true。
  */
-function hasEnoughProfile(input: HasEnoughProfileIn): HasEnoughProfileOut {
+function hasEnoughProfile(input: HasEnoughProfileIn): boolean {
   return input.profile.clb != null || input.profile.status != null || input.profile.noc != null
 }
 
@@ -5228,7 +5224,7 @@ async function opsByProvince(input: OpsByProvinceIn): OpsByProvinceOut {
  * @param input 那个省的数字、指标名与指标值。
  * @returns 没有返回值。
  */
-function applyOpsRow(input: ApplyOpsRowIn): ApplyOpsRowOut {
+function applyOpsRow(input: ApplyOpsRowIn): void {
   const f = input.facts
   if (input.metric === OPS_METRIC.allocation) {
     f.allocation = input.value
@@ -5255,7 +5251,7 @@ function applyOpsRow(input: ApplyOpsRowIn): ApplyOpsRowOut {
  * @param input 那个省的数字、指标名与这一行的期次。
  * @returns 没有返回值。
  */
-function applyOpsPeriod(input: ApplyOpsPeriodIn): ApplyOpsPeriodOut {
+function applyOpsPeriod(input: ApplyOpsPeriodIn): void {
   const f = input.facts
   if (input.period === '') {
     return
@@ -5313,7 +5309,7 @@ export function pathVerdict(input: PathVerdictIn): PathVerdictOut {
  * @param input 职业的 NOC 与 TEER。
  * @returns 只填了职业两格的判定档案。
  */
-function profileOfOccupation(input: ProfileOfOccupationIn): ProfileOfOccupationOut {
+function profileOfOccupation(input: ProfileOfOccupationIn): VerdictProfile {
   return {
     age: null, married: null, clb: null, edu: null, eduYears: null, canadaStudy: null,
     studyProvince: null, noc: input.noc, teer: input.teer, expCanadaMonths: null, expForeignMonths: null,
@@ -5381,7 +5377,7 @@ export function jobPathways(input: JobPathwaysIn): JobPathwaysOut {
         }
       }
     }
-    let gate: PickGateOut | null = null
+    let gate: GateEval | null = null
     if (rows.length > 0) {
       gate = pickGate({ spec: spec, rows: rows, p: p, selfEmpExcluded: selfEmpExcludedIn({ rows: rows }) })
     }
@@ -5422,7 +5418,7 @@ export function jobPathways(input: JobPathwaysIn): JobPathwaysOut {
  * @param input 一条通道的裁决;前后对比时那一头可能压根没这条通道。
  * @returns 档次(越小越好)。
  */
-function verdictRank(input: VerdictRankIn): VerdictRankOut {
+function verdictRank(input: VerdictRankIn): number {
   if (input.v == null) {
     return VERDICT_RANK.absent
   }
@@ -5449,7 +5445,7 @@ function verdictRank(input: VerdictRankIn): VerdictRankOut {
  * @param input 换职业前后的同一条通道的裁决。
  * @returns 变差了则 true。
  */
-function gotWorse(input: GotWorseIn): GotWorseOut {
+function gotWorse(input: GotWorseIn): boolean {
   const rankBefore = verdictRank({ v: input.before })
   const rankAfter = verdictRank({ v: input.after })
   if (rankAfter !== rankBefore) {
@@ -5754,7 +5750,7 @@ export async function tripleWireOf(input: TripleWireOfIn): TripleWireOfOut {
  * @param input 当前这个人。
  * @returns 那组档案槽;没有则空袋。
  */
-function profileSlots(input: ProfileSlotsIn): ProfileSlotsOut {
+function profileSlots(input: ProfileSlotsIn): AnswerBag {
   if (input.user == null || input.user.profile == null) {
     return {}
   }
@@ -5772,7 +5768,7 @@ function profileSlots(input: ProfileSlotsIn): ProfileSlotsOut {
  * @param input 鉴权那层交回来的人。
  * @returns 本域认的那个人。
  */
-function sessionOf(input: SessionOfIn): SessionOfOut {
+function sessionOf(input: SessionOfIn): SessionUser {
   return input.user as SessionUser
 }
 
@@ -5781,6 +5777,6 @@ function sessionOf(input: SessionOfIn): SessionOfOut {
  *
  * @returns null。
  */
-function nullUser(): NullUserOut {
+function nullUser(): null {
   return null
 }

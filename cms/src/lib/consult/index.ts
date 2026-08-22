@@ -15,6 +15,4 @@ export {
   EMPTY_PROFILE,
 } from './constants'
 
-export type {
-  Availability, ConsultIn, ConsultOut, Fact, GateHit, Profile, RunIn, RunOut, Turn,
-} from './types'
+export type { Availability, RunIn, ConsultOut, Fact, GateHit, Profile, RunOut, Turn } from './types'

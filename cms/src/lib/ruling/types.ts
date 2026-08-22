@@ -2602,11 +2602,6 @@ export type AvailabilityOfIn = {
 }
 
 /**
- * `availabilityOf` 的返回。
- */
-export type AvailabilityOfOut = Availability
-
-/**
  * `tierBasisOf` 的入参。
  */
 export type TierBasisOfIn = {
@@ -2650,11 +2645,6 @@ export type TierFullTimeOfIn = {
    */
   gate: GateEval
 }
-
-/**
- * `tierFullTimeOf` 的返回:官方原文里写了全职则 true。
- */
-export type TierFullTimeOfOut = boolean
 
 /**
  * `harderBlock` 的入参。
@@ -2817,11 +2807,6 @@ export type GridMatchesStreamIn = {
 }
 
 /**
- * `gridMatchesStream` 的返回:这张表是不是这条线的。
- */
-export type GridMatchesStreamOut = boolean
-
-/**
  * `hasRequiredSlots` 的入参。
  */
 export type HasRequiredSlotsIn = {
@@ -2835,11 +2820,6 @@ export type HasRequiredSlotsIn = {
    */
   p: VerdictProfile
 }
-
-/**
- * `hasRequiredSlots` 的返回:必需槽答齐了则 true。
- */
-export type HasRequiredSlotsOut = boolean
 
 /**
  * `ownTicksOf` 的入参。
@@ -2887,11 +2867,6 @@ export type ParseWageRuleIn = {
 }
 
 /**
- * `parseWageRule` 的返回:解出来的参数;串坏了或没有则空对象。
- */
-export type ParseWageRuleOut = WageRule
-
-/**
  * `wagePoints` 的入参。
  */
 export type WagePointsIn = {
@@ -2905,11 +2880,6 @@ export type WagePointsIn = {
    */
   wage: number
 }
-
-/**
- * `wagePoints` 的返回:这一格记多少分。
- */
-export type WagePointsOut = number
 
 /**
  * `gridRowFor` 的入参。
@@ -2998,11 +2968,6 @@ export type QuoteOfOccIn = {
    */
   o: OccupationRow
 }
-
-/**
- * `quoteOfOcc` 的返回:官方原句。
- */
-export type QuoteOfOccOut = string
 
 /**
  * `totalExpMonths` 的入参。
@@ -3145,11 +3110,6 @@ export type OccNoListRowIn = {
 }
 
 /**
- * `occNoListRow` 的返回:「未命中/官方无清单」那一行。
- */
-export type OccNoListRowOut = TripleRow
-
-/**
  * `occTeerRow` 的入参。
  */
 export type OccTeerRowIn = {
@@ -3168,11 +3128,6 @@ export type OccTeerRowIn = {
    */
   nocName: string
 }
-
-/**
- * `occTeerRow` 的返回:TEER 粗筛那一行。
- */
-export type OccTeerRowOut = TripleRow
 
 /**
  * `occupationRows` 的入参。
@@ -3330,11 +3285,6 @@ export type EmpRevenueRowIn = {
 }
 
 /**
- * `empRevenueRow` 的返回:营业额那一行(恒 unknown)。
- */
-export type EmpRevenueRowOut = TripleRow
-
-/**
  * `empStaffFactRow` 的入参。
  */
 export type EmpStaffFactRowIn = {
@@ -3395,11 +3345,6 @@ export type EmpNextStepRowIn = {
 }
 
 /**
- * `empNextStepRow` 的返回:「怎么谈」那一行。
- */
-export type EmpNextStepRowOut = TripleRow
-
-/**
  * `employerRows` 的入参。
  */
 export type EmployerRowsIn = {
@@ -3445,11 +3390,6 @@ export type CardRuleProfileIn = {
 }
 
 /**
- * `cardRuleProfile` 的返回:判定引擎认的那份档案。
- */
-export type CardRuleProfileOut = EngineProfile
-
-/**
  * `personRows` 的入参。
  */
 export type PersonRowsIn = {
@@ -3483,11 +3423,6 @@ export type TimeRowIn = {
    */
   profile: TripleProfile
 }
-
-/**
- * `timeRow` 的返回:时间窗那一行。
- */
-export type TimeRowOut = TripleRow
 
 /**
  * `crossProvinceRows` 的入参。
@@ -3570,11 +3505,6 @@ export type JudgeableRowIn = {
 }
 
 /**
- * `judgeableRow` 的返回:够不够得着「最快」的评比。
- */
-export type JudgeableRowOut = boolean
-
-/**
  * `myPathways` 的入参。
  */
 export type MyPathwaysIn = {
@@ -3618,11 +3548,6 @@ export type ConcludeIn = {
    */
   paths: PathwayVerdict[]
 }
-
-/**
- * `conclude` 的返回:那一句结论。
- */
-export type ConcludeOut = TripleConclusion
 
 /**
  * `excludedRow` 的入参。
@@ -3710,11 +3635,6 @@ export type ProfileWithOfferIn = {
 }
 
 /**
- * `profileWithOffer` 的返回:判定核认的档案,`hasOffer` 恒 true。
- */
-export type ProfileWithOfferOut = VerdictProfile
-
-/**
  * `fastestRow` 的入参。
  */
 export type FastestRowIn = {
@@ -3723,11 +3643,6 @@ export type FastestRowIn = {
    */
   compare: TripleCompareRow[]
 }
-
-/**
- * `fastestRow` 的返回:「最快」那一行。
- */
-export type FastestRowOut = TripleRow
 
 /**
  * `notCollectedRow` 的入参。
@@ -3794,11 +3709,6 @@ export type TripleVerdictIn = {
   nowYear?: number
 }
 
-/**
- * `tripleVerdict` 的返回:一张判定卡。
- */
-export type TripleVerdictOut = TripleCard
-
 // =========================================================================
 // 9. 各函数的入参与返回(`XxxIn` / `XxxOut`)
 // =========================================================================
@@ -3842,11 +3752,6 @@ export type ProfileWithNocIn = {
    */
   teer: number
 }
-
-/**
- * `profileWithNoc` 的返回:换过职业的那份档案。
- */
-export type ProfileWithNocOut = VerdictProfile
 
 /**
  * `pickScoreRow` 的入参。
@@ -3964,11 +3869,6 @@ export type GateKeyOfIn = {
 }
 
 /**
- * `gateKeyOf` 的返回:那一句的 i18n key。
- */
-export type GateKeyOfOut = string
-
-/**
  * `obstacleRank` 的入参。
  */
 export type ObstacleRankIn = {
@@ -3982,11 +3882,6 @@ export type ObstacleRankIn = {
    */
   profile: VerdictProfile
 }
-
-/**
- * `obstacleRank` 的返回:名次(越小越靠前)。
- */
-export type ObstacleRankOut = number
 
 /**
  * `workPermitSoon` 的入参。
@@ -4004,11 +3899,6 @@ export type WorkPermitSoonIn = {
 }
 
 /**
- * `workPermitSoon` 的返回:这条通道的工签闸算不算「快到手了」。
- */
-export type WorkPermitSoonOut = boolean
-
-/**
  * `selfEmpExcludedIn` 的入参。
  */
 export type SelfEmpExcludedInIn = {
@@ -4017,11 +3907,6 @@ export type SelfEmpExcludedInIn = {
    */
   rows: ReqRow[]
 }
-
-/**
- * `selfEmpExcludedIn` 的返回:有没有「自雇不计入经验」那类行。
- */
-export type SelfEmpExcludedInOut = boolean
 
 /**
  * `jobRowRank` 的入参。
@@ -4034,11 +3919,6 @@ export type JobRowRankIn = {
 }
 
 /**
- * `jobRowRank` 的返回:档(越小越靠前)。
- */
-export type JobRowRankOut = number
-
-/**
  * `verdictRank` 的入参。
  */
 export type VerdictRankIn = {
@@ -4047,11 +3927,6 @@ export type VerdictRankIn = {
    */
   v?: PathwayVerdict
 }
-
-/**
- * `verdictRank` 的返回:档次(越小越好)。
- */
-export type VerdictRankOut = number
 
 /**
  * `gotWorse` 的入参。
@@ -4067,11 +3942,6 @@ export type GotWorseIn = {
    */
   after?: PathwayVerdict
 }
-
-/**
- * `gotWorse` 的返回:变差了则 true。
- */
-export type GotWorseOut = boolean
 
 /**
  * `pickOnLangRow` 的入参。
@@ -4619,11 +4489,6 @@ export type CrsScoreIn = {
 }
 
 /**
- * `crsScore` 的返回:CRS 估分;不是这条线或档案缺格则 undefined。
- */
-export type CrsScoreOut = MaybeScore
-
-/**
  * `mbScore` 的入参。
  */
 export type MbScoreIn = {
@@ -4687,21 +4552,6 @@ export type FedLanguageReasonsIn = {
    */
   rows: ReqRow[]
 }
-
-/**
- * `fedLanguageReasons` 的返回:与 `languageReasons` 同形(它就是分流出去的那一半)。
- */
-export type FedLanguageReasonsOut = LanguageReasonsOut
-
-/**
- * `pnpLanguageReasons` 的入参 —— 与 `languageReasons` 同形。
- */
-export type PnpLanguageReasonsIn = LanguageReasonsIn
-
-/**
- * `pnpLanguageReasons` 的返回 —— 与 `languageReasons` 同形。
- */
-export type PnpLanguageReasonsOut = LanguageReasonsOut
 
 /**
  * `gateAnswers` 的入参。
@@ -4899,11 +4749,6 @@ export type NotCollectedVerdictIn = {
 }
 
 /**
- * `notCollectedVerdict` 的返回:一条「本站尚未收录」的裁决。
- */
-export type NotCollectedVerdictOut = PathwayVerdict
-
-/**
  * `foldVerdict` 的入参 —— 前面七段攒下的全部中间态。
  */
 export type FoldVerdictIn = {
@@ -4964,11 +4809,6 @@ export type FoldVerdictIn = {
 }
 
 /**
- * `foldVerdict` 的返回:这条通道的裁决。
- */
-export type FoldVerdictOut = PathwayVerdict
-
-/**
  * `teerDowngradeLever` 的入参。
  */
 export type TeerDowngradeLeverIn = {
@@ -5027,11 +4867,6 @@ export type GridSelfProfileIn = {
    */
   p: VerdictProfile
 }
-
-/**
- * `gridSelfProfile` 的返回:喂给 scoreProvince 的那份档案。
- */
-export type GridSelfProfileOut = GridProfile
 
 /**
  * `pathwayFacts` 的入参。
@@ -5129,11 +4964,6 @@ export type PathwayFactsOut = {
 }
 
 /**
- * `subjectOf` 的入参:库里的 subject 列那一格。
- */
-export type SubjectOfIn = Cell
-
-/**
  * `subjectOf` 的返回:门槛行的两个合法主语之一。
  */
 export type SubjectOfOut = 'applicant' | 'employer'
@@ -5169,46 +4999,6 @@ export type RowsOfIn<R> = {
 export type RowsOfOut<R> = Promise<R[]>
 
 /**
- * 各个 `toXxx` 映射函数的入参:库里的一行。
- */
-export type ToRowIn = Row
-
-/**
- * `toRequirement` 的返回。
- */
-export type ToRequirementOut = ReqRow
-
-/**
- * `toOccupation` 的返回。
- */
-export type ToOccupationOut = OccupationRow
-
-/**
- * `toDraw` 的返回。
- */
-export type ToDrawOut = VerdictDrawRow
-
-/**
- * `toScoreFactor` 的返回。
- */
-export type ToScoreFactorOut = ScoreRow
-
-/**
- * `toEeGrid` 的返回。
- */
-export type ToEeGridOut = EeRow
-
-/**
- * `toDesignated` 的返回。
- */
-export type ToDesignatedOut = DesignatedEmployerRow
-
-/**
- * `loadVerdictTables` 的入参:能查的东西。
- */
-export type LoadVerdictTablesIn = Db
-
-/**
  * `loadVerdictTables` 的返回:判定层六张底表。
  */
 export type LoadVerdictTablesOut = Promise<VerdictData>
@@ -5216,21 +5006,6 @@ export type LoadVerdictTablesOut = Promise<VerdictData>
 // =========================================================================
 // 10. 名录匹配
 // =========================================================================
-
-/**
- * `normalizeEmployerName` 的入参:待归一的名字。
- */
-export type NormalizeEmployerNameIn = string
-
-/**
- * `normalizeEmployerName` 的返回:归一后的名字。
- */
-export type NormalizeEmployerNameOut = string
-
-/**
- * `employerNameSegments` 的入参:名录上那个名字。
- */
-export type EmployerNameSegmentsIn = string
 
 /**
  * `employerNameSegments` 的返回:可比的名段。
@@ -5317,11 +5092,6 @@ export type EmployerVerdictIn = {
 }
 
 /**
- * `employerVerdict` 的返回。
- */
-export type EmployerVerdictOut = EmployerVerdict
-
-/**
  * `empRowsOf` 的入参。
  */
 export type EmpRowsOfIn = {
@@ -5382,11 +5152,6 @@ export type PushItemIn = {
 }
 
 /**
- * `pushItem` 没有返回值 —— 它往收集器里写。
- */
-export type PushItemOut = void
-
-/**
  * 判定过程里的收集器。**只在一次调用内活着**,不是共享状态。
  */
 export type EmpAcc = {
@@ -5420,11 +5185,6 @@ export type UniversalValueOut = number | null
  * `blockCost` 的入参:闸的名字;没有闸就是 undefined。
  */
 export type BlockCostIn = string | undefined
-
-/**
- * `blockCost` 的返回:这道闸有多难拆。
- */
-export type BlockCostOut = number
 
 /**
  * `pathLevers` 的入参。
@@ -5465,11 +5225,6 @@ export type ProfileOfOccupationIn = {
    */
   teer: number | null
 }
-
-/**
- * `profileOfOccupation` 的返回:除 noc / teer 外全 null 的判定档案。
- */
-export type ProfileOfOccupationOut = VerdictProfile
 
 /**
  * `jobPathways` 的入参。
@@ -5522,11 +5277,6 @@ export type ProvinceGridScoreIn = {
 }
 
 /**
- * `provinceGridScore` 的返回:接不上(见函数头四条)一律 undefined。
- */
-export type ProvinceGridScoreOut = MaybeScore
-
-/**
  * `pathVerdict` 的入参。
  */
 export type PathVerdictIn = {
@@ -5567,11 +5317,6 @@ export type EvaluateOneIn = {
 }
 
 /**
- * `evaluateOne` 的返回。
- */
-export type EvaluateOneOut = PathwayVerdict
-
-/**
  * `fedLangApplies` 的入参。
  */
 export type FedLangAppliesIn = {
@@ -5587,11 +5332,6 @@ export type FedLangAppliesIn = {
 }
 
 /**
- * `fedLangApplies` 的返回。
- */
-export type FedLangAppliesOut = boolean
-
-/**
  * `ruleProfileOf` 的入参。
  */
 export type RuleProfileOfIn = {
@@ -5605,11 +5345,6 @@ export type RuleProfileOfIn = {
    */
   total: number | null
 }
-
-/**
- * `ruleProfileOf` 的返回。
- */
-export type RuleProfileOfOut = EngineProfile
 
 /**
  * `mbProfileOf` 的入参。
@@ -5632,11 +5367,6 @@ export type MbProfileOfIn = {
 }
 
 /**
- * `mbProfileOf` 的返回。
- */
-export type MbProfileOfOut = MbEoiProfile
-
-/**
  * `mbEduOf` 的入参。
  */
 export type MbEduOfIn = {
@@ -5650,11 +5380,6 @@ export type MbEduOfIn = {
    */
   years: number | null
 }
-
-/**
- * `mbEduOf` 的返回。
- */
-export type MbEduOfOut = MbEduBand
 
 /**
  * `refDraw` 的入参。
@@ -5740,11 +5465,6 @@ export type PickGateIn = {
    */
   selfEmpExcluded: boolean
 }
-
-/**
- * `pickGate` 的返回。
- */
-export type PickGateOut = GateEval
 
 /**
  * `reqsOf` 的入参。
@@ -5892,11 +5612,6 @@ export type EvOfFactorIn = {
 }
 
 /**
- * `evOfFactor` 的返回。
- */
-export type EvOfFactorOut = Evidence
-
-/**
  * `evOfDraw` 的入参。
  */
 export type EvOfDrawIn = {
@@ -5905,11 +5620,6 @@ export type EvOfDrawIn = {
    */
   d: VerdictDrawRow
 }
-
-/**
- * `evOfDraw` 的返回。
- */
-export type EvOfDrawOut = Evidence
 
 /**
  * `evOfOcc` 的入参。
@@ -5922,11 +5632,6 @@ export type EvOfOccIn = {
 }
 
 /**
- * `evOfOcc` 的返回。
- */
-export type EvOfOccOut = Evidence
-
-/**
  * `quoteOfReq` 的入参。
  */
 export type QuoteOfReqIn = {
@@ -5937,11 +5642,6 @@ export type QuoteOfReqIn = {
 }
 
 /**
- * `quoteOfReq` 的返回。
- */
-export type QuoteOfReqOut = string
-
-/**
  * `evOfReq` 的入参。
  */
 export type EvOfReqIn = {
@@ -5950,11 +5650,6 @@ export type EvOfReqIn = {
    */
   r: ReqRow
 }
-
-/**
- * `evOfReq` 的返回。
- */
-export type EvOfReqOut = Evidence
 
 // =========================================================================
 // 12. 判定卡的下行数据
@@ -5991,21 +5686,6 @@ export type TripleJobOfIn = {
    */
   row: Row
 }
-
-/**
- * `tripleJobOf` 的返回。
- */
-export type TripleJobOfOut = TripleJob
-
-/**
- * `employerFactsOf` 的入参:库里那一行公司登记事实(纯映射;查不到那一行时空份由调用方给)。
- */
-export type EmployerFactsOfIn = Row
-
-/**
- * `employerFactsOf` 的返回。
- */
-export type EmployerFactsOfOut = EmployerFacts
 
 /**
  * `lmiaNocsOf` 的入参。
@@ -6055,11 +5735,6 @@ export type TripleProfileOfIn = {
    */
   answers: ClientAnswers
 }
-
-/**
- * `tripleProfileOf` 的返回。
- */
-export type TripleProfileOfOut = TripleProfile
 
 /**
  * `boolOf` 的入参。
@@ -6282,26 +5957,6 @@ export type TripleCompanyOfIn = {
 export type TripleCompanyOfOut = Promise<TripleCompany>
 
 /**
- * `passRow` 的入参:原始行。
- */
-export type PassRowIn = Row
-
-/**
- * `passRow` 的返回:原样的那一行。
- */
-export type PassRowOut = Row
-
-/**
- * `lmiaNocsCellOf` 的入参:`COMPANY_LMIA_NOCS` 的那一行。
- */
-export type LmiaNocsCellOfIn = Row
-
-/**
- * `lmiaNocsCellOf` 的返回:`lmia_nocs` 那一格的文本(空值落空串)。
- */
-export type LmiaNocsCellOfOut = string
-
-/**
  * `oneRow` 的入参:一条 SQL + 它的行映射函数(db 的 `queryRows` 同款形态,单行版)。
  * 泛型 `R` 由 `map` 的返回类型定。
  */
@@ -6340,11 +5995,6 @@ export type HasEnoughProfileIn = {
    */
   profile: TripleProfile
 }
-
-/**
- * `hasEnoughProfile` 的返回。
- */
-export type HasEnoughProfileOut = boolean
 
 /**
  * `designatedRow` 的入参。
@@ -6556,11 +6206,6 @@ export type ApplyOpsRowIn = {
 }
 
 /**
- * `applyOpsRow` 没有返回值。
- */
-export type ApplyOpsRowOut = void
-
-/**
  * `applyOpsPeriod` 的入参。
  */
 export type ApplyOpsPeriodIn = {
@@ -6579,11 +6224,6 @@ export type ApplyOpsPeriodIn = {
    */
   period: string
 }
-
-/**
- * `applyOpsPeriod` 没有返回值。
- */
-export type ApplyOpsPeriodOut = void
 
 /**
  * `trainableRows` 的入参。
@@ -6665,11 +6305,6 @@ export type DirectoryRowIn = {
 }
 
 /**
- * `directoryRow` 的返回。
- */
-export type DirectoryRowOut = DesignatedEmployerRow
-
-/**
  * `tripleWireOf` 的入参。
  */
 export type TripleWireOfIn = {
@@ -6688,16 +6323,6 @@ export type TripleWireOfIn = {
  * `tripleWireOf` 的返回。
  */
 export type TripleWireOfOut = Promise<TripleWireResult>
-
-/**
- * `nullResult` 的返回。
- */
-export type NullResultOut = null
-
-/**
- * `nullUser` 的返回。
- */
-export type NullUserOut = null
 
 /**
  * 六张底表那一份缓存。
@@ -6751,11 +6376,6 @@ export type SessionUser = {
 } | null
 
 /**
- * `profileSlots` 的返回。
- */
-export type ProfileSlotsOut = AnswerBag
-
-/**
  * `sessionOf` 的入参。
  */
 export type SessionOfIn = {
@@ -6769,11 +6389,6 @@ export type SessionOfIn = {
  * 鉴权那层交回来的那个人 —— 本域**不认识它的字段**,只负责把它转成自己的形状。
  */
 export type AuthUser = object | null
-
-/**
- * `sessionOf` 的返回。
- */
-export type SessionOfOut = SessionUser
 
 /**
  * 判定域的运行时状态。**这个域一共有多少可变的东西,就这张表上这几格。**
@@ -6804,11 +6419,6 @@ export type RankedBlock = {
    */
   cost: number
 }
-
-/**
- * `toProvCount` 的返回:每省一行的计数。
- */
-export type ToProvCountOut = ProvCountRow
 
 /**
  * 一行官方运营统计(rows 映射后的干净形态)。
@@ -6848,4 +6458,3 @@ export type OpsStatRow = {
 /**
  * `toOpsStat` 的返回:干净的统计行。
  */
-export type ToOpsStatOut = OpsStatRow

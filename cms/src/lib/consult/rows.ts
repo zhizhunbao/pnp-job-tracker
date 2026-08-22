@@ -8,30 +8,12 @@
  */
 
 import { count, numOrNull, text } from '../db'
+import type { Requirement } from '../gauge'
 import { DATE_LEN, SUBJECT } from './constants'
 import type {
-  SubjectOfIn,
-  SubjectOfOut,
-  ToDrawRowIn,
-  ToDrawRowOut,
-  ToEeRowIn,
-  ToEeRowOut,
-  ToNocHitIn,
-  ToNocHitOut,
-  ToOccFlatIn,
-  ToOccFlatOut,
-  ToOpsRowIn,
-  ToOpsRowOut,
-  ToPermitRowIn,
-  ToPermitRowOut,
-  ToPointsRowIn,
-  ToPointsRowOut,
-  ToProvOpenIn,
-  ToProvOpenOut,
-  ToRequirementIn,
-  ToRequirementOut,
-  ToTitleTeerIn,
-  ToTitleTeerOut,
+  SubjectOfIn, SubjectOfOut, DrawDbRow, DrawRow, EeDbRow, EeRow, NocSearchRow, NocHit, OccFlatRow, OccFlat,
+  OpsDbRow, OpsRow, PermitDbRow, PermitRow, PointsDbRow, PointsRow, ProvOpenRow, JobsRow, ReqRow,
+  ToTitleTeerIn, TitleTeer,
 } from './types'
 
 /**
@@ -41,7 +23,7 @@ import type {
  * @param r 原始行。
  * @returns 收窄后的命中。
  */
-export function toNocHit(r: ToNocHitIn): ToNocHitOut {
+export function toNocHit(r: NocSearchRow): NocHit {
   return { noc: text(r.noc), title: text(r.title), n: count(r.n) }
 }
 
@@ -51,7 +33,7 @@ export function toNocHit(r: ToNocHitIn): ToNocHitOut {
  * @param r 原始行。
  * @returns 收窄后的行。
  */
-export function toProvOpen(r: ToProvOpenIn): ToProvOpenOut {
+export function toProvOpen(r: ProvOpenRow): JobsRow {
   return { prov: text(r.province), open: count(r.open), named: count(r.named) }
 }
 
@@ -62,7 +44,7 @@ export function toProvOpen(r: ToProvOpenIn): ToProvOpenOut {
  * @param rows 查询结果集,可能为空。
  * @returns 收窄后的对象。
  */
-export function toTitleTeer(rows: ToTitleTeerIn): ToTitleTeerOut {
+export function toTitleTeer(rows: ToTitleTeerIn): TitleTeer {
   if (rows.length === 0) {
     return { title: '', teer: null }
   }
@@ -75,7 +57,7 @@ export function toTitleTeer(rows: ToTitleTeerIn): ToTitleTeerOut {
  * @param r 原始行。
  * @returns 收窄后的记录。
  */
-export function toOccFlat(r: ToOccFlatIn): ToOccFlatOut {
+export function toOccFlat(r: OccFlatRow): OccFlat {
   return {
     province: text(r.province),
     noc: text(r.noc),
@@ -92,7 +74,7 @@ export function toOccFlat(r: ToOccFlatIn): ToOccFlatOut {
  * @param r 原始行。
  * @returns 收窄后的行。
  */
-export function toDrawRow(r: ToDrawRowIn): ToDrawRowOut {
+export function toDrawRow(r: DrawDbRow): DrawRow {
   return {
     prov: text(r.province),
     date: text(r.draw_date).slice(0, DATE_LEN),
@@ -110,7 +92,7 @@ export function toDrawRow(r: ToDrawRowIn): ToDrawRowOut {
  * @param r 原始行。
  * @returns 收窄后的行。
  */
-export function toOpsRow(r: ToOpsRowIn): ToOpsRowOut {
+export function toOpsRow(r: OpsDbRow): OpsRow {
   return {
     key: text(r.metric),
     scope: text(r.scope),
@@ -130,7 +112,7 @@ export function toOpsRow(r: ToOpsRowIn): ToOpsRowOut {
  * @param r 原始行。
  * @returns 收窄后的行。
  */
-export function toEeRow(r: ToEeRowIn): ToEeRowOut {
+export function toEeRow(r: EeDbRow): EeRow {
   return {
     category: text(r.category),
     label: text(r.label),
@@ -148,7 +130,7 @@ export function toEeRow(r: ToEeRowIn): ToEeRowOut {
  * @param r 原始行。
  * @returns 收窄后的行。
  */
-export function toPermitRow(r: ToPermitRowIn): ToPermitRowOut {
+export function toPermitRow(r: PermitDbRow): PermitRow {
   return {
     program: text(r.program),
     stream: text(r.stream),
@@ -169,7 +151,7 @@ export function toPermitRow(r: ToPermitRowIn): ToPermitRowOut {
  * @param r 原始行。
  * @returns 收窄后的行。
  */
-export function toPointsRow(r: ToPointsRowIn): ToPointsRowOut {
+export function toPointsRow(r: PointsDbRow): PointsRow {
   return {
     grid: text(r.grid),
     section: text(r.section),
@@ -207,7 +189,7 @@ export function subjectOf(raw: SubjectOfIn): SubjectOfOut {
  * @param row 库里的一行。
  * @returns 判定引擎认的形状。
  */
-export function toRequirement(row: ToRequirementIn): ToRequirementOut {
+export function toRequirement(row: ReqRow): Requirement {
   return {
     province: text(row.province),
     program: text(row.program),

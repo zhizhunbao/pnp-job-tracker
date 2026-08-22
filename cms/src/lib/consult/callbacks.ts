@@ -10,7 +10,7 @@
  * @time 2026-08-20 20:50:00
  */
 
-import type { ByOpenDescIn, ByOpenDescOut } from './types'
+import type { JobsRow } from './types'
 
 /**
  * 在招数从多到少。并列时按省码排,保证同一次查询连查两遍结果一模一样。
@@ -21,6 +21,6 @@ import type { ByOpenDescIn, ByOpenDescOut } from './types'
  * @param b 右边那行。
  * @returns 排序比较值。
  */
-export function byOpenDesc(a: ByOpenDescIn, b: ByOpenDescIn): ByOpenDescOut {
+export function byOpenDesc(a: JobsRow, b: JobsRow): number {
   return b.open - a.open || a.prov.localeCompare(b.prov)
 }

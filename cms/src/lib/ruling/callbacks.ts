@@ -18,9 +18,7 @@
 
 import { SINK } from './constants'
 
-import type {
-  MyPathway, RankedBlock, RankedJobRow, RankedPathway, RankedVerdict, TrainableRow, VerdictDrawRow,
-} from './types'
+import type { MyPathway, RankedBlock, RankedJobRow, RankedPathway, RankedVerdict, TrainableRow, VerdictDrawRow } from './types'
 
 /**
  * 抽选行按日期倒序 —— 最近一轮排在最前。

@@ -14,6 +14,4 @@ export {
   consult,
 } from './functions'
 
-export type {
-  ConsultIn, ConsultOut, Fact, Profile, RunOut, Turn,
-} from './types'
+export type { RunIn, ConsultOut, Fact, Profile, RunOut, Turn } from './types'

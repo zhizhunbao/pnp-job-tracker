@@ -11,27 +11,8 @@
 import { count, numOrNull, text, textOrNull } from '../db'
 import { DATE_LEN, DATE_LEN_DAY, FACTOR_ROW, SUBJECT } from './constants'
 import type {
-  DirectoryRowIn,
-  DirectoryRowOut,
-  EmployerFactsOfIn,
-  EmployerFactsOfOut,
-  LmiaNocsCellOfIn,
-  LmiaNocsCellOfOut,
-  PassRowIn,
-  PassRowOut,
-  SubjectOfIn,
-  SubjectOfOut,
-  ToDesignatedOut,
-  ToDrawOut,
-  ToEeGridOut,
-  ToOccupationOut,
-  ToRequirementOut,
-  ToRowIn,
-  ToScoreFactorOut,
-  TripleJobOfIn,
-  TripleJobOfOut,
-  ToOpsStatOut,
-  ToProvCountOut,
+  DirectoryRowIn, DesignatedEmployerRow, Row, EmployerFacts, Cell, SubjectOfOut, VerdictDrawRow, EeRow,
+  OccupationRow, ReqRow, ScoreRow, TripleJobOfIn, TripleJob, OpsStatRow, ProvCountRow,
 } from './types'
 
 /**
@@ -41,7 +22,7 @@ import type {
  * @param v 库里的 subject 列。
  * @returns applicant 或 employer。
  */
-export function subjectOf(v: SubjectOfIn): SubjectOfOut {
+export function subjectOf(v: Cell): SubjectOfOut {
   if (text(v) === SUBJECT.employer) {
     return SUBJECT.employer
   }
@@ -57,7 +38,7 @@ export function subjectOf(v: SubjectOfIn): SubjectOfOut {
  * @param r 库里的一行。
  * @returns 判定引擎认的形状。
  */
-export function toRequirement(r: ToRowIn): ToRequirementOut {
+export function toRequirement(r: Row): ReqRow {
   return {
     province: text(r.province), program: text(r.program), stream: text(r.stream),
     subject: subjectOf(r.subject),
@@ -76,7 +57,7 @@ export function toRequirement(r: ToRowIn): ToRequirementOut {
  * @param r 库里的一行。
  * @returns 判定核认的形状。
  */
-export function toOccupation(r: ToRowIn): ToOccupationOut {
+export function toOccupation(r: Row): OccupationRow {
   return {
     province: text(r.province), stream: text(r.stream), label: text(r.label), program: text(r.program),
     type: text(r.type), url: text(r.url), fetched: text(r.fetched), appliesTo: text(r.applies_to),
@@ -90,7 +71,7 @@ export function toOccupation(r: ToRowIn): ToOccupationOut {
  * @param r 库里的一行。
  * @returns 判定核认的形状。
  */
-export function toDraw(r: ToRowIn): ToDrawOut {
+export function toDraw(r: Row): VerdictDrawRow {
   return {
     province: text(r.province), label: text(r.label), scale: textOrNull(r.scale),
     url: text(r.url), fetched: text(r.fetched), kind: text(r.kind),
@@ -105,7 +86,7 @@ export function toDraw(r: ToRowIn): ToDrawOut {
  * @param r 库里的一行。
  * @returns 评分域认的形状。
  */
-export function toScoreFactor(r: ToRowIn): ToScoreFactorOut {
+export function toScoreFactor(r: Row): ScoreRow {
   return {
     province: text(r.province), system: text(r.system), factor: text(r.factor),
     kind: text(r.kind) || FACTOR_ROW, seq: count(r.seq), label: text(r.label),
@@ -122,7 +103,7 @@ export function toScoreFactor(r: ToRowIn): ToScoreFactorOut {
  * @param r 库里的一行。
  * @returns 评分域认的形状。
  */
-export function toEeGrid(r: ToRowIn): ToEeGridOut {
+export function toEeGrid(r: Row): EeRow {
   return {
     grid: text(r.grid), section: text(r.section), sectionLabel: text(r.section_label),
     kind: text(r.kind), tableNo: numOrNull(r.table_no), heading: text(r.heading), factor: text(r.factor),
@@ -137,7 +118,7 @@ export function toEeGrid(r: ToRowIn): ToEeGridOut {
  * @param r 库里的一行。
  * @returns 判定核认的形状。
  */
-export function toDesignated(r: ToRowIn): ToDesignatedOut {
+export function toDesignated(r: Row): DesignatedEmployerRow {
   return {
     name: text(r.name), province: text(r.province), location: text(r.location),
     isTech: Boolean(r.is_tech), source: text(r.source), nocs: text(r.nocs),
@@ -151,7 +132,7 @@ export function toDesignated(r: ToRowIn): ToDesignatedOut {
  * @param input 库里那一行。
  * @returns 判定卡认的岗位。
  */
-export function tripleJobOf(input: TripleJobOfIn): TripleJobOfOut {
+export function tripleJobOf(input: TripleJobOfIn): TripleJob {
   const r = input.row
   return {
     id: Number(r.id), title: text(r.title), noc: text(r.noc), nocName: text(r.noc_title),
@@ -169,7 +150,7 @@ export function tripleJobOf(input: TripleJobOfIn): TripleJobOfOut {
  * @param f 库里那一行。
  * @returns 雇主判定认的事实。
  */
-export function employerFactsOf(f: EmployerFactsOfIn): EmployerFactsOfOut {
+export function employerFactsOf(f: Row): EmployerFacts {
   return {
     foundedYear: numOrNull(f.founded_year),
     registryStatus: text(f.registry_status),
@@ -185,7 +166,7 @@ export function employerFactsOf(f: EmployerFactsOfIn): EmployerFactsOfOut {
  * @param row 库里那一行。
  * @returns 那一格的文本。
  */
-export function lmiaNocsCellOf(row: LmiaNocsCellOfIn): LmiaNocsCellOfOut {
+export function lmiaNocsCellOf(row: Row): string {
   return text(row.lmia_nocs)
 }
 
@@ -195,7 +176,7 @@ export function lmiaNocsCellOf(row: LmiaNocsCellOfIn): LmiaNocsCellOfOut {
  * @param row 原始行。
  * @returns 原样的那一行。
  */
-export function passRow(row: PassRowIn): PassRowOut {
+export function passRow(row: Row): Row {
   return row
 }
 
@@ -206,7 +187,7 @@ export function passRow(row: PassRowIn): PassRowOut {
  * @param input 库里那一行。
  * @returns 判定认的那一行。
  */
-export function directoryRow(input: DirectoryRowIn): DirectoryRowOut {
+export function directoryRow(input: DirectoryRowIn): DesignatedEmployerRow {
   const d = input.row
   const url = text(d.url) || undefined
   const fetched = text(d.fetched).slice(0, DATE_LEN_DAY) || undefined
@@ -228,7 +209,7 @@ export function directoryRow(input: DirectoryRowIn): DirectoryRowOut {
  * @param row 库里的一行。
  * @returns 每省一行的计数。
  */
-export function toProvCount(row: ToRowIn): ToProvCountOut {
+export function toProvCount(row: Row): ProvCountRow {
   return { province: text(row.province), n: count(row.n), t: count(row.t) }
 }
 
@@ -238,7 +219,7 @@ export function toProvCount(row: ToRowIn): ToProvCountOut {
  * @param row 库里的一行。
  * @returns 干净的统计行。
  */
-export function toOpsStat(row: ToRowIn): ToOpsStatOut {
+export function toOpsStat(row: Row): OpsStatRow {
   return {
     value: numOrNull(row.value), province: text(row.province), metric: text(row.metric),
     period: text(row.period), asOf: text(row.as_of), url: text(row.url),

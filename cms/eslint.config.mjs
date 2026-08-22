@@ -70,12 +70,12 @@ const localRules = {
         schema: [],
         messages: {
           param:
-            '`{{ name }}` 的入参要同时满足两条:本域 `types.ts` 里声明,且叫 `{{ suggest }}In`。'
-            + '库的类型(`Promise<…>` / `Model<…>` / `Error`)不是我们的契约,要先起个本地名字。',
+            '`{{ name }}` 的入参类型必须是我们自己的名字:本域 `types.ts` 声明的,或从自家域(相对路径 / `@/lib`)'
+            + ' `import type` 来的。库的类型(`Promise<…>` / `Model<…>` / `Error`)要先在 types.ts 起本地名。',
           noReturn: '`{{ name }}` 没有写返回类型。显式写出来 —— 推断出来的返回类型会随实现悄悄变。',
           ret:
-            '`{{ name }}` 的返回要同时满足两条:本域 `types.ts` 里声明,且叫 `{{ suggest }}Out`。'
-            + '返回是这个函数的对外契约,契约要有我们自己的名字,不能借库的。',
+            '`{{ name }}` 的返回类型必须是我们自己的名字:本域 `types.ts` 声明的,或从自家域(相对路径 / `@/lib`)'
+            + ' `import type` 来的。返回是这个函数的对外契约,契约不能借库的名字。',
         },
       },
       create(context) {
@@ -87,21 +87,38 @@ const localRules = {
         //    名字得能在同目录的 `types.ts` 里找到 `export type`。库的类型(`Promise` / `Model` / `Error`)
         //    要用就先在 `types.ts` 里起个本地名字,那样才有地方挂注释说清它为什么在签名里。
         //    (宪法「库类型在 types.ts 里起本地名字,签名里不出现外部类型」。)
-        //    2026-08-20 Frank 追加:**后缀也约束** —— 光「是我们的类型」不够,还得叫 `XxxIn` / `XxxOut`。
-        //    两条一起才拦得住两种漏法:借库的类型(Promise)、和拿一个恰好存在的领域类型顶上去
-        //    (`SearchTool` 是我们的,但它是「一把工具」不是「searchTool 的返回契约」)。
+        //    2026-08-20 Frank 追加过「后缀也约束」(必须叫 XxxIn/XxxOut);2026-08-21 又收回 ——
+        //    禁纯包装别名之后,`toRequirement(r: Row): ReqRow` 直接用真名才是对的,
+        //    强制 In/Out 后缀会逼出一层 `ToRequirementOut = ReqRow` 转发别名。
+        //    现口径:**必须是本域 types.ts 里声明的名字**(挡住 Promise/Model 这类库类型);
+        //    In/Out 只对「专为这个函数新造的形状」保留为命名惯例,不由闸强制。
         //    ⚠️ 「本域」有两种形态:带 `types.ts` 的目录(`lib/consult/`),
         //    和**单文件叶子**(`lib/error.ts` / `lib/log.ts` —— 它们的类型就写在自己文件里)。
         //    只查目录的 types.ts 会把单文件叶子的 `LogIn` / `LogOut` 也判成外人(实测 16 条假阳性)。
+        //    2026-08-21 拍板②的推论:禁纯包装别名后,跨域取形状只剩 `import type … from '../gauge'`
+        //    这一条路,所以「自家模块空间(相对路径 / `@/lib`)import type 来的名字」也算我们的 ——
+        //    它在源头域的 types.ts 里有注释有归属。库包(`@earendil-works/…`)的 import type 不算,
+        //    仍逼着先起本地名(样板:agent/types.ts 的 `TranscriptMessage = AgentMessage`)。
         const declared = new Map()
         function typeNames(text) {
-          return new Set(Array.from(text.matchAll(/^export type (\w+)/gm), (m) => m[1]))
+          const out = new Set(Array.from(text.matchAll(/^export type (\w+)/gm), (m) => m[1]))
+          for (const m of text.matchAll(/import type \{([^}]*)\} from '(\.[^']*|@\/lib\/[^']*)'/g)) {
+            for (const raw of m[1].split(',')) {
+              const name = raw.trim().split(/\s+as\s+/).pop()
+              if (name) out.add(name)
+            }
+          }
+          return out
         }
-        function ours(ann, context, tail) {
+        // 基本类型直写放行(2026-08-21 Frank 拍板②:「type 应该只允许基本类型,不应该允许包装类型」——
+        // string/number/boolean/void/null 不必包一层别名;库的具名类型仍要先起本地名)。
+        const PRIMS = new Set(['TSStringKeyword', 'TSNumberKeyword', 'TSBooleanKeyword', 'TSVoidKeyword', 'TSNullKeyword'])
+        function ours(ann, context) {
+          if (PRIMS.has(ann?.type)) return true
           if (ann?.type !== 'TSTypeReference') return false
           const n = ann.typeName
           const name = n?.type === 'Identifier' ? n.name : ''
-          if (!name || !name.endsWith(tail)) return false
+          if (!name) return false
           const file = context.filename ?? ''
           if (!declared.has(file)) {
             const src = context.sourceCode ?? context.getSourceCode()
@@ -128,7 +145,7 @@ const localRules = {
             for (const p of node.params) {
               // 库/语言定死签名里用不上的那个参数以 `_` 开头,不参与判定
               if (p.type === 'Identifier' && p.name.startsWith('_')) continue
-              if (!ours(p.typeAnnotation?.typeAnnotation, context, 'In')) {
+              if (!ours(p.typeAnnotation?.typeAnnotation, context)) {
                 context.report({ node: p, messageId: 'param', data: { name, suggest } })
               }
             }
@@ -136,7 +153,7 @@ const localRules = {
               context.report({ node, messageId: 'noReturn', data: { name, suggest } })
               return
             }
-            if (!ours(node.returnType.typeAnnotation, context, 'Out')) {
+            if (!ours(node.returnType.typeAnnotation, context)) {
               context.report({ node, messageId: 'ret', data: { name, suggest } })
             }
           },

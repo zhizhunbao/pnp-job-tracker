@@ -17,8 +17,7 @@ export {
 } from './constants'
 
 export type {
-  DesignatedEmployerRow, EmployerFacts, EmployerVerdict, NameRow, OccupationRow,
-  PathLeverOpts, PathwayVerdict, ReqRow,
-  TripleCard, TripleCompany, TripleCompareRow, TripleJob, TripleProfile, TripleRow,
-  VerdictData, VerdictDrawRow, VerdictLever, VerdictProfile, VerdictReason,
+  DesignatedEmployerRow, EmployerFacts, EmployerVerdict, NameRow, OccupationRow, PathLeverOpts, PathwayVerdict,
+  ReqRow, TripleCard, TripleCompany, TripleCompareRow, TripleJob, TripleProfile, TripleRow, VerdictData,
+  VerdictDrawRow, VerdictLever, VerdictProfile, VerdictReason,
 } from './types'
