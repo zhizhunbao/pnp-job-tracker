@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
   const user = await getUser(req.headers)
   if (!user) return Response.json({ error: 'login' }, { status: 401 })
   // #124 统一免费额度池:与 jobtext/advisor 同池同数;对 wizard 保持旧契约({error:'limit'} 429)
-  const g = freeGate(user, req)
+  const g = freeGate({ user, headers: req.headers })
   if (g.block) return Response.json({ error: 'limit' }, { status: 429 })
   const freeLeft = g.left ?? FREE_DAILY_TRIES
 

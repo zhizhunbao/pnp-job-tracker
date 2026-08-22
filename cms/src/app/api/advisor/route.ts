@@ -356,7 +356,7 @@ export async function POST(req: NextRequest) {
   // 试用计「功能使用次数」,缓存命中也算 —— 付费卖的是功能不是 token。
   const user = await getUser(req.headers)
   const pro = isPro(user)
-  const gate = freeGate(user, req)
+  const gate = freeGate({ user, headers: req.headers })
   if (gate.block) return gate.block
 
   // Pro 档案感知(E5-00):自报档案 + 本岗匹配结论注入 facts;个性化内容缓存按人隔离

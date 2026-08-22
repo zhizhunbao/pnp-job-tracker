@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   if (!row) return new Response('', { status: 204 })
   if (row.cached) return Response.json(row.cached)
   // 第25轮打码批:调查并入统一免费池(缓存命中不计费)——原私设 IP 日限绕过全站额度,匿名裸用
-  const g = freeGate(await getUser(req.headers), req)
+  const g = freeGate({ user: await getUser(req.headers), headers: req.headers })
   if (g.block) return g.block
   const out = await investigateCompany({ db, id: row.id, name })
   if (!out) return new Response('', { status: 204 })

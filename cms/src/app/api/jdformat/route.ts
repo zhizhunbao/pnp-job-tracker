@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
   if (!row.description) return new Response(null, { status: 204 })   // 真没正文(抓不到)→ 静默,前端空态照旧
   // 第25轮打码批:生成并入统一免费池(缓存命中不计费)——原私设 IP 日限 40 绕过全站额度,匿名裸用
   // 第25轮 #114:失败态拆三种给前端(402/429=额度、503=生成失败可重试、204=无正文),不再五因一果
-  const g = freeGate(await getUser(req.headers), req)
+  const g = freeGate({ user: await getUser(req.headers), headers: req.headers })
   if (g.block) return g.block
   let p = inflight.get(url)
   if (!p) {

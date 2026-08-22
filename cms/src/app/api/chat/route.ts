@@ -112,7 +112,7 @@ export async function POST(req: Request) {
   const user = await getUser(await headers()).catch(() => null)
   const up = (user as any)?.profile ?? {}
   // 免费池(匿名 IP / 登录账号);402 也当限流处理,前端一个 'limit' 分支就够
-  const g = freeGate(user, req as any)
+  const g = freeGate({ user, headers: req.headers })
   if (g.block) return Response.json({ error: 'limit' }, { status: 429 })
   // Pro 个人日帽:freeGate 只帽住免费与匿名,Pro 在这条路上原本是敞开的,而每一轮都真调模型
   if (user && isPro(user) && !checkLimit([[`chat:pro:${user.id}`, PRO_CHAT_DAILY]])) {

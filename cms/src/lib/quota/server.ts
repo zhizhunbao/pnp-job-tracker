@@ -1,11 +1,12 @@
-// 配额域的**服务端**入口 —— 认人、数用量、下闸。三支都要请求上下文,`entitlement` 还要连库。
-//
-// 🔴 为什么和 `index.ts` 分开:`entitlement` 的依赖链上挂着 `payload` 与 `@/payload.config`,
-//    而 `PricingModal.tsx` 是 `'use client'`、只要几个数字。混一个桶就把连接池打进浏览器包
-//    (tsc 全绿,build 才炸,lib/jobs 08-18 实撞)。服务端要数字时照旧从 `@/lib/quota` 取。
-//
-// 🔴 端点闸统一走 `freeGate`,别在路由里自己拼 isPro + checkLimit —— 那是三处各写一遍的老路。
+/**
+ * 配额域的**服务端**门 —— 认人、数用量、下闸(getUser 连库,浏览器不该拿到)。
+ * 门里只有转发(闸 door-forward-only)。
+ *
+ * 🔴 端点闸统一走 `freeGate`,别在路由里自己拼 isPro + checkLimit —— 那是三处各写一遍的老路。
+ *
+ * @author Frank
+ * @time 2026-08-22 18:00:00
+ */
 
-export { getUser, isPro } from './entitlement'
-export { freeGate } from './freeQuota'
-export { checkLimit, ipOf, usedToday } from './rateLimit'
+export { checkLimit, freeGate, getUser, ipOf, isPro, usedToday } from './functions'
+export type { MaybeUser, SessionUser } from './types'
