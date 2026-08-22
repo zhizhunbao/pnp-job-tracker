@@ -17,7 +17,6 @@ import { headers } from 'next/headers'
 
 import { getDb } from '../db/server'
 import { count, numOrNull, queryRowsOrEmpty, SQL, text } from '../db'
-import type { Db } from '../db'
 import { getUser, isPro } from '../quota/server'
 import {
   byCostAsc, byCountDesc, byDrawDateDesc, byListRankThenMonths, byNumberAsc, byObstacleThenTier, byOpeningsDesc, byTierAsc,
@@ -58,7 +57,7 @@ import type {
   EmpPublicSectorRowIn, EmpPublicSectorRowOut, EmpReqOfIn, EmpReqOfOut, EmpRevenueRowIn, EmpRevenueRowOut,
   EmpRowsOfIn, EmpRowsOfOut, EmpStaffFactRowIn, EmpStaffFactRowOut, EmpThresholdRowsIn, EmpThresholdRowsOut,
   EmployerFactsOfOut, EmployerNameSegmentsIn, EmployerNameSegmentsOut, EmployerRowsIn,
-  EmployerRowsOut, EmployerVerdictIn, EmployerVerdictItem, EmployerVerdictOut, EmptyRowsOut, EngineResult,
+  EmployerRowsOut, EmployerVerdictIn, EmployerVerdictItem, EmployerVerdictOut, EngineResult,
   EvOfDrawIn, EvOfDrawOut, EvOfFactorIn, EvOfFactorOut, EvOfOccIn, EvOfOccOut, EvOfReqIn, EvOfReqOut, EvaluateOneIn,
   EvaluateOneOut, Evidence, ExcludedRowIn, ExcludedRowOut, ExperienceGapsIn, ExperienceGapsOut, ExperienceReasonsIn,
   ExperienceReasonsOut, FactorNamesIn, FactorNamesOut, FactorThreshold, FastestRowIn, FastestRowOut,
@@ -106,8 +105,6 @@ import type {
 
 /**
  * 打一条 SQL 拿行并逐行过映射 —— 一行转发 db 的 `queryRowsOrEmpty`(吞错留痕回空的策略在那儿)。
- * 体内的 `as Db` 是跨形状断言:Queryable 是本域对「能查的东西」的自声明,与 db 的 Db
- * 结构同型(Cell ⊂ SqlParam)—— db 缝的职责划界(Queryable 是否退役)待 Frank 拍,见宪法议题。
  * **查不动回空数组,不抛**:判定层缺一张表要落成「本站未收录」,而不是整页 500;
  * 哪张表缺了,`pathVerdict` 自己会说。
  *
@@ -115,7 +112,7 @@ import type {
  * @returns 映射完的行;查不动是空数组。
  */
 async function rowsOf<R>(input: RowsOfIn<R>): RowsOfOut<R> {
-  return queryRowsOrEmpty({ db: input.db as Db, sql: input.sql, params: input.params, map: input.map })
+  return queryRowsOrEmpty({ db: input.db, sql: input.sql, params: input.params, map: input.map })
 }
 
 /**

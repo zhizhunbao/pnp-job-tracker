@@ -18,6 +18,8 @@
  * @time 2026-08-20 01:40:00
  */
 
+import type { Db } from '../db'
+
 
 // =========================================================================
 // 0. 判定域自己的底表与档案形状
@@ -780,16 +782,6 @@ export type Availability = 'ok' | 'not-published' | 'not-collected' | 'not-appli
 // =========================================================================
 // 0b. 取数的形状
 // =========================================================================
-
-/**
- * 能查的东西。**不收 `Pool`,只收「能 query 的东西」** —— 判定域不认识连接池是谁家的。
- */
-export type Queryable = {
-  /**
-   * 打一条 SQL。参数是库标量数组 —— 形状与 `Row` 的值域一致。
-   */
-  query: (sql: string, params?: Cell[]) => Promise<SqlResult>
-}
 
 /**
  * 库里一格的值域:文本 / 数字 / 布尔 / 空。
@@ -2183,21 +2175,6 @@ export type OpsFacts = {
    * 官方页地址。
    */
   url?: string
-}
-
-/**
- * 能打 SQL 的东西。判定域不认识连接池是谁家的。
- */
-export type Sql = (q: string, v?: Cell[]) => Promise<SqlResult>
-
-/**
- * 一次查询的回包。只声明我们真读的那一格。
- */
-export type SqlResult = {
-  /**
-   * 行。列名是 snake_case,值都可空。
-   */
-  rows: Row[]
 }
 
 // =========================================================================
@@ -5168,7 +5145,7 @@ export type RowsOfIn<R> = {
   /**
    * 能查的东西。
    */
-  db: Queryable
+  db: Db
 
   /**
    * 要打的那条 SQL,文本来自 `lib/db/sql`。
@@ -5229,7 +5206,7 @@ export type ToDesignatedOut = DesignatedEmployerRow
 /**
  * `loadVerdictTables` 的入参:能查的东西。
  */
-export type LoadVerdictTablesIn = Queryable
+export type LoadVerdictTablesIn = Db
 
 /**
  * `loadVerdictTables` 的返回:判定层六张底表。
@@ -6209,7 +6186,7 @@ export type BuildTripleWireIn = {
   /**
    * 能打 SQL 的东西。连接池由调用方注进来 —— 本域不 import `payload`。
    */
-  db: Queryable
+  db: Db
 
   /**
    * 岗位号。**不可信**,进库前先验成正整数。
@@ -6281,7 +6258,7 @@ export type TripleCompanyOfIn = {
   /**
    * 能打 SQL 的东西。
    */
-  db: Queryable
+  db: Db
 
   /**
    * 库里那一行岗位(公司名与公司主键都在上面)。
@@ -6332,7 +6309,7 @@ export type OneRowIn<R> = {
   /**
    * 能打 SQL 的东西。
    */
-  db: Queryable
+  db: Db
 
   /**
    * 那条 SQL。取自 `lib/db/sql`,本域不自己写 SQL。
@@ -6455,7 +6432,7 @@ export type CaseAnswerIn = {
   /**
    * 能打 SQL 的东西。连接池由调用方注进来。
    */
-  db: Queryable
+  db: Db
 }
 
 /**
@@ -6490,7 +6467,7 @@ export type ProvCountsIn = {
   /**
    * 能打 SQL 的东西。
    */
-  db: Queryable
+  db: Db
 
   /**
    * 职业码。
@@ -6550,7 +6527,7 @@ export type OpsByProvinceIn = {
   /**
    * 能打 SQL 的东西。
    */
-  db: Queryable
+  db: Db
 }
 
 /**
@@ -6622,11 +6599,6 @@ export type TrainableRowsIn = {
  * `trainableRows` 的返回。
  */
 export type TrainableRowsOut = TrainableRow[]
-
-/**
- * `emptyRows` 的返回:一份空结果。
- */
-export type EmptyRowsOut = SqlResult
 
 /**
  * `answerBool` 的入参。

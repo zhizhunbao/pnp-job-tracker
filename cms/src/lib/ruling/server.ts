@@ -22,6 +22,6 @@ export {
 export type {
   AnswerBag, CaseAnswer, CasePageSpec, ClientAnswers, DesignatedEmployerRow, DesignatedLoader,
   EmployerFacts, EmployerVerdict, NameRow, OccupationRow, OpsFacts, PathLeverOpts, PathwayVerdict,
-  Queryable, ReqRow, Row, Sql, TripleCard, TripleCompany, TripleJob, TripleProfile, TripleWire,
+  ReqRow, Row, TripleCard, TripleCompany, TripleJob, TripleProfile, TripleWire,
   TripleWireResult, VerdictData, VerdictDrawRow, VerdictLever, VerdictProfile, VerdictReason,
 } from './types'

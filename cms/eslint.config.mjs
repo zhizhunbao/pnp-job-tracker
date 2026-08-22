@@ -950,6 +950,9 @@ const localRules = {
         if (!m) return {}
         return {
           ImportDeclaration(node) {
+            // 2026-08-21 Frank 批的唯一例外:db 是基础设施叶子,连接/参数/结果形状归它一家 ——
+            // types.ts 允许 `import type` 自 ../db(或 @/lib/db),别的来源照拦。
+            if (node.importKind === 'type' && /^(\.\.\/db|@\/lib\/db)$/.test(node.source.value)) return
             context.report({ node, messageId: 'leaf', data: { file: `${m[1]}.ts` } })
           },
         }
