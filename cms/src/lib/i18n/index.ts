@@ -1,20 +1,18 @@
 // 文案的桶 —— 全站唯一的语言机制:语言是哪几门、怎么判、怎么落盘、怎么取词。
 //
-// 为什么单独存在:文案本身按领域分在 report/jobs/site/consult/quiz/legal 六个文件里,
-// 而**语言这套机器只该有一份**。加一门语言只改下面 `Lang` 那一行 —— 六个领域文件会被
-// tsc 逐个点名(它们的导出都标了 `Domain<typeof zh>`),不需要任何检查脚本。
+// 2026-08-22 Frank 拍板改按**语言**分文件:zh.ts(母本)/ en.ts / ko.ts 各装整站一门语言,
+// 域降级为语言文件内的分段横幅;身份+三语一体的块(RES/法务长文/官方名映射/显示函数)在 labels.ts。
+// 加一门语言 = 加一个语言文件 + 下面 `Lang` 一行 + 装配表七行(tsc 会逐处点名)。
 //
 // 🔴 本目录一律不带 `'use client'`:服务端 page.tsx(SSR 首帧语言、generateMetadata)也 import 它。
 //    老坑 6:服务端组件从 `'use client'` 模块导入常量会拿到 undefined。
 //
 // 边界:**给模型看的提示词不进这里**(system/instructions 归 prompts.ts)——
 // 用户永远看不到它们,也不需要翻译。
-import { report, pathwayNames, caseCopy } from './report'
-import { jobs, nocLabels } from './jobs'
-import { site } from './site'
-import { consult } from './consult'
-import { quiz } from './quiz'
-import { legal } from './legal'
+import { caseZh, consultZh, jobsZh, legalZh, quizZh, reportZh, siteZh } from './zh'
+import { caseEn, consultEn, jobsEn, legalEn, quizEn, reportEn, siteEn } from './en'
+import { caseKo, consultKo, jobsKo, legalKo, quizKo, reportKo, siteKo } from './ko'
+import { nocLabels, pathwayNames } from './labels'
 
 // ── 语言 ────────────────────────────────────────────────────────────────────
 export type Lang = 'zh' | 'en' | 'ko'
@@ -26,11 +24,9 @@ export const LANGS: { code: Lang; label: string }[] = [
 ]
 
 export type Dict = Record<string, string>
-/** 一个领域的三语字典:zh 是母本,其余语言按它的键逐条对齐。
- *  漏一条 = tsc 红(缺属性);多一条 = tsc 红(超额属性);
- *  加一门语言 = 只改上面的 `Lang`,六个领域文件的导出会挨个报缺哪门语言。
- *  —— 这就是「能让编译器管的别写脚本管」在文案上的落法。 */
-export type Domain<Z extends Record<string, string>> = Record<Lang, Record<keyof Z, string>>
+// 三语对齐仍是编译器管:en.ts / ko.ts 每块标 `Record<keyof typeof xxZh, string>`,
+// 漏一条 = tsc 红(缺属性);多一条 = tsc 红(超额属性)。
+// (旧 `Domain<Z>` 类型随六域文件一起退役 —— 唯一消费者就是它们。)
 
 // ── 首访判语与落盘 ──────────────────────────────────────────────────────────
 export const LANG_KEY = 'jobs.lang'
@@ -56,7 +52,15 @@ export const saveLang = (l: Lang): void => {
 }
 
 // ── 取词 ────────────────────────────────────────────────────────────────────
-// 领域文件合并成一张扁平表。这段**不枚举语言** —— 加一门语言时它一个字都不用改。
+// 三个语言文件的同名块装配回「域 × 语言」,再合并成每语言一张扁平表。
+// 合并顺序与改版前逐字一致(report → pathwayNames → caseCopy → jobs → nocLabels → site → consult → quiz → legal)。
+const report: Record<Lang, Dict> = { zh: reportZh, en: reportEn, ko: reportKo }
+const jobs: Record<Lang, Dict> = { zh: jobsZh, en: jobsEn, ko: jobsKo }
+const site: Record<Lang, Dict> = { zh: siteZh, en: siteEn, ko: siteKo }
+const consult: Record<Lang, Dict> = { zh: consultZh, en: consultEn, ko: consultKo }
+const quiz: Record<Lang, Dict> = { zh: quizZh, en: quizEn, ko: quizKo }
+const legal: Record<Lang, Dict> = { zh: legalZh, en: legalEn, ko: legalKo }
+const caseCopy: Record<Lang, Dict> = { zh: caseZh, en: caseEn, ko: caseKo }
 const PARTS: Record<Lang, Dict>[] = [report, pathwayNames, caseCopy, jobs, nocLabels, site, consult, quiz, legal]
 const MESSAGES = Object.fromEntries(
   LANGS.map(({ code }) => [code, Object.assign({}, ...PARTS.map((p) => p[code]))]),
@@ -78,17 +82,12 @@ export function makeT(lang: Lang): TFn {
   return t
 }
 
-// ── 显示助手:官方名/数据层值 → 界面词。跟它映射的那批键住同一个文件,这里只作转出 ──
-export { drawStreamNote, streamDisplay, reqStreamDisplay, eeDisplay, eeKeyDisplay } from './jobs'
-export { dropProvPrefix } from './site'
-// ── 不走 t() 的整块文案:法务四页正文(一页一个整体,见 legal.ts 文件头) ──
-export { legalDocs, type LegalDoc } from './legal'
-// ── 不走 t() 的表:官方分值表原文的译名、门槛闸的人话名(见 report.ts 各自的段头) ──
-export { officialLabel, officialLabels, gateLabels, askLabels } from './report'
-// ── 官方资源导航(name/url 是身份、use 是三语文案,整条住一起,见 site.ts)──
-export { RES, type Res } from './site'
-// ── 对话轨迹的见客文案(整块,不走 t();消费者是 lib/consult 的 step)──
-// 旧链的 15 个文案块(FOLLOWUPS/LBL/STEP…)2026-08-21 随 lib/chat 整域一起删了。
+// ── 身份+三语一体的块与显示函数(见 labels.ts 文件头;各自的段头注释也在那边)──
+// 含:显示助手(官方名/数据层值 → 界面词)、法务四页正文、官方分值表译名与门槛闸人话名、
+// 官方资源导航(name/url 是身份)、对话轨迹的见客文案(消费者是 lib/consult 的 step;
+// 旧链 15 个文案块 2026-08-21 随 lib/chat 整域删了)。
 export {
-  CONSULT_STEP, CONSULT_STEP_OCC,
-} from './consult'
+  askLabels, CONSULT_STEP, CONSULT_STEP_OCC, drawStreamNote, dropProvPrefix, eeDisplay, eeKeyDisplay,
+  gateLabels, legalDocs, type LegalDoc, officialLabel, officialLabels, reqStreamDisplay, RES, type Res,
+  streamDisplay,
+} from './labels'

@@ -9,7 +9,7 @@ import { Footer } from '../Footer'
 // 公开支持邮箱(删号/异议下架/退款申请都走它):正式域名定了换 env 即可
 export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'wangsansi9527@gmail.com'
 
-// LegalDoc 的形状跟着**数据**走(lib/i18n/legal.ts),这里只是它的渲染器
+// LegalDoc 的形状跟着**数据**走(lib/i18n/labels.ts),这里只是它的渲染器
 
 export function Legal({ docs, icon }: { docs: Record<Lang, LegalDoc>; icon?: React.ReactNode }) {
   const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
