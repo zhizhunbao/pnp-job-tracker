@@ -1,6 +1,6 @@
 // 文案的桶 —— 全站唯一的语言机制:语言是哪几门、怎么判、怎么落盘、怎么取词。
 //
-// 为什么单独存在:文案本身按领域分在 report/jobs/site/chat/quiz/legal 六个文件里,
+// 为什么单独存在:文案本身按领域分在 report/jobs/site/consult/quiz/legal 六个文件里,
 // 而**语言这套机器只该有一份**。加一门语言只改下面 `Lang` 那一行 —— 六个领域文件会被
 // tsc 逐个点名(它们的导出都标了 `Domain<typeof zh>`),不需要任何检查脚本。
 //
@@ -12,7 +12,7 @@
 import { report, pathwayNames, caseCopy } from './report'
 import { jobs, nocLabels } from './jobs'
 import { site } from './site'
-import { chat } from './chat'
+import { consult } from './consult'
 import { quiz } from './quiz'
 import { legal } from './legal'
 
@@ -57,7 +57,7 @@ export const saveLang = (l: Lang): void => {
 
 // ── 取词 ────────────────────────────────────────────────────────────────────
 // 领域文件合并成一张扁平表。这段**不枚举语言** —— 加一门语言时它一个字都不用改。
-const PARTS: Record<Lang, Dict>[] = [report, pathwayNames, caseCopy, jobs, nocLabels, site, chat, quiz, legal]
+const PARTS: Record<Lang, Dict>[] = [report, pathwayNames, caseCopy, jobs, nocLabels, site, consult, quiz, legal]
 const MESSAGES = Object.fromEntries(
   LANGS.map(({ code }) => [code, Object.assign({}, ...PARTS.map((p) => p[code]))]),
 ) as Record<Lang, Dict>
@@ -91,4 +91,4 @@ export { RES, type Res } from './site'
 // 旧链的 15 个文案块(FOLLOWUPS/LBL/STEP…)2026-08-21 随 lib/chat 整域一起删了。
 export {
   CONSULT_STEP, CONSULT_STEP_OCC,
-} from './chat'
+} from './consult'

@@ -1,4 +1,5 @@
-// 文案 · 对话与 AI 顾问的**见客文案**。
+// 文案 · 对话与 AI 顾问的**见客文案**(2026-08-22 由 chat.ts 改名:lib/chat 域已死于
+// consult 替换,文案文件跟着活着的域名走;`chat.*`/`advisor.*` 是组件调用点的 key 空间,不动)。
 // 🔴 红线:**给模型看的提示词不在这里**(system/instructions 归 prompts.ts)——
 //    用户永远看不到它们,也不需要翻译。别把「给人看的」和「给模型看的」混进一个抽屉。
 import type { Domain, Lang } from './index'
@@ -184,7 +185,7 @@ const ko: Record<keyof typeof zh, string> = {
   'advisor.disclaimer': 'AI 기반 판단이며 이민 자문이 아닙니다(당사는 RCIC가 아님) · 공식 출처를 기준으로 확인하세요.',
 }
 
-export const chat: Domain<typeof zh> = { zh, en, ko }
+export const consult: Domain<typeof zh> = { zh, en, ko }
 
 // ── 对话与顾问的见客文案 ────────────────────────────────────────────────────
 // 2026-08-17 从对话编排层搬来(那边 08-18 拆成了 lib/chat/)。那边留下的是**编排逻辑**与
