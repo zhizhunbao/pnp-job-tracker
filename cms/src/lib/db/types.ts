@@ -50,12 +50,12 @@ export type PayloadWithPool = {
 export type SqlParam = string | number | boolean | null | string[] | number[]
 
 /**
- * 能执行 SQL 的连接。
+ * 能执行 SQL 的连接 —— **原语,不是正门**。
  *
- * **故意不做成泛型方法**:写成 `query<R>(…): Promise<{rows: R[]}>` 等于承诺「你挑 R,我还你 R[]」,
- * 那么单测里固定形状的假池(`() => ({ rows: Record<string, unknown>[] })`)就永远满足不了它 ——
- * 实测 employersBoard 单测直接编不过。行的形状与默认值按「一条 SQL 一个行形状 + 一个映射函数」
- * 在消费它的域里收(docs/implementation/默认值架构-20260821.md),本层不撒谎也不代劳。
+ * 取行走 `queryRows`(SQL + 行映射进,干净的 `R[]` 出,2026-08-21 Frank 定):`query` 本体
+ * 保持无类型是因为泛型参数在运行时不存在,标在它头上保证不了任何一格(本层不撒谎);
+ * 它留着给 `queryRows` 当脚下原语,以及事务体(seed 的 BEGIN/COMMIT)这类不取行的语句用。
+ * 行形状与默认值的设计见 docs/implementation/默认值架构-20260821.md。
  */
 export type Db = {
   /**
