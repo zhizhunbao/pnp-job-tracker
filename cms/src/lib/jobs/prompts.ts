@@ -7,204 +7,149 @@
  */
 
 /**
- * 理由键 → 英文事实行(与 MatchReason 同一 params;措辞红线:只陈述可核验事实)。
+ * 理由键 → 英文事实行模板(槽位名 = MatchReason.params 的键;填充在 functions.reasonEn 走
+ * `lib/template` 的 fill —— prompts 只装字,不装函数;措辞红线:只陈述可核验事实)。
  */
-export const REASON_EN: Record<string, (p: Record<string, string | number>) => string> = {
+export const REASON_EN: Record<string, string> = {
   /**
    * 岗位未分类。
    */
-  'match.r.noc.jobUncat': function jobUncat() {
-    return 'Job has no NOC classification; profile match not applicable.'
-  },
+  'match.r.noc.jobUncat': 'Job has no NOC classification; profile match not applicable.',
 
   /**
    * 档案没填职业码。
    */
-  'match.r.noc.noProfile': function noProfile() {
-    return 'User has not listed their NOC codes.'
-  },
+  'match.r.noc.noProfile': 'User has not listed their NOC codes.',
 
   /**
    * 精确命中。
    */
-  'match.r.noc.exact': function exact(p) {
-    return `User's own NOC ${p.noc} matches this job's NOC exactly.`
-  },
+  'match.r.noc.exact': "User's own NOC {noc} matches this job's NOC exactly.",
 
   /**
    * 同小类。
    */
-  'match.r.noc.minor': function minor(p) {
-    return `User's NOC ${p.yours} is in the same minor group as this job's NOC ${p.noc}.`
-  },
+  'match.r.noc.minor': "User's NOC {yours} is in the same minor group as this job's NOC {noc}.",
 
   /**
    * 同族。
    */
-  'match.r.noc.submajor': function submajor(p) {
-    return `User's NOC ${p.yours} is in the same occupational sub-major group as this job's NOC ${p.noc} (same field, different specialty).`
-  },
+  'match.r.noc.submajor': "User's NOC {yours} is in the same occupational sub-major group as this job's NOC {noc} (same field, different specialty).",
 
   /**
    * 全不沾边。
    */
-  'match.r.noc.none': function none(p) {
-    return `Job NOC ${p.noc} does not match user's NOC (${p.yours}).`
-  },
+  'match.r.noc.none': "Job NOC {noc} does not match user's NOC ({yours}).",
 
   /**
    * 魁省自有体系。
    */
-  'match.r.prov.qc': function qc() {
-    return 'Quebec runs its own selection system (not PNP).'
-  },
+  'match.r.prov.qc': 'Quebec runs its own selection system (not PNP).',
 
   /**
    * 不在目标省(只提示不扣分)。
    */
-  'match.r.prov.notTarget': function notTarget(p) {
-    return `Job is in ${p.prov}, outside user's target provinces (${p.targets}).`
-  },
+  'match.r.prov.notTarget': "Job is in {prov}, outside user's target provinces ({targets}).",
 
   /**
    * 具名清单命中。
    */
-  'match.r.prov.named': function named(p) {
-    return `Job NOC ${p.noc} is on ${p.prov}'s published list "${p.label}".`
-  },
+  'match.r.prov.named': "Job NOC {noc} is on {prov}'s published list \"{label}\".",
 
   /**
    * 排除清单命中。
    */
-  'match.r.prov.excluded': function excluded(p) {
-    return `Job NOC ${p.noc} is on ${p.prov}'s exclusion list "${p.label}".`
-  },
+  'match.r.prov.excluded': "Job NOC {noc} is on {prov}'s exclusion list \"{label}\".",
 
   /**
    * TEER 0-3 通用粗筛。
    */
-  'match.r.prov.generic': function generic(p) {
-    return `Meets the generic TEER 0-3 screen for ${p.prov} (no named list hit).`
-  },
+  'match.r.prov.generic': 'Meets the generic TEER 0-3 screen for {prov} (no named list hit).',
 
   /**
    * 不满足省粗筛。
    */
-  'match.r.prov.none': function provNone(p) {
-    return `Does not meet the provincial screen for ${p.prov}.`
-  },
+  'match.r.prov.none': 'Does not meet the provincial screen for {prov}.',
 
   /**
    * 不在任何 EE 类别清单。
    */
-  'match.r.ee.none': function eeNone() {
-    return 'Job NOC is not on any federal EE category-based selection list.'
-  },
+  'match.r.ee.none': 'Job NOC is not on any federal EE category-based selection list.',
 
   /**
    * 类别无抽选记录。
    */
-  'match.r.ee.noDraw': function noDraw(p) {
-    return `EE category "${p.cat}" has no recorded draw data.`
-  },
+  'match.r.ee.noDraw': 'EE category "{cat}" has no recorded draw data.',
 
   /**
    * 用户没报 CRS。
    */
-  'match.r.ee.noCrs': function noCrs(p) {
-    return `Job is in EE category "${p.cat}" (last draw CRS ${p.draw}, ${p.date}); user has not reported a CRS score.`
-  },
+  'match.r.ee.noCrs': 'Job is in EE category "{cat}" (last draw CRS {draw}, {date}); user has not reported a CRS score.',
 
   /**
    * CRS 高于分数线。
    */
-  'match.r.ee.above': function above(p) {
-    return `User's self-reported CRS ${p.crs} is ${p.diff} above the last "${p.cat}" draw cutoff ${p.draw} (${p.date}).`
-  },
+  'match.r.ee.above': "User's self-reported CRS {crs} is {diff} above the last \"{cat}\" draw cutoff {draw} ({date}).",
 
   /**
    * CRS 低于分数线。
    */
-  'match.r.ee.below': function below(p) {
-    return `User's self-reported CRS ${p.crs} is ${p.gap} below the last "${p.cat}" draw cutoff ${p.draw} (${p.date}).`
-  },
+  'match.r.ee.below': "User's self-reported CRS {crs} is {gap} below the last \"{cat}\" draw cutoff {draw} ({date}).",
 
   /**
    * TEER 达标。
    */
-  'match.r.teer.ok': function teerOk(p) {
-    return `TEER ${p.teer} passes the generic skilled-worker screen.`
-  },
+  'match.r.teer.ok': 'TEER {teer} passes the generic skilled-worker screen.',
 
   /**
    * 低 TEER 但命中具名通道。
    */
-  'match.r.teer.channel': function teerChannel(p) {
-    return `TEER ${p.teer} but hits named low-TEER stream "${p.stream}".`
-  },
+  'match.r.teer.channel': 'TEER {teer} but hits named low-TEER stream "{stream}".',
 
   /**
    * 低 TEER 无通道。
    */
-  'match.r.teer.low': function teerLow(p) {
-    return `TEER ${p.teer} with no named low-TEER stream.`
-  },
+  'match.r.teer.low': 'TEER {teer} with no named low-TEER stream.',
 
   /**
    * 高于中位。
    */
-  'match.r.wage.above': function wageAbove(p) {
-    return `Offered salary is ${p.pct}% above the local NOC median.`
-  },
+  'match.r.wage.above': 'Offered salary is {pct}% above the local NOC median.',
 
   /**
    * 略低于中位。
    */
-  'match.r.wage.near': function wageNear(p) {
-    return `Offered salary is ${p.pct}% below the local NOC median (within 20%).`
-  },
+  'match.r.wage.near': 'Offered salary is {pct}% below the local NOC median (within 20%).',
 
   /**
    * 明显低于中位(省提名工资要求风险)。
    */
-  'match.r.wage.below': function wageBelow(p) {
-    return `Offered salary is ${p.pct}% below the local NOC median — verify the offer meets provincial wage requirements.`
-  },
+  'match.r.wage.below': 'Offered salary is {pct}% below the local NOC median — verify the offer meets provincial wage requirements.',
 
   /**
    * 无可比数据。
    */
-  'match.r.wage.na': function wageNa() {
-    return 'No salary/median data to compare.'
-  },
+  'match.r.wage.na': 'No salary/median data to compare.',
 
   /**
    * 有获批记录(股别未拆)。
    */
-  'match.r.lmia.has': function lmiaHas(p) {
-    return `Employer had ${p.n} positions on approved positive LMIAs in the past two years (latest: ${p.q}, ESDC open data) — a historical fact, not an indication they can or will sponsor now.`
-  },
+  'match.r.lmia.has': 'Employer had {n} positions on approved positive LMIAs in the past two years (latest: {q}, ESDC open data) — a historical fact, not an indication they can or will sponsor now.',
 
   /**
    * 技能股获批。
    */
-  'match.r.lmia.skilled': function lmiaSkilled(p) {
-    return `Employer had ${p.n} skilled-stream (High Wage/Global Talent) positions on approved LMIAs in the past two years (${p.total} across all streams, latest ${p.q}, ESDC open data) — a historical fact, not a sponsorship promise.`
-  },
+  'match.r.lmia.skilled': 'Employer had {n} skilled-stream (High Wage/Global Talent) positions on approved LMIAs in the past two years ({total} across all streams, latest {q}, ESDC open data) — a historical fact, not a sponsorship promise.',
 
   /**
    * 纯农业/低薪股(不加分,中性提示)。
    */
-  'match.r.lmia.lowOnly': function lmiaLowOnly(p) {
-    return `Employer's ${p.n} approved LMIA positions (latest ${p.q}) are all in Primary Agriculture / Low Wage streams — mostly seasonal hiring, weak evidence for skilled-stream sponsorship; no points added.`
-  },
+  'match.r.lmia.lowOnly': "Employer's {n} approved LMIA positions (latest {q}) are all in Primary Agriculture / Low Wage streams — mostly seasonal hiring, weak evidence for skilled-stream sponsorship; no points added.",
 
   /**
    * 无记录(许多雇主从不需要 LMIA,不是负面证据)。
    */
-  'match.r.lmia.na': function lmiaNa() {
-    return 'No positive-LMIA record for this employer in the past two years (many employers never needed one; not negative evidence).'
-  },
+  'match.r.lmia.na': 'No positive-LMIA record for this employer in the past two years (many employers never needed one; not negative evidence).',
 }
 
 /**

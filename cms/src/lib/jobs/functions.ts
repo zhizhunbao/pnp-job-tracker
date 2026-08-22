@@ -11,6 +11,7 @@
 import { queryRows, queryRowsOrEmpty, SQL } from '../db'
 import type { Db } from '../db'
 import { JOBS_LOG, log } from '../log'
+import { fill } from '../template'
 import {
   BLOCKED_SRC, BROAD_NOCS_MAX, CAND_CAP, COMMA, COUNT_CACHE_MAX, COUNT_TTL_MS, COV, CURRENT_STATUSES,
   DIMS_TTL_MS, DIR_ASC, DIR_DESC, DOLLAR, ENT_PAIRS, FK, FV, HREF_ENT_PAIRS, JB_APPLY_ANCHOR, JB_DESC_RE,
@@ -527,11 +528,11 @@ export function match(input: MatchIn): MatchResult {
  * @returns 英文事实行。
  */
 export function reasonEn(r: MatchReason): string {
-  const f = REASON_EN[r.key]
-  if (f == null) {
+  const tpl = REASON_EN[r.key]
+  if (tpl == null) {
     return r.key
   }
-  return f(r.params)
+  return fill({ tpl: tpl, params: r.params })
 }
 
 /**

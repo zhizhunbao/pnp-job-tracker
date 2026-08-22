@@ -198,10 +198,11 @@ export async function POST(req: Request) {
   // ── 排序(#307 单源化):拆省在先(每个省级行按自己的在招/竞争排),planRank 一把尺排完再下发;
   //    客户端只渲染不再重排 —— 此前引擎/服务端/客户端三处口径并存,#302 的「省外提示与排序
   //    不是同一把尺」就是分叉的直接后果。
-  type SplitRow = (typeof all)[number] & { belowLine: boolean; aboveLine: boolean; competition: { ratio: number } & Record<string, unknown> | null }
+  type SplitRow = Omit<(typeof all)[number], 'blockedBy'> & { blockedBy: string | null; belowLine: boolean; aboveLine: boolean; competition: { ratio: number } & Record<string, unknown> | null }
   const decorateSplit = (rows: typeof all, targets: string[]): SplitRow[] =>
     splitRegionalByProvince(rows.map((row) => ({ ...row })), targets).map((row) => ({
       ...row,
+      blockedBy: row.blockedBy ?? null,
       belowLine: belowLine(row),
       aboveLine: aboveLine(row),
       // AIP/RCIP/FCIP 无 EOI 池 → competition 保持 null,不许拿该省 PNP 名额竞争比充数
@@ -219,7 +220,7 @@ export async function POST(req: Request) {
   const ctx: RankCtx = { jobsOf, homeProvs }
 
   const scoped = all.filter((row) => pathwayMatchesTargets(row.key, row.province, targetProvinces))
-  const ranked = rankRows(decorateSplit(scoped.filter((row) => row.verdict !== 'excluded'), targetProvinces), ctx)
+  const ranked = rankRows({ rows: decorateSplit(scoped.filter((row) => row.verdict !== 'excluded'), targetProvinces), ctx })
 
   const wireOf = (row: SplitRow) => {
     const after = row.blockedBy === 'offer' ? afterByKey?.get(row.key) : undefined
@@ -278,7 +279,7 @@ export async function POST(req: Request) {
   // ── 省外提示(#302/#303):与主排序共用 planRank 同一把尺(含 0 岗/thin/本省/竞争比)。
   //    措辞层拿 insideBest 摆对照(两边竞争比与档位如实并排),不再裸称「更优」。
   const allSplit = decorateSplit(all.filter((row) => row.verdict !== 'excluded'), [])
-  const picked = pickOutside(allSplit, targetProvinces, ctx)
+  const picked = pickOutside({ rows: allSplit, targets: targetProvinces, ctx })
   const outside = picked ? {
     key: picked.row.key,
     province: picked.row.province,

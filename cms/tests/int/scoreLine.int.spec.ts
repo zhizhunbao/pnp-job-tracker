@@ -8,7 +8,8 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { describe, expect, it } from 'vitest'
 import { isAboveLine, isBelowLine, lineStateOf, marginOf, type ScoreVsLine } from '@/lib/points'
-import { rankRows, type RankableRow, type RankCtx } from '@/lib/plan/planRank'
+import { rankRows } from '@/lib/plan'
+import type { RankableRow, RankCtx } from '@/lib/plan'
 import {
   pathVerdict as rulingPathVerdict, type DesignatedEmployerRow, type OccupationRow,
   type VerdictData, type VerdictDrawRow, type VerdictProfile,
@@ -28,7 +29,8 @@ const mart = <T>(name: string): T[] =>
 
 const ctx: RankCtx = { jobsOf: () => 50, homeProvs: new Set<string>() }
 const row = (over: Partial<RankableRow>): RankableRow => ({
-  key: 'X', province: 'AB', verdict: 'viable', tier: 1, availability: 'ok', ...over,
+  key: 'X', province: 'AB', verdict: 'viable', tier: 1, availability: 'ok',
+  blockedBy: null, belowLine: false, aboveLine: false, competition: null, ...over,
 })
 
 describe('lineStateOf 三态', () => {
@@ -95,27 +97,27 @@ describe('lineStateOf 三态', () => {
 
 describe('排序里的位置', () => {
   it('够得着的排同档前头', () => {
-    const out = rankRows([row({ key: 'plain' }), row({ key: 'above', aboveLine: true })], ctx)
+    const out = rankRows({ rows: [row({ key: 'plain' }), row({ key: 'above', aboveLine: true })], ctx: ctx })
     expect(out.map((r) => r.key)).toEqual(['above', 'plain'])
   })
 
   it('够不着的沉队尾,够得着救不了别的档', () => {
-    const out = rankRows([row({ key: 'sunk', belowLine: true }), row({ key: 'plain' })], ctx)
+    const out = rankRows({ rows: [row({ key: 'sunk', belowLine: true }), row({ key: 'plain' })], ctx: ctx })
     expect(out.map((r) => r.key)).toEqual(['plain', 'sunk'])
   })
 
   it('够得着**不许**翻越本省优先 —— 分够不够是「多久到手」,不是「能不能走」', () => {
     const home: RankCtx = { jobsOf: () => 50, homeProvs: new Set(['ON']) }
-    const out = rankRows([
+    const out = rankRows({ rows: [
       row({ key: 'ab-above', province: 'AB', aboveLine: true }),
       row({ key: 'on-home', province: 'ON' }),
-    ], home)
+    ], ctx: home })
     expect(out[0].key).toBe('on-home')
   })
 
   it('够得着也翻不过 0 岗沉底', () => {
     const zero: RankCtx = { jobsOf: (r) => (r.key === 'zero' ? 0 : 50), homeProvs: new Set<string>() }
-    const out = rankRows([row({ key: 'zero', aboveLine: true }), row({ key: 'plain' })], zero)
+    const out = rankRows({ rows: [row({ key: 'zero', aboveLine: true }), row({ key: 'plain' })], ctx: zero })
     expect(out.map((r) => r.key)).toEqual(['plain', 'zero'])
   })
 })
