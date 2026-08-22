@@ -291,6 +291,9 @@ function nocRule(input: RuleIn): NocRuleOut {
 
 /**
  * 规则 2:省通道(inclusion/exclusion 公开清单 × 目标省)。目标省是偏好不是资格,不一致只提示不扣分。
+ * 本站没有该省清单数据时不给「查过没有」的假结论 —— 分数走 TEER 粗筛同档,理由说实话(uncovered)。
+ * E13-09:TEER4-5 的通过理由分三类(NL=offer 即可;MB/NS/NB/PE=先同雇主 6 个月;其余开放),
+ * 翻案岗不再拿假理由;省集合镜像 etl/08_score。
  *
  * @param input 档案、岗位与维度。
  * @returns 该规则的加分与理由。
@@ -336,14 +339,12 @@ function provRule(input: RuleIn): RuleScoreOut {
       source: { label: excluded.label, url: excluded.url, fetched: excluded.fetched },
     })
   } else if (provListCoverage({ prov: prov, dims: input.dims }) === COV.uncovered) {
-    // 本站没有该省清单数据 → 不给「查过没有」的假结论;分数走 TEER 粗筛同档,但理由说实话
     if (job.pnpEligible) {
       score += 15
     }
     reasons.push({ rule: RULE.prov, verdict: VD.na, key: RK.provUncovered, params: { prov: prov }, source: null })
   } else if (job.pnpEligible) {
     score += 15
-    // E13-09:TEER4-5 的通过理由分三类(翻案岗不再拿假理由);省集合镜像 etl/08_score
     const t45 = job.teer != null && job.teer >= 4
     let key: string = RK.provGeneric
     if (t45) {
@@ -638,6 +639,8 @@ async function resolveQCompanyIds(input: ResolveQIn): ResolveQOut {
 /**
  * 筛选 → WHERE 条件串(无 WHERE 前缀,空=TRUE)。阈值逐字对齐旧前端谓词;
  * 未知键静默跳过并进 skipped(提醒邮件里给用户交代)。
+ * 搜索词每词一组「跨列 OR」、词与词之间 AND(见 splitQ),单词时与旧写法逐字等价;
+ * 状态筛默认排除已下架(#136 批A),显式选「已下架」仍可看。
  *
  * @param input 筛选与占位符起始。
  * @returns 条件串、绑定参数与被跳过的键。
@@ -663,7 +666,6 @@ export function buildJobsWhere(input: BuildWhereIn): JobsWhere {
     const v = filters[k]
     return v === true || v === FV.trueStr || v === FV.oneStr
   }
-  // 每词一组「跨列 OR」,词与词之间 AND(见 splitQ)。单词时与旧写法逐字等价。
   const terms = splitQ(s(FK.q))
   for (let i = 0; i < terms.length; i++) {
     const term = terms[i]
@@ -762,7 +764,6 @@ export function buildJobsWhere(input: BuildWhereIn): JobsWhere {
   } else if (s(FK.pilot) === FV.rcip || s(FK.pilot) === FV.fcip) {
     conds.push(W.pilotLike + param(PCT + s(FK.pilot) + PCT))
   }
-  // #136(批A):默认排除已下架;显式选「已下架」仍可看
   if (s(FK.status) !== '') {
     conds.push(W.statusEq + param(s(FK.status)))
   } else {
@@ -953,13 +954,13 @@ function rowMatchLevel(input: RowMatchIn): MaybeLevel {
 }
 
 /**
- * pg 错误码(pg 的错误对象带 code;不是它的错空串)。
+ * pg 错误码(pg 的错误对象带 code;不是它的错空串)。体内那一步 `as PgFailure` 是跨边界断言:
+ * code 是 pg 挂上去的,TS 看不见 —— 形状声明在 types.PgFailure。
  *
  * @param e 已收窄成 Error 的异常。
  * @returns 错误码;没有空串。
  */
 function pgCodeOf(e: CaughtError): string {
-  // pg 的错误形状(跨边界断言:code 是 pg 挂上去的,TS 看不见)
   const withCode = e as PgFailure
   if (typeof withCode.code === 'string') {
     return withCode.code
@@ -1180,7 +1181,8 @@ function strOf(v: StrCell): string {
 
 /**
  * 「我的匹配」视图(E10-01 P3):SQL 候选预筛(并集从宽,宁可多算不漏)→ TS 跑 match 留 high/mid
- * → 按档位+日期序分页;表头点击在可见集内重排(空值恒沉底)。匹配全放开(2026-07-21 拍板)。
+ * → 默认按档位降序(候选已按日期↓,stable sort 保同档内日期序)分页;表头点击在可见集内重排
+ * (空值恒沉底)。匹配全放开(2026-07-21 拍板)。
  *
  * @param input 连接、分层态、维度与页。
  * @returns 当前页行、命中总数、FOMO 计数与最近核对时刻。
@@ -1213,7 +1215,6 @@ export async function fetchMatchPage(input: MatchPageIn): MatchPageOut {
     }
     hits.push({ j: j, level: level, rank: matchRank(level), v: null })
   }
-  // 默认排序:match 等级↓(候选已按日期↓,stable sort 保同级内日期序)
   hits.sort(byLevelDesc)
   let sortKey = ''
   let sortDir = ''
@@ -1466,7 +1467,8 @@ async function lmiaNocsOf(input: LmiaNocsIn): LmiaNocsOut {
 }
 
 /**
- * 公司详情主体(slug 与 jobId 两个入口共用)。
+ * 公司详情主体(slug 与 jobId 两个入口共用)。score_detail 那一步 `as` 是跨边界单断言:
+ * json 列的四维明细由数据层写入方保证形状,TS 只看得到 JsonObj。
  *
  * @param input 连接、WHERE 与绑定值。
  * @returns 公司详情;查无 null。
@@ -1500,7 +1502,6 @@ async function fetchCompanyWhere(input: CompanyWhereIn): CompanyOut {
   }
   let scoreDetail: CompanyDetail['scoreDetail'] = null
   if (c.score_detail != null && typeof c.score_detail === 'object' && Array.isArray(c.score_detail) === false) {
-    // 数据层写入的四维明细(单断言跨边界:JsonObj → 具体形状,写入方保证)
     scoreDetail = c.score_detail as CompanyDetail['scoreDetail']
   }
   const strCell = function strCell(v: JsonCell): string {
@@ -1664,7 +1665,8 @@ export async function fetchNocOpenCounts(input: NocCountsIn): NocCountsOut {
 
 /**
  * 热门职业清单(不手写,按库里在招量取前 N,自己随市场变)。主路读 ETL 聚合好的 noc_openings
- * (2026-08-12「把这个数据聚合好」:旧现算 200 行实测 3.2s);表没建/没灌回退现算,慢但不瞎。
+ * (2026-08-12「把这个数据聚合好」:旧现算 200 行实测 3.2s);表没建/没灌回退现算,慢但不瞎 ——
+ * 且大清单回退时不算中位薪资(percentile_cont 是查询大头,控件里也用不到)。
  *
  * @param input 连接与取几。
  * @returns 热门职业行。
@@ -1683,7 +1685,6 @@ export async function fetchTopNocs(input: TopNocsIn): TopNocsOut {
     }
     log({ tag: JOBS_LOG.tag, text: JOBS_LOG.topNocsMainFailed + why })
   }
-  // 回退现算:大清单不要中位薪资(percentile_cont 是大头,控件里也用不到)
   let medSel = ''
   if (n <= TOP_NOCS_WITH_MED) {
     medSel = MED_SELECT

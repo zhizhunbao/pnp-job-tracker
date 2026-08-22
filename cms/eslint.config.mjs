@@ -1190,6 +1190,9 @@ const eslintConfig = [
       'local/file-header': 'error',
       'local/jsdoc-tags': 'error',
       'local/no-new-error': 'error',
+      // 函数体内不许注释(2026-08-22 Frank 实拍 plan 漏网:这条原先只对 ruling/gauge/points 开,
+      // 「清完存量才进名单」的滚动没跟上新域 —— 自此并进十三域全量名单,注释一律上移进 JSDoc)
+      'local/no-comment-in-function': 'error',
       'local/no-bare-strings': 'error',
       'local/function-length': 'error',
       // 这两条内置规则够用,不自己造:全局是 warn(存量欠账本),定型域收紧成 error

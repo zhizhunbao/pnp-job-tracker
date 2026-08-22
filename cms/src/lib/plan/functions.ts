@@ -353,6 +353,7 @@ function drawStep(p: PlanPathInput): PlanStep {
 /**
  * ③ 递交后官方处理多久 = ops 的 processing_weeks。省内多条通道又没指明 scope = 不替你挑。
  * ops 整体 ok 但独独没有处理时长 = 本站未收录这一项,不能沿用整体的 ok。
+ * 🔴 value=null 是官方的隐私抑制 / 不适用(valueText 原文如 "N/A"),**不是 0 周**。
  *
  * @param p 该省的路径输入。
  * @returns processing 段。
@@ -398,7 +399,6 @@ function processingStep(p: PlanPathInput): PlanStep {
     return { kind: STEP.processing, factor: factor, months: null, basis: '', availability: AV.notCollected, why: why, evidence: null }
   }
   const m = scoped[0]
-  // 🔴 value=null 是官方的隐私抑制 / 不适用(valueText 原文如 "N/A"),**不是 0 周**
   let months: MaybeNum = null
   if (m.value != null) {
     months = monthsFromUnit({ value: m.value, unit: m.unit })
@@ -565,7 +565,9 @@ function daysBetween(input: DaysIn): number {
 /**
  * 三路在库事件源合并 + 抽选节奏统计。诚实红线循 E6-04:省分数带分制标注(≠CRS);
  * 节奏只报历史统计不预测下一次(伪权威红线)。#135:联邦 EE 历次抽选已并进 pnp_draws,
- * FED 行不混省节奏(另走 eeCadence)。
+ * FED 行不混省节奏(另走 eeCadence,历史未入库只报「距今」;二期历史入库后并入 cadence)。
+ * 省级节奏按 省×项目 分组(kind=draw 且有日期);分组键 = label||stream(项目级)——
+ * stream 每期写法不同(BC 各 ITA 因素/AB 各期描述),按它分组会碎成一期一卡。
  *
  * @param db 能打 SQL 的东西。
  * @returns 事件流、省级节奏与联邦 EE 距今。
@@ -588,8 +590,6 @@ export async function fetchTimeline(db: Db): TimelineOut {
   }
   events.sort(byDateDesc)
 
-  // 抽选节奏(省×项目,kind=draw 且有日期)。分组键=label||stream(项目级):stream 每期写法不同
-  // (BC 各 ITA 因素/AB 各期描述),按它分组会碎成一期一卡。
   const byStream = new Map<string, CadenceGroup>()
   for (const r of draws) {
     if (r.kind === KIND_NOTICE || r.province === PROV_FED) {
@@ -642,7 +642,6 @@ export async function fetchTimeline(db: Db): TimelineOut {
   }
   cadence.sort(byProvStream)
 
-  // EE:历史未入库,只报「距今」(二期=EE draws 历史入库后并入 cadence)
   const eeCadence: EeCadence[] = []
   for (const r of ee) {
     const last = day(r.draw_date)
