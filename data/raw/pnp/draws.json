@@ -1,12 +1,26 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-08-18",
+  "fetched": "2026-08-21",
   "provinces": {
     "BC": {
       "label": "BC PNP Skills Immigration",
       "scale": "SIRS",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
       "draws": [
+        {
+          "date": "2026-08-20",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Minimum wage of $55/hour and $110,000/year, and NOC 0, 1, 2, or 3",
+          "score": null,
+          "invitations": 337
+        },
+        {
+          "date": "2026-08-20",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Points",
+          "score": 132,
+          "invitations": 265
+        },
         {
           "date": "2026-08-06",
           "stream": "Care: Childcare",

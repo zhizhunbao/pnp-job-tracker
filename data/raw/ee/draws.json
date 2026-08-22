@@ -1,8 +1,15 @@
 {
   "source": "Express Entry rounds of invitations",
   "url": "https://www.canada.ca/content/dam/ircc/documents/json/ee_rounds_123_en.json",
-  "fetched": "2026-08-18",
+  "fetched": "2026-08-21",
   "byCategory": {
+    "french": {
+      "date": "2026-08-19",
+      "crs": 382,
+      "size": 5000,
+      "drawName": "French-Language proficiency 2026-Version 2",
+      "drawNumber": 437
+    },
     "cec": {
       "date": "2026-08-18",
       "crs": 523,
@@ -23,13 +30,6 @@
       "size": 300,
       "drawName": "Transport Occupations, 2026-Version 2",
       "drawNumber": 434
-    },
-    "french": {
-      "date": "2026-08-06",
-      "crs": 391,
-      "size": 5000,
-      "drawName": "French-Language proficiency 2026-Version 2",
-      "drawNumber": 433
     },
     "military": {
       "date": "2026-07-23",
@@ -103,6 +103,92 @@
     }
   },
   "history": {
+    "french": [
+      {
+        "date": "2026-08-19",
+        "crs": 382,
+        "size": 5000,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 437
+      },
+      {
+        "date": "2026-08-06",
+        "crs": 391,
+        "size": 5000,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 433
+      },
+      {
+        "date": "2026-07-22",
+        "crs": 399,
+        "size": 5000,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 429
+      },
+      {
+        "date": "2026-07-09",
+        "crs": 420,
+        "size": 5000,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 425
+      },
+      {
+        "date": "2026-05-28",
+        "crs": 409,
+        "size": 4500,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 418
+      },
+      {
+        "date": "2026-04-29",
+        "crs": 400,
+        "size": 4000,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 414
+      },
+      {
+        "date": "2026-04-15",
+        "crs": 419,
+        "size": 4000,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 411
+      },
+      {
+        "date": "2026-03-18",
+        "crs": 393,
+        "size": 4000,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 405
+      },
+      {
+        "date": "2026-03-04",
+        "crs": 397,
+        "size": 5500,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 401
+      },
+      {
+        "date": "2026-02-06",
+        "crs": 400,
+        "size": 8500,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 394
+      },
+      {
+        "date": "2025-12-17",
+        "crs": 399,
+        "size": 6000,
+        "drawName": "French language proficiency (Version 1)",
+        "drawNumber": 388
+      },
+      {
+        "date": "2025-11-28",
+        "crs": 408,
+        "size": 6000,
+        "drawName": "French language proficiency (Version 1)",
+        "drawNumber": 382
+      }
+    ],
     "cec": [
       {
         "date": "2026-08-18",
@@ -284,92 +370,6 @@
         "drawNumber": 434
       }
     ],
-    "french": [
-      {
-        "date": "2026-08-06",
-        "crs": 391,
-        "size": 5000,
-        "drawName": "French-Language proficiency 2026-Version 2",
-        "drawNumber": 433
-      },
-      {
-        "date": "2026-07-22",
-        "crs": 399,
-        "size": 5000,
-        "drawName": "French-Language proficiency 2026-Version 2",
-        "drawNumber": 429
-      },
-      {
-        "date": "2026-07-09",
-        "crs": 420,
-        "size": 5000,
-        "drawName": "French-Language proficiency 2026-Version 2",
-        "drawNumber": 425
-      },
-      {
-        "date": "2026-05-28",
-        "crs": 409,
-        "size": 4500,
-        "drawName": "French-Language proficiency 2026-Version 2",
-        "drawNumber": 418
-      },
-      {
-        "date": "2026-04-29",
-        "crs": 400,
-        "size": 4000,
-        "drawName": "French-Language proficiency 2026-Version 2",
-        "drawNumber": 414
-      },
-      {
-        "date": "2026-04-15",
-        "crs": 419,
-        "size": 4000,
-        "drawName": "French-Language proficiency 2026-Version 2",
-        "drawNumber": 411
-      },
-      {
-        "date": "2026-03-18",
-        "crs": 393,
-        "size": 4000,
-        "drawName": "French-Language proficiency 2026-Version 2",
-        "drawNumber": 405
-      },
-      {
-        "date": "2026-03-04",
-        "crs": 397,
-        "size": 5500,
-        "drawName": "French-Language proficiency 2026-Version 2",
-        "drawNumber": 401
-      },
-      {
-        "date": "2026-02-06",
-        "crs": 400,
-        "size": 8500,
-        "drawName": "French-Language proficiency 2026-Version 2",
-        "drawNumber": 394
-      },
-      {
-        "date": "2025-12-17",
-        "crs": 399,
-        "size": 6000,
-        "drawName": "French language proficiency (Version 1)",
-        "drawNumber": 388
-      },
-      {
-        "date": "2025-11-28",
-        "crs": 408,
-        "size": 6000,
-        "drawName": "French language proficiency (Version 1)",
-        "drawNumber": 382
-      },
-      {
-        "date": "2025-10-29",
-        "crs": 416,
-        "size": 6000,
-        "drawName": "French language proficiency (Version 1)",
-        "drawNumber": 376
-      }
-    ],
     "military": [
       {
         "date": "2026-07-23",
@@ -529,6 +529,13 @@
   },
   "recent": [
     {
+      "date": "2026-08-19",
+      "crs": 382,
+      "size": 5000,
+      "name": "French-Language proficiency 2026-Version 2",
+      "number": 437
+    },
+    {
       "date": "2026-08-18",
       "crs": 523,
       "size": 1000,
@@ -660,13 +667,6 @@
       "size": 4500,
       "name": "French-Language proficiency 2026-Version 2",
       "number": 418
-    },
-    {
-      "date": "2026-05-27",
-      "crs": 518,
-      "size": 3000,
-      "name": "Canadian Experience Class",
-      "number": 417
     }
   ]
 }

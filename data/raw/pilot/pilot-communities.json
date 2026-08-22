@@ -1,5 +1,5 @@
 {
- "fetched": "2026-08-18",
+ "fetched": "2026-08-21",
  "source": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots.html",
  "note": "IRCC 官方参与社区名单(fed-rcip crawl 缓存解析)。cities=人工核对的 Job Bank 城市映射,空=区域型社区界线未举证不打标(宁漏勿错);试点须雇主被社区指定,城市命中只是粗筛信号。",
  "rows": [
