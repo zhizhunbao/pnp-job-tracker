@@ -8,23 +8,19 @@
  * 🔴 noc 口径:名录**没写职业**的行照常保留(空 = 官方没列清单,不是「不招这个职业」)。
  * 挂了回空表(total 0),前端保底继续用 SSR 那一页,绝不 500。
  */
-import { getPayload } from 'payload'
-
-import config from '@/payload.config'
-import { EMP_PAGE_SIZE, loadEmployerPage, normalizeEmployerFilters, type Pool } from '@/lib/employers/server'
+import { getDb } from '@/lib/db/server'
+import { EMP_PAGE_SIZE, loadEmployerPage, normalizeEmployerFilters } from '@/lib/employers/server'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export async function GET(req: Request) {
   const sp = new URL(req.url).searchParams
-  const f = normalizeEmployerFilters((k) => sp.get(k))
+  const f = normalizeEmployerFilters({ get: function get(k: string) { return sp.get(k) }, defMode: 'designated' })
   const sizeRaw = Number(sp.get('pageSize'))
   const pageSize = Number.isFinite(sizeRaw) && sizeRaw > 0 ? Math.min(Math.floor(sizeRaw), 100) : EMP_PAGE_SIZE
   try {
-    const payload = await getPayload({ config: await config })
-    const pool = (payload.db as { pool?: Pool }).pool
-    const data = await loadEmployerPage(pool, f, pageSize)
+    const data = await loadEmployerPage({ db: await getDb(), filters: f, pageSize })
     return Response.json(data, { headers: { 'Cache-Control': 'public, max-age=120, stale-while-revalidate=600' } })
   } catch {
     return Response.json({

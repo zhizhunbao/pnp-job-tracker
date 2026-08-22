@@ -5,6 +5,8 @@ import { getUser, isPro } from '@/lib/quota/server'
 import { loadMatchDims } from '@/lib/jobs/server'
 import type { CompareRow } from '@/lib/employers'
 import { compareEmployers } from '@/lib/employers/server'
+import { getDb } from '@/lib/db/server'
+import { hasProfile, normalizeProfile } from '@/lib/jobs'
 import { Compare } from './Compare'
 
 export const dynamic = 'force-dynamic'
@@ -22,7 +24,8 @@ export default async function CompareEmployersPage({ searchParams }: { searchPar
   let rows: CompareRow[] = []
   if (pro && names.length >= 2) {
     const dims = await loadMatchDims().catch(() => null)
-    rows = await compareEmployers(names, (user as any)?.profile, dims)
+    const p = normalizeProfile((user as any)?.profile)
+    rows = await compareEmployers({ db: await getDb(), names, profile: hasProfile(p) ? p : null, dims })
   }
   return <Compare names={names} rows={rows} pro={pro} loggedIn={!!user} />
 }

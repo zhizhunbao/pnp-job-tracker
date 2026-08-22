@@ -28,7 +28,7 @@ fi
 echo "[pre-push] eslint 过闸。"
 
 # warn 棘轮:改动碰到九域时,warning 总数只许降不许升(基线 .githooks/lint-baseline.json)
-if echo "$files" | grep -qE 'src/lib/(consult|db|ruling|gauge|points|agent|llm)/|src/lib/(error|log)\.ts'; then
+if echo "$files" | grep -qE 'src/lib/(consult|db|employers|ruling|gauge|points|agent|llm)/|src/lib/(error|log)\.ts'; then
   echo "[pre-push] warn 棘轮…"
   node ../.githooks/lint-ratchet.mjs || exit 1
 fi

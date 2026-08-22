@@ -2,8 +2,7 @@
 // 事实免费结论收费:浏览/筛选在 /employers 免费,**成文件带走的名单**是付费交付物。
 // 红线:CSV 只含库内可核验事实列,无任何「好签/成功率」字样(凭证=粗筛信号非担保承诺)。
 import { headers } from 'next/headers'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
+import { getDb } from '@/lib/db/server'
 import { getUser, isPro } from '@/lib/quota/server'
 import { applySponsorFilters, fetchSponsorEmployers } from '@/lib/employers/server'
 
@@ -31,8 +30,7 @@ export async function GET(req: Request) {
     q: one('q').slice(0, 80),
     sort: (one('sort') === 'skilled' ? 'skilled' : 'open') as 'open' | 'skilled',
   }
-  const payload = await getPayload({ config: await config })
-  const rows = applySponsorFilters(await fetchSponsorEmployers((payload.db as any).pool), filters)
+  const rows = applySponsorFilters({ rows: await fetchSponsorEmployers(await getDb()), filters })
 
   const head = ['employer', 'aip_designated', 'lmia_3mo', 'lmia_6mo', 'lmia_1yr', 'lmia_positions_2yr', 'lmia_skilled', 'lmia_last_quarter', 'pnp_streams', 'pnp_in_demand_hit', 'open_jobs', 'provinces', 'city']
   const body = rows.map((r) => [

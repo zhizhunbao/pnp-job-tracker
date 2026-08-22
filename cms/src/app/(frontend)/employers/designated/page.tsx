@@ -1,6 +1,7 @@
 // 指定雇主名录入口(2026-08-16 重做:与 /employers/hiring 合并成同一块**雇主板**,口径作筛选项之一)。
 // 入口契约不变:/employers/designated?program=AIP&prov=NS 仍直达并预置筛选(初评表「查雇主」的落点)。
 import { employersBoardProps } from '@/lib/employers/server'
+import { getDb } from '@/lib/db/server'
 import { Employers } from '../Employers'
 
 export const dynamic = 'force-dynamic'
@@ -17,6 +18,6 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 }
 
 export default async function DesignatedEmployersPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const props = await employersBoardProps(await searchParams, 'designated')
+  const props = await employersBoardProps({ sp: await searchParams, mode: 'designated', db: await getDb() })
   return <Employers {...props} />
 }

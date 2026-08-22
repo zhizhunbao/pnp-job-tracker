@@ -393,12 +393,12 @@ export async function POST(req: NextRequest) {
   const coName = (job.company || '').trim()
   if (field === 'company' && !isChat && coName && coName.length <= 200 && friendLlmReady()) {
     try {
-      const payload = await getPayload({ config: await config })
-      const pool = (payload.db as any).pool
-      const row = await companyRow(pool, coName)
+      const { getDb } = await import('@/lib/db/server')
+      const db = await getDb()
+      const row = await companyRow({ db, name: coName })
       if (row) {
         const hasStored = !!((job.companyDescription || '').trim() || (job.companySectors || '').trim())
-        web = row.cached || (!hasStored ? await investigateCompany(pool, row.id, coName) : null)
+        web = row.cached || (!hasStored ? await investigateCompany({ db, id: row.id, name: coName }) : null)
       }
     } catch { /* 调查层任何异常不拦初判 */ }
   }

@@ -403,3 +403,43 @@ export const RULING_LOG = {
    */
   directoryQueryFailed: 'designated employers query failed, not cached: ',
 } as const
+
+/**
+ * `lib/employers` 写出去的全部字面量。
+ */
+export const EMP_LOG = {
+  /**
+   * 这个域每一行日志的来源标签。
+   */
+  tag: 'employers',
+
+  /**
+   * 雇主板一页取数挂了(回空表不 500,但必须留痕)。
+   */
+  pageQueryFailed: 'employer page query failed, falling back to empty: ',
+
+  /**
+   * 懒建公司最小行失败(背调没有落脚点,这次不查)。
+   */
+  lazyInsertFailed: 'lazy company insert failed, skipping research: ',
+
+  /**
+   * 缓存的调查来源 JSON 解析不出(按无来源处理,简介照用)。
+   */
+  sourcesParseFailed: 'cached research sources parse failed, treating as none: ',
+
+  /**
+   * Wikidata 回填写库失败(别名丢这一次,调查主体不受影响)。
+   */
+  aliasWriteFailed: 'wikidata alias backfill write failed: ',
+
+  /**
+   * Wikidata 懒查失败(超时/掉线;不重试 —— 一家公司一生一次,宁缺勿滥)。
+   */
+  wikidataFailed: 'wikidata lookup failed, skipping enrichment: ',
+
+  /**
+   * 难度 JSON 解析不出(该省难度档落空,对照页照出)。
+   */
+  difficultyParseFailed: 'difficulty json parse failed for province: ',
+} as const

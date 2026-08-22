@@ -105,6 +105,11 @@ export const ERR_NAME = {
    * 网关那一种。名字沿用旧类名,因为生产日志是靠它 grep 的。
    */
   gateway: 'FriendLlmError',
+
+  /**
+   * Wikidata 懒查的 HTTP 失败(employers 域;只在域内 catch 留痕,不见客)。
+   */
+  wikidata: 'WikidataHttpError',
 }
 
 /**

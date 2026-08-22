@@ -11,6 +11,7 @@ import { getUser } from '@/lib/quota/server'
 import { freeGate } from '@/lib/quota/server'
 import { friendLlmReady } from '@/lib/llm'
 import { companyRow, investigateCompany } from '@/lib/employers/server'
+import { getDb } from '@/lib/db/server'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -20,15 +21,14 @@ export async function POST(req: NextRequest) {
   let name = ''
   try { name = String((await req.json())?.name || '').trim() } catch { /* fallthrough */ }
   if (!name || name.length > 200) return Response.json({ ok: false }, { status: 400 })
-  const payload = await getPayload({ config: await config })
-  const pool = (payload.db as any).pool
-  const row = await companyRow(pool, name)
+  const db = await getDb()
+  const row = await companyRow({ db, name })
   if (!row) return new Response('', { status: 204 })
   if (row.cached) return Response.json(row.cached)
   // 第25轮打码批:调查并入统一免费池(缓存命中不计费)——原私设 IP 日限绕过全站额度,匿名裸用
   const g = freeGate(await getUser(req.headers), req)
   if (g.block) return g.block
-  const out = await investigateCompany(pool, row.id, name)
+  const out = await investigateCompany({ db, id: row.id, name })
   if (!out) return new Response('', { status: 204 })
   return Response.json(out)
 }
