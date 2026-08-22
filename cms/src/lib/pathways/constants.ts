@@ -8,9 +8,9 @@
  * @time 2026-08-22 01:00:16
  */
 
-// eslint-disable-next-line local/no-import-in-leaf -- 数据体的键完备性护栏要本域键型(特批牌形态;「能让编译器管的别写脚本管」)
+
 import type { GateKey, PathwayKey, StatusAsk } from './types'
-// eslint-disable-next-line local/no-import-in-leaf -- 语言轴由 i18n 基建持有,三语表的形状检查靠它
+
 import type { Lang } from '../i18n'
 
 // 🔴 本文件是**通道数据本体**(Frank 2026-08-22 拍板:策略就是常量,并入常量抽屉;
@@ -96,11 +96,37 @@ export const FED_EE: PathwayStrategy = {
   reqStream: null,
   listRequired: null,
   drawFallbackProvinceWide: false,
-  ui: { program: 'EE', regionLabelKey: 'dp.federal', jobsSource: null, afterOfferOkKey: null, offerGapKey: null, jobsQuery: null, seeJobsKey: null },
+  ui: {
+    program: 'EE',
+    regionLabelKey: 'dp.federal',
+    jobsSource: null,
+    afterOfferOkKey: null,
+    offerGapKey: null,
+    jobsQuery: null,
+    seeJobsKey: null,
+  },
   gates: {
-    offer: { need: 'notRequired', basis: 'absent', url: EE_URL, fetched: D, note: null },
-    statusInCanada: { need: 'notRequired', basis: 'absent', url: EE_URL, fetched: D, note: null },
-    credentialCanada: { need: 'notRequired', basis: 'absent', url: EE_URL, fetched: D, note: null },
+    offer: {
+      need: 'notRequired',
+      basis: 'absent',
+      url: EE_URL,
+      fetched: D,
+      note: null,
+    },
+    statusInCanada: {
+      need: 'notRequired',
+      basis: 'absent',
+      url: EE_URL,
+      fetched: D,
+      note: null,
+    },
+    credentialCanada: {
+      need: 'notRequired',
+      basis: 'absent',
+      url: EE_URL,
+      fetched: D,
+      note: null,
+    },
     fieldMatch: null,
     french: null,
   },
@@ -135,13 +161,28 @@ export const ON_WORKFORCE: PathwayStrategy = {
   drawFallbackProvinceWide: false,
   // ⚠️ ON 官方第三档(近 5 年同 NOC 2 年经验)本站未收录(C5b-0 留痕),这里只判已入库的两档。
   gates: {
-    offer: { need: 'required', url: ON_URL, fetched: D,
+    offer: {
+      need: 'required',
+      url: ON_URL,
+      fetched: D,
       quote: 'The Ontario Workforce Priority stream offers eligible skilled foreign workers with a qualifying job offer and work experience in any National Occupational Classification ( NOC ) occupation',
-      note: '例外:自雇医生无需 offer(官方同页原句「The stream is also available to eligible self-employed physicians who do not have a job offer.」)', asks: null },
-    statusInCanada: { need: 'notRequired', url: ON_URL, fetched: D,
+      note: '例外:自雇医生无需 offer(官方同页原句「The stream is also available to eligible self-employed physicians who do not have a job offer.」)',
+      asks: null,
+    },
+    statusInCanada: {
+      need: 'notRequired',
+      url: ON_URL,
+      fetched: D,
       quote: 'Applicants may not qualify for nomination if they are residing in Canada without valid legal status at the time of nomination.',
-      note: '条件句:管的是「若已在境内则须有合法身份」,不构成「必须在境内」' },
-    credentialCanada: { need: 'notRequired', basis: 'absent', url: ON_URL, fetched: D, note: null },
+      note: '条件句:管的是「若已在境内则须有合法身份」,不构成「必须在境内」',
+    },
+    credentialCanada: {
+      need: 'notRequired',
+      basis: 'absent',
+      url: ON_URL,
+      fetched: D,
+      note: null,
+    },
     fieldMatch: null,
     french: null,
   },
@@ -178,15 +219,30 @@ export const NB_SW: PathwayStrategy = {
   listRequired: null,
   drawFallbackProvinceWide: false,
   gates: {
-    offer: { need: 'required', url: NB_SW_URL, fetched: D,
+    offer: {
+      need: 'required',
+      url: NB_SW_URL,
+      fetched: D,
       quote: 'have the support of an eligible employer who has been actively operating in New Brunswick for the past 24 months, providing goods or services',
-      note: 'Experience pathway 另写「be working full time in a non-seasonal position for the employer who is supporting your application」—— 雇主支持是硬闸', asks: null },
+      note: 'Experience pathway 另写「be working full time in a non-seasonal position for the employer who is supporting your application」—— 雇主支持是硬闸',
+      asks: null,
+    },
     // 问的是「住在新省满 6 个月」,不是「人在加拿大」(2026-08-15 拆闸:asks=provResidence)
-    statusInCanada: { need: 'required', asks: 'provResidence', url: NB_SW_URL, fetched: D,
+    statusInCanada: {
+      need: 'required',
+      asks: 'provResidence',
+      url: NB_SW_URL,
+      fetched: D,
       quote: 'have lived in New Brunswick for the past six months',
-      note: 'Experience pathway 专条;另两条 pathway(Graduates / Priority Occupations)不是本站 NB-sw 判的那条' },
-    credentialCanada: { need: 'notRequired', basis: 'absent', url: NB_SW_URL, fetched: D,
-      note: '资格清单只写「have at least a high school diploma」,**没写必须是加拿大学历**;要加拿大学历的是 Graduates 那条 pathway' },
+      note: 'Experience pathway 专条;另两条 pathway(Graduates / Priority Occupations)不是本站 NB-sw 判的那条',
+    },
+    credentialCanada: {
+      need: 'notRequired',
+      basis: 'absent',
+      url: NB_SW_URL,
+      fetched: D,
+      note: '资格清单只写「have at least a high school diploma」,**没写必须是加拿大学历**;要加拿大学历的是 Graduates 那条 pathway',
+    },
     fieldMatch: null,
     french: null,
   },
@@ -223,10 +279,28 @@ export const NS_SW: PathwayStrategy = {
   listRequired: null,
   drawFallbackProvinceWide: false,
   gates: {
-    offer: { need: 'required', url: NS_URL, fetched: D,
-      quote: 'To submit an expression of interest (EOI) you must: have a full-time permanent job offer from a Nova Scotia employer', note: null, asks: null },
-    statusInCanada: { need: 'notRequired', basis: 'absent', url: NS_URL, fetched: D, note: null },
-    credentialCanada: { need: 'notRequired', basis: 'absent', url: NS_URL, fetched: D, note: null },
+    offer: {
+      need: 'required',
+      url: NS_URL,
+      fetched: D,
+      quote: 'To submit an expression of interest (EOI) you must: have a full-time permanent job offer from a Nova Scotia employer',
+      note: null,
+      asks: null,
+    },
+    statusInCanada: {
+      need: 'notRequired',
+      basis: 'absent',
+      url: NS_URL,
+      fetched: D,
+      note: null,
+    },
+    credentialCanada: {
+      need: 'notRequired',
+      basis: 'absent',
+      url: NS_URL,
+      fetched: D,
+      note: null,
+    },
     fieldMatch: null,
     french: null,
   },
@@ -260,11 +334,28 @@ export const SK_OFFER: PathwayStrategy = {
   listRequired: null,
   drawFallbackProvinceWide: false,
   gates: {
-    offer: { need: 'required', url: SK_URL, fetched: D,
+    offer: {
+      need: 'required',
+      url: SK_URL,
+      fetched: D,
       quote: 'Employment Offer Learn what you need to apply to the SINP as an international skilled worker with an employment offer from Saskatchewan.',
-      note: '同页另一条 OID 子通道明写「Don’t have a job offer in Saskatchewan but are highly skilled in an in-demand occupation.」—— 两条是并列关系,别混判', asks: null },
-    statusInCanada: { need: 'notRequired', basis: 'absent', url: SK_URL, fetched: D, note: null },
-    credentialCanada: { need: 'notRequired', basis: 'absent', url: SK_URL, fetched: D, note: null },
+      note: '同页另一条 OID 子通道明写「Don’t have a job offer in Saskatchewan but are highly skilled in an in-demand occupation.」—— 两条是并列关系,别混判',
+      asks: null,
+    },
+    statusInCanada: {
+      need: 'notRequired',
+      basis: 'absent',
+      url: SK_URL,
+      fetched: D,
+      note: null,
+    },
+    credentialCanada: {
+      need: 'notRequired',
+      basis: 'absent',
+      url: SK_URL,
+      fetched: D,
+      note: null,
+    },
     fieldMatch: null,
     french: null,
   },
@@ -308,13 +399,28 @@ export const AIP: PathwayStrategy = {
     seeJobsKey: 'dp.planSeeJobsAip',
   },
   gates: {
-    offer: { need: 'required', url: AIP_URL, fetched: D,
-      quote: 'You must receive a job offer from a designated employer in Atlantic Canada to participate in the program.', note: null, asks: null },
-    statusInCanada: { need: 'notRequired', url: AIP_URL, fetched: D,
-      quote: 'You can be living abroad or in Canada as a temporary resident.', note: null },
-    credentialCanada: { need: 'notRequired', url: AIP_URL, fetched: D,
+    offer: {
+      need: 'required',
+      url: AIP_URL,
+      fetched: D,
+      quote: 'You must receive a job offer from a designated employer in Atlantic Canada to participate in the program.',
+      note: null,
+      asks: null,
+    },
+    statusInCanada: {
+      need: 'notRequired',
+      url: AIP_URL,
+      fetched: D,
+      quote: 'You can be living abroad or in Canada as a temporary resident.',
+      note: null,
+    },
+    credentialCanada: {
+      need: 'notRequired',
+      url: AIP_URL,
+      fetched: D,
       quote: 'You must be either a recent graduate of a recognized post-secondary institution in Atlantic Canada or a skilled worker',
-      note: '「毕业生 或 技术工人」是二选一,不是学历硬闸' },
+      note: '「毕业生 或 技术工人」是二选一,不是学历硬闸',
+    },
     fieldMatch: null,
     french: null,
   },
@@ -355,10 +461,28 @@ export const RCIP: PathwayStrategy = {
     seeJobsKey: 'dp.planSeeJobsPilot',
   },
   gates: {
-    offer: { need: 'required', url: RCIP_URL, fetched: D,
-      quote: 'Before you apply for permanent residence through this pilot, you need a job offer.', note: null, asks: null },
-    statusInCanada: { need: 'notRequired', basis: 'absent', url: RCIP_URL, fetched: D, note: null },
-    credentialCanada: { need: 'notRequired', basis: 'absent', url: RCIP_URL, fetched: D, note: null },
+    offer: {
+      need: 'required',
+      url: RCIP_URL,
+      fetched: D,
+      quote: 'Before you apply for permanent residence through this pilot, you need a job offer.',
+      note: null,
+      asks: null,
+    },
+    statusInCanada: {
+      need: 'notRequired',
+      basis: 'absent',
+      url: RCIP_URL,
+      fetched: D,
+      note: null,
+    },
+    credentialCanada: {
+      need: 'notRequired',
+      basis: 'absent',
+      url: RCIP_URL,
+      fetched: D,
+      note: null,
+    },
     fieldMatch: null,
     french: null,
   },
@@ -404,18 +528,39 @@ export const FCIP_PATHWAY: PathwayStrategy = {
   //    所以本通道的经验档会如实落「本站未收录」。补行走 etl/build_ee_rules.py(那里已备注过
   //    「Franco 语言规则不同,不共享 RCIP 那批行」),是另一件事,不在这里抄数字。
   gates: {
-    offer: { need: 'required', url: FCIP, fetched: D,
-      quote: 'have a valid job offer from a designated employer in the community', note: null, asks: null },
+    offer: {
+      need: 'required',
+      url: FCIP,
+      fetched: D,
+      quote: 'have a valid job offer from a designated employer in the community',
+      note: null,
+      asks: null,
+    },
     // 官方资格页通篇没有「必须已在境内」这类条款(与 RCIP 同):读过这一页、页上没有 → basis absent
-    statusInCanada: { need: 'notRequired', basis: 'absent', url: FCIP, fetched: D, note: null },
+    statusInCanada: {
+      need: 'notRequired',
+      basis: 'absent',
+      url: FCIP,
+      fetched: D,
+      note: null,
+    },
     // 「加拿大学历**或其等价的海外学历**」→ 不是加拿大学历闸
-    credentialCanada: { need: 'notRequired', url: FCIP, fetched: D,
+    credentialCanada: {
+      need: 'notRequired',
+      url: FCIP,
+      fetched: D,
       quote: 'have a Canadian educational credential or the foreign equivalent',
-      note: '有学历门槛,但**不要求是加拿大的** —— 两件事不许混(同 PE-sw 那条)' },
+      note: '有学历门槛,但**不要求是加拿大的** —— 两件事不许混(同 PE-sw 那条)',
+    },
     // 法语闸:整条 pilot 的定义性条件
-    french: { need: 'required', url: FCIP_LANG, fetched: D,
+    french: {
+      need: 'required',
+      url: FCIP_LANG,
+      fetched: D,
       quote: 'You need a minimum score of NCLC 5 in all 4 abilities to apply for the Francophone Community Immigration Pilot (FCIP).',
-      note: '社区名单见 ' + FCIP_OFFER, asks: null },
+      note: '社区名单见 ' + FCIP_OFFER,
+      asks: null,
+    },
     fieldMatch: null,
   },
   ui: {
@@ -459,13 +604,31 @@ export const MB_SWM: PathwayStrategy = {
   reqPrograms: null,
   listRequired: null,
   gates: {
-    offer: { need: 'required', url: MB_URL, fetched: MB_FETCHED,
-      quote: 'Your employer must demonstrate to the satisfaction of the MPNP that they are an established business with an ability to offer you full-time and long-term employment in Manitoba.', note: null, asks: null },
+    offer: {
+      need: 'required',
+      url: MB_URL,
+      fetched: MB_FETCHED,
+      quote: 'Your employer must demonstrate to the satisfaction of the MPNP that they are an established business with an ability to offer you full-time and long-term employment in Manitoba.',
+      note: null,
+      asks: null,
+    },
     // 问的是「在曼省在职」,不是「人在加拿大」(2026-08-15 拆闸:asks=provEmployment ——
     // 先前拿 inCanada 过闸,一个在安省上班的人照样被放行)
-    statusInCanada: { need: 'required', asks: 'provEmployment', url: MB_URL, fetched: MB_FETCHED,
-      quote: 'To apply to the Skilled Worker in Manitoba (SWM) Pathway, you must demonstrate ongoing Manitoba employment as your established connection to Manitoba.', note: null },
-    credentialCanada: { need: 'notRequired', basis: 'absent', url: MB_URL, fetched: MB_FETCHED, note: null },
+    statusInCanada: {
+      need: 'required',
+      asks: 'provEmployment',
+      url: MB_URL,
+      fetched: MB_FETCHED,
+      quote: 'To apply to the Skilled Worker in Manitoba (SWM) Pathway, you must demonstrate ongoing Manitoba employment as your established connection to Manitoba.',
+      note: null,
+    },
+    credentialCanada: {
+      need: 'notRequired',
+      basis: 'absent',
+      url: MB_URL,
+      fetched: MB_FETCHED,
+      note: null,
+    },
     fieldMatch: null,
     french: null,
   },
@@ -501,15 +664,41 @@ export const AB_OPPORTUNITY: PathwayStrategy = {
   drawFallbackProvinceWide: false,
   // 官方原句要求「already working full-time in Alberta」+ 有效工签 —— 拿到 offer 也不是 Day0 就能申请,
   // 话术如实降级(2026-08-15 Frank「失实的话术修掉,按如实的改」)
-  ui: { afterOfferOkKey: 'dp.planAfterOfferOkAb', program: null, jobsSource: null, regionLabelKey: null, offerGapKey: null, jobsQuery: null, seeJobsKey: null },
+  ui: {
+    afterOfferOkKey: 'dp.planAfterOfferOkAb',
+    program: null,
+    jobsSource: null,
+    regionLabelKey: null,
+    offerGapKey: null,
+    jobsQuery: null,
+    seeJobsKey: null,
+  },
   gates: {
-    offer: { need: 'required', url: AB_URL, fetched: D,
-      quote: 'The Alberta Opportunity Stream is for temporary foreign workers who are already working full-time in Alberta and have a full-time job offer from an Alberta employer in an eligible occupation.', note: null, asks: null },
+    offer: {
+      need: 'required',
+      url: AB_URL,
+      fetched: D,
+      quote: 'The Alberta Opportunity Stream is for temporary foreign workers who are already working full-time in Alberta and have a full-time job offer from an Alberta employer in an eligible occupation.',
+      note: null,
+      asks: null,
+    },
     // 问的是「有没有有效工签」,不是「人在不在加拿大」(2026-08-15 拆闸:asks=workPermit ——
     // 先前学签在读的人被这道闸放行,结论写成「只差一个 offer」)
-    statusInCanada: { need: 'required', asks: 'workPermit', url: AB_ELIG, fetched: D,
-      quote: 'At the time your application is submitted, and at the time AAIP assesses your application, you must have a valid work permit', note: null },
-    credentialCanada: { need: 'notRequired', basis: 'absent', url: AB_ELIG, fetched: D, note: null },
+    statusInCanada: {
+      need: 'required',
+      asks: 'workPermit',
+      url: AB_ELIG,
+      fetched: D,
+      quote: 'At the time your application is submitted, and at the time AAIP assesses your application, you must have a valid work permit',
+      note: null,
+    },
+    credentialCanada: {
+      need: 'notRequired',
+      basis: 'absent',
+      url: AB_ELIG,
+      fetched: D,
+      note: null,
+    },
     fieldMatch: null,
     french: null,
   },
@@ -542,14 +731,28 @@ export const BC_SW: PathwayStrategy = {
   listRequired: null,
   drawFallbackProvinceWide: false,
   gates: {
-    offer: { need: 'required', url: BC_GUIDE, fetched: D,
+    offer: {
+      need: 'required',
+      url: BC_GUIDE,
+      fetched: D,
       quote: 'You must have a valid job offer in an eligible occupation.',
-      note: '§4.1 (b);§3.5 另写明要全职且原则上不定期', asks: null },
-    statusInCanada: { need: 'notRequired', url: BC_GUIDE, fetched: D,
+      note: '§4.1 (b);§3.5 另写明要全职且原则上不定期',
+      asks: null,
+    },
+    statusInCanada: {
+      need: 'notRequired',
+      url: BC_GUIDE,
+      fetched: D,
       quote: 'The BC PNP will not nominate you if you: Are in Canada and are out of status',
-      note: '§3.3 是条件句:管的是「若已在境内则须有合法身份」，不构成「必须在境内」—— 同 ON-workforce 那条，别读反' },
-    credentialCanada: { need: 'notRequired', basis: 'absent', url: BC_GUIDE, fetched: D,
-      note: '通用要求 §3.1–3.13 与技术工人 §4.1(a)-(e) 逐条读完，没有任何学历门槛(学历只在注册打分表里算分，不是资格门槛)' },
+      note: '§3.3 是条件句:管的是「若已在境内则须有合法身份」，不构成「必须在境内」—— 同 ON-workforce 那条，别读反',
+    },
+    credentialCanada: {
+      need: 'notRequired',
+      basis: 'absent',
+      url: BC_GUIDE,
+      fetched: D,
+      note: '通用要求 §3.1–3.13 与技术工人 §4.1(a)-(e) 逐条读完，没有任何学历门槛(学历只在注册打分表里算分，不是资格门槛)',
+    },
     fieldMatch: null,
     french: null,
   },
@@ -583,13 +786,28 @@ export const BC_BUILD: PathwayStrategy = {
   drawFallbackProvinceWide: false,
   note: 'Build 是 Skills Immigration 池里的定向抽选,资格门槛与 Skilled Worker 同一套',
   gates: {
-    offer: { need: 'required', url: BC_GUIDE, fetched: D,
-      quote: 'You must have a valid job offer in an eligible occupation.', note: null, asks: null },
-    statusInCanada: { need: 'notRequired', url: BC_GUIDE, fetched: D,
+    offer: {
+      need: 'required',
+      url: BC_GUIDE,
+      fetched: D,
+      quote: 'You must have a valid job offer in an eligible occupation.',
+      note: null,
+      asks: null,
+    },
+    statusInCanada: {
+      need: 'notRequired',
+      url: BC_GUIDE,
+      fetched: D,
       quote: 'The BC PNP will not nominate you if you: Are in Canada and are out of status',
-      note: '同 BC-sw:§3.3 是条件句，不是「必须在境内」' },
-    credentialCanada: { need: 'notRequired', basis: 'absent', url: BC_GUIDE, fetched: D,
-      note: '同 BC-sw:通用要求与本通道专条里都没有学历门槛' },
+      note: '同 BC-sw:§3.3 是条件句，不是「必须在境内」',
+    },
+    credentialCanada: {
+      need: 'notRequired',
+      basis: 'absent',
+      url: BC_GUIDE,
+      fetched: D,
+      note: '同 BC-sw:通用要求与本通道专条里都没有学历门槛',
+    },
     fieldMatch: null,
     french: null,
   },
@@ -636,20 +854,42 @@ export const NL_INTL_GRAD: PathwayStrategy = {
   listRequired: null,
   drawFallbackProvinceWide: false,
   gates: {
-    offer: { need: 'required', url: NL_URL, fetched: D,
-      quote: 'Full-time job or job offer from an eligible Newfoundland and Labrador employer , guarantee a minimum of 30 hours per week, and be at least one year in duration with a reasonable expectation of extension.', note: null, asks: null },
+    offer: {
+      need: 'required',
+      url: NL_URL,
+      fetched: D,
+      quote: 'Full-time job or job offer from an eligible Newfoundland and Labrador employer , guarantee a minimum of 30 hours per week, and be at least one year in duration with a reasonable expectation of extension.',
+      note: null,
+      asks: null,
+    },
     // 指名要 PGWP,不是「人在加拿大」就行(2026-08-15 拆闸:asks=pgwp ——
     // 封闭工签、学签都不是 PGWP,不许拿「人在境内」冒充)
-    statusInCanada: { need: 'required', asks: 'pgwp', url: NL_URL, fetched: D,
-      quote: 'Must hold a valid post-graduation work permit (PGWP).', note: null },
-    credentialCanada: { need: 'required', url: NL_CATEGORY, fetched: D,
+    statusInCanada: {
+      need: 'required',
+      asks: 'pgwp',
+      url: NL_URL,
+      fetched: D,
+      quote: 'Must hold a valid post-graduation work permit (PGWP).',
+      note: null,
+    },
+    credentialCanada: {
+      need: 'required',
+      url: NL_CATEGORY,
+      fetched: D,
       quote: 'Applicant’s to this category must hold a valid post-graduation work permit (PGWP) and have a job offer with a Newfoundland and Labrador employer, meeting the employer criteria.',
-      note: 'PGWP 的前提就是加拿大院校毕业 —— 学历闸由 PGWP 反推,不是我们自己加的', asks: null },
+      note: 'PGWP 的前提就是加拿大院校毕业 —— 学历闸由 PGWP 反推,不是我们自己加的',
+      asks: null,
+    },
     // 专业对口(2026-08-15 Frank「毕业生干厨师靠谱吗?跨专业了怎么弄」→「加」):官方要求岗位与
     // 所学专业相关。先前只是一枚灰提醒胶囊(答不上就当没有障碍),收成真闸后由问卷两道题喂答案。
-    fieldMatch: { need: 'required', url: NL_POLICY, fetched: D,
+    fieldMatch: {
+      need: 'required',
+      url: NL_POLICY,
+      fetched: D,
       quote: 'Applicants to the International Graduate category should hold a fulltime position that is related to their field of study from the post-secondary program they completed in Canada.',
-      note: '省外院校毕业生更严:官方另写 offer 要与专业**直接**相关,且先在 NL 工作满 1 年', asks: null },
+      note: '省外院校毕业生更严:官方另写 offer 要与专业**直接**相关,且先在 NL 工作满 1 年',
+      asks: null,
+    },
     french: null,
   },
   // 例外:NL 本省院校(Memorial / College of the North Atlantic,该省公立高等院校就这两所)毕业生
@@ -700,16 +940,35 @@ export const PE_SW: PathwayStrategy = {
   drawStream: null,
   scorer: null,
   drawFallbackProvinceWide: false,
-  listRequired: { province: 'PE', streamRe: /occupations in demand/i },
+  listRequired: {
+    province: 'PE',
+    streamRe: /occupations in demand/i,
+  },
   gates: {
-    offer: { need: 'required', url: PE_GUIDE, fetched: D,
-      quote: 'have a full-time, non-seasonal (permanent or minimum of two years) job offer from a PEI employer in a high skilled occupation defined by the Training, Education, Experience, and Responsibility classification system as TEER category 0, 1, 2, or 3', note: null, asks: null },
+    offer: {
+      need: 'required',
+      url: PE_GUIDE,
+      fetched: D,
+      quote: 'have a full-time, non-seasonal (permanent or minimum of two years) job offer from a PEI employer in a high skilled occupation defined by the Training, Education, Experience, and Responsibility classification system as TEER category 0, 1, 2, or 3',
+      note: null,
+      asks: null,
+    },
     // 问的是「有没有有效工签」(2026-08-15 拆闸:asks=workPermit,同 AB)
-    statusInCanada: { need: 'required', asks: 'workPermit', url: PE_GUIDE, fetched: D,
+    statusInCanada: {
+      need: 'required',
+      asks: 'workPermit',
+      url: PE_GUIDE,
+      fetched: D,
       quote: 'have a valid work permit to be working in Canada',
-      note: '同页 Note 留了境外招募的口子:「The Skilled Worker Stream may be utilized for talent recruitment outside of Canada, if the Prince Edward Island Employer has received authorization from the Office of Immigration prior to issuing a job offer.」—— 但那道口子要**雇主事先获授权**,不是申请人自己能满足的条件,故资格闸按 bullet 记' },
-    credentialCanada: { need: 'notRequired', basis: 'absent', url: PE_GUIDE, fetched: D,
-      note: '资格清单里确有学历要求(「have successfully completed a post-secondary degree or diploma (minimum two-year program)」),但**没写必须是加拿大学历** —— 学历闸有、加拿大学历闸无' },
+      note: '同页 Note 留了境外招募的口子:「The Skilled Worker Stream may be utilized for talent recruitment outside of Canada, if the Prince Edward Island Employer has received authorization from the Office of Immigration prior to issuing a job offer.」—— 但那道口子要**雇主事先获授权**,不是申请人自己能满足的条件,故资格闸按 bullet 记',
+    },
+    credentialCanada: {
+      need: 'notRequired',
+      basis: 'absent',
+      url: PE_GUIDE,
+      fetched: D,
+      note: '资格清单里确有学历要求(「have successfully completed a post-secondary degree or diploma (minimum two-year program)」),但**没写必须是加拿大学历** —— 学历闸有、加拿大学历闸无',
+    },
     fieldMatch: null,
     french: null,
   },
@@ -814,7 +1073,11 @@ const pwKo: PathwayNames = {
 /**
  * 通道名三语表(消费方:i18n 装配进 t() 的扁平表)。
  */
-export const pathwayNames: Record<Lang, PathwayNames> = { zh: pwZh, en: pwEn, ko: pwKo }
+export const pathwayNames: Record<Lang, PathwayNames> = {
+  zh: pwZh,
+  en: pwEn,
+  ko: pwKo,
+}
 
 /**
  * 三类闸的人话名(题面与结论共用一份,前端不另写)。分界:闸**有哪几类、每类怎么记**在
@@ -822,26 +1085,62 @@ export const pathwayNames: Record<Lang, PathwayNames> = { zh: pwZh, en: pwEn, ko
  * (2026-08-17 从 lib/gateManifest.ts 搬去 i18n「文案只有一个家」,2026-08-22 按域迁回)。
  */
 export const gateLabels: Record<GateKey, Record<Lang, string>> = {
-  offer: { zh: 'job offer', en: 'job offer', ko: '잡 오퍼' },
-  statusInCanada: { zh: '境内身份', en: 'status in Canada', ko: '캐나다 체류 신분' },
-  credentialCanada: { zh: '加拿大学历', en: 'Canadian credential', ko: '캐나다 학력' },
+  offer: {
+    zh: 'job offer',
+    en: 'job offer',
+    ko: '잡 오퍼',
+  },
+  statusInCanada: {
+    zh: '境内身份',
+    en: 'status in Canada',
+    ko: '캐나다 체류 신분',
+  },
+  credentialCanada: {
+    zh: '加拿大学历',
+    en: 'Canadian credential',
+    ko: '캐나다 학력',
+  },
   // 2026-08-15 第四类闸(Frank「毕业生干厨师靠谱吗?跨专业了怎么弄」):NL 国际毕业生官方要求
   // 岗位与所学专业相关。先前只是一枚灰提醒胶囊,答不上就当没有障碍 —— 与工签闸同一种病,收成真闸。
-  fieldMatch: { zh: '专业对口', en: 'field of study match', ko: '전공 일치' },
+  fieldMatch: {
+    zh: '专业对口',
+    en: 'field of study match',
+    ko: '전공 일치',
+  },
   // 2026-08-15 第五类闸:FCIP 要 NCLC 5 **法语**四项。站里那道语言题问的是 CLB(英语的尺子),
   // 拿它当 NCLC 用 = 把不会法语的人判成达标再推去法语社区,故单开一闸、单问一题。
-  french: { zh: '法语(NCLC 5)', en: 'French NCLC 5', ko: '프랑스어 NCLC 5' },
+  french: {
+    zh: '法语(NCLC 5)',
+    en: 'French NCLC 5',
+    ko: '프랑스어 NCLC 5',
+  },
 }
 
 /**
  * statusInCanada 按 asks 拆开后的人话名(结论文案用它,不再统称「境内身份」)。
  */
 export const askLabels: Record<StatusAsk, Record<Lang, string>> = {
-  workPermit: { zh: '有效工签', en: 'work permit', ko: '유효한 취업 허가' },
+  workPermit: {
+    zh: '有效工签',
+    en: 'work permit',
+    ko: '유효한 취업 허가',
+  },
   // 拉丁缩写**括起来**(同 french 的「法语(NCLC 5)」):闸名会与「判不了」直接连写,
   // 裸的 `毕业工签 PGWP` 拼出来是「毕业工签 PGWP判不了」,措辞层那份带空格,两边逐字对不上
   // ——2026-08-15 夜判定矩阵测试实撞,与「NCLC 5判不了」同一个病
-  pgwp: { zh: '毕业工签(PGWP)', en: 'PGWP', ko: 'PGWP' },
-  provResidence: { zh: '在该省居住', en: 'residence in the province', ko: '해당 주 거주' },
-  provEmployment: { zh: '在该省在职', en: 'employment in the province', ko: '해당 주 재직' },
+  pgwp: {
+    zh: '毕业工签(PGWP)',
+    en: 'PGWP',
+    ko: 'PGWP',
+  },
+  provResidence: {
+    zh: '在该省居住',
+    en: 'residence in the province',
+    ko: '해당 주 거주',
+  },
+  provEmployment: {
+    zh: '在该省在职',
+    en: 'employment in the province',
+    ko: '해당 주 재직',
+  },
 }

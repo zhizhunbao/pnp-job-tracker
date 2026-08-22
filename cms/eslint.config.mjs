@@ -11,6 +11,7 @@ import nextTypeScript from 'eslint-config-next/typescript'
 import eslintComments from '@eslint-community/eslint-plugin-eslint-comments'
 import jsdoc from 'eslint-plugin-jsdoc'
 import importX from 'eslint-plugin-import-x'
+import stylistic from '@stylistic/eslint-plugin'
 
 // 带桶的模块(`lib/<名>/index.ts`)—— 下面那道边界闸认这几个,加新桶就加这里一行。
 const BARRELS = ['agent', 'consult', 'db', 'i18n', 'jobs', 'pathways', 'gauge', 'points', 'quiz', 'ruling', 'employers', 'plan', 'stats', 'quota', 'llm', 'resume', 'legal', 'official']
@@ -1306,6 +1307,21 @@ const eslintConfig = [
       '@typescript-eslint/no-misused-promises': 'error',
       '@typescript-eslint/await-thenable': 'error',
       '@typescript-eslint/switch-exhaustiveness-check': 'error',
+    },
+  },
+  {
+    // ── 数据表的对象排版(2026-08-22 Frank「闸门没有 json 格式化检查吗」):身份键+三语值的
+    //    嵌套表一键一块、一语一行,@stylistic 两条带 fixer —— 格式化由闸执行,不靠手排。
+    //    jobs/constants 不进:它的 W/FV 等扁平词表是**故意**多键一行分组的,展开反而毁可查性。
+    files: ['src/lib/official/constants.ts', 'src/lib/pathways/constants.ts', 'src/lib/consult/constants.ts', 'src/lib/legal/constants.ts'],
+    plugins: { '@stylistic': stylistic },
+    rules: {
+      '@stylistic/object-curly-newline': ['error', { ObjectExpression: { multiline: true, minProperties: 3 } }],
+      '@stylistic/object-property-newline': ['error', { allowAllPropertiesOnSameLine: false }],
+      // 断行后的缩进由这条重排(fixer 只断不排;legal/official 不在 REFACTORED 缩进块里,这里补上)
+      '@stylistic/indent': ['error', 2, { SwitchCase: 1 }],
+      '@stylistic/comma-dangle': ['error', 'always-multiline'],
+      '@stylistic/no-trailing-spaces': 'error',
     },
   },
   {
