@@ -234,9 +234,11 @@ pnp-job-tracker/
 >
 > `constants.ts` 常量 / `variables.ts` 运行时状态 / `prompts.ts` 给模型看的字
 > / `schemas.ts` 运行时校验(TypeBox 等) / `types.ts` 类型 / `functions.ts` 只有函数
+> / `rows.ts` 行构造器(SQL 原始行 → 本域形状的 to* 映射,一条 SQL 一个;体内只许词汇表 +
+> 纯拼装,不许业务判断 —— 2026-08-21 Frank 添的第十个抽屉,db 域的 rows 装词汇表与 queryRows 本体)
 > / `callbacks.ts` 签名归外部库管的函数 / `index.ts` + `server.ts` 两个门
 >
-> **只有这九个名字**,闸 `domain-file-names` 盯着(2026-08-20 Frank 立)。
+> **只有这十个名字**,闸 `domain-file-names` 盯着(2026-08-20 Frank 立,08-21 添 rows)。
 > 起个别的名字塞进来,一年后没人记得当初为什么破例;八个抽屉都装不下,
 > 说明那东西**不属于这个域**。
 

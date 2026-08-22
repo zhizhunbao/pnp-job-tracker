@@ -13,8 +13,12 @@
  */
 
 export {
-  count, numOrNull, poolOf, queryRows, show, text, textOrNull,
+  poolOf,
 } from './functions'
+
+export {
+  count, numOrNull, queryRows, show, text, textOrNull,
+} from './rows'
 
 export * as SQL from './sql'
 

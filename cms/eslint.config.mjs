@@ -317,12 +317,14 @@ const localRules = {
         type: 'suggestion',
         schema: [],
         messages: {
-          bad: '域里只许有这九个文件:{{ allowed }}。`{{ name }}` 不在其中 —— 装不下就说明它不属于这个域,别新起一个名字。',
+          bad: '域里只许有这十个文件:{{ allowed }}。`{{ name }}` 不在其中 —— 装不下就说明它不属于这个域,别新起一个名字。',
         },
       },
       create(context) {
+        // rows.ts 是 2026-08-21 Frank 添的第十个抽屉:SQL 原始行 → 本域形状的构造器(to* 行映射),
+        // 一条 SQL 一个;体内只许词汇表 + 纯拼装,不许业务判断(db 域的 rows 装词汇表与 queryRows 本体)。
         const ALLOWED = ['constants.ts', 'variables.ts', 'prompts.ts', 'schemas.ts', 'types.ts',
-          'functions.ts', 'callbacks.ts', 'index.ts', 'server.ts']
+          'functions.ts', 'rows.ts', 'callbacks.ts', 'index.ts', 'server.ts']
         return {
           Program(node) {
             const full = context.filename ?? ''
