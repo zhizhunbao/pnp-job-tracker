@@ -357,10 +357,8 @@ const localRules = {
             const parent = full.slice(0, cut)
             const cut2 = Math.max(parent.lastIndexOf('/'), parent.lastIndexOf(String.fromCharCode(92)))
             if ((name === 'sql.ts' || name === 'pool.ts') && parent.slice(cut2 + 1) === 'db') return
-            // pathways 是**通道数据特区**(Frank 2026-08-15「每个通道一个策略文件吧?不要混在一起吧」):
-            // 一条通道一个文件 + registry.ts 注册表,文件名就是内容说明 —— 与 db/sql.ts 同一性质的
-            // 「内容命名」特批,只认这一个目录,别的域不许借。
-            if (parent.slice(cut2 + 1) === 'pathways' && /^[a-z][a-z0-9-]*\.ts$/.test(name)) return
+            // (2026-08-22 拍板:pathways 的策略文件并入 constants.ts —— 08-15 的「一条通道一个
+            // 文件」目录特区随之撤销,可查性由 constants 里的分段横幅接续。)
             context.report({ node, messageId: 'bad', data: { allowed: ALLOWED.join(' / '), name } })
           },
         }
@@ -1212,15 +1210,10 @@ const eslintConfig = [
     rules: { 'local/domain-file-names': 'error', 'local/door-forward-only': 'error' },
   },
   {
-    // ── 通道策略文件:引用与判读为主的数据文件(pathways 特区,见 domain-file-names 的注)──
-    // 字段键的语义已在 types.ts 的 PathwayStrategy/GateRule 上逐格注释,再逐键抄一遍 JSDoc
-    // 是两份真相;策略文件里的旁注(quote 判读、拆闸缘由)比模板化键注释信息量大得多,别逼着换。
-    files: ['src/lib/pathways/*.ts'],
-    ignores: [
-      'src/lib/pathways/types.ts', 'src/lib/pathways/constants.ts', 'src/lib/pathways/functions.ts',
-      'src/lib/pathways/rows.ts', 'src/lib/pathways/callbacks.ts', 'src/lib/pathways/index.ts',
-      'src/lib/pathways/server.ts',
-    ],
+    // ── 通道常量 = 通道数据本体(2026-08-22 Frank 拍板并入 constants):策略声明的键语义
+    // 已在 types.ts 的 PathwayStrategy/GateRule 上逐格注释,再逐键抄一遍 JSDoc 是两份真相;
+    // 声明里的旁注(quote 判读、拆闸缘由)比模板化键注释信息量大得多,别逼着换。
+    files: ['src/lib/pathways/constants.ts'],
     plugins: { local: localRules },
     rules: { 'local/doc-every-member': 'off' },
   },

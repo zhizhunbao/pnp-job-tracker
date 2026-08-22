@@ -10,7 +10,7 @@
 import { queryRowsOrEmpty, SQL } from '../db'
 import type { Db } from '../db'
 import { GROUP_SEP, NEED_UNKNOWN, PILOT_TYPES, UI_JOBS_DEFAULT, UI_PROGRAM_DEFAULT, WHY_NO_SOURCE } from './constants'
-import { PATHWAYS } from './registry'
+import { PATHWAYS } from './constants'
 import { toPilotCommunity } from './rows'
 import { byProvThenType } from './callbacks'
 import type {

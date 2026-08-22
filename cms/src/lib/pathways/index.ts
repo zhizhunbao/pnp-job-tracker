@@ -8,7 +8,7 @@
  * @time 2026-08-22 01:00:16
  */
 
-export { PATHWAYS } from './registry'
+export { PATHWAYS } from './constants'
 export { aggregatePilotQuota, fieldMatchExemptionOf, gateOf, regionProvincesOf, uiOf } from './functions'
 export type {
   FieldMatchExemption, GateBook, GateKey, GateOfIn, GateRule, OutOfProvinceGrad, PathwayKey,
