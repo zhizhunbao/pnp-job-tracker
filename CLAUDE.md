@@ -478,7 +478,7 @@ cd cms && npm run dev                            # 开发:localhost:3000(读写�
 - 给只有一个消费者的东西加导出,或把它塞进共享叶子
 - 把带注释的常量搬成 `.json`(注释就是决策记录,搬走等于丢掉)
 - 给人看的文案散在 `lib/i18n/` 之外;给模型看的 prompt 混进 i18n
-- 不从桶 import(`@/lib/i18n/chat` ✗ → `@/lib/i18n` ✓);`index` 桶里混服务端依赖;`'use client'` 文件对 `/server` 做值导入
+- 不从桶 import(`@/lib/i18n/consult` ✗ → `@/lib/i18n` ✓);`index` 桶里混服务端依赖;`'use client'` 文件对 `/server` 做值导入
 - 自造页面容器或表格形态(用 `Shell` 与职位板那套);新页面缺右上角返回
 - 批量预抓公司级数据(公司级一律懒查询)
 - 未经协商添加新依赖
