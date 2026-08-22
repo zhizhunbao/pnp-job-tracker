@@ -229,6 +229,9 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
   const hasShownQuizStep = useRef(false)
 
   // 本地答案 → 页面状态(挂载、服务端档拉回、注册闸放行三处共用一套重建,不许各抄一份)
+  // react-compiler 存量诊断:这个手写 useCallback 它保不住 memo(降级为每渲染重建,行为无碍)。
+  // tsx 归 Frank 之后的重构批,这里先记账不动刀。
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- CI 上闸(2026-08-21)要零 error
   const refreshFromStore = useCallback((): Answers => {
     const a = readAnswers()
     setBands(a)

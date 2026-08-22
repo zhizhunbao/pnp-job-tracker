@@ -1,0 +1,39 @@
+# 代码闸上云(Frank 2026-08-21「先写闸门」):tsc + eslint(error 级)+ warn 棘轮。
+#
+# · 本地闸(pre-push 钩子)换台机器或 --no-verify 就绕过了,这里补最后一道;
+# · vitest 不在这儿跑:int 测试要连库(本地 dev 直连正式库的架构),CI 里放 DATABASE_URI
+#   等于把生产库钥匙交给 Actions —— 要上得先议(单独的只读副本或纯函数子集),别顺手。
+name: gates
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cms
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: cms/package-lock.json
+
+      - name: 依赖
+        run: npm ci
+
+      - name: tsc(零错)
+        run: npx tsc --noEmit
+
+      - name: eslint(error 级拦截)
+        run: npx eslint src tests --quiet
+
+      - name: warn 棘轮(九域只降不升)
+        run: node ../.githooks/lint-ratchet.mjs
