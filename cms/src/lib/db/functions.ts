@@ -20,7 +20,10 @@ import type { DbPool, PayloadWithPool } from './types'
  * 真想显示布尔列先问自己要显示什么词。
  */
 export function text(x: string | number | boolean | null): string {
-  return x == null ? '' : String(x)
+  if (x == null) {
+    return ''
+  }
+  return String(x)
 }
 
 /**
@@ -28,7 +31,10 @@ export function text(x: string | number | boolean | null): string {
  * 收 `string` 是因为 pg 的 numeric/bigint 按字符串交回来。
  */
 export function count(x: number | string | boolean | null): number {
-  return x == null ? 0 : Number(x)
+  if (x == null) {
+    return 0
+  }
+  return Number(x)
 }
 
 /**
@@ -68,7 +74,10 @@ export function textOrNull(x: string | number | boolean | null): string | null {
  * 语义与前三个词都不同 —— 前三个收进来,这个送出去。)
  */
 export function show(x: number | null): string {
-  return x == null ? '' : String(x)
+  if (x == null) {
+    return ''
+  }
+  return String(x)
 }
 
 /**

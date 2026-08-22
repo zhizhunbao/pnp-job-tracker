@@ -2083,6 +2083,31 @@ export type SegIn = {
 export type SegOut = string
 
 /**
+ * `orNone` 与 `orNone2` 的入参:官方可空的那一格。
+ */
+export type OrNoneIn = string | number | null
+
+/**
+ * `orNone2` 的入参。
+ */
+export type OrNone2In = {
+  /**
+   * 那一格的值。
+   */
+  v: OrNoneIn
+
+  /**
+   * 占位词。
+   */
+  fallback: string
+}
+
+/**
+ * `orNone` 与 `orNone2` 的返回:值本身或占位词。
+ */
+export type OrNoneOut = string | number
+
+/**
  * `subjectOf` 的入参:库里的 subject 列。
  */
 export type SubjectOfIn = string | null

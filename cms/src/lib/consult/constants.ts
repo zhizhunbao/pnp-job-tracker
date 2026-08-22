@@ -24,7 +24,7 @@ export const BASE = (process.env.CHAT_LLM_BASE || process.env.TRANSLATE_API_BASE
 /**
  * 网关的钥匙。直连局域网时没有鉴权,留空即可。
  */
-export const KEY = process.env.CHAT_LLM_KEY ?? process.env.TRANSLATE_API_KEY ?? ''
+export const KEY = process.env.CHAT_LLM_KEY || process.env.TRANSLATE_API_KEY || ''
 
 /**
  * 没有钥匙时给 pi 的占位。

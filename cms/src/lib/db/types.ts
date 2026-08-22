@@ -32,10 +32,12 @@ export type PayloadWithPool = {
   /**
    * payload 的 db adapter。
    */
+  // eslint-disable-next-line local/no-optional -- 别人家的对象:Payload 实例的形状由 payload 定,这格只是我们摸它的门
   db?: {
     /**
      * postgres adapter 挂的连接池。用别的 adapter 时没有这一格 —— dbOf 会抛人话。
      */
+    // eslint-disable-next-line local/no-optional -- 别人家的对象:非 postgres adapter 身上真没有这格,缺席是事实
     pool?: DbPool
   }
 }
@@ -60,6 +62,7 @@ export type Db = {
    * 跑一条语句。params 可省是 db 边界豁免:三分之一的语句是零参固定文本,
    * pg 自己的签名也是这个形状。
    */
+  // eslint-disable-next-line local/no-optional -- pg 的签名形状:零参语句不传第二参,跟 pg 保持同形
   query: (sql: string, params?: SqlParam[]) => Promise<QueryResult>
 }
 

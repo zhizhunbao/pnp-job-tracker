@@ -61,9 +61,9 @@ import type {
   LookupJobsIn, LookupJobsOut, LookupOpsIn, LookupOpsOut, LookupPermitIn, LookupPermitOut, LookupPointsIn,
   LookupPointsOut, LookupThresholdsIn, LookupThresholdsOut, MakeToolGatesIn, MakeToolGatesOut, MakeToolsIn,
   MakeToolsOut, ModelOut, NocOfIn, NocOfOut, NormNumIn, NormNumOut, NumberCheckIn, OnEventIn, OnEventOut,
-  OnTimeoutOut, OpsFactsIn, OpsFactsOut, OpsRow, PermitFactsIn, PermitFactsOut, PermitRow, PointsFactsIn,
+  OnTimeoutOut, OpsFactsIn, OpsFactsOut, PermitFactsIn, PermitFactsOut, PermitRow, PointsFactsIn,
   PointsFactsOut, PointsRow, ProvOfIn, ProvOfOut, RetryNoteIn, RetryNoteOut, RunGatesIn, RunGatesOut, RunIn,
-  SayIn, SayOut, SearchOccupationsIn, SearchOccupationsOut, SegIn, SegOut, StatusFactIn, StatusFactOut,
+  OrNone2In, OrNoneIn, OrNoneOut, SayIn, SayOut, SearchOccupationsIn, SearchOccupationsOut, SegIn, SegOut, StatusFactIn, StatusFactOut,
   StatusWordOfIn, StatusWordOfOut, StepIn, StepOut, SubjectOfIn, SubjectOfOut, EmptyAvailabilityIn,
   EmptyAvailabilityOut,
   SystemOfOut, TakeIn, TakeOut, TextOfIn, TextOfOut, ThresholdsFactsIn, ThresholdsFactsOut, ThresholdsRow,
@@ -167,7 +167,7 @@ function toProvOpen(r: ToProvOpenIn): ToProvOpenOut {
  * @returns 收窄后的对象。
  */
 function toTitleTeer(rows: ToTitleTeerIn): ToTitleTeerOut {
-  if (!rows.length) {
+  if (rows.length === 0) {
     return { title: '', teer: null }
   }
   return { title: text(rows[0].title), teer: numOrNull(rows[0].teer) }
@@ -357,10 +357,13 @@ async function lookupCoverage(input: LookupCoverageIn): LookupCoverageOut {
   const { rows } = await input.db.query(SQL.PNP_OCCUPATIONS_FLAT, [])
   const byProv = new Map<string, CoverageRow>()
   for (const r of rows.map(toOccFlat)) {
-    if (!PROVS.has(r.province) || r.noc !== input.noc) {
+    if (PROVS.has(r.province) === false || r.noc !== input.noc) {
       continue
     }
-    const row = byProv.get(r.province) ?? blankCoverage(r.province)
+    let row = byProv.get(r.province)
+    if (row == null) {
+      row = blankCoverage(r.province)
+    }
     if (r.type === INELIGIBLE) {
       row.excluded.push(r.stream)
     } else {
@@ -372,7 +375,11 @@ async function lookupCoverage(input: LookupCoverageIn): LookupCoverageOut {
   }
   const out: CoverageRow[] = []
   for (const prov of PROVS) {
-    out.push(byProv.get(prov) ?? blankCoverage(prov))
+    let row = byProv.get(prov)
+    if (row == null) {
+      row = blankCoverage(prov)
+    }
+    out.push(row)
   }
   return { noc: input.noc, rows: out }
 }
@@ -451,10 +458,13 @@ async function lookupThresholds(input: LookupThresholdsIn): LookupThresholdsOut 
   const byProv = new Map<string, Requirement[]>()
   for (const row of rows) {
     const req = toRequirement(row)
-    if (!PROVS.has(req.province) || req.province === QC) {
+    if (PROVS.has(req.province) === false || req.province === QC) {
       continue
     }
-    const got = byProv.get(req.province) ?? []
+    let got = byProv.get(req.province)
+    if (got == null) {
+      got = []
+    }
     got.push(req)
     byProv.set(req.province, got)
   }
@@ -475,8 +485,11 @@ async function lookupThresholds(input: LookupThresholdsIn): LookupThresholdsOut 
   }
   const out: ThresholdsRow[] = []
   for (const prov of want) {
-    const reqs = byProv.get(prov) ?? []
-    if (!reqs.length) {
+    let reqs = byProv.get(prov)
+    if (reqs == null) {
+      reqs = []
+    }
+    if (reqs.length === 0) {
       out.push({ prov, availability: AVAIL.notCollected, results: [] })
       continue
     }
@@ -498,7 +511,7 @@ async function lookupDraws(input: LookupDrawsIn): LookupDrawsOut {
   const { rows } = await input.db.query(SQL.PNP_DRAWS_BY_PROV, [input.prov])
   const out: DrawRow[] = []
   for (const r of rows.map(toDrawRow)) {
-    if (!r.evidence.url) {
+    if (r.evidence.url === '') {
       continue
     }
     if (out.length >= DRAW_LIMIT) {
@@ -575,7 +588,7 @@ async function lookupPermit(input: LookupPermitIn): LookupPermitOut {
  */
 async function lookupPoints(input: LookupPointsIn): LookupPointsOut {
   let kind = ''
-  if (!input.section && input.grid === GRID_CRS) {
+  if (input.section === '' && input.grid === GRID_CRS) {
     kind = KIND_SUMMARY
   }
   const { rows } = await input.db.query(SQL.EE_POINTS_GRID, [input.grid, input.section, kind, '', '', POINTS_LIMIT])
@@ -602,10 +615,36 @@ async function lookupPoints(input: LookupPointsIn): LookupPointsOut {
  * @returns 那一段;不出就空串。
  */
 function seg(input: SegIn): SegOut {
-  if (!input.when) {
+  if (input.when === false) {
     return ''
   }
   return input.text
+}
+
+/**
+ * 官方可空的数值进句子:没有就用占位横线(SEP.none),不折 0 —— 「没公布」和「0 人」是两句话。
+ *
+ * @param v 那一格的值。
+ * @returns 值本身;没有则占位横线。
+ */
+function orNone(v: OrNoneIn): OrNoneOut {
+  if (v == null) {
+    return SEP.none
+  }
+  return v
+}
+
+/**
+ * 可空值进日志:没有就用调用方给的占位词 —— 占位词随日志词表走,不跟 `orNone` 的显示占位混用。
+ *
+ * @param input 那一格的值与占位词。
+ * @returns 值本身;没有则占位词。
+ */
+function orNone2(input: OrNone2In): OrNoneOut {
+  if (input.v == null) {
+    return input.fallback
+  }
+  return input.v
 }
 
 /**
@@ -730,7 +769,7 @@ function tierText(res: TierTextIn): TierTextOut {
   if (res.tiers && res.tiers.length) {
     const parts: string[] = []
     for (const t of res.tiers) {
-      parts.push(`${t.area}${SEP.colon}${t.value ?? SEP.none}${unitTail}`)
+      parts.push(`${t.area}${SEP.colon}${orNone(t.value)}${unitTail}`)
     }
     return parts.join(SEP.semi)
   }
@@ -789,7 +828,7 @@ function thresholdsFacts(r: ThresholdsFactsIn): ThresholdsFactsOut {
  * @returns 事实清单。
  */
 function drawsFacts(r: DrawsFactsIn): DrawsFactsOut {
-  if (!r.rows.length) {
+  if (r.rows.length === 0) {
     return [statusFact({
       tool: TOOL_NAME.draws,
       label: `${r.prov}${LABEL.drawsList}`,
@@ -802,7 +841,7 @@ function drawsFacts(r: DrawsFactsIn): DrawsFactsOut {
   for (const row of r.rows) {
     out.push(fact({
       tool: TOOL_NAME.draws,
-      label: `${row.prov}${LABEL.drawRound}${row.date}${SPACE}${row.stream}${SEP.comma}${row.invitations ?? SEP.none}${LABEL.invited}`,
+      label: `${row.prov}${LABEL.drawRound}${row.date}${SPACE}${row.stream}${SEP.comma}${orNone(row.invitations)}${LABEL.invited}`,
       quote: `${row.prov}${SEP.dot}${row.date}${SEP.dot}${row.stream}`,
       value: row.score,
       valueText: seg({ when: row.score !== null, text: `${row.score}${SPACE}${row.scale}` }),
@@ -826,7 +865,7 @@ function drawsFacts(r: DrawsFactsIn): DrawsFactsOut {
  * @returns 事实清单。
  */
 function opsFacts(r: OpsFactsIn): OpsFactsOut {
-  if (!r.rows.length) {
+  if (r.rows.length === 0) {
     return [statusFact({
       tool: TOOL_NAME.ops,
       label: `${r.prov}${LABEL.opsList}`,
@@ -867,7 +906,7 @@ function opsFacts(r: OpsFactsIn): OpsFactsOut {
  * @returns 事实清单。
  */
 function eeFacts(r: EeFactsIn): EeFactsOut {
-  if (!r.rows.length) {
+  if (r.rows.length === 0) {
     return [statusFact({
       tool: TOOL_NAME.ee,
       label: `${SAID.noc}${r.noc}${LABEL.eeNone}`,
@@ -880,7 +919,7 @@ function eeFacts(r: EeFactsIn): EeFactsOut {
   for (const row of r.rows) {
     const last = seg({
       when: row.drawDate !== '',
-      text: `${LABEL.eeLast}${row.drawDate}${SEP.comma}${row.drawSize ?? SEP.none}${LABEL.invited}`,
+      text: `${LABEL.eeLast}${row.drawDate}${SEP.comma}${orNone(row.drawSize)}${LABEL.invited}`,
     })
     out.push(fact({
       tool: TOOL_NAME.ee,
@@ -903,7 +942,7 @@ function eeFacts(r: EeFactsIn): EeFactsOut {
  * @returns 事实清单。
  */
 function permitFacts(r: PermitFactsIn): PermitFactsOut {
-  if (!r.rows.length) {
+  if (r.rows.length === 0) {
     return [statusFact({
       tool: TOOL_NAME.permit,
       label: `${r.program}${LABEL.permitList}`,
@@ -936,7 +975,7 @@ function permitFacts(r: PermitFactsIn): PermitFactsOut {
  * @returns 事实清单。
  */
 function pointsFacts(r: PointsFactsIn): PointsFactsOut {
-  if (!r.rows.length) {
+  if (r.rows.length === 0) {
     return [statusFact({
       tool: TOOL_NAME.points,
       label: `${r.grid}${LABEL.pointsList}`,
@@ -986,7 +1025,7 @@ function statusWordOf(said: StatusWordOfIn): StatusWordOfOut {
  * @returns 判定引擎认的档案,缺的槽全是 null。
  */
 function verdictProfileOf(input: VerdictProfileOfIn): VerdictProfileOfOut {
-  const said = input.profile.status ?? ''
+  const said = text(input.profile.status)
   return {
     age: null,
     married: null,
@@ -1133,7 +1172,7 @@ function findUngroundedNumbers(input: NumberCheckIn): FindUngroundedNumbersOut {
     const body = line.replace(LEAD_MARK, blankIfNumbered)
     for (const m of body.matchAll(NUM_RE)) {
       const n = normNum(m[0])
-      if (!ok.has(n) && !bad.includes(n)) {
+      if (ok.has(n) === false && bad.includes(n) === false) {
         bad.push(n)
       }
     }
@@ -1211,7 +1250,7 @@ function findRawMarkup(answer: FindRawMarkupIn): FindRawMarkupOut {
  * @returns 第一句;整段没有断句记号时按长度截。
  */
 function firstLineOf(input: FirstLineOfIn): FirstLineOfOut {
-  const head = input.answer.trim().split(NL)[0] ?? ''
+  const head = input.answer.trim().split(NL)[0]
   const stop = head.indexOf(FULL_STOP)
   let line = head
   if (stop >= 0) {
@@ -1237,7 +1276,7 @@ function firstLineOf(input: FirstLineOfIn): FirstLineOfOut {
 function findRestatedOpening(input: FindRestatedOpeningIn): FindRestatedOpeningOut {
   const line = firstLineOf({ answer: input.answer })
   const bad: string[] = []
-  if (!line) {
+  if (line === '') {
     return bad
   }
   if (OPENING_COLON.test(line)) {
@@ -1415,7 +1454,7 @@ function makeToolGates(input: MakeToolGatesIn): MakeToolGatesOut {
     if (args && typeof args.noc === 'string') {
       noc = args.noc.trim()
     }
-    if (!noc) {
+    if (noc === '') {
       return undefined
     }
     if (noc === box.noc) {
@@ -1463,7 +1502,11 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
 
   function step(key: StepIn): StepOut {
     if (run.onStep) {
-      run.onStep(CONSULT_STEP[run.lang][key] ?? key)
+      let stepText = CONSULT_STEP[run.lang][key]
+      if (stepText == null) {
+        stepText = key
+      }
+      run.onStep(stepText)
     }
   }
 
@@ -1485,7 +1528,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
   async function execSearch(_id: string, args: ExecSearchIn): ExecSearchOut {
     step(TOOL_NAME.search)
     const hits = await searchOccupations({ db: run.db, query: args.query.trim().slice(0, MAX_QUERY) })
-    if (!hits.length) {
+    if (hits.length === 0) {
       return say(TOOL_REPLY.noCandidates)
     }
     const lines: string[] = []
@@ -1498,7 +1541,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
 
   async function execJobs(_id: string, args: ExecJobsIn): ExecJobsOut {
     const noc = await nocOf(args.noc)
-    if (!noc) {
+    if (noc == null || noc === '') {
       return say(TOOL_REPLY.needNoc)
     }
     step(TOOL_NAME.jobs)
@@ -1508,7 +1551,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
 
   async function execCoverage(_id: string, args: ExecCoverageIn): ExecCoverageOut {
     const noc = await nocOf(args.noc)
-    if (!noc) {
+    if (noc == null || noc === '') {
       return say(TOOL_REPLY.needNoc)
     }
     step(TOOL_NAME.coverage)
@@ -1518,7 +1561,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
 
   async function execThresholds(_id: string, args: ExecThresholdsIn): ExecThresholdsOut {
     const noc = await nocOf(args.noc)
-    if (!noc) {
+    if (noc == null || noc === '') {
       return say(TOOL_REPLY.needNoc)
     }
     step(TOOL_NAME.thresholds)
@@ -1530,7 +1573,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
 
   async function execDraws(_id: string, args: ExecDrawsIn): ExecDrawsOut {
     const prov = provOf(args.prov)
-    if (!prov) {
+    if (prov == null) {
       return say(TOOL_REPLY.badProv)
     }
     step(TOOL_NAME.draws)
@@ -1540,7 +1583,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
 
   async function execOps(_id: string, args: ExecOpsIn): ExecOpsOut {
     const prov = provOf(args.prov)
-    if (!prov || prov === FED) {
+    if (prov == null || prov === FED) {
       return say(TOOL_REPLY.badProv)
     }
     step(TOOL_NAME.ops)
@@ -1550,7 +1593,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
 
   async function execEe(_id: string, args: ExecEeIn): ExecEeOut {
     const noc = await nocOf(args.noc)
-    if (!noc) {
+    if (noc == null || noc === '') {
       return say(TOOL_REPLY.needNoc)
     }
     step(TOOL_NAME.ee)
@@ -1583,14 +1626,14 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
 
   async function execClaims(_id: string, args: ExecClaimsIn): ExecClaimsOut {
     const noc = await nocOf(args.noc)
-    if (!noc) {
+    if (noc == null || noc === '') {
       return say(TOOL_REPLY.needNoc)
     }
     step(TOOL_NAME.claims)
     const lines: string[] = []
     for (const raw of args.claims.slice(0, CLAIMS_CAP)) {
       const text = raw.trim().slice(0, CLAIM_TEXT_CAP)
-      if (!text) {
+      if (text === '') {
         continue
       }
       if (PRIVATE_PROMISE.test(text)) {
@@ -1608,7 +1651,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
       }
       lines.push(`${SEP.bullet}${text}${LABEL.dash}${TOOL_REPLY.claimCheckable}`)
     }
-    if (!lines.length) {
+    if (lines.length === 0) {
       return say(TOOL_REPLY.empty)
     }
     return say(lines.join(NL))
@@ -1758,7 +1801,7 @@ function lastDraftOf(input: LastDraftOfIn): LastDraftOfOut {
   if (input.aborted) {
     throw chatError({ code: CHAT_CODE.busy, msg: `${FAIL_MSG.timeout}${TIMEOUT_MS}${FAIL_MSG.ms}` })
   }
-  if (!drafts.length) {
+  if (drafts.length === 0) {
     throw chatError({ code: CHAT_CODE.llm, msg: FAIL_MSG.emptyDraft })
   }
   return drafts[drafts.length - 1]
@@ -1788,7 +1831,7 @@ async function draftOnce(input: DraftOnceIn): DraftOnceOut {
   const sent = { n: 0 }
 
   function onEvent(event: OnEventIn): OnEventOut {
-    if (event.type !== MESSAGE_UPDATE || !event.message || !run.onDelta) {
+    if (event.type !== MESSAGE_UPDATE || event.message == null || run.onDelta == null) {
       return
     }
     const full = textOf(event.message)
@@ -1865,7 +1908,7 @@ function hardHits(input: HardHitsIn): HardHitsOut {
  */
 async function boxFor(input: BoxForIn): BoxForOut {
   const noc = input.profile.noc
-  if (!noc) {
+  if (noc === '') {
     return { facts: [], candidates: [], noc: null, title: '', teer: null }
   }
   const { rows } = await input.db.query(SQL.NOC_TITLE_TEER, [noc])
@@ -1883,7 +1926,7 @@ async function boxFor(input: BoxForIn): BoxForOut {
  * @returns 过完闸的答复、标好 `cited` 的事实、采信的职业码、是不是降级来的。
  */
 export async function consult(input: ConsultIn): ConsultOut {
-  if (!BASE) {
+  if (BASE === '') {
     throw chatError({ code: CHAT_CODE.llm, msg: FAIL_MSG.noBase })
   }
   const box: Inbox = await boxFor({ db: input.db, profile: input.profile })
@@ -1899,19 +1942,19 @@ export async function consult(input: ConsultIn): ConsultOut {
     }
     answer = clampAnswer({ answer: await draftOnce({ run: input, box, extra }), lang: input.lang })
     fired = runGates({ answer, facts: box.facts, echo, lang: input.lang, codes: codesOf(box) })
-    if (!fired.length) {
+    if (fired.length === 0) {
       break
     }
     log({
       tag: CHAT_LOG.tag,
-      text: `${GATE_LOG.hit}${attempt + 1} ${fired.map(gateLabel).join(GATE_LOG.comma)}${GATE_LOG.noc}${box.noc ?? GATE_LOG.none}`,
+      text: `${GATE_LOG.hit}${attempt + 1} ${fired.map(gateLabel).join(GATE_LOG.comma)}${GATE_LOG.noc}${orNone2({ v: box.noc, fallback: GATE_LOG.none })}`,
     })
   }
 
   const hard = hardHits({ fired: fired })
   const degraded = hard.length > 0
   if (degraded) {
-    if (!box.facts.length) {
+    if (box.facts.length === 0) {
       throw chatError({ code: CHAT_CODE.guard, msg: `${FAIL_MSG.noFacts}${hard.map(gateLabel).join(GATE_LOG.comma)}` })
     }
     answer = factSheet(box.facts)
@@ -1919,7 +1962,7 @@ export async function consult(input: ConsultIn): ConsultOut {
   const facts = citeFacts({ answer, facts: box.facts })
   log({
     tag: CHAT_LOG.tag,
-    text: `${CHAT_LOG.loopDone}${box.noc ?? GATE_LOG.none}${CHAT_LOG.facts}${box.facts.length}`
+    text: `${CHAT_LOG.loopDone}${orNone2({ v: box.noc, fallback: GATE_LOG.none })}${CHAT_LOG.facts}${box.facts.length}`
       + `${CHAT_LOG.ms}${Date.now() - t0}${CHAT_LOG.out}${answer.length}${GATE_LOG.degraded}${degraded}`,
   })
   return { answer, facts, noc: box.noc, degraded }
