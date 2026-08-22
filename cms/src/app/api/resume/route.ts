@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
   if (file.size > RESUME_MAX_BYTES) return Response.json({ error: 'size' }, { status: 413 })
 
   const buf = Buffer.from(await file.arrayBuffer())
-  const text = (await extractText(file.name || '', buf)).text?.replace(/\s+/g, ' ').trim() ?? null
+  const text = (await extractText({ name: file.name || '', buf })).text?.replace(/\s+/g, ' ').trim() ?? null
   if (text == null) return Response.json({ error: 'parse', freeLeft }, { status: 422 })
   if (text.length < 120) return Response.json({ error: 'scan', freeLeft }, { status: 422 })  // 扫描件/空文件:无文本层
 

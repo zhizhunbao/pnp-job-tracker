@@ -68,7 +68,7 @@ export async function POST(req: Request) {
     //    (Frank 真简历实测必败的根因)。新端点上限 20000,预算见 resumeMatch 顶部,这里按 CLAMP 走。
     // temperature 压到 0.1:要的是稳定的 JSON 与可复现的判定,不要发挥。
     text = await completeText({
-      messages: matchPrompt(jd, resume, lang, pro),
+      messages: matchPrompt({ jd, resume, lang, pro }),
       maxTokens: pro ? 1600 : 900, provider: 'friend', temperature: 0.1,
       onMeta: (m) => { meta = m },
     })
@@ -112,7 +112,7 @@ export async function POST(req: Request) {
     }
   }
 
-  const gated = gateMatch(rows, pro)
+  const gated = gateMatch({ rows, pro })
   const rewrite = pro && typeof parsed?.rewrite === 'string' ? parsed.rewrite.trim().slice(0, 1200) : undefined
   console.log(`[resume-match] ok user=${(user as any).id} rows=${rows.length} pro=${pro} jd=${jd.length}ch resume=${resume.length}ch via=${meta.via} x-cache=${meta.xCache ?? '-'} saved=${saved}`)
   return Response.json({

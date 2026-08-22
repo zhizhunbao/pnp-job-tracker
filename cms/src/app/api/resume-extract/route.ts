@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 
   const buf = Buffer.from(await file.arrayBuffer())
   // 保留换行(回填 textarea 要可读),只压回车与行内连空格
-  const { text: raw, err } = await extractText(file.name || '', buf)
+  const { text: raw, err } = await extractText({ name: file.name || '', buf })
   const text = raw?.replace(/\r/g, '').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim() ?? null
   if (text == null) {
     // 真实解析错误只回给 @test.local(生产排障用;普通用户只见统一 parse 码)

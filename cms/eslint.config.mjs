@@ -1200,7 +1200,7 @@ const eslintConfig = [
     // 域定型一个就往这里加一个。
     // 域每定型一个就往这张名单里加一个。2026-08-19 当天 `agent` / `llm` / `error` / `log`
     // 的 91 条存量(多数是写成一行的 type,属性没各自的注释)已经逐条补完,所以它们也在里面。
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error.ts', 'src/lib/log.ts', 'src/lib/template.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error.ts', 'src/lib/log.ts', 'src/lib/template.ts'],
     plugins: { local: localRules },
     rules: {
       // 注释的形状
@@ -1239,7 +1239,7 @@ const eslintConfig = [
     //   · no-split-import:另外五个域还有 3 处(consult 2 / i18n 1);
     //   · no-import-in-leaf:constants 还有 3 处(consult 2 / agent 1),
     //     types 还有 16 处(consult 8 / agent 5 / llm 1 / pathways 1 / jobs 1)。
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/db/**/*.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/db/**/*.ts'],
     plugins: { local: localRules },
     rules: { 'local/domain-file-names': 'error', 'local/door-forward-only': 'error' },
   },
@@ -1253,7 +1253,7 @@ const eslintConfig = [
   },
   {
     // ── 同一条闸:立规当天就达标的三个域直接 error ──────────────────────────────
-    files: ['src/lib/stats/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/jobs/**/*.ts'],
+    files: ['src/lib/stats/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/resume/**/*.ts'],
     plugins: { local: localRules },
     rules: { 'local/no-db-vocab-in-functions': 'error' },
   },

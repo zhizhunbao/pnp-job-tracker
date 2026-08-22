@@ -387,6 +387,31 @@ export const DB_LOG = {
 } as const
 
 /**
+ * 简历域的日志字面量(2026-08-22 resume 定型批立)。
+ */
+export const RESUME_LOG = {
+  /**
+   * 这个域每一行日志的来源标签。
+   */
+  tag: 'resume',
+
+  /**
+   * 取字失败(加密 PDF/损坏文件/引擎错;text 落 null,路由给用户报回退)。
+   */
+  extractFailed: 'resume extract failed: ',
+
+  /**
+   * pdf 解析器 destroy 失败(文本已拿到,只留痕)。
+   */
+  destroyFailed: 'pdf parser destroy failed: ',
+
+  /**
+   * 错误名与错误信息之间的分隔。
+   */
+  errSep: ': ',
+} as const
+
+/**
  * `lib/ruling` 写出去的全部字面量。
  */
 export const RULING_LOG = {
