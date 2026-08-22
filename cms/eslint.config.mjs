@@ -349,12 +349,44 @@ const localRules = {
             const cut = Math.max(full.lastIndexOf('/'), full.lastIndexOf(String.fromCharCode(92)))
             const name = full.slice(cut + 1)
             if (!name || ALLOWED.includes(name)) return
-            // 唯一的第十个名字:lib/db/sql.ts —— 宪法特批的「另一种介质」(SQL 文本整体搬走的家),
-            // 文件名就是内容说明,改叫 constants.ts 反而埋信号。只认 db 这一处,别的域不许借这个名。
+            // db 独有的两个名字,别的域不许借:
+            // · sql.ts —— 宪法特批的「另一种介质」(SQL 文本整体搬走的家),
+            //   文件名就是内容说明,改叫 constants.ts 反而埋信号;
+            // · pool.ts —— payload 接缝(getDb,2026-08-21 Frank 拍板:db 是基础设施,
+            //   「怎么拿到那一个池」就是它的业务;门里不许有函数后它得有自己的抽屉)。
             const parent = full.slice(0, cut)
             const cut2 = Math.max(parent.lastIndexOf('/'), parent.lastIndexOf(String.fromCharCode(92)))
-            if (name === 'sql.ts' && parent.slice(cut2 + 1) === 'db') return
+            if ((name === 'sql.ts' || name === 'pool.ts') && parent.slice(cut2 + 1) === 'db') return
             context.report({ node, messageId: 'bad', data: { allowed: ALLOWED.join(' / '), name } })
+          },
+        }
+      },
+    },
+    'door-forward-only': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          impl:
+            '门里只有转发(宪法「两个门的域怎么摆」):`index.ts` / `server.ts` 顶层只许 `import`'
+            + ' 与带 `from` 的 `export`。这条 {{ kind }} 的家在别的抽屉。',
+        },
+      },
+      create(context) {
+        // 2026-08-21 Frank 实拍:db/server.ts 里藏着 dbOf/getDb 两个函数,push 一路绿灯 ——
+        // 之前只有「门的 import 方向」有闸(client-no-server-values / 桶引用),
+        // 「门里只许转发」这半句一直没闸。门允许的三样:import、`export * from`、
+        // `export { … } from`(带 source 的转发);其余顶层语句(函数、变量、类、
+        // 就地声明的 export)都是实现,归各自的抽屉。
+        if (!/(index|server)\.ts$/.test(context.filename ?? '')) return {}
+        return {
+          Program(node) {
+            for (const st of node.body) {
+              if (st.type === 'ImportDeclaration') continue
+              if (st.type === 'ExportAllDeclaration') continue
+              if (st.type === 'ExportNamedDeclaration' && st.source != null && st.declaration == null) continue
+              context.report({ node: st, messageId: 'impl', data: { kind: st.type } })
+            }
           },
         }
       },
@@ -1173,7 +1205,7 @@ const eslintConfig = [
     //     types 还有 16 处(consult 8 / agent 5 / llm 1 / pathways 1 / jobs 1)。
     files: ['src/lib/consult/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/db/**/*.ts'],
     plugins: { local: localRules },
-    rules: { 'local/domain-file-names': 'error' },
+    rules: { 'local/domain-file-names': 'error', 'local/door-forward-only': 'error' },
   },
   {
     // ── `callbacks.ts`:签名由外部库/语言定死的那几个(2026-08-20 Frank 立)────────
