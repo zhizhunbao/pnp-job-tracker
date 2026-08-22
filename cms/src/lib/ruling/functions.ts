@@ -83,11 +83,11 @@ import type {
   PathVerdictOut, PathwayFactsIn, PathwayFactsOut, PathwayScore, PermitOfIn, PermitOfOut, PersonRowsIn,
   PersonRowsOut, PickGateIn, GateEval, PickGridFactorsIn, PickGridFactorsOut, PickOnLangRowIn,
   PickOnLangRowOut, PickScoreRowIn, PickScoreRowOut, PickedFactor, ProfileOfOccupationIn, VerdictProfile,
-  ProfileSlotsIn, AnswerBag, ProfileWithNocIn, ProfileWithOfferIn, ProvCountsIn, ProvCountsOut,
+  ProfileSlotsIn, AnswerBag, ProfileWithNocIn, ProfileWithOfferIn,
   ProvinceGridScoreIn, ProvinceOfIn, ProvinceOfOut, PushItemIn, QuoteOfOccIn, QuoteOfReqIn, RankedBlock,
   RankedJobRow, RankedPathway, RankedVerdict, RecentGraduateHoldsIn, RecentGraduateHoldsOut, RefDrawIn,
   RefDrawOut, ReqMonths, ReqRow, ReqsOfIn, ReqsOfOut, ResidenceGapIn, ResidenceGapOut, ResidenceReasonIn,
-  ResidenceReasonOut, RowsOfIn, RowsOfOut, RuleProfileOfIn, ScoreAndRefLineIn, ScoreAndRefLineOut,
+  ResidenceReasonOut, RuleProfileOfIn, ScoreAndRefLineIn, ScoreAndRefLineOut,
   ScoreGulfReasonIn, ScoreGulfReasonOut, ScoreOverride, ScoreRow, SelfEmpExcludedInIn, SessionOfIn,
   SessionUser, StatusGateAnswerIn, StatusGateAnswerOut, TargetProvincesOfIn, TargetProvincesOfOut,
   TeerDowngradeLeverIn, TeerDowngradeLeverOut, TeerScope, TeerScopeAcc, TeerScopesIn, TeerScopesOut, Tier,
@@ -100,21 +100,11 @@ import type {
 } from './types'
 
 /**
- * 打一条 SQL 拿行并逐行过映射 —— 一行转发 db 的 `queryRowsOrEmpty`(吞错留痕回空的策略在那儿)。
- * **查不动回空数组,不抛**:判定层缺一张表要落成「本站未收录」,而不是整页 500;
- * 哪张表缺了,`pathVerdict` 自己会说。
- *
- * @param input 能查的东西、SQL 与行映射函数。
- * @returns 映射完的行;查不动是空数组。
- */
-async function rowsOf<R>(input: RowsOfIn<R>): RowsOfOut<R> {
-  return queryRowsOrEmpty({ db: input.db, sql: input.sql, params: input.params, map: input.map })
-}
-
-/**
  * 把六张底表一次拉全。
  *
  * 六条查询**并发**发出去:它们互不依赖,串行等于把详情页的首屏时间乘以六。
+ * 走 db 的 `queryRowsOrEmpty`(吞错留痕回空的策略在那儿):**查不动回空数组,不抛** ——
+ * 判定层缺一张表要落成「本站未收录」,而不是整页 500;哪张表缺了,`pathVerdict` 自己会说。
  *
  * ⚠️ 指定雇主名录只拉 NL 那一段 —— `pathVerdict` 只把它当「NL 名录里有几家申报过这个 NOC」的分母,
  * 整表 3476 行拉回来纯属浪费带宽(另有 `getDesignatedEmployers` 按省拉,那是雇主名字匹配用的,别混)。
@@ -124,12 +114,12 @@ async function rowsOf<R>(input: RowsOfIn<R>): RowsOfOut<R> {
  */
 export async function loadVerdictTables(db: Db): LoadVerdictTablesOut {
   const [requirements, occupations, draws, scoreFactors, eeGrid, employers] = await Promise.all([
-    rowsOf({ db, sql: SQL.PNP_REQUIREMENTS_ALL, params: [], map: toRequirement }),
-    rowsOf({ db, sql: SQL.PNP_OCCUPATIONS_FULL, params: [], map: toOccupation }),
-    rowsOf({ db, sql: SQL.PNP_DRAWS_FULL, params: [], map: toDraw }),
-    rowsOf({ db, sql: SQL.PNP_SCORE_FACTORS, params: [], map: toScoreFactor }),
-    rowsOf({ db, sql: SQL.EE_POINTS_GRID_2, params: [], map: toEeGrid }),
-    rowsOf({ db, sql: SQL.DESIGNATED_BY_PROV_2, params: [], map: toDesignated }),
+    queryRowsOrEmpty({ db, sql: SQL.PNP_REQUIREMENTS_ALL, params: [], map: toRequirement }),
+    queryRowsOrEmpty({ db, sql: SQL.PNP_OCCUPATIONS_FULL, params: [], map: toOccupation }),
+    queryRowsOrEmpty({ db, sql: SQL.PNP_DRAWS_FULL, params: [], map: toDraw }),
+    queryRowsOrEmpty({ db, sql: SQL.PNP_SCORE_FACTORS, params: [], map: toScoreFactor }),
+    queryRowsOrEmpty({ db, sql: SQL.EE_POINTS_GRID_2, params: [], map: toEeGrid }),
+    queryRowsOrEmpty({ db, sql: SQL.DESIGNATED_BY_PROV_2, params: [], map: toDesignated }),
   ])
   return {
     requirements: requirements,
@@ -4878,8 +4868,21 @@ export async function buildTripleWire(input: BuildTripleWireIn): BuildTripleWire
   }
 
   const job = tripleJobOf({ row: found })
-  const company = await tripleCompanyOf({
-    db: input.db, row: found, province: job.province, designatedOf: input.designatedOf,
+  const cid = numOrNull(found.company_id)
+  let facts: EmployerFacts | null = null
+  if (cid != null) {
+    facts = await oneRow({ db: input.db, sql: SQL.COMPANY_REGISTRY_FACTS, params: [cid], map: employerFactsOf })
+  }
+  let nocsRaw: string | null = null
+  if (cid != null) {
+    nocsRaw = await oneRow({ db: input.db, sql: SQL.COMPANY_LMIA_NOCS, params: [cid], map: lmiaNocsCellOf })
+  }
+  let dir: DesignatedEmployerRow[] = []
+  if (text(found.company_name) !== '' && job.province !== '') {
+    dir = await input.designatedOf({ province: job.province })
+  }
+  const company = tripleCompanyOf({
+    row: found, province: job.province, facts: facts, nocsRaw: nocsRaw, dir: dir,
   })
   const profile = tripleProfileOf({ up: input.profile, answers: input.answers })
   const card = tripleVerdict({ job: job, company: company, profile: profile, data: input.data })
@@ -4897,49 +4900,40 @@ export async function buildTripleWire(input: BuildTripleWireIn): BuildTripleWire
 }
 
 /**
- * 库里那一行岗位 + 公司侧两查 + 名录匹配 → 判定卡认的那家公司。
+ * 库里那一行岗位 + 公司侧两查的结果 + 名录匹配 → 判定卡认的那家公司。
+ * 公司侧两查与名录取数由边缘入口(`buildTripleWire`)先做好传进来(拍板③:db 只在边缘),
+ * 本函数纯拼装。
  *
  * 名录匹配的口径 = **完全匹配**(规范化后公司名 == 名录名的任一 o/a 名段)。
  * 老口径的双向子串包含会把 `Esso` 匹进 `Wheeler Accessories`(2026-08-09 全量审计坐实)。
  * 认不出 = designation 为 null 且 matches 为 0(本站的缺口,**不写「未被指定」**);
  * 多配 = designation 为 null 且 matches 为 N(只报家数,不点名加盟法人)。
  *
- * @param input 连接池、库里那一行岗位、省码与名录取数函数。
+ * @param input 库里那一行岗位、省码、公司侧两查的结果与名录候选行。
  * @returns 判定卡认的那家公司。
  */
-async function tripleCompanyOf(input: TripleCompanyOfIn): TripleCompanyOfOut {
+function tripleCompanyOf(input: TripleCompanyOfIn): TripleCompanyOfOut {
   const name = text(input.row.company_name)
   const cid = numOrNull(input.row.company_id)
   let facts: EmployerFacts = { foundedYear: null, registryStatus: null, staffEst: null, staffEstSrc: null, sector: null }
-  if (cid != null) {
-    const mapped = await oneRow({ db: input.db, sql: SQL.COMPANY_REGISTRY_FACTS, params: [cid], map: employerFactsOf })
-    if (mapped != null) {
-      facts = mapped
-    }
+  if (input.facts != null) {
+    facts = input.facts
   }
-  let nocsRaw: string | null = null
-  if (cid != null) {
-    nocsRaw = await oneRow({ db: input.db, sql: SQL.COMPANY_LMIA_NOCS, params: [cid], map: lmiaNocsCellOf })
-  }
-  let dir: DesignatedEmployerRow[] = []
-  if (name !== '' && input.province !== '') {
-    dir = await input.designatedOf({ province: input.province })
-  }
-  const hit = matchDesignation({ companyName: name, rows: dir })
+  const hit = matchDesignation({ companyName: name, rows: input.dir })
   let id = 0
   if (cid != null) {
     id = cid
   }
   let lmiaNocs: LmiaNocsOfOut = null
-  if (nocsRaw != null) {
-    lmiaNocs = lmiaNocsOf({ raw: nocsRaw })
+  if (input.nocsRaw != null) {
+    lmiaNocs = lmiaNocsOf({ raw: input.nocsRaw })
   }
   return {
     id: id,
     name: name,
     facts: facts,
     lmiaNocs: lmiaNocs,
-    designation: designatedRow({ rows: dir, hit: hit.row }),
+    designation: designatedRow({ rows: input.dir, hit: hit.row }),
     designationMatches: hit.count, designationSource: hit.source,
   }
 }
@@ -5081,7 +5075,7 @@ export async function caseAnswer(input: CaseAnswerIn): CaseAnswerOut {
   if (spec.profile.noc != null) {
     specNoc = spec.profile.noc
   }
-  const byProv = await provCounts({ db: input.db, noc: specNoc })
+  const byProv = await queryRowsOrEmpty({ db: input.db, sql: SQL.CASE_PROV_COUNTS, params: [specNoc], map: toProvCount })
   const openings: Record<string, OpeningCount> = {}
   for (const r of byProv) {
     openings[r.province] = { n: r.n, t: r.t }
@@ -5120,18 +5114,8 @@ export async function caseAnswer(input: CaseAnswerIn): CaseAnswerOut {
     asked: asked, tiers: tiers, excluded: excluded,
     trainable: trainable, trainableTotal: trainableTotal,
     openings: openings,
-    ops: await opsByProvince({ db: input.db }),
+    ops: opsByProvince({ stats: await queryRowsOrEmpty({ db: input.db, sql: SQL.PNP_OPS_STATS, params: [], map: toOpsStat }) }),
   }
-}
-
-/**
- * 一次查两列:该职业各省在招岗数 `n`,其中官方标了带训 / 不要经验的 `t`。
- *
- * @param input 能打 SQL 的东西与职业码。
- * @returns 每省一行;查挂了则空(页面照出,只是第一步那块没数)。
- */
-async function provCounts(input: ProvCountsIn): ProvCountsOut {
-  return rowsOf({ db: input.db, sql: SQL.CASE_PROV_COUNTS, params: [input.noc], map: toProvCount })
 }
 
 /**
@@ -5192,11 +5176,11 @@ function trainableRows(input: TrainableRowsIn): TrainableRowsOut {
  *
  * 取每省最近一期的**全省合计**行(scope 为空 = 不分通道的总数)。
  *
- * @param input 能打 SQL 的东西。
- * @returns 省码 → 官方运营数字;查挂了则空。
+ * @param input 原始统计行(边缘入口查好传进来;查挂了上游给空,这里照出空表)。
+ * @returns 省码 → 官方运营数字。
  */
-async function opsByProvince(input: OpsByProvinceIn): OpsByProvinceOut {
-  const stats = await rowsOf({ db: input.db, sql: SQL.PNP_OPS_STATS, params: [], map: toOpsStat })
+function opsByProvince(input: OpsByProvinceIn): OpsByProvinceOut {
+  const stats = input.stats
   const out: Record<string, OpsFacts> = {}
   for (const r of stats) {
     if (r.value == null || r.province === '') {

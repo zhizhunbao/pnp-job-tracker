@@ -4969,36 +4969,6 @@ export type PathwayFactsOut = {
 export type SubjectOfOut = 'applicant' | 'employer'
 
 /**
- * `rowsOf` 的入参。
- */
-export type RowsOfIn<R> = {
-  /**
-   * 能查的东西。
-   */
-  db: Db
-
-  /**
-   * 要打的那条 SQL,文本来自 `lib/db/sql`。
-   */
-  sql: string
-
-  /**
-   * 绑定参数;零参语句显式给空数组。形状与 Queryable 的 params 一致(库标量数组)。
-   */
-  params: Cell[]
-
-  /**
-   * 行映射函数:一行原始行 → 一行干净的 `R`(`queryRows` 同款形态;默认值决策全在它体内)。
-   */
-  map: (row: Row) => R
-}
-
-/**
- * `rowsOf` 的返回:映射完的行;查不动是空数组。
- */
-export type RowsOfOut<R> = Promise<R[]>
-
-/**
  * `loadVerdictTables` 的返回:判定层六张底表。
  */
 export type LoadVerdictTablesOut = Promise<VerdictData>
@@ -5931,14 +5901,20 @@ export type WireError = {
  */
 export type TripleCompanyOfIn = {
   /**
-   * 能打 SQL 的东西。
-   */
-  db: Db
-
-  /**
    * 库里那一行岗位(公司名与公司主键都在上面)。
    */
   row: Row
+
+  /**
+   * 公司注册事实。边缘入口(`buildTripleWire`)先查好传进来(拍板③:db 只在边缘)——
+   * 没有公司主键或查不到则 null,本函数落成全 null 的空事实。
+   */
+  facts: EmployerFacts | null
+
+  /**
+   * 该公司 LMIA 职业码那一格的原始文本。同上由边缘入口先查;没有则 null。
+   */
+  nocsRaw: string | null
 
   /**
    * 这份岗所在省 —— 名录按省取。
@@ -5946,15 +5922,15 @@ export type TripleCompanyOfIn = {
   province: string
 
   /**
-   * 按省取名录候选行。
+   * 名录候选行。同上由边缘入口按省取好传进来(公司名或省码为空时给空数组,不白查)。
    */
-  designatedOf: DesignatedLoader
+  dir: DesignatedEmployerRow[]
 }
 
 /**
  * `tripleCompanyOf` 的返回。
  */
-export type TripleCompanyOfOut = Promise<TripleCompany>
+export type TripleCompanyOfOut = TripleCompany
 
 /**
  * `oneRow` 的入参:一条 SQL + 它的行映射函数(db 的 `queryRows` 同款形态,单行版)。
@@ -6111,26 +6087,6 @@ export type ProvCountRow = {
 }
 
 /**
- * `provCounts` 的入参。
- */
-export type ProvCountsIn = {
-  /**
-   * 能打 SQL 的东西。
-   */
-  db: Db
-
-  /**
-   * 职业码。
-   */
-  noc: string
-}
-
-/**
- * `provCounts` 的返回。
- */
-export type ProvCountsOut = Promise<ProvCountRow[]>
-
-/**
  * 一条通道配上「本省该职业有多少个在招岗」—— 只为排序活着。
  */
 export type RankedPathway = {
@@ -6175,15 +6131,15 @@ export type TierRowsOut = PathwayVerdict[]
  */
 export type OpsByProvinceIn = {
   /**
-   * 能打 SQL 的东西。
+   * `PNP_OPS_STATS` 查出的原始统计行。边缘入口(`caseAnswer`)先查好传进来(拍板③:db 只在边缘)。
    */
-  db: Db
+  stats: OpsStatRow[]
 }
 
 /**
  * `opsByProvince` 的返回:省码 → 官方运营数字。
  */
-export type OpsByProvinceOut = Promise<Record<string, OpsFacts>>
+export type OpsByProvinceOut = Record<string, OpsFacts>
 
 /**
  * `applyOpsRow` 的入参。
