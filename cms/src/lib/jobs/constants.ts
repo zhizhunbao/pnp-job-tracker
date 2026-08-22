@@ -5,6 +5,9 @@
  * @time 2026-08-22 00:05:00
  */
 
+// eslint-disable-next-line local/no-import-in-leaf -- 语言轴由 i18n 基建持有,三语表的形状检查靠它
+import type { Dict, Lang } from '../i18n'
+
 /**
  * 省全名 → 省码(筛选参数收进来可能是全名)。
  */
@@ -1861,3 +1864,226 @@ export const LMIA_SOURCE = {
    */
   fetched: '',
 } as const
+
+/**
+ * eeDisplay 的多段分隔(数据层用「/」拼接)。
+ */
+export const EE_SPLIT = '/'
+
+/**
+ * 顿号枚举的 i18n 键(eeDisplay 拼回用;no-dot-separator 硬规矩)。
+ */
+export const SEP_KEY = 'sep'
+
+/**
+ * 界面语言码·英文(显示函数分岔用)。
+ */
+export const LANG_EN = 'en'
+
+/**
+ * 界面语言码·韩文。
+ */
+export const LANG_KO = 'ko'
+
+/**
+ * 通道名归一时破折号统到的字符(mart 里是 em dash)。
+ */
+export const NORM_DASH = '-'
+
+/**
+ * 通道名归一:要统掉的两种破折号。
+ */
+export const NORM_DASH_RE = /[—–]/g
+
+/**
+ * 通道名归一:连空白折一(带 g,逐处替换)。
+ */
+export const NORM_WS_RE = /\s+/g
+
+/**
+ * 摘省名前缀后要吃掉的连接符与空白。
+ */
+export const PROV_PREFIX_TRIM_RE = /^[\s:：—–-]+/
+
+/**
+ * 省抽选的**官方通道名**译名(2026-08-01 Frank 队列⑤:「中文界面官方英文名 + 中文译名,
+ * 英文界面只显英文」)。有限集人工定表(现 17 条,取自 pnp_draws 实际出现过的通道名),
+ * 照「宁可留空也不瞎猜」—— 表里没有的原样只显英文,不让模型现编译名。
+ * 官方英文名永远是主文案,译名只是灰字小注。
+ */
+export const DRAW_STREAM_L10N: Record<string, { zh: string; ko: string }> = {
+  // AB(AAIP)
+  'Rural Renewal Stream': { zh: '乡镇振兴通道', ko: '농촌 재생 스트림' },
+  'Alberta Opportunity Stream': { zh: '阿尔伯塔机会通道', ko: '앨버타 기회 스트림' },
+  'Dedicated Health Care Pathway – Express Entry': { zh: '医护专项(EE 通道)', ko: '의료 전용 경로(EE)' },
+  'Dedicated Health Care Pathway – non-Express Entry': { zh: '医护专项(非 EE)', ko: '의료 전용 경로(비 EE)' },
+  'Alberta Express Entry Stream – Law Enforcement Pathway': { zh: 'EE 定向:执法', ko: 'EE 지정: 법 집행' },
+  'Alberta Express Entry Stream – Accelerated Tech Pathway': { zh: 'EE 定向:科技加速', ko: 'EE 지정: 기술 가속' },
+  'Alberta Express Entry Stream – Priority Sectors (Agriculture)': { zh: 'EE 定向:农业', ko: 'EE 지정: 농업' },
+  'Alberta Express Entry Stream – Priority Sectors (Construction)': { zh: 'EE 定向:建筑', ko: 'EE 지정: 건설' },
+  // BC(2026 新政三大类)
+  'Innovate: High Economic Impact': { zh: 'Innovate:高经济贡献', ko: 'Innovate: 높은 경제 기여' },
+  'Care: Health': { zh: 'Care:医疗', ko: 'Care: 의료' },
+  'Care: Childcare': { zh: 'Care:幼教', ko: 'Care: 보육' },
+  'Care: Veterinary Care': { zh: 'Care:兽医', ko: 'Care: 수의' },
+  'Build: Construction Trades': { zh: 'Build:建筑技工', ko: 'Build: 건설 기능직' },
+  'Temporary Rural/Remote Health Support Initiative': { zh: '乡镇偏远医疗支援(临时)', ko: '농촌·오지 의료 지원(임시)' },
+  // MB / ON
+  'Skilled Worker Stream': { zh: '技术工人通道', ko: '숙련 인력 스트림' },
+  'Employer Job Offer: Foreign Worker stream': { zh: '雇主 offer:海外工人(已关停)', ko: '고용주 오퍼: 해외 근로자(폐지)' },
+  'Employer Job Offer: International Student stream': { zh: '雇主 offer:国际学生(已关停)', ko: '고용주 오퍼: 유학생(폐지)' },
+}
+/**
+ * 具名通道 chip 的 label(数据层的中文,有限小集合)→ 三语 key,未知值原样回退
+ * (第 9 轮 #24,照大类 cat.* 先例;数据层不动,ETL 新增 label 时这里补一行即可)。
+ */
+export const STREAM_L10N: Record<string, string> = {
+  'AB 科技': 'stream.abTech', 'SK 医疗': 'stream.skHealth', 'SK 科技': 'stream.skTech',
+  'SK 农业': 'stream.skAgri', 'NS 紧缺空缺': 'stream.nsCritical', 'NS 毕业生': 'stream.nsGrad',
+  'AAIP 不符合清单': 'stream.aaipExcl',
+  'BC 医疗': 'stream.bcHealth', 'BC 幼教': 'stream.bcChildcare', 'BC 法语教师': 'stream.bcEdu',
+  'BC 兽医': 'stream.bcVet', 'BC 建筑技工': 'stream.bcConstr',
+  'MB 在需职业': 'stream.mbIndemand', 'MB 乡镇在需': 'stream.mbRural', 'PE 在需职业': 'stream.peIndemand',
+  'NB 不符合清单': 'stream.nbExcl', 'NB 餐饮住宿不符合': 'stream.nbExclFood',
+  'NB AIP 不受理': 'stream.nbAipExcl', 'NB AIP 餐饮住宿不受理': 'stream.nbAipExclFood',
+}
+/**
+ * pnp_requirements.stream(官方通道名,键按 normReqStream 归一)→ 三语显示短名。
+ * 表里没有的**原样返回官方英文名**(照 DRAW_STREAM_L10N 的老规矩:宁可显英文,不让模型现编译名);
+ * 英文短名只做前缀缩写(NSNP / PEI …)—— 判定卡那行灰字要在 375 一行放得下。
+ */
+export const REQ_STREAM_L10N: Record<string, { zh: string; ko: string; en: string }> = {
+  'bc pnp skills immigration (all streams)': { zh: 'BC 技术移民全通道', ko: 'BC 기술이민 전 통로', en: 'BC Skills Immigration' },
+  'aaip alberta opportunity stream': { zh: '阿尔伯塔机会通道', ko: '앨버타 기회 스트림', en: 'Alberta Opportunity Stream' },
+  'mpnp in-demand occupations list': { zh: 'MB 在需职业清单', ko: 'MB 수요 직업 목록', en: 'MPNP In-Demand list' },
+  'mpnp skilled worker overseas': { zh: 'MB 海外技术工人通道', ko: 'MB 해외 기술인력 통로', en: 'MPNP Overseas' },
+  'nlpnp skilled worker category': { zh: 'NL 技术工人类别', ko: 'NL 기술인력 부문', en: 'NLPNP Skilled Worker' },
+  'nlpnp international graduate category': { zh: 'NL 国际毕业生类别', ko: 'NL 국제 졸업생 부문', en: 'NLPNP International Graduate' },
+  'nova scotia nominee program - skilled worker stream': { zh: 'NS 技术工人通道', ko: 'NS 기술인력 통로', en: 'NSNP Skilled Worker' },
+  'ontario workforce priority stream': { zh: 'ON 劳动力优先通道', ko: 'ON 우선 직군 통로', en: 'Ontario Workforce Priority' },
+  'pei pnp workforce - skilled worker stream': { zh: 'PEI 技术工人通道', ko: 'PEI 기술인력 통로', en: 'PEI Skilled Worker' },
+}
+/**
+ * EE 类别 label 三语映射(第 11 轮 #28,同 #24 性质;数据层 label 是有限集,
+ * federal-categories.json 9 类)。职位可命中多类别,数据层用「/」拼接 —— 逐段映射再拼回。
+ */
+export const EE_L10N: Record<string, string> = {
+  '医疗社服': 'ee.healthcare', 'STEM': 'ee.stem', '技工': 'ee.trade', '教育': 'ee.education',
+  '运输': 'ee.transport', '医生': 'ee.physicians', '高管': 'ee.seniorMgr', '研究': 'ee.researchers', '军职': 'ee.military',
+}
+/**
+ * E6-10:联邦轮次(pnp_draws 的 province=FED 行)的 label 是数据层 **英文 cat_key**
+ * (build_ee_draws.CAT_MAP),与上面 ee_categories 的中文 label 不同源 —— 两张表各管一头,别合并。
+ */
+export const EE_KEY_L10N: Record<string, string> = {
+  healthcare: 'ee.healthcare', stem: 'ee.stem', trade: 'ee.trade', education: 'ee.education', transport: 'ee.transport',
+  physicians: 'ee.physicians', 'senior-managers': 'ee.seniorMgr', researchers: 'ee.researchers', military: 'ee.military',
+  agriculture: 'ee.agriculture', cec: 'ee.cec', french: 'ee.french', pnp: 'ee.pnpLinked', general: 'ee.general',
+  fsw: 'ee.fsw', fst: 'ee.fst',
+}
+/**
+ * NOC 中/小分类名 —— **不是 UI 文案,是数据值的译名**:值本身是 etl/noc.py 产的中文,
+ * 所以 zh 天然没有条目(catName 查不到就回退原值,见 lib/noc),三语键集本来就不该相同,
+ * 塞进受键强制的语言文件只会逼出一堆假的 zh 条目。
+ * 终局不在代码里:noc_categories 维度表已带 mid_en/mid_ko,registerCatLabels 登记后优先于这张表;
+ * 这里是维度表查不到时的回退路径(CLAUDE.md:移民事实的去处是 data/ → mart → DB)。
+ */
+export const nocLabels: Record<Lang, Dict> = {
+  zh: {},
+  en: {
+    'cat.IT': 'IT',
+    'cat.科技管理': 'Science & tech management', 'cat.自然科学': 'Natural sciences', 'cat.建筑与规划': 'Architecture & planning',
+    'cat.数据与统计': 'Data & statistics', 'cat.科学技术员': 'Science technologists', 'cat.设计与制图': 'Design & drafting',
+    'cat.IT 支持': 'IT support', 'cat.检验与安全': 'Inspection & safety', 'cat.工程技术员': 'Engineering technologists',
+    'cat.自然与应用科学': 'Natural and applied sciences', 'cat.工程管理': 'Engineering management', 'cat.建筑与科学管理': 'Architecture & science management',
+    'cat.IT 管理': 'IT management', 'cat.物理与天文': 'Physics & astronomy', 'cat.化学': 'Chemistry',
+    'cat.地球与海洋': 'Earth & ocean sciences', 'cat.生物': 'Biology', 'cat.林业': 'Forestry',
+    'cat.景观设计': 'Landscape architecture', 'cat.城市规划': 'Urban planning', 'cat.测绘': 'Land surveying',
+    'cat.统计与精算': 'Statistics & actuarial', 'cat.数据科学': 'Data science',
+    'cat.电气与电子工程': 'Electrical & electronics engineering', 'cat.计算机与硬件工程': 'Computer & hardware engineering', 'cat.化学工程': 'Chemical engineering',
+    'cat.工业与制造工程': 'Industrial & manufacturing engineering', 'cat.冶金与材料工程': 'Metallurgical & materials engineering', 'cat.采矿工程': 'Mining engineering',
+    'cat.地质工程': 'Geological engineering', 'cat.石油工程': 'Petroleum engineering', 'cat.航空航天工程': 'Aerospace engineering',
+    'cat.其他工程': 'Other engineering', 'cat.农渔产品检验': 'Agricultural & fish product inspection', 'cat.保育与渔业': 'Conservation & fishery',
+    'cat.园艺与景观': 'Horticulture & landscaping', 'cat.建筑技术': 'Architectural technology', 'cat.工业设计': 'Industrial design',
+    'cat.制图': 'Drafting', 'cat.测绘技术': 'Survey technology', 'cat.地理信息与气象': 'Geomatics & meteorology',
+    'cat.网络与网站': 'Network & web technicians', 'cat.用户支持': 'User support', 'cat.无损检测': 'Non-destructive testing',
+    'cat.工程检查': 'Engineering inspection', 'cat.职业健康与安全': 'Occupational health & safety', 'cat.建筑检查': 'Construction inspection',
+    'cat.土木': 'Civil', 'cat.机械': 'Mechanical', 'cat.工业与制造': 'Industrial & manufacturing',
+    'cat.建筑估价': 'Construction estimating', 'cat.电气与电子': 'Electrical & electronics', 'cat.电子设备维修': 'Electronic equipment repair',
+    'cat.工业仪表': 'Industrial instrumentation', 'cat.航空电子': 'Avionics',
+    'cat.高级管理': 'Senior management', 'cat.金融': 'Finance', 'cat.人力资源': 'Human resources',
+    'cat.市场营销': 'Marketing', 'cat.客户成功': 'Customer success', 'cat.财务支持': 'Finance support', 'cat.行政': 'Administration',
+    'cat.办公支持': 'Office support', 'cat.工程': 'Engineering', 'cat.医疗专业': 'Health professionals', 'cat.护理': 'Nursing',
+    'cat.医疗技术': 'Medical technology', 'cat.社会服务': 'Social services', 'cat.教育辅助': 'Education support', 'cat.照护': 'Care work',
+    'cat.设计': 'Design', 'cat.销售管理': 'Sales management', 'cat.餐饮': 'Food service', 'cat.服务主管': 'Service supervisors',
+    'cat.零售': 'Retail', 'cat.客服': 'Customer service', 'cat.服务支持': 'Service support', 'cat.清洁': 'Cleaning',
+    'cat.运输': 'Transportation', 'cat.物流': 'Logistics', 'cat.建筑': 'Construction', 'cat.农业': 'Agriculture',
+    'cat.金融商务': 'Finance & business', 'cat.行政支持': 'Admin support', 'cat.教育/社会': 'Education & social services',
+    'cat.文化艺术': 'Arts & culture', 'cat.销售/客服': 'Sales & customer service', 'cat.劳工/物流': 'Labour & logistics',
+    'cat.高层管理': 'Senior executives', 'cat.IT/信息系统管理': 'IT & IS management', 'cat.会计/财务分析': 'Accounting & financial analysis',
+    'cat.市场/品牌/传播': 'Marketing / brand / comms', 'cat.客户成功/实施': 'Customer success & implementation', 'cat.记账/薪酬': 'Bookkeeping & payroll',
+    'cat.行政助理': 'Administrative assistants', 'cat.文员/数据录入': 'Clerks & data entry', 'cat.数据科学/机器学习': 'Data science & ML',
+    'cat.网络安全': 'Cybersecurity', 'cat.系统/业务分析': 'Systems & business analysis', 'cat.数据库': 'Databases',
+    'cat.软件工程': 'Software engineering', 'cat.软件开发': 'Software development', 'cat.Web 开发': 'Web development',
+    'cat.计算机/硬件工程': 'Computer & hardware engineering', 'cat.IT 支持/网络': 'IT support & networking', 'cat.测试/QA': 'Testing & QA',
+    'cat.医生/全科': 'Physicians & GPs', 'cat.牙科': 'Dental', 'cat.药剂师': 'Pharmacists', 'cat.理疗/康复': 'Physio & rehab',
+    'cat.注册护士': 'Registered nurses', 'cat.实用护士': 'Practical nurses', 'cat.医学影像/化验': 'Medical imaging & lab',
+    'cat.教师/讲师': 'Teachers & instructors', 'cat.社工/社区': 'Social & community work', 'cat.幼教/托育': 'Early childhood & childcare',
+    'cat.护理员/PSW': 'Care aides & PSW', 'cat.UI/UX/平面设计': 'UI/UX & graphic design', 'cat.销售/业务管理': 'Sales & business management',
+    'cat.厨师/主厨': 'Chefs', 'cat.厨工': 'Cooks', 'cat.零售/餐饮主管': 'Retail & food service supervisors', 'cat.零售销售': 'Retail sales',
+    'cat.客服/安保': 'Customer service & security', 'cat.餐饮服务': 'Food & beverage service', 'cat.服务员/接待': 'Servers & reception',
+    'cat.清洁/保洁': 'Cleaning & janitorial', 'cat.机械师/CNC': 'Machinists & CNC', 'cat.焊工': 'Welders', 'cat.电工': 'Electricians',
+    'cat.管道工': 'Plumbers', 'cat.木工': 'Carpenters', 'cat.暖通/制冷': 'HVAC & refrigeration', 'cat.安装技工': 'Installers',
+    'cat.汽修/钳工': 'Auto mechanics & millwrights', 'cat.油漆/装修': 'Painting & finishing', 'cat.货车司机': 'Truck drivers',
+    'cat.物料搬运/仓储': 'Material handling & warehousing', 'cat.建筑劳工': 'Construction labourers', 'cat.农场工': 'Farm workers',
+    'cat.农林劳工': 'Agriculture & forestry labourers', 'cat.园林劳工': 'Landscaping labourers', 'cat.生产劳工': 'Production labourers',
+  },
+  ko: {
+    'cat.IT': 'IT',
+    'cat.科技管理': '과학기술 관리', 'cat.自然科学': '자연과학', 'cat.建筑与规划': '건축 및 도시계획',
+    'cat.数据与统计': '데이터 및 통계', 'cat.科学技术员': '과학 기술직', 'cat.设计与制图': '설계 및 제도',
+    'cat.IT 支持': 'IT 지원', 'cat.检验与安全': '검사 및 안전', 'cat.工程技术员': '엔지니어링 기술직',
+    'cat.自然与应用科学': '자연 및 응용과학', 'cat.工程管理': '엔지니어링 관리', 'cat.建筑与科学管理': '건축·과학 관리',
+    'cat.IT 管理': 'IT 관리', 'cat.物理与天文': '물리학 및 천문학', 'cat.化学': '화학',
+    'cat.地球与海洋': '지구·해양과학', 'cat.生物': '생물학', 'cat.林业': '임업',
+    'cat.景观设计': '조경 설계', 'cat.城市规划': '도시계획', 'cat.测绘': '측량',
+    'cat.统计与精算': '통계 및 보험계리', 'cat.数据科学': '데이터 사이언스',
+    'cat.电气与电子工程': '전기·전자공학', 'cat.计算机与硬件工程': '컴퓨터·하드웨어 공학', 'cat.化学工程': '화학공학',
+    'cat.工业与制造工程': '산업·제조공학', 'cat.冶金与材料工程': '금속·재료공학', 'cat.采矿工程': '광산공학',
+    'cat.地质工程': '지질공학', 'cat.石油工程': '석유공학', 'cat.航空航天工程': '항공우주공학',
+    'cat.其他工程': '기타 공학', 'cat.农渔产品检验': '농수산물 검사', 'cat.保育与渔业': '자연보호 및 수산',
+    'cat.园艺与景观': '원예 및 조경', 'cat.建筑技术': '건축 기술', 'cat.工业设计': '산업 디자인',
+    'cat.制图': '제도', 'cat.测绘技术': '측량 기술', 'cat.地理信息与气象': '지리정보 및 기상',
+    'cat.网络与网站': '네트워크 및 웹 기술', 'cat.用户支持': '사용자 지원', 'cat.无损检测': '비파괴 검사',
+    'cat.工程检查': '엔지니어링 검사', 'cat.职业健康与安全': '산업보건 및 안전', 'cat.建筑检查': '건축 검사',
+    'cat.土木': '토목', 'cat.机械': '기계', 'cat.工业与制造': '산업·제조',
+    'cat.建筑估价': '건축 적산', 'cat.电气与电子': '전기·전자', 'cat.电子设备维修': '전자기기 수리',
+    'cat.工业仪表': '산업 계측', 'cat.航空电子': '항공전자',
+    'cat.高级管理': '고위 경영', 'cat.金融': '금융', 'cat.人力资源': '인사(HR)',
+    'cat.市场营销': '마케팅', 'cat.客户成功': '고객 성공', 'cat.财务支持': '재무 지원', 'cat.行政': '행정',
+    'cat.办公支持': '사무 지원', 'cat.工程': '엔지니어링', 'cat.医疗专业': '의료 전문직', 'cat.护理': '간호',
+    'cat.医疗技术': '의료 기술', 'cat.社会服务': '사회 서비스', 'cat.教育辅助': '교육 보조', 'cat.照护': '돌봄',
+    'cat.设计': '디자인', 'cat.销售管理': '영업 관리', 'cat.餐饮': '요식업', 'cat.服务主管': '서비스 관리자',
+    'cat.零售': '소매', 'cat.客服': '고객 서비스', 'cat.服务支持': '서비스 지원', 'cat.清洁': '청소',
+    'cat.运输': '운송', 'cat.物流': '물류', 'cat.建筑': '건설', 'cat.农业': '농업',
+    'cat.金融商务': '금융·비즈니스', 'cat.行政支持': '행정 지원', 'cat.教育/社会': '교육·사회 서비스',
+    'cat.文化艺术': '문화·예술', 'cat.销售/客服': '영업·고객 서비스', 'cat.劳工/物流': '노무·물류',
+    'cat.高层管理': '최고 경영진', 'cat.IT/信息系统管理': 'IT·정보시스템 관리', 'cat.会计/财务分析': '회계·재무 분석',
+    'cat.市场/品牌/传播': '마케팅·브랜드·홍보', 'cat.客户成功/实施': '고객 성공·구축', 'cat.记账/薪酬': '부기·급여',
+    'cat.行政助理': '행정 보조', 'cat.文员/数据录入': '사무원·데이터 입력', 'cat.数据科学/机器学习': '데이터 과학·머신러닝',
+    'cat.网络安全': '사이버 보안', 'cat.系统/业务分析': '시스템·업무 분석', 'cat.数据库': '데이터베이스',
+    'cat.软件工程': '소프트웨어 엔지니어링', 'cat.软件开发': '소프트웨어 개발', 'cat.Web 开发': '웹 개발',
+    'cat.计算机/硬件工程': '컴퓨터·하드웨어 엔지니어링', 'cat.IT 支持/网络': 'IT 지원·네트워크', 'cat.测试/QA': '테스트 및 QA',
+    'cat.医生/全科': '의사 및 일반의', 'cat.牙科': '치과', 'cat.药剂师': '약사', 'cat.理疗/康复': '물리치료 및 재활',
+    'cat.注册护士': '등록 간호사(RN)', 'cat.实用护士': '실무 간호사(LPN)', 'cat.医学影像/化验': '의료 영상 및 검사',
+    'cat.教师/讲师': '교사 및 강사', 'cat.社工/社区': '사회복지 및 지역사회', 'cat.幼教/托育': '유아교육 및 보육',
+    'cat.护理员/PSW': '요양보호사(PSW)', 'cat.UI/UX/平面设计': 'UI/UX 및 그래픽 디자인', 'cat.销售/业务管理': '영업 및 사업 관리',
+    'cat.厨师/主厨': '셰프 및 주방장', 'cat.厨工': '조리원', 'cat.零售/餐饮主管': '소매 및 요식업 관리자', 'cat.零售销售': '소매 판매',
+    'cat.客服/安保': '고객 서비스 및 보안', 'cat.餐饮服务': '푸드 앤 드링크 서비스', 'cat.服务员/接待': '서빙 및 접수',
+    'cat.清洁/保洁': '청소 및 미화', 'cat.机械师/CNC': '기계공 및 CNC', 'cat.焊工': '용접공', 'cat.电工': '전기공',
+    'cat.管道工': '배관공', 'cat.木工': '목수', 'cat.暖通/制冷': 'HVAC·냉동', 'cat.安装技工': '설치 기사',
+    'cat.汽修/钳工': '자동차 정비·기계 정비', 'cat.油漆/装修': '도장·마감', 'cat.货车司机': '트럭 운전기사',
+    'cat.物料搬运/仓储': '자재 운반·창고', 'cat.建筑劳工': '건설 노무', 'cat.农场工': '농장 노동자',
+    'cat.农林劳工': '농림 노무', 'cat.园林劳工': '조경 노무', 'cat.生产劳工': '생산 노무',
+  },
+}

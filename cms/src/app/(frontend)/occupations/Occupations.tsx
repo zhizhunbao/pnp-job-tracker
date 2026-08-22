@@ -1,7 +1,7 @@
 'use client'
 // 紧缺职业清单视图(B4-01):183 行按 省→通道 分组一页展示;行级官方来源链+抓取日(既有 url/fetched 列)。
 // 口径红线:清单命中=粗筛信号,非资格认定(dir.occ.note)。
-import { streamDisplay } from '@/lib/i18n'
+import { streamDisplay } from '@/lib/jobs'
 import { useLang } from '../LangProvider'
 import { Header } from '../Header'
 import { Footer } from '../Footer'
@@ -41,7 +41,7 @@ export function Occupations({ rows }: { rows: OccRow[] }) {
               <div key={s.stream} style={{ margin: '0 0 14px' }}>
                 <Table<OccRow> rows={s.occ} rowKey={(r) => r.noc} header={
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', padding: '10px 12px 6px' }}>
-                    <span style={{ fontSize: 13.5, fontWeight: 700 }}>{streamDisplay(t, s.stream) || s.label || s.stream}</span>
+                    <span style={{ fontSize: 13.5, fontWeight: 700 }}>{streamDisplay({ t, label: s.stream }) || s.label || s.stream}</span>
                     <span style={{ fontSize: 12, color: '#9ca3af' }}>{s.occ.length} NOC</span>
                     {/* #106:官方来源外链撤(归拢到 /resources) */}
                     {s.fetched && <span style={{ marginLeft: 'auto', fontSize: 11.5, color: '#9ca3af' }}>{t('dir.occ.fetched', { d: s.fetched })}</span>}

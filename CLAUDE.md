@@ -119,7 +119,7 @@ pnp-job-tracker/
 │   │   └── jobs/                   #     职位板 —— 全站卡片与表格的形态基准
 │   ├── src/lib/                    #   领域模块:**一域一目录 + index.ts 桶**
 │   │   ├── db/                     #     database.ts(通用 CRUD,零业务)+ sql.ts(纯 SQL,编号分段)
-│   │   ├── i18n/                   #     **给人看的文案唯一的家**(zh/en/ko 一语一文件 + labels)
+│   │   ├── i18n/                   #     可翻译文案的家(zh/en/ko 一语一文件;身份+三语表随各域)
 │   │   ├── jobs/ points/ verdict/  #     判定与评分域(还有 employers/plan/stats/quota/pathways/quiz;score 2026-08-22 解散并进 jobs+points)
 │   │   ├── agent/ chat/ llm/       #     对话:prompts.ts(给模型看的,不进 i18n)、编排、模型提供方
 │   │   └── resume/                 #     简历解析与匹配
@@ -219,7 +219,7 @@ pnp-job-tracker/
 - ⚠️ **JSON 存不下注释。** 本仓库的决策记录就挂在每个常量正上方(带日期带人带理由),
   把带注释的常量搬成 `.json` 等于把它们丢掉。真该变 JSON 的只有**移民事实** ——
   而它的去处是 `data/ → mart → DB`(见上「数据约定」铁律),不是代码旁边放个 `.json`。
-- **给人看的文案只有一个家:`lib/i18n/`**(2026-08-22 Frank 拍板按**语言**分文件:zh/en/ko 各装整站一门语言,域是文件内分段横幅;身份+三语一体的块归 labels.ts)。
+- **可翻译的扁平键值文案只有一个家:`lib/i18n/`**(2026-08-22 Frank 拍板按**语言**分文件:zh/en/ko 各装整站一门语言,域是文件内分段横幅)。**身份+三语一体的表「所有都按域来管理」**:并进各域 constants(键型护栏用逐行特批 import type),显示函数进 functions;法律、官方资料为此立了新域(lib/legal、lib/official)。
   散在各处、每处都自称「单一来源」是最常见的退化 —— 判据:**加一门语言时要改几个地方?**
   答案不是「一个」就说明还没收拢。
   **三语对齐靠类型强制**(en/ko 每块标 `Record<keyof typeof xxZh, string>`),漏翻/多键就是 tsc 红。

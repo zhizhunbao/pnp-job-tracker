@@ -1,7 +1,8 @@
 // 文案的桶 —— 全站唯一的语言机制:语言是哪几门、怎么判、怎么落盘、怎么取词。
 //
 // 2026-08-22 Frank 拍板改按**语言**分文件:zh.ts(母本)/ en.ts / ko.ts 各装整站一门语言,
-// 域降级为语言文件内的分段横幅;身份+三语一体的块(RES/法务长文/官方名映射/显示函数)在 labels.ts。
+// 域降级为语言文件内的分段横幅;身份+三语一体的块「所有都按域来管理」—— 住各域的
+// labels.ts(第十二抽屉),法律/官方资料为此立了新域(lib/legal、lib/official)。
 // 加一门语言 = 加一个语言文件 + 下面 `Lang` 一行 + 装配表七行(tsc 会逐处点名)。
 //
 // 🔴 本目录一律不带 `'use client'`:服务端 page.tsx(SSR 首帧语言、generateMetadata)也 import 它。
@@ -12,7 +13,8 @@
 import { caseZh, consultZh, jobsZh, legalZh, quizZh, reportZh, siteZh } from './zh'
 import { caseEn, consultEn, jobsEn, legalEn, quizEn, reportEn, siteEn } from './en'
 import { caseKo, consultKo, jobsKo, legalKo, quizKo, reportKo, siteKo } from './ko'
-import { nocLabels, pathwayNames } from './labels'
+import { nocLabels } from '@/lib/jobs'
+import { pathwayNames } from '@/lib/pathways'
 
 // ── 语言 ────────────────────────────────────────────────────────────────────
 export type Lang = 'zh' | 'en' | 'ko'
@@ -82,12 +84,7 @@ export function makeT(lang: Lang): TFn {
   return t
 }
 
-// ── 身份+三语一体的块与显示函数(见 labels.ts 文件头;各自的段头注释也在那边)──
-// 含:显示助手(官方名/数据层值 → 界面词)、法务四页正文、官方分值表译名与门槛闸人话名、
-// 官方资源导航(name/url 是身份)、对话轨迹的见客文案(消费者是 lib/consult 的 step;
-// 旧链 15 个文案块 2026-08-21 随 lib/chat 整域删了)。
-export {
-  askLabels, CONSULT_STEP, CONSULT_STEP_OCC, drawStreamNote, dropProvPrefix, eeDisplay, eeKeyDisplay,
-  gateLabels, legalDocs, type LegalDoc, officialLabel, officialLabels, reqStreamDisplay, RES, type Res,
-  streamDisplay,
-} from './labels'
+// 身份+三语一体的块 2026-08-22 Frank「所有都按域来管理」—— 全部迁回各自的域
+// (labels 第十二抽屉;法律/官方资料立新域 lib/legal、lib/official)。本桶只剩语言机器;
+// 装配所需的两张表(pathwayNames/nocLabels)从域桶取,type-only 之外的这条边是
+// 「i18n 装配 ← 域的映射体」,方向与「域 → i18n 取词」并存但无运行时环(域侧只 import type)。

@@ -10,6 +10,7 @@
 
 export { PATHWAYS } from './constants'
 export { aggregatePilotQuota, fieldMatchExemptionOf, gateOf, regionProvincesOf, uiOf } from './functions'
+export { askLabels, gateLabels, pathwayNames } from './constants'
 export type {
   FieldMatchExemption, GateBook, GateKey, GateOfIn, GateRule, OutOfProvinceGrad, PathwayKey,
   PathwayStrategy, PathwayUi, PilotQuotaAgg, PilotQuotaCommunityRow, ResolvedUi, StatusAsk,

@@ -15,6 +15,7 @@
  * @time 2026-08-19 22:55:33
  */
 
+import { fill } from '../template'
 import { runAgentLoop } from '@earendil-works/pi-agent-core'
 import type { StreamFn } from '@earendil-works/pi-agent-core'
 import { streamSimple } from '@earendil-works/pi-ai/api/openai-completions'
@@ -23,7 +24,7 @@ import { acceptNoc, passThroughMessages } from '../agent/server'
 import type { TranscriptMessage } from '../agent'
 import { loadVerdictTables, pathVerdict } from '../ruling/server'
 import type { VerdictProfile } from '../ruling'
-import { CONSULT_STEP, CONSULT_STEP_OCC } from '../i18n'
+
 import { cleanProvs } from '../location'
 import { chatError, CHAT_CODE } from '../error'
 import { CHAT_FN, CHAT_LOG, GATE_LOG, log } from '../log'
@@ -31,7 +32,8 @@ import { queryRows, show, SQL, text } from '../db'
 import { evaluateRequirements } from '../gauge'
 import type { Requirement, RuleProfile, RuleResult } from '../gauge'
 import {
-  API, AS_FOLLOWS, AUTH_HEADER, AVAIL, BASE, BEARER, BOLD_RE, CLAIMS_CAP, CLAIM_TEXT_CAP, CONTEXT_WINDOW,
+  API, AS_FOLLOWS, AUTH_HEADER, AVAIL, BASE, BEARER, BOLD_RE, CLAIMS_CAP, CLAIM_TEXT_CAP,
+  CONSULT_STEP, CONSULT_STEP_OCC_TPL, CONTEXT_WINDOW,
   CUT_MIN_RATIO, DRAW_LIMIT, EARLIER_HEAD, EN, EN_UNIT_WORDS, ERR_CAP, FAIL_MSG, FED, FIRST_LINE_CAP, FULL_STOP, GATE, GRID_CRS,
   GUARD_RETRIES, HARD_GATES, HAS_DIGIT, HEADING_RE, HISTORY_CAP, HISTORY_TURNS, INELIGIBLE, INTERNAL_WORDS,
   JOBS_LINK, KEY, KIND_SUMMARY, LABEL, LANG_NAME, LEAD_MARK, LEN_CAP, LIKE_ANY, LIKE_ESCAPE, LIKE_SPECIAL,
@@ -65,7 +67,7 @@ import type {
   RunGatesOut, OrNone2In, OrNoneIn, OrNoneOut, Reply, SearchOccupationsIn, SearchOccupationsOut, SegIn,
   StatusFactIn, StatusWordOfOut, Availability, TakeIn, ThresholdsResult, ThresholdsFactsOut, ThresholdsRow,
   Tool, ToolArgs, VerdictFactsIn, VerdictFactsOut, VerdictProfileOfIn,
-  ExecClaimsIn, ExecClaimsOut, ExecVerdictIn, ExecVerdictOut,
+  ExecClaimsIn, ExecClaimsOut, ExecVerdictIn, ExecVerdictOut, StepOccLineIn,
 } from './types'
 
 // =========================================================================
@@ -1310,7 +1312,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
       box.title = tt.title
       box.teer = tt.teer
       if (run.onStep) {
-        run.onStep(CONSULT_STEP_OCC[run.lang](box.title || ok))
+        run.onStep(stepOccLineOf({ lang: run.lang, occ: box.title || ok }))
       }
     }
     return box.noc
@@ -1808,4 +1810,14 @@ function retryNote(fired: RetryNoteIn): string {
     }
   }
   return lines.join(NL)
+}
+
+/**
+ * 采信出职业那一拍的轨迹一行(模板在 constants 的 CONSULT_STEP_OCC_TPL,{occ} 槽用 fill 填)。
+ *
+ * @param input 语言与职业名。
+ * @returns 轨迹一行。
+ */
+export function stepOccLineOf(input: StepOccLineIn): string {
+  return fill({ tpl: CONSULT_STEP_OCC_TPL[input.lang], params: { occ: input.occ } })
 }

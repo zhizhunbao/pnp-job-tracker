@@ -23,7 +23,8 @@ import { EeCategorySection, MeansForMe, NewsLatestBlock, PnpDrawsBlock, PnpListS
 import { LockedText } from './Lock'
 import { CARD, SCRIM, iconBtnS, useIsNarrow } from './Modal'
 import { useOverlayClose } from './overlay'
-import { makeT, streamDisplay, type Lang, type TFn } from '@/lib/i18n'
+import { makeT, type Lang, type TFn } from '@/lib/i18n'
+import { streamDisplay } from '@/lib/jobs'
 import { type ColKey, type FieldGroup, type Plan, type DesigEmp, type EeOcc, type FieldSource, type JobRow, type NewsSlim, type NocDesc, type PnpDraw, type PnpOcc, type ProvInfo, blockedSrc, isDirect, sourceLabel } from '@/lib/jobs'
 import { isExemptSector, lmiaWageClass } from '@/lib/lmiaStatus'
 import { mapQuery, mapsUrl, parseLoc } from '@/lib/location'
@@ -178,7 +179,7 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
             : <VerdictPill tone={v === 'on' ? 'ok' : 'na'}>{t('ch.aip.' + v)}</VerdictPill>}
         </Row>
         {blocked ? (
-          <Row k={streamDisplay(t, blocked.label)}>
+          <Row k={streamDisplay({ t, label: blocked.label })}>
             {t('fact.aipBlockedHit', { name: blocked.occupations.find((o) => o.noc === job.noc)?.name || job.noc, noc: job.noc })}
           </Row>
         ) : null}

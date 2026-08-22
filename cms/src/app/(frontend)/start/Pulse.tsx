@@ -14,7 +14,8 @@
 // SSR 瘦身手法守住:职业大表(occ ~3400 行)不进 HTML,挂载后拉 /api/market-stats(与旧版同一端点)。
 import { useEffect, useMemo, useState } from 'react'
 
-import { eeKeyDisplay, makeT, drawStreamNote, streamDisplay, type Lang, type TFn } from '@/lib/i18n'
+import { makeT, type Lang, type TFn } from '@/lib/i18n'
+import { eeKeyDisplay, drawStreamNote, streamDisplay } from '@/lib/jobs'
 import { useLang } from '../LangProvider'
 import { Header } from '../Header'
 import { Footer } from '../Footer'
@@ -189,7 +190,7 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: 
   )
   const streamSel = kind === 'named' ? (
     <SbSel key="stream" value={fStream} onChange={setFStream} all={t('se.allStreams')}
-      options={streamOpts.map((s) => ({ v: s, label: streamDisplay(t, s) }))} />
+      options={streamOpts.map((s) => ({ v: s, label: streamDisplay({ t, label: s }) }))} />
   ) : null
   // 职业筛三级联动(08-08 Frank「大类种类小类联动过滤要加上」,与职位板同套形态):
   // 大类/中类=纯点选、选项只列本表真实存在的分类(小样本橱窗表不比全量职位板,摆满 89 个中类全是死选项);
@@ -593,16 +594,16 @@ export function Pulse({ stats }: { stats: HomeStats }) {
 
   // ── S5 抽选行显示(与旧版同口径):官方英文名主文案 + 界面语言译名灰注 ──
   const tEn = useMemo(() => makeT('en'), [])
-  const drawMain = (r: PulseDraw) => (r.province === 'FED' ? eeKeyDisplay(tEn, r.label) : (r.stream || r.label))
+  const drawMain = (r: PulseDraw) => (r.province === 'FED' ? eeKeyDisplay({ t: tEn, key: r.label }) : (r.stream || r.label))
   const drawNote = (r: PulseDraw) => {
     if (lang === 'en') return ''
     if (r.province !== 'FED') {
       // #280:优先用 ETL 批译(data/processed/draw_stream_zh.json → pnp_draws.stream_zh,覆盖全部
       // 41 个 distinct 流名);缺列/还没翻到的 stream 回退旧的手工小表(17 条,覆盖有限但零延迟)
-      if (lang === 'zh') return r.streamZh || drawStreamNote(r.stream || '', lang)
-      return drawStreamNote(r.stream || '', lang)
+      if (lang === 'zh') return r.streamZh || drawStreamNote({ stream: r.stream || '', lang: lang })
+      return drawStreamNote({ stream: r.stream || '', lang: lang })
     }
-    const zh = eeKeyDisplay(t, r.label)
+    const zh = eeKeyDisplay({ t, key: r.label })
     return zh === drawMain(r) ? '' : zh
   }
   // 冷解读:当期分数线 vs 近 12 期同通道区间(服务端算好的三标量填槽)。样本不足 → 不出这句
@@ -901,7 +902,7 @@ export function Pulse({ stats }: { stats: HomeStats }) {
           {provStat?.streamLabels ? (
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, margin: '0 0 10px', fontSize: 12.5, color: UI.text2 }}>
               <span style={{ whiteSpace: 'nowrap' }}>{t('pulse.s4.streams')}</span>
-              {provStat.streamLabels.split('、').map((s) => <Tag key={s} variant="warn">{streamDisplay(t, s)}</Tag>)}
+              {provStat.streamLabels.split('、').map((s) => <Tag key={s} variant="warn">{streamDisplay({ t, label: s })}</Tag>)}
             </div>
           ) : null}
           {provOcc === null

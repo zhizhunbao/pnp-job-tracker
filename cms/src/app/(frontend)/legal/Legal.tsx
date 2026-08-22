@@ -1,7 +1,8 @@
 'use client'
 // 法务页共享外壳(E4-02):四件套(免责/隐私/条款/关于)共用。内容各页自带三语字典(章节数组),
 // i18n.ts 只管 UI 壳 —— 法务长文不进全局字典。文案为模板级自拟,不构成法律意见(收入后请专业审阅,backlog)。
-import { type Lang, type LegalDoc } from '@/lib/i18n'
+import { type Lang } from '@/lib/i18n'
+import { type LegalDoc } from '@/lib/legal'
 import { useLang } from '../LangProvider'
 import { Header } from '../Header'
 import { Footer } from '../Footer'
@@ -9,7 +10,7 @@ import { Footer } from '../Footer'
 // 公开支持邮箱(删号/异议下架/退款申请都走它):正式域名定了换 env 即可
 export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'wangsansi9527@gmail.com'
 
-// LegalDoc 的形状跟着**数据**走(lib/i18n/labels.ts),这里只是它的渲染器
+// LegalDoc 的形状跟着**数据**走(lib/i18n/legal.ts),这里只是它的渲染器
 
 export function Legal({ docs, icon }: { docs: Record<Lang, LegalDoc>; icon?: React.ReactNode }) {
   const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定

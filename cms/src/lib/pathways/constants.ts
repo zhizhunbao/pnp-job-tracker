@@ -8,6 +8,11 @@
  * @time 2026-08-22 01:00:16
  */
 
+// eslint-disable-next-line local/no-import-in-leaf -- 数据体的键完备性护栏要本域键型(特批牌形态;「能让编译器管的别写脚本管」)
+import type { GateKey, PathwayKey, StatusAsk } from './types'
+// eslint-disable-next-line local/no-import-in-leaf -- 语言轴由 i18n 基建持有,三语表的形状检查靠它
+import type { Lang } from '../i18n'
+
 // 🔴 本文件是**通道数据本体**(Frank 2026-08-22 拍板:策略就是常量,并入常量抽屉;
 //    08-15「一条通道一个文件」的可查性由下面的分段横幅接续 —— 一通道一段,旁注原样)。
 //    形状注解是本文件唯一的一条 import 边;引用与判读的取证方式见文件头。
@@ -737,3 +742,106 @@ export const PATHWAYS: PathwayStrategy[] = [
   NL_INTL_GRAD,
   PE_SW,
 ]
+
+// =========================================================================
+// 15. 界面说法(通道名与门槛闸人话名;2026-08-22 Frank「所有都按域来管理」自 i18n 迁回)
+// =========================================================================
+
+/**
+ * 通道名键型:`jpw.p.${PathwayKey}` —— 加一条通道、在 types.ts 登记完 key,
+ * 下面三张表就会报缺,写完三语名才编得过。裸键 `jpw.p.XX` 不可能再上线
+ * (2026-08-17 从 lib/pathways/<通道>.ts 搬去 i18n「文案只有一个家」,2026-08-22 按域迁回)。
+ */
+type PathwayNames = Record<`jpw.p.${PathwayKey}`, string>
+
+/**
+ * 通道名·中文。
+ */
+const pwZh: PathwayNames = {
+  'jpw.p.AB-opportunity': '阿尔伯塔省 机会通道',
+  'jpw.p.AIP': '大西洋移民计划(AIP)',
+  'jpw.p.BC-build': '不列颠哥伦比亚省 建筑技工定向抽选',
+  'jpw.p.BC-sw': '不列颠哥伦比亚省 技术工人通道',
+  'jpw.p.FCIP': '法语社区移民试点(FCIP)',
+  'jpw.p.FED-EE': '联邦 快速通道(EE)',
+  'jpw.p.MB-swm': '曼尼托巴省 技术工人通道',
+  'jpw.p.NB-sw': '新不伦瑞克省 技术工人通道',
+  'jpw.p.NL-intl-grad': '纽芬兰省 国际毕业生类别',
+  'jpw.p.NS-sw': '新斯科舍省 技术工人通道',
+  'jpw.p.ON-workforce': '安大略省 劳动力优先通道',
+  'jpw.p.PE-sw': '爱德华王子岛省 在需职业通道',
+  'jpw.p.RCIP': '乡村社区移民试点(RCIP)',
+  'jpw.p.SK-offer': '萨斯喀彻温省 雇主 offer 通道',
+}
+/**
+ * 通道名·英文。
+ */
+const pwEn: PathwayNames = {
+  'jpw.p.AB-opportunity': 'Alberta Opportunity Stream',
+  'jpw.p.AIP': 'Atlantic Immigration Program',
+  'jpw.p.BC-build': 'BC Build targeted draw',
+  'jpw.p.BC-sw': 'British Columbia Skilled Worker',
+  'jpw.p.FCIP': 'Francophone Community Immigration Pilot',
+  'jpw.p.FED-EE': 'Federal Express Entry',
+  'jpw.p.MB-swm': 'Manitoba Skilled Worker',
+  'jpw.p.NB-sw': 'New Brunswick Skilled Worker',
+  'jpw.p.NL-intl-grad': 'Newfoundland International Graduate',
+  'jpw.p.NS-sw': 'Nova Scotia Skilled Worker',
+  'jpw.p.ON-workforce': 'Ontario Workforce Priority',
+  'jpw.p.PE-sw': 'PEI Occupations in Demand',
+  'jpw.p.RCIP': 'Rural Community Immigration Pilot',
+  'jpw.p.SK-offer': 'Saskatchewan Employment Offer',
+}
+/**
+ * 通道名·韩文。
+ */
+const pwKo: PathwayNames = {
+  'jpw.p.AB-opportunity': '앨버타주 기회 통로',
+  'jpw.p.AIP': '대서양 이민 프로그램(AIP)',
+  'jpw.p.BC-build': '브리티시컬럼비아주 건설 기능직 지정 추첨',
+  'jpw.p.BC-sw': '브리티시컬럼비아주 기술인력 통로',
+  'jpw.p.FCIP': '프랑스어 커뮤니티 이민 시범(FCIP)',
+  'jpw.p.FED-EE': '연방 Express Entry',
+  'jpw.p.MB-swm': '매니토바주 기술인력 통로',
+  'jpw.p.NB-sw': '뉴브런즈윅주 기술인력 통로',
+  'jpw.p.NL-intl-grad': '뉴펀들랜드주 국제 졸업생 부문',
+  'jpw.p.NS-sw': '노바스코샤주 기술인력 통로',
+  'jpw.p.ON-workforce': '온타리오주 우선 직군 통로',
+  'jpw.p.PE-sw': '프린스에드워드아일랜드주 수요 직업 통로',
+  'jpw.p.RCIP': '농촌 지역 이민 시범(RCIP)',
+  'jpw.p.SK-offer': '서스캐처원주 고용 오퍼 통로',
+}
+/**
+ * 通道名三语表(消费方:i18n 装配进 t() 的扁平表)。
+ */
+export const pathwayNames: Record<Lang, PathwayNames> = { zh: pwZh, en: pwEn, ko: pwKo }
+
+/**
+ * 三类闸的人话名(题面与结论共用一份,前端不另写)。分界:闸**有哪几类、每类怎么记**在
+ * types/constants(那是词汇表与举证规则),这里只是它们在界面上的**说法**
+ * (2026-08-17 从 lib/gateManifest.ts 搬去 i18n「文案只有一个家」,2026-08-22 按域迁回)。
+ */
+export const gateLabels: Record<GateKey, Record<Lang, string>> = {
+  offer: { zh: 'job offer', en: 'job offer', ko: '잡 오퍼' },
+  statusInCanada: { zh: '境内身份', en: 'status in Canada', ko: '캐나다 체류 신분' },
+  credentialCanada: { zh: '加拿大学历', en: 'Canadian credential', ko: '캐나다 학력' },
+  // 2026-08-15 第四类闸(Frank「毕业生干厨师靠谱吗?跨专业了怎么弄」):NL 国际毕业生官方要求
+  // 岗位与所学专业相关。先前只是一枚灰提醒胶囊,答不上就当没有障碍 —— 与工签闸同一种病,收成真闸。
+  fieldMatch: { zh: '专业对口', en: 'field of study match', ko: '전공 일치' },
+  // 2026-08-15 第五类闸:FCIP 要 NCLC 5 **法语**四项。站里那道语言题问的是 CLB(英语的尺子),
+  // 拿它当 NCLC 用 = 把不会法语的人判成达标再推去法语社区,故单开一闸、单问一题。
+  french: { zh: '法语(NCLC 5)', en: 'French NCLC 5', ko: '프랑스어 NCLC 5' },
+}
+
+/**
+ * statusInCanada 按 asks 拆开后的人话名(结论文案用它,不再统称「境内身份」)。
+ */
+export const askLabels: Record<StatusAsk, Record<Lang, string>> = {
+  workPermit: { zh: '有效工签', en: 'work permit', ko: '유효한 취업 허가' },
+  // 拉丁缩写**括起来**(同 french 的「法语(NCLC 5)」):闸名会与「判不了」直接连写,
+  // 裸的 `毕业工签 PGWP` 拼出来是「毕业工签 PGWP判不了」,措辞层那份带空格,两边逐字对不上
+  // ——2026-08-15 夜判定矩阵测试实撞,与「NCLC 5判不了」同一个病
+  pgwp: { zh: '毕业工签(PGWP)', en: 'PGWP', ko: 'PGWP' },
+  provResidence: { zh: '在该省居住', en: 'residence in the province', ko: '해당 주 거주' },
+  provEmployment: { zh: '在该省在职', en: 'employment in the province', ko: '해당 주 재직' },
+}

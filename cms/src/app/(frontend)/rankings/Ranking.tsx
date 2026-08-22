@@ -1,7 +1,8 @@
 'use client'
 // 榜单视图(E5-02):纯渲染(计算在 ETL);三语壳;岗位行链官方原帖,公司行链官网。
 // RankingTable = 内容单一来源(E8-02):页面版与 /jobs 榜单弹窗共用,不许 fork。
-import { streamDisplay, eeDisplay, type TFn } from '@/lib/i18n'
+import { type TFn } from '@/lib/i18n'
+import { streamDisplay, eeDisplay } from '@/lib/jobs'
 import { useLang } from '../LangProvider'
 import { Header } from '../Header'
 import { Footer } from '../Footer'
@@ -108,8 +109,8 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
           { key: 'city', label: t('col.city'), nowrap: true, sort: (r) => r.city || null, render: (r) => <>{[r.city, r.province].filter(Boolean).join(', ')}</> },
           { key: 'salary', label: t('col.salary'), nowrap: true, sort: (r) => r.salaryAnnual ?? null, render: (r) => <span style={{ color: '#15803d' }}>{r.salaryText || '—'}</span> },
           // #199(Frank「拆成两列」):PNP/EE 合并列拆为 PNP、EE 两列(与主表列名同源)
-          { key: 'pnp', label: t('col.pnp'), render: (r) => r.pnpStream ? <span style={{ fontSize: 12 }}>{streamDisplay(t, r.pnpStream)}</span> : <span style={{ color: '#9ca3af' }}>—</span> },
-          { key: 'ee', label: t('col.ee'), render: (r) => r.eeCategory ? <span style={{ fontSize: 12 }}>{eeDisplay(t, r.eeCategory)}</span> : <span style={{ color: '#9ca3af' }}>—</span> },
+          { key: 'pnp', label: t('col.pnp'), render: (r) => r.pnpStream ? <span style={{ fontSize: 12 }}>{streamDisplay({ t, label: r.pnpStream })}</span> : <span style={{ color: '#9ca3af' }}>—</span> },
+          { key: 'ee', label: t('col.ee'), render: (r) => r.eeCategory ? <span style={{ fontSize: 12 }}>{eeDisplay({ t, label: r.eeCategory })}</span> : <span style={{ color: '#9ca3af' }}>—</span> },
           // #199(Frank「这个通道没人知道什么意思」):此列实为 0-100 移民价值分(非 1-5 通道档),relabel「移民价值分」
           { key: 'score', label: t('rank.col.score'), sort: (r) => r.score ?? null, render: (r) => <span style={{ fontWeight: 600 }}>{r.score ?? '—'}</span> },
           { key: 'date', label: t('col.datePosted'), nowrap: true, sort: (r) => r.datePosted || null, render: (r) => <span style={{ color: '#9ca3af', fontSize: 12.5 }}>{(r.datePosted || '').slice(0, 10)}</span> },

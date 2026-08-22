@@ -5,7 +5,7 @@
 // 上一版做成「四块无主的事实」,被点名「列一堆信息,用户看了有什么用」—— 摆事实不等于给答案。
 // 每条路径下面挂的是判定核给的理由(met/gap/excluded),官方原句原样摆,页面不改写、不加戏。
 import { BackLink } from '../../BackLink'
-import { dropProvPrefix } from '@/lib/i18n'
+import { dropProvPrefix } from '@/lib/jobs'
 import { useLang } from '../../LangProvider'
 import { Footer } from '../../Footer'
 import { Header } from '../../Header'
@@ -61,7 +61,7 @@ export function Case({ caseId, answer }: { caseId: string; answer: CaseAnswer })
               否则一行里省名说两遍,还多折一行。 */}
           {v.province === 'FED' ? t('dp.federal') : provOf(v.province)}
           <span style={{ display: 'inline-block', width: 10 }} />
-          {dropProvPrefix(v.stream, v.province === 'FED' ? '' : provOf(v.province))}
+          {dropProvPrefix({ name: v.stream, prov: v.province === 'FED' ? '' : provOf(v.province) })}
         </span>
         <span style={{ marginLeft: 'auto', color: v.verdict === 'excluded' ? '#b91c1c' : v.tier === 0 ? UI.ok : '#92400e',
           background: v.verdict === 'excluded' ? '#fef2f2' : v.tier === 0 ? '#ecfdf5' : '#fffbeb',

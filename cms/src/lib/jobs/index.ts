@@ -10,6 +10,8 @@
  */
 
 export { NO_LIST_PROVINCES } from './constants'
+export { nocLabels } from './constants'
+export { drawStreamNote, dropProvPrefix, eeDisplay, eeKeyDisplay, reqStreamDisplay, streamDisplay } from './functions'
 export {
   blockedSrc, hasProfile, isDirect, match, matchRank, normalizeProfile, provListCoverage, reasonEn,
   sourceLabel, statusEn,

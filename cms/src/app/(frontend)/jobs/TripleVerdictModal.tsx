@@ -10,7 +10,8 @@
 // 两块同屏名字打架 —— 这一关是**判定**(你这边达不达标),不是又一个输入面。
 import { useEffect, useState } from 'react'
 
-import { makeT, reqStreamDisplay, streamDisplay, type Lang, type TFn } from '@/lib/i18n'
+import { makeT, type Lang, type TFn } from '@/lib/i18n'
+import { reqStreamDisplay, streamDisplay } from '@/lib/jobs'
 
 import { ConditionGrid } from './ConditionGrid'
 import { track } from '@/lib/track'
@@ -107,9 +108,9 @@ function rowText(t: TFn, row: TvRow): { main: string; sub?: string; icon?: strin
   const prov = provDisp(t, P(p.prov))
   switch (true) {
     case row.key === 'tv.occ.listed':
-      return { main: t('tv.occ.listed', { list: streamDisplay(t, P(p.list)) }) }
+      return { main: t('tv.occ.listed', { list: streamDisplay({ t, label: P(p.list) }) }) }
     case row.key === 'tv.occ.excluded':
-      return { main: t('tv.occ.excluded', { list: streamDisplay(t, P(p.list)) }) }
+      return { main: t('tv.occ.excluded', { list: streamDisplay({ t, label: P(p.list) }) }) }
     case row.key === 'tv.occ.notListed': {
       // 定向清单只绑它自己那条通道 → 适用范围写进主文案(哪张清单、多少个职业),
       // 不再一句「未命中任何具名清单」判死。**不配安慰句**:「不在清单上不等于走不了」是废话,清单名+职业数已经把范围说清了。
@@ -117,7 +118,7 @@ function rowText(t: TFn, row: TvRow): { main: string; sub?: string; icon?: strin
       if (!n) return { main: t('tv.occ.notListedNone', { prov }) }
       return {
         main: n === 1
-          ? t('tv.occ.notListedOne', { list: streamDisplay(t, P(p.list)), count: P(p.count) })
+          ? t('tv.occ.notListedOne', { list: streamDisplay({ t, label: P(p.list) }), count: P(p.count) })
           : t('tv.occ.notListedN', { prov, n }),
       }
     }
@@ -130,7 +131,7 @@ function rowText(t: TFn, row: TvRow): { main: string; sub?: string; icon?: strin
       const main = t(p.coarsePass === false ? 'tv.occ.teerCoarseNo' : 'tv.occ.teerCoarse', { teer: P(p.teer), prov })
       const scopeTeers = Array.isArray(p.scopeTeers) ? (p.scopeTeers as string[]) : []
       const sub = p.scopeStream && scopeTeers.length
-        ? t('tv.occ.teerScope', { stream: reqStreamDisplay(P(p.scopeStream), t.lang), teers: teerRange(scopeTeers) })
+        ? t('tv.occ.teerScope', { stream: reqStreamDisplay({ stream: P(p.scopeStream), lang: t.lang ?? 'zh' }), teers: teerRange(scopeTeers) })
         : p.scoped === false ? t('tv.occ.teerNoScope', { prov }) : undefined
       // 2026-08-14 Frank「满足绿勾不满足红叉」:不再强制中性圆点,吃引擎的 pass/excluded 态
       return { main, sub }
@@ -180,7 +181,7 @@ function rowText(t: TFn, row: TvRow): { main: string; sub?: string; icon?: strin
     case row.key === 'tv.time.permit':
       return row.state === 'unknown' ? { main: t('tv.time.na') } : { main: t('tv.time.months', { months: P(p.months) }) }
     case row.key === 'tv.compare.listed':
-      return { main: t('tv.cmp.listed', { prov, list: streamDisplay(t, P(p.list)) }), sub: t('tv.cmp.basis', { prov: provDisp(t, P(p.basisProv)) }) }
+      return { main: t('tv.cmp.listed', { prov, list: streamDisplay({ t, label: P(p.list) }) }), sub: t('tv.cmp.basis', { prov: provDisp(t, P(p.basisProv)) }) }
     case row.key === 'tv.compare.notListed':
       return { main: t('tv.cmp.notListed', { prov }) }
     case row.key === 'tv.compare.noTarget':

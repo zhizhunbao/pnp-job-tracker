@@ -23,7 +23,8 @@ import { PricingModal } from './PricingModal'
 import { OnboardingWizard, OB_SEEN_KEY } from './OnboardingWizard'
 import { useColWidths, type ColWidthSeed } from './colWidths'   // 列宽唯一控制点(刷新/筛选/拖竖线共用一套规则)
 import { filterSig, URL_TO_FILTER, DIRECT_URL_KEY, type JobFilters } from './filters.shared'   // URL↔筛选映射(与 SSR 共用)
-import { eeDisplay, streamDisplay, type TFn } from '@/lib/i18n'
+import { type TFn } from '@/lib/i18n'
+import { eeDisplay, streamDisplay } from '@/lib/jobs'
 import { COLS_COOKIE } from './columns.shared'
 import { type ColKey, type FieldGroup, type Plan, type Dims, type JobRow, isDirect, sourceLabel } from '@/lib/jobs'
 import { PROV_NAMES, mapQuery, mapsUrl, parseLoc, provName } from '@/lib/location'
@@ -851,11 +852,11 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
               // #214 回滚(Frank 2026-07-26「直接改回用 teer 不行么」):卡上显示回 TEER 码,人话档名退到 title
               anyRoute && j.teer != null ? chip('gray', `TEER ${j.teer}`, 'teer', t('teer.tip', { n: j.teer, l: t('teer.' + j.teer) })) : null,
               // 批A 追拍(Frank「可提名和可省提名有什么区别」):命中具名清单显清单名(BC 医疗),通用才显「可提名」
-              anyRoute && j.pnpEligible ? chip('amber', j.pnpStream ? streamDisplay(t, j.pnpStream) : t('cell.pnpSkilledProv', { p: j.province }), 'pnp')
+              anyRoute && j.pnpEligible ? chip('amber', j.pnpStream ? streamDisplay({ t, label: j.pnpStream }) : t('cell.pnpSkilledProv', { p: j.province }), 'pnp')
                 : anyRoute && pnpExcl ? chip('red', aipBlocked ? t('cell.blockedBoth') : t('cell.pnpExcl'), 'pnp') : null,
               anyRoute && j.eeCategory ? (eeDorm
-                ? chip('gray', 'EE ' + eeDisplay(t, j.eeCategory) + t('ee.lastDraw', { d: eeLast.slice(0, 7) || '—' }), 'ee', t('ee.dormantTip', { d: eeLast.slice(0, 7) || '—' }))
-                : chip('blue', 'EE ' + eeDisplay(t, j.eeCategory), 'ee')) : null,
+                ? chip('gray', 'EE ' + eeDisplay({ t, label: j.eeCategory }) + t('ee.lastDraw', { d: eeLast.slice(0, 7) || '—' }), 'ee', t('ee.dormantTip', { d: eeLast.slice(0, 7) || '—' }))
+                : chip('blue', 'EE ' + eeDisplay({ t, label: j.eeCategory }), 'ee')) : null,
               // Frank 2026-07-26「不符合清单 职业不受理 需要两个胶囊吗」:两条都命中排除时只出一枚「本省不受理」
               anyRoute && aipBlocked && !pnpExcl ? chip('red', t('cell.aipBlocked'), 'aip')
                 : anyRoute && j.aip ? chip('orange', t('cell.aipYes'), 'aip') : null,

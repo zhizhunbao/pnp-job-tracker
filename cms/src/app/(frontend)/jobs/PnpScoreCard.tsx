@@ -14,7 +14,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { QuizChecks, QuizChoices, QuizNav, QuizSub, QuizTitle } from '../quiz/QuizUI'
 import type { Lang, TFn } from '@/lib/i18n'
-import { officialLabel as label } from '@/lib/i18n'
+import { officialLabel as label } from '@/lib/official'
 import { CLB, NCLC, pullAndMerge, readAnswers, readScoreAnswers, writeAnswers, writeScoreAnswers, type ScoreAnswers } from '@/lib/quiz'
 import { defaultProfile, EDU_KEYS, scoreProvince, streamMatches, type DrawRow, type EduKey, type ScoreFactor, type SelfProfile } from '@/lib/points'
 
@@ -358,7 +358,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   const bcAreaRows = factors.filter((f) => f.province === 'BC' && f.factor === 'area' && f.kind === 'row')
   if (bcAreaRows.length) {
     addChoices('job:bcArea', t('ps.in.area'), bcAreaRows.map((r, i) => ({
-      key: String(r.seq), text: label(r.label, lang), active: areaI === i, apply: () => setAreaI(i),
+      key: String(r.seq), text: label({ raw: r.label, lang }), active: areaI === i, apply: () => setAreaI(i),
     })), scopedSub('BC'))
   }
   for (const { prov, name, key, rows } of manualQuestions) {
@@ -366,7 +366,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
     // 落哪一档由官方档位文字自己说了算(只认唯一命中,读不出区间就照旧问)
     if (name === 'wage' && wageProvince && wageRowAt(rows, wage) != null) continue
     addChoices(key, t('ps.f.' + name), rows.map((r) => ({
-      key: String(r.seq), text: label(r.label, lang), active: rowAnswers[key] === r.seq,
+      key: String(r.seq), text: label({ raw: r.label, lang }), active: rowAnswers[key] === r.seq,
       apply: () => setRowAnswers((m) => ({ ...m, [key]: r.seq })),
     })), scopedSub(prov))
   }
@@ -392,10 +392,10 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
         for (const [seq, on] of Object.entries(derived)) derivedTicks[`${prov}:${g.factor}:${seq}`] = on
         const hit = g.rows.filter((r) => derived[r.seq])
         derivedEcho.push(g.rows.length === 1
-          ? { key: `${prov}:${g.factor}:0`, prov, label: label(g.rows[0].label, lang),
+          ? { key: `${prov}:${g.factor}:0`, prov, label: label({ raw: g.rows[0].label, lang }),
             value: t(hit.length ? 'ps.yes' : 'ps.no') }
           : { key: `${prov}:${g.factor}:0`, prov, label: t('ps.f.' + g.factor) || g.factor,
-            value: hit.length ? hit.map((r) => label(r.label, lang)).join(lang === 'zh' ? '、' : ', ') : t('ps.no') })
+            value: hit.length ? hit.map((r) => label({ raw: r.label, lang })).join(lang === 'zh' ? '、' : ', ') : t('ps.no') })
         continue
       }
       // 现有最大的组是 3 条;这道闸是给以后加省的数据留的,别让某个省一屏冒出 8 条
@@ -420,17 +420,17 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
         if (chunk.length === 1) {
           // 只有一条的组不摆一个孤零零的勾选框 —— 退回是/否单选,标题就是那一条
           const r = chunk[0]
-          addChoices(screenKey, t('ps.q.meet', { condition: label(r.label, lang) }), [
+          addChoices(screenKey, t('ps.q.meet', { condition: label({ raw: r.label, lang }) }), [
             { key: 'yes', text: t('ps.yes'), active: isOn(r), apply: () => setOn(r, true) },
             { key: 'no', text: t('ps.no'), active: !isOn(r), apply: () => setOn(r, false) },
-          ], undefined, label(r.label, lang))
+          ], undefined, label({ raw: r.label, lang }))
         } else {
           extraQuestions.push({
             key: screenKey,
             title: t('ps.f.' + g.factor) || g.factor,
 
             checks: chunk.map((r) => ({
-              key: tickKey(r), text: label(r.label, lang), pts: r.points,
+              key: tickKey(r), text: label({ raw: r.label, lang }), pts: r.points,
               on: isOn(r), toggle: (on: boolean) => setOn(r, on),
             })),
           })
@@ -690,7 +690,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
         {scores.some((s) => s.province === 'BC' && s.parts.some((p) => p.factor === 'area')) ? (
           <div><div style={lbl}>{t('ps.in.area')}</div>
             <select value={areaI} onChange={(e) => setAreaI(Number(e.target.value))} style={sel}>
-              {factors.filter((f) => f.factor === 'area' && f.kind === 'row').map((r, i) => <option key={r.label} value={i}>{label(r.label, lang)}</option>)}
+              {factors.filter((f) => f.factor === 'area' && f.kind === 'row').map((r, i) => <option key={r.label} value={i}>{label({ raw: r.label, lang })}</option>)}
             </select></div>
         ) : null}
         {manualQuestions.map(({ name, key, rows }) => {
@@ -701,7 +701,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
                   return { ...m, [key]: Number(e.target.value) }
                 })} style={sel}>
                   <option value="">{t('ps.choose')}</option>
-                  {rows.map((r) => <option key={r.seq} value={r.seq}>{label(r.label, lang)} ({r.points ?? 0})</option>)}
+                  {rows.map((r) => <option key={r.seq} value={r.seq}>{label({ raw: r.label, lang })} ({r.points ?? 0})</option>)}
                 </select>
               </div>
             )
@@ -752,13 +752,13 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
                       条目内部 [勾选框 | 条目 | +N] 三列,+N 在同一列上对齐 */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '4px 16px' }}>
                     {offerRow ? (
-                      <Tick on={hasOffer} onToggle={answerHasOffer} text={label(offerRow.label, lang)} pts={offerRow.points} />
+                      <Tick on={hasOffer} onToggle={answerHasOffer} text={label({ raw: offerRow.label, lang })} pts={offerRow.points} />
                     ) : null}
                     {list.map((b) => {
                       const key = `${s.province}:${b.factor}:${b.seq}`
                       return (
                         <Tick key={key} on={!!ticks[key]} onToggle={(v) => setTicks((m) => ({ ...m, [key]: v }))}
-                          text={label(b.label, lang)} pts={b.points} />
+                          text={label({ raw: b.label, lang })} pts={b.points} />
                       )
                     })}
                   </div>
@@ -818,7 +818,7 @@ function ProvinceResult({ t, lang, s, draws, byProv, switchable, matchedStream, 
           标签列吃 max-content、数字列右对齐:两张省卡等宽,数字列因此也跨卡对齐。 */}
       <div style={{ display: 'grid', gridTemplateColumns: 'max-content 1fr max-content max-content', columnGap: 6, rowGap: 2, fontSize: 12, alignItems: 'baseline' }}>
         {s.parts.filter((p) => p.max > 0).map((p) => [
-          <span key={p.factor + 'k'} style={{ color: '#9ca3af', gridColumn: '1 / 3' }} title={p.matched ? label(p.matched, lang) : ''}>{t('ps.f.' + p.factor) || p.factor}</span>,
+          <span key={p.factor + 'k'} style={{ color: '#9ca3af', gridColumn: '1 / 3' }} title={p.matched ? label({ raw: p.matched, lang }) : ''}>{t('ps.f.' + p.factor) || p.factor}</span>,
           <span key={p.factor + 'v'} style={{ color: '#374151', fontWeight: 600, fontVariantNumeric: 'tabular-nums', textAlign: 'right', minWidth: 22 }}>{p.pts}</span>,
           <span key={p.factor + 'm'} style={{ color: '#9ca3af', fontVariantNumeric: 'tabular-nums' }}>/ {p.max}</span>,
         ]).flat()}

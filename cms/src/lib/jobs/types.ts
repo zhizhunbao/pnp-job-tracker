@@ -3790,3 +3790,107 @@ export type TopNocsSlot = {
    */
   rows: TopNoc[]
 }
+
+// =========================================================================
+// 9. 界面显示的入参(2026-08-22 「所有都按域来管理」自 i18n 迁回)
+// =========================================================================
+
+/**
+ * 界面语言码(镜像 i18n 的 Lang;types 是叶子不 import,加语言时 i18n 装配处 tsc 会点名)。
+ */
+export type LangCode = 'zh' | 'en' | 'ko'
+
+/**
+ * 取词函数的最小面(i18n 的 TFn 结构兼容;显示函数只用「key → 词」这一格)。
+ */
+export type TransFn = (key: string) => string
+
+/**
+ * `drawStreamNote` 的入参。
+ */
+export type DrawStreamNoteIn = {
+  /**
+   * 官方通道名。
+   */
+  stream: string
+
+  /**
+   * 界面语言。
+   */
+  lang: LangCode
+}
+
+/**
+ * `streamDisplay` 的入参。
+ */
+export type StreamDisplayIn = {
+  /**
+   * 取词函数。
+   */
+  t: TransFn
+
+  /**
+   * 数据层的中文 label。
+   */
+  label: string
+}
+
+/**
+ * `reqStreamDisplay` 的入参。
+ */
+export type ReqStreamDisplayIn = {
+  /**
+   * 官方通道名。
+   */
+  stream: string
+
+  /**
+   * 界面语言(调用端拿 `t.lang` 时自行 `?? 'zh'` 兜缺省)。
+   */
+  lang: LangCode
+}
+
+/**
+ * `eeDisplay` 的入参。
+ */
+export type EeDisplayIn = {
+  /**
+   * 取词函数。
+   */
+  t: TransFn
+
+  /**
+   * 数据层 label(可含「/」多段)。
+   */
+  label: string
+}
+
+/**
+ * `eeKeyDisplay` 的入参。
+ */
+export type EeKeyDisplayIn = {
+  /**
+   * 取词函数。
+   */
+  t: TransFn
+
+  /**
+   * 数据层英文 cat_key。
+   */
+  key: string
+}
+
+/**
+ * `dropProvPrefix` 的入参。
+ */
+export type DropProvPrefixIn = {
+  /**
+   * 通道名。
+   */
+  name: string
+
+  /**
+   * 省名(全称)。
+   */
+  prov: string
+}

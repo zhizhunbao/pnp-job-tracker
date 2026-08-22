@@ -7,7 +7,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { IconCheck, IconTarget, IconWarn, IconX } from '../Icons'
 import { Grid } from '../ui'
 import { TvEntryCard } from './TripleVerdictModal'
-import { eeDisplay, eeKeyDisplay, makeT, streamDisplay, type Lang, type TFn } from '@/lib/i18n'
+import { makeT, type Lang, type TFn } from '@/lib/i18n'
+import { eeDisplay, eeKeyDisplay, streamDisplay } from '@/lib/jobs'
 import { type Plan, type EeCat, type EeOcc, type JobRow, type NewsSlim, type NocDesc, type PnpDraw, type PnpOcc, type PnpStream, match as matchJob, type MatchJob, type MatchReason } from '@/lib/jobs'
 import { PROV_NAMES, provName } from '@/lib/location'
 import { nocLocalTitle } from '@/lib/noc'
@@ -155,8 +156,8 @@ export function PnpListSection({ job, lang, occ, draws, news, profileClb, nocDes
   let verdictPill: React.ReactNode
   let genericWhy = ''
   if (isQc) verdictPill = <VerdictPill tone="na">{t('ch.pnp.qc')}</VerdictPill>
-  else if (excludedBy) verdictPill = <VerdictPill tone="fail">{t('ch.pnp.exl', { label: streamDisplay(t, excludedBy.label) })}</VerdictPill>
-  else if (matched) verdictPill = <VerdictPill tone="ok">{t('ch.pnp.on', { label: streamDisplay(t, matched.label) })}</VerdictPill>
+  else if (excludedBy) verdictPill = <VerdictPill tone="fail">{t('ch.pnp.exl', { label: streamDisplay({ t, label: excludedBy.label }) })}</VerdictPill>
+  else if (matched) verdictPill = <VerdictPill tone="ok">{t('ch.pnp.on', { label: streamDisplay({ t, label: matched.label }) })}</VerdictPill>
   else if (job.pnpEligible) {
     verdictPill = <VerdictPill tone="ok">{t('ch.pnp.generic')}</VerdictPill>
     // Frank 同批「显示走通用 但是不知道具体走的是什么」:把「凭什么算通用」写出来,别让用户猜。
@@ -214,7 +215,7 @@ export function PnpListSection({ job, lang, occ, draws, news, profileClb, nocDes
         <div key={fk} className="cardMd">
           {/* Frank 走查#14:清单头改纯 title(不再作折叠开关);开关移到列表末尾 */}
           <div className="mcardHead">
-            {streamDisplay(t, s.label)}
+            {streamDisplay({ t, label: s.label })}
             <span className="pnpCount">{t('eelist.count', { n: s.occupations.length })}</span>
           </div>
           <div className="pnpBox">
@@ -298,7 +299,7 @@ function FederalRoundsCard({ t, draws }: { t: TFn; draws: PnpDraw[] }) {
         {buckets.map(([k, n], i) => (
           <span key={k}>{i ? t('sep') : ''}
             <span style={{ color: k === '__cat' ? '#b45309' : (FED_TYPE_COLOR[k] || '#4b5563') }}>
-              {k === '__cat' ? t('eefed.cat') : eeKeyDisplay(t, k)} {n}
+              {k === '__cat' ? t('eefed.cat') : eeKeyDisplay({ t, key: k })} {n}
             </span>
           </span>
         ))}
@@ -307,7 +308,7 @@ function FederalRoundsCard({ t, draws }: { t: TFn; draws: PnpDraw[] }) {
         {rows.map((d, i) => (
           <div key={`${d.drawDate}-${d.label}-${i}`} className="pnpFedRow">
             <span className="pnpFedDate">{d.drawDate.slice(0, 10)}</span>
-            <span title={d.stream} className="pnpFedType" style={{ color: FED_TYPE_COLOR[d.label] || '#b45309' }}>{eeKeyDisplay(t, d.label)}</span>
+            <span title={d.stream} className="pnpFedType" style={{ color: FED_TYPE_COLOR[d.label] || '#b45309' }}>{eeKeyDisplay({ t, key: d.label })}</span>
             <span className="pnpFedCrs">{t('eelist.crsN', { crs: d.score ?? '—' })}</span>
             <span className="pnpFedIta">{t('eefed.ita', { n: d.invitations ?? '—' })}</span>
           </div>
@@ -374,7 +375,7 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
       <div className="cardMd">
         <div className="mcardHead">{t('col.ee')}</div>
         <div className={hit.length ? 'pnpEeVerdict on' : 'pnpEeVerdict'}>
-          {hit.length ? <><IconCheck /> {t('eelist.in', { noc, cats: hit.map((c) => eeDisplay(t, c.label)).join('/') })}</> : t('eelist.out')}
+          {hit.length ? <><IconCheck /> {t('eelist.in', { noc, cats: hit.map((c) => eeDisplay({ t, label: c.label })).join('/') })}</> : t('eelist.out')}
         </div>
         {/* 2026-07-25 Frank「这两个应该是两行吧」:展开钮从结论行拆出,独立一行 */}
         {!hit.length && grouped.length ? (
@@ -394,7 +395,7 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
             const histOpen = openCat === c.key
             return (
               <div key={c.key} className="pnpCat">
-                {shown.length > 1 ? <div className="pnpCatName">{eeDisplay(t, c.label)}</div> : null}
+                {shown.length > 1 ? <div className="pnpCatName">{eeDisplay({ t, label: c.label })}</div> : null}
                 <div onClick={histExpandable ? () => setOpenCat(histOpen ? null : c.key) : undefined}
                   className={histExpandable ? 'pnpDrawLine clickable' : 'pnpDrawLine'}>
                   {t('eelist.draw', { crs: c.drawCrs ?? '—', date: c.drawDate, size: c.drawSize ?? '—' })}
@@ -426,7 +427,7 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
             return (
               <div key={c.key} className="pnpCat">
                 <div onClick={() => setFoldOpen((m) => ({ ...m, [c.key]: !listOpen }))} className="pnpCatHead">
-                  <span className="pnpCatName lg">{eeDisplay(t, c.label)}</span>
+                  <span className="pnpCatName lg">{eeDisplay({ t, label: c.label })}</span>
                   <span className="pnpCatN">{t('eelist.count', { n: c.occupations.length })}</span>
                   <span className="pnpCatCaret">{listOpen ? '▴' : '▾'}</span>
                 </div>
@@ -573,22 +574,22 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
     } else if (r.rule === 'prov') {
       if (r.key === 'match.r.prov.notTarget') rows.push({ dim: t('mm.dim.prov'), jc: provCell(String(p.prov)), yc: <>{pf.targetProvinces.map((c: string) => <div key={c}>{provCell(c)}</div>)}</>, verdict: 'warn', v: t('mm.v.notTarget') })
       else if (r.key === 'match.r.prov.qc') rows.push({ dim: t('mm.dim.pnp'), jc: provCell('QC'), yc: '—', verdict: 'na', v: t('mm.v.qc') })
-      else if (r.key === 'match.r.prov.named') rows.push({ dim: t('mm.dim.pnp'), jc: streamDisplay(t, String(p.label)), yc: '—', verdict: 'pass', v: t('mm.v.named'), src: r.source })
-      else if (r.key === 'match.r.prov.excluded') rows.push({ dim: t('mm.dim.pnp'), jc: streamDisplay(t, String(p.label)), yc: '—', verdict: 'fail', v: t('mm.v.excluded'), src: r.source })
+      else if (r.key === 'match.r.prov.named') rows.push({ dim: t('mm.dim.pnp'), jc: streamDisplay({ t, label: String(p.label) }), yc: '—', verdict: 'pass', v: t('mm.v.named'), src: r.source })
+      else if (r.key === 'match.r.prov.excluded') rows.push({ dim: t('mm.dim.pnp'), jc: streamDisplay({ t, label: String(p.label) }), yc: '—', verdict: 'fail', v: t('mm.v.excluded'), src: r.source })
       else if (r.key === 'match.r.prov.generic') rows.push({ dim: t('mm.dim.pnpPre'), jc: teerCell(), yc: '—', verdict: 'pass', v: t('mm.v.generic') })
       else if (r.key === 'match.r.prov.uncovered') rows.push({ dim: t('mm.dim.pnpPre'), jc: teerCell(), yc: '—', verdict: 'na', v: t('mm.v.uncovered') })
       else rows.push({ dim: t('mm.dim.pnpPre'), jc: teerCell(), yc: '—', verdict: 'fail', v: t('mm.v.provNone') })
     } else if (r.rule === 'ee') {
       if (r.key === 'match.r.ee.none') rows.push({ dim: t('mm.dim.ee'), jc: t('mm.job.eeNone'), yc: '—', verdict: 'na', v: '—' })
-      else if (r.key === 'match.r.ee.noDraw') rows.push({ dim: t('mm.dim.ee'), jc: t('mm.job.inCat', { cat: eeDisplay(t, String(p.cat)) }), yc: '—', verdict: 'na', v: t('mm.v.noDraw') })
+      else if (r.key === 'match.r.ee.noDraw') rows.push({ dim: t('mm.dim.ee'), jc: t('mm.job.inCat', { cat: eeDisplay({ t, label: String(p.cat) }) }), yc: '—', verdict: 'na', v: t('mm.v.noDraw') })
       else {
         const noCrs = r.key === 'match.r.ee.noCrs'
-        rows.push({ dim: t('mm.dim.ee'), jc: t('mm.job.inCat', { cat: eeDisplay(t, String(p.cat)) }), yc: noCrs ? t('mm.you.noCrs') : t('mm.you.crs', { crs: p.crs }), verdict: noCrs ? 'warn' : r.verdict as MMRow['verdict'], v: noCrs ? t('mm.v.fillCrs') : r.key === 'match.r.ee.above' ? t('mm.v.crsAbove', { diff: p.diff }) : t('mm.v.crsBelow', { gap: p.gap }) })
+        rows.push({ dim: t('mm.dim.ee'), jc: t('mm.job.inCat', { cat: eeDisplay({ t, label: String(p.cat) }) }), yc: noCrs ? t('mm.you.noCrs') : t('mm.you.crs', { crs: p.crs }), verdict: noCrs ? 'warn' : r.verdict as MMRow['verdict'], v: noCrs ? t('mm.v.fillCrs') : r.key === 'match.r.ee.above' ? t('mm.v.crsAbove', { diff: p.diff }) : t('mm.v.crsBelow', { gap: p.gap }) })
         rows.push({ dim: t('mm.dim.eeDraw'), jc: t('mm.job.draw', { draw: p.draw, date: p.date }), yc: '—', verdict: 'na', v: noCrs ? t('mm.v.fillCrsThen') : '—', src: r.source })
       }
     } else if (r.rule === 'teer') {
       if (r.key === 'match.r.teer.ok') rows.push({ dim: t('mm.dim.teer'), jc: teerCell(), yc: '—', verdict: 'pass', v: t('mm.v.teerOk') })
-      else if (r.key === 'match.r.teer.channel') rows.push({ dim: t('mm.dim.teer'), jc: teerCell(), yc: '—', verdict: 'pass', v: t('mm.v.teerChannel', { stream: streamDisplay(t, String(p.stream)) }) })
+      else if (r.key === 'match.r.teer.channel') rows.push({ dim: t('mm.dim.teer'), jc: teerCell(), yc: '—', verdict: 'pass', v: t('mm.v.teerChannel', { stream: streamDisplay({ t, label: String(p.stream) }) }) })
       else rows.push({ dim: t('mm.dim.teer'), jc: teerCell(), yc: '—', verdict: 'fail', v: t('mm.v.teerLow') })
     } else if (r.rule === 'wage') {
       if (r.key === 'match.r.wage.above') rows.push({ dim: t('mm.dim.wage'), jc: salaryCell, yc: '—', verdict: 'pass', v: t('mm.v.wageAbove', { pct: p.pct }) })

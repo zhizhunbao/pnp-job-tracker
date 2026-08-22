@@ -6,7 +6,7 @@ import { useLang } from '../LangProvider'
 import { Header } from '../Header'
 import { Footer } from '../Footer'
 import { BANNER_IMGS, Banner } from '../ui'
-import { RES } from '@/lib/i18n'
+import { RES } from '@/lib/official'
 
 export function Resources() {
   const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定

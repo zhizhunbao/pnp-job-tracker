@@ -7,7 +7,7 @@
 // 判定/分数全来自确定性层,本页不算一个数。
 import { Fragment, useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 
-import { dropProvPrefix, streamDisplay } from '@/lib/i18n'
+import { dropProvPrefix, streamDisplay } from '@/lib/jobs'
 import { useLang } from '../../LangProvider'
 import { Header } from '../../Header'
 import { Footer } from '../../Footer'
@@ -676,7 +676,7 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
 
   // 通道短名(走查 #293 的两步剥省名),初评表行与省外提示行共用一份
   const routeNameOf = (key: string, provinceLabel: string) => {
-    const dropped = dropProvPrefix(t(`jpw.p.${key}`), provinceLabel)
+    const dropped = dropProvPrefix({ name: t(`jpw.p.${key}`), prov: provinceLabel })
     const short = lang === 'zh' ? dropped.replace(/^[一-龥]{1,4}省\s+/, '') : dropped
     return short.trim() || dropped
   }
@@ -1533,7 +1533,7 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
                       </div>
                       <div style={{ display: 'flex', gap: 8, fontSize: 12.5, color: UI.text2, marginTop: 2 }}>
                         <span style={{ fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{r.drawDate}</span>
-                        <span style={{ minWidth: 0, overflowWrap: 'anywhere' }}>{streamDisplay(t, r.stream)}</span>
+                        <span style={{ minWidth: 0, overflowWrap: 'anywhere' }}>{streamDisplay({ t, label: r.stream })}</span>
                       </div>
                     </div>
                   ))}
@@ -1553,7 +1553,7 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
                       // 走查 #297:官方通道名截断(「Alberta Express Entry Stream – Priority Sectors (Constructio…」)。
                       // 英文界面拿到的就是官方原名,我们**没有权力**给它编个短名 —— 放不下就换行,不截。
                       { key: 'stream', label: t('rpt.s.d.stream'), width: '32%', render: (r) => (
-                        <span style={{ display: 'block', color: UI.text2, overflowWrap: 'anywhere' }}>{streamDisplay(t, r.stream)}</span>
+                        <span style={{ display: 'block', color: UI.text2, overflowWrap: 'anywhere' }}>{streamDisplay({ t, label: r.stream })}</span>
                       ) },
                       // 邀请数:这张表的入选条件是「有分数线**或**有邀请数」—— 只摆分数线的话,
                       // 靠邀请数入选的行(NL/MB/NB)整行都是「—」,把它入选的那个事实藏了

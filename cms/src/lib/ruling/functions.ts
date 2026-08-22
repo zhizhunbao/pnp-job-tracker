@@ -26,8 +26,7 @@ import { CACHE } from './variables'
 import { directoryRow, employerFactsOf, lmiaNocsCellOf, passRow, toDesignated, toDraw, toEeGrid, toOccupation, toOpsStat, toProvCount, toRequirement, toScoreFactor, tripleJobOf } from './rows'
 import { evaluateRequirements, teerHit } from '../gauge'
 import { estimateCrs, estimateMbEoi, gridStreamOf, scoreProvince, streamMatches } from '../points'
-import { askLabels, gateLabels } from '../i18n'
-import { fieldMatchExemptionOf, gateOf, PATHWAYS } from '../pathways'
+import { askLabels, fieldMatchExemptionOf, gateLabels, gateOf, PATHWAYS } from '../pathways'
 import {
   AB_LOCAL_EXP, AIP_PROVINCES, AIP_SOURCE, AMP, AND_WORD, APPLIES_OFFER, ASKABLE_FACTORS, AVAIL, BASIS,
   BASIS_MIN_YEARS, BLOCKED_BY, BLOCK_COST, CARD_SLOT, CARD_STATE, CASES, CASE_C01, CASE_ID, CASE_TIERS,

@@ -1121,3 +1121,66 @@ export const OPENING_SAMPLE = 24
  *   · 不会,只是难看 → 软闸 → 重写两次;还不行就**留着模型那一版**,记一笔,别把答案换掉。
  */
 export const HARD_GATES = ['ungroundedNumber', 'internalWord', 'englishUnit', 'rawMarkup']
+
+// =========================================================================
+// 4. 对话轨迹的见客文案(2026-08-22 Frank「所有都按域来管理」自 i18n 迁回)
+// =========================================================================
+
+/**
+ * consult 工具循环的轨迹一行 —— 键 = 工具名(`TOOL_NAME` 的值)。
+ *
+ * 轨迹在**取数开始前**发(「这一步真的开始打了才发」),那时还没有条数/省名可带,
+ * 所以全部无参;采信出职业那一拍例外 —— 用下面的 `CONSULT_STEP_OCC`,那一刻职业名已在手。
+ * (旧链的带参 STEP 表 2026-08-21 随 lib/chat 一起删了。)
+ */
+export const CONSULT_STEP: Record<Lang, Record<string, string>> = {
+  zh: {
+    search_occupations: '检索职业库',
+    lookup_jobs: '查在招岗位',
+    lookup_coverage: '查职业清单',
+    lookup_thresholds: '查官方门槛',
+    lookup_draws: '查抽选记录',
+    lookup_ops: '查运营统计',
+    lookup_ee: '查联邦 EE 类别',
+    lookup_permit: '查联邦规则',
+    lookup_points: '查联邦计分表',
+    assess_pathways: '逐条比对官方门槛',
+    check_claims: '核对别人跟你说的',
+  },
+  en: {
+    search_occupations: 'Searching occupations',
+    lookup_jobs: 'Checking open postings',
+    lookup_coverage: 'Checking occupation lists',
+    lookup_thresholds: 'Checking official requirements',
+    lookup_draws: 'Checking draw history',
+    lookup_ops: 'Checking operational stats',
+    lookup_ee: 'Checking Express Entry categories',
+    lookup_permit: 'Checking federal rules',
+    lookup_points: 'Checking the federal points grid',
+    assess_pathways: 'Comparing official requirements',
+    check_claims: 'Checking what you were told',
+  },
+  ko: {
+    search_occupations: '직업 검색',
+    lookup_jobs: '채용 공고 조회',
+    lookup_coverage: '직업 목록 조회',
+    lookup_thresholds: '공식 요건 조회',
+    lookup_draws: '추첨 기록 조회',
+    lookup_ops: '운영 통계 조회',
+    lookup_ee: '연방 EE 카테고리 조회',
+    lookup_permit: '연방 규정 조회',
+    lookup_points: '연방 점수표 조회',
+    assess_pathways: '공식 요건 대조',
+    check_claims: '들으신 내용 대조',
+  },
+}
+
+/**
+ * 采信出职业那一拍的轨迹一行模板({occ} 槽)—— 唯一带参的:那一刻职业名已在手,
+ * 是全程信息量最大的一条(拼装在 functions 的 stepOccLineOf,走 lib/template 的 fill)。
+ */
+export const CONSULT_STEP_OCC_TPL: Record<Lang, string> = {
+  zh: '认出职业:{occ}',
+  en: 'Occupation identified: {occ}',
+  ko: '직업 확인: {occ}',
+}

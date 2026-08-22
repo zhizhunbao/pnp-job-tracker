@@ -2207,3 +2207,18 @@ export type ToolArgs = {
   // eslint-disable-next-line local/no-optional -- 模型经 pi 交来的工具入参:带不带码由那把工具的 schema 定
   noc?: string
 }
+
+/**
+ * `stepOccLineOf` 的入参(2026-08-22 轨迹文案按域迁回时立)。
+ */
+export type StepOccLineIn = {
+  /**
+   * 界面语言(run.lang)。
+   */
+  lang: 'zh' | 'en' | 'ko'
+
+  /**
+   * 采信出的职业名。
+   */
+  occ: string
+}

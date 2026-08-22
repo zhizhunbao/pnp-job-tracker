@@ -8,7 +8,8 @@
 import { IconLock } from '../Icons'
 import { gradeColor } from '../ui'
 import { fmtLocalSec } from '@/lib/time'
-import { eeDisplay, streamDisplay, type TFn } from '@/lib/i18n'
+import { type TFn } from '@/lib/i18n'
+import { eeDisplay, streamDisplay } from '@/lib/jobs'
 import { COLS_COOKIE } from './columns.shared'
 import { eeIsDormant, eeLastDraw } from './Pnp'
 import { type ColKey, type FieldGroup, type Plan, type EeOcc, type JobRow, isDirect, sourceLabel } from '@/lib/jobs'
@@ -205,7 +206,7 @@ export function cellOf(k: ColKey, j: JobRow, cx: CellCtx): Cell {
     const stream = j.pnpStream  // 命中省 inclusion 清单才有,别处看不到的真信号
     if (j.province === 'QC') { node = t('cell.pnpQc'); Object.assign(extra, { whiteSpace: 'normal', color: '#7c3aed', fontSize: 12.5 }) }
     else if (stream) {       // 强:省点名招 → 浅琥珀底色徽章(全列唯一加底色的一档)
-      node = <span className="jtStream">{streamDisplay(t, stream)}</span>
+      node = <span className="jtStream">{streamDisplay({ t, label: stream })}</span>
       Object.assign(extra, { whiteSpace: 'normal', overflowWrap: 'anywhere' })
     }
     // 中:可提名 —— 带上省码(Frank 2026-07-26「最好是显示 可哪个省的提名」):
@@ -220,7 +221,7 @@ export function cellOf(k: ColKey, j: JobRow, cx: CellCtx): Cell {
     const dormant = !!j.eeCategory && eeIsDormant(lastDraw)
     node = j.eeCategory
       ? <span title={dormant ? t('ee.dormantTip', { d: lastDraw.slice(0, 7) || '—' }) : undefined}>
-          {eeDisplay(t, j.eeCategory)}{dormant ? t('ee.lastDraw', { d: lastDraw.slice(0, 7) || '—' }) : ''}</span>
+          {eeDisplay({ t, label: j.eeCategory })}{dormant ? t('ee.lastDraw', { d: lastDraw.slice(0, 7) || '—' }) : ''}</span>
       : '—'
     Object.assign(extra, { whiteSpace: 'normal', color: j.eeCategory ? (dormant ? '#9ca3af' : '#2563eb') : '#d1d5db', fontSize: 12.5 })
   }

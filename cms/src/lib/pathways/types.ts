@@ -376,7 +376,7 @@ export type ListRequired = {
 
 /**
  * 通道的 key 全集 —— **加一条通道必须先在这里登记**。
- * 登记之后 `lib/i18n/labels.ts` 的通道名那块会立刻报缺这一条,写完三语名才编得过。
+ * 登记之后 `lib/i18n/pathways.ts` 的通道名那块会立刻报缺这一条,写完三语名才编得过。
  * (2026-08-17:名字搬进 i18n 时补的护栏 —— 否则漏补名字就是页面上冒个裸键 `jpw.p.XX`。)
  */
 export type PathwayKey = 'AB-opportunity' | 'AIP' | 'BC-build' | 'BC-sw' | 'FCIP' | 'FED-EE' | 'MB-swm' | 'NB-sw' | 'NL-intl-grad' | 'NS-sw' | 'ON-workforce' | 'PE-sw' | 'RCIP' | 'SK-offer'

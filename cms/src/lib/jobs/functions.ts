@@ -29,6 +29,9 @@ import {
   ACCEPT_HTML, DIGIT_PICK_RE, EMAIL_RE, LMIA_SOURCE, NO_LIST_PROVINCES, ORIGIN_TITLE_HEAD, PHONE_RE, PII_MASK,
   REDIRECT_FOLLOW, SPACE,
   TOP_NOCS_TTL_MS,
+  DRAW_STREAM_L10N, EE_KEY_L10N, EE_L10N, EE_SPLIT, LANG_EN, LANG_KO, NORM_DASH, NORM_DASH_RE,
+  NORM_WS_RE, PROV_PREFIX_TRIM_RE, REQ_STREAM_L10N,
+  SEP_KEY, STREAM_L10N,
 } from './constants'
 import { REASON_EN, STATUS_EN } from './prompts'
 import {
@@ -55,6 +58,7 @@ import type {
   SimilarIn, SimilarOut, SortValIn, SsrDimsOut, StrList, StripTitleIn, TopNocsIn, TopNocsOut, UrlHandle,
   CountMap, CountOfIn, OccCompetitionIn, OccCompetitionOut, OccCompetitionRows,
   OccDiffFacts, ProvCounts, RatioMap, RatioOfIn,
+  DrawStreamNoteIn, DropProvPrefixIn, EeDisplayIn, EeKeyDisplayIn, ReqStreamDisplayIn, StreamDisplayIn,
   WhereParam,
 } from './types'
 
@@ -2196,4 +2200,129 @@ export async function fetchOccCompetition(input: OccCompetitionIn): OccCompetiti
     })
   }
   return out
+}
+
+// =========================================================================
+// 11. 界面显示(数据层值 → 界面词;2026-08-22 Frank「所有都按域来管理」自 i18n 迁回)
+// =========================================================================
+
+/**
+ * 官方通道名 → 界面语言的译名;英文界面与表里没有的一律返回空(只显官方英文名)。
+ *
+ * @param input 官方通道名与界面语言。
+ * @returns 译名;不出译名则空串。
+ */
+export function drawStreamNote(input: DrawStreamNoteIn): string {
+  if (input.lang === LANG_EN) {
+    return ''
+  }
+  const hit = DRAW_STREAM_L10N[(input.stream || '').trim()]
+  if (hit == null) {
+    return ''
+  }
+  if (input.lang === LANG_KO) {
+    return hit.ko
+  }
+  return hit.zh
+}
+
+/**
+ * 具名通道 chip 的三语显示(未知值原样回退)。
+ *
+ * @param input 取词函数与数据层 label。
+ * @returns 界面词。
+ */
+export function streamDisplay(input: StreamDisplayIn): string {
+  const key = STREAM_L10N[input.label]
+  if (key == null) {
+    return input.label
+  }
+  return input.t(key)
+}
+
+/**
+ * 官方通道名归一(小写、破折号统一、连空白折一)—— mart 里的破折号是 em dash,
+ * 写死全串等于把编码问题埋进代码(pathVerdict 同款告诫)。
+ *
+ * @param s 官方通道名。
+ * @returns 归一后的键。
+ */
+function normReqStream(s: string): string {
+  return (s || '').toLowerCase().replace(NORM_DASH_RE, NORM_DASH).replace(NORM_WS_RE, SPACE).trim()
+}
+
+/**
+ * 官方通道名 → 显示短名(表里没有原样返回;语言缺省由调用端 `?? 'zh'` 兜,与 makeT 同)。
+ *
+ * @param input 官方通道名与界面语言。
+ * @returns 显示短名。
+ */
+export function reqStreamDisplay(input: ReqStreamDisplayIn): string {
+  const hit = REQ_STREAM_L10N[normReqStream(input.stream)]
+  if (hit == null) {
+    return input.stream
+  }
+  if (input.lang === LANG_EN) {
+    return hit.en
+  }
+  if (input.lang === LANG_KO) {
+    return hit.ko
+  }
+  return hit.zh
+}
+
+/**
+ * EE 类别 label 的三语显示。#209(第 26 轮体检):数据层用「/」拼接,
+ * 显示层改顿号枚举(no-dot-separator 硬规矩:禁「·」「/」杂糅多信息)。
+ *
+ * @param input 取词函数与数据层 label(可含「/」多段)。
+ * @returns 界面词(顿号枚举)。
+ */
+export function eeDisplay(input: EeDisplayIn): string {
+  const out: StrList = []
+  for (const raw of input.label.split(EE_SPLIT)) {
+    const s = raw.trim()
+    const key = EE_L10N[s]
+    if (key == null) {
+      out.push(s)
+    } else {
+      out.push(input.t(key))
+    }
+  }
+  return out.join(input.t(SEP_KEY))
+}
+
+/**
+ * 联邦轮次 cat_key 的三语显示(未知键原样回退)。
+ *
+ * @param input 取词函数与数据层英文 cat_key。
+ * @returns 界面词。
+ */
+export function eeKeyDisplay(input: EeKeyDisplayIn): string {
+  const hit = EE_KEY_L10N[input.key]
+  if (hit == null) {
+    return input.key
+  }
+  return input.t(hit)
+}
+
+/**
+ * 通道名以省名开头时把省名摘掉 —— 旁边那行灰字已经写着省名了(走查 #293)。
+ * 「Saskatchewan Employment Offer」+ 灰字「Saskatchewan」→ 主文案只留「Employment Offer」。
+ * 摘完为空(整条名字就是个省名)则原样返回:宁可重复一次,不给一个空标题。
+ *
+ * @param input 通道名与省名(全称)。
+ * @returns 摘掉省名前缀后的通道名。
+ */
+export function dropProvPrefix(input: DropProvPrefixIn): string {
+  const p = (input.prov || '').trim()
+  const n = (input.name || '').trim()
+  if (p === '' || n.startsWith(p) === false) {
+    return n
+  }
+  const rest = n.slice(p.length).replace(PROV_PREFIX_TRIM_RE, '').trim()
+  if (rest === '') {
+    return n
+  }
+  return rest
 }
