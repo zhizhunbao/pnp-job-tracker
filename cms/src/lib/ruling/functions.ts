@@ -113,18 +113,22 @@ function swallow(): SwallowOut {
 }
 
 /**
- * 打一条 SQL 拿行。**查不动回空数组,不抛** —— 判定层缺一张表要落成「本站未收录」,
- * 而不是整页 500;哪张表缺了,`pathVerdict` 自己会说。
+ * 打一条 SQL 拿行并逐行过映射(`queryRows` 同款形态)。**查不动回空数组,不抛** ——
+ * 判定层缺一张表要落成「本站未收录」,而不是整页 500;哪张表缺了,`pathVerdict` 自己会说。
  *
- * @param input 能查的东西与 SQL。
- * @returns 行;查不动是空数组。
+ * @param input 能查的东西、SQL 与行映射函数。
+ * @returns 映射完的行;查不动是空数组。
  */
-async function rowsOf(input: RowsOfIn): RowsOfOut {
+async function rowsOf<R>(input: RowsOfIn<R>): RowsOfOut<R> {
   const res = await input.db.query(input.sql).catch(swallow)
   if (res == null) {
     return []
   }
-  return res.rows
+  const out: R[] = []
+  for (const row of res.rows) {
+    out.push(input.map(row))
+  }
+  return out
 }
 
 /**
@@ -139,21 +143,21 @@ async function rowsOf(input: RowsOfIn): RowsOfOut {
  * @returns 判定层六张底表。
  */
 export async function loadVerdictTables(db: LoadVerdictTablesIn): LoadVerdictTablesOut {
-  const [reqs, occs, draws, factors, grid, employers] = await Promise.all([
-    rowsOf({ db, sql: SQL.PNP_REQUIREMENTS_ALL }),
-    rowsOf({ db, sql: SQL.PNP_OCCUPATIONS_FULL }),
-    rowsOf({ db, sql: SQL.PNP_DRAWS_FULL }),
-    rowsOf({ db, sql: SQL.PNP_SCORE_FACTORS }),
-    rowsOf({ db, sql: SQL.EE_POINTS_GRID_2 }),
-    rowsOf({ db, sql: SQL.DESIGNATED_BY_PROV_2 }),
+  const [requirements, occupations, draws, scoreFactors, eeGrid, employers] = await Promise.all([
+    rowsOf({ db, sql: SQL.PNP_REQUIREMENTS_ALL, map: toRequirement }),
+    rowsOf({ db, sql: SQL.PNP_OCCUPATIONS_FULL, map: toOccupation }),
+    rowsOf({ db, sql: SQL.PNP_DRAWS_FULL, map: toDraw }),
+    rowsOf({ db, sql: SQL.PNP_SCORE_FACTORS, map: toScoreFactor }),
+    rowsOf({ db, sql: SQL.EE_POINTS_GRID_2, map: toEeGrid }),
+    rowsOf({ db, sql: SQL.DESIGNATED_BY_PROV_2, map: toDesignated }),
   ])
   return {
-    requirements: reqs.map(toRequirement),
-    occupations: occs.map(toOccupation),
-    draws: draws.map(toDraw),
-    scoreFactors: factors.map(toScoreFactor),
-    eeGrid: grid.map(toEeGrid),
-    designatedEmployers: employers.map(toDesignated),
+    requirements: requirements,
+    occupations: occupations,
+    draws: draws,
+    scoreFactors: scoreFactors,
+    eeGrid: eeGrid,
+    designatedEmployers: employers,
   }
 }
 

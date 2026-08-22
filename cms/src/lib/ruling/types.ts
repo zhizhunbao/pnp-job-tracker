@@ -5164,7 +5164,7 @@ export type SubjectOfOut = 'applicant' | 'employer'
 /**
  * `rowsOf` 的入参。
  */
-export type RowsOfIn = {
+export type RowsOfIn<R> = {
   /**
    * 能查的东西。
    */
@@ -5174,12 +5174,17 @@ export type RowsOfIn = {
    * 要打的那条 SQL,文本来自 `lib/db/sql`。
    */
   sql: string
+
+  /**
+   * 行映射函数:一行原始行 → 一行干净的 `R`(`queryRows` 同款形态;默认值决策全在它体内)。
+   */
+  map: (row: Row) => R
 }
 
 /**
- * `rowsOf` 的返回:行;查不动是空数组。
+ * `rowsOf` 的返回:映射完的行;查不动是空数组。
  */
-export type RowsOfOut = Promise<Row[]>
+export type RowsOfOut<R> = Promise<R[]>
 
 /**
  * `swallow` 的返回:恒为 null。
