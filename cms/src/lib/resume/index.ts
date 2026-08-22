@@ -12,4 +12,5 @@
  */
 
 export { DAILY_FREE, MIN_RESUME, RESUME_MAX_BYTES } from './constants'
-export { extractText, gateMatch, matchPrompt, normalizeRows, parseLlmJson } from './functions'
+export { extractText, gateMatch, matchPrompt } from './functions'
+export { normalizeRows, parseLlmJson } from './rows'
