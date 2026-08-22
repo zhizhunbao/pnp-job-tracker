@@ -23,7 +23,7 @@ export default async function CompareEmployersPage({ searchParams }: { searchPar
   const pro = isPro(user)
   let rows: CompareRow[] = []
   if (pro && names.length >= 2) {
-    const dims = await loadMatchDims().catch(() => null)
+    const dims = await loadMatchDims(await getDb()).catch(() => null)
     const p = normalizeProfile((user as any)?.profile)
     rows = await compareEmployers({ db: await getDb(), names, profile: hasProfile(p) ? p : null, dims })
   }

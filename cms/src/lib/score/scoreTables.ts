@@ -82,7 +82,7 @@ const numOrNull = (v: unknown): number | null => (typeof v === 'number' ? v : nu
 
 async function load(): Promise<Tables> {
   const payload = await getPayload({ config: await config })
-  const pool = (payload.db as { pool?: { query: (q: string, v?: unknown[]) => Promise<{ rows: Record<string, unknown>[] }> } }).pool
+  const pool = (payload.db as { pool?: import('@/lib/db').Db }).pool
   const [drawRes, factorRes] = await Promise.all([
     payload.find({ collection: 'pnp-draws', limit: 200, depth: 0, sort: '-drawDate' })
       .catch(() => ({ docs: [] as Record<string, unknown>[] })),
@@ -134,7 +134,7 @@ async function load(): Promise<Tables> {
   }
 
   // 热门职业 24 条:聚合表一次索引扫描(表还没建时 fetchTopNocs 内部自动回退老查询)
-  const topNocs = pool ? await fetchTopNocs(pool, 24).catch(() => [] as TopNoc[]) : []
+  const topNocs = pool ? await fetchTopNocs({ db: pool, limit: 24 }).catch(() => [] as TopNoc[]) : []
 
   // 各省名额竞争:一条按省的小查询,与上面几张表共用同一份 TTL 缓存
   const competition: ProvCompetition[] = []

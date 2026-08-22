@@ -127,7 +127,7 @@ export async function GET(req: NextRequest) {
   const out = { dryRun: dry, matchEmails: 0, searchEmails: 0, weeklyEmails: 0, sendFails: 0, usersChecked: 0, searchesChecked: 0, weeklyChecked: 0, skippedFilters: [] as string[] }
 
   // ── A 档案匹配提醒(Pro + 建档 + 有邮箱) ──
-  const dims = await loadMatchDims()
+  const dims = await loadMatchDims(pool)
   // 当日新抽选(drawDate=近 2 天)去重按类别
   const today = new Date(); const cut = new Date(today.getTime() - 2 * 86400_000).toISOString().slice(0, 10)
   const newDraws = [...new Map(dims.eeCategories.filter((c) => c.drawCrs != null && (c.drawDate || '') >= cut).map((c) => [c.label, c])).values()]
@@ -147,8 +147,8 @@ export async function GET(req: NextRequest) {
     // 外省对口岗不排除,只往后放;stable sort 保住组内原 score 序
     const inTarget = (j: any) => (profile.targetProvinces.includes((j.province || '').toUpperCase()) ? 0 : 1)
     const hits = rows.filter((j: any) => {
-      const mj: MatchJob = { noc: j.noc ?? '', teer: j.teer == null ? null : Number(j.teer), province: j.province ?? '', pnpEligible: !!j.pnp_eligible, pnpStream: j.pnp_stream ?? '', eeCategory: j.ee_category ?? '', salaryAnnual: j.salary_annual == null ? null : Number(j.salary_annual), wageMedAnnual: j.wage_med_annual == null ? null : Number(j.wage_med_annual) }
-      const m = match(profile, mj, dims)
+      const mj: MatchJob = { noc: j.noc ?? '', teer: j.teer == null ? null : Number(j.teer), province: j.province ?? '', pnpEligible: !!j.pnp_eligible, pnpStream: j.pnp_stream ?? '', eeCategory: j.ee_category ?? '', salaryAnnual: j.salary_annual == null ? null : Number(j.salary_annual), wageMedAnnual: j.wage_med_annual == null ? null : Number(j.wage_med_annual), lmiaPositions: null, lmiaLastQuarter: '', lmiaPositionsSkilled: null }
+      const m = match({ profile, job: mj, dims })
       return m.level === 'high' || (ALERT_MATCH_LEVEL === 'mid' && m.level === 'mid')
     })
     if (profile.targetProvinces.length) hits.sort((a: any, b: any) => inTarget(a) - inTarget(b))
@@ -174,7 +174,7 @@ export async function GET(req: NextRequest) {
     const owner = typeof sdoc.user === 'object' ? sdoc.user : null
     if (!owner?.email) continue
     const since = sdoc.lastNotifiedAt || new Date(Date.now() - 36 * 3600_000).toISOString()
-    const { rows, skipped } = await fetchAlertHits(pool, (sdoc.filters as Record<string, unknown>) || {}, since)
+    const { rows, skipped } = await fetchAlertHits({ db: pool, filters: ((sdoc.filters as Record<string, unknown>) || {}) as import('@/lib/jobs/types').JobsFilters, since })
     out.skippedFilters.push(...skipped)
     if (!rows.length) continue
     if (!dry) {

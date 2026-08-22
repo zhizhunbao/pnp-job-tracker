@@ -29,8 +29,9 @@ function profileFacts(profileRaw: any, j: Job, dims: MatchDims): string {
   const mj: MatchJob = {
     noc: j.noc || '', teer: teerOf(j.noc), province: j.province || '', pnpEligible: !!j.pnpEligible,
     pnpStream: j.pnpStream || '', eeCategory: j.eeCategory || '', salaryAnnual: j.salaryAnnual ?? null, wageMedAnnual: j.wageMedAnnual ?? null,
+    lmiaPositions: null, lmiaLastQuarter: '', lmiaPositionsSkilled: null,
   }
-  const m = match(p, mj, dims)
+  const m = match({ profile: p, job: mj, dims })
   return [
     `\nUser immigration profile (self-reported): NOC ${p.nocCodes.join('/') || '—'}; CLB ${p.clb ?? '—'}; CRS ${p.crs ?? 'not reported'}; target provinces ${p.targetProvinces.join('/') || '—'}; PGWP months left ${p.pgwpMonthsLeft ?? '—'}.`,
     `Profile-match for THIS job: ${m.level} (score ${m.score}). Findings:`,
@@ -41,7 +42,8 @@ function profileFacts(profileRaw: any, j: Job, dims: MatchDims): string {
 
 // JD 正文从 DB jobs.description 取(mart 灌入),不再扫 .md 文件;模型基于真实 JD 总结,不凭空猜。
 async function loadJD(url?: string): Promise<string> {
-  return (await jobDescription((url || '').trim())).slice(0, 2200) // 截断,控制 prompt 长度
+  const { getDb } = await import('@/lib/db/server')
+  return (await jobDescription({ db: await getDb(), applyUrl: (url || '').trim() })).slice(0, 2200) // 截断,控制 prompt 长度
 }
 
 type Lang = 'zh' | 'en' | 'ko'
@@ -365,7 +367,7 @@ export async function POST(req: NextRequest) {
   const readerCtx = st
     ? `\nReader's self-reported situation: ${st}. Treat this as the reader's ACTUAL status (it overrides the generic audience assumption above); frame immigration-path comments accordingly. Still never assert facts the profile does not state.`
     : ''
-  const pf = (pro && user ? profileFacts(profileRaw, job, await loadMatchDims()) : '') + readerCtx
+  const pf = (pro && user ? profileFacts(profileRaw, job, await (async () => { const { getDb } = await import('@/lib/db/server'); return loadMatchDims(await getDb()) })()) : '') + readerCtx
 
   // 缓存键含 字段+标识+语言(公司按公司名,其余按 id);带档案的初判按人隔离;对话不缓存(每轮唯一)
   // v2(#126 生产复验教训):#125 换初判模板后线上仍捞到旧模板缓存条目——提示词/模板一改就 bump 版本,陈旧条目永不再服务

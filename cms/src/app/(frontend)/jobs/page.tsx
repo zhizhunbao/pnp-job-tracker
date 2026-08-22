@@ -66,9 +66,9 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
   // 有筛选就走 fetchJobsPage(与 /api/jobs 同一条查询路径 → SSR 与水合后客户端逐行一致,不会换一次内容);
   // 没筛选照旧走 fetchJobRows(全站首屏,total 用全站数)。
   const listP = filtered
-    ? fetchJobsPage(pool, { pro, profile, profileOk, matchDims, filters, page: 0, pageSize: FIRST_SCREEN_ROWS })
+    ? fetchJobsPage({ db: pool, pro, profile, profileOk, matchDims, filters, sort: null, page: 0, pageSize: FIRST_SCREEN_ROWS })
       .then((r) => ({ jobs: r.jobs, updatedAt: r.updatedAt, total: r.total as number | null }))
-    : fetchJobRows(pool, { pro, profile, profileOk, matchDims, limit: FIRST_SCREEN_ROWS })
+    : fetchJobRows({ db: pool, pro, profile, profileOk, matchDims, limit: FIRST_SCREEN_ROWS })
       .then((r) => ({ jobs: r.jobs, updatedAt: r.updatedAt, total: null as number | null }))
   const [list, tp] = await Promise.all([listP, fetchTotalAndProof(pool)])
   const { jobs, updatedAt } = list

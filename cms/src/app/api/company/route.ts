@@ -14,8 +14,8 @@ export async function POST(req: NextRequest) {
   if (!Number.isFinite(Number(jobId))) return new Response('', { status: 400 })
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
-  const company = await fetchCompanyByJobId(pool, Number(jobId))
+  const company = await fetchCompanyByJobId({ db: pool, jobId: Number(jobId) })
   if (!company) return new Response('', { status: 404 })
-  const similar = await fetchSimilarEmployers(pool, { province: company.province, industry: company.industry, excludeSlug: company.slug }).catch(() => [])
+  const similar = await fetchSimilarEmployers({ db: pool, province: company.province, industry: company.industry, excludeSlug: company.slug }).catch(() => [])
   return Response.json({ company, similar })
 }

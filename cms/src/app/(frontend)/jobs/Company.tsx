@@ -160,7 +160,7 @@ export function CompanyGradesView({ detail, t, hideSponsor }: { detail: CoGradeD
     <span key={label + 'e'} className="gridN">{evidence}</span>,
   ]
   const sp = detail.sponsor, act = detail.active, sal = detail.salary, fm = detail.fame
-  const fameParts = fm ? [fm.v?.wiki ? t('gr.co.fm.wiki') : '', fm.v?.provs >= 2 ? t('gr.co.fm.provs', { n: fm.v.provs }) : '', fm.v?.open ? t(fm.v.open === 1 ? 'gr.co.fm.open1' : 'gr.co.fm.open', { n: fm.v.open }) : ''].filter(Boolean) : []
+  const fameParts = fm ? [fm.v?.wiki ? t('gr.co.fm.wiki') : '', (fm.v?.provs ?? 0) >= 2 ? t('gr.co.fm.provs', { n: fm.v?.provs ?? 0 }) : '', fm.v?.open ? t(fm.v.open === 1 ? 'gr.co.fm.open1' : 'gr.co.fm.open', { n: fm.v.open }) : ''].filter(Boolean) : []
   return (
     <>
       {/* 字号/行高/色显式定在 ul(不靠继承):(frontend)/main.css 的 body 白字 18px 会吃掉裸继承的 li

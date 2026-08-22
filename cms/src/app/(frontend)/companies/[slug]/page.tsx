@@ -15,7 +15,7 @@ const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com').replac
 async function loadCompany(slug: string) {
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
-  return fetchCompanyBySlug(pool, slug)
+  return fetchCompanyBySlug({ db: pool, slug })
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -44,13 +44,13 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
       wikiUrl: '', sponsorGrade: null, scoreDetail: null, aiBrief: '', aiWebsite: '', aiSources: [], aiFetched: '',
       description: '', address: '', province: '',
       lmiaPositions: null, lmiaLmias: null, lmiaLastQuarter: '', lmiaStreams: '', lmiaSkilled: null,
-      openCount: 0, jobs: [],
+      lmiaNocs: [], openCount: 0, jobs: [],
     }} loggedIn={!!user} />
   }
 
   // 相似雇主(同省同行业;失败不拦页面)
   const payload = await getPayload({ config: await config })
-  const similar = await fetchSimilarEmployers((payload.db as any).pool, { province: company.province, industry: company.industry, excludeSlug: company.slug }).catch(() => [])
+  const similar = await fetchSimilarEmployers({ db: (payload.db as any).pool, province: company.province, industry: company.industry, excludeSlug: company.slug }).catch(() => [])
 
   // Organization JSON-LD(公开事实层;缺值不编)
   const jsonLd: Record<string, unknown> = {

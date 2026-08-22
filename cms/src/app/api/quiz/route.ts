@@ -27,13 +27,13 @@ export async function GET(req: Request) {
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
 
-  if (q) return Response.json({ candidates: await searchNocByTitle(pool, q) })
+  if (q) return Response.json({ candidates: await searchNocByTitle({ db: pool, q }) })
   // ?broad=技工 → 用户点中大类后才取该类职业。比每次打开控件都查 top=200 更快、更省。
   const broad = (sp.get('broad') || '').trim().slice(0, 24)
   if (broad) {
     const hit = broadCache.get(broad)
     if (hit && Date.now() - hit.at < TOP_TTL) return Response.json({ top: hit.rows })
-    const rows = await fetchBroadNocs(pool, broad)
+    const rows = await fetchBroadNocs({ db: pool, broad, limit: 60 })
     if (broadCache.size >= 40) broadCache.clear()
     broadCache.set(broad, { at: Date.now(), rows })
     return Response.json({ top: rows })
@@ -51,7 +51,7 @@ export async function GET(req: Request) {
     const key = counts.slice().sort().join(',')
     const hit = countsCache.get(key)
     if (hit && Date.now() - hit.at < TOP_TTL) return Response.json({ counts: hit.rows })
-    const rows = await fetchNocOpenCounts(pool, counts)
+    const rows = await fetchNocOpenCounts({ db: pool, nocs: counts })
     if (countsCache.size >= 100) countsCache.clear()
     countsCache.set(key, { at: Date.now(), rows })
     return Response.json({ counts: rows })
@@ -63,11 +63,11 @@ export async function GET(req: Request) {
   if (fHit) {
     if (Date.now() - fHit.at >= TOP_TTL) {
       factsCache.delete(noc)
-      fetchQuizFacts(pool, noc).then((facts) => { if (factsCache.size < 600) factsCache.set(noc, { at: Date.now(), facts }) }).catch(() => { /* 下次再试 */ })
+      fetchQuizFacts({ db: pool, noc }).then((facts) => { if (factsCache.size < 600) factsCache.set(noc, { at: Date.now(), facts }) }).catch(() => { /* 下次再试 */ })
     }
     return Response.json({ facts: fHit.facts })
   }
-  const facts = await fetchQuizFacts(pool, noc)
+  const facts = await fetchQuizFacts({ db: pool, noc })
   if (facts && factsCache.size < 600) factsCache.set(noc, { at: Date.now(), facts })
   if (!facts) return Response.json({ facts: null }, { status: 200 })   // 该职业当前零在招=正常,不是错误
   return Response.json({ facts })

@@ -525,10 +525,10 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
       pnpStream: job.pnpStream, eeCategory: job.eeCategory, salaryAnnual: job.salaryAnnual, wageMedAnnual: job.wageMedAnnual,
       lmiaPositions: job.lmiaPositions, lmiaPositionsSkilled: job.lmiaPositionsSkilled, lmiaLastQuarter: job.lmiaLastQuarter,
     }
-    return matchJob(plan.profile, mj, {
+    return matchJob({ profile: plan.profile, job: mj, dims: {
       pnpOccupations: pnpOcc.map((r) => ({ province: r.province, label: r.label, type: r.type, noc: r.noc, url: r.url, fetched: r.fetched })),
       eeCategories: eeOcc.map((r) => ({ category: r.category, label: r.label, noc: r.noc, drawCrs: r.drawCrs, drawDate: r.drawDate, url: r.url, fetched: r.fetched })),
-    })
+    } })
   }, [job, plan, pnpOcc, eeOcc])
 
   // 未登录/未建档:弹框内不再放建档引导(页头横幅 + 列表「建档案 →」列已覆盖;用户拍板:别到处都是)
@@ -560,7 +560,7 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
     return <>TEER {job.teer}{withNote && <> <span className="pnpNote">{t('mm.job.teerNote')}</span></>}</>
   }
   const salaryCell = job.salaryAnnual != null ? `$${Math.round(job.salaryAnnual / 1000)}K/yr` : t('mm.job.noSalary')
-  type MMRow = { dim: string; jc: React.ReactNode; yc: React.ReactNode; verdict: 'pass' | 'warn' | 'fail' | 'na'; v: React.ReactNode; vTip?: string; src?: { label: string; url: string; fetched?: string } }
+  type MMRow = { dim: string; jc: React.ReactNode; yc: React.ReactNode; verdict: 'pass' | 'warn' | 'fail' | 'na'; v: React.ReactNode; vTip?: string; src?: { label: string; url: string; fetched?: string } | null }
   const rows: MMRow[] = []
   for (const r of result.reasons as MatchReason[]) {
     const p: any = r.params || {}

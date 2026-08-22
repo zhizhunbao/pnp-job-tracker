@@ -443,3 +443,43 @@ export const EMP_LOG = {
    */
   difficultyParseFailed: 'difficulty json parse failed for province: ',
 } as const
+
+/**
+ * `lib/jobs` 写出去的全部字面量。
+ */
+export const JOBS_LOG = {
+  /**
+   * 这个域每一行日志的来源标签。
+   */
+  tag: 'jobs',
+
+  /**
+   * 公司弹框的地址兜底探测挂了(地址留空,弹框照出)。
+   */
+  addressProbeFailed: 'job address probe failed, leaving blank: ',
+
+  /**
+   * 公司 LMIA 获批职业拆分探测挂了(列未建=容缺,弹框整块不渲)。
+   */
+  lmiaNocsProbeFailed: 'company lmia nocs probe failed, block hidden: ',
+
+  /**
+   * K 调查来源 JSON 解析不出(按无来源处理)。
+   */
+  sourcesParseFailed: 'company ai sources parse failed, treating as none: ',
+
+  /**
+   * 热门职业主路(noc_openings)挂了(回退现算,慢但不瞎)。
+   */
+  topNocsMainFailed: 'noc_openings main path failed, falling back to live aggregate: ',
+
+  /**
+   * JD 懒抓单页拉取挂了(走负缓存,前端空态照旧)。
+   */
+  jdFetchFailed: 'jd lazy fetch failed: ',
+
+  /**
+   * JD 抓到但写库失败(文本照给,下次点开重写)。
+   */
+  jdWriteFailed: 'jd cache write failed, serving text anyway: ',
+} as const

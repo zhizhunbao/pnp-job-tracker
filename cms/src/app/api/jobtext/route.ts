@@ -16,6 +16,7 @@ export async function GET(req: NextRequest) {
   if (!checkLimit([[`jd:${ipOf(req)}`, JD_DAILY]])) return new Response('', { status: 429 })
   const url = req.nextUrl.searchParams.get('url')?.trim()
   if (!url) return new Response('', { status: 400 })
-  const body = await jobDescription(url)
+  const { getDb } = await import('@/lib/db/server')
+  const body = await jobDescription({ db: await getDb(), applyUrl: url })
   return new Response(body, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
 }

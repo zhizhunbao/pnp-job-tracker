@@ -44,17 +44,17 @@ export async function GET(req: Request) {
 
   // 匹配维度只在建了档才需要(未登录/未建档 = 全部 match null,省两次查询)
   let matchDims: MatchDims = { pnpOccupations: [], eeCategories: [] }
-  if (profileOk) matchDims = await loadMatchDims()
-
   const pool = dbOf(payload)
+  if (profileOk) matchDims = await loadMatchDims(pool)
   // 「我的匹配」视图(E5-05):候选预筛 + TS match;未建档 → 空(与旧客户端一致)
   if (sp.get('view') === 'match') {
     if (!profileOk) return Response.json({ rows: [], total: 0, page, pageSize: PAGE_SIZE, updatedAt: '', matchHigh: 0, matchMid: 0 })
-    const m = await fetchMatchPage(pool, { pro, profile, matchDims, page, pageSize: PAGE_SIZE, sort })
+    const m = await fetchMatchPage({ db: pool, pro, profile, matchDims, page, pageSize: PAGE_SIZE, sort: { key: sort.key ?? '', dir: sort.dir ?? '' } })
     return Response.json({ rows: m.jobs, total: m.total, page, pageSize: PAGE_SIZE, updatedAt: m.updatedAt, matchHigh: m.matchHigh, matchMid: m.matchMid })
   }
-  const { jobs, total, updatedAt } = await fetchJobsPage(pool, {
-    pro, profile, profileOk, matchDims, filters, sort, page, pageSize: PAGE_SIZE,
+  const { jobs, total, updatedAt } = await fetchJobsPage({
+    db: pool, pro, profile, profileOk, matchDims, filters: filters as import('@/lib/jobs/types').JobsFilters,
+    sort: { key: sort.key ?? '', dir: sort.dir ?? '' }, page, pageSize: PAGE_SIZE,
   })
   return Response.json({ rows: jobs, total, page, pageSize: PAGE_SIZE, updatedAt })
 }

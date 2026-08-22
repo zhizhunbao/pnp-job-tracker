@@ -18,7 +18,7 @@ const dims: MatchDims = {
 
 const job = (o: Partial<MatchJob>): MatchJob => ({
   noc: '', teer: null, province: '', pnpEligible: false, pnpStream: '', eeCategory: '',
-  salaryAnnual: null, wageMedAnnual: null, ...o,
+  salaryAnnual: null, wageMedAnnual: null, lmiaPositions: null, lmiaLastQuarter: '', lmiaPositionsSkilled: null, ...o,
 })
 
 // 档案 fixture:软件开发者,CRS 480,目标 ON/BC
@@ -37,13 +37,13 @@ describe('normalizeProfile / hasProfile', () => {
 
 describe('match rules v1', () => {
   it('unclassified job → na (不硬塞)', () => {
-    const r = match(dev, job({ noc: '' }), dims)
+    const r = match({ profile: dev, job: job({ noc: '' }), dims })
     expect(r.level).toBe('na')
     expect(r.reasons[0].key).toBe('match.r.noc.jobUncat')
   })
 
   it('dev × ON tech job:NOC 对口 + 省具名 + EE 差 11 分 → high,依据链指回维度', () => {
-    const r = match(dev, job({ noc: '21232', teer: 1, province: 'ON', pnpEligible: true, pnpStream: 'ON 科技', eeCategory: 'STEM', salaryAnnual: 95000, wageMedAnnual: 91000 }), dims)
+    const r = match({ profile: dev, job: job({ noc: '21232', teer: 1, province: 'ON', pnpEligible: true, pnpStream: 'ON 科技', eeCategory: 'STEM', salaryAnnual: 95000, wageMedAnnual: 91000 }), dims })
     expect(r.level).toBe('high')
     expect(r.score).toBe(40 + 30 + 0 + 10 + 5) // noc.exact + prov.named + ee.below(0) + teer.channel? teer=1→ok + wage.above
     const ee = r.reasons.find((x) => x.rule === 'ee')!
@@ -56,14 +56,14 @@ describe('match rules v1', () => {
   })
 
   it('dev × 非目标省(SK)同岗:目标省只警示不扣分(2026-07-21 拍板:目标省是偏好不是资格)', () => {
-    const r = match(dev, job({ noc: '21232', teer: 1, province: 'SK', pnpEligible: true, eeCategory: 'STEM' }), dims)
+    const r = match({ profile: dev, job: job({ noc: '21232', teer: 1, province: 'SK', pnpEligible: true, eeCategory: 'STEM' }), dims })
     expect(r.reasons.find((x) => x.key === 'match.r.prov.notTarget')).toBeTruthy()
     expect(r.score).toBe(40 + 15 + 0 + 10) // exact + generic + ee.below(0) + teer.ok;notTarget 不再 −10
     expect(r.level).toBe('high')
   })
 
   it('psw × AB 排除清单岗:excluded fail + TEER5 无通道 → low', () => {
-    const r = match(psw, job({ noc: '65200', teer: 5, province: 'AB', pnpEligible: true }), dims)
+    const r = match({ profile: psw, job: job({ noc: '65200', teer: 5, province: 'AB', pnpEligible: true }), dims })
     const prov = r.reasons.find((x) => x.rule === 'prov')!
     expect(prov.key).toBe('match.r.prov.excluded')
     expect(r.reasons.find((x) => x.key === 'match.r.teer.low')).toBeTruthy()
@@ -71,7 +71,7 @@ describe('match rules v1', () => {
   })
 
   it('psw × ON 护理岗:同小类 NOC 33103→33102?否——完全一致才 exact;无 CRS → ee.noCrs 提示', () => {
-    const r = match(psw, job({ noc: '33102', teer: 3, province: 'ON', pnpEligible: true, eeCategory: 'Healthcare' }), dims)
+    const r = match({ profile: psw, job: job({ noc: '33102', teer: 3, province: 'ON', pnpEligible: true, eeCategory: 'Healthcare' }), dims })
     expect(r.reasons.find((x) => x.key === 'match.r.noc.exact')).toBeTruthy()
     expect(r.reasons.find((x) => x.key === 'match.r.prov.named')).toBeTruthy()
     expect(r.reasons.find((x) => x.key === 'match.r.ee.noCrs')).toBeTruthy()
@@ -80,12 +80,12 @@ describe('match rules v1', () => {
   })
 
   it('QC 岗:省规则 na(魁省自有体系)', () => {
-    const r = match(dev, job({ noc: '21232', teer: 1, province: 'QC' }), dims)
+    const r = match({ profile: dev, job: job({ noc: '21232', teer: 1, province: 'QC' }), dims })
     expect(r.reasons.find((x) => x.key === 'match.r.prov.qc')).toBeTruthy()
   })
 
   it('同小类 NOC 记 minor 分(2026-07-21 三档:精确 40 / 同小类 30 / 同族 20)', () => {
-    const r = match(dev, job({ noc: '21233', teer: 1, province: 'BC', pnpEligible: true }), dims)
+    const r = match({ profile: dev, job: job({ noc: '21233', teer: 1, province: 'BC', pnpEligible: true }), dims })
     expect(r.reasons.find((x) => x.key === 'match.r.noc.minor')).toBeTruthy()
     expect(r.score).toBe(30 + 15 + 10) // minor + generic + teer.ok
   })
@@ -108,15 +108,15 @@ describe('match rules v1', () => {
       job({ noc: '99999', teer: 4, province: 'NS', pnpEligible: false, salaryAnnual: 50000, wageMedAnnual: 52000 }),
       job({ noc: '' }),
     ]
-    for (const p of [dev, psw]) for (const j of jobs) for (const r of match(p, j, dims).reasons) {
+    for (const p of [dev, psw]) for (const j of jobs) for (const r of match({ profile: p, job: j, dims }).reasons) {
       expect(allowed.has(r.key), r.key).toBe(true)
     }
   })
 
   it('雇主 LMIA 记录(E6-02):有记录 +5 带来源,无记录 na 不扣分', () => {
     const base = { noc: '21232', teer: 1 as const, province: 'ON', pnpEligible: true, eeCategory: '' }
-    const withRec = match(dev, job({ ...base, lmiaPositions: 44, lmiaLastQuarter: '2025Q4' }), dims)
-    const without = match(dev, job(base), dims)
+    const withRec = match({ profile: dev, job: job({ ...base, lmiaPositions: 44, lmiaLastQuarter: '2025Q4' }), dims })
+    const without = match({ profile: dev, job: job(base), dims })
     const rec = withRec.reasons.find((x) => x.rule === 'lmia')!
     expect(rec.key).toBe('match.r.lmia.has')
     expect(rec.params).toMatchObject({ n: 44, q: '2025Q4' })

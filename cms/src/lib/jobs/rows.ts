@@ -1,0 +1,401 @@
+/**
+ * SQL 原始行 → 本域形状的构造器 + 本域词汇(iso)。一条 SQL 一个映射,体内只许词汇表 + 纯拼装。
+ * 🔴 数字一律走 db 的 `numOrNull`:库里 numeric 回来是**字符串**,Payload Local API 回来是数字 ——
+ * 一套词汇两条路都对(老坑:`typeof x === 'number'` 换路后 teer/drawCrs 静默判 null)。
+ *
+ * @author Frank
+ * @time 2026-08-22 00:05:00
+ */
+
+import { count, numOrNull, text } from '../db'
+import { UNCAT } from './constants'
+import type {
+  AlertHit, BroadNoc, CompanyJobRow, EeCatDim, EeOcc, FieldSource, JobDbRow, JobRow, MatchJob,
+  JsonRow, NewsSlim, NocCat, NocHit, PnpDraw, PnpOcc, PnpOccDim, RelatedJob, Row, SimilarEmployer, TimeLike,
+  ToJobRowIn, TopNoc,
+} from './types'
+
+/**
+ * 时间格词汇:pg timestamp 回来是 Date、文本列是字符串、可空 —— 归一成 ISO 串(空落空串)。
+ * 入参放宽到库标量:窄行(Row)的时间格在类型上是 Cell,运行时才是 Date,这里一网收干净。
+ *
+ * @param v 库回的时间格。
+ * @returns ISO 串;没有则空串。
+ */
+export function iso(v: TimeLike): string {
+  if (v instanceof Date) {
+    return v.toISOString()
+  }
+  if (v == null) {
+    return ''
+  }
+  return String(v)
+}
+
+/**
+ * jobs 主表一行 → 板上一行(不含 match;match 由调用方按人/序算好传入)。
+ * Pro 数据列 2026-07-25「先都显示出来」后暂不剥值(pro 参数保留,收费面回收时改回)。
+ *
+ * @param input 原始行、匹配档与付费态。
+ * @returns 板上一行。
+ */
+// eslint-disable-next-line local/function-length -- 61 列的一次性拼装,拆开只会把一行搬成两处
+export function toJobRow(input: ToJobRowIn): JobRow {
+  const j = input.row
+  let broad = text(j.broad)
+  if (broad === '') {
+    broad = UNCAT
+  }
+  let mid = text(j.mid)
+  if (mid === '') {
+    mid = UNCAT
+  }
+  let fine = text(j.fine)
+  if (fine === '') {
+    fine = UNCAT
+  }
+  let address = text(j.address)
+  if (address === '') {
+    address = text(j.company_address)
+  }
+  let officialUrl = text(j.official_url)
+  if (officialUrl === '') {
+    officialUrl = text(j.company_website)
+  }
+  let status = text(j.status)
+  if (status === '') {
+    status = 'open'
+  }
+  let certificates: string[] = []
+  if (Array.isArray(j.certificates)) {
+    certificates = j.certificates
+  }
+  return {
+    match: input.matchLevel,
+    id: j.id,
+    title: text(j.title),
+    company: text(j.company_name),
+    companySlug: text(j.company_slug),
+    companyDescription: text(j.company_description),
+    companySectors: text(j.company_sectors),
+    companyWebsiteSrc: text(j.website_source),
+    lmiaPositions: numOrNull(j.lmia_positions),
+    lmiaPositionsSkilled: numOrNull(j.lmia_positions_skilled),
+    lmiaLastQuarter: text(j.lmia_last_quarter),
+    lmiaStreams: text(j.lmia_streams),
+    address: address,
+    source: text(j.source),
+    sourceLabel: text(j.source_label),
+    origin: text(j.origin),
+    country: text(j.country),
+    province: text(j.province),
+    city: text(j.city),
+    district: text(j.district),
+    noc: text(j.noc),
+    category: text(j.category),
+    teer: numOrNull(j.teer),
+    broad: broad,
+    mid: mid,
+    fine: fine,
+    accessibility: text(j.accessibility),
+    score: numOrNull(j.score),
+    gradeChannel: numOrNull(j.grade_channel),
+    sponsorGrade: numOrNull(j.sponsor_grade),
+    pnpEligible: j.pnp_eligible === true,
+    pnpStream: text(j.pnp_stream),
+    eeCategory: text(j.ee_category),
+    aip: j.aip === true,
+    pilot: text(j.pilot), pilotCommunity: text(j.pilot_community),
+    pilotEmployer: j.pilot_employer === true, pilotOcc: text(j.pilot_occ),
+    employmentTerm: text(j.employment_term),
+    employmentHours: text(j.employment_hours),
+    eligibilityFlag: text(j.eligibility_flag),
+    eligibilityQuote: text(j.eligibility_quote),
+    certificates: certificates,
+    education: text(j.education),
+    salary: text(j.salary),
+    salaryAnnual: numOrNull(j.salary_annual),
+    salaryText: text(j.salary_text),
+    wageMedHourly: numOrNull(j.wage_med_hourly),
+    wageMedAnnual: numOrNull(j.wage_med_annual),
+    wageLowHourly: numOrNull(j.wage_low_hourly),
+    wageLowAnnual: numOrNull(j.wage_low_annual),
+    wageHighHourly: numOrNull(j.wage_high_hourly),
+    wageHighAnnual: numOrNull(j.wage_high_annual),
+    wageYear: text(j.wage_year),
+    officialUrl: officialUrl,
+    applyUrl: text(j.apply_url),
+    datePosted: iso(j.date_posted),
+    firstSeen: iso(j.first_seen),
+    lastSeen: iso(j.last_seen),
+    status: status,
+    closedAt: iso(j.closed_at),
+  }
+}
+
+/**
+ * jobs 主表一行 → 匹配引擎只读的那几格(rowMatchLevel 与两个视图共用一份收窄)。
+ *
+ * @param j 原始行。
+ * @returns 匹配侧字段。
+ */
+export function toMatchJob(j: JobDbRow): MatchJob {
+  return {
+    noc: text(j.noc), teer: numOrNull(j.teer), province: text(j.province), pnpEligible: j.pnp_eligible === true,
+    pnpStream: text(j.pnp_stream), eeCategory: text(j.ee_category),
+    salaryAnnual: numOrNull(j.salary_annual), wageMedAnnual: numOrNull(j.wage_med_annual),
+    lmiaPositions: numOrNull(j.lmia_positions), lmiaPositionsSkilled: numOrNull(j.lmia_positions_skilled),
+    lmiaLastQuarter: text(j.lmia_last_quarter),
+  }
+}
+
+/**
+ * 维度行 → 匹配引擎口径的省清单行(/api/jobs-data 自取维度时与 page.tsx 同一把尺;
+ * program 空档落 'PNP')。
+ *
+ * @param r 原始行(SQL 别名 camelCase)。
+ * @returns 省清单行。
+ */
+export function mapPnpOcc(r: Row): PnpOcc {
+  let program = text(r.program)
+  if (program === '') {
+    program = 'PNP'
+  }
+  return {
+    province: text(r.province), stream: text(r.stream), label: text(r.label), type: text(r.type),
+    program: program, noc: text(r.noc), name: text(r.name),
+    gtaRestricted: r.gtaRestricted === true, url: text(r.url), fetched: text(r.fetched),
+  }
+}
+
+/**
+ * 维度行 → 联邦 EE 类别行(numeric 三列走词汇,两条路都对)。
+ *
+ * @param r 原始行(SQL 别名 camelCase)。
+ * @returns EE 类别行。
+ */
+export function mapEeCat(r: Row): EeOcc {
+  return {
+    category: text(r.category), label: text(r.label), noc: text(r.noc), teer: numOrNull(r.teer),
+    title: text(r.title), url: text(r.url), fetched: text(r.fetched),
+    drawCrs: numOrNull(r.drawCrs), drawDate: text(r.drawDate), drawSize: numOrNull(r.drawSize),
+  }
+}
+
+/**
+ * MATCH_PNP_OCCUPATIONS 一行 → 匹配维度省清单行(时间列是 timestamp,过 iso)。
+ *
+ * @param r 原始行。
+ * @returns 匹配维度行。
+ */
+export function toPnpOccDim(r: Row): PnpOccDim {
+  return {
+    province: text(r.province), label: text(r.label), type: text(r.type), noc: text(r.noc),
+    url: text(r.url), fetched: iso(r.fetched),
+  }
+}
+
+/**
+ * MATCH_EE_CATEGORIES 一行 → 匹配维度 EE 行(列名 snake_case —— 换路必须跟着换,
+ * 否则 drawCrs/drawDate 静默变 undefined,match 只会少给一条理由不报错)。
+ *
+ * @param r 原始行。
+ * @returns 匹配维度行。
+ */
+export function toEeCatDim(r: Row): EeCatDim {
+  return {
+    category: text(r.category), label: text(r.label), noc: text(r.noc),
+    drawCrs: numOrNull(r.draw_crs), drawDate: iso(r.draw_date), url: text(r.url), fetched: iso(r.fetched),
+  }
+}
+
+/**
+ * DIMS_PNP_DRAWS 一行 → 省抽选事实行。
+ *
+ * @param r 原始行。
+ * @returns 抽选行。
+ */
+export function toPnpDraw(r: Row): PnpDraw {
+  return {
+    province: text(r.province), kind: text(r.kind), drawDate: text(r.drawDate), stream: text(r.stream),
+    streamZh: text(r.streamZh), score: numOrNull(r.score), scale: text(r.scale),
+    invitations: numOrNull(r.invitations), note: text(r.note), label: text(r.label),
+    url: text(r.url), fetched: text(r.fetched),
+  }
+}
+
+/**
+ * DIMS_NOC_CATEGORIES 一行 → 分类树行。
+ *
+ * @param r 原始行。
+ * @returns 分类树行。
+ */
+export function toNocCat(r: Row): NocCat {
+  return {
+    broad: text(r.broad), mid: text(r.mid), fine: text(r.fine), teer: numOrNull(r.teer),
+    broadEn: text(r.broadEn), broadKo: text(r.broadKo),
+    midEn: text(r.midEn), midKo: text(r.midKo), fineEn: text(r.fineEn), fineKo: text(r.fineKo),
+  }
+}
+
+/**
+ * DIMS_FIELD_SOURCES 一行 → 字段出处行。
+ *
+ * @param r 原始行。
+ * @returns 字段出处行。
+ */
+export function toFieldSource(r: Row): FieldSource {
+  return {
+    field: text(r.field), kind: text(r.kind), publisher: text(r.publisher), url: text(r.url),
+    title: text(r.title), description: text(r.description), status: text(r.status),
+    fetched: text(r.fetched), note: text(r.note),
+  }
+}
+
+/**
+ * NEWS_SLIM_60 一行 → 新闻瘦行。
+ *
+ * @param r 原始行。
+ * @returns 新闻瘦行。
+ */
+export function toNewsSlim(r: Row): NewsSlim {
+  return { region: text(r.region), title: text(r.title), date: text(r.date), slug: text(r.slug) }
+}
+
+/**
+ * 相关职位一行 → 瘦行(salary_text 空时用 salary 兜底)。
+ *
+ * @param r 原始行。
+ * @returns 瘦行。
+ */
+export function toRelated(r: Row): RelatedJob {
+  let salaryText = text(r.salary_text)
+  if (salaryText === '') {
+    salaryText = text(r.salary)
+  }
+  return {
+    id: count(r.id), title: text(r.title), company: text(r.company_name),
+    city: text(r.city), province: text(r.province), salaryText: salaryText,
+  }
+}
+
+/**
+ * 公司详情页在招岗一行 → 干净行(salary_text 空时用 salary 兜底;时间过 iso)。
+ *
+ * @param j 原始行。
+ * @returns 在招岗行。
+ */
+export function toCompanyJob(j: Row): CompanyJobRow {
+  let salaryText = text(j.salary_text)
+  if (salaryText === '') {
+    salaryText = text(j.salary)
+  }
+  const datePosted = iso(j.date_posted)
+  return {
+    id: count(j.id), title: text(j.title), city: text(j.city), province: text(j.province),
+    gradeChannel: numOrNull(j.grade_channel), noc: text(j.noc), nocTitle: text(j.noc_title),
+    nocTitleZh: text(j.noc_title_zh), nocTitleKo: text(j.noc_title_ko),
+    teer: numOrNull(j.teer), salaryText: salaryText, datePosted: datePosted,
+  }
+}
+
+/**
+ * SIMILAR_EMPLOYERS 一行 → 相似雇主行。
+ *
+ * @param r 原始行。
+ * @returns 相似雇主行。
+ */
+export function toSimilar(r: Row): SimilarEmployer {
+  return {
+    slug: text(r.slug), name: text(r.name), industry: text(r.industry),
+    sponsorGrade: numOrNull(r.sponsor_grade), openCount: count(r.open_count),
+  }
+}
+
+/**
+ * 提醒命中一行 → AlertHit(列名保持 snake_case,邮件模板按它渲)。
+ *
+ * @param r 原始行。
+ * @returns 命中行。
+ */
+export function toAlertHit(r: Row): AlertHit {
+  return {
+    id: count(r.id), title: text(r.title), city: text(r.city), province: text(r.province),
+    salary_text: text(r.salary_text), company_name: text(r.company_name),
+  }
+}
+
+/**
+ * 热门职业一行 → TopNoc(主路 noc_openings 与回退现算两条路同一映射;med 列名两路各异由 SQL 对齐)。
+ *
+ * @param r 原始行。
+ * @returns 热门职业行。
+ */
+export function toTopNoc(r: Row): TopNoc {
+  let median: number | null = numOrNull(r.median_salary)
+  if (median == null) {
+    median = numOrNull(r.med)
+  }
+  return {
+    noc: text(r.noc), title: text(r.title), titleZh: text(r.title_zh), titleZhShort: text(r.title_zh_short),
+    titleKoShort: text(r.title_ko_short), titleEnShort: text(r.title_en_short), broad: text(r.broad),
+    open: count(r.open), eligible: count(r.eligible), medianSalary: median,
+  }
+}
+
+/**
+ * 按大类浏览一行 → BroadNoc。
+ *
+ * @param r 原始行。
+ * @returns 大类浏览行。
+ */
+export function toBroadNoc(r: Row): BroadNoc {
+  return {
+    noc: text(r.noc), title: text(r.title), titleZh: text(r.title_zh), titleZhShort: text(r.title_zh_short),
+    titleKoShort: text(r.title_ko_short), titleEnShort: text(r.title_en_short), broad: text(r.broad),
+    open: count(r.open), eligible: count(r.eligible),
+  }
+}
+
+/**
+ * 职业名搜索一行 → NocHit。
+ *
+ * @param r 原始行。
+ * @returns 命中行。
+ */
+export function toNocHit(r: Row): NocHit {
+  return {
+    noc: text(r.noc), title: text(r.title), titleZh: text(r.title_zh), titleZhShort: text(r.title_zh_short),
+    titleKoShort: text(r.title_ko_short), titleEnShort: text(r.title_en_short),
+  }
+}
+
+/**
+ * jobs 主表原始行的原样透传(match 计算与 toJobRow 要吃整行;照 ruling `passRow` 先例)。
+ *
+ * @param r 原始行。
+ * @returns 同一行。
+ */
+export function passJobRow(r: JobDbRow): JobDbRow {
+  return r
+}
+
+/**
+ * 窄行原样透传(count/heartbeat/探测这类单格行,取值在调用处收窄)。
+ *
+ * @param r 原始行。
+ * @returns 同一行。
+ */
+export function passRow(r: Row): Row {
+  return r
+}
+
+/**
+ * 带 JSON 列的行原样透传(公司详情 score_detail / lmia_nocs 这类 json 列,取值在调用处收窄)。
+ *
+ * @param r 原始行。
+ * @returns 同一行。
+ */
+export function passJsonRow(r: JsonRow): JsonRow {
+  return r
+}

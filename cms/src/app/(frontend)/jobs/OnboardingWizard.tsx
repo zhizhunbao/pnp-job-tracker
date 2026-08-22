@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { TFn } from '@/lib/i18n'
 import { Modal } from './Modal'
 import { Button, chipStyle } from '../ui'
-import { hasProfile, normalizeProfile, type MatchProfile } from '@/lib/jobs'
+import { hasProfile, normalizeProfile, type MatchProfile, type ProfileJson } from '@/lib/jobs'
 import {
   POPULAR_NOCS, CLB_OPTS, CRS_OPTS, PGWP_OPTS, clbActive, crsActive, pgwpActive, type Opt,
 } from '../account/profileOptions'
@@ -92,9 +92,9 @@ export function OnboardingWizard({ t, initial, onClose, onFinished, z }: { t: TF
       } catch { /* 保存失败也放行,不卡住用户 */ }
     }
     if (onFinished) { onFinished(); return }
-    const p = { ...draft(), targetProvinces: provs, nocCodes: nocs } as Partial<MatchProfile>
+    const p = { ...draft(), targetProvinces: provs, nocCodes: nocs } as ProfileJson
     // 有档案 → 整页跳匹配视图(SSR 重算 profileOk 亮 match);否则回职位板。根域直出=职位板在根路径(同 toggleMatchView)
-    window.location.href = hasProfile(p) ? '/?view=match' : '/'
+    window.location.href = hasProfile(normalizeProfile(p)) ? '/?view=match' : '/'
   }
 
   const next = () => { if (isLast) finish(); else setStep((s) => Math.min(s + 1, total - 1)) }

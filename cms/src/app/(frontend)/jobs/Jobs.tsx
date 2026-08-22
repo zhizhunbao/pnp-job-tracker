@@ -35,7 +35,7 @@ import { track } from '@/lib/track'   // #129 功能级 umami 埋点
 // 读 localStorage 偏好(列/语言)用「绘制前」生效,避免 SSR 默认值闪一下再切到保存值。
 // SSR 端 useLayoutEffect 无效且会告警 → 服务端退化成 useEffect。
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
-const FREE_PLAN: Plan = { isPro: false, loggedIn: false, profileOk: false, profile: null, freeMatchCap: 0 }
+const FREE_PLAN: Plan = { isPro: false, loggedIn: false, profileOk: false, profile: null, freeMatchCap: 0, email: null, displayName: null, avatar: null, proUntil: '' }
 
 // 未登录价值主张横幅(E5-01):一句话+关闭,可关闭。注册/定价按钮已归组进顶栏账户区(E8-01,2026-07-06 拍板)。
 // 关闭记忆走 cookie(同 COLS_COOKIE 手法)→ SSR 首帧直接渲对,不再等水合后才弹出来(用户点名);bump cookie 名可重新展示

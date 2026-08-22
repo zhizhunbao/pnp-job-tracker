@@ -670,9 +670,9 @@ function companyAggOf(input: CompanyAggIn): CompareAgg {
       const mj: MatchJob = {
         noc: j.noc, teer: teerOf(j.noc), province: j.province, pnpEligible: j.pnpEligible,
         pnpStream: j.pnpStream, eeCategory: j.eeCategory, salaryAnnual: j.salaryAnnual,
-        wageMedAnnual: j.wageMedAnnual,
+        wageMedAnnual: j.wageMedAnnual, lmiaPositions: null, lmiaLastQuarter: '', lmiaPositionsSkilled: null,
       }
-      const m = match(input.profile, mj, input.dims)
+      const m = match({ profile: input.profile, job: mj, dims: input.dims })
       if (m.level === LEVEL.high) {
         high += 1
       } else if (m.level === LEVEL.mid) {

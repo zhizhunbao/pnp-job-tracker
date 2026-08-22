@@ -13,7 +13,7 @@ export async function getTopNocsCached(pool: any, n: number): Promise<unknown[]>
   if (hit) {
     if (Date.now() - hit.at >= TTL && !hit.refreshing) {
       hit.refreshing = true
-      fetchTopNocs(pool, n).then((rows) => cache.set(n, { at: Date.now(), rows }))
+      fetchTopNocs({ db: pool, limit: n }).then((rows) => cache.set(n, { at: Date.now(), rows }))
         .catch(() => { hit.refreshing = false })   // 刷失败:旧值继续顶,下次再试
     }
     return hit.rows
@@ -22,7 +22,7 @@ export async function getTopNocsCached(pool: any, n: number): Promise<unknown[]>
   // 4 万岗 GROUP BY(08-10 冷启动实测 8s),预热反而把数据库压力翻倍。
   const inFlight = pending.get(n)
   if (inFlight) return inFlight
-  const task = fetchTopNocs(pool, n)
+  const task = fetchTopNocs({ db: pool, limit: n })
     .then((rows) => { cache.set(n, { at: Date.now(), rows }); return rows })
     .finally(() => pending.delete(n))
   pending.set(n, task)
