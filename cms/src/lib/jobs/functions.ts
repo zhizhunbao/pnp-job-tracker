@@ -8,7 +8,7 @@
  * @time 2026-08-22 00:05:00
  */
 
-import { queryRows, queryRowsOrEmpty, SQL } from '../db'
+import { numOrNull, queryRows, queryRowsOrEmpty, SQL, text } from '../db'
 import type { Db } from '../db'
 import { JOBS_LOG, log } from '../log'
 import { fill } from '../template'
@@ -28,12 +28,14 @@ import {
   TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_WITH_MED, UNCAT, W,
   ACCEPT_HTML, DIGIT_PICK_RE, EMAIL_RE, LMIA_SOURCE, NO_LIST_PROVINCES, ORIGIN_TITLE_HEAD, PHONE_RE, PII_MASK,
   REDIRECT_FOLLOW, SPACE,
+  COMP_KEY, TOP_NOCS_TTL_MS,
 } from './constants'
 import { REASON_EN, STATUS_EN } from './prompts'
 import {
   iso, mapEeCat, mapPnpOcc, passJobRow, passJsonRow, passRow, toAlertHit, toBroadNoc, toCompanyJob, toEeCatDim,
   toFieldSource, toJobRow, toMatchJob, toNewsSlim, toNocCat, toNocHit, toPnpDraw, toPnpOccDim, toRelated,
   toSimilar, toTopNoc,
+  passOccDiffRow, toOccOpen, toProvCount,
 } from './rows'
 import { byEntryCountDesc, byHitValAsc, byHitValDesc, byLevelDesc } from './callbacks'
 import { CACHE } from './variables'
@@ -51,6 +53,8 @@ import type {
   PnpOccs, ProfileJsonOrNull, ProvOption, QuizFactsOut, QuizProvCount, QuizStreamCount, RankedHit, RelatedIn,
   RelatedOut, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut,
   SimilarIn, SimilarOut, SortValIn, SsrDimsOut, StrList, StripTitleIn, TopNocsIn, TopNocsOut, UrlHandle,
+  CountMap, CountOfIn, MaybeOccDiff, OccCompetitionIn, OccCompetitionOut, OccCompetitionRows,
+  OccDiffDbRows, OccDiffRaw, ProvCounts, RatioMap, RatioOfIn,
   WhereParam,
 } from './types'
 
@@ -1693,6 +1697,27 @@ export async function fetchTopNocs(input: TopNocsIn): TopNocsOut {
 }
 
 /**
+ * `fetchTopNocs` 的 TTL 缓存壳(/plan/pr 决策页用;2026-08-22 自 lib/score 的表包缓存拆来)。
+ * 聚合表日更,10 分钟 TTL 只是挡「Google 落地页每请求一查」(prod-pool-wedge 口径)。
+ * ⚠️ lib/quiz/quizTop.ts 还有一份同职缓存 —— quiz 域重构批收拢到这儿(2026-08-22 记账)。
+ * 空榜不灌缓存:多半是查挂了,不把一次抖动钉死 10 分钟。
+ *
+ * @param input 连接与取几。
+ * @returns 热门职业行(TTL 内直接给缓存那一份)。
+ */
+export async function fetchTopNocsCached(input: TopNocsIn): TopNocsOut {
+  const hit = CACHE.topNocs.get(input.limit)
+  if (hit != null && Date.now() - hit.at <= TOP_NOCS_TTL_MS) {
+    return hit.rows
+  }
+  const rows = await fetchTopNocs(input)
+  if (rows.length > 0) {
+    CACHE.topNocs.set(input.limit, { at: Date.now(), rows: rows })
+  }
+  return rows
+}
+
+/**
  * 按大类浏览(只在用户点中某类后查,避免打开问卷就扫 top=200)。
  *
  * @param input 连接、大类与取几。
@@ -2058,4 +2083,151 @@ export async function jobDescription(input: JdIn): JdOut {
     return scrubPii(String(rows[0].description))
   }
   return scrubPii(await lazyFetchJd(input))
+}
+
+// =========================================================================
+// 10. 职业竞争面(该职业各省在招;2026-08-22 自 lib/score 并入)
+// =========================================================================
+
+/**
+ * difficulty 原料 → json。经文本列绕行时是字符串,当场收(语言接缝);
+ * 解析不出留痕落 null,不静默。体内 `as` 是跨边界断言:JSON.parse 的返回没有形状,
+ * 形状声明在 types 的 `OccDiffJson`(ETL 写入方保证)。
+ *
+ * @param raw 库里那一格。
+ * @returns 解析好的 json;没有或坏的是 null。
+ */
+function occDiffJsonOf(raw: OccDiffRaw): MaybeOccDiff {
+  if (raw == null) {
+    return null
+  }
+  if (typeof raw !== 'string') {
+    return raw
+  }
+  try {
+    return JSON.parse(raw) as MaybeOccDiff
+  } catch (e) {
+    log({ tag: JOBS_LOG.tag, text: JOBS_LOG.difficultyParseFailed + String(e) })
+    return null
+  }
+}
+
+/**
+ * 各省难度行 → 省码 → 名额竞争比(difficulty json 里 key='comp' 那格;省级,与职业无关)。
+ *
+ * @param rows 难度行。
+ * @returns 省码 → 比值(缺位的省不出键)。
+ */
+function ratioMapOf(rows: OccDiffDbRows): RatioMap {
+  const out: RatioMap = {}
+  for (const r of rows) {
+    const d = occDiffJsonOf(r.difficulty)
+    if (d == null || d.factors == null) {
+      continue
+    }
+    for (const f of d.factors) {
+      if (f == null || f.key !== COMP_KEY) {
+        continue
+      }
+      const v = numOrNull(f.value)
+      if (v != null) {
+        out[text(r.province)] = v
+      }
+      break
+    }
+  }
+  return out
+}
+
+/**
+ * 计数行 → 省码 → 数。
+ *
+ * @param rows 按省计数行。
+ * @returns 省码 → 数。
+ */
+function countMapOf(rows: ProvCounts): CountMap {
+  const out: CountMap = {}
+  for (const r of rows) {
+    out[r.province] = r.n
+  }
+  return out
+}
+
+/**
+ * 比值查表:没有这省保 null(名额竞争比官方可缺,不折 0)。
+ *
+ * @param input 表与省码。
+ * @returns 比值;没有则 null。
+ */
+function ratioOf(input: RatioOfIn): MaybeNum {
+  const v = input.map[input.key]
+  if (v == null) {
+    return null
+  }
+  return v
+}
+
+/**
+ * 计数查表:没有这省是 0(GROUP BY 没出这省 = 一个都没有,「一个都没有」本身就是答案)。
+ *
+ * @param input 表与省码。
+ * @returns 数;没有则 0。
+ */
+function countOf(input: CountOfIn): number {
+  const v = input.map[input.key]
+  if (v == null) {
+    return 0
+  }
+  return v
+}
+
+/**
+ * 该职业分省竞争面(2026-08-15 #307 排序单源化时自路由抽出;2026-08-22 自 lib/score 并入本域。
+ * `/api/occ-competition` 与 profile-pathways 的服务端排序共用这一份,口径不许分叉 ——
+ * 并入时顺手收掉路由里残留的单 noc 快照版:那份还在读 stats_occupation 日快照,
+ * 与下面 ① 的实时口径已经岔开)。
+ *
+ * 🔴 职业级「几人抢一个」算不出来,本站不编 —— 只给三类实数(在招/新增/平均在招天数)
+ * 与省级名额竞争比,不合成分数(完整口径注释见 `/api/occ-competition` 路由头)。
+ *
+ * 2026-08-16 Frank「在招是显示多少就查多少」「要支持多个职位类别」:
+ * ① openJobs 走**实时 jobs 表**(与「查岗位」落地页同一条谓词),不取日快照 ——
+ *    快照与实时差 1-3 岗,点进去数字对不上就是「跑偏」;new30d/平均在招天数仍走快照(本就是统计口径);
+ * ② 档案里选了几个职业就算几个:nocs 全量参与,岗位按 noc = ANY(...) 去重计数。
+ *
+ * @param input 连接与职业码清单。
+ * @returns 各省竞争面(按在招量降序,序在 SQL 里)。
+ */
+export async function fetchOccCompetition(input: OccCompetitionIn): OccCompetitionOut {
+  const nocs: StrList = []
+  for (const n of input.nocs) {
+    if (NOC_RE.test(n)) {
+      nocs.push(n)
+    }
+  }
+  if (nocs.length === 0) {
+    return []
+  }
+  const [occ, diff, aip, rcip, fcip] = await Promise.all([
+    queryRowsOrEmpty({ db: input.db, sql: SQL.OCC_COMPETITION_BY_PROV, params: [nocs], map: toOccOpen }),
+    queryRowsOrEmpty({ db: input.db, sql: SQL.PROV_DIFFICULTY, params: [], map: passOccDiffRow }),
+    queryRowsOrEmpty({ db: input.db, sql: SQL.PROV_OPEN_COUNT, params: [nocs], map: toProvCount }),
+    queryRowsOrEmpty({ db: input.db, sql: SQL.PROV_OPEN_COUNT_NOC4, params: [nocs], map: toProvCount }),
+    queryRowsOrEmpty({ db: input.db, sql: SQL.PROV_OPEN_COUNT_BROAD, params: [nocs], map: toProvCount }),
+  ])
+  const ratios = ratioMapOf(diff)
+  const aips = countMapOf(aip)
+  const rcips = countMapOf(rcip)
+  const fcips = countMapOf(fcip)
+  const out: OccCompetitionRows = []
+  for (const o of occ) {
+    out.push({
+      province: o.province, openJobs: o.openJobs, new30d: o.new30d, avgDaysOpen: o.avgDaysOpen,
+      ratio: ratioOf({ map: ratios, key: o.province }),
+      aipJobs: countOf({ map: aips, key: o.province }),
+      rcipJobs: countOf({ map: rcips, key: o.province }),
+      fcipJobs: countOf({ map: fcips, key: o.province }),
+    })
+  }
+  return out
 }

@@ -9,7 +9,7 @@
 import type { JobsCache } from './types'
 
 /**
- * 职位域全部的可变状态,就这六格。
+ * 职位域全部的可变状态,就这七格。
  */
 export const CACHE: JobsCache = {
   /**
@@ -31,6 +31,11 @@ export const CACHE: JobsCache = {
    * 证言三连数缓存(2026-08-03 生产僵死事故后的保险)。
    */
   proof: null,
+
+  /**
+   * 热门职业榜缓存(limit → 榜;10 分钟)。
+   */
+  topNocs: new Map(),
 
   /**
    * JD 懒抓单飞表。

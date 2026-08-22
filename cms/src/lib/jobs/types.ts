@@ -3456,6 +3456,12 @@ export type JobsCache = {
   jdInflight: Map<string, Promise<string>>
 
   /**
+   * 热门职业榜缓存(limit → 榜;10 分钟)。⚠️ lib/quiz/quizTop.ts 还有一份同职缓存 ——
+   * quiz 域重构批收拢到这儿(2026-08-22 记账)。
+   */
+  topNocs: Map<number, TopNocsSlot>
+
+  /**
    * JD 懒抓负缓存:applyUrl → 失败时刻(10 分钟防连点)。
    */
   jdFailed: Map<string, number>
@@ -3525,3 +3531,242 @@ export type ColKey = 'score' | 'match' | 'pnp' | 'ee' | 'aip' | 'pilot' | 'lmia'
  * 弹框分组(E8-10 三合一后陆续拆出的九组)。
  */
 export type FieldGroup = 'company' | 'immigration' | 'category' | 'location' | 'pnp' | 'ee' | 'aip' | 'pilot' | 'salary'
+
+// =========================================================================
+// 8. 职业竞争面(该职业各省在招;2026-08-22 自 lib/score 并入)
+// =========================================================================
+
+/**
+ * `fetchOccCompetition` 的入参。
+ */
+export type OccCompetitionIn = {
+  /**
+   * 能打 SQL 的东西。
+   */
+  db: Db
+
+  /**
+   * 档案里的职业码(5 位;不合形的当场滤掉)。
+   */
+  nocs: StrList
+}
+
+/**
+ * 该职业一省的竞争面一行。
+ * 🔴 职业级「几人抢一个」算不出来,本站不编 —— 只给三类实数与省级名额竞争比,
+ * 不合成一个分数(合成就等于替用户拿主意,没有官方口径支持那种合成)。
+ */
+export type OccCompetitionRow = {
+  /**
+   * 两位省码。
+   */
+  province: string
+
+  /**
+   * 实时在招岗数(与「查岗位」落地页同一条谓词)。
+   */
+  openJobs: number
+
+  /**
+   * 近 30 天新增(stats_occupation 日快照);没算保 null。
+   */
+  new30d: number | null
+
+  /**
+   * 平均在招天数(本站库内该省该职业);null = 样本不足未算。
+   */
+  avgDaysOpen: number | null
+
+  /**
+   * 该省名额竞争(省级,与职业无关);官方缺位保 null。
+   */
+  ratio: number | null
+
+  /**
+   * 该省 AIP 指定雇主在招的本职业岗数(2026-08-15 Frank「aip 别四个省放一起了,分开来算」)。
+   */
+  aipJobs: number
+
+  /**
+   * 该省 RCIP 试点社区在招的本职业岗数(2026-08-15 Frank「rcip 也需要拆」;
+   * LIKE 口径同列表页 pilot=RCIP)。
+   */
+  rcipJobs: number
+
+  /**
+   * FCIP 试点社区 ∩ 本职业(2026-08-15 FCIP 立成通道;与 rcipJobs 同口径,别混 ——
+   * Sudbury/Timmins 两地双标,两个数会重叠:那是事实不是重复计数,
+   * 两条 pilot 在同一个城市各有各的社区名单与名额)。
+   */
+  fcipJobs: number
+}
+
+/**
+ * 竞争面行的复数。
+ */
+export type OccCompetitionRows = OccCompetitionRow[]
+
+/**
+ * `fetchOccCompetition` 的返回。
+ */
+export type OccCompetitionOut = Promise<OccCompetitionRows>
+
+/**
+ * 一行实时在招聚合(SQL.OCC_COMPETITION_BY_PROV 洗净后)。
+ */
+export type OccOpen = {
+  /**
+   * 两位省码。
+   */
+  province: string
+
+  /**
+   * 实时在招岗数。
+   */
+  openJobs: number
+
+  /**
+   * 近 30 天新增;没算保 null。
+   */
+  new30d: number | null
+
+  /**
+   * 平均在招天数;没算保 null。
+   */
+  avgDaysOpen: number | null
+}
+
+/**
+ * 实时在招聚合行的复数。
+ */
+export type OccOpens = OccOpen[]
+
+/**
+ * 一行按省计数(AIP/RCIP/FCIP 三条 COUNT 共用)。
+ */
+export type ProvCount = {
+  /**
+   * 两位省码。
+   */
+  province: string
+
+  /**
+   * 数。
+   */
+  n: number
+}
+
+/**
+ * 按省计数行的复数。
+ */
+export type ProvCounts = ProvCount[]
+
+/**
+ * difficulty json 里本域读的因子格(只要 key/value 两格;宽形状归 points)。
+ */
+export type OccDiffFactorJson = {
+  /**
+   * 因子键(名额竞争是 'comp')。
+   */
+  key: string | null
+
+  /**
+   * 因子值(comp 的是比值)。
+   */
+  value: number | string | null
+}
+
+/**
+ * difficulty json 里本域读的那一格。
+ */
+export type OccDiffJson = {
+  /**
+   * 因子清单。
+   */
+  factors: OccDiffFactorJson[] | null
+}
+
+/**
+ * difficulty 一格的原料:json 列驱动可能已解析成对象,经文本列绕行时是字符串。
+ */
+export type OccDiffRaw = OccDiffJson | string | null
+
+/**
+ * `OccDiffJson` 或没有。
+ */
+export type MaybeOccDiff = OccDiffJson | null
+
+/**
+ * 一行各省难度(SQL.PROV_DIFFICULTY)。
+ */
+export type OccDiffDbRow = {
+  /**
+   * 两位省码。
+   */
+  province: string | null
+
+  /**
+   * 难度 json 原料。
+   */
+  difficulty: OccDiffRaw
+}
+
+/**
+ * 难度行的复数。
+ */
+export type OccDiffDbRows = OccDiffDbRow[]
+
+/**
+ * 省码 → 名额竞争比。
+ */
+export type RatioMap = Record<string, number>
+
+/**
+ * 省码 → 计数。
+ */
+export type CountMap = Record<string, number>
+
+/**
+ * 比值查表的入参。
+ */
+export type RatioOfIn = {
+  /**
+   * 省码 → 比值。
+   */
+  map: RatioMap
+
+  /**
+   * 省码。
+   */
+  key: string
+}
+
+/**
+ * 计数查表的入参。
+ */
+export type CountOfIn = {
+  /**
+   * 省码 → 计数。
+   */
+  map: CountMap
+
+  /**
+   * 省码。
+   */
+  key: string
+}
+
+/**
+ * 热门职业榜缓存的一格。
+ */
+export type TopNocsSlot = {
+  /**
+   * 灌入时刻。
+   */
+  at: number
+
+  /**
+   * 榜。
+   */
+  rows: TopNoc[]
+}

@@ -482,4 +482,29 @@ export const JOBS_LOG = {
    * JD 抓到但写库失败(文本照给,下次点开重写)。
    */
   jdWriteFailed: 'jd cache write failed, serving text anyway: ',
+
+  /**
+   * 各省难度 json 解析不出(该省的名额竞争比落 null,不折 0)。
+   */
+  difficultyParseFailed: 'prov difficulty json parse failed, ratio dropped: ',
+} as const
+
+/**
+ * 分值域的日志字面量(2026-08-22 决策页官方表包并入 points 时立)。
+ */
+export const POINTS_LOG = {
+  /**
+   * 这个域每一行日志的来源标签。
+   */
+  tag: 'points',
+
+  /**
+   * 各省难度 json 解析不出(该省不出竞争行,不编数)。
+   */
+  difficultyParseFailed: 'prov difficulty json parse failed, competition row dropped: ',
+
+  /**
+   * provinces.info json 解析不出(该省的流量/序列增补落 null)。
+   */
+  provInfoParseFailed: 'province info json parse failed, extras dropped: ',
 } as const

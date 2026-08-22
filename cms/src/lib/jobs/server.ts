@@ -11,7 +11,8 @@ export { PROV_NAME } from './constants'
 export {
   buildJobsWhere, checkedAt, fetchAlertHits, fetchBroadNocs, fetchCompanyByJobId, fetchCompanyBySlug,
   fetchJobById, fetchJobRows, fetchJobsPage, fetchMatchPage, fetchNocOpenCounts, fetchQuizFacts,
-  fetchRelatedJobs, fetchSimilarEmployers, fetchSsrDims, fetchTopNocs, fetchTotalAndProof, jobDescription,
+  fetchOccCompetition, fetchRelatedJobs, fetchSimilarEmployers, fetchSsrDims, fetchTopNocs,
+  fetchTopNocsCached, fetchTotalAndProof, jobDescription,
   loadMatchDims, pnpOnly, scrubPii, searchNocByTitle, splitQ,
 } from './functions'
 export { mapEeCat, mapPnpOcc } from './rows'

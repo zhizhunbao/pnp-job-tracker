@@ -392,6 +392,17 @@ export const DIMS_TTL_MS = 3600_000
 export const NOC_RE = /^\d{5}$/
 
 /**
+ * difficulty json 里名额竞争因子的 key(fetchOccCompetition 借省级比值用)。
+ */
+export const COMP_KEY = 'comp'
+
+/**
+ * 热门职业榜缓存时长(10 分钟)。聚合表日更,TTL 只是挡「Google 落地页每请求一查」
+ * (prod-pool-wedge 口径;2026-08-22 自 lib/score 的表包缓存拆来)。
+ */
+export const TOP_NOCS_TTL_MS = 600_000
+
+/**
  * 单个数字(fTeer 里挑数字)。
  */
 export const DIGIT_PICK_RE = /(\d)/

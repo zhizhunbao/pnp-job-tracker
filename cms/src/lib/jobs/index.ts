@@ -16,6 +16,7 @@ export {
 } from './functions'
 export type {
   CoGradeDetail, ColKey, DesigEmp, Dims, EeCat, EeOcc, FieldGroup, FieldSource, JobRow, MatchDims, MatchJob,
+  OccCompetitionRow,
   ProfileJson,
   MatchProfile, MatchReason, NewsSlim, NocDesc, Plan, PnpDraw, PnpOcc, PnpStream, ProvInfo, ProvListCoverage,
 } from './types'

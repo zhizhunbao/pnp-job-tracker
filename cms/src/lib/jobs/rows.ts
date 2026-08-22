@@ -11,7 +11,7 @@ import { count, numOrNull, text } from '../db'
 import { UNCAT } from './constants'
 import type {
   AlertHit, BroadNoc, CompanyJobRow, EeCatDim, EeOcc, FieldSource, JobDbRow, JobRow, MatchJob,
-  JsonRow, NewsSlim, NocCat, NocHit, PnpDraw, PnpOcc, PnpOccDim, RelatedJob, Row, SimilarEmployer, TimeLike,
+  JsonRow, NewsSlim, NocCat, NocHit, OccDiffDbRow, OccOpen, PnpDraw, PnpOcc, PnpOccDim, ProvCount, RelatedJob, Row, SimilarEmployer, TimeLike,
   ToJobRowIn, TopNoc,
 } from './types'
 
@@ -397,5 +397,40 @@ export function passRow(r: Row): Row {
  * @returns 同一行。
  */
 export function passJsonRow(r: JsonRow): JsonRow {
+  return r
+}
+
+/**
+ * 一行实时在招聚合(SQL.OCC_COMPETITION_BY_PROV)→ `OccOpen`。
+ * avg_days_open 是 ROUND 过的 numeric,pg 交回字符串 —— numOrNull 一网收。
+ *
+ * @param r 原始行。
+ * @returns 洗净的一行。
+ */
+export function toOccOpen(r: Row): OccOpen {
+  return {
+    province: text(r.province), openJobs: count(r.open_jobs),
+    new30d: numOrNull(r.new30d), avgDaysOpen: numOrNull(r.avg_days_open),
+  }
+}
+
+/**
+ * 一行按省计数(AIP/RCIP/FCIP 三条 COUNT 共用)→ `ProvCount`。
+ *
+ * @param r 原始行。
+ * @returns 洗净的一行。
+ */
+export function toProvCount(r: Row): ProvCount {
+  return { province: text(r.province), n: count(r.n) }
+}
+
+/**
+ * 一行各省难度(SQL.PROV_DIFFICULTY)原样透传 —— difficulty json 的解析是真会抛的
+ * JSON.parse,归 `functions.ts` 的 `occDiffJsonOf`(照 `passRow` 先例)。
+ *
+ * @param r 原始行。
+ * @returns 同一行。
+ */
+export function passOccDiffRow(r: OccDiffDbRow): OccDiffDbRow {
   return r
 }

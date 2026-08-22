@@ -343,18 +343,27 @@ export const NOC_TITLE_TEER = `SELECT COALESCE(s.title_en, d.title, '') title, s
 export const PROV_DIFFICULTY = `SELECT province, difficulty FROM stats
        WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL`
 
-// ── score/occCompetition.ts ──
+// ── jobs/functions.ts(fetchOccCompetition;2026-08-22 自 lib/score 并入)──
 
 /**
- * 职业竞争度:各省在架量/30 天新增/平均在架天数。$1=码数组。
+ * 职业竞争度:各省在架量(实时)/30 天新增/平均在架天数(后两列走快照)。$1=码数组。
+ * 🔴 2026-08-22 收拢 /api/occ-competition 时抓出的口径 bug:原写法把 stats_occupation
+ * **逐岗位行**连接再 SUM,快照值被乘上在招岗数(实测 ON 某职业 576 岗 × 670 = 385920)——
+ * 快照统计列改成先按省聚合再连,单职业时逐字等于快照原值(老路由的口径)。
+ * 全无快照时 new30d/avg_days_open 是 NULL(本站未收录,不折 0)。
  */
 export const OCC_COMPETITION_BY_PROV = `SELECT j.province AS province, COUNT(*)::int AS open_jobs,
-              COALESCE(SUM(s.new30d), 0)::int AS new30d,
-              ROUND(AVG(s.avg_days_open)::numeric, 1) AS avg_days_open
+              s.new30d AS new30d, s.avg_days_open AS avg_days_open
          FROM jobs j
-         LEFT JOIN stats_occupation s ON s.noc = j.noc AND s.province = j.province
+         LEFT JOIN (
+           SELECT province, SUM(new30d)::int AS new30d,
+                  ROUND(AVG(avg_days_open)::numeric, 1) AS avg_days_open
+             FROM stats_occupation
+            WHERE noc = ANY($1) AND province <> 'all'
+            GROUP BY province
+         ) s ON s.province = j.province
         WHERE COALESCE(j.status, 'open') <> 'closed' AND COALESCE(j.is_dup, false) = false AND j.noc = ANY($1) AND COALESCE(j.province, '') <> ''
-        GROUP BY j.province
+        GROUP BY j.province, s.new30d, s.avg_days_open
         ORDER BY open_jobs DESC`
 
 
@@ -379,7 +388,7 @@ export const PROV_OPEN_COUNT_BROAD = `SELECT province, COUNT(*)::int AS n FROM j
         WHERE COALESCE(status, 'open') <> 'closed' AND COALESCE(is_dup, false) = false AND COALESCE(pilot, '') LIKE '%FCIP%' AND noc = ANY($1) AND province <> ''
         GROUP BY province`
 
-// ── score/scoreTables.ts ──
+// ── points/functions.ts(getScoreTables;2026-08-22 自 lib/score 并入)──
 
 /**
  * 各省难度分 + 抓取日(报告要标数据新鲜度时用这条,不用 PROV_DIFFICULTY)。
@@ -808,36 +817,9 @@ export const alertNewCount = (a1: string) => `SELECT count(*)::int AS n FROM job
 // =========================================================================
 
 // ── app/api/occ-competition/route.ts ──
-
-/**
- * 职业竞争度 API:各省在架/30 天新增/平均在架天数(stats_occupation)。$1=NOC。
- */
-export const OCC_COMP_BY_PROV = `SELECT province, open_jobs, new30d, avg_days_open
-         FROM stats_occupation
-        WHERE noc = $1 AND province <> 'all' AND COALESCE(open_jobs, 0) > 0
-        ORDER BY open_jobs DESC`
-
-
-/**
- * 某职业各省 AIP 在招数。$1=NOC。
- */
-export const OCC_AIP_BY_PROV = `SELECT province, COUNT(*)::int AS n FROM jobs
-        WHERE status = 'open' AND COALESCE(aip, false) = true AND noc = $1 AND province <> ''
-        GROUP BY province`
-
-/**
- * 某职业各省 RCIP 在招数。$1=NOC。
- */
-export const OCC_RCIP_BY_PROV = `SELECT province, COUNT(*)::int AS n FROM jobs
-        WHERE status = 'open' AND COALESCE(pilot, '') LIKE '%RCIP%' AND noc = $1 AND province <> ''
-        GROUP BY province`
-
-/**
- * 某职业各省 FCIP 在招数。$1=NOC。
- */
-export const OCC_FCIP_BY_PROV = `SELECT province, COUNT(*)::int AS n FROM jobs
-        WHERE status = 'open' AND COALESCE(pilot, '') LIKE '%FCIP%' AND noc = $1 AND province <> ''
-        GROUP BY province`
+// 2026-08-22 段内四条(OCC_COMP/AIP/RCIP/FCIP_BY_PROV 单 noc 版)退役:路由改吃
+// jobs/functions.fetchOccCompetition 的数组版(§8 那组)—— 单 noc 版还在读
+// stats_occupation 日快照,与 2026-08-16「在招是显示多少就查多少」的实时口径岔开。
 
 // =========================================================================
 // 18. JD 整理回写

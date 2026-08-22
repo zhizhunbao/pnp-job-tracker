@@ -17,7 +17,7 @@ export {
 } from './functions'
 
 export type {
-  CrsProfile, DrawRow, EduKey, EeGridRow, EstimateItem, EstimateResult, LineState,
+  CrsProfile, DrawRow, EduKey, EeGridRow, EstimateItem, EstimateResult, LineState, OverviewDraw, ProvCompetition,
   MbEduKey, MbEoiScore, MbProfile, ProvinceScore, ScoreVsLine,
   ScoreFactor, ScoreOverride, ScorePart, ScoreSource, SelfProfile,
 } from './types'

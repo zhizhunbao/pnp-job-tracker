@@ -10,16 +10,16 @@ import nextCoreWebVitals from 'eslint-config-next/core-web-vitals'
 import nextTypeScript from 'eslint-config-next/typescript'
 
 // 带桶的模块(`lib/<名>/index.ts`)—— 下面那道边界闸认这几个,加新桶就加这里一行。
-const BARRELS = ['agent', 'consult', 'db', 'i18n', 'jobs', 'pathways', 'gauge', 'points', 'quiz', 'ruling', 'score', 'employers', 'plan', 'stats', 'quota', 'llm', 'resume']
+const BARRELS = ['agent', 'consult', 'db', 'i18n', 'jobs', 'pathways', 'gauge', 'points', 'quiz', 'ruling', 'employers', 'plan', 'stats', 'quota', 'llm', 'resume']
 const ABSOLUTE = BARRELS.map((m) => `**/lib/${m}/*`)
-// jobs / score / ruling / employers / plan / quiz / stats / quota / pathways 有**两个门**(index=客户端也安全的那半、server=要连库的那半;
+// jobs / points / ruling / employers / plan / quiz / stats / quota / pathways 有**两个门**(index=客户端也安全的那半、server=要连库的那半;
 // 理由见 lib/jobs/index.ts 顶上那段:混着 payload 依赖的桶会把连接池打进浏览器包)。
 // 每加一个 server 门,下面 ALLOW 里补三条(绝对 + 两种相对),否则模块自己的服务端半边被闸拦住。
 // 🔴 放行必须排在整个 group 的**最后** —— 同组内后面的模式覆盖前面的,
 //    夹在中间会被后来的相对模式重新拦住(实撞:tools.ts/quizTop.ts/scoreTables.ts 三处照旧报错)。
 const ALLOW = [
   '!**/lib/jobs/server', '!./jobs/server', '!../jobs/server',
-  '!**/lib/score/server', '!./score/server', '!../score/server',
+  '!**/lib/points/server', '!./points/server', '!../points/server',
   '!**/lib/ruling/server', '!./ruling/server', '!../ruling/server',
   '!**/lib/employers/server', '!./employers/server', '!../employers/server',
   '!**/lib/plan/server', '!./plan/server', '!../plan/server',

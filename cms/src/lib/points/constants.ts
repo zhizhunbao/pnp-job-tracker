@@ -1530,3 +1530,99 @@ export const PROGRAM_YEARS = {
  * 通道名切词后,实词最少要有几个才算数得上一次比对。
  */
 export const STREAM_MIN_WORDS = 1
+
+// =========================================================================
+// 12. 决策页官方表包(2026-08-22 自 lib/score 并入)
+// =========================================================================
+
+/**
+ * 表包缓存时长(10 分钟)。为什么要缓存见 variables.ts 头注(2026-08-12 立,
+ * prod-pool-wedge 教训:站级聚合禁每请求现算)。
+ */
+export const SCORE_TTL_MS = 600_000
+
+/**
+ * drawsRecent 每省最多取几轮有分数的抽选(9 省 × 6 ≈ 54 行,随 SSR 走)。
+ */
+export const RECENT_ROUNDS = 6
+
+/**
+ * 只收 13 省区码 —— pnp_draws 里还有联邦轮(province='FED'),那是 EE 不是省提名,
+ * 不进 overview 与竞争表。
+ */
+export const PNP_PROV_CODES = ['ON', 'BC', 'AB', 'QC', 'MB', 'SK', 'NS', 'NB', 'NL', 'PE', 'NT', 'YT', 'NU']
+
+/**
+ * difficulty json 里名额竞争因子的 key。
+ */
+export const COMP_KEY = 'comp'
+
+/**
+ * flow 口径期里年与月的拼接符('YYYY-MM')。
+ */
+export const PERIOD_SEP = '-'
+
+/**
+ * 英文月份缩写 → 两位月数(IRCC 月度表的 throughMonth 用)。
+ */
+export const MONTH_NUM: Record<string, string> = {
+  /**
+   * 一月。
+   */
+  Jan: '01',
+
+  /**
+   * 二月。
+   */
+  Feb: '02',
+
+  /**
+   * 三月。
+   */
+  Mar: '03',
+
+  /**
+   * 四月。
+   */
+  Apr: '04',
+
+  /**
+   * 五月。
+   */
+  May: '05',
+
+  /**
+   * 六月。
+   */
+  Jun: '06',
+
+  /**
+   * 七月。
+   */
+  Jul: '07',
+
+  /**
+   * 八月。
+   */
+  Aug: '08',
+
+  /**
+   * 九月。
+   */
+  Sep: '09',
+
+  /**
+   * 十月。
+   */
+  Oct: '10',
+
+  /**
+   * 十一月。
+   */
+  Nov: '11',
+
+  /**
+   * 十二月。
+   */
+  Dec: '12',
+}

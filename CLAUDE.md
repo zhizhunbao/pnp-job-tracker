@@ -120,7 +120,7 @@ pnp-job-tracker/
 │   ├── src/lib/                    #   领域模块:**一域一目录 + index.ts 桶**
 │   │   ├── db/                     #     database.ts(通用 CRUD,零业务)+ sql.ts(纯 SQL,编号分段)
 │   │   ├── i18n/                   #     **给人看的文案唯一的家**(三语,按域分文件)
-│   │   ├── jobs/ score/ verdict/   #     判定与评分域(还有 employers/plan/stats/quota/pathways/quiz)
+│   │   ├── jobs/ points/ verdict/  #     判定与评分域(还有 employers/plan/stats/quota/pathways/quiz;score 2026-08-22 解散并进 jobs+points)
 │   │   ├── agent/ chat/ llm/       #     对话:prompts.ts(给模型看的,不进 i18n)、编排、模型提供方
 │   │   └── resume/                 #     简历解析与匹配
 │   └── tests/                      #   int(vitest)、e2e(playwright)、eval(评测批)、cases

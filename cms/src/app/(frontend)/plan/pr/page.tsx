@@ -6,10 +6,9 @@
 // 2026-08-12:官方分值表**不再随页面下发**(192 行 ≈ 88KB,只有答完题的人才看得到)——
 // 改由 /api/score-factors 按省懒取;抽选表仍走 SSR(唯一的免费硬事实,要被爬到),
 // 但两张表都过 getScoreTables 的进程内缓存,不再每请求两条查询(prod-pool-wedge 教训)。
-import { getPayload } from 'payload'
-
-import config from '@/payload.config'
-import { getScoreTables } from '@/lib/score/server'
+import { getDb } from '@/lib/db/server'
+import { getScoreTables } from '@/lib/points/server'
+import { fetchTopNocsCached } from '@/lib/jobs/server'
 import { tripleWireOf, type TripleWire } from '@/lib/ruling/server'
 import { Decision, type TvJob } from './Decision'
 import { SQL } from '@/lib/db'   // SQL 文本全在那儿,本文件只管取数与组装
@@ -24,26 +23,26 @@ export const metadata = {
 
 export default async function PlanPrPage({ searchParams }: { searchParams: Promise<{ job?: string }> }) {
   const sp = await searchParams
-  const { overview, drawsRecent, competition, topNocs } = await getScoreTables()
+  // 表包(points)与热门职业榜(jobs)2026-08-22 拆开取,各自 TTL 缓存;池由页面注入(拍板③)
+  const db = await getDb()
+  const [{ overview, drawsRecent, competition }, topNocs] = await Promise.all([
+    getScoreTables(db), fetchTopNocsCached({ db, limit: 24 }),
+  ])
 
   // ?job= 带岗进来 → 三项结果直接并入本页(轻查:判定本体在 /api/triple-verdict,这里只要表头四样)
   let tvJob: TvJob | null = null
   const jobId = Number(sp.job)
   if (Number.isFinite(jobId) && jobId > 0) {
-    const payload = await getPayload({ config: await config })
-    const pool = (payload.db as { pool?: { query: (q: string, v?: unknown[]) => Promise<{ rows: Record<string, unknown>[] }> } }).pool
-    if (pool) {
-      const { rows } = await pool.query(
-        SQL.PR_PLAN_JOBS, [jobId],
-      ).catch(() => ({ rows: [] as Record<string, unknown>[] }))
-      if (rows.length) {
-        const r = rows[0]
-        const teer = Number(r.teer)
-        tvJob = {
-          id: Number(r.id), title: String(r.title ?? ''), noc: String(r.noc ?? ''),
-          teer: Number.isFinite(teer) ? teer : null, pnpStream: String(r.pnp_stream ?? ''),
-          company: String(r.company ?? ''), city: String(r.city ?? ''), province: String(r.province ?? ''),
-        }
+    const { rows } = await db.query(
+      SQL.PR_PLAN_JOBS, [jobId],
+    ).catch(() => ({ rows: [] as Record<string, unknown>[], rowCount: null }))
+    if (rows.length) {
+      const r = rows[0]
+      const teer = Number(r.teer)
+      tvJob = {
+        id: Number(r.id), title: String(r.title ?? ''), noc: String(r.noc ?? ''),
+        teer: Number.isFinite(teer) ? teer : null, pnpStream: String(r.pnp_stream ?? ''),
+        company: String(r.company ?? ''), city: String(r.city ?? ''), province: String(r.province ?? ''),
       }
     }
   }

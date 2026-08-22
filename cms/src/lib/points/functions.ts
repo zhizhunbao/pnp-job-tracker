@@ -19,6 +19,12 @@
  */
 
 import { fail, POINTS_ERR } from '../error'
+import { numOrNull, queryRowsOrEmpty, SQL, text } from '../db'
+import type { Db } from '../db'
+import { log, POINTS_LOG } from '../log'
+import { byRatioAsc } from './callbacks'
+import { passDifficultyRow, passProvInfoRow, toDrawFact, toScoreFactor } from './rows'
+import { CACHE } from './variables'
 import {
   AGE_AND_OLDER, AGE_LESS_THAN, AGE_MAX, AGE_MORE_THAN, AGE_ONE, AGE_RANGE, AT_LEAST, AUTO_FACTOR, CLB_ANY,
   CLB_ZERO, CRS_COMBO_TIER, CRS_EDU_SPECIAL, CRS_EDU_YEARS, CRS_STUDY_LONG_YEARS, CRS_STUDY_SHORT_YEARS,
@@ -34,6 +40,7 @@ import {
   MB_CLB, MB_CTX, MB_CTX_SEP, MB_EDU, MB_EDU_ONE_YEAR, MB_EDU_RE, MB_EDU_TWO_YEARS, MB_FACTOR, MB_JOIN, MB_NOTE,
   MB_RISK_RE, MB_WORK_LESS, MB_WORK_WORD, MONTHS_ANY, MONTHS_PER_YEAR, NON_ALPHA, NO_EXPERIENCE, PROGRAM_YEARS,
   SEP, SOURCE, STREAM_STOP, STREAM_WORD_MIN, SUB_TIER_VALUE, SYSTEM_TAIL, TICK_SEP, WORD, WORD_NUM, YEARS_ANY,
+  COMP_KEY, MONTH_NUM, PERIOD_SEP, PNP_PROV_CODES, RECENT_ROUNDS, SCORE_TTL_MS,
 } from './constants'
 import type {
   AdaptItemIn, AdaptOut, AgeRangeOut, AutoPickIn, BonusPointsIn, BonusPointsOut, ComboItemIn, ComboSubTierIn,
@@ -51,6 +58,11 @@ import type {
   ScorePart, ScoreProvinceIn, ScoreProvinceOut, ScoreSource, StreamMatchesIn, StreamMatchesOut, StreamWordsIn,
   StreamWordsOut, SumPointsIn, SumPointsOut, SystemIn, SystemOut, ThresholdRow, TierRow, TotalOfIn, TotalOfOut,
   WordGroup, WordGroupOut,
+  CompetitionExtrasIn, DifficultyDbRow, DifficultyRaw, DrawFact, DrawFacts, DrawRow, DrawRows,
+  FlowSeriesEntryJson, MaybeCompetition, MaybeCompFactor, MaybeDifficulty, MaybeFlow, MaybeNum,
+  ExtrasMap, MaybeProvInfo, MaybeSeries, NumCell, OverviewDraws, ProvCompetitions, ProvFlowYear, ProvInfoDbRows,
+  ProvInfoExtra, ProvInfoJson, ProvInfoRaw, ProvQuotaYears, ProvStockYear, ScoreFactors,
+  ScoreTablesOut, StrList,
 } from './types'
 
 // =========================================================================
@@ -2395,4 +2407,411 @@ export function estimateMbEoi(input: EstimateMbEoiIn): EstimateMbEoiOut {
     guideEffective: head.guideEffective, fetched: head.fetched, parts: parts,
     total: capped,
   }
+}
+
+// =========================================================================
+// 10. 决策页官方表包(取数 + 单件缓存;2026-08-22 自 lib/score 并入)
+// =========================================================================
+
+/**
+ * difficulty 原料 → json。经文本列绕行时是字符串,当场收(语言接缝);
+ * 解析不出留痕落 null,不静默。体内 `as DifficultyJson` 是跨边界断言:
+ * JSON.parse 的返回没有形状,形状声明在 types 的 `DifficultyJson`(ETL 写入方保证)。
+ *
+ * @param raw 库里那一格。
+ * @returns 解析好的 json;没有或坏的是 null。
+ */
+function difficultyJsonOf(raw: DifficultyRaw): MaybeDifficulty {
+  if (raw == null) {
+    return null
+  }
+  if (typeof raw !== 'string') {
+    return raw
+  }
+  try {
+    return JSON.parse(raw) as MaybeDifficulty
+  } catch (e) {
+    log({ tag: POINTS_LOG.tag, text: `${POINTS_LOG.difficultyParseFailed}${String(e)}` })
+    return null
+  }
+}
+
+/**
+ * provinces.info 原料 → json(两条路与解析口径同 `difficultyJsonOf`;
+ * 体内 `as` 的理由也同它)。
+ *
+ * @param raw 库里那一格。
+ * @returns 解析好的 json;没有或坏的是 null。
+ */
+function provInfoJsonOf(raw: ProvInfoRaw): MaybeProvInfo {
+  if (raw == null) {
+    return null
+  }
+  if (typeof raw !== 'string') {
+    return raw
+  }
+  try {
+    return JSON.parse(raw) as MaybeProvInfo
+  } catch (e) {
+    log({ tag: POINTS_LOG.tag, text: `${POINTS_LOG.provInfoParseFailed}${String(e)}` })
+    return null
+  }
+}
+
+/**
+ * 英文月份缩写 → 两位月数;认不出空串(口径期就不带月)。
+ *
+ * @param name 英文月份缩写(如 'May')。
+ * @returns 两位月数或空串。
+ */
+function monthNumOf(name: string): string {
+  const mm = MONTH_NUM[name]
+  if (mm == null) {
+    return ''
+  }
+  return mm
+}
+
+/**
+ * 上一年流量格:官方缺位或 0 都落 null —— 0 在这一格的历史含义是「没取到」
+ * (IRCC 月度表上一年缺位时源数据是 0),照旧不展示。
+ *
+ * @param x json 里的上一年格。
+ * @returns 上一年数;没有则 null。
+ */
+function prevYearOf(x: NumCell): MaybeNum {
+  const n = numOrNull(x)
+  if (n == null || n === 0) {
+    return null
+  }
+  return n
+}
+
+/**
+ * 数字格 → 数,缺位折 0(pool/quota/quotaYear 合计列,并入前就是 `|| 0` 的口径)。
+ *
+ * @param x json 里的数字格。
+ * @returns 数;缺位是 0。
+ */
+function numOrZero(x: NumCell): number {
+  const n = numOrNull(x)
+  if (n == null) {
+    return 0
+  }
+  return n
+}
+
+/**
+ * difficulty json 里名额竞争那个因子(key='comp')。
+ *
+ * @param d 解析好的 difficulty json。
+ * @returns 因子;没有则 null。
+ */
+function compFactorOf(d: MaybeDifficulty): MaybeCompFactor {
+  if (d == null || d.factors == null) {
+    return null
+  }
+  for (const f of d.factors) {
+    if (f != null && f.key === COMP_KEY) {
+      return f
+    }
+  }
+  return null
+}
+
+/**
+ * 一行难度 json → 名额竞争基础行(flow/series 由 `attachExtras` 再挂)。
+ * 比值缺位、或省码不在 13 省区名单(FED 是 EE 不是省提名)→ 不出行,纯事实零解释。
+ *
+ * @param r 难度一行。
+ * @returns 竞争行;不入选是 null。
+ */
+function competitionRowOf(r: DifficultyDbRow): MaybeCompetition {
+  const prov = text(r.province)
+  if (PNP_PROV_CODES.includes(prov) === false) {
+    return null
+  }
+  const d = difficultyJsonOf(r.difficulty)
+  const f = compFactorOf(d)
+  if (d == null || f == null) {
+    return null
+  }
+  const ratio = numOrNull(f.value)
+  if (ratio == null) {
+    return null
+  }
+  let generated = text(d.generated)
+  if (generated === '') {
+    generated = text(r.fetched)
+  }
+  return {
+    province: prov, ratio: ratio, tier: text(d.tier),
+    pool: numOrZero(f.pool), quota: numOrZero(f.quota),
+    poolStudy: numOrNull(f.poolStudy), poolWork: numOrNull(f.poolWork),
+    poolYear: text(f.asOf), quotaYear: numOrZero(f.quotaYear),
+    generated: generated, source: text(f.source),
+    series: null, flow: null,
+  }
+}
+
+/**
+ * studyFlow 格 → 新发学签流量(口径红线见 `ProvFlow`)。
+ *
+ * @param info 解析好的 info json。
+ * @returns 流量;缺年份或缺数是 null。
+ */
+function flowOf(info: ProvInfoJson): MaybeFlow {
+  const f = info.studyFlow
+  if (f == null) {
+    return null
+  }
+  const n = numOrNull(f.n)
+  const year = text(f.year)
+  if (year === '' || n == null) {
+    return null
+  }
+  const mm = monthNumOf(text(f.throughMonth))
+  let period = year
+  if (mm !== '') {
+    period = year + PERIOD_SEP + mm
+  }
+  return { period: period, n: n, prevYear: prevYearOf(f.prev) }
+}
+
+/**
+ * 流量进行年 complete=false → 口径期带「至几月」;整年空串。
+ *
+ * @param v 某年的流量格。
+ * @returns 两位月数或空串。
+ */
+function flowMonthOf(v: FlowSeriesEntryJson): string {
+  if (v.complete === false) {
+    return monthNumOf(text(v.throughMonth))
+  }
+  return ''
+}
+
+/**
+ * info json → 年份筛选序列(2026-08-14:存量近 3 年、流量近 5 年、名额 2024–2026)。
+ * 流量进行年带「至几月」;缺位一律 null,前端显「—」。三格全缺 = 没有序列。
+ *
+ * @param info 解析好的 info json。
+ * @returns 序列;三格全缺是 null。
+ */
+function seriesOf(info: ProvInfoJson): MaybeSeries {
+  if (info.trSeries == null && info.flowSeries == null && info.alloc == null) {
+    return null
+  }
+  const stocks: Record<string, ProvStockYear> = {}
+  if (info.trSeries != null) {
+    for (const [y, v] of Object.entries(info.trSeries)) {
+      if (v == null) {
+        continue
+      }
+      stocks[y] = { study: numOrNull(v.study), work: numOrNull(v.work), asOf: text(v.asOf) }
+    }
+  }
+  const flow: Record<string, ProvFlowYear> = {}
+  if (info.flowSeries != null) {
+    for (const [y, v] of Object.entries(info.flowSeries)) {
+      if (v == null) {
+        continue
+      }
+      const n = numOrNull(v.n)
+      if (n == null) {
+        continue
+      }
+      let period = y
+      const mm = flowMonthOf(v)
+      if (mm !== '') {
+        period = y + PERIOD_SEP + mm
+      }
+      flow[y] = { n: n, period: period }
+    }
+  }
+  let quota: ProvQuotaYears = { y2024: null, y2025: null, y2026: null }
+  if (info.alloc != null) {
+    quota = { y2024: numOrNull(info.alloc.y2024), y2025: numOrNull(info.alloc.y2025), y2026: numOrNull(info.alloc.y2026) }
+  }
+  return { stocks: stocks, flow: flow, quota: quota }
+}
+
+/**
+ * 单省 info json → flow/series 两格增补。
+ *
+ * @param info 解析好的 info json。
+ * @returns 两格增补。
+ */
+function infoExtraOf(info: ProvInfoJson): ProvInfoExtra {
+  return { flow: flowOf(info), series: seriesOf(info) }
+}
+
+/**
+ * provinces.info 全表 → 省码 → 增补(与名额竞争同一次取、共用同一份 TTL 缓存)。
+ *
+ * @param rows 省份维度行。
+ * @returns 省码 → 增补。
+ */
+function infoExtrasOf(rows: ProvInfoDbRows): ExtrasMap {
+  const out: ExtrasMap = {}
+  for (const r of rows) {
+    const code = text(r.code)
+    if (code === '') {
+      continue
+    }
+    const info = provInfoJsonOf(r.info)
+    if (info == null) {
+      continue
+    }
+    out[code] = infoExtraOf(info)
+  }
+  return out
+}
+
+/**
+ * 把 flow/series 挂回竞争行(没有增补的省保持 null)。
+ *
+ * @param input 竞争行与省码增补表。
+ * @returns 无(就地挂)。
+ */
+function attachExtras(input: CompetitionExtrasIn): void {
+  for (const row of input.rows) {
+    const extra = input.extras[row.province]
+    if (extra == null) {
+      continue
+    }
+    row.flow = extra.flow
+    row.series = extra.series
+  }
+}
+
+/**
+ * 抽选事实 → 展示行(`DrawRow`;invitations 不进 —— 它只在 overview 出)。
+ *
+ * @param f 抽选事实。
+ * @returns 展示行。
+ */
+function drawOf(f: DrawFact): DrawRow {
+  const row: DrawRow = { province: f.province, kind: f.kind, drawDate: f.drawDate, stream: f.stream, score: f.score }
+  if (f.streamZh !== '') {
+    row.streamZh = f.streamZh
+  }
+  return row
+}
+
+/**
+ * 每省最近一轮有分数线**或**邀请数的抽选(行序已按抽选日倒序;查不到的省不出行,
+ * 纯事实零解释;联邦轮不进,见 `PNP_PROV_CODES`)。
+ *
+ * @param facts 抽选事实(按抽选日倒序)。
+ * @returns SSR 事实区行。
+ */
+function overviewOf(facts: DrawFacts): OverviewDraws {
+  const seen = new Set<string>()
+  const out: OverviewDraws = []
+  for (const f of facts) {
+    if (f.province === '' || PNP_PROV_CODES.includes(f.province) === false || seen.has(f.province)) {
+      continue
+    }
+    if (f.score == null && f.invitations == null) {
+      continue
+    }
+    seen.add(f.province)
+    out.push({ province: f.province, drawDate: f.drawDate, stream: f.stream, score: f.score, invitations: f.invitations })
+  }
+  return out
+}
+
+/**
+ * 每省近 6 轮**有分数**的抽选(没分数的轮次不进 —— 拿它跟估分比就是编)。
+ * 2026-08-16:估分卡的空态诱饵,必须随 SSR 下发 —— 先前它取自 `/api/score-factors`,
+ * 而那个请求只在**答满全卷**后才发,于是「选了省却看不到线」(实撞)。线是免费硬事实。
+ *
+ * @param facts 抽选事实(按抽选日倒序)。
+ * @returns 每省近 6 轮有分数的展示行。
+ */
+function recentOf(facts: DrawFacts): DrawRows {
+  const perProv = new Map<string, number>()
+  const out: DrawRows = []
+  for (const f of facts) {
+    if (f.province === '' || f.score == null) {
+      continue
+    }
+    let n = perProv.get(f.province)
+    if (n == null) {
+      n = 0
+    }
+    if (n >= RECENT_ROUNDS) {
+      continue
+    }
+    perProv.set(f.province, n + 1)
+    out.push(drawOf(f))
+  }
+  return out
+}
+
+/**
+ * 已收录官方分值表的省清单(决策页据此把「本站没有表」的省单列出来)。
+ *
+ * @param factors 分值表全表。
+ * @returns 去重后的省码清单。
+ */
+function factorProvincesOf(factors: ScoreFactors): StrList {
+  const seen = new Set<string>()
+  for (const f of factors) {
+    if (f.province !== '') {
+      seen.add(f.province)
+    }
+  }
+  return Array.from(seen)
+}
+
+/**
+ * 真去库里取一版表包(缓存判断在 `getScoreTables`):四条查询并行 ——
+ * 抽选近 200 轮、分值表全表、各省难度、省份维度 info。
+ *
+ * @param db 能打 SQL 的东西(池由调用方注进来)。
+ * @returns 组装好的表包。
+ */
+async function loadScoreTables(db: Db): ScoreTablesOut {
+  const [facts, factors, diffRows, infoRows] = await Promise.all([
+    queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PNP_DRAWS, params: [], map: toDrawFact }),
+    queryRowsOrEmpty({ db: db, sql: SQL.PNP_SCORE_FACTORS, params: [], map: toScoreFactor }),
+    queryRowsOrEmpty({ db: db, sql: SQL.PROV_DIFFICULTY_FETCHED, params: [], map: passDifficultyRow }),
+    queryRowsOrEmpty({ db: db, sql: SQL.PROVINCES_INFO, params: [], map: passProvInfoRow }),
+  ])
+  const competition: ProvCompetitions = []
+  for (const r of diffRows) {
+    const row = competitionRowOf(r)
+    if (row != null) {
+      competition.push(row)
+    }
+  }
+  attachExtras({ rows: competition, extras: infoExtrasOf(infoRows) })
+  competition.sort(byRatioAsc)
+  return {
+    overview: overviewOf(facts), drawsRecent: recentOf(facts), competition: competition,
+    draws: facts.map(drawOf), factors: factors, factorProvinces: factorProvincesOf(factors),
+  }
+}
+
+/**
+ * 决策页首屏的官方表包(进程内单件缓存;2026-08-12 立,2026-08-22 自 lib/score 并入本域)。
+ * 抽选表(overview)留在 SSR:它是这页唯一的免费硬事实,要被爬到,不能等水合;
+ * 分值表由 `/api/score-factors` 按省懒取,不再随页面下发。
+ * topNocs 2026-08-22 起不进包 —— 那是 jobs 的题材,页面另取 `fetchTopNocsCached`(同 TTL)。
+ * 两张主表都空 = 多半是查挂了,不把一次抖动钉死 10 分钟。
+ *
+ * @param db 能打 SQL 的东西(池由调用方注进来)。
+ * @returns 表包(TTL 内直接给缓存那一份)。
+ */
+export async function getScoreTables(db: Db): ScoreTablesOut {
+  if (CACHE.scoreTables != null && Date.now() - CACHE.scoreTables.at <= SCORE_TTL_MS) {
+    return CACHE.scoreTables.data
+  }
+  const data = await loadScoreTables(db)
+  if (data.draws.length > 0 || data.factors.length > 0) {
+    CACHE.scoreTables = { at: Date.now(), data: data }
+  }
+  return data
 }

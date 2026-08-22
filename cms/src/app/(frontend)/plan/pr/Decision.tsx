@@ -32,10 +32,10 @@ import { gateOf, regionProvincesOf, uiOf } from '@/lib/pathways'
 import { pickName } from '@/lib/occName'
 import { track } from '@/lib/track'
 import type { DrawRow, ScoreFactor, SelfProfile } from '@/lib/points'
-import type { ProvCompetition } from '@/lib/score/server'
-import type { OccCompetitionRow } from '@/app/api/occ-competition/route'
+import type { ProvCompetition } from '@/lib/points'
+import type { OccCompetitionRow } from '@/lib/jobs'
 
-/** 形状与 `lib/scoreTables.ts` 的同名类型对齐(那边是产出方,这里是消费方) */
+/** 形状与 `lib/points` 的同名类型对齐(那边是产出方,这里是消费方) */
 export type OverviewDraw = { province: string; drawDate: string; stream: string; score: number | null; invitations: number | null }
 /** 热门职业一行(与 lib/jobs/queries.fetchTopNocs 的返回对齐) */
 export type TopNoc = {
