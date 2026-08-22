@@ -1,0 +1,91 @@
+{
+  "src/app/(frontend)/employers/Employers.tsx": {
+    "@eslint-community/eslint-comments/require-description": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/jobs/Advisor.tsx": {
+    "@eslint-community/eslint-comments/require-description": {
+      "count": 2
+    }
+  },
+  "src/app/(frontend)/jobs/AuthForm.tsx": {
+    "@eslint-community/eslint-comments/require-description": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/jobs/Jd.tsx": {
+    "@eslint-community/eslint-comments/require-description": {
+      "count": 4
+    }
+  },
+  "src/app/(frontend)/jobs/Jobs.tsx": {
+    "@eslint-community/eslint-comments/require-description": {
+      "count": 5
+    }
+  },
+  "src/app/(frontend)/jobs/PnpScoreCard.tsx": {
+    "@eslint-community/eslint-comments/require-description": {
+      "count": 4
+    }
+  },
+  "src/app/(frontend)/news/News.tsx": {
+    "@eslint-community/eslint-comments/require-description": {
+      "count": 2
+    }
+  },
+  "src/app/(frontend)/plan/pr/Decision.tsx": {
+    "@eslint-community/eslint-comments/require-description": {
+      "count": 3
+    }
+  },
+  "src/app/(frontend)/ui/Banner.tsx": {
+    "@eslint-community/eslint-comments/require-description": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/ui/Table.tsx": {
+    "@eslint-community/eslint-comments/require-description": {
+      "count": 1
+    }
+  },
+  "src/lib/consult/functions.ts": {
+    "local/no-db-vocab-in-functions": {
+      "count": 2
+    }
+  },
+  "src/lib/db/types.ts": {
+    "@eslint-community/eslint-comments/require-description": {
+      "count": 1
+    }
+  },
+  "src/lib/llm/types.ts": {
+    "local/no-optional": {
+      "count": 44
+    },
+    "local/no-undefined-type": {
+      "count": 1
+    }
+  },
+  "src/lib/points/types.ts": {
+    "local/no-optional": {
+      "count": 8
+    },
+    "local/no-undefined-type": {
+      "count": 1
+    }
+  },
+  "src/lib/ruling/functions.ts": {
+    "local/no-db-vocab-in-functions": {
+      "count": 2
+    }
+  },
+  "src/lib/ruling/types.ts": {
+    "local/no-optional": {
+      "count": 56
+    },
+    "local/no-undefined-type": {
+      "count": 6
+    }
+  }
+}

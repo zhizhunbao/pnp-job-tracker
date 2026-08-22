@@ -919,6 +919,7 @@ export type LoadEmployerPageOut = Promise<EmployerPage>
 /**
  * Next 服务端组件的 searchParams 形状(Next 定死:缺席参数是 undefined)。
  */
+// eslint-disable-next-line local/no-undefined-type -- 别人家的形状:Next 的 searchParams 缺席参数就是 undefined,这格只是照实描述
 export type SearchParams = Record<string, string | string[] | undefined>
 
 /**

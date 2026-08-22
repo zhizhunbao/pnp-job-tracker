@@ -1,4 +1,4 @@
-# 代码闸上云(Frank 2026-08-21「先写闸门」):tsc + eslint(error 级)+ warn 棘轮。
+# 代码闸上云(Frank 2026-08-21「先写闸门」):tsc + eslint(error 级 + eslint-suppressions.json 基线,2026-08-22 棒轮退役)。
 #
 # · 本地闸(pre-push 钩子)换台机器或 --no-verify 就绕过了,这里补最后一道;
 # · vitest 不在这儿跑:int 测试要连库(本地 dev 直连正式库的架构),CI 里放 DATABASE_URI
@@ -32,8 +32,5 @@ jobs:
       - name: tsc(零错)
         run: npx tsc --noEmit
 
-      - name: eslint(error 级拦截)
+      - name: eslint(error 级拦截;抑制基线自动生效,基线只紧不松 —— 修掉存量没 prune 会在这里红)
         run: npx eslint src tests --quiet
-
-      - name: warn 棘轮(九域只降不升)
-        run: node ../.githooks/lint-ratchet.mjs

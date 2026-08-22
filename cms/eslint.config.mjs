@@ -8,6 +8,9 @@ import fs from 'node:fs'
 import nodePath from 'node:path'
 import nextCoreWebVitals from 'eslint-config-next/core-web-vitals'
 import nextTypeScript from 'eslint-config-next/typescript'
+import eslintComments from '@eslint-community/eslint-plugin-eslint-comments'
+import jsdoc from 'eslint-plugin-jsdoc'
+import importX from 'eslint-plugin-import-x'
 
 // 带桶的模块(`lib/<名>/index.ts`)—— 下面那道边界闸认这几个,加新桶就加这里一行。
 const BARRELS = ['agent', 'consult', 'db', 'i18n', 'jobs', 'pathways', 'gauge', 'points', 'quiz', 'ruling', 'employers', 'plan', 'stats', 'quota', 'llm', 'resume']
@@ -1119,6 +1122,11 @@ const localRules = {
 const REFACTORED = [
   'src/lib/consult/**/*.ts', 'src/lib/db/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/gauge/**/*.ts',
   'src/lib/points/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error.ts', 'src/lib/log.ts',
+  // 2026-08-22 变异探针抓到的空洞:后进的六域(employers/jobs/pathways/plan/stats/resume)
+  // 一直没进这张写法闸名单 —— 只被 doc+写法 error 块(下面那两张枚举名单)盖着,
+  // no-optional/no-bang/no-nullish/no-ternary 一族对它们从没生效过。补齐,存量进抑制基线。
+  'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts',
+  'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/template.ts',
 ]
 
 const eslintConfig = [
@@ -1249,13 +1257,56 @@ const eslintConfig = [
     //    清完一个域升一个 error(下面那块)。
     files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts'],
     plugins: { local: localRules },
-    rules: { 'local/no-db-vocab-in-functions': 'warn' },
+    rules: { 'local/no-db-vocab-in-functions': 'error' },
   },
   {
     // ── 同一条闸:立规当天就达标的三个域直接 error ──────────────────────────────
     files: ['src/lib/stats/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/resume/**/*.ts'],
     plugins: { local: localRules },
     rules: { 'local/no-db-vocab-in-functions': 'error' },
+  },
+  {
+    // ── 现成闸接入 ①(2026-08-22 Frank「全都接进来」)· 特批牌纪律 ──────────────────
+    // require-description:eslint-disable 不带 `-- 理由` 直接报错 —— 「逐行特批必须写明为什么」
+    // 从自觉变成闸;no-unlimited-disable:禁不点名规则的整片 disable(「不设整层豁免」铁律)。
+    // 组件层历史欠账(react-hooks 那批没理由的 21 张)进 eslint-suppressions.json 基线,新增必须带理由。
+    files: ['src/**/*.ts', 'src/**/*.tsx', 'tests/**/*.ts'],
+    plugins: { '@eslint-community/eslint-comments': eslintComments },
+    rules: {
+      '@eslint-community/eslint-comments/require-description': 'error',
+      '@eslint-community/eslint-comments/no-unlimited-disable': 'error',
+    },
+  },
+  {
+    // ── 现成闸接入 ② · JSDoc 族(与自研 doc 闸并行跑;零违规验证同构后,自研那几条再议退役)──
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error.ts', 'src/lib/log.ts', 'src/lib/template.ts'],
+    plugins: { jsdoc },
+    rules: {
+      'jsdoc/multiline-blocks': ['error', { noSingleLineBlocks: true }],
+      'jsdoc/require-description': 'error',
+      'jsdoc/require-param': 'error',
+      'jsdoc/check-param-names': 'error',
+      'jsdoc/require-returns': 'error',
+    },
+  },
+  {
+    // ── 现成闸接入 ③ · 域内依赖环检测(callbacks→functions 那类环自动抓;桶别名走 ts 解析器)──
+    files: ['src/lib/**/*.ts'],
+    plugins: { 'import-x': importX },
+    settings: { 'import-x/resolver': { typescript: { project: './tsconfig.json' } } },
+    rules: { 'import-x/no-cycle': ['error', { maxDepth: 6 }] },
+  },
+  {
+    // ── 现成闸接入 ④ · 类型感知四条(projectService;lint 变慢的时长花在真 bug 上)────────
+    // no-unnecessary-condition 不在此列:要先全仓开 noUncheckedIndexedAccess(单开批,见记忆)。
+    files: ['src/lib/**/*.ts'],
+    languageOptions: { parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname } },
+    rules: {
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': 'error',
+      '@typescript-eslint/await-thenable': 'error',
+      '@typescript-eslint/switch-exhaustiveness-check': 'error',
+    },
   },
   {
     // ── 通道常量 = 通道数据本体(2026-08-22 Frank 拍板并入 constants):策略声明的键语义
@@ -1336,7 +1387,7 @@ const eslintConfig = [
     files: REFACTORED,
     ignores: ['src/lib/consult/**', 'src/lib/db/functions.ts'],
     plugins: { local: localRules },
-    rules: { 'local/no-ternary-branch': 'warn' },
+    rules: { 'local/no-ternary-branch': 'error' },
   },
   {
     // ── 禁 `?`:全站 warn = 整改清单(2026-08-21 Frank「禁止用 ?」,consult 先清零)──
@@ -1345,7 +1396,7 @@ const eslintConfig = [
     files: REFACTORED,
     ignores: ['src/lib/consult/**'],
     plugins: { local: localRules },
-    rules: { 'local/no-optional': 'warn' },
+    rules: { 'local/no-optional': 'error' },
   },
   {
     // ── 控制语句一律大括号 + 括号体必须换行(2026-08-21 Frank 三连:「if/else 都要大括号」
@@ -1369,13 +1420,13 @@ const eslintConfig = [
     // 比较基准同场拍板:默认 `===`,唯一例外 `== null` / `!= null`(一次命中 null 与 undefined)。
     files: REFACTORED,
     plugins: { local: localRules },
-    rules: { 'local/no-bang': 'warn' },
+    rules: { 'local/no-bang': 'error' },
   },
   {
     // ── 禁 `??` / `??=`:全站 warn = 整改清单(2026-08-21 Frank 实看 agent 后补禁)──
     files: REFACTORED,
     plugins: { local: localRules },
-    rules: { 'local/no-nullish': 'warn' },
+    rules: { 'local/no-nullish': 'error' },
   },
   {
     // ── 函数内注释:全站 warn = 整改清单(2026-08-21 Frank 实看 agent 的 2 条欠账后补)──
@@ -1383,7 +1434,7 @@ const eslintConfig = [
     files: REFACTORED,
     ignores: ['src/lib/ruling/**', 'src/lib/gauge/**', 'src/lib/points/**', 'src/lib/consult/**'],
     plugins: { local: localRules },
-    rules: { 'local/no-comment-in-function': 'warn' },
+    rules: { 'local/no-comment-in-function': 'error' },
   },
   {
     // ── 禁 undefined 出现在类型里:全站 warn = 整改清单(2026-08-21 Frank「都不允许」)──
@@ -1391,7 +1442,7 @@ const eslintConfig = [
     files: REFACTORED,
     ignores: ['src/lib/consult/**', 'src/lib/db/**'],
     plugins: { local: localRules },
-    rules: { 'local/no-undefined-type': 'warn' },
+    rules: { 'local/no-undefined-type': 'error' },
   },
   {
     // ── 边界收窄成语:全站 warn = 整改清单(2026-08-21,设计见 默认值架构 卷宗 §5)──
@@ -1399,7 +1450,7 @@ const eslintConfig = [
     files: REFACTORED,
     ignores: ['src/lib/consult/**'],
     plugins: { local: localRules },
-    rules: { 'local/no-inline-coercion': 'warn' },
+    rules: { 'local/no-inline-coercion': 'error' },
   },
   {
     // ── 测试是例外,而且只有测试(2026-08-18 拆 lib/chat 时立)──────────────────

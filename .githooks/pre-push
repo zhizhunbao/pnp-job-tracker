@@ -19,16 +19,13 @@ done
 
 cd cms || exit 1
 echo "[pre-push] eslint $(echo $files | wc -w) 个改动文件…"
-npx eslint --quiet $files
+# 2026-08-22 手写棒轮退役:warn 清单全部升 error,存量在 cms/eslint-suppressions.json 基线里
+# (ESLint 核心 bulk suppressions,v9.24+)。新违规直接拦;修掉存量后基线收紧跑 `npm run lint:prune`。
+# --pass-on-unpruned-suppressions:这里只 lint 改动文件,没被 lint 的文件的基线条目不算「没用上」。
+npx eslint --quiet --pass-on-unpruned-suppressions $files
 code=$?
 if [ $code -ne 0 ]; then
   echo "[pre-push] eslint 有 error,push 已拦 —— 修完再推(禁 --no-verify)。"
   exit $code
 fi
 echo "[pre-push] eslint 过闸。"
-
-# warn 棘轮:改动碰到九域时,warning 总数只许降不许升(基线 .githooks/lint-baseline.json)
-if echo "$files" | grep -qE 'src/lib/(consult|db|employers|jobs|pathways|plan|ruling|gauge|points|agent|llm)/|src/lib/(error|log|template)\.ts'; then
-  echo "[pre-push] warn 棘轮…"
-  node ../.githooks/lint-ratchet.mjs || exit 1
-fi

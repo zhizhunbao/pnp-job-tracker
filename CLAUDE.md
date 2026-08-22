@@ -314,7 +314,9 @@ pnp-job-tracker/
   - **唯一的豁免形态是逐行 `eslint-disable` + 理由**(外部库/模型定死的形状:pi 的事件、
     TypeBox 的 Optional、pg 的签名),不设整层豁免 —— 特批牌挂在那一行上,greppable。
   - 闸:`no-optional` / `no-undefined-type` / `no-unknown-type` / `no-explicit-any`,
-    迁完的域 error、其余全站 warn 当清单,清完一个域升一个(eslint.config.mjs)。
+    已重构域全部 error;存量在 `cms/eslint-suppressions.json` 基线里(ESLint 核心 bulk
+    suppressions,2026-08-22 替掉手写 warn 棒轮):新违规直接红,修掉存量跑 `npm run
+    lint:prune` 收紧基线,基线只紧不松(CI 盯着)。
 - **🔴 禁 `!x` 与后缀 `x!`,禁 `??` / `??=`**(2026-08-21 Frank 同日追加,闸 `no-bang` / `no-nullish`):
   - `!x` 把「x 是哪一种没有」折进一个布尔 —— 判空写 `== null`,空串 `=== ''`,
     空数组 `.length === 0`,布尔 `=== false`;`x!` 非空断言和 `as unknown as X` 同罪(把编译器闭嘴)。

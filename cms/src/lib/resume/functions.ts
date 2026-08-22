@@ -40,11 +40,21 @@ function shimPdfGlobals(): void {
           [this.a, this.b, this.c, this.d, this.e, this.f] = init
         }
       }
-      translate() { return this }
-      scale() { return this }
-      multiply() { return this }
-      inverse() { return this }
-      transformPoint(p: object) { return p }
+      translate() {
+        return this 
+      }
+      scale() {
+        return this 
+      }
+      multiply() {
+        return this 
+      }
+      inverse() {
+        return this 
+      }
+      transformPoint(p: object) {
+        return p 
+      }
     }
   }
   if (typeof g.ImageData === 'undefined') {

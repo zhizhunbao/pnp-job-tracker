@@ -1187,8 +1187,7 @@ function citeFacts(input: CiteFactsIn): CiteFactsOut {
  *
  * 回执越短,后面每一轮越快 —— 每一轮都要重发全部消息,而经隧道那个门每次调用约 1.7 秒固定开销。
  *
- * @param box 这一趟的收件箱。
- * @param facts 这一把工具产出的事实。
+ * @param input 这一趟的收件箱与这一把工具产出的事实。
  * @returns pi 认的工具回执。
  */
 function take(input: TakeIn): Reply {
