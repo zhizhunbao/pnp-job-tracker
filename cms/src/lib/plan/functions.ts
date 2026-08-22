@@ -11,7 +11,7 @@
  *  ③ **金额不做结论性差额。** 官方规费与中介报价是两个口径,并列摆出、**绝不相减**、
  *     绝不出 saved 字段 —— 两个数根本不在同一个口径上(中介费里含不含规费?我们不知道)。
  *  ④ **只出结构化 Plan,不生成自然语言。** 措辞归上层(渲染/LLM 复述),计算归这里;
- *     basis/why 的字都在 prompts.ts(算术的说明,不是成品文案)。
+ *     basis/why 的模板在 constants(字符串表;prompts 只放与 AI 交互的内容,2026-08-22 拍板)。
  * 纯函数、无 IO、前后端同构:同一份输入永远出同一份 Plan —— 可测、可复现、可对账。
  *
  * @author Frank
@@ -25,11 +25,10 @@ import {
 } from './callbacks'
 import {
   AV, BAND_A, BAND_Y, BAND_Z, CADENCE_FACTOR, CERT, CMP, DAYS_PER_MONTH, GROUP_SEP, KIND_NOTICE,
-  MS_PER_DAY, NOT_TIME_CONVERTIBLE, PROCESSING_KEY, PROV_FED, PROV_RE, SPACE, STEP, SUBJECT_EMPLOYER,
-  THIN_MIN, TV, UNIT_HEADS,
+  MS_PER_DAY, NA_TEXT, NOT_TIME_CONVERTIBLE, PLAN_NOTES, PLAN_TEXT, PROCESSING_KEY, PROV_FED, PROV_RE,
+  SPACE, STEP, SUBJECT_EMPLOYER, THIN_MIN, TV, UNIT_HEADS,
 } from './constants'
 import { fill } from '../template'
-import { NA_TEXT, PLAN_NOTES, PLAN_TEXT } from './prompts'
 import { day, passRow, toDrawEvent, toNewsEvent } from './rows'
 import type {
   Availability, CadenceGroup, ComparisonsIn, DaysIn, DecoratedRows, DrawRow, EeCadence, MaybeNum,

@@ -232,7 +232,7 @@ pnp-job-tracker/
 > 上面「文件名不许说构造」那条**只管顶层与共享叶子**。进了一个已经说清领域的目录,
 > 按构造分文件反而是最好定位的 —— 一个域最多这九个文件,新写的域照抄:
 >
-> `constants.ts` 常量 / `variables.ts` 运行时状态 / `prompts.ts` 给模型看的字
+> `constants.ts` 常量 / `variables.ts` 运行时状态 / `prompts.ts` **只放与 AI 交互的内容**(system、工具描述、注入模型的事实行;2026-08-22 Frank 拍板 —— 给渲染层的说明字符串归 constants)
 > / `schemas.ts` 运行时校验(TypeBox 等) / `types.ts` 类型 / `functions.ts` 只有函数
 > / `rows.ts` 行构造器(SQL 原始行 → 本域形状的 to* 映射,一条 SQL 一个;体内只许词汇表 +
 > 纯拼装,不许业务判断 —— 2026-08-21 Frank 添的第十个抽屉,db 域的 rows 装词汇表与 queryRows 本体)
