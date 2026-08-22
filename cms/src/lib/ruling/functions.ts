@@ -16,12 +16,13 @@ import { log, RULING_LOG } from '../log'
 import { headers } from 'next/headers'
 
 import { getDb } from '../db/server'
-import { count, numOrNull, SQL, text, textOrNull } from '../db'
+import { count, numOrNull, SQL, text } from '../db'
 import { getUser, isPro } from '../quota/server'
 import {
   byCostAsc, byCountDesc, byDrawDateDesc, byListRankThenMonths, byNumberAsc, byObstacleThenTier, byOpeningsDesc, byTierAsc,
 } from './callbacks'
 import { CACHE } from './variables'
+import { directoryRow, employerFactsOf, lmiaNocsCellOf, passRow, toDesignated, toDraw, toEeGrid, toOccupation, toRequirement, toScoreFactor, tripleJobOf } from './rows'
 import { evaluateRequirements, teerHit } from '../gauge'
 import { estimateCrs, estimateMbEoi, gridStreamOf, scoreProvince, streamMatches } from '../points'
 import { askLabels, gateLabels } from '../i18n'
@@ -29,8 +30,7 @@ import { fieldMatchExemptionOf, gateOf, PATHWAYS } from '../pathways'
 import {
   AB_LOCAL_EXP, AIP_PROVINCES, AIP_SOURCE, AMP, AND_WORD, APPLIES_OFFER, ASKABLE_FACTORS, AVAIL, BASIS,
   BASIS_MIN_YEARS, BLOCKED_BY, BLOCK_COST, CARD_SLOT, CARD_STATE, CASES, CASE_C01, CASE_ID, CASE_TIERS,
-  CLB_IN_LABEL, CLB_TARGET_DEFAULT, COMPARE_ROLE, CONDITION, CRS_GRID_LABEL, DATE_LEN, DATE_LEN_DAY,
-  DESIGNATION_MULTI, EDU, EDU_TO_MB, EMPLOYMENT_OFFER_STREAM, EMPTY_JSON, EMP_FACTOR, EMP_KEY, EMP_STATE, EMP_UNIT,
+  CLB_IN_LABEL, CLB_TARGET_DEFAULT, COMPARE_ROLE, CONDITION, CRS_GRID_LABEL, DESIGNATION_MULTI, EDU, EDU_TO_MB, EMPLOYMENT_OFFER_STREAM, EMPTY_JSON, EMP_FACTOR, EMP_KEY, EMP_STATE, EMP_UNIT,
   EVIDENCE_KIND, EXP_BASIS, FACTOR, FACTOR_ROW, FED, FIRST_OFFICIAL_LANGUAGE, FULL_TIME_IN_LABEL, GATE_ASK,
   GATE_KEYS, GATE_NEED, GATE_OF, GRID, GRID_AUTO_FACTORS, HTTP, INDEMAND, ITEM, JOB_ROW_RANK, KEY_PREFIX,
   KEY_SUFFIX_NOT_COLLECTED, KIND_RULE, LEVER, MB_ADAPT_EDU_YEARS, MB_EDU, MB_EDU_YEARS, MB_RISK_STUDY, MB_RISK_WORK,
@@ -52,11 +52,11 @@ import type {
   CompareRowsIn, CompareRowsOut, ConcludeBlockedIn, ConcludeBlockedOut, ConcludeIn, ConcludeNeedsInfoIn,
   ConcludeNeedsInfoOut, ConcludeOpenIn, ConcludeOpenOut, ConcludeOut, ConditionHoldsIn, ConditionHoldsOut,
   CountableMonthsIn, CountableMonthsOut, CrossProvinceRowsIn, CrossProvinceRowsOut, CrsProfile, CrsScoreIn,
-  CrsScoreOut, DesignatedEmployerRow, DesignatedRowIn, DesignatedRowOut, DirectoryRowIn, DirectoryRowOut, EduBand,
+  CrsScoreOut, DesignatedEmployerRow, DesignatedRowIn, DesignatedRowOut, EduBand,
   EeRow, EmpAcc, EmpDesignationRowIn, EmpDesignationRowOut, EmpNextStepRowIn, EmpNextStepRowOut,
   EmpPublicSectorRowIn, EmpPublicSectorRowOut, EmpReqOfIn, EmpReqOfOut, EmpRevenueRowIn, EmpRevenueRowOut,
   EmpRowsOfIn, EmpRowsOfOut, EmpStaffFactRowIn, EmpStaffFactRowOut, EmpThresholdRowsIn, EmpThresholdRowsOut,
-  EmployerFactsOfIn, EmployerFactsOfOut, EmployerNameSegmentsIn, EmployerNameSegmentsOut, EmployerRowsIn,
+  EmployerFactsOfOut, EmployerNameSegmentsIn, EmployerNameSegmentsOut, EmployerRowsIn,
   EmployerRowsOut, EmployerVerdictIn, EmployerVerdictItem, EmployerVerdictOut, EmptyRowsOut, EngineResult,
   EvOfDrawIn, EvOfDrawOut, EvOfFactorIn, EvOfFactorOut, EvOfOccIn, EvOfOccOut, EvOfReqIn, EvOfReqOut, EvaluateOneIn,
   EvaluateOneOut, Evidence, ExcludedRowIn, ExcludedRowOut, ExperienceGapsIn, ExperienceGapsOut, ExperienceReasonsIn,
@@ -76,8 +76,7 @@ import type {
   MergeOverridesIn, MergeOverridesOut, MonthsOfReqIn, MonthsOfReqOut, MostSpecificRowsIn, MostSpecificRowsOut,
   MyPathway, MyPathwaysIn, MyPathwaysOut, NameRow, NamedList, NamedListsIn, NamedListsOut, NlDesignatedReasonIn,
   NlDesignatedReasonOut, NormalizeEmployerNameIn, NormalizeEmployerNameOut, NotCollectedRowIn, NotCollectedRowOut,
-  LmiaNocsCellOfIn, LmiaNocsCellOfOut, NotCollectedVerdictIn, NotCollectedVerdictOut, NullResultOut, NullUserOut, ObstacleRankIn, PassRowIn, PassRowOut,
-  ObstacleRankOut, OccExcludedRowsIn, OccExcludedRowsOut, OccListNoneForIn, OccListNoneForOut, OccListedRowsIn,
+  NotCollectedVerdictIn, NotCollectedVerdictOut, NullResultOut, NullUserOut, ObstacleRankIn, ObstacleRankOut, OccExcludedRowsIn, OccExcludedRowsOut, OccListNoneForIn, OccListNoneForOut, OccListedRowsIn,
   OccListedRowsOut, OccNoListRowIn, OccNoListRowOut, OccTeerRowIn, OccTeerRowOut, OccupationListReasonsIn,
   OccupationListReasonsOut, OccupationRow, OccupationRowsIn, OccupationRowsOut, OfferOverrideIn, OfferOverrideOut,
   OneRowIn, OneRowOut, OopGradReasonIn, OopGradReasonOut, OpeningCount, OpsByProvinceIn, OpsByProvinceOut, OpsFacts,
@@ -94,31 +93,15 @@ import type {
   ReqsOfOut, ResidenceGapIn, ResidenceGapOut, ResidenceReasonIn, ResidenceReasonOut, RowsOfIn, RowsOfOut,
   RuleProfileOfIn, RuleProfileOfOut, ScoreAndRefLineIn, ScoreAndRefLineOut, ScoreGulfReasonIn, ScoreGulfReasonOut,
   ScoreOverride, ScoreRow, SelfEmpExcludedInIn, SelfEmpExcludedInOut, SessionOfIn, SessionOfOut, SessionUser,
-  StatusGateAnswerIn, StatusGateAnswerOut, SubjectOfIn, SubjectOfOut, SwallowOut, TargetProvincesOfIn, TargetProvincesOfOut,
+  StatusGateAnswerIn, StatusGateAnswerOut, SwallowOut, TargetProvincesOfIn, TargetProvincesOfOut,
   TeerDowngradeLeverIn, TeerDowngradeLeverOut, TeerScope, TeerScopeAcc, TeerScopesIn, TeerScopesOut, Tier,
   TierBasisOfIn, TierBasisOfOut, TierFullTimeOfIn, TierFullTimeOfOut, TierGap, TierOfMonthsIn, TierOfMonthsOut,
-  TierRowsIn, TierRowsOut, TimeRowIn, TimeRowOut, ToDesignatedOut, ToDrawOut, ToEeGridOut, ToOccupationOut,
-  ToRequirementOut, ToRowIn, ToScoreFactorOut, TotalExpMonthsIn, TotalExpMonthsOut, TrainableRow, TrainableRowsIn,
-  TrainableRowsOut, TripleCompanyOfIn, TripleCompanyOfOut, TripleCompareRole, TripleCompareRow, TripleJobOfIn,
-  TripleJobOfOut, TripleProfileOfIn, TripleProfileOfOut, TripleRow, TripleVerdictIn, TripleVerdictOut,
+  TierRowsIn, TierRowsOut, TimeRowIn, TimeRowOut, TotalExpMonthsIn, TotalExpMonthsOut, TrainableRow, TrainableRowsIn,
+  TrainableRowsOut, TripleCompanyOfIn, TripleCompanyOfOut, TripleCompareRole, TripleCompareRow, TripleProfileOfIn, TripleProfileOfOut, TripleRow, TripleVerdictIn, TripleVerdictOut,
   TripleWireOfIn, TripleWireOfOut, TripleWireRow, UniversalValueIn, UniversalValueOut, VerdictDrawRow, VerdictLever,
   VerdictProfile, VerdictRankIn, VerdictRankOut, VerdictReason, VerdictReasonsIn, VerdictReasonsOut, WagePointsIn,
   WagePointsOut, WireRowsIn, WireRowsOut, WorkPermitSoonIn, WorkPermitSoonOut, WorstGapIn, WorstGapOut,
 } from './types'
-
-/**
- * 门槛行的 subject 列 → 两个合法主语之一。不是 employer 的一律按 applicant 读 ——
- * 搞混这两个,句子本身就是假的(「你要开满一年」vs「雇主要开满一年」)。
- *
- * @param v 库里的 subject 列。
- * @returns applicant 或 employer。
- */
-function subjectOf(v: SubjectOfIn): SubjectOfOut {
-  if (text(v) === SUBJECT.employer) {
-    return SUBJECT.employer
-  }
-  return SUBJECT.applicant
-}
 
 /**
  * 查不动时把错吞掉 —— 提成具名函数,`.catch()` 里不写匿名回调。
@@ -142,103 +125,6 @@ async function rowsOf(input: RowsOfIn): RowsOfOut {
     return []
   }
   return res.rows
-}
-
-/**
- * 一行门槛条文 → `Requirement`。
- *
- * ⚠️ `applies_condition` 在 SQL 那头走 `to_jsonb` 取:列还没建时返回 NULL 而不是 42703,
- * 让 DDL 与 push 谁先谁后不至于变成线上开关。
- *
- * @param r 库里的一行。
- * @returns 判定引擎认的形状。
- */
-function toRequirement(r: ToRowIn): ToRequirementOut {
-  return {
-    province: text(r.province), program: text(r.program), stream: text(r.stream),
-    subject: subjectOf(r.subject),
-    factor: text(r.factor), op: text(r.op), value: numOrNull(r.value), valueText: text(r.value_text),
-    unit: text(r.unit), appliesTeer: text(r.applies_teer), appliesNoc: text(r.applies_noc),
-    excludesNoc: text(r.excludes_noc), appliesArea: text(r.applies_area),
-    appliesCondition: text(r.applies_condition), familySize: numOrNull(r.applies_family_size),
-    basis: text(r.basis), label: text(r.label), section: text(r.section), effective: text(r.effective),
-    url: text(r.url), pageUrl: text(r.page_url), fetched: text(r.fetched),
-  }
-}
-
-/**
- * 一行省提名职业清单 → `OccupationRow`。
- *
- * @param r 库里的一行。
- * @returns 判定核认的形状。
- */
-function toOccupation(r: ToRowIn): ToOccupationOut {
-  return {
-    province: text(r.province), stream: text(r.stream), label: text(r.label), program: text(r.program),
-    type: text(r.type), url: text(r.url), fetched: text(r.fetched), appliesTo: text(r.applies_to),
-    noc: text(r.noc), name: text(r.name), gtaRestricted: Boolean(r.gta_restricted),
-  }
-}
-
-/**
- * 一行抽选记录 → `VerdictDrawRow`。日期只取前十位(库里可能带时分秒)。
- *
- * @param r 库里的一行。
- * @returns 判定核认的形状。
- */
-function toDraw(r: ToRowIn): ToDrawOut {
-  return {
-    province: text(r.province), label: text(r.label), scale: textOrNull(r.scale),
-    url: text(r.url), fetched: text(r.fetched), kind: text(r.kind),
-    drawDate: text(r.draw_date).slice(0, DATE_LEN), stream: text(r.stream),
-    score: numOrNull(r.score), invitations: numOrNull(r.invitations), note: text(r.note),
-  }
-}
-
-/**
- * 一行省提名打分因素 → `ScoreFactor`。
- *
- * @param r 库里的一行。
- * @returns 评分域认的形状。
- */
-function toScoreFactor(r: ToRowIn): ToScoreFactorOut {
-  return {
-    province: text(r.province), system: text(r.system), factor: text(r.factor),
-    kind: text(r.kind) || FACTOR_ROW, seq: count(r.seq), label: text(r.label),
-    points: numOrNull(r.points), xorPrev: Boolean(r.xor_prev), rule: text(r.rule),
-    factorMax: numOrNull(r.factor_max), factorGroup: text(r.factor_group), groupMax: numOrNull(r.group_max),
-    passMark: numOrNull(r.pass_mark), maxTotal: numOrNull(r.max_total),
-    guideEffective: text(r.guide_effective), fetched: text(r.fetched), url: text(r.url),
-  }
-}
-
-/**
- * 一行 EE 分表 → `EeGridRow`。`points` 可空:官方的 n/a 原样留在 `pointsText`,不拿 0 冒充。
- *
- * @param r 库里的一行。
- * @returns 评分域认的形状。
- */
-function toEeGrid(r: ToRowIn): ToEeGridOut {
-  return {
-    grid: text(r.grid), section: text(r.section), sectionLabel: text(r.section_label),
-    kind: text(r.kind), tableNo: numOrNull(r.table_no), heading: text(r.heading), factor: text(r.factor),
-    criterion: text(r.criterion), columnLabel: text(r.column_label), points: numOrNull(r.points),
-    pointsText: text(r.points_text), seq: numOrNull(r.seq), url: text(r.url), fetched: text(r.fetched),
-  }
-}
-
-/**
- * 一行指定雇主名录 → `DesignatedEmployerRow`。
- *
- * @param r 库里的一行。
- * @returns 判定核认的形状。
- */
-function toDesignated(r: ToRowIn): ToDesignatedOut {
-  return {
-    name: text(r.name), province: text(r.province), location: text(r.location),
-    isTech: Boolean(r.is_tech), source: text(r.source), nocs: text(r.nocs),
-    url: text(r.url), fetched: text(r.fetched),
-  }
 }
 
 /**
@@ -4694,50 +4580,6 @@ function answerNum(input: AnswerNumIn): AnswerNumOut {
 }
 
 /**
- * 库里一行岗位 → 判定卡认的岗位。
- *
- * @param input 库里那一行。
- * @returns 判定卡认的岗位。
- */
-function tripleJobOf(input: TripleJobOfIn): TripleJobOfOut {
-  const r = input.row
-  return {
-    id: Number(r.id), title: text(r.title), noc: text(r.noc), nocName: text(r.noc_title),
-    teer: numOrNull(r.teer), province: text(r.province), city: text(r.city),
-    pnpEligible: Boolean(r.pnp_eligible), pnpStream: text(r.pnp_stream),
-    eeCategory: text(r.ee_category), aip: Boolean(r.aip),
-    employmentTerm: text(r.employment_term), employmentHours: text(r.employment_hours),
-  }
-}
-
-/**
- * 库里一行公司登记事实 → 雇主判定认的事实(纯映射;查不到那一行时由调用方给全 null 的空份,
- * `employerVerdict` 落 unknown,**不编**)。
- *
- * @param f 库里那一行。
- * @returns 雇主判定认的事实。
- */
-function employerFactsOf(f: EmployerFactsOfIn): EmployerFactsOfOut {
-  return {
-    foundedYear: numOrNull(f.founded_year),
-    registryStatus: text(f.registry_status),
-    staffEst: numOrNull(f.staff_est),
-    staffEstSrc: text(f.staff_est_src),
-    sector: text(f.sector),
-  }
-}
-
-/**
- * `COMPANY_LMIA_NOCS` 的行映射:整行只有一格,取成字符串(空值落空串,由 `lmiaNocsOf` 判空)。
- *
- * @param row 库里那一行。
- * @returns 那一格的文本。
- */
-function lmiaNocsCellOf(row: LmiaNocsCellOfIn): LmiaNocsCellOfOut {
-  return text(row.lmia_nocs)
-}
-
-/**
  * 库里那一格 `lmia_nocs` → 「这家给哪几个 NOC 批过多少次」。
  *
  * 只认五位 NOC 码且次数大于 0 的格子。列值坏或没回填一律 null ——
@@ -5153,15 +4995,6 @@ function designatedRow(input: DesignatedRowIn): DesignatedRowOut {
  * @param input 连接池、SQL 与绑定参数。
  * @returns 第一行;查不到或查挂了则 null。
  */
-/**
- * 原样通过的行映射 —— 只给「一行多用、还没配完整行形状」的查询当占位(见 `oneRow` 的 JSDoc)。
- *
- * @param row 原始行。
- * @returns 原样的那一行。
- */
-function passRow(row: PassRowIn): PassRowOut {
-  return row
-}
 
 async function oneRow<R>(input: OneRowIn<R>): OneRowOut<R> {
   try {
@@ -5914,29 +5747,6 @@ export async function getDesignatedEmployers(input: GetDesignatedEmployersIn): G
  */
 function nullResult(): NullResultOut {
   return null
-}
-
-/**
- * 库里一行名录 → 判定认的那一行。url/fetched 空串折 undefined:两格在形状里是「有才挂」,
- * JSON.stringify 丢 undefined 值。
- *
- * @param input 库里那一行。
- * @returns 判定认的那一行。
- */
-function directoryRow(input: DirectoryRowIn): DirectoryRowOut {
-  const d = input.row
-  const url = text(d.url) || undefined
-  const fetched = text(d.fetched).slice(0, DATE_LEN_DAY) || undefined
-  return {
-    name: text(d.name),
-    province: text(d.province),
-    location: text(d.location),
-    isTech: Boolean(d.is_tech),
-    source: text(d.source),
-    nocs: text(d.nocs),
-    url: url,
-    fetched: fetched,
-  }
 }
 
 /**
