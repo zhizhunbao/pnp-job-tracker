@@ -236,6 +236,9 @@ pnp-job-tracker/
 > / `schemas.ts` 运行时校验(TypeBox 等) / `types.ts` 类型 / `functions.ts` 只有函数
 > / `rows.ts` 行构造器(SQL 原始行 → 本域形状的 to* 映射,一条 SQL 一个;体内只许词汇表 +
 > 纯拼装,不许业务判断 —— 2026-08-21 Frank 添的第十个抽屉,db 域的 rows 装词汇表与 queryRows 本体)
+> (2026-08-22 Frank 追加:**值级清洗 —— json 解析、默认值、字段提取 —— 全在 rows 做完,
+> functions 的入参一律已有效**;functions 里剩下的判空只许是业务取舍(这行入不入选),
+> 不许是「这格可能是脏的」。判据机械化成闸 `no-db-vocab-in-functions`:db 词汇只许 rows.ts 用)
 > / `callbacks.ts` 签名归外部库管的函数 / `index.ts` + `server.ts` 两个门
 >
 > **只有这十个名字**,闸 `domain-file-names` 盯着(2026-08-20 Frank 立,08-21 添 rows)。

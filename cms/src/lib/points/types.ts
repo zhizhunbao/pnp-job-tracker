@@ -2513,6 +2513,92 @@ export type ProvInfoDbRow = {
 export type ProvInfoDbRows = ProvInfoDbRow[]
 
 /**
+ * 一行各省难度洗净后的事实 —— json 解析与拆格都在 rows 做完,functions 拿到即有效
+ * (2026-08-22 Frank:值级清洗不进 functions)。
+ */
+export type DifficultyFact = {
+  /**
+   * 两位省码。
+   */
+  province: string
+
+  /**
+   * 名额竞争比(comp 因子的值);官方缺位保 null —— 据此不出竞争行(判断在 functions)。
+   */
+  ratio: MaybeNum
+
+  /**
+   * 难度档;没有是空串。
+   */
+  tier: string
+
+  /**
+   * 临时居民存量合计;缺位折 0(ratio 为 null 的行不会上屏)。
+   */
+  pool: number
+
+  /**
+   * 当年省提名名额;缺位折 0(同上)。
+   */
+  quota: number
+
+  /**
+   * 存量拆分:学签;官方缺位保 null。
+   */
+  poolStudy: MaybeNum
+
+  /**
+   * 存量拆分:工签;官方缺位保 null。
+   */
+  poolWork: MaybeNum
+
+  /**
+   * 分子的统计年;没有是空串。
+   */
+  poolYear: string
+
+  /**
+   * 分母的名额年份;缺位折 0。
+   */
+  quotaYear: number
+
+  /**
+   * 本站算出这一行的日期(generated 缺位落 stats.fetched)。
+   */
+  generated: string
+
+  /**
+   * 数据源说明;没有是空串。
+   */
+  source: string
+}
+
+/**
+ * 难度事实的复数。
+ */
+export type DifficultyFacts = DifficultyFact[]
+
+/**
+ * 一行省份维度洗净后的事实 —— json 解析与 flow/series 拼装都在 rows 做完。
+ */
+export type ProvInfoFact = {
+  /**
+   * 两位省码。
+   */
+  code: string
+
+  /**
+   * flow/series 两格增补(没有的格是 null)。
+   */
+  extra: ProvInfoExtra
+}
+
+/**
+ * 省份维度事实的复数。
+ */
+export type ProvInfoFacts = ProvInfoFact[]
+
+/**
  * 单省的 flow/series 两格增补(info json 里读出来挂给竞争行)。
  */
 export type ProvInfoExtra = {

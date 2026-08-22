@@ -231,7 +231,7 @@ export function pageSlice(input: PageSliceIn): EmployerRows {
  * 指定雇主名录整表(6,680 行 × 7 短字段)带 TTL 缓存取数。
  * 过期先回旧值、后台单飞刷新,只有冷启动第一请求真等(改 `CACHE.designated` / `CACHE.designatedInflight`)。
  *
- * @param db 能打 SQL 的东西。
+ * @param db 数据库连接(池由调用方注进来)。
  * @returns 名录整表。
  */
 function fetchAllDesignated(db: Db): DesignatedRowsOut {
@@ -436,7 +436,7 @@ function factColsFragment(cols: StrList): string {
  * 在招担保雇主全量聚合(边缘的取数实现):探列 → 聚合 SQL + 雇主侧门槛并发 → 逐行判定并收窄。
  * 门槛省 = provs[0](表行没有单一地址,与既有 where 列同一取法)。
  *
- * @param db 能打 SQL 的东西。
+ * @param db 数据库连接(池由调用方注进来)。
  * @returns 全量担保行。
  */
 async function loadSponsors(db: Db): SponsorRowsOut {
@@ -471,7 +471,7 @@ async function loadSponsors(db: Db): SponsorRowsOut {
  * 在招担保雇主整表带 TTL 缓存取数(策略同名录:过期先回旧值、后台单飞刷新;
  * 改 `CACHE.sponsors` / `CACHE.sponsorsInflight`)。
  *
- * @param db 能打 SQL 的东西。
+ * @param db 数据库连接(池由调用方注进来)。
  * @returns 全量担保行(缓存行全站共享,消费端不许原地改)。
  */
 export function fetchSponsorEmployers(db: Db): SponsorRowsOut {
@@ -1073,7 +1073,7 @@ function wikidataHitOf(e: WdEntity): WikidataHitOrNull {
 /**
  * 职业目录(/occupations;照 lib/rankings 模式,零计算只 SELECT,挂了抛给页面)。
  *
- * @param db 能打 SQL 的东西。
+ * @param db 数据库连接(池由调用方注进来)。
  * @returns 全量目录行。
  */
 export function fetchOccupations(db: Db): OccRowsOut {

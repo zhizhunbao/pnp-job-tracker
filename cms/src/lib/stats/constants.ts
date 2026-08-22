@@ -1,0 +1,125 @@
+/**
+ * 统计域的死值:大类 slug 表、省码与省名、职业统计的探测列清单、pg 错误码。
+ *
+ * @author Frank
+ * @time 2026-08-22 14:00:00
+ */
+
+/**
+ * URL slug ↔ 本站大类(数据值);顺序即展示顺序。
+ * 单一来源 = etl/noc_buckets.py 的 BROADS,改那边要同步这里。
+ */
+export const BROAD_SLUGS: [string, string][] = [
+  ['management', '管理层'], ['business', '商务'], ['administration', '行政'], ['office', '文员'], ['finance', '金融'],
+  ['accounting', '会计'], ['legal', '法律'], ['it', 'IT'], ['engineering', '工程'], ['science', '科学'],
+  ['healthcare', '医疗'], ['education', '教育'], ['social-services', '社会服务'], ['arts', '艺术'], ['sport', '体育'],
+  ['sales', '销售'], ['retail', '零售'], ['food-service', '餐饮'], ['hospitality', '住宿'], ['personal-services', '生活服务'],
+  ['trades', '技工'], ['construction', '建筑'], ['transport', '运输'], ['logistics', '物流'], ['agriculture', '农业'],
+  ['mining', '矿业'], ['manufacturing', '制造'],
+]
+
+/**
+ * 统计页收录的 10 个省(展示序)。
+ */
+export const PROVS = ['ON', 'BC', 'AB', 'SK', 'MB', 'QC', 'NS', 'NB', 'NL', 'PE']
+
+/**
+ * 两位省码 → 英文省全名。
+ */
+export const PROV_NAME: Record<string, string> = {
+  /**
+   * 安大略。
+   */
+  ON: 'Ontario',
+
+  /**
+   * 卑诗。
+   */
+  BC: 'British Columbia',
+
+  /**
+   * 阿尔伯塔。
+   */
+  AB: 'Alberta',
+
+  /**
+   * 萨省。
+   */
+  SK: 'Saskatchewan',
+
+  /**
+   * 曼省。
+   */
+  MB: 'Manitoba',
+
+  /**
+   * 魁北克。
+   */
+  QC: 'Quebec',
+
+  /**
+   * 新斯科舍。
+   */
+  NS: 'Nova Scotia',
+
+  /**
+   * 新不伦瑞克。
+   */
+  NB: 'New Brunswick',
+
+  /**
+   * 纽芬兰与拉布拉多。
+   */
+  NL: 'Newfoundland and Labrador',
+
+  /**
+   * 爱德华王子岛。
+   */
+  PE: 'Prince Edward Island',
+}
+
+/**
+ * citation 来源要取的三个字段(岗量=Job Bank、薪资=ESDC、通道=省清单;复用 E4-04 field-sources 维度)。
+ */
+export const STAT_SOURCE_FIELDS = ['title', 'wageMedYr', 'pnp']
+
+/**
+ * 职业统计的**逐列探测**清单(E13-03 派生列,契约 v3;E14-02 担保率四列):
+ * DDL 分批落库,少一列不该把其余几列一起打回 null —— 探到哪列就 SELECT 哪列,
+ * 没探到的映射层给 null(前端「null=整块不渲」照旧;#280 同款容缺先例)。
+ * 30 天窗(爬坡期假涨)与下架列(排水期虚高)口径未稳,不在此列(同入 E13-04)。
+ */
+export const OCC_EXTRA_COLUMNS = [
+  'new14d', 'new14d_prev', 'mom14d', 'avg_days_open', 'pulse_score', 'pnp_provs', 'channel_tier',
+  'dead_provs', 'pnp_provs_cond', 'sponsor_pos_q', 'sponsor_pos_skilled_q', 'jvws_vac_q', 'sponsor_rate',
+]
+
+/**
+ * 探测出的附加列拼进 SELECT 的词头(', s.列名')。
+ */
+export const OCC_COL_PREFIX = ', s.'
+
+/**
+ * 城市统计榜取几行。
+ */
+export const CITY_LIMIT = 400
+
+/**
+ * stats 表大类汇总行的 mid 值(旧行/mid 列未落地时读取层回填它)。
+ */
+export const MID_ALL = 'all'
+
+/**
+ * top_cities 列缺位时的空 JSON 数组串(消费端按 JSON 解析,不能给空串)。
+ */
+export const EMPTY_TOP_CITIES = '[]'
+
+/**
+ * pg 「列不存在」错误码(mid 列 / 探测列未落地的部署时序降级判据,E12-06 教训)。
+ */
+export const PG_UNDEFINED_COLUMN = '42703'
+
+/**
+ * pg 「表不存在」错误码(stats_city / stats_occupation 未落地的降级判据)。
+ */
+export const PG_UNDEFINED_TABLE = '42P01'

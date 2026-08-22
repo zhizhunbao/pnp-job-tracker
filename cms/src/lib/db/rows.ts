@@ -85,6 +85,35 @@ export function show(x: number | null): string {
 }
 
 /**
+ * 🔴 json 格词汇:jsonb 驱动交**对象**照放,文本列绕行交**字符串**当场 JSON.parse,
+ * 解析不出**留痕落 null**(不静默、不编数)。`R` 由那一格在行形状(XxxDbRow)上声明的
+ * 对象形状推出,体内 `as R` 是跨边界断言:JSON.parse 的返回没有形状,形状由 ETL 写入方保证。
+ * 2026-08-22 Frank 两问「透传函数有什么意义」后定型:此前各域为 json 列各写一份
+ * 解析接缝 + 一只恒等 map 凑管道合同 —— 解析收成这一个词、就地进行构造器,恒等函数退役。
+ *
+ * @param x 库回的 json 格(对象 / JSON 串 / null)。
+ * @returns 解析好的对象;没有或坏的是 null。
+ */
+export function jsonOrNull<R>(x: R | string | null): R | null {
+  if (x == null) {
+    return null
+  }
+  if (typeof x !== 'string') {
+    return x
+  }
+  try {
+    return JSON.parse(x) as R
+  } catch (e) {
+    let why = String(e)
+    if (e instanceof Error) {
+      why = e.message
+    }
+    log({ tag: DB_LOG.tag, text: `${DB_LOG.jsonParseFailed}${why}` })
+    return null
+  }
+}
+
+/**
  * 跑一条语句并把**每一行**过一遍映射函数 —— 返回的数组就是干净的 `R[]`,
  * 每格的 null/空串在映射里(用词汇表)已经处理完,调用端直接用,不再各自兜底。
  *

@@ -1045,6 +1045,37 @@ const localRules = {
       },
     },
 
+    // 🔴 值级清洗不进 functions(2026-08-22 Frank:「functions 层,进来的所有参数都保证他是有效的」,
+    // 当天看 stats 的 tierOf 判空实拍)。判据取最机械的一条:db 词汇表(text/count/numOrNull/
+    // textOrNull/show/jsonOrNull)只许 rows.ts 用 —— functions.ts 里 import 这些词,
+    // 就是还有格没洗完就进了业务层;该格的清洗挪进那条查询的行构造器(to*)。
+    // functions 里剩下的判空只许是业务取舍(这行入不入选),不许是「这格可能是脏的」。
+    'no-db-vocab-in-functions': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          vocab:
+            '`{{ name }}` 是 db 词汇(值级清洗),只许 rows.ts 用 —— functions 的入参必须已经有效'
+            + '(2026-08-22 Frank 拍板);把这格的清洗挪进该查询的行构造器。',
+        },
+      },
+      create(context) {
+        if (!/functions\.ts$/.test(context.filename ?? '')) return {}
+        const WORDS = new Set(['text', 'count', 'numOrNull', 'textOrNull', 'show', 'jsonOrNull'])
+        return {
+          ImportDeclaration(node) {
+            if (!/(\.\.\/db|@\/lib\/db)$/.test(node.source.value)) return
+            for (const sp of node.specifiers) {
+              if (sp.type === 'ImportSpecifier' && WORDS.has(sp.imported.name)) {
+                context.report({ node: sp, messageId: 'vocab', data: { name: sp.imported.name } })
+              }
+            }
+          },
+        }
+      },
+    },
+
     'client-no-server-values': {
       meta: {
         type: 'problem',
@@ -1169,7 +1200,7 @@ const eslintConfig = [
     // 域定型一个就往这里加一个。
     // 域每定型一个就往这张名单里加一个。2026-08-19 当天 `agent` / `llm` / `error` / `log`
     // 的 91 条存量(多数是写成一行的 type,属性没各自的注释)已经逐条补完,所以它们也在里面。
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error.ts', 'src/lib/log.ts', 'src/lib/template.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error.ts', 'src/lib/log.ts', 'src/lib/template.ts'],
     plugins: { local: localRules },
     rules: {
       // 注释的形状
@@ -1208,9 +1239,23 @@ const eslintConfig = [
     //   · no-split-import:另外五个域还有 3 处(consult 2 / i18n 1);
     //   · no-import-in-leaf:constants 还有 3 处(consult 2 / agent 1),
     //     types 还有 16 处(consult 8 / agent 5 / llm 1 / pathways 1 / jobs 1)。
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/db/**/*.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/db/**/*.ts'],
     plugins: { local: localRules },
     rules: { 'local/domain-file-names': 'error', 'local/door-forward-only': 'error' },
+  },
+  {
+    // ── 值级清洗不进 functions:全部已重构域 warn = 整改清单(2026-08-22 Frank「把这个规则
+    //    加到闸门」)。ruling/employers/plan/consult 等的 functions 还在用词汇洗格,
+    //    清完一个域升一个 error(下面那块)。
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts'],
+    plugins: { local: localRules },
+    rules: { 'local/no-db-vocab-in-functions': 'warn' },
+  },
+  {
+    // ── 同一条闸:立规当天就达标的三个域直接 error ──────────────────────────────
+    files: ['src/lib/stats/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/jobs/**/*.ts'],
+    plugins: { local: localRules },
+    rules: { 'local/no-db-vocab-in-functions': 'error' },
   },
   {
     // ── 通道常量 = 通道数据本体(2026-08-22 Frank 拍板并入 constants):策略声明的键语义

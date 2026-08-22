@@ -100,14 +100,14 @@ async function loadHomeStats(pool: any, payload: any): Promise<Omit<HomeStats, '
     // SELECT *:title_zh 列(E13-06)可能还没加,点名会整块炸;* 容缺列,80 行无压力
     pool.query(SQL.NEWS_RECENT_80)
       .then((r: any) => r.rows as any[]).catch(() => []),
-    loadProvExtra().catch(() => ({})),      // 省卡:IRCC 学签/工签/PNP 拿到 PR + 难度档(与 /stats 索引页同源)
+    loadProvExtra(pool).catch(() => ({})),      // 省卡:IRCC 学签/工签/PNP 拿到 PR + 难度档(与 /stats 索引页同源)
     // B2+ 雇主橱窗:复用进程内聚合缓存(同进程同一份,零额外查询);挂了只丢橱窗
     fetchSponsorEmployers(pool).catch(() => []),
     occOptions(pool).catch(() => []),
     catOptions(payload).catch(() => []),
     // S1 两标量 + noc→分类映射的原料(单一真相源 lib/stats/server.loadOccStats,同 /api/market-stats);
     // 挂了只丢中间两卡与分类联动,页面照常
-    loadOccStats().catch(() => []),
+    loadOccStats(pool).catch(() => []),
   ])
   // S1 中间两卡:occ 全国行聚合成两个标量(逻辑原样自 Pulse.pulseCards 下沉;缺列/缺数=null,卡整张不出)
   const natOcc = occRows.filter((o) => (o.province || '').toLowerCase() === 'all')

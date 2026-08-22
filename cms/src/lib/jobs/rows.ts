@@ -7,11 +7,11 @@
  * @time 2026-08-22 00:05:00
  */
 
-import { count, numOrNull, text } from '../db'
-import { UNCAT } from './constants'
+import { count, jsonOrNull, numOrNull, text } from '../db'
+import { COMP_KEY, UNCAT } from './constants'
 import type {
   AlertHit, BroadNoc, CompanyJobRow, EeCatDim, EeOcc, FieldSource, JobDbRow, JobRow, MatchJob,
-  JsonRow, NewsSlim, NocCat, NocHit, OccDiffDbRow, OccOpen, PnpDraw, PnpOcc, PnpOccDim, ProvCount, RelatedJob, Row, SimilarEmployer, TimeLike,
+  JsonRow, MaybeNum, MaybeOccDiff, NewsSlim, NocCat, NocHit, OccDiffDbRow, OccDiffFact, OccOpen, PnpDraw, PnpOcc, PnpOccDim, ProvCount, RelatedJob, Row, SimilarEmployer, TimeLike,
   ToJobRowIn, TopNoc,
 } from './types'
 
@@ -425,12 +425,31 @@ export function toProvCount(r: Row): ProvCount {
 }
 
 /**
- * 一行各省难度(SQL.PROV_DIFFICULTY)原样透传 —— difficulty json 的解析是真会抛的
- * JSON.parse,归 `functions.ts` 的 `occDiffJsonOf`(照 `passRow` 先例)。
+ * 词汇:解析好的难度 json → key='comp' 因子的比值;没有保 null。
+ *
+ * @param d 解析好的难度 json。
+ * @returns 比值;没有则 null。
+ */
+function compRatioOf(d: MaybeOccDiff): MaybeNum {
+  if (d == null || d.factors == null) {
+    return null
+  }
+  for (const f of d.factors) {
+    if (f != null && f.key === COMP_KEY) {
+      return numOrNull(f.value)
+    }
+  }
+  return null
+}
+
+/**
+ * 一行各省难度(SQL.PROV_DIFFICULTY)→ 难度事实。json 解析(词汇 `jsonOrNull`)与
+ * comp 因子提取都在这里做完 —— functions 拿到的 ratio 即有效(2026-08-22 Frank:
+ * 值级清洗不进 functions)。
  *
  * @param r 原始行。
- * @returns 同一行。
+ * @returns 洗净的一行。
  */
-export function passOccDiffRow(r: OccDiffDbRow): OccDiffDbRow {
-  return r
+export function toOccDiffFact(r: OccDiffDbRow): OccDiffFact {
+  return { province: text(r.province), ratio: compRatioOf(jsonOrNull(r.difficulty)) }
 }

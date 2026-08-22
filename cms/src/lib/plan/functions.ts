@@ -569,7 +569,7 @@ function daysBetween(input: DaysIn): number {
  * 省级节奏按 省×项目 分组(kind=draw 且有日期);分组键 = label||stream(项目级)——
  * stream 每期写法不同(BC 各 ITA 因素/AB 各期描述),按它分组会碎成一期一卡。
  *
- * @param db 能打 SQL 的东西。
+ * @param db 数据库连接(池由调用方注进来)。
  * @returns 事件流、省级节奏与联邦 EE 距今。
  */
 // eslint-disable-next-line local/function-length -- 三路事件源合并与两套节奏统计共享同一批行

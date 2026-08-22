@@ -9,6 +9,7 @@
  * 列在 loadOccStats 里逐列探测后加,本路由是纯透传(单一真相源在 lib/stats/server.ts,别在这儿再写一份 SELECT)。
  * 列未落库时该列值为 null,前端整块不渲,本路由永不 500。
  */
+import { getDb } from '@/lib/db/server'
 import { loadChannelNocs, loadCityStats, loadOccStats, loadStats } from '@/lib/stats/server'
 
 export const dynamic = 'force-dynamic'
@@ -20,11 +21,12 @@ const TTL = 10 * 60_000
 export async function GET() {
   if (!cache || Date.now() - cache.ts >= TTL) {
     // 每份独立 .catch 空值(同 start 页红线):一张表缺只丢它自己,前端拿到空数组整节不渲,绝不 500
+    const db = await getDb()
     const [occ, city, rows, channels] = await Promise.all([
-      loadOccStats().catch(() => []),
-      loadCityStats().catch(() => []),
-      loadStats('', [], { withMid: true }).catch(() => []),   // withMid:图表下钻要中类行(与两页原口径一致)
-      loadChannelNocs().catch(() => ({ pnp: [], ee: [] })),
+      loadOccStats(db).catch(() => []),
+      loadCityStats(db).catch(() => []),
+      loadStats({ db, withMid: true }).catch(() => []),   // withMid:图表下钻要中类行(与两页原口径一致)
+      loadChannelNocs(db).catch(() => ({ pnp: [], ee: [] })),
     ])
     cache = { v: { occ, city, rows, channels }, ts: Date.now() }
   }

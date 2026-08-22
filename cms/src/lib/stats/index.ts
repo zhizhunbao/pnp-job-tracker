@@ -1,65 +1,17 @@
-// 统计域的桶 —— **客户端也安全的那半**:省/大类/城市三张表的形状与共享枚举。
-// 这个文件**自己就是门**(域里只有两个文件,再套一层纯转发的桶是白加一层)。
-//
-// 老坑 6:服务端组件从 'use client' 模块导入常量会拿到 undefined —— 共享常量必须住这种普通模块。
-//
-// 🔴 **取数那半在 `./server`**(要连库)。2026-08-19 这两个文件从 `app/(frontend)/stats/`
-//    收编进 lib:那个目录**根本没有 page.tsx**,却被六个路由跨目录引用 —— 它从来就是个库,
-//    只是住在路由树里(全仓仅有的两个数据访问错位文件之一,另一个是 employers/board.ts)。
-//    留在原地的 charts.tsx / ui.tsx 是组件,归后续的组件批次。
+/**
+ * 统计域的桶 —— **客户端也安全的那半**:大类 slug 表、省码省名、slug 映射与全部形状。
+ * 门里只有转发(闸 door-forward-only)。
+ *
+ * 老坑 6:服务端组件从 'use client' 模块导入常量会拿到 undefined —— 共享常量必须住这种普通模块。
+ * 2026-08-19 本域自 `app/(frontend)/stats/` 收编进 lib:那个目录根本没有 page.tsx,
+ * 却被六个路由跨目录引用 —— 它从来就是个库,只是住在路由树里。
+ * 2026-08-22 定型十件套:取数那半(要连库)在 `./server`,混一个桶会把连接池打进浏览器包
+ * (tsc 全绿、build 才炸,08-18 实撞)。
+ *
+ * @author Frank
+ * @time 2026-08-22 14:00:00
+ */
 
-export type StatRow = {
-  province: string; broad: string
-  mid: string   // NOC 中类;'all'=大类汇总行(旧行/列未落地时读取层回退 'all')
-  openJobs: number | null; new7d: number | null
-  medianWageAnnual: number | null; medianSalaryAnnual: number | null
-  namedJobs: number | null; streamLabels: string; aipJobs: number | null
-  topCities: string; fetched: string
-  difficulty?: string | Record<string, unknown> | null   // E12-07 难度指数(jsonb,仅 broad=all 行)
-}
-export type SrcRow = { field: string; publisher: string; url: string; fetched: string }
-// 批B(#133):省卡 IRCC 体量(provinces.info jsonb 透传,与 E8-12 省弹框同源同口径)
-type ProvVolNum = { n: number; year: string }
-export type ProvVol = { study?: ProvVolNum; tfwp?: ProvVolNum; imp?: ProvVolNum; pnpPr?: ProvVolNum }
-export type ProvExtra = { info: ProvVol | null; tier: string | null }
-
-// URL slug ↔ 本站大类(数据值);顺序即展示顺序。单一来源 = etl/noc_buckets.py 的 BROADS,改那边要同步这里。
-export const BROAD_SLUGS: [string, string][] = [
-  ['management', '管理层'], ['business', '商务'], ['administration', '行政'], ['office', '文员'], ['finance', '金融'],
-  ['accounting', '会计'], ['legal', '法律'], ['it', 'IT'], ['engineering', '工程'], ['science', '科学'],
-  ['healthcare', '医疗'], ['education', '教育'], ['social-services', '社会服务'], ['arts', '艺术'], ['sport', '体育'],
-  ['sales', '销售'], ['retail', '零售'], ['food-service', '餐饮'], ['hospitality', '住宿'], ['personal-services', '生活服务'],
-  ['trades', '技工'], ['construction', '建筑'], ['transport', '运输'], ['logistics', '物流'], ['agriculture', '农业'],
-  ['mining', '矿业'], ['manufacturing', '制造'],
-]
-export const slugToBroad = (s: string) => BROAD_SLUGS.find(([k]) => k === s)?.[1]
-export const PROVS = ['ON', 'BC', 'AB', 'SK', 'MB', 'QC', 'NS', 'NB', 'NL', 'PE']
-export const PROV_NAME: Record<string, string> = {
-  ON: 'Ontario', BC: 'British Columbia', AB: 'Alberta', SK: 'Saskatchewan', MB: 'Manitoba', QC: 'Quebec',
-  NS: 'Nova Scotia', NB: 'New Brunswick', NL: 'Newfoundland and Labrador', PE: 'Prince Edward Island',
-}
-
-// E8-14 统计主图的两个数据源(ETL 算好,前端零计算透传)
-// E13-03 派生指标(契约 v3,见 docs/implementation/E13-把脉首页/00_总设计与口径.md §3 修订 v3):
-//   上前端的只有 new14d / new14dPrev(分母)/ mom14d(14 天发帖环比)/ avgDaysOpen / pulseScore。
-//   **30 天口径与下架口径都不进这个类型**:
-//     · mom30d 的分母窗卡在抓取全国化爬坡期(全员假涨),有成熟度闸门,约 8-31 后才可信;
-//     · closed30d/net30d 的判死日≠真实下架日,7-25 起的排水期虚高。
-//   凡上前端的数字必须经得起「怎么算的」追问 —— 两者同入 E13-04。
-//   列可能还没落库:读取层逐列探测(见 lib.ts loadOccStats),缺列即 null,
-//   前端「null=该卡/该行/该榜整块不渲染」(绝不显示 0 或 NaN)。
-export type OccRow = { noc: string; province: string; titleZh: string; titleZhShort: string; titleEn: string; titleKo: string
-  teer: number | null; broad: string; mid: string; fine: string; openJobs: number | null; new7d: number | null
-  medianWageAnnual: number | null; wageLowAnnual: number | null; wageHighAnnual: number | null
-  medianSalaryAnnual: number | null; salaryN: number | null; namedJobs: number | null
-  new14d: number | null; new14dPrev: number | null; mom14d: number | null
-  avgDaysOpen: number | null; pulseScore: number | null
-  pnpProvs: string | null; channelTier: string | null
-  deadProvs: string | null     // E13-08 完全无路可走的省(''=处处有路;null=未落库或 TEER 未分类不判)
-  pnpProvsCond: string | null   // E13-09 先省内工作 6 个月可提名的省(pnpProvs 同步收紧为拿 offer 即可)
-  // E14-02 担保率(分子=担保侧观测量,分母=StatCan JVWS 官方空缺季度数):sponsorPosQ/sponsorPosSkilledQ
-  // 是分子的两种口径(全量/技能股),sponsorRate=分子/分母的 0-1 小数,>1 是已知方法论偏差(见 E14-01 §7.4
-  // 农业案例)非 bug。列可能还没落库,读取层同款逐列探测,缺列即 null。
-  sponsorPosQ: number | null; sponsorPosSkilledQ: number | null; jvwsVacQ: number | null; sponsorRate: number | null }
-export type CityRow = { city: string; cityZh: string; cityKo: string; province: string; openJobs: number | null; new7d: number | null
-  medianWageAnnual: number | null; medianSalaryAnnual: number | null; salaryN: number | null; namedJobs: number | null }
+export { BROAD_SLUGS, PROVS, PROV_NAME } from './constants'
+export { slugToBroad } from './functions'
+export type { ChannelNocs, CityRow, OccRow, ProvExtra, ProvVol, ProvVolNum, SrcRow, StatRow } from './types'

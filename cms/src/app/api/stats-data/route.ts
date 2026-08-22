@@ -5,6 +5,7 @@ import { headers } from 'next/headers'
 
 import { getUser, isPro } from '@/lib/quota/server'
 import { normalizeProfile } from '@/lib/jobs'
+import { getDb } from '@/lib/db/server'
 import { loadStats, loadStatSources } from '@/lib/stats/server'
 
 export const dynamic = 'force-dynamic'
@@ -13,6 +14,7 @@ export const runtime = 'nodejs'
 export async function GET() {
   const user = await getUser(await headers())
   const profile = normalizeProfile((user as any)?.profile)
-  const [rows, srcs] = await Promise.all([loadStats(), loadStatSources()])
+  const db = await getDb()
+  const [rows, srcs] = await Promise.all([loadStats({ db, withMid: false }), loadStatSources(db)])
   return Response.json({ rows, srcs, isPro: isPro(user), loggedIn: !!user, myNocs: profile.nocCodes })
 }

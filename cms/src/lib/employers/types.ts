@@ -651,7 +651,7 @@ export type CompanyResearch = {
  */
 export type CompanyRowIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 
@@ -686,7 +686,7 @@ export type CompanyRowOut = Promise<CompanyCacheRow | null>
  */
 export type InvestigateIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 
@@ -1637,7 +1637,7 @@ export type NocTitleMap = Record<string, NocTitle>
  */
 export type NocTitlesIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 

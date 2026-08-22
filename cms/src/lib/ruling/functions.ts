@@ -16,7 +16,7 @@ import { log, RULING_LOG } from '../log'
 import { headers } from 'next/headers'
 
 import { getDb } from '../db/server'
-import { count, numOrNull, queryRowsOrEmpty, SQL, text } from '../db'
+import { numOrNull, queryRowsOrEmpty, SQL, text } from '../db'
 import type { Db } from '../db'
 import { getUser, isPro } from '../quota/server'
 import {
@@ -5062,7 +5062,7 @@ export function casePages(): CasePagesOut {
  * 🔴 红线照旧:**一句结论都不是手写的**。排序、档位、理由、官方原句全部来自判定核,
  * 本层只负责挑出「他问的那条」、按档分组、把带训岗位数查出来当第一步。
  *
- * @param input 页面 slug、六张底表与能打 SQL 的东西。
+ * @param input 页面 slug、六张底表与数据库连接(池由调用方注进来)。
  * @returns 整份答案;没有事实层的 slug 则 null。
  */
 export async function caseAnswer(input: CaseAnswerIn): CaseAnswerOut {

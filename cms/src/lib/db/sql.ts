@@ -664,21 +664,29 @@ export const JD_UPDATE_BY_APPLY_URL = `UPDATE jobs SET description = $1 WHERE ap
 // 14. 统计页(/stats)
 // =========================================================================
 
-// ── stats/server.ts ──
+// ── stats/functions.ts ──
 
 /**
- * 统计页·中类粒度行。a1=WHERE 片段(省/大类筛选)。
+ * 统计页·中类粒度全量行(图表下钻用)。2026-08-22 stats 定型批:原 statsByMid/statsByBroad
+ * 两个模板函数的 WHERE 片段全站只用过两种取值,固化成下面三条常量,模板退役。
  */
-export const statsByMid = (a1: string) => `SELECT province, broad, mid, open_jobs, new7d, median_wage_annual, median_salary_annual,
+export const STATS_WITH_MID = `SELECT province, broad, mid, open_jobs, new7d, median_wage_annual, median_salary_annual,
               named_jobs, stream_labels, aip_jobs, top_cities, fetched, difficulty
-       FROM stats ${a1} ORDER BY open_jobs DESC NULLS LAST`
+       FROM stats ORDER BY open_jobs DESC NULLS LAST`
 
 /**
- * 统计页·大类粒度行。a1=WHERE 片段。
+ * 统计页·大类层行(mid='all' 或 NULL;省页/对比/表格口径,不重复计数)。
  */
-export const statsByBroad = (a1: string) => `SELECT province, broad, open_jobs, new7d, median_wage_annual, median_salary_annual,
+export const STATS_BROAD_ROWS = `SELECT province, broad, mid, open_jobs, new7d, median_wage_annual, median_salary_annual,
+              named_jobs, stream_labels, aip_jobs, top_cities, fetched, difficulty
+       FROM stats WHERE (mid = 'all' OR mid IS NULL) ORDER BY open_jobs DESC NULLS LAST`
+
+/**
+ * 统计页·mid 列未落地时的降级行(E12-06:无 mid/difficulty 列查询,读取层回填 mid='all')。
+ */
+export const STATS_FALLBACK_BROAD = `SELECT province, broad, open_jobs, new7d, median_wage_annual, median_salary_annual,
               named_jobs, stream_labels, aip_jobs, top_cities, fetched
-       FROM stats ${a1} ORDER BY open_jobs DESC NULLS LAST`
+       FROM stats ORDER BY open_jobs DESC NULLS LAST`
 
 
 /**
@@ -687,9 +695,17 @@ export const statsByBroad = (a1: string) => `SELECT province, broad, open_jobs, 
 export const STATS_OCC_HAS_COLUMNS = `SELECT column_name FROM information_schema.columns WHERE table_name = 'stats_occupation' AND column_name = ANY($1)`
 
 /**
- * 统计页·职业粒度行。a1/a2=按列存在性拼的列清单。
+ * 统计页·职业粒度行的固定列。韩文职业名从 noc_descriptions 借(485/489 有值);
+ * stats_occupation 不另存一列 —— 名字的家在那张表。英文用 title_en(NOC 官方名,引用依据),
+ * 中文用 title_zh_short(本站 04f/04g 译名)。
  */
-export const statsOccupations = (a1: string, a2: string) => `SELECT ${a1}${a2}
+export const STATS_OCC_BASE = `s.noc, s.province, s.title_zh, s.title_zh_short, s.title_en, d.title_ko, s.teer, s.broad, s.mid, s.fine,
+              s.open_jobs, s.new7d, s.median_wage_annual, s.wage_low_annual, s.wage_high_annual, s.median_salary_annual, s.salary_n, s.named_jobs`
+
+/**
+ * 统计页·职业粒度行。a1=逐列探测出的附加列(', s.列名' 串;探测理由见 stats 域 OCC_EXTRA_COLUMNS)。
+ */
+export const statsOccupations = (a1: string) => `SELECT ${STATS_OCC_BASE}${a1}
        FROM stats_occupation s LEFT JOIN noc_descriptions d ON d.noc = s.noc
        ORDER BY s.open_jobs DESC NULLS LAST`
 
@@ -699,6 +715,11 @@ export const statsOccupations = (a1: string, a2: string) => `SELECT ${a1}${a2}
 export const CITY_STATS = `SELECT s.city, s.province, c.name_zh, c.name_ko, s.open_jobs, s.new7d, s.median_wage_annual, s.median_salary_annual, s.salary_n, s.named_jobs
        FROM stats_city s LEFT JOIN cities c ON c.name = s.city AND c.province = s.province
        ORDER BY s.open_jobs DESC NULLS LAST LIMIT $1`
+
+/**
+ * citation 来源三行(field-sources 维度,$1=字段名数组;2026-08-22 stats 定型批自 payload.find 换来)。
+ */
+export const STAT_FIELD_SOURCES = `SELECT field, publisher, url, fetched FROM field_sources WHERE field = ANY($1) ORDER BY id LIMIT 10`
 
 /**
  * 省提名清单里出现过的职业码(去重,只吃 program=PNP)。

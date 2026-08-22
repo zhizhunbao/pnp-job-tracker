@@ -8,7 +8,7 @@
  * @time 2026-08-22 00:05:00
  */
 
-import { numOrNull, queryRows, queryRowsOrEmpty, SQL, text } from '../db'
+import { queryRows, queryRowsOrEmpty, SQL } from '../db'
 import type { Db } from '../db'
 import { JOBS_LOG, log } from '../log'
 import { fill } from '../template'
@@ -28,14 +28,14 @@ import {
   TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_WITH_MED, UNCAT, W,
   ACCEPT_HTML, DIGIT_PICK_RE, EMAIL_RE, LMIA_SOURCE, NO_LIST_PROVINCES, ORIGIN_TITLE_HEAD, PHONE_RE, PII_MASK,
   REDIRECT_FOLLOW, SPACE,
-  COMP_KEY, TOP_NOCS_TTL_MS,
+  TOP_NOCS_TTL_MS,
 } from './constants'
 import { REASON_EN, STATUS_EN } from './prompts'
 import {
   iso, mapEeCat, mapPnpOcc, passJobRow, passJsonRow, passRow, toAlertHit, toBroadNoc, toCompanyJob, toEeCatDim,
   toFieldSource, toJobRow, toMatchJob, toNewsSlim, toNocCat, toNocHit, toPnpDraw, toPnpOccDim, toRelated,
   toSimilar, toTopNoc,
-  passOccDiffRow, toOccOpen, toProvCount,
+  toOccDiffFact, toOccOpen, toProvCount,
 } from './rows'
 import { byEntryCountDesc, byHitValAsc, byHitValDesc, byLevelDesc } from './callbacks'
 import { CACHE } from './variables'
@@ -53,8 +53,8 @@ import type {
   PnpOccs, ProfileJsonOrNull, ProvOption, QuizFactsOut, QuizProvCount, QuizStreamCount, RankedHit, RelatedIn,
   RelatedOut, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut,
   SimilarIn, SimilarOut, SortValIn, SsrDimsOut, StrList, StripTitleIn, TopNocsIn, TopNocsOut, UrlHandle,
-  CountMap, CountOfIn, MaybeOccDiff, OccCompetitionIn, OccCompetitionOut, OccCompetitionRows,
-  OccDiffDbRows, OccDiffRaw, ProvCounts, RatioMap, RatioOfIn,
+  CountMap, CountOfIn, OccCompetitionIn, OccCompetitionOut, OccCompetitionRows,
+  OccDiffFacts, ProvCounts, RatioMap, RatioOfIn,
   WhereParam,
 } from './types'
 
@@ -858,7 +858,7 @@ function orderByClause(input: OrderByIn): string {
  * SSR 瘦身照旧(2026-07-17):cities/districts/designatedEmployers/nocDescriptions 四张大表
  * 首屏不带(约 1.25MB),客户端从 /api/dims 后台拉了再并进来。查挂回空(宁可留空)。
  *
- * @param db 能打 SQL 的东西。
+ * @param db 数据库连接(池由调用方注进来)。
  * @returns 首屏维度包。
  */
 export async function fetchSsrDims(db: Db): SsrDimsOut {
@@ -923,7 +923,7 @@ export function pnpOnly(rows: PnpOccs): PnpOccs {
  * 口径与职位板分叉(那条路滤 AIP 这条没滤)—— 现在滤在 SQL 的 WHERE 里,两条路口径合一。
  * 池由调用方注进来(拍板③:db 只在边缘 —— 原「getDb 单件」的理由被注入式取代)。
  *
- * @param db 能打 SQL 的东西。
+ * @param db 数据库连接(池由调用方注进来)。
  * @returns 维度包。
  */
 export async function loadMatchDims(db: Db): MatchDimsOut {
@@ -977,7 +977,7 @@ function pgCodeOf(e: CaughtError): string {
  * 2026-07-26 Frank「前端数据时间怎么没更新」:旧口径 max(last_seen) 在 Job Bank 当天没发岗时
  * 冻在昨晚,读起来像站死了。
  *
- * @param db 能打 SQL 的东西。
+ * @param db 数据库连接(池由调用方注进来)。
  * @returns 时刻(ISO)。
  */
 export async function checkedAt(db: Db): CheckedAtOut {
@@ -1334,7 +1334,7 @@ export async function fetchRelatedJobs(input: RelatedIn): RelatedOut {
  * 头条总数 + 差异化证言数字(60s 缓存,改 `CACHE.proof`;2026-08-03 生产僵死事故的保险)。
  * 口径与列表一致(#125 去重 + 排除下架);is_dup 未落地 42703 降级不去重。
  *
- * @param db 能打 SQL 的东西。
+ * @param db 数据库连接(池由调用方注进来)。
  * @returns 三连数。
  */
 export async function fetchTotalAndProof(db: Db): ProofOut {
@@ -2090,50 +2090,16 @@ export async function jobDescription(input: JdIn): JdOut {
 // =========================================================================
 
 /**
- * difficulty 原料 → json。经文本列绕行时是字符串,当场收(语言接缝);
- * 解析不出留痕落 null,不静默。体内 `as` 是跨边界断言:JSON.parse 的返回没有形状,
- * 形状声明在 types 的 `OccDiffJson`(ETL 写入方保证)。
+ * 各省难度事实 → 省码 → 名额竞争比(省级,与职业无关;比值缺位的省不出键)。
  *
- * @param raw 库里那一格。
- * @returns 解析好的 json;没有或坏的是 null。
+ * @param rows 难度事实行。
+ * @returns 省码 → 比值。
  */
-function occDiffJsonOf(raw: OccDiffRaw): MaybeOccDiff {
-  if (raw == null) {
-    return null
-  }
-  if (typeof raw !== 'string') {
-    return raw
-  }
-  try {
-    return JSON.parse(raw) as MaybeOccDiff
-  } catch (e) {
-    log({ tag: JOBS_LOG.tag, text: JOBS_LOG.difficultyParseFailed + String(e) })
-    return null
-  }
-}
-
-/**
- * 各省难度行 → 省码 → 名额竞争比(difficulty json 里 key='comp' 那格;省级,与职业无关)。
- *
- * @param rows 难度行。
- * @returns 省码 → 比值(缺位的省不出键)。
- */
-function ratioMapOf(rows: OccDiffDbRows): RatioMap {
+function ratioMapOf(rows: OccDiffFacts): RatioMap {
   const out: RatioMap = {}
   for (const r of rows) {
-    const d = occDiffJsonOf(r.difficulty)
-    if (d == null || d.factors == null) {
-      continue
-    }
-    for (const f of d.factors) {
-      if (f == null || f.key !== COMP_KEY) {
-        continue
-      }
-      const v = numOrNull(f.value)
-      if (v != null) {
-        out[text(r.province)] = v
-      }
-      break
+    if (r.ratio != null) {
+      out[r.province] = r.ratio
     }
   }
   return out
@@ -2210,7 +2176,7 @@ export async function fetchOccCompetition(input: OccCompetitionIn): OccCompetiti
   }
   const [occ, diff, aip, rcip, fcip] = await Promise.all([
     queryRowsOrEmpty({ db: input.db, sql: SQL.OCC_COMPETITION_BY_PROV, params: [nocs], map: toOccOpen }),
-    queryRowsOrEmpty({ db: input.db, sql: SQL.PROV_DIFFICULTY, params: [], map: passOccDiffRow }),
+    queryRowsOrEmpty({ db: input.db, sql: SQL.PROV_DIFFICULTY, params: [], map: toOccDiffFact }),
     queryRowsOrEmpty({ db: input.db, sql: SQL.PROV_OPEN_COUNT, params: [nocs], map: toProvCount }),
     queryRowsOrEmpty({ db: input.db, sql: SQL.PROV_OPEN_COUNT_NOC4, params: [nocs], map: toProvCount }),
     queryRowsOrEmpty({ db: input.db, sql: SQL.PROV_OPEN_COUNT_BROAD, params: [nocs], map: toProvCount }),

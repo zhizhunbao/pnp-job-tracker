@@ -176,7 +176,7 @@ export function aggregatePilotQuota(rows: PilotCommunityRows): PilotQuotaAggs {
  * 省 × 制度 聚合(profile-pathways 区域线行用)。表没建/查询失败 = [](queryRowsOrEmpty 留痕回空,
  * 上游按「没数据」处理,不编)。池由调用方注进来(拍板③:db 只在边缘)。
  *
- * @param db 能打 SQL 的东西。
+ * @param db 数据库连接(池由调用方注进来)。
  * @returns 聚合行;拉不到空数组。
  */
 export async function fetchPilotQuota(db: Db): PilotQuotaOut {

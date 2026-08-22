@@ -1758,7 +1758,7 @@ export type OrderByIn = {
  */
 export type ResolveQIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 
@@ -1833,7 +1833,7 @@ export type SsrDimsOut = Promise<SsrDims>
  */
 export type JobRowsIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 
@@ -1893,7 +1893,7 @@ export type JobRowsOut = Promise<{
  */
 export type JobsPageIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 
@@ -1963,7 +1963,7 @@ export type JobsPageOut = Promise<{
  */
 export type MatchPageIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 
@@ -2033,7 +2033,7 @@ export type MatchPageOut = Promise<{
  */
 export type JobByIdIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 
@@ -2108,7 +2108,7 @@ export type RelatedJob = {
  */
 export type RelatedIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 
@@ -2433,7 +2433,7 @@ export type CompanyOut = Promise<CompanyDetail | null>
  */
 export type CompanyBySlugIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 
@@ -2448,7 +2448,7 @@ export type CompanyBySlugIn = {
  */
 export type CompanyByJobIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 
@@ -2493,7 +2493,7 @@ export type SimilarEmployer = {
  */
 export type SimilarIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 
@@ -2558,7 +2558,7 @@ export type AlertHit = {
  */
 export type AlertHitsIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 
@@ -2672,7 +2672,7 @@ export type QuizFacts = {
  */
 export type QuizFactsIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 
@@ -2692,7 +2692,7 @@ export type QuizFactsOut = Promise<QuizFacts | null>
  */
 export type NocCountsIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 
@@ -2767,7 +2767,7 @@ export type TopNoc = {
  */
 export type TopNocsIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 
@@ -2837,7 +2837,7 @@ export type BroadNoc = {
  */
 export type BroadNocsIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 
@@ -2897,7 +2897,7 @@ export type NocHit = {
  */
 export type NocSearchIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 
@@ -2921,7 +2921,7 @@ export type NocSearchOut = Promise<NocHit[]>
  */
 export type JdIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 
@@ -3311,7 +3311,7 @@ export type NocRuleOut = {
  */
 export type CompanyWhereIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 
@@ -3331,7 +3331,7 @@ export type CompanyWhereIn = {
  */
 export type LmiaNocsIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 
@@ -3541,7 +3541,7 @@ export type FieldGroup = 'company' | 'immigration' | 'category' | 'location' | '
  */
 export type OccCompetitionIn = {
   /**
-   * 能打 SQL 的东西。
+   * 数据库连接(池由调用方注进来)。
    */
   db: Db
 
@@ -3715,6 +3715,26 @@ export type OccDiffDbRow = {
  * 难度行的复数。
  */
 export type OccDiffDbRows = OccDiffDbRow[]
+
+/**
+ * 一行各省难度洗净后的事实(json 解析与 comp 因子提取都在 rows 做完,functions 拿到即有效)。
+ */
+export type OccDiffFact = {
+  /**
+   * 两位省码。
+   */
+  province: string
+
+  /**
+   * 名额竞争比(difficulty json 里 key='comp' 因子的值);官方缺位保 null。
+   */
+  ratio: MaybeNum
+}
+
+/**
+ * 难度事实的复数。
+ */
+export type OccDiffFacts = OccDiffFact[]
 
 /**
  * 省码 → 名额竞争比。

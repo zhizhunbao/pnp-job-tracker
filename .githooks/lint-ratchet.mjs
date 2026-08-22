@@ -1,4 +1,4 @@
-// warn 棘轮(Frank 2026-08-21「先写闸门」):已重构十三域的 eslint warning 总数只许降不许升。
+// warn 棘轮(Frank 2026-08-21「先写闸门」):已重构十四域的 eslint warning 总数只许降不许升。
 //
 // · error 级早有闸(pre-push --quiet);这道管的是 warn —— 清账成果不许被新增 warn 悄悄回填;
 // · 基线存 .githooks/lint-baseline.json(随仓库走);现值低于基线时自动改写基线文件,
@@ -13,7 +13,7 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const BASELINE_PATH = join(HERE, 'lint-baseline.json')
 const CMS = join(HERE, '..', 'cms')
 const SCOPE = [
-  'src/lib/consult', 'src/lib/db', 'src/lib/employers', 'src/lib/jobs', 'src/lib/pathways', 'src/lib/plan', 'src/lib/ruling', 'src/lib/gauge', 'src/lib/points',
+  'src/lib/consult', 'src/lib/db', 'src/lib/employers', 'src/lib/jobs', 'src/lib/pathways', 'src/lib/plan', 'src/lib/stats', 'src/lib/ruling', 'src/lib/gauge', 'src/lib/points',
   'src/lib/agent', 'src/lib/llm', 'src/lib/error.ts', 'src/lib/log.ts', 'src/lib/template.ts',
 ]
 
@@ -39,12 +39,12 @@ for (const file of JSON.parse(raw)) {
 }
 
 if (warnings > baseline.warnings) {
-  console.error(`[ratchet] 十三域 warning ${warnings} 条,高于基线 ${baseline.warnings} —— 棘轮只许降不许升,把新增的清掉再推。`)
+  console.error(`[ratchet] 十四域 warning ${warnings} 条,高于基线 ${baseline.warnings} —— 棘轮只许降不许升,把新增的清掉再推。`)
   process.exit(1)
 }
 if (warnings < baseline.warnings) {
   writeFileSync(BASELINE_PATH, JSON.stringify({ scope: baseline.scope, warnings }, null, 2) + '\n')
-  console.log(`[ratchet] 十三域 warning ${warnings} 条,低于基线 ${baseline.warnings} —— 基线已收紧,记得 git add .githooks/lint-baseline.json。`)
+  console.log(`[ratchet] 十四域 warning ${warnings} 条,低于基线 ${baseline.warnings} —— 基线已收紧,记得 git add .githooks/lint-baseline.json。`)
   process.exit(0)
 }
-console.log(`[ratchet] 十三域 warning ${warnings} 条,与基线持平。`)
+console.log(`[ratchet] 十四域 warning ${warnings} 条,与基线持平。`)
