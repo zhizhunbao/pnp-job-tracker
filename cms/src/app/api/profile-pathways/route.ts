@@ -8,7 +8,9 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { fetchOccCompetition } from '@/lib/score/server'
-import { fetchPilotQuota, type PilotQuotaAgg } from '@/lib/pathways/server'
+import { fetchPilotQuota } from '@/lib/pathways/server'
+import type { PilotQuotaAgg } from '@/lib/pathways'
+import { getDb } from '@/lib/db/server'
 import type { VerdictProfile } from '@/lib/ruling'
 import { regionProvincesOf, uiOf } from '@/lib/pathways'
 import { pickOutside, rankRows, type RankCtx } from '@/lib/plan'
@@ -167,7 +169,7 @@ export async function POST(req: Request) {
     scoreRows, wage, areaI,
   }
 
-  const [data, comp, occRows, pilotQuota] = await Promise.all([getVerdictData(), competitionByProvince(), fetchOccCompetition(nocs.length ? nocs : [noc]), fetchPilotQuota()])
+  const [data, comp, occRows, pilotQuota] = await Promise.all([getVerdictData(), competitionByProvince(), fetchOccCompetition(nocs.length ? nocs : [noc]), fetchPilotQuota(await getDb())])
   // RCIP/FCIP 名额状态(2026-08-16 Frank「不是有比名额竞争更准确的数据吗」):社区官网 quote-anchored,
   // 按 省×制度 聚合,挂给区域线行 —— 展示层用语义单一的 remainingSum/perIntakeSum,不上混算的 quotaSum
   const quotaByKey = new Map<string, PilotQuotaAgg>(pilotQuota.map((q) => [`${q.province}|${q.type}`, q]))

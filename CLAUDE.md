@@ -323,7 +323,7 @@ pnp-job-tracker/
   闸 `curly: 'all'` + `brace-style: 1tbs, allowSingleLine: false`,都可 `--fix`。
   函数行数上限随之 60 → 75(同一逻辑机械涨行 ~25%,复杂度没变;判定日期在闸注释里)。
 - **🔴 写法闸只查已重构的域**(2026-08-21 Frank:「其他的地方先别动,以后都先只检查已重构过的代码」):
-  名单 = `eslint.config.mjs` 的 `REFACTORED` 常量(consult/db/employers/jobs/ruling/gauge/points/agent/llm/error/log)。
+  名单 = `eslint.config.mjs` 的 `REFACTORED` 常量(consult/db/employers/jobs/pathways/ruling/gauge/points/agent/llm/error/log)。
   未重构区域连 warn 清单都不出 —— 噪音会淹掉真该改的;域重构完一个,名单加一个。
 - **🔴 禁三目**(2026-08-21 Frank 拍板:三目是人手写代码省事用的,AI 写代码统一 if/else):
   流程位改 if/else;值位置提成具名小函数(那一格的概念顺带得一个名字,如 `subjectOf`);

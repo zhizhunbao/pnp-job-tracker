@@ -658,9 +658,9 @@ export type OutOfProvinceGrad = {
   fetched: string
 
   /**
-   * 生效日;官方没写则不挂。
+   * 生效日;官方没写则 null。
    */
-  effective?: string
+  effective: string | null
 }
 
 /**
@@ -693,29 +693,29 @@ export type PathwaySpec = {
   /**
    * 联邦三子通道各自的项目名;非联邦不填。
    */
-  reqPrograms?: string[]
+  reqPrograms: string[] | null
 
   /**
    * 门槛行的通道名要对上的正则。用**子串**不用字面相等:mart 里的通道名带 em dash,
    * 写死全串等于把编码问题埋进代码。
    */
-  reqStream?: RegExp
+  reqStream: RegExp | null
 
   /**
    * 抽选行的通道名。
    */
-  drawStream?: string
+  drawStream: string | null
 
   /**
    * 抽选行没有子通道字段时,准不准退回「全省最近一轮有分线的抽选」。
    * 只对 MB 开:MPNP 是单池单分制;BC 逐通道设线,退回全省线就是拿医疗线量木匠。
    */
-  drawFallbackProvinceWide?: boolean
+  drawFallbackProvinceWide: boolean
 
   /**
    * 有没有专用估分器;没有则走官方分值表。
    */
-  scorer?: 'CRS' | 'MB'
+  scorer: 'CRS' | 'MB' | null
 
   /**
    * 门槛认不认境外经验。
@@ -725,12 +725,12 @@ export type PathwaySpec = {
   /**
    * 「不在清单就不合格」的明文;多数通道没有。
    */
-  listRequired?: ListRequired
+  listRequired: ListRequired | null
 
   /**
    * 省外院校毕业生那一档;多数通道没有。
    */
-  outOfProvinceGrad?: OutOfProvinceGrad
+  outOfProvinceGrad: OutOfProvinceGrad | null
 }
 
 // =========================================================================
@@ -2409,9 +2409,9 @@ export type TierGap = {
  */
 export type GateAsks = {
   /**
-   * 这道闸问的是哪一样(如 workPermit);没写就是不细分。
+   * 这道闸问的是哪一样(如 workPermit);null = 不细分。
    */
-  asks?: string
+  asks: string | null
 }
 
 /**
@@ -3830,7 +3830,7 @@ export type StatusGateAnswerIn = {
   /**
    * 这道闸问的是哪一样(工签 / PGWP / 住在本省 / 受雇于本省);没标注则走旧口径。
    */
-  asks?: AskKind
+  asks: AskKind | null
 
   /**
    * 判定档案。
@@ -3860,7 +3860,7 @@ export type GateKeyOfIn = {
   /**
    * 这道闸问的是哪一样;没细分则 undefined。
    */
-  asks?: AskKind
+  asks: AskKind | null
 
   /**
    * 状态(met / gap / unknown / notCollected)。

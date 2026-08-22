@@ -1,11 +1,9 @@
-// 通道域**要连库的那半**(2026-08-19 立这扇门)。
-//
-// 分界不是风格,是运行环境:`./index.ts` 是 13 条通道的策略清单,纯数据、浏览器也能跑,
-// 而 `plan/pr/Decision.tsx` 是 `'use client'` 且取的是**值**(uiOf / regionProvincesOf)。
-// 本文件这半 import 了 payload,混进那个桶就会把连接池整条链拉进浏览器包 ——
-// tsc 全绿,build 才炸(lib/jobs 2026-08-18 实撞)。
-//
-// 眼下只有一件:RCIP/FCIP 的社区名额状态。
+/**
+ * 通道域的**服务端**门:RCIP/FCIP 社区名额状态取数 —— 签名收 `Db`,浏览器跑不了。
+ * 门里只有转发(闸 door-forward-only);连接池由调用方注进来(拍板③:db 只在边缘)。
+ *
+ * @author Frank
+ * @time 2026-08-22 01:00:16
+ */
 
-export { fetchPilotQuota } from './pilotQuota'
-export type { PilotQuotaAgg, PilotQuotaCommunityRow } from './pilotQuota'
+export { fetchPilotQuota } from './functions'

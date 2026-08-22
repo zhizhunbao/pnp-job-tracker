@@ -48,7 +48,7 @@ function pathVerdict(profile: VerdictProfile, data: VerdictData) {
 }
 
 import { gateOf, PATHWAYS, type PathwayStrategy } from '@/lib/pathways'
-import type { GateKey, StatusAsk } from '@/lib/gateManifest'
+import type { GateKey, StatusAsk } from '@/lib/pathways'
 import type { Requirement } from '@/lib/gauge'
 import type { EduKey, EeGridRow, ScoreFactor } from '@/lib/points'
 
@@ -70,11 +70,11 @@ const data: VerdictData = {
 const GATES: GateKey[] = ['offer', 'statusInCanada', 'credentialCanada', 'fieldMatch', 'french']
 
 /** 这条通道**声明为 required** 的闸(策略层的声明,不是算法的复制品) */
-const requiredGates = (key: string): GateKey[] => GATES.filter((g) => gateOf(key, g).need === 'required')
+const requiredGates = (key: string): GateKey[] => GATES.filter((g) => gateOf({ key: key, gate: g }).need === 'required')
 
 /** required 的 statusInCanada 闸问的是哪一种官方要求 */
 const askOf = (key: string): StatusAsk | null => {
-  const rule = gateOf(key, 'statusInCanada')
+  const rule = gateOf({ key: key, gate: 'statusInCanada' })
   return rule.need === 'required' ? (rule.asks ?? null) : null
 }
 
@@ -496,7 +496,7 @@ describe('铁律④:通道没声明的闸,它读的字段怎么摇都不许影�
     const bad: string[] = []
     for (const { p, list } of MATRIX) {
       for (const v of list) {
-        const declared = new Set(GATES.filter((g) => gateOf(v.key, g).need !== 'unknown'))
+        const declared = new Set(GATES.filter((g) => gateOf({ key: v.key, gate: g }).need !== 'unknown'))
         for (const g of ['fieldMatch', 'french'] as GateKey[]) {
           if (declared.has(g)) continue
           const st = gateStatesOf(v)[g]

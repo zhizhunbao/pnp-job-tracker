@@ -143,7 +143,7 @@ const NO_POINTS_GRID: Record<string, { url: string; quote: string; fetched: stri
 // 未标注(如 AIP/RCIP 这类本无此闸的 key)回落通用键
 const gateChip = (pathKey: string, blocked: string): string => {
   if (blocked !== 'statusInCanada') return blocked
-  const r = gateOf(pathKey, 'statusInCanada')
+  const r = gateOf({ key: pathKey, gate: 'statusInCanada' })
   return r.need === 'required' && r.asks ? `statusInCanada.${r.asks}` : 'statusInCanada'
 }
 

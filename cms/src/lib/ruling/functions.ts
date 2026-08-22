@@ -2516,7 +2516,7 @@ function oopGradReason(input: OopGradReasonIn): OopGradReasonOut {
     const ev: Evidence = {
       url: input.oop.url, fetched: input.oop.fetched, label: input.spec.stream,
     }
-    if (input.oop.effective !== '') {
+    if (input.oop.effective != null && input.oop.effective !== '') {
       ev.effective = input.oop.effective
     }
     let kind: VerdictReason['kind'] = REASON.needsInfo
@@ -2960,7 +2960,7 @@ function gateManifest(input: GateManifestIn): GateManifestOut {
   let manifestNoSource = false
   const answerOf = gateAnswers({ spec: input.spec, p: input.p })
   for (const g of GATE_KEYS) {
-    const rule = gateOf(input.spec.key, g)
+    const rule = gateOf({ key: input.spec.key, gate: g })
     if (rule.need === GATE_NEED.notRequired) {
       continue
     }
@@ -2986,7 +2986,7 @@ function gateManifest(input: GateManifestIn): GateManifestOut {
     }
     let asks = rule.asks
     if (g !== BLOCKED_BY.statusInCanada) {
-      asks = undefined
+      asks = null
     }
     let have: boolean | null
     if (asks != null) {
@@ -3147,10 +3147,10 @@ function workPermitSoon(input: WorkPermitSoonIn): boolean {
   if (input.profile.studyProvince == null || input.profile.studyProvince !== input.v.province) {
     return false
   }
-  if (gateOf(input.v.key, BLOCKED_BY.statusInCanada).need !== GATE_NEED.required) {
+  if (gateOf({ key: input.v.key, gate: BLOCKED_BY.statusInCanada }).need !== GATE_NEED.required) {
     return false
   }
-  return (gateOf(input.v.key, 'statusInCanada') as GateAsks).asks === GATE_ASK.workPermit
+  return (gateOf({ key: input.v.key, gate: 'statusInCanada' }) as GateAsks).asks === GATE_ASK.workPermit
 }
 
 /**

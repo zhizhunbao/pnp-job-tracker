@@ -357,6 +357,10 @@ const localRules = {
             const parent = full.slice(0, cut)
             const cut2 = Math.max(parent.lastIndexOf('/'), parent.lastIndexOf(String.fromCharCode(92)))
             if ((name === 'sql.ts' || name === 'pool.ts') && parent.slice(cut2 + 1) === 'db') return
+            // pathways 是**通道数据特区**(Frank 2026-08-15「每个通道一个策略文件吧?不要混在一起吧」):
+            // 一条通道一个文件 + registry.ts 注册表,文件名就是内容说明 —— 与 db/sql.ts 同一性质的
+            // 「内容命名」特批,只认这一个目录,别的域不许借。
+            if (parent.slice(cut2 + 1) === 'pathways' && /^[a-z][a-z0-9-]*\.ts$/.test(name)) return
             context.report({ node, messageId: 'bad', data: { allowed: ALLOWED.join(' / '), name } })
           },
         }
@@ -1167,7 +1171,7 @@ const eslintConfig = [
     // 域定型一个就往这里加一个。
     // 域每定型一个就往这张名单里加一个。2026-08-19 当天 `agent` / `llm` / `error` / `log`
     // 的 91 条存量(多数是写成一行的 type,属性没各自的注释)已经逐条补完,所以它们也在里面。
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error.ts', 'src/lib/log.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error.ts', 'src/lib/log.ts'],
     plugins: { local: localRules },
     rules: {
       // 注释的形状
@@ -1203,9 +1207,22 @@ const eslintConfig = [
     //   · no-split-import:另外五个域还有 3 处(consult 2 / i18n 1);
     //   · no-import-in-leaf:constants 还有 3 处(consult 2 / agent 1),
     //     types 还有 16 处(consult 8 / agent 5 / llm 1 / pathways 1 / jobs 1)。
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/db/**/*.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/db/**/*.ts'],
     plugins: { local: localRules },
     rules: { 'local/domain-file-names': 'error', 'local/door-forward-only': 'error' },
+  },
+  {
+    // ── 通道策略文件:引用与判读为主的数据文件(pathways 特区,见 domain-file-names 的注)──
+    // 字段键的语义已在 types.ts 的 PathwayStrategy/GateRule 上逐格注释,再逐键抄一遍 JSDoc
+    // 是两份真相;策略文件里的旁注(quote 判读、拆闸缘由)比模板化键注释信息量大得多,别逼着换。
+    files: ['src/lib/pathways/*.ts'],
+    ignores: [
+      'src/lib/pathways/types.ts', 'src/lib/pathways/constants.ts', 'src/lib/pathways/functions.ts',
+      'src/lib/pathways/rows.ts', 'src/lib/pathways/callbacks.ts', 'src/lib/pathways/index.ts',
+      'src/lib/pathways/server.ts',
+    ],
+    plugins: { local: localRules },
+    rules: { 'local/doc-every-member': 'off' },
   },
   {
     // ── `callbacks.ts`:签名由外部库/语言定死的那几个(2026-08-20 Frank 立)────────

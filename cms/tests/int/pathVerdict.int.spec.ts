@@ -643,6 +643,7 @@ describe('红线不变量', () => {
     for (const o of data.occupations) pool.add(`${o.stream} — ${o.noc} ${o.name}`)
     for (const spec of PATHWAYS) {
       for (const g of Object.values(spec.gates ?? {})) {
+        if (g == null) continue   // GateBook 五格显式,null = 本站未收录(2026-08-22 契约化后新增)
         const q = (g as { quote?: string }).quote
         if (q) pool.add(q.trim())
       }

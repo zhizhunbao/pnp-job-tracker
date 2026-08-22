@@ -6,7 +6,7 @@
 // ⚠️ 2026-08-18:`pw.*` 里**通道名那部分**(pathwayNames)还活着,但当年由 lib/pathwayRecipes.ts
 // 产出的那批(pw.steps/pw.gaps/pw.forYou 等,旧 /pathways 方案卡的正文)随该文件一起没了产出方。
 // 没删:动态拼键,tsc/eslint 都证不了死,要人对着页面核一遍再动。
-import type { GateKey, StatusAsk } from '@/lib/gateManifest'
+import type { GateKey, StatusAsk } from '@/lib/pathways'
 import type { PathwayKey } from '@/lib/pathways'
 import type { Domain, Lang } from './index'
 
