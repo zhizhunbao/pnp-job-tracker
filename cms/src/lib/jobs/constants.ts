@@ -1829,3 +1829,24 @@ export const NOC_JOIN_SLASH = '/'
  * 相关职位兜底探测列的后缀(levelHasJobs 的输出列名 = 级名 + 它)。
  */
 export const HAS_SUFFIX = '_has'
+
+/**
+ * 规则 6 的依据链(ESDC 公开数据集;fetched 空 —— 这是数据集页不是快照)。
+ * 它随 `MatchReason.source` 出现在 UI 的来源引用里,是数据不是提示词,所以住这儿不住 prompts。
+ */
+export const LMIA_SOURCE = {
+  /**
+   * 依据名。
+   */
+  label: 'ESDC TFWP positive LMIA employers',
+
+  /**
+   * 数据集页。
+   */
+  url: 'https://open.canada.ca/data/en/dataset/90fed587-1364-4f33-a9ee-208181dc0b97',
+
+  /**
+   * 无快照时刻。
+   */
+  fetched: '',
+} as const

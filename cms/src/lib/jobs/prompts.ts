@@ -237,23 +237,3 @@ export const STATUS_EN: Record<string, string> = {
    */
   pr: 'already a permanent resident or does not need immigration — goal is simply finding a good job; de-emphasize immigration angles',
 }
-
-/**
- * 规则 6 的依据链(ESDC 公开数据集;fetched 空 —— 这是数据集页不是快照)。
- */
-export const LMIA_SOURCE = {
-  /**
-   * 依据名。
-   */
-  label: 'ESDC TFWP positive LMIA employers',
-
-  /**
-   * 数据集页。
-   */
-  url: 'https://open.canada.ca/data/en/dataset/90fed587-1364-4f33-a9ee-208181dc0b97',
-
-  /**
-   * 无快照时刻。
-   */
-  fetched: '',
-} as const
