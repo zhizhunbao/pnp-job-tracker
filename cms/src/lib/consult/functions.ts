@@ -25,18 +25,18 @@ import { CONSULT_STEP, CONSULT_STEP_OCC } from '../i18n'
 import { cleanProvs } from '../location'
 import { chatError, CHAT_CODE } from '../error'
 import { CHAT_FN, CHAT_LOG, GATE_LOG, log } from '../log'
-import { count, numOrNull, queryRows, show, SQL, text } from '../db'
+import { queryRows, show, SQL, text } from '../db'
 import { evaluateRequirements } from '../gauge'
 import type { Requirement, RuleProfile } from '../gauge'
 import {
   API, AS_FOLLOWS, AUTH_HEADER, AVAIL, BASE, BEARER, BOLD_RE, CLAIMS_CAP, CLAIM_TEXT_CAP, CONTEXT_WINDOW,
-  CUT_MIN_RATIO, DATE_LEN, DRAW_LIMIT, EARLIER_HEAD, EN, EN_UNIT_WORDS, ERR_CAP, FAIL_MSG, FED, FIRST_LINE_CAP, FULL_STOP, GATE, GRID_CRS,
+  CUT_MIN_RATIO, DRAW_LIMIT, EARLIER_HEAD, EN, EN_UNIT_WORDS, ERR_CAP, FAIL_MSG, FED, FIRST_LINE_CAP, FULL_STOP, GATE, GRID_CRS,
   GUARD_RETRIES, HARD_GATES, HAS_DIGIT, HEADING_RE, HISTORY_CAP, HISTORY_TURNS, INELIGIBLE, INTERNAL_WORDS,
   JOBS_LINK, KEY, KIND_SUMMARY, LABEL, LANG_NAME, LEAD_MARK, LEN_CAP, LIKE_ANY, LIKE_ESCAPE, LIKE_SPECIAL,
   MARKUP, MAX_FACTS, MAX_QUERY, MAX_TOKENS, MESSAGE_UPDATE, MODEL_ID, NL, NOISE_RATIO, NOW_HEAD,
   NO_KEY_PLACEHOLDER, NUMBERED_RE, NUM_RE, OPENING_COLON, OPENING_SAMPLE, POINTS_LIMIT, PRIVATE_PROMISE,
   PROVIDER, PROVS, QC, REASON_EXCLUDED, ROLE, SAID, SAMPLING, SEARCH_LIMIT, SEP, SHEET_CAP, SPACE, STAR_RE,
-  STATUS_WORDS, SUBJECT, TABLE_RE, THOUSANDS_COMMA, TIER_TEXT, TIMEOUT_MS, TOOL_LABEL, TOOL_NAME,
+  STATUS_WORDS, TABLE_RE, THOUSANDS_COMMA, TIER_TEXT, TIMEOUT_MS, TOOL_LABEL, TOOL_NAME,
   TRAILING_ZEROS, UNIT, V1, WORD_EDGE,
 } from './constants'
 import {
@@ -45,6 +45,7 @@ import {
 } from './prompts'
 import { CLAIMS_PARAMS, CRS_PARAMS, NOC_PARAMS, NOC_PROVS_PARAMS, PERMIT_PARAMS, PROV_PARAMS, SEARCH_PARAMS, VERDICT_PARAMS } from './schemas'
 import { byOpenDesc } from './callbacks'
+import { toDrawRow, toEeRow, toNocHit, toOccFlat, toOpsRow, toPermitRow, toPointsRow, toProvOpen, toRequirement, toTitleTeer } from './rows'
 import type {
   AllowedNumbersIn, AllowedNumbersOut, AnswerLangIn, BeforeToolCallIn, BeforeToolCallOut, BlankCoverageIn,
   BlankCoverageOut, BlankIfNumberedIn, BlankIfNumberedOut, BoxForIn, BoxForOut, Candidate, CiteFactsIn,
@@ -64,13 +65,10 @@ import type {
   OnTimeoutOut, OpsFactsIn, OpsFactsOut, PermitFactsIn, PermitFactsOut, PermitRow, PointsFactsIn,
   PointsFactsOut, PointsRow, ProvOfIn, ProvOfOut, RetryNoteIn, RetryNoteOut, RunGatesIn, RunGatesOut, RunIn,
   OrNone2In, OrNoneIn, OrNoneOut, SayIn, SayOut, SearchOccupationsIn, SearchOccupationsOut, SegIn, SegOut, StatusFactIn, StatusFactOut,
-  StatusWordOfIn, StatusWordOfOut, StepIn, StepOut, SubjectOfIn, SubjectOfOut, EmptyAvailabilityIn,
+  StatusWordOfIn, StatusWordOfOut, StepIn, StepOut, EmptyAvailabilityIn,
   EmptyAvailabilityOut,
   SystemOfOut, TakeIn, TakeOut, TextOfIn, TextOfOut, ThresholdsFactsIn, ThresholdsFactsOut, ThresholdsRow,
-  TierTextIn, TierTextOut, ToDrawRowIn, ToDrawRowOut, ToEeRowIn, ToEeRowOut, ToNocHitIn, ToNocHitOut,
-  ToOccFlatIn, ToOccFlatOut, ToOpsRowIn, ToOpsRowOut, ToPermitRowIn, ToPermitRowOut, ToPointsRowIn,
-  ToPointsRowOut, ToProvOpenIn, ToProvOpenOut, ToRequirementIn, ToRequirementOut, ToTitleTeerIn,
-  ToTitleTeerOut, Tool, ToolArgs, VerdictFactsIn, VerdictFactsOut,
+  TierTextIn, TierTextOut, Tool, ToolArgs, VerdictFactsIn, VerdictFactsOut,
   VerdictProfileOfIn, VerdictProfileOfOut, ExecClaimsIn, ExecClaimsOut, ExecVerdictIn, ExecVerdictOut,
 } from './types'
 
@@ -139,157 +137,6 @@ function provOf(raw: ProvOfIn): ProvOfOut {
 // =========================================================================
 
 /**
- * 检索行 → 干净命中。每格空值决策见 `lib/db` 的词汇表(text/count/numOrNull),
- * 下面九个映射函数同此 —— 收窄只在映射里做一次,循环与调用处不再出现 `??`。
- *
- * @param r 原始行。
- * @returns 收窄后的命中。
- */
-function toNocHit(r: ToNocHitIn): ToNocHitOut {
-  return { noc: text(r.noc), title: text(r.title), n: count(r.n) }
-}
-
-/**
- * 各省在招数行 → `JobsRow`。open/named 是计数,0 无害。
- *
- * @param r 原始行。
- * @returns 收窄后的行。
- */
-function toProvOpen(r: ToProvOpenIn): ToProvOpenOut {
-  return { prov: text(r.province), open: count(r.open), named: count(r.named) }
-}
-
-/**
- * 职业名与 TEER 结果集 → 干净对象。零行在这儿显式落空(''/null),数组越界的 undefined
- * 不进契约。TEER 走 `numOrNull` —— 不知道就是 null,分 TEER 的条款那时一条都挑不出来,那是实话。
- *
- * @param rows 查询结果集,可能为空。
- * @returns 收窄后的对象。
- */
-function toTitleTeer(rows: ToTitleTeerIn): ToTitleTeerOut {
-  if (rows.length === 0) {
-    return { title: '', teer: null }
-  }
-  return { title: text(rows[0].title), teer: numOrNull(rows[0].teer) }
-}
-
-/**
- * 清单收录行 → 干净记录。通道名官方缺失时落到本站短名。
- *
- * @param r 原始行。
- * @returns 收窄后的记录。
- */
-function toOccFlat(r: ToOccFlatIn): ToOccFlatOut {
-  return {
-    province: text(r.province),
-    noc: text(r.noc),
-    stream: text(r.stream) || text(r.label),
-    type: text(r.type),
-    url: text(r.url),
-    fetched: text(r.fetched),
-  }
-}
-
-/**
- * 抽选行 → `DrawRow`。分数线与邀请数走 `numOrNull` —— 官方没公布就是 null,不折 0。
- *
- * @param r 原始行。
- * @returns 收窄后的行。
- */
-function toDrawRow(r: ToDrawRowIn): ToDrawRowOut {
-  return {
-    prov: text(r.province),
-    date: text(r.draw_date).slice(0, DATE_LEN),
-    stream: text(r.stream),
-    scale: text(r.scale),
-    score: numOrNull(r.score),
-    invitations: numOrNull(r.invitations),
-    evidence: { url: text(r.url), fetched: text(r.fetched) },
-  }
-}
-
-/**
- * 运营统计行 → `OpsRow`。value 走 `numOrNull` —— 隐私抑制值折成 0 就是替官方编数。
- *
- * @param r 原始行。
- * @returns 收窄后的行。
- */
-function toOpsRow(r: ToOpsRowIn): ToOpsRowOut {
-  return {
-    key: text(r.metric),
-    scope: text(r.scope),
-    label: text(r.label),
-    value: numOrNull(r.value),
-    valueText: text(r.value_text),
-    unit: text(r.unit),
-    asOf: text(r.as_of),
-    period: text(r.period),
-    evidence: { url: text(r.url), fetched: text(r.fetched) },
-  }
-}
-
-/**
- * EE 类别行 → `EeRow`。分数线与邀请数走 `numOrNull`。
- *
- * @param r 原始行。
- * @returns 收窄后的行。
- */
-function toEeRow(r: ToEeRowIn): ToEeRowOut {
-  return {
-    category: text(r.category),
-    label: text(r.label),
-    drawCrs: numOrNull(r.draw_crs),
-    drawDate: text(r.draw_date).slice(0, DATE_LEN),
-    drawSize: numOrNull(r.draw_size),
-    evidence: { url: text(r.url), fetched: text(r.fetched) },
-  }
-}
-
-/**
- * 联邦规则行 → `PermitRow`。value 走 `numOrNull`(`rule` 行本来就没有阈值);
- * 出处页 url 缺失时落到所属页面 page_url。
- *
- * @param r 原始行。
- * @returns 收窄后的行。
- */
-function toPermitRow(r: ToPermitRowIn): ToPermitRowOut {
-  return {
-    program: text(r.program),
-    stream: text(r.stream),
-    factor: text(r.factor),
-    op: text(r.op),
-    value: numOrNull(r.value),
-    valueText: text(r.value_text),
-    unit: text(r.unit),
-    basis: text(r.basis),
-    label: text(r.label),
-    evidence: { url: text(r.url) || text(r.page_url), fetched: text(r.fetched) },
-  }
-}
-
-/**
- * 计分表行 → `PointsRow`。points 走 `numOrNull` —— 官方写 n/a 就是 null,原文在 pointsText。
- *
- * @param r 原始行。
- * @returns 收窄后的行。
- */
-function toPointsRow(r: ToPointsRowIn): ToPointsRowOut {
-  return {
-    grid: text(r.grid),
-    section: text(r.section),
-    sectionLabel: text(r.section_label),
-    kind: text(r.kind),
-    heading: text(r.heading),
-    factor: text(r.factor),
-    criterion: text(r.criterion),
-    columnLabel: text(r.column_label),
-    points: numOrNull(r.points),
-    pointsText: text(r.points_text),
-    evidence: { url: text(r.url), fetched: text(r.fetched) },
-  }
-}
-
-/**
  * 查职业候选:库里**真有在招岗位**的 NOC。
  *
  * 榜首 `NOISE_RATIO` 以下的当噪音丢掉 —— 那些是被官方要求文本连带捞出来的,
@@ -300,8 +147,7 @@ function toPointsRow(r: ToPointsRowIn): ToPointsRowOut {
  */
 async function searchOccupations(input: SearchOccupationsIn): SearchOccupationsOut {
   const like = `${LIKE_ANY}${input.query.replace(LIKE_SPECIAL, LIKE_ESCAPE)}${LIKE_ANY}`
-  const { rows } = await input.db.query(SQL.NOC_LIST_WITH_TITLES, [like, SEARCH_LIMIT])
-  const all = rows.map(toNocHit)
+  const all = await queryRows({ db: input.db, sql: SQL.NOC_LIST_WITH_TITLES, params: [like, SEARCH_LIMIT], map: toNocHit })
   let top = 0
   if (all.length) {
     top = all[0].n
@@ -325,15 +171,15 @@ async function searchOccupations(input: SearchOccupationsIn): SearchOccupationsO
  * @returns 各省一行,按在招数从多到少。
  */
 async function lookupJobs(input: LookupJobsIn): LookupJobsOut {
-  const [counts, title] = await Promise.all([
-    input.db.query(SQL.PROV_OPEN_BY_PROV, [input.noc]),
+  const [countRows, title] = await Promise.all([
+    queryRows({ db: input.db, sql: SQL.PROV_OPEN_BY_PROV, params: [input.noc], map: toProvOpen }),
     input.db.query(SQL.NOC_TITLE_TEER, [input.noc]),
   ])
   const byProv = new Map<string, JobsRow>()
   for (const prov of PROVS) {
     byProv.set(prov, { prov, open: 0, named: 0 })
   }
-  for (const r of counts.rows.map(toProvOpen)) {
+  for (const r of countRows) {
     if (byProv.has(r.prov)) {
       byProv.set(r.prov, r)
     }
@@ -354,9 +200,9 @@ async function lookupJobs(input: LookupJobsIn): LookupJobsOut {
  * @returns 各省一行,九个省一个不少。
  */
 async function lookupCoverage(input: LookupCoverageIn): LookupCoverageOut {
-  const { rows } = await input.db.query(SQL.PNP_OCCUPATIONS_FLAT, [])
+  const occRows = await queryRows({ db: input.db, sql: SQL.PNP_OCCUPATIONS_FLAT, params: [], map: toOccFlat })
   const byProv = new Map<string, CoverageRow>()
-  for (const r of rows.map(toOccFlat)) {
+  for (const r of occRows) {
     if (PROVS.has(r.province) === false || r.noc !== input.noc) {
       continue
     }
@@ -395,55 +241,6 @@ function blankCoverage(prov: BlankCoverageIn): BlankCoverageOut {
 }
 
 /**
- * 门槛行的 subject 列 → 两个合法值之一。不是 employer 的一律按 applicant 读 ——
- * 这两个搞混,句子本身就是假的(「你要开满一年」vs「雇主要开满一年」)。
- *
- * @param raw 库里的 subject 列。
- * @returns applicant 或 employer。
- */
-function subjectOf(raw: SubjectOfIn): SubjectOfOut {
-  if (text(raw) === SUBJECT.employer) {
-    return SUBJECT.employer
-  }
-  return SUBJECT.applicant
-}
-
-/**
- * 库里一行门槛条文 → `lib/rules` 认的 `Requirement`。
- *
- * 只做列名映射,一个判定都不做 —— 判定是 `evaluateRequirements` 的活,本域不重写它。
- *
- * @param row 库里的一行。
- * @returns 判定引擎认的形状。
- */
-function toRequirement(row: ToRequirementIn): ToRequirementOut {
-  return {
-    province: text(row.province),
-    program: text(row.program),
-    stream: text(row.stream),
-    subject: subjectOf(row.subject),
-    factor: text(row.factor),
-    op: text(row.op),
-    value: numOrNull(row.value),
-    valueText: text(row.value_text),
-    unit: text(row.unit),
-    appliesTeer: text(row.applies_teer),
-    appliesNoc: text(row.applies_noc),
-    excludesNoc: text(row.excludes_noc),
-    appliesArea: text(row.applies_area),
-    appliesCondition: text(row.applies_condition),
-    familySize: numOrNull(row.applies_family_size),
-    basis: text(row.basis),
-    label: text(row.label),
-    section: text(row.section),
-    effective: text(row.effective),
-    url: text(row.url),
-    pageUrl: text(row.page_url),
-    fetched: text(row.fetched),
-  }
-}
-
-/**
  * 各省的省提名门槛,按这个职业的 TEER 与职业码挑行,再交给判定引擎。
  *
  * 🔴 **判定不在本域写** —— `lib/rules` 的 `evaluateRequirements` 是判定层的单一来源
@@ -454,10 +251,9 @@ function toRequirement(row: ToRequirementIn): ToRequirementOut {
  * @returns 各省一行。
  */
 async function lookupThresholds(input: LookupThresholdsIn): LookupThresholdsOut {
-  const { rows } = await input.db.query(SQL.PNP_REQUIREMENTS_ALL, [])
+  const reqRows = await queryRows({ db: input.db, sql: SQL.PNP_REQUIREMENTS_ALL, params: [], map: toRequirement })
   const byProv = new Map<string, Requirement[]>()
-  for (const row of rows) {
-    const req = toRequirement(row)
+  for (const req of reqRows) {
     if (PROVS.has(req.province) === false || req.province === QC) {
       continue
     }
@@ -546,9 +342,9 @@ async function lookupOps(input: LookupOpsIn): LookupOpsOut {
  * @returns 命中的类别,各带该类别最近一轮的分数线。
  */
 async function lookupEe(input: LookupEeIn): LookupEeOut {
-  const { rows } = await input.db.query(SQL.EE_CATEGORIES_BY_NOC, [input.noc])
+  const eeRows = await queryRows({ db: input.db, sql: SQL.EE_CATEGORIES_BY_NOC, params: [input.noc], map: toEeRow })
   const out: EeRow[] = []
-  for (const r of rows.map(toEeRow)) {
+  for (const r of eeRows) {
     if (r.evidence.url) {
       out.push(r)
     }
@@ -566,9 +362,9 @@ async function lookupEe(input: LookupEeIn): LookupEeOut {
  * @returns 库里有出处的每一行,按官方页面顺序。
  */
 async function lookupPermit(input: LookupPermitIn): LookupPermitOut {
-  const { rows } = await input.db.query(SQL.PERMIT_RULES, [input.program])
+  const permitRows = await queryRows({ db: input.db, sql: SQL.PERMIT_RULES, params: [input.program], map: toPermitRow })
   const out: PermitRow[] = []
-  for (const r of rows.map(toPermitRow)) {
+  for (const r of permitRows) {
     if (r.evidence.url) {
       out.push(r)
     }
@@ -591,9 +387,9 @@ async function lookupPoints(input: LookupPointsIn): LookupPointsOut {
   if (input.section === '' && input.grid === GRID_CRS) {
     kind = KIND_SUMMARY
   }
-  const { rows } = await input.db.query(SQL.EE_POINTS_GRID, [input.grid, input.section, kind, '', '', POINTS_LIMIT])
+  const gridRows = await queryRows({ db: input.db, sql: SQL.EE_POINTS_GRID, params: [input.grid, input.section, kind, '', '', POINTS_LIMIT], map: toPointsRow })
   const out: PointsRow[] = []
-  for (const r of rows.map(toPointsRow)) {
+  for (const r of gridRows) {
     if (r.evidence.url) {
       out.push(r)
     }
