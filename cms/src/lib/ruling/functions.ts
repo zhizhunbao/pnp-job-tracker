@@ -76,7 +76,7 @@ import type {
   MergeOverridesIn, MergeOverridesOut, MonthsOfReqIn, MonthsOfReqOut, MostSpecificRowsIn, MostSpecificRowsOut,
   MyPathway, MyPathwaysIn, MyPathwaysOut, NameRow, NamedList, NamedListsIn, NamedListsOut, NlDesignatedReasonIn,
   NlDesignatedReasonOut, NormalizeEmployerNameIn, NormalizeEmployerNameOut, NotCollectedRowIn, NotCollectedRowOut,
-  NotCollectedVerdictIn, NotCollectedVerdictOut, NullResultOut, NullUserOut, ObstacleRankIn,
+  LmiaNocsCellOfIn, LmiaNocsCellOfOut, NotCollectedVerdictIn, NotCollectedVerdictOut, NullResultOut, NullUserOut, ObstacleRankIn, PassRowIn, PassRowOut,
   ObstacleRankOut, OccExcludedRowsIn, OccExcludedRowsOut, OccListNoneForIn, OccListNoneForOut, OccListedRowsIn,
   OccListedRowsOut, OccNoListRowIn, OccNoListRowOut, OccTeerRowIn, OccTeerRowOut, OccupationListReasonsIn,
   OccupationListReasonsOut, OccupationRow, OccupationRowsIn, OccupationRowsOut, OfferOverrideIn, OfferOverrideOut,
@@ -4711,18 +4711,13 @@ function tripleJobOf(input: TripleJobOfIn): TripleJobOfOut {
 }
 
 /**
- * 库里一行公司登记事实 → 雇主判定认的事实。
+ * 库里一行公司登记事实 → 雇主判定认的事实(纯映射;查不到那一行时由调用方给全 null 的空份,
+ * `employerVerdict` 落 unknown,**不编**)。
  *
- * 查不到就整份留 null —— `employerVerdict` 落 unknown,**不编**。
- *
- * @param input 库里那一行;查不到则 null。
+ * @param f 库里那一行。
  * @returns 雇主判定认的事实。
  */
-function employerFactsOf(input: EmployerFactsOfIn): EmployerFactsOfOut {
-  const f = input.row
-  if (f == null) {
-    return { foundedYear: null, registryStatus: null, staffEst: null, staffEstSrc: null, sector: null }
-  }
+function employerFactsOf(f: EmployerFactsOfIn): EmployerFactsOfOut {
   return {
     foundedYear: numOrNull(f.founded_year),
     registryStatus: text(f.registry_status),
@@ -4730,6 +4725,16 @@ function employerFactsOf(input: EmployerFactsOfIn): EmployerFactsOfOut {
     staffEstSrc: text(f.staff_est_src),
     sector: text(f.sector),
   }
+}
+
+/**
+ * `COMPANY_LMIA_NOCS` 的行映射:整行只有一格,取成字符串(空值落空串,由 `lmiaNocsOf` 判空)。
+ *
+ * @param row 库里那一行。
+ * @returns 那一格的文本。
+ */
+function lmiaNocsCellOf(row: LmiaNocsCellOfIn): LmiaNocsCellOfOut {
+  return text(row.lmia_nocs)
 }
 
 /**
@@ -5041,7 +5046,7 @@ export async function buildTripleWire(input: BuildTripleWireIn): BuildTripleWire
   if (Number.isInteger(input.id) === false || input.id <= 0) {
     return { error: WIRE_ERR.jobRequired, status: HTTP.badRequest }
   }
-  const found = await oneRow({ db: input.db, sql: SQL.TRIPLE_WIRE_JOB, params: [input.id] })
+  const found = await oneRow({ db: input.db, sql: SQL.TRIPLE_WIRE_JOB, params: [input.id], map: passRow })
   if (found == null) {
     return { error: WIRE_ERR.notFound, status: HTTP.notFound }
   }
@@ -5079,13 +5084,16 @@ export async function buildTripleWire(input: BuildTripleWireIn): BuildTripleWire
 async function tripleCompanyOf(input: TripleCompanyOfIn): TripleCompanyOfOut {
   const name = text(input.row.company_name)
   const cid = numOrNull(input.row.company_id)
-  let factsRow = null
+  let facts: EmployerFactsOfOut = { foundedYear: null, registryStatus: null, staffEst: null, staffEstSrc: null, sector: null }
   if (cid != null) {
-    factsRow = await oneRow({ db: input.db, sql: SQL.COMPANY_REGISTRY_FACTS, params: [cid] })
+    const mapped = await oneRow({ db: input.db, sql: SQL.COMPANY_REGISTRY_FACTS, params: [cid], map: employerFactsOf })
+    if (mapped != null) {
+      facts = mapped
+    }
   }
-  let nocsRow = null
+  let nocsRaw: string | null = null
   if (cid != null) {
-    nocsRow = await oneRow({ db: input.db, sql: SQL.COMPANY_LMIA_NOCS, params: [cid] })
+    nocsRaw = await oneRow({ db: input.db, sql: SQL.COMPANY_LMIA_NOCS, params: [cid], map: lmiaNocsCellOf })
   }
   let dir: DesignatedEmployerRow[] = []
   if (name !== '' && input.province !== '') {
@@ -5097,13 +5105,13 @@ async function tripleCompanyOf(input: TripleCompanyOfIn): TripleCompanyOfOut {
     id = cid
   }
   let lmiaNocs: LmiaNocsOfOut = null
-  if (nocsRow != null) {
-    lmiaNocs = lmiaNocsOf({ raw: text(nocsRow.lmia_nocs) })
+  if (nocsRaw != null) {
+    lmiaNocs = lmiaNocsOf({ raw: nocsRaw })
   }
   return {
     id: id,
     name: name,
-    facts: employerFactsOf({ row: factsRow }),
+    facts: facts,
     lmiaNocs: lmiaNocs,
     designation: designatedRow({ rows: dir, hit: hit.row }),
     designationMatches: hit.count, designationSource: hit.source,
@@ -5134,7 +5142,10 @@ function designatedRow(input: DesignatedRowIn): DesignatedRowOut {
 }
 
 /**
- * 打一条只取第一行的查询。
+ * 打一条只取第一行的查询,并把那一行过一遍映射 —— 回来的就是干净的 `R`(`queryRows` 的单行版)。
+ *
+ * `TRIPLE_WIRE_JOB` 那条暂用 `passRow` 原样通过:那一行一行多用(岗位 + 公司两格 + 双语标题),
+ * 要配一张完整行形状才好换,归行映射统一批。
  *
  * 查挂了**留痕后**回 null,不让公司侧的补充查询拖垮主体(B3 那几列可能还没建)——
  * 但不许静默:「这家没数据」和「这条 SQL 一直在报错」在日志里必须分得开。
@@ -5142,13 +5153,23 @@ function designatedRow(input: DesignatedRowIn): DesignatedRowOut {
  * @param input 连接池、SQL 与绑定参数。
  * @returns 第一行;查不到或查挂了则 null。
  */
-async function oneRow(input: OneRowIn): OneRowOut {
+/**
+ * 原样通过的行映射 —— 只给「一行多用、还没配完整行形状」的查询当占位(见 `oneRow` 的 JSDoc)。
+ *
+ * @param row 原始行。
+ * @returns 原样的那一行。
+ */
+function passRow(row: PassRowIn): PassRowOut {
+  return row
+}
+
+async function oneRow<R>(input: OneRowIn<R>): OneRowOut<R> {
   try {
     const res = await input.db.query(input.sql, input.params)
     if (res.rows.length === 0) {
       return null
     }
-    return res.rows[0]
+    return input.map(res.rows[0])
   } catch (e) {
     let why = String(e)
     if (e instanceof Error) {

@@ -6016,14 +6016,9 @@ export type TripleJobOfIn = {
 export type TripleJobOfOut = TripleJob
 
 /**
- * `employerFactsOf` 的入参。
+ * `employerFactsOf` 的入参:库里那一行公司登记事实(纯映射;查不到那一行时空份由调用方给)。
  */
-export type EmployerFactsOfIn = {
-  /**
-   * 库里那一行公司登记事实;查不到则 null。
-   */
-  row: Row | null
-}
+export type EmployerFactsOfIn = Row
 
 /**
  * `employerFactsOf` 的返回。
@@ -6305,9 +6300,30 @@ export type TripleCompanyOfIn = {
 export type TripleCompanyOfOut = Promise<TripleCompany>
 
 /**
- * `oneRow` 的入参。
+ * `passRow` 的入参:原始行。
  */
-export type OneRowIn = {
+export type PassRowIn = Row
+
+/**
+ * `passRow` 的返回:原样的那一行。
+ */
+export type PassRowOut = Row
+
+/**
+ * `lmiaNocsCellOf` 的入参:`COMPANY_LMIA_NOCS` 的那一行。
+ */
+export type LmiaNocsCellOfIn = Row
+
+/**
+ * `lmiaNocsCellOf` 的返回:`lmia_nocs` 那一格的文本(空值落空串)。
+ */
+export type LmiaNocsCellOfOut = string
+
+/**
+ * `oneRow` 的入参:一条 SQL + 它的行映射函数(db 的 `queryRows` 同款形态,单行版)。
+ * 泛型 `R` 由 `map` 的返回类型定。
+ */
+export type OneRowIn<R> = {
   /**
    * 能打 SQL 的东西。
    */
@@ -6322,12 +6338,16 @@ export type OneRowIn = {
    * 绑定参数。
    */
   params: Cell[]
+  /**
+   * 行映射函数:第一行原始行 → 干净的 `R`。默认值决策(词汇表)全在它体内。
+   */
+  map: (row: Row) => R
 }
 
 /**
- * `oneRow` 的返回:第一行;查不到或查挂了则 null。
+ * `oneRow` 的返回:映射完的第一行;查不到或查挂了则 null。
  */
-export type OneRowOut = Promise<Row | null>
+export type OneRowOut<R> = Promise<R | null>
 
 /**
  * `hasEnoughProfile` 的入参。
