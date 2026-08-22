@@ -67,6 +67,32 @@ export type Db = {
 }
 
 /**
+ * `queryRows` 的入参:一条 SQL + 它的行映射函数。泛型 `R` 由 `map` 的返回类型定。
+ */
+export type QueryRowsIn<R> = {
+  /**
+   * 能查的东西(池或独占连接)。
+   */
+  db: Db
+
+  /**
+   * 固定语句(来自 `./sql`)。
+   */
+  sql: string
+
+  /**
+   * 绑定参数;零参语句显式给空数组(本层自己的契约不留 `?`)。
+   */
+  params: SqlParam[]
+
+  /**
+   * 行映射函数:一行原始行 → 一行干净的 `R`。默认值决策全在它体内(用词汇表),
+   * 这就是「返回即可用」的运行时保证。
+   */
+  map: (row: QueryResult['rows'][number]) => R
+}
+
+/**
  * 事务用的独占连接。**用完必须 release**(先例:seed/route.ts 的事务体,
  * BEGIN/COMMIT/ROLLBACK + finally release)。
  */

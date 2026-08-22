@@ -25,7 +25,7 @@ import { CONSULT_STEP, CONSULT_STEP_OCC } from '../i18n'
 import { cleanProvs } from '../location'
 import { chatError, CHAT_CODE } from '../error'
 import { CHAT_FN, CHAT_LOG, GATE_LOG, log } from '../log'
-import { count, numOrNull, show, SQL, text } from '../db'
+import { count, numOrNull, queryRows, show, SQL, text } from '../db'
 import { evaluateRequirements } from '../gauge'
 import type { Requirement, RuleProfile } from '../gauge'
 import {
@@ -508,9 +508,9 @@ async function lookupThresholds(input: LookupThresholdsIn): LookupThresholdsOut 
  * @returns 近 `DRAW_LIMIT` 轮,按日期从新到旧;一轮都没有时 rows 为空。
  */
 async function lookupDraws(input: LookupDrawsIn): LookupDrawsOut {
-  const { rows } = await input.db.query(SQL.PNP_DRAWS_BY_PROV, [input.prov])
+  const mapped = await queryRows({ db: input.db, sql: SQL.PNP_DRAWS_BY_PROV, params: [input.prov], map: toDrawRow })
   const out: DrawRow[] = []
-  for (const r of rows.map(toDrawRow)) {
+  for (const r of mapped) {
     if (r.evidence.url === '') {
       continue
     }
@@ -532,8 +532,8 @@ async function lookupDraws(input: LookupDrawsIn): LookupDrawsOut {
  * @returns 库里有出处的每一行;一行都没有时 rows 为空(= 本站未收录,不是官方不公布)。
  */
 async function lookupOps(input: LookupOpsIn): LookupOpsOut {
-  const { rows } = await input.db.query(SQL.PNP_OPS_METRICS, [input.prov])
-  return { prov: input.prov, rows: rows.map(toOpsRow) }
+  const rows = await queryRows({ db: input.db, sql: SQL.PNP_OPS_METRICS, params: [input.prov], map: toOpsRow })
+  return { prov: input.prov, rows: rows }
 }
 
 /**

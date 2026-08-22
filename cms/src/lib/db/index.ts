@@ -13,11 +13,11 @@
  */
 
 export {
-  count, numOrNull, poolOf, show, text, textOrNull,
+  count, numOrNull, poolOf, queryRows, show, text, textOrNull,
 } from './functions'
 
 export * as SQL from './sql'
 
 export type {
-  Db, DbClient, DbPool, PayloadWithPool, QueryResult, SqlParam,
+  Db, DbClient, DbPool, PayloadWithPool, QueryResult, QueryRowsIn, SqlParam,
 } from './types'

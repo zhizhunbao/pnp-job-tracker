@@ -10,7 +10,7 @@
  * @time 2026-08-21 15:20:30
  */
 
-import type { DbPool, PayloadWithPool } from './types'
+import type { Db, DbPool, PayloadWithPool, QueryResult, QueryRowsIn, SqlParam } from './types'
 
 /**
  * 库里的脏字符串 → 干净字符串,空值落空串。显示与拼接的兜底,永远无害。
@@ -78,6 +78,26 @@ export function show(x: number | null): string {
     return ''
   }
   return String(x)
+}
+
+/**
+ * 跑一条语句并把**每一行**过一遍映射函数 —— 返回的数组就是干净的 `R[]`,
+ * 每格的 null/空串在映射里(用词汇表)已经处理完,调用端直接用,不再各自兜底。
+ *
+ * 🔴 泛型 `R` 由 `map` 的返回类型推出来,**不是**「传个 type 进来」:类型参数在运行时不存在,
+ * 光标注保证不了任何一格 —— 运行时的保证只能来自那只映射函数(2026-08-21 Frank 提「query 泛型化」
+ * 时定的形态:传的是函数,类型跟着函数走,本层不撒谎)。
+ *
+ * @param input 能查的东西、SQL、绑定参数与行映射函数。
+ * @returns 映射完的行。
+ */
+export async function queryRows<R>(input: QueryRowsIn<R>): Promise<R[]> {
+  const res = await input.db.query(input.sql, input.params)
+  const out: R[] = []
+  for (const row of res.rows) {
+    out.push(input.map(row))
+  }
+  return out
 }
 
 /**
