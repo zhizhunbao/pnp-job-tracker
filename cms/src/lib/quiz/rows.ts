@@ -1,86 +1,450 @@
-// 字段库 = 全站单一来源(设计:docs/design/统一题库与付费面-20260731.md §1/§3)。
-// 每个字段带四件事:
-//   q        题面(题干 + 选项,三语对象:加一门语言 = 加一个键)
-//   unlocks  答完能算出哪几条结论 —— 写的是引擎里真实存在的 key(lib/report.ts),不是口号
-//   tier     那几条结论落免费区还是锁区:free=留存题(答完立刻多一条能看的),pro=转化题
-//   toAnswer 档位 → 引擎输入(换算只此一处;页面不再各存一份 CLB/EXP/PROVS 映射表)
-// 铁律:挂不上任何结论的字段不入库。
-// 2026-08-03:题面原先是 SurveyJS 的题 JSON(type/name/isRequired 全是给框架看的),
-// 撤掉框架后收成本站自己的最小形状 —— 全部是必答单选,类型与必答不用逐题再声明一遍。
-import type { Lang } from '../i18n'
-import type { Answers } from './answers'
+/**
+ * 外部原料 → 本域事实行的构造器 + 字段库本体。
+ * 三类映射都在这:① 档位 → 引擎输入(一题一个 *Answer 换算,值级清洗的家);
+ * ② 旧档/服务端档 → 全字段对齐的 Answers/ScoreAnswers(normalize 一族);
+ * ③ 全卷 → 引擎入参(toEngineAnswers)。体内只许词汇表 + 纯拼装;
+ * 真会抛的 JSON.parse 与 localStorage I/O 归 functions.ts 的接缝函数。
+ *
+ * 字段库(FIELDS)也住这:题面是数据、换算是行映射,一题一行放一起,
+ * 拆开就得靠名字对齐两张表(设计:docs/design/统一题库与付费面-20260731.md §1/§3)。
+ * 铁律:挂不上任何结论的字段不入库。
+ * 2026-08-03:题面原先是 SurveyJS 的题 JSON(type/name/isRequired 全是给框架看的),
+ * 撤掉框架后收成本站自己的最小形状 —— 全部是必答单选,类型与必答不用逐题再声明一遍。
+ *
+ * @author Frank
+ * @time 2026-08-18 04:36:46
+ */
+import {
+  AGE, CLB, CLB_V2_MAP, CRS, EDU, EDU_YEARS, EXP, FRENCH_V2_MAP, IN_CANADA, NCLC, PERMIT,
+  PGWP, PROVS, STUDY_LEVEL, STUDY_MONTHS, TOTAL_EXP, TOTAL_V2_MAP, UNSURE_BAND,
+} from './constants'
+import type {
+  Answers, BandValue, EngineAnswers, EngineValue, FieldDef, L, MaybeProvList, ProvList, RawAnswersSource,
+  RawCell, RawDoc, RawField, RawScoreSource, ScoreAnswers,
+} from './types'
 
-type Tier = 'free' | 'pro'
-/** 题面/选项的三语文本。2026-08-17 从 { default; 'zh-cn'; ko } 换成全站同一套 Lang ——
- *  先前那套是 SurveyJS 留下的键名,撤掉框架后没跟着改;两套并存的代价见 resumeMatch 的 LANG_NAME。 */
-export type L = Record<Lang, string>
-type Question = {
-  title: L
-  choices: { value: number | string; text: L }[]
-  // 选项过滤(目前只有一处:加拿大经验不得超过总经验)。先前是框架的字符串表达式,现在是普通函数
-  choiceVisible?: (a: Answers, v: number) => boolean
+/**
+ * 档里的一格 → 数字(不是有限数字给 0)。
+ *
+ * @param v 原料格。
+ * @returns 数字。
+ */
+export function num(v: RawField): number {
+  if (typeof v === 'number' && Number.isFinite(v)) {
+    return v
+  }
+  return 0
 }
-type FieldDef = {
-  engineKey?: string                                   // /api/report answers 的键名(缺省=字段名)
-  q: Question
-  unlocks: string[]
-  tier: Tier
-  toAnswer?: (v: any, all: Answers) => unknown         // 返回 undefined = 不传(缺答与「答案是 0」要分开)
-  /** 题级显隐(2026-08-15 拆闸批新增,此前只有选项级过滤):不该问的人不见这道题,
-   *  完整度计数同源过滤 —— 境外用户没有「持什么许可/人在哪个省」可答,摆着=逼他乱答。 */
-  visible?: (a: Answers) => boolean
+
+/**
+ * 档里的一格 → 字符串数组(不是数组给空;数组里只留字符串)。
+ *
+ * @param v 原料格。
+ * @returns 字符串数组。
+ */
+export function arr(v: RawField): ProvList {
+  if (Array.isArray(v)) {
+    return v.filter(isStr)
+  }
+  return []
 }
 
-const l = (en: string, zh: string, ko: string): L => ({ zh, en, ko })
+/**
+ * 档里的一格 → 字符串(不是字符串给空串)。
+ *
+ * @param v 原料格。
+ * @returns 字符串。
+ */
+export function str(v: RawField): string {
+  if (typeof v === 'string') {
+    return v
+  }
+  return ''
+}
 
-// 档 → 引擎输入(原先散在 PlanPrView 顶部的五张表,收拢到字段自己身上)
-// 语言:问**实测档位**,不问自评(2026-08-02 Frank「我选的是英语流利,为什么显示 CLB 9」)——
-// 「初级/中级/流利 → CLB 5/7/9」那套映射是本站编的,报告却写成「你报的 CLB 9」= 替他填了个他没说过的数;
-// 而且自评偏乐观(自认流利常是 CLB 7),门槛判定会因此说「达标」而实际不达标。取每档**下界**,宁可低报。
-// 「不清楚」的统一档位值(2026-08-12 Frank「每个选项都应该给一个不清楚的」)。
-// 它是**答过的**(计数与 missingFields 认它),但 toAnswer 一律回 undefined —— 引擎拿 null
-// 落「判不了」,而不是被折成某个他没说过的答案。三值折叠里的 unknown 就该由用户显式说得出口。
-const UNSURE_BAND = 9
+/**
+ * 档里的一格 → 对象(不是对象给空对象)。
+ *
+ * @param v 原料格。
+ * @returns 对象。
+ */
+export function rec(v: RawField): RawDoc {
+  if (v != null && typeof v === 'object' && Array.isArray(v) === false) {
+    return v as RawDoc
+  }
+  return {}
+}
 
-// 精确档(2026-08-13 语言合一:基础卷直接问精确 CLB,官方分值表不再追问第二遍)。
-// index = 选项 value;1「还没考」= 没有分,不传。**不用 CLB 数字当 value**:9 会撞 UNSURE_BAND。
-// export:估分段推导双语加分(PnpScoreCard #305)按同一把梯子读英语档,不许另抄一份。
-export const CLB = [0, 0, 4, 5, 6, 7, 8, 9, 10]
-// 法语档(2026-08-16):index = 选项 value,值 = NCLC 等级(0 = 不会或不到 4)
-export const NCLC = [0, 0, 4, 5, 6, 7, 8]
-const EXP = [0, 0, 6, 18, 30]          // a1「没有」= 0 个月,是答案不是缺答
-// a4「先看哪个够得着」= 不限省。**海洋四省挂 5 不挂 4**:4 已经在生产用了,改它的含义会把
-// 已存档案里的「不限省」静默变成「海洋四省」(2026-08-03 加这一档时的取舍——显示顺序看 choices 数组,与值无关)。
-const PROVS: string[][] = [[], ['BC'], ['ON'], ['AB', 'SK', 'MB'], [], ['NS', 'NB', 'PE', 'NL']]
-const CRS = [0, 0, 380, 425, 480]      // a1「没算过」= 不传,引擎照旧出「没填 CRS」
-const PGWP = [0, 4, 9, 18, 30]
-// 官方分值表要的三样(题库扩充 20260802):学历阶梯 / 年龄取区间中点 / 同职业总经验(含海外)
-const EDU = ['', 'highschool', 'diploma2y', 'bachelor', 'master', 'doctorate']
-const AGE = [0, 23, 28, 33, 38, 43]
-// 精确档(2026-08-14 经验合一,与语言同批):index=选项 value;「没有」=0 个月,是答案不是缺答。
-// 月数取整年 ×12(不到 1 年沿用 6):旧区间档迁移按旧月数对齐(见 answers.ts BANDS_V2)
-const TOTAL_EXP = [0, 0, 6, 12, 24, 36, 48, 60]
-// B1-4 PGWP:课程时长档下界 / 层级(引擎只对 master 有特例,其余按时长档)
-const STUDY_MONTHS = [0, 4, 8, 12, 24]
-const STUDY_LEVEL = ['', 'college', 'bachelor', 'master', 'doctorate']
-// 学制年数档(2026-08-15 #316):index=选项 value → 整年数。「不到 1 年」= 0 整年,是答案不是缺答;
-// 档取下界(同 CLB/经验口径)。四档而不是三档:消费端的阈值有 ≥1 / ≥2 / ≥3 三道
-// (crsEstimate 学习加分 1 年与 3 年分档;pathVerdict/ mbEoiEstimate 要 ≥2、≥3),并成「1 年及以下」
-// 就得在 0 和 1 之间替他挑一头 —— 拆开就不用猜。
-const EDU_YEARS = [0, 0, 1, 2, 3]
-// statusInCanada 拆闸(2026-08-15):许可类型档。学签在读不问(处境题已说明持学签),
-// 境外不问(没有加拿大许可可答)—— 见各题 visible。
-const PERMIT = ['', 'study', 'pgwp', 'work', 'none']
-const inCanada = (a: Answers) => ['studying', 'working', 'jobhunting'].includes(a.status)
+/**
+ * 数组过滤用的字符串判定(filter 传具名函数)。
+ *
+ * @param x 数组一格。
+ * @returns 是字符串 true。
+ */
+function isStr(x: RawCell): x is string {
+  return typeof x === 'string'
+}
 
+/**
+ * 三语文本的紧凑构造(题面表逐行调用,摆开写会把整张表撑到三倍)。
+ *
+ * @param en 英文。
+ * @param zh 中文。
+ * @param ko 韩文。
+ * @returns 三语对象。
+ */
+// eslint-disable-next-line local/one-parameter -- 三语构造:题面表逐行调用,(en, zh, ko) 三参就是它的人体工学
+function l(en: string, zh: string, ko: string): L {
+  return { zh, en, ko }
+}
+
+/**
+ * 人在不在加拿大境内(境内三种处境;permitBand/resProv 的题级显隐都用它)。
+ *
+ * @param a 全卷答案。
+ * @returns 境内 true。
+ */
+export function inCanada(a: Answers): boolean {
+  return IN_CANADA.includes(a.status)
+}
+
+/**
+ * 档位数字收窄(BandValue 可能是省码字符串;数字题的换算先过这一格)。
+ *
+ * @param v 选项值。
+ * @returns 数字档;不是数字给 0。
+ */
+function band(v: BandValue): number {
+  if (typeof v === 'number') {
+    return v
+  }
+  return 0
+}
+
+/**
+ * 处境:'unsure' → undefined,引擎拿 null 落「判不了」,不替他猜
+ * (2026-08-12 Frank「每个选项都应该给一个不清楚的」)。
+ *
+ * @param v 处境码。
+ * @returns 引擎处境;不清楚不传。
+ */
+function statusAnswer(v: BandValue): EngineValue {
+  if (typeof v === 'string' && v !== '' && v !== 'unsure') {
+    return v
+  }
+  return undefined
+}
+
+/**
+ * 许可档 → 许可码(境外不传;不清楚不传)。
+ *
+ * @param v 档位。
+ * @param all 全卷答案。
+ * @returns 许可码或不传。
+ */
+// eslint-disable-next-line local/one-parameter -- FieldDef.toAnswer 的形状定死两参(见 types.ts 的特批)
+function permitAnswer(v: BandValue, all: Answers): EngineValue {
+  const b = band(v)
+  if (inCanada(all) && b !== 0 && b !== UNSURE_BAND) {
+    return PERMIT[b]
+  }
+  return undefined
+}
+
+/**
+ * 现居省(境外不传)。
+ *
+ * @param v 省码。
+ * @param all 全卷答案。
+ * @returns 省码或不传。
+ */
+// eslint-disable-next-line local/one-parameter -- 同 permitAnswer:toAnswer 契约两参
+function resProvAnswer(v: BandValue, all: Answers): EngineValue {
+  if (inCanada(all) && typeof v === 'string' && v !== '') {
+    return v
+  }
+  return undefined
+}
+
+/**
+ * 学历档 → 学历码(0 档/超界不传)。
+ *
+ * @param v 档位。
+ * @returns 学历码或不传。
+ */
+function eduAnswer(v: BandValue): EngineValue {
+  return EDU[band(v)] || undefined
+}
+
+/**
+ * 年龄档 → 区间中点(0 档不传)。
+ *
+ * @param v 档位。
+ * @returns 年龄或不传。
+ */
+function ageAnswer(v: BandValue): EngineValue {
+  return AGE[band(v)] || undefined
+}
+
+/**
+ * 总经验档 → 月数(不清楚不传;「没有」= 0 是答案)。
+ *
+ * @param v 档位。
+ * @returns 月数或不传。
+ */
+function totalExpAnswer(v: BandValue): EngineValue {
+  const b = band(v)
+  if (b !== 0 && b !== UNSURE_BAND) {
+    return TOTAL_EXP[b]
+  }
+  return undefined
+}
+
+/**
+ * 英语档 → CLB(「还没考」不传)。
+ *
+ * @param v 档位。
+ * @returns CLB 或不传。
+ */
+function clbAnswer(v: BandValue): EngineValue {
+  return CLB[band(v)] || undefined
+}
+
+/**
+ * 加拿大经验档 → 月数(不清楚不传)。
+ *
+ * @param v 档位。
+ * @returns 月数或不传。
+ */
+function expAnswer(v: BandValue): EngineValue {
+  const b = band(v)
+  if (b !== 0 && b !== UNSURE_BAND) {
+    return EXP[b]
+  }
+  return undefined
+}
+
+/**
+ * 加拿大经验的选项过滤:「其中」是真的其中 —— 加拿大经验选不出比总经验更长的档
+ * (2026-08-02 实撞:总经验答「没有」、加拿大答「2 年以上」,引擎取大的那个,句子写成
+ * 「你填的 30 个月」,看着就像胡说)。2026-08-14 起总经验是精确档,两套序号不再对齐 ——
+ * 改按**月数**比(总经验「不清楚」不设限)。
+ *
+ * @param a 全卷答案。
+ * @param v 候选档位。
+ * @returns 该选项可见 true。
+ */
+// eslint-disable-next-line local/one-parameter -- FieldDef.choiceVisible 的形状定死两参(见 types.ts 的特批)
+function expChoiceVisible(a: Answers, v: BandValue): boolean {
+  if (a.totalExpBand === 0 || a.totalExpBand === UNSURE_BAND) {
+    return true
+  }
+  let cand = 0
+  const e = EXP[band(v)]
+  if (e != null) {
+    cand = e
+  }
+  let cap = 999
+  const t = TOTAL_EXP[a.totalExpBand]
+  if (t != null) {
+    cap = t
+  }
+  return cand <= cap
+}
+
+/**
+ * 目标省档 → 省码组(超界给空 = 不限省)。
+ *
+ * @param v 档位。
+ * @returns 省码组。
+ */
+function provAnswer(v: BandValue): EngineValue {
+  const hit = PROVS[band(v)]
+  if (hit != null) {
+    return hit
+  }
+  return []
+}
+
+/**
+ * 诉求档 → 目标函数码。
+ *
+ * @param v 档位。
+ * @returns 'pr' / 'work' 或不传。
+ */
+function goalAnswer(v: BandValue): EngineValue {
+  const b = band(v)
+  if (b === 1) {
+    return 'pr'
+  }
+  if (b === 2) {
+    return 'work'
+  }
+  return undefined
+}
+
+/**
+ * offer 档 → 有无 offer(「面试中/自雇」都按「还没有」算,不含糊;不清楚不传)。
+ *
+ * @param v 档位。
+ * @returns 布尔或不传。
+ */
+function offerAnswer(v: BandValue): EngineValue {
+  const b = band(v)
+  if (b !== 0 && b !== UNSURE_BAND) {
+    return b === 1
+  }
+  return undefined
+}
+
+/**
+ * 有无加拿大学历(不清楚不传)。
+ *
+ * @param v 档位。
+ * @returns 布尔或不传。
+ */
+function canadaEduAnswer(v: BandValue): EngineValue {
+  const b = band(v)
+  if (b !== 0 && b !== UNSURE_BAND) {
+    return b === 1
+  }
+  return undefined
+}
+
+/**
+ * 有加拿大学历的人才见的题(fieldMatchBand/eduProv/eduYearsBand 三题同闸)。
+ *
+ * @param a 全卷答案。
+ * @returns 可见 true。
+ */
+function hasCanadaEdu(a: Answers): boolean {
+  return a.canadaEduBand === 1
+}
+
+/**
+ * 专业对口档 → 布尔(只对有加拿大学历的人传;不清楚不传)。
+ *
+ * @param v 档位。
+ * @param all 全卷答案。
+ * @returns 布尔或不传。
+ */
+// eslint-disable-next-line local/one-parameter -- 同 permitAnswer:toAnswer 契约两参
+function fieldMatchAnswer(v: BandValue, all: Answers): EngineValue {
+  const b = band(v)
+  if (all.canadaEduBand === 1 && b !== 0 && b !== UNSURE_BAND) {
+    return b === 1
+  }
+  return undefined
+}
+
+/**
+ * 学历所在省(只对有加拿大学历的人传)。
+ *
+ * @param v 省码。
+ * @param all 全卷答案。
+ * @returns 省码或不传。
+ */
+// eslint-disable-next-line local/one-parameter -- 同 permitAnswer:toAnswer 契约两参
+function eduProvAnswer(v: BandValue, all: Answers): EngineValue {
+  if (all.canadaEduBand === 1 && typeof v === 'string' && v !== '') {
+    return v
+  }
+  return undefined
+}
+
+/**
+ * 学制年数档 → 整年数(只对有加拿大学历的人传;不清楚不传)。
+ *
+ * @param v 档位。
+ * @param all 全卷答案。
+ * @returns 整年数或不传。
+ */
+// eslint-disable-next-line local/one-parameter -- 同 permitAnswer:toAnswer 契约两参
+function eduYearsAnswer(v: BandValue, all: Answers): EngineValue {
+  const b = band(v)
+  if (all.canadaEduBand === 1 && b !== 0 && b !== UNSURE_BAND) {
+    return EDU_YEARS[b]
+  }
+  return undefined
+}
+
+/**
+ * 法语档 → 「够不够 NCLC 5」:≥5 为 true;不会/NCLC 4 为 false;不清楚不传(判不了)。
+ *
+ * @param v 档位。
+ * @returns 布尔或不传。
+ */
+function frenchAnswer(v: BandValue): EngineValue {
+  const b = band(v)
+  if (b === UNSURE_BAND) {
+    return undefined
+  }
+  if (b >= 1) {
+    return NCLC[b] >= 5
+  }
+  return undefined
+}
+
+/**
+ * CRS 档 → 分数下界(「没算过」不传)。
+ *
+ * @param v 档位。
+ * @returns 分数或不传。
+ */
+function crsAnswer(v: BandValue): EngineValue {
+  return CRS[band(v)] || undefined
+}
+
+/**
+ * 签证剩余档 → 月数。境外不传:没有加拿大签证,拿档位造时间窗=编数。
+ *
+ * @param v 档位。
+ * @param all 全卷答案。
+ * @returns 月数或不传。
+ */
+// eslint-disable-next-line local/one-parameter -- 同 permitAnswer:toAnswer 契约两参
+function pgwpAnswer(v: BandValue, all: Answers): EngineValue {
+  if (all.status === 'overseas') {
+    return undefined
+  }
+  return PGWP[band(v)] || undefined
+}
+
+/**
+ * 课程时长档 → 月数下界(0 档不传;「不到 8 个月」给 4 只为让引擎判「不足 8 个月无 PGWP」)。
+ *
+ * @param v 档位。
+ * @returns 月数或不传。
+ */
+function studyMonthsAnswer(v: BandValue): EngineValue {
+  const b = band(v)
+  if (b !== 0) {
+    return STUDY_MONTHS[b]
+  }
+  return undefined
+}
+
+/**
+ * 课程层级档 → 层级码(0 档不传)。
+ *
+ * @param v 档位。
+ * @returns 层级码或不传。
+ */
+function studyLevelAnswer(v: BandValue): EngineValue {
+  return STUDY_LEVEL[band(v)] || undefined
+}
+
+/**
+ * 字段库本体。键序即 toEngineAnswers 的遍历序,别乱动。
+ * 每个字段头上的 `//` 是它的决策记录(带日期带人带理由),与三语题面同存。
+ */
 export const FIELDS: Record<string, FieldDef> = {
   // 处境:决定签证题算不算数(境外没有加拿大签证),并计入基本题完整度
   status: {
     engineKey: 'currentStatus',
     unlocks: ['rpt.c.window', 'rpt.g.basics'],
     tier: 'free',
-    // 'unsure' → undefined:引擎拿 null 落「判不了」,不替他猜(2026-08-12 Frank「每个选项都应该给一个不清楚的」)
-    toAnswer: (v: string) => (v && v !== 'unsure' ? v : undefined),
+    toAnswer: statusAnswer,
     q: {
       title: l('Where are you today?', '你现在的情况?', '현재 상황은?'),
       choices: [
@@ -101,7 +465,7 @@ export const FIELDS: Record<string, FieldDef> = {
     unlocks: ['rpt.g.basics'],
     tier: 'free',
     visible: inCanada,
-    toAnswer: (b: number, all) => (inCanada(all) && b && b !== UNSURE_BAND ? PERMIT[b] : undefined),
+    toAnswer: permitAnswer,
     q: {
       title: l('What permit are you on now?', '你现在持什么许可?', '지금 어떤 허가로 체류 중인가요?'),
       choices: [
@@ -120,7 +484,7 @@ export const FIELDS: Record<string, FieldDef> = {
     unlocks: ['rpt.g.basics'],
     tier: 'free',
     visible: inCanada,
-    toAnswer: (v: string, all) => (inCanada(all) && v ? v : undefined),
+    toAnswer: resProvAnswer,
     q: {
       title: l('Which province are you in now?', '你现在人在哪个省?', '지금 어느 주에 있나요?'),
       choices: [
@@ -144,7 +508,7 @@ export const FIELDS: Record<string, FieldDef> = {
     engineKey: 'edu',
     unlocks: ['rpt.s.cur', 'rpt.s.alt.mark'],
     tier: 'free',
-    toAnswer: (b: number) => EDU[b] || undefined,
+    toAnswer: eduAnswer,
     q: {
       title: l('Your highest education?', '最高学历?', '최종 학력은?'),
       choices: [
@@ -161,7 +525,7 @@ export const FIELDS: Record<string, FieldDef> = {
     engineKey: 'age',
     unlocks: ['rpt.s.cur', 'rpt.s.alt.mark'],
     tier: 'free',
-    toAnswer: (b: number) => AGE[b] || undefined,
+    toAnswer: ageAnswer,
     q: {
       title: l('Your age?', '年龄段?', '연령대는?'),
       choices: [
@@ -179,7 +543,7 @@ export const FIELDS: Record<string, FieldDef> = {
     engineKey: 'totalExpMonths',
     unlocks: ['rpt.s.cur', 'rpt.s.alt.mark', 'rpt.g.zeroExp', 'rpt.n.firstJob'],
     tier: 'free',
-    toAnswer: (b: number) => (b && b !== UNSURE_BAND ? TOTAL_EXP[b] : undefined),
+    toAnswer: totalExpAnswer,
     q: {
       title: l('Total experience in this occupation?', '做这个职业一共多久了?(含海外)', '이 직종 총 경력은?(해외 포함)'),
       // 2026-08-14 经验合一(与语言同批,Frank「怎么有两个」同款病):原来问区间(1-3/3-5 年),
@@ -203,7 +567,7 @@ export const FIELDS: Record<string, FieldDef> = {
     engineKey: 'clb',
     unlocks: ['rpt.g.basics', 'rpt.s.cur'],
     tier: 'free',
-    toAnswer: (b: number) => CLB[b] || undefined,
+    toAnswer: clbAnswer,
     q: {
       title: l('Your official language level (CLB)?', '你的语言成绩到 CLB 几?', '공인 언어 점수(CLB)는?'),
       // 2026-08-13 语言合一(Frank 连点两次「怎么有两个语言」):原来这题问区间(4-5/6-7…),
@@ -226,13 +590,9 @@ export const FIELDS: Record<string, FieldDef> = {
     engineKey: 'canadianExpMonths',
     unlocks: ['rpt.c.expOk', 'rpt.g.expShort'],
     tier: 'free',
-    toAnswer: (b: number) => (b && b !== UNSURE_BAND ? EXP[b] : undefined),
+    toAnswer: expAnswer,
     q: {
-      // 「其中」是真的其中:加拿大经验选不出比总经验更长的档(2026-08-02 实撞 —— 总经验答「没有」、
-      // 加拿大答「2 年以上」,引擎取大的那个,句子写成「你填的 30 个月」,看着就像胡说)。
-      // 2026-08-14 起总经验是精确档,两套序号不再对齐 —— 改按**月数**比(总经验「不清楚」不设限)。
-      choiceVisible: (a, v) => !a.totalExpBand || a.totalExpBand === UNSURE_BAND
-        || (EXP[v as number] ?? 0) <= (TOTAL_EXP[a.totalExpBand] ?? 999),
+      choiceVisible: expChoiceVisible,
       // 紧跟在总经验那道题后面问 → 题干写「其中」,一眼看出是子集(全称在一屏里重复一遍是废话)
       title: l('Of that, how long in Canada?', '其中在加拿大多久?', '그중 캐나다에서는?'),
       choices: [
@@ -249,7 +609,7 @@ export const FIELDS: Record<string, FieldDef> = {
     engineKey: 'targetProvinces',
     unlocks: ['rpt.c.listedHit', 'rpt.c.listedMiss', 'rpt.c.drawBand', 'rpt.a.prov'],
     tier: 'free',
-    toAnswer: (b: number) => PROVS[b] ?? [],
+    toAnswer: provAnswer,
     q: {
       title: l('Target province?', '目标省?', '희망 주?'),
       choices: [
@@ -268,7 +628,7 @@ export const FIELDS: Record<string, FieldDef> = {
     engineKey: 'goal',
     unlocks: ['rpt.p.best', 'rpt.p.mostJobs'],
     tier: 'free',
-    toAnswer: (b: number) => (b === 1 ? 'pr' : b === 2 ? 'work' : undefined),
+    toAnswer: goalAnswer,
     q: {
       title: l('What matters more right now?', '你现在更看重哪个?', '지금 무엇이 더 중요한가요?'),
       choices: [
@@ -283,7 +643,7 @@ export const FIELDS: Record<string, FieldDef> = {
     engineKey: 'hasJobOffer',
     unlocks: ['rpt.n.employer', 'rpt.g.noOffer'],
     tier: 'free',
-    toAnswer: (b: number) => (b && b !== UNSURE_BAND ? b === 1 : undefined),
+    toAnswer: offerAnswer,
     q: {
       title: l('Do you have a job offer in hand?', '手上有 offer 吗?', '받은 잡오퍼가 있나요?'),
       choices: [
@@ -303,7 +663,7 @@ export const FIELDS: Record<string, FieldDef> = {
     engineKey: 'canadaStudy',
     unlocks: ['rpt.g.basics'],
     tier: 'free',
-    toAnswer: (b: number) => (b && b !== UNSURE_BAND ? b === 1 : undefined),
+    toAnswer: canadaEduAnswer,
     q: {
       title: l('Do you have a Canadian credential?', '你有加拿大的学历吗?', '캐나다 학력이 있나요?'),
       choices: [
@@ -320,8 +680,8 @@ export const FIELDS: Record<string, FieldDef> = {
     engineKey: 'fieldMatch',
     unlocks: ['rpt.g.basics'],
     tier: 'free',
-    visible: (a) => a.canadaEduBand === 1,
-    toAnswer: (b: number, all) => (all.canadaEduBand === 1 && b && b !== UNSURE_BAND ? b === 1 : undefined),
+    visible: hasCanadaEdu,
+    toAnswer: fieldMatchAnswer,
     q: {
       title: l('Is your Canadian credential in the same field as this job?',
         '你的加拿大学历专业与这个职业对口吗?', '캐나다 학력 전공이 이 직종과 맞나요?'),
@@ -339,8 +699,8 @@ export const FIELDS: Record<string, FieldDef> = {
     engineKey: 'studyProvince',
     unlocks: ['rpt.s.cur', 'rpt.g.basics'],
     tier: 'free',
-    visible: (a) => a.canadaEduBand === 1,
-    toAnswer: (v: string, all) => (all.canadaEduBand === 1 && v ? v : undefined),
+    visible: hasCanadaEdu,
+    toAnswer: eduProvAnswer,
     q: {
       title: l('Where did you study in Canada?', '你的加拿大学历在哪个省读的?', '캐나다 학력은 어느 주에서 취득했나요?'),
       choices: [
@@ -367,8 +727,8 @@ export const FIELDS: Record<string, FieldDef> = {
     engineKey: 'eduYears',
     unlocks: ['rpt.g.basics'],
     tier: 'free',
-    visible: (a) => a.canadaEduBand === 1,
-    toAnswer: (b: number, all) => (all.canadaEduBand === 1 && b && b !== UNSURE_BAND ? EDU_YEARS[b] : undefined),
+    visible: hasCanadaEdu,
+    toAnswer: eduYearsAnswer,
     q: {
       title: l('How long was that program?', '这个学历的学制几年?', '그 과정은 몇 년제인가요?'),
       choices: [
@@ -389,8 +749,7 @@ export const FIELDS: Record<string, FieldDef> = {
     engineKey: 'frenchOk',
     unlocks: ['rpt.g.basics'],
     tier: 'free',
-    // 引擎要的是「够不够 NCLC 5」:≥5 为 true;不会/NCLC 4 为 false;不清楚不传(判不了)
-    toAnswer: (b: number) => (b === UNSURE_BAND ? undefined : b >= 1 ? NCLC[b] >= 5 : undefined),
+    toAnswer: frenchAnswer,
     q: {
       title: l('Your French level (NCLC, all four abilities)?',
         '法语四项到 NCLC 几?', '프랑스어 4개 영역 NCLC 등급은?'),
@@ -410,7 +769,7 @@ export const FIELDS: Record<string, FieldDef> = {
     engineKey: 'crs',
     unlocks: ['rpt.c.eeAbove', 'rpt.c.eeBelow'],
     tier: 'pro',
-    toAnswer: (b: number) => CRS[b] || undefined,
+    toAnswer: crsAnswer,
     q: {
       title: l('Your Express Entry CRS score?', '你的 EE 综合排名分(CRS)?', 'Express Entry CRS 점수는?'),
       choices: [
@@ -426,7 +785,7 @@ export const FIELDS: Record<string, FieldDef> = {
     engineKey: 'pgwpMonthsLeft',
     unlocks: ['rpt.c.window'],
     tier: 'pro',
-    toAnswer: (b: number, all: Answers) => (all.status === 'overseas' ? undefined : PGWP[b] || undefined),
+    toAnswer: pgwpAnswer,
     q: {
       title: l('How long is left on your permit?', '你的签证还剩多久?', '비자 잔여 기간은?'),
       choices: [
@@ -437,14 +796,14 @@ export const FIELDS: Record<string, FieldDef> = {
       ],
     },
   },
-  // ── B1-4 PGWP(20260803,Frank 拍板只加两道;探索批 2)──────────────────────
+  // B1-4 PGWP(20260803,Frank 拍板只加两道;探索批 2)。
   // 「读书 vs 直接工作」的官方算术:课程时长档 + 层级 → 毕业后 PGWP 几个月(规则行 quote-anchored,
-  // 见 etl/build_pgwp.py)。档取下界(同 CLB/经验口径);「不到 8 个月」给 4 只为让引擎判「不足 8 个月无 PGWP」。
+  // 见 etl/build_pgwp.py)。档取下界(同 CLB/经验口径)。
   studyMonthsBand: {
     engineKey: 'studyMonths',
     unlocks: ['rpt.c.pgwpLen', 'rpt.c.pgwpCombine'],
     tier: 'free',
-    toAnswer: (b: number) => (b ? STUDY_MONTHS[b] : undefined),
+    toAnswer: studyMonthsAnswer,
     q: {
       title: l('How long is the program you plan to take (or are in)?', '计划读(或在读)的课程有多长?', '계획 중(재학 중)인 과정 길이는?'),
       choices: [
@@ -459,7 +818,7 @@ export const FIELDS: Record<string, FieldDef> = {
     engineKey: 'studyLevel',
     unlocks: ['rpt.c.pgwpLen', 'rpt.c.pgwpLang'],
     tier: 'free',
-    toAnswer: (b: number) => STUDY_LEVEL[b] || undefined,
+    toAnswer: studyLevelAnswer,
     q: {
       title: l('What level is that program?', '这个课程是什么层级?', '그 과정의 학위 수준은?'),
       choices: [
@@ -472,7 +831,177 @@ export const FIELDS: Record<string, FieldDef> = {
   },
 }
 
-// 目标省的两种表示(三问存省份数组、答题存档位)必须互推,否则「问过的不再问」是假的
-export const provsFromBand = (b: number): string[] => PROVS[b] ?? []
-export const bandFromProvs = (provs: string[] | undefined): number =>
-  !provs?.length ? 0 : provs.length === 1 && provs[0] === 'BC' ? 1 : provs.length === 1 && provs[0] === 'ON' ? 2 : 4
+/**
+ * 目标省档 → 省码组(与 bandFromProvs 互推:三问存省份数组、答题存档位,
+ * 两种表示必须互推,否则「问过的不再问」是假的)。
+ *
+ * @param b 档位。
+ * @returns 省码组。
+ */
+export function provsFromBand(b: number): ProvList {
+  const hit = PROVS[b]
+  if (hit != null) {
+    return hit
+  }
+  return []
+}
+
+/**
+ * 省码组 → 目标省档(provsFromBand 的反向)。
+ *
+ * @param provs 省码组;没答过是 undefined。
+ * @returns 档位(空=0,单 BC=1,单 ON=2,其余=4 不限省)。
+ */
+export function bandFromProvs(provs: MaybeProvList): number {
+  if (provs == null || provs.length === 0) {
+    return 0
+  }
+  if (provs.length === 1 && provs[0] === 'BC') {
+    return 1
+  }
+  if (provs.length === 1 && provs[0] === 'ON') {
+    return 2
+  }
+  return 4
+}
+
+/**
+ * 任意来源的档(内存/旧档/服务端)→ 全字段对齐的 Answers。逐字段重建的清单必须与 Answers
+ * 全量对齐(2026-08-15 Frank 实拍「学历下面的内容填完一刷新就没了」:studyMonths/studyLevel
+ * 写入一直正常,是**读取路径漏了字段** → 每次刷新被归零)。
+ * 三处 v2 迁移都在这(值域重叠的靠标记区分,不靠值本身猜 —— 见 FRENCH_V2_MAP 的注释)。
+ *
+ * @param cur 原料档。
+ * @returns 洗净的全卷。
+ */
+export function normalize(cur: RawAnswersSource): Answers {
+  const raw = cur as RawDoc
+  let clbBand: number
+  if (raw.bandsV2 === true) {
+    clbBand = num(raw.clbBand)
+  } else {
+    let mapped = CLB_V2_MAP[num(raw.clbBand)]
+    if (mapped == null) {
+      mapped = 0
+    }
+    clbBand = mapped
+  }
+  let totalExpBand: number
+  if (raw.bandsV2 === true) {
+    totalExpBand = num(raw.totalExpBand)
+  } else {
+    totalExpBand = totalV2(num(raw.totalExpBand))
+  }
+  let frenchBand: number
+  if (raw.frenchV2 === true) {
+    frenchBand = num(raw.frenchBand)
+  } else {
+    let mapped = FRENCH_V2_MAP[num(raw.frenchBand)]
+    if (mapped == null) {
+      mapped = 0
+    }
+    frenchBand = mapped
+  }
+  const out: Answers = {
+    status: str(raw.status), nocs: arr(raw.nocs), provs: arr(raw.provs),
+    clbBand: clbBand, bandsV2: true,
+    expBand: num(raw.expBand), provBand: num(raw.provBand),
+    crsBand: num(raw.crsBand), pgwpBand: num(raw.pgwpBand),
+    eduBand: num(raw.eduBand), ageBand: num(raw.ageBand),
+    totalExpBand: totalExpBand,
+    offerBand: num(raw.offerBand), goalBand: num(raw.goalBand), canadaEduBand: num(raw.canadaEduBand),
+    permitBand: num(raw.permitBand), resProv: str(raw.resProv),
+    fieldMatchBand: num(raw.fieldMatchBand), eduProv: str(raw.eduProv), eduYearsBand: num(raw.eduYearsBand),
+    frenchBand: frenchBand, frenchV2: true,
+    studyMonthsBand: num(raw.studyMonthsBand), studyLevelBand: num(raw.studyLevelBand),
+  }
+  if (raw.done === true) {
+    out.done = true
+  }
+  if (typeof raw.provsAny === 'boolean') {
+    out.provsAny = raw.provsAny
+  }
+  return out
+}
+
+/**
+ * 总经验档迁移(9=不清楚原样保留,超界落 0)。
+ *
+ * @param b 旧档。
+ * @returns 新档。
+ */
+export function totalV2(b: number): number {
+  if (b === 9) {
+    return 9
+  }
+  const hit = TOTAL_V2_MAP[b]
+  if (hit != null) {
+    return hit
+  }
+  return 0
+}
+
+/**
+ * 任意来源的分值卡档 → 全字段对齐的 ScoreAnswers(可选格只在原档真有时带上)。
+ * 体内四个 `as` 是跨边界断言:ticks/rowAnswers/extraAnswered/profile 的值形状由写入端
+ * (本门面)保证,读回来只收「是对象」这一层 —— 逐键再验类型就是把校验做两遍。
+ *
+ * @param cur 原料档。
+ * @returns 洗净的分值卡档。
+ */
+export function normalizeScore(cur: RawScoreSource): ScoreAnswers {
+  if (cur == null || typeof cur !== 'object') {
+    return { ticks: {}, rowAnswers: {}, extraAnswered: {}, profile: {} }
+  }
+  const raw = cur as RawDoc
+  const out: ScoreAnswers = {
+    ticks: rec(raw.ticks) as Record<string, boolean>,
+    rowAnswers: rec(raw.rowAnswers) as Record<string, number>,
+    extraAnswered: rec(raw.extraAnswered) as Record<string, boolean>,
+    profile: rec(raw.profile) as ScoreAnswers['profile'],
+  }
+  if (typeof raw.hasOffer === 'boolean') {
+    out.hasOffer = raw.hasOffer
+  }
+  if (typeof raw.wage === 'number' && Number.isFinite(raw.wage)) {
+    out.wage = raw.wage
+  }
+  if (typeof raw.areaI === 'number' && Number.isFinite(raw.areaI)) {
+    out.areaI = raw.areaI
+  }
+  return out
+}
+
+/**
+ * 档位 → /api/report 的 answers。换算全在上面的字段库里,这里只做遍历与职业。
+ * `noc` 保留单值是为了老前端与 advisor 不受影响(2026-08-02),引擎按 `nocs` 一个职业一份报告 ——
+ * 两个职业的清单命中/门槛/抽选线不能合起来算。
+ * 新问卷直接多选具体省份;provBand 只保留给旧答案和其它页面兼容,不能反过来把精确数组覆盖掉。
+ *
+ * 体内的 `as` 是跨边界断言:字段名就是 Answers 的键(字段库与 Answers 同源维护),
+ * 值域收窄到题的两种存值。
+ *
+ * @param a 全卷。
+ * @returns 引擎入参对象(undefined 的键被 JSON.stringify 抹掉 = 不传)。
+ */
+export function toEngineAnswers(a: Answers): EngineAnswers {
+  const out: EngineAnswers = { noc: a.nocs[0] || '', nocs: a.nocs }
+  for (const [name, def] of Object.entries(FIELDS)) {
+    const cell = a[name as keyof Answers] as string | number
+    let v: EngineValue = cell
+    if (def.toAnswer != null) {
+      v = def.toAnswer(cell, a)
+    }
+    if (typeof v !== 'undefined') {
+      let key = name
+      if (def.engineKey != null) {
+        key = def.engineKey
+      }
+      out[key] = v
+    }
+  }
+  if (a.provs.length > 0) {
+    out.targetProvinces = a.provs
+  }
+  return out
+}

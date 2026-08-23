@@ -1142,6 +1142,8 @@ const REFACTORED = [
   'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts',
   // 2026-08-23 i18n 进闸(三语文件 + index 机器是 Frank 拍板的介质形状,domain-file-names 单独特批)。
   'src/lib/i18n/**/*.ts',
+  // 2026-08-23 quiz 十件套化(Frank「还是需要按规范命名」),同批进闸。
+  'src/lib/quiz/**/*.ts',
 ]
 
 const eslintConfig = [
@@ -1223,7 +1225,7 @@ const eslintConfig = [
     // 域定型一个就往这里加一个。
     // 域每定型一个就往这张名单里加一个。2026-08-19 当天 `agent` / `llm` / `error` / `log`
     // 的 91 条存量(多数是写成一行的 type,属性没各自的注释)已经逐条补完,所以它们也在里面。
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error.ts', 'src/lib/log.ts', 'src/lib/template.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mailer/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts', 'src/lib/i18n/**/*.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error.ts', 'src/lib/log.ts', 'src/lib/template.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mailer/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts', 'src/lib/i18n/**/*.ts', 'src/lib/quiz/**/*.ts'],
     plugins: { local: localRules },
     rules: {
       // 注释的形状
@@ -1262,7 +1264,7 @@ const eslintConfig = [
     //   · no-split-import:另外五个域还有 3 处(consult 2 / i18n 1);
     //   · no-import-in-leaf:constants 还有 3 处(consult 2 / agent 1),
     //     types 还有 16 处(consult 8 / agent 5 / llm 1 / pathways 1 / jobs 1)。
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/db/**/*.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mailer/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/db/**/*.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mailer/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/quiz/**/*.ts'],
     plugins: { local: localRules },
     rules: { 'local/domain-file-names': 'error', 'local/door-forward-only': 'error' },
   },
@@ -1294,7 +1296,7 @@ const eslintConfig = [
   },
   {
     // ── 现成闸接入 ② · JSDoc 族(与自研 doc 闸并行跑;零违规验证同构后,自研那几条再议退役)──
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error.ts', 'src/lib/log.ts', 'src/lib/template.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mailer/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts', 'src/lib/i18n/**/*.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error.ts', 'src/lib/log.ts', 'src/lib/template.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mailer/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts', 'src/lib/i18n/**/*.ts', 'src/lib/quiz/**/*.ts'],
     plugins: { jsdoc },
     rules: {
       'jsdoc/multiline-blocks': ['error', { noSingleLineBlocks: true }],
@@ -1349,7 +1351,9 @@ const eslintConfig = [
       // 省码→省名(location)、分类→配色(noc)—— 键即身份,逐键注释是复读。
       'src/lib/funnel/constants.ts', 'src/lib/lmia/constants.ts', 'src/lib/location/constants.ts', 'src/lib/noc/constants.ts',
       // i18n 的三语词表 + index 装配表:key 即身份,逐键注释是复读(2026-08-23 i18n 进闸批)。
-      'src/lib/i18n/zh.ts', 'src/lib/i18n/en.ts', 'src/lib/i18n/ko.ts', 'src/lib/i18n/index.ts'],
+      'src/lib/i18n/zh.ts', 'src/lib/i18n/en.ts', 'src/lib/i18n/ko.ts', 'src/lib/i18n/index.ts',
+      // quiz 的字段库(键即题名)与梯子/清单表(2026-08-23 十件套批)。
+      'src/lib/quiz/rows.ts', 'src/lib/quiz/constants.ts'],
     plugins: { local: localRules },
     rules: { 'local/doc-every-member': 'off' },
   },

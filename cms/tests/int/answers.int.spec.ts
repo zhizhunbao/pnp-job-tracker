@@ -7,7 +7,7 @@ import { ANSWERS_KEY, DECISIONS, FIELDS, KNOWN_NO_FREE_LEAD, answeredBasics, bat
 const OLD_QUIZ = 'jobs_quiz_v1'
 const OLD_PR = 'plan_pr_v1'
 const base = (p: Partial<Answers> = {}): Answers =>
-  ({ status: '', nocs: [], provs: [], clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0, eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0, canadaEduBand: 0, permitBand: 0, resProv: '', fieldMatchBand: 0, eduProv: '', frenchBand: 0, studyMonthsBand: 0, studyLevelBand: 0, bandsV2: true, ...p })
+  ({ status: '', nocs: [], provs: [], clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0, eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0, goalBand: 0, canadaEduBand: 0, permitBand: 0, resProv: '', fieldMatchBand: 0, eduProv: '', eduYearsBand: 0, frenchBand: 0, studyMonthsBand: 0, studyLevelBand: 0, bandsV2: true, ...p })
 
 beforeEach(() => { localStorage.clear(); resetAnswersMemory() })
 

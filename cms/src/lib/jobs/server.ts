@@ -13,7 +13,9 @@ export {
   fetchJobById, fetchJobRows, fetchJobsPage, fetchMatchPage, fetchNocOpenCounts, fetchQuizFacts,
   fetchOccCompetition, fetchRelatedJobs, fetchSimilarEmployers, fetchSsrDims, fetchTopNocs,
   fetchTopNocsCached, fetchTotalAndProof, jobDescription,
+} from './functions'
+export {
   loadMatchDims, pnpOnly, scrubPii, searchNocByTitle, splitQ,
 } from './functions'
 export { mapEeCat, mapPnpOcc } from './rows'
-export type { CompanyDetail, RelatedJob, SimilarEmployer, SsrDims } from './types'
+export type { CompanyDetail, RelatedJob, SimilarEmployer, SsrDims, TopNoc } from './types'
