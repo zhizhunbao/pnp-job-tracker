@@ -1,7 +1,7 @@
 /**
  * 判定域的 HTTP 芯(第十一抽屉):/api/ruling/verdict(一键三合一判定卡)与
  * /api/ruling/pathways(职位详情页通道卡)。/api/ruling/profile(PR 问卷初筛)的
- * 300 行组装还在老壳里,搬芯 = 一次完整重写,另立一批。
+ * 翻译层 parseProfileBody、组装层 buildProfileWire 全在 functions,芯只管取数与回传。
  * rulingVerdictPostRoute 体内 `await req.json() as VerdictBody` 是跨边界断言:
  * 网络来的 body 先按声明形状收下,逐格判后才用。
  *
@@ -9,9 +9,12 @@
  * @time 2026-08-23 05:40:00
  */
 import { BAD_REQUEST } from '../http'
-import { E_NOC_REQUIRED, NOC5_RE, P_JOB, P_NOC, P_TEER, TEER_MAX } from './constants'
-import { getVerdictData, jobPathways, tripleWireOf } from './functions'
-import type { ClientAnswers, TripleWireResult, VerdictBody } from './types'
+import { getDb } from '../db/server'
+import { fetchOccCompetition } from '../jobs/server'
+import { fetchPilotQuota } from '../pathways/server'
+import { E_ANSWERS_REQUIRED, E_NOC_REQUIRED, NOC5_RE, P_JOB, P_NOC, P_TEER, TEER_MAX } from './constants'
+import { buildProfileWire, getVerdictData, jobPathways, loadProvinceCompetition, parseProfileBody, tripleWireOf } from './functions'
+import type { ClientAnswers, ProfileBody, TripleWireResult, VerdictBody } from './types'
 
 /**
  * GET /api/ruling/verdict?job=<id>:#287 一键三合一判定卡(批D),无档案态。
@@ -97,4 +100,44 @@ function wireRespond(wire: TripleWireResult): Response {
     return Response.json({ error: wire.error }, { status: wire.status })
   }
   return Response.json(wire)
+}
+
+/**
+ * POST /api/ruling/profile：PR 问卷完成后的个人路径初筛。只把统一题库答案翻成
+ * VerdictProfile 再调判定层；不依赖具体职位或雇主（具体岗位判定仍走
+ * /api/ruling/verdict，作为第二层验证）。翻译/验形/组装的口径决策全在
+ * parseProfileBody 与 buildProfileWire 的 JSDoc 里，芯只做四样取数与回传。
+ * nocs 全量回传（2026-08-16「要支持多个职位类别」）。
+ *
+ * @param req 请求（body 是 { answers, ticks, rows, wage, areaI }）。
+ * @returns { noc, nocs, rows, excluded, outside }；缺答案包/缺职业码 400。
+ */
+export async function rulingProfileRoute(req: Request): Promise<Response> {
+  let body: ProfileBody | null = null
+  try {
+    body = await req.json() as ProfileBody
+  } catch {
+    body = null
+  }
+  const parsed = parseProfileBody(body)
+  if (parsed == null) {
+    return Response.json({ error: E_ANSWERS_REQUIRED }, { status: BAD_REQUEST })
+  }
+  if (parsed.noc === '') {
+    return Response.json({ error: E_NOC_REQUIRED }, { status: BAD_REQUEST })
+  }
+  let occNocs = parsed.nocs
+  if (occNocs.length === 0) {
+    occNocs = [parsed.noc]
+  }
+  const db = await getDb()
+  const [data, comp, occRows, pilotQuota] = await Promise.all([
+    getVerdictData(), loadProvinceCompetition(db),
+    fetchOccCompetition({ db: db, nocs: occNocs }), fetchPilotQuota(db),
+  ])
+  const wire = buildProfileWire({
+    profile: parsed.profile, data: data, comp: comp,
+    occRows: occRows, pilotQuota: pilotQuota, targets: parsed.targets,
+  })
+  return Response.json({ noc: parsed.noc, nocs: occNocs, rows: wire.rows, excluded: wire.excluded, outside: wire.outside })
 }

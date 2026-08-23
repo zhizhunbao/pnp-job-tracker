@@ -19,6 +19,12 @@
  */
 
 import type { Db } from '../db'
+// eslint-disable-next-line local/no-import-in-leaf -- 职业竞争面行的形状归 jobs 域（特批牌形态）
+import type { OccCompetitionRow } from '../jobs'
+// eslint-disable-next-line local/no-import-in-leaf -- 试点名额聚合的形状归 pathways 域（特批牌形态）
+import type { PilotQuotaAgg } from '../pathways'
+// eslint-disable-next-line local/no-import-in-leaf -- 排序行的最小形状归 plan 域（jobsOf 回调的参型由它定；特批牌形态）
+import type { RankableRow } from '../plan'
 
 
 // =========================================================================
@@ -6457,3 +6463,682 @@ export type VerdictBody = {
    */
   answers: ClientAnswers
 }
+
+/**
+ * 透传的 json 值（问卷答案包的格；逐格验形后才用）。
+ */
+export type RCell = string | number | boolean | null | RCell[] | { [k: string]: RCell }
+
+/**
+ * 透传的 json 对象。
+ */
+export type RObj = { [k: string]: RCell }
+
+/**
+ * POST /api/ruling/profile 的请求体形状（跨边界断言目标）。
+ */
+export type ProfileBody = {
+  /**
+   * 统一题库答案包；不是对象 400。
+   */
+  answers: RObj | null
+
+  /**
+   * 加分项勾选（省:因素:批 → true）；验形不过的丢。
+   */
+  ticks: RObj | null
+
+  /**
+   * 官方档位直选（省:因素 → seq）；验形不过的丢。
+   */
+  rows: RObj | null
+
+  /**
+   * 时薪；非法落 null。
+   */
+  wage: RCell
+
+  /**
+   * BC 地区档；非法落 null。
+   */
+  areaI: RCell
+}
+
+/**
+ * 各省名额竞争度（E12-07 stats.difficulty，IRCC 开放数据）：
+ * value = 临时居民存量 ÷ 当年省提名名额。与「各省 EOI 池不可比」不是一回事：
+ * 这个是联邦一个源算的比值，九省同口径可排序（Frank 2026-08-12）。
+ */
+export type ProvCompetition = {
+  /**
+   * 竞争比。
+   */
+  ratio: number
+
+  /**
+   * 难度档文本；没有空串。
+   */
+  tier: string
+
+  /**
+   * 池子人数（缺位 0）。
+   */
+  pool: number
+
+  /**
+   * 当年名额（缺位 0）。
+   */
+  quota: number
+
+  /**
+   * 名额年份（缺位 0）。
+   */
+  quotaYear: number
+}
+
+/**
+ * 省码 → 竞争度。
+ */
+export type CompetitionMap = Record<string, ProvCompetition>
+
+/**
+ * 难度表一行的解析结果（rows 产；json 坏/比值缺 = comp null 不入图）。
+ */
+export type CompetitionPair = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 解得出的竞争度；解不出 null。
+   */
+  comp: ProvCompetition | null
+}
+
+/**
+ * 难度表原始行（SQL.PROV_DIFFICULTY）。
+ */
+export type ProfileDiffDbRow = {
+  /**
+   * 省码；库里可空。
+   */
+  province: string | null
+
+  /**
+   * 难度 json；jsonb 驱动给对象、文本列给串、没有 null。
+   */
+  difficulty: RCell
+}
+
+/**
+ * `loadProvinceCompetition` 的返回。
+ */
+export type CompetitionMapOut = Promise<CompetitionMap>
+
+/**
+ * `pathwayMatchesTargets` 的入参。
+ */
+export type MatchTargetsIn = {
+  /**
+   * 通道 key。
+   */
+  key: string
+
+  /**
+   * 行的省（'FED' 或两字码）。
+   */
+  province: string
+
+  /**
+   * 目标省；空 = 不限。
+   */
+  targets: string[]
+}
+
+/**
+ * 拆省并装饰后的一行（rankRows/pickOutside 的输入；#307 单源化：服务端一把尺
+ * 排完再下发，客户端只渲染不重排）。
+ */
+export type SplitRow = {
+  /**
+   * 通道 key。
+   */
+  key: string
+
+  /**
+   * 省（联邦区域线已拆到省）。
+   */
+  province: string
+
+  /**
+   * 命中的通道名。
+   */
+  stream: string
+
+  /**
+   * 判定档。
+   */
+  verdict: string
+
+  /**
+   * 障碍档；没有 null。
+   */
+  tier: number | null
+
+  /**
+   * tier 的起算点（#319：在读学生的经验型 tier 要等毕业拿工签才起算）。
+   */
+  tierBasis: string
+
+  /**
+   * 这段等待要不要全职（取自官方条文行）。
+   */
+  tierFullTime: boolean
+
+  /**
+   * 最难那道闸；没有 null。
+   */
+  blockedBy: string | null
+
+  /**
+   * 判不了是因为他还没答哪几道题。
+   */
+  missingSlots: string[]
+
+  /**
+   * 理由行（措辞层键+参数，quote 随行）。
+   */
+  reasons: VerdictReason[]
+
+  /**
+   * 打分制通道的估分与官方线；非打分制 null。
+   */
+  score: PathwayScore | null
+
+  /**
+   * 该省门槛数据的可得性。
+   */
+  availability: string
+
+  /**
+   * 估分上界也摸不到线（沉底段）。
+   */
+  belowLine: boolean
+
+  /**
+   * 估分下界已 ≥ 线（同档内提前）。
+   */
+  aboveLine: boolean
+
+  /**
+   * 该省名额竞争度；联邦区域线行 null（AIP/RCIP/FCIP 没有 EOI 池，
+   * 不许拿该省 PNP 的名额竞争比充数）。
+   */
+  competition: ProvCompetition | null
+}
+
+/**
+ * `splitDecorated` 的入参。
+ */
+export type SplitDecoratedIn = {
+  /**
+   * 引擎原行。
+   */
+  rows: PathwayVerdict[]
+
+  /**
+   * 目标省（拆区域线时取交；空 = 全拆）。
+   */
+  targets: string[]
+
+  /**
+   * 省码 → 竞争度（非区域行按省挂）。
+   */
+  comp: CompetitionMap
+}
+
+/**
+ * 单行装饰的入参（splitDecorated 内部用）。
+ */
+export type SplitRowOfIn = {
+  /**
+   * 引擎原行。
+   */
+  row: PathwayVerdict
+
+  /**
+   * 拆完的省。
+   */
+  province: string
+
+  /**
+   * 该行的竞争度（区域线行一律 null）。
+   */
+  competition: ProvCompetition | null
+}
+
+/**
+ * 反事实一格（L2-09：拿到该省 offer 之后这条路的判定；只给被 offer 卡住的行）。
+ */
+export type AfterOfferWire = {
+  /**
+   * 反事实判定档。
+   */
+  verdict: string
+
+  /**
+   * 反事实下还剩的闸；没有 null。
+   */
+  blockedBy: string | null
+
+  /**
+   * 反事实障碍档。
+   */
+  tier: number | null
+}
+
+/**
+ * 估分与官方线的下发格（三态互斥：两头硬结论、中间如实留白 —— 2026-08-16）。
+ */
+export type WireScore = {
+  /**
+   * 估分下界（加分项按 0 记）。
+   */
+  value: number
+
+  /**
+   * 估分上界；算不出 null。
+   */
+  ceiling: number | null
+
+  /**
+   * 最近抽选线；没有 null。
+   */
+  refLine: number | null
+
+  /**
+   * 线所属通道；没有 null。
+   */
+  refStream: string | null
+
+  /**
+   * value 是下界吗（展示层据此说不说「取决于加分项」）。
+   */
+  partial: boolean
+}
+
+/**
+ * 一行方案的下发格（前端 Decision 的契约按这个写）。
+ */
+export type ProfileWireRow = {
+  /**
+   * 通道 key。
+   */
+  key: string
+
+  /**
+   * 省。
+   */
+  province: string
+
+  /**
+   * 判定档。
+   */
+  verdict: string
+
+  /**
+   * 障碍档；没有 null。
+   */
+  tier: number | null
+
+  /**
+   * 该省门槛数据的可得性。
+   */
+  availability: string
+
+  /**
+   * 最难那道闸；没有 null（被硬门槛卡住时方案卡不能再写「优先核对」）。
+   */
+  blockedBy: string | null
+
+  /**
+   * tier 起算点（#319）。
+   */
+  tierBasis: string
+
+  /**
+   * 这段等待要不要全职。
+   */
+  tierFullTime: boolean
+
+  /**
+   * 全部缺口闸键（#324：原因列要逐行差异，单一 blockedBy 不够）。
+   */
+  gaps: string[]
+
+  /**
+   * 还没答的题（展示层据此挂提醒）。
+   */
+  missingSlots: string[]
+
+  /**
+   * 该省名额竞争度；联邦区域线 null。
+   */
+  competition: ProvCompetition | null
+
+  /**
+   * 该省该职业在招岗数（与排序同源，#307）；非省级行 null。
+   */
+  jobsN: number | null
+
+  /**
+   * RCIP/FCIP 社区名额状态（省×制度聚合）；非试点行 null。
+   */
+  pilotQuota: PilotQuotaAgg | null
+
+  /**
+   * 反事实；只给被 offer 卡住的行，其余 null。
+   */
+  afterOffer: AfterOfferWire | null
+
+  /**
+   * 估分与官方线；非打分制 null。
+   */
+  score: WireScore | null
+
+  /**
+   * 估分上界也摸不到线。
+   */
+  belowLine: boolean
+
+  /**
+   * 估分下界已 ≥ 线。
+   */
+  aboveLine: boolean
+}
+
+/**
+ * 已排除通道的理由下发格（#318：excluded 不再整条隐身）。
+ */
+export type ExcludedReasonWire = {
+  /**
+   * 措辞层键；没有 null。
+   */
+  key: string | null
+
+  /**
+   * 措辞参数；没有 null。
+   */
+  params: Record<string, string | number> | null
+
+  /**
+   * 兑好的文本。
+   */
+  text: string
+
+  /**
+   * 官方原句；没有 null。
+   */
+  quote: string | null
+}
+
+/**
+ * 一条已排除通道。
+ */
+export type ExcludedRowWire = {
+  /**
+   * 通道 key。
+   */
+  key: string
+
+  /**
+   * 省。
+   */
+  province: string
+
+  /**
+   * 第一条排除理由；没有 null。
+   */
+  reason: ExcludedReasonWire | null
+}
+
+/**
+ * 省外提示里的对照边（措辞层拿 insideBest 摆对照，不再裸称「更优」）。
+ */
+export type OutsideSideWire = {
+  /**
+   * 通道 key。
+   */
+  key: string
+
+  /**
+   * 省。
+   */
+  province: string
+
+  /**
+   * 竞争比；没数据 null。
+   */
+  ratio: number | null
+
+  /**
+   * 障碍档。
+   */
+  tier: number | null
+
+  /**
+   * 最难那道闸；没有 null。
+   */
+  blockedBy: string | null
+}
+
+/**
+ * 省外提示（#302/#303：与主排序共用 planRank 同一把尺）。
+ */
+export type OutsideWire = {
+  /**
+   * 省外那一边。
+   */
+  key: string
+
+  /**
+   * 省。
+   */
+  province: string
+
+  /**
+   * 竞争比；没数据 null。
+   */
+  ratio: number | null
+
+  /**
+   * 障碍档。
+   */
+  tier: number | null
+
+  /**
+   * 最难那道闸；没有 null。
+   */
+  blockedBy: string | null
+
+  /**
+   * 目标省内最好的那条；没有 null。
+   */
+  inside: OutsideSideWire | null
+}
+
+/**
+ * `parseProfileBody` 的返回：验完形的档案与附带三样。
+ */
+export type ProfileParse = {
+  /**
+   * 翻好的引擎档案。
+   */
+  profile: VerdictProfile
+
+  /**
+   * 验过形的职业码清单（可空）。
+   */
+  nocs: string[]
+
+  /**
+   * 主职业码；空串 = 没给（路由 400）。
+   */
+  noc: string
+
+  /**
+   * 目标省（验过形）。
+   */
+  targets: string[]
+}
+
+/**
+ * `buildProfileWire` 的入参（取数全在路由完成，这里纯组装）。
+ */
+export type ProfileWireIn = {
+  /**
+   * 引擎档案。
+   */
+  profile: VerdictProfile
+
+  /**
+   * 判定底表（getVerdictData 的单件缓存）。
+   */
+  data: VerdictData
+
+  /**
+   * 省码 → 竞争度。
+   */
+  comp: CompetitionMap
+
+  /**
+   * 该职业在各省的竞争面（jobs 域取）。
+   */
+  occRows: OccCompetitionRow[]
+
+  /**
+   * 试点名额聚合（pathways 域取）。
+   */
+  pilotQuota: PilotQuotaAgg[]
+
+  /**
+   * 目标省。
+   */
+  targets: string[]
+}
+
+/**
+ * `buildProfileWire` 的返回（不含 noc/nocs —— 那两样路由自己回传）。
+ */
+export type ProfileWireOut = {
+  /**
+   * 排好序的方案行。
+   */
+  rows: ProfileWireRow[]
+
+  /**
+   * 已排除通道（单列一组）。
+   */
+  excluded: ExcludedRowWire[]
+
+  /**
+   * 省外提示；没有 null。
+   */
+  outside: OutsideWire | null
+}
+
+/**
+ * plan 排序行的本地名（jobsOf 回调收它 —— 参型由 plan 定，收窄会逆变报错）。
+ */
+export type PlanRow = RankableRow
+
+/**
+ * 「该省该职业在招岗数」取数回调（RankCtx.jobsOf 的形状）。
+ */
+export type JobsOfFn = (row: PlanRow) => number | null
+
+/**
+ * 反事实结果表：通道 key → 拿到 offer 之后的判定行；档案明确没 offer 才跑。
+ */
+export type AfterMap = Map<string, PathwayVerdict>
+
+/**
+ * 学历格的本地名（VerdictProfile.edu 的取值域；白名单验过才断言进来）。
+ */
+export type EduCell = VerdictProfile['edu']
+
+/**
+ * 持照格的本地名。
+ */
+export type PermitCell = VerdictProfile['permit']
+
+/**
+ * `wireRowOf` 的入参（查表在循环里做完，这里纯拼装）。
+ */
+export type WireRowOfIn = {
+  /**
+   * 排好序的一行。
+   */
+  row: SplitRow
+
+  /**
+   * 该省该职业在招岗数；非省级行 null。
+   */
+  jobsN: number | null
+
+  /**
+   * 反事实行；不适用 null。
+   */
+  after: PathwayVerdict | null
+
+  /**
+   * 试点名额；非试点行 null。
+   */
+  pilot: PilotQuotaAgg | null
+}
+
+/**
+ * `parseProfileBody` 的入参（解不开的 body 就是 null）。
+ */
+export type MaybeProfileBody = ProfileBody | null
+
+/**
+ * `parseProfileBody` 的返回（body 非法是 null）。
+ */
+export type MaybeProfileParse = ProfileParse | null
+
+/**
+ * json 格里的标量（cellOr 的返回；缺席折空串）。
+ */
+export type ScalarCell = string | number | boolean
+
+/**
+ * 可缺位的布尔（没答不算「没有」）。
+ */
+export type MaybeBool = boolean | null
+
+/**
+ * 可缺位的数。
+ */
+export type MaybeNum = number | null
+
+/**
+ * 可缺位的文本（职业码空串折 null 那类）。
+ */
+export type MaybeStr = string | null
+
+/**
+ * 排序行清单。
+ */
+export type SplitRows = SplitRow[]
+
+/**
+ * 可缺位的竞争度。
+ */
+export type MaybeCompetition = ProvCompetition | null
+
+/**
+ * 该职业在各省的竞争面清单（jobs 行的本域清单名）。
+ */
+export type OccRowsList = OccCompetitionRow[]

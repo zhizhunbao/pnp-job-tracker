@@ -2972,3 +2972,131 @@ export const NOC5_RE = /^\d{5}$/
  * 错误体：noc 参数缺位或非法。
  */
 export const E_NOC_REQUIRED = 'noc required'
+
+/**
+ * 问卷「你现在的情况」→ 引擎 status 词（引擎只认 other/study/worker）。
+ */
+export const STATUS_MAP: Record<string, string> = {
+  /**
+   * 人在海外。
+   */
+  overseas: 'other',
+
+  /**
+   * 在读学生。
+   */
+  studying: 'study',
+
+  /**
+   * 在职工签。
+   */
+  working: 'worker',
+
+  /**
+   * 境内找工作。
+   */
+  jobhunting: 'other',
+}
+
+/**
+ * 加分项勾选键的形状（省:因素:批 三段；信任边界校验 —— 它直接进分值
+ * 计算，放任自由文本进来等于让请求方自己写分）。
+ */
+export const TICK_KEY_RE = /^[A-Z]{2}:[A-Za-z][A-Za-z0-9]{0,23}:\d{1,2}$/
+
+/**
+ * 官方档位直选键的形状（省:因素；同一条信任边界）。
+ */
+export const ROW_KEY_RE = /^[A-Z]{2}:[A-Za-z][A-Za-z0-9]{0,23}$/
+
+/**
+ * 勾选/档位总量封顶。
+ */
+export const TICKS_N_MAX = 64
+
+/**
+ * 档位 seq 上限。
+ */
+export const ROW_SEQ_MAX = 99
+
+/**
+ * 时薪上限（超出 = 不是时薪）。
+ */
+export const WAGE_MAX = 1000
+
+/**
+ * BC 地区档上限。
+ */
+export const AREA_I_MAX = 20
+
+/**
+ * 两位省码形状。
+ */
+export const PROV2_RE = /^[A-Z]{2}$/
+
+/**
+ * 省码或北地区（学历省/现居省两题的取值域）。
+ */
+export const PROV_OR_TERR_RE = /^([A-Z]{2}|TERR)$/
+
+/**
+ * 学历白名单（fields.ts engineKey 送来的 edu；与 points 的 EduBand 逐字对齐 ——
+ * 2026-08-15「EE 为什么还会排在前面」溯源：此前路由写死 null，CRS 估分永远算不出）。
+ */
+export const EDU_KEY_VALUES: string[] = ['doctorate', 'master', 'bachelor', 'tradeCert', 'diploma2y', 'cert1y', 'highschool']
+
+/**
+ * 持照白名单（AB/PE 工签闸、NL 的 PGWP 闸靠它；没答留 null 不猜）。
+ */
+export const PERMIT_VALUES: string[] = ['study', 'pgwp', 'work', 'none']
+
+/**
+ * 错误体：答案包没带。
+ */
+export const E_ANSWERS_REQUIRED = 'answers required'
+
+/**
+ * 被 offer 闸卡住的 blockedBy 值（反事实只给这档）。
+ */
+export const GATE_OFFER = 'offer'
+
+/**
+ * 理由行的 gap 档（原因列逐行差异用）。
+ */
+export const REASON_GAP = 'gap'
+
+/**
+ * 理由行的 excluded 档。
+ */
+export const REASON_EXCLUDED = 'excluded'
+
+/**
+ * 难度 json 里名额竞争因子的 key（口径与 points/rows 的 COMP_KEY 同源；
+ * 形状/常量重复先忍着，行为不开叉）。
+ */
+export const COMP_KEY = 'comp'
+
+/**
+ * 试点名额聚合的键分隔（省|制度）。
+ */
+export const PILOT_KEY_SEP = '|'
+
+/**
+ * RCIP 的通道 key（试点名额只挂这两条的省级行）。
+ */
+export const KEY_RCIP = 'RCIP'
+
+/**
+ * FCIP 的通道 key。
+ */
+export const KEY_FCIP = 'FCIP'
+
+/**
+ * 引擎判定档里的排除档（#318：单列一组不隐身）。
+ */
+export const VERDICT_EXCLUDED = 'excluded'
+
+/**
+ * 从五位职业码里抽 TEER（第二位；具名捕获组，不按位取值）。
+ */
+export const NOC_TEER_RE = /^\d(?<teer>\d)\d{3}$/

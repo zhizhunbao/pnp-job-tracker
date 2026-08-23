@@ -8,11 +8,12 @@
  * @time 2026-08-21 21:15:00
  */
 
-import { count, numOrNull, text, textOrNull } from '../db'
-import { DATE_LEN, DATE_LEN_DAY, FACTOR_ROW, SUBJECT } from './constants'
+import { count, jsonOrNull, numOrNull, text, textOrNull } from '../db'
+import {
+  COMP_KEY, DATE_LEN, DATE_LEN_DAY, FACTOR_ROW, SUBJECT,
+} from './constants'
 import type {
-  DirectoryRowIn, DesignatedEmployerRow, Row, EmployerFacts, Cell, SubjectOfOut, VerdictDrawRow, EeRow,
-  OccupationRow, ReqRow, ScoreRow, TripleJobOfIn, TripleJob, OpsStatRow, ProvCountRow,
+  Cell, CompetitionPair, DesignatedEmployerRow, DirectoryRowIn, EeRow, EmployerFacts, MaybeNum, OccupationRow, OpsStatRow, ProfileDiffDbRow, ProvCompetition, ProvCountRow, RCell, ReqRow, Row, ScoreRow, SubjectOfOut, TripleJob, TripleJobOfIn, VerdictDrawRow,
 } from './types'
 
 /**
@@ -224,4 +225,82 @@ export function toOpsStat(row: Row): OpsStatRow {
     value: numOrNull(row.value), province: text(row.province), metric: text(row.metric),
     period: text(row.period), asOf: text(row.as_of), url: text(row.url),
   }
+}
+
+/**
+ * 一行难度表（SQL.PROV_DIFFICULTY）→ 省级竞争度：json 解析（词汇 jsonOrNull）与
+ * 逐格拆解都在这里做完。列缺/值坏/比值非数 = comp null 不入图 ——
+ * 竞争度是加分项不是前置条件，方案照常给。
+ * pool/quota/quotaYear 沿并入前口径：缺位折 0（展示层拿 0 当「没数」）。
+ *
+ * @param r 库里的一行。
+ * @returns 省码 + 解得出的竞争度（解不出 null）。
+ */
+export function toCompetitionPair(r: ProfileDiffDbRow): CompetitionPair {
+  const province = text(r.province)
+  const d = jsonOrNull(r.difficulty)
+  if (d == null || typeof d !== 'object' || Array.isArray(d)) {
+    return { province: province, comp: null }
+  }
+  let factor: RCell = null
+  const factors = d.factors
+  if (Array.isArray(factors)) {
+    for (const f of factors) {
+      if (f != null && typeof f === 'object' && Array.isArray(f) === false && f.key === COMP_KEY) {
+        factor = f
+        break
+      }
+    }
+  }
+  if (factor == null || typeof factor !== 'object' || Array.isArray(factor)) {
+    return { province: province, comp: null }
+  }
+  const ratio = scalarNumOf(factor.value)
+  if (ratio == null) {
+    return { province: province, comp: null }
+  }
+  let pool = 0
+  const poolN = scalarNumOf(factor.pool)
+  if (poolN != null) {
+    pool = poolN
+  }
+  let quota = 0
+  const quotaN = scalarNumOf(factor.quota)
+  if (quotaN != null) {
+    quota = quotaN
+  }
+  let quotaYear = 0
+  const qyN = scalarNumOf(factor.quotaYear)
+  if (qyN != null) {
+    quotaYear = qyN
+  }
+  const comp: ProvCompetition = { ratio: ratio, tier: scalarTextOf(d.tier), pool: pool, quota: quota, quotaYear: quotaYear }
+  return { province: province, comp: comp }
+}
+
+/**
+ * 词汇：json 格里的数 —— 标量才进 numOrNull，数组/对象直接 null（json 自由形状
+ * 比库列多两态，先收窄再进词汇表）。
+ *
+ * @param x json 里的一格。
+ * @returns 数；不是标量或解不出是 null。
+ */
+function scalarNumOf(x: RCell): MaybeNum {
+  if (typeof x === 'number' || typeof x === 'string') {
+    return numOrNull(x)
+  }
+  return null
+}
+
+/**
+ * 词汇：json 格里的文本 —— 只认字符串，其余空串。
+ *
+ * @param x json 里的一格。
+ * @returns 文本；不是字符串是空串。
+ */
+function scalarTextOf(x: RCell): string {
+  if (typeof x === 'string') {
+    return x
+  }
+  return ''
 }

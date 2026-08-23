@@ -1331,6 +1331,7 @@ const API_DONE = [
   'src/app/api/resume/route.ts',
   'src/app/api/resume/extract/route.ts',
   'src/app/api/resume/match/route.ts',
+  'src/app/api/ruling/profile/route.ts',
 ]
 
 const REFACTORED = [

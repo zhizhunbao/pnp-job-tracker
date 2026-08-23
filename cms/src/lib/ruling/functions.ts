@@ -24,79 +24,19 @@ import {
   byCostAsc, byCountDesc, byDrawDateDesc, byListRankThenMonths, byNumberAsc, byObstacleThenTier, byOpeningsDesc, byTierAsc,
 } from './callbacks'
 import { CACHE } from './variables'
-import { directoryRow, employerFactsOf, lmiaNocsCellOf, passRow, toDesignated, toDraw, toEeGrid, toOccupation, toOpsStat, toProvCount, toRequirement, toScoreFactor, tripleJobOf } from './rows'
+import { directoryRow, employerFactsOf, lmiaNocsCellOf, passRow, toCompetitionPair, toDesignated, toDraw, toEeGrid, toOccupation, toOpsStat, toProvCount, toRequirement, toScoreFactor, tripleJobOf } from './rows'
 import { evaluateRequirements, teerHit } from '../gauge'
-import { estimateCrs, estimateMbEoi, gridStreamOf, scoreProvince, streamMatches } from '../points'
-import { askLabels, fieldMatchExemptionOf, gateLabels, gateOf, PATHWAYS } from '../pathways'
+import { estimateCrs, estimateMbEoi, gridStreamOf, isAboveLine, isBelowLine, scoreProvince, streamMatches } from '../points'
+import { askLabels, fieldMatchExemptionOf, gateLabels, gateOf, PATHWAYS, regionProvincesOf, uiOf } from '../pathways'
+import { pickOutside, rankRows } from '../plan'
+import type { RankCtx } from '../plan'
+import type { PilotQuotaAgg } from '../pathways'
+import type { OccCompetitionRow } from '../jobs'
 import {
-  AB_LOCAL_EXP, AIP_PROVINCES, AIP_SOURCE, AMP, AND_WORD, APPLIES_OFFER, ASKABLE_FACTORS, AVAIL, BASIS,
-  BASIS_MIN_YEARS, BLOCKED_BY, BLOCK_COST, CARD_SLOT, CARD_STATE, CASES, CASE_C01, CASE_ID, CASE_TIERS,
-  CLB_IN_LABEL, CLB_TARGET_DEFAULT, COMPARE_ROLE, CONDITION, CRS_GRID_LABEL, DESIGNATION_MULTI, EDU, EDU_TO_MB, EMPLOYMENT_OFFER_STREAM, EMPTY_JSON, EMP_FACTOR, EMP_KEY, EMP_STATE, EMP_UNIT,
-  EVIDENCE_KIND, EXP_BASIS, FACTOR, FACTOR_ROW, FED, FIRST_OFFICIAL_LANGUAGE, FULL_TIME_IN_LABEL, GATE_ASK,
-  GATE_KEYS, GATE_NEED, GATE_OF, GRID, GRID_AUTO_FACTORS, HTTP, INDEMAND, ITEM, JOB_ROW_RANK, KEY_PREFIX,
-  KEY_SUFFIX_NOT_COLLECTED, KIND_RULE, LEVER, MB_ADAPT_EDU_YEARS, MB_EDU, MB_EDU_YEARS, MB_RISK_STUDY, MB_RISK_WORK,
-  MB_SWM_STREAM, MONTHS, MONTHS_PER_YEAR, NAME_KEEP, NL_DESIGNATED_LABEL, NOC_CODE, NO_BLOCK_COST, NO_PROVINCE_RANK,
-  OA_SPLIT, OCC_INELIGIBLE, OCC_LIST_NONE, ON_GRAD_MIN_YEARS, OPS_METRIC, OPT_IN_GATES, PERMIT, PERMIT_KINDS, PROV,
-  PROVINCE_CODE, PROVINCE_LOCAL_EXP, PV_KEY, PV_KEY_LANG_GAP, PV_TEXT, RANK, REASON, RECENT_ON_GRADUATE, REQ_FACTOR,
-  REQ_UNIT, SCORE_FACTOR, SECTOR_PUBLIC, SEP, SINK, SLOT, SLOTS_OF_FACTOR, SOURCE_PROFILE, SPACE, STATE,
-  STATE_OF_RULE, STATUS, STATUS_OF, STATUS_OVERSEAS, SUBJECT, SUM_KIND, TEER5_NOC, TEER_DIGIT, TEER_LOWEST,
-  TEER_RANGE_PARTS, TEER_REASONS_SHOWN, TEER_STREAM, TIER, TIER_BASIS, TIER_BOUND, TIER_OF, TTL, TV_EMP,
-  TV_EMP_PREFIX, TV_LABEL, TV_NEXT, TV_OCC, TV_PERSON, TV_PERSON_PREFIX, TV_SUM, TV_YOU, UNKNOWN_BLOCK_COST,
-  VERDICT, VERDICT_RANK, WAGE_RULE_DEFAULT, WIRE_ERR,
+  AB_LOCAL_EXP, AIP_PROVINCES, AIP_SOURCE, AMP, AND_WORD, APPLIES_OFFER, AREA_I_MAX, ASKABLE_FACTORS, AVAIL, BASIS, BASIS_MIN_YEARS, BLOCKED_BY, BLOCK_COST, CARD_SLOT, CARD_STATE, CASES, CASE_C01, CASE_ID, CASE_TIERS, CLB_IN_LABEL, CLB_TARGET_DEFAULT, COMPARE_ROLE, CONDITION, CRS_GRID_LABEL, DESIGNATION_MULTI, EDU, EDU_KEY_VALUES, EDU_TO_MB, EMPLOYMENT_OFFER_STREAM, EMPTY_JSON, EMP_FACTOR, EMP_KEY, EMP_STATE, EMP_UNIT, EVIDENCE_KIND, EXP_BASIS, E_ANSWERS_REQUIRED, FACTOR, FACTOR_ROW, FED, FIRST_OFFICIAL_LANGUAGE, FULL_TIME_IN_LABEL, GATE_ASK, GATE_KEYS, GATE_NEED, GATE_OF, GATE_OFFER, GRID, GRID_AUTO_FACTORS, HTTP, INDEMAND, ITEM, JOB_ROW_RANK, KEY_FCIP, KEY_PREFIX, KEY_RCIP, KEY_SUFFIX_NOT_COLLECTED, KIND_RULE, LEVER, MB_ADAPT_EDU_YEARS, MB_EDU, MB_EDU_YEARS, MB_RISK_STUDY, MB_RISK_WORK, MB_SWM_STREAM, MONTHS, MONTHS_PER_YEAR, NAME_KEEP, NL_DESIGNATED_LABEL, NOC5_RE, NOC_CODE, NOC_TEER_RE, NO_BLOCK_COST, NO_PROVINCE_RANK, OA_SPLIT, OCC_INELIGIBLE, OCC_LIST_NONE, ON_GRAD_MIN_YEARS, OPS_METRIC, OPT_IN_GATES, PERMIT, PERMIT_KINDS, PERMIT_VALUES, PILOT_KEY_SEP, PROV, PROV2_RE, PROVINCE_CODE, PROVINCE_LOCAL_EXP, PROV_OR_TERR_RE, PV_KEY, PV_KEY_LANG_GAP, PV_TEXT, RANK, REASON, REASON_EXCLUDED, REASON_GAP, RECENT_ON_GRADUATE, REQ_FACTOR, REQ_UNIT, ROW_KEY_RE, ROW_SEQ_MAX, SCORE_FACTOR, SECTOR_PUBLIC, SEP, SINK, SLOT, SLOTS_OF_FACTOR, SOURCE_PROFILE, SPACE, STATE, STATE_OF_RULE, STATUS, STATUS_MAP, STATUS_OF, STATUS_OVERSEAS, SUBJECT, SUM_KIND, TEER5_NOC, TEER_DIGIT, TEER_LOWEST, TEER_MAX, TEER_RANGE_PARTS, TEER_REASONS_SHOWN, TEER_STREAM, TICKS_N_MAX, TICK_KEY_RE, TIER, TIER_BASIS, TIER_BOUND, TIER_OF, TTL, TV_EMP, TV_EMP_PREFIX, TV_LABEL, TV_NEXT, TV_OCC, TV_PERSON, TV_PERSON_PREFIX, TV_SUM, TV_YOU, UNKNOWN_BLOCK_COST, VERDICT, VERDICT_EXCLUDED, VERDICT_RANK, WAGE_MAX, WAGE_RULE_DEFAULT, WIRE_ERR,
 } from './constants'
 import type {
-  AnswerBoolIn, AnswerBoolOut, AnswerNumIn, AnswerNumOut, AnswerTextIn, AnswerTextOut, ApplyOpsPeriodIn,
-  ApplyOpsRowIn, AskableSlotIn, AskableSlotOut, AvailabilityOfIn, Availability, BasisParamIn, BasisParamOut,
-  BlockCostIn, BlockedBy, BoolOfIn, BoolOfOut, BuildTripleWireIn, BuildTripleWireOut, CardFollowupsIn,
-  CardFollowupsOut, CardRuleProfileIn, EngineProfile, CaseAnswerIn, CaseAnswerOut, CasePagesOut,
-  CaseProfilesOut, CaseTier, Cell, ClbBoostLeverIn, ClbBoostLeverOut, CompareRowsIn, CompareRowsOut,
-  ConcludeBlockedIn, ConcludeBlockedOut, ConcludeIn, ConcludeNeedsInfoIn, ConcludeNeedsInfoOut, ConcludeOpenIn,
-  ConcludeOpenOut, TripleConclusion, ConditionHoldsIn, ConditionHoldsOut, CountableMonthsIn,
-  CountableMonthsOut, CrossProvinceRowsIn, CrossProvinceRowsOut, CrsProfile, CrsScoreIn, MaybeScore,
-  DesignatedEmployerRow, DesignatedRowIn, DesignatedRowOut, EduBand, EeRow, EmpAcc, EmpDesignationRowIn,
-  EmpDesignationRowOut, EmpNextStepRowIn, TripleRow, EmpPublicSectorRowIn, EmpPublicSectorRowOut, EmpReqOfIn,
-  EmpReqOfOut, EmpRevenueRowIn, EmpRowsOfIn, EmpRowsOfOut, EmpStaffFactRowIn, EmpStaffFactRowOut,
-  EmpThresholdRowsIn, EmpThresholdRowsOut, EmployerFacts, EmployerNameSegmentsOut, EmployerRowsIn,
-  EmployerRowsOut, EmployerVerdictIn, EmployerVerdictItem, EmployerVerdict, EngineResult, EvOfDrawIn, Evidence,
-  EvOfFactorIn, EvOfOccIn, EvOfReqIn, EvaluateOneIn, PathwayVerdict, ExcludedRowIn, ExcludedRowOut,
-  ExperienceGapsIn, ExperienceGapsOut, ExperienceReasonsIn, ExperienceReasonsOut, FactorNamesIn,
-  FactorNamesOut, FactorThreshold, FastestRowIn, FedLangAppliesIn, FedLanguageReasonsIn, LanguageReasonsOut,
-  FieldMatchAnswerIn, FieldMatchAnswerOut, FirstNocIn, FirstNocOut, FoldTriStateIn, FoldTriStateOut,
-  FoldVerdictIn, GateAnswersIn, GateAnswersOut, GateAsks, GateKeyOfIn, GateManifestIn, GateManifestOut,
-  GetDesignatedEmployersIn, GetDesignatedEmployersOut, GetVerdictDataOut, GotWorseIn, GridCeilingIn,
-  GridCeilingOut, GridMatchesStreamIn, GridProfile, GridRowForIn, GridRowForOut, GridSelfProfileIn,
-  HarderBlockIn, HarderBlockOut, HasEnoughProfileIn, HasRequiredSlotsIn, HaveMonthsOfIn, HaveMonthsOfOut,
-  ItemVerdict, JobPathwayRow, JobPathwaysIn, JobPathwaysOut, JobRowRankIn, JudgeableRowIn, LanguageReasonsIn,
-  LeverGain, ListRequiredReasonIn, ListRequiredReasonOut, LmiaNocsOfIn, LmiaNocsOfOut,
-  LoadVerdictTablesOut, LocalExperienceHoldsIn, LocalExperienceHoldsOut, LowestMonthsRowIn, LowestMonthsRowOut,
-  MatchDesignationIn, MatchDesignationOut, MaxClbInIn, MaxClbInOut, MbEduOfIn, MbEduBand, MbEoiProfile,
-  MbProfileOfIn, MbScoreIn, MbScoreOut, MbWarningsIn, MbWarningsOut, MergeOverridesIn, MergeOverridesOut,
-  MonthsOfReqIn, MonthsOfReqOut, MostSpecificRowsIn, MostSpecificRowsOut, MyPathway, MyPathwaysIn,
-  MyPathwaysOut, NameRow, NamedList, NamedListsIn, NamedListsOut, NlDesignatedReasonIn, NlDesignatedReasonOut,
-  NotCollectedRowIn, NotCollectedRowOut, NotCollectedVerdictIn, ObstacleRankIn, OccExcludedRowsIn,
-  OccExcludedRowsOut, OccListNoneForIn, OccListNoneForOut, OccListedRowsIn, OccListedRowsOut, OccNoListRowIn,
-  OccTeerRowIn, OccupationListReasonsIn, OccupationListReasonsOut, OccupationRow, OccupationRowsIn,
-  OccupationRowsOut, OfferOverrideIn, OfferOverrideOut, OneRowIn, OneRowOut, OopGradReasonIn, OopGradReasonOut,
-  OpeningCount, OpsByProvinceIn, OpsByProvinceOut, OpsFacts, OtherProvinceGraduateHoldsIn,
-  OtherProvinceGraduateHoldsOut, OutOfProvinceGradGapIn, OutOfProvinceGradGapOut, OwnTicksOfIn, OwnTicksOfOut,
-  ParseNocDictIn, ParseNocDictOut, ParseWageRuleIn, WageRule, PathLeversIn, PathLeversOut, PathVerdictIn,
-  PathVerdictOut, PathwayFactsIn, PathwayFactsOut, PathwayScore, PermitOfIn, PermitOfOut, PersonRowsIn,
-  PersonRowsOut, PickGateIn, GateEval, PickGridFactorsIn, PickGridFactorsOut, PickOnLangRowIn,
-  PickOnLangRowOut, PickScoreRowIn, PickScoreRowOut, PickedFactor, ProfileOfOccupationIn, VerdictProfile,
-  ProfileSlotsIn, AnswerBag, ProfileWithNocIn, ProfileWithOfferIn,
-  ProvinceGridScoreIn, ProvinceOfIn, ProvinceOfOut, PushItemIn, QuoteOfOccIn, QuoteOfReqIn, RankedBlock,
-  RankedJobRow, RankedPathway, RankedVerdict, RecentGraduateHoldsIn, RecentGraduateHoldsOut, RefDrawIn,
-  RefDrawOut, ReqMonths, ReqRow, ReqsOfIn, ReqsOfOut, ResidenceGapIn, ResidenceGapOut, ResidenceReasonIn,
-  ResidenceReasonOut, RuleProfileOfIn, ScoreAndRefLineIn, ScoreAndRefLineOut,
-  ScoreGulfReasonIn, ScoreGulfReasonOut, ScoreOverride, ScoreRow, SelfEmpExcludedInIn, SessionOfIn,
-  SessionUser, StatusGateAnswerIn, StatusGateAnswerOut, TargetProvincesOfIn, TargetProvincesOfOut,
-  TeerDowngradeLeverIn, TeerDowngradeLeverOut, TeerScope, TeerScopeAcc, TeerScopesIn, TeerScopesOut, Tier,
-  TierBasisOfIn, TierBasisOfOut, TierFullTimeOfIn, TierGap, TierOfMonthsIn, TierOfMonthsOut, TierRowsIn,
-  TierRowsOut, TimeRowIn, TotalExpMonthsIn, TotalExpMonthsOut, TrainableRow, TrainableRowsIn, TrainableRowsOut,
-  TripleCompanyOfIn, TripleCompanyOfOut, TripleCompareRole, TripleCompareRow, TripleProfileOfIn, TripleProfile,
-  TripleVerdictIn, TripleCard, TripleWireOfIn, TripleWireOfOut, TripleWireRow, UniversalValueIn,
-  UniversalValueOut, VerdictDrawRow, VerdictLever, VerdictRankIn, VerdictReason, VerdictReasonsIn,
-  VerdictReasonsOut, WagePointsIn, WireRowsIn, WireRowsOut, WorkPermitSoonIn, WorstGapIn, WorstGapOut,
+  AfterMap, AfterOfferWire, AnswerBag, AnswerBoolIn, AnswerBoolOut, AnswerNumIn, AnswerNumOut, AnswerTextIn, AnswerTextOut, ApplyOpsPeriodIn, ApplyOpsRowIn, AskableSlotIn, AskableSlotOut, Availability, AvailabilityOfIn, BasisParamIn, BasisParamOut, BlockCostIn, BlockedBy, BoolOfIn, BoolOfOut, BuildTripleWireIn, BuildTripleWireOut, CardFollowupsIn, CardFollowupsOut, CardRuleProfileIn, CaseAnswerIn, CaseAnswerOut, CasePagesOut, CaseProfilesOut, CaseTier, Cell, ClbBoostLeverIn, ClbBoostLeverOut, CompareRowsIn, CompareRowsOut, CompetitionMap, CompetitionMapOut, ConcludeBlockedIn, ConcludeBlockedOut, ConcludeIn, ConcludeNeedsInfoIn, ConcludeNeedsInfoOut, ConcludeOpenIn, ConcludeOpenOut, ConditionHoldsIn, ConditionHoldsOut, CountableMonthsIn, CountableMonthsOut, CrossProvinceRowsIn, CrossProvinceRowsOut, CrsProfile, CrsScoreIn, DesignatedEmployerRow, DesignatedRowIn, DesignatedRowOut, EduBand, EduCell, EeRow, EmpAcc, EmpDesignationRowIn, EmpDesignationRowOut, EmpNextStepRowIn, EmpPublicSectorRowIn, EmpPublicSectorRowOut, EmpReqOfIn, EmpReqOfOut, EmpRevenueRowIn, EmpRowsOfIn, EmpRowsOfOut, EmpStaffFactRowIn, EmpStaffFactRowOut, EmpThresholdRowsIn, EmpThresholdRowsOut, EmployerFacts, EmployerNameSegmentsOut, EmployerRowsIn, EmployerRowsOut, EmployerVerdict, EmployerVerdictIn, EmployerVerdictItem, EngineProfile, EngineResult, EvOfDrawIn, EvOfFactorIn, EvOfOccIn, EvOfReqIn, EvaluateOneIn, Evidence, ExcludedRowIn, ExcludedRowOut, ExcludedRowWire, ExperienceGapsIn, ExperienceGapsOut, ExperienceReasonsIn, ExperienceReasonsOut, FactorNamesIn, FactorNamesOut, FactorThreshold, FastestRowIn, FedLangAppliesIn, FedLanguageReasonsIn, FieldMatchAnswerIn, FieldMatchAnswerOut, FirstNocIn, FirstNocOut, FoldTriStateIn, FoldTriStateOut, FoldVerdictIn, GateAnswersIn, GateAnswersOut, GateAsks, GateEval, GateKeyOfIn, GateManifestIn, GateManifestOut, GetDesignatedEmployersIn, GetDesignatedEmployersOut, GetVerdictDataOut, GotWorseIn, GridCeilingIn, GridCeilingOut, GridMatchesStreamIn, GridProfile, GridRowForIn, GridRowForOut, GridSelfProfileIn, HarderBlockIn, HarderBlockOut, HasEnoughProfileIn, HasRequiredSlotsIn, HaveMonthsOfIn, HaveMonthsOfOut, ItemVerdict, JobPathwayRow, JobPathwaysIn, JobPathwaysOut, JobRowRankIn, JobsOfFn, JudgeableRowIn, LanguageReasonsIn, LanguageReasonsOut, LeverGain, ListRequiredReasonIn, ListRequiredReasonOut, LmiaNocsOfIn, LmiaNocsOfOut, LoadVerdictTablesOut, LocalExperienceHoldsIn, LocalExperienceHoldsOut, LowestMonthsRowIn, LowestMonthsRowOut, MatchDesignationIn, MatchDesignationOut, MatchTargetsIn, MaxClbInIn, MaxClbInOut, MaybeBool, MaybeCompetition, MaybeNum, MaybeProfileBody, MaybeProfileParse, MaybeScore, MaybeStr, MbEduBand, MbEduOfIn, MbEoiProfile, MbProfileOfIn, MbScoreIn, MbScoreOut, MbWarningsIn, MbWarningsOut, MergeOverridesIn, MergeOverridesOut, MonthsOfReqIn, MonthsOfReqOut, MostSpecificRowsIn, MostSpecificRowsOut, MyPathway, MyPathwaysIn, MyPathwaysOut, NameRow, NamedList, NamedListsIn, NamedListsOut, NlDesignatedReasonIn, NlDesignatedReasonOut, NotCollectedRowIn, NotCollectedRowOut, NotCollectedVerdictIn, ObstacleRankIn, OccExcludedRowsIn, OccExcludedRowsOut, OccListNoneForIn, OccListNoneForOut, OccListedRowsIn, OccListedRowsOut, OccNoListRowIn, OccRowsList, OccTeerRowIn, OccupationListReasonsIn, OccupationListReasonsOut, OccupationRow, OccupationRowsIn, OccupationRowsOut, OfferOverrideIn, OfferOverrideOut, OneRowIn, OneRowOut, OopGradReasonIn, OopGradReasonOut, OpeningCount, OpsByProvinceIn, OpsByProvinceOut, OpsFacts, OtherProvinceGraduateHoldsIn, OtherProvinceGraduateHoldsOut, OutOfProvinceGradGapIn, OutOfProvinceGradGapOut, OutsideWire, OwnTicksOfIn, OwnTicksOfOut, ParseNocDictIn, ParseNocDictOut, ParseWageRuleIn, PathLeversIn, PathLeversOut, PathVerdictIn, PathVerdictOut, PathwayFactsIn, PathwayFactsOut, PathwayScore, PathwayVerdict, PermitCell, PermitOfIn, PermitOfOut, PersonRowsIn, PersonRowsOut, PickGateIn, PickGridFactorsIn, PickGridFactorsOut, PickOnLangRowIn, PickOnLangRowOut, PickScoreRowIn, PickScoreRowOut, PickedFactor, PlanRow, ProfileBody, ProfileOfOccupationIn, ProfileParse, ProfileSlotsIn, ProfileWireIn, ProfileWireOut, ProfileWireRow, ProfileWithNocIn, ProfileWithOfferIn, ProvCompetition, ProvinceGridScoreIn, ProvinceOfIn, ProvinceOfOut, PushItemIn, QuoteOfOccIn, QuoteOfReqIn, RCell, RankedBlock, RankedJobRow, RankedPathway, RankedVerdict, RecentGraduateHoldsIn, RecentGraduateHoldsOut, RefDrawIn, RefDrawOut, ReqMonths, ReqRow, ReqsOfIn, ReqsOfOut, ResidenceGapIn, ResidenceGapOut, ResidenceReasonIn, ResidenceReasonOut, RuleProfileOfIn, ScalarCell, ScoreAndRefLineIn, ScoreAndRefLineOut, ScoreGulfReasonIn, ScoreGulfReasonOut, ScoreOverride, ScoreRow, SelfEmpExcludedInIn, SessionOfIn, SessionUser, SplitDecoratedIn, SplitRow, SplitRowOfIn, SplitRows, StatusGateAnswerIn, StatusGateAnswerOut, TargetProvincesOfIn, TargetProvincesOfOut, TeerDowngradeLeverIn, TeerDowngradeLeverOut, TeerScope, TeerScopeAcc, TeerScopesIn, TeerScopesOut, Tier, TierBasisOfIn, TierBasisOfOut, TierFullTimeOfIn, TierGap, TierOfMonthsIn, TierOfMonthsOut, TierRowsIn, TierRowsOut, TimeRowIn, TotalExpMonthsIn, TotalExpMonthsOut, TrainableRow, TrainableRowsIn, TrainableRowsOut, TripleCard, TripleCompanyOfIn, TripleCompanyOfOut, TripleCompareRole, TripleCompareRow, TripleConclusion, TripleProfile, TripleProfileOfIn, TripleRow, TripleVerdictIn, TripleWireOfIn, TripleWireOfOut, TripleWireRow, UniversalValueIn, UniversalValueOut, VerdictDrawRow, VerdictLever, VerdictProfile, VerdictRankIn, VerdictReason, VerdictReasonsIn, VerdictReasonsOut, WagePointsIn, WageRule, WireRowOfIn, WireRowsIn, WireRowsOut, WireScore, WorkPermitSoonIn, WorstGapIn, WorstGapOut,
 } from './types'
 
 /**
@@ -4475,7 +4415,7 @@ export function tripleVerdict(input: TripleVerdictIn): TripleCard {
     facts: input.company.facts, province: input.job.province,
     reqs: input.data.requirements, nowYear: nowYear,
   })
-  const paths = pathVerdict({ profile: profileWithOffer({ p: input.profile }), data: input.data })
+  const paths = pathVerdict({ profile: profileWithOfferPlain(input.profile), data: input.data })
 
   const rows: TripleRow[] = []
   for (const one of occupationRows({ job: input.job, occs: input.data.occupations, provReqs: provReqs })) {
@@ -5763,4 +5703,541 @@ function sessionOf(input: SessionOfIn): SessionUser {
  */
 function nullUser(): null {
   return null
+}
+
+/**
+ * 区域线要不要留在目标省视野里：不限省全留；省级行直接比；联邦行看它的
+ * 区域省（lib/pathways 的 regionProvinces）与目标省有无交集 —— 「AIP 管哪四个省」
+ * 是 AIP 自己的事，不住在某个路由里（2026-08-15 搬进策略文件）。
+ *
+ * @param input 通道 key、行省与目标省。
+ * @returns 留不留。
+ */
+export function pathwayMatchesTargets(input: MatchTargetsIn): boolean {
+  if (input.targets.length === 0) {
+    return true
+  }
+  if (input.province !== FED) {
+    return input.targets.includes(input.province)
+  }
+  const regional = regionProvincesOf(input.key)
+  if (regional == null) {
+    return true
+  }
+  for (const p of regional) {
+    if (input.targets.includes(p)) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * 各省名额竞争度（E12-07 stats.difficulty）：解析在 rows 的 toCompetitionPair，
+ * 这里只聚成省码表。列缺/值坏 = 这一维不出，方案照常给 ——
+ * 竞争度是加分项不是前置条件（queryRowsOrEmpty 的降级口径）。
+ *
+ * @param db 能查的连接（池由调用方注进来）。
+ * @returns 省码 → 竞争度。
+ */
+export async function loadProvinceCompetition(db: Db): CompetitionMapOut {
+  const pairs = await queryRowsOrEmpty({ db: db, sql: SQL.PROV_DIFFICULTY, params: [], map: toCompetitionPair })
+  const out: CompetitionMap = {}
+  for (const p of pairs) {
+    if (p.comp != null && p.province !== '') {
+      out[p.province] = p.comp
+    }
+  }
+  return out
+}
+
+/**
+ * 问卷答案包 → 引擎档案（/api/ruling/profile 的翻译层）。信任边界全在这里：
+ * 勾选/档位验形封顶（它们直接进分值计算，放任自由文本 = 让请求方自己写分）；
+ * 没答的一律 null —— 引擎如实标 needs-info，不猜。
+ * 体内 edu/permit 两处 as 是跨边界断言：白名单与取值域逐字对齐，验过才进。
+ * 口径决策都在各行注释原地：学历接线（2026-08-15 EE 排序溯源）、eduYears（#316）、
+ * 现居省/持照（拆闸批新题）、inCanada 不另开一题。
+ *
+ * @param body 请求体；解不开或 answers 不是对象是 null。
+ * @returns 档案与附带三样；body 非法是 null（路由 400）。
+ */
+// eslint-disable-next-line local/function-length -- 统一题库二十二格逐格验形的翻译表,每格四五行各自完结;拆开就是把一张表撕成几截
+export function parseProfileBody(body: MaybeProfileBody): MaybeProfileParse {
+  if (body == null || body.answers == null || typeof body.answers !== 'object') {
+    return null
+  }
+  const answers = body.answers
+  const ticks: Record<string, boolean> = {}
+  let ticksN = 0
+  if (body.ticks != null && typeof body.ticks === 'object') {
+    for (const [k, v] of Object.entries(body.ticks)) {
+      if (v !== true || TICK_KEY_RE.test(k) === false) {
+        continue
+      }
+      ticks[k] = true
+      ticksN = ticksN + 1
+      if (ticksN >= TICKS_N_MAX) {
+        break
+      }
+    }
+  }
+  const scoreRows: Record<string, number> = {}
+  let rowsN = 0
+  if (body.rows != null && typeof body.rows === 'object') {
+    for (const [k, v] of Object.entries(body.rows)) {
+      const n = Number(v)
+      if (ROW_KEY_RE.test(k) === false || Number.isInteger(n) === false || n < 0 || n > ROW_SEQ_MAX) {
+        continue
+      }
+      scoreRows[k] = n
+      rowsN = rowsN + 1
+      if (rowsN >= TICKS_N_MAX) {
+        break
+      }
+    }
+  }
+  let wage: number | null = null
+  const wageN = Number(body.wage)
+  if (Number.isFinite(wageN) && wageN > 0 && wageN < WAGE_MAX) {
+    wage = wageN
+  }
+  let areaI: number | null = null
+  const areaN = Number(body.areaI)
+  if (Number.isInteger(areaN) && areaN >= 0 && areaN <= AREA_I_MAX) {
+    areaI = areaN
+  }
+  const nocs: string[] = []
+  if (Array.isArray(answers.nocs)) {
+    for (const cell of answers.nocs) {
+      const code = String(cell)
+      if (NOC5_RE.test(code)) {
+        nocs.push(code)
+      }
+    }
+  }
+  let noc = ''
+  if (nocs.length > 0) {
+    noc = nocs[0]
+  } else if (NOC5_RE.test(String(cellOr(answers.noc)))) {
+    noc = String(answers.noc)
+  }
+  const targets: string[] = []
+  if (Array.isArray(answers.targetProvinces)) {
+    for (const cell of answers.targetProvinces) {
+      const code = String(cell)
+      if (PROV2_RE.test(code)) {
+        targets.push(code)
+      }
+    }
+  }
+  const totalExp = finiteOf(answers.totalExpMonths)
+  const canadaExp = finiteOf(answers.canadianExpMonths)
+  let expForeign: number | null = null
+  if (totalExp != null) {
+    let ca = 0
+    if (canadaExp != null) {
+      ca = canadaExp
+    }
+    expForeign = Math.max(0, totalExp - ca)
+  }
+  let teer: MaybeNum = null
+  const teerM = NOC_TEER_RE.exec(noc)
+  if (teerM != null && teerM.groups != null && teerM.groups.teer != null) {
+    const teerN = Number(teerM.groups.teer)
+    if (Number.isInteger(teerN) && teerN >= 0 && teerN <= TEER_MAX) {
+      teer = teerN
+    }
+  }
+  let edu: EduCell = null
+  const eduCell = String(cellOr(answers.edu))
+  if (EDU_KEY_VALUES.includes(eduCell)) {
+    edu = eduCell as EduCell
+  }
+  let studyProvince: string | null = null
+  const spCell = String(cellOr(answers.studyProvince))
+  if (PROV_OR_TERR_RE.test(spCell)) {
+    studyProvince = spCell
+  }
+  let status: string | null = null
+  const statusCell = String(cellOr(answers.currentStatus))
+  const mapped = STATUS_MAP[statusCell]
+  if (mapped != null) {
+    status = mapped
+  }
+  let province: string | null = null
+  const rpCell = String(cellOr(answers.residenceProvince))
+  if (PROV_OR_TERR_RE.test(rpCell)) {
+    province = rpCell
+  }
+  let permit: PermitCell = null
+  const permitCell = String(cellOr(answers.permit))
+  if (PERMIT_VALUES.includes(permitCell)) {
+    permit = permitCell as PermitCell
+  }
+  let inCanada: boolean | null = null
+  if (typeof answers.currentStatus === 'string' && answers.currentStatus !== '') {
+    inCanada = answers.currentStatus !== STATUS_OVERSEAS
+  }
+  const profile: VerdictProfile = {
+    age: finiteOf(answers.age), married: null,
+    clb: finiteOf(answers.clb), edu: edu, eduYears: finiteOf(answers.eduYears),
+    canadaStudy: cellBoolOf(answers.canadaStudy),
+    studyProvince: studyProvince,
+    noc: nocOrNull(noc), teer: teer,
+    expCanadaMonths: canadaExp, expForeignMonths: expForeign,
+    foreignExpSelfEmployed: null,
+    status: status, province: province,
+    hasOffer: cellBoolOf(answers.hasJobOffer),
+    inCanada: inCanada,
+    fieldMatch: cellBoolOf(answers.fieldMatch),
+    frenchOk: cellBoolOf(answers.frenchOk),
+    permit: permit,
+    scoreTicks: ticks, scoreRows: scoreRows, wage: wage, areaI: areaI,
+  }
+  return { profile: profile, nocs: nocs, noc: noc, targets: targets }
+}
+
+/**
+ * 词汇：json 格可能缺席 —— 缺席折空串再进 String（避免 'undefined'/'null' 这种
+ * 字面量混进比对）。
+ *
+ * @param x json 里的一格。
+ * @returns 标量原值；缺席/非标量是空串。
+ */
+function cellOr(x: RCell): ScalarCell {
+  if (typeof x === 'string' || typeof x === 'number' || typeof x === 'boolean') {
+    return x
+  }
+  return ''
+}
+
+/**
+ * 词汇：只认真布尔；其余 null（没答不算「没有」，引擎落「判不了」）。
+ *
+ * @param x json 里的一格。
+ * @returns 布尔；不是布尔是 null。
+ */
+function cellBoolOf(x: RCell): MaybeBool {
+  if (typeof x === 'boolean') {
+    return x
+  }
+  return null
+}
+
+/**
+ * 词汇：数字格 → 有限数；解不出 null。
+ *
+ * @param x json 里的一格。
+ * @returns 数；解不出是 null。
+ */
+function finiteOf(x: RCell): MaybeNum {
+  const n = Number(x)
+  if (Number.isFinite(n)) {
+    return n
+  }
+  return null
+}
+
+/**
+ * 词汇：空串 → null（VerdictProfile.noc 的口径）。
+ *
+ * @param x 职业码或空串。
+ * @returns 码；空串是 null。
+ */
+function nocOrNull(x: string): MaybeStr {
+  if (x === '') {
+    return null
+  }
+  return x
+}
+
+/**
+ * 同一份引擎档案把 hasOffer 代成 true（L2-09 反事实）。与卡片侧的
+ * profileWithOffer（收 TripleProfile，多三格）分开 —— 两边收的形不同，
+ * 逐字段显式复制才看得见哪些格参与了反事实。
+ *
+ * @param p 原档案。
+ * @returns hasOffer=true 的副本。
+ */
+function profileWithOfferPlain(p: VerdictProfile): VerdictProfile {
+  return {
+    age: p.age, married: p.married, clb: p.clb, edu: p.edu, eduYears: p.eduYears,
+    canadaStudy: p.canadaStudy, studyProvince: p.studyProvince, noc: p.noc, teer: p.teer,
+    expCanadaMonths: p.expCanadaMonths, expForeignMonths: p.expForeignMonths,
+    foreignExpSelfEmployed: p.foreignExpSelfEmployed, status: p.status, province: p.province,
+    hasOffer: true, inCanada: p.inCanada, fieldMatch: p.fieldMatch, frenchOk: p.frenchOk,
+    permit: p.permit, scoreTicks: p.scoreTicks, scoreRows: p.scoreRows, wage: p.wage, areaI: p.areaI,
+  }
+}
+
+/**
+ * 拆省 + 装饰（#307 单源化的入口形态）：联邦区域线按 目标省∩区域省 逐省一行
+ * （不限省 = 全拆，判定字段原样复制；2026-08-15 Frank「aip 别四个省放一起」）；
+ * 非区域行按省挂竞争度，区域行 competition 保持 null（AIP/RCIP 都没有 EOI 池，
+ * 不许拿该省 PNP 的名额竞争比充数）；两头的线比较（aboveLine/belowLine）也在
+ * 这里挂好（判定本体在 lib/points 的纯函数）。
+ *
+ * @param input 引擎原行、目标省与竞争度表。
+ * @returns 拆完装饰完的行。
+ */
+export function splitDecorated(input: SplitDecoratedIn): SplitRows {
+  const out: SplitRow[] = []
+  for (const row of input.rows) {
+    const regional = regionProvincesOf(row.key)
+    if (regional == null) {
+      let comp: ProvCompetition | null = null
+      const hit = input.comp[row.province]
+      if (hit != null) {
+        comp = hit
+      }
+      out.push(splitRowOf({ row: row, province: row.province, competition: comp }))
+      continue
+    }
+    for (const p of regional) {
+      if (input.targets.length === 0 || input.targets.includes(p)) {
+        out.push(splitRowOf({ row: row, province: p, competition: null }))
+      }
+    }
+  }
+  return out
+}
+
+/**
+ * 引擎一行 → 排序行（逐字段显式复制；可选格在这里归一：null/[]/false）。
+ *
+ * @param input 引擎原行、拆完的省与竞争度。
+ * @returns 排序行。
+ */
+function splitRowOf(input: SplitRowOfIn): SplitRow {
+  const row = input.row
+  let blockedBy: string | null = null
+  if (row.blockedBy != null) {
+    blockedBy = row.blockedBy
+  }
+  let missingSlots: string[] = []
+  if (row.missingSlots != null) {
+    missingSlots = row.missingSlots
+  }
+  let score: PathwayScore | null = null
+  if (row.score != null) {
+    score = row.score
+  }
+  return {
+    key: row.key, province: input.province, stream: row.stream, verdict: row.verdict,
+    tier: row.tier, tierBasis: row.tierBasis, tierFullTime: row.tierFullTime === true,
+    blockedBy: blockedBy, missingSlots: missingSlots, reasons: row.reasons, score: score,
+    availability: row.availability,
+    belowLine: isBelowLine(score), aboveLine: isAboveLine(score),
+    competition: input.competition,
+  }
+}
+
+/**
+ * 初筛结果的全部组装（/api/ruling/profile 的芯之芯）：跑引擎 → 反事实重跑 →
+ * 拆省装饰 → planRank 一把尺排完（#307：客户端只渲染不重排）→ 逐行下发格 →
+ * 已排除单列一组（#318）→ 省外提示（#302/#303 同一把尺）。
+ *
+ * @param input 档案、底表与三份取好的数据。
+ * @returns 下发三件套。
+ */
+// eslint-disable-next-line local/function-length -- 引擎→反事实→拆省→排序→三份下发一条握着共同中间量(all/ctx/afterByKey/quotaByKey)的组装流水;拆开每段都要把四五个表显式穿一串
+export function buildProfileWire(input: ProfileWireIn): ProfileWireOut {
+  const all = pathVerdict({ profile: input.profile, data: input.data })
+  let afterByKey: AfterMap | null = null
+  if (input.profile.hasOffer === false) {
+    afterByKey = new Map()
+    for (const v of pathVerdict({ profile: profileWithOfferPlain(input.profile), data: input.data })) {
+      afterByKey.set(v.key, v)
+    }
+  }
+  const scoped: PathwayVerdict[] = []
+  for (const row of all) {
+    if (pathwayMatchesTargets({ key: row.key, province: row.province, targets: input.targets })) {
+      scoped.push(row)
+    }
+  }
+  const scopedLive: PathwayVerdict[] = []
+  const scopedExcluded: PathwayVerdict[] = []
+  for (const row of scoped) {
+    if (row.verdict === VERDICT_EXCLUDED) {
+      scopedExcluded.push(row)
+    } else {
+      scopedLive.push(row)
+    }
+  }
+  const quotaByKey = new Map<string, PilotQuotaAgg>()
+  for (const q of input.pilotQuota) {
+    quotaByKey.set(q.province + PILOT_KEY_SEP + q.type, q)
+  }
+  const jobsOf = makeJobsOf(input.occRows)
+  const homeProvs = new Set<string>()
+  if (input.profile.province != null && PROV2_RE.test(input.profile.province)) {
+    homeProvs.add(input.profile.province)
+  }
+  if (input.profile.studyProvince != null && PROV2_RE.test(input.profile.studyProvince)) {
+    homeProvs.add(input.profile.studyProvince)
+  }
+  const ctx: RankCtx = { jobsOf: jobsOf, homeProvs: homeProvs }
+  const ranked = rankRows({ rows: splitDecorated({ rows: scopedLive, targets: input.targets, comp: input.comp }), ctx: ctx })
+  const rows: ProfileWireRow[] = []
+  for (const row of ranked) {
+    let after: PathwayVerdict | null = null
+    if (row.blockedBy === GATE_OFFER && afterByKey != null) {
+      const hit = afterByKey.get(row.key)
+      if (hit != null) {
+        after = hit
+      }
+    }
+    let pilot: PilotQuotaAgg | null = null
+    if ((row.key === KEY_RCIP || row.key === KEY_FCIP) && PROV2_RE.test(row.province)) {
+      const hit = quotaByKey.get(row.province + PILOT_KEY_SEP + row.key)
+      if (hit != null) {
+        pilot = hit
+      }
+    }
+    rows.push(wireRowOf({ row: row, jobsN: jobsOf(row), after: after, pilot: pilot }))
+  }
+  const excluded: ExcludedRowWire[] = []
+  for (const row of splitDecorated({ rows: scopedExcluded, targets: input.targets, comp: input.comp })) {
+    excluded.push(excludedRowOf(row))
+  }
+  const allLive: PathwayVerdict[] = []
+  for (const row of all) {
+    if (row.verdict !== VERDICT_EXCLUDED) {
+      allLive.push(row)
+    }
+  }
+  const picked = pickOutside({ rows: splitDecorated({ rows: allLive, targets: [], comp: input.comp }), targets: input.targets, ctx: ctx })
+  let outside: OutsideWire | null = null
+  if (picked != null) {
+    let insideWire: OutsideWire['inside'] = null
+    if (picked.insideBest != null) {
+      insideWire = {
+        key: picked.insideBest.key, province: picked.insideBest.province,
+        ratio: ratioOf(picked.insideBest.competition), tier: picked.insideBest.tier,
+        blockedBy: picked.insideBest.blockedBy,
+      }
+    }
+    outside = {
+      key: picked.row.key, province: picked.row.province,
+      ratio: ratioOf(picked.row.competition), tier: picked.row.tier,
+      blockedBy: picked.row.blockedBy, inside: insideWire,
+    }
+  }
+  return { rows: rows, excluded: excluded, outside: outside }
+}
+
+/**
+ * 竞争比取格（没数据 null）。
+ *
+ * @param comp 竞争度；没有 null。
+ * @returns 比值；没有 null。
+ */
+function ratioOf(comp: MaybeCompetition): MaybeNum {
+  if (comp == null) {
+    return null
+  }
+  return comp.ratio
+}
+
+/**
+ * 「该省该职业在招岗数」取数器：按通道口径取列（AIP=指定雇主∩职业、
+ * RCIP/FCIP=试点∩职业、其余=全省）。查无该省 = 0（occ 查询只回有岗的省）；
+ * 非省级行 = null。
+ *
+ * @param occRows 该职业在各省的竞争面。
+ * @returns RankCtx.jobsOf 形状的取数回调。
+ */
+function makeJobsOf(occRows: OccRowsList): JobsOfFn {
+  return function jobsOf(row: PlanRow): number | null {
+    if (PROV2_RE.test(row.province) === false) {
+      return null
+    }
+    for (const o of occRows) {
+      if (o.province === row.province) {
+        return o[uiOf(row.key).jobsSource]
+      }
+    }
+    return 0
+  }
+}
+
+/**
+ * 排好序的一行 → 下发格（前端 Decision 契约；字段含义见 ProfileWireRow 逐格注释）。
+ *
+ * @param input 行与三份查好的格。
+ * @returns 下发格。
+ */
+function wireRowOf(input: WireRowOfIn): ProfileWireRow {
+  const row = input.row
+  const gapSet = new Set<string>()
+  for (const r of row.reasons) {
+    if (r.kind === REASON_GAP && r.key != null && r.key !== '') {
+      gapSet.add(r.key)
+    }
+  }
+  let after: AfterOfferWire | null = null
+  if (input.after != null) {
+    let afterBlocked: string | null = null
+    if (input.after.blockedBy != null) {
+      afterBlocked = input.after.blockedBy
+    }
+    after = { verdict: input.after.verdict, blockedBy: afterBlocked, tier: input.after.tier }
+  }
+  let score: WireScore | null = null
+  if (row.score != null) {
+    let refStream: string | null = null
+    if (row.score.refStream != null) {
+      refStream = row.score.refStream
+    }
+    score = {
+      value: row.score.value, ceiling: row.score.ceiling, refLine: row.score.refLine,
+      refStream: refStream, partial: row.score.partial === true,
+    }
+  }
+  return {
+    key: row.key, province: row.province, verdict: row.verdict, tier: row.tier,
+    availability: row.availability, blockedBy: row.blockedBy,
+    tierBasis: row.tierBasis, tierFullTime: row.tierFullTime,
+    gaps: Array.from(gapSet), missingSlots: row.missingSlots,
+    competition: row.competition, jobsN: input.jobsN, pilotQuota: input.pilot,
+    afterOffer: after, score: score, belowLine: row.belowLine, aboveLine: row.aboveLine,
+  }
+}
+
+/**
+ * 已排除一行 → 下发格（#318：带第一条排除理由，quote 随行）。
+ *
+ * @param row 拆完的已排除行。
+ * @returns 下发格。
+ */
+function excludedRowOf(row: SplitRow): ExcludedRowWire {
+  let hit: VerdictReason | null = null
+  for (const r of row.reasons) {
+    if (r.kind === REASON_EXCLUDED) {
+      hit = r
+      break
+    }
+  }
+  if (hit == null && row.reasons.length > 0) {
+    hit = row.reasons[0]
+  }
+  let reason: ExcludedRowWire['reason'] = null
+  if (hit != null) {
+    let key: string | null = null
+    if (hit.key != null) {
+      key = hit.key
+    }
+    let params: Record<string, string | number> | null = null
+    if (hit.params != null) {
+      params = hit.params
+    }
+    let quote: string | null = null
+    if (hit.quote != null) {
+      quote = hit.quote
+    }
+    reason = { key: key, params: params, text: hit.text, quote: quote }
+  }
+  return { key: row.key, province: row.province, reason: reason }
 }
