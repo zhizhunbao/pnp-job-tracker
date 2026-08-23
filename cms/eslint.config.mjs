@@ -437,18 +437,44 @@ const localRules = {
         }
       },
     },
+    // ② 壳零代码 → 整壳形状（2026-08-23 Frank「加 eslint route 闸门」，壳终态定案后硬化）：
+    //    壳里只许「文件头注释 + export { xxxRoute as GET/POST/… } from '@/lib/<域>/server'」。
+    //    段配置常量已全数证伪（runtime 默认、dynamic 自动、maxDuration 只被 Vercel 消费，
+    //    Render standalone 无效），所以连 const 都不许 —— 真出现平台迁移再逐行特批。
     'route-shell-only': {
       meta: {
         type: 'suggestion',
         schema: [],
         messages: {
-          shell: '壳里不许有逻辑：芯归本域 routes.ts，这里只留 runtime/dynamic/maxDuration 与一行转发。',
+          shell: '壳里只许一行转发（export { xxxRoute as GET } from 域/server）：{{ what }} 不属于壳，芯归本域 routes.ts。',
+          name: '壳的转发必须是「*Route 改名成 HTTP 方法」：`{{ local }} as {{ exported }}` 不合形。',
         },
       },
       create(context) {
+        const METHODS = new Set(['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'])
         return {
-          FunctionDeclaration(node) {
-            context.report({ node, messageId: 'shell' })
+          Program(node) {
+            for (const stmt of node.body) {
+              if (stmt.type === 'ExportNamedDeclaration' && stmt.source && !stmt.declaration) continue
+              let what = stmt.type
+              if (stmt.type === 'ExportNamedDeclaration' && stmt.declaration) {
+                what = stmt.declaration.type === 'VariableDeclaration' ? 'export const（段配置常量）' : '带声明的 export'
+              } else if (stmt.type === 'ImportDeclaration') {
+                what = 'import（壳不自己 import，直接 re-export）'
+              } else if (stmt.type === 'FunctionDeclaration') {
+                what = '函数声明'
+              } else if (stmt.type === 'VariableDeclaration') {
+                what = '变量声明'
+              }
+              context.report({ node: stmt, messageId: 'shell', data: { what } })
+            }
+          },
+          ExportSpecifier(node) {
+            const local = node.local.type === 'Identifier' ? node.local.name : ''
+            const exported = node.exported.type === 'Identifier' ? node.exported.name : ''
+            if (!METHODS.has(exported) || !/Route$/.test(local)) {
+              context.report({ node, messageId: 'name', data: { local, exported } })
+            }
           },
         }
       },
