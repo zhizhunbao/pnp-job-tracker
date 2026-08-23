@@ -1,5 +1,6 @@
 /**
- * 全站留痕:唯一一处 `console.log`,各域的日志字面量也都在这里。
+ * 留痕域的死值:各域的日志字面量表(一域一表,域里只剩「什么时候记」)。
+ * 标签是生产日志人肉 grep 的关键词 —— 改名等于把历史记录切断,动之前先想清。
  *
  * @author Frank
  * @time 2026-08-19 07:41:03
@@ -8,37 +9,6 @@
 // =========================================================================
 // 1. 出口
 // =========================================================================
-
-/**
- * 写一行日志要的两样。
- */
-export type LogIn = {
-  /**
-   * 来源标签,不带方括号,`log()` 会补上。
-   */
-  tag: string
-
-  /**
-   * 正文。字面量从下面各域的表里取,代码只负责拼变量。
-   */
-  text: string
-}
-
-/**
- * 写日志没有返回值。
- */
-export type LogOut = void
-
-/**
- * 写一行日志。全站只有这一处 `console.log`。
- *
- * @param input 来源标签与正文。
- * @returns 没有返回值。
- */
-export function log(input: LogIn): LogOut {
-  // eslint-disable-next-line no-console -- 全站唯一被特批的一处:这个函数存在的意义就是「只有这里能写 console」
-  console.log(`[${input.tag}] ${input.text}`)
-}
 
 /**
  * 日志里截断长消息的上限。留痕要看得见,但别把一整篇回包灌进日志。
@@ -550,3 +520,13 @@ export const PROFILE_LOG = {
    */
   dropKey: 'patch key not in collection, dropped: ',
 } as const
+
+/**
+ * 日志行来源标签的左括号。
+ */
+export const TAG_L = '['
+
+/**
+ * 日志行来源标签的右括号(带一格与正文隔开)。
+ */
+export const TAG_R = '] '
