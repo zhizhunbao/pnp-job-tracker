@@ -1,0 +1,311 @@
+/**
+ * 职位域的 HTTP 芯(第十一抽屉):/api/jobs(列表分页)、text(JD 摘录)、company(公司弹框)、
+ * dims(大维度包)、city / province(地点弹框情报)、competition(职业竞争面)、
+ * applyhow(投递邮箱懒查)。取数与组装全在 functions,这里只做参数验形、限额与缓存编排。
+ * 两处跨边界断言:jobsRoute 的 `user.profile as ProfileJson`(quota 的档案格是递归 json,
+ * normalizeProfile 只读扁平几格并自带兜底)与 `draft as JobsFilters`(白名单键逐个收进来的
+ * Record,形状声明在 JobsFilters);jobsCompanyRoute 的 `await req.json() as CompanyBody`
+ * 同款(网络来的 body 先按声明形状收下,逐格判后才用)。
+ *
+ * @author Frank
+ * @time 2026-08-23 06:30:00
+ */
+import { headers } from 'next/headers'
+import { getDb } from '../db/server'
+import {
+  BAD_REQUEST, HDR_CACHE_CONTROL, HDR_CONTENT_TYPE, MIME_TEXT, NOT_FOUND, TOO_MANY,
+} from '../http'
+import { checkLimit, getUser, ipOf, isPro } from '../quota/server'
+import {
+  AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, CITY_PARAM_LEN_MAX,
+  DIMS_CACHE_CONTROL, E_NOC_REQUIRED, JB_POSTING_RE, JD_DAILY_DEFAULT, JD_LIMIT_PREFIX, JOBS_FILTER_KEYS,
+  JOBS_PAGE_SIZE, NOC5_RE, P_CITY, P_CODE, P_DIR, P_DIRECT, P_DISTRICT, P_NOC, P_PAGE, P_PROV, P_SORT, P_URL,
+  P_VIEW, PAGE_N_MAX, PROV2_RE, TRUE_ONE, TRUE_WORD, URL_CUT_RE, VIEW_MATCH,
+} from './constants'
+import {
+  fetchApplyEmail, fetchCompanyByJobId, fetchJobsPage, fetchMatchPage, fetchOccCompetition,
+  fetchSimilarEmployers, hasProfile, jobDescription, loadBigDims, loadCityCard, loadMatchDims,
+  loadProvinceCard, normalizeProfile,
+} from './functions'
+import { CACHE } from './variables'
+import type { CompanyBody, JobsFilters, MatchDims, ProfileJson, SimilarEmployer } from './types'
+
+/**
+ * GET /api/jobs:职位列表服务端分页/筛选/搜索(E10-01 P2,取代旧「一次拉 20k blob 前端过滤」)。
+ * 入参 = /jobs 前端筛选 state 原样(白名单 JOBS_FILTER_KEYS)+ page/sort/dir;
+ * 分层语义同 SSR(Pro 列剥离、免费匹配前 N)。total=同 WHERE count,前端头条命中数/
+ * 「还有 N」全用它,天然自洽。「我的匹配」视图(view=match)走 fetchMatchPage,未建档回空。
+ *
+ * @param req 请求。
+ * @returns { rows, total, page, pageSize, updatedAt }(匹配视图另带 matchHigh/matchMid)。
+ */
+export async function jobsRoute(req: Request): Promise<Response> {
+  const sp = new URL(req.url).searchParams
+  const draft: Record<string, string | boolean> = {}
+  for (const k of JOBS_FILTER_KEYS) {
+    const v = sp.get(k)
+    if (v != null && v !== '') {
+      draft[k] = v
+    }
+  }
+  const direct = sp.get(P_DIRECT)
+  if (direct === TRUE_ONE || direct === TRUE_WORD) {
+    draft[P_DIRECT] = true
+  }
+  const filters = draft as JobsFilters
+  let page = 0
+  const pageRaw = parseInt(String(sp.get(P_PAGE)), 10)
+  if (Number.isFinite(pageRaw) && pageRaw > 0) {
+    page = Math.min(PAGE_N_MAX, pageRaw)
+  }
+  let sortKey = ''
+  const sortParam = sp.get(P_SORT)
+  if (sortParam != null) {
+    sortKey = sortParam
+  }
+  let sortDir = ''
+  const dirParam = sp.get(P_DIR)
+  if (dirParam != null) {
+    sortDir = dirParam
+  }
+  const user = await getUser(await headers())
+  const pro = isPro(user)
+  let profileRaw: ProfileJson | null = null
+  if (user != null) {
+    profileRaw = user.profile as ProfileJson
+  }
+  const profile = normalizeProfile(profileRaw)
+  const profileOk = hasProfile(profile)
+  const db = await getDb()
+  let matchDims: MatchDims = { pnpOccupations: [], eeCategories: [] }
+  if (profileOk) {
+    matchDims = await loadMatchDims(db)
+  }
+  if (sp.get(P_VIEW) === VIEW_MATCH) {
+    if (profileOk === false) {
+      return Response.json({ rows: [], total: 0, page: page, pageSize: JOBS_PAGE_SIZE, updatedAt: '', matchHigh: 0, matchMid: 0 })
+    }
+    const m = await fetchMatchPage({ db: db, pro: pro, profile: profile, matchDims: matchDims, page: page, pageSize: JOBS_PAGE_SIZE, sort: { key: sortKey, dir: sortDir } })
+    return Response.json({ rows: m.jobs, total: m.total, page: page, pageSize: JOBS_PAGE_SIZE, updatedAt: m.updatedAt, matchHigh: m.matchHigh, matchMid: m.matchMid })
+  }
+  const out = await fetchJobsPage({
+    db: db, pro: pro, profile: profile, profileOk: profileOk, matchDims: matchDims, filters: filters,
+    sort: { key: sortKey, dir: sortDir }, page: page, pageSize: JOBS_PAGE_SIZE,
+  })
+  return Response.json({ rows: out.jobs, total: out.total, page: page, pageSize: JOBS_PAGE_SIZE, updatedAt: out.updatedAt })
+}
+
+/**
+ * GET /api/jobs/text?url=:真实抓取的职位描述文本(DB jobs.description,mart 按 applyUrl 灌)。
+ * #201(#96 整改):JD 摘录 = 通用商品,退出统一付费额度池;只留一道宽松的按 IP 日限
+ * (懒抓 miss 会触发外站请求,属信任边界),超了素 429 不做升级引流。
+ *
+ * @param req 请求(?url=投递链接)。
+ * @returns 纯文本 JD;缺参 400、超限 429。
+ */
+export async function jobsTextRoute(req: Request): Promise<Response> {
+  let jdDaily = JD_DAILY_DEFAULT
+  const jdEnv = Number(process.env.JD_DAILY)
+  if (Number.isFinite(jdEnv) && jdEnv > 0) {
+    jdDaily = jdEnv
+  }
+  if (checkLimit([[JD_LIMIT_PREFIX + ipOf(req), jdDaily]]) === false) {
+    return new Response(null, { status: TOO_MANY })
+  }
+  let url = ''
+  const urlParam = new URL(req.url).searchParams.get(P_URL)
+  if (urlParam != null) {
+    url = urlParam.trim()
+  }
+  if (url === '') {
+    return new Response(null, { status: BAD_REQUEST })
+  }
+  const body = await jobDescription({ db: await getDb(), applyUrl: url })
+  return new Response(body, { headers: { [HDR_CONTENT_TYPE]: MIME_TEXT } })
+}
+
+/**
+ * POST /api/jobs/company {jobId}:公司弹框数据同源端点(E8-11 B1)—— 与 /companies/[slug]
+ * 页面同一份 CompanyDetail(+相似雇主)。全事实层免费不走额度闸(Frank 拍板「一个来源」)。
+ * 按 jobs.company_id 解析,不走公司名匹配(同名公司不串)。相似雇主查挂回空表不 500。
+ *
+ * @param req 请求(body 是 { jobId })。
+ * @returns { company, similar };id 非数 400、查无 404。
+ */
+export async function jobsCompanyRoute(req: Request): Promise<Response> {
+  let body: CompanyBody | null = null
+  try {
+    body = await req.json() as CompanyBody
+  } catch {
+    body = null
+  }
+  let jobId = Number.NaN
+  if (body != null) {
+    jobId = Number(body.jobId)
+  }
+  if (Number.isFinite(jobId) === false) {
+    return new Response(null, { status: BAD_REQUEST })
+  }
+  const db = await getDb()
+  const company = await fetchCompanyByJobId({ db: db, jobId: jobId })
+  if (company == null) {
+    return new Response(null, { status: NOT_FOUND })
+  }
+  const similar = await fetchSimilarEmployers({ db: db, province: company.province, industry: company.industry, excludeSlug: company.slug }).catch(emptySimilar)
+  return Response.json({ company, similar })
+}
+
+/**
+ * GET /api/jobs/dims:筛选下拉/顾问弹窗要用的大维度包(E10-01 P3)。
+ * 1.4MB(压缩 302KB)包,ETL 小时级才动且与用户无关 —— 浏览器缓存 5 分钟 + SWR
+ * (2026-07-28 实测:不缓存每次进职位板白付 1.2s TTFB)。
+ *
+ * @param _req 请求(不读参数)。
+ * @returns { dims } 四张维度表。
+ */
+export async function jobsDimsRoute(_req: Request): Promise<Response> {
+  const dims = await loadBigDims({ db: await getDb() })
+  return Response.json({ dims }, { headers: { [HDR_CACHE_CONTROL]: DIMS_CACHE_CONTROL } })
+}
+
+/**
+ * GET /api/jobs/city?city=Ottawa&prov=ON[&district=Kanata]:市/区情报(E8-12b 懒查询,
+ * 弹框打开才拉)。取数与拼装在 loadCityCard;这里只验参。
+ *
+ * @param req 请求。
+ * @returns { ok: true, ...市卡 };参数非法 400。
+ */
+export async function jobsCityRoute(req: Request): Promise<Response> {
+  const sp = new URL(req.url).searchParams
+  let city = ''
+  const cityParam = sp.get(P_CITY)
+  if (cityParam != null) {
+    city = cityParam.trim()
+  }
+  let prov = ''
+  const provParam = sp.get(P_PROV)
+  if (provParam != null) {
+    prov = provParam.toUpperCase()
+  }
+  let district = ''
+  const districtParam = sp.get(P_DISTRICT)
+  if (districtParam != null) {
+    district = districtParam.trim()
+  }
+  if (city === '' || city.length > CITY_PARAM_LEN_MAX || PROV2_RE.test(prov) === false) {
+    return Response.json({ ok: false }, { status: BAD_REQUEST })
+  }
+  const card = await loadCityCard({ db: await getDb(), city: city, prov: prov, district: district })
+  return Response.json({
+    ok: true,
+    openJobs: card.openJobs, new7d: card.new7d, medSalary: card.medSalary,
+    topBroads: card.topBroads, dli: card.dli, aipEmployers: card.aipEmployers, district: card.district,
+  })
+}
+
+/**
+ * GET /api/jobs/province?code=ON:地点弹框省情报(E8-12 懒查询)。
+ * info=provinces.info(IRCC 体量数,mart 挂列);difficulty=stats 表 broad='all' 行
+ * (E12-07,与 /stats DifficultyCard 同源)。零 AI 零额度。
+ *
+ * @param req 请求(?code=两位省码)。
+ * @returns { ok, info, difficulty };码非法 400、查无 404。
+ */
+export async function jobsProvinceRoute(req: Request): Promise<Response> {
+  let code = ''
+  const codeParam = new URL(req.url).searchParams.get(P_CODE)
+  if (codeParam != null) {
+    code = codeParam.toUpperCase()
+  }
+  if (PROV2_RE.test(code) === false) {
+    return Response.json({ ok: false }, { status: BAD_REQUEST })
+  }
+  const card = await loadProvinceCard({ db: await getDb(), code: code })
+  if (card == null) {
+    return Response.json({ ok: false }, { status: NOT_FOUND })
+  }
+  return Response.json({ ok: true, info: card.info, difficulty: card.difficulty })
+}
+
+/**
+ * GET /api/jobs/competition?noc=63200:该职业在各省的竞争面。
+ * 🔴 职业级的「几人抢一个」算不出来,本站不编 —— 给的是三个能代表紧俏度的实数
+ * (在招/近 30 天新增、平均在招天数、该省名额竞争),不合成一个分数。
+ * 取数与组装在 fetchOccCompetition(与 profile-pathways 的服务端排序同一份,口径不许分叉)。
+ *
+ * @param req 请求(?noc=五位码)。
+ * @returns { noc, rows };noc 非法 400。
+ */
+export async function jobsCompetitionRoute(req: Request): Promise<Response> {
+  let noc = ''
+  const nocParam = new URL(req.url).searchParams.get(P_NOC)
+  if (nocParam != null) {
+    noc = nocParam.trim()
+  }
+  if (NOC5_RE.test(noc) === false) {
+    return Response.json({ error: E_NOC_REQUIRED }, { status: BAD_REQUEST })
+  }
+  const rows = await fetchOccCompetition({ db: await getDb(), nocs: [noc] })
+  return Response.json({ noc, rows })
+}
+
+/**
+ * GET /api/jobs/applyhow?url=:投递邮箱懒查(E9-04 B11)。Job Bank 把投递邮箱藏在
+ * 「Show how to apply」的 JSF 局部提交后面 —— 打开投递栏时现抓(fetchApplyEmail),
+ * 进程内正/负两级缓存,零批量预抓(lazy-first)。只认 jobbank.gc.ca 职位页(白名单防
+ * SSRF);其他来源(ATS 原站)邮箱走前端对 jobtext 的正则,不进这里。
+ *
+ * @param req 请求(?url=职位页链接)。
+ * @returns { email }(空串 = 无/失败);超限 429。
+ */
+export async function jobsApplyhowRoute(req: Request): Promise<Response> {
+  let ahDaily = AH_DAILY_DEFAULT
+  const ahEnv = Number(process.env.APPLYHOW_DAILY)
+  if (Number.isFinite(ahEnv) && ahEnv > 0) {
+    ahDaily = ahEnv
+  }
+  if (checkLimit([[AH_LIMIT_PREFIX + ipOf(req), ahDaily]]) === false) {
+    return Response.json({ email: '' }, { status: TOO_MANY })
+  }
+  let raw = ''
+  const urlParam = new URL(req.url).searchParams.get(P_URL)
+  if (urlParam != null) {
+    raw = urlParam.trim()
+  }
+  if (JB_POSTING_RE.test(raw) === false) {
+    return Response.json({ email: '' })
+  }
+  const key = raw.split(URL_CUT_RE)[0]
+  const hit = CACHE.applyMail.get(key)
+  if (hit != null) {
+    return Response.json({ email: hit })
+  }
+  const neg = CACHE.applyFail.get(key)
+  if (neg != null && Date.now() - neg < APPLY_NEG_TTL_MS) {
+    return Response.json({ email: '' })
+  }
+  const email = await fetchApplyEmail(key)
+  if (email == null) {
+    CACHE.applyFail.set(key, Date.now())
+    if (CACHE.applyFail.size > APPLY_FAIL_MAX) {
+      CACHE.applyFail.clear()
+    }
+    return Response.json({ email: '' })
+  }
+  CACHE.applyMail.set(key, email)
+  if (CACHE.applyMail.size > APPLY_CACHE_MAX) {
+    CACHE.applyMail.clear()
+  }
+  return Response.json({ email })
+}
+
+/**
+ * 相似雇主查挂时的空表兜底(catch 传具名函数;弹框主体照常给,不 500)。
+ *
+ * @param _e 捕到的错(查询层已留痕)。
+ * @returns 空表。
+ */
+// eslint-disable-next-line local/routes-shape -- catch 传具名函数,非 HTTP 芯本体
+function emptySimilar(_e: Error): SimilarEmployer[] {
+  return []
+}

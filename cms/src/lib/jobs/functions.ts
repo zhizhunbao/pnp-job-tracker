@@ -8,58 +8,24 @@
  * @time 2026-08-22 00:05:00
  */
 
+import {
+  HDR_ACCEPT, HDR_CONTENT_TYPE, HDR_COOKIE, HDR_REFERER, HDR_USER_AGENT, METHOD_POST,
+} from '../http'
 import { queryRows, queryRowsOrEmpty, SQL } from '../db'
 import type { Db } from '../db'
 import { JOBS_LOG, log } from '../log'
 import { fill } from '../template'
 import {
-  BLOCKED_SRC, BROAD_NOCS_MAX, CAND_CAP, COMMA, COUNT_CACHE_MAX, COUNT_TTL_MS, COV, CURRENT_STATUSES,
-  DIMS_TTL_MS, DIR_ASC, DIR_DESC, DOLLAR, ENT_PAIRS, FK, FV, HREF_ENT_PAIRS, JB_APPLY_ANCHOR, JB_DESC_RE,
-  JB_EXT_LINK_RE, JB_INNER_ENT_PAIRS, JB_REQ_ANCHOR, JB_SECTION_CAP, JB_URL_RE, JD_BAD_HOST_172_RE,
-  JD_BAD_HOST_RE, JD_FAILED_MAX, JD_FETCH_TIMEOUT_MS, JD_HEAD_JUNK_RE, JD_HEAD_MAX_LINES, JD_HTML_CAP,
-  JD_LINE_MIN, JD_MAX_LEN, JD_MIN_LEN, JD_NEG_TTL_MS, JD_ORPHAN_LEN, JD_PARA_LEN, JD_PROTO_RE,
-  JD_STRIP_BLOCK_RE, JD_BLOCK_BREAK_RE, JD_TAG_RE, JD_UA, LEVEL_RANK, LINE_SPACES_RE, LV,
-  CAT_LEVEL, CK, CNT_SEP, COL_PROVINCE, COMPANY_SLUG_COND, HAS_SUFFIX, NOC_JOIN_SLASH, PROGRAM_PNP, RULE, TYPE_INELIGIBLE, VD,
-  MAIN_LIST_COVERAGE, MED_SELECT, NL, NOC_LEN, NOC_MINOR_LEN, NOC_RE, NOC_SEARCH_MIN, NOC_SUBMAJOR_LEN,
-  COLON_END_RE, HAS_DIGIT_RE, OPEN_COND, ORDER_DATE_TAIL, ORDER_DEFAULT_COL, ORDER_FRESH, PCT,
-  PG_UNDEFINED_COLUMN, PG_UNDEFINED_TABLE, PROOF_TTL_MS, PROV_CODE, PROV_MAX_WORDS, PRO_SORTS, Q_MAX_TERMS,
-  Q_SHORT_LEN, RK, SCORE_HIGH, SCORE_MID, SEARCH_COLS, SORT_COLUMNS, SORT_MATCH_KEY, SPACES_RE, SRC_DASH,
-  SRC_JOB_BANK, T45_COND_PROVS, T45_NL, TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE, TITLE_RE,
-  TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_WITH_MED, UNCAT, W,
-  ACCEPT_HTML, DIGIT_PICK_RE, EMAIL_RE, LMIA_SOURCE, NO_LIST_PROVINCES, ORIGIN_TITLE_HEAD, PHONE_RE, PII_MASK,
-  REDIRECT_FOLLOW, SPACE,
-  TOP_NOCS_TTL_MS,
-  DRAW_STREAM_L10N, EE_KEY_L10N, EE_L10N, EE_SPLIT, LANG_EN, LANG_KO, NORM_DASH, NORM_DASH_RE,
-  NORM_WS_RE, PROV_PREFIX_TRIM_RE, REQ_STREAM_L10N,
-  SEP_KEY, STREAM_L10N,
+  ACCEPT_ANY, ACCEPT_HTML, AMP, AMP_ENT_RE, APPLY_SLICE_LEN, APPLY_TIMEOUT_MS, BLOCKED_SRC, BROAD_NOCS_MAX, CAND_CAP, CAT_LEVEL, CK, CNT_SEP, COLON_END_RE, COL_PROVINCE, COMMA, COMPANY_SLUG_COND, COOKIE_CUT, COOKIE_JOIN, COUNT_CACHE_MAX, COUNT_TTL_MS, COV, CURRENT_STATUSES, DIGIT_PICK_RE, DIMS_TTL_MS, DIR_ASC, DIR_DESC, DOLLAR, DRAW_STREAM_L10N, EE_KEY_L10N, EE_L10N, EE_SPLIT, EMAIL_RE, ENT_PAIRS, FACES_REQUEST_HDR, FACES_REQUEST_VAL, FK, FORM_CONTENT_TYPE, FV, HAS_DIGIT_RE, HAS_SUFFIX, HOW_APPLY_RE, HREF_ENT_PAIRS, JB_APPLY_ANCHOR, JB_DESC_RE, JB_EXT_LINK_RE, JB_INNER_ENT_PAIRS, JB_ORIGIN, JB_REQ_ANCHOR, JB_SECTION_CAP, JB_URL_RE, JD_BAD_HOST_172_RE, JD_BAD_HOST_RE, JD_BLOCK_BREAK_RE, JD_FAILED_MAX, JD_FETCH_TIMEOUT_MS, JD_HEAD_JUNK_RE, JD_HEAD_MAX_LINES, JD_HTML_CAP, JD_LINE_MIN, JD_MAX_LEN, JD_MIN_LEN, JD_NEG_TTL_MS, JD_ORPHAN_LEN, JD_PARA_LEN, JD_PROTO_RE, JD_STRIP_BLOCK_RE, JD_TAG_RE, JD_UA, JSF_FORM_BASE, JSF_KEY_JOBID, JSF_KEY_JSJOBID, LANG_EN, LANG_KO, LEVEL_RANK, LINE_SPACES_RE, LMIA_SOURCE, LV, MAIL_AT, MAIL_RE, MAIL_SKIP_SUFFIXES, MAIL_SKIP_WORD, MAIN_LIST_COVERAGE, MED_SELECT, NL, NOC_JOIN_SLASH, NOC_LEN, NOC_MINOR_LEN, NOC_RE, NOC_SEARCH_MIN, NOC_SUBMAJOR_LEN, NORM_DASH, NORM_DASH_RE, NORM_WS_RE, NO_LIST_PROVINCES, OPEN_COND, ORDER_DATE_TAIL, ORDER_DEFAULT_COL, ORDER_FRESH, ORIGIN_TITLE_HEAD, PCT, PG_UNDEFINED_COLUMN, PG_UNDEFINED_TABLE, PHONE_RE, PII_MASK, PROGRAM_PNP, PROOF_TTL_MS, PROV_CODE, PROV_MAX_WORDS, PROV_PREFIX_TRIM_RE, PRO_SORTS, Q_MAX_TERMS, Q_SHORT_LEN, REDIRECT_FOLLOW, REQ_STREAM_L10N, RK, RULE, SCORE_HIGH, SCORE_MID, SEARCH_COLS, SEEKER_ACTION_RE, SEEKER_JOBID_RE, SEP_KEY, SORT_COLUMNS, SORT_MATCH_KEY, SPACE, SPACES_RE, SRC_DASH, SRC_JOB_BANK, STREAM_L10N, T45_COND_PROVS, T45_NL, TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE, TITLE_RE, TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_TTL_MS, TOP_NOCS_WITH_MED, TYPE_INELIGIBLE, UNCAT, VD, W,
 } from './constants'
 import { REASON_EN, STATUS_EN } from './prompts'
 import {
-  iso, mapEeCat, mapPnpOcc, passJobRow, passJsonRow, passRow, toAlertHit, toBroadNoc, toCompanyJob, toEeCatDim,
-  toFieldSource, toJobRow, toMatchJob, toNewsSlim, toNocCat, toNocHit, toPnpDraw, toPnpOccDim, toRelated,
-  toSimilar, toTopNoc,
-  toOccDiffFact, toOccOpen, toProvCount,
+  iso, mapEeCat, mapPnpOcc, passJobRow, passJsonRow, passRow, toAlertHit, toBroadCount, toBroadNoc, toCityAgg, toCityDim, toCompanyJob, toCountN, toDesigDim, toDiffCell, toDistrictDim, toDistrictEmployer, toDliTop, toEeCatDim, toFieldSource, toInfoCell, toJobRow, toMatchJob, toNewsSlim, toNocCat, toNocDescDim, toNocHit, toOccDiffFact, toOccOpen, toPnpDraw, toPnpOccDim, toProvCount, toRelated, toSimilar, toTopNoc,
 } from './rows'
 import { byEntryCountDesc, byHitValAsc, byHitValDesc, byLevelDesc } from './callbacks'
 import { CACHE } from './variables'
 import type {
-  AlertHitsIn, AlertHitsOut, BroadNocsIn, BroadNocsOut, BuildWhereIn, CaughtError, Cell, CheckedAtOut,
-  ProfileJsonCell,
-  CompanyByJobIn, CompanyBySlugIn, CompanyDetail, CompanyOut, CompanyWhereIn, CoverageIn, HtmlOut, JdIn,
-  JdOut, JobByIdIn, JobByIdOut,
-  JobDbRow, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn, JobsPageOut, JobsWhere, LmiaNocRow,
-  LmiaNocsIn, LmiaNocsOut, MatchDims, MatchDimsOut, MatchIn, MatchLevel, MatchPageIn, MatchPageOut,
-  MatchProfile, MatchReason, MatchResult, MaybeLevel, MaybeNum, MaybeProfile, MaybeStr, NameOption,
-  NocCountsIn, NocCountsOut, NocOpenCount, NocRuleOut, NocSearchIn, NocSearchOut,
-  JsonCell, JsonObj, NumCell, StrCell,
-  OrderByIn, PgFailure, PnpOcc, ProofOut, ProvListCoverage, QuizFactsIn,
-  PnpOccs, ProfileJsonOrNull, ProvOption, QuizFactsOut, QuizProvCount, QuizStreamCount, RankedHit, RelatedIn,
-  RelatedOut, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut,
-  SimilarIn, SimilarOut, SortValIn, SsrDimsOut, StrList, StripTitleIn, TopNocsIn, TopNocsOut, UrlHandle,
-  CountMap, CountOfIn, OccCompetitionIn, OccCompetitionOut, OccCompetitionRows,
-  OccDiffFacts, ProvCounts, RatioMap, RatioOfIn,
-  DrawStreamNoteIn, DropProvPrefixIn, EeDisplayIn, EeKeyDisplayIn, ReqStreamDisplayIn, StreamDisplayIn,
-  WhereParam,
+  AlertHitsIn, AlertHitsOut, ApplyMailOut, BigDimsIn, BigDimsOut, BroadNocsIn, BroadNocsOut, BuildWhereIn, CaughtError, Cell, CheckedAtOut, CityAgg, CityCardIn, CityCardOut, CompanyByJobIn, CompanyBySlugIn, CompanyDetail, CompanyOut, CompanyWhereIn, CountMap, CountOfIn, CoverageIn, DistrictCard, DrawStreamNoteIn, DropProvPrefixIn, EeDisplayIn, EeKeyDisplayIn, HtmlOut, JdIn, JdOut, JobByIdIn, JobByIdOut, JobDbRow, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn, JobsPageOut, JobsWhere, JsonCell, JsonObj, LmiaNocRow, LmiaNocsIn, LmiaNocsOut, MatchDims, MatchDimsOut, MatchIn, MatchLevel, MatchPageIn, MatchPageOut, MatchProfile, MatchReason, MatchResult, MaybeLevel, MaybeNum, MaybeProfile, MaybeStr, NameOption, NocCountsIn, NocCountsOut, NocOpenCount, NocRuleOut, NocSearchIn, NocSearchOut, NumCell, OccCompetitionIn, OccCompetitionOut, OccCompetitionRows, OccDiffFacts, OrderByIn, PgFailure, PnpOcc, PnpOccs, ProfileJsonCell, ProfileJsonOrNull, ProofOut, ProvCounts, ProvListCoverage, ProvOption, ProvinceCardIn, ProvinceCardOut, QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount, RankedHit, RatioMap, RatioOfIn, RelatedIn, RelatedOut, ReqStreamDisplayIn, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut, SimilarIn, SimilarOut, SortValIn, SsrDimsOut, StrCell, StrList, StreamDisplayIn, StripTitleIn, TopNocsIn, TopNocsOut, UrlHandle, WhereParam,
 } from './types'
 
 // =========================================================================
@@ -2325,4 +2291,186 @@ export function dropProvPrefix(input: DropProvPrefixIn): string {
     return n
   }
   return rest
+}
+
+/**
+ * 省情报卡(/api/jobs/province 的取数):provinces.info + stats 的 difficulty,零 AI 零额度。
+ *
+ * @param input 连接与省码。
+ * @returns 两格透传;查无该省 null。
+ */
+export async function loadProvinceCard(input: ProvinceCardIn): ProvinceCardOut {
+  const infoRows = await queryRows({ db: input.db, sql: SQL.PROVINCE_INFO_ONE, params: [input.code], map: toInfoCell })
+  if (infoRows.length === 0) {
+    return null
+  }
+  const diffRows = await queryRows({ db: input.db, sql: SQL.PROV_DIFFICULTY_ONE, params: [input.code], map: toDiffCell })
+  let difficulty: JsonCell = null
+  if (diffRows.length > 0) {
+    difficulty = diffRows[0]
+  }
+  return { info: infoRows[0], difficulty: difficulty }
+}
+
+/**
+ * 市/区情报卡(/api/jobs/city 的取数,E8-12b):全部现算自库内既有表 ——
+ * jobs 聚合 + dli(PGWP 可申院校)+ designated_employers(AIP)。district 非空另附整套
+ * 区级统计(「点区看区」,Frank 2026-07-23)。市级 2,346 城不预计算(懒化透镜)。
+ *
+ * @param input 连接、市、省与可空的区。
+ * @returns 市情报卡(区级没数据时 district 落 null)。
+ */
+export async function loadCityCard(input: CityCardIn): CityCardOut {
+  const [aggRows, broads, dliTop, aipRows, dliCountRows] = await Promise.all([
+    queryRows({ db: input.db, sql: SQL.cityTotals(SQL.OPEN_COND), params: [input.city, input.prov], map: toCityAgg }),
+    queryRows({ db: input.db, sql: SQL.cityByBroad(SQL.OPEN_COND), params: [input.city, input.prov], map: toBroadCount }),
+    queryRows({ db: input.db, sql: SQL.CITY_DLI, params: [input.city, input.prov], map: toDliTop }),
+    queryRows({ db: input.db, sql: SQL.CITY_DESIGNATED_COUNT, params: [input.city, input.prov], map: toCountN }),
+    queryRows({ db: input.db, sql: SQL.CITY_DLI_COUNT, params: [input.city, input.prov], map: toCountN }),
+  ])
+  let base: CityAgg = { openJobs: 0, new7d: 0, medSalary: null }
+  if (aggRows.length > 0) {
+    base = aggRows[0]
+  }
+  let aipEmployers = 0
+  if (aipRows.length > 0) {
+    aipEmployers = aipRows[0]
+  }
+  let dliCount = 0
+  if (dliCountRows.length > 0) {
+    dliCount = dliCountRows[0]
+  }
+  let district: DistrictCard | null = null
+  if (input.district !== '') {
+    const [dAggRows, dBroads, dEmps] = await Promise.all([
+      queryRows({ db: input.db, sql: SQL.districtTotals(SQL.OPEN_COND), params: [input.city, input.prov, input.district], map: toCityAgg }),
+      queryRows({ db: input.db, sql: SQL.districtByBroad(SQL.OPEN_COND), params: [input.city, input.prov, input.district], map: toBroadCount }),
+      queryRows({ db: input.db, sql: SQL.districtEmployers(SQL.OPEN_COND), params: [input.city, input.prov, input.district], map: toDistrictEmployer }),
+    ])
+    if (dAggRows.length > 0) {
+      district = {
+        openJobs: dAggRows[0].openJobs, new7d: dAggRows[0].new7d, medSalary: dAggRows[0].medSalary,
+        topBroads: dBroads, topEmployers: dEmps,
+      }
+    }
+  }
+  return {
+    openJobs: base.openJobs, new7d: base.new7d, medSalary: base.medSalary,
+    topBroads: broads, dli: { count: dliCount, top: dliTop }, aipEmployers: aipEmployers,
+    district: district,
+  }
+}
+
+/**
+ * 大维度包(/api/jobs/dims 的取数,E10-01 P3):城市/区/AIP 雇主/NOC 描述四张维度表。
+ * 上限沿原 payload.find 的 5000/2000(写死在 SQL 里)。
+ *
+ * @param input 连接。
+ * @returns 四张维度表。
+ */
+export async function loadBigDims(input: BigDimsIn): BigDimsOut {
+  const [cities, districts, designatedEmployers, nocDescriptions] = await Promise.all([
+    queryRows({ db: input.db, sql: SQL.DIMS_CITIES, params: [], map: toCityDim }),
+    queryRows({ db: input.db, sql: SQL.DIMS_DISTRICTS, params: [], map: toDistrictDim }),
+    queryRows({ db: input.db, sql: SQL.DIMS_DESIGNATED, params: [], map: toDesigDim }),
+    queryRows({ db: input.db, sql: SQL.DIMS_NOC_DESCRIPTIONS, params: [], map: toNocDescDim }),
+  ])
+  return { cities: cities, districts: districts, designatedEmployers: designatedEmployers, nocDescriptions: nocDescriptions }
+}
+
+/**
+ * Job Bank 投递邮箱现抓(E9-04 B11):初始 HTML 和 ETL 存的 description 里都没有 ——
+ * 邮箱藏在「Show how to apply」的 JSF 局部提交后面。两跳:GET 取 seekeractivity 表单 →
+ * 复刻 JSF partial POST(render=@all)→ 从 How to apply 块附近抽邮箱。
+ * 白名单与限额在路由;本函数只管抓。
+ *
+ * @param postingUrl 规范化后的 Job Bank 职位页 url。
+ * @returns 邮箱;空串 = 确认无(页面在但没表单/没邮箱);null = 抓取失败(负缓存到期重试)。
+ */
+export async function fetchApplyEmail(postingUrl: string): ApplyMailOut {
+  const first = await fetch(postingUrl, {
+    headers: { [HDR_USER_AGENT]: JD_UA, [HDR_ACCEPT]: ACCEPT_HTML },
+    redirect: REDIRECT_FOLLOW, signal: AbortSignal.timeout(APPLY_TIMEOUT_MS),
+  }).catch(nullFetch)
+  if (first == null || first.ok === false) {
+    return null
+  }
+  const cookieParts: string[] = []
+  for (const c of first.headers.getSetCookie()) {
+    cookieParts.push(c.split(COOKIE_CUT)[0])
+  }
+  const cookies = cookieParts.join(COOKIE_JOIN)
+  const html = await first.text()
+  const actionM = SEEKER_ACTION_RE.exec(html)
+  const jidM = SEEKER_JOBID_RE.exec(html)
+  if (actionM == null || jidM == null) {
+    return ''
+  }
+  const jid = jidM[1]
+  const form = new URLSearchParams(JSF_FORM_BASE)
+  form.set(JSF_KEY_JSJOBID, jid)
+  form.set(JSF_KEY_JOBID, jid)
+  const h: Record<string, string> = {
+    [HDR_USER_AGENT]: JD_UA, [HDR_ACCEPT]: ACCEPT_ANY, [HDR_REFERER]: postingUrl,
+    [HDR_CONTENT_TYPE]: FORM_CONTENT_TYPE, [FACES_REQUEST_HDR]: FACES_REQUEST_VAL,
+  }
+  if (cookies !== '') {
+    h[HDR_COOKIE] = cookies
+  }
+  const second = await fetch(JB_ORIGIN + actionM[1].replace(AMP_ENT_RE, AMP), {
+    method: METHOD_POST, headers: h, body: form.toString(), signal: AbortSignal.timeout(APPLY_TIMEOUT_MS),
+  }).catch(nullFetch)
+  if (second == null || second.ok === false) {
+    return null
+  }
+  const out = await second.text()
+  const i = out.search(HOW_APPLY_RE)
+  if (i >= 0) {
+    return pickMail(out.slice(i, i + APPLY_SLICE_LEN))
+  }
+  return pickMail(out)
+}
+
+/**
+ * 抓取单跳失败的兜底(catch 传具名函数;失败语义交回 null 由缓存层负缓存)。
+ *
+ * @param _e 捕到的错(超时/网络层)。
+ * @returns null。
+ */
+function nullFetch(_e: Error): null {
+  return null
+}
+
+/**
+ * 文本里挑第一枚**雇主侧**邮箱:Job Bank 自家与政府域的地址不算(那是客服不是投递)。
+ *
+ * @param s 待扫文本。
+ * @returns 邮箱;没有是空串。
+ */
+function pickMail(s: string): string {
+  const matches = s.match(MAIL_RE)
+  if (matches == null) {
+    return ''
+  }
+  for (const m of matches) {
+    const at = m.split(MAIL_AT)
+    let d = ''
+    if (at[1] != null) {
+      d = at[1].toLowerCase()
+    }
+    if (d === '' || d.includes(MAIL_SKIP_WORD)) {
+      continue
+    }
+    let skip = false
+    for (const suf of MAIL_SKIP_SUFFIXES) {
+      if (d.endsWith(suf)) {
+        skip = true
+      }
+    }
+    if (skip) {
+      continue
+    }
+    return m
+  }
+  return ''
 }

@@ -90,6 +90,36 @@ export const MIME_JSON = 'application/json'
 export const MIME_HTML = 'text/html; charset=utf-8'
 
 /**
+ * 纯文本响应(JD 摘录这类)。
+ */
+export const MIME_TEXT = 'text/plain; charset=utf-8'
+
+/**
+ * 请求方 UA 头名(对外抓取用)。
+ */
+export const HDR_USER_AGENT = 'User-Agent'
+
+/**
+ * Accept 头名。
+ */
+export const HDR_ACCEPT = 'Accept'
+
+/**
+ * Referer 头名。
+ */
+export const HDR_REFERER = 'Referer'
+
+/**
+ * Cookie 头名(对外抓取回带会话)。
+ */
+export const HDR_COOKIE = 'Cookie'
+
+/**
+ * fetch 的 POST 方法名。
+ */
+export const METHOD_POST = 'POST'
+
+/**
  * 401 的统一响应体(token 闸路由共用)。
  */
 export const TEXT_UNAUTHORIZED = 'unauthorized'

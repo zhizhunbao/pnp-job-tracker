@@ -10,9 +10,7 @@
 import { count, jsonOrNull, numOrNull, text } from '../db'
 import { COMP_KEY, UNCAT } from './constants'
 import type {
-  AlertHit, BroadNoc, CompanyJobRow, EeCatDim, EeOcc, FieldSource, JobDbRow, JobRow, MatchJob,
-  JsonRow, MaybeNum, MaybeOccDiff, NewsSlim, NocCat, NocHit, OccDiffDbRow, OccDiffFact, OccOpen, PnpDraw, PnpOcc, PnpOccDim, ProvCount, RelatedJob, Row, SimilarEmployer, TimeLike,
-  ToJobRowIn, TopNoc,
+  AlertHit, BroadCount, BroadNoc, Cell, CityAgg, CityDim, CompanyJobRow, DesigDim, DistrictDim, DistrictEmployerRow, DliTop, EeCatDim, EeOcc, FieldSource, JobDbRow, JobRow, JsonCell, JsonRow, MatchJob, MaybeNum, MaybeOccDiff, NewsSlim, NocCat, NocDescDim, NocHit, OccDiffDbRow, OccDiffFact, OccOpen, PnpDraw, PnpOcc, PnpOccDim, ProvCount, RelatedJob, Row, SimilarEmployer, TimeLike, ToJobRowIn, TopNoc,
 } from './types'
 
 /**
@@ -452,4 +450,138 @@ function compRatioOf(d: MaybeOccDiff): MaybeNum {
  */
 export function toOccDiffFact(r: OccDiffDbRow): OccDiffFact {
   return { province: text(r.province), ratio: compRatioOf(jsonOrNull(r.difficulty)) }
+}
+
+/**
+ * 词汇:数字格 → 取整;缺位 null(市/区帖面中位年薪的口径,并入前就是 Math.round)。
+ *
+ * @param x 库里的数字格。
+ * @returns 取整后的数;缺位 null。
+ */
+function roundOrNull(x: Cell): MaybeNum {
+  const n = numOrNull(x)
+  if (n == null) {
+    return null
+  }
+  return Math.round(n)
+}
+
+/**
+ * 一行市/区聚合(SQL.cityTotals / districtTotals)→ 三件套。
+ *
+ * @param r 库里的一行。
+ * @returns 洗净的聚合。
+ */
+export function toCityAgg(r: Row): CityAgg {
+  return { openJobs: count(r.open_jobs), new7d: count(r.new7d), medSalary: roundOrNull(r.med_salary) }
+}
+
+/**
+ * 一行大类计数(SQL.cityByBroad / districtByBroad)。
+ *
+ * @param r 库里的一行。
+ * @returns 大类 + 计数。
+ */
+export function toBroadCount(r: Row): BroadCount {
+  return { broad: text(r.broad), n: count(r.n) }
+}
+
+/**
+ * 一行院校(SQL.CITY_DLI)。
+ *
+ * @param r 库里的一行。
+ * @returns 院校名 + 公立与否。
+ */
+export function toDliTop(r: Row): DliTop {
+  return { name: text(r.name), isPublic: r.is_public === true }
+}
+
+/**
+ * 一行计数(SQL.CITY_DLI_COUNT / CITY_DESIGNATED_COUNT 这类单数查询)。
+ *
+ * @param r 库里的一行。
+ * @returns 计数(缺位 0)。
+ */
+export function toCountN(r: Row): number {
+  return count(r.n)
+}
+
+/**
+ * 一行区主要雇主(SQL.districtEmployers)。
+ *
+ * @param r 库里的一行。
+ * @returns 雇主名 + slug + 在招数。
+ */
+export function toDistrictEmployer(r: Row): DistrictEmployerRow {
+  return { name: text(r.name), slug: text(r.slug), n: count(r.n) }
+}
+
+/**
+ * 单列 json 透传(SQL.PROVINCE_INFO_ONE 的 info 格):jsonb 驱动给对象、文本列绕行给
+ * 字符串,消费端自己认 —— 与 stats 的 StatDifficulty 同一口径,这里只把缺位收成 null。
+ *
+ * @param r 库里的一行。
+ * @returns 格值;缺位 null。
+ */
+export function toInfoCell(r: JsonRow): JsonCell {
+  if (r.info == null) {
+    return null
+  }
+  return r.info
+}
+
+/**
+ * 单列 json 透传(SQL.PROV_DIFFICULTY_ONE 的 difficulty 格;口径同上)。
+ *
+ * @param r 库里的一行。
+ * @returns 格值;缺位 null。
+ */
+export function toDiffCell(r: JsonRow): JsonCell {
+  if (r.difficulty == null) {
+    return null
+  }
+  return r.difficulty
+}
+
+/**
+ * 一行城市维度(SQL.DIMS_CITIES)。
+ *
+ * @param r 库里的一行。
+ * @returns 维度行。
+ */
+export function toCityDim(r: Row): CityDim {
+  return { name: text(r.name), province: text(r.province) }
+}
+
+/**
+ * 一行区维度(SQL.DIMS_DISTRICTS)。
+ *
+ * @param r 库里的一行。
+ * @returns 维度行。
+ */
+export function toDistrictDim(r: Row): DistrictDim {
+  return { name: text(r.name), city: text(r.city), province: text(r.province) }
+}
+
+/**
+ * 一行 AIP 指定雇主维度(SQL.DIMS_DESIGNATED)。
+ *
+ * @param r 库里的一行。
+ * @returns 维度行。
+ */
+export function toDesigDim(r: Row): DesigDim {
+  return { name: text(r.name), province: text(r.province), location: text(r.location), isTech: r.is_tech === true }
+}
+
+/**
+ * 一行 NOC 描述维度(SQL.DIMS_NOC_DESCRIPTIONS)。
+ *
+ * @param r 库里的一行。
+ * @returns 维度行。
+ */
+export function toNocDescDim(r: Row): NocDescDim {
+  return {
+    noc: text(r.noc), title: text(r.title), titleZh: text(r.title_zh), titleKo: text(r.title_ko),
+    duties: text(r.duties), requirements: text(r.requirements), fetched: text(r.fetched),
+  }
 }

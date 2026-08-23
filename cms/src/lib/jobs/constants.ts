@@ -2087,3 +2087,305 @@ export const nocLabels: Record<Lang, Dict> = {
     'cat.农林劳工': '농림 노무', 'cat.园林劳工': '조경 노무', 'cat.生产劳工': '생산 노무',
   },
 }
+
+/**
+ * /api/jobs 认的筛选键白名单。⚠️ 新增筛选键三处同步:buildJobsWhere + 前端 state + 本表
+ * (#73 排序白名单同款教训,fElig 漏过一回)。
+ */
+export const JOBS_FILTER_KEYS: string[] = ['q', 'fNoc', 'fProv', 'fCity', 'fDistrict', 'fBroad', 'fMid', 'fFine', 'fTeer',
+  'fSource', 'fAcc', 'fPnp', 'fAip', 'fPilot', 'fStatus', 'fOrigin', 'fScore', 'fSal', 'fVs', 'fEmp', 'fElig']
+
+/**
+ * /api/jobs 的每页行数。
+ */
+export const JOBS_PAGE_SIZE = 50
+
+/**
+ * 页码上限(乱传大数也不至于让 OFFSET 飞走)。
+ */
+export const PAGE_N_MAX = 100000
+
+/**
+ * 直招开关参数名。
+ */
+export const P_DIRECT = 'directOnly'
+
+/**
+ * 视图参数名(match = 我的匹配)。
+ */
+export const P_VIEW = 'view'
+
+/**
+ * 「我的匹配」视图的参数值。
+ */
+export const VIEW_MATCH = 'match'
+
+/**
+ * 布尔参数的真值写法一('1')。
+ */
+export const TRUE_ONE = '1'
+
+/**
+ * 布尔参数的真值写法二('true')。
+ */
+export const TRUE_WORD = 'true'
+
+/**
+ * 页码参数名。
+ */
+export const P_PAGE = 'page'
+
+/**
+ * 排序键参数名。
+ */
+export const P_SORT = 'sort'
+
+/**
+ * 排序方向参数名。
+ */
+export const P_DIR = 'dir'
+
+/**
+ * 职位原文/投递方式端点的 url 参数名。
+ */
+export const P_URL = 'url'
+
+/**
+ * 省码参数名(/api/jobs/province)。
+ */
+export const P_CODE = 'code'
+
+/**
+ * 城市参数名(/api/jobs/city)。
+ */
+export const P_CITY = 'city'
+
+/**
+ * 省参数名(/api/jobs/city)。
+ */
+export const P_PROV = 'prov'
+
+/**
+ * 区参数名(/api/jobs/city)。
+ */
+export const P_DISTRICT = 'district'
+
+/**
+ * 职业码参数名(/api/jobs/competition)。
+ */
+export const P_NOC = 'noc'
+
+/**
+ * JD 摘录 IP 日限的默认值(env JD_DAILY 可覆盖;宽松防滥用,不是付费闸 —— #201)。
+ */
+export const JD_DAILY_DEFAULT = 150
+
+/**
+ * JD 摘录限额键前缀(键 = 前缀 + IP)。
+ */
+export const JD_LIMIT_PREFIX = 'jd:'
+
+/**
+ * 投递方式懒查 IP 日限的默认值(env APPLYHOW_DAILY 可覆盖)。
+ */
+export const AH_DAILY_DEFAULT = 60
+
+/**
+ * 投递方式限额键前缀。
+ */
+export const AH_LIMIT_PREFIX = 'ah:'
+
+/**
+ * /api/jobs/city 的 city 参数长度上限。
+ */
+export const CITY_PARAM_LEN_MAX = 80
+
+/**
+ * 两位省码形状。
+ */
+export const PROV2_RE = /^[A-Z]{2}$/
+
+/**
+ * 五位职业码形状。
+ */
+export const NOC5_RE = /^\d{5}$/
+
+/**
+ * 错误体:noc 参数缺位或非法。
+ */
+export const E_NOC_REQUIRED = 'noc required'
+
+/**
+ * 大维度包的浏览器缓存头(1.4MB 包,ETL 小时级才动,与用户无关 —— 5 分钟 + SWR)。
+ */
+export const DIMS_CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=3600'
+
+/**
+ * 只认 Job Bank 职位页(白名单防 SSRF;其他来源的邮箱走前端对 jobtext 的正则)。
+ */
+export const JB_POSTING_RE = /^https:\/\/www\.jobbank\.gc\.ca\/jobsearch\/jobposting\/\d+([/?#]|$)/
+
+/**
+ * 缓存键规范化:掐掉 query 与锚。
+ */
+export const URL_CUT_RE = /[?#]/
+
+/**
+ * 投递方式抓取失败负缓存的时长(到期重试;有没有邮箱未知才进这里)。
+ */
+export const APPLY_NEG_TTL_MS = 600000
+
+/**
+ * 邮箱正缓存条数上限(满了整清;空串=确认无邮箱也缓存)。
+ */
+export const APPLY_CACHE_MAX = 5000
+
+/**
+ * 失败负缓存条数上限。
+ */
+export const APPLY_FAIL_MAX = 500
+
+/**
+ * 从 partial 响应里只看 How to apply 块附近这么多字符。
+ */
+export const APPLY_SLICE_LEN = 4000
+
+/**
+ * 对外抓取的单跳超时(ms)。
+ */
+export const APPLY_TIMEOUT_MS = 8000
+
+/**
+ * Accept:任意(JSF partial 响应)。
+ */
+export const ACCEPT_ANY = '*/*'
+
+/**
+ * Job Bank 站源(partial 提交的 action 拼在它后面)。
+ */
+export const JB_ORIGIN = 'https://www.jobbank.gc.ca'
+
+/**
+ * 投递表单与 action 抽取(JSF 页面结构)。
+ */
+export const SEEKER_ACTION_RE = /<form id="seekeractivity"[^>]*action="([^"]+)"/
+
+/**
+ * 表单里岗位 id 的抽取。
+ */
+export const SEEKER_JOBID_RE = /id="seekeractivity:jobid"[^>]*value="(\d+)"/
+
+/**
+ * action 里的 HTML 实体还原(&amp; → &)。
+ */
+export const AMP_ENT_RE = /&amp;/g
+
+/**
+ * 还原后的连接符。
+ */
+export const AMP = '&'
+
+/**
+ * Set-Cookie 里值段的切分符。
+ */
+export const COOKIE_CUT = ';'
+
+/**
+ * 多条 cookie 回带时的连接符。
+ */
+export const COOKIE_JOIN = '; '
+
+/**
+ * JSF partial 提交的固定字段(动态的 jsJobId / seekeractivity:jobid 由函数补)。
+ */
+export const JSF_FORM_BASE: Record<string, string> = {
+  /**
+   * partial 提交标记。
+   */
+  'jakarta.faces.partial.ajax': 'true',
+
+  /**
+   * 提交源组件。
+   */
+  'jakarta.faces.source': 'seekeractivity',
+
+  /**
+   * 参与执行的组件。
+   */
+  'jakarta.faces.partial.execute': 'seekeractivity:jobid',
+
+  /**
+   * 要求整页重渲(邮箱块才会出现在响应里)。
+   */
+  'jakarta.faces.partial.render': '@all',
+
+  /**
+   * 行为事件名。
+   */
+  'jakarta.faces.behavior.event': 'action',
+
+  /**
+   * 按的是「立即申请」。
+   */
+  action: 'applynowbutton',
+
+  /**
+   * JSF 表单提交标记。
+   */
+  seekeractivity_SUBMIT: '1',
+
+  /**
+   * 无状态视图(不用回带 ViewState)。
+   */
+  'jakarta.faces.ViewState': 'stateless',
+}
+
+/**
+ * partial 提交里岗位 id 的两个动态键之一(顶层)。
+ */
+export const JSF_KEY_JSJOBID = 'jsJobId'
+
+/**
+ * partial 提交里岗位 id 的两个动态键之二(组件域)。
+ */
+export const JSF_KEY_JOBID = 'seekeractivity:jobid'
+
+/**
+ * JSF partial 请求头名。
+ */
+export const FACES_REQUEST_HDR = 'Faces-Request'
+
+/**
+ * JSF partial 请求头值。
+ */
+export const FACES_REQUEST_VAL = 'partial/ajax'
+
+/**
+ * 表单提交的 Content-Type。
+ */
+export const FORM_CONTENT_TYPE = 'application/x-www-form-urlencoded; charset=UTF-8'
+
+/**
+ * 邮箱抽取。
+ */
+export const MAIL_RE = /[\w.+-]+@[\w-]+\.[\w.-]+/g
+
+/**
+ * 邮箱域名切分符。
+ */
+export const MAIL_AT = '@'
+
+/**
+ * 域名含它 = Job Bank 自己的地址,跳过。
+ */
+export const MAIL_SKIP_WORD = 'jobbank'
+
+/**
+ * 域名以它们结尾 = 政府地址,跳过。
+ */
+export const MAIL_SKIP_SUFFIXES: string[] = ['gc.ca', 'canada.ca']
+
+/**
+ * How to apply 块定位(只在它附近找邮箱,别把页脚客服邮箱当投递邮箱)。
+ */
+export const HOW_APPLY_RE = /how to apply/i

@@ -738,6 +738,11 @@ export const EE_NOCS_DISTINCT = `SELECT DISTINCT noc FROM ee_categories WHERE no
 // ── app/api/jobs/city/route.ts ──
 
 /**
+ * 「岗还在招」的条件片段(市/区聚合几条 SQL 共用的 a1 实参;status 空当 open)。
+ */
+export const OPEN_COND = `COALESCE(j.status,'open') = 'open'`
+
+/**
  * 城市页三数:在架/7 天新增/中位薪资。$1=城市,$2=省,a1=在架口径片段。
  */
 export const cityTotals = (a1: string) => `SELECT COUNT(*)::int AS open_jobs,
@@ -1387,3 +1392,28 @@ export const TEMP_DEAD_EXT = `CREATE TEMP TABLE dead_ext (external_id text PRIMA
  * 本轮抓到的全部 external_id,用于「本次未见」反连接
  */
 export const TEMP_SEEN_EXT = `CREATE TEMP TABLE seen_ext (external_id text PRIMARY KEY) ON COMMIT DROP`
+
+/**
+ * 单省的 info 列(/api/jobs/province 地点弹框;info 是 mart 挂的 IRCC 体量数 jsonb)。
+ */
+export const PROVINCE_INFO_ONE = `SELECT info FROM provinces WHERE code = $1 LIMIT 1`
+
+/**
+ * 筛选下拉的城市维度(/api/jobs/dims;上限同原 payload.find 的 5000)。
+ */
+export const DIMS_CITIES = `SELECT name, province FROM cities ORDER BY name LIMIT 5000`
+
+/**
+ * 筛选下拉的区维度。
+ */
+export const DIMS_DISTRICTS = `SELECT name, city, province FROM districts ORDER BY name LIMIT 5000`
+
+/**
+ * 筛选下拉的 AIP 指定雇主维度。
+ */
+export const DIMS_DESIGNATED = `SELECT name, province, location, is_tech FROM designated_employers LIMIT 5000`
+
+/**
+ * 筛选下拉/弹窗的 NOC 描述维度(上限同原 payload.find 的 2000)。
+ */
+export const DIMS_NOC_DESCRIPTIONS = `SELECT noc, title, title_zh, title_ko, duties, requirements, fetched FROM noc_descriptions LIMIT 2000`

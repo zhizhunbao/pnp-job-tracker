@@ -3465,6 +3465,16 @@ export type JobsCache = {
    * JD 懒抓负缓存:applyUrl → 失败时刻(10 分钟防连点)。
    */
   jdFailed: Map<string, number>
+
+  /**
+   * 投递邮箱正缓存:规范化 url → 邮箱(空串 = 确认无邮箱,同样缓存)。
+   */
+  applyMail: Map<string, string>
+
+  /**
+   * 投递抓取失败负缓存:规范化 url → 失败时刻(到期重试)。
+   */
+  applyFail: Map<string, number>
 }
 
 // =========================================================================
@@ -3893,4 +3903,375 @@ export type DropProvPrefixIn = {
    * 省名(全称)。
    */
   prov: string
+}
+
+/**
+ * 省情报卡(/api/jobs/province):info 与 difficulty 都是库列**透传**——
+ * jsonb 驱动给对象、文本列绕行给字符串,消费端自己认(与 stats 的 StatDifficulty 同一口径)。
+ */
+export type ProvCard = {
+  /**
+   * provinces.info(IRCC 体量数,mart 挂列);没有是 null。
+   */
+  info: JsonCell
+
+  /**
+   * stats 表 broad='all' 行的 difficulty;没有是 null。
+   */
+  difficulty: JsonCell
+}
+
+/**
+ * `loadProvinceCard` 的入参。
+ */
+export type ProvinceCardIn = {
+  /**
+   * 能查的连接(池由调用方注进来)。
+   */
+  db: Db
+
+  /**
+   * 省码(路由已验形)。
+   */
+  code: string
+}
+
+/**
+ * `loadProvinceCard` 的返回(查无该省是 null)。
+ */
+export type ProvinceCardOut = Promise<ProvCard | null>
+
+/**
+ * 大类计数一行(市/区热门方向)。
+ */
+export type BroadCount = {
+  /**
+   * 大类名。
+   */
+  broad: string
+
+  /**
+   * 在招岗数。
+   */
+  n: number
+}
+
+/**
+ * PGWP 可申院校一行(市情报卡的 dli.top)。
+ */
+export type DliTop = {
+  /**
+   * 院校名。
+   */
+  name: string
+
+  /**
+   * 公立与否。
+   */
+  isPublic: boolean
+}
+
+/**
+ * 区主要雇主一行。
+ */
+export type DistrictEmployerRow = {
+  /**
+   * 雇主名。
+   */
+  name: string
+
+  /**
+   * 公司页 slug;没有是空串。
+   */
+  slug: string
+
+  /**
+   * 在招岗数。
+   */
+  n: number
+}
+
+/**
+ * 市/区共用的聚合三件(在招/近 7 日/帖面中位年薪)。
+ */
+export type CityAgg = {
+  /**
+   * 在招岗数。
+   */
+  openJobs: number
+
+  /**
+   * 近 7 日新增。
+   */
+  new7d: number
+
+  /**
+   * 帖面中位年薪(取整);算不出是 null。
+   */
+  medSalary: MaybeNum
+}
+
+/**
+ * 区级情报(district 参数传了才有)。
+ */
+export type DistrictCard = {
+  /**
+   * 在招岗数。
+   */
+  openJobs: number
+
+  /**
+   * 近 7 日新增。
+   */
+  new7d: number
+
+  /**
+   * 帖面中位年薪;算不出是 null。
+   */
+  medSalary: MaybeNum
+
+  /**
+   * 热门大分类。
+   */
+  topBroads: BroadCount[]
+
+  /**
+   * 主要雇主。
+   */
+  topEmployers: DistrictEmployerRow[]
+}
+
+/**
+ * 市情报卡(/api/jobs/city;E8-12b 懒查询,弹框打开才拉)。
+ */
+export type CityCard = {
+  /**
+   * 在招岗数。
+   */
+  openJobs: number
+
+  /**
+   * 近 7 日新增。
+   */
+  new7d: number
+
+  /**
+   * 帖面中位年薪;算不出是 null。
+   */
+  medSalary: MaybeNum
+
+  /**
+   * 热门大分类。
+   */
+  topBroads: BroadCount[]
+
+  /**
+   * PGWP 可申院校:总数 + 前几名。
+   */
+  dli: {
+    /**
+     * 该市院校总数。
+     */
+    count: number
+
+    /**
+     * 前几名(公立优先)。
+     */
+    top: DliTop[]
+  }
+
+  /**
+   * AIP 指定雇主数(location 含该市)。
+   */
+  aipEmployers: number
+
+  /**
+   * 区级情报;没传 district 是 null。
+   */
+  district: DistrictCard | null
+}
+
+/**
+ * `loadCityCard` 的入参。
+ */
+export type CityCardIn = {
+  /**
+   * 能查的连接(池由调用方注进来)。
+   */
+  db: Db
+
+  /**
+   * 城市名(路由已验长)。
+   */
+  city: string
+
+  /**
+   * 省码(路由已验形)。
+   */
+  prov: string
+
+  /**
+   * 区名;空串 = 不带区级。
+   */
+  district: string
+}
+
+/**
+ * `loadCityCard` 的返回。
+ */
+export type CityCardOut = Promise<CityCard>
+
+/**
+ * 筛选下拉的城市维度一行。
+ */
+export type CityDim = {
+  /**
+   * 城市名。
+   */
+  name: string
+
+  /**
+   * 省码。
+   */
+  province: string
+}
+
+/**
+ * 筛选下拉的区维度一行。
+ */
+export type DistrictDim = {
+  /**
+   * 区名。
+   */
+  name: string
+
+  /**
+   * 所属市。
+   */
+  city: string
+
+  /**
+   * 省码。
+   */
+  province: string
+}
+
+/**
+ * AIP 指定雇主维度一行。
+ */
+export type DesigDim = {
+  /**
+   * 雇主名。
+   */
+  name: string
+
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 名录上的地点原文。
+   */
+  location: string
+
+  /**
+   * 是否名录标注的科技岗雇主。
+   */
+  isTech: boolean
+}
+
+/**
+ * NOC 描述维度一行。
+ */
+export type NocDescDim = {
+  /**
+   * 五位职业码。
+   */
+  noc: string
+
+  /**
+   * 英文职业名。
+   */
+  title: string
+
+  /**
+   * 中文职业名。
+   */
+  titleZh: string
+
+  /**
+   * 韩文职业名。
+   */
+  titleKo: string
+
+  /**
+   * 职责摘录。
+   */
+  duties: string
+
+  /**
+   * 要求摘录。
+   */
+  requirements: string
+
+  /**
+   * 抓取时刻。
+   */
+  fetched: string
+}
+
+/**
+ * 大维度包(/api/jobs/dims;E10-01 P3 从旧 20k blob 拆出)。
+ */
+export type BigDims = {
+  /**
+   * 城市维度。
+   */
+  cities: CityDim[]
+
+  /**
+   * 区维度。
+   */
+  districts: DistrictDim[]
+
+  /**
+   * AIP 指定雇主维度。
+   */
+  designatedEmployers: DesigDim[]
+
+  /**
+   * NOC 描述维度。
+   */
+  nocDescriptions: NocDescDim[]
+}
+
+/**
+ * `loadBigDims` 的入参。
+ */
+export type BigDimsIn = {
+  /**
+   * 能查的连接(池由调用方注进来)。
+   */
+  db: Db
+}
+
+/**
+ * `loadBigDims` 的返回。
+ */
+export type BigDimsOut = Promise<BigDims>
+
+/**
+ * `fetchApplyEmail` 的返回:邮箱;空串 = 确认无;null = 抓取失败(有没有未知,负缓存到期重试)。
+ */
+export type ApplyMailOut = Promise<string | null>
+
+/**
+ * POST /api/jobs/company 的请求体形状(跨边界断言目标,逐格判后才用)。
+ */
+export type CompanyBody = {
+  /**
+   * 岗位 id;不是数就 400。
+   */
+  jobId: number | string | null
 }

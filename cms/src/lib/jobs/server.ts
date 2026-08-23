@@ -19,3 +19,7 @@ export {
 } from './functions'
 export { mapEeCat, mapPnpOcc } from './rows'
 export type { AlertHit, CompanyDetail, JobsFilters, RelatedJob, SimilarEmployer, SsrDims, TopNoc } from './types'
+export {
+  jobsApplyhowRoute, jobsCityRoute, jobsCompanyRoute, jobsCompetitionRoute, jobsDimsRoute, jobsProvinceRoute,
+  jobsRoute, jobsTextRoute,
+} from './routes'
