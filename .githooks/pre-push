@@ -29,3 +29,19 @@ if [ $code -ne 0 ]; then
   exit $code
 fi
 echo "[pre-push] eslint 过闸。"
+
+# 裸构建闸(Frank 2026-08-23 拍板「加闸门,下次不要发烧」):复现 Render 构建容器 ——
+# 它不注入运行时密钥,而 Next 构建期会收集 generateSitemaps 等页面数据,凡是这条路上
+# 摸 Payload/库又没兜底的代码,本地带 .env 的 build 全绿、Render 当场红(seo 立域实撞,
+# 修复=分片壳 getDb 裹回兜底)。手法:空串环境变量压过 .env(dotenv 不覆盖已存在变量,
+# 空串也算存在),等价于构建容器没密钥;约 30-45s,只有真要 push 时才花。
+echo "[pre-push] 裸构建(无密钥,复现 Render 构建容器)…"
+PAYLOAD_SECRET= DATABASE_URI= npm run build >/tmp/prepush-bare-build.log 2>&1
+code=$?
+if [ $code -ne 0 ]; then
+  echo "[pre-push] 裸构建失败 —— 构建期有代码在无密钥环境下抛错,Render 上必红。"
+  echo "[pre-push] 日志:/tmp/prepush-bare-build.log(尾部如下);修法参考 jobs/sitemap.ts 头注。"
+  tail -30 /tmp/prepush-bare-build.log
+  exit $code
+fi
+echo "[pre-push] 裸构建过闸。"
