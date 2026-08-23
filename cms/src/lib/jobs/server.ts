@@ -24,7 +24,7 @@ export {
   jobsProvinceRoute, jobsRoute, jobsTextRoute,
 } from './routes'
 export {
-  loadJdFormatted, loadJdState, loadNewsForSummary, loadNewsForTranslate, loadNocDuties,
+  loadApplyUrlById, loadJdFormatted, loadJdState, loadNewsForSummary, loadNewsForTranslate, loadNocDuties,
   saveNewsSummary, saveNewsTranslation,
 } from './functions'
 export type { NewsSummaryRow } from './types'

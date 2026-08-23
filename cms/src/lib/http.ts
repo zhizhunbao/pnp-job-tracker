@@ -39,6 +39,11 @@ export const PAYMENT_REQUIRED = 402
 export const TOO_LARGE = 413
 
 /**
+ * 422：收到了但处理不了（扫描件无文本层这类）。
+ */
+export const UNPROCESSABLE = 422
+
+/**
  * 404:不存在(含「功能未配置」的兜底门)。
  */
 export const NOT_FOUND = 404
@@ -57,6 +62,11 @@ export const SERVER_ERROR = 500
  * 502：上游（朋友盒子/翻译网关）没给出东西。
  */
 export const BAD_GATEWAY = 502
+
+/**
+ * 504：上游超时（重试有用的那种）。
+ */
+export const GATEWAY_TIMEOUT = 504
 
 /**
  * 503:依赖未配置/不可用(如 Stripe 无密钥)。

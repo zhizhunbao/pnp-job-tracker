@@ -47,6 +47,7 @@ const ALLOW = [
   '!**/lib/mail/server', '!./mail/server', '!../mail/server',
   '!**/lib/funnel/server', '!./funnel/server', '!../funnel/server',
   '!**/lib/llm/server', '!./llm/server', '!../llm/server',
+  '!**/lib/resume/server', '!./resume/server', '!../resume/server',
 ]
 const SIBLING = BARRELS.flatMap((m) => [`./${m}/*`, `../${m}/*`])
 const barrelOnly = (group) => ({
@@ -1327,6 +1328,9 @@ const API_DONE = [
   'src/app/api/news-translate/route.ts',
   'src/app/api/news-summarize/route.ts',
   'src/app/api/jdformat/route.ts',
+  'src/app/api/resume/route.ts',
+  'src/app/api/resume/extract/route.ts',
+  'src/app/api/resume/match/route.ts',
 ]
 
 const REFACTORED = [

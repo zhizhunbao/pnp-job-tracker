@@ -425,6 +425,106 @@ export const RESUME_LOG = {
    * 错误名与错误信息之间的分隔。
    */
   errSep: ': ',
+
+  /**
+   * extract 成功一行的开头,后面接用户 id。
+   */
+  extractOk: 'extract ok user=',
+
+  /**
+   * 文件大小段。
+   */
+  fileB: ' file=',
+
+  /**
+   * 字节后缀。
+   */
+  bSuffix: 'b',
+
+  /**
+   * 文本长度段。
+   */
+  textCh: ' text=',
+
+  /**
+   * 字符数后缀。
+   */
+  chSuffix: 'ch',
+
+  /**
+   * match 模型层挂了一行的开头。
+   */
+  matchLlmFail: 'match llm fail user=',
+
+  /**
+   * 错误码段。
+   */
+  codeFrag: ' code=',
+
+  /**
+   * 映射到对外错误码的箭头。
+   */
+  arrow: ' → ',
+
+  /**
+   * jd 长度段。
+   */
+  jdCh: ' jd=',
+
+  /**
+   * 简历长度段(只记长度不记内容 —— 简历是 PII)。
+   */
+  resumeCh: ' resume=',
+
+  /**
+   * match 解析失败一行的开头。
+   */
+  matchParseFail: 'match parse fail user=',
+
+  /**
+   * 上游链路段(串答事故只能靠它发现)。
+   */
+  viaFrag: ' via=',
+
+  /**
+   * x-cache 头原值段。
+   */
+  xcacheFrag: ' x-cache=',
+
+  /**
+   * 原始输出摘要段。
+   */
+  rawFrag: ' raw=',
+
+  /**
+   * match 成功一行的开头。
+   */
+  matchOk: 'match ok user=',
+
+  /**
+   * 行数段。
+   */
+  rowsFrag: ' rows=',
+
+  /**
+   * Pro 态段。
+   */
+  proFrag: ' pro=',
+
+  /**
+   * 存档态段。
+   */
+  savedFrag: ' saved=',
+
+  /**
+   * 档案写失败一行的开头(记账/存档失败都不挡结果,但必须留痕 —— 裸 catch 是老教训)。
+   */
+  profileWriteFail: 'match profile write fail user=',
+
+  /**
+   * save 开关段。
+   */
+  saveFrag: ' save=',
 } as const
 
 /**

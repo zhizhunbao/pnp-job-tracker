@@ -640,3 +640,13 @@ export function toJdStateRow(r: Row): JdStateRow {
     hours: textOrNull(r.employment_hours), formatted: textOrNull(r.jd_formatted),
   }
 }
+
+/**
+ * 单列投递链接（SQL.JOB_APPLY_URL_BY_ID）→ 链接；缺位 null。
+ *
+ * @param r 库里的一行。
+ * @returns 投递链接；没有是 null。
+ */
+export function toApplyUrlCell(r: Row): MaybeStr {
+  return textOrNull(r.apply_url)
+}

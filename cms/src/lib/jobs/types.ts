@@ -4526,3 +4526,18 @@ export type JdUrlBody = {
  * 写库即返类函数的返回（无体）。
  */
 export type SavedOut = Promise<void>
+
+/**
+ * `loadApplyUrlById` 的入参。
+ */
+export type ApplyUrlIn = {
+  /**
+   * 能查的连接（池由调用方注进来）。
+   */
+  db: Db
+
+  /**
+   * 岗 id。
+   */
+  jobId: number
+}

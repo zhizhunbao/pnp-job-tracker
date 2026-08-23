@@ -1417,3 +1417,11 @@ export const DIMS_DESIGNATED = `SELECT name, province, location, is_tech FROM de
  * 筛选下拉/弹窗的 NOC 描述维度(上限同原 payload.find 的 2000)。
  */
 export const DIMS_NOC_DESCRIPTIONS = `SELECT noc, title, title_zh, title_ko, duties, requirements, fetched FROM noc_descriptions LIMIT 2000`
+
+/**
+ * 职名 → NOC 候选：在库职位标题 pg_trgm 相似度（真实在招岗位的 title→noc 映射，
+ * 比官方类名更贴简历用语；简历上传 E11-07）。$1=英文职名。
+ */
+export const NOC_BY_TITLE_SIM = `SELECT j.noc, max(similarity(j.title, $1)) AS sim, count(*) AS n
+   FROM jobs j WHERE j.noc IS NOT NULL AND j.noc <> '' AND similarity(j.title, $1) > 0.3
+   GROUP BY j.noc ORDER BY sim DESC, n DESC LIMIT 3`

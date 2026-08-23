@@ -7,9 +7,10 @@
  * @time 2026-08-22 16:00:00
  */
 
+import { text } from '../db'
 import { BRACE_CLOSE, BRACE_OPEN, NOTE_MAX, REQ_MAX, ROWS_MAX, ROWS_MIN } from './constants'
 import { OUT_LANG, OUT_LANG_DEFAULT } from './prompts'
-import type { JsonObj, MatchRows, MaybeMatchRows, ParsedJson } from './types'
+import type { JsonObj, MatchRows, MaybeMatchRows, NocSimDbRow, NocTitleDbRow, NocTitleRow, ParsedJson } from './types'
 
 /**
  * LLM 输出收口·第一步:整体 JSON.parse,且要求结果是对象(模型偶发给裸数组/标量,
@@ -120,4 +121,24 @@ export function outLangOf(lang: string): string {
     return OUT_LANG_DEFAULT
   }
   return hit
+}
+
+/**
+ * 一行 trgm 命中（SQL.NOC_BY_TITLE_SIM）→ 职业码（只消费这一格）。
+ *
+ * @param r 库里的一行。
+ * @returns 职业码；缺位空串。
+ */
+export function toNocCodeCell(r: NocSimDbRow): string {
+  return text(r.noc)
+}
+
+/**
+ * 一行 NOC 官方名（SQL.NOC_TITLES_BY_CODES；多出的三语列不消费）。
+ *
+ * @param r 库里的一行。
+ * @returns 码 + 英文名。
+ */
+export function toNocTitleRow(r: NocTitleDbRow): NocTitleRow {
+  return { noc: text(r.noc), title: text(r.title) }
 }

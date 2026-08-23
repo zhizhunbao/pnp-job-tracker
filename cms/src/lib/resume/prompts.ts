@@ -49,3 +49,14 @@ export const OUT_LANG: Record<string, string> = {
  * 语言码不认识时的输出语言名。
  */
 export const OUT_LANG_DEFAULT = 'English'
+
+/**
+ * 简历抽取的 system（E11-07）：只要 JSON；titles 最多 3 个职业化英文职名；
+ * ielts/clb 只认简历明写的分数，绝不猜。
+ */
+export const EXTRACT_SYSTEM = 'You extract structured facts from a resume. Reply with ONLY a JSON object, no prose, no markdown fence:\n'
+  + '{"titles":[{"title_en":"<job title in English, generic occupational phrasing>","years":<number|null>}],'
+  + '"ielts":{"listening":<n>,"reading":<n>,"writing":<n>,"speaking":<n>}|null,"clb":<number|null>}\n'
+  + 'Rules: titles = up to 3 most recent/representative OCCUPATIONS (translate to English if needed; strip company/level noise, e.g. "高级Java开发" -> "software developer"). '
+  + 'years = years of experience in that occupation if stated or clearly inferable, else null. '
+  + 'ielts/clb ONLY if the resume explicitly states test scores — never guess; absent = null.'

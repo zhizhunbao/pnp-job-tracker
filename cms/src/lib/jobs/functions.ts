@@ -21,12 +21,12 @@ import {
 } from './constants'
 import { JD_FORMAT_PROMPT_HEAD, REASON_EN, STATUS_EN } from './prompts'
 import {
-  iso, mapEeCat, mapPnpOcc, passJobRow, passJsonRow, passRow, toAlertHit, toBroadCount, toBroadNoc, toCityAgg, toCityDim, toCompanyJob, toCountN, toDesigDim, toDiffCell, toDistrictDim, toDistrictEmployer, toDliTop, toEeCatDim, toFieldSource, toInfoCell, toJdFormattedCell, toJdStateRow, toJobRow, toMatchJob, toNewsSlim, toNewsSummaryRow, toNewsTransRow, toNocCat, toNocDescDim, toNocDutiesRow, toNocHit, toOccDiffFact, toOccOpen, toPnpDraw, toPnpOccDim, toProvCount, toRelated, toSimilar, toTopNoc,
+  iso, mapEeCat, mapPnpOcc, passJobRow, passJsonRow, passRow, toAlertHit, toApplyUrlCell, toBroadCount, toBroadNoc, toCityAgg, toCityDim, toCompanyJob, toCountN, toDesigDim, toDiffCell, toDistrictDim, toDistrictEmployer, toDliTop, toEeCatDim, toFieldSource, toInfoCell, toJdFormattedCell, toJdStateRow, toJobRow, toMatchJob, toNewsSlim, toNewsSummaryRow, toNewsTransRow, toNocCat, toNocDescDim, toNocDutiesRow, toNocHit, toOccDiffFact, toOccOpen, toPnpDraw, toPnpOccDim, toProvCount, toRelated, toSimilar, toTopNoc,
 } from './rows'
 import { byEntryCountDesc, byHitValAsc, byHitValDesc, byLevelDesc } from './callbacks'
 import { CACHE } from './variables'
 import type {
-  AlertHitsIn, AlertHitsOut, ApplyMailOut, BigDimsIn, BigDimsOut, BroadNocsIn, BroadNocsOut, BuildWhereIn, CaughtError, Cell, CheckedAtOut, CityAgg, CityCardIn, CityCardOut, CompanyByJobIn, CompanyBySlugIn, CompanyDetail, CompanyOut, CompanyWhereIn, CountMap, CountOfIn, CoverageIn, DistrictCard, DrawStreamNoteIn, DropProvPrefixIn, EeDisplayIn, EeKeyDisplayIn, GenerateJdIn, GenerateJdOut, HtmlOut, JdFormattedIn, JdIn, JdOut, JdStateOut, JobByIdIn, JobByIdOut, JobDbRow, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn, JobsPageOut, JobsWhere, JsonCell, JsonObj, LmiaNocRow, LmiaNocsIn, LmiaNocsOut, MatchDims, MatchDimsOut, MatchIn, MatchLevel, MatchPageIn, MatchPageOut, MatchProfile, MatchReason, MatchResult, MaybeLevel, MaybeNum, MaybeProfile, MaybeStr, MaybeStrOut, NameOption, NewsSummaryOut, NewsSummarySaveIn, NewsTransIn, NewsTransOut, NewsTransSaveIn, NocCountsIn, NocCountsOut, NocDutiesIn, NocDutiesOut, NocOpenCount, NocRuleOut, NocSearchIn, NocSearchOut, NumCell, OccCompetitionIn, OccCompetitionOut, OccCompetitionRows, OccDiffFacts, OrderByIn, PgFailure, PnpOcc, PnpOccs, ProfileJsonCell, ProfileJsonOrNull, ProofOut, ProvCounts, ProvListCoverage, ProvOption, ProvinceCardIn, ProvinceCardOut, QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount, RankedHit, RatioMap, RatioOfIn, RelatedIn, RelatedOut, ReqStreamDisplayIn, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut, SavedOut, SimilarEmployer, SimilarIn, SimilarList, SimilarOut, SortValIn, SsrDimsOut, StrCell, StrList, StreamDisplayIn, StripTitleIn, TopNocsIn, TopNocsOut, UrlHandle, WhereParam,
+  AlertHitsIn, AlertHitsOut, ApplyMailOut, ApplyUrlIn, BigDimsIn, BigDimsOut, BroadNocsIn, BroadNocsOut, BuildWhereIn, CaughtError, Cell, CheckedAtOut, CityAgg, CityCardIn, CityCardOut, CompanyByJobIn, CompanyBySlugIn, CompanyDetail, CompanyOut, CompanyWhereIn, CountMap, CountOfIn, CoverageIn, DistrictCard, DrawStreamNoteIn, DropProvPrefixIn, EeDisplayIn, EeKeyDisplayIn, GenerateJdIn, GenerateJdOut, HtmlOut, JdFormattedIn, JdIn, JdOut, JdStateOut, JobByIdIn, JobByIdOut, JobDbRow, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn, JobsPageOut, JobsWhere, JsonCell, JsonObj, LmiaNocRow, LmiaNocsIn, LmiaNocsOut, MatchDims, MatchDimsOut, MatchIn, MatchLevel, MatchPageIn, MatchPageOut, MatchProfile, MatchReason, MatchResult, MaybeLevel, MaybeNum, MaybeProfile, MaybeStr, MaybeStrOut, NameOption, NewsSummaryOut, NewsSummarySaveIn, NewsTransIn, NewsTransOut, NewsTransSaveIn, NocCountsIn, NocCountsOut, NocDutiesIn, NocDutiesOut, NocOpenCount, NocRuleOut, NocSearchIn, NocSearchOut, NumCell, OccCompetitionIn, OccCompetitionOut, OccCompetitionRows, OccDiffFacts, OrderByIn, PgFailure, PnpOcc, PnpOccs, ProfileJsonCell, ProfileJsonOrNull, ProofOut, ProvCounts, ProvListCoverage, ProvOption, ProvinceCardIn, ProvinceCardOut, QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount, RankedHit, RatioMap, RatioOfIn, RelatedIn, RelatedOut, ReqStreamDisplayIn, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut, SavedOut, SimilarEmployer, SimilarIn, SimilarList, SimilarOut, SortValIn, SsrDimsOut, StrCell, StrList, StreamDisplayIn, StripTitleIn, TopNocsIn, TopNocsOut, UrlHandle, WhereParam,
 } from './types'
 
 // =========================================================================
@@ -2658,4 +2658,19 @@ function validateJdFormatted(out: string, src: string): boolean {
     }
   }
   return true
+}
+
+/**
+ * 按岗 id 取投递链接（resume-match 的 jd 兜底链：前端没带 JD 时服务端按 jobId
+ * 走 jobDescription 统一入口兜一次）。
+ *
+ * @param input 连接与岗 id。
+ * @returns 投递链接；查无这岗/没链接是 null。
+ */
+export async function loadApplyUrlById(input: ApplyUrlIn): MaybeStrOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.JOB_APPLY_URL_BY_ID, params: [input.jobId], map: toApplyUrlCell })
+  if (rows.length === 0) {
+    return null
+  }
+  return rows[0]
 }

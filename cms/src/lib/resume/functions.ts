@@ -8,15 +8,16 @@
  * @time 2026-08-22 16:00:00
  */
 
+import { queryRows, SQL } from '../db'
 import { fill } from '../template'
 import { log, RESUME_LOG } from '../log'
 import {
-  CLAMP, ERR_SLICE, ERR_UNSUPPORTED, EXT_DOCX, EXT_PDF, EXT_SEP, FREE_ROWS, ROLE_SYSTEM, ROLE_USER,
+  CLAMP, ERR_SLICE, ERR_UNSUPPORTED, EXT_DOCX, EXT_PDF, EXT_SEP, FREE_ROWS, IELTS_CLB, NOC_CAND_MAX, ROLE_SYSTEM, ROLE_USER,
 } from './constants'
 import { MATCH_REWRITE, MATCH_SYSTEM, MATCH_USER } from './prompts'
-import { outLangOf } from './rows'
+import { outLangOf, toNocCodeCell, toNocTitleRow } from './rows'
 import type {
-  CaughtError, ExtractIn, ExtractOut, Gated, GateMatchIn, MatchMessages, MatchPromptIn, MatchRows,
+  CaughtError, ExtractIn, ExtractOut, GateMatchIn, Gated, IeltsCells, MatchMessages, MatchPromptIn, MatchRows, MaybeIelts, MaybeNum, NocCandidate, NocCandidatesIn, NocCandidatesOut,
 } from './types'
 
 /**
@@ -194,4 +195,70 @@ export function matchPrompt(input: MatchPromptIn): MatchMessages {
       content: fill({ tpl: MATCH_USER, params: { jd: input.jd.slice(0, CLAMP), resume: input.resume.slice(0, CLAMP) } }),
     },
   ]
+}
+
+/**
+ * IELTS（G 类）→ CLB：四项都是数才换，从高到低扫首个四项全达标的档
+ * （= 四技能各自换算取最小，IRCC 官方对照）。
+ *
+ * @param b 四项分；简历没写是 null。
+ * @returns CLB 档；换不出是 null（绝不猜）。
+ */
+export function ieltsToClb(b: MaybeIelts): MaybeNum {
+  if (b == null) {
+    return null
+  }
+  if (typeof b.listening !== 'number' || typeof b.reading !== 'number'
+    || typeof b.writing !== 'number' || typeof b.speaking !== 'number') {
+    return null
+  }
+  for (const row of IELTS_CLB) {
+    if (b.listening >= row.l && b.reading >= row.r && b.writing >= row.w && b.speaking >= row.s) {
+      return row.clb
+    }
+  }
+  return null
+}
+
+/**
+ * 职名 → NOC 候选：在库职位标题 pg_trgm 相似度（真实在招岗位的 title→noc
+ * 映射，比官方类名更贴简历用语）；去重封顶 NOC_CAND_MAX，再回表补官方英文名。
+ *
+ * @param input 连接与验过形的职名清单。
+ * @returns 候选清单（可空）。
+ */
+export async function nocCandidatesOf(input: NocCandidatesIn): NocCandidatesOut {
+  const seen = new Set<string>()
+  const out: NocCandidate[] = []
+  for (const q of input.titles) {
+    if (out.length >= NOC_CAND_MAX) {
+      break
+    }
+    const codes = await queryRows({ db: input.db, sql: SQL.NOC_BY_TITLE_SIM, params: [q], map: toNocCodeCell })
+    for (const noc of codes) {
+      if (noc === '' || seen.has(noc) || out.length >= NOC_CAND_MAX) {
+        continue
+      }
+      seen.add(noc)
+      out.push({ noc: noc, title: '' })
+    }
+  }
+  if (out.length > 0) {
+    const wanted: string[] = []
+    for (const c of out) {
+      wanted.push(c.noc)
+    }
+    const titles = await queryRows({ db: input.db, sql: SQL.NOC_TITLES_BY_CODES, params: [wanted], map: toNocTitleRow })
+    const byNoc = new Map<string, string>()
+    for (const t of titles) {
+      byNoc.set(t.noc, t.title)
+    }
+    for (const c of out) {
+      const title = byNoc.get(c.noc)
+      if (title != null) {
+        c.title = title
+      }
+    }
+  }
+  return out
 }
