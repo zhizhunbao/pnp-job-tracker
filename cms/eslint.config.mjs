@@ -46,6 +46,7 @@ const ALLOW = [
   '!**/lib/stripe/server', '!./stripe/server', '!../stripe/server',
   '!**/lib/mail/server', '!./mail/server', '!../mail/server',
   '!**/lib/funnel/server', '!./funnel/server', '!../funnel/server',
+  '!**/lib/llm/server', '!./llm/server', '!../llm/server',
 ]
 const SIBLING = BARRELS.flatMap((m) => [`./${m}/*`, `../${m}/*`])
 const barrelOnly = (group) => ({
@@ -1320,6 +1321,12 @@ const API_DONE = [
   'src/app/api/stripe/checkout/route.ts',
   'src/app/api/stripe/webhook/route.ts',
   'src/app/api/consult/chat/route.ts',
+  'src/app/api/co-translate/route.ts',
+  'src/app/api/jd-translate/route.ts',
+  'src/app/api/noc-translate/route.ts',
+  'src/app/api/news-translate/route.ts',
+  'src/app/api/news-summarize/route.ts',
+  'src/app/api/jdformat/route.ts',
 ]
 
 const REFACTORED = [

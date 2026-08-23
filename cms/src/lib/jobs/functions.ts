@@ -8,6 +8,7 @@
  * @time 2026-08-22 00:05:00
  */
 
+import { FRIEND_INPUT_MAX, friendChat } from '../llm'
 import {
   HDR_ACCEPT, HDR_CONTENT_TYPE, HDR_COOKIE, HDR_REFERER, HDR_USER_AGENT, METHOD_POST,
 } from '../http'
@@ -16,16 +17,16 @@ import type { Db } from '../db'
 import { JOBS_LOG, log } from '../log'
 import { fill } from '../template'
 import {
-  ACCEPT_ANY, ACCEPT_HTML, AMP, AMP_ENT_RE, APPLY_SLICE_LEN, APPLY_TIMEOUT_MS, BLOCKED_SRC, BROAD_NOCS_MAX, CAND_CAP, CAT_LEVEL, CK, CNT_SEP, COLON_END_RE, COL_PROVINCE, COMMA, COMPANY_SLUG_COND, COOKIE_CUT, COOKIE_JOIN, COUNT_CACHE_MAX, COUNT_TTL_MS, COV, CURRENT_STATUSES, DIGIT_PICK_RE, DIMS_TTL_MS, DIR_ASC, DIR_DESC, DOLLAR, DRAW_STREAM_L10N, EE_KEY_L10N, EE_L10N, EE_SPLIT, EMAIL_RE, ENT_PAIRS, FACES_REQUEST_HDR, FACES_REQUEST_VAL, FK, FORM_CONTENT_TYPE, FV, HAS_DIGIT_RE, HAS_SUFFIX, HOW_APPLY_RE, HREF_ENT_PAIRS, JB_APPLY_ANCHOR, JB_DESC_RE, JB_EXT_LINK_RE, JB_INNER_ENT_PAIRS, JB_ORIGIN, JB_REQ_ANCHOR, JB_SECTION_CAP, JB_URL_RE, JD_BAD_HOST_172_RE, JD_BAD_HOST_RE, JD_BLOCK_BREAK_RE, JD_FAILED_MAX, JD_FETCH_TIMEOUT_MS, JD_HEAD_JUNK_RE, JD_HEAD_MAX_LINES, JD_HTML_CAP, JD_LINE_MIN, JD_MAX_LEN, JD_MIN_LEN, JD_NEG_TTL_MS, JD_ORPHAN_LEN, JD_PARA_LEN, JD_PROTO_RE, JD_STRIP_BLOCK_RE, JD_TAG_RE, JD_UA, JSF_FORM_BASE, JSF_KEY_JOBID, JSF_KEY_JSJOBID, LANG_EN, LANG_KO, LEVEL_RANK, LINE_SPACES_RE, LMIA_SOURCE, LV, MAIL_AT, MAIL_RE, MAIL_SKIP_SUFFIXES, MAIL_SKIP_WORD, MAIN_LIST_COVERAGE, MED_SELECT, NL, NOC_JOIN_SLASH, NOC_LEN, NOC_MINOR_LEN, NOC_RE, NOC_SEARCH_MIN, NOC_SUBMAJOR_LEN, NORM_DASH, NORM_DASH_RE, NORM_WS_RE, NO_LIST_PROVINCES, OPEN_COND, ORDER_DATE_TAIL, ORDER_DEFAULT_COL, ORDER_FRESH, ORIGIN_TITLE_HEAD, PCT, PG_UNDEFINED_COLUMN, PG_UNDEFINED_TABLE, PHONE_RE, PII_MASK, PROGRAM_PNP, PROOF_TTL_MS, PROV_CODE, PROV_MAX_WORDS, PROV_PREFIX_TRIM_RE, PRO_SORTS, Q_MAX_TERMS, Q_SHORT_LEN, REDIRECT_FOLLOW, REQ_STREAM_L10N, RK, RULE, SCORE_HIGH, SCORE_MID, SEARCH_COLS, SEEKER_ACTION_RE, SEEKER_JOBID_RE, SEP_KEY, SORT_COLUMNS, SORT_MATCH_KEY, SPACE, SPACES_RE, SRC_DASH, SRC_JOB_BANK, STREAM_L10N, T45_COND_PROVS, T45_NL, TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE, TITLE_RE, TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_TTL_MS, TOP_NOCS_WITH_MED, TYPE_INELIGIBLE, UNCAT, VD, W,
+  ACCEPT_ANY, ACCEPT_HTML, AMP, AMP_ENT_RE, APPLY_SLICE_LEN, APPLY_TIMEOUT_MS, BLOCKED_SRC, BROAD_NOCS_MAX, CAND_CAP, CAT_LEVEL, CK, CNT_SEP, COLON_END_RE, COL_PROVINCE, COMMA, COMPANY_SLUG_COND, COOKIE_CUT, COOKIE_JOIN, COUNT_CACHE_MAX, COUNT_TTL_MS, COV, CURRENT_STATUSES, DIGIT_PICK_RE, DIMS_TTL_MS, DIR_ASC, DIR_DESC, DOLLAR, DRAW_STREAM_L10N, EE_KEY_L10N, EE_L10N, EE_SPLIT, EMAIL_RE, ENT_PAIRS, FACES_REQUEST_HDR, FACES_REQUEST_VAL, FK, FORM_CONTENT_TYPE, FV, HAS_DIGIT_RE, HAS_SUFFIX, HOW_APPLY_RE, HREF_ENT_PAIRS, JB_APPLY_ANCHOR, JB_DESC_RE, JB_EXT_LINK_RE, JB_INNER_ENT_PAIRS, JB_ORIGIN, JB_REQ_ANCHOR, JB_SECTION_CAP, JB_URL_RE, JD_BAD_HOST_172_RE, JD_BAD_HOST_RE, JD_BLOCK_BREAK_RE, JD_BUDGET_MARGIN, JD_DIGITS_RE, JD_FAILED_MAX, JD_FETCH_TIMEOUT_MS, JD_GEN_TIMEOUT_MS, JD_HEAD_JUNK_RE, JD_HEAD_MAX_LINES, JD_HOURS_VALUES, JD_HRS_RE, JD_HTML_CAP, JD_LINE_MIN, JD_MAX_LEN, JD_MIN_LEN, JD_NEG_TTL_MS, JD_ORPHAN_LEN, JD_OUT_MAX_BASE, JD_OUT_MAX_RATIO, JD_OUT_MIN_LEN, JD_PARA_LEN, JD_PROTO_RE, JD_SECTION_MARKS, JD_STRIP_BLOCK_RE, JD_TAG_RE, JD_TAIL_STRIP_RE, JD_TERM_RE, JD_TERM_VALUES, JD_UA, JSF_FORM_BASE, JSF_KEY_JOBID, JSF_KEY_JSJOBID, LANG_EN, LANG_KO, LEVEL_RANK, LINE_SPACES_RE, LMIA_SOURCE, LV, MAIL_AT, MAIL_RE, MAIL_SKIP_SUFFIXES, MAIL_SKIP_WORD, MAIN_LIST_COVERAGE, MARK_HEAD, MARK_TAIL, MED_SELECT, NEWS_BODY_COL, NEWS_SUMMARY_COL, NL, NOC_JOIN_SLASH, NOC_LEN, NOC_MINOR_LEN, NOC_RE, NOC_SEARCH_MIN, NOC_SUBMAJOR_LEN, NORM_DASH, NORM_DASH_RE, NORM_WS_RE, NO_LIST_PROVINCES, OPEN_COND, ORDER_DATE_TAIL, ORDER_DEFAULT_COL, ORDER_FRESH, ORIGIN_TITLE_HEAD, PCT, PG_UNDEFINED_COLUMN, PG_UNDEFINED_TABLE, PHONE_RE, PII_MASK, PROGRAM_PNP, PROOF_TTL_MS, PROV_CODE, PROV_MAX_WORDS, PROV_PREFIX_TRIM_RE, PRO_SORTS, Q_MAX_TERMS, Q_SHORT_LEN, REDIRECT_FOLLOW, REQ_STREAM_L10N, RK, RULE, SCORE_HIGH, SCORE_MID, SEARCH_COLS, SEEKER_ACTION_RE, SEEKER_JOBID_RE, SEP_KEY, SORT_COLUMNS, SORT_MATCH_KEY, SPACE, SPACES_RE, SRC_DASH, SRC_JOB_BANK, STREAM_L10N, T45_COND_PROVS, T45_NL, TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE, TITLE_RE, TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_TTL_MS, TOP_NOCS_WITH_MED, TYPE_INELIGIBLE, UNCAT, VD, W,
 } from './constants'
-import { REASON_EN, STATUS_EN } from './prompts'
+import { JD_FORMAT_PROMPT_HEAD, REASON_EN, STATUS_EN } from './prompts'
 import {
-  iso, mapEeCat, mapPnpOcc, passJobRow, passJsonRow, passRow, toAlertHit, toBroadCount, toBroadNoc, toCityAgg, toCityDim, toCompanyJob, toCountN, toDesigDim, toDiffCell, toDistrictDim, toDistrictEmployer, toDliTop, toEeCatDim, toFieldSource, toInfoCell, toJobRow, toMatchJob, toNewsSlim, toNocCat, toNocDescDim, toNocHit, toOccDiffFact, toOccOpen, toPnpDraw, toPnpOccDim, toProvCount, toRelated, toSimilar, toTopNoc,
+  iso, mapEeCat, mapPnpOcc, passJobRow, passJsonRow, passRow, toAlertHit, toBroadCount, toBroadNoc, toCityAgg, toCityDim, toCompanyJob, toCountN, toDesigDim, toDiffCell, toDistrictDim, toDistrictEmployer, toDliTop, toEeCatDim, toFieldSource, toInfoCell, toJdFormattedCell, toJdStateRow, toJobRow, toMatchJob, toNewsSlim, toNewsSummaryRow, toNewsTransRow, toNocCat, toNocDescDim, toNocDutiesRow, toNocHit, toOccDiffFact, toOccOpen, toPnpDraw, toPnpOccDim, toProvCount, toRelated, toSimilar, toTopNoc,
 } from './rows'
 import { byEntryCountDesc, byHitValAsc, byHitValDesc, byLevelDesc } from './callbacks'
 import { CACHE } from './variables'
 import type {
-  AlertHitsIn, AlertHitsOut, ApplyMailOut, BigDimsIn, BigDimsOut, BroadNocsIn, BroadNocsOut, BuildWhereIn, CaughtError, Cell, CheckedAtOut, CityAgg, CityCardIn, CityCardOut, CompanyByJobIn, CompanyBySlugIn, CompanyDetail, CompanyOut, CompanyWhereIn, CountMap, CountOfIn, CoverageIn, DistrictCard, DrawStreamNoteIn, DropProvPrefixIn, EeDisplayIn, EeKeyDisplayIn, HtmlOut, JdIn, JdOut, JobByIdIn, JobByIdOut, JobDbRow, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn, JobsPageOut, JobsWhere, JsonCell, JsonObj, LmiaNocRow, LmiaNocsIn, LmiaNocsOut, MatchDims, MatchDimsOut, MatchIn, MatchLevel, MatchPageIn, MatchPageOut, MatchProfile, MatchReason, MatchResult, MaybeLevel, MaybeNum, MaybeProfile, MaybeStr, NameOption, NocCountsIn, NocCountsOut, NocOpenCount, NocRuleOut, NocSearchIn, NocSearchOut, NumCell, OccCompetitionIn, OccCompetitionOut, OccCompetitionRows, OccDiffFacts, OrderByIn, PgFailure, PnpOcc, PnpOccs, ProfileJsonCell, ProfileJsonOrNull, ProofOut, ProvCounts, ProvListCoverage, ProvOption, ProvinceCardIn, ProvinceCardOut, QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount, RankedHit, RatioMap, RatioOfIn, RelatedIn, RelatedOut, ReqStreamDisplayIn, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut, SimilarEmployer, SimilarIn, SimilarList, SimilarOut, SortValIn, SsrDimsOut, StrCell, StrList, StreamDisplayIn, StripTitleIn, TopNocsIn, TopNocsOut, UrlHandle, WhereParam,
+  AlertHitsIn, AlertHitsOut, ApplyMailOut, BigDimsIn, BigDimsOut, BroadNocsIn, BroadNocsOut, BuildWhereIn, CaughtError, Cell, CheckedAtOut, CityAgg, CityCardIn, CityCardOut, CompanyByJobIn, CompanyBySlugIn, CompanyDetail, CompanyOut, CompanyWhereIn, CountMap, CountOfIn, CoverageIn, DistrictCard, DrawStreamNoteIn, DropProvPrefixIn, EeDisplayIn, EeKeyDisplayIn, GenerateJdIn, GenerateJdOut, HtmlOut, JdFormattedIn, JdIn, JdOut, JdStateOut, JobByIdIn, JobByIdOut, JobDbRow, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn, JobsPageOut, JobsWhere, JsonCell, JsonObj, LmiaNocRow, LmiaNocsIn, LmiaNocsOut, MatchDims, MatchDimsOut, MatchIn, MatchLevel, MatchPageIn, MatchPageOut, MatchProfile, MatchReason, MatchResult, MaybeLevel, MaybeNum, MaybeProfile, MaybeStr, MaybeStrOut, NameOption, NewsSummaryOut, NewsSummarySaveIn, NewsTransIn, NewsTransOut, NewsTransSaveIn, NocCountsIn, NocCountsOut, NocDutiesIn, NocDutiesOut, NocOpenCount, NocRuleOut, NocSearchIn, NocSearchOut, NumCell, OccCompetitionIn, OccCompetitionOut, OccCompetitionRows, OccDiffFacts, OrderByIn, PgFailure, PnpOcc, PnpOccs, ProfileJsonCell, ProfileJsonOrNull, ProofOut, ProvCounts, ProvListCoverage, ProvOption, ProvinceCardIn, ProvinceCardOut, QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount, RankedHit, RatioMap, RatioOfIn, RelatedIn, RelatedOut, ReqStreamDisplayIn, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut, SavedOut, SimilarEmployer, SimilarIn, SimilarList, SimilarOut, SortValIn, SsrDimsOut, StrCell, StrList, StreamDisplayIn, StripTitleIn, TopNocsIn, TopNocsOut, UrlHandle, WhereParam,
 } from './types'
 
 // =========================================================================
@@ -2484,4 +2485,177 @@ function pickMail(s: string): string {
 // eslint-disable-next-line local/routes-shape -- catch 传具名函数,非 HTTP 芯本体
 export function emptySimilar(_e: Error): SimilarList {
   return []
+}
+
+/**
+ * 已有的 JD 五节整理版（jd-translate 只翻整理版就绪的，不收任意文本防开放代理）。
+ *
+ * @param input 连接与职位链接。
+ * @returns 整理版全文；没生过/查无这岗是 null。
+ */
+export async function loadJdFormatted(input: JdFormattedIn): MaybeStrOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.JD_FORMATTED_BY_URL, params: [input.url], map: toJdFormattedCell })
+  if (rows.length === 0) {
+    return null
+  }
+  return rows[0]
+}
+
+/**
+ * NOC 官方职责/任职要求（英文单语，懒翻译的源）。
+ *
+ * @param input 连接与职业码。
+ * @returns 两段英文；查无这条是 null。
+ */
+export async function loadNocDuties(input: NocDutiesIn): NocDutiesOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.NOC_DUTIES_BY_CODE, params: [input.noc], map: toNocDutiesRow })
+  if (rows.length === 0) {
+    return null
+  }
+  return rows[0]
+}
+
+/**
+ * 新闻译文源（英文正文 + 该语种已有译文；列名映射 NEWS_BODY_COL）。
+ *
+ * @param input 连接、slug 与语种（路由已验在白名单里）。
+ * @returns 源行；查无这条是 null。
+ */
+export async function loadNewsForTranslate(input: NewsTransIn): NewsTransOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.newsBodyForTranslate(NEWS_BODY_COL[input.lang]), params: [input.slug], map: toNewsTransRow })
+  if (rows.length === 0) {
+    return null
+  }
+  return rows[0]
+}
+
+/**
+ * 写回新闻译文（= 永久缓存，第二个读者秒开；seed 对这两列不清）。
+ *
+ * @param input 连接、slug、语种与校验过的译文。
+ * @returns 落库即返。
+ */
+export async function saveNewsTranslation(input: NewsTransSaveIn): SavedOut {
+  await input.db.query(SQL.newsSetTranslation(NEWS_BODY_COL[input.lang]), [input.body, input.slug])
+}
+
+/**
+ * 新闻速读源（标题 + 英文正文 + 该语种已有速读）。summary_en 列未建（DDL4 未跑）
+ * 时查询抱错 —— 不在这里吞，由路由容错成 503（这是部署态不是数据态）。
+ *
+ * @param input 连接、slug 与语种。
+ * @returns 源行；查无这条是 null。
+ */
+export async function loadNewsForSummary(input: NewsTransIn): NewsSummaryOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.newsForSummary(NEWS_SUMMARY_COL[input.lang]), params: [input.slug], map: toNewsSummaryRow })
+  if (rows.length === 0) {
+    return null
+  }
+  return rows[0]
+}
+
+/**
+ * 写回新闻速读（= 永久缓存）。
+ *
+ * @param input 连接、slug、语种与速读。
+ * @returns 落库即返。
+ */
+export async function saveNewsSummary(input: NewsSummarySaveIn): SavedOut {
+  await input.db.query(SQL.newsSetSummary(NEWS_SUMMARY_COL[input.lang]), [input.summary, input.slug])
+}
+
+/**
+ * jdformat 的岗态（id、两个只补空字段、已有整理版）。
+ *
+ * @param input 连接与职位链接。
+ * @returns 岗态行；查无这岗是 null。
+ */
+export async function loadJdState(input: JdFormattedIn): JdStateOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.JD_STATE_BY_URL, params: [input.url], map: toJdStateRow })
+  if (rows.length === 0) {
+    return null
+  }
+  return rows[0]
+}
+
+/**
+ * JD 五节整理生成（J2）：friendChat 按提示头整理 → 校验 → 存列 = 永久缓存；
+ * 顺带抽 [TERM]/[HRS] 补空字段（只补空不覆盖官方标注，622 缺失岗兜底）。
+ * 红线：只搬运不发挥 —— 输出里的多位数字必须在原文出现，否则整条拒收；
+ * 原文永不覆盖。正文预算 = FRIEND_INPUT_MAX - 提示头 - 边距（#123d：上游硬上限
+ * 6000，超长帖截前段，尾部缺节由 (not stated) + 前端兜底）。
+ *
+ * @param input 连接、岗态与原文。
+ * @returns 整理版；生成/校验失败是 null。
+ */
+export async function generateJdFormatted(input: GenerateJdIn): GenerateJdOut {
+  const src = input.description
+  const budget = FRIEND_INPUT_MAX - JD_FORMAT_PROMPT_HEAD.length - JD_BUDGET_MARGIN
+  const r = await friendChat({ prompt: JD_FORMAT_PROMPT_HEAD + src.slice(0, budget), timeoutMs: JD_GEN_TIMEOUT_MS })
+  if (r == null) {
+    return null
+  }
+  let out = r.answer
+  let term = ''
+  const termM = JD_TERM_RE.exec(out)
+  if (termM != null && termM[1] != null) {
+    term = termM[1].toLowerCase()
+  }
+  let hrs = ''
+  const hrsM = JD_HRS_RE.exec(out)
+  if (hrsM != null && hrsM[1] != null) {
+    hrs = hrsM[1].toLowerCase()
+  }
+  out = out.replace(JD_TAIL_STRIP_RE, '').trim()
+  const ok = validateJdFormatted(out, src)
+  log({ tag: JOBS_LOG.tag, text: JOBS_LOG.jdformatLine + input.state.id + JOBS_LOG.jdformatSrc + src.length + JOBS_LOG.jdformatCh + JOBS_LOG.jdformatCached + r.cached + JOBS_LOG.jdformatValid + ok })
+  if (ok === false) {
+    return null
+  }
+  out = scrubPii(out)
+  await input.db.query(SQL.JD_SET_FORMATTED, [out, input.state.id])
+  if (term !== '' && JD_TERM_VALUES.includes(term) && input.state.term == null) {
+    await input.db.query(SQL.JD_SET_EMP_TERM, [term, input.state.id])
+  }
+  if (hrs !== '' && JD_HOURS_VALUES.includes(hrs) && input.state.hours == null) {
+    await input.db.query(SQL.JD_SET_EMP_HOURS, [hrs, input.state.id])
+  }
+  return out
+}
+
+/**
+ * 整理版校验：五节标记齐 + 输出多位数字必须来自原文（防幻觉）+ 长度合理。
+ * 库定两参（输出与原文必须分开比）—— 入参不走 In 型是因为两格同型同命，
+ * 包成对象反而容易传反。
+ *
+ * @param out 模型输出（已剥尾部字段行）。
+ * @param src 岗位原文。
+ * @returns 过没过。
+ */
+// eslint-disable-next-line local/one-parameter -- 输出/原文两格同型同命，包成 In 对象反而易传反；校验函数的两列对比是它的本业
+function validateJdFormatted(out: string, src: string): boolean {
+  for (const mark of JD_SECTION_MARKS) {
+    if (out.includes(MARK_HEAD + mark + MARK_TAIL) === false) {
+      return false
+    }
+  }
+  if (out.length < JD_OUT_MIN_LEN || out.length > Math.max(JD_OUT_MAX_BASE, src.length * JD_OUT_MAX_RATIO)) {
+    return false
+  }
+  const srcDigits = new Set<string>()
+  const srcM = src.match(JD_DIGITS_RE)
+  if (srcM != null) {
+    for (const d of srcM) {
+      srcDigits.add(d)
+    }
+  }
+  const outM = out.replace(JD_TAIL_STRIP_RE, '').match(JD_DIGITS_RE)
+  if (outM != null) {
+    for (const d of outM) {
+      if (srcDigits.has(d) === false) {
+        return false
+      }
+    }
+  }
+  return true
 }

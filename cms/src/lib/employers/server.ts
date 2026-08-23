@@ -12,6 +12,6 @@ export type { CompanyResearch, SponsorBoards } from './types'
 export {
   applyEmployerFilters, applySponsorFilters, buildSponsorBoards, companyRow, compareEmployers,
   employersBoardProps, fetchOccupations, fetchSponsorEmployers, investigateCompany, loadEmployerPage,
-  normalizeEmployerFilters, resetEmployersCache,
+  loadCompanyBrief, normalizeEmployerFilters, resetEmployersCache,
 } from './functions'
 export { employersExportRoute, employersInfoRoute, employersRoute, employersSponsorsRoute } from './routes'

@@ -7,10 +7,12 @@
  * @time 2026-08-22 00:05:00
  */
 
-import { count, jsonOrNull, numOrNull, text } from '../db'
+import {
+  count, jsonOrNull, numOrNull, text, textOrNull,
+} from '../db'
 import { COMP_KEY, UNCAT } from './constants'
 import type {
-  AlertHit, BroadCount, BroadNoc, Cell, CityAgg, CityDim, CompanyJobRow, DesigDim, DistrictDim, DistrictEmployerRow, DliTop, EeCatDim, EeOcc, FieldSource, JobDbRow, JobRow, JsonCell, JsonRow, MatchJob, MaybeNum, MaybeOccDiff, NewsSlim, NocCat, NocDescDim, NocHit, OccDiffDbRow, OccDiffFact, OccOpen, PnpDraw, PnpOcc, PnpOccDim, ProvCount, RelatedJob, Row, SimilarEmployer, TimeLike, ToJobRowIn, TopNoc,
+  AlertHit, BroadCount, BroadNoc, Cell, CityAgg, CityDim, CompanyJobRow, DesigDim, DistrictDim, DistrictEmployerRow, DliTop, EeCatDim, EeOcc, FieldSource, JdStateRow, JobDbRow, JobRow, JsonCell, JsonRow, MatchJob, MaybeNum, MaybeOccDiff, MaybeStr, NewsSlim, NewsSummaryRow, NewsTransRow, NocCat, NocDescDim, NocDutiesRow, NocHit, OccDiffDbRow, OccDiffFact, OccOpen, PnpDraw, PnpOcc, PnpOccDim, ProvCount, RelatedJob, Row, SimilarEmployer, TimeLike, ToJobRowIn, TopNoc,
 } from './types'
 
 /**
@@ -583,5 +585,58 @@ export function toNocDescDim(r: Row): NocDescDim {
   return {
     noc: text(r.noc), title: text(r.title), titleZh: text(r.title_zh), titleKo: text(r.title_ko),
     duties: text(r.duties), requirements: text(r.requirements), fetched: text(r.fetched),
+  }
+}
+
+/**
+ * 单列整理版（SQL.JD_FORMATTED_BY_URL）→ 文本；没生过是 null。
+ *
+ * @param r 库里的一行。
+ * @returns 整理版全文；没有是 null。
+ */
+export function toJdFormattedCell(r: Row): MaybeStr {
+  return textOrNull(r.jd_formatted)
+}
+
+/**
+ * 一行 NOC 职责/要求（SQL.NOC_DUTIES_BY_CODE）。
+ *
+ * @param r 库里的一行。
+ * @returns 两段英文（缺位空串）。
+ */
+export function toNocDutiesRow(r: Row): NocDutiesRow {
+  return { duties: text(r.duties), requirements: text(r.requirements) }
+}
+
+/**
+ * 一行新闻译文源（SQL.newsBodyForTranslate）。
+ *
+ * @param r 库里的一行。
+ * @returns 英文正文与已有译文（都可缺）。
+ */
+export function toNewsTransRow(r: Row): NewsTransRow {
+  return { en: textOrNull(r.en), cached: textOrNull(r.cached) }
+}
+
+/**
+ * 一行新闻速读源（SQL.newsForSummary）。
+ *
+ * @param r 库里的一行。
+ * @returns 标题、英文正文与已有速读。
+ */
+export function toNewsSummaryRow(r: Row): NewsSummaryRow {
+  return { title: text(r.title), en: textOrNull(r.en), cached: textOrNull(r.cached) }
+}
+
+/**
+ * 一行 jdformat 岗态（SQL.JD_STATE_BY_URL）。
+ *
+ * @param r 库里的一行。
+ * @returns 岗 id、两个只补空字段与已有整理版。
+ */
+export function toJdStateRow(r: Row): JdStateRow {
+  return {
+    id: count(r.id), term: textOrNull(r.employment_term),
+    hours: textOrNull(r.employment_hours), formatted: textOrNull(r.jd_formatted),
   }
 }

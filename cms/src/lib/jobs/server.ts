@@ -20,6 +20,11 @@ export {
 export { mapEeCat, mapPnpOcc } from './rows'
 export type { AlertHit, CompanyDetail, JobsFilters, RelatedJob, SimilarEmployer, SsrDims, TopNoc } from './types'
 export {
-  jobsApplyhowRoute, jobsCityRoute, jobsCompanyRoute, jobsCompetitionRoute, jobsDimsRoute, jobsProvinceRoute,
-  jobsRoute, jobsTextRoute,
+  jdformatRoute, jobsApplyhowRoute, jobsCityRoute, jobsCompanyRoute, jobsCompetitionRoute, jobsDimsRoute,
+  jobsProvinceRoute, jobsRoute, jobsTextRoute,
 } from './routes'
+export {
+  loadJdFormatted, loadJdState, loadNewsForSummary, loadNewsForTranslate, loadNocDuties,
+  saveNewsSummary, saveNewsTranslation,
+} from './functions'
+export type { NewsSummaryRow } from './types'

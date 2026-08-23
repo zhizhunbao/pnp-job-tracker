@@ -54,6 +54,11 @@ export const TOO_MANY = 429
 export const SERVER_ERROR = 500
 
 /**
+ * 502：上游（朋友盒子/翻译网关）没给出东西。
+ */
+export const BAD_GATEWAY = 502
+
+/**
  * 503:依赖未配置/不可用(如 Stripe 无密钥)。
  */
 export const UNAVAILABLE = 503

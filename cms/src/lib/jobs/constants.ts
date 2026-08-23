@@ -2389,3 +2389,108 @@ export const MAIL_SKIP_SUFFIXES: string[] = ['gc.ca', 'canada.ca']
  * How to apply 块定位(只在它附近找邮箱,别把页脚客服邮箱当投递邮箱)。
  */
 export const HOW_APPLY_RE = /how to apply/i
+
+/**
+ * 新闻正文译文列：语种 → 列名（懒翻译的 DB 永久缓存；seed 对这两列不清）。
+ */
+export const NEWS_BODY_COL: Record<string, string> = {
+  /**
+   * 中文正文列。
+   */
+  zh: 'body_zh',
+
+  /**
+   * 韩文正文列。
+   */
+  ko: 'body_ko',
+}
+
+/**
+ * 新闻速读列：语种 → 列名（summary_en 由 DDL4 手写加，未跑时查询报错由路由容错）。
+ */
+export const NEWS_SUMMARY_COL: Record<string, string> = {
+  /**
+   * 中文速读列。
+   */
+  zh: 'summary_zh',
+
+  /**
+   * 韩文速读列。
+   */
+  ko: 'summary_ko',
+
+  /**
+   * 英文速读列。
+   */
+  en: 'summary_en',
+}
+
+/**
+ * JD 整理版必须齐全的五节标记（校验用；口径主人是 prompts 的 JD_FORMAT_PROMPT_HEAD）。
+ */
+export const JD_SECTION_MARKS: string[] = ['ROLE', 'REQS', 'PAY', 'WORKHOURS', 'APPLY']
+
+/**
+ * 就业性质的合法值（只补空不覆盖官方标注）。
+ */
+export const JD_TERM_VALUES: string[] = ['permanent', 'term', 'casual', 'seasonal']
+
+/**
+ * 工时类型的合法值。
+ */
+export const JD_HOURS_VALUES: string[] = ['full', 'part']
+
+/**
+ * 输出尾部 [TERM]= 行的抽取。
+ */
+export const JD_TERM_RE = /\[TERM\]=\s*(\w+)/
+
+/**
+ * 输出尾部 [HRS]= 行的抽取。
+ */
+export const JD_HRS_RE = /\[HRS\]=\s*(\w+)/
+
+/**
+ * 把尾部字段行从正文里剥掉。
+ */
+export const JD_TAIL_STRIP_RE = /\[(TERM|HRS)\]=[^\n]*/g
+
+/**
+ * 整理版最短长度（短于它 = 没整出东西）。
+ */
+export const JD_OUT_MIN_LEN = 60
+
+/**
+ * 整理版长度上限的基础值（与原文 1.5 倍取大）。
+ */
+export const JD_OUT_MAX_BASE = 2000
+
+/**
+ * 整理版长度上限相对原文的倍数。
+ */
+export const JD_OUT_MAX_RATIO = 1.5
+
+/**
+ * 多位数字（防幻觉校验：输出里的必须在原文出现）。
+ */
+export const JD_DIGITS_RE = /\d{2,}/g
+
+/**
+ * 提示头之外的安全边距（正文预算 = 上游硬上限 - 头 - 它；#123d 教训）。
+ */
+export const JD_BUDGET_MARGIN = 20
+
+/**
+ * jdformat 生成的单次超时（ms）。
+ */
+export const JD_GEN_TIMEOUT_MS = 90000
+
+/**
+ * 节标记拼写的头（校验时 [MARK] 现拼）。
+ */
+export const MARK_HEAD = '['
+
+/**
+ * 节标记拼写的尾。
+ */
+export const MARK_TAIL = ']'

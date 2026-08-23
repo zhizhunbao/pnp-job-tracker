@@ -182,3 +182,19 @@ export const STATUS_EN: Record<string, string> = {
    */
   pr: 'already a permanent resident or does not need immigration — goal is simply finding a good job; de-emphasize immigration angles',
 }
+
+/**
+ * JD 五节整理的提示头（J2）。红线：只搬运不发挥 —— 输出里的多位数字必须在
+ * 原文出现（校验在 functions.validateJdFormatted）；五节标记的口径主人就是这段字，
+ * llm 域的 JD_MARKS_RE 是它的解析侧镜像。
+ */
+export const JD_FORMAT_PROMPT_HEAD = `You are reorganizing a job posting into fixed sections. STRICT RULES:
+- Only move and lightly condense sentences from the posting. NEVER invent facts, numbers, requirements or benefits not present in it.
+- Output plain text with EXACTLY these section markers, each on its own line: [ROLE] [REQS] [PAY] [WORKHOURS] [APPLY]
+- Under [ROLE]: 1-2 sentences, what the job does. Under [REQS]: bullet lines starting with "- ", hard requirements only.
+- Under [PAY]: bullet lines for pay and benefits. Under [WORKHOURS]: bullet lines for schedule, employment type, location type.
+- Under [APPLY]: 1 line how to apply. If the posting says nothing for a section, write exactly: (not stated)
+- Keep the posting's original language. No markdown besides "- " bullets. No section other than the five.
+- Finally, on two extra lines output: [TERM]=permanent|term|casual|seasonal|unknown and [HRS]=full|part|unknown (from the posting).
+Posting follows:
+`

@@ -13,9 +13,10 @@
 import { headers } from 'next/headers'
 import { getDb } from '../db/server'
 import {
-  BAD_REQUEST, HDR_CACHE_CONTROL, HDR_CONTENT_TYPE, MIME_TEXT, NOT_FOUND, TOO_MANY,
+  BAD_REQUEST, HDR_CACHE_CONTROL, HDR_CONTENT_TYPE, MIME_TEXT, NO_CONTENT, NOT_FOUND, TOO_MANY, UNAVAILABLE,
 } from '../http'
-import { checkLimit, getUser, ipOf, isPro } from '../quota/server'
+import { friendLlmReady } from '../llm'
+import { checkLimit, freeGate, getUser, ipOf, isPro } from '../quota/server'
 import {
   AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, CITY_PARAM_LEN_MAX,
   DIMS_CACHE_CONTROL, E_NOC_REQUIRED, JB_POSTING_RE, JD_DAILY_DEFAULT, JD_LIMIT_PREFIX, JOBS_FILTER_KEYS,
@@ -23,12 +24,12 @@ import {
   P_VIEW, PAGE_N_MAX, PROV2_RE, TRUE_ONE, TRUE_WORD, URL_CUT_RE, VIEW_MATCH,
 } from './constants'
 import {
-  fetchApplyEmail, fetchCompanyByJobId, fetchJobsPage, fetchMatchPage, fetchOccCompetition,
-  emptySimilar, fetchSimilarEmployers, hasProfile, jobDescription, loadBigDims, loadCityCard, loadMatchDims,
-  loadProvinceCard, normalizeProfile,
+  emptySimilar, fetchApplyEmail, fetchCompanyByJobId, fetchJobsPage, fetchMatchPage, fetchOccCompetition,
+  fetchSimilarEmployers, generateJdFormatted, hasProfile, jobDescription, loadBigDims, loadCityCard,
+  loadJdState, loadMatchDims, loadProvinceCard, normalizeProfile,
 } from './functions'
 import { CACHE } from './variables'
-import type { CompanyBody, JobsFilters, MatchDims, ProfileJson } from './types'
+import type { CompanyBody, JdUrlBody, JobsFilters, MatchDims, MaybeStr, ProfileJson } from './types'
 
 /**
  * GET /api/jobs:职位列表服务端分页/筛选/搜索(E10-01 P2,取代旧「一次拉 20k blob 前端过滤」)。
@@ -297,4 +298,72 @@ export async function jobsApplyhowRoute(req: Request): Promise<Response> {
     CACHE.applyMail.clear()
   }
   return Response.json({ email })
+}
+
+/**
+ * POST /api/jdformat {url}:JD 五节整理版懒生成（J2）。命中 jobs.jd_formatted 直接回；
+ * 缺则走 jobDescription 统一入口拿原文（#139：含懒抓单飞，与并发的 jobtext 共用一次
+ * 抓取不重复打原站）→ generateJdFormatted（生成+校验+存列）。同岗并发去重
+ * （CACHE.jdFormatInflight，后到者等同一个 Promise）。生成入统一免费池
+ * （缓存命中不计费）；失败态拆三种（402/429=额度、503=生成失败可重试、
+ * 204=无正文），不再五因一果（#114）。
+ *
+ * @param req 请求（body 是 { url }）。
+ * @returns 整理版纯文本；掉线 204、缺参 400。
+ */
+export async function jdformatRoute(req: Request): Promise<Response> {
+  if (friendLlmReady() === false) {
+    return new Response(null, { status: NO_CONTENT })
+  }
+  let url = ''
+  try {
+    const b = await req.json() as JdUrlBody
+    if (typeof b.url === 'string') {
+      url = b.url.trim()
+    }
+  } catch {
+    url = ''
+  }
+  if (url === '') {
+    return new Response(null, { status: BAD_REQUEST })
+  }
+  const db = await getDb()
+  const state = await loadJdState({ db: db, url: url })
+  if (state == null) {
+    return new Response(null, { status: NO_CONTENT })
+  }
+  if (state.formatted != null) {
+    return new Response(state.formatted, { headers: { [HDR_CONTENT_TYPE]: MIME_TEXT } })
+  }
+  const description = await jobDescription({ db: db, applyUrl: url })
+  if (description === '') {
+    return new Response(null, { status: NO_CONTENT })
+  }
+  const g = freeGate({ user: await getUser(req.headers), headers: req.headers })
+  if (g.block != null) {
+    return g.block
+  }
+  let task = CACHE.jdFormatInflight.get(url)
+  let mine = false
+  if (task == null) {
+    mine = true
+    task = generateJdFormatted({ db: db, state: state, description: description })
+    CACHE.jdFormatInflight.set(url, task)
+  }
+  let out: MaybeStr = null
+  try {
+    out = await task
+  } finally {
+    if (mine) {
+      CACHE.jdFormatInflight.delete(url)
+    }
+  }
+  if (out == null) {
+    return new Response(null, { status: UNAVAILABLE })
+  }
+  const h: Record<string, string> = { [HDR_CONTENT_TYPE]: MIME_TEXT }
+  for (const [k, v] of Object.entries(g.headers)) {
+    h[k] = v
+  }
+  return new Response(out, { headers: h })
 }

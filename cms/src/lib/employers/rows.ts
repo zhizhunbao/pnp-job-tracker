@@ -13,10 +13,7 @@ import { EMP_LOG, log } from '../log'
 import type { EmployerFacts } from '../ruling'
 import { DATE8_RE, DATE_LEN, NOC_RE, NOC_SPLIT_RE } from './constants'
 import type {
-  ColumnDbRow, CompanyBriefDbRow, CompareCompanyDbRow, CompareJob, CompareJobDbRow, CompareRow, DesignatedDbRow,
-  DesignatedRow, DifficultyDbRow, DifficultyObj, DifficultyPair, EmployerRow, HiringDbRow, HiringRow, NocTitleDbRow,
-  IdCell, NocTitlePair, OccDbRow, OccRow, ReqDbRow, SponsorDbRow, SponsorEmployerRow, StrList, StrListCell,
-  ToCompareRowIn, ToSponsorRowIn,
+  ColumnDbRow, CompanyBriefDbRow, CompareCompanyDbRow, CompareJob, CompareJobDbRow, CompareRow, DesignatedDbRow, DesignatedRow, DifficultyDbRow, DifficultyObj, DifficultyPair, EmployerRow, HiringDbRow, HiringRow, IdCell, MaybeStr, NocTitleDbRow, NocTitlePair, OccDbRow, OccRow, ReqDbRow, SponsorDbRow, SponsorEmployerRow, StrList, StrListCell, ToCompareRowIn, ToSponsorRowIn,
 } from './types'
 
 /**
@@ -338,4 +335,15 @@ export function toCompareRow(input: ToCompareRowIn): CompareRow {
     mainProvince: input.agg.mainProvince, diffTier: null,
     matchHigh: input.agg.matchHigh, matchMid: input.agg.matchMid,
   }
+}
+
+/**
+ * 单列 AI 简介（SQL.COMPANY_BRIEF_BY_NAME）→ 文本；查询已把 NULL 行滤掉，
+ * 行形状借既有的 CompanyBriefDbRow（只读 ai_brief 一格）。
+ *
+ * @param r 库里的一行。
+ * @returns 简介全文；缺位 null。
+ */
+export function toBriefCell(r: CompanyBriefDbRow): MaybeStr {
+  return textOrNull(r.ai_brief)
 }

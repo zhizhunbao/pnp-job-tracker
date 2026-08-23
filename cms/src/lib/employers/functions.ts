@@ -23,13 +23,11 @@ import {
 } from './constants'
 import { RESEARCH_PROMPT_HEAD, RESEARCH_PROMPT_TAIL, RESEARCH_SEARCH_TAIL, RESEARCH_SYSTEM } from './prompts'
 import {
-  companyIdOf, employerFactsOf, hiringToEmployerRow, passCompanyBrief, passCompareCompany, passSponsorRow,
-  toColumnName, toCompareJob, toCompareRow, toDesignatedRow, toDifficultyPair, toEmployerReq, toEmployerRow,
-  toHiringRow, toNocTitlePair, toOccRow, toSlimSponsorRow, toSponsorRow,
+  companyIdOf, employerFactsOf, hiringToEmployerRow, passCompanyBrief, passCompareCompany, passSponsorRow, toBriefCell, toColumnName, toCompareJob, toCompareRow, toDesignatedRow, toDifficultyPair, toEmployerReq, toEmployerRow, toHiringRow, toNocTitlePair, toOccRow, toSlimSponsorRow, toSponsorRow,
 } from './rows'
 import { CACHE } from './variables'
 import type {
-  ApplyEmployerFiltersIn, ApplySponsorFiltersIn, BoardPropsIn, BoardPropsOut, ClipIn, CompanyAggIn, CompanyBriefDbRow, CompanyResearch, CompanyRowIn, CompanyRowOut, CompareAgg, CompareCompanyDbRow, CompareIn, CompareOut, CompareRow, DesignatedRowsOut, EmployerFacets, EmployerFacetsIn, EmployerFilters, EmployerMode, EmployerPage, EmployerRow, EmployerRows, EmptyPageIn, EntityNameHitsIn, InvestigateIn, InvestigateOut, LoadEmployerPageIn, LoadEmployerPageOut, MaybeNum, MaybeTeer, NocMatchesIn, NocTitleMap, NocTitlesIn, NocTitlesOut, NormalizeFiltersIn, OccRowsOut, PageSliceIn, ParamGetter, ProgramMatchesIn, ProvTally, RankedSponsor, SearchParams, SponsorBoardData, SponsorBoards, SponsorEmployerRow, SponsorRows, SponsorRowsOut, StrList, WdEntity, WdGetIn, WdGetOut, WikidataHitOrNull, WikidataOut,
+  ApplyEmployerFiltersIn, ApplySponsorFiltersIn, BoardPropsIn, BoardPropsOut, ClipIn, CompanyAggIn, CompanyBriefDbRow, CompanyBriefIn, CompanyResearch, CompanyRowIn, CompanyRowOut, CompareAgg, CompareCompanyDbRow, CompareIn, CompareOut, CompareRow, DesignatedRowsOut, EmployerFacets, EmployerFacetsIn, EmployerFilters, EmployerMode, EmployerPage, EmployerRow, EmployerRows, EmptyPageIn, EntityNameHitsIn, InvestigateIn, InvestigateOut, LoadEmployerPageIn, LoadEmployerPageOut, MaybeNum, MaybeStrOut, MaybeTeer, NocMatchesIn, NocTitleMap, NocTitlesIn, NocTitlesOut, NormalizeFiltersIn, OccRowsOut, PageSliceIn, ParamGetter, ProgramMatchesIn, ProvTally, RankedSponsor, SearchParams, SponsorBoardData, SponsorBoards, SponsorEmployerRow, SponsorRows, SponsorRowsOut, StrList, WdEntity, WdGetIn, WdGetOut, WikidataHitOrNull, WikidataOut,
 } from './types'
 
 // =========================================================================
@@ -1176,4 +1174,19 @@ function blankIfNull(v: MaybeNum): string {
     return CSV_EMPTY
   }
   return String(v)
+}
+
+/**
+ * 公司 AI 检索简介（companies.ai_brief，五节标记；懒翻译的源 —— 只翻库内，
+ * 不收任意文本防开放代理）。
+ *
+ * @param input 连接与公司名（大小写不敏感）。
+ * @returns 简介全文；没查过/查无这家是 null。
+ */
+export async function loadCompanyBrief(input: CompanyBriefIn): MaybeStrOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_BRIEF_BY_NAME, params: [input.name], map: toBriefCell })
+  if (rows.length === 0) {
+    return null
+  }
+  return rows[0]
 }

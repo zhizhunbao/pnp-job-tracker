@@ -495,6 +495,32 @@ export const EMP_LOG = {
  */
 export const JOBS_LOG = {
   /**
+   * jdformat 生成一行:岗 id、原文长度、上游缓存命中、校验过没过 —— 「不同岗一直 cached=true」
+   * 就是上游缓存键又出问题了(2026-08-04 串答事故的哨兵),别再靠人肉发现。
+   */
+  jdformatLine: 'jdformat job=',
+
+  /**
+   * jdformat 行:原文长度。
+   */
+  jdformatSrc: ' src=',
+
+  /**
+   * jdformat 行:字符数后缀。
+   */
+  jdformatCh: 'ch',
+
+  /**
+   * jdformat 行:上游缓存命中与否。
+   */
+  jdformatCached: ' cached=',
+
+  /**
+   * jdformat 行:校验过没过。
+   */
+  jdformatValid: ' valid=',
+
+  /**
    * 这个域每一行日志的来源标签。
    */
   tag: 'jobs',

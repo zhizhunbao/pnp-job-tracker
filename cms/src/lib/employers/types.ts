@@ -1953,3 +1953,28 @@ export type InfoBody = {
  * 可缺位的数（CSV 数值格词汇的入参；库里可空列的本域名字）。
  */
 export type MaybeNum = number | null
+
+/**
+ * 可缺位的文本（库里可空列的本域名字）。
+ */
+export type MaybeStr = string | null
+
+/**
+ * `loadCompanyBrief` 的入参。
+ */
+export type CompanyBriefIn = {
+  /**
+   * 能查的连接（池由调用方注进来）。
+   */
+  db: Db
+
+  /**
+   * 公司名。
+   */
+  name: string
+}
+
+/**
+ * 单列文本取数的返回。
+ */
+export type MaybeStrOut = Promise<MaybeStr>

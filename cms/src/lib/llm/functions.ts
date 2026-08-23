@@ -7,6 +7,7 @@
  * @time 2026-08-19 06:32:21
  */
 
+import { NEWS_SUMMARY_INSTR, SUMMARY_BODY_HEAD, SUMMARY_TITLE_HEAD } from './prompts'
 import Anthropic from '@anthropic-ai/sdk'
 import {
   ERR_DEFAULT, FRIEND_CODE, FRIEND_MSG, GATEWAY_MSG, LLM_MSG, TRANSLATE_CODE, TRANSLATE_TIMEOUT,
@@ -14,29 +15,10 @@ import {
 } from '@/lib/error'
 import { LLM_FN, LLM_LOG, LOG_MSG_MAX, log } from '@/lib/log'
 import {
-  ALPHA_BASE, ALPHA_LEN, ALPHA_ZERO, ANTHROPIC_MODEL, BACKEND, BLOCK_TEXT, CACHE_HIT,
-  FNV_PRIME, FNV_SEED_A, FNV_SEED_B, FRIEND_CALL_TIMEOUT_MS, FRIEND_INPUT_MAX, FRIEND_MAX_TOKENS,
-  FRIEND_STREAM_TEMP, GATEWAY_BASE, GATEWAY_KEY, GATEWAY_MODEL, GATEWAY_TIMEOUT_MS, HEADER,
-  LEGACY_SOURCE_MAX, MD_BOLD, MD_HEADING, MD_STARS,
-  KEEP_GROUP1, NUMBERED_SPLIT, NUMBER_HEAD, NUMBER_TAIL, OLLAMA_COMPLETE_TEMP, OLLAMA_MODEL,
-  OLLAMA_STREAM_TEMP, PARA, POST, PROTOCOL, ROLE, STALL, STOP_REFUSAL, STREAM_EVENT, VIA,
-  OLLAMA_URL, PATH_LEGACY, PATH_OLLAMA, PATH_TRANSLATE, PATH_V1, PROVIDER, REF_HEAD, REF_SALT_SEP, REF_TAIL,
-  SSE_BLOCK_SEP, SSE_DATA, SSE_DATA_LEN, SSE_DONE, SSE_LINE_SEP, TRANSLATE_CHUNK, TRANSLATE_SOURCE,
-  TRANSLATE_TRIES, WEB_FETCH,
+  ALPHA_BASE, ALPHA_LEN, ALPHA_ZERO, ANTHROPIC_MODEL, BACKEND, BLOCK_TEXT, BULLET_PREFIX, BULLET_RE, CACHE_HIT, E_EMPTY_SUMMARY, E_TRANSLATE_UNAVAILABLE, FNV_PRIME, FNV_SEED_A, FNV_SEED_B, FRIEND_CALL_TIMEOUT_MS, FRIEND_INPUT_MAX, FRIEND_MAX_TOKENS, FRIEND_STREAM_TEMP, GATEWAY_BASE, GATEWAY_KEY, GATEWAY_MODEL, GATEWAY_TIMEOUT_MS, HEADER, KEEP_GROUP1, LEGACY_SOURCE_MAX, MD_BOLD, MD_HEADING, MD_STARS, NEWS_BODY_CAP, NOT_STATED_RE, NUMBERED_SPLIT, NUMBER_HEAD, NUMBER_TAIL, OLLAMA_COMPLETE_TEMP, OLLAMA_MODEL, OLLAMA_STREAM_TEMP, OLLAMA_URL, PARA, PARA_JOIN, PARA_SPLIT_RE, PATH_LEGACY, PATH_OLLAMA, PATH_TRANSLATE, PATH_V1, POST, PROTOCOL, PROVIDER, REF_HEAD, REF_SALT_SEP, REF_TAIL, ROLE, SSE_BLOCK_SEP, SSE_DATA, SSE_DATA_LEN, SSE_DONE, SSE_LINE_SEP, STALL, STOP_REFUSAL, STREAM_EVENT, SUMMARY_BODY_CAP, SUMMARY_MIN_LEN, TRANSLATE_CHUNK, TRANSLATE_ROUTE_TIMEOUT_MS, TRANSLATE_SOURCE, TRANSLATE_TRIES, VIA, WEB_FETCH,
 } from './constants'
 import type {
-  Alpha7In, Alpha7Out, AnthropicMessage, AnthropicParams, AnthropicStreamIn, AnthropicStreamParams, ArmOut,
-  BackendStreamIn, BackendStreamOut, CharCountIn, CharCountOut, CompleteBackendIn, CompleteBackendOut,
-  CompleteFriendIn, CompleteTextIn, CompleteTextOut, ContentTagIn, ContentTagOut, EmptyTextOut, Fnv1aIn,
-  Fnv1aOut, FriendChatIn, FriendChatMaybeOut, FriendChatOut, FriendLlmReadyOut, FriendResult, GatewayMessage,
-  GatewayMessagesIn, GatewayMessagesOut, IgnoreOut, LegacyRequest, LegacyResponse, MakeWatchIn, MakeWatchOut,
-  NullJsonOut, NumberLinesIn, NumberLinesOut, OllamaRequest, OllamaResponse, OnEndOut, OnErrorIn, OnErrorOut,
-  OnTextIn, OnTextOut, ParseNumberedIn, ParseNumberedOut, PostJsonIn, PostJsonOut, ReadV1SseIn, ReadV1SseOut,
-  OrTextIn, OrTextOut, RefPromptIn, RefPromptOut, SendV1In, SendV1Out, SourceUrlIn, SourceUrlOut, SplitMessagesIn,
-  SplitMessagesOut, StreamChatIn, StreamChatOut, StripMdIn, StripMdOut, SystemOfIn, SystemOfOut, TextOfIn,
-  TextOfOut, TranslateChunkIn, TranslateChunkOut, TranslateLinesIn, TranslateLinesOut, TranslateReadyOut,
-  TranslateResponse, TurnsOfIn, TurnsOfOut, V1AnswerOfIn, V1AnswerOfOut, V1Request, V1Response, WatchWhy, WebFetchToolIn,
-  WebFetchToolOut,
+  Alpha7In, Alpha7Out, AnthropicMessage, AnthropicParams, AnthropicStreamIn, AnthropicStreamParams, ArmOut, BackendStreamIn, BackendStreamOut, CharCountIn, CharCountOut, CompleteBackendIn, CompleteBackendOut, CompleteFriendIn, CompleteTextIn, CompleteTextOut, ContentTagIn, ContentTagOut, EmptyTextOut, Fnv1aIn, Fnv1aOut, FriendChatIn, FriendChatMaybeOut, FriendChatOut, FriendLlmReadyOut, FriendResult, GatewayMessage, GatewayMessagesIn, GatewayMessagesOut, IgnoreOut, LegacyRequest, LegacyResponse, MakeWatchIn, MakeWatchOut, NullJsonOut, NumberLinesIn, NumberLinesOut, OllamaRequest, OllamaResponse, OnEndOut, OnErrorIn, OnErrorOut, OnTextIn, OnTextOut, OrTextIn, OrTextOut, ParasStrictIn, ParasStrictOut, ParseNumberedIn, ParseNumberedOut, PlainLinesIn, PostJsonIn, PostJsonOut, ReadV1SseIn, ReadV1SseOut, RefPromptIn, RefPromptOut, SectionJob, SectionedIn, SectionedPOut, SendV1In, SendV1Out, SourceUrlIn, SourceUrlOut, SplitMessagesIn, SplitMessagesOut, StreamChatIn, StreamChatOut, StripMdIn, StripMdOut, SummarizeNewsIn, SummarizeNewsOut, SystemOfIn, SystemOfOut, TextOfIn, TextOfOut, TranslateChunkIn, TranslateChunkOut, TranslateLinesIn, TranslateLinesOut, TranslateReadyOut, TranslateResponse, TurnsOfIn, TurnsOfOut, V1AnswerOfIn, V1AnswerOfOut, V1Request, V1Response, WatchWhy, WebFetchToolIn, WebFetchToolOut,
 } from './types'
 
 // =========================================================================
@@ -1127,4 +1109,173 @@ export async function translateLinesAligned(input: TranslateLinesIn): TranslateL
     }
   }
   return out
+}
+
+/**
+ * 五节标记文本的逐行对位翻译（co-translate 与 jd-translate 共用：原先两家各抄一份，
+ * 行为重复不许 —— 2026-08-23 并成一个，标记集与子弹开关参数化）。
+ * 节标记（可与正文同行，#180 教训）与 (not stated) 原样保留，输出与原文行结构
+ * 完全一致 —— 前端按节内行号逐句配对。
+ *
+ * @param input 全文、语种、超时信号、标记集与子弹开关。
+ * @returns 译文与是否全量翻齐；一行都没翻到抛错。
+ */
+export async function translateSectioned(input: SectionedIn): SectionedPOut {
+  const lines = input.text.split(SSE_LINE_SEP)
+  const jobs: SectionJob[] = []
+  for (let idx = 0; idx < lines.length; idx++) {
+    let l = lines[idx].trim()
+    let prefix = ''
+    const mk = input.marks.exec(l)
+    if (mk != null) {
+      prefix = mk[1]
+      l = mk[2].trim()
+    }
+    if (l === '' || NOT_STATED_RE.test(l)) {
+      continue
+    }
+    if (input.bullets) {
+      const b = BULLET_RE.exec(l)
+      if (b != null) {
+        prefix = prefix + BULLET_PREFIX
+        l = b[2]
+      }
+    }
+    jobs.push({ idx: idx, prefix: prefix, body: l })
+  }
+  if (jobs.length === 0) {
+    return { text: input.text, full: true }
+  }
+  const bodies: string[] = []
+  for (const j of jobs) {
+    bodies.push(j.body)
+  }
+  const translated = await translateLinesAligned({ lines: bodies, lang: input.lang, signal: input.signal })
+  let any = false
+  for (const t of translated) {
+    if (t != null) {
+      any = true
+    }
+  }
+  if (any === false) {
+    throw translateError({ msg: E_TRANSLATE_UNAVAILABLE, code: TRANSLATE_CODE.upstream })
+  }
+  const result = lines.slice()
+  let full = true
+  for (let i = 0; i < jobs.length; i++) {
+    const t = translated[i]
+    if (t != null) {
+      result[jobs[i].idx] = jobs[i].prefix + t
+    } else {
+      full = false
+    }
+  }
+  return { text: result.join(SSE_LINE_SEP), full: full }
+}
+
+/**
+ * 逐行文本（一行一条，NOC 职责/要求那种）的对位翻译：没翻到的行保留英文
+ * （前端同文不重复渲），full 才进缓存。
+ *
+ * @param input 逐行文本、语种、超时信号。
+ * @returns 译文与是否全量翻齐；一行都没翻到抛错。
+ */
+export async function translatePlainLines(input: PlainLinesIn): SectionedPOut {
+  const lines: string[] = []
+  for (const raw of input.text.split(SSE_LINE_SEP)) {
+    const l = raw.trim()
+    if (l !== '') {
+      lines.push(l)
+    }
+  }
+  if (lines.length === 0) {
+    return { text: '', full: true }
+  }
+  const translated = await translateLinesAligned({ lines: lines, lang: input.lang, signal: input.signal })
+  let any = false
+  for (const t of translated) {
+    if (t != null) {
+      any = true
+    }
+  }
+  if (any === false) {
+    throw translateError({ msg: E_TRANSLATE_UNAVAILABLE, code: TRANSLATE_CODE.upstream })
+  }
+  const out: string[] = []
+  let full = true
+  for (let i = 0; i < lines.length; i++) {
+    const t = translated[i]
+    if (t != null) {
+      out.push(t)
+    } else {
+      out.push(lines[i])
+      full = false
+    }
+  }
+  return { text: out.join(SSE_LINE_SEP), full: full }
+}
+
+/**
+ * 新闻正文的整段严格翻译：整段计预算不截半段；缺一段即拒收（宁可失败不出
+ * 错位页的红线不动）。分块与重试走 translateLinesAligned（同 #181 修法，取代原单发
+ * 直连 —— 对位红线不变，抖动容错变好）。
+ *
+ * @param input 英文全文、语种、超时信号。
+ * @returns 译完的正文；缺段/无段落是 null（调用方拒收不缓存）。
+ */
+export async function translateParasStrict(input: ParasStrictIn): ParasStrictOut {
+  const paras: string[] = []
+  let used = 0
+  for (const raw of input.text.split(PARA_SPLIT_RE)) {
+    const para = raw.trim()
+    if (para === '') {
+      continue
+    }
+    if (used + para.length > NEWS_BODY_CAP && paras.length > 0) {
+      break
+    }
+    paras.push(para)
+    used = used + para.length
+  }
+  if (paras.length === 0) {
+    return null
+  }
+  const translated = await translateLinesAligned({ lines: paras, lang: input.lang, signal: input.signal })
+  const out: string[] = []
+  for (const t of translated) {
+    if (t == null) {
+      return null
+    }
+    out.push(t)
+  }
+  return out.join(PARA_JOIN)
+}
+
+/**
+ * 新闻 AI 速读：定向语种、无联网，走 friendChat 统一入口（取代原直连
+ * /api/chat + 手工钉 ref —— 串答防护在 friendChat 里只有一份）。
+ * 措辞红线在 prompts 的指令里：只依据原文，无开场白无 Markdown。
+ *
+ * @param input 标题、英文正文、目标语种。
+ * @returns 去过 Markdown 的速读；太短/没给/语种不认是 null。
+ */
+export async function summarizeNews(input: SummarizeNewsIn): SummarizeNewsOut {
+  const pair = NEWS_SUMMARY_INSTR[input.lang]
+  if (pair == null) {
+    return null
+  }
+  const r = await friendChat({
+    prompt: pair[0] + SUMMARY_TITLE_HEAD + input.title + SUMMARY_BODY_HEAD + input.en.slice(0, SUMMARY_BODY_CAP),
+    system: pair[1],
+    webSearch: false,
+    timeoutMs: TRANSLATE_ROUTE_TIMEOUT_MS,
+  })
+  if (r == null) {
+    return null
+  }
+  const summary = stripMd({ text: r.answer }).trim()
+  if (summary.length < SUMMARY_MIN_LEN) {
+    return null
+  }
+  return summary
 }

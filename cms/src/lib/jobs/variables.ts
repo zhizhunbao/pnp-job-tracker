@@ -9,7 +9,7 @@
 import type { JobsCache } from './types'
 
 /**
- * 职位域全部的可变状态,就这九格。
+ * 职位域全部的可变状态,就这十格。
  */
 export const CACHE: JobsCache = {
   /**
@@ -56,4 +56,9 @@ export const CACHE: JobsCache = {
    * 投递抓取失败负缓存。
    */
   applyFail: new Map(),
+
+  /**
+   * jdformat 五节整理的同岗单飞。
+   */
+  jdFormatInflight: new Map(),
 }

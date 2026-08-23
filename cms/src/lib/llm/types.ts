@@ -1144,3 +1144,209 @@ export type MakeWatchOut = Watch
  * `onError` 的入参。
  */
 export type OnErrorIn = Error
+
+/**
+ * 一次分节翻译的结果：与原文行结构完全一致的译文 + 是否全量翻齐（full 才进缓存，
+ * 部分翻齐直接返回不缓存，下次点重试补齐）。
+ */
+export type SectionedOut = {
+  /**
+   * 译完的全文（没翻到的行保留英文）。
+   */
+  text: string
+
+  /**
+   * 全量翻齐了没有。
+   */
+  full: boolean
+}
+
+/**
+ * `translateSectioned` 的入参（co/jd 两家五节文本共用；区别只在标记集与子弹行）。
+ */
+export type SectionedIn = {
+  /**
+   * 五节标记文本全文。
+   */
+  text: string
+
+  /**
+   * 目标语种（zh/ko）。
+   */
+  lang: string
+
+  /**
+   * 总超时信号。
+   */
+  signal: AbortSignal
+
+  /**
+   * 节标记行的剖分正则（捕组 1=标记前缀，捕组 2=正文）。
+   */
+  marks: RegExp
+
+  /**
+   * 要不要剥子弹行前缀（JD 整理版 true）。
+   */
+  bullets: boolean
+}
+
+/**
+ * `translatePlainLines` 的入参（NOC 职责/要求逐行文本）。
+ */
+export type PlainLinesIn = {
+  /**
+   * 逐行文本（一行一条）。
+   */
+  text: string
+
+  /**
+   * 目标语种。
+   */
+  lang: string
+
+  /**
+   * 总超时信号。
+   */
+  signal: AbortSignal
+}
+
+/**
+ * `translateParasStrict` 的入参（新闻正文：整段计预算，缺一段即拒收）。
+ */
+export type ParasStrictIn = {
+  /**
+   * 英文正文全文。
+   */
+  text: string
+
+  /**
+   * 目标语种。
+   */
+  lang: string
+
+  /**
+   * 总超时信号。
+   */
+  signal: AbortSignal
+}
+
+/**
+ * `translateParasStrict` 的返回（全部段落翻齐才给文；缺段 = null，调用方拒收）。
+ */
+export type ParasStrictOut = Promise<string | null>
+
+/**
+ * `summarizeNews` 的入参。
+ */
+export type SummarizeNewsIn = {
+  /**
+   * 新闻标题。
+   */
+  title: string
+
+  /**
+   * 英文正文。
+   */
+  en: string
+
+  /**
+   * 目标语种（zh/ko/en）。
+   */
+  lang: string
+}
+
+/**
+ * `summarizeNews` 的返回（太短/没给 = null）。
+ */
+export type SummarizeNewsOut = Promise<string | null>
+
+/**
+ * NOC 翻译缓存一格（职责 + 要求两段译文）。
+ */
+export type NocTransPair = {
+  /**
+   * 职责译文。
+   */
+  duties: string
+
+  /**
+   * 任职要求译文。
+   */
+  requirements: string
+}
+
+/**
+ * 本域全部可变状态：三个懒翻译的进程缓存（全量翻齐才进；重启后按需重暖）。
+ */
+export type LlmCache = {
+  /**
+   * 公司简介：name:lang → 译文全文。
+   */
+  coBy: Map<string, string>
+
+  /**
+   * JD 整理版：url:lang → 译文全文。
+   */
+  jdBy: Map<string, string>
+
+  /**
+   * NOC 职责/要求：noc:lang → 两段译文。
+   */
+  nocBy: Map<string, NocTransPair>
+}
+
+/**
+ * 翻译类请求体（四个端点共用形状；跨边界断言目标，逐格判后才用）。
+ */
+export type TransBody = {
+  /**
+   * 公司名（co-translate）。
+   */
+  name: string | null
+
+  /**
+   * 职位链接（jd-translate）。
+   */
+  url: string | null
+
+  /**
+   * 职业码（noc-translate）。
+   */
+  noc: string | null
+
+  /**
+   * 新闻 slug（news-translate / news-summarize）。
+   */
+  slug: string | null
+
+  /**
+   * 目标语种。
+   */
+  lang: string | null
+}
+
+/**
+ * 分节翻译里一条要翻的行（原行位 + 剥下保管的前缀 + 正文）。
+ */
+export type SectionJob = {
+  /**
+   * 原文里的行号（译完按它拼回）。
+   */
+  idx: number
+
+  /**
+   * 节标记/子弹前缀（不进翻译，拼回时原样奉还）。
+   */
+  prefix: string
+
+  /**
+   * 要翻的正文。
+   */
+  body: string
+}
+
+/**
+ * 分节/逐行翻译函数的返回。
+ */
+export type SectionedPOut = Promise<SectionedOut>
