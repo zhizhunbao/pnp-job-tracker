@@ -8,4 +8,4 @@
 
 export { CHAT_STEPS, DECISION_STEPS, FUNNEL_STEPS, LEGACY_STEPS } from './constants'
 export { chatRates, decisionRates, isLocalHost, stepRates, toFunnelHit } from './functions'
-export type { FunnelHit, StepCounts } from './types'
+export type { FunnelHit, StepCounts, TrackValue } from './types'

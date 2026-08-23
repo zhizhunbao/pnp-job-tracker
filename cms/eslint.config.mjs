@@ -1130,6 +1130,17 @@ const localRules = {
  * 未重构区域连 warn 清单都不出 —— 噪音会淹掉真该改的。域重构完一个,往这里加一个。
  * (app/seed/route.ts 是例外:它今晚跟着 unknown 批迁完了,它的 unknown 闸单独一块保留。)
  */
+// ── api 路由层(2026-08-23 立,样张 api/track):route.ts 是框架定名的门,不设抽屉 ——
+// 路由 = freeGate → 取参 → 注池调域 → 响应;胖出来的清洗/判断下沉进它调用的那个域。
+// 不上的四条:domain-file-names(文件名是 Next 定的)、one-parameter(GET(req, ctx) 双参是
+// 框架签名)、no-bare-strings(那条只咬 functions.ts;路由字面量该来自域表,靠 review)、
+// typed-signature(Request/Response 是 fetch 标准的名字 —— HTTP 层的母语,起本地别名是
+// 换个字念同一本经;域函数的形状照旧在域里管)。
+// 瘦完一个路由加一行,与 REFACTORED 同一滚动规矩。
+const API_DONE = [
+  'src/app/api/track/route.ts',
+]
+
 const REFACTORED = [
   'src/lib/consult/**/*.ts', 'src/lib/db/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/gauge/**/*.ts',
   'src/lib/points/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts',
@@ -1146,6 +1157,7 @@ const REFACTORED = [
   'src/lib/i18n/**/*.ts',
   // 2026-08-23 quiz 十件套化(Frank「还是需要按规范命名」),同批进闸。
   'src/lib/quiz/**/*.ts',
+  ...API_DONE,
 ]
 
 const eslintConfig = [
@@ -1227,7 +1239,7 @@ const eslintConfig = [
     // 域定型一个就往这里加一个。
     // 域每定型一个就往这张名单里加一个。2026-08-19 当天 `agent` / `llm` / `error` / `log`
     // 的 91 条存量(多数是写成一行的 type,属性没各自的注释)已经逐条补完,所以它们也在里面。
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts', 'src/lib/template.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mailer/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts', 'src/lib/i18n/**/*.ts', 'src/lib/quiz/**/*.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts', 'src/lib/template.ts', ...API_DONE, 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mailer/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts', 'src/lib/i18n/**/*.ts', 'src/lib/quiz/**/*.ts'],
     plugins: { local: localRules },
     rules: {
       // 注释的形状
@@ -1298,7 +1310,7 @@ const eslintConfig = [
   },
   {
     // ── 现成闸接入 ② · JSDoc 族(与自研 doc 闸并行跑;零违规验证同构后,自研那几条再议退役)──
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts', 'src/lib/template.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mailer/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts', 'src/lib/i18n/**/*.ts', 'src/lib/quiz/**/*.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts', 'src/lib/template.ts', ...API_DONE, 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mailer/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts', 'src/lib/i18n/**/*.ts', 'src/lib/quiz/**/*.ts'],
     plugins: { jsdoc },
     rules: {
       'jsdoc/multiline-blocks': ['error', { noSingleLineBlocks: true }],
@@ -1366,6 +1378,11 @@ const eslintConfig = [
     // 人才会信它),而「这个域有几处签名不归我们管」也一眼数得清。
     // ⚠️ 只关这两条:注释、命名、不许匿名函数在这个文件里照旧管着。
     files: ['src/lib/*/callbacks.ts'],
+    rules: { 'local/one-parameter': 'off', 'local/typed-signature': 'off' },
+  },
+  {
+    // ── api 路由层的四条豁免落地(理由见文件顶部 API_DONE 的注释)────────────────
+    files: API_DONE,
     rules: { 'local/one-parameter': 'off', 'local/typed-signature': 'off' },
   },
   {
