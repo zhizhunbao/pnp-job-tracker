@@ -9,6 +9,7 @@
  * @time 2026-08-01 18:59:44
  */
 import { SQL } from '@/lib/db'
+import { NO_CONTENT } from '@/lib/http'
 import { getDb } from '@/lib/db/server'
 import { isLocalHost, toFunnelHit } from '@/lib/funnel'
 import type { TrackValue } from '@/lib/funnel'
@@ -29,7 +30,7 @@ export const runtime = 'nodejs'
  * @returns 空体 204。
  */
 function ok(): Response {
-  return new Response(null, { status: 204 })
+  return new Response(null, { status: NO_CONTENT })
 }
 
 /**

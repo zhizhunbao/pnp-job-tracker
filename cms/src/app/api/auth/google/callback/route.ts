@@ -11,7 +11,7 @@ import {
   STATE_COOKIE, exchangeCode, fetchGoogleUser, loginWithGoogle, oauthCookie, readCookie, safeReturnPath,
   sessionCookies,
 } from '@/lib/auth/server'
-
+import { FOUND, HDR_LOCATION, HDR_SET_COOKIE } from '@/lib/http'
 import { AUTH_LOG, log } from '@/lib/log'
 
 /**
@@ -33,10 +33,10 @@ export const runtime = 'nodejs'
 function fail(why: string): Response {
   log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + why })
   return new Response(null, {
-    status: 302,
+    status: FOUND,
     headers: {
-      Location: SITE + FAIL_PATH,
-      'Set-Cookie': oauthCookie({ name: STATE_COOKIE, value: '', maxAge: 0 }),
+      [HDR_LOCATION]: SITE + FAIL_PATH,
+      [HDR_SET_COOKIE]: oauthCookie({ name: STATE_COOKIE, value: '', maxAge: 0 }),
     },
   })
 }
@@ -90,13 +90,13 @@ export async function GET(req: Request): Promise<Response> {
   const rt = safeReturnPath(rtRaw)
   const [tokenCookie, traceCookie] = sessionCookies(session)
   return new Response(null, {
-    status: 302,
+    status: FOUND,
     headers: [
-      ['Location', SITE + rt],
-      ['Set-Cookie', tokenCookie],
-      ['Set-Cookie', traceCookie],
-      ['Set-Cookie', oauthCookie({ name: STATE_COOKIE, value: '', maxAge: 0 })],
-      ['Set-Cookie', oauthCookie({ name: RETURN_COOKIE, value: '', maxAge: 0 })],
+      [HDR_LOCATION, SITE + rt],
+      [HDR_SET_COOKIE, tokenCookie],
+      [HDR_SET_COOKIE, traceCookie],
+      [HDR_SET_COOKIE, oauthCookie({ name: STATE_COOKIE, value: '', maxAge: 0 })],
+      [HDR_SET_COOKIE, oauthCookie({ name: RETURN_COOKIE, value: '', maxAge: 0 })],
     ],
   })
 }

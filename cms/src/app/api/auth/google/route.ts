@@ -8,9 +8,10 @@
  * @time 2026-08-01 18:59:44
  */
 import {
-  FLOW_COOKIE_AGE, GOOGLE_CLIENT_ID, PARAM_RETURN_TO, RETURN_COOKIE, RETURN_RE, STATE_COOKIE, googleConsentUrl,
-  oauthCookie,
+  FLOW_COOKIE_AGE, GOOGLE_CLIENT_ID, MSG_NOT_CONFIGURED, PARAM_RETURN_TO, RETURN_COOKIE, RETURN_RE,
+  STATE_COOKIE, googleConsentUrl, oauthCookie,
 } from '@/lib/auth/server'
+import { FOUND, HDR_LOCATION, HDR_SET_COOKIE, NOT_FOUND } from '@/lib/http'
 
 /**
  * 强制动态渲染(每次都要新 state)。
@@ -25,19 +26,19 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(req: Request): Promise<Response> {
   if (GOOGLE_CLIENT_ID === '') {
-    return new Response('Google login not configured', { status: 404 })
+    return new Response(MSG_NOT_CONFIGURED, { status: NOT_FOUND })
   }
   const state = crypto.randomUUID()
   const headers: [string, string][] = [
-    ['Location', googleConsentUrl(state)],
-    ['Set-Cookie', oauthCookie({ name: STATE_COOKIE, value: state, maxAge: FLOW_COOKIE_AGE })],
+    [HDR_LOCATION, googleConsentUrl(state)],
+    [HDR_SET_COOKIE, oauthCookie({ name: STATE_COOKIE, value: state, maxAge: FLOW_COOKIE_AGE })],
   ]
   let rt = new URL(req.url).searchParams.get(PARAM_RETURN_TO)
   if (rt == null) {
     rt = ''
   }
   if (RETURN_RE.test(rt)) {
-    headers.push(['Set-Cookie', oauthCookie({ name: RETURN_COOKIE, value: encodeURIComponent(rt), maxAge: FLOW_COOKIE_AGE })])
+    headers.push([HDR_SET_COOKIE, oauthCookie({ name: RETURN_COOKIE, value: encodeURIComponent(rt), maxAge: FLOW_COOKIE_AGE })])
   }
-  return new Response(null, { status: 302, headers })
+  return new Response(null, { status: FOUND, headers })
 }

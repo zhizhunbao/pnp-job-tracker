@@ -221,3 +221,8 @@ export const HDR_COOKIE = 'cookie'
  * 第 1 跳的回跳目标参数名(登录钮携带)。
  */
 export const PARAM_RETURN_TO = 'returnTo'
+
+/**
+ * env 未配 client_id 时第 1 跳的响应体(前端钮同门控不渲染,本路由只是兜底)。
+ */
+export const MSG_NOT_CONFIGURED = 'Google login not configured'
