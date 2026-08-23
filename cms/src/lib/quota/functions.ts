@@ -35,6 +35,22 @@ export async function getUser(headers: ReqHeaders): UserOut {
 }
 
 /**
+ * 同 getUser，但鉴权层抛错当未登录（查挂不该把业务端点打成 500；
+ * 匿名可用的端点落到匿名帽）。原先三个路由各自写 catch 具名函数，
+ * 同一个决定拄了三遍 —— 2026-08-23 收进本域。
+ *
+ * @param headers 请求头。
+ * @returns 会话用户；未登录或鉴权层抛错都是 null。
+ */
+export async function getUserOrNull(headers: ReqHeaders): UserOut {
+  try {
+    return await getUser(headers)
+  } catch {
+    return null
+  }
+}
+
+/**
  * 时长包语义:到期日在未来 = Pro。没有订阅状态机。
  *
  * @param user 会话用户(未登录 null)。

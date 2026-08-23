@@ -24,11 +24,11 @@ import {
 } from './constants'
 import {
   fetchApplyEmail, fetchCompanyByJobId, fetchJobsPage, fetchMatchPage, fetchOccCompetition,
-  fetchSimilarEmployers, hasProfile, jobDescription, loadBigDims, loadCityCard, loadMatchDims,
+  emptySimilar, fetchSimilarEmployers, hasProfile, jobDescription, loadBigDims, loadCityCard, loadMatchDims,
   loadProvinceCard, normalizeProfile,
 } from './functions'
 import { CACHE } from './variables'
-import type { CompanyBody, JobsFilters, MatchDims, ProfileJson, SimilarEmployer } from './types'
+import type { CompanyBody, JobsFilters, MatchDims, ProfileJson } from './types'
 
 /**
  * GET /api/jobs:职位列表服务端分页/筛选/搜索(E10-01 P2,取代旧「一次拉 20k blob 前端过滤」)。
@@ -297,15 +297,4 @@ export async function jobsApplyhowRoute(req: Request): Promise<Response> {
     CACHE.applyMail.clear()
   }
   return Response.json({ email })
-}
-
-/**
- * 相似雇主查挂时的空表兜底(catch 传具名函数;弹框主体照常给,不 500)。
- *
- * @param _e 捕到的错(查询层已留痕)。
- * @returns 空表。
- */
-// eslint-disable-next-line local/routes-shape -- catch 传具名函数,非 HTTP 芯本体
-function emptySimilar(_e: Error): SimilarEmployer[] {
-  return []
 }

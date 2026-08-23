@@ -15,6 +15,7 @@
  * @time 2026-08-19 22:55:33
  */
 
+import { createHash } from 'node:crypto'
 import { fill } from '../template'
 import { runAgentLoop } from '@earendil-works/pi-agent-core'
 import type { StreamFn } from '@earendil-works/pi-agent-core'
@@ -34,16 +35,7 @@ import { queryRows, show, SQL, text } from '../db'
 import { evaluateRequirements } from '../gauge'
 import type { Requirement, RuleProfile, RuleResult } from '../gauge'
 import {
-  API, AS_FOLLOWS, AUTH_HEADER, AVAIL, BASE, BEARER, BOLD_RE, CLAIMS_CAP, CLAIM_TEXT_CAP,
-  CONSULT_STEP, CONSULT_STEP_OCC_TPL, CONTEXT_WINDOW,
-  CUT_MIN_RATIO, DRAW_LIMIT, EARLIER_HEAD, EN, EN_UNIT_WORDS, ERR_CAP, FAIL_MSG, FED, FIRST_LINE_CAP, FULL_STOP, GATE, GRID_CRS,
-  GUARD_RETRIES, HARD_GATES, HAS_DIGIT, HEADING_RE, HISTORY_CAP, HISTORY_TURNS, INELIGIBLE, INTERNAL_WORDS,
-  JOBS_LINK, KEY, KIND_SUMMARY, LABEL, LANG_NAME, LEAD_MARK, LEN_CAP, LIKE_ANY, LIKE_ESCAPE, LIKE_SPECIAL,
-  MARKUP, MAX_FACTS, MAX_QUERY, MAX_TOKENS, MESSAGE_UPDATE, MODEL_ID, NL, NOISE_RATIO, NOW_HEAD,
-  NO_KEY_PLACEHOLDER, NUMBERED_RE, NUM_RE, OPENING_COLON, OPENING_SAMPLE, POINTS_LIMIT, PRIVATE_PROMISE,
-  PROVIDER, PROVS, QC, REASON_EXCLUDED, ROLE, SAID, SAMPLING, SEARCH_LIMIT, SEP, SHEET_CAP, SPACE, STAR_RE,
-  STATUS_WORDS, TABLE_RE, THOUSANDS_COMMA, TIER_TEXT, TIMEOUT_MS, TOOL_LABEL, TOOL_NAME,
-  TRAILING_ZEROS, UNIT, V1, WORD_EDGE,
+  API, AS_FOLLOWS, AUTH_HEADER, AVAIL, A_CAP, BASE, BEARER, BOLD_RE, CLAIMS_CAP, CLAIM_TEXT_CAP, COLLECTION_CHAT_LOGS, CONSULT_STEP, CONSULT_STEP_OCC_TPL, CONTEXT_WINDOW, CUT_MIN_RATIO, DRAW_LIMIT, EARLIER_HEAD, EN, EN_UNIT_WORDS, ERR_CAP, ERR_LOG_CAP, FAIL_MSG, FED, FIRST_LINE_CAP, FULL_STOP, GATE, GRID_CRS, GUARD_RETRIES, HARD_GATES, HASH_HEX, HASH_SHA256, HAS_DIGIT, HEADING_RE, HISTORY_CAP, HISTORY_TURNS, INELIGIBLE, INTERNAL_WORDS, JOBS_LINK, KEY, KIND_SUMMARY, LABEL, LANG_NAME, LEAD_MARK, LEN_CAP, LIKE_ANY, LIKE_ESCAPE, LIKE_SPECIAL, MARKUP, MAX_FACTS, MAX_QUERY, MAX_TOKENS, MESSAGE_UPDATE, MODEL_ID, NL, NOISE_RATIO, NOW_HEAD, NO_KEY_PLACEHOLDER, NUMBERED_RE, NUM_RE, OPENING_COLON, OPENING_SAMPLE, POINTS_LIMIT, PRIVATE_PROMISE, PROVIDER, PROVS, QC, Q_CAP, REASON_EXCLUDED, ROLE, SAID, SAMPLING, SEARCH_LIMIT, SEP, SHEET_CAP, SPACE, SSE_PREFIX, SSE_SUFFIX, STAR_RE, STATUS_WORDS, TABLE_RE, THOUSANDS_COMMA, THREAD_ID_LEN, THREAD_SEED, TIER_TEXT, TIMEOUT_MS, TOOL_LABEL, TOOL_NAME, TRAILING_ZEROS, UNIT, V1, WORD_EDGE,
 } from './constants'
 import {
   BLOCK_UNKNOWN_NOC, PROFILE_HEAD, PROFILE_NONE, REPLY_LANGUAGE_HEAD, RETRY_BULLET, RETRY_COLON, RETRY_COMMA,
@@ -53,23 +45,7 @@ import { CLAIMS_PARAMS, CRS_PARAMS, NOC_PARAMS, NOC_PROVS_PARAMS, PERMIT_PARAMS,
 import { byOpenDesc } from './callbacks'
 import { toDrawRow, toEeRow, toNocHit, toOccFlat, toOpsRow, toPermitRow, toPointsRow, toProvOpen, toRequirement, toTitleTeer } from './rows'
 import type {
-  NumberCheckIn, AllowedNumbersOut, AnswerLangIn, BeforeToolCallIn, BeforeToolCallOut, CoverageRow, BoxForIn,
-  BoxForOut, Candidate, CiteFactsIn, CiteFactsOut, Inbox, CodesOfOut, RunIn, ConsultOut, ContentOfIn,
-  CoverageResult, CoverageFactsOut, DraftOnceIn, DraftOnceOut, DrawRow, DrawsResult, DrawsFactsOut, EeResult,
-  EeFactsOut, EeRow, ExecCoverageIn, ExecCoverageOut, ExecDrawsIn, ExecDrawsOut, ExecEeIn, ExecEeOut,
-  ExecJobsIn, ExecJobsOut, ExecOpsIn, ExecOpsOut, ExecPermitIn, ExecPermitOut, ExecPointsIn, ExecPointsOut,
-  ExecSearchIn, ExecSearchOut, ExecThresholdsIn, ExecThresholdsOut, Fact, FactIn, FactSheetIn,
-  FindEnglishUnitsOut, FindInternalWordsOut, FindRawMarkupOut, FindRestatedOpeningIn, FindRestatedOpeningOut,
-  FindUngroundedNumbersOut, FirstLineOfIn, GateHit, HardHitsIn, HardHitsOut, IsUserTurnIn,
-  JobsResult, JobsFactsOut, JobsRow, LastDraftOfIn, NocQueryIn, LookupCoverageOut, LookupDrawsIn,
-  LookupDrawsOut, LookupEeOut, LookupJobsOut, LookupOpsIn, LookupOpsOut, LookupPermitIn, LookupPermitOut,
-  LookupPointsIn, LookupPointsOut, LookupThresholdsIn, LookupThresholdsOut, MakeToolGatesIn, MakeToolGatesOut,
-  MakeToolsIn, MakeToolsOut, ModelOut, NocOfOut, OnEventIn, OpsResult, OpsFactsOut, PermitResult,
-  PermitFactsOut, PermitRow, PointsResult, PointsFactsOut, PointsRow, ProvOfOut, RetryNoteIn, RunGatesIn,
-  RunGatesOut, OrNone2In, OrNoneIn, OrNoneOut, Reply, SearchOccupationsIn, SearchOccupationsOut, SegIn,
-  StatusFactIn, StatusWordOfOut, Availability, TakeIn, ThresholdsResult, ThresholdsFactsOut, ThresholdsRow,
-  Tool, ToolArgs, VerdictFactsIn, VerdictFactsOut, VerdictProfileOfIn,
-  ExecClaimsIn, ExecClaimsOut, ExecVerdictIn, ExecVerdictOut, StepOccLineIn,
+  AllowedNumbersOut, AnswerLangIn, Availability, BeforeToolCallIn, BeforeToolCallOut, BoxForIn, BoxForOut, Candidate, CaughtError, ChatOut, CiteFactsIn, CiteFactsOut, CodesOfOut, ConsultOut, ContentOfIn, CoverageFactsOut, CoverageResult, CoverageRow, DraftOnceIn, DraftOnceOut, DrawRow, DrawsFactsOut, DrawsResult, EeFactsOut, EeResult, EeRow, ExecClaimsIn, ExecClaimsOut, ExecCoverageIn, ExecCoverageOut, ExecDrawsIn, ExecDrawsOut, ExecEeIn, ExecEeOut, ExecJobsIn, ExecJobsOut, ExecOpsIn, ExecOpsOut, ExecPermitIn, ExecPermitOut, ExecPointsIn, ExecPointsOut, ExecSearchIn, ExecSearchOut, ExecThresholdsIn, ExecThresholdsOut, ExecVerdictIn, ExecVerdictOut, Fact, FactIn, FactSheetIn, FindEnglishUnitsOut, FindInternalWordsOut, FindRawMarkupOut, FindRestatedOpeningIn, FindRestatedOpeningOut, FindUngroundedNumbersOut, FirstLineOfIn, GateHit, HardHitsIn, HardHitsOut, Inbox, IsUserTurnIn, JobsFactsOut, JobsResult, JobsRow, LastDraftOfIn, LogChatIn, LookupCoverageOut, LookupDrawsIn, LookupDrawsOut, LookupEeOut, LookupJobsOut, LookupOpsIn, LookupOpsOut, LookupPermitIn, LookupPermitOut, LookupPointsIn, LookupPointsOut, LookupThresholdsIn, LookupThresholdsOut, MakeToolGatesIn, MakeToolGatesOut, MakeToolsIn, MakeToolsOut, ModelOut, NocOfOut, NocQueryIn, NumberCheckIn, OnEventIn, OpsFactsOut, OpsResult, OrNone2In, OrNoneIn, OrNoneOut, PermitFactsOut, PermitResult, PermitRow, PointsFactsOut, PointsResult, PointsRow, ProvOfOut, Reply, RetryNoteIn, RunGatesIn, RunGatesOut, RunIn, SearchOccupationsIn, SearchOccupationsOut, SegIn, SseBytes, SsePacket, StatusFactIn, StatusWordOfOut, StepOccLineIn, TakeIn, ThreadIdIn, ThresholdsFactsOut, ThresholdsResult, ThresholdsRow, Tool, ToolArgs, Turn, TurnList, VerdictFactsIn, VerdictFactsOut, VerdictProfileOfIn,
 } from './types'
 
 // =========================================================================
@@ -1822,4 +1798,110 @@ function retryNote(fired: RetryNoteIn): string {
  */
 export function stepOccLineOf(input: StepOccLineIn): string {
   return fill({ tpl: CONSULT_STEP_OCC_TPL[input.lang], params: { occ: input.occ } })
+}
+
+/**
+ * 一个对象 → 一包 SSE 字节。
+ *
+ * @param o 要发的对象。
+ * @returns 编码后的一包。
+ */
+export function sseChunk(o: SsePacket): SseBytes {
+  return new TextEncoder().encode(SSE_PREFIX + JSON.stringify(o) + SSE_SUFFIX)
+}
+
+/**
+ * 同一串追问的 id = 首轮提问文本的哈希。不用 IP/UA/session —— 那三样都指向人,
+ * 而我们只需要「这几轮是一串」这一个信息。
+ *
+ * @param input 本轮提问与历史。
+ * @returns 16 位十六进制串。
+ */
+export function threadIdOf(input: ThreadIdIn): string {
+  let first = input.text
+  for (const h of input.history) {
+    if (h.role === ROLE.user) {
+      first = h.content
+      break
+    }
+  }
+  return createHash(HASH_SHA256).update(first.trim().slice(0, THREAD_SEED)).digest(HASH_HEX).slice(0, THREAD_ID_LEN)
+}
+
+/**
+ * 本串里的第几轮:history 里的 user 消息数 + 1。
+ *
+ * @param history 多轮历史。
+ * @returns 轮次(1 起)。
+ */
+export function turnOf(history: TurnList): number {
+  let n = 0
+  for (const h of history) {
+    if (h.role === ROLE.user) {
+      n = n + 1
+    }
+  }
+  return n + 1
+}
+
+/**
+ * 写一行 chat_logs。fire-and-forget,自己吞异常(swallowChatlogError 留痕)——
+ * 留痕是副产品,它挂了用户不该有任何感知;列形状一字不动。
+ *
+ * @param input 句柄与一轮的问/答/错误码/耗时。
+ * @returns 没有返回值(不等写库)。
+ */
+export function logChat(input: LogChatIn): void {
+  if (input.payload == null) {
+    return
+  }
+  let answer: string | null = null
+  let nocCell: string | null = null
+  let slotsCell: ChatOut['slots'] | null = null
+  let factsCell: Fact[] | null = null
+  let toolsCell: string[] | null = null
+  let degraded = false
+  if (input.result != null) {
+    if (input.result.answer !== '') {
+      answer = input.result.answer.slice(0, A_CAP)
+    }
+    nocCell = input.result.slots.noc
+    slotsCell = input.result.slots
+    if (input.result.facts.length > 0) {
+      factsCell = input.result.facts
+      const tools = new Set<string>()
+      for (const f of input.result.facts) {
+        tools.add(f.tool)
+      }
+      toolsCell = Array.from(tools)
+    }
+    degraded = input.result.degraded
+  }
+  input.payload.create({
+    collection: COLLECTION_CHAT_LOGS,
+    data: {
+      thread: threadIdOf({ text: input.text, history: input.history }),
+      turn: turnOf(input.history),
+      lang: input.lang,
+      question: input.text.slice(0, Q_CAP),
+      answer: answer,
+      noc: nocCell,
+      slots: slotsCell,
+      facts: factsCell,
+      tools: toolsCell,
+      degraded: degraded,
+      err: input.err,
+      ms: Math.round(input.ms),
+    },
+  }).catch(swallowChatlogError)
+}
+
+/**
+ * chat_logs 写库失败的收尾(catch 传具名函数;只留痕不影响用户)。
+ *
+ * @param e 捕到的错。
+ * @returns 没有返回值。
+ */
+function swallowChatlogError(e: CaughtError): void {
+  log({ tag: CHAT_LOG.tag, text: CHAT_LOG.chatlogSkipped + e.message.slice(0, ERR_LOG_CAP) })
 }

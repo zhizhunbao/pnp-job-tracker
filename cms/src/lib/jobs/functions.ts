@@ -25,7 +25,7 @@ import {
 import { byEntryCountDesc, byHitValAsc, byHitValDesc, byLevelDesc } from './callbacks'
 import { CACHE } from './variables'
 import type {
-  AlertHitsIn, AlertHitsOut, ApplyMailOut, BigDimsIn, BigDimsOut, BroadNocsIn, BroadNocsOut, BuildWhereIn, CaughtError, Cell, CheckedAtOut, CityAgg, CityCardIn, CityCardOut, CompanyByJobIn, CompanyBySlugIn, CompanyDetail, CompanyOut, CompanyWhereIn, CountMap, CountOfIn, CoverageIn, DistrictCard, DrawStreamNoteIn, DropProvPrefixIn, EeDisplayIn, EeKeyDisplayIn, HtmlOut, JdIn, JdOut, JobByIdIn, JobByIdOut, JobDbRow, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn, JobsPageOut, JobsWhere, JsonCell, JsonObj, LmiaNocRow, LmiaNocsIn, LmiaNocsOut, MatchDims, MatchDimsOut, MatchIn, MatchLevel, MatchPageIn, MatchPageOut, MatchProfile, MatchReason, MatchResult, MaybeLevel, MaybeNum, MaybeProfile, MaybeStr, NameOption, NocCountsIn, NocCountsOut, NocOpenCount, NocRuleOut, NocSearchIn, NocSearchOut, NumCell, OccCompetitionIn, OccCompetitionOut, OccCompetitionRows, OccDiffFacts, OrderByIn, PgFailure, PnpOcc, PnpOccs, ProfileJsonCell, ProfileJsonOrNull, ProofOut, ProvCounts, ProvListCoverage, ProvOption, ProvinceCardIn, ProvinceCardOut, QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount, RankedHit, RatioMap, RatioOfIn, RelatedIn, RelatedOut, ReqStreamDisplayIn, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut, SimilarIn, SimilarOut, SortValIn, SsrDimsOut, StrCell, StrList, StreamDisplayIn, StripTitleIn, TopNocsIn, TopNocsOut, UrlHandle, WhereParam,
+  AlertHitsIn, AlertHitsOut, ApplyMailOut, BigDimsIn, BigDimsOut, BroadNocsIn, BroadNocsOut, BuildWhereIn, CaughtError, Cell, CheckedAtOut, CityAgg, CityCardIn, CityCardOut, CompanyByJobIn, CompanyBySlugIn, CompanyDetail, CompanyOut, CompanyWhereIn, CountMap, CountOfIn, CoverageIn, DistrictCard, DrawStreamNoteIn, DropProvPrefixIn, EeDisplayIn, EeKeyDisplayIn, HtmlOut, JdIn, JdOut, JobByIdIn, JobByIdOut, JobDbRow, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn, JobsPageOut, JobsWhere, JsonCell, JsonObj, LmiaNocRow, LmiaNocsIn, LmiaNocsOut, MatchDims, MatchDimsOut, MatchIn, MatchLevel, MatchPageIn, MatchPageOut, MatchProfile, MatchReason, MatchResult, MaybeLevel, MaybeNum, MaybeProfile, MaybeStr, NameOption, NocCountsIn, NocCountsOut, NocOpenCount, NocRuleOut, NocSearchIn, NocSearchOut, NumCell, OccCompetitionIn, OccCompetitionOut, OccCompetitionRows, OccDiffFacts, OrderByIn, PgFailure, PnpOcc, PnpOccs, ProfileJsonCell, ProfileJsonOrNull, ProofOut, ProvCounts, ProvListCoverage, ProvOption, ProvinceCardIn, ProvinceCardOut, QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount, RankedHit, RatioMap, RatioOfIn, RelatedIn, RelatedOut, ReqStreamDisplayIn, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut, SimilarEmployer, SimilarIn, SimilarList, SimilarOut, SortValIn, SsrDimsOut, StrCell, StrList, StreamDisplayIn, StripTitleIn, TopNocsIn, TopNocsOut, UrlHandle, WhereParam,
 } from './types'
 
 // =========================================================================
@@ -2473,4 +2473,15 @@ function pickMail(s: string): string {
     return m
   }
   return ''
+}
+
+/**
+ * 相似雇主查挂时的空表兜底(catch 传具名函数;弹框主体照常给,不 500)。
+ *
+ * @param _e 捕到的错(查询层已留痕)。
+ * @returns 空表。
+ */
+// eslint-disable-next-line local/routes-shape -- catch 传具名函数,非 HTTP 芯本体
+export function emptySimilar(_e: Error): SimilarList {
+  return []
 }

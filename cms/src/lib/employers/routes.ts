@@ -14,7 +14,7 @@ import {
   BAD_REQUEST, HDR_CACHE_CONTROL, HDR_CONTENT_DISPOSITION, HDR_CONTENT_TYPE, NO_CONTENT, PAYMENT_REQUIRED,
 } from '../http'
 import { friendLlmReady } from '../llm'
-import { freeGate, getUser, isPro } from '../quota/server'
+import { freeGate, getUser, getUserOrNull, isPro } from '../quota/server'
 import {
   CACHE_TTL_MS, CITY_LEN_MAX, CSV_CACHE_CONTROL, CSV_CONTENT_TYPE, CSV_DISPOSITION, E_PRO, EMP_CACHE_CONTROL,
   EMP_PAGE_SIZE, EXPORT_PROVS, EXPORT_Q_LEN_MAX, MODE, NAME_LEN_MAX, NOC5_RE, PAGE_SIZE_MAX, PARAM, SORT_OPEN,
@@ -91,7 +91,7 @@ export async function employersSponsorsRoute(_req: Request): Promise<Response> {
  * @returns CSV 附件;非 Pro 402。
  */
 export async function employersExportRoute(req: Request): Promise<Response> {
-  const user = await getUser(await headers()).catch(nullUser)
+  const user = await getUserOrNull(await headers())
   if (user == null || isPro(user) === false) {
     return Response.json({ error: E_PRO }, { status: PAYMENT_REQUIRED })
   }
@@ -172,17 +172,6 @@ export async function employersInfoRoute(req: Request): Promise<Response> {
     return new Response(null, { status: NO_CONTENT })
   }
   return Response.json(out)
-}
-
-/**
- * getUser 抛错当未登录(catch 传具名函数;鉴权层查挂不该把导出端点打成 500)。
- *
- * @param _e 捕到的错。
- * @returns null(未登录)。
- */
-// eslint-disable-next-line local/routes-shape -- catch 传具名函数,非 HTTP 芯本体
-function nullUser(_e: Error): null {
-  return null
 }
 
 /**

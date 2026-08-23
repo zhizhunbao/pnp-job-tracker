@@ -16,7 +16,7 @@ import config from '@/payload.config'
 import { getDb } from '../db/server'
 import { BAD_REQUEST, TOO_LARGE, UNAUTHORIZED } from '../http'
 import { fetchBroadNocs, fetchNocOpenCounts, fetchQuizFacts, fetchTopNocs, searchNocByTitle } from '../jobs/server'
-import { getUser } from '../quota/server'
+import { getUserOrNull } from '../quota/server'
 import {
   ANSWERS_LEN_MAX, BROAD_CACHE_MAX, BROAD_LEN_MAX, BROAD_LIMIT, COUNTS_CACHE_MAX, COUNTS_N_MAX, COUNTS_SEP,
   E_AUTH, E_BAD, E_PARAM, E_TOO_BIG, FACTS_CACHE_MAX, P_BROAD, P_COUNTS, P_NOC, P_Q, P_TOP, Q_LEN_MAX,
@@ -131,7 +131,7 @@ export async function quizRoute(req: Request): Promise<Response> {
  * @returns { answers };未登录 401。
  */
 export async function quizAnswersGetRoute(_req: Request): Promise<Response> {
-  const user = await getUser(await headers()).catch(nullUser)
+  const user = await getUserOrNull(await headers())
   if (user == null) {
     return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
   }
@@ -150,7 +150,7 @@ export async function quizAnswersGetRoute(_req: Request): Promise<Response> {
  * @returns { ok, updatedAt };未登录 401、形状不对 400、超 64KB 413。
  */
 export async function quizAnswersPutRoute(req: Request): Promise<Response> {
-  const user = await getUser(await headers()).catch(nullUser)
+  const user = await getUserOrNull(await headers())
   if (user == null) {
     return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
   }
@@ -180,17 +180,6 @@ export async function quizAnswersPutRoute(req: Request): Promise<Response> {
   const payload = await getPayload({ config: await config })
   await saveAnswers({ payload: payload, userId: user.id, basic: basic, score: score, updatedAt: updatedAt })
   return Response.json({ ok: true, updatedAt })
-}
-
-/**
- * getUser 抛错当未登录(catch 传具名函数;鉴权层查挂不该把答案端点打成 500)。
- *
- * @param _e 捕到的错。
- * @returns null(未登录)。
- */
-// eslint-disable-next-line local/routes-shape -- catch 传具名函数(两个 answers handler 共用),非 HTTP 芯本体
-function nullUser(_e: Error): null {
-  return null
 }
 
 /**

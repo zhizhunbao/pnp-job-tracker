@@ -2509,3 +2509,18 @@ export type ErrDetailPacket = {
  * SSE 能发的全部包型。
  */
 export type SsePacket = StepPacket | ChatWire | ErrPacket | ErrDetailPacket
+
+/**
+ * 多轮历史清单（turnOf 的入参；数组在签名位要本域名字）。
+ */
+export type TurnList = Turn[]
+
+/**
+ * 捕到的错（库的 Error 在本域的名字）。
+ */
+export type CaughtError = Error
+
+/**
+ * SSE 一包的字节（库的 Uint8Array 在本域的名字）。
+ */
+export type SseBytes = Uint8Array

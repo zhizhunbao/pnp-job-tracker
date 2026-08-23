@@ -4275,3 +4275,8 @@ export type CompanyBody = {
    */
   jobId: number | string | null
 }
+
+/**
+ * 相似雇主清单（emptySimilar 兜底的返回；数组在签名位要本域名字）。
+ */
+export type SimilarList = SimilarEmployer[]

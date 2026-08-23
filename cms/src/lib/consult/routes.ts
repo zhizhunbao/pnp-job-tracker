@@ -15,7 +15,6 @@
  * @author Frank
  * @time 2026-08-23 07:40:00
  */
-import { createHash } from 'node:crypto'
 import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
@@ -24,17 +23,17 @@ import { isChatError } from '../error'
 import { HDR_CACHE_CONTROL, HDR_CONTENT_TYPE_LC, TOO_MANY } from '../http'
 import type { Lang } from '../i18n'
 import { CHAT_LOG, log } from '../log'
-import { checkLimit, freeGate, getUser, isPro } from '../quota/server'
+import { checkLimit, freeGate, getUserOrNull, isPro } from '../quota/server'
 import { PRO_CHAT_DAILY } from '../quota'
 import {
-  A_CAP, ACCEL_NO, CHAT_LANGS, COLLECTION_CHAT_LOGS, CONN_KEEP_ALIVE, DETAIL_CAP, E_LIMIT, E_LLM,
-  ERR_LOG_CAP, HASH_HEX, HASH_SHA256, HDR_ACCEL, HDR_CONNECTION, HISTORY_MAX, LANG_FALLBACK,
-  PRO_LIMIT_PREFIX, Q_CAP, ROLE, SSE_CACHE_CONTROL, SSE_CONTENT_TYPE, SSE_DONE, SSE_PREFIX, SSE_SUFFIX,
-  TEST_MAIL_SUFFIX, THREAD_ID_LEN, THREAD_SEED, TURN_CONTENT_CAP,
+  ACCEL_NO, CHAT_LANGS, CONN_KEEP_ALIVE, DETAIL_CAP, E_LIMIT, E_LLM,
+  ERR_LOG_CAP, HDR_ACCEL, HDR_CONNECTION, HISTORY_MAX, LANG_FALLBACK,
+  PRO_LIMIT_PREFIX, ROLE, SSE_CACHE_CONTROL, SSE_CONTENT_TYPE, SSE_DONE,
+  TEST_MAIL_SUFFIX, TURN_CONTENT_CAP,
 } from './constants'
-import { consult } from './functions'
+import { consult, logChat, sseChunk, threadIdOf } from './functions'
 import type {
-  ChatBody, ChatOut, ChatPayloadHandle, ChatUserProfile, Fact, LogChatIn, Profile, SsePacket, ThreadIdIn, Turn,
+  ChatBody, ChatOut, ChatPayloadHandle, ChatUserProfile, Fact, Profile, SsePacket, Turn,
 } from './types'
 
 /**
@@ -82,7 +81,7 @@ export async function consultChatRoute(req: Request): Promise<Response> {
       contextNoc = body.context.noc
     }
   }
-  const user = await getUser(await headers()).catch(nullUser)
+  const user = await getUserOrNull(await headers())
   const g = freeGate({ user: user, headers: req.headers })
   if (g.block != null) {
     return Response.json({ error: E_LIMIT }, { status: TOO_MANY })
@@ -206,126 +205,4 @@ export async function consultChatRoute(req: Request): Promise<Response> {
     h[k] = v
   }
   return new Response(stream, { headers: h })
-}
-
-/**
- * getUser 抛错当未登录(catch 传具名函数;鉴权层查挂不该把对话入口打成 500)。
- *
- * @param _e 捕到的错。
- * @returns null(未登录,走匿名 IP 帽)。
- */
-// eslint-disable-next-line local/routes-shape -- catch 传具名函数,非 HTTP 芯本体
-function nullUser(_e: Error): null {
-  return null
-}
-
-/**
- * 一个对象 → 一包 SSE 字节。
- *
- * @param o 要发的对象。
- * @returns 编码后的一包。
- */
-// eslint-disable-next-line local/routes-shape -- SSE 编包小件,非 HTTP 芯本体
-function sseChunk(o: SsePacket): Uint8Array {
-  return new TextEncoder().encode(SSE_PREFIX + JSON.stringify(o) + SSE_SUFFIX)
-}
-
-/**
- * 同一串追问的 id = 首轮提问文本的哈希。不用 IP/UA/session —— 那三样都指向人,
- * 而我们只需要「这几轮是一串」这一个信息。
- *
- * @param input 本轮提问与历史。
- * @returns 16 位十六进制串。
- */
-// eslint-disable-next-line local/routes-shape -- 留痕小件(原 lib/chat/log.ts 幸存件,单消费者不导出),非 HTTP 芯本体
-function threadIdOf(input: ThreadIdIn): string {
-  let first = input.text
-  for (const h of input.history) {
-    if (h.role === ROLE.user) {
-      first = h.content
-      break
-    }
-  }
-  return createHash(HASH_SHA256).update(first.trim().slice(0, THREAD_SEED)).digest(HASH_HEX).slice(0, THREAD_ID_LEN)
-}
-
-/**
- * 本串里的第几轮:history 里的 user 消息数 + 1。
- *
- * @param history 多轮历史。
- * @returns 轮次(1 起)。
- */
-// eslint-disable-next-line local/routes-shape -- 留痕小件,非 HTTP 芯本体
-function turnOf(history: Turn[]): number {
-  let n = 0
-  for (const h of history) {
-    if (h.role === ROLE.user) {
-      n = n + 1
-    }
-  }
-  return n + 1
-}
-
-/**
- * 写一行 chat_logs。fire-and-forget,自己吞异常(swallowChatlogError 留痕)——
- * 留痕是副产品,它挂了用户不该有任何感知;列形状一字不动。
- *
- * @param input 句柄与一轮的问/答/错误码/耗时。
- * @returns 没有返回值(不等写库)。
- */
-// eslint-disable-next-line local/routes-shape -- 留痕小件,非 HTTP 芯本体
-function logChat(input: LogChatIn): void {
-  if (input.payload == null) {
-    return
-  }
-  let answer: string | null = null
-  let nocCell: string | null = null
-  let slotsCell: ChatOut['slots'] | null = null
-  let factsCell: Fact[] | null = null
-  let toolsCell: string[] | null = null
-  let degraded = false
-  if (input.result != null) {
-    if (input.result.answer !== '') {
-      answer = input.result.answer.slice(0, A_CAP)
-    }
-    nocCell = input.result.slots.noc
-    slotsCell = input.result.slots
-    if (input.result.facts.length > 0) {
-      factsCell = input.result.facts
-      const tools = new Set<string>()
-      for (const f of input.result.facts) {
-        tools.add(f.tool)
-      }
-      toolsCell = Array.from(tools)
-    }
-    degraded = input.result.degraded
-  }
-  input.payload.create({
-    collection: COLLECTION_CHAT_LOGS,
-    data: {
-      thread: threadIdOf({ text: input.text, history: input.history }),
-      turn: turnOf(input.history),
-      lang: input.lang,
-      question: input.text.slice(0, Q_CAP),
-      answer: answer,
-      noc: nocCell,
-      slots: slotsCell,
-      facts: factsCell,
-      tools: toolsCell,
-      degraded: degraded,
-      err: input.err,
-      ms: Math.round(input.ms),
-    },
-  }).catch(swallowChatlogError)
-}
-
-/**
- * chat_logs 写库失败的收尾(catch 传具名函数;只留痕不影响用户)。
- *
- * @param e 捕到的错。
- * @returns 没有返回值。
- */
-// eslint-disable-next-line local/routes-shape -- 留痕小件,非 HTTP 芯本体
-function swallowChatlogError(e: Error): void {
-  log({ tag: CHAT_LOG.tag, text: CHAT_LOG.chatlogSkipped + e.message.slice(0, ERR_LOG_CAP) })
 }
