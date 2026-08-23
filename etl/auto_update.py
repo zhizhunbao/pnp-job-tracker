@@ -92,16 +92,15 @@ def run_once(meta: dict) -> bool:
             return False
         # 邮件提醒(E5-03):seed 成功后触发匹配版 alerts(同一 token 鉴权;失败不影响本轮,下轮补)
         try:
-            # 2026-08-23 正名:/api/alerts/run → /api/mail/run(api 目录与 lib/mail 域对齐)
-            mail_url = SEED_URL.rsplit("/seed", 1)[0] + "/api/mail/run"
-            r = httpx.get(mail_url, timeout=300,
+            alerts_url = SEED_URL.rsplit("/seed", 1)[0] + "/api/alerts/run"
+            r = httpx.get(alerts_url, timeout=300,
                           headers={"x-seed-token": SEED_TOKEN} if SEED_TOKEN else None)
             if r.is_success:
-                log.info(f"✓ mail {r.status_code}: {r.text[:200]}")
+                log.info(f"✓ alerts {r.status_code}: {r.text[:200]}")
             else:
-                log.error(f"✗ mail {r.status_code}: {r.text[:200]} —— 不影响本轮")
+                log.error(f"✗ alerts {r.status_code}: {r.text[:200]} —— 不影响本轮")
         except Exception as e:  # noqa: BLE001
-            log.error(f"✗ mail 失败({type(e).__name__}: {e})—— 不影响本轮")
+            log.error(f"✗ alerts 失败({type(e).__name__}: {e})—— 不影响本轮")
     # 监控心跳(E7-01):本轮全部成功 → ping healthchecks.io(env 缺省=本地开发不 ping)
     ping = os.environ.get(f"HEALTHCHECK_PING_{SOURCE.upper()}", "")
     if ping:

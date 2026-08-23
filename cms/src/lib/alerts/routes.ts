@@ -1,5 +1,5 @@
 /**
- * 邮件域的 HTTP 芯（第十一抽屉）：/api/alerts/run 与 /api/alerts/unsub。
+ * 提醒域的 HTTP 芯（第十一抽屉）：/api/alerts/run 与 /api/alerts/unsub。
  * 顶层只有 handler（闸 routes-shape）；本文件是域内边缘，唯一允许借别域 server 门取数。
  * fetchHits 内联闭包里的 `as JobsFilters` 是跨边界断言：保存的筛选是 payload 里的
  * 自由 json，fetchAlertHits 自己按白名单收。
@@ -21,14 +21,14 @@ import { isDryRun, quietInfo, runAlerts, unsubApply, unsubPageHtml } from './fun
 import type { FetchHitsFn } from './types'
 
 /**
- * GET /api/mail/run：跑一轮提醒（2026-08-23 正名，URL↔名机械映射；旧名 alertsRunRoute
- * 与别名路径 /api/alerts/run 同日退役，etl 已切新 URL）。x-seed-token 鉴权；dry/preview/lang/force 见 functions 头。
+ * GET /api/alerts/run：跑一轮提醒(2026-08-23 两域拍板后 alerts 即正名,URL↔名机械映射;
+ * 当日上午的 mail/run 方向作废)。x-seed-token 鉴权;dry/preview/lang/force 见 functions 头。
  * 静默窗口内（非 dry/preview/force）整轮不发，返回 deferred 说明。
  *
  * @param req 触发请求。
  * @returns 计数 json；preview 时是邮件 HTML。
  */
-export async function mailRunRoute(req: Request): Promise<Response> {
+export async function alertsRunRoute(req: Request): Promise<Response> {
   if (process.env.SEED_TOKEN == null || process.env.SEED_TOKEN === '' || req.headers.get(HDR_SEED_TOKEN) !== process.env.SEED_TOKEN) {
     return new Response(TEXT_UNAUTHORIZED, { status: UNAUTHORIZED })
   }

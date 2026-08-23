@@ -130,11 +130,6 @@
       "count": 1
     }
   },
-  "src/lib/mail/functions.ts": {
-    "local/step-down-order": {
-      "count": 8
-    }
-  },
   "src/lib/mart/functions.ts": {
     "local/step-down-order": {
       "count": 3
