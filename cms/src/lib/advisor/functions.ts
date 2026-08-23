@@ -6,32 +6,47 @@
  * @author Frank
  * @time 2026-08-23 16:00:00
  */
+import { runAgentLoop } from '@earendil-works/pi-agent-core'
+import type { StreamFn } from '@earendil-works/pi-agent-core'
+import { streamSimple } from '@earendil-works/pi-ai/api/openai-completions'
+import type { Model } from '@earendil-works/pi-ai'
+import { passThroughMessages } from '../agent'
+import { CHAT_CODE, chatError } from '../error'
 import { fill } from '../template'
 import { PROV_NAMES } from '../location'
 import {
-  ATLANTIC_PROVS, CACHE_VER, CO_ABOUT_LEN_MAX, CO_DESC_LEN_MAX, CO_SECTORS_LEN_MAX, CO_SOURCES_MAX,
-  CO_WEB_LEN_MAX, COMMA_SEP, F_CITY_READ, F_CO_READ, F_COMPANY, F_IMMIGRATION, F_JD_READ, F_OCC_READ,
-  F_PROV_READ, F_SCORE, F_TITLE, HTTP_RE, INDEMAND_NOC2, ISO_DATE_LEN, K_DIV, KEY_PRO_PREFIX, KEY_SEP,
-  LANG_NAMES, LANG_ZH, LOC_FACTS_LEN_MAX, NL, NL2, NOC_GROUP_LEN, NOC_TEER_RE, OCC_DUTY_LEN_MAX,
-  OCC_DUTY_LINES_MAX, OCC_REQ_LEN_MAX, OCC_REQ_LINES_MAX, QUOTE, REASON_PREFIX, SEMI_SEP,
-  SIMPLE_FIELDS, SLASH_SEP, SPACE_SEP, WAGE_FIELDS,
+  API, ATLANTIC_PROVS, AUTH_HEADER, BASE, BEARER, BLOCK_TEXT, CACHE_VER, CO_ABOUT_LEN_MAX,
+  CO_DESC_LEN_MAX, CO_SECTORS_LEN_MAX, CO_SOURCES_MAX, CO_WEB_LEN_MAX, COMMA_SEP, CONTEXT_WINDOW,
+  CT_TEXT, F_CITY_READ, F_CO_READ, F_COMPANY, F_IMMIGRATION, F_JD_READ, F_OCC_READ,
+  F_PROV_READ, F_SCORE, F_TITLE, HDR_CONTENT_TYPE, HDR_X_CACHE, HDR_X_JD, HTML_SCRIPT_RE,
+  HTML_STYLE_RE, HTML_TAG_RE, HTTP_RE, INDEMAND_NOC2,
+  ISO_DATE_LEN, K_DIV, KEY, KEY_PRO_PREFIX, KEY_SEP, LANG_NAMES, LANG_ZH, LOC_FACTS_LEN_MAX, LOC_KEY,
+  LOOP_TIMEOUT_MS, MESSAGE_UPDATE, MODEL_ID, NL, NL2, NO_KEY_PLACEHOLDER, NOC_GROUP_LEN, NOC_TEER_RE,
+  OCC_DUTY_LEN_MAX, OCC_DUTY_LINES_MAX, OCC_REQ_LEN_MAX, OCC_REQ_LINES_MAX, PCT_100, PROVIDER, QC_CODE, QUOTE,
+  REASON_PREFIX, ROLE_ASSISTANT, ROLE_USER, SAMPLING, SEMI_SEP, SIMPLE_FIELDS, SLASH_SEP, SPACE_SEP, TOOL_WEB_FETCH,
+  V1, WAGE_FIELDS, WEBFETCH_TEXT_MAX, WEBFETCH_TIMEOUT_MS, WS_RE,
 } from './constants'
+import { WEB_FETCH_PARAMS } from './schemas'
 import {
   ASK, ASK_FALLBACK_TPL, ATLANTIC_RULE, CH_NAME, CHAT_FACTS_HEAD, CHAT_JD_HEAD, CHAT_JD_TAIL,
   CHAT_TAIL, CITY_READ_ASK, CO_ANTI_FAB, CO_FACT, CO_GROUND_BOTH, CO_GROUND_FETCH, CO_GROUND_NONE,
   CO_GROUND_STORED, CO_HEAD_TPL, CO_KNOWN, CO_KNOWN_HEAD, CO_OUTPUT_RULES, CO_READ_ASK, CO_READ_RULES,
   CO_SPONSOR, CO_WEB_HEAD, DRIVER, GROUNDING_RULES, HEADINGS, HEADINGS_INSTR, IMM_HEAD_TPL,
   JD_BLOCK_HEAD, JD_BLOCK_TAIL, JD_FACTS_TPL, JD_READ_ASK, JD_READ_MISSING, JD_READ_SRC_HEAD,
-  JD_READ_TAIL, JOB_FACT, JOB_FACTS_HEAD, LANG_PURITY, LOC_FACTS_HEAD, LOC_READ_TAIL, NO_JD_LINE,
+  JD_READ_TAIL, JOB_FACT, JOB_FACTS_HEAD, LANG_PURITY, LOC_FACT, LOC_FACTS_HEAD, LOC_READ_TAIL, NO_JD_LINE,
   NO_MEDIAN_RULE, NOC_NONE_LINE, OCC_FACT, OCC_READ_TAIL, PATH_FACTS_HEAD, PATH_FACTS_TPL, PLAN_RULES, PREP_EXTRA,
   PROFILE_MATCH_TPL, PROFILE_TAIL, PROFILE_TPL, PROV_READ_ASK, READER_CTX_TPL, READER_LINE,
-  READS_OUTPUT, SCORE_FACTS_TPL, SECTIONS_OUTPUT, SIMPLE_OUTPUT, STREAM_SEG, SYSTEM_TPL, VAL,
-  YR_SEG, ZH_ONLY,
+  READS_OUTPUT, SCORE_FACTS_TPL, SECTIONS_OUTPUT, SIMPLE_OUTPUT, STREAM_SEG, SYSTEM_TPL, TURN_ADVISOR,
+  TURN_HEAD, TURN_USER, VAL, WEB_FETCH_DESC, WEB_FETCH_FAIL, YR_SEG, ZH_ONLY,
 } from './prompts'
 import type {
-  AdvisorJob, CacheKeyIn, ClipLinesIn, CompanyPromptIn, CoReadPromptIn, ChatSystemIn, FieldPromptIn,
-  HeadingPair, ImmigrationPromptIn, JdReadPromptIn, Lang, LocReadPromptIn, MaybeNum, MaybeStr,
-  OccReadPromptIn, ProfileFactsIn, PromptIn,
+  AdvisorJob, AdvisorWire, BroadCountCell, CacheKeyIn, Cell, CellAtIn, CellList, ChatMsg, ChatMsgList,
+  ChatPromptIn, CityFactsIn, ClipLinesIn,
+  CompanyPromptIn, CoReadPromptIn, ChatSystemIn, EmployerCountCell, EventIn, FactorIn, FieldPromptIn,
+  HeaderMap, HeadersOfIn, HeadingPair, ImmigrationPromptIn, JdReadPromptIn, JobRowCell, Lang, LastTextIn,
+  LocJobIn, LocReadPromptIn, MatchJobCell, MaybeNum, MaybeObj, MaybeStr, ModelOut, NamedCell, OccJobIn,
+  OccReadPromptIn, ProfileFactsIn,
+  PromptIn, ProvFactsIn, Reply, ReplyOut, RunIn, RunOut, ToolList, TranscriptMsg, VolLineIn, WebFetchToolIn,
 } from './types'
 
 // =========================================================================
@@ -621,11 +636,12 @@ function catOf(j: AdvisorJob): string {
 
 /**
  * NOC 码取 TEER 位(长度 5 且第二位是数字才算,与老链判据同义)。
+ * 导出给 routes 拼 MatchJob(第二消费者)。
  *
  * @param noc NOC 码;没有为 null。
  * @returns TEER 数字或 null。
  */
-function teerOf(noc: MaybeStr): MaybeNum {
+export function teerOf(noc: MaybeStr): MaybeNum {
   if (noc == null) {
     return null
   }
@@ -761,4 +777,648 @@ function dateSlotOf(v: MaybeStr): string {
     return VAL.dash
   }
   return s
+}
+
+// =========================================================================
+// 5. 运行(pi 循环与工具;样板 lib/consult 的 draftOnce,advisor 直用 pi 库)
+// =========================================================================
+
+/**
+ * 跑一趟 advisor 循环:一段 system + 一段提示词 + 工具表 → 模型全文。
+ * 简单场景传空工具表 ≈ 一发调用,零额外开销(2026-08-23 Frank 拍板全场景上循环)。
+ * 流式增量走 onDelta;整趟预算 LOOP_TIMEOUT_MS,到点掐断。
+ *
+ * 里面的嵌套件按闸的规矩不再各挂 JSDoc,要点:onTimeout 到点掐断;onEvent 只管
+ * 正文增量(思考期间 content 是空串不是缺字段,按真值判会漏计);末参那句
+ * `streamSimple as StreamFn` 是跨边界断言 —— pi 的 StreamFn 要通吃所有 Api,
+ * 这个 stream 锁死 openai-completions,逆变对不上,只能断言(宪法「跨边界的断言留着」)。
+ *
+ * @param input 这一趟要的东西。
+ * @returns 模型全文(闸前)。
+ */
+export async function runAdvisor(input: RunIn): RunOut {
+  const ac = new AbortController()
+
+  function onTimeout(): void {
+    ac.abort()
+  }
+  const timer = setTimeout(onTimeout, LOOP_TIMEOUT_MS)
+  const sent = { n: 0 }
+
+  function onEvent(event: EventIn): void {
+    if (event.type !== MESSAGE_UPDATE || event.message == null || input.onDelta == null) {
+      return
+    }
+    const full = textOf(event.message)
+    if (full.length <= sent.n) {
+      return
+    }
+    input.onDelta(full.slice(sent.n))
+    sent.n = full.length
+  }
+
+  try {
+    const messages = await runAgentLoop(
+      [userMsgOf(input.prompt)],
+      { systemPrompt: input.system, messages: [], tools: input.tools },
+      {
+        model: model(), apiKey: KEY || NO_KEY_PLACEHOLDER, maxTokens: input.maxTokens,
+        convertToLlm: passThroughMessages,
+      },
+      onEvent,
+      ac.signal,
+      streamSimple as StreamFn,
+    )
+    return lastTextOf({ messages: messages, aborted: ac.signal.aborted })
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+/**
+ * pi 模型描述符(与 consult 同一后端链;鉴权头只在真有钥匙时才挂 ——
+ * 裸 Ollama 挂空 Authorization 反被当鉴权失败)。
+ *
+ * @returns 模型描述符。
+ */
+function model(): ModelOut {
+  const m: Model<'openai-completions'> = {
+    id: MODEL_ID,
+    name: MODEL_ID,
+    api: API,
+    provider: PROVIDER,
+    baseUrl: `${BASE}${V1}`,
+    reasoning: false,
+    input: [BLOCK_TEXT],
+    contextWindow: CONTEXT_WINDOW,
+    maxTokens: CONTEXT_WINDOW,
+    cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+    samplingParams: SAMPLING,
+  }
+  if (KEY) {
+    m.headers = { [AUTH_HEADER]: `${BEARER}${KEY}` }
+  }
+  return m
+}
+
+/**
+ * 用户轮消息(pi 形状;循环的第一条)。
+ *
+ * @param text 提示词全文。
+ * @returns pi 的 user 消息。
+ */
+function userMsgOf(text: string): TranscriptMsg {
+  return { role: ROLE_USER, content: [{ type: BLOCK_TEXT, text }], timestamp: Date.now() }
+}
+
+/**
+ * 消息取正文(只认助手轮的文本块;思考/工具块不算,别的轮空串)。
+ *
+ * @param message 循环里的一条消息。
+ * @returns 目前累积的正文。
+ */
+function textOf(message: TranscriptMsg): string {
+  if (message.role !== ROLE_ASSISTANT) {
+    return ''
+  }
+  const parts: string[] = []
+  for (const block of message.content) {
+    if (block.type === BLOCK_TEXT) {
+      parts.push(block.text)
+    }
+  }
+  return parts.join('')
+}
+
+/**
+ * 从循环整串消息取最后一段助手正文;超时/空产出都抛,不返回空串
+ * (consult 生产日志回放的教训:pi 被 abort 是正常返回不抛,只能在这认)。
+ *
+ * @param input 消息串与是否被掐断。
+ * @returns 最后一段有字的正文。
+ */
+function lastTextOf(input: LastTextIn): string {
+  const drafts: string[] = []
+  for (const m of input.messages) {
+    const t = textOf(m)
+    if (t !== '') {
+      drafts.push(t)
+    }
+  }
+  if (input.aborted) {
+    throw chatError({ code: CHAT_CODE.busy, msg: String(LOOP_TIMEOUT_MS), slots: null })
+  }
+  if (drafts.length === 0) {
+    throw chatError({ code: CHAT_CODE.llm, msg: '', slots: null })
+  }
+  return drafts[drafts.length - 1]
+}
+
+/**
+ * 造 web_fetch 工具(company 场景专用):URL 由服务端定死为官网,模型只决定调不调。
+ * 抓失败回失败句 —— 反编铁律「不得谎称网站不可访问,除非工具真的返回了错误」靠它成立。
+ *
+ * @param input 定死的官网 URL。
+ * @returns 单元素工具表。
+ */
+export function webFetchToolOf(input: WebFetchToolIn): ToolList {
+  // eslint-disable-next-line local/one-parameter, local/typed-signature -- pi 的 execute(toolCallId, args) 签名库定死
+  async function execFetch(): ReplyOut {
+    try {
+      const res = await fetch(input.url, { signal: AbortSignal.timeout(WEBFETCH_TIMEOUT_MS) })
+      if (res.ok === false) {
+        return replyOf(WEB_FETCH_FAIL)
+      }
+      const html = await res.text()
+      const text = htmlTextOf(html).slice(0, WEBFETCH_TEXT_MAX)
+      if (text === '') {
+        return replyOf(WEB_FETCH_FAIL)
+      }
+      return replyOf(text)
+    } catch {
+      return replyOf(WEB_FETCH_FAIL)
+    }
+  }
+  return [{
+    name: TOOL_WEB_FETCH, label: TOOL_WEB_FETCH, description: WEB_FETCH_DESC,
+    parameters: WEB_FETCH_PARAMS, execute: execFetch,
+  }]
+}
+
+/**
+ * 工具回执(文本一段)。
+ *
+ * @param text 回给模型的正文。
+ * @returns pi 形状的回执。
+ */
+function replyOf(text: string): Reply {
+  return { content: [{ type: BLOCK_TEXT, text }], details: { n: text.length }, terminate: false }
+}
+
+/**
+ * 抓回的 HTML → 可读文本(去 script/style/标签,空白折一)。
+ *
+ * @param html 原始页面。
+ * @returns 素文本。
+ */
+function htmlTextOf(html: string): string {
+  return html.replace(HTML_SCRIPT_RE, SPACE_SEP).replace(HTML_STYLE_RE, SPACE_SEP)
+    .replace(HTML_TAG_RE, SPACE_SEP).replace(WS_RE, SPACE_SEP).trim()
+}
+
+/**
+ * 多轮追问折转写:历史轮 + 本轮拼成一段提示词。
+ * (老链发的是 role 数组;pi 的 AssistantMessage 形状由后端定不伪造,改走转写注入 ——
+ * 2026-08-23 记录在案的传输形状差异,eval 对拍盯语义。)
+ *
+ * @param input 追问轮。
+ * @returns 转写块。
+ */
+export function chatPromptOf(input: ChatPromptIn): string {
+  const lines: string[] = []
+  for (const m of input.messages) {
+    if (m.role === ROLE_USER) {
+      lines.push(TURN_USER + m.content)
+    } else {
+      lines.push(TURN_ADVISOR + m.content)
+    }
+  }
+  return TURN_HEAD + lines.join(NL)
+}
+
+// =========================================================================
+// 6. 地点事实块(自 Advisor.tsx aiFacts() 逐字搬入,服务端与面板同源重建)
+// =========================================================================
+
+/**
+ * 省级地点事实块(provRead):难度档 + 体量数,与 /stats 面板同一份 jsonb。
+ *
+ * @param input 省码与省情报卡。
+ * @returns 多行事实块。
+ */
+export function provFactsOf(input: ProvFactsIn): string {
+  const out: string[] = [fill({ tpl: LOC_FACT.provHead, params: { name: provFullOf(input.code), code: input.code } })]
+  const isQc = input.code === QC_CODE
+  if (isQc) {
+    out.push(LOC_FACT.qc)
+  }
+  const diff = cellObjOf(input.card.difficulty)
+  let factors: CellList = []
+  if (diff != null) {
+    factors = cellListOf(atOf({ obj: diff, key: LOC_KEY.factors }))
+  }
+  let tier = ''
+  if (diff != null) {
+    tier = slotCellOf(atOf({ obj: diff, key: LOC_KEY.tier }))
+  }
+  if (tier !== '') {
+    out.push(fill({ tpl: LOC_FACT.tier, params: {
+      tier, comp: compSegOf(factorOf({ list: factors, key: LOC_KEY.comp })),
+      trend: trendSegOf(factorOf({ list: factors, key: LOC_KEY.quotaTrend })),
+      act: actSegOf(factorOf({ list: factors, key: LOC_KEY.activity })),
+    } }))
+  }
+  const info = cellObjOf(input.card.info)
+  if (info != null) {
+    pushVolLine({ out, obj: cellObjOf(atOf({ obj: info, key: LOC_KEY.study })), tpl: LOC_FACT.study })
+    pushVolLine({ out, obj: cellObjOf(atOf({ obj: info, key: LOC_KEY.tfwp })), tpl: LOC_FACT.tfwp })
+    pushVolLine({ out, obj: cellObjOf(atOf({ obj: info, key: LOC_KEY.imp })), tpl: LOC_FACT.imp })
+    const alloc = cellObjOf(atOf({ obj: info, key: LOC_KEY.alloc }))
+    if (isQc === false && alloc != null && cellNumOf(atOf({ obj: alloc, key: LOC_KEY.y2026 })) != null) {
+      let prev = ''
+      if (cellNumOf(atOf({ obj: alloc, key: LOC_KEY.y2025 })) != null) {
+        prev = fill({ tpl: LOC_FACT.allocPrevSeg, params: { v: slotCellOf(atOf({ obj: alloc, key: LOC_KEY.y2025 })) } })
+      }
+      out.push(fill({ tpl: LOC_FACT.alloc, params: { v: slotCellOf(atOf({ obj: alloc, key: LOC_KEY.y2026 })), prev } }))
+    }
+    const pnpPr = cellObjOf(atOf({ obj: info, key: LOC_KEY.pnpPr }))
+    if (isQc === false && pnpPr != null) {
+      pushVolLine({ out, obj: pnpPr, tpl: LOC_FACT.pnpPr })
+    }
+  }
+  return out.join(NL)
+}
+
+/**
+ * 竞争比子句(因子缺 = 空串)。
+ *
+ * @param f 竞争比因子。
+ * @returns 子句或空串。
+ */
+function compSegOf(f: MaybeObj): string {
+  if (f == null) {
+    return ''
+  }
+  let asOf = slotCellOf(atOf({ obj: f, key: LOC_KEY.asOf }))
+  if (asOf === '') {
+    asOf = VAL.qmark
+  }
+  return fill({ tpl: LOC_FACT.compSeg, params: {
+    v: slotCellOf(atOf({ obj: f, key: LOC_KEY.value })), pool: slotCellOf(atOf({ obj: f, key: LOC_KEY.pool })),
+    asOf, quota: slotCellOf(atOf({ obj: f, key: LOC_KEY.quota })), quotaYear: slotCellOf(atOf({ obj: f, key: LOC_KEY.quotaYear })),
+  } })
+}
+
+/**
+ * 配额同比子句(因子缺 = 空串;值乘 100 取整)。
+ *
+ * @param f 同比因子。
+ * @returns 子句或空串。
+ */
+function trendSegOf(f: MaybeObj): string {
+  if (f == null) {
+    return ''
+  }
+  let v = cellNumOf(atOf({ obj: f, key: LOC_KEY.value }))
+  if (v == null) {
+    v = 0
+  }
+  return fill({ tpl: LOC_FACT.trendSeg, params: { v: Math.round(v * PCT_100) } })
+}
+
+/**
+ * 抽选活跃子句(因子缺 = 空串;邀请数缺按 0,老链口径)。
+ *
+ * @param f 活跃因子。
+ * @returns 子句或空串。
+ */
+function actSegOf(f: MaybeObj): string {
+  if (f == null) {
+    return ''
+  }
+  let inv = cellNumOf(atOf({ obj: f, key: LOC_KEY.invitations }))
+  if (inv == null) {
+    inv = 0
+  }
+  return fill({ tpl: LOC_FACT.actSeg, params: { v: slotCellOf(atOf({ obj: f, key: LOC_KEY.value })), inv } })
+}
+
+/**
+ * 体量行:{n}/{year} 两槽的对象格,格在才出行。
+ *
+ * @param input 输出数组、对象格与行模板。
+ */
+function pushVolLine(input: VolLineIn): void {
+  if (input.obj == null) {
+    return
+  }
+  input.out.push(fill({ tpl: input.tpl, params: {
+    n: slotCellOf(atOf({ obj: input.obj, key: LOC_KEY.n })), year: slotCellOf(atOf({ obj: input.obj, key: LOC_KEY.year })),
+  } }))
+}
+
+/**
+ * 市/区级地点事实块(cityRead):本站在招聚合,与市卡面板同一取数。
+ *
+ * @param input 市、省、区与市情报卡。
+ * @returns 多行事实块。
+ */
+export function cityFactsOf(input: CityFactsIn): string {
+  const card = input.card
+  const provName = provFullOf(input.prov)
+  if (input.district !== '' && card.district != null) {
+    const dd = card.district
+    const lines: string[] = [
+      fill({ tpl: LOC_FACT.districtHead, params: { district: input.district, city: input.city, prov: provName } }),
+      fill({ tpl: LOC_FACT.districtJobs, params: { open: dd.openJobs, new7d: dd.new7d } }),
+    ]
+    if (dd.medSalary != null) {
+      lines.push(fill({ tpl: LOC_FACT.medSalary, params: { v: dd.medSalary } }))
+    }
+    if (dd.topBroads.length > 0) {
+      lines.push(fill({ tpl: LOC_FACT.topBroads, params: { v: dd.topBroads.map(broadItemOf).join(COMMA_SEP) } }))
+    }
+    if (dd.topEmployers.length > 0) {
+      lines.push(fill({ tpl: LOC_FACT.topEmployers, params: { v: dd.topEmployers.map(employerItemOf).join(COMMA_SEP) } }))
+    }
+    return lines.join(NL)
+  }
+  const lines: string[] = [
+    fill({ tpl: LOC_FACT.cityHead, params: { city: input.city, prov: provName } }),
+    fill({ tpl: LOC_FACT.cityJobs, params: { open: card.openJobs, new7d: card.new7d } }),
+  ]
+  if (card.medSalary != null) {
+    lines.push(fill({ tpl: LOC_FACT.medSalary, params: { v: card.medSalary } }))
+  }
+  if (card.topBroads.length > 0) {
+    lines.push(fill({ tpl: LOC_FACT.topBroads, params: { v: card.topBroads.map(broadItemOf).join(COMMA_SEP) } }))
+  }
+  if (card.dli.count > 0) {
+    lines.push(fill({ tpl: LOC_FACT.dli, params: { n: card.dli.count, names: card.dli.top.map(dliNameOf).join(COMMA_SEP) } }))
+  }
+  if (card.aipEmployers > 0) {
+    lines.push(fill({ tpl: LOC_FACT.aipEmployers, params: { n: card.aipEmployers } }))
+  }
+  return lines.join(NL)
+}
+
+/**
+ * 大类单项(named callback,给 map 用)。
+ *
+ * @param b 大类计数行。
+ * @returns 「大类 数」。
+ */
+function broadItemOf(b: BroadCountCell): string {
+  return fill({ tpl: LOC_FACT.broadItem, params: { broad: b.broad, n: b.n } })
+}
+
+/**
+ * 热门雇主单项(named callback,给 map 用)。
+ *
+ * @param e 雇主计数行。
+ * @returns 「名 (n open)」。
+ */
+function employerItemOf(e: EmployerCountCell): string {
+  return fill({ tpl: LOC_FACT.employerItem, params: { name: e.name, n: e.n } })
+}
+
+/**
+ * 院校名(named callback,给 map 用)。
+ *
+ * @param s 院校行。
+ * @returns 名字。
+ */
+function dliNameOf(s: NamedCell): string {
+  return s.name
+}
+
+/**
+ * 对象格按键取值(缺键当 null,语言接缝在这一行收掉)。
+ *
+ * @param input 对象与键。
+ * @returns 格值;缺为 null。
+ */
+function atOf(input: CellAtIn): Cell {
+  const v = input.obj[input.key]
+  if (v == null) {
+    return null
+  }
+  return v
+}
+
+/**
+ * 格 → 对象(数组与标量都不算)。
+ *
+ * @param v 格值。
+ * @returns 对象或 null。
+ */
+function cellObjOf(v: Cell): MaybeObj {
+  if (typeof v === 'object' && v !== null && Array.isArray(v) === false) {
+    return v
+  }
+  return null
+}
+
+/**
+ * 格 → 数组(不是数组给空表)。
+ *
+ * @param v 格值。
+ * @returns 数组。
+ */
+function cellListOf(v: Cell): CellList {
+  if (Array.isArray(v)) {
+    return v
+  }
+  return []
+}
+
+/**
+ * 格 → 数字(不是数字给 null;官方可空,禁折 0)。
+ *
+ * @param v 格值。
+ * @returns 数字或 null。
+ */
+function cellNumOf(v: Cell): MaybeNum {
+  if (typeof v === 'number') {
+    return v
+  }
+  return null
+}
+
+/**
+ * 格 → 显示槽(数字原样、串原样、其余空串)。
+ *
+ * @param v 格值。
+ * @returns 槽值串。
+ */
+function slotCellOf(v: Cell): string {
+  if (typeof v === 'number') {
+    return String(v)
+  }
+  if (typeof v === 'string') {
+    return v
+  }
+  return ''
+}
+
+/**
+ * 因子数组里按 key 找一个(difficulty.factors 的形状)。
+ *
+ * @param input 数组与目标 key。
+ * @returns 因子对象;找不到 null。
+ */
+function factorOf(input: FactorIn): MaybeObj {
+  for (const item of input.list) {
+    const obj = cellObjOf(item)
+    if (obj != null && slotCellOf(atOf({ obj, key: LOC_KEY.key })) === input.key) {
+      return obj
+    }
+  }
+  return null
+}
+
+// =========================================================================
+// 7. 行构造器(rows 抽屉 2026-08-23 撤编后的固定尾段)
+// =========================================================================
+
+/**
+ * jobs 整行 → 本域岗位事实(契约换 id 制的落点:服务端现查行,前端整包不再采信)。
+ * JobRow 的空串口径原样透传 —— 拼装层的 orDashOf 对 ''/null 同判。
+ *
+ * @param row jobs 域 fetchJobById 的整行。
+ * @returns 岗位事实。
+ */
+export function toAdvisorJob(row: JobRowCell): AdvisorJob {
+  return {
+    title: row.title, company: row.company, companyDescription: row.companyDescription,
+    companySectors: row.companySectors, noc: row.noc, broad: row.broad, province: row.province,
+    city: row.city, district: row.district, address: row.address, officialUrl: row.officialUrl,
+    applyUrl: row.applyUrl, score: row.score, gradeChannel: row.gradeChannel,
+    accessibility: row.accessibility, pnpEligible: row.pnpEligible, pnpStream: row.pnpStream,
+    eeCategory: row.eeCategory, aip: row.aip, salary: row.salary, salaryAnnual: row.salaryAnnual,
+    employmentTerm: row.employmentTerm, employmentHours: row.employmentHours,
+    certificates: row.certificates, education: row.education, wageMedHourly: row.wageMedHourly,
+    wageMedAnnual: row.wageMedAnnual, lmiaPositions: row.lmiaPositions,
+    lmiaPositionsSkilled: row.lmiaPositionsSkilled, lmiaLastQuarter: row.lmiaLastQuarter,
+    source: row.source, sourceLabel: row.sourceLabel, origin: row.origin, datePosted: row.datePosted,
+    lastSeen: row.lastSeen, status: row.status, duties: null, requirements: null, locationFacts: null,
+  }
+}
+
+/**
+ * occRead 场景的最小事实包(按 NOC 缓存干净,不带本岗字段 —— 老链同口径)。
+ *
+ * @param input NOC 与官方职责/要求原文。
+ * @returns 岗位事实。
+ */
+export function makeOccJob(input: OccJobIn): AdvisorJob {
+  const j = makeEmptyJob()
+  j.noc = input.noc
+  j.duties = input.duties
+  j.requirements = input.requirements
+  return j
+}
+
+/**
+ * provRead/cityRead 场景的最小事实包(地点事实块服务端已重建)。
+ *
+ * @param input 省码与事实块。
+ * @returns 岗位事实。
+ */
+export function makeLocJob(input: LocJobIn): AdvisorJob {
+  const j = makeEmptyJob()
+  j.province = input.province
+  j.locationFacts = input.facts
+  return j
+}
+
+/**
+ * 空岗位事实(一无所知的底座;occ/loc 速读场景在它上面点格)。
+ *
+ * @returns 全空的岗位事实。
+ */
+export function makeEmptyJob(): AdvisorJob {
+  return {
+    title: null, company: null, companyDescription: null, companySectors: null, noc: null,
+    broad: null, province: null, city: null, district: null, address: null, officialUrl: null,
+    applyUrl: null, score: null, gradeChannel: null, accessibility: null, pnpEligible: false,
+    pnpStream: null, eeCategory: null, aip: false, salary: null, salaryAnnual: null,
+    employmentTerm: null, employmentHours: null, certificates: [], education: null,
+    wageMedHourly: null, wageMedAnnual: null, lmiaPositions: null, lmiaPositionsSkilled: null,
+    lmiaLastQuarter: null, source: null, sourceLabel: null, origin: null, datePosted: null,
+    lastSeen: null, status: null, duties: null, requirements: null, locationFacts: null,
+  }
+}
+
+/**
+ * 语言收窄(老链口径:非 en/ko 一律 zh)。
+ *
+ * @param wire 请求体。
+ * @returns 输出语言。
+ */
+export function langOf(wire: AdvisorWire): Lang {
+  if (wire.lang === 'en') {
+    return wire.lang
+  }
+  if (wire.lang === 'ko') {
+    return wire.lang
+  }
+  return LANG_ZH
+}
+
+/**
+ * 追问轮过滤(老链口径:user/assistant 且 content 是串的才收)。
+ *
+ * @param wire 请求体。
+ * @returns 合法追问轮;空表 = 一次性初判。
+ */
+export function cleanMessages(wire: AdvisorWire): ChatMsgList {
+  const out: ChatMsg[] = []
+  if (wire.messages == null || Array.isArray(wire.messages) === false) {
+    return out
+  }
+  for (const m of wire.messages) {
+    if (m == null || typeof m.content !== 'string') {
+      continue
+    }
+    if (m.role === ROLE_USER || m.role === ROLE_ASSISTANT) {
+      out.push({ role: m.role, content: m.content })
+    }
+  }
+  return out
+}
+
+/**
+ * 岗位事实 → jobs 域 match() 的岗位输入(与老链 profileFacts 里的 mj 逐字同形:
+ * LMIA 三格不进匹配)。
+ *
+ * @param j 岗位事实。
+ * @returns 匹配用岗位形状。
+ */
+export function matchJobOf(j: AdvisorJob): MatchJobCell {
+  return {
+    noc: emptyOf(j.noc), teer: teerOf(j.noc), province: emptyOf(j.province),
+    pnpEligible: j.pnpEligible, pnpStream: emptyOf(j.pnpStream), eeCategory: emptyOf(j.eeCategory),
+    salaryAnnual: j.salaryAnnual, wageMedAnnual: j.wageMedAnnual,
+    lmiaPositions: null, lmiaLastQuarter: '', lmiaPositionsSkilled: null,
+  }
+}
+
+/**
+ * 响应头(Content-Type + X-Cache + 可选 X-JD,再并上 freeGate 的 X-Free-Left)。
+ *
+ * @param input 闸头、缓存标与 JD 标。
+ * @returns 键值对(Response init 直收)。
+ */
+export function headersOf(input: HeadersOfIn): HeaderMap {
+  const h: HeaderMap = {}
+  for (const [k, v] of Object.entries(input.gate)) {
+    h[k] = v
+  }
+  h[HDR_CONTENT_TYPE] = CT_TEXT
+  h[HDR_X_CACHE] = input.cache
+  if (input.jd != null) {
+    h[HDR_X_JD] = input.jd
+  }
+  return h
+}
+
+/**
+ * 可空串 → 空串(routes 侧的语言接缝小件;emptyOf 的导出面)。
+ *
+ * @param v 原值。
+ * @returns 串。
+ */
+export function blankOf(v: MaybeStr): string {
+  return emptyOf(v)
 }

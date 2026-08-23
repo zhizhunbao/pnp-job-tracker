@@ -7,6 +7,10 @@
  * @author Frank
  * @time 2026-08-23 16:00:00
  */
+import type { AgentMessage, AgentTool, AgentToolResult } from '@earendil-works/pi-agent-core'
+import type { Model, TSchema } from '@earendil-works/pi-ai'
+import type { CityCard, JobRow, JsonCell, JsonObj, MatchJob, ProvCard } from '@/lib/jobs'
+import type { WEB_FETCH_PARAMS } from './schemas'
 
 /**
  * 输出语言(前端 lang 参数收窄后)。
@@ -542,6 +546,413 @@ export type ProfileFactsIn = {
    * 匹配依据行(已过 reasonEn 的英文句)。
    */
   reasons: StrList
+}
+
+/**
+ * pi 模型描述符(库类型起本地名,签名里不出现外部类型)。
+ */
+export type ModelOut = Model<'openai-completions'>
+
+/**
+ * 工具回执里给我们自己读的那格(不进模型上下文,只记账)。
+ */
+export type ToolNote = {
+  /**
+   * 这把工具回给模型的正文长度(0 = 失败句)。
+   */
+  n: number
+}
+
+/**
+ * 一把 advisor 工具(pi 的 AgentTool 起本地名)。
+ */
+export type Tool<P extends TSchema> = AgentTool<P, ToolNote>
+
+/**
+ * 工具回执(pi 的 AgentToolResult 起本地名)。
+ */
+export type Reply = AgentToolResult<ToolNote>
+
+/**
+ * 交给模型的工具表(目前只有 web_fetch 一种;空数组 = 无工具场景)。
+ */
+export type ToolList = Tool<typeof WEB_FETCH_PARAMS>[]
+
+/**
+ * 循环产出的整串消息(pi 的 AgentMessage 起本地名)。
+ */
+export type TranscriptList = AgentMessage[]
+
+/**
+ * 循环里流动的一条消息(pi 的 AgentMessage 起本地名)。
+ */
+export type TranscriptMsg = AgentMessage
+
+/**
+ * pi 事件里我们读的两格(事件是 10 种的大联合,只声明自己认的形状)。
+ */
+export type EventIn = {
+  /**
+   * 事件种类;只认 message_update。
+   */
+  type: string
+
+  /**
+   * 那一刻的助手消息(累积形态),只有部分事件带它。
+   */
+  // eslint-disable-next-line local/no-optional -- pi 的事件形状:缺席字段由库定,不是我们的契约
+  message?: TranscriptMsg
+}
+
+/**
+ * 大类计数行里我们读的两格(jobs 域 BroadCount 的形状,本域自声明)。
+ */
+export type BroadCountCell = {
+  /**
+   * 大类名。
+   */
+  broad: string
+
+  /**
+   * 计数。
+   */
+  n: number
+}
+
+/**
+ * 雇主计数行里我们读的两格。
+ */
+export type EmployerCountCell = {
+  /**
+   * 雇主名。
+   */
+  name: string
+
+  /**
+   * 在招数。
+   */
+  n: number
+}
+
+/**
+ * 只读名字的一行(院校表)。
+ */
+export type NamedCell = {
+  /**
+   * 名字。
+   */
+  name: string
+}
+
+/**
+ * `pushVolLine` 的入参(体量行:对象格在才出行)。
+ */
+export type VolLineIn = {
+  /**
+   * 输出行数组(原地追加)。
+   */
+  out: string[]
+
+  /**
+   * 对象格;null = 整行不出。
+   */
+  obj: MaybeObj
+
+  /**
+   * 行模板({n}/{year} 两槽)。
+   */
+  tpl: string
+}
+
+/**
+ * 流式增量回调(chunk = 新增的一段正文)。
+ */
+export type DeltaFn = (chunk: string) => void
+
+/**
+ * 跑一趟 advisor 循环的入参。
+ */
+export type RunIn = {
+  /**
+   * system 全文。
+   */
+  system: string
+
+  /**
+   * 用户提示词(chat 场景已折入转写)。
+   */
+  prompt: string
+
+  /**
+   * 工具表;简单场景传空数组(≈一发,零额外开销)。
+   */
+  tools: ToolList
+
+  /**
+   * 生成长度档。
+   */
+  maxTokens: number
+
+  /**
+   * 增量回调;null = 不要流。
+   */
+  onDelta: DeltaFn | null
+}
+
+/**
+ * `runAdvisor` 的返回:模型全文(闸前)。
+ */
+export type RunOut = Promise<string>
+
+/**
+ * `webFetchToolOf` 的入参。
+ */
+export type WebFetchToolIn = {
+  /**
+   * 定死的官网 URL(服务端选定,模型不可改)。
+   */
+  url: string
+}
+
+/**
+ * POST /api/advisor 的请求体形状(跨边界断言目标,逐格判后才用)。
+ * 老前端还会带整包 `job` —— 契约换 id 制后服务端**不读它**(信任边界:事实一律现查)。
+ */
+export type AdvisorWire = {
+  /**
+   * 场景名;不是字符串按 title 走(老链同口径)。
+   */
+  field: string | null
+
+  /**
+   * 标识:job 场景 = jobs 主键;occRead = NOC;provRead = 省码;cityRead = `市|省[|区]`。
+   */
+  id: string | null
+
+  /**
+   * 语言;非 en/ko 一律 zh(老链同口径)。
+   */
+  lang: string | null
+
+  /**
+   * 追问轮;缺省当一次性初判。
+   */
+  messages: ChatMsgList | null
+}
+
+/**
+ * 服务端按场景查好的一包事实(routes 组装,进拼装函数)。
+ */
+export type FactsPack = {
+  /**
+   * 岗位事实(occ/loc 速读场景是空壳 + 对应格)。
+   */
+  job: AdvisorJob
+
+  /**
+   * 缓存键标识(company = 小写公司名;其余 = body.id)。
+   */
+  keyId: string
+}
+
+/**
+ * `provFactsOf` 的入参。
+ */
+export type ProvFactsIn = {
+  /**
+   * 省码(已验形大写)。
+   */
+  code: string
+
+  /**
+   * 省情报卡(jobs 域 loadProvinceCard 的透传两格)。
+   */
+  card: ProvCardCell
+}
+
+/**
+ * 省情报卡形状(jobs 域的名字起本地别名)。
+ */
+export type ProvCardCell = ProvCard
+
+/**
+ * 市情报卡形状(同上)。
+ */
+export type CityCardCell = CityCard
+
+/**
+ * 库 jsonb 透传格(值级收窄在本域 to* 段做)。
+ */
+export type Cell = JsonCell
+
+/**
+ * jsonb 对象格(jobs 域的名字起本地别名)。
+ */
+export type CellObj = JsonObj
+
+/**
+ * 可空对象格。
+ */
+export type MaybeObj = CellObj | null
+
+/**
+ * jsonb 数组格。
+ */
+export type CellList = Cell[]
+
+/**
+ * 按键取格的入参。
+ */
+export type CellAtIn = {
+  /**
+   * 对象格。
+   */
+  obj: CellObj
+
+  /**
+   * 键名。
+   */
+  key: string
+}
+
+/**
+ * 按 key 字段找因子的入参(difficulty.factors 形状)。
+ */
+export type FactorIn = {
+  /**
+   * 因子数组。
+   */
+  list: CellList
+
+  /**
+   * 因子的 key 值(comp/quotaTrend/activity)。
+   */
+  key: string
+}
+
+/**
+ * 工具回执的 Promise(库泛型起本地名)。
+ */
+export type ReplyOut = Promise<Reply>
+
+/**
+ * `lastTextOf` 的入参。
+ */
+export type LastTextIn = {
+  /**
+   * 循环产出的整串消息。
+   */
+  messages: TranscriptList
+
+  /**
+   * 这一趟是不是被超时掐断的(pi 被 abort 是正常返回不抛,只能在这认)。
+   */
+  aborted: boolean
+}
+
+/**
+ * `makeOccJob` 的入参(occRead 场景的最小事实包)。
+ */
+export type OccJobIn = {
+  /**
+   * 五位职业码。
+   */
+  noc: string
+
+  /**
+   * 官方职责原文。
+   */
+  duties: string
+
+  /**
+   * 官方任职要求原文。
+   */
+  requirements: string
+}
+
+/**
+ * `makeLocJob` 的入参(provRead/cityRead 场景的最小事实包)。
+ */
+export type LocJobIn = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 服务端重建的地点事实块。
+   */
+  facts: string
+}
+
+/**
+ * `chatPromptOf` 的入参(多轮折转写)。
+ */
+export type ChatPromptIn = {
+  /**
+   * 追问轮(已过滤合法角色)。
+   */
+  messages: ChatMsgList
+}
+
+/**
+ * `cityFactsOf` 的入参。
+ */
+export type CityFactsIn = {
+  /**
+   * 市名。
+   */
+  city: string
+
+  /**
+   * 省码(已验形大写)。
+   */
+  prov: string
+
+  /**
+   * 区名;空串 = 市级。
+   */
+  district: string
+
+  /**
+   * 市情报卡。
+   */
+  card: CityCardCell
+}
+
+/**
+ * jobs 域的整行形状(起本地别名;toAdvisorJob 的输入)。
+ */
+export type JobRowCell = JobRow
+
+/**
+ * jobs 域 match() 的岗位输入形状(起本地别名;matchJobOf 的返回)。
+ */
+export type MatchJobCell = MatchJob
+
+/**
+ * 响应头键值对。
+ */
+export type HeaderMap = Record<string, string>
+
+/**
+ * `headersOf` 的入参。
+ */
+export type HeadersOfIn = {
+  /**
+   * freeGate 带出的头(X-Free-Left;可空对象)。
+   */
+  gate: HeaderMap
+
+  /**
+   * X-Cache 值(hit/miss)。
+   */
+  cache: string
+
+  /**
+   * X-JD 值;null = 不带这枚头(缓存命中响应老链就不带)。
+   */
+  jd: string | null
 }
 
 /**

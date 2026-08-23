@@ -280,3 +280,321 @@ export const KEY_SEP = ':'
  * 缓存键的按人隔离段前缀(后接用户 id)。
  */
 export const KEY_PRO_PREFIX = 'p'
+
+/**
+ * 模型服务地址(与 consult 同一条环境链:生产=朋友服务器经 ngrok 的网关,
+ * 本机可 CHAT_LLM_BASE 直连局域网盒子;尾斜杠掐掉)。
+ */
+export const BASE = (process.env.CHAT_LLM_BASE || process.env.TRANSLATE_API_BASE || '').replace(/\/$/, '')
+
+/**
+ * 网关鉴权钥匙(没有就不挂头 —— 裸 Ollama 挂空 Authorization 反被当鉴权失败)。
+ */
+export const KEY = process.env.CHAT_LLM_KEY || process.env.TRANSLATE_API_KEY || ''
+
+/**
+ * pi 必填非空 apiKey 的占位(后端不校验时用)。
+ */
+export const NO_KEY_PLACEHOLDER = 'local'
+
+/**
+ * 模型名(网关实际固定路由,见 consult 域同名常量的注释)。
+ */
+export const MODEL_ID = process.env.CHAT_LLM_MODEL || process.env.TRANSLATE_API_MODEL || 'glm-4.7-flash'
+
+/**
+ * pi 模型描述符的 api 字段。
+ */
+export const API = 'openai-completions'
+
+/**
+ * pi 模型描述符的 provider 字段。
+ */
+export const PROVIDER = 'openai'
+
+/**
+ * OpenAI 兼容端点前缀。
+ */
+export const V1 = '/v1'
+
+/**
+ * 鉴权头名。
+ */
+export const AUTH_HEADER = 'Authorization'
+
+/**
+ * Bearer 前缀(带尾空格)。
+ */
+export const BEARER = 'Bearer '
+
+/**
+ * 上下文窗(与 consult 同口径)。
+ */
+export const CONTEXT_WINDOW = 262_144
+
+/**
+ * pi 事件流里我们唯一认的事件名。
+ */
+export const MESSAGE_UPDATE = 'message_update'
+
+/**
+ * 采样参数:只关思维链(qwen 默认开着,不发这个键=不关)。
+ * ⚠️ 不设 temperature —— 顾问是生成文案不是工具派发,老链 streamChat 走后端默认温度,
+ * 对拍期保持同口径(consult 的 0 度是工具派发正确性,那是另一回事)。
+ */
+export const SAMPLING = {
+  /**
+   * 关思维链(实测开思考多绕一轮还慢一倍,见 consult 同名注释)。
+   */
+  reasoning_effort: 'none',
+}
+
+/**
+ * 一趟循环的总预算(公司场景带 web_fetch 一跳,给到 90s;超时掐断)。
+ */
+export const LOOP_TIMEOUT_MS = 90_000
+
+/**
+ * pi 消息里文本块的 type 值。
+ */
+export const BLOCK_TEXT = 'text'
+
+/**
+ * 追问消息的用户角色值。
+ */
+export const ROLE_USER = 'user'
+
+/**
+ * 追问消息的助手角色值。
+ */
+export const ROLE_ASSISTANT = 'assistant'
+
+/**
+ * web_fetch 工具名(prompts 里的措辞点名它,不许改名)。
+ */
+export const TOOL_WEB_FETCH = 'web_fetch'
+
+/**
+ * web_fetch 抓页超时。
+ */
+export const WEBFETCH_TIMEOUT_MS = 12_000
+
+/**
+ * web_fetch 回给模型的正文截断。
+ */
+export const WEBFETCH_TEXT_MAX = 6000
+
+/**
+ * cityRead 的 id 段分隔(前端拼的是 `市|省[|区]`)。
+ */
+export const ID_SEP = '|'
+
+/**
+ * 省码形状(provRead 的 id 验形)。
+ */
+export const PROV_CODE_RE = /^[A-Za-z]{2}$/
+
+/**
+ * 前导话闸认的首段标记(吞掉它之前的过程叙述)。
+ */
+export const GATE_MARK = '【'
+
+/**
+ * 响应头:内容类型。
+ */
+export const HDR_CONTENT_TYPE = 'Content-Type'
+
+/**
+ * 纯文本流的内容类型值。
+ */
+export const CT_TEXT = 'text/plain; charset=utf-8'
+
+/**
+ * 响应头:缓存命否。
+ */
+export const HDR_X_CACHE = 'X-Cache'
+
+/**
+ * 缓存命中值。
+ */
+export const CACHE_HIT = 'hit'
+
+/**
+ * 缓存未中值。
+ */
+export const CACHE_MISS = 'miss'
+
+/**
+ * 响应头:这次带没带真实 JD。
+ */
+export const HDR_X_JD = 'X-JD'
+
+/**
+ * X-JD 是。
+ */
+export const JD_YES = 'yes'
+
+/**
+ * X-JD 否。
+ */
+export const JD_NO = 'no'
+
+/**
+ * 错误体:body 不是 JSON。
+ */
+export const E_BAD_JSON = 'bad json'
+
+/**
+ * 错误体:标识对不上一条记录。
+ */
+export const E_NOT_FOUND = 'not found'
+
+/**
+ * 错误体:限流。
+ */
+export const E_RATE_LIMITED = 'rate limited'
+
+/**
+ * 错误体:上游模型不可用(老链 502 同文)。
+ */
+export const E_LLM_DOWN = '大模型不可用。'
+
+/**
+ * 魁北克省码(独立体系判据)。
+ */
+export const QC_CODE = 'QC'
+
+/**
+ * 省情报卡 jsonb 里我们读的键名(与 /stats 面板消费端同一形状)。
+ */
+export const LOC_KEY = {
+  /**
+   * 难度因子数组。
+   */
+  factors: 'factors',
+
+  /**
+   * 难度档名。
+   */
+  tier: 'tier',
+
+  /**
+   * 因子的判别键。
+   */
+  key: 'key',
+
+  /**
+   * 竞争比因子。
+   */
+  comp: 'comp',
+
+  /**
+   * 配额同比因子。
+   */
+  quotaTrend: 'quotaTrend',
+
+  /**
+   * 抽选活跃因子。
+   */
+  activity: 'activity',
+
+  /**
+   * 因子主值。
+   */
+  value: 'value',
+
+  /**
+   * 竞争基数(学签+工签持有人)。
+   */
+  pool: 'pool',
+
+  /**
+   * 基数口径年。
+   */
+  asOf: 'asOf',
+
+  /**
+   * 提名配额。
+   */
+  quota: 'quota',
+
+  /**
+   * 配额口径年。
+   */
+  quotaYear: 'quotaYear',
+
+  /**
+   * 邀请数。
+   */
+  invitations: 'invitations',
+
+  /**
+   * 学签体量格。
+   */
+  study: 'study',
+
+  /**
+   * TFWP 体量格。
+   */
+  tfwp: 'tfwp',
+
+  /**
+   * IMP 体量格。
+   */
+  imp: 'imp',
+
+  /**
+   * 提名配额格。
+   */
+  alloc: 'alloc',
+
+  /**
+   * PNP 登陆格。
+   */
+  pnpPr: 'pnpPr',
+
+  /**
+   * 数值。
+   */
+  n: 'n',
+
+  /**
+   * 年份。
+   */
+  year: 'year',
+
+  /**
+   * 2026 配额。
+   */
+  y2026: 'y2026',
+
+  /**
+   * 2025 配额。
+   */
+  y2025: 'y2025',
+}
+
+/**
+ * 抓回网页去 script 块。
+ */
+export const HTML_SCRIPT_RE = /<script[\s\S]*?<\/script>/gi
+
+/**
+ * 抓回网页去 style 块。
+ */
+export const HTML_STYLE_RE = /<style[\s\S]*?<\/style>/gi
+
+/**
+ * 抓回网页去标签。
+ */
+export const HTML_TAG_RE = /<[^>]+>/g
+
+/**
+ * 连续空白折一个空格。
+ */
+export const WS_RE = /\s+/g
+
+/**
+ * 百分比换算乘数(配额同比 value 是小数,喂模型前乘 100 取整)。
+ */
+export const PCT_100 = 100

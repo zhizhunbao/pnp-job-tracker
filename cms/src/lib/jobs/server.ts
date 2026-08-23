@@ -15,7 +15,7 @@ export {
   fetchTopNocsCached, fetchTotalAndProof, jobDescription,
 } from './functions'
 export {
-  loadMatchDims, pnpOnly, scrubPii, searchNocByTitle, splitQ,
+  loadCityCard, loadMatchDims, loadProvinceCard, pnpOnly, scrubPii, searchNocByTitle, splitQ,
 } from './functions'
 export { mapEeCat, mapPnpOcc } from './rows'
 export type { AlertHit, CompanyDetail, JobsFilters, RelatedJob, SimilarEmployer, SsrDims, TopNoc } from './types'

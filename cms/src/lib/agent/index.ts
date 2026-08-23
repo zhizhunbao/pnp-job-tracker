@@ -7,3 +7,4 @@
  */
 
 export type { AgentSlots, ResolveByAgentIn, ResolveByAgentOut, TranscriptMessage } from './types'
+export { passThroughMessages } from './functions'

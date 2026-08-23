@@ -17,8 +17,8 @@ export {
   sourceLabel, statusEn,
 } from './functions'
 export type {
-  BroadNoc, CoGradeDetail, ColKey, DesigEmp, Dims, EeCat, EeOcc, FieldGroup, FieldSource, JobRow, MatchDims, MatchJob, NocOpenCount, QuizFacts, TopNoc,
+  BroadNoc, CityCard, CoGradeDetail, ColKey, DesigEmp, Dims, EeCat, EeOcc, FieldGroup, FieldSource, JobRow, JsonCell, JsonObj, MatchDims, MatchJob, NocOpenCount, ProvCard, QuizFacts, TopNoc,
   OccCompetitionRow,
   ProfileJson,
-  MatchProfile, MatchReason, NewsSlim, NocDesc, Plan, PnpDraw, PnpOcc, PnpStream, ProvInfo, ProvListCoverage,
+  MatchProfile, MatchReason, MatchResult, NewsSlim, NocDesc, Plan, PnpDraw, PnpOcc, PnpStream, ProvInfo, ProvListCoverage,
 } from './types'
