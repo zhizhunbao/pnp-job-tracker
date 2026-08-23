@@ -42,18 +42,18 @@ export default function Job({ job, plan, dims, related }: {
     track('jd-open', { kind: 'page' })
   }, [])
 
-  const provFull = provName(t, job.province || '')
+  const provFull = provName({ t, code: job.province || '', localeOnly: false })
   const nocRow = dims.nocDesc.find((d) => d.noc === job.noc) || null
   // 职位名翻译(Frank「job 名称也需要翻译」):雇主原始岗名多是英文且不规范,挂 NOC 官方职业名的
   // 界面语言译名作对照(#151 口径,与公司页在招职位同款);英文界面/无 NOC 译名=空,不渲。
-  const nocZh = nocLocalTitle(nocRow, lang)
+  const nocZh = nocLocalTitle({ row: nocRow, lang })
   // 列表页会注册整张分类维表；详情页直入也必须注册本岗这一行，否则英/韩界面会回退中文分类名。
   useMemo(() => registerCatLabels(dims.nocCategories), [dims.nocCategories])
   // 面包屑职业分类路径段(省 › 大 › 中 › 小):同名相邻跳过,不铺重复
   const catSegs = (([
-    job.broad && job.broad !== '未分类' ? { txt: catName(t, job.broad), href: `/?broad=${encodeURIComponent(job.broad)}` } : null,
-    job.mid && job.mid !== '未分类' ? { txt: catName(t, job.mid), href: `/?broad=${encodeURIComponent(job.broad || '')}&mid=${encodeURIComponent(job.mid)}` } : null,
-    job.fine && job.fine !== '未分类' ? { txt: catName(t, job.fine), href: `/?fine=${encodeURIComponent(job.fine)}` } : null,
+    job.broad && job.broad !== '未分类' ? { txt: catName({ t, value: job.broad }), href: `/?broad=${encodeURIComponent(job.broad)}` } : null,
+    job.mid && job.mid !== '未分类' ? { txt: catName({ t, value: job.mid }), href: `/?broad=${encodeURIComponent(job.broad || '')}&mid=${encodeURIComponent(job.mid)}` } : null,
+    job.fine && job.fine !== '未分类' ? { txt: catName({ t, value: job.fine }), href: `/?fine=${encodeURIComponent(job.fine)}` } : null,
   ].filter(Boolean)) as { txt: string; href: string }[])
     .filter((s, i, arr) => i === 0 || s.txt !== arr[i - 1].txt)
 

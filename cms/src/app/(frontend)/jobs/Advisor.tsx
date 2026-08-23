@@ -26,7 +26,7 @@ import { useOverlayClose } from './overlay'
 import { makeT, type Lang, type TFn } from '@/lib/i18n'
 import { streamDisplay } from '@/lib/jobs'
 import { type ColKey, type FieldGroup, type Plan, type DesigEmp, type EeOcc, type FieldSource, type JobRow, type NewsSlim, type NocDesc, type PnpDraw, type PnpOcc, type ProvInfo, blockedSrc, isDirect, sourceLabel } from '@/lib/jobs'
-import { isExemptSector, lmiaWageClass } from '@/lib/lmiaStatus'
+import { isExemptSector, lmiaWageClass } from '@/lib/lmia'
 import { mapQuery, mapsUrl, parseLoc } from '@/lib/location'
 import { catName, nocLocalTitle } from '@/lib/noc'
 import { track } from '@/lib/track'
@@ -222,8 +222,8 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
   }
 
   if (field === 'lmia') {  // E6-02:公司级 LMIA 获批史(ESDC 近 8 季聚合)——纯事实,股别/季度语境必带
-    // E8-04:把「历史记录」升级为「今天这条路通不通」——按本岗高/低薪 + 豁免行业判前瞻可行性(数据:lib/lmiaStatus)
-    const wc = lmiaWageClass(job.province, job.salaryAnnual)
+    // E8-04:把「历史记录」升级为「今天这条路通不通」——按本岗高/低薪 + 豁免行业判前瞻可行性(数据:lib/lmia)
+    const wc = lmiaWageClass({ province: job.province, salaryAnnual: job.salaryAnnual })
     const exempt = isExemptSector(job.noc)
     const feasible = wc === 'high' ? { tone: '#15803d', txt: t('lmia.high') }        // 高薪类:不受冻结
       : wc === 'low' && exempt ? { tone: '#15803d', txt: t('lmia.exempt') }          // 低薪但豁免行业
@@ -317,10 +317,10 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
           {noc?.title ? <Row k={t('fact.nocTitle')}>{noc.title}</Row> : null}
         </> : null}
         {(field === 'noc' || field === 'teer') && <Row k={t('col.teer')}>{job.teer != null ? `TEER ${job.teer} (${t('teer.' + job.teer)})` : null}</Row>}
-        {(field === 'noc' || depth >= 1) && <Row k={t('col.broad')}>{job.broad && job.broad !== '未分类' ? catName(t, job.broad) : null}</Row>}
-        {(field === 'noc' || depth >= 2) && <Row k={t('col.mid')}>{job.mid && job.mid !== '未分类' ? catName(t, job.mid) : null}</Row>}
+        {(field === 'noc' || depth >= 1) && <Row k={t('col.broad')}>{job.broad && job.broad !== '未分类' ? catName({ t, value: job.broad }) : null}</Row>}
+        {(field === 'noc' || depth >= 2) && <Row k={t('col.mid')}>{job.mid && job.mid !== '未分类' ? catName({ t, value: job.mid }) : null}</Row>}
         {/* 官方层级里有 36 个中类只有一个小类(两级同名)——那时小类不再重复一遍,留空 */}
-        {(field === 'noc' || depth >= 3) && <Row k={t('col.fine')}>{job.fine && job.fine !== '未分类' && job.fine !== job.mid ? catName(t, job.fine) : null}</Row>}
+        {(field === 'noc' || depth >= 3) && <Row k={t('col.fine')}>{job.fine && job.fine !== '未分类' && job.fine !== job.mid ? catName({ t, value: job.fine }) : null}</Row>}
         {field === 'noc' && <NocDutiesView noc={noc} lang={lang} />}
       </FactsBox>
     )
@@ -498,8 +498,8 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
     { f: 'noc', k: t('fact.nocTitle'), v: noc?.title || null },
     { f: 'teer', k: t('col.teer'), v: job.teer != null ? `TEER ${job.teer} (${t('teer.' + job.teer)})` : null },
     { f: 'broad', k: t('col.broad'), v: job.broad && job.broad !== '未分类' ? t('broad.' + job.broad) : null },
-    { f: 'mid', k: t('col.mid'), v: job.mid && job.mid !== '未分类' ? catName(t, job.mid) : null },
-    { f: 'fine', k: t('col.fine'), v: job.fine && job.fine !== '未分类' && job.fine !== job.mid ? catName(t, job.fine) : null },
+    { f: 'mid', k: t('col.mid'), v: job.mid && job.mid !== '未分类' ? catName({ t, value: job.mid }) : null },
+    { f: 'fine', k: t('col.fine'), v: job.fine && job.fine !== '未分类' && job.fine !== job.mid ? catName({ t, value: job.fine }) : null },
   ]
 
   // 逐行 duties/requirements;中文对照开 → **逐句对照**:英文行下跟译文行(noc-translate 按行编号对位,行数恒等)
@@ -734,7 +734,7 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
             <div key={i} className={on ? 'advKv hl on' : 'advKv hl'}>
               <span className="advKvK w64">{r.k}</span>
               <span className="advKvV brk">
-                {r.map ? <a href={mapsUrl(mapQuery(r.f, job))} target="_blank" rel="noreferrer" className="advLink">{r.v}</a> : r.v}
+                {r.map ? <a href={mapsUrl(mapQuery({ field: r.f, job: job }))} target="_blank" rel="noreferrer" className="advLink">{r.v}</a> : r.v}
               </span>
             </div>
           )
@@ -995,7 +995,7 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
                 岗位名弹框补 NOC 界面语译名(与职位弹框 ActModal 同一函数、同一「与英文标题相同则不重复」规则);
                 公司弹框不加(公司名没有译名,上面那条 2026-07-24 的决定不动)。 */}
             {group !== 'company' && (() => {
-              const zh = nocLocalTitle(nocDesc.find((d) => d.noc === job.noc) || null, lang)
+              const zh = nocLocalTitle({ row: nocDesc.find((d) => d.noc === job.noc) || null, lang })
               return zh && zh.toLowerCase() !== (job.title || '').toLowerCase()
                 ? <div className="advSub">{zh}</div>
                 : null
@@ -1075,7 +1075,7 @@ export function ActModal({ job, lang, plan, nocDesc, onClose }: { job: JobRow; l
   // #112(2026-07-20 Frank):标题栏「AI 顾问」钮摘除——点钮会关本框跳顾问弹框,描述/整理版一去不回。
   const t = makeT(lang)
   // #199(Frank「chiropractor 怎么没有翻译呢」):标题下挂 NOC 官方职业名译名(与详情页 H1 同款,英文界面不出)
-  const nocZh = nocLocalTitle(nocDesc.find((d) => d.noc === job.noc) || null, lang)
+  const nocZh = nocLocalTitle({ row: nocDesc.find((d) => d.noc === job.noc) || null, lang })
   const overlayClose = useOverlayClose(onClose)
   const { narrow, full, toggleFull, panel, startDrag, startResize } = useFloatPanel(JD_PREF, 760, 640)
   const [freeLeft, setFreeLeft] = useState<number | null>(null)  // 第 5 轮 #16:试用额度可见化(JobBody 回传)

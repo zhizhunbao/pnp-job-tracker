@@ -29,7 +29,7 @@ import { iconBtnS, SCRIM, CARD as OVERLAY_CARD, useIsNarrow } from '../../jobs/M
 import { IconRefresh } from '../../Icons'
 import { EMPTY, FIELDS, NCLC, clearAnswers, fieldsOf, missingFields, pullAndMerge, readAnswers, readScoreAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/quiz'
 import { gateOf, regionProvincesOf, uiOf } from '@/lib/pathways'
-import { pickName } from '@/lib/occName'
+import { pickName } from '@/lib/noc'
 import { track } from '@/lib/track'
 import type { DrawRow, ScoreFactor, SelfProfile } from '@/lib/points'
 import type { ProvCompetition } from '@/lib/points'
@@ -373,7 +373,7 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
     Promise.all(missingCodes.map((code) => fetch(`/api/quiz?noc=${encodeURIComponent(code)}`)
       .then((r) => r.json())
       .then((d) => {
-        const name = pickName(d?.facts, lang)
+        const name = pickName({ row: d?.facts || null, lang })
         if (name) NOC_TITLE_CACHE[`${lang}:${code}`] = name
         return [`${lang}:${code}`, name] as [string, string]
       })

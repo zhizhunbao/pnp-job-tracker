@@ -514,3 +514,39 @@ export const JOBS_LOG = {
   jdWriteFailed: 'jd cache write failed, serving text anyway: ',
 
 } as const
+
+/**
+ * 邮件域的日志字面量(2026-08-22 mailer 定型批立)。
+ */
+export const MAILER_LOG = {
+  /**
+   * 这个域每一行日志的来源标签。
+   */
+  tag: 'mailer',
+
+  /**
+   * 发信失败(Resend HTTP 非 2xx 或网络错;调用方按 false 语义继续,不许静默)。
+   */
+  sendFailed: 'send failed: ',
+
+  /**
+   * 状态码与响应体之间的分隔。
+   */
+  sep: ' ',
+} as const
+
+/**
+ * 档案域的日志字面量(2026-08-22 profile 定型批立)。
+ */
+export const PROFILE_LOG = {
+  /**
+   * 这个域每一行日志的来源标签。
+   */
+  tag: 'profile',
+
+  /**
+   * patch 里出现 collection 未声明的键(丢弃并留痕 —— 静默丢弃是当初 matchUses
+   * 恒 undefined 那颗雷,不能再重演)。
+   */
+  dropKey: 'patch key not in collection, dropped: ',
+} as const

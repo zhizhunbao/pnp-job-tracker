@@ -4,7 +4,8 @@ import { NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { fetchRankingRows, RANKING_SLUGS } from '@/lib/rankings'
+import { RANKING_SLUGS } from '@/lib/rankings'
+import { fetchRankingRows } from '@/lib/rankings/server'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -13,6 +14,6 @@ export async function GET(req: NextRequest) {
   const slug = req.nextUrl.searchParams.get('slug') || ''
   if (!RANKING_SLUGS.has(slug)) return new Response('', { status: 400 })
   const payload = await getPayload({ config: await config })
-  const items = await fetchRankingRows((payload.db as any).pool, slug)
+  const items = await fetchRankingRows({ db: (payload.db as any).pool, slug })
   return Response.json({ items })
 }

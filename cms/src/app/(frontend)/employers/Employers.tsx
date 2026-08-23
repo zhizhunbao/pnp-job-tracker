@@ -12,7 +12,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   EMP_PROGRAMS, type EmployerFilters, type EmployerPage, type EmployerRow,
 } from '@/lib/employers'
-import { pickName } from '@/lib/occName'
+import { pickName } from '@/lib/noc'
 import { BackLink } from '../BackLink'
 import { useLang } from '../LangProvider'
 import { Footer } from '../Footer'
@@ -51,7 +51,7 @@ const provName = (t: TFn, code: string) => {
 /** 职业显示:人话名主文案 + 5 位码灰注(站规 ui-plain-language);字典缺名的码原样显示码 */
 function nocLabel(noc: string, titles: EmployerPage['nocTitles'], lang: Lang): string {
   const r = titles[noc]
-  return pickName(r ? { title: r.en, titleZh: r.zh, titleKo: r.ko } : null, lang) || noc
+  return pickName({ row: r ? { title: r.en, titleZh: r.zh, titleKo: r.ko } : null, lang }) || noc
 }
 
 /** 一行的职业格:选了职业就只显那条;名录没写职业 → 未列明(灰),**不是**「不招」 */

@@ -3,8 +3,8 @@ import './main.css'
 import { LangProvider } from './LangProvider'
 import { SessionProvider } from './SessionProvider'
 import { ChatLauncher } from './chat/ChatLauncher'
-import { ssrLang } from '@/lib/lang.server'
-import { ssrHasSession } from '@/lib/auth.server'
+import { ssrLang } from '@/lib/i18n/server'
+import { ssrHasSession } from '@/lib/auth/server'
 
 // 站点默认 metadata(各页 generateMetadata 覆盖);E7-02:umami 轻量 analytics(无 cookie,env 未设=本地不注入)
 export const metadata = {

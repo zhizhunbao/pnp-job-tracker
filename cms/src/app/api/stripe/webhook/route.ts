@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import type Stripe from 'stripe'
 import config from '@/payload.config'
-import { getStripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe/server'
 
 const HANDLED = new Set(['checkout.session.completed', 'checkout.session.async_payment_succeeded'])
 

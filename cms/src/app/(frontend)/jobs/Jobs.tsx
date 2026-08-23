@@ -246,7 +246,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
     if (d === 'map') {
       // 各字段只查自己那一级(与「一格一事」同一原则):点省看省、点市看市、点区/地址才到街号。
       // 查询串统一走 mapQuery(与表格格 href、手机卡同源;省用全称消歧,见其注释)。
-      const q = mapQuery(field, job)
+      const q = mapQuery({ field: field, job: job })
       if (q) window.open(mapsUrl(q), '_blank', 'noopener')
       return
     }
@@ -330,8 +330,8 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
   // 大分类标签:'未分类' 复用规范 key cell.uncat(字典无 broad.未分类,否则会回退成原样输出 "broad.未分类")
   // 大类显示名同样走 catName:名字住 noc_categories(broad_en/broad_ko),
   // 分类换一版就不必再往 i18n 里手加 17×3 个键(#256 那类事故的同一个根)
-  const broadLabel = (v?: string) => (v && v !== '未分类' ? catName(t, v) : t('cell.uncat'))
-  const catLabel = (v?: string) => (!v || v === '未分类' ? t('cell.uncat') : catName(t, v))
+  const broadLabel = (v?: string) => (v && v !== '未分类' ? catName({ t, value: v }) : t('cell.uncat'))
+  const catLabel = (v?: string) => (!v || v === '未分类' ? t('cell.uncat') : catName({ t, value: v }))
   const toggleSort = (key: ColKey) =>
     setSort((s) => {
       if (s.key !== key) return { key, dir: 'desc' }       // 新列:降序
@@ -489,7 +489,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
     const codes = fNoc.split(',').map((x) => x.trim()).filter(Boolean)
     if (!codes.length) return ''
     return codes
-      .map((code) => nocLocalTitle(dims.nocDescriptions.find((d) => d.noc === code) || null, lang) || code)
+      .map((code) => nocLocalTitle({ row: dims.nocDescriptions.find((d) => d.noc === code) || null, lang }) || code)
       .join(lang === 'zh' ? '、' : ', ')
   }, [fNoc, dims, lang])
   const anyFilter = q || fNoc || directOnly || fCountry || fProv || fCity || fDistrict || fBroad || fMid || fFine || fTeer || fSource || fAcc || fPnp || fAip || fPilot || fStatus || fOrigin || fScore || fSal || fVs || fEmp || fElig
@@ -577,7 +577,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
                 筛选都靠它),中文界面看着半中半英 —— 挂上既有的 provName 显示层,**值不动**:labelOf 只管显示。
                 同日续:出**界面语言的省名就够**(localeOnly),「Ontario(安大略省)」在下拉里是一行说两遍 */}
             <Sel value={fProv} onChange={(v) => { setFProv(v); setFCity(''); setFDistrict('') }} opts={provOpts} all={t('all.prov')}
-              labelOf={(v) => provName(t, PROV_CODE[v] || v, true)} />
+              labelOf={(v) => provName({ t, code: PROV_CODE[v] || v, localeOnly: true })} />
             <Sel value={fBroad} onChange={(v) => { setFBroad(v); setFMid(''); setFFine('') }} opts={broadOpts} all={t('all.broad')} labelOf={broadLabel} />
             {/* 「PNP」「年薪」2026-08-16 下沉进折叠区(Frank「上面这一行太长了吧」,效果图 B 拍板):
                 常用一行只留 搜索/省/大类 + 更多筛选;选了什么不会藏起来 —— foldActive 徽标把它们算进计数 */}
@@ -837,7 +837,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
             // Frank 走查:发布当天显示 1 天 → new Date('YYYY-MM-DD') 按 UTC 午夜解析,EDT 晚上 Date.now() 已跨 UTC 次日差 1 天;改按本地午夜解析(+'T00:00:00')
             const days = j.datePosted && (j.status || 'open') !== 'closed' ? Math.max(0, Math.floor((Date.now() - new Date(j.datePosted.slice(0, 10) + 'T00:00:00').getTime()) / 86400000)) : null
             // #200(Frank「岗位名称中文翻译默认都加上」):手机卡职位名挂 NOC 官方职业名译名(界面语言;与在招职位/弹框标题同款)
-            const nz = nocLocalTitle(dims.nocDescriptions.find((d) => d.noc === j.noc) || null, lang)
+            const nz = nocLocalTitle({ row: dims.nocDescriptions.find((d) => d.noc === j.noc) || null, lang })
             // 通道胶囊排(批A 追拍「每个岗位都要列 teer,pnp,ee 胶囊;aip/qc 单独列;什么都走不了就不用列」):
             // 统一门=任一通道可走(具名信号或 TEER≤3 或 QC);全走不了 → 通道胶囊整排不出。
             // E6-09(手机优先):命中官方具名清单的「走不了」也要在卡上说 —— 那是有依据的结论,不是「没信号」。
@@ -895,10 +895,10 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
                    <a href> 语义保留给爬虫/长按新开对应层级地图 */
                 location={L.city ? (
                   <>
-                    <a href={mapsUrl(mapQuery('city', j))} target="_blank" rel="noreferrer" onClick={(e) => { e.preventDefault(); e.stopPropagation(); open('city', L.city) }} className="jtCardLink">{L.city}</a>
+                    <a href={mapsUrl(mapQuery({ field: 'city', job: j }))} target="_blank" rel="noreferrer" onClick={(e) => { e.preventDefault(); e.stopPropagation(); open('city', L.city) }} className="jtCardLink">{L.city}</a>
                     {j.province ? <>
                       <span className="jtCardSep">, </span>
-                      <a href={mapsUrl(mapQuery('province', j))} target="_blank" rel="noreferrer" onClick={(e) => { e.preventDefault(); e.stopPropagation(); open('province', L.prov) }} className="jtCardLink">{j.province}</a>
+                      <a href={mapsUrl(mapQuery({ field: 'province', job: j }))} target="_blank" rel="noreferrer" onClick={(e) => { e.preventDefault(); e.stopPropagation(); open('province', L.prov) }} className="jtCardLink">{j.province}</a>
                     </> : null}
                   </>
                 ) : undefined}

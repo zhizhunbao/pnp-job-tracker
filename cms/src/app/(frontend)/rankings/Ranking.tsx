@@ -2,6 +2,7 @@
 // 榜单视图(E5-02):纯渲染(计算在 ETL);三语壳;岗位行链官方原帖,公司行链官网。
 // RankingTable = 内容单一来源(E8-02):页面版与 /jobs 榜单弹窗共用,不许 fork。
 import { type TFn } from '@/lib/i18n'
+import type { RankRow } from '@/lib/rankings'
 import { streamDisplay, eeDisplay } from '@/lib/jobs'
 import { useLang } from '../LangProvider'
 import { Header } from '../Header'
@@ -12,16 +13,6 @@ import { Table } from '../ui'
 import { IconChart } from '../Icons'
 import { BROAD_SLUGS, slugToBroad } from '@/lib/stats'
 
-export type RankRow = {
-  rank: number; kind: string; externalId: string
-  title: string; company: string; city: string; province: string
-  noc: string; teer: number | null; score: number | null
-  salaryText: string; salaryAnnual: number | null
-  pnpStream: string; eeCategory: string; datePosted: string
-  applyUrl: string; officialUrl: string
-  openJobs: number | null; namedJobs: number | null; avgScore: number | null
-  lmiaPositions: number | null; lmiaQuarter: string  // #21(第 17 轮):第一排序键上榜可见
-}
 
 // ── E8-08 #121 手机域卡(按逻辑拆):公司榜卡 / 职位榜卡——#排名进标题行,数字语义色与桌面列一致 ──
 function RankCompanyCard({ r, t, showNamed }: { r: RankRow; t: TFn; showNamed: boolean }) {

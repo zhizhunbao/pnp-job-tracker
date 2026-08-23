@@ -67,7 +67,7 @@ export default buildConfig({
       const addr = (v: unknown): string =>
         typeof v === 'string' ? v : v && typeof v === 'object' && 'address' in (v as Record<string, unknown>) ? String((v as { address?: unknown }).address ?? '') : ''
       const to = Array.isArray(m.to) ? addr(m.to[0]) : addr(m.to)
-      if (to) await sendMail(to, String(m.subject || ''), String(m.html || m.text || ''))
+      if (to) await sendMail({ to: to, subject: String(m.subject || ''), html: String(m.html || m.text || '') })
     },
   }),
   secret: process.env.PAYLOAD_SECRET || '',

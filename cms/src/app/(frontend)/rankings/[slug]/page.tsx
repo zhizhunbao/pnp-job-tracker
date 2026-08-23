@@ -4,7 +4,8 @@ import { getPayload } from 'payload'
 import { notFound, permanentRedirect } from 'next/navigation'
 import config from '@/payload.config'
 import { Ranking } from '../Ranking'
-import { fetchRankingRows, fetchRankingSlugs, RANKING_SLUGS } from '@/lib/rankings'
+import { RANKING_SLUGS } from '@/lib/rankings'
+import { fetchRankingRows, fetchRankingSlugs } from '@/lib/rankings/server'
 
 export const dynamic = 'force-dynamic'
 const META: Record<string, { title: string; desc: string }> = {
@@ -43,6 +44,6 @@ export default async function RankingPage({ params }: { params: Promise<{ slug: 
   if (!RANKING_SLUGS.has(slug)) notFound()
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
-  const [items, slugs] = await Promise.all([fetchRankingRows(pool, slug), fetchRankingSlugs(pool)])
+  const [items, slugs] = await Promise.all([fetchRankingRows({ db: pool, slug }), fetchRankingSlugs(pool)])
   return <Ranking slug={slug} items={items} slugs={slugs} />
 }

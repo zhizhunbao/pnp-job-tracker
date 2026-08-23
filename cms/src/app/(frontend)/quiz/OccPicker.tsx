@@ -15,7 +15,7 @@ import { QuizNav, QuizStyle, QuizTitle } from './QuizUI'
 import { Button, UI } from '../ui'
 import { shortOcc } from './EntryQuiz'
 import { BROAD_SLUGS } from '@/lib/stats'
-import { pickName } from '@/lib/occName'
+import { pickName } from '@/lib/noc'
 import type { TFn } from '@/lib/i18n'
 
 type Cand = { noc: string; title: string; titleZh: string; titleZhShort?: string; titleKoShort?: string; titleEnShort?: string }
@@ -104,7 +104,7 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
         // 回到这一步时存档只有 NOC 码。热门清单通常比逐码查询先返回,顺手从同一份数据补名字,
         // 避免已选胶囊在慢连接下多空白一拍；冷门职业仍由下面的逐码查询兜底。
         setTopLoaded(true)
-        const known = rows.filter((x) => nocs.includes(x.noc)).map((x) => [x.noc, pickName(x, lang)] as [string, string])
+        const known = rows.filter((x) => nocs.includes(x.noc)).map((x) => [x.noc, pickName({ row: x, lang })] as [string, string])
         if (known.length) setTitles((m) => ({ ...m, ...Object.fromEntries(known) }))
       })
       // **abort 不算拿不到**:StrictMode/切页会中止第一次请求,把它当失败会立刻撤掉骨架,
@@ -159,14 +159,14 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
     let dead = false
     Promise.all(miss.map((n) => fetch(`/api/quiz?noc=${encodeURIComponent(n)}`)
       .then((r) => r.json())
-      .then((d) => [n, pickName(d?.facts, lang) || n] as [string, string])
+      .then((d) => [n, pickName({ row: d?.facts || null, lang }) || n] as [string, string])
       .catch(() => [n, n] as [string, string])))
       .then((rows) => { if (!dead) setTitles((m) => ({ ...m, ...Object.fromEntries(rows) })) })
     return () => { dead = true }
   }, [nocs, lang])   // eslint-disable-line react-hooks/exhaustive-deps -- titles 是这个 effect 的产物,进依赖会自己触发自己
 
   // 显示名优先用库里的短名(三语,ETL 04g 产)——前端不自己截字符串,清洗归数据层
-  const label = (x: Cand) => pickName(x, lang)
+  const label = (x: Cand) => pickName({ row: x, lang })
   // onChange 必须在 updater **外面**调:React 的 setState updater 跑在渲染阶段,
   // 在里面回调父组件的 setState = 「渲染 A 的时候更新 B」,控制台会红(2026-08-02 走查在 console 抓到:
   // Cannot update a component `PlanPrView` while rendering a different component `OccPicker`)。

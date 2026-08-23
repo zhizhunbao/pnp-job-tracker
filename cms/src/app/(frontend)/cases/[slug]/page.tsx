@@ -8,7 +8,7 @@ import { makeT } from '@/lib/i18n'
 import { CASES } from '@/lib/ruling'
 import { caseAnswer, casePages, getVerdictData } from '@/lib/ruling/server'
 import { getDb } from '@/lib/db/server'
-import { ssrLang } from '@/lib/lang.server'
+import { ssrLang } from '@/lib/i18n/server'
 import { Case } from './Case'
 
 // 🔴 **不要加回 generateStaticParams**(2026-08-11 实撞):它与 force-dynamic 同时存在时,

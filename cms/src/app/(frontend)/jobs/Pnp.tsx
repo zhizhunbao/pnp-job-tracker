@@ -221,7 +221,7 @@ export function PnpListSection({ job, lang, occ, draws, news, profileClb, nocDes
           <div className="pnpBox">
             {rows.map((o) => {
               const hit = o.noc === noc
-              const zh = showZh ? nocLocalTitle(nocRowOf.get(o.noc) || null, lang) : ''
+              const zh = showZh ? nocLocalTitle({ row: nocRowOf.get(o.noc) || null, lang }) : ''
               return (
                 <div key={o.noc + o.name} ref={hit ? matchRef : undefined} className={hit ? 'pnpRow hit' : 'pnpRow'}>
                   <span className="pnpNoc">{o.noc}</span>
@@ -435,7 +435,7 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
                 <div className="pnpMt6">
                   {c.occupations.map((o, oi) => {
                     const isHit = o.noc === noc
-                    const zh = showZh ? nocLocalTitle(nocRowOf.get(o.noc) || null, lang) : ''
+                    const zh = showZh ? nocLocalTitle({ row: nocRowOf.get(o.noc) || null, lang }) : ''
                     return (
                       <div key={o.noc} ref={isHit ? matchRef : undefined} className={isHit ? 'pnpOccRow hit' : 'pnpOccRow'}>
                         <span className="pnpOccNoc">{o.noc}</span>
@@ -550,7 +550,7 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
   }
   // NOC:英文官方名主文案 + 界面语言译名灰注(#147),NOC 码作同行行尾灰注——不另起行
   const nocCell = (c: string) => {
-    const d = nocDesc.find((x) => x.noc === c); const loc = nocLocalTitle(d, lang)
+    const d = nocDesc.find((x) => x.noc === c); const loc = nocLocalTitle({ row: d || null, lang })
     return d?.title ? <>{d.title}{loc ? <span className="pnpNote">　{loc}</span> : null} <span className="pnpNote">NOC {c}</span></> : <>NOC {c}</>
   }
   // TEER 值同屏可能出现两次(省提名粗筛 / 技能层级),「0 最高,5 最低」灰注只随首次出现(一事只说一遍)

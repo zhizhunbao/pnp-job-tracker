@@ -265,7 +265,7 @@ export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo,
       .catch(() => {})
     return () => { dead = true }
   }, [showTrans, trans, hasDesc, company.aiBrief, company.name, lang])
-  const provFull = company.province ? provName(t, company.province) : ''
+  const provFull = company.province ? provName({ t, code: company.province, localeOnly: false }) : ''
   const addr = company.address || provFull
   const aip = !!company.scoreDetail?.sponsor?.v?.aip
   const showSponsor = (company.lmiaPositions ?? 0) > 0 || aip

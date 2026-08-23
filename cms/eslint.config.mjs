@@ -14,7 +14,10 @@ import importX from 'eslint-plugin-import-x'
 import stylistic from '@stylistic/eslint-plugin'
 
 // 带桶的模块(`lib/<名>/index.ts`)—— 下面那道边界闸认这几个,加新桶就加这里一行。
-const BARRELS = ['agent', 'consult', 'db', 'i18n', 'jobs', 'pathways', 'gauge', 'points', 'quiz', 'ruling', 'employers', 'plan', 'stats', 'quota', 'llm', 'resume', 'legal', 'official']
+const BARRELS = ['agent', 'consult', 'db', 'i18n', 'jobs', 'pathways', 'gauge', 'points', 'quiz', 'ruling', 'employers', 'plan', 'stats', 'quota', 'llm', 'resume', 'legal', 'official',
+  // 2026-08-23 singles 批立域:funnel/location/noc/rankings/mailer/lmia/track 有 index 桶;
+  // profile/auth/stripe 只有 server 门(纯服务端域),照样进名单 —— ABSOLUTE 拦直点文件,ALLOW 放行 server。
+  'funnel', 'location', 'noc', 'rankings', 'mailer', 'lmia', 'track', 'profile', 'auth', 'stripe']
 const ABSOLUTE = BARRELS.map((m) => `**/lib/${m}/*`)
 // jobs / points / ruling / employers / plan / quiz / stats / quota / pathways 有**两个门**(index=客户端也安全的那半、server=要连库的那半;
 // 理由见 lib/jobs/index.ts 顶上那段:混着 payload 依赖的桶会把连接池打进浏览器包)。
@@ -34,6 +37,11 @@ const ALLOW = [
   '!**/lib/agent/server', '!./agent/server', '!../agent/server',
   '!**/lib/consult/server', '!./consult/server', '!../consult/server',
   '!**/lib/db/server', '!./db/server', '!../db/server',
+  '!**/lib/i18n/server', '!./i18n/server', '!../i18n/server',
+  '!**/lib/profile/server', '!./profile/server', '!../profile/server',
+  '!**/lib/rankings/server', '!./rankings/server', '!../rankings/server',
+  '!**/lib/auth/server', '!./auth/server', '!../auth/server',
+  '!**/lib/stripe/server', '!./stripe/server', '!../stripe/server',
 ]
 const SIBLING = BARRELS.flatMap((m) => [`./${m}/*`, `../${m}/*`])
 const barrelOnly = (group) => ({
@@ -1128,6 +1136,10 @@ const REFACTORED = [
   // no-optional/no-bang/no-nullish/no-ternary 一族对它们从没生效过。补齐,存量进抑制基线。
   'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts',
   'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/template.ts',
+  // 2026-08-23 singles 批:顶层散件 → 域(+ time.ts 留叶),新写即达标,直接进名单。
+  'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts',
+  'src/lib/rankings/**/*.ts', 'src/lib/mailer/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts',
+  'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts',
 ]
 
 const eslintConfig = [
@@ -1209,7 +1221,7 @@ const eslintConfig = [
     // 域定型一个就往这里加一个。
     // 域每定型一个就往这张名单里加一个。2026-08-19 当天 `agent` / `llm` / `error` / `log`
     // 的 91 条存量(多数是写成一行的 type,属性没各自的注释)已经逐条补完,所以它们也在里面。
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error.ts', 'src/lib/log.ts', 'src/lib/template.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error.ts', 'src/lib/log.ts', 'src/lib/template.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mailer/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts'],
     plugins: { local: localRules },
     rules: {
       // 注释的形状
@@ -1248,7 +1260,7 @@ const eslintConfig = [
     //   · no-split-import:另外五个域还有 3 处(consult 2 / i18n 1);
     //   · no-import-in-leaf:constants 还有 3 处(consult 2 / agent 1),
     //     types 还有 16 处(consult 8 / agent 5 / llm 1 / pathways 1 / jobs 1)。
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/db/**/*.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/db/**/*.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mailer/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts'],
     plugins: { local: localRules },
     rules: { 'local/domain-file-names': 'error', 'local/door-forward-only': 'error' },
   },
@@ -1262,7 +1274,7 @@ const eslintConfig = [
   },
   {
     // ── 同一条闸:立规当天就达标的三个域直接 error ──────────────────────────────
-    files: ['src/lib/stats/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts'],
+    files: ['src/lib/stats/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/rankings/**/*.ts'],
     plugins: { local: localRules },
     rules: { 'local/no-db-vocab-in-functions': 'error' },
   },
@@ -1280,7 +1292,7 @@ const eslintConfig = [
   },
   {
     // ── 现成闸接入 ② · JSDoc 族(与自研 doc 闸并行跑;零违规验证同构后,自研那几条再议退役)──
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error.ts', 'src/lib/log.ts', 'src/lib/template.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error.ts', 'src/lib/log.ts', 'src/lib/template.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mailer/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts'],
     plugins: { jsdoc },
     rules: {
       'jsdoc/multiline-blocks': ['error', { noSingleLineBlocks: true }],
@@ -1330,7 +1342,10 @@ const eslintConfig = [
     // 声明里的旁注(quote 判读、拆闸缘由)比模板化键注释信息量大得多,别逼着换。
     // 数据体 constants(键即身份 —— 官方原句/工具名/分类码/法务页,逐键注释是复读):
     // 2026-08-22「所有都按域来管理」后三语映射表并进各域 constants,豁免名单随之点名到文件。
-    files: ['src/lib/pathways/constants.ts', 'src/lib/jobs/constants.ts', 'src/lib/consult/constants.ts', 'src/lib/legal/constants.ts', 'src/lib/official/constants.ts'],
+    files: ['src/lib/pathways/constants.ts', 'src/lib/jobs/constants.ts', 'src/lib/consult/constants.ts', 'src/lib/legal/constants.ts', 'src/lib/official/constants.ts',
+      // 2026-08-23 singles 批的数据体 constants:事件名别名/来源表(funnel)、省码→中位时薪(lmia)、
+      // 省码→省名(location)、分类→配色(noc)—— 键即身份,逐键注释是复读。
+      'src/lib/funnel/constants.ts', 'src/lib/lmia/constants.ts', 'src/lib/location/constants.ts', 'src/lib/noc/constants.ts'],
     plugins: { local: localRules },
     rules: { 'local/doc-every-member': 'off' },
   },

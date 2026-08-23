@@ -4,7 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import type Stripe from 'stripe'
 import { getUser } from '@/lib/quota/server'
-import { getStripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe/server'
 
 const PLANS: Record<string, { days: number; priceEnv: string }> = {
   '30': { days: 30, priceEnv: 'STRIPE_PRICE_30D' },

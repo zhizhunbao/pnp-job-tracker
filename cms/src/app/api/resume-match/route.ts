@@ -17,7 +17,7 @@ import { getUser, isPro } from '@/lib/quota/server'
 import { jobDescription } from '@/lib/jobs/server'
 import { isLlmError } from '@/lib/error'
 import { completeText } from '@/lib/llm'
-import { patchProfile, type ProfilePatch } from '@/lib/profile'
+import { patchProfile, type ProfilePatch } from '@/lib/profile/server'
 import { DAILY_FREE, gateMatch, matchPrompt, MIN_RESUME, normalizeRows, parseLlmJson } from '@/lib/resume'
 import { SQL } from '@/lib/db'   // SQL 文本全在那儿,本文件只管取数与组装
 
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
   }
   if (Object.keys(patch).length > 0) {
     try {
-      await patchProfile((user as any).id, patch)
+      await patchProfile({ userId: (user as any).id, patch })
       saved = save
     } catch (e) {
       // 记账/存档失败都不挡结果(记账最坏多送一次,存档下次再存);但必须留痕 —— 裸 catch 是老教训。

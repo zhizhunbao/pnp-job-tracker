@@ -5,19 +5,19 @@ import { FUNNEL_STEPS, decisionRates, isLocalHost, stepRates, toFunnelHit } from
 
 describe('漏斗事件白名单', () => {
   it('站内既有埋点名归到五步(调用点一个都不用改名)', () => {
-    expect(toFunnelHit('modal-jd')).toEqual({ event: 'jd-open', prop: '' })
-    expect(toFunnelHit('plan-job-report')).toEqual({ event: 'report-open', prop: 'job' })
-    expect(toFunnelHit('jd-lock-seen')).toEqual({ event: 'lock-seen', prop: 'jd' })
-    expect(toFunnelHit('rpt-lock-seen')).toEqual({ event: 'lock-seen', prop: 'rpt' })
-    expect(toFunnelHit('upgrade-open')).toEqual({ event: 'pricing-open', prop: 'upgrade' })
+    expect(toFunnelHit({ name: 'modal-jd', prop: null })).toEqual({ event: 'jd-open', prop: '' })
+    expect(toFunnelHit({ name: 'plan-job-report', prop: null })).toEqual({ event: 'report-open', prop: 'job' })
+    expect(toFunnelHit({ name: 'jd-lock-seen', prop: null })).toEqual({ event: 'lock-seen', prop: 'jd' })
+    expect(toFunnelHit({ name: 'rpt-lock-seen', prop: null })).toEqual({ event: 'lock-seen', prop: 'rpt' })
+    expect(toFunnelHit({ name: 'upgrade-open', prop: null })).toEqual({ event: 'pricing-open', prop: 'upgrade' })
   })
 
   // 2026-08-02 收口:第 1 步先前**根本没有调用点**(详情页没埋),库里只有第 3 步有数、分母是空的。
   // 详情页那个「点了看报告」不再算第 2 步 —— 同一次跳转报告页自己也会记一次,留着就是双计。
   it('第 1 步分弹框与整页;详情页的「点了看报告」不进漏斗(报告态真渲染才算打开)', () => {
-    expect(toFunnelHit('jd-open', 'page')).toEqual({ event: 'jd-open', prop: 'page' })
-    expect(toFunnelHit('modal-jd', 'modal')).toEqual({ event: 'jd-open', prop: 'modal' })
-    expect(toFunnelHit('jd-report-open')).toBeNull()
+    expect(toFunnelHit({ name: 'jd-open', prop: 'page' })).toEqual({ event: 'jd-open', prop: 'page' })
+    expect(toFunnelHit({ name: 'modal-jd', prop: 'modal' })).toEqual({ event: 'jd-open', prop: 'modal' })
+    expect(toFunnelHit({ name: 'jd-report-open', prop: null })).toBeNull()
   })
 
   // 2026-08-03 第一次读这张表撞到的洞:站内唯一直链 /pricing 的入口是报告锁区那个 CTA,
@@ -25,24 +25,24 @@ describe('漏斗事件白名单', () => {
   // **主转化边整条不计数**,第 4 步恒为 0。补上之后来路走 `?from=rpt-<卡>`,这里锁住它过得了白名单。
   it('报告锁区来的定价页带来路,四张卡的 from 都过得了低基数白名单', () => {
     for (const card of ['pr', 'job', 'prov', 'career']) {
-      expect(toFunnelHit('pricing-open', `rpt-${card}`)).toEqual({ event: 'pricing-open', prop: `rpt-${card}` })
+      expect(toFunnelHit({ name: 'pricing-open', prop: `rpt-${card}` })).toEqual({ event: 'pricing-open', prop: `rpt-${card}` })
     }
-    expect(toFunnelHit('pricing-open', 'direct')).toEqual({ event: 'pricing-open', prop: 'direct' })
+    expect(toFunnelHit({ name: 'pricing-open', prop: 'direct' })).toEqual({ event: 'pricing-open', prop: 'direct' })
     // 来路是 URL 参数 = 用户可随手改 → 脏值退回入口名,不许污染这张低基数表
-    expect(toFunnelHit('pricing-open', 'rpt pr <script>')?.prop).toBe('pricing')
+    expect(toFunnelHit({ name: 'pricing-open', prop: 'rpt pr <script>' })?.prop).toBe('pricing')
   })
 
   it('白名单之外一律丢掉(埋点调用点几十处,全塞进来这张表就没法读了)', () => {
     for (const junk of ['save-job', 'ai-read-jd', 'cat-translate', '', 'DROP TABLE', null, 42]) {
-      expect(toFunnelHit(junk as unknown)).toBeNull()
+      expect(toFunnelHit({ name: junk, prop: null })).toBeNull()
     }
   })
 
   it('prop 只收低基数枚举:NOC、公司名、搜索词这类高基数值一律退回入口名', () => {
-    expect(toFunnelHit('rpt-lock-seen', 'pr')).toEqual({ event: 'lock-seen', prop: 'pr' })
-    expect(toFunnelHit('rpt-lock-seen', '31301 registered nurse')?.prop).toBe('rpt')   // 带空格=自由文本
-    expect(toFunnelHit('rpt-lock-seen', 'x'.repeat(40))?.prop).toBe('rpt')             // 太长
-    expect(toFunnelHit('pay-click', '30')).toEqual({ event: 'pay-click', prop: '30' })
+    expect(toFunnelHit({ name: 'rpt-lock-seen', prop: 'pr' })).toEqual({ event: 'lock-seen', prop: 'pr' })
+    expect(toFunnelHit({ name: 'rpt-lock-seen', prop: '31301 registered nurse' })?.prop).toBe('rpt')   // 带空格=自由文本
+    expect(toFunnelHit({ name: 'rpt-lock-seen', prop: 'x'.repeat(40) })?.prop).toBe('rpt')             // 太长
+    expect(toFunnelHit({ name: 'pay-click', prop: '30' })).toEqual({ event: 'pay-click', prop: '30' })
   })
 
   it('顺序就是漏斗顺序(页面按它排,别在显示层再排一次);旧五步在前、对话三步居中、雇主线三步在后', () => {
@@ -59,8 +59,8 @@ describe('漏斗事件白名单', () => {
   })
 
   it('PR 评估四步各自归位,且相邻转化率只在本链内算', () => {
-    expect(toFunnelHit('dp-open', '1')).toEqual({ event: 'dp-open', prop: '1' })
-    expect(toFunnelHit('dp-score-done', '')?.event).toBe('dp-score-done')
+    expect(toFunnelHit({ name: 'dp-open', prop: '1' })).toEqual({ event: 'dp-open', prop: '1' })
+    expect(toFunnelHit({ name: 'dp-score-done', prop: '' })?.event).toBe('dp-score-done')
     // 100 人打开 → 40 人答完 → 20 人进估分 → 10 人答完
     expect(decisionRates({ 'dp-open': 100, 'dp-quiz-done': 40, 'dp-score-start': 20, 'dp-score-done': 10 }))
       .toEqual([40, 50, 50])
@@ -70,12 +70,12 @@ describe('漏斗事件白名单', () => {
   })
 
   it('对话形态的三个键各自归位,不串进旧五步', () => {
-    expect(toFunnelHit('widget-open', 'jd')).toEqual({ event: 'chat-open', prop: 'jd' })
-    expect(toFunnelHit('chat-answer', '')?.event).toBe('chat-answer')
+    expect(toFunnelHit({ name: 'widget-open', prop: 'jd' })).toEqual({ event: 'chat-open', prop: 'jd' })
+    expect(toFunnelHit({ name: 'chat-answer', prop: '' })?.event).toBe('chat-answer')
     // 点踩是数据缺口报警器 —— prop 只收 good|bad 这两个枚举,不收自由文本
-    expect(toFunnelHit('chat-feedback', 'bad')).toEqual({ event: 'chat-feedback', prop: 'bad' })
-    expect(toFunnelHit('widget-close', '')).toBeNull()   // 关闭不进表:它不是漏斗的一格
-    expect(toFunnelHit('widget-drag', '')).toBeNull()    // 拖动/缩放/重置同理,是交互不是漏斗
+    expect(toFunnelHit({ name: 'chat-feedback', prop: 'bad' })).toEqual({ event: 'chat-feedback', prop: 'bad' })
+    expect(toFunnelHit({ name: 'widget-close', prop: '' })).toBeNull()   // 关闭不进表:它不是漏斗的一格
+    expect(toFunnelHit({ name: 'widget-drag', prop: '' })).toBeNull()    // 拖动/缩放/重置同理,是交互不是漏斗
   })
 })
 

@@ -159,7 +159,7 @@ export async function GET(req: NextRequest) {
     }) : []
     if (!top.length && !drawLines.length) continue
     if (!dry) {
-      const ok = await sendMail(u.email, T.matchSubject(top.length), emailHtml(top, drawLines))
+      const ok = await sendMail({ to: u.email, subject: T.matchSubject(top.length), html: emailHtml(top, drawLines) })
       if (ok) {
         out.matchEmails++
         await payload.update({ collection: 'users', id: u.id, overrideAccess: true, data: { lastAlertAt: now } })
@@ -178,7 +178,7 @@ export async function GET(req: NextRequest) {
     out.skippedFilters.push(...skipped)
     if (!rows.length) continue
     if (!dry) {
-      const ok = await sendMail(owner.email, T.subject(rows.length), emailHtml(rows, []))
+      const ok = await sendMail({ to: owner.email, subject: T.subject(rows.length), html: emailHtml(rows, []) })
       if (ok) {
         out.searchEmails++
         await payload.update({ collection: 'saved-searches', id: sdoc.id, overrideAccess: true, data: { lastNotifiedAt: now } })
@@ -234,7 +234,7 @@ export async function GET(req: NextRequest) {
       }
       if (!dry) {
         const unsubUrl = `${SITE}/api/alerts/unsub?u=${u.id}&t=${unsubToken(u.id)}`
-        const ok = await sendMail(u.email, subject, weeklyProfileHtml(top3 as any, st, dimsOf, unsubUrl, uLoc))
+        const ok = await sendMail({ to: u.email, subject: subject, html: weeklyProfileHtml(top3 as any, st, dimsOf, unsubUrl, uLoc) })
         if (ok) {
           out.weeklyEmails++
           await payload.update({ collection: 'users', id: u.id, overrideAccess: true, data: { lastWeeklyAt: now } })
@@ -266,7 +266,7 @@ export async function GET(req: NextRequest) {
     const subject = `你收藏的 ${sj.docs.length} 个岗:${openN} 在招 · ${items.length - openN} 已下架 — Offer2PR`
     if (!dry) {
       const unsubUrl = `${SITE}/api/alerts/unsub?u=${u.id}&t=${unsubToken(u.id)}`
-      const ok = await sendMail(u.email, subject, weeklyHtml(items, newN, dims, unsubUrl))
+      const ok = await sendMail({ to: u.email, subject: subject, html: weeklyHtml(items, newN, dims, unsubUrl) })
       if (ok) {
         out.weeklyEmails++
         await payload.update({ collection: 'users', id: u.id, overrideAccess: true, data: { lastWeeklyAt: now } })

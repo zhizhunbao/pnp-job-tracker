@@ -144,8 +144,8 @@ export function cellOf(k: ColKey, j: JobRow, cx: CellCtx): Cell {
   const { t, plan, eeCats, blocked: blockedKeys, onUpsell } = cx
   const L = parseLoc(j)                                                       // 省/市/区
   const cat = colorOf(j.broad)
-  const broadLabel = (v?: string) => (v && v !== '未分类' ? catName(t, v) : t('cell.uncat'))
-  const catLabel = (v?: string) => (!v || v === '未分类' ? t('cell.uncat') : catName(t, v))
+  const broadLabel = (v?: string) => (v && v !== '未分类' ? catName({ t, value: v }) : t('cell.uncat'))
+  const catLabel = (v?: string) => (!v || v === '未分类' ? t('cell.uncat') : catName({ t, value: v }))
   let href: string | null = null
   let node: React.ReactNode
   const extra: React.CSSProperties = {}
@@ -197,9 +197,9 @@ export function cellOf(k: ColKey, j: JobRow, cx: CellCtx): Cell {
   else if (k === 'direct') { const dr = isDirect(j); node = dr ? t('cell.first') : t('cell.repost'); Object.assign(extra, { whiteSpace: 'nowrap', color: dr ? '#15803d' : '#9ca3af', fontSize: 12.5 }) }
   else if (k === 'country') { node = L.country || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
   // 省/市/区 → 文字=地图链接、格子=地点弹框(E8-12 Frank「点文字跳 map,点框弹框」)
-  else if (k === 'province') { href = L.prov ? mapsUrl(mapQuery('province', j)) : null; node = L.prov || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-  else if (k === 'city') { href = L.city ? mapsUrl(mapQuery('city', j)) : null; node = L.city || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-  else if (k === 'district') { href = L.district ? mapsUrl(mapQuery('district', j)) : null; node = L.district || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#1f2937' }) }
+  else if (k === 'province') { href = L.prov ? mapsUrl(mapQuery({ field: 'province', job: j })) : null; node = L.prov || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+  else if (k === 'city') { href = L.city ? mapsUrl(mapQuery({ field: 'city', job: j })) : null; node = L.city || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+  else if (k === 'district') { href = L.district ? mapsUrl(mapQuery({ field: 'district', job: j })) : null; node = L.district || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#1f2937' }) }
   else if (k === 'source') { node = sourceLabel(j); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
   else if (k === 'origin') { node = j.origin ? t('origin.' + j.origin) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
   else if (k === 'pnp') {  // 三档强度 + 魁省N/A:强=具名紧缺通道(琥珀底色 chip,500)、中=可提名(绿,500)、弱=不符(灰—,400);魁省=紫,400(独立 N/A)

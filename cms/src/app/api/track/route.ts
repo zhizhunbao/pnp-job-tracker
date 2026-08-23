@@ -19,7 +19,7 @@ const OK = new Response(null, { status: 204 })
 export async function POST(req: Request) {
   let body: any = null
   try { body = await req.json() } catch { return OK }
-  const hit = toFunnelHit(body?.event, body?.prop)
+  const hit = toFunnelHit({ name: body?.event ?? null, prop: body?.prop ?? null })
   if (!hit) return OK
   try {
     const origin = req.headers.get('origin') || ''
