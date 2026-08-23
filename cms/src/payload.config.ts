@@ -5,7 +5,8 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
-import { sendMail } from './lib/mailer'
+// eslint-disable-next-line no-restricted-imports -- 特批：mail/server 载着 routes 芯（芯要 payload.config），本文件走门会成环；发信本体 payload-无依赖，深口直取
+import { sendMail } from './lib/mail/functions'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'

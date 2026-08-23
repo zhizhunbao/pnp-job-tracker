@@ -219,3 +219,64 @@ export type ConfigWithPrefix = {
  * 时刻的本地名(库类型起本地名,签名里不出现外部类型)。
  */
 export type Clock = Date
+
+/**
+ * `googleCallback` 的入参（路由取好的五样原料；判定链全在域里）。
+ */
+export type GoogleCallbackIn = {
+  /**
+   * 授权码；没有是 null。
+   */
+  code: string | null
+
+  /**
+   * 同意屏的 error 参数；没有是 null。
+   */
+  error: string | null
+
+  /**
+   * 回调 URL 里的 state；没有是 null。
+   */
+  stateParam: string | null
+
+  /**
+   * cookie 里种的 state；没有是 null。
+   */
+  cookieState: string | null
+
+  /**
+   * 回跳目标 cookie 原料（已 decode）；没有是 null。
+   */
+  rtRaw: string | null
+}
+
+/**
+ * 登录链的产物：成功带会话与回跳路径；失败只说失败（原因已在域里留痕，
+ * 路由统一 302 回首页带 oauth=fail，不向用户透细节）。
+ */
+export type CallbackOutcome = {
+  /**
+   * 哪种产物。
+   */
+  kind: 'fail'
+} | {
+  /**
+   * 哪种产物。
+   */
+  kind: 'ok'
+
+  /**
+   * 签好的会话三件。
+   */
+  session: GoogleLogin
+
+  /**
+   * 校验过的站内回跳路径。
+   */
+  rt: string
+}
+
+/**
+ * `googleCallback` 的返回。
+ */
+export type CallbackOut = Promise<CallbackOutcome>

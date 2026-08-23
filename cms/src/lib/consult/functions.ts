@@ -20,8 +20,10 @@ import { runAgentLoop } from '@earendil-works/pi-agent-core'
 import type { StreamFn } from '@earendil-works/pi-agent-core'
 import { streamSimple } from '@earendil-works/pi-ai/api/openai-completions'
 import type { Model } from '@earendil-works/pi-ai'
+// eslint-disable-next-line no-restricted-imports -- 存量特批（2026-08-23 边界闸首轮拓出）：十一件套前的跨域取数，归 api 批②注入化改造
 import { acceptNoc, passThroughMessages } from '../agent/server'
 import type { TranscriptMessage } from '../agent'
+// eslint-disable-next-line no-restricted-imports -- 存量特批（2026-08-23 边界闸首轮拓出）：十一件套前的跨域取数，归 api 批②注入化改造
 import { loadVerdictTables, pathVerdict } from '../ruling/server'
 import type { VerdictProfile } from '../ruling'
 

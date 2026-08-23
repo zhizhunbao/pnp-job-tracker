@@ -88,3 +88,18 @@ export const MIME_HTML = 'text/html; charset=utf-8'
  * 401 的统一响应体(token 闸路由共用)。
  */
 export const TEXT_UNAUTHORIZED = 'unauthorized'
+
+/**
+ * Origin 请求头名。
+ */
+export const HDR_ORIGIN = 'origin'
+
+/**
+ * Host 请求头名。
+ */
+export const HDR_HOST = 'host'
+
+/**
+ * x-seed-token 触发闸头名（auto_update 与运维脚本共用）。
+ */
+export const HDR_SEED_TOKEN = 'x-seed-token'

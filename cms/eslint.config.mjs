@@ -17,7 +17,7 @@ import stylistic from '@stylistic/eslint-plugin'
 const BARRELS = ['agent', 'consult', 'db', 'i18n', 'jobs', 'pathways', 'gauge', 'points', 'quiz', 'ruling', 'employers', 'plan', 'stats', 'quota', 'llm', 'resume', 'legal', 'official',
   // 2026-08-23 singles 批立域:funnel/location/noc/rankings/mailer/lmia/track 有 index 桶;
   // profile/auth/stripe 只有 server 门(纯服务端域),照样进名单 —— ABSOLUTE 拦直点文件,ALLOW 放行 server。
-  'funnel', 'location', 'noc', 'rankings', 'mailer', 'lmia', 'track', 'profile', 'auth', 'stripe',
+  'funnel', 'location', 'noc', 'rankings', 'mail', 'lmia', 'track', 'profile', 'auth', 'stripe',
   // 2026-08-23 log/error 自单文件升目录(Frank「log 和 error 呢」),既有 '../log' import 经桶续命。
   'log', 'error']
 const ABSOLUTE = BARRELS.map((m) => `**/lib/${m}/*`)
@@ -44,6 +44,8 @@ const ALLOW = [
   '!**/lib/rankings/server', '!./rankings/server', '!../rankings/server',
   '!**/lib/auth/server', '!./auth/server', '!../auth/server',
   '!**/lib/stripe/server', '!./stripe/server', '!../stripe/server',
+  '!**/lib/mail/server', '!./mail/server', '!../mail/server',
+  '!**/lib/funnel/server', '!./funnel/server', '!../funnel/server',
 ]
 const SIBLING = BARRELS.flatMap((m) => [`./${m}/*`, `../${m}/*`])
 const barrelOnly = (group) => ({
@@ -238,7 +240,8 @@ const localRules = {
         },
       },
       create(context) {
-        if (!/functions\.ts$/.test(context.filename ?? '')) return {}
+        // 2026-08-23 扩到 routes.ts（Frank「还有一大堆写死的常量」）：HTTP 芯同样不许裸字
+        if (!/(functions|routes)\.ts$/.test(context.filename ?? '')) return {}
         return {
           VariableDeclaration(node) {
             const p = node.parent
@@ -343,6 +346,113 @@ const localRules = {
     // ── 域内只许有那九个文件(2026-08-20 Frank 立)────────────────────────────
     // 「一个域最多这九个文件」是**能测的**,那就别只写在宪法里 —— 起个别的名字塞进来,
     // 一年后没人记得当初为什么破例。要放的东西七个抽屉都装不下,说明它不属于这个域。
+    // ── routes.ts ↔ functions.ts 边界两闸（2026-08-23 Frank「边界怎么控制，怎么加闸门」）──
+    // ① 纯行为层不认识 HTTP：签名位的 Request/NextRequest/NextResponse、体内造响应、
+    //    import next/server 都红。fetch 拿到的 Response 局部变量注解是出站接缝，放行。
+    'no-http-in-functions': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          http: '纯行为层不认识 HTTP：{{ what }} 只许出现在本域 routes.ts（第十一抽屉）。',
+        },
+      },
+      create(context) {
+        const BAD = new Set(['Request', 'NextRequest', 'NextResponse'])
+        return {
+          ImportDeclaration(node) {
+            if (node.source.value === 'next/server') {
+              context.report({ node, messageId: 'http', data: { what: "import 'next/server'" } })
+            }
+          },
+          NewExpression(node) {
+            if (node.callee.type === 'Identifier' && node.callee.name === 'Response') {
+              context.report({ node, messageId: 'http', data: { what: 'new Response(...)' } })
+            }
+          },
+          MemberExpression(node) {
+            if (node.object.type === 'Identifier' && (node.object.name === 'NextResponse'
+              || (node.object.name === 'Response' && node.property.type === 'Identifier' && node.property.name === 'json'))) {
+              context.report({ node, messageId: 'http', data: { what: node.object.name } })
+            }
+          },
+          TSTypeReference(node) {
+            if (node.typeName.type !== 'Identifier' || !BAD.has(node.typeName.name)) return
+            let p = node.parent
+            let hops = 0
+            while (p && hops < 6) {
+              if (p.type === 'VariableDeclarator') return
+              if (p.type === 'TSTypeAnnotation' && p.parent
+                && (p.parent.type === 'Identifier' || p.parent.type === 'FunctionDeclaration'
+                  || p.parent.type === 'FunctionExpression' || p.parent.type === 'ArrowFunctionExpression')) {
+                context.report({ node, messageId: 'http', data: { what: node.typeName.name } })
+                return
+              }
+              p = p.parent
+              hops += 1
+            }
+          },
+        }
+      },
+    },
+    // ② 壳零代码：api/route.ts 只许框架开关常量与转发，长出函数就红。
+    // ③ routes.ts 的形状（2026-08-23 Frank「怎么自己定义 fail 函数 / 怎么还能直接调 db」）：
+    //    顶层函数必须是 export 的 *Route（判定链/辅助件下沉 functions；handler 体内的
+    //    注入闭包不管）；禁 import SQL、禁 .query( —— 取数归域，芯只拿池注入。
+    'routes-shape': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          fn: 'routes.ts 顶层只许 export 的 *Route handler；`{{ name }}` 下沉进 functions（造 Response 的分支就地写，不抽函数）。',
+          sql: 'routes.ts 不许碰 SQL/query：取数下沉本域 functions，芯只拿池注入。',
+        },
+      },
+      create(context) {
+        return {
+          FunctionDeclaration(node) {
+            if (node.parent && node.parent.type !== 'Program' && node.parent.type !== 'ExportNamedDeclaration') return
+            const name = node.id ? node.id.name : ''
+            const exported = node.parent && node.parent.type === 'ExportNamedDeclaration'
+            if (!exported || !/Route$/.test(name)) {
+              context.report({ node, messageId: 'fn', data: { name } })
+            }
+          },
+          ImportSpecifier(node) {
+            if (node.imported.type === 'Identifier' && node.imported.name === 'SQL') {
+              context.report({ node, messageId: 'sql' })
+            }
+          },
+          ImportNamespaceSpecifier(node) {
+            if (node.local.name === 'SQL') {
+              context.report({ node, messageId: 'sql' })
+            }
+          },
+          CallExpression(node) {
+            if (node.callee.type === 'MemberExpression' && node.callee.property.type === 'Identifier'
+              && node.callee.property.name === 'query') {
+              context.report({ node, messageId: 'sql' })
+            }
+          },
+        }
+      },
+    },
+    'route-shell-only': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          shell: '壳里不许有逻辑：芯归本域 routes.ts，这里只留 runtime/dynamic/maxDuration 与一行转发。',
+        },
+      },
+      create(context) {
+        return {
+          FunctionDeclaration(node) {
+            context.report({ node, messageId: 'shell' })
+          },
+        }
+      },
+    },
     'domain-file-names': {
       meta: {
         type: 'suggestion',
@@ -354,8 +464,10 @@ const localRules = {
       create(context) {
         // rows.ts 是 2026-08-21 Frank 添的第十个抽屉:SQL 原始行 → 本域形状的构造器(to* 行映射),
         // 一条 SQL 一个;体内只许词汇表 + 纯拼装,不许业务判断(db 域的 rows 装词汇表与 queryRows 本体)。
+        // routes.ts 是 2026-08-23 Frank 拍板的第十一抽屉：本域路由的 HTTP 芯（收 Request/拼 Response），
+        // 域内唯一允许 import 别域 server 门取数的文件；形状另有闸 routes-shape 盯。
         const ALLOWED = ['constants.ts', 'variables.ts', 'prompts.ts', 'schemas.ts', 'types.ts',
-          'functions.ts', 'rows.ts', 'callbacks.ts', 'index.ts', 'server.ts']
+          'functions.ts', 'rows.ts', 'callbacks.ts', 'routes.ts', 'index.ts', 'server.ts']
         return {
           Program(node) {
             const full = context.filename ?? ''
@@ -416,7 +528,8 @@ const localRules = {
         },
       },
       create(context) {
-        if (!/functions\.ts$/.test(context.filename ?? '')) return {}
+        // 2026-08-23 扩到 routes.ts（Frank「还有一大堆写死的常量」）：HTTP 芯同样不许裸字
+        if (!/(functions|routes)\.ts$/.test(context.filename ?? '')) return {}
         function inTypePosition(node) {
           let p = node.parent
           let depth = 0
@@ -647,7 +760,8 @@ const localRules = {
         },
       },
       create(context) {
-        if (!/functions\.ts$/.test(context.filename ?? '')) return {}
+        // 2026-08-23 扩到 routes.ts（Frank「还有一大堆写死的常量」）：HTTP 芯同样不许裸字
+        if (!/(functions|routes)\.ts$/.test(context.filename ?? '')) return {}
         return {
           Literal(node) {
             if (typeof node.value !== 'number') return
@@ -1075,7 +1189,8 @@ const localRules = {
         },
       },
       create(context) {
-        if (!/functions\.ts$/.test(context.filename ?? '')) return {}
+        // 2026-08-23 扩到 routes.ts（Frank「还有一大堆写死的常量」）：HTTP 芯同样不许裸字
+        if (!/(functions|routes)\.ts$/.test(context.filename ?? '')) return {}
         const WORDS = new Set(['text', 'count', 'numOrNull', 'textOrNull', 'show', 'jsonOrNull'])
         return {
           ImportDeclaration(node) {
@@ -1141,6 +1256,8 @@ const API_DONE = [
   'src/app/api/track/route.ts',
   'src/app/api/auth/google/route.ts',
   'src/app/api/auth/google/callback/route.ts',
+  'src/app/api/alerts/run/route.ts',
+  'src/app/api/alerts/unsub/route.ts',
 ]
 
 const REFACTORED = [
@@ -1153,7 +1270,7 @@ const REFACTORED = [
   'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/template.ts',
   // 2026-08-23 singles 批:顶层散件 → 域(+ time.ts 留叶),新写即达标,直接进名单。
   'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts',
-  'src/lib/rankings/**/*.ts', 'src/lib/mailer/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts',
+  'src/lib/rankings/**/*.ts', 'src/lib/mail/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts',
   'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts',
   // 2026-08-23 i18n 进闸(三语文件 + index 机器是 Frank 拍板的介质形状,domain-file-names 单独特批)。
   'src/lib/i18n/**/*.ts',
@@ -1241,7 +1358,7 @@ const eslintConfig = [
     // 域定型一个就往这里加一个。
     // 域每定型一个就往这张名单里加一个。2026-08-19 当天 `agent` / `llm` / `error` / `log`
     // 的 91 条存量(多数是写成一行的 type,属性没各自的注释)已经逐条补完,所以它们也在里面。
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts', 'src/lib/template.ts', 'src/lib/http.ts', ...API_DONE, 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mailer/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts', 'src/lib/i18n/**/*.ts', 'src/lib/quiz/**/*.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts', 'src/lib/template.ts', 'src/lib/http.ts', ...API_DONE, 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mail/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts', 'src/lib/i18n/**/*.ts', 'src/lib/quiz/**/*.ts'],
     plugins: { local: localRules },
     rules: {
       // 注释的形状
@@ -1280,7 +1397,7 @@ const eslintConfig = [
     //   · no-split-import:另外五个域还有 3 处(consult 2 / i18n 1);
     //   · no-import-in-leaf:constants 还有 3 处(consult 2 / agent 1),
     //     types 还有 16 处(consult 8 / agent 5 / llm 1 / pathways 1 / jobs 1)。
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/db/**/*.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mailer/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/quiz/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/db/**/*.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mail/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/quiz/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts'],
     plugins: { local: localRules },
     rules: { 'local/domain-file-names': 'error', 'local/door-forward-only': 'error' },
   },
@@ -1312,7 +1429,7 @@ const eslintConfig = [
   },
   {
     // ── 现成闸接入 ② · JSDoc 族(与自研 doc 闸并行跑;零违规验证同构后,自研那几条再议退役)──
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts', 'src/lib/template.ts', 'src/lib/http.ts', ...API_DONE, 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mailer/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts', 'src/lib/i18n/**/*.ts', 'src/lib/quiz/**/*.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts', 'src/lib/template.ts', 'src/lib/http.ts', ...API_DONE, 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mail/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts', 'src/lib/i18n/**/*.ts', 'src/lib/quiz/**/*.ts'],
     plugins: { jsdoc },
     rules: {
       'jsdoc/multiline-blocks': ['error', { noSingleLineBlocks: true }],
@@ -1384,8 +1501,37 @@ const eslintConfig = [
   },
   {
     // ── api 路由层的四条豁免落地(理由见文件顶部 API_DONE 的注释)────────────────
-    files: API_DONE,
+    files: [...API_DONE, 'src/lib/*/routes.ts'],
     rules: { 'local/one-parameter': 'off', 'local/typed-signature': 'off' },
+  },
+  {
+    // ── routes ↔ functions 边界闸①：纯行为层不认识 HTTP ──────────────────────
+    files: ['src/lib/*/functions.ts', 'src/lib/*/rows.ts', 'src/lib/*/constants.ts', 'src/lib/*/types.ts', 'src/lib/*/variables.ts'],
+    plugins: { local: localRules },
+    rules: { 'local/no-http-in-functions': 'error' },
+  },
+  {
+    // ── 边界闸②：取数只许 routes.ts 借别域 server 门；纯行为层要数据由 routes 注入。
+    //    db 是基建叶（getDb 属基建）放行；自家 './server' 本就不该引（成环）一并拦。
+    files: ['src/lib/*/functions.ts', 'src/lib/*/rows.ts', 'src/lib/*/constants.ts', 'src/lib/*/types.ts', 'src/lib/*/variables.ts'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: [{
+        group: ['**/lib/*/server', '../*/server', './server', '!**/lib/db/server', '!../db/server'],
+        message: '取数只许 routes.ts（第十一抽屉）借别域 server 门；纯行为层走注入。',
+      }] }],
+    },
+  },
+  {
+    // ── 边界闸：routes.ts 的形状（顶层只许 *Route；禁 SQL/query）──────────────
+    files: ['src/lib/*/routes.ts'],
+    plugins: { local: localRules },
+    rules: { 'local/routes-shape': 'error' },
+  },
+  {
+    // ── 边界闸③：壳零代码 ────────────────────────────────────────────
+    files: API_DONE,
+    plugins: { local: localRules },
+    rules: { 'local/route-shell-only': 'error' },
   },
   {
     files: ['src/lib/ruling/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts'],

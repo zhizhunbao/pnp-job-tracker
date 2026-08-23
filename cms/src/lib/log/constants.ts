@@ -488,7 +488,7 @@ export const JOBS_LOG = {
 /**
  * 邮件域的日志字面量(2026-08-22 mailer 定型批立)。
  */
-export const MAILER_LOG = {
+export const MAIL_LOG = {
   /**
    * 这个域每一行日志的来源标签。
    */

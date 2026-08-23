@@ -11,7 +11,7 @@ import type { Lang } from '../i18n'
 // eslint-disable-next-line local/no-import-in-leaf -- 分值卡 profile 格的形状归 points 域(特批牌形态)
 import type { SelfProfile } from '../points'
 // eslint-disable-next-line local/no-import-in-leaf -- 热门职业行的形状归 jobs 域(特批牌形态)
-import type { TopNoc } from '../jobs/server'
+import type { TopNoc } from '../jobs'
 
 /**
  * 结论落免费区还是锁区。

@@ -15,6 +15,7 @@ import { hasProfile, match } from '../jobs'
 import type { MatchJob } from '../jobs'
 import { friendChat } from '../llm'
 import { EMP_LOG, log } from '../log'
+// eslint-disable-next-line no-restricted-imports -- 存量特批（2026-08-23 边界闸首轮拓出）：十一件套前的跨域取数，归 api 批②注入化改造
 import { employerVerdict } from '../ruling/server'
 import { byLmiaRecency, byNamedRank, byNumAsc, bySkilledDesc } from './callbacks'
 import {

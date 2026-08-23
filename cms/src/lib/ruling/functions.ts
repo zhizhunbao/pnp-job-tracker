@@ -18,6 +18,7 @@ import { headers } from 'next/headers'
 import { getDb } from '../db/server'
 import { numOrNull, queryRowsOrEmpty, SQL, text } from '../db'
 import type { Db } from '../db'
+// eslint-disable-next-line no-restricted-imports -- 存量特批（2026-08-23 边界闸首轮拓出）：十一件套前的跨域取数，归 api 批②注入化改造
 import { getUser, isPro } from '../quota/server'
 import {
   byCostAsc, byCountDesc, byDrawDateDesc, byListRankThenMonths, byNumberAsc, byObstacleThenTier, byOpeningsDesc, byTierAsc,

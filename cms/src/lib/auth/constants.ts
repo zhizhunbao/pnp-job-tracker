@@ -226,3 +226,48 @@ export const PARAM_RETURN_TO = 'returnTo'
  * env 未配 client_id 时第 1 跳的响应体(前端钮同门控不渲染,本路由只是兜底)。
  */
 export const MSG_NOT_CONFIGURED = 'Google login not configured'
+
+/**
+ * 失败留痕话术：env 没配齐。
+ */
+export const LOG_ENV_MISSING = 'env missing'
+
+/**
+ * 失败留痕话术：同意屏没带回 code。
+ */
+export const LOG_NO_CODE = 'no code'
+
+/**
+ * 失败留痕话术：同意屏拒绝/出错前缀。
+ */
+export const LOG_CONSENT = 'consent error: '
+
+/**
+ * 失败留痕话术：state 不对（CSRF 闸）。
+ */
+export const LOG_STATE = 'state mismatch'
+
+/**
+ * 失败留痕话术：换 token 失败。
+ */
+export const LOG_TOKEN = 'token exchange failed'
+
+/**
+ * 失败留痕话术：邮箱缺失或未验证。
+ */
+export const LOG_EMAIL = 'email missing/unverified'
+
+/**
+ * 失败留痕话术：签会话抛错前缀。
+ */
+export const LOG_LOGIN = 'login failed: '
+
+/**
+ * 登录回调产物的 kind：失败。
+ */
+export const K_FAIL = 'fail'
+
+/**
+ * 登录回调产物的 kind：成功。
+ */
+export const K_OK = 'ok'

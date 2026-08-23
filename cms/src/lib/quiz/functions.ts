@@ -19,18 +19,16 @@
  * @author Frank
  * @time 2026-08-18 04:36:46
  */
-import { fetchTopNocs } from '../jobs/server'
-import type { Db } from '../db'
 import {
   ANSWERS_KEY, CLB_V2_MAP, CRED_INCLUDE, DECISIONS, EMPTY, EV_PAGEHIDE, EV_VISIBILITY, JSON_MIME, LI_RE,
   LI_SET_OFF, LI_SET_ON, META_KEY, METHOD_PUT, OLD_PR, OLD_QUIZ, SCORE_ANSWERS_KEY, SCORE_EMPTY, STAGE_BASIC,
-  STATE_HIDDEN, TIER_FREE, TTL, URL_ANSWERS,
+  STATE_HIDDEN, TIER_FREE, URL_ANSWERS,
 } from './constants'
 import { FIELDS, arr, bandFromProvs, normalize, normalizeScore, num, provsFromBand, str, totalV2 } from './rows'
 import { CACHE } from './variables'
 import type {
-  Answers, AnswersPatch, DropFn, FieldNames, FirstStoreFn, MaybeAnswers, MaybeRawDoc, NameFilter, PulledOut,
-  PushedOut, RawCell, RawDoc, RawText, ScoreAnswers, Stage, StoreFn, TopOut, TopRows, UnflagFn,
+  Answers, AnswersPatch, FieldNames, MaybeAnswers, MaybeRawDoc, NameFilter, PulledOut,
+  PushedOut, RawCell, RawDoc, RawText, ScoreAnswers, Stage,
 } from './types'
 
 /**
@@ -613,85 +611,4 @@ export function batchLeadsFree(names: FieldNames): boolean {
     return false
   }
   return def.tier === TIER_FREE
-}
-
-/**
- * 热门职业清单,SWR:命中(含过期)立即返回;过期后台刷。只有整个进程生涯的第一请求真等查询
- * (判定合一批3 前置。为什么在本域:route 的模块级 Map 只有 route 自己够得着,instrumentation
- * 预热填不进去 —— 冷启动后的第一位访客实测吃 8.4s(08-10 生产探针),预热必须和请求路径写
- * 同一份缓存)。
- *
- * @param pool 能查的连接(池由调用方注进来)。
- * @param n 清单条数。
- * @returns 热门职业清单(可能是过期缓存,后台刷新中)。
- */
-// eslint-disable-next-line local/one-parameter -- 既有门面:route 与 instrumentation 两个调用点的形态(连接 + 条数)定死在此
-export async function getTopNocsCached(pool: Db, n: number): TopOut {
-  const hit = CACHE.top.get(n)
-  if (hit != null) {
-    if (Date.now() - hit.at >= TTL && hit.refreshing === false) {
-      hit.refreshing = true
-      fetchTopNocs({ db: pool, limit: n }).then(makeStore(n)).catch(makeUnflag(n))
-    }
-    return hit.rows
-  }
-  const inFlight = CACHE.topPending.get(n)
-  if (inFlight != null) {
-    return inFlight
-  }
-  const task = fetchTopNocs({ db: pool, limit: n }).then(makeFirstStore(n)).finally(makeDrop(n))
-  CACHE.topPending.set(n, task)
-  return task
-}
-
-/**
- * 后台刷成功的落格(then 传具名函数;闭包住条数)。
- *
- * @param n 条数。
- * @returns 落格函数。
- */
-function makeStore(n: number): StoreFn {
-  return function store(rows: TopRows): void {
-    CACHE.top.set(n, { at: Date.now(), rows: rows, refreshing: false })
-  }
-}
-
-/**
- * 后台刷失败的收尾:旧值继续顶,下次再试(闭包住条数)。
- *
- * @param n 条数。
- * @returns 收尾函数。
- */
-function makeUnflag(n: number): UnflagFn {
-  return function unflag(_e: Error): void {
-    const hit = CACHE.top.get(n)
-    if (hit != null) {
-      hit.refreshing = false
-    }
-  }
-}
-
-/**
- * 首查成功的落格 + 透传(闭包住条数)。
- *
- * @param n 条数。
- * @returns 落格函数。
- */
-function makeFirstStore(n: number): FirstStoreFn {
-  return function firstStore(rows: TopRows): TopRows {
-    CACHE.top.set(n, { at: Date.now(), rows: rows, refreshing: false })
-    return rows
-  }
-}
-
-/**
- * 首查收尾:清在途标记(成败都清;闭包住条数)。
- *
- * @param n 条数。
- * @returns 收尾函数。
- */
-function makeDrop(n: number): DropFn {
-  return function drop(): void {
-    CACHE.topPending.delete(n)
-  }
 }

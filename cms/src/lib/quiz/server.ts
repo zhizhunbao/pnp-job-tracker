@@ -10,4 +10,4 @@
  * @time 2026-08-19 02:12:57
  */
 
-export { getTopNocsCached } from './functions'
+export { getTopNocsCached } from './routes'

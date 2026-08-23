@@ -112,9 +112,11 @@ export function freeGate(input: FreeGateIn): FreeGated {
   const user = input.user
   const pro = isPro(user)
   if (user != null && pro === false && checkLimit([[KEY_FREE_USER + String(user.id), FREE_DAILY_TRIES]]) === false) {
+    // eslint-disable-next-line local/no-http-in-functions -- 存量特批：freeGate 的 402/429 拦截体是既有契约（十路由直铺）；改成判定产物由 routes 拼响应，归 api 批②
     return { block: new Response(TEXT_UPGRADE, { status: 402 }), left: 0, headers: {} }
   }
   if (user == null && checkLimit([[KEY_FREE_IP + ipOfHeaders(input.headers), ANON_DAILY_TRIES]]) === false) {
+    // eslint-disable-next-line local/no-http-in-functions -- 存量特批：freeGate 的 402/429 拦截体是既有契约（十路由直铺）；改成判定产物由 routes 拼响应，归 api 批②
     return { block: new Response(TEXT_RATE_LIMITED, { status: 429 }), left: null, headers: {} }
   }
   let left: number | null = null

@@ -9,17 +9,19 @@
  */
 
 import { cookies } from 'next/headers'
+import { AUTH_LOG, log } from '../log'
 import { getFieldsToSign, getPayload, jwtSign } from 'payload'
 import config from '@/payload.config'
 import {
   BEARER_PREFIX, CALLBACK_PATH, CONSENT_STATIC, COOKIE_PREFIX_DEFAULT, COOKIE_RE_HEAD, COOKIE_RE_TAIL,
   FLOW_COOKIE_TAIL, FORM_MIME, GOOGLE_AUTH_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_TOKEN_URL,
   GOOGLE_USERINFO_URL, GRANT_AUTH_CODE, HTTPONLY_TAIL, HTTPS_PREFIX, KV_EQ, LI_PAIR, METHOD_POST,
+  K_FAIL, K_OK, LOG_CONSENT, LOG_EMAIL, LOG_ENV_MISSING, LOG_LOGIN, LOG_NO_CODE, LOG_STATE, LOG_TOKEN,
   PARAM_CLIENT_ID, PARAM_REDIRECT, PARAM_STATE, PROVIDER_GOOGLE, RETURN_RE, ROOT_PATH, SECURE_TAIL,
   HEX_PAD, SESSION_COOKIE_TAIL, SITE, SSR_TOKEN_COOKIE, TOKEN_NAME_TAIL, USERS,
 } from './constants'
 import type {
-  AliveFn, Clock, ConfigWithPrefix, ExchangeIn, GoogleLogin, GoogleLoginIn, GoogleLoginOut, GoogleUserOut,
+  AliveFn, CallbackOut, GoogleCallbackIn, Clock, ConfigWithPrefix, ExchangeIn, GoogleLogin, GoogleLoginIn, GoogleLoginOut, GoogleUserOut,
   HasSessionOut, MaybeCookie, MaybeToken, OauthCookieIn, ReadCookieIn, SessionCookieList, SessionEntry,
   TokenBody, UserinfoBody,
 } from './types'
@@ -285,4 +287,53 @@ function makeAliveFilter(now: Clock): AliveFn {
   return function alive(s: SessionEntry): boolean {
     return new Date(s.expiresAt) > now
   }
+}
+
+/**
+ * 登录回调的整条判定链：参数闸 → state 防 CSRF → 换 token → userinfo 红线 →
+ * 关联/创建并签会话 → 校验回跳路径。每一步失败都在这里留痕（AUTH_LOG），
+ * 路由只按 kind 拼响应 —— HTTP 芯里不再有判定（闸 routes-shape 的由来）。
+ *
+ * @param input 路由取好的五样原料。
+ * @returns 成败联合产物。
+ */
+export async function googleCallback(input: GoogleCallbackIn): CallbackOut {
+  if (GOOGLE_CLIENT_ID === '') {
+    log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_ENV_MISSING })
+    return { kind: K_FAIL }
+  }
+  if (input.error != null || input.code == null || input.code === '') {
+    let why: string = LOG_NO_CODE
+    if (input.error != null) {
+      why = input.error
+    }
+    log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_CONSENT + why })
+    return { kind: K_FAIL }
+  }
+  if (input.cookieState == null || input.stateParam !== input.cookieState) {
+    log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_STATE })
+    return { kind: K_FAIL }
+  }
+  const accessToken = await exchangeCode({ code: input.code })
+  if (accessToken == null) {
+    log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_TOKEN })
+    return { kind: K_FAIL }
+  }
+  const gu = await fetchGoogleUser(accessToken)
+  if (gu == null) {
+    log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_EMAIL })
+    return { kind: K_FAIL }
+  }
+  let session: GoogleLogin
+  try {
+    session = await loginWithGoogle(gu)
+  } catch (e) {
+    let why = String(e)
+    if (e instanceof Error) {
+      why = e.message
+    }
+    log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_LOGIN + why })
+    return { kind: K_FAIL }
+  }
+  return { kind: K_OK, session: session, rt: safeReturnPath(input.rtRaw) }
 }

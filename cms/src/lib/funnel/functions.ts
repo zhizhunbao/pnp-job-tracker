@@ -6,8 +6,9 @@
  * @time 2026-08-22 19:27:15
  */
 
+import { SQL } from '../db'
 import { ALIAS, CHAT_STEPS, DECISION_STEPS, LEGACY_STEPS, LOCAL_HOST_RE, PROP_OK, SOURCE } from './constants'
-import type { FunnelHitIn, MaybeFunnelHit, RateList, RatesOfIn, StepCounts } from './types'
+import type { FunnelHitIn, HostHeadersIn, MaybeFunnelHit, RateList, RatesOfIn, RecordHitIn, RecordedOut, StepCounts } from './types'
 
 /**
  * 站内埋点名(+ 可选分组)→ 入库的一行;不在白名单的返回 null(静默丢弃,不报错)。
@@ -111,4 +112,38 @@ export function decisionRates(counts: StepCounts): RateList {
  */
 export function isLocalHost(host: string): boolean {
   return LOCAL_HOST_RE.test((host || '').trim().toLowerCase())
+}
+
+/**
+ * 取请求来源的 host（优先 origin 头；头不合法就按线上算 ——
+ * 宁可多记一条，也不静默丢线上流量）。
+ *
+ * @param input 两个头的原文（没有是 null）。
+ * @returns host 串；取不到给空串（空串不是本机）。
+ */
+export function siteHostOf(input: HostHeadersIn): string {
+  try {
+    if (input.origin != null && input.origin !== '') {
+      return new URL(input.origin).host
+    }
+    if (input.host != null) {
+      return input.host
+    }
+    return ''
+  } catch {
+    return ''
+  }
+}
+
+/**
+ * 记一笔漏斗计数（按天 UPSERT）。库抖动/表还没建静默吞 ——
+ * 埋点丢一次比页面报错强（同 track 埋点吞错先例）。
+ *
+ * @param input 连接与入库行。
+ * @returns 无。
+ */
+export async function recordHit(input: RecordHitIn): RecordedOut {
+  try {
+    await input.db.query(SQL.FUNNEL_EVENT_UPSERT, [input.hit.event, input.hit.prop])
+  } catch {}
 }

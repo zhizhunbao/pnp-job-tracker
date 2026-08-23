@@ -9,6 +9,7 @@ export {
   exchangeCode, fetchGoogleUser, googleConsentUrl, loginWithGoogle, oauthCookie, readCookie, safeReturnPath,
   sessionCookies, ssrHasSession,
 } from './functions'
+export { googleCallbackRoute, googleStartRoute } from './routes'
 export {
   FAIL_PATH, FLOW_COOKIE_AGE, GOOGLE_CLIENT_ID, HDR_COOKIE, MSG_NOT_CONFIGURED, PARAM_CODE, PARAM_ERROR, PARAM_RETURN_TO,
   PARAM_STATE, RETURN_COOKIE, RETURN_RE, SITE, STATE_COOKIE,

@@ -18,4 +18,4 @@ export {
   loadMatchDims, pnpOnly, scrubPii, searchNocByTitle, splitQ,
 } from './functions'
 export { mapEeCat, mapPnpOcc } from './rows'
-export type { CompanyDetail, RelatedJob, SimilarEmployer, SsrDims, TopNoc } from './types'
+export type { AlertHit, CompanyDetail, JobsFilters, RelatedJob, SimilarEmployer, SsrDims, TopNoc } from './types'
