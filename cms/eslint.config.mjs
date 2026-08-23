@@ -1365,7 +1365,6 @@ const API_DONE = [
   'src/app/api/auth/google/route.ts',
   'src/app/api/auth/google/callback/route.ts',
   'src/app/api/mail/run/route.ts',
-  'src/app/api/alerts/run/route.ts',
   'src/app/api/alerts/unsub/route.ts',
   'src/app/api/points/factors/route.ts',
   'src/app/api/rankings/data/route.ts',

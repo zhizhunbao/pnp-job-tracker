@@ -7,6 +7,6 @@
  */
 
 export { isDryRun, quietInfo, runAlerts, sendMail, unsubToken } from './functions'
-export { alertsRunRoute, alertsUnsubRoute } from './routes'
+export { alertsUnsubRoute, mailRunRoute } from './routes'
 export { MAIL_ENABLED } from './constants'
 export type { FetchHitsFn, RunIn, RunResult } from './types'
