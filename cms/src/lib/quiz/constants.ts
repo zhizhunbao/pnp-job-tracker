@@ -290,3 +290,104 @@ export const CRED_INCLUDE = 'include'
  * 免费档的档名(batchLeadsFree 的判值)。
  */
 export const TIER_FREE = 'free'
+
+/**
+ * /api/quiz 的职业搜索参数名(?q=厨师)。
+ */
+export const P_Q = 'q'
+
+/**
+ * /api/quiz 的职业码参数名(?noc=63200 → 免费事实卡)。
+ */
+export const P_NOC = 'noc'
+
+/**
+ * /api/quiz 的大类参数名(?broad=技工 → 该类职业清单)。
+ */
+export const P_BROAD = 'broad'
+
+/**
+ * /api/quiz 的热门条数参数名(?top=24)。
+ */
+export const P_TOP = 'top'
+
+/**
+ * /api/quiz 的批量计数参数名(?counts=21232,63200)。
+ */
+export const P_COUNTS = 'counts'
+
+/**
+ * 搜索词长度上限(职业名没这么长,超出 = 乱砸)。
+ */
+export const Q_LEN_MAX = 40
+
+/**
+ * 大类名长度上限。
+ */
+export const BROAD_LEN_MAX = 24
+
+/**
+ * 批量计数一次最多几个 NOC。
+ */
+export const COUNTS_N_MAX = 30
+
+/**
+ * ?top= 缺位或非法时的默认条数。
+ */
+export const TOP_N_DEFAULT = 24
+
+/**
+ * 大类职业清单每次取几条。
+ */
+export const BROAD_LIMIT = 60
+
+/**
+ * 事实卡缓存条数上限(职业总数 ~500,600 封顶纯保险)。
+ */
+export const FACTS_CACHE_MAX = 600
+
+/**
+ * 大类清单缓存条数上限(大类共 17 个,40 封顶纯保险;满了整清)。
+ */
+export const BROAD_CACHE_MAX = 40
+
+/**
+ * 批量计数缓存键数上限(满了整清)。
+ */
+export const COUNTS_CACHE_MAX = 100
+
+/**
+ * 批量计数参数的分隔符。
+ */
+export const COUNTS_SEP = ','
+
+/**
+ * 答案档请求体长度上限(几十个档位/勾选 64KB 顶天,超限 = 不是问卷答案,
+ * 不让人往 users 表塞大对象)。
+ */
+export const ANSWERS_LEN_MAX = 64_000
+
+/**
+ * 用户表的 collection 名(答案档存取用)。
+ */
+export const COLLECTION_USERS = 'users'
+
+/**
+ * 错误体:未登录。
+ */
+export const E_AUTH = 'auth'
+
+/**
+ * 错误体:body 形状不对。
+ */
+export const E_BAD = 'bad'
+
+/**
+ * 错误体:请求体超长。
+ */
+export const E_TOO_BIG = 'tooBig'
+
+/**
+ * 错误体:/api/quiz 两个主参数都没带。
+ */
+export const E_PARAM = 'noc or q required'

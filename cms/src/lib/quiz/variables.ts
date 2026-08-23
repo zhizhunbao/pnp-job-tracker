@@ -67,4 +67,19 @@ export const CACHE: QuizCache = {
    * 热门职业:条数 → 在途首查。
    */
   topPending: new Map(),
+
+  /**
+   * 事实卡:noc → 缓存格。
+   */
+  factsBy: new Map(),
+
+  /**
+   * 批量计数:排序后的 noc 串 → 缓存格。
+   */
+  countsBy: new Map(),
+
+  /**
+   * 大类职业清单:大类名 → 缓存格。
+   */
+  broadBy: new Map(),
 }

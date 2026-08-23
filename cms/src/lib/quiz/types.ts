@@ -10,8 +10,10 @@
 import type { Lang } from '../i18n'
 // eslint-disable-next-line local/no-import-in-leaf -- 分值卡 profile 格的形状归 points 域(特批牌形态)
 import type { SelfProfile } from '../points'
-// eslint-disable-next-line local/no-import-in-leaf -- 热门职业行的形状归 jobs 域(特批牌形态)
-import type { TopNoc } from '../jobs'
+// eslint-disable-next-line local/no-import-in-leaf -- 热门职业行/事实卡/计数行的形状归 jobs 域(特批牌形态)
+import type { BroadNoc, NocOpenCount, QuizFacts, TopNoc } from '../jobs'
+// eslint-disable-next-line local/no-import-in-leaf -- Payload Local API 的句柄形状归库(同 mail/types 的 PayloadHandle 特批)
+import type { Payload } from 'payload'
 
 /**
  * 结论落免费区还是锁区。
@@ -509,4 +511,171 @@ export type QuizCache = {
    * 没有它会并发跑两次 4 万岗 GROUP BY —— 08-10 冷启动实测 8s)。
    */
   topPending: Map<number, Promise<TopRows>>
+
+  /**
+   * 事实卡:noc → 缓存格(SWR:命中含过期先回,过期后台刷;实测 1.0s/次,
+   * 决策页分值上下文与职业名回显都在打它)。
+   */
+  factsBy: Map<string, FactsSlot>
+
+  /**
+   * 批量计数:排序后的 noc 串 → 缓存格(第 2 题热门按钮挂真数)。
+   */
+  countsBy: Map<string, CountsSlot>
+
+  /**
+   * 大类职业清单:大类名 → 缓存格(点中大类才取,比每次 top=200 快且省)。
+   */
+  broadBy: Map<string, BroadSlot>
 }
+
+/**
+ * 事实卡缓存一格(noc → 卡;null = 该职业当前零在招,也缓存)。
+ */
+export type FactsSlot = {
+  /**
+   * 落格时刻(ms)。
+   */
+  at: number
+
+  /**
+   * 事实卡;零在招是 null。
+   */
+  facts: QuizFacts | null
+}
+
+/**
+ * 批量计数缓存一格(排序后的 noc 串 → 计数表)。
+ */
+export type CountsSlot = {
+  /**
+   * 落格时刻(ms)。
+   */
+  at: number
+
+  /**
+   * noc → 在招/可提名计数。
+   */
+  counts: Record<string, NocOpenCount>
+}
+
+/**
+ * 大类职业清单缓存一格(大类名 → 清单)。
+ */
+export type BroadSlot = {
+  /**
+   * 落格时刻(ms)。
+   */
+  at: number
+
+  /**
+   * 该大类的职业清单。
+   */
+  rows: BroadNoc[]
+}
+
+/**
+ * 事实卡后台刷成功的落格函数形状。
+ */
+export type FactsStoreFn = (facts: QuizFacts | null) => void
+
+/**
+ * 事实卡后台刷失败的收尾函数形状(旧值已删,下次请求重查)。
+ */
+export type FactsSwallowFn = (e: Error) => void
+
+/**
+ * Payload Local API 的句柄(本域只用 findByID/update 两个面)。
+ */
+export type PayloadHandle = Payload
+
+/**
+ * 用户 id(payload 会话里两种都见过)。
+ */
+export type UserId = string | number
+
+/**
+ * 透传的 json 值(答案档服务端不读内容,只验形与限长)。
+ */
+export type Json = string | number | boolean | null | Json[] | { [key: string]: Json }
+
+/**
+ * PUT /api/quiz/answers 的请求体形状(两格都必须是对象,路由验过才落库)。
+ */
+export type AnswersBody = {
+  /**
+   * 基础三题答案档。
+   */
+  basic: Json
+
+  /**
+   * 分值卡答案档。
+   */
+  score: Json
+}
+
+/**
+ * 答案档在 users 表上的那一格(findByID 的跨边界断言目标:生成的 User 型
+ * 没收 docs/sql 手写加的 answers 列)。
+ */
+export type AnswersDoc = {
+  /**
+   * 答案档 jsonb;没存过是 null。
+   */
+  answers: Json | null
+}
+
+/**
+ * `loadAnswers` 的入参。
+ */
+export type LoadAnswersIn = {
+  /**
+   * Payload 句柄(路由注进来)。
+   */
+  payload: PayloadHandle
+
+  /**
+   * 本人 id(取自 cookie 鉴权结果,不收参数 —— 答案是隐私)。
+   */
+  userId: UserId
+}
+
+/**
+ * `loadAnswers` 的返回(没档/查挂都是 null)。
+ */
+export type AnswersOut = Promise<Json | null>
+
+/**
+ * `saveAnswers` 的入参。
+ */
+export type SaveAnswersIn = {
+  /**
+   * Payload 句柄(路由注进来)。
+   */
+  payload: PayloadHandle
+
+  /**
+   * 本人 id。
+   */
+  userId: UserId
+
+  /**
+   * 基础三题答案档(路由已验是对象)。
+   */
+  basic: Json
+
+  /**
+   * 分值卡答案档(同上)。
+   */
+  score: Json
+
+  /**
+   * 服务端补的更新时刻(ISO)。
+   */
+  updatedAt: string
+}
+
+/**
+ * `saveAnswers` 的返回(落库即返,无体)。
+ */
+export type SaveAnswersOut = Promise<void>

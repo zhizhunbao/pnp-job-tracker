@@ -9,7 +9,7 @@
  */
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { poolOf } from '../db'
+import { getDb } from '../db/server'
 import { fetchAlertHits, loadMatchDims } from '../jobs/server'
 import type { JobsFilters } from '../jobs/server'
 import {
@@ -43,10 +43,7 @@ export async function alertsRunRoute(req: Request): Promise<Response> {
     return Response.json({ ok: true, deferred: true, quietHours: fill({ tpl: QUIET_RANGE, params: { qs: q.qs, qe: q.qe } }), etHour: q.etHour })
   }
   const payload = await getPayload({ config: await config })
-  const pool = poolOf(payload)
-  if (pool == null) {
-    return new Response(null, { status: SERVER_ERROR })
-  }
+  const pool = await getDb()
   let previewLang = ''
   const langParam = sp.get(P_LANG)
   if (langParam != null) {

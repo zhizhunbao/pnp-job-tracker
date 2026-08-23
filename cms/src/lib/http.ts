@@ -34,6 +34,11 @@ export const UNAUTHORIZED = 401
 export const PAYMENT_REQUIRED = 402
 
 /**
+ * 413：请求体超长（答案档 64KB 顶天那类限长闸）。
+ */
+export const TOO_LARGE = 413
+
+/**
  * 404:不存在(含「功能未配置」的兜底门)。
  */
 export const NOT_FOUND = 404

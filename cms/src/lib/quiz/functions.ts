@@ -20,15 +20,12 @@
  * @time 2026-08-18 04:36:46
  */
 import {
-  ANSWERS_KEY, CLB_V2_MAP, CRED_INCLUDE, DECISIONS, EMPTY, EV_PAGEHIDE, EV_VISIBILITY, JSON_MIME, LI_RE,
-  LI_SET_OFF, LI_SET_ON, META_KEY, METHOD_PUT, OLD_PR, OLD_QUIZ, SCORE_ANSWERS_KEY, SCORE_EMPTY, STAGE_BASIC,
-  STATE_HIDDEN, TIER_FREE, URL_ANSWERS,
+  ANSWERS_KEY, CLB_V2_MAP, COLLECTION_USERS, CRED_INCLUDE, DECISIONS, EMPTY, EV_PAGEHIDE, EV_VISIBILITY, JSON_MIME, LI_RE, LI_SET_OFF, LI_SET_ON, META_KEY, METHOD_PUT, OLD_PR, OLD_QUIZ, SCORE_ANSWERS_KEY, SCORE_EMPTY, STAGE_BASIC, STATE_HIDDEN, TIER_FREE, URL_ANSWERS,
 } from './constants'
 import { FIELDS, arr, bandFromProvs, normalize, normalizeScore, num, provsFromBand, str, totalV2 } from './rows'
 import { CACHE } from './variables'
 import type {
-  Answers, AnswersPatch, FieldNames, MaybeAnswers, MaybeRawDoc, NameFilter, PulledOut,
-  PushedOut, RawCell, RawDoc, RawText, ScoreAnswers, Stage,
+  Answers, AnswersDoc, AnswersOut, AnswersPatch, FieldNames, LoadAnswersIn, MaybeAnswers, MaybeRawDoc, NameFilter, PulledOut, PushedOut, RawCell, RawDoc, RawText, SaveAnswersIn, SaveAnswersOut, ScoreAnswers, Stage,
 } from './types'
 
 /**
@@ -611,4 +608,52 @@ export function batchLeadsFree(names: FieldNames): boolean {
     return false
   }
   return def.tier === TIER_FREE
+}
+
+/**
+ * 取本人答案档(2026-08-15 Frank「答案入库绑账号」;Payload 句柄由路由注进来)。
+ * payload.auth 的 user 走 JWT 策略不保证带全字段 —— 档案按 id 回表取,别信缓存形状。
+ * 查挂视作无档(答案档丢一次拉取无害,前端本地档兜底,不 500)。
+ * 体内 `raw as AnswersDoc` 是跨边界断言:生成的 User 型没收 docs/sql 手写加的
+ * answers 列,形状声明在 `AnswersDoc`。
+ *
+ * @param input Payload 句柄与本人 id。
+ * @returns 答案档 json;没档/查挂是 null。
+ */
+export async function loadAnswers(input: LoadAnswersIn): AnswersOut {
+  const raw = await input.payload
+    .findByID({ collection: COLLECTION_USERS, id: input.userId, depth: 0 })
+    .catch(nullAnswersDoc)
+  if (raw == null) {
+    return null
+  }
+  const doc = raw as AnswersDoc
+  if (doc.answers == null) {
+    return null
+  }
+  return doc.answers
+}
+
+/**
+ * 查挂时的空档兜底(catch 传具名函数)。
+ *
+ * @param _e 捕到的错。
+ * @returns null(视作无档)。
+ */
+function nullAnswersDoc(_e: Error): null {
+  return null
+}
+
+/**
+ * 整档覆盖答案(合并判新旧在客户端,本函数只做存;updatedAt 由路由补,服务端时刻为准)。
+ *
+ * @param input Payload 句柄、本人 id、两份答案档与更新时刻。
+ * @returns 落库即返。
+ */
+export async function saveAnswers(input: SaveAnswersIn): SaveAnswersOut {
+  await input.payload.update({
+    collection: COLLECTION_USERS,
+    id: input.userId,
+    data: { answers: { basic: input.basic, score: input.score, updatedAt: input.updatedAt } },
+  })
 }

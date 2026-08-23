@@ -424,6 +424,8 @@ const localRules = {
           ImportDeclaration(node) {
             const src = String(node.source.value)
             if (/(^|\/)db(\/|$)/.test(src) === false) return
+            // import type 放行：形状不是取数（getTopNocsCached 的 Db 参数这类签名要用）
+            if (node.importKind === 'type') return
             const isServerDoor = /(^|\/)db\/server$/.test(src)
             const onlyGetDb = node.specifiers.every(function isGetDb(sp) {
               return sp.type === 'ImportSpecifier' && sp.imported.type === 'Identifier' && sp.imported.name === 'getDb'
@@ -1299,6 +1301,8 @@ const API_DONE = [
   'src/app/api/stats/data/route.ts',
   'src/app/api/stats/fine/route.ts',
   'src/app/api/stats/market/route.ts',
+  'src/app/api/quiz/route.ts',
+  'src/app/api/quiz/answers/route.ts',
 ]
 
 const REFACTORED = [
