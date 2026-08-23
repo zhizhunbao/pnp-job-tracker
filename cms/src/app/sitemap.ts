@@ -1,33 +1,10 @@
-// sitemap(E7-03):核心页 + 榜单 + 地区统计矩阵(E5-04 §2 的 sitemap 收录)。Next 原生约定,零依赖。
-import type { MetadataRoute } from 'next'
+/**
+ * /sitemap.xml(核心页平铺表)— 壳。芯在 lib/seo/functions.ts(coreSitemapOf;
+ * 2026-08-23 seo 立域批)。文件名是 Next Metadata 框架定的,不能改名;
+ * 构建期静态烘焙,芯走 index 门(零库依赖)。职位/公司页在分片 sitemap 里。
+ *
+ * @author Frank
+ * @time 2026-08-23 23:30:00
+ */
 
-// ⚠️ 本路由构建期静态烘焙,而 Docker 构建拿不到 Render env(Dockerfile 无 ARG)→ 实际生效的是 fallback,必须=正式域
-const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com').replace(/\/$/, '')
-
-export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date()
-  const url = (path: string, priority: number, freq: MetadataRoute.Sitemap[0]['changeFrequency'] = 'daily') =>
-    ({ url: `${SITE}${path}`, lastModified: now, changeFrequency: freq, priority })
-
-  const core = [
-    url('/', 1),
-    url('/pricing', 0.8, 'weekly'),
-    url('/about', 0.5, 'monthly'),
-    url('/legal/disclaimer', 0.3, 'monthly'),
-    url('/legal/privacy', 0.3, 'monthly'),
-    url('/legal/terms', 0.3, 'monthly'),
-    // 判定合一批2:/pathways 与 /plan/{job,province,career} 已 301 进决策页,sitemap 只留 /plan/pr
-    url('/plan/pr', 0.9, 'daily'),
-    url('/news', 0.8),
-    // B4-01 名录(SEO 高意图词落地页:AIP designated employers / LMIA records / in-demand occupations)
-    url('/occupations', 0.8, 'weekly'),
-    url('/timeline', 0.8, 'daily'),   // C6-01 抽选与政策时间线
-    url('/resources', 0.7, 'weekly'), // E4-05 官方资源导航
-
-    url('/rankings/weekly-top', 0.9),
-    url('/rankings/sponsor-likely', 0.9),
-    // E13-03:/stats 全家退役(08-06 Frank「完整统计与首页重复」,通配 301 → /start),收录只留把脉首页
-    url('/start', 0.9),
-  ]
-  return core
-}
+export { coreSitemapOf as default } from '@/lib/seo'

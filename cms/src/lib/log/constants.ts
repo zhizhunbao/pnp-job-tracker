@@ -382,6 +382,26 @@ export const DB_LOG = {
 } as const
 
 /**
+ * `lib/seo` 写出去的全部字面量(sitemap 分片查库失败的两类留痕)。
+ */
+export const SEO_LOG = {
+  /**
+   * 这个域每一行日志的来源标签。
+   */
+  tag: 'seo',
+
+  /**
+   * 分片计数查库失败(回落 1 片 —— 空片无害,0 片 = 整个 sitemap 消失)。
+   */
+  countFail: 'sitemap shard count failed, falling back to 1 shard: ',
+
+  /**
+   * 单片查库失败(回空片,不 500 —— sitemap 请求不该打挂站点)。
+   */
+  pageFail: 'sitemap shard page failed, returning empty shard: ',
+} as const
+
+/**
  * `lib/stripe` 写出去的全部字面量。
  */
 export const STRIPE_LOG = {

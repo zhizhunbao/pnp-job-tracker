@@ -1002,6 +1002,13 @@ export const DIMS_FIELD_SOURCES = `SELECT field, kind, publisher, url, title, de
 // ── app/(frontend)/jobs/sitemap.ts ──
 
 /**
+ * 站点地图的在架口径片段(⚠️ 与 OPEN_COND 不是一个口径:这里无表别名、`<> 'closed'`
+ * 把 NULL 与其它状态都算在架 —— sitemap 宁多收不漏收;2026-08-23 自 app 文件搬入,
+ * SQL 片段的家在本叶)。
+ */
+export const SITEMAP_ACTIVE = `COALESCE(status,'open') <> 'closed'`
+
+/**
  * 职位站点地图分片计数。a1=在架口径片段。
  */
 export const jobsSitemapCount = (a1: string) => `SELECT count(*)::int AS n FROM jobs WHERE ${a1}`
