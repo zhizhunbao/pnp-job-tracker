@@ -23,7 +23,7 @@ import { advisorRoute } from '@/lib/advisor/server'
 import { toAdvisorJob, provFactsOf, cityFactsOf, promptOf, type AdvisorJob } from '@/lib/advisor'
 import { normalizeProfile } from '@/lib/jobs'
 import type { JobRow } from '@/lib/jobs'
-import { fetchJobById, loadCityCard, loadProvinceCard } from '@/lib/jobs/server'
+import { fetchJobById, jobDescription, loadCityCard, loadProvinceCard } from '@/lib/jobs/server'
 import { loadNocDuties } from '@/lib/noc/server'
 import { POST as oldAdvisorPost } from '@/app/api/advisor/route'
 
@@ -101,13 +101,26 @@ function probeText(input: { field: string; lang: Lang; text: string; facts: stri
     if (tail.length > 80) out.push({ kind: 'shape/建议行超长', detail: `${tail.length} 字` })
     if (tail.includes('\n')) out.push({ kind: 'shape/建议行后有尾巴', detail: tail.slice(0, 40) })
   }
-  // 接地:答案里的 $ 金额要能在事实块找到(K 档四舍五入的同数放行)
+  // 接地:答案里的 $ 金额要能在事实块找到 —— 数值化比对:facts 里的 "$34K" 展开成
+  // 34000,答案 "$34,000" 归一后按 ±2% 容差找(年化/中位换算的舍入差放行);
+  // 找不到的(如模型自算的差值 $1,000)照报,人工复核减法是否合法。
+  const factNums = new Set<number>()
+  for (const f of facts.replace(/,/g, '').match(/\$?\d+(?:\.\d+)?K?/gi) ?? []) {
+    const k = /K$/i.test(f)
+    const n = Number(f.replace(/^\$/, '').replace(/K$/i, ''))
+    if (Number.isFinite(n)) factNums.add(k ? n * 1000 : n)
+  }
   for (const m of text.match(MONEY_RE) ?? []) {
-    const norm = m.replace(/[\s,]/g, '')
-    const digits = norm.replace(/^\$/, '').replace(/K$/i, '')
-    if (facts.replace(/,/g, '').includes(digits) === false) {
-      out.push({ kind: '接地/金额无出处', detail: m })
+    const norm = m.replace(/[\s,$]/g, '')
+    const k = /K$/i.test(norm)
+    const v0 = Number(norm.replace(/K$/i, ''))
+    const v = k ? v0 * 1000 : v0
+    if (Number.isFinite(v) === false) continue
+    let hit = false
+    for (const fn of factNums) {
+      if (fn === v || (fn > 0 && Math.abs(fn - v) / fn <= 0.02)) { hit = true; break }
     }
+    if (!hit) out.push({ kind: '接地/金额无出处', detail: m })
   }
   if (hasMedian === false && field === 'salary' && /median|中位|중앙값/i.test(text) && (text.match(MONEY_RE) ?? []).length > 1) {
     out.push({ kind: '禁令/疑似编中位', detail: '无中位喂入但答案多处金额' })
@@ -171,7 +184,8 @@ async function oldBodyOf(field: string, p: Picked, lang: Lang): Promise<Record<s
   return { field, id: p.id, lang, job: p.row }
 }
 
-/** 探针接地用的事实底料(该场景喂进模型的数字来源)。 */
+/** 探针接地用的事实底料(该场景喂进模型的数字来源;带 JD 场景连原文一起 ——
+ * 首轮误报教训:签约奖金 $750/里程 $0.45 都写在 JD 里,底料不带 JD 全成「无出处」)。 */
 async function factsOf(field: string, p: Picked, lang: Lang): Promise<string> {
   const db = await getDb()
   if (field === 'provRead') {
@@ -185,8 +199,12 @@ async function factsOf(field: string, p: Picked, lang: Lang): Promise<string> {
     const card = await loadCityCard({ db, city, prov, district: '' })
     return cityFactsOf({ city, prov, district: '', card })
   }
+  let jd = ''
+  if (field === 'title' || field === 'jdRead') {
+    jd = (await jobDescription({ db, applyUrl: (p.job.applyUrl ?? '').trim() })).slice(0, 2200)
+  }
   // 岗位场景:直接用新链的提示词整文当底料(含 jobFacts 的全部数字)
-  return promptOf({ field, job: p.job, jd: '', lang, pf: '', web: null })
+  return promptOf({ field, job: p.job, jd, lang, pf: '', web: null })
 }
 
 suite('advisor 评测批(新链网格 + 老链初判对拍)', () => {
