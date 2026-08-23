@@ -55,3 +55,13 @@ export const KEY_CAT = 'cat.'
  * 分类词条的 i18n 键前缀(老值仍在库里,回退用)。
  */
 export const KEY_BROAD = 'broad.'
+
+/**
+ * 职责/要求翻译的 IP 日限。
+ */
+export const NOCTR_IP_DAILY = 80
+
+/**
+ * 职责/要求翻译限额键前缀。
+ */
+export const NOCTR_LIMIT_PREFIX = 'noctr:'

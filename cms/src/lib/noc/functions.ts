@@ -13,9 +13,10 @@
  * @time 2026-08-22 19:27:15
  */
 
+import { queryRows, SQL, text } from '../db'
 import { BROAD_COLOR, KEY_BROAD, KEY_CAT, LANG_KO, LANG_ZH, NA } from './constants'
 import { CACHE } from './variables'
-import type { Cat, CatLabelRows, CatNameIn, MaybeBroad, NocLocalTitleIn, PickNameIn } from './types'
+import type { Cat, CatLabelRows, CatNameIn, MaybeBroad, NocDutiesIn, NocDutiesOut, NocDutiesRow, NocLocalTitleIn, PickNameIn, Row } from './types'
 
 /**
  * 页面拿到 dims 时把维度表的英/韩分类名登记进本域缓存(catName 优先查它)。
@@ -130,4 +131,32 @@ export function colorOf(broad: MaybeBroad): Cat {
     return NA
   }
   return hit
+}
+
+/**
+ * NOC 官方职责/任职要求（英文单语，懒翻译的源）。
+ *
+ * @param input 连接与职业码。
+ * @returns 两段英文；查无这条是 null。
+ */
+export async function loadNocDuties(input: NocDutiesIn): NocDutiesOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.NOC_DUTIES_BY_CODE, params: [input.noc], map: toNocDutiesRow })
+  if (rows.length === 0) {
+    return null
+  }
+  return rows[0]
+}
+
+// =========================================================================
+// 行构造器（rows 抽屉 2026-08-23 撤编后的固定尾段：db 词汇只许 to* 体内）
+// =========================================================================
+
+/**
+ * 一行 NOC 职责/要求（SQL.NOC_DUTIES_BY_CODE）。
+ *
+ * @param r 库里的一行。
+ * @returns 两段英文（缺位空串）。
+ */
+export function toNocDutiesRow(r: Row): NocDutiesRow {
+  return { duties: text(r.duties), requirements: text(r.requirements) }
 }

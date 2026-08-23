@@ -851,7 +851,7 @@ export const alertNewCount = (a1: string) => `SELECT count(*)::int AS n FROM job
 // 18. JD 整理回写
 // =========================================================================
 
-// ── app/api/jdformat/route.ts ──
+// ── lib/jobs/routes.ts jobsJdformatRoute ──
 /**
  * JD 整理稿回写(带时间戳)。$1=整理稿,$2=职位 id。
  */
@@ -873,7 +873,7 @@ export const JD_SET_EMP_HOURS = `UPDATE jobs SET employment_hours = $1 WHERE id 
 export const JD_STATE_BY_URL = `SELECT id, employment_term, employment_hours, jd_formatted FROM jobs WHERE apply_url = $1 LIMIT 1`
 
 
-// ── app/api/jdformat/route.ts ──
+// ── lib/jobs/routes.ts jobsJdformatRoute ──
 
 // =========================================================================
 // 19. 新闻与评论
@@ -1111,7 +1111,7 @@ export const NEWS_RECENT_80 = `SELECT * FROM news ORDER BY date DESC, id DESC LI
 // 23. 翻译 / 摘要缓存(按界面语言选列)
 // =========================================================================
 
-// ── app/api/news-translate/route.ts ──
+// ── lib/news/routes.ts newsTranslateRoute ──
 
 /**
  * 取英文正文 + 目标语缓存列。a1=缓存列名,$1=slug。
@@ -1123,7 +1123,7 @@ export const newsBodyForTranslate = (a1: string) => `SELECT body_en AS en, ${a1}
  */
 export const newsSetTranslation = (a1: string) => `UPDATE news SET ${a1} = $1 WHERE slug = $2`
 
-// ── app/api/news-summarize/route.ts ──
+// ── lib/news/routes.ts newsSummarizeRoute ──
 
 /**
  * 取标题、英文正文 + 摘要缓存列。a1=缓存列名,$1=slug。

@@ -14,4 +14,4 @@ export {
   employersBoardProps, fetchOccupations, fetchSponsorEmployers, investigateCompany, loadEmployerPage,
   loadCompanyBrief, normalizeEmployerFilters, resetEmployersCache,
 } from './functions'
-export { employersExportRoute, employersInfoRoute, employersRoute, employersSponsorsRoute } from './routes'
+export { employersExportRoute, employersInfoRoute, employersRoute, employersSponsorsRoute, employersTranslateRoute } from './routes'

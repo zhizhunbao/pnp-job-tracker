@@ -521,3 +521,18 @@ export const CSV_CONTENT_TYPE = 'text/csv; charset=utf-8'
  * CSV 响应的下载文件名头值。
  */
 export const CSV_DISPOSITION = 'attachment; filename="sponsor-employers.csv"'
+
+/**
+ * 公司简介五节标记行（ai_brief 生成侧的口径主人在本域；翻译时剖出标记只翻正文）。
+ */
+export const CO_MARKS_RE = /^(\[(?:WHAT|BASE|SIZE|FOUNDED|NOTE)\]\s*)(.*)$/
+
+/**
+ * 简介翻译的 IP 日限。
+ */
+export const CO_IP_DAILY = 60
+
+/**
+ * 简介翻译限额键前缀。
+ */
+export const CO_LIMIT_PREFIX = 'cotr:'

@@ -366,18 +366,18 @@ export function NewsDetail({ row, comments, loggedIn }: { row: NewsRow; comments
   // 段落=\n\n 分隔;段内 \n(联系人块等)渲染为换行(P1c 保真)
   const paras = useMemo(() => row.bodyEn.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean), [row.bodyEn])
   const [zh, setZh] = useState(false)
-  // 懒翻译(P1e,Frank 终版「线上实时」):DB 缓存(SSR 带下)命中秒开;缺则点开关时调 /api/news-translate
+  // 懒翻译(P1e,Frank 终版「线上实时」):DB 缓存(SSR 带下)命中秒开;缺则点开关时调 /api/news/translate
   // (朋友的 qwen 服务,编号协议服务端校验对齐后写回 DB=永久缓存)。per-lang 各自缓存。
   const [transCache, setTransCache] = useState<{ zh: string | null; ko: string | null }>({ zh: row.bodyZh, ko: row.bodyKo })
   const [trState, setTrState] = useState<'idle' | 'busy' | 'err'>('idle')
-  // AI 速读按需生成(P1f):per-lang 缓存(SSR 带下命中秒显);点按钮 → /api/news-summarize → 写库
+  // AI 速读按需生成(P1f):per-lang 缓存(SSR 带下命中秒显);点按钮 → /api/news/summarize → 写库
   const [sumCache, setSumCache] = useState<{ zh: string | null; ko: string | null; en: string | null }>({ zh: row.summaryZh, ko: row.summaryKo, en: row.summaryEn })
   const [sumState, setSumState] = useState<'idle' | 'busy' | 'err'>('idle')
   const fetchSum = async (lang: 'zh' | 'ko' | 'en') => {
     if (sumState === 'busy') return
     setSumState('busy')
     try {
-      const r = await fetch('/api/news-summarize', {
+      const r = await fetch('/api/news/summarize', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ slug: row.slug, lang }),
       })
@@ -391,7 +391,7 @@ export function NewsDetail({ row, comments, loggedIn }: { row: NewsRow; comments
     if (trState === 'busy') return
     setTrState('busy')
     try {
-      const r = await fetch('/api/news-translate', {
+      const r = await fetch('/api/news/translate', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ slug: row.slug, lang }),
       })

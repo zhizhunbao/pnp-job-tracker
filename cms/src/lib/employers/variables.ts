@@ -10,7 +10,7 @@
 import type { EmployersCache } from './types'
 
 /**
- * 雇主域全部的可变状态,就这六格。
+ * 雇主域全部的可变状态,就这七格。
  */
 export const CACHE: EmployersCache = {
   /**
@@ -42,4 +42,9 @@ export const CACHE: EmployersCache = {
    * 橱窗三分表。开机是空的,第一次取的人负责灌。
    */
   boards: null,
+
+  /**
+   * 简介译文缓存。
+   */
+  briefTransBy: new Map(),
 }

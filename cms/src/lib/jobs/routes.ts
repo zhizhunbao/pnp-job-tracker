@@ -13,23 +13,22 @@
 import { headers } from 'next/headers'
 import { getDb } from '../db/server'
 import {
-  BAD_REQUEST, HDR_CACHE_CONTROL, HDR_CONTENT_TYPE, MIME_TEXT, NO_CONTENT, NOT_FOUND, TOO_MANY, UNAVAILABLE,
+  BAD_GATEWAY, BAD_REQUEST, HDR_CACHE_CONTROL, HDR_CONTENT_TYPE, MIME_TEXT, NO_CONTENT, NOT_FOUND, TOO_MANY,
+  UNAVAILABLE,
 } from '../http'
-import { friendLlmReady } from '../llm'
+import {
+  E_BAD_REQUEST, E_NOT_CONFIGURED, E_NOT_FOUND, E_RATE_LIMITED, friendLlmReady, TRANS_KEY_SEP, TRANS_LANGS,
+  TRANSLATE_ROUTE_TIMEOUT_MS, translateReady, translateSectioned,
+} from '../llm'
 import { checkLimit, freeGate, getUser, ipOf, isPro } from '../quota/server'
 import {
-  AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, CITY_PARAM_LEN_MAX,
-  DIMS_CACHE_CONTROL, E_NOC_REQUIRED, JB_POSTING_RE, JD_DAILY_DEFAULT, JD_LIMIT_PREFIX, JOBS_FILTER_KEYS,
-  JOBS_PAGE_SIZE, NOC5_RE, P_CITY, P_CODE, P_DIR, P_DIRECT, P_DISTRICT, P_NOC, P_PAGE, P_PROV, P_SORT, P_URL,
-  P_VIEW, PAGE_N_MAX, PROV2_RE, TRUE_ONE, TRUE_WORD, URL_CUT_RE, VIEW_MATCH,
+  AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, CITY_PARAM_LEN_MAX, DIMS_CACHE_CONTROL, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT, JD_LIMIT_PREFIX, JD_TRANS_MARKS_RE, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, NOC5_RE, PAGE_N_MAX, PROV2_RE, P_CITY, P_CODE, P_DIR, P_DIRECT, P_DISTRICT, P_NOC, P_PAGE, P_PROV, P_SORT, P_URL, P_VIEW, TRUE_ONE, TRUE_WORD, URL_CUT_RE, VIEW_MATCH,
 } from './constants'
 import {
-  emptySimilar, fetchApplyEmail, fetchCompanyByJobId, fetchJobsPage, fetchMatchPage, fetchOccCompetition,
-  fetchSimilarEmployers, generateJdFormatted, hasProfile, jobDescription, loadBigDims, loadCityCard,
-  loadJdState, loadMatchDims, loadProvinceCard, normalizeProfile,
+  emptySimilar, fetchApplyEmail, fetchCompanyByJobId, fetchJobsPage, fetchMatchPage, fetchOccCompetition, fetchSimilarEmployers, generateJdFormatted, hasProfile, jobDescription, loadBigDims, loadCityCard, loadJdFormatted, loadJdState, loadMatchDims, loadProvinceCard, normalizeProfile,
 } from './functions'
 import { CACHE } from './variables'
-import type { CompanyBody, JdUrlBody, JobsFilters, MatchDims, MaybeStr, ProfileJson } from './types'
+import type { CompanyBody, JdTransBody, JdUrlBody, JobsFilters, MatchDims, MaybeStr, ProfileJson } from './types'
 
 /**
  * GET /api/jobs:职位列表服务端分页/筛选/搜索(E10-01 P2,取代旧「一次拉 20k blob 前端过滤」)。
@@ -301,7 +300,7 @@ export async function jobsApplyhowRoute(req: Request): Promise<Response> {
 }
 
 /**
- * POST /api/jdformat {url}:JD 五节整理版懒生成（J2）。命中 jobs.jd_formatted 直接回；
+ * POST /api/jobs/jdformat {url}:JD 五节整理版懒生成（J2）。命中 jobs.jd_formatted 直接回；
  * 缺则走 jobDescription 统一入口拿原文（#139：含懒抓单飞，与并发的 jobtext 共用一次
  * 抓取不重复打原站）→ generateJdFormatted（生成+校验+存列）。同岗并发去重
  * （CACHE.jdFormatInflight，后到者等同一个 Promise）。生成入统一免费池
@@ -311,7 +310,7 @@ export async function jobsApplyhowRoute(req: Request): Promise<Response> {
  * @param req 请求（body 是 { url }）。
  * @returns 整理版纯文本；掉线 204、缺参 400。
  */
-export async function jdformatRoute(req: Request): Promise<Response> {
+export async function jobsJdformatRoute(req: Request): Promise<Response> {
   if (friendLlmReady() === false) {
     return new Response(null, { status: NO_CONTENT })
   }
@@ -367,3 +366,62 @@ export async function jdformatRoute(req: Request): Promise<Response> {
   }
   return new Response(out, { headers: h })
 }
+
+/**
+ * POST /api/jobs/jd-translate {url, lang}:JD 五节整理版懒翻译(职位弹框「显示中文对照」)。
+ * 只翻库内 jobs.jd_formatted(整理版就绪才可翻);标记可与正文同行(#180 教训),
+ * 「- 」子弹前缀剥下保管只翻正文。进程缓存 url+lang(全量翻齐才进;部分翻齐下次点重试补齐)。
+ *
+ * @param req 请求(body 是 { url, lang })。
+ * @returns { ok, text, cached };状态码同 co-translate。
+ */
+export async function jobsJdTranslateRoute(req: Request): Promise<Response> {
+  if (translateReady() === false) {
+    return Response.json({ ok: false, error: E_NOT_CONFIGURED }, { status: UNAVAILABLE })
+  }
+  let url = ''
+  let lang = ''
+  try {
+    const b = await req.json() as JdTransBody
+    if (typeof b.url === 'string') {
+      url = b.url.trim()
+    }
+    if (typeof b.lang === 'string') {
+      lang = b.lang
+    }
+  } catch {
+    url = ''
+  }
+  if (url === '' || TRANS_LANGS.includes(lang) === false) {
+    return Response.json({ ok: false, error: E_BAD_REQUEST }, { status: BAD_REQUEST })
+  }
+  const ck = url + TRANS_KEY_SEP + lang
+  const hit = CACHE.jdTransBy.get(ck)
+  if (hit != null) {
+    return Response.json({ ok: true, text: hit, cached: true })
+  }
+  const fmt = await loadJdFormatted({ db: await getDb(), url: url })
+  if (fmt == null) {
+    return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
+  }
+  if (checkLimit([[JDTR_LIMIT_PREFIX + ipOf(req), JDTR_IP_DAILY]]) === false) {
+    return Response.json({ ok: false, error: E_RATE_LIMITED }, { status: TOO_MANY })
+  }
+  try {
+    const r = await translateSectioned({
+      text: fmt, lang: lang, signal: AbortSignal.timeout(TRANSLATE_ROUTE_TIMEOUT_MS),
+      marks: JD_TRANS_MARKS_RE, bullets: true,
+    })
+    if (r.full) {
+      CACHE.jdTransBy.set(ck, r.text)
+    }
+    return Response.json({ ok: true, text: r.text, cached: false })
+  } catch (e) {
+    let msg = String(e)
+    if (e instanceof Error) {
+      msg = e.message
+    }
+    return Response.json({ ok: false, error: msg }, { status: BAD_GATEWAY })
+  }
+}
+

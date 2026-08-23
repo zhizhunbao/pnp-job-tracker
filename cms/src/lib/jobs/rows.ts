@@ -12,7 +12,7 @@ import {
 } from '../db'
 import { COMP_KEY, UNCAT } from './constants'
 import type {
-  AlertHit, BroadCount, BroadNoc, Cell, CityAgg, CityDim, CompanyJobRow, DesigDim, DistrictDim, DistrictEmployerRow, DliTop, EeCatDim, EeOcc, FieldSource, JdStateRow, JobDbRow, JobRow, JsonCell, JsonRow, MatchJob, MaybeNum, MaybeOccDiff, MaybeStr, NewsSlim, NewsSummaryRow, NewsTransRow, NocCat, NocDescDim, NocDutiesRow, NocHit, OccDiffDbRow, OccDiffFact, OccOpen, PnpDraw, PnpOcc, PnpOccDim, ProvCount, RelatedJob, Row, SimilarEmployer, TimeLike, ToJobRowIn, TopNoc,
+  AlertHit, BroadCount, BroadNoc, Cell, CityAgg, CityDim, CompanyJobRow, DesigDim, DistrictDim, DistrictEmployerRow, DliTop, EeCatDim, EeOcc, FieldSource, JdStateRow, JobDbRow, JobRow, JsonCell, JsonRow, MatchJob, MaybeNum, MaybeOccDiff, MaybeStr, NewsSlim, NocCat, NocDescDim, NocHit, OccDiffDbRow, OccDiffFact, OccOpen, PnpDraw, PnpOcc, PnpOccDim, ProvCount, RelatedJob, Row, SimilarEmployer, TimeLike, ToJobRowIn, TopNoc,
 } from './types'
 
 /**
@@ -596,36 +596,6 @@ export function toNocDescDim(r: Row): NocDescDim {
  */
 export function toJdFormattedCell(r: Row): MaybeStr {
   return textOrNull(r.jd_formatted)
-}
-
-/**
- * 一行 NOC 职责/要求（SQL.NOC_DUTIES_BY_CODE）。
- *
- * @param r 库里的一行。
- * @returns 两段英文（缺位空串）。
- */
-export function toNocDutiesRow(r: Row): NocDutiesRow {
-  return { duties: text(r.duties), requirements: text(r.requirements) }
-}
-
-/**
- * 一行新闻译文源（SQL.newsBodyForTranslate）。
- *
- * @param r 库里的一行。
- * @returns 英文正文与已有译文（都可缺）。
- */
-export function toNewsTransRow(r: Row): NewsTransRow {
-  return { en: textOrNull(r.en), cached: textOrNull(r.cached) }
-}
-
-/**
- * 一行新闻速读源（SQL.newsForSummary）。
- *
- * @param r 库里的一行。
- * @returns 标题、英文正文与已有速读。
- */
-export function toNewsSummaryRow(r: Row): NewsSummaryRow {
-  return { title: text(r.title), en: textOrNull(r.en), cached: textOrNull(r.cached) }
 }
 
 /**

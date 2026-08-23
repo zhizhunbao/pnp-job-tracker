@@ -5,6 +5,7 @@
 // 后果不是「少了几条警告」,而是这道闸事实上一直是空的:算完不用的变量、撤功能留下的死代码,
 // 全靠人肉发现(2026-08-11 实撞两处)。改成直接摊平 flat 配置,不再过兼容层。
 import fs from 'node:fs'
+import perfectionist from 'eslint-plugin-perfectionist'
 import nodePath from 'node:path'
 import nextCoreWebVitals from 'eslint-config-next/core-web-vitals'
 import nextTypeScript from 'eslint-config-next/typescript'
@@ -19,7 +20,7 @@ const BARRELS = ['agent', 'consult', 'db', 'i18n', 'jobs', 'pathways', 'gauge', 
   // profile/auth/stripe 只有 server 门(纯服务端域),照样进名单 —— ABSOLUTE 拦直点文件,ALLOW 放行 server。
   'funnel', 'location', 'noc', 'rankings', 'mail', 'lmia', 'track', 'profile', 'auth', 'stripe',
   // 2026-08-23 log/error 自单文件升目录(Frank「log 和 error 呢」),既有 '../log' import 经桶续命。
-  'log', 'error']
+  'log', 'error', 'news']
 const ABSOLUTE = BARRELS.map((m) => `**/lib/${m}/*`)
 // jobs / points / ruling / employers / plan / quiz / stats / quota / pathways 有**两个门**(index=客户端也安全的那半、server=要连库的那半;
 // 理由见 lib/jobs/index.ts 顶上那段:混着 payload 依赖的桶会把连接池打进浏览器包)。
@@ -46,8 +47,9 @@ const ALLOW = [
   '!**/lib/stripe/server', '!./stripe/server', '!../stripe/server',
   '!**/lib/mail/server', '!./mail/server', '!../mail/server',
   '!**/lib/funnel/server', '!./funnel/server', '!../funnel/server',
-  '!**/lib/llm/server', '!./llm/server', '!../llm/server',
   '!**/lib/resume/server', '!./resume/server', '!../resume/server',
+  '!**/lib/news/server', '!./news/server', '!../news/server',
+  '!**/lib/noc/server', '!./noc/server', '!../noc/server',
 ]
 const SIBLING = BARRELS.flatMap((m) => [`./${m}/*`, `../${m}/*`])
 const barrelOnly = (group) => ({
@@ -1217,28 +1219,92 @@ const localRules = {
     // textOrNull/show/jsonOrNull)只许 rows.ts 用 —— functions.ts 里 import 这些词,
     // 就是还有格没洗完就进了业务层;该格的清洗挪进那条查询的行构造器(to*)。
     // functions 里剩下的判空只许是业务取舍(这行入不入选),不许是「这格可能是脏的」。
+    // ── 报纸式排序（2026-08-23 Frank「可以给我 functions 一个固定排序吗」）：
+    //    先主干后细节 —— 被调函数必须出现在它的第一个调用者之后。
+    //    只看同文件顶层 function 声明；互相递归的一对不管（两头都排不了）。
+    'step-down-order': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          order: '`{{ callee }}` 声明在它的第一个调用者 `{{ caller }}` 之前 —— 报纸式排序：先主干后细节，把它移到首个调用者之后。',
+        },
+      },
+      create(context) {
+        if (!/(functions|routes)\.ts$/.test(context.filename ?? '')) return {}
+        const fns = new Map()
+        const calls = []
+        function topFn(node) {
+          let fn = null
+          for (let n = node; n; n = n.parent) {
+            if (n.type === 'FunctionDeclaration' && n.id) fn = n
+          }
+          if (fn) return fn.id.name
+          return ''
+        }
+        return {
+          Program(node) {
+            let i = 0
+            for (const st of node.body) {
+              let d = st
+              if (st.type === 'ExportNamedDeclaration' && st.declaration) d = st.declaration
+              if (d.type === 'FunctionDeclaration' && d.id) fns.set(d.id.name, { node: d, index: i++ })
+            }
+          },
+          CallExpression(node) {
+            if (node.callee.type !== 'Identifier') return
+            const from = topFn(node)
+            if (from) calls.push({ from, name: node.callee.name })
+          },
+          'Program:exit'() {
+            const firstCaller = new Map()
+            for (const c of calls) {
+              if (!fns.has(c.name) || !fns.has(c.from) || c.name === c.from) continue
+              const ci = fns.get(c.from).index
+              const cur = firstCaller.get(c.name)
+              if (cur == null || ci < cur.index) firstCaller.set(c.name, { index: ci, caller: c.from })
+            }
+            for (const [callee, info] of firstCaller) {
+              const mutual = calls.some((c) => c.from === callee && c.name === info.caller)
+              if (mutual) continue
+              if (fns.get(callee).index < info.index) {
+                context.report({ node: fns.get(callee).node.id, messageId: 'order', data: { callee, caller: info.caller } })
+              }
+            }
+          },
+        }
+      },
+    },
+
     'no-db-vocab-in-functions': {
       meta: {
         type: 'suggestion',
         schema: [],
         messages: {
           vocab:
-            '`{{ name }}` 是 db 词汇(值级清洗),只许 rows.ts 用 —— functions 的入参必须已经有效'
-            + '(2026-08-22 Frank 拍板);把这格的清洗挪进该查询的行构造器。',
+            '`{{ name }}` 是 db 词汇(值级清洗),只许 `to*` 行构造器体内用(rows 抽屉 2026-08-23 撤编)'
+            + ' —— 其余函数的入参必须已经有效(2026-08-22 Frank 拍板);把这格的清洗挪进该查询的行构造器。',
         },
       },
       create(context) {
-        // 2026-08-23 扩到 routes.ts（Frank「还有一大堆写死的常量」）：HTTP 芯同样不许裸字
+        // 2026-08-23 扩到 routes.ts（Frank「还有一大堆写死的常量」）：HTTP 芯同样不许裸字。
+        // 2026-08-23 rows 抽屉撤编（Frank「rows callback 合并到 functions」）：判据从「文件」
+        // 改「函数名」—— db 词汇只监调用点，to* 行构造器体内放行（import 不再报）。
         if (!/(functions|routes)\.ts$/.test(context.filename ?? '')) return {}
         const WORDS = new Set(['text', 'count', 'numOrNull', 'textOrNull', 'show', 'jsonOrNull'])
+        function topFnName(node) {
+          let fn = null
+          for (let n = node; n; n = n.parent) {
+            if (n.type === 'FunctionDeclaration' && n.id) fn = n
+          }
+          if (fn) return fn.id.name
+          return ''
+        }
         return {
-          ImportDeclaration(node) {
-            if (!/(\.\.\/db|@\/lib\/db)$/.test(node.source.value)) return
-            for (const sp of node.specifiers) {
-              if (sp.type === 'ImportSpecifier' && WORDS.has(sp.imported.name)) {
-                context.report({ node: sp, messageId: 'vocab', data: { name: sp.imported.name } })
-              }
-            }
+          CallExpression(node) {
+            if (node.callee.type !== 'Identifier' || !WORDS.has(node.callee.name)) return
+            if (/^to[A-Z]/.test(topFnName(node))) return
+            context.report({ node: node.callee, messageId: 'vocab', data: { name: node.callee.name } })
           },
         }
       },
@@ -1322,12 +1388,12 @@ const API_DONE = [
   'src/app/api/stripe/checkout/route.ts',
   'src/app/api/stripe/webhook/route.ts',
   'src/app/api/consult/chat/route.ts',
-  'src/app/api/co-translate/route.ts',
-  'src/app/api/jd-translate/route.ts',
-  'src/app/api/noc-translate/route.ts',
-  'src/app/api/news-translate/route.ts',
-  'src/app/api/news-summarize/route.ts',
-  'src/app/api/jdformat/route.ts',
+  'src/app/api/employers/translate/route.ts',
+  'src/app/api/jobs/jd-translate/route.ts',
+  'src/app/api/noc/translate/route.ts',
+  'src/app/api/news/translate/route.ts',
+  'src/app/api/news/summarize/route.ts',
+  'src/app/api/jobs/jdformat/route.ts',
   'src/app/api/resume/route.ts',
   'src/app/api/resume/extract/route.ts',
   'src/app/api/resume/match/route.ts',
@@ -1432,7 +1498,7 @@ const eslintConfig = [
     // 域定型一个就往这里加一个。
     // 域每定型一个就往这张名单里加一个。2026-08-19 当天 `agent` / `llm` / `error` / `log`
     // 的 91 条存量(多数是写成一行的 type,属性没各自的注释)已经逐条补完,所以它们也在里面。
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts', 'src/lib/template.ts', 'src/lib/http.ts', ...API_DONE, 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mail/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts', 'src/lib/i18n/**/*.ts', 'src/lib/quiz/**/*.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts', 'src/lib/template.ts', 'src/lib/http.ts', ...API_DONE, 'src/lib/news/**/*.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mail/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts', 'src/lib/i18n/**/*.ts', 'src/lib/quiz/**/*.ts'],
     plugins: { local: localRules },
     rules: {
       // 注释的形状
@@ -1485,9 +1551,49 @@ const eslintConfig = [
   },
   {
     // ── 同一条闸:立规当天就达标的三个域直接 error ──────────────────────────────
-    files: ['src/lib/stats/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/rankings/**/*.ts'],
+    files: ['src/lib/stats/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/news/**/*.ts', 'src/lib/noc/**/*.ts'],
     plugins: { local: localRules },
     rules: { 'local/no-db-vocab-in-functions': 'error' },
+  },
+  {
+    // ── 报纸式排序闸（2026-08-23）：存量违规进 suppressions 基线只紧不松 ────────
+    files: ['src/lib/*/functions.ts', 'src/lib/*/routes.ts'],
+    plugins: { local: localRules },
+    rules: { 'local/step-down-order': 'error' },
+  },
+  {
+    // ── routes 按 URL 字典序（名↔URL 机械映射后字母序 ≈ URL 序；现成闸直接用，
+    //    多方法序迁就它改字母序 —— 2026-08-23 规约）。只排顶层函数，不碎 import。
+    files: ['src/lib/*/routes.ts'],
+    plugins: { perfectionist },
+    rules: {
+      'perfectionist/sort-modules': ['error', {
+        type: 'alphabetical',
+        partitionByComment: true,
+        groups: [],
+      }],
+    },
+  },
+  {
+    // ── 命名形状闸（2026-08-23 Frank「函数名需要设计吗」那套规约的现成半）：
+    //    常量/变量全大写、type PascalCase、函数 camelCase。角色词表（load/get/to…）靠 review。
+    files: ['src/lib/*/constants.ts', 'src/lib/*/variables.ts'],
+    rules: {
+      '@typescript-eslint/naming-convention': ['error',
+        { selector: 'variable', modifiers: ['const', 'exported'], format: ['UPPER_CASE'] }],
+    },
+  },
+  {
+    files: ['src/lib/*/types.ts'],
+    rules: {
+      '@typescript-eslint/naming-convention': ['error', { selector: 'typeAlias', format: ['PascalCase'] }],
+    },
+  },
+  {
+    files: ['src/lib/*/functions.ts', 'src/lib/*/routes.ts', 'src/lib/*/rows.ts', 'src/lib/*/callbacks.ts'],
+    rules: {
+      '@typescript-eslint/naming-convention': ['error', { selector: 'function', format: ['camelCase'] }],
+    },
   },
   {
     // ── 现成闸接入 ①(2026-08-22 Frank「全都接进来」)· 特批牌纪律 ──────────────────
@@ -1503,7 +1609,7 @@ const eslintConfig = [
   },
   {
     // ── 现成闸接入 ② · JSDoc 族(与自研 doc 闸并行跑;零违规验证同构后,自研那几条再议退役)──
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts', 'src/lib/template.ts', 'src/lib/http.ts', ...API_DONE, 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mail/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts', 'src/lib/i18n/**/*.ts', 'src/lib/quiz/**/*.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts', 'src/lib/template.ts', 'src/lib/http.ts', ...API_DONE, 'src/lib/news/**/*.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mail/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts', 'src/lib/i18n/**/*.ts', 'src/lib/quiz/**/*.ts'],
     plugins: { jsdoc },
     rules: {
       'jsdoc/multiline-blocks': ['error', { noSingleLineBlocks: true }],

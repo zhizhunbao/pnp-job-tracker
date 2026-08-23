@@ -6,6 +6,9 @@
  * @time 2026-08-22 19:27:15
  */
 
+// eslint-disable-next-line local/no-import-in-leaf -- db 是基础设施叶子（能 query 的连接形状归它），与 stats/types 同一特批
+import type { Db } from '../db'
+
 /**
  * 界面语言码(镜像 i18n 的 Lang;types 是叶子不 import,加语言时装配处 tsc 会点名)。
  */
@@ -120,6 +123,11 @@ export type NocCache = {
    * 分类值 → 英/韩名登记表(页面拿到 dims 时登记一次;查不到走 i18n 回退)。
    */
   labels: Record<string, CatL10n>
+
+  /**
+   * 职责/要求译文：noc:lang → 两段（全量翻齐才进；服务端才用，浏览器侧恒空）。
+   */
+  dutiesTransBy: Map<string, NocTransPair>
 }
 
 /**
@@ -210,4 +218,79 @@ export type NocLocalTitleIn = {
    * 界面语言码。
    */
   lang: LangCode
+}
+
+/**
+ * 库标量格（本域窄行只读文本列）。
+ */
+export type Cell = string | number | boolean | null
+
+/**
+ * 库里的一行（窄查询 + 词汇表收窄）。
+ */
+export type Row = Record<string, Cell>
+
+/**
+ * NOC 职责/要求两段（英文原文；缺位空串）。
+ */
+export type NocDutiesRow = {
+  /**
+   * 职责逐行文本。
+   */
+  duties: string
+
+  /**
+   * 任职要求逐行文本。
+   */
+  requirements: string
+}
+
+/**
+ * `loadNocDuties` 的入参。
+ */
+export type NocDutiesIn = {
+  /**
+   * 能查的连接。
+   */
+  db: Db
+
+  /**
+   * 五位职业码。
+   */
+  noc: string
+}
+
+/**
+ * `loadNocDuties` 的返回（查无这条是 null）。
+ */
+export type NocDutiesOut = Promise<NocDutiesRow | null>
+
+/**
+ * POST /api/noc/translate 的请求体形状（跨边界断言目标，逐格判后才用）。
+ */
+export type NocTransBody = {
+  /**
+   * 五位职业码；不是字符串当没带。
+   */
+  noc: string | null
+
+  /**
+   * 目标语种；不在白名单 400。
+   */
+  lang: string | null
+}
+
+/**
+ * 职责/要求两段译文（进程缓存一格）。
+ */
+export type NocTransPair = {
+  /**
+   * 职责译文。
+   */
+  duties: string
+
+  /**
+   * 任职要求译文。
+   */
+  requirements: string
 }

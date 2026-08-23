@@ -123,7 +123,7 @@ export function CompanyAiSection({ company, t, showTrans, lang, flat, bare, skip
   useEffect(() => {
     if (!showTrans || trans != null || !d || lang === 'en' || !lang) return
     let dead = false
-    fetch('/api/co-translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: company, lang }) })
+    fetch('/api/employers/translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: company, lang }) })
       .then((r) => r.json().catch(() => null))
       .then((x) => { if (!dead && x?.ok && x.text) setTrans(x.text) })
       .catch(() => {})
@@ -259,7 +259,7 @@ export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo,
   useEffect(() => {
     if (!showTrans || trans != null || hasDesc || !company.aiBrief || lang === 'en') return
     let dead = false
-    fetch('/api/co-translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: company.name, lang }) })
+    fetch('/api/employers/translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: company.name, lang }) })
       .then((r) => r.json().catch(() => null))
       .then((x) => { if (!dead && x?.ok && x.text) setTrans(x.text) })
       .catch(() => {})

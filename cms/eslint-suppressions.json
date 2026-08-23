@@ -49,14 +49,72 @@
       "count": 1
     }
   },
+  "src/lib/agent/functions.ts": {
+    "local/step-down-order": {
+      "count": 13
+    }
+  },
+  "src/lib/auth/functions.ts": {
+    "local/step-down-order": {
+      "count": 5
+    }
+  },
   "src/lib/consult/functions.ts": {
     "local/no-db-vocab-in-functions": {
       "count": 2
+    },
+    "local/step-down-order": {
+      "count": 55
+    }
+  },
+  "src/lib/db/functions.ts": {
+    "local/step-down-order": {
+      "count": 1
     }
   },
   "src/lib/db/types.ts": {
     "@eslint-community/eslint-comments/require-description": {
       "count": 1
+    }
+  },
+  "src/lib/employers/functions.ts": {
+    "local/step-down-order": {
+      "count": 20
+    }
+  },
+  "src/lib/error/functions.ts": {
+    "local/step-down-order": {
+      "count": 3
+    }
+  },
+  "src/lib/funnel/functions.ts": {
+    "local/step-down-order": {
+      "count": 1
+    }
+  },
+  "src/lib/gauge/functions.ts": {
+    "local/step-down-order": {
+      "count": 5
+    }
+  },
+  "src/lib/jobs/constants.ts": {
+    "@typescript-eslint/naming-convention": {
+      "count": 1
+    }
+  },
+  "src/lib/jobs/functions.ts": {
+    "local/step-down-order": {
+      "count": 38
+    }
+  },
+  "src/lib/legal/constants.ts": {
+    "@typescript-eslint/naming-convention": {
+      "count": 1
+    }
+  },
+  "src/lib/llm/functions.ts": {
+    "local/step-down-order": {
+      "count": 32
     }
   },
   "src/lib/llm/types.ts": {
@@ -67,6 +125,41 @@
       "count": 1
     }
   },
+  "src/lib/location/functions.ts": {
+    "local/step-down-order": {
+      "count": 1
+    }
+  },
+  "src/lib/mail/functions.ts": {
+    "local/step-down-order": {
+      "count": 8
+    }
+  },
+  "src/lib/official/constants.ts": {
+    "@typescript-eslint/naming-convention": {
+      "count": 1
+    }
+  },
+  "src/lib/pathways/constants.ts": {
+    "@typescript-eslint/naming-convention": {
+      "count": 3
+    }
+  },
+  "src/lib/pathways/functions.ts": {
+    "local/step-down-order": {
+      "count": 2
+    }
+  },
+  "src/lib/plan/functions.ts": {
+    "local/step-down-order": {
+      "count": 10
+    }
+  },
+  "src/lib/points/functions.ts": {
+    "local/step-down-order": {
+      "count": 60
+    }
+  },
   "src/lib/points/types.ts": {
     "local/no-optional": {
       "count": 8
@@ -75,9 +168,27 @@
       "count": 1
     }
   },
+  "src/lib/quiz/functions.ts": {
+    "local/step-down-order": {
+      "count": 10
+    }
+  },
+  "src/lib/quota/functions.ts": {
+    "local/step-down-order": {
+      "count": 4
+    }
+  },
+  "src/lib/resume/functions.ts": {
+    "local/step-down-order": {
+      "count": 1
+    }
+  },
   "src/lib/ruling/functions.ts": {
     "local/no-db-vocab-in-functions": {
-      "count": 2
+      "count": 6
+    },
+    "local/step-down-order": {
+      "count": 130
     }
   },
   "src/lib/ruling/types.ts": {
@@ -86,6 +197,16 @@
     },
     "local/no-undefined-type": {
       "count": 6
+    }
+  },
+  "src/lib/stats/functions.ts": {
+    "local/step-down-order": {
+      "count": 2
+    }
+  },
+  "src/lib/track/functions.ts": {
+    "local/step-down-order": {
+      "count": 1
     }
   }
 }

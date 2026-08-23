@@ -11,21 +11,25 @@
 import { headers } from 'next/headers'
 import { getDb } from '../db/server'
 import {
-  BAD_REQUEST, HDR_CACHE_CONTROL, HDR_CONTENT_DISPOSITION, HDR_CONTENT_TYPE, NO_CONTENT, PAYMENT_REQUIRED,
+  BAD_GATEWAY, BAD_REQUEST, HDR_CACHE_CONTROL, HDR_CONTENT_DISPOSITION, HDR_CONTENT_TYPE, NO_CONTENT,
+  NOT_FOUND, PAYMENT_REQUIRED, TOO_MANY, UNAVAILABLE,
 } from '../http'
-import { friendLlmReady } from '../llm'
-import { freeGate, getUser, getUserOrNull, isPro } from '../quota/server'
 import {
-  CACHE_TTL_MS, CITY_LEN_MAX, CSV_CACHE_CONTROL, CSV_CONTENT_TYPE, CSV_DISPOSITION, E_PRO, EMP_CACHE_CONTROL,
+  E_BAD_REQUEST, E_NOT_CONFIGURED, E_NOT_FOUND, E_RATE_LIMITED, friendLlmReady,
+  TRANS_KEY_SEP, TRANS_LANGS, TRANSLATE_ROUTE_TIMEOUT_MS, translateReady, translateSectioned,
+} from '../llm'
+import { checkLimit, freeGate, getUser, getUserOrNull, ipOf, isPro } from '../quota/server'
+import {
+  CACHE_TTL_MS, CITY_LEN_MAX, CO_IP_DAILY, CO_LIMIT_PREFIX, CO_MARKS_RE, CSV_CACHE_CONTROL, CSV_CONTENT_TYPE, CSV_DISPOSITION, E_PRO, EMP_CACHE_CONTROL,
   EMP_PAGE_SIZE, EXPORT_PROVS, EXPORT_Q_LEN_MAX, MODE, NAME_LEN_MAX, NOC5_RE, PAGE_SIZE_MAX, PARAM, SORT_OPEN,
   SORT_SKILLED, SPONSORS_CACHE_CONTROL, VIEW,
 } from './constants'
 import {
   applySponsorFilters, buildSponsorBoards, companyRow, fetchSponsorEmployers, investigateCompany,
-  loadEmployerPage, normalizeEmployerFilters, sponsorCsvOf,
+  loadCompanyBrief, loadEmployerPage, normalizeEmployerFilters, sponsorCsvOf,
 } from './functions'
 import { CACHE } from './variables'
-import type { InfoBody, SponsorFilters } from './types'
+import type { EmployersTransBody, InfoBody, SponsorFilters } from './types'
 
 /**
  * GET /api/employers:雇主板懒取(2026-08-16,雇主页照职位板重做那批)。
@@ -189,3 +193,62 @@ function paramOf(sp: URLSearchParams, key: string): string {
   }
   return v.trim()
 }
+
+/**
+ * POST /api/employers/translate {name, lang}:公司 AI 检索简介懒翻译(公司弹框「显示中文对照」)。
+ * 只翻库内 companies.ai_brief(五节标记);节标记与 (not stated) 原样保留,输出与原文
+ * 行结构完全一致 —— 前端按节配对,英文下显中文(#185)。进程缓存 name+lang(全量翻齐才进)。
+ *
+ * @param req 请求(body 是 { name, lang })。
+ * @returns { ok, text, cached };未配置 503、参数非法 400、查无 404、超限 429、翻挂 502。
+ */
+export async function employersTranslateRoute(req: Request): Promise<Response> {
+  if (translateReady() === false) {
+    return Response.json({ ok: false, error: E_NOT_CONFIGURED }, { status: UNAVAILABLE })
+  }
+  let name = ''
+  let lang = ''
+  try {
+    const b = await req.json() as EmployersTransBody
+    if (typeof b.name === 'string') {
+      name = b.name.trim()
+    }
+    if (typeof b.lang === 'string') {
+      lang = b.lang
+    }
+  } catch {
+    name = ''
+  }
+  if (name === '' || TRANS_LANGS.includes(lang) === false) {
+    return Response.json({ ok: false, error: E_BAD_REQUEST }, { status: BAD_REQUEST })
+  }
+  const ck = name.toLowerCase() + TRANS_KEY_SEP + lang
+  const hit = CACHE.briefTransBy.get(ck)
+  if (hit != null) {
+    return Response.json({ ok: true, text: hit, cached: true })
+  }
+  const brief = await loadCompanyBrief({ db: await getDb(), name: name })
+  if (brief == null) {
+    return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
+  }
+  if (checkLimit([[CO_LIMIT_PREFIX + ipOf(req), CO_IP_DAILY]]) === false) {
+    return Response.json({ ok: false, error: E_RATE_LIMITED }, { status: TOO_MANY })
+  }
+  try {
+    const r = await translateSectioned({
+      text: brief, lang: lang, signal: AbortSignal.timeout(TRANSLATE_ROUTE_TIMEOUT_MS),
+      marks: CO_MARKS_RE, bullets: false,
+    })
+    if (r.full) {
+      CACHE.briefTransBy.set(ck, r.text)
+    }
+    return Response.json({ ok: true, text: r.text, cached: false })
+  } catch (e) {
+    let msg = String(e)
+    if (e instanceof Error) {
+      msg = e.message
+    }
+    return Response.json({ ok: false, error: msg }, { status: BAD_GATEWAY })
+  }
+}
+

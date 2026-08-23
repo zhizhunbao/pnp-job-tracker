@@ -2391,41 +2391,6 @@ export const MAIL_SKIP_SUFFIXES: string[] = ['gc.ca', 'canada.ca']
 export const HOW_APPLY_RE = /how to apply/i
 
 /**
- * 新闻正文译文列：语种 → 列名（懒翻译的 DB 永久缓存；seed 对这两列不清）。
- */
-export const NEWS_BODY_COL: Record<string, string> = {
-  /**
-   * 中文正文列。
-   */
-  zh: 'body_zh',
-
-  /**
-   * 韩文正文列。
-   */
-  ko: 'body_ko',
-}
-
-/**
- * 新闻速读列：语种 → 列名（summary_en 由 DDL4 手写加，未跑时查询报错由路由容错）。
- */
-export const NEWS_SUMMARY_COL: Record<string, string> = {
-  /**
-   * 中文速读列。
-   */
-  zh: 'summary_zh',
-
-  /**
-   * 韩文速读列。
-   */
-  ko: 'summary_ko',
-
-  /**
-   * 英文速读列。
-   */
-  en: 'summary_en',
-}
-
-/**
  * JD 整理版必须齐全的五节标记（校验用；口径主人是 prompts 的 JD_FORMAT_PROMPT_HEAD）。
  */
 export const JD_SECTION_MARKS: string[] = ['ROLE', 'REQS', 'PAY', 'WORKHOURS', 'APPLY']
@@ -2494,3 +2459,19 @@ export const MARK_HEAD = '['
  * 节标记拼写的尾。
  */
 export const MARK_TAIL = ']'
+
+/**
+ * JD 整理版五节标记行的剖分（翻译时标记与正文可同行，#180 教训；
+ * 口径主人是 prompts 的 JD_FORMAT_PROMPT_HEAD）。
+ */
+export const JD_TRANS_MARKS_RE = /^(\[(?:ROLE|REQS|PAY|WORKHOURS|APPLY)\]\s*)(.*)$/
+
+/**
+ * JD 翻译的 IP 日限。
+ */
+export const JDTR_IP_DAILY = 60
+
+/**
+ * JD 翻译限额键前缀。
+ */
+export const JDTR_LIMIT_PREFIX = 'jdtr:'

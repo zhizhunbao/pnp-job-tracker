@@ -447,7 +447,7 @@ function useFloatPanel(prefKey: string, defW: number, defH: number) {
 // 分类弹框主体(#176 分类=「这职业是干嘛的」;Frank 2026-07-21 三卡改版):
 // 三张带 title 的卡 —— ① 职业分类(NOC/职业名/TEER/三级;点哪个字段该行高亮=「点哪个字段就显示哪个字段」
 // 在「始终出完整三卡」下的落地)② 官方主要职责 ③ 任职要求。顶部两钮:
-//  · 显示中文对照:职责/要求实时翻(/api/noc-translate 懒调朋友 qwen,进程缓存;数据层只存英文)。英文界面不出。
+//  · 显示中文对照:职责/要求实时翻(/api/noc/translate 懒调朋友 qwen,进程缓存;数据层只存英文)。英文界面不出。
 //  · AI 速读:点了才生成(复用 /api/advisor 免费额度 field=occRead,按 NOC 缓存)——不点不烧,#176 零成本默认不破。
 function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; lang: Lang; plan: Plan; nocDesc: NocDesc[]; srcField: ColKey }) {
   const t = makeT(lang)
@@ -462,7 +462,7 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
     track('cat-translate')   // #129
     setTransStatus('loading')
     try {
-      const r = await fetch('/api/noc-translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ noc: job.noc, lang }) })
+      const r = await fetch('/api/noc/translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ noc: job.noc, lang }) })
       const d = await r.json().catch(() => null)
       if (d?.ok) { setTrans({ duties: d.duties || '', requirements: d.requirements || '' }); setShowTrans(true); setTransStatus('idle') }
       else setTransStatus('error')

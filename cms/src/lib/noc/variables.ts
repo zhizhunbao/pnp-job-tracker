@@ -11,11 +11,16 @@
 import type { NocCache } from './types'
 
 /**
- * NOC 显示域全部的可变状态,就这一格。
+ * NOC 显示域全部的可变状态,就这两格。
  */
 export const CACHE: NocCache = {
   /**
    * 分类值 → 英/韩名(开机是空的,页面拿到 dims 时登记)。
    */
   labels: {},
+
+  /**
+   * 职责/要求译文缓存。
+   */
+  dutiesTransBy: new Map(),
 }

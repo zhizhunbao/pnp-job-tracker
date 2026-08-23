@@ -463,7 +463,7 @@ export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow;
   const [showOrig, setShowOrig] = useState(false)
   // 2026-07-21 Frank「参考类别」:AI 速读点了才生成(不点不烧,额度闸在 JdAdvisorSection 内照走)
   const [aiOn, setAiOn] = useState(false)
-  // 中文对照(参考分类弹框):整理版逐句翻(/api/jd-translate 行位保真);拿到后前端存一份,切换零延迟
+  // 中文对照(参考分类弹框):整理版逐句翻(/api/jobs/jd-translate 行位保真);拿到后前端存一份,切换零延迟
   const [showTrans, setShowTrans] = useState(false)
   const [trans, setTrans] = useState<string | null>(null)
   const [transStatus, setTransStatus] = useState<'idle' | 'loading' | 'error'>('idle')
@@ -472,7 +472,7 @@ export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow;
     track('jd-translate')   // #129:首次拉取才计(纯开合不计)
     setTransStatus('loading')
     try {
-      const r = await fetch('/api/jd-translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: job.applyUrl || '', lang }) })
+      const r = await fetch('/api/jobs/jd-translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: job.applyUrl || '', lang }) })
       const d = await r.json().catch(() => null)
       if (d?.ok && d.text) { setTrans(d.text); setShowTrans(true); setTransStatus('idle') }
       else setTransStatus('error')
@@ -513,7 +513,7 @@ const hostOf = (u: string) => { try { return new URL(u).host.replace(/^www\./, '
   // 2026-07-25 用户「有时候 AI 解析会失败,需要有重试按钮」:拉取抽成 loadFmt,失败态(fmt=null)挂重试钮
   const loadFmt = (signal?: AbortSignal) => {
     setFmt(undefined)
-    fetch('/api/jdformat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: job.applyUrl || '' }), signal })
+    fetch('/api/jobs/jdformat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: job.applyUrl || '' }), signal })
       .then((r) => {
         setFmtWhy(r.status === 402 || r.status === 429 ? 'quota' : r.status === 204 ? 'notext' : 'fail')
         return r.status === 200 ? r.text() : ''

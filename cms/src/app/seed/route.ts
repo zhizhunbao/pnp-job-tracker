@@ -266,8 +266,8 @@ export async function GET(req: Request) {
     }
 
     // ── news:按 slug upsert(E12-06 P1f)──────────────────────────
-    // 懒翻译/速读缓存列(body_zh/body_ko/summary_zh/summary_ko/summary_en)由 /api/news-translate、
-    // /api/news-summarize 线上写入,seed 不许碰——除非该条 body_en 变了(重抽正文)才连带清缓存(防错位陈译)。
+    // 懒翻译/速读缓存列(body_zh/body_ko/summary_zh/summary_ko/summary_en)由 /api/news/translate、
+    // /api/news/summarize 线上写入,seed 不许碰——除非该条 body_en 变了(重抽正文)才连带清缓存(防错位陈译)。
     // 滚出 60 条窗口的行删除;mart 缺文件=跳过(与 dims 同防线)。预翻批若恢复(budget>0)需同步调整此块。
     if (martPaths('news').length > 0 && prevHash['news'] === martHash('news')) { counts.news = -2 }
     else if (martPaths('news').length > 0) {

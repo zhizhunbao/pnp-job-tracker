@@ -17,6 +17,10 @@
 
 export { completeText, streamChat } from './functions'
 export { contentTag, friendChat, friendChatOrThrow, friendLlmReady, refPrompt } from './functions'
-export { translateLinesAligned, translateReady } from './functions'
+export { summarizeNews, translateLinesAligned, translateParasStrict, translatePlainLines, translateReady, translateSectioned } from './functions'
+export {
+  E_BAD_REQUEST, E_COL_NOT_READY, E_NOT_CONFIGURED, E_NOT_FOUND, E_RATE_LIMITED, E_TRANSLATE_NOT_CONFIGURED,
+  SUM_LANGS, TRANS_KEY_SEP, TRANS_LANGS, TRANSLATE_ROUTE_TIMEOUT_MS,
+} from './constants'
 export { FRIEND_INPUT_MAX } from './constants'
 export type { ChatMessage, ResultMeta } from './types'

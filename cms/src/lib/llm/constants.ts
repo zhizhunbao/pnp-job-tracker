@@ -472,18 +472,6 @@ export const KEEP_GROUP1 = '$1'
 export const STALL = 'stall'
 
 /**
- * 公司简介五节标记行（标记可独占行或与正文同行；剖出标记只翻正文）。
- * 口径的主人是 employers 的 ai_brief 生成侧；这里是解析侧的镜像（形状重复先忍着）。
- */
-export const CO_MARKS_RE = /^(\[(?:WHAT|BASE|SIZE|FOUNDED|NOTE)\]\s*)(.*)$/
-
-/**
- * JD 整理版五节标记行（标记可与正文同行，#180 教训）。
- * 口径的主人是 jobs 的 jdformat 提示词；这里是解析侧的镜像。
- */
-export const JD_MARKS_RE = /^(\[(?:ROLE|REQS|PAY|WORKHOURS|APPLY)\]\s*)(.*)$/
-
-/**
  * 缺节行（原样保留不进翻译）。
  */
 export const NOT_STATED_RE = /^\(not stated\)$/i
@@ -502,16 +490,6 @@ export const BULLET_PREFIX = '- '
  * 译文全部落空 = 服务整体不可用的报错文案。
  */
 export const E_TRANSLATE_UNAVAILABLE = 'translate unavailable'
-
-/**
- * 段落对位失败（新闻整篇拒收红线）的报错文案。
- */
-export const E_PARA_ALIGN = 'paragraph alignment failed'
-
-/**
- * 速读太短 = 上游没给东西的报错文案。
- */
-export const E_EMPTY_SUMMARY = 'empty summary'
 
 /**
  * 速读最短长度（短于它 = 没内容）。
@@ -542,56 +520,6 @@ export const PARA_JOIN = '\n\n'
  * 翻译类路由的单次总超时（ms）。
  */
 export const TRANSLATE_ROUTE_TIMEOUT_MS = 90000
-
-/**
- * co-translate 的 IP 日限与限额键前缀。
- */
-export const CO_IP_DAILY = 60
-
-/**
- * co-translate 限额键前缀。
- */
-export const CO_LIMIT_PREFIX = 'cotr:'
-
-/**
- * jd-translate 的 IP 日限。
- */
-export const JDTR_IP_DAILY = 60
-
-/**
- * jd-translate 限额键前缀。
- */
-export const JDTR_LIMIT_PREFIX = 'jdtr:'
-
-/**
- * noc-translate 的 IP 日限。
- */
-export const NOCTR_IP_DAILY = 80
-
-/**
- * noc-translate 限额键前缀。
- */
-export const NOCTR_LIMIT_PREFIX = 'noctr:'
-
-/**
- * news-translate 的 IP 日限（缓存命中不计）。
- */
-export const NTR_IP_DAILY = 60
-
-/**
- * news-translate 限额键前缀。
- */
-export const NTR_LIMIT_PREFIX = 'ntr:'
-
-/**
- * news-summarize 的 IP 日限。
- */
-export const NSUM_IP_DAILY = 60
-
-/**
- * news-summarize 限额键前缀。
- */
-export const NSUM_LIMIT_PREFIX = 'nsum:'
 
 /**
  * 错误体：翻译链 env 没配（co/jd/noc/summarize 的文案）。

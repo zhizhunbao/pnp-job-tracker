@@ -1045,6 +1045,11 @@ export type EmployersCache = {
    * 橱窗三分表(/api/employers/sponsors)。开机是空的。
    */
   boards: BoardsSlot | null
+
+  /**
+   * 简介译文：name:lang → 全文（全量翻齐才进）。
+   */
+  briefTransBy: Map<string, string>
 }
 
 /**
@@ -1978,3 +1983,18 @@ export type CompanyBriefIn = {
  * 单列文本取数的返回。
  */
 export type MaybeStrOut = Promise<MaybeStr>
+
+/**
+ * POST /api/employers/translate 的请求体形状（跨边界断言目标，逐格判后才用）。
+ */
+export type EmployersTransBody = {
+  /**
+   * 公司名；不是字符串当没带。
+   */
+  name: string | null
+
+  /**
+   * 目标语种；不在白名单 400。
+   */
+  lang: string | null
+}

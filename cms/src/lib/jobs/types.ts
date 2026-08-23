@@ -3481,6 +3481,11 @@ export type JobsCache = {
    * 与 jdInflight 分开 —— 那格是 JD 原文懒抓的单飞，这格是五节整理的单飞）。
    */
   jdFormatInflight: Map<string, Promise<MaybeStr>>
+
+  /**
+   * JD 整理版译文：url:lang → 全文（全量翻齐才进）。
+   */
+  jdTransBy: Map<string, string>
 }
 
 // =========================================================================
@@ -4293,56 +4298,6 @@ export type SimilarList = SimilarEmployer[]
 export type MaybeStrOut = Promise<MaybeStr>
 
 /**
- * NOC 职责/要求两段（英文原文；缺位空串）。
- */
-export type NocDutiesRow = {
-  /**
-   * 职责逐行文本。
-   */
-  duties: string
-
-  /**
-   * 任职要求逐行文本。
-   */
-  requirements: string
-}
-
-/**
- * 新闻翻译源行：英文正文 + 已有译文缓存。
- */
-export type NewsTransRow = {
-  /**
-   * 英文正文；没有是 null（= 库里没这条或没正文）。
-   */
-  en: MaybeStr
-
-  /**
-   * 已有的译文；没翻过是 null。
-   */
-  cached: MaybeStr
-}
-
-/**
- * 新闻速读源行：标题 + 英文正文 + 已有速读。
- */
-export type NewsSummaryRow = {
-  /**
-   * 标题。
-   */
-  title: string
-
-  /**
-   * 英文正文；没有是 null。
-   */
-  en: MaybeStr
-
-  /**
-   * 已有的速读；没生过是 null。
-   */
-  cached: MaybeStr
-}
-
-/**
  * jdformat 的岗态行（按 apply_url 取）。
  */
 export type JdStateRow = {
@@ -4383,106 +4338,6 @@ export type JdFormattedIn = {
 }
 
 /**
- * `loadNocDuties` 的入参。
- */
-export type NocDutiesIn = {
-  /**
-   * 能查的连接。
-   */
-  db: Db
-
-  /**
-   * 五位职业码。
-   */
-  noc: string
-}
-
-/**
- * `loadNocDuties` 的返回（查无这条是 null）。
- */
-export type NocDutiesOut = Promise<NocDutiesRow | null>
-
-/**
- * `loadNewsForTranslate` / `saveNewsTranslation` 等新闻译文存取的入参。
- */
-export type NewsTransIn = {
-  /**
-   * 能查的连接。
-   */
-  db: Db
-
-  /**
-   * 新闻 slug。
-   */
-  slug: string
-
-  /**
-   * 目标语种（zh/ko；列名映射在 NEWS_BODY_COL）。
-   */
-  lang: string
-}
-
-/**
- * `loadNewsForTranslate` 的返回（查无这条是 null）。
- */
-export type NewsTransOut = Promise<NewsTransRow | null>
-
-/**
- * `saveNewsTranslation` 的入参。
- */
-export type NewsTransSaveIn = {
-  /**
-   * 能查的连接。
-   */
-  db: Db
-
-  /**
-   * 新闻 slug。
-   */
-  slug: string
-
-  /**
-   * 目标语种。
-   */
-  lang: string
-
-  /**
-   * 校验过的译文全文。
-   */
-  body: string
-}
-
-/**
- * `loadNewsForSummary` 的返回（查无这条是 null；列未建由查询抱错、路由容错）。
- */
-export type NewsSummaryOut = Promise<NewsSummaryRow | null>
-
-/**
- * `saveNewsSummary` 的入参。
- */
-export type NewsSummarySaveIn = {
-  /**
-   * 能查的连接。
-   */
-  db: Db
-
-  /**
-   * 新闻 slug。
-   */
-  slug: string
-
-  /**
-   * 速读语种（zh/ko/en；列名映射在 NEWS_SUMMARY_COL）。
-   */
-  lang: string
-
-  /**
-   * 生成好的速读。
-   */
-  summary: string
-}
-
-/**
  * `loadJdState` 的返回（查无这岗是 null）。
  */
 export type JdStateOut = Promise<JdStateRow | null>
@@ -4513,7 +4368,7 @@ export type GenerateJdIn = {
 export type GenerateJdOut = Promise<MaybeStr>
 
 /**
- * POST /api/jdformat 的请求体形状（跨边界断言目标，逐格判后才用）。
+ * POST /api/jobs/jdformat 的请求体形状（跨边界断言目标，逐格判后才用）。
  */
 export type JdUrlBody = {
   /**
@@ -4540,4 +4395,19 @@ export type ApplyUrlIn = {
    * 岗 id。
    */
   jobId: number
+}
+
+/**
+ * POST /api/jobs/jd-translate 的请求体形状（跨边界断言目标，逐格判后才用）。
+ */
+export type JdTransBody = {
+  /**
+   * 职位链接；不是字符串当没带。
+   */
+  url: string | null
+
+  /**
+   * 目标语种；不在白名单 400。
+   */
+  lang: string | null
 }
