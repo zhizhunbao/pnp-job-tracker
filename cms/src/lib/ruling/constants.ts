@@ -2942,3 +2942,33 @@ export const TTL = 10 * 60_000
  * 日期列只取到日(`YYYY-MM-DD`)。
  */
 export const DATE_LEN_DAY = 10
+
+/**
+ * /api/ruling/verdict 的岗位 id 参数名。
+ */
+export const P_JOB = 'job'
+
+/**
+ * /api/ruling/pathways 的职业码参数名。
+ */
+export const P_NOC = 'noc'
+
+/**
+ * /api/ruling/pathways 的 TEER 参数名。
+ */
+export const P_TEER = 'teer'
+
+/**
+ * TEER 档上限（0..5）。
+ */
+export const TEER_MAX = 5
+
+/**
+ * 五位职业码的形状（pathways 的 noc 参数验形）。
+ */
+export const NOC5_RE = /^\d{5}$/
+
+/**
+ * 错误体：noc 参数缺位或非法。
+ */
+export const E_NOC_REQUIRED = 'noc required'

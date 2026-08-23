@@ -6442,3 +6442,18 @@ export type OpsStatRow = {
 /**
  * `toOpsStat` 的返回:干净的统计行。
  */
+
+/**
+ * POST /api/ruling/verdict 的请求体形状（跨边界断言目标，逐格判后才用）。
+ */
+export type VerdictBody = {
+  /**
+   * 岗位 id；不是数就落 NaN 由域层拒。
+   */
+  job: number | string | null
+
+  /**
+   * 本地答案；不是对象就当没带。
+   */
+  answers: ClientAnswers
+}

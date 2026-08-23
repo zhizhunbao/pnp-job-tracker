@@ -18,6 +18,7 @@ export {
   jobPathways, loadVerdictTables, matchDesignation, pathLevers, pathVerdict, tripleVerdict,
   tripleWireOf,
 } from './functions'
+export { rulingPathwaysRoute, rulingVerdictGetRoute, rulingVerdictPostRoute } from './routes'
 
 export type {
   AnswerBag, CaseAnswer, CasePageSpec, ClientAnswers, DesignatedEmployerRow, DesignatedLoader, EmployerFacts,
