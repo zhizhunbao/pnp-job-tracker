@@ -357,6 +357,27 @@ export const DB_LOG = {
 } as const
 
 /**
+ * `lib/stripe` 写出去的全部字面量。
+ */
+export const STRIPE_LOG = {
+  /**
+   * 这个域每一行日志的来源标签。
+   */
+  tag: 'stripe',
+
+  /**
+   * live 模式下 alipay/wechat 未获批,Checkout 建不出来 → 自动退回纯卡(收款可用性 >
+   * 支付方式齐全);看到这行去 Dashboard 确认开通。
+   */
+  fallbackCard: 'non-card methods rejected, falling back to card-only: ',
+
+  /**
+   * webhook 处理抛错(回 500 让 Stripe 重试对账)。
+   */
+  webhookFailed: 'webhook failed: ',
+} as const
+
+/**
  * 简历域的日志字面量(2026-08-22 resume 定型批立)。
  */
 export const RESUME_LOG = {

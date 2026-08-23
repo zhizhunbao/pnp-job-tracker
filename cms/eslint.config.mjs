@@ -1317,6 +1317,8 @@ const API_DONE = [
   'src/app/api/jobs/province/route.ts',
   'src/app/api/jobs/competition/route.ts',
   'src/app/api/jobs/applyhow/route.ts',
+  'src/app/api/stripe/checkout/route.ts',
+  'src/app/api/stripe/webhook/route.ts',
 ]
 
 const REFACTORED = [
