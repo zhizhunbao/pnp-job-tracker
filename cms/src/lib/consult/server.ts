@@ -15,3 +15,4 @@ export {
 } from './functions'
 
 export type { RunIn, ConsultOut, Fact, Profile, RunOut, Turn } from './types'
+export { consultChatRoute } from './routes'

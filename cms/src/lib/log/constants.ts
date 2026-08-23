@@ -264,6 +264,31 @@ export const CHAT_LOG = {
    * 出错留痕时,夹在函数名和原因之间。
    */
   failedTail: ' failed: ',
+
+  /**
+   * 路由级成功行的开头,后面接采信职业码(与 loopDone 分开:一条是循环内,一条是路由收口)。
+   */
+  routeOk: 'ok noc=',
+
+  /**
+   * 路由级成功行:进来的提问多少字符。
+   */
+  inLen: ' in=',
+
+  /**
+   * 字符数后缀。
+   */
+  chSuffix: 'ch',
+
+  /**
+   * 路由级错误行:错误码与消息摘要之间。
+   */
+  errSep: ': ',
+
+  /**
+   * chat_logs 写库失败(fire-and-forget,只留痕不影响用户)。
+   */
+  chatlogSkipped: 'chatlog skipped: ',
 }
 
 /**

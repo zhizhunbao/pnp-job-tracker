@@ -9,6 +9,7 @@
  */
 
 import type { AgentMessage, AgentTool, AgentToolResult } from '@earendil-works/pi-agent-core'
+import type { Payload } from 'payload'
 import type { Model, Static, TSchema } from '@earendil-works/pi-ai'
 import type { Requirement, RuleResult } from '../gauge'
 import type { Db } from '../db'
@@ -2222,3 +2223,289 @@ export type StepOccLineIn = {
    */
   occ: string
 }
+
+/**
+ * POST /api/consult/chat 的请求体形状（跨边界断言目标，逐格判后才用）。
+ */
+export type ChatBody = {
+  /**
+   * 提问文本；不是字符串当空。
+   */
+  text: string | null
+
+  /**
+   * 语种；不在白名单落 en。
+   */
+  lang: string | null
+
+  /**
+   * 多轮历史（前端传，不落库）；逐项验形。
+   */
+  history: ChatBodyTurn[] | null
+
+  /**
+   * 上一轮服务端返回的 slots；只取 noc 一格，进 consult 还要过采信。
+   */
+  context: ChatContext | null
+}
+
+/**
+ * body.history 的一轮（未验形）。
+ */
+export type ChatBodyTurn = {
+  /**
+   * 角色；只认 user/assistant。
+   */
+  role: string | null
+
+  /**
+   * 内容；不是字符串丢轮。
+   */
+  content: string | null
+}
+
+/**
+ * body.context（上一轮 slots 的回传）。
+ */
+export type ChatContext = {
+  /**
+   * 上一轮采信的职业码；多轮职业记忆的唯一格。
+   */
+  noc: string | null
+}
+
+/**
+ * 定稿返回体的 slots（前端 ChatAnswer 契约；只装新链真有的几格）。
+ */
+export type ChatSlots = {
+  /**
+   * 采信职业码；没有是 null。
+   */
+  noc: string | null
+
+  /**
+   * 职业原文（新链暂不产，恒空串）。
+   */
+  occText: string
+
+  /**
+   * 目标省（从档案透传）。
+   */
+  provs: string[]
+
+  /**
+   * 总经验月数（从档案透传）；没有是 null。
+   */
+  expMonths: number | null
+
+  /**
+   * 当前身份（从档案透传）；没有是 null。
+   */
+  status: string | null
+
+  /**
+   * 旧链遗留格，恒空（前端契约还收它）。
+   */
+  claims: never[]
+}
+
+/**
+ * 定稿返回体（前端 ChatAnswer 的 Answer 契约按这个写）。
+ */
+export type ChatOut = {
+  /**
+   * 终稿正文（已过出口闸）。
+   */
+  answer: string
+
+  /**
+   * 多轮记忆回传格。
+   */
+  slots: ChatSlots
+
+  /**
+   * 采信事实（见客 label 已换 quote）。
+   */
+  facts: Fact[]
+
+  /**
+   * 追问候选（新链暂不产，恒空）。
+   */
+  followups: string[]
+
+  /**
+   * 出口闸降级了没有。
+   */
+  degraded: boolean
+}
+
+/**
+ * 用户档案里 consult 要读的几格（users.profile 的跨边界断言目标）。
+ */
+export type ChatUserProfile = {
+  /**
+   * 职业码清单；取第一个。
+   */
+  nocCodes: string[] | null
+
+  /**
+   * 目标省。
+   */
+  targetProvinces: string[] | null
+
+  /**
+   * 加拿大经验月数（他自报的数）。
+   */
+  expCanadaMonths: number | null
+
+  /**
+   * 海外经验月数（同上）。
+   */
+  expForeignMonths: number | null
+
+  /**
+   * 当前身份。
+   */
+  currentStatus: string | null
+}
+
+/**
+ * Payload Local API 的句柄（留痕写 chat_logs 用；路由注进来）。
+ */
+export type ChatPayloadHandle = Payload
+
+/**
+ * `logChat` 的入参（fire-and-forget 留痕；铁律：①永不影响回答；
+ * ②不存能指向人的东西）。
+ */
+export type LogChatIn = {
+  /**
+   * Payload 句柄；还没拿到（流还没起步就炸）是 null，此时不写。
+   */
+  payload: ChatPayloadHandle | null
+
+  /**
+   * 提问原文。
+   */
+  text: string
+
+  /**
+   * 语种。
+   */
+  lang: Lang
+
+  /**
+   * 多轮历史（算 thread/turn 用）。
+   */
+  history: Turn[]
+
+  /**
+   * 定稿；失败轮是 null。
+   */
+  result: ChatOut | null
+
+  /**
+   * 错误码；成功轮是 null。
+   */
+  err: string | null
+
+  /**
+   * 耗时（ms）。
+   */
+  ms: number
+}
+
+/**
+ * `threadIdOf` 的入参。
+ */
+export type ThreadIdIn = {
+  /**
+   * 本轮提问（史上无 user 轮时当首轮）。
+   */
+  text: string
+
+  /**
+   * 多轮历史。
+   */
+  history: Turn[]
+}
+
+/**
+ * SSE 工具轨迹一包。
+ */
+export type StepPacket = {
+  /**
+   * 服务端已按用户语种写好的一步。
+   */
+  step: string
+}
+
+/**
+ * SSE 定稿包（ChatOut + 轨迹与线程 id）。
+ */
+export type ChatWire = {
+  /**
+   * 终稿正文。
+   */
+  answer: string
+
+  /**
+   * 多轮记忆回传格。
+   */
+  slots: ChatSlots
+
+  /**
+   * 采信事实。
+   */
+  facts: Fact[]
+
+  /**
+   * 追问候选（恒空）。
+   */
+  followups: string[]
+
+  /**
+   * 降级了没有。
+   */
+  degraded: boolean
+
+  /**
+   * 全部工具轨迹（定稿时整包重发，前端收束动画用）。
+   */
+  activity: string[]
+
+  /**
+   * 同一串追问的 id。
+   */
+  thread: string
+}
+
+/**
+ * SSE 错误包（对外只给错误码）。
+ */
+export type ErrPacket = {
+  /**
+   * 错误码。
+   */
+  error: string
+}
+
+/**
+ * SSE 错误包（探针账号额外带细节）。
+ */
+export type ErrDetailPacket = {
+  /**
+   * 错误码。
+   */
+  error: string
+
+  /**
+   * 错误细节摘要（只回 @test.local）。
+   */
+  detail: string
+}
+
+/**
+ * SSE 能发的全部包型。
+ */
+export type SsePacket = StepPacket | ChatWire | ErrPacket | ErrDetailPacket

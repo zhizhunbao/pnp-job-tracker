@@ -1184,3 +1184,133 @@ export const CONSULT_STEP_OCC_TPL: Record<Lang, string> = {
   en: 'Occupation identified: {occ}',
   ko: '직업 확인: {occ}',
 }
+
+/**
+ * 对话入口认的三语（body.lang 白名单；认不出落 en）。
+ */
+export const CHAT_LANGS: Lang[] = ['zh', 'en', 'ko']
+
+/**
+ * lang 认不出时的回落。
+ */
+export const LANG_FALLBACK: Lang = 'en'
+
+/**
+ * 提问留痕截断（前端 MAX_TEXT=1200 已截过，这里只是兜底）。
+ */
+export const Q_CAP = 2000
+
+/**
+ * 答复留痕截断。
+ */
+export const A_CAP = 8000
+
+/**
+ * 同一串追问的 id = 首轮提问前这么多字的哈希：后面再长也不影响归并。
+ */
+export const THREAD_SEED = 200
+
+/**
+ * 线程 id 取哈希前这么多位。
+ */
+export const THREAD_ID_LEN = 16
+
+/**
+ * 哈希算法。
+ */
+export const HASH_SHA256 = 'sha256'
+
+/**
+ * 哈希输出编码。
+ */
+export const HASH_HEX = 'hex'
+
+/**
+ * 多轮记忆只带最近这么多轮（前端传 history，不落库）。
+ */
+export const HISTORY_MAX = 6
+
+/**
+ * history 每轮内容截断。
+ */
+export const TURN_CONTENT_CAP = 600
+
+/**
+ * Pro 个人日帽的限额键前缀（键 = 前缀 + 用户 id）。
+ */
+export const PRO_LIMIT_PREFIX = 'chat:pro:'
+
+/**
+ * 错误体：限流（402 也当限流，前端一个分支就够）。
+ */
+export const E_LIMIT = 'limit'
+
+/**
+ * 未知异常的错误码。
+ */
+export const E_LLM = 'llm'
+
+/**
+ * SSE 一包的开头。
+ */
+export const SSE_PREFIX = 'data: '
+
+/**
+ * SSE 一包的结尾（空行分包）。
+ */
+export const SSE_SUFFIX = '\n\n'
+
+/**
+ * 流结束包。
+ */
+export const SSE_DONE = 'data: [DONE]\n\n'
+
+/**
+ * SSE 响应的 Content-Type。
+ */
+export const SSE_CONTENT_TYPE = 'text/event-stream; charset=utf-8'
+
+/**
+ * SSE 响应的缓存头（no-transform：不许中间层改写）。
+ */
+export const SSE_CACHE_CONTROL = 'no-cache, no-transform'
+
+/**
+ * nginx 类中间层的不攒包头名（否则攒满才吐，流等于没流）。
+ */
+export const HDR_ACCEL = 'x-accel-buffering'
+
+/**
+ * 不攒包头值。
+ */
+export const ACCEL_NO = 'no'
+
+/**
+ * 长连接头名。
+ */
+export const HDR_CONNECTION = 'connection'
+
+/**
+ * 长连接头值。
+ */
+export const CONN_KEEP_ALIVE = 'keep-alive'
+
+/**
+ * 留痕表的 collection 名（列形状不动：生产面板与复现率仪表盘都靠它）。
+ */
+export const COLLECTION_CHAT_LOGS = 'chat-logs'
+
+/**
+ * 真实错误细节只回这个后缀的账号（standalone-dynamic-loads 探针惯例）。
+ */
+export const TEST_MAIL_SUFFIX = '@test.local'
+
+/**
+ * 错误细节回给探针账号时的截断。
+ */
+export const DETAIL_CAP = 300
+
+/**
+ * 错误消息进日志的截断。
+ */
+export const ERR_LOG_CAP = 200
