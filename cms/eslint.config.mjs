@@ -1139,6 +1139,8 @@ const localRules = {
 // 瘦完一个路由加一行,与 REFACTORED 同一滚动规矩。
 const API_DONE = [
   'src/app/api/track/route.ts',
+  'src/app/api/auth/google/route.ts',
+  'src/app/api/auth/google/callback/route.ts',
 ]
 
 const REFACTORED = [

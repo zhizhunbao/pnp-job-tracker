@@ -1,103 +1,102 @@
-// E11-03 Google 登录 · 第 2 跳(回调):code 换 token → userinfo → 按已验证邮箱查找/创建用户 →
-// 写会话条目 + 签 payload-token(与 Payload 3.85 login 同形:getFieldsToSign+sid+jwtSign,官方根导出)→ 302 回首页。
-// 红线:只认 email_verified=true;已存在的邮箱账号按邮箱关联登录,**不动其密码**(不用改密来借道 login);
-// 新用户 loginProvider=google + 随机密码(用户不持有,走 Google 或忘记密码自设)。任何失败 → /?login=1&oauth=fail。
-import { getFieldsToSign, getPayload, jwtSign } from 'payload'
-import config from '@/payload.config'
+/**
+ * GET /api/auth/google/callback — Google 登录 · 第 2 跳(E11-03):
+ * code 换 token → userinfo → 关联/创建用户并签会话(编排全在 lib/auth)→ 302 回原页。
+ * 任何失败 → /?login=1&oauth=fail(原因留痕在 AUTH_LOG)。
+ *
+ * @author Frank
+ * @time 2026-08-01 18:59:44
+ */
+import {
+  FAIL_PATH, GOOGLE_CLIENT_ID, HDR_COOKIE, PARAM_CODE, PARAM_ERROR, PARAM_STATE, RETURN_COOKIE, SITE,
+  STATE_COOKIE, exchangeCode, fetchGoogleUser, loginWithGoogle, oauthCookie, readCookie, safeReturnPath,
+  sessionCookies,
+} from '@/lib/auth/server'
 
+import { AUTH_LOG, log } from '@/lib/log'
+
+/**
+ * 强制动态渲染。
+ */
 export const dynamic = 'force-dynamic'
+
+/**
+ * 跑在 node 运行时(要连库签会话)。
+ */
 export const runtime = 'nodejs'
 
-const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '')
-const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''
-const SECRET = process.env.GOOGLE_CLIENT_SECRET || ''
-const secure = SITE.startsWith('https') ? '; Secure' : ''
-const CLEAR_STATE = `g_oauth_state=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`
-const CLEAR_RETURN = `g_oauth_return=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`
-
-const fail = (why: string): Response => {
-  console.error('[google-oauth] fail:', why)
-  return new Response(null, { status: 302, headers: { Location: `${SITE}/?login=1&oauth=fail`, 'Set-Cookie': CLEAR_STATE } })
+/**
+ * 统一失败出口:留痕 + 302 回首页带 oauth=fail,顺手清 state cookie。
+ *
+ * @param why 失败原因(只进日志,不见客)。
+ * @returns 302。
+ */
+function fail(why: string): Response {
+  log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + why })
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: SITE + FAIL_PATH,
+      'Set-Cookie': oauthCookie({ name: STATE_COOKIE, value: '', maxAge: 0 }),
+    },
+  })
 }
 
+/**
+ * 第 2 跳:换 token、取 userinfo、登录、302 回原页。
+ *
+ * @param req 回调请求(code/state 在 searchParams,state/return 在 cookie)。
+ * @returns 302(成功种会话 cookie;失败带 oauth=fail)。
+ */
 export async function GET(req: Request): Promise<Response> {
-  if (!CLIENT_ID || !SECRET) return fail('env missing')
-  const sp = new URL(req.url).searchParams
-  const code = sp.get('code')
-  if (sp.get('error') || !code) return fail('consent error: ' + (sp.get('error') || 'no code'))
-  // state 防 CSRF:必须与第 1 跳种的 cookie 一致
-  const cookieState = /(?:^|;\s*)g_oauth_state=([^;]+)/.exec(req.headers.get('cookie') || '')?.[1]
-  if (!cookieState || sp.get('state') !== cookieState) return fail('state mismatch')
-
-  // code → access_token
-  const tokRes = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      code, client_id: CLIENT_ID, client_secret: SECRET,
-      redirect_uri: `${SITE}/api/auth/google/callback`, grant_type: 'authorization_code',
-    }),
-  }).catch(() => null)
-  const tok = tokRes && tokRes.ok ? await tokRes.json().catch(() => null) : null
-  if (!tok?.access_token) return fail(`token exchange ${tokRes?.status}`)
-
-  // userinfo(openid 标准端点):email 必须已验证
-  const uiRes = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
-    headers: { Authorization: `Bearer ${tok.access_token}` },
-  }).catch(() => null)
-  const ui = uiRes && uiRes.ok ? await uiRes.json().catch(() => null) : null
-  const email = (ui?.email || '').toLowerCase()
-  if (!email || ui.email_verified !== true) return fail('email missing/unverified')
-
-  const payload = await getPayload({ config })
-  // 查找(带隐藏字段拿 sessions)/ 创建
-  const found = await payload.find({
-    collection: 'users', where: { email: { equals: email } }, limit: 1,
-    overrideAccess: true, showHiddenFields: true,
-  })
-  let user = found.docs[0] as any
-  const backfill: Record<string, unknown> = {}
-  if (!user) {
-    const rand = Array.from(crypto.getRandomValues(new Uint8Array(24)), (b) => b.toString(16).padStart(2, '0')).join('')
-    user = await payload.create({
-      collection: 'users', overrideAccess: true,
-      data: {
-        email, password: rand, loginProvider: 'google',
-        ...(ui.name ? { displayName: String(ui.name).slice(0, 40) } : {}),
-        ...(ui.picture ? { avatar: String(ui.picture) } : {}),
-      },
-    }) as any
-  } else {
-    // 关联登录:补空头像/昵称(不覆盖用户已设的),不动密码/来路
-    if (!user.avatar && ui.picture) backfill.avatar = String(ui.picture)
-    if (!user.displayName && ui.name) backfill.displayName = String(ui.name).slice(0, 40)
+  if (GOOGLE_CLIENT_ID === '') {
+    return fail('env missing')
   }
-
-  // 会话条目 + JWT(镜像 login op;useSessions 默认开,无 sid 的 token 会被 jwt 策略拒收)
-  const collectionConfig = payload.collections.users.config
-  const tokenExpiration = collectionConfig.auth.tokenExpiration || 7200
-  const now = new Date()
-  const sid = crypto.randomUUID()
-  const keep = (user.sessions || []).filter((s: { expiresAt: string }) => new Date(s.expiresAt) > now)
-  await payload.update({
-    collection: 'users', id: user.id, overrideAccess: true,
-    data: { ...backfill, sessions: [...keep, { id: sid, createdAt: now.toISOString(), expiresAt: new Date(now.getTime() + tokenExpiration * 1000).toISOString() }] },
-  })
-  const fieldsToSign = getFieldsToSign({ collectionConfig, email, sid, user: { ...user, collection: 'users' } })
-  const { token } = await jwtSign({ fieldsToSign, secret: payload.secret, tokenExpiration })
-  const cookiePrefix = (payload.config as { cookiePrefix?: string }).cookiePrefix || 'payload'
-  // E9-04b:回跳原页(g_oauth_return 由第 1 跳按站内路径白名单种下,这里再验一遍双保险)
-  const rtRaw = decodeURIComponent(/(?:^|;\s*)g_oauth_return=([^;]+)/.exec(req.headers.get('cookie') || '')?.[1] || '')
-  const rt = /^\/(?!\/)[\x21-\x7e]{0,200}$/.test(rtRaw) ? rtRaw : '/'
+  const sp = new URL(req.url).searchParams
+  const code = sp.get(PARAM_CODE)
+  if (sp.get(PARAM_ERROR) != null || code == null || code === '') {
+    let why = sp.get(PARAM_ERROR)
+    if (why == null) {
+      why = 'no code'
+    }
+    return fail('consent error: ' + why)
+  }
+  const cookieHeader = req.headers.get(HDR_COOKIE)
+  const cookieState = readCookie({ header: cookieHeader, name: STATE_COOKIE })
+  if (cookieState == null || sp.get(PARAM_STATE) !== cookieState) {
+    return fail('state mismatch')
+  }
+  const accessToken = await exchangeCode({ code })
+  if (accessToken == null) {
+    return fail('token exchange failed')
+  }
+  const gu = await fetchGoogleUser(accessToken)
+  if (gu == null) {
+    return fail('email missing/unverified')
+  }
+  let session: Awaited<ReturnType<typeof loginWithGoogle>>
+  try {
+    session = await loginWithGoogle(gu)
+  } catch (e) {
+    let why = String(e)
+    if (e instanceof Error) {
+      why = e.message
+    }
+    return fail('login failed: ' + why)
+  }
+  let rtRaw = readCookie({ header: cookieHeader, name: RETURN_COOKIE })
+  if (rtRaw != null) {
+    rtRaw = decodeURIComponent(rtRaw)
+  }
+  const rt = safeReturnPath(rtRaw)
+  const [tokenCookie, traceCookie] = sessionCookies(session)
   return new Response(null, {
     status: 302,
     headers: [
-      ['Location', `${SITE}${rt}`],
-      ['Set-Cookie', `${cookiePrefix}-token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${tokenExpiration}${secure}`],
-      // #311 登录迹象(与 lib/quiz/answers.ts 的 LI_COOKIE 同名):token 是 httpOnly,前端读不到 ——
-      // OAuth 是整页跳转、没有客户端登录回调,这里不种迹象的话 Google 用户的答案档同步永远不开闸
-      ['Set-Cookie', `o2p_li=1; Path=/; SameSite=Lax; Max-Age=${tokenExpiration}${secure}`],
-      ['Set-Cookie', CLEAR_STATE],
-      ['Set-Cookie', CLEAR_RETURN],
+      ['Location', SITE + rt],
+      ['Set-Cookie', tokenCookie],
+      ['Set-Cookie', traceCookie],
+      ['Set-Cookie', oauthCookie({ name: STATE_COOKIE, value: '', maxAge: 0 })],
+      ['Set-Cookie', oauthCookie({ name: RETURN_COOKIE, value: '', maxAge: 0 })],
     ],
   })
 }

@@ -530,3 +530,19 @@ export const TAG_L = '['
  * 日志行来源标签的右括号(带一格与正文隔开)。
  */
 export const TAG_R = '] '
+
+/**
+ * 会话域(lib/auth)的日志字面量(2026-08-23 OAuth 编排下沉批立)。
+ * 标签沿用生产日志既有关键词 google-oauth(改名切断人肉 grep 历史)。
+ */
+export const AUTH_LOG = {
+  /**
+   * 这个域每一行日志的来源标签。
+   */
+  tag: 'google-oauth',
+
+  /**
+   * 登录链任一步失败(统一 302 回首页带 oauth=fail,这里留失败原因)。
+   */
+  failed: 'fail: ',
+} as const

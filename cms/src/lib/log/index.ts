@@ -8,7 +8,7 @@
 
 export type { LogIn, LogOut } from './types'
 export {
-  AGENT_FN, AGENT_LOG, CHAT_FN, CHAT_LOG, DB_LOG, EMP_LOG, GATE_LOG, JOBS_LOG, LLM_FN, LLM_LOG,
+  AGENT_FN, AGENT_LOG, AUTH_LOG, CHAT_FN, CHAT_LOG, DB_LOG, EMP_LOG, GATE_LOG, JOBS_LOG, LLM_FN, LLM_LOG,
   LOG_MSG_MAX, MAILER_LOG, PROFILE_LOG, RESUME_LOG, RULING_LOG,
 } from './constants'
 export { log } from './functions'
