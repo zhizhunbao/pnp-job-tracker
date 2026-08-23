@@ -13,5 +13,4 @@
  */
 
 export { BROAD_SLUGS, PROVS, PROV_NAME } from './constants'
-export { slugToBroad } from './functions'
 export type { ChannelNocs, CityRow, OccRow, ProvExtra, ProvVol, ProvVolNum, SrcRow, StatRow } from './types'

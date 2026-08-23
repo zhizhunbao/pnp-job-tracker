@@ -41,26 +41,7 @@ import {
   SEP, SOURCE, STREAM_STOP, STREAM_WORD_MIN, SUB_TIER_VALUE, SYSTEM_TAIL, TICK_SEP, WORD, WORD_NUM, YEARS_ANY,
   PNP_PROV_CODES, RECENT_ROUNDS, SCORE_TTL_MS,
 } from './constants'
-import type {
-  AdaptItemIn, AdaptOut, AgeRangeOut, AutoPickIn, BonusPointsIn, BonusPointsOut, ComboItemIn, ComboSubTierIn,
-  ComboSubTierOut, ComboTierOfIn, ComboTierOfOut, DefaultProfileOut, EduComboIn, EduSpecialOfIn,
-  EduSpecialOfOut, EduYearsOut, EeEvidenceOfIn, EeEvidenceOfOut, EeGridRow, EstimateIn, EstimateItem,
-  EstimateItemIn, EstimateItemOut, EstimateMbEoiIn, EstimateMbEoiOut, EstimateOut, FactorPartIn, FactorPartOut,
-  ForeignComboIn, FswPickerIn, FswRowsOfIn, FswRowsOfOut, GroupCapIn, GroupCapOut, HasAutoPickOut, HitItemIn,
-  LabelIn, LabelNumOut, LineSideOut, LineStateOut, MarginOut, MatchIn, MbAgePickIn, MbBandsIn, MbBandsOut,
-  MbConnectionPicksIn, MbConnectionPicksOut, MbEduReOfIn, MbEduReOfOut, MbLangPickIn, MbLangPickOut,
-  MbMaxPointsIn, MbMaxPointsOut, MbPartIn, MbPartOut, MbPick, MbRiskTicksIn, MbRiskTicksOut, MbRowOut,
-  MbRowsOfIn, MbScorePart, MbThresholdRow, MbWorkPickIn, MbWorkYearsOut, MonthsToYearsIn, MonthsToYearsOut,
-  NeedRowIn, NeedRowOut, NeedsInfoItemIn, NeedsInfoOfIn, NeedsInfoOfOut, OneGroup, OneGroupOut, PickBestTierIn,
-  PickBestTierOut, PickByAgeIn, PickByRangeIn, PickByRangeOut, PickByThresholdIn, PickEduRowIn, PickOut,
-  PickStudyTierIn, PickerIn, RangeGroup, RangeGroupOut, RangeOut, RowsOfIn, RowsOfOut, ScoreFactor, ScoreLineIn,
-  ScorePart, ScoreProvinceIn, ScoreProvinceOut, ScoreSource, StreamMatchesIn, StreamMatchesOut, StreamWordsIn,
-  StreamWordsOut, SumPointsIn, SumPointsOut, SystemIn, SystemOut, ThresholdRow, TierRow, TotalOfIn, TotalOfOut,
-  WordGroup, WordGroupOut,
-  CompetitionExtrasIn, DifficultyFact, DrawFact, DrawFacts, DrawRow, DrawRows,
-  ExtrasMap, MaybeCompetition, OverviewDraws, ProvCompetitions, ProvInfoFacts, ScoreFactors,
-  ScoreTablesOut, StrList,
-} from './types'
+import type { AdaptItemIn, AdaptOut, AgeRangeOut, AutoPickIn, BonusPointsIn, BonusPointsOut, ComboItemIn, ComboSubTierIn, ComboSubTierOut, ComboTierOfIn, ComboTierOfOut, CompetitionExtrasIn, DefaultProfileOut, DifficultyFact, DrawFact, DrawFacts, DrawRow, DrawRows, EduComboIn, EduSpecialOfIn, EduSpecialOfOut, EduYearsOut, EeEvidenceOfIn, EeEvidenceOfOut, EeGridRow, EstimateIn, EstimateItem, EstimateItemIn, EstimateItemOut, EstimateMbEoiIn, EstimateMbEoiOut, EstimateOut, ExtrasMap, FactorPartIn, FactorPartOut, ForeignComboIn, FswPickerIn, FswRowsOfIn, FswRowsOfOut, GroupCapIn, GroupCapOut, HasAutoPickOut, HitItemIn, LabelIn, LabelNumOut, LineSideOut, LineStateOut, MarginOut, MatchIn, MaybeCompetition, MbAgePickIn, MbBandsIn, MbBandsOut, MbConnectionPicksIn, MbConnectionPicksOut, MbEduReOfIn, MbEduReOfOut, MbLangPickIn, MbLangPickOut, MbMaxPointsIn, MbMaxPointsOut, MbPartIn, MbPartOut, MbPick, MbRiskTicksIn, MbRiskTicksOut, MbRowOut, MbRowsOfIn, MbScorePart, MbThresholdRow, MbWorkPickIn, MbWorkYearsOut, MonthsToYearsIn, MonthsToYearsOut, NeedRowIn, NeedRowOut, NeedsInfoItemIn, NeedsInfoOfIn, NeedsInfoOfOut, OneGroup, OneGroupOut, OverviewDraws, PickBestTierIn, PickBestTierOut, PickByAgeIn, PickByRangeIn, PickByRangeOut, PickByThresholdIn, PickEduRowIn, PickOut, PickStudyTierIn, PickerIn, ProvCompetitions, ProvHitFn, ProvInfoFacts, ProvKeyed, ProvSet, RangeGroup, RangeGroupOut, RangeOut, RowsOfIn, RowsOfOut, ScoreFactor, ScoreFactors, ScoreLineIn, ScorePart, ScoreProvinceIn, ScoreProvinceOut, ScoreSource, ScoreTablesOut, StrList, StreamMatchesIn, StreamMatchesOut, StreamWordsIn, StreamWordsOut, SumPointsIn, SumPointsOut, SystemIn, SystemOut, ThresholdRow, TierRow, TotalOfIn, TotalOfOut, WordGroup, WordGroupOut } from './types'
 
 // =========================================================================
 // 0. 正则的具名捕获组
@@ -2407,7 +2388,7 @@ export function estimateMbEoi(input: EstimateMbEoiIn): EstimateMbEoiOut {
 }
 
 // =========================================================================
-// 10. 决策页官方表包(取数 + 单件缓存;2026-08-22 自 lib/score 并入)
+// 10. 决策页官方表包（取数 + 单件缓存；2026-08-22 自 lib/score 并入）
 // =========================================================================
 
 /**
@@ -2594,4 +2575,22 @@ export async function getScoreTables(db: Db): ScoreTablesOut {
     CACHE.scoreTables = { at: Date.now(), data: data }
   }
   return data
+}
+
+// =========================================================================
+// 11. 省过滤小件（/api/points/factors 用）
+// =========================================================================
+
+
+/**
+ * 「行的省在想要的集合里吗」过滤器工厂（factors 与 draws 都按 province 格判 ——
+ * 分值卡拿抽选做对照锚点时也只按省取；filter 传具名函数）。
+ *
+ * @param want 想要的省码集。
+ * @returns 判定函数。
+ */
+export function makeProvHit(want: ProvSet): ProvHitFn {
+  return function provHit(row: ProvKeyed): boolean {
+    return want.has(row.province)
+  }
 }

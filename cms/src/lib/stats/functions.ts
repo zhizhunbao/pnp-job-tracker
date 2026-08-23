@@ -16,28 +16,10 @@ import type { Db } from '../db'
 import {
   BROAD_SLUGS, CITY_LIMIT, OCC_COL_PREFIX, OCC_EXTRA_COLUMNS, PG_UNDEFINED_COLUMN, PG_UNDEFINED_TABLE,
   STAT_SOURCE_FIELDS,
+  MAX_FINE_ROWS,
 } from './constants'
-import { toCityRow, toColumnName, toNocCode, toOccRow, toSrcRow, toStatProvDiffFact, toStatProvInfoFact, toStatRow } from './rows'
-import type {
-  CaughtError, ChannelNocsOut, ChannelNocsQueryIn, CityRowsOut, MaybeStr, OccRowsOut,
-  PgFailure, ProvExtraMap, ProvExtraOut, SrcRowsOut,
-  StatsIn, StatsOut, StrList, StrListOut,
-} from './types'
-
-/**
- * URL slug → 本站大类(数据值);认不出 null。
- *
- * @param slug 大类的 URL slug(如 'healthcare')。
- * @returns 大类中文数据值;认不出是 null。
- */
-export function slugToBroad(slug: string): MaybeStr {
-  for (const [k, v] of BROAD_SLUGS) {
-    if (k === slug) {
-      return v
-    }
-  }
-  return null
-}
+import { toCityRow, toColumnName, toFineRow, toNocCode, toOccRow, toSrcRow, toStatProvDiffFact, toStatProvInfoFact, toStatRow } from './rows'
+import type { CaughtError, ChannelNocs, ChannelNocsOut, ChannelNocsQueryIn, CityRowsOut, EmptyList, FineCountsIn, FineRowsOut, MaybeStr, OccRowsOut, PgFailure, ProvExtraMap, ProvExtraOut, SrcRowsOut, StatsIn, StatsOut, StrList, StrListOut } from './types'
 
 /**
  * pg 错误码(pg 的错误对象带 code;不是它的错空串)。体内那一步 `as PgFailure` 是跨边界断言:
@@ -208,4 +190,35 @@ export async function loadChannelNocs(db: Db): ChannelNocsOut {
     channelNocsOf({ db: db, sql: SQL.EE_NOCS_DISTINCT }),
   ])
   return { pnp: pnp, ee: ee }
+}
+
+/**
+ * 单省×大类×中类的在招岗按小类计数（/api/stats/fine 的取数；现查现算，
+ * 小类级不进 stats 表 —— 行数爆炸）。
+ *
+ * @param input 连接与三级分类值。
+ * @returns 小类计数行（≤ MAX_FINE_ROWS）。
+ */
+export async function loadFineCounts(input: FineCountsIn): FineRowsOut {
+  return queryRows({ db: input.db, sql: SQL.fineCounts(MAX_FINE_ROWS), params: [input.prov, input.broad, input.mid], map: toFineRow })
+}
+
+/**
+ * 单表查挂时的空清单兜底（catch 传具名函数；丢一张表不丢整图）。
+ *
+ * @param _e 捕到的错（查询层已留痕）。
+ * @returns 空数组。
+ */
+export function emptyRows(_e: Error): EmptyList {
+  return []
+}
+
+/**
+ * 通道清单查挂时的空兜底。
+ *
+ * @param _e 捕到的错。
+ * @returns 空 pnp/ee。
+ */
+export function emptyChannels(_e: Error): ChannelNocs {
+  return { pnp: [], ee: [] }
 }

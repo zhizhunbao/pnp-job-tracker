@@ -1,19 +1,8 @@
-// GET /api/rankings/data?slug= —— 榜单数据 JSON(E8-02 弹窗化:/jobs 站内榜单弹窗按需拉;
-// 页面版 /rankings/[slug] 保留给 SEO/直链,两边走 lib/rankings.ts 同一查询)。公开只读,零计算。
-import { NextRequest } from 'next/server'
-import { getPayload } from 'payload'
+/**
+ * GET /api/rankings/data — 榜单数据的壳。芯在 lib/rankings/routes.ts(第十一抽屉)。
+ *
+ * @author Frank
+ * @time 2026-08-23 03:30:00
+ */
 
-import config from '@/payload.config'
-import { RANKING_SLUGS } from '@/lib/rankings'
-import { fetchRankingRows } from '@/lib/rankings/server'
-
-export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
-
-export async function GET(req: NextRequest) {
-  const slug = req.nextUrl.searchParams.get('slug') || ''
-  if (!RANKING_SLUGS.has(slug)) return new Response('', { status: 400 })
-  const payload = await getPayload({ config: await config })
-  const items = await fetchRankingRows({ db: (payload.db as any).pool, slug })
-  return Response.json({ items })
-}
+export { rankingsDataRoute as GET } from '@/lib/rankings/server'

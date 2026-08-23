@@ -10,7 +10,7 @@
 import { jsonOrNull, numOrNull, text, textOrNull } from '../db'
 import { EMPTY_TOP_CITIES, MID_ALL } from './constants'
 import type {
-  CityRow, MaybeProvVol, MaybeProvVolJson, MaybeProvVolNum, MaybeProvVolNumJson, MaybeStatDiff, MaybeStr,
+  CityRow, FineRow, MaybeProvVol, MaybeProvVolJson, MaybeProvVolNum, MaybeProvVolNumJson, MaybeStatDiff, MaybeStr,
   OccRow, Row, SrcRow, StatDbRow, StatDifficulty, StatProvDiffDbRow, StatProvDiffFact, StatProvInfoDbRow,
   StatProvInfoFact, StatRow,
 } from './types'
@@ -184,4 +184,19 @@ export function toStatProvInfoFact(r: StatProvInfoDbRow): StatProvInfoFact {
  */
 export function toStatProvDiffFact(r: StatProvDiffDbRow): StatProvDiffFact {
   return { province: text(r.province), tier: tierOf(jsonOrNull(r.difficulty)) }
+}
+
+/**
+ * 一行 fine 下钻（SQL.fineCounts）→ `FineRow`。
+ *
+ * @param r 库里的一行。
+ * @returns 洗净的一行。
+ */
+export function toFineRow(r: Row): FineRow {
+  let n = 0
+  const v = numOrNull(r.n)
+  if (v != null) {
+    n = v
+  }
+  return { fine: text(r.fine), n: n }
 }

@@ -1,7 +1,7 @@
 /**
  * 榜单域的行为:榜行读取(E5-02)。rankings 页与 /api/rankings/data 共用同一查询与映射
  * (E8-02 弹窗化,不许 fork)。零计算 —— 只 SELECT rankings 表(计算在 etl/10_build_rankings.py)。
- * 池由调用方注进来,本文件不 import payload。
+ * 池由调用方注进来,本文件不 import payload(2026-08-23 方案 A 重申:functions 全纯,routes/页面拿 getDb 再注)。
  *
  * @author Frank
  * @time 2026-08-22 19:27:15

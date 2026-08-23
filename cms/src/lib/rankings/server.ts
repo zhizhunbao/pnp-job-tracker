@@ -7,3 +7,4 @@
  */
 
 export { fetchRankingRows, fetchRankingSlugs } from './functions'
+export { rankingsDataRoute } from './routes'

@@ -202,7 +202,7 @@ export type StatsIn = {
    */
   db: Db
 
-  /**
+    /**
    * true=带中类行(仅图表下钻用);false=只回大类层 —— 既有页面(省页/对比/表格)
    * 口径不变不重复计数。
    */
@@ -767,3 +767,78 @@ export type PgFailure = Error & {
    */
   code: string
 }
+
+/**
+ * fine 下钻的一行（小类 + 在招计数）。
+ */
+export type FineRow = {
+  /**
+   * 小类名（数据层中文值）。
+   */
+  fine: string
+
+  /**
+   * 在招岗数。
+   */
+  n: number
+}
+
+/**
+ * `loadFineCounts` 的入参。
+ */
+export type FineCountsIn = {
+  /**
+   * 数据库连接(池由调用方注进来)。
+   */
+  db: Db
+
+    /**
+   * 省码。
+   */
+  prov: string
+
+  /**
+   * 大类。
+   */
+  broad: string
+
+  /**
+   * 中类。
+   */
+  mid: string
+}
+
+/**
+ * `loadFineCounts` 的返回。
+ */
+export type FineRowsOut = Promise<FineRow[]>
+
+/**
+ * /api/stats/market 四件套缓存的一格。
+ */
+export type MarketSlot = {
+  /**
+   * 缓存的四件套（透传 json，形状由各 load* 函数的返回定）。
+   */
+  v: object
+
+  /**
+   * 写入时刻（ms）。
+   */
+  ts: number
+}
+
+/**
+ * 统计域全部可变状态的形状（住 variables.ts 的 CACHE）。
+ */
+export type StatsCache = {
+  /**
+   * market 四件套；没拉过/过期由 TTL 判。
+   */
+  market: MarketSlot | null
+}
+
+/**
+ * 空清单（`emptyRows` 兜底的返回；可赋给任意行清单）。
+ */
+export type EmptyList = []

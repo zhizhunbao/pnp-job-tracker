@@ -12,3 +12,4 @@
  */
 
 export { getScoreTables } from './functions'
+export { pointsFactorsRoute } from './routes'

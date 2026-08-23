@@ -12,6 +12,11 @@
  * @time 2026-08-21 23:07:25
  */
 
+// Next 官方毒丸（2026-08-23 Frank「按文档来」）：任何客户端代码引到本模块，build 当场红、
+// 错误信息指名道姓（08-18 那次是打包才炸且报错绕远）。与「池注入」并存：注入让 functions
+// 全纯永不引到这里，毒丸兜住引错的那天 —— 方案 A（2026-08-23）双保险。
+import 'server-only'
+
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'

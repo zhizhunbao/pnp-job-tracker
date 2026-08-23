@@ -405,7 +405,7 @@ const localRules = {
         schema: [],
         messages: {
           fn: 'routes.ts 顶层只许 export 的 *Route handler；`{{ name }}` 下沉进 functions（造 Response 的分支就地写，不抽函数）。',
-          sql: 'routes.ts 不许碰 SQL/query：取数下沉本域 functions，芯只拿池注入。',
+          sql: 'routes.ts 的 db 只放行 `import { getDb } from \'../db/server\'`（方案 A，2026-08-23）：拿池一行、注给本域 functions；SQL/queryRows/poolOf 一律不许 —— 查询本体归 functions。',
         },
       },
       create(context) {
@@ -418,8 +418,17 @@ const localRules = {
               context.report({ node, messageId: 'fn', data: { name } })
             }
           },
-          ImportSpecifier(node) {
-            if (node.imported.type === 'Identifier' && node.imported.name === 'SQL') {
+          // 2026-08-23 方案 A（毒丸留 pool，functions 全纯收注入）：routes 是入口，入口知道自己
+          // 站在服务器上 —— 唯一放行「从 ../db/server 拿 getDb」这一个名字；其余 db 面孔
+          //（SQL、queryRows、poolOf、'../db' 桶）都不许，查询本体归 functions。
+          ImportDeclaration(node) {
+            const src = String(node.source.value)
+            if (/(^|\/)db(\/|$)/.test(src) === false) return
+            const isServerDoor = /(^|\/)db\/server$/.test(src)
+            const onlyGetDb = node.specifiers.every(function isGetDb(sp) {
+              return sp.type === 'ImportSpecifier' && sp.imported.type === 'Identifier' && sp.imported.name === 'getDb'
+            })
+            if (!isServerDoor || !onlyGetDb || node.specifiers.length === 0) {
               context.report({ node, messageId: 'sql' })
             }
           },
@@ -1285,6 +1294,11 @@ const API_DONE = [
   'src/app/api/mail/run/route.ts',
   'src/app/api/alerts/run/route.ts',
   'src/app/api/alerts/unsub/route.ts',
+  'src/app/api/points/factors/route.ts',
+  'src/app/api/rankings/data/route.ts',
+  'src/app/api/stats/data/route.ts',
+  'src/app/api/stats/fine/route.ts',
+  'src/app/api/stats/market/route.ts',
 ]
 
 const REFACTORED = [

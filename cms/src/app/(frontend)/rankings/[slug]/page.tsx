@@ -1,10 +1,9 @@
 // 榜单页(E5-02,PRD F8):零前端计算 —— 只 SELECT rankings 表渲染(计算在 etl/10_build_rankings.py)。
 // 行只含事实字段 + 官方链接(E4-03 约束);SEO 主体 = generateMetadata。
-import { getPayload } from 'payload'
 import { notFound, permanentRedirect } from 'next/navigation'
-import config from '@/payload.config'
 import { Ranking } from '../Ranking'
 import { RANKING_SLUGS } from '@/lib/rankings'
+import { getDb } from '@/lib/db/server'
 import { fetchRankingRows, fetchRankingSlugs } from '@/lib/rankings/server'
 
 export const dynamic = 'force-dynamic'
@@ -42,8 +41,7 @@ export default async function RankingPage({ params }: { params: Promise<{ slug: 
   // B2:sponsor-likely 曾并入 /employers;货架页 08-08 下架 → 直指把脉页橱窗(避免 308 双跳)
   if (slug === 'sponsor-likely') permanentRedirect('/start')
   if (!RANKING_SLUGS.has(slug)) notFound()
-  const payload = await getPayload({ config: await config })
-  const pool = (payload.db as any).pool
-  const [items, slugs] = await Promise.all([fetchRankingRows({ db: pool, slug }), fetchRankingSlugs(pool)])
+  const db = await getDb()
+  const [items, slugs] = await Promise.all([fetchRankingRows({ db: db, slug: slug }), fetchRankingSlugs(db)])
   return <Ranking slug={slug} items={items} slugs={slugs} />
 }

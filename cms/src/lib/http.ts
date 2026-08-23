@@ -103,3 +103,8 @@ export const HDR_HOST = 'host'
  * x-seed-token 触发闸头名（auto_update 与运维脚本共用）。
  */
 export const HDR_SEED_TOKEN = 'x-seed-token'
+
+/**
+ * Cache-Control 响应头名。
+ */
+export const HDR_CACHE_CONTROL = 'Cache-Control'

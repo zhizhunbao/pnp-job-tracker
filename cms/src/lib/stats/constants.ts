@@ -123,3 +123,38 @@ export const PG_UNDEFINED_COLUMN = '42703'
  * pg 「表不存在」错误码(stats_city / stats_occupation 未落地的降级判据)。
  */
 export const PG_UNDEFINED_TABLE = '42P01'
+
+/**
+ * /api/stats/fine 的三个参数名:省。
+ */
+export const P_PROV = 'prov'
+
+/**
+ * 大类。
+ */
+export const P_BROAD = 'broad'
+
+/**
+ * 中类。
+ */
+export const P_MID = 'mid'
+
+/**
+ * fine 下钻参数的长度上限(分类值最长的中文串远不到它;超限=不是分类值)。
+ */
+export const MAX_PARAM_LEN = 80
+
+/**
+ * fine 下钻单次最多回多少小类行。
+ */
+export const MAX_FINE_ROWS = 60
+
+/**
+ * /api/stats/market 进程内缓存 TTL(与 start 页 homeCache 同 10 分钟)。
+ */
+export const MARKET_TTL_MS = 10 * 60_000
+
+/**
+ * /api/stats/market 的浏览器侧缓存头(5 分钟 + SWR 一小时:页间往返不重付)。
+ */
+export const MARKET_CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=3600'

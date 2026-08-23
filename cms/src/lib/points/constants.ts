@@ -1626,3 +1626,18 @@ export const MONTH_NUM: Record<string, string> = {
    */
   Dec: '12',
 }
+
+/**
+ * /api/points/factors 的省清单参数名。
+ */
+export const P_PROVS = 'provs'
+
+/**
+ * 省清单的分隔符。
+ */
+export const PROV_SEP = ','
+
+/**
+ * 合法省码形状(两位大写)。
+ */
+export const PROV_CODE_RE = /^[A-Z]{2}$/

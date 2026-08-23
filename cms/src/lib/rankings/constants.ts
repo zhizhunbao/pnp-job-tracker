@@ -14,3 +14,8 @@ export const RANKING_SLUGS = new Set([
   'daily-top-tech', 'daily-top-health', 'daily-top-trades', 'daily-top-service', 'daily-top-business',
   'daily-top-education', 'daily-top-manufacturing', 'daily-top-resources', 'daily-top-arts', 'daily-top-management',
 ])
+
+/**
+ * /api/rankings/data 的榜名参数。
+ */
+export const P_SLUG = 'slug'

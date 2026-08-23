@@ -11,7 +11,7 @@ import { BANNER_IMGS, Card, CardAction, CardKV, Banner } from '../ui'
 import { JobCard } from '../ui'
 import { Table } from '../ui'
 import { IconChart } from '../Icons'
-import { BROAD_SLUGS, slugToBroad } from '@/lib/stats'
+import { BROAD_SLUGS } from '@/lib/stats'
 
 
 // ── E8-08 #121 手机域卡(按逻辑拆):公司榜卡 / 职位榜卡——#排名进标题行,数字语义色与桌面列一致 ──
@@ -116,7 +116,7 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
 // 它自己镜像 etl/noc_buckets.SLUGS),这里不再抄一遍。
 const rankTitle = (t: TFn, slug: string): string => {
   if (!slug.startsWith('daily-top')) return t('rank.title.' + slug)
-  const zh = slugToBroad(slug.replace('daily-top-', ''))
+  const zh = (BROAD_SLUGS.find(([s]) => s === slug.replace('daily-top-', '')) || [])[1]
   return t('rank.title.daily-top') + (zh ? '　' + t('broad.' + zh) : '')
 }
 

@@ -2705,3 +2705,23 @@ export type PointsCache = {
     data: ScoreTables
   } | null
 }
+
+/**
+ * 带省码格的行（`makeProvHit` 的过滤器只读这一格）。
+ */
+export type ProvKeyed = {
+  /**
+   * 省码。
+   */
+  province: string
+}
+
+/**
+ * 「行的省在想要的集合里吗」判定函数（`Array.prototype.filter` 的谓词位）。
+ */
+export type ProvHitFn = (row: ProvKeyed) => boolean
+
+/**
+ * 想要的省码集（`makeProvHit` 的入参；库的 `Set` 在本域的名字）。
+ */
+export type ProvSet = Set<string>

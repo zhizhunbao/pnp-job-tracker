@@ -1,9 +1,16 @@
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig({
   plugins: [tsconfigPaths(), react()],
+  resolve: {
+    alias: {
+      // `server-only` 毒丸(db/pool.ts)在 jsdom 下走 client 分支会 throw —— 测试里换成空模块
+      'server-only': fileURLToPath(new URL('./tests/server-only-stub.ts', import.meta.url)),
+    },
+  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
