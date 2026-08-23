@@ -1418,6 +1418,8 @@ const REFACTORED = [
   'src/lib/i18n/**/*.ts',
   // 2026-08-23 quiz 十件套化(Frank「还是需要按规范命名」),同批进闸。
   'src/lib/quiz/**/*.ts', 'src/lib/http.ts',
+  // 2026-08-23 advisor 域重建(替换老 api/advisor):新写即达标,骨架批就进闸。
+  'src/lib/advisor/**/*.ts',
   ...API_DONE,
 ]
 
