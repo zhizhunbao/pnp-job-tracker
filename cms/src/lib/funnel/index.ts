@@ -1,5 +1,5 @@
 /**
- * 漏斗域的桶(消费方:/api/track 路由、lib/track 门面、admin 漏斗页)。
+ * 漏斗域的桶(消费方:/api/funnel/track 路由、lib/track 门面、admin 漏斗页)。
  * 门里只有转发(闸 door-forward-only)。
  *
  * @author Frank

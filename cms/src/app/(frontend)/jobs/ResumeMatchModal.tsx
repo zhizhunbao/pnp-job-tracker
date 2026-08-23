@@ -46,7 +46,7 @@ export function ResumeMatchModal({ jobId, jd, loggedIn, onClose }: {
   }, [loggedIn])
 
   // 文件上传(2026-08-03 Frank 把上传从 G3 二期提上来):md/txt 是文本,浏览器直读;
-  // pdf/docx 走 /api/resume-extract(复用 E11-07 解析器,内存即弃)。文本回填粘贴框,能看能改。
+  // pdf/docx 走 /api/resume/extract(复用 E11-07 解析器,内存即弃)。文本回填粘贴框,能看能改。
   const pickFile = async (f: File | null) => {
     if (!f) return
     touched.current = true; setArchAt('')
@@ -57,7 +57,7 @@ export function ResumeMatchModal({ jobId, jd, loggedIn, onClose }: {
         setResume((await f.text()).trim())
       } else {
         const fd = new FormData(); fd.append('file', f)
-        const r = await fetch('/api/resume-extract', { method: 'POST', credentials: 'include', body: fd })
+        const r = await fetch('/api/resume/extract', { method: 'POST', credentials: 'include', body: fd })
         const d = await r.json().catch(() => null)
         if (!r.ok || !d?.text) {
           setErr(t(d?.error === 'size' ? 'rm.fileSize' : d?.error === 'scan' ? 'rm.fileScan' : 'rm.fileErr'))
@@ -72,7 +72,7 @@ export function ResumeMatchModal({ jobId, jd, loggedIn, onClose }: {
     setBusy(true); setErr('')
     track('jd-match-run', {})
     try {
-      const r = await fetch('/api/resume-match', {
+      const r = await fetch('/api/resume/match', {
         method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ jobId, jd, resume, lang, save }),
       })

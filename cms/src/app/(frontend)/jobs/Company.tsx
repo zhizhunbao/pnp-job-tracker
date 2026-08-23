@@ -113,7 +113,7 @@ export function CompanyAiSection({ company, t, showTrans, lang, flat, bare, skip
   useEffect(() => {
     let dead = false
     setD(undefined); setTrans(null)
-    fetch('/api/companyinfo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: company }) })
+    fetch('/api/employers/info', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: company }) })
       .then((r) => (r.ok && r.status === 200 ? r.json() : null))
       .then((x) => { if (!dead) setD(x && x.brief ? x : null) })
       .catch(() => { if (!dead) setD(null) })
@@ -434,7 +434,7 @@ export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo,
   )
 }
 
-// 公司弹框(E8-11 B1 重写):三钮壳(#185 对照/AI 速读/完整页)+ /api/company 同源取数 + CompanyBody 同源骨架。
+// 公司弹框(E8-11 B1 重写):三钮壳(#185 对照/AI 速读/完整页)+ /api/jobs/company 同源取数 + CompanyBody 同源骨架。
 // job 行字段拼凑与 scoredetail/companyinfo 双 fetch 退役;数据与 /companies/[slug] 页面完全同一份(免额度)。
 export function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: { job: JobRow; jobs: JobRow[]; lang: Lang; plan: Plan; onOpenJob?: (j: JobRow) => void }) {
   const t = makeT(lang)
@@ -444,7 +444,7 @@ export function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: { job: JobRow
   useEffect(() => {
     let dead = false
     setD(undefined)
-    fetch('/api/company', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jobId: job.id }) })
+    fetch('/api/jobs/company', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jobId: job.id }) })
       .then((r) => (r.ok ? r.json() : null))
       .then((x) => { if (!dead) setD(x && x.company ? x : null) })
       .catch(() => { if (!dead) setD(null) })

@@ -369,7 +369,22 @@ export const SUBJ_WK = {
 /**
  * C 收藏版周报标题模板(中文站语;收藏数/在招/下架)。
  */
-export const SUBJ_SAVED = '你收藏的 {total} 个岗:{open} 在招 · {closed} 已下架 — Offer2PR'
+export const SUBJ_SAVED = {
+  /**
+   * 中文标题（原串原样；空/未知 locale 用它 —— 与 C2 的 SUBJ_WK 同口径）。
+   */
+  zh: '你收藏的 {total} 个岗:{open} 在招 · {closed} 已下架 — Offer2PR',
+
+  /**
+   * 英文标题（open/closed 与正文徽标术语一致）。
+   */
+  en: 'Your {total} saved jobs: {open} open · {closed} closed — Offer2PR',
+
+  /**
+   * 韩文标题。
+   */
+  ko: '저장한 공고 {total}건: 모집 중 {open}건 · 마감 {closed}건 — Offer2PR',
+} as const
 
 /**
  * 退订链接模板。

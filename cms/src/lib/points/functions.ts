@@ -2504,7 +2504,7 @@ function overviewOf(facts: DrawFacts): OverviewDraws {
 
 /**
  * 每省近 6 轮**有分数**的抽选(没分数的轮次不进 —— 拿它跟估分比就是编)。
- * 2026-08-16:估分卡的空态诱饵,必须随 SSR 下发 —— 先前它取自 `/api/score-factors`,
+ * 2026-08-16:估分卡的空态诱饵,必须随 SSR 下发 —— 先前它取自 `/api/points/factors`,
  * 而那个请求只在**答满全卷**后才发,于是「选了省却看不到线」(实撞)。线是免费硬事实。
  *
  * @param facts 抽选事实(按抽选日倒序)。
@@ -2578,7 +2578,7 @@ async function loadScoreTables(db: Db): ScoreTablesOut {
 /**
  * 决策页首屏的官方表包(进程内单件缓存;2026-08-12 立,2026-08-22 自 lib/score 并入本域)。
  * 抽选表(overview)留在 SSR:它是这页唯一的免费硬事实,要被爬到,不能等水合;
- * 分值表由 `/api/score-factors` 按省懒取,不再随页面下发。
+ * 分值表由 `/api/points/factors` 按省懒取,不再随页面下发。
  * topNocs 2026-08-22 起不进包 —— 那是 jobs 的题材,页面另取 `fetchTopNocsCached`(同 TTL)。
  * 两张主表都空 = 多半是查挂了,不把一次抖动钉死 10 分钟。
  *

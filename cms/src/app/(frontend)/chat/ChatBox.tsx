@@ -192,7 +192,7 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { 
     stick.current = true
     track('chat-submit')
     try {
-      const r = await fetch('/api/chat', {
+      const r = await fetch('/api/consult/chat', {
         method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: q, lang, history, context }),
       })

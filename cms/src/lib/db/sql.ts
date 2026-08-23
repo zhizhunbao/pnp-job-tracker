@@ -347,7 +347,7 @@ export const PROV_DIFFICULTY = `SELECT province, difficulty FROM stats
 
 /**
  * 职业竞争度:各省在架量(实时)/30 天新增/平均在架天数(后两列走快照)。$1=码数组。
- * 🔴 2026-08-22 收拢 /api/occ-competition 时抓出的口径 bug:原写法把 stats_occupation
+ * 🔴 2026-08-22 收拢 /api/jobs/competition 时抓出的口径 bug:原写法把 stats_occupation
  * **逐岗位行**连接再 SUM,快照值被乘上在招岗数(实测 ON 某职业 576 岗 × 670 = 385920)——
  * 快照统计列改成先按省聚合再连,单职业时逐字等于快照原值(老路由的口径)。
  * 全无快照时 new30d/avg_days_open 是 NULL(本站未收录,不折 0)。
@@ -735,7 +735,7 @@ export const EE_NOCS_DISTINCT = `SELECT DISTINCT noc FROM ee_categories WHERE no
 // 15. 城市 / 社区页
 // =========================================================================
 
-// ── app/api/city/route.ts ──
+// ── app/api/jobs/city/route.ts ──
 
 /**
  * 城市页三数:在架/7 天新增/中位薪资。$1=城市,$2=省,a1=在架口径片段。
@@ -837,7 +837,7 @@ export const alertNewCount = (a1: string) => `SELECT count(*)::int AS n FROM job
 // 17. 职业竞争度(API)
 // =========================================================================
 
-// ── app/api/occ-competition/route.ts ──
+// ── app/api/jobs/competition/route.ts ──
 // 2026-08-22 段内四条(OCC_COMP/AIP/RCIP/FCIP_BY_PROV 单 noc 版)退役:路由改吃
 // jobs/functions.fetchOccCompetition 的数组版(§8 那组)—— 单 noc 版还在读
 // stats_occupation 日快照,与 2026-08-16「在招是显示多少就查多少」的实时口径岔开。
@@ -1134,7 +1134,7 @@ export const newsSetSummary = (a1: string) => `UPDATE news SET ${a1} = $1 WHERE 
 // 24. 埋点与零散查询
 // =========================================================================
 
-// ── app/api/track/route.ts ──
+// ── app/api/funnel/track/route.ts ──
 
 /**
  * 埋点自增(按天/事件/prop 一行,冲突 +1)。$1=事件,$2=prop。
@@ -1142,7 +1142,7 @@ export const newsSetSummary = (a1: string) => `UPDATE news SET ${a1} = $1 WHERE 
 export const FUNNEL_EVENT_UPSERT = `INSERT INTO funnel_events (day, event, prop, n) VALUES (CURRENT_DATE, $1, $2, 1)
        ON CONFLICT (day, event, prop) DO UPDATE SET n = funnel_events.n + 1`
 
-// ── app/api/statsfine/route.ts ──
+// ── app/api/stats/fine/route.ts ──
 
 /**
  * 某省某大类某中类下的细类分布。$1..$3=省/大类/中类,a1=行数。
@@ -1152,7 +1152,7 @@ export const fineCounts = (a1: string | number) => `SELECT fine, count(*)::int A
        AND fine IS NOT NULL AND fine <> '' AND fine <> '未分类'
      GROUP BY fine ORDER BY n DESC LIMIT ${a1}`
 
-// ── app/api/province/route.ts ──
+// ── app/api/jobs/province/route.ts ──
 
 /**
  * 单省难度分。$1=省。

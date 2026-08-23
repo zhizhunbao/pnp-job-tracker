@@ -303,7 +303,7 @@ export interface User {
     familySize?: number | null;
     profileUpdatedAt?: string | null;
     /**
-     * 简历文本(PII,上限 2 万字符):用户勾选后由 /api/resume-match 写入
+     * 简历文本(PII,上限 2 万字符):用户勾选后由 /api/resume/match 写入
      */
     resumeText?: string | null;
     /**
@@ -506,7 +506,7 @@ export interface Job {
   address?: string | null;
   region?: string | null;
   /**
-   * 第一方投递链接(/api/jobtext 按此等值查询)
+   * 第一方投递链接(/api/jobs/text 按此等值查询)
    */
   applyUrl?: string | null;
   officialUrl?: string | null;

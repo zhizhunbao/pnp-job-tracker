@@ -3,7 +3,7 @@
 // 2026-08-10 并入 /plan/pr 主页面,不再在页面上自动套第二层弹窗。版式沿用三项文字胶囊条、免费行 ✓+官方 quote+出处日期、
 // 锁区=行名可见值打码+ProCard、无档案态=行名+「—」+建档 CTA+预填问句、入口卡=标题+按钮零解释。
 //
-// 分层不在这里:付费闸在服务端(/api/triple-verdict 只给非 Pro 下发 gate/tier/key),
+// 分层不在这里:付费闸在服务端(/api/ruling/verdict 只给非 Pro 下发 gate/tier/key),
 // 本组件拿到什么渲什么 —— locked 行天然没有 params,想漏都没得漏。
 // 文案四闸:零逗号标题 / 无解释句 / 术语=职业匹配·雇主资质·你这边 / 值一行放下。
 // 三关第三关 2026-08-12 由「个人条件」改称**「你这边」**(审计 A3):页面上那张问卷回显卡叫「你的条件」,
@@ -17,7 +17,7 @@ import { ConditionGrid } from './ConditionGrid'
 import { track } from '@/lib/track'
 import { readAnswers, toEngineAnswers } from '@/lib/quiz'
 
-// ── wire(与 /api/triple-verdict 的响应一一对应)─────────────────────────────
+// ── wire(与 /api/ruling/verdict 的响应一一对应)─────────────────────────────
 type TvEv = { url?: string; fetched?: string; label?: string }
 type TvRow = {
   gate: 'occupation' | 'employer' | 'person'
@@ -365,7 +365,7 @@ export function TripleVerdictPanel({ job, lang, profileComplete = false, refresh
     if (initial && !hasLocal && !refreshKey) return
     // POST 带上本地答案(2026-08-12 Frank「匿名也可以访问」):没登录也判得出个人条件。
     // 服务端逐槽以落档的档案优先,本地答案只补它缺的那几样;付费闸与此无关(锁不锁看是不是 Pro)。
-    fetch('/api/triple-verdict', {
+    fetch('/api/ruling/verdict', {
       method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ job: job.id, answers: local }),
     })

@@ -138,7 +138,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
   // 大维度独立加载(cities/districts/designatedEmployers/nocDescriptions),不再随职位 blob
   useEffect(() => {
     let dead = false
-    fetch('/api/dims').then((r) => (r.ok ? r.json() : null)).then((d) => { if (!dead && d?.dims) setDims((prev) => ({ ...prev, ...d.dims })) }).catch(() => {})
+    fetch('/api/jobs/dims').then((r) => (r.ok ? r.json() : null)).then((d) => { if (!dead && d?.dims) setDims((prev) => ({ ...prev, ...d.dims })) }).catch(() => {})
     return () => { dead = true }
   }, [])
   // 筛选初值来自服务端(page.tsx 已按 URL 解析并据此查过库)→ 首帧下拉就是选中的那项、行就是筛选后的行,

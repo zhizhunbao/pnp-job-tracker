@@ -860,7 +860,7 @@ function orderByClause(input: OrderByIn): string {
 /**
  * 首屏维度(2026-08-18 从 page.tsx 搬下来:同一份数据两条路两套映射,口径迟早分叉)。
  * SSR 瘦身照旧(2026-07-17):cities/districts/designatedEmployers/nocDescriptions 四张大表
- * 首屏不带(约 1.25MB),客户端从 /api/dims 后台拉了再并进来。查挂回空(宁可留空)。
+ * 首屏不带(约 1.25MB),客户端从 /api/jobs/dims 后台拉了再并进来。查挂回空(宁可留空)。
  *
  * @param db 数据库连接(池由调用方注进来)。
  * @returns 首屏维度包。
@@ -2153,12 +2153,12 @@ function countOf(input: CountOfIn): number {
 
 /**
  * 该职业分省竞争面(2026-08-15 #307 排序单源化时自路由抽出;2026-08-22 自 lib/score 并入本域。
- * `/api/occ-competition` 与 profile-pathways 的服务端排序共用这一份,口径不许分叉 ——
+ * `/api/jobs/competition` 与 profile-pathways 的服务端排序共用这一份,口径不许分叉 ——
  * 并入时顺手收掉路由里残留的单 noc 快照版:那份还在读 stats_occupation 日快照,
  * 与下面 ① 的实时口径已经岔开)。
  *
  * 🔴 职业级「几人抢一个」算不出来,本站不编 —— 只给三类实数(在招/新增/平均在招天数)
- * 与省级名额竞争比,不合成分数(完整口径注释见 `/api/occ-competition` 路由头)。
+ * 与省级名额竞争比,不合成分数(完整口径注释见 `/api/jobs/competition` 路由头)。
  *
  * 2026-08-16 Frank「在招是显示多少就查多少」「要支持多个职位类别」:
  * ① openJobs 走**实时 jobs 表**(与「查岗位」落地页同一条谓词),不取日快照 ——

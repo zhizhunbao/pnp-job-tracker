@@ -532,7 +532,15 @@ export async function runAlerts(input: RunIn): RunOut {
     for (const r of pairs.slice(0, DIM_PAIRS)) {
       dimPieces.push(r.province + DIM_JOIN + r.broad)
     }
-    const subject = fill({ tpl: SUBJ_SAVED, params: { total: sj.docs.length, open: openN, closed: items.length - openN } })
+    let savedLoc = ''
+    if (typeof u.locale === 'string') {
+      savedLoc = u.locale
+    }
+    let savedKey: MailLang = L_ZH
+    if (savedLoc === L_EN || savedLoc === L_KO) {
+      savedKey = savedLoc
+    }
+    const subject = fill({ tpl: SUBJ_SAVED[savedKey], params: { total: sj.docs.length, open: openN, closed: items.length - openN } })
     if (input.dry) {
       out.weeklyEmails++
       continue

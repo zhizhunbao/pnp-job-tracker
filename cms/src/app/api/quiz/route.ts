@@ -40,7 +40,7 @@ export async function GET(req: Request) {
   }
   // ?top=N → 按在招量排的热门职业(清单本身不手写)。进程内缓存 10 分钟:
   // 这条要对 4 万多在招岗做 GROUP BY,实测 3.6s;选职业控件每次打开都等它是不可接受的,
-  // 而它一天也变不了几次(同 /api/market-stats、homeCache 的手法)。
+  // 而它一天也变不了几次(同 /api/stats/market、homeCache 的手法)。
   if (sp.get('top')) {
     const n = Number(sp.get('top')) || 24
     return Response.json({ top: await getTopNocsCached(pool, n) })

@@ -35,7 +35,7 @@ export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; lo
     setBusy(true)
     try { (window as any).umami?.track('checkout', { plan }) } catch { /* E7-02:Checkout 发起事件 */ }
     try {
-      const r = await fetch('/api/billing/checkout', {
+      const r = await fetch('/api/stripe/checkout', {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ plan }),
       })

@@ -89,7 +89,7 @@ export const Users: CollectionConfig = {
     },
     {
       // 问卷答案档(2026-08-15 答案入库绑账号):{ basic: Answers, score: ScoreAnswers, updatedAt: ISO }。
-      // 列由 docs/sql/account-answers.sql 手写添加(不走 DB_PUSH);写入走 /api/account/answers,
+      // 列由 docs/sql/account-answers.sql 手写添加(不走 DB_PUSH);写入走 /api/quiz/answers,
       // 服务端补 updatedAt;客户端合并规则(新者胜)在 lib/quiz/answers.ts。
       name: 'answers',
       type: 'json',
@@ -116,7 +116,7 @@ export const Users: CollectionConfig = {
         { name: 'pgwpMonthsLeft', type: 'number', admin: { description: 'PGWP 剩余月数' } },
         // ── 判定核个人条件要的槽(2026-08-12 Frank「先把功能做完善」)────────────────────
         // 病灶:答题时明明问了经验/offer/加拿大学历,quizToProfile 却只落 status/nocs/provs/clb,
-        // /api/triple-verdict 里其余一律硬写 null —— 于是「个人条件」那几行对**任何人**(含 Pro)
+        // /api/ruling/verdict 里其余一律硬写 null —— 于是「个人条件」那几行对**任何人**(含 Pro)
         // 都只能输出「判不了」。不是锁的问题,是答案根本没存下来。
         // 列由 docs/sql/user-profile-verdict-slots.sql 手写添加(不走 DB_PUSH,见 db-push-minefield)。
         { name: 'expCanadaMonths', type: 'number', admin: { description: '同职业加拿大工作经验(月)' } },
@@ -132,7 +132,7 @@ export const Users: CollectionConfig = {
           type: 'textarea',
           maxLength: 20000,
           // 后台只读:这是 PII,管理员能看已经够,不该在 admin 里随手改用户简历(清除走账户页本人操作)。
-          admin: { readOnly: true, description: '简历文本(PII,上限 2 万字符):用户勾选后由 /api/resume-match 写入' },
+          admin: { readOnly: true, description: '简历文本(PII,上限 2 万字符):用户勾选后由 /api/resume/match 写入' },
         },
         { name: 'resumeSavedAt', type: 'date', admin: { description: '简历存档时刻(账户页显示新旧)' } },
         {

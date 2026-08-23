@@ -983,7 +983,7 @@ export type NewsSlim = {
 }
 
 /**
- * 首屏维度包(SSR 与 /api/dims 共用一份行映射,口径不分叉)。
+ * 首屏维度包(SSR 与 /api/jobs/dims 共用一份行映射,口径不分叉)。
  */
 export type Dims = {
   /**
@@ -992,7 +992,7 @@ export type Dims = {
   provinces: ProvOption[]
 
   /**
-   * 城市清单(SSR 瘦身:首屏空,客户端从 /api/dims 拉后并入)。
+   * 城市清单(SSR 瘦身:首屏空,客户端从 /api/jobs/dims 拉后并入)。
    */
   cities: CityOption[]
 

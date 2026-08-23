@@ -1,7 +1,7 @@
 'use client'
 // C6 · 职位详情页通道卡(卡位=已摘的 OccReportCard;设计 docs/design/对话选项卡与图片上传-20260806.md §五)。
 //
-// v1 = **无档案通用态**:13 条通道按工作经验门槛从低到高铺名单(/api/pathways 纯查表),
+// v1 = **无档案通用态**:13 条通道按工作经验门槛从低到高铺名单(/api/ruling/pathways 纯查表),
 // 清单排除的划线沉底;CTA 拉起对话挂件并预填路径问句(个性化态等档案存续拍板,设计 §五「双态」)。
 //
 // 硬约束(照 OccReportCard 原样):
@@ -36,7 +36,7 @@ export function PathwaysCard({ noc, teer, prefill, t }: { noc: string; teer: num
       if (!entries.some((e) => e.isIntersecting)) return
       io.disconnect()
       track('pw-seen')
-      fetch(`/api/pathways?noc=${encodeURIComponent(noc)}${teer != null ? `&teer=${teer}` : ''}`)
+      fetch(`/api/ruling/pathways?noc=${encodeURIComponent(noc)}${teer != null ? `&teer=${teer}` : ''}`)
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => { if (!dead) setRows(Array.isArray(d?.rows) ? d.rows : null) })
         .catch(() => { /* 拿不到就不渲,不打扰 */ })

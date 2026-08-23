@@ -47,7 +47,7 @@ export type TvJob = {
   noc: string; teer: number | null; pnpStream: string
 }
 
-/** /api/score-factors 的响应:官方分值表按省过滤后的行 + 本站有表的省清单 */
+/** /api/points/factors 的响应:官方分值表按省过滤后的行 + 本站有表的省清单 */
 type ScoreTables = { factorProvinces: string[]; factors: ScoreFactor[]; draws: DrawRow[] }
 
 type ProfilePath = {
@@ -275,7 +275,7 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
     const target = occNoc || noc
     if (!target) { setOccComp(null); return }
     const ctrl = new AbortController()
-    fetch(`/api/occ-competition?noc=${encodeURIComponent(target)}`, { signal: ctrl.signal })
+    fetch(`/api/jobs/competition?noc=${encodeURIComponent(target)}`, { signal: ctrl.signal })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => { if (!ctrl.signal.aborted) setOccComp(Array.isArray(d?.rows) ? d.rows : []) })
       .catch(() => { if (!ctrl.signal.aborted) setOccComp([]) })
@@ -345,7 +345,7 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
     if (!ready || !noc) { setProfilePaths(null); return }
     const ctrl = new AbortController()
     setProfilePaths(null)
-    fetch('/api/profile-pathways', {
+    fetch('/api/ruling/profile', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
       body: JSON.stringify({ answers: toEngineAnswers(bands), ticks: scoreTicks,
         rows: scoreRowsAns.rowAnswers, wage: scoreRowsAns.wage, areaI: scoreRowsAns.areaI }),
@@ -479,7 +479,7 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
   useEffect(() => {
     if (!provKey || (!quizComplete && !tvJob)) { setScoreTables(null); return }
     const ctrl = new AbortController()
-    fetch(`/api/score-factors?provs=${encodeURIComponent(provKey)}`, { signal: ctrl.signal })
+    fetch(`/api/points/factors?provs=${encodeURIComponent(provKey)}`, { signal: ctrl.signal })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (ctrl.signal.aborted) return
@@ -1479,13 +1479,13 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
             {/* 带岗进入后,三项判定就是本页结果,不再自动套一层弹窗。条件在上、结果在下,修改后原地重算。
                 **必须等 ready**:quizOpen 初值是 false,不等读完 localStorage 就渲染的话,新用户首帧先看到
                 这块判定面板、水合后又被答题卡顶掉 —— 闪一下不说,还白打一次 tv-open + 一次
-                /api/triple-verdict 请求,把「有多少人真看了判定」这个数顶虚(2026-08-11 umami session 实录)。 */}
+                /api/ruling/verdict 请求,把「有多少人真看了判定」这个数顶虚(2026-08-11 umami session 实录)。 */}
             {/* 服务端已经把判定算好了(initialVerdict)就**不必等 ready**:ready 那道闸是为了防
                 「首帧先渲判定、水合后被答题卡顶掉」的闪烁,而带岗态如今根本不摆答题卡,顶不掉。
                 有 initialVerdict = 这一段真的进 SSR HTML,首屏不再是空白 + 骨架。 */}
             {/* 面板**常驻不卸载**(问卷弹框的壳与分值卡如今都并在判定卡②里,scoreSlot):
                 开弹框时不藏面板 —— 藏了连弹框一起看不见,遮罩本来就盖在它上面。
-                顺带修掉旧行为里每开关一次弹窗就重挂面板、重打一次 tv-open + /api/triple-verdict 的毛病。 */}
+                顺带修掉旧行为里每开关一次弹窗就重挂面板、重打一次 tv-open + /api/ruling/verdict 的毛病。 */}
             {(ready || !!initialVerdict) && tvJob && <div><TripleVerdictPanel job={tvJob} lang={lang} profileComplete={quizComplete} refreshKey={verdictNonce}
               initial={initialVerdict}
               countPills={countPills}

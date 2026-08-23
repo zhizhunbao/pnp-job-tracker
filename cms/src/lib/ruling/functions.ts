@@ -4335,7 +4335,7 @@ function concludeNeedsInfo(input: ConcludeNeedsInfoIn): ConcludeNeedsInfoOut {
  * 不都是缺 job offer 的吗」)。这张卡回答的是「**拿下这份 offer 之后**还卡在哪」——比路行的语义
  * 本来就是 fastest after offer,拿「你现在没 offer」当拦路结论是对每个访客说同一句废话。
  *
- * 🔴 只改这张带岗卡:无岗初评(`/api/profile-pathways`)仍按真实答案判 offer 闸。
+ * 🔴 只改这张带岗卡:无岗初评(`/api/ruling/profile`)仍按真实答案判 offer 闸。
  *
  * @param input 卡片用的判定档案。
  * @returns 判定核认的档案,`hasOffer` 恒 true。
@@ -5698,7 +5698,7 @@ export async function getDesignatedEmployers(input: GetDesignatedEmployersIn): G
 }
 
 /**
- * 判定卡的下行数据 —— `/api/triple-verdict` 与 `/plan/pr?job=` 的 SSR 首屏共用这一条口径。
+ * 判定卡的下行数据 —— `/api/ruling/verdict` 与 `/plan/pr?job=` 的 SSR 首屏共用这一条口径。
  *
  * 本函数只负责把 `buildTripleWire` 要的东西凑齐:连接池、六张底表、按省取名录的函数,
  * 以及**当前这个人**(登录态与 Pro 与否)。付费闸在 `buildTripleWire` 里,

@@ -5,7 +5,7 @@ import type { Access, CollectionConfig } from 'payload'
 // 只有字数),Umami 那边只有事件计数。于是「用户实际最常问什么」「哪类问题最容易 guard 降级」无法回答,
 // 而复现率仪表盘的数据源正是这张表。
 //
-// 只由 `/api/chat` 服务端写(local API,绕过 access),前台永不读:
+// 只由 `/api/consult/chat` 服务端写(local API,绕过 access),前台永不读:
 //   access 四把全关 —— 里面是用户自述的职业/身份/省份,REST/GraphQL 一律不开;admin 只给管理员看。
 //
 // 🔴 不存任何指向人的东西:没有 IP、没有 user 关系、没有邮箱。`thread` 是**首轮提问文本**的哈希,

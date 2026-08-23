@@ -467,7 +467,7 @@ export type SponsorBoardData = {
 }
 
 /**
- * 把脉页橱窗三分表(#313:lmia/named/aip;SSR 与 /api/sponsor-employers 共用)。
+ * 把脉页橱窗三分表(#313:lmia/named/aip;SSR 与 /api/employers/sponsors 共用)。
  */
 export type SponsorBoards = {
   /**

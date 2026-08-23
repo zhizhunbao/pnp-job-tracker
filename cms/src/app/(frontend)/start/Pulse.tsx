@@ -11,7 +11,7 @@
 //      变化量口径按契约 v3 一律用**近 14 天新发环比 mom14d**:30 天窗卡在抓取爬坡期(假涨)、
 //      下架/净流失卡在排水期(虚高),两者的数字与措辞都不上前端(同入 E13-04);
 //   ③ 每行可溯源:职业名点开落到按该 NOC 筛过的职位板(/?q=<noc>),省卡下钻落 /stats/[prov]。
-// SSR 瘦身手法守住:职业大表(occ ~3400 行)不进 HTML,挂载后拉 /api/market-stats(与旧版同一端点)。
+// SSR 瘦身手法守住:职业大表(occ ~3400 行)不进 HTML,挂载后拉 /api/stats/market(与旧版同一端点)。
 import { useEffect, useMemo, useState } from 'react'
 
 import { makeT, type Lang, type TFn } from '@/lib/i18n'
@@ -46,7 +46,7 @@ export type HomeStats = {
   catMids: { broad: string; mid: string; midEn: string; midKo: string; fine: string; fineEn: string; fineKo: string }[]   // 职业筛联动的中/小类英韩名(noc_categories,一行=一个小类)
   // S1 中间两卡标量(08-09 下沉 SSR 消刷新闪占位,Frank「中间两个数为什么会闪」):null=该卡不出
   pulse: { new14: number | null; days: number | null }
-  // 三分表职业筛联动 noc→分类(只含橱窗行出现过的 NOC;同批下沉 SSR,中类下拉不再等 /api/market-stats)
+  // 三分表职业筛联动 noc→分类(只含橱窗行出现过的 NOC;同批下沉 SSR,中类下拉不再等 /api/stats/market)
   nocCat: Record<string, { broad: string; mid: string; fine: string }>
   provExtra: Record<string, ProvExtra>            // S4 省卡:IRCC 体量 + 难度档
   provPreset: string                              // S4 预选省(档案省;匿名为空 → 默认 ON。禁 IP 定位)
@@ -478,11 +478,11 @@ export function Pulse({ stats }: { stats: HomeStats }) {
   // 主图四份数据(occ 含 E13-03 派生列)挂载后拉;null=加载中 → 依赖它的区渲占位高度,不出空壳
   const market = useMarketStats()
   // #313:橱窗三分表 SSR 只带每表前 50 行(RSC payload 6.5MB 瘦身),挂载后拉全量换上
-  // (手法照 occ 大表的 /api/market-stats);拉挂/拉到空表就继续用 SSR 那 50 行,不闪不塌
+  // (手法照 occ 大表的 /api/stats/market);拉挂/拉到空表就继续用 SSR 那 50 行,不闪不塌
   const [sponsorFull, setSponsorFull] = useState<HomeStats['sponsor'] | null>(null)
   useEffect(() => {
     const ctrl = new AbortController()
-    fetch('/api/sponsor-employers', { signal: ctrl.signal })
+    fetch('/api/employers/sponsors', { signal: ctrl.signal })
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => { if (j?.lmia?.top?.length) setSponsorFull(j) })
       .catch(() => { /* 保底 SSR 首 50 行 */ })

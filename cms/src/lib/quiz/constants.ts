@@ -239,7 +239,7 @@ export const LI_RE = new RegExp('(?:^|;\\s*)o2p_li=1')
 /**
  * 答案档同步端点(PUT 正推;sendBeacon 只能 POST —— 端点同时收两种,见 api/account/answers)。
  */
-export const URL_ANSWERS = '/api/account/answers'
+export const URL_ANSWERS = '/api/quiz/answers'
 
 /**
  * 正推的 HTTP 方法。

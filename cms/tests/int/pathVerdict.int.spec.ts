@@ -330,7 +330,7 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
   it('语言差档不再冒充「现在就能走」:联邦 EE 被标 blockedBy=language 并让位', () => {
     // 2026-08-11 Frank 实拍:厨师 + 在加读书 + CLB 4 + 加拿大经验 0 → 方案第一条是联邦 EE。
     // CEC 要加拿大经验、FSW 要 CLB 7、FST 要 CLB 5 口语听力,三条全不通。
-    // 档案照 Frank 那张截图配:基础卷只问 6 项,年龄/学历都没问过 → 传 null(与 /api/profile-pathways 一致)
+    // 档案照 Frank 那张截图配:基础卷只问 6 项,年龄/学历都没问过 → 传 null(与 /api/ruling/profile 一致)
     const weak = pathVerdict({
       age: null, married: null, clb: 4, edu: null, eduYears: null, canadaStudy: null, studyProvince: null,
       noc: '63200', teer: 3, expCanadaMonths: 0, expForeignMonths: 60, foreignExpSelfEmployed: null,
@@ -345,7 +345,7 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
   })
 
   it('反事实(L2-09):hasOffer=true 重跑后,被 offer 卡住的路不再报 offer 缺口', () => {
-    // /api/profile-pathways 的 afterOffer 就靠这个不变量:offer 闸放行后,徽标要么写「即可申请」,
+    // /api/ruling/profile 的 afterOffer 就靠这个不变量:offer 闸放行后,徽标要么写「即可申请」,
     // 要么暴露下一道更硬的闸(语言/身份/学历)—— 绝不能还是 offer。
     // 档案照 Frank 2026-08-14 实拍:软件职业、在加读书、CLB 5、海外 5 年经验、有加拿大学历、无 offer
     const profile = {

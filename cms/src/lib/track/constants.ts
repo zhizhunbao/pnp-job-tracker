@@ -8,7 +8,7 @@
 /**
  * 第一方漏斗计数端点(站内路由,广告拦截器挡不住)。
  */
-export const TRACK_URL = '/api/track'
+export const TRACK_URL = '/api/funnel/track'
 
 /**
  * JSON 请求体的 MIME。

@@ -535,7 +535,7 @@ describe('#287 金标 · 个人关', () => {
 
 // ── 2026-08-12:答案落了档,个人关就不许再说「判不了」──────────────────────────
 // 病灶(Frank「这个功能还不完善啊」):答题时明明问了经验/offer/加拿大学历,quizToProfile 却只落
-// status/nocs/provs/clb,/api/triple-verdict 里其余一律硬写 null —— 于是「个人条件」那几行
+// status/nocs/provs/clb,/api/ruling/verdict 里其余一律硬写 null —— 于是「个人条件」那几行
 // 对**任何人(含 Pro)**都只能输出「判不了」。这一节守的就是那条链:**槽填了,结论必须出来**。
 describe('个人关:槽填了就必须判得出来(不许再落「判不了」)', () => {
   const FILLED: TripleProfile = { ...PROFILE, expCanadaMonths: 24, expForeignMonths: 12, hasOffer: true, canadaStudy: true }

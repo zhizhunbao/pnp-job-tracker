@@ -2356,7 +2356,7 @@ export type PathwayScore = {
    * 这一分是**下界**:加分项按不勾算(用户没勾过),真上界看 ceiling。
    *
    * 2026-08-20 补声明:老 `lib/verdict` 是靠对象展开把它塞进来的,类型上从来没有这一格,
-   * 于是 `/api/profile-pathways` 只能拿 `as { partial?: boolean }` 把它读出来。
+   * 于是 `/api/ruling/profile` 只能拿 `as { partial?: boolean }` 把它读出来。
    */
   partial?: true
 }

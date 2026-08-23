@@ -14,7 +14,7 @@ import { useLang } from '../LangProvider'
 import { UI } from '../ui'
 import { track } from '@/lib/track'
 
-// 后端契约(POST /api/chat 200 体)——由 api/chat/route.ts 定,这里只照抄形状,不自行扩展
+// 后端契约(POST /api/consult/chat 200 体)——由 api/chat/route.ts 定,这里只照抄形状,不自行扩展
 export type Fact = {
   tool: string; label: string; value: number | null; valueText: string; unit: string
   evidence: { url: string; fetched: string; label?: string; section?: string }

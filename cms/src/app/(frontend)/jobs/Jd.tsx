@@ -15,7 +15,7 @@ import { makeT, type Lang, type TFn } from '@/lib/i18n'
 import { type Plan, type JobRow, type NocDesc, hasProfile, normalizeProfile, type MatchProfile, blockedSrc } from '@/lib/jobs'
 import { track } from '@/lib/track'
 
-// 职位事实块:标题 + 匹配 NOC + 抓取的 JD 正文摘录(走 /api/jobtext,同 ActModal desc;列表 SQL 不带 description)
+// 职位事实块:标题 + 匹配 NOC + 抓取的 JD 正文摘录(走 /api/jobs/text,同 ActModal desc;列表 SQL 不带 description)
 // NOC 官方主要职责 / 任职要求(StatCan Elements);noc 来自 noc-descriptions 维度,无则不渲染
 export function NocDutiesView({ noc, lang }: { noc: NocDesc | null; lang: Lang }) {
   const t = makeT(lang)
@@ -265,7 +265,7 @@ const jobTextCache = new Map<string, string>()
 export async function fetchJobText(applyUrl: string, signal?: AbortSignal): Promise<{ status: 'ok' | 'gated' | 'limited' | 'error' | 'empty'; text: string; freeLeft: number | null }> {
   const hit = jobTextCache.get(applyUrl)
   if (hit != null) return { status: 'ok', text: hit, freeLeft: null }
-  const res = await fetch('/api/jobtext?url=' + encodeURIComponent(applyUrl), { signal })
+  const res = await fetch('/api/jobs/text?url=' + encodeURIComponent(applyUrl), { signal })
   const left = res.headers.get('X-Free-Left')
   const freeLeft = left != null ? Number(left) : null
   if (res.status === 402) return { status: 'gated', text: '', freeLeft }
@@ -492,7 +492,7 @@ export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow;
     return () => ctrl.abort()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [job])
-  // 投递邮箱(E9-04,dd24-#110 从 ApplyBar 上提):JB 岗藏在「Show how to apply」JSF 后 → 懒查 /api/applyhow;
+  // 投递邮箱(E9-04,dd24-#110 从 ApplyBar 上提):JB 岗藏在「Show how to apply」JSF 后 → 懒查 /api/jobs/applyhow;
   // URL → 域名(#239):来源行只报出处,不铺整条链接;解析失败退原串(宁可原样也不吞)
 const hostOf = (u: string) => { try { return new URL(u).host.replace(/^www\./, '') } catch { return u } }
 // 非 JB 岗正文常直接带邮箱 → 正则兜底。「怎么投」节与投递栏共用同一份结果。
@@ -503,7 +503,7 @@ const hostOf = (u: string) => { try { return new URL(u).host.replace(/^www\./, '
     if (!/jobbank\.gc\.ca\/jobsearch\/jobposting\//.test(job.applyUrl || '')) { setJbDone(true); return }
     setJbDone(false)
     const ctrl = new AbortController()
-    fetch('/api/applyhow?url=' + encodeURIComponent(job.applyUrl), { signal: ctrl.signal })
+    fetch('/api/jobs/applyhow?url=' + encodeURIComponent(job.applyUrl), { signal: ctrl.signal })
       .then((r) => (r.ok ? r.json() : null)).then((d) => { if (d?.email) setJbEmail(d.email) }).catch(() => {})
       .finally(() => { if (!ctrl.signal.aborted) setJbDone(true) })
     return () => ctrl.abort()

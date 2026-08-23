@@ -40,7 +40,7 @@ function EChart({ option, height, onBarClick }: { option: object; height: number
 // 主图卡壳(MarketChart 用;原「预设四图/自定义区」那套 DrillCard 与 byProv/byCat/byMid/barOption
 // 随 /stats 索引页 2026-08-06 退役一并删,不留死代码)
 
-// ── /api/market-stats 客户端拉取(SSR 瘦身,手法照 /jobs 的 /api/dims):主图四份数据与用户无关、
+// ── /api/stats/market 客户端拉取(SSR 瘦身,手法照 /jobs 的 /api/jobs/dims):主图四份数据与用户无关、
 // mart 日更,不该 SSR 直出(occ ~3400 行占 /start HTML 大头)。null=加载中(调用侧渲占位高度防 CLS);
 // 失败/缺表回空数组 → 调用侧整节不渲(红线:查不到不出空壳)。/start 与 /stats 首页同吃这一个端点。
 export type MarketData = { occ: OccRow[]; city: CityRow[]; rows: StatRow[]; channels: { pnp: string[]; ee: string[] } }
@@ -48,7 +48,7 @@ export function useMarketStats(): MarketData | null {
   const [d, setD] = useState<MarketData | null>(null)
   useEffect(() => {
     const ctrl = new AbortController()
-    fetch('/api/market-stats', { signal: ctrl.signal })
+    fetch('/api/stats/market', { signal: ctrl.signal })
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => setD({ occ: j?.occ ?? [], city: j?.city ?? [], rows: j?.rows ?? [], channels: j?.channels ?? { pnp: [], ee: [] } }))
       .catch(() => { if (!ctrl.signal.aborted) setD({ occ: [], city: [], rows: [], channels: { pnp: [], ee: [] } }) })

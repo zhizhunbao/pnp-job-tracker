@@ -116,7 +116,7 @@ export type RecordHitIn = {
 export type RecordedOut = Promise<void>
 
 /**
- * /api/track 请求体里本域读的两格（原料：类型不可信，判定在 toFunnelHit）。
+ * /api/funnel/track 请求体里本域读的两格（原料：类型不可信，判定在 toFunnelHit）。
  */
 export type TrackBody = {
   /**

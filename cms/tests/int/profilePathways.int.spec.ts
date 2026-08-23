@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { pathwayMatchesTargets, splitRegionalByProvince } from '@/app/api/profile-pathways/route'
+import { pathwayMatchesTargets, splitRegionalByProvince } from '@/app/api/ruling/profile/route'
 
 describe('profile pathway province scope', () => {
   it('keeps nationwide programs but removes regional federal programs outside selected provinces', () => {

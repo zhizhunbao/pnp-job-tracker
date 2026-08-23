@@ -584,7 +584,7 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
   useEffect(() => {
     if (level !== 'province' || !job.province) { setProv(null); return }
     let dead = false
-    fetch('/api/province?code=' + encodeURIComponent(job.province))
+    fetch('/api/jobs/province?code=' + encodeURIComponent(job.province))
       .then((r) => (r.ok ? r.json() : null)).then((d) => { if (!dead && d?.ok) setProv({ info: d.info, difficulty: d.difficulty }) }).catch(() => {})
     return () => { dead = true }
   }, [level, job.province])
@@ -596,7 +596,7 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
     let dead = false
     const q = new URLSearchParams({ city: L.city, prov: job.province })
     if (level === 'district' && L.district) q.set('district', L.district)
-    fetch('/api/city?' + q.toString())
+    fetch('/api/jobs/city?' + q.toString())
       .then((r) => (r.ok ? r.json() : null)).then((d) => { if (!dead && d?.ok) setCityInfo(d) }).catch(() => {})
     return () => { dead = true }
   }, [level, L.city, L.district, job.province])
@@ -792,7 +792,7 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
         <div className="cardMd"><NewsLatestBlock province={job.province} lang={lang} news={news} /></div>
       )}
 
-      {/* ── 市级卡组(点市/区进来;/api/city 现算,本站口径)────────── */}
+      {/* ── 市级卡组(点市/区进来;/api/jobs/city 现算,本站口径)────────── */}
       {level === 'city' && cityInfo && (
         <div className="cardMd">
           <div className="mcardHead">{t('loc.cityJobs')} <span className="advGnote m">{L.city}</span></div>
@@ -984,7 +984,7 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
             {/* 页眉三弹框统一(Frank 2026-07-21「这三个也要保持一致」):灰色小标+纯名称,与职位弹框
                 「职位描述」同款。「AI 顾问」标只留移民弹框(唯一真在流式生成顾问内容的;#176 分类零 AI,
                 公司弹框的 AI 段 #167⑨ 已撤、只剩检索卡,挂「AI 顾问」名不副实)。 */}
-            {/* #189 公司组额度注已随 E8-11 B1 退役:公司数据走 /api/company 免额度(与页面同口径),没烧池无可显 */}
+            {/* #189 公司组额度注已随 E8-11 B1 退役:公司数据走 /api/jobs/company 免额度(与页面同口径),没烧池无可显 */}
             <div className="advKicker">{group !== 'immigration' || !AI_ADVISOR_ON
               ? t('grp.' + group)
               : <><IconCompass /> {t('advisor.tag')}<span className="advKickerSub">{t('grp.' + group)}</span>{freeLeft != null ? <span className="advKickerSub">{t('advisor.left', { n: freeLeft })}</span> : null}</>}

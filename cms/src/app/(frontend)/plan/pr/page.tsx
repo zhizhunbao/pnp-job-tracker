@@ -4,7 +4,7 @@
 // URL 不变保收录;表空时明确不估分,不拿旧规则凑数。
 //
 // 2026-08-12:官方分值表**不再随页面下发**(192 行 ≈ 88KB,只有答完题的人才看得到)——
-// 改由 /api/score-factors 按省懒取;抽选表仍走 SSR(唯一的免费硬事实,要被爬到),
+// 改由 /api/points/factors 按省懒取;抽选表仍走 SSR(唯一的免费硬事实,要被爬到),
 // 但两张表都过 getScoreTables 的进程内缓存,不再每请求两条查询(prod-pool-wedge 教训)。
 import { getDb } from '@/lib/db/server'
 import { getScoreTables } from '@/lib/points/server'
@@ -29,7 +29,7 @@ export default async function PlanPrPage({ searchParams }: { searchParams: Promi
     getScoreTables(db), fetchTopNocsCached({ db, limit: 24 }),
   ])
 
-  // ?job= 带岗进来 → 三项结果直接并入本页(轻查:判定本体在 /api/triple-verdict,这里只要表头四样)
+  // ?job= 带岗进来 → 三项结果直接并入本页(轻查:判定本体在 /api/ruling/verdict,这里只要表头四样)
   let tvJob: TvJob | null = null
   const jobId = Number(sp.job)
   if (Number.isFinite(jobId) && jobId > 0) {
@@ -49,7 +49,7 @@ export default async function PlanPrPage({ searchParams }: { searchParams: Promi
 
   // 判定卡**服务端先算一版**(2026-08-12):先前整张卡都在客户端取,一进页面先盯 ~1.5s 的骨架条。
   // 服务端读不到 localStorage,所以这一版按「登录档案 / 无本地答案」算;客户端拿到本地答案后再刷一次。
-  // 同一个 tripleWireOf,与 /api/triple-verdict 一条口径(付费闸也在里面,SSR 不会多漏一行)。
+  // 同一个 tripleWireOf,与 /api/ruling/verdict 一条口径(付费闸也在里面,SSR 不会多漏一行)。
   // 🔴 **SSR 不许阻塞页面**:判定拿不到/慢了就当没有,首屏照出,客户端再取(它本来就会取)。
   //    数据面有单件缓存(实测 getVerdictData 冷 2.3s、热 0ms;名录冷 97ms、热 0ms)——
   //    热进程里这一步几乎免费,但**冷启那一次不能让整页跟着等**,更不能因为它挂了页面就白屏。

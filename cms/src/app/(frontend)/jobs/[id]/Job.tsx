@@ -106,7 +106,7 @@ export default function Job({ job, plan, dims, related }: {
                    Umami 近 30 天 pw-seen 148 次曝光,pw-cta 连事件表前 50 都没进(≤6 次);
                 ② #287 批D 判定卡入口 TvEntryCard(「放到 job 详情比较突兀」「根本就没人点」)——
                    同期 tv-entry 全渠道合计仅 7 次,同窗口 jd-open 318 次。
-                两者的组件、/api/pathways、判定弹框都保留(照 OccReportCard/答题卡的「只摘入口」先例),
+                两者的组件、/api/ruling/pathways、判定弹框都保留(照 OccReportCard/答题卡的「只摘入口」先例),
                 判定入口仍在职位板行内与公司弹框挂着,只是不再落在详情页。 */}
           </div>
 

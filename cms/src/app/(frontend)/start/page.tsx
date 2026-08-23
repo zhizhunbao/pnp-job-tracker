@@ -1,10 +1,10 @@
 // E13-03 把脉首页(/start)—— 开始规划 + 榜单 + 地区统计**三合一**(设计:docs/implementation/E13-把脉首页/00_总设计与口径.md)。
 // 本页只做 SSR 取数:判决区的证据数(proof)、抽选表+冷解读、政策动态、省卡的 IRCC 体量与难度档、口径出处。
 // S1 中间两卡(近 14 天新发/平均在架天数)08-09 起也在这儿算成两个标量下发(此前走客户端
-// /api/market-stats,刷新必闪一次骨架占位——Frank「中间两个数为什么会闪」);occ 大表本身仍不进 HTML。
+// /api/stats/market,刷新必闪一次骨架占位——Frank「中间两个数为什么会闪」);occ 大表本身仍不进 HTML。
 // 净值卡(在架存量差)按契约 v3 **本批不做** —— 排水期的存量下跌是数据清洗不是市场收缩(后置 E13-04)。
 // 红线:数字全部来自库内聚合查询,不写死;单项查询失败 → 该行/该块整条不渲染,绝不显示 0。
-// SSR 瘦身照旧:职业大表(occ ~3400 行,含 E13-03 派生列)不进 HTML,由 Pulse 挂载后拉 /api/market-stats。
+// SSR 瘦身照旧:职业大表(occ ~3400 行,含 E13-03 派生列)不进 HTML,由 Pulse 挂载后拉 /api/stats/market。
 import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 
@@ -105,7 +105,7 @@ async function loadHomeStats(pool: any, payload: any): Promise<Omit<HomeStats, '
     fetchSponsorEmployers(pool).catch(() => []),
     occOptions(pool).catch(() => []),
     catOptions(payload).catch(() => []),
-    // S1 两标量 + noc→分类映射的原料(单一真相源 lib/stats/server.loadOccStats,同 /api/market-stats);
+    // S1 两标量 + noc→分类映射的原料(单一真相源 lib/stats/server.loadOccStats,同 /api/stats/market);
     // 挂了只丢中间两卡与分类联动,页面照常
     loadOccStats(pool).catch(() => []),
   ])
@@ -126,7 +126,7 @@ async function loadHomeStats(pool: any, payload: any): Promise<Omit<HomeStats, '
   // Frank 08-08 三分表:对应三类人——没工签→LMIA、有工签→PNP 担保记录(省清单命中,二拍撤 LMIA 维)、想去海洋省→AIP。
   // #313(LCP 7.15s 真因):三表全量(16,430 行)序列化进 RSC payload 把 SSR 文档撑到 6.92MB ——
   // 「全量可翻页」拍板不动,只换运输方式:SSR 只带每表前 SE_SSR_ROWS 行 + total,挂载后
-  // Pulse 拉 /api/sponsor-employers 换全量(手法照本页 occ 大表的 /api/market-stats 先例)。
+  // Pulse 拉 /api/employers/sponsors 换全量(手法照本页 occ 大表的 /api/stats/market 先例)。
   // 三表构建(筛选+排序)下沉 lib/sponsorEmployers.buildSponsorBoards,与 API 路由共用一份,不 fork。
   const boards = buildSponsorBoards(sponsorRows)
   const ssrSlice = (b: typeof boards.lmia) => ({ top: b.top.slice(0, SE_SSR_ROWS), total: b.total })

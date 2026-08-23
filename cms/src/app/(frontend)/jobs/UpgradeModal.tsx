@@ -1,7 +1,7 @@
 'use client'
 // 升级 Pro 专用弹框(用户定:注册弹框与购买弹框分离,升级入口不再跳 /account)。
 // 仅在已登录上下文渲染(未登录的升级入口先走 AuthModal 注册)。
-// 价格展示走 NEXT_PUBLIC_PRICE_DISPLAY(与 /pricing 同源,构建期内联);Checkout 复用 /api/billing/checkout。
+// 价格展示走 NEXT_PUBLIC_PRICE_DISPLAY(与 /pricing 同源,构建期内联);Checkout 复用 /api/stripe/checkout。
 import { useEffect, useState } from 'react'
 import type { TFn } from '@/lib/i18n'
 import { Modal } from './Modal'
@@ -41,7 +41,7 @@ export function UpgradeModal({ t, onClose, reason }: { t: TFn; onClose: () => vo
     setBusy(true); setErr('')
     try { (window as any).umami?.track('checkout', { plan }) } catch { /* E7-02:Checkout 发起事件 */ }
     try {
-      const r = await fetch('/api/billing/checkout', {
+      const r = await fetch('/api/stripe/checkout', {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ plan }),
       })
