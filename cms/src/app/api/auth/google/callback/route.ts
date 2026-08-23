@@ -6,14 +6,4 @@
  * @time 2026-08-01 18:59:44
  */
 
-/**
- * 强制动态渲染。
- */
-export const dynamic = 'force-dynamic'
-
-/**
- * 跑在 node 运行时(要连库签会话)。
- */
-export const runtime = 'nodejs'
-
 export { googleCallbackRoute as GET } from '@/lib/auth/server'
