@@ -10,6 +10,9 @@ import { caseZh, consultZh, jobsZh, legalZh, quizZh, reportZh, siteZh } from './
 // =========================================================================
 // 判定与报告(原 report.ts)
 // =========================================================================
+/**
+ * reportEn: 词表块(与 zh.ts 同名块逐键对齐)。
+ */
 export const reportEn: Record<keyof typeof reportZh, string> = {
   'score.base': 'Baseline', 'score.indemand': 'In-demand group', 'score.low': 'On a PNP occupation list', 'score.direct': 'First-party employer', 'score.exp': 'Experience', 'score.prov': 'Province (non-ON)', 'score.total': 'Total', 'score.stored': 'stored',
   'plan.pr.title': 'PR assessment', 'plan.pr.sub': '4 details, first-pass report',
@@ -472,6 +475,9 @@ export const reportEn: Record<keyof typeof reportZh, string> = {
 // =========================================================================
 // 职位板(原 jobs.ts)
 // =========================================================================
+/**
+ * jobsEn: 词表块(与 zh.ts 同名块逐键对齐)。
+ */
 export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'subtitle.count': '{n} jobs',
   'subtitle.hits': '{n} matches',
@@ -744,6 +750,9 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
 // =========================================================================
 // 站壳与其余页面(原 site.ts)
 // =========================================================================
+/**
+ * siteEn: 词表块(与 zh.ts 同名块逐键对齐)。
+ */
 export const siteEn: Record<keyof typeof siteZh, string> = {
   'stats.rank': '#{a} in open jobs · #{b} in median wage (of {total} provinces)',
   'chart.common': 'Common charts', 'chart.custom': 'Custom chart', 'chart.dim': 'Dimension', 'chart.metric': 'Metric', 'chart.dimProv': 'by province', 'chart.dimCat': 'by occupation group', 'chart.all': 'All', 'chart.medianNote': 'Medians are not merged across provinces — pick a province to see per-group medians.',
@@ -796,7 +805,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'home.dr.date': 'Date', 'home.dr.prog': 'Program', 'home.dr.stream': 'Stream', 'home.dr.score': 'Cutoff', 'home.dr.inv': 'Invites',
   'home.policy': 'Policy updates', 'home.pulse.all': 'All updates', 'home.stats.more': 'Full stats',
   'home.jobs': 'Job rankings', 'home.jobs.new': 'Newest', 'home.jobs.paid': 'Top paid', 'home.jobs.most': 'Most open', 'home.jobs.med': 'median {v}', 'home.jobs.rangeTip': 'ESDC annual wage range (low–high; per-posting provincial figures, median)', 'home.jobs.all': 'All jobs',
-  // ── E13-03 Market Pulse landing (/start) ──
+  // E13-03 Market Pulse landing (/start)
   'pulse.entry': 'Market Pulse',
   'pulse.card.total': 'Open jobs now', 'pulse.card.total.tip': 'All live postings site-wide, same caliber as the job board',
   'pulse.card.new14': 'New in 14d',
@@ -949,6 +958,9 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
 // =========================================================================
 // 对话与顾问(原 consult.ts)
 // =========================================================================
+/**
+ * consultEn: 词表块(与 zh.ts 同名块逐键对齐)。
+ */
 export const consultEn: Record<keyof typeof consultZh, string> = {
   'advisor.left': '{n} free uses left today',
   'advisor.unavail': 'The AI read is temporarily unavailable — the facts and official links above are unaffected. Please try again later.',
@@ -1009,6 +1021,9 @@ export const consultEn: Record<keyof typeof consultZh, string> = {
 // =========================================================================
 // 答题(原 quiz.ts)
 // =========================================================================
+/**
+ * quizEn: 词表块(与 zh.ts 同名块逐键对齐)。
+ */
 export const quizEn: Record<keyof typeof quizZh, string> = {
   'occ.az.all': 'All', 'occ.cat.hot': 'Popular', 'occ.max': 'Select multiple occupations',
   'occ.selected': '{n} selected', 'occ.resultN': '{n} occupations found', 'occ.noResult': 'No matching occupation. Try another keyword.',
@@ -1034,7 +1049,7 @@ export const quizEn: Record<keyof typeof quizZh, string> = {
   'prof.crsCalc.no': 'Not yet', 'prof.crsCalc.yes': 'Yes',
   'prof.crsOpt.lt400': 'Under 400', 'prof.crsOpt.r400': '400–450', 'prof.crsOpt.r450': '450–500', 'prof.crsOpt.r500': '500+',
   'prof.prov': 'Which province(s)?',
-  // ── Entry quiz(2026-07-26 funnel redesign)──
+  // Entry quiz(2026-07-26 funnel redesign)
   'quiz.q1': 'Where are you right now?', 'quiz.st.overseas': 'Outside Canada, want to work here', 'quiz.st.studying': 'Studying in Canada',
   'quiz.st.working': 'Already working in Canada', 'quiz.st.jobhunting': 'Job hunting in Canada',
   'quiz.q2': 'What work have you done or want to pursue?', 'quiz.q2sub': 'Students and job seekers can choose multiple target directions', 'quiz.q2ph': 'Search a direction, e.g. programmer, cook, nurse aide',
@@ -1065,6 +1080,9 @@ export const quizEn: Record<keyof typeof quizZh, string> = {
 // =========================================================================
 // 法务短句(原 legal.ts;四页长文在 labels.ts)
 // =========================================================================
+/**
+ * legalEn: 词表块(与 zh.ts 同名块逐键对齐)。
+ */
 export const legalEn: Record<keyof typeof legalZh, string> = {
   'foot.disclaimer': 'Data is for reference only, all from official sources; not immigration or legal advice',
   // 免责声明(E4-01)
@@ -1077,6 +1095,9 @@ export const legalEn: Record<keyof typeof legalZh, string> = {
 // =========================================================================
 // 案例库 C01-C16
 // =========================================================================
+/**
+ * caseEn: 词表块(与 zh.ts 同名块逐键对齐)。
+ */
 export const caseEn: Record<string, string> = {
   'case.C01.label': 'ON carpenter: the MB route pushed',
   'case.C01.q': 'MB, SK or Atlantic — which is real? The agent says MB is safe, an 80% chance of PR, and that he will line up the employer.',

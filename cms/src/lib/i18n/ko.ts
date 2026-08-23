@@ -10,6 +10,9 @@ import { caseZh, consultZh, jobsZh, legalZh, quizZh, reportZh, siteZh } from './
 // =========================================================================
 // 判定与报告(原 report.ts)
 // =========================================================================
+/**
+ * reportKo: 词表块(与 zh.ts 同名块逐键对齐)。
+ */
 export const reportKo: Record<keyof typeof reportZh, string> = {
   'score.base': '기준', 'score.indemand': '수요 직종 그룹', 'score.low': 'PNP 직종 목록 포함', 'score.direct': '직접 고용주', 'score.exp': '경력', 'score.prov': '주(ON 제외)', 'score.total': '합계', 'score.stored': '저장됨',
   'plan.pr.title': 'PR 평가', 'plan.pr.sub': '4개 항목으로 1차 보고서, 언제든 수정',
@@ -469,6 +472,9 @@ export const reportKo: Record<keyof typeof reportZh, string> = {
 // =========================================================================
 // 职位板(原 jobs.ts)
 // =========================================================================
+/**
+ * jobsKo: 词表块(与 zh.ts 同名块逐键对齐)。
+ */
 export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'subtitle.count': '{n}개 공고',
   'subtitle.hits': '{n}건 일치',
@@ -741,6 +747,9 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
 // =========================================================================
 // 站壳与其余页面(原 site.ts)
 // =========================================================================
+/**
+ * siteKo: 词表块(与 zh.ts 同名块逐键对齐)。
+ */
 export const siteKo: Record<keyof typeof siteZh, string> = {
   'stats.rank': '채용 중 전국 {a}위 · 중위 연봉 전국 {b}위 (총 {total}개 주·도)',
   'chart.common': '일반 차트', 'chart.custom': '사용자 지정 차트', 'chart.dim': '차원', 'chart.metric': '지표', 'chart.dimProv': '주별', 'chart.dimCat': '직업 대분류별', 'chart.all': '전체', 'chart.medianNote': '중위값은 주 간 합산되지 않습니다. 주를 선택해 각 그룹별 중위값을 확인하세요.',
@@ -790,7 +799,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'home.dr.date': '날짜', 'home.dr.prog': '프로그램', 'home.dr.stream': '스트림', 'home.dr.score': '커트라인', 'home.dr.inv': '초청',
   'home.policy': '정책 소식', 'home.pulse.all': '전체 소식', 'home.stats.more': '전체 통계',
   'home.jobs': '채용 랭킹', 'home.jobs.new': '최신', 'home.jobs.paid': '고연봉', 'home.jobs.most': '최다 채용', 'home.jobs.med': '중위 {v}', 'home.jobs.rangeTip': 'ESDC 공식 연봉 범위(하위–상위)', 'home.jobs.all': '전체 공고',
-  // ── E13-03 취업 진단 랜딩(/start) ──
+  // E13-03 취업 진단 랜딩(/start)
   'pulse.entry': '취업 진단',
   'pulse.card.total': '현재 게시 공고', 'pulse.card.total.tip': '사이트 전체 유효 공고 수, 잡보드와 동일 기준',
   'pulse.card.new14': '최근 14일 신규',
@@ -942,6 +951,9 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
 // =========================================================================
 // 对话与顾问(原 consult.ts)
 // =========================================================================
+/**
+ * consultKo: 词表块(与 zh.ts 同名块逐键对齐)。
+ */
 export const consultKo: Record<keyof typeof consultZh, string> = {
   'advisor.left': '오늘 무료 {n}회 남음',
   'advisor.unavail': 'AI 분석이 일시적으로 사용 불가합니다. 위의 사실 및 공식 링크에는 영향이 없습니다. 잠시 후 다시 시도하세요.',
@@ -1002,6 +1014,9 @@ export const consultKo: Record<keyof typeof consultZh, string> = {
 // =========================================================================
 // 答题(原 quiz.ts)
 // =========================================================================
+/**
+ * quizKo: 词表块(与 zh.ts 同名块逐键对齐)。
+ */
 export const quizKo: Record<keyof typeof quizZh, string> = {
   'occ.az.all': '전체', 'occ.cat.hot': '인기', 'occ.max': '여러 직업을 선택할 수 있습니다',
   'occ.selected': '{n}개 선택', 'occ.resultN': '직업 {n}개 찾음', 'occ.noResult': '일치하는 직업이 없습니다. 다른 검색어를 입력해 보세요.',
@@ -1027,7 +1042,7 @@ export const quizKo: Record<keyof typeof quizZh, string> = {
   'prof.crsCalc.no': '아직 계산하지 않음', 'prof.crsCalc.yes': '계산함',
   'prof.crsOpt.lt400': '400점 미만', 'prof.crsOpt.r400': '400~450점', 'prof.crsOpt.r450': '450~500점', 'prof.crsOpt.r500': '500점 이상',
   'prof.prov': '이민을 희망하는 주를 선택하세요 (다중 선택 가능)',
-  // ── 입장 3문(2026-07-26 결제 퍼널 재설계)──
+  // 입장 3문(2026-07-26 결제 퍼널 재설계)
   'quiz.q1': '지금 어느 단계인가요?', 'quiz.st.overseas': '해외에 있고 캐나다에서 일하고 싶습니다', 'quiz.st.studying': '캐나다에서 유학 중',
   'quiz.st.working': '이미 캐나다에서 근무 중', 'quiz.st.jobhunting': '캐나다에서 구직 중',
   'quiz.q2': '해 본 일이나 찾고 싶은 일은 무엇인가요?', 'quiz.q2sub': '학생·구직자는 원하는 방향을 여러 개 선택할 수 있습니다', 'quiz.q2ph': '직무 방향 검색: 프로그래머, 요리사, 요양보호사 등',
@@ -1058,6 +1073,9 @@ export const quizKo: Record<keyof typeof quizZh, string> = {
 // =========================================================================
 // 法务短句(原 legal.ts;四页长文在 labels.ts)
 // =========================================================================
+/**
+ * legalKo: 词表块(与 zh.ts 同名块逐键对齐)。
+ */
 export const legalKo: Record<keyof typeof legalZh, string> = {
   'foot.disclaimer': '데이터는 참고용이며 모두 공식 출처입니다. 이민·법률 자문이 아닙니다',
   // 免责声明(E4-01)
@@ -1070,6 +1088,9 @@ export const legalKo: Record<keyof typeof legalZh, string> = {
 // =========================================================================
 // 案例库 C01-C16
 // =========================================================================
+/**
+ * caseKo: 词表块(与 zh.ts 同名块逐键对齐)。
+ */
 export const caseKo: Record<string, string> = {
   'case.C01.label': '온타리오 졸업 목수: 중개인이 권한 MB',
   'case.C01.q': 'MB/SK/대서양 중 어디가 확실한가요? 중개인은 MB가 안전하고 영주권 확률 80%이며 고용주도 소개해 준다고 합니다.',

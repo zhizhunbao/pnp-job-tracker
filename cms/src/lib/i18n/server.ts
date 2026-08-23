@@ -11,7 +11,8 @@
 
 import { cookies, headers } from 'next/headers'
 
-import { LANG_COOKIE, langFromAccept, parseLang, type Lang } from './index'
+import { LANG_COOKIE, langFromAccept, parseLang } from './index'
+import type { LangOut } from './index'
 
 /**
  * SSR 首帧语言。catch 兜底:force-static 的页面里 cookies()/headers() 取不到真值 →
@@ -19,7 +20,7 @@ import { LANG_COOKIE, langFromAccept, parseLang, type Lang } from './index'
  *
  * @returns 首帧语言。
  */
-export async function ssrLang(): Promise<Lang> {
+export async function ssrLang(): LangOut {
   try {
     const raw = (await cookies()).get(LANG_COOKIE)
     let cookieValue: string | null = null
