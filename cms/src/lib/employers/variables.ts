@@ -10,7 +10,7 @@
 import type { EmployersCache } from './types'
 
 /**
- * 雇主域全部的可变状态,就这五格。
+ * 雇主域全部的可变状态,就这六格。
  */
 export const CACHE: EmployersCache = {
   /**
@@ -37,4 +37,9 @@ export const CACHE: EmployersCache = {
    * 背调同名并发合流表。
    */
   research: new Map(),
+
+  /**
+   * 橱窗三分表。开机是空的,第一次取的人负责灌。
+   */
+  boards: null,
 }

@@ -1040,6 +1040,11 @@ export type EmployersCache = {
    * 背调同名并发合流:公司名 → 在飞的调查(一家公司全站只查一次)。
    */
   research: Map<string, Promise<CompanyResearch | null>>
+
+  /**
+   * 橱窗三分表(/api/employers/sponsors)。开机是空的。
+   */
+  boards: BoardsSlot | null
 }
 
 /**
@@ -1918,3 +1923,33 @@ export type DifficultyObj = {
    */
   tier: string | null
 }
+
+/**
+ * 橱窗三分表缓存一格(/api/employers/sponsors 的 10 分钟进程缓存)。
+ */
+export type BoardsSlot = {
+  /**
+   * 三分表本体。
+   */
+  v: SponsorBoards
+
+  /**
+   * 落格时刻(ms)。
+   */
+  ts: number
+}
+
+/**
+ * POST /api/employers/info 的请求体形状(跨边界断言目标,逐格判后才用)。
+ */
+export type InfoBody = {
+  /**
+   * 公司名;不是字符串就当没带。
+   */
+  name: string | null
+}
+
+/**
+ * 可缺位的数（CSV 数值格词汇的入参；库里可空列的本域名字）。
+ */
+export type MaybeNum = number | null

@@ -1303,6 +1303,10 @@ const API_DONE = [
   'src/app/api/stats/market/route.ts',
   'src/app/api/quiz/route.ts',
   'src/app/api/quiz/answers/route.ts',
+  'src/app/api/employers/route.ts',
+  'src/app/api/employers/sponsors/route.ts',
+  'src/app/api/employers/export/route.ts',
+  'src/app/api/employers/info/route.ts',
 ]
 
 const REFACTORED = [

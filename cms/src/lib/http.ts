@@ -113,3 +113,8 @@ export const HDR_SEED_TOKEN = 'x-seed-token'
  * Cache-Control 响应头名。
  */
 export const HDR_CACHE_CONTROL = 'Cache-Control'
+
+/**
+ * 下载文件名头(CSV 导出这类附件响应用)。
+ */
+export const HDR_CONTENT_DISPOSITION = 'Content-Disposition'

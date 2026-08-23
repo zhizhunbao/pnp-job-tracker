@@ -19,12 +19,7 @@ import { EMP_LOG, log } from '../log'
 import { employerVerdict } from '../ruling/server'
 import { byLmiaRecency, byNamedRank, byNumAsc, bySkilledDesc } from './callbacks'
 import {
-  BRIEF_MAX, BRIEF_MIN, BRIEF_V2_MARK, CACHE_TTL_MS, CAP_MODE, CAP_NOC, CAP_PAGE, CAP_PROGRAM, CAP_PROV,
-  CAP_TEXT, CMP_MAX, COL_PREFIX, DATE_LEN, DIGIT_RE, EMP_PROGRAMS, EMP_SSR_ROWS, ENWIKI_BASE, FACT_COLS,
-  FORMAT_JSON, FORMAT_KEY, HTTP_URL_RE, JOIN_COMMA, LEVEL, MODE, NOC_RE, NOC_TITLES_MAX, NOT_FOUND_RE,
-  PAGE_MAX, PARAM, PIPE, PROV_RE, PUNCT_RE, RESEARCH_TIMEOUT_MS, SITE_LINE_RE, SITE_PICK_RE, SORT_SKILLED,
-  SPACE, SPACES_RE, SPACE_GLOBAL_RE, SUFFIX_RE, UNDERSCORE, URL_QS, VERDICT_ORDER, VIEW, WD_ACTION_ENTITIES,
-  WD_ACTION_SEARCH, WD_API, WD_LANGS, WD_LANG_EN, WD_LIMIT, WD_PROPS, WD_TIMEOUT_MS, WD_TYPE_ITEM, WD_UA,
+  BRIEF_MAX, BRIEF_MIN, BRIEF_V2_MARK, CACHE_TTL_MS, CAP_MODE, CAP_NOC, CAP_PAGE, CAP_PROGRAM, CAP_PROV, CAP_TEXT, CMP_MAX, COL_PREFIX, CSV_BOM, CSV_EMPTY, CSV_HEAD, CSV_NL, CSV_QUOTE, CSV_QUOTE_ESC, CSV_QUOTE_G_RE, CSV_QUOTE_RE, CSV_SEP, CSV_YES, DATE_LEN, DIGIT_RE, EMP_PROGRAMS, EMP_SSR_ROWS, ENWIKI_BASE, FACT_COLS, FORMAT_JSON, FORMAT_KEY, HTTP_URL_RE, JOIN_COMMA, LEVEL, MODE, NOC_RE, NOC_TITLES_MAX, NOT_FOUND_RE, PAGE_MAX, PARAM, PIPE, PROV_RE, PUNCT_RE, RESEARCH_TIMEOUT_MS, SITE_LINE_RE, SITE_PICK_RE, SORT_SKILLED, SPACE, SPACES_RE, SPACE_GLOBAL_RE, SUFFIX_RE, UNDERSCORE, URL_QS, VERDICT_ORDER, VIEW, WD_ACTION_ENTITIES, WD_ACTION_SEARCH, WD_API, WD_LANGS, WD_LANG_EN, WD_LIMIT, WD_PROPS, WD_TIMEOUT_MS, WD_TYPE_ITEM, WD_UA,
 } from './constants'
 import { RESEARCH_PROMPT_HEAD, RESEARCH_PROMPT_TAIL, RESEARCH_SEARCH_TAIL, RESEARCH_SYSTEM } from './prompts'
 import {
@@ -34,13 +29,7 @@ import {
 } from './rows'
 import { CACHE } from './variables'
 import type {
-  ApplyEmployerFiltersIn, ApplySponsorFiltersIn, BoardPropsIn, BoardPropsOut, ClipIn, CompanyAggIn,
-  CompanyBriefDbRow, CompanyRowIn, CompanyRowOut, CompareAgg, CompareCompanyDbRow, CompareIn, CompareOut, CompareRow,
-  CompanyResearch, DesignatedRowsOut, EmployerFacets, EmployerFacetsIn, EmployerFilters, EmployerMode,
-  EmployerPage, EmployerRow, EmployerRows, EmptyPageIn, EntityNameHitsIn, InvestigateIn, InvestigateOut, LoadEmployerPageIn,
-  LoadEmployerPageOut, MaybeTeer, NocMatchesIn, NocTitleMap, NocTitlesIn, NocTitlesOut, NormalizeFiltersIn,
-  OccRowsOut, PageSliceIn, ParamGetter, ProgramMatchesIn, ProvTally, RankedSponsor, SearchParams, SponsorBoardData,
-  SponsorBoards, SponsorEmployerRow, SponsorRows, SponsorRowsOut, StrList, WdEntity, WdGetIn, WdGetOut, WikidataHitOrNull, WikidataOut,
+  ApplyEmployerFiltersIn, ApplySponsorFiltersIn, BoardPropsIn, BoardPropsOut, ClipIn, CompanyAggIn, CompanyBriefDbRow, CompanyResearch, CompanyRowIn, CompanyRowOut, CompareAgg, CompareCompanyDbRow, CompareIn, CompareOut, CompareRow, DesignatedRowsOut, EmployerFacets, EmployerFacetsIn, EmployerFilters, EmployerMode, EmployerPage, EmployerRow, EmployerRows, EmptyPageIn, EntityNameHitsIn, InvestigateIn, InvestigateOut, LoadEmployerPageIn, LoadEmployerPageOut, MaybeNum, MaybeTeer, NocMatchesIn, NocTitleMap, NocTitlesIn, NocTitlesOut, NormalizeFiltersIn, OccRowsOut, PageSliceIn, ParamGetter, ProgramMatchesIn, ProvTally, RankedSponsor, SearchParams, SponsorBoardData, SponsorBoards, SponsorEmployerRow, SponsorRows, SponsorRowsOut, StrList, WdEntity, WdGetIn, WdGetOut, WikidataHitOrNull, WikidataOut,
 } from './types'
 
 // =========================================================================
@@ -1092,4 +1081,99 @@ export function resetEmployersCache(): void {
   CACHE.sponsors = null
   CACHE.sponsorsInflight = null
   CACHE.research.clear()
+}
+
+/**
+ * 担保雇主名单 → CSV 全文(B3 付费交付物:浏览免费,成文件带走收费)。
+ * 只含库内可核验事实列,无任何「好签/成功率」字样 —— 凭证=粗筛信号非担保承诺。
+ * BOM 开头让 Excel 打开中文别名不乱码。
+ *
+ * @param rows 已按筛选与排序处理过的行。
+ * @returns CSV 全文(表头 + 行,尾带换行)。
+ */
+export function sponsorCsvOf(rows: SponsorRows): string {
+  const lines: string[] = [CSV_HEAD.join(CSV_SEP)]
+  for (const r of rows) {
+    lines.push(csvRowOf(r))
+  }
+  return CSV_BOM + lines.join(CSV_NL) + CSV_NL
+}
+
+/**
+ * 一行雇主 → 一行 CSV(列序与 CSV_HEAD 逐格对齐)。
+ * lmia 三窗与获批数沿并入前口径:0 或缺位都出空格;lmia_skilled 是官方可空列,
+ * 0 是真值要保留,只有 null 出空格(与 db 词汇表 numOrNull 同一条红线)。
+ *
+ * @param r 一行雇主。
+ * @returns 一行 CSV。
+ */
+function csvRowOf(r: SponsorEmployerRow): string {
+  const cells: string[] = [
+    csvCell(r.name),
+    yesCell(r.aip),
+    blankIfNone(r.lmia1q),
+    blankIfNone(r.lmia2q),
+    blankIfNone(r.lmia4q),
+    blankIfNone(r.lmiaPositions),
+    blankIfNull(r.lmiaPositionsSkilled),
+    csvCell(r.lmiaLastQuarter),
+    csvCell(r.streams.join(PIPE)),
+    yesCell(r.named),
+    String(r.openJobs),
+    csvCell(r.provs.join(PIPE)),
+    csvCell(r.city),
+  ]
+  return cells.join(CSV_SEP)
+}
+
+/**
+ * CSV 格转义:含逗号/引号/换行才加引号(Excel 兼容)。
+ *
+ * @param v 格内容。
+ * @returns 转义后的格。
+ */
+function csvCell(v: string): string {
+  if (CSV_QUOTE_RE.test(v) === false) {
+    return v
+  }
+  return CSV_QUOTE + v.replace(CSV_QUOTE_G_RE, CSV_QUOTE_ESC) + CSV_QUOTE
+}
+
+/**
+ * 布尔格:真 = yes,假 = 空格(aip/named 两列的口径)。
+ *
+ * @param v 布尔值。
+ * @returns yes 或空格。
+ */
+function yesCell(v: boolean): string {
+  if (v) {
+    return CSV_YES
+  }
+  return CSV_EMPTY
+}
+
+/**
+ * 数值格:0 或缺位都出空格(lmia 三窗与获批数并入前就是 `|| ''` 的口径 —— 0 无信息量)。
+ *
+ * @param v 数值。
+ * @returns 数字串或空格。
+ */
+function blankIfNone(v: MaybeNum): string {
+  if (v == null || v === 0) {
+    return CSV_EMPTY
+  }
+  return String(v)
+}
+
+/**
+ * 数值格:只有 null 出空格,0 保留(官方可空列,0 是真值 —— 折 0 = 替官方编数)。
+ *
+ * @param v 数值。
+ * @returns 数字串或空格。
+ */
+function blankIfNull(v: MaybeNum): string {
+  if (v == null) {
+    return CSV_EMPTY
+  }
+  return String(v)
 }

@@ -110,6 +110,21 @@ export const PARAM = {
    * 雇主名关键词。
    */
   q: 'q',
+
+  /**
+   * 每页行数(懒取端点)。
+   */
+  pageSize: 'pageSize',
+
+  /**
+   * 凭证视图(导出端点:aip/lmia/named)。
+   */
+  f: 'f',
+
+  /**
+   * 排序键(导出端点:open/skilled)。
+   */
+  sort: 'sort',
 } as const
 
 /**
@@ -391,3 +406,118 @@ export const SPACES_RE = /\s+/g
  * 英文维基条目 URL 的前缀(命中 enwiki sitelink 时拼接)。
  */
 export const ENWIKI_BASE = 'https://en.wikipedia.org/wiki/'
+
+/**
+ * 懒取端点每页行数上限(乱传大数也压不垮查询)。
+ */
+export const PAGE_SIZE_MAX = 100
+
+/**
+ * 懒取端点的浏览器缓存头(2 分钟 + SWR 10 分钟)。
+ */
+export const EMP_CACHE_CONTROL = 'public, max-age=120, stale-while-revalidate=600'
+
+/**
+ * 橱窗三分表的浏览器缓存头(5 分钟 + SWR 1 小时)。
+ */
+export const SPONSORS_CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=3600'
+
+/**
+ * 导出端点的缓存头(付费名单不进任何缓存)。
+ */
+export const CSV_CACHE_CONTROL = 'no-store'
+
+/**
+ * 排序键:按在招数(导出端点 sort 的默认值;SORT_SKILLED 的另一半)。
+ */
+export const SORT_OPEN = 'open'
+
+/**
+ * 导出筛选 city 参数长度上限。
+ */
+export const CITY_LEN_MAX = 60
+
+/**
+ * 导出筛选 q 参数长度上限。
+ */
+export const EXPORT_Q_LEN_MAX = 80
+
+/**
+ * 公司信息懒探索的公司名长度上限(再长不是公司名)。
+ */
+export const NAME_LEN_MAX = 200
+
+/**
+ * 五位职业码的形状(导出筛选 noc 参数验形)。
+ */
+export const NOC5_RE = /^\d{5}$/
+
+/**
+ * 导出筛选认的省码(担保三表只覆盖这十省)。
+ */
+export const EXPORT_PROVS: string[] = ['NS', 'NB', 'NL', 'PE', 'ON', 'BC', 'AB', 'SK', 'MB', 'QC']
+
+/**
+ * 错误体:要 Pro(导出是付费交付物)。
+ */
+export const E_PRO = 'pro'
+
+/**
+ * CSV 表头(只含库内可核验事实列,无任何「好签/成功率」字样 —— 凭证=粗筛信号非担保承诺)。
+ */
+export const CSV_HEAD: string[] = ['employer', 'aip_designated', 'lmia_3mo', 'lmia_6mo', 'lmia_1yr', 'lmia_positions_2yr', 'lmia_skilled', 'lmia_last_quarter', 'pnp_streams', 'pnp_in_demand_hit', 'open_jobs', 'provinces', 'city']
+
+/**
+ * CSV 列分隔符。
+ */
+export const CSV_SEP = ','
+
+/**
+ * CSV 行分隔符。
+ */
+export const CSV_NL = '\n'
+
+/**
+ * CSV 布尔真值(aip/named 两列)。
+ */
+export const CSV_YES = 'yes'
+
+/**
+ * CSV 空格(数值缺位)。
+ */
+export const CSV_EMPTY = ''
+
+/**
+ * CSV 开头的 BOM(Excel 打开中文别名不乱码)。
+ */
+export const CSV_BOM = '\ufeff'
+
+/**
+ * 需要加引号的格(含逗号/引号/换行才加,Excel 兼容)。
+ */
+export const CSV_QUOTE_RE = /[",\n]/
+
+/**
+ * CSV 引号。
+ */
+export const CSV_QUOTE = '"'
+
+/**
+ * CSV 格内引号的转义写法。
+ */
+export const CSV_QUOTE_ESC = '""'
+
+/**
+ * 格内找引号的正则(全局替换用)。
+ */
+export const CSV_QUOTE_G_RE = /"/g
+
+/**
+ * CSV 响应的 Content-Type。
+ */
+export const CSV_CONTENT_TYPE = 'text/csv; charset=utf-8'
+
+/**
+ * CSV 响应的下载文件名头值。
+ */
+export const CSV_DISPOSITION = 'attachment; filename="sponsor-employers.csv"'
