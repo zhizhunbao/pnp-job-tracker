@@ -1,21 +1,21 @@
 /**
- * advisor 域评测批 —— 新链(lib/advisor,pi 循环)× 老链(api/advisor,streamChat)对拍。
- * 质量关(设计文档「五」):探针全绿 + Frank 抽读三语各 2 篇点头,才切换、才删老 route。
+ * advisor 域评测批 —— 新链(lib/advisor,pi 循环)回归网。
+ * 2026-08-23 切换前它是两链对拍(质量关报告 docs/evaluation/advisor评测-2026-08-23.md,
+ * 禁令四探针两链零命中,Frank 拍板「老链肯定不如新链」);老链删除后本批只跑新链,
+ * 探针即回归判据。
  *
- * 语料 = 生产库现查的真岗(最近在招,含一个海洋省岗若有):
- *   新链:场景网格(初判/评分/薪资/职业速读/省速读/市速读/帖速读/公司速读/公司初判)× zh/en/ko;
- *   老链:初判(title)三语对拍 —— Frank 抽读的六篇并排放报告里。
+ * 语料 = 生产库现查的真岗(最近在招,含一个海洋省岗若有),
+ * 场景网格(初判/评分/薪资/职业速读/省速读/市速读/帖速读/公司速读/公司初判)× zh/en/ko。
  * 三类探针(20 轮措辞红线断言化,#46/#50/#126/#133/#161/#162/#167):
  *   ① 禁令:X/5 与 0-100 总分、繁体字(zh)、资格判定/死胡同措辞、无中位时编造中位数;
  *   ② 形状:分段【标题】、结尾 ❓ 建议行(短、单问、无尾巴)、简单场景不分段;
- *   ③ 接地:答案里的 $ 金额必须能在喂进去的事实块里找到。
- * 探针一律**记录不拦**(首轮基线,报告里红绿说话);报告落 docs/evaluation/。
- * 两链都走真 HTTP handler(闸/缓存/流全链);匿名闸用逐请求换 X-Forwarded-For 绕开
+ *   ③ 接地:答案里的 $ 金额必须能在喂进去的事实块里找到(数值化 ±2%,K 档展开)。
+ * 探针一律**记录不拦**(报告里红绿说话);报告落 docs/evaluation/。
+ * 走真 HTTP handler(闸/缓存/流全链);匿名闸用逐请求换 X-Forwarded-For 绕开
  * (评测自己的免费池,不是生产旁路)。串行单文件,别打爆朋友的服务与生产池。
  */
 import { mkdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
-import { NextRequest } from 'next/server'
 import { afterAll, describe, expect, it } from 'vitest'
 
 import { getDb } from '@/lib/db/server'
@@ -24,15 +24,13 @@ import { toAdvisorJob, provFactsOf, cityFactsOf, promptOf, type AdvisorJob } fro
 import { normalizeProfile } from '@/lib/jobs'
 import type { JobRow } from '@/lib/jobs'
 import { fetchJobById, jobDescription, loadCityCard, loadProvinceCard } from '@/lib/jobs/server'
-import { loadNocDuties } from '@/lib/noc/server'
-import { POST as oldAdvisorPost } from '@/app/api/advisor/route'
 
 const LIVE = Boolean(process.env.DATABASE_URI) && Boolean(process.env.CHAT_LLM_BASE || process.env.TRANSLATE_API_BASE)
 const suite = LIVE ? describe : describe.skip
 
 type Lang = 'zh' | 'en' | 'ko'
 const LANGS: Lang[] = ['zh', 'en', 'ko']
-// 新链全网格的场景(chat 休眠场景另用一条冒烟);老链只对拍 title(Frank 抽读的六篇)
+// 全网格的场景(chat 休眠场景另用一条冒烟)
 const FIELDS = ['title', 'score', 'salary', 'occRead', 'provRead', 'cityRead', 'jdRead', 'coRead', 'company']
 
 type Probe = { kind: string; detail: string }
@@ -56,18 +54,6 @@ async function callNew(body: Record<string, unknown>): Promise<{ status: number;
     body: JSON.stringify(body),
   })
   const res = await advisorRoute(req)
-  let text = ''
-  try { text = await res.text() } catch (e) { text = `<<stream error: ${String((e as Error)?.message).slice(0, 120)}>>` }
-  return { status: res.status, text, ms: Date.now() - t0 }
-}
-
-async function callOld(body: Record<string, unknown>): Promise<{ status: number; text: string; ms: number }> {
-  const t0 = Date.now()
-  const req = new NextRequest('http://local/api/advisor', {
-    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Forwarded-For': nextIp() },
-    body: JSON.stringify(body),
-  })
-  const res = await oldAdvisorPost(req)
   let text = ''
   try { text = await res.text() } catch (e) { text = `<<stream error: ${String((e as Error)?.message).slice(0, 120)}>>` }
   return { status: res.status, text, ms: Date.now() - t0 }
@@ -162,28 +148,6 @@ function bodyOf(field: string, p: Picked, lang: Lang): Record<string, unknown> {
   return { field, id: p.id, lang }
 }
 
-/** 老链请求体:job 整包照老前端(row 即 JobRow,老 Job 形状同名字段的超集)。 */
-async function oldBodyOf(field: string, p: Picked, lang: Lang): Promise<Record<string, unknown>> {
-  const db = await getDb()
-  if (field === 'occRead') {
-    const d = await loadNocDuties({ db, noc: p.job.noc ?? '' })
-    return { field, id: p.job.noc ?? '', lang, job: { noc: p.job.noc, duties: d?.duties, requirements: d?.requirements } }
-  }
-  if (field === 'provRead') {
-    const code = (p.job.province ?? '').toUpperCase()
-    const card = await loadProvinceCard({ db, code })
-    const facts = card ? provFactsOf({ code, card }) : ''
-    return { field, id: code, lang, job: { province: code, locationFacts: facts } }
-  }
-  if (field === 'cityRead') {
-    const city = p.job.city ?? ''
-    const prov = (p.job.province ?? '').toUpperCase()
-    const card = await loadCityCard({ db, city, prov, district: '' })
-    return { field, id: [city, prov, ''].join('|'), lang, job: { province: prov, locationFacts: cityFactsOf({ city, prov, district: '', card }) } }
-  }
-  return { field, id: p.id, lang, job: p.row }
-}
-
 /** 探针接地用的事实底料(该场景喂进模型的数字来源;带 JD 场景连原文一起 ——
  * 首轮误报教训:签约奖金 $750/里程 $0.45 都写在 JD 里,底料不带 JD 全成「无出处」)。 */
 async function factsOf(field: string, p: Picked, lang: Lang): Promise<string> {
@@ -236,21 +200,6 @@ suite('advisor 评测批(新链网格 + 老链初判对拍)', () => {
       expect(true).toBe(true)
     }, 1_800_000)
   }
-
-  it('老链 title 三语对拍(Frank 抽读的六篇)', async () => {
-    for (const p of picked) {
-      for (const lang of LANGS) {
-        const r = await callOld(await oldBodyOf('title', p, lang))
-        const facts = await factsOf('title', p, lang)
-        const probes = r.status === 200
-          ? probeText({ field: 'title', lang, text: r.text, facts, hasMedian: p.job.wageMedAnnual != null })
-          : [{ kind: `http/${r.status}`, detail: r.text.slice(0, 120) }]
-        results.push({ chain: 'old', field: 'title', lang, jobId: p.id, title: p.row.title, status: r.status, ms: r.ms, text: r.text, probes })
-        console.log(`  old title/${lang}/#${p.id} ${r.status} ${r.ms}ms ${probes.length ? '✗ ' + probes.map((x) => x.kind).join(',') : '✓'}`)
-      }
-    }
-    expect(true).toBe(true)
-  }, 1_800_000)
 
   it('新链 chat 冒烟(休眠场景不失守)', async () => {
     const p = picked[0]

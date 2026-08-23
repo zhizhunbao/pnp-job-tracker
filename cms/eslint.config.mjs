@@ -1360,6 +1360,7 @@ const localRules = {
 // 换个字念同一本经;域函数的形状照旧在域里管)。
 // 瘦完一个路由加一行,与 REFACTORED 同一滚动规矩。
 const API_DONE = [
+  'src/app/api/advisor/route.ts',
   'src/app/api/funnel/track/route.ts',
   'src/app/api/auth/google/route.ts',
   'src/app/api/auth/google/callback/route.ts',

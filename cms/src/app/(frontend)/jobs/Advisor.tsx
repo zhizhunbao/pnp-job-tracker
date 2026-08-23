@@ -480,7 +480,8 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
     try {
       const res = await fetch('/api/advisor', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ field: 'occRead', id: job.noc, job: { noc: job.noc, duties: noc?.duties, requirements: noc?.requirements }, lang }),
+        // 2026-08-23 契约换 id 制:职责/要求由服务端按 NOC 现查(loadNocDuties),不再整包上传
+        body: JSON.stringify({ field: 'occRead', id: job.noc, lang }),
       })
       if (res.status === 402) { setAiStatus('upgrade'); return }
       if (res.status === 429) { setAiStatus('limited'); return }
@@ -608,43 +609,8 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
   // 事实块=面板同源数字(provRead 按省缓存 / cityRead 按市|区缓存),模型被禁越出事实(advisor 路由 GROUNDING_RULES)。
   const [ai, setAi] = useState('')
   const [aiStatus, setAiStatus] = useState<'idle' | 'loading' | 'streaming' | 'done' | 'error' | 'upgrade' | 'limited'>('idle')
-  const aiFacts = (): string => {
-    if (level === 'province') {
-      const d0 = prov?.difficulty, inf = prov?.info
-      const out = [`Province: ${L.prov} (${job.province})`]
-      if (isQc) out.push('Quebec runs its own selection system (not part of PNP); allocation and draws do not apply.')
-      const c0 = (d0?.factors || []).find((x: any) => x.key === 'comp')
-      const t0 = (d0?.factors || []).find((x: any) => x.key === 'quotaTrend')
-      const a0 = (d0?.factors || []).find((x: any) => x.key === 'activity')
-      if (d0?.tier) out.push(`PNP difficulty tier: ${d0.tier}${c0 ? `; competition ratio ${c0.value}:1 (study+work permit holders ${c0.pool} as of year-end ${c0.asOf ?? '?'} ÷ nomination allocation ${c0.quota} for ${c0.quotaYear})` : ''}${t0 ? `; allocation YoY ${Math.round(t0.value * 100)}%` : ''}${a0 ? `; ${a0.value} draws in last 180 days (${a0.invitations ?? 0} invitations)` : ''}`)
-      if (inf?.study) out.push(`Study permit holders: ${inf.study.n} (${inf.study.year} year-end)`)
-      if (inf?.tfwp) out.push(`Employer-specific work permits (TFWP): ${inf.tfwp.n} (${inf.tfwp.year} year-end)`)
-      if (inf?.imp) out.push(`Open/exempt work permits (IMP, incl. PGWP): ${inf.imp.n} (${inf.imp.year} year-end)`)
-      if (!isQc && inf?.alloc && inf.alloc.y2026 != null) out.push(`PNP nomination allocation 2026: ${inf.alloc.y2026}${inf.alloc.y2025 != null ? ` (2025: ${inf.alloc.y2025})` : ''}`)
-      if (!isQc && inf?.pnpPr) out.push(`PR landings via PNP: ${inf.pnpPr.n} (${inf.pnpPr.year}, incl. family)`)
-      return out.join('\n')
-    }
-    const ci = cityInfo
-    if (!ci) return ''
-    if (level === 'district' && ci.district) {
-      const dd = ci.district
-      return [
-        `District: ${L.district}, ${L.city}, ${L.prov}`,
-        `Open jobs in district: ${dd.openJobs}; posted in last 7 days: ${dd.new7d}`,
-        dd.medSalary != null ? `Median posted salary: $${dd.medSalary}/yr` : '',
-        dd.topBroads.length ? `Top fields: ${dd.topBroads.map((b) => `${b.broad} ${b.n}`).join(', ')}` : '',
-        dd.topEmployers.length ? `Top employers: ${dd.topEmployers.map((e) => `${e.name} (${e.n} open)`).join(', ')}` : '',
-      ].filter(Boolean).join('\n')
-    }
-    return [
-      `City: ${L.city}, ${L.prov}`,
-      `Open jobs: ${ci.openJobs}; posted in last 7 days: ${ci.new7d}`,
-      ci.medSalary != null ? `Median posted salary: $${ci.medSalary}/yr` : '',
-      ci.topBroads.length ? `Top fields: ${ci.topBroads.map((b) => `${b.broad} ${b.n}`).join(', ')}` : '',
-      ci.dli.count ? `PGWP-eligible schools: ${ci.dli.count} (${ci.dli.top.map((s) => s.name).join(', ')})` : '',
-      ci.aipEmployers ? `AIP designated employers: ${ci.aipEmployers}` : '',
-    ].filter(Boolean).join('\n')
-  }
+  // aiFacts()(客户端拼地点事实块)2026-08-23 随契约换 id 制退役 —— 同一文案在
+  // lib/advisor 的 provFactsOf/cityFactsOf 逐字保形,服务端用面板同一取数函数重建。
   const runAi = async () => {
     setAiStatus('loading'); setAi('')
     try {
@@ -652,7 +618,8 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
       const id = level === 'province' ? (job.province || '') : [L.city, job.province, level === 'district' ? L.district : ''].join('|')
       const res = await fetch('/api/advisor', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ field: aiField, id, job: { province: job.province, locationFacts: aiFacts() }, lang }),
+        // 2026-08-23 契约换 id 制:地点事实块由服务端用面板同一取数函数重建(provFactsOf/cityFactsOf)
+        body: JSON.stringify({ field: aiField, id, lang }),
       })
       if (res.status === 402) { setAiStatus('upgrade'); return }
       if (res.status === 429) { setAiStatus('limited'); return }
@@ -945,7 +912,7 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
       try {
         const res = await fetch('/api/advisor', {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
-          body: JSON.stringify({ field: group, id: String(job.id), job, lang }),   // E8-10:后端按分组取提示词
+          body: JSON.stringify({ field: group, id: String(job.id), lang }),   // E8-10:后端按分组取提示词;2026-08-23 起事实服务端现查,job 包不再上传
         })
         const left = res.headers.get('X-Free-Left')
         if (left != null) setFreeLeft(Number(left))

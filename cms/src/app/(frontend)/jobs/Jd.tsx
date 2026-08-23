@@ -207,7 +207,8 @@ export function JdAdvisorSection({ job, lang, plan, title, field = 'title' }: { 
       try {
         const res = await fetch('/api/advisor', {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
-          body: JSON.stringify({ field, id: String(job.id), job, lang }),
+          // 2026-08-23 契约换 id 制:事实服务端现查,job 包不再上传
+          body: JSON.stringify({ field, id: String(job.id), lang }),
         })
         const left = res.headers.get('X-Free-Left')
         if (left != null) setFreeLeft(Number(left))
