@@ -32,6 +32,21 @@ export type Res = {
 }
 
 /**
+ * 资源导航的一个分组(cat 分组名 + 组内资源)。
+ */
+export type ResGroup = {
+  /**
+   * 分组名(federal/provincial/authority…)。
+   */
+  cat: string
+
+  /**
+   * 组内资源。
+   */
+  items: Res[]
+}
+
+/**
  * `officialLabel` 的入参。
  */
 export type OfficialLabelIn = {

@@ -7,23 +7,29 @@
  */
 
 
-import type { LangCode, Res } from './types'
+import type { LangCode, Res, ResGroup } from './types'
 
 /**
- * 官方原文尾部悬空的「, or」(表格排版残留,显示时摘掉)。
+ * 官方原文尾部悬空的「, or」(表格排版残留,显示时摘掉):那个 or 是官方**表格排版**
+ * 留下的(下一行接着念),单拎出来放进选项就是个悬空的 or(英文界面实拍:
+ * 「Post-secondary education completed in B.C., or」)。二选一改由 UI 表达,尾巴去掉。
  */
 export const OR_TAIL_RE = /[,，]?\s*or\s*$/i
-// 官方表的行文是**英文原文**,中/韩界面按这张表出人话(**只译不改口径**,分值仍来自官方表)。
-//
-// 🔴 `OFFICIAL_EN` 不是「忘了翻」,是**显式声明「这一条用官方英文原文」** ——
-//    2026-08-17 Frank 拍板:官方分值表的句子译错一个词就是改了口径,宁可显英文
-//    (同 streamDisplay 的老规矩:表里没有的原样只显英文,不让模型现编译名)。
-//    类型是必填的 `Record<LangCode, string>`,所以「没决定」这个状态不存在了 ——
-//    先前 `{ zh?; ko? }` 两个都可选,75 条里 54 条静默缺 ko,三个月没人看见。
-//
-// 终局不在代码里:这是**移民事实**,该走 data/ → mart → DB(CLAUDE.md 铁律),
-// 先例是 noc_categories 的 mid_en/mid_ko。搬进 i18n 是过渡形态。
+
+/**
+ * 官方表的行文是**英文原文**,中/韩界面按这张表出人话(**只译不改口径**,分值仍来自官方表)。
+ *
+ * 🔴 `OFFICIAL_EN` 不是「忘了翻」,是**显式声明「这一条用官方英文原文」** ——
+ * 2026-08-17 Frank 拍板:官方分值表的句子译错一个词就是改了口径,宁可显英文
+ * (同 streamDisplay 的老规矩:表里没有的原样只显英文,不让模型现编译名)。
+ * 类型是必填的 `Record<LangCode, string>`,所以「没决定」这个状态不存在了 ——
+ * 先前 `{ zh?; ko? }` 两个都可选,75 条里 54 条静默缺 ko,三个月没人看见。
+ *
+ * 终局不在代码里:这是**移民事实**,该走 data/ → mart → DB(CLAUDE.md 铁律),
+ * 先例是 noc_categories 的 mid_en/mid_ko。搬进 i18n 是过渡形态。
+ */
 const OFFICIAL_EN = ''
+
 /**
  * 官方分值表原句 → 三语译名(键 = 官方英文原句,quote-anchored;表里没有的显示官方原文)。
  */
@@ -410,15 +416,12 @@ export const officialLabels: Record<string, Record<LangCode, string>> = {
     ko: '해당 주 인정 교육기관에서 유효한 유학허가로 1학년도 이상 수학',
   },
 }
-// 官方原文里「…, or」的那个 or 是**表格排版**留下的(下一行接着念),单拎出来放进选项就是个悬空的 or
-// (英文界面实拍:「Post-secondary education completed in B.C., or」)。二选一改由 UI 表达,尾巴去掉。
 
 /**
  * 官方资源导航(按类分组)。红线=宁缺毋滥,失效宁可不列
  * (各省 PNP 页改版频繁,官方 URL 人工核对现行有效)。
  */
-export const RES: { cat: string;
-  items: Res[] }[] = [
+export const RES: ResGroup[] = [
   {
     cat: 'federal',
     items: [

@@ -1424,6 +1424,8 @@ const REFACTORED = [
   'src/lib/advisor/**/*.ts',
   // 2026-08-23 seo 立域(robots/sitemap 芯下沉;Frank「需要单独成域吧」)。
   'src/lib/seo/**/*.ts',
+  // 2026-08-23 legal/official 补进写法闸(08-22 立域时只进了 doc 闸)—— 全 lib 收官。
+  'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts',
   ...API_DONE,
 ]
 
