@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
@@ -9,6 +10,12 @@ import tsconfigPaths from 'vite-tsconfig-paths'
  */
 export default defineConfig({
   plugins: [tsconfigPaths()],
+  resolve: {
+    alias: {
+      // `server-only` 毒丸(db/pool.ts):node 环境下同样要换成空模块(与 vitest.config.mts 同一手法)
+      'server-only': fileURLToPath(new URL('./tests/server-only-stub.ts', import.meta.url)),
+    },
+  },
   test: {
     environment: 'node',
     setupFiles: ['./vitest.setup.ts'],
