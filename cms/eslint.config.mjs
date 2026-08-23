@@ -20,7 +20,7 @@ const BARRELS = ['agent', 'consult', 'db', 'i18n', 'jobs', 'pathways', 'gauge', 
   // profile/auth/stripe 只有 server 门(纯服务端域),照样进名单 —— ABSOLUTE 拦直点文件,ALLOW 放行 server。
   'funnel', 'location', 'noc', 'rankings', 'mail', 'lmia', 'track', 'profile', 'auth', 'stripe',
   // 2026-08-23 log/error 自单文件升目录(Frank「log 和 error 呢」),既有 '../log' import 经桶续命。
-  'log', 'error', 'news']
+  'log', 'error', 'news', 'mart']
 const ABSOLUTE = BARRELS.map((m) => `**/lib/${m}/*`)
 // jobs / points / ruling / employers / plan / quiz / stats / quota / pathways 有**两个门**(index=客户端也安全的那半、server=要连库的那半;
 // 理由见 lib/jobs/index.ts 顶上那段:混着 payload 依赖的桶会把连接池打进浏览器包)。
@@ -50,6 +50,7 @@ const ALLOW = [
   '!**/lib/resume/server', '!./resume/server', '!../resume/server',
   '!**/lib/news/server', '!./news/server', '!../news/server',
   '!**/lib/noc/server', '!./noc/server', '!../noc/server',
+  '!**/lib/mart/server', '!./mart/server', '!../mart/server',
 ]
 const SIBLING = BARRELS.flatMap((m) => [`./${m}/*`, `../${m}/*`])
 const barrelOnly = (group) => ({
@@ -1398,6 +1399,7 @@ const API_DONE = [
   'src/app/api/resume/extract/route.ts',
   'src/app/api/resume/match/route.ts',
   'src/app/api/ruling/profile/route.ts',
+  'src/app/api/mart/[name]/route.ts',
 ]
 
 const REFACTORED = [

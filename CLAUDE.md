@@ -82,7 +82,7 @@ etl/ (Python: 抓取 → 清洗 → 评分, 写 data/) ──> cms/ (Payload + N
 
 - `etl/` 编号顺序执行,`etl/_paths.py` 是**唯一的路径真相来源**(任何脚本不写死路径)。
 - **分层(数据仓库式)**:raw(抽取) → clean/(清洗,按字段) → **mart(集市层,`09_build_mart.py` 产出 data/mart/ 最终表,列对齐 DB)** → load(seed)。
-- `cms/src/app/seed/route.ts` 是**纯加载器**:只读 `data/mart/*.json`(每文件=一张表)→ 灌库,不做拼装/清洗。不带 `?reset=1` = 增量对账(本次没出现的岗 → status=closed)。
+- `lib/mart`(交接域,壳在 `app/seed/route.ts`)是**纯加载器**:只读 `data/mart/*.json`(每文件=一张表)→ 灌库,不做拼装/清洗。不带 `?reset=1` = 增量对账(本次没出现的岗 → status=closed)。
 - **DB 表**:事实表 jobs/companies;维度表 provinces/cities/districts/noc_categories/sources/experience_levels/designated_employers(AIP)。Payload 仍管 schema/admin。
 - **分类/标签也在数据层算**:NOC 大/中/小分类+TEER 在 `etl/noc.py`(单一来源)→ 存 job 字段 + noc_categories 维度;来源显示标签(JB→Job Bank)在 mart 洗 → job.sourceLabel + sources 维度。前端只读字段、筛选选项读维度表(颜色等纯显示留前端)。
 
@@ -364,6 +364,40 @@ pnp-job-tracker/
   **域里连一层 `logFailure` 包装都不留** —— 包装本身就是 log 代码。
 - **域之间不互相取常量,也不互相借取数函数** —— 共享叶子(`lib/location`、`lib/db/sql`)例外。
   跨域只留一条边:上层把函数注进去(样板:路由把 `resolveByAgent` 注给 `orchestrate`)。
+
+### 命名与排序(2026-08-23 Frank 拍板;理念:按内容分类,苹果是苹果)
+
+- **db 怎么拿(方案 A,定形)**:functions **全纯收 db 注入**,永远浏览器可打包;
+  routes/页面是**入口**,入口知道自己站在服务器上,一行 `await getDb()` 再注进去。
+  闸 `routes-shape` 只放行 `../db/server` 的 `getDb` 一个名字(SQL/queryRows/poolOf 都不许)。
+  `db/pool.ts` 挂 `server-only` 毒丸与注入**并存双保险**(引错的那天 build 当场红且报错指名道姓);
+  vitest 里用 `tests/server-only-stub.ts` alias 顶掉(jsdom 走它 client 分支会 throw)。
+  ⚠️ 教训(08-23 方案 C 一日废):「取数自足(functions 内部 getDb)」与混合域物理冲突 ——
+  points 的纯算分被 client 组件消费,functions 一 import db/server 就把 payload 打进浏览器包。
+- **抽屉收敛(裁决已下,撤编另立一批)**:rows.ts / callbacks.ts 撤编,并回 functions.ts 当**尾段**
+  (行构造器段 + 回调段);比较器回逐行特批牌(宪法钦定豁免形态);`no-db-vocab-in-functions`
+  判据改「db 词汇只许 `to*` 函数体内」。终态九个名字:constants / variables / prompts / schemas /
+  types / functions / routes + index、server 两门。
+- **函数七词表**(角色用固定词,业务动词自由——`estimateCrs` 这类不硬套):
+  `xxxRoute` HTTP 芯 / `loadXxx(db)` 连库**现查** / `getXxx` **带单件缓存**的获取 /
+  `toXxx` 行构造器 / `xxxOf` 纯派生 / `isXxx` 谓词 / `makeXxx` 返回函数的工厂。
+  `fetch*` 退役并入 `load*`(存量改名集中一批)。get 与 load 的分界:get 可能给缓存那份,load 保证现查。
+- **常量名**:`主题_角色`,角色后缀固定词(`_RE`/`_SEP`/`_MAX`/`_MIN`/`_TTL_MS`/`_LIMIT`);
+  边界名家族用前缀(`P_` 查询参数、`HDR_` 头名);**带单位的数字单位入名**(`_MS`/`_LEN`/`_ROWS`);
+  **映射表 = 键_值**(`PROV_NAME` 省码→省名)。存量 `MAX_PARAM_LEN` 这类翻成 `PARAM_LEN_MAX`(撤编批)。
+- **变量名**:默认唯一容器就叫 `CACHE`(格 camelCase,每格 JSDoc 写装什么、几分钟);
+  出现第二种状态才有第二个容器,名字说内容(`QUEUE`),不许 STATE/DATA 构造名。
+- **types 七后缀 + 三段律**:`XxxDbRow`(pg 原始)→ `XxxFact`(to* 洗净)→ `XxxRow`(对外/展示),
+  允许跳段但**用哪个后缀必须名副其实**;`XxxIn`/`XxxOut` 函数契约、`MaybeXxx` = `Xxx | null`、
+  `XxxJson` json 列形状、`XxxFn` 函数类型;清单用复数,拗口才 `XxxList`。
+- **routes 名 ↔ URL 机械映射**:`/api/stats/fine` ⇔ `statsFineRoute`;单方法不带方法词(默认 GET),
+  多方法每个 handler 带(`quizAnswersGetRoute`,方法殿后 Route 前)。
+- **排序**:constants / types / functions 三文件**段横幅同名同序(镜像)**;段内 **step-down**
+  (先主干后细节,被调函数必须出现在首个调用者之后);types 段内 `In` 挨 `Out`、三段律相邻;
+  routes 按 URL 字典序,同路径多方法按字母序(迁就 perfectionist 现成闸)。局部变量不立法。
+- **闸**:naming-convention 按文件 glob 分块配格式与后缀、perfectionist sort-modules 管 routes 序、
+  `func-style: declaration`;step-down 与 URL 映射自写 local 规则;镜像段与 load/get 语义靠 review。
+  全部走 REFACTORED 滚动名单,豁免走 suppressions 基线,不新增机制。
 
 ### 新建域 / 替换域:先判边界,再写第一行(2026-08-19 立)
 
