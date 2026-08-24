@@ -11,7 +11,7 @@ import {
 } from '@/lib/employers/server'
 // 测试例外:纯函数直接点文件(桶只走门的规矩不管测试)
 import { employerFacets, nocMatches, pageSlice, programMatches } from '@/lib/employers/functions'
-import { fmtFetched, nocList, toEmployerRow } from '@/lib/employers/rows'
+import { fmtFetched, nocList, toEmployerRow } from '@/lib/employers/functions'
 import type { EmployerFilters, EmployerRow } from '@/lib/employers'
 
 const F = (p: Partial<EmployerFilters> = {}): EmployerFilters =>

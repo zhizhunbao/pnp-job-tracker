@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest'
 import { CLAMP, FREE_ROWS, GATEWAY_MAX } from '@/lib/resume/constants'
 import { gateMatch, matchPrompt, promptChars } from '@/lib/resume/functions'
-import { normalizeRows, parseLlmJson } from '@/lib/resume/rows'
+import { normalizeRows, parseLlmJson } from '@/lib/resume/functions'
 import type { MatchRow } from '@/lib/resume/types'
 import { FRIEND_INPUT_MAX } from '@/lib/llm'
 

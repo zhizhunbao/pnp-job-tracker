@@ -7,15 +7,14 @@
  * @time 2026-08-22 01:00:16
  */
 
-import { queryRowsOrEmpty, SQL } from '../db'
+import { queryRowsOrEmpty, SQL, numOrNull, text } from '../db'
 import type { Db } from '../db'
-import { GROUP_SEP, NEED_UNKNOWN, PILOT_TYPES, UI_JOBS_DEFAULT, UI_PROGRAM_DEFAULT, WHY_NO_SOURCE } from './constants'
-import { PATHWAYS } from './constants'
-import { toPilotCommunity } from './rows'
-import { byProvThenType } from './callbacks'
+import {
+  GROUP_SEP, NEED_UNKNOWN, PILOT_TYPES, UI_JOBS_DEFAULT, UI_PROGRAM_DEFAULT, WHY_NO_SOURCE, PATHWAYS,
+} from './constants'
 import type {
   GateOfIn, GateRule, MaybeExemption, MaybeRegionProvinces, MaybeStrategy, PathwayStrategy, PilotCommunityRows,
-  PilotQuotaAgg, PilotQuotaAggs, PilotQuotaOut, ResolvedUi,
+  PilotQuotaAgg, PilotQuotaAggs, PilotQuotaOut, ResolvedUi, PilotQuotaCommunityRow, PilotQuotaDbRow,
 } from './types'
 
 /**
@@ -182,4 +181,58 @@ export function aggregatePilotQuota(rows: PilotCommunityRows): PilotQuotaAggs {
 export async function fetchPilotQuota(db: Db): PilotQuotaOut {
   const rows = await queryRowsOrEmpty({ db: db, sql: SQL.PILOT_QUOTA_COMMUNITIES, params: [], map: toPilotCommunity })
   return aggregatePilotQuota(rows)
+}
+
+// =========================================================================
+// 行构造器(rows 抽屉 2026-08-23 撤编后的固定尾段;体内只许词汇表 + 纯拼装)
+// =========================================================================
+
+/**
+ * `PILOT_QUOTA_COMMUNITIES` 一行 → 干净的社区级行。
+ * 🔴 数值格走 `numOrNull` 保 null:官网没写就是没写,折 0 = 替官网编数(「禁 ?? 0」的同族雷)。
+ * firstCome 只认真布尔(数据里没有 false,非布尔一律当「官网没写」)。
+ *
+ * @param r 原始行。
+ * @returns 收窄后的社区行。
+ */
+export function toPilotCommunity(r: PilotQuotaDbRow): PilotQuotaCommunityRow {
+  let firstCome: boolean | null = null
+  if (typeof r.first_come === 'boolean') {
+    firstCome = r.first_come
+  }
+  return {
+    community: text(r.community),
+    province: text(r.province),
+    type: text(r.type),
+    firstCome: firstCome,
+    firstComeQuote: text(r.first_come_quote),
+    firstComeUrl: text(r.first_come_url),
+    perIntake: numOrNull(r.per_intake),
+    perIntakeQuote: text(r.per_intake_quote),
+    perIntakeUrl: text(r.per_intake_url),
+    remaining: numOrNull(r.remaining),
+    remainingQuote: text(r.remaining_quote),
+    remainingUrl: text(r.remaining_url),
+    asOf: text(r.as_of),
+  }
+}
+
+// =========================================================================
+// 回调(callbacks 抽屉 2026-08-23 撤编后的固定尾段;签名由外部库/语言定死,逐行特批)
+// =========================================================================
+
+/**
+ * 名额聚合的展示序:省码字典序,同省内制度字典序(RCIP 在 FCIP 后?—— localeCompare 定,别手排)。
+ *
+ * @param a 左行。
+ * @param b 右行。
+ * @returns 负数 a 在前,正数 b 在前。
+ */
+// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+export function byProvThenType(a: PilotQuotaAgg, b: PilotQuotaAgg): number {
+  const prov = a.province.localeCompare(b.province)
+  if (prov !== 0) {
+    return prov
+  }
+  return a.type.localeCompare(b.type)
 }

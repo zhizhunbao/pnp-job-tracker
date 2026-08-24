@@ -18,25 +18,20 @@
  * @time 2026-08-22 01:00:16
  */
 
-import { queryRows, SQL } from '../db'
+import { queryRows, SQL, numOrNull, text } from '../db'
 import type { Db } from '../db'
 import {
-  byDateAsc, byDateDesc, byDaysSince, byDeterminedMonths, byPlanOrder, byProvStream, byTotalMonths,
-} from './callbacks'
-import {
-  AV, BAND_A, BAND_Y, BAND_Z, CADENCE_FACTOR, CERT, CMP, DAYS_PER_MONTH, GROUP_SEP, KIND_NOTICE,
-  MS_PER_DAY, NA_TEXT, NOT_TIME_CONVERTIBLE, PLAN_NOTES, PLAN_TEXT, PROCESSING_KEY, PROV_FED, PROV_RE,
-  SPACE, STEP, SUBJECT_EMPLOYER, THIN_MIN, TV, UNIT_HEADS,
+  AV, BAND_A, BAND_Y, BAND_Z, CADENCE_FACTOR, CERT, CMP, DAYS_PER_MONTH, GROUP_SEP, KIND_NOTICE, MS_PER_DAY, NA_TEXT,
+  NOT_TIME_CONVERTIBLE, PLAN_NOTES, PLAN_TEXT, PROCESSING_KEY, PROV_FED, PROV_RE, SPACE, STEP, SUBJECT_EMPLOYER,
+  THIN_MIN, TV, UNIT_HEADS,
 } from './constants'
 import { fill } from '../template'
-import { day, passRow, toDrawEvent, toNewsEvent } from './rows'
 import type {
-  Availability, CadenceGroup, ComparisonsIn, DaysIn, DecoratedRows, DrawRow, EeCadence, MaybeNum,
-  MaybeOutside, MonthsIn, OpsMetric, OutsideIn, Plan, PlanBlockers, PlanComparisons, PlanIn, PlanPath,
-  PlanPathInput, PlanStep, PlanSteps, RankableRow, RankedRows, RankIn, ThresholdRows, TimelineOut,
-  TlCadence, TlEvent,
+  Availability, CadenceGroup, ComparisonsIn, DaysIn, DecoratedRows, DrawRow, EeCadence, MaybeNum, MaybeOutside,
+  MonthsIn, OpsMetric, OutsideIn, Plan, PlanBlockers, PlanComparisons, PlanIn, PlanPath, PlanPathInput, PlanStep,
+  PlanSteps, RankableRow, RankedRows, RankIn, ThresholdRows, TimelineOut, TlCadence, TlEvent, Row, TimeLike,
+  DecoratedRow,
 } from './types'
-
 // =========================================================================
 // 1. 初评排序(#307;八键次序全部 Frank 逐条拍板,见 callbacks.byPlanOrder)
 // =========================================================================
@@ -661,4 +656,252 @@ export async function fetchTimeline(db: Db): TimelineOut {
   eeCadence.sort(byDaysSince)
 
   return { events: events, cadence: cadence, eeCadence: eeCadence }
+}
+
+// =========================================================================
+// 行构造器(rows 抽屉 2026-08-23 撤编后的固定尾段;体内只许词汇表 + 纯拼装)
+// =========================================================================
+
+/**
+ * 时间格 → YYYY-MM-DD(pg timestamp 回 Date、文本列回字符串,一网收干净;空落空串)。
+ *
+ * @param v 库回的时间格。
+ * @returns 十位日期;没有则空串。
+ */
+export function day(v: TimeLike): string {
+  if (v instanceof Date) {
+    return v.toISOString().slice(0, 10)
+  }
+  if (v == null) {
+    return ''
+  }
+  return String(v).slice(0, 10)
+}
+
+/**
+ * `PNP_DRAWS_ALL` 一行 → 时间线事件(FED 行 label=类别 key、stream=官方 drawName → 标题取 stream;
+ * prov 留空 = 联邦口径不变)。
+ *
+ * @param r 原始行。
+ * @returns 事件。
+ */
+export function toDrawEvent(r: Row): TlEvent {
+  const fed = r.province === 'FED'
+  let prov = text(r.province)
+  let title = text(r.label)
+  if (title === '') {
+    title = text(r.stream)
+  }
+  if (fed) {
+    prov = ''
+    title = text(r.stream)
+    if (title === '') {
+      title = text(r.label)
+    }
+  }
+  let kind: TlEvent['kind'] = 'draw'
+  if (r.kind === 'notice') {
+    kind = 'notice'
+  }
+  return {
+    date: day(r.draw_date), prov: prov, kind: kind,
+    title: title, score: numOrNull(r.score), scale: text(r.scale),
+    invitations: numOrNull(r.invitations), note: text(r.note),
+    importance: null, url: text(r.url), slug: '',
+  }
+}
+
+/**
+ * `NEWS_RECENT` 一行 → 时间线事件(FEDERAL/CA 两种写法都归 '' 联邦)。
+ *
+ * @param r 原始行。
+ * @returns 事件。
+ */
+export function toNewsEvent(r: Row): TlEvent {
+  let region = text(r.region).toUpperCase()
+  if (region === 'FEDERAL' || region === 'CA') {
+    region = ''
+  }
+  return {
+    date: day(r.date), prov: region, kind: 'policy',
+    title: text(r.title), score: null, scale: '', invitations: null, note: '',
+    importance: numOrNull(r.importance), url: '', slug: text(r.slug),
+  }
+}
+
+/**
+ * 窄行原样透传(节奏聚合要按原始列分组;照 ruling `passRow` 先例)。
+ *
+ * @param r 原始行。
+ * @returns 同一行。
+ */
+export function passRow(r: Row): Row {
+  return r
+}
+
+// =========================================================================
+// 回调(callbacks 抽屉 2026-08-23 撤编后的固定尾段;签名由外部库/语言定死,逐行特批)
+// =========================================================================
+
+/**
+ * 初评主排序(#307 唯一的尺):① 0 岗跨档沉底 ② 沉降段(缺数据/够不着线)③ 本省优先跨档
+ * ④ 档位 band ⑤ 档内够得着优先 ⑥ thin 沉同档尾 ⑦ thin 组内岗数多→少、足量组竞争比松→紧
+ * ⑧ 引擎原序兜底。
+ *
+ * @param a 左行。
+ * @param b 右行。
+ * @returns 负数 a 在前,正数 b 在前。
+ */
+// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+export function byPlanOrder<T extends RankableRow>(a: DecoratedRow<T>, b: DecoratedRow<T>): number {
+  if (a.zero !== b.zero) {
+    if (a.zero) {
+      return 1
+    }
+    return -1
+  }
+  if (a.sunk !== b.sunk) {
+    if (a.sunk) {
+      return 1
+    }
+    return -1
+  }
+  if (a.home !== b.home) {
+    if (a.home) {
+      return -1
+    }
+    return 1
+  }
+  if (a.band !== b.band) {
+    return a.band - b.band
+  }
+  if (a.row.aboveLine !== b.row.aboveLine) {
+    if (a.row.aboveLine) {
+      return -1
+    }
+    return 1
+  }
+  if (a.thin !== b.thin) {
+    if (a.thin) {
+      return 1
+    }
+    return -1
+  }
+  if (a.thin && b.thin && a.n !== b.n) {
+    let an = -1
+    if (a.n != null) {
+      an = a.n
+    }
+    let bn = -1
+    if (b.n != null) {
+      bn = b.n
+    }
+    return bn - an
+  }
+  if (a.ratio !== b.ratio) {
+    return a.ratio - b.ratio
+  }
+  return a.i - b.i
+}
+
+/**
+ * 时间线事件:日期新在前。
+ *
+ * @param a 左行。
+ * @param b 右行。
+ * @returns 负数 a 在前,正数 b 在前。
+ */
+// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+export function byDateDesc(a: TlEvent, b: TlEvent): number {
+  if (a.date < b.date) {
+    return 1
+  }
+  if (a.date > b.date) {
+    return -1
+  }
+  return 0
+}
+
+/**
+ * 省级节奏:省码字典序,同省内项目字典序。
+ *
+ * @param a 左行。
+ * @param b 右行。
+ * @returns 负数 a 在前,正数 b 在前。
+ */
+// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+export function byProvStream(a: TlCadence, b: TlCadence): number {
+  const prov = a.prov.localeCompare(b.prov)
+  if (prov !== 0) {
+    return prov
+  }
+  return a.stream.localeCompare(b.stream)
+}
+
+/**
+ * 联邦 EE 距今:近在前。
+ *
+ * @param a 左行。
+ * @param b 右行。
+ * @returns 负数 a 在前,正数 b 在前。
+ */
+// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+export function byDaysSince(a: EeCadence, b: EeCadence): number {
+  return a.daysSince - b.daysSince
+}
+
+/**
+ * 全段确定的路径:总月数升序,同数按省码(totalMonths 在 complete 组恒非 null)。
+ *
+ * @param a 左行。
+ * @param b 右行。
+ * @returns 负数 a 在前,正数 b 在前。
+ */
+// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+export function byTotalMonths(a: PlanPath, b: PlanPath): number {
+  let at = 0
+  if (a.totalMonths != null) {
+    at = a.totalMonths
+  }
+  let bt = 0
+  if (b.totalMonths != null) {
+    bt = b.totalMonths
+  }
+  if (at !== bt) {
+    return at - bt
+  }
+  return a.province.localeCompare(b.province)
+}
+
+/**
+ * 含 unknown 段的路径:下界升序,同数按省码。
+ *
+ * @param a 左行。
+ * @param b 右行。
+ * @returns 负数 a 在前,正数 b 在前。
+ */
+// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+export function byDeterminedMonths(a: PlanPath, b: PlanPath): number {
+  if (a.determinedMonths !== b.determinedMonths) {
+    return a.determinedMonths - b.determinedMonths
+  }
+  return a.province.localeCompare(b.province)
+}
+
+/**
+ * 日期字符串升序(节奏分组内排期)。
+ *
+ * @param a 左行。
+ * @param b 右行。
+ * @returns 负数 a 在前,正数 b 在前。
+ */
+// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+export function byDateAsc(a: string, b: string): number {
+  if (a < b) {
+    return -1
+  }
+  if (a > b) {
+    return 1
+  }
+  return 0
 }

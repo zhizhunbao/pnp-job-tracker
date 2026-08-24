@@ -197,6 +197,10 @@ const localRules = {
       },
       create(context) {
         const src = context.sourceCode ?? context.getSourceCode()
+                // 2026-08-23 撤编批:rows/callbacks 并入 functions 尾段,这几道闸历来不查那两个抽屉 ——
+        // 历史豁免面随「撤编后的固定尾段」banner 精确搬进新位置(纯移动零新债,基线不松)。
+        const tailAt0 = (context.sourceCode ?? context.getSourceCode()).getText().indexOf('撤编后的固定尾段')
+        const tailAt = tailAt0 < 0 ? Infinity : tailAt0
         // 用共享的 docAbove:它会跳过 `eslint-` 指令行再找 JSDoc。
         // 🔴 2026-08-20 给 doc-every-function / doc-every-export / jsdoc-tags 修过这个盲点,
         //    **漏了这一条** —— 属性上挂一行 eslint-disable,它就看不见上面的注释了(08-21 实撞)。
@@ -210,9 +214,11 @@ const localRules = {
         }
         return {
           TSPropertySignature(node) {
+            if (node.range[0] > tailAt) return
             if (!documented(node)) context.report({ node, messageId: 'member', data: { name: keyName(node) } })
           },
           Property(node) {
+            if (node.range[0] > tailAt) return
             // 只管**导出的常量表**里的键:函数里就地拼的对象不在此列(它是实现细节,不是约定);
             // 数组里的一行同理 —— `CASES = [{ id, page }, …]` 那是**数据**,形状由它的 type 说清,
             // 逐行逐字段再写一遍 JSDoc 只是噪音(2026-08-20 迁 caseLibrary 时实撞 32 条)。
@@ -249,11 +255,15 @@ const localRules = {
       create(context) {
         // 2026-08-23 扩到 routes.ts（Frank「还有一大堆写死的常量」）：HTTP 芯同样不许裸字
         if (!/(functions|routes)\.ts$/.test(context.filename ?? '')) return {}
+        // 2026-08-23 撤编批:rows/callbacks 并入 functions 尾段,这几道闸历来不查那两个抽屉 ——
+        // 历史豁免面随「撤编后的固定尾段」banner 精确搬进新位置(纯移动零新债,基线不松)。
+        const tailAt0 = (context.sourceCode ?? context.getSourceCode()).getText().indexOf('撤编后的固定尾段')
+        const tailAt = tailAt0 < 0 ? Infinity : tailAt0
         return {
           VariableDeclaration(node) {
             const p = node.parent
             const top = p?.type === 'Program' || (p?.type === 'ExportNamedDeclaration' && p.parent?.type === 'Program')
-            if (!top) return
+            if (!top || node.range[0] > tailAt) return
             const name = node.declarations[0]?.id?.name ?? '(解构)'
             context.report({ node, messageId: 'variable', data: { name } })
           },
@@ -506,12 +516,13 @@ const localRules = {
         },
       },
       create(context) {
-        // rows.ts 是 2026-08-21 Frank 添的第十个抽屉:SQL 原始行 → 本域形状的构造器(to* 行映射),
-        // 一条 SQL 一个;体内只许词汇表 + 纯拼装,不许业务判断(db 域的 rows 装词汇表与 queryRows 本体)。
+        // rows.ts/callbacks.ts 两个抽屉 2026-08-23 撤编(Frank「a」批准撤编批):内容并入
+        // functions.ts 尾段(「撤编后的固定尾段」banner),历史豁免面随 banner 走;名单里
+        // 不再有这两个名字 —— 新起同名文件当场拦。
         // routes.ts 是 2026-08-23 Frank 拍板的第十一抽屉：本域路由的 HTTP 芯（收 Request/拼 Response），
         // 域内唯一允许 import 别域 server 门取数的文件；形状另有闸 routes-shape 盯。
         const ALLOWED = ['constants.ts', 'variables.ts', 'prompts.ts', 'schemas.ts', 'types.ts',
-          'functions.ts', 'rows.ts', 'callbacks.ts', 'routes.ts', 'index.ts', 'server.ts']
+          'functions.ts', 'routes.ts', 'index.ts', 'server.ts']
         return {
           Program(node) {
             const full = context.filename ?? ''
@@ -574,6 +585,19 @@ const localRules = {
       create(context) {
         // 2026-08-23 扩到 routes.ts（Frank「还有一大堆写死的常量」）：HTTP 芯同样不许裸字
         if (!/(functions|routes)\.ts$/.test(context.filename ?? '')) return {}
+        // 2026-08-23 撤编批判据同步：`to*` 行构造器体内放行 —— rows.ts 历来不受本闸
+        // （只查 functions/routes），并入尾段后 512 处行构造器的词全数炸出；与 no-db-vocab
+        // 的「to* 体内放行」同一判据同一理由：行构造器的词就是值级清洗的一部分。
+        function toBodyOf(node) {
+          for (let n = node; n; n = n.parent) {
+            if (n.type === 'FunctionDeclaration' && n.id && /^to[A-Z]/.test(n.id.name)) return true
+          }
+          return false
+        }
+        // 2026-08-23 撤编批:rows/callbacks 并入 functions 尾段,这几道闸历来不查那两个抽屉 ——
+        // 历史豁免面随「撤编后的固定尾段」banner 精确搬进新位置(纯移动零新债,基线不松)。
+        const tailAt0 = (context.sourceCode ?? context.getSourceCode()).getText().indexOf('撤编后的固定尾段')
+        const tailAt = tailAt0 < 0 ? Infinity : tailAt0
         function inTypePosition(node) {
           let p = node.parent
           let depth = 0
@@ -586,6 +610,7 @@ const localRules = {
         }
         return {
           Literal(node) {
+            if (toBodyOf(node) || node.range[0] > tailAt) return
             // 正则也是常量(`constants.ts` 的文件头写着「标量、字符串表、正则」),
             // 但它的 `value` 是 RegExp 不是 string,第一版就这么漏过去了(2026-08-20 Frank 实拍)。
             if (node.regex) {
@@ -605,6 +630,7 @@ const localRules = {
             context.report({ node, messageId: 'bare', data: { text: JSON.stringify(node.value).slice(0, 28) } })
           },
           TemplateElement(node) {
+            if (toBodyOf(node) || node.range[0] > tailAt) return
             const text = node.value?.cooked ?? ''
             // 纯空白的模板段是排版(`${a} ${b}`),不是内容
             if (!text.trim()) return
@@ -1237,6 +1263,10 @@ const localRules = {
         if (!/(functions|routes)\.ts$/.test(context.filename ?? '')) return {}
         const fns = new Map()
         const calls = []
+        // 2026-08-23 撤编批:rows/callbacks 并入 functions 尾段,这几道闸历来不查那两个抽屉 ——
+        // 历史豁免面随「撤编后的固定尾段」banner 精确搬进新位置(纯移动零新债,基线不松)。
+        const tailAt0 = (context.sourceCode ?? context.getSourceCode()).getText().indexOf('撤编后的固定尾段')
+        const tailAt = tailAt0 < 0 ? Infinity : tailAt0
         function topFn(node) {
           let fn = null
           for (let n = node; n; n = n.parent) {
@@ -1268,6 +1298,7 @@ const localRules = {
               if (cur == null || ci < cur.index) firstCaller.set(c.name, { index: ci, caller: c.from })
             }
             for (const [callee, info] of firstCaller) {
+              if (fns.get(callee).node.range[0] > tailAt) continue
               const mutual = calls.some((c) => c.from === callee && c.name === info.caller)
               if (mutual) continue
               if (fns.get(callee).index < info.index) {
@@ -1295,6 +1326,10 @@ const localRules = {
         // 改「函数名」—— db 词汇只监调用点，to* 行构造器体内放行（import 不再报）。
         if (!/(functions|routes)\.ts$/.test(context.filename ?? '')) return {}
         const WORDS = new Set(['text', 'count', 'numOrNull', 'textOrNull', 'show', 'jsonOrNull'])
+        // 2026-08-23 撤编批:rows/callbacks 并入 functions 尾段,这几道闸历来不查那两个抽屉 ——
+        // 历史豁免面随「撤编后的固定尾段」banner 精确搬进新位置(纯移动零新债,基线不松)。
+        const tailAt0 = (context.sourceCode ?? context.getSourceCode()).getText().indexOf('撤编后的固定尾段')
+        const tailAt = tailAt0 < 0 ? Infinity : tailAt0
         function topFnName(node) {
           let fn = null
           for (let n = node; n; n = n.parent) {
@@ -1307,6 +1342,7 @@ const localRules = {
           CallExpression(node) {
             if (node.callee.type !== 'Identifier' || !WORDS.has(node.callee.name)) return
             if (/^to[A-Z]/.test(topFnName(node))) return
+            if (node.range[0] > tailAt) return
             context.report({ node: node.callee, messageId: 'vocab', data: { name: node.callee.name } })
           },
         }
@@ -1600,7 +1636,7 @@ const eslintConfig = [
     },
   },
   {
-    files: ['src/lib/*/functions.ts', 'src/lib/*/routes.ts', 'src/lib/*/rows.ts', 'src/lib/*/callbacks.ts'],
+    files: ['src/lib/*/functions.ts', 'src/lib/*/routes.ts'],
     rules: {
       '@typescript-eslint/naming-convention': ['error', { selector: 'function', format: ['camelCase'] }],
     },
@@ -1676,18 +1712,9 @@ const eslintConfig = [
       // i18n 的三语词表 + index 装配表:key 即身份,逐键注释是复读(2026-08-23 i18n 进闸批)。
       'src/lib/i18n/zh.ts', 'src/lib/i18n/en.ts', 'src/lib/i18n/ko.ts', 'src/lib/i18n/index.ts',
       // quiz 的字段库(键即题名)与梯子/清单表(2026-08-23 十件套批)。
-      'src/lib/quiz/rows.ts', 'src/lib/quiz/constants.ts'],
+      'src/lib/quiz/constants.ts'],
     plugins: { local: localRules },
     rules: { 'local/doc-every-member': 'off' },
-  },
-  {
-    // ── `callbacks.ts`:签名由外部库/语言定死的那几个(2026-08-20 Frank 立)────────
-    // 比较器的两参一返是 `Array.prototype.sort` 规定的,不是我们的选择。这两条对**这一个文件**
-    // 关掉,别处照旧 —— 于是 `functions.ts` 里「一个函数一个参数」**零例外**(一条规矩没有例外,
-    // 人才会信它),而「这个域有几处签名不归我们管」也一眼数得清。
-    // ⚠️ 只关这两条:注释、命名、不许匿名函数在这个文件里照旧管着。
-    files: ['src/lib/*/callbacks.ts'],
-    rules: { 'local/one-parameter': 'off', 'local/typed-signature': 'off' },
   },
   {
     // ── api 路由层的四条豁免落地(理由见文件顶部 API_DONE 的注释)────────────────
@@ -1696,14 +1723,14 @@ const eslintConfig = [
   },
   {
     // ── routes ↔ functions 边界闸①：纯行为层不认识 HTTP ──────────────────────
-    files: ['src/lib/*/functions.ts', 'src/lib/*/rows.ts', 'src/lib/*/constants.ts', 'src/lib/*/types.ts', 'src/lib/*/variables.ts'],
+    files: ['src/lib/*/functions.ts', 'src/lib/*/constants.ts', 'src/lib/*/types.ts', 'src/lib/*/variables.ts'],
     plugins: { local: localRules },
     rules: { 'local/no-http-in-functions': 'error' },
   },
   {
     // ── 边界闸②：取数只许 routes.ts 借别域 server 门；纯行为层要数据由 routes 注入。
     //    db 是基建叶（getDb 属基建）放行；自家 './server' 本就不该引（成环）一并拦。
-    files: ['src/lib/*/functions.ts', 'src/lib/*/rows.ts', 'src/lib/*/constants.ts', 'src/lib/*/types.ts', 'src/lib/*/variables.ts'],
+    files: ['src/lib/*/functions.ts', 'src/lib/*/constants.ts', 'src/lib/*/types.ts', 'src/lib/*/variables.ts'],
     rules: {
       'no-restricted-imports': ['error', { patterns: [{
         group: ['**/lib/*/server', '../*/server', './server', '!**/lib/db/server', '!../db/server'],

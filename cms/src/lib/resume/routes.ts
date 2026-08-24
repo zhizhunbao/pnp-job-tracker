@@ -29,7 +29,7 @@ import {
 } from './constants'
 import { extractText, gateMatch, ieltsToClb, matchPrompt, nocCandidatesOf } from './functions'
 import { EXTRACT_SYSTEM } from './prompts'
-import { normalizeRows, parseLlmJson } from './rows'
+import { normalizeRows, parseLlmJson } from './functions'
 import type { ExtractData, MatchBody, MatchUsesProfile, MaybeNum } from './types'
 
 /**

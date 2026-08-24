@@ -14,29 +14,95 @@
 
 import { log, RULING_LOG } from '../log'
 import { headers } from 'next/headers'
-
 import { getDb } from '../db/server'
-import { numOrNull, queryRowsOrEmpty, SQL, text } from '../db'
+import { numOrNull, queryRowsOrEmpty, SQL, text, count, jsonOrNull, textOrNull } from '../db'
 import type { Db } from '../db'
 // eslint-disable-next-line no-restricted-imports -- 存量特批（2026-08-23 边界闸首轮拓出）：十一件套前的跨域取数，归 api 批②注入化改造
 import { getUser, isPro } from '../quota/server'
-import {
-  byCostAsc, byCountDesc, byDrawDateDesc, byListRankThenMonths, byNumberAsc, byObstacleThenTier, byOpeningsDesc, byTierAsc,
-} from './callbacks'
 import { CACHE } from './variables'
-import { directoryRow, employerFactsOf, lmiaNocsCellOf, passRow, toCompetitionPair, toDesignated, toDraw, toEeGrid, toOccupation, toOpsStat, toProvCount, toRequirement, toScoreFactor, tripleJobOf } from './rows'
 import { evaluateRequirements, teerHit } from '../gauge'
-import { estimateCrs, estimateMbEoi, gridStreamOf, isAboveLine, isBelowLine, scoreProvince, streamMatches } from '../points'
+import {
+  estimateCrs, estimateMbEoi, gridStreamOf, isAboveLine, isBelowLine, scoreProvince, streamMatches,
+} from '../points'
 import { askLabels, fieldMatchExemptionOf, gateLabels, gateOf, PATHWAYS, regionProvincesOf, uiOf } from '../pathways'
 import { pickOutside, rankRows } from '../plan'
 import type { RankCtx } from '../plan'
 import type { PilotQuotaAgg } from '../pathways'
 import type { OccCompetitionRow } from '../jobs'
 import {
-  AB_LOCAL_EXP, AIP_PROVINCES, AIP_SOURCE, AMP, AND_WORD, APPLIES_OFFER, AREA_I_MAX, ASKABLE_FACTORS, AVAIL, BASIS, BASIS_MIN_YEARS, BLOCKED_BY, BLOCK_COST, CARD_SLOT, CARD_STATE, CASES, CASE_C01, CASE_ID, CASE_TIERS, CLB_IN_LABEL, CLB_TARGET_DEFAULT, COMPARE_ROLE, CONDITION, CRS_GRID_LABEL, DESIGNATION_MULTI, EDU, EDU_KEY_VALUES, EDU_TO_MB, EMPLOYMENT_OFFER_STREAM, EMPTY_JSON, EMP_FACTOR, EMP_KEY, EMP_STATE, EMP_UNIT, EVIDENCE_KIND, EXP_BASIS, E_ANSWERS_REQUIRED, FACTOR, FACTOR_ROW, FED, FIRST_OFFICIAL_LANGUAGE, FULL_TIME_IN_LABEL, GATE_ASK, GATE_KEYS, GATE_NEED, GATE_OF, GATE_OFFER, GRID, GRID_AUTO_FACTORS, HTTP, INDEMAND, ITEM, JOB_ROW_RANK, KEY_FCIP, KEY_PREFIX, KEY_RCIP, KEY_SUFFIX_NOT_COLLECTED, KIND_RULE, LEVER, MB_ADAPT_EDU_YEARS, MB_EDU, MB_EDU_YEARS, MB_RISK_STUDY, MB_RISK_WORK, MB_SWM_STREAM, MONTHS, MONTHS_PER_YEAR, NAME_KEEP, NL_DESIGNATED_LABEL, NOC5_RE, NOC_CODE, NOC_TEER_RE, NO_BLOCK_COST, NO_PROVINCE_RANK, OA_SPLIT, OCC_INELIGIBLE, OCC_LIST_NONE, ON_GRAD_MIN_YEARS, OPS_METRIC, OPT_IN_GATES, PERMIT, PERMIT_KINDS, PERMIT_VALUES, PILOT_KEY_SEP, PROV, PROV2_RE, PROVINCE_CODE, PROVINCE_LOCAL_EXP, PROV_OR_TERR_RE, PV_KEY, PV_KEY_LANG_GAP, PV_TEXT, RANK, REASON, REASON_EXCLUDED, REASON_GAP, RECENT_ON_GRADUATE, REQ_FACTOR, REQ_UNIT, ROW_KEY_RE, ROW_SEQ_MAX, SCORE_FACTOR, SECTOR_PUBLIC, SEP, SINK, SLOT, SLOTS_OF_FACTOR, SOURCE_PROFILE, SPACE, STATE, STATE_OF_RULE, STATUS, STATUS_MAP, STATUS_OF, STATUS_OVERSEAS, SUBJECT, SUM_KIND, TEER5_NOC, TEER_DIGIT, TEER_LOWEST, TEER_MAX, TEER_RANGE_PARTS, TEER_REASONS_SHOWN, TEER_STREAM, TICKS_N_MAX, TICK_KEY_RE, TIER, TIER_BASIS, TIER_BOUND, TIER_OF, TTL, TV_EMP, TV_EMP_PREFIX, TV_LABEL, TV_NEXT, TV_OCC, TV_PERSON, TV_PERSON_PREFIX, TV_SUM, TV_YOU, UNKNOWN_BLOCK_COST, VERDICT, VERDICT_EXCLUDED, VERDICT_RANK, WAGE_MAX, WAGE_RULE_DEFAULT, WIRE_ERR,
+  AB_LOCAL_EXP, AIP_PROVINCES, AIP_SOURCE, AMP, AND_WORD, APPLIES_OFFER, AREA_I_MAX, ASKABLE_FACTORS, AVAIL, BASIS,
+  BASIS_MIN_YEARS, BLOCKED_BY, BLOCK_COST, CARD_SLOT, CARD_STATE, CASES, CASE_C01, CASE_ID, CASE_TIERS, CLB_IN_LABEL,
+  CLB_TARGET_DEFAULT, COMPARE_ROLE, CONDITION, CRS_GRID_LABEL, DESIGNATION_MULTI, EDU, EDU_KEY_VALUES, EDU_TO_MB,
+  EMPLOYMENT_OFFER_STREAM, EMPTY_JSON, EMP_FACTOR, EMP_KEY, EMP_STATE, EMP_UNIT, EVIDENCE_KIND, EXP_BASIS,
+  E_ANSWERS_REQUIRED, FACTOR, FACTOR_ROW, FED, FIRST_OFFICIAL_LANGUAGE, FULL_TIME_IN_LABEL, GATE_ASK, GATE_KEYS,
+  GATE_NEED, GATE_OF, GATE_OFFER, GRID, GRID_AUTO_FACTORS, HTTP, INDEMAND, ITEM, JOB_ROW_RANK, KEY_FCIP, KEY_PREFIX,
+  KEY_RCIP, KEY_SUFFIX_NOT_COLLECTED, KIND_RULE, LEVER, MB_ADAPT_EDU_YEARS, MB_EDU, MB_EDU_YEARS, MB_RISK_STUDY,
+  MB_RISK_WORK, MB_SWM_STREAM, MONTHS, MONTHS_PER_YEAR, NAME_KEEP, NL_DESIGNATED_LABEL, NOC5_RE, NOC_CODE,
+  NOC_TEER_RE, NO_BLOCK_COST, NO_PROVINCE_RANK, OA_SPLIT, OCC_INELIGIBLE, OCC_LIST_NONE, ON_GRAD_MIN_YEARS,
+  OPS_METRIC, OPT_IN_GATES, PERMIT, PERMIT_KINDS, PERMIT_VALUES, PILOT_KEY_SEP, PROV, PROV2_RE, PROVINCE_CODE,
+  PROVINCE_LOCAL_EXP, PROV_OR_TERR_RE, PV_KEY, PV_KEY_LANG_GAP, PV_TEXT, RANK, REASON, REASON_EXCLUDED, REASON_GAP,
+  RECENT_ON_GRADUATE, REQ_FACTOR, REQ_UNIT, ROW_KEY_RE, ROW_SEQ_MAX, SCORE_FACTOR, SECTOR_PUBLIC, SEP, SINK, SLOT,
+  SLOTS_OF_FACTOR, SOURCE_PROFILE, SPACE, STATE, STATE_OF_RULE, STATUS, STATUS_MAP, STATUS_OF, STATUS_OVERSEAS,
+  SUBJECT, SUM_KIND, TEER5_NOC, TEER_DIGIT, TEER_LOWEST, TEER_MAX, TEER_RANGE_PARTS, TEER_REASONS_SHOWN, TEER_STREAM,
+  TICKS_N_MAX, TICK_KEY_RE, TIER, TIER_BASIS, TIER_BOUND, TIER_OF, TTL, TV_EMP, TV_EMP_PREFIX, TV_LABEL, TV_NEXT,
+  TV_OCC, TV_PERSON, TV_PERSON_PREFIX, TV_SUM, TV_YOU, UNKNOWN_BLOCK_COST, VERDICT, VERDICT_EXCLUDED, VERDICT_RANK,
+  WAGE_MAX, WAGE_RULE_DEFAULT, WIRE_ERR, COMP_KEY, DATE_LEN, DATE_LEN_DAY,
 } from './constants'
 import type {
-  AfterMap, AfterOfferWire, AnswerBag, AnswerBoolIn, AnswerBoolOut, AnswerNumIn, AnswerNumOut, AnswerTextIn, AnswerTextOut, ApplyOpsPeriodIn, ApplyOpsRowIn, AskableSlotIn, AskableSlotOut, Availability, AvailabilityOfIn, BasisParamIn, BasisParamOut, BlockCostIn, BlockedBy, BoolOfIn, BoolOfOut, BuildTripleWireIn, BuildTripleWireOut, CardFollowupsIn, CardFollowupsOut, CardRuleProfileIn, CaseAnswerIn, CaseAnswerOut, CasePagesOut, CaseProfilesOut, CaseTier, Cell, ClbBoostLeverIn, ClbBoostLeverOut, CompareRowsIn, CompareRowsOut, CompetitionMap, CompetitionMapOut, ConcludeBlockedIn, ConcludeBlockedOut, ConcludeIn, ConcludeNeedsInfoIn, ConcludeNeedsInfoOut, ConcludeOpenIn, ConcludeOpenOut, ConditionHoldsIn, ConditionHoldsOut, CountableMonthsIn, CountableMonthsOut, CrossProvinceRowsIn, CrossProvinceRowsOut, CrsProfile, CrsScoreIn, DesignatedEmployerRow, DesignatedRowIn, DesignatedRowOut, EduBand, EduCell, EeRow, EmpAcc, EmpDesignationRowIn, EmpDesignationRowOut, EmpNextStepRowIn, EmpPublicSectorRowIn, EmpPublicSectorRowOut, EmpReqOfIn, EmpReqOfOut, EmpRevenueRowIn, EmpRowsOfIn, EmpRowsOfOut, EmpStaffFactRowIn, EmpStaffFactRowOut, EmpThresholdRowsIn, EmpThresholdRowsOut, EmployerFacts, EmployerNameSegmentsOut, EmployerRowsIn, EmployerRowsOut, EmployerVerdict, EmployerVerdictIn, EmployerVerdictItem, EngineProfile, EngineResult, EvOfDrawIn, EvOfFactorIn, EvOfOccIn, EvOfReqIn, EvaluateOneIn, Evidence, ExcludedRowIn, ExcludedRowOut, ExcludedRowWire, ExperienceGapsIn, ExperienceGapsOut, ExperienceReasonsIn, ExperienceReasonsOut, FactorNamesIn, FactorNamesOut, FactorThreshold, FastestRowIn, FedLangAppliesIn, FedLanguageReasonsIn, FieldMatchAnswerIn, FieldMatchAnswerOut, FirstNocIn, FirstNocOut, FoldTriStateIn, FoldTriStateOut, FoldVerdictIn, GateAnswersIn, GateAnswersOut, GateAsks, GateEval, GateKeyOfIn, GateManifestIn, GateManifestOut, GetDesignatedEmployersIn, GetDesignatedEmployersOut, GetVerdictDataOut, GotWorseIn, GridCeilingIn, GridCeilingOut, GridMatchesStreamIn, GridProfile, GridRowForIn, GridRowForOut, GridSelfProfileIn, HarderBlockIn, HarderBlockOut, HasEnoughProfileIn, HasRequiredSlotsIn, HaveMonthsOfIn, HaveMonthsOfOut, ItemVerdict, JobPathwayRow, JobPathwaysIn, JobPathwaysOut, JobRowRankIn, JobsOfFn, JudgeableRowIn, LanguageReasonsIn, LanguageReasonsOut, LeverGain, ListRequiredReasonIn, ListRequiredReasonOut, LmiaNocsOfIn, LmiaNocsOfOut, LoadVerdictTablesOut, LocalExperienceHoldsIn, LocalExperienceHoldsOut, LowestMonthsRowIn, LowestMonthsRowOut, MatchDesignationIn, MatchDesignationOut, MatchTargetsIn, MaxClbInIn, MaxClbInOut, MaybeBool, MaybeCompetition, MaybeNum, MaybeProfileBody, MaybeProfileParse, MaybeScore, MaybeStr, MbEduBand, MbEduOfIn, MbEoiProfile, MbProfileOfIn, MbScoreIn, MbScoreOut, MbWarningsIn, MbWarningsOut, MergeOverridesIn, MergeOverridesOut, MonthsOfReqIn, MonthsOfReqOut, MostSpecificRowsIn, MostSpecificRowsOut, MyPathway, MyPathwaysIn, MyPathwaysOut, NameRow, NamedList, NamedListsIn, NamedListsOut, NlDesignatedReasonIn, NlDesignatedReasonOut, NotCollectedRowIn, NotCollectedRowOut, NotCollectedVerdictIn, ObstacleRankIn, OccExcludedRowsIn, OccExcludedRowsOut, OccListNoneForIn, OccListNoneForOut, OccListedRowsIn, OccListedRowsOut, OccNoListRowIn, OccRowsList, OccTeerRowIn, OccupationListReasonsIn, OccupationListReasonsOut, OccupationRow, OccupationRowsIn, OccupationRowsOut, OfferOverrideIn, OfferOverrideOut, OneRowIn, OneRowOut, OopGradReasonIn, OopGradReasonOut, OpeningCount, OpsByProvinceIn, OpsByProvinceOut, OpsFacts, OtherProvinceGraduateHoldsIn, OtherProvinceGraduateHoldsOut, OutOfProvinceGradGapIn, OutOfProvinceGradGapOut, OutsideWire, OwnTicksOfIn, OwnTicksOfOut, ParseNocDictIn, ParseNocDictOut, ParseWageRuleIn, PathLeversIn, PathLeversOut, PathVerdictIn, PathVerdictOut, PathwayFactsIn, PathwayFactsOut, PathwayScore, PathwayVerdict, PermitCell, PermitOfIn, PermitOfOut, PersonRowsIn, PersonRowsOut, PickGateIn, PickGridFactorsIn, PickGridFactorsOut, PickOnLangRowIn, PickOnLangRowOut, PickScoreRowIn, PickScoreRowOut, PickedFactor, PlanRow, ProfileBody, ProfileOfOccupationIn, ProfileParse, ProfileSlotsIn, ProfileWireIn, ProfileWireOut, ProfileWireRow, ProfileWithNocIn, ProfileWithOfferIn, ProvCompetition, ProvinceGridScoreIn, ProvinceOfIn, ProvinceOfOut, PushItemIn, QuoteOfOccIn, QuoteOfReqIn, RCell, RankedBlock, RankedJobRow, RankedPathway, RankedVerdict, RecentGraduateHoldsIn, RecentGraduateHoldsOut, RefDrawIn, RefDrawOut, ReqMonths, ReqRow, ReqsOfIn, ReqsOfOut, ResidenceGapIn, ResidenceGapOut, ResidenceReasonIn, ResidenceReasonOut, RuleProfileOfIn, ScalarCell, ScoreAndRefLineIn, ScoreAndRefLineOut, ScoreGulfReasonIn, ScoreGulfReasonOut, ScoreOverride, ScoreRow, SelfEmpExcludedInIn, SessionOfIn, SessionUser, SplitDecoratedIn, SplitRow, SplitRowOfIn, SplitRows, StatusGateAnswerIn, StatusGateAnswerOut, TargetProvincesOfIn, TargetProvincesOfOut, TeerDowngradeLeverIn, TeerDowngradeLeverOut, TeerScope, TeerScopeAcc, TeerScopesIn, TeerScopesOut, Tier, TierBasisOfIn, TierBasisOfOut, TierFullTimeOfIn, TierGap, TierOfMonthsIn, TierOfMonthsOut, TierRowsIn, TierRowsOut, TimeRowIn, TotalExpMonthsIn, TotalExpMonthsOut, TrainableRow, TrainableRowsIn, TrainableRowsOut, TripleCard, TripleCompanyOfIn, TripleCompanyOfOut, TripleCompareRole, TripleCompareRow, TripleConclusion, TripleProfile, TripleProfileOfIn, TripleRow, TripleVerdictIn, TripleWireOfIn, TripleWireOfOut, TripleWireRow, UniversalValueIn, UniversalValueOut, VerdictDrawRow, VerdictLever, VerdictProfile, VerdictRankIn, VerdictReason, VerdictReasonsIn, VerdictReasonsOut, WagePointsIn, WageRule, WireRowOfIn, WireRowsIn, WireRowsOut, WireScore, WorkPermitSoonIn, WorstGapIn, WorstGapOut,
+  AfterMap, AfterOfferWire, AnswerBag, AnswerBoolIn, AnswerBoolOut, AnswerNumIn, AnswerNumOut, AnswerTextIn,
+  AnswerTextOut, ApplyOpsPeriodIn, ApplyOpsRowIn, AskableSlotIn, AskableSlotOut, Availability, AvailabilityOfIn,
+  BasisParamIn, BasisParamOut, BlockCostIn, BlockedBy, BoolOfIn, BoolOfOut, BuildTripleWireIn, BuildTripleWireOut,
+  CardFollowupsIn, CardFollowupsOut, CardRuleProfileIn, CaseAnswerIn, CaseAnswerOut, CasePagesOut, CaseProfilesOut,
+  CaseTier, Cell, ClbBoostLeverIn, ClbBoostLeverOut, CompareRowsIn, CompareRowsOut, CompetitionMap,
+  CompetitionMapOut, ConcludeBlockedIn, ConcludeBlockedOut, ConcludeIn, ConcludeNeedsInfoIn, ConcludeNeedsInfoOut,
+  ConcludeOpenIn, ConcludeOpenOut, ConditionHoldsIn, ConditionHoldsOut, CountableMonthsIn, CountableMonthsOut,
+  CrossProvinceRowsIn, CrossProvinceRowsOut, CrsProfile, CrsScoreIn, DesignatedEmployerRow, DesignatedRowIn,
+  DesignatedRowOut, EduBand, EduCell, EeRow, EmpAcc, EmpDesignationRowIn, EmpDesignationRowOut, EmpNextStepRowIn,
+  EmpPublicSectorRowIn, EmpPublicSectorRowOut, EmpReqOfIn, EmpReqOfOut, EmpRevenueRowIn, EmpRowsOfIn, EmpRowsOfOut,
+  EmpStaffFactRowIn, EmpStaffFactRowOut, EmpThresholdRowsIn, EmpThresholdRowsOut, EmployerFacts,
+  EmployerNameSegmentsOut, EmployerRowsIn, EmployerRowsOut, EmployerVerdict, EmployerVerdictIn, EmployerVerdictItem,
+  EngineProfile, EngineResult, EvOfDrawIn, EvOfFactorIn, EvOfOccIn, EvOfReqIn, EvaluateOneIn, Evidence,
+  ExcludedRowIn, ExcludedRowOut, ExcludedRowWire, ExperienceGapsIn, ExperienceGapsOut, ExperienceReasonsIn,
+  ExperienceReasonsOut, FactorNamesIn, FactorNamesOut, FactorThreshold, FastestRowIn, FedLangAppliesIn,
+  FedLanguageReasonsIn, FieldMatchAnswerIn, FieldMatchAnswerOut, FirstNocIn, FirstNocOut, FoldTriStateIn,
+  FoldTriStateOut, FoldVerdictIn, GateAnswersIn, GateAnswersOut, GateAsks, GateEval, GateKeyOfIn, GateManifestIn,
+  GateManifestOut, GetDesignatedEmployersIn, GetDesignatedEmployersOut, GetVerdictDataOut, GotWorseIn, GridCeilingIn,
+  GridCeilingOut, GridMatchesStreamIn, GridProfile, GridRowForIn, GridRowForOut, GridSelfProfileIn, HarderBlockIn,
+  HarderBlockOut, HasEnoughProfileIn, HasRequiredSlotsIn, HaveMonthsOfIn, HaveMonthsOfOut, ItemVerdict,
+  JobPathwayRow, JobPathwaysIn, JobPathwaysOut, JobRowRankIn, JobsOfFn, JudgeableRowIn, LanguageReasonsIn,
+  LanguageReasonsOut, LeverGain, ListRequiredReasonIn, ListRequiredReasonOut, LmiaNocsOfIn, LmiaNocsOfOut,
+  LoadVerdictTablesOut, LocalExperienceHoldsIn, LocalExperienceHoldsOut, LowestMonthsRowIn, LowestMonthsRowOut,
+  MatchDesignationIn, MatchDesignationOut, MatchTargetsIn, MaxClbInIn, MaxClbInOut, MaybeBool, MaybeCompetition,
+  MaybeNum, MaybeProfileBody, MaybeProfileParse, MaybeScore, MaybeStr, MbEduBand, MbEduOfIn, MbEoiProfile,
+  MbProfileOfIn, MbScoreIn, MbScoreOut, MbWarningsIn, MbWarningsOut, MergeOverridesIn, MergeOverridesOut,
+  MonthsOfReqIn, MonthsOfReqOut, MostSpecificRowsIn, MostSpecificRowsOut, MyPathway, MyPathwaysIn, MyPathwaysOut,
+  NameRow, NamedList, NamedListsIn, NamedListsOut, NlDesignatedReasonIn, NlDesignatedReasonOut, NotCollectedRowIn,
+  NotCollectedRowOut, NotCollectedVerdictIn, ObstacleRankIn, OccExcludedRowsIn, OccExcludedRowsOut, OccListNoneForIn,
+  OccListNoneForOut, OccListedRowsIn, OccListedRowsOut, OccNoListRowIn, OccRowsList, OccTeerRowIn,
+  OccupationListReasonsIn, OccupationListReasonsOut, OccupationRow, OccupationRowsIn, OccupationRowsOut,
+  OfferOverrideIn, OfferOverrideOut, OneRowIn, OneRowOut, OopGradReasonIn, OopGradReasonOut, OpeningCount,
+  OpsByProvinceIn, OpsByProvinceOut, OpsFacts, OtherProvinceGraduateHoldsIn, OtherProvinceGraduateHoldsOut,
+  OutOfProvinceGradGapIn, OutOfProvinceGradGapOut, OutsideWire, OwnTicksOfIn, OwnTicksOfOut, ParseNocDictIn,
+  ParseNocDictOut, ParseWageRuleIn, PathLeversIn, PathLeversOut, PathVerdictIn, PathVerdictOut, PathwayFactsIn,
+  PathwayFactsOut, PathwayScore, PathwayVerdict, PermitCell, PermitOfIn, PermitOfOut, PersonRowsIn, PersonRowsOut,
+  PickGateIn, PickGridFactorsIn, PickGridFactorsOut, PickOnLangRowIn, PickOnLangRowOut, PickScoreRowIn,
+  PickScoreRowOut, PickedFactor, PlanRow, ProfileBody, ProfileOfOccupationIn, ProfileParse, ProfileSlotsIn,
+  ProfileWireIn, ProfileWireOut, ProfileWireRow, ProfileWithNocIn, ProfileWithOfferIn, ProvCompetition,
+  ProvinceGridScoreIn, ProvinceOfIn, ProvinceOfOut, PushItemIn, QuoteOfOccIn, QuoteOfReqIn, RCell, RankedBlock,
+  RankedJobRow, RankedPathway, RankedVerdict, RecentGraduateHoldsIn, RecentGraduateHoldsOut, RefDrawIn, RefDrawOut,
+  ReqMonths, ReqRow, ReqsOfIn, ReqsOfOut, ResidenceGapIn, ResidenceGapOut, ResidenceReasonIn, ResidenceReasonOut,
+  RuleProfileOfIn, ScalarCell, ScoreAndRefLineIn, ScoreAndRefLineOut, ScoreGulfReasonIn, ScoreGulfReasonOut,
+  ScoreOverride, ScoreRow, SelfEmpExcludedInIn, SessionOfIn, SessionUser, SplitDecoratedIn, SplitRow, SplitRowOfIn,
+  SplitRows, StatusGateAnswerIn, StatusGateAnswerOut, TargetProvincesOfIn, TargetProvincesOfOut,
+  TeerDowngradeLeverIn, TeerDowngradeLeverOut, TeerScope, TeerScopeAcc, TeerScopesIn, TeerScopesOut, Tier,
+  TierBasisOfIn, TierBasisOfOut, TierFullTimeOfIn, TierGap, TierOfMonthsIn, TierOfMonthsOut, TierRowsIn, TierRowsOut,
+  TimeRowIn, TotalExpMonthsIn, TotalExpMonthsOut, TrainableRow, TrainableRowsIn, TrainableRowsOut, TripleCard,
+  TripleCompanyOfIn, TripleCompanyOfOut, TripleCompareRole, TripleCompareRow, TripleConclusion, TripleProfile,
+  TripleProfileOfIn, TripleRow, TripleVerdictIn, TripleWireOfIn, TripleWireOfOut, TripleWireRow, UniversalValueIn,
+  UniversalValueOut, VerdictDrawRow, VerdictLever, VerdictProfile, VerdictRankIn, VerdictReason, VerdictReasonsIn,
+  VerdictReasonsOut, WagePointsIn, WageRule, WireRowOfIn, WireRowsIn, WireRowsOut, WireScore, WorkPermitSoonIn,
+  WorstGapIn, WorstGapOut, CompetitionPair, DirectoryRowIn, OpsStatRow, ProfileDiffDbRow, ProvCountRow, Row,
+  SubjectOfOut, TripleJob, TripleJobOfIn,
 } from './types'
 
 /**
@@ -6240,4 +6306,430 @@ function excludedRowOf(row: SplitRow): ExcludedRowWire {
     reason = { key: key, params: params, text: hit.text, quote: quote }
   }
   return { key: row.key, province: row.province, reason: reason }
+}
+
+// =========================================================================
+// 行构造器(rows 抽屉 2026-08-23 撤编后的固定尾段;体内只许词汇表 + 纯拼装)
+// =========================================================================
+
+/**
+ * 门槛行的 subject 列 → 两个合法主语之一。不是 employer 的一律按 applicant 读 ——
+ * 搞混这两个,句子本身就是假的(「你要开满一年」vs「雇主要开满一年」)。
+ *
+ * @param v 库里的 subject 列。
+ * @returns applicant 或 employer。
+ */
+export function subjectOf(v: Cell): SubjectOfOut {
+  if (text(v) === SUBJECT.employer) {
+    return SUBJECT.employer
+  }
+  return SUBJECT.applicant
+}
+
+/**
+ * 一行门槛条文 → `Requirement`。
+ *
+ * ⚠️ `applies_condition` 在 SQL 那头走 `to_jsonb` 取:列还没建时返回 NULL 而不是 42703,
+ * 让 DDL 与 push 谁先谁后不至于变成线上开关。
+ *
+ * @param r 库里的一行。
+ * @returns 判定引擎认的形状。
+ */
+export function toRequirement(r: Row): ReqRow {
+  return {
+    province: text(r.province), program: text(r.program), stream: text(r.stream),
+    subject: subjectOf(r.subject),
+    factor: text(r.factor), op: text(r.op), value: numOrNull(r.value), valueText: text(r.value_text),
+    unit: text(r.unit), appliesTeer: text(r.applies_teer), appliesNoc: text(r.applies_noc),
+    excludesNoc: text(r.excludes_noc), appliesArea: text(r.applies_area),
+    appliesCondition: text(r.applies_condition), familySize: numOrNull(r.applies_family_size),
+    basis: text(r.basis), label: text(r.label), section: text(r.section), effective: text(r.effective),
+    url: text(r.url), pageUrl: text(r.page_url), fetched: text(r.fetched),
+  }
+}
+
+/**
+ * 一行省提名职业清单 → `OccupationRow`。
+ *
+ * @param r 库里的一行。
+ * @returns 判定核认的形状。
+ */
+export function toOccupation(r: Row): OccupationRow {
+  return {
+    province: text(r.province), stream: text(r.stream), label: text(r.label), program: text(r.program),
+    type: text(r.type), url: text(r.url), fetched: text(r.fetched), appliesTo: text(r.applies_to),
+    noc: text(r.noc), name: text(r.name), gtaRestricted: Boolean(r.gta_restricted),
+  }
+}
+
+/**
+ * 一行抽选记录 → `VerdictDrawRow`。日期只取前十位(库里可能带时分秒)。
+ *
+ * @param r 库里的一行。
+ * @returns 判定核认的形状。
+ */
+export function toDraw(r: Row): VerdictDrawRow {
+  return {
+    province: text(r.province), label: text(r.label), scale: textOrNull(r.scale),
+    url: text(r.url), fetched: text(r.fetched), kind: text(r.kind),
+    drawDate: text(r.draw_date).slice(0, DATE_LEN), stream: text(r.stream),
+    score: numOrNull(r.score), invitations: numOrNull(r.invitations), note: text(r.note),
+  }
+}
+
+/**
+ * 一行省提名打分因素 → `ScoreFactor`。
+ *
+ * @param r 库里的一行。
+ * @returns 评分域认的形状。
+ */
+export function toScoreFactor(r: Row): ScoreRow {
+  return {
+    province: text(r.province), system: text(r.system), factor: text(r.factor),
+    kind: text(r.kind) || FACTOR_ROW, seq: count(r.seq), label: text(r.label),
+    points: numOrNull(r.points), xorPrev: Boolean(r.xor_prev), rule: text(r.rule),
+    factorMax: numOrNull(r.factor_max), factorGroup: text(r.factor_group), groupMax: numOrNull(r.group_max),
+    passMark: numOrNull(r.pass_mark), maxTotal: numOrNull(r.max_total),
+    guideEffective: text(r.guide_effective), fetched: text(r.fetched), url: text(r.url),
+  }
+}
+
+/**
+ * 一行 EE 分表 → `EeGridRow`。`points` 可空:官方的 n/a 原样留在 `pointsText`,不拿 0 冒充。
+ *
+ * @param r 库里的一行。
+ * @returns 评分域认的形状。
+ */
+export function toEeGrid(r: Row): EeRow {
+  return {
+    grid: text(r.grid), section: text(r.section), sectionLabel: text(r.section_label),
+    kind: text(r.kind), tableNo: numOrNull(r.table_no), heading: text(r.heading), factor: text(r.factor),
+    criterion: text(r.criterion), columnLabel: text(r.column_label), points: numOrNull(r.points),
+    pointsText: text(r.points_text), seq: numOrNull(r.seq), url: text(r.url), fetched: text(r.fetched),
+  }
+}
+
+/**
+ * 一行指定雇主名录 → `DesignatedEmployerRow`。
+ *
+ * @param r 库里的一行。
+ * @returns 判定核认的形状。
+ */
+export function toDesignated(r: Row): DesignatedEmployerRow {
+  return {
+    name: text(r.name), province: text(r.province), location: text(r.location),
+    isTech: Boolean(r.is_tech), source: text(r.source), nocs: text(r.nocs),
+    url: text(r.url), fetched: text(r.fetched),
+  }
+}
+
+/**
+ * 库里一行岗位 → 判定卡认的岗位。
+ *
+ * @param input 库里那一行。
+ * @returns 判定卡认的岗位。
+ */
+export function tripleJobOf(input: TripleJobOfIn): TripleJob {
+  const r = input.row
+  return {
+    id: Number(r.id), title: text(r.title), noc: text(r.noc), nocName: text(r.noc_title),
+    teer: numOrNull(r.teer), province: text(r.province), city: text(r.city),
+    pnpEligible: Boolean(r.pnp_eligible), pnpStream: text(r.pnp_stream),
+    eeCategory: text(r.ee_category), aip: Boolean(r.aip),
+    employmentTerm: text(r.employment_term), employmentHours: text(r.employment_hours),
+  }
+}
+
+/**
+ * 库里一行公司登记事实 → 雇主判定认的事实(纯映射;查不到那一行时由调用方给全 null 的空份,
+ * `employerVerdict` 落 unknown,**不编**)。
+ *
+ * @param f 库里那一行。
+ * @returns 雇主判定认的事实。
+ */
+export function employerFactsOf(f: Row): EmployerFacts {
+  return {
+    foundedYear: numOrNull(f.founded_year),
+    registryStatus: text(f.registry_status),
+    staffEst: numOrNull(f.staff_est),
+    staffEstSrc: text(f.staff_est_src),
+    sector: text(f.sector),
+  }
+}
+
+/**
+ * `COMPANY_LMIA_NOCS` 的行映射:整行只有一格,取成字符串(空值落空串,由 `lmiaNocsOf` 判空)。
+ *
+ * @param row 库里那一行。
+ * @returns 那一格的文本。
+ */
+export function lmiaNocsCellOf(row: Row): string {
+  return text(row.lmia_nocs)
+}
+
+/**
+ * 原样通过的行映射 —— 只给「一行多用、还没配完整行形状」的查询当占位(见 `oneRow` 的 JSDoc)。
+ *
+ * @param row 原始行。
+ * @returns 原样的那一行。
+ */
+export function passRow(row: Row): Row {
+  return row
+}
+
+/**
+ * 库里一行名录 → 判定认的那一行。url/fetched 空串折 undefined:两格在形状里是「有才挂」,
+ * JSON.stringify 丢 undefined 值。
+ *
+ * @param input 库里那一行。
+ * @returns 判定认的那一行。
+ */
+export function directoryRow(input: DirectoryRowIn): DesignatedEmployerRow {
+  const d = input.row
+  const url = text(d.url) || undefined
+  const fetched = text(d.fetched).slice(0, DATE_LEN_DAY) || undefined
+  return {
+    name: text(d.name),
+    province: text(d.province),
+    location: text(d.location),
+    isTech: Boolean(d.is_tech),
+    source: text(d.source),
+    nocs: text(d.nocs),
+    url: url,
+    fetched: fetched,
+  }
+}
+
+/**
+ * `CASE_PROV_COUNTS` 的一行 → 每省在招计数。两列都是个数,`count` 落 0 无害。
+ *
+ * @param row 库里的一行。
+ * @returns 每省一行的计数。
+ */
+export function toProvCount(row: Row): ProvCountRow {
+  return { province: text(row.province), n: count(row.n), t: count(row.t) }
+}
+
+/**
+ * `PNP_OPS_STATS` 的一行 → 官方运营统计行。`value` 走 `numOrNull` —— 隐私抑制值折 0 就是替官方编数。
+ *
+ * @param row 库里的一行。
+ * @returns 干净的统计行。
+ */
+export function toOpsStat(row: Row): OpsStatRow {
+  return {
+    value: numOrNull(row.value), province: text(row.province), metric: text(row.metric),
+    period: text(row.period), asOf: text(row.as_of), url: text(row.url),
+  }
+}
+
+/**
+ * 一行难度表（SQL.PROV_DIFFICULTY）→ 省级竞争度：json 解析（词汇 jsonOrNull）与
+ * 逐格拆解都在这里做完。列缺/值坏/比值非数 = comp null 不入图 ——
+ * 竞争度是加分项不是前置条件，方案照常给。
+ * pool/quota/quotaYear 沿并入前口径：缺位折 0（展示层拿 0 当「没数」）。
+ *
+ * @param r 库里的一行。
+ * @returns 省码 + 解得出的竞争度（解不出 null）。
+ */
+export function toCompetitionPair(r: ProfileDiffDbRow): CompetitionPair {
+  const province = text(r.province)
+  const d = jsonOrNull(r.difficulty)
+  if (d == null || typeof d !== 'object' || Array.isArray(d)) {
+    return { province: province, comp: null }
+  }
+  let factor: RCell = null
+  const factors = d.factors
+  if (Array.isArray(factors)) {
+    for (const f of factors) {
+      if (f != null && typeof f === 'object' && Array.isArray(f) === false && f.key === COMP_KEY) {
+        factor = f
+        break
+      }
+    }
+  }
+  if (factor == null || typeof factor !== 'object' || Array.isArray(factor)) {
+    return { province: province, comp: null }
+  }
+  const ratio = scalarNumOf(factor.value)
+  if (ratio == null) {
+    return { province: province, comp: null }
+  }
+  let pool = 0
+  const poolN = scalarNumOf(factor.pool)
+  if (poolN != null) {
+    pool = poolN
+  }
+  let quota = 0
+  const quotaN = scalarNumOf(factor.quota)
+  if (quotaN != null) {
+    quota = quotaN
+  }
+  let quotaYear = 0
+  const qyN = scalarNumOf(factor.quotaYear)
+  if (qyN != null) {
+    quotaYear = qyN
+  }
+  const comp: ProvCompetition = { ratio: ratio, tier: scalarTextOf(d.tier), pool: pool, quota: quota, quotaYear: quotaYear }
+  return { province: province, comp: comp }
+}
+
+/**
+ * 词汇：json 格里的数 —— 标量才进 numOrNull，数组/对象直接 null（json 自由形状
+ * 比库列多两态，先收窄再进词汇表）。
+ *
+ * @param x json 里的一格。
+ * @returns 数；不是标量或解不出是 null。
+ */
+function scalarNumOf(x: RCell): MaybeNum {
+  if (typeof x === 'number' || typeof x === 'string') {
+    return numOrNull(x)
+  }
+  return null
+}
+
+/**
+ * 词汇：json 格里的文本 —— 只认字符串，其余空串。
+ *
+ * @param x json 里的一格。
+ * @returns 文本；不是字符串是空串。
+ */
+function scalarTextOf(x: RCell): string {
+  if (typeof x === 'string') {
+    return x
+  }
+  return ''
+}
+
+// =========================================================================
+// 回调(callbacks 抽屉 2026-08-23 撤编后的固定尾段;签名由外部库/语言定死,逐行特批)
+// =========================================================================
+
+/**
+ * 抽选行按日期倒序 —— 最近一轮排在最前。
+ *
+ * 两个参数是 `Array.prototype.sort` 定死的签名(外部规定,不是本域「一个函数一个参数」的例外)。
+ *
+ * @param a 前一行。
+ * @param b 后一行。
+ * @returns 负数 = a 排在前面。
+ */
+// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+export function byDrawDateDesc(a: VerdictDrawRow, b: VerdictDrawRow): number {
+  if (a.drawDate < b.drawDate) {
+    return 1
+  }
+  return -1
+}
+
+/**
+ * 通道裁决按「障碍 → tier → 注册表原序」排。
+ *
+ * 两个参数是 `Array.prototype.sort` 定死的签名(外部规定)。名次在入表时就算好了,
+ * 比较器只比数 —— 它不再认识档案,也就不必把档案闭包进来。
+ *
+ * @param a 前一条。
+ * @param b 后一条。
+ * @returns 负数 = a 排在前面。
+ */
+// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+export function byObstacleThenTier(a: RankedVerdict, b: RankedVerdict): number {
+  if (a.obstacle !== b.obstacle) {
+    return a.obstacle - b.obstacle
+  }
+  if (a.tier !== b.tier) {
+    return a.tier - b.tier
+  }
+  return a.i - b.i
+}
+
+/**
+ * 职业级通道行按「档 → 门槛月数 → 注册表原序」排。
+ *
+ * 两个参数是 `Array.prototype.sort` 定死的签名(外部规定)。
+ *
+ * @param a 前一行。
+ * @param b 后一行。
+ * @returns 负数 = a 排在前面。
+ */
+// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+export function byListRankThenMonths(a: RankedJobRow, b: RankedJobRow): number {
+  if (a.rank !== b.rank) {
+    return a.rank - b.rank
+  }
+  if (a.months !== b.months) {
+    return a.months - b.months
+  }
+  return a.i - b.i
+}
+
+/**
+ * 数字升序 —— 两个参数是 `Array.prototype.sort` 定死的签名(外部规定)。
+ *
+ * @param a 前一个。
+ * @param b 后一个。
+ * @returns 负数 = a 排在前面。
+ */
+// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+export function byNumberAsc(a: number, b: number): number {
+  return a - b
+}
+
+/**
+ * 按 tier 升序 —— 两个参数是 `Array.prototype.sort` 定死的签名(外部规定)。
+ *
+ * @param a 前一条。
+ * @param b 后一条。
+ * @returns 负数 = a 排在前面。
+ */
+// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+export function byTierAsc(a: MyPathway, b: MyPathway): number {
+  let aTier: number = SINK.tier
+  if (a.c.tier != null) {
+    aTier = a.c.tier
+  }
+  let bTier: number = SINK.tier
+  if (b.c.tier != null) {
+    bTier = b.c.tier
+  }
+  return aTier - bTier
+}
+
+/**
+ * 按「这道闸多难拆」升序 —— 最好拆的排最前(它就是「下一步该干什么」)。
+ *
+ * 难度**由调用方先算好挂在行上**,不在这里查表:比较器会被调用 O(n log n) 次,
+ * 更要紧的是这样它就不必认识 `functions.ts`(否则两个文件互相 import)。
+ *
+ * @param a 前一条。
+ * @param b 后一条。
+ * @returns 负数 = a 排在前面。
+ */
+// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+export function byCostAsc(a: RankedBlock, b: RankedBlock): number {
+  return a.cost - b.cost
+}
+
+/**
+ * 按在招岗数降序 —— 两个参数是 `Array.prototype.sort` 定死的签名(外部规定)。
+ *
+ * @param a 前一条。
+ * @param b 后一条。
+ * @returns 负数 = a 排在前面。
+ */
+// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+export function byOpeningsDesc(a: RankedPathway, b: RankedPathway): number {
+  return b.n - a.n
+}
+
+/**
+ * 按数量降序 —— 两个参数是 `Array.prototype.sort` 定死的签名(外部规定)。
+ *
+ * @param a 前一条。
+ * @param b 后一条。
+ * @returns 负数 = a 排在前面。
+ */
+// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+export function byCountDesc(a: TrainableRow, b: TrainableRow): number {
+  return b.n - a.n
 }

@@ -18,7 +18,7 @@ export {
 
 export {
   count, jsonOrNull, numOrNull, queryRows, queryRowsOrEmpty, show, text, textOrNull,
-} from './rows'
+} from './functions'
 
 export * as SQL from './sql'
 

@@ -14,23 +14,19 @@
  */
 
 import {
-  AREA, AREA_PROV, BASIS, DEFAULT_FAMILY_SIZE, EMP_TIERED, FACTOR, GTA, ITEM, LIST_SEP,
-  METRO_VAN, MONTHS_PER_YEAR, NOC_GENERIC, NOC_MISS, NON_LETTERS, ON_LISTED, OP, ST_JOHNS,
-  SUBJECT, UNIT,
+  AREA, AREA_PROV, BASIS, DEFAULT_FAMILY_SIZE, EMP_TIERED, FACTOR, GTA, ITEM, LIST_SEP, METRO_VAN, MONTHS_PER_YEAR,
+  NOC_GENERIC, NOC_MISS, NON_LETTERS, ON_LISTED, OP, ST_JOHNS, SUBJECT, UNIT,
 } from './constants'
-import { byLengthDesc, byScoreDesc, byValueAsc, byValueDesc } from './callbacks'
 import type {
-  AreaOfPlaceIn, AreaOfPlaceOut, AreasForIn, AreasForOut, BarRowIn, BarRowOut,
-  EmployerBarIn, EmployerBarOut, EvaluateRequirementsIn, EvaluateRequirementsOut,
-  EvidenceOfIn, EvidenceOfOut, ExpMonthsIn, ExpMonthsOut, ExperienceVerdictIn, ExperienceVerdictOut,
-  FactorIn, FactorManyOut, FactorOneOut, IncomeVerdictIn, IncomeVerdictOut,
-  MatchesAnyIn, MatchesAnyOut, NocScoreIn, NocScoreOut, NormalizeNameIn, NormalizeNameOut,
-  PickIncomeRowIn, PickIncomeRowOut, PickLanguageRowIn, PickLanguageRowOut,
-  PlaceNamesIn, PlaceNamesOut, PrefixListIn, PrefixListOut, Requirement, RowsOfFactorIn,
-  AreaTier, PushOneIn, PushOneOut, RowsOfFactorOut, RuleResult, ScoredRow, TeerHitIn, TeerHitOut,
-  NoExperienceBarIn, NoExperienceBarOut, TiersOfIn, TiersOfOut, YearsOfIn, YearsOfOut,
+  AreaOfPlaceIn, AreaOfPlaceOut, AreasForIn, AreasForOut, BarRowIn, BarRowOut, EmployerBarIn, EmployerBarOut,
+  EvaluateRequirementsIn, EvaluateRequirementsOut, EvidenceOfIn, EvidenceOfOut, ExpMonthsIn, ExpMonthsOut,
+  ExperienceVerdictIn, ExperienceVerdictOut, FactorIn, FactorManyOut, FactorOneOut, IncomeVerdictIn,
+  IncomeVerdictOut, MatchesAnyIn, MatchesAnyOut, NocScoreIn, NocScoreOut, NormalizeNameIn, NormalizeNameOut,
+  PickIncomeRowIn, PickIncomeRowOut, PickLanguageRowIn, PickLanguageRowOut, PlaceNamesIn, PlaceNamesOut,
+  PrefixListIn, PrefixListOut, Requirement, RowsOfFactorIn, AreaTier, PushOneIn, PushOneOut, RowsOfFactorOut,
+  RuleResult, ScoredRow, TeerHitIn, TeerHitOut, NoExperienceBarIn, NoExperienceBarOut, TiersOfIn, TiersOfOut,
+  YearsOfIn, YearsOfOut,
 } from './types'
-
 // =========================================================================
 // 1. 地点 → 官方分档区域
 // =========================================================================
@@ -887,4 +883,72 @@ function tiersOfArea(input: TiersOfIn): TiersOfOut {
     out.push({ area: r.appliesArea, value: r.value })
   }
   return out
+}
+
+// =========================================================================
+// 回调(callbacks 抽屉 2026-08-23 撤编后的固定尾段;签名由外部库/语言定死,逐行特批)
+// =========================================================================
+
+/**
+ * 按字符串长度降序 —— NOC 前缀里最长的那个最具体。
+ *
+ * @param a 前一个。
+ * @param b 后一个。
+ * @returns 负数 = a 排在前面。
+ */
+// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+export function byLengthDesc(a: string, b: string): number {
+  return b.length - a.length
+}
+
+/**
+ * 按「有多具体」降序 —— 最具体的那一行排最前。
+ *
+ * @param a 前一行。
+ * @param b 后一行。
+ * @returns 负数 = a 排在前面。
+ */
+// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+export function byScoreDesc(a: ScoredRow, b: ScoredRow): number {
+  return b.s - a.s
+}
+
+/**
+ * 按阈值升序。调用方已滤掉 `value` 为空的行,所以这里的 `?? 0` 永远走不到。
+ *
+ * @param a 前一行。
+ * @param b 后一行。
+ * @returns 负数 = a 排在前面。
+ */
+// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+export function byValueAsc(a: Requirement, b: Requirement): number {
+  let av = 0
+  if (a.value != null) {
+    av = a.value
+  }
+  let bv = 0
+  if (b.value != null) {
+    bv = b.value
+  }
+  return av - bv
+}
+
+/**
+ * 按阈值降序。调用方已滤掉 `value` 为空的行,所以这里的 `?? 0` 永远走不到。
+ *
+ * @param a 前一行。
+ * @param b 后一行。
+ * @returns 负数 = a 排在前面。
+ */
+// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+export function byValueDesc(a: Requirement, b: Requirement): number {
+  let av = 0
+  if (a.value != null) {
+    av = a.value
+  }
+  let bv = 0
+  if (b.value != null) {
+    bv = b.value
+  }
+  return bv - av
 }

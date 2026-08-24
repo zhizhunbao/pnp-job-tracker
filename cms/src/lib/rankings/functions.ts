@@ -7,10 +7,9 @@
  * @time 2026-08-22 19:27:15
  */
 
-import { queryRows, SQL } from '../db'
+import { queryRows, SQL, numOrNull, text } from '../db'
 import type { Db } from '../db'
-import { toRankRow, toSlug } from './rows'
-import type { FetchRowsIn, RowsOut, SlugsOut } from './types'
+import type { FetchRowsIn, RowsOut, SlugsOut, RankDbRow, RankRow, SlugDbRow } from './types'
 
 /**
  * 当前实际有数据的榜 slug(大类榜岗不够当天不出榜 —— 导航只显示存在的)。
@@ -30,4 +29,43 @@ export async function fetchRankingSlugs(db: Db): SlugsOut {
  */
 export async function fetchRankingRows(input: FetchRowsIn): RowsOut {
   return queryRows({ db: input.db, sql: SQL.RANKING_ROWS, params: [input.slug], map: toRankRow })
+}
+
+// =========================================================================
+// 行构造器(rows 抽屉 2026-08-23 撤编后的固定尾段;体内只许词汇表 + 纯拼装)
+// =========================================================================
+
+/**
+ * 一行榜单(SQL.RANKING_ROWS)→ `RankRow`。kind 空值落 'job':历史行没这列,
+ * 而卡片形态靠它分岔,空串会让两种卡都不渲染。
+ * 数值列全走 numOrNull —— teer/score/openJobs 这些列官方可空,折 0 = 替官方编数。
+ *
+ * @param r 库里的一行。
+ * @returns 洗净的一行。
+ */
+export function toRankRow(r: RankDbRow): RankRow {
+  let kind = text(r.kind)
+  if (kind === '') {
+    kind = 'job'
+  }
+  return {
+    rank: Number(r.rank), kind: kind, externalId: text(r.external_id),
+    title: text(r.title), company: text(r.company), city: text(r.city), province: text(r.province),
+    noc: text(r.noc), teer: numOrNull(r.teer), score: numOrNull(r.score),
+    salaryText: text(r.salary_text), salaryAnnual: numOrNull(r.salary_annual),
+    pnpStream: text(r.pnp_stream), eeCategory: text(r.ee_category), datePosted: text(r.date_posted),
+    applyUrl: text(r.apply_url), officialUrl: text(r.official_url),
+    openJobs: numOrNull(r.open_jobs), namedJobs: numOrNull(r.named_jobs), avgScore: numOrNull(r.avg_score),
+    lmiaPositions: numOrNull(r.lmia_positions), lmiaQuarter: text(r.lmia_quarter),
+  }
+}
+
+/**
+ * 一行榜 slug(SQL.RANKING_SLUGS_ALL)→ slug 串。
+ *
+ * @param r 库里的一行。
+ * @returns slug。
+ */
+export function toSlug(r: SlugDbRow): string {
+  return text(r.slug)
 }

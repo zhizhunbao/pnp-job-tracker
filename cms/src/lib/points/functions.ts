@@ -16,33 +16,54 @@
  *
  * @author Frank
  * @time 2026-08-20 22:10:00
+ *
+ * 尾段注(rows 抽屉 2026-08-23 撤编并入):🔴 数字一律走 db 的 `numOrNull` ——
+ * pnp_draws 的 score/invitations 与分值表的 points 都是 numeric,pg 直连交回来是
+ * **字符串**;并入前经 Payload Local API 拿到的是数字 —— 一套词汇两条路都对
+ * (jobs 域老坑:`typeof x === 'number'` 换路后整列静默判 null)。
  */
 
 import { fail, POINTS_ERR } from '../error'
-import { queryRowsOrEmpty, SQL } from '../db'
+import { queryRowsOrEmpty, SQL, count, jsonOrNull, numOrNull, text } from '../db'
 import type { Db } from '../db'
-import { byRatioAsc } from './callbacks'
-import { toDifficultyFact, toDrawFact, toProvInfoFact, toScoreFactor } from './rows'
 import { CACHE } from './variables'
 import {
-  AGE_AND_OLDER, AGE_LESS_THAN, AGE_MAX, AGE_MORE_THAN, AGE_ONE, AGE_RANGE, AT_LEAST, AUTO_FACTOR, CLB_ANY,
-  CLB_ZERO, CRS_COMBO_TIER, CRS_EDU_SPECIAL, CRS_EDU_YEARS, CRS_STUDY_LONG_YEARS, CRS_STUDY_SHORT_YEARS,
-  CRS_SUB_TIER, DEFAULT_SELF, EDU, EDU_LADDER, EDU_RANK, EE_AGE_AND_OLDER, EE_AGE_BARE, EE_AGE_EXACT,
-  EE_AGE_MAX, EE_AGE_OR_LESS, EE_AGE_OR_MORE, EE_AGE_RANGE, EE_AGE_UNDER, EE_CLB_AT_LEAST, EE_CLB_BELOW,
-  EE_CLB_MAX, EE_CLB_ONE, EE_CLB_OR_LESS, EE_CLB_OR_MORE, EE_CLB_RANGE, EE_COL_SPEAKING, EE_COL_WITHOUT_SPOUSE,
-  EE_COL_WITH_SPOUSE, EE_CRIT_CANADA_STUDY, EE_CRIT_PAST_STUDY, EE_CRIT_PAST_WORK, EE_CRIT_STUDY_LONG,
-  EE_CRIT_STUDY_SHORT, EE_FACTOR, EE_HEAD_CANADA_EXP, EE_HEAD_FIRST_LANG, EE_HEAD_FOREIGN_EXP,
-  EE_HEAD_GOOD_LANG, EE_KEY, EE_KIND_DETAIL, EE_LABEL, EE_NOTE, EE_SECTION, EE_YEARS_MAX, EE_YEARS_NONE,
-  EE_YEARS_ONE, EE_YEARS_OR, EE_YEARS_OR_MORE, EE_YEARS_RANGE, FSW_ADAPT_STUDY_YEARS, FSW_ADAPT_WORK_MONTHS,
-  FSW_EDU_PLUS, FSW_EDU_SPECIAL, FSW_EDU_YEARS, GRID, GRID_STREAM, ITEM_STATUS, KIND, LANG_ABILITIES,
-  LESS_THAN_ANY, LESS_THAN_HEAD, LINE, MATCHED_MAX, MB, MB_ADAPT_RE, MB_AGE_BARE, MB_AGE_OR_OLDER, MB_AGE_RANGE,
-  MB_CLB, MB_CTX, MB_CTX_SEP, MB_EDU, MB_EDU_ONE_YEAR, MB_EDU_RE, MB_EDU_TWO_YEARS, MB_FACTOR, MB_JOIN, MB_NOTE,
-  MB_RISK_RE, MB_WORK_LESS, MB_WORK_WORD, MONTHS_ANY, MONTHS_PER_YEAR, NON_ALPHA, NO_EXPERIENCE, PROGRAM_YEARS,
-  SEP, SOURCE, STREAM_STOP, STREAM_WORD_MIN, SUB_TIER_VALUE, SYSTEM_TAIL, TICK_SEP, WORD, WORD_NUM, YEARS_ANY,
-  PNP_PROV_CODES, RECENT_ROUNDS, SCORE_TTL_MS,
+  AGE_AND_OLDER, AGE_LESS_THAN, AGE_MAX, AGE_MORE_THAN, AGE_ONE, AGE_RANGE, AT_LEAST, AUTO_FACTOR, CLB_ANY, CLB_ZERO,
+  CRS_COMBO_TIER, CRS_EDU_SPECIAL, CRS_EDU_YEARS, CRS_STUDY_LONG_YEARS, CRS_STUDY_SHORT_YEARS, CRS_SUB_TIER,
+  DEFAULT_SELF, EDU, EDU_LADDER, EDU_RANK, EE_AGE_AND_OLDER, EE_AGE_BARE, EE_AGE_EXACT, EE_AGE_MAX, EE_AGE_OR_LESS,
+  EE_AGE_OR_MORE, EE_AGE_RANGE, EE_AGE_UNDER, EE_CLB_AT_LEAST, EE_CLB_BELOW, EE_CLB_MAX, EE_CLB_ONE, EE_CLB_OR_LESS,
+  EE_CLB_OR_MORE, EE_CLB_RANGE, EE_COL_SPEAKING, EE_COL_WITHOUT_SPOUSE, EE_COL_WITH_SPOUSE, EE_CRIT_CANADA_STUDY,
+  EE_CRIT_PAST_STUDY, EE_CRIT_PAST_WORK, EE_CRIT_STUDY_LONG, EE_CRIT_STUDY_SHORT, EE_FACTOR, EE_HEAD_CANADA_EXP,
+  EE_HEAD_FIRST_LANG, EE_HEAD_FOREIGN_EXP, EE_HEAD_GOOD_LANG, EE_KEY, EE_KIND_DETAIL, EE_LABEL, EE_NOTE, EE_SECTION,
+  EE_YEARS_MAX, EE_YEARS_NONE, EE_YEARS_ONE, EE_YEARS_OR, EE_YEARS_OR_MORE, EE_YEARS_RANGE, FSW_ADAPT_STUDY_YEARS,
+  FSW_ADAPT_WORK_MONTHS, FSW_EDU_PLUS, FSW_EDU_SPECIAL, FSW_EDU_YEARS, GRID, GRID_STREAM, ITEM_STATUS, KIND,
+  LANG_ABILITIES, LESS_THAN_ANY, LESS_THAN_HEAD, LINE, MATCHED_MAX, MB, MB_ADAPT_RE, MB_AGE_BARE, MB_AGE_OR_OLDER,
+  MB_AGE_RANGE, MB_CLB, MB_CTX, MB_CTX_SEP, MB_EDU, MB_EDU_ONE_YEAR, MB_EDU_RE, MB_EDU_TWO_YEARS, MB_FACTOR, MB_JOIN,
+  MB_NOTE, MB_RISK_RE, MB_WORK_LESS, MB_WORK_WORD, MONTHS_ANY, MONTHS_PER_YEAR, NON_ALPHA, NO_EXPERIENCE,
+  PROGRAM_YEARS, SEP, SOURCE, STREAM_STOP, STREAM_WORD_MIN, SUB_TIER_VALUE, SYSTEM_TAIL, TICK_SEP, WORD, WORD_NUM,
+  YEARS_ANY, PNP_PROV_CODES, RECENT_ROUNDS, SCORE_TTL_MS, COMP_KEY, MONTH_NUM, PERIOD_SEP,
 } from './constants'
-import type { AdaptItemIn, AdaptOut, AgeRangeOut, AutoPickIn, BonusPointsIn, BonusPointsOut, ComboItemIn, ComboSubTierIn, ComboSubTierOut, ComboTierOfIn, ComboTierOfOut, CompetitionExtrasIn, DefaultProfileOut, DifficultyFact, DrawFact, DrawFacts, DrawRow, DrawRows, EduComboIn, EduSpecialOfIn, EduSpecialOfOut, EduYearsOut, EeEvidenceOfIn, EeEvidenceOfOut, EeGridRow, EstimateIn, EstimateItem, EstimateItemIn, EstimateItemOut, EstimateMbEoiIn, EstimateMbEoiOut, EstimateOut, ExtrasMap, FactorPartIn, FactorPartOut, ForeignComboIn, FswPickerIn, FswRowsOfIn, FswRowsOfOut, GroupCapIn, GroupCapOut, HasAutoPickOut, HitItemIn, LabelIn, LabelNumOut, LineSideOut, LineStateOut, MarginOut, MatchIn, MaybeCompetition, MbAgePickIn, MbBandsIn, MbBandsOut, MbConnectionPicksIn, MbConnectionPicksOut, MbEduReOfIn, MbEduReOfOut, MbLangPickIn, MbLangPickOut, MbMaxPointsIn, MbMaxPointsOut, MbPartIn, MbPartOut, MbPick, MbRiskTicksIn, MbRiskTicksOut, MbRowOut, MbRowsOfIn, MbScorePart, MbThresholdRow, MbWorkPickIn, MbWorkYearsOut, MonthsToYearsIn, MonthsToYearsOut, NeedRowIn, NeedRowOut, NeedsInfoItemIn, NeedsInfoOfIn, NeedsInfoOfOut, OneGroup, OneGroupOut, OverviewDraws, PickBestTierIn, PickBestTierOut, PickByAgeIn, PickByRangeIn, PickByRangeOut, PickByThresholdIn, PickEduRowIn, PickOut, PickStudyTierIn, PickerIn, ProvCompetitions, ProvHitFn, ProvInfoFacts, ProvKeyed, ProvSet, RangeGroup, RangeGroupOut, RangeOut, RowsOfIn, RowsOfOut, ScoreFactor, ScoreFactors, ScoreLineIn, ScorePart, ScoreProvinceIn, ScoreProvinceOut, ScoreSource, ScoreTablesOut, StrList, StreamMatchesIn, StreamMatchesOut, StreamWordsIn, StreamWordsOut, SumPointsIn, SumPointsOut, SystemIn, SystemOut, ThresholdRow, TierRow, TotalOfIn, TotalOfOut, WordGroup, WordGroupOut } from './types'
-
+import type {
+  AdaptItemIn, AdaptOut, AgeRangeOut, AutoPickIn, BonusPointsIn, BonusPointsOut, ComboItemIn, ComboSubTierIn,
+  ComboSubTierOut, ComboTierOfIn, ComboTierOfOut, CompetitionExtrasIn, DefaultProfileOut, DifficultyFact, DrawFact,
+  DrawFacts, DrawRow, DrawRows, EduComboIn, EduSpecialOfIn, EduSpecialOfOut, EduYearsOut, EeEvidenceOfIn,
+  EeEvidenceOfOut, EeGridRow, EstimateIn, EstimateItem, EstimateItemIn, EstimateItemOut, EstimateMbEoiIn,
+  EstimateMbEoiOut, EstimateOut, ExtrasMap, FactorPartIn, FactorPartOut, ForeignComboIn, FswPickerIn, FswRowsOfIn,
+  FswRowsOfOut, GroupCapIn, GroupCapOut, HasAutoPickOut, HitItemIn, LabelIn, LabelNumOut, LineSideOut, LineStateOut,
+  MarginOut, MatchIn, MaybeCompetition, MbAgePickIn, MbBandsIn, MbBandsOut, MbConnectionPicksIn,
+  MbConnectionPicksOut, MbEduReOfIn, MbEduReOfOut, MbLangPickIn, MbLangPickOut, MbMaxPointsIn, MbMaxPointsOut,
+  MbPartIn, MbPartOut, MbPick, MbRiskTicksIn, MbRiskTicksOut, MbRowOut, MbRowsOfIn, MbScorePart, MbThresholdRow,
+  MbWorkPickIn, MbWorkYearsOut, MonthsToYearsIn, MonthsToYearsOut, NeedRowIn, NeedRowOut, NeedsInfoItemIn,
+  NeedsInfoOfIn, NeedsInfoOfOut, OneGroup, OneGroupOut, OverviewDraws, PickBestTierIn, PickBestTierOut, PickByAgeIn,
+  PickByRangeIn, PickByRangeOut, PickByThresholdIn, PickEduRowIn, PickOut, PickStudyTierIn, PickerIn,
+  ProvCompetitions, ProvHitFn, ProvInfoFacts, ProvKeyed, ProvSet, RangeGroup, RangeGroupOut, RangeOut, RowsOfIn,
+  RowsOfOut, ScoreFactor, ScoreFactors, ScoreLineIn, ScorePart, ScoreProvinceIn, ScoreProvinceOut, ScoreSource,
+  ScoreTablesOut, StrList, StreamMatchesIn, StreamMatchesOut, StreamWordsIn, StreamWordsOut, SumPointsIn,
+  SumPointsOut, SystemIn, SystemOut, ThresholdRow, TierRow, TotalOfIn, TotalOfOut, WordGroup, WordGroupOut,
+  DifficultyDbRow, FlowSeriesEntryJson, MaybeCompFactor, MaybeDifficulty, MaybeFlow, MaybeNum, MaybeProvInfo,
+  MaybeSeries, NumCell, ProvFlowYear, ProvInfoDbRow, ProvInfoExtra, ProvInfoFact, ProvInfoJson, ProvQuotaYears,
+  ProvStockYear, Row, ProvCompetition,
+} from './types'
 // =========================================================================
 // 0. 正则的具名捕获组
 // =========================================================================
@@ -2593,4 +2614,270 @@ export function makeProvHit(want: ProvSet): ProvHitFn {
   return function provHit(row: ProvKeyed): boolean {
     return want.has(row.province)
   }
+}
+
+// =========================================================================
+// 行构造器(rows 抽屉 2026-08-23 撤编后的固定尾段;体内只许词汇表 + 纯拼装)
+// =========================================================================
+
+/**
+ * 一行抽选(SQL.DIMS_PNP_DRAWS,列已按 camelCase 起别名)→ 抽选事实。
+ * invitations 必须带出来 —— 理由见 `DrawFact` 上那条 2026-08-12 红线。
+ *
+ * @param r 库里的一行。
+ * @returns 洗净的抽选事实。
+ */
+export function toDrawFact(r: Row): DrawFact {
+  return {
+    province: text(r.province), kind: text(r.kind), drawDate: text(r.drawDate),
+    stream: text(r.stream), streamZh: text(r.streamZh),
+    score: numOrNull(r.score), invitations: numOrNull(r.invitations),
+  }
+}
+
+/**
+ * 一行官方分值表(SQL.PNP_SCORE_FACTORS)→ `ScoreFactor`。
+ * 档位顺序由 SQL 的 `ORDER BY province, factor, seq` 定死 —— 只按 province 排的话,
+ * 同一道题的官方档位顺序随 DB 返回(2026-08-16 Frank 实拍:BC 工作地区出成
+ * 「Area 3 / Area 1 / Area 2」),并入时把这条红线从 payload.find 的 sort 参数搬进 SQL 消费侧。
+ *
+ * @param r 库里的一行。
+ * @returns 评分域认的形状。
+ */
+export function toScoreFactor(r: Row): ScoreFactor {
+  return {
+    province: text(r.province), system: text(r.system), factor: text(r.factor),
+    kind: text(r.kind), seq: count(r.seq), label: text(r.label),
+    points: numOrNull(r.points), xorPrev: Boolean(r.xor_prev), rule: text(r.rule),
+    factorMax: numOrNull(r.factor_max), factorGroup: text(r.factor_group), groupMax: numOrNull(r.group_max),
+    passMark: numOrNull(r.pass_mark), maxTotal: numOrNull(r.max_total),
+    guideEffective: text(r.guide_effective), fetched: text(r.fetched), url: text(r.url),
+  }
+}
+
+/**
+ * 词汇:解析好的难度 json 里名额竞争那个因子(key='comp')。
+ *
+ * @param d 解析好的 difficulty json。
+ * @returns 因子;没有则 null。
+ */
+function compFactorOf(d: MaybeDifficulty): MaybeCompFactor {
+  if (d == null || d.factors == null) {
+    return null
+  }
+  for (const f of d.factors) {
+    if (f != null && f.key === COMP_KEY) {
+      return f
+    }
+  }
+  return null
+}
+
+/**
+ * 词汇:数字格 → 数,缺位折 0(pool/quota/quotaYear 合计列,并入前就是 `|| 0` 的口径)。
+ *
+ * @param x json 里的数字格。
+ * @returns 数;缺位是 0。
+ */
+function numOrZero(x: NumCell): number {
+  const n = numOrNull(x)
+  if (n == null) {
+    return 0
+  }
+  return n
+}
+
+/**
+ * 词汇:上一年流量格 —— 官方缺位或 0 都落 null,0 在这一格的历史含义是「没取到」
+ * (IRCC 月度表上一年缺位时源数据是 0),照旧不展示。
+ *
+ * @param x json 里的上一年格。
+ * @returns 上一年数;没有则 null。
+ */
+function prevYearOf(x: NumCell): MaybeNum {
+  const n = numOrNull(x)
+  if (n == null || n === 0) {
+    return null
+  }
+  return n
+}
+
+/**
+ * 词汇:英文月份缩写 → 两位月数;认不出空串(口径期就不带月)。
+ *
+ * @param name 英文月份缩写(如 'May')。
+ * @returns 两位月数或空串。
+ */
+function monthNumOf(name: string): string {
+  const mm = MONTH_NUM[name]
+  if (mm == null) {
+    return ''
+  }
+  return mm
+}
+
+/**
+ * 词汇:流量进行年 complete=false → 口径期带「至几月」;整年空串。
+ *
+ * @param v 某年的流量格。
+ * @returns 两位月数或空串。
+ */
+function flowMonthOf(v: FlowSeriesEntryJson): string {
+  if (v.complete === false) {
+    return monthNumOf(text(v.throughMonth))
+  }
+  return ''
+}
+
+/**
+ * studyFlow 格 → 新发学签流量(口径红线见 `ProvFlow`)。
+ *
+ * @param info 解析好的 info json。
+ * @returns 流量;缺年份或缺数是 null。
+ */
+function flowOf(info: ProvInfoJson): MaybeFlow {
+  const f = info.studyFlow
+  if (f == null) {
+    return null
+  }
+  const n = numOrNull(f.n)
+  const year = text(f.year)
+  if (year === '' || n == null) {
+    return null
+  }
+  const mm = monthNumOf(text(f.throughMonth))
+  let period = year
+  if (mm !== '') {
+    period = year + PERIOD_SEP + mm
+  }
+  return { period: period, n: n, prevYear: prevYearOf(f.prev) }
+}
+
+/**
+ * info json → 年份筛选序列(2026-08-14:存量近 3 年、流量近 5 年、名额 2024–2026)。
+ * 流量进行年带「至几月」;缺位一律 null,前端显「—」。三格全缺 = 没有序列。
+ *
+ * @param info 解析好的 info json。
+ * @returns 序列;三格全缺是 null。
+ */
+function seriesOf(info: ProvInfoJson): MaybeSeries {
+  if (info.trSeries == null && info.flowSeries == null && info.alloc == null) {
+    return null
+  }
+  const stocks: Record<string, ProvStockYear> = {}
+  if (info.trSeries != null) {
+    for (const [y, v] of Object.entries(info.trSeries)) {
+      if (v == null) {
+        continue
+      }
+      stocks[y] = { study: numOrNull(v.study), work: numOrNull(v.work), asOf: text(v.asOf) }
+    }
+  }
+  const flow: Record<string, ProvFlowYear> = {}
+  if (info.flowSeries != null) {
+    for (const [y, v] of Object.entries(info.flowSeries)) {
+      if (v == null) {
+        continue
+      }
+      const n = numOrNull(v.n)
+      if (n == null) {
+        continue
+      }
+      let period = y
+      const mm = flowMonthOf(v)
+      if (mm !== '') {
+        period = y + PERIOD_SEP + mm
+      }
+      flow[y] = { n: n, period: period }
+    }
+  }
+  let quota: ProvQuotaYears = { y2024: null, y2025: null, y2026: null }
+  if (info.alloc != null) {
+    quota = { y2024: numOrNull(info.alloc.y2024), y2025: numOrNull(info.alloc.y2025), y2026: numOrNull(info.alloc.y2026) }
+  }
+  return { stocks: stocks, flow: flow, quota: quota }
+}
+
+/**
+ * 词汇:解析好的 info json → flow/series 两格增补(没有 json 就是两格 null)。
+ *
+ * @param info 解析好的 info json。
+ * @returns 两格增补。
+ */
+function infoExtraOf(info: MaybeProvInfo): ProvInfoExtra {
+  if (info == null) {
+    return { flow: null, series: null }
+  }
+  return { flow: flowOf(info), series: seriesOf(info) }
+}
+
+/**
+ * 一行各省难度(SQL.PROV_DIFFICULTY_FETCHED)→ 难度事实。json 解析(词汇 `jsonOrNull`)
+ * 与逐格拆解都在这里做完 —— functions 拿到的每格即有效,那边只剩「这行入不入选」的业务取舍
+ * (2026-08-22 Frank:值级清洗不进 functions)。
+ *
+ * @param r 库里的一行。
+ * @returns 洗净的一行。
+ */
+export function toDifficultyFact(r: DifficultyDbRow): DifficultyFact {
+  const d = jsonOrNull(r.difficulty)
+  const f = compFactorOf(d)
+  let tier = ''
+  let generated = ''
+  if (d != null) {
+    tier = text(d.tier)
+    generated = text(d.generated)
+  }
+  if (generated === '') {
+    generated = text(r.fetched)
+  }
+  let ratio: MaybeNum = null
+  let pool = 0
+  let quota = 0
+  let poolStudy: MaybeNum = null
+  let poolWork: MaybeNum = null
+  let poolYear = ''
+  let quotaYear = 0
+  let source = ''
+  if (f != null) {
+    ratio = numOrNull(f.value)
+    pool = numOrZero(f.pool)
+    quota = numOrZero(f.quota)
+    poolStudy = numOrNull(f.poolStudy)
+    poolWork = numOrNull(f.poolWork)
+    poolYear = text(f.asOf)
+    quotaYear = numOrZero(f.quotaYear)
+    source = text(f.source)
+  }
+  return {
+    province: text(r.province), ratio: ratio, tier: tier,
+    pool: pool, quota: quota, poolStudy: poolStudy, poolWork: poolWork,
+    poolYear: poolYear, quotaYear: quotaYear, generated: generated, source: source,
+  }
+}
+
+/**
+ * 一行省份维度(SQL.PROVINCES_INFO)→ 省份维度事实(json 解析与增补拼装同上口径)。
+ *
+ * @param r 库里的一行。
+ * @returns 洗净的一行。
+ */
+export function toProvInfoFact(r: ProvInfoDbRow): ProvInfoFact {
+  return { code: text(r.code), extra: infoExtraOf(jsonOrNull(r.info)) }
+}
+
+// =========================================================================
+// 回调(callbacks 抽屉 2026-08-23 撤编后的固定尾段;签名由外部库/语言定死,逐行特批)
+// =========================================================================
+
+/**
+ * 各省名额竞争按比值升序 —— 松 → 紧,决策页第二条免费硬事实的展示序。
+ *
+ * @param a 左行。
+ * @param b 右行。
+ * @returns 比较值。
+ */
+// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+export function byRatioAsc(a: ProvCompetition, b: ProvCompetition): number {
+  return a.ratio - b.ratio
 }

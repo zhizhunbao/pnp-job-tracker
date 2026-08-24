@@ -16,7 +16,6 @@ import {
   ANON_DAILY_TRIES, COMMA, FREE_DAILY_TRIES, HDR_FREE_LEFT, HDR_FWD, IP_LOCAL, KEY_FREE_IP, KEY_FREE_USER,
   TEXT_RATE_LIMITED, TEXT_UPGRADE,
 } from './constants'
-import { day, toSessionUser } from './rows'
 import { CACHE } from './variables'
 import type { FreeGated, FreeGateIn, MaybeRawUser, MaybeUser, QuotaPairs, ReqHeaders, ReqLike, UserOut } from './types'
 
@@ -161,4 +160,47 @@ function ipOfHeaders(headers: ReqHeaders): string {
     return IP_LOCAL
   }
   return first
+}
+
+// =========================================================================
+// 行构造器(rows 抽屉 2026-08-23 撤编后的固定尾段;体内只许词汇表 + 纯拼装)
+// =========================================================================
+
+/**
+ * 词汇:今天的 ISO 日期(计数桶按它分日)。
+ *
+ * @returns 'YYYY-MM-DD'。
+ */
+export function day(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
+/**
+ * payload.auth 的用户 → 会话用户(缺席格 undefined 在这儿 `== null` 一网收成 null;
+ * 没登录照旧 null)。
+ *
+ * @param u payload 交回来的用户。
+ * @returns 会话用户;没登录是 null。
+ */
+export function toSessionUser(u: MaybeRawUser): MaybeUser {
+  if (u == null) {
+    return null
+  }
+  let email = ''
+  if (u.email != null) {
+    email = u.email
+  }
+  let role: string | null = null
+  if (u.role != null) {
+    role = u.role
+  }
+  let proUntil: string | null = null
+  if (u.proUntil != null) {
+    proUntil = u.proUntil
+  }
+  let profile = null
+  if (u.profile != null) {
+    profile = u.profile
+  }
+  return { id: u.id, email: email, role: role, proUntil: proUntil, profile: profile }
 }
