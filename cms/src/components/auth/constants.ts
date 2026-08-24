@@ -193,12 +193,6 @@ export const AVATAR_FONT_RATIO = 0.44
 export const HASH_BASE = 31
 
 /**
- * 账户区定宽槽:与 Header 的 ACCT_SLOT_W 同值。两处差 1px,登录态导航整排就平移 1px
- * (2026-07-31 实撞过 52px 错位)—— 常量留在 Header,这里按值对齐避免循环 import。
- */
-export const SLOT_W = 32
-
-/**
  * 账户页路径(账户菜单的条目去处,下同 —— 打错是静默 404,所以全部起名)。
  */
 export const PATH_ACCOUNT = '/account'

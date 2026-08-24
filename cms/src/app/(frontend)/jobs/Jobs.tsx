@@ -7,7 +7,7 @@
 // ./Lock,地点/来源/NOC 三组工具下沉 @/lib。本文件只剩「这一页」自己的事。
 import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
-import { Header } from '../Header'
+import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { AccountMenu } from '@/components/auth'
 import { useLang } from '@/components/i18n'

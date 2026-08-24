@@ -4,7 +4,7 @@
 import { type Lang } from '@/lib/i18n'
 import { type LegalDoc } from '@/lib/legal'
 import { useLang } from '@/components/i18n'
-import { Header } from '../Header'
+import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 
 // 公开支持邮箱(删号/异议下架/退款申请都走它):正式域名定了换 env 即可

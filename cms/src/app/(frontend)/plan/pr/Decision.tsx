@@ -9,7 +9,7 @@ import { Fragment, useState, useEffect, useLayoutEffect, useRef, useCallback } f
 
 import { dropProvPrefix, streamDisplay } from '@/lib/jobs'
 import { useLang } from '@/components/i18n'
-import { Header } from '../../Header'
+import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { quizToProfile } from '../../quiz/EntryQuiz'
 import { AuthModal } from '@/components/auth'

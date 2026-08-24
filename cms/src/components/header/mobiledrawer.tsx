@@ -1,0 +1,105 @@
+'use client'
+/**
+ * header 域的窄屏侧滑抽屉(E8-07 D 件):条目圆角块,带二级的组 chevron 展开,
+ * 遮罩/× 关,当前页高亮;portal 到 body —— 抽屉原来渲在 header 里 = main 内部,
+ * main 一 transform 就成了 fixed 的包含块,抽屉会跟着页面一起被推走。
+ * 推主页面的机器在 hooks 的 useMainPush。
+ * 2026-08-24 自 Header 拆出(一个 tsx 一个组件)。
+ *
+ * @author Frank
+ * @time 2026-08-24 08:00:00
+ */
+import { useState } from 'react'
+import { createPortal } from 'react-dom'
+
+import {
+  A_EMPLOYERS,
+  A_JOBS,
+  A_MATCH,
+  A_NEWS,
+  A_PATHWAYS,
+  A_RANK,
+  A_START,
+  A_STATS,
+  PATH_CASES,
+  PATH_EMPLOYERS,
+  PATH_HOME,
+  PATH_NEWS,
+  PATH_OCC,
+  PATH_PLAN_PR,
+  PATH_RESOURCES,
+  PATH_START,
+  PATH_TIMELINE,
+} from './constants'
+import { withOn } from './functions'
+import { DrawerGroup } from './drawergroup'
+import { useMainPush } from './hooks'
+import type { MobileDrawerIn } from './types'
+import css from './header.module.css'
+
+/**
+ * 侧滑抽屉。
+ *
+ * @param props 翻译函数/高亮键/关闭回调。
+ * @returns portal 到 body 的抽屉。
+ */
+export function MobileDrawer({ t, active, onClose }: MobileDrawerIn) {
+  const [openGrp, setOpenGrp] = useState('')
+  useMainPush()
+
+  function toggleGrp(key: string) {
+    if (openGrp === key) {
+      setOpenGrp('')
+      return
+    }
+    setOpenGrp(key)
+  }
+
+  function stop(e: React.MouseEvent) {
+    e.stopPropagation()
+  }
+
+  const onHome = active == null
+  const onStart = active === A_START || active === A_STATS || active === A_RANK
+  const onJobs = active === A_JOBS || active === A_MATCH
+  const onNews = active === A_NEWS
+  return createPortal(
+    <div className={css.drawerMask} onClick={onClose}>
+      <div className={css.drawer} onClick={stop}>
+        <div className={css.drawerHead}>
+          <span className={css.drawerBrand}>🍁 Offer2PR</span>
+          <button className={css.drawerClose} onClick={onClose} aria-label={t('nav.menu')}>✕</button>
+        </div>
+        <nav className={css.drawerNav}>
+          <a href={PATH_HOME} className={withOn({ base: css.drawerItem, on: onHome })}>{t('detail.crumbHome')}</a>
+          <a href={PATH_START} className={withOn({ base: css.drawerItem, on: onStart })}>{t('pulse.entry')}</a>
+          <a href={PATH_HOME} className={withOn({ base: css.drawerItem, on: onJobs })}>{t('nav.jobs')}</a>
+          <a href={PATH_PLAN_PR} className={withOn({ base: css.drawerItem, on: active === A_PATHWAYS })}>
+            {t('plan.pr.title')}
+          </a>
+          <a href={PATH_EMPLOYERS} className={withOn({ base: css.drawerItem, on: active === A_EMPLOYERS })}>
+            {t('nav.employers')}
+          </a>
+          <DrawerGroup groupKey="lib"
+            label={t('nav.library')}
+            openKey={openGrp}
+            onToggle={toggleGrp}
+            items={[
+              { href: PATH_OCC, label: t('dir.occ.title') },
+              { href: PATH_RESOURCES, label: t('res.entry') },
+              { href: PATH_CASES, label: t('dp.cases') },
+            ]} />
+          <DrawerGroup groupKey="info"
+            label={t('nav.info')}
+            openKey={openGrp}
+            onToggle={toggleGrp}
+            items={[
+              { href: PATH_NEWS, label: t('news.entry'), active: onNews },
+              { href: PATH_TIMELINE, label: t('nav.timeline') },
+            ]} />
+        </nav>
+      </div>
+    </div>,
+    document.body,
+  )
+}

@@ -8,7 +8,7 @@ import { useLang } from '@/components/i18n'
 import { CompanyBody } from '../../jobs/Company'   // 公司身体与职位板弹框同源(拆分前住在 JobsTable 里)
 import { provName } from '@/lib/location'
 import { type CompanyDetail, type SimilarEmployer } from '@/lib/jobs/server'
-import { Header } from '../../Header'
+import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { Notice, Shell } from '@/components/ui'
 import { goBackOr } from '@/components/ui'

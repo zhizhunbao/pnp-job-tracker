@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { type TFn } from '@/lib/i18n'
 import { useLang } from '@/components/i18n'
-import { Header } from '../../Header'
+import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { BackLink } from '@/components/ui'
 import { Button, Card, CardKV, Notice, Shell, Tag, UI } from '@/components/ui'

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { type Lang, type TFn } from '@/lib/i18n'
 import { IconPaperclip } from '@/components/icons'
-import { Header } from '../Header'
+import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import type { StatRow, SrcRow } from '@/lib/stats'
 

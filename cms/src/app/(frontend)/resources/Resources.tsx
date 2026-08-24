@@ -3,7 +3,7 @@
 // curated 常量(非 ETL);红线=宁缺毋滥,失效宁可不列。链接=可点卡片(整卡跳官方页)。
 import { useMemo, useState } from 'react'
 import { useLang } from '@/components/i18n'
-import { Header } from '../Header'
+import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { BANNER_IMGS, Banner } from '@/components/ui'
 import { RES } from '@/lib/official'

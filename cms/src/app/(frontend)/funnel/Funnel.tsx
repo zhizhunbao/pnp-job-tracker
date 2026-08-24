@@ -2,7 +2,7 @@
 // 漏斗五个数的显示层(主线 M2 / E7-05)。**内部页**:数据由服务端组件鉴权后传进来,这里零业务逻辑。
 // 文案只有中文 —— 这页只给 Frank 看,不是产品页面,翻三语是浪费。
 import { useLang } from '@/components/i18n'
-import { Header } from '../Header'
+import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { Shell, UI } from '@/components/ui'
 import { Table } from '@/components/table'

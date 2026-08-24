@@ -3,7 +3,7 @@
 // 诚实红线:省分数带分制标注(≠CRS);节奏=历史统计,不预测下一次(tl.note 写死)。
 import { useMemo, useState, type KeyboardEvent } from 'react'
 import { useLang } from '@/components/i18n'
-import { Header } from '../Header'
+import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { BANNER_IMGS, Banner, Shell, SectionTabs, Title, Tag, UI, chipStyle } from '@/components/ui'
 import { IconNews } from '@/components/icons'

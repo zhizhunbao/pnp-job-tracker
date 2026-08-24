@@ -4,7 +4,7 @@
 // 行形态原样搬决策页那张卡(08-11 Frank 连拍四刀后的终态):一行一条不折叠,
 // 做了事实层的才有「完整案例」按钮 —— 答不了就不假装能答。
 import { useLang } from '@/components/i18n'
-import { Header } from '../Header'
+import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { BANNER_IMGS, Banner, UI } from '@/components/ui'
 import { CASES } from '@/lib/ruling'

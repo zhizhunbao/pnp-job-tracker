@@ -9,7 +9,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { type Lang, type TFn } from '@/lib/i18n'
 import { useLang } from '../stats/ui'
-import { Header } from '../Header'
+import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { BackLink } from '@/components/ui'
 import { BANNER_IMGS, Banner, Shell, SectionTabs, chipStyle } from '@/components/ui'

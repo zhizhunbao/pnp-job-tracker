@@ -1,0 +1,109 @@
+'use client'
+/**
+ * header 域的二级页缺省账户区:loading 占位槽 → 有票据无身份的占位圆(不能让
+ * Avatar 拿空 email 兜底成「?」,2026-08-17 Frank「会先变成问号」)→ 登录 =
+ * 共用 AccountMenu 下拉(2026-08-15「点这个应该还是下拉啊」)→ 未登录 =
+ * 登录/注册钮就地开 AuthModal(2026-08-09「为什么要跳到 jobtable 页面再弹框」;
+ * 按需载,header 常驻包不背它)。Pro 钮不进 header(2026-07-18「没有意义」)。
+ * 2026-08-24 自 Header 拆出(一个 tsx 一个组件)。
+ * ⚠️ 过渡边:PricingModal 还住在 app/(frontend)/jobs(定价件未域化),
+ * 这条 components → app 的 import 待 pricing 域化后换桶。
+ *
+ * @author Frank
+ * @time 2026-08-24 08:00:00
+ */
+import { useState } from 'react'
+import dynamic from 'next/dynamic'
+
+import { PricingModal } from '@/app/(frontend)/jobs/PricingModal'
+import { AccountMenu } from '@/components/auth'
+import { Button } from '@/components/button'
+import { ACCT_IN, ACCT_LOADING } from './constants'
+import type { AccountLiteIn, AuthOpen } from './types'
+import css from './header.module.css'
+
+/**
+ * 登录弹框按需载(点开才下载那份 JS,手法同 ChatLauncher)。
+ *
+ * @returns AuthModal 组件模块。
+ */
+function loadAuthModal() {
+  return import('@/components/auth').then(pickAuthModal)
+}
+
+/**
+ * 从 auth 桶里挑出 AuthModal(dynamic 的取件回调)。
+ *
+ * @param m auth 桶模块。
+ * @returns AuthModal。
+ */
+function pickAuthModal(m: typeof import('@/components/auth')) {
+  return m.AuthModal
+}
+
+/**
+ * 按需载的登录弹框。
+ */
+const AuthModal = dynamic(loadAuthModal, { ssr: false })
+
+/**
+ * 二级页账户区。
+ *
+ * @param props 翻译函数与账户状态。
+ * @returns 账户区。
+ */
+export function AccountLite({ t, acct }: AccountLiteIn) {
+  const [auth, setAuth] = useState<AuthOpen>('')
+  const [pricing, setPricing] = useState(false)
+
+  function openLogin() {
+    setAuth('login')
+  }
+
+  function openRegister() {
+    setAuth('register')
+  }
+
+  function closeAuth() {
+    setAuth('')
+  }
+
+  function reload() {
+    window.location.reload()
+  }
+
+  function openPricing() {
+    setPricing(true)
+  }
+
+  function closePricing() {
+    setPricing(false)
+  }
+
+  if (acct.state === ACCT_LOADING) {
+    return <span className={css.acctSlot} />
+  }
+  if (acct.state === ACCT_IN && acct.u.email === '') {
+    return <span className={css.acctSlot}><span className={css.acctDot} aria-hidden="true" /></span>
+  }
+  if (acct.state === ACCT_IN) {
+    return (
+      <>
+        <AccountMenu t={t}
+          email={acct.u.email}
+          displayName={acct.u.displayName}
+          avatar={acct.u.avatar}
+          isPro={acct.u.pro}
+          onPricing={openPricing} />
+        {pricing && <PricingModal t={t} loggedIn pro={acct.u.pro} onClose={closePricing} />}
+      </>
+    )
+  }
+  return (
+    <>
+      <Button kind="ghost" sm className={css.tapY} onClick={openLogin}>{t('nav.login')}</Button>
+      <Button kind="primary" sm className={css.tapY} onClick={openRegister}>{t('nav.register')}</Button>
+      {auth !== '' && <AuthModal t={t} mode={auth} onClose={closeAuth} onDone={reload} />}
+    </>
+  )
+}

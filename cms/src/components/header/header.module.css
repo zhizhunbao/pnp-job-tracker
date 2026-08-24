@@ -1,0 +1,1383 @@
+/*
+ * header 域的私有样式(2026-08-24 自 main.css 第 7 段整段迁入,值逐格相等;
+ * 那段 2026-08-17 才从组件内联迁出 —— 现在跟着组件进域,单一来源不变)。
+ * 高亮态一律「基类 + .on」修饰,tsx 里只剩布尔(withOn)。
+ */
+
+/*
+ * 顶栏外壳:白底 + 下边线。
+ */
+.header {
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 与正文的分界线。
+   */
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/*
+ * 吸顶态(职位板用)。
+ */
+.sticky {
+  /*
+   * 吸顶。
+   */
+  position: sticky;
+
+  /*
+   * 贴视口顶。
+   */
+  top: 0;
+
+  /*
+   * 压过正文内容。
+   */
+  z-index: 30;
+}
+
+/*
+ * 头轨:1320px 与正文轨同宽(2026-07-18 Frank「为什么不一样宽」—— 跟最宽的职位板走)。
+ */
+.bar {
+  /*
+   * 头轨上限宽,和 Shell 正文轨同一个数。
+   */
+  max-width: 1320px;
+
+  /*
+   * 水平居中。
+   */
+  margin: 0 auto;
+
+  /*
+   * 上下 10、左右 1.25rem 内衬。
+   */
+  padding: 10px 1.25rem;
+
+  /*
+   * 品牌区与右组排一行。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 两端排开。
+   */
+  justify-content: space-between;
+
+  /*
+   * 组间距。
+   */
+  gap: 12px;
+
+  /*
+   * 挤不下允许换行(≥1351 禁,见底部媒体块)。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 品牌区(汉堡 + logo + 标语)。
+ */
+.brand {
+  /*
+   * 三件排一行。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 件间距。
+   */
+  gap: 8px;
+
+  /*
+   * 允许被压窄(标语可省略)。
+   */
+  min-width: 0;
+}
+
+/*
+ * logo(🍁 Offer2PR)。
+ */
+.logo {
+  /*
+   * logo 字号。
+   */
+  font-size: 17px;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 700;
+
+  /*
+   * 深字。
+   */
+  color: #111827;
+
+  /*
+   * 链接不带下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 副标语(<1351px 隐藏,先牺牲标语保导航一行)。
+ */
+.tagline {
+  /*
+   * 标语字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 标语灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 超长裁掉。
+   */
+  overflow: hidden;
+
+  /*
+   * 裁口给省略号。
+   */
+  text-overflow: ellipsis;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 窄屏汉堡(桌面藏,≤640 显,见底部媒体块)。
+ */
+.burger {
+  /*
+   * 桌面不渲。
+   */
+  display: none;
+
+  /*
+   * 钮宽(≤640 抬到 44)。
+   */
+  width: 34px;
+
+  /*
+   * 钮高。
+   */
+  height: 34px;
+
+  /*
+   * 浅灰描边。
+   */
+  border: 1px solid #e5e7eb;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 图形色。
+   */
+  color: #374151;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * ☰ 字号。
+   */
+  font-size: 15px;
+
+  /*
+   * 不许被压扁。
+   */
+  flex-shrink: 0;
+}
+
+/*
+ * 右组(导航 + 竖线 + 语言/账户)。
+ */
+.right {
+  /*
+   * 三块排一行。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 块间距。
+   */
+  gap: 12px;
+
+  /*
+   * 不许超出头轨。
+   */
+  max-width: 100%;
+
+  /*
+   * 挤不下允许换行(≥1351 禁)。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 桌面导航排(≤640 整组藏,汉堡抽屉接管)。
+ */
+.nav {
+  /*
+   * 导航项排一行。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 项间距。
+   */
+  gap: 14px;
+
+  /*
+   * 挤不下允许换行。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 导航与账户之间的竖线(窄屏藏)。
+ */
+.divider {
+  /*
+   * 1px 竖线。
+   */
+  width: 1px;
+
+  /*
+   * 线高。
+   */
+  height: 16px;
+
+  /*
+   * 浅灰。
+   */
+  background: #e5e7eb;
+}
+
+/*
+ * 语言/账户块。
+ */
+.acct {
+  /*
+   * 两件排一行。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 件间距。
+   */
+  gap: 10px;
+
+  /*
+   * 挤不下允许换行。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 导航项(与下拉触发器共用一套字形,当前页加 .on)。
+ */
+.navLink {
+  /*
+   * 链接不带下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 导航字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 非当前页次级灰。
+   */
+  color: #6b7280;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 当前页的导航项。
+ */
+.navLink.on {
+  /*
+   * 当前页蓝。
+   */
+  color: #2563eb;
+
+  /*
+   * 当前页加粗。
+   */
+  font-weight: 700;
+}
+
+/*
+ * 下拉触发钮(字形同导航项)。
+ */
+.dropBtn {
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 无内衬。
+   */
+  padding: 0;
+
+  /*
+   * 导航字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 非高亮次级灰。
+   */
+  color: #6b7280;
+
+  /*
+   * 非高亮不加粗。
+   */
+  font-weight: 400;
+}
+
+/*
+ * 高亮的下拉触发钮(组里有当前页)。
+ */
+.dropBtn.on {
+  /*
+   * 高亮蓝。
+   */
+  color: #2563eb;
+
+  /*
+   * 高亮加粗。
+   */
+  font-weight: 700;
+}
+
+/*
+ * 下拉的 ▾ 小箭头。
+ */
+.dropCaret {
+  /*
+   * 小一号。
+   */
+  font-size: 10px;
+
+  /*
+   * 箭头灰。
+   */
+  color: #9ca3af;
+}
+
+/*
+ * 下拉面板(白卡描边圆角)。
+ */
+.dropPanel {
+  /*
+   * 锚在触发器下。
+   */
+  position: absolute;
+
+  /*
+   * 触发器下 6px。
+   */
+  top: calc(100% + 6px);
+
+  /*
+   * 左对齐微出血(和触发器文字对齐)。
+   */
+  left: -10px;
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 浅灰描边。
+   */
+  border: 1px solid #e5e7eb;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 10px;
+
+  /*
+   * 弹层投影。
+   */
+  box-shadow: 0 10px 30px rgb(0 0 0 / 12%);
+
+  /*
+   * 上下 4px 内衬。
+   */
+  padding: 4px 0;
+
+  /*
+   * 压过头轨内容。
+   */
+  z-index: 40;
+
+  /*
+   * 面板最窄宽。
+   */
+  min-width: 168px;
+
+  /*
+   * span 当块用。
+   */
+  display: block;
+}
+
+/*
+ * 下拉条目。
+ */
+.dropItem {
+  /*
+   * 块级通栏。
+   */
+  display: block;
+
+  /*
+   * 内衬。
+   */
+  padding: 6px 14px;
+
+  /*
+   * 条目字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 链接不带下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 条目文字色。
+   */
+  color: #374151;
+}
+
+/*
+ * 当前页的下拉条目(蓝底高亮)。
+ */
+.dropItem.on {
+  /*
+   * 当前页深蓝字。
+   */
+  color: #1d4ed8;
+
+  /*
+   * 浅蓝底。
+   */
+  background: #eff6ff;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 下拉的定位外壳。
+ */
+.dropWrap {
+  /*
+   * 面板的参照系。
+   */
+  position: relative;
+
+  /*
+   * 行内弹性盒。
+   */
+  display: inline-flex;
+}
+
+/*
+ * 语言切换钮组(2026-08-16 Frank「怎么给我拉长了」:真实 min-height 撑高被点名 →
+ * 回视觉 25px,触控靶 ≤640 用 ::after 纵向撑,见底部媒体块)。
+ */
+.langWrap {
+  /*
+   * 钮并排。
+   */
+  display: inline-flex;
+
+  /*
+   * 组描边。
+   */
+  border: 1px solid #e5e7eb;
+
+  /*
+   * 组圆角。
+   */
+  border-radius: 6px;
+
+  /*
+   * 钮方角被组圆角裁齐。
+   */
+  overflow: hidden;
+}
+
+/*
+ * 单个语言钮。
+ */
+.langBtn {
+  /*
+   * 无描边(组统一描)。
+   */
+  border: none;
+
+  /*
+   * 紧凑内衬(视觉 25px 高)。
+   */
+  padding: 3px 9px;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 非当前灰。
+   */
+  color: #6b7280;
+}
+
+/*
+ * 当前语言钮。
+ */
+.langBtn.on {
+  /*
+   * 当前蓝底。
+   */
+  background: #2563eb;
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+}
+
+/*
+ * 账户槽(32px,只在 loading 态用 —— 正常页首帧登录态由服务端给)。
+ */
+.acctSlot {
+  /*
+   * 行内块占位。
+   */
+  display: inline-block;
+
+  /*
+   * 槽宽(与头像钮 28+4 同宽,防导航整排平移 —— 2026-07-31 实撞 52px 错位)。
+   */
+  width: 32px;
+
+  /*
+   * 槽高同头像。
+   */
+  height: 28px;
+}
+
+/*
+ * 有会话但身份未到时的中性占位圆(尺寸同真头像 28 ——
+ * 不能让 Avatar 拿空 email 兜底成「?」,2026-08-17 Frank「会先变成问号」实拍)。
+ */
+.acctDot {
+  /*
+   * 行内块。
+   */
+  display: inline-block;
+
+  /*
+   * 同头像宽。
+   */
+  width: 28px;
+
+  /*
+   * 同头像高。
+   */
+  height: 28px;
+
+  /*
+   * 圆形。
+   */
+  border-radius: 50%;
+
+  /*
+   * 中性灰。
+   */
+  background: #e5e7eb;
+}
+
+/*
+ * 抽屉遮罩淡入。
+ */
+@keyframes drwfade {
+  from {
+    /*
+     * 从全透明。
+     */
+    opacity: 0;
+  }
+
+  to {
+    /*
+     * 到实底。
+     */
+    opacity: 1;
+  }
+}
+
+/*
+ * 抽屉面板从左滑入(Frank 2026-07-23「呼出太宽太大,加平移动画+缩小」)。
+ */
+@keyframes drwslide {
+  from {
+    /*
+     * 从整宽藏在左侧外。
+     */
+    transform: translateX(-100%);
+  }
+
+  to {
+    /*
+     * 滑到位。
+     */
+    transform: translateX(0);
+  }
+}
+
+/*
+ * 抽屉遮罩(点它关抽屉)。
+ */
+.drawerMask {
+  /*
+   * 钉满视口。
+   */
+  position: fixed;
+
+  /*
+   * 四边贴 0。
+   */
+  inset: 0;
+
+  /*
+   * 半透黑。
+   */
+  background: rgb(17 24 39 / 28%);
+
+  /*
+   * 压过一切页面内容。
+   */
+  z-index: 60;
+
+  /*
+   * 挂载即淡入。
+   */
+  animation: drwfade 0.18s ease;
+}
+
+/*
+ * 抽屉面板(68%/280 宽,从左滑入)。
+ */
+.drawer {
+  /*
+   * 锚在遮罩左沿。
+   */
+  position: absolute;
+
+  /*
+   * 贴顶。
+   */
+  top: 0;
+
+  /*
+   * 贴底。
+   */
+  bottom: 0;
+
+  /*
+   * 贴左。
+   */
+  left: 0;
+
+  /*
+   * 抽屉宽(与 PUSH_X 的推距同源)。
+   */
+  width: 68%;
+
+  /*
+   * 抽屉上限宽。
+   */
+  max-width: 280px;
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 右分界线。
+   */
+  border-right: 1px solid #e5e7eb;
+
+  /*
+   * 左右 12 内衬。
+   */
+  padding: 0 12px;
+
+  /*
+   * 条目多了自己滚。
+   */
+  overflow-y: auto;
+
+  /*
+   * 挂载即滑入。
+   */
+  animation: drwslide 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/*
+ * 抽屉头(品牌 + ×)。
+ */
+.drawerHead {
+  /*
+   * 两端排开。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 品牌在左 × 在右。
+   */
+  justify-content: space-between;
+
+  /*
+   * 内衬。
+   */
+  padding: 13px 2px 10px;
+}
+
+/*
+ * 抽屉里的品牌字。
+ */
+.drawerBrand {
+  /*
+   * 品牌字号。
+   */
+  font-size: 16px;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 700;
+
+  /*
+   * 深字。
+   */
+  color: #111827;
+}
+
+/*
+ * 抽屉关闭钮(44 触控靶)。
+ */
+.drawerClose {
+  /*
+   * 触控靶宽。
+   */
+  width: 44px;
+
+  /*
+   * 触控靶高。
+   */
+  height: 44px;
+
+  /*
+   * 浅灰描边。
+   */
+  border: 1px solid #e5e7eb;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * ✕ 色。
+   */
+  color: #374151;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * ✕ 字号。
+   */
+  font-size: 14px;
+}
+
+/*
+ * 抽屉导航列。
+ */
+.drawerNav {
+  /*
+   * 竖排。
+   */
+  display: flex;
+
+  /*
+   * 从上往下。
+   */
+  flex-direction: column;
+
+  /*
+   * 条目间距。
+   */
+  gap: 8px;
+
+  /*
+   * 列尾留一口气。
+   */
+  padding-bottom: 20px;
+}
+
+/*
+ * 抽屉条目(#300:触控靶 ≥44 真实高度 —— 成列小控件 ::after 会被邻行抢点,第 27 轮教训)。
+ */
+.drawerItem {
+  /*
+   * 内容竖直居中。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 真实触控高。
+   */
+  min-height: 44px;
+
+  /*
+   * 内衬算进高度。
+   */
+  box-sizing: border-box;
+
+  /*
+   * 内衬。
+   */
+  padding: 10px 12px;
+
+  /*
+   * 圆角块。
+   */
+  border-radius: 9px;
+
+  /*
+   * 条目字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 链接不带下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 浅灰底。
+   */
+  background: #f9fafb;
+
+  /*
+   * 浅灰描边。
+   */
+  border: 1px solid #e5e7eb;
+
+  /*
+   * 条目文字色。
+   */
+  color: #374151;
+
+  /*
+   * 非当前不加粗。
+   */
+  font-weight: 400;
+}
+
+/*
+ * 当前页的抽屉条目。
+ */
+.drawerItem.on {
+  /*
+   * 浅蓝底。
+   */
+  background: #eff6ff;
+
+  /*
+   * 蓝描边。
+   */
+  border-color: #bfdbfe;
+
+  /*
+   * 深蓝字。
+   */
+  color: #1d4ed8;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 抽屉里带二级的组标题钮。
+ */
+.drawerGrpBtn {
+  /*
+   * 通栏。
+   */
+  width: 100%;
+
+  /*
+   * 文字靠左。
+   */
+  text-align: left;
+
+  /*
+   * 标题与 chevron 两端排开。
+   */
+  display: flex;
+
+  /*
+   * 两端排开。
+   */
+  justify-content: space-between;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 真实触控高。
+   */
+  min-height: 44px;
+
+  /*
+   * 内衬算进高度。
+   */
+  box-sizing: border-box;
+
+  /*
+   * 内衬。
+   */
+  padding: 10px 12px;
+
+  /*
+   * 圆角块。
+   */
+  border-radius: 9px;
+
+  /*
+   * 字号同条目。
+   */
+  font-size: 14px;
+
+  /*
+   * 浅灰底。
+   */
+  background: #f9fafb;
+
+  /*
+   * 浅灰描边。
+   */
+  border: 1px solid #e5e7eb;
+
+  /*
+   * 文字色。
+   */
+  color: #374151;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 组标题右侧的展开箭头。
+ */
+.drawerChev {
+  /*
+   * 箭头灰。
+   */
+  color: #9ca3af;
+}
+
+/*
+ * 抽屉二级条目(缩进一档)。
+ */
+.drawerSub {
+  /*
+   * 内容竖直居中。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 真实触控高。
+   */
+  min-height: 44px;
+
+  /*
+   * 内衬算进高度。
+   */
+  box-sizing: border-box;
+
+  /*
+   * 内衬(比一级紧)。
+   */
+  padding: 7px 8px;
+
+  /*
+   * 左缩进一档。
+   */
+  margin: 0 6px 0 16px;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 二级字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 二级文字色。
+   */
+  color: #4b5563;
+
+  /*
+   * 链接不带下划线。
+   */
+  text-decoration: none;
+}
+
+/*
+ * 当前页的二级条目。
+ */
+.drawerSub.on {
+  /*
+   * 深蓝字。
+   */
+  color: #1d4ed8;
+
+  /*
+   * 浅蓝底。
+   */
+  background: #eff6ff;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * ≥1351(标语在显)整条禁折行、右组禁压缩:flex 换行按内容假想宽算,不会先压标语再折 ——
+ * 英文导航长,浏览器宁可把整排导航折下去(2026-07-31 Frank 实拍 EN 折两行)。
+ */
+@media (width >= 1351px) {
+  .bar {
+    /*
+     * 整条禁折行(!important 压过基类的 wrap)。
+     */
+    flex-wrap: nowrap !important;
+  }
+
+  .right {
+    /*
+     * 右组禁折行。
+     */
+    flex-wrap: nowrap !important;
+
+    /*
+     * 右组禁压缩。
+     */
+    flex-shrink: 0;
+  }
+}
+
+/*
+ * <1351:先牺牲标语保导航一行。
+ */
+@media (width <= 1350px) {
+  .tagline {
+    /*
+     * 藏标语。
+     */
+    display: none;
+  }
+}
+
+/*
+ * ≤640(#300 第 38 轮):顶栏触控靶补 ≥44。汉堡直接撑箱到 44;语言钮/登录注册/logo
+ * 视觉不动,::after 只**纵向**撑热区(横向不撑 —— 成排邻钮横向热区互抢,第 27 轮教训)。
+ */
+@media (width <= 640px) {
+  .divider {
+    /*
+     * 窄屏藏竖线。
+     */
+    display: none;
+  }
+
+  .nav {
+    /*
+     * 平铺导航整组藏(汉堡抽屉接管)。
+     */
+    display: none !important;
+  }
+
+  .burger {
+    /*
+     * 窄屏显汉堡。
+     */
+    display: inline-block !important;
+
+    /*
+     * 撑到触控靶宽。
+     */
+    width: 44px !important;
+
+    /*
+     * 撑到触控靶高。
+     */
+    height: 44px !important;
+  }
+
+  .tapY {
+    /*
+     * ::after 热区的参照系。
+     */
+    position: relative;
+  }
+
+  .tapY::after {
+    /*
+     * 空内容伪元素当热区。
+     */
+    content: '';
+
+    /*
+     * 盖在钮上。
+     */
+    position: absolute;
+
+    /*
+     * 横向贴钮(不外扩,防邻钮互抢)。
+     */
+    left: 0;
+
+    /*
+     * 横向贴钮。
+     */
+    right: 0;
+
+    /*
+     * 纵向居中。
+     */
+    top: 50%;
+
+    /*
+     * 居中回拉。
+     */
+    transform: translateY(-50%);
+
+    /*
+     * 纵向撑到 44。
+     */
+    height: 44px;
+  }
+
+  .langWrap {
+    /*
+     * 放出 ::after 热区(基类 overflow:hidden 会裁掉)。
+     */
+    overflow: visible !important;
+  }
+
+  .langBtn {
+    /*
+     * ::after 热区的参照系。
+     */
+    position: relative;
+  }
+
+  .langBtn::after {
+    /*
+     * 空内容伪元素当热区。
+     */
+    content: '';
+
+    /*
+     * 盖在钮上。
+     */
+    position: absolute;
+
+    /*
+     * 横向贴钮。
+     */
+    left: 0;
+
+    /*
+     * 横向贴钮。
+     */
+    right: 0;
+
+    /*
+     * 纵向居中。
+     */
+    top: 50%;
+
+    /*
+     * 居中回拉。
+     */
+    transform: translateY(-50%);
+
+    /*
+     * 纵向撑到 44。
+     */
+    height: 44px;
+  }
+
+  .langBtn:first-child {
+    /*
+     * overflow 放开后自己补左圆角。
+     */
+    border-top-left-radius: 5px;
+
+    /*
+     * 左下圆角。
+     */
+    border-bottom-left-radius: 5px;
+  }
+
+  .langBtn:last-child {
+    /*
+     * 右上圆角。
+     */
+    border-top-right-radius: 5px;
+
+    /*
+     * 右下圆角。
+     */
+    border-bottom-right-radius: 5px;
+  }
+}

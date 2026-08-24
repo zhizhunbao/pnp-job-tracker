@@ -3,7 +3,7 @@
 // 口径红线:清单命中=粗筛信号,非资格认定(dir.occ.note)。
 import { streamDisplay } from '@/lib/jobs'
 import { useLang } from '@/components/i18n'
-import { Header } from '../Header'
+import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { BANNER_IMGS, Banner, Shell, Title, Tag, UI } from '@/components/ui'
 import { Table } from '@/components/table'
