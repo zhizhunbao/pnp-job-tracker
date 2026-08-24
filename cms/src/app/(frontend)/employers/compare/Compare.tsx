@@ -7,7 +7,7 @@ import { type TFn } from '@/lib/i18n'
 import { useLang } from '@/components/i18n'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
-import { BackLink } from '@/components/ui'
+import { BackButton } from '@/components/ui'
 import { Button, Card, CardKV, Notice, Shell, Tag, UI } from '@/components/ui'
 import { Table } from '@/components/table'
 import { PricingModal } from '../../jobs/PricingModal'
@@ -60,7 +60,7 @@ export function Compare({ names, rows, pro, loggedIn }: {
     <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
       <Header lang={lang} setLang={setLangSaved} t={t} active="employers" />
       <Shell top={32}>
-        <div style={{ marginBottom: 8 }}><BackLink href="/employers" label={t('dir.title')} /></div>
+        <div style={{ marginBottom: 8 }}><BackButton href="/employers" label={t('dir.title')} /></div>
         <h1 style={{ fontSize: 22, margin: '0 0 6px' }}><IconScale /> {t('ce.title')}</h1>
         <div style={{ fontSize: 12.5, color: '#6b7280', margin: '0 0 12px', lineHeight: 1.6 }}>{t('ce.note')}</div>
 

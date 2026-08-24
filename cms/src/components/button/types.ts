@@ -97,9 +97,9 @@ export type BtnClsIn = {
 }
 
 /**
- * BackLink 的 props。
+ * BackButton 的 props。
  */
-export type BackLinkIn = {
+export type BackButtonIn = {
   /**
    * 返回目标(真 <a>,要能被爬、能整页导航)。
    */

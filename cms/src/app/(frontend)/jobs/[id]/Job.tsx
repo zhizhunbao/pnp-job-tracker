@@ -89,7 +89,7 @@ export default function Job({ job, plan, dims, related }: {
             {/* 返回(Frank 走查#18,2026-07-25):右上角文字钮,直接走浏览器返回——保留滚动位置与筛选状态,
                 不重拉数据(比 ?back=1 快照更省);文案缩到「返回」。
                 2026-07-28:改走 goBackOr —— 新标签页(站内「打开完整页」一律 _blank)无处可回时落职位板,
-                不再点了没反应(见 BackLink.tsx 注释里的生产实测) */}
+                不再点了没反应(见 BackButton.tsx 注释里的生产实测) */}
             <button className="jdBack" onClick={() => { setLeaving(true); goBackOr('/?back=1') }}
               style={{ position: 'absolute', top: 12, right: 12, border: '1px solid #d1d5db', borderRadius: 8, padding: '6px 14px', fontSize: 12.5, color: '#374151', background: leaving ? '#f3f4f6' : '#fff', opacity: leaving ? 0.7 : 1, whiteSpace: 'nowrap', cursor: 'pointer', transition: 'transform .06s' }}>
               <style>{'.jdBack:active{transform:scale(.95)}'}</style>

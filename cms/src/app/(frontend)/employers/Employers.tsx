@@ -13,7 +13,7 @@ import {
   EMP_PROGRAMS, type EmployerFilters, type EmployerPage, type EmployerRow,
 } from '@/lib/employers'
 import { pickName } from '@/lib/noc'
-import { BackLink } from '@/components/ui'
+import { BackButton } from '@/components/ui'
 import { useLang } from '@/components/i18n'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
@@ -160,7 +160,7 @@ export function Employers({ initial, initialFilters }: { initial: EmployerPage; 
         <Shell top={16} bottom={40}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, margin: '0 0 12px' }}>
             <h1 style={{ flex: 1, minWidth: 0, fontSize: 22, fontWeight: 700, color: '#111827', margin: 0, lineHeight: 1.45 }}>{title}</h1>
-            <BackLink href="/plan/pr" label={t('de.back')} />
+            <BackButton href="/plan/pr" label={t('de.back')} />
           </div>
 
           <div style={{ background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, padding: '14px 16px' }}>

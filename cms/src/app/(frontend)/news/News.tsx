@@ -11,7 +11,7 @@ import { type Lang, type TFn } from '@/lib/i18n'
 import { useLang } from '../stats/ui'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
-import { BackLink } from '@/components/ui'
+import { BackButton } from '@/components/ui'
 import { BANNER_IMGS, Banner, Shell, SectionTabs, chipStyle } from '@/components/ui'
 import { IconNews } from '@/components/icons'
 import { newsPublisher, newsRegionName, NEWS_REGIONS, type NewsCard, type NewsComment, type NewsHero, type NewsRow } from './shared'
@@ -412,7 +412,7 @@ export function NewsDetail({ row, comments, loggedIn }: { row: NewsRow; comments
       // 外轨=Shell 1320(宽度统一拍板);阅读列 860 居中保行长可读
       <Shell top={18}>
       <div className="nwRead860">
-        <div className="nwBack"><BackLink href="/news" label={t('news.back')} /></div>
+        <div className="nwBack"><BackButton href="/news" label={t('news.back')} /></div>
         <article className="nwArticle card">
           <div className="nwDetMeta">
             <RegionTag t={t} region={row.region} />

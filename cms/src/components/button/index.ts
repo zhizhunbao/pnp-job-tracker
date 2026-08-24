@@ -5,7 +5,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
-export { BackLink } from './backlink'
+export { BackButton } from './backbutton'
 export { Button } from './button'
 export { goBackOr } from './functions'
-export type { BackLinkIn, ButtonIn, ButtonKind } from './types'
+export type { BackButtonIn, ButtonIn, ButtonKind } from './types'

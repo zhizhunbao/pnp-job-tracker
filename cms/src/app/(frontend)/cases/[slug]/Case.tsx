@@ -4,7 +4,7 @@
 // 版式顺序由 Frank 2026-08-11 定死:**他问的那个省 → 为什么 → 由易到难的替代 → 走不通的 → 第一步**。
 // 上一版做成「四块无主的事实」,被点名「列一堆信息,用户看了有什么用」—— 摆事实不等于给答案。
 // 每条路径下面挂的是判定核给的理由(met/gap/excluded),官方原句原样摆,页面不改写、不加戏。
-import { BackLink } from '@/components/ui'
+import { BackButton } from '@/components/ui'
 import { dropProvPrefix } from '@/lib/jobs'
 import { useLang } from '@/components/i18n'
 import { Footer } from '@/components/footer'
@@ -125,7 +125,7 @@ export function Case({ caseId, answer }: { caseId: string; answer: CaseAnswer })
         <Shell top={16} bottom={40}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, margin: '0 0 12px' }}>
             <h1 style={{ flex: 1, minWidth: 0, fontSize: 22, fontWeight: 700, color: '#111827', margin: 0, lineHeight: 1.45 }}>{t(`case.${caseId}.label`)}</h1>
-            <BackLink href="/plan/pr" label={t('case.back')} />
+            <BackButton href="/plan/pr" label={t('case.back')} />
           </div>
 
           {/* 用户原话,一个字不改。「用户原话」那个标签 2026-08-11 Frank 撤掉 —— 引号自己就说明了。
