@@ -1937,6 +1937,16 @@ const eslintConfig = [
     rules: {
       'react/forbid-dom-props': ['error', { forbid: [{ propName: 'style', message: '静态样式进 module.css;运行时数据逐行特批并写理由' }] }],
       'local/component-file-names': 'error',
+      // ③ 解构统一成两种形态(2026-08-24 Frank「这些写法不能统一吗」):同名简写与
+      //    「= 默认值」(和 XxxIn 的 ? 一一对应)。改名(键名: 新名)与嵌套解包禁 ——
+      //    要改名说明该整个收下点着取(普通函数本来就不解包,收 x: XxxIn)。
+      'no-restricted-syntax': ['error', {
+        selector: 'ObjectPattern > Property[shorthand=false]',
+        message: '解构只许同名简写与「= 默认值」两种形态;要改名或嵌套,就整个收下用点取。',
+      }],
+      // ④ 造对象侧的同一条统一(现成规则,可 --fix):同名必须简写 ——
+      //    `{ narrow: narrow }` 当场红,和解构侧的 ③ 合成一句话「同名可省,省是义务」。
+      'object-shorthand': ['error', 'always'],
     },
   },
   {
