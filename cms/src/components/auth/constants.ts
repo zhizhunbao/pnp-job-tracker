@@ -197,3 +197,63 @@ export const HASH_BASE = 31
  * (2026-07-31 实撞过 52px 错位)—— 常量留在 Header,这里按值对齐避免循环 import。
  */
 export const SLOT_W = 32
+
+/**
+ * 账户页路径(账户菜单的条目去处,下同 —— 打错是静默 404,所以全部起名)。
+ */
+export const PATH_ACCOUNT = '/account'
+
+/**
+ * 账户页·收藏节。
+ */
+export const PATH_ACCOUNT_FAVS = '/account?sec=favs'
+
+/**
+ * 账户页·存查节。
+ */
+export const PATH_ACCOUNT_SJOBS = '/account?sec=sjobs'
+
+/**
+ * 账户页·档案节。
+ */
+export const PATH_ACCOUNT_PROFILE = '/account?sec=profile'
+
+/**
+ * 账户页·订阅节。
+ */
+export const PATH_ACCOUNT_SAVED = '/account?sec=saved'
+
+/**
+ * 匹配视图入口。
+ */
+export const PATH_MATCH = '/?view=match'
+
+/**
+ * Google 整页 OAuth 的入口。
+ */
+export const PATH_GOOGLE_AUTH = '/api/auth/google'
+
+/**
+ * Payload 用户接口:注册(POST 建号)。
+ */
+export const API_USERS = '/api/users'
+
+/**
+ * Payload 用户接口:登录。
+ */
+export const API_LOGIN = '/api/users/login'
+
+/**
+ * Payload 用户接口:登出。
+ */
+export const API_LOGOUT = '/api/users/logout'
+
+/**
+ * Payload 用户接口:发找回邮件。
+ */
+export const API_FORGOT = '/api/users/forgot-password'
+
+/**
+ * Payload 用户接口:重置密码。
+ */
+export const API_RESET = '/api/users/reset-password'

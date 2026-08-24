@@ -928,6 +928,7 @@ const localRules = {
         messages: {
           magic: '比较位的裸字符串 `{{ s }}` 看不出是什么、打错也不报错。平台定值进 `constants.ts` 起名;自家档位改查表(键由联合类型管)。',
           hex: '色值 `{{ s }}` 不许散在代码里(2026-08-24 Frank「颜色这个域 函数有字符串没检查出来吗」):静态的进 module.css,JS 要读的进 constants.ts 起名带注释。',
+          path: '路径 `{{ s }}` 不许散写(2026-08-24 Frank「tsx 一堆常量没检查出来呢」):href/fetch 的路径打错是静默 404 —— 进 constants.ts 起名带注释。',
         },
       },
       create(context) {
@@ -944,6 +945,15 @@ const localRules = {
               return
             }
             const p = node.parent
+            // 路径串:JSX 的 href 属性、fetch 的第一参 —— 打错是静默 404,必须有名字。
+            if (p?.type === 'JSXAttribute' && p.name?.name === 'href') {
+              context.report({ node, messageId: 'path', data: { s: node.value } })
+              return
+            }
+            if (p?.type === 'CallExpression' && p.callee?.name === 'fetch' && p.arguments[0] === node) {
+              context.report({ node, messageId: 'path', data: { s: node.value } })
+              return
+            }
             if (p?.type !== 'BinaryExpression') return
             if (p.operator !== '===' && p.operator !== '!==') return
             // `typeof window === 'undefined'` 是语言成语:'undefined' 是 typeof 的
@@ -1598,6 +1608,7 @@ const COMPONENTS = [
   'src/components/card/**/*.{ts,tsx}',
   'src/components/banner/**/*.{ts,tsx}',
   'src/components/auth/**/*.{ts,tsx}',
+  'src/components/i18n/**/*.{ts,tsx}',
 ]
 
 const eslintConfig = [
@@ -2078,7 +2089,7 @@ const eslintConfig = [
   },
   {
     // ── 组件域闸 B:常量表形制(Frank「json 也格式化,换行 对齐」):逐键一行 ──
-    files: ['src/components/{footer,modal,title,shell,tag,chip,row,pager,backlink,colors,button,notice,grid,tabs,card,banner,auth}/constants.ts'],
+    files: ['src/components/{footer,modal,title,shell,tag,chip,row,pager,backlink,colors,button,notice,grid,tabs,card,banner,auth,i18n}/constants.ts'],
     plugins: { '@stylistic': stylistic },
     rules: {
       '@stylistic/object-curly-newline': ['error', { ObjectExpression: { multiline: true, minProperties: 3 } }],

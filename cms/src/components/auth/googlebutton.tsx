@@ -7,6 +7,7 @@
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
+import { PATH_GOOGLE_AUTH } from './constants'
 import { GoogleIcon } from './googleicon'
 import type { GoogleButtonIn } from './types'
 import css from './auth.module.css'
@@ -20,7 +21,7 @@ import css from './auth.module.css'
 export function GoogleButton({ t, go }: GoogleButtonIn) {
   return (
     <>
-      <a href="/api/auth/google" onClick={go} className={css.googleBtn}>
+      <a href={PATH_GOOGLE_AUTH} onClick={go} className={css.googleBtn}>
         <GoogleIcon /> {t('acct.google')}
       </a>
       <div className={css.orRow}>

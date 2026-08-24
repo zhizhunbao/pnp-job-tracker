@@ -13,6 +13,12 @@ import {
   MODE_FORGOT,
   MODE_REGISTER,
   MODE_RESET,
+  API_FORGOT,
+  API_LOGIN,
+  API_LOGOUT,
+  API_RESET,
+  API_USERS,
+  PATH_GOOGLE_AUTH,
   PW_LV_MEDIUM,
   PW_LV_STRONG,
   PW_LV_WEAK,
@@ -157,7 +163,7 @@ export function googleHrefOf(x: QuizDestIn): string {
   } else if (x.returnTo != null && x.returnTo !== '') {
     rt = x.returnTo
   }
-  return '/api/auth/google?returnTo=' + encodeURIComponent(rt)
+  return PATH_GOOGLE_AUTH + '?returnTo=' + encodeURIComponent(rt)
 }
 
 /**
@@ -226,7 +232,7 @@ export function trackSignup() {
  */
 export async function runAuthFlow(x: AuthFlowIn): Promise<AuthFlowOut> {
   if (x.mode === MODE_FORGOT) {
-    await fetch('/api/users/forgot-password', {
+    await fetch(API_FORGOT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: x.email }),
@@ -243,7 +249,7 @@ export async function runAuthFlow(x: AuthFlowIn): Promise<AuthFlowOut> {
     if (x.resetToken != null) {
       token = x.resetToken
     }
-    const r = await fetch('/api/users/reset-password', {
+    const r = await fetch(API_RESET, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -258,7 +264,7 @@ export async function runAuthFlow(x: AuthFlowIn): Promise<AuthFlowOut> {
     if (x.pw.length < PW_MIN_LEN) {
       return { kind: 'err', errKey: 'acct.err.weakPw' }
     }
-    const r = await fetch('/api/users', {
+    const r = await fetch(API_USERS, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -275,7 +281,7 @@ export async function runAuthFlow(x: AuthFlowIn): Promise<AuthFlowOut> {
     }
     trackSignup()
   }
-  const r2 = await fetch('/api/users/login', {
+  const r2 = await fetch(API_LOGIN, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -294,7 +300,7 @@ export async function runAuthFlow(x: AuthFlowIn): Promise<AuthFlowOut> {
  */
 export async function logout() {
   try {
-    await fetch('/api/users/logout', { method: 'POST', credentials: 'include' })
+    await fetch(API_LOGOUT, { method: 'POST', credentials: 'include' })
   } catch {
     // 网络失败也照刷:刷新后按真实 cookie 态渲染
   }
