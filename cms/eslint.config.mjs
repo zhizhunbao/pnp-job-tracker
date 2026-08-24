@@ -927,13 +927,22 @@ const localRules = {
         schema: [],
         messages: {
           magic: '比较位的裸字符串 `{{ s }}` 看不出是什么、打错也不报错。平台定值进 `constants.ts` 起名;自家档位改查表(键由联合类型管)。',
+          hex: '色值 `{{ s }}` 不许散在代码里(2026-08-24 Frank「颜色这个域 函数有字符串没检查出来吗」):静态的进 module.css,JS 要读的进 constants.ts 起名带注释。',
         },
       },
       create(context) {
+        // constants.ts 是字符串的家,整个文件豁免。
+        if (/constants\.ts$/.test(context.filename ?? '')) return {}
         return {
           Literal(node) {
             if (typeof node.value !== 'string') return
             if (node.value === '') return
+            // 十六进制色值:**任何位置**都拦(比较位那条只管比较,色值散在返回值/
+            // 对象字面量里一样是没名字的死值)。
+            if (/#[0-9a-fA-F]{3}/.test(node.value)) {
+              context.report({ node, messageId: 'hex', data: { s: node.value } })
+              return
+            }
             const p = node.parent
             if (p?.type !== 'BinaryExpression') return
             if (p.operator !== '===' && p.operator !== '!==') return

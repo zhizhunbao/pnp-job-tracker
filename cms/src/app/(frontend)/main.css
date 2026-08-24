@@ -446,7 +446,7 @@ button:not(:disabled):hover {
 /* 最常用的一档:弹框里的分节卡 */
 .cardMd { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; margin-bottom: 14px; }
 
-/* (jcard*/cardKV*/cardAct/proCard*/lockRow* 2026-08-24 迁 components/card 域;.card/.cardMd 白卡壳留全局 —— 6/5 处消费页直写) */
+/* (jcard·cardKV·cardAct·proCard·lockRow 各族 2026-08-24 迁 components/card 域;.card/.cardMd 白卡壳留全局 —— 6/5 处消费页直写) */
 
 /* ===================================================
    10. 二级 tab 条 SectionTabs

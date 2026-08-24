@@ -4,7 +4,17 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
-import { GRADE_AMBER_MIN, GRADE_DEEP_GREEN_MIN, GRADE_GREEN_MIN, GRADE_NEUTRAL_MIN } from './constants'
+import {
+  GRADE_AMBER_MIN,
+  GRADE_C_2,
+  GRADE_C_3,
+  GRADE_C_4,
+  GRADE_C_5,
+  GRADE_C_NONE,
+  GRADE_DEEP_GREEN_MIN,
+  GRADE_GREEN_MIN,
+  GRADE_NEUTRAL_MIN,
+} from './constants'
 
 /**
  * 通道档(1-5)→ 档色:5 深绿、4 绿、3 默认灰黑、2 琥珀、1/缺 灰。
@@ -12,23 +22,23 @@ import { GRADE_AMBER_MIN, GRADE_DEEP_GREEN_MIN, GRADE_GREEN_MIN, GRADE_NEUTRAL_M
  * 有直接传可选字段的,收窄留给消费页形制化批。)
  *
  * @param g 档位;null/undefined = 缺档。
- * @returns 十六进制色。
+ * @returns 十六进制色(值与名字都在 constants,这里只做阈值判定)。
  */
 export function gradeColor(g: number | null | undefined): string {
   if (g == null) {
-    return '#9ca3af'
+    return GRADE_C_NONE
   }
   if (g >= GRADE_DEEP_GREEN_MIN) {
-    return '#166534'
+    return GRADE_C_5
   }
   if (g >= GRADE_GREEN_MIN) {
-    return '#15803d'
+    return GRADE_C_4
   }
   if (g >= GRADE_NEUTRAL_MIN) {
-    return '#374151'
+    return GRADE_C_3
   }
   if (g >= GRADE_AMBER_MIN) {
-    return '#b45309'
+    return GRADE_C_2
   }
-  return '#9ca3af'
+  return GRADE_C_NONE
 }

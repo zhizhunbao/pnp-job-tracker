@@ -4,7 +4,16 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
-import { CHIP_FONT_SIZE, CHIP_RADIUS, FONT_WEIGHT_OFF, FONT_WEIGHT_ON } from './constants'
+import {
+  CHIP_BG_OFF,
+  CHIP_BORDER_HOT,
+  CHIP_C_HOT,
+  CHIP_C_ON,
+  CHIP_FONT_SIZE,
+  CHIP_RADIUS,
+  FONT_WEIGHT_OFF,
+  FONT_WEIGHT_ON,
+} from './constants'
 import type { ChipClsIn } from './types'
 import css from './chip.module.css'
 
@@ -36,17 +45,17 @@ export function chipClsOf(x: ChipClsIn): string {
 // eslint-disable-next-line local/one-parameter -- 旧 API 的签名:十几处 spread 调用方按位置传参,改签名要动它们全部;消费页类化批一起收
 export function chipStyle(active: boolean, hot = false): React.CSSProperties {
   let border = '1px solid var(--border)'
-  let background = '#fff'
+  let background = CHIP_BG_OFF
   let color = 'var(--text2)'
   let fontWeight = FONT_WEIGHT_OFF
   if (active) {
     border = '1px solid var(--primary)'
     background = 'var(--primary)'
-    color = '#fff'
+    color = CHIP_C_ON
     fontWeight = FONT_WEIGHT_ON
   } else if (hot) {
-    border = '1px solid #fecaca'
-    color = '#b91c1c'
+    border = CHIP_BORDER_HOT
+    color = CHIP_C_HOT
   }
   return {
     border,

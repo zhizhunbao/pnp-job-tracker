@@ -25,3 +25,23 @@ export const FONT_WEIGHT_OFF = 400
  * 选中字重(镜像 .active 的 font-weight)。
  */
 export const FONT_WEIGHT_ON = 600
+
+/**
+ * 未选中白底(镜像 .chip 的 background)。
+ */
+export const CHIP_BG_OFF = '#fff'
+
+/**
+ * 选中白字(镜像 .active 的 color;和上面同值不同格 —— 各镜像各的 css 声明)。
+ */
+export const CHIP_C_ON = '#fff'
+
+/**
+ * 强调红描边(镜像 .hot 的 border)。
+ */
+export const CHIP_BORDER_HOT = '1px solid #fecaca'
+
+/**
+ * 强调红字(镜像 .hot 的 color)。
+ */
+export const CHIP_C_HOT = '#b91c1c'

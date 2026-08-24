@@ -97,3 +97,28 @@ export const GRADE_NEUTRAL_MIN = 3
  * 通道档色阶阈值:≥2 琥珀。
  */
 export const GRADE_AMBER_MIN = 2
+
+/**
+ * 5 档色:深绿(green-800)。
+ */
+export const GRADE_C_5 = '#166534'
+
+/**
+ * 4 档色:绿(green-700)。
+ */
+export const GRADE_C_4 = '#15803d'
+
+/**
+ * 3 档色:默认灰黑(gray-700)。
+ */
+export const GRADE_C_3 = '#374151'
+
+/**
+ * 2 档色:琥珀(amber-700)。
+ */
+export const GRADE_C_2 = '#b45309'
+
+/**
+ * 1 档/缺档色:灰(gray-400)。
+ */
+export const GRADE_C_NONE = '#9ca3af'
