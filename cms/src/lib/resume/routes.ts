@@ -23,7 +23,7 @@ import { log, RESUME_LOG } from '../log'
 import { patchProfile } from '../profile/server'
 import type { ProfilePatch } from '../profile/server'
 import { FREE_DAILY_TRIES } from '../quota'
-import { freeGate, getUser, getUserOrNull, isPro } from '../quota/server'
+import { denyBodyOf, freeGate, getUser, getUserOrNull, isPro } from '../quota/server'
 import {
   BLANKS2, BLANKS3_RE, CLB_MAX, CLB_MIN, CODE_TIMEOUT, CODE_TOO_LONG, CR_RE, DAILY_FREE, DATE_LEN, DETAIL_CAP, ERR_LOG_CAP, EXTRACT_CHARS_MAX, EXTRACT_OUT_MAX, EXTRACT_TEXT_MIN, EXTRACT_TOKENS_MAX, E_AUTH, E_BUSY, E_LIMIT, E_LLM, E_LOGIN, E_NOFILE, E_NO_JD, E_PARSE, E_SCAN, E_SIZE, E_TOO_LONG, E_TOO_SHORT, FIELD_FILE, JD_LEN_MIN, LANG_FALLBACK_EN, LOG_DASH, MATCH_PROVIDER, MATCH_TEMPERATURE, MATCH_TOKENS_FREE, MATCH_TOKENS_PRO, META_VIA_LEGACY, MIN_RESUME, ONE_SPACE, RESUME_MAX_BYTES, RESUME_SAVE_CAP, REWRITE_CAP, ROLE_SYSTEM, ROLE_USER, SPACES_RE, TEST_MAIL_SUFFIX, TITLES_N_MAX, TITLE_Q_LEN_MAX, TITLE_Q_LEN_MIN, USES_SEP, WS_ALL_RE,
 } from './constants'
@@ -48,7 +48,7 @@ export async function resumeRoute(req: Request): Promise<Response> {
     return Response.json({ error: E_LOGIN }, { status: UNAUTHORIZED })
   }
   const g = freeGate({ user: user, headers: req.headers })
-  if (g.block != null) {
+  if (g.deny != null) {
     return Response.json({ error: E_LIMIT }, { status: TOO_MANY })
   }
   let freeLeft = FREE_DAILY_TRIES

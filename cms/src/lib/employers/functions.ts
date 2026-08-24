@@ -15,8 +15,6 @@ import { hasProfile, match } from '../jobs'
 import type { MatchJob } from '../jobs'
 import { friendChat } from '../llm'
 import { EMP_LOG, log } from '../log'
-// eslint-disable-next-line no-restricted-imports -- 存量特批（2026-08-23 边界闸首轮拓出）：十一件套前的跨域取数，归 api 批②注入化改造
-import { employerVerdict } from '../ruling/server'
 import {
   BRIEF_MAX, BRIEF_MIN, BRIEF_V2_MARK, CACHE_TTL_MS, CAP_MODE, CAP_NOC, CAP_PAGE, CAP_PROGRAM, CAP_PROV, CAP_TEXT,
   CMP_MAX, COL_PREFIX, CSV_BOM, CSV_EMPTY, CSV_HEAD, CSV_NL, CSV_QUOTE, CSV_QUOTE_ESC, CSV_QUOTE_G_RE, CSV_QUOTE_RE,
@@ -39,7 +37,7 @@ import type {
   SponsorRowsOut, StrList, WdEntity, WdGetIn, WdGetOut, WikidataHitOrNull, WikidataOut, ColumnDbRow, CompareJob,
   CompareJobDbRow, DesignatedDbRow, DesignatedRow, DifficultyDbRow, DifficultyObj, DifficultyPair, HiringDbRow,
   HiringRow, IdCell, MaybeStr, NocTitleDbRow, NocTitlePair, OccDbRow, OccRow, ReqDbRow, SponsorDbRow, StrListCell,
-  ToCompareRowIn, ToSponsorRowIn,
+  ToCompareRowIn, ToSponsorRowIn, SponsorsIn,
 } from './types'
 import type { Requirement } from '../gauge'
 import type { EmployerFacts } from '../ruling'
@@ -437,10 +435,11 @@ function factColsFragment(cols: StrList): string {
  * 在招担保雇主全量聚合(边缘的取数实现):探列 → 聚合 SQL + 雇主侧门槛并发 → 逐行判定并收窄。
  * 门槛省 = provs[0](表行没有单一地址,与既有 where 列同一取法)。
  *
- * @param db 数据库连接(池由调用方注进来)。
+ * @param input 连接与注入的雇主判定引擎(2026-08-23 收牌批)。
  * @returns 全量担保行。
  */
-async function loadSponsors(db: Db): SponsorRowsOut {
+async function loadSponsors(input: SponsorsIn): SponsorRowsOut {
+  const db = input.db
   const probed = await queryRowsOrEmpty({ db: db, sql: SQL.COMPANIES_HAS_COLUMNS, params: [Array.from(FACT_COLS)], map: toColumnName })
   const cols: string[] = []
   for (const c of probed) {
@@ -460,7 +459,7 @@ async function loadSponsors(db: Db): SponsorRowsOut {
     if (r.provs != null && r.provs.length > 0 && r.provs[0] != null) {
       province = r.provs[0]
     }
-    const verdict = employerVerdict({
+    const verdict = input.judge({
       facts: employerFactsOf(r), province: province, reqs: reqs, nowYear: nowYear,
     })
     out.push(toSponsorRow({ row: r, verdict: verdict }))
@@ -472,16 +471,17 @@ async function loadSponsors(db: Db): SponsorRowsOut {
  * 在招担保雇主整表带 TTL 缓存取数(策略同名录:过期先回旧值、后台单飞刷新;
  * 改 `CACHE.sponsors` / `CACHE.sponsorsInflight`)。
  *
- * @param db 数据库连接(池由调用方注进来)。
+ * @param input 连接与注入的雇主判定引擎(2026-08-23 收牌批)。
  * @returns 全量担保行(缓存行全站共享,消费端不许原地改)。
  */
-export function loadSponsorEmployers(db: Db): SponsorRowsOut {
+export function loadSponsorEmployers(input: SponsorsIn): SponsorRowsOut {
+  const db = input.db
   const hot = CACHE.sponsors
   if (hot != null && Date.now() - hot.at < CACHE_TTL_MS) {
     return Promise.resolve(hot.rows)
   }
   if (CACHE.sponsorsInflight == null) {
-    CACHE.sponsorsInflight = loadSponsors(db)
+    CACHE.sponsorsInflight = loadSponsors({ db: db, judge: input.judge })
       .then(function remember(rows) {
         CACHE.sponsors = { at: Date.now(), rows: rows }
         return rows

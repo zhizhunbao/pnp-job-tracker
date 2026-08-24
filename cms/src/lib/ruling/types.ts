@@ -18,6 +18,8 @@
  * @time 2026-08-20 01:40:00
  */
 
+// eslint-disable-next-line local/no-import-in-leaf -- 鉴权层「人」的形状归 quota(会话契约),与本文件借 db/jobs 形状同一特批形态
+import type { SessionUser as QuotaSession } from '../quota'
 import type { Db } from '../db'
 // eslint-disable-next-line local/no-import-in-leaf -- 职业竞争面行的形状归 jobs 域（特批牌形态）
 import type { OccCompetitionRow } from '../jobs'
@@ -6298,6 +6300,16 @@ export type DirectoryRowIn = {
  * `tripleWireOf` 的入参。
  */
 export type TripleWireOfIn = {
+  /**
+   * 当前这个人(入口 getUser 后注进来;未登录 null;鉴权层的形状起本地别名)。
+   */
+  user: QuotaSession | null
+
+  /**
+   * Pro 与否(入口 isPro(user) 后注进来 —— isPro 住 quota 服务端半边,functions 不借门)。
+   */
+  pro: boolean
+
   /**
    * 岗位号。
    */

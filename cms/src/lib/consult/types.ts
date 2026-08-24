@@ -14,7 +14,7 @@ import type { Model, Static, TSchema } from '@earendil-works/pi-ai'
 import type { Requirement, RuleResult } from '../gauge'
 import type { Db } from '../db'
 import type { Lang } from '../i18n'
-import type { PathwayVerdict, VerdictProfile } from '../ruling'
+import type { PathwayVerdict, VerdictData, VerdictProfile } from '../ruling'
 import type { CLAIMS_PARAMS, CRS_PARAMS, NOC_PARAMS, NOC_PROVS_PARAMS, PERMIT_PARAMS, PROV_PARAMS, SEARCH_PARAMS, VERDICT_PARAMS } from './schemas'
 
 // =========================================================================
@@ -584,6 +584,33 @@ export type ReplyDetails = {
 export type Tool<P extends TSchema> = AgentTool<P, ReplyDetails>
 
 /**
+ * 判定底表的取数函数(ruling 的 loadVerdictTables 由路由注进来 ——
+ * 2026-08-23 收牌批:functions 不借 server 门,跨域只留「上层注入」一条边)。
+ */
+export type VerdictLoadFn = (db: Db) => Promise<VerdictData>
+
+/**
+ * 判定引擎(ruling 的 pathVerdict,由路由注进来 —— 经 index 桶取会把 ruling/functions
+ * 的 payload 链拉进浏览器包,2026-08-23 毒丸实拦)。
+ */
+export type JudgeVerdictFn = (input: JudgeVerdictIn) => PathwayVerdict[]
+
+/**
+ * 注入判定引擎收的参(与 ruling 的 pathVerdict 门面同形)。
+ */
+export type JudgeVerdictIn = {
+  /**
+   * 判定档案。
+   */
+  profile: VerdictProfile
+
+  /**
+   * 六张底表。
+   */
+  data: VerdictData
+}
+
+/**
  * 跑一趟循环要的东西。
  */
 export type RunIn = {
@@ -611,6 +638,16 @@ export type RunIn = {
    * 前面几轮。
    */
   history: Turn[]
+
+  /**
+   * 判定底表取数(ruling 的 loadVerdictTables,由路由注进来)。
+   */
+  loadVerdict: VerdictLoadFn
+
+  /**
+   * 判定引擎(ruling 的 pathVerdict,由路由注进来)。
+   */
+  judgeVerdict: JudgeVerdictFn
 
   /**
    * 工具轨迹回调;不要就显式给 null(禁 `?`:缺席也要写出来)。

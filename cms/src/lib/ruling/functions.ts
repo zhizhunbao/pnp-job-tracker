@@ -13,12 +13,9 @@
  */
 
 import { log, RULING_LOG } from '../log'
-import { headers } from 'next/headers'
 import { getDb } from '../db/server'
 import { numOrNull, queryRowsOrEmpty, SQL, text, count, jsonOrNull, textOrNull } from '../db'
 import type { Db } from '../db'
-// eslint-disable-next-line no-restricted-imports -- 存量特批（2026-08-23 边界闸首轮拓出）：十一件套前的跨域取数，归 api 批②注入化改造
-import { getUser, isPro } from '../quota/server'
 import { CACHE } from './variables'
 import { evaluateRequirements, teerHit } from '../gauge'
 import {
@@ -5706,8 +5703,9 @@ export async function getDesignatedEmployers(input: GetDesignatedEmployersIn): G
 /**
  * 判定卡的下行数据 —— `/api/ruling/verdict` 与 `/plan/pr?job=` 的 SSR 首屏共用这一条口径。
  *
- * 本函数只负责把 `buildTripleWire` 要的东西凑齐:连接池、六张底表、按省取名录的函数,
- * 以及**当前这个人**(登录态与 Pro 与否)。付费闸在 `buildTripleWire` 里,
+ * 本函数只负责把 `buildTripleWire` 要的东西凑齐:连接池、六张底表、按省取名录的函数。
+ * **当前这个人**由入口注进来(2026-08-23 收牌批:getUser 是会话取数,归入口;
+ * routes 与 SSR 两个入口各自 getUser 再传人)。付费闸在 `buildTripleWire` 里,
  * 两处调用都走同一道闸,SSR 不会多漏一行。
  *
  * 它存在的唯一理由是**两个调用点要抄同样八行**,不是为了好看。
@@ -5716,14 +5714,14 @@ export async function getDesignatedEmployers(input: GetDesignatedEmployersIn): G
  * @returns 整张卡,或一句错误加 HTTP 码。
  */
 export async function tripleWireOf(input: TripleWireOfIn): TripleWireOfOut {
-  const user = await getUser(await headers()).catch(nullUser)
+  const user = input.user
   return buildTripleWire({
     db: await getDb(),
     id: input.id,
     answers: input.answers,
     profile: profileSlots({ user: sessionOf({ user: user }) }),
     loggedIn: user != null,
-    pro: isPro(user),
+    pro: input.pro,
     data: await getVerdictData(),
     designatedOf: getDesignatedEmployers,
   })
@@ -5762,14 +5760,6 @@ function sessionOf(input: SessionOfIn): SessionUser {
   return input.user as SessionUser
 }
 
-/**
- * 解不出登录态时当没登录 —— 给 `.catch()` 用的具名函数。
- *
- * @returns null。
- */
-function nullUser(): null {
-  return null
-}
 
 /**
  * 区域线要不要留在目标省视野里：不限省全留；省级行直接比；联邦行看它的

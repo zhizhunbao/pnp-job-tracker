@@ -21,11 +21,8 @@ import { runAgentLoop } from '@earendil-works/pi-agent-core'
 import type { StreamFn } from '@earendil-works/pi-agent-core'
 import { streamSimple } from '@earendil-works/pi-ai/api/openai-completions'
 import type { Model } from '@earendil-works/pi-ai'
-// eslint-disable-next-line no-restricted-imports -- 存量特批（2026-08-23 边界闸首轮拓出）：十一件套前的跨域取数，归 api 批②注入化改造
-import { acceptNoc, passThroughMessages } from '../agent/server'
+import { acceptNoc, passThroughMessages } from '../agent'
 import type { TranscriptMessage } from '../agent'
-// eslint-disable-next-line no-restricted-imports -- 存量特批（2026-08-23 边界闸首轮拓出）：十一件套前的跨域取数，归 api 批②注入化改造
-import { loadVerdictTables, pathVerdict } from '../ruling/server'
 import type { VerdictProfile } from '../ruling'
 import { cleanProvs } from '../location'
 import { chatError, CHAT_CODE } from '../error'
@@ -1414,8 +1411,8 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
 
   async function execVerdict(_id: string, _args: ExecVerdictIn): ExecVerdictOut {
     step(TOOL_NAME.verdict)
-    const data = await loadVerdictTables(run.db)
-    const rows = pathVerdict({ profile: verdictProfileOf({ box, profile: run.profile }), data: data })
+    const data = await run.loadVerdict(run.db)
+    const rows = run.judgeVerdict({ profile: verdictProfileOf({ box, profile: run.profile }), data: data })
     return take({ box, facts: verdictFacts(rows) })
   }
 

@@ -18,7 +18,28 @@ export type ReqLike = Request
 /**
  * 拦截响应的本地名。
  */
-export type GateBlock = Response
+export type GateDeny = 'user402' | 'ip429'
+
+/**
+ * 可空的响应素材(denyBodyOf 的返回)。
+ */
+export type MaybeDenyBody = DenyBody | null
+
+/**
+ * 拦截响应的素材(状态码 + 文本;Response 由路由层用 http 叶的 textResponseOf 拼 ——
+ * 2026-08-23 收牌批:functions 不造 Response)。
+ */
+export type DenyBody = {
+  /**
+   * HTTP 状态码。
+   */
+  status: number
+
+  /**
+   * 响应正文。
+   */
+  text: string
+}
 
 /**
  * 用户档案 json 的一格(users.profile jsonb;形状归 lib/jobs 的 normalizeProfile 消化,
@@ -168,9 +189,10 @@ export type HeaderMap = Record<string, string>
  */
 export type FreeGated = {
   /**
-   * 拦截响应(402 升级 / 429 限流);放行则 null。
+   * 拦截判定(user402=免费池用完 / ip429=匿名池超限);放行则 null。
+   * Response 由路由层拼:denyBodyOf(gate) → textResponseOf(2026-08-23 收牌批)。
    */
-  block: GateBlock | null
+  deny: GateDeny | null
 
   /**
    * 免费池剩余次数;Pro 与匿名不给数则 null。

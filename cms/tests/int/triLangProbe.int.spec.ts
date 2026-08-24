@@ -16,6 +16,7 @@ import { describe, expect, it } from 'vitest'
 import { getDb } from '@/lib/db/server'
 import { EMPTY_PROFILE } from '@/lib/consult'
 import { consult } from '@/lib/consult/server'
+import { loadVerdictTables, pathVerdict } from '@/lib/ruling/server'
 import type { Profile } from '@/lib/consult'
 
 const LIVE = Boolean(process.env.CHAT_LLM_BASE)
@@ -47,6 +48,7 @@ describe.skipIf(!LIVE)(`三语横评(${MODEL})`, () => {
         db, text: a.text, lang: a.lang, profile: { ...EMPTY_PROFILE, ...(a.profile ?? {}) }, history: [],
         onStep: (s: string) => { steps.push(s.slice(0, 24)) },
         onDelta: null,
+        loadVerdict: loadVerdictTables, judgeVerdict: pathVerdict,
       })
       const secs = ((Date.now() - t0) / 1000).toFixed(1)
 

@@ -12,6 +12,7 @@
  * @time 2026-08-21 23:20:43
  */
 
+import type { EmployerFacts, EmployerVerdict, ReqRow } from '../ruling'
 import type { Db } from '../db'
 // 对照线的档案与维度形状归 jobs 域(match 引擎在那儿),这里只透传不拆读 ——
 // 自声明要复制四层嵌套形状,引擎一改这里就悄悄失配;jobs 重构时再回头判这条边(no-import-in-leaf 挂账)。
@@ -966,6 +967,52 @@ export type BoardPropsOut = Promise<BoardProps>
  * `loadSponsorEmployers` / `fetchAllDesignated` 这类带缓存取数的返回。
  */
 export type SponsorRowsOut = Promise<SponsorEmployerRow[]>
+
+/**
+ * 雇主判定引擎收的参(与 ruling 的 employerVerdict 门面同形;本域只声明自己读的格)。
+ */
+export type EmployerJudgeIn = {
+  /**
+   * 公司事实。
+   */
+  facts: EmployerFacts
+
+  /**
+   * 判定用省码。
+   */
+  province: string
+
+  /**
+   * 门槛行。
+   */
+  reqs: ReqRow[]
+
+  /**
+   * 当前年(成立年限判定)。
+   */
+  nowYear: number
+}
+
+/**
+ * 雇主判定引擎(ruling 的 employerVerdict,由入口注进来 —— 2026-08-23 收牌批,
+ * 经 index 桶取会把 ruling/functions 的 payload 链拉进浏览器包,毒丸实拦)。
+ */
+export type EmployerJudgeFn = (input: EmployerJudgeIn) => EmployerVerdict
+
+/**
+ * 带注入判定的取数入参(loadSponsorEmployers/loadSponsors 全链同形)。
+ */
+export type SponsorsIn = {
+  /**
+   * 能查的连接。
+   */
+  db: Db
+
+  /**
+   * 注入的雇主判定引擎。
+   */
+  judge: EmployerJudgeFn
+}
 
 /**
  * 字符串清单(数组进签名要有自己的名字:探测列名、职业码清单都用它)。

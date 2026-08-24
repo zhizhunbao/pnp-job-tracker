@@ -12,7 +12,7 @@
  */
 import { headers } from 'next/headers'
 import { getDb } from '../db/server'
-import {
+import { textResponseOf,
   BAD_GATEWAY, BAD_REQUEST, HDR_CACHE_CONTROL, HDR_CONTENT_TYPE, MIME_TEXT, NO_CONTENT, NOT_FOUND, TOO_MANY,
   UNAVAILABLE,
 } from '../http'
@@ -20,7 +20,7 @@ import {
   E_BAD_REQUEST, E_NOT_CONFIGURED, E_NOT_FOUND, E_RATE_LIMITED, friendLlmReady, TRANS_KEY_SEP, TRANS_LANGS,
   TRANSLATE_ROUTE_TIMEOUT_MS, translateReady, translateSectioned,
 } from '../llm'
-import { checkLimit, freeGate, getUser, ipOf, isPro } from '../quota/server'
+import { denyBodyOf, checkLimit, freeGate, getUser, ipOf, isPro } from '../quota/server'
 import {
   AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, CITY_PARAM_LEN_MAX, DIMS_CACHE_CONTROL, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT, JD_LIMIT_PREFIX, JD_TRANS_MARKS_RE, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, NOC5_RE, PAGE_N_MAX, PROV2_RE, P_CITY, P_CODE, P_DIR, P_DIRECT, P_DISTRICT, P_NOC, P_PAGE, P_PROV, P_SORT, P_URL, P_VIEW, TRUE_ONE, TRUE_WORD, URL_CUT_RE, VIEW_MATCH,
 } from './constants'
@@ -339,8 +339,9 @@ export async function jobsJdformatRoute(req: Request): Promise<Response> {
     return new Response(null, { status: NO_CONTENT })
   }
   const g = freeGate({ user: await getUser(req.headers), headers: req.headers })
-  if (g.block != null) {
-    return g.block
+  const deny = denyBodyOf(g)
+  if (deny != null) {
+    return textResponseOf(deny)
   }
   let task = CACHE.jdFormatInflight.get(url)
   let mine = false

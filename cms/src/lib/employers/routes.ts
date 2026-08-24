@@ -10,7 +10,8 @@
  */
 import { headers } from 'next/headers'
 import { getDb } from '../db/server'
-import {
+import { employerVerdict } from '../ruling/server'
+import { textResponseOf,
   BAD_GATEWAY, BAD_REQUEST, HDR_CACHE_CONTROL, HDR_CONTENT_DISPOSITION, HDR_CONTENT_TYPE, NO_CONTENT,
   NOT_FOUND, PAYMENT_REQUIRED, TOO_MANY, UNAVAILABLE,
 } from '../http'
@@ -18,7 +19,7 @@ import {
   E_BAD_REQUEST, E_NOT_CONFIGURED, E_NOT_FOUND, E_RATE_LIMITED, friendLlmReady,
   TRANS_KEY_SEP, TRANS_LANGS, TRANSLATE_ROUTE_TIMEOUT_MS, translateReady, translateSectioned,
 } from '../llm'
-import { checkLimit, freeGate, getUser, getUserOrNull, ipOf, isPro } from '../quota/server'
+import { denyBodyOf, checkLimit, freeGate, getUser, getUserOrNull, ipOf, isPro } from '../quota/server'
 import {
   CACHE_TTL_MS, CITY_LEN_MAX, CO_IP_DAILY, CO_LIMIT_PREFIX, CO_MARKS_RE, CSV_CACHE_CONTROL, CSV_CONTENT_TYPE, CSV_DISPOSITION, E_PRO, EMP_CACHE_CONTROL,
   EMP_PAGE_SIZE, EXPORT_PROVS, EXPORT_Q_LEN_MAX, MODE, NAME_LEN_MAX, NOC5_RE, PAGE_SIZE_MAX, PARAM, SORT_OPEN,
@@ -77,7 +78,7 @@ export async function employersRoute(req: Request): Promise<Response> {
 export async function employersSponsorsRoute(_req: Request): Promise<Response> {
   if (CACHE.boards == null || Date.now() - CACHE.boards.ts >= CACHE_TTL_MS) {
     try {
-      const rows = await loadSponsorEmployers(await getDb())
+      const rows = await loadSponsorEmployers({ db: await getDb(), judge: employerVerdict })
       CACHE.boards = { v: buildSponsorBoards(rows), ts: Date.now() }
     } catch {
       const empty = { top: [], total: 0 }
@@ -123,7 +124,7 @@ export async function employersExportRoute(req: Request): Promise<Response> {
     f: f, prov: prov, city: paramOf(sp, PARAM.city).slice(0, CITY_LEN_MAX),
     noc: noc, q: paramOf(sp, PARAM.q).slice(0, EXPORT_Q_LEN_MAX), sort: sort,
   }
-  const rows = applySponsorFilters({ rows: await loadSponsorEmployers(await getDb()), filters: filters })
+  const rows = applySponsorFilters({ rows: await loadSponsorEmployers({ db: await getDb(), judge: employerVerdict }), filters: filters })
   return new Response(sponsorCsvOf(rows), {
     headers: {
       [HDR_CONTENT_TYPE]: CSV_CONTENT_TYPE,
@@ -168,8 +169,9 @@ export async function employersInfoRoute(req: Request): Promise<Response> {
     return Response.json(row.cached)
   }
   const g = freeGate({ user: await getUser(req.headers), headers: req.headers })
-  if (g.block != null) {
-    return g.block
+  const deny = denyBodyOf(g)
+  if (deny != null) {
+    return textResponseOf(deny)
   }
   const out = await investigateCompany({ db: db, id: row.id, name: name })
   if (out == null) {

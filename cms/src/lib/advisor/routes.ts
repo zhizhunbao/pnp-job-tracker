@@ -20,7 +20,7 @@
  * @time 2026-08-23 21:30:00
  */
 import { getDb } from '../db/server'
-import { BAD_REQUEST, NOT_FOUND, TOO_MANY } from '../http'
+import { textResponseOf, BAD_REQUEST, NOT_FOUND, TOO_MANY } from '../http'
 import { hasProfile, match, normalizeProfile, reasonEn, statusEn } from '../jobs'
 import type { MatchDims, ProfileJson } from '../jobs'
 import {
@@ -30,7 +30,7 @@ import { companyRow, investigateCompany } from '../employers/server'
 import type { CompanyResearch } from '../employers/server'
 import { loadNocDuties } from '../noc/server'
 import { PRO_ADVISOR_DAILY } from '../quota'
-import { checkLimit, freeGate, getUser, isPro } from '../quota/server'
+import { denyBodyOf, checkLimit, freeGate, getUser, isPro } from '../quota/server'
 import { friendLlmReady } from '../llm'
 import {
   CACHE_HIT, CACHE_MISS, CO_NAME_LEN_MAX, E_BAD_JSON, E_LLM_DOWN, E_NOT_FOUND,
@@ -77,8 +77,9 @@ export async function advisorRoute(req: Request): Promise<Response> {
   const user = await getUser(req.headers)
   const pro = isPro(user)
   const gate = freeGate({ user, headers: req.headers })
-  if (gate.block != null) {
-    return gate.block
+  const deny = denyBodyOf(gate)
+  if (deny != null) {
+    return textResponseOf(deny)
   }
 
   const db = await getDb()

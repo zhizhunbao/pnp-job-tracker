@@ -10,14 +10,15 @@
  * @time 2026-08-22 18:00:00
  */
 
+import { PAYMENT_REQUIRED, TOO_MANY } from '../http'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import {
+import { DENY_IP, DENY_USER,
   ANON_DAILY_TRIES, COMMA, FREE_DAILY_TRIES, HDR_FREE_LEFT, HDR_FWD, IP_LOCAL, KEY_FREE_IP, KEY_FREE_USER,
   TEXT_RATE_LIMITED, TEXT_UPGRADE,
 } from './constants'
 import { CACHE } from './variables'
-import type { FreeGated, FreeGateIn, MaybeRawUser, MaybeUser, QuotaPairs, ReqHeaders, ReqLike, UserOut } from './types'
+import type { MaybeDenyBody, FreeGated, FreeGateIn, MaybeRawUser, MaybeUser, QuotaPairs, ReqHeaders, ReqLike, UserOut } from './types'
 
 /**
  * 从请求 headers(httpOnly payload-token cookie)解出当前用户;未登录 null。
@@ -127,21 +128,35 @@ export function freeGate(input: FreeGateIn): FreeGated {
   const user = input.user
   const pro = isPro(user)
   if (user != null && pro === false && checkLimit([[KEY_FREE_USER + String(user.id), FREE_DAILY_TRIES]]) === false) {
-    // eslint-disable-next-line local/no-http-in-functions -- 存量特批：freeGate 的 402/429 拦截体是既有契约（十路由直铺）；改成判定产物由 routes 拼响应，归 api 批②
-    return { block: new Response(TEXT_UPGRADE, { status: 402 }), left: 0, headers: {} }
+    return { deny: DENY_USER, left: 0, headers: {} }
   }
   if (user == null && checkLimit([[KEY_FREE_IP + ipOfHeaders(input.headers), ANON_DAILY_TRIES]]) === false) {
-    // eslint-disable-next-line local/no-http-in-functions -- 存量特批：freeGate 的 402/429 拦截体是既有契约（十路由直铺）；改成判定产物由 routes 拼响应，归 api 批②
-    return { block: new Response(TEXT_RATE_LIMITED, { status: 429 }), left: null, headers: {} }
+    return { deny: DENY_IP, left: null, headers: {} }
   }
   let left: number | null = null
   if (user != null && pro === false) {
     left = Math.max(0, FREE_DAILY_TRIES - usedToday(KEY_FREE_USER + String(user.id)))
   }
   if (left != null) {
-    return { block: null, left: left, headers: { [HDR_FREE_LEFT]: String(left) } }
+    return { deny: null, left: left, headers: { [HDR_FREE_LEFT]: String(left) } }
   }
-  return { block: null, left: null, headers: {} }
+  return { deny: null, left: null, headers: {} }
+}
+
+/**
+ * 拦截判定 → 响应素材(纯映射;路由层拿它去 http 叶的 textResponseOf 拼 Response)。
+ *
+ * @param gate freeGate 的裁决。
+ * @returns 素材;放行 null。
+ */
+export function denyBodyOf(gate: FreeGated): MaybeDenyBody {
+  if (gate.deny === DENY_USER) {
+    return { status: PAYMENT_REQUIRED, text: TEXT_UPGRADE }
+  }
+  if (gate.deny === DENY_IP) {
+    return { status: TOO_MANY, text: TEXT_RATE_LIMITED }
+  }
+  return null
 }
 
 /**

@@ -9,6 +9,7 @@
 import { describe, expect, it } from 'vitest'
 import { getDb } from '@/lib/db/server'
 import { consult } from '@/lib/consult/functions'
+import { loadVerdictTables, pathVerdict } from '@/lib/ruling/server'
 import type { Profile } from '@/lib/consult/types'
 import { EMPTY_PROFILE } from '@/lib/consult'
 
@@ -41,6 +42,7 @@ describe.skipIf(!LIVE)('pi 工具循环(打真库 + 真模型)', () => {
         history: [],
         onStep: (s: string) => { steps.push(s.slice(0, 24)) },
         onDelta: null,
+        loadVerdict: loadVerdictTables, judgeVerdict: pathVerdict,
       })
       const secs = ((Date.now() - t0) / 1000).toFixed(1)
       console.log(`\n${'='.repeat(70)}\n${c.name}\n问: ${c.text}`)

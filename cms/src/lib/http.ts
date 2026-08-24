@@ -163,3 +163,34 @@ export const HDR_CACHE_CONTROL = 'Cache-Control'
  * 下载文件名头(CSV 导出这类附件响应用)。
  */
 export const HDR_CONTENT_DISPOSITION = 'Content-Disposition'
+
+/**
+ * `textResponseOf` 的入参(状态码 + 文本正文)。
+ */
+export type TextResponseIn = {
+  /**
+   * HTTP 状态码。
+   */
+  status: number
+
+  /**
+   * 响应正文。
+   */
+  text: string
+}
+
+/**
+ * `textResponseOf` 的返回(fetch 标准的 Response 起本地名 —— HTTP 层的母语)。
+ */
+export type TextResponseOut = Response
+
+/**
+ * 纯文本响应(路由层拼拦截响应用;2026-08-23 收牌批 —— functions 不造 Response,
+ * 判定素材由域给,壳在本叶一处拼)。
+ *
+ * @param input 状态码与正文。
+ * @returns Response。
+ */
+export function textResponseOf(input: TextResponseIn): TextResponseOut {
+  return new Response(input.text, { status: input.status })
+}

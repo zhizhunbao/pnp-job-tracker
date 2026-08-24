@@ -16,6 +16,7 @@ import { loadOccStats, loadProvExtra } from '@/lib/stats/server'
 import { PROVS } from '@/lib/stats'
 import { Pulse, type HomeStats } from './Pulse'
 import { buildSponsorBoards, loadSponsorEmployers, SE_SSR_ROWS } from '@/lib/employers/server'
+import { employerVerdict } from '@/lib/ruling/server'
 import { SQL } from '@/lib/db'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
@@ -102,7 +103,7 @@ async function loadHomeStats(pool: any, payload: any): Promise<Omit<HomeStats, '
       .then((r: any) => r.rows as any[]).catch(() => []),
     loadProvExtra(pool).catch(() => ({})),      // 省卡:IRCC 学签/工签/PNP 拿到 PR + 难度档(与 /stats 索引页同源)
     // B2+ 雇主橱窗:复用进程内聚合缓存(同进程同一份,零额外查询);挂了只丢橱窗
-    loadSponsorEmployers(pool).catch(() => []),
+    loadSponsorEmployers({ db: pool, judge: employerVerdict }).catch(() => []),
     occOptions(pool).catch(() => []),
     catOptions(payload).catch(() => []),
     // S1 两标量 + noc→分类映射的原料(单一真相源 lib/stats/server.loadOccStats,同 /api/stats/market);

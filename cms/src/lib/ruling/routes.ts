@@ -10,6 +10,7 @@
  */
 import { BAD_REQUEST } from '../http'
 import { getDb } from '../db/server'
+import { getUser, isPro } from '../quota/server'
 import { loadOccCompetition } from '../jobs/server'
 import { loadPilotQuota } from '../pathways/server'
 import { E_ANSWERS_REQUIRED, E_NOC_REQUIRED, NOC5_RE, P_JOB, P_NOC, P_TEER, TEER_MAX } from './constants'
@@ -25,7 +26,11 @@ import type { ClientAnswers, ProfileBody, TripleWireResult, VerdictBody } from '
  * @returns 三合一判定卡 json;域层裁决的错误照其状态码回。
  */
 export async function rulingVerdictGetRoute(req: Request): Promise<Response> {
-  return wireRespond(await tripleWireOf({ id: Number(new URL(req.url).searchParams.get(P_JOB)), answers: null }))
+  function nullSession(_e: Error): null {
+    return null
+  }
+  const user = await getUser(req.headers).catch(nullSession)
+  return wireRespond(await tripleWireOf({ id: Number(new URL(req.url).searchParams.get(P_JOB)), answers: null, user: user, pro: isPro(user) }))
 }
 
 /**
@@ -51,7 +56,11 @@ export async function rulingVerdictPostRoute(req: Request): Promise<Response> {
       answers = body.answers
     }
   }
-  return wireRespond(await tripleWireOf({ id: id, answers: answers }))
+  function nullSession(_e: Error): null {
+    return null
+  }
+  const user = await getUser(req.headers).catch(nullSession)
+  return wireRespond(await tripleWireOf({ id: id, answers: answers, user: user, pro: isPro(user) }))
 }
 
 /**

@@ -9,7 +9,9 @@
 import { getDb } from '@/lib/db/server'
 import { getScoreTables } from '@/lib/points/server'
 import { getTopNocs } from '@/lib/jobs/server'
+import { headers } from 'next/headers'
 import { tripleWireOf, type TripleWire } from '@/lib/ruling/server'
+import { getUser, isPro } from '@/lib/quota/server'
 import { Decision, type TvJob } from './Decision'
 import { SQL } from '@/lib/db'   // SQL 文本全在那儿,本文件只管取数与组装
 
@@ -57,7 +59,7 @@ export default async function PlanPrPage({ searchParams }: { searchParams: Promi
   if (tvJob) {
     let timer: ReturnType<typeof setTimeout> | undefined
     const wire = await Promise.race([
-      tripleWireOf({ id: tvJob.id, answers: null }).catch(() => null),
+      (async () => { const u = await getUser(await headers()).catch(() => null); return tripleWireOf({ id: tvJob.id, answers: null, user: u, pro: isPro(u) }) })().catch(() => null),
       new Promise<null>((resolve) => { timer = setTimeout(() => resolve(null), 1500) }),
     ])
     if (timer) clearTimeout(timer)

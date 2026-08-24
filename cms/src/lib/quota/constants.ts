@@ -104,6 +104,16 @@ export const IP_LOCAL = 'local'
 export const COMMA = ','
 
 /**
+ * 拦截判定字面量:免费池用完(402 素材在 denyBodyOf)。
+ */
+export const DENY_USER = 'user402'
+
+/**
+ * 拦截判定字面量:匿名 IP 池超限。
+ */
+export const DENY_IP = 'ip429'
+
+/**
  * 402 拦截响应的正文(前端据此弹升级卡)。
  */
 export const TEXT_UPGRADE = 'upgrade required'

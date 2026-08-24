@@ -9,6 +9,7 @@ import { describe, it } from 'vitest'
 import { getDb } from '@/lib/db/server'
 import { EMPTY_PROFILE } from '@/lib/consult'
 import { consult } from '@/lib/consult/server'
+import { loadVerdictTables, pathVerdict } from '@/lib/ruling/server'
 import type { Profile, Turn } from '@/lib/consult'
 
 const LIVE = Boolean(process.env.CHAT_LLM_BASE)
@@ -40,14 +41,14 @@ describe.skipIf(!LIVE)('追问:上一轮的内容记不记得住', () => {
   for (const s of SEQS) {
     it(s.name, async () => {
       const db = await getDb()
-      const t1 = await consult({ db, text: s.first, lang: 'zh', profile: EMPTY_PROFILE, history: [], onStep: null, onDelta: null })
+      const t1 = await consult({ db, text: s.first, lang: 'zh', profile: EMPTY_PROFILE, history: [], onStep: null, onDelta: null, loadVerdict: loadVerdictTables, judgeVerdict: pathVerdict })
       console.log(`\n【${s.name}】`)
       console.log(`  轮1 「${s.first}」 → noc=${t1.noc ?? '-'} 事实${t1.facts.length}`)
       const history: Turn[] = [
         { role: 'user', content: s.first },
         { role: 'assistant', content: t1.answer },
       ]
-      const t2 = await consult({ db, text: s.follow, lang: 'zh', profile: { ...EMPTY_PROFILE, ...s.profileOnFollow }, history, onStep: null, onDelta: null })
+      const t2 = await consult({ db, text: s.follow, lang: 'zh', profile: { ...EMPTY_PROFILE, ...s.profileOnFollow }, history, onStep: null, onDelta: null, loadVerdict: loadVerdictTables, judgeVerdict: pathVerdict })
       console.log(`  轮2 「${s.follow}」 → noc=${t2.noc ?? '-'} 事实${t2.facts.length} 降级=${t2.degraded}`)
       console.log(`  → ${t2.answer.slice(0, 200).replace(/\n/g, ' ⏎ ')}`)
       console.log(`  ⇒ 职业带下来了吗:${t2.noc === t1.noc && t1.noc ? '是' : '否'}`)

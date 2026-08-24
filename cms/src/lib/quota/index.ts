@@ -11,6 +11,7 @@
  * @time 2026-08-22 18:00:00
  */
 
+export type { DenyBody, FreeGated, MaybeUser, SessionUser } from './types'
 export {
   ALERT_MATCH_LEVEL, FREE_ADVISOR_TRIES, FREE_DAILY_TRIES, FREE_JOBTEXT_TRIES,
   FREE_MATCH_JOBS_PER_DAY, FREE_SAVED_SEARCHES, PRO_ADVISOR_DAILY, PRO_CHAT_DAILY,

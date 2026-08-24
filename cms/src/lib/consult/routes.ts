@@ -19,6 +19,7 @@ import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getDb } from '../db/server'
+import { loadVerdictTables, pathVerdict } from '../ruling/server'
 import { isChatError } from '../error'
 import { HDR_CACHE_CONTROL, HDR_CONTENT_TYPE_LC, TOO_MANY } from '../http'
 import type { Lang } from '../i18n'
@@ -83,7 +84,7 @@ export async function consultChatRoute(req: Request): Promise<Response> {
   }
   const user = await getUserOrNull(await headers())
   const g = freeGate({ user: user, headers: req.headers })
-  if (g.block != null) {
+  if (g.deny != null) {
     return Response.json({ error: E_LIMIT }, { status: TOO_MANY })
   }
   if (user != null && isPro(user) && checkLimit([[PRO_LIMIT_PREFIX + String(user.id), PRO_CHAT_DAILY]]) === false) {
@@ -144,6 +145,7 @@ export async function consultChatRoute(req: Request): Promise<Response> {
         const db = await getDb()
         const r = await consult({
           db: db, text: text, lang: lang, profile: profile, history: history,
+          loadVerdict: loadVerdictTables, judgeVerdict: pathVerdict,
           onStep: function onStep(s: string): void {
             steps.push(s)
             send({ step: s })
