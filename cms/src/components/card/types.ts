@@ -142,9 +142,9 @@ export type LockedRowsIn = {
 }
 
 /**
- * LinkText(可点文本,域内小件)的 props。
+ * TextButton(可点文本钮,域内小件;原名 LinkText)的 props。
  */
-export type LinkTextIn = {
+export type TextButtonIn = {
   /**
    * 文本数据(三形态见 CardLink)。
    */

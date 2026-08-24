@@ -6,13 +6,13 @@
  * 右对齐后在卡片流里连成一条竖线,手指下滑只走右边就能比(#148 拍板)。
  * 组件只管版式不管数据与交互:可点的一律由调用方给 href/onClick,
  * 胶囊排/右上钮/页脚都是插槽。
- * 2026-08-24 自 ui/Card.tsx 拆出(内嵌 Row/LinkText 提成域内小件,展开与 ?? 清零)。
+ * 2026-08-24 自 ui/Card.tsx 拆出(内嵌 Row/TextButton 提成域内小件,展开与 ?? 清零)。
  *
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
 import { JobCardRow } from './jobcardrow'
-import { LinkText } from './linktext'
+import { TextButton } from './textbutton'
 import type { CardLink, JobCardIn } from './types'
 import css from './card.module.css'
 
@@ -51,7 +51,7 @@ export function JobCard({
   if (company != null || companyBadge != null) {
     companyCell = (
       <>
-        {company != null && <LinkText v={company} className={css.co} />}
+        {company != null && <TextButton v={company} className={css.co} />}
         {companyBadge}
       </>
     )
@@ -72,7 +72,7 @@ export function JobCard({
   return (
     <div data-tap-card onClick={onCardClick} className={css.jcard}>
       <div className={css.top}>
-        <LinkText v={titleLink} className={css.title} />
+        <TextButton v={titleLink} className={css.title} />
         {action != null && <span className={css.actSlot}>{action}</span>}
       </div>
       {note != null && <div className={css.note}>{note}</div>}
