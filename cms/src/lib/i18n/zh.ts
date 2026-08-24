@@ -853,7 +853,7 @@ export const siteZh = {
   'acct.toReg': '还没有账号?免费注册', 'acct.toLogin': '已有账号?登录',
   'acct.err.cred': '邮箱或密码不正确', 'acct.err.exists': '该邮箱已注册,请直接登录', 'acct.err.weakPw': '密码不够强:至少 8 位', 'acct.err.generic': '操作失败,请稍后再试', 'acct.err.oauth': 'Google 登录没成功,请重试或用邮箱登录',
   'acct.pw.short': '太短:至少 8 位', 'acct.pw.weak': '弱', 'acct.pw.medium': '中', 'acct.pw.strong': '强', 'acct.pw.hint': '建议混合大小写、数字或符号',
-  'acct.plan.free': '免费版', 'acct.plan.pro': 'Pro · 有效期至 {d}',
+  'acct.plan.free': '免费版', 'acct.plan.pro': '有效期至 {d}',
   'acct.logout': '退出登录',
   'acct.nick': '昵称', 'acct.nickSave': '保存', 'acct.nickPh': '取个昵称',
   'acct.forgot': '忘记密码?', 'acct.forgotSend': '发送重置邮件', 'acct.forgotSent': '如果该邮箱已注册,重置邮件已发出——请查收(链接 1 小时内有效)。',

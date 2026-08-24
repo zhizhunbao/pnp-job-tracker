@@ -772,7 +772,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'acct.toReg': '계정이 없으신가요? 무료 가입', 'acct.toLogin': '이미 계정이 있으신가요? 로그인',
   'acct.err.cred': '이메일 또는 비밀번호가 올바르지 않습니다', 'acct.err.exists': '이미 등록된 이메일입니다. 로그인해 주세요', 'acct.err.weakPw': '비밀번호가 약합니다: 8자 이상', 'acct.err.generic': '오류가 발생했습니다. 다시 시도하세요', 'acct.err.oauth': 'Google 로그인에 실패했습니다. 다시 시도하거나 이메일로 로그인하세요',
   'acct.pw.short': '너무 짧음: 8자 이상', 'acct.pw.weak': '약함', 'acct.pw.medium': '보통', 'acct.pw.strong': '강함', 'acct.pw.hint': '대소문자·숫자·기호를 섞어 주세요',
-  'acct.plan.free': '무료', 'acct.plan.pro': 'Pro · {d}까지',
+  'acct.plan.free': '무료', 'acct.plan.pro': '{d}까지',
   'acct.logout': '로그아웃',
   'acct.nick': '닉네임', 'acct.nickSave': '저장', 'acct.nickPh': '닉네임 입력',
   'acct.forgot': '비밀번호를 잊으셨나요?', 'acct.forgotSend': '재설정 메일 보내기', 'acct.forgotSent': '등록된 이메일인 경우 재설정 링크가 발송되었습니다(1시간 유효).',

@@ -777,7 +777,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'acct.toReg': "No account? Sign up free", 'acct.toLogin': 'Have an account? Sign in',
   'acct.err.cred': 'Wrong email or password', 'acct.err.exists': 'Email already registered — sign in instead', 'acct.err.weakPw': 'Password too weak: at least 8 characters', 'acct.err.generic': 'Something went wrong, try again', 'acct.err.oauth': 'Google sign-in didn’t go through — try again or use email',
   'acct.pw.short': 'Too short: 8+ characters', 'acct.pw.weak': 'Weak', 'acct.pw.medium': 'Fair', 'acct.pw.strong': 'Strong', 'acct.pw.hint': 'Mix upper/lower case, digits or symbols',
-  'acct.plan.free': 'Free', 'acct.plan.pro': 'Pro · until {d}',
+  'acct.plan.free': 'Free', 'acct.plan.pro': 'until {d}',
   'acct.logout': 'Sign out',
   'acct.nick': 'Nickname', 'acct.nickSave': 'Save', 'acct.nickPh': 'Choose a nickname',
   'acct.forgot': 'Forgot password?', 'acct.forgotSend': 'Send reset email', 'acct.forgotSent': 'If that email is registered, a reset link has been sent (valid for 1 hour).',

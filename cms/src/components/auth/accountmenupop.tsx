@@ -18,6 +18,7 @@ import {
   PATH_MATCH,
   QUIZ_PATH,
 } from './constants'
+import { PRO_LABEL } from './constants'
 import { logout } from './functions'
 import type { AccountMenuPopIn } from './types'
 import css from './auth.module.css'
@@ -28,18 +29,21 @@ import css from './auth.module.css'
  * @param props 身份与回调(见 AccountMenuPopIn 逐格注释)。
  * @returns 弹层。
  */
-export function AccountMenuPop({ t, email, shortName, isPro, proText, onUpgrade }: AccountMenuPopIn) {
+export function AccountMenuPop({ t, email, shortName, isPro, proUntil, onUpgrade }: AccountMenuPopIn) {
   return (
     <div role="menu" className={css.menuPop}>
       <LinkButton href={PATH_ACCOUNT} className={css.menuHead}>
         <div className={css.menuName}>
           {shortName}
           <span className={css.menuPlan}>
-            {isPro && <span className={css.menuPro}>{proText}</span>}
+            {isPro && <span className={css.menuPro}>{PRO_LABEL}</span>}
             {isPro === false && <span className={css.menuFree}>{t('acct.plan.free')}</span>}
           </span>
         </div>
         <div className={css.menuMail}>{email}</div>
+        {/* 到期日独占一行(2026-08-24 Frank 拍 A 案):原先是「Pro · 有效期至 X」,
+            那个「·」撞全站铁律「禁·杂糅多信息,一行一条」—— 拆行,三语文案同步去点 */}
+        {isPro && proUntil !== '' && <div className={css.menuUntil}>{t('acct.plan.pro', { d: proUntil })}</div>}
       </LinkButton>
       <div className={css.menuSect}>{t('menu.sect.job')}</div>
       <LinkButton href={PATH_MATCH} className={css.menuItem}><IconTarget /> {t('mv.entry')}</LinkButton>

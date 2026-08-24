@@ -7,6 +7,12 @@
  */
 
 /**
+ * 界面语取词函数(与 lib/i18n 的 TFn 同形:键 + 可选插值 —— 本域当初手抄成单参,
+ * 2026-08-24 到期日文案带 {d} 插值时撞出来,按真形补齐)。
+ */
+export type TFn = (key: string, vars?: Record<string, string | number>) => string
+
+/**
  * 表单四态:登录 / 注册 / 找回密码(输邮箱)/ 重置密码(邮件链接落地设新密码 ——
  * 「改密码」走的就是这条链)。
  */
@@ -29,7 +35,7 @@ export type AuthFormIn = {
   /**
    * 界面语翻译函数。
    */
-  t: (key: string) => string
+  t: TFn
 
   /**
    * 认证完成回调(邮箱路径原地刷新;有问卷缺口时先跳问卷,不走它)。
@@ -65,7 +71,7 @@ export type AuthModalIn = {
   /**
    * 界面语翻译函数。
    */
-  t: (key: string) => string
+  t: TFn
 
   /**
    * 关闭回调。
@@ -231,7 +237,7 @@ export type GoogleButtonIn = {
   /**
    * 界面语翻译函数。
    */
-  t: (key: string) => string
+  t: TFn
 
   /**
    * 点击(整页 OAuth 跳转由调用方拼 returnTo)。
@@ -246,7 +252,7 @@ export type AuthHeroIn = {
   /**
    * 界面语翻译函数。
    */
-  t: (key: string) => string
+  t: TFn
 
   /**
    * 当前态(只会是 login/register,调用方判过)。
@@ -271,7 +277,7 @@ export type AuthFieldsIn = {
   /**
    * 界面语翻译函数。
    */
-  t: (key: string) => string
+  t: TFn
 
   /**
    * 当前态(定字段显隐与提交钮文案)。
@@ -321,7 +327,7 @@ export type PwMeterIn = {
   /**
    * 界面语翻译函数。
    */
-  t: (key: string) => string
+  t: TFn
 
   /**
    * 当前密码(空串不渲染,调用方已判)。
@@ -336,7 +342,7 @@ export type AuthFooterIn = {
   /**
    * 界面语翻译函数。
    */
-  t: (key: string) => string
+  t: TFn
 
   /**
    * 当前态。
@@ -361,7 +367,7 @@ export type AuthFormHookIn = {
   /**
    * 界面语翻译函数(报错文案在机器里翻好)。
    */
-  t: (key: string) => string
+  t: TFn
 
   /**
    * 认证完成回调。
@@ -496,7 +502,7 @@ export type AccountMenuPopIn = {
   /**
    * 界面语翻译函数。
    */
-  t: (key: string) => string
+  t: TFn
 
   /**
    * 邮箱;未知给 null。
@@ -514,9 +520,9 @@ export type AccountMenuPopIn = {
   isPro: boolean
 
   /**
-   * Pro 层级字(已拼好到期日)。
+   * Pro 到期日(YYYY-MM-DD);'' = 免费号或未知。
    */
-  proText: string
+  proUntil: string
 
   /**
    * 「升级 Pro」点击;null = 不显这一条。
@@ -531,7 +537,7 @@ export type AccountMenuIn = {
   /**
    * 界面语翻译函数。
    */
-  t: (key: string) => string
+  t: TFn
 
   /**
    * 邮箱;未知给 null。
