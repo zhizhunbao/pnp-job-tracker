@@ -8,4 +8,4 @@
 
 export { isDryRun, quietInfo, runAlerts } from './functions'
 export { alertsRunRoute, alertsUnsubRoute } from './routes'
-export type { FetchHitsFn, RunIn, RunResult } from './types'
+export type { LoadHitsFn, RunIn, RunResult } from './types'

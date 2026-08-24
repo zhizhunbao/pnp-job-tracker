@@ -6,4 +6,4 @@
  * @time 2026-08-22 01:00:16
  */
 
-export { fetchPilotQuota } from './functions'
+export { loadPilotQuota } from './functions'

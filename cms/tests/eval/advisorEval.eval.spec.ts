@@ -23,7 +23,7 @@ import { advisorRoute } from '@/lib/advisor/server'
 import { toAdvisorJob, provFactsOf, cityFactsOf, promptOf, type AdvisorJob } from '@/lib/advisor'
 import { normalizeProfile } from '@/lib/jobs'
 import type { JobRow } from '@/lib/jobs'
-import { fetchJobById, jobDescription, loadCityCard, loadProvinceCard } from '@/lib/jobs/server'
+import { loadJobById, jobDescription, loadCityCard, loadProvinceCard } from '@/lib/jobs/server'
 
 const LIVE = Boolean(process.env.DATABASE_URI) && Boolean(process.env.CHAT_LLM_BASE || process.env.TRANSLATE_API_BASE)
 const suite = LIVE ? describe : describe.skip
@@ -131,7 +131,7 @@ async function pickJobs(): Promise<Picked[]> {
   }
   const out: Picked[] = []
   for (const id of ids) {
-    const row = await fetchJobById({
+    const row = await loadJobById({
       db, id, pro: true, profile: normalizeProfile(null), profileOk: false,
       matchDims: { pnpOccupations: [], eeCategories: [] },
     })

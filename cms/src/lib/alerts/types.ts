@@ -195,7 +195,7 @@ export type MailJobRow = {
  * saved-search 取命中函数的形状(取数函数由路由注入 —— 域之间不互相借取数函数,
  * 样板:路由把 resolveByAgent 注给 orchestrate)。
  */
-export type FetchHitsFn = (input: {
+export type LoadHitsFn = (input: {
   /**
    * 保存的筛选(payload 文档里的 json)。
    */
@@ -252,9 +252,9 @@ export type RunIn = {
   payload: PayloadHandle
 
   /**
-   * saved-search 命中取数(路由注入 fetchAlertHits)。
+   * saved-search 命中取数(路由注入 loadAlertHits)。
    */
-  fetchHits: FetchHitsFn
+  fetchHits: LoadHitsFn
 }
 
 /**
@@ -406,7 +406,7 @@ export type UnsubIn = {
 
 /**
  * 保存的筛选里一格的取值（payload 自由 json 的信任边界；真正的白名单收窄在
- * fetchAlertHits，这里只把 unknown 换成显式联合）。
+ * loadAlertHits，这里只把 unknown 换成显式联合）。
  */
 export type FilterCell = string | number | boolean | string[] | null
 

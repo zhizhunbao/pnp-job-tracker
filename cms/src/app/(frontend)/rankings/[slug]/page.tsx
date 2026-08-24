@@ -4,7 +4,7 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import { Ranking } from '../Ranking'
 import { RANKING_SLUGS } from '@/lib/rankings'
 import { getDb } from '@/lib/db/server'
-import { fetchRankingRows, fetchRankingSlugs } from '@/lib/rankings/server'
+import { loadRankingRows, loadRankingSlugs } from '@/lib/rankings/server'
 
 export const dynamic = 'force-dynamic'
 const META: Record<string, { title: string; desc: string }> = {
@@ -42,6 +42,6 @@ export default async function RankingPage({ params }: { params: Promise<{ slug: 
   if (slug === 'sponsor-likely') permanentRedirect('/start')
   if (!RANKING_SLUGS.has(slug)) notFound()
   const db = await getDb()
-  const [items, slugs] = await Promise.all([fetchRankingRows({ db: db, slug: slug }), fetchRankingSlugs(db)])
+  const [items, slugs] = await Promise.all([loadRankingRows({ db: db, slug: slug }), loadRankingSlugs(db)])
   return <Ranking slug={slug} items={items} slugs={slugs} />
 }

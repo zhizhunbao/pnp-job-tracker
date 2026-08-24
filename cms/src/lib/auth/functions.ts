@@ -168,7 +168,7 @@ export async function exchangeCode(input: ExchangeIn): MaybeToken {
  * @param accessToken 换来的 access_token。
  * @returns 本域要的三格;任一步失败或邮箱未验证给 null。
  */
-export async function fetchGoogleUser(accessToken: string): GoogleUserOut {
+export async function loadGoogleUser(accessToken: string): GoogleUserOut {
   let res: Response | null = null
   try {
     res = await fetch(GOOGLE_USERINFO_URL, { headers: { Authorization: BEARER_PREFIX + accessToken } })
@@ -319,7 +319,7 @@ export async function googleCallback(input: GoogleCallbackIn): CallbackOut {
     log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_TOKEN })
     return { kind: K_FAIL }
   }
-  const gu = await fetchGoogleUser(accessToken)
+  const gu = await loadGoogleUser(accessToken)
   if (gu == null) {
     log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_EMAIL })
     return { kind: K_FAIL }

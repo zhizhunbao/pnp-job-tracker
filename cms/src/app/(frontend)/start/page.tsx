@@ -11,11 +11,11 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getUser } from '@/lib/quota/server'
 import { normalizeProfile } from '@/lib/jobs'
-import { checkedAt, fetchTotalAndProof } from '@/lib/jobs/server'
+import { checkedAt, loadTotalAndProof } from '@/lib/jobs/server'
 import { loadOccStats, loadProvExtra } from '@/lib/stats/server'
 import { PROVS } from '@/lib/stats'
 import { Pulse, type HomeStats } from './Pulse'
-import { buildSponsorBoards, fetchSponsorEmployers, SE_SSR_ROWS } from '@/lib/employers/server'
+import { buildSponsorBoards, loadSponsorEmployers, SE_SSR_ROWS } from '@/lib/employers/server'
 import { SQL } from '@/lib/db'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'
@@ -90,7 +90,7 @@ async function catOptions(payload: any) {
 async function loadHomeStats(pool: any, payload: any): Promise<Omit<HomeStats, 'checkedAt' | 'provPreset'>> {
   // 每项独立 .catch(null):一张表缺/查询挂只丢它自己那块,页面照常(宁可留空)
   const [proof, drawRes, newsRes, provExtra, sponsorRows, occOpts, catMids, occRows] = await Promise.all([
-    fetchTotalAndProof(pool).catch(() => null),
+    loadTotalAndProof(pool).catch(() => null),
     // 抽选表(与 /pathways 同源 pnp_draws):前端只展示 Top N(下拉 10/20/50),
     // 但冷解读要按通道回看 12 期 —— 多取一批只在服务端用完即丢,不进 HTML
     // #280:SELECT *(不点名 stream_zh)—— 同 news.title_zh 的容缺手法:DDL 没跑前该列不存在,
@@ -102,7 +102,7 @@ async function loadHomeStats(pool: any, payload: any): Promise<Omit<HomeStats, '
       .then((r: any) => r.rows as any[]).catch(() => []),
     loadProvExtra(pool).catch(() => ({})),      // 省卡:IRCC 学签/工签/PNP 拿到 PR + 难度档(与 /stats 索引页同源)
     // B2+ 雇主橱窗:复用进程内聚合缓存(同进程同一份,零额外查询);挂了只丢橱窗
-    fetchSponsorEmployers(pool).catch(() => []),
+    loadSponsorEmployers(pool).catch(() => []),
     occOptions(pool).catch(() => []),
     catOptions(payload).catch(() => []),
     // S1 两标量 + noc→分类映射的原料(单一真相源 lib/stats/server.loadOccStats,同 /api/stats/market);

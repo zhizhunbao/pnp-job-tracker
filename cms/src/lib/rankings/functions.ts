@@ -17,7 +17,7 @@ import type { FetchRowsIn, RowsOut, SlugsOut, RankDbRow, RankRow, SlugDbRow } fr
  * @param db 能查的连接(池由调用方注进来)。
  * @returns 有数据的榜 slug 清单。
  */
-export async function fetchRankingSlugs(db: Db): SlugsOut {
+export async function loadRankingSlugs(db: Db): SlugsOut {
   return queryRows({ db: db, sql: SQL.RANKING_SLUGS_ALL, params: [], map: toSlug })
 }
 
@@ -27,7 +27,7 @@ export async function fetchRankingSlugs(db: Db): SlugsOut {
  * @param input 连接与榜 slug。
  * @returns 榜行(名次序)。
  */
-export async function fetchRankingRows(input: FetchRowsIn): RowsOut {
+export async function loadRankingRows(input: FetchRowsIn): RowsOut {
   return queryRows({ db: input.db, sql: SQL.RANKING_ROWS, params: [input.slug], map: toRankRow })
 }
 

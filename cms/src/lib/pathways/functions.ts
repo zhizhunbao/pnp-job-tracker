@@ -178,7 +178,7 @@ export function aggregatePilotQuota(rows: PilotCommunityRows): PilotQuotaAggs {
  * @param db 数据库连接(池由调用方注进来)。
  * @returns 聚合行;拉不到空数组。
  */
-export async function fetchPilotQuota(db: Db): PilotQuotaOut {
+export async function loadPilotQuota(db: Db): PilotQuotaOut {
   const rows = await queryRowsOrEmpty({ db: db, sql: SQL.PILOT_QUOTA_COMMUNITIES, params: [], map: toPilotCommunity })
   return aggregatePilotQuota(rows)
 }

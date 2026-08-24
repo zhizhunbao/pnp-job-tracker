@@ -2581,7 +2581,7 @@ async function loadScoreTables(db: Db): ScoreTablesOut {
  * 决策页首屏的官方表包(进程内单件缓存;2026-08-12 立,2026-08-22 自 lib/score 并入本域)。
  * 抽选表(overview)留在 SSR:它是这页唯一的免费硬事实,要被爬到,不能等水合;
  * 分值表由 `/api/points/factors` 按省懒取,不再随页面下发。
- * topNocs 2026-08-22 起不进包 —— 那是 jobs 的题材,页面另取 `fetchTopNocsCached`(同 TTL)。
+ * topNocs 2026-08-22 起不进包 —— 那是 jobs 的题材,页面另取 `getTopNocs`(同 TTL)。
  * 两张主表都空 = 多半是查挂了,不把一次抖动钉死 10 分钟。
  *
  * @param db 能打 SQL 的东西(池由调用方注进来)。

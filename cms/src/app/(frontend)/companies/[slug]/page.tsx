@@ -5,7 +5,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { getUser } from '@/lib/quota/server'
-import { fetchCompanyBySlug, fetchSimilarEmployers } from '@/lib/jobs/server'
+import { loadCompanyBySlug, loadSimilarEmployers } from '@/lib/jobs/server'
 import Company from './Company'
 
 export const dynamic = 'force-dynamic'
@@ -15,7 +15,7 @@ const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com').replac
 async function loadCompany(slug: string) {
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
-  return fetchCompanyBySlug({ db: pool, slug })
+  return loadCompanyBySlug({ db: pool, slug })
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -50,7 +50,7 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
 
   // 相似雇主(同省同行业;失败不拦页面)
   const payload = await getPayload({ config: await config })
-  const similar = await fetchSimilarEmployers({ db: (payload.db as any).pool, province: company.province, industry: company.industry, excludeSlug: company.slug }).catch(() => [])
+  const similar = await loadSimilarEmployers({ db: (payload.db as any).pool, province: company.province, industry: company.industry, excludeSlug: company.slug }).catch(() => [])
 
   // Organization JSON-LD(公开事实层;缺值不编)
   const jsonLd: Record<string, unknown> = {

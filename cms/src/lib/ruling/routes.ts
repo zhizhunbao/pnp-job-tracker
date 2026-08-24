@@ -10,8 +10,8 @@
  */
 import { BAD_REQUEST } from '../http'
 import { getDb } from '../db/server'
-import { fetchOccCompetition } from '../jobs/server'
-import { fetchPilotQuota } from '../pathways/server'
+import { loadOccCompetition } from '../jobs/server'
+import { loadPilotQuota } from '../pathways/server'
 import { E_ANSWERS_REQUIRED, E_NOC_REQUIRED, NOC5_RE, P_JOB, P_NOC, P_TEER, TEER_MAX } from './constants'
 import { buildProfileWire, getVerdictData, jobPathways, loadProvinceCompetition, parseProfileBody, tripleWireOf } from './functions'
 import type { ClientAnswers, ProfileBody, TripleWireResult, VerdictBody } from './types'
@@ -133,7 +133,7 @@ export async function rulingProfileRoute(req: Request): Promise<Response> {
   const db = await getDb()
   const [data, comp, occRows, pilotQuota] = await Promise.all([
     getVerdictData(), loadProvinceCompetition(db),
-    fetchOccCompetition({ db: db, nocs: occNocs }), fetchPilotQuota(db),
+    loadOccCompetition({ db: db, nocs: occNocs }), loadPilotQuota(db),
   ])
   const wire = buildProfileWire({
     profile: parsed.profile, data: data, comp: comp,

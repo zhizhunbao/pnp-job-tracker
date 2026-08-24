@@ -6,5 +6,5 @@
  * @time 2026-08-22 19:27:15
  */
 
-export { fetchRankingRows, fetchRankingSlugs } from './functions'
+export { loadRankingRows, loadRankingSlugs } from './functions'
 export { rankingsDataRoute } from './routes'

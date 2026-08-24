@@ -2,7 +2,7 @@
  * 提醒域的 HTTP 芯（第十一抽屉）：/api/alerts/run 与 /api/alerts/unsub。
  * 顶层只有 handler（闸 routes-shape）；本文件是域内边缘，唯一允许借别域 server 门取数。
  * fetchHits 内联闭包里的 `as JobsFilters` 是跨边界断言：保存的筛选是 payload 里的
- * 自由 json，fetchAlertHits 自己按白名单收。
+ * 自由 json，loadAlertHits 自己按白名单收。
  *
  * @author Frank
  * @time 2026-08-23 01:30:00
@@ -10,7 +10,7 @@
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getDb } from '../db/server'
-import { fetchAlertHits, loadMatchDims } from '../jobs/server'
+import { loadAlertHits, loadMatchDims } from '../jobs/server'
 import type { JobsFilters } from '../jobs/server'
 import {
   HDR_CONTENT_TYPE_LC, HDR_SEED_TOKEN, MIME_HTML, SERVER_ERROR, TEXT_UNAUTHORIZED, UNAUTHORIZED,
@@ -18,7 +18,7 @@ import {
 import { fill } from '../template'
 import { K_PREVIEW, P_DRY, P_FORCE, P_LANG, P_PREVIEW, P_TOKEN, P_USER, QUIET_RANGE, SWITCH_ON } from './constants'
 import { isDryRun, quietInfo, runAlerts, unsubApply, unsubPageHtml } from './functions'
-import type { FetchHitsFn } from './types'
+import type { LoadHitsFn } from './types'
 
 /**
  * GET /api/alerts/run：跑一轮提醒(2026-08-23 两域拍板后 alerts 即正名,URL↔名机械映射;
@@ -50,8 +50,8 @@ export async function alertsRunRoute(req: Request): Promise<Response> {
   if (langParam != null) {
     previewLang = langParam
   }
-  const fetchHits: FetchHitsFn = function fetchHits(input) {
-    return fetchAlertHits({ db: pool, filters: input.filters as JobsFilters, since: input.since })
+  const fetchHits: LoadHitsFn = function fetchHits(input) {
+    return loadAlertHits({ db: pool, filters: input.filters as JobsFilters, since: input.since })
   }
   const result = await runAlerts({
     db: pool, dry: dry, preview: preview, previewLang: previewLang,

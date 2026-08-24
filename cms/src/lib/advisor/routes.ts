@@ -1,7 +1,7 @@
 /**
  * advisor 域的 HTTP 芯(第十一抽屉):POST /api/advisor。
  * 与老 api/advisor 的行为级差异只有一个(设计文档「二、契约变更」):body.job 整包
- * **不再采信** —— 事实一律服务端现查(fetchJobById / loadNocDuties / loadProvince·CityCard /
+ * **不再采信** —— 事实一律服务端现查(loadJobById / loadNocDuties / loadProvince·CityCard /
  * companyRow),前端伪造「PNP-eligible: yes」的洞随之关闭;其余(闸、缓存、限流、
  * 前导话闸、响应头)逐字保形。生成走 pi 循环(runAdvisor):简单场景空工具集≈一发,
  * company 挂 web_fetch(2026-08-23 Frank 拍板全场景上循环)。
@@ -24,7 +24,7 @@ import { BAD_REQUEST, NOT_FOUND, TOO_MANY } from '../http'
 import { hasProfile, match, normalizeProfile, reasonEn, statusEn } from '../jobs'
 import type { MatchDims, ProfileJson } from '../jobs'
 import {
-  fetchJobById, jobDescription, loadCityCard, loadMatchDims, loadProvinceCard,
+  loadJobById, jobDescription, loadCityCard, loadMatchDims, loadProvinceCard,
 } from '../jobs/server'
 import { companyRow, investigateCompany } from '../employers/server'
 import type { CompanyResearch } from '../employers/server'
@@ -126,7 +126,7 @@ export async function advisorRoute(req: Request): Promise<Response> {
   } else {
     const id = Number(bodyId)
     if (Number.isFinite(id)) {
-      const row = await fetchJobById({ db, id, pro, profile: p, profileOk, matchDims: dims })
+      const row = await loadJobById({ db, id, pro, profile: p, profileOk, matchDims: dims })
       if (row != null) {
         job = toAdvisorJob(row)
         if (field === F_COMPANY) {

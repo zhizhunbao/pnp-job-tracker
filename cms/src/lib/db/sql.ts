@@ -343,7 +343,7 @@ export const NOC_TITLE_TEER = `SELECT COALESCE(s.title_en, d.title, '') title, s
 export const PROV_DIFFICULTY = `SELECT province, difficulty FROM stats
        WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL`
 
-// ── jobs/functions.ts(fetchOccCompetition;2026-08-22 自 lib/score 并入)──
+// ── jobs/functions.ts(loadOccCompetition;2026-08-22 自 lib/score 并入)──
 
 /**
  * 职业竞争度:各省在架量(实时)/30 天新增/平均在架天数(后两列走快照)。$1=码数组。
@@ -844,7 +844,7 @@ export const alertNewCount = (a1: string) => `SELECT count(*)::int AS n FROM job
 
 // ── app/api/jobs/competition/route.ts ──
 // 2026-08-22 段内四条(OCC_COMP/AIP/RCIP/FCIP_BY_PROV 单 noc 版)退役:路由改吃
-// jobs/functions.fetchOccCompetition 的数组版(§8 那组)—— 单 noc 版还在读
+// jobs/functions.loadOccCompetition 的数组版(§8 那组)—— 单 noc 版还在读
 // stats_occupation 日快照,与 2026-08-16「在招是显示多少就查多少」的实时口径岔开。
 
 // =========================================================================

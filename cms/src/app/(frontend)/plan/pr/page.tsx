@@ -8,7 +8,7 @@
 // 但两张表都过 getScoreTables 的进程内缓存,不再每请求两条查询(prod-pool-wedge 教训)。
 import { getDb } from '@/lib/db/server'
 import { getScoreTables } from '@/lib/points/server'
-import { fetchTopNocsCached } from '@/lib/jobs/server'
+import { getTopNocs } from '@/lib/jobs/server'
 import { tripleWireOf, type TripleWire } from '@/lib/ruling/server'
 import { Decision, type TvJob } from './Decision'
 import { SQL } from '@/lib/db'   // SQL 文本全在那儿,本文件只管取数与组装
@@ -26,7 +26,7 @@ export default async function PlanPrPage({ searchParams }: { searchParams: Promi
   // 表包(points)与热门职业榜(jobs)2026-08-22 拆开取,各自 TTL 缓存;池由页面注入(拍板③)
   const db = await getDb()
   const [{ overview, drawsRecent, competition }, topNocs] = await Promise.all([
-    getScoreTables(db), fetchTopNocsCached({ db, limit: 24 }),
+    getScoreTables(db), getTopNocs({ db, limit: 24 }),
   ])
 
   // ?job= 带岗进来 → 三项结果直接并入本页(轻查:判定本体在 /api/ruling/verdict,这里只要表头四样)

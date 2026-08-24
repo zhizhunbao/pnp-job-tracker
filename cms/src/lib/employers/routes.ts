@@ -25,7 +25,7 @@ import {
   SORT_SKILLED, SPONSORS_CACHE_CONTROL, VIEW,
 } from './constants'
 import {
-  applySponsorFilters, buildSponsorBoards, companyRow, fetchSponsorEmployers, investigateCompany,
+  applySponsorFilters, buildSponsorBoards, companyRow, loadSponsorEmployers, investigateCompany,
   loadCompanyBrief, loadEmployerPage, normalizeEmployerFilters, sponsorCsvOf,
 } from './functions'
 import { CACHE } from './variables'
@@ -69,7 +69,7 @@ export async function employersRoute(req: Request): Promise<Response> {
  * #313(LCP 7.15s 真因):三表 16,430 行全量序列化进 /start 的 RSC payload,SSR 文档
  * 6.92MB —— 拆法照 /api/stats/market:SSR 只带每表前 SE_SSR_ROWS 行 + total,
  * 全量改挂载后后台拉。进程内 10 分钟缓存(CACHE.boards)+ 浏览器侧 5 分钟 + SWR;
- * fetchSponsorEmployers 自带进程缓存 + in-flight 去重,聚合不站在请求路径上排队。
+ * loadSponsorEmployers 自带进程缓存 + in-flight 去重,聚合不站在请求路径上排队。
  *
  * @param _req 请求(不读参数)。
  * @returns 三分表 json;查挂回三张空表。
@@ -77,7 +77,7 @@ export async function employersRoute(req: Request): Promise<Response> {
 export async function employersSponsorsRoute(_req: Request): Promise<Response> {
   if (CACHE.boards == null || Date.now() - CACHE.boards.ts >= CACHE_TTL_MS) {
     try {
-      const rows = await fetchSponsorEmployers(await getDb())
+      const rows = await loadSponsorEmployers(await getDb())
       CACHE.boards = { v: buildSponsorBoards(rows), ts: Date.now() }
     } catch {
       const empty = { top: [], total: 0 }
@@ -123,7 +123,7 @@ export async function employersExportRoute(req: Request): Promise<Response> {
     f: f, prov: prov, city: paramOf(sp, PARAM.city).slice(0, CITY_LEN_MAX),
     noc: noc, q: paramOf(sp, PARAM.q).slice(0, EXPORT_Q_LEN_MAX), sort: sort,
   }
-  const rows = applySponsorFilters({ rows: await fetchSponsorEmployers(await getDb()), filters: filters })
+  const rows = applySponsorFilters({ rows: await loadSponsorEmployers(await getDb()), filters: filters })
   return new Response(sponsorCsvOf(rows), {
     headers: {
       [HDR_CONTENT_TYPE]: CSV_CONTENT_TYPE,

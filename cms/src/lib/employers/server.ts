@@ -11,7 +11,7 @@ export { EMP_PAGE_SIZE, EMP_SSR_ROWS, SE_SSR_ROWS } from './constants'
 export type { CompanyResearch, SponsorBoards } from './types'
 export {
   applyEmployerFilters, applySponsorFilters, buildSponsorBoards, companyRow, compareEmployers,
-  employersBoardProps, fetchOccupations, fetchSponsorEmployers, investigateCompany, loadEmployerPage,
+  employersBoardProps, loadOccupations, loadSponsorEmployers, investigateCompany, loadEmployerPage,
   loadCompanyBrief, normalizeEmployerFilters, resetEmployersCache,
 } from './functions'
 export { employersExportRoute, employersInfoRoute, employersRoute, employersSponsorsRoute, employersTranslateRoute } from './routes'

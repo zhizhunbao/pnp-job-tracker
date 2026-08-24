@@ -860,7 +860,7 @@ function orderByClause(input: OrderByIn): string {
  * @param db 数据库连接(池由调用方注进来)。
  * @returns 首屏维度包。
  */
-export async function fetchSsrDims(db: Db): SsrDimsOut {
+export async function loadSsrDims(db: Db): SsrDimsOut {
   const [prov, noc, src, exp, pnp, draws, ee, fieldSrc, news] = await Promise.all([
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PROVINCES, params: [], map: passRow }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_NOC_CATEGORIES, params: [], map: toNocCat }),
@@ -1014,7 +1014,7 @@ export async function checkedAt(db: Db): CheckedAtOut {
  * @param input 连接、分层态与维度。
  * @returns 行、最近核对时刻与 FOMO 计数。
  */
-export async function fetchJobRows(input: JobRowsIn): JobRowsOut {
+export async function loadJobRows(input: JobRowsIn): JobRowsOut {
   const rows = await queryRows({ db: input.db, sql: SQL.JOB_ROWS_LATEST, params: [input.limit], map: passJobRow })
   let high = 0
   let mid = 0
@@ -1038,7 +1038,7 @@ export async function fetchJobRows(input: JobRowsIn): JobRowsOut {
  * @param input 连接、分层态、筛选、排序与页。
  * @returns 当前页行、同 WHERE 总数与最近核对时刻。
  */
-export async function fetchJobsPage(input: JobsPageIn): JobsPageOut {
+export async function loadJobsPage(input: JobsPageIn): JobsPageOut {
   const w = buildJobsWhere({ filters: await resolveQCompanyIds({ db: input.db, filters: input.filters }), startIndex: 1 })
   const order = orderByClause({ sort: input.sort, pro: input.pro })
   const limPh = DOLLAR + String(w.params.length + 1)
@@ -1190,7 +1190,7 @@ function strOf(v: StrCell): string {
  * @param input 连接、分层态、维度与页。
  * @returns 当前页行、命中总数、FOMO 计数与最近核对时刻。
  */
-export async function fetchMatchPage(input: MatchPageIn): MatchPageOut {
+export async function loadMatchPage(input: MatchPageIn): MatchPageOut {
   const nocs = input.profile.nocCodes
   const noc4 = new Set<string>()
   const noc3 = new Set<string>()
@@ -1259,7 +1259,7 @@ export async function fetchMatchPage(input: MatchPageIn): MatchPageOut {
  * @param input 连接、岗位号与分层态。
  * @returns 板上一行;查无/id 不像样 null。
  */
-export async function fetchJobById(input: JobByIdIn): JobByIdOut {
+export async function loadJobById(input: JobByIdIn): JobByIdOut {
   if (Number.isFinite(input.id) === false) {
     return null
   }
@@ -1279,7 +1279,7 @@ export async function fetchJobById(input: JobByIdIn): JobByIdOut {
  * @param input 连接与本岗。
  * @returns 两组瘦行与兜底级。
  */
-export async function fetchRelatedJobs(input: RelatedIn): RelatedOut {
+export async function loadRelatedJobs(input: RelatedIn): RelatedOut {
   const job = input.job
   let coRows: Row[] = []
   if (job.company !== '') {
@@ -1336,7 +1336,7 @@ export async function fetchRelatedJobs(input: RelatedIn): RelatedOut {
  * @param db 数据库连接(池由调用方注进来)。
  * @returns 三连数。
  */
-export async function fetchTotalAndProof(db: Db): ProofOut {
+export async function loadTotalAndProof(db: Db): ProofOut {
   const hot = CACHE.proof
   if (hot != null && Date.now() - hot.ts < PROOF_TTL_MS) {
     return hot.v
@@ -1369,7 +1369,7 @@ export async function fetchTotalAndProof(db: Db): ProofOut {
  * @param input 连接与 slug。
  * @returns 公司详情;查无 null。
  */
-export async function fetchCompanyBySlug(input: CompanyBySlugIn): CompanyOut {
+export async function loadCompanyBySlug(input: CompanyBySlugIn): CompanyOut {
   if (input.slug === '') {
     return null
   }
@@ -1383,7 +1383,7 @@ export async function fetchCompanyBySlug(input: CompanyBySlugIn): CompanyOut {
  * @param input 连接与岗位号。
  * @returns 公司详情;查无 null。
  */
-export async function fetchCompanyByJobId(input: CompanyByJobIn): CompanyOut {
+export async function loadCompanyByJobId(input: CompanyByJobIn): CompanyOut {
   const detail = await fetchCompanyWhere({ db: input.db, where: SQL.COMPANY_BY_JOB_ID_COND, param: input.jobId })
   if (detail != null && detail.address === '') {
     try {
@@ -1544,7 +1544,7 @@ async function fetchCompanyWhere(input: CompanyWhereIn): CompanyOut {
  * @param input 连接、省、行业与排除 slug。
  * @returns 相似雇主行。
  */
-export async function fetchSimilarEmployers(input: SimilarIn): SimilarOut {
+export async function loadSimilarEmployers(input: SimilarIn): SimilarOut {
   if (input.province === '' || input.industry === '') {
     return []
   }
@@ -1557,7 +1557,7 @@ export async function fetchSimilarEmployers(input: SimilarIn): SimilarOut {
  * @param input 连接、保存筛选与时间下限。
  * @returns 命中行与被跳过的筛选键。
  */
-export async function fetchAlertHits(input: AlertHitsIn): AlertHitsOut {
+export async function loadAlertHits(input: AlertHitsIn): AlertHitsOut {
   const w = buildJobsWhere({ filters: await resolveQCompanyIds({ db: input.db, filters: input.filters }), startIndex: 2 })
   const params: WhereParam[] = [input.since]
   for (const p of w.params) {
@@ -1577,7 +1577,7 @@ export async function fetchAlertHits(input: AlertHitsIn): AlertHitsOut {
  * @param input 连接与职业码。
  * @returns 事实包;码不像样/无在招 null。
  */
-export async function fetchQuizFacts(input: QuizFactsIn): QuizFactsOut {
+export async function loadQuizFacts(input: QuizFactsIn): QuizFactsOut {
   if (NOC_RE.test(input.noc) === false) {
     return null
   }
@@ -1648,7 +1648,7 @@ export async function fetchQuizFacts(input: QuizFactsIn): QuizFactsOut {
  * @param input 连接与职业码清单。
  * @returns 码 → 在招/可提名。
  */
-export async function fetchNocOpenCounts(input: NocCountsIn): NocCountsOut {
+export async function loadNocOpenCounts(input: NocCountsIn): NocCountsOut {
   const list: string[] = []
   for (const n of input.nocs) {
     if (NOC_RE.test(n)) {
@@ -1674,7 +1674,7 @@ export async function fetchNocOpenCounts(input: NocCountsIn): NocCountsOut {
  * @param input 连接与取几。
  * @returns 热门职业行。
  */
-export async function fetchTopNocs(input: TopNocsIn): TopNocsOut {
+export async function loadTopNocs(input: TopNocsIn): TopNocsOut {
   const n = Math.min(Math.max(input.limit, 1), TOP_NOCS_MAX)
   try {
     const hit = await queryRows({ db: input.db, sql: SQL.BROAD_NOCS, params: [n], map: toTopNoc })
@@ -1696,7 +1696,7 @@ export async function fetchTopNocs(input: TopNocsIn): TopNocsOut {
 }
 
 /**
- * `fetchTopNocs` 的 TTL 缓存壳(/plan/pr 决策页用;2026-08-22 自 lib/score 的表包缓存拆来)。
+ * `loadTopNocs` 的 TTL 缓存壳(/plan/pr 决策页用;2026-08-22 自 lib/score 的表包缓存拆来)。
  * 聚合表日更,10 分钟 TTL 只是挡「Google 落地页每请求一查」(prod-pool-wedge 口径)。
  * ⚠️ lib/quiz/quizTop.ts 还有一份同职缓存 —— quiz 域重构批收拢到这儿(2026-08-22 记账)。
  * 空榜不灌缓存:多半是查挂了,不把一次抖动钉死 10 分钟。
@@ -1704,12 +1704,12 @@ export async function fetchTopNocs(input: TopNocsIn): TopNocsOut {
  * @param input 连接与取几。
  * @returns 热门职业行(TTL 内直接给缓存那一份)。
  */
-export async function fetchTopNocsCached(input: TopNocsIn): TopNocsOut {
+export async function getTopNocs(input: TopNocsIn): TopNocsOut {
   const hit = CACHE.topNocs.get(input.limit)
   if (hit != null && Date.now() - hit.at <= TOP_NOCS_TTL_MS) {
     return hit.rows
   }
-  const rows = await fetchTopNocs(input)
+  const rows = await loadTopNocs(input)
   if (rows.length > 0) {
     CACHE.topNocs.set(input.limit, { at: Date.now(), rows: rows })
   }
@@ -1722,7 +1722,7 @@ export async function fetchTopNocsCached(input: TopNocsIn): TopNocsOut {
  * @param input 连接、大类与取几。
  * @returns 该类职业行。
  */
-export async function fetchBroadNocs(input: BroadNocsIn): BroadNocsOut {
+export async function loadBroadNocs(input: BroadNocsIn): BroadNocsOut {
   const n = Math.min(Math.max(input.limit, 1), BROAD_NOCS_MAX)
   return queryRows({ db: input.db, sql: SQL.NOC_SEARCH_FALLBACK, params: [input.broad, n], map: toBroadNoc })
 }
@@ -2163,7 +2163,7 @@ function countOf(input: CountOfIn): number {
  * @param input 连接与职业码清单。
  * @returns 各省竞争面(按在招量降序,序在 SQL 里)。
  */
-export async function fetchOccCompetition(input: OccCompetitionIn): OccCompetitionOut {
+export async function loadOccCompetition(input: OccCompetitionIn): OccCompetitionOut {
   const nocs: StrList = []
   for (const n of input.nocs) {
     if (NOC_RE.test(n)) {
@@ -2416,7 +2416,7 @@ export async function loadBigDims(input: BigDimsIn): BigDimsOut {
  * @param postingUrl 规范化后的 Job Bank 职位页 url。
  * @returns 邮箱;空串 = 确认无(页面在但没表单/没邮箱);null = 抓取失败(负缓存到期重试)。
  */
-export async function fetchApplyEmail(postingUrl: string): ApplyMailOut {
+export async function loadApplyEmail(postingUrl: string): ApplyMailOut {
   const first = await fetch(postingUrl, {
     headers: { [HDR_USER_AGENT]: JD_UA, [HDR_ACCEPT]: ACCEPT_HTML },
     redirect: REDIRECT_FOLLOW, signal: AbortSignal.timeout(APPLY_TIMEOUT_MS),

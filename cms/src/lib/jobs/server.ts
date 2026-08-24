@@ -9,10 +9,10 @@
 
 export { PROV_NAME } from './constants'
 export {
-  buildJobsWhere, checkedAt, fetchAlertHits, fetchBroadNocs, fetchCompanyByJobId, fetchCompanyBySlug,
-  fetchJobById, fetchJobRows, fetchJobsPage, fetchMatchPage, fetchNocOpenCounts, fetchQuizFacts,
-  fetchOccCompetition, fetchRelatedJobs, fetchSimilarEmployers, fetchSsrDims, fetchTopNocs,
-  fetchTopNocsCached, fetchTotalAndProof, jobDescription,
+  buildJobsWhere, checkedAt, loadAlertHits, loadBroadNocs, loadCompanyByJobId, loadCompanyBySlug,
+  loadJobById, loadJobRows, loadJobsPage, loadMatchPage, loadNocOpenCounts, loadQuizFacts,
+  loadOccCompetition, loadRelatedJobs, loadSimilarEmployers, loadSsrDims, loadTopNocs,
+  getTopNocs, loadTotalAndProof, jobDescription,
 } from './functions'
 export {
   loadCityCard, loadMatchDims, loadProvinceCard, pnpOnly, scrubPii, searchNocByTitle, splitQ,

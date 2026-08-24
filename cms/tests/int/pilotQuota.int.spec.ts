@@ -1,7 +1,7 @@
 // pilot_quota(RCIP/FCIP 社区名额状态)测试。
 // ① mart 实况:照 mbEoi 惯例直接读 data/mart/pilot_quota.json —— 抽取器/09 改版先在这里炸;
 //    断言 = 行数>0、必填齐、每个值与它的 quote/url 成对(quote-anchored 红线)。
-// ② 聚合纯函数:喂 fixture 行(不连库),断言 fetchPilotQuota 的返回形状与空值语义
+// ② 聚合纯函数:喂 fixture 行(不连库),断言 loadPilotQuota 的返回形状与空值语义
 //    (🔴 官网没写 ≠ 0:一组里一个数都没有 → quotaSum=null,禁被 ?? 0 抹成零)。
 import fs from 'fs'
 import path from 'path'

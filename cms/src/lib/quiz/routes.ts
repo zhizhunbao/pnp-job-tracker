@@ -15,7 +15,8 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getDb } from '../db/server'
 import { BAD_REQUEST, TOO_LARGE, UNAUTHORIZED } from '../http'
-import { fetchBroadNocs, fetchNocOpenCounts, fetchQuizFacts, fetchTopNocs, searchNocByTitle } from '../jobs/server'
+import { loadBroadNocs, loadNocOpenCounts, loadQuizFacts, loadTopNocs, searchNocByTitle } from '../jobs/server'
+import { getTopNocsCached, makeFactsStore, swallowFactsError } from './functions'
 import { getUserOrNull } from '../quota/server'
 import {
   ANSWERS_LEN_MAX, BROAD_CACHE_MAX, BROAD_LEN_MAX, BROAD_LIMIT, COUNTS_CACHE_MAX, COUNTS_N_MAX, COUNTS_SEP,
@@ -62,7 +63,7 @@ export async function quizRoute(req: Request): Promise<Response> {
     if (bHit != null && Date.now() - bHit.at < TTL) {
       return Response.json({ top: bHit.rows })
     }
-    const rows = await fetchBroadNocs({ db: db, broad: broad, limit: BROAD_LIMIT })
+    const rows = await loadBroadNocs({ db: db, broad: broad, limit: BROAD_LIMIT })
     if (CACHE.broadBy.size >= BROAD_CACHE_MAX) {
       CACHE.broadBy.clear()
     }
@@ -75,7 +76,7 @@ export async function quizRoute(req: Request): Promise<Response> {
     if (Number.isFinite(n) === false || n <= 0) {
       n = TOP_N_DEFAULT
     }
-    return Response.json({ top: await getTopNocsCached(db, n) })
+    return Response.json({ top: await getTopNocsCached({ db: db, n: n, load: loadTopNocs }) })
   }
   const countsParam = sp.get(P_COUNTS)
   const countsList: string[] = []
@@ -93,7 +94,7 @@ export async function quizRoute(req: Request): Promise<Response> {
     if (cHit != null && Date.now() - cHit.at < TTL) {
       return Response.json({ counts: cHit.counts })
     }
-    const counts = await fetchNocOpenCounts({ db: db, nocs: countsList })
+    const counts = await loadNocOpenCounts({ db: db, nocs: countsList })
     if (CACHE.countsBy.size >= COUNTS_CACHE_MAX) {
       CACHE.countsBy.clear()
     }
@@ -112,11 +113,11 @@ export async function quizRoute(req: Request): Promise<Response> {
   if (fHit != null) {
     if (Date.now() - fHit.at >= TTL) {
       CACHE.factsBy.delete(noc)
-      fetchQuizFacts({ db: db, noc: noc }).then(makeFactsStore(noc)).catch(swallowFactsError)
+      loadQuizFacts({ db: db, noc: noc }).then(makeFactsStore(noc)).catch(swallowFactsError)
     }
     return Response.json({ facts: fHit.facts })
   }
-  const facts = await fetchQuizFacts({ db: db, noc: noc })
+  const facts = await loadQuizFacts({ db: db, noc: noc })
   if (facts != null && CACHE.factsBy.size < FACTS_CACHE_MAX) {
     CACHE.factsBy.set(noc, { at: Date.now(), facts: facts })
   }
@@ -180,117 +181,4 @@ export async function quizAnswersPutRoute(req: Request): Promise<Response> {
   const payload = await getPayload({ config: await config })
   await saveAnswers({ payload: payload, userId: user.id, basic: basic, score: score, updatedAt: updatedAt })
   return Response.json({ ok: true, updatedAt })
-}
-
-/**
- * 事实卡后台刷成功的落格(then 传具名函数;闭包住 noc)。
- *
- * @param noc 职业码。
- * @returns 落格函数。
- */
-// eslint-disable-next-line local/routes-shape -- SWR 边缘缓存件(非 HTTP 芯):quizRoute 后台刷的落格
-function makeFactsStore(noc: string): FactsStoreFn {
-  return function factsStore(facts) {
-    if (CACHE.factsBy.size < FACTS_CACHE_MAX) {
-      CACHE.factsBy.set(noc, { at: Date.now(), facts: facts })
-    }
-  }
-}
-
-/**
- * 事实卡后台刷失败的收尾:旧格已删,这次不落,下次请求重查(与热门清单的 makeUnflag
- * 同款静默口径 —— 后台刷失败无损可见行为)。
- *
- * @param _e 捕到的错。
- * @returns 无。
- */
-// eslint-disable-next-line local/routes-shape -- SWR 边缘缓存件(非 HTTP 芯):quizRoute 后台刷的收尾
-function swallowFactsError(_e: Error): void {
-  return
-}
-
-/**
- * 热门职业清单,SWR:命中(含过期)立即返回;过期后台刷。只有整个进程生涯的第一请求真等查询
- * (判定合一批3 前置。为什么在本域:route 的模块级 Map 只有 route 自己够得着,instrumentation
- * 预热填不进去 —— 冷启动后的第一位访客实测吃 8.4s(08-10 生产探针),预热必须和请求路径写
- * 同一份缓存)。
- *
- * @param pool 能查的连接(池由调用方注进来)。
- * @param n 清单条数。
- * @returns 热门职业清单(可能是过期缓存,后台刷新中)。
- */
-// eslint-disable-next-line local/one-parameter -- 既有门面:route 与 instrumentation 两个调用点的形态(连接 + 条数)定死在此
-// eslint-disable-next-line local/routes-shape -- SWR 边缘缓存件（非 HTTP 芯）：借 server 特权仅此；quiz 路由瘦身批并入 quizRoute
-export async function getTopNocsCached(pool: Db, n: number): TopOut {
-  const hit = CACHE.top.get(n)
-  if (hit != null) {
-    if (Date.now() - hit.at >= TTL && hit.refreshing === false) {
-      hit.refreshing = true
-      fetchTopNocs({ db: pool, limit: n }).then(makeStore(n)).catch(makeUnflag(n))
-    }
-    return hit.rows
-  }
-  const inFlight = CACHE.topPending.get(n)
-  if (inFlight != null) {
-    return inFlight
-  }
-  const task = fetchTopNocs({ db: pool, limit: n }).then(makeFirstStore(n)).finally(makeDrop(n))
-  CACHE.topPending.set(n, task)
-  return task
-}
-
-/**
- * 后台刷成功的落格(then 传具名函数;闭包住条数)。
- *
- * @param n 条数。
- * @returns 落格函数。
- */
-// eslint-disable-next-line local/routes-shape -- SWR 边缘缓存件（非 HTTP 芯）：借 server 特权仅此；quiz 路由瘦身批并入 quizRoute
-function makeStore(n: number): StoreFn {
-  return function store(rows: TopRows): void {
-    CACHE.top.set(n, { at: Date.now(), rows: rows, refreshing: false })
-  }
-}
-
-/**
- * 后台刷失败的收尾:旧值继续顶,下次再试(闭包住条数)。
- *
- * @param n 条数。
- * @returns 收尾函数。
- */
-// eslint-disable-next-line local/routes-shape -- SWR 边缘缓存件（非 HTTP 芯）：借 server 特权仅此；quiz 路由瘦身批并入 quizRoute
-function makeUnflag(n: number): UnflagFn {
-  return function unflag(_e: Error): void {
-    const hit = CACHE.top.get(n)
-    if (hit != null) {
-      hit.refreshing = false
-    }
-  }
-}
-
-/**
- * 首查成功的落格 + 透传(闭包住条数)。
- *
- * @param n 条数。
- * @returns 落格函数。
- */
-// eslint-disable-next-line local/routes-shape -- SWR 边缘缓存件（非 HTTP 芯）：借 server 特权仅此；quiz 路由瘦身批并入 quizRoute
-function makeFirstStore(n: number): FirstStoreFn {
-  return function firstStore(rows: TopRows): TopRows {
-    CACHE.top.set(n, { at: Date.now(), rows: rows, refreshing: false })
-    return rows
-  }
-}
-
-/**
- * 首查收尾:清在途标记(成败都清;闭包住条数)。
- *
- * @param n 条数。
- * @returns 收尾函数。
- */
-// eslint-disable-next-line local/routes-shape -- SWR 边缘缓存件（非 HTTP 芯）：借 server 特权仅此；quiz 路由瘦身批并入 quizRoute
-function makeDrop(n: number): DropFn {
-  return function drop(): void {
-    CACHE.topPending.delete(n)
-  }
 }

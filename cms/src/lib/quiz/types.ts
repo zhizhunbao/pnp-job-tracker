@@ -12,6 +12,8 @@ import type { Lang } from '../i18n'
 import type { SelfProfile } from '../points'
 // eslint-disable-next-line local/no-import-in-leaf -- 热门职业行/事实卡/计数行的形状归 jobs 域(特批牌形态)
 import type { BroadNoc, NocOpenCount, QuizFacts, TopNoc } from '../jobs'
+// eslint-disable-next-line local/no-import-in-leaf -- db 是基础设施叶子(能 query 的连接形状归它),与 mail/types 同一特批
+import type { Db } from '../db'
 // eslint-disable-next-line local/no-import-in-leaf -- Payload Local API 的句柄形状归库(同 mail/types 的 PayloadHandle 特批)
 import type { Payload } from 'payload'
 
@@ -418,6 +420,46 @@ export type TopSlot = {
    * 有没有在途的后台刷新(防重复刷)。
    */
   refreshing: boolean
+}
+
+/**
+ * 注入取数函数收的参(与 jobs 的 loadTopNocs 门面同形)。
+ */
+export type TopLoadIn = {
+  /**
+   * 能查的连接。
+   */
+  db: Db
+
+  /**
+   * 清单条数。
+   */
+  limit: number
+}
+
+/**
+ * 热门清单取数函数的形状(jobs 的 loadTopNocs 由调用方注进来,functions 不借 server 门)。
+ */
+export type TopLoaderFn = (input: TopLoadIn) => Promise<TopNoc[]>
+
+/**
+ * `getTopNocsCached` 的入参(2026-08-23 批②注入化后的单参门面)。
+ */
+export type TopCachedIn = {
+  /**
+   * 能查的连接(池由调用方注进来)。
+   */
+  db: Db
+
+  /**
+   * 清单条数。
+   */
+  n: number
+
+  /**
+   * 注入的取数函数。
+   */
+  load: TopLoaderFn
 }
 
 /**

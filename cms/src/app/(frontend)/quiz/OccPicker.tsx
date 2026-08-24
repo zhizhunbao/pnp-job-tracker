@@ -118,7 +118,7 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
   const cats = BROAD_SLUGS.map(([, name]) => name)
   const catRows = cat ? catalogByCat[cat] : undefined
   const catLoading = !!cat && catRows === undefined
-  // 分类一次摆全:接口 fetchBroadNocs 硬顶 60 条,不需要再分页(「查看更多」已撤)。
+  // 分类一次摆全:接口 loadBroadNocs 硬顶 60 条,不需要再分页(「查看更多」已撤)。
   // 热门那一屏**按在招量降序**(2026-08-12 Frank:「cooks 应该排在第一啊」)—— 胶囊上就写着在招数,
   // 顺序不跟着它走,读者会以为这个序另有含义。分类页的行由接口按量排好,不再动。
   const list = cat ? (catRows || []) : [...base].sort((a, b) => (b.open ?? 0) - (a.open ?? 0)).slice(0, 24)

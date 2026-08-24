@@ -136,17 +136,17 @@ export type RankDbRow = Record<string, string | number | null>
 export type SlugDbRow = Record<string, string | null>
 
 /**
- * `fetchRankingSlugs` 的返回(有数据的榜 slug 清单)。
+ * `loadRankingSlugs` 的返回(有数据的榜 slug 清单)。
  */
 export type SlugsOut = Promise<string[]>
 
 /**
- * `fetchRankingRows` 的返回(名次序的榜行)。
+ * `loadRankingRows` 的返回(名次序的榜行)。
  */
 export type RowsOut = Promise<RankRow[]>
 
 /**
- * `fetchRankingRows` 的入参。
+ * `loadRankingRows` 的入参。
  */
 export type FetchRowsIn = {
   /**

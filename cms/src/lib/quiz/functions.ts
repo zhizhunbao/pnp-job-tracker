@@ -30,12 +30,14 @@ import {
   LI_RE, LI_SET_OFF, LI_SET_ON, META_KEY, METHOD_PUT, OLD_PR, OLD_QUIZ, SCORE_ANSWERS_KEY, SCORE_EMPTY, STAGE_BASIC,
   STATE_HIDDEN, TIER_FREE, URL_ANSWERS, AGE, CLB, CRS, EDU, EDU_YEARS, EXP, FRENCH_V2_MAP, IN_CANADA, NCLC, PERMIT,
   PGWP, PROVS, STUDY_LEVEL, STUDY_MONTHS, TOTAL_EXP, TOTAL_V2_MAP, UNSURE_BAND,
+  FACTS_CACHE_MAX, TTL,
 } from './constants'
 import { CACHE } from './variables'
 import type {
   Answers, AnswersDoc, AnswersOut, AnswersPatch, FieldNames, LoadAnswersIn, MaybeAnswers, MaybeRawDoc, NameFilter,
   PulledOut, PushedOut, RawCell, RawDoc, RawText, SaveAnswersIn, SaveAnswersOut, ScoreAnswers, Stage, BandValue,
   EngineAnswers, EngineValue, FieldDef, L, MaybeProvList, ProvList, RawAnswersSource, RawField, RawScoreSource,
+  DropFn, FactsStoreFn, FirstStoreFn, StoreFn, TopCachedIn, TopOut, TopRows, UnflagFn,
 } from './types'
 
 /**
@@ -1653,4 +1655,117 @@ export function toEngineAnswers(a: Answers): EngineAnswers {
     out.targetProvinces = a.provs
   }
   return out
+}
+
+// =========================================================================
+// SWR 缓存件(2026-08-23 批②并入自 routes.ts;判定合一批3 的冷启动预热背景见
+// getTopNocsCached 的 JSDoc,取数走注入)
+// =========================================================================
+
+/**
+ * 事实卡后台刷成功的落格(then 传具名函数;闭包住 noc)。
+ *
+ * @param noc 职业码。
+ * @returns 落格函数。
+ */
+export function makeFactsStore(noc: string): FactsStoreFn {
+  return function factsStore(facts) {
+    if (CACHE.factsBy.size < FACTS_CACHE_MAX) {
+      CACHE.factsBy.set(noc, { at: Date.now(), facts: facts })
+    }
+  }
+}
+
+/**
+ * 事实卡后台刷失败的收尾:旧格已删,这次不落,下次请求重查(与热门清单的 makeUnflag
+ * 同款静默口径 —— 后台刷失败无损可见行为)。
+ *
+ * @param _e 捕到的错。
+ * @returns 无。
+ */
+export function swallowFactsError(_e: Error): void {
+  return
+}
+
+/**
+ * 热门职业清单,SWR:命中(含过期)立即返回;过期后台刷。只有整个进程生涯的第一请求真等查询
+ * (判定合一批3 前置。为什么在本域:route 的模块级 Map 只有 route 自己够得着,instrumentation
+ * 预热填不进去 —— 冷启动后的第一位访客实测吃 8.4s(08-10 生产探针),预热必须和请求路径写
+ * 同一份缓存)。
+ *
+ * 2026-08-23 批②注入化:取数函数(jobs 的 loadTopNocs)由调用方注进来 ——
+ * functions 不借 server 门,门面收单参,route 与 instrumentation 两个调用点同步换形。
+ *
+ * @param input 连接、条数与注入的取数函数。
+ * @returns 热门职业清单(可能是过期缓存,后台刷新中)。
+ */
+export async function getTopNocsCached(input: TopCachedIn): TopOut {
+  const n = input.n
+  const hit = CACHE.top.get(n)
+  if (hit != null) {
+    if (Date.now() - hit.at >= TTL && hit.refreshing === false) {
+      hit.refreshing = true
+      input.load({ db: input.db, limit: n }).then(makeStore(n)).catch(makeUnflag(n))
+    }
+    return hit.rows
+  }
+  const inFlight = CACHE.topPending.get(n)
+  if (inFlight != null) {
+    return inFlight
+  }
+  const task = input.load({ db: input.db, limit: n }).then(makeFirstStore(n)).finally(makeDrop(n))
+  CACHE.topPending.set(n, task)
+  return task
+}
+
+/**
+ * 后台刷成功的落格(then 传具名函数;闭包住条数)。
+ *
+ * @param n 条数。
+ * @returns 落格函数。
+ */
+function makeStore(n: number): StoreFn {
+  return function store(rows: TopRows): void {
+    CACHE.top.set(n, { at: Date.now(), rows: rows, refreshing: false })
+  }
+}
+
+/**
+ * 后台刷失败的收尾:旧值继续顶,下次再试(闭包住条数)。
+ *
+ * @param n 条数。
+ * @returns 收尾函数。
+ */
+function makeUnflag(n: number): UnflagFn {
+  return function unflag(_e: Error): void {
+    const hit = CACHE.top.get(n)
+    if (hit != null) {
+      hit.refreshing = false
+    }
+  }
+}
+
+/**
+ * 首查成功的落格 + 透传(闭包住条数)。
+ *
+ * @param n 条数。
+ * @returns 落格函数。
+ */
+function makeFirstStore(n: number): FirstStoreFn {
+  return function firstStore(rows: TopRows): TopRows {
+    CACHE.top.set(n, { at: Date.now(), rows: rows, refreshing: false })
+    return rows
+  }
+}
+
+/**
+ * 首查收尾:清在途标记(成败都清;闭包住条数)。
+ *
+ * @param n 条数。
+ * @returns 收尾函数。
+ */
+function makeDrop(n: number): DropFn {
+  return function drop(): void {
+    CACHE.topPending.delete(n)
+  }
 }

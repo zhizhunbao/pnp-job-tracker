@@ -1824,12 +1824,12 @@ export type RowMatchIn = {
 export type SsrDims = Dims
 
 /**
- * `fetchSsrDims` 的返回。
+ * `loadSsrDims` 的返回。
  */
 export type SsrDimsOut = Promise<SsrDims>
 
 /**
- * `fetchJobRows` 的入参(SSR 首屏 50 行)。
+ * `loadJobRows` 的入参(SSR 首屏 50 行)。
  */
 export type JobRowsIn = {
   /**
@@ -1864,7 +1864,7 @@ export type JobRowsIn = {
 }
 
 /**
- * `fetchJobRows` 的返回。
+ * `loadJobRows` 的返回。
  */
 export type JobRowsOut = Promise<{
   /**
@@ -1889,7 +1889,7 @@ export type JobRowsOut = Promise<{
 }>
 
 /**
- * `fetchJobsPage` 的入参(E10-01 服务端筛选+排序+分页)。
+ * `loadJobsPage` 的入参(E10-01 服务端筛选+排序+分页)。
  */
 export type JobsPageIn = {
   /**
@@ -1939,7 +1939,7 @@ export type JobsPageIn = {
 }
 
 /**
- * `fetchJobsPage` 的返回。
+ * `loadJobsPage` 的返回。
  */
 export type JobsPageOut = Promise<{
   /**
@@ -1959,7 +1959,7 @@ export type JobsPageOut = Promise<{
 }>
 
 /**
- * `fetchMatchPage` 的入参(「我的匹配」视图)。
+ * `loadMatchPage` 的入参(「我的匹配」视图)。
  */
 export type MatchPageIn = {
   /**
@@ -1999,7 +1999,7 @@ export type MatchPageIn = {
 }
 
 /**
- * `fetchMatchPage` 的返回。
+ * `loadMatchPage` 的返回。
  */
 export type MatchPageOut = Promise<{
   /**
@@ -2029,7 +2029,7 @@ export type MatchPageOut = Promise<{
 }>
 
 /**
- * `fetchJobById` 的入参(详情页单岗;closed 岗也返回)。
+ * `loadJobById` 的入参(详情页单岗;closed 岗也返回)。
  */
 export type JobByIdIn = {
   /**
@@ -2064,7 +2064,7 @@ export type JobByIdIn = {
 }
 
 /**
- * `fetchJobById` 的返回;查无/id 不像样则 null。
+ * `loadJobById` 的返回;查无/id 不像样则 null。
  */
 export type JobByIdOut = Promise<JobRow | null>
 
@@ -2104,7 +2104,7 @@ export type RelatedJob = {
 }
 
 /**
- * `fetchRelatedJobs` 的入参。
+ * `loadRelatedJobs` 的入参。
  */
 export type RelatedIn = {
   /**
@@ -2154,7 +2154,7 @@ export type RelatedIn = {
 }
 
 /**
- * `fetchRelatedJobs` 的返回(2026-08-11:两组都空时给 fallbackLevel —— 下架页不能是死路)。
+ * `loadRelatedJobs` 的返回(2026-08-11:两组都空时给 fallbackLevel —— 下架页不能是死路)。
  */
 export type RelatedOut = Promise<{
   /**
@@ -2174,7 +2174,7 @@ export type RelatedOut = Promise<{
 }>
 
 /**
- * `fetchTotalAndProof` 的返回:头条总数 + 证言数字。
+ * `loadTotalAndProof` 的返回:头条总数 + 证言数字。
  */
 export type ProofOut = Promise<{
   /**
@@ -2424,12 +2424,12 @@ export type CompanyDetail = {
 }
 
 /**
- * `fetchCompanyBySlug` / `fetchCompanyByJobId` 的返回;查无则 null(页面走 Notice 不 404)。
+ * `loadCompanyBySlug` / `loadCompanyByJobId` 的返回;查无则 null(页面走 Notice 不 404)。
  */
 export type CompanyOut = Promise<CompanyDetail | null>
 
 /**
- * `fetchCompanyBySlug` 的入参。
+ * `loadCompanyBySlug` 的入参。
  */
 export type CompanyBySlugIn = {
   /**
@@ -2444,7 +2444,7 @@ export type CompanyBySlugIn = {
 }
 
 /**
- * `fetchCompanyByJobId` 的入参(E8-11 B1:按 jobs.company_id 解析,同名公司也不串)。
+ * `loadCompanyByJobId` 的入参(E8-11 B1:按 jobs.company_id 解析,同名公司也不串)。
  */
 export type CompanyByJobIn = {
   /**
@@ -2489,7 +2489,7 @@ export type SimilarEmployer = {
 }
 
 /**
- * `fetchSimilarEmployers` 的入参。
+ * `loadSimilarEmployers` 的入参。
  */
 export type SimilarIn = {
   /**
@@ -2514,7 +2514,7 @@ export type SimilarIn = {
 }
 
 /**
- * `fetchSimilarEmployers` 的返回。
+ * `loadSimilarEmployers` 的返回。
  */
 export type SimilarOut = Promise<SimilarEmployer[]>
 
@@ -2554,7 +2554,7 @@ export type AlertHit = {
 }
 
 /**
- * `fetchAlertHits` 的入参。
+ * `loadAlertHits` 的入参。
  */
 export type AlertHitsIn = {
   /**
@@ -2574,7 +2574,7 @@ export type AlertHitsIn = {
 }
 
 /**
- * `fetchAlertHits` 的返回。
+ * `loadAlertHits` 的返回。
  */
 export type AlertHitsOut = Promise<{
   /**
@@ -2668,7 +2668,7 @@ export type QuizFacts = {
 }
 
 /**
- * `fetchQuizFacts` 的入参。
+ * `loadQuizFacts` 的入参。
  */
 export type QuizFactsIn = {
   /**
@@ -2683,12 +2683,12 @@ export type QuizFactsIn = {
 }
 
 /**
- * `fetchQuizFacts` 的返回;码不像样/无在招则 null。
+ * `loadQuizFacts` 的返回;码不像样/无在招则 null。
  */
 export type QuizFactsOut = Promise<QuizFacts | null>
 
 /**
- * `fetchNocOpenCounts` 的入参。
+ * `loadNocOpenCounts` 的入参。
  */
 export type NocCountsIn = {
   /**
@@ -2703,7 +2703,7 @@ export type NocCountsIn = {
 }
 
 /**
- * `fetchNocOpenCounts` 的返回:码 → 在招/可提名。
+ * `loadNocOpenCounts` 的返回:码 → 在招/可提名。
  */
 export type NocCountsOut = Promise<Record<string, NocOpenCount>>
 
@@ -2763,7 +2763,7 @@ export type TopNoc = {
 }
 
 /**
- * `fetchTopNocs` 的入参。
+ * `loadTopNocs` 的入参。
  */
 export type TopNocsIn = {
   /**
@@ -2778,7 +2778,7 @@ export type TopNocsIn = {
 }
 
 /**
- * `fetchTopNocs` 的返回。
+ * `loadTopNocs` 的返回。
  */
 export type TopNocsOut = Promise<TopNoc[]>
 
@@ -2833,7 +2833,7 @@ export type BroadNoc = {
 }
 
 /**
- * `fetchBroadNocs` 的入参(只在用户点中某类后查,避免打开问卷就扫 top=200)。
+ * `loadBroadNocs` 的入参(只在用户点中某类后查,避免打开问卷就扫 top=200)。
  */
 export type BroadNocsIn = {
   /**
@@ -2853,7 +2853,7 @@ export type BroadNocsIn = {
 }
 
 /**
- * `fetchBroadNocs` 的返回。
+ * `loadBroadNocs` 的返回。
  */
 export type BroadNocsOut = Promise<BroadNoc[]>
 
@@ -3558,7 +3558,7 @@ export type FieldGroup = 'company' | 'immigration' | 'category' | 'location' | '
 // =========================================================================
 
 /**
- * `fetchOccCompetition` 的入参。
+ * `loadOccCompetition` 的入参。
  */
 export type OccCompetitionIn = {
   /**
@@ -3628,7 +3628,7 @@ export type OccCompetitionRow = {
 export type OccCompetitionRows = OccCompetitionRow[]
 
 /**
- * `fetchOccCompetition` 的返回。
+ * `loadOccCompetition` 的返回。
  */
 export type OccCompetitionOut = Promise<OccCompetitionRows>
 
@@ -4273,7 +4273,7 @@ export type BigDimsIn = {
 export type BigDimsOut = Promise<BigDims>
 
 /**
- * `fetchApplyEmail` 的返回:邮箱;空串 = 确认无;null = 抓取失败(有没有未知,负缓存到期重试)。
+ * `loadApplyEmail` 的返回:邮箱;空串 = 确认无;null = 抓取失败(有没有未知,负缓存到期重试)。
  */
 export type ApplyMailOut = Promise<string | null>
 

@@ -1,8 +1,8 @@
 /**
  * 雇主域的行为:板取数与筛选、担保聚合、对照聚合、单公司背调、职业目录。
  * 🔴 本文件**不 import payload**(宪法:取数函数收一个能 query 的东西当参数,池由调用方注进来)——
- * 边缘入口(`loadEmployerPage` / `fetchSponsorEmployers` / `compareEmployers` / `companyRow` /
- * `investigateCompany` / `fetchOccupations` / `employersBoardProps`)收 `db`,内部纯函数吃数据。
+ * 边缘入口(`loadEmployerPage` / `loadSponsorEmployers` / `compareEmployers` / `companyRow` /
+ * `investigateCompany` / `loadOccupations` / `employersBoardProps`)收 `db`,内部纯函数吃数据。
  *
  * @author Frank
  * @time 2026-08-21 23:20:43
@@ -475,7 +475,7 @@ async function loadSponsors(db: Db): SponsorRowsOut {
  * @param db 数据库连接(池由调用方注进来)。
  * @returns 全量担保行(缓存行全站共享,消费端不许原地改)。
  */
-export function fetchSponsorEmployers(db: Db): SponsorRowsOut {
+export function loadSponsorEmployers(db: Db): SponsorRowsOut {
   const hot = CACHE.sponsors
   if (hot != null && Date.now() - hot.at < CACHE_TTL_MS) {
     return Promise.resolve(hot.rows)
@@ -1077,7 +1077,7 @@ function wikidataHitOf(e: WdEntity): WikidataHitOrNull {
  * @param db 数据库连接(池由调用方注进来)。
  * @returns 全量目录行。
  */
-export function fetchOccupations(db: Db): OccRowsOut {
+export function loadOccupations(db: Db): OccRowsOut {
   return queryRows({ db: db, sql: SQL.PNP_OCCUPATIONS_ALL, params: [], map: toOccRow })
 }
 

@@ -772,7 +772,7 @@ export type OccRow = {
 }
 
 /**
- * `fetchOccupations` 的返回。
+ * `loadOccupations` 的返回。
  */
 export type OccRowsOut = Promise<OccRow[]>
 
@@ -963,7 +963,7 @@ export type BoardProps = {
 export type BoardPropsOut = Promise<BoardProps>
 
 /**
- * `fetchSponsorEmployers` / `fetchAllDesignated` 这类带缓存取数的返回。
+ * `loadSponsorEmployers` / `fetchAllDesignated` 这类带缓存取数的返回。
  */
 export type SponsorRowsOut = Promise<SponsorEmployerRow[]>
 

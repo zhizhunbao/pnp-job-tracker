@@ -6,7 +6,7 @@
  */
 
 export {
-  exchangeCode, fetchGoogleUser, googleConsentUrl, loginWithGoogle, oauthCookie, readCookie, safeReturnPath,
+  exchangeCode, loadGoogleUser, googleConsentUrl, loginWithGoogle, oauthCookie, readCookie, safeReturnPath,
   sessionCookies, ssrHasSession,
 } from './functions'
 export { googleCallbackRoute, googleStartRoute } from './routes'

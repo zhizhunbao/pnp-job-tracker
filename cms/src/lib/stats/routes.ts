@@ -11,7 +11,7 @@ import { BAD_REQUEST, HDR_CACHE_CONTROL } from '../http'
 import { normalizeProfile } from '../jobs'
 import type { ProfileJson } from '../jobs'
 import { getUser, isPro } from '../quota/server'
-import { MARKET_CACHE_CONTROL, MARKET_TTL_MS, MAX_PARAM_LEN, P_BROAD, P_MID, P_PROV } from './constants'
+import { MARKET_CACHE_CONTROL, MARKET_TTL_MS, PARAM_LEN_MAX, P_BROAD, P_MID, P_PROV } from './constants'
 import { emptyChannels, emptyRows, loadChannelNocs, loadCityStats, loadFineCounts, loadOccStats, loadStats, loadStatSources } from './functions'
 import { CACHE } from './variables'
 
@@ -62,7 +62,7 @@ export async function statsFineRoute(req: Request): Promise<Response> {
     mid = midParam.trim()
   }
   if (prov === '' || broad === '' || mid === ''
-    || prov.length > MAX_PARAM_LEN || broad.length > MAX_PARAM_LEN || mid.length > MAX_PARAM_LEN) {
+    || prov.length > PARAM_LEN_MAX || broad.length > PARAM_LEN_MAX || mid.length > PARAM_LEN_MAX) {
     return new Response(null, { status: BAD_REQUEST })
   }
   const rows = await loadFineCounts({ db: await getDb(), prov: prov, broad: broad, mid: mid })

@@ -166,7 +166,7 @@ export type MaybeCookie = string | null
 export type SessionCookieList = string[]
 
 /**
- * `fetchGoogleUser` 的返回。
+ * `loadGoogleUser` 的返回。
  */
 export type GoogleUserOut = Promise<MaybeGoogleUser>
 

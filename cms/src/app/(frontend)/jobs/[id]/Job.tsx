@@ -61,7 +61,7 @@ export default function Job({ job, plan, dims, related }: {
   // 文案定长,不把职业名插进句子:NOC 官方职业名可以长到
   // 「Machine operators and related workers in pulp and paper production and wood processing…」,
   // 塞进句子手机上折三行。范围交给链接目标,措辞与上面的分组小标题「同省同职业」同一套词。
-  // 按哪一级筛由服务端定(fetchRelatedJobs 探过「本省该级确实还有在招岗」)—— 探不到就退到只按省,
+  // 按哪一级筛由服务端定(loadRelatedJobs 探过「本省该级确实还有在招岗」)—— 探不到就退到只按省,
   // 决不把人从死页面送进空列表。省名用 t('prov.XX') 三语单名,不用面包屑那种「Ontario(安大略省)」组合。
   const provPlain = t('prov.' + (job.province || '').toUpperCase())
   const provWord = provPlain.startsWith('prov.') ? provFull : provPlain

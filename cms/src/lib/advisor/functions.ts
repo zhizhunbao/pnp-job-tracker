@@ -1275,7 +1275,7 @@ function factorOf(input: FactorIn): MaybeObj {
  * jobs 整行 → 本域岗位事实(契约换 id 制的落点:服务端现查行,前端整包不再采信)。
  * JobRow 的空串口径原样透传 —— 拼装层的 orDashOf 对 ''/null 同判。
  *
- * @param row jobs 域 fetchJobById 的整行。
+ * @param row jobs 域 loadJobById 的整行。
  * @returns 岗位事实。
  */
 export function toAdvisorJob(row: JobRowCell): AdvisorJob {

@@ -705,6 +705,6 @@ export type PilotQuotaDbRow = {
 }
 
 /**
- * `fetchPilotQuota` 的返回;表没建/查询失败 = [](上游按「没数据」处理,不编)。
+ * `loadPilotQuota` 的返回;表没建/查询失败 = [](上游按「没数据」处理,不编)。
  */
 export type PilotQuotaOut = Promise<PilotQuotaAgg[]>

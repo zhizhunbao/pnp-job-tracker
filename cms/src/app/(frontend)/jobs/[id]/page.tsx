@@ -1,6 +1,6 @@
 // E8-07 A 件:/jobs/[id] 独立职位详情页(SSR)——单栏内容骨架(内容站模式借鉴批,2026-07-20 Frank 拍板)。
 // 定位:可分享 URL + SEO 落地页(JobPosting JSON-LD + sitemap 分片)+ 手机端主阅读形态;桌面弹框体系照旧。
-// 分层口径与主表完全一致:fetchJobById 同一列集/映射,Pro 列免费剥离在 SELECT 映射层;closed 岗保留可访问(已收录不 404)。
+// 分层口径与主表完全一致:loadJobById 同一列集/映射,Pro 列免费剥离在 SELECT 映射层;closed 岗保留可访问(已收录不 404)。
 import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
@@ -9,7 +9,7 @@ import config from '@/payload.config'
 import { getUser, isPro } from '@/lib/quota/server'
 import { FREE_MATCH_JOBS_PER_DAY } from '@/lib/quota'
 import { hasProfile, normalizeProfile } from '@/lib/jobs'
-import { fetchJobById, fetchRelatedJobs } from '@/lib/jobs/server'
+import { loadJobById, loadRelatedJobs } from '@/lib/jobs/server'
 import Job from './Job'
 import { SQL } from '@/lib/db'   // SQL 文本全在那儿,本文件只管取数与组装
 
@@ -69,14 +69,14 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
   const pro = isPro(user)
 
   // E8-11 B2:页面砍到只剩 JD(移民/匹配/相关职位/公司 meta 全移交弹框)→ 匹配级、PNP/EE/新闻/AIP 维度不再取。
-  const job = await fetchJobById({ db: pool, id, pro, profile: normalizeProfile(null), profileOk: false, matchDims: { pnpOccupations: [], eeCategories: [] } })
+  const job = await loadJobById({ db: pool, id, pro, profile: normalizeProfile(null), profileOk: false, matchDims: { pnpOccupations: [], eeCategories: [] } })
   if (!job) notFound()
 
   // 2026-08-11 Frank「下架了应该下面列出其他相似职位,用户不至于一看下架就走」:closed 岗是死路 ——
   // Google 招聘富结果直落本页(30 天最大入口),撞上「已下架」横幅就只剩关页。相关职位卡是 B2 瘦身时
   // 摘掉的(函数与三语文案一直留着),这里只对 closed 岗接回来:在招岗照旧守「一条信息一个家」。
   const related = job.status === 'closed'
-    ? await fetchRelatedJobs({ db: pool, job: {
+    ? await loadRelatedJobs({ db: pool, job: {
       id, company: job.company || '', province: job.province || '', noc: job.noc || '',
       fine: job.fine || '', mid: job.mid || '', broad: job.broad || '',
     } })

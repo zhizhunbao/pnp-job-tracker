@@ -395,7 +395,7 @@ export const DIMS_TTL_MS = 3600_000
 export const NOC_RE = /^\d{5}$/
 
 /**
- * difficulty json 里名额竞争因子的 key(fetchOccCompetition 借省级比值用)。
+ * difficulty json 里名额竞争因子的 key(loadOccCompetition 借省级比值用)。
  */
 export const COMP_KEY = 'comp'
 
@@ -421,7 +421,7 @@ export const UNCAT = '未分类'
 export const SPACES_RE = /\s+/
 
 /**
- * fetchTopNocs 的 limit 夹紧上限。
+ * loadTopNocs 的 limit 夹紧上限。
  */
 export const TOP_NOCS_MAX = 200
 
@@ -431,7 +431,7 @@ export const TOP_NOCS_MAX = 200
 export const TOP_NOCS_WITH_MED = 24
 
 /**
- * fetchBroadNocs 的 limit 夹紧上限。
+ * loadBroadNocs 的 limit 夹紧上限。
  */
 export const BROAD_NOCS_MAX = 80
 
@@ -441,7 +441,7 @@ export const BROAD_NOCS_MAX = 80
 export const NOC_SEARCH_MIN = 2
 
 /**
- * 中位薪资附加 SELECT 片段(fetchTopNocs 回退现算路用)。
+ * 中位薪资附加 SELECT 片段(loadTopNocs 回退现算路用)。
  */
 export const MED_SELECT = ', percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual) med'
 

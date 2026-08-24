@@ -2,7 +2,7 @@
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { Occupations } from './Occupations'
-import { fetchOccupations } from '@/lib/employers/server'
+import { loadOccupations } from '@/lib/employers/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,6 +17,6 @@ export async function generateMetadata() {
 export default async function OccupationsPage() {
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
-  const rows = await fetchOccupations(pool)
+  const rows = await loadOccupations(pool)
   return <Occupations rows={rows} />
 }

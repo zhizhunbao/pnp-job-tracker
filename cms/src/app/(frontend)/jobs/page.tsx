@@ -9,7 +9,7 @@ import { parseJobFilters, toSearchParams } from './filters.shared'
 import { getUser, isPro } from '@/lib/quota/server'
 import { FREE_MATCH_JOBS_PER_DAY } from '@/lib/quota'
 import { normalizeProfile, hasProfile } from '@/lib/jobs'
-import { fetchJobRows, fetchJobsPage, fetchSsrDims, fetchTotalAndProof, type SsrDims } from '@/lib/jobs/server'
+import { loadJobRows, loadJobsPage, loadSsrDims, loadTotalAndProof, type SsrDims } from '@/lib/jobs/server'
 import { dbOf } from '@/lib/db/server'
 
 // 首屏行数(2026-07-05 用户拍板):SSR 只带最近 N 行秒开,全量 /api/jobs-data 后台拉(拉完筛选/搜索照旧)
@@ -33,7 +33,7 @@ const SSR_DIMS_TTL = 10 * 60_000
 
 async function getDimsCached(pool: any): Promise<SsrDims> {
   if (ssrDimsCache && Date.now() - ssrDimsCache.ts < SSR_DIMS_TTL) return ssrDimsCache.dims
-  const dims = await fetchSsrDims(pool)
+  const dims = await loadSsrDims(pool)
   ssrDimsCache = { dims, ts: Date.now() }
   return dims
 }
@@ -63,14 +63,14 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
   // 匹配只吃省提名清单(AIP 背书清单是另一条路,见 lib/jobs/queries.pnpOnly);展示维度仍是全量
   const matchDims = { pnpOccupations: dims.pnpOccupations.filter((r) => r.program === 'PNP'), eeCategories: dims.eeCategories }
   // 差异化证言数字(第 5 轮 #14):省提名清单命中岗 + 有外劳记录雇主数 —— 首屏 3 秒讲清与聚合站的区别
-  // 有筛选就走 fetchJobsPage(与 /api/jobs 同一条查询路径 → SSR 与水合后客户端逐行一致,不会换一次内容);
-  // 没筛选照旧走 fetchJobRows(全站首屏,total 用全站数)。
+  // 有筛选就走 loadJobsPage(与 /api/jobs 同一条查询路径 → SSR 与水合后客户端逐行一致,不会换一次内容);
+  // 没筛选照旧走 loadJobRows(全站首屏,total 用全站数)。
   const listP = filtered
-    ? fetchJobsPage({ db: pool, pro, profile, profileOk, matchDims, filters, sort: null, page: 0, pageSize: FIRST_SCREEN_ROWS })
+    ? loadJobsPage({ db: pool, pro, profile, profileOk, matchDims, filters, sort: null, page: 0, pageSize: FIRST_SCREEN_ROWS })
       .then((r) => ({ jobs: r.jobs, updatedAt: r.updatedAt, total: r.total as number | null }))
-    : fetchJobRows({ db: pool, pro, profile, profileOk, matchDims, limit: FIRST_SCREEN_ROWS })
+    : loadJobRows({ db: pool, pro, profile, profileOk, matchDims, limit: FIRST_SCREEN_ROWS })
       .then((r) => ({ jobs: r.jobs, updatedAt: r.updatedAt, total: null as number | null }))
-  const [list, tp] = await Promise.all([listP, fetchTotalAndProof(pool)])
+  const [list, tp] = await Promise.all([listP, loadTotalAndProof(pool)])
   const { jobs, updatedAt } = list
   const totalCount: number = list.total ?? (tp.total || jobs.length)   // 筛选后 0 条也得是 0,不能退回全站数
   const proof = { named: tp.named, lmia: tp.lmia }

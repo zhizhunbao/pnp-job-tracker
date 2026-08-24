@@ -25,7 +25,7 @@ import {
   AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, CITY_PARAM_LEN_MAX, DIMS_CACHE_CONTROL, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT, JD_LIMIT_PREFIX, JD_TRANS_MARKS_RE, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, NOC5_RE, PAGE_N_MAX, PROV2_RE, P_CITY, P_CODE, P_DIR, P_DIRECT, P_DISTRICT, P_NOC, P_PAGE, P_PROV, P_SORT, P_URL, P_VIEW, TRUE_ONE, TRUE_WORD, URL_CUT_RE, VIEW_MATCH,
 } from './constants'
 import {
-  emptySimilar, fetchApplyEmail, fetchCompanyByJobId, fetchJobsPage, fetchMatchPage, fetchOccCompetition, fetchSimilarEmployers, generateJdFormatted, hasProfile, jobDescription, loadBigDims, loadCityCard, loadJdFormatted, loadJdState, loadMatchDims, loadProvinceCard, normalizeProfile,
+  emptySimilar, loadApplyEmail, loadCompanyByJobId, loadJobsPage, loadMatchPage, loadOccCompetition, loadSimilarEmployers, generateJdFormatted, hasProfile, jobDescription, loadBigDims, loadCityCard, loadJdFormatted, loadJdState, loadMatchDims, loadProvinceCard, normalizeProfile,
 } from './functions'
 import { CACHE } from './variables'
 import type { CompanyBody, JdTransBody, JdUrlBody, JobsFilters, MatchDims, MaybeStr, ProfileJson } from './types'
@@ -34,7 +34,7 @@ import type { CompanyBody, JdTransBody, JdUrlBody, JobsFilters, MatchDims, Maybe
  * GET /api/jobs:职位列表服务端分页/筛选/搜索(E10-01 P2,取代旧「一次拉 20k blob 前端过滤」)。
  * 入参 = /jobs 前端筛选 state 原样(白名单 JOBS_FILTER_KEYS)+ page/sort/dir;
  * 分层语义同 SSR(Pro 列剥离、免费匹配前 N)。total=同 WHERE count,前端头条命中数/
- * 「还有 N」全用它,天然自洽。「我的匹配」视图(view=match)走 fetchMatchPage,未建档回空。
+ * 「还有 N」全用它,天然自洽。「我的匹配」视图(view=match)走 loadMatchPage,未建档回空。
  *
  * @param req 请求。
  * @returns { rows, total, page, pageSize, updatedAt }(匹配视图另带 matchHigh/matchMid)。
@@ -85,10 +85,10 @@ export async function jobsRoute(req: Request): Promise<Response> {
     if (profileOk === false) {
       return Response.json({ rows: [], total: 0, page: page, pageSize: JOBS_PAGE_SIZE, updatedAt: '', matchHigh: 0, matchMid: 0 })
     }
-    const m = await fetchMatchPage({ db: db, pro: pro, profile: profile, matchDims: matchDims, page: page, pageSize: JOBS_PAGE_SIZE, sort: { key: sortKey, dir: sortDir } })
+    const m = await loadMatchPage({ db: db, pro: pro, profile: profile, matchDims: matchDims, page: page, pageSize: JOBS_PAGE_SIZE, sort: { key: sortKey, dir: sortDir } })
     return Response.json({ rows: m.jobs, total: m.total, page: page, pageSize: JOBS_PAGE_SIZE, updatedAt: m.updatedAt, matchHigh: m.matchHigh, matchMid: m.matchMid })
   }
-  const out = await fetchJobsPage({
+  const out = await loadJobsPage({
     db: db, pro: pro, profile: profile, profileOk: profileOk, matchDims: matchDims, filters: filters,
     sort: { key: sortKey, dir: sortDir }, page: page, pageSize: JOBS_PAGE_SIZE,
   })
@@ -147,11 +147,11 @@ export async function jobsCompanyRoute(req: Request): Promise<Response> {
     return new Response(null, { status: BAD_REQUEST })
   }
   const db = await getDb()
-  const company = await fetchCompanyByJobId({ db: db, jobId: jobId })
+  const company = await loadCompanyByJobId({ db: db, jobId: jobId })
   if (company == null) {
     return new Response(null, { status: NOT_FOUND })
   }
-  const similar = await fetchSimilarEmployers({ db: db, province: company.province, industry: company.industry, excludeSlug: company.slug }).catch(emptySimilar)
+  const similar = await loadSimilarEmployers({ db: db, province: company.province, industry: company.industry, excludeSlug: company.slug }).catch(emptySimilar)
   return Response.json({ company, similar })
 }
 
@@ -231,7 +231,7 @@ export async function jobsProvinceRoute(req: Request): Promise<Response> {
  * GET /api/jobs/competition?noc=63200:该职业在各省的竞争面。
  * 🔴 职业级的「几人抢一个」算不出来,本站不编 —— 给的是三个能代表紧俏度的实数
  * (在招/近 30 天新增、平均在招天数、该省名额竞争),不合成一个分数。
- * 取数与组装在 fetchOccCompetition(与 profile-pathways 的服务端排序同一份,口径不许分叉)。
+ * 取数与组装在 loadOccCompetition(与 profile-pathways 的服务端排序同一份,口径不许分叉)。
  *
  * @param req 请求(?noc=五位码)。
  * @returns { noc, rows };noc 非法 400。
@@ -245,13 +245,13 @@ export async function jobsCompetitionRoute(req: Request): Promise<Response> {
   if (NOC5_RE.test(noc) === false) {
     return Response.json({ error: E_NOC_REQUIRED }, { status: BAD_REQUEST })
   }
-  const rows = await fetchOccCompetition({ db: await getDb(), nocs: [noc] })
+  const rows = await loadOccCompetition({ db: await getDb(), nocs: [noc] })
   return Response.json({ noc, rows })
 }
 
 /**
  * GET /api/jobs/applyhow?url=:投递邮箱懒查(E9-04 B11)。Job Bank 把投递邮箱藏在
- * 「Show how to apply」的 JSF 局部提交后面 —— 打开投递栏时现抓(fetchApplyEmail),
+ * 「Show how to apply」的 JSF 局部提交后面 —— 打开投递栏时现抓(loadApplyEmail),
  * 进程内正/负两级缓存,零批量预抓(lazy-first)。只认 jobbank.gc.ca 职位页(白名单防
  * SSRF);其他来源(ATS 原站)邮箱走前端对 jobtext 的正则,不进这里。
  *
@@ -284,7 +284,7 @@ export async function jobsApplyhowRoute(req: Request): Promise<Response> {
   if (neg != null && Date.now() - neg < APPLY_NEG_TTL_MS) {
     return Response.json({ email: '' })
   }
-  const email = await fetchApplyEmail(key)
+  const email = await loadApplyEmail(key)
   if (email == null) {
     CACHE.applyFail.set(key, Date.now())
     if (CACHE.applyFail.size > APPLY_FAIL_MAX) {

@@ -142,7 +142,7 @@ export const P_MID = 'mid'
 /**
  * fine 下钻参数的长度上限(分类值最长的中文串远不到它;超限=不是分类值)。
  */
-export const MAX_PARAM_LEN = 80
+export const PARAM_LEN_MAX = 80
 
 /**
  * fine 下钻单次最多回多少小类行。
