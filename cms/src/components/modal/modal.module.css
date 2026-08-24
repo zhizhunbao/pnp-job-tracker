@@ -6,9 +6,10 @@
  */
 
 /*
- * 遮罩(规范值同 constants 的 SCRIM;域内自用这份类,消费端过渡期还在 spread 常量)。
+ * 遮罩层(2026-08-24 Frank 拍板改名 scrim → overlay:与本域 useOverlayClose
+ * 同一个词,说的是同一层东西 —— 弹框背后那层半透黑,点它关框)。
  */
-.scrim {
+.overlay {
   position: fixed;
   inset: 0;
   background: rgb(17 24 39 / 50%);
@@ -21,11 +22,11 @@
 /*
  * 窄屏遮罩内衬:sm 档留 14px,其余全屏贴边。
  */
-.scrimNarrowSm {
+.overlayNarrowSm {
   padding: 14px;
 }
 
-.scrimNarrowFull {
+.overlayNarrowFull {
   padding: 0;
 }
 

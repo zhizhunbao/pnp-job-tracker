@@ -43,10 +43,10 @@ export function clsOf(x: ClsIn): ClsOut {
     md: css.narrowFull,
     lg: css.narrowFull,
   }
-  const narrowScrim: Record<ModalSize, string> = {
-    sm: css.scrimNarrowSm,
-    md: css.scrimNarrowFull,
-    lg: css.scrimNarrowFull,
+  const narrowOverlay: Record<ModalSize, string> = {
+    sm: css.overlayNarrowSm,
+    md: css.overlayNarrowFull,
+    lg: css.overlayNarrowFull,
   }
   const sizeCls: Record<ModalSize, string> = {
     sm: css.sm,
@@ -54,10 +54,10 @@ export function clsOf(x: ClsIn): ClsOut {
     lg: css.lg,
   }
   const card = [css.card]
-  const scrim = [css.scrim]
+  const overlay = [css.overlay]
   if (x.narrow) {
     card.push(narrowCard[x.size])
-    scrim.push(narrowScrim[x.size])
+    overlay.push(narrowOverlay[x.size])
   } else if (x.maximized) {
     card.push(css.max)
   } else {
@@ -76,7 +76,7 @@ export function clsOf(x: ClsIn): ClsOut {
   if (x.pad === false) {
     card.push(css.noPad)
   }
-  return { card: card.join(' '), scrim: scrim.join(' ') }
+  return { card: card.join(' '), overlay: overlay.join(' ') }
 }
 
 /**
@@ -109,4 +109,15 @@ export function cardStyleOf(x: CardStyleIn): React.CSSProperties {
     transform = `translate3d(${x.pos.x}px, ${x.pos.y}px, 0)`
   }
   return { transform }
+}
+
+/**
+ * 遮罩层类名(交给**自带壳**的重弹框用:Advisor / Decision 这类带拖拽全屏的面板
+ * 不套 Modal 组件,但遮罩必须与全站同一份 —— 2026-08-24 弹框族批把它们从
+ * `style={SCRIM}` 换成这个类,SCRIM 常量随之退役)。
+ *
+ * @returns 遮罩 className(半透黑全屏底;z-index 由调用方按层级给)。
+ */
+export function overlayCls(): string {
+  return css.overlay
 }

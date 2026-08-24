@@ -221,9 +221,9 @@ export type ClsOut = {
   card: string
 
   /**
-   * 遮罩 className。
+   * 遮罩层 className。
    */
-  scrim: string
+  overlay: string
 }
 
 /**

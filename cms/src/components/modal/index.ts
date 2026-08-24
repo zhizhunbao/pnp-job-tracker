@@ -4,13 +4,16 @@
  * 对应 lib 域:无(通用件)。
  *
  * 2026-08-24 刀 A:Modal/ModalTitle 体内类化 + hooks 抽屉首证(useIsNarrow +
- * useOverlayClose,后者自 ui/overlay.ts 并入);SCRIM/CARD/iconBtnS 是跨弹框族的
- * **过渡导出**(39 处消费端还在 spread 拼运行时样式),各消费域形制化批里逐个类化后退役。
+ * useOverlayClose,后者自 ui/overlay.ts 并入)。同日弹框族批:SCRIM 退役 ——
+ * 自带壳的重弹框(Advisor/Decision)改用 overlayCls() 拿同一份遮罩类
+ * (同日 Frank 拍板:scrim 这个舞台术语改叫 overlay,与 useOverlayClose 同词);
+ * CARD/iconBtnS 仍是过渡导出,随后续批次类化后退役。
  *
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
-export { CARD, iconBtnS, MODAL_RADIUS, MODAL_SHADOW, SCRIM } from './constants'
+export { CARD, iconBtnS, MODAL_RADIUS, MODAL_SHADOW } from './constants'
+export { overlayCls } from './functions'
 export { useEscClose, useIsNarrow, useOverlayClose } from './hooks'
 export { Modal } from './modal'
 export type { ModalIn, OverlayHandlers } from './types'

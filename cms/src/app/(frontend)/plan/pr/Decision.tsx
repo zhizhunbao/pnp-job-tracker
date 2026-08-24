@@ -27,7 +27,7 @@ import { TripleVerdictPanel } from '../../jobs/TripleVerdictModal'
 import { ConditionGrid } from '../../jobs/ConditionGrid'
 import { ScoreLineCard, recentDraws } from './ScoreLineCard'
 import { PnpScoreCard } from '../../jobs/PnpScoreCard'
-import { iconBtnS, SCRIM, CARD as OVERLAY_CARD, useIsNarrow } from '@/components/modal'
+import { iconBtnS, overlayCls, CARD as OVERLAY_CARD, useIsNarrow } from '@/components/modal'
 import { IconRefresh } from '@/components/icons'
 import { EMPTY, FIELDS, NCLC, clearAnswers, fieldsOf, missingFields, pullAndMerge, readAnswers, readScoreAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/quiz'
 import { gateOf, regionProvincesOf, uiOf } from '@/lib/pathways'
@@ -1299,7 +1299,8 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
           onDone={() => { setMe(true); quizToProfile(refreshFromStore()) }} />
       ) : null}
       <div onClick={quizShow ? closeQuiz : undefined}
-        style={quizShow ? { ...SCRIM, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: narrow ? 0 : 16 } : undefined}>
+        className={quizShow ? overlayCls() : undefined}
+        style={quizShow ? { zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: narrow ? 0 : 16 } : undefined}>
         <div onClick={quizShow ? (e) => e.stopPropagation() : undefined}
           style={quizShow ? (narrow
             ? { ...OVERLAY_CARD, borderRadius: 0, width: '100%', height: '100%', maxHeight: '100vh', overflowY: 'auto', padding: '20px 14px 16px' }

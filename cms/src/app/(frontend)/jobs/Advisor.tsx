@@ -23,7 +23,7 @@ import { CompanyAiSection, CompanyPanel } from './Company'
 import { JdTextView, JobBody, NocDutiesView, SUG_MARK, extractSug, fetchJobText, renderAI } from './Jd'
 import { EeCategorySection, MeansForMe, NewsLatestBlock, PnpDrawsBlock, PnpListSection, STREAM_REFORM, VerdictPill, aipBlockOf, aipVerdictOf, normName } from './Pnp'
 import { LockedText } from './Lock'
-import { CARD, SCRIM, iconBtnS, useIsNarrow } from '@/components/modal'
+import { CARD, iconBtnS, overlayCls, useIsNarrow } from '@/components/modal'
 import { useOverlayClose } from '@/components/modal'
 import { makeT, type Lang, type TFn } from '@/lib/i18n'
 import { streamDisplay } from '@/lib/jobs'
@@ -939,7 +939,7 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
   const iconBtn = iconBtnS
 
   return (
-    <div {...overlayClose} className="advScrim" style={SCRIM}>
+    <div {...overlayClose} className={`advScrim ${overlayCls()}`}>
       <div onClick={(e) => e.stopPropagation()} className="advPanel" style={{ ...CARD, ...panel }}>
         {/* 标题栏 = 拖动手柄 */}
         <div onPointerDown={startDrag} className={full ? 'advHead full' : 'advHead'}>
@@ -1050,7 +1050,7 @@ export function ActModal({ job, lang, plan, nocDesc, onClose }: { job: JobRow; l
   const [freeLeft, setFreeLeft] = useState<number | null>(null)  // 第 5 轮 #16:试用额度可见化(JobBody 回传)
   useEffect(() => { track('modal-jd', { kind: 'modal' }) }, [])  // #129 埋点 + 漏斗第 1 步(kind 分开弹框与整页)
   return (
-    <div {...overlayClose} className="advScrim" style={SCRIM}>
+    <div {...overlayClose} className={`advScrim ${overlayCls()}`}>
       <div onClick={(e) => e.stopPropagation()} className="advPanel" style={{ ...CARD, ...panel }}>
         {/* 标题栏 = 拖动手柄(与顾问弹框同款) */}
         <div onPointerDown={startDrag} className={full ? 'advHead tight full' : 'advHead tight'}>

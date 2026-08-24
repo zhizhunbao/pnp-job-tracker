@@ -62,7 +62,7 @@ export function Modal({
 
   return (
     // eslint-disable-next-line react/forbid-dom-props -- 层级是调用方传的运行时数据(有 z+10 算术叠层)
-    <div onMouseDown={ov.onMouseDown} onClick={ov.onClick} className={cls.scrim} style={{ zIndex: z }}>
+    <div onMouseDown={ov.onMouseDown} onClick={ov.onClick} className={cls.overlay} style={{ zIndex: z }}>
       <div onClick={stopClick}
         onPointerDown={card.onPointerDown}
         onPointerMove={card.onPointerMove}

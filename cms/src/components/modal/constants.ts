@@ -20,25 +20,11 @@ export const MODAL_RADIUS = 14
  */
 export const MODAL_SHADOW = '0 24px 60px rgba(0,0,0,.3)'
 
-/**
- * 遮罩规范(fixed 全屏 + 半透黑;不带毛玻璃是拍板)。镜像 .scrim 类。
+/*
+ * (SCRIM 2026-08-24 撤编:自带壳的重弹框改用 functions 的 overlayCls() 拿类,
+ *  值的单一来源回到 modal.module.css 的 .overlay;同日 scrim 这个舞台术语
+ *  按 Frank 拍板统一改叫 overlay)
  */
-export const SCRIM = {
-  /**
-   * 钉死在视口上。
-   */
-  position: 'fixed',
-
-  /**
-   * 四边贴 0 = 盖满全屏。
-   */
-  inset: 0,
-
-  /**
-   * 半透黑(50% 透明度的深灰蓝)。
-   */
-  background: 'rgba(17,24,39,.5)',
-} as const
 
 /**
  * 白卡规范(圆角/投影/内滚动收敛)。镜像 .card 类。
