@@ -1,0 +1,661 @@
+/*
+ * banner 域的私有样式(2026-08-24 自 ui/Banner.tsx 内联全量迁类,值逐格相等;
+ * 六模块渐变/前景/暗化色收成变体类,--grad/--fg/--deep 三个变量一档一套)。
+ */
+
+/*
+ * jobs 档模块色(主品牌蓝;home 也用这档 —— 同档不发明新色,映射在 moduleClsOf)。
+ */
+.jobs {
+  /*
+   * 渐变带底(浅蓝)。
+   */
+  --grad: linear-gradient(100deg, #eff6ff, #dbeafe);
+
+  /*
+   * 前景字色(深蓝)。
+   */
+  --fg: #1e40af;
+
+  /*
+   * 暗化层基色(空格分隔的 RGB 三元,给 rgb(var(--deep) / α) 用)。
+   */
+  --deep: 30 64 175;
+}
+
+/*
+ * pathways 档模块色(紫)。
+ */
+.pathways {
+  /*
+   * 渐变带底(浅紫)。
+   */
+  --grad: linear-gradient(100deg, #f5f3ff, #ede9fe);
+
+  /*
+   * 前景字色(深紫)。
+   */
+  --fg: #5b21b6;
+
+  /*
+   * 暗化层基色。
+   */
+  --deep: 91 33 182;
+}
+
+/*
+ * rank 档模块色(琥珀)。
+ */
+.rank {
+  /*
+   * 渐变带底(浅琥珀)。
+   */
+  --grad: linear-gradient(100deg, #fffbeb, #fef3c7);
+
+  /*
+   * 前景字色(深琥珀)。
+   */
+  --fg: #92400e;
+
+  /*
+   * 暗化层基色。
+   */
+  --deep: 146 64 14;
+}
+
+/*
+ * stats 档模块色(绿)。
+ */
+.stats {
+  /*
+   * 渐变带底(浅绿)。
+   */
+  --grad: linear-gradient(100deg, #f0fdf4, #dcfce7);
+
+  /*
+   * 前景字色(深绿)。
+   */
+  --fg: #166534;
+
+  /*
+   * 暗化层基色。
+   */
+  --deep: 22 101 52;
+}
+
+/*
+ * news 档模块色(青)。
+ */
+.news {
+  /*
+   * 渐变带底(浅青)。
+   */
+  --grad: linear-gradient(100deg, #f0fdfa, #ccfbf1);
+
+  /*
+   * 前景字色(深青)。
+   */
+  --fg: #0f766e;
+
+  /*
+   * 暗化层基色。
+   */
+  --deep: 15 118 110;
+}
+
+/*
+ * 渐变带形态(不传图/图挂的兜底):浅色渐变 + 模块色标题一行排开。
+ */
+.band {
+  /*
+   * 标题、副题、右槽排一行。
+   */
+  display: flex;
+
+  /*
+   * 按基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 件与件的间距。
+   */
+  gap: 12px;
+
+  /*
+   * 挤不下换行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 模块渐变底(变量来自模块档类)。
+   */
+  background: var(--grad);
+
+  /*
+   * 模块前景字色。
+   */
+  color: var(--fg);
+
+  /*
+   * 圆角。
+   */
+  border-radius: 12px;
+
+  /*
+   * 内衬。
+   */
+  padding: 16px 20px;
+
+  /*
+   * 与下文留 14px。
+   */
+  margin: 0 0 14px;
+}
+
+/*
+ * 标题(两形态共用):20px,图标与文字排一行。
+ */
+.h1 {
+  /*
+   * 模块标题字号。
+   */
+  font-size: 20px;
+
+  /*
+   * h1 默认外边距清零(间距归容器管)。
+   */
+  margin: 0;
+
+  /*
+   * 图标与文字排一行。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 图标与文字的间距。
+   */
+  gap: 8px;
+}
+
+/*
+ * 渐变带的副题。
+ */
+.bandSub {
+  /*
+   * 副题字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 打淡(和标题分层)。
+   */
+  opacity: 0.75;
+}
+
+/*
+ * 渐变带的右槽:推到行右端。
+ */
+.bandRight {
+  /*
+   * 左 margin 吃掉剩余宽度 = 靠右。
+   */
+  margin-left: auto;
+
+  /*
+   * 右槽字号。
+   */
+  font-size: 13px;
+}
+
+/*
+ * 图版形态(2026-07-19 Frank 批槽位:标题+副题左下、数字胶囊右下、轮播圆点右上):
+ * 恒 130px 定框 cover 裁剪,背景 crossfade 8s。
+ */
+.imgBanner {
+  /*
+   * 图层/暗化层/内容层的参照系。
+   */
+  position: relative;
+
+  /*
+   * 定框高(手机断点另有 110,见 main.css 的历史断点 —— 图版类原本就没写那条,不加行为)。
+   */
+  height: 130px;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 12px;
+
+  /*
+   * 图与暗化层不许溢出圆角。
+   */
+  overflow: hidden;
+
+  /*
+   * 与下文留 14px。
+   */
+  margin: 0 0 14px;
+}
+
+/*
+ * landing 首屏加高档:130 → 200(门面比二级页重)。
+ */
+.tall {
+  /*
+   * 加高定框。
+   */
+  height: 200px;
+}
+
+/*
+ * 一张轮播图:铺满定框 cover 裁剪,靠透明度 crossfade。
+ */
+.img {
+  /*
+   * 钉在定框上。
+   */
+  position: absolute;
+
+  /*
+   * 四边贴 0 铺满。
+   */
+  inset: 0;
+
+  /*
+   * 铺满宽。
+   */
+  width: 100%;
+
+  /*
+   * 铺满高。
+   */
+  height: 100%;
+
+  /*
+   * 等比裁剪填满(不变形)。
+   */
+  object-fit: cover;
+
+  /*
+   * 非当前张全透明。
+   */
+  opacity: 0;
+
+  /*
+   * crossfade 过渡。
+   */
+  transition: opacity 1.2s ease;
+}
+
+/*
+ * 当前张:显形。
+ */
+.imgOn {
+  /*
+   * 完全不透明。
+   */
+  opacity: 1;
+}
+
+/*
+ * 模块色暗化层(左浓右淡)压图保字;对比度红线 ≥4.5:1。
+ */
+.shade {
+  /*
+   * 钉在定框上。
+   */
+  position: absolute;
+
+  /*
+   * 四边贴 0 铺满。
+   */
+  inset: 0;
+
+  /*
+   * 左 82% 浓、55% 处 45%、右尾 25% 的模块色渐变(--deep 来自模块档类)。
+   */
+  background: linear-gradient(90deg, rgb(var(--deep) / 82%), rgb(var(--deep) / 45%) 55%, rgb(17 24 39 / 25%));
+}
+
+/*
+ * 内容层:标题副题左下、数字与右槽右下。
+ */
+.body {
+  /*
+   * 压在暗化层上。
+   */
+  position: relative;
+
+  /*
+   * 层级抬到图与暗化层之上。
+   */
+  z-index: 2;
+
+  /*
+   * 吃满定框高(内容才能贴底)。
+   */
+  height: 100%;
+
+  /*
+   * 左右两块排开。
+   */
+  display: flex;
+
+  /*
+   * 内容贴下沿。
+   */
+  align-items: flex-end;
+
+  /*
+   * 左右两端排开。
+   */
+  justify-content: space-between;
+
+  /*
+   * 两块的间距。
+   */
+  gap: 16px;
+
+  /*
+   * 左右 20、下 13 内衬。
+   */
+  padding: 0 20px 13px;
+
+  /*
+   * 图上文字一律白。
+   */
+  color: #ffffff;
+}
+
+/*
+ * 左下块(标题+副题):允许被压窄。
+ */
+.bodyLeft {
+  /*
+   * flex 子项允许被压窄(配合副题省略号)。
+   */
+  min-width: 0;
+}
+
+/*
+ * 图上标题的字影(压图保读)。
+ */
+.hShadow {
+  /*
+   * 黑色柔影。
+   */
+  text-shadow: 0 1px 6px rgb(0 0 0 / 50%);
+}
+
+/*
+ * 图版副题:单行省略 + 字影。
+ */
+.imgSub {
+  /*
+   * 副题字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 微打淡。
+   */
+  opacity: 0.92;
+
+  /*
+   * 与标题留 3px。
+   */
+  margin-top: 3px;
+
+  /*
+   * 黑色柔影。
+   */
+  text-shadow: 0 1px 4px rgb(0 0 0 / 50%);
+
+  /*
+   * 超长裁掉。
+   */
+  overflow: hidden;
+
+  /*
+   * 裁口给省略号。
+   */
+  text-overflow: ellipsis;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 右下块(数字胶囊排 + 右槽)。
+ */
+.statRow {
+  /*
+   * 胶囊排一行。
+   */
+  display: flex;
+
+  /*
+   * 胶囊间距。
+   */
+  gap: 8px;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 不许被压缩。
+   */
+  flex-shrink: 0;
+}
+
+/*
+ * 数字胶囊(数字+标签同行,治「数字与标签断裂悬在标题旁」)。
+ */
+.stat {
+  /*
+   * 白 16% 的毛玻璃感底。
+   */
+  background: rgb(255 255 255 / 16%);
+
+  /*
+   * 白 35% 描边。
+   */
+  border: 1px solid rgb(255 255 255 / 35%);
+
+  /*
+   * 全圆胶囊。
+   */
+  border-radius: 999px;
+
+  /*
+   * 内衬。
+   */
+  padding: 4px 12px;
+
+  /*
+   * 胶囊字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 胶囊里的数字:比标签大一号。
+ */
+.statV {
+  /*
+   * 数字字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 与标签留 4px。
+   */
+  margin-right: 4px;
+}
+
+/*
+ * 图版右槽(白底小片,装钮/链接)。
+ */
+.rightPill {
+  /*
+   * 近实白底。
+   */
+  background: rgb(255 255 255 / 92%);
+
+  /*
+   * 圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 内衬。
+   */
+  padding: 6px 13px;
+
+  /*
+   * 右槽字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 轮播圆点排(右上)。
+ */
+.dots {
+  /*
+   * 钉在定框右上。
+   */
+  position: absolute;
+
+  /*
+   * 距右 14。
+   */
+  right: 14px;
+
+  /*
+   * 距顶 10。
+   */
+  top: 10px;
+
+  /*
+   * 圆点排一行。
+   */
+  display: flex;
+
+  /*
+   * 点间距(桌面维持 6px 点距 5 视觉不变)。
+   */
+  gap: 5px;
+
+  /*
+   * 抬到暗化层之上。
+   */
+  z-index: 2;
+}
+
+/*
+ * 切图钮:透明热区(#212:原来钮就是那颗 6×6 的点,手机上点不中 ——
+ * 钮改热区、圆点挪进内层 span)。
+ */
+.dotBtn {
+  /*
+   * 热区宽(桌面 = 点大小;手机断点由 tapPad 体系接管)。
+   */
+  width: 6px;
+
+  /*
+   * 热区高。
+   */
+  height: 6px;
+
+  /*
+   * 无内衬。
+   */
+  padding: 0;
+
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底(热区透明)。
+   */
+  background: none;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 内层圆点居中用。
+   */
+  display: inline-flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 水平居中。
+   */
+  justify-content: center;
+}
+
+/*
+ * 圆点本体(非当前张:半透白)。
+ */
+.dot {
+  /*
+   * 点宽。
+   */
+  width: 6px;
+
+  /*
+   * 点高。
+   */
+  height: 6px;
+
+  /*
+   * 圆形。
+   */
+  border-radius: 50%;
+
+  /*
+   * 半透白。
+   */
+  background: rgb(255 255 255 / 45%);
+}
+
+/*
+ * 当前张的圆点:实白。
+ */
+.dotOn {
+  /*
+   * 实白。
+   */
+  background: #ffffff;
+}

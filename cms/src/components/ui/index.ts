@@ -1,6 +1,6 @@
 // ui/ 聚类过渡桶(2026-08-24 起解散中,Frank「每个组件都拆的可复用,按我的规范来」):
 // 迁出成域的件在这**转发**(将死的依赖幸存的),消费端 import 最后一批机械切换到各域桶;
-// 全部迁完本目录删除。还没迁的:Banner。
+// 全部迁完本目录删除。件已全部迁完 —— 本桶只剩转发,消费端 import 切换批后整目录删。
 export { UI, gradeColor } from '../colors'
 export { Button } from '../button'
 export { Card, CardKV, CardAction, ProCard, LockedRows, JobCard } from '../card'
@@ -10,7 +10,7 @@ export { Row } from '../row'
 export { Chip, chipStyle } from '../chip'
 export { Tag } from '../tag'
 export { Notice } from '../notice'
-export { Banner, BANNER_IMGS } from './Banner'
+export { Banner, BANNER_IMGS } from '../banner'
 export { Pager } from '../pager'
 export { Tabs, TabPanel, SectionTabs } from '../tabs'
 export type { TabItem } from '../tabs'
