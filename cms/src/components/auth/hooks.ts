@@ -6,7 +6,7 @@
  * @time 2026-08-24 01:30:00
  */
 import { createContext, useContext, useEffect, useState } from 'react'
-import { FLOW_ERR, FLOW_SENT, OAUTH_FAIL, OAUTH_PARAM } from './constants'
+import { EV_MOUSEDOWN, FLOW_ERR, FLOW_SENT, OAUTH_FAIL, OAUTH_PARAM } from './constants'
 import { finishAuth, googleHrefOf, localeOf, runAuthFlow } from './functions'
 import type { AuthFormHookIn, AuthFormHookOut, AuthMode, ClickOutsideIn } from './types'
 
@@ -154,9 +154,9 @@ export function useClickOutside(x: ClickOutsideIn) {
         x.close()
       }
     }
-    document.addEventListener('mousedown', onDown)
+    document.addEventListener(EV_MOUSEDOWN, onDown)
     function off() {
-      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener(EV_MOUSEDOWN, onDown)
     }
     return off
   }, [x.open, x.ref, x.close, x])

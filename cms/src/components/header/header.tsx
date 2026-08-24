@@ -15,6 +15,8 @@
  */
 import { useState } from 'react'
 
+import { IconMenu } from '@/components/icons'
+
 import { PATH_HOME } from './constants'
 import { AccountLite } from './accountlite'
 import { HeaderNav } from './headernav'
@@ -66,7 +68,7 @@ export function Header({ lang, setLang, t, active, sticky = false, accountArea, 
     <header className={headCls}>
       <div className={css.bar}>
         <div className={css.brand}>
-          <button className={css.burger} onClick={openDrawer} aria-label={t('nav.menu')}>☰</button>
+          <button className={css.burger} onClick={openDrawer} aria-label={t('nav.menu')}><IconMenu /></button>
           <a href={PATH_HOME} className={`${css.tapY} ${css.logo}`}>🍁 Offer2PR</a>
           <span className={css.tagline}>{t('tagline')}</span>
         </div>

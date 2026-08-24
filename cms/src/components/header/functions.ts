@@ -69,3 +69,22 @@ export function meToAcct(d: MeJson): AcctState {
   }
   return { state: ACCT_IN, u: { email: u.email, displayName, avatar, pro: proOf(proUntil) } }
 }
+
+/**
+ * 登录弹框按需载(点开才下载那份 JS,手法同 ChatLauncher;header 常驻包不背它)。
+ *
+ * @returns AuthModal 组件模块。
+ */
+export function loadAuthModal() {
+  return import('@/components/auth').then(pickAuthModal)
+}
+
+/**
+ * 从 auth 桶里挑出 AuthModal(dynamic 的取件回调)。
+ *
+ * @param m auth 桶模块。
+ * @returns AuthModal。
+ */
+function pickAuthModal(m: typeof import('@/components/auth')) {
+  return m.AuthModal
+}

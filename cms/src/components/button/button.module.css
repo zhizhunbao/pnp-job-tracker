@@ -233,3 +233,69 @@
    */
   border-radius: 0;
 }
+
+/*
+ * ── 以下自 backlink 域并入(2026-08-24 Frank「backlink 是不是应该归到 button 里去」:
+ * 按钮族一域多变体,BackLink 是返回钮变体)──
+ */
+
+/*
+ * 返回钮:药丸幽灵样式(白底描边),**不带箭头**(2026-07-27 Frank
+ * 「带箭头的按钮,把箭头都删掉,不允许使用箭头」)。
+ */
+.backLink {
+  /*
+   * 行内弹性盒(文字与将来可能的图标排一行)。
+   */
+  display: inline-flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 内容件间距。
+   */
+  gap: 6px;
+
+  /*
+   * 浅灰描边(幽灵钮:边有底无色)。
+   */
+  border: 1px solid #e5e7eb;
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 链接蓝。
+   */
+  color: #2563eb;
+
+  /*
+   * 全圆 = 药丸形。
+   */
+  border-radius: 999px;
+
+  /*
+   * 上下 4px、左右 14px 内衬。
+   */
+  padding: 4px 14px;
+
+  /*
+   * 返回钮字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 链接不带下划线(全站口径)。
+   */
+  text-decoration: none;
+
+  /*
+   * 钮文字不折行。
+   */
+  white-space: nowrap;
+}

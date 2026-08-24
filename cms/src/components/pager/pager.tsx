@@ -8,6 +8,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { IconChevronLeft, IconChevronRight } from '@/components/icons'
 import type { PagerIn } from './types'
 import css from './pager.module.css'
 
@@ -31,9 +32,13 @@ export function Pager({ page, max, note, onPage }: PagerIn) {
       {note != null && <span>{note}</span>}
       {max > 1 && (
         <span className={css.nav}>
-          <button aria-label="‹" className={css.btn} disabled={page === 0} onClick={prev}>‹</button>
+          <button aria-label="‹" className={css.btn} disabled={page === 0} onClick={prev}>
+            <IconChevronLeft />
+          </button>
           <span className={css.num}>{page + 1} / {max}</span>
-          <button aria-label="›" className={css.btn} disabled={page >= max - 1} onClick={next}>›</button>
+          <button aria-label="›" className={css.btn} disabled={page >= max - 1} onClick={next}>
+            <IconChevronRight />
+          </button>
         </span>
       )}
     </div>

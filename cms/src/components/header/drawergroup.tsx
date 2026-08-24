@@ -6,6 +6,7 @@
  * @author Frank
  * @time 2026-08-24 08:00:00
  */
+import { IconChevronDown, IconChevronRight } from '@/components/icons'
 import { withOn } from './functions'
 import type { DrawerGroupIn } from './types'
 import css from './header.module.css'
@@ -21,9 +22,9 @@ export function DrawerGroup({ groupKey, label, openKey, onToggle, items }: Drawe
     onToggle(groupKey)
   }
 
-  let chev = '▸'
+  let chev = <IconChevronRight />
   if (openKey === groupKey) {
-    chev = '▾'
+    chev = <IconChevronDown />
   }
   const subs = []
   if (openKey === groupKey) {

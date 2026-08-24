@@ -19,30 +19,12 @@ import { PricingModal } from '@/app/(frontend)/jobs/PricingModal'
 import { AccountMenu } from '@/components/auth'
 import { Button } from '@/components/button'
 import { ACCT_IN, ACCT_LOADING } from './constants'
+import { loadAuthModal } from './functions'
 import type { AccountLiteIn, AuthOpen } from './types'
 import css from './header.module.css'
 
 /**
- * 登录弹框按需载(点开才下载那份 JS,手法同 ChatLauncher)。
- *
- * @returns AuthModal 组件模块。
- */
-function loadAuthModal() {
-  return import('@/components/auth').then(pickAuthModal)
-}
-
-/**
- * 从 auth 桶里挑出 AuthModal(dynamic 的取件回调)。
- *
- * @param m auth 桶模块。
- * @returns AuthModal。
- */
-function pickAuthModal(m: typeof import('@/components/auth')) {
-  return m.AuthModal
-}
-
-/**
- * 按需载的登录弹框。
+ * 按需载的登录弹框(装载管道在 functions 的 loadAuthModal)。
  */
 const AuthModal = dynamic(loadAuthModal, { ssr: false })
 

@@ -17,6 +17,7 @@ import {
   PUSH_RESET_MS,
   PUSH_TRANSITION,
   PUSH_X,
+  SEL_MAIN,
 } from './constants'
 import { emptyUser, meToAcct } from './functions'
 import type { AcctHookIn, AcctPhase, AcctState, HoverOut, MeJson } from './types'
@@ -142,7 +143,7 @@ export function useHoverOpen(): HoverOut {
  */
 export function useMainPush() {
   useEffect(function push() {
-    const m = document.querySelector('main')
+    const m = document.querySelector(SEL_MAIN)
     const prevBody = document.body.style.overflowX
     const prevHtml = document.documentElement.style.overflowX
     document.body.style.overflowX = 'hidden'

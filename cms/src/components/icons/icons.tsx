@@ -3,7 +3,7 @@
 // 加图标 = 从 lucide-react 挑一个再包一行,调用点永远只 import 本文件。
 import {
   ArrowUp, Check, ChartColumn, ChevronDown, CircleCheck, ClipboardList, Compass, Lock, Mail, Map as LMap, MapPin,
-  Maximize, Medal, MessageCircle, Minimize, Minus, Newspaper, Paperclip, Rocket, RotateCcw, Save, Scale, Search, Settings, Square, Star, Target,
+  ChevronLeft, ChevronRight, Maximize, Medal, Menu, MessageCircle, Minimize, Minus, Newspaper, Paperclip, Rocket, RotateCcw, Save, Scale, Search, Settings, Square, Star, Target,
   ThumbsDown, ThumbsUp, TriangleAlert, User, Users, X,
   type LucideProps,
 } from 'lucide-react'
@@ -19,7 +19,10 @@ export const IconArrowUp = wrap(ArrowUp)      // 对话发送
 export const IconCheckCircle = wrap(CircleCheck) // 原 check-circle
 export const IconChart = wrap(ChartColumn)    // 原 chart
 export const IconChat = wrap(MessageCircle)   // 右下角对话挂件的气泡钮(ChatLauncher)
-export const IconChevronDown = wrap(ChevronDown) // 收起(挂件面板头)
+export const IconChevronDown = wrap(ChevronDown) // 收起(挂件面板头)/下拉与抽屉组的展开态
+export const IconChevronRight = wrap(ChevronRight) // 抽屉组的收起态
+export const IconChevronLeft = wrap(ChevronLeft)  // 翻页 ‹
+export const IconMenu = wrap(Menu)            // 窄屏汉堡(2026-08-24 Frank「统一用 icons」,替 ☰ 字符)
 export const IconClipboard = wrap(ClipboardList) // 原 clipboard
 export const IconCompass = wrap(Compass)      // 原 compass
 export const IconLock = wrap(Lock)            // 原 lock

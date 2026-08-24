@@ -928,6 +928,7 @@ const localRules = {
         messages: {
           magic: '比较位的裸字符串 `{{ s }}` 看不出是什么、打错也不报错。平台定值进 `constants.ts` 起名;自家档位改查表(键由联合类型管)。',
           hex: '色值 `{{ s }}` 不许散在代码里(2026-08-24 Frank「颜色这个域 函数有字符串没检查出来吗」):静态的进 module.css,JS 要读的进 constants.ts 起名带注释。',
+          platform: '平台串 `{{ s }}` 不许散写(事件名/选择器打错是静默失效):进 constants.ts 起名带注释。',
           path: '路径 `{{ s }}` 不许散写(2026-08-24 Frank「tsx 一堆常量没检查出来呢」):href/fetch 的路径打错是静默 404 —— 进 constants.ts 起名带注释。',
         },
       },
@@ -952,6 +953,15 @@ const localRules = {
             }
             if (p?.type === 'CallExpression' && p.callee?.name === 'fetch' && p.arguments[0] === node) {
               context.report({ node, messageId: 'path', data: { s: node.value } })
+              return
+            }
+            // 平台调用串:事件名/选择器打错同样是静默失效(2026-08-24 Frank
+            // 「tsx 还是有很多常量没检查出来吗」第四刀)。联合类型实参不在此列 ——
+            // 那类打错是 tsc 红,编译器就是它的名字。
+            if (p?.type === 'CallExpression' && p.arguments[0] === node
+              && p.callee?.type === 'MemberExpression'
+              && ['addEventListener', 'removeEventListener', 'querySelector'].includes(p.callee.property?.name)) {
+              context.report({ node, messageId: 'platform', data: { s: node.value } })
               return
             }
             if (p?.type !== 'BinaryExpression') return
@@ -1599,7 +1609,6 @@ const COMPONENTS = [
   'src/components/chip/**/*.{ts,tsx}',
   'src/components/row/**/*.{ts,tsx}',
   'src/components/pager/**/*.{ts,tsx}',
-  'src/components/backlink/**/*.{ts,tsx}',
   'src/components/colors/**/*.{ts,tsx}',
   'src/components/button/**/*.{ts,tsx}',
   'src/components/notice/**/*.{ts,tsx}',
@@ -2090,7 +2099,7 @@ const eslintConfig = [
   },
   {
     // ── 组件域闸 B:常量表形制(Frank「json 也格式化,换行 对齐」):逐键一行 ──
-    files: ['src/components/{footer,modal,title,shell,tag,chip,row,pager,backlink,colors,button,notice,grid,tabs,card,banner,auth,i18n,header}/constants.ts'],
+    files: ['src/components/{footer,modal,title,shell,tag,chip,row,pager,colors,button,notice,grid,tabs,card,banner,auth,i18n,header}/constants.ts'],
     plugins: { '@stylistic': stylistic },
     rules: {
       '@stylistic/object-curly-newline': ['error', { ObjectExpression: { multiline: true, minProperties: 3 } }],

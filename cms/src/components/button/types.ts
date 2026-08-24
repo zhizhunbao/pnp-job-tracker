@@ -95,3 +95,18 @@ export type BtnClsIn = {
    */
   className: string | null
 }
+
+/**
+ * BackLink 的 props。
+ */
+export type BackLinkIn = {
+  /**
+   * 返回目标(真 <a>,要能被爬、能整页导航)。
+   */
+  href: string
+
+  /**
+   * 钮文字(过 i18n 的词)。
+   */
+  label: string
+}

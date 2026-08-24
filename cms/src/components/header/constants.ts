@@ -131,3 +131,8 @@ export const ACCT_OUT = 'out'
  * 账户区三态:已登录(email 可能还没到,见 AccountLite 的占位圆)。
  */
 export const ACCT_IN = 'in'
+
+/**
+ * 主内容区的选择器(抽屉推的就是它;layout 的 <main> 是唯一一个)。
+ */
+export const SEL_MAIN = 'main'

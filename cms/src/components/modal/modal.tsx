@@ -19,7 +19,7 @@
 import { useLang } from '@/components/i18n'
 import { CLOSE_ARIA, SIZE_DEFAULT, Z_MODAL } from './constants'
 import { cardStyleOf, clsOf, maxKeyOf, stopClick } from './functions'
-import { MaxIcon } from '@/components/icons'
+import { IconX, MaxIcon } from '@/components/icons'
 import { useCard, useEscClose, useIsNarrow, useOverlayClose } from './hooks'
 import type { ModalIn } from './types'
 import css from './modal.module.css'
@@ -77,7 +77,7 @@ export function Modal({
               <MaxIcon maximized={card.maximized} />
             </button>
           )}
-          <button onClick={onClose} aria-label={CLOSE_ARIA} className={css.iconBtn}>×</button>
+          <button onClick={onClose} aria-label={CLOSE_ARIA} className={css.iconBtn}><IconX /></button>
         </div>
         {children}
       </div>

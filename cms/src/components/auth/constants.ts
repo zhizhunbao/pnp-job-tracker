@@ -251,3 +251,8 @@ export const API_FORGOT = '/api/users/forgot-password'
  * Payload 用户接口:重置密码。
  */
 export const API_RESET = '/api/users/reset-password'
+
+/**
+ * mousedown 事件名(平台定值,点外面关弹层用)。
+ */
+export const EV_MOUSEDOWN = 'mousedown'

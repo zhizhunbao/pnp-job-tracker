@@ -180,3 +180,13 @@ export const RESTORE_KEY = 'cw.restore'
  * 关闭钮的 aria-label(上线以来就是英文死值;要不要走 i18n 待 Frank 拍,先归位常量)。
  */
 export const CLOSE_ARIA = 'close'
+
+/**
+ * keydown 事件名(平台定值,打错是静默失效所以起名,下同)。
+ */
+export const EV_KEYDOWN = 'keydown'
+
+/**
+ * 媒体查询变化的事件名。
+ */
+export const EV_CHANGE = 'change'

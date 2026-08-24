@@ -7,6 +7,7 @@
  * @author Frank
  * @time 2026-08-24 08:00:00
  */
+import { IconChevronDown } from '@/components/icons'
 import { withOn } from './functions'
 import { useHoverOpen } from './hooks'
 import type { NavDropIn } from './types'
@@ -33,7 +34,7 @@ export function NavDrop({ label, icon, highlight, items }: NavDropIn) {
   return (
     <span className={css.dropWrap} onMouseEnter={h.enter} onMouseLeave={h.leave} onFocus={h.enter} onBlur={h.onBlur}>
       <button className={withOn({ base: css.dropBtn, on: highlight })} onClick={h.toggle}>
-        {icon} {label} <span className={css.dropCaret}>▾</span>
+        {icon} {label} <span className={css.dropCaret}><IconChevronDown /></span>
       </button>
       {h.open && <span className={css.dropPanel}>{links}</span>}
     </span>

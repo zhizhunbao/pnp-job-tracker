@@ -12,6 +12,8 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 
+import { IconX } from '@/components/icons'
+
 import {
   A_EMPLOYERS,
   A_JOBS,
@@ -68,7 +70,7 @@ export function MobileDrawer({ t, active, onClose }: MobileDrawerIn) {
       <div className={css.drawer} onClick={stop}>
         <div className={css.drawerHead}>
           <span className={css.drawerBrand}>🍁 Offer2PR</span>
-          <button className={css.drawerClose} onClick={onClose} aria-label={t('nav.menu')}>✕</button>
+          <button className={css.drawerClose} onClick={onClose} aria-label={t('nav.menu')}><IconX /></button>
         </div>
         <nav className={css.drawerNav}>
           <a href={PATH_HOME} className={withOn({ base: css.drawerItem, on: onHome })}>{t('detail.crumbHome')}</a>

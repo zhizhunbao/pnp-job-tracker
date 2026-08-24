@@ -7,7 +7,7 @@
  * @time 2026-08-24 04:30:00
  */
 import { useEffect, useRef, useState } from 'react'
-import { DRAG_IGNORE_SEL, KEY_ESC, NARROW_BP } from './constants'
+import { DRAG_IGNORE_SEL, EV_CHANGE, EV_KEYDOWN, KEY_ESC, NARROW_BP } from './constants'
 import { elOf } from './functions'
 import type { CardIn, CardOut, DragPos, DragStart, OverlayHandlers } from './types'
 
@@ -27,9 +27,9 @@ export function useIsNarrow(bp = NARROW_BP): boolean {
     function onChange() {
       setNarrow(mq.matches)
     }
-    mq.addEventListener('change', onChange)
+    mq.addEventListener(EV_CHANGE, onChange)
     function off() {
-      mq.removeEventListener('change', onChange)
+      mq.removeEventListener(EV_CHANGE, onChange)
     }
     return off
   }, [bp])
@@ -70,9 +70,9 @@ export function useEscClose(onClose: () => void) {
         onClose()
       }
     }
-    window.addEventListener('keydown', onKey)
+    window.addEventListener(EV_KEYDOWN, onKey)
     function off() {
-      window.removeEventListener('keydown', onKey)
+      window.removeEventListener(EV_KEYDOWN, onKey)
     }
     return off
   }, [onClose])
