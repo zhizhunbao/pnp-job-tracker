@@ -8,7 +8,11 @@
 # 生效需要一次性设置(每个 clone 一次):git config core.hooksPath .githooks
 
 upstream=$(git rev-parse --abbrev-ref '@{push}' 2>/dev/null || echo origin/main)
-changed=$(git diff --name-only "$upstream"..HEAD 2>/dev/null | grep -E '^cms/.*\.(ts|tsx|mjs)$')
+# --diff-filter=d 排掉本批**删除**的路径(2026-08-24 实撞:域内文件批量改成小写后,
+# diff 会同时列出旧大写名与新小写名;Windows 文件系统不分大小写,下面的 [ -f ] 对早已
+# 不存在的 AccountMenu.tsx 照样成立 → 拿旧名送进 eslint,命中「文件名必须小写」当场拦 push。
+# 只查这次推上去后仍然存在的文件才是这道闸的本意。)
+changed=$(git diff --name-only --diff-filter=d "$upstream"..HEAD 2>/dev/null | grep -E '^cms/.*\.(ts|tsx|mjs)$')
 [ -z "$changed" ] && exit 0
 
 files=""
