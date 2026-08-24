@@ -11,6 +11,6 @@
  * @time 2026-08-24 04:30:00
  */
 export { CARD, iconBtnS, MODAL_RADIUS, MODAL_SHADOW, SCRIM } from './constants'
-export { useIsNarrow, useOverlayClose } from './hooks'
+export { useEscClose, useIsNarrow, useOverlayClose } from './hooks'
 export { Modal } from './modal'
 export type { ModalIn, OverlayHandlers } from './types'

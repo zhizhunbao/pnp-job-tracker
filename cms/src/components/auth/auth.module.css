@@ -1,0 +1,1214 @@
+/*
+ * auth 域的私有样式(2026-08-24 自 AuthForm/AccountMenu/Avatar 内联全量迁类,
+ * 值逐格相等;原先靠内联 \3c style> 标签打 !important 的 focus 态改成正经 :focus)。
+ */
+
+/*
+ * 表单输入框(邮箱/密码同款):浅灰底描边,聚焦见 :focus。
+ */
+.input {
+  /*
+   * 吃满表单宽。
+   */
+  width: 100%;
+
+  /*
+   * 内衬算进宽度。
+   */
+  box-sizing: border-box;
+
+  /*
+   * 输入内衬。
+   */
+  padding: 10px 12px;
+
+  /*
+   * 输入字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 加厚一点的浅灰描边(1.5px,聚焦换蓝)。
+   */
+  border: 1.5px solid #e5e7eb;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 9px;
+
+  /*
+   * 与上方 label 文字留 6px。
+   */
+  margin-top: 6px;
+
+  /*
+   * 浅灰底(聚焦换白)。
+   */
+  background: #fafafa;
+
+  /*
+   * 关浏览器默认聚焦框(自己画,见 :focus)。
+   */
+  outline: none;
+
+  /*
+   * 聚焦切换的过渡。
+   */
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+/*
+ * 聚焦态:蓝描边 + 白底 + 蓝晕(原来是内联 \3c style> 打 !important,类化后不用了)。
+ */
+.input:focus {
+  /*
+   * 聚焦蓝描边。
+   */
+  border-color: #3b82f6;
+
+  /*
+   * 聚焦白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 聚焦蓝晕。
+   */
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 12%);
+}
+
+/*
+ * 表单字段的 label(文字 + 输入框竖排)。
+ */
+.label {
+  /*
+   * label 文字字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 半粗偏细。
+   */
+  font-weight: 500;
+
+  /*
+   * 字段文字色。
+   */
+  color: #374151;
+
+  /*
+   * 块级:文字与输入框竖排。
+   */
+  display: block;
+}
+
+/*
+ * 两个字段之间的间隔条。
+ */
+.fieldGap {
+  /*
+   * 12px 空档。
+   */
+  height: 12px;
+}
+
+/*
+ * 品牌头(拍板保留:登录弹框 = 品牌触点):枫叶 + 站名居中。
+ */
+.brand {
+  /*
+   * 居中。
+   */
+  text-align: center;
+
+  /*
+   * 与下文留 14px。
+   */
+  margin-bottom: 14px;
+}
+
+/*
+ * 品牌头的枫叶。
+ */
+.brandLeaf {
+  /*
+   * 枫叶字号。
+   */
+  font-size: 26px;
+
+  /*
+   * 行高压到 1,和站名贴紧。
+   */
+  line-height: 1;
+}
+
+/*
+ * 品牌头的站名。
+ */
+.brandName {
+  /*
+   * 站名字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 700;
+
+  /*
+   * 深字。
+   */
+  color: #111827;
+
+  /*
+   * 与枫叶留 4px。
+   */
+  margin-top: 4px;
+}
+
+/*
+ * 大标题文案(#54:careerbeacon 式价值前置)。
+ */
+.hero {
+  /*
+   * 大标题字号。
+   */
+  font-size: 17px;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 700;
+
+  /*
+   * 深字。
+   */
+  color: #111827;
+
+  /*
+   * 居中。
+   */
+  text-align: center;
+
+  /*
+   * 行高(两行文案不挤)。
+   */
+  line-height: 1.4;
+
+  /*
+   * 与下文留 16px(注册态收 12,见 .heroTight)。
+   */
+  margin-bottom: 16px;
+}
+
+/*
+ * 注册态的大标题下距收紧(下面还有社交钮)。
+ */
+.heroTight {
+  /*
+   * 收到 12px。
+   */
+  margin-bottom: 12px;
+}
+
+/*
+ * 重置态标题(小一号)。
+ */
+.resetTitle {
+  /*
+   * 标题字号。
+   */
+  font-size: 14.5px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 深字。
+   */
+  color: #111827;
+
+  /*
+   * 与下文留 14px。
+   */
+  margin-bottom: 14px;
+
+  /*
+   * 居中。
+   */
+  text-align: center;
+}
+
+/*
+ * Google 钮(#54 骨架:社交在上):白底描边通栏。
+ */
+.googleBtn {
+  /*
+   * 图标与文字排一行居中。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 水平居中。
+   */
+  justify-content: center;
+
+  /*
+   * 图标与文字的间距。
+   */
+  gap: 8px;
+
+  /*
+   * 通栏。
+   */
+  width: 100%;
+
+  /*
+   * 内衬算进宽度。
+   */
+  box-sizing: border-box;
+
+  /*
+   * 上下 10 内衬。
+   */
+  padding: 10px 0;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 钮文字色。
+   */
+  color: #374151;
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 与输入框同款 1.5px 描边。
+   */
+  border: 1.5px solid #e5e7eb;
+
+  /*
+   * 与输入框同款圆角。
+   */
+  border-radius: 9px;
+
+  /*
+   * 链接形态不带下划线。
+   */
+  text-decoration: none;
+}
+
+/*
+ * 「或用邮箱」分隔行:两条细线夹一句小字。
+ */
+.orRow {
+  /*
+   * 线、字、线排一行。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 线与字的间距。
+   */
+  gap: 10px;
+
+  /*
+   * 上下 14 外距。
+   */
+  margin: 14px 0;
+
+  /*
+   * 小字灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 小字号。
+   */
+  font-size: 11.5px;
+}
+
+/*
+ * 分隔行的细线(左右各一条)。
+ */
+.orLine {
+  /*
+   * 吃掉剩余宽度。
+   */
+  flex: 1;
+
+  /*
+   * 细线高。
+   */
+  height: 1px;
+
+  /*
+   * 浅灰。
+   */
+  background: #e5e7eb;
+}
+
+/*
+ * Google G 图标:基线微下沉(和钮文字对齐)。
+ */
+.gIcon {
+  /*
+   * 基线下沉 0.155em。
+   */
+  vertical-align: -0.155em;
+}
+
+/*
+ * 密码强度条容器。
+ */
+.meter {
+  /*
+   * 与密码框留 8px。
+   */
+  margin-top: 8px;
+}
+
+/*
+ * 强度条三段的排。
+ */
+.meterRow {
+  /*
+   * 三段排一行。
+   */
+  display: flex;
+
+  /*
+   * 段间距。
+   */
+  gap: 4px;
+}
+
+/*
+ * 强度条一段(未点亮灰;点亮色随档,见 .lv1-.lv3 的 --pw-c)。
+ */
+.meterSeg {
+  /*
+   * 三段等分。
+   */
+  flex: 1;
+
+  /*
+   * 条高。
+   */
+  height: 4px;
+
+  /*
+   * 圆头。
+   */
+  border-radius: 2px;
+
+  /*
+   * 未点亮浅灰。
+   */
+  background: #e5e7eb;
+
+  /*
+   * 点亮切换的过渡。
+   */
+  transition: background 0.2s;
+}
+
+/*
+ * 点亮段:吃档色变量。
+ */
+.meterOn {
+  /*
+   * 档色(--pw-c 来自 .lv0-.lv3)。
+   */
+  background: var(--pw-c);
+}
+
+/*
+ * 强度文案行。
+ */
+.meterText {
+  /*
+   * 小字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 与条留 4px。
+   */
+  margin-top: 4px;
+
+  /*
+   * 档色文字。
+   */
+  color: var(--pw-c);
+}
+
+/*
+ * 强度文案后的补强提示(灰)。
+ */
+.meterHint {
+  /*
+   * 提示灰。
+   */
+  color: #9ca3af;
+}
+
+/*
+ * 太短档(红)。
+ */
+.lv0 {
+  /*
+   * 红。
+   */
+  --pw-c: #dc2626;
+}
+
+/*
+ * 弱档(橙)。
+ */
+.lv1 {
+  /*
+   * 橙。
+   */
+  --pw-c: #f59e0b;
+}
+
+/*
+ * 中档(黄)。
+ */
+.lv2 {
+  /*
+   * 黄。
+   */
+  --pw-c: #eab308;
+}
+
+/*
+ * 强档(绿)。
+ */
+.lv3 {
+  /*
+   * 绿。
+   */
+  --pw-c: #16a34a;
+}
+
+/*
+ * 报错框与上文的间距(Notice 自带样式,这里只管距)。
+ */
+.errGap {
+  /*
+   * 与上文留 10px。
+   */
+  margin-top: 10px;
+}
+
+/*
+ * 提交钮通栏(Button 组件的几何微调,过渡口收编进类)。
+ */
+.submitBtn {
+  /*
+   * 通栏。
+   */
+  width: 100%;
+
+  /*
+   * 与表单留 18px。
+   */
+  margin-top: 18px;
+
+  /*
+   * 钮文字居中。
+   */
+  text-align: center;
+}
+
+/*
+ * 页脚态切换钮(登录↔注册):蓝字无底。
+ */
+.footToggle {
+  /*
+   * 块级独占一行。
+   */
+  display: block;
+
+  /*
+   * 水平居中,与上文留 14px。
+   */
+  margin: 14px auto 0;
+
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 无内衬。
+   */
+  padding: 0;
+
+  /*
+   * 小字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 链接蓝。
+   */
+  color: #2563eb;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 页脚忘记密码钮:灰小字带下划线。
+ */
+.footForgot {
+  /*
+   * 块级独占一行。
+   */
+  display: block;
+
+  /*
+   * 水平居中,与上文留 10px。
+   */
+  margin: 10px auto 0;
+
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 无内衬。
+   */
+  padding: 0;
+
+  /*
+   * 更小字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 下划线(和上面的切换钮区分层级)。
+   */
+  text-decoration: underline;
+}
+
+/*
+ * 页脚返回登录钮(找回/重置态):灰小字。
+ */
+.footBack {
+  /*
+   * 块级独占一行。
+   */
+  display: block;
+
+  /*
+   * 水平居中,与上文留 14px。
+   */
+  margin: 14px auto 0;
+
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 无内衬。
+   */
+  padding: 0;
+
+  /*
+   * 更小字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 找回成功页里的返回登录(蓝字,与成功框同列)。
+ */
+.sentBack {
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 无内衬。
+   */
+  padding: 0;
+
+  /*
+   * 链接蓝。
+   */
+  color: #2563eb;
+
+  /*
+   * 小字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 与成功框留 12px。
+   */
+  margin-top: 12px;
+}
+
+/*
+ * 头像图形态:圆形裁剪。
+ */
+.avatarImg {
+  /*
+   * 圆形。
+   */
+  border-radius: 50%;
+
+  /*
+   * 等比裁剪填满。
+   */
+  object-fit: cover;
+
+  /*
+   * 块级(去掉 img 基线缝)。
+   */
+  display: block;
+
+  /*
+   * 排里不许被压扁。
+   */
+  flex-shrink: 0;
+}
+
+/*
+ * 头像首字母色块形态(尺寸与底色是运行时数据走 style)。
+ */
+.avatarBadge {
+  /*
+   * 圆形。
+   */
+  border-radius: 50%;
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+
+  /*
+   * 首字母居中用。
+   */
+  display: inline-flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 水平居中。
+   */
+  justify-content: center;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 排里不许被压扁。
+   */
+  flex-shrink: 0;
+
+  /*
+   * 禁选中(头像不是文本)。
+   */
+  user-select: none;
+}
+
+/*
+ * 账户菜单的定宽槽(与 Header 的 ACCT_SLOT_W 对齐,值见 constants.SLOT_W 的注释)。
+ */
+.menuWrap {
+  /*
+   * 弹层的参照系。
+   */
+  position: relative;
+
+  /*
+   * 行内弹性盒。
+   */
+  display: inline-flex;
+
+  /*
+   * 定宽槽(SSR 首帧与登录态同宽,防导航平移)。
+   */
+  min-width: 32px;
+
+  /*
+   * 头像靠右贴齐。
+   */
+  justify-content: flex-end;
+}
+
+/*
+ * 头像圆钮(#63b:像 Google 那样只显示图标,名字/Pro 态挂 title)。
+ */
+.menuBtn {
+  /*
+   * 行内弹性盒。
+   */
+  display: inline-flex;
+
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 一圈 2px 热区。
+   */
+  padding: 2px;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 圆钮。
+   */
+  border-radius: 50%;
+}
+
+/*
+ * 菜单开着时的圆钮:蓝圈提示。
+ */
+.menuBtnOn {
+  /*
+   * 2px 浅蓝圈。
+   */
+  box-shadow: 0 0 0 2px #bfdbfe;
+}
+
+/*
+ * 下拉弹层。
+ */
+.menuPop {
+  /*
+   * 锚在钮下。
+   */
+  position: absolute;
+
+  /*
+   * 钮下 6px。
+   */
+  top: calc(100% + 6px);
+
+  /*
+   * 右对齐钮。
+   */
+  right: 0;
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 浅灰描边。
+   */
+  border: 1px solid #e5e7eb;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 10px;
+
+  /*
+   * 弹层投影。
+   */
+  box-shadow: 0 10px 30px rgb(0 0 0 / 12%);
+
+  /*
+   * 上下 3px 内衬(条目自带左右衬)。
+   */
+  padding: 3px 0;
+
+  /*
+   * 压过页面内容。
+   */
+  z-index: 30;
+
+  /*
+   * 菜单最窄宽(短邮箱也不缩成一条)。
+   */
+  min-width: 185px;
+}
+
+/*
+ * 身份头(昵称+邮箱+Free/Pro 两行紧凑版,整块可点去账户页)。
+ */
+.menuHead {
+  /*
+   * 块级。
+   */
+  display: block;
+
+  /*
+   * 内衬。
+   */
+  padding: 7px 12px;
+
+  /*
+   * 链接不带下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 与菜单条目之间的分隔线。
+   */
+  border-bottom: 1px solid #f3f4f6;
+
+  /*
+   * 与条目留 2px。
+   */
+  margin-bottom: 2px;
+}
+
+/*
+ * 身份头首行(昵称 + 层级)。
+ */
+.menuName {
+  /*
+   * 昵称字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 深字。
+   */
+  color: #111827;
+
+  /*
+   * 超长裁掉。
+   */
+  overflow: hidden;
+
+  /*
+   * 裁口给省略号。
+   */
+  text-overflow: ellipsis;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 昵称旁的层级小字容器。
+ */
+.menuPlan {
+  /*
+   * 不加粗(里面的 Pro 自己加)。
+   */
+  font-weight: 400;
+
+  /*
+   * 与昵称留 6px。
+   */
+  margin-left: 6px;
+
+  /*
+   * 小字号。
+   */
+  font-size: 11px;
+}
+
+/*
+ * Pro 层级字(琥珀加粗)。
+ */
+.menuPro {
+  /*
+   * 付费琥珀。
+   */
+  color: #b45309;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * Free 层级字(灰)。
+ */
+.menuFree {
+  /*
+   * 灰。
+   */
+  color: #9ca3af;
+}
+
+/*
+ * 身份头次行(邮箱)。
+ */
+.menuMail {
+  /*
+   * 小字号。
+   */
+  font-size: 11px;
+
+  /*
+   * 灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 超长裁掉。
+   */
+  overflow: hidden;
+
+  /*
+   * 裁口给省略号。
+   */
+  text-overflow: ellipsis;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 分组小标(「求职」「管理」)。
+ */
+.menuSect {
+  /*
+   * 极小字号。
+   */
+  font-size: 10px;
+
+  /*
+   * 灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 字距拉开(全大写小标的惯例)。
+   */
+  letter-spacing: 0.5px;
+
+  /*
+   * 上 3、左右 12 内衬。
+   */
+  padding: 3px 12px 0;
+}
+
+/*
+ * 菜单条目(链接与按钮同款)。
+ */
+.menuItem {
+  /*
+   * 块级通栏。
+   */
+  display: block;
+
+  /*
+   * 吃满菜单宽。
+   */
+  width: 100%;
+
+  /*
+   * 文字靠左(button 默认居中)。
+   */
+  text-align: left;
+
+  /*
+   * 内衬。
+   */
+  padding: 4px 12px;
+
+  /*
+   * 条目字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 条目文字色。
+   */
+  color: #374151;
+
+  /*
+   * 无底(button 形态)。
+   */
+  background: none;
+
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 链接不带下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 条目不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 内衬算进宽度。
+   */
+  box-sizing: border-box;
+
+  /*
+   * 行高(条目垂直呼吸)。
+   */
+  line-height: 1.7;
+}
+
+/*
+ * 升级条目(琥珀加粗)。
+ */
+.menuItemPro {
+  /*
+   * 付费琥珀。
+   */
+  color: #b45309;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 登出条目(弱化灰)。
+ */
+.menuItemDim {
+  /*
+   * 灰。
+   */
+  color: #9ca3af;
+}
+
+/*
+ * 菜单里的横向分隔线。
+ */
+.menuHr {
+  /*
+   * 上边线做分隔。
+   */
+  border-top: 1px solid #f3f4f6;
+
+  /*
+   * 上下 4px。
+   */
+  margin: 4px 0;
+}
+
+/*
+ * 登出上面那条分隔线:上下收到 2px(迁移保值,与原内联逐格相等)。
+ */
+.menuHrTight {
+  /*
+   * 上下 2px。
+   */
+  margin: 2px 0;
+}
