@@ -8,7 +8,8 @@
  * @author Frank
  * @time 2026-08-24 14:00:00
  */
-import { inputClsOf } from './functions'
+import { AUTOCOMPLETE_OFF, SIZE_DEFAULT } from './constants'
+import { inputClsOf, makeChange } from './functions'
 import type { InputIn } from './types'
 
 /**
@@ -21,7 +22,7 @@ export function Input({
   value,
   onChange,
   placeholder,
-  size = 'md',
+  size = SIZE_DEFAULT,
   enterKeyHint,
   maxLength,
   autoFocus = false,
@@ -34,9 +35,7 @@ export function Input({
     extra = className
   }
 
-  function change(e: React.ChangeEvent<HTMLInputElement>) {
-    onChange(e.target.value)
-  }
+  const change = makeChange(onChange)
 
   return (
     <input className={inputClsOf({ size, search: false, extra })}
@@ -48,6 +47,6 @@ export function Input({
       autoFocus={autoFocus}
       aria-label={ariaLabel}
       onKeyDown={onKeyDown}
-      autoComplete="off" />
+      autoComplete={AUTOCOMPLETE_OFF} />
   )
 }

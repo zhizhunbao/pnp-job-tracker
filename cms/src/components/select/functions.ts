@@ -4,7 +4,7 @@
  * @author Frank
  * @time 2026-08-24 10:00:00
  */
-import type { ListIn, ShownIn } from './types'
+import type { ListIn, SelectChangeFn, ShownIn } from './types'
 
 /**
  * 镜像文本该显示什么:有值走显示名,空值走「全部」档文案。
@@ -36,3 +36,16 @@ export function listOf(x: ListIn): readonly string[] {
   return x.opts
 }
 
+/**
+ * 造一枚下拉的事件拆包手柄(同 input 域 makeChange 的道理:组件收下事件对象,
+ * 调用方只拿到选中的值)。
+ *
+ * @param onChange 收字符串的回调。
+ * @returns 挂到 select 上的 onChange 手柄。
+ */
+export function makeSelectChange(onChange: (v: string) => void): SelectChangeFn {
+  function change(e: React.ChangeEvent<HTMLSelectElement>) {
+    onChange(e.target.value)
+  }
+  return change
+}

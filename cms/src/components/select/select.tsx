@@ -15,7 +15,7 @@
  * @time 2026-08-24 10:00:00
  */
 import { inputClsOf, SIZE_DEFAULT } from '@/components/input'
-import { listOf, shownOf } from './functions'
+import { listOf, makeSelectChange, shownOf } from './functions'
 import type { SelectIn, SelectSize } from './types'
 import css from './select.module.css'
 
@@ -32,10 +32,6 @@ export function Select({ value, onChange, opts, all, labelOf, size = 'sm', tap =
   }
   const shown = shownOf({ value, all, labelOf: labelIn })
   const list = listOf({ value, opts })
-
-  function change(e: React.ChangeEvent<HTMLSelectElement>) {
-    onChange(e.target.value)
-  }
 
   function labelFor(o: string): string {
     if (labelOf != null) {
@@ -63,7 +59,7 @@ export function Select({ value, onChange, opts, all, labelOf, size = 'sm', tap =
   return (
     <span className={boxCls}>
       <span aria-hidden className={`${base} ${css.measure}`}>{shown}</span>
-      <select value={value} onChange={change} className={selCls}>
+      <select value={value} onChange={makeSelectChange(onChange)} className={selCls}>
         <option value="">{all}</option>
         {opels}
       </select>

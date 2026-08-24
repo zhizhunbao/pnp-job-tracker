@@ -4,7 +4,7 @@
  * @author Frank
  * @time 2026-08-24 15:00:00
  */
-import type { InputClsIn, InputSize } from './types'
+import type { ChangeFn, InputClsIn, InputSize } from './types'
 import css from './input.module.css'
 
 /**
@@ -27,4 +27,19 @@ export function inputClsOf(x: InputClsIn): string {
     out.push(x.extra)
   }
   return out.join(' ')
+}
+
+/**
+ * 造一枚事件拆包手柄:原生 `<input>` 的 onChange 交回整个事件对象,而调用方只想要
+ * 那个字符串 —— 这层转换收在组件域里一次,页面就不必七处各写一遍
+ * `(e) => setX(e.target.value)`,也不必碰 e.target(工厂形态同 tabs 的 makeTabKeys)。
+ *
+ * @param onChange 收字符串的回调。
+ * @returns 挂到 input 上的 onChange 手柄。
+ */
+export function makeChange(onChange: (v: string) => void): ChangeFn {
+  function change(e: React.ChangeEvent<HTMLInputElement>) {
+    onChange(e.target.value)
+  }
+  return change
 }

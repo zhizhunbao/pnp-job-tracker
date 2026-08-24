@@ -88,3 +88,8 @@ export type InputClsIn = {
    */
   extra: string | null
 }
+
+/**
+ * 事件拆包手柄:原生 input 交回整个事件,这枚把它拆成字符串再递给调用方。
+ */
+export type ChangeFn = (e: React.ChangeEvent<HTMLInputElement>) => void

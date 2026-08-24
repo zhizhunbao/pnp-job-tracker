@@ -8,8 +8,8 @@
  * @time 2026-08-24 14:00:00
  */
 import { IconSearch, IconX } from '@/components/icons'
-import { inputClsOf } from '@/components/input'
-import { CLEAR_ARIA } from './constants'
+import { AUTOCOMPLETE_OFF, inputClsOf, makeChange } from '@/components/input'
+import { CLEAR_ARIA, SIZE_LG } from './constants'
 import type { SearchIn } from './types'
 import css from './search.module.css'
 
@@ -19,10 +19,8 @@ import css from './search.module.css'
  * @param props 值/回调/占位/尺寸。
  * @returns 搜索框。
  */
-export function Search({ value, onChange, placeholder, size = 'lg' }: SearchIn) {
-  function change(e: React.ChangeEvent<HTMLInputElement>) {
-    onChange(e.target.value)
-  }
+export function Search({ value, onChange, placeholder, size = SIZE_LG }: SearchIn) {
+  const change = makeChange(onChange)
 
   function clear() {
     onChange('')
@@ -37,7 +35,7 @@ export function Search({ value, onChange, placeholder, size = 'lg' }: SearchIn) 
         placeholder={placeholder}
         aria-label={placeholder}
         enterKeyHint="search"
-        autoComplete="off" />
+        autoComplete={AUTOCOMPLETE_OFF} />
       {value !== '' && (
         <button type="button" className={css.searchClear} onClick={clear} aria-label={CLEAR_ARIA}>
           <IconX />

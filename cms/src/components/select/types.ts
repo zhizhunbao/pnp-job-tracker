@@ -91,3 +91,7 @@ export type ListIn = {
   opts: readonly string[]
 }
 
+/**
+ * 下拉的事件拆包手柄(同 input 域的 ChangeFn,但事件目标是 select)。
+ */
+export type SelectChangeFn = (e: React.ChangeEvent<HTMLSelectElement>) => void

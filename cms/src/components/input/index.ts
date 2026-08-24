@@ -7,7 +7,7 @@
  * @author Frank
  * @time 2026-08-24 15:00:00
  */
-export { SIZE_DEFAULT } from './constants'
+export { AUTOCOMPLETE_OFF, SIZE_DEFAULT } from './constants'
 export { Input } from './input'
-export { inputClsOf } from './functions'
-export type { InputClsIn, InputIn, InputSize } from './types'
+export { inputClsOf, makeChange } from './functions'
+export type { ChangeFn, InputClsIn, InputIn, InputSize } from './types'
