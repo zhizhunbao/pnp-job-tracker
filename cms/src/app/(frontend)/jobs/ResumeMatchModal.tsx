@@ -94,7 +94,7 @@ export function ResumeMatchModal({ jobId, jd, loggedIn, onClose }: {
   return (
     <Modal onClose={onClose} size="md" pad>
       {/* 眉题删了(2026-08-03 Frank「不用标 AI 工具」):功能名自己会说话 */}
-      <ModalTitle color="#4338ca" title={t('rm.title')} />
+      <ModalTitle deep title={t('rm.title')} />
       {!loggedIn ? (
         // 登录墙:匿名不给(同时喂注册漏斗)。文案一句话 + 直达登录
         <div style={{ margin: '16px 0 4px', fontSize: 13.5, color: UI.text2 }}>

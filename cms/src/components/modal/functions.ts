@@ -76,6 +76,19 @@ export function clsOf(x: ClsIn): ClsOut {
 }
 
 /**
+ * eyebrow 的类名预算(默认靛蓝,深档叠 .eyebrowDeep)。
+ *
+ * @param deep 是否深靛蓝档。
+ * @returns 拼好的 className。
+ */
+export function eyebrowClsOf(deep: boolean): string {
+  if (deep) {
+    return `${css.eyebrow} ${css.eyebrowDeep}`
+  }
+  return css.eyebrow
+}
+
+/**
  * 全屏钮标签的 i18n 键选择(全屏中显示「还原」)。
  *
  * @param maximized 是否全屏态。

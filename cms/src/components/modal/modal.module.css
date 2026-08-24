@@ -148,13 +148,21 @@
 }
 
 /*
- * eyebrow 小字(颜色按场景由 style 变量进)。
+ * eyebrow 小字(默认靛蓝;全站实际只有两档色,深档见 .eyebrowDeep ——
+ * 2026-08-24 Frank「这种呢」把 --eyebrow-c 变量类化掉)。
  */
 .eyebrow {
   font-size: 12px;
   font-weight: 600;
   letter-spacing: .3px;
-  color: var(--eyebrow-c);
+  color: #6366f1;
+}
+
+/*
+ * eyebrow 深靛蓝档(简历匹配弹框用)。
+ */
+.eyebrowDeep {
+  color: #4338ca;
 }
 
 /*

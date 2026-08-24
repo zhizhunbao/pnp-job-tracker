@@ -556,24 +556,26 @@ const localRules = {
       },
       create(context) {
         // 组件域抽屉(2026-08-24 Frank 连环拍板定型,样板 footer/table/modal):
-        // 结构 = `<域名>.tsx`(全小写,react 惯例)、样式 = `<域名>.module.css`(.module
-        // 是 Next 的隔离开关,框架定名;css 文件 eslint 看不见,名字由本闸的反面兜 ——
-        // 别的 .tsx/.ts 名字进不来)、机器 = hooks.ts(调用位被 React 规则定死的单独
-        // 一格,lib 域没有它)、其余与 lib 域同名同义:constants/types/functions/
-        // variables/index。prompts/schemas/routes/server 是 lib 的抽屉,组件域装不下
-        // 这些内容 —— 出现即拦。
+        // 结构 = `<组件小写>.tsx`(全小写,react 惯例;2026-08-24 Frank 追加「一个 tsx
+        // 只能包含一个 return html 的函数」→ 一域多 tsx,一文件一组件,react/no-multi-comp
+        // 盯着)、样式 = `<域名>.module.css`(.module 是 Next 的隔离开关,框架定名;
+        // css 文件 eslint 看不见,名字由本闸的反面兜 —— 别的 .ts 名字进不来)、
+        // 机器 = hooks.ts(调用位被 React 规则定死的单独一格,lib 域没有它)、
+        // 其余与 lib 域同名同义:constants/types/functions/variables/index。
+        // prompts/schemas/routes/server 是 lib 的抽屉,组件域装不下这些内容 —— 出现即拦。
+        const ALLOWED = ['constants.ts', 'variables.ts', 'types.ts', 'functions.ts', 'hooks.ts', 'index.ts']
+        const TSX_RE = /^[a-z][a-z0-9]*\.tsx$/
         return {
           Program(node) {
             const full = context.filename ?? ''
             const cut = Math.max(full.lastIndexOf('/'), full.lastIndexOf(String.fromCharCode(92)))
             const name = full.slice(cut + 1)
-            const parent = full.slice(0, cut)
-            const cut2 = Math.max(parent.lastIndexOf('/'), parent.lastIndexOf(String.fromCharCode(92)))
-            const domain = parent.slice(cut2 + 1)
-            const ALLOWED = [`${domain}.tsx`, 'constants.ts', 'variables.ts', 'types.ts',
-              'functions.ts', 'hooks.ts', 'index.ts']
-            if (!name || ALLOWED.includes(name)) return
-            context.report({ node, messageId: 'bad', data: { allowed: ALLOWED.join(' / '), name } })
+            if (!name || ALLOWED.includes(name) || TSX_RE.test(name)) return
+            context.report({
+              node,
+              messageId: 'bad',
+              data: { allowed: `全小写 <组件>.tsx / ${ALLOWED.join(' / ')}`, name },
+            })
           },
         }
       },
@@ -1947,6 +1949,9 @@ const eslintConfig = [
       // ④ 造对象侧的同一条统一(现成规则,可 --fix):同名必须简写 ——
       //    `{ narrow: narrow }` 当场红,和解构侧的 ③ 合成一句话「同名可省,省是义务」。
       'object-shorthand': ['error', 'always'],
+      // ⑤ 一个 tsx 一个组件(2026-08-24 Frank「一个 tsx 文件只能包含一个 return html
+      //    的函数,包含多个还得继续拆」;现成规则):第二个组件出现当场红。
+      'react/no-multi-comp': 'error',
     },
   },
   {

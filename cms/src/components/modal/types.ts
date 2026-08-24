@@ -70,9 +70,9 @@ export type ModalTitleIn = {
   eyebrow?: React.ReactNode
 
   /**
-   * eyebrow 颜色按场景传(顾问靛蓝/升级琥珀)。
+   * eyebrow 深靛蓝档(默认靛蓝;全站只有简历匹配弹框用深档)。
    */
-  color?: string
+  deep?: boolean
 
   /**
    * 17px 标题(右侧给关闭钮留位)。
@@ -191,11 +191,11 @@ export type CardOut = {
 }
 
 /**
- * MaxToggleIcon 的 props。
+ * MaxIcon 的 props。
  */
-export type MaxToggleIconIn = {
+export type MaxIconIn = {
   /**
-   * 是否全屏态(定两态图标取哪个)。
+   * 是否全屏态(定两态图标取哪个:放大/还原)。
    */
   maximized: boolean
 }

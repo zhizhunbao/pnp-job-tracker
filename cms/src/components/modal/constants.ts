@@ -70,12 +70,6 @@ export const NARROW_BP = 640
 export const Z_MODAL = 50
 
 /**
- * eyebrow 场景色默认(靛蓝;JS 读的默认参数,按 css/constants 分界归这边 ——
- * 具体场景色由调用方 prop 传,经 --eyebrow-c 变量进 css)。
- */
-export const EYEBROW_C_DEFAULT = '#6366f1'
-
-/**
  * 拖拽豁免目标(闭包选择器):按在这些交互件上不算抓 header ——
  * 否则点按钮/选字/选 occ 药丸都会把整框拖走。
  */
