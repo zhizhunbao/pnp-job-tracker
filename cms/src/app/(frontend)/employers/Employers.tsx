@@ -13,6 +13,7 @@ import {
   EMP_PROGRAMS, type EmployerFilters, type EmployerPage, type EmployerRow,
 } from '@/lib/employers'
 import { pickName } from '@/lib/noc'
+import { Select } from '@/components/field'
 import { BackButton } from '@/components/ui'
 import { useLang } from '@/components/i18n'
 import { Footer } from '@/components/footer'
@@ -23,26 +24,9 @@ import { JobCard } from '@/components/ui'
 import { Button, Shell, UI } from '@/components/ui'
 import type { Lang, TFn } from '@/lib/i18n'
 
-// 下拉:职位板 Sel 同规格(高 38、圆角 6、镜像文本贴宽不留空白);className=sbCtl 拿到既有的
-// 手机断点 min-height:44 触控靶(main.css #276),不新造一套 CSS
+// (量宽下拉 Sel 2026-08-24 收拢进 components/field 的 Select;md 档=原 170 宽,tap=原 sbCtl 触控靶)
 const filtRow: React.CSSProperties = { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }
 const filtLabel: React.CSSProperties = { fontSize: 12, color: UI.text3, minWidth: 28, whiteSpace: 'nowrap' }
-
-function Sel({ value, onChange, opts, all, labelOf }: {
-  value: string; onChange: (v: string) => void; opts: string[]; all: string; labelOf?: (v: string) => string
-}) {
-  const list = value && !opts.includes(value) ? [value, ...opts] : opts
-  const shown = value ? (labelOf ? labelOf(value) : value) : all
-  return (
-    <span style={{ position: 'relative', display: 'inline-block', maxWidth: 170 }}>
-      <span aria-hidden className="field" style={{ display: 'block', visibility: 'hidden', paddingRight: 38, whiteSpace: 'nowrap', overflow: 'hidden', border: '1px solid transparent' }}>{shown}</span>
-      <select className="sbCtl field" value={value} onChange={(e) => onChange(e.target.value)} style={{ position: 'absolute', inset: 0, width: '100%' }}>
-        <option value="">{all}</option>
-        {list.map((o) => <option key={o} value={o}>{labelOf ? labelOf(o) : o}</option>)}
-      </select>
-    </span>
-  )
-}
 
 const provName = (t: TFn, code: string) => {
   const v = t('pr.' + code)
@@ -169,10 +153,10 @@ export function Employers({ initial, initialFilters }: { initial: EmployerPage; 
               <div style={filtRow}>
                 <input className="sbCtl field" placeholder={t('de.qPh')} value={qDraft} onChange={(e) => setQDraft(e.target.value)} enterKeyHint="search"
                   style={{ flex: '0 1 240px', minWidth: 150 }} />
-                <Sel value={f.mode} onChange={(v) => set({ mode: (v || 'designated') as EmployerFilters['mode'], program: v === 'hiring' ? '' : f.program, city: '' })}
+                <Select size="md" tap value={f.mode} onChange={(v) => set({ mode: (v || 'designated') as EmployerFilters['mode'], program: v === 'hiring' ? '' : f.program, city: '' })}
                   opts={['designated', 'hiring']} all={t('de.mode')} labelOf={(v) => t('de.mode.' + v)} />
-                <Sel value={f.prov} onChange={(v) => set({ prov: v, city: '' })} opts={data.facets.provs} all={t('all.prov')} labelOf={(c) => provName(t, c)} />
-                {designated && <Sel value={f.program} onChange={(v) => set({ program: v, city: '' })} opts={[...EMP_PROGRAMS]} all={t('de.allProgram')} />}
+                <Select size="md" tap value={f.prov} onChange={(v) => set({ prov: v, city: '' })} opts={data.facets.provs} all={t('all.prov')} labelOf={(c) => provName(t, c)} />
+                {designated && <Select size="md" tap value={f.program} onChange={(v) => set({ program: v, city: '' })} opts={[...EMP_PROGRAMS]} all={t('de.allProgram')} />}
                 <Button kind="secondary" className="sbCtl" onClick={() => setDrawer((o) => !o)}
                   style={{ height: 38, display: 'inline-flex', alignItems: 'center', gap: 5, color: '#374151', ...(drawer || foldActive ? { background: '#eff6ff', borderColor: UI.primary, color: '#1d4ed8' } : {}) }}>
                   {t('filter.more')}
@@ -189,11 +173,11 @@ export function Employers({ initial, initialFilters }: { initial: EmployerPage; 
                 <div style={{ border: '1px dashed #d1d5db', borderRadius: 8, padding: '10px 12px', background: '#fafafa', display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <div style={filtRow}>
                     <span style={filtLabel}>{t('de.fGeo')}</span>
-                    <Sel value={f.city} onChange={(v) => set({ city: v })} opts={data.facets.cities} all={t('de.allCity')} />
+                    <Select size="md" tap value={f.city} onChange={(v) => set({ city: v })} opts={data.facets.cities} all={t('de.allCity')} />
                   </div>
                   <div style={filtRow}>
                     <span style={filtLabel}>{t('de.fOcc')}</span>
-                    <Sel value={f.noc} onChange={(v) => set({ noc: v })} opts={data.facets.nocs} all={t('de.allNoc')} labelOf={(n) => nocLabel(n, titles, lang)} />
+                    <Select size="md" tap value={f.noc} onChange={(v) => set({ noc: v })} opts={data.facets.nocs} all={t('de.allNoc')} labelOf={(n) => nocLabel(n, titles, lang)} />
                   </div>
                 </div>
               )}

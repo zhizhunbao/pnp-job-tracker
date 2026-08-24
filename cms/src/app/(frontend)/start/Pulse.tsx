@@ -13,6 +13,7 @@
 //   ③ 每行可溯源:职业名点开落到按该 NOC 筛过的职位板(/?q=<noc>),省卡下钻落 /stats/[prov]。
 // SSR 瘦身手法守住:职业大表(occ ~3400 行)不进 HTML,挂载后拉 /api/stats/market(与旧版同一端点)。
 import { useEffect, useMemo, useState } from 'react'
+import { Select } from '@/components/field'
 
 import { makeT, type Lang, type TFn } from '@/lib/i18n'
 import { eeKeyDisplay, drawStreamNote, streamDisplay } from '@/lib/jobs'
@@ -127,26 +128,8 @@ function Sec({ title, right, children, sub }: { id?: string; title: React.ReactN
   )
 }
 
-// 筛选控件统一样式(2026-08-09 Frank「这两部分样式怎么不一样」):对齐 ui 的 ctrl 规格(08-17 起 ctrl 已提进 ui/Button,本页可直接 import)
-// (38 高 radius6 字号 14;高度走 .sbCtl,手机 44 触控靶不变)
-const SB_CTL: React.CSSProperties = { border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', fontSize: 14, color: '#1f2937', padding: '0 10px' }
-// select 的固有宽度=**最长选项**文本,闭合态永远被撑到上限(Frank 08-09 两连「太宽了/怎么还是这么宽」,
-// maxWidth 硬压治标不治本)——照职位板 Sel 的镜像手法:流内占宽的是当前选中项的隐形镜像,select 绝对
-// 定位铺满壳(弹出的选项列表浏览器仍按全文排,不吃这个宽);不 import Jobs.Sel 免把整个职位板拖进本页包
-function SbSel({ value, onChange, all, options }: {
-  value: string; onChange: (v: string) => void; all: string; options: { v: string; label: string }[]
-}) {
-  const shown = value ? (options.find((o) => o.v === value)?.label || value) : all
-  return (
-    <span style={{ position: 'relative', display: 'inline-block', maxWidth: 210 }}>
-      <span aria-hidden className="sbCtl" style={{ ...SB_CTL, display: 'flex', alignItems: 'center', visibility: 'hidden', paddingRight: 30, whiteSpace: 'nowrap', overflow: 'hidden', border: '1px solid transparent' }}>{shown}</span>
-      <select className="sbCtl" value={value} onChange={(e) => onChange(e.target.value)} style={{ ...SB_CTL, position: 'absolute', inset: 0, width: '100%' }}>
-        <option value="">{all}</option>
-        {options.map((o) => <option key={o.v} value={o.v}>{o.label}</option>)}
-      </select>
-    </span>
-  )
-}
+// (量宽下拉 SbSel 2026-08-24 收拢进 components/field 的 Select;lg 档=原 210 宽,tap=原 sbCtl
+//  触控靶;箭头留白统一到 08-16 拍板的 38 —— 这份还是旧 30,末字曾被压)
 
 // 雇主橱窗单表(Frank 08-08「加分页」+「每表加筛选条件」+「按逻辑重新设计」):桌面 Table 翻页(10/页),
 // 手机卡 5/页;全量已在客户端 → 筛选纯前端,控件一行等高 30 照职位板站规(#282 教训)。
@@ -186,12 +169,12 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: 
   // 本地实现省名(08-17 起 provName 已下沉 lib/location,是个零依赖叶子,想换 import 随时可换)
   const provLabel = (c: string) => { const loc = t('prov.' + c); return loc && loc !== 'prov.' + c ? loc : PROV_NAME[c] || c }
   const provSel = (
-    <SbSel key="prov" value={fProv} onChange={setFProv} all={t('all.prov')}
-      options={provOpts.map((c) => ({ v: c, label: provLabel(c) }))} />
+    <Select size="lg" tap key="prov" value={fProv} onChange={setFProv} all={t('all.prov')}
+      opts={provOpts} labelOf={provLabel} />
   )
   const streamSel = kind === 'named' ? (
-    <SbSel key="stream" value={fStream} onChange={setFStream} all={t('se.allStreams')}
-      options={streamOpts.map((s) => ({ v: s, label: streamDisplay({ t, label: s }) }))} />
+    <Select size="lg" tap key="stream" value={fStream} onChange={setFStream} all={t('se.allStreams')}
+      opts={streamOpts} labelOf={(s) => streamDisplay({ t, label: s })} />
   ) : null
   // 职业筛三级联动(08-08 Frank「大类种类小类联动过滤要加上」,与职位板同套形态):
   // 大类/中类=纯点选、选项只列本表真实存在的分类(小样本橱窗表不比全量职位板,摆满 89 个中类全是死选项);
@@ -224,17 +207,17 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: 
     return [...set].sort()
   }, [rows, nocCat, fBroad, fMid])
   const broadSel = (
-    <SbSel key="broad" value={fBroad} onChange={(v) => { setFBroad(v); setFMid(''); setFFine(''); setFNoc('') }} all={t('all.broad')}
-      options={broadOpts.map((b) => ({ v: b, label: b === '未分类' ? t('cell.uncat') : t('broad.' + b) }))} />
+    <Select size="lg" tap key="broad" value={fBroad} onChange={(v) => { setFBroad(v); setFMid(''); setFFine(''); setFNoc('') }} all={t('all.broad')}
+      opts={broadOpts} labelOf={(b) => b === '未分类' ? t('cell.uncat') : t('broad.' + b)} />
   )
   const midSel = (
-    <SbSel key="mid" value={fMid} onChange={(v) => { setFMid(v); setFFine(''); setFNoc('') }} all={t('all.mid')}
-      options={midOpts.map((m) => ({ v: m, label: midLabel(m) }))} />
+    <Select size="lg" tap key="mid" value={fMid} onChange={(v) => { setFMid(v); setFFine(''); setFNoc('') }} all={t('all.mid')}
+      opts={midOpts} labelOf={midLabel} />
   )
   // 小类(08-09 Frank「全部小类呢?」——此前从中类直接跳到职业,少了职位板同款的一级)
   const fineSel = (
-    <SbSel key="fine" value={fFine} onChange={(v) => { setFFine(v); setFNoc('') }} all={t('all.fine')}
-      options={fineOpts.map((f) => ({ v: f, label: fineLabel(f) }))} />
+    <Select size="lg" tap key="fine" value={fFine} onChange={(v) => { setFFine(v); setFNoc('') }} all={t('all.fine')}
+      opts={fineOpts} labelOf={fineLabel} />
   )
   // 职业筛=纯点选(Frank 08-08「手机上也没办法敲字」):选项只列本表真实存在的职业,按雇主数倒序,
   // 常用职业置顶;字典缺题名的码原样兜底(不因缺翻译丢筛选项);受上三级大类/中类/小类联动收窄
@@ -251,8 +234,8 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: 
     return [...cnt.entries()].sort((a, b) => b[1] - a[1]).map(([n]) => ({ noc: n, label: title.get(n) || n }))
   }, [rows, occOpts, lang, nocCat, fBroad, fMid, fFine])
   const occInput = (
-    <SbSel key="occ" value={fNoc} onChange={setFNoc} all={t('se.allOcc')}
-      options={occSel.map((o) => ({ v: o.noc, label: o.label }))} />
+    <Select size="lg" tap key="occ" value={fNoc} onChange={setFNoc} all={t('se.allOcc')}
+      opts={occSel.map((o) => o.noc)} labelOf={(n) => occSel.find((o) => o.noc === n)?.label || n} />
   )
   // 搜雇主名文本框 08-08 拍掉(「文本框是干啥的」+手机零打字):筛选全点选
   // 「只看技能类获批」钮 08-10 Frank 拍掉:技能类获批数已是表内一列,自己点列排序即可

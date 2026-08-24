@@ -1619,6 +1619,7 @@ const COMPONENTS = [
   'src/components/auth/**/*.{ts,tsx}',
   'src/components/i18n/**/*.{ts,tsx}',
   'src/components/header/**/*.{ts,tsx}',
+  'src/components/field/**/*.{ts,tsx}',
 ]
 
 const eslintConfig = [
@@ -2108,7 +2109,7 @@ const eslintConfig = [
   },
   {
     // ── 组件域闸 B:常量表形制(Frank「json 也格式化,换行 对齐」):逐键一行 ──
-    files: ['src/components/{footer,modal,title,shell,tag,chip,row,pager,colors,button,notice,grid,tabs,card,banner,auth,i18n,header}/constants.ts'],
+    files: ['src/components/{footer,modal,title,shell,tag,chip,row,pager,colors,button,notice,grid,tabs,card,banner,auth,i18n,header,field}/constants.ts'],
     plugins: { '@stylistic': stylistic },
     rules: {
       '@stylistic/object-curly-newline': ['error', { ObjectExpression: { multiline: true, minProperties: 3 } }],

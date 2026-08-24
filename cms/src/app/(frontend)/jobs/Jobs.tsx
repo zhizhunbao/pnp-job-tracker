@@ -11,6 +11,7 @@ import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { AccountMenu } from '@/components/auth'
 import { useLang } from '@/components/i18n'
+import { Select } from '@/components/field'
 import { IconLock, IconSave, IconSettings, IconTarget } from '@/components/icons'
 import { BANNER_IMGS, Banner, Button, JobCard, gradeColor } from '@/components/ui'
 import { BROAD_SLUGS } from '@/lib/stats'   // 大类的行业顺序(镜像 etl/noc_buckets.BROADS)
@@ -576,9 +577,9 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
             {/* 2026-08-16 Frank「这个没有完全国际化」:省下拉的选项一直是英文全名(筛选值就是它,深链/保存的
                 筛选都靠它),中文界面看着半中半英 —— 挂上既有的 provName 显示层,**值不动**:labelOf 只管显示。
                 同日续:出**界面语言的省名就够**(localeOnly),「Ontario(安大略省)」在下拉里是一行说两遍 */}
-            <Sel value={fProv} onChange={(v) => { setFProv(v); setFCity(''); setFDistrict('') }} opts={provOpts} all={t('all.prov')}
+            <Select value={fProv} onChange={(v) => { setFProv(v); setFCity(''); setFDistrict('') }} opts={provOpts} all={t('all.prov')}
               labelOf={(v) => provName({ t, code: PROV_CODE[v] || v, localeOnly: true })} />
-            <Sel value={fBroad} onChange={(v) => { setFBroad(v); setFMid(''); setFFine('') }} opts={broadOpts} all={t('all.broad')} labelOf={broadLabel} />
+            <Select value={fBroad} onChange={(v) => { setFBroad(v); setFMid(''); setFFine('') }} opts={broadOpts} all={t('all.broad')} labelOf={broadLabel} />
             {/* 「PNP」「年薪」2026-08-16 下沉进折叠区(Frank「上面这一行太长了吧」,效果图 B 拍板):
                 常用一行只留 搜索/省/大类 + 更多筛选;选了什么不会藏起来 —— foldActive 徽标把它们算进计数 */}
             {/* P1 换装:secondary 型(激活态浅蓝底描边蓝);高度 38 与同行下拉对齐 */}
@@ -625,25 +626,25 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
             <div className="jtFold">
               <div className="jtCtl">
                 <span className="jtFiltLabel">{t('filter.geo')}</span>
-                <Sel value={fCity} onChange={(v) => { setFCity(v); setFDistrict('') }} opts={cityOpts} all={t('all.city')} />
-                <Sel value={fDistrict} onChange={setFDistrict} opts={distOpts} all={t('all.district')} />
+                <Select value={fCity} onChange={(v) => { setFCity(v); setFDistrict('') }} opts={cityOpts} all={t('all.city')} />
+                <Select value={fDistrict} onChange={setFDistrict} opts={distOpts} all={t('all.district')} />
               </div>
               <div className="jtCtl">
                 <span className="jtFiltLabel">{t('filter.cat')}</span>
-                <Sel value={fMid} onChange={(v) => { setFMid(v); setFFine('') }} opts={midOpts} all={t('all.mid')} labelOf={catLabel} />
-                <Sel value={fFine} onChange={setFFine} opts={fineOpts} all={t('all.fine')} labelOf={catLabel} />
+                <Select value={fMid} onChange={(v) => { setFMid(v); setFFine('') }} opts={midOpts} all={t('all.mid')} labelOf={catLabel} />
+                <Select value={fFine} onChange={setFFine} opts={fineOpts} all={t('all.fine')} labelOf={catLabel} />
               </div>
               {/* gig=兼职∪casual∪seasonal(E6-06);未标注岗选类型自然不命中,与「未分类」同一诚实口径 */}
               <div className="jtCtl">
                 <span className="jtFiltLabel">{t('filter.other')}</span>
                 {/* PNP / 年薪:原在常用一行,2026-08-16 下沉至此(方案 B);年薪排到「对比中位」旁,两条薪资维度同处 */}
-                <Sel value={fPnp} onChange={setFPnp} opts={['yes', 'no']} all={t('all.pnp')} labelOf={(v) => t('opt.' + v)} />
-                <Sel value={fAip} onChange={setFAip} opts={['yes', 'no']} all={t('all.aip')} labelOf={(v) => t('opt.' + v)} />
+                <Select value={fPnp} onChange={setFPnp} opts={['yes', 'no']} all={t('all.pnp')} labelOf={(v) => t('opt.' + v)} />
+                <Select value={fAip} onChange={setFAip} opts={['yes', 'no']} all={t('all.aip')} labelOf={(v) => t('opt.' + v)} />
                 {/* RCIP/FCIP 试点社区(E6-11):yes=任一命中,RCIP/FCIP=指定类型 */}
-                <Sel value={fPilot} onChange={setFPilot} opts={['yes', 'RCIP', 'FCIP', 'no']} all={t('all.pilot')} labelOf={(v) => (v === 'yes' || v === 'no' ? t('opt.' + v) : v)} />
-                <Sel value={fEmp} onChange={setFEmp} opts={['full', 'part', 'gig']} all={t('all.emp')} labelOf={(v) => t('emp.' + v)} />
-                <Sel value={fSal} onChange={setFSal} opts={['ge100', '80', '60', 'u60']} all={t('all.sal')} labelOf={(v) => t('sal.' + v)} />
-                <Sel value={fVs} onChange={setFVs} opts={['above', 'above20', 'below']} all={t('all.vs')} labelOf={(v) => t('vs.' + v)} />
+                <Select value={fPilot} onChange={setFPilot} opts={['yes', 'RCIP', 'FCIP', 'no']} all={t('all.pilot')} labelOf={(v) => (v === 'yes' || v === 'no' ? t('opt.' + v) : v)} />
+                <Select value={fEmp} onChange={setFEmp} opts={['full', 'part', 'gig']} all={t('all.emp')} labelOf={(v) => t('emp.' + v)} />
+                <Select value={fSal} onChange={setFSal} opts={['ge100', '80', '60', 'u60']} all={t('all.sal')} labelOf={(v) => t('sal.' + v)} />
+                <Select value={fVs} onChange={setFVs} opts={['above', 'above20', 'below']} all={t('all.vs')} labelOf={(v) => t('vs.' + v)} />
                 <label className={`${directOnly ? 'jtCheck on' : 'jtCheck'} field`} title={t('directOnly.tip')}>
                   <input type="checkbox" checked={directOnly} onChange={(e) => setDirectOnly(e.target.checked)} />{t('directOnly')}
                 </label>
@@ -960,23 +961,4 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
 // ── 省提名清单区(点 PNP 字段时显示)────────────────────────────
 // 清单是权威「事实」,来自 DB 维度表(pnp-occupations,经 props 传入),绝不让 LLM 编。
 // 判定只用本岗既有字段(province/noc/teer)+ 清单比对,不在前端重算资格逻辑。
-// 联动下拉:上级选了,下级选项随之收窄;当前值不在选项里也保留显示
-// 宽度贴当前选中值(2026-07-17 用户拍板「不要有空白」;沿革:07-07 曾统一封顶 150 治「按最长选项撑宽」,
-// 但短值如「全部省」仍剩大段空白):镜像文本按选中值占位、select 叠满其上——选短值不留空白,
-// 选长值自动变宽仍封顶 150(下拉展开始终显示全文);代价=切换选中值时同行控件轻微挪位(拍板已认)
-function Sel({ value, onChange, opts, all, labelOf }: { value: string; onChange: (v: string) => void; opts: string[]; all: string; labelOf?: (v: string) => string }) {
-  const list = value && !opts.includes(value) ? [value, ...opts] : opts
-  const shown = value ? (labelOf ? labelOf(value) : value) : all
-  // select 的内在宽度=最长选项,放流内怎么都会撑满上限 → 镜像文本在流内定宽,select 绝对铺满不参与布局
-  return (
-    <span className="jtSel">
-      {/* 2026-08-16 Frank「最后一个字都被挡住了一半」:28px 不够 —— 原生 select 左 padding 10 +
-          自绘箭头区 ~20,镜像只留 28 差 2-6px,末字被箭头压半个;38 = 10+20+8 余量 */}
-      <span aria-hidden className="field" style={{ display: 'block', visibility: 'hidden', paddingRight: 38, whiteSpace: 'nowrap', overflow: 'hidden', border: '1px solid transparent' }}>{shown}</span>
-      <select value={value} onChange={(e) => onChange(e.target.value)} className="field" style={{ position: 'absolute', inset: 0, width: '100%' }}>
-        <option value="">{all}</option>
-        {list.map((o) => <option key={o} value={o}>{labelOf ? labelOf(o) : o}</option>)}
-      </select>
-    </span>
-  )
-}
+// (量宽下拉 Sel 2026-08-24 收拢进 components/field 的 Select,决策注释随迁其头注)

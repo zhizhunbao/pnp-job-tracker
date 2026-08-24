@@ -258,7 +258,7 @@ button:not(:disabled):hover {
    通用变量名撞车(全站 60 处 `ctrl` 里大多数是 `ctrl.abort()`/`ctrl.signal`)。 */
 
 /* 输入控件(下拉/搜索框/勾选块)统一规格:高 38 是全站筛选行的基准高度,别处对齐它 */
-.field { height: 38px; box-sizing: border-box; padding: 0 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; color: #1f2937; background: var(--card); }
+/* (.field 2026-08-24 迁 components/field 域 —— 仅有消费者是三份量宽下拉双胞胎,已收拢成 Select) */
 
 /* 站内行内动作钮(职位板一路用下来的那枚药丸钮;08-10 Frank 点名把脉页并过来) */
 .pill { border: 1px solid var(--border); border-radius: 999px; padding: 5px 13px; font-size: 12.5px; background: var(--card); color: #374151; cursor: pointer; font-weight: 600; }
@@ -621,7 +621,7 @@ button:not(:disabled):hover {
    ⚠️ 镜像与 select 自身仍内联 {...ctrl}:它们要盖掉 ctrl 的 border 与 padding
    (透明边 + paddingRight 38),而 ctrl 是 ui/Button.tsx 的样式对象——内联压得过类,
    把这两条搬进类反而会被 ctrl 的内联值盖回去。等 ctrl 一起迁成类时再收。 */
-.jtSel { position: relative; display: inline-block; max-width: 150px; }
+/* (.jtSel 2026-08-24 随量宽下拉收拢进 components/field 的 .box) */
 .jtColPanel { position: absolute; top: 110%; right: 0; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 10px 30px rgba(0, 0, 0, .12); padding: 8px; z-index: 20; min-width: 210px; }
 .jtColHead { display: flex; gap: 6px; padding: 2px 4px 6px; border-bottom: 1px solid #f3f4f6; margin-bottom: 4px; }
 .jtColBtn { flex: 1; white-space: nowrap; padding: 4px 8px; font-size: 12.5px; border: 1px solid #d1d5db; border-radius: 5px; background: #f9fafb; color: #374151; cursor: pointer; }
