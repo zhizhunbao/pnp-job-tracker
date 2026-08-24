@@ -11,7 +11,7 @@
 .scrim {
   position: fixed;
   inset: 0;
-  background: rgba(17, 24, 39, .5);
+  background: rgb(17 24 39 / 50%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -34,9 +34,9 @@
  */
 .card {
   position: relative;
-  background: #fff;
+  background: #ffffff;
   border-radius: 14px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, .3);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 30%);
   overscroll-behavior: contain;
   overflow-y: auto;
 }
@@ -137,4 +137,24 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/*
+ * 窗口图标钮(域内自用类;外部消费端还在用 constants 的 iconBtnS 过渡导出,
+ * 值与它逐格相等 —— 各消费域类化后常量退役,这个类成唯一真相)。
+ */
+.iconBtn {
+  border: none;
+  background: #f3f4f6;
+  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
+  color: #6b7280;
+  cursor: pointer;
+  line-height: 1;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }

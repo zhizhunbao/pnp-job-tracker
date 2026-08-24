@@ -1,0 +1,27 @@
+{
+  "extends": "stylelint-config-standard",
+  "rules": {
+    "declaration-block-single-line-max-declarations": 1,
+    "selector-class-pattern": [
+      "^[a-z][a-zA-Z0-9]*$",
+      {
+        "message": "类名 camelCase(域内短名,module 隔离兜底)"
+      }
+    ],
+    "custom-property-pattern": [
+      "^[a-z][a-zA-Z0-9-]*$",
+      {
+        "message": "CSS 变量小写开头"
+      }
+    ],
+    "comment-empty-line-before": [
+      "always",
+      {
+        "except": [
+          "first-nested"
+        ]
+      }
+    ],
+    "color-hex-length": "long"
+  }
+}

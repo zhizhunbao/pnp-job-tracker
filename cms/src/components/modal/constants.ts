@@ -23,26 +23,50 @@ export const MODAL_SHADOW = '0 24px 60px rgba(0,0,0,.3)'
 /**
  * 遮罩规范(fixed 全屏 + 半透黑;不带毛玻璃是拍板)。
  */
-export const SCRIM = { position: 'fixed', inset: 0, background: 'rgba(17,24,39,.5)' } as const
+export const SCRIM = {
+  position: 'fixed',
+  inset: 0,
+  background: 'rgba(17,24,39,.5)',
+} as const
 
 /**
  * 白卡规范(圆角/投影/内滚动收敛)。
  */
-export const CARD = { position: 'relative', background: '#fff', borderRadius: MODAL_RADIUS, boxShadow: MODAL_SHADOW, overscrollBehavior: 'contain' } as const
+export const CARD = {
+  position: 'relative',
+  background: '#fff',
+  borderRadius: MODAL_RADIUS,
+  boxShadow: MODAL_SHADOW,
+  overscrollBehavior: 'contain',
+} as const
 
 /**
  * 窗口图标钮规范(全屏/关闭/自定义动作三颗一样大才叫一排)。
  */
 export const iconBtnS = {
-  border: 'none', background: '#f3f4f6', borderRadius: 8, width: 30, height: 30,
-  fontSize: 16, color: '#6b7280', cursor: 'pointer', lineHeight: 1, flexShrink: 0,
-  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+  border: 'none',
+  background: '#f3f4f6',
+  borderRadius: 8,
+  width: 30,
+  height: 30,
+  fontSize: 16,
+  color: '#6b7280',
+  cursor: 'pointer',
+  lineHeight: 1,
+  flexShrink: 0,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 } as const
 
 /**
  * 三档宽(sm/md/lg 的像素)。
  */
-export const WIDTH = { sm: 390, md: 560, lg: 760 } as const
+export const WIDTH = {
+  sm: 390,
+  md: 560,
+  lg: 760,
+} as const
 
 /**
  * 窄屏断点(E8-03 单一来源:≤640px 弹窗一律全屏)。
@@ -53,3 +77,9 @@ export const NARROW_BP = 640
  * 普通弹框层级。
  */
 export const Z_MODAL = 50
+
+/**
+ * eyebrow 场景色默认(靛蓝;JS 读的默认参数,按 css/constants 分界归这边 ——
+ * 具体场景色由调用方 prop 传,经 --eyebrow-c 变量进 css)。
+ */
+export const EYEBROW_C_DEFAULT = '#6366f1'
