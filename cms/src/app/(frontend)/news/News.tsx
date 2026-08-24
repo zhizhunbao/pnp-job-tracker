@@ -215,7 +215,7 @@ export function News({ items, hero, cmtCounts }: { items: NewsCard[]; hero: News
             {/* 页头=Banner 图版(2026-07-31 banner 统一:上距全站 1rem、补 news 图组,原 marginTop:16 包层撤) */}
             {/* 2026-07-19 Frank 批提案:二级导航=统一 SectionTabs(公告|时间线),右槽链接退役 */}
             <Banner module="news" icon={<IconNews />} title={t('news.title')} images={BANNER_IMGS.news} />
-            <SectionTabs color="#0f766e" tabs={[
+            <SectionTabs tone="teal" tabs={[
               { href: '/news', label: t('tl.tabNews'), active: true },
               { href: '/timeline', label: t('tl.title') },
             ]} />

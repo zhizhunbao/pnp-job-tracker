@@ -42,7 +42,7 @@ export function Timeline({ events, cadence, eeCadence }: {
       <Shell top={16}>
         <Banner module="news" icon={<IconNews />} title={t('tl.title')} sub={t('tl.sub')} images={BANNER_IMGS.news} />
         {/* 2026-07-19 Frank 批提案:统一二级 tab 条(与 /news 互为切换) */}
-        <SectionTabs color="#0f766e" tabs={[
+        <SectionTabs tone="teal" tabs={[
           { href: '/news', label: t('tl.tabNews') },
           { href: '/timeline', label: t('tl.title'), active: true },
         ]} />

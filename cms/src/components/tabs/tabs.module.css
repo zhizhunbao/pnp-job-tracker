@@ -1,0 +1,288 @@
+/*
+ * tabs 域的私有样式(2026-08-24 自 ui/Tabs.tsx 内联与 main.css 的 secTab* 迁入,
+ * 值逐格相等;--tab 模块色原来是调用方经 style 传,实查只有两档 → 收成 .teal 变体类)。
+ */
+
+/*
+ * 选项卡条(下划线态,区别于胶囊 —— 胶囊是筛选,这是「同一块内容的多个面」):
+ * 窄屏横向可滚动,永不换行。
+ */
+.tablist {
+  /*
+   * 页签排一行。
+   */
+  display: flex;
+
+  /*
+   * 页签间距。
+   */
+  gap: 20px;
+
+  /*
+   * 整条底线(当前页签的高亮线压在它上面)。
+   */
+  border-bottom: 1px solid #e5e7eb;
+
+  /*
+   * 横向可滚、纵向永不滚(overflow 简写:先横后纵)。
+   */
+  overflow: auto hidden;
+
+  /*
+   * 藏滚动条(Firefox;滚动手势仍可用)。
+   */
+  scrollbar-width: none;
+}
+
+/*
+ * 单个页签(非选中态):无底无边,像一截可点文字。
+ */
+.tab {
+  /*
+   * 横滚时页签不许被压缩。
+   */
+  flex-shrink: 0;
+
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 继承页面字体(button 默认字体和正文不一致)。
+   */
+  font-family: inherit;
+
+  /*
+   * 上 9 下 8 内衬(下面留给高亮线)。
+   */
+  padding: 9px 0 8px;
+
+  /*
+   * 页签字号。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 非选中半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 非选中次级灰。
+   */
+  color: #6b7280;
+
+  /*
+   * 高亮线的占位(透明,选中时上色)—— 有占位切换时不跳高。
+   */
+  border-bottom: 2px solid transparent;
+
+  /*
+   * 高亮线压住 tablist 的整条底线。
+   */
+  margin-bottom: -1px;
+
+  /*
+   * 页签文字不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 选中页签:加粗深字 + 蓝高亮线。
+ */
+.on {
+  /*
+   * 选中加粗到 700。
+   */
+  font-weight: 700;
+
+  /*
+   * 选中深字。
+   */
+  color: #111827;
+
+  /*
+   * 蓝高亮线。
+   */
+  border-bottom-color: #2563eb;
+}
+
+/*
+ * 页签右上角小字(条数之类)。
+ */
+.badge {
+  /*
+   * 与页签文字的间距。
+   */
+  margin-left: 6px;
+
+  /*
+   * 小字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 非选中浅灰。
+   */
+  color: #9ca3af;
+}
+
+/*
+ * 选中页签的小字:跟高亮线同蓝。
+ */
+.badgeOn {
+  /*
+   * 选中蓝。
+   */
+  color: #2563eb;
+}
+
+/*
+ * 面板隐藏态(hidden 属性之外再压一道 display —— 有的全局样式会把 display 定回去)。
+ */
+.off {
+  /*
+   * 整块不渲染布局。
+   */
+  display: none;
+}
+
+/*
+ * 模块二级 tab 条(2026-07-19 Frank 批「二级模块统一样式」):banner 正下方那条,
+ * 圆角上沿,当前页高亮模块色。模块色走 --tab(默认主蓝,变体类往下看)。
+ */
+.secTabs {
+  /*
+   * 模块色默认主蓝(真值在 main.css 的 :root;青档见 .teal)。
+   */
+  --tab: var(--primary);
+
+  /*
+   * 页签排一行。
+   */
+  display: flex;
+
+  /*
+   * 页签间距。
+   */
+  gap: 6px;
+
+  /*
+   * 上收 6px 贴 banner,下留 14px。
+   */
+  margin: -6px 0 14px;
+
+  /*
+   * 整条底线:模块色打 13.33% 透明(原来是「色值 + 22」拼十六进制透明度,
+   * 那种写法挡住了颜色变量化,改 color-mix)。
+   */
+  border-bottom: 2px solid color-mix(in srgb, var(--tab) 13.33%, transparent);
+}
+
+/*
+ * 模块色青档(移民动态/时间线;原调用方传 #0f766e)。
+ */
+.teal {
+  /*
+   * 青(teal-700)。
+   */
+  --tab: #0f766e;
+}
+
+/*
+ * 二级页签(非当前页 = 链接)。
+ */
+.secTab {
+  /*
+   * 页签字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 上下 5、左右 14 内衬。
+   */
+  padding: 5px 14px;
+
+  /*
+   * 只圆上沿(贴着底线像文件夹签)。
+   */
+  border-radius: 9px 9px 0 0;
+
+  /*
+   * 链接不带下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 边框灰描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 底边交给 .secTabs 的整条底线。
+   */
+  border-bottom: none;
+
+  /*
+   * 页面底灰(非当前页凹下去的感觉)。
+   */
+  background: var(--bg);
+
+  /*
+   * 次级文字灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 当前页签(#205:当前页 = span 不是 a —— 看着像链接点不动是 bug):
+ * 白底 + 模块色加粗,不可点。
+ */
+.secOn {
+  /*
+   * 白底(浮起来)。
+   */
+  background: #ffffff;
+
+  /*
+   * 模块色字。
+   */
+  color: var(--tab);
+
+  /*
+   * 当前页加粗。
+   */
+  font-weight: 700;
+
+  /*
+   * 描边打模块色 33.33% 透明。
+   */
+  border-color: color-mix(in srgb, var(--tab) 33.33%, transparent);
+
+  /*
+   * 不可点,还原光标。
+   */
+  cursor: default;
+}

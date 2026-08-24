@@ -486,10 +486,7 @@ button:not(:disabled):hover {
    模块色由调用方经 --tab 传入,透明度用 color-mix 算 ——
    原来是 `${color}22` 拼十六进制,那种写法挡住了颜色变量化。
 ===================================================== */
-.secTabs { display: flex; gap: 6px; margin: -6px 0 14px; border-bottom: 2px solid color-mix(in srgb, var(--tab) 13.33%, transparent); }
-.secTab { font-size: 12.5px; padding: 5px 14px; border-radius: 9px 9px 0 0; text-decoration: none; border: 1px solid var(--border); border-bottom: none; background: var(--bg); color: var(--text2); cursor: pointer; }
-/* #205(第 26 轮体检):当前页签是 span 不是 a —— 看着像链接点不动是 bug */
-.secTab.on { background: #fff; color: var(--tab); font-weight: 700; border-color: color-mix(in srgb, var(--tab) 33.33%, transparent); cursor: default; }
+/* (secTab* 三类 2026-08-24 迁 components/tabs 域;--tab 模块色收成 .teal 变体) */
 
 /* ===================================================
    11. 资讯 News(列表 + 详情 + 评论)
