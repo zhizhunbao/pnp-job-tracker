@@ -12,8 +12,8 @@
 import { useEffect, useState } from 'react'
 
 import { Table } from '@/components/table'
-import { Tabs } from '@/components/ui'
-import { UI } from '@/components/ui'
+import { Tabs } from '@/components/tabs'
+import { UI } from '@/components/colors'
 import { lineStateOf, type DrawRow, type LineState } from '@/lib/points'
 
 const N_DRAWS = 6

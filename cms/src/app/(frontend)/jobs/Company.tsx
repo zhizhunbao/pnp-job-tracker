@@ -5,7 +5,9 @@
 import { useEffect, useState } from 'react'
 
 import { IconCompass, IconMap } from '@/components/icons'
-import { gradeColor, Grid, Row } from '@/components/ui'
+import { gradeColor } from '@/components/colors'
+import { Grid } from '@/components/grid'
+import { Row } from '@/components/row'
 import { JD_ZH_LINE, JdAdvisorSection, isJdNone } from './Jd'
 import { SponsorLeadCard } from './Pnp'
 import { TvEntryCard } from './TripleVerdictModal'

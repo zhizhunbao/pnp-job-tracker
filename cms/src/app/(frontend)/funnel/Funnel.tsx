@@ -4,9 +4,10 @@
 import { useLang } from '@/components/i18n'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
-import { Shell, UI } from '@/components/ui'
+import { UI } from '@/components/colors'
+import { Shell } from '@/components/shell'
 import { Table } from '@/components/table'
-import { goBackOr } from '@/components/ui'
+import { goBackOr } from '@/components/button'
 
 export type FunnelRow = { step: string; label: string; d30: number; d7: number; d1: number; rate: number | null }
 

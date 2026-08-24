@@ -14,7 +14,8 @@ import { SavedSearchList } from './SavedSearchList'
 import { SavedJobsList } from './SavedJobsList'
 import { ResumeArchive } from './ResumeArchive'
 import { Avatar } from '@/components/auth'
-import { Button, Notice } from '@/components/ui'
+import { Button } from '@/components/button'
+import { Notice } from '@/components/notice'
 
 // profile 上的简历存档两键(E11-08)只在本页读显示,不进 ProfileForm 的表单值 → 就地扩类型,不动 ProfileValue
 type ProfileWithResume = ProfileValue & { resumeText?: string | null; resumeSavedAt?: string | null }

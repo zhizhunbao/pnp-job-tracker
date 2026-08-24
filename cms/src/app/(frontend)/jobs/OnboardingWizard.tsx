@@ -5,7 +5,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { TFn } from '@/lib/i18n'
 import { Modal } from '@/components/modal'
-import { Button, chipStyle } from '@/components/ui'
+import { Button } from '@/components/button'
+import { chipStyle } from '@/components/chip'
 import { hasProfile, normalizeProfile, type MatchProfile, type ProfileJson } from '@/lib/jobs'
 import {
   POPULAR_NOCS, CLB_OPTS, CRS_OPTS, PGWP_OPTS, clbActive, crsActive, pgwpActive, type Opt,

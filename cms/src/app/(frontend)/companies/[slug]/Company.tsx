@@ -10,8 +10,9 @@ import { provName } from '@/lib/location'
 import { type CompanyDetail, type SimilarEmployer } from '@/lib/jobs/server'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
-import { Notice, Shell } from '@/components/ui'
-import { goBackOr } from '@/components/ui'
+import { Notice } from '@/components/notice'
+import { Shell } from '@/components/shell'
+import { goBackOr } from '@/components/button'
 
 const aLink: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
 

@@ -19,7 +19,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { IconArrowUp } from '@/components/icons'
 import { useLang } from '@/components/i18n'
-import { UI } from '@/components/ui'
+import { UI } from '@/components/colors'
 import { track } from '@/lib/track'
 import { ChatAnswer, ChatText, CHAT_ANSWER_CSS, type Answer, type AnswerOption } from './ChatAnswer'
 import { pickExamples, profileMemories, exampleKind, type ChatProfile } from './chatExamples'

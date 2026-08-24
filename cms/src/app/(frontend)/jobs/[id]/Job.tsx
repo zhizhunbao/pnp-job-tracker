@@ -15,8 +15,8 @@ import { catName, nocLocalTitle, registerCatLabels } from '@/lib/noc'
 import { provName } from '@/lib/location'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
-import { Shell } from '@/components/ui'
-import { goBackOr } from '@/components/ui'
+import { Shell } from '@/components/shell'
+import { goBackOr } from '@/components/button'
 import { track } from '@/lib/track'
 
 // dims 收窄:B2 后页面只用 nocDesc(职位名译名对照);其余维度(pnp/ee/新闻…)随移民卡砍一并不用

@@ -8,7 +8,8 @@
 // 换来的只是 10 道单选题的翻页,而站内为了压它的默认样式写了 25 处 .sd-* 覆盖)。
 // 选项用**原生 radio**:同名 radio 的方向键切换、Tab 焦点、读屏播报全是浏览器自带的,
 // 自绘控件反而要一条条补回来(可访问性是 CLAUDE.md 里不上砧板的四样之一)。
-import { Button, UI } from '@/components/ui'
+import { Button } from '@/components/button'
+import { UI } from '@/components/colors'
 import type { Lang } from '@/lib/i18n'
 import type { L } from '@/lib/quiz'
 

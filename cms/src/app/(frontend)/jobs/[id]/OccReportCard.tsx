@@ -12,7 +12,7 @@
 //   ④ 拿不到数 / 本省零在招 → 整卡不渲,不出空壳。
 import { useEffect, useRef, useState } from 'react'
 
-import { UI } from '@/components/ui'
+import { UI } from '@/components/colors'
 import type { TFn } from '@/lib/i18n'
 
 type Facts = {

@@ -6,7 +6,8 @@
 import { useLang } from '@/components/i18n'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
-import { BANNER_IMGS, Banner, UI } from '@/components/ui'
+import { BANNER_IMGS, Banner } from '@/components/banner'
+import { UI } from '@/components/colors'
 import { CASES } from '@/lib/ruling'
 import { track } from '@/lib/track'
 

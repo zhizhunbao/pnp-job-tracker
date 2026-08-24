@@ -7,7 +7,7 @@ import { AuthModal } from '@/components/auth'
 import { PricingCard, type PriceCaps } from '../jobs/PricingModal'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
-import { Shell } from '@/components/ui'
+import { Shell } from '@/components/shell'
 import { track } from '@/lib/track'
 
 // 来路白名单(低基数,与 lib/funnel 的 PROP_OK 同口径):报告锁区 CTA 带 ?from=rpt-<卡>,其余算直达

@@ -12,7 +12,7 @@
  * @time 2026-08-24 02:30:00
  */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { Pager } from '@/components/ui'
+import { Pager } from '@/components/pager'
 import { COL_W_FALLBACK, COL_W_MIN, PCT_DECIMALS } from './constants'
 import { cls, sortRows } from './functions'
 import type { Col, TableIn } from './types'

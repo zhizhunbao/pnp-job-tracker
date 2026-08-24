@@ -6,7 +6,7 @@
 // 🔴 不并进 ui/Table.tsx:那个是「简单表统一壳」(客户端排序、配置式列声明);职位主表是另一套机器
 // (服务端排序、冻结列、字段面板、列宽落 cookie)。硬并会把共享组件撑成怪物 —— 旧拍板,别推翻。
 import { IconLock } from '@/components/icons'
-import { gradeColor } from '@/components/ui'
+import { gradeColor } from '@/components/colors'
 import { fmtLocalSec } from '@/lib/time'
 import { type TFn } from '@/lib/i18n'
 import { eeDisplay, streamDisplay } from '@/lib/jobs'

@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { IconCheck, IconTarget, IconWarn, IconX } from '@/components/icons'
-import { Grid } from '@/components/ui'
+import { Grid } from '@/components/grid'
 import { TvEntryCard } from './TripleVerdictModal'
 import { makeT, type Lang, type TFn } from '@/lib/i18n'
 import { eeDisplay, eeKeyDisplay, streamDisplay } from '@/lib/jobs'
