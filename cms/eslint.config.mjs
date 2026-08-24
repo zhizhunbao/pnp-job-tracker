@@ -563,7 +563,11 @@ const localRules = {
         // 机器 = hooks.ts(调用位被 React 规则定死的单独一格,lib 域没有它)、
         // 其余与 lib 域同名同义:constants/types/functions/variables/index。
         // prompts/schemas/routes/server 是 lib 的抽屉,组件域装不下这些内容 —— 出现即拦。
-        const ALLOWED = ['constants.ts', 'variables.ts', 'types.ts', 'functions.ts', 'hooks.ts', 'index.ts']
+        // functions.tsx 是同一格抽屉的 JSX 变体(2026-08-24 icons 形制化时定):
+        // 造组件的**机器**(makeIcon 这类工厂)产 JSX 所以必须是 .tsx,但它不是组件 ——
+        // 不进 JSX 树、不受 no-multi-comp 那套约束,住 functions 位才对。
+        // 一个域两份 functions 仍然禁(下面按 basename 判重)。
+        const ALLOWED = ['constants.ts', 'variables.ts', 'types.ts', 'functions.ts', 'functions.tsx', 'hooks.ts', 'index.ts']
         const TSX_RE = /^[a-z][a-z0-9]*\.tsx$/
         return {
           Program(node) {
@@ -1621,6 +1625,7 @@ const COMPONENTS = [
   'src/components/header/**/*.{ts,tsx}',
   'src/components/field/**/*.{ts,tsx}',
   'src/components/table/**/*.{ts,tsx}',
+  'src/components/icons/**/*.{ts,tsx}',
 ]
 
 const eslintConfig = [
@@ -2110,7 +2115,7 @@ const eslintConfig = [
   },
   {
     // ── 组件域闸 B:常量表形制(Frank「json 也格式化,换行 对齐」):逐键一行 ──
-    files: ['src/components/{footer,modal,title,shell,tag,chip,row,pager,colors,button,notice,grid,tabs,card,banner,auth,i18n,header,field,table}/constants.ts'],
+    files: ['src/components/{footer,modal,title,shell,tag,chip,row,pager,colors,button,notice,grid,tabs,card,banner,auth,i18n,header,field,table,icons}/constants.ts'],
     plugins: { '@stylistic': stylistic },
     rules: {
       '@stylistic/object-curly-newline': ['error', { ObjectExpression: { multiline: true, minProperties: 3 } }],
