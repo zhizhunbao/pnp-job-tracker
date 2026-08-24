@@ -4,6 +4,7 @@
 // 尾行「覆盖 M/N」→ 打码区(行数=真实剩余数,ProCard 悬浮)→ 说明小注。
 // 简历文本默认只在内存与本次请求里;E11-08 起用户**主动勾选**才存进账户档案(默认不勾=行为同以前)。
 import { useEffect, useRef, useState } from 'react'
+import { ymd } from '@/lib/time'
 
 import { Modal } from '@/components/modal'
 import { ModalTitle } from '@/components/title'
@@ -125,7 +126,7 @@ export function ResumeMatchModal({ jobId, jd, loggedIn, onClose }: {
           <textarea value={resume} onChange={(e) => { touched.current = true; setArchAt(''); setResume(e.target.value) }} placeholder={t('rm.paste')} rows={9}
             style={{ width: '100%', border: `1px solid ${UI.border}`, borderRadius: 8, padding: 10, fontSize: 13, color: '#111827', resize: 'vertical', boxSizing: 'border-box' }} />
           {/* 预填来自存档:灰字小注说清「这不是你刚贴的」+ 存档日期;用户一动手就撤掉(已不是存档那份) */}
-          {archAt ? <div style={{ fontSize: 12, color: UI.text3, marginTop: 6 }}>{t('rm.arch.used', { d: archAt.slice(0, 10) })}</div> : null}
+          {archAt ? <div style={{ fontSize: 12, color: UI.text3, marginTop: 6 }}>{t('rm.arch.used', { d: ymd(archAt) })}</div> : null}
           {err ? <div style={{ fontSize: 12.5, color: UI.danger, marginTop: 6 }}>{err}</div> : null}
           <input ref={fileRef} type="file" accept=".pdf,.docx,.md,.markdown,.txt" style={{ display: 'none' }}
             onChange={(e) => pickFile(e.target.files?.[0] ?? null)} />

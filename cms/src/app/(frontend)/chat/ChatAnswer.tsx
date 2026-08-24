@@ -8,6 +8,7 @@
 // 红线(与 lib/chat/tools 同口径,不许放松):`value === null` 是官方隐私抑制(如 "Less than 10"),
 // 渲 valueText 原文,**永不折成 0 或「暂无」** —— 折了就是替官方编了个数字。
 import { useState } from 'react'
+import { ymd } from '@/lib/time'
 
 import { IconCheck, IconClipboard, IconThumbDown, IconThumbUp } from '@/components/icons'
 import { useLang } from '@/components/i18n'
@@ -168,7 +169,7 @@ export function ChatAnswer({ a, busy, onAsk }: { a: Answer; busy: boolean; onAsk
                   {/* value=null → valueText 原文;两者都空就整格留白,不编「暂无」 */}
                   <span className="cbFactV">{factValue(f)}</span>
                   <a className="cbFactS" href={ev.url}
-                    title={ev.fetched ? t('match.srcFetched', { d: ev.fetched.slice(0, 10) }) : ev.url}
+                    title={ev.fetched ? t('match.srcFetched', { d: ymd(ev.fetched) }) : ev.url}
                     target={isExt(ev.url) ? '_blank' : undefined} rel={isExt(ev.url) ? 'noreferrer' : undefined}>
                     {srcName(ev.url)}
                   </a>

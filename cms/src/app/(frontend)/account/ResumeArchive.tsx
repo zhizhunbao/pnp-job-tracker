@@ -3,6 +3,7 @@
 // 数据来自父页已拉到的 /api/users/me(不再自己拉);清除走 Payload PATCH /api/users/:id(照 ProfileForm 的写法)。
 // 形态照 SavedJobsList:标题 13.5/600 + 灰字小注 + 右侧灰色文字钮;清除要二次确认(简历是用户资产,删了不可逆)。
 import { useState } from 'react'
+import { ymd } from '@/lib/time'
 import type { TFn } from '@/lib/i18n'
 import { UI } from '@/components/colors'
 
@@ -36,7 +37,7 @@ export function ResumeArchive({ t, userId, text, savedAt }: {
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginTop: 4 }}>
             <span style={{ flex: 1, minWidth: 150, fontSize: 12.5, color: UI.text2 }}>
-              {t('rm.arch.meta', { d: at.slice(0, 10), n: cur.length })}
+              {t('rm.arch.meta', { d: ymd(at), n: cur.length })}
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
               <button onClick={() => setOpen(!open)} style={{ ...linkBtn, color: UI.primary }}>{t(open ? 'rm.arch.hide' : 'rm.arch.view')}</button>

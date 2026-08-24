@@ -4,6 +4,7 @@
 // (3)浮层本体(可拖可拉可全屏,尺寸记 localStorage)。ActModal 是它的同族:JD 快看浮层。
 // E8-10 收编的教训写在 GROUP_SECTIONS 上:一套组件伺候 24 种字段必漏,所以字段→分组是张明表,不是 if 链。
 import { useEffect, useRef, useState } from 'react'
+import { daysSince, ymd } from '@/lib/time'
 
 import { IconCompass, IconMap, IconMaximize, IconMinimize } from '@/components/icons'
 import { Grid } from '@/components/grid'
@@ -161,8 +162,7 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
   if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} draws={pnpDraws} news={news} profileClb={profileClb} nocDesc={nocDesc} showZh={showZh} />
   if (field === 'ee') return <EeCategorySection job={job} lang={lang} cats={eeOcc} draws={pnpDraws} nocDesc={nocDesc} showZh={showZh} />
   if (field === 'title') return <TitleFacts job={job} lang={lang} loggedIn={loggedIn} />
-  const day = (s?: string) => (s || '').slice(0, 10)
-
+  
   // field === 'company' 分支退役(2026-07-21):公司弹框走专用 CompanyPanel(平级卡),不再经本表
 
   if (field === 'aip') {
@@ -347,15 +347,16 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
     return (
       <FactsBox>
         {isStatusish && <Row k={t('col.status')}>{t(job.status === 'closed' ? 'cell.closed' : 'cell.open')}</Row>}
-        {field === 'datePosted' && <Row k={t('col.datePosted')}>{day(job.datePosted)}</Row>}
+        {field === 'datePosted' && <Row k={t('col.datePosted')}>{ymd(job.datePosted)}</Row>}
         {/* 挂帖时长(痛点盘点 P0 零抓取项):新鲜度信号,弹窗只在客户端开,无水合差异 */}
         {field === 'datePosted' && job.datePosted && (job.status || 'open') !== 'closed' && (() => {
-          const d = Math.max(0, Math.floor((Date.now() - new Date(job.datePosted).getTime()) / 86400000))
+          const d = daysSince({ iso: job.datePosted, now: Date.now() })
+          if (d == null) return null
           return <Row k={t('fact.daysUp')}>{t('fact.daysUpVal', { n: d })}</Row>
         })()}
-        {field === 'datePosted' && <Row k={t('col.firstSeen')}>{day(job.firstSeen)}</Row>}
-        {field === 'lastSeen' && <Row k={t('col.lastSeen')}>{day(job.lastSeen)}</Row>}
-        {isStatusish && <Row k={t('col.closedAt')}>{job.closedAt ? day(job.closedAt) : null}</Row>}
+        {field === 'datePosted' && <Row k={t('col.firstSeen')}>{ymd(job.firstSeen)}</Row>}
+        {field === 'lastSeen' && <Row k={t('col.lastSeen')}>{ymd(job.lastSeen)}</Row>}
+        {isStatusish && <Row k={t('col.closedAt')}>{job.closedAt ? ymd(job.closedAt) : null}</Row>}
       </FactsBox>
     )
   }

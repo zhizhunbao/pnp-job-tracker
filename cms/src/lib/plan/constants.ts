@@ -13,10 +13,10 @@
  */
 export const DAYS_PER_MONTH = 30.4375
 
-/**
- * 一天的毫秒数(日期差用)。
+/*
+ * (MS_PER_DAY 2026-08-24 撤编:天毫秒收进 lib/time 的 DAY_MS —— 原先本域、
+ * lib/stripe 与四处裸 86400000 各写各的)
  */
-export const MS_PER_DAY = 86400000
 
 /**
  * 薄盘线:在招 < 这个数(或无数)沉同档尾。

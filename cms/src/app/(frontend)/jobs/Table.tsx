@@ -7,7 +7,7 @@
 // (服务端排序、冻结列、字段面板、列宽落 cookie)。硬并会把共享组件撑成怪物 —— 旧拍板,别推翻。
 import { IconLock } from '@/components/icons'
 import { gradeColor } from '@/components/colors'
-import { fmtLocalSec } from '@/lib/time'
+import { fmtLocalSec, ymd } from '@/lib/time'
 import { type TFn } from '@/lib/i18n'
 import { eeDisplay, streamDisplay } from '@/lib/jobs'
 import { COLS_COOKIE } from './columns.shared'
@@ -245,8 +245,8 @@ export function cellOf(k: ColKey, j: JobRow, cx: CellCtx): Cell {
     Object.assign(extra, { whiteSpace: 'nowrap', color: j.eligibilityFlag ? '#b91c1c' : '#d1d5db', fontSize: 12.5, fontWeight: j.eligibilityFlag ? 600 : 400 })
   }
   else if (k === 'status') { const cl = j.status === 'closed'; node = cl ? t('cell.closed') : t('cell.open'); Object.assign(extra, { whiteSpace: 'nowrap', color: cl ? '#9ca3af' : '#15803d', fontSize: 12.5 }) }
-  else if (k === 'closedAt') { node = j.closedAt ? j.closedAt.slice(0, 10) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
-  else if (k === 'datePosted') { node = j.datePosted ? j.datePosted.slice(0, 10) : '—'; Object.assign(extra, { color: '#6b7280', fontSize: 12.5, whiteSpace: 'nowrap' }) }
+  else if (k === 'closedAt') { node = j.closedAt ? ymd(j.closedAt) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
+  else if (k === 'datePosted') { node = j.datePosted ? ymd(j.datePosted) : '—'; Object.assign(extra, { color: '#6b7280', fontSize: 12.5, whiteSpace: 'nowrap' }) }
   else { node = j.lastSeen ? fmtLocalSec(j.lastSeen) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
   return { node, extra, href }
 }

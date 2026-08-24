@@ -33,7 +33,7 @@ import { COLS_COOKIE } from './columns.shared'
 import { type ColKey, type FieldGroup, type Plan, type Dims, type JobRow, isDirect, sourceLabel } from '@/lib/jobs'
 import { PROV_NAMES, mapQuery, mapsUrl, parseLoc, provName } from '@/lib/location'
 import { FIELD_GROUP, COLUMNS, DEFAULT_COLS, NOWRAP_COLS, PREF_KEY, PRO_COLS, cellActionable, cellActive, cellOf, writeColsCookie } from './Table'
-import { fmtLocal, fmtLocalSec } from '@/lib/time'
+import { daysSince, fmtLocal, fmtLocalSec, ymd } from '@/lib/time'
 import { catName, colorOf, nocLocalTitle, registerCatLabels } from '@/lib/noc'
 import { track } from '@/lib/track'   // #129 功能级 umami 埋点
 
@@ -74,7 +74,7 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
   useEffect(() => {
     if (!plan.loggedIn || plan.email != null) return   // #84:SSR 已给身份则不再拉(拉回前的紫「?」闪烁根因)
     fetch('/api/users/me', { credentials: 'include' })
-      .then((r) => r.json()).then((d) => { setEmail(d?.user?.email ?? null); setProUntil((d?.user?.proUntil || '').slice(0, 10)); setDisplayName(d?.user?.displayName ?? null); setAvatar(d?.user?.avatar ?? null) }).catch(() => {})
+      .then((r) => r.json()).then((d) => { setEmail(d?.user?.email ?? null); setProUntil(ymd(d?.user?.proUntil ?? null)); setDisplayName(d?.user?.displayName ?? null); setAvatar(d?.user?.avatar ?? null) }).catch(() => {})
   }, [plan.loggedIn, plan.email])
   useEffect(() => {
     // 开框后立刻把 ?login=1 / ?reset= 从地址栏洗掉(第 15 轮用户反馈:留着参数,刷新就再弹一次)
@@ -839,7 +839,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
                 className={cellActionable(k) ? `jtChip act tone-${tone}` : `jtChip tone-${tone}`}>{txt}</span>
             )
             // Frank 走查:发布当天显示 1 天 → new Date('YYYY-MM-DD') 按 UTC 午夜解析,EDT 晚上 Date.now() 已跨 UTC 次日差 1 天;改按本地午夜解析(+'T00:00:00')
-            const days = j.datePosted && (j.status || 'open') !== 'closed' ? Math.max(0, Math.floor((Date.now() - new Date(j.datePosted.slice(0, 10) + 'T00:00:00').getTime()) / 86400000)) : null
+            const days = (j.status || 'open') !== 'closed' ? daysSince({ iso: j.datePosted ?? null, now: Date.now() }) : null
             // #200(Frank「岗位名称中文翻译默认都加上」):手机卡职位名挂 NOC 官方职业名译名(界面语言;与在招职位/弹框标题同款)
             const nz = nocLocalTitle({ row: dims.nocDescriptions.find((d) => d.noc === j.noc) || null, lang })
             // 通道胶囊排(批A 追拍「每个岗位都要列 teer,pnp,ee 胶囊;aip/qc 单独列;什么都走不了就不用列」):
@@ -906,7 +906,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
                     </> : null}
                   </>
                 ) : undefined}
-                date={<span suppressHydrationWarning>{(j.datePosted || '').slice(0, 10)}{days != null ? `(${days === 0 ? t('cell.today') : t('fact.daysUpVal', { n: days })})` : ''}</span>}
+                date={<span suppressHydrationWarning>{ymd(j.datePosted ?? null)}{days != null ? `(${days === 0 ? t('cell.today') : t('fact.daysUpVal', { n: days })})` : ''}</span>}
                 /* #167⑩(Frank「卡片胶囊应该统一放到一个位置吧」):胶囊都归卡底那排,右上角只留星标——它是按钮不是胶囊。
                    #52:收藏入口手机也要有(E9-01 闭环第一环),匿名点=注册框(与桌面 toggleSave 同一逻辑) */
                 action={

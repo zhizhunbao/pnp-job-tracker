@@ -13,6 +13,7 @@
 //   ③ 每行可溯源:职业名点开落到按该 NOC 筛过的职位板(/?q=<noc>),省卡下钻落 /stats/[prov]。
 // SSR 瘦身手法守住:职业大表(occ ~3400 行)不进 HTML,挂载后拉 /api/stats/market(与旧版同一端点)。
 import { useEffect, useMemo, useState } from 'react'
+import { ymd } from '@/lib/time'
 import { Select } from '@/components/field'
 
 import { makeT, type Lang, type TFn } from '@/lib/i18n'
@@ -62,7 +63,6 @@ export type HomeStats = {
 const num = (n: number) => n.toLocaleString('en-CA')
 // 环比(mom14d 是比值:近 14 天新发 ÷ 前 14 天新发 − 1)→ 百分数;不做四舍五入以外的加工
 const pctSigned = (ratio: number) => `${ratio > 0 ? '+' : ratio < 0 ? '-' : ''}${Math.abs(Math.round(ratio * 100))}%`
-const ymd = (iso: string) => (iso || '').slice(0, 10)
 const isAllProv = (p: string) => (p || '').toLowerCase() === 'all'
 
 // 职业名三态(#309 主次对调:人话名主文案 + 官方名灰注,站规):

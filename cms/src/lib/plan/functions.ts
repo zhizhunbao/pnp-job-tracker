@@ -19,9 +19,10 @@
  */
 
 import { queryRows, SQL, numOrNull, text } from '../db'
+import { DAY_MS } from '@/lib/time'
 import type { Db } from '../db'
 import {
-  AV, BAND_A, BAND_Y, BAND_Z, CADENCE_FACTOR, CERT, CMP, DAYS_PER_MONTH, GROUP_SEP, KIND_NOTICE, MS_PER_DAY, NA_TEXT,
+  AV, BAND_A, BAND_Y, BAND_Z, CADENCE_FACTOR, CERT, CMP, DAYS_PER_MONTH, GROUP_SEP, KIND_NOTICE, NA_TEXT,
   NOT_TIME_CONVERTIBLE, PLAN_NOTES, PLAN_TEXT, PROCESSING_KEY, PROV_FED, PROV_RE, SPACE, STEP, SUBJECT_EMPLOYER,
   THIN_MIN, TV, UNIT_HEADS,
 } from './constants'
@@ -335,7 +336,7 @@ function drawStep(p: PlanPathInput): PlanStep {
   days.sort(byDateAsc)
   let sum = 0
   for (let i = 1; i < days.length; i++) {
-    sum += (Date.parse(days[i]) - Date.parse(days[i - 1])) / MS_PER_DAY
+    sum += (Date.parse(days[i]) - Date.parse(days[i - 1])) / DAY_MS
   }
   const avg = sum / (days.length - 1)
   return stepOf({
@@ -554,7 +555,7 @@ function comparisonsOf(input: ComparisonsIn): PlanComparisons {
  * @returns 天数(四舍五入)。
  */
 function daysBetween(input: DaysIn): number {
-  return Math.round((Date.parse(input.to) - Date.parse(input.from)) / MS_PER_DAY)
+  return Math.round((Date.parse(input.to) - Date.parse(input.from)) / DAY_MS)
 }
 
 /**

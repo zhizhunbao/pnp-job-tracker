@@ -11,6 +11,7 @@
 //   ④ 结果只能说「按官方分值表自算」,**不是资格认定**;
 //   ⑤ 默认值一律取保守值(非本岗省份的工作地区默认 0 分档),不许用有利默认把分数吹上去。
 import { useEffect, useMemo, useState } from 'react'
+import { ymd } from '@/lib/time'
 
 import { QuizChecks, QuizChoices, QuizNav, QuizSub, QuizTitle } from '../quiz/QuizUI'
 import type { Lang, TFn } from '@/lib/i18n'
@@ -835,7 +836,7 @@ function ProvinceResult({ t, lang, s, draws, byProv, switchable, matchedStream, 
         {line == null ? (range ? t('ps.range', { lo: range.lo, hi: range.hi, n: range.n }) : t(hasOtherStreamDraws ? 'ps.noLineStream' : 'ps.noLine')) : (
           <>
             {latest?.score != null
-              ? t('ps.cut', { n: line, date: (latest.drawDate || '').slice(0, 10), stream: latest.stream })
+              ? t('ps.cut', { n: line, date: ymd(latest.drawDate ?? null), stream: latest.stream })
               : t('ps.pass', { n: line })}
             <br />
             {ok ? t('ps.over', { n: gap ?? 0 }) : t('ps.under', { n: Math.abs(gap ?? 0) })}

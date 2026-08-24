@@ -18,6 +18,7 @@
  * 「本次未见且发布超 30 天」才下架。
  */
 import fs from 'fs'
+import { DAY_MS } from '@/lib/time'
 import { gunzipSync } from 'zlib'
 
 import { getDb } from '../db/server'
@@ -472,7 +473,7 @@ export async function seedRoute(req: Request): Promise<Response> {
     const EXPIRE_DAYS = 30
     // seenIds 为空(jobs + seen_ids 两张 mart 都缺/空)时跳过:空清单会把所有 30 天以上的旧岗一锅端下架
     if (!reset && seenIds.length > 0) {
-      const cutoff = new Date(Date.now() - EXPIRE_DAYS * 86400000).toISOString()
+      const cutoff = new Date(Date.now() - EXPIRE_DAYS * DAY_MS).toISOString()
       // 本次见到的 external_id 灌进带主键的临时表,下架走 NOT EXISTS 反连接。
       // 原 `NOT (external_id = ANY($seenIds))`:5.2 万元素数组对每个候选行线性搜(≈ 待检行 × 5.2万),
       // 库涨到 5 万岗后超线性变慢 → seed 整轮撞 180s 超时(mart 已传但灌不进库)。

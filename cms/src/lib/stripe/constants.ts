@@ -73,10 +73,9 @@ export const PAID = 'paid'
  */
 export const SIG_HEADER = 'stripe-signature'
 
-/**
- * 一天的毫秒数（proUntil 拨天用）。
+/*
+ * (DAY_MS 2026-08-24 撤编:天毫秒收进 lib/time 的 DAY_MS)
  */
-export const DAY_MS = 86400000
 
 /**
  * 错误体：未配置收款（缺 STRIPE_SECRET_KEY / STRIPE_WEBHOOK_SECRET）。

@@ -2,6 +2,7 @@
 // 榜单视图(E5-02):纯渲染(计算在 ETL);三语壳;岗位行链官方原帖,公司行链官网。
 // RankingTable = 内容单一来源(E8-02):页面版与 /jobs 榜单弹窗共用,不许 fork。
 import { type TFn } from '@/lib/i18n'
+import { ymd } from '@/lib/time'
 import type { RankRow } from '@/lib/rankings'
 import { streamDisplay, eeDisplay } from '@/lib/jobs'
 import { useLang } from '@/components/i18n'
@@ -46,7 +47,7 @@ function RankJobCard({ r, t }: { r: RankRow; t: TFn }) {
       company={r.company ? { text: r.company } : undefined}
       salary={r.salaryText || undefined}
       location={[r.city, r.province].filter(Boolean).join(', ') || undefined}
-      date={(r.datePosted || '').slice(0, 10) || undefined}
+      date={ymd(r.datePosted ?? null) || undefined}
       // #215(第 26 轮体检续):标签原用 col.score(=「通道」),值却是旧 0-100 分 —— 名实不符,换回榜单口径名
       footer={r.score != null ? `${t('rank.col.score')} ${r.score}` : undefined}
     />

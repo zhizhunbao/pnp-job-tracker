@@ -3,6 +3,7 @@
 // 红线在这儿落地——**粗筛信号,不是资格认定**:命中与否都只陈列官方事实与出处,
 // 各省自己的职业清单/语言/工资要求不在这里判,更不替用户下结论。
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { DAY_MS, ymd } from '@/lib/time'
 
 import { IconCheck, IconTarget, IconWarn, IconX } from '@/components/icons'
 import { Grid } from '@/components/grid'
@@ -264,7 +265,7 @@ export function eeIsDormant(lastDraw: string): boolean {
   if (!lastDraw) return true
   const d = new Date(lastDraw + 'T00:00:00')
   if (isNaN(d.getTime())) return true
-  return Date.now() - d.getTime() > EE_DORMANT_MONTHS * 30.4 * 86400000
+  return Date.now() - d.getTime() > EE_DORMANT_MONTHS * 30.4 * DAY_MS
 }
 
 // E6-10 · 联邦抽选近况(Frank「现在都是在抽 cec 和法语吧」)。
@@ -307,7 +308,7 @@ function FederalRoundsCard({ t, draws }: { t: TFn; draws: PnpDraw[] }) {
       <div className="pnpBox clip mt">
         {rows.map((d, i) => (
           <div key={`${d.drawDate}-${d.label}-${i}`} className="pnpFedRow">
-            <span className="pnpFedDate">{d.drawDate.slice(0, 10)}</span>
+            <span className="pnpFedDate">{ymd(d.drawDate)}</span>
             <span title={d.stream} className="pnpFedType" style={{ color: FED_TYPE_COLOR[d.label] || '#b45309' }}>{eeKeyDisplay({ t, key: d.label })}</span>
             <span className="pnpFedCrs">{t('eelist.crsN', { crs: d.score ?? '—' })}</span>
             <span className="pnpFedIta">{t('eefed.ita', { n: d.invitations ?? '—' })}</span>
@@ -405,7 +406,7 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
                   <div className="pnpBox clip my">
                     {hist.map((h, i) => (
                       <div key={`${h.drawDate}-${i}`} className="pnpHistRow">
-                        <span className="pnpFedDate">{(h.drawDate || '').slice(0, 10)}</span>
+                        <span className="pnpFedDate">{ymd(h.drawDate ?? null)}</span>
                         <span className="pnpFedCrs">{t('eelist.crsN', { crs: h.score ?? '—' })}</span>
                         <span className="pnpHistIta">{t('eelist.itaN', { n: h.invitations ?? '—' })}</span>
                       </div>
