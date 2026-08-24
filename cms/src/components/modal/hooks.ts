@@ -7,7 +7,7 @@
  * @time 2026-08-24 04:30:00
  */
 import { useEffect, useRef, useState } from 'react'
-import { DRAG_IGNORE_SEL, NARROW_BP } from './constants'
+import { DRAG_IGNORE_SEL, KEY_ESC, NARROW_BP } from './constants'
 import { elOf } from './functions'
 import type { CardIn, CardOut, DragPos, DragStart, OverlayHandlers } from './types'
 
@@ -66,7 +66,7 @@ export function useOverlayClose(onClose: () => void): OverlayHandlers {
 export function useEscClose(onClose: () => void) {
   useEffect(function bind() {
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
+      if (e.key === KEY_ESC) {
         onClose()
       }
     }

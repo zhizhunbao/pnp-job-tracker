@@ -22,6 +22,7 @@
         ]
       }
     ],
-    "color-hex-length": "long"
+    "color-hex-length": "long",
+    "declaration-block-no-redundant-longhand-properties": null
   }
 }

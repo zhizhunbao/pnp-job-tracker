@@ -6,7 +6,7 @@
  * @time 2026-08-24 04:30:00
  */
 import { MAX_KEY, RESTORE_KEY } from './constants'
-import type { CardStyleIn, ClsIn, ClsOut } from './types'
+import type { CardStyleIn, ClsIn, ClsOut, ModalSize } from './types'
 import css from './modal.module.css'
 
 /**
@@ -38,27 +38,31 @@ export function stopClick(e: React.MouseEvent) {
  * @returns 两条拼好的 className。
  */
 export function clsOf(x: ClsIn): ClsOut {
+  const narrowCard: Record<ModalSize, string> = {
+    sm: css.narrowSm,
+    md: css.narrowFull,
+    lg: css.narrowFull,
+  }
+  const narrowScrim: Record<ModalSize, string> = {
+    sm: css.scrimNarrowSm,
+    md: css.scrimNarrowFull,
+    lg: css.scrimNarrowFull,
+  }
+  const sizeCls: Record<ModalSize, string> = {
+    sm: css.sm,
+    md: css.md,
+    lg: css.lg,
+  }
   const card = [css.card]
   const scrim = [css.scrim]
   if (x.narrow) {
-    if (x.size === 'sm') {
-      card.push(css.narrowSm)
-      scrim.push(css.scrimNarrowSm)
-    } else {
-      card.push(css.narrowFull)
-      scrim.push(css.scrimNarrowFull)
-    }
+    card.push(narrowCard[x.size])
+    scrim.push(narrowScrim[x.size])
   } else if (x.maximized) {
     card.push(css.max)
   } else {
     card.push(css.center)
-    if (x.size === 'sm') {
-      card.push(css.sm)
-    } else if (x.size === 'lg') {
-      card.push(css.lg)
-    } else {
-      card.push(css.md)
-    }
+    card.push(sizeCls[x.size])
     if (x.tall) {
       card.push(css.tall)
     }

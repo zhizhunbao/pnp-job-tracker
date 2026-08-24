@@ -146,6 +146,11 @@ export const iconBtnS = {
 export const NARROW_BP = 640
 
 /**
+ * Esc 键的平台键名(KeyboardEvent.key 的定值,打错是静默失效所以起名)。
+ */
+export const KEY_ESC = 'Escape'
+
+/**
  * 普通弹框层级。
  */
 export const Z_MODAL = 50

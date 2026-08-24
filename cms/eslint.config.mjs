@@ -580,6 +580,37 @@ const localRules = {
         }
       },
     },
+    'component-name-match': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          bad: '组件 `{{ name }}` 住在 `{{ file }}` 里 —— tsx 文件名必须是组件名的全小写'
+            + '(`{{ want }}.tsx`),看文件名就知道里面是谁。',
+        },
+      },
+      create(context) {
+        // tsx 文件命名规范(2026-08-24 Frank「tsx 文件名有命名规范吗」落闸):
+        // `<组件名全小写>.tsx`,一文件一组件(后半截由 react/no-multi-comp 盯)。
+        // 只查**导出的大写字母开头函数**(= 组件);内部小件不导出就不设名字税。
+        const full = context.filename ?? ''
+        if (!/\.tsx$/.test(full)) return {}
+        const cut = Math.max(full.lastIndexOf('/'), full.lastIndexOf(String.fromCharCode(92)))
+        const base = full.slice(cut + 1).replace(/\.tsx$/, '')
+        return {
+          'ExportNamedDeclaration > FunctionDeclaration'(node) {
+            const name = node.id?.name ?? ''
+            if (!/^[A-Z]/.test(name)) return
+            if (name.toLowerCase() === base) return
+            context.report({
+              node,
+              messageId: 'bad',
+              data: { name, file: `${base}.tsx`, want: name.toLowerCase() },
+            })
+          },
+        }
+      },
+    },
     'door-forward-only': {
       meta: {
         type: 'suggestion',
@@ -879,6 +910,38 @@ const localRules = {
             // 完整性由 Record<档位联合, string> 注解管;键不是魔数,值位置照拦。
             if (node.parent?.type === 'Property' && node.parent.key === node) return
             context.report({ node, messageId: 'magic', data: { n: String(node.value) } })
+          },
+        }
+      },
+    },
+
+    // 魔字符串闸(2026-08-24 Frank「函数里的常量没查出来啊」「tsx 还有常量字符串
+    // 也没法审出来」—— no-magic-number 只管数,'ArrowRight' 这类平台定值串漏网):
+    // **比较位**的裸字符串必须进 constants 起名(平台串打错是静默失效,没有编译器盯);
+    // 自家档位串改查表(Record<联合, …>,键由联合类型管,样板 tagClsOf)或判 != null。
+    // 空串判空(x !== '')是成语,豁免。JSX 属性串(role="tab" 这类)不在比较位,不查。
+    // 覆盖 ts + tsx 全量;圈哪些文件由挂它的块定(现在只挂组件 A 块)。
+    'no-magic-string': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          magic: '比较位的裸字符串 `{{ s }}` 看不出是什么、打错也不报错。平台定值进 `constants.ts` 起名;自家档位改查表(键由联合类型管)。',
+        },
+      },
+      create(context) {
+        return {
+          Literal(node) {
+            if (typeof node.value !== 'string') return
+            if (node.value === '') return
+            const p = node.parent
+            if (p?.type !== 'BinaryExpression') return
+            if (p.operator !== '===' && p.operator !== '!==') return
+            // `typeof window === 'undefined'` 是语言成语:'undefined' 是 typeof 的
+            // 八个定值之一,由语言规定 —— 豁免 typeof 比较。
+            const other = p.left === node ? p.right : p.left
+            if (other.type === 'UnaryExpression' && other.operator === 'typeof') return
+            context.report({ node, messageId: 'magic', data: { s: node.value } })
           },
         }
       },
@@ -1970,6 +2033,7 @@ const eslintConfig = [
     rules: {
       'react/forbid-dom-props': ['error', { forbid: [{ propName: 'style', message: '静态样式进 module.css;运行时数据逐行特批并写理由' }] }],
       'local/component-file-names': 'error',
+      'local/component-name-match': 'error',
       'react/no-multi-comp': 'error',
       'no-restricted-syntax': ['error', {
         selector: 'ObjectPattern > Property[shorthand=false]',
@@ -1990,6 +2054,7 @@ const eslintConfig = [
       'local/function-length': 'error',
       'local/functions-file-no-variables': 'error',
       'local/no-magic-number': 'error',
+      'local/no-magic-string': 'error',
       'local/file-header': 'error',
       'local/doc-every-member': 'error',
       'local/doc-multiline': 'error',

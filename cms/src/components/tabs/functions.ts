@@ -4,11 +4,14 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
-import type { TabDir, TabItem, TabKeysFn, TabKeysIn } from './types'
+import { KEY_END, KEY_HOME, KEY_LEFT, KEY_RIGHT } from './constants'
+import type { TabItem, TabKeysFn, TabKeysIn } from './types'
 
 /**
  * 造一枚键盘导航手柄(WAI-ARIA tabs 模式):← → 相邻循环、Home/End 跳两端,
  * 切换后把焦点跟过去。工厂形态 —— 手柄要闭包住这一渲染的清单与当前值。
+ * (原先有个 'home'/'end' 字符串方向参数,2026-08-24 撤编成「跳到第几个」的数字 ——
+ * 少一种自家串,魔字符串闸就少一类要豁免的东西。)
  *
  * @param x 清单/当前值/切换回调/焦点查找。
  * @returns 挂到每个页签上的 onKeyDown。
@@ -18,14 +21,7 @@ export function makeTabKeys(x: TabKeysIn): TabKeysFn {
     return it.key === x.value
   }
 
-  function move(dir: TabDir) {
-    const i = x.items.findIndex(isCurrent)
-    let next = 0
-    if (dir === 'end') {
-      next = x.items.length - 1
-    } else if (dir === 1 || dir === -1) {
-      next = (i + dir + x.items.length) % x.items.length
-    }
+  function moveTo(next: number) {
     const item = x.items[next]
     if (item == null) {
       return
@@ -37,19 +33,24 @@ export function makeTabKeys(x: TabKeysIn): TabKeysFn {
     }
   }
 
+  function moveBy(delta: number) {
+    const i = x.items.findIndex(isCurrent)
+    moveTo((i + delta + x.items.length) % x.items.length)
+  }
+
   function onKey(e: React.KeyboardEvent) {
-    if (e.key === 'ArrowRight') {
+    if (e.key === KEY_RIGHT) {
       e.preventDefault()
-      move(1)
-    } else if (e.key === 'ArrowLeft') {
+      moveBy(1)
+    } else if (e.key === KEY_LEFT) {
       e.preventDefault()
-      move(-1)
-    } else if (e.key === 'Home') {
+      moveBy(-1)
+    } else if (e.key === KEY_HOME) {
       e.preventDefault()
-      move('home')
-    } else if (e.key === 'End') {
+      moveTo(0)
+    } else if (e.key === KEY_END) {
       e.preventDefault()
-      move('end')
+      moveTo(x.items.length - 1)
     }
   }
 

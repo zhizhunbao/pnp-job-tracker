@@ -24,9 +24,14 @@
   border-bottom: 1px solid #e5e7eb;
 
   /*
-   * 横向可滚、纵向永不滚(overflow 简写:先横后纵)。
+   * 横向可滚。
    */
-  overflow: auto hidden;
+  overflow-x: auto;
+
+  /*
+   * 纵向永不滚。
+   */
+  overflow-y: hidden;
 
   /*
    * 藏滚动条(Firefox;滚动手势仍可用)。

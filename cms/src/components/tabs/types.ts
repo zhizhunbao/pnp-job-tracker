@@ -26,11 +26,6 @@ export type TabItem = {
 }
 
 /**
- * 键盘移动方向:±1 相邻、home 第一个、end 最后一个(WAI-ARIA tabs 模式)。
- */
-export type TabDir = 1 | -1 | 'home' | 'end'
-
-/**
  * Tabs 的 props。
  */
 export type TabsIn = {

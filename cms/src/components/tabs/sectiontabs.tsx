@@ -20,7 +20,7 @@ import css from './tabs.module.css'
  */
 export function SectionTabs({ tabs, tone = null }: SectionTabsIn) {
   let barCls = css.secTabs
-  if (tone === 'teal') {
+  if (tone != null) {
     barCls = `${css.secTabs} ${css.teal}`
   }
   const items = []

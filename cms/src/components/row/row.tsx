@@ -8,6 +8,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { EMPTY_MARK } from './constants'
 import type { RowIn } from './types'
 import css from './row.module.css'
 
@@ -18,7 +19,7 @@ import css from './row.module.css'
  * @returns 事实行,或 null(不渲染)。
  */
 export function Row({ k, children }: RowIn) {
-  if (children == null || children === '' || children === '—') {
+  if (children == null || children === '' || children === EMPTY_MARK) {
     return null
   }
   return (

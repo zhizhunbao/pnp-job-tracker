@@ -20,9 +20,14 @@
   grid-template-columns: repeat(var(--gc), max-content) 1fr;
 
   /*
-   * 行 3px(事实行贴紧)、列 14px 的间距(gap 简写:先行后列)。
+   * 行间距(事实行贴紧)。
    */
-  gap: 3px 14px;
+  row-gap: 3px;
+
+  /*
+   * 列间距。
+   */
+  column-gap: 14px;
 
   /*
    * 各格按基线对齐(数字与标签不上下跳)。
