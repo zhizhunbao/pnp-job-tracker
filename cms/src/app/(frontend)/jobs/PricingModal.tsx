@@ -145,7 +145,7 @@ export function PricingModal({ t, loggedIn, pro, onClose, z = 50 }: { t: TFn; lo
   const [auth, setAuth] = useState(false)
   return (
     // vh=94:对照表 10 行是站内最长弹框,85vh 在普通笔记本必出滚动条(2026-07-17 用户「不要有滚动框」)
-    <Modal onClose={onClose} size="lg" z={z} vh={94}>
+    <Modal onClose={onClose} size="lg" z={z} tall>
       <h3 style={{ margin: 0, fontSize: 18, color: '#111827', textAlign: 'center' }}>{t('price.title')}</h3>
       <p style={{ fontSize: 13, color: '#6b7280', textAlign: 'center', margin: '4px 0 10px' }}>{t('price.sub')}</p>
       <PricingCard t={t} loggedIn={loggedIn} pro={pro} caps={CLIENT_CAPS} onRegister={() => setAuth(true)} />

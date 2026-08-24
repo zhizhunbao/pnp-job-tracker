@@ -1,12 +1,14 @@
 'use client'
 /**
- * modal 域的结构与交互:居中弹框壳(三档宽 / Esc / 点遮罩关 / header 拖拽 / 全屏还原)
- * 与统一标题块。样式在 modal.module.css,机器在 hooks,死值在 constants。
- * (2026-07-05 用户拍板:全站弹框格式布局一致;2026-08-24 组件域刀 A 形制化,
- * 同日 Frank「没重构干净」二筛:体内三目/箭头赋值/裸断言/行内注释清零。)
+ * modal 域的结构:居中弹框壳(三档宽 / Esc / 点遮罩关 / header 拖拽 / 全屏还原)
+ * 与统一标题块。只剩 JSX 装配 —— 机器在 hooks(useCard/useEscClose…)、预算在
+ * functions(clsOf/cardStyleOf/maxKeyOf)、死值在 constants、样式在 modal.module.css。
+ * (2026-07-05 用户拍板:全站弹框格式布局一致;2026-08-24 组件域刀 A 形制化、
+ * 同日 Frank 二筛三筛:三目/裸断言/匿名函数/对象展开/体内函数与常量全数归抽屉。)
  *
  * style 白名单(同 table 域头注那条边界):zIndex、拖拽 transform 与过渡、
- * 按档宽 --mw 与高上限 --vh、eyebrow 场景色 —— 全是运行时数据/变量,不是静态样式。
+ * 按档宽 --mw 与高上限 --vh、eyebrow 场景色 —— 全是运行时数据/变量,不是静态样式;
+ * 每处挂逐行特批牌(闸 react/forbid-dom-props)。
  *
  * 决策记录:#314 全屏钮的 title/aria-label 原是写死中文,英韩界面属性残留中文 ——
  * 改经 useLang 取词(cw.restore/cw.max)。
@@ -14,13 +16,11 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
-import { useEffect, useRef, useState } from 'react'
-
 import { useLang } from '@/components/i18n'
-import { EYEBROW_C_DEFAULT, WIDTH, Z_MODAL } from './constants'
-import { elOf } from './functions'
-import { useIsNarrow, useOverlayClose } from './hooks'
-import type { ModalIn, ModalTitleIn } from './types'
+import { CLOSE_ARIA, EYEBROW_C_DEFAULT, SIZE_DEFAULT, Z_MODAL } from './constants'
+import { cardStyleOf, clsOf, maxKeyOf, stopClick } from './functions'
+import { useCard, useEscClose, useIsNarrow, useOverlayClose } from './hooks'
+import type { MaxToggleIconIn, ModalIn, ModalTitleIn } from './types'
 import css from './modal.module.css'
 
 /**
@@ -29,10 +29,17 @@ import css from './modal.module.css'
  * @param props eyebrow/场景色/标题。
  * @returns 标题块。
  */
-export function ModalTitle({ eyebrow, color = EYEBROW_C_DEFAULT, title }: ModalTitleIn) {
+export function ModalTitle({
+  eyebrow,
+  color = EYEBROW_C_DEFAULT,
+  title,
+}: ModalTitleIn) {
   return (
     <div className={css.titleWrap}>
-      {eyebrow ? <div className={css.eyebrow} style={{ '--eyebrow-c': color } as React.CSSProperties}>{eyebrow}</div> : null}
+      {eyebrow ? (
+        // eslint-disable-next-line react/forbid-dom-props -- 场景色是运行时数据,经 --eyebrow-c 变量进 css
+        <div className={css.eyebrow} style={{ '--eyebrow-c': color } as React.CSSProperties}>{eyebrow}</div>
+      ) : null}
       <h3 className={css.title}>{title}</h3>
     </div>
   )
@@ -45,7 +52,16 @@ export function ModalTitle({ eyebrow, color = EYEBROW_C_DEFAULT, title }: ModalT
  */
 function MaxIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+    <svg width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round">
+      <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+    </svg>
   )
 }
 
@@ -56,8 +72,30 @@ function MaxIcon() {
  */
 function RestoreIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7"/></svg>
+    <svg width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round">
+      <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7"/>
+    </svg>
   )
+}
+
+/**
+ * 全屏钮的两态图标(按全屏态二选一;选择收在小件里,Modal 体内不留分支)。
+ *
+ * @param props 是否全屏态。
+ * @returns 图标。
+ */
+function MaxToggleIcon({ maximized }: MaxToggleIconIn) {
+  if (maximized) {
+    return <RestoreIcon />
+  }
+  return <MaxIcon />
 }
 
 /**
@@ -67,131 +105,53 @@ function RestoreIcon() {
  * @param props 关闭回调与形态开关。
  * @returns 弹框。
  */
-export function Modal({ onClose, size = 'md', z = Z_MODAL, pad = true, vh = 85, draggable = true, resizable = true, actions, children }: ModalIn) {
+export function Modal({
+  onClose,
+  size = SIZE_DEFAULT,
+  z = Z_MODAL,
+  pad = true,
+  tall = false,
+  draggable = true,
+  resizable = true,
+  actions,
+  children,
+}: ModalIn) {
   const ov = useOverlayClose(onClose)
   const [, , t] = useLang()
   const narrow = useIsNarrow()
-  const [maximized, setMaximized] = useState(false)
-  const [pos, setPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
-  const draggingRef = useRef(false)
-  const startPosRef = useRef<{ x: number; y: number; posX: number; posY: number }>({ x: 0, y: 0, posX: 0, posY: 0 })
+  const card = useCard({ narrow, draggable })
+  useEscClose(onClose)
 
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        onClose()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
-
-  function onPointerDown(e: React.PointerEvent) {
-    if (!draggable || narrow || maximized) {
-      return
-    }
-    if (elOf(e.target).closest('button, input, select, textarea, a, label, .occPill, .occSelectedChip')) {
-      return
-    }
-    draggingRef.current = true
-    startPosRef.current = { x: e.clientX, y: e.clientY, posX: pos.x, posY: pos.y }
-    elOf(e.target).setPointerCapture(e.pointerId)
-  }
-
-  function onPointerMove(e: React.PointerEvent) {
-    if (!draggingRef.current) {
-      return
-    }
-    const dx = e.clientX - startPosRef.current.x
-    const dy = e.clientY - startPosRef.current.y
-    setPos({ x: startPosRef.current.posX + dx, y: startPosRef.current.posY + dy })
-  }
-
-  function onPointerUp(e: React.PointerEvent) {
-    if (!draggingRef.current) {
-      return
-    }
-    draggingRef.current = false
-    try {
-      elOf(e.target).releasePointerCapture(e.pointerId)
-    } catch {
-      return
-    }
-  }
-
-  function stopClick(e: React.MouseEvent) {
-    e.stopPropagation()
-  }
-
-  function toggleMax() {
-    setMaximized(!maximized)
-    setPos({ x: 0, y: 0 })
-  }
-
-  const cardCls = [css.card]
-  const scrimCls = [css.scrim]
-  if (narrow) {
-    if (size === 'sm') {
-      cardCls.push(css.narrowSm)
-      scrimCls.push(css.scrimNarrowSm)
-    } else {
-      cardCls.push(css.narrowFull)
-      scrimCls.push(css.scrimNarrowFull)
-    }
-  } else if (maximized) {
-    cardCls.push(css.max)
-  } else {
-    cardCls.push(css.center)
-    if (draggable) {
-      cardCls.push(css.grab)
-    }
-  }
-  if (!pad) {
-    cardCls.push(css.noPad)
-  }
-
-  let cardStyle: React.CSSProperties = {}
-  if (!narrow && !maximized) {
-    const moved = pos.x !== 0 || pos.y !== 0
-    let transform: string | undefined
-    if (moved) {
-      transform = `translate3d(${pos.x}px, ${pos.y}px, 0)`
-    }
-    let transition = 'transform .1s ease-out'
-    if (draggingRef.current) {
-      transition = 'none'
-    }
-    cardStyle = {
-      '--mw': `${WIDTH[size]}px`,
-      '--vh': `${vh}vh`,
-      transform,
-      transition,
-    } as React.CSSProperties
-  }
-
-  let maxLabel = t('cw.max')
-  let maxIcon = <MaxIcon />
-  if (maximized) {
-    maxLabel = t('cw.restore')
-    maxIcon = <RestoreIcon />
-  }
+  const cls = clsOf({
+    narrow,
+    size,
+    maximized: card.maximized,
+    draggable,
+    pad,
+    tall,
+    dragging: card.dragging(),
+  })
+  const cardStyle = cardStyleOf({ narrow, maximized: card.maximized, pos: card.pos })
+  const maxLabel = t(maxKeyOf(card.maximized))
 
   return (
-    <div {...ov} className={scrimCls.join(' ')} style={{ zIndex: z }}>
+    // eslint-disable-next-line react/forbid-dom-props -- 层级是调用方传的运行时数据(普通层 50/叠加层 60)
+    <div onMouseDown={ov.onMouseDown} onClick={ov.onClick} className={cls.scrim} style={{ zIndex: z }}>
       <div onClick={stopClick}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        className={cardCls.join(' ')}
+        onPointerDown={card.onPointerDown}
+        onPointerMove={card.onPointerMove}
+        onPointerUp={card.onPointerUp}
+        className={cls.card}
+        // eslint-disable-next-line react/forbid-dom-props -- 拖拽位移/过渡与 --mw/--vh 全是运行时预算(cardStyleOf)
         style={cardStyle}>
         <div className={css.acts} onClick={stopClick}>
           {actions}
-          {resizable && !narrow && (
-            <button onClick={toggleMax} aria-label={maxLabel} title={maxLabel} className={css.iconBtn}>
-              {maxIcon}
+          {resizable && narrow === false && (
+            <button onClick={card.toggleMax} aria-label={maxLabel} title={maxLabel} className={css.iconBtn}>
+              <MaxToggleIcon maximized={card.maximized} />
             </button>
           )}
-          <button onClick={onClose} aria-label="close" className={css.iconBtn}>×</button>
+          <button onClick={onClose} aria-label={CLOSE_ARIA} className={css.iconBtn}>×</button>
         </div>
         {children}
       </div>

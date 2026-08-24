@@ -42,12 +42,42 @@
 }
 
 /*
- * 居中态:宽按档(--mw)、高上限按 --vh;拖拽位移与过渡是运行时数据走 style。
+ * 居中态:高上限默认 85vh(94vh 档见 .tall)、位移过渡在这;
+ * 宽按档见 .sm/.md/.lg,拖拽位移是每帧连续变化的运行时数据走 style。
  */
 .center {
-  width: min(var(--mw), 100%);
-  max-height: var(--vh);
+  max-height: 85vh;
   padding: 24px 24px 20px;
+  transition: transform 0.1s ease-out;
+}
+
+/*
+ * 三档宽(2026-07-05 规范:sm=390 / md=560 / lg=760;只在居中态叠加)。
+ */
+.sm {
+  width: min(390px, 100%);
+}
+
+.md {
+  width: min(560px, 100%);
+}
+
+.lg {
+  width: min(760px, 100%);
+}
+
+/*
+ * 加高档(全站只有 PricingModal 用,94vh)。
+ */
+.tall {
+  max-height: 94vh;
+}
+
+/*
+ * 拖拽进行中关过渡(跟手不拖影)。
+ */
+.dragging {
+  transition: none;
 }
 
 /*

@@ -545,6 +545,39 @@ const localRules = {
         }
       },
     },
+    'component-file-names': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          bad: '组件域里只许有这些文件:{{ allowed }}。`{{ name }}` 不在其中 ——'
+            + ' 装不下就说明它不属于这个域,别新起一个名字。',
+        },
+      },
+      create(context) {
+        // 组件域抽屉(2026-08-24 Frank 连环拍板定型,样板 footer/table/modal):
+        // 结构 = `<域名>.tsx`(全小写,react 惯例)、样式 = `<域名>.module.css`(.module
+        // 是 Next 的隔离开关,框架定名;css 文件 eslint 看不见,名字由本闸的反面兜 ——
+        // 别的 .tsx/.ts 名字进不来)、机器 = hooks.ts(调用位被 React 规则定死的单独
+        // 一格,lib 域没有它)、其余与 lib 域同名同义:constants/types/functions/
+        // variables/index。prompts/schemas/routes/server 是 lib 的抽屉,组件域装不下
+        // 这些内容 —— 出现即拦。
+        return {
+          Program(node) {
+            const full = context.filename ?? ''
+            const cut = Math.max(full.lastIndexOf('/'), full.lastIndexOf(String.fromCharCode(92)))
+            const name = full.slice(cut + 1)
+            const parent = full.slice(0, cut)
+            const cut2 = Math.max(parent.lastIndexOf('/'), parent.lastIndexOf(String.fromCharCode(92)))
+            const domain = parent.slice(cut2 + 1)
+            const ALLOWED = [`${domain}.tsx`, 'constants.ts', 'variables.ts', 'types.ts',
+              'functions.ts', 'hooks.ts', 'index.ts']
+            if (!name || ALLOWED.includes(name)) return
+            context.report({ node, messageId: 'bad', data: { allowed: ALLOWED.join(' / '), name } })
+          },
+        }
+      },
+    },
     'door-forward-only': {
       meta: {
         type: 'suggestion',
@@ -1886,6 +1919,58 @@ const eslintConfig = [
     // 选②。测试不是运行时消费者,它绕过桶**不会**让生产代码的对外面失控;反过来才会。
     files: ['tests/**/*.{ts,tsx}'],
     rules: { 'no-restricted-imports': 'off' },
+  },
+  {
+    // ── 组件域 tsx 闸(2026-08-24 Frank「先创建闸门吧」;滚动名单同 REFACTORED 规矩,
+    // 组件域形制化一个加一行)──
+    // ① style= 禁静态样式(Frank「这些检查出来了吗」):静态样式一律进各域 module.css;
+    //    style= 只许运行时数据(拖拽 transform、测出的列宽、CSS 变量、层级),
+    //    每处逐行特批并写理由 —— 白名单的判据在 modal/table 两域头注。
+    // ② 抽屉名单:组件域只有七个文件名(`<域名>.tsx` + module.css + 五个 ts 抽屉),
+    //    判据在 component-file-names 规则体的注释里。
+    files: [
+      'src/components/footer/**/*.{ts,tsx}',
+      'src/components/table/**/*.{ts,tsx}',
+      'src/components/modal/**/*.{ts,tsx}',
+    ],
+    plugins: { local: localRules },
+    rules: {
+      'react/forbid-dom-props': ['error', { forbid: [{ propName: 'style', message: '静态样式进 module.css;运行时数据逐行特批并写理由' }] }],
+      'local/component-file-names': 'error',
+    },
+  },
+  {
+    // ── 组件域断行闸(2026-08-24 Frank「这种传参 应该多行对齐吧」)──
+    // 超长行必断,断开的对象/解构逐属性一行(props 解构 9 个挤一行就是这条抓的);
+    // 短的内联对象({ x: 0, y: 0 } 这类)不逼着竖排。table 暂缓 —— 它的 tsx 还没过
+    // modal 这套深筛(体内三目/箭头/展开成片),等 table 二筛批一起进。
+    files: [
+      'src/components/footer/**/*.tsx',
+      'src/components/modal/**/*.tsx',
+    ],
+    plugins: { '@stylistic': stylistic },
+    rules: {
+      '@stylistic/max-len': ['error', { code: 120, ignoreUrls: true }],
+      '@stylistic/object-property-newline': ['error', { allowAllPropertiesOnSameLine: true }],
+      '@stylistic/comma-dangle': ['error', 'always-multiline'],
+      '@stylistic/no-trailing-spaces': 'error',
+    },
+  },
+  {
+    // ── 组件域常量表形制(Frank「json 也格式化,换行 对齐」):逐键一行,同 lib 四域那块 ──
+    files: [
+      'src/components/footer/constants.ts',
+      'src/components/table/constants.ts',
+      'src/components/modal/constants.ts',
+    ],
+    plugins: { '@stylistic': stylistic },
+    rules: {
+      '@stylistic/object-curly-newline': ['error', { ObjectExpression: { multiline: true, minProperties: 3 } }],
+      '@stylistic/object-property-newline': ['error', { allowAllPropertiesOnSameLine: false }],
+      '@stylistic/indent': ['error', 2, { SwitchCase: 1 }],
+      '@stylistic/comma-dangle': ['error', 'always-multiline'],
+      '@stylistic/no-trailing-spaces': 'error',
+    },
   },
   {
     ignores: ['.next/', 'src/payload-types.ts', 'src/payload-generated-schema.ts'],

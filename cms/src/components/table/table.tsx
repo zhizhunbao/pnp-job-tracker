@@ -67,12 +67,14 @@ export function Table<T>({ cols, rows, rowKey, empty, header, minWidth, pageSize
   return (
     <div className={bare ? cls(css.shell, css.bare) : css.shell}>
       {header}
+      {/* eslint-disable-next-line react/forbid-dom-props -- 表最小宽与布局模式是调用方传的运行时数据 */}
       <table ref={tableRef} className={css.table} style={{ minWidth, tableLayout: pct ? 'fixed' : 'auto' }}>
         <thead><tr>
           {cols.map((c) => (
             <th key={c.key} ref={(el) => { thRefs.current[c.key] = el }} title={c.thTip}
               className={cls(css.th, c.sort && css.sortable, c.thTip && css.tip, c.align === 'right' && css.right, c.className)}
               onClick={c.sort ? () => setSort((s) => (s?.key === c.key ? (s.dir === -1 ? { key: c.key, dir: 1 } : null) : { key: c.key, dir: -1 })) : undefined}
+              // eslint-disable-next-line react/forbid-dom-props -- 列宽是拖出来/测出来的运行时数据
               style={{ width: widths[c.key] ?? pct?.[c.key] ?? c.width }}>
               {c.label}{sort?.key === c.key ? (sort.dir === -1 ? ' ▼' : ' ▲') : c.sort ? <span className={css.sortHint}> ⇅</span> : null}
               <span className={css.grip} onPointerDown={(e) => startResize(e, c.key)} onClick={(e) => e.stopPropagation()} />

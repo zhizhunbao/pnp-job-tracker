@@ -60,15 +60,6 @@ export const iconBtnS = {
 } as const
 
 /**
- * 三档宽(sm/md/lg 的像素)。
- */
-export const WIDTH = {
-  sm: 390,
-  md: 560,
-  lg: 760,
-} as const
-
-/**
  * 窄屏断点(E8-03 单一来源:≤640px 弹窗一律全屏)。
  */
 export const NARROW_BP = 640
@@ -83,3 +74,29 @@ export const Z_MODAL = 50
  * 具体场景色由调用方 prop 传,经 --eyebrow-c 变量进 css)。
  */
 export const EYEBROW_C_DEFAULT = '#6366f1'
+
+/**
+ * 拖拽豁免目标(闭包选择器):按在这些交互件上不算抓 header ——
+ * 否则点按钮/选字/选 occ 药丸都会把整框拖走。
+ */
+export const DRAG_IGNORE_SEL = 'button, input, select, textarea, a, label, .occPill, .occSelectedChip'
+
+/**
+ * 三档宽默认档。
+ */
+export const SIZE_DEFAULT = 'md'
+
+/**
+ * 全屏钮两态的 i18n 键:放大。
+ */
+export const MAX_KEY = 'cw.max'
+
+/**
+ * 全屏钮两态的 i18n 键:还原。
+ */
+export const RESTORE_KEY = 'cw.restore'
+
+/**
+ * 关闭钮的 aria-label(上线以来就是英文死值;要不要走 i18n 待 Frank 拍,先归位常量)。
+ */
+export const CLOSE_ARIA = 'close'
