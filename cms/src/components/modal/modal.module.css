@@ -140,44 +140,6 @@
 }
 
 /*
- * 标题块:给右上动作排留位。
- */
-.titleWrap {
-  min-width: 0;
-  padding-right: 80px;
-}
-
-/*
- * eyebrow 小字(默认靛蓝;全站实际只有两档色,深档见 .eyebrowDeep ——
- * 2026-08-24 Frank「这种呢」把 --eyebrow-c 变量类化掉)。
- */
-.eyebrow {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: .3px;
-  color: #6366f1;
-}
-
-/*
- * eyebrow 深靛蓝档(简历匹配弹框用)。
- */
-.eyebrowDeep {
-  color: #4338ca;
-}
-
-/*
- * 17px 标题单行截断。
- */
-.title {
-  margin: 4px 0 0;
-  font-size: 17px;
-  color: #111827;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/*
  * 窗口图标钮(域内自用类;外部消费端还在用 constants 的 iconBtnS 过渡导出,
  * 值与它逐格相等 —— 各消费域类化后常量退役,这个类成唯一真相)。
  */
