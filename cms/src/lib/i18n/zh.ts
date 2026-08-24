@@ -1146,7 +1146,7 @@ export const quizZh = {
   'prof.st.pr': '已 PR / 只找工作',
   'prof.noc': '你想做什么工作?',
   'prof.jobPopular': '热门职业(点一下就选好):',
-  'prof.nocSearch': '没有?输入职业名搜一下…',
+  'prof.nocAdd': '加入这条', 'prof.nocSearch': '没有?输入职业名搜一下…',
   'prof.job.software': '软件开发', 'prof.job.accountant': '会计', 'prof.job.nurse': '护士', 'prof.job.psw': '护理员 / PSW',
   'prof.job.cook': '厨师', 'prof.job.truck': '卡车司机', 'prof.job.electrician': '电工', 'prof.job.welder': '焊工',
   'prof.job.ece': '幼儿教育', 'prof.job.retail': '零售销售', 'prof.job.warehouse': '仓储理货', 'prof.job.server': '餐饮服务',

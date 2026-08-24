@@ -1038,7 +1038,7 @@ export const quizEn: Record<keyof typeof quizZh, string> = {
   'prof.st.pr': 'PR / just job-hunting',
   'prof.noc': 'What work do you want to do?',
   'prof.jobPopular': 'Popular jobs (just tap to pick):',
-  'prof.nocSearch': "Not listed? Search by job title…",
+  'prof.nocAdd': 'Add this', 'prof.nocSearch': "Not listed? Search by job title…",
   'prof.job.software': 'Software developer', 'prof.job.accountant': 'Accountant', 'prof.job.nurse': 'Nurse', 'prof.job.psw': 'PSW / care aide',
   'prof.job.cook': 'Cook', 'prof.job.truck': 'Truck driver', 'prof.job.electrician': 'Electrician', 'prof.job.welder': 'Welder',
   'prof.job.ece': 'Early childhood educator', 'prof.job.retail': 'Retail sales', 'prof.job.warehouse': 'Warehouse', 'prof.job.server': 'Food & beverage server',

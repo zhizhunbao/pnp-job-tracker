@@ -1031,7 +1031,7 @@ export const quizKo: Record<keyof typeof quizZh, string> = {
   'prof.st.pr': '영주권자 / 구직만',
   'prof.noc': '희망 직무는 무엇인가요?',
   'prof.jobPopular': '인기 직업 (탭하여 선택):',
-  'prof.nocSearch': '없나요? 직업명으로 검색…',
+  'prof.nocAdd': '이 항목 추가', 'prof.nocSearch': '없나요? 직업명으로 검색…',
   'prof.job.software': '소프트웨어 개발자', 'prof.job.accountant': '회계사', 'prof.job.nurse': '간호사', 'prof.job.psw': 'PSW / 요양보호사',
   'prof.job.cook': '요리사', 'prof.job.truck': '트럭 운전기사', 'prof.job.electrician': '전기공', 'prof.job.welder': '용접공',
   'prof.job.ece': '유아교육 교사', 'prof.job.retail': '소매 판매원', 'prof.job.warehouse': '창고 관리', 'prof.job.server': '식음료 서빙 직원',

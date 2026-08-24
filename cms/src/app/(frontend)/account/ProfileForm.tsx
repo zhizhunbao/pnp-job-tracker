@@ -4,6 +4,7 @@
 // 保存走 Payload 自带 REST PATCH /api/users/:id(update 已限 selfOrAdmin;profile 无字段锁=本人可改)。
 // 数据完整性:返回用户已填精确值(clb/crs/pgwp)未主动改档时原值保留(state 初值=精确值,不点不覆盖)。
 import { useEffect, useMemo, useState } from 'react'
+import { Search } from '@/components/field'
 import type { TFn } from '@/lib/i18n'
 import { IconTarget } from '@/components/icons'
 import { Button } from '@/components/button'
@@ -54,6 +55,20 @@ export function ProfileForm({ t, userId, initial, onSaved }: { t: TFn; userId: s
     if (!s) return []
     return opts.filter((o) => !nocs.includes(o.noc) && (o.noc.startsWith(s) || o.title.toLowerCase().includes(s))).slice(0, 8)
   }, [q, opts, nocs])
+
+  // 输入框里敲的东西直接加:5 位码按码加,否则加命中的第一条。
+  // (原先埋在 input 的 onKeyDown 箭头里 —— 换 field 域的 Search 后,键盘出口归
+  //  组件域统一定,这条页面专属行为提成具名函数并给一个显式的钮。)
+  function addTyped() {
+    const v = q.trim()
+    if (/^\d{5}$/.test(v)) {
+      addNoc(v)
+      return
+    }
+    if (hits[0] != null) {
+      addNoc(hits[0].noc)
+    }
+  }
 
   const addNoc = (code: string) => { if (code && !nocs.includes(code)) setNocs([...nocs, code]); setQ('') }
   // 职位名解析(§3.4 藏码):noc-descriptions 官方名优先 → 热门大白话标签 → 兜底码
@@ -114,8 +129,12 @@ export function ProfileForm({ t, userId, initial, onSaved }: { t: TFn; userId: s
           return <Chip key={p.noc} onClick={() => (on ? setNocs(nocs.filter((x) => x !== p.noc)) : addNoc(p.noc))} active={on}>{t(p.key)}</Chip>
         })}
       </div>
-      <input style={{ ...inputS, marginTop: 8 }} value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('prof.nocSearch')}
-        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (/^\d{5}$/.test(q.trim())) addNoc(q.trim()); else if (hits[0]) addNoc(hits[0].noc) } }} />
+      <div className="profNocSearch">
+        <Search value={q} onChange={setQ} placeholder={t('prof.nocSearch')} size="md" />
+      </div>
+      {q.trim() !== '' && (
+        <button type="button" className="profNocAdd" onClick={addTyped}>{t('prof.nocAdd')}</button>
+      )}
       {hits.length > 0 && (
         <div style={{ border: '1px solid #e5e7eb', borderRadius: 6, marginTop: 2, maxHeight: 180, overflowY: 'auto', background: '#fff' }}>
           {hits.map((o) => (

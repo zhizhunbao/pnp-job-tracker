@@ -1127,3 +1127,7 @@ button:not(:disabled):hover {
 .advPanel { display: flex; flex-direction: column; overflow: hidden; }
 .advHandle { position: absolute; }          /* 八向缩放手柄,各自的边距与 cursor 是数据 */
 .advMapLink { font-size: 12.5px; }          /* 配 style={link} 用 */
+
+/* 档案页职业搜索(2026-08-24 换 field 域的 Search 后,页面只留位置与那个「加入这条」钮) */
+.profNocSearch { margin-top: 8px; }
+.profNocAdd { margin-top: 6px; border: 1px solid #e5e7eb; border-radius: 6px; background: #fff; color: #2563eb; font-size: 12.5px; padding: 4px 10px; cursor: pointer; }
