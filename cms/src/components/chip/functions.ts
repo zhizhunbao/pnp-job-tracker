@@ -24,13 +24,16 @@ import css from './chip.module.css'
  * @returns 拼好的 className。
  */
 export function chipClsOf(x: ChipClsIn): string {
+  const out = [css.chip]
   if (x.active) {
-    return `${css.chip} ${css.active}`
+    out.push(css.active)
+  } else if (x.hot) {
+    out.push(css.hot)
   }
-  if (x.hot) {
-    return `${css.chip} ${css.hot}`
+  if (x.extra != null) {
+    out.push(x.extra)
   }
-  return css.chip
+  return out.join(' ')
 }
 
 /**

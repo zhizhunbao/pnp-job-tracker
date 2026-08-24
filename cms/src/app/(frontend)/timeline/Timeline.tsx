@@ -6,7 +6,7 @@ import { useLang } from '@/components/i18n'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { BANNER_IMGS, Banner } from '@/components/banner'
-import { chipStyle } from '@/components/chip'
+import { Chip } from '@/components/chip'
 import { UI } from '@/components/colors'
 import { Shell } from '@/components/shell'
 import { SectionTabs } from '@/components/tabs'
@@ -84,14 +84,14 @@ export function Timeline({ events, cadence, eeCadence }: {
         {/* 筛选 chips(手动切省/类型时清掉节奏卡带入的流过滤,避免空结果) */}
         <div id="tl-events" style={{ scrollMarginTop: 12 }}><Title>{t('tl.events')}</Title></div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '0 0 6px' }}>
-          <button style={chipStyle(!fProv)} onClick={() => { setFProv(''); setFStream('') }}>{t('all.prov')}</button>
-          <button style={chipStyle(fProv === 'FED')} onClick={() => { setFProv('FED'); setFStream('') }}>{t('tl.fed')}</button>
-          {provs.map((p) => <button key={p} style={chipStyle(fProv === p)} onClick={() => { setFProv(p); setFStream('') }}>{t('pr.' + p)}</button>)}
+          <Chip onClick={() => { setFProv(''); setFStream('') }} active={!fProv}>{t('all.prov')}</Chip>
+          <Chip onClick={() => { setFProv('FED'); setFStream('') }} active={fProv === 'FED'}>{t('tl.fed')}</Chip>
+          {provs.map((p) => <Chip key={p} onClick={() => { setFProv(p); setFStream('') }} active={fProv === p}>{t('pr.' + p)}</Chip>)}
           <span style={{ width: 1, background: '#e5e7eb', margin: '0 4px' }} />
-          <button style={chipStyle(!fKind)} onClick={() => { setFKind(''); setFStream('') }}>{t('tl.kindAll')}</button>
-          <button style={chipStyle(fKind === 'draw')} onClick={() => setFKind('draw')}>{t('tl.kindDraw')}</button>
-          <button style={chipStyle(fKind === 'policy')} onClick={() => { setFKind('policy'); setFStream('') }}>{t('tl.kindPolicy')}</button>
-          {fStream && <button style={chipStyle(true)} onClick={() => setFStream('')}>{fStream} ✕</button>}
+          <Chip onClick={() => { setFKind(''); setFStream('') }} active={!fKind}>{t('tl.kindAll')}</Chip>
+          <Chip onClick={() => setFKind('draw')} active={fKind === 'draw'}>{t('tl.kindDraw')}</Chip>
+          <Chip onClick={() => { setFKind('policy'); setFStream('') }} active={fKind === 'policy'}>{t('tl.kindPolicy')}</Chip>
+          {fStream && <Chip onClick={() => setFStream('')} active={true}>{fStream} ✕</Chip>}
         </div>
 
         {/* 时间轴(左缘竖线+圆点) */}

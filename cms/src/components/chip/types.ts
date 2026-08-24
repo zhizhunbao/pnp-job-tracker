@@ -30,6 +30,12 @@ export type ChipIn = {
   title?: string
 
   /**
+   * 调用方追加类:只用来接全局规范类(如手机触控靶 tapPad),
+   * 长相仍归本域 —— 传别的类等于绕过药丸规格。
+   */
+  className?: string
+
+  /**
    * 药丸文字。
    */
   children: React.ReactNode
@@ -39,6 +45,11 @@ export type ChipIn = {
  * chipClsOf 的入参:两个态开关。
  */
 export type ChipClsIn = {
+  /**
+   * 调用方追加的全局规范类(如 tapPad);null = 没有。
+   */
+  extra: string | null
+
   /**
    * 是否选中。
    */

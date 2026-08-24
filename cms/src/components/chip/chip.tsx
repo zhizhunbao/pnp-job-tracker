@@ -17,6 +17,12 @@ import type { ChipIn } from './types'
  * @param props 态开关/点击/提示/文字。
  * @returns 药丸按钮。
  */
-export function Chip({ active = false, hot = false, onClick, title, children }: ChipIn) {
-  return <button className={chipClsOf({ active, hot })} onClick={onClick} title={title}>{children}</button>
+export function Chip({ active = false, hot = false, onClick, title, className, children }: ChipIn) {
+  let extra: string | null = null
+  if (className != null) {
+    extra = className
+  }
+  return (
+    <button className={chipClsOf({ active, hot, extra })} onClick={onClick} title={title}>{children}</button>
+  )
 }

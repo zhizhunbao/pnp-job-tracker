@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { TFn } from '@/lib/i18n'
 import { Modal } from '@/components/modal'
 import { Button } from '@/components/button'
-import { chipStyle } from '@/components/chip'
+import { Chip } from '@/components/chip'
 import { hasProfile, normalizeProfile, type MatchProfile, type ProfileJson } from '@/lib/jobs'
 import {
   POPULAR_NOCS, CLB_OPTS, CRS_OPTS, PGWP_OPTS, clbActive, crsActive, pgwpActive, type Opt,
@@ -28,7 +28,6 @@ const BRANCH: Record<string, Field[]> = {
   pr: ['noc', 'prov'],                       // E 已 PR/纯找工:移民信号弱化
 }
 
-const chip = chipStyle   // P3 chips 归并(#114):选项 chips 统一 primitives 药丸(B映射)
 
 // E9-04:投递流复用本向导当「求职意向表单」——onFinished 存在时保存后交还调用方(继续投递),不再整页跳转
 export function OnboardingWizard({ t, initial, onClose, onFinished, z }: { t: TFn; initial: MatchProfile | null; onClose: () => void; onFinished?: () => void; z?: number }) {
@@ -105,7 +104,7 @@ export function OnboardingWizard({ t, initial, onClose, onFinished, z }: { t: TF
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
       {opts.map((o) => {
         const on = o.value === null ? active === null : active === o.value
-        return <button key={o.key} type="button" onClick={() => onPick(o.value)} style={chip(on)}>{t(o.key)}</button>
+        return <Chip key={o.key} onClick={() => onPick(o.value)} active={on}>{t(o.key)}</Chip>
       })}
     </div>
   )
@@ -113,7 +112,7 @@ export function OnboardingWizard({ t, initial, onClose, onFinished, z }: { t: TF
   const body = () => {
     if (cur === 'status') return (<>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
-        {STATUS_SLUGS.map((s) => <button key={s} type="button" onClick={() => setStatus(status === s ? '' : s)} style={chip(status === s)}>{t(`prof.st.${s}`)}</button>)}
+        {STATUS_SLUGS.map((s) => <Chip key={s} onClick={() => setStatus(status === s ? '' : s)} active={status === s}>{t(`prof.st.${s}`)}</Chip>)}
       </div>
       {/* E11-07:上传简历自动预填(可跳过;失败回退手填不阻断) */}
       <div style={{ marginTop: 16, padding: '10px 12px', border: '1.5px dashed #c7d2fe', borderRadius: 9, background: '#f8faff' }}>
@@ -141,7 +140,7 @@ export function OnboardingWizard({ t, initial, onClose, onFinished, z }: { t: TF
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
           {resumeNocs.map((c) => {
             const on = nocs.includes(c.noc)
-            return <button key={c.noc} type="button" onClick={() => (on ? setNocs(nocs.filter((x) => x !== c.noc)) : setNocs([...nocs, c.noc]))} style={chip(on)}>{c.title || c.noc} <span style={{ color: '#9ca3af' }}>{c.noc}</span></button>
+            return <Chip key={c.noc} onClick={() => (on ? setNocs(nocs.filter((x) => x !== c.noc)) : setNocs([...nocs, c.noc]))} active={on}>{c.title || c.noc} <span style={{ color: '#9ca3af' }}>{c.noc}</span></Chip>
           })}
         </div>
       </>)}
@@ -149,7 +148,7 @@ export function OnboardingWizard({ t, initial, onClose, onFinished, z }: { t: TF
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
         {POPULAR_NOCS.map((p) => {
           const on = nocs.includes(p.noc)
-          return <button key={p.noc} type="button" onClick={() => (on ? setNocs(nocs.filter((x) => x !== p.noc)) : setNocs([...nocs, p.noc]))} style={chip(on)}>{t(p.key)}</button>
+          return <Chip key={p.noc} onClick={() => (on ? setNocs(nocs.filter((x) => x !== p.noc)) : setNocs([...nocs, p.noc]))} active={on}>{t(p.key)}</Chip>
         })}
       </div>
       <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 10 }}>{t('ob.nocHint')}</div>
@@ -157,15 +156,15 @@ export function OnboardingWizard({ t, initial, onClose, onFinished, z }: { t: TF
     if (cur === 'clb') return <Chips opts={CLB_OPTS} active={clbActive(clb)} onPick={setClb} />
     if (cur === 'crs') return (<>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
-        <button type="button" onClick={() => { setCrsCalc(false); setCrs(null) }} style={chip(!crsCalc)}>{t('prof.crsCalc.no')}</button>
-        <button type="button" onClick={() => setCrsCalc(true)} style={chip(crsCalc)}>{t('prof.crsCalc.yes')}</button>
+        <Chip onClick={() => { setCrsCalc(false); setCrs(null) }} active={!crsCalc}>{t('prof.crsCalc.no')}</Chip>
+        <Chip onClick={() => setCrsCalc(true)} active={crsCalc}>{t('prof.crsCalc.yes')}</Chip>
       </div>
       {crsCalc && <Chips opts={CRS_OPTS} active={crsActive(crs)} onPick={setCrs} />}
     </>)
     if (cur === 'prov') return (
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
         {/* #58 零黑话:chip 显示省全名(三语),值仍存两字码 */}
-        {PROVS.map((p) => { const on = provs.includes(p); return <button key={p} type="button" onClick={() => setProvs(on ? provs.filter((x) => x !== p) : [...provs, p])} style={chip(on)}>{t('pr.' + p)}</button> })}
+        {PROVS.map((p) => { const on = provs.includes(p); return <Chip key={p} onClick={() => setProvs(on ? provs.filter((x) => x !== p) : [...provs, p])} active={on}>{t('pr.' + p)}</Chip> })}
       </div>
     )
     // pgwp

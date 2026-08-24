@@ -13,7 +13,7 @@ import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { BackButton } from '@/components/button'
 import { BANNER_IMGS, Banner } from '@/components/banner'
-import { chipStyle } from '@/components/chip'
+import { Chip } from '@/components/chip'
 import { Shell } from '@/components/shell'
 import { SectionTabs } from '@/components/tabs'
 import { IconNews } from '@/components/icons'
@@ -210,7 +210,6 @@ export function News({ items, hero, cmtCounts }: { items: NewsCard[]; hero: News
         if (last && last[0] === n.date) last[1].push(n)
         else byDay.push([n.date, [n]])
       }
-      const chip = chipStyle   // P3 chips 归并(#114):与 primitives 同款,本地副本退役
       return (
         <>
           {/* 正文轨=Shell 1320(Frank 2026-07-18 宽度统一拍板),原 1100 单轨退役 */}
@@ -223,8 +222,8 @@ export function News({ items, hero, cmtCounts }: { items: NewsCard[]; hero: News
               { href: '/timeline', label: t('tl.title') },
             ]} />
             <div className="nwChips">
-              <button className="tapPad" style={chip(!region)} onClick={() => setRegion('')}>{t('chart.all')}</button>
-              {present.map((r) => <button key={r} className="tapPad" style={chip(region === r)} onClick={() => setRegion(r)}>{regionLabel(t, r)}</button>)}
+              <Chip className="tapPad" onClick={() => setRegion('')} active={!region}>{t('chart.all')}</Chip>
+              {present.map((r) => <Chip key={r} className="tapPad" onClick={() => setRegion(r)} active={region === r}>{regionLabel(t, r)}</Chip>)}
             </div>
             {/* 头条区:1 大 + 4 小(大卡轮播);筛选态下不显(看筛选结果为主) */}
             {!region && <FeaturedGrid t={t} lang={lang} slides={hero} />}

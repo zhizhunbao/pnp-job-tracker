@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { TFn } from '@/lib/i18n'
 import { IconTarget } from '@/components/icons'
 import { Button } from '@/components/button'
-import { chipStyle } from '@/components/chip'
+import { Chip } from '@/components/chip'
 import { Notice } from '@/components/notice'
 import { POPULAR_NOCS, CLB_OPTS, CRS_OPTS, PGWP_OPTS, clbActive, crsActive, pgwpActive, type Opt } from './profileOptions'
 
@@ -27,8 +27,6 @@ const STATUS_SLUGS = ['overseas', 'studying', 'working', 'jobhunting', 'pr'] as 
 
 const inputS: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '7px 10px', fontSize: 13.5, border: '1px solid #d1d5db', borderRadius: 6, marginTop: 4 }
 const lbl: React.CSSProperties = { fontSize: 13, color: '#374151', display: 'block', marginTop: 14 }
-// 统一点选 chip 样式(省份/分型/职业/区间共用)——P3 chips 归并(#114):primitives 药丸
-const chip = chipStyle
 
 export function ProfileForm({ t, userId, initial, onSaved }: { t: TFn; userId: string | number; initial: ProfileValue | null; onSaved?: () => void }) {
   const [status, setStatus] = useState<string>(initial?.currentStatus ?? '')
@@ -89,7 +87,7 @@ export function ProfileForm({ t, userId, initial, onSaved }: { t: TFn; userId: s
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
       {os.map((o) => {
         const on = o.value === null ? active === null : active === o.value
-        return <button key={o.key} type="button" onClick={() => onPick(o.value)} style={chip(on)}>{t(o.key)}</button>
+        return <Chip key={o.key} onClick={() => onPick(o.value)} active={on}>{t(o.key)}</Chip>
       })}
     </div>
   )
@@ -103,7 +101,7 @@ export function ProfileForm({ t, userId, initial, onSaved }: { t: TFn; userId: s
       <div style={lbl}>{t('prof.status')}</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
         {STATUS_SLUGS.map((s) => (
-          <button key={s} type="button" onClick={() => setStatus(status === s ? '' : s)} style={chip(status === s)}>{t(`prof.st.${s}`)}</button>
+          <Chip key={s} onClick={() => setStatus(status === s ? '' : s)} active={status === s}>{t(`prof.st.${s}`)}</Chip>
         ))}
       </div>
 
@@ -113,7 +111,7 @@ export function ProfileForm({ t, userId, initial, onSaved }: { t: TFn; userId: s
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
         {POPULAR_NOCS.map((p) => {
           const on = nocs.includes(p.noc)
-          return <button key={p.noc} type="button" onClick={() => (on ? setNocs(nocs.filter((x) => x !== p.noc)) : addNoc(p.noc))} style={chip(on)}>{t(p.key)}</button>
+          return <Chip key={p.noc} onClick={() => (on ? setNocs(nocs.filter((x) => x !== p.noc)) : addNoc(p.noc))} active={on}>{t(p.key)}</Chip>
         })}
       </div>
       <input style={{ ...inputS, marginTop: 8 }} value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('prof.nocSearch')}
@@ -147,8 +145,8 @@ export function ProfileForm({ t, userId, initial, onSaved }: { t: TFn; userId: s
       {/* EE 分(§3.4):两段式,没算过=跳过 / 算过→区间(存下界) */}
       <div style={lbl}>{t('prof.crs')}</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
-        <button type="button" onClick={() => { setCrsCalc(false); setCrs(null) }} style={chip(!crsCalc)}>{t('prof.crsCalc.no')}</button>
-        <button type="button" onClick={() => setCrsCalc(true)} style={chip(crsCalc)}>{t('prof.crsCalc.yes')}</button>
+        <Chip onClick={() => { setCrsCalc(false); setCrs(null) }} active={!crsCalc}>{t('prof.crsCalc.no')}</Chip>
+        <Chip onClick={() => setCrsCalc(true)} active={crsCalc}>{t('prof.crsCalc.yes')}</Chip>
       </div>
       {crsCalc && <BucketRow opts={CRS_OPTS} active={crsActive(crs)} onPick={(v) => setCrs(v)} />}
 
@@ -162,7 +160,7 @@ export function ProfileForm({ t, userId, initial, onSaved }: { t: TFn; userId: s
         {PROVS.map((p) => {
           const on = provs.includes(p)
           {/* #58 零黑话:chip 显示省全名(三语),值仍存两字码 */}
-          return <button key={p} type="button" onClick={() => setProvs(on ? provs.filter((x) => x !== p) : [...provs, p])} style={chip(on)}>{t('pr.' + p)}</button>
+          return <Chip key={p} onClick={() => setProvs(on ? provs.filter((x) => x !== p) : [...provs, p])} active={on}>{t('pr.' + p)}</Chip>
         })}
       </div>
 
