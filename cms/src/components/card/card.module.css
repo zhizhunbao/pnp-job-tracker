@@ -1,0 +1,683 @@
+/*
+ * card 域的私有样式(2026-08-24 自 main.css 第 9 段迁入,值逐格相等)。
+ * ⚠️ `.card` / `.cardMd` 白卡壳**仍在 main.css 全局层**:6/5 个消费页按字面类名直写,
+ * 是多消费者的全局词汇 —— 消费页域化时随行收进来;本域的 Card 组件叠自己的 .pad。
+ */
+
+/*
+ * Card 组件的默认密度(叠在全局 .card 壳上):紧凑内衬 + 卡间距 + 给右上操作位当参照系。
+ */
+.pad {
+  /*
+   * 紧凑内衬(各页密度不同的走 style 过渡口)。
+   */
+  padding: 10px 12px;
+
+  /*
+   * 卡与卡的间距。
+   */
+  margin-bottom: 8px;
+
+  /*
+   * 右上操作位 position:absolute 自摆的参照系。
+   */
+  position: relative;
+}
+
+/*
+ * 键值区:两列 grid(条目 = k 在 v 上方;与 grid 域的分界 —— 那边的列装**格子**,
+ * 这边的列装**条目**,实现相同不是同一件事)。
+ */
+.kv {
+  /*
+   * 网格布局。
+   */
+  display: grid;
+
+  /*
+   * 两列等宽。
+   */
+  grid-template-columns: 1fr 1fr;
+
+  /*
+   * 行 4px、列 14px 间距。
+   */
+  gap: 4px 14px;
+
+  /*
+   * 与上文留 6px。
+   */
+  margin-top: 6px;
+}
+
+/*
+ * 独占一整行的条目(长值)。
+ */
+.wide {
+  /*
+   * 从第 1 列跨到最后一列。
+   */
+  grid-column: 1 / -1;
+}
+
+/*
+ * 条目的标签(k 在 v 上方的小字)。
+ */
+.kvK {
+  /*
+   * 标签小字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 标签灰。
+   */
+  color: #9ca3af;
+}
+
+/*
+ * 条目的值。
+ */
+.kvV {
+  /*
+   * 值字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 值文字色。
+   */
+  color: #374151;
+}
+
+/*
+ * 操作行(卡底部的按钮排)。
+ */
+.act {
+  /*
+   * 与上文留 6px。
+   */
+  margin-top: 6px;
+
+  /*
+   * 操作行字号。
+   */
+  font-size: 12.5px;
+}
+
+/*
+ * 统一升级卡(G3 规范,Frank 八轮收敛定稿):单行淡黄底 + 琥珀短句 + 蓝钮。
+ * 全站升级入口一律用它,不再自造。
+ */
+.proCard {
+  /*
+   * 短句与钮排一行。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 短句与钮的间距。
+   */
+  gap: 10px;
+
+  /*
+   * 淡黄底。
+   */
+  background: #fffbeb;
+
+  /*
+   * 金描边。
+   */
+  border: 1px solid #fde68a;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 10px;
+
+  /*
+   * 内衬。
+   */
+  padding: 10px 12px;
+
+  /*
+   * 与上文留 12px。
+   */
+  margin-top: 12px;
+}
+
+/*
+ * 升级卡悬浮态(打码行数够多时悬浮在码区正中)。
+ */
+.overlay {
+  /*
+   * 绝对定位到打码区(lockRows 是参照系)。
+   */
+  position: absolute;
+
+  /*
+   * 水平锚点在正中。
+   */
+  left: 50%;
+
+  /*
+   * 竖直锚点在正中。
+   */
+  top: 50%;
+
+  /*
+   * 按自身尺寸回拉一半 = 真正居中。
+   */
+  transform: translate(-50%, -50%);
+
+  /*
+   * 悬浮态不需要上边距。
+   */
+  margin: 0;
+
+  /*
+   * 宽度按内容收。
+   */
+  width: max-content;
+
+  /*
+   * 不许超出码区宽度。
+   */
+  max-width: 92%;
+
+  /*
+   * 悬浮投影(和码区分层)。
+   */
+  box-shadow: 0 4px 14px rgb(0 0 0 / 8%);
+}
+
+/*
+ * 升级卡短句:吃剩余宽、超长删字不折行。
+ */
+.proText {
+  /*
+   * 吃掉剩余宽度。
+   */
+  flex: 1;
+
+  /*
+   * flex 子项允许被压窄(配合省略号)。
+   */
+  min-width: 0;
+
+  /*
+   * 短句字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 琥珀深字。
+   */
+  color: #92400e;
+
+  /*
+   * 超长裁掉。
+   */
+  overflow: hidden;
+
+  /*
+   * 裁口给省略号。
+   */
+  text-overflow: ellipsis;
+
+  /*
+   * 永不折行(折行 = 文案太长,删词)。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 升级卡的蓝钮。
+ */
+.proBtn {
+  /*
+   * 钮不参与伸缩。
+   */
+  flex: none;
+
+  /*
+   * 行动蓝实底。
+   */
+  background: #2563eb;
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 内衬。
+   */
+  padding: 7px 13px;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 实底钮无描边。
+   */
+  border: none;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 钮文字不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 打码锁区:悬浮升级卡的参照系。
+ */
+.lockRows {
+  /*
+   * 悬浮卡 position:absolute 的参照系。
+   */
+  position: relative;
+
+  /*
+   * 与上文留 6px。
+   */
+  margin-top: 6px;
+}
+
+/*
+ * 一行打码(糊掉的占位假词)。
+ */
+.lockRow {
+  /*
+   * 高斯糊 5px,只见纹理不见字。
+   */
+  filter: blur(5px);
+
+  /*
+   * 禁选中(选中能看清就白糊了)。
+   */
+  user-select: none;
+
+  /*
+   * 假词灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 假词字号(和真结论行一致,行高才像)。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 行内衬。
+   */
+  padding: 7px 0;
+
+  /*
+   * 行间细线。
+   */
+  border-bottom: 1px solid #f3f4f6;
+}
+
+/*
+ * 职位卡(手机形态,全站唯一一套 —— 2026-08-02 Frank「以后这个定死」):
+ * 左列身份、右列数字,右对齐在卡片流里连成竖线,手指下滑只走右边就能比(#148)。
+ */
+.jcard {
+  /*
+   * 浅灰描边。
+   */
+  border: 1px solid #e5e7eb;
+
+  /*
+   * 圆角(和白卡壳同 12)。
+   */
+  border-radius: 12px;
+
+  /*
+   * 内衬。
+   */
+  padding: 10px 12px;
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+}
+
+/*
+ * 卡头行:职位名在左、操作位在右。
+ */
+.top {
+  /*
+   * 两端排开。
+   */
+  display: flex;
+
+  /*
+   * 名在左钮在右。
+   */
+  justify-content: space-between;
+
+  /*
+   * 名与钮的间距。
+   */
+  gap: 8px;
+
+  /*
+   * 按基线对齐。
+   */
+  align-items: baseline;
+}
+
+/*
+ * 职位名:蓝字 14.5 不加粗(蓝色已说明可点,再加粗是同一件事说两遍)。
+ */
+.title {
+  /*
+   * 职位名字号。
+   */
+  font-size: 14.5px;
+
+  /*
+   * flex 子项允许被压窄。
+   */
+  min-width: 0;
+}
+
+/*
+ * 右上操作位(星标等)。
+ */
+.actSlot {
+  /*
+   * 多颗钮排一行。
+   */
+  display: flex;
+
+  /*
+   * 钮间距。
+   */
+  gap: 8px;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 不许被压缩。
+   */
+  flex-shrink: 0;
+}
+
+/*
+ * NOC 官方职业名译名小注。
+ */
+.note {
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 小注灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 与职位名贴近。
+   */
+  margin-top: 1px;
+
+  /*
+   * 小注行高。
+   */
+  line-height: 1.4;
+}
+
+/*
+ * 左右两格行(身份在左、数字在右)。
+ */
+.row {
+  /*
+   * 与上一行留 2px。
+   */
+  margin-top: 2px;
+
+  /*
+   * 两端排开。
+   */
+  display: flex;
+
+  /*
+   * 左格在左右格在右。
+   */
+  justify-content: space-between;
+
+  /*
+   * 按基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 两格间距。
+   */
+  gap: 10px;
+}
+
+/*
+ * 左格(身份:公司+徽章、地点)。
+ */
+.left {
+  /*
+   * 允许被压窄。
+   */
+  min-width: 0;
+
+  /*
+   * 公司名与徽章排一行。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 名与徽章的间距。
+   */
+  gap: 6px;
+
+  /*
+   * 挤不下时徽章掉下一行。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 右格(数字:薪资、时间;右对齐连成竖线)。
+ */
+.right {
+  /*
+   * 不许被压缩(数字列是对比的锚)。
+   */
+  flex-shrink: 0;
+
+  /*
+   * 右对齐。
+   */
+  text-align: right;
+}
+
+/*
+ * 公司名。
+ */
+.co {
+  /*
+   * 公司名字号。
+   */
+  font-size: 12.5px;
+}
+
+/*
+ * 薪资:绿粗不折行。
+ */
+.pay {
+  /*
+   * 薪资字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 薪资绿。
+   */
+  color: #15803d;
+
+  /*
+   * 加粗(数字列的锚)。
+   */
+  font-weight: 700;
+
+  /*
+   * 金额不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 地点:超长省略。
+ */
+.loc {
+  /*
+   * 地点字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 允许被压窄。
+   */
+  min-width: 0;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 超长裁掉。
+   */
+  overflow: hidden;
+
+  /*
+   * 裁口给省略号。
+   */
+  text-overflow: ellipsis;
+}
+
+/*
+ * 发布时间。
+ */
+.date {
+  /*
+   * 时间字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 时间灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 通道胶囊排(PNP/EE/AIP…)。
+ */
+.chips {
+  /*
+   * 胶囊排一行。
+   */
+  display: flex;
+
+  /*
+   * 胶囊间距。
+   */
+  gap: 6px;
+
+  /*
+   * 与上文留 8px。
+   */
+  margin-top: 8px;
+
+  /*
+   * 挤不下换行。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 卡页脚(更新时间等)。
+ */
+.foot {
+  /*
+   * 与上文留 6px。
+   */
+  margin-top: 6px;
+
+  /*
+   * 页脚小字。
+   */
+  font-size: 11px;
+
+  /*
+   * 页脚灰。
+   */
+  color: #9ca3af;
+}
+
+/*
+ * 卡内可点文本(蓝链无下划线)。
+ */
+.link {
+  /*
+   * 链接蓝。
+   */
+  color: #2563eb;
+
+  /*
+   * 无下划线(全站口径)。
+   */
+  text-decoration: none;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+}
