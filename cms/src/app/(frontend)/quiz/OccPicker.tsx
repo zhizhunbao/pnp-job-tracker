@@ -8,7 +8,7 @@
 // 数据口径照旧(与三问同源,不新写端点):热门清单 = 库里在招量前 24(/api/quiz?top=24),
 // 拿不到退回内置常用清单;搜索 = /api/quiz?q=(≥2 字、250ms 防抖);chip 上挂真在招数。
 import { useEffect, useRef, useState } from 'react'
-import { Search } from '@/components/field'
+import { Search } from '@/components/search'
 
 import { POPULAR_NOCS } from '../account/profileOptions'
 import { IconCheck, IconSearch, IconX } from '@/components/icons'

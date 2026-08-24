@@ -4,6 +4,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { ACTION_KINDS } from './constants'
 import type { BtnClsIn, ButtonKind } from './types'
 import css from './button.module.css'
 
@@ -22,18 +23,49 @@ export function btnClsOf(x: BtnClsIn): string {
     ai: css.ai,
     ghost: css.ghost,
     danger: css.danger,
+    icon: css.icon,
+    iconGhost: css.iconGhost,
+    box: css.box,
+    step: css.step,
+    tab: css.tab,
+    drop: css.drop,
+    seg: css.seg,
+    menu: css.menu,
+    groupRow: css.groupRow,
+    dot: css.dot,
+    linkText: css.linkText,
+    linkDim: css.linkDim,
   }
-  const cls = [css.btn]
-  if (x.sm) {
-    cls.push(css.sm)
-  } else if (x.lg) {
-    cls.push(css.lg)
+  const cls = []
+  // 基座只给**行动钮**:控件钮的形状由自己那一档定死,套上基座反而要一条条盖回去。
+  if (isAction(x.kind)) {
+    cls.push(css.btn)
+    if (x.sm) {
+      cls.push(css.sm)
+    } else if (x.lg) {
+      cls.push(css.lg)
+    }
+  } else {
+    cls.push(css.ctl)
   }
   cls.push(kindCls[x.kind])
+  if (x.active) {
+    cls.push(css.on)
+  }
   if (x.className != null) {
     cls.push(x.className)
   }
   return cls.join(' ')
+}
+
+/**
+ * 是不是行动钮(六个带颜色语义的);其余是控件钮,形状由自己那一档定。
+ *
+ * @param kind 变体。
+ * @returns 是行动钮吗。
+ */
+function isAction(kind: ButtonKind): boolean {
+  return ACTION_KINDS.includes(kind)
 }
 
 /**

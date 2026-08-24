@@ -32,13 +32,25 @@ export function Button({
   title,
   style,
   className,
+  ariaLabel,
+  active = false,
+  expanded,
+  haspopup,
+  role,
+  tabIndex,
+  id,
+  ariaControls,
+  ariaSelected,
+  onKeyDown,
+  btnRef,
+  type,
   children,
 }: ButtonIn) {
   let extraCls: string | null = null
   if (className != null) {
     extraCls = className
   }
-  const cls = btnClsOf({ kind, sm, lg, className: extraCls })
+  const cls = btnClsOf({ kind, sm, lg, active, className: extraCls })
   if (href != null && href !== '' && disabled === false) {
     return (
       <LinkButton href={href} target={target} title={title} className={cls} style={style}>{children}</LinkButton>
@@ -47,7 +59,18 @@ export function Button({
   return (
     <button disabled={disabled}
       onClick={onClick}
+      onKeyDown={onKeyDown}
       title={title}
+      aria-label={ariaLabel}
+      aria-haspopup={haspopup}
+      aria-expanded={expanded}
+      aria-controls={ariaControls}
+      aria-selected={ariaSelected}
+      role={role}
+      tabIndex={tabIndex}
+      id={id}
+      ref={btnRef}
+      type={type}
       className={cls}
       // eslint-disable-next-line react/forbid-dom-props -- 调用方几何微调的过渡口(见文件头)
       style={style}>{children}</button>

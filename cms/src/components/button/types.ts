@@ -6,10 +6,27 @@
  */
 
 /**
- * 按钮变体(颜色语义):primary 普通行动蓝 / pro 付费琥珀 / secondary 白底描边 /
- * ai AI 功能靛蓝 / ghost 弱操作幽灵 / danger 危险红。
+ * 按钮变体。全站的钮都在这个域里(2026-08-24 Frank 拍板「用我自己的 button 域
+ * 把所有 button 管理起来」;「页面本身就有这么多按钮,18 个变体怎么了」)——
+ * 变体多不是坏事,是如实反映页面上真有这么多种钮,而且每一种都有名字有注释、
+ * 值在一个 css 里,不再散成 20 个文件各写各的。
+ *
+ * ── 六个**行动钮**(有颜色语义,按「这个动作有多重」选)──
+ * primary 普通行动蓝 / pro 付费琥珀 / secondary 白底描边 / ai AI 功能靛蓝 /
+ * ghost 弱操作幽灵 / danger 危险红。
+ *
+ * ── 十二个**控件钮**(形状由所在控件定,颜色语义不适用)──
+ * icon 弹框窗口钮(灰底方角 30) / iconGhost 悬浮清除钮(透明底 hover 才显) /
+ * box 描边方钮(汉堡/抽屉关闭,44 触控靶) / step 翻页箭头(描边小方) /
+ * tab 选项卡页签(下划线态) / drop 下拉触发器(纯文字带 caret) /
+ * seg 分段钮(语言切换那种挤成一组的) / menu 菜单条目(通栏左对齐) /
+ * groupRow 抽屉分组行(通栏两端排开 44 高) / dot 轮播圆点(6px 透明热区) /
+ * linkText 文字钮(蓝字无底,如「返回登录」) / linkDim 弱文字钮(灰字,如「忘记密码」)。
  */
-export type ButtonKind = 'primary' | 'pro' | 'secondary' | 'ai' | 'ghost' | 'danger'
+export type ButtonKind =
+  | 'primary' | 'pro' | 'secondary' | 'ai' | 'ghost' | 'danger'
+  | 'icon' | 'iconGhost' | 'box' | 'step' | 'tab' | 'drop'
+  | 'seg' | 'menu' | 'groupRow' | 'dot' | 'linkText' | 'linkDim'
 
 /**
  * Button 的 props。
@@ -56,6 +73,66 @@ export type ButtonIn = {
   title?: string
 
   /**
+   * 无障碍名(纯图标钮必须给 —— 读屏只能靠它说出这个钮是干什么的)。
+   */
+  ariaLabel?: string
+
+  /**
+   * 当前态(页签/分段/下拉触发器的高亮:亮起来那一档)。
+   */
+  active?: boolean
+
+  /**
+   * 弹层类钮的展开态(挂 aria-expanded,读屏才知道点开没)。
+   */
+  expanded?: boolean
+
+  /**
+   * 弹层类钮的 aria-haspopup 值(菜单钮给 'menu')。
+   */
+  haspopup?: 'menu'
+
+  /**
+   * 语义角色(页签给 'tab' —— WAI-ARIA 的选项卡模式要它)。
+   */
+  role?: 'tab'
+
+  /**
+   * 键盘序号(页签组里只有当前项进 Tab 序列,其余 -1)。
+   */
+  tabIndex?: number
+
+  /**
+   * 元素 id(页签与面板靠它对上 aria-controls)。
+   */
+  id?: string
+
+  /**
+   * 受控的面板 id(页签指向自己那一面)。
+   */
+  ariaControls?: string
+
+  /**
+   * 选中态(页签的 aria-selected)。
+   */
+  ariaSelected?: boolean
+
+  /**
+   * 键盘事件(页签组的 ← → Home End 导航)。
+   */
+  onKeyDown?: (e: React.KeyboardEvent) => void
+
+  /**
+   * 元素 ref(页签组要把焦点移过去)。
+   */
+  btnRef?: (el: HTMLButtonElement | null) => void
+
+  /**
+   * 表单内的钮默认是 submit —— 传 'button' 明确不提交(表单里的辅助钮必给)。
+   */
+  type?: 'button' | 'submit'
+
+  /**
    * 调用方几何微调(宽度/边距这类;过渡口 —— 消费页形制化后逐个收进各页的类)。
    */
   style?: React.CSSProperties
@@ -89,6 +166,11 @@ export type BtnClsIn = {
    * 大一号档。
    */
   lg: boolean
+
+  /**
+   * 当前态(页签/分段/下拉触发器亮起来那一档)。
+   */
+  active: boolean
 
   /**
    * 调用方追加类;null = 没有。

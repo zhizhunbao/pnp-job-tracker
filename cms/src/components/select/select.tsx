@@ -1,6 +1,6 @@
 'use client'
 /**
- * field 域的量宽自适应下拉(2026-08-24 收拢三份逐字双胞胎:职位板 Sel /
+ * select 域的量宽自适应下拉(2026-08-24 收拢三份逐字双胞胎:职位板 Sel /
  * 雇主板 Sel / 就业把脉 SbSel —— 把脉那份当初注释着「不 import Jobs.Sel
  * 免把整个职位板拖进本页包」,独立域正是那句话欠的解)。
  *
@@ -14,9 +14,10 @@
  * @author Frank
  * @time 2026-08-24 10:00:00
  */
+import { inputClsOf, SIZE_DEFAULT } from '@/components/input'
 import { listOf, shownOf } from './functions'
 import type { SelectIn, SelectSize } from './types'
-import css from './field.module.css'
+import css from './select.module.css'
 
 /**
  * 量宽下拉。
@@ -49,7 +50,9 @@ export function Select({ value, onChange, opts, all, labelOf, size = 'sm', tap =
     lg: `${css.box} ${css.lg}`,
   }
   const boxCls = sizeCls[size]
-  let selCls = `${css.field} ${css.overlay}`
+  // 镜像与真 select 吃同一份输入件基座(算一次两处共用 —— 分开算迟早走散)
+  const base = inputClsOf({ size: SIZE_DEFAULT, search: false, extra: null })
+  let selCls = `${base} ${css.overlay}`
   if (tap) {
     selCls = `${selCls} ${css.tap}`
   }
@@ -59,7 +62,7 @@ export function Select({ value, onChange, opts, all, labelOf, size = 'sm', tap =
   }
   return (
     <span className={boxCls}>
-      <span aria-hidden className={`${css.field} ${css.measure}`}>{shown}</span>
+      <span aria-hidden className={`${base} ${css.measure}`}>{shown}</span>
       <select value={value} onChange={change} className={selCls}>
         <option value="">{all}</option>
         {opels}

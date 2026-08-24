@@ -13,7 +13,8 @@ import {
   EMP_PROGRAMS, type EmployerFilters, type EmployerPage, type EmployerRow,
 } from '@/lib/employers'
 import { pickName } from '@/lib/noc'
-import { Search, Select } from '@/components/field'
+import { Search } from '@/components/search'
+import { Select } from '@/components/select'
 import { BackButton } from '@/components/button'
 import { useLang } from '@/components/i18n'
 import { Footer } from '@/components/footer'

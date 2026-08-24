@@ -14,7 +14,7 @@
 // SSR 瘦身手法守住:职业大表(occ ~3400 行)不进 HTML,挂载后拉 /api/stats/market(与旧版同一端点)。
 import { useEffect, useMemo, useState } from 'react'
 import { ymd } from '@/lib/time'
-import { Select } from '@/components/field'
+import { Select } from '@/components/select'
 
 import { makeT, type Lang, type TFn } from '@/lib/i18n'
 import { eeKeyDisplay, drawStreamNote, streamDisplay } from '@/lib/jobs'

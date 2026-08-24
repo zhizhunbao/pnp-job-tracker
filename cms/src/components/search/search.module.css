@@ -1,0 +1,119 @@
+/*
+ * search 域的私有样式(2026-08-24 由 field 域拆出)。
+ * 输入框本体的基座/尺寸/搜索留位在 input 域 —— 这里只有放大镜与清除钮。
+ */
+
+/*
+ * 搜索框外壳(图标与清除钮的定位参照系)。
+ */
+.searchBox {
+  /*
+   * 图标/清除钮绝对定位的参照系。
+   */
+  position: relative;
+}
+
+/*
+ * 左侧放大镜(纯装饰,不吃点击 —— 点它应该聚焦输入框,而不是什么都不发生)。
+ */
+.searchIcon {
+  /*
+   * 钉在框内左侧。
+   */
+  position: absolute;
+
+  /*
+   * 距左 12。
+   */
+  left: 12px;
+
+  /*
+   * 竖直居中锚点。
+   */
+  top: 50%;
+
+  /*
+   * 居中回拉。
+   */
+  transform: translateY(-50%);
+
+  /*
+   * 图标灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 点击穿透到输入框。
+   */
+  pointer-events: none;
+}
+
+/*
+ * 右侧清除钮(有值才渲)。
+ */
+.searchClear {
+  /*
+   * 钉在框内右侧。
+   */
+  position: absolute;
+
+  /*
+   * 距右 5。
+   */
+  right: 5px;
+
+  /*
+   * 竖直居中锚点。
+   */
+  top: 50%;
+
+  /*
+   * 居中回拉。
+   */
+  transform: translateY(-50%);
+
+  /*
+   * 触控靶宽。
+   */
+  width: 30px;
+
+  /*
+   * 触控靶高。
+   */
+  height: 30px;
+
+  /*
+   * 无描边。
+   */
+  border: 0;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 透明底(hover 才显)。
+   */
+  background: transparent;
+
+  /*
+   * 图标色。
+   */
+  color: #6b7280;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 清除钮 hover:浅灰底(可点才有态)。
+ */
+.searchClear:hover {
+  /*
+   * 浅灰底。
+   */
+  background: #f3f4f6;
+}

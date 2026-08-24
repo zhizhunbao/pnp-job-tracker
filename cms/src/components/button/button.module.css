@@ -299,3 +299,33 @@
    */
   white-space: nowrap;
 }
+
+/*
+ * 控件钮的共同底(只有这三条:可点手型、继承字体、盒模型 —— 形状各归各档)。
+ */
+.ctl {
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 继承页面字体(button 默认用系统 UI 字体,和正文不一致)。
+   */
+  font-family: inherit;
+
+  /*
+   * 内衬与描边算进尺寸。
+   */
+  box-sizing: border-box;
+}
+
+/*
+ * 控件钮禁用态:还原光标(变浅由各档自己定 —— 翻页箭头变灰、页签不禁用)。
+ */
+.ctl:disabled {
+  /*
+   * 不可点不给手型。
+   */
+  cursor: default;
+}

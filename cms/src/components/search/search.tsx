@@ -1,6 +1,6 @@
 'use client'
 /**
- * field 域的搜索框:左放大镜 + 有值时右清除钮(形态来自 quiz/OccPicker 手搭的那份,
+ * search 域的搜索框:左放大镜 + 有值时右清除钮(形态来自 quiz/OccPicker 手搭的那份,
  * 2026-08-24 立件时收编 —— 那份的样式还是组件里拼 css 字符串注入的 <style> 标签)。
  * 图标不吃点击(点它应该聚焦输入框);清除钮 30×30 触控靶。
  *
@@ -8,10 +8,10 @@
  * @time 2026-08-24 14:00:00
  */
 import { IconSearch, IconX } from '@/components/icons'
+import { inputClsOf } from '@/components/input'
 import { CLEAR_ARIA } from './constants'
-import { inputClsOf } from './functions'
 import type { SearchIn } from './types'
-import css from './field.module.css'
+import css from './search.module.css'
 
 /**
  * 搜索框。
