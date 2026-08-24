@@ -256,3 +256,18 @@ export const API_RESET = '/api/users/reset-password'
  * mousedown 事件名(平台定值,点外面关弹层用)。
  */
 export const EV_MOUSEDOWN = 'mousedown'
+
+/**
+ * 昵称与邮箱都缺席时的展示兜底(em dash 占位)。
+ */
+export const NAME_FALLBACK = '—'
+
+/**
+ * 邮箱的分隔符(取 @ 前缀当短名用)。
+ */
+export const MAIL_AT = '@'
+
+/**
+ * Pro 层级的展示词(到期日拼接见 accountmenu;「·」分隔待 Frank 对文案铁律拍板)。
+ */
+export const PRO_LABEL = 'Pro'

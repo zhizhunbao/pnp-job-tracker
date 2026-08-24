@@ -1,4 +1,12 @@
 {
+  // 组件域的文件嵌套(2026-08-24 Frank「tsx css 和其他 ts 混一起看着乱」):
+  // 五个 ts 抽屉 + module.css 收进 index.ts 底下折叠 —— 资源管理器里一个域
+  // 默认只见「index.ts + 各组件 tsx」,点开 index 才见抽屉。纯编辑器视图,不动磁盘结构。
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    "index.ts": "constants.ts, variables.ts, types.ts, functions.ts, hooks.ts, *.module.css, server.ts"
+  },
   "npm.packageManager": "pnpm",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[typescript]": {

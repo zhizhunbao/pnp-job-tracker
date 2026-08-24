@@ -14,7 +14,7 @@ import { useRef, useState } from 'react'
 import { useEscClose } from '@/components/modal'
 import { AccountMenuPop } from './accountmenupop'
 import { Avatar } from './avatar'
-import { AVATAR_SIZE_MENU } from './constants'
+import { AVATAR_SIZE_MENU, MAIL_AT, NAME_FALLBACK, PRO_LABEL } from './constants'
 import { useClickOutside } from './hooks'
 import type { AccountMenuIn } from './types'
 import css from './auth.module.css'
@@ -46,11 +46,11 @@ export function AccountMenu({ t, email, displayName, avatar, isPro, proUntil, on
     }
   }
 
-  let shortName = '—'
+  let shortName = NAME_FALLBACK
   if (displayName != null && displayName.trim() !== '') {
     shortName = displayName.trim()
   } else if (email != null) {
-    shortName = email.split('@')[0]
+    shortName = email.split(MAIL_AT)[0]
   }
   let btnTitle = ''
   if (displayName != null && displayName.trim() !== '') {
@@ -62,9 +62,9 @@ export function AccountMenu({ t, email, displayName, avatar, isPro, proUntil, on
   if (menu) {
     btnCls = `${css.menuBtn} ${css.menuBtnOn}`
   }
-  let proText = 'Pro'
+  let proText = PRO_LABEL
   if (proUntil != null && proUntil !== '') {
-    proText = `Pro · ${proUntil}`
+    proText = `${PRO_LABEL} · ${proUntil}`
   }
   let onUpgrade: (() => void) | null = null
   if (isPro === false && onPricing != null) {
