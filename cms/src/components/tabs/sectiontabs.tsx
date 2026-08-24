@@ -10,6 +10,7 @@
  * @time 2026-08-24 04:30:00
  */
 import type { SectionTabsIn } from './types'
+import { LinkButton } from '@/components/button'
 import css from './tabs.module.css'
 
 /**
@@ -31,7 +32,7 @@ export function SectionTabs({ tabs, tone = null }: SectionTabsIn) {
       )
     } else {
       items.push(
-        <a key={tb.href} href={tb.href} className={`${css.secTab} tapPad`}>{tb.label}</a>,
+        <LinkButton key={tb.href} href={tb.href} className={`${css.secTab} tapPad`}>{tb.label}</LinkButton>,
       )
     }
   }

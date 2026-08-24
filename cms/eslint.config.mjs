@@ -2065,6 +2065,10 @@ const eslintConfig = [
     plugins: { local: localRules, '@stylistic': stylistic },
     rules: {
       'react/forbid-dom-props': ['error', { forbid: [{ propName: 'style', message: '静态样式进 module.css;运行时数据逐行特批并写理由' }] }],
+      // 裸 <a> 禁(2026-08-24 Frank「弄个 button 实际是 a 标签,统一,不裸写 a 标签」
+      // 「都放到 button 里面」):一律经 button 族的 LinkButton(rel 逻辑收拢在它一处;
+      // Button href/BackButton 体内也经它);全站唯一裸 <a> 在 linkbutton.tsx(下面单独关闸)。
+      'react/forbid-elements': ['error', { forbid: [{ element: 'a', message: '裸 <a> 禁:经 button 族的 LinkButton(钮形走 Button href/BackButton)' }] }],
       'local/component-file-names': 'error',
       'local/component-name-match': 'error',
       'react/no-multi-comp': 'error',
@@ -2096,6 +2100,11 @@ const eslintConfig = [
       '@stylistic/comma-dangle': ['error', 'always-multiline'],
       '@stylistic/no-trailing-spaces': 'error',
     },
+  },
+  {
+    // ── linkbutton 是裸 <a> 的唯一出口:关掉禁令(别处一律经它)──
+    files: ['src/components/button/linkbutton.tsx'],
+    rules: { 'react/forbid-elements': 'off' },
   },
   {
     // ── 组件域闸 B:常量表形制(Frank「json 也格式化,换行 对齐」):逐键一行 ──

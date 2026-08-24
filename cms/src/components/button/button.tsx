@@ -11,6 +11,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { LinkButton } from './linkbutton'
 import { btnClsOf } from './functions'
 import type { ButtonIn } from './types'
 
@@ -39,20 +40,8 @@ export function Button({
   }
   const cls = btnClsOf({ kind, sm, lg, className: extraCls })
   if (href != null && href !== '' && disabled === false) {
-    if (target != null) {
-      return (
-        <a href={href}
-          target={target}
-          rel="noreferrer"
-          title={title}
-          className={cls}
-          // eslint-disable-next-line react/forbid-dom-props -- 调用方几何微调的过渡口(见文件头)
-          style={style}>{children}</a>
-      )
-    }
     return (
-      // eslint-disable-next-line react/forbid-dom-props -- 调用方几何微调的过渡口(见文件头)
-      <a href={href} title={title} className={cls} style={style}>{children}</a>
+      <LinkButton href={href} target={target} title={title} className={cls} style={style}>{children}</LinkButton>
     )
   }
   return (

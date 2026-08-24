@@ -13,6 +13,7 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { IconX } from '@/components/icons'
+import { LinkButton } from '@/components/button'
 
 import {
   A_EMPLOYERS,
@@ -73,15 +74,21 @@ export function MobileDrawer({ t, active, onClose }: MobileDrawerIn) {
           <button className={css.drawerClose} onClick={onClose} aria-label={t('nav.menu')}><IconX /></button>
         </div>
         <nav className={css.drawerNav}>
-          <a href={PATH_HOME} className={withOn({ base: css.drawerItem, on: onHome })}>{t('detail.crumbHome')}</a>
-          <a href={PATH_START} className={withOn({ base: css.drawerItem, on: onStart })}>{t('pulse.entry')}</a>
-          <a href={PATH_HOME} className={withOn({ base: css.drawerItem, on: onJobs })}>{t('nav.jobs')}</a>
-          <a href={PATH_PLAN_PR} className={withOn({ base: css.drawerItem, on: active === A_PATHWAYS })}>
+          <LinkButton href={PATH_HOME} className={withOn({ base: css.drawerItem, on: onHome })}>
+            {t('detail.crumbHome')}
+          </LinkButton>
+          <LinkButton href={PATH_START} className={withOn({ base: css.drawerItem, on: onStart })}>
+            {t('pulse.entry')}
+          </LinkButton>
+          <LinkButton href={PATH_HOME} className={withOn({ base: css.drawerItem, on: onJobs })}>
+            {t('nav.jobs')}
+          </LinkButton>
+          <LinkButton href={PATH_PLAN_PR} className={withOn({ base: css.drawerItem, on: active === A_PATHWAYS })}>
             {t('plan.pr.title')}
-          </a>
-          <a href={PATH_EMPLOYERS} className={withOn({ base: css.drawerItem, on: active === A_EMPLOYERS })}>
+          </LinkButton>
+          <LinkButton href={PATH_EMPLOYERS} className={withOn({ base: css.drawerItem, on: active === A_EMPLOYERS })}>
             {t('nav.employers')}
-          </a>
+          </LinkButton>
           <DrawerGroup groupKey="lib"
             label={t('nav.library')}
             openKey={openGrp}

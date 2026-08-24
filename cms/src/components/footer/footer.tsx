@@ -9,6 +9,7 @@
  * @time 2026-08-24 02:30:00
  */
 import { COPYRIGHT, LEGAL_LINKS } from './constants'
+import { LinkButton } from '@/components/button'
 import type { FooterIn } from './types'
 import css from './footer.module.css'
 
@@ -21,7 +22,7 @@ import css from './footer.module.css'
 export function Footer({ t }: FooterIn) {
   const links = []
   for (const l of LEGAL_LINKS) {
-    links.push(<a key={l.href} href={l.href} className="tapPad">{t(l.key)}</a>)
+    links.push(<LinkButton key={l.href} href={l.href} className="tapPad">{t(l.key)}</LinkButton>)
   }
   return (
     <footer className={css.foot}>

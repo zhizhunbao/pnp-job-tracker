@@ -8,6 +8,7 @@
  * @time 2026-08-24 08:00:00
  */
 import { IconChevronDown } from '@/components/icons'
+import { LinkButton } from '@/components/button'
 import { withOn } from './functions'
 import { useHoverOpen } from './hooks'
 import type { NavDropIn } from './types'
@@ -28,7 +29,7 @@ export function NavDrop({ label, icon, highlight, items }: NavDropIn) {
       on = true
     }
     links.push(
-      <a key={it.href} href={it.href} className={withOn({ base: css.dropItem, on })}>{it.label}</a>,
+      <LinkButton key={it.href} href={it.href} className={withOn({ base: css.dropItem, on })}>{it.label}</LinkButton>,
     )
   }
   return (

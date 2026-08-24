@@ -110,3 +110,49 @@ export type BackButtonIn = {
    */
   label: string
 }
+
+/**
+ * LinkButton 的 props。
+ */
+export type LinkButtonIn = {
+  /**
+   * 去处(真 <a>:要被爬到、能新开页/中键点;这是它存在的理由)。
+   * 可缺的唯一场景:onClick 拦截链的遗留形态(能给尽量给 —— 没 href 爬虫看不见它)。
+   */
+  href?: string
+
+  /**
+   * 点击回调(拦截成弹框/回放历史这类;可省)。
+   */
+  onClick?: (e: React.MouseEvent) => void
+
+  /**
+   * 新开页目标(传了自动补 rel="noreferrer" —— 这条原先在三处逐字抄)。
+   */
+  target?: string
+
+  /**
+   * 悬停提示(原生 title 属性;可省)。
+   */
+  title?: string
+
+  /**
+   * 长相归调用域(link 只管标签语义,不管样式)。
+   */
+  className?: string
+
+  /**
+   * 无障碍名(图标链接这类没有可读文本时传)。
+   */
+  ariaLabel?: string
+
+  /**
+   * 调用方几何微调(Button href 形态的过渡口;消费页形制化后收)。
+   */
+  style?: React.CSSProperties
+
+  /**
+   * 链接内容。
+   */
+  children: React.ReactNode
+}

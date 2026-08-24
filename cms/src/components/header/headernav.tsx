@@ -10,6 +10,7 @@
  * @time 2026-08-24 08:00:00
  */
 import { IconChart, IconClipboard, IconCompass, IconNews, IconUsers } from '@/components/icons'
+import { LinkButton } from '@/components/button'
 import {
   A_EMPLOYERS,
   A_JOBS,
@@ -46,14 +47,18 @@ export function HeaderNav({ t, active }: HeaderNavIn) {
   const onNews = active === A_NEWS
   return (
     <div className={css.nav}>
-      <a href={PATH_START} className={withOn({ base: css.navLink, on: onStart })}><IconChart /> {t('pulse.entry')}</a>
-      <a href={PATH_HOME} className={withOn({ base: css.navLink, on: onJobs })}><IconClipboard /> {t('nav.jobs')}</a>
-      <a href={PATH_PLAN_PR} className={withOn({ base: css.navLink, on: active === A_PATHWAYS })}>
+      <LinkButton href={PATH_START} className={withOn({ base: css.navLink, on: onStart })}>
+        <IconChart /> {t('pulse.entry')}
+      </LinkButton>
+      <LinkButton href={PATH_HOME} className={withOn({ base: css.navLink, on: onJobs })}>
+        <IconClipboard /> {t('nav.jobs')}
+      </LinkButton>
+      <LinkButton href={PATH_PLAN_PR} className={withOn({ base: css.navLink, on: active === A_PATHWAYS })}>
         <IconCompass /> {t('plan.pr.title')}
-      </a>
-      <a href={PATH_EMPLOYERS} className={withOn({ base: css.navLink, on: active === A_EMPLOYERS })}>
+      </LinkButton>
+      <LinkButton href={PATH_EMPLOYERS} className={withOn({ base: css.navLink, on: active === A_EMPLOYERS })}>
         <IconUsers /> {t('nav.employers')}
-      </a>
+      </LinkButton>
       <NavDrop label={t('nav.library')}
         icon={<IconUsers />}
         highlight={false}

@@ -7,6 +7,7 @@
  * @time 2026-08-24 08:00:00
  */
 import { IconChevronDown, IconChevronRight } from '@/components/icons'
+import { LinkButton } from '@/components/button'
 import { withOn } from './functions'
 import type { DrawerGroupIn } from './types'
 import css from './header.module.css'
@@ -34,7 +35,7 @@ export function DrawerGroup({ groupKey, label, openKey, onToggle, items }: Drawe
         on = true
       }
       subs.push(
-        <a key={c.href} href={c.href} className={withOn({ base: css.drawerSub, on })}>{c.label}</a>,
+        <LinkButton key={c.href} href={c.href} className={withOn({ base: css.drawerSub, on })}>{c.label}</LinkButton>,
       )
     }
   }

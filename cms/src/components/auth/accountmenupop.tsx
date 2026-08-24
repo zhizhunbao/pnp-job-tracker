@@ -8,6 +8,7 @@
  * @time 2026-08-24 01:30:00
  */
 import { IconClipboard, IconCompass, IconSave, IconSettings, IconStar, IconTarget, IconUser } from '@/components/icons'
+import { LinkButton } from '@/components/button'
 import {
   PATH_ACCOUNT,
   PATH_ACCOUNT_FAVS,
@@ -30,7 +31,7 @@ import css from './auth.module.css'
 export function AccountMenuPop({ t, email, shortName, isPro, proText, onUpgrade }: AccountMenuPopIn) {
   return (
     <div role="menu" className={css.menuPop}>
-      <a href={PATH_ACCOUNT} className={css.menuHead}>
+      <LinkButton href={PATH_ACCOUNT} className={css.menuHead}>
         <div className={css.menuName}>
           {shortName}
           <span className={css.menuPlan}>
@@ -39,17 +40,17 @@ export function AccountMenuPop({ t, email, shortName, isPro, proText, onUpgrade 
           </span>
         </div>
         <div className={css.menuMail}>{email}</div>
-      </a>
+      </LinkButton>
       <div className={css.menuSect}>{t('menu.sect.job')}</div>
-      <a href={PATH_MATCH} className={css.menuItem}><IconTarget /> {t('mv.entry')}</a>
-      <a href={QUIZ_PATH} className={css.menuItem}><IconCompass /> {t('plan.pr.title')}</a>
-      <a href={PATH_ACCOUNT_FAVS} className={css.menuItem}><IconStar /> {t('fav.title')}</a>
-      <a href={PATH_ACCOUNT_SJOBS} className={css.menuItem}><IconClipboard /> {t('sj.title')}</a>
+      <LinkButton href={PATH_MATCH} className={css.menuItem}><IconTarget /> {t('mv.entry')}</LinkButton>
+      <LinkButton href={QUIZ_PATH} className={css.menuItem}><IconCompass /> {t('plan.pr.title')}</LinkButton>
+      <LinkButton href={PATH_ACCOUNT_FAVS} className={css.menuItem}><IconStar /> {t('fav.title')}</LinkButton>
+      <LinkButton href={PATH_ACCOUNT_SJOBS} className={css.menuItem}><IconClipboard /> {t('sj.title')}</LinkButton>
       <div className={css.menuHr} />
       <div className={css.menuSect}>{t('menu.sect.manage')}</div>
-      <a href={PATH_ACCOUNT_PROFILE} className={css.menuItem}><IconUser /> {t('prof.title')}</a>
-      <a href={PATH_ACCOUNT_SAVED} className={css.menuItem}><IconSave /> {t('ss.title')}</a>
-      <a href={PATH_ACCOUNT} className={css.menuItem}><IconSettings /> {t('nav.acctTab')}</a>
+      <LinkButton href={PATH_ACCOUNT_PROFILE} className={css.menuItem}><IconUser /> {t('prof.title')}</LinkButton>
+      <LinkButton href={PATH_ACCOUNT_SAVED} className={css.menuItem}><IconSave /> {t('ss.title')}</LinkButton>
+      <LinkButton href={PATH_ACCOUNT} className={css.menuItem}><IconSettings /> {t('nav.acctTab')}</LinkButton>
       {onUpgrade != null && (
         <button onClick={onUpgrade} className={`${css.menuItem} ${css.menuItemPro}`}>
           <IconStar /> {t('up.cta2')}

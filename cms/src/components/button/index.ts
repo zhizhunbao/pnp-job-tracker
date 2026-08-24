@@ -8,4 +8,5 @@
 export { BackButton } from './backbutton'
 export { Button } from './button'
 export { goBackOr } from './functions'
-export type { BackButtonIn, ButtonIn, ButtonKind } from './types'
+export { LinkButton } from './linkbutton'
+export type { BackButtonIn, ButtonIn, ButtonKind, LinkButtonIn } from './types'

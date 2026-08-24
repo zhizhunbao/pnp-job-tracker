@@ -7,6 +7,7 @@
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
+import { LinkButton } from '@/components/button'
 import { PATH_GOOGLE_AUTH } from './constants'
 import { GoogleIcon } from './googleicon'
 import type { GoogleButtonIn } from './types'
@@ -21,9 +22,9 @@ import css from './auth.module.css'
 export function GoogleButton({ t, go }: GoogleButtonIn) {
   return (
     <>
-      <a href={PATH_GOOGLE_AUTH} onClick={go} className={css.googleBtn}>
+      <LinkButton href={PATH_GOOGLE_AUTH} onClick={go} className={css.googleBtn}>
         <GoogleIcon /> {t('acct.google')}
-      </a>
+      </LinkButton>
       <div className={css.orRow}>
         <span className={css.orLine} />{t('acct.orEmail')}<span className={css.orLine} />
       </div>

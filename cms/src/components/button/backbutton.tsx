@@ -6,6 +6,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { LinkButton } from './linkbutton'
 import type { BackButtonIn } from './types'
 import css from './button.module.css'
 
@@ -17,8 +18,8 @@ import css from './button.module.css'
  */
 export function BackButton({ href, label }: BackButtonIn) {
   return (
-    <a href={href} className={css.backButton}>
+    <LinkButton href={href} className={css.backButton}>
       {label}
-    </a>
+    </LinkButton>
   )
 }

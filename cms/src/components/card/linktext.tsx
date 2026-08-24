@@ -7,6 +7,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { LinkButton } from '@/components/button'
 import type { LinkTextIn } from './types'
 import css from './card.module.css'
 
@@ -21,17 +22,13 @@ export function LinkText({ v, className }: LinkTextIn) {
   if (clickable === false) {
     return <span title={v.title} className={className}>{v.text}</span>
   }
-  if (v.target != null) {
-    return (
-      <a href={v.href}
-        title={v.title}
-        onClick={v.onClick}
-        target={v.target}
-        rel="noreferrer"
-        className={`${className} ${css.link}`}>{v.text}</a>
-    )
-  }
   return (
-    <a href={v.href} title={v.title} onClick={v.onClick} className={`${className} ${css.link}`}>{v.text}</a>
+    <LinkButton href={v.href}
+      title={v.title}
+      onClick={v.onClick}
+      target={v.target}
+      className={`${className} ${css.link}`}>
+      {v.text}
+    </LinkButton>
   )
 }
