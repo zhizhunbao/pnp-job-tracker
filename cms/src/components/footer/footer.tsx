@@ -19,14 +19,16 @@ import css from './footer.module.css'
  * @returns 页脚。
  */
 export function Footer({ t }: FooterIn) {
+  const links = []
+  for (const l of LEGAL_LINKS) {
+    links.push(<a key={l.href} href={l.href} className="tapPad">{t(l.key)}</a>)
+  }
   return (
     <footer className={css.foot}>
       <div className={css.inner}>
         <span>{t('foot.disclaimer')}</span>
         <span className={`sfLinks ${css.links}`}>
-          {LEGAL_LINKS.map((l) => (
-            <a key={l.href} href={l.href} className="tapPad">{t(l.key)}</a>
-          ))}
+          {links}
           <span className={css.copy}>{COPYRIGHT}</span>
         </span>
       </div>

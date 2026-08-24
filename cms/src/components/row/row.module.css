@@ -1,0 +1,74 @@
+/*
+ * row 域的私有样式(2026-08-24 自 main.css 的 fact* 三类迁入,值逐格相等;
+ * 原名 factRow/factK/factV,进 module 后隔离开,短名不再撞全局 .row 修饰类)。
+ */
+
+/*
+ * 事实行:一条「标签-值」。
+ */
+.row {
+  /*
+   * 标签与值排一行。
+   */
+  display: flex;
+
+  /*
+   * 标签列与值列的间距。
+   */
+  gap: 10px;
+
+  /*
+   * 上下 3px,行与行之间贴紧。
+   */
+  padding: 3px 0;
+
+  /*
+   * 事实行字号。
+   */
+  font-size: 13px;
+}
+
+/*
+ * 标签列:定宽 88 是全站约定 —— 正因为写死,散在几十处的 Row 才能上下对齐成一条竖线
+ * (与 Grid 的分界:Grid 的列宽是按这一批数据算的,换一批就换宽)。
+ */
+.k {
+  /*
+   * 标签列定宽(全站约定,不许改)。
+   */
+  min-width: 88px;
+
+  /*
+   * 标签灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 行窄时标签列不许被压缩。
+   */
+  flex-shrink: 0;
+}
+
+/*
+ * 值列:吃剩余宽度。
+ */
+.v {
+  /*
+   * 吃掉剩余宽度。
+   */
+  flex: 1;
+
+  /*
+   * 值文字色。
+   */
+  color: #374151;
+
+  /*
+   * 长值(URL/长地址)允许折行,不许撑破行。
+   * break-word 是废弃别名(新写法 overflow-wrap: anywhere),但两者对 flex 子项的
+   * min-content 计算不完全一样 —— 迁移批只搬不改值,换写法留给视检批。
+   */
+
+  /* stylelint-disable-next-line declaration-property-value-keyword-no-deprecated -- 迁移保值 */
+  word-break: break-word;
+}

@@ -11,23 +11,6 @@
 }
 
 /*
- * eyebrow 小字(默认靛蓝;全站实际只有两档色,深档见 .eyebrowDeep)。
- */
-.eyebrow {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  color: #6366f1;
-}
-
-/*
- * eyebrow 深靛蓝档(简历匹配弹框用)。
- */
-.eyebrowDeep {
-  color: #4338ca;
-}
-
-/*
  * 17px 标题单行截断。
  */
 .title {

@@ -32,7 +32,7 @@ export function Pricing({ loggedIn, pro, caps }: { loggedIn: boolean; pro: boole
       <Header lang={lang} setLang={setLangSaved} t={t} />
 
       {/* #67 宽度统一:外轨 Shell 1320;三卡内容轨 1000 居中(#64 三卡比旧对照表宽,760 挤不下) */}
-      <Shell pad="2.5rem 1.25rem 32px">
+      <Shell top={40}>
         <div style={{ maxWidth: 1000, margin: '0 auto' }}>
           <h1 style={{ fontSize: 24, margin: 0, textAlign: 'center' }}>{t('price.title')}</h1>
           <p style={{ fontSize: 13.5, color: '#6b7280', textAlign: 'center', margin: '8px 0 24px' }}>{t('price.sub')}</p>

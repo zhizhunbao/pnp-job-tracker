@@ -1,0 +1,93 @@
+/*
+ * chip 域的私有样式(2026-08-24 自 ui/Chip.tsx 的 chipStyle 迁类,值逐格相等)。
+ */
+
+/*
+ * 筛选药丸基座(可点):默认态白底灰字,选中/强调红叠下面的变体类。
+ */
+.chip {
+  /*
+   * 默认描边(边框色真值在 main.css 的 :root)。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 次级文字色(真值在 main.css 的 :root)。
+   */
+  color: var(--text2);
+
+  /*
+   * 默认不加粗。
+   */
+  font-weight: 400;
+
+  /*
+   * 全圆 = 药丸形(区别于 Tag 的 6px 小圆角 —— Chip 可点,形状上也要分得开)。
+   */
+  border-radius: 999px;
+
+  /*
+   * 上下 4px、左右 12px 内衬。
+   */
+  padding: 4px 12px;
+
+  /*
+   * 筛选项字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 可点的手型光标。
+   */
+  cursor: pointer;
+
+  /*
+   * 药丸文字永不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 选中态:主色实底白字加粗。
+ */
+.active {
+  /*
+   * 主色描边(真值在 main.css 的 :root)。
+   */
+  border-color: var(--primary);
+
+  /*
+   * 主色实底。
+   */
+  background: var(--primary);
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 强调红态(未选中但要引起注意,如「重置筛选」):红描边红字。
+ */
+.hot {
+  /*
+   * 红浅描边。
+   */
+  border-color: #fecaca;
+
+  /*
+   * 红深字。
+   */
+  color: #b91c1c;
+}

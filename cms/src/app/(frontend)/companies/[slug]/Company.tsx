@@ -23,7 +23,7 @@ export default function Company({ company, similar = [], loggedIn }: { company: 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f9fafb' }}>
       <Header lang={lang} setLang={setLang} t={t} loggedIn={loggedIn} />
-      <Shell pad="14px 1.25rem 32px">
+      <Shell top={14}>
         <div style={{ maxWidth: 860, margin: '0 auto' }}>
           {/* 面包屑:职位板 › 省 › 公司(「公司」无独立索引页,不做死链;省作可点筛选) */}
           <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8, lineHeight: 1.7 }}>

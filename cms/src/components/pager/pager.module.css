@@ -1,0 +1,176 @@
+/*
+ * pager 域的私有样式(2026-08-24 自 main.css 第 8 段的 pager* 四类迁入,值逐格相等;
+ * 手机断点的 44px 触控靶随迁,判定记录见 .btn 的媒体块)。
+ */
+
+/*
+ * 翻页行:总数说明在左,‹ x/y › 导航靠右。
+ */
+.pager {
+  /*
+   * 说明与导航排一行。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中对齐。
+   */
+  align-items: center;
+
+  /*
+   * 件与件的间距。
+   */
+  gap: 10px;
+
+  /*
+   * 翻页行字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 次级灰(说明文字)。
+   */
+  color: #6b7280;
+}
+
+/*
+ * 导航组(‹ 页码 ›):推到行右端。
+ */
+.nav {
+  /*
+   * 左 margin 吃掉剩余宽度 = 靠右。
+   */
+  margin-left: auto;
+
+  /*
+   * 三件排一行。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 钮与页码的间距。
+   */
+  gap: 8px;
+}
+
+/*
+ * 页码(x / y):等宽数字,翻页时不跳宽。
+ */
+.num {
+  /*
+   * 等宽数字字形,1 和 8 一样宽,页码变了行宽不抖。
+   */
+  font-variant-numeric: tabular-nums;
+
+  /*
+   * 页码不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 翻页钮(‹ ›):禁用态走 :disabled,不用 JS 算样式。
+ */
+.btn {
+  /*
+   * 浅灰描边。
+   */
+  border: 1px solid #e5e7eb;
+
+  /*
+   * 小圆角。
+   */
+  border-radius: 6px;
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 钮内字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 行高定死,箭头竖直居中。
+   */
+  line-height: 18px;
+
+  /*
+   * 继承页面字体(button 默认用系统 UI 字体,会和页码不一致)。
+   */
+  font-family: inherit;
+
+  /*
+   * 次级灰。
+   */
+  color: #6b7280;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 紧凑内衬。
+   */
+  padding: 2px 10px;
+}
+
+/*
+ * 禁用态(第一页的 ‹、最后一页的 ›):变浅 + 还原光标。
+ */
+.btn:disabled {
+  /*
+   * 禁用浅灰。
+   */
+  color: #d1d5db;
+
+  /*
+   * 不可点就不给手型。
+   */
+  cursor: default;
+}
+
+/*
+ * #276(第 34 轮体检):‹ › 触控靶不足 44px —— 只手机断点抬,字号/桌面态不动。
+ */
+@media (width <= 640px) {
+  .btn {
+    /*
+     * 行内弹性盒,箭头在撑大的靶里仍居中。
+     */
+    display: inline-flex;
+
+    /*
+     * 水平居中。
+     */
+    align-items: center;
+
+    /*
+     * 竖直居中。
+     */
+    justify-content: center;
+
+    /*
+     * 触控靶最小宽(可点区 ≥ 44px 的无障碍底线)。
+     */
+    min-width: 44px;
+
+    /*
+     * 触控靶最小高。
+     */
+    min-height: 44px;
+
+    /*
+     * 左右加宽的内衬。
+     */
+    padding: 2px 14px;
+  }
+}

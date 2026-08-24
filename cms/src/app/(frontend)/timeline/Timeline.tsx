@@ -39,7 +39,7 @@ export function Timeline({ events, cadence, eeCadence }: {
   return (
     <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
       <Header lang={lang} setLang={setLangSaved} t={t} active="news" />
-      <Shell pad="1rem 1.25rem 32px">
+      <Shell top={16}>
         <Banner module="news" icon={<IconNews />} title={t('tl.title')} sub={t('tl.sub')} images={BANNER_IMGS.news} />
         {/* 2026-07-19 Frank 批提案:统一二级 tab 条(与 /news 互为切换) */}
         <SectionTabs color="#0f766e" tabs={[

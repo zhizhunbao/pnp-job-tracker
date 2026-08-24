@@ -21,41 +21,122 @@ export const MODAL_RADIUS = 14
 export const MODAL_SHADOW = '0 24px 60px rgba(0,0,0,.3)'
 
 /**
- * 遮罩规范(fixed 全屏 + 半透黑;不带毛玻璃是拍板)。
+ * 遮罩规范(fixed 全屏 + 半透黑;不带毛玻璃是拍板)。镜像 .scrim 类。
  */
 export const SCRIM = {
+  /**
+   * 钉死在视口上。
+   */
   position: 'fixed',
+
+  /**
+   * 四边贴 0 = 盖满全屏。
+   */
   inset: 0,
+
+  /**
+   * 半透黑(50% 透明度的深灰蓝)。
+   */
   background: 'rgba(17,24,39,.5)',
 } as const
 
 /**
- * 白卡规范(圆角/投影/内滚动收敛)。
+ * 白卡规范(圆角/投影/内滚动收敛)。镜像 .card 类。
  */
 export const CARD = {
+  /**
+   * 给卡内绝对定位的动作排当参照系。
+   */
   position: 'relative',
+
+  /**
+   * 白底。
+   */
   background: '#fff',
+
+  /**
+   * 规范圆角(值见 MODAL_RADIUS)。
+   */
   borderRadius: MODAL_RADIUS,
+
+  /**
+   * 规范投影(值见 MODAL_SHADOW)。
+   */
   boxShadow: MODAL_SHADOW,
+
+  /**
+   * 卡内滚到头不把滚动传给遮罩后面的页面。
+   */
   overscrollBehavior: 'contain',
 } as const
 
 /**
- * 窗口图标钮规范(全屏/关闭/自定义动作三颗一样大才叫一排)。
+ * 窗口图标钮规范(全屏/关闭/自定义动作三颗一样大才叫一排)。镜像 .iconBtn 类。
  */
 export const iconBtnS = {
+  /**
+   * 无描边。
+   */
   border: 'none',
+
+  /**
+   * 浅灰底。
+   */
   background: '#f3f4f6',
+
+  /**
+   * 小圆角。
+   */
   borderRadius: 8,
+
+  /**
+   * 钮宽(三颗一样大)。
+   */
   width: 30,
+
+  /**
+   * 钮高。
+   */
   height: 30,
+
+  /**
+   * 钮内字号(× 号)。
+   */
   fontSize: 16,
+
+  /**
+   * 图标灰。
+   */
   color: '#6b7280',
+
+  /**
+   * 可点手型。
+   */
   cursor: 'pointer',
+
+  /**
+   * 行高压到 1,× 号才竖直居中。
+   */
   lineHeight: 1,
+
+  /**
+   * 动作排挤的时候钮不许被压扁。
+   */
   flexShrink: 0,
+
+  /**
+   * 行内弹性盒:图标居中用。
+   */
   display: 'inline-flex',
+
+  /**
+   * 图标竖直居中。
+   */
   alignItems: 'center',
+
+  /**
+   * 图标水平居中。
+   */
   justifyContent: 'center',
 } as const
 

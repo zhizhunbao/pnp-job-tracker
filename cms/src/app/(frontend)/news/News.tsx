@@ -211,7 +211,7 @@ export function News({ items, hero, cmtCounts }: { items: NewsCard[]; hero: News
       return (
         <>
           {/* 正文轨=Shell 1320(Frank 2026-07-18 宽度统一拍板),原 1100 单轨退役 */}
-          <Shell pad="1rem 1.25rem 32px">
+          <Shell top={16}>
             {/* 页头=Banner 图版(2026-07-31 banner 统一:上距全站 1rem、补 news 图组,原 marginTop:16 包层撤) */}
             {/* 2026-07-19 Frank 批提案:二级导航=统一 SectionTabs(公告|时间线),右槽链接退役 */}
             <Banner module="news" icon={<IconNews />} title={t('news.title')} images={BANNER_IMGS.news} />
@@ -410,7 +410,7 @@ export function NewsDetail({ row, comments, loggedIn }: { row: NewsRow; comments
       const summary = sumCache[lang]
       return (
       // 外轨=Shell 1320(宽度统一拍板);阅读列 860 居中保行长可读
-      <Shell pad="18px 1.25rem 32px">
+      <Shell top={18}>
       <div className="nwRead860">
         <div className="nwBack"><BackLink href="/news" label={t('news.back')} /></div>
         <article className="nwArticle card">

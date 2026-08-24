@@ -874,6 +874,10 @@ const localRules = {
             const neg = node.parent?.type === 'UnaryExpression' && node.parent.operator === '-'
             if (neg && node.value === 1) return
             if (node.parent?.type === 'VariableDeclarator') return          // 就地起名的不算
+            // 2026-08-24 组件查表形态(Frank「这个常量没搬出去啊」定下的形):档位 → 类的
+            // 映射表里,数字**键**就是档位身份(shellClsOf 的 `14: css.top14`),
+            // 完整性由 Record<档位联合, string> 注解管;键不是魔数,值位置照拦。
+            if (node.parent?.type === 'Property' && node.parent.key === node) return
             context.report({ node, messageId: 'magic', data: { n: String(node.value) } })
           },
         }
@@ -1500,6 +1504,22 @@ const REFACTORED = [
   ...API_DONE,
 ]
 
+// 组件域滚动名单(2026-08-24 Frank「先把闸门都定义好,然后再新写域组件」):
+// 已形制化的组件域全量挂组件 A/B 两块闸;形制化一个,加一行。
+// table 不在(tsx 未过深筛,三目/箭头/展开成片,随二筛批进)、icons 不在
+// (原样搬的 lucide 词汇表,形制化另立批)—— 两者只挂基础闸那一块。
+const COMPONENTS = [
+  'src/components/footer/**/*.{ts,tsx}',
+  'src/components/modal/**/*.{ts,tsx}',
+  'src/components/title/**/*.{ts,tsx}',
+  'src/components/shell/**/*.{ts,tsx}',
+  'src/components/tag/**/*.{ts,tsx}',
+  'src/components/chip/**/*.{ts,tsx}',
+  'src/components/row/**/*.{ts,tsx}',
+  'src/components/pager/**/*.{ts,tsx}',
+  'src/components/backlink/**/*.{ts,tsx}',
+]
+
 const eslintConfig = [
   ...nextCoreWebVitals,
   ...nextTypeScript,
@@ -1919,71 +1939,64 @@ const eslintConfig = [
     //   ① 桶把这 66 个也导出:桶就不再是「看一眼知道对外是什么」,这条约定当场作废;
     //   ② 测试直接点文件:桶保持 23 个生产契约,内部件只有测试够得着。
     // 选②。测试不是运行时消费者,它绕过桶**不会**让生产代码的对外面失控;反过来才会。
+    // (lib/chat 本体 2026-08-23 已随 consult 替换删除 —— 上面是立规当时的判例数据,留作「当初为什么」。)
     files: ['tests/**/*.{ts,tsx}'],
     rules: { 'no-restricted-imports': 'off' },
   },
   {
-    // ── 组件域 tsx 闸(2026-08-24 Frank「先创建闸门吧」;滚动名单同 REFACTORED 规矩,
-    // 组件域形制化一个加一行)──
-    // ① style= 禁静态样式(Frank「这些检查出来了吗」):静态样式一律进各域 module.css;
-    //    style= 只许运行时数据(拖拽 transform、测出的列宽、CSS 变量、层级),
-    //    每处逐行特批并写理由 —— 白名单的判据在 modal/table 两域头注。
-    // ② 抽屉名单:组件域只有七个文件名(`<域名>.tsx` + module.css + 五个 ts 抽屉),
-    //    判据在 component-file-names 规则体的注释里。
-    files: [
-      'src/components/footer/**/*.{ts,tsx}',
-      'src/components/table/**/*.{ts,tsx}',
-      'src/components/modal/**/*.{ts,tsx}',
-      'src/components/title/**/*.{ts,tsx}',
-    ],
-    plugins: { local: localRules },
+    // =======================================================================
+    // 组件域闸 A:形制全量(2026-08-24 Frank「先把闸门都定义好,然后再新写域组件」)
+    // =======================================================================
+    // 覆盖 COMPONENTS 滚动名单。一条一个「为什么」:
+    // · style= 禁静态样式(「这些检查出来了吗」):只许运行时数据,逐行特批写理由,
+    //   白名单判据在 modal/table 两域头注;
+    // · 抽屉名单(component-file-names):`<组件小写>.tsx` 多文件 + 五个 ts 抽屉 + index;
+    // · 一个 tsx 一个组件(「只能包含一个 return html 的函数,包含多个还得继续拆」);
+    // · 解构只许同名简写与「= 默认值」(「这些写法不能统一吗」),造对象同名必须简写;
+    // · 三目全禁(tsx 特区已撤,「有值才渲染」用 `x != null && <…>`,二选一提具名小件);
+    // · 大括号 + 括号体换行 + 函数一律声明式(lib 战役同款);
+    // · lib 写法闸同款搬用:禁 !x/x!、禁 ??、禁箭头函数、禁对象展开、禁双重断言、
+    //   禁 class、一个函数一个参数、函数 75 行上限、functions.ts 顶层只许函数、
+    //   functions/routes 禁魔数(查表键放行,样板 shellClsOf);
+    // · 注释闸:文件头(@author/@time)+ 每个声明有注释 + 一律多行形;
+    // · 断行闸(「这种传参 应该多行对齐吧」):超长必断,断开逐属性一行。
+    files: COMPONENTS,
+    plugins: { local: localRules, '@stylistic': stylistic },
     rules: {
       'react/forbid-dom-props': ['error', { forbid: [{ propName: 'style', message: '静态样式进 module.css;运行时数据逐行特批并写理由' }] }],
       'local/component-file-names': 'error',
-      // ③ 解构统一成两种形态(2026-08-24 Frank「这些写法不能统一吗」):同名简写与
-      //    「= 默认值」(和 XxxIn 的 ? 一一对应)。改名(键名: 新名)与嵌套解包禁 ——
-      //    要改名说明该整个收下点着取(普通函数本来就不解包,收 x: XxxIn)。
+      'react/no-multi-comp': 'error',
       'no-restricted-syntax': ['error', {
         selector: 'ObjectPattern > Property[shorthand=false]',
         message: '解构只许同名简写与「= 默认值」两种形态;要改名或嵌套,就整个收下用点取。',
       }],
-      // ④ 造对象侧的同一条统一(现成规则,可 --fix):同名必须简写 ——
-      //    `{ narrow: narrow }` 当场红,和解构侧的 ③ 合成一句话「同名可省,省是义务」。
       'object-shorthand': ['error', 'always'],
-      // ⑤ 一个 tsx 一个组件(2026-08-24 Frank「一个 tsx 文件只能包含一个 return html
-      //    的函数,包含多个还得继续拆」;现成规则):第二个组件出现当场红。
-      'react/no-multi-comp': 'error',
-    },
-  },
-  {
-    // ── 组件域断行闸(2026-08-24 Frank「这种传参 应该多行对齐吧」)──
-    // 超长行必断,断开的对象/解构逐属性一行(props 解构 9 个挤一行就是这条抓的);
-    // 短的内联对象({ x: 0, y: 0 } 这类)不逼着竖排。table 暂缓 —— 它的 tsx 还没过
-    // modal 这套深筛(体内三目/箭头/展开成片),等 table 二筛批一起进。
-    files: [
-      'src/components/footer/**/*.tsx',
-      'src/components/modal/**/*.tsx',
-      'src/components/title/**/*.tsx',
-    ],
-    plugins: { '@stylistic': stylistic },
-    rules: {
+      'no-ternary': 'error',
+      curly: ['error', 'all'],
+      '@stylistic/brace-style': ['error', '1tbs', { allowSingleLine: false }],
+      'func-style': ['error', 'declaration'],
+      'local/no-bang': 'error',
+      'local/no-nullish': 'error',
+      'local/no-arrow-function': 'error',
+      'local/no-object-spread': 'error',
+      'local/no-double-assertion': 'error',
+      'local/no-class': 'error',
+      'local/one-parameter': 'error',
+      'local/function-length': 'error',
+      'local/functions-file-no-variables': 'error',
+      'local/no-magic-number': 'error',
+      'local/file-header': 'error',
+      'local/doc-every-member': 'error',
+      'local/doc-multiline': 'error',
       '@stylistic/max-len': ['error', { code: 120, ignoreUrls: true }],
       '@stylistic/object-property-newline': ['error', { allowAllPropertiesOnSameLine: true }],
       '@stylistic/comma-dangle': ['error', 'always-multiline'],
       '@stylistic/no-trailing-spaces': 'error',
-      // 三目的 tsx 特区撤销(2026-08-24 Frank 问到 title 域最后一处;现成规则):
-      // 「有值才渲染」用 `x != null && <…>`,二选一提成具名小件(样板 MaxIcon)。
-      // table 同断行闸一起暂缓,随 table 二筛批进。
-      'no-ternary': 'error',
     },
   },
   {
-    // ── 组件域常量表形制(Frank「json 也格式化,换行 对齐」):逐键一行,同 lib 四域那块 ──
-    files: [
-      'src/components/footer/constants.ts',
-      'src/components/table/constants.ts',
-      'src/components/modal/constants.ts',
-    ],
+    // ── 组件域闸 B:常量表形制(Frank「json 也格式化,换行 对齐」):逐键一行 ──
+    files: ['src/components/{footer,modal,title,shell,tag,chip,row,pager,backlink}/constants.ts'],
     plugins: { '@stylistic': stylistic },
     rules: {
       '@stylistic/object-curly-newline': ['error', { ObjectExpression: { multiline: true, minProperties: 3 } }],
@@ -1991,6 +2004,22 @@ const eslintConfig = [
       '@stylistic/indent': ['error', 2, { SwitchCase: 1 }],
       '@stylistic/comma-dangle': ['error', 'always-multiline'],
       '@stylistic/no-trailing-spaces': 'error',
+    },
+  },
+  {
+    // ── 组件域闸 C:table 基础闸(tsx 未过深筛,只挂当下已达标的几条;
+    //    深筛完成后从这挪进 COMPONENTS 名单)──
+    files: ['src/components/table/**/*.{ts,tsx}'],
+    plugins: { local: localRules },
+    rules: {
+      'react/forbid-dom-props': ['error', { forbid: [{ propName: 'style', message: '静态样式进 module.css;运行时数据逐行特批并写理由' }] }],
+      'local/component-file-names': 'error',
+      'react/no-multi-comp': 'error',
+      'no-restricted-syntax': ['error', {
+        selector: 'ObjectPattern > Property[shorthand=false]',
+        message: '解构只许同名简写与「= 默认值」两种形态;要改名或嵌套,就整个收下用点取。',
+      }],
+      'object-shorthand': ['error', 'always'],
     },
   },
   {

@@ -1,39 +1,29 @@
 /**
- * title 域的形状:标题块的 props 契约。
+ * title 域的形状:两种标题变体的 props 契约。
  *
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
 
 /**
- * Eyebrow 的 props。
+ * Title(页面二级标题)的 props。
  */
-export type EyebrowIn = {
+export type TitleIn = {
   /**
-   * 小字内容;null/没传 = 整块不渲染。
+   * 右槽(可挂「更多 →」这类链接;可省)。
    */
-  eyebrow: React.ReactNode
+  right?: React.ReactNode
 
   /**
-   * 是否深靛蓝档。
+   * 标题文字。
    */
-  deep: boolean
+  children: React.ReactNode
 }
 
 /**
- * ModalTitle 的 props。
+ * ModalTitle(弹框标题)的 props。
  */
 export type ModalTitleIn = {
-  /**
-   * eyebrow 小字(可省)。
-   */
-  eyebrow?: React.ReactNode
-
-  /**
-   * eyebrow 深靛蓝档(默认靛蓝;全站只有简历匹配弹框用深档)。
-   */
-  deep?: boolean
-
   /**
    * 17px 标题(右侧给关闭钮留位)。
    */

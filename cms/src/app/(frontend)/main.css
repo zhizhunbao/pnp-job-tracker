@@ -324,14 +324,7 @@ button:not(:disabled):hover {
 
   /* #276(第 34 轮体检):DTPager ‹›(20px 高)/ /start 三分表筛选控件(30px)/
      Sec 折叠箭头(更小)三处触控靶不足 44px——同款手法,只手机断点抬,字号/桌面态不动。 */
-  .pagerBtn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 44px;
-    min-height: 44px;
-    padding: 2px 14px;
-  }
+  /* (.pagerBtn 的 44px 触控靶 2026-08-24 随迁 components/pager 域的媒体块) */
 
   .sbCtl {
     min-height: 44px;
@@ -438,11 +431,7 @@ button:not(:disabled):hover {
 /* 数字列右对齐 + 等宽数字(漏斗表、抽选表):右对齐后同位数在列里能上下对齐着比 */
 
 
-.pager { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: #6b7280; }
-.pagerNav { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-.pagerNum { font-variant-numeric: tabular-nums; white-space: nowrap; }
-.pagerBtn { border: 1px solid #e5e7eb; border-radius: 6px; background: #fff; font-size: 13px; line-height: 18px; font-family: inherit; color: #6b7280; cursor: pointer; padding: 2px 10px; }
-.pagerBtn:disabled { color: #d1d5db; cursor: default; }
+/* (pager* 四类 2026-08-24 迁 components/pager 域,含手机断点触控靶) */
 
 /* ===================================================
    9. 卡片 Card
@@ -653,10 +642,7 @@ button:not(:disabled):hover {
    跟着 CARD_SHELL / CARD_MD 一起留在下一批(现在变成类会造出两份同样的值)。
 ===================================================== */
 
-/* 标签-值行:标签列定宽 88 让多行的值左缘对齐成一条竖线 */
-.factRow { display: flex; gap: 10px; padding: 3px 0; font-size: 13px; }
-.factK { min-width: 88px; color: #9ca3af; flex-shrink: 0; }
-.factV { flex: 1; color: #374151; word-break: break-word; }
+/* (fact* 三类 2026-08-24 迁 components/row 域) */
 
 /* 多值网格(ui/Grid):前 cols-1 列 max-content 跨行对齐、末列吃剩余宽。
    列数是数据(调用方 2 或 3 列),经 --gc 传入;规则留这儿 */

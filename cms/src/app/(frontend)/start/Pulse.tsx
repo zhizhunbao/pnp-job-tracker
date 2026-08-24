@@ -108,7 +108,7 @@ const hmRight: React.CSSProperties = { marginLeft: 'auto', display: 'flex', alig
 
 // 全宽色带 + Shell 内轨(全站统一 1320 正文轨)
 function Band({ bg, id, children }: { bg?: string; id?: string; children: React.ReactNode }) {
-  return <div className="plBand" id={id} style={{ background: bg, scrollMarginTop: 52 }}><Shell pad="0 1.25rem">{children}</Shell></div>
+  return <div className="plBand" id={id} style={{ background: bg, scrollMarginTop: 52 }}><Shell top={0} bottom={0}>{children}</Shell></div>
 }
 
 // 分区标题(08-10 Frank「所有的展开和关闭按钮都删了」:折叠开关连同 localStorage 记忆一并撤,分区恒展开)。
@@ -680,7 +680,7 @@ export function Pulse({ stats }: { stats: HomeStats }) {
           2026-08-09 Frank「这个地方的高亮也不对啊」:原先五个锚点永远灰、属主永远蓝=看着像永远停在第一项。
           现加滚动跟随(当前分区的锚点亮蓝),属主前缀改深色粗体——蓝色只有一个语义:你现在在哪 */}
       <div style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', borderBottom: `1px solid ${UI.border}` }}>
-        <Shell pad="0 1.25rem">
+        <Shell top={0} bottom={0}>
           <div className="plNavRow" style={{ display: 'flex', gap: 16, overflowX: 'auto', fontSize: 12.5, whiteSpace: 'nowrap', alignItems: 'center' }}>
             {/* 归属设计(Frank 08-08「二级标题应该只属于这个一级标题」):条首挂一级项「就业把脉」作属主 */}
             <span style={{ fontWeight: 700, color: UI.text, flexShrink: 0 }}>{t('pulse.entry')}</span>
@@ -698,7 +698,7 @@ export function Pulse({ stats }: { stats: HomeStats }) {
         {/* ── S1 判决区:动态冷脸标题 + 四脉象卡(banner 下方——毛玻璃合并版试过一轮,
             Frank 08-06「还是放下来吧」;副题口号已删,调性靠数字自己立) ── */}
         <div className="plBand plHero">
-          <Shell pad="0 1.25rem">
+          <Shell top={0} bottom={0}>
             {/* banner 口号 08-07 Frank 拍板删(「你的下一步,用数据算出来」);图上叠页名 08-09 Frank
                 「这个文字是不是应该删了」→ 切 #267 方案B:视觉纯图,H1 文字 sr-only 保留(裸删=#267
                 空 H1 复发,SEO/无障碍双输);页 <title> 不受影响 */}
@@ -1001,7 +1001,7 @@ export function Pulse({ stats }: { stats: HomeStats }) {
 
         {/* ── S6 职位板入口(文案承接判决)────────────────────────────────────── */}
         <div className="plBand" style={{ background: 'linear-gradient(100deg,#eff6ff,#dbeafe)' }}>
-          <Shell pad="0 1.25rem">
+          <Shell top={0} bottom={0}>
             <div className="plCta">
               <span style={{ flex: 1 }}>
                 <span style={{ fontSize: 17, fontWeight: 700, color: UI.primaryDeep, display: 'block', marginBottom: 4 }}>{t('pulse.s6.t')}</span>

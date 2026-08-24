@@ -1396,7 +1396,7 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
     <div style={{ background: UI.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
       <Header lang={lang} setLang={setLangSaved} t={t} active="pathways" />
       <div style={{ flex: '1 0 auto' }}>
-        <Shell pad="1rem 1.25rem 40px">
+        <Shell top={16} bottom={40}>
           <div style={{ width: '100%' }}>
             {/* PR 评估是顶栏一级页:banner 与全部卡片统一使用 Shell 1320px 页面轨,不放历史返回按钮。 */}
             <Banner module="pathways" title={t('plan.pr.title')} sub={t('dp.sub')} images={BANNER_IMGS.pathways} />

@@ -7,4 +7,5 @@
  * @time 2026-08-24 04:30:00
  */
 export { ModalTitle } from './modaltitle'
-export type { ModalTitleIn } from './types'
+export { Title } from './title'
+export type { ModalTitleIn, TitleIn } from './types'

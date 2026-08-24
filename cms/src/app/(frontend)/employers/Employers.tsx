@@ -157,7 +157,7 @@ export function Employers({ initial, initialFilters }: { initial: EmployerPage; 
     <div style={{ background: UI.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
       <Header lang={lang} setLang={setLangSaved} t={t} active="employers" />
       <div style={{ flex: '1 0 auto' }}>
-        <Shell pad="1rem 1.25rem 40px">
+        <Shell top={16} bottom={40}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, margin: '0 0 12px' }}>
             <h1 style={{ flex: 1, minWidth: 0, fontSize: 22, fontWeight: 700, color: '#111827', margin: 0, lineHeight: 1.45 }}>{title}</h1>
             <BackLink href="/plan/pr" label={t('de.back')} />

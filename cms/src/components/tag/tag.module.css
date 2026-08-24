@@ -1,0 +1,138 @@
+/*
+ * tag 域的私有样式(2026-08-24 自 ui/Tag.tsx 内联迁类,值逐格相等)。
+ */
+
+/*
+ * 标签基座(状态标签,不可点):圆角小胶囊,配色由变体类给。
+ */
+.tag {
+  /*
+   * 小圆角(区别于 Chip 的全圆药丸 —— Tag 不可点,形状上也要分得开)。
+   */
+  border-radius: 6px;
+
+  /*
+   * 上下 1px、左右 7px 的紧凑内衬。
+   */
+  padding: 1px 7px;
+
+  /*
+   * 标签字号(比正文小两号)。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 半粗(变体里 imp/warn 再加到 700)。
+   */
+  font-weight: 600;
+
+  /*
+   * 标签文字永不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 省/地区变体(靛蓝浅底)。
+ */
+.region {
+  /*
+   * 靛蓝浅底。
+   */
+  background: #eef2ff;
+
+  /*
+   * 靛蓝深字。
+   */
+  color: #3730a3;
+}
+
+/*
+ * 联邦变体(红浅底)。
+ */
+.federal {
+  /*
+   * 红浅底。
+   */
+  background: #fee2e2;
+
+  /*
+   * 红深字。
+   */
+  color: #b91c1c;
+}
+
+/*
+ * 重要变体(实底红,白字加粗)。
+ */
+.imp {
+  /*
+   * 危险色实底(真值在 main.css 的 :root)。
+   */
+  background: var(--danger);
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+
+  /*
+   * 加粗到 700。
+   */
+  font-weight: 700;
+}
+
+/*
+ * 关注变体(琥珀浅底加粗)。
+ */
+.warn {
+  /*
+   * 琥珀浅底。
+   */
+  background: #fef3c7;
+
+  /*
+   * 警示色字(真值在 main.css 的 :root)。
+   */
+  color: var(--warn);
+
+  /*
+   * 加粗到 700。
+   */
+  font-weight: 700;
+}
+
+/*
+ * 通过变体(绿浅底)。
+ */
+.ok {
+  /*
+   * 绿浅底。
+   */
+  background: #dcfce7;
+
+  /*
+   * 通过色字(真值在 main.css 的 :root)。
+   */
+  color: var(--ok);
+}
+
+/*
+ * Pro 变体(金浅底带描边)。
+ */
+.pro {
+  /*
+   * 金浅底。
+   */
+  background: #fffbeb;
+
+  /*
+   * 棕金字。
+   */
+  color: #92400e;
+
+  /*
+   * 金描边(Pro 是唯一带边的变体,和权益卡同语)。
+   */
+  border: 1px solid #fde68a;
+}

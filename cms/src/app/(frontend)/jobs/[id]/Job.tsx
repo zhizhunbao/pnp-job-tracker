@@ -75,7 +75,7 @@ export default function Job({ job, plan, dims, related }: {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f9fafb' }}>
       {/* active:职位详情仍属「职位」一档 —— 不传的话顶栏这一项不高亮(08-17 首页那处已修,这处是同类漏网) */}
       <Header lang={lang} setLang={setLang} t={t} loggedIn={plan.loggedIn} active="jobs" />
-      <Shell pad="14px 1.25rem 32px">
+      <Shell top={14}>
         <div style={{ maxWidth: 860, margin: '0 auto' }}>
           {/* 面包屑(壳):职位板 › 省 › 大类 › 中类 › 小类;末段「本岗」由 H1 承担不重复 */}
           <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8, lineHeight: 1.7 }}>

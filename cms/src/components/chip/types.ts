@@ -1,0 +1,51 @@
+/**
+ * chip 域的形状:筛选药丸的 props 契约与类名预算入参。
+ *
+ * @author Frank
+ * @time 2026-08-24 04:30:00
+ */
+
+/**
+ * Chip 的 props。
+ */
+export type ChipIn = {
+  /**
+   * 是否选中(主色实底)。
+   */
+  active?: boolean
+
+  /**
+   * 是否强调红(未选中但要引起注意;选中态优先于它)。
+   */
+  hot?: boolean
+
+  /**
+   * 点击回调(可省 = 纯展示)。
+   */
+  onClick?: () => void
+
+  /**
+   * 悬停提示(原生 title 属性;可省)。
+   */
+  title?: string
+
+  /**
+   * 药丸文字。
+   */
+  children: React.ReactNode
+}
+
+/**
+ * chipClsOf 的入参:两个态开关。
+ */
+export type ChipClsIn = {
+  /**
+   * 是否选中。
+   */
+  active: boolean
+
+  /**
+   * 是否强调红(选中态优先)。
+   */
+  hot: boolean
+}

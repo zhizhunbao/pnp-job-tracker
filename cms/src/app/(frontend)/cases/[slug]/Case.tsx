@@ -122,7 +122,7 @@ export function Case({ caseId, answer }: { caseId: string; answer: CaseAnswer })
       <style>{`@media(max-width:640px){.caseWrap summary{min-height:44px;display:flex;align-items:center}}`}</style>
       <Header lang={lang} setLang={setLangSaved} t={t} active="pathways" />
       <div style={{ flex: '1 0 auto' }}>
-        <Shell pad="1rem 1.25rem 40px">
+        <Shell top={16} bottom={40}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, margin: '0 0 12px' }}>
             <h1 style={{ flex: 1, minWidth: 0, fontSize: 22, fontWeight: 700, color: '#111827', margin: 0, lineHeight: 1.45 }}>{t(`case.${caseId}.label`)}</h1>
             <BackLink href="/plan/pr" label={t('case.back')} />

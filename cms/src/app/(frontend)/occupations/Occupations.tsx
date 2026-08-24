@@ -26,7 +26,7 @@ export function Occupations({ rows }: { rows: OccRow[] }) {
   return (
     <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
       <Header lang={lang} setLang={setLangSaved} t={t} active="employers" />
-      <Shell pad="1rem 1.25rem 32px">
+      <Shell top={16}>
         <Banner module="jobs" icon={<IconClipboard />} title={t('dir.occ.title')} sub={t('dir.occ.sub')} images={BANNER_IMGS.jobs} />
         <div style={{ fontSize: 12.5, color: '#6b7280', margin: '0 0 6px', lineHeight: 1.6 }}>{t('dir.occ.note')}</div>
         {/* 省锚点导航 */}
