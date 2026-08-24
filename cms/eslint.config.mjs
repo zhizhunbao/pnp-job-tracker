@@ -1620,6 +1620,7 @@ const COMPONENTS = [
   'src/components/i18n/**/*.{ts,tsx}',
   'src/components/header/**/*.{ts,tsx}',
   'src/components/field/**/*.{ts,tsx}',
+  'src/components/table/**/*.{ts,tsx}',
 ]
 
 const eslintConfig = [
@@ -2109,7 +2110,7 @@ const eslintConfig = [
   },
   {
     // ── 组件域闸 B:常量表形制(Frank「json 也格式化,换行 对齐」):逐键一行 ──
-    files: ['src/components/{footer,modal,title,shell,tag,chip,row,pager,colors,button,notice,grid,tabs,card,banner,auth,i18n,header,field}/constants.ts'],
+    files: ['src/components/{footer,modal,title,shell,tag,chip,row,pager,colors,button,notice,grid,tabs,card,banner,auth,i18n,header,field,table}/constants.ts'],
     plugins: { '@stylistic': stylistic },
     rules: {
       '@stylistic/object-curly-newline': ['error', { ObjectExpression: { multiline: true, minProperties: 3 } }],
@@ -2117,22 +2118,6 @@ const eslintConfig = [
       '@stylistic/indent': ['error', 2, { SwitchCase: 1 }],
       '@stylistic/comma-dangle': ['error', 'always-multiline'],
       '@stylistic/no-trailing-spaces': 'error',
-    },
-  },
-  {
-    // ── 组件域闸 C:table 基础闸(tsx 未过深筛,只挂当下已达标的几条;
-    //    深筛完成后从这挪进 COMPONENTS 名单)──
-    files: ['src/components/table/**/*.{ts,tsx}'],
-    plugins: { local: localRules },
-    rules: {
-      'react/forbid-dom-props': ['error', { forbid: [{ propName: 'style', message: '静态样式进 module.css;运行时数据逐行特批并写理由' }] }],
-      'local/component-file-names': 'error',
-      'react/no-multi-comp': 'error',
-      'no-restricted-syntax': ['error', {
-        selector: 'ObjectPattern > Property[shorthand=false]',
-        message: '解构只许同名简写与「= 默认值」两种形态;要改名或嵌套,就整个收下用点取。',
-      }],
-      'object-shorthand': ['error', 'always'],
     },
   },
   {
