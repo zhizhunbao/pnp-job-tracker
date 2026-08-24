@@ -5,7 +5,8 @@
 // 简历文本默认只在内存与本次请求里;E11-08 起用户**主动勾选**才存进账户档案(默认不勾=行为同以前)。
 import { useEffect, useRef, useState } from 'react'
 
-import { Modal, ModalTitle } from '@/components/modal'
+import { Modal } from '@/components/modal'
+import { ModalTitle } from '@/components/title'
 import { useLang } from '@/components/i18n'
 import { LockedRows, UI } from '@/components/ui'
 import { Table } from '@/components/table'

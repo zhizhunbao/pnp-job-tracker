@@ -9,7 +9,7 @@
 // 渲 valueText 原文,**永不折成 0 或「暂无」** —— 折了就是替官方编了个数字。
 import { useState } from 'react'
 
-import { IconCheck, IconClipboard, IconThumbDown, IconThumbUp } from '@/components/ui'
+import { IconCheck, IconClipboard, IconThumbDown, IconThumbUp } from '@/components/icons'
 import { useLang } from '@/components/i18n'
 import { UI } from '@/components/ui'
 import { track } from '@/lib/track'

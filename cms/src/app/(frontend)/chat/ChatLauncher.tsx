@@ -38,7 +38,7 @@ import dynamic from 'next/dynamic'
 import { usePathname } from 'next/navigation'
 import { Component, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 
-import { IconChat, IconMaximize, IconMinimize, IconMinus, IconRefresh } from '@/components/ui'
+import { IconChat, IconMaximize, IconMinimize, IconMinus, IconRefresh } from '@/components/icons'
 import { useLang } from '@/components/i18n'
 import { UI } from '@/components/ui'
 import { track } from '@/lib/track'

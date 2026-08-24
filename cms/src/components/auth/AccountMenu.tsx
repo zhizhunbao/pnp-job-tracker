@@ -8,7 +8,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { Avatar } from './Avatar'
-import { IconClipboard, IconCompass, IconSave, IconSettings, IconStar, IconTarget, IconUser } from '@/components/ui'
+import { IconClipboard, IconCompass, IconSave, IconSettings, IconStar, IconTarget, IconUser } from '@/components/icons'
 import type { TFn } from '@/lib/i18n'
 
 /** 账户区定宽槽:与 Header 的 ACCT_SLOT_W 同值。两处差 1px,登录态导航整排就平移 1px

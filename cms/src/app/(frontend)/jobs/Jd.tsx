@@ -4,7 +4,7 @@
 // 正文一律懒取(fetchJobText 带同岗会话缓存),原站拦抓取的走空态说事实,不绕过访问控制。
 import { useEffect, useState } from 'react'
 
-import { IconCompass } from '@/components/ui'
+import { IconCompass } from '@/components/icons'
 
 import { LockedText } from './Lock'
 import { AuthModal } from '@/components/auth'

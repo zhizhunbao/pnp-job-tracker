@@ -1934,6 +1934,7 @@ const eslintConfig = [
       'src/components/footer/**/*.{ts,tsx}',
       'src/components/table/**/*.{ts,tsx}',
       'src/components/modal/**/*.{ts,tsx}',
+      'src/components/title/**/*.{ts,tsx}',
     ],
     plugins: { local: localRules },
     rules: {
@@ -1962,6 +1963,7 @@ const eslintConfig = [
     files: [
       'src/components/footer/**/*.tsx',
       'src/components/modal/**/*.tsx',
+      'src/components/title/**/*.tsx',
     ],
     plugins: { '@stylistic': stylistic },
     rules: {
@@ -1969,6 +1971,10 @@ const eslintConfig = [
       '@stylistic/object-property-newline': ['error', { allowAllPropertiesOnSameLine: true }],
       '@stylistic/comma-dangle': ['error', 'always-multiline'],
       '@stylistic/no-trailing-spaces': 'error',
+      // 三目的 tsx 特区撤销(2026-08-24 Frank 问到 title 域最后一处;现成规则):
+      // 「有值才渲染」用 `x != null && <…>`,二选一提成具名小件(样板 MaxIcon)。
+      // table 同断行闸一起暂缓,随 table 二筛批进。
+      'no-ternary': 'error',
     },
   },
   {

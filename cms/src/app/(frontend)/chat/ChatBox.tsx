@@ -17,7 +17,7 @@
 //      渲染的每一截都是核过的字,不是假装的打字机 —— 详见 §流式 注释。
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { IconArrowUp } from '@/components/ui'
+import { IconArrowUp } from '@/components/icons'
 import { useLang } from '@/components/i18n'
 import { UI } from '@/components/ui'
 import { track } from '@/lib/track'

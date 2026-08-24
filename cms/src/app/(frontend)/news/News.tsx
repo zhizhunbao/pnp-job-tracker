@@ -13,7 +13,7 @@ import { Header } from '../Header'
 import { Footer } from '@/components/footer'
 import { BackLink } from '@/components/ui'
 import { BANNER_IMGS, Banner, Shell, SectionTabs, chipStyle } from '@/components/ui'
-import { IconNews } from '@/components/ui'
+import { IconNews } from '@/components/icons'
 import { newsPublisher, newsRegionName, NEWS_REGIONS, type NewsCard, type NewsComment, type NewsHero, type NewsRow } from './shared'
 
 function NewsShell({ children }: { children: (t: TFn, lang: Lang) => React.ReactNode }) {

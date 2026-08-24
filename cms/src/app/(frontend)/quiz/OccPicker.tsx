@@ -10,7 +10,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { POPULAR_NOCS } from '../account/profileOptions'
-import { IconCheck, IconSearch, IconX } from '@/components/ui'
+import { IconCheck, IconSearch, IconX } from '@/components/icons'
 import { QuizNav, QuizStyle, QuizTitle } from './QuizUI'
 import { Button, UI } from '@/components/ui'
 import { shortOcc } from './EntryQuiz'

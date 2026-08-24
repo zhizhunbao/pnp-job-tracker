@@ -7,7 +7,7 @@ import { Header } from '../Header'
 import { Footer } from '@/components/footer'
 import { BANNER_IMGS, Banner, Shell, Title, Tag, UI } from '@/components/ui'
 import { Table } from '@/components/table'
-import { IconClipboard } from '@/components/ui'
+import { IconClipboard } from '@/components/icons'
 import type { OccRow } from '@/lib/employers'
 
 export function Occupations({ rows }: { rows: OccRow[] }) {

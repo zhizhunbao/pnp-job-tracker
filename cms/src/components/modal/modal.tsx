@@ -1,9 +1,9 @@
 'use client'
 /**
  * modal 域的主结构:居中弹框壳(三档宽 / Esc / 点遮罩关 / header 拖拽 / 全屏还原)。
- * 一个 tsx 一个组件(2026-08-24 Frank 拍板):标题块在 title.tsx、全屏钮图标在
- * maxicon.tsx;机器在 hooks(useCard/useEscClose…)、预算在 functions(clsOf/
- * cardStyleOf/maxKeyOf)、死值在 constants、样式在 modal.module.css。
+ * 一个 tsx 一个组件、通用件各归各域(2026-08-24 Frank 拍板):标题块在 title 域、
+ * 全屏钮图标在 icons 域;机器在 hooks(useCard/useEscClose…)、预算在 functions
+ * (clsOf/cardStyleOf/maxKeyOf)、死值在 constants、样式在 modal.module.css。
  * (2026-07-05 用户拍板:全站弹框格式布局一致;2026-08-24 组件域刀 A 形制化。)
  *
  * style 白名单(同 table 域头注那条边界):只剩两条真运行时数据 ——
@@ -19,8 +19,8 @@
 import { useLang } from '@/components/i18n'
 import { CLOSE_ARIA, SIZE_DEFAULT, Z_MODAL } from './constants'
 import { cardStyleOf, clsOf, maxKeyOf, stopClick } from './functions'
+import { MaxIcon } from '@/components/icons'
 import { useCard, useEscClose, useIsNarrow, useOverlayClose } from './hooks'
-import { MaxIcon } from './maxicon'
 import type { ModalIn } from './types'
 import css from './modal.module.css'
 

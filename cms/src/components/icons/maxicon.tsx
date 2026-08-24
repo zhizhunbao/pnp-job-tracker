@@ -1,8 +1,8 @@
 'use client'
 /**
  * 全屏钮的两态图标:放大 / 还原(按 maximized 二选一;选择收在组件体内,
- * Modal 体内不留分支)。一个 tsx 一个组件(2026-08-24 Frank 拍板),从 modal.tsx 拆出;
- * 通用图标属 icons 域,这个是 modal 专用两态件所以留本域。
+ * 消费方体内不留分支)。2026-08-24 自 modal 域迁入 icons 域(Frank「title.tsx 和
+ * maxicon.tsx 也需要拆成域」)—— 手画 svg 两态件,与 icons.tsx 的 lucide 词汇表并排。
  *
  * @author Frank
  * @time 2026-08-24 04:30:00

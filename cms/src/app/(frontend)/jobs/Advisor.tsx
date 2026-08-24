@@ -5,7 +5,7 @@
 // E8-10 收编的教训写在 GROUP_SECTIONS 上:一套组件伺候 24 种字段必漏,所以字段→分组是张明表,不是 if 链。
 import { useEffect, useRef, useState } from 'react'
 
-import { IconCompass, IconMap, IconMaximize, IconMinimize } from '@/components/ui'
+import { IconCompass, IconMap, IconMaximize, IconMinimize } from '@/components/icons'
 import { Grid, Row } from '@/components/ui'
 // FactsBox 只有本文件用 —— 2026-08-17 从退役的 jobs/Facts 收回宿主(一处用的东西不该住在共享叶子里)
 function FactsBox({ children, note }: { children: React.ReactNode; note?: React.ReactNode }) {

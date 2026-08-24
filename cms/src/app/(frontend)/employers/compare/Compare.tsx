@@ -11,7 +11,7 @@ import { BackLink } from '@/components/ui'
 import { Button, Card, CardKV, Notice, Shell, Tag, UI } from '@/components/ui'
 import { Table } from '@/components/table'
 import { PricingModal } from '../../jobs/PricingModal'
-import { IconScale, IconStar } from '@/components/ui'
+import { IconScale, IconStar } from '@/components/icons'
 import { CMP_KEY, type CompareRow } from '@/lib/employers'
 
 const money = (v: number | null) => (v != null ? `$${Math.round(v / 1000)}K` : null)

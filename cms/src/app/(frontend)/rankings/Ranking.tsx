@@ -10,7 +10,7 @@ import { Footer } from '@/components/footer'
 import { BANNER_IMGS, Card, CardAction, CardKV, Banner } from '@/components/ui'
 import { JobCard } from '@/components/ui'
 import { Table } from '@/components/table'
-import { IconChart } from '@/components/ui'
+import { IconChart } from '@/components/icons'
 import { BROAD_SLUGS } from '@/lib/stats'
 
 

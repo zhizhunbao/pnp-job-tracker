@@ -1,0 +1,40 @@
+/*
+ * title 域的私有样式(2026-08-24 自 modal.module.css 迁入,值逐格相等)。
+ */
+
+/*
+ * 标题块:给弹框右上动作排留位(80px 与 modal 的 .acts 宽度对齐)。
+ */
+.titleWrap {
+  min-width: 0;
+  padding-right: 80px;
+}
+
+/*
+ * eyebrow 小字(默认靛蓝;全站实际只有两档色,深档见 .eyebrowDeep)。
+ */
+.eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: #6366f1;
+}
+
+/*
+ * eyebrow 深靛蓝档(简历匹配弹框用)。
+ */
+.eyebrowDeep {
+  color: #4338ca;
+}
+
+/*
+ * 17px 标题单行截断。
+ */
+.title {
+  margin: 4px 0 0;
+  font-size: 17px;
+  color: #111827;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

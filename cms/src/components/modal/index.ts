@@ -13,5 +13,4 @@
 export { CARD, iconBtnS, MODAL_RADIUS, MODAL_SHADOW, SCRIM } from './constants'
 export { useIsNarrow, useOverlayClose } from './hooks'
 export { Modal } from './modal'
-export { ModalTitle } from './title'
-export type { ModalIn, ModalTitleIn, OverlayHandlers } from './types'
+export type { ModalIn, OverlayHandlers } from './types'

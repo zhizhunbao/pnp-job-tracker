@@ -6,7 +6,7 @@ import { useLang } from '@/components/i18n'
 import { Header } from '../Header'
 import { Footer } from '@/components/footer'
 import { BANNER_IMGS, Banner, Shell, SectionTabs, Title, Tag, UI, chipStyle } from '@/components/ui'
-import { IconNews } from '@/components/ui'
+import { IconNews } from '@/components/icons'
 import type { TlCadence, TlEvent } from '@/lib/plan/server'
 
 export function Timeline({ events, cadence, eeCadence }: {

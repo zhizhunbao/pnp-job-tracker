@@ -10,7 +10,7 @@
 // ⚠️ 与 ui/Card 的 ProCard / LockedRows 是同一类东西,但**不能并进 ui/**:本件要 UpgradeCta,
 // 那条链拖着 UpgradeModal → AuthModal + Stripe + track;ui/ 现在是零外部依赖的叶子,并进去等于
 // 每个 import ui 的页面都背上整套登录与支付。要合并,得先把 CTA 改成插槽 prop 让本件退化成纯样式件。
-import { IconLock } from '@/components/ui'
+import { IconLock } from '@/components/icons'
 import { UpgradeCta } from './UpgradeModal'
 import type { TFn } from '@/lib/i18n'
 

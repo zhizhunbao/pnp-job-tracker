@@ -18,7 +18,7 @@ import { Avatar } from '@/components/auth'
 import { AccountMenu } from '@/components/auth'
 import { PricingModal } from './jobs/PricingModal'
 import { Button } from '@/components/ui'
-import { IconTarget, IconChart, IconClipboard, IconCompass, IconNews, IconUsers } from '@/components/ui'
+import { IconTarget, IconChart, IconClipboard, IconCompass, IconNews, IconUsers } from '@/components/icons'
 
 // 登录弹框就地开(2026-08-09 Frank「为什么要跳到 jobtable 页面再弹框」):AuthModal 按需载
 // (点开才下载那份 JS,手法同 ChatLauncher),header 常驻包不背它

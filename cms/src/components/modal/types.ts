@@ -61,26 +61,6 @@ export type ModalIn = {
 }
 
 /**
- * ModalTitle 的 props。
- */
-export type ModalTitleIn = {
-  /**
-   * eyebrow 小字(可省)。
-   */
-  eyebrow?: React.ReactNode
-
-  /**
-   * eyebrow 深靛蓝档(默认靛蓝;全站只有简历匹配弹框用深档)。
-   */
-  deep?: boolean
-
-  /**
-   * 17px 标题(右侧给关闭钮留位)。
-   */
-  title: React.ReactNode
-}
-
-/**
  * useOverlayClose 交回的两枚手柄(挂到 overlay 元素上)。
  */
 export type OverlayHandlers = {
@@ -190,15 +170,6 @@ export type CardOut = {
   onPointerUp: (e: React.PointerEvent) => void
 }
 
-/**
- * MaxIcon 的 props。
- */
-export type MaxIconIn = {
-  /**
-   * 是否全屏态(定两态图标取哪个:放大/还原)。
-   */
-  maximized: boolean
-}
 
 /**
  * clsOf 的入参:决定遮罩与白卡形态的五个开关。
