@@ -60,3 +60,84 @@ export const SPACE = ' '
  * 解析,在西五区就成了前一天下午 —— 算「挂了几天」会差一天。
  */
 export const MIDNIGHT_SUFFIX = 'T00:00:00'
+
+/**
+ * 到分格式的字段档位(`Intl.DateTimeFormat` 的选项)。
+ * 值是平台定死的枚举字面量,不是我们能起的名字:
+ * `'numeric'` = 不补零的数字(年份要 2026 不要 26),`'2-digit'` = 补零到两位
+ * (月日时分要 08 不要 8 —— 这一栏是等宽对齐的关键,列表里不补零会参差)。
+ * 整块放这儿而不是散在 functions:两个格式只差一个 second,并排放才看得出差在哪。
+ */
+export const FMT_MIN: Intl.DateTimeFormatOptions = {
+  /**
+   * 渲染时区,见本文件 TZ。
+   */
+  timeZone: TZ,
+
+  /**
+   * 年:不补零(四位年本来就够宽)。
+   */
+  year: 'numeric',
+
+  /**
+   * 月:补零两位。
+   */
+  month: '2-digit',
+
+  /**
+   * 日:补零两位。
+   */
+  day: '2-digit',
+
+  /**
+   * 时:补零两位(配 sv-SE 出 24 小时制)。
+   */
+  hour: '2-digit',
+
+  /**
+   * 分:补零两位。
+   */
+  minute: '2-digit',
+}
+
+/**
+ * 到秒格式:同 FMT_MIN 再加一格秒(「最近看到」列要看到时分秒)。
+ * 逐字重复 FMT_MIN 的六格是有意的 —— 常量文件不许有函数,
+ * 用展开拼(`...FMT_MIN`)又撞全站禁展开;六行换一个「一眼看全」值得。
+ */
+export const FMT_SEC: Intl.DateTimeFormatOptions = {
+  /**
+   * 渲染时区,见本文件 TZ。
+   */
+  timeZone: TZ,
+
+  /**
+   * 年:不补零。
+   */
+  year: 'numeric',
+
+  /**
+   * 月:补零两位。
+   */
+  month: '2-digit',
+
+  /**
+   * 日:补零两位。
+   */
+  day: '2-digit',
+
+  /**
+   * 时:补零两位。
+   */
+  hour: '2-digit',
+
+  /**
+   * 分:补零两位。
+   */
+  minute: '2-digit',
+
+  /**
+   * 秒:补零两位(这一格是它和 FMT_MIN 唯一的差别)。
+   */
+  second: '2-digit',
+}

@@ -254,7 +254,9 @@ const localRules = {
       },
       create(context) {
         // 2026-08-23 扩到 routes.ts（Frank「还有一大堆写死的常量」）：HTTP 芯同样不许裸字
-        if (!/(functions|routes)\.ts$/.test(context.filename ?? '')) return {}
+        // 2026-08-24 自守正则补 `x?`:`icons/functions.tsx` 这类抽屉的 tsx 形态原先整份跳过
+        //    —— 文件挂着五道闸,一条都没生效过。
+        if (!/(functions|routes)\.tsx?$/.test(context.filename ?? '')) return {}
         // 2026-08-23 撤编批:rows/callbacks 并入 functions 尾段,这几道闸历来不查那两个抽屉 ——
         // 历史豁免面随「撤编后的固定尾段」banner 精确搬进新位置(纯移动零新债,基线不松)。
         const tailAt0 = (context.sourceCode ?? context.getSourceCode()).getText().indexOf('撤编后的固定尾段')
@@ -649,12 +651,18 @@ const localRules = {
         type: 'suggestion',
         schema: [],
         messages: {
-          bare: '`functions.ts` 里不许有裸字符串 {{ text }}。挪进 `constants.ts`(给模型看的字挪进 `prompts.ts`)。',
+          bare: '裸字符串 {{ text }} 不许写在这里。值挪进 `constants.ts`(给模型看的字进 `prompts.ts`,给人看的文案进 `lib/i18n`)—— 抽出来是为了让它有地方挂注释。',
         },
       },
       create(context) {
         // 2026-08-23 扩到 routes.ts（Frank「还有一大堆写死的常量」）：HTTP 芯同样不许裸字
-        if (!/(functions|routes)\.ts$/.test(context.filename ?? '')) return {}
+        // 2026-08-24 自守正则补 `x?`:`icons/functions.tsx` 这类抽屉的 tsx 形态原先整份跳过
+        //    —— 文件挂着五道闸,一条都没生效过。
+        // 2026-08-24 Frank 实拍 `rel="noreferrer"` 查不出来:本条再放宽到**全部 .tsx**。
+        //    组件的值大半写在 JSX 属性位(rel/type/role/viewBox…),而属性位从没进过闸;
+        //    文本子节点(`<span>已关闭</span>`)是给人看的文案,家在 `lib/i18n`。
+        if (!/(functions|routes)\.tsx?$/.test(context.filename ?? '')
+          && !/\.tsx$/.test(context.filename ?? '')) return {}
         // 2026-08-23 撤编批判据同步：`to*` 行构造器体内放行 —— rows.ts 历来不受本闸
         // （只查 functions/routes），并入尾段后 512 处行构造器的词全数炸出；与 no-db-vocab
         // 的「to* 体内放行」同一判据同一理由：行构造器的词就是值级清洗的一部分。
@@ -681,13 +689,34 @@ const localRules = {
         return {
           Literal(node) {
             if (toBodyOf(node) || node.range[0] > tailAt) return
+            // 2026-08-24:'use client' / 'use server' 是**语言指令**不是值 —— 它必须逐字
+            // 待在文件顶部,挪进常量当场失效(Next 靠源码文本识别这一行)。
+            if (node.parent?.type === 'ExpressionStatement') return
             // 正则也是常量(`constants.ts` 的文件头写着「标量、字符串表、正则」),
             // 但它的 `value` 是 RegExp 不是 string,第一版就这么漏过去了(2026-08-20 Frank 实拍)。
             if (node.regex) {
               context.report({ node, messageId: 'bare', data: { text: `/${node.regex.pattern}/` } })
               return
             }
-            if (typeof node.value !== 'string' || node.value === '') return
+            if (typeof node.value !== 'string') return
+            // 2026-08-24 Frank 实拍:空串原先一句话放行。可它是**决策**不是排版 ——
+            // `ymd(null)` 回空串是「没有日期」、`basis: ''` 是「没算过」、`extra: ''` 是
+            // 「不加类」,三种含义在读的人眼里长得一模一样。起名才分得开。
+            // 唯一放行:JSX 属性里的 `=""`(那是 DOM 的布尔缺省写法,不是我们的值)。
+            // 空串按**位置**分(2026-08-24 Frank 实拍「'' 也需要提到常量」后细化):
+            // · 比较位 `x !== ''` 放行 —— 宪法「禁 !x」那条钦定的判空写法就是它
+            //   (「判空写 == null,空串 === '',空数组 .length === 0」),报它等于跟自己打架;
+            // · JSX 属性 `foo=""` 放行 —— 那是 DOM 的布尔缺省写法,不是我们的值;
+            // · 值位要报 —— `let title = ''`、`return ''`、`basis: ''` 是**决策**不是排版:
+            //   「没有名字」「没算过」「不加类」三种含义长得一模一样,起名才分得开。
+            if (node.value === '') {
+              const pp = node.parent
+              if (pp?.type === 'JSXAttribute') return
+              if (pp?.type === 'BinaryExpression'
+                && (pp.operator === '===' || pp.operator === '!==' || pp.operator === '==' || pp.operator === '!=')) return
+              context.report({ node, messageId: 'bare', data: { text: '""(空串)' } })
+              return
+            }
             const p = node.parent
             if (p?.type === 'ImportDeclaration' || p?.type === 'ExportNamedDeclaration') return
             if (p?.type === 'Property' && p.key === node) return
@@ -705,6 +734,14 @@ const localRules = {
             // 纯空白的模板段是排版(`${a} ${b}`),不是内容
             if (!text.trim()) return
             context.report({ node, messageId: 'bare', data: { text: JSON.stringify(text).slice(0, 28) } })
+          },
+          // 2026-08-24 JSX 的文本子节点(`<span>已关闭</span>`)是 JSXText 不是 Literal,
+          // 现有 visitor 看不见 —— 而它恰恰是给人看的文案,家在 `lib/i18n`(组件域里
+          // 写死一句中文/英文 = 那句话永远翻译不了)。纯空白/换行是排版,放行。
+          JSXText(node) {
+            const text = node.value ?? ''
+            if (!text.trim()) return
+            context.report({ node, messageId: 'bare', data: { text: JSON.stringify(text.trim()).slice(0, 28) } })
           },
         }
       },
@@ -901,7 +938,9 @@ const localRules = {
       },
       create(context) {
         // 2026-08-23 扩到 routes.ts（Frank「还有一大堆写死的常量」）：HTTP 芯同样不许裸字
-        if (!/(functions|routes)\.ts$/.test(context.filename ?? '')) return {}
+        // 2026-08-24 自守正则补 `x?`:`icons/functions.tsx` 这类抽屉的 tsx 形态原先整份跳过
+        //    —— 文件挂着五道闸,一条都没生效过。
+        if (!/(functions|routes)\.tsx?$/.test(context.filename ?? '')) return {}
         return {
           Literal(node) {
             if (typeof node.value !== 'number') return
@@ -1395,7 +1434,9 @@ const localRules = {
         },
       },
       create(context) {
-        if (!/(functions|routes)\.ts$/.test(context.filename ?? '')) return {}
+        // 2026-08-24 自守正则补 `x?`:`icons/functions.tsx` 这类抽屉的 tsx 形态原先整份跳过
+        //    —— 文件挂着五道闸,一条都没生效过。
+        if (!/(functions|routes)\.tsx?$/.test(context.filename ?? '')) return {}
         const fns = new Map()
         const calls = []
         // 2026-08-23 撤编批:rows/callbacks 并入 functions 尾段,这几道闸历来不查那两个抽屉 ——
@@ -1459,7 +1500,9 @@ const localRules = {
         // 2026-08-23 扩到 routes.ts（Frank「还有一大堆写死的常量」）：HTTP 芯同样不许裸字。
         // 2026-08-23 rows 抽屉撤编（Frank「rows callback 合并到 functions」）：判据从「文件」
         // 改「函数名」—— db 词汇只监调用点，to* 行构造器体内放行（import 不再报）。
-        if (!/(functions|routes)\.ts$/.test(context.filename ?? '')) return {}
+        // 2026-08-24 自守正则补 `x?`:`icons/functions.tsx` 这类抽屉的 tsx 形态原先整份跳过
+        //    —— 文件挂着五道闸,一条都没生效过。
+        if (!/(functions|routes)\.tsx?$/.test(context.filename ?? '')) return {}
         const WORDS = new Set(['text', 'count', 'numOrNull', 'textOrNull', 'show', 'jsonOrNull'])
         // 2026-08-23 撤编批:rows/callbacks 并入 functions 尾段,这几道闸历来不查那两个抽屉 ——
         // 历史豁免面随「撤编后的固定尾段」banner 精确搬进新位置(纯移动零新债,基线不松)。
@@ -1531,105 +1574,23 @@ const localRules = {
 // typed-signature(Request/Response 是 fetch 标准的名字 —— HTTP 层的母语,起本地别名是
 // 换个字念同一本经;域函数的形状照旧在域里管)。
 // 瘦完一个路由加一行,与 REFACTORED 同一滚动规矩。
-const API_DONE = [
-  'src/app/api/advisor/route.ts',
-  'src/app/api/funnel/track/route.ts',
-  'src/app/api/auth/google/route.ts',
-  'src/app/api/auth/google/callback/route.ts',
-  'src/app/api/alerts/run/route.ts',
-  'src/app/api/alerts/unsub/route.ts',
-  'src/app/api/points/factors/route.ts',
-  'src/app/api/rankings/data/route.ts',
-  'src/app/api/stats/data/route.ts',
-  'src/app/api/stats/fine/route.ts',
-  'src/app/api/stats/market/route.ts',
-  'src/app/api/quiz/route.ts',
-  'src/app/api/quiz/answers/route.ts',
-  'src/app/api/employers/route.ts',
-  'src/app/api/employers/sponsors/route.ts',
-  'src/app/api/employers/export/route.ts',
-  'src/app/api/employers/info/route.ts',
-  'src/app/api/ruling/verdict/route.ts',
-  'src/app/api/ruling/pathways/route.ts',
-  'src/app/api/jobs/route.ts',
-  'src/app/api/jobs/text/route.ts',
-  'src/app/api/jobs/company/route.ts',
-  'src/app/api/jobs/dims/route.ts',
-  'src/app/api/jobs/city/route.ts',
-  'src/app/api/jobs/province/route.ts',
-  'src/app/api/jobs/competition/route.ts',
-  'src/app/api/jobs/applyhow/route.ts',
-  'src/app/api/stripe/checkout/route.ts',
-  'src/app/api/stripe/webhook/route.ts',
-  'src/app/api/consult/chat/route.ts',
-  'src/app/api/employers/translate/route.ts',
-  'src/app/api/jobs/jd-translate/route.ts',
-  'src/app/api/noc/translate/route.ts',
-  'src/app/api/news/translate/route.ts',
-  'src/app/api/news/summarize/route.ts',
-  'src/app/api/jobs/jdformat/route.ts',
-  'src/app/api/resume/route.ts',
-  'src/app/api/resume/extract/route.ts',
-  'src/app/api/resume/match/route.ts',
-  'src/app/api/ruling/profile/route.ts',
-  'src/app/api/mart/[name]/route.ts',
-]
+// ⚠️ 名单一律通配,不许枚举(2026-08-24 Frank 三连实拍立):
+//    枚举名单会**比磁盘旧**,而旧了不报错 —— 只是那些文件悄悄一条闸都不吃。
+//    实拍三例:① `src/lib/time.ts` 域化后成了死字符串,time/ 四个文件零闸;
+//    ② `src/app/api/mart/[name]/route.ts` 被 minimatch 当字符类,连自己都匹配不上;
+//    ③ `lib/mart` 从没进过任何名单,`'utf8'`/`'md5'`/`'hex'` 与三处模板串全在闸外。
+//    通配 + `eslint-suppressions.json` 基线(08-22 已选定的机制)= 新域自动进闸、
+//    存量不挡路、基线只紧不松。要豁免就写具名 ignores 并说明理由,别靠「没列进来」。
+const API_DONE = ['src/app/api/**/route.ts']
+const REFACTORED = ['src/lib/**/*.ts', ...API_DONE]
 
-const REFACTORED = [
-  'src/lib/consult/**/*.ts', 'src/lib/db/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/gauge/**/*.ts',
-  'src/lib/points/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts',
-  // 2026-08-22 变异探针抓到的空洞:后进的六域(employers/jobs/pathways/plan/stats/resume)
-  // 一直没进这张写法闸名单 —— 只被 doc+写法 error 块(下面那两张枚举名单)盖着,
-  // no-optional/no-bang/no-nullish/no-ternary 一族对它们从没生效过。补齐,存量进抑制基线。
-  'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts',
-  'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/template.ts',
-  // 2026-08-23 singles 批:顶层散件 → 域(+ time.ts 留叶),新写即达标,直接进名单。
-  'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts',
-  'src/lib/rankings/**/*.ts', 'src/lib/mail/**/*.ts', 'src/lib/alerts/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts',
-  'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts',
-  // 2026-08-23 i18n 进闸(三语文件 + index 机器是 Frank 拍板的介质形状,domain-file-names 单独特批)。
-  'src/lib/i18n/**/*.ts',
-  // 2026-08-23 quiz 十件套化(Frank「还是需要按规范命名」),同批进闸。
-  'src/lib/quiz/**/*.ts', 'src/lib/http.ts',
-  // 2026-08-23 advisor 域重建(替换老 api/advisor):新写即达标,骨架批就进闸。
-  'src/lib/advisor/**/*.ts',
-  // 2026-08-23 seo 立域(robots/sitemap 芯下沉;Frank「需要单独成域吧」)。
-  'src/lib/seo/**/*.ts',
-  // 2026-08-23 legal/official 补进写法闸(08-22 立域时只进了 doc 闸)—— 全 lib 收官。
-  'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts',
-  ...API_DONE,
-]
 
 // 组件域滚动名单(2026-08-24 Frank「先把闸门都定义好,然后再新写域组件」):
 // 已形制化的组件域全量挂组件 A/B 两块闸;形制化一个,加一行。
 // table 不在(tsx 未过深筛,三目/箭头/展开成片,随二筛批进)、icons 不在
 // (原样搬的 lucide 词汇表,形制化另立批)—— 两者只挂基础闸那一块。
-const COMPONENTS = [
-  'src/components/footer/**/*.{ts,tsx}',
-  'src/components/modal/**/*.{ts,tsx}',
-  'src/components/title/**/*.{ts,tsx}',
-  'src/components/shell/**/*.{ts,tsx}',
-  'src/components/tag/**/*.{ts,tsx}',
-  'src/components/chip/**/*.{ts,tsx}',
-  'src/components/row/**/*.{ts,tsx}',
-  'src/components/pager/**/*.{ts,tsx}',
-  'src/components/colors/**/*.{ts,tsx}',
-  'src/components/button/**/*.{ts,tsx}',
-  'src/components/notice/**/*.{ts,tsx}',
-  'src/components/grid/**/*.{ts,tsx}',
-  'src/components/tabs/**/*.{ts,tsx}',
-  'src/components/card/**/*.{ts,tsx}',
-  'src/components/banner/**/*.{ts,tsx}',
-  'src/components/auth/**/*.{ts,tsx}',
-  'src/components/i18n/**/*.{ts,tsx}',
-  'src/components/header/**/*.{ts,tsx}',
-  'src/components/input/**/*.{ts,tsx}',
-  'src/components/search/**/*.{ts,tsx}',
-  'src/components/select/**/*.{ts,tsx}',
-  'src/components/table/**/*.{ts,tsx}',
-  'src/components/icons/**/*.{ts,tsx}',
-  'src/components/time/**/*.{ts,tsx}',
-]
+const COMPONENTS = ['src/components/**/*.{ts,tsx}']
+
 
 const eslintConfig = [
   ...nextCoreWebVitals,
@@ -1710,7 +1671,7 @@ const eslintConfig = [
     // 域定型一个就往这里加一个。
     // 域每定型一个就往这张名单里加一个。2026-08-19 当天 `agent` / `llm` / `error` / `log`
     // 的 91 条存量(多数是写成一行的 type,属性没各自的注释)已经逐条补完,所以它们也在里面。
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts', 'src/lib/template.ts', 'src/lib/http.ts', ...API_DONE, 'src/lib/news/**/*.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mail/**/*.ts', 'src/lib/alerts/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts', 'src/lib/i18n/**/*.ts', 'src/lib/quiz/**/*.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts', 'src/lib/template.ts', 'src/lib/http.ts', ...API_DONE, 'src/lib/news/**/*.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mail/**/*.ts', 'src/lib/alerts/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time/**/*.ts', 'src/lib/i18n/**/*.ts', 'src/lib/quiz/**/*.ts'],
     plugins: { local: localRules },
     rules: {
       // 注释的形状
@@ -1821,7 +1782,7 @@ const eslintConfig = [
   },
   {
     // ── 现成闸接入 ② · JSDoc 族(与自研 doc 闸并行跑;零违规验证同构后,自研那几条再议退役)──
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts', 'src/lib/template.ts', 'src/lib/http.ts', ...API_DONE, 'src/lib/news/**/*.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mail/**/*.ts', 'src/lib/alerts/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time.ts', 'src/lib/i18n/**/*.ts', 'src/lib/quiz/**/*.ts'],
+    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts', 'src/lib/template.ts', 'src/lib/http.ts', ...API_DONE, 'src/lib/news/**/*.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mail/**/*.ts', 'src/lib/alerts/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time/**/*.ts', 'src/lib/i18n/**/*.ts', 'src/lib/quiz/**/*.ts'],
     plugins: { jsdoc },
     rules: {
       'jsdoc/multiline-blocks': ['error', { noSingleLineBlocks: true }],
@@ -2081,6 +2042,10 @@ const eslintConfig = [
       'react/forbid-elements': ['error', { forbid: [{ element: 'a', message: '裸 <a> 禁:经 button 族的 LinkButton(钮形走 Button href/BackButton)' }] }],
       'local/component-file-names': 'error',
       'local/component-name-match': 'error',
+      // 2026-08-24 Frank 实拍 `rel="noreferrer"` 查不出来:这条闸 lib 侧开了一年,
+      // 组件区一次都没开过 —— 而「常量抽出来是为了挂注释」在前端最要紧(参数最多)。
+      // JSX 属性值、文本子节点、空串一起进闸(规则实现同日补齐这三样)。
+      'local/no-bare-strings': 'error',
       'react/no-multi-comp': 'error',
       'no-restricted-syntax': ['error', {
         selector: 'ObjectPattern > Property[shorthand=false]',

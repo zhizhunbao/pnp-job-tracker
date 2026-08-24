@@ -7,8 +7,8 @@
  * @author Frank
  * @time 2026-08-22 19:27:15
  */
-import { DAY_MS, ISO_LOCALE, ISO_T, MIDNIGHT_SUFFIX, MIN_LEN, SEC_LEN, SPACE, TZ, YMD_LEN } from './constants'
-import type { DaysSinceIn } from './types'
+import { DAY_MS, FMT_MIN, FMT_SEC, ISO_LOCALE, ISO_T, MIDNIGHT_SUFFIX, MIN_LEN, SEC_LEN, SPACE, YMD_LEN } from './constants'
+import type { CutFallbackIn, DaysSinceIn, MaybeDays, MaybeIso } from './types'
 
 /**
  * 到分(列表「更新时间」页脚等)。
@@ -18,14 +18,7 @@ import type { DaysSinceIn } from './types'
  */
 export function fmtLocal(iso: string): string {
   try {
-    return new Date(iso).toLocaleString(ISO_LOCALE, {
-      timeZone: TZ,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
+    return new Date(iso).toLocaleString(ISO_LOCALE, FMT_MIN)
   } catch {
     return cutFallback({ iso, len: MIN_LEN })
   }
@@ -39,15 +32,7 @@ export function fmtLocal(iso: string): string {
  */
 export function fmtLocalSec(iso: string): string {
   try {
-    return new Date(iso).toLocaleString(ISO_LOCALE, {
-      timeZone: TZ,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    })
+    return new Date(iso).toLocaleString(ISO_LOCALE, FMT_SEC)
   } catch {
     return cutFallback({ iso, len: SEC_LEN })
   }
@@ -62,7 +47,7 @@ export function fmtLocalSec(iso: string): string {
  * @param x 起点与此刻。
  * @returns 天数(≥0);算不了给 null。
  */
-export function daysSince(x: DaysSinceIn): number | null {
+export function daysSince(x: DaysSinceIn): MaybeDays {
   if (x.iso == null || x.iso === '') {
     return null
   }
@@ -85,7 +70,7 @@ export function daysSince(x: DaysSinceIn): number | null {
  * @param iso ISO 串;null/空串照样收(给空串,调用点不必先判)。
  * @returns 'YYYY-MM-DD';没值给空串。
  */
-export function ymd(iso: string | null): string {
+export function ymd(iso: MaybeIso): string {
   if (iso == null) {
     return ''
   }
@@ -98,7 +83,7 @@ export function ymd(iso: string | null): string {
  * @param x 原串与裁到第几位。
  * @returns 截断后的串。
  */
-function cutFallback(x: { iso: string; len: number }): string {
+function cutFallback(x: CutFallbackIn): string {
   if (x.iso === '') {
     return ''
   }
