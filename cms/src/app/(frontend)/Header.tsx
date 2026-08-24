@@ -13,16 +13,16 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import dynamic from 'next/dynamic'
 import { LANGS, type Lang, type TFn } from '@/lib/i18n'
-import { useSsrSession } from './SessionProvider'
-import { Avatar } from './Avatar'
-import { AccountMenu } from './AccountMenu'
+import { useSsrSession } from '@/components/auth'
+import { Avatar } from '@/components/auth'
+import { AccountMenu } from '@/components/auth'
 import { PricingModal } from './jobs/PricingModal'
-import { Button } from './ui'
-import { IconTarget, IconChart, IconClipboard, IconCompass, IconNews, IconUsers } from './Icons'
+import { Button } from '@/components/ui'
+import { IconTarget, IconChart, IconClipboard, IconCompass, IconNews, IconUsers } from '@/components/ui'
 
 // 登录弹框就地开(2026-08-09 Frank「为什么要跳到 jobtable 页面再弹框」):AuthModal 按需载
 // (点开才下载那份 JS,手法同 ChatLauncher),header 常驻包不背它
-const AuthModal = dynamic(() => import('./jobs/AuthForm').then((m) => m.AuthModal), { ssr: false })
+const AuthModal = dynamic(() => import('@/components/auth').then((m) => m.AuthModal), { ssr: false })
 
 /** 类名 + 当前态:cx('shNavLink', isActive) → "shNavLink on"。
  *  样式迁进 main.css 后,tsx 里剩的只有「这一项亮不亮」这个布尔,不再逐属性写三元。

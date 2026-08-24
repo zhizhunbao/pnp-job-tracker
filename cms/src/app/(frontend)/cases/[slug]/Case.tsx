@@ -4,12 +4,12 @@
 // 版式顺序由 Frank 2026-08-11 定死:**他问的那个省 → 为什么 → 由易到难的替代 → 走不通的 → 第一步**。
 // 上一版做成「四块无主的事实」,被点名「列一堆信息,用户看了有什么用」—— 摆事实不等于给答案。
 // 每条路径下面挂的是判定核给的理由(met/gap/excluded),官方原句原样摆,页面不改写、不加戏。
-import { BackLink } from '../../BackLink'
+import { BackLink } from '@/components/ui'
 import { dropProvPrefix } from '@/lib/jobs'
-import { useLang } from '../../LangProvider'
-import { Footer } from '../../Footer'
+import { useLang } from '@/components/i18n'
+import { Footer } from '@/components/footer'
 import { Header } from '../../Header'
-import { Shell, UI } from '../../ui'
+import { Shell, UI } from '@/components/ui'
 import type { CaseAnswer, OpsFacts } from '@/lib/ruling/server'
 import type { PathwayVerdict, VerdictReason } from '@/lib/ruling'
 import { track } from '@/lib/track'

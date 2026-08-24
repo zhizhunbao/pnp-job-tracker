@@ -4,17 +4,17 @@
 // E3-03:时长包购买入口(30/90 天)——前端只拿 Checkout URL 跳转,回跳 ?ok=1 提示(到期日由 webhook 拨)。
 import { resetAnswersMemory } from '@/lib/quiz'
 import { useEffect, useState } from 'react'
-import { useLang } from '../LangProvider'
-import { useIsNarrow } from '../jobs/Modal'
-import { IconStar, IconUser } from '../Icons'
+import { useLang } from '@/components/i18n'
+import { useIsNarrow } from '@/components/modal'
+import { IconStar, IconUser } from '@/components/ui'
 import { Header } from '../Header'
-import { Footer } from '../Footer'
+import { Footer } from '@/components/footer'
 import { ProfileForm, type ProfileValue } from './ProfileForm'
 import { SavedSearchList } from './SavedSearchList'
 import { SavedJobsList } from './SavedJobsList'
 import { ResumeArchive } from './ResumeArchive'
-import { Avatar } from '../Avatar'
-import { Button, Notice } from '../ui'
+import { Avatar } from '@/components/auth'
+import { Button, Notice } from '@/components/ui'
 
 // profile 上的简历存档两键(E11-08)只在本页读显示,不进 ProfileForm 的表单值 → 就地扩类型,不动 ProfileValue
 type ProfileWithResume = ProfileValue & { resumeText?: string | null; resumeSavedAt?: string | null }

@@ -21,7 +21,7 @@ import { defaultProfile, EDU_KEYS, scoreProvince, streamMatches, type DrawRow, t
 // 打分是**关于你这个人**的功能,不绑某一个岗位(Frank 2026-07-27「应该单独弄个功能吧,
 // 不应该放到 pnp 弹框里面」)—— 所以只收一个轻量语境:职业(拿该省在招数)、目标省(排序)、
 // 时薪与城市(BC 的两项按官方规则要用,拿不到就让用户自己填)。全是可选。
-import { TabPanel, Tabs } from '../ui'
+import { TabPanel, Tabs } from '@/components/ui'
 
 export type ScoreCtx = { noc?: string; teer?: number | null; province?: string; hourly?: number | null; city?: string; hasOffer?: boolean }
 

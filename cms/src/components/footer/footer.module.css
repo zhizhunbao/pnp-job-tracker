@@ -1,0 +1,53 @@
+/*
+ * footer 域的私有样式(2026-08-24 组件域样张:值与原内联逐格相等,渲染不变)。
+ * 跨域规范类(tapPad 点区)仍来自 main.css 全局层 —— 判据同 lib:多消费者的留全局。
+ */
+
+/*
+ * 页脚壳:细顶线 + 浅底;flex 布局页里 margin-top auto 贴底。
+ */
+.foot {
+  border-top: 1px solid #e5e7eb;
+  background: #fafafa;
+  flex-shrink: 0;
+  margin-top: auto;
+}
+
+/*
+ * 内轨:轨宽 1320 定死 —— 与头轨/全站容器同宽(2026-07-30 Frank「每个页面宽度一样」);
+ * 单行回绕。
+ */
+.inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 14px 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
+  color: #9ca3af;
+  font-size: 12.5px;
+}
+
+/*
+ * 法务链组(老全局名 sfLinks 的正名迁居;main.css 里 .sfLinks a.tapPad 点区规则仍生效)。
+ */
+.links {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.links a {
+  color: #6b7280;
+  text-decoration: none;
+}
+
+/*
+ * 版权不换行。
+ */
+.copy {
+  white-space: nowrap;
+}

@@ -38,9 +38,9 @@ import dynamic from 'next/dynamic'
 import { usePathname } from 'next/navigation'
 import { Component, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 
-import { IconChat, IconMaximize, IconMinimize, IconMinus, IconRefresh } from '../Icons'
-import { useLang } from '../LangProvider'
-import { UI } from '../ui'
+import { IconChat, IconMaximize, IconMinimize, IconMinus, IconRefresh } from '@/components/ui'
+import { useLang } from '@/components/i18n'
+import { UI } from '@/components/ui'
 import { track } from '@/lib/track'
 
 // 懒加载:挂件挂在全站 layout 上,不该让每个页面都背对话那份 JS —— 第一次点开才下载。

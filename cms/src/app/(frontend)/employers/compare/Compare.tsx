@@ -4,14 +4,14 @@
 // 红线:摆事实高亮差异不下结论;LMIA=历史事实≠担保(ce.note);缺数「—」不猜。
 import { useState } from 'react'
 import { type TFn } from '@/lib/i18n'
-import { useLang } from '../../LangProvider'
+import { useLang } from '@/components/i18n'
 import { Header } from '../../Header'
-import { Footer } from '../../Footer'
-import { BackLink } from '../../BackLink'
-import { Button, Card, CardKV, Notice, Shell, Tag, UI } from '../../ui'
-import { Table } from '../../ui'
+import { Footer } from '@/components/footer'
+import { BackLink } from '@/components/ui'
+import { Button, Card, CardKV, Notice, Shell, Tag, UI } from '@/components/ui'
+import { Table } from '@/components/table'
 import { PricingModal } from '../../jobs/PricingModal'
-import { IconScale, IconStar } from '../../Icons'
+import { IconScale, IconStar } from '@/components/ui'
 import { CMP_KEY, type CompareRow } from '@/lib/employers'
 
 const money = (v: number | null) => (v != null ? `$${Math.round(v / 1000)}K` : null)

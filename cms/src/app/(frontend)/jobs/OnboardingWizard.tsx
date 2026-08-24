@@ -4,8 +4,8 @@
 // 一步一问、零打字点选(复用 account/profileOptions)、每项可跳过、进度可见、价值前置;末步保存→整页跳 ?view=match 让 SSR 亮匹配。
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { TFn } from '@/lib/i18n'
-import { Modal } from './Modal'
-import { Button, chipStyle } from '../ui'
+import { Modal } from '@/components/modal'
+import { Button, chipStyle } from '@/components/ui'
 import { hasProfile, normalizeProfile, type MatchProfile, type ProfileJson } from '@/lib/jobs'
 import {
   POPULAR_NOCS, CLB_OPTS, CRS_OPTS, PGWP_OPTS, clbActive, crsActive, pgwpActive, type Opt,

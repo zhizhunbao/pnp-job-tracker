@@ -2,12 +2,12 @@
 // 定价页视图(E5-01):对照表与按钮三态在 jobs/PricingModal.tsx 的 PricingCard(单一来源,弹窗/页面共用);
 // 本页只是 SEO/直链/Stripe 回跳用的页面壳(E8-02 拍板:站内入口一律开定价弹窗)。caps 由服务端 plan.ts 传入。
 import { useEffect, useState } from 'react'
-import { useLang } from '../LangProvider'
-import { AuthModal } from '../jobs/AuthForm'
+import { useLang } from '@/components/i18n'
+import { AuthModal } from '@/components/auth'
 import { PricingCard, type PriceCaps } from '../jobs/PricingModal'
 import { Header } from '../Header'
-import { Footer } from '../Footer'
-import { Shell } from '../ui'
+import { Footer } from '@/components/footer'
+import { Shell } from '@/components/ui'
 import { track } from '@/lib/track'
 
 // 来路白名单(低基数,与 lib/funnel 的 PROP_OK 同口径):报告锁区 CTA 带 ?from=rpt-<卡>,其余算直达

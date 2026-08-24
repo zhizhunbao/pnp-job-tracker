@@ -2,10 +2,10 @@
 // 官方资源导航(E4-05):hao123 式导航——顶部搜索框 + 每条一卡的密集网格,按分类分区。
 // curated 常量(非 ETL);红线=宁缺毋滥,失效宁可不列。链接=可点卡片(整卡跳官方页)。
 import { useMemo, useState } from 'react'
-import { useLang } from '../LangProvider'
+import { useLang } from '@/components/i18n'
 import { Header } from '../Header'
-import { Footer } from '../Footer'
-import { BANNER_IMGS, Banner } from '../ui'
+import { Footer } from '@/components/footer'
+import { BANNER_IMGS, Banner } from '@/components/ui'
 import { RES } from '@/lib/official'
 
 export function Resources() {
@@ -56,7 +56,7 @@ export function Resources() {
         ))}
 
       </div>
-      <Footer t={t} maxWidth={1320} />
+      <Footer t={t} />
     </div>
   )
 }

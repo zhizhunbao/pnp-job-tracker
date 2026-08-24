@@ -47,7 +47,7 @@ export function Banner({ module, icon, title, sub, right, images, stats, tall }:
     <div className={tall ? 'pbImgBanner pbTall' : 'pbImgBanner'} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
       style={{ position: 'relative', height: tall ? 200 : 130, borderRadius: 12, overflow: 'hidden', margin: '0 0 14px' }}>
       {imgs.map((src, i) => (
-        // eslint-disable-next-line @next/next/no-img-element
+        // eslint-disable-next-line @next/next/no-img-element -- Wikimedia 外源图不进 next/image 优化管线(域名白名单与尺寸都不可控)
         <img key={src} src={src} alt="" title="Wikimedia Commons" onError={() => setDead(true)}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: i === idx % imgs.length ? 1 : 0, transition: 'opacity 1.2s ease' }} />
       ))}

@@ -11,9 +11,9 @@
 //      **只到「够不够线」为止**:不许延伸成「多久能被捞」「概率多大」(禁概率红线)。
 import { useEffect, useState } from 'react'
 
-import { Table } from '../../ui'
-import { Tabs } from '../../ui'
-import { UI } from '../../ui'
+import { Table } from '@/components/table'
+import { Tabs } from '@/components/ui'
+import { UI } from '@/components/ui'
 import { lineStateOf, type DrawRow, type LineState } from '@/lib/points'
 
 const N_DRAWS = 6

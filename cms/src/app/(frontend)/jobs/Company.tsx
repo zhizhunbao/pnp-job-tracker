@@ -4,8 +4,8 @@
 // 「担保 None=无记录 ≠ 不担保」是这里的语义红线(灰句写明),别把没数据说成负判定。
 import { useEffect, useState } from 'react'
 
-import { IconCompass, IconMap } from '../Icons'
-import { gradeColor, Grid, Row } from '../ui'
+import { IconCompass, IconMap } from '@/components/ui'
+import { gradeColor, Grid, Row } from '@/components/ui'
 import { JD_ZH_LINE, JdAdvisorSection, isJdNone } from './Jd'
 import { SponsorLeadCard } from './Pnp'
 import { TvEntryCard } from './TripleVerdictModal'

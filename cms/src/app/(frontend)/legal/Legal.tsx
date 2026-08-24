@@ -3,9 +3,9 @@
 // i18n.ts 只管 UI 壳 —— 法务长文不进全局字典。文案为模板级自拟,不构成法律意见(收入后请专业审阅,backlog)。
 import { type Lang } from '@/lib/i18n'
 import { type LegalDoc } from '@/lib/legal'
-import { useLang } from '../LangProvider'
+import { useLang } from '@/components/i18n'
 import { Header } from '../Header'
-import { Footer } from '../Footer'
+import { Footer } from '@/components/footer'
 
 // 公开支持邮箱(删号/异议下架/退款申请都走它):正式域名定了换 env 即可
 export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'wangsansi9527@gmail.com'

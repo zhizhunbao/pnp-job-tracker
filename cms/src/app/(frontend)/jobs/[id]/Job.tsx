@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { LANGS } from '@/lib/i18n'
-import { useLang } from '../../LangProvider'
+import { useLang } from '@/components/i18n'
 import { JobBody } from '../Jd'                    // 正文身体:整页与弹框渲的是同一棵树
 import { JobMiniRow } from '../Company'
 import { type Plan, type JobRow, type NocDesc } from '@/lib/jobs'
@@ -14,9 +14,9 @@ import { type RelatedJob } from '@/lib/jobs/server'
 import { catName, nocLocalTitle, registerCatLabels } from '@/lib/noc'
 import { provName } from '@/lib/location'
 import { Header } from '../../Header'
-import { Footer } from '../../Footer'
-import { Shell } from '../../ui'
-import { goBackOr } from '../../BackLink'
+import { Footer } from '@/components/footer'
+import { Shell } from '@/components/ui'
+import { goBackOr } from '@/components/ui'
 import { track } from '@/lib/track'
 
 // dims 收窄:B2 后页面只用 nocDesc(职位名译名对照);其余维度(pnp/ee/新闻…)随移民卡砍一并不用

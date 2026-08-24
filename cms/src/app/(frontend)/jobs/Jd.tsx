@@ -4,11 +4,11 @@
 // 正文一律懒取(fetchJobText 带同岗会话缓存),原站拦抓取的走空态说事实,不绕过访问控制。
 import { useEffect, useState } from 'react'
 
-import { IconCompass } from '../Icons'
+import { IconCompass } from '@/components/ui'
 
 import { LockedText } from './Lock'
-import { AuthModal } from './AuthForm'
-import { Modal, useIsNarrow } from './Modal'
+import { AuthModal } from '@/components/auth'
+import { Modal, useIsNarrow } from '@/components/modal'
 import { OnboardingWizard, OB_SEEN_KEY } from './OnboardingWizard'
 import { ResumeMatchModal } from './ResumeMatchModal'   // G3 简历对照(入口在 ApplyBar)
 import { makeT, type Lang, type TFn } from '@/lib/i18n'

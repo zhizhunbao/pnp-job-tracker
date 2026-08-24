@@ -3,10 +3,10 @@
 // 大半屏,决策页要的是动线不是阅览室)。骨架照 /resources:Header + 1320 轨 + banner + 白卡。
 // 行形态原样搬决策页那张卡(08-11 Frank 连拍四刀后的终态):一行一条不折叠,
 // 做了事实层的才有「完整案例」按钮 —— 答不了就不假装能答。
-import { useLang } from '../LangProvider'
+import { useLang } from '@/components/i18n'
 import { Header } from '../Header'
-import { Footer } from '../Footer'
-import { BANNER_IMGS, Banner, UI } from '../ui'
+import { Footer } from '@/components/footer'
+import { BANNER_IMGS, Banner, UI } from '@/components/ui'
 import { CASES } from '@/lib/ruling'
 import { track } from '@/lib/track'
 
@@ -35,7 +35,7 @@ export function Cases() {
           ))}
         </div>
       </div>
-      <Footer t={t} maxWidth={1320} />
+      <Footer t={t} />
     </div>
   )
 }

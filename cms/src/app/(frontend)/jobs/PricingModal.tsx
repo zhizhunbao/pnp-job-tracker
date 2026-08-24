@@ -4,10 +4,10 @@
 // caps 用 lib/quota.ts 常量(客户端 bundle 取默认值;若哪天用 env 改分层数字,记得 NEXT_PUBLIC 化或改走 props)。
 import { useEffect, useState } from 'react'
 import type { TFn } from '@/lib/i18n'
-import { Modal } from './Modal'
-import { Button } from '../ui'
-import { IconCheck, IconStar } from '../Icons'
-import { AuthModal } from './AuthForm'
+import { Modal } from '@/components/modal'
+import { Button } from '@/components/ui'
+import { IconCheck, IconStar } from '@/components/ui'
+import { AuthModal } from '@/components/auth'
 import { track } from '@/lib/track'
 import { FREE_ADVISOR_TRIES, FREE_JOBTEXT_TRIES, FREE_MATCH_JOBS_PER_DAY, PRO_ADVISOR_DAILY } from '@/lib/quota'
 

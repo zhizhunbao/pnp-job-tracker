@@ -8,16 +8,16 @@
 import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { Header } from '../Header'
-import { Footer } from '../Footer'
-import { AccountMenu } from '../AccountMenu'
-import { useLang } from '../LangProvider'
-import { IconLock, IconSave, IconSettings, IconTarget } from '../Icons'
-import { BANNER_IMGS, Banner, Button, JobCard, gradeColor } from '../ui'
+import { Footer } from '@/components/footer'
+import { AccountMenu } from '@/components/auth'
+import { useLang } from '@/components/i18n'
+import { IconLock, IconSave, IconSettings, IconTarget } from '@/components/ui'
+import { BANNER_IMGS, Banner, Button, JobCard, gradeColor } from '@/components/ui'
 import { BROAD_SLUGS } from '@/lib/stats'   // 大类的行业顺序(镜像 etl/noc_buckets.BROADS)
 import { quizToProfile, readQuiz } from '../quiz/EntryQuiz'   // 答案读写与落档(弹框本体已退役,2026-07-31 统一答题)
 import { ActModal, AdvisorModal } from './Advisor'
 import { eeIsDormant, eeLastDraw } from './Pnp'
-import { AuthModal } from './AuthForm'
+import { AuthModal } from '@/components/auth'
 import { UpgradeModal } from './UpgradeModal'
 import { PricingModal } from './PricingModal'
 import { OnboardingWizard, OB_SEEN_KEY } from './OnboardingWizard'
@@ -934,7 +934,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
             升级动力改由表内 Pro 数据列(vs中位/工资中位)打码承担 */}
       </div>
       {/* footer:全站共享 Footer(2026-07-16 用户拍板统一 header/footer) */}
-      <Footer t={t} maxWidth={1320} />
+      <Footer t={t} />
 
       {popup && <AdvisorModal group={popup.group} field={popup.srcField} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} news={dims.news} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} onOpenJob={(x) => setActModal({ kind: 'desc', job: x })} />}
       {actModal && <ActModal job={actModal.job} lang={lang} plan={plan} nocDesc={dims.nocDescriptions} onClose={() => setActModal(null)} />}

@@ -5,8 +5,8 @@
 // 数据完整性:返回用户已填精确值(clb/crs/pgwp)未主动改档时原值保留(state 初值=精确值,不点不覆盖)。
 import { useEffect, useMemo, useState } from 'react'
 import type { TFn } from '@/lib/i18n'
-import { IconTarget } from '../Icons'
-import { Button, Notice, chipStyle } from '../ui'
+import { IconTarget } from '@/components/ui'
+import { Button, Notice, chipStyle } from '@/components/ui'
 import { POPULAR_NOCS, CLB_OPTS, CRS_OPTS, PGWP_OPTS, clbActive, crsActive, pgwpActive, type Opt } from './profileOptions'
 
 type NocOpt = { noc: string; title: string }

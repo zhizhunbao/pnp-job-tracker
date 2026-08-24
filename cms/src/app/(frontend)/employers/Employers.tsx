@@ -13,13 +13,14 @@ import {
   EMP_PROGRAMS, type EmployerFilters, type EmployerPage, type EmployerRow,
 } from '@/lib/employers'
 import { pickName } from '@/lib/noc'
-import { BackLink } from '../BackLink'
-import { useLang } from '../LangProvider'
-import { Footer } from '../Footer'
+import { BackLink } from '@/components/ui'
+import { useLang } from '@/components/i18n'
+import { Footer } from '@/components/footer'
 import { Header } from '../Header'
-import { Table, Pager, type Col } from '../ui'
-import { JobCard } from '../ui'
-import { Button, Shell, UI } from '../ui'
+import { Pager } from '@/components/ui'
+import { Table, type Col } from '@/components/table'
+import { JobCard } from '@/components/ui'
+import { Button, Shell, UI } from '@/components/ui'
 import type { Lang, TFn } from '@/lib/i18n'
 
 // 下拉:职位板 Sel 同规格(高 38、圆角 6、镜像文本贴宽不留空白);className=sbCtl 拿到既有的

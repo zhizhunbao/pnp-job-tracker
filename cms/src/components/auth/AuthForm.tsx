@@ -5,8 +5,8 @@
 // 全走 Payload 自带 REST(httpOnly cookie),特权字段由 Users collection 字段级锁保护。
 import { useEffect, useState } from 'react'
 import type { TFn } from '@/lib/i18n'
-import { Modal } from './Modal'
-import { Button, Notice } from '../ui'
+import { Modal } from '@/components/modal'
+import { Button, Notice } from '@/components/ui'
 import { fieldsOf, missingFields, pullAndMerge, readAnswers } from '@/lib/quiz'
 
 const GOOGLE_ON = !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
@@ -92,7 +92,7 @@ export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }:
         window.history.replaceState(null, '', u.pathname + (u.searchParams.toString() ? '?' + u.searchParams.toString() : '') + u.hash)
       }
     } catch { /* ignore */ }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 只在挂载时读一次 localStorage 初始化,依赖列表空是本意
   }, [])
 
   const submit = async (e: React.FormEvent) => {

@@ -1,0 +1,110 @@
+/*
+ * table 域的私有样式(2026-08-24 组件域样张:自 main.css 第 8 段整体迁入,值逐格相等)。
+ * 行 hover 摘除与链接 hover 由 main.css 全局规范接管(E8-08「可点才有态」)。
+ */
+
+/*
+ * 白卡壳:横滚容器 + 圆角描边。
+ */
+.shell {
+  overflow: auto;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+/*
+ * 已嵌在调用方白卡里,不套第二层描边。
+ */
+.bare {
+  background: none;
+  border: 0;
+  border-radius: 0;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.th {
+  text-align: left;
+  padding: 9px 12px;
+  font-size: 12.5px;
+  color: #6b7280;
+  font-weight: 600;
+  white-space: nowrap;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fafafa;
+  position: relative;
+}
+
+.th:not(:last-child) {
+  border-right: 1px solid #e5e7eb;
+}
+
+.sortable {
+  cursor: pointer;
+}
+
+/*
+ * 表头 hover 提示(如「技能类获批」口径)。
+ */
+.tip {
+  text-decoration: underline dotted #d1d5db;
+}
+
+/*
+ * 可排序但未排序时的 ⇅。
+ */
+.sortHint {
+  color: #d1d5db;
+}
+
+/*
+ * 拖列宽手柄。
+ */
+.grip {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+}
+
+.td {
+  padding: 9px 12px;
+  font-size: 13px;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.td:not(:last-child) {
+  border-right: 1px solid #f3f4f6;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.th.right,
+.td.right {
+  text-align: right;
+}
+
+.td.right {
+  font-variant-numeric: tabular-nums;
+}
+
+.empty {
+  padding: 24px 16px;
+  color: #9ca3af;
+  font-size: 13px;
+  text-align: center;
+}
+
+.foot {
+  padding: 8px 12px;
+  border-top: 1px solid #f3f4f6;
+}

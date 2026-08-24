@@ -3,6 +3,6 @@
 // 文案模板级自拟,不构成法律意见。
 import { Legal } from '../Legal'
 import { legalDocs } from '@/lib/legal'
-import { IconClipboard } from '../../Icons'
+import { IconClipboard } from '@/components/ui'
 
 export default function TermsPage() { return <Legal docs={legalDocs.terms} icon={<IconClipboard />} /> }

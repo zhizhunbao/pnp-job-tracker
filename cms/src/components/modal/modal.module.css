@@ -1,0 +1,140 @@
+/*
+ * modal 域的私有样式(2026-08-24 组件域刀 A:Modal/ModalTitle 体内的内联对象全数类化,
+ * 值与原内联逐格相等,渲染不变)。
+ * 运行时数据(zIndex、拖拽 transform、按档宽与 vh 上限的 CSS 变量)仍经 style 进 ——
+ * table 域头注同一条 style 白名单。
+ */
+
+/*
+ * 遮罩(规范值同 constants 的 SCRIM;域内自用这份类,消费端过渡期还在 spread 常量)。
+ */
+.scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, .5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+/*
+ * 窄屏遮罩内衬:sm 档留 14px,其余全屏贴边。
+ */
+.scrimNarrowSm {
+  padding: 14px;
+}
+
+.scrimNarrowFull {
+  padding: 0;
+}
+
+/*
+ * 白卡基座(规范值同 constants 的 CARD)。
+ */
+.card {
+  position: relative;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .3);
+  overscroll-behavior: contain;
+  overflow-y: auto;
+}
+
+/*
+ * 居中态:宽按档(--mw)、高上限按 --vh;拖拽位移与过渡是运行时数据走 style。
+ */
+.center {
+  width: min(var(--mw), 100%);
+  max-height: var(--vh);
+  padding: 24px 24px 20px;
+}
+
+/*
+ * 窄屏 sm 档:整宽、92vh 上限。
+ */
+.narrowSm {
+  width: 100%;
+  max-height: 92vh;
+  padding: 20px 16px 16px;
+}
+
+/*
+ * 窄屏其余档:全屏贴边。
+ */
+.narrowFull {
+  border-radius: 0;
+  width: 100%;
+  height: 100%;
+  max-height: 100vh;
+  padding: 20px 14px 16px;
+}
+
+/*
+ * 全屏态(右上角放大):近全窗 + 尺寸过渡。
+ */
+.max {
+  width: 96vw;
+  height: 94vh;
+  max-height: 94vh;
+  padding: 24px 24px 20px;
+  transform: none;
+  transition: width .2s, height .2s;
+}
+
+/*
+ * pad=false:内容自管内衬(整页 JD 这类)。
+ */
+.noPad {
+  padding: 0;
+}
+
+/*
+ * 可拖态的手势光标。
+ */
+.grab {
+  cursor: grab;
+}
+
+/*
+ * 右上角窗口动作排(全屏/关闭/自定义钮)。
+ */
+.acts {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 20;
+}
+
+/*
+ * 标题块:给右上动作排留位。
+ */
+.titleWrap {
+  min-width: 0;
+  padding-right: 80px;
+}
+
+/*
+ * eyebrow 小字(颜色按场景由 style 变量进)。
+ */
+.eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .3px;
+  color: var(--eyebrow-c);
+}
+
+/*
+ * 17px 标题单行截断。
+ */
+.title {
+  margin: 4px 0 0;
+  font-size: 17px;
+  color: #111827;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -4,7 +4,7 @@
 // 红线:凭证=历史事实/官方名录,非担保承诺。
 import { type Lang, type TFn } from '@/lib/i18n'
 import { track } from '@/lib/track'
-import { Card, CardKV, UI } from '../ui'
+import { Card, CardKV, UI } from '@/components/ui'
 import { type SponsorEmployerRow } from '@/lib/employers'
 
 // 所在地统一省维度(Frank 08-08「怎么有的显示省有的显示市」:单省带市名造成两种粒度混排)——

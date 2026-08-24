@@ -4,7 +4,7 @@
 // 形态照 SavedJobsList:标题 13.5/600 + 灰字小注 + 右侧灰色文字钮;清除要二次确认(简历是用户资产,删了不可逆)。
 import { useState } from 'react'
 import type { TFn } from '@/lib/i18n'
-import { UI } from '../ui'
+import { UI } from '@/components/ui'
 
 const linkBtn: React.CSSProperties = {
   border: 'none', background: 'none', padding: '4px 2px', fontSize: 12.5,

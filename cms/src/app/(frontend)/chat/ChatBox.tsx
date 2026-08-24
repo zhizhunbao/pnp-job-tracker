@@ -17,9 +17,9 @@
 //      渲染的每一截都是核过的字,不是假装的打字机 —— 详见 §流式 注释。
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { IconArrowUp } from '../Icons'
-import { useLang } from '../LangProvider'
-import { UI } from '../ui'
+import { IconArrowUp } from '@/components/ui'
+import { useLang } from '@/components/i18n'
+import { UI } from '@/components/ui'
 import { track } from '@/lib/track'
 import { ChatAnswer, ChatText, CHAT_ANSWER_CSS, type Answer, type AnswerOption } from './ChatAnswer'
 import { pickExamples, profileMemories, exampleKind, type ChatProfile } from './chatExamples'

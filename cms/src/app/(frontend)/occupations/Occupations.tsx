@@ -2,12 +2,12 @@
 // 紧缺职业清单视图(B4-01):183 行按 省→通道 分组一页展示;行级官方来源链+抓取日(既有 url/fetched 列)。
 // 口径红线:清单命中=粗筛信号,非资格认定(dir.occ.note)。
 import { streamDisplay } from '@/lib/jobs'
-import { useLang } from '../LangProvider'
+import { useLang } from '@/components/i18n'
 import { Header } from '../Header'
-import { Footer } from '../Footer'
-import { BANNER_IMGS, Banner, Shell, Title, Tag, UI } from '../ui'
-import { Table } from '../ui'
-import { IconClipboard } from '../Icons'
+import { Footer } from '@/components/footer'
+import { BANNER_IMGS, Banner, Shell, Title, Tag, UI } from '@/components/ui'
+import { Table } from '@/components/table'
+import { IconClipboard } from '@/components/ui'
 import type { OccRow } from '@/lib/employers'
 
 export function Occupations({ rows }: { rows: OccRow[] }) {

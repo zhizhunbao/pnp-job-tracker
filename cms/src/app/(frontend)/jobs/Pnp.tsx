@@ -4,8 +4,8 @@
 // 各省自己的职业清单/语言/工资要求不在这里判,更不替用户下结论。
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { IconCheck, IconTarget, IconWarn, IconX } from '../Icons'
-import { Grid } from '../ui'
+import { IconCheck, IconTarget, IconWarn, IconX } from '@/components/ui'
+import { Grid } from '@/components/ui'
 import { TvEntryCard } from './TripleVerdictModal'
 import { makeT, type Lang, type TFn } from '@/lib/i18n'
 import { eeDisplay, eeKeyDisplay, streamDisplay } from '@/lib/jobs'

@@ -9,9 +9,9 @@
 // 渲 valueText 原文,**永不折成 0 或「暂无」** —— 折了就是替官方编了个数字。
 import { useState } from 'react'
 
-import { IconCheck, IconClipboard, IconThumbDown, IconThumbUp } from '../Icons'
-import { useLang } from '../LangProvider'
-import { UI } from '../ui'
+import { IconCheck, IconClipboard, IconThumbDown, IconThumbUp } from '@/components/ui'
+import { useLang } from '@/components/i18n'
+import { UI } from '@/components/ui'
 import { track } from '@/lib/track'
 
 // 后端契约(POST /api/consult/chat 200 体)——由 api/chat/route.ts 定,这里只照抄形状,不自行扩展

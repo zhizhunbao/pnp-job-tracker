@@ -5,8 +5,8 @@
 // E8-10 收编的教训写在 GROUP_SECTIONS 上:一套组件伺候 24 种字段必漏,所以字段→分组是张明表,不是 if 链。
 import { useEffect, useRef, useState } from 'react'
 
-import { IconCompass, IconMap, IconMaximize, IconMinimize } from '../Icons'
-import { Grid, Row } from '../ui'
+import { IconCompass, IconMap, IconMaximize, IconMinimize } from '@/components/ui'
+import { Grid, Row } from '@/components/ui'
 // FactsBox 只有本文件用 —— 2026-08-17 从退役的 jobs/Facts 收回宿主(一处用的东西不该住在共享叶子里)
 function FactsBox({ children, note }: { children: React.ReactNode; note?: React.ReactNode }) {
   // Frank 走查#8:去掉卡片底部横线(borderBottom+paddingBottom 退役);组间留白靠 marginBottom
@@ -21,8 +21,8 @@ import { CompanyAiSection, CompanyPanel } from './Company'
 import { JdTextView, JobBody, NocDutiesView, SUG_MARK, extractSug, fetchJobText, renderAI } from './Jd'
 import { EeCategorySection, MeansForMe, NewsLatestBlock, PnpDrawsBlock, PnpListSection, STREAM_REFORM, VerdictPill, aipBlockOf, aipVerdictOf, normName } from './Pnp'
 import { LockedText } from './Lock'
-import { CARD, SCRIM, iconBtnS, useIsNarrow } from './Modal'
-import { useOverlayClose } from './overlay'
+import { CARD, SCRIM, iconBtnS, useIsNarrow } from '@/components/modal'
+import { useOverlayClose } from '@/components/modal'
 import { makeT, type Lang, type TFn } from '@/lib/i18n'
 import { streamDisplay } from '@/lib/jobs'
 import { type ColKey, type FieldGroup, type Plan, type DesigEmp, type EeOcc, type FieldSource, type JobRow, type NewsSlim, type NocDesc, type PnpDraw, type PnpOcc, type ProvInfo, blockedSrc, isDirect, sourceLabel } from '@/lib/jobs'

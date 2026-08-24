@@ -4,12 +4,12 @@
 // 价格展示走 NEXT_PUBLIC_PRICE_DISPLAY(与 /pricing 同源,构建期内联);Checkout 复用 /api/stripe/checkout。
 import { useEffect, useState } from 'react'
 import type { TFn } from '@/lib/i18n'
-import { Modal } from './Modal'
+import { Modal } from '@/components/modal'
 import { track } from '@/lib/track'
-import { IconStar } from '../Icons'
+import { IconStar } from '@/components/ui'
 import { PricingModal, PRICE } from './PricingModal'
-import { AuthModal } from './AuthForm'
-import { Button, Notice } from '../ui'
+import { AuthModal } from '@/components/auth'
+import { Button, Notice } from '@/components/ui'
 
 // 统一升级钮 UpgradeCta(⓪ 2026-07-19 Frank 批「升级 Pro 按钮单独设计」):⭐ 实心棕 pro 型,
 // 全站升级入口从裸文字链换装到这;已登录=开升级弹框,未登录=开注册框(行为与原各处一致)。
