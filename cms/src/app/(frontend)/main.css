@@ -646,7 +646,7 @@ button:not(:disabled):hover {
 
 /* 多值网格(ui/Grid):前 cols-1 列 max-content 跨行对齐、末列吃剩余宽。
    列数是数据(调用方 2 或 3 列),经 --gc 传入;规则留这儿 */
-.grid { display: grid; grid-template-columns: repeat(var(--gc), max-content) 1fr; column-gap: 14px; row-gap: 3px; align-items: baseline; font-size: 13px; text-align: left; }
+/* (.grid 容器 2026-08-24 迁 components/grid 域;gridK/V/N 角色类 17 处消费页直写,留全局层随消费页域化收) */
 /* 三个角色类由调用方按格挂,组件不按列位自动派(同一列在不同行里角色可以不同) */
 .gridK { color: #9ca3af; }                                        /* 标签格 */
 .gridV { color: #374151; font-variant-numeric: tabular-nums; }    /* 值格 */

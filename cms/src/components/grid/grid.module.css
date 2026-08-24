@@ -1,0 +1,41 @@
+/*
+ * grid 域的私有样式(2026-08-24 容器类自 main.css 迁入,值逐格相等)。
+ * ⚠️ 单元格角色类 gridK(标签)/ gridV(值)/ gridN(注)**仍在 main.css 全局层**:
+ * 17 处消费页按字面类名直写,是多消费者的全局词汇 —— 消费页域化时随行收进来。
+ */
+
+/*
+ * 事实网格容器:前 N-1 列 max-content 跨行对齐、末列吃剩余宽;
+ * 列数经 --gc 变量进(调用方的数据定的,运行时值)。
+ */
+.grid {
+  /*
+   * 网格布局。
+   */
+  display: grid;
+
+  /*
+   * 前 --gc 列按内容最宽者定宽(跨行对齐),末列 1fr 吃剩余。
+   */
+  grid-template-columns: repeat(var(--gc), max-content) 1fr;
+
+  /*
+   * 行 3px(事实行贴紧)、列 14px 的间距(gap 简写:先行后列)。
+   */
+  gap: 3px 14px;
+
+  /*
+   * 各格按基线对齐(数字与标签不上下跳)。
+   */
+  align-items: baseline;
+
+  /*
+   * 事实字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 一律左对齐(2026-07-26 Frank 走查拍板)。
+   */
+  text-align: left;
+}

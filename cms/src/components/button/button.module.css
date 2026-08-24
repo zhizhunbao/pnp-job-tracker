@@ -1,0 +1,235 @@
+/*
+ * button 域的私有样式(2026-08-24 自 ui/Button.tsx 的样式对象迁类,值逐格相等)。
+ * 颜色语义:蓝=普通行动,棕=付费,靛=AI 功能,红=危险,幽灵=弱操作。
+ */
+
+/*
+ * 按钮基座(默认 = md 档 + primary 形):变体与尺寸档往上叠。
+ */
+.btn {
+  /*
+   * 按钮字重统一半粗(pro 档再加到 700)。
+   */
+  font-weight: 600;
+
+  /*
+   * 钮文字不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * <a> 形态的按钮不带下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 行内块:能设内衬、能排进文本流。
+   */
+  display: inline-block;
+
+  /*
+   * 可点手型(禁用态见 :disabled)。
+   */
+  cursor: pointer;
+
+  /*
+   * md 档字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 统一圆角(ghost 档清零)。
+   */
+  border-radius: 8px;
+
+  /*
+   * md 档内衬。
+   */
+  padding: 7px 16px;
+}
+
+/*
+ * 禁用态:还原光标(禁用变浅只有 primary 定义了档,见 .primary:disabled)。
+ */
+.btn:disabled {
+  /*
+   * 不可点就不给手型。
+   */
+  cursor: default;
+}
+
+/*
+ * sm 档:小一号。
+ */
+.sm {
+  /*
+   * sm 档字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * sm 档内衬。
+   */
+  padding: 4px 12px;
+}
+
+/*
+ * lg 档:大一号。
+ */
+.lg {
+  /*
+   * lg 档字号。
+   */
+  font-size: 14px;
+
+  /*
+   * lg 档内衬。
+   */
+  padding: 11px 20px;
+}
+
+/*
+ * 普通行动(默认变体):品牌蓝实底。
+ */
+.primary {
+  /*
+   * 品牌蓝实底(真值在 main.css 的 :root)。
+   */
+  background: var(--primary);
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+
+  /*
+   * 实底钮无描边。
+   */
+  border: none;
+}
+
+/*
+ * primary 的禁用态:变浅蓝(原内联 disabled && kind === 'primary' 那格)。
+ */
+.primary:disabled {
+  /*
+   * 浅蓝(禁用)。
+   */
+  background: #93c5fd;
+}
+
+/*
+ * 付费入口(⭐):琥珀实底加粗。
+ */
+.pro {
+  /*
+   * 付费琥珀实底(真值在 main.css 的 :root)。
+   */
+  background: var(--warn);
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+
+  /*
+   * 实底钮无描边。
+   */
+  border: none;
+
+  /*
+   * 付费钮加粗到 700。
+   */
+  font-weight: 700;
+}
+
+/*
+ * 次级行动:白底蓝字描边。
+ */
+.secondary {
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 品牌蓝字。
+   */
+  color: var(--primary);
+
+  /*
+   * 边框灰描边。
+   */
+  border: 1px solid var(--border);
+}
+
+/*
+ * AI 功能:靛蓝浅底。
+ */
+.ai {
+  /*
+   * 靛蓝浅底。
+   */
+  background: #eef2ff;
+
+  /*
+   * 靛蓝深字。
+   */
+  color: #4338ca;
+
+  /*
+   * 靛蓝浅描边。
+   */
+  border: 1px solid #c7d2fe;
+}
+
+/*
+ * 危险行动:红实底。
+ */
+.danger {
+  /*
+   * 危险红实底(真值在 main.css 的 :root)。
+   */
+  background: var(--danger);
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+
+  /*
+   * 实底钮无描边。
+   */
+  border: none;
+}
+
+/*
+ * 弱操作(幽灵):无底无边零衬,像一截可点文字。
+ * 写在尺寸档之后 —— ghost 的 padding 0 要压过 .sm/.lg 的内衬(字号仍按档走)。
+ */
+.ghost {
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 品牌蓝字(弱操作调用方常用 style 把它盖成灰,过渡期允许)。
+   */
+  color: var(--primary);
+
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 零内衬(压过尺寸档)。
+   */
+  padding: 0;
+
+  /*
+   * 无底无边不需要圆角。
+   */
+  border-radius: 0;
+}

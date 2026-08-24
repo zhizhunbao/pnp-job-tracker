@@ -9,7 +9,7 @@
 //   · 窄屏横向可滚动,**永不换行**(换行的选项卡会把下面的内容顶得跳来跳去)
 import { useRef } from 'react'
 
-import { UI } from './colors'
+import { UI } from '../colors'
 
 export type TabItem = {
   key: string

@@ -9,7 +9,7 @@
 // 壳本身不许再抄一遍;12/16 这档最常用,直接给成 CARD_MD。
 import React from 'react'
 
-import { UI } from './colors'
+import { UI } from '../colors'
 
 // 白卡壳 2026-08-18 迁进 main.css 第 9 段(.card / .cardMd):调用点写 className,
 // padding 各页密度不同的那几处走内联(内联盖类)。
