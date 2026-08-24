@@ -1,7 +1,7 @@
 'use client'
 // 已保存筛选管理(E5-03):列表+删除。数据走 Payload REST(access 已限本人)。
 import { useEffect, useState } from 'react'
-import { ymd } from '@/lib/time'
+import { TimeText } from '@/components/time'
 import type { TFn } from '@/lib/i18n'
 import { IconMail } from '@/components/icons'
 
@@ -29,7 +29,7 @@ export function SavedSearchList({ t }: { t: TFn }) {
           {items.map((x) => (
             <div key={x.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid #f9fafb', fontSize: 13 }}>
               <span style={{ flex: 1, color: '#374151' }}><IconMail /> {x.name}</span>
-              {x.lastNotifiedAt ? <span style={{ fontSize: 11, color: '#c4c4c8' }}>{ymd(x.lastNotifiedAt ?? null)}</span> : null}
+              {x.lastNotifiedAt ? <TimeText iso={x.lastNotifiedAt} /> : null}
               <button onClick={() => del(x.id)}
                 style={{ border: 'none', background: '#fef2f2', color: '#b91c1c', borderRadius: 6, padding: '3px 10px', fontSize: 12, cursor: 'pointer' }}>
                 {t('ss.del')}

@@ -3,6 +3,7 @@
 // 红线在这儿落地——**粗筛信号,不是资格认定**:命中与否都只陈列官方事实与出处,
 // 各省自己的职业清单/语言/工资要求不在这里判,更不替用户下结论。
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { TimeText } from '@/components/time'
 import { DAY_MS, ymd } from '@/lib/time'
 
 import { IconCheck, IconTarget, IconWarn, IconX } from '@/components/icons'
@@ -308,7 +309,7 @@ function FederalRoundsCard({ t, draws }: { t: TFn; draws: PnpDraw[] }) {
       <div className="pnpBox clip mt">
         {rows.map((d, i) => (
           <div key={`${d.drawDate}-${d.label}-${i}`} className="pnpFedRow">
-            <span className="pnpFedDate">{ymd(d.drawDate)}</span>
+            <TimeText iso={d.drawDate} />
             <span title={d.stream} className="pnpFedType" style={{ color: FED_TYPE_COLOR[d.label] || '#b45309' }}>{eeKeyDisplay({ t, key: d.label })}</span>
             <span className="pnpFedCrs">{t('eelist.crsN', { crs: d.score ?? '—' })}</span>
             <span className="pnpFedIta">{t('eefed.ita', { n: d.invitations ?? '—' })}</span>
@@ -406,7 +407,7 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
                   <div className="pnpBox clip my">
                     {hist.map((h, i) => (
                       <div key={`${h.drawDate}-${i}`} className="pnpHistRow">
-                        <span className="pnpFedDate">{ymd(h.drawDate ?? null)}</span>
+                        <TimeText iso={h.drawDate ?? null} />
                         <span className="pnpFedCrs">{t('eelist.crsN', { crs: h.score ?? '—' })}</span>
                         <span className="pnpHistIta">{t('eelist.itaN', { n: h.invitations ?? '—' })}</span>
                       </div>

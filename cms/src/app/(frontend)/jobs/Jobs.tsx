@@ -6,6 +6,7 @@
 // 现按关注点各归其位:./types(形状)、./Pnp、./Company、./Jd、./Advisor、
 // ./Lock,地点/来源/NOC 三组工具下沉 @/lib。本文件只剩「这一页」自己的事。
 import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { DateAge, TimeText } from '@/components/time'
 
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
@@ -838,8 +839,14 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
               <span key={k} title={tip} onClick={cellActionable(k) ? stop(() => open(k, txt)) : undefined}
                 className={cellActionable(k) ? `jtChip act tone-${tone}` : `jtChip tone-${tone}`}>{txt}</span>
             )
-            // Frank 走查:发布当天显示 1 天 → new Date('YYYY-MM-DD') 按 UTC 午夜解析,EDT 晚上 Date.now() 已跨 UTC 次日差 1 天;改按本地午夜解析(+'T00:00:00')
-            const days = (j.status || 'open') !== 'closed' ? daysSince({ iso: j.datePosted ?? null, now: Date.now() }) : null
+            // 挂帖时长(Frank 走查过的本地午夜解析坑,现已收在 lib/time 的 daysSince):
+            // 「今天」与「N 天」两句文案归调用方,组件只管版式
+            function ageText(n: number): string {
+              if (n === 0) {
+                return `(${t('cell.today')})`
+              }
+              return `(${t('fact.daysUpVal', { n })})`
+            }
             // #200(Frank「岗位名称中文翻译默认都加上」):手机卡职位名挂 NOC 官方职业名译名(界面语言;与在招职位/弹框标题同款)
             const nz = nocLocalTitle({ row: dims.nocDescriptions.find((d) => d.noc === j.noc) || null, lang })
             // 通道胶囊排(批A 追拍「每个岗位都要列 teer,pnp,ee 胶囊;aip/qc 单独列;什么都走不了就不用列」):
@@ -906,7 +913,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
                     </> : null}
                   </>
                 ) : undefined}
-                date={<span suppressHydrationWarning>{ymd(j.datePosted ?? null)}{days != null ? `(${days === 0 ? t('cell.today') : t('fact.daysUpVal', { n: days })})` : ''}</span>}
+                date={<DateAge iso={j.datePosted ?? null} aging={(j.status || 'open') !== 'closed'} ageText={ageText} />}
                 /* #167⑩(Frank「卡片胶囊应该统一放到一个位置吧」):胶囊都归卡底那排,右上角只留星标——它是按钮不是胶囊。
                    #52:收藏入口手机也要有(E9-01 闭环第一环),匿名点=注册框(与桌面 toggleSave 同一逻辑) */
                 action={
@@ -918,7 +925,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
                 /* #167⑦(Frank「这个卡片最好有个更新时间吧,年月日时分秒」):发布时间只有日期没时刻(Job Bank 原样),
                    判断不了「刚抓到还是躺了一天」;更新时间是本站每小时抓取的实际时刻,精确到秒。
                    **此处必须带标签**:一张卡上两个日期并排,值自己说不清谁是谁——#166「值自证就删标签」的那条例外 */
-                footer={j.lastSeen ? <span suppressHydrationWarning>{t('col.lastSeen')} {fmtLocalSec(j.lastSeen)}</span> : undefined}
+                footer={j.lastSeen ? <>{t('col.lastSeen')} <TimeText iso={j.lastSeen} grain="second" /></> : undefined}
               />
             )
           })}
