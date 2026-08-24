@@ -89,3 +89,109 @@ export type ListIn = {
    */
   opts: readonly string[]
 }
+
+/**
+ * 输入框尺寸档:sm 32(图表控件行)/ md 38(筛选行,与 Select 同高)/ lg 42(独立搜索区)。
+ */
+export type InputSize = 'sm' | 'md' | 'lg'
+
+/**
+ * Input(通用文本框)的 props。
+ */
+export type InputIn = {
+  /**
+   * 当前值。
+   */
+  value: string
+
+  /**
+   * 改值回调(收已取出的字符串 —— 调用点不必再写 e.target.value)。
+   */
+  onChange: (v: string) => void
+
+  /**
+   * 占位提示。
+   */
+  placeholder?: string
+
+  /**
+   * 尺寸档(可省 = md,与 Select 同高)。
+   */
+  size?: InputSize
+
+  /**
+   * 手机虚拟键盘的回车键样式(搜索框传 'search')。
+   */
+  enterKeyHint?: 'search' | 'done' | 'go'
+
+  /**
+   * 最大字数。
+   */
+  maxLength?: number
+
+  /**
+   * 挂载即聚焦。
+   */
+  autoFocus?: boolean
+
+  /**
+   * 无障碍名(没有可见 label 时传)。
+   */
+  ariaLabel?: string
+
+  /**
+   * 键盘事件(Enter 提交、Esc 取消这类)。
+   */
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
+
+  /**
+   * 调用方追加的全局规范类(如手机触控靶 sbCtl / jtSearch 的伸缩位),
+   * 长相仍归本域。
+   */
+  className?: string
+}
+
+/**
+ * Search(搜索框:左图标 + 可清除)的 props。
+ */
+export type SearchIn = {
+  /**
+   * 当前值。
+   */
+  value: string
+
+  /**
+   * 改值回调。
+   */
+  onChange: (v: string) => void
+
+  /**
+   * 占位提示(同时当无障碍名)。
+   */
+  placeholder: string
+
+  /**
+   * 尺寸档(可省 = lg,搜索框通常独占一行)。
+   */
+  size?: InputSize
+}
+
+/**
+ * inputClsOf 的入参。
+ */
+export type InputClsIn = {
+  /**
+   * 尺寸档。
+   */
+  size: InputSize
+
+  /**
+   * 搜索形态(左右留出图标与清除钮的位)。
+   */
+  search: boolean
+
+  /**
+   * 调用方追加类;null = 没有。
+   */
+  extra: string | null
+}

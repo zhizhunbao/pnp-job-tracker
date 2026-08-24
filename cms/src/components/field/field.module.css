@@ -156,3 +156,268 @@
     min-height: 44px;
   }
 }
+
+/*
+ * ── 文本框(2026-08-24 Frank「input search 也需要抽取一个域」立件:全站六处
+ * 各写各的 —— 高 32/38/40/42、圆角 6/8/10、边框两色、聚焦态只有一处有)──
+ */
+
+/*
+ * 文本框基座:尺寸档另加,聚焦见 :focus。
+ */
+.input {
+  /*
+   * 吃满给它的宽(窄化由外层容器或 className 定)。
+   */
+  width: 100%;
+
+  /*
+   * 内衬与描边算进尺寸。
+   */
+  box-sizing: border-box;
+
+  /*
+   * 输入件描边灰(与 Select 同源)。
+   */
+  border: 1px solid #d1d5db;
+
+  /*
+   * 输入文字色。
+   */
+  color: #1f2937;
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 继承页面字体(input 默认用系统 UI 字体,和正文不一致)。
+   */
+  font-family: inherit;
+
+  /*
+   * 关浏览器默认聚焦框(自己画,见 :focus)。
+   */
+  outline: none;
+
+  /*
+   * 聚焦切换的过渡。
+   */
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+/*
+ * 聚焦态:蓝描边 + 蓝晕(原先只有 OccPicker 那份有,其余五处聚焦没有任何反馈)。
+ */
+.input:focus {
+  /*
+   * 聚焦浅蓝描边。
+   */
+  border-color: #93c5fd;
+
+  /*
+   * 聚焦蓝晕。
+   */
+  box-shadow: 0 0 0 3px #dbeafe;
+}
+
+/*
+ * sm 档(图表控件行,与那一行的小控件同高)。
+ */
+.inputSm {
+  /*
+   * 控件行高。
+   */
+  height: 32px;
+
+  /*
+   * 紧凑内衬。
+   */
+  padding: 0 10px;
+
+  /*
+   * 小字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 小圆角。
+   */
+  border-radius: 8px;
+}
+
+/*
+ * md 档(筛选行,与 Select 的 38 同高 —— 一行里的控件必须齐平)。
+ */
+.inputMd {
+  /*
+   * 筛选行控件统一高。
+   */
+  height: 38px;
+
+  /*
+   * 标准内衬。
+   */
+  padding: 0 10px;
+
+  /*
+   * 标准字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 标准圆角(同 Select)。
+   */
+  border-radius: 6px;
+}
+
+/*
+ * lg 档(独立搜索区,视觉更重)。
+ */
+.inputLg {
+  /*
+   * 大档高。
+   */
+  height: 42px;
+
+  /*
+   * 宽松内衬。
+   */
+  padding: 0 14px;
+
+  /*
+   * 大档字号。
+   */
+  font-size: 14.5px;
+
+  /*
+   * 大圆角。
+   */
+  border-radius: 10px;
+}
+
+/*
+ * 搜索形态的输入框:左右各让出图标与清除钮的位。
+ */
+.inputSearch {
+  /*
+   * 左让给放大镜、右让给清除钮。
+   */
+  padding: 0 38px;
+}
+
+/*
+ * 搜索框外壳(图标与清除钮的定位参照系)。
+ */
+.searchBox {
+  /*
+   * 图标/清除钮绝对定位的参照系。
+   */
+  position: relative;
+}
+
+/*
+ * 左侧放大镜(纯装饰,不吃点击 —— 点它应该聚焦输入框,而不是什么都不发生)。
+ */
+.searchIcon {
+  /*
+   * 钉在框内左侧。
+   */
+  position: absolute;
+
+  /*
+   * 距左 12。
+   */
+  left: 12px;
+
+  /*
+   * 竖直居中锚点。
+   */
+  top: 50%;
+
+  /*
+   * 居中回拉。
+   */
+  transform: translateY(-50%);
+
+  /*
+   * 图标灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 点击穿透到输入框。
+   */
+  pointer-events: none;
+}
+
+/*
+ * 右侧清除钮(有值才渲)。
+ */
+.searchClear {
+  /*
+   * 钉在框内右侧。
+   */
+  position: absolute;
+
+  /*
+   * 距右 5。
+   */
+  right: 5px;
+
+  /*
+   * 竖直居中锚点。
+   */
+  top: 50%;
+
+  /*
+   * 居中回拉。
+   */
+  transform: translateY(-50%);
+
+  /*
+   * 触控靶宽。
+   */
+  width: 30px;
+
+  /*
+   * 触控靶高。
+   */
+  height: 30px;
+
+  /*
+   * 无描边。
+   */
+  border: 0;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 透明底(hover 才显)。
+   */
+  background: transparent;
+
+  /*
+   * 图标色。
+   */
+  color: #6b7280;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 清除钮 hover:浅灰底(可点才有态)。
+ */
+.searchClear:hover {
+  /*
+   * 浅灰底。
+   */
+  background: #f3f4f6;
+}

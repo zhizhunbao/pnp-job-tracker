@@ -2,6 +2,7 @@
 // 官方资源导航(E4-05):hao123 式导航——顶部搜索框 + 每条一卡的密集网格,按分类分区。
 // curated 常量(非 ETL);红线=宁缺毋滥,失效宁可不列。链接=可点卡片(整卡跳官方页)。
 import { useMemo, useState } from 'react'
+import { Search } from '@/components/field'
 import { useLang } from '@/components/i18n'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
@@ -31,8 +32,7 @@ export function Resources() {
 
         {/* 顶部搜索框(Frank「上面带一个文本框搜索」) */}
         <div style={{ margin: '14px 0' }}>
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('res.search')} enterKeyHint="search"
-            style={{ width: '100%', boxSizing: 'border-box', height: 42, padding: '0 14px', border: '1px solid #d1d5db', borderRadius: 10, fontSize: 14.5, color: '#1f2937', background: '#fff' }} />
+          <Search value={q} onChange={setQ} placeholder={t('res.search')} />
         </div>
 
         {groups.length === 0 ? (

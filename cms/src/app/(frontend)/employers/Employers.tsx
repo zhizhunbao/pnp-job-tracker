@@ -13,7 +13,7 @@ import {
   EMP_PROGRAMS, type EmployerFilters, type EmployerPage, type EmployerRow,
 } from '@/lib/employers'
 import { pickName } from '@/lib/noc'
-import { Select } from '@/components/field'
+import { Search, Select } from '@/components/field'
 import { BackButton } from '@/components/button'
 import { useLang } from '@/components/i18n'
 import { Footer } from '@/components/footer'
@@ -153,8 +153,7 @@ export function Employers({ initial, initialFilters }: { initial: EmployerPage; 
             {/* 常用一行:搜索 / 口径 / 省 / 制度 + 更多筛选折叠(激活计数徽标)——职位板同一套 */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
               <div style={filtRow}>
-                <input className="sbCtl field" placeholder={t('de.qPh')} value={qDraft} onChange={(e) => setQDraft(e.target.value)} enterKeyHint="search"
-                  style={{ flex: '0 1 240px', minWidth: 150 }} />
+                <Search value={qDraft} onChange={setQDraft} placeholder={t('de.qPh')} size="md" />
                 <Select size="md" tap value={f.mode} onChange={(v) => set({ mode: (v || 'designated') as EmployerFilters['mode'], program: v === 'hiring' ? '' : f.program, city: '' })}
                   opts={['designated', 'hiring']} all={t('de.mode')} labelOf={(v) => t('de.mode.' + v)} />
                 <Select size="md" tap value={f.prov} onChange={(v) => set({ prov: v, city: '' })} opts={data.facets.provs} all={t('all.prov')} labelOf={(c) => provName(t, c)} />

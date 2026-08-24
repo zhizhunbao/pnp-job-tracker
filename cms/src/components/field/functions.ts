@@ -4,7 +4,8 @@
  * @author Frank
  * @time 2026-08-24 10:00:00
  */
-import type { ListIn, ShownIn } from './types'
+import type { InputClsIn, InputSize, ListIn, ShownIn } from './types'
+import css from './field.module.css'
 
 /**
  * 镜像文本该显示什么:有值走显示名,空值走「全部」档文案。
@@ -34,4 +35,26 @@ export function listOf(x: ListIn): readonly string[] {
     return [x.value, ...x.opts]
   }
   return x.opts
+}
+
+/**
+ * 文本框的类名预算:基座 + 尺寸档 + 搜索留位 + 调用方追加类。
+ *
+ * @param x 尺寸档/搜索形态/追加类。
+ * @returns 拼好的 className。
+ */
+export function inputClsOf(x: InputClsIn): string {
+  const bySize: Record<InputSize, string> = {
+    sm: css.inputSm,
+    md: css.inputMd,
+    lg: css.inputLg,
+  }
+  const out = [css.input, bySize[x.size]]
+  if (x.search) {
+    out.push(css.inputSearch)
+  }
+  if (x.extra != null) {
+    out.push(x.extra)
+  }
+  return out.join(' ')
 }

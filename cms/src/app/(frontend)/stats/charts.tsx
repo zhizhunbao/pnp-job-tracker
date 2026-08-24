@@ -3,6 +3,7 @@
 // E13-03(2026-08-06):按省/按大类的预设四图与自定义区(StatsCharts)随 /stats 索引页退役一并删 ——
 // 主图折进把脉首页 S4(默认收起)。红线不变:计数类可跨省求和,中位数不做跨省合并。
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Search } from '@/components/field'
 import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow, type OccRow, type CityRow } from '@/lib/stats'
 import type { TFn } from '@/lib/i18n'
 
@@ -317,8 +318,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels, firstSc
           四行药丸 → **常用一行 + 更多筛选折叠**,与职位板筛选区同一套语言(#59 拍板的形态)。
           原生 select 不用药丸:四组都是单选,药丸横铺白占竖向空间(效果图 Frank 过目后实施)。 */}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', margin: '8px 0 0' }}>
-        <input className="mktCtl" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('mkt.search')}
-          style={{ height: 32, border: '1px solid #e5e7eb', borderRadius: 8, padding: '0 10px', fontSize: 12.5, width: 190 }} />
+        <Search value={q} onChange={setQ} placeholder={t('mkt.search')} size="sm" />
         <span style={ctlLb}>{t('mkt.x')}</span>
         <select className="mktCtl" value={xKey} onChange={(e) => setXKey(e.target.value as 'occ' | 'prov' | 'city')} style={selS}>
           <option value="occ">{t('mkt.x.occ')}</option><option value="prov">{t('mkt.x.prov')}</option><option value="city">{t('mkt.x.city')}</option>

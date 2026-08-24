@@ -596,6 +596,8 @@ button:not(:disabled):hover {
    这里只还原它原本内联的左边距,不顺手改行为(改了就不是纯迁移了)。 */
 .pbProof { margin-left: 10px; }
 .jtAcct { display: inline-flex; align-items: center; gap: 10px; }
+/* 昵称编辑框的窄化壳(2026-08-24 换 field 域的 Input 后,宽度归调用方) */
+.acctNickBox { display: inline-block; width: 160px; }
 
 /* ── 筛选行 ───────────────────────────────────────── */
 /* .jtCtl 原先只在手机断点里出现(撑触控靶),桌面态的 flex 规则走 filtRow 对象 —— 合成一处 */

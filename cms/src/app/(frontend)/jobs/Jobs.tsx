@@ -12,7 +12,7 @@ import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { AccountMenu } from '@/components/auth'
 import { useLang } from '@/components/i18n'
-import { Select } from '@/components/field'
+import { Search, Select } from '@/components/field'
 import { IconLock, IconSave, IconSettings, IconTarget } from '@/components/icons'
 import { BANNER_IMGS, Banner } from '@/components/banner'
 import { Button } from '@/components/button'
@@ -576,7 +576,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
               窄屏抽屉(jtDrawerToggle)一并退役——一行+折叠对窄屏同样成立,靠 flexWrap 自然换行。
               右端=更新时间+字段钮(#56 拍板延续)。市/区、中/小类仍是省/大类的联动下级,只在折叠区出现。 ═══ */}
           <div className="jtCtl">
-            <input className="jtSearch field" placeholder={t('search.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} enterKeyHint="search" />
+            <span className="jtSearch"><Search value={q} onChange={setQ} placeholder={t('search.placeholder')} size="md" /></span>
             {/* 职业胶囊已移到下方「已选」行(2026-08-16 Frank「这个已经筛选的条件不应该放到这里吧」) */}
             {/* 2026-08-16 Frank「这个没有完全国际化」:省下拉的选项一直是英文全名(筛选值就是它,深链/保存的
                 筛选都靠它),中文界面看着半中半英 —— 挂上既有的 provName 显示层,**值不动**:labelOf 只管显示。

@@ -3,6 +3,7 @@
 // 登录入口全站只有一个 = /jobs 顶栏弹框(用户定):未登录访问本页 → 跳回 /jobs?login=1 自动弹框。
 // E3-03:时长包购买入口(30/90 天)——前端只拿 Checkout URL 跳转,回跳 ?ok=1 提示(到期日由 webhook 拨)。
 import { resetAnswersMemory } from '@/lib/quiz'
+import { Input } from '@/components/field'
 import { useEffect, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { useIsNarrow } from '@/components/modal'
@@ -67,6 +68,16 @@ export default function AccountPage() {
   // 昵称就地编辑(E11-01):null=不在编辑;字符串=编辑值。保存走 Payload PATCH /api/users/:id(本人可改)
   const [nick, setNick] = useState<string | null>(null)
   const [nickBusy, setNickBusy] = useState(false)
+  // 昵称框的键盘出口:Enter 存、Esc 取消(收成具名函数 —— 组件区禁匿名箭头)
+  function onNickKey(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') {
+      saveNick()
+    }
+    if (e.key === 'Escape') {
+      setNick(null)
+    }
+  }
+
   const saveNick = async () => {
     if (nick == null || !me) return
     setNickBusy(true)
@@ -137,9 +148,10 @@ export default function AccountPage() {
                     </div>
                   ) : (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <input value={nick} onChange={(e) => setNick(e.target.value)} placeholder={t('acct.nickPh')} maxLength={40} autoFocus
-                        onKeyDown={(e) => { if (e.key === 'Enter') saveNick(); if (e.key === 'Escape') setNick(null) }}
-                        style={{ padding: '5px 8px', fontSize: 14, border: '1px solid #d1d5db', borderRadius: 6, width: 160 }} />
+                      <span className="acctNickBox">
+                        <Input value={nick} onChange={setNick} placeholder={t('acct.nickPh')}
+                          maxLength={40} autoFocus size="sm" onKeyDown={onNickKey} />
+                      </span>
                       <Button sm onClick={saveNick} disabled={nickBusy}>{nickBusy ? '…' : t('acct.nickSave')}</Button>
                     </div>
                   )}

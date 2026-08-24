@@ -8,6 +8,7 @@
 // 数据口径照旧(与三问同源,不新写端点):热门清单 = 库里在招量前 24(/api/quiz?top=24),
 // 拿不到退回内置常用清单;搜索 = /api/quiz?q=(≥2 字、250ms 防抖);chip 上挂真在招数。
 import { useEffect, useRef, useState } from 'react'
+import { Search } from '@/components/field'
 
 import { POPULAR_NOCS } from '../account/profileOptions'
 import { IconCheck, IconSearch, IconX } from '@/components/icons'
@@ -56,6 +57,15 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
   ))
   const [q, setQ] = useState('')
   const [cands, setCands] = useState<Cand[]>([])
+  // 搜索框改值:清空即连候选一起清(原先这句写在自搭清除钮的 onClick 里,
+  // 2026-08-24 换 field 域的 Search 后收进这一处)
+  function onSearch(v: string) {
+    setQ(v)
+    if (v === '') {
+      setCands([])
+    }
+  }
+
   const [searching, setSearching] = useState(false)
   // 首屏先用内置常用清单,不让冷启动的全表 GROUP BY 把题目冻成骨架 8 秒。
   const [top, setTop] = useState<Top[]>(() => initialTop?.length ? initialTop : POPULAR_NOCS.map((x) => ({
@@ -197,11 +207,6 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
 .occSelectedHead{display:flex;align-items:center;gap:8px;margin-right:2px}
 .occSelectedChip{display:inline-flex;align-items:center;gap:5px;max-width:100%;border:1px solid #bfdbfe;border-radius:999px;background:#eff6ff;color:${UI.primaryDeep};padding:5px 8px 5px 10px;font:600 12.5px/1.3 inherit;cursor:pointer}
 .occSearchWrap{position:relative;margin-bottom:10px}
-.occSearchIcon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:${UI.text3};font-size:15px;pointer-events:none}
-.occSearchInput{width:100%;box-sizing:border-box;height:40px;padding:0 38px;border:1px solid ${UI.border};border-radius:10px;font-size:13.5px;background:#fff;color:${UI.text};font-family:inherit;outline:none}
-.occSearchInput:focus{border-color:#93c5fd;box-shadow:0 0 0 3px #dbeafe}
-.occSearchClear{position:absolute;right:5px;top:50%;transform:translateY(-50%);width:30px;height:30px;border:0;border-radius:8px;background:transparent;color:${UI.text2};cursor:pointer;font-size:15px}
-.occSearchClear:hover{background:${UI.hairline}}
 .occResultsHead{font-size:12px;color:${UI.text3};margin:0 0 7px}
 .occCatSel{display:none;width:100%;height:40px;box-sizing:border-box;margin:0 0 11px;padding:0 10px;border:1px solid ${UI.border};border-radius:10px;background:#fff;color:${UI.text};font:13.5px/1 inherit}
 .occCatTabs{display:flex;flex-wrap:wrap;gap:14px;margin:1px 0 12px;padding:0 0 9px;border-bottom:1px solid ${UI.hairline}}
@@ -229,10 +234,7 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
         )}
 
         <div className="occSearchWrap">
-          <span className="occSearchIcon"><IconSearch /></span>
-          <input className="occSearchInput" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('quiz.q2ph')}
-            aria-label={t('quiz.q2ph')} enterKeyHint="search" autoComplete="off" />
-          {q && <button type="button" className="occSearchClear" onClick={() => { setQ(''); setCands([]) }} aria-label="clear"><IconX /></button>}
+          <Search value={q} onChange={onSearch} placeholder={t('quiz.q2ph')} />
         </div>
 
         {q.trim().length >= 2 && (
