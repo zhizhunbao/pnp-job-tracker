@@ -141,3 +141,11 @@ export const FMT_SEC: Intl.DateTimeFormatOptions = {
    */
   second: '2-digit',
 }
+
+/**
+ * 「没有日期可显示」时给出的空串:`ymd(null)` 与退化路径收到空串时都回它。
+ * 本域的空串只有这一个含义 —— **没有可显示的日期**,而不是「日期是 0」或「解析失败」。
+ * 给空串而不是 null,是为了让调用点直接把返回值塞进 JSX/字符串拼接:
+ * 显示成一格空白是对的(那格本来就没数),而 null 拼进串里会打出字面的 "null"。
+ */
+export const DATE_EMPTY = ''

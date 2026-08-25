@@ -58,3 +58,19 @@ export const STATS_MAX = 3
  * 「减少动态」系统偏好的媒体查询串(命中就不轮播,静止在第一张)。
  */
 export const REDUCED_MOTION_MQ = '(prefers-reduced-motion: reduce)'
+
+/**
+ * 轮播圆点的无障碍标签词干:读屏念出来是「bg 1」「bg 2」——bg 是 background 的缩写,
+ * 后面接第几张背景图。圆点本身没有可读文字(就是一颗 6×6 的点),不给 aria-label
+ * 读屏只会念「按钮」,三颗点分不清点的是哪一张;用缩写而不是整句,是因为每颗点都要
+ * 念一遍,越短越不打断浏览。
+ */
+export const DOT_LABEL = 'bg'
+
+/**
+ * 背景图的致谢文字,挂在 img 的 title 上(鼠标悬停可见)。图全部取自 Wikimedia Commons
+ * 的实景照(出处逐张记在 `cms/public/img/banners/SOURCES.md`),画面上不压水印 ——
+ * 致谢改挂这里,既标了出处又不弄脏画面。这是出处站点的**专名**,不随界面语言变,
+ * 所以留在常量而不是进 i18n。
+ */
+export const IMG_CREDIT = 'Wikimedia Commons'

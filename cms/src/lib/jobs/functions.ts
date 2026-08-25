@@ -15,25 +15,25 @@ import type { Db } from '../db'
 import { JOBS_LOG, log } from '../log'
 import { fill } from '../template'
 import {
-  ACCEPT_ANY, ACCEPT_HTML, AMP, AMP_ENT_RE, APPLY_SLICE_LEN, APPLY_TIMEOUT_MS, BLOCKED_SRC, BROAD_NOCS_MAX, CAND_CAP,
-  CAT_LEVEL, CK, CNT_SEP, COLON_END_RE, COL_PROVINCE, COMMA, COMPANY_SLUG_COND, COOKIE_CUT, COOKIE_JOIN,
+  ACCEPT_ANY, ACCEPT_HTML, AMP, AMP_ENT_RE, APPLY_SLICE_LEN, APPLY_TIMEOUT_MS, BLOCKED_SRC, BLOCKED_SRC_NONE, BROAD_NOCS_MAX, CAND_CAP,
+  CAT_LEVEL, CELL_NONE, CK, CNT_SEP, COLON_END_RE, COL_PROVINCE, COMMA, COMPANY_SLUG_COND, COOKIE_CUT, COOKIE_JOIN,
   COUNT_CACHE_MAX, COUNT_TTL_MS, COV, CURRENT_STATUSES, DIGIT_PICK_RE, DIMS_TTL_MS, DIR_ASC, DIR_DESC, DOLLAR,
   DRAW_STREAM_L10N, EE_KEY_L10N, EE_L10N, EE_SPLIT, EMAIL_RE, ENT_PAIRS, FACES_REQUEST_HDR, FACES_REQUEST_VAL, FK,
-  FORM_CONTENT_TYPE, FV, HAS_DIGIT_RE, HAS_SUFFIX, HOW_APPLY_RE, HREF_ENT_PAIRS, JB_APPLY_ANCHOR, JB_DESC_RE,
-  JB_EXT_LINK_RE, JB_INNER_ENT_PAIRS, JB_ORIGIN, JB_REQ_ANCHOR, JB_SECTION_CAP, JB_URL_RE, JD_BAD_HOST_172_RE,
-  JD_BAD_HOST_RE, JD_BLOCK_BREAK_RE, JD_BUDGET_MARGIN, JD_DIGITS_RE, JD_FAILED_MAX, JD_FETCH_TIMEOUT_MS,
+  FORM_CONTENT_TYPE, FV, HAS_DIGIT_RE, HAS_SUFFIX, HOW_APPLY_RE, HREF_ENT_PAIRS, HTML_NONE, JB_APPLY_ANCHOR, JB_DESC_RE,
+  JB_EXT_LINK_RE, JB_INNER_ENT_PAIRS, JB_LINK_NONE, JB_ORIGIN, JB_REQ_ANCHOR, JB_SECTION_CAP, JB_URL_RE, JD_BAD_HOST_172_RE,
+  JD_BAD_HOST_RE, JD_BLOCK_BREAK_RE, JD_BUDGET_MARGIN, JD_DIGITS_RE, JD_FAILED_MAX, JD_FETCH_TIMEOUT_MS, JD_FIELD_NONE,
   JD_GEN_TIMEOUT_MS, JD_HEAD_JUNK_RE, JD_HEAD_MAX_LINES, JD_HOURS_VALUES, JD_HRS_RE, JD_HTML_CAP, JD_LINE_MIN,
-  JD_MAX_LEN, JD_MIN_LEN, JD_NEG_TTL_MS, JD_ORPHAN_LEN, JD_OUT_MAX_BASE, JD_OUT_MAX_RATIO, JD_OUT_MIN_LEN,
+  JD_MAX_LEN, JD_MIN_LEN, JD_NEG_TTL_MS, JD_NONE, JD_ORPHAN_LEN, JD_OUT_MAX_BASE, JD_OUT_MAX_RATIO, JD_OUT_MIN_LEN,
   JD_PARA_LEN, JD_PROTO_RE, JD_SECTION_MARKS, JD_STRIP_BLOCK_RE, JD_TAG_RE, JD_TAIL_STRIP_RE, JD_TERM_RE,
   JD_TERM_VALUES, JD_UA, JSF_FORM_BASE, JSF_KEY_JOBID, JSF_KEY_JSJOBID, LANG_EN, LANG_KO, LEVEL_RANK, LINE_SPACES_RE,
-  LMIA_SOURCE, LV, MAIL_AT, MAIL_RE, MAIL_SKIP_SUFFIXES, MAIL_SKIP_WORD, MAIN_LIST_COVERAGE, MARK_HEAD, MARK_TAIL,
-  MED_SELECT, NL, NOC_JOIN_SLASH, NOC_LEN, NOC_MINOR_LEN, NOC_RE, NOC_SEARCH_MIN, NOC_SUBMAJOR_LEN, NORM_DASH,
-  NORM_DASH_RE, NORM_WS_RE, NO_LIST_PROVINCES, OPEN_COND, ORDER_DATE_TAIL, ORDER_DEFAULT_COL, ORDER_FRESH,
-  ORIGIN_TITLE_HEAD, PCT, PG_UNDEFINED_COLUMN, PG_UNDEFINED_TABLE, PHONE_RE, PII_MASK, PROGRAM_PNP, PROOF_TTL_MS,
-  PROV_CODE, PROV_MAX_WORDS, PROV_PREFIX_TRIM_RE, PRO_SORTS, Q_MAX_TERMS, Q_SHORT_LEN, REDIRECT_FOLLOW,
+  LMIA_SOURCE, LV, MAIL_AT, MAIL_DOMAIN_NONE, MAIL_NONE, MAIL_RE, MAIL_SKIP_SUFFIXES, MAIL_SKIP_WORD, MAIN_LIST_COVERAGE, MARK_HEAD, MARK_TAIL,
+  MED_SELECT, NL, NOC_JOIN_SLASH, NOC_LEN, NOC_MINOR_LEN, NOC_NONE, NOC_RE, NOC_SEARCH_MIN, NOC_SUBMAJOR_LEN, NORM_DASH,
+  NORM_DASH_RE, NORM_WS_RE, NO_LIST_PROVINCES, OCC_TITLE_NONE, OPEN_COND, ORDER_DATE_TAIL, ORDER_DEFAULT_COL, ORDER_FRESH,
+  ORIGIN_TITLE_HEAD, PARAM_NONE, PCT, PG_CODE_NONE, PG_UNDEFINED_COLUMN, PG_UNDEFINED_TABLE, PHONE_RE, PII_MASK, PREV_LINE_NONE, PROGRAM_PNP, PROOF_TTL_MS,
+  PROV_CODE, PROV_CODE_NONE, PROV_MAX_WORDS, PROV_PREFIX_TRIM_RE, PRO_SORTS, Q_MAX_TERMS, Q_SHORT_LEN, REDIRECT_FOLLOW,
   REQ_STREAM_L10N, RK, RULE, SCORE_HIGH, SCORE_MID, SEARCH_COLS, SEEKER_ACTION_RE, SEEKER_JOBID_RE, SEP_KEY,
-  SORT_COLUMNS, SORT_MATCH_KEY, SPACE, SPACES_RE, SRC_DASH, SRC_JOB_BANK, STREAM_L10N, T45_COND_PROVS, T45_NL,
-  TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE, TITLE_RE, TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE,
+  SORT_COLUMNS, SORT_MATCH_KEY, SORT_NONE, SPACE, SPACES_RE, SQL_SEG_NONE, SRC_DASH, SRC_JOB_BANK, STAMP_NONE, STREAM_L10N, STREAM_NOTE_NONE, STRIP_REPL, T45_COND_PROVS, T45_NL,
+  TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE, TITLE_NONE, TITLE_RE, TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE,
   TOP_NOCS_MAX, TOP_NOCS_TTL_MS, TOP_NOCS_WITH_MED, TYPE_INELIGIBLE, UNCAT, VD, W, COMP_KEY,
 } from './constants'
 import { JD_FORMAT_PROMPT_HEAD, REASON_EN, STATUS_EN } from './prompts'
@@ -70,7 +70,7 @@ import type {
 export function blockedSrc(j: JobRow): string {
   const hit = BLOCKED_SRC[j.source.toLowerCase()]
   if (hit == null) {
-    return ''
+    return BLOCKED_SRC_NONE
   }
   return hit
 }
@@ -270,8 +270,8 @@ function nocRule(input: RuleIn): NocRuleOut {
   if (p.nocCodes.includes(job.noc)) {
     return { score: 40, reasons: [{ rule: RULE.noc, verdict: VD.pass, key: RK.nocExact, params: { noc: job.noc }, source: null }], nocMiss: false }
   }
-  let minor = ''
-  let submajor = ''
+  let minor = NOC_NONE
+  let submajor = NOC_NONE
   for (const c of p.nocCodes) {
     if (c.length === NOC_LEN && c.slice(0, NOC_MINOR_LEN) === job.noc.slice(0, NOC_MINOR_LEN) && minor === '') {
       minor = c
@@ -572,7 +572,7 @@ function provCodeOfLower(nameLower: string): string {
       return PROV_CODE[name]
     }
   }
-  return ''
+  return PROV_CODE_NONE
 }
 
 /**
@@ -613,7 +613,7 @@ export function splitQ(q: string): StrList {
  * @returns 原筛选 + qCompanyIds。
  */
 async function resolveQCompanyIds(input: ResolveQIn): ResolveQOut {
-  let q = ''
+  let q = PARAM_NONE
   const rawQ = input.filters[FK.q]
   if (typeof rawQ === 'string') {
     q = rawQ
@@ -663,7 +663,7 @@ export function buildJobsWhere(input: BuildWhereIn): JobsWhere {
     if (typeof v === 'string') {
       return v.trim()
     }
-    return ''
+    return PARAM_NONE
   }
   const isOn = function isOn(k: string): boolean {
     const v = filters[k]
@@ -824,14 +824,14 @@ export function buildJobsWhere(input: BuildWhereIn): JobsWhere {
  * @returns ORDER BY 子句。
  */
 function orderByClause(input: OrderByIn): string {
-  let key = ''
-  let dir = ''
+  let key = SORT_NONE
+  let dir = SORT_NONE
   if (input.sort != null) {
     key = input.sort.key
     dir = input.sort.dir
   }
   if (key !== '' && input.pro === false && PRO_SORTS.has(key)) {
-    key = ''
+    key = SORT_NONE
   }
   let col = ORDER_DEFAULT_COL
   if (key !== '' && SORT_COLUMNS[key] != null) {
@@ -968,7 +968,7 @@ function pgCodeOf(e: CaughtError): string {
   if (typeof withCode.code === 'string') {
     return withCode.code
   }
-  return ''
+  return PG_CODE_NONE
 }
 
 /**
@@ -985,7 +985,7 @@ export async function checkedAt(db: Db): CheckedAtOut {
   if (hot != null && now - hot.ts < COUNT_TTL_MS) {
     return hot.v
   }
-  let v = ''
+  let v = STAMP_NONE
   try {
     const rows = await queryRows({ db: db, sql: SQL.ETL_HEARTBEAT, params: [], map: passRow })
     if (rows.length > 0) {
@@ -993,7 +993,7 @@ export async function checkedAt(db: Db): CheckedAtOut {
     }
   } catch (e) {
     if (e instanceof Error && pgCodeOf(e) === PG_UNDEFINED_TABLE) {
-      v = ''
+      v = STAMP_NONE
     } else {
       throw e
     }
@@ -1177,7 +1177,7 @@ function numOf(v: NumCell): MaybeNum {
  */
 function strOf(v: StrCell): string {
   if (v == null) {
-    return ''
+    return CELL_NONE
   }
   return v
 }
@@ -1219,8 +1219,8 @@ export async function loadMatchPage(input: MatchPageIn): MatchPageOut {
     hits.push({ j: j, level: level, rank: matchRank(level), v: null })
   }
   hits.sort(byLevelDesc)
-  let sortKey = ''
-  let sortDir = ''
+  let sortKey = SORT_NONE
+  let sortDir = SORT_NONE
   if (input.sort != null) {
     sortKey = input.sort.key
     sortDir = input.sort.dir
@@ -1242,7 +1242,7 @@ export async function loadMatchPage(input: MatchPageIn): MatchPageOut {
   for (const h of pageItems) {
     jobs.push(toJobRow({ row: h.j, matchLevel: h.level, pro: input.pro }))
   }
-  let updatedAt = ''
+  let updatedAt = STAMP_NONE
   if (updRows.length > 0) {
     updatedAt = iso(updRows[0].upd)
   }
@@ -1448,9 +1448,9 @@ async function lmiaNocsOf(input: LmiaNocsIn): LmiaNocsOut {
     const out: LmiaNocRow[] = []
     for (const [noc, positions] of entries) {
       const r = names.get(noc)
-      let title = ''
-      let titleZh = ''
-      let titleKo = ''
+      let title = OCC_TITLE_NONE
+      let titleZh = OCC_TITLE_NONE
+      let titleKo = OCC_TITLE_NONE
       if (r != null) {
         title = String(r.title)
         titleZh = String(r.title_zh)
@@ -1509,7 +1509,7 @@ async function fetchCompanyWhere(input: CompanyWhereIn): CompanyOut {
   }
   const strCell = function strCell(v: JsonCell): string {
     if (v == null) {
-      return ''
+      return CELL_NONE
     }
     return String(v)
   }
@@ -1598,7 +1598,7 @@ export async function loadQuizFacts(input: QuizFactsIn): QuizFactsOut {
   }
   const strCell = function strCell(v: Cell): string {
     if (v == null) {
-      return ''
+      return CELL_NONE
     }
     return String(v)
   }
@@ -1688,7 +1688,7 @@ export async function loadTopNocs(input: TopNocsIn): TopNocsOut {
     }
     log({ tag: JOBS_LOG.tag, text: JOBS_LOG.topNocsMainFailed + why })
   }
-  let medSel = ''
+  let medSel = SQL_SEG_NONE
   if (n <= TOP_NOCS_WITH_MED) {
     medSel = MED_SELECT
   }
@@ -1770,7 +1770,7 @@ function badHost(u: UrlHandle): boolean {
 async function fetchHtml(url: string): HtmlOut {
   const u = new URL(url)
   if (badHost(u)) {
-    return ''
+    return HTML_NONE
   }
   const ctrl = new AbortController()
   const timer = setTimeout(function abortJd() {
@@ -1781,7 +1781,7 @@ async function fetchHtml(url: string): HtmlOut {
       headers: { 'User-Agent': JD_UA, Accept: ACCEPT_HTML }, redirect: REDIRECT_FOLLOW, signal: ctrl.signal,
     })
     if (res.ok === false) {
-      return ''
+      return HTML_NONE
     }
     return (await res.text()).slice(0, JD_HTML_CAP)
   } catch (e) {
@@ -1790,7 +1790,7 @@ async function fetchHtml(url: string): HtmlOut {
       why = e.message
     }
     log({ tag: JOBS_LOG.tag, text: JOBS_LOG.jdFetchFailed + why })
-    return ''
+    return HTML_NONE
   } finally {
     clearTimeout(timer)
   }
@@ -1822,7 +1822,7 @@ function trimHeadJunk(lines: StrList): StrList {
     if (JD_HEAD_JUNK_RE.test(l)) {
       continue
     }
-    let prevKept = ''
+    let prevKept = PREV_LINE_NONE
     if (head.length > 0) {
       prevKept = head[head.length - 1]
     }
@@ -1888,7 +1888,7 @@ function jbOwnText(html: string): string {
   }
   const m = JB_DESC_RE.exec(html)
   if (m == null) {
-    return ''
+    return JD_NONE
   }
   let inner = m[1]
   for (const [re, to] of JB_INNER_ENT_PAIRS) {
@@ -1906,7 +1906,7 @@ function jbOwnText(html: string): string {
 function jbExternalLink(html: string): string {
   const m = JB_EXT_LINK_RE.exec(html)
   if (m == null) {
-    return ''
+    return JB_LINK_NONE
   }
   let href = m[1]
   for (const [re, to] of HREF_ENT_PAIRS) {
@@ -1925,7 +1925,7 @@ function jbExternalLink(html: string): string {
 function originTitle(html: string): string {
   const m = TITLE_RE.exec(html)
   if (m == null) {
-    return ''
+    return TITLE_NONE
   }
   let t = m[1]
   for (const [re, to] of TITLE_ENT_PAIRS) {
@@ -1938,13 +1938,13 @@ function originTitle(html: string): string {
       segs.push(seg)
     }
   }
-  let best = ''
+  let best = TITLE_NONE
   for (const seg of segs) {
     if (seg.length > best.length) {
       best = seg
     }
   }
-  return best.replace(TITLE_TAIL_RE, '').trim()
+  return best.replace(TITLE_TAIL_RE, STRIP_REPL).trim()
 }
 
 /**
@@ -1987,14 +1987,14 @@ async function doFetch(applyUrl: string): JdOut {
   const isJb = JB_URL_RE.test(applyUrl)
   const first = await fetchHtml(applyUrl)
   if (first === '') {
-    return ''
+    return JD_NONE
   }
   if (isJb === false) {
     const t = stripTitleLine({ text: extractText(first), html: first })
     if (t.length >= JD_MIN_LEN) {
       return t
     }
-    return ''
+    return JD_NONE
   }
   const own = jbOwnText(first)
   if (own.length >= JD_MIN_LEN) {
@@ -2002,12 +2002,12 @@ async function doFetch(applyUrl: string): JdOut {
   }
   const ext = jbExternalLink(first)
   if (ext === '') {
-    return ''
+    return JD_NONE
   }
   const originHtml = await fetchHtml(ext)
   const t = stripTitleLine({ text: extractText(originHtml), html: originHtml })
   if (t.length < JD_MIN_LEN) {
-    return ''
+    return JD_NONE
   }
   const ot = originTitle(originHtml)
   if (ot !== '') {
@@ -2026,7 +2026,7 @@ async function doFetch(applyUrl: string): JdOut {
 function lazyFetchJd(input: JdIn): JdOut {
   const neg = CACHE.jdFailed.get(input.applyUrl)
   if (neg != null && Date.now() - neg < JD_NEG_TTL_MS) {
-    return Promise.resolve('')
+    return Promise.resolve(JD_NONE)
   }
   const flying = CACHE.jdInflight.get(input.applyUrl)
   if (flying != null) {
@@ -2075,7 +2075,7 @@ async function fetchAndStore(input: JdIn): JdOut {
  */
 export async function jobDescription(input: JdIn): JdOut {
   if (input.applyUrl === '') {
-    return ''
+    return JD_NONE
   }
   const rows = await queryRows({ db: input.db, sql: SQL.JD_BY_APPLY_URL, params: [input.applyUrl], map: passRow })
   if (rows.length > 0 && rows[0].description != null && rows[0].description !== '') {
@@ -2209,11 +2209,11 @@ export async function loadOccCompetition(input: OccCompetitionIn): OccCompetitio
  */
 export function drawStreamNote(input: DrawStreamNoteIn): string {
   if (input.lang === LANG_EN) {
-    return ''
+    return STREAM_NOTE_NONE
   }
-  const hit = DRAW_STREAM_L10N[(input.stream || '').trim()]
+  const hit = DRAW_STREAM_L10N[(input.stream || PARAM_NONE).trim()]
   if (hit == null) {
-    return ''
+    return STREAM_NOTE_NONE
   }
   if (input.lang === LANG_KO) {
     return hit.ko
@@ -2243,7 +2243,7 @@ export function streamDisplay(input: StreamDisplayIn): string {
  * @returns 归一后的键。
  */
 function normReqStream(s: string): string {
-  return (s || '').toLowerCase().replace(NORM_DASH_RE, NORM_DASH).replace(NORM_WS_RE, SPACE).trim()
+  return (s || PARAM_NONE).toLowerCase().replace(NORM_DASH_RE, NORM_DASH).replace(NORM_WS_RE, SPACE).trim()
 }
 
 /**
@@ -2310,12 +2310,12 @@ export function eeKeyDisplay(input: EeKeyDisplayIn): string {
  * @returns 摘掉省名前缀后的通道名。
  */
 export function dropProvPrefix(input: DropProvPrefixIn): string {
-  const p = (input.prov || '').trim()
-  const n = (input.name || '').trim()
+  const p = (input.prov || PARAM_NONE).trim()
+  const n = (input.name || PARAM_NONE).trim()
   if (p === '' || n.startsWith(p) === false) {
     return n
   }
-  const rest = n.slice(p.length).replace(PROV_PREFIX_TRIM_RE, '').trim()
+  const rest = n.slice(p.length).replace(PROV_PREFIX_TRIM_RE, STRIP_REPL).trim()
   if (rest === '') {
     return n
   }
@@ -2433,7 +2433,7 @@ export async function loadApplyEmail(postingUrl: string): ApplyMailOut {
   const actionM = SEEKER_ACTION_RE.exec(html)
   const jidM = SEEKER_JOBID_RE.exec(html)
   if (actionM == null || jidM == null) {
-    return ''
+    return MAIL_NONE
   }
   const jid = jidM[1]
   const form = new URLSearchParams(JSF_FORM_BASE)
@@ -2479,11 +2479,11 @@ function nullFetch(_e: Error): null {
 function pickMail(s: string): string {
   const matches = s.match(MAIL_RE)
   if (matches == null) {
-    return ''
+    return MAIL_NONE
   }
   for (const m of matches) {
     const at = m.split(MAIL_AT)
-    let d = ''
+    let d = MAIL_DOMAIN_NONE
     if (at[1] != null) {
       d = at[1].toLowerCase()
     }
@@ -2501,7 +2501,7 @@ function pickMail(s: string): string {
     }
     return m
   }
-  return ''
+  return MAIL_NONE
 }
 
 /**
@@ -2561,17 +2561,17 @@ export async function generateJdFormatted(input: GenerateJdIn): GenerateJdOut {
     return null
   }
   let out = r.answer
-  let term = ''
+  let term = JD_FIELD_NONE
   const termM = JD_TERM_RE.exec(out)
   if (termM != null && termM[1] != null) {
     term = termM[1].toLowerCase()
   }
-  let hrs = ''
+  let hrs = JD_FIELD_NONE
   const hrsM = JD_HRS_RE.exec(out)
   if (hrsM != null && hrsM[1] != null) {
     hrs = hrsM[1].toLowerCase()
   }
-  out = out.replace(JD_TAIL_STRIP_RE, '').trim()
+  out = out.replace(JD_TAIL_STRIP_RE, STRIP_REPL).trim()
   const ok = validateJdFormatted(out, src)
   log({ tag: JOBS_LOG.tag, text: JOBS_LOG.jdformatLine + input.state.id + JOBS_LOG.jdformatSrc + src.length + JOBS_LOG.jdformatCh + JOBS_LOG.jdformatCached + r.cached + JOBS_LOG.jdformatValid + ok })
   if (ok === false) {
@@ -2614,7 +2614,7 @@ function validateJdFormatted(out: string, src: string): boolean {
       srcDigits.add(d)
     }
   }
-  const outM = out.replace(JD_TAIL_STRIP_RE, '').match(JD_DIGITS_RE)
+  const outM = out.replace(JD_TAIL_STRIP_RE, STRIP_REPL).match(JD_DIGITS_RE)
   if (outM != null) {
     for (const d of outM) {
       if (srcDigits.has(d) === false) {

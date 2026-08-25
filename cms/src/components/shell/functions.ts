@@ -4,6 +4,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { CLS_SEP } from './constants'
 import type { ShellBottom, ShellClsIn, ShellTop } from './types'
 import css from './shell.module.css'
 
@@ -35,5 +36,5 @@ export function shellClsOf(x: ShellClsIn): string {
   if (x.bottom != null) {
     cls.push(bottomCls[x.bottom])
   }
-  return cls.join(' ')
+  return cls.join(CLS_SEP)
 }

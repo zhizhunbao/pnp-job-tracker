@@ -6,11 +6,19 @@
  */
 import {
   CHIP_BG_OFF,
+  CHIP_BG_ON,
   CHIP_BORDER_HOT,
+  CHIP_BORDER_OFF,
+  CHIP_BORDER_ON,
   CHIP_C_HOT,
+  CHIP_C_OFF,
   CHIP_C_ON,
+  CHIP_CURSOR,
   CHIP_FONT_SIZE,
+  CHIP_PADDING,
   CHIP_RADIUS,
+  CHIP_WHITE_SPACE,
+  CLS_SEP,
   FONT_WEIGHT_OFF,
   FONT_WEIGHT_ON,
 } from './constants'
@@ -33,7 +41,7 @@ export function chipClsOf(x: ChipClsIn): string {
   if (x.extra != null) {
     out.push(x.extra)
   }
-  return out.join(' ')
+  return out.join(CLS_SEP)
 }
 
 /**
@@ -47,13 +55,13 @@ export function chipClsOf(x: ChipClsIn): string {
  */
 // eslint-disable-next-line local/one-parameter -- 旧 API 的签名:十几处 spread 调用方按位置传参,改签名要动它们全部;消费页类化批一起收
 export function chipStyle(active: boolean, hot = false): React.CSSProperties {
-  let border = '1px solid var(--border)'
+  let border = CHIP_BORDER_OFF
   let background = CHIP_BG_OFF
-  let color = 'var(--text2)'
+  let color = CHIP_C_OFF
   let fontWeight = FONT_WEIGHT_OFF
   if (active) {
-    border = '1px solid var(--primary)'
-    background = 'var(--primary)'
+    border = CHIP_BORDER_ON
+    background = CHIP_BG_ON
     color = CHIP_C_ON
     fontWeight = FONT_WEIGHT_ON
   } else if (hot) {
@@ -66,9 +74,9 @@ export function chipStyle(active: boolean, hot = false): React.CSSProperties {
     color,
     fontWeight,
     borderRadius: CHIP_RADIUS,
-    padding: '4px 12px',
+    padding: CHIP_PADDING,
     fontSize: CHIP_FONT_SIZE,
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
+    cursor: CHIP_CURSOR,
+    whiteSpace: CHIP_WHITE_SPACE,
   }
 }

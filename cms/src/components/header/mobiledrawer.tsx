@@ -24,6 +24,10 @@ import {
   A_RANK,
   A_START,
   A_STATS,
+  BRAND_MARK,
+  GRP_INFO,
+  GRP_LIB,
+  GRP_NONE,
   PATH_CASES,
   PATH_EMPLOYERS,
   PATH_HOME,
@@ -47,12 +51,12 @@ import css from './header.module.css'
  * @returns portal 到 body 的抽屉。
  */
 export function MobileDrawer({ t, active, onClose }: MobileDrawerIn) {
-  const [openGrp, setOpenGrp] = useState('')
+  const [openGrp, setOpenGrp] = useState(GRP_NONE)
   useMainPush()
 
   function toggleGrp(key: string) {
     if (openGrp === key) {
-      setOpenGrp('')
+      setOpenGrp(GRP_NONE)
       return
     }
     setOpenGrp(key)
@@ -70,7 +74,7 @@ export function MobileDrawer({ t, active, onClose }: MobileDrawerIn) {
     <div className={css.drawerMask} onClick={onClose}>
       <div className={css.drawer} onClick={stop}>
         <div className={css.drawerHead}>
-          <span className={css.drawerBrand}>🍁 Offer2PR</span>
+          <span className={css.drawerBrand}>{BRAND_MARK}</span>
           <button className={css.drawerClose} onClick={onClose} aria-label={t('nav.menu')}><IconX /></button>
         </div>
         <nav className={css.drawerNav}>
@@ -89,7 +93,7 @@ export function MobileDrawer({ t, active, onClose }: MobileDrawerIn) {
           <LinkButton href={PATH_EMPLOYERS} className={withOn({ base: css.drawerItem, on: active === A_EMPLOYERS })}>
             {t('nav.employers')}
           </LinkButton>
-          <DrawerGroup groupKey="lib"
+          <DrawerGroup groupKey={GRP_LIB}
             label={t('nav.library')}
             openKey={openGrp}
             onToggle={toggleGrp}
@@ -98,7 +102,7 @@ export function MobileDrawer({ t, active, onClose }: MobileDrawerIn) {
               { href: PATH_RESOURCES, label: t('res.entry') },
               { href: PATH_CASES, label: t('dp.cases') },
             ]} />
-          <DrawerGroup groupKey="info"
+          <DrawerGroup groupKey={GRP_INFO}
             label={t('nav.info')}
             openKey={openGrp}
             onToggle={toggleGrp}

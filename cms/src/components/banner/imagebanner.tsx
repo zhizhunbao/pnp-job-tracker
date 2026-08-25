@@ -9,7 +9,7 @@
  * @time 2026-08-24 04:30:00
  */
 import { BannerDots } from './bannerdots'
-import { STATS_MAX } from './constants'
+import { IMG_CREDIT, STATS_MAX } from './constants'
 import { moduleClsOf } from './functions'
 import type { ImageBannerIn } from './types'
 import css from './banner.module.css'
@@ -49,7 +49,7 @@ export function ImageBanner({
     }
     imgEls.push(
       // eslint-disable-next-line @next/next/no-img-element -- Wikimedia 外源图不进 next/image 优化管线(域名白名单与尺寸都不可控)
-      <img key={imgs[i]} src={imgs[i]} alt="" title="Wikimedia Commons" onError={fail} className={imgCls} />,
+      <img key={imgs[i]} src={imgs[i]} alt="" title={IMG_CREDIT} onError={fail} className={imgCls} />,
     )
   }
 

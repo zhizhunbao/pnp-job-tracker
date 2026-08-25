@@ -15,7 +15,7 @@ import { caseEn, consultEn, jobsEn, legalEn, quizEn, reportEn, siteEn } from './
 import { caseKo, consultKo, jobsKo, legalKo, quizKo, reportKo, siteKo } from './ko'
 import { nocLabels } from '@/lib/jobs'
 import { pathwayNames } from '@/lib/pathways'
-import { COOKIE_EQ, COOKIE_PATH_AGE, COOKIE_SAMESITE, LANG_COOKIE, LANG_COOKIE_MAX_AGE_S, LANG_EN, LANG_KEY, LANG_KO, LANG_ZH, LANGS, VAR_L, VAR_R } from './constants'
+import { ACCEPT_NONE, COOKIE_EQ, COOKIE_PATH_AGE, COOKIE_SAMESITE, LANG_COOKIE, LANG_COOKIE_MAX_AGE_S, LANG_EN, LANG_KEY, LANG_KO, LANG_ZH, LANGS, VAR_L, VAR_R } from './constants'
 import { CACHE } from './variables'
 import type { Dict, Lang, Messages, MaybeLang, RawAccept, RawLangPref, TFn, TVars } from './types'
 
@@ -41,7 +41,7 @@ export function parseLang(raw: RawLangPref): MaybeLang {
  * @returns 首帧语言。
  */
 export function langFromAccept(raw: RawAccept): Lang {
-  const n = (raw || '').toLowerCase()
+  const n = (raw || ACCEPT_NONE).toLowerCase()
   if (n.startsWith(LANG_ZH)) {
     return LANG_ZH
   }

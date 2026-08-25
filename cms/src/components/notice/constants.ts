@@ -29,3 +29,17 @@ export const NOTICE_ICON = {
    */
   ok: '✓',
 } as const
+
+/**
+ * 拼 className 时各类之间的分隔符。HTML 的 class 属性按**空白**切词,一个空格就是
+ * 一次分隔 —— 写错不会报错,只会让四色类和基座类粘成一个匹配不上的长类名,
+ * 提醒框当场变成没样式的一行字。
+ */
+export const CLS_SEP = ' '
+
+/**
+ * 不指定颜色时的默认档。四色里选 info 当默认,是因为它是**最弱的断言** ——
+ * 口径注记、补充说明用它,读者不会被一个不该有的警告色吓到;万一调用点忘了传 kind,
+ * 蓝框只是少了强调,而默认成 err 那种红框会凭空造出一条不存在的错误。
+ */
+export const NOTICE_KIND_DEFAULT = 'info'

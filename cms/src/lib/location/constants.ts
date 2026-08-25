@@ -80,3 +80,12 @@ export const NOTE_L = '('
  * 省名双语注记的右括号。
  */
 export const NOTE_R = ')'
+
+/**
+ * 地点某一格没有值时的显示层占位:空串。
+ * 本域交出去的四格(country / prov / city / district)与省名都用它 ——
+ * 调用方要么直接把这几格拼进页面,要么 `filter(Boolean)` 把没有的那几级丢掉,
+ * 两条路都吃空串、都不吃 null:一个 null 拼进地址就会在页面上印出 "null" 四个字母。
+ * (库里的「没有」是 NULL,到了这一层统一翻成空串,翻译点只此一处。)
+ */
+export const LOC_NONE = ''

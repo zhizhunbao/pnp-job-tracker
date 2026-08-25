@@ -54,3 +54,11 @@ export const TRADES_P2 = new Set(['72', '73'])
  * 初级农业的 NOC 前两位。
  */
 export const AGRI_P2 = new Set(['84', '86'])
+
+/**
+ * 没给省码时用的空串:`lmiaWageClass` 收的省码可能是 null,先折成空串再查
+ * PROV_MEDIAN_HOURLY —— 空串必然查不到门槛,于是返回 null(判不了),而不是拿某个
+ * 省的门槛顶上。🔴 这是「宁可留空也不瞎猜」在本域的落点:省份决定门槛,省份不明
+ * 就没有门槛可比,任何默认省都是替官方编一个口径。
+ */
+export const PROV_NONE = ''

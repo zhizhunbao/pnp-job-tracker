@@ -12,9 +12,9 @@ import { AGENT_FN, AGENT_LOG, log } from '@/lib/log'
 import { cleanProvs } from '../location'
 import { SQL } from '../db'
 import {
-  COST_CACHE_READ, COST_CACHE_WRITE, COST_INPUT, COST_OUTPUT, DASH, FALLBACK_ON, LIKE_ANY, LIKE_ESCAPE,
+  CLAIM_NONE, COST_CACHE_READ, COST_CACHE_WRITE, COST_INPUT, COST_OUTPUT, DASH, FALLBACK_ON, LIKE_ANY, LIKE_ESCAPE,
   LIKE_SPECIAL, MAX_INPUT_CHARS, MAX_QUERY_CHARS, MAX_REASON_CHARS, MAX_TOKENS, MODEL_API, MODEL_BASE_URL,
-  MODEL_CONTEXT_WINDOW, MODEL_ID, MODEL_NAME, MODEL_PROVIDER, MODEL_REASONING, NL, NOC_RE, NOISE_RATIO, ROLE,
+  MODEL_CONTEXT_WINDOW, MODEL_ID, MODEL_NAME, MODEL_PROVIDER, MODEL_REASONING, NL, NOC_RE, NOISE_RATIO, ROLE, ROW_NONE,
   SEARCH_LIMIT, SHOWN, TIMEOUT_MS, TOOLS,
 } from './constants'
 import { RESOLVE_SYSTEM, SEARCH_RESULT_HINT, TOOL_DESC, TOOL_REPLY } from './prompts'
@@ -54,7 +54,7 @@ function inCandidates(input: InCandidatesIn): InCandidatesOut {
  * @returns 采信就返回那个码,不采信返回 null。
  */
 export function acceptNoc(input: AcceptNocIn): AcceptNocOut {
-  let raw = ''
+  let raw = CLAIM_NONE
   if (input.raw != null) {
     raw = input.raw
   }
@@ -100,11 +100,11 @@ async function searchCandidates(input: SearchCandidatesIn): SearchCandidatesOut 
     }
     const hits: Candidate[] = []
     for (const r of rows) {
-      let noc = ''
+      let noc = ROW_NONE
       if (r.noc != null) {
         noc = String(r.noc)
       }
-      let title = ''
+      let title = ROW_NONE
       if (r.title != null) {
         title = String(r.title)
       }
@@ -205,7 +205,7 @@ function setSlotsTool(input: SetSlotsToolIn): SetSlotsToolOut {
 function giveUpTool(input: GiveUpToolIn): GiveUpToolOut {
   async function executeGiveUp(_id: ToolCallId, args: ExecuteGiveUpIn): ExecuteGiveUpOut {
     input.out.gaveUp = true
-    let reason = ''
+    let reason = CLAIM_NONE
     if (args.reason != null) {
       reason = args.reason
     }
@@ -369,7 +369,7 @@ export async function resolveByAgent(input: ResolveByAgentIn): ResolveByAgentOut
     }
 
     const provs = cleanProvs({ raw: out.claim.provinces })
-    let reasonRaw = ''
+    let reasonRaw = CLAIM_NONE
     if (out.claim.reason != null) {
       reasonRaw = out.claim.reason
     }

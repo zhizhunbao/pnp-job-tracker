@@ -22,7 +22,7 @@ import {
 } from '../llm'
 import { denyBodyOf, checkLimit, freeGate, getUser, ipOf, isPro } from '../quota/server'
 import {
-  AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, CITY_PARAM_LEN_MAX, DIMS_CACHE_CONTROL, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT, JD_LIMIT_PREFIX, JD_TRANS_MARKS_RE, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, NOC5_RE, PAGE_N_MAX, PROV2_RE, P_CITY, P_CODE, P_DIR, P_DIRECT, P_DISTRICT, P_NOC, P_PAGE, P_PROV, P_SORT, P_URL, P_VIEW, TRUE_ONE, TRUE_WORD, URL_CUT_RE, VIEW_MATCH,
+  AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, CITY_PARAM_LEN_MAX, DIMS_CACHE_CONTROL, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT, JD_LIMIT_PREFIX, JD_TRANS_MARKS_RE, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, MAIL_NONE, NOC5_RE, PAGE_N_MAX, PARAM_NONE, PROV2_RE, P_CITY, P_CODE, P_DIR, P_DIRECT, P_DISTRICT, P_NOC, P_PAGE, P_PROV, P_SORT, P_URL, P_VIEW, SORT_NONE, STAMP_NONE, TRUE_ONE, TRUE_WORD, URL_CUT_RE, VIEW_MATCH,
 } from './constants'
 import {
   emptySimilar, loadApplyEmail, loadCompanyByJobId, loadJobsPage, loadMatchPage, loadOccCompetition, loadSimilarEmployers, generateJdFormatted, hasProfile, jobDescription, loadBigDims, loadCityCard, loadJdFormatted, loadJdState, loadMatchDims, loadProvinceCard, normalizeProfile,
@@ -58,12 +58,12 @@ export async function jobsRoute(req: Request): Promise<Response> {
   if (Number.isFinite(pageRaw) && pageRaw > 0) {
     page = Math.min(PAGE_N_MAX, pageRaw)
   }
-  let sortKey = ''
+  let sortKey = SORT_NONE
   const sortParam = sp.get(P_SORT)
   if (sortParam != null) {
     sortKey = sortParam
   }
-  let sortDir = ''
+  let sortDir = SORT_NONE
   const dirParam = sp.get(P_DIR)
   if (dirParam != null) {
     sortDir = dirParam
@@ -83,7 +83,7 @@ export async function jobsRoute(req: Request): Promise<Response> {
   }
   if (sp.get(P_VIEW) === VIEW_MATCH) {
     if (profileOk === false) {
-      return Response.json({ rows: [], total: 0, page: page, pageSize: JOBS_PAGE_SIZE, updatedAt: '', matchHigh: 0, matchMid: 0 })
+      return Response.json({ rows: [], total: 0, page: page, pageSize: JOBS_PAGE_SIZE, updatedAt: STAMP_NONE, matchHigh: 0, matchMid: 0 })
     }
     const m = await loadMatchPage({ db: db, pro: pro, profile: profile, matchDims: matchDims, page: page, pageSize: JOBS_PAGE_SIZE, sort: { key: sortKey, dir: sortDir } })
     return Response.json({ rows: m.jobs, total: m.total, page: page, pageSize: JOBS_PAGE_SIZE, updatedAt: m.updatedAt, matchHigh: m.matchHigh, matchMid: m.matchMid })
@@ -112,7 +112,7 @@ export async function jobsTextRoute(req: Request): Promise<Response> {
   if (checkLimit([[JD_LIMIT_PREFIX + ipOf(req), jdDaily]]) === false) {
     return new Response(null, { status: TOO_MANY })
   }
-  let url = ''
+  let url = PARAM_NONE
   const urlParam = new URL(req.url).searchParams.get(P_URL)
   if (urlParam != null) {
     url = urlParam.trim()
@@ -177,17 +177,17 @@ export async function jobsDimsRoute(_req: Request): Promise<Response> {
  */
 export async function jobsCityRoute(req: Request): Promise<Response> {
   const sp = new URL(req.url).searchParams
-  let city = ''
+  let city = PARAM_NONE
   const cityParam = sp.get(P_CITY)
   if (cityParam != null) {
     city = cityParam.trim()
   }
-  let prov = ''
+  let prov = PARAM_NONE
   const provParam = sp.get(P_PROV)
   if (provParam != null) {
     prov = provParam.toUpperCase()
   }
-  let district = ''
+  let district = PARAM_NONE
   const districtParam = sp.get(P_DISTRICT)
   if (districtParam != null) {
     district = districtParam.trim()
@@ -212,7 +212,7 @@ export async function jobsCityRoute(req: Request): Promise<Response> {
  * @returns { ok, info, difficulty };码非法 400、查无 404。
  */
 export async function jobsProvinceRoute(req: Request): Promise<Response> {
-  let code = ''
+  let code = PARAM_NONE
   const codeParam = new URL(req.url).searchParams.get(P_CODE)
   if (codeParam != null) {
     code = codeParam.toUpperCase()
@@ -237,7 +237,7 @@ export async function jobsProvinceRoute(req: Request): Promise<Response> {
  * @returns { noc, rows };noc 非法 400。
  */
 export async function jobsCompetitionRoute(req: Request): Promise<Response> {
-  let noc = ''
+  let noc = PARAM_NONE
   const nocParam = new URL(req.url).searchParams.get(P_NOC)
   if (nocParam != null) {
     noc = nocParam.trim()
@@ -265,15 +265,15 @@ export async function jobsApplyhowRoute(req: Request): Promise<Response> {
     ahDaily = ahEnv
   }
   if (checkLimit([[AH_LIMIT_PREFIX + ipOf(req), ahDaily]]) === false) {
-    return Response.json({ email: '' }, { status: TOO_MANY })
+    return Response.json({ email: MAIL_NONE }, { status: TOO_MANY })
   }
-  let raw = ''
+  let raw = PARAM_NONE
   const urlParam = new URL(req.url).searchParams.get(P_URL)
   if (urlParam != null) {
     raw = urlParam.trim()
   }
   if (JB_POSTING_RE.test(raw) === false) {
-    return Response.json({ email: '' })
+    return Response.json({ email: MAIL_NONE })
   }
   const key = raw.split(URL_CUT_RE)[0]
   const hit = CACHE.applyMail.get(key)
@@ -282,7 +282,7 @@ export async function jobsApplyhowRoute(req: Request): Promise<Response> {
   }
   const neg = CACHE.applyFail.get(key)
   if (neg != null && Date.now() - neg < APPLY_NEG_TTL_MS) {
-    return Response.json({ email: '' })
+    return Response.json({ email: MAIL_NONE })
   }
   const email = await loadApplyEmail(key)
   if (email == null) {
@@ -290,7 +290,7 @@ export async function jobsApplyhowRoute(req: Request): Promise<Response> {
     if (CACHE.applyFail.size > APPLY_FAIL_MAX) {
       CACHE.applyFail.clear()
     }
-    return Response.json({ email: '' })
+    return Response.json({ email: MAIL_NONE })
   }
   CACHE.applyMail.set(key, email)
   if (CACHE.applyMail.size > APPLY_CACHE_MAX) {
@@ -314,14 +314,14 @@ export async function jobsJdformatRoute(req: Request): Promise<Response> {
   if (friendLlmReady() === false) {
     return new Response(null, { status: NO_CONTENT })
   }
-  let url = ''
+  let url = PARAM_NONE
   try {
     const b = await req.json() as JdUrlBody
     if (typeof b.url === 'string') {
       url = b.url.trim()
     }
   } catch {
-    url = ''
+    url = PARAM_NONE
   }
   if (url === '') {
     return new Response(null, { status: BAD_REQUEST })
@@ -380,8 +380,8 @@ export async function jobsJdTranslateRoute(req: Request): Promise<Response> {
   if (translateReady() === false) {
     return Response.json({ ok: false, error: E_NOT_CONFIGURED }, { status: UNAVAILABLE })
   }
-  let url = ''
-  let lang = ''
+  let url = PARAM_NONE
+  let lang = PARAM_NONE
   try {
     const b = await req.json() as JdTransBody
     if (typeof b.url === 'string') {
@@ -391,7 +391,7 @@ export async function jobsJdTranslateRoute(req: Request): Promise<Response> {
       lang = b.lang
     }
   } catch {
-    url = ''
+    url = PARAM_NONE
   }
   if (url === '' || TRANS_LANGS.includes(lang) === false) {
     return Response.json({ ok: false, error: E_BAD_REQUEST }, { status: BAD_REQUEST })

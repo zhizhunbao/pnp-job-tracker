@@ -9,6 +9,7 @@
  * @time 2026-08-24 13:00:00
  */
 import { daysSince } from '@/lib/time'
+import { GRAIN_DATE, TONE_DIM } from './constants'
 import { textOf, toneClsOf } from './functions'
 import type { DateAgeIn } from './types'
 import css from './time.module.css'
@@ -25,8 +26,8 @@ export function DateAge({ iso, ageText, aging }: DateAgeIn) {
     days = daysSince({ iso, now: Date.now() })
   }
   return (
-    <span className={toneClsOf('dim')} suppressHydrationWarning>
-      {textOf({ iso, grain: 'date' })}
+    <span className={toneClsOf(TONE_DIM)} suppressHydrationWarning>
+      {textOf({ iso, grain: GRAIN_DATE })}
       {days != null && <span className={css.age}>{ageText(days)}</span>}
     </span>
   )

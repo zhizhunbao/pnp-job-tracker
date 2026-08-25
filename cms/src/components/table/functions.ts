@@ -4,7 +4,7 @@
  * @author Frank
  * @time 2026-08-24 02:30:00
  */
-import { EMPTY_MARK } from './constants'
+import { CLS_SEP, EMPTY_MARK } from './constants'
 import type { CellIn, Col, SortRowsIn } from './types'
 
 /**
@@ -66,7 +66,7 @@ export function cls(base: string, ...mods: (string | false | null | undefined)[]
       out.push(m)
     }
   }
-  return out.join(' ')
+  return out.join(CLS_SEP)
 }
 
 /**

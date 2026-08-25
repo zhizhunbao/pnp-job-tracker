@@ -24,6 +24,7 @@ import {
   CACHE_TTL_MS, CITY_LEN_MAX, CO_IP_DAILY, CO_LIMIT_PREFIX, CO_MARKS_RE, CSV_CACHE_CONTROL, CSV_CONTENT_TYPE, CSV_DISPOSITION, E_PRO, EMP_CACHE_CONTROL,
   EMP_PAGE_SIZE, EXPORT_PROVS, EXPORT_Q_LEN_MAX, MODE, NAME_LEN_MAX, NOC5_RE, PAGE_SIZE_MAX, PARAM, SORT_OPEN,
   SORT_SKILLED, SPONSORS_CACHE_CONTROL, VIEW,
+  FETCHED_NONE, FILTER_UNSET, LANG_UNSET, NAME_UNSET,
 } from './constants'
 import {
   applySponsorFilters, buildSponsorBoards, companyRow, loadSponsorEmployers, investigateCompany,
@@ -60,7 +61,7 @@ export async function employersRoute(req: Request): Promise<Response> {
   } catch {
     return Response.json({
       mode: f.mode, rows: [], total: 0, page: f.page, pageSize: pageSize,
-      facets: { provs: [], programs: [], cities: [], nocs: [] }, fetched: '', nocTitles: {},
+      facets: { provs: [], programs: [], cities: [], nocs: [] }, fetched: FETCHED_NONE, nocTitles: {},
     })
   }
 }
@@ -101,17 +102,17 @@ export async function employersExportRoute(req: Request): Promise<Response> {
     return Response.json({ error: E_PRO }, { status: PAYMENT_REQUIRED })
   }
   const sp = new URL(req.url).searchParams
-  let f: SponsorFilters['f'] = ''
+  let f: SponsorFilters['f'] = FILTER_UNSET
   const fRaw = paramOf(sp, PARAM.f)
   if (fRaw === VIEW.aip || fRaw === VIEW.lmia || fRaw === VIEW.named) {
     f = fRaw
   }
-  let prov = ''
+  let prov = FILTER_UNSET
   const provRaw = paramOf(sp, PARAM.prov).toUpperCase()
   if (EXPORT_PROVS.includes(provRaw)) {
     prov = provRaw
   }
-  let noc = ''
+  let noc = FILTER_UNSET
   const nocRaw = paramOf(sp, PARAM.noc)
   if (NOC5_RE.test(nocRaw)) {
     noc = nocRaw
@@ -148,14 +149,14 @@ export async function employersInfoRoute(req: Request): Promise<Response> {
   if (friendLlmReady() === false) {
     return new Response(null, { status: NO_CONTENT })
   }
-  let name = ''
+  let name = NAME_UNSET
   try {
     const body = await req.json() as InfoBody
     if (typeof body.name === 'string') {
       name = body.name.trim()
     }
   } catch {
-    name = ''
+    name = NAME_UNSET
   }
   if (name === '' || name.length > NAME_LEN_MAX) {
     return Response.json({ ok: false }, { status: BAD_REQUEST })
@@ -191,7 +192,7 @@ export async function employersInfoRoute(req: Request): Promise<Response> {
 function paramOf(sp: URLSearchParams, key: string): string {
   const v = sp.get(key)
   if (v == null) {
-    return ''
+    return FILTER_UNSET
   }
   return v.trim()
 }
@@ -208,8 +209,8 @@ export async function employersTranslateRoute(req: Request): Promise<Response> {
   if (translateReady() === false) {
     return Response.json({ ok: false, error: E_NOT_CONFIGURED }, { status: UNAVAILABLE })
   }
-  let name = ''
-  let lang = ''
+  let name = NAME_UNSET
+  let lang = LANG_UNSET
   try {
     const b = await req.json() as EmployersTransBody
     if (typeof b.name === 'string') {
@@ -219,7 +220,7 @@ export async function employersTranslateRoute(req: Request): Promise<Response> {
       lang = b.lang
     }
   } catch {
-    name = ''
+    name = NAME_UNSET
   }
   if (name === '' || TRANS_LANGS.includes(lang) === false) {
     return Response.json({ ok: false, error: E_BAD_REQUEST }, { status: BAD_REQUEST })

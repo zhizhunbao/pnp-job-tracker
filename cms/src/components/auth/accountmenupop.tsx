@@ -10,6 +10,7 @@
 import { IconClipboard, IconCompass, IconSave, IconSettings, IconStar, IconTarget, IconUser } from '@/components/icons'
 import { LinkButton } from '@/components/button'
 import {
+  ARIA_MENU,
   PATH_ACCOUNT,
   PATH_ACCOUNT_FAVS,
   PATH_ACCOUNT_PROFILE,
@@ -31,7 +32,7 @@ import css from './auth.module.css'
  */
 export function AccountMenuPop({ t, email, shortName, isPro, proUntil, onUpgrade }: AccountMenuPopIn) {
   return (
-    <div role="menu" className={css.menuPop}>
+    <div role={ARIA_MENU} className={css.menuPop}>
       <LinkButton href={PATH_ACCOUNT} className={css.menuHead}>
         <div className={css.menuName}>
           {shortName}

@@ -304,3 +304,35 @@ export const NON_LETTERS = /[^a-z ]/g
  * 门槛行里逗号分隔的列表(`appliesTeer` / `appliesNoc` / `excludesNoc`)的分隔符。
  */
 export const LIST_SEP = ','
+
+/**
+ * 地名是空的时候拿它顶上:空串。签名上收的是 string,但地名一路从库里过来,
+ * 空(以及类型挡不住的 null)是常态 —— 这一格保的是「拿到空的也照样走完这条链」:
+ * 小写 → 抹掉非字母 → 去首尾空白,出来仍是空串,链子前面不必先判一次空。
+ * 而空串跟官方枚举表里的任何一条都比不上,「不知道」于是自动落进「认不出」那一档 ——
+ * 认不出就说认不出,不硬塞档位(档位说低了比不说更糟)。
+ */
+export const NAME_NONE = ''
+
+/**
+ * `NON_LETTERS` 的替换串:空串 = **删掉**匹配到的字符,不是换成别的。
+ * 换成空格会把 `niagara-on-the-lake` 变成 `niagara on the lake`,
+ * 而官方枚举表里存的是 `niagaraonthelake`(见 ON_LISTED)—— 只有直接删,两边才是同一把尺。
+ */
+export const NON_LETTERS_REPL = ''
+
+/**
+ * 门槛行的职业清单列(`appliesNoc` / `excludesNoc`)没写时的占位。
+ * 逗号切出来是**空清单**,而空的适用清单在 nocScore 里正是「通用条款」——
+ * 官方没点名职业 = 这一行不分职业都算数,不是「谁都不算」。两者反着,不能拿 null 含混过去。
+ * 排除清单那一格反过来读:空 = 一个都不排除,nocScore 的前缀循环空转直接放行。
+ * 同一个空串在两格上各读各的(「谁都算」与「谁都不排」),合起来才是「这行对所有职业生效」。
+ */
+export const LIST_NONE = ''
+
+/**
+ * 门槛行的 `appliesCondition` 没写时的档名:空串。
+ * 两档并列时档名是给人看的分档标签,官方没给条件名就留空 ——
+ * 不许在这里编一个:编出来的档名会被下游当成官方原文读。
+ */
+export const COND_NONE = ''

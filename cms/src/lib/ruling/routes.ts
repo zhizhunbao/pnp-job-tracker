@@ -13,7 +13,7 @@ import { getDb } from '../db/server'
 import { getUser, isPro } from '../quota/server'
 import { loadOccCompetition } from '../jobs/server'
 import { loadPilotQuota } from '../pathways/server'
-import { E_ANSWERS_REQUIRED, E_NOC_REQUIRED, NOC5_RE, P_JOB, P_NOC, P_TEER, TEER_MAX } from './constants'
+import { E_ANSWERS_REQUIRED, E_NOC_REQUIRED, NOC5_RE, NO_TEXT, P_JOB, P_NOC, P_TEER, TEER_MAX } from './constants'
 import { buildProfileWire, getVerdictData, jobPathways, loadProvinceCompetition, parseProfileBody, tripleWireOf } from './functions'
 import type { ClientAnswers, ProfileBody, TripleWireResult, VerdictBody } from './types'
 
@@ -76,7 +76,7 @@ export async function rulingVerdictPostRoute(req: Request): Promise<Response> {
  */
 export async function rulingPathwaysRoute(req: Request): Promise<Response> {
   const sp = new URL(req.url).searchParams
-  let noc = ''
+  let noc = NO_TEXT
   const nocParam = sp.get(P_NOC)
   if (nocParam != null) {
     noc = nocParam.trim()

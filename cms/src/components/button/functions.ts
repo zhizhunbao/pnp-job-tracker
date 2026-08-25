@@ -4,7 +4,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
-import { ACTION_KINDS } from './constants'
+import { ACTION_KINDS, CLS_SEP } from './constants'
 import type { BtnClsIn, ButtonKind } from './types'
 import css from './button.module.css'
 
@@ -55,7 +55,7 @@ export function btnClsOf(x: BtnClsIn): string {
   if (x.className != null) {
     cls.push(x.className)
   }
-  return cls.join(' ')
+  return cls.join(CLS_SEP)
 }
 
 /**

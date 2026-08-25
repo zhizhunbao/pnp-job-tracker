@@ -15,7 +15,7 @@ import {
 } from '@/lib/error'
 import { LLM_FN, LLM_LOG, LOG_MSG_MAX, log } from '@/lib/log'
 import {
-  ALPHA_BASE, ALPHA_LEN, ALPHA_ZERO, ANTHROPIC_MODEL, BACKEND, BLOCK_TEXT, BULLET_PREFIX, BULLET_RE, CACHE_HIT, E_TRANSLATE_UNAVAILABLE, FNV_PRIME, FNV_SEED_A, FNV_SEED_B, FRIEND_CALL_TIMEOUT_MS, FRIEND_INPUT_MAX, FRIEND_MAX_TOKENS, FRIEND_STREAM_TEMP, GATEWAY_BASE, GATEWAY_KEY, GATEWAY_MODEL, GATEWAY_TIMEOUT_MS, HEADER, KEEP_GROUP1, LEGACY_SOURCE_MAX, MD_BOLD, MD_HEADING, MD_STARS, NEWS_BODY_CAP, NOT_STATED_RE, NUMBERED_SPLIT, NUMBER_HEAD, NUMBER_TAIL, OLLAMA_COMPLETE_TEMP, OLLAMA_MODEL, OLLAMA_STREAM_TEMP, OLLAMA_URL, PARA, PARA_JOIN, PARA_SPLIT_RE, PATH_LEGACY, PATH_OLLAMA, PATH_TRANSLATE, PATH_V1, POST, PROTOCOL, PROVIDER, REF_HEAD, REF_SALT_SEP, REF_TAIL, ROLE, SSE_BLOCK_SEP, SSE_DATA, SSE_DATA_LEN, SSE_DONE, SSE_LINE_SEP, STALL, STOP_REFUSAL, STREAM_EVENT, SUMMARY_BODY_CAP, SUMMARY_MIN_LEN, TRANSLATE_CHUNK, TRANSLATE_ROUTE_TIMEOUT_MS, TRANSLATE_SOURCE, TRANSLATE_TRIES, VIA, WEB_FETCH,
+  ALPHA_BASE, ALPHA_LEN, ALPHA_ZERO, ANSWER_NONE, ANTHROPIC_MODEL, BACKEND, BLOCK_TEXT, BULLET_PREFIX, BULLET_RE, CACHE_HIT, CONTENT_TYPE_NONE, DELTA_NONE, DETAIL_NONE, E_TRANSLATE_UNAVAILABLE, FNV_PRIME, FNV_SEED_A, FNV_SEED_B, FRIEND_CALL_TIMEOUT_MS, FRIEND_INPUT_MAX, FRIEND_MAX_TOKENS, FRIEND_STREAM_TEMP, GATEWAY_BASE, GATEWAY_KEY, GATEWAY_MODEL, GATEWAY_TIMEOUT_MS, HEADER, KEEP_GROUP1, LEGACY_SOURCE_MAX, MD_BOLD, MD_DROP, MD_HEADING, MD_STARS, NEWS_BODY_CAP, NOT_STATED_RE, NUMBERED_SPLIT, NUMBER_HEAD, NUMBER_TAIL, OLLAMA_COMPLETE_TEMP, OLLAMA_MODEL, OLLAMA_STREAM_TEMP, OLLAMA_URL, PARA, PARA_JOIN, PARA_SPLIT_RE, PART_NONE, PATH_LEGACY, PATH_OLLAMA, PATH_TRANSLATE, PATH_V1, POST, PREFIX_NONE, PROTOCOL, PROVIDER, REF_HEAD, REF_SALT_SEP, REF_TAIL, ROLE, SALT_NONE, SOURCE_URL_NONE, SSE_BLOCK_SEP, SSE_DATA, SSE_DATA_LEN, SSE_DONE, SSE_LINE_SEP, STALL, STOP_REFUSAL, STREAM_EVENT, SUMMARY_BODY_CAP, SUMMARY_MIN_LEN, TAIL_NONE, TEXT_START, TRANSLATED_EMPTY, TRANSLATE_CHUNK, TRANSLATE_ROUTE_TIMEOUT_MS, TRANSLATE_SOURCE, TRANSLATE_TRIES, UPSTREAM_TEXT_NONE, VIA, WEB_FETCH, WHY_NONE,
 } from './constants'
 import type {
   Alpha7In, Alpha7Out, AnthropicMessage, AnthropicParams, AnthropicStreamIn, AnthropicStreamParams, ArmOut, BackendStreamIn, BackendStreamOut, CharCountIn, CharCountOut, CompleteBackendIn, CompleteBackendOut, CompleteFriendIn, CompleteTextIn, CompleteTextOut, ContentTagIn, ContentTagOut, EmptyTextOut, Fnv1aIn, Fnv1aOut, FriendChatIn, FriendChatMaybeOut, FriendChatOut, FriendLlmReadyOut, FriendResult, GatewayMessage, GatewayMessagesIn, GatewayMessagesOut, IgnoreOut, LegacyRequest, LegacyResponse, MakeWatchIn, MakeWatchOut, NullJsonOut, NumberLinesIn, NumberLinesOut, OllamaRequest, OllamaResponse, OnEndOut, OnErrorIn, OnErrorOut, OnTextIn, OnTextOut, OrTextIn, OrTextOut, ParasStrictIn, ParasStrictOut, ParseNumberedIn, ParseNumberedOut, PlainLinesIn, PostJsonIn, PostJsonOut, ReadV1SseIn, ReadV1SseOut, RefPromptIn, RefPromptOut, SectionJob, SectionedIn, SectionedPOut, SendV1In, SendV1Out, SourceUrlIn, SourceUrlOut, SplitMessagesIn, SplitMessagesOut, StreamChatIn, StreamChatOut, StripMdIn, StripMdOut, SummarizeNewsIn, SummarizeNewsOut, SystemOfIn, SystemOfOut, TextOfIn, TextOfOut, TranslateChunkIn, TranslateChunkOut, TranslateLinesIn, TranslateLinesOut, TranslateReadyOut, TranslateResponse, TurnsOfIn, TurnsOfOut, V1AnswerOfIn, V1AnswerOfOut, V1Request, V1Response, WatchWhy, WebFetchToolIn, WebFetchToolOut,
@@ -31,7 +31,7 @@ import type {
  * @returns 空串。
  */
 function emptyText(): EmptyTextOut {
-  return ''
+  return DETAIL_NONE
 }
 
 /**
@@ -80,7 +80,7 @@ function fnv1a(input: Fnv1aIn): Fnv1aOut {
  * @returns 7 个小写字母。
  */
 function alpha7(input: Alpha7In): Alpha7Out {
-  let s = ''
+  let s = TEXT_START
   for (let i = 0, x = input.n; i < ALPHA_LEN; i++, x = Math.floor(x / ALPHA_BASE)) {
     s += String.fromCharCode(ALPHA_ZERO + (x % ALPHA_BASE))
   }
@@ -228,8 +228,8 @@ async function postJson(input: PostJsonIn): PostJsonOut {
 async function readV1Sse(input: ReadV1SseIn): ReadV1SseOut {
   const reader = input.body.getReader()
   const dec = new TextDecoder()
-  let buf = ''
-  let out = ''
+  let buf = TEXT_START
+  let out = TEXT_START
   for (; ;) {
     let chunk: ReadableStreamReadResult<Uint8Array>
     try {
@@ -247,7 +247,7 @@ async function readV1Sse(input: ReadV1SseIn): ReadV1SseOut {
     const blocks = buf.split(SSE_BLOCK_SEP)
     let rest = blocks.pop()
     if (rest == null) {
-      rest = ''
+      rest = TAIL_NONE
     }
     buf = rest
     for (const block of blocks) {
@@ -261,7 +261,7 @@ async function readV1Sse(input: ReadV1SseIn): ReadV1SseOut {
         }
         try {
           const parsed: V1Response = JSON.parse(raw)
-          let t = ''
+          let t = DELTA_NONE
           if (parsed.choices != null && parsed.choices.length > 0) {
             const choice = parsed.choices[0]
             if (choice.delta != null && choice.delta.content != null) {
@@ -374,7 +374,7 @@ async function chatV1(input: FriendChatIn): FriendChatOut {
   }
   let watch = makeWatch({ timeoutMs: timeoutMs, stallMs: input.stallMs })
 
-  let answer = ''
+  let answer = ANSWER_NONE
   let body: V1Response | null = null
   let xCache: string | null = null
   let streamed = false
@@ -384,7 +384,7 @@ async function chatV1(input: FriendChatIn): FriendChatOut {
       throw gatewayErrorOf({ status: res.status, body: await res.text().catch(emptyText) })
     }
     xCache = res.headers.get(HEADER.xCache)
-    const ctype = res.headers.get(HEADER.contentType) || ''
+    const ctype = res.headers.get(HEADER.contentType) || CONTENT_TYPE_NONE
     streamed = Boolean(input.onDelta) && ctype.includes(HEADER.sse) && Boolean(res.body)
     if (streamed && res.body) {
       answer = (await readV1Sse({ body: res.body, watch, onDelta: input.onDelta })).trim()
@@ -445,11 +445,11 @@ async function chatV1(input: FriendChatIn): FriendChatOut {
  */
 function v1AnswerOf(input: V1AnswerOfIn): V1AnswerOfOut {
   if (input.body == null || input.body.choices == null || input.body.choices.length === 0) {
-    return ''
+    return ANSWER_NONE
   }
   const msg = input.body.choices[0].message
   if (msg == null || msg.content == null) {
-    return ''
+    return ANSWER_NONE
   }
   return msg.content
 }
@@ -479,7 +479,7 @@ function sourceUrl(input: SourceUrlIn): SourceUrlOut {
     return input.source
   }
   if (input.source == null || input.source.url == null) {
-    return ''
+    return SOURCE_URL_NONE
   }
   return String(input.source.url)
 }
@@ -501,7 +501,7 @@ async function chatLegacy(input: FriendChatIn): FriendChatOut {
   const watch = makeWatch({ timeoutMs: timeoutMs })
   let body: LegacyResponse | null = null
   try {
-    let salt = ''
+    let salt = SALT_NONE
     if (input.system != null) {
       salt = input.system
     }
@@ -524,7 +524,7 @@ async function chatLegacy(input: FriendChatIn): FriendChatOut {
   } finally {
     watch.stop()
   }
-  let answer = ''
+  let answer = ANSWER_NONE
   if (body != null && body.answer != null) {
     answer = String(body.answer).trim()
   }
@@ -576,7 +576,7 @@ export async function friendChatOrThrow(input: FriendChatIn): FriendChatOut {
     if (code !== FRIEND_CODE.upstream && code !== FRIEND_CODE.offline) {
       throw e
     }
-    let why = ''
+    let why = WHY_NONE
     if (e instanceof Error) {
       why = e.message.slice(0, LOG_MSG_MAX)
     }
@@ -584,7 +584,7 @@ export async function friendChatOrThrow(input: FriendChatIn): FriendChatOut {
     try {
       return await chatLegacy(input)
     } catch (e2) {
-      let why2 = ''
+      let why2 = WHY_NONE
       if (e2 instanceof Error) {
         why2 = e2.message.slice(0, LOG_MSG_MAX)
       }
@@ -674,7 +674,7 @@ function turnsOf(input: TurnsOfIn): TurnsOfOut {
  * @returns 文本块拼起来的正文。
  */
 function textOf(input: TextOfIn): TextOfOut {
-  let out = ''
+  let out = TEXT_START
   for (const block of input.blocks) {
     if (block.type === BLOCK_TEXT) {
       out += block.text
@@ -764,7 +764,7 @@ async function ollamaStream(input: BackendStreamIn): BackendStreamOut {
   const reader = upstream.body.getReader()
   const decoder = new TextDecoder()
   const encoder = new TextEncoder()
-  let buf = ''
+  let buf = TEXT_START
   return new ReadableStream({
     async pull(controller) {
       const { done, value } = await reader.read()
@@ -773,14 +773,14 @@ async function ollamaStream(input: BackendStreamIn): BackendStreamOut {
       }
       buf += decoder.decode(value, { stream: true })
       const lines = buf.split(SSE_LINE_SEP)
-      buf = lines.pop() || ''
+      buf = lines.pop() || TAIL_NONE
       for (const line of lines) {
         if (line.trim() === '') {
           continue
         }
         try {
           const parsed: OllamaResponse = JSON.parse(line)
-          let delta = ''
+          let delta = DELTA_NONE
           if (parsed.message != null && parsed.message.content != null) {
             delta = parsed.message.content
           }
@@ -966,7 +966,7 @@ async function completeOllama(input: CompleteBackendIn): CompleteBackendOut {
   if (parsed.message != null && parsed.message.content != null) {
     return parsed.message.content
   }
-  return ''
+  return ANSWER_NONE
 }
 
 /**
@@ -1008,7 +1008,7 @@ export function translateReady(): TranslateReadyOut {
  * @returns 去掉加粗与标题记号之后的正文。
  */
 function stripMd(input: StripMdIn): StripMdOut {
-  return input.text.replace(MD_BOLD, KEEP_GROUP1).replace(MD_HEADING, '').replace(MD_STARS, '')
+  return input.text.replace(MD_BOLD, KEEP_GROUP1).replace(MD_HEADING, MD_DROP).replace(MD_STARS, MD_DROP)
 }
 
 /**
@@ -1021,7 +1021,7 @@ function parseNumbered(input: ParseNumberedIn): ParseNumberedOut {
   const parts = input.text.split(NUMBERED_SPLIT)
   const d: ParseNumberedOut = new Map()
   for (let i = 1; i + 1 < parts.length + 1; i += 2) {
-    let part = ''
+    let part = PART_NONE
     if (i + 1 < parts.length) {
       part = parts[i + 1]
     }
@@ -1070,7 +1070,7 @@ async function translateChunk(input: TranslateChunkIn): TranslateChunkOut {
         throw translateError({ msg: `${UPSTREAM_HEAD}${resp.status}`, code: TRANSLATE_CODE.upstream })
       }
       const parsed: TranslateResponse = await resp.json()
-      const m = parseNumbered({ text: String(parsed.translated_text || '') })
+      const m = parseNumbered({ text: String(parsed.translated_text || UPSTREAM_TEXT_NONE) })
       if (m.size) {
         return m
       }
@@ -1125,7 +1125,7 @@ export async function translateSectioned(input: SectionedIn): SectionedPOut {
   const jobs: SectionJob[] = []
   for (let idx = 0; idx < lines.length; idx++) {
     let l = lines[idx].trim()
-    let prefix = ''
+    let prefix = PREFIX_NONE
     const mk = input.marks.exec(l)
     if (mk != null) {
       prefix = mk[1]
@@ -1189,7 +1189,7 @@ export async function translatePlainLines(input: PlainLinesIn): SectionedPOut {
     }
   }
   if (lines.length === 0) {
-    return { text: '', full: true }
+    return { text: TRANSLATED_EMPTY, full: true }
   }
   const translated = await translateLinesAligned({ lines: lines, lang: input.lang, signal: input.signal })
   let any = false

@@ -69,3 +69,11 @@ export const E_PARA_ALIGN = 'paragraph alignment failed'
  * 错误体：速读太短/没给。
  */
 export const E_EMPTY_SUMMARY = 'empty summary'
+
+/**
+ * 请求体里这一格没给时的占位:空串。两个 handler 收 body 的路数一样 ——
+ * 起手按「没给」落地,`typeof === 'string'` 过了才覆盖上去,JSON 本身坏掉则在 catch 里
+ * 把它按回「没给」。于是「缺字段」「类型不对」「body 是坏 JSON」三种脏法收成同一种,
+ * 下面只留一条拒收线(空 = 400),不必为每种脏法各写一支。
+ */
+export const BODY_MISSING = ''

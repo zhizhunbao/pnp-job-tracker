@@ -10,7 +10,7 @@
  * @time 2026-08-24 01:30:00
  */
 import { Notice } from '@/components/notice'
-import { MODE_FORGOT, MODE_LOGIN, MODE_REGISTER, MODE_RESET } from './constants'
+import { BTN_TYPE_BUTTON, MODE_FORGOT, MODE_LOGIN, MODE_REGISTER, MODE_RESET, NOTICE_OK } from './constants'
 import { AuthFields } from './authfields'
 import { AuthFooter } from './authfooter'
 import { AuthHero } from './authhero'
@@ -26,7 +26,7 @@ import css from './auth.module.css'
  * @returns 表单。
  */
 export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }: AuthFormIn) {
-  let init: AuthMode = 'login'
+  let init: AuthMode = MODE_LOGIN
   if (initialMode != null) {
     init = initialMode
   }
@@ -53,8 +53,10 @@ export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }:
       {f.mode === MODE_RESET && <div className={css.resetTitle}>{t('acct.resetTitle')}</div>}
       {f.mode === MODE_FORGOT && f.sent && (
         <div>
-          <Notice kind="ok">{t('acct.forgotSent')}</Notice>
-          <button type="button" onClick={f.backFromSent} className={css.sentBack}>{t('acct.backLogin')}</button>
+          <Notice kind={NOTICE_OK}>{t('acct.forgotSent')}</Notice>
+          <button type={BTN_TYPE_BUTTON} onClick={f.backFromSent} className={css.sentBack}>
+            {t('acct.backLogin')}
+          </button>
         </div>
       )}
       {(f.mode !== MODE_FORGOT || f.sent === false) && (

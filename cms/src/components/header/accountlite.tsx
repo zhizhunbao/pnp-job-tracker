@@ -18,7 +18,16 @@ import dynamic from 'next/dynamic'
 import { PricingModal } from '@/app/(frontend)/jobs/PricingModal'
 import { AccountMenu } from '@/components/auth'
 import { Button } from '@/components/button'
-import { ACCT_IN, ACCT_LOADING } from './constants'
+import {
+  ACCT_IN,
+  ACCT_LOADING,
+  ARIA_TRUE,
+  AUTH_CLOSED,
+  AUTH_LOGIN,
+  AUTH_REGISTER,
+  KIND_LOGIN,
+  KIND_REGISTER,
+} from './constants'
 import { loadAuthModal } from './functions'
 import type { AccountLiteIn, AuthOpen } from './types'
 import css from './header.module.css'
@@ -35,19 +44,19 @@ const AuthModal = dynamic(loadAuthModal, { ssr: false })
  * @returns 账户区。
  */
 export function AccountLite({ t, acct }: AccountLiteIn) {
-  const [auth, setAuth] = useState<AuthOpen>('')
+  const [auth, setAuth] = useState<AuthOpen>(AUTH_CLOSED)
   const [pricing, setPricing] = useState(false)
 
   function openLogin() {
-    setAuth('login')
+    setAuth(AUTH_LOGIN)
   }
 
   function openRegister() {
-    setAuth('register')
+    setAuth(AUTH_REGISTER)
   }
 
   function closeAuth() {
-    setAuth('')
+    setAuth(AUTH_CLOSED)
   }
 
   function reload() {
@@ -66,7 +75,7 @@ export function AccountLite({ t, acct }: AccountLiteIn) {
     return <span className={css.acctSlot} />
   }
   if (acct.state === ACCT_IN && acct.u.email === '') {
-    return <span className={css.acctSlot}><span className={css.acctDot} aria-hidden="true" /></span>
+    return <span className={css.acctSlot}><span className={css.acctDot} aria-hidden={ARIA_TRUE} /></span>
   }
   if (acct.state === ACCT_IN) {
     return (
@@ -83,8 +92,8 @@ export function AccountLite({ t, acct }: AccountLiteIn) {
   }
   return (
     <>
-      <Button kind="ghost" sm className={css.tapY} onClick={openLogin}>{t('nav.login')}</Button>
-      <Button kind="primary" sm className={css.tapY} onClick={openRegister}>{t('nav.register')}</Button>
+      <Button kind={KIND_LOGIN} sm className={css.tapY} onClick={openLogin}>{t('nav.login')}</Button>
+      <Button kind={KIND_REGISTER} sm className={css.tapY} onClick={openRegister}>{t('nav.register')}</Button>
       {auth !== '' && <AuthModal t={t} mode={auth} onClose={closeAuth} onDone={reload} />}
     </>
   )

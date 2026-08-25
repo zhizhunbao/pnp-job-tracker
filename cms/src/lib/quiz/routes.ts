@@ -20,7 +20,7 @@ import { getTopNocsCached, makeFactsStore, swallowFactsError } from './functions
 import { getUserOrNull } from '../quota/server'
 import {
   ANSWERS_LEN_MAX, BROAD_CACHE_MAX, BROAD_LEN_MAX, BROAD_LIMIT, COUNTS_CACHE_MAX, COUNTS_N_MAX, COUNTS_SEP,
-  E_AUTH, E_BAD, E_PARAM, E_TOO_BIG, FACTS_CACHE_MAX, P_BROAD, P_COUNTS, P_NOC, P_Q, P_TOP, Q_LEN_MAX,
+  E_AUTH, E_BAD, E_PARAM, E_TOO_BIG, FACTS_CACHE_MAX, PARAM_NONE, P_BROAD, P_COUNTS, P_NOC, P_Q, P_TOP, Q_LEN_MAX,
   TOP_N_DEFAULT, TTL,
 } from './constants'
 import { loadAnswers, saveAnswers } from './functions'
@@ -45,7 +45,7 @@ import type { Db } from '../db'
 export async function quizRoute(req: Request): Promise<Response> {
   const sp = new URL(req.url).searchParams
   const db = await getDb()
-  let q = ''
+  let q = PARAM_NONE
   const qParam = sp.get(P_Q)
   if (qParam != null) {
     q = qParam.slice(0, Q_LEN_MAX)
@@ -53,7 +53,7 @@ export async function quizRoute(req: Request): Promise<Response> {
   if (q !== '') {
     return Response.json({ candidates: await searchNocByTitle({ db: db, q: q }) })
   }
-  let broad = ''
+  let broad = PARAM_NONE
   const broadParam = sp.get(P_BROAD)
   if (broadParam != null) {
     broad = broadParam.trim().slice(0, BROAD_LEN_MAX)
@@ -101,7 +101,7 @@ export async function quizRoute(req: Request): Promise<Response> {
     CACHE.countsBy.set(key, { at: Date.now(), counts: counts })
     return Response.json({ counts: counts })
   }
-  let noc = ''
+  let noc = PARAM_NONE
   const nocParam = sp.get(P_NOC)
   if (nocParam != null) {
     noc = nocParam.trim()

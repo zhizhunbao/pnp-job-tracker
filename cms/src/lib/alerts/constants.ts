@@ -169,6 +169,13 @@ export const WEEKLY_SHELL = `<div style="font-family:system-ui,sans-serif;color:
 export const WEEKLY_NEW_P = '<p>你的方向({dims})近 7 天新增 <strong>{n}</strong> 岗 / {n} new jobs this week in your saved directions — <a href="{site}" style="color:#2563eb">看新岗 View →</a></p>'
 
 /**
+ * C 收藏版周报「本周新增」段的**不出**态:newN=0 时这一格填空串,
+ * 整段从信里消失 —— 不写「本周新增 0 岗」,那是把「没有新岗」这件事
+ * 再念一遍给用户听,收件人只会更想退订。
+ */
+export const WEEKLY_NEW_NONE = ''
+
+/**
  * C2 档案版周报(E5-07):一行(标题/公司/薪资)。
  */
 export const TR_PROFILE = `<tr>
@@ -300,6 +307,13 @@ export const PROFILE_HEAD_P = '<p style="{style}">{head}</p>'
 export const PROFILE_HEAD_DIM = 'color:#6b7280;margin-top:-6px'
 
 /**
+ * C2 头行**第一门**语言的样式位:留空 = 不加任何额外样式,走 `PROFILE_HEAD_P`
+ * 模板自带的常规字色。第二门起才换成 `PROFILE_HEAD_DIM` 压灰 ——
+ * 一封信里两门语言并排,主次要靠字色分,不能两行一样重。
+ */
+export const PROFILE_HEAD_STYLE_NONE = ''
+
+/**
  * C2 档案版周报标题三 locale 模板(空/未知 locale 用 zh)。
  */
 export const SUBJ_WK = {
@@ -378,6 +392,13 @@ export const JOB_PATH = '/jobs/'
  * C2 档案版的省筛选片段(有目标省时拼进 SQL 模板参数位)。
  */
 export const PROV_COND = ' AND j.province = ANY($3)'
+
+/**
+ * 没有目标省时拼进 SQL 模板的**空**片段:整句少一段 WHERE,等于全国不限省。
+ * 空串在这儿不是「没取到」,是**这一维不筛** —— 与之配套,查询参数也少传一位
+ * (只传 [cut7, nocs],不带 provs),两处必须同时改,否则 $3 悬空。
+ */
+export const PROV_COND_NONE = ''
 
 /**
  * 收藏画像对的键分隔。
@@ -657,3 +678,33 @@ export const HOUR_NUMERIC = 'numeric'
  * 邮件里城市与省的分隔。
  */
 export const SEP_LOC = ', '
+
+/**
+ * 上游没给这一格时的空串占位:payload 文档展开不出的关联字段(owner 邮箱)、
+ * 库行里的可空列(标题、公司名、薪资文本、省码、职业名)。
+ * 空串进邮件模板 = 这一格什么都不显示;与 `TITLE_NONE` / `SAL_NONE` 的「—」不同 ——
+ * 那两个是明说「这项没有」,这个是整格不出现(公司名缺了就不占一行,不摆个横线在那儿)。
+ */
+export const FIELD_NONE = ''
+
+/**
+ * 用户没设界面语言时的 locale 值。它不是错,是**大多数账号的常态**(注册流程不强制选语言),
+ * 所以拿到空串一律回落 `L_ZH`,不当异常报;`SUBJ_WK` / `WK_HEAD` 这些三语表的取值全靠它兜底。
+ */
+export const LOCALE_NONE = ''
+
+/**
+ * 拼 HTML 片段时 `join` 的分隔符:一个字都不插。
+ * 被 join 的每一片都是 `fill()` 出来的**完整块级标签**(`<tr>` / `<p>`),
+ * 首尾相接就已经是最终正文;塞任何分隔符都会落在两个兄弟标签**之间**,
+ * 那个位置的字符不是标记而是裸文本,会跟着正文一起渲染出来。
+ * 用在 `emailHtml` 的抽选行、`jobsTable` 与 `weeklyHtml` 的表行、`weeklyProfileHtml` 的头行与表行。
+ */
+export const HTML_SEP = ''
+
+/**
+ * 查询参数没带时的值:`searchParams.get()` 取不到返回 null,统一收成空串再往下走
+ * (宪法禁 `undefined` 进契约,`?? ''` 也禁,所以是「先给空串、取到再覆盖」)。
+ * 下游一律用 `=== ''` 判「这个参数没带」,不用真假值 —— `dry=0` 也是带了参数。
+ */
+export const PARAM_NONE = ''

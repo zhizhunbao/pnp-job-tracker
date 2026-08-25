@@ -8,7 +8,7 @@
  * @time 2026-08-23 03:30:00
  */
 import { getDb } from '../db/server'
-import { P_PROVS, PROV_CODE_RE, PROV_SEP } from './constants'
+import { P_PROVS, PROVS_NONE, PROV_CODE_RE, PROV_SEP } from './constants'
 import { getScoreTables, makeProvHit } from './functions'
 
 /**
@@ -20,7 +20,7 @@ import { getScoreTables, makeProvHit } from './functions'
  */
 export async function pointsFactorsRoute(req: Request): Promise<Response> {
   const sp = new URL(req.url).searchParams
-  let raw = ''
+  let raw = PROVS_NONE
   const provsParam = sp.get(P_PROVS)
   if (provsParam != null) {
     raw = provsParam

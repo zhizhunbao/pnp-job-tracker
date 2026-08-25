@@ -19,17 +19,18 @@ import { hasProfile, match, normalizeProfile } from '../jobs'
 import { ALERT_MATCH_LEVEL } from '../quota'
 import {
   ALERT_MIN_GAP_MS, BADGE_CLOSED, BADGE_OPEN, DIMS_FALLBACK, DIMS_LIST_SEP, DIMS_NATION, DIMS_PROVS, DIMS_SEP,
-  DIM_JOIN, DIM_PAIRS, DRAW_ABOVE, DRAW_BELOW, DRAW_P, DRAW_WINDOW_MS, DRY_ON, EMAIL_SHELL, ET_ZONE,
-  HI_LINE, JOB_PATH, LOOKBACK_MS, L_EN, L_KO, L_ZH, MATCH_TOP,
+  DIM_JOIN, DIM_PAIRS, DRAW_ABOVE, DRAW_BELOW, DRAW_P, DRAW_WINDOW_MS, DRY_ON, EMAIL_SHELL, ET_ZONE, FIELD_NONE,
+  HI_LINE, HTML_SEP, JOB_PATH, LOCALE_NONE, LOOKBACK_MS, L_EN, L_KO, L_ZH, MATCH_TOP,
   NOC_RE, OPEN_BOARD, OR_SEP, PAIR_KEY_SEP, PAIR_L, PAIR_M, PAIR_R, PREVIEW_WEEKLY,
-  PROFILE_HEAD_DIM, PROFILE_HEAD_P, PROFILE_SHELL, PROV_COND, QUIET_END_DEF, QUIET_START_DEF,
+  PROFILE_HEAD_DIM, PROFILE_HEAD_P, PROFILE_HEAD_STYLE_NONE, PROFILE_SHELL, PROV_COND, PROV_COND_NONE,
+  QUIET_END_DEF, QUIET_START_DEF,
   SAL_K, SAL_NONE, SAVED_SHOW, SITE, ST_OPEN, SUBJ_MATCH, SUBJ_SAVED, SUBJ_SEARCH, SUBJ_WK, TABLE_JOBS,
   COL_SAVED_JOBS, COL_SEARCHES, COL_USERS, ET_LOCALE, HOUR_NUMERIC, K_COUNTS, K_PREVIEW, LEVEL_HIGH,
   LEVEL_MID, SEP_LOC,
   TITLE_NONE, TR_JOB, TR_PROFILE, TR_WEEKLY, UNSUB_MSG_DONE, UNSUB_MSG_FAIL, UNSUB_MSG_INVALID, UNSUB_PAGE,
   US_DONE, US_FAIL, US_INVALID,
   UNSUB_PREVIEW, UNSUB_SAVED, UNSUB_URL, USERS_WEEKLY_OPT, WEEKLY_CAP,
-  WEEKLY_NEW_P, WEEKLY_SHELL, WEEK_MS, WK_CTA, WK_FOOT, WK_HEAD, WK_SETTINGS, WK_UNSUB,
+  WEEKLY_NEW_NONE, WEEKLY_NEW_P, WEEKLY_SHELL, WEEK_MS, WK_CTA, WK_FOOT, WK_HEAD, WK_SETTINGS, WK_UNSUB,
 } from './constants'
 import type {
   AlertCounts, AlertJobRow, EngineJob, MaybeWeeklyStatRow, SampleDbRow, DimsOfFn, MailJobRow, MailLang, MailUserId, QuietInfo, RunIn, RunOut, SampleRow,
@@ -155,7 +156,7 @@ export async function runAlerts(input: RunIn): RunOut {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- payload 生成型接缝(读的格见文件头)
   for (const sdoc of searches.docs as any[]) {
     out.searchesChecked++
-    let ownerEmail = ''
+    let ownerEmail = FIELD_NONE
     let ownerId: string | number | null = null
     if (sdoc.user != null && typeof sdoc.user === 'object' && typeof sdoc.user.email === 'string') {
       ownerEmail = sdoc.user.email
@@ -233,7 +234,7 @@ export async function runAlerts(input: RunIn): RunOut {
         continue
       }
       out.weeklyChecked++
-      let provCond = ''
+      let provCond = PROV_COND_NONE
       let params: (string | string[])[] = [cut7, nocs]
       if (provs.length > 0) {
         provCond = PROV_COND
@@ -249,7 +250,7 @@ export async function runAlerts(input: RunIn): RunOut {
       const nameRes = await input.db.query(SQL.ALERT_NOC_TITLE, [nocs])
       const nameRows = nameRes.rows as NocNameRow[]
       const dimsOf = makeDimsOf({ nameRows: nameRows, nocs: nocs, provs: provs })
-      let uLoc = ''
+      let uLoc = LOCALE_NONE
       if (typeof u.locale === 'string') {
         uLoc = u.locale
       }
@@ -314,7 +315,7 @@ export async function runAlerts(input: RunIn): RunOut {
       if (typeof d.title === 'string' && d.title !== '') {
         title = d.title
       }
-      let company = ''
+      let company = FIELD_NONE
       if (typeof d.company === 'string') {
         company = d.company
       }
@@ -354,7 +355,7 @@ export async function runAlerts(input: RunIn): RunOut {
     for (const r of pairs.slice(0, DIM_PAIRS)) {
       dimPieces.push(r.province + DIM_JOIN + r.broad)
     }
-    let savedLoc = ''
+    let savedLoc = LOCALE_NONE
     if (typeof u.locale === 'string') {
       savedLoc = u.locale
     }
@@ -386,7 +387,7 @@ export async function runAlerts(input: RunIn): RunOut {
  * @returns 整封 HTML。
  */
 export function emailHtml(input: EmailHtmlIn): string {
-  const draws = input.drawLines.map(drawP).join('')
+  const draws = input.drawLines.map(drawP).join(HTML_SEP)
   return fill({ tpl: EMAIL_SHELL, params: { draws: draws, hi: HI_LINE, table: jobsTable(input.rows), site: SITE, open: OPEN_BOARD, unsub: UNSUB_SAVED } })
 }
 
@@ -403,22 +404,22 @@ export function jobsTable(rows: MailJobList): string {
     if (j.id != null) {
       href = SITE + JOB_PATH + j.id
     }
-    let title = ''
+    let title = FIELD_NONE
     if (j.title != null) {
       title = j.title
     }
-    let company = ''
+    let company = FIELD_NONE
     if (j.company_name != null) {
       company = j.company_name
     }
     const where = [j.city, j.province].filter(Boolean).join(SEP_LOC)
-    let salary = ''
+    let salary = FIELD_NONE
     if (j.salary_text != null) {
       salary = j.salary_text
     }
     trs.push(fill({ tpl: TR_JOB, params: { href: href, title: title, company: company, where: where, salary: salary } }))
   }
-  return fill({ tpl: TABLE_JOBS, params: { rows: trs.join('') } })
+  return fill({ tpl: TABLE_JOBS, params: { rows: trs.join(HTML_SEP) } })
 }
 
 /**
@@ -446,11 +447,14 @@ export function weeklyHtml(input: WeeklyHtmlIn): string {
     }
     trs.push(fill({ tpl: TR_WEEKLY, params: { title: r.title, company: r.company, status: status } }))
   }
-  let newp = ''
+  let newp = WEEKLY_NEW_NONE
   if (input.newN > 0) {
     newp = fill({ tpl: WEEKLY_NEW_P, params: { dims: input.dims, n: input.newN, site: SITE } })
   }
-  return fill({ tpl: WEEKLY_SHELL, params: { rows: trs.join(''), newp: newp, site: SITE, unsubUrl: input.unsubUrl } })
+  return fill({
+    tpl: WEEKLY_SHELL,
+    params: { rows: trs.join(HTML_SEP), newp: newp, site: SITE, unsubUrl: input.unsubUrl },
+  })
 }
 
 /**
@@ -475,7 +479,7 @@ export function weeklyProfileHtml(input: ProfileHtmlIn): string {
   const heads: string[] = []
   for (let i = 0; i < langs.length; i++) {
     const L = langs[i]
-    let style = ''
+    let style = PROFILE_HEAD_STYLE_NONE
     if (i > 0) {
       style = PROFILE_HEAD_DIM
     }
@@ -486,7 +490,7 @@ export function weeklyProfileHtml(input: ProfileHtmlIn): string {
   return fill({
     tpl: PROFILE_SHELL,
     params: {
-      heads: heads.join(''), rows: trs.join(''), site: SITE,
+      heads: heads.join(HTML_SEP), rows: trs.join(HTML_SEP), site: SITE,
       cta: fill({ tpl: WK_CTA[F], params: { n: input.stat.newN } }),
       foot: WK_FOOT[F], unsub: WK_UNSUB[F], settings: WK_SETTINGS[F], unsubUrl: input.unsubUrl,
     },
@@ -541,7 +545,7 @@ function makeTargetFirst(targets: ProvCodes): TargetFirstFn {
   }
 
   function rankOf(j: AlertJobRow): number {
-    let prov = ''
+    let prov = FIELD_NONE
     if (j.province != null) {
       prov = j.province.toUpperCase()
     }
@@ -563,7 +567,7 @@ export function makeDimsOf(input: DimsOfMakeIn): DimsOfFn {
   return function dimsOf(L: MailLang): string {
     const names: string[] = []
     for (const r of input.nameRows) {
-      let name = ''
+      let name = FIELD_NONE
       if (L === L_ZH) {
         name = r.zh || r.en
       } else {

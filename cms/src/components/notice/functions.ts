@@ -4,6 +4,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { CLS_SEP } from './constants'
 import type { NoticeClsIn, NoticeKind } from './types'
 import css from './notice.module.css'
 
@@ -25,5 +26,5 @@ export function noticeClsOf(x: NoticeClsIn): string {
   if (x.className != null) {
     cls.push(x.className)
   }
-  return cls.join(' ')
+  return cls.join(CLS_SEP)
 }

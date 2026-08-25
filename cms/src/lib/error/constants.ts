@@ -431,3 +431,19 @@ export const MSG_SEP = ': '
  * 上游没给错误 type 时的兜底 type 名。
  */
 export const HTTP_ERROR_TYPE = 'http_error'
+
+/**
+ * 上游回包里认不出 type、也没给 message 时,那一格的初值。
+ * 空串在这里是**哨兵**:`type === ''` 才回头去试旧链的 detail,
+ * `message !== ''` 才把上游正文接进见客消息 —— 两处判断都靠它。
+ * 不用 null,是因为这两格的来源是 `String(...)`,本来就只可能是字符串;
+ * 掺一个 null 进来,每个读它的人都得先想一次「是 null 还是空串」。
+ */
+export const ERR_FIELD_NONE = ''
+
+/**
+ * 上游没给正文时,见客消息不接尾巴。
+ * 尾巴 = `MSG_SEP` 加上游正文,没正文就整段不拼 ——
+ * 于是消息干净地停在「状态码 + type」上,不会留一个后面什么都没有的冒号。
+ */
+export const ERR_TAIL_NONE = ''

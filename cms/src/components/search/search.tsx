@@ -9,7 +9,7 @@
  */
 import { IconSearch, IconX } from '@/components/icons'
 import { AUTOCOMPLETE_OFF, inputClsOf, makeChange } from '@/components/input'
-import { CLEAR_ARIA, SIZE_LG } from './constants'
+import { CLEAR_ARIA, ENTER_HINT_SEARCH, QUERY_NONE, SIZE_LG, TYPE_BUTTON } from './constants'
 import type { SearchIn } from './types'
 import css from './search.module.css'
 
@@ -23,7 +23,7 @@ export function Search({ value, onChange, placeholder, size = SIZE_LG }: SearchI
   const change = makeChange(onChange)
 
   function clear() {
-    onChange('')
+    onChange(QUERY_NONE)
   }
 
   return (
@@ -34,10 +34,10 @@ export function Search({ value, onChange, placeholder, size = SIZE_LG }: SearchI
         onChange={change}
         placeholder={placeholder}
         aria-label={placeholder}
-        enterKeyHint="search"
+        enterKeyHint={ENTER_HINT_SEARCH}
         autoComplete={AUTOCOMPLETE_OFF} />
       {value !== '' && (
-        <button type="button" className={css.searchClear} onClick={clear} aria-label={CLEAR_ARIA}>
+        <button type={TYPE_BUTTON} className={css.searchClear} onClick={clear} aria-label={CLEAR_ARIA}>
           <IconX />
         </button>
       )}

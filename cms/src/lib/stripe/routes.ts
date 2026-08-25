@@ -18,7 +18,7 @@ import { getUser } from '../quota/server'
 import {
   CANCEL_PATH, COLLECTION_USERS, E_BAD_SIG, E_INTERNAL, E_LOGIN, E_NOT_CONFIGURED, E_PRICE,
   E_UNKNOWN_PLAN, HANDLED_EVENTS, MODE_PAYMENT, PAID, PLANS, PM_ALIPAY, PM_CARD, PM_WECHAT, SIG_HEADER,
-  ENV_ON, SUCCESS_PATH, WECHAT_CLIENT_WEB,
+  ENV_ON, LOG_MSG_NONE, REQ_FIELD_NONE, SUCCESS_PATH, WECHAT_CLIENT_WEB,
 } from './constants'
 import { getStripe } from './functions'
 import type { CheckoutBody, CreateSessionIn, PayMethod, StripeCheckoutSession, WebhookUserDoc } from './types'
@@ -47,7 +47,7 @@ export async function stripeCheckoutRoute(req: Request): Promise<Response> {
   } catch {
     body = null
   }
-  let planKey = ''
+  let planKey = REQ_FIELD_NONE
   if (body != null) {
     planKey = String(body.plan)
   }
@@ -75,7 +75,7 @@ export async function stripeCheckoutRoute(req: Request): Promise<Response> {
     if (pmTypes.length <= 1) {
       throw e
     }
-    let msg = ''
+    let msg = LOG_MSG_NONE
     if (e instanceof Error) {
       msg = e.message
     }
@@ -102,7 +102,7 @@ export async function stripeWebhookRoute(req: Request): Promise<Response> {
     return Response.json({ error: E_NOT_CONFIGURED }, { status: UNAVAILABLE })
   }
   const raw = await req.text()
-  let sig = ''
+  let sig = REQ_FIELD_NONE
   const sigHeader = req.headers.get(SIG_HEADER)
   if (sigHeader != null) {
     sig = sigHeader
@@ -120,7 +120,7 @@ export async function stripeWebhookRoute(req: Request): Promise<Response> {
   if (session.payment_status !== PAID) {
     return Response.json({ received: true })
   }
-  let daysRaw = ''
+  let daysRaw = REQ_FIELD_NONE
   if (session.metadata != null && session.metadata.days != null) {
     daysRaw = session.metadata.days
   }
@@ -163,7 +163,7 @@ export async function stripeWebhookRoute(req: Request): Promise<Response> {
     }
     return Response.json({ received: true })
   } catch (e) {
-    let msg = ''
+    let msg = LOG_MSG_NONE
     if (e instanceof Error) {
       msg = e.message
     }

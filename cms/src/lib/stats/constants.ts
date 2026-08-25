@@ -158,3 +158,24 @@ export const MARKET_TTL_MS = 10 * 60_000
  * /api/stats/market 的浏览器侧缓存头(5 分钟 + SWR 一小时:页间往返不重付)。
  */
 export const MARKET_CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=3600'
+
+/**
+ * 下钻参数没带时的初值(`?prov` `?broad` `?mid` 三处共用)。
+ * 与「带了但是空」落成同一个值:三参缺一律 400 ——
+ * 少一个维度查出来的就不是这张下钻表,宁可不给也不给半张。
+ */
+export const PARAM_NONE = ''
+
+/**
+ * 捕到的不是 pg 抛的错时,错误码那一格(只有 pg 的错误对象才挂 code)。
+ * 空串与任何真错误码都不相等,于是「不是 pg 的错」自然走不进容缺分支、原样往上抛 ——
+ * 容缺只该盖住「DDL 还没落地」这一种,别顺手把别的错也一起吞了。
+ */
+export const PG_CODE_NONE = ''
+
+/**
+ * 一列派生列都没探到时,拼给 SQL 的追加列片段。
+ * 空片段 = SELECT 退回基础列,主图整块照常渲染(E13-02 的 DDL 分批落库,
+ * 少一列不该把其余几列一起打回 null)。
+ */
+export const OCC_COL_NONE = ''

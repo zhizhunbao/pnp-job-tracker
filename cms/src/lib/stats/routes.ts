@@ -11,7 +11,7 @@ import { BAD_REQUEST, HDR_CACHE_CONTROL } from '../http'
 import { normalizeProfile } from '../jobs'
 import type { ProfileJson } from '../jobs'
 import { getUser, isPro } from '../quota/server'
-import { MARKET_CACHE_CONTROL, MARKET_TTL_MS, PARAM_LEN_MAX, P_BROAD, P_MID, P_PROV } from './constants'
+import { MARKET_CACHE_CONTROL, MARKET_TTL_MS, PARAM_LEN_MAX, PARAM_NONE, P_BROAD, P_MID, P_PROV } from './constants'
 import { emptyChannels, emptyRows, loadChannelNocs, loadCityStats, loadFineCounts, loadOccStats, loadStats, loadStatSources } from './functions'
 import { CACHE } from './variables'
 
@@ -46,17 +46,17 @@ export async function statsDataRoute(_req: Request): Promise<Response> {
  */
 export async function statsFineRoute(req: Request): Promise<Response> {
   const sp = new URL(req.url).searchParams
-  let prov = ''
+  let prov = PARAM_NONE
   const provParam = sp.get(P_PROV)
   if (provParam != null) {
     prov = provParam.trim()
   }
-  let broad = ''
+  let broad = PARAM_NONE
   const broadParam = sp.get(P_BROAD)
   if (broadParam != null) {
     broad = broadParam.trim()
   }
-  let mid = ''
+  let mid = PARAM_NONE
   const midParam = sp.get(P_MID)
   if (midParam != null) {
     mid = midParam.trim()

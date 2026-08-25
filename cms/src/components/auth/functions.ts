@@ -30,6 +30,36 @@ import {
   PW_CLASSES_STRONG,
   PW_LONG_LEN,
   PW_MIN_LEN,
+  BODY_NONE,
+  CREDENTIALS_INCLUDE,
+  EVENT_SIGNUP,
+  FLOW_DONE,
+  FLOW_ERR,
+  FLOW_SENT,
+  HTTP_POST,
+  KEY_ERR_CRED,
+  KEY_ERR_EXISTS,
+  KEY_ERR_GENERIC,
+  KEY_ERR_RESET_BAD,
+  KEY_ERR_WEAK_PW,
+  KEY_SUBMIT_FORGOT,
+  KEY_SUBMIT_LOGIN,
+  KEY_SUBMIT_REG,
+  KEY_SUBMIT_RESET,
+  MIME_JSON,
+  P_JOB,
+  P_NEXT,
+  P_QUIZ,
+  PATH_ROOT,
+  PW_CLASS_RES,
+  QS_RETURN_TO,
+  QUIZ_DECISION_PR,
+  QUIZ_ON,
+  QUIZ_STAGE_BASIC,
+  REGISTER_EXISTS_RE,
+  REGISTER_WEAK_PW_RE,
+  SAFE_PATH_RE,
+  TOKEN_NONE,
 } from './constants'
 import type { AuthFlowIn, AuthFlowOut, FinishAuthIn, PwLevel, QuizDestIn, RegisterErrIn, UmamiHost } from './types'
 
@@ -44,9 +74,8 @@ export function pwStrength(pw: string): PwLevel {
   if (pw.length < PW_MIN_LEN) {
     return 0
   }
-  const res = [/[a-z]/, /[A-Z]/, /\d/, /[^a-zA-Z0-9]/]
   let classes = 0
-  for (const re of res) {
+  for (const re of PW_CLASS_RES) {
     if (re.test(pw)) {
       classes = classes + 1
     }
@@ -101,27 +130,27 @@ export function localeOf(): string {
  */
 export function quizDestinationOf(x: QuizDestIn): string | null {
   const a = readAnswers()
-  if (a.nocs.length > 0 && missingFields(fieldsOf('pr', 'basic', 0, a), a).length === 0) {
+  if (a.nocs.length > 0 && missingFields(fieldsOf(QUIZ_DECISION_PR, QUIZ_STAGE_BASIC, 0, a), a).length === 0) {
     return null
   }
   let raw = window.location.pathname + window.location.search
   if (x.returnTo != null && x.returnTo !== '') {
     raw = x.returnTo
   }
-  let safe = '/'
-  if (/^\/(?!\/)/.test(raw)) {
+  let safe = PATH_ROOT
+  if (SAFE_PATH_RE.test(raw)) {
     safe = raw
   }
   const from = new URL(safe, window.location.origin)
   const out = new URL(QUIZ_PATH, window.location.origin)
-  out.searchParams.set('quiz', '1')
+  out.searchParams.set(P_QUIZ, QUIZ_ON)
   if (from.pathname === QUIZ_PATH) {
-    const job = from.searchParams.get('job')
+    const job = from.searchParams.get(P_JOB)
     if (job != null && job !== '') {
-      out.searchParams.set('job', job)
+      out.searchParams.set(P_JOB, job)
     }
   } else {
-    out.searchParams.set('next', from.pathname + from.search + from.hash)
+    out.searchParams.set(P_NEXT, from.pathname + from.search + from.hash)
   }
   return out.pathname + out.search
 }
@@ -163,7 +192,7 @@ export function googleHrefOf(x: QuizDestIn): string {
   } else if (x.returnTo != null && x.returnTo !== '') {
     rt = x.returnTo
   }
-  return PATH_GOOGLE_AUTH + '?returnTo=' + encodeURIComponent(rt)
+  return PATH_GOOGLE_AUTH + QS_RETURN_TO + encodeURIComponent(rt)
 }
 
 /**
@@ -174,14 +203,14 @@ export function googleHrefOf(x: QuizDestIn): string {
  */
 export function submitKeyOf(mode: string): string {
   const keys: Record<string, string> = {
-    login: 'acct.login',
-    register: 'acct.submitReg',
-    forgot: 'acct.forgotSend',
-    reset: 'acct.resetBtn',
+    login: KEY_SUBMIT_LOGIN,
+    register: KEY_SUBMIT_REG,
+    forgot: KEY_SUBMIT_FORGOT,
+    reset: KEY_SUBMIT_RESET,
   }
   const k = keys[mode]
   if (k == null) {
-    return 'acct.login'
+    return KEY_SUBMIT_LOGIN
   }
   return k
 }
@@ -194,13 +223,13 @@ export function submitKeyOf(mode: string): string {
  * @returns i18n 键。
  */
 export function registerErrKeyOf(x: RegisterErrIn): string {
-  if (x.status === HTTP_BAD_REQUEST && /email|already|registered|exist/i.test(x.body)) {
-    return 'acct.err.exists'
+  if (x.status === HTTP_BAD_REQUEST && REGISTER_EXISTS_RE.test(x.body)) {
+    return KEY_ERR_EXISTS
   }
-  if (x.status === HTTP_BAD_REQUEST && /password/i.test(x.body)) {
-    return 'acct.err.weakPw'
+  if (x.status === HTTP_BAD_REQUEST && REGISTER_WEAK_PW_RE.test(x.body)) {
+    return KEY_ERR_WEAK_PW
   }
-  return 'acct.err.generic'
+  return KEY_ERR_GENERIC
 }
 
 /**
@@ -213,7 +242,7 @@ export function trackSignup() {
     // 外部脚本注入的全局形状(UmamiHost),断言收在这一处。
     const w = window as UmamiHost
     if (w.umami != null) {
-      w.umami.track('signup')
+      w.umami.track(EVENT_SIGNUP)
     }
   } catch {
     return
@@ -233,64 +262,64 @@ export function trackSignup() {
 export async function runAuthFlow(x: AuthFlowIn): Promise<AuthFlowOut> {
   if (x.mode === MODE_FORGOT) {
     await fetch(API_FORGOT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: HTTP_POST,
+      headers: { 'Content-Type': MIME_JSON },
       body: JSON.stringify({ email: x.email }),
     }).catch(function ignore() {
       return null
     })
-    return { kind: 'sent', errKey: null }
+    return { kind: FLOW_SENT, errKey: null }
   }
   if (x.mode === MODE_RESET) {
     if (x.pw.length < PW_MIN_LEN) {
-      return { kind: 'err', errKey: 'acct.err.weakPw' }
+      return { kind: FLOW_ERR, errKey: KEY_ERR_WEAK_PW }
     }
-    let token = ''
+    let token = TOKEN_NONE
     if (x.resetToken != null) {
       token = x.resetToken
     }
     const r = await fetch(API_RESET, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
+      method: HTTP_POST,
+      credentials: CREDENTIALS_INCLUDE,
+      headers: { 'Content-Type': MIME_JSON },
       body: JSON.stringify({ token, password: x.pw }),
     })
     if (r.ok === false) {
-      return { kind: 'err', errKey: 'acct.resetBad' }
+      return { kind: FLOW_ERR, errKey: KEY_ERR_RESET_BAD }
     }
-    return { kind: 'done', errKey: null }
+    return { kind: FLOW_DONE, errKey: null }
   }
   if (x.mode === MODE_REGISTER) {
     if (x.pw.length < PW_MIN_LEN) {
-      return { kind: 'err', errKey: 'acct.err.weakPw' }
+      return { kind: FLOW_ERR, errKey: KEY_ERR_WEAK_PW }
     }
     const r = await fetch(API_USERS, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
+      method: HTTP_POST,
+      credentials: CREDENTIALS_INCLUDE,
+      headers: { 'Content-Type': MIME_JSON },
       body: JSON.stringify({ email: x.email, password: x.pw, locale: x.locale }),
     })
     if (r.ok === false) {
-      let body = ''
+      let body = BODY_NONE
       try {
         body = JSON.stringify(await r.json())
       } catch {
-        body = ''
+        body = BODY_NONE
       }
-      return { kind: 'err', errKey: registerErrKeyOf({ status: r.status, body }) }
+      return { kind: FLOW_ERR, errKey: registerErrKeyOf({ status: r.status, body }) }
     }
     trackSignup()
   }
   const r2 = await fetch(API_LOGIN, {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+    method: HTTP_POST,
+    credentials: CREDENTIALS_INCLUDE,
+    headers: { 'Content-Type': MIME_JSON },
     body: JSON.stringify({ email: x.email, password: x.pw }),
   })
   if (r2.ok === false) {
-    return { kind: 'err', errKey: 'acct.err.cred' }
+    return { kind: FLOW_ERR, errKey: KEY_ERR_CRED }
   }
-  return { kind: 'done', errKey: null }
+  return { kind: FLOW_DONE, errKey: null }
 }
 
 /**
@@ -300,7 +329,7 @@ export async function runAuthFlow(x: AuthFlowIn): Promise<AuthFlowOut> {
  */
 export async function logout() {
   try {
-    await fetch(API_LOGOUT, { method: 'POST', credentials: 'include' })
+    await fetch(API_LOGOUT, { method: HTTP_POST, credentials: CREDENTIALS_INCLUDE })
   } catch {
     // 网络失败也照刷:刷新后按真实 cookie 态渲染
   }

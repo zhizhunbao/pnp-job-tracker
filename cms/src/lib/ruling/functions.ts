@@ -35,7 +35,8 @@ import {
   GATE_NEED, GATE_OF, GATE_OFFER, GRID, GRID_AUTO_FACTORS, HTTP, INDEMAND, ITEM, JOB_ROW_RANK, KEY_FCIP, KEY_PREFIX,
   KEY_RCIP, KEY_SUFFIX_NOT_COLLECTED, KIND_RULE, LEVER, MB_ADAPT_EDU_YEARS, MB_EDU, MB_EDU_YEARS, MB_RISK_STUDY,
   MB_RISK_WORK, MB_SWM_STREAM, MONTHS, MONTHS_PER_YEAR, NAME_KEEP, NL_DESIGNATED_LABEL, NOC5_RE, NOC_CODE,
-  NOC_TEER_RE, NO_BLOCK_COST, NO_PROVINCE_RANK, OA_SPLIT, OCC_INELIGIBLE, OCC_LIST_NONE, ON_GRAD_MIN_YEARS,
+  NOC_TEER_RE, NO_ANSWER, NO_BLOCK_COST, NO_EVIDENCE, NO_PARAM, NO_PROVINCE_RANK, NO_SEGMENT, NO_SOURCE, NO_TEXT,
+  OA_SPLIT, OCC_INELIGIBLE, OCC_LIST_NONE, ON_GRAD_MIN_YEARS,
   OPS_METRIC, OPT_IN_GATES, PERMIT, PERMIT_KINDS, PERMIT_VALUES, PILOT_KEY_SEP, PROV, PROV2_RE, PROVINCE_CODE,
   PROVINCE_LOCAL_EXP, PROV_OR_TERR_RE, PV_KEY, PV_KEY_LANG_GAP, PV_TEXT, RANK, REASON, REASON_EXCLUDED, REASON_GAP,
   RECENT_ON_GRADUATE, REQ_FACTOR, REQ_UNIT, ROW_KEY_RE, ROW_SEQ_MAX, SCORE_FACTOR, SECTOR_PUBLIC, SEP, SINK, SLOT,
@@ -148,7 +149,7 @@ export async function loadVerdictTables(db: Db): LoadVerdictTablesOut {
  * @returns 归一后的名字。
  */
 export function normalizeEmployerName(name: string): string {
-  return (name || '').toLowerCase().replace(AMP, AND_WORD).replace(NAME_KEEP, SPACE).trim()
+  return (name || NO_TEXT).toLowerCase().replace(AMP, AND_WORD).replace(NAME_KEEP, SPACE).trim()
 }
 
 /**
@@ -159,14 +160,14 @@ export function normalizeEmployerName(name: string): string {
  */
 export function employerNameSegments(name: string): EmployerNameSegmentsOut {
   const parts: string[] = []
-  for (const raw of (name || '').split(OA_SPLIT)) {
+  for (const raw of (name || NO_TEXT).split(OA_SPLIT)) {
     const part = raw.trim()
     if (part) {
       parts.push(part)
     }
   }
   if (parts.length === 0) {
-    return [name || '']
+    return [name || NO_TEXT]
   }
   return parts
 }
@@ -203,7 +204,7 @@ export function employerNameSegments(name: string): EmployerNameSegmentsOut {
 export function matchDesignation(input: MatchDesignationIn): MatchDesignationOut {
   const target = normalizeEmployerName(input.companyName)
   if (target === '') {
-    return { row: null, count: 0, source: '' }
+    return { row: null, count: 0, source: NO_SOURCE }
   }
 
   const hits: NameRow[] = []
@@ -216,12 +217,12 @@ export function matchDesignation(input: MatchDesignationIn): MatchDesignationOut
     }
   }
   if (hits.length === 0) {
-    return { row: null, count: 0, source: '' }
+    return { row: null, count: 0, source: NO_SOURCE }
   }
 
   const sources = new Set<string>()
   for (const row of hits) {
-    let one = ''
+    let one = NO_SOURCE
     if (row.source != null) {
       one = row.source.trim()
     }
@@ -229,7 +230,7 @@ export function matchDesignation(input: MatchDesignationIn): MatchDesignationOut
       sources.add(one)
     }
   }
-  let source = ''
+  let source = NO_SOURCE
   if (sources.size === 1) {
     source = Array.from(sources)[0]
   }
@@ -420,7 +421,7 @@ function evOfReq(input: EvOfReqIn): Evidence {
  * @returns 官方原句;两处都空则空串。
  */
 function quoteOfReq(input: QuoteOfReqIn): string {
-  return (input.r.valueText || input.r.label || '').trim()
+  return (input.r.valueText || input.r.label || NO_TEXT).trim()
 }
 
 /**
@@ -439,7 +440,7 @@ function evOfOcc(input: EvOfOccIn): Evidence {
  * @returns 出处。
  */
 function evOfDraw(input: EvOfDrawIn): Evidence {
-  let note = ''
+  let note = NO_SEGMENT
   if (input.d.note !== '') {
     note = SEP.midDot + input.d.note
   }
@@ -464,7 +465,7 @@ function evOfFactor(input: EvOfFactorIn): Evidence {
  * @returns 该键的值;串里没有这个键则 null。
  */
 function basisParam(input: BasisParamIn): BasisParamOut {
-  for (const kv of (input.basis || '').split(SEP.semicolon)) {
+  for (const kv of (input.basis || NO_TEXT).split(SEP.semicolon)) {
     const i = kv.indexOf(SEP.eq)
     if (i > 0 && kv.slice(0, i).trim() === input.key) {
       return kv.slice(i + 1).trim()
@@ -530,7 +531,7 @@ function tierOfMonths(input: TierOfMonthsIn): TierOfMonthsOut {
 function maxClbIn(input: MaxClbInIn): MaxClbInOut {
   let max: number | null = null
   for (const l of input.labels) {
-    const m = CLB_IN_LABEL.exec(l || '')
+    const m = CLB_IN_LABEL.exec(l || NO_TEXT)
     if (m) {
       const [, clb] = m
       const v = Number(clb)
@@ -722,7 +723,7 @@ function countableMonths(input: CountableMonthsIn): CountableMonthsOut {
 function mostSpecificRows(input: MostSpecificRowsIn): MostSpecificRowsOut {
   const conditional: ReqRow[] = []
   for (const r of input.applicable) {
-    if ((r.appliesCondition || '') !== '') {
+    if ((r.appliesCondition || NO_TEXT) !== '') {
       conditional.push(r)
     }
   }
@@ -775,7 +776,7 @@ function lowestMonthsRow(input: LowestMonthsRowIn): LowestMonthsRowOut {
  */
 function haveMonthsOf(input: HaveMonthsOfIn): HaveMonthsOfOut {
   const local = input.p.province === input.spec.reqProvince
-  if (input.picked != null && PROVINCE_LOCAL_EXP.has(input.picked.appliesCondition || '')) {
+  if (input.picked != null && PROVINCE_LOCAL_EXP.has(input.picked.appliesCondition || NO_TEXT)) {
     if (input.p.expCanadaMonths == null) {
       return null
     }
@@ -838,7 +839,7 @@ function pickGate(input: PickGateIn): GateEval {
   const unknownCond: ReqRow[] = []
   const applicable: ReqRow[] = []
   for (const r of gateRows) {
-    const ok = conditionHolds({ cond: r.appliesCondition || '', p: input.p, province: input.spec.reqProvince })
+    const ok = conditionHolds({ cond: r.appliesCondition || NO_TEXT, p: input.p, province: input.spec.reqProvince })
     if (ok === null) {
       unknownCond.push(r); continue 
     }
@@ -1528,7 +1529,7 @@ function ruleProfileOf(input: RuleProfileOfIn): EngineProfile {
  *   是**该子通道通用**,一律适用。
  */
 function fedLangApplies(input: FedLangAppliesIn): boolean {
-  const m = TEER_STREAM.exec(input.r.stream || '')
+  const m = TEER_STREAM.exec(input.r.stream || NO_TEXT)
   if (m == null) {
     return true
   }
@@ -1652,7 +1653,7 @@ function statusGateAnswer(input: StatusGateAnswerIn): StatusGateAnswerOut {
  * @returns 那一句的 i18n key。
  */
 function gateKeyOf(input: GateKeyOfIn): string {
-  let asks = ''
+  let asks = NO_SEGMENT
   if (input.asks != null) {
     asks = `${SEP.dot}${input.asks}`
   }
@@ -2098,7 +2099,7 @@ function crsScore(input: CrsScoreIn): MaybeScore {
     }
     refLabel = `${PV_TEXT.latestDrawHead}${input.draw.stream}${SEP.parenL}${input.draw.drawDate}${SEP.comma}${invited}${PV_TEXT.peopleTail}`
   }
-  let evidence: Evidence = { url: '', fetched: '' }
+  let evidence: Evidence = { url: NO_EVIDENCE, fetched: NO_EVIDENCE }
   if (head != null) {
     evidence = { url: head.url, fetched: head.fetched, label: CRS_GRID_LABEL }
   }
@@ -2177,7 +2178,7 @@ function mbWarnings(input: MbWarningsIn): MbWarningsOut {
   if (mbScored.length > 0) {
     const drawParts: string[] = []
     for (const d of mbScored) {
-      let note = ''
+      let note = NO_SEGMENT
       if (d.note !== '') {
         note = SPACE + d.note
       }
@@ -2253,7 +2254,7 @@ function mbScore(input: MbScoreIn): MbScoreOut {
   let refLabel: string = PV_TEXT.mbRefNone
   if (input.draw != null) {
     refLine = input.draw.score
-    let note = ''
+    let note = NO_SEGMENT
     if (input.draw.note !== '') {
       note = SEP.midDot + input.draw.note
     }
@@ -2310,9 +2311,9 @@ function scoreAndRefLine(input: ScoreAndRefLineIn): ScoreAndRefLineOut {
     reasons.push({ kind: REASON.needsInfo, text: PV_TEXT.noScoreBand, key: PV_KEY.noScoreBand })
   }
   if (score == null && draw != null && draw.score != null) {
-    let scaleTail = ''
+    let scaleTail = NO_SEGMENT
     let key: string = PV_KEY.drawLine
-    let scale = ''
+    let scale = NO_PARAM
     if (draw.scale != null && draw.scale !== '') {
       scaleTail = ` ${draw.scale}${PV_TEXT.scaleTail}`
       key = PV_KEY.drawLineScaled
@@ -2342,7 +2343,7 @@ function scoreGulfReason(input: ScoreGulfReasonIn): ScoreGulfReasonOut {
   const reasons: VerdictReason[] = []
   if (input.scoreGulf && input.score != null) {
     let stream = input.score.refLabel
-    let date = ''
+    let date = NO_PARAM
     let evidence = input.score.evidence
     if (input.draw != null) {
       stream = input.draw.stream
@@ -2579,7 +2580,7 @@ function nlDesignatedReason(input: NlDesignatedReasonIn): NlDesignatedReasonOut 
       }
       nlTotal += 1
       let declared = false
-      for (const one of (e.nocs || '').split(SEP.comma)) {
+      for (const one of (e.nocs || NO_TEXT).split(SEP.comma)) {
         if (one.trim() === noc) {
           declared = true; break 
         }
@@ -2974,7 +2975,7 @@ function gateManifest(input: GateManifestIn): GateManifestOut {
       manifestUnknown = true
       manifestNoSource = true
       if (rule.url) {
-        let fetched = ''
+        let fetched = NO_EVIDENCE
         if (rule.fetched != null) {
           fetched = rule.fetched
         }
@@ -3362,7 +3363,7 @@ function occListNoneFor(input: OccListNoneForIn): OccListNoneForOut {
  */
 function occNoListRow(input: OccNoListRowIn): TripleRow {
   const lists = namedLists({ province: input.job.province, occs: input.occs })
-  let nocText = ''
+  let nocText = NO_PARAM
   if (input.job.noc != null) {
     nocText = input.job.noc
   }
@@ -3386,8 +3387,8 @@ function occNoListRow(input: OccNoListRowIn): TripleRow {
   for (const l of lists) {
     labels.push(l.label)
   }
-  let onlyLabel = ''
-  let onlyStream = ''
+  let onlyLabel = NO_PARAM
+  let onlyStream = NO_PARAM
   let onlyCount = 0
   if (only != null) {
     onlyLabel = only.label
@@ -3459,7 +3460,7 @@ function occTeerRow(input: OccTeerRowIn): TripleRow {
   if (input.job.pnpEligible) {
     coarse = TV_LABEL.coarsePass
   }
-  let tail = ''
+  let tail = NO_SEGMENT
   if (outScope != null) {
     tail = `${TV_LABEL.onFileMid}${outScope.stream}${TV_LABEL.coversMid}${outScope.teers.join(SEP.comma)}`
   }
@@ -3470,17 +3471,17 @@ function occTeerRow(input: OccTeerRowIn): TripleRow {
       state = CARD_STATE.pass
     }
   }
-  let teerParam: string | number = ''
+  let teerParam: string | number = NO_PARAM
   let teerLabel: string | number = TV_LABEL.unknownValue
   if (input.job.teer != null) {
     teerParam = input.job.teer
     teerLabel = input.job.teer
   }
-  let nocText = ''
+  let nocText = NO_PARAM
   if (input.job.noc != null) {
     nocText = input.job.noc
   }
-  let scopeStream = ''
+  let scopeStream = NO_PARAM
   if (outScope != null) {
     scopeStream = outScope.stream
   }
@@ -3514,7 +3515,7 @@ function occTeerRow(input: OccTeerRowIn): TripleRow {
  * @returns 职业关的那几行,按「排除 → 命中 → 未命中 → 粗筛」的次序。
  */
 function occupationRows(input: OccupationRowsIn): OccupationRowsOut {
-  const nocName = input.job.nocName || ''
+  const nocName = input.job.nocName || NO_TEXT
   const mine: OccupationRow[] = []
   if (input.job.noc) {
     for (const o of input.occs) {
@@ -3625,19 +3626,19 @@ function empThresholdRows(input: EmpThresholdRowsIn): EmpThresholdRowsOut {
       factor = EMP_FACTOR.years
     }
     const src = empReqOf({ reqs: input.reqs, province: input.job.province, factor: factor })
-    let needParam: string | number = ''
+    let needParam: string | number = NO_PARAM
     let needLabel: string | number = TV_LABEL.unknownValue
     if (item.need != null) {
       needParam = item.need
       needLabel = item.need
     }
-    let haveParam: string | number = ''
+    let haveParam: string | number = NO_PARAM
     let haveLabel: string | number = TV_LABEL.unknownValue
     if (item.have != null) {
       haveParam = item.have
       haveLabel = item.have
     }
-    let shortParam: string | number = ''
+    let shortParam: string | number = NO_PARAM
     if (item.short != null) {
       shortParam = item.short
     }
@@ -3673,7 +3674,7 @@ function empThresholdRows(input: EmpThresholdRowsIn): EmpThresholdRowsOut {
  */
 function empRevenueRow(input: EmpRevenueRowIn): TripleRow {
   const src = empReqOf({ reqs: input.reqs, province: input.job.province, factor: EMP_FACTOR.revenue })
-  let needParam: string | number = ''
+  let needParam: string | number = NO_PARAM
   let needLabel: string | number = TV_LABEL.unknownValue
   if (input.ev.revenue != null && input.ev.revenue.need != null) {
     needParam = input.ev.revenue.need
@@ -3707,7 +3708,7 @@ function empStaffFactRow(input: EmpStaffFactRowIn): EmpStaffFactRowOut {
   if (input.company.facts.staffEst == null) {
     return null
   }
-  let staffSrc = ''
+  let staffSrc = NO_PARAM
   if (input.company.facts.staffEstSrc != null) {
     staffSrc = input.company.facts.staffEstSrc
   }
@@ -3762,17 +3763,17 @@ function empNextStepRow(input: EmpNextStepRowIn): TripleRow {
   if (d != null || sameNoc > 0) {
     state = CARD_STATE.info
   }
-  let nocText = ''
+  let nocText = NO_PARAM
   let nocLabel: string = TV_LABEL.unknownValue
   if (input.job.noc != null) {
     nocText = input.job.noc
     nocLabel = input.job.noc
   }
-  let nocNameText = ''
+  let nocNameText = NO_PARAM
   if (input.job.nocName != null) {
     nocNameText = input.job.nocName
   }
-  let program = ''
+  let program = NO_PARAM
   let programLabel: string = CARD_STATE.unknown
   if (d != null) {
     program = d.source
@@ -3871,23 +3872,23 @@ function personRows(input: PersonRowsIn): PersonRowsOut {
     if (slots != null && slots.length === 0) {
       followups = undefined
     }
-    let needParam: string | number = ''
+    let needParam: string | number = NO_PARAM
     let needLabel: string | number = TV_LABEL.unknownValue
     if (r.need != null) {
       needParam = r.need
       needLabel = r.need
     }
-    let needLowParam: string | number = ''
+    let needLowParam: string | number = NO_PARAM
     if (r.needLow != null) {
       needLowParam = r.needLow
     }
-    let haveParam: string | number = ''
+    let haveParam: string | number = NO_PARAM
     let haveLabel: string | number = TV_LABEL.unanswered
     if (r.have != null) {
       haveParam = r.have
       haveLabel = r.have
     }
-    let shortParam: string | number = ''
+    let shortParam: string | number = NO_PARAM
     if (r.short != null) {
       shortParam = r.short
     }
@@ -3922,7 +3923,7 @@ function timeRow(input: TimeRowIn): TripleRow {
   const m = input.profile.permitMonthsLeft
   let left: string = TV_LABEL.unanswered
   let state: TripleRow['state'] = CARD_STATE.unknown
-  let monthsParam: string | number = ''
+  let monthsParam: string | number = NO_PARAM
   let followups: TripleRow['followups'] = undefined
   if (m != null) {
     left = `${m}${TV_LABEL.permitMonthsTail}`
@@ -3931,7 +3932,7 @@ function timeRow(input: TimeRowIn): TripleRow {
   } else {
     followups = [CARD_SLOT.permitMonthsLeft]
   }
-  let statusParam = ''
+  let statusParam = NO_PARAM
   let statusLabel: string = TV_LABEL.unknownValue
   if (input.profile.status != null) {
     statusParam = input.profile.status
@@ -3979,13 +3980,13 @@ function crossProvinceRows(input: CrossProvinceRowsIn): CrossProvinceRowsOut {
       }
     }
     if (hits.length === 0) {
-      let nocText = ''
+      let nocText = NO_PARAM
       let nocLabel: string = TV_LABEL.unknownValue
       if (input.job.noc != null) {
         nocText = input.job.noc
         nocLabel = input.job.noc
       }
-      let nocNameText = ''
+      let nocNameText = NO_PARAM
       if (input.job.nocName != null) {
         nocNameText = input.job.nocName
       }
@@ -4141,17 +4142,17 @@ function myPathways(input: MyPathwaysIn): MyPathwaysOut {
 function conclude(input: ConcludeIn): TripleConclusion {
   const excluded = excludedRow({ rows: input.rows })
   if (excluded) {
-    let list = ''
+    let list = NO_PARAM
     if (excluded.params.list != null) {
       list = String(excluded.params.list)
     }
-    let nocText = ''
+    let nocText = NO_PARAM
     let nocLabel: string = TV_LABEL.unknownValue
     if (input.job.noc != null) {
       nocText = input.job.noc
       nocLabel = input.job.noc
     }
-    let nocNameText = ''
+    let nocNameText = NO_PARAM
     if (input.job.nocName != null) {
       nocNameText = input.job.nocName
     }
@@ -4219,7 +4220,7 @@ function concludeOpen(input: ConcludeOpenIn): ConcludeOpenOut {
   }
   open.sort(byTierAsc)
   const top = open[0]
-  let tierParam: string | number = ''
+  let tierParam: string | number = NO_PARAM
   let tierLabel: string | number = TV_LABEL.unknownValue
   if (top.c.tier != null) {
     tierParam = top.c.tier
@@ -4266,12 +4267,12 @@ function concludeBlocked(input: ConcludeBlockedIn): ConcludeBlockedOut {
       break
     }
   }
-  let gateParam = ''
+  let gateParam = NO_PARAM
   if (top.v.blockedBy != null) {
     gateParam = top.v.blockedBy
   }
   let needParam
-  let clbTail = ''
+  let clbTail = NO_SEGMENT
   if (need > 0) {
     needParam = need
     clbTail = `${TV_LABEL.sumClbHead}${need}${SEP.parenR}`
@@ -4377,14 +4378,14 @@ function fastestRow(input: FastestRowIn): TripleRow {
   }
   const tied = keys.length > 1
   let state: TripleRow['state'] = CARD_STATE.unknown
-  let tierParam: string | number = ''
+  let tierParam: string | number = NO_PARAM
   let label = `${TV_LABEL.fastestNoneHead}${input.compare.length}${TV_LABEL.fastestNoneTail}`
   if (keys.length > 0) {
     state = CARD_STATE.info
     if (tier != null) {
       tierParam = tier
     }
-    let tiedTail = ''
+    let tiedTail = NO_SEGMENT
     if (tied) {
       tiedTail = TV_LABEL.fastestTied
     }
@@ -4506,7 +4507,7 @@ export function tripleVerdict(input: TripleVerdictIn): TripleCard {
 
   const conclusion = conclude({ job: input.job, rows: rows, compare: compare, paths: paths })
   if (conclusion.gate) {
-    let route: NonNullable<TripleConclusion['params']>[string] = ''
+    let route: NonNullable<TripleConclusion['params']>[string] = NO_PARAM
     if (conclusion.params.route != null) {
       route = conclusion.params.route
     }
@@ -4631,7 +4632,7 @@ function tripleProfileOf(input: TripleProfileOfIn): TripleProfile {
   if (permitLeft == null) {
     permitLeft = answerNum({ v: a.pgwpMonthsLeft })
   }
-  let statusRaw = ''
+  let statusRaw = NO_ANSWER
   if (up.currentStatus != null) {
     statusRaw = String(up.currentStatus)
   }
@@ -4748,7 +4749,7 @@ function answerText(input: AnswerTextIn): AnswerTextOut {
  * @returns 省码;没答则 null。
  */
 function provinceOf(input: ProvinceOfIn): ProvinceOfOut {
-  let s = ''
+  let s = NO_ANSWER
   if (input.v != null) {
     s = String(input.v)
   }
@@ -4765,7 +4766,7 @@ function provinceOf(input: ProvinceOfIn): ProvinceOfOut {
  * @returns 许可;没答则 null。
  */
 function permitOf(input: PermitOfIn): PermitOfOut {
-  let s = ''
+  let s = NO_ANSWER
   if (input.v != null) {
     s = String(input.v)
   }
@@ -5074,7 +5075,7 @@ export async function caseAnswer(input: CaseAnswerIn): CaseAnswerOut {
     return null
   }
 
-  let specNoc = ''
+  let specNoc = NO_TEXT
   if (spec.profile.noc != null) {
     specNoc = spec.profile.noc
   }
@@ -5671,7 +5672,7 @@ export async function getVerdictData(): GetVerdictDataOut {
  * @returns 该省的名录行;省码为空或查失败则空。
  */
 export async function getDesignatedEmployers(input: GetDesignatedEmployersIn): GetDesignatedEmployersOut {
-  const prov = (input.province || '').trim()
+  const prov = (input.province || NO_TEXT).trim()
   if (prov === '') {
     return []
   }
@@ -5872,7 +5873,7 @@ export function parseProfileBody(body: MaybeProfileBody): MaybeProfileParse {
       }
     }
   }
-  let noc = ''
+  let noc = NO_ANSWER
   if (nocs.length > 0) {
     noc = nocs[0]
   } else if (NOC5_RE.test(String(cellOr(answers.noc)))) {
@@ -5965,7 +5966,7 @@ function cellOr(x: RCell): ScalarCell {
   if (typeof x === 'string' || typeof x === 'number' || typeof x === 'boolean') {
     return x
   }
-  return ''
+  return NO_TEXT
 }
 
 /**

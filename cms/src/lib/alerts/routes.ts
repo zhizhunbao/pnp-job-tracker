@@ -16,7 +16,9 @@ import {
   HDR_CONTENT_TYPE_LC, HDR_SEED_TOKEN, MIME_HTML, SERVER_ERROR, TEXT_UNAUTHORIZED, UNAUTHORIZED,
 } from '../http'
 import { fill } from '../template'
-import { K_PREVIEW, P_DRY, P_FORCE, P_LANG, P_PREVIEW, P_TOKEN, P_USER, QUIET_RANGE, SWITCH_ON } from './constants'
+import {
+  K_PREVIEW, PARAM_NONE, P_DRY, P_FORCE, P_LANG, P_PREVIEW, P_TOKEN, P_USER, QUIET_RANGE, SWITCH_ON,
+} from './constants'
 import { isDryRun, quietInfo, runAlerts, unsubApply, unsubPageHtml } from './functions'
 import type { LoadHitsFn } from './types'
 
@@ -34,7 +36,7 @@ export async function alertsRunRoute(req: Request): Promise<Response> {
   }
   const sp = new URL(req.url).searchParams
   const dry = isDryRun(sp.get(P_DRY))
-  let preview = ''
+  let preview = PARAM_NONE
   const previewParam = sp.get(P_PREVIEW)
   if (previewParam != null) {
     preview = previewParam
@@ -45,7 +47,7 @@ export async function alertsRunRoute(req: Request): Promise<Response> {
   }
   const payload = await getPayload({ config: await config })
   const pool = await getDb()
-  let previewLang = ''
+  let previewLang = PARAM_NONE
   const langParam = sp.get(P_LANG)
   if (langParam != null) {
     previewLang = langParam
@@ -72,12 +74,12 @@ export async function alertsRunRoute(req: Request): Promise<Response> {
  */
 export async function alertsUnsubRoute(req: Request): Promise<Response> {
   const sp = new URL(req.url).searchParams
-  let u = ''
+  let u = PARAM_NONE
   const uParam = sp.get(P_USER)
   if (uParam != null) {
     u = uParam
   }
-  let t = ''
+  let t = PARAM_NONE
   const tParam = sp.get(P_TOKEN)
   if (tParam != null) {
     t = tParam

@@ -9,7 +9,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
-import { NOTICE_ICON } from './constants'
+import { NOTICE_ICON, NOTICE_KIND_DEFAULT } from './constants'
 import { noticeClsOf } from './functions'
 import type { NoticeIn } from './types'
 import css from './notice.module.css'
@@ -20,7 +20,7 @@ import css from './notice.module.css'
  * @param props 色/引导语/钮槽/微调/正文。
  * @returns 提醒框。
  */
-export function Notice({ kind = 'info', lead, action, style, className, children }: NoticeIn) {
+export function Notice({ kind = NOTICE_KIND_DEFAULT, lead, action, style, className, children }: NoticeIn) {
   let extraCls: string | null = null
   if (className != null) {
     extraCls = className

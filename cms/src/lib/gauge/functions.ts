@@ -14,8 +14,9 @@
  */
 
 import {
-  AREA, AREA_PROV, BASIS, DEFAULT_FAMILY_SIZE, EMP_TIERED, FACTOR, GTA, ITEM, LIST_SEP, METRO_VAN, MONTHS_PER_YEAR,
-  NOC_GENERIC, NOC_MISS, NON_LETTERS, ON_LISTED, OP, ST_JOHNS, SUBJECT, UNIT,
+  AREA, AREA_PROV, BASIS, COND_NONE, DEFAULT_FAMILY_SIZE, EMP_TIERED, FACTOR, GTA, ITEM, LIST_NONE, LIST_SEP,
+  METRO_VAN, MONTHS_PER_YEAR, NAME_NONE, NOC_GENERIC, NOC_MISS, NON_LETTERS, NON_LETTERS_REPL, ON_LISTED, OP,
+  ST_JOHNS, SUBJECT, UNIT,
 } from './constants'
 import type {
   AreaOfPlaceIn, AreaOfPlaceOut, AreasForIn, AreasForOut, BarRowIn, BarRowOut, EmployerBarIn, EmployerBarOut,
@@ -40,7 +41,7 @@ import type {
  * @returns 规范化后的地名。
  */
 function normalizeName(s: NormalizeNameIn): NormalizeNameOut {
-  return (s || '').toLowerCase().replace(NON_LETTERS, '').trim()
+  return (s || NAME_NONE).toLowerCase().replace(NON_LETTERS, NON_LETTERS_REPL).trim()
 }
 
 /**
@@ -293,13 +294,13 @@ export function teerHit(input: TeerHitIn): TeerHitOut {
  */
 function nocScore(input: NocScoreIn): NocScoreOut {
   const noc = input.noc
-  const ex = prefixList({ text: input.r.excludesNoc || '' })
+  const ex = prefixList({ text: input.r.excludesNoc || LIST_NONE })
   for (const p of ex) {
     if (noc && noc.startsWith(p)) {
       return NOC_MISS
     }
   }
-  const inc = prefixList({ text: input.r.appliesNoc || '' })
+  const inc = prefixList({ text: input.r.appliesNoc || LIST_NONE })
   if (inc.length === 0) {
     return NOC_GENERIC
   }
@@ -626,7 +627,7 @@ function tenureResult(input: FactorIn): FactorOneOut {
 function tiersOfCondition(input: TiersOfIn): TiersOfOut {
   const out: AreaTier[] = []
   for (const r of input.rows) {
-    out.push({ area: r.appliesCondition || '', value: r.value })
+    out.push({ area: r.appliesCondition || COND_NONE, value: r.value })
   }
   return out
 }

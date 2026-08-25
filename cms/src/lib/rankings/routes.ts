@@ -8,7 +8,7 @@
  */
 import { getDb } from '../db/server'
 import { BAD_REQUEST } from '../http'
-import { P_SLUG, RANKING_SLUGS } from './constants'
+import { P_SLUG, RANKING_SLUGS, SLUG_NONE } from './constants'
 import { loadRankingRows } from './functions'
 
 /**
@@ -18,7 +18,7 @@ import { loadRankingRows } from './functions'
  * @returns { items };slug 不在白名单 400。
  */
 export async function rankingsDataRoute(req: Request): Promise<Response> {
-  let slug = ''
+  let slug = SLUG_NONE
   const slugParam = new URL(req.url).searchParams.get(P_SLUG)
   if (slugParam != null) {
     slug = slugParam

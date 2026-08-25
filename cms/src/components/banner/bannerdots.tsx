@@ -7,6 +7,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { DOT_LABEL } from './constants'
 import type { BannerDotsIn } from './types'
 import css from './banner.module.css'
 
@@ -32,7 +33,7 @@ export function BannerDots({ imgs, cur, pick }: BannerDotsIn) {
       dotCls = `${css.dot} ${css.dotOn}`
     }
     dotEls.push(
-      <button key={imgs[i]} aria-label={`bg ${i + 1}`} onClick={pickThis} className={css.dotBtn}>
+      <button key={imgs[i]} aria-label={`${DOT_LABEL} ${i + 1}`} onClick={pickThis} className={css.dotBtn}>
         <span className={dotCls} />
       </button>,
     )

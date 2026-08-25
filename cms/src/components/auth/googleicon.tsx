@@ -8,7 +8,18 @@
  * @time 2026-08-24 01:30:00
  */
 
-import { G_BLUE, G_GREEN, G_PATH_BLUE, G_PATH_GREEN, G_PATH_RED, G_PATH_YELLOW, G_RED, G_YELLOW } from './constants'
+import {
+  G_BLUE,
+  G_GREEN,
+  G_ICON_PX,
+  G_PATH_BLUE,
+  G_PATH_GREEN,
+  G_PATH_RED,
+  G_PATH_YELLOW,
+  G_RED,
+  G_VIEW_BOX,
+  G_YELLOW,
+} from './constants'
 import css from './auth.module.css'
 
 /**
@@ -18,7 +29,7 @@ import css from './auth.module.css'
  */
 export function GoogleIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden className={css.gIcon}>
+    <svg width={G_ICON_PX} height={G_ICON_PX} viewBox={G_VIEW_BOX} aria-hidden className={css.gIcon}>
       <path fill={G_RED} d={G_PATH_RED} />
       <path fill={G_BLUE} d={G_PATH_BLUE} />
       <path fill={G_YELLOW} d={G_PATH_YELLOW} />

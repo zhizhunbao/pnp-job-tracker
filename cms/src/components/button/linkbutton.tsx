@@ -11,6 +11,7 @@
  * @author Frank
  * @time 2026-08-24 09:00:00
  */
+import { REL_NOREFERRER } from './constants'
 import type { LinkButtonIn } from './types'
 
 /**
@@ -25,7 +26,7 @@ export function LinkButton({ href, onClick, target, title, className, ariaLabel,
       <a href={href}
         onClick={onClick}
         target={target}
-        rel="noreferrer"
+        rel={REL_NOREFERRER}
         title={title}
         className={className}
         aria-label={ariaLabel}

@@ -22,9 +22,9 @@ import { queryRows, SQL, numOrNull, text } from '../db'
 import { DAY_MS } from '@/lib/time'
 import type { Db } from '../db'
 import {
-  AV, BAND_A, BAND_Y, BAND_Z, CADENCE_FACTOR, CERT, CMP, DAYS_PER_MONTH, GROUP_SEP, KIND_NOTICE, NA_TEXT,
-  NOT_TIME_CONVERTIBLE, PLAN_NOTES, PLAN_TEXT, PROCESSING_KEY, PROV_FED, PROV_RE, SPACE, STEP, SUBJECT_EMPLOYER,
-  THIN_MIN, TV, UNIT_HEADS,
+  AV, BAND_A, BAND_NONE, BAND_Y, BAND_Z, BASIS_NONE, CADENCE_FACTOR, CERT, CMP, DAYS_PER_MONTH, GROUP_SEP,
+  KIND_NOTICE, NA_TEXT, NOT_TIME_CONVERTIBLE, PLAN_NOTES, PLAN_TEXT, PROCESSING_KEY, PROV_FED, PROV_RE, SLOT_NONE,
+  SPACE, STEP, SUBJECT_EMPLOYER, TEXT_NONE, THIN_MIN, TV, UNIT_HEADS, WHY_NONE,
 } from './constants'
 import { fill } from '../template'
 import type {
@@ -52,11 +52,11 @@ function bandOf(row: RankableRow): string {
   if (row.belowLine) {
     below = BAND_Z
   }
-  let blocked = ''
+  let blocked = BAND_NONE
   if (row.blockedBy != null) {
     blocked = row.blockedBy
   }
-  let tier = ''
+  let tier = BAND_NONE
   if (row.tier != null) {
     tier = String(row.tier)
   }
@@ -215,7 +215,7 @@ function stepOf(s: PlanStep): PlanStep {
     return s
   }
   return {
-    kind: s.kind, factor: s.factor, months: null, basis: '', availability: AV.notCollected,
+    kind: s.kind, factor: s.factor, months: null, basis: BASIS_NONE, availability: AV.notCollected,
     why: fill({ tpl: PLAN_TEXT.noEvidenceWhy, params: { factor: s.factor } }), evidence: s.evidence,
   }
 }
@@ -237,19 +237,19 @@ function gapSteps(rows: ThresholdRows): PlanSteps {
     if (blocked == null && r.short != null) {
       months = monthsFromUnit({ value: r.short, unit: r.unit })
     }
-    let basis = ''
+    let basis = BASIS_NONE
     let availability: Availability = AV.notCollected
-    let why = ''
+    let why = WHY_NONE
     if (months != null) {
       let have = 0
       if (r.have != null) {
         have = r.have
       }
-      let need: string | number = ''
+      let need: string | number = SLOT_NONE
       if (r.need != null) {
         need = r.need
       }
-      let short: string | number = ''
+      let short: string | number = SLOT_NONE
       if (r.short != null) {
         short = r.short
       }
@@ -300,7 +300,7 @@ function drawStep(p: PlanPathInput): PlanStep {
   if (p.noDrawStep != null && p.noDrawStep.evidence.url !== '') {
     return stepOf({
       kind: STEP.draw, factor: CADENCE_FACTOR, months: 0, basis: PLAN_TEXT.noDrawBasis,
-      availability: AV.notApplicable, why: '', evidence: p.noDrawStep.evidence,
+      availability: AV.notApplicable, why: WHY_NONE, evidence: p.noDrawStep.evidence,
     })
   }
   const d = p.draws
@@ -323,7 +323,7 @@ function drawStep(p: PlanPathInput): PlanStep {
     if (rows.length > 0) {
       evidence = rows[0].evidence
     }
-    return { kind: STEP.draw, factor: CADENCE_FACTOR, months: null, basis: '', availability: availability, why: why, evidence: evidence }
+    return { kind: STEP.draw, factor: CADENCE_FACTOR, months: null, basis: BASIS_NONE, availability: availability, why: why, evidence: evidence }
   }
   const seen = new Set<string>()
   const days: string[] = []
@@ -342,7 +342,7 @@ function drawStep(p: PlanPathInput): PlanStep {
   return stepOf({
     kind: STEP.draw, factor: CADENCE_FACTOR, months: round1(avg / DAYS_PER_MONTH),
     basis: fill({ tpl: PLAN_TEXT.cadenceBasis, params: { from: days[0], rounds: days.length, avgDays: Math.round(avg) } }),
-    availability: AV.ok, why: '', evidence: rows[0].evidence,
+    availability: AV.ok, why: WHY_NONE, evidence: rows[0].evidence,
   })
 }
 
@@ -375,7 +375,7 @@ function processingStep(p: PlanPathInput): PlanStep {
         why = o.note
       }
     }
-    return { kind: STEP.processing, factor: PROCESSING_KEY, months: null, basis: '', availability: availability, why: why, evidence: null }
+    return { kind: STEP.processing, factor: PROCESSING_KEY, months: null, basis: BASIS_NONE, availability: availability, why: why, evidence: null }
   }
   let scoped = all
   if (p.processingScope != null && p.processingScope !== '') {
@@ -392,18 +392,18 @@ function processingStep(p: PlanPathInput): PlanStep {
     if (scoped.length === 0) {
       why = fill({ tpl: PLAN_TEXT.scopeMissWhy, params: { province: p.province, scope: factor } })
     }
-    return { kind: STEP.processing, factor: factor, months: null, basis: '', availability: AV.notCollected, why: why, evidence: null }
+    return { kind: STEP.processing, factor: factor, months: null, basis: BASIS_NONE, availability: AV.notCollected, why: why, evidence: null }
   }
   const m = scoped[0]
   let months: MaybeNum = null
   if (m.value != null) {
     months = monthsFromUnit({ value: m.value, unit: m.unit })
   }
-  let basis = ''
+  let basis = BASIS_NONE
   let availability: Availability = AV.notCollected
-  let why = ''
+  let why = WHY_NONE
   if (months != null) {
-    let period = ''
+    let period = SLOT_NONE
     if (m.period !== '') {
       period = SPACE + m.period
     }
@@ -467,12 +467,12 @@ export function buildPlan(input: PlanIn): Plan {
       totalMonths = null
       certainty = CERT.partial
     }
-    let stream = ''
+    let stream = TEXT_NONE
     if (p.stream != null) {
       stream = p.stream
     }
     let availability: Availability = AV.notCollected
-    let note = ''
+    let note = TEXT_NONE
     if (t != null) {
       availability = t.availability
       if (t.note != null) {
@@ -595,7 +595,7 @@ export async function fetchTimeline(db: Db): TimelineOut {
     if (d === '') {
       continue
     }
-    let name = ''
+    let name = TEXT_NONE
     if (r.label != null && r.label !== '') {
       name = String(r.label)
     } else if (r.stream != null) {
@@ -604,11 +604,11 @@ export async function fetchTimeline(db: Db): TimelineOut {
     const key = String(r.province) + GROUP_SEP + name
     let g = byStream.get(key)
     if (g == null) {
-      let prov = ''
+      let prov = TEXT_NONE
       if (r.province != null) {
         prov = String(r.province)
       }
-      let scale = ''
+      let scale = TEXT_NONE
       if (r.scale != null) {
         scale = String(r.scale)
       }
@@ -644,7 +644,7 @@ export async function fetchTimeline(db: Db): TimelineOut {
     if (last === '') {
       continue
     }
-    let category = ''
+    let category = TEXT_NONE
     if (r.category != null) {
       category = String(r.category)
     }

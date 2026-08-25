@@ -176,3 +176,17 @@ export const EV_KEYDOWN = 'keydown'
  * 媒体查询变化的事件名。
  */
 export const EV_CHANGE = 'change'
+
+/**
+ * className 之间的分隔符。DOM 的 class 属性按**空白**切词,拼多个类只能用空格 ——
+ * 换成逗号或加号会被浏览器当成一整个类名,整条样式静默失效。
+ */
+export const CLS_SEP = ' '
+
+/**
+ * 还没拖动过时的 transform:空串。React 把空串写进 style 等于**把这条声明整个抹掉**,
+ * 白卡就停在 .overlay 那层 flex 居中给它的位置上(居中不靠 transform 做,所以留空是安全的)。
+ * 不写成 `'none'`:那是一个真的会生效的关键字,而这里要表达的是「这一格我没有值」。
+ */
+export const TRANSFORM_NONE = ''
+

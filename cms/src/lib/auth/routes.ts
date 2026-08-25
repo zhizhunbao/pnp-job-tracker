@@ -8,8 +8,8 @@
  */
 import { FOUND, HDR_LOCATION, HDR_SET_COOKIE, NOT_FOUND } from '../http'
 import {
-  FAIL_PATH, FLOW_COOKIE_AGE, GOOGLE_CLIENT_ID, HDR_COOKIE, K_FAIL, MSG_NOT_CONFIGURED, PARAM_CODE, PARAM_ERROR,
-  PARAM_RETURN_TO, PARAM_STATE, RETURN_COOKIE, RETURN_RE, SITE, STATE_COOKIE,
+  COOKIE_DEL_VALUE, FAIL_PATH, FLOW_COOKIE_AGE, GOOGLE_CLIENT_ID, HDR_COOKIE, K_FAIL, MSG_NOT_CONFIGURED,
+  PARAM_CODE, PARAM_ERROR, PARAM_RETURN_TO, PARAM_STATE, RETURN_COOKIE, RETURN_NONE, RETURN_RE, SITE, STATE_COOKIE,
 } from './constants'
 import { googleCallback, googleConsentUrl, oauthCookie, readCookie, sessionCookies } from './functions'
 
@@ -32,7 +32,7 @@ export async function googleStartRoute(req: Request): Promise<Response> {
   ]
   let rt = new URL(req.url).searchParams.get(PARAM_RETURN_TO)
   if (rt == null) {
-    rt = ''
+    rt = RETURN_NONE
   }
   if (RETURN_RE.test(rt)) {
     headers.push([HDR_SET_COOKIE, oauthCookie({ name: RETURN_COOKIE, value: encodeURIComponent(rt), maxAge: FLOW_COOKIE_AGE })])
@@ -62,7 +62,7 @@ export async function googleCallbackRoute(req: Request): Promise<Response> {
       status: FOUND,
       headers: {
         [HDR_LOCATION]: SITE + FAIL_PATH,
-        [HDR_SET_COOKIE]: oauthCookie({ name: STATE_COOKIE, value: '', maxAge: 0 }),
+        [HDR_SET_COOKIE]: oauthCookie({ name: STATE_COOKIE, value: COOKIE_DEL_VALUE, maxAge: 0 }),
       },
     })
   }
@@ -73,8 +73,8 @@ export async function googleCallbackRoute(req: Request): Promise<Response> {
       [HDR_LOCATION, SITE + outcome.rt],
       [HDR_SET_COOKIE, tokenCookie],
       [HDR_SET_COOKIE, traceCookie],
-      [HDR_SET_COOKIE, oauthCookie({ name: STATE_COOKIE, value: '', maxAge: 0 })],
-      [HDR_SET_COOKIE, oauthCookie({ name: RETURN_COOKIE, value: '', maxAge: 0 })],
+      [HDR_SET_COOKIE, oauthCookie({ name: STATE_COOKIE, value: COOKIE_DEL_VALUE, maxAge: 0 })],
+      [HDR_SET_COOKIE, oauthCookie({ name: RETURN_COOKIE, value: COOKIE_DEL_VALUE, maxAge: 0 })],
     ],
   })
 }

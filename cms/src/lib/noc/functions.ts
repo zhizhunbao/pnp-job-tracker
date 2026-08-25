@@ -14,7 +14,7 @@
  */
 
 import { queryRows, SQL, text } from '../db'
-import { BROAD_COLOR, KEY_BROAD, KEY_CAT, LANG_KO, LANG_ZH, NA } from './constants'
+import { BROAD_COLOR, KEY_BROAD, KEY_CAT, LANG_KO, LANG_ZH, NA, NAME_NONE } from './constants'
 import { CACHE } from './variables'
 import type { Cat, CatLabelRows, CatNameIn, MaybeBroad, NocDutiesIn, NocDutiesOut, NocDutiesRow, NocLocalTitleIn, PickNameIn, Row } from './types'
 
@@ -85,15 +85,15 @@ export function catName(input: CatNameIn): string {
 export function nocLocalTitle(input: NocLocalTitleIn): string {
   const n = input.row
   if (n == null) {
-    return ''
+    return NAME_NONE
   }
   if (input.lang === LANG_ZH) {
-    return n.titleZh || ''
+    return n.titleZh || NAME_NONE
   }
   if (input.lang === LANG_KO) {
-    return n.titleKo || ''
+    return n.titleKo || NAME_NONE
   }
-  return ''
+  return NAME_NONE
 }
 
 /**
@@ -105,15 +105,15 @@ export function nocLocalTitle(input: NocLocalTitleIn): string {
 export function pickName(input: PickNameIn): string {
   const f = input.row
   if (f == null) {
-    return ''
+    return NAME_NONE
   }
   if (input.lang === LANG_ZH) {
-    return f.titleZhShort || f.titleZh || f.title || ''
+    return f.titleZhShort || f.titleZh || f.title || NAME_NONE
   }
   if (input.lang === LANG_KO) {
-    return f.titleKoShort || f.titleKo || f.title || ''
+    return f.titleKoShort || f.titleKo || f.title || NAME_NONE
   }
-  return f.titleEnShort || f.title || ''
+  return f.titleEnShort || f.title || NAME_NONE
 }
 
 /**

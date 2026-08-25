@@ -6,6 +6,7 @@
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
+import { BRAND_LEAF, BRAND_NAME } from './constants'
 import css from './auth.module.css'
 
 /**
@@ -16,8 +17,8 @@ import css from './auth.module.css'
 export function BrandHead() {
   return (
     <div className={css.brand}>
-      <div className={css.brandLeaf}>🍁</div>
-      <div className={css.brandName}>Offer2PR</div>
+      <div className={css.brandLeaf}>{BRAND_LEAF}</div>
+      <div className={css.brandName}>{BRAND_NAME}</div>
     </div>
   )
 }

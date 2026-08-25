@@ -7,7 +7,7 @@
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
-import { PW_METER_KEYS } from './constants'
+import { PW_HINT_SEP, PW_METER_KEYS } from './constants'
 import { pwStrength } from './functions'
 import type { PwMeterIn } from './types'
 import css from './auth.module.css'
@@ -40,7 +40,7 @@ export function PwMeter({ t, pw }: PwMeterIn) {
       <div className={css.meterRow}>{segs}</div>
       <div className={css.meterText}>
         {key != null && t(key)}
-        {lv > 0 && lv < 3 && <span className={css.meterHint}> · {t('acct.pw.hint')}</span>}
+        {lv > 0 && lv < 3 && <span className={css.meterHint}>{PW_HINT_SEP}{t('acct.pw.hint')}</span>}
       </div>
     </div>
   )

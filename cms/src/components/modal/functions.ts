@@ -5,7 +5,12 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
-import { MAX_KEY, RESTORE_KEY } from './constants'
+import {
+  CLS_SEP,
+  MAX_KEY,
+  RESTORE_KEY,
+  TRANSFORM_NONE,
+} from './constants'
 import type { CardStyleIn, ClsIn, ClsOut, ModalSize } from './types'
 import css from './modal.module.css'
 
@@ -76,7 +81,7 @@ export function clsOf(x: ClsIn): ClsOut {
   if (x.pad === false) {
     card.push(css.noPad)
   }
-  return { card: card.join(' '), overlay: overlay.join(' ') }
+  return { card: card.join(CLS_SEP), overlay: overlay.join(CLS_SEP) }
 }
 
 /**
@@ -104,8 +109,11 @@ export function cardStyleOf(x: CardStyleIn): React.CSSProperties {
   if (x.narrow || x.maximized) {
     return {}
   }
-  let transform = ''
+  let transform = TRANSFORM_NONE
   if (x.pos.x !== 0 || x.pos.y !== 0) {
+    // CSS 值整条留在这里:拆成 HEAD/MID/TAIL 三截之后就再没人看得出这是一条 translate3d,
+    // 与「抽常量是为了看懂」正好相反。用 3d 而非 translate 是为了吃 GPU 合成层(拖动不触发重排)。
+    // eslint-disable-next-line local/no-bare-strings -- 见上:CSS 值不拆片
     transform = `translate3d(${x.pos.x}px, ${x.pos.y}px, 0)`
   }
   return { transform }

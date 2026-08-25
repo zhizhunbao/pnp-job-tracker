@@ -10,6 +10,7 @@
  * @author Frank
  * @time 2026-08-24 13:00:00
  */
+import { GRAIN_DATE, TONE_DIM } from './constants'
 import { textOf, toneClsOf } from './functions'
 import type { TimeTextIn } from './types'
 
@@ -19,7 +20,7 @@ import type { TimeTextIn } from './types'
  * @param props ISO 串/粒度/字色档。
  * @returns 文本。
  */
-export function TimeText({ iso, grain = 'date', tone = 'dim' }: TimeTextIn) {
+export function TimeText({ iso, grain = GRAIN_DATE, tone = TONE_DIM }: TimeTextIn) {
   return (
     <span className={toneClsOf(tone)} suppressHydrationWarning>{textOf({ iso, grain })}</span>
   )

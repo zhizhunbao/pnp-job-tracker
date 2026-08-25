@@ -28,7 +28,7 @@ import { checkLimit, freeGate, getUserOrNull, isPro } from '../quota/server'
 import { PRO_CHAT_DAILY } from '../quota'
 import {
   ACCEL_NO, CHAT_LANGS, CONN_KEEP_ALIVE, DETAIL_CAP, E_LIMIT, E_LLM,
-  ERR_LOG_CAP, HDR_ACCEL, HDR_CONNECTION, HISTORY_MAX, LANG_FALLBACK,
+  ERR_LOG_CAP, HDR_ACCEL, HDR_CONNECTION, HISTORY_MAX, INPUT_TEXT_NONE, LANG_FALLBACK, OCC_TEXT_NONE,
   PRO_LIMIT_PREFIX, ROLE, SSE_CACHE_CONTROL, SSE_CONTENT_TYPE, SSE_DONE,
   TEST_MAIL_SUFFIX, TURN_CONTENT_CAP,
 } from './constants'
@@ -55,7 +55,7 @@ export async function consultChatRoute(req: Request): Promise<Response> {
   } catch {
     body = null
   }
-  let text = ''
+  let text = INPUT_TEXT_NONE
   let lang: Lang = LANG_FALLBACK
   let history: Turn[] = []
   let contextNoc: string | null = null
@@ -165,7 +165,10 @@ export async function consultChatRoute(req: Request): Promise<Response> {
         }
         const ok: ChatOut = {
           answer: r.answer,
-          slots: { noc: r.noc, occText: '', provs: profile.provs, expMonths: profile.expMonths, status: profile.status, claims: [] },
+          slots: {
+            noc: r.noc, occText: OCC_TEXT_NONE, provs: profile.provs,
+            expMonths: profile.expMonths, status: profile.status, claims: [],
+          },
           facts: facts,
           followups: [],
           degraded: r.degraded,

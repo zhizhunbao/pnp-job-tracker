@@ -8,7 +8,15 @@
  * @time 2026-08-24 01:30:00
  */
 import type { AuthFooterIn } from './types'
-import { MODE_FORGOT, MODE_LOGIN, MODE_REGISTER, MODE_RESET } from './constants'
+import {
+  BTN_TYPE_BUTTON,
+  KEY_TO_LOGIN,
+  KEY_TO_REG,
+  MODE_FORGOT,
+  MODE_LOGIN,
+  MODE_REGISTER,
+  MODE_RESET,
+} from './constants'
 import css from './auth.module.css'
 
 /**
@@ -19,39 +27,39 @@ import css from './auth.module.css'
  */
 export function AuthFooter({ t, mode, sent, onMode }: AuthFooterIn) {
   function toLogin() {
-    onMode('login')
+    onMode(MODE_LOGIN)
   }
 
   function toggle() {
     if (mode === MODE_LOGIN) {
-      onMode('register')
+      onMode(MODE_REGISTER)
     } else {
-      onMode('login')
+      onMode(MODE_LOGIN)
     }
   }
 
   function toForgot() {
-    onMode('forgot')
+    onMode(MODE_FORGOT)
   }
 
-  let toggleKey = 'acct.toLogin'
+  let toggleKey = KEY_TO_LOGIN
   if (mode === MODE_LOGIN) {
-    toggleKey = 'acct.toReg'
+    toggleKey = KEY_TO_REG
   }
   return (
     <>
       {(mode === MODE_LOGIN || mode === MODE_REGISTER) && (
-        <button type="button" onClick={toggle} className={css.footToggle}>
+        <button type={BTN_TYPE_BUTTON} onClick={toggle} className={css.footToggle}>
           {t(toggleKey)}
         </button>
       )}
       {mode === MODE_LOGIN && (
-        <button type="button" onClick={toForgot} className={css.footForgot}>
+        <button type={BTN_TYPE_BUTTON} onClick={toForgot} className={css.footForgot}>
           {t('acct.forgot')}
         </button>
       )}
       {(mode === MODE_RESET || (mode === MODE_FORGOT && sent === false)) && (
-        <button type="button" onClick={toLogin} className={css.footBack}>
+        <button type={BTN_TYPE_BUTTON} onClick={toLogin} className={css.footBack}>
           {t('acct.backLogin')}
         </button>
       )}

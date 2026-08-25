@@ -536,3 +536,68 @@ export const CO_IP_DAILY = 60
  * 简介翻译限额键前缀。
  */
 export const CO_LIMIT_PREFIX = 'cotr:'
+
+/**
+ * 筛选参数没给,或给了但不合法(省码不是两位、职业码不是五位、制度不在三个之内)——
+ * 这一格**不筛**,不是「筛出空结果」。URL 参数缺席、paramOf 取不到、三个 clean 变量的初值
+ * 都落它:宁可少筛一格给全量,也不拿猜出来的值把用户的结果悄悄削掉。
+ * 🔵 这里**不写类型注解**:`SponsorFilters.f` 的联合自带这个空串(`'' | 'aip' | 'lmia' | 'named'`),
+ * 只有保持字面量类型才落得进那个联合;写成 `: string` 当场 tsc 红。
+ */
+export const FILTER_UNSET = ''
+
+/**
+ * 没有日期。两处共用:名录抓取日(designated 口径的 fetched)与公司调查日(ai_fetched)。
+ * 三种情况都落它 —— 查挂了回的空表、hiring 口径本来就不读名录、库里那一格是 NULL。
+ * 空表也照发一格空串而不是省掉这个字段:前端读的是同一个形状,少一格就得多写一套判断。
+ */
+export const FETCHED_NONE = ''
+
+/**
+ * B4 公司事实列一列都没探到时的 SQL 片段:一个字都不拼,担保聚合的 SELECT 与 GROUP BY
+ * 退回没有那五列的原样(#280/E14-02 容缺先例 —— 生产库大概率还没建 founded_year 那批,
+ * 探到哪列拼哪列,探不到就当没有,不许因为缺列让整条查询挂掉)。
+ */
+export const SQL_FRAG_NONE = ''
+
+/**
+ * 没有省。担保行的 provs 是空数组(表行没有单一地址),或对照聚合的岗位一个省都没落上。
+ * 判定引擎收到它就走「不按省判门槛」那条路 —— 空串是「这行没有省」,不是「全国」。
+ */
+export const PROVINCE_NONE = ''
+
+/**
+ * 对照聚合喂给匹配引擎的岗位不带 LMIA 季度事实:对照只看在招与档案匹配,LMIA 那三格
+ * 一律不填 —— 数值两格给 null,字符串这格就是空串,两种写法说的是同一件事「没查这格」。
+ */
+export const LMIA_QUARTER_NONE = ''
+
+/**
+ * 没有官网。两处共用:库里 ai_website 是 NULL,或模型这次回答里没给出合法的 [SITE] 行。
+ * 写库前它会被翻回 NULL(不存空串);前端凭空串决定不渲染官网链接。
+ */
+export const WEBSITE_NONE = ''
+
+/**
+ * 官网标记行整行删掉时的替身:[SITE] 那行是给我们解析用的协议行、不是简介正文,
+ * 而 URL 已经先被 SITE_PICK_RE 取走了,所以这里一个字都不留。
+ */
+export const SITE_LINE_DROP = ''
+
+/**
+ * 维基没有这门语言的名字(zh 三个变体全空,或 ko 缺)。别名留空不瞎猜 ——
+ * 音译或机翻出来的公司名比没有更糟:用户会拿它去搜,搜不到。
+ */
+export const ALIAS_NONE = ''
+
+/**
+ * 请求体里没给公司名。body 解不出来、name 不是字符串、trim 完什么都不剩,三种都落它,
+ * 随后一律 400。这一格是必填项 —— 空串不是「查全部公司」。
+ */
+export const NAME_UNSET = ''
+
+/**
+ * 请求体里没给目标语种。随后过 TRANS_LANGS 白名单必然落空 → 400。
+ * 不给它挑一个默认语种:猜错语种等于把用户看不懂的译文当成他要的。
+ */
+export const LANG_UNSET = ''

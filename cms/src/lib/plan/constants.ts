@@ -228,6 +228,13 @@ export const BAND_Y = 'y'
 export const BAND_Z = 'z'
 
 /**
+ * 档位键里 blockedBy / tier 这两格**没有值**时占的空位:两个分隔符之间空着,
+ * 就是「这行没有这一格」。不填 'none' 之类的假值 —— 键只用来把同类行归堆,
+ * 一旦填了字,「没有障碍」就会和某个真叫 none 的障碍归进同一档。
+ */
+export const BAND_NONE = ''
+
+/**
  * 一个空格(processing 段 period 槽的前导)。
  */
 export const SPACE = ' '
@@ -326,6 +333,35 @@ export const PLAN_TEXT = {
  * valueNaWhy 的 text 槽在官方原文为空串时的展示字。
  */
 export const NA_TEXT = '空'
+
+/**
+ * 一段**没有算术原文**。basis 与 why 是分工:basis 说「这个数是怎么算出来的」,
+ * why 说「为什么算不出数」—— 算不出的段(出处闸降级、单位换算不了、抽选记录不够)
+ * basis 一律空,话全写在 why。不塞「暂无」之类的字:渲染层看见空串才知道这一格根本不出现。
+ */
+export const BASIS_NONE = ''
+
+/**
+ * 一段**没有「为什么算不出」可写**。与 BASIS_NONE 互补:一段要么算出来了(有 basis)、
+ * 要么算不出(有 why),不会两样都有,也不会两样都没有。
+ */
+export const WHY_NONE = ''
+
+/**
+ * 模板槽位**没有数**时填的空串(gapBasis 的 need / short、processingBasis 的 period)。
+ * 官方那一格没数就空着印,**不折成 0** —— 折 0 = 替官方编一个数;
+ * 这些槽只管展示,能不能算早由 months 判过了。
+ * 对 period 这种可选前缀,空串还有第二层意思:这一段不加(纯拼接,拼上空等于没拼)。
+ */
+export const SLOT_NONE = ''
+
+/**
+ * 出库那一格**库里没值**时对外给的空串:路径的 stream、门槛的 note、抽选的通道名 /
+ * 省码 / 规模、EE 的 category 都走它。这些字段对外声明成 string 而不是 `string | null`,
+ * 本域在边界上把 null 收成空串,渲染层只管印字,不必再判一次「有没有」。
+ * ⚠️ 只对**字**这么干:数字一格永远保 null(折 0 = 替官方编数)。
+ */
+export const TEXT_NONE = ''
 
 /**
  * 整份方案的口径说明(复述层照此措辞,不是成品文案)。

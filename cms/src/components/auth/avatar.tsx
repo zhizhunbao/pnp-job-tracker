@@ -9,7 +9,7 @@
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
-import { AVATAR_FONT_RATIO, AVATAR_SIZE_DEFAULT } from './constants'
+import { ARIA_TRUE, AVATAR_FONT_RATIO, AVATAR_SIZE_DEFAULT, INITIAL_FALLBACK } from './constants'
 import { stableColor } from './functions'
 import type { AvatarIn } from './types'
 import css from './auth.module.css'
@@ -21,14 +21,14 @@ import css from './auth.module.css'
  * @returns 头像。
  */
 export function Avatar({ src, name, email, size = AVATAR_SIZE_DEFAULT }: AvatarIn) {
-  let base = '?'
+  let base = INITIAL_FALLBACK
   if (name != null && name !== '') {
     base = name
   } else if (email != null && email !== '') {
     base = email
   }
   const label = base.trim()
-  let initial = '?'
+  let initial = INITIAL_FALLBACK
   if (label !== '') {
     initial = label.charAt(0).toUpperCase()
   }
@@ -39,7 +39,7 @@ export function Avatar({ src, name, email, size = AVATAR_SIZE_DEFAULT }: AvatarI
     )
   }
   return (
-    <span aria-hidden="true"
+    <span aria-hidden={ARIA_TRUE}
       className={css.avatarBadge}
       // eslint-disable-next-line react/forbid-dom-props -- 直径是调用方数字、底色是名字 hash —— 运行时数据
       style={{

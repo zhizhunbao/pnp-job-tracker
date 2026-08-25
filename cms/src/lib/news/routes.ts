@@ -15,7 +15,9 @@ import {
   SUM_LANGS, summarizeNews, TRANS_LANGS, TRANSLATE_ROUTE_TIMEOUT_MS, translateParasStrict, translateReady,
 } from '../llm'
 import { checkLimit, ipOf } from '../quota/server'
-import { E_EMPTY_SUMMARY, E_PARA_ALIGN, NSUM_IP_DAILY, NSUM_LIMIT_PREFIX, NTR_IP_DAILY, NTR_LIMIT_PREFIX } from './constants'
+import {
+  BODY_MISSING, E_EMPTY_SUMMARY, E_PARA_ALIGN, NSUM_IP_DAILY, NSUM_LIMIT_PREFIX, NTR_IP_DAILY, NTR_LIMIT_PREFIX,
+} from './constants'
 import { loadNewsForSummary, loadNewsForTranslate, saveNewsSummary, saveNewsTranslation } from './functions'
 import type { NewsSummaryRow, NewsTransBody } from './types'
 
@@ -31,8 +33,8 @@ export async function newsSummarizeRoute(req: Request): Promise<Response> {
   if (translateReady() === false) {
     return Response.json({ ok: false, error: E_NOT_CONFIGURED }, { status: UNAVAILABLE })
   }
-  let slug = ''
-  let lang = ''
+  let slug = BODY_MISSING
+  let lang = BODY_MISSING
   try {
     const b = await req.json() as NewsTransBody
     if (typeof b.slug === 'string') {
@@ -42,7 +44,7 @@ export async function newsSummarizeRoute(req: Request): Promise<Response> {
       lang = b.lang
     }
   } catch {
-    slug = ''
+    slug = BODY_MISSING
   }
   if (slug === '' || SUM_LANGS.includes(lang) === false) {
     return Response.json({ ok: false, error: E_BAD_REQUEST }, { status: BAD_REQUEST })
@@ -83,8 +85,8 @@ export async function newsTranslateRoute(req: Request): Promise<Response> {
   if (translateReady() === false) {
     return Response.json({ ok: false, error: E_TRANSLATE_NOT_CONFIGURED }, { status: UNAVAILABLE })
   }
-  let slug = ''
-  let lang = ''
+  let slug = BODY_MISSING
+  let lang = BODY_MISSING
   try {
     const b = await req.json() as NewsTransBody
     if (typeof b.slug === 'string') {
@@ -94,7 +96,7 @@ export async function newsTranslateRoute(req: Request): Promise<Response> {
       lang = b.lang
     }
   } catch {
-    slug = ''
+    slug = BODY_MISSING
   }
   if (slug === '' || TRANS_LANGS.includes(lang) === false) {
     return Response.json({ ok: false, error: E_BAD_REQUEST }, { status: BAD_REQUEST })

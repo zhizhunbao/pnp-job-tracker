@@ -10,7 +10,7 @@
 import { queryRowsOrEmpty, SQL, numOrNull, text } from '../db'
 import type { Db } from '../db'
 import {
-  GROUP_SEP, NEED_UNKNOWN, PILOT_TYPES, UI_JOBS_DEFAULT, UI_PROGRAM_DEFAULT, WHY_NO_SOURCE, PATHWAYS,
+  ASOF_INIT, GROUP_SEP, NEED_UNKNOWN, PILOT_TYPES, UI_JOBS_DEFAULT, UI_PROGRAM_DEFAULT, WHY_NO_SOURCE, PATHWAYS,
 } from './constants'
 import type {
   GateOfIn, GateRule, MaybeExemption, MaybeRegionProvinces, MaybeStrategy, PathwayStrategy, PilotCommunityRows,
@@ -129,7 +129,7 @@ export function aggregatePilotQuota(rows: PilotCommunityRows): PilotQuotaAggs {
       const key = r.province + GROUP_SEP + t
       let g = groups.get(key)
       if (g == null) {
-        g = { province: r.province, type: t, communities: 0, firstComeN: 0, quotaSum: null, remainingSum: null, perIntakeSum: null, asOf: '' }
+        g = { province: r.province, type: t, communities: 0, firstComeN: 0, quotaSum: null, remainingSum: null, perIntakeSum: null, asOf: ASOF_INIT }
         groups.set(key, g)
       }
       g.communities += 1

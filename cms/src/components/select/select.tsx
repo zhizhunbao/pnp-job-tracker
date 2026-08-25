@@ -15,6 +15,7 @@
  * @time 2026-08-24 10:00:00
  */
 import { inputClsOf, SIZE_DEFAULT } from '@/components/input'
+import { BOX_SIZE_DEFAULT } from './constants'
 import { listOf, makeSelectChange, shownOf } from './functions'
 import type { SelectIn, SelectSize } from './types'
 import css from './select.module.css'
@@ -25,7 +26,7 @@ import css from './select.module.css'
  * @param props 值/选项/文案/宽档(见 SelectIn 逐格注释)。
  * @returns 下拉。
  */
-export function Select({ value, onChange, opts, all, labelOf, size = 'sm', tap = false }: SelectIn) {
+export function Select({ value, onChange, opts, all, labelOf, size = BOX_SIZE_DEFAULT, tap = false }: SelectIn) {
   let labelIn = null
   if (labelOf != null) {
     labelIn = labelOf

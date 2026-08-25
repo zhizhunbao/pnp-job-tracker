@@ -565,3 +565,96 @@ export const SUM_LANGS: string[] = ['zh', 'ko', 'en']
  * 公司简介缓存键里 name 与 lang 的分隔。
  */
 export const TRANS_KEY_SEP = ':'
+
+/**
+ * 逐块往里拼的串从空开始:SSE 的粘包缓冲、拼出来的正文、摊字母的那个串,起点都是它。
+ * 这里的空串是「还一个字都没收到」,不是「上游给了个空答案」—— 后者归 ANSWER_NONE 那格判。
+ */
+export const TEXT_START = ''
+
+/**
+ * 没有答案:回包里没有 choices、choices 里没有 content、ollama 回包没有 message.content,
+ * 以及两条链上 answer 的起点,四处都是它。
+ * 🔴 **绝不把它交给调用方** —— chatV1 与 chatLegacy 判到它就抛 FRIEND_CODE.empty
+ * (数据丢失处理不上砧板:空答案要么原地非流式重来一次,要么如实报错)。
+ */
+export const ANSWER_NONE = ''
+
+/**
+ * 上游报错时连正文都读不出来:详情丢了不该连 HTTP 状态一起盖掉 ——
+ * 空串照样交给 gatewayErrorOf,它按状态码分得出 upstream / authKey / tooLong。
+ */
+export const DETAIL_NONE = ''
+
+/**
+ * 按分隔符切完没有半行余量:最后一片是完整的,buf 里不留东西等下一块。
+ * 上游正好在块边界断开时就是它。两处用它:/v1 的 SSE 按空行切块、ollama 按行切,
+ * 切出来那一格 `pop()` 回的是语言给的 undefined —— 在拿到的那一行当场收成我们的「没有」,
+ * 别让它顺着 buf 流下去(下一轮 `buf += 新块` 会拼出 undefined 五个字母混进正文)。
+ */
+export const TAIL_NONE = ''
+
+/**
+ * 这一块没有增量文本:SSE 的心跳行、role 那一块(content 本来就是空串)、
+ * ollama 解不出 content 的行,三种都落它。
+ * 🔴 空增量**不喂看门狗** —— 一个还在心跳但一个字都不吐的流,
+ * 不该被当成「还在出声」把我们吊住。
+ */
+export const DELTA_NONE = ''
+
+/**
+ * 上游没给 Content-Type 头:取不到就当它不是 SSE,走一次性 JSON 那条路
+ * (chatV1 的兜底①「要了流,上游却回 JSON」—— 按一次性解完再补发一次 onDelta,一个字不丢)。
+ * 🔵 缺头时宁可判「不是流」:把真流当 JSON 解,最多是不逐字吐字、答案还在;
+ * 反过来拿 SSE 解析器去啃整段 JSON,一行 data: 都切不出来 → 空答案,
+ * 得靠兜底②再打一趟非流式才救得回来(白搭一趟网络)。
+ */
+export const CONTENT_TYPE_NONE = ''
+
+/**
+ * 这条来源没有 URL:上游的 sources 给了对象却缺 url,或干脆给了个空串。
+ * 空串在下一步被丢掉 —— 出处列表宁可少一条,也不放一条点不开的。
+ */
+export const SOURCE_URL_NONE = ''
+
+/**
+ * 这一趟没有 system:旧链的内容指纹要拌一段盐,没有 system 就拌空串。
+ * 拌进去的东西不同 → 指纹不同 → 上游缓存键不同,这正是指纹存在的理由(见第 5 段串答事故)。
+ */
+export const SALT_NONE = ''
+
+/**
+ * 还没取到失败原因:catch 收到的不是 Error 时就保持空串进日志。
+ * 不编一句「未知错误」—— 日志里留一格空白,比留一句假话好查。
+ */
+export const WHY_NONE = ''
+
+/**
+ * 去 Markdown 装饰时的替身:行首的标题记号与落单的 `**` 整段删掉,一个字都不留
+ * (加粗那条不一样,它要留第一个捕获组,见 KEEP_GROUP1)。逐行对位不要这些装饰。
+ */
+export const MD_DROP = ''
+
+/**
+ * 这一号没有译文段:上游漏了号,或那一段解出来是空的。缺号只是「这行没翻到」,
+ * 调用方保留英文原文 —— 编号映射下缺号不构成错行风险(#181 的部分容错)。
+ */
+export const PART_NONE = ''
+
+/**
+ * 这一行没有前缀:既不是节标记行([WHAT] 那种),也不是子弹行。
+ * 前缀原样保管、只翻正文,回拼时前缀在前 —— 没前缀就直接拼译文。
+ */
+export const PREFIX_NONE = ''
+
+/**
+ * 上游回包没给 translated_text:当成空串去解编号,必然解出零条 →
+ * 这一块算失败,走 TRANSLATE_TRIES 的那次重试。
+ */
+export const UPSTREAM_TEXT_NONE = ''
+
+/**
+ * 一行可翻的都没有(整段全是空白):译文正文就是空串,且算**全量翻齐**——
+ * 没有东西要翻不是翻译失败,调用方照常缓存 —— 否则每次打开都要再问上游一遍。
+ */
+export const TRANSLATED_EMPTY = ''

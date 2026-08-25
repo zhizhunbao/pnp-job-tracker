@@ -7,7 +7,9 @@
  */
 
 import { SQL } from '../db'
-import { ALIAS, CHAT_STEPS, DECISION_STEPS, LEGACY_STEPS, LOCAL_HOST_RE, PROP_OK, SOURCE } from './constants'
+import {
+  ALIAS, CHAT_STEPS, DECISION_STEPS, HOST_NONE, LEGACY_STEPS, LOCAL_HOST_RE, PROP_OK, SOURCE,
+} from './constants'
 import type { FunnelHitIn, HostHeadersIn, MaybeFunnelHit, RateList, RatesOfIn, RecordHitIn, RecordedOut, StepCounts } from './types'
 
 /**
@@ -111,7 +113,7 @@ export function decisionRates(counts: StepCounts): RateList {
  * @returns 本机来源 true。
  */
 export function isLocalHost(host: string): boolean {
-  return LOCAL_HOST_RE.test((host || '').trim().toLowerCase())
+  return LOCAL_HOST_RE.test((host || HOST_NONE).trim().toLowerCase())
 }
 
 /**
@@ -129,9 +131,9 @@ export function siteHostOf(input: HostHeadersIn): string {
     if (input.host != null) {
       return input.host
     }
-    return ''
+    return HOST_NONE
   } catch {
-    return ''
+    return HOST_NONE
   }
 }
 

@@ -10,7 +10,22 @@
  */
 import { Button } from '@/components/button'
 import { Notice } from '@/components/notice'
-import { MODE_FORGOT, MODE_LOGIN, MODE_REGISTER, MODE_RESET, PW_MIN_LEN } from './constants'
+import {
+  AUTOCOMPLETE_CURRENT_PW,
+  AUTOCOMPLETE_EMAIL,
+  AUTOCOMPLETE_NEW_PW,
+  EMAIL_PLACEHOLDER,
+  INPUT_TYPE_EMAIL,
+  INPUT_TYPE_PASSWORD,
+  MODE_FORGOT,
+  MODE_LOGIN,
+  MODE_REGISTER,
+  MODE_RESET,
+  NOTICE_ERR,
+  PW_MIN_LEN,
+  PW_PLACEHOLDER,
+  SUBMIT_BUSY_LABEL,
+} from './constants'
 import { submitKeyOf } from './functions'
 import { PwMeter } from './pwmeter'
 import type { AuthFieldsIn } from './types'
@@ -29,25 +44,25 @@ export function AuthFields({ t, mode, email, pw, busy, err, onEmail, onPw, onSub
   if (mode === MODE_LOGIN) {
     minLen = 0
   }
-  let autoComplete = 'new-password'
+  let autoComplete = AUTOCOMPLETE_NEW_PW
   if (mode === MODE_LOGIN) {
-    autoComplete = 'current-password'
+    autoComplete = AUTOCOMPLETE_CURRENT_PW
   }
   let submitLabel = t(submitKeyOf(mode))
   if (busy) {
-    submitLabel = '…'
+    submitLabel = SUBMIT_BUSY_LABEL
   }
   return (
     <form onSubmit={onSubmit}>
       {showEmail && (
         <label className={css.label}>{t('acct.email')}
           <input className={css.input}
-            type="email"
+            type={INPUT_TYPE_EMAIL}
             required
             value={email}
             onChange={onEmail}
-            autoComplete="email"
-            placeholder="you@example.com" />
+            autoComplete={AUTOCOMPLETE_EMAIL}
+            placeholder={EMAIL_PLACEHOLDER} />
         </label>
       )}
       {showPw && (
@@ -55,18 +70,18 @@ export function AuthFields({ t, mode, email, pw, busy, err, onEmail, onPw, onSub
           {showEmail && <div className={css.fieldGap} />}
           <label className={css.label}>{t('acct.password')}
             <input className={css.input}
-              type="password"
+              type={INPUT_TYPE_PASSWORD}
               required
               minLength={minLen}
               value={pw}
               onChange={onPw}
               autoComplete={autoComplete}
-              placeholder="••••••••" />
+              placeholder={PW_PLACEHOLDER} />
           </label>
         </>
       )}
       {(mode === MODE_REGISTER || mode === MODE_RESET) && pw !== '' && <PwMeter t={t} pw={pw} />}
-      {err !== '' && <Notice kind="err" className={css.errGap}>{err}</Notice>}
+      {err !== '' && <Notice kind={NOTICE_ERR} className={css.errGap}>{err}</Notice>}
       <Button lg disabled={busy} className={css.submitBtn}>{submitLabel}</Button>
     </form>
   )

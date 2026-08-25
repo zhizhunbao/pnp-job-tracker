@@ -5,7 +5,7 @@
  * @time 2026-08-22 22:00:00
  */
 
-import { officialLabels, OR_TAIL_RE } from './constants'
+import { LABEL_MISS, officialLabels, OR_TAIL_DROP, OR_TAIL_RE } from './constants'
 import type { LangCode, OfficialLabelIn } from './types'
 
 /**
@@ -19,7 +19,7 @@ import type { LangCode, OfficialLabelIn } from './types'
  */
 export function officialLabel(input: OfficialLabelIn): string {
   const row = officialLabels[input.raw]
-  let hit = ''
+  let hit = LABEL_MISS
   if (row != null) {
     const v = row[input.lang as LangCode]
     if (v != null) {
@@ -29,5 +29,5 @@ export function officialLabel(input: OfficialLabelIn): string {
   if (hit === '') {
     hit = input.raw
   }
-  return hit.replace(OR_TAIL_RE, '')
+  return hit.replace(OR_TAIL_RE, OR_TAIL_DROP)
 }

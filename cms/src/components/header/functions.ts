@@ -4,7 +4,7 @@
  * @author Frank
  * @time 2026-08-24 08:00:00
  */
-import { ACCT_IN, ACCT_OUT } from './constants'
+import { ACCT_IN, ACCT_OUT, EMAIL_UNKNOWN } from './constants'
 import type { AcctState, AcctUser, MeJson, WithOnIn } from './types'
 import css from './header.module.css'
 
@@ -28,7 +28,7 @@ export function withOn(x: WithOnIn): string {
  * @returns 四格全空的身份。
  */
 export function emptyUser(): AcctUser {
-  return { email: '', displayName: null, avatar: null, pro: false }
+  return { email: EMAIL_UNKNOWN, displayName: null, avatar: null, pro: false }
 }
 
 /**
@@ -76,6 +76,7 @@ export function meToAcct(d: MeJson): AcctState {
  * @returns AuthModal 组件模块。
  */
 export function loadAuthModal() {
+  // eslint-disable-next-line local/no-bare-strings -- 模块说明符必须是字面量:打包器静态分析靠它,变量化会断依赖追踪
   return import('@/components/auth').then(pickAuthModal)
 }
 
@@ -85,6 +86,7 @@ export function loadAuthModal() {
  * @param m auth 桶模块。
  * @returns AuthModal。
  */
+// eslint-disable-next-line local/no-bare-strings -- 同上:`typeof import()` 的说明符是类型位,TS 只收字面量
 function pickAuthModal(m: typeof import('@/components/auth')) {
   return m.AuthModal
 }

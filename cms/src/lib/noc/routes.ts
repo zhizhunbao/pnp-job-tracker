@@ -14,7 +14,7 @@ import {
   TRANSLATE_ROUTE_TIMEOUT_MS, translatePlainLines, translateReady,
 } from '../llm'
 import { checkLimit, ipOf } from '../quota/server'
-import { NOCTR_IP_DAILY, NOCTR_LIMIT_PREFIX } from './constants'
+import { NOCTR_IP_DAILY, NOCTR_LIMIT_PREFIX, PARAM_NONE, TRANS_TEXT_NONE } from './constants'
 import { loadNocDuties } from './functions'
 import { CACHE } from './variables'
 import type { NocTransBody } from './types'
@@ -31,8 +31,8 @@ export async function nocTranslateRoute(req: Request): Promise<Response> {
   if (translateReady() === false) {
     return Response.json({ ok: false, error: E_NOT_CONFIGURED }, { status: UNAVAILABLE })
   }
-  let noc = ''
-  let lang = ''
+  let noc = PARAM_NONE
+  let lang = PARAM_NONE
   try {
     const b = await req.json() as NocTransBody
     if (typeof b.noc === 'string') {
@@ -42,7 +42,7 @@ export async function nocTranslateRoute(req: Request): Promise<Response> {
       lang = b.lang
     }
   } catch {
-    noc = ''
+    noc = PARAM_NONE
   }
   if (noc === '' || TRANS_LANGS.includes(lang) === false) {
     return Response.json({ ok: false, error: E_BAD_REQUEST }, { status: BAD_REQUEST })
@@ -61,11 +61,11 @@ export async function nocTranslateRoute(req: Request): Promise<Response> {
   }
   try {
     const signal = AbortSignal.timeout(TRANSLATE_ROUTE_TIMEOUT_MS)
-    let duties = { text: '', full: true }
+    let duties = { text: TRANS_TEXT_NONE, full: true }
     if (row.duties !== '') {
       duties = await translatePlainLines({ text: row.duties, lang: lang, signal: signal })
     }
-    let requirements = { text: '', full: true }
+    let requirements = { text: TRANS_TEXT_NONE, full: true }
     if (row.requirements !== '') {
       requirements = await translatePlainLines({ text: row.requirements, lang: lang, signal: signal })
     }

@@ -18,7 +18,7 @@ import { useState } from 'react'
 import { IconMenu } from '@/components/icons'
 import { LinkButton } from '@/components/button'
 
-import { PATH_HOME } from './constants'
+import { BRAND_MARK, PATH_HOME } from './constants'
 import { AccountLite } from './accountlite'
 import { HeaderNav } from './headernav'
 import { LangSwitch } from './langswitch'
@@ -70,7 +70,7 @@ export function Header({ lang, setLang, t, active, sticky = false, accountArea, 
       <div className={css.bar}>
         <div className={css.brand}>
           <button className={css.burger} onClick={openDrawer} aria-label={t('nav.menu')}><IconMenu /></button>
-          <LinkButton href={PATH_HOME} className={`${css.tapY} ${css.logo}`}>🍁 Offer2PR</LinkButton>
+          <LinkButton href={PATH_HOME} className={`${css.tapY} ${css.logo}`}>{BRAND_MARK}</LinkButton>
           <span className={css.tagline}>{t('tagline')}</span>
         </div>
         <div className={css.right}>

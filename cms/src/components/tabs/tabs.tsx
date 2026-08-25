@@ -14,7 +14,7 @@
  */
 import { useRef } from 'react'
 
-import { ID_PREFIX_DEFAULT } from './constants'
+import { ID_PANEL_SEG, ID_PREFIX_DEFAULT, ID_SEP, ROLE_TAB, ROLE_TABLIST } from './constants'
 import { makeTabKeys } from './functions'
 import type { TabsIn } from './types'
 import css from './tabs.module.css'
@@ -65,10 +65,10 @@ export function Tabs({ items, value, onChange, ariaLabel, idPrefix = ID_PREFIX_D
     btns.push(
       <button key={it.key}
         ref={setRef}
-        role="tab"
-        id={`${idPrefix}-${it.key}`}
+        role={ROLE_TAB}
+        id={`${idPrefix}${ID_SEP}${it.key}`}
         aria-selected={on}
-        aria-controls={`${idPrefix}-panel-${it.key}`}
+        aria-controls={`${idPrefix}${ID_SEP}${ID_PANEL_SEG}${ID_SEP}${it.key}`}
         tabIndex={tabIndex}
         onClick={click}
         onKeyDown={onKey}
@@ -80,7 +80,7 @@ export function Tabs({ items, value, onChange, ariaLabel, idPrefix = ID_PREFIX_D
   }
 
   return (
-    <div role="tablist" aria-label={ariaLabel} className={css.tablist}>
+    <div role={ROLE_TABLIST} aria-label={ariaLabel} className={css.tablist}>
       {btns}
     </div>
   )

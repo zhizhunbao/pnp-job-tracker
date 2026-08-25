@@ -10,6 +10,7 @@
  */
 import { Modal } from '@/components/modal'
 import { AuthForm } from './authform'
+import { MODAL_SIZE_SM } from './constants'
 import type { AuthModalIn } from './types'
 
 /**
@@ -20,7 +21,7 @@ import type { AuthModalIn } from './types'
  */
 export function AuthModal({ t, onClose, onDone, mode, resetToken, z, returnTo, hero }: AuthModalIn) {
   return (
-    <Modal onClose={onClose} size="sm" z={z}>
+    <Modal onClose={onClose} size={MODAL_SIZE_SM} z={z}>
       <AuthForm t={t} onDone={onDone} initialMode={mode} resetToken={resetToken} returnTo={returnTo} hero={hero} />
     </Modal>
   )

@@ -7,7 +7,7 @@
  * @author Frank
  * @time 2026-08-22 19:27:15
  */
-import { DAY_MS, FMT_MIN, FMT_SEC, ISO_LOCALE, ISO_T, MIDNIGHT_SUFFIX, MIN_LEN, SEC_LEN, SPACE, YMD_LEN } from './constants'
+import { DATE_EMPTY, DAY_MS, FMT_MIN, FMT_SEC, ISO_LOCALE, ISO_T, MIDNIGHT_SUFFIX, MIN_LEN, SEC_LEN, SPACE, YMD_LEN } from './constants'
 import type { CutFallbackIn, DaysSinceIn, MaybeDays, MaybeIso } from './types'
 
 /**
@@ -72,7 +72,7 @@ export function daysSince(x: DaysSinceIn): MaybeDays {
  */
 export function ymd(iso: MaybeIso): string {
   if (iso == null) {
-    return ''
+    return DATE_EMPTY
   }
   return iso.slice(0, YMD_LEN)
 }
@@ -85,7 +85,7 @@ export function ymd(iso: MaybeIso): string {
  */
 function cutFallback(x: CutFallbackIn): string {
   if (x.iso === '') {
-    return ''
+    return DATE_EMPTY
   }
   return x.iso.slice(0, x.len).replace(ISO_T, SPACE)
 }

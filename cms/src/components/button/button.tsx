@@ -11,6 +11,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { KIND_DEFAULT } from './constants'
 import { LinkButton } from './linkbutton'
 import { btnClsOf } from './functions'
 import type { ButtonIn } from './types'
@@ -22,7 +23,7 @@ import type { ButtonIn } from './types'
  * @returns 按钮或链接。
  */
 export function Button({
-  kind = 'primary',
+  kind = KIND_DEFAULT,
   sm = false,
   lg = false,
   disabled = false,

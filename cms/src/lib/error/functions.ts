@@ -7,8 +7,8 @@
  */
 
 import {
-  CHAT_ERR_NAME, ERR_BY_STATUS, ERR_BY_TYPE, ERR_DEFAULT, ERR_MSG_MAX, ERR_NAME, HTTP_ERROR_TYPE,
-  LEGACY_TOO_LONG, LEGACY_TOO_LONG_TYPE, MSG_SEP, TRANSLATE_ERR_NAME,
+  CHAT_ERR_NAME, ERR_BY_STATUS, ERR_BY_TYPE, ERR_DEFAULT, ERR_FIELD_NONE, ERR_MSG_MAX, ERR_NAME, ERR_TAIL_NONE,
+  HTTP_ERROR_TYPE, LEGACY_TOO_LONG, LEGACY_TOO_LONG_TYPE, MSG_SEP, TRANSLATE_ERR_NAME,
 } from './constants'
 import type {
   ChatErrorIn, ChatErrorOut, ChatFailure, FailIn, FailOut, GatewayErrorBody, GatewayErrorIn, GatewayErrorOfIn,
@@ -94,8 +94,8 @@ export function isGatewayError(err: Error): err is GatewayFailure {
  * @returns 认好码的网关失败。
  */
 export function gatewayErrorOf(input: GatewayErrorOfIn): GatewayErrorOfOut {
-  let type = ''
-  let message = ''
+  let type = ERR_FIELD_NONE
+  let message = ERR_FIELD_NONE
   try {
     const parsed: GatewayErrorBody = JSON.parse(input.body)
     if (parsed.error != null) {
@@ -117,7 +117,7 @@ export function gatewayErrorOf(input: GatewayErrorOfIn): GatewayErrorOfOut {
     }
   } catch {}
   const code = ERR_BY_TYPE[type] || ERR_BY_STATUS[input.status] || ERR_DEFAULT
-  let tail = ''
+  let tail = ERR_TAIL_NONE
   if (message !== '') {
     tail = MSG_SEP + message.slice(0, ERR_MSG_MAX)
   }

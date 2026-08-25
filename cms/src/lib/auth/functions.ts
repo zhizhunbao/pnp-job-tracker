@@ -13,12 +13,12 @@ import { AUTH_LOG, log } from '../log'
 import { getFieldsToSign, getPayload, jwtSign } from 'payload'
 import config from '@/payload.config'
 import {
-  BEARER_PREFIX, CALLBACK_PATH, CONSENT_STATIC, COOKIE_PREFIX_DEFAULT, COOKIE_RE_HEAD, COOKIE_RE_TAIL,
+  BEARER_PREFIX, CALLBACK_PATH, CONSENT_STATIC, COOKIE_PREFIX_DEFAULT, COOKIE_RE_HEAD, COOKIE_RE_TAIL, EMAIL_NONE,
   FLOW_COOKIE_TAIL, FORM_MIME, GOOGLE_AUTH_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_TOKEN_URL,
   GOOGLE_USERINFO_URL, GRANT_AUTH_CODE, HTTPONLY_TAIL, HTTPS_PREFIX, KV_EQ, LI_PAIR, METHOD_POST,
   K_FAIL, K_OK, LOG_CONSENT, LOG_EMAIL, LOG_ENV_MISSING, LOG_LOGIN, LOG_NO_CODE, LOG_STATE, LOG_TOKEN,
   PARAM_CLIENT_ID, PARAM_REDIRECT, PARAM_STATE, PROVIDER_GOOGLE, RETURN_RE, ROOT_PATH, SECURE_TAIL,
-  HEX_PAD, SESSION_COOKIE_TAIL, SITE, SSR_TOKEN_COOKIE, TOKEN_NAME_TAIL, USERS,
+  HEX_PAD, HEX_SEP, SECURE_TAIL_NONE, SESSION_COOKIE_TAIL, SITE, SSR_TOKEN_COOKIE, TOKEN_NAME_TAIL, USERS,
 } from './constants'
 import type {
   AliveFn, CallbackOut, GoogleCallbackIn, Clock, ConfigWithPrefix, ExchangeIn, GoogleLogin, GoogleLoginIn, GoogleLoginOut, GoogleUserOut,
@@ -70,7 +70,7 @@ function secureSuffix(): string {
   if (SITE.startsWith(HTTPS_PREFIX)) {
     return SECURE_TAIL
   }
-  return ''
+  return SECURE_TAIL_NONE
 }
 
 /**
@@ -184,7 +184,7 @@ export async function loadGoogleUser(accessToken: string): GoogleUserOut {
   } catch {
     return null
   }
-  let email = ''
+  let email = EMAIL_NONE
   if (typeof ui.email === 'string') {
     email = ui.email.toLowerCase()
   }
@@ -224,7 +224,7 @@ export async function loginWithGoogle(input: GoogleLoginIn): GoogleLoginOut {
   let user = found.docs[0] as any
   const backfill: Record<string, string> = {}
   if (user == null) {
-    const rand = Array.from(crypto.getRandomValues(new Uint8Array(24)), toHex).join('')
+    const rand = Array.from(crypto.getRandomValues(new Uint8Array(24)), toHex).join(HEX_SEP)
     const data: Record<string, string> = { email: input.email, password: rand, loginProvider: PROVIDER_GOOGLE }
     if (input.name != null) {
       data.displayName = input.name

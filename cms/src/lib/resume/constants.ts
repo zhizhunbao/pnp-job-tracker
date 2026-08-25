@@ -379,3 +379,54 @@ export const LOG_DASH = '-'
  * meta 的初始链路值（onMeta 没响过就是它；日志里尽量不出现 —— 响过必覆盖）。
  */
 export const META_VIA_LEGACY = 'legacy'
+
+/**
+ * 取字成功时 err 格的值:空串 = **没有错误**(失败那条路会把真实错误串装进来,
+ * 给 @test.local 探针看)。调用方判成没成看的是 `text == null`,不是判它 ——
+ * 空串在这里是「无事发生」,不是「不知道」。
+ */
+export const ERR_NONE = ''
+
+/**
+ * 免费档的改写段:空串 = **不插这一段**(付费档才把 MATCH_REWRITE 填进 system 的槽)。
+ * 免费不生成 rewrite 是 #102 账单教训里的成本闸之一 —— 少一段指令,输出也短一截。
+ */
+export const REWRITE_NONE = ''
+
+/**
+ * NOC 候选刚入表时的职业名:空串 = **名字还没查到**(不是「这个 NOC 没有名字」)。
+ * 候选先只带码收齐,名字随后一条 SQL 批量补 —— 逐个查名会把 5 次往返打成 N 次。
+ */
+export const TITLE_PENDING = ''
+
+/**
+ * `\r` 的替换串:空串 = **直接删掉**。Windows 简历里的换行是 `\r\n`,只留 `\n`
+ * 才对得上后面那步压空行:BLANKS3_RE(`/\n{3,}/g`)咬三行以上的空白,换成 BLANKS2
+ * (`'\n\n'` —— 那是替换串,不是正则)。`\r` 留着,空行就长成 `\r\n\r\n` 混排,咬不住。
+ */
+export const CR_DROP = ''
+
+/**
+ * 请求体里没给的文本字段(resume / jd)的初值:空串 = 「用户没给」。body 坏了也落回它,
+ * 随后被长度闸(MIN_RESUME / JD_LEN_MIN)挡下 → 400 —— 用空串不用 null,是因为下一步
+ * 就是 `.length` 比对,少一次判空。
+ */
+export const BODY_TEXT_NONE = ''
+
+/**
+ * 按 jobId 回库兜 JD 的落点:空串 = **没兜到**(库里没有这条岗、或抓正文那步抛了)。
+ * 兜到才覆盖用户给的 jd(`jdFromDb !== ''`)—— 兜底失败不许把已有的 jd 冲成空。
+ */
+export const JD_DB_NONE = ''
+
+/**
+ * 计次格(profile.matchUses)缺席时的落点:空串 = **今天还没记过**。
+ * 解析时找不到 USES_SEP 分隔符,用量就停在 0,免费额度照常给满。
+ */
+export const USES_CELL_NONE = ''
+
+/**
+ * 模型原文的初值(await 之前):空串 = **还没拿到**。真正的失败走 catch 里的错误码
+ * (tooLong/busy/llm),不靠这个空串表达 —— 空串只在「还没开始」那一瞬存在。
+ */
+export const LLM_TEXT_NONE = ''

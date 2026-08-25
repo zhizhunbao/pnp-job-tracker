@@ -9,6 +9,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { CLS_TAP_PAD } from './constants'
 import type { SectionTabsIn } from './types'
 import { LinkButton } from '@/components/button'
 import css from './tabs.module.css'
@@ -32,7 +33,7 @@ export function SectionTabs({ tabs, tone = null }: SectionTabsIn) {
       )
     } else {
       items.push(
-        <LinkButton key={tb.href} href={tb.href} className={`${css.secTab} tapPad`}>{tb.label}</LinkButton>,
+        <LinkButton key={tb.href} href={tb.href} className={`${css.secTab} ${CLS_TAP_PAD}`}>{tb.label}</LinkButton>,
       )
     }
   }

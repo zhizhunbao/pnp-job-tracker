@@ -65,3 +65,24 @@ export const NOCTR_IP_DAILY = 80
  * 职责/要求翻译限额键前缀。
  */
 export const NOCTR_LIMIT_PREFIX = 'noctr:'
+
+/**
+ * 「没有名字可显示」的表示:空串。职业名一路回退(短名 → 完整译名 → 官方英文名)
+ * 到底还是没有、或者英文界面本来就不渲译名时给它 —— 调用方拿到空串就整格不渲染
+ * (灰字小注不出现),而不是渲一个空盒子。本域里空串只有这一种含义。
+ */
+export const NAME_NONE = ''
+
+/**
+ * 请求体里没取到的参数(noc / lang)的初值:空串 = 「没给」。body 解析失败也落回它,
+ * 随后被 `noc === '' || TRANS_LANGS.includes(lang) === false` 一把挡下 → 400。
+ * 用空串而不是 null,是因为这两道闸一个比字面量、一个查白名单,空串照样进得去,
+ * 少一次判空。
+ */
+export const PARAM_NONE = ''
+
+/**
+ * 没有原文时的译文:空串。官方职责/任职要求常常只有一半有内容,空的那一半不调模型
+ * (省一次上游往返),直接给空译文并算「完整」(full),缓存才敢收下这一份。
+ */
+export const TRANS_TEXT_NONE = ''

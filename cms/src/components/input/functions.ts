@@ -4,6 +4,7 @@
  * @author Frank
  * @time 2026-08-24 15:00:00
  */
+import { CLS_SEP } from './constants'
 import type { ChangeFn, InputClsIn, InputSize } from './types'
 import css from './input.module.css'
 
@@ -26,7 +27,7 @@ export function inputClsOf(x: InputClsIn): string {
   if (x.extra != null) {
     out.push(x.extra)
   }
-  return out.join(' ')
+  return out.join(CLS_SEP)
 }
 
 /**

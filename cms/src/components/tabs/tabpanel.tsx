@@ -8,7 +8,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
-import { ID_PREFIX_DEFAULT } from './constants'
+import { CLS_NONE, ID_PANEL_SEG, ID_PREFIX_DEFAULT, ID_SEP, ROLE_TABPANEL } from './constants'
 import type { TabPanelIn } from './types'
 import css from './tabs.module.css'
 
@@ -19,14 +19,14 @@ import css from './tabs.module.css'
  * @returns 面板。
  */
 export function TabPanel({ tabKey, active, idPrefix = ID_PREFIX_DEFAULT, children }: TabPanelIn) {
-  let cls = ''
+  let cls = CLS_NONE
   if (active === false) {
     cls = css.off
   }
   return (
-    <div role="tabpanel"
-      id={`${idPrefix}-panel-${tabKey}`}
-      aria-labelledby={`${idPrefix}-${tabKey}`}
+    <div role={ROLE_TABPANEL}
+      id={`${idPrefix}${ID_SEP}${ID_PANEL_SEG}${ID_SEP}${tabKey}`}
+      aria-labelledby={`${idPrefix}${ID_SEP}${tabKey}`}
       hidden={active === false}
       className={cls}>
       {children}

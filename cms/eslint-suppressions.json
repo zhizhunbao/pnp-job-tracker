@@ -9,11 +9,6 @@
       "count": 2
     }
   },
-  "src/app/(frontend)/jobs/AuthForm.tsx": {
-    "@eslint-community/eslint-comments/require-description": {
-      "count": 1
-    }
-  },
   "src/app/(frontend)/jobs/Jd.tsx": {
     "@eslint-community/eslint-comments/require-description": {
       "count": 4
@@ -39,16 +34,6 @@
       "count": 3
     }
   },
-  "src/app/(frontend)/ui/Banner.tsx": {
-    "@eslint-community/eslint-comments/require-description": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/ui/Table.tsx": {
-    "@eslint-community/eslint-comments/require-description": {
-      "count": 1
-    }
-  },
   "src/app/api/version/route.ts": {
     "local/doc-every-export": {
       "count": 2
@@ -60,261 +45,22 @@
       "count": 2
     }
   },
-  "src/components/auth/accountmenu.tsx": {
-    "local/no-bare-strings": {
-      "count": 3
-    }
-  },
-  "src/components/auth/accountmenupop.tsx": {
-    "local/no-bare-strings": {
-      "count": 14
-    }
-  },
-  "src/components/auth/authfields.tsx": {
-    "local/no-bare-strings": {
-      "count": 11
-    }
-  },
-  "src/components/auth/authfooter.tsx": {
-    "local/no-bare-strings": {
-      "count": 9
-    }
-  },
-  "src/components/auth/authform.tsx": {
-    "local/no-bare-strings": {
-      "count": 6
-    }
-  },
-  "src/components/auth/authhero.tsx": {
-    "local/no-bare-strings": {
-      "count": 2
-    }
-  },
-  "src/components/auth/authmodal.tsx": {
-    "local/no-bare-strings": {
-      "count": 1
-    }
-  },
-  "src/components/auth/avatar.tsx": {
-    "local/no-bare-strings": {
-      "count": 3
-    }
-  },
-  "src/components/auth/brandhead.tsx": {
-    "local/no-bare-strings": {
-      "count": 2
-    }
-  },
-  "src/components/auth/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 53
-    }
-  },
-  "src/components/auth/googlebutton.tsx": {
-    "local/no-bare-strings": {
-      "count": 2
-    }
-  },
-  "src/components/auth/googleicon.tsx": {
-    "local/no-bare-strings": {
-      "count": 3
-    }
-  },
-  "src/components/auth/pwmeter.tsx": {
-    "local/no-bare-strings": {
-      "count": 2
-    }
-  },
-  "src/components/banner/bannerdots.tsx": {
-    "local/no-bare-strings": {
-      "count": 1
-    }
-  },
-  "src/components/banner/imagebanner.tsx": {
-    "local/no-bare-strings": {
-      "count": 1
-    }
-  },
-  "src/components/button/button.tsx": {
-    "local/no-bare-strings": {
-      "count": 1
-    }
-  },
-  "src/components/button/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 1
-    }
-  },
-  "src/components/button/linkbutton.tsx": {
-    "local/no-bare-strings": {
-      "count": 1
-    }
-  },
-  "src/components/card/card.tsx": {
-    "local/no-bare-strings": {
-      "count": 1
-    }
-  },
-  "src/components/card/cardkv.tsx": {
-    "local/no-bare-strings": {
-      "count": 1
-    }
-  },
-  "src/components/chip/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 8
-    }
-  },
-  "src/components/footer/footer.tsx": {
-    "local/no-bare-strings": {
-      "count": 3
-    }
-  },
-  "src/components/header/accountlite.tsx": {
-    "local/no-bare-strings": {
-      "count": 9
-    }
-  },
-  "src/components/header/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 3
-    }
-  },
-  "src/components/header/header.tsx": {
-    "local/no-bare-strings": {
-      "count": 3
-    }
-  },
-  "src/components/header/headernav.tsx": {
-    "local/no-bare-strings": {
-      "count": 11
-    }
-  },
-  "src/components/header/mobiledrawer.tsx": {
-    "local/no-bare-strings": {
-      "count": 18
-    }
-  },
-  "src/components/icons/maxicon.tsx": {
-    "local/no-bare-strings": {
-      "count": 18
-    }
-  },
-  "src/components/input/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 1
-    }
-  },
-  "src/components/modal/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 6
-    }
-  },
-  "src/components/notice/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 1
-    }
-  },
-  "src/components/notice/notice.tsx": {
-    "local/no-bare-strings": {
-      "count": 1
-    }
-  },
-  "src/components/pager/pager.tsx": {
-    "local/no-bare-strings": {
-      "count": 3
-    }
-  },
-  "src/components/search/search.tsx": {
-    "local/no-bare-strings": {
-      "count": 3
-    }
-  },
-  "src/components/select/select.tsx": {
-    "local/no-bare-strings": {
-      "count": 1
-    }
-  },
-  "src/components/shell/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 1
-    }
-  },
-  "src/components/table/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 1
-    }
-  },
-  "src/components/tabs/sectiontabs.tsx": {
-    "local/no-bare-strings": {
-      "count": 1
-    }
-  },
-  "src/components/tabs/tabpanel.tsx": {
-    "local/no-bare-strings": {
-      "count": 4
-    }
-  },
-  "src/components/tabs/tabs.tsx": {
-    "local/no-bare-strings": {
-      "count": 4
-    }
-  },
-  "src/components/time/dateage.tsx": {
-    "local/no-bare-strings": {
-      "count": 2
-    }
-  },
-  "src/components/time/timetext.tsx": {
-    "local/no-bare-strings": {
-      "count": 2
-    }
-  },
   "src/lib/agent/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 5
-    },
     "local/step-down-order": {
       "count": 13
     }
   },
-  "src/lib/alerts/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 17
-    }
-  },
-  "src/lib/alerts/routes.ts": {
-    "local/no-bare-strings": {
-      "count": 4
-    }
-  },
   "src/lib/auth/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 3
-    },
     "local/step-down-order": {
       "count": 5
     }
   },
-  "src/lib/auth/routes.ts": {
-    "local/no-bare-strings": {
-      "count": 4
-    }
-  },
   "src/lib/consult/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 37
-    },
     "local/no-db-vocab-in-functions": {
       "count": 2
     },
     "local/step-down-order": {
       "count": 55
-    }
-  },
-  "src/lib/consult/routes.ts": {
-    "local/no-bare-strings": {
-      "count": 2
     }
   },
   "src/lib/db/functions.ts": {
@@ -328,45 +74,23 @@
     }
   },
   "src/lib/employers/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 17
-    },
     "local/step-down-order": {
       "count": 20
     }
   },
-  "src/lib/employers/routes.ts": {
-    "local/no-bare-strings": {
-      "count": 10
-    }
-  },
   "src/lib/error/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 3
-    },
     "local/step-down-order": {
       "count": 3
     }
   },
   "src/lib/funnel/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 3
-    },
     "local/step-down-order": {
       "count": 1
     }
   },
   "src/lib/gauge/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 5
-    },
     "local/step-down-order": {
       "count": 5
-    }
-  },
-  "src/lib/i18n/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 1
     }
   },
   "src/lib/jobs/constants.ts": {
@@ -375,16 +99,8 @@
     }
   },
   "src/lib/jobs/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 52
-    },
     "local/step-down-order": {
       "count": 38
-    }
-  },
-  "src/lib/jobs/routes.ts": {
-    "local/no-bare-strings": {
-      "count": 19
     }
   },
   "src/lib/legal/constants.ts": {
@@ -393,9 +109,6 @@
     }
   },
   "src/lib/llm/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 26
-    },
     "local/step-down-order": {
       "count": 32
     }
@@ -408,21 +121,8 @@
       "count": 1
     }
   },
-  "src/lib/lmia/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 1
-    }
-  },
   "src/lib/location/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 7
-    },
     "local/step-down-order": {
-      "count": 1
-    }
-  },
-  "src/lib/mail/functions.ts": {
-    "local/no-bare-strings": {
       "count": 1
     }
   },
@@ -463,29 +163,9 @@
       "count": 1
     }
   },
-  "src/lib/news/routes.ts": {
-    "local/no-bare-strings": {
-      "count": 6
-    }
-  },
-  "src/lib/noc/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 8
-    }
-  },
-  "src/lib/noc/routes.ts": {
-    "local/no-bare-strings": {
-      "count": 5
-    }
-  },
   "src/lib/official/constants.ts": {
     "@typescript-eslint/naming-convention": {
       "count": 1
-    }
-  },
-  "src/lib/official/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 2
     }
   },
   "src/lib/pathways/constants.ts": {
@@ -494,32 +174,18 @@
     }
   },
   "src/lib/pathways/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 1
-    },
     "local/step-down-order": {
       "count": 2
     }
   },
   "src/lib/plan/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 21
-    },
     "local/step-down-order": {
       "count": 10
     }
   },
   "src/lib/points/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 14
-    },
     "local/step-down-order": {
       "count": 60
-    }
-  },
-  "src/lib/points/routes.ts": {
-    "local/no-bare-strings": {
-      "count": 1
     }
   },
   "src/lib/points/types.ts": {
@@ -531,16 +197,8 @@
     }
   },
   "src/lib/quiz/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 2
-    },
     "local/step-down-order": {
       "count": 10
-    }
-  },
-  "src/lib/quiz/routes.ts": {
-    "local/no-bare-strings": {
-      "count": 3
     }
   },
   "src/lib/quota/functions.ts": {
@@ -548,38 +206,17 @@
       "count": 4
     }
   },
-  "src/lib/rankings/routes.ts": {
-    "local/no-bare-strings": {
-      "count": 1
-    }
-  },
   "src/lib/resume/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 4
-    },
     "local/step-down-order": {
       "count": 1
     }
   },
-  "src/lib/resume/routes.ts": {
-    "local/no-bare-strings": {
-      "count": 8
-    }
-  },
   "src/lib/ruling/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 65
-    },
     "local/no-db-vocab-in-functions": {
       "count": 6
     },
     "local/step-down-order": {
       "count": 130
-    }
-  },
-  "src/lib/ruling/routes.ts": {
-    "local/no-bare-strings": {
-      "count": 1
     }
   },
   "src/lib/ruling/types.ts": {
@@ -591,32 +228,11 @@
     }
   },
   "src/lib/stats/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 2
-    },
     "local/step-down-order": {
       "count": 2
     }
   },
-  "src/lib/stats/routes.ts": {
-    "local/no-bare-strings": {
-      "count": 3
-    }
-  },
-  "src/lib/stripe/routes.ts": {
-    "local/no-bare-strings": {
-      "count": 5
-    }
-  },
-  "src/lib/time/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 2
-    }
-  },
   "src/lib/track/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 2
-    },
     "local/step-down-order": {
       "count": 1
     }

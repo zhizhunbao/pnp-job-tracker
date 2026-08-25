@@ -13,7 +13,8 @@ import { fill } from '../template'
 import { log, RESUME_LOG } from '../log'
 import {
   CLAMP, ERR_SLICE, ERR_UNSUPPORTED, EXT_DOCX, EXT_PDF, EXT_SEP, FREE_ROWS, IELTS_CLB, NOC_CAND_MAX, ROLE_SYSTEM,
-  ROLE_USER, BRACE_CLOSE, BRACE_OPEN, NOTE_MAX, REQ_MAX, ROWS_MAX, ROWS_MIN,
+  ROLE_USER, BRACE_CLOSE, BRACE_OPEN, NOTE_MAX, REQ_MAX, ROWS_MAX, ROWS_MIN, ERR_NONE, REWRITE_NONE,
+  TITLE_PENDING,
 } from './constants'
 import { MATCH_REWRITE, MATCH_SYSTEM, MATCH_USER, OUT_LANG, OUT_LANG_DEFAULT } from './prompts'
 import type {
@@ -112,7 +113,7 @@ export async function extractText(input: ExtractIn): ExtractOut {
       const parser = new PDFParse({ data: new Uint8Array(input.buf) })
       try {
         const got = await parser.getText()
-        return { text: got.text, err: '' }
+        return { text: got.text, err: ERR_NONE }
       } finally {
         await parser.destroy().catch(ignoreDestroyFailure)
       }
@@ -121,7 +122,7 @@ export async function extractText(input: ExtractIn): ExtractOut {
       // eslint-disable-next-line local/no-bare-strings -- 同上:动态 import 的说明符必须是字面量
       const mod = await import('mammoth')
       const got = await mod.default.extractRawText({ buffer: input.buf })
-      return { text: got.value, err: '' }
+      return { text: got.value, err: ERR_NONE }
     }
   } catch (e) {
     let err = String(e)
@@ -186,7 +187,7 @@ export function gateMatch(input: GateMatchIn): Gated {
  */
 export function matchPrompt(input: MatchPromptIn): MatchMessages {
   const outLang = outLangOf(input.lang)
-  let rewrite = ''
+  let rewrite = REWRITE_NONE
   if (input.pro) {
     rewrite = MATCH_REWRITE
   }
@@ -242,7 +243,7 @@ export async function nocCandidatesOf(input: NocCandidatesIn): NocCandidatesOut 
         continue
       }
       seen.add(noc)
-      out.push({ noc: noc, title: '' })
+      out.push({ noc: noc, title: TITLE_PENDING })
     }
   }
   if (out.length > 0) {

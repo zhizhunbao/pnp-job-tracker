@@ -51,3 +51,12 @@ export const BEARER_PREFIX = 'Bearer '
  * 发信请求的内容类型。
  */
 export const JSON_MIME = 'application/json'
+
+/**
+ * 签名密钥没配时的空密钥:`PAYLOAD_SECRET` 缺席时 HMAC 用空串当 key。
+ * 空 key 的 HMAC 照样算得出一个 16 位 hex,所以退订链接不会当场 500,但它与真密钥
+ * 签出来的 token 对不上 —— 也就是说这条链接只在同一个「没配密钥」的环境里自洽
+ * (本地 dev),换到配了密钥的生产就验不过。留空而不是塞一个假密钥,是为了不让
+ * 「密钥没配」这件事被一个能用的默认值盖住。
+ */
+export const HMAC_KEY_NONE = ''

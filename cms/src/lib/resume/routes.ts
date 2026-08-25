@@ -25,7 +25,7 @@ import type { ProfilePatch } from '../profile/server'
 import { FREE_DAILY_TRIES } from '../quota'
 import { denyBodyOf, freeGate, getUser, getUserOrNull, isPro } from '../quota/server'
 import {
-  BLANKS2, BLANKS3_RE, CLB_MAX, CLB_MIN, CODE_TIMEOUT, CODE_TOO_LONG, CR_RE, DAILY_FREE, DATE_LEN, DETAIL_CAP, ERR_LOG_CAP, EXTRACT_CHARS_MAX, EXTRACT_OUT_MAX, EXTRACT_TEXT_MIN, EXTRACT_TOKENS_MAX, E_AUTH, E_BUSY, E_LIMIT, E_LLM, E_LOGIN, E_NOFILE, E_NO_JD, E_PARSE, E_SCAN, E_SIZE, E_TOO_LONG, E_TOO_SHORT, FIELD_FILE, JD_LEN_MIN, LANG_FALLBACK_EN, LOG_DASH, MATCH_PROVIDER, MATCH_TEMPERATURE, MATCH_TOKENS_FREE, MATCH_TOKENS_PRO, META_VIA_LEGACY, MIN_RESUME, ONE_SPACE, RESUME_MAX_BYTES, RESUME_SAVE_CAP, REWRITE_CAP, ROLE_SYSTEM, ROLE_USER, SPACES_RE, TEST_MAIL_SUFFIX, TITLES_N_MAX, TITLE_Q_LEN_MAX, TITLE_Q_LEN_MIN, USES_SEP, WS_ALL_RE,
+  BLANKS2, BLANKS3_RE, BODY_TEXT_NONE, CLB_MAX, CLB_MIN, CODE_TIMEOUT, CODE_TOO_LONG, CR_DROP, CR_RE, DAILY_FREE, DATE_LEN, DETAIL_CAP, ERR_LOG_CAP, EXTRACT_CHARS_MAX, EXTRACT_OUT_MAX, EXTRACT_TEXT_MIN, EXTRACT_TOKENS_MAX, E_AUTH, E_BUSY, E_LIMIT, E_LLM, E_LOGIN, E_NOFILE, E_NO_JD, E_PARSE, E_SCAN, E_SIZE, E_TOO_LONG, E_TOO_SHORT, FIELD_FILE, JD_DB_NONE, JD_LEN_MIN, LANG_FALLBACK_EN, LLM_TEXT_NONE, LOG_DASH, MATCH_PROVIDER, MATCH_TEMPERATURE, MATCH_TOKENS_FREE, MATCH_TOKENS_PRO, META_VIA_LEGACY, MIN_RESUME, ONE_SPACE, RESUME_MAX_BYTES, RESUME_SAVE_CAP, REWRITE_CAP, ROLE_SYSTEM, ROLE_USER, SPACES_RE, TEST_MAIL_SUFFIX, TITLES_N_MAX, TITLE_Q_LEN_MAX, TITLE_Q_LEN_MIN, USES_CELL_NONE, USES_SEP, WS_ALL_RE,
 } from './constants'
 import { extractText, gateMatch, ieltsToClb, matchPrompt, nocCandidatesOf } from './functions'
 import { EXTRACT_SYSTEM } from './prompts'
@@ -82,7 +82,7 @@ export async function resumeRoute(req: Request): Promise<Response> {
   if (text.length < EXTRACT_TEXT_MIN) {
     return Response.json({ error: E_SCAN, freeLeft }, { status: UNPROCESSABLE })
   }
-  let raw = ''
+  let raw = LLM_TEXT_NONE
   try {
     raw = await completeText({
       messages: [
@@ -153,7 +153,7 @@ export async function resumeExtractRoute(req: Request): Promise<Response> {
   const extracted = await extractText({ name: file.name, buf: buf })
   let text: string | null = null
   if (extracted.text != null) {
-    text = extracted.text.replace(CR_RE, '').replace(SPACES_RE, ONE_SPACE).replace(BLANKS3_RE, BLANKS2).trim()
+    text = extracted.text.replace(CR_RE, CR_DROP).replace(SPACES_RE, ONE_SPACE).replace(BLANKS3_RE, BLANKS2).trim()
   }
   if (text == null) {
     if (user.email.endsWith(TEST_MAIL_SUFFIX)) {
@@ -188,8 +188,8 @@ export async function resumeMatchRoute(req: Request): Promise<Response> {
   } catch {
     body = null
   }
-  let resume = ''
-  let jd = ''
+  let resume = BODY_TEXT_NONE
+  let jd = BODY_TEXT_NONE
   let lang = LANG_FALLBACK_EN
   let save = false
   if (body != null) {
@@ -215,7 +215,7 @@ export async function resumeMatchRoute(req: Request): Promise<Response> {
     return Response.json({ error: E_TOO_SHORT }, { status: BAD_REQUEST })
   }
   if (jd.length < JD_LEN_MIN && body != null && body.jobId != null) {
-    let jdFromDb = ''
+    let jdFromDb = JD_DB_NONE
     try {
       const db = await getDb()
       const applyUrl = await loadApplyUrlById({ db: db, jobId: Number(body.jobId) })
@@ -223,7 +223,7 @@ export async function resumeMatchRoute(req: Request): Promise<Response> {
         jdFromDb = (await jobDescription({ db: db, applyUrl: applyUrl })).trim()
       }
     } catch {
-      jdFromDb = ''
+      jdFromDb = JD_DB_NONE
     }
     if (jdFromDb !== '') {
       jd = jdFromDb
@@ -233,7 +233,7 @@ export async function resumeMatchRoute(req: Request): Promise<Response> {
     return Response.json({ error: E_NO_JD }, { status: BAD_REQUEST })
   }
   const today = new Date().toISOString().slice(0, DATE_LEN)
-  let usesCell = ''
+  let usesCell = USES_CELL_NONE
   if (user.profile != null) {
     const prof = user.profile as MatchUsesProfile
     if (typeof prof.matchUses === 'string') {
@@ -257,7 +257,7 @@ export async function resumeMatchRoute(req: Request): Promise<Response> {
   if (pro) {
     maxTokens = MATCH_TOKENS_PRO
   }
-  let text = ''
+  let text = LLM_TEXT_NONE
   try {
     text = await completeText({
       messages: matchPrompt({ jd: jd, resume: resume, lang: lang, pro: pro }),

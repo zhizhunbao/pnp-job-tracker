@@ -7,8 +7,8 @@
  */
 
 import {
-  ALL_PROVS, COUNTRY_CANADA, F_CITY, F_COUNTRY, F_DISTRICT, F_PROVINCE, MAPS_URL, NOTE_L, NOTE_R, PROV_KEY,
-  PROV_NAMES, SEP_COMMA,
+  ALL_PROVS, COUNTRY_CANADA, F_CITY, F_COUNTRY, F_DISTRICT, F_PROVINCE, LOC_NONE, MAPS_URL, NOTE_L, NOTE_R,
+  PROV_KEY, PROV_NAMES, SEP_COMMA,
 } from './constants'
 import type { CleanProvsIn, LocJob, MapQueryIn, ParsedLoc, ProvList, ProvNameIn } from './types'
 
@@ -21,8 +21,8 @@ import type { CleanProvsIn, LocJob, MapQueryIn, ParsedLoc, ProvList, ProvNameIn 
  * @returns 显示省名。
  */
 export function provName(input: ProvNameIn): string {
-  const c = (input.code || '').toUpperCase()
-  const en = PROV_NAMES[c] || input.code || ''
+  const c = (input.code || LOC_NONE).toUpperCase()
+  const en = PROV_NAMES[c] || input.code || LOC_NONE
   const loc = input.t(PROV_KEY + c)
   const has = loc !== '' && loc !== PROV_KEY + c && loc !== en
   if (has === false) {
@@ -41,7 +41,7 @@ export function provName(input: ProvNameIn): string {
  * @returns 拆解后的显示地点。
  */
 export function parseLoc(j: LocJob): ParsedLoc {
-  let country = ''
+  let country = LOC_NONE
   if (j.country != null && j.country !== '') {
     country = j.country
   } else if (j.province != null && j.province !== '') {
@@ -49,9 +49,9 @@ export function parseLoc(j: LocJob): ParsedLoc {
   }
   return {
     country: country,
-    prov: PROV_NAMES[(j.province || '').toUpperCase()] || j.province || '',
-    city: j.city || '',
-    district: j.district || '',
+    prov: PROV_NAMES[(j.province || LOC_NONE).toUpperCase()] || j.province || LOC_NONE,
+    city: j.city || LOC_NONE,
+    district: j.district || LOC_NONE,
   }
 }
 

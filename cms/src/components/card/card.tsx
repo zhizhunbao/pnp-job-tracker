@@ -11,6 +11,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { CARD_CLS } from './constants'
 import type { CardIn } from './types'
 import css from './card.module.css'
 
@@ -23,6 +24,6 @@ import css from './card.module.css'
 export function Card({ style, children }: CardIn) {
   return (
     // eslint-disable-next-line react/forbid-dom-props -- 各页密度不同的 padding 过渡口(见文件头)
-    <div className={`card ${css.pad}`} style={style}>{children}</div>
+    <div className={`${CARD_CLS} ${css.pad}`} style={style}>{children}</div>
   )
 }

@@ -8,7 +8,7 @@
  * @author Frank
  * @time 2026-08-24 02:30:00
  */
-import { COPYRIGHT, LEGAL_LINKS } from './constants'
+import { COPYRIGHT, LEGAL_LINKS, SF_LINKS_CLS, TAP_PAD_CLS } from './constants'
 import { LinkButton } from '@/components/button'
 import type { FooterIn } from './types'
 import css from './footer.module.css'
@@ -22,13 +22,13 @@ import css from './footer.module.css'
 export function Footer({ t }: FooterIn) {
   const links = []
   for (const l of LEGAL_LINKS) {
-    links.push(<LinkButton key={l.href} href={l.href} className="tapPad">{t(l.key)}</LinkButton>)
+    links.push(<LinkButton key={l.href} href={l.href} className={TAP_PAD_CLS}>{t(l.key)}</LinkButton>)
   }
   return (
     <footer className={css.foot}>
       <div className={css.inner}>
         <span>{t('foot.disclaimer')}</span>
-        <span className={`sfLinks ${css.links}`}>
+        <span className={`${SF_LINKS_CLS} ${css.links}`}>
           {links}
           <span className={css.copy}>{COPYRIGHT}</span>
         </span>

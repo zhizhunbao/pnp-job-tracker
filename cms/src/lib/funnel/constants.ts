@@ -101,3 +101,13 @@ export const DECISION_STEPS = FUNNEL_STEPS.slice(11, 15)
  * 本机来源判定(host 白名单)。
  */
 export const LOCAL_HOST_RE = /^(localhost|127\.0\.0\.1|\[::1\]|0\.0\.0\.0)(:\d+)?$/
+
+/**
+ * 取不到请求来源 host 时的那一格,三处共用:`isLocalHost` 收到空 host 的兜底、
+ * `siteHostOf` 里 origin 与 host 两个头都没有、`siteHostOf` 里 URL 解析抛错。
+ * (origin 缺席但 host 在,走的是「回 host」那一支,落不到这里。)
+ * 空串**不匹配** LOCAL_HOST_RE,于是判定落在「不是本机」,这一笔照常计数。
+ * 方向是故意的:头缺失时宁可多记一条线上流量,也不静默丢 ——
+ * 漏斗是拿来做分叉判断的分母,少记的那条永远补不回来,多记的那条下一轮还看得见。
+ */
+export const HOST_NONE = ''

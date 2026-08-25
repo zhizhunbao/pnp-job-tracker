@@ -10,7 +10,7 @@
 import crypto from 'crypto'
 import { log, MAIL_LOG } from '../log'
 import {
-  BEARER_PREFIX, FROM, HEX_ENC, HMAC_ALGO, JSON_MIME, MAIL_ENABLED, METHOD_POST, RESEND_URL,
+  BEARER_PREFIX, FROM, HEX_ENC, HMAC_ALGO, HMAC_KEY_NONE, JSON_MIME, MAIL_ENABLED, METHOD_POST, RESEND_URL,
   UNSUB_PREFIX,
 } from './constants'
 import type { MailUserId, SendMailIn, SentOut } from './types'
@@ -53,5 +53,5 @@ export async function sendMail(input: SendMailIn): SentOut {
  * @returns 16 位 hex token。
  */
 export function unsubToken(userId: MailUserId): string {
-  return crypto.createHmac(HMAC_ALGO, process.env.PAYLOAD_SECRET || '').update(UNSUB_PREFIX + userId).digest(HEX_ENC).slice(0, 16)
+  return crypto.createHmac(HMAC_ALGO, process.env.PAYLOAD_SECRET || HMAC_KEY_NONE).update(UNSUB_PREFIX + userId).digest(HEX_ENC).slice(0, 16)
 }

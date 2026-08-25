@@ -13,7 +13,7 @@
  */
 
 import { toFunnelHit } from '../funnel'
-import { JSON_MIME, METHOD_POST, TRACK_URL } from './constants'
+import { JSON_MIME, METHOD_POST, PROP_NONE, TRACK_URL } from './constants'
 import type { MaybeTrackData, TrackData, UmamiLike } from './types'
 
 /**
@@ -24,7 +24,7 @@ import type { MaybeTrackData, TrackData, UmamiLike } from './types'
  */
 function pickProp(data: MaybeTrackData): string {
   if (data == null) {
-    return ''
+    return PROP_NONE
   }
   let v: string | number | null = null
   if (data.plan != null) {
@@ -37,7 +37,7 @@ function pickProp(data: MaybeTrackData): string {
   if (typeof v === 'string') {
     return v
   }
-  return ''
+  return PROP_NONE
 }
 
 /**

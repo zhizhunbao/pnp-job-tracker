@@ -7,6 +7,10 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import {
+  MAXICON_ENTER_PATH, MAXICON_FILL, MAXICON_LINE_CAP, MAXICON_LINE_JOIN, MAXICON_RESTORE_PATH, MAXICON_SIZE_PX,
+  MAXICON_STROKE, MAXICON_STROKE_WIDTH, MAXICON_VIEW_BOX,
+} from './constants'
 import type { MaxIconIn } from './types'
 
 /**
@@ -18,28 +22,28 @@ import type { MaxIconIn } from './types'
 export function MaxIcon({ maximized }: MaxIconIn) {
   if (maximized) {
     return (
-      <svg width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        strokeLinejoin="round">
-        <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7"/>
+      <svg width={MAXICON_SIZE_PX}
+        height={MAXICON_SIZE_PX}
+        viewBox={MAXICON_VIEW_BOX}
+        fill={MAXICON_FILL}
+        stroke={MAXICON_STROKE}
+        strokeWidth={MAXICON_STROKE_WIDTH}
+        strokeLinecap={MAXICON_LINE_CAP}
+        strokeLinejoin={MAXICON_LINE_JOIN}>
+        <path d={MAXICON_RESTORE_PATH}/>
       </svg>
     )
   }
   return (
-    <svg width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round">
-      <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+    <svg width={MAXICON_SIZE_PX}
+      height={MAXICON_SIZE_PX}
+      viewBox={MAXICON_VIEW_BOX}
+      fill={MAXICON_FILL}
+      stroke={MAXICON_STROKE}
+      strokeWidth={MAXICON_STROKE_WIDTH}
+      strokeLinecap={MAXICON_LINE_CAP}
+      strokeLinejoin={MAXICON_LINE_JOIN}>
+      <path d={MAXICON_ENTER_PATH}/>
     </svg>
   )
 }

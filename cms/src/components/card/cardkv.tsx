@@ -8,6 +8,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { CELL_CLS_NONE } from './constants'
 import type { CardKvIn } from './types'
 import css from './card.module.css'
 
@@ -21,7 +22,7 @@ export function CardKV({ items }: CardKvIn) {
   const cells = []
   let i = 0
   for (const it of items) {
-    let cls = ''
+    let cls = CELL_CLS_NONE
     if (it.wide) {
       cls = css.wide
     }

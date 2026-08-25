@@ -126,3 +126,18 @@ export const COLLECTION_USERS = 'users'
  * 开关型环境变量的真值写法（STRIPE_WECHAT_PAY=1）。
  */
 export const ENV_ON = '1'
+
+/**
+ * 从请求里没取到这一格时的初值(Checkout 的 plan、webhook 的验签头、metadata.days 三处共用)。
+ * 三处都靠「空串取不到东西」自然落进各自的拒绝分支,不必为缺席单写一条判断:
+ * `PLANS['']` 查不到 → 400 unknown plan;空签名过不了 constructEvent → 400 bad signature;
+ * `parseInt('')` 是 NaN → 不拨天数、回 received 让 Stripe 别再重试。
+ */
+export const REQ_FIELD_NONE = ''
+
+/**
+ * 捕到的东西不是 Error(没有 message 可读)时,留痕正文那一格。
+ * 日志于是只剩前缀,至少还看得出是哪一步挂的;
+ * 不为了凑一句话去 String(e) —— 那印出来的可能是「object Object」,比空还难查。
+ */
+export const LOG_MSG_NONE = ''

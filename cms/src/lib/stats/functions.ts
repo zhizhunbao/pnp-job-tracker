@@ -14,8 +14,8 @@
 import { queryRows, queryRowsOrEmpty, SQL, jsonOrNull, numOrNull, text, textOrNull } from '../db'
 import type { Db } from '../db'
 import {
-  BROAD_SLUGS, CITY_LIMIT, OCC_COL_PREFIX, OCC_EXTRA_COLUMNS, PG_UNDEFINED_COLUMN, PG_UNDEFINED_TABLE,
-  STAT_SOURCE_FIELDS, MAX_FINE_ROWS, EMPTY_TOP_CITIES, MID_ALL,
+  BROAD_SLUGS, CITY_LIMIT, OCC_COL_NONE, OCC_COL_PREFIX, OCC_EXTRA_COLUMNS, PG_UNDEFINED_COLUMN,
+  PG_UNDEFINED_TABLE, PG_CODE_NONE, STAT_SOURCE_FIELDS, MAX_FINE_ROWS, EMPTY_TOP_CITIES, MID_ALL,
 } from './constants'
 import type {
   CaughtError, ChannelNocs, ChannelNocsOut, ChannelNocsQueryIn, CityRowsOut, EmptyList, FineCountsIn, FineRowsOut,
@@ -37,7 +37,7 @@ function pgCodeOf(e: CaughtError): string {
   if (typeof withCode.code === 'string') {
     return withCode.code
   }
-  return ''
+  return PG_CODE_NONE
 }
 
 /**
@@ -113,7 +113,7 @@ export async function loadStatSources(db: Db): SrcRowsOut {
  */
 export async function loadOccStats(db: Db): OccRowsOut {
   const have = await queryRowsOrEmpty({ db: db, sql: SQL.STATS_OCC_HAS_COLUMNS, params: [OCC_EXTRA_COLUMNS], map: toColumnName })
-  let extra = ''
+  let extra = OCC_COL_NONE
   for (const c of have) {
     if (c !== '') {
       extra += OCC_COL_PREFIX + c

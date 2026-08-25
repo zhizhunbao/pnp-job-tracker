@@ -64,3 +64,12 @@ export const EV_POINTERUP = 'pointerup'
  * 对齐档:右(数字列;缺省左)。
  */
 export const ALIGN_RIGHT = 'right'
+
+/**
+ * 拼 className 时各类之间的分隔符,`cls()` 用它把基类和一串开关修饰类连起来
+ * (表壳、表头、单元格三处都走那一个函数)。HTML 的 class 属性按**空白**切词,
+ * 一个空格就是一次分隔 —— 写错不会报错,只会让基类和修饰类粘成一个谁也匹配不上的
+ * 长类名,表当场掉回没有边框、没有对齐、没有排序态的裸 table。
+ * ⚠️ 与上面 SIG_SEP 的 `|` 是两回事:那个切的是量宽签名里的列 key,这个切的是类名。
+ */
+export const CLS_SEP = ' '

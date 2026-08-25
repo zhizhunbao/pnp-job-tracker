@@ -271,3 +271,38 @@ export const K_FAIL = 'fail'
  * 登录回调产物的 kind：成功。
  */
 export const K_OK = 'ok'
+
+/**
+ * http 站点的 cookie 尾缀:空串,什么都不追加(与 SECURE_TAIL 是同一格的两个取值)。
+ * 带 `Secure` 的 cookie 浏览器只在 https 下才肯收下,本地 dev 走的是 http ——
+ * 不分站点一律加,登录当场断在第一跳而且不报错。所以这里的「没有」必须是真的什么都不拼。
+ */
+export const SECURE_TAIL_NONE = ''
+
+/**
+ * userinfo 还没给出邮箱时的起手值。Google 的响应是外部数据,先按「没有」落地、
+ * 逐格判过才敢用;空串同时接住「这格缺席」和「这格不是字符串」两种脏法,
+ * 于是下面只留一条拒收线(空 = 不给签会话),不必为两种情形各写一支。
+ */
+export const EMAIL_NONE = ''
+
+/**
+ * 随机密码的 hex 片段之间不插东西:24 个字节各转两位 hex,首尾相接成 48 位的一整串。
+ * 插任何分隔符都会让密码里混进非 hex 字符、长度也对不上 —— 而这串密码用户并不持有
+ * (走 Google 或忘记密码自设),它唯一的作用就是别让账号留着空密码。
+ */
+export const HEX_SEP = ''
+
+/**
+ * 请求没带 returnTo 时的占位。空串过不了 `RETURN_RE`(它要求以 / 开头),
+ * 于是「没带」和「带了个非法值」自动走同一条路:不种回跳 cookie,登录后回首页 ——
+ * 少一个分支,也少一次「忘了判空」的机会。
+ */
+export const RETURN_NONE = ''
+
+/**
+ * 删 cookie 时给的值:空串。HTTP 没有「删除 cookie」这个动作 ——
+ * 删一条就是**再种一次同名的**、值清空、`Max-Age=0` 让它当场过期
+ * (所以调用处一律配 `maxAge: 0`,见 oauthCookie)。
+ */
+export const COOKIE_DEL_VALUE = ''

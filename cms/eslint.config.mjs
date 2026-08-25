@@ -719,6 +719,12 @@ const localRules = {
             }
             const p = node.parent
             if (p?.type === 'ImportDeclaration' || p?.type === 'ExportNamedDeclaration') return
+            // i18n 键放行(2026-08-24):`t('acct.plan.free')` 的键**本身就是名字** ——
+            // 它指的那条文案在 `lib/i18n` 里有家、有注释、有三语对齐的类型强制,
+            // 再包一层 `K_ACCT_PLAN_FREE` 只是多一次跳转,不多一个字的信息。
+            // 只放行第一个实参:`t(key, { d: x })` 里的别的字面量照查。
+            if (p?.type === 'CallExpression' && p.callee?.type === 'Identifier'
+              && p.callee.name === 't' && p.arguments?.[0] === node) return
             if (p?.type === 'Property' && p.key === node) return
             if (p?.type === 'MemberExpression' && p.property === node) return
             // `typeof x === 'string'` 的右边是**语言构造**,不是文案:它永远不会被翻译、

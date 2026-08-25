@@ -36,12 +36,13 @@ import {
   EE_CRIT_PAST_STUDY, EE_CRIT_PAST_WORK, EE_CRIT_STUDY_LONG, EE_CRIT_STUDY_SHORT, EE_FACTOR, EE_HEAD_CANADA_EXP,
   EE_HEAD_FIRST_LANG, EE_HEAD_FOREIGN_EXP, EE_HEAD_GOOD_LANG, EE_KEY, EE_KIND_DETAIL, EE_LABEL, EE_NOTE, EE_SECTION,
   EE_YEARS_MAX, EE_YEARS_NONE, EE_YEARS_ONE, EE_YEARS_OR, EE_YEARS_OR_MORE, EE_YEARS_RANGE, FSW_ADAPT_STUDY_YEARS,
-  FSW_ADAPT_WORK_MONTHS, FSW_EDU_PLUS, FSW_EDU_SPECIAL, FSW_EDU_YEARS, GRID, GRID_STREAM, ITEM_STATUS, KIND,
-  LANG_ABILITIES, LESS_THAN_ANY, LESS_THAN_HEAD, LINE, MATCHED_MAX, MB, MB_ADAPT_RE, MB_AGE_BARE, MB_AGE_OR_OLDER,
-  MB_AGE_RANGE, MB_CLB, MB_CTX, MB_CTX_SEP, MB_EDU, MB_EDU_ONE_YEAR, MB_EDU_RE, MB_EDU_TWO_YEARS, MB_FACTOR, MB_JOIN,
-  MB_NOTE, MB_RISK_RE, MB_WORK_LESS, MB_WORK_WORD, MONTHS_ANY, MONTHS_PER_YEAR, NON_ALPHA, NO_EXPERIENCE,
-  PROGRAM_YEARS, SEP, SOURCE, STREAM_STOP, STREAM_WORD_MIN, SUB_TIER_VALUE, SYSTEM_TAIL, TICK_SEP, WORD, WORD_NUM,
-  YEARS_ANY, PNP_PROV_CODES, RECENT_ROUNDS, SCORE_TTL_MS, COMP_KEY, MONTH_NUM, PERIOD_SEP,
+  FSW_ADAPT_WORK_MONTHS, FSW_EDU_PLUS, FSW_EDU_SPECIAL, FSW_EDU_YEARS, GRID, GRID_STREAM, GROUP_NONE, ITEM_STATUS, KIND,
+  LANG_ABILITIES, LESS_THAN_ANY, LESS_THAN_HEAD, LINE, MATCHED_MAX, MATCHED_NONE, MB, MB_ADAPT_RE, MB_AGE_BARE,
+  MB_AGE_OR_OLDER, MB_AGE_RANGE, MB_CLB, MB_CTX, MB_CTX_SEP, MB_EDU, MB_EDU_ONE_YEAR, MB_EDU_RE, MB_EDU_TWO_YEARS,
+  MB_FACTOR, MB_JOIN, MB_LABEL_NONE, MB_NOTE, MB_NOTE_NONE, MB_RISK_RE, MB_WORK_LESS, MB_WORK_WORD, MONTHS_ANY,
+  MONTHS_PER_YEAR, NON_ALPHA, NO_EXPERIENCE, PROGRAM_YEARS, SEP, SOURCE, STREAM_NONE, STREAM_STOP, STREAM_WORD_MIN,
+  SUB_TIER_VALUE, SYSTEM_TAIL, SYSTEM_TAIL_CUT, TICK_SEP, WORD, WORD_NUM, YEARS_ANY, PNP_PROV_CODES, RECENT_ROUNDS,
+  SCORE_TTL_MS, COMP_KEY, MONTH_NUM, PERIOD_SEP,
 } from './constants'
 import type {
   AdaptItemIn, AdaptOut, AgeRangeOut, AutoPickIn, BonusPointsIn, BonusPointsOut, ComboItemIn, ComboSubTierIn,
@@ -129,7 +130,7 @@ function wordGroupOf(input: MatchIn): WordGroupOut {
  */
 function streamWords(s: StreamWordsIn): StreamWordsOut {
   const out: string[] = []
-  for (const w of (s || '').toLowerCase().replace(NON_ALPHA, SEP.space).split(SEP.space)) {
+  for (const w of (s || STREAM_NONE).toLowerCase().replace(NON_ALPHA, SEP.space).split(SEP.space)) {
     if (w.length > STREAM_WORD_MIN && STREAM_STOP.includes(w as typeof STREAM_STOP[number]) === false) {
       out.push(w)
     }
@@ -172,7 +173,7 @@ export function streamMatches(input: StreamMatchesIn): StreamMatchesOut {
 export function gridStreamOf(system: SystemIn): SystemOut {
   const hit = oneGroupOf({ re: GRID_STREAM, text: system })
   if (hit == null || hit.n == null) {
-    return ''
+    return STREAM_NONE
   }
   return hit.n
 }
@@ -184,7 +185,7 @@ export function gridStreamOf(system: SystemIn): SystemOut {
  * @returns 短名。
  */
 export function systemShort(system: SystemIn): SystemOut {
-  return system.replace(SYSTEM_TAIL, '')
+  return system.replace(SYSTEM_TAIL, SYSTEM_TAIL_CUT)
 }
 
 // =========================================================================
@@ -500,10 +501,10 @@ function factorPart(input: FactorPartIn): FactorPartOut {
   }
   const rows = rowsOf({ rows: mine, kind: KIND.row })
   const bonusRows = rowsOf({ rows: mine, kind: KIND.bonus })
-  let group = ''
+  let group = GROUP_NONE
   let max = 0
   if (mine.length > 0) {
-    group = mine[0].factorGroup || ''
+    group = mine[0].factorGroup || GROUP_NONE
     if (mine[0].factorMax != null) {
       max = mine[0].factorMax
     }
@@ -511,7 +512,7 @@ function factorPart(input: FactorPartIn): FactorPartOut {
 
   const ov = input.overrides[input.name]
   let pts = 0
-  let matched = ''
+  let matched = MATCHED_NONE
   let source: ScoreSource = SOURCE.profile
   const auto: AutoPickIn = { factor: input.name, rows: rows, profile: input.profile }
   if (ov) {
@@ -840,7 +841,7 @@ function eeEvidenceOf(input: EeEvidenceOfIn): EeEvidenceOfOut {
  */
 function needsInfoItem(input: NeedsInfoItemIn): EstimateItemOut {
   return estimateItem({
-    factor: input.factor, label: input.label, points: 0, matched: '', evidence: null,
+    factor: input.factor, label: input.label, points: 0, matched: MATCHED_NONE, evidence: null,
     status: ITEM_STATUS.needsInfo,
   })
 }
@@ -1642,7 +1643,7 @@ function adaptStudyItem(input: AdaptItemIn): EstimateItemOut {
     return needsInfoItem({ factor: key, label: label })
   }
   if (p.canadaStudy === false || p.eduYears < FSW_ADAPT_STUDY_YEARS || row == null) {
-    let matched = ''
+    let matched = MATCHED_NONE
     if (row != null) {
       matched = EE_NOTE.underTwoStudyYears
     }
@@ -1676,7 +1677,7 @@ function adaptWorkItem(input: AdaptItemIn): EstimateItemOut {
     return needsInfoItem({ factor: key, label: label })
   }
   if (months < FSW_ADAPT_WORK_MONTHS || row == null) {
-    let matched = ''
+    let matched = MATCHED_NONE
     if (row != null) {
       matched = EE_NOTE.underOneWorkYear
     }
@@ -2070,7 +2071,7 @@ function mbLanguagePart(input: MbPartIn): MbPartOut {
     hits.push(one.row)
   }
   const lang2Rows = mbRowsOf({ rows: input.rows, factor: MB_FACTOR.language, kind: KIND.bonus })
-  let secondNote = ''
+  let secondNote = MB_NOTE_NONE
   if (input.profile.secondLangClb5Plus && lang2Rows.length > 0) {
     const lang2 = lang2Rows[0]
     if (lang2.points != null) {
@@ -2086,7 +2087,7 @@ function mbLanguagePart(input: MbPartIn): MbPartOut {
   if (max != null) {
     capped = Math.min(pts, max)
   }
-  let firstHitLabel = ''
+  let firstHitLabel = MB_LABEL_NONE
   if (hits.length > 0 && hits[0] != null) {
     firstHitLabel = hits[0].label
   }
@@ -2135,7 +2136,7 @@ function mbWorkPart(input: MbPartIn): MbPartOut {
     pts = row.points
   }
   const bonusRows = mbRowsOf({ rows: input.rows, factor: MB_FACTOR.work, kind: KIND.bonus })
-  let licensedNote = ''
+  let licensedNote = MB_NOTE_NONE
   if (input.profile.employerLicenseRecognized && bonusRows.length > 0) {
     const bonus = bonusRows[0]
     if (bonus.points != null) {
@@ -2236,11 +2237,11 @@ function mbAdaptPart(input: MbPartIn): MbPartOut {
   }
   const sum = connPts + demandPts + regionalPts
   const notes: string[] = []
-  let demandNote = ''
+  let demandNote = MB_NOTE_NONE
   if (adapt.demand) {
     demandNote = MB_NOTE.demand
   }
-  let regionalNote = ''
+  let regionalNote = MB_NOTE_NONE
   if (adapt.regionalOutsideWinnipeg && regionalRows.length > 0) {
     regionalNote = regionalRows[0].label
   }

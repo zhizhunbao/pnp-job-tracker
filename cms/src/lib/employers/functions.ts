@@ -23,6 +23,7 @@ import {
   PUNCT_RE, RESEARCH_TIMEOUT_MS, SITE_LINE_RE, SITE_PICK_RE, SORT_SKILLED, SPACE, SPACES_RE, SPACE_GLOBAL_RE,
   SUFFIX_RE, UNDERSCORE, URL_QS, VERDICT_ORDER, VIEW, WD_ACTION_ENTITIES, WD_ACTION_SEARCH, WD_API, WD_LANGS,
   WD_LANG_EN, WD_LIMIT, WD_PROPS, WD_TIMEOUT_MS, WD_TYPE_ITEM, WD_UA, DATE8_RE, NOC_SPLIT_RE,
+  ALIAS_NONE, FETCHED_NONE, FILTER_UNSET, LMIA_QUARTER_NONE, PROVINCE_NONE, SITE_LINE_DROP, SQL_FRAG_NONE, WEBSITE_NONE,
 } from './constants'
 import { RESEARCH_PROMPT_HEAD, RESEARCH_PROMPT_TAIL, RESEARCH_SEARCH_TAIL, RESEARCH_SYSTEM } from './prompts'
 import { CACHE } from './variables'
@@ -53,7 +54,7 @@ import type { EmployerFacts } from '../ruling'
  */
 function clip(input: ClipIn): string {
   if (input.value == null) {
-    return ''
+    return FILTER_UNSET
   }
   return input.value.trim().slice(0, input.max)
 }
@@ -75,15 +76,15 @@ export function normalizeEmployerFilters(input: NormalizeFiltersIn): EmployerFil
   if (modeRaw === MODE.hiring || modeRaw === MODE.designated) {
     mode = modeRaw
   }
-  let cleanProgram = ''
+  let cleanProgram = FILTER_UNSET
   if ((EMP_PROGRAMS as readonly string[]).includes(program)) {
     cleanProgram = program
   }
-  let cleanProv = ''
+  let cleanProv = FILTER_UNSET
   if (PROV_RE.test(prov)) {
     cleanProv = prov
   }
-  let cleanNoc = ''
+  let cleanNoc = FILTER_UNSET
   if (NOC_RE.test(noc)) {
     cleanNoc = noc
   }
@@ -290,7 +291,7 @@ async function nocTitlesOf(input: NocTitlesIn): NocTitlesOut {
 function emptyEmployerPage(input: EmptyPageIn): EmployerPage {
   return {
     mode: input.filters.mode, rows: [], total: 0, page: input.filters.page, pageSize: input.pageSize,
-    facets: { provs: [], programs: [], cities: [], nocs: [] }, fetched: '', nocTitles: {},
+    facets: { provs: [], programs: [], cities: [], nocs: [] }, fetched: FETCHED_NONE, nocTitles: {},
   }
 }
 
@@ -345,14 +346,14 @@ export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerP
         mode: MODE.hiring, rows: pageSlice({ rows: hit, page: f.page, size: input.pageSize }),
         total: hit.length, page: f.page, pageSize: input.pageSize,
         facets: { provs: facetProvs, programs: [], cities: Array.from(cities).sort(), nocs: facetNocs },
-        fetched: '', nocTitles: await nocTitlesOf({ db: db, codes: titleCodes }),
+        fetched: FETCHED_NONE, nocTitles: await nocTitlesOf({ db: db, codes: titleCodes }),
       }
     }
     const raw = await fetchAllDesignated(db)
     const all = raw.map(toEmployerRow)
     const facets = employerFacets({ rows: all, filters: f })
     const hit = applyEmployerFilters({ rows: all, filters: f })
-    let fetched = ''
+    let fetched = FETCHED_NONE
     for (const r of raw) {
       if (r.fetched !== '') {
         fetched = r.fetched
@@ -422,7 +423,7 @@ function getterOf(sp: SearchParams): ParamGetter {
  */
 function factColsFragment(cols: StrList): string {
   if (cols.length === 0) {
-    return ''
+    return SQL_FRAG_NONE
   }
   const parts: string[] = []
   for (const c of cols) {
@@ -455,7 +456,7 @@ async function loadSponsors(input: SponsorsIn): SponsorRowsOut {
   const nowYear = new Date().getFullYear()
   const out: SponsorEmployerRow[] = []
   for (const r of raw) {
-    let province = ''
+    let province = PROVINCE_NONE
     if (r.provs != null && r.provs.length > 0 && r.provs[0] != null) {
       province = r.provs[0]
     }
@@ -671,7 +672,7 @@ function companyAggOf(input: CompanyAggIn): CompareAgg {
       const mj: MatchJob = {
         noc: j.noc, teer: teerOf(j.noc), province: j.province, pnpEligible: j.pnpEligible,
         pnpStream: j.pnpStream, eeCategory: j.eeCategory, salaryAnnual: j.salaryAnnual,
-        wageMedAnnual: j.wageMedAnnual, lmiaPositions: null, lmiaLastQuarter: '', lmiaPositionsSkilled: null,
+        wageMedAnnual: j.wageMedAnnual, lmiaPositions: null, lmiaLastQuarter: LMIA_QUARTER_NONE, lmiaPositionsSkilled: null,
       }
       const m = match({ profile: input.profile, job: mj, dims: input.dims })
       if (m.level === LEVEL.high) {
@@ -714,7 +715,7 @@ function companyAggOf(input: CompanyAggIn): CompareAgg {
  * @returns 主要省;空表则空串。
  */
 function mainProvinceOf(tally: ProvTally): string {
-  let mainProvince = ''
+  let mainProvince = PROVINCE_NONE
   let best = 0
   for (const prov of Object.keys(tally)) {
     if (tally[prov] > best) {
@@ -830,11 +831,11 @@ export async function companyRow(input: CompanyRowIn): CompanyRowOut {
         log({ tag: EMP_LOG.tag, text: `${EMP_LOG.sourcesParseFailed}${input.name}` })
       }
     }
-    let website = ''
+    let website = WEBSITE_NONE
     if (row.ai_website != null) {
       website = row.ai_website
     }
-    let fetched = ''
+    let fetched = FETCHED_NONE
     if (row.ai_fetched != null) {
       fetched = String(row.ai_fetched).slice(0, DATE_LEN)
     }
@@ -902,8 +903,8 @@ async function investigate(input: InvestigateIn): InvestigateOut {
   if (r == null) {
     return null
   }
-  const brief = r.answer.replace(SITE_LINE_RE, '').trim()
-  let website = ''
+  const brief = r.answer.replace(SITE_LINE_RE, SITE_LINE_DROP).trim()
+  let website = WEBSITE_NONE
   const siteMatch = r.answer.match(SITE_PICK_RE)
   if (siteMatch != null && HTTP_URL_RE.test(siteMatch[1])) {
     website = siteMatch[1]
@@ -1050,7 +1051,7 @@ function wikidataHitOf(e: WdEntity): WikidataHitOrNull {
   if (title === '') {
     return null
   }
-  let zh = ''
+  let zh = ALIAS_NONE
   if (e.labels != null) {
     if (e.labels['zh-cn'] != null && e.labels['zh-cn'].value != null && e.labels['zh-cn'].value !== '') {
       zh = e.labels['zh-cn'].value
@@ -1060,7 +1061,7 @@ function wikidataHitOf(e: WdEntity): WikidataHitOrNull {
       zh = e.labels['zh'].value
     }
   }
-  let ko = ''
+  let ko = ALIAS_NONE
   if (e.labels != null && e.labels['ko'] != null && e.labels['ko'].value != null) {
     ko = e.labels['ko'].value
   }

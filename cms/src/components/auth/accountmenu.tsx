@@ -14,7 +14,7 @@ import { useRef, useState } from 'react'
 import { useEscClose } from '@/components/modal'
 import { AccountMenuPop } from './accountmenupop'
 import { Avatar } from './avatar'
-import { AVATAR_SIZE_MENU, MAIL_AT, NAME_FALLBACK } from './constants'
+import { ARIA_MENU, AVATAR_SIZE_MENU, MAIL_AT, NAME_FALLBACK, PRO_UNTIL_NONE, TITLE_NONE } from './constants'
 import { useClickOutside } from './hooks'
 import type { AccountMenuIn } from './types'
 import css from './auth.module.css'
@@ -52,7 +52,7 @@ export function AccountMenu({ t, email, displayName, avatar, isPro, proUntil, on
   } else if (email != null) {
     shortName = email.split(MAIL_AT)[0]
   }
-  let btnTitle = ''
+  let btnTitle = TITLE_NONE
   if (displayName != null && displayName.trim() !== '') {
     btnTitle = displayName.trim()
   } else if (email != null) {
@@ -62,7 +62,7 @@ export function AccountMenu({ t, email, displayName, avatar, isPro, proUntil, on
   if (menu) {
     btnCls = `${css.menuBtn} ${css.menuBtnOn}`
   }
-  let proUntilIn = ''
+  let proUntilIn = PRO_UNTIL_NONE
   if (proUntil != null) {
     proUntilIn = proUntil
   }
@@ -73,7 +73,7 @@ export function AccountMenu({ t, email, displayName, avatar, isPro, proUntil, on
 
   return (
     <span ref={menuRef} className={css.menuWrap}>
-      <button onClick={toggleMenu} title={btnTitle} aria-haspopup="menu" aria-expanded={menu} className={btnCls}>
+      <button onClick={toggleMenu} title={btnTitle} aria-haspopup={ARIA_MENU} aria-expanded={menu} className={btnCls}>
         <Avatar src={avatar} name={shortName} email={email} size={AVATAR_SIZE_MENU} />
       </button>
       {menu && (

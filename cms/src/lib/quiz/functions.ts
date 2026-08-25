@@ -30,7 +30,7 @@ import {
   LI_RE, LI_SET_OFF, LI_SET_ON, META_KEY, METHOD_PUT, OLD_PR, OLD_QUIZ, SCORE_ANSWERS_KEY, SCORE_EMPTY, STAGE_BASIC,
   STATE_HIDDEN, TIER_FREE, URL_ANSWERS, AGE, CLB, CRS, EDU, EDU_YEARS, EXP, FRENCH_V2_MAP, IN_CANADA, NCLC, PERMIT,
   PGWP, PROVS, STUDY_LEVEL, STUDY_MONTHS, TOTAL_EXP, TOTAL_V2_MAP, UNSURE_BAND,
-  FACTS_CACHE_MAX, TTL,
+  FACTS_CACHE_MAX, PREV_JSON_NONE, STATUS_NONE, TTL,
 } from './constants'
 import { CACHE } from './variables'
 import type {
@@ -89,7 +89,7 @@ function migrate(): MaybeAnswers {
     provBand = bandFromProvs(provs)
   }
   const merged: Answers = Object.assign({}, EMPTY)
-  let status = ''
+  let status = STATUS_NONE
   if (p != null && str(p.status) !== '') {
     status = str(p.status)
   } else if (q != null && str(q.status) !== '') {
@@ -147,7 +147,7 @@ export function resetAnswersMemory(): void {
  * @returns 无。
  */
 function save(a: Answers): void {
-  let before = ''
+  let before = PREV_JSON_NONE
   if (CACHE.mem != null) {
     before = JSON.stringify(normalize(CACHE.mem))
   }

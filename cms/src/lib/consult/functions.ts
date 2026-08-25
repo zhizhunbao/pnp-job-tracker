@@ -31,16 +31,18 @@ import { queryRows, show, SQL, text, count, numOrNull } from '../db'
 import { evaluateRequirements } from '../gauge'
 import type { Requirement, RuleProfile, RuleResult } from '../gauge'
 import {
-  API, AS_FOLLOWS, AUTH_HEADER, AVAIL, A_CAP, BASE, BEARER, BOLD_RE, CLAIMS_CAP, CLAIM_TEXT_CAP,
+  ANSWER_PENDING, API, ARG_NONE, AS_FOLLOWS, AUTH_HEADER, AVAIL, A_CAP, BASE, BEARER, BOLD_RE, CLAIMS_CAP, CLAIM_TEXT_CAP,
   COLLECTION_CHAT_LOGS, CONSULT_STEP, CONSULT_STEP_OCC_TPL, CONTEXT_WINDOW, CUT_MIN_RATIO, DRAW_LIMIT, EARLIER_HEAD,
-  EN, EN_UNIT_WORDS, ERR_CAP, ERR_LOG_CAP, FAIL_MSG, FED, FIRST_LINE_CAP, FULL_STOP, GATE, GRID_CRS, GUARD_RETRIES,
+  EN, EN_UNIT_WORDS, ERR_CAP, ERR_LOG_CAP, EVIDENCE_FETCHED_NONE, EVIDENCE_URL_NONE, FAIL_MSG, FED, FIRST_LINE_CAP,
+  FULL_STOP, GATE, GRID_CRS, GUARD_RETRIES,
   HARD_GATES, HASH_HEX, HASH_SHA256, HAS_DIGIT, HEADING_RE, HISTORY_CAP, HISTORY_TURNS, INELIGIBLE, INTERNAL_WORDS,
   JOBS_LINK, KEY, KIND_SUMMARY, LABEL, LANG_NAME, LEAD_MARK, LEN_CAP, LIKE_ANY, LIKE_ESCAPE, LIKE_SPECIAL, MARKUP,
   MAX_FACTS, MAX_QUERY, MAX_TOKENS, MESSAGE_UPDATE, MODEL_ID, NL, NOISE_RATIO, NOW_HEAD, NO_KEY_PLACEHOLDER,
   NUMBERED_RE, NUM_RE, OPENING_COLON, OPENING_SAMPLE, POINTS_LIMIT, PRIVATE_PROMISE, PROVIDER, PROVS, QC, Q_CAP,
-  REASON_EXCLUDED, ROLE, SAID, SAMPLING, SEARCH_LIMIT, SEP, SHEET_CAP, SPACE, SSE_PREFIX, SSE_SUFFIX, STAR_RE,
-  STATUS_WORDS, TABLE_RE, THOUSANDS_COMMA, THREAD_ID_LEN, THREAD_SEED, TIER_TEXT, TIMEOUT_MS, TOOL_LABEL, TOOL_NAME,
-  TRAILING_ZEROS, UNIT, V1, WORD_EDGE, DATE_LEN, SUBJECT,
+  REASON_EXCLUDED, ROLE, SAID, SAMPLING, SEARCH_LIMIT, SEG_NONE, SEP, SHEET_CAP, SPACE, SQL_NO_FILTER, SSE_PREFIX,
+  SSE_SUFFIX, STAR_RE, STATUS_WORDS, STRIP_SUB, TABLE_RE, TEXT_BLOCK_SEP, TEXT_NONE, THOUSANDS_COMMA,
+  THREAD_ID_LEN, THREAD_SEED, TIER_TEXT, TIMEOUT_MS, TITLE_PENDING, TOOL_LABEL, TOOL_NAME,
+  TRAILING_ZEROS, UNIT, VALUE_TEXT_NONE, V1, WORD_EDGE, DATE_LEN, SUBJECT,
 } from './constants'
 import {
   BLOCK_UNKNOWN_NOC, PROFILE_HEAD, PROFILE_NONE, REPLY_LANGUAGE_HEAD, RETRY_BULLET, RETRY_COLON, RETRY_COMMA,
@@ -234,7 +236,10 @@ async function lookupCoverage(input: NocQueryIn): LookupCoverageOut {
  * @returns 空白行。
  */
 function blankCoverage(prov: string): CoverageRow {
-  return { prov, streams: [], excluded: [], availability: AVAIL.notCollected, evidence: { url: '', fetched: '' } }
+  return {
+    prov, streams: [], excluded: [], availability: AVAIL.notCollected,
+    evidence: { url: EVIDENCE_URL_NONE, fetched: EVIDENCE_FETCHED_NONE },
+  }
 }
 
 /**
@@ -380,11 +385,14 @@ async function lookupPermit(input: LookupPermitIn): LookupPermitOut {
  * @returns 档位行,按官方表序。
  */
 async function lookupPoints(input: LookupPointsIn): LookupPointsOut {
-  let kind = ''
+  let kind = SQL_NO_FILTER
   if (input.section === '' && input.grid === GRID_CRS) {
     kind = KIND_SUMMARY
   }
-  const gridRows = await queryRows({ db: input.db, sql: SQL.EE_POINTS_GRID, params: [input.grid, input.section, kind, '', '', POINTS_LIMIT], map: toPointsRow })
+  const gridRows = await queryRows({
+    db: input.db, sql: SQL.EE_POINTS_GRID, map: toPointsRow,
+    params: [input.grid, input.section, kind, SQL_NO_FILTER, SQL_NO_FILTER, POINTS_LIMIT],
+  })
   const out: PointsRow[] = []
   for (const r of gridRows) {
     if (r.evidence.url) {
@@ -409,7 +417,7 @@ async function lookupPoints(input: LookupPointsIn): LookupPointsOut {
  */
 function seg(input: SegIn): string {
   if (input.when === false) {
-    return ''
+    return SEG_NONE
   }
   return input.text
 }
@@ -476,7 +484,8 @@ function fact(input: FactIn): Fact {
  */
 function statusFact(input: StatusFactIn): Fact {
   return {
-    tool: input.tool, label: input.label, quote: input.quote, value: null, valueText: '', unit: UNIT.status,
+    tool: input.tool, label: input.label, quote: input.quote, value: null,
+    valueText: VALUE_TEXT_NONE, unit: UNIT.status,
     evidence: input.evidence, availability: input.availability, cited: null,
   }
 }
@@ -497,7 +506,7 @@ function jobsFacts(r: JobsResult): JobsFactsOut {
       value: row.open,
       valueText: String(row.open),
       unit: UNIT.jobs,
-      evidence: { url: `${JOBS_LINK.head}${r.noc}${JOBS_LINK.prov}${row.prov}`, fetched: '' },
+      evidence: { url: `${JOBS_LINK.head}${r.noc}${JOBS_LINK.prov}${row.prov}`, fetched: EVIDENCE_FETCHED_NONE },
     }))
   }
   return out
@@ -591,7 +600,7 @@ function thresholdsFacts(r: ThresholdsResult): ThresholdsFactsOut {
         label: `${row.prov}${LABEL.requirements}${r.noc}`,
         quote: `${row.prov}${LABEL.nocDot}${r.noc}`,
         availability: row.availability,
-        evidence: { url: '', fetched: '' },
+        evidence: { url: EVIDENCE_URL_NONE, fetched: EVIDENCE_FETCHED_NONE },
       }))
       continue
     }
@@ -627,7 +636,7 @@ function drawsFacts(r: DrawsResult): DrawsFactsOut {
       label: `${r.prov}${LABEL.drawsList}`,
       quote: r.prov,
       availability: emptyAvailability(r.prov),
-      evidence: { url: '', fetched: '' },
+      evidence: { url: EVIDENCE_URL_NONE, fetched: EVIDENCE_FETCHED_NONE },
     })]
   }
   const out: Fact[] = []
@@ -664,13 +673,13 @@ function opsFacts(r: OpsResult): OpsFactsOut {
       label: `${r.prov}${LABEL.opsList}`,
       quote: r.prov,
       availability: emptyAvailability(r.prov),
-      evidence: { url: '', fetched: '' },
+      evidence: { url: EVIDENCE_URL_NONE, fetched: EVIDENCE_FETCHED_NONE },
     })]
   }
   const out: Fact[] = []
   for (const row of r.rows) {
     const scope = seg({ when: row.scope !== '', text: `${LABEL.parenOpen}${row.scope}${LABEL.nocClose}` })
-    let when = ''
+    let when = SEG_NONE
     if (row.asOf !== '') {
       when = `${LABEL.asOf}${row.asOf}`
     } else if (row.period !== '') {
@@ -705,7 +714,7 @@ function eeFacts(r: EeResult): EeFactsOut {
       label: `${SAID.noc}${r.noc}${LABEL.eeNone}`,
       quote: `${LABEL.ee}${LABEL.nocDot}${r.noc}`,
       availability: AVAIL.notApplicable,
-      evidence: { url: '', fetched: '' },
+      evidence: { url: EVIDENCE_URL_NONE, fetched: EVIDENCE_FETCHED_NONE },
     })]
   }
   const out: Fact[] = []
@@ -741,7 +750,7 @@ function permitFacts(r: PermitResult): PermitFactsOut {
       label: `${r.program}${LABEL.permitList}`,
       quote: r.program,
       availability: AVAIL.notCollected,
-      evidence: { url: '', fetched: '' },
+      evidence: { url: EVIDENCE_URL_NONE, fetched: EVIDENCE_FETCHED_NONE },
     })]
   }
   const out: Fact[] = []
@@ -774,7 +783,7 @@ function pointsFacts(r: PointsResult): PointsFactsOut {
       label: `${r.grid}${LABEL.pointsList}`,
       quote: r.grid,
       availability: AVAIL.notCollected,
-      evidence: { url: '', fetched: '' },
+      evidence: { url: EVIDENCE_URL_NONE, fetched: EVIDENCE_FETCHED_NONE },
     })]
   }
   const out: Fact[] = []
@@ -856,7 +865,7 @@ function verdictFacts(rows: VerdictFactsIn): VerdictFactsOut {
   const out: Fact[] = []
   for (const p of rows) {
     let quote = `${p.province}${SEP.dot}${p.stream}`
-    let evidence = { url: '', fetched: '' }
+    let evidence = { url: EVIDENCE_URL_NONE, fetched: EVIDENCE_FETCHED_NONE }
     for (const r of p.reasons) {
       if (r.kind === REASON_EXCLUDED && r.quote) {
         quote = `${p.province}${SEP.dot}${r.quote}`
@@ -866,12 +875,12 @@ function verdictFacts(rows: VerdictFactsIn): VerdictFactsOut {
         break
       }
     }
-    let tier = ''
+    let tier = SEG_NONE
     if (p.tier != null) {
       tier = `${LABEL.tierHead}${TIER_TEXT[p.tier]}`
     }
     const blocked = seg({ when: Boolean(p.blockedBy), text: `${LABEL.blockedBy}${p.blockedBy}` })
-    let missing = ''
+    let missing = SEG_NONE
     if (p.missingSlots && p.missingSlots.length) {
       missing = `${LABEL.missing}${p.missingSlots.join(SEP.comma)}`
     }
@@ -899,9 +908,9 @@ function verdictFacts(rows: VerdictFactsIn): VerdictFactsOut {
  * @returns 规范形态。
  */
 function normNum(raw: string): string {
-  const s = raw.replace(THOUSANDS_COMMA, '')
+  const s = raw.replace(THOUSANDS_COMMA, STRIP_SUB)
   if (s.includes(SAID.stop)) {
-    return s.replace(TRAILING_ZEROS, '')
+    return s.replace(TRAILING_ZEROS, STRIP_SUB)
   }
   return s
 }
@@ -1242,7 +1251,7 @@ function makeToolGates(input: MakeToolGatesIn): MakeToolGatesOut {
 
   async function beforeToolCall(ctx: BeforeToolCallIn): BeforeToolCallOut {
     const args = ctx.args as ToolArgs
-    let noc = ''
+    let noc = ARG_NONE
     if (args && typeof args.noc === 'string') {
       noc = args.noc.trim()
     }
@@ -1401,7 +1410,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
 
   async function execPoints(_id: string, args: ExecPointsIn): ExecPointsOut {
     step(TOOL_NAME.points)
-    let section = ''
+    let section = ARG_NONE
     if (args.section !== undefined) {
       section = args.section.trim()
     }
@@ -1436,7 +1445,7 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
             label: `${LABEL.claimHead}${text}`,
             quote: text,
             availability: AVAIL.notApplicable,
-            evidence: { url: '', fetched: '' },
+            evidence: { url: EVIDENCE_URL_NONE, fetched: EVIDENCE_FETCHED_NONE },
           }))
         }
         continue
@@ -1538,7 +1547,7 @@ function firstPrompt(input: RunIn): TranscriptMessage {
   for (const turn of input.history.slice(-HISTORY_TURNS)) {
     lines.push(`${turn.role}${SEP.colon}${turn.content.slice(0, HISTORY_CAP)}`)
   }
-  let earlier = ''
+  let earlier = SEG_NONE
   if (lines.length) {
     earlier = `${lines.join(NL)}${NL}${NL}${NOW_HEAD}`
   }
@@ -1558,7 +1567,7 @@ function firstPrompt(input: RunIn): TranscriptMessage {
  */
 function textOf(message: TranscriptMessage): string {
   if (message.role !== ROLE.assistant) {
-    return ''
+    return TEXT_NONE
   }
   const parts: string[] = []
   for (const block of message.content) {
@@ -1566,7 +1575,7 @@ function textOf(message: TranscriptMessage): string {
       parts.push(block.text)
     }
   }
-  return parts.join('')
+  return parts.join(TEXT_BLOCK_SEP)
 }
 
 /**
@@ -1701,7 +1710,7 @@ function hardHits(input: HardHitsIn): HardHitsOut {
 async function boxFor(input: BoxForIn): BoxForOut {
   const noc = input.profile.noc
   if (noc === '') {
-    return { facts: [], candidates: [], noc: null, title: '', teer: null }
+    return { facts: [], candidates: [], noc: null, title: TITLE_PENDING, teer: null }
   }
   const { rows } = await input.db.query(SQL.NOC_TITLE_TEER, [noc])
   const tt = toTitleTeer(rows)
@@ -1725,10 +1734,10 @@ export async function consult(input: RunIn): ConsultOut {
   const echo = input.history.filter(isUserTurn).map(contentOf).concat(input.text).join(NL)
   const t0 = Date.now()
 
-  let answer = ''
+  let answer = ANSWER_PENDING
   let fired: GateHit[] = []
   for (let attempt = 0; attempt <= GUARD_RETRIES; attempt += 1) {
-    let extra = ''
+    let extra = SEG_NONE
     if (fired.length) {
       extra = `${NL}${NL}${retryNote(fired)}`
     }
