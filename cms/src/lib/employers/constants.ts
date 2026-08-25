@@ -248,9 +248,41 @@ export const WD_LANG_EN = 'en'
 export const WD_PROPS = 'labels|aliases|sitelinks'
 
 /**
+ * Wikidata 实体里指向英文维基百科条目的站点键。
+ * 一个实体的 sitelinks 按站点分格(enwiki / zhwiki / jawiki…),
+ * 只取英文站:公司条目以英文最全,中文站常常没有或是转写。
+ */
+export const WD_SITE_EN = 'enwiki'
+
+/**
+ * 简体中文标签键(大陆用法)。Wikidata 把中文按变体分了好几格,
+ * 优先级 zh-cn → zh-hans → zh:先要大陆简体的实际用词,
+ * 再退到「通用简体」,最后才退到不分变体的 zh(可能是繁体)。
+ */
+export const WD_LANG_ZH_CN = 'zh-cn'
+
+/**
+ * 通用简体中文标签键(不分地区)。zh-cn 没有时的第一退路。
+ */
+export const WD_LANG_ZH_HANS = 'zh-hans'
+
+/**
+ * 不分变体的中文标签键。最后一档退路 —— 它可能是繁体,
+ * 但有个中文名总好过没有(公司名的繁简差异通常不影响认出是谁)。
+ */
+export const WD_LANG_ZH = 'zh'
+
+/**
+ * 韩文标签键。韩文只有一格,没有变体退路。
+ */
+export const WD_LANG_KO = 'ko'
+
+/**
  * Wikidata:要取的语言标签(简繁与韩)。
  */
-export const WD_LANGS = 'en|zh|zh-cn|zh-hans|ko'
+// 2026-08-24:原先这里逐字抄着 'en|zh|zh-cn|zh-hans|ko',与下面五个语言码常量
+// 是同一份知识的两个副本 —— 加一门语言要改两处,漏一处就是「请求里要了、代码里不读」。
+export const WD_LANGS = `${WD_LANG_EN}|${WD_LANG_ZH}|${WD_LANG_ZH_CN}|${WD_LANG_ZH_HANS}|${WD_LANG_KO}`
 
 /**
  * fetch 的 format 参数键。
@@ -601,3 +633,9 @@ export const NAME_UNSET = ''
  * 不给它挑一个默认语种:猜错语种等于把用户看不懂的译文当成他要的。
  */
 export const LANG_UNSET = ''
+
+
+
+
+
+

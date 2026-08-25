@@ -26,11 +26,49 @@
  * 撤掉框架后收成本站自己的最小形状 —— 全部是必答单选,类型与必答不用逐题再声明一遍。
  */
 import {
-  ANSWERS_KEY, CLB_V2_MAP, COLLECTION_USERS, CRED_INCLUDE, DECISIONS, EMPTY, EV_PAGEHIDE, EV_VISIBILITY, JSON_MIME,
-  LI_RE, LI_SET_OFF, LI_SET_ON, META_KEY, METHOD_PUT, OLD_PR, OLD_QUIZ, SCORE_ANSWERS_KEY, SCORE_EMPTY, STAGE_BASIC,
-  STATE_HIDDEN, TIER_FREE, URL_ANSWERS, AGE, CLB, CRS, EDU, EDU_YEARS, EXP, FRENCH_V2_MAP, IN_CANADA, NCLC, PERMIT,
-  PGWP, PROVS, STUDY_LEVEL, STUDY_MONTHS, TOTAL_EXP, TOTAL_V2_MAP, UNSURE_BAND,
-  FACTS_CACHE_MAX, PREV_JSON_NONE, STATUS_NONE, TTL,
+  AGE,
+  ANSWERS_KEY,
+  CLB,
+  CLB_V2_MAP,
+  COLLECTION_USERS,
+  CRED_INCLUDE,
+  CRS,
+  DECISIONS,
+  EDU,
+  EDU_YEARS,
+  EMPTY,
+  EV_PAGEHIDE,
+  EV_VISIBILITY,
+  EXP,
+  FACTS_CACHE_MAX,
+  FRENCH_V2_MAP,
+  IN_CANADA,
+  JSON_MIME,
+  LI_RE,
+  LI_SET_OFF,
+  LI_SET_ON,
+  META_KEY,
+  METHOD_PUT,
+  NCLC,
+  OLD_PR,
+  OLD_QUIZ,
+  PERMIT,
+  PGWP,
+  PREV_JSON_NONE,
+  PROVS,
+  SCORE_ANSWERS_KEY,
+  SCORE_EMPTY,
+  STAGE_BASIC,
+  STATE_HIDDEN,
+  STATUS_NONE,
+  STUDY_LEVEL,
+  STUDY_MONTHS,
+  TIER_FREE,
+  TOTAL_EXP,
+  TOTAL_V2_MAP,
+  TTL,
+  UNSURE_BAND,
+  URL_ANSWERS,
 } from './constants'
 import { CACHE } from './variables'
 import type {
@@ -39,6 +77,7 @@ import type {
   EngineAnswers, EngineValue, FieldDef, L, MaybeProvList, ProvList, RawAnswersSource, RawField, RawScoreSource,
   DropFn, FactsStoreFn, FirstStoreFn, StoreFn, TopCachedIn, TopOut, TopRows, UnflagFn,
 } from './types'
+import { HDR_CONTENT_TYPE } from '../http'
 
 /**
  * localStorage 里的 json → 档对象(真会抛的 JSON.parse 接缝;坏的/空的给 null,
@@ -394,7 +433,7 @@ async function pushToServer(): PushedOut {
   }
   try {
     const r = await fetch(URL_ANSWERS, {
-      method: METHOD_PUT, credentials: CRED_INCLUDE, headers: { 'Content-Type': JSON_MIME },
+      method: METHOD_PUT, credentials: CRED_INCLUDE, headers: { [HDR_CONTENT_TYPE]: JSON_MIME },
       body: payload(),
     })
     if (r.status === 401) {

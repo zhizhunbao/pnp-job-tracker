@@ -15,6 +15,7 @@
 import { toFunnelHit } from '../funnel'
 import { JSON_MIME, METHOD_POST, PROP_NONE, TRACK_URL } from './constants'
 import type { MaybeTrackData, TrackData, UmamiLike } from './types'
+import { HDR_CONTENT_TYPE_LC } from '../http'
 
 /**
  * 只挑得出低基数枚举的那一个值当分组;NOC 这类高基数的不传(会把日聚合表撑成明细表)。
@@ -88,7 +89,7 @@ function trackFirstParty(event: string, data?: TrackData): void {
     if (typeof navigator.sendBeacon === 'function' && navigator.sendBeacon(TRACK_URL, new Blob([body], { type: JSON_MIME }))) {
       return
     }
-    void fetch(TRACK_URL, { method: METHOD_POST, body, headers: { 'content-type': JSON_MIME }, keepalive: true }).catch(ignoreTrackFailure)
+    void fetch(TRACK_URL, { method: METHOD_POST, body, headers: { [HDR_CONTENT_TYPE_LC]: JSON_MIME }, keepalive: true }).catch(ignoreTrackFailure)
   } catch {
     return
   }

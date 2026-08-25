@@ -646,6 +646,19 @@ const localRules = {
         }
       },
     },
+    // 字符串字面量在 `functions.ts` / `routes.ts` / 所有 `.tsx` 里一律要有名字 ——
+    // 名字是它的说明书,而说明书的家是 `constants.ts`(给模型看的进 `prompts.ts`,
+    // 给人看的文案进 `lib/i18n`)。Frank 立这条的理由是**学习**:
+    // 「我把常量抽出来,就是为了加注释,方便我理解和学习。你不抽出来、不解释,
+    //   我怎么知道什么意思。前端那么多参数。」
+    //
+    // 🔴 2026-08-24 改写成**封闭白名单**(Frank:「能不能不要补丁似的加检查逻辑」)。
+    // 原实现是「全报,除了这一串特例」,而特例靠一次次实拍往上补 —— 同一天里就补了
+    // tsx 进闸、空串、指令、i18n 键、对象键、`as` 表达式六次,每补一次就露出下一个洞
+    // (`{ '--gc': … } as React.CSSProperties` 同时踩中「对象键」与「往上找四层撞见 as」
+    //  两条,于是一个 CSS 变量名两层都逃掉)。
+    // 反过来写:字符串**只许**出现在 ALLOW 列的五个位置,其余一律报。
+    // 判据一句话:**这个串是「值」,还是「语法」?** 要加一格,先答得上这句。
     'no-bare-strings': {
       meta: {
         type: 'suggestion',
@@ -655,109 +668,202 @@ const localRules = {
         },
       },
       create(context) {
-        // 2026-08-23 扩到 routes.ts（Frank「还有一大堆写死的常量」）：HTTP 芯同样不许裸字
-        // 2026-08-24 自守正则补 `x?`:`icons/functions.tsx` 这类抽屉的 tsx 形态原先整份跳过
-        //    —— 文件挂着五道闸,一条都没生效过。
-        // 2026-08-24 Frank 实拍 `rel="noreferrer"` 查不出来:本条再放宽到**全部 .tsx**。
-        //    组件的值大半写在 JSX 属性位(rel/type/role/viewBox…),而属性位从没进过闸;
-        //    文本子节点(`<span>已关闭</span>`)是给人看的文案,家在 `lib/i18n`。
-        if (!/(functions|routes)\.tsx?$/.test(context.filename ?? '')
-          && !/\.tsx$/.test(context.filename ?? '')) return {}
-        // 2026-08-23 撤编批判据同步：`to*` 行构造器体内放行 —— rows.ts 历来不受本闸
-        // （只查 functions/routes），并入尾段后 512 处行构造器的词全数炸出；与 no-db-vocab
-        // 的「to* 体内放行」同一判据同一理由：行构造器的词就是值级清洗的一部分。
-        function toBodyOf(node) {
+        const file = context.filename ?? ''
+        // 2026-08-23 扩到 routes.ts(Frank「还有一大堆写死的常量」):HTTP 芯同样不许裸字。
+        // 2026-08-24 自守补 `x?` 并收全部 .tsx:`icons/functions.tsx` 这类抽屉的 tsx 形态
+        // 原先整份跳过(挂着五道闸一条没生效);组件的值大半写在 JSX 属性位,那里从没进过闸。
+        if (!/(functions|routes)\.tsx?$/.test(file) && !/\.tsx$/.test(file)) {
+          return {}
+        }
+
+        // 2026-08-23 撤编批判据:`to*` 行构造器体内放行 —— rows.ts 历来不受本闸
+        // (只查 functions/routes),并入尾段后 512 处行构造器的词全数炸出;与 no-db-vocab
+        // 的「to* 体内放行」同一判据同一理由:行构造器的词就是值级清洗的一部分。
+        function inRowBuilder(node) {
           for (let n = node; n; n = n.parent) {
-            if (n.type === 'FunctionDeclaration' && n.id && /^to[A-Z]/.test(n.id.name)) return true
+            if (n.type === 'FunctionDeclaration' && n.id && /^to[A-Z]/.test(n.id.name)) {
+              return true
+            }
           }
           return false
         }
+
         // 2026-08-23 撤编批:rows/callbacks 并入 functions 尾段,这几道闸历来不查那两个抽屉 ——
         // 历史豁免面随「撤编后的固定尾段」banner 精确搬进新位置(纯移动零新债,基线不松)。
-        const tailAt0 = (context.sourceCode ?? context.getSourceCode()).getText().indexOf('撤编后的固定尾段')
-        const tailAt = tailAt0 < 0 ? Infinity : tailAt0
-        function inTypePosition(node) {
-          let p = node.parent
-          let depth = 0
-          while (p && depth < 4) {
-            if (p.type === 'TSLiteralType' || p.type === 'TSTypeReference' || p.type === 'TSAsExpression') return true
-            p = p.parent
-            depth += 1
+        const tailFound = (context.sourceCode ?? context.getSourceCode()).getText().indexOf('撤编后的固定尾段')
+        let tailAt = Infinity
+        if (tailFound >= 0) {
+          tailAt = tailFound
+        }
+
+        // ① 模块路径:`import x from './constants'` 的 source。
+        //    起名反而**不能用** —— 打包器要求这里是静态字面量,换成标识符就解析不了。
+        function isModulePath(node, p) {
+          if (p.type === 'ImportDeclaration' || p.type === 'ExportNamedDeclaration'
+            || p.type === 'ExportAllDeclaration' || p.type === 'ImportExpression') {
+            return p.source === node
           }
           return false
         }
+
+        // ② 类型位:`type Kind = 'a' | 'b'` 里的字面量**是类型不是值**,
+        //    它没有运行时存在,搬进 constants 就不再是类型了。
+        //    只认**直接**长在类型里的(TSLiteralType / TSTypeReference 的类型实参)——
+        //    2026-08-24 前这里往上找四层、撞见 `TSAsExpression` 就放行,
+        //    于是 `as` **前面**那个对象里的值整个逃掉(grid.tsx 的 `'--gc'` 实拍)。
+        function isTypeLiteral(p) {
+          return p.type === 'TSLiteralType' || p.type === 'TSTypeReference'
+        }
+
+        // ③ 指令:`'use client'` / `'use server'` 必须**逐字**待在文件或函数顶部,
+        //    Next 靠源码文本识别这一行,挪进常量当场失效。
+        function isDirective(node, p) {
+          if (p.type !== 'ExpressionStatement' || p.expression !== node) {
+            return false
+          }
+          const body = p.parent
+          if (body == null) {
+            return false
+          }
+          let list = null
+          if (body.type === 'Program' || body.type === 'BlockStatement') {
+            list = body.body
+          }
+          if (list == null) {
+            return false
+          }
+          // 指令只能出现在体的开头连续段里,后面出现的裸表达式不是指令
+          for (const st of list) {
+            if (st === p) {
+              return true
+            }
+            if (st.type !== 'ExpressionStatement' || st.expression.type !== 'Literal') {
+              return false
+            }
+          }
+          return false
+        }
+
+        // ④ 宪法钦定的比较写法:`x === ''`(判空串)与 `typeof x === 'string'`(语言构造)。
+        //    宪法「禁 !x」那条把判空的写法定死成 `== null` / `=== ''` / `.length === 0`,
+        //    报它等于跟自己打架;typeof 的右边永远不会被翻译也永远不会改。
+        //    ⚠️ 只放行这两种 —— `kind === 'err'` 那种拿字面量当档位比较的**照报**,
+        //    档位该有名字(`kind === KIND_ERR`),不然改一个档位要全站 grep 字符串。
+        function isSanctionedCompare(node, p) {
+          if (p.type !== 'BinaryExpression') {
+            return false
+          }
+          const cmp = p.operator === '===' || p.operator === '!==' || p.operator === '==' || p.operator === '!='
+          if (cmp === false) {
+            return false
+          }
+          if (node.value === '') {
+            return true
+          }
+          return p.left != null && p.left.type === 'UnaryExpression' && p.left.operator === 'typeof'
+        }
+
+        // ⑤ i18n 键:`t('acct.plan.free')` 的键**本身就是名字** —— 它指的那条文案在
+        //    `lib/i18n` 里有家、有注释、有三语对齐的类型强制,再包一层常量只多一次跳转。
+        //    只放行第一个实参;`t(key, { d: x })` 里别的字面量照查。
+        function isI18nKey(node, p) {
+          if (p.type !== 'CallExpression' || p.callee == null) {
+            return false
+          }
+          if (p.callee.type !== 'Identifier' || p.callee.name !== 't') {
+            return false
+          }
+          return p.arguments != null && p.arguments[0] === node
+        }
+
+        // 🔴 封闭白名单:五格,一格一个「这里的字符串为什么不是值」。不在表里 = 报。
+        function allowed(node) {
+          const p = node.parent
+          if (p == null) {
+            return false
+          }
+          if (isModulePath(node, p)) {
+            return true
+          }
+          if (isTypeLiteral(p)) {
+            return true
+          }
+          if (isDirective(node, p)) {
+            return true
+          }
+          if (isSanctionedCompare(node, p)) {
+            return true
+          }
+          if (isI18nKey(node, p)) {
+            return true
+          }
+          // JSX 的 `foo=""`:DOM 的布尔缺省写法(`<input required="" />`),不是我们的值。
+          if (node.value === '' && p.type === 'JSXAttribute') {
+            return true
+          }
+          return false
+        }
+
+        function skip(node) {
+          return inRowBuilder(node) || node.range[0] > tailAt
+        }
+
         return {
           Literal(node) {
-            if (toBodyOf(node) || node.range[0] > tailAt) return
-            // 2026-08-24:'use client' / 'use server' 是**语言指令**不是值 —— 它必须逐字
-            // 待在文件顶部,挪进常量当场失效(Next 靠源码文本识别这一行)。
-            if (node.parent?.type === 'ExpressionStatement') return
+            if (skip(node)) {
+              return
+            }
             // 正则也是常量(`constants.ts` 的文件头写着「标量、字符串表、正则」),
             // 但它的 `value` 是 RegExp 不是 string,第一版就这么漏过去了(2026-08-20 Frank 实拍)。
             if (node.regex) {
               context.report({ node, messageId: 'bare', data: { text: `/${node.regex.pattern}/` } })
               return
             }
-            if (typeof node.value !== 'string') return
-            // 2026-08-24 Frank 实拍:空串原先一句话放行。可它是**决策**不是排版 ——
-            // `ymd(null)` 回空串是「没有日期」、`basis: ''` 是「没算过」、`extra: ''` 是
-            // 「不加类」,三种含义在读的人眼里长得一模一样。起名才分得开。
-            // 唯一放行:JSX 属性里的 `=""`(那是 DOM 的布尔缺省写法,不是我们的值)。
-            // 空串按**位置**分(2026-08-24 Frank 实拍「'' 也需要提到常量」后细化):
-            // · 比较位 `x !== ''` 放行 —— 宪法「禁 !x」那条钦定的判空写法就是它
-            //   (「判空写 == null,空串 === '',空数组 .length === 0」),报它等于跟自己打架;
-            // · JSX 属性 `foo=""` 放行 —— 那是 DOM 的布尔缺省写法,不是我们的值;
-            // · 值位要报 —— `let title = ''`、`return ''`、`basis: ''` 是**决策**不是排版:
-            //   「没有名字」「没算过」「不加类」三种含义长得一模一样,起名才分得开。
+            if (typeof node.value !== 'string') {
+              return
+            }
+            if (allowed(node)) {
+              return
+            }
             if (node.value === '') {
-              const pp = node.parent
-              if (pp?.type === 'JSXAttribute') return
-              if (pp?.type === 'BinaryExpression'
-                && (pp.operator === '===' || pp.operator === '!==' || pp.operator === '==' || pp.operator === '!=')) return
+              // 空串是**决策**不是排版:`let title = ''` 是「还没取到名字」、`basis: ''` 是
+              // 「没算过」、`extra: ''` 是「不加类」—— 三种含义长得一模一样,起名才分得开。
               context.report({ node, messageId: 'bare', data: { text: '""(空串)' } })
               return
             }
-            const p = node.parent
-            if (p?.type === 'ImportDeclaration' || p?.type === 'ExportNamedDeclaration') return
-            // i18n 键放行(2026-08-24):`t('acct.plan.free')` 的键**本身就是名字** ——
-            // 它指的那条文案在 `lib/i18n` 里有家、有注释、有三语对齐的类型强制,
-            // 再包一层 `K_ACCT_PLAN_FREE` 只是多一次跳转,不多一个字的信息。
-            // 只放行第一个实参:`t(key, { d: x })` 里的别的字面量照查。
-            if (p?.type === 'CallExpression' && p.callee?.type === 'Identifier'
-              && p.callee.name === 't' && p.arguments?.[0] === node) return
-            if (p?.type === 'Property' && p.key === node) return
-            if (p?.type === 'MemberExpression' && p.property === node) return
-            // `typeof x === 'string'` 的右边是**语言构造**,不是文案:它永远不会被翻译、
-            // 永远不会改,收进 `constants.ts` 只是把一句读得懂的判断换成一次跳转(2026-08-20 立)。
-            if (p?.type === 'BinaryExpression'
-              && p.left?.type === 'UnaryExpression' && p.left.operator === 'typeof') return
-            if (inTypePosition(node)) return
             context.report({ node, messageId: 'bare', data: { text: JSON.stringify(node.value).slice(0, 28) } })
           },
           TemplateElement(node) {
-            if (toBodyOf(node) || node.range[0] > tailAt) return
-            const text = node.value?.cooked ?? ''
+            if (skip(node)) {
+              return
+            }
+            let text = ''
+            if (node.value != null && node.value.cooked != null) {
+              text = node.value.cooked
+            }
             // 纯空白的模板段是排版(`${a} ${b}`),不是内容
-            if (!text.trim()) return
+            if (text.trim() === '') {
+              return
+            }
             context.report({ node, messageId: 'bare', data: { text: JSON.stringify(text).slice(0, 28) } })
           },
-          // 2026-08-24 JSX 的文本子节点(`<span>已关闭</span>`)是 JSXText 不是 Literal,
-          // 现有 visitor 看不见 —— 而它恰恰是给人看的文案,家在 `lib/i18n`(组件域里
-          // 写死一句中文/英文 = 那句话永远翻译不了)。纯空白/换行是排版,放行。
+          // JSX 的文本子节点(`<span>已关闭</span>`)是 JSXText 不是 Literal,
+          // 现有 visitor 看不见 —— 而它恰恰是给人看的文案,家在 `lib/i18n`
+          // (组件域里写死一句中文/英文 = 那句话永远翻译不了)。纯空白/换行是排版,放行。
           JSXText(node) {
-            const text = node.value ?? ''
-            if (!text.trim()) return
+            let text = ''
+            if (node.value != null) {
+              text = node.value
+            }
+            if (text.trim() === '') {
+              return
+            }
             context.report({ node, messageId: 'bare', data: { text: JSON.stringify(text.trim()).slice(0, 28) } })
           },
         }
       },
     },
 
-    // 同一个模块拆成好几行 import,读的人得把散在各处的名字自己拼回去,还看不出「到底依赖了它几样」。
-    // 2026-08-20 Frank 实拍:`ruling/types.ts` 里 `'../score'` 摞了 3 行、`'../rules'` 摞了 2 行 ——
-    // 每次加类型顺手补一行,谁都没回头合并。
-    // ⚠️ 只拦**同一种**的:值导入与 `import type` 分开写是对的(前者进运行时,后者编译期就没了),
-    //    那正是「这个域到底在运行时依赖谁」一眼能看出来的原因。
     'no-split-import': {
       meta: {
         type: 'suggestion',

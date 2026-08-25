@@ -60,3 +60,4 @@ export const JSON_MIME = 'application/json'
  * 「密钥没配」这件事被一个能用的默认值盖住。
  */
 export const HMAC_KEY_NONE = ''
+

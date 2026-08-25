@@ -10,10 +10,19 @@
 import crypto from 'crypto'
 import { log, MAIL_LOG } from '../log'
 import {
-  BEARER_PREFIX, FROM, HEX_ENC, HMAC_ALGO, HMAC_KEY_NONE, JSON_MIME, MAIL_ENABLED, METHOD_POST, RESEND_URL,
+  BEARER_PREFIX,
+  FROM,
+  HEX_ENC,
+  HMAC_ALGO,
+  HMAC_KEY_NONE,
+  JSON_MIME,
+  MAIL_ENABLED,
+  METHOD_POST,
+  RESEND_URL,
   UNSUB_PREFIX,
 } from './constants'
 import type { MailUserId, SendMailIn, SentOut } from './types'
+import { HDR_CONTENT_TYPE } from '../http'
 
 /**
  * 发一封信;没配密钥或发失败返回 false(调用方据此不回写游标),失败留痕不抛。
@@ -28,7 +37,7 @@ export async function sendMail(input: SendMailIn): SentOut {
   try {
     const r = await fetch(RESEND_URL, {
       method: METHOD_POST,
-      headers: { Authorization: BEARER_PREFIX + process.env.RESEND_API_KEY, 'Content-Type': JSON_MIME },
+      headers: { Authorization: BEARER_PREFIX + process.env.RESEND_API_KEY, [HDR_CONTENT_TYPE]: JSON_MIME },
       body: JSON.stringify({ from: FROM, to: [input.to], subject: input.subject, html: input.html }),
     })
     if (r.ok === false) {

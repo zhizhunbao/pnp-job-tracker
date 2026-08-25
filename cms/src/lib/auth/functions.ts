@@ -13,18 +13,57 @@ import { AUTH_LOG, log } from '../log'
 import { getFieldsToSign, getPayload, jwtSign } from 'payload'
 import config from '@/payload.config'
 import {
-  BEARER_PREFIX, CALLBACK_PATH, CONSENT_STATIC, COOKIE_PREFIX_DEFAULT, COOKIE_RE_HEAD, COOKIE_RE_TAIL, EMAIL_NONE,
-  FLOW_COOKIE_TAIL, FORM_MIME, GOOGLE_AUTH_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_TOKEN_URL,
-  GOOGLE_USERINFO_URL, GRANT_AUTH_CODE, HTTPONLY_TAIL, HTTPS_PREFIX, KV_EQ, LI_PAIR, METHOD_POST,
-  K_FAIL, K_OK, LOG_CONSENT, LOG_EMAIL, LOG_ENV_MISSING, LOG_LOGIN, LOG_NO_CODE, LOG_STATE, LOG_TOKEN,
-  PARAM_CLIENT_ID, PARAM_REDIRECT, PARAM_STATE, PROVIDER_GOOGLE, RETURN_RE, ROOT_PATH, SECURE_TAIL,
-  HEX_PAD, HEX_SEP, SECURE_TAIL_NONE, SESSION_COOKIE_TAIL, SITE, SSR_TOKEN_COOKIE, TOKEN_NAME_TAIL, USERS,
+  BEARER_PREFIX,
+  CALLBACK_PATH,
+  CONSENT_STATIC,
+  COOKIE_PREFIX_DEFAULT,
+  COOKIE_RE_HEAD,
+  COOKIE_RE_TAIL,
+  EMAIL_NONE,
+  FLOW_COOKIE_TAIL,
+  FORM_MIME,
+  GOOGLE_AUTH_URL,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+  GOOGLE_TOKEN_URL,
+  GOOGLE_USERINFO_URL,
+  GRANT_AUTH_CODE,
+  HEX_PAD,
+  HEX_SEP,
+  HTTPONLY_TAIL,
+  HTTPS_PREFIX,
+  KV_EQ,
+  K_FAIL,
+  K_OK,
+  LI_PAIR,
+  LOG_CONSENT,
+  LOG_EMAIL,
+  LOG_ENV_MISSING,
+  LOG_LOGIN,
+  LOG_NO_CODE,
+  LOG_STATE,
+  LOG_TOKEN,
+  METHOD_POST,
+  PARAM_CLIENT_ID,
+  PARAM_REDIRECT,
+  PARAM_STATE,
+  PROVIDER_GOOGLE,
+  RETURN_RE,
+  ROOT_PATH,
+  SECURE_TAIL,
+  SECURE_TAIL_NONE,
+  SESSION_COOKIE_TAIL,
+  SITE,
+  SSR_TOKEN_COOKIE,
+  TOKEN_NAME_TAIL,
+  USERS,
 } from './constants'
 import type {
   AliveFn, CallbackOut, GoogleCallbackIn, Clock, ConfigWithPrefix, ExchangeIn, GoogleLogin, GoogleLoginIn, GoogleLoginOut, GoogleUserOut,
   HasSessionOut, MaybeCookie, MaybeToken, OauthCookieIn, ReadCookieIn, SessionCookieList, SessionEntry,
   TokenBody, UserinfoBody,
 } from './types'
+import { HDR_CONTENT_TYPE } from '../http'
 
 /**
  * 首帧有没有会话票据。取不到 cookie 的极端情形按匿名占位 ——
@@ -138,7 +177,7 @@ export async function exchangeCode(input: ExchangeIn): MaybeToken {
   let res: Response | null = null
   try {
     res = await fetch(GOOGLE_TOKEN_URL, {
-      method: METHOD_POST, headers: { 'Content-Type': FORM_MIME },
+      method: METHOD_POST, headers: { [HDR_CONTENT_TYPE]: FORM_MIME },
       body: new URLSearchParams({
         code: input.code, client_id: GOOGLE_CLIENT_ID, client_secret: GOOGLE_CLIENT_SECRET,
         redirect_uri: SITE + CALLBACK_PATH, grant_type: GRANT_AUTH_CODE,

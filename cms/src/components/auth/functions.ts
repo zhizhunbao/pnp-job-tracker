@@ -8,34 +8,20 @@
  */
 import { fieldsOf, missingFields, pullAndMerge, readAnswers } from '@/lib/quiz'
 import {
-  AVATAR_PALETTE,
-  HTTP_BAD_REQUEST,
-  MODE_FORGOT,
-  MODE_REGISTER,
-  MODE_RESET,
   API_FORGOT,
   API_LOGIN,
   API_LOGOUT,
   API_RESET,
   API_USERS,
-  PATH_GOOGLE_AUTH,
-  PW_LV_MEDIUM,
-  PW_LV_STRONG,
-  PW_LV_WEAK,
-  QUIZ_PATH,
-  HASH_BASE,
-  LOCALE_DEFAULT,
-  LOCALE_KEY,
-  PW_CLASSES_MEDIUM,
-  PW_CLASSES_STRONG,
-  PW_LONG_LEN,
-  PW_MIN_LEN,
+  AVATAR_PALETTE,
   BODY_NONE,
   CREDENTIALS_INCLUDE,
   EVENT_SIGNUP,
   FLOW_DONE,
   FLOW_ERR,
   FLOW_SENT,
+  HASH_BASE,
+  HTTP_BAD_REQUEST,
   HTTP_POST,
   KEY_ERR_CRED,
   KEY_ERR_EXISTS,
@@ -46,15 +32,29 @@ import {
   KEY_SUBMIT_LOGIN,
   KEY_SUBMIT_REG,
   KEY_SUBMIT_RESET,
+  LOCALE_DEFAULT,
+  LOCALE_KEY,
   MIME_JSON,
+  MODE_FORGOT,
+  MODE_REGISTER,
+  MODE_RESET,
+  PATH_GOOGLE_AUTH,
+  PATH_ROOT,
+  PW_CLASSES_MEDIUM,
+  PW_CLASSES_STRONG,
+  PW_CLASS_RES,
+  PW_LONG_LEN,
+  PW_LV_MEDIUM,
+  PW_LV_STRONG,
+  PW_LV_WEAK,
+  PW_MIN_LEN,
   P_JOB,
   P_NEXT,
   P_QUIZ,
-  PATH_ROOT,
-  PW_CLASS_RES,
   QS_RETURN_TO,
   QUIZ_DECISION_PR,
   QUIZ_ON,
+  QUIZ_PATH,
   QUIZ_STAGE_BASIC,
   REGISTER_EXISTS_RE,
   REGISTER_WEAK_PW_RE,
@@ -62,6 +62,7 @@ import {
   TOKEN_NONE,
 } from './constants'
 import type { AuthFlowIn, AuthFlowOut, FinishAuthIn, PwLevel, QuizDestIn, RegisterErrIn, UmamiHost } from './types'
+import { HDR_CONTENT_TYPE } from '@/lib/http'
 
 /**
  * 密码强度(注册/重置时实时提示):0 太短(不可提交)/ 1 弱 / 2 中 / 3 强。
@@ -263,7 +264,7 @@ export async function runAuthFlow(x: AuthFlowIn): Promise<AuthFlowOut> {
   if (x.mode === MODE_FORGOT) {
     await fetch(API_FORGOT, {
       method: HTTP_POST,
-      headers: { 'Content-Type': MIME_JSON },
+      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
       body: JSON.stringify({ email: x.email }),
     }).catch(function ignore() {
       return null
@@ -281,7 +282,7 @@ export async function runAuthFlow(x: AuthFlowIn): Promise<AuthFlowOut> {
     const r = await fetch(API_RESET, {
       method: HTTP_POST,
       credentials: CREDENTIALS_INCLUDE,
-      headers: { 'Content-Type': MIME_JSON },
+      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
       body: JSON.stringify({ token, password: x.pw }),
     })
     if (r.ok === false) {
@@ -296,7 +297,7 @@ export async function runAuthFlow(x: AuthFlowIn): Promise<AuthFlowOut> {
     const r = await fetch(API_USERS, {
       method: HTTP_POST,
       credentials: CREDENTIALS_INCLUDE,
-      headers: { 'Content-Type': MIME_JSON },
+      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
       body: JSON.stringify({ email: x.email, password: x.pw, locale: x.locale }),
     })
     if (r.ok === false) {
@@ -313,7 +314,7 @@ export async function runAuthFlow(x: AuthFlowIn): Promise<AuthFlowOut> {
   const r2 = await fetch(API_LOGIN, {
     method: HTTP_POST,
     credentials: CREDENTIALS_INCLUDE,
-    headers: { 'Content-Type': MIME_JSON },
+    headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
     body: JSON.stringify({ email: x.email, password: x.pw }),
   })
   if (r2.ok === false) {

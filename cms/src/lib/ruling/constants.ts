@@ -3170,3 +3170,9 @@ export const NO_EVIDENCE = ''
  * 而这张卡是付费信任的地基(同 `matchDesignation` 那条「不点名法人」的道理)。
  */
 export const NO_ANSWER = ''
+
+/**
+ * 「人在不在加拿大」这道闸的键。它是通道判定里被单独问及的一格 ——
+ * 用它反查该闸问的是不是工签,以决定要不要把工签追问挂出来。
+ */
+export const GATE_KEY_STATUS_IN_CANADA = 'statusInCanada'

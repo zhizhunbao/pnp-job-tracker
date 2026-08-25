@@ -22,6 +22,7 @@
  */
 import type { GridIn } from './types'
 import css from './grid.module.css'
+import { CSS_VAR_COLS } from './constants'
 
 /**
  * 事实网格容器。
@@ -32,7 +33,7 @@ import css from './grid.module.css'
 export function Grid({ cols, children }: GridIn) {
   return (
     // eslint-disable-next-line react/forbid-dom-props -- 列数是调用方数据算出的运行时值,经 --gc 变量进 css
-    <div className={css.grid} style={{ '--gc': cols - 1 } as React.CSSProperties}>
+    <div className={css.grid} style={{ [CSS_VAR_COLS]: cols - 1 } as React.CSSProperties}>
       {children}
     </div>
   )

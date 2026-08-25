@@ -412,3 +412,4 @@ export const STATUS_NONE = ''
  * 不必再养一个「有没有写过」的布尔标记(两份状态迟早对不上)。
  */
 export const PREV_JSON_NONE = ''
+

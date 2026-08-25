@@ -16,14 +16,85 @@ import type { MatchJob } from '../jobs'
 import { friendChat } from '../llm'
 import { EMP_LOG, log } from '../log'
 import {
-  BRIEF_MAX, BRIEF_MIN, BRIEF_V2_MARK, CACHE_TTL_MS, CAP_MODE, CAP_NOC, CAP_PAGE, CAP_PROGRAM, CAP_PROV, CAP_TEXT,
-  CMP_MAX, COL_PREFIX, CSV_BOM, CSV_EMPTY, CSV_HEAD, CSV_NL, CSV_QUOTE, CSV_QUOTE_ESC, CSV_QUOTE_G_RE, CSV_QUOTE_RE,
-  CSV_SEP, CSV_YES, DATE_LEN, DIGIT_RE, EMP_PROGRAMS, EMP_SSR_ROWS, ENWIKI_BASE, FACT_COLS, FORMAT_JSON, FORMAT_KEY,
-  HTTP_URL_RE, JOIN_COMMA, LEVEL, MODE, NOC_RE, NOC_TITLES_MAX, NOT_FOUND_RE, PAGE_MAX, PARAM, PIPE, PROV_RE,
-  PUNCT_RE, RESEARCH_TIMEOUT_MS, SITE_LINE_RE, SITE_PICK_RE, SORT_SKILLED, SPACE, SPACES_RE, SPACE_GLOBAL_RE,
-  SUFFIX_RE, UNDERSCORE, URL_QS, VERDICT_ORDER, VIEW, WD_ACTION_ENTITIES, WD_ACTION_SEARCH, WD_API, WD_LANGS,
-  WD_LANG_EN, WD_LIMIT, WD_PROPS, WD_TIMEOUT_MS, WD_TYPE_ITEM, WD_UA, DATE8_RE, NOC_SPLIT_RE,
-  ALIAS_NONE, FETCHED_NONE, FILTER_UNSET, LMIA_QUARTER_NONE, PROVINCE_NONE, SITE_LINE_DROP, SQL_FRAG_NONE, WEBSITE_NONE,
+  ALIAS_NONE,
+  BRIEF_MAX,
+  BRIEF_MIN,
+  BRIEF_V2_MARK,
+  CACHE_TTL_MS,
+  CAP_MODE,
+  CAP_NOC,
+  CAP_PAGE,
+  CAP_PROGRAM,
+  CAP_PROV,
+  CAP_TEXT,
+  CMP_MAX,
+  COL_PREFIX,
+  CSV_BOM,
+  CSV_EMPTY,
+  CSV_HEAD,
+  CSV_NL,
+  CSV_QUOTE,
+  CSV_QUOTE_ESC,
+  CSV_QUOTE_G_RE,
+  CSV_QUOTE_RE,
+  CSV_SEP,
+  CSV_YES,
+  DATE8_RE,
+  DATE_LEN,
+  DIGIT_RE,
+  EMP_PROGRAMS,
+  EMP_SSR_ROWS,
+  ENWIKI_BASE,
+  FACT_COLS,
+  FETCHED_NONE,
+  FILTER_UNSET,
+  FORMAT_JSON,
+  FORMAT_KEY,
+  HTTP_URL_RE,
+  JOIN_COMMA,
+  LEVEL,
+  LMIA_QUARTER_NONE,
+  MODE,
+  NOC_RE,
+  NOC_SPLIT_RE,
+  NOC_TITLES_MAX,
+  NOT_FOUND_RE,
+  PAGE_MAX,
+  PARAM,
+  PIPE,
+  PROVINCE_NONE,
+  PROV_RE,
+  PUNCT_RE,
+  RESEARCH_TIMEOUT_MS,
+  SITE_LINE_DROP,
+  SITE_LINE_RE,
+  SITE_PICK_RE,
+  SORT_SKILLED,
+  SPACE,
+  SPACES_RE,
+  SPACE_GLOBAL_RE,
+  SQL_FRAG_NONE,
+  SUFFIX_RE,
+  UNDERSCORE,
+  URL_QS,
+  VERDICT_ORDER,
+  VIEW,
+  WD_ACTION_ENTITIES,
+  WD_ACTION_SEARCH,
+  WD_API,
+  WD_LANGS,
+  WD_LANG_EN,
+  WD_LANG_KO,
+  WD_LANG_ZH,
+  WD_LANG_ZH_CN,
+  WD_LANG_ZH_HANS,
+  WD_LIMIT,
+  WD_PROPS,
+  WD_SITE_EN,
+  WD_TIMEOUT_MS,
+  WD_TYPE_ITEM,
+  WD_UA,
+  WEBSITE_NONE,
 } from './constants'
 import { RESEARCH_PROMPT_HEAD, RESEARCH_PROMPT_TAIL, RESEARCH_SEARCH_TAIL, RESEARCH_SYSTEM } from './prompts'
 import { CACHE } from './variables'
@@ -42,6 +113,7 @@ import type {
 } from './types'
 import type { Requirement } from '../gauge'
 import type { EmployerFacts } from '../ruling'
+import { HDR_USER_AGENT } from '../http'
 // =========================================================================
 // 1. 雇主板:筛选口径(纯函数,int 测试直打这里)
 // =========================================================================
@@ -940,7 +1012,7 @@ async function wdGet(input: WdGetIn): WdGetOut {
   const qs = new URLSearchParams(input.params)
   qs.set(FORMAT_KEY, FORMAT_JSON)
   const r = await fetch(WD_API + URL_QS + qs.toString(), {
-    signal: input.signal, headers: { 'User-Agent': WD_UA },
+    signal: input.signal, headers: { [HDR_USER_AGENT]: WD_UA },
   })
   if (r.ok === false) {
     throw fail({ name: ERR_NAME.wikidata, msg: String(r.status), code: null })
@@ -1044,26 +1116,26 @@ function entityNameHits(input: EntityNameHitsIn): boolean {
  * @returns 回填载荷;不够格则 null。
  */
 function wikidataHitOf(e: WdEntity): WikidataHitOrNull {
-  if (e.sitelinks == null || e.sitelinks['enwiki'] == null || e.sitelinks['enwiki'].title == null) {
+  if (e.sitelinks == null || e.sitelinks[WD_SITE_EN] == null || e.sitelinks[WD_SITE_EN].title == null) {
     return null
   }
-  const title = e.sitelinks['enwiki'].title
+  const title = e.sitelinks[WD_SITE_EN].title
   if (title === '') {
     return null
   }
   let zh = ALIAS_NONE
   if (e.labels != null) {
-    if (e.labels['zh-cn'] != null && e.labels['zh-cn'].value != null && e.labels['zh-cn'].value !== '') {
-      zh = e.labels['zh-cn'].value
-    } else if (e.labels['zh-hans'] != null && e.labels['zh-hans'].value != null && e.labels['zh-hans'].value !== '') {
-      zh = e.labels['zh-hans'].value
-    } else if (e.labels['zh'] != null && e.labels['zh'].value != null && e.labels['zh'].value !== '') {
-      zh = e.labels['zh'].value
+    if (e.labels[WD_LANG_ZH_CN] != null && e.labels[WD_LANG_ZH_CN].value != null && e.labels[WD_LANG_ZH_CN].value !== '') {
+      zh = e.labels[WD_LANG_ZH_CN].value
+    } else if (e.labels[WD_LANG_ZH_HANS] != null && e.labels[WD_LANG_ZH_HANS].value != null && e.labels[WD_LANG_ZH_HANS].value !== '') {
+      zh = e.labels[WD_LANG_ZH_HANS].value
+    } else if (e.labels[WD_LANG_ZH] != null && e.labels[WD_LANG_ZH].value != null && e.labels[WD_LANG_ZH].value !== '') {
+      zh = e.labels[WD_LANG_ZH].value
     }
   }
   let ko = ALIAS_NONE
-  if (e.labels != null && e.labels['ko'] != null && e.labels['ko'].value != null) {
-    ko = e.labels['ko'].value
+  if (e.labels != null && e.labels[WD_LANG_KO] != null && e.labels[WD_LANG_KO].value != null) {
+    ko = e.labels[WD_LANG_KO].value
   }
   return { zh: zh, ko: ko, wiki: ENWIKI_BASE + encodeURIComponent(title.replace(SPACE_GLOBAL_RE, UNDERSCORE)) }
 }

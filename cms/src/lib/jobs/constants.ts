@@ -2630,3 +2630,4 @@ export const STREAM_NOTE_NONE = ''
  * 读到 STRIP_REPL 就知道这一行在剥字,不用回头确认第二个参数是不是漏写了。
  */
 export const STRIP_REPL = ''
+
