@@ -165,7 +165,7 @@
   },
   "src/lib/agent/functions.ts": {
     "local/step-down-order": {
-      "count": 13
+      "count": 11
     }
   },
   "src/lib/agent/types.ts": {
@@ -202,7 +202,7 @@
       "count": 3
     },
     "local/step-down-order": {
-      "count": 56
+      "count": 27
     }
   },
   "src/lib/consult/routes.ts": {
@@ -247,7 +247,7 @@
       "count": 8
     },
     "local/step-down-order": {
-      "count": 23
+      "count": 19
     }
   },
   "src/lib/employers/types.ts": {
@@ -260,7 +260,7 @@
       "count": 2
     },
     "local/step-down-order": {
-      "count": 3
+      "count": 1
     }
   },
   "src/lib/funnel/functions.ts": {
@@ -276,7 +276,7 @@
   },
   "src/lib/gauge/functions.ts": {
     "local/step-down-order": {
-      "count": 5
+      "count": 1
     }
   },
   "src/lib/i18n/functions.ts": {
@@ -311,7 +311,7 @@
       "count": 28
     },
     "local/step-down-order": {
-      "count": 40
+      "count": 34
     }
   },
   "src/lib/jobs/routes.ts": {
@@ -338,7 +338,7 @@
       "count": 5
     },
     "local/step-down-order": {
-      "count": 32
+      "count": 26
     }
   },
   "src/lib/llm/types.ts": {
@@ -472,7 +472,7 @@
       "count": 13
     },
     "local/step-down-order": {
-      "count": 68
+      "count": 56
     }
   },
   "src/lib/points/types.ts": {
@@ -555,7 +555,7 @@
       "count": 31
     },
     "local/step-down-order": {
-      "count": 131
+      "count": 126
     }
   },
   "src/lib/ruling/types.ts": {

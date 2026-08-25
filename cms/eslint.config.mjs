@@ -1683,11 +1683,34 @@ const localRules = {
         }
         return {
           Program(node) {
+            // 🔴 2026-08-25 教会它认**段横幅**:本条与「一级分段用三行 `//` 框 + N. 编号」
+            // 那条同时管着这些文件,而它原先不认识段 —— 于是会要求把函数搬到别的段里去,
+            // 照办就毁掉分段(实测 421 处违规里 70 处是这种,占 17%)。
+            // 判据:**报纸式排序在段内成立**;段与段之间的先后由分段本身决定,不归本条管。
+            const text = (context.sourceCode ?? context.getSourceCode()).getText()
+            const bars = []
+            const RE = /^\/\/ =+$/gm
+            let bm = RE.exec(text)
+            while (bm != null) {
+              bars.push(bm.index)
+              bm = RE.exec(text)
+            }
+            function sectionOf(pos) {
+              let n = 0
+              for (const b of bars) {
+                if (b < pos) {
+                  n += 1
+                }
+              }
+              return n
+            }
             let i = 0
             for (const st of node.body) {
               let d = st
               if (st.type === 'ExportNamedDeclaration' && st.declaration) d = st.declaration
-              if (d.type === 'FunctionDeclaration' && d.id) fns.set(d.id.name, { node: d, index: i++ })
+              if (d.type === 'FunctionDeclaration' && d.id) {
+                fns.set(d.id.name, { node: d, index: i++, section: sectionOf(d.range[0]) })
+              }
             }
           },
           CallExpression(node) {
@@ -1706,6 +1729,10 @@ const localRules = {
             for (const [callee, info] of firstCaller) {
               const mutual = calls.some((c) => c.from === callee && c.name === info.caller)
               if (mutual) continue
+              // 不同段之间不比先后:段横幅是更强的组织原则(见上)。
+              if (fns.get(callee).section !== fns.get(info.caller).section) {
+                continue
+              }
               if (fns.get(callee).index < info.index) {
                 context.report({ node: fns.get(callee).node.id, messageId: 'order', data: { callee, caller: info.caller } })
               }
