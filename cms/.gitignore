@@ -48,3 +48,6 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# eslint 增量缓存(2026-08-25:全量 2 分 14 秒 → 热跑 10 秒)
+.eslintcache

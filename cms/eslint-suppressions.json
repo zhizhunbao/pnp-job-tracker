@@ -143,19 +143,39 @@
   "src/lib/advisor/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 6
+    },
+    "local/jsdoc-tags": {
+      "count": 1
+    },
+    "local/no-bare-strings": {
+      "count": 25
     }
   },
   "src/lib/advisor/routes.ts": {
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-bare-strings": {
+      "count": 11
+    },
     "local/no-literal-index": {
       "count": 2
     },
     "local/no-magic-number": {
+      "count": 1
+    },
+    "local/no-new-error": {
       "count": 1
     }
   },
   "src/lib/advisor/types.ts": {
     "local/no-import-in-leaf": {
       "count": 4
+    }
+  },
+  "src/lib/advisor/variables.ts": {
+    "local/doc-every-member": {
+      "count": 1
     }
   },
   "src/lib/agent/constants.ts": {
@@ -216,8 +236,39 @@
     }
   },
   "src/lib/db/functions.ts": {
+    "jsdoc/require-param": {
+      "count": 7
+    },
+    "jsdoc/require-returns": {
+      "count": 7
+    },
+    "local/jsdoc-tags": {
+      "count": 14
+    },
+    "local/no-new-error": {
+      "count": 1
+    },
     "local/step-down-order": {
       "count": 2
+    }
+  },
+  "src/lib/db/pool.ts": {
+    "jsdoc/require-returns": {
+      "count": 1
+    },
+    "local/jsdoc-tags": {
+      "count": 1
+    }
+  },
+  "src/lib/db/sql.ts": {
+    "jsdoc/require-param": {
+      "count": 37
+    },
+    "jsdoc/require-returns": {
+      "count": 29
+    },
+    "local/file-header": {
+      "count": 1
     }
   },
   "src/lib/db/types.ts": {
@@ -371,22 +422,64 @@
     }
   },
   "src/lib/mart/functions.ts": {
+    "local/no-bare-strings": {
+      "count": 12
+    },
     "local/no-literal-index": {
       "count": 2
     },
+    "local/no-new-error": {
+      "count": 3
+    },
     "local/step-down-order": {
       "count": 3
+    },
+    "local/typed-signature": {
+      "count": 2
     }
   },
   "src/lib/mart/routes.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 10
+    },
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 3
     },
     "curly": {
       "count": 7
     },
+    "jsdoc/check-param-names": {
+      "count": 1
+    },
+    "jsdoc/require-param": {
+      "count": 1
+    },
+    "local/doc-every-export": {
+      "count": 1
+    },
+    "local/doc-every-function": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 2
+    },
+    "local/file-header": {
+      "count": 2
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/functions-file-no-variables": {
+      "count": 2
+    },
+    "local/no-arrow-function": {
+      "count": 54
+    },
     "local/no-bang": {
       "count": 25
+    },
+    "local/no-bare-strings": {
+      "count": 604
     },
     "local/no-comment-in-function": {
       "count": 110
@@ -400,8 +493,14 @@
     "local/no-nullish": {
       "count": 72
     },
+    "local/no-object-spread": {
+      "count": 1
+    },
     "local/no-optional": {
       "count": 4
+    },
+    "local/no-section-dashes": {
+      "count": 2
     },
     "local/no-ternary-branch": {
       "count": 4
@@ -563,6 +662,20 @@
       "count": 56
     },
     "local/no-undefined-type": {
+      "count": 6
+    }
+  },
+  "src/lib/seo/functions.ts": {
+    "jsdoc/check-param-names": {
+      "count": 1
+    },
+    "jsdoc/require-param": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 1
+    },
+    "local/typed-signature": {
       "count": 6
     }
   },

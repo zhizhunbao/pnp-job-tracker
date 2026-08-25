@@ -1934,7 +1934,7 @@ const eslintConfig = [
     // 域定型一个就往这里加一个。
     // 域每定型一个就往这张名单里加一个。2026-08-19 当天 `agent` / `llm` / `error` / `log`
     // 的 91 条存量(多数是写成一行的 type,属性没各自的注释)已经逐条补完,所以它们也在里面。
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts', 'src/lib/template.ts', 'src/lib/http.ts', ...API_DONE, 'src/lib/news/**/*.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mail/**/*.ts', 'src/lib/alerts/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time/**/*.ts', 'src/lib/i18n/**/*.ts', 'src/lib/quiz/**/*.ts'],
+    files: REFACTORED,
     plugins: { local: localRules },
     rules: {
       // 注释的形状
@@ -2049,7 +2049,7 @@ const eslintConfig = [
   },
   {
     // ── 现成闸接入 ② · JSDoc 族(与自研 doc 闸并行跑;零违规验证同构后,自研那几条再议退役)──
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts', 'src/lib/template.ts', 'src/lib/http.ts', ...API_DONE, 'src/lib/news/**/*.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mail/**/*.ts', 'src/lib/alerts/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/time/**/*.ts', 'src/lib/i18n/**/*.ts', 'src/lib/quiz/**/*.ts'],
+    files: REFACTORED,
     plugins: { jsdoc },
     rules: {
       'jsdoc/multiline-blocks': ['error', { noSingleLineBlocks: true }],
@@ -2176,6 +2176,18 @@ const eslintConfig = [
     rules: {
       'local/doc-multiline': 'error',
       'local/no-section-dashes': 'off',
+      // 2026-08-25 通配名单把 db 提前拉进了大名单(上面这块原本写着「到时再把 db 挪进去」)。
+      // 大名单里那几条对 `sql.ts` 不成立 —— 它装的是**另一种介质**(SQL),宪法明文特批:
+      // · no-bare-strings:222 处「裸串」是 SQL 文本本身,起名等于给 SQL 语句起名;
+      // · no-arrow-function / func-style:30 个模板构造器就是箭头;
+      // · one-parameter / typed-signature:模板构造器收多参拼片段,签名由 SQL 形状定;
+      // · no-magic-number:SQL 里的 LIMIT/OFFSET 数字含义在语句里。
+      // 这不是退让,是把「另一种介质」这条既有裁决落到闸上;db 定型批做完再逐条收回。
+      'local/no-bare-strings': 'off',
+      'local/no-arrow-function': 'off',
+      'local/one-parameter': 'off',
+      'local/typed-signature': 'off',
+      'func-style': 'off',
       'local/doc-every-export': 'error',
       'local/doc-every-function': 'error',
       'local/doc-every-member': 'error',
