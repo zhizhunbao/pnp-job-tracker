@@ -472,17 +472,8 @@
     "local/functions-file-no-variables": {
       "count": 2
     },
-    "local/no-arrow-function": {
-      "count": 54
-    },
     "local/no-bang": {
       "count": 25
-    },
-    "local/no-bare-strings": {
-      "count": 604
-    },
-    "local/no-comment-in-function": {
-      "count": 110
     },
     "local/no-literal-index": {
       "count": 1

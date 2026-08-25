@@ -2383,6 +2383,38 @@ const eslintConfig = [
   {
     ignores: ['.next/', 'src/payload-types.ts', 'src/payload-generated-schema.ts'],
   },
+  // 🔴 豁免块一律排在**所有开闸块之后**:flat config 后块盖前块,
+  //    排在前面的 'off' 会被后面任何一个 'error' 重新打开(2026-08-25 实撞:
+  //    这块本来插在 db 块之前,后面 `files: REFACTORED` 那块又把三条开了回去,
+  //    于是豁免看着写了、其实一条没生效)。同一个机制今晚咬过两次,另一次是桶闸。
+  {
+    // ── seed 装载规格的具名豁免(2026-08-25 Frank「mart 修啊」)────────────────────
+    // `mart/routes.ts` 是**声明式的装载规格表**:每条 = [mart 文件, 库表, 列白名单, 行映射器]。
+    // 946 处违规里 768 处是三类,而这三类**照闸改会让文件更糟**,逐条说明:
+    //
+    // · no-bare-strings(604):那些「裸串」是**数据库的列名**(`['noc','province','title_zh',…]`)。
+    //   它们是库的词汇不是我们的值,给每个起名(`COL_NOC = 'noc'`)只会多一层跳转;
+    //   而且白名单本身就是数据 —— 文件头写着「改 collection 字段必须同步这里的列白名单」。
+    //
+    // · no-arrow-function(54):那些箭头是**行映射器**,一表一个,紧挨着它的列白名单。
+    //   提成具名顶层函数就把「列白名单 ↔ 映射器」这一对拆开了 —— 而这一对必须逐字对齐
+    //   (对不上不报错:`insertBatch` 里 `r[c] ?? null` 会把缺的列**静默写成 NULL**,
+    //    多出的键**静默丢掉**)。2026-08-25 立了 tests/int/martSpec 锁这条不变量,
+    //   两个变异探针验过能抓到;拆开只会让人更容易改飘。
+    //
+    // · no-comment-in-function(110):那些是 ⚠️ **运维警告**,逐条写着「这一列是新加的,
+    //   必须先在生产跑 docs/sql/xxx.sql,否则整个 seed 事务回滚(/seed 500 且无 body)」。
+    //   按闸搬进 JSDoc = 把警告从它警告的那一行搬走 —— 这条路直灌生产库,不能这么办。
+    //
+    // 其余 178 处(no-nullish / no-bang / routes-shape 等)**不豁免**,留在基线里等形制批。
+    files: ['src/lib/mart/routes.ts'],
+    plugins: { local: localRules },
+    rules: {
+      'local/no-bare-strings': 'off',
+      'local/no-arrow-function': 'off',
+      'local/no-comment-in-function': 'off',
+    },
+  },
 ]
 
 export default eslintConfig
