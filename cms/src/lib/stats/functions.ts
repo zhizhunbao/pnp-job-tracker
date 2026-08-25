@@ -248,10 +248,7 @@ export function toStatRow(r: StatDbRow): StatRow {
   if (topCities === '') {
     topCities = EMPTY_TOP_CITIES
   }
-  let difficulty: StatDifficulty = null
-  if (r.difficulty != null) {
-    difficulty = r.difficulty
-  }
+  const difficulty: StatDifficulty = r.difficulty
   return {
     province: text(r.province), broad: text(r.broad), mid: mid,
     openJobs: numOrNull(r.open_jobs), new7d: numOrNull(r.new7d),

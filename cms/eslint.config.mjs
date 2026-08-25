@@ -2049,6 +2049,15 @@ const eslintConfig = [
       '@typescript-eslint/no-misused-promises': 'error',
       '@typescript-eslint/await-thenable': 'error',
       '@typescript-eslint/switch-exhaustiveness-check': 'error',
+      // 2026-08-25 Frank「能不能把这种非 null 判断都去掉…有没有什么规范和配置」——
+      // 就是这条(类型感知):凡是「按类型根本不可能为 null 还在判」的当场报,实测 109 处。
+      // ⚠️ 它的输出分两类,第二类比第一类值钱:
+      // ① 真死判断 —— 删掉;
+      // ② **类型在替外部数据撒谎** —— `if (m == null || typeof m.content !== 'string')` 这种,
+      //    m 是从外面解析进来的,类型说它非空只是**声明不是事实**。这时该改的是类型
+      //    (信任边界收窄成显式联合),不是删判断 —— 删掉等于拆掉信任边界校验,
+      //    那是宪法「永不上砧板」的四样之一。
+      '@typescript-eslint/no-unnecessary-condition': 'error',
     },
   },
   {

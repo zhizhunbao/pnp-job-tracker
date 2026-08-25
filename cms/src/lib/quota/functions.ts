@@ -11,6 +11,7 @@
  */
 
 import { PAYMENT_REQUIRED, TOO_MANY } from '../http'
+import { text } from '../db'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { DENY_IP, DENY_USER,
@@ -201,21 +202,10 @@ export function toSessionUser(u: MaybeRawUser): MaybeUser {
   if (u == null) {
     return null
   }
-  let email = ''
-  if (u.email != null) {
-    email = u.email
-  }
-  let role: string | null = null
-  if (u.role != null) {
-    role = u.role
-  }
-  let proUntil: string | null = null
-  if (u.proUntil != null) {
-    proUntil = u.proUntil
-  }
-  let profile = null
-  if (u.profile != null) {
-    profile = u.profile
-  }
-  return { id: u.id, email: email, role: role, proUntil: proUntil, profile: profile }
+  // 值级清洗走 db 词汇表(2026-08-21 定的四个词),不手搓:
+  // `text()` = 「文本格空值折空串」,口径全站一份。手写成 `let email = ''` 加一段 if
+  // 是把同一个决定又抄一遍 —— 抄一遍就多一处会走散的口径。
+  // role / proUntil / profile 直接透传:它们的 `| null` 是**真的没有**(库里就可空),
+  // 折成别的值等于替库编事实。
+  return { id: u.id, email: text(u.email), role: u.role, proUntil: u.proUntil, profile: u.profile }
 }

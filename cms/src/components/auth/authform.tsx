@@ -30,6 +30,9 @@ export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }:
   if (initialMode != null) {
     init = initialMode
   }
+  // 这三处不是空转:props 是 `string | undefined`(React 可选属性),这段 if 干的是
+  // **把 undefined 收成 null** —— 宪法「语言接缝在拿到的那一行当场收」说的正是它。
+  // 2026-08-25 折叠空转判空时误判过一次,tsc 当场拦下(TS2322),记在这免得再折。
   let token: string | null = null
   if (resetToken != null) {
     token = resetToken
