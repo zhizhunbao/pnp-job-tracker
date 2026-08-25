@@ -42,7 +42,6 @@ import type { MartRow, MartValue } from './types'
  * @param ctx 路由参数（表名；形状 Next 定）。
  * @returns { ok, table, bytes }；未授权 401、表名/载荷非法 400。
  */
-// eslint-disable-next-line local/one-parameter -- Next 动态路由 handler 的 (req, ctx) 双参是框架定的
 export async function martUploadRoute(req: Request, ctx: { params: Promise<{ name: string }> }): Promise<Response> {
   if (seedTokenOk({ req: req, queryToken: null }) === false) {
     return new Response(T_UNAUTHORIZED, { status: 401 })
@@ -107,7 +106,9 @@ async function insertBatch(client: PgClient, table: string, cols: string[], rows
     const chunk = rows.slice(i, i + BATCH)
     const params: MartValue[] = []
     const values = chunk
-      .map((r, ri) => '(' + cols.map((c, ci) => { params.push(r[c] ?? null); return `$${ri * cols.length + ci + 1}` }).join(',') + ')')
+      .map((r, ri) => '(' + cols.map((c, ci) => {
+        params.push(r[c] ?? null); return `$${ri * cols.length + ci + 1}` 
+      }).join(',') + ')')
       .join(',')
     // 跨边界断言:jsonb 列的绑定值是对象/数组,不在 SqlParam 的标量联合里 —— pg 会按列类型
     // 序列化收下。SqlParam 不为 seed 一个调用方扩容,断言留在边界这一行。
@@ -217,21 +218,21 @@ export async function seedRoute(req: Request): Promise<Response> {
       // sponsor_rate=分子/分母 0-1 小数)——改列后同样要清 seed_state('stats_occupation')
       ['noc', 'province', 'title_zh', 'title_zh_short', 'title_en', 'teer', 'broad', 'mid', 'fine', 'open_jobs', 'new7d', 'median_wage_annual', 'wage_low_annual', 'wage_high_annual', 'median_salary_annual', 'salary_n', 'named_jobs', 'fetched', 'new30d', 'new30d_prev', 'mom30d', 'new14d', 'new14d_prev', 'mom14d', 'closed30d', 'net30d', 'avg_days_open', 'pulse_score', 'pnp_provs', 'channel_tier', 'dead_provs', 'pnp_provs_cond', 'sponsor_pos_q', 'sponsor_pos_skilled_q', 'jvws_vac_q', 'sponsor_rate', 'sponsor_evidence'],
       (r) => ({ noc: r.noc, province: r.province, title_zh: r.titleZh, title_zh_short: r.titleZhShort, title_en: r.titleEn, teer: r.teer, broad: r.broad, mid: r.mid, fine: r.fine,
-                open_jobs: r.openJobs, new7d: r.new7d, median_wage_annual: r.medianWageAnnual, wage_low_annual: r.wageLowAnnual, wage_high_annual: r.wageHighAnnual, median_salary_annual: r.medianSalaryAnnual,
-                salary_n: r.salaryN, named_jobs: r.namedJobs, fetched: r.fetched,
-                new30d: r.new30d ?? null, new30d_prev: r.new30dPrev ?? null, mom30d: r.mom30d ?? null,
-                new14d: r.new14d ?? null, new14d_prev: r.new14dPrev ?? null, mom14d: r.mom14d ?? null,
-                closed30d: r.closed30d ?? null, net30d: r.net30d ?? null,
-                avg_days_open: r.avgDaysOpen ?? null, pulse_score: r.pulseScore ?? null,
-                pnp_provs: r.pnpProvs ?? null, channel_tier: r.channelTier ?? null, dead_provs: r.deadProvs ?? null,
-                pnp_provs_cond: r.pnpProvsCond ?? null,
-                sponsor_pos_q: r.sponsorPosQ ?? null, sponsor_pos_skilled_q: r.sponsorPosSkilledQ ?? null,
-                jvws_vac_q: r.jvwsVacQ ?? null, sponsor_rate: r.sponsorRate ?? null, sponsor_evidence: r.sponsorEvidence ?? null })],
+        open_jobs: r.openJobs, new7d: r.new7d, median_wage_annual: r.medianWageAnnual, wage_low_annual: r.wageLowAnnual, wage_high_annual: r.wageHighAnnual, median_salary_annual: r.medianSalaryAnnual,
+        salary_n: r.salaryN, named_jobs: r.namedJobs, fetched: r.fetched,
+        new30d: r.new30d ?? null, new30d_prev: r.new30dPrev ?? null, mom30d: r.mom30d ?? null,
+        new14d: r.new14d ?? null, new14d_prev: r.new14dPrev ?? null, mom14d: r.mom14d ?? null,
+        closed30d: r.closed30d ?? null, net30d: r.net30d ?? null,
+        avg_days_open: r.avgDaysOpen ?? null, pulse_score: r.pulseScore ?? null,
+        pnp_provs: r.pnpProvs ?? null, channel_tier: r.channelTier ?? null, dead_provs: r.deadProvs ?? null,
+        pnp_provs_cond: r.pnpProvsCond ?? null,
+        sponsor_pos_q: r.sponsorPosQ ?? null, sponsor_pos_skilled_q: r.sponsorPosSkilledQ ?? null,
+        jvws_vac_q: r.jvwsVacQ ?? null, sponsor_rate: r.sponsorRate ?? null, sponsor_evidence: r.sponsorEvidence ?? null })],
     ['stats_city', 'stats_city',
       ['city', 'province', 'open_jobs', 'new7d', 'median_wage_annual', 'median_salary_annual', 'salary_n', 'named_jobs', 'fetched'],
       (r) => ({ city: r.city, province: r.province, open_jobs: r.openJobs, new7d: r.new7d,
-                median_wage_annual: r.medianWageAnnual, median_salary_annual: r.medianSalaryAnnual,
-                salary_n: r.salaryN, named_jobs: r.namedJobs, fetched: r.fetched })],
+        median_wage_annual: r.medianWageAnnual, median_salary_annual: r.medianSalaryAnnual,
+        salary_n: r.salaryN, named_jobs: r.namedJobs, fetched: r.fetched })],
     ['stats', 'stats',
       ['province', 'broad', 'mid', 'open_jobs', 'new7d', 'median_wage_annual', 'median_salary_annual', 'named_jobs', 'stream_labels', 'aip_jobs', 'top_cities', 'fetched', 'difficulty'],
       (r) => ({ province: r.province, broad: r.broad, mid: r.mid ?? 'all', open_jobs: r.openJobs, new7d: r.new7d, median_wage_annual: r.medianWageAnnual, median_salary_annual: r.medianSalaryAnnual, named_jobs: r.namedJobs, stream_labels: r.streamLabels, aip_jobs: r.aipJobs, top_cities: r.topCities, fetched: r.fetched, difficulty: r.difficulty ?? null })],
@@ -254,13 +255,19 @@ export async function seedRoute(req: Request): Promise<Response> {
     for (const [file, table, cols, map] of dims) {
       // E12-03 防线升级(22c8d6a 空灌事故防线的延伸):mart **文件缺失** = 该表本轮没上传(新表未产出/分表上传)
       // → 跳过保留现有行,不再「清空+重灌 0 行」。要真清空一张维度表 = 上传内容为 [] 的文件(显式意图)。
-      if (martPaths(file).length === 0) { counts[table] = -1; continue }   // -1 = skipped(本轮无该表上传)
+      if (martPaths(file).length === 0) {
+        counts[table] = -1; continue 
+      }   // -1 = skipped(本轮无该表上传)
       // -3 = **表还没建**(DDL 与部署有先后)。seed 整个跑在一个事务里,撞 42P01 会让**这一轮全部回滚** ——
       // 一张新表的 SQL 还没在生产跑,就能把每小时一次的灌库整个停掉。to_regclass 查不到只返回 null,
       // 不抛错、也不污染事务(2026-08-12 随 noc_openings 新表一并加的闸)。
-      if (!(await client.query(SQL.TABLE_EXISTS, [table])).rows[0]?.t) { counts[table] = -3; continue }
+      if (!(await client.query(SQL.TABLE_EXISTS, [table])).rows[0]?.t) {
+        counts[table] = -3; continue 
+      }
       const hash = martHash(file)
-      if (prevHash[table] === hash) { counts[table] = -2; continue }   // -2 = 内容与上轮一致,整表免重灌
+      if (prevHash[table] === hash) {
+        counts[table] = -2; continue 
+      }   // -2 = 内容与上轮一致,整表免重灌
       const rows = mart(file).map(map).filter((d) => Object.values(d).some((v) => v !== undefined && v !== null && v !== ''))
       await client.query(`DELETE FROM payload_locked_documents_rels WHERE ${table}_id IS NOT NULL`)
       await client.query(`DELETE FROM ${table}`)
@@ -292,8 +299,9 @@ export async function seedRoute(req: Request): Promise<Response> {
     // 懒翻译/速读缓存列(body_zh/body_ko/summary_zh/summary_ko/summary_en)由 /api/news/translate、
     // /api/news/summarize 线上写入,seed 不许碰——除非该条 body_en 变了(重抽正文)才连带清缓存(防错位陈译)。
     // 滚出 60 条窗口的行删除;mart 缺文件=跳过(与 dims 同防线)。预翻批若恢复(budget>0)需同步调整此块。
-    if (martPaths('news').length > 0 && prevHash['news'] === martHash('news')) { counts.news = -2 }
-    else if (martPaths('news').length > 0) {
+    if (martPaths('news').length > 0 && prevHash['news'] === martHash('news')) {
+      counts.news = -2 
+    } else if (martPaths('news').length > 0) {
       const newsRows = mart('news').filter((r: any) => r.slug).map((r: any) => ({
         region: r.region, title: r.title, title_zh: r.titleZh ?? null, date: r.date, slug: r.slug, url: r.url, og_image: r.ogImage,
         excerpt: r.excerpt, importance: r.importance, importance_note: r.importanceNote,
@@ -309,7 +317,9 @@ export async function seedRoute(req: Request): Promise<Response> {
         `ON CONFLICT (slug) DO UPDATE SET ${staleClear}, ${newsUpdate}`)
       await markState('news', martHash('news'))
       counts.news = newsRows.length
-    } else { counts.news = -1 }
+    } else {
+      counts.news = -1 
+    }
 
     if (reset) {
       await client.query(SQL.RESET_UNLOCK_JOBS_COMPANIES)
@@ -463,7 +473,9 @@ export async function seedRoute(req: Request): Promise<Response> {
     //   任何一步读文件失败都会抛错 → 整事务回滚(martPaths 对「目录都不存在」也是抛错不是空表)。
     for (const p of martPaths('seen_ids')) {
       for (const id of JSON.parse(fs.readFileSync(p, 'utf8')) as string[]) {
-        if (id && !seenExt.has(id)) { seenExt.add(id); seenIds.push(id) }
+        if (id && !seenExt.has(id)) {
+          seenExt.add(id); seenIds.push(id) 
+        }
       }
     }
     counts.seen_ids = seenIds.length

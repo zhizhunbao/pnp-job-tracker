@@ -508,7 +508,6 @@ const hostOf = (u: string) => { try { return new URL(u).host.replace(/^www\./, '
       .then((r) => (r.ok ? r.json() : null)).then((d) => { if (d?.email) setJbEmail(d.email) }).catch(() => {})
       .finally(() => { if (!ctrl.signal.aborted) setJbDone(true) })
     return () => ctrl.abort()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [job.applyUrl])
   const applyEmail = jbEmail || applyEmailOf(text || '')
   // 2026-07-25 用户「有时候 AI 解析会失败,需要有重试按钮」:拉取抽成 loadFmt,失败态(fmt=null)挂重试钮

@@ -1624,7 +1624,7 @@ export function toBriefCell(r: CompanyBriefDbRow): MaybeStr {
  * @param b 右行。
  * @returns 负数 a 在前,正数 b 在前。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byLmiaRecency(a: SponsorEmployerRow, b: SponsorEmployerRow): number {
   if (b.lmia1q !== a.lmia1q) {
     return b.lmia1q - a.lmia1q
@@ -1645,7 +1645,7 @@ export function byLmiaRecency(a: SponsorEmployerRow, b: SponsorEmployerRow): num
  * @param b 右行。
  * @returns 负数 a 在前,正数 b 在前。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byNamedRank(a: RankedSponsor, b: RankedSponsor): number {
   if (a.rank !== b.rank) {
     return a.rank - b.rank
@@ -1663,7 +1663,7 @@ export function byNamedRank(a: RankedSponsor, b: RankedSponsor): number {
  * @param b 右行。
  * @returns 负数 a 在前,正数 b 在前。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function bySkilledDesc(a: SponsorEmployerRow, b: SponsorEmployerRow): number {
   let av = 0
   if (a.lmiaPositionsSkilled != null) {
@@ -1686,7 +1686,7 @@ export function bySkilledDesc(a: SponsorEmployerRow, b: SponsorEmployerRow): num
  * @param b 右行。
  * @returns 负数 a 在前,正数 b 在前。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byNumAsc(a: number, b: number): number {
   return a - b
 }

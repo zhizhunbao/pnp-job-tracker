@@ -11,12 +11,12 @@
   },
   "src/app/(frontend)/jobs/Jd.tsx": {
     "@eslint-community/eslint-comments/require-description": {
-      "count": 4
+      "count": 3
     }
   },
   "src/app/(frontend)/jobs/Jobs.tsx": {
     "@eslint-community/eslint-comments/require-description": {
-      "count": 5
+      "count": 3
     }
   },
   "src/app/(frontend)/jobs/PnpScoreCard.tsx": {
@@ -186,10 +186,10 @@
   },
   "src/lib/consult/functions.ts": {
     "local/no-db-vocab-in-functions": {
-      "count": 2
+      "count": 3
     },
     "local/step-down-order": {
-      "count": 55
+      "count": 56
     }
   },
   "src/lib/consult/types.ts": {
@@ -199,7 +199,7 @@
   },
   "src/lib/db/functions.ts": {
     "local/step-down-order": {
-      "count": 1
+      "count": 2
     }
   },
   "src/lib/db/types.ts": {
@@ -213,6 +213,12 @@
     }
   },
   "src/lib/employers/functions.ts": {
+    "local/no-bare-strings": {
+      "count": 4
+    },
+    "local/no-db-vocab-in-functions": {
+      "count": 7
+    },
     "local/no-literal-index": {
       "count": 4
     },
@@ -220,7 +226,7 @@
       "count": 8
     },
     "local/step-down-order": {
-      "count": 20
+      "count": 23
     }
   },
   "src/lib/employers/types.ts": {
@@ -257,6 +263,12 @@
     }
   },
   "src/lib/jobs/functions.ts": {
+    "local/no-bare-strings": {
+      "count": 2
+    },
+    "local/no-db-vocab-in-functions": {
+      "count": 21
+    },
     "local/no-literal-index": {
       "count": 15
     },
@@ -264,7 +276,7 @@
       "count": 28
     },
     "local/step-down-order": {
-      "count": 38
+      "count": 40
     }
   },
   "src/lib/jobs/routes.ts": {
@@ -326,14 +338,8 @@
     }
   },
   "src/lib/mart/routes.ts": {
-    "brace-style": {
-      "count": 15
-    },
     "curly": {
       "count": 7
-    },
-    "indent": {
-      "count": 12
     },
     "local/no-bang": {
       "count": 25
@@ -388,6 +394,9 @@
     }
   },
   "src/lib/plan/functions.ts": {
+    "local/no-bare-strings": {
+      "count": 1
+    },
     "local/no-magic-number": {
       "count": 8
     },
@@ -396,8 +405,14 @@
     }
   },
   "src/lib/points/functions.ts": {
+    "local/no-bare-strings": {
+      "count": 2
+    },
+    "local/no-db-vocab-in-functions": {
+      "count": 13
+    },
     "local/step-down-order": {
-      "count": 60
+      "count": 68
     }
   },
   "src/lib/points/types.ts": {
@@ -409,11 +424,20 @@
     }
   },
   "src/lib/quiz/functions.ts": {
+    "local/doc-every-member": {
+      "count": 20
+    },
+    "local/functions-file-no-variables": {
+      "count": 1
+    },
+    "local/no-bare-strings": {
+      "count": 498
+    },
     "local/no-magic-number": {
       "count": 77
     },
     "local/step-down-order": {
-      "count": 10
+      "count": 13
     }
   },
   "src/lib/quiz/routes.ts": {
@@ -433,11 +457,14 @@
     }
   },
   "src/lib/resume/functions.ts": {
+    "local/no-bare-strings": {
+      "count": 1
+    },
     "local/no-magic-number": {
       "count": 2
     },
     "local/step-down-order": {
-      "count": 1
+      "count": 2
     }
   },
   "src/lib/resume/routes.ts": {
@@ -446,11 +473,14 @@
     }
   },
   "src/lib/ruling/functions.ts": {
+    "local/no-bare-strings": {
+      "count": 1
+    },
     "local/no-db-vocab-in-functions": {
-      "count": 6
+      "count": 31
     },
     "local/step-down-order": {
-      "count": 130
+      "count": 131
     }
   },
   "src/lib/ruling/types.ts": {
@@ -467,8 +497,11 @@
     }
   },
   "src/lib/stats/functions.ts": {
-    "local/step-down-order": {
+    "local/no-db-vocab-in-functions": {
       "count": 2
+    },
+    "local/step-down-order": {
+      "count": 5
     }
   },
   "src/lib/stripe/routes.ts": {

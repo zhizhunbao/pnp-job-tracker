@@ -61,6 +61,10 @@ export function useLang(): [Lang, (l: Lang) => void, TFn] {
  * 老用户迁移(照列偏好 cookie 的先例):改造前偏好只在 localStorage,这里补写一次
  * cookie 并纠正当前语言;之后每次刷新服务端都读得到,永久零闪。
  *
+ * 迁移那个 effect 的依赖只有 `initial`:它**只在挂载与换初值时跑一次**,
+ * apply 是稳定闭包不必入依赖(此话原先挂在一张 eslint 特批牌上,
+ * 2026-08-25 那张牌已失效——React Compiler 接手后规则不再报——理由搬进这里保住)。
+ *
  * @param initial 服务端算好的首帧语言。
  * @returns 机器面板(当前语言与换语言)。
  */
@@ -103,7 +107,6 @@ export function useLangState(initial: Lang): LangStateOut {
     } catch {
       return
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- 只在挂载/换初值时跑一次迁移,apply 是稳定闭包
   }, [initial])
 
   return { lang, setLang }

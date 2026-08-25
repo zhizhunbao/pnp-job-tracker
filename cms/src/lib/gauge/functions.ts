@@ -897,7 +897,7 @@ function tiersOfArea(input: TiersOfIn): TiersOfOut {
  * @param b 后一个。
  * @returns 负数 = a 排在前面。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byLengthDesc(a: string, b: string): number {
   return b.length - a.length
 }
@@ -909,7 +909,7 @@ export function byLengthDesc(a: string, b: string): number {
  * @param b 后一行。
  * @returns 负数 = a 排在前面。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byScoreDesc(a: ScoredRow, b: ScoredRow): number {
   return b.s - a.s
 }
@@ -921,7 +921,7 @@ export function byScoreDesc(a: ScoredRow, b: ScoredRow): number {
  * @param b 后一行。
  * @returns 负数 = a 排在前面。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byValueAsc(a: Requirement, b: Requirement): number {
   let av = 0
   if (a.value != null) {
@@ -941,7 +941,7 @@ export function byValueAsc(a: Requirement, b: Requirement): number {
  * @param b 后一行。
  * @returns 负数 = a 排在前面。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byValueDesc(a: Requirement, b: Requirement): number {
   let av = 0
   if (a.value != null) {

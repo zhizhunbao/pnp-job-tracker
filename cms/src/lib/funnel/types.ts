@@ -7,7 +7,6 @@
 
 // eslint-disable-next-line local/no-import-in-leaf -- FunnelStep 与白名单数组同居 constants(派生即护栏),入库行的 event 格要它
 import type { FunnelStep } from './constants'
-// eslint-disable-next-line local/no-import-in-leaf -- db 是基建叶（能 query 的连接形状归它）
 import type { Db } from '../db'
 
 /**

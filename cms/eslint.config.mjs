@@ -197,10 +197,14 @@ const localRules = {
       },
       create(context) {
         const src = context.sourceCode ?? context.getSourceCode()
-                // 2026-08-23 撤编批:rows/callbacks 并入 functions 尾段,这几道闸历来不查那两个抽屉 ——
-        // 历史豁免面随「撤编后的固定尾段」banner 精确搬进新位置(纯移动零新债,基线不松)。
-        const tailAt0 = (context.sourceCode ?? context.getSourceCode()).getText().indexOf('撤编后的固定尾段')
-        const tailAt = tailAt0 < 0 ? Infinity : tailAt0
+        // 🔴 2026-08-25 撤掉「尾段开关」(Frank 让再查一遍时挖出来的):原先这里按**文本位置**
+        // 豁免 —— banner『撤编后的固定尾段』以下**全部不查**。它想保住的只是行构造器的历史豁免,
+        // 而那件事已经有精确检查(只认 `to*` 函数体)。按位置豁免的三条代价:
+        // ① 面积没人看得见 —— 实测 19 个文件里豁免了 7%–74%(db 74% / quiz 61% / rankings 51%);
+        // ② **新写的代码只要落在 banner 下面就自动免检**,而没人会意识到这件事;
+        // ③ 它盖住了真问题 —— 撤掉后炸出的 69 处 db 词汇,查下去是行构造器按 `xxxOf` 命名
+        //    (`employerFactsOf(r: SponsorDbRow): EmployerFacts` 按七词表该叫 `toEmployerFacts`),
+        //    正因为它们在 banner 以下,这个命名错位一直没人发现。
         // 用共享的 docAbove:它会跳过 `eslint-` 指令行再找 JSDoc。
         // 🔴 2026-08-20 给 doc-every-function / doc-every-export / jsdoc-tags 修过这个盲点,
         //    **漏了这一条** —— 属性上挂一行 eslint-disable,它就看不见上面的注释了(08-21 实撞)。
@@ -214,11 +218,9 @@ const localRules = {
         }
         return {
           TSPropertySignature(node) {
-            if (node.range[0] > tailAt) return
             if (!documented(node)) context.report({ node, messageId: 'member', data: { name: keyName(node) } })
           },
           Property(node) {
-            if (node.range[0] > tailAt) return
             // 只管**导出的常量表**里的键:函数里就地拼的对象不在此列(它是实现细节,不是约定);
             // 数组里的一行同理 —— `CASES = [{ id, page }, …]` 那是**数据**,形状由它的 type 说清,
             // 逐行逐字段再写一遍 JSDoc 只是噪音(2026-08-20 迁 caseLibrary 时实撞 32 条)。
@@ -257,15 +259,19 @@ const localRules = {
         // 2026-08-24 自守正则补 `x?`:`icons/functions.tsx` 这类抽屉的 tsx 形态原先整份跳过
         //    —— 文件挂着五道闸,一条都没生效过。
         if (!/(functions|routes)\.tsx?$/.test(context.filename ?? '')) return {}
-        // 2026-08-23 撤编批:rows/callbacks 并入 functions 尾段,这几道闸历来不查那两个抽屉 ——
-        // 历史豁免面随「撤编后的固定尾段」banner 精确搬进新位置(纯移动零新债,基线不松)。
-        const tailAt0 = (context.sourceCode ?? context.getSourceCode()).getText().indexOf('撤编后的固定尾段')
-        const tailAt = tailAt0 < 0 ? Infinity : tailAt0
+        // 🔴 2026-08-25 撤掉「尾段开关」(Frank 让再查一遍时挖出来的):原先这里按**文本位置**
+        // 豁免 —— banner『撤编后的固定尾段』以下**全部不查**。它想保住的只是行构造器的历史豁免,
+        // 而那件事已经有精确检查(只认 `to*` 函数体)。按位置豁免的三条代价:
+        // ① 面积没人看得见 —— 实测 19 个文件里豁免了 7%–74%(db 74% / quiz 61% / rankings 51%);
+        // ② **新写的代码只要落在 banner 下面就自动免检**,而没人会意识到这件事;
+        // ③ 它盖住了真问题 —— 撤掉后炸出的 69 处 db 词汇,查下去是行构造器按 `xxxOf` 命名
+        //    (`employerFactsOf(r: SponsorDbRow): EmployerFacts` 按七词表该叫 `toEmployerFacts`),
+        //    正因为它们在 banner 以下,这个命名错位一直没人发现。
         return {
           VariableDeclaration(node) {
             const p = node.parent
             const top = p?.type === 'Program' || (p?.type === 'ExportNamedDeclaration' && p.parent?.type === 'Program')
-            if (!top || node.range[0] > tailAt) return
+            if (!top) return
             const name = node.declarations[0]?.id?.name ?? '(解构)'
             context.report({ node, messageId: 'variable', data: { name } })
           },
@@ -733,13 +739,14 @@ const localRules = {
           return false
         }
 
-        // 2026-08-23 撤编批:rows/callbacks 并入 functions 尾段,这几道闸历来不查那两个抽屉 ——
-        // 历史豁免面随「撤编后的固定尾段」banner 精确搬进新位置(纯移动零新债,基线不松)。
-        const tailFound = (context.sourceCode ?? context.getSourceCode()).getText().indexOf('撤编后的固定尾段')
-        let tailAt = Infinity
-        if (tailFound >= 0) {
-          tailAt = tailFound
-        }
+        // 🔴 2026-08-25 撤掉「尾段开关」(Frank 让再查一遍时挖出来的):原先这里按**文本位置**
+        // 豁免 —— banner『撤编后的固定尾段』以下**全部不查**。它想保住的只是行构造器的历史豁免,
+        // 而那件事已经有精确检查(只认 `to*` 函数体)。按位置豁免的三条代价:
+        // ① 面积没人看得见 —— 实测 19 个文件里豁免了 7%–74%(db 74% / quiz 61% / rankings 51%);
+        // ② **新写的代码只要落在 banner 下面就自动免检**,而没人会意识到这件事;
+        // ③ 它盖住了真问题 —— 撤掉后炸出的 69 处 db 词汇,查下去是行构造器按 `xxxOf` 命名
+        //    (`employerFactsOf(r: SponsorDbRow): EmployerFacts` 按七词表该叫 `toEmployerFacts`),
+        //    正因为它们在 banner 以下,这个命名错位一直没人发现。
 
         // ① 模块路径:`import x from './constants'` 的 source。
         //    起名反而**不能用** —— 打包器要求这里是静态字面量,换成标识符就解析不了。
@@ -865,7 +872,7 @@ const localRules = {
         }
 
         function skip(node) {
-          return inRowBuilder(node) || node.range[0] > tailAt
+          return inRowBuilder(node)
         }
 
         /**
@@ -1658,10 +1665,14 @@ const localRules = {
         if (!/(functions|routes)\.tsx?$/.test(context.filename ?? '')) return {}
         const fns = new Map()
         const calls = []
-        // 2026-08-23 撤编批:rows/callbacks 并入 functions 尾段,这几道闸历来不查那两个抽屉 ——
-        // 历史豁免面随「撤编后的固定尾段」banner 精确搬进新位置(纯移动零新债,基线不松)。
-        const tailAt0 = (context.sourceCode ?? context.getSourceCode()).getText().indexOf('撤编后的固定尾段')
-        const tailAt = tailAt0 < 0 ? Infinity : tailAt0
+        // 🔴 2026-08-25 撤掉「尾段开关」(Frank 让再查一遍时挖出来的):原先这里按**文本位置**
+        // 豁免 —— banner『撤编后的固定尾段』以下**全部不查**。它想保住的只是行构造器的历史豁免,
+        // 而那件事已经有精确检查(只认 `to*` 函数体)。按位置豁免的三条代价:
+        // ① 面积没人看得见 —— 实测 19 个文件里豁免了 7%–74%(db 74% / quiz 61% / rankings 51%);
+        // ② **新写的代码只要落在 banner 下面就自动免检**,而没人会意识到这件事;
+        // ③ 它盖住了真问题 —— 撤掉后炸出的 69 处 db 词汇,查下去是行构造器按 `xxxOf` 命名
+        //    (`employerFactsOf(r: SponsorDbRow): EmployerFacts` 按七词表该叫 `toEmployerFacts`),
+        //    正因为它们在 banner 以下,这个命名错位一直没人发现。
         function topFn(node) {
           let fn = null
           for (let n = node; n; n = n.parent) {
@@ -1693,7 +1704,6 @@ const localRules = {
               if (cur == null || ci < cur.index) firstCaller.set(c.name, { index: ci, caller: c.from })
             }
             for (const [callee, info] of firstCaller) {
-              if (fns.get(callee).node.range[0] > tailAt) continue
               const mutual = calls.some((c) => c.from === callee && c.name === info.caller)
               if (mutual) continue
               if (fns.get(callee).index < info.index) {
@@ -1723,10 +1733,14 @@ const localRules = {
         //    —— 文件挂着五道闸,一条都没生效过。
         if (!/(functions|routes)\.tsx?$/.test(context.filename ?? '')) return {}
         const WORDS = new Set(['text', 'count', 'numOrNull', 'textOrNull', 'show', 'jsonOrNull'])
-        // 2026-08-23 撤编批:rows/callbacks 并入 functions 尾段,这几道闸历来不查那两个抽屉 ——
-        // 历史豁免面随「撤编后的固定尾段」banner 精确搬进新位置(纯移动零新债,基线不松)。
-        const tailAt0 = (context.sourceCode ?? context.getSourceCode()).getText().indexOf('撤编后的固定尾段')
-        const tailAt = tailAt0 < 0 ? Infinity : tailAt0
+        // 🔴 2026-08-25 撤掉「尾段开关」(Frank 让再查一遍时挖出来的):原先这里按**文本位置**
+        // 豁免 —— banner『撤编后的固定尾段』以下**全部不查**。它想保住的只是行构造器的历史豁免,
+        // 而那件事已经有精确检查(只认 `to*` 函数体)。按位置豁免的三条代价:
+        // ① 面积没人看得见 —— 实测 19 个文件里豁免了 7%–74%(db 74% / quiz 61% / rankings 51%);
+        // ② **新写的代码只要落在 banner 下面就自动免检**,而没人会意识到这件事;
+        // ③ 它盖住了真问题 —— 撤掉后炸出的 69 处 db 词汇,查下去是行构造器按 `xxxOf` 命名
+        //    (`employerFactsOf(r: SponsorDbRow): EmployerFacts` 按七词表该叫 `toEmployerFacts`),
+        //    正因为它们在 banner 以下,这个命名错位一直没人发现。
         function topFnName(node) {
           let fn = null
           for (let n = node; n; n = n.parent) {
@@ -1739,7 +1753,6 @@ const localRules = {
           CallExpression(node) {
             if (node.callee.type !== 'Identifier' || !WORDS.has(node.callee.name)) return
             if (/^to[A-Z]/.test(topFnName(node))) return
-            if (node.range[0] > tailAt) return
             context.report({ node: node.callee, messageId: 'vocab', data: { name: node.callee.name } })
           },
         }

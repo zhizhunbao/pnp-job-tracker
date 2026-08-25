@@ -321,7 +321,7 @@ export function useColWidths(opts: {
     if (val === seedOut.current) return
     seedOut.current = val
     try { document.cookie = `${COLW_COOKIE}=${encodeURIComponent(val)}; path=/; max-age=2592000; SameSite=Lax` } catch { /* ignore */ }
-  })   // eslint-disable-line react-hooks/exhaustive-deps -- 自己比对去重,依赖数组写不全反而漏写
+  })   // 依赖数组故意不写:上面自己比对 seedOut 去重,写依赖反而容易漏写一项
 
   // 种子只在「还没量到 + 列集对得上」时顶班:量到了立刻换成像素(同一批数据,差几像素看不出来)
   const useSeed = !measuredReady && seed?.keys === keysKey

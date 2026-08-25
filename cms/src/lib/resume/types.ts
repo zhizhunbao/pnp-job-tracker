@@ -6,7 +6,6 @@
  * @time 2026-08-22 16:00:00
  */
 
-// eslint-disable-next-line local/no-import-in-leaf -- db 是基础设施叶子（能 query 的连接形状归它），与 stats/types 同一特批
 import type { Db } from '../db'
 
 /**

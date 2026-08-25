@@ -753,7 +753,7 @@ export function passRow(r: Row): Row {
  * @param b 右行。
  * @returns 负数 a 在前,正数 b 在前。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byPlanOrder<T extends RankableRow>(a: DecoratedRow<T>, b: DecoratedRow<T>): number {
   if (a.zero !== b.zero) {
     if (a.zero) {
@@ -812,7 +812,7 @@ export function byPlanOrder<T extends RankableRow>(a: DecoratedRow<T>, b: Decora
  * @param b 右行。
  * @returns 负数 a 在前,正数 b 在前。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byDateDesc(a: TlEvent, b: TlEvent): number {
   if (a.date < b.date) {
     return 1
@@ -830,7 +830,7 @@ export function byDateDesc(a: TlEvent, b: TlEvent): number {
  * @param b 右行。
  * @returns 负数 a 在前,正数 b 在前。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byProvStream(a: TlCadence, b: TlCadence): number {
   const prov = a.prov.localeCompare(b.prov)
   if (prov !== 0) {
@@ -846,7 +846,7 @@ export function byProvStream(a: TlCadence, b: TlCadence): number {
  * @param b 右行。
  * @returns 负数 a 在前,正数 b 在前。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byDaysSince(a: EeCadence, b: EeCadence): number {
   return a.daysSince - b.daysSince
 }
@@ -858,7 +858,7 @@ export function byDaysSince(a: EeCadence, b: EeCadence): number {
  * @param b 右行。
  * @returns 负数 a 在前,正数 b 在前。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byTotalMonths(a: PlanPath, b: PlanPath): number {
   let at = 0
   if (a.totalMonths != null) {
@@ -881,7 +881,7 @@ export function byTotalMonths(a: PlanPath, b: PlanPath): number {
  * @param b 右行。
  * @returns 负数 a 在前,正数 b 在前。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byDeterminedMonths(a: PlanPath, b: PlanPath): number {
   if (a.determinedMonths !== b.determinedMonths) {
     return a.determinedMonths - b.determinedMonths
@@ -896,7 +896,7 @@ export function byDeterminedMonths(a: PlanPath, b: PlanPath): number {
  * @param b 右行。
  * @returns 负数 a 在前,正数 b 在前。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byDateAsc(a: string, b: string): number {
   if (a < b) {
     return -1

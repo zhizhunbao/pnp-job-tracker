@@ -6744,7 +6744,7 @@ function scalarTextOf(x: RCell): string {
  * @param b 后一行。
  * @returns 负数 = a 排在前面。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byDrawDateDesc(a: VerdictDrawRow, b: VerdictDrawRow): number {
   if (a.drawDate < b.drawDate) {
     return 1
@@ -6762,7 +6762,7 @@ export function byDrawDateDesc(a: VerdictDrawRow, b: VerdictDrawRow): number {
  * @param b 后一条。
  * @returns 负数 = a 排在前面。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byObstacleThenTier(a: RankedVerdict, b: RankedVerdict): number {
   if (a.obstacle !== b.obstacle) {
     return a.obstacle - b.obstacle
@@ -6782,7 +6782,7 @@ export function byObstacleThenTier(a: RankedVerdict, b: RankedVerdict): number {
  * @param b 后一行。
  * @returns 负数 = a 排在前面。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byListRankThenMonths(a: RankedJobRow, b: RankedJobRow): number {
   if (a.rank !== b.rank) {
     return a.rank - b.rank
@@ -6800,7 +6800,7 @@ export function byListRankThenMonths(a: RankedJobRow, b: RankedJobRow): number {
  * @param b 后一个。
  * @returns 负数 = a 排在前面。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byNumberAsc(a: number, b: number): number {
   return a - b
 }
@@ -6812,7 +6812,7 @@ export function byNumberAsc(a: number, b: number): number {
  * @param b 后一条。
  * @returns 负数 = a 排在前面。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byTierAsc(a: MyPathway, b: MyPathway): number {
   let aTier: number = SINK.tier
   if (a.c.tier != null) {
@@ -6835,7 +6835,7 @@ export function byTierAsc(a: MyPathway, b: MyPathway): number {
  * @param b 后一条。
  * @returns 负数 = a 排在前面。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byCostAsc(a: RankedBlock, b: RankedBlock): number {
   return a.cost - b.cost
 }
@@ -6847,7 +6847,7 @@ export function byCostAsc(a: RankedBlock, b: RankedBlock): number {
  * @param b 后一条。
  * @returns 负数 = a 排在前面。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byOpeningsDesc(a: RankedPathway, b: RankedPathway): number {
   return b.n - a.n
 }
@@ -6859,7 +6859,7 @@ export function byOpeningsDesc(a: RankedPathway, b: RankedPathway): number {
  * @param b 后一条。
  * @returns 负数 = a 排在前面。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byCountDesc(a: TrainableRow, b: TrainableRow): number {
   return b.n - a.n
 }

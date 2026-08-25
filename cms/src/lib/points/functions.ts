@@ -2878,7 +2878,7 @@ export function toProvInfoFact(r: ProvInfoDbRow): ProvInfoFact {
  * @param b 右行。
  * @returns 比较值。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byRatioAsc(a: ProvCompetition, b: ProvCompetition): number {
   return a.ratio - b.ratio
 }

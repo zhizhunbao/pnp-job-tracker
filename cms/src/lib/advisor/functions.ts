@@ -922,7 +922,6 @@ function lastTextOf(input: LastTextIn): string {
  * @returns 单元素工具表。
  */
 export function webFetchToolOf(input: WebFetchToolIn): ToolList {
-  // eslint-disable-next-line local/one-parameter, local/typed-signature -- pi 的 execute(toolCallId, args) 签名库定死
   async function execFetch(): ReplyOut {
     try {
       const res = await fetch(input.url, { signal: AbortSignal.timeout(WEBFETCH_TIMEOUT_MS) })

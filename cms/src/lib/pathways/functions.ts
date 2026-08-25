@@ -228,7 +228,7 @@ export function toPilotCommunity(r: PilotQuotaDbRow): PilotQuotaCommunityRow {
  * @param b 右行。
  * @returns 负数 a 在前,正数 b 在前。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byProvThenType(a: PilotQuotaAgg, b: PilotQuotaAgg): number {
   const prov = a.province.localeCompare(b.province)
   if (prov !== 0) {

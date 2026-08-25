@@ -108,7 +108,6 @@ export async function extractText(input: ExtractIn): ExtractOut {
   try {
     if (ext === EXT_PDF) {
       shimPdfGlobals()
-      // eslint-disable-next-line local/no-bare-strings -- 模块说明符必须是字面量:打包器(Turbopack/webpack)静态分析靠它,变量化会断依赖追踪
       const { PDFParse } = await import('pdf-parse')
       const parser = new PDFParse({ data: new Uint8Array(input.buf) })
       try {
@@ -119,7 +118,6 @@ export async function extractText(input: ExtractIn): ExtractOut {
       }
     }
     if (ext === EXT_DOCX) {
-      // eslint-disable-next-line local/no-bare-strings -- 同上:动态 import 的说明符必须是字面量
       const mod = await import('mammoth')
       const got = await mod.default.extractRawText({ buffer: input.buf })
       return { text: got.value, err: ERR_NONE }

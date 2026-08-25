@@ -2153,7 +2153,7 @@ export function toRequirement(row: ReqRow): Requirement {
  * @param b 右边那行。
  * @returns 排序比较值。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byOpenDesc(a: JobsRow, b: JobsRow): number {
   return b.open - a.open || a.prov.localeCompare(b.prov)
 }

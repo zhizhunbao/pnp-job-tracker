@@ -357,7 +357,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
         if (keys.length) { setVisible(keys); writeColsCookie(keys) }
       }
     } catch { /* ignore */ }
-  }, [])  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
   const saveCols = (next: ColKey[]) => {
     writeColsCookie(next)                                      // 写 cookie:下次刷新服务端直接渲对
     try { localStorage.setItem(PREF_KEY, JSON.stringify(next)) } catch { /* ignore */ }  // 留一份兜底
@@ -435,7 +435,7 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
   // 列宽变了必须重量:sticky 的 left 是**累计实宽**,拖列改了左侧列宽而偏移量还停在旧值,
   // 固定列就会钉在旧位置、拿不透明底色盖住右邻居(Frank 2026-08-16「怎么穿透了职位列」)。
   const colwKey = shown.map((c) => String(cw.width(c.key))).join(',')
-  useIsoLayoutEffect(() => { measureSticky() }, [shownKey, cw.overflow, colwKey])  // eslint-disable-line react-hooks/exhaustive-deps
+  useIsoLayoutEffect(() => { measureSticky() }, [shownKey, cw.overflow, colwKey])
   useEffect(() => {
     window.addEventListener('resize', measureSticky)
     return () => window.removeEventListener('resize', measureSticky)

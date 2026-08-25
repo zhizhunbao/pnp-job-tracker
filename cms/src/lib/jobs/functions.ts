@@ -2670,7 +2670,6 @@ function pickMail(s: string): string {
  * @param _e 捕到的错(查询层已留痕)。
  * @returns 空表。
  */
-// eslint-disable-next-line local/routes-shape -- catch 传具名函数,非 HTTP 芯本体
 export function emptySimilar(_e: Error): SimilarList {
   return []
 }
@@ -3421,7 +3420,7 @@ export function toApplyUrlCell(r: Row): MaybeStr {
  * @param b 右行。
  * @returns 负数 a 在前,正数 b 在前。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byLevelDesc(a: RankedHit, b: RankedHit): number {
   return b.rank - a.rank
 }
@@ -3433,7 +3432,7 @@ export function byLevelDesc(a: RankedHit, b: RankedHit): number {
  * @param b 右行。
  * @returns 负数 a 在前,正数 b 在前。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byHitValAsc(a: RankedHit, b: RankedHit): number {
   const av = a.v
   const bv = b.v
@@ -3462,7 +3461,7 @@ export function byHitValAsc(a: RankedHit, b: RankedHit): number {
  * @param b 右行。
  * @returns 负数 a 在前,正数 b 在前。
  */
-// eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byHitValDesc(a: RankedHit, b: RankedHit): number {
   const av = a.v
   const bv = b.v

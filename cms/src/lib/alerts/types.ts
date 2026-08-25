@@ -7,7 +7,6 @@
  */
 
 
-// eslint-disable-next-line local/no-import-in-leaf -- db 是基础设施叶子(能 query 的连接形状归它),与 stats/types 同一特批
 import type { Db } from '../db'
 // eslint-disable-next-line local/no-import-in-leaf -- 匹配引擎的输入行与维度表形状归 jobs 域(引擎契约,特批牌形态)
 import type { MatchDims, MatchJob } from '../jobs'

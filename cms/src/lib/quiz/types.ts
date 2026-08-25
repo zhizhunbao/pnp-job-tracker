@@ -12,7 +12,6 @@ import type { Lang } from '../i18n'
 import type { SelfProfile } from '../points'
 // eslint-disable-next-line local/no-import-in-leaf -- 热门职业行/事实卡/计数行的形状归 jobs 域(特批牌形态)
 import type { BroadNoc, NocOpenCount, QuizFacts, TopNoc } from '../jobs'
-// eslint-disable-next-line local/no-import-in-leaf -- db 是基础设施叶子(能 query 的连接形状归它),与 mail/types 同一特批
 import type { Db } from '../db'
 // eslint-disable-next-line local/no-import-in-leaf -- Payload Local API 的句柄形状归库(同 mail/types 的 PayloadHandle 特批)
 import type { Payload } from 'payload'
@@ -67,7 +66,7 @@ export type Question = {
   /**
    * 选项过滤(目前只有一处:加拿大经验不得超过总经验)。先前是框架的字符串表达式,现在是普通函数。
    */
-  // eslint-disable-next-line local/no-optional, local/one-parameter -- 字段库的声明形状:多数题没有选项过滤,缺席即全显;两参由「答案 + 候选值」这对语义定
+  // eslint-disable-next-line local/no-optional -- 字段库的声明形状:多数题没有选项过滤,缺席即全显;两参由「答案 + 候选值」这对语义定
   choiceVisible?: (a: Answers, v: BandValue) => boolean
 }
 
@@ -99,7 +98,7 @@ export type FieldDef = {
   /**
    * 档位 → 引擎输入(缺席=原样透传)。
    */
-  // eslint-disable-next-line local/no-optional, local/one-parameter -- 原样透传的字段不配换算函数;两参由「本题答案 + 全卷」这对语义定
+  // eslint-disable-next-line local/no-optional -- 原样透传的字段不配换算函数;两参由「本题答案 + 全卷」这对语义定
   toAnswer?: (v: BandValue, all: Answers) => EngineValue
 
   /**
