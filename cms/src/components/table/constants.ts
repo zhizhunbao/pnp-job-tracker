@@ -73,3 +73,15 @@ export const ALIGN_RIGHT = 'right'
  * ⚠️ 与上面 SIG_SEP 的 `|` 是两回事:那个切的是量宽签名里的列 key,这个切的是类名。
  */
 export const CLS_SEP = ' '
+
+/**
+ * 量完列宽后锁死的表格布局。fixed 让列宽只由第一行(与 colgroup)决定,
+ * 后面几百行再长的单元格也不会把列撑开 —— 这正是「百分比固定布局永不横滚」的实现。
+ */
+export const LAYOUT_LOCKED = 'fixed'
+
+/**
+ * 列宽的单位。用百分比而不是像素:容器宽度随视口变,百分比跟着变,
+ * 像素不跟 —— 手机上就会横滚。
+ */
+export const PCT_UNIT = '%'

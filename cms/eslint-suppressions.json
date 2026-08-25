@@ -34,15 +34,123 @@
       "count": 3
     }
   },
-  "src/app/api/version/route.ts": {
-    "local/doc-every-export": {
-      "count": 2
-    },
-    "local/file-header": {
+  "src/components/auth/accountmenupop.tsx": {
+    "local/no-comment-in-function": {
       "count": 1
     },
-    "local/route-shell-only": {
+    "local/no-split-import": {
+      "count": 1
+    }
+  },
+  "src/components/auth/functions.ts": {
+    "local/no-comment-in-function": {
+      "count": 3
+    }
+  },
+  "src/components/auth/hooks.ts": {
+    "local/no-comment-in-function": {
       "count": 2
+    }
+  },
+  "src/components/banner/hooks.ts": {
+    "local/no-comment-in-function": {
+      "count": 1
+    }
+  },
+  "src/components/button/functions.ts": {
+    "local/no-comment-in-function": {
+      "count": 1
+    }
+  },
+  "src/components/footer/types.ts": {
+    "local/no-import-in-leaf": {
+      "count": 1
+    }
+  },
+  "src/components/header/hooks.ts": {
+    "local/no-comment-in-function": {
+      "count": 2
+    }
+  },
+  "src/components/header/types.ts": {
+    "local/no-import-in-leaf": {
+      "count": 1
+    }
+  },
+  "src/components/i18n/hooks.ts": {
+    "@stylistic/max-len": {
+      "count": 1
+    },
+    "local/no-literal-index": {
+      "count": 2
+    }
+  },
+  "src/components/i18n/types.ts": {
+    "local/no-import-in-leaf": {
+      "count": 1
+    }
+  },
+  "src/components/icons/functions.tsx": {
+    "local/no-comment-in-function": {
+      "count": 1
+    }
+  },
+  "src/components/icons/types.ts": {
+    "local/no-import-in-leaf": {
+      "count": 1
+    }
+  },
+  "src/components/modal/functions.ts": {
+    "local/no-comment-in-function": {
+      "count": 2
+    }
+  },
+  "src/components/modal/hooks.ts": {
+    "@stylistic/max-len": {
+      "count": 1
+    }
+  },
+  "src/components/search/types.ts": {
+    "local/no-import-in-leaf": {
+      "count": 1
+    }
+  },
+  "src/components/select/select.tsx": {
+    "local/no-comment-in-function": {
+      "count": 1
+    }
+  },
+  "src/components/table/functions.ts": {
+    "local/no-comment-in-function": {
+      "count": 2
+    }
+  },
+  "src/components/table/hooks.ts": {
+    "local/no-comment-in-function": {
+      "count": 4
+    }
+  },
+  "src/components/table/table.tsx": {
+    "local/no-comment-in-function": {
+      "count": 1
+    }
+  },
+  "src/lib/advisor/routes.ts": {
+    "local/no-literal-index": {
+      "count": 2
+    },
+    "local/no-magic-number": {
+      "count": 1
+    }
+  },
+  "src/lib/advisor/types.ts": {
+    "local/no-import-in-leaf": {
+      "count": 4
+    }
+  },
+  "src/lib/agent/constants.ts": {
+    "local/no-import-in-leaf": {
+      "count": 1
     }
   },
   "src/lib/agent/functions.ts": {
@@ -50,9 +158,30 @@
       "count": 13
     }
   },
+  "src/lib/agent/types.ts": {
+    "local/no-import-in-leaf": {
+      "count": 4
+    }
+  },
+  "src/lib/alerts/functions.ts": {
+    "local/no-magic-number": {
+      "count": 12
+    }
+  },
   "src/lib/auth/functions.ts": {
+    "local/no-literal-index": {
+      "count": 1
+    },
+    "local/no-magic-number": {
+      "count": 6
+    },
     "local/step-down-order": {
       "count": 5
+    }
+  },
+  "src/lib/consult/constants.ts": {
+    "local/no-import-in-leaf": {
+      "count": 2
     }
   },
   "src/lib/consult/functions.ts": {
@@ -61,6 +190,11 @@
     },
     "local/step-down-order": {
       "count": 55
+    }
+  },
+  "src/lib/consult/types.ts": {
+    "local/no-import-in-leaf": {
+      "count": 7
     }
   },
   "src/lib/db/functions.ts": {
@@ -73,9 +207,25 @@
       "count": 1
     }
   },
+  "src/lib/employers/constants.ts": {
+    "local/doc-every-export": {
+      "count": 1
+    }
+  },
   "src/lib/employers/functions.ts": {
+    "local/no-literal-index": {
+      "count": 4
+    },
+    "local/no-magic-number": {
+      "count": 8
+    },
     "local/step-down-order": {
       "count": 20
+    }
+  },
+  "src/lib/employers/types.ts": {
+    "local/no-import-in-leaf": {
+      "count": 2
     }
   },
   "src/lib/error/functions.ts": {
@@ -84,6 +234,9 @@
     }
   },
   "src/lib/funnel/functions.ts": {
+    "local/no-magic-number": {
+      "count": 2
+    },
     "local/step-down-order": {
       "count": 1
     }
@@ -93,27 +246,55 @@
       "count": 5
     }
   },
+  "src/lib/i18n/server.ts": {
+    "local/door-forward-only": {
+      "count": 1
+    }
+  },
   "src/lib/jobs/constants.ts": {
     "@typescript-eslint/naming-convention": {
       "count": 1
     }
   },
   "src/lib/jobs/functions.ts": {
+    "local/no-literal-index": {
+      "count": 15
+    },
+    "local/no-magic-number": {
+      "count": 28
+    },
     "local/step-down-order": {
       "count": 38
+    }
+  },
+  "src/lib/jobs/routes.ts": {
+    "local/no-magic-number": {
+      "count": 1
     }
   },
   "src/lib/legal/constants.ts": {
     "@typescript-eslint/naming-convention": {
       "count": 1
+    },
+    "local/no-import-in-leaf": {
+      "count": 1
     }
   },
   "src/lib/llm/functions.ts": {
+    "local/no-literal-index": {
+      "count": 4
+    },
+    "local/no-magic-number": {
+      "count": 5
+    },
     "local/step-down-order": {
       "count": 32
     }
   },
   "src/lib/llm/types.ts": {
+    "local/no-import-in-leaf": {
+      "count": 1
+    },
     "local/no-optional": {
       "count": 44
     },
@@ -121,12 +302,25 @@
       "count": 1
     }
   },
+  "src/lib/lmia/functions.ts": {
+    "local/no-magic-number": {
+      "count": 2
+    }
+  },
   "src/lib/location/functions.ts": {
     "local/step-down-order": {
       "count": 1
     }
   },
+  "src/lib/mail/functions.ts": {
+    "local/no-magic-number": {
+      "count": 2
+    }
+  },
   "src/lib/mart/functions.ts": {
+    "local/no-literal-index": {
+      "count": 2
+    },
     "local/step-down-order": {
       "count": 3
     }
@@ -147,6 +341,12 @@
     "local/no-comment-in-function": {
       "count": 110
     },
+    "local/no-literal-index": {
+      "count": 1
+    },
+    "local/no-magic-number": {
+      "count": 9
+    },
     "local/no-nullish": {
       "count": 72
     },
@@ -166,11 +366,20 @@
   "src/lib/official/constants.ts": {
     "@typescript-eslint/naming-convention": {
       "count": 1
+    },
+    "local/no-import-in-leaf": {
+      "count": 1
     }
   },
   "src/lib/pathways/constants.ts": {
     "@typescript-eslint/naming-convention": {
       "count": 3
+    },
+    "local/no-import-in-leaf": {
+      "count": 3
+    },
+    "local/no-split-import": {
+      "count": 1
     }
   },
   "src/lib/pathways/functions.ts": {
@@ -179,6 +388,9 @@
     }
   },
   "src/lib/plan/functions.ts": {
+    "local/no-magic-number": {
+      "count": 8
+    },
     "local/step-down-order": {
       "count": 10
     }
@@ -197,17 +409,39 @@
     }
   },
   "src/lib/quiz/functions.ts": {
+    "local/no-magic-number": {
+      "count": 77
+    },
     "local/step-down-order": {
       "count": 10
     }
   },
+  "src/lib/quiz/routes.ts": {
+    "local/no-split-import": {
+      "count": 1
+    }
+  },
   "src/lib/quota/functions.ts": {
+    "local/no-literal-index": {
+      "count": 1
+    },
+    "local/no-magic-number": {
+      "count": 1
+    },
     "local/step-down-order": {
       "count": 4
     }
   },
   "src/lib/resume/functions.ts": {
+    "local/no-magic-number": {
+      "count": 2
+    },
     "local/step-down-order": {
+      "count": 1
+    }
+  },
+  "src/lib/resume/routes.ts": {
+    "local/no-split-import": {
       "count": 1
     }
   },
@@ -227,9 +461,24 @@
       "count": 6
     }
   },
+  "src/lib/seo/types.ts": {
+    "local/no-import-in-leaf": {
+      "count": 1
+    }
+  },
   "src/lib/stats/functions.ts": {
     "local/step-down-order": {
       "count": 2
+    }
+  },
+  "src/lib/stripe/routes.ts": {
+    "local/no-magic-number": {
+      "count": 1
+    }
+  },
+  "src/lib/stripe/types.ts": {
+    "local/no-split-import": {
+      "count": 1
     }
   },
   "src/lib/track/functions.ts": {

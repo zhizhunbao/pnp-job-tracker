@@ -7,7 +7,7 @@
  * @time 2026-08-24 04:30:00
  */
 import { useEffect, useRef, useState } from 'react'
-import { DRAG_IGNORE_SEL, EV_CHANGE, EV_KEYDOWN, KEY_ESC, NARROW_BP } from './constants'
+import { DRAG_IGNORE_SEL, EV_CHANGE, EV_KEYDOWN, KEY_ESC, MQ_MAX_WIDTH_HEAD, MQ_MAX_WIDTH_TAIL, NARROW_BP } from './constants'
 import { elOf } from './functions'
 import type { CardIn, CardOut, DragPos, DragStart, OverlayHandlers } from './types'
 
@@ -20,10 +20,10 @@ import type { CardIn, CardOut, DragPos, DragStart, OverlayHandlers } from './typ
  */
 export function useIsNarrow(bp = NARROW_BP): boolean {
   const [narrow, setNarrow] = useState(function init() {
-    return typeof window !== 'undefined' && window.matchMedia(`(max-width: ${bp}px)`).matches
+    return typeof window !== 'undefined' && window.matchMedia(MQ_MAX_WIDTH_HEAD + bp + MQ_MAX_WIDTH_TAIL).matches
   })
   useEffect(function bind() {
-    const mq = window.matchMedia(`(max-width: ${bp}px)`)
+    const mq = window.matchMedia(MQ_MAX_WIDTH_HEAD + bp + MQ_MAX_WIDTH_TAIL)
     function onChange() {
       setNarrow(mq.matches)
     }

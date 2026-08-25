@@ -13,12 +13,13 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
 import { LANG_COOKIE, LANG_KEY, makeT, parseLang, saveLang, type Lang, type TFn } from '@/lib/i18n'
 import type { LangStateOut } from './types'
+import { COOKIE_RE_HEAD, COOKIE_RE_TAIL, DOT_ESCAPED, DOT_RE, LANG_COOKIE_ATTRS, LANG_COOKIE_EQ, LANG_DEFAULT } from './constants'
 
 /**
  * 语言上下文(react 接缝件,住机器抽屉)。默认值只给「不在 Provider 下」的
  * 测试/存量路径兜底:中文 + 空操作。
  */
-const LangCtx = createContext<LangStateOut>({ lang: 'zh', setLang: noopSetLang })
+const LangCtx = createContext<LangStateOut>({ lang: LANG_DEFAULT, setLang: noopSetLang })
 
 /**
  * 默认上下文的空操作(不在 Provider 下换语言没有去处)。
@@ -82,7 +83,7 @@ export function useLangState(initial: Lang): LangStateOut {
 
   useEffect(function migrate() {
     try {
-      const re = new RegExp(`(?:^|;\\s*)${LANG_COOKIE.replace(/\./g, '\\.')}=([^;]+)`)
+      const re = new RegExp(COOKIE_RE_HEAD + LANG_COOKIE.replace(DOT_RE, DOT_ESCAPED) + COOKIE_RE_TAIL)
       const m = document.cookie.match(re)
       let cookieVal: string | null = null
       if (m != null && m[1] != null) {
@@ -95,7 +96,7 @@ export function useLangState(initial: Lang): LangStateOut {
       if (saved == null) {
         return
       }
-      document.cookie = `${LANG_COOKIE}=${saved}; path=/; max-age=31536000; samesite=lax`
+      document.cookie = LANG_COOKIE + LANG_COOKIE_EQ + saved + LANG_COOKIE_ATTRS
       if (saved !== initial) {
         apply(saved)
       }

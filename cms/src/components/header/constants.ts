@@ -203,3 +203,21 @@ export const GRP_INFO = 'info'
  * 抽屉「没有组展开」态:空串 = 两组全收着(再点一次开着的那组也回到它)。
  */
 export const GRP_NONE = ''
+
+/**
+ * 取当前登录态时的凭证策略。必须是 include ——
+ * 会话在 httpOnly cookie 里,omit/same-origin 都会让这个请求变成匿名的,
+ * 结果是「明明登录着,头像却不显示」。
+ */
+export const CRED_INCLUDE = 'include'
+
+/**
+ * 抽屉打开时锁横向滚动。只锁横向:纵向照常滚(抽屉本身可能比屏幕高)。
+ */
+export const OVERFLOW_LOCK = 'hidden'
+
+/**
+ * 内联样式复位成「按样式表来」。空串而不是某个具体值 ——
+ * 写死一个值会盖住 css 里的规则,空串才是把这一格还给样式表。
+ */
+export const STYLE_RESET = ''

@@ -6,7 +6,19 @@
  * @time 2026-08-24 01:30:00
  */
 import { createContext, useContext, useEffect, useState } from 'react'
-import { EV_MOUSEDOWN, FLOW_ERR, FLOW_SENT, OAUTH_FAIL, OAUTH_PARAM } from './constants'
+import {
+  ERR_NONE,
+  EV_MOUSEDOWN,
+  FIELD_EMPTY,
+  FLOW_ERR,
+  FLOW_SENT,
+  HISTORY_TITLE_UNUSED,
+  MODE_BACK_TO,
+  OAUTH_FAIL,
+  OAUTH_PARAM,
+  QS_NONE,
+  QS_PREFIX,
+} from './constants'
 import { finishAuth, googleHrefOf, localeOf, runAuthFlow } from './functions'
 import type { AuthFormHookIn, AuthFormHookOut, AuthMode, ClickOutsideIn } from './types'
 
@@ -50,11 +62,11 @@ export function useOauthFail(onFail: () => void) {
       if (u.searchParams.get(OAUTH_PARAM) === OAUTH_FAIL) {
         onFail()
         u.searchParams.delete(OAUTH_PARAM)
-        let qs = ''
+        let qs = QS_NONE
         if (u.searchParams.toString() !== '') {
-          qs = '?' + u.searchParams.toString()
+          qs = QS_PREFIX + u.searchParams.toString()
         }
-        window.history.replaceState(null, '', u.pathname + qs + u.hash)
+        window.history.replaceState(null, HISTORY_TITLE_UNUSED, u.pathname + qs + u.hash)
       }
     } catch {
       return
@@ -72,10 +84,10 @@ export function useOauthFail(onFail: () => void) {
  */
 export function useAuthForm(x: AuthFormHookIn): AuthFormHookOut {
   const [mode, setMode] = useState<AuthMode>(x.init)
-  const [email, setEmail] = useState('')
-  const [pw, setPw] = useState('')
+  const [email, setEmail] = useState(FIELD_EMPTY)
+  const [pw, setPw] = useState(FIELD_EMPTY)
   const [busy, setBusy] = useState(false)
-  const [err, setErr] = useState('')
+  const [err, setErr] = useState(ERR_NONE)
   const [sent, setSent] = useState(false)
   useOauthFail(oauthFailed)
 
@@ -85,13 +97,13 @@ export function useAuthForm(x: AuthFormHookIn): AuthFormHookOut {
 
   function switchMode(m: AuthMode) {
     setMode(m)
-    setErr('')
+    setErr(ERR_NONE)
   }
 
   function backFromSent() {
-    setMode('login')
+    setMode(MODE_BACK_TO)
     setSent(false)
-    setErr('')
+    setErr(ERR_NONE)
   }
 
   function onEmail(e: React.ChangeEvent<HTMLInputElement>) {
@@ -110,7 +122,7 @@ export function useAuthForm(x: AuthFormHookIn): AuthFormHookOut {
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setBusy(true)
-    setErr('')
+    setErr(ERR_NONE)
     try {
       const out = await runAuthFlow({ mode, email, pw, resetToken: x.resetToken, locale: localeOf() })
       if (out.kind === FLOW_SENT) {
@@ -123,7 +135,7 @@ export function useAuthForm(x: AuthFormHookIn): AuthFormHookOut {
         }
         return
       }
-      setPw('')
+      setPw(FIELD_EMPTY)
       await finishAuth({ returnTo: x.returnTo, onDone: x.onDone })
     } catch {
       setErr(x.t('acct.err.generic'))

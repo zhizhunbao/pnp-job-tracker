@@ -13,11 +13,14 @@ import {
   ACCT_LOADING,
   ACCT_OUT,
   API_ME,
+  CRED_INCLUDE,
   HOVER_CLOSE_MS,
+  OVERFLOW_LOCK,
   PUSH_RESET_MS,
   PUSH_TRANSITION,
   PUSH_X,
   SEL_MAIN,
+  STYLE_RESET,
 } from './constants'
 import { emptyUser, meToAcct } from './functions'
 import type { AcctHookIn, AcctPhase, AcctState, HoverOut, MeJson } from './types'
@@ -79,7 +82,7 @@ export function useAcct(x: AcctHookIn): AcctState {
       setAcct(markOut)
     }
 
-    fetch(API_ME, { credentials: 'include' }).then(readJson).then(applyMe).catch(onFail)
+    fetch(API_ME, { credentials: CRED_INCLUDE }).then(readJson).then(applyMe).catch(onFail)
   }, [x.loggedIn, x.hasAccountArea])
 
   return acct
@@ -146,8 +149,8 @@ export function useMainPush() {
     const m = document.querySelector(SEL_MAIN)
     const prevBody = document.body.style.overflowX
     const prevHtml = document.documentElement.style.overflowX
-    document.body.style.overflowX = 'hidden'
-    document.documentElement.style.overflowX = 'hidden'
+    document.body.style.overflowX = OVERFLOW_LOCK
+    document.documentElement.style.overflowX = OVERFLOW_LOCK
     if (m != null) {
       m.style.transition = PUSH_TRANSITION
 
@@ -164,11 +167,11 @@ export function useMainPush() {
       document.body.style.overflowX = prevBody
       document.documentElement.style.overflowX = prevHtml
       if (m != null) {
-        m.style.transform = ''
+        m.style.transform = STYLE_RESET
 
         function reset() {
           if (m != null) {
-            m.style.transition = ''
+            m.style.transition = STYLE_RESET
           }
         }
 

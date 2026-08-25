@@ -482,10 +482,34 @@ const localRules = {
       },
       create(context) {
         const METHODS = new Set(['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'])
+        // Next 的**段配置**:这几个名字必须以 `export const 名 = 字面量` 的形状**留在路由文件里** ——
+        // Next 是静态分析路由模块拿到它们的,搬进域再 re-export 就读不到了(和「模块路径不能起名」
+        // 同一类:那不是我们的代码组织问题,是平台的契约)。2026-08-24 立,表是封闭的。
+        // ⚠️ 只放行**名字**;值仍受别的闸管。绝大多数路由不需要它们(POST 本就不静态化、
+        //    route handler 默认就是 nodejs 运行时),写了通常是缺省值 —— 见 advisor 壳的退役记录。
+        const SEGMENT_CONFIG = new Set([
+          'dynamic', 'dynamicParams', 'revalidate', 'fetchCache',
+          'runtime', 'preferredRegion', 'maxDuration',
+        ])
+        function isSegmentConfig(stmt) {
+          if (stmt.type !== 'ExportNamedDeclaration' || stmt.declaration == null) {
+            return false
+          }
+          if (stmt.declaration.type !== 'VariableDeclaration') {
+            return false
+          }
+          for (const d of stmt.declaration.declarations) {
+            if (d.id == null || d.id.type !== 'Identifier' || SEGMENT_CONFIG.has(d.id.name) === false) {
+              return false
+            }
+          }
+          return true
+        }
         return {
           Program(node) {
             for (const stmt of node.body) {
               if (stmt.type === 'ExportNamedDeclaration' && stmt.source && !stmt.declaration) continue
+              if (isSegmentConfig(stmt)) continue
               let what = stmt.type
               if (stmt.type === 'ExportNamedDeclaration' && stmt.declaration) {
                 what = stmt.declaration.type === 'VariableDeclaration' ? 'export const（段配置常量）' : '带声明的 export'
@@ -532,6 +556,12 @@ const localRules = {
             const cut = Math.max(full.lastIndexOf('/'), full.lastIndexOf(String.fromCharCode(92)))
             const name = full.slice(cut + 1)
             if (!name || ALLOWED.includes(name)) return
+            // 2026-08-24:只管**域目录里的抽屉**。`src/lib/http.ts`、`src/lib/template.ts`
+            // 这类顶层叶子不是域(它们没有目录,也就没有抽屉),拿九个抽屉名要求它们没道理
+            // —— 通配名单换上来当天就误报到了 http.ts 头上。
+            const leafDir = full.slice(0, cut)
+            const cutLeaf = Math.max(leafDir.lastIndexOf('/'), leafDir.lastIndexOf(String.fromCharCode(92)))
+            if (leafDir.slice(cutLeaf + 1) === 'lib') return
             // db 独有的两个名字,别的域不许借:
             // · sql.ts —— 宪法特批的「另一种介质」(SQL 文本整体搬走的家),
             //   文件名就是内容说明,改叫 constants.ts 反而埋信号;
@@ -665,14 +695,29 @@ const localRules = {
         schema: [],
         messages: {
           bare: '裸字符串 {{ text }} 不许写在这里。值挪进 `constants.ts`(给模型看的字进 `prompts.ts`,给人看的文案进 `lib/i18n`)—— 抽出来是为了让它有地方挂注释。',
+          path: '路径 {{ text }} 不许散写:href / fetch 的路径打错是**静默 404**,没有任何东西会报错 —— 进 `constants.ts` 起名带注释。',
+          hex: '色值 {{ text }} 不许散在代码里(2026-08-24 Frank「颜色这个域 函数有字符串没检查出来吗」):静态的进 module.css,JS 要读的进 `constants.ts` 起名带注释。',
+          platform: '平台串 {{ text }} 不许散写:事件名 / 选择器打错是**静默失效**(监听器绑不上、选择器选不中,都不报错)—— 进 `constants.ts` 起名带注释。',
         },
       },
       create(context) {
+        // 打错就静默失效的平台调用:监听器绑不上、选择器选不中,两者都不报错。
+        const PLATFORM_CALLS = ['addEventListener', 'removeEventListener', 'querySelector', 'querySelectorAll', 'getElementById']
         const file = context.filename ?? ''
         // 2026-08-23 扩到 routes.ts(Frank「还有一大堆写死的常量」):HTTP 芯同样不许裸字。
         // 2026-08-24 自守补 `x?` 并收全部 .tsx:`icons/functions.tsx` 这类抽屉的 tsx 形态
         // 原先整份跳过(挂着五道闸一条没生效);组件的值大半写在 JSX 属性位,那里从没进过闸。
-        if (!/(functions|routes)\.tsx?$/.test(file) && !/\.tsx$/.test(file)) {
+        // 🔴 2026-08-24 合并 no-magic-string 后管**所有**文件,只豁免「值的家」三处。
+        // 原先两条规则把文件空间分掉:本条只管 functions/routes/tsx 且全查,
+        // no-magic-string 管其余文件却只查五个位置(色值/href/fetch/事件名/=== 比较)——
+        // 于是 `hooks.ts` / `schemas.ts` / `server.ts` 里普通位置的裸串两条都不查(实测 69 处)。
+        // 豁免的三处都是「这个文件本来就是装字符串的」:
+        //   · `constants.ts` —— 值的家,本条要求挪进去的正是它;
+        //   · `prompts.ts`   —— 给模型看的字的家;
+        //   · `schemas.ts`   —— TypeBox 是 `types.ts` 的运行时形态,`Type.Literal('PGWP')`
+        //                        里的字面量是**类型成员**不是值,与 `type X = 'PGWP'` 同一件事;
+        //   · `lib/i18n/**`  —— 三语文案表(zh/en/ko 三个文件就 13,656 个串)。
+        if (/(constants|prompts|schemas)\.ts$/.test(file) || /[\\/]lib[\\/]i18n[\\/]/.test(file)) {
           return {}
         }
 
@@ -760,6 +805,8 @@ const localRules = {
           if (node.value === '') {
             return true
           }
+          // `typeof window === 'undefined'` 是**语言成语**:'undefined' 是 typeof 的
+          // 八个定值之一,由语言规定 —— 起名反而看不懂(自 no-magic-string 并入时保留)。
           return p.left != null && p.left.type === 'UnaryExpression' && p.left.operator === 'typeof'
         }
 
@@ -770,7 +817,14 @@ const localRules = {
           if (p.type !== 'CallExpression' || p.callee == null) {
             return false
           }
-          if (p.callee.type !== 'Identifier' || p.callee.name !== 't') {
+          // 译函数有两种拿法:`t(key)` 直接拿,`x.t(key)` 从入参对象上拿
+          // (hooks 里译函数是随 props 传进来的,写成 x.t 是常态)。两种都是同一件事。
+          let isT = p.callee.type === 'Identifier' && p.callee.name === 't'
+          if (p.callee.type === 'MemberExpression' && p.callee.property != null
+            && p.callee.property.type === 'Identifier' && p.callee.property.name === 't') {
+            isT = true
+          }
+          if (isT === false) {
             return false
           }
           return p.arguments != null && p.arguments[0] === node
@@ -797,6 +851,12 @@ const localRules = {
           if (isI18nKey(node, p)) {
             return true
           }
+          if (isBeingNamed(node, p)) {
+            return true
+          }
+          if (isTypeGuarded(node, p)) {
+            return true
+          }
           // JSX 的 `foo=""`:DOM 的布尔缺省写法(`<input required="" />`),不是我们的值。
           if (node.value === '' && p.type === 'JSXAttribute') {
             return true
@@ -808,6 +868,103 @@ const localRules = {
           return inRowBuilder(node) || node.range[0] > tailAt
         }
 
+        /**
+         * 挑一句更准的话术(自 no-magic-string 并入)。只影响**报什么话**,
+         * 不影响**报不报** —— 白名单仍是封闭的那七格。
+         *
+         * 三类各自的危害不同,说清楚才知道为什么非改不可:
+         * · 色值:2026-08-24 Frank「颜色这个域 函数有字符串没检查出来吗」——
+         *   **任何位置**都拦,散在返回值/对象字面量里一样是没名字的死值;
+         * · 路径:href / fetch 打错是静默 404,没有任何东西会报错;
+         * · 平台串:2026-08-24 Frank「tsx 还是有很多常量没检查出来吗」第四刀 ——
+         *   事件名/选择器打错同样静默失效。⚠️ 联合类型实参**不在此列**:
+         *   那类打错是 tsc 红,编译器就是它的名字。
+         *
+         * @param node 字面量。
+         * @returns 消息 id。
+         */
+        function kindOf(node) {
+          if (/#[0-9a-fA-F]{3}/.test(node.value)) {
+            return 'hex'
+          }
+          const p = node.parent
+          if (p != null && p.type === 'JSXAttribute' && p.name != null && p.name.name === 'href') {
+            return 'path'
+          }
+          if (p != null && p.type === 'CallExpression' && p.arguments != null && p.arguments[0] === node) {
+            if (p.callee != null && p.callee.type === 'Identifier' && p.callee.name === 'fetch') {
+              return 'path'
+            }
+            if (p.callee != null && p.callee.type === 'MemberExpression' && p.callee.property != null
+              && PLATFORM_CALLS.includes(p.callee.property.name)) {
+              return 'platform'
+            }
+          }
+          return 'bare'
+        }
+
+        /**
+         * ⑥ 这一行**就是在起名**:模块顶层的 `export const NAME = '…'`。
+         * 报它等于要求给名字再起一个名字 —— `lib/http.ts` 十八行 HTTP 词汇
+         * (HDR_LOCATION / MIME_JSON / METHOD_POST…)全被报,就是这一格缺席。
+         * ⚠️ 只认**模块顶层**:函数体里的 `const x = 'foo'` 照报,那是藏在实现里的死值,
+         * 它没有跨文件的身份,也没有地方挂注释。
+         *
+         * @param node 字面量。
+         * @param p 它的父节点。
+         * @returns 是不是「正在被起名」。
+         */
+        function isBeingNamed(node, p) {
+          if (p == null || p.type !== 'VariableDeclarator' || p.init !== node) {
+            return false
+          }
+          const decl = p.parent
+          if (decl == null || decl.type !== 'VariableDeclaration') {
+            return false
+          }
+          const holder = decl.parent
+          if (holder == null) {
+            return false
+          }
+          return holder.type === 'Program' || holder.type === 'ExportNamedDeclaration'
+        }
+
+        /**
+         * ⑦ 有**字面量联合注解**兜着的位置:`let layout: 'auto' | 'fixed' = 'auto'`。
+         * 打错是 tsc 红,编译器就是它的名字 —— 这条判据本来写在 no-magic-string 的
+         * 注释里(「联合类型实参不在此列」),2026-08-24 并入时一起生效。
+         * ⚠️ 只认**写出来的**注解:推断出来的类型这里看不见,也就不算数。
+         *
+         * @param node 字面量。
+         * @param p 它的父节点。
+         * @returns 是不是被写出来的字面量类型盯着。
+         */
+        function isTypeGuarded(node, p) {
+          if (p == null || p.type !== 'VariableDeclarator' || p.init !== node) {
+            return false
+          }
+          const id = p.id
+          if (id == null || id.typeAnnotation == null) {
+            return false
+          }
+          const ann = id.typeAnnotation.typeAnnotation
+          if (ann == null) {
+            return false
+          }
+          if (ann.type === 'TSLiteralType') {
+            return true
+          }
+          if (ann.type !== 'TSUnionType' || ann.types == null) {
+            return false
+          }
+          for (const t of ann.types) {
+            if (t.type !== 'TSLiteralType') {
+              return false
+            }
+          }
+          return ann.types.length > 0
+        }
+
         return {
           Literal(node) {
             if (skip(node)) {
@@ -815,8 +972,12 @@ const localRules = {
             }
             // 正则也是常量(`constants.ts` 的文件头写着「标量、字符串表、正则」),
             // 但它的 `value` 是 RegExp 不是 string,第一版就这么漏过去了(2026-08-20 Frank 实拍)。
+            // ⚠️ 白名单要**先**过:`const SLOT_RE = /…/g` 是正在被起名(第⑥格),
+            // 2026-08-24 改写时把正则分支排在白名单前面,把它也报了 —— 顺序修正。
             if (node.regex) {
-              context.report({ node, messageId: 'bare', data: { text: `/${node.regex.pattern}/` } })
+              if (allowed(node) === false) {
+                context.report({ node, messageId: 'bare', data: { text: `/${node.regex.pattern}/` } })
+              }
               return
             }
             if (typeof node.value !== 'string') {
@@ -831,7 +992,7 @@ const localRules = {
               context.report({ node, messageId: 'bare', data: { text: '""(空串)' } })
               return
             }
-            context.report({ node, messageId: 'bare', data: { text: JSON.stringify(node.value).slice(0, 28) } })
+            context.report({ node, messageId: kindOf(node), data: { text: JSON.stringify(node.value).slice(0, 28) } })
           },
           TemplateElement(node) {
             if (skip(node)) {
@@ -1076,60 +1237,6 @@ const localRules = {
     // 自家档位串改查表(Record<联合, …>,键由联合类型管,样板 tagClsOf)或判 != null。
     // 空串判空(x !== '')是成语,豁免。JSX 属性串(role="tab" 这类)不在比较位,不查。
     // 覆盖 ts + tsx 全量;圈哪些文件由挂它的块定(现在只挂组件 A 块)。
-    'no-magic-string': {
-      meta: {
-        type: 'suggestion',
-        schema: [],
-        messages: {
-          magic: '比较位的裸字符串 `{{ s }}` 看不出是什么、打错也不报错。平台定值进 `constants.ts` 起名;自家档位改查表(键由联合类型管)。',
-          hex: '色值 `{{ s }}` 不许散在代码里(2026-08-24 Frank「颜色这个域 函数有字符串没检查出来吗」):静态的进 module.css,JS 要读的进 constants.ts 起名带注释。',
-          platform: '平台串 `{{ s }}` 不许散写(事件名/选择器打错是静默失效):进 constants.ts 起名带注释。',
-          path: '路径 `{{ s }}` 不许散写(2026-08-24 Frank「tsx 一堆常量没检查出来呢」):href/fetch 的路径打错是静默 404 —— 进 constants.ts 起名带注释。',
-        },
-      },
-      create(context) {
-        // constants.ts 是字符串的家,整个文件豁免。
-        if (/constants\.ts$/.test(context.filename ?? '')) return {}
-        return {
-          Literal(node) {
-            if (typeof node.value !== 'string') return
-            if (node.value === '') return
-            // 十六进制色值:**任何位置**都拦(比较位那条只管比较,色值散在返回值/
-            // 对象字面量里一样是没名字的死值)。
-            if (/#[0-9a-fA-F]{3}/.test(node.value)) {
-              context.report({ node, messageId: 'hex', data: { s: node.value } })
-              return
-            }
-            const p = node.parent
-            // 路径串:JSX 的 href 属性、fetch 的第一参 —— 打错是静默 404,必须有名字。
-            if (p?.type === 'JSXAttribute' && p.name?.name === 'href') {
-              context.report({ node, messageId: 'path', data: { s: node.value } })
-              return
-            }
-            if (p?.type === 'CallExpression' && p.callee?.name === 'fetch' && p.arguments[0] === node) {
-              context.report({ node, messageId: 'path', data: { s: node.value } })
-              return
-            }
-            // 平台调用串:事件名/选择器打错同样是静默失效(2026-08-24 Frank
-            // 「tsx 还是有很多常量没检查出来吗」第四刀)。联合类型实参不在此列 ——
-            // 那类打错是 tsc 红,编译器就是它的名字。
-            if (p?.type === 'CallExpression' && p.arguments[0] === node
-              && p.callee?.type === 'MemberExpression'
-              && ['addEventListener', 'removeEventListener', 'querySelector'].includes(p.callee.property?.name)) {
-              context.report({ node, messageId: 'platform', data: { s: node.value } })
-              return
-            }
-            if (p?.type !== 'BinaryExpression') return
-            if (p.operator !== '===' && p.operator !== '!==') return
-            // `typeof window === 'undefined'` 是语言成语:'undefined' 是 typeof 的
-            // 八个定值之一,由语言规定 —— 豁免 typeof 比较。
-            const other = p.left === node ? p.right : p.left
-            if (other.type === 'UnaryExpression' && other.operator === 'typeof') return
-            context.report({ node, messageId: 'magic', data: { s: node.value } })
-          },
-        }
-      },
-    },
 
     // 一个函数超过 75 行,读的人就得翻屏 —— 翻过去的那一刻,前半段的变量已经记不住了。
     // 原线 60(2026-08-20 立,当时五个定型域最长 57,拦「明天新长出来的那一个」,零误伤);
@@ -1694,7 +1801,11 @@ const localRules = {
 //    通配 + `eslint-suppressions.json` 基线(08-22 已选定的机制)= 新域自动进闸、
 //    存量不挡路、基线只紧不松。要豁免就写具名 ignores 并说明理由,别靠「没列进来」。
 const API_DONE = ['src/app/api/**/route.ts']
-const REFACTORED = ['src/lib/**/*.ts', ...API_DONE]
+// 只含 lib 的那半。抽屉形制类的闸(domain-file-names / door-forward-only)只对它开:
+// `app/api/*/route.ts` 是**壳**不是抽屉,拿九个抽屉名去要求它没有道理(实测误报 47 处)。
+const LIB = ['src/lib/**/*.ts']
+
+const REFACTORED = [...LIB, ...API_DONE]
 
 
 // 组件域滚动名单(2026-08-24 Frank「先把闸门都定义好,然后再新写域组件」):
@@ -1822,7 +1933,11 @@ const eslintConfig = [
     //   · no-split-import:另外五个域还有 3 处(consult 2 / i18n 1);
     //   · no-import-in-leaf:constants 还有 3 处(consult 2 / agent 1),
     //     types 还有 16 处(consult 8 / agent 5 / llm 1 / pathways 1 / jobs 1)。
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/legal/**/*.ts', 'src/lib/official/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts', 'src/lib/db/**/*.ts', 'src/lib/funnel/**/*.ts', 'src/lib/location/**/*.ts', 'src/lib/noc/**/*.ts', 'src/lib/profile/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/mail/**/*.ts', 'src/lib/alerts/**/*.ts', 'src/lib/lmia/**/*.ts', 'src/lib/track/**/*.ts', 'src/lib/auth/**/*.ts', 'src/lib/stripe/**/*.ts', 'src/lib/quiz/**/*.ts', 'src/lib/error/**/*.ts', 'src/lib/log/**/*.ts'],
+    files: LIB,
+    // i18n 按**语言**分文件是 2026-08-22 Frank 的拍板(zh/en/ko 各装整站一门语言,
+    // 域是文件内的分段横幅)—— zh.ts / en.ts / ko.ts 说的是语言不是抽屉,
+    // 拿九个抽屉名要求它们等于要推翻那次拍板。
+    ignores: ['src/lib/i18n/zh.ts', 'src/lib/i18n/en.ts', 'src/lib/i18n/ko.ts'],
     plugins: { local: localRules },
     rules: { 'local/domain-file-names': 'error', 'local/door-forward-only': 'error' },
   },
@@ -1830,13 +1945,13 @@ const eslintConfig = [
     // ── 值级清洗不进 functions:全部已重构域 warn = 整改清单(2026-08-22 Frank「把这个规则
     //    加到闸门」)。ruling/employers/plan/consult 等的 functions 还在用词汇洗格,
     //    清完一个域升一个 error(下面那块)。
-    files: ['src/lib/consult/**/*.ts', 'src/lib/employers/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/pathways/**/*.ts', 'src/lib/plan/**/*.ts', 'src/lib/stats/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/ruling/**/*.ts', 'src/lib/agent/**/*.ts', 'src/lib/llm/**/*.ts'],
+    files: REFACTORED,
     plugins: { local: localRules },
     rules: { 'local/no-db-vocab-in-functions': 'error' },
   },
   {
     // ── 同一条闸:立规当天就达标的三个域直接 error ──────────────────────────────
-    files: ['src/lib/stats/**/*.ts', 'src/lib/points/**/*.ts', 'src/lib/jobs/**/*.ts', 'src/lib/resume/**/*.ts', 'src/lib/quota/**/*.ts', 'src/lib/rankings/**/*.ts', 'src/lib/news/**/*.ts', 'src/lib/noc/**/*.ts'],
+    files: REFACTORED,
     plugins: { local: localRules },
     rules: { 'local/no-db-vocab-in-functions': 'error' },
   },
@@ -1990,7 +2105,7 @@ const eslintConfig = [
     rules: { 'local/route-shell-only': 'error' },
   },
   {
-    files: ['src/lib/ruling/**/*.ts', 'src/lib/gauge/**/*.ts', 'src/lib/points/**/*.ts'],
+    files: [...REFACTORED, ...COMPONENTS],
     plugins: { local: localRules },
     rules: {
       'local/no-literal-index': 'error',
@@ -2178,7 +2293,6 @@ const eslintConfig = [
       'local/function-length': 'error',
       'local/functions-file-no-variables': 'error',
       'local/no-magic-number': 'error',
-      'local/no-magic-string': 'error',
       'local/file-header': 'error',
       'local/doc-every-member': 'error',
       'local/doc-multiline': 'error',

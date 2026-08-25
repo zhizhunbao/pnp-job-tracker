@@ -76,7 +76,6 @@ export function meToAcct(d: MeJson): AcctState {
  * @returns AuthModal 组件模块。
  */
 export function loadAuthModal() {
-  // eslint-disable-next-line local/no-bare-strings -- 模块说明符必须是字面量:打包器静态分析靠它,变量化会断依赖追踪
   return import('@/components/auth').then(pickAuthModal)
 }
 

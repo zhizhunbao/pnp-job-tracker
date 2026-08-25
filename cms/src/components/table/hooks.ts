@@ -9,7 +9,17 @@
  */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-import { COL_W_FALLBACK, COL_W_MIN, EV_POINTERMOVE, EV_POINTERUP, PCT_DECIMALS, SIG_SEP, SIG_TAIL } from './constants'
+import {
+  COL_W_FALLBACK,
+  COL_W_MIN,
+  EV_POINTERMOVE,
+  EV_POINTERUP,
+  LAYOUT_LOCKED,
+  PCT_DECIMALS,
+  PCT_UNIT,
+  SIG_SEP,
+  SIG_TAIL,
+} from './constants'
 import { sortRows } from './functions'
 import type {
   Col,
@@ -155,7 +165,7 @@ export function useColWidths<T>(x: ColWidthsIn<T>): ColWidthsOut<T> {
 
   let layout: 'auto' | 'fixed' = 'auto'
   if (pct != null) {
-    layout = 'fixed'
+    layout = LAYOUT_LOCKED
   }
   return { tableRef, thRefOf, layout, widthOf, startResize }
 }
@@ -186,7 +196,7 @@ function measureCols<T>(x: MeasureIn<T>): Record<string, string> | null {
     if (el == null) {
       return null
     }
-    m[c.key] = (el.offsetWidth / total * 100).toFixed(PCT_DECIMALS) + '%'
+    m[c.key] = (el.offsetWidth / total * 100).toFixed(PCT_DECIMALS) + PCT_UNIT
   }
   return m
 }

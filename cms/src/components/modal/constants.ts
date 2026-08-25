@@ -190,3 +190,14 @@ export const CLS_SEP = ' '
  */
 export const TRANSFORM_NONE = ''
 
+/**
+ * 窄屏媒体查询的前半段(后面接断点像素与右括号)。
+ * 用 max-width 而不是 min-width:弹框的默认形态是桌面的居中白卡,
+ * 窄屏是**例外**分支 —— 查询写成「小于某宽度」才与这个默认一致。
+ */
+export const MQ_MAX_WIDTH_HEAD = '(max-width: '
+
+/**
+ * 窄屏媒体查询的后半段。
+ */
+export const MQ_MAX_WIDTH_TAIL = 'px)'

@@ -576,3 +576,38 @@ export const TITLE_NONE = ''
  */
 export const PRO_UNTIL_NONE = ''
 
+/**
+ * 表单字段的空初值:用户还没输入。
+ * 与「输入过又清空」在类型上无从区分,但在流程上只出现在挂载那一刻。
+ */
+export const FIELD_EMPTY = ''
+
+/**
+ * 没有错误可报。每次提交前、切换模式后都要复位成它 ——
+ * 留着上一次的错误比不报错更糟(用户以为这次也失败了)。
+ */
+export const ERR_NONE = ''
+
+/**
+ * URL 查询串的前导问号。只在**确有参数**时才拼上 ——
+ * 空参数时留一个孤零零的 `?` 会让地址栏看着像出了错。
+ */
+export const QS_PREFIX = '?'
+
+/**
+ * 「回到登录」用的模式名。`sent`(已发出重置邮件)那屏的返回落在登录而不是上一屏 ——
+ * 用户走到这一步的目的就是登录,退回忘密表单只会让他再填一次。
+ */
+export const MODE_BACK_TO = 'login'
+
+/**
+ * 没有查询串。与 QS_PREFIX 配对:参数删光之后地址栏该是干净的路径,
+ * 不是一个孤零零的问号。
+ */
+export const QS_NONE = ''
+
+/**
+ * `history.replaceState` 的第二参。规范里它是「新条目的标题」,但**所有浏览器都忽略它** ——
+ * 传空串是 MDN 给的写法(传别的字符串既不生效也不报错,只会让读的人以为它有用)。
+ */
+export const HISTORY_TITLE_UNUSED = ''
