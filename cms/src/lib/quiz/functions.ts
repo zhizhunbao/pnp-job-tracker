@@ -19,7 +19,9 @@
  * @author Frank
  * @time 2026-08-18 04:36:46
  *
- * 尾段注(rows 抽屉 2026-08-23 撤编并入):字段库(FIELDS)住尾段 —— 题面是数据、
+ * 2026-08-25:字段库的**数据半**已搬进 constants.ts 的 FIELD_SPECS(宪法「functions.ts
+ * 顶层只许有 function」),这里只剩装配(getFields)与行为半(fieldBehaviorOf)。
+ * 原尾段注:字段库(FIELDS)住尾段 —— 题面是数据、
  * 换算是行映射,一题一行放一起,拆开就得靠名字对齐两张表(设计:
  * docs/design/统一题库与付费面-20260731.md §1/§3)。铁律:挂不上任何结论的字段不入库。
  * 2026-08-03:题面原先是 SurveyJS 的题 JSON(type/name/isRequired 全是给框架看的),
@@ -41,6 +43,7 @@ import {
   EV_VISIBILITY,
   EXP,
   FACTS_CACHE_MAX,
+  FIELD_SPECS,
   FRENCH_V2_MAP,
   IN_CANADA,
   JSON_MIME,
@@ -72,10 +75,45 @@ import {
 } from './constants'
 import { CACHE } from './variables'
 import type {
-  Answers, AnswersDoc, AnswersOut, AnswersPatch, FieldNames, LoadAnswersIn, MaybeAnswers, MaybeRawDoc, NameFilter,
-  PulledOut, PushedOut, RawCell, RawDoc, RawText, SaveAnswersIn, SaveAnswersOut, ScoreAnswers, Stage, BandValue,
-  EngineAnswers, EngineValue, FieldDef, L, MaybeProvList, ProvList, RawAnswersSource, RawField, RawScoreSource,
-  DropFn, FactsStoreFn, FirstStoreFn, StoreFn, TopCachedIn, TopOut, TopRows, UnflagFn,
+  Answers,
+  AnswersDoc,
+  AnswersOut,
+  AnswersPatch,
+  BandValue,
+  DropFn,
+  EngineAnswers,
+  EngineValue,
+  FactsStoreFn,
+  FieldBehavior,
+  FieldDef,
+  FieldMap,
+  FieldNames,
+  FirstStoreFn,
+  L,
+  LoadAnswersIn,
+  MaybeAnswers,
+  MaybeProvList,
+  MaybeRawDoc,
+  NameFilter,
+  ProvList,
+  PulledOut,
+  PushedOut,
+  RawAnswersSource,
+  RawCell,
+  RawDoc,
+  RawField,
+  RawScoreSource,
+  RawText,
+  SaveAnswersIn,
+  SaveAnswersOut,
+  ScoreAnswers,
+  Stage,
+  StoreFn,
+  Tier,
+  TopCachedIn,
+  TopOut,
+  TopRows,
+  UnflagFn,
 } from './types'
 import { HDR_CONTENT_TYPE } from '../http'
 
@@ -609,7 +647,7 @@ export function fieldsOf(decision: string, stage: Stage, batch: number = 0, a?: 
  */
 function makeVisibleFilter(a: Answers): NameFilter {
   return function visibleOf(n: string): boolean {
-    const def = FIELDS[n]
+    const def = getFields()[n]
     if (def == null || def.visible == null) {
       return true
     }
@@ -654,7 +692,7 @@ function makeMissingFilter(a: Answers): NameFilter {
  * @returns 批首是 free 题 true。
  */
 export function batchLeadsFree(names: FieldNames): boolean {
-  const def = FIELDS[names[0]]
+  const def = getFields()[names[0]]
   if (def == null) {
     return false
   }
@@ -1125,401 +1163,67 @@ function studyLevelAnswer(v: BandValue): EngineValue {
 }
 
 /**
- * 字段库本体。键序即 toEngineAnswers 的遍历序,别乱动。
- * 每个字段头上的 `//` 是它的决策记录(带日期带人带理由),与三语题面同存。
+ * 装配好的题库(数据半 FIELD_SPECS + 行为半接回来)。
+ * 首次调用装配一次并记进 CACHE —— 纯数据加固定函数引用,进程内不会变。
+ *
+ * @returns 字段名 → 完整定义。
  */
-export const FIELDS: Record<string, FieldDef> = {
-  // 处境:决定签证题算不算数(境外没有加拿大签证),并计入基本题完整度
-  status: {
-    engineKey: 'currentStatus',
-    unlocks: ['rpt.c.window', 'rpt.g.basics'],
-    tier: 'free',
-    toAnswer: statusAnswer,
-    q: {
-      title: l('Where are you today?', '你现在的情况?', '현재 상황은?'),
-      choices: [
-        { value: 'overseas', text: l('Outside Canada, planning the move', '还在境外,想来加拿大工作', '해외에서 캐나다 취업 준비 중') },
-        { value: 'studying', text: l('Studying in Canada', '在加拿大读书', '캐나다에서 유학 중') },
-        { value: 'working', text: l('Working in Canada', '已经在加拿大工作', '캐나다에서 근무 중') },
-        { value: 'jobhunting', text: l('In Canada, job hunting', '在加拿大找工作', '캐나다에서 구직 중') },
-        { value: 'unsure', text: l('Not sure', '不清楚', '잘 모르겠음') },
-      ],
-    },
-  },
-  // 持的许可(2026-08-15 statusInCanada 拆闸):AB/PE 的闸是**有效工签**、NL 指名 **PGWP** ——
-  // 「人在境内」答不了这两道闸(学签在读曾因此被 AB 放行)。境外不问。
-  // 2026-08-16 Frank「这个上面的问题也没问,你是否有工签啊?」:**在读也要问** —— 先前拿「在加拿大读书」
-  // 推定持学签,推出来的却是「差工签」这种结论性判定,等于没问就替他认定。境内一律问,答了才判。
-  permitBand: {
-    engineKey: 'permit',
-    unlocks: ['rpt.g.basics'],
-    tier: 'free',
-    visible: inCanada,
-    toAnswer: permitAnswer,
-    q: {
-      title: l('What permit are you on now?', '你现在持什么许可?', '지금 어떤 허가로 체류 중인가요?'),
-      choices: [
-        { value: 2, text: l('PGWP', '毕业工签 PGWP', 'PGWP(졸업 후 취업 허가)') },
-        { value: 3, text: l('Other work permit', '其他工签', '기타 취업 허가') },
-        { value: 1, text: l('Study permit', '学签', '학업 허가') },
-        { value: 4, text: l('Visitor or no permit', '访客或没有许可', '방문자·허가 없음') },
-        { value: 9, text: l('Not sure', '不清楚', '잘 모르겠음') },
-      ],
-    },
-  },
-  // 现居省(2026-08-15 statusInCanada 拆闸):NB 的闸是「在新省住满 6 个月」、MB 是「在曼省在职」——
-  // 目标省答不了「你人在哪」(在安省问曼省的人不是曼省居民)。境外不问;领地并作一档。
-  resProv: {
-    engineKey: 'residenceProvince',
-    unlocks: ['rpt.g.basics'],
-    tier: 'free',
-    visible: inCanada,
-    toAnswer: resProvAnswer,
-    q: {
-      title: l('Which province are you in now?', '你现在人在哪个省?', '지금 어느 주에 있나요?'),
-      choices: [
-        { value: 'ON', text: l('Ontario', '安省 Ontario', '온타리오') },
-        { value: 'BC', text: l('British Columbia', 'BC 不列颠哥伦比亚', '브리티시컬럼비아') },
-        { value: 'AB', text: l('Alberta', '阿省 Alberta', '앨버타') },
-        { value: 'QC', text: l('Quebec', '魁省 Quebec', '퀘벡') },
-        { value: 'MB', text: l('Manitoba', '曼省 Manitoba', '매니토바') },
-        { value: 'SK', text: l('Saskatchewan', '萨省 Saskatchewan', '서스캐처원') },
-        { value: 'NS', text: l('Nova Scotia', '新斯科舍 Nova Scotia', '노바스코샤') },
-        { value: 'NB', text: l('New Brunswick', '新不伦瑞克 New Brunswick', '뉴브런즈윅') },
-        { value: 'NL', text: l('Newfoundland and Labrador', '纽芬兰 Newfoundland', '뉴펀들랜드') },
-        { value: 'PE', text: l('Prince Edward Island', '爱德华王子岛 PEI', '프린스에드워드아일랜드') },
-        { value: 'TERR', text: l('Territories', '三个领地 Territories', '준주 지역') },
-      ],
-    },
-  },
-  // 学历:官方分值表里分最重的一项(BC SIRS 0-26、SK SINP 0-23)。
-  // 先前引擎写死 highschool —— 每个省都少算十几分,「至少 N 分」低得没意义(题库扩充 20260802 §1)
-  eduBand: {
-    engineKey: 'edu',
-    unlocks: ['rpt.s.cur', 'rpt.s.alt.mark'],
-    tier: 'free',
-    toAnswer: eduAnswer,
-    q: {
-      title: l('Your highest education?', '最高学历?', '최종 학력은?'),
-      choices: [
-        { value: 1, text: l('High school or less', '高中或以下', '고졸 이하') },
-        { value: 2, text: l('College diploma', '大专或证书', '전문대·수료증') },
-        { value: 3, text: l('Bachelor', '本科', '학사') },
-        { value: 4, text: l('Master', '硕士', '석사') },
-        { value: 5, text: l('Doctorate', '博士', '박사') },
-      ],
-    },
-  },
-  // 年龄:SK 年龄分 0-12(18-35 满分、≥50 归零),BC 不算年龄 —— 引擎按区间中点匹官方档
-  ageBand: {
-    engineKey: 'age',
-    unlocks: ['rpt.s.cur', 'rpt.s.alt.mark'],
-    tier: 'free',
-    toAnswer: ageAnswer,
-    q: {
-      title: l('Your age?', '年龄段?', '연령대는?'),
-      choices: [
-        { value: 1, text: l('24 or under', '24 岁及以下', '24세 이하') },
-        { value: 2, text: l('25-30', '25-30 岁', '25-30세') },
-        { value: 3, text: l('31-35', '31-35 岁', '31-35세') },
-        { value: 4, text: l('36-40', '36-40 岁', '36-40세') },
-        { value: 5, text: l('41 or over', '41 岁以上', '41세 이상') },
-      ],
-    },
-  },
-  // 同职业总经验(含海外):省级分值表的 work 因素按**总年数**给分,不限加拿大。
-  // 与 expBand(加拿大经验)分工:那道题管 CEC 的 12 个月,这道题管省级 work 档位。
-  totalExpBand: {
-    engineKey: 'totalExpMonths',
-    unlocks: ['rpt.s.cur', 'rpt.s.alt.mark', 'rpt.g.zeroExp', 'rpt.n.firstJob'],
-    tier: 'free',
-    toAnswer: totalExpAnswer,
-    q: {
-      title: l('Total experience in this occupation?', '做这个职业一共多久了?(含海外)', '이 직종 총 경력은?(해외 포함)'),
-      // 2026-08-14 经验合一(与语言同批,Frank「怎么有两个」同款病):原来问区间(1-3/3-5 年),
-      // 官方分值表按整年给分,分值段还得追问精确年数。改成一步问整年,追问题自动消失
-      //(SK 这类按「近 5 年/6-10 年」拆段的省仍要拆段追问,那不是重复,是官方口径不同)。
-      choices: [
-        { value: 1, text: l('None', '没有', '없음') },
-        { value: 2, text: l('Under 1 year', '不到 1 年', '1년 미만') },
-        { value: 3, text: l('1 year', '1 年', '1년') },
-        { value: 4, text: l('2 years', '2 年', '2년') },
-        { value: 5, text: l('3 years', '3 年', '3년') },
-        { value: 6, text: l('4 years', '4 年', '4년') },
-        { value: 7, text: l('5+ years', '5 年以上', '5년 이상') },
-        { value: 9, text: l('Not sure', '不清楚', '잘 모르겠음') },
-      ],
-    },
-  },
-  // 英语:门槛建模(L2-04/05 的 BC 20 条 + ON 11 条)与换省对照(L2-08)落地后,
-  // 它已经真的驱动结论 —— 原先「只驱动完整度」那行注释同批销账。
-  clbBand: {
-    engineKey: 'clb',
-    unlocks: ['rpt.g.basics', 'rpt.s.cur'],
-    tier: 'free',
-    toAnswer: clbAnswer,
-    q: {
-      title: l('Your official language level (CLB)?', '你的语言成绩到 CLB 几?', '공인 언어 점수(CLB)는?'),
-      // 2026-08-13 语言合一(Frank 连点两次「怎么有两个语言」):原来这题问区间(4-5/6-7…),
-      // 官方分值表按精确档给分,于是分值段还得在区间里再问一遍 —— 同一件事问两遍。
-      // 改成一步问精确档,分值段的语言题因「范围只剩一个值」自动消失(PnpScoreCard 既有机制)。
-      choices: [
-        { value: 1, text: l('Not tested yet', '还没考', '시험 전') },
-        { value: 2, text: l('CLB 4', 'CLB 4', 'CLB 4') },
-        { value: 3, text: l('CLB 5', 'CLB 5', 'CLB 5') },
-        { value: 4, text: l('CLB 6', 'CLB 6', 'CLB 6') },
-        { value: 5, text: l('CLB 7', 'CLB 7', 'CLB 7') },
-        { value: 6, text: l('CLB 8', 'CLB 8', 'CLB 8') },
-        { value: 7, text: l('CLB 9', 'CLB 9', 'CLB 9') },
-        { value: 8, text: l('CLB 10 or higher', 'CLB 10 以上', 'CLB 10 이상') },
-      ],
-    },
-  },
-  // 加拿大经验:够 12 个月出 rpt.c.expOk,不够出 rpt.g.expShort(缺口免费)
-  expBand: {
-    engineKey: 'canadianExpMonths',
-    unlocks: ['rpt.c.expOk', 'rpt.g.expShort'],
-    tier: 'free',
-    toAnswer: expAnswer,
-    q: {
-      choiceVisible: expChoiceVisible,
-      // 紧跟在总经验那道题后面问 → 题干写「其中」,一眼看出是子集(全称在一屏里重复一遍是废话)
-      title: l('Of that, how long in Canada?', '其中在加拿大多久?', '그중 캐나다에서는?'),
-      choices: [
-        { value: 1, text: l('None', '没有', '없음') },
-        { value: 2, text: l('Under 1 year', '不到 1 年', '1년 미만') },
-        { value: 3, text: l('1-2 years', '1-2 年', '1-2년') },
-        { value: 4, text: l('2+ years', '2 年以上', '2년 이상') },
-        { value: 9, text: l('Not sure', '不清楚', '잘 모르겠음') },
-      ],
-    },
-  },
-  // 目标省:决定报告逐省算哪几个省(不选就按具名命中取前 3)
-  provBand: {
-    engineKey: 'targetProvinces',
-    unlocks: ['rpt.c.listedHit', 'rpt.c.listedMiss', 'rpt.c.drawBand', 'rpt.a.prov'],
-    tier: 'free',
-    toAnswer: provAnswer,
-    q: {
-      title: l('Target province?', '目标省?', '희망 주?'),
-      choices: [
-        { value: 1, text: l('BC', 'BC', 'BC') },
-        { value: 2, text: l('Ontario', '安省', '온타리오') },
-        { value: 3, text: l('Prairies', '草原三省', '프레리 3주') },
-        { value: 5, text: l('Atlantic', '海洋四省', '애틀랜틱 4주') },
-        { value: 4, text: l('Show me what is reachable', '先看哪个够得着', '가능한 곳부터 보기') },
-      ],
-    },
-  },
-  // 诉求(2026-08-03 Frank:「肯定是容易拿 PR 啊」→「如果不拿 PR 肯定去岗位多的啊」→「每个人诉求不一样」)。
-  // 选省份的排序目标本来被助手写死过两版(先按岗位量、后按难度),两版都错 —— 排序该由用户的诉求定。
-  // 一道题定一个目标函数:拿 PR = 按「容易拿提名」排;先找工作 = 按在招量排。两者都给对方那条当提示。
-  goalBand: {
-    engineKey: 'goal',
-    unlocks: ['rpt.p.best', 'rpt.p.mostJobs'],
-    tier: 'free',
-    toAnswer: goalAnswer,
-    q: {
-      title: l('What matters more right now?', '你现在更看重哪个?', '지금 무엇이 더 중요한가요?'),
-      choices: [
-        { value: 1, text: l('Getting nominated (PR)', '容易拿身份(省提名)', '영주권(주정부 지명)') },
-        { value: 2, text: l('Finding a job first', '先找到工作', '우선 취업') },
-      ],
-    },
-  },
-  // 卡③「选省份」唯一的专属题:雇主担保类通道按定义要先有 offer —— 有/没有各改一条真结论
-  // (有 → 下一步换成对照该省雇主通道;没有 → 出缺口)。「面试中/自雇」都按「还没有」算,不含糊。
-  offerBand: {
-    engineKey: 'hasJobOffer',
-    unlocks: ['rpt.n.employer', 'rpt.g.noOffer'],
-    tier: 'free',
-    toAnswer: offerAnswer,
-    q: {
-      title: l('Do you have a job offer in hand?', '手上有 offer 吗?', '받은 잡오퍼가 있나요?'),
-      choices: [
-        { value: 1, text: l('Yes', '有', '있음') },
-        { value: 2, text: l('In interviews', '面试中', '면접 중') },
-        { value: 3, text: l('No', '没有', '없음') },
-        { value: 4, text: l('Self-employed', '自雇', '자영업') },
-        { value: 9, text: l('Not sure', '不清楚', '잘 모르겠음') },
-      ],
-    },
-  },
-  // 门槛清单三类闸之一(2026-08-12,设计 docs/design/通道判定口径根治-20260812.md §3.3):
-  // 「有没有加拿大学历」是好几条通道的硬闸(NL 国际毕业生要 PGWP、PGWP 的前提就是加拿大院校毕业)。
-  // 不问就只能落「判不了」—— 而不问却当成「没有障碍」,正是把从没来过加拿大的人推荐去走
-  // 「国际毕业生」通道的那个病。第三类闸「人在不在境内」不另开题:既有的「你现在的情况」已经分开了。
-  canadaEduBand: {
-    engineKey: 'canadaStudy',
-    unlocks: ['rpt.g.basics'],
-    tier: 'free',
-    toAnswer: canadaEduAnswer,
-    q: {
-      title: l('Do you have a Canadian credential?', '你有加拿大的学历吗?', '캐나다 학력이 있나요?'),
-      choices: [
-        { value: 1, text: l('Yes', '有', '있음') },
-        { value: 2, text: l('No', '没有', '없음') },
-        { value: 9, text: l('Not sure', '不清楚', '잘 모르겠음') },
-      ],
-    },
-  },
-  // 专业对口(2026-08-15 Frank「毕业生干厨师靠谱吗?跨专业了怎么弄」→「加」):NL 国际毕业生
-  // 官方要求岗位与所学专业相关。只问有加拿大学历的人 —— 没有加拿大学历的,这条通道早被学历闸挡住了,
-  // 再问一遍专业是浪费一屏。
-  fieldMatchBand: {
-    engineKey: 'fieldMatch',
-    unlocks: ['rpt.g.basics'],
-    tier: 'free',
-    visible: hasCanadaEdu,
-    toAnswer: fieldMatchAnswer,
-    q: {
-      title: l('Is your Canadian credential in the same field as this job?',
-        '你的加拿大学历专业与这个职业对口吗?', '캐나다 학력 전공이 이 직종과 맞나요?'),
-      choices: [
-        { value: 1, text: l('Yes, same field', '对口', '전공과 일치') },
-        { value: 2, text: l('No, different field', '不对口(跨专业)', '전공과 다름') },
-        { value: 9, text: l('Not sure', '不清楚', '잘 모르겠음') },
-      ],
-    },
-  },
-  // 学历所在省(同批):NL 只给本省院校(Memorial / College of the North Atlantic)留了不对口的口子,
-  // 省外院校反而更严。这道题还同时喂两条既有官方条款 —— MB「外省院校毕业要 12 个月经验」、
-  // ON「近 3 年安省院校毕业只要 3 个月」,先前恒缺槽判不了。
-  eduProv: {
-    engineKey: 'studyProvince',
-    unlocks: ['rpt.s.cur', 'rpt.g.basics'],
-    tier: 'free',
-    visible: hasCanadaEdu,
-    toAnswer: eduProvAnswer,
-    q: {
-      title: l('Where did you study in Canada?', '你的加拿大学历在哪个省读的?', '캐나다 학력은 어느 주에서 취득했나요?'),
-      choices: [
-        { value: 'ON', text: l('Ontario', '安省 Ontario', '온타리오') },
-        { value: 'BC', text: l('British Columbia', 'BC 不列颠哥伦比亚', '브리티시컬럼비아') },
-        { value: 'AB', text: l('Alberta', '阿省 Alberta', '앨버타') },
-        { value: 'QC', text: l('Quebec', '魁省 Quebec', '퀘벡') },
-        { value: 'MB', text: l('Manitoba', '曼省 Manitoba', '매니토바') },
-        { value: 'SK', text: l('Saskatchewan', '萨省 Saskatchewan', '서스캐처원') },
-        { value: 'NS', text: l('Nova Scotia', '新斯科舍 Nova Scotia', '노바스코샤') },
-        { value: 'NB', text: l('New Brunswick', '新不伦瑞克 New Brunswick', '뉴브런즈윅') },
-        { value: 'NL', text: l('Newfoundland and Labrador', '纽芬兰 Newfoundland', '뉴펀들랜드') },
-        { value: 'PE', text: l('Prince Edward Island', '爱德华王子岛 PEI', '프린스에드워드아일랜드') },
-        { value: 'TERR', text: l('Territories', '三个领地 Territories', '준주 지역') },
-      ],
-    },
-  },
-  // 学制年数(2026-08-15 #316):全站此前从没问过,后果是三处官方条款恒判不了 ——
-  // ON「近 3 年安省院校毕业只要 3 个月经验」那行要 ≥2 年学制才适用(pathVerdict conditionHolds),
-  // MB 学历分按 1/2/3+ 年分档(pathVerdict mbEduOf、mbEoiEstimate mbEduYears),
-  // CRS 加拿大学习加分分 1-2 年与 3 年+ 两档(crsEstimate)。消费端全按**年**收,这里给整年数。
-  // 只问有加拿大学历的人(与 fieldMatchBand/eduProv 同闸):海外学历不喂这三处条款,问了挂不上结论。
-  eduYearsBand: {
-    engineKey: 'eduYears',
-    unlocks: ['rpt.g.basics'],
-    tier: 'free',
-    visible: hasCanadaEdu,
-    toAnswer: eduYearsAnswer,
-    q: {
-      title: l('How long was that program?', '这个学历的学制几年?', '그 과정은 몇 년제인가요?'),
-      choices: [
-        { value: 1, text: l('Under 1 year', '不到 1 年', '1년 미만') },
-        { value: 2, text: l('1 year', '1 年', '1년') },
-        { value: 3, text: l('2 years', '2 年', '2년') },
-        { value: 4, text: l('3 years or more', '3 年及以上', '3년 이상') },
-        { value: 9, text: l('Not sure', '不清楚', '잘 모르겠음') },
-      ],
-    },
-  },
-  // 法语(2026-08-15 立,2026-08-16 升级成档位)。两件事本来问了两遍:
-  //   · FCIP 的定义性门槛只看「四项够不够 NCLC 5」
-  //   · ON/SK 官方表的 language2 要的是**档位**(第二官方语言 CLB/NCLC 4-10 逐档给分)
-  // Frank「前面那个就是英语 后面那个就是法语吧」——于是并成一道:问档位,门槛由档位自己判。
-  // 量表用 NCLC(法语的尺子);官方 language2 档位按同数值可比,直接喂 clb2。
-  frenchBand: {
-    engineKey: 'frenchOk',
-    unlocks: ['rpt.g.basics'],
-    tier: 'free',
-    toAnswer: frenchAnswer,
-    q: {
-      title: l('Your French level (NCLC, all four abilities)?',
-        '法语四项到 NCLC 几?', '프랑스어 4개 영역 NCLC 등급은?'),
-      choices: [
-        { value: 1, text: l('No French / below NCLC 4', '不会法语或不到 NCLC 4', '프랑스어 미보유·NCLC 4 미만') },
-        { value: 2, text: l('NCLC 4', 'NCLC 4', 'NCLC 4') },
-        { value: 3, text: l('NCLC 5', 'NCLC 5', 'NCLC 5') },
-        { value: 4, text: l('NCLC 6', 'NCLC 6', 'NCLC 6') },
-        { value: 5, text: l('NCLC 7', 'NCLC 7', 'NCLC 7') },
-        { value: 6, text: l('NCLC 8 or higher', 'NCLC 8 以上', 'NCLC 8 이상') },
-        { value: 9, text: l('Not sure', '不清楚', '잘 모르겠음') },
-      ],
-    },
-  },
-  // 探索层:CRS → EE 分差(锁区 ee)
-  crsBand: {
-    engineKey: 'crs',
-    unlocks: ['rpt.c.eeAbove', 'rpt.c.eeBelow'],
-    tier: 'pro',
-    toAnswer: crsAnswer,
-    q: {
-      title: l('Your Express Entry CRS score?', '你的 EE 综合排名分(CRS)?', 'Express Entry CRS 점수는?'),
-      choices: [
-        { value: 1, text: l('Never calculated it', '没算过', '계산해 본 적 없음') },
-        { value: 2, text: l('Under 400', '400 以下', '400 미만') },
-        { value: 3, text: l('400-450', '400-450', '400-450') },
-        { value: 4, text: l('450+', '450 以上', '450 이상') },
-      ],
-    },
-  },
-  // 探索层:签证剩余 → 时间窗(锁区 window)。境外不传:没有加拿大签证,拿档位造时间窗=编数
-  pgwpBand: {
-    engineKey: 'pgwpMonthsLeft',
-    unlocks: ['rpt.c.window'],
-    tier: 'pro',
-    toAnswer: pgwpAnswer,
-    q: {
-      title: l('How long is left on your permit?', '你的签证还剩多久?', '비자 잔여 기간은?'),
-      choices: [
-        { value: 1, text: l('Under 6 months', '不到 6 个月', '6개월 미만') },
-        { value: 2, text: l('6-12 months', '6-12 个月', '6-12개월') },
-        { value: 3, text: l('1-2 years', '1-2 年', '1-2년') },
-        { value: 4, text: l('2+ years', '2 年以上', '2년 이상') },
-      ],
-    },
-  },
-  // B1-4 PGWP(20260803,Frank 拍板只加两道;探索批 2)。
-  // 「读书 vs 直接工作」的官方算术:课程时长档 + 层级 → 毕业后 PGWP 几个月(规则行 quote-anchored,
-  // 见 etl/build_pgwp.py)。档取下界(同 CLB/经验口径)。
-  studyMonthsBand: {
-    engineKey: 'studyMonths',
-    unlocks: ['rpt.c.pgwpLen', 'rpt.c.pgwpCombine'],
-    tier: 'free',
-    toAnswer: studyMonthsAnswer,
-    q: {
-      title: l('How long is the program you plan to take (or are in)?', '计划读(或在读)的课程有多长?', '계획 중(재학 중)인 과정 길이는?'),
-      choices: [
-        { value: 1, text: l('Under 8 months', '不到 8 个月', '8개월 미만') },
-        { value: 2, text: l('8 months - 1 year', '8 个月-1 年', '8개월-1년') },
-        { value: 3, text: l('1-2 years', '1-2 年', '1-2년') },
-        { value: 4, text: l('2 years or more', '2 年及以上', '2년 이상') },
-      ],
-    },
-  },
-  studyLevelBand: {
-    engineKey: 'studyLevel',
-    unlocks: ['rpt.c.pgwpLen', 'rpt.c.pgwpLang'],
-    tier: 'free',
-    toAnswer: studyLevelAnswer,
-    q: {
-      title: l('What level is that program?', '这个课程是什么层级?', '그 과정의 학위 수준은?'),
-      choices: [
-        { value: 1, text: l('College cert / diploma / post-grad cert', '大专文凭、证书或研文', '컬리지 수료증·디플로마') },
-        { value: 2, text: l('Bachelor', '本科', '학사') },
-        { value: 3, text: l('Master', '硕士', '석사') },
-        { value: 4, text: l('Doctorate', '博士', '박사') },
-      ],
-    },
-  },
+export function getFields(): FieldMap {
+  const hit = CACHE.fields
+  if (hit != null) {
+    return hit
+  }
+  const out: FieldMap = {}
+  for (const key of Object.keys(FIELD_SPECS)) {
+    const spec = FIELD_SPECS[key as keyof typeof FIELD_SPECS]
+    const beh = fieldBehaviorOf(key)
+    out[key] = {
+      engineKey: spec.engineKey,
+      unlocks: spec.unlocks,
+      tier: spec.tier as Tier,
+      q: { title: spec.q.title, choices: spec.q.choices, choiceVisible: beh.choiceVisible },
+      toAnswer: beh.toAnswer,
+      visible: beh.visible,
+    }
+  }
+  CACHE.fields = out
+  return out
 }
+
+/**
+ * 一个字段的行为半:换算 / 题级显隐 / 选项过滤。
+ * 用 switch 而不是一张表:表就是 functions.ts 里的变量(那归 constants/variables),
+ * 而这三样都是函数引用,constants 装不下(它只到 JSON)。
+ *
+ * @param key 字段名。
+ * @returns 该字段的三个行为(没有的给 null)。
+ */
+function fieldBehaviorOf(key: string): FieldBehavior {
+  switch (key) {
+    case 'status': return { toAnswer: statusAnswer, visible: null, choiceVisible: null }
+    case 'permitBand': return { toAnswer: permitAnswer, visible: inCanada, choiceVisible: null }
+    case 'resProv': return { toAnswer: resProvAnswer, visible: inCanada, choiceVisible: null }
+    case 'eduBand': return { toAnswer: eduAnswer, visible: null, choiceVisible: null }
+    case 'ageBand': return { toAnswer: ageAnswer, visible: null, choiceVisible: null }
+    case 'totalExpBand': return { toAnswer: totalExpAnswer, visible: null, choiceVisible: null }
+    case 'clbBand': return { toAnswer: clbAnswer, visible: null, choiceVisible: null }
+    case 'expBand': return { toAnswer: expAnswer, visible: null, choiceVisible: expChoiceVisible }
+    case 'provBand': return { toAnswer: provAnswer, visible: null, choiceVisible: null }
+    case 'goalBand': return { toAnswer: goalAnswer, visible: null, choiceVisible: null }
+    case 'offerBand': return { toAnswer: offerAnswer, visible: null, choiceVisible: null }
+    case 'canadaEduBand': return { toAnswer: canadaEduAnswer, visible: null, choiceVisible: null }
+    case 'fieldMatchBand': return { toAnswer: fieldMatchAnswer, visible: hasCanadaEdu, choiceVisible: null }
+    case 'eduProv': return { toAnswer: eduProvAnswer, visible: hasCanadaEdu, choiceVisible: null }
+    case 'eduYearsBand': return { toAnswer: eduYearsAnswer, visible: hasCanadaEdu, choiceVisible: null }
+    case 'frenchBand': return { toAnswer: frenchAnswer, visible: null, choiceVisible: null }
+    case 'crsBand': return { toAnswer: crsAnswer, visible: null, choiceVisible: null }
+    case 'pgwpBand': return { toAnswer: pgwpAnswer, visible: null, choiceVisible: null }
+    case 'studyMonthsBand': return { toAnswer: studyMonthsAnswer, visible: null, choiceVisible: null }
+    case 'studyLevelBand': return { toAnswer: studyLevelAnswer, visible: null, choiceVisible: null }
+  }
+  return { toAnswer: null, visible: null, choiceVisible: null }
+}
+
 
 /**
  * 目标省档 → 省码组(与 bandFromProvs 互推:三问存省份数组、答题存档位,
@@ -1676,7 +1380,7 @@ export function normalizeScore(cur: RawScoreSource): ScoreAnswers {
  */
 export function toEngineAnswers(a: Answers): EngineAnswers {
   const out: EngineAnswers = { noc: a.nocs[0] || '', nocs: a.nocs }
-  for (const [name, def] of Object.entries(FIELDS)) {
+  for (const [name, def] of Object.entries(getFields())) {
     const cell = a[name as keyof Answers] as string | number
     let v: EngineValue = cell
     if (def.toAnswer != null) {

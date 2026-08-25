@@ -577,17 +577,11 @@
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 12
     },
-    "local/doc-every-member": {
-      "count": 20
-    },
-    "local/functions-file-no-variables": {
-      "count": 1
-    },
     "local/no-bare-strings": {
-      "count": 498
+      "count": 27
     },
     "local/no-magic-number": {
-      "count": 77
+      "count": 12
     },
     "local/step-down-order": {
       "count": 13

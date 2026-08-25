@@ -29,7 +29,7 @@ import { ScoreLineCard, recentDraws } from './ScoreLineCard'
 import { PnpScoreCard } from '../../jobs/PnpScoreCard'
 import { iconBtnS, overlayCls, CARD as OVERLAY_CARD, useIsNarrow } from '@/components/modal'
 import { IconRefresh } from '@/components/icons'
-import { EMPTY, FIELDS, NCLC, clearAnswers, fieldsOf, missingFields, pullAndMerge, readAnswers, readScoreAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/quiz'
+import { EMPTY, getFields, NCLC, clearAnswers, fieldsOf, missingFields, pullAndMerge, readAnswers, readScoreAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/quiz'
 import { gateOf, regionProvincesOf, uiOf } from '@/lib/pathways'
 import { pickName } from '@/lib/noc'
 import { track } from '@/lib/track'
@@ -390,7 +390,7 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
 
   const choiceText = (name: string): string => {
     const value = (bands as unknown as Record<string, string | number>)[name]
-    const choice = FIELDS[name]?.q.choices.find((x) => x.value === value)
+    const choice = getFields()[name]?.q.choices.find((x) => x.value === value)
     return choice ? pickL(choice.text as L, lang) : ''
   }
   const occName = (code: string): string => {
@@ -419,8 +419,8 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
       ...(occMismatch ? { warn: t('dp.warnOcc') } : {}) },
     { key: 'status', prov: '', group: G.who, label: t('dp.sum.status'), value: choiceText('status') || unparsed, filled: !!choiceText('status') },
     // 拆闸批两题只对境内处境回显(与题的显隐同源):境外用户不摆两个永远「待填写」的格
-    ...(FIELDS.permitBand.visible?.(bands) ? [{ key: 'permitBand', prov: '', group: G.who, label: t('dp.sum.permit'), value: choiceText('permitBand') || unparsed, filled: !!choiceText('permitBand') }] : []),
-    ...(FIELDS.resProv.visible?.(bands) ? [{ key: 'resProv', prov: '', group: G.who, label: t('dp.sum.resProv'), value: choiceText('resProv') || unparsed, filled: !!choiceText('resProv') }] : []),
+    ...(getFields().permitBand.visible?.(bands) ? [{ key: 'permitBand', prov: '', group: G.who, label: t('dp.sum.permit'), value: choiceText('permitBand') || unparsed, filled: !!choiceText('permitBand') }] : []),
+    ...(getFields().resProv.visible?.(bands) ? [{ key: 'resProv', prov: '', group: G.who, label: t('dp.sum.resProv'), value: choiceText('resProv') || unparsed, filled: !!choiceText('resProv') }] : []),
     { key: 'eduBand', prov: '', group: G.edu, label: t('dp.sum.edu'), value: choiceText('eduBand') || unparsed, filled: !!choiceText('eduBand') },
     { key: 'ageBand', prov: '', group: G.who, label: t('dp.sum.age'), value: choiceText('ageBand') || unparsed, filled: !!choiceText('ageBand') },
     { key: 'clbBand', prov: '', group: G.lang, label: t('dp.sum.clb'), value: choiceText('clbBand') || unparsed, filled: !!choiceText('clbBand') },
@@ -441,10 +441,10 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
     { key: 'offerBand', prov: '', group: G.work, label: t('dp.sum.offer'), value: choiceText('offerBand') || unparsed, filled: !!choiceText('offerBand') },
     { key: 'canadaEduBand', prov: '', group: G.edu, label: t('dp.sum.canadaEdu'), value: choiceText('canadaEduBand') || unparsed, filled: !!choiceText('canadaEduBand') },
     // 专业对口两题同样只对「有加拿大学历」的人回显(与题的显隐同源)
-    ...(FIELDS.fieldMatchBand.visible?.(bands) ? [{ key: 'fieldMatchBand', prov: '', group: G.edu, label: t('dp.sum.fieldMatch'), value: choiceText('fieldMatchBand') || unparsed, filled: !!choiceText('fieldMatchBand') }] : []),
-    ...(FIELDS.eduProv.visible?.(bands) ? [{ key: 'eduProv', prov: '', group: G.edu, label: t('dp.sum.eduProv'), value: choiceText('eduProv') || unparsed, filled: !!choiceText('eduProv') }] : []),
+    ...(getFields().fieldMatchBand.visible?.(bands) ? [{ key: 'fieldMatchBand', prov: '', group: G.edu, label: t('dp.sum.fieldMatch'), value: choiceText('fieldMatchBand') || unparsed, filled: !!choiceText('fieldMatchBand') }] : []),
+    ...(getFields().eduProv.visible?.(bands) ? [{ key: 'eduProv', prov: '', group: G.edu, label: t('dp.sum.eduProv'), value: choiceText('eduProv') || unparsed, filled: !!choiceText('eduProv') }] : []),
     // 学制年数(#316 新题):有加拿大学历才问,格随题显隐同源
-    ...(FIELDS.eduYearsBand?.visible?.(bands) ? [{ key: 'eduYearsBand', prov: '', group: G.edu, label: t('dp.sum.eduYears'), value: choiceText('eduYearsBand') || unparsed, filled: !!choiceText('eduYearsBand') }] : []),
+    ...(getFields().eduYearsBand?.visible?.(bands) ? [{ key: 'eduYearsBand', prov: '', group: G.edu, label: t('dp.sum.eduYears'), value: choiceText('eduYearsBand') || unparsed, filled: !!choiceText('eduYearsBand') }] : []),
     // 法语(FCIP 的定义性门槛):全员都问,所以格子也无条件摆 —— 2026-08-15 首版漏了这一格,
     // 题问了、答案也存了(计数都对),就是回显没有,人在格子里找不到自己答过的那道题
     { key: 'frenchBand', prov: '', group: G.lang, label: t('dp.sum.french'), value: choiceText('frenchBand') || unparsed, filled: !!choiceText('frenchBand') },

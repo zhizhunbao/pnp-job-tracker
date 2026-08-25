@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react'
 
 import { QuizChoices, QuizNav, QuizTitle, pickL, type L } from '../quiz/QuizUI'
 import type { Lang, TFn } from '@/lib/i18n'
-import { FIELDS, fieldsOf, type Answers, type Stage } from '@/lib/quiz'
+import { getFields, fieldsOf, type Answers, type Stage } from '@/lib/quiz'
 
 export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplete, doneKey, onBack, onStepChange, startAtEnd = false, startAt, finishLabel, onFinish }: {
   decision: string
@@ -42,7 +42,7 @@ export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplet
   const at = Math.min(idx, Math.max(names.length - 1, 0))
   useEffect(() => { onStepChange?.(at, names.length) }, [at, names.length, onStepChange])
   const name = names[at]
-  const f = FIELDS[name]
+  const f = getFields()[name]
   if (!f) return null
   const q = f.q
   const value = (answers as any)[name]

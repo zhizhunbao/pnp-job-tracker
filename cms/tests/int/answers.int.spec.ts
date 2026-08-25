@@ -2,7 +2,7 @@
 // 锁死三件事:① 老答案迁得过来(丢了=让用户重答,红线);② 目标省两种表示始终同步
 // (只写一边 → 另一个入口会重新问一遍,那正是这次收敛掉的病);③ 档位→引擎输入的换算与重构前逐字一致。
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { ANSWERS_KEY, DECISIONS, FIELDS, KNOWN_NO_FREE_LEAD, answeredBasics, batchLeadsFree, fieldsOf, pullAndMerge, readAnswers, readScoreAnswers, resetAnswersMemory, toEngineAnswers, writeAnswers, type Answers } from '@/lib/quiz'
+import { ANSWERS_KEY, DECISIONS, getFields, KNOWN_NO_FREE_LEAD, answeredBasics, batchLeadsFree, fieldsOf, pullAndMerge, readAnswers, readScoreAnswers, resetAnswersMemory, toEngineAnswers, writeAnswers, type Answers } from '@/lib/quiz'
 
 const OLD_QUIZ = 'jobs_quiz_v1'
 const OLD_PR = 'plan_pr_v1'
@@ -255,7 +255,7 @@ describe('服务端答案档同步', () => {
 
 describe('题库铁律', () => {
   it('每个字段都挂着引擎里真实存在的结论 key', () => {
-    for (const [name, def] of Object.entries(FIELDS)) {
+    for (const [name, def] of Object.entries(getFields())) {
       expect(def.unlocks.length, `${name} 挂不上结论就不该入库`).toBeGreaterThan(0)
       // p = 卡③ 选省份的结论命名空间(rpt.p.best / mostJobs / notExcluded …),2026-08-03 加 goalBand 时补进白名单
       for (const k of def.unlocks) expect(k).toMatch(/^rpt\.[cgnaps]\./)   // s = 换省对照节(L2-08)

@@ -65,9 +65,10 @@ export type Question = {
 
   /**
    * 选项过滤(目前只有一处:加拿大经验不得超过总经验)。先前是框架的字符串表达式,现在是普通函数。
+   * 不过滤的给 null(2026-08-25 由 `?:` 改)。
    */
-  // eslint-disable-next-line local/no-optional -- 字段库的声明形状:多数题没有选项过滤,缺席即全显;两参由「答案 + 候选值」这对语义定
-  choiceVisible?: (a: Answers, v: BandValue) => boolean
+  // eslint-disable-next-line local/one-parameter -- 两参由「答案 + 候选值」这对语义定
+  choiceVisible: ((a: Answers, v: BandValue) => boolean) | null
 }
 
 /**
@@ -96,17 +97,17 @@ export type FieldDef = {
   tier: Tier
 
   /**
-   * 档位 → 引擎输入(缺席=原样透传)。
+   * 档位 → 引擎输入;原样透传的字段给 null(2026-08-25:原先是 `?:`,
+   * 「没有」靠键的缺席表达 —— 改成显式 null,漏填当场 tsc 红)。
    */
-  // eslint-disable-next-line local/no-optional -- 原样透传的字段不配换算函数;两参由「本题答案 + 全卷」这对语义定
-  toAnswer?: (v: BandValue, all: Answers) => EngineValue
+  // eslint-disable-next-line local/one-parameter -- 两参由「本题答案 + 全卷」这对语义定
+  toAnswer: ((v: BandValue, all: Answers) => EngineValue) | null
 
   /**
    * 题级显隐(2026-08-15 拆闸批新增,此前只有选项级过滤):不该问的人不见这道题,
    * 完整度计数同源过滤 —— 境外用户没有「持什么许可/人在哪个省」可答,摆着=逼他乱答。
    */
-  // eslint-disable-next-line local/no-optional -- 多数题对所有人可见,缺席即恒显
-  visible?: (a: Answers) => boolean
+  visible: ((a: Answers) => boolean) | null
 }
 
 /**
@@ -568,6 +569,12 @@ export type QuizCache = {
    * 大类职业清单:大类名 → 缓存格(点中大类才取,比每次 top=200 快且省)。
    */
   broadBy: Map<string, BroadSlot>
+
+  /**
+   * 装配好的题库(数据半 FIELD_SPECS + 行为半接回来);getFields 首次调用时填。
+   * 装一次就够 —— 它是纯数据加固定函数引用,进程内不会变。
+   */
+  fields: FieldMap | null
 }
 
 /**
@@ -720,3 +727,30 @@ export type SaveAnswersIn = {
  * `saveAnswers` 的返回(落库即返,无体)。
  */
 export type SaveAnswersOut = Promise<void>
+
+/**
+ * 题库一个字段的**行为半**:换算 / 题级显隐 / 选项过滤。
+ * 2026-08-25 拆题库时立:数据半(题面、选项、解锁、档位)住 constants 的 FIELD_SPECS,
+ * 这半留 functions —— 判据是「问什么」与「怎么算」分家。
+ */
+export type FieldBehavior = {
+  /**
+   * 档位 → 引擎输入;原样透传的字段没有,给 null。
+   */
+  toAnswer: ((v: BandValue, all: Answers) => EngineValue) | null
+
+  /**
+   * 题级显隐(不该问的人不见这道题);恒显的给 null。
+   */
+  visible: ((a: Answers) => boolean) | null
+
+  /**
+   * 选项级过滤;不过滤的给 null。
+   */
+  choiceVisible: ((a: Answers, v: BandValue) => boolean) | null
+}
+
+/**
+ * 装配好的题库(字段名 → 完整定义)。
+ */
+export type FieldMap = Record<string, FieldDef>
