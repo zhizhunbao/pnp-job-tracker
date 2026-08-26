@@ -102,6 +102,7 @@ export function useLangState(initial: Lang): LangStateOut {
       }
       document.cookie = LANG_COOKIE + LANG_COOKIE_EQ + saved + LANG_COOKIE_ATTRS
       if (saved !== initial) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- 一次性迁移:水合后读旧 localStorage 纠正语言,这次级联重渲正是目的
         apply(saved)
       }
     } catch {

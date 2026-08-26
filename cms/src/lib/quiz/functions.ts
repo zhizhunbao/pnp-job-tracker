@@ -37,7 +37,7 @@ import {
 import { CACHE } from './variables'
 import type {
   Answers, AnswersDoc, AnswersOut, AnswersPatch, BandValue, DropFn, EngineAnswers, EngineValue, FactsStoreFn,
-  FieldBehavior, FieldMap, FieldNames, FirstStoreFn, L, LoadAnswersIn, MaybeAnswers, MaybeProvList, MaybeRawDoc,
+  FieldBehavior, FieldMap, FieldNames, FirstStoreFn, LoadAnswersIn, MaybeAnswers, MaybeProvList, MaybeRawDoc,
   NameFilter, ProvList, PulledOut, PushedOut, RawAnswersSource, RawCell, RawDoc, RawField, RawScoreSource, RawText,
   SaveAnswersIn, SaveAnswersOut, ScoreAnswers, Stage, StoreFn, Tier, TopCachedIn, TopOut, TopRows, UnflagFn
 } from './types'

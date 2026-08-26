@@ -195,17 +195,18 @@ export type ColWidthsIn<T> = {
    * 行数(进量宽签名:数据换了要重量)。
    */
   rowCount: number
+
+  /**
+   * 表元素 ref(量总宽用):由挂 table 的组件持有并传进来 —— 混装在返回面板里
+   * 会被 react-hooks/refs 把整个面板判成「渲染期读 ref」(2026-08-26 搬家)。
+   */
+  tableRef: React.RefObject<HTMLTableElement | null>
 }
 
 /**
  * useColWidths 交回的机器面板(量宽锁列 + 拖列宽一台机器:两者都在写同一格列宽)。
  */
 export type ColWidthsOut<T> = {
-  /**
-   * 表元素 ref(量总宽用)。
-   */
-  tableRef: React.RefObject<HTMLTableElement | null>
-
   /**
    * 收表头元素的回调 ref 工厂(量各列真实宽用)。
    */

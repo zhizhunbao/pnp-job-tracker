@@ -23,6 +23,7 @@ import css from './time.module.css'
 export function DateAge({ iso, ageText, aging }: DateAgeIn) {
   let days: number | null = null
   if (aging) {
+    // eslint-disable-next-line react-hooks/purity -- 天粒度事实:Date.now 渲染间漂移不改输出,跨日差由 suppressHydrationWarning 兜住
     days = daysSince({ iso, now: Date.now() })
   }
   return (

@@ -36,7 +36,10 @@ export function Tabs({ items, value, onChange, ariaLabel, idPrefix = ID_PREFIX_D
     return el
   }
 
-  const onKey = makeTabKeys({ items, value, onChange, focusOf })
+  function onKey(e: React.KeyboardEvent) {
+    const handle = makeTabKeys({ items, value, onChange, focusOf })
+    handle(e)
+  }
 
   const btns = []
   for (const it of items) {

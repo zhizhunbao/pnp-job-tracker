@@ -7,7 +7,7 @@
  * @author Frank
  * @time 2026-08-24 11:00:00
  */
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 
 import {
   COL_W_FALLBACK, COL_W_MIN, EV_POINTERMOVE, EV_POINTERUP, LAYOUT_LOCKED, PCT_DECIMALS, PCT_UNIT, SIG_SEP, SIG_TAIL,
@@ -19,7 +19,9 @@ import type {
 
 /**
  * 排序 + 分页整机(简单表数据全量在手:先全量排序再切页)。
- * 数据换了(如切省)回第一页,不停在越界页。
+ * 数据换了(如切省)回第一页,不停在越界页 —— 回页在渲染中对比上一批行完成
+ * (React 官方「adjusting state during render」形态,2026-08-26 由 effect 改写:
+ * effect 里同步 setState 会多提交一帧旧页,react-hooks/set-state-in-effect 也拦)。
  *
  * @param x 列声明、行、每页行数。
  * @returns 机器面板(当前页行、排序态与翻页手柄)。
@@ -27,10 +29,12 @@ import type {
 export function useRows<T>(x: RowsIn<T>): RowsOut<T> {
   const [sort, setSort] = useState<SortState>(null)
   const [page, setPage] = useState(0)
+  const [prevRows, setPrevRows] = useState(x.rows)
 
-  useEffect(function resetPage() {
+  if (prevRows !== x.rows) {
+    setPrevRows(x.rows)
     setPage(0)
-  }, [x.rows])
+  }
 
   function toggleSort(key: string) {
     function next(s: SortState): SortState {
@@ -78,32 +82,36 @@ export function useRows<T>(x: RowsIn<T>): RowsOut<T> {
  * 量宽锁列 + 拖列宽整机(Frank 2026-08-10「点列排序的时候宽度会变化」):
  * auto 布局按**当页**最长值算列宽,排序/翻页换了一批行就整表重排 → 每点一次表头列都跳。
  * 首屏先用 auto 量一次真实内容宽,换算成百分比锁成 fixed 布局(百分比而非 px:容器变窄
- * 仍按比例缩,不横滚);只有数据本身换了(切筛选/换页大小)才重量。
+ * 仍按比例缩,不横滚);只有数据本身换了(切筛选/换页大小)才重量 —— 重量的解锁
+ * 在渲染中对比签名完成(同 useRows 的回页形态,2026-08-26 由 layout effect 改写)。
  * 拖列宽写的是像素,压过量出来的百分比。
+ * 表元素 ref 由挂 table 的组件持有并经 x 传进来(2026-08-26:原先住返回面板里,
+ * 混装 ref 的面板会被 react-hooks/refs 整体判成「渲染期读 ref」)。
  *
- * @param x 列声明与行数。
- * @returns 机器面板(两枚 ref、布局模式、取宽与起手拖)。
+ * @param x 列声明、行数与表元素 ref。
+ * @returns 机器面板(表头 ref 工厂、布局模式、取宽与起手拖)。
  */
 export function useColWidths<T>(x: ColWidthsIn<T>): ColWidthsOut<T> {
   const [widths, setWidths] = useState<Record<string, number>>({})
   const [pct, setPct] = useState<Record<string, string> | null>(null)
-  const tableRef = useRef<HTMLTableElement | null>(null)
   const thRefs = useRef<Record<string, HTMLTableCellElement | null>>({})
 
   function keyOf(c: Col<T>): string {
     return c.key
   }
   const sig = x.cols.map(keyOf).join(SIG_SEP) + SIG_TAIL + x.rowCount
+  const [prevSig, setPrevSig] = useState(sig)
 
-  useLayoutEffect(function clearOnDataChange() {
+  if (prevSig !== sig) {
+    setPrevSig(sig)
     setPct(null)
-  }, [sig])
+  }
 
   useLayoutEffect(function measure() {
     if (pct != null) {
       return
     }
-    const m = measureCols({ cols: x.cols, table: tableRef.current, ths: thRefs.current })
+    const m = measureCols({ cols: x.cols, table: x.tableRef.current, ths: thRefs.current })
     if (m == null) {
       return
     }
@@ -154,7 +162,7 @@ export function useColWidths<T>(x: ColWidthsIn<T>): ColWidthsOut<T> {
   if (pct != null) {
     layout = LAYOUT_LOCKED
   }
-  return { tableRef, thRefOf, layout, widthOf, startResize }
+  return { thRefOf, layout, widthOf, startResize }
 }
 
 /**

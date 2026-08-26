@@ -14,6 +14,8 @@
  * @author Frank
  * @time 2026-08-24 02:30:00
  */
+import { useRef } from 'react'
+
 import { cssOf } from '@/components/css'
 import { Pager } from '@/components/pager'
 import { ALIGN_RIGHT } from './constants'
@@ -46,7 +48,8 @@ export function Table<T>({
     pageSizeIn = pageSize
   }
   const r = useRows({ cols, rows, pageSize: pageSizeIn })
-  const widths = useColWidths({ cols, rowCount: rows.length })
+  const tableRef = useRef<HTMLTableElement | null>(null)
+  const widths = useColWidths({ cols, rowCount: rows.length, tableRef })
 
   const trs = []
   let i = 0
@@ -73,7 +76,7 @@ export function Table<T>({
     <div className={cls(cssOf(css.shell), bare && css.bare)}>
       {header}
       {/* eslint-disable-next-line react/forbid-dom-props -- 表最小宽与布局模式是运行时数据(量宽完成才锁 fixed) */}
-      <table ref={widths.tableRef} className={css.table} style={{ minWidth, tableLayout: widths.layout }}>
+      <table ref={tableRef} className={css.table} style={{ minWidth, tableLayout: widths.layout }}>
         <TableHead cols={cols} sort={r.sort} toggleSort={r.toggleSort} widths={widths} />
         <tbody>
           {/* E8-08 hover 规范(Frank「可点才有态」):行本身不可点 → 行 hover 摘除(原 #f9fafb 全行态误导);
