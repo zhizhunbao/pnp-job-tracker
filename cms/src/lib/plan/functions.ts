@@ -22,7 +22,7 @@ import { queryRows, SQL, numOrNull, text } from '../db'
 import { DAY_MS } from '@/lib/time'
 import type { Db } from '../db'
 import {
-  AV, BAND_A, BAND_NONE, BAND_Y, BAND_Z, BASIS_NONE, CADENCE_FACTOR, CERT, CMP, DAYS_PER_MONTH, GROUP_SEP,
+  AV, BAND_A, BAND_NONE, BAND_Y, BAND_Z, BASIS_NONE, CADENCE_FACTOR, CERT, CMP, DATE_NONE, DAYS_PER_MONTH, GROUP_SEP,
   KIND_NOTICE, NA_TEXT, NOT_TIME_CONVERTIBLE, PLAN_NOTES, PLAN_TEXT, PROCESSING_KEY, PROV_FED, PROV_RE, SLOT_NONE,
   SPACE, STEP, SUBJECT_EMPLOYER, TEXT_NONE, THIN_MIN, TV, UNIT_HEADS, WHY_NONE,
 } from './constants'
@@ -38,29 +38,20 @@ import type {
 // =========================================================================
 
 /**
- * 一行的档位键:availability/belowLine/verdict/blockedBy/tier 五样拼串。
+ * 主排序:输入 = 引擎序(pathVerdict 原样,区域线已拆省、竞争比已挂),输出 = 展示序。
+ * 服务端排完序下发,客户端只渲染不再重排;省外提示与主排序共用同一把尺(#302)。
  *
- * @param row 通道行。
- * @returns 档位键。
+ * @param input 行与上下文。
+ * @returns 展示序的行。
  */
-function bandOf(row: RankableRow): string {
-  let avail: string = BAND_A
-  if (row.availability !== AV.ok) {
-    avail = BAND_Y
+export function rankRows<T extends RankableRow>(input: RankIn<T>): RankedRows<T> {
+  const ranked = decorate(input)
+  ranked.sort(byPlanOrder)
+  const out: RankedRows<T> = []
+  for (const d of ranked) {
+    out.push(d.row)
   }
-  let below: string = BAND_A
-  if (row.belowLine) {
-    below = BAND_Z
-  }
-  let blocked = BAND_NONE
-  if (row.blockedBy != null) {
-    blocked = row.blockedBy
-  }
-  let tier = BAND_NONE
-  if (row.tier != null) {
-    tier = String(row.tier)
-  }
-  return avail + GROUP_SEP + below + GROUP_SEP + row.verdict + GROUP_SEP + blocked + GROUP_SEP + tier
+  return out
 }
 
 /**
@@ -102,20 +93,29 @@ function decorate<T extends RankableRow>(input: RankIn<T>): DecoratedRows<T> {
 }
 
 /**
- * 主排序:输入 = 引擎序(pathVerdict 原样,区域线已拆省、竞争比已挂),输出 = 展示序。
- * 服务端排完序下发,客户端只渲染不再重排;省外提示与主排序共用同一把尺(#302)。
+ * 一行的档位键:availability/belowLine/verdict/blockedBy/tier 五样拼串。
  *
- * @param input 行与上下文。
- * @returns 展示序的行。
+ * @param row 通道行。
+ * @returns 档位键。
  */
-export function rankRows<T extends RankableRow>(input: RankIn<T>): RankedRows<T> {
-  const ranked = decorate(input)
-  ranked.sort(byPlanOrder)
-  const out: RankedRows<T> = []
-  for (const d of ranked) {
-    out.push(d.row)
+function bandOf(row: RankableRow): string {
+  let avail: string = BAND_A
+  if (row.availability !== AV.ok) {
+    avail = BAND_Y
   }
-  return out
+  let below: string = BAND_A
+  if (row.belowLine) {
+    below = BAND_Z
+  }
+  let blocked = BAND_NONE
+  if (row.blockedBy != null) {
+    blocked = row.blockedBy
+  }
+  let tier = BAND_NONE
+  if (row.tier != null) {
+    tier = String(row.tier)
+  }
+  return avail + GROUP_SEP + below + GROUP_SEP + row.verdict + GROUP_SEP + blocked + GROUP_SEP + tier
 }
 
 /**
@@ -164,104 +164,82 @@ export function pickOutside<T extends RankableRow>(input: OutsideIn<T>): MaybeOu
 // =========================================================================
 
 /**
- * 四舍五入到 0.1 个月(精度到此为止 —— 官方颗粒度就是「2 weeks」,两位小数是假精确)。
+ * 核心算法:每条路 = 三类段 → 分组(全确定 / 含未知)→ 组内升序 → 只在算术站得住时生成快慢差。
  *
- * @param n 原数。
- * @returns 一位小数。
+ * @param input 门槛、路径与费用。
+ * @returns 整份方案。
  */
-function round1(n: number): number {
-  return Math.round(n * 10) / 10
-}
-
-/**
- * 差值 → 月数。认得出的单位才换算,认不出返回 null(宁缺不猜,同 rules.areaOfPlace 的先例)。
- *
- * @param input 差值与官方单位。
- * @returns 月数;换算不了 null。
- */
-function monthsFromUnit(input: MonthsIn): MaybeNum {
-  const u = input.unit.toLowerCase()
-  if (u.startsWith(UNIT_HEADS.month)) {
-    return round1(input.value)
-  }
-  if (u.startsWith(UNIT_HEADS.year)) {
-    return round1(input.value * 12)
-  }
-  if (u.startsWith(UNIT_HEADS.week)) {
-    return round1((input.value * 7) / DAYS_PER_MONTH)
-  }
-  if (u.startsWith(UNIT_HEADS.day)) {
-    return round1(input.value / DAYS_PER_MONTH)
-  }
-  return null
-}
-
-/**
- * 出处闸(反向验证的着力点):数字段没有 evidence.url 就地降级为不可用,**不静默沿用**。
- * 这是红线①在代码里的唯一执行点 —— 所有段构造都必须过它。
- *
- * @param s 一段。
- * @returns 原段;数字没出处则降级段。
- */
-function stepOf(s: PlanStep): PlanStep {
-  if (s.months == null) {
-    return s
-  }
-  if (s.evidence != null && s.evidence.url !== '') {
-    return s
-  }
-  return {
-    kind: s.kind, factor: s.factor, months: null, basis: BASIS_NONE, availability: AV.notCollected,
-    why: fill({ tpl: PLAN_TEXT.noEvidenceWhy, params: { factor: s.factor } }), evidence: s.evidence,
-  }
-}
-
-/**
- * ① 还缺什么:门槛 fail 的差值 → 月数。fail 之外的行不进时间线(pass 无缺口,unknown 进 unresolved)。
- *
- * @param rows 门槛行。
- * @returns gap 段。
- */
-function gapSteps(rows: ThresholdRows): PlanSteps {
-  const out: PlanSteps = []
-  for (const r of rows) {
-    if (r.verdict !== TV.fail) {
-      continue
+export function buildPlan(input: PlanIn): Plan {
+  const paths: PlanPath[] = []
+  for (const p of input.paths) {
+    let t = p.thresholds
+    if (t == null) {
+      for (const x of input.thresholds.provinces) {
+        if (x.province === p.province) {
+          t = x
+          break
+        }
+      }
     }
-    const blocked = NOT_TIME_CONVERTIBLE[r.factor]
-    let months: MaybeNum = null
-    if (blocked == null && r.short != null) {
-      months = monthsFromUnit({ value: r.short, unit: r.unit })
+    let rows: ThresholdRows = []
+    if (t != null) {
+      rows = t.rows
     }
-    let basis = BASIS_NONE
+    const steps = gapSteps(rows)
+    steps.push(drawStep(p))
+    steps.push(processingStep(p))
+    const unknownSteps: PlanSteps = []
+    let determined = 0
+    for (const s of steps) {
+      if (s.months == null) {
+        unknownSteps.push(s)
+      } else {
+        determined += s.months
+      }
+    }
+    const determinedMonths = round1(determined)
+    let totalMonths: MaybeNum = determinedMonths
+    let certainty: PlanPath['timelineCertainty'] = CERT.complete
+    if (unknownSteps.length > 0) {
+      totalMonths = null
+      certainty = CERT.partial
+    }
+    let stream = TEXT_NONE
+    if (p.stream != null) {
+      stream = p.stream
+    }
     let availability: Availability = AV.notCollected
-    let why = WHY_NONE
-    if (months != null) {
-      let have = 0
-      if (r.have != null) {
-        have = r.have
+    let note = TEXT_NONE
+    if (t != null) {
+      availability = t.availability
+      if (t.note != null) {
+        note = t.note
       }
-      let need: string | number = SLOT_NONE
-      if (r.need != null) {
-        need = r.need
-      }
-      let short: string | number = SLOT_NONE
-      if (r.short != null) {
-        short = r.short
-      }
-      basis = fill({ tpl: PLAN_TEXT.gapBasis, params: { need: need, have: have, short: short, unit: r.unit } })
-      availability = AV.ok
-    } else if (blocked != null) {
-      why = blocked
-    } else {
-      why = fill({ tpl: PLAN_TEXT.gapUnitWhy, params: { unit: r.unit } })
     }
-    out.push(stepOf({
-      kind: STEP.gap, factor: r.factor, months: months, basis: basis,
-      availability: availability, why: why, evidence: r.evidence,
-    }))
+    paths.push({
+      province: p.province, stream: stream, steps: steps, determinedMonths: determinedMonths,
+      totalMonths: totalMonths, timelineCertainty: certainty,
+      unknownSteps: unknownSteps, unresolved: blockersOf(rows),
+      availability: availability, note: note,
+    })
   }
-  return out
+  const ranked: PlanPath[] = []
+  const partial: PlanPath[] = []
+  for (const p of paths) {
+    if (p.timelineCertainty === CERT.complete) {
+      ranked.push(p)
+    } else {
+      partial.push(p)
+    }
+  }
+  ranked.sort(byTotalMonths)
+  partial.sort(byDeterminedMonths)
+  return {
+    noc: input.thresholds.noc, title: input.thresholds.title, teer: input.thresholds.teer,
+    ranked: ranked, partial: partial, comparisons: comparisonsOf({ ranked: ranked, partial: partial }),
+    officialCosts: input.officialCosts, quotedCosts: input.quotedCosts,
+    notes: PLAN_NOTES,
+  }
 }
 
 /**
@@ -286,70 +264,13 @@ function blockersOf(rows: ThresholdRows): PlanBlockers {
 }
 
 /**
- * ② 然后要等多久 —— **官方多久开一轮**(历史平均间隔),不是「你要等几轮才被抽中」(红线②)。
- * ≥2 轮才有间隔可算;只有 1 轮 = 算不出节奏(1 个点画不出周期)。
+ * 四舍五入到 0.1 个月(精度到此为止 —— 官方颗粒度就是「2 weeks」,两位小数是假精确)。
  *
- * @param p 该省的路径输入。
- * @returns draw 段。
+ * @param n 原数。
+ * @returns 一位小数。
  */
-function drawStep(p: PlanPathInput): PlanStep {
-  if (p.noDrawStep != null && p.noDrawStep.evidence.url !== '') {
-    return stepOf({
-      kind: STEP.draw, factor: CADENCE_FACTOR, months: 0, basis: PLAN_TEXT.noDrawBasis,
-      availability: AV.notApplicable, why: WHY_NONE, evidence: p.noDrawStep.evidence,
-    })
-  }
-  const d = p.draws
-  let rows: DrawRow[] = []
-  if (d != null) {
-    rows = d.rows
-  }
-  if (d == null || d.availability !== AV.ok || rows.length < 2) {
-    let availability: Availability = AV.notCollected
-    if (d != null) {
-      availability = d.availability
-    }
-    let why = fill({ tpl: PLAN_TEXT.noRoundsWhy, params: { province: p.province } })
-    if (d != null && d.note != null && d.note !== '') {
-      why = d.note
-    } else if (rows.length === 1) {
-      why = fill({ tpl: PLAN_TEXT.oneRoundWhy, params: { province: p.province } })
-    }
-    let evidence: PlanStep['evidence'] = null
-    const rowsFirst = rows[0]
-    if (rowsFirst != null) {
-      evidence = rowsFirst.evidence
-    }
-    return { kind: STEP.draw, factor: CADENCE_FACTOR, months: null, basis: BASIS_NONE, availability: availability, why: why, evidence: evidence }
-  }
-  const seen = new Set<string>()
-  const days: string[] = []
-  for (const r of rows) {
-    if (r.drawDate !== '' && seen.has(r.drawDate) === false) {
-      seen.add(r.drawDate)
-      days.push(r.drawDate)
-    }
-  }
-  days.sort(byDateAsc)
-  let sum = 0
-  let prevDay: string | null = null
-  for (const day of days) {
-    if (prevDay != null) {
-      sum += (Date.parse(day) - Date.parse(prevDay)) / DAY_MS
-    }
-    prevDay = day
-  }
-  const avg = sum / (days.length - 1)
-  const dayFirst = days[0]
-  const evFirst = rows[0]
-  if (dayFirst == null || evFirst == null) {
-    return stepOf({ kind: STEP.draw, factor: CADENCE_FACTOR, months: null, basis: BASIS_NONE, availability: AV.ok, why: WHY_NONE, evidence: null })
-  }
-  return stepOf({
-    kind: STEP.draw, factor: CADENCE_FACTOR, months: round1(avg / DAYS_PER_MONTH),
-    basis: fill({ tpl: PLAN_TEXT.cadenceBasis, params: { from: dayFirst, rounds: days.length, avgDays: Math.round(avg) } }),
-    availability: AV.ok, why: WHY_NONE, evidence: evFirst.evidence,
-  })
+function round1(n: number): number {
+  return Math.round(n * 10) / 10
 }
 
 /**
@@ -433,82 +354,161 @@ function processingStep(p: PlanPathInput): PlanStep {
 }
 
 /**
- * 核心算法:每条路 = 三类段 → 分组(全确定 / 含未知)→ 组内升序 → 只在算术站得住时生成快慢差。
+ * 出处闸(反向验证的着力点):数字段没有 evidence.url 就地降级为不可用,**不静默沿用**。
+ * 这是红线①在代码里的唯一执行点 —— 所有段构造都必须过它。
  *
- * @param input 门槛、路径与费用。
- * @returns 整份方案。
+ * @param s 一段。
+ * @returns 原段;数字没出处则降级段。
  */
-export function buildPlan(input: PlanIn): Plan {
-  const paths: PlanPath[] = []
-  for (const p of input.paths) {
-    let t = p.thresholds
-    if (t == null) {
-      for (const x of input.thresholds.provinces) {
-        if (x.province === p.province) {
-          t = x
-          break
-        }
-      }
-    }
-    let rows: ThresholdRows = []
-    if (t != null) {
-      rows = t.rows
-    }
-    const steps = gapSteps(rows)
-    steps.push(drawStep(p))
-    steps.push(processingStep(p))
-    const unknownSteps: PlanSteps = []
-    let determined = 0
-    for (const s of steps) {
-      if (s.months == null) {
-        unknownSteps.push(s)
-      } else {
-        determined += s.months
-      }
-    }
-    const determinedMonths = round1(determined)
-    let totalMonths: MaybeNum = determinedMonths
-    let certainty: PlanPath['timelineCertainty'] = CERT.complete
-    if (unknownSteps.length > 0) {
-      totalMonths = null
-      certainty = CERT.partial
-    }
-    let stream = TEXT_NONE
-    if (p.stream != null) {
-      stream = p.stream
-    }
-    let availability: Availability = AV.notCollected
-    let note = TEXT_NONE
-    if (t != null) {
-      availability = t.availability
-      if (t.note != null) {
-        note = t.note
-      }
-    }
-    paths.push({
-      province: p.province, stream: stream, steps: steps, determinedMonths: determinedMonths,
-      totalMonths: totalMonths, timelineCertainty: certainty,
-      unknownSteps: unknownSteps, unresolved: blockersOf(rows),
-      availability: availability, note: note,
+function stepOf(s: PlanStep): PlanStep {
+  if (s.months == null) {
+    return s
+  }
+  if (s.evidence != null && s.evidence.url !== '') {
+    return s
+  }
+  return {
+    kind: s.kind, factor: s.factor, months: null, basis: BASIS_NONE, availability: AV.notCollected,
+    why: fill({ tpl: PLAN_TEXT.noEvidenceWhy, params: { factor: s.factor } }), evidence: s.evidence,
+  }
+}
+
+/**
+ * 差值 → 月数。认得出的单位才换算,认不出返回 null(宁缺不猜,同 rules.areaOfPlace 的先例)。
+ *
+ * @param input 差值与官方单位。
+ * @returns 月数;换算不了 null。
+ */
+function monthsFromUnit(input: MonthsIn): MaybeNum {
+  const u = input.unit.toLowerCase()
+  if (u.startsWith(UNIT_HEADS.month)) {
+    return round1(input.value)
+  }
+  if (u.startsWith(UNIT_HEADS.year)) {
+    return round1(input.value * 12)
+  }
+  if (u.startsWith(UNIT_HEADS.week)) {
+    return round1((input.value * 7) / DAYS_PER_MONTH)
+  }
+  if (u.startsWith(UNIT_HEADS.day)) {
+    return round1(input.value / DAYS_PER_MONTH)
+  }
+  return null
+}
+
+/**
+ * ② 然后要等多久 —— **官方多久开一轮**(历史平均间隔),不是「你要等几轮才被抽中」(红线②)。
+ * ≥2 轮才有间隔可算;只有 1 轮 = 算不出节奏(1 个点画不出周期)。
+ *
+ * @param p 该省的路径输入。
+ * @returns draw 段。
+ */
+function drawStep(p: PlanPathInput): PlanStep {
+  if (p.noDrawStep != null && p.noDrawStep.evidence.url !== '') {
+    return stepOf({
+      kind: STEP.draw, factor: CADENCE_FACTOR, months: 0, basis: PLAN_TEXT.noDrawBasis,
+      availability: AV.notApplicable, why: WHY_NONE, evidence: p.noDrawStep.evidence,
     })
   }
-  const ranked: PlanPath[] = []
-  const partial: PlanPath[] = []
-  for (const p of paths) {
-    if (p.timelineCertainty === CERT.complete) {
-      ranked.push(p)
-    } else {
-      partial.push(p)
+  const d = p.draws
+  let rows: DrawRow[] = []
+  if (d != null) {
+    rows = d.rows
+  }
+  if (d == null || d.availability !== AV.ok || rows.length < 2) {
+    let availability: Availability = AV.notCollected
+    if (d != null) {
+      availability = d.availability
+    }
+    let why = fill({ tpl: PLAN_TEXT.noRoundsWhy, params: { province: p.province } })
+    if (d != null && d.note != null && d.note !== '') {
+      why = d.note
+    } else if (rows.length === 1) {
+      why = fill({ tpl: PLAN_TEXT.oneRoundWhy, params: { province: p.province } })
+    }
+    let evidence: PlanStep['evidence'] = null
+    const rowsFirst = rows[0]
+    if (rowsFirst != null) {
+      evidence = rowsFirst.evidence
+    }
+    return { kind: STEP.draw, factor: CADENCE_FACTOR, months: null, basis: BASIS_NONE, availability: availability, why: why, evidence: evidence }
+  }
+  const seen = new Set<string>()
+  const days: string[] = []
+  for (const r of rows) {
+    if (r.drawDate !== '' && seen.has(r.drawDate) === false) {
+      seen.add(r.drawDate)
+      days.push(r.drawDate)
     }
   }
-  ranked.sort(byTotalMonths)
-  partial.sort(byDeterminedMonths)
-  return {
-    noc: input.thresholds.noc, title: input.thresholds.title, teer: input.thresholds.teer,
-    ranked: ranked, partial: partial, comparisons: comparisonsOf({ ranked: ranked, partial: partial }),
-    officialCosts: input.officialCosts, quotedCosts: input.quotedCosts,
-    notes: PLAN_NOTES,
+  days.sort(byDateAsc)
+  let sum = 0
+  let prevDay: string | null = null
+  for (const day of days) {
+    if (prevDay != null) {
+      sum += (Date.parse(day) - Date.parse(prevDay)) / DAY_MS
+    }
+    prevDay = day
   }
+  const avg = sum / (days.length - 1)
+  const dayFirst = days[0]
+  const evFirst = rows[0]
+  if (dayFirst == null || evFirst == null) {
+    return stepOf({ kind: STEP.draw, factor: CADENCE_FACTOR, months: null, basis: BASIS_NONE, availability: AV.ok, why: WHY_NONE, evidence: null })
+  }
+  return stepOf({
+    kind: STEP.draw, factor: CADENCE_FACTOR, months: round1(avg / DAYS_PER_MONTH),
+    basis: fill({ tpl: PLAN_TEXT.cadenceBasis, params: { from: dayFirst, rounds: days.length, avgDays: Math.round(avg) } }),
+    availability: AV.ok, why: WHY_NONE, evidence: evFirst.evidence,
+  })
+}
+
+/**
+ * ① 还缺什么:门槛 fail 的差值 → 月数。fail 之外的行不进时间线(pass 无缺口,unknown 进 unresolved)。
+ *
+ * @param rows 门槛行。
+ * @returns gap 段。
+ */
+function gapSteps(rows: ThresholdRows): PlanSteps {
+  const out: PlanSteps = []
+  for (const r of rows) {
+    if (r.verdict !== TV.fail) {
+      continue
+    }
+    const blocked = NOT_TIME_CONVERTIBLE[r.factor]
+    let months: MaybeNum = null
+    if (blocked == null && r.short != null) {
+      months = monthsFromUnit({ value: r.short, unit: r.unit })
+    }
+    let basis = BASIS_NONE
+    let availability: Availability = AV.notCollected
+    let why = WHY_NONE
+    if (months != null) {
+      let have = 0
+      if (r.have != null) {
+        have = r.have
+      }
+      let need: string | number = SLOT_NONE
+      if (r.need != null) {
+        need = r.need
+      }
+      let short: string | number = SLOT_NONE
+      if (r.short != null) {
+        short = r.short
+      }
+      basis = fill({ tpl: PLAN_TEXT.gapBasis, params: { need: need, have: have, short: short, unit: r.unit } })
+      availability = AV.ok
+    } else if (blocked != null) {
+      why = blocked
+    } else {
+      why = fill({ tpl: PLAN_TEXT.gapUnitWhy, params: { unit: r.unit } })
+    }
+    out.push(stepOf({
+      kind: STEP.gap, factor: r.factor, months: months, basis: basis,
+      availability: availability, why: why, evidence: r.evidence,
+    }))
+  }
+  return out
 }
 
 /**
@@ -553,16 +553,6 @@ function comparisonsOf(input: ComparisonsIn): PlanComparisons {
 // =========================================================================
 // 3. 政策时间线(C6-01;零 schema 改动,SQL 只 SELECT)
 // =========================================================================
-
-/**
- * 两个十位日期的天数差。
- *
- * @param input 起止日期。
- * @returns 天数(四舍五入)。
- */
-function daysBetween(input: DaysIn): number {
-  return Math.round((Date.parse(input.to) - Date.parse(input.from)) / DAY_MS)
-}
 
 /**
  * 三路在库事件源合并 + 抽选节奏统计。诚实红线循 E6-04:省分数带分制标注(≠CRS);
@@ -672,6 +662,16 @@ export async function fetchTimeline(db: Db): TimelineOut {
   return { events: events, cadence: cadence, eeCadence: eeCadence }
 }
 
+/**
+ * 两个十位日期的天数差。
+ *
+ * @param input 起止日期。
+ * @returns 天数(四舍五入)。
+ */
+function daysBetween(input: DaysIn): number {
+  return Math.round((Date.parse(input.to) - Date.parse(input.from)) / DAY_MS)
+}
+
 // =========================================================================
 // 行构造器(rows 抽屉 2026-08-23 撤编后的固定尾段;体内只许词汇表 + 纯拼装)
 // =========================================================================
@@ -688,7 +688,7 @@ export function day(v: TimeLike | undefined): string {
     return v.toISOString().slice(0, 10)
   }
   if (v == null) {
-    return ''
+    return DATE_NONE
   }
   return String(v).slice(0, 10)
 }

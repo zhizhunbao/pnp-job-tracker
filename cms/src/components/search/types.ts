@@ -1,10 +1,16 @@
 /**
- * search 域的形状。尺寸档来自 input 域(输入件共用一套高度)。
+ * search 域的形状。尺寸档与 input 域同集(输入件共用一套高度);原先直接 type 引入
+ * input 域的 InputSize,2026-08-26 依宪法 08-25「types 自声明」改为本域自声明。
  *
  * @author Frank
  * @time 2026-08-24 15:00:00
  */
-import type { InputSize } from '@/components/input'
+
+/**
+ * 尺寸档 —— 本域自声明(宪法 08-25「types 自声明」,2026-08-26 撤跨域 import;
+ * 与 input 域的 InputSize 同集,结构相同即兼容,走样当场 tsc 红)。
+ */
+export type InputSize = 'sm' | 'md' | 'lg'
 
 /**
  * Search(搜索框:左图标 + 可清除)的 props。

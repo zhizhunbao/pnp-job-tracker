@@ -414,6 +414,150 @@ export const STATUS_NONE = ''
 export const PREV_JSON_NONE = ''
 
 /**
+ * 处境题「不清楚」的选项码(statusAnswer 的判值)。数字档的「不清楚」统一是 UNSURE_BAND,
+ * 处境是字符串题,由这个码承担同一件事:它是**答过的**,但引擎拿 undefined 落「判不了」。
+ * 与 FIELD_SPECS.status 的选项 value 同源,改要一起改。
+ */
+export const STATUS_UNSURE = 'unsure'
+
+/**
+ * 处境「还在境外」的选项码(pgwpAnswer 的判值:境外没有加拿大签证,签证剩余档不传 ——
+ * 拿档位造时间窗=编数)。与 FIELD_SPECS.status 的选项 value 同源,改要一起改。
+ */
+export const STATUS_OVERSEAS = 'overseas'
+
+/**
+ * 诉求「容易拿身份」对应的目标函数码(goalAnswer 的返回值):引擎按它把选省报告排成
+ * 「容易拿提名」优先(2026-08-03 Frank「每个人诉求不一样」,排序由用户的诉求定)。
+ */
+export const GOAL_PR = 'pr'
+
+/**
+ * 诉求「先找到工作」对应的目标函数码(goalAnswer 的返回值):引擎按它把选省报告排成
+ * 在招量优先。
+ */
+export const GOAL_WORK = 'work'
+
+/**
+ * 单选 BC 那一档的省码(bandFromProvs 的判值:省码组只装这一个省才折回档位 1,
+ * 与 PROVS[1] 那格同源)。
+ */
+export const PROV_BC = 'BC'
+
+/**
+ * 单选 ON 那一档的省码(bandFromProvs 的判值:省码组只装这一个省才折回档位 2,
+ * 与 PROVS[2] 那格同源)。
+ */
+export const PROV_ON = 'ON'
+
+/**
+ * 档里的一格不是字符串时给的值(行构造器 str 的兜底):空串 = 「没答」,与 STATUS_NONE
+ * 同口径 —— 消费端全按「空串即缺答」判(makeMissingFilter)。
+ */
+export const STR_NONE = ''
+
+/**
+ * 字段名:处境。F_ 家族 = FIELD_SPECS 的键(fieldBehaviorOf 按它把行为半接回数据半),
+ * 改名要连 FIELD_SPECS 的键与 Answers 的格一起改。
+ */
+export const F_STATUS = 'status'
+
+/**
+ * 字段名:持有许可(F_ 家族,说明同 F_STATUS)。
+ */
+export const F_PERMIT_BAND = 'permitBand'
+
+/**
+ * 字段名:现居省(F_ 家族,说明同 F_STATUS)。
+ */
+export const F_RES_PROV = 'resProv'
+
+/**
+ * 字段名:最高学历(F_ 家族,说明同 F_STATUS)。
+ */
+export const F_EDU_BAND = 'eduBand'
+
+/**
+ * 字段名:年龄段(F_ 家族,说明同 F_STATUS)。
+ */
+export const F_AGE_BAND = 'ageBand'
+
+/**
+ * 字段名:同职业总经验(F_ 家族,说明同 F_STATUS)。
+ */
+export const F_TOTAL_EXP_BAND = 'totalExpBand'
+
+/**
+ * 字段名:英语 CLB(F_ 家族,说明同 F_STATUS)。
+ */
+export const F_CLB_BAND = 'clbBand'
+
+/**
+ * 字段名:加拿大经验(F_ 家族,说明同 F_STATUS)。
+ */
+export const F_EXP_BAND = 'expBand'
+
+/**
+ * 字段名:目标省档(F_ 家族,说明同 F_STATUS)。
+ */
+export const F_PROV_BAND = 'provBand'
+
+/**
+ * 字段名:诉求(F_ 家族,说明同 F_STATUS)。
+ */
+export const F_GOAL_BAND = 'goalBand'
+
+/**
+ * 字段名:手上有无 offer(F_ 家族,说明同 F_STATUS)。
+ */
+export const F_OFFER_BAND = 'offerBand'
+
+/**
+ * 字段名:有无加拿大学历(F_ 家族,说明同 F_STATUS)。
+ */
+export const F_CANADA_EDU_BAND = 'canadaEduBand'
+
+/**
+ * 字段名:专业对口(F_ 家族,说明同 F_STATUS)。
+ */
+export const F_FIELD_MATCH_BAND = 'fieldMatchBand'
+
+/**
+ * 字段名:学历所在省(F_ 家族,说明同 F_STATUS)。
+ */
+export const F_EDU_PROV = 'eduProv'
+
+/**
+ * 字段名:学制年数(F_ 家族,说明同 F_STATUS)。
+ */
+export const F_EDU_YEARS_BAND = 'eduYearsBand'
+
+/**
+ * 字段名:法语 NCLC(F_ 家族,说明同 F_STATUS)。
+ */
+export const F_FRENCH_BAND = 'frenchBand'
+
+/**
+ * 字段名:CRS 档(F_ 家族,说明同 F_STATUS)。
+ */
+export const F_CRS_BAND = 'crsBand'
+
+/**
+ * 字段名:签证剩余(F_ 家族,说明同 F_STATUS)。
+ */
+export const F_PGWP_BAND = 'pgwpBand'
+
+/**
+ * 字段名:课程时长(F_ 家族,说明同 F_STATUS)。
+ */
+export const F_STUDY_MONTHS_BAND = 'studyMonthsBand'
+
+/**
+ * 字段名:课程层级(F_ 家族,说明同 F_STATUS)。
+ */
+export const F_STUDY_LEVEL_BAND = 'studyLevelBand'
+
+/**
  * 题库的**数据半**:题面、选项、解锁的结论、免费/锁区档。
  * 2026-08-25 自 functions.ts 搬入 —— 它原先是 `export const FIELDS`,住在只许有 function
  * 的抽屉里(宪法「functions.ts 顶层只许有 function」),498 处三语题面与 77 个选项码

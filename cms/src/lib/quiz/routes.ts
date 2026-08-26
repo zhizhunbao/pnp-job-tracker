@@ -16,14 +16,13 @@ import config from '@/payload.config'
 import { getDb } from '../db/server'
 import { BAD_REQUEST, TOO_LARGE, UNAUTHORIZED } from '../http'
 import { loadBroadNocs, loadNocOpenCounts, loadQuizFacts, loadTopNocs, searchNocByTitle } from '../jobs/server'
-import { getTopNocsCached, makeFactsStore, swallowFactsError } from './functions'
+import { getTopNocsCached, loadAnswers, makeFactsStore, saveAnswers, swallowFactsError } from './functions'
 import { getUserOrNull } from '../quota/server'
 import {
   ANSWERS_LEN_MAX, BROAD_CACHE_MAX, BROAD_LEN_MAX, BROAD_LIMIT, COUNTS_CACHE_MAX, COUNTS_N_MAX, COUNTS_SEP,
   E_AUTH, E_BAD, E_PARAM, E_TOO_BIG, FACTS_CACHE_MAX, PARAM_NONE, P_BROAD, P_COUNTS, P_NOC, P_Q, P_TOP, Q_LEN_MAX,
   TOP_N_DEFAULT, TTL,
 } from './constants'
-import { loadAnswers, saveAnswers } from './functions'
 import { CACHE } from './variables'
 import type {
   AnswersBody, Json,

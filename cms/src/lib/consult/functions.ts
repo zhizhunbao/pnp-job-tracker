@@ -408,35 +408,6 @@ async function lookupPoints(input: LookupPointsIn): LookupPointsOut {
 // =========================================================================
 
 /**
- * 一段可选文案:条件成立才出,不成立整段消失。
- *
- * 全站禁三目(2026-08-21 Frank 拍板)后,「x 有值才拼这段」collapses 到这一个小件 ——
- * 条件由调用方显式写,文本只许纯拼接(会炸的取值去写 if,这里是拼字的不是守门的)。
- *
- * @param input 出不出、出什么。
- * @returns 那一段;不出就空串。
- */
-function seg(input: SegIn): string {
-  if (input.when === false) {
-    return SEG_NONE
-  }
-  return input.text
-}
-
-/**
- * 官方可空的数值进句子:没有就用占位横线(SEP.none),不折 0 —— 「没公布」和「0 人」是两句话。
- *
- * @param v 那一格的值。
- * @returns 值本身;没有则占位横线。
- */
-function orNone(v: OrNoneIn): OrNoneOut {
-  if (v == null) {
-    return SEP.none
-  }
-  return v
-}
-
-/**
  * 可空值进日志:没有就用调用方给的占位词 —— 占位词随日志词表走,不跟 `orNone` 的显示占位混用。
  *
  * @param input 那一格的值与占位词。
@@ -447,48 +418,6 @@ function orNone2(input: OrNone2In): OrNoneOut {
     return input.fallback
   }
   return input.v
-}
-
-/**
- * 「一行都没有」的省该落哪一态:QC 是**不适用**(自有体系,不走这套抽选/清单),
- * 其余省是**本站未收录** —— 不是「官方没有」,那句话需要举证。
- *
- * @param prov 两位省码。
- * @returns 四态之一。
- */
-function emptyAvailability(prov: string): Availability {
-  if (prov === QC) {
-    return AVAIL.notApplicable
-  }
-  return AVAIL.notCollected
-}
-
-/**
- * 造一条带数值的事实。
- *
- * @param input 工具名、说明、数值、展示形态、单位、出处。
- * @returns 一条事实。
- */
-function fact(input: FactIn): Fact {
-  return {
-    tool: input.tool, label: input.label, quote: input.quote, value: input.value,
-    valueText: input.valueText, unit: input.unit, evidence: input.evidence,
-    availability: null, cited: null,
-  }
-}
-
-/**
- * 造一条**没有值**的事实,四态之一。它的 `value` 永远是 null,数字闸不会去查它。
- *
- * @param input 工具名、说明、是四态里的哪一种、出处。
- * @returns 一条四态事实。
- */
-function statusFact(input: StatusFactIn): Fact {
-  return {
-    tool: input.tool, label: input.label, quote: input.quote, value: null,
-    valueText: VALUE_TEXT_NONE, unit: UNIT.status,
-    evidence: input.evidence, availability: input.availability, cited: null,
-  }
 }
 
 /**
@@ -511,6 +440,20 @@ function jobsFacts(r: JobsResult): JobsFactsOut {
     }))
   }
   return out
+}
+
+/**
+ * 造一条带数值的事实。
+ *
+ * @param input 工具名、说明、数值、展示形态、单位、出处。
+ * @returns 一条事实。
+ */
+function fact(input: FactIn): Fact {
+  return {
+    tool: input.tool, label: input.label, quote: input.quote, value: input.value,
+    valueText: input.valueText, unit: input.unit, evidence: input.evidence,
+    availability: null, cited: null,
+  }
 }
 
 /**
@@ -559,28 +502,17 @@ function coverageFacts(r: CoverageResult): CoverageFactsOut {
 }
 
 /**
- * 一条门槛的值:**分档的要把每一档都写出来**。
+ * 造一条**没有值**的事实,四态之一。它的 `value` 永远是 null,数字闸不会去查它。
  *
- * 🔴 实撞:BC 雇主雇员数是大温 5 人 / BC 其余 3 人两档,只报 5 的那一版答复
- * 对住在温哥华岛的人就是错的 —— 少给一档不是「简洁」,是半个真话。
- *
- * @param res 一条判定。
- * @returns 值的展示形态。
+ * @param input 工具名、说明、是四态里的哪一种、出处。
+ * @returns 一条四态事实。
  */
-function tierText(res: RuleResult): string {
-  const unitTail = seg({ when: Boolean(res.unit), text: `${SPACE}${res.unit}` })
-  if (res.tiers && res.tiers.length) {
-    const parts: string[] = []
-    for (const t of res.tiers) {
-      parts.push(`${t.area}${SEP.colon}${orNone(t.value)}${unitTail}`)
-    }
-    return parts.join(SEP.semi)
+function statusFact(input: StatusFactIn): Fact {
+  return {
+    tool: input.tool, label: input.label, quote: input.quote, value: null,
+    valueText: VALUE_TEXT_NONE, unit: UNIT.status,
+    evidence: input.evidence, availability: input.availability, cited: null,
   }
-  if (res.need == null) {
-    return res.verdict
-  }
-  const low = seg({ when: res.needLow != null && res.needLow !== res.need, text: `${res.needLow}${LABEL.range}` })
-  return `${low}${res.need}${unitTail}`
 }
 
 /**
@@ -621,6 +553,60 @@ function thresholdsFacts(r: ThresholdsResult): ThresholdsFactsOut {
 }
 
 /**
+ * 一段可选文案:条件成立才出,不成立整段消失。
+ *
+ * 全站禁三目(2026-08-21 Frank 拍板)后,「x 有值才拼这段」collapses 到这一个小件 ——
+ * 条件由调用方显式写,文本只许纯拼接(会炸的取值去写 if,这里是拼字的不是守门的)。
+ *
+ * @param input 出不出、出什么。
+ * @returns 那一段;不出就空串。
+ */
+function seg(input: SegIn): string {
+  if (input.when === false) {
+    return SEG_NONE
+  }
+  return input.text
+}
+
+/**
+ * 一条门槛的值:**分档的要把每一档都写出来**。
+ *
+ * 🔴 实撞:BC 雇主雇员数是大温 5 人 / BC 其余 3 人两档,只报 5 的那一版答复
+ * 对住在温哥华岛的人就是错的 —— 少给一档不是「简洁」,是半个真话。
+ *
+ * @param res 一条判定。
+ * @returns 值的展示形态。
+ */
+function tierText(res: RuleResult): string {
+  const unitTail = seg({ when: Boolean(res.unit), text: `${SPACE}${res.unit}` })
+  if (res.tiers && res.tiers.length) {
+    const parts: string[] = []
+    for (const t of res.tiers) {
+      parts.push(`${t.area}${SEP.colon}${orNone(t.value)}${unitTail}`)
+    }
+    return parts.join(SEP.semi)
+  }
+  if (res.need == null) {
+    return res.verdict
+  }
+  const low = seg({ when: res.needLow != null && res.needLow !== res.need, text: `${res.needLow}${LABEL.range}` })
+  return `${low}${res.need}${unitTail}`
+}
+
+/**
+ * 官方可空的数值进句子:没有就用占位横线(SEP.none),不折 0 —— 「没公布」和「0 人」是两句话。
+ *
+ * @param v 那一格的值。
+ * @returns 值本身;没有则占位横线。
+ */
+function orNone(v: OrNoneIn): OrNoneOut {
+  if (v == null) {
+    return SEP.none
+  }
+  return v
+}
+
+/**
  * 抽选记录 → 事实。一轮一条,分数线当数值、分制跟在旁边 —— FED 的 CRS 与
  * 各省的 SIRS/EOI 互不相通,摆分数不带分制就是在诱导比较两套分。
  *
@@ -653,6 +639,20 @@ function drawsFacts(r: DrawsResult): DrawsFactsOut {
     }))
   }
   return out
+}
+
+/**
+ * 「一行都没有」的省该落哪一态:QC 是**不适用**(自有体系,不走这套抽选/清单),
+ * 其余省是**本站未收录** —— 不是「官方没有」,那句话需要举证。
+ *
+ * @param prov 两位省码。
+ * @returns 四态之一。
+ */
+function emptyAvailability(prov: string): Availability {
+  if (prov === QC) {
+    return AVAIL.notApplicable
+  }
+  return AVAIL.notCollected
 }
 
 /**
@@ -804,20 +804,6 @@ function pointsFacts(r: PointsResult): PointsFactsOut {
 }
 
 /**
- * 档案身份词 → 引擎词表里的词;不在表里就 null。
- * 喂一个引擎不认识的词,它会走「不是在读」之类的反向分支,比「没答」更糟。
- *
- * @param said 档案里的身份词原文。
- * @returns 词表里的词,或 null。
- */
-function statusWordOf(said: string): StatusWordOfOut {
-  if (STATUS_WORDS.includes(said)) {
-    return said
-  }
-  return null
-}
-
-/**
  * 收件箱 + 档案槽 → 判定引擎认的档案。
  *
  * 🔴 **只搬真有的槽,缺的原样 null** —— 缺一个槽 ≠ 有一个默认值(「按单身算」会直接换一张分表)。
@@ -850,6 +836,20 @@ function verdictProfileOf(input: VerdictProfileOfIn): VerdictProfile {
     frenchOk: null,
     permit: null,
   }
+}
+
+/**
+ * 档案身份词 → 引擎词表里的词;不在表里就 null。
+ * 喂一个引擎不认识的词,它会走「不是在读」之类的反向分支,比「没答」更糟。
+ *
+ * @param said 档案里的身份词原文。
+ * @returns 词表里的词,或 null。
+ */
+function statusWordOf(said: string): StatusWordOfOut {
+  if (STATUS_WORDS.includes(said)) {
+    return said
+  }
+  return null
 }
 
 /**
@@ -903,6 +903,177 @@ function verdictFacts(rows: VerdictFactsIn): VerdictFactsOut {
 // =========================================================================
 
 /**
+ * 行首的排版记号:项目符号 `- ` 或一两位序号。
+ *
+ * @param mark 匹配到的那一段。
+ * @returns 它是序号就抹成空白(那个数是排版不是事实),是项目符号就原样留下。
+ */
+function blankIfNumbered(mark: string): string {
+  if (HAS_DIGIT.test(mark)) {
+    return SPACE
+  }
+  return mark
+}
+
+/**
+ * 跑完全部出口闸。
+ *
+ * @param input 答复、事实、用户原话、语种。
+ * @returns 撞到的每一道闸;全过时是空数组。
+ */
+function runGates(input: RunGatesIn): RunGatesOut {
+  const fired: GateHit[] = []
+  const checks: GateHit[] = [
+    { gate: GATE.ungrounded, hits: findUngroundedNumbers({ answer: input.answer, facts: input.facts, echo: input.echo, codes: input.codes }) },
+    { gate: GATE.internal, hits: findInternalWords(input.answer) },
+    { gate: GATE.englishUnit, hits: findEnglishUnits({ answer: input.answer, lang: input.lang }) },
+    { gate: GATE.markup, hits: findRawMarkup(input.answer) },
+    { gate: GATE.opening, hits: findRestatedOpening({ answer: input.answer }) },
+  ]
+  for (const c of checks) {
+    if (c.hits.length) {
+      fired.push(c)
+    }
+  }
+  return fired
+}
+
+/**
+ * 第一句只是把问题复述了一遍。
+ *
+ * 判据两条,都是**看得见摸得着的形状**,不猜语义:
+ *   ① 以冒号收尾 —— 那句话在说「下面开始列」,不是在回答;
+ *   ② 带「如下 / 以下条件 / as follows」这类预告词。
+ *
+ * 🔴 为什么是闸不是提示词:三轮提示词迭代(说人话 → 独立成条 → 并进 RULE 0)都没治住,
+ * 而这两条形状用正则一眼认得出。提示词负责说一遍,执行交给这里 ——
+ * 撞了就把话回喂给模型重写,两次不过降级成事实清单,和别的闸一个待遇。
+ *
+ * @param input 整段答复。
+ * @returns 撞到的毛病;第一句没问题则空。
+ */
+function findRestatedOpening(input: FindRestatedOpeningIn): FindRestatedOpeningOut {
+  const line = firstLineOf({ answer: input.answer })
+  const bad: string[] = []
+  if (line === '') {
+    return bad
+  }
+  if (OPENING_COLON.test(line)) {
+    bad.push(line.slice(-OPENING_SAMPLE))
+  }
+  if (AS_FOLLOWS.test(line)) {
+    bad.push(line.slice(-OPENING_SAMPLE))
+  }
+  return bad
+}
+
+/**
+ * 整段答复的第一句 —— 到第一个换行或第一个句号为止。
+ *
+ * @param input 整段答复。
+ * @returns 第一句;整段没有断句记号时按长度截。
+ */
+function firstLineOf(input: FirstLineOfIn): string {
+  const head = input.answer.trim().split(NL)[0]
+  if (head == null) {
+    return SEG_NONE
+  }
+  const stop = head.indexOf(FULL_STOP)
+  let line = head
+  if (stop >= 0) {
+    line = head.slice(0, stop + 1)
+  }
+  return line.slice(0, FIRST_LINE_CAP).trim()
+}
+
+/**
+ * 前端只渲染得出两样排版:空行分段、行首 `- `。其余记号会原样见客。
+ *
+ * @param answer 答复。
+ * @returns 撞到的记号。
+ */
+function findRawMarkup(answer: string): FindRawMarkupOut {
+  const bad: string[] = []
+  if (BOLD_RE.test(answer)) {
+    bad.push(MARKUP.bold)
+  }
+  if (STAR_RE.test(answer)) {
+    bad.push(MARKUP.star)
+  }
+  if (HEADING_RE.test(answer)) {
+    bad.push(MARKUP.heading)
+  }
+  if (TABLE_RE.test(answer)) {
+    bad.push(MARKUP.pipe)
+  }
+  if (NUMBERED_RE.test(answer)) {
+    bad.push(MARKUP.numbered)
+  }
+  return bad
+}
+
+/**
+ * 中/韩答复里夹了英文单位速记。数据是英文的,话不能是。
+ *
+ * @param input 答复与语种。
+ * @returns 撞到的词;英文答复永远是空。
+ */
+function findEnglishUnits(input: AnswerLangIn): FindEnglishUnitsOut {
+  if (input.lang === EN) {
+    return []
+  }
+  const low = input.answer.toLowerCase()
+  const bad: string[] = []
+  for (const w of EN_UNIT_WORDS) {
+    if (new RegExp(`${WORD_EDGE}${w}${WORD_EDGE}`).test(low)) {
+      bad.push(w)
+    }
+  }
+  return bad
+}
+
+/**
+ * 内部枚举与字段名漏进答复。2026-08-04 事故:英文内部标签原样吐给了用户。
+ *
+ * @param answer 答复。
+ * @returns 撞到的词。
+ */
+function findInternalWords(answer: string): FindInternalWordsOut {
+  const low = answer.toLowerCase()
+  const bad: string[] = []
+  for (const w of INTERNAL_WORDS) {
+    if (low.includes(w)) {
+      bad.push(w)
+    }
+  }
+  return bad
+}
+
+/**
+ * 🔴 **数字回读** —— 答复里每个数字都要在 facts 或用户原话里找得到。
+ *
+ * 这是「不许编数字」那条唯一的执行件:靠回读比对,不靠在 prompt 里求模型别编。
+ * 行首的一两位序号(排版用)放行。
+ *
+ * @param input 答复、事实、用户原话。
+ * @returns 溯不到源的那些数字。
+ */
+function findUngroundedNumbers(input: NumberCheckIn): FindUngroundedNumbersOut {
+  const ok = allowedNumbers(input)
+  const bad: string[] = []
+  for (const line of input.answer.split(NL)) {
+    const body = line.replace(LEAD_MARK, blankIfNumbered)
+    for (const m of body.matchAll(NUM_RE)) {
+      const n = normNum(m[0])
+      if (ok.has(n) === false && bad.includes(n) === false) {
+        bad.push(n)
+      }
+    }
+  }
+  return bad
+}
+
+/**
  * 把一个数规范成可比对的形态:去掉千分位,去掉末尾的 `.0`。
  *
  * @param raw 从答复或事实里抠出来的数字串。
@@ -944,177 +1115,6 @@ function allowedNumbers(input: NumberCheckIn): AllowedNumbersOut {
     ok.add(normNum(m[0]))
   }
   return ok
-}
-
-/**
- * 行首的排版记号:项目符号 `- ` 或一两位序号。
- *
- * @param mark 匹配到的那一段。
- * @returns 它是序号就抹成空白(那个数是排版不是事实),是项目符号就原样留下。
- */
-function blankIfNumbered(mark: string): string {
-  if (HAS_DIGIT.test(mark)) {
-    return SPACE
-  }
-  return mark
-}
-
-/**
- * 🔴 **数字回读** —— 答复里每个数字都要在 facts 或用户原话里找得到。
- *
- * 这是「不许编数字」那条唯一的执行件:靠回读比对,不靠在 prompt 里求模型别编。
- * 行首的一两位序号(排版用)放行。
- *
- * @param input 答复、事实、用户原话。
- * @returns 溯不到源的那些数字。
- */
-function findUngroundedNumbers(input: NumberCheckIn): FindUngroundedNumbersOut {
-  const ok = allowedNumbers(input)
-  const bad: string[] = []
-  for (const line of input.answer.split(NL)) {
-    const body = line.replace(LEAD_MARK, blankIfNumbered)
-    for (const m of body.matchAll(NUM_RE)) {
-      const n = normNum(m[0])
-      if (ok.has(n) === false && bad.includes(n) === false) {
-        bad.push(n)
-      }
-    }
-  }
-  return bad
-}
-
-/**
- * 内部枚举与字段名漏进答复。2026-08-04 事故:英文内部标签原样吐给了用户。
- *
- * @param answer 答复。
- * @returns 撞到的词。
- */
-function findInternalWords(answer: string): FindInternalWordsOut {
-  const low = answer.toLowerCase()
-  const bad: string[] = []
-  for (const w of INTERNAL_WORDS) {
-    if (low.includes(w)) {
-      bad.push(w)
-    }
-  }
-  return bad
-}
-
-/**
- * 中/韩答复里夹了英文单位速记。数据是英文的,话不能是。
- *
- * @param input 答复与语种。
- * @returns 撞到的词;英文答复永远是空。
- */
-function findEnglishUnits(input: AnswerLangIn): FindEnglishUnitsOut {
-  if (input.lang === EN) {
-    return []
-  }
-  const low = input.answer.toLowerCase()
-  const bad: string[] = []
-  for (const w of EN_UNIT_WORDS) {
-    if (new RegExp(`${WORD_EDGE}${w}${WORD_EDGE}`).test(low)) {
-      bad.push(w)
-    }
-  }
-  return bad
-}
-
-/**
- * 前端只渲染得出两样排版:空行分段、行首 `- `。其余记号会原样见客。
- *
- * @param answer 答复。
- * @returns 撞到的记号。
- */
-function findRawMarkup(answer: string): FindRawMarkupOut {
-  const bad: string[] = []
-  if (BOLD_RE.test(answer)) {
-    bad.push(MARKUP.bold)
-  }
-  if (STAR_RE.test(answer)) {
-    bad.push(MARKUP.star)
-  }
-  if (HEADING_RE.test(answer)) {
-    bad.push(MARKUP.heading)
-  }
-  if (TABLE_RE.test(answer)) {
-    bad.push(MARKUP.pipe)
-  }
-  if (NUMBERED_RE.test(answer)) {
-    bad.push(MARKUP.numbered)
-  }
-  return bad
-}
-
-/**
- * 整段答复的第一句 —— 到第一个换行或第一个句号为止。
- *
- * @param input 整段答复。
- * @returns 第一句;整段没有断句记号时按长度截。
- */
-function firstLineOf(input: FirstLineOfIn): string {
-  const head = input.answer.trim().split(NL)[0]
-  if (head == null) {
-    return SEG_NONE
-  }
-  const stop = head.indexOf(FULL_STOP)
-  let line = head
-  if (stop >= 0) {
-    line = head.slice(0, stop + 1)
-  }
-  return line.slice(0, FIRST_LINE_CAP).trim()
-}
-
-/**
- * 第一句只是把问题复述了一遍。
- *
- * 判据两条,都是**看得见摸得着的形状**,不猜语义:
- *   ① 以冒号收尾 —— 那句话在说「下面开始列」,不是在回答;
- *   ② 带「如下 / 以下条件 / as follows」这类预告词。
- *
- * 🔴 为什么是闸不是提示词:三轮提示词迭代(说人话 → 独立成条 → 并进 RULE 0)都没治住,
- * 而这两条形状用正则一眼认得出。提示词负责说一遍,执行交给这里 ——
- * 撞了就把话回喂给模型重写,两次不过降级成事实清单,和别的闸一个待遇。
- *
- * @param input 整段答复。
- * @returns 撞到的毛病;第一句没问题则空。
- */
-function findRestatedOpening(input: FindRestatedOpeningIn): FindRestatedOpeningOut {
-  const line = firstLineOf({ answer: input.answer })
-  const bad: string[] = []
-  if (line === '') {
-    return bad
-  }
-  if (OPENING_COLON.test(line)) {
-    bad.push(line.slice(-OPENING_SAMPLE))
-  }
-  if (AS_FOLLOWS.test(line)) {
-    bad.push(line.slice(-OPENING_SAMPLE))
-  }
-  return bad
-}
-
-/**
- * 跑完全部出口闸。
- *
- * @param input 答复、事实、用户原话、语种。
- * @returns 撞到的每一道闸;全过时是空数组。
- */
-function runGates(input: RunGatesIn): RunGatesOut {
-  const fired: GateHit[] = []
-  const checks: GateHit[] = [
-    { gate: GATE.ungrounded, hits: findUngroundedNumbers({ answer: input.answer, facts: input.facts, echo: input.echo, codes: input.codes }) },
-    { gate: GATE.internal, hits: findInternalWords(input.answer) },
-    { gate: GATE.englishUnit, hits: findEnglishUnits({ answer: input.answer, lang: input.lang }) },
-    { gate: GATE.markup, hits: findRawMarkup(input.answer) },
-    { gate: GATE.opening, hits: findRestatedOpening({ answer: input.answer }) },
-  ]
-  for (const c of checks) {
-    if (c.hits.length) {
-      fired.push(c)
-    }
-  }
-  return fired
 }
 
 /**
@@ -1195,43 +1195,6 @@ function citeFacts(input: CiteFactsIn): CiteFactsOut {
 // =========================================================================
 // 6. 工具
 // =========================================================================
-
-/**
- * 把事实攒进收件箱,并拼一段**紧凑的**回执给模型。
- *
- * 回执越短,后面每一轮越快 —— 每一轮都要重发全部消息,而经隧道那个门每次调用约 1.7 秒固定开销。
- *
- * @param input 这一趟的收件箱与这一把工具产出的事实。
- * @returns pi 认的工具回执。
- */
-function take(input: TakeIn): Reply {
-  const room = MAX_FACTS - input.box.facts.length
-  let kept: Fact[] = []
-  if (room > 0) {
-    kept = input.facts.slice(0, room)
-  }
-  const lines: string[] = []
-  for (const f of kept) {
-    input.box.facts.push(f)
-    lines.push(`${SEP.bullet}${f.label}${seg({ when: f.valueText !== '', text: `${SEP.colon}${f.valueText}` })}`)
-  }
-  let reply = TOOL_REPLY.empty
-  if (lines.length) {
-    reply = lines.join(NL)
-  }
-  return { content: [{ type: ROLE.text, text: reply }], details: { n: kept.length }, terminate: false }
-}
-
-/**
- * 拼一段纯话术的回执(拿不到职业码这类)。
- *
- * @param text 给模型看的那句话。
- * @returns pi 认的工具回执。
- */
-function say(text: string): Reply {
-  return { content: [{ type: ROLE.text, text }], details: { n: 0 }, terminate: false }
-}
-
 
 /**
  * 这一趟的工具挂点 —— **接的是 pi 自己的 `beforeToolCall`**,不是我们另造的一层。
@@ -1498,122 +1461,115 @@ function makeTools(input: MakeToolsIn): MakeToolsOut {
   return [search, jobs, coverage, thresholds, draws, ops, ee, permit, points, verdict, claims]
 }
 
+
+/**
+ * 把事实攒进收件箱,并拼一段**紧凑的**回执给模型。
+ *
+ * 回执越短,后面每一轮越快 —— 每一轮都要重发全部消息,而经隧道那个门每次调用约 1.7 秒固定开销。
+ *
+ * @param input 这一趟的收件箱与这一把工具产出的事实。
+ * @returns pi 认的工具回执。
+ */
+function take(input: TakeIn): Reply {
+  const room = MAX_FACTS - input.box.facts.length
+  let kept: Fact[] = []
+  if (room > 0) {
+    kept = input.facts.slice(0, room)
+  }
+  const lines: string[] = []
+  for (const f of kept) {
+    input.box.facts.push(f)
+    lines.push(`${SEP.bullet}${f.label}${seg({ when: f.valueText !== '', text: `${SEP.colon}${f.valueText}` })}`)
+  }
+  let reply = TOOL_REPLY.empty
+  if (lines.length) {
+    reply = lines.join(NL)
+  }
+  return { content: [{ type: ROLE.text, text: reply }], details: { n: kept.length }, terminate: false }
+}
+
+/**
+ * 拼一段纯话术的回执(拿不到职业码这类)。
+ *
+ * @param text 给模型看的那句话。
+ * @returns pi 认的工具回执。
+ */
+function say(text: string): Reply {
+  return { content: [{ type: ROLE.text, text }], details: { n: 0 }, terminate: false }
+}
+
 // =========================================================================
 // 7. 循环
 // =========================================================================
 
 /**
- * 拼这一趟的 system prompt:规则 + 语种 + 用户自己说过的档案。
+ * 答一个问题:跑工具循环,过出口闸,撞了重写一次,再撞就降级成事实清单。
  *
- * @param input 跑这一趟要的东西。
- * @returns 完整的 system prompt。
+ * 降级只认**硬闸**(拦假话的那几道):软闸没过只是难看,留着模型那一版,
+ * 换成一行英文事实清单反而更糟(2026-08-20 实拍,见 `HARD_GATES` 的注释)。
+ *
+ * @param input 库连接、用户原话、语种、档案、历史与两个回调。
+ * @returns 过完闸的答复、标好 `cited` 的事实、采信的职业码、是不是降级来的。
  */
-function systemOf(input: RunIn): string {
-  const said: string[] = []
-  const p = input.profile
-  if (p.noc) {
-    said.push(`${SAID.noc}${p.noc}`)
+export async function consult(input: RunIn): ConsultOut {
+  if (BASE === '') {
+    throw chatError({ code: CHAT_CODE.llm, msg: FAIL_MSG.noBase, slots: null })
   }
-  if (p.occText) {
-    said.push(`${SAID.occOpen}${p.occText}${SAID.occClose}`)
+  const box: Inbox = await boxFor({ db: input.db, profile: input.profile })
+  const echo = input.history.filter(isUserTurn).map(contentOf).concat(input.text).join(NL)
+  const t0 = Date.now()
+
+  let answer = ANSWER_PENDING
+  let fired: GateHit[] = []
+  for (let attempt = 0; attempt <= GUARD_RETRIES; attempt += 1) {
+    let extra = SEG_NONE
+    if (fired.length) {
+      extra = `${NL}${NL}${retryNote(fired)}`
+    }
+    answer = clampAnswer({ answer: await draftOnce({ run: input, box, extra }), lang: input.lang })
+    fired = runGates({ answer, facts: box.facts, echo, lang: input.lang, codes: codesOf(box) })
+    if (fired.length === 0) {
+      break
+    }
+    log({
+      tag: CHAT_LOG.tag,
+      text: `${GATE_LOG.hit}${attempt + 1} ${fired.map(gateLabel).join(GATE_LOG.comma)}${GATE_LOG.noc}${orNone2({ v: box.noc, fallback: GATE_LOG.none })}`,
+    })
   }
-  if (p.provs.length) {
-    said.push(`${SAID.provs}${p.provs.join(SEP.comma)}`)
+
+  const hard = hardHits({ fired: fired })
+  const degraded = hard.length > 0
+  if (degraded) {
+    if (box.facts.length === 0) {
+      throw chatError({ code: CHAT_CODE.guard, msg: `${FAIL_MSG.noFacts}${hard.map(gateLabel).join(GATE_LOG.comma)}`, slots: null })
+    }
+    answer = factSheet(box.facts)
   }
-  if (p.expMonths != null) {
-    said.push(`${p.expMonths}${SAID.exp}`)
-  }
-  if (p.status) {
-    said.push(`${SAID.status}${p.status}`)
-  }
-  let profile = PROFILE_NONE
-  if (said.length) {
-    profile = `${PROFILE_HEAD}${said.join(SEP.semi)}`
-  }
-  return `${SYSTEM_RULES}${NL}${NL}${REPLY_LANGUAGE_HEAD}${LANG_NAME[input.lang]}${NL}${NL}${profile}`
+  const facts = citeFacts({ answer, facts: box.facts })
+  log({
+    tag: CHAT_LOG.tag,
+    text: `${CHAT_LOG.loopDone}${orNone2({ v: box.noc, fallback: GATE_LOG.none })}${CHAT_LOG.facts}${box.facts.length}`
+      + `${CHAT_LOG.ms}${Date.now() - t0}${CHAT_LOG.out}${answer.length}${GATE_LOG.degraded}${degraded}`,
+  })
+  return { answer, facts, noc: box.noc, degraded }
 }
 
 /**
- * 把用户这一句(前面带上几轮历史)包成 pi 认的消息。
+ * 撞到的闸里,哪几道拦的是「假话」。
  *
- * 🔴 **我们只产 user 消息**,历史折进正文而不是伪造成 assistant 轮 ——
- * pi 的 assistant 消息带一整套模型元数据(api / provider / usage / stopReason),
- * 我们手上没有那些,编出来只会在下一轮被当真。
+ * 只有这几道值得把答案整段换掉 —— 见 `HARD_GATES` 的注释。
  *
- * @param input 用户原话与历史。
- * @returns pi 认的一条 user 消息。
+ * @param input 这一轮撞到的全部闸。
+ * @returns 其中的硬闸;没有则空。
  */
-function firstPrompt(input: RunIn): TranscriptMessage {
-  const lines: string[] = []
-  if (input.history.length) {
-    lines.push(EARLIER_HEAD)
-  }
-  for (const turn of input.history.slice(-HISTORY_TURNS)) {
-    lines.push(`${turn.role}${SEP.colon}${turn.content.slice(0, HISTORY_CAP)}`)
-  }
-  let earlier = SEG_NONE
-  if (lines.length) {
-    earlier = `${lines.join(NL)}${NL}${NL}${NOW_HEAD}`
-  }
-  const message: TranscriptMessage = {
-    role: ROLE.user,
-    content: [{ type: ROLE.text, text: earlier + input.text }],
-    timestamp: Date.now(),
-  }
-  return message
-}
-
-/**
- * 从一条消息里取出正文(不含思维链与工具调用)。
- *
- * @param message 循环里的一条消息。
- * @returns 正文;这条不是助手正文就返回空串。
- */
-function textOf(message: TranscriptMessage): string {
-  if (message.role !== ROLE.assistant) {
-    return TEXT_NONE
-  }
-  const parts: string[] = []
-  for (const block of message.content) {
-    if (block.type === ROLE.text) {
-      parts.push(block.text)
+function hardHits(input: HardHitsIn): HardHitsOut {
+  const out: GateHit[] = []
+  for (const h of input.fired) {
+    if (HARD_GATES.includes(h.gate)) {
+      out.push(h)
     }
   }
-  return parts.join(TEXT_BLOCK_SEP)
-}
-
-/**
- * 从循环跑出来的整串消息里取最后一段正文;取不出来就抛,不返回空串。
- *
- * 🔴 **pi 被 abort 时是正常返回、不抛** —— 所以超时只能在这里认出来,
- * `draftOnce` 的 `catch` 里那句 `ac.signal.aborted` 永远够不着。
- * 2026-08-21 实测三条(「我 480 稳吗」「按我的情况判一判走哪条路最快」
- * 「大家都是这么说的 两个一年 能换 3 年」)全是 45.0s、`out=0`、`degraded=false`:
- * 原先写的是 `drafts.length ? … : ''`,把「一个字都没写出来」悄悄变成「答案是空字符串」,
- * 用户看到一片空白,而四道出口闸一道都不响 —— 闸查的是「数字有没有出处」,空串一个数字都没有。
- *
- * @param input 循环产出的消息,以及这一趟是不是被掐断的。
- * @returns 最后一段有字的正文。
- */
-function lastDraftOf(input: LastDraftOfIn): string {
-  const drafts: string[] = []
-  for (const m of input.messages) {
-    const t = textOf(m)
-    if (t) {
-      drafts.push(t)
-    }
-  }
-  if (input.aborted) {
-    throw chatError({ code: CHAT_CODE.busy, msg: `${FAIL_MSG.timeout}${TIMEOUT_MS}${FAIL_MSG.ms}`, slots: null })
-  }
-  if (drafts.length === 0) {
-    throw chatError({ code: CHAT_CODE.llm, msg: FAIL_MSG.emptyDraft, slots: null })
-  }
-  const last = drafts[drafts.length - 1]
-  if (last == null) {
-    throw chatError({ code: CHAT_CODE.llm, msg: SEG_NONE, slots: null })
-  }
-  return last
+  return out
 }
 
 /**
@@ -1681,21 +1637,117 @@ async function draftOnce(input: DraftOnceIn): DraftOnceOut {
 }
 
 /**
- * 撞到的闸里,哪几道拦的是「假话」。
+ * 从一条消息里取出正文(不含思维链与工具调用)。
  *
- * 只有这几道值得把答案整段换掉 —— 见 `HARD_GATES` 的注释。
- *
- * @param input 这一轮撞到的全部闸。
- * @returns 其中的硬闸;没有则空。
+ * @param message 循环里的一条消息。
+ * @returns 正文;这条不是助手正文就返回空串。
  */
-function hardHits(input: HardHitsIn): HardHitsOut {
-  const out: GateHit[] = []
-  for (const h of input.fired) {
-    if (HARD_GATES.includes(h.gate)) {
-      out.push(h)
+function textOf(message: TranscriptMessage): string {
+  if (message.role !== ROLE.assistant) {
+    return TEXT_NONE
+  }
+  const parts: string[] = []
+  for (const block of message.content) {
+    if (block.type === ROLE.text) {
+      parts.push(block.text)
     }
   }
-  return out
+  return parts.join(TEXT_BLOCK_SEP)
+}
+
+/**
+ * 从循环跑出来的整串消息里取最后一段正文;取不出来就抛,不返回空串。
+ *
+ * 🔴 **pi 被 abort 时是正常返回、不抛** —— 所以超时只能在这里认出来,
+ * `draftOnce` 的 `catch` 里那句 `ac.signal.aborted` 永远够不着。
+ * 2026-08-21 实测三条(「我 480 稳吗」「按我的情况判一判走哪条路最快」
+ * 「大家都是这么说的 两个一年 能换 3 年」)全是 45.0s、`out=0`、`degraded=false`:
+ * 原先写的是 `drafts.length ? … : ''`,把「一个字都没写出来」悄悄变成「答案是空字符串」,
+ * 用户看到一片空白,而四道出口闸一道都不响 —— 闸查的是「数字有没有出处」,空串一个数字都没有。
+ *
+ * @param input 循环产出的消息,以及这一趟是不是被掐断的。
+ * @returns 最后一段有字的正文。
+ */
+function lastDraftOf(input: LastDraftOfIn): string {
+  const drafts: string[] = []
+  for (const m of input.messages) {
+    const t = textOf(m)
+    if (t) {
+      drafts.push(t)
+    }
+  }
+  if (input.aborted) {
+    throw chatError({ code: CHAT_CODE.busy, msg: `${FAIL_MSG.timeout}${TIMEOUT_MS}${FAIL_MSG.ms}`, slots: null })
+  }
+  if (drafts.length === 0) {
+    throw chatError({ code: CHAT_CODE.llm, msg: FAIL_MSG.emptyDraft, slots: null })
+  }
+  const last = drafts[drafts.length - 1]
+  if (last == null) {
+    throw chatError({ code: CHAT_CODE.llm, msg: SEG_NONE, slots: null })
+  }
+  return last
+}
+
+/**
+ * 拼这一趟的 system prompt:规则 + 语种 + 用户自己说过的档案。
+ *
+ * @param input 跑这一趟要的东西。
+ * @returns 完整的 system prompt。
+ */
+function systemOf(input: RunIn): string {
+  const said: string[] = []
+  const p = input.profile
+  if (p.noc) {
+    said.push(`${SAID.noc}${p.noc}`)
+  }
+  if (p.occText) {
+    said.push(`${SAID.occOpen}${p.occText}${SAID.occClose}`)
+  }
+  if (p.provs.length) {
+    said.push(`${SAID.provs}${p.provs.join(SEP.comma)}`)
+  }
+  if (p.expMonths != null) {
+    said.push(`${p.expMonths}${SAID.exp}`)
+  }
+  if (p.status) {
+    said.push(`${SAID.status}${p.status}`)
+  }
+  let profile = PROFILE_NONE
+  if (said.length) {
+    profile = `${PROFILE_HEAD}${said.join(SEP.semi)}`
+  }
+  return `${SYSTEM_RULES}${NL}${NL}${REPLY_LANGUAGE_HEAD}${LANG_NAME[input.lang]}${NL}${NL}${profile}`
+}
+
+/**
+ * 把用户这一句(前面带上几轮历史)包成 pi 认的消息。
+ *
+ * 🔴 **我们只产 user 消息**,历史折进正文而不是伪造成 assistant 轮 ——
+ * pi 的 assistant 消息带一整套模型元数据(api / provider / usage / stopReason),
+ * 我们手上没有那些,编出来只会在下一轮被当真。
+ *
+ * @param input 用户原话与历史。
+ * @returns pi 认的一条 user 消息。
+ */
+function firstPrompt(input: RunIn): TranscriptMessage {
+  const lines: string[] = []
+  if (input.history.length) {
+    lines.push(EARLIER_HEAD)
+  }
+  for (const turn of input.history.slice(-HISTORY_TURNS)) {
+    lines.push(`${turn.role}${SEP.colon}${turn.content.slice(0, HISTORY_CAP)}`)
+  }
+  let earlier = SEG_NONE
+  if (lines.length) {
+    earlier = `${lines.join(NL)}${NL}${NL}${NOW_HEAD}`
+  }
+  const message: TranscriptMessage = {
+    role: ROLE.user,
+    content: [{ type: ROLE.text, text: earlier + input.text }],
+    timestamp: Date.now(),
+  }
+  return message
 }
 
 /**
@@ -1723,58 +1775,6 @@ async function boxFor(input: BoxForIn): BoxForOut {
   const { rows } = await input.db.query(SQL.NOC_TITLE_TEER, [noc])
   const tt = toTitleTeer(rows)
   return { facts: [], candidates: [], noc: noc, title: tt.title, teer: tt.teer }
-}
-
-/**
- * 答一个问题:跑工具循环,过出口闸,撞了重写一次,再撞就降级成事实清单。
- *
- * 降级只认**硬闸**(拦假话的那几道):软闸没过只是难看,留着模型那一版,
- * 换成一行英文事实清单反而更糟(2026-08-20 实拍,见 `HARD_GATES` 的注释)。
- *
- * @param input 库连接、用户原话、语种、档案、历史与两个回调。
- * @returns 过完闸的答复、标好 `cited` 的事实、采信的职业码、是不是降级来的。
- */
-export async function consult(input: RunIn): ConsultOut {
-  if (BASE === '') {
-    throw chatError({ code: CHAT_CODE.llm, msg: FAIL_MSG.noBase, slots: null })
-  }
-  const box: Inbox = await boxFor({ db: input.db, profile: input.profile })
-  const echo = input.history.filter(isUserTurn).map(contentOf).concat(input.text).join(NL)
-  const t0 = Date.now()
-
-  let answer = ANSWER_PENDING
-  let fired: GateHit[] = []
-  for (let attempt = 0; attempt <= GUARD_RETRIES; attempt += 1) {
-    let extra = SEG_NONE
-    if (fired.length) {
-      extra = `${NL}${NL}${retryNote(fired)}`
-    }
-    answer = clampAnswer({ answer: await draftOnce({ run: input, box, extra }), lang: input.lang })
-    fired = runGates({ answer, facts: box.facts, echo, lang: input.lang, codes: codesOf(box) })
-    if (fired.length === 0) {
-      break
-    }
-    log({
-      tag: CHAT_LOG.tag,
-      text: `${GATE_LOG.hit}${attempt + 1} ${fired.map(gateLabel).join(GATE_LOG.comma)}${GATE_LOG.noc}${orNone2({ v: box.noc, fallback: GATE_LOG.none })}`,
-    })
-  }
-
-  const hard = hardHits({ fired: fired })
-  const degraded = hard.length > 0
-  if (degraded) {
-    if (box.facts.length === 0) {
-      throw chatError({ code: CHAT_CODE.guard, msg: `${FAIL_MSG.noFacts}${hard.map(gateLabel).join(GATE_LOG.comma)}`, slots: null })
-    }
-    answer = factSheet(box.facts)
-  }
-  const facts = citeFacts({ answer, facts: box.facts })
-  log({
-    tag: CHAT_LOG.tag,
-    text: `${CHAT_LOG.loopDone}${orNone2({ v: box.noc, fallback: GATE_LOG.none })}${CHAT_LOG.facts}${box.facts.length}`
-      + `${CHAT_LOG.ms}${Date.now() - t0}${CHAT_LOG.out}${answer.length}${GATE_LOG.degraded}${degraded}`,
-  })
-  return { answer, facts, noc: box.noc, degraded }
 }
 
 /**
@@ -1849,40 +1849,6 @@ export function sseChunk(o: SsePacket): SseBytes {
 }
 
 /**
- * 同一串追问的 id = 首轮提问文本的哈希。不用 IP/UA/session —— 那三样都指向人,
- * 而我们只需要「这几轮是一串」这一个信息。
- *
- * @param input 本轮提问与历史。
- * @returns 16 位十六进制串。
- */
-export function threadIdOf(input: ThreadIdIn): string {
-  let first = input.text
-  for (const h of input.history) {
-    if (h.role === ROLE.user) {
-      first = h.content
-      break
-    }
-  }
-  return createHash(HASH_SHA256).update(first.trim().slice(0, THREAD_SEED)).digest(HASH_HEX).slice(0, THREAD_ID_LEN)
-}
-
-/**
- * 本串里的第几轮:history 里的 user 消息数 + 1。
- *
- * @param history 多轮历史。
- * @returns 轮次(1 起)。
- */
-export function turnOf(history: TurnList): number {
-  let n = 0
-  for (const h of history) {
-    if (h.role === ROLE.user) {
-      n = n + 1
-    }
-  }
-  return n + 1
-}
-
-/**
  * 写一行 chat_logs。fire-and-forget,自己吞异常(swallowChatlogError 留痕)——
  * 留痕是副产品,它挂了用户不该有任何感知;列形状一字不动。
  *
@@ -1932,6 +1898,40 @@ export function logChat(input: LogChatIn): void {
       ms: Math.round(input.ms),
     },
   }).catch(swallowChatlogError)
+}
+
+/**
+ * 本串里的第几轮:history 里的 user 消息数 + 1。
+ *
+ * @param history 多轮历史。
+ * @returns 轮次(1 起)。
+ */
+export function turnOf(history: TurnList): number {
+  let n = 0
+  for (const h of history) {
+    if (h.role === ROLE.user) {
+      n = n + 1
+    }
+  }
+  return n + 1
+}
+
+/**
+ * 同一串追问的 id = 首轮提问文本的哈希。不用 IP/UA/session —— 那三样都指向人,
+ * 而我们只需要「这几轮是一串」这一个信息。
+ *
+ * @param input 本轮提问与历史。
+ * @returns 16 位十六进制串。
+ */
+export function threadIdOf(input: ThreadIdIn): string {
+  let first = input.text
+  for (const h of input.history) {
+    if (h.role === ROLE.user) {
+      first = h.content
+      break
+    }
+  }
+  return createHash(HASH_SHA256).update(first.trim().slice(0, THREAD_SEED)).digest(HASH_HEX).slice(0, THREAD_ID_LEN)
 }
 
 /**
@@ -2101,20 +2101,6 @@ export function toPointsRow(r: PointsDbRow): PointsRow {
 }
 
 /**
- * 门槛行的 subject 列 → 两个合法值之一。不是 employer 的一律按 applicant 读 ——
- * 这两个搞混,句子本身就是假的(「你要开满一年」vs「雇主要开满一年」)。
- *
- * @param raw 库里的 subject 列。
- * @returns applicant 或 employer。
- */
-export function subjectOf(raw: SubjectOfIn): SubjectOfOut {
-  if (text(raw) === SUBJECT.employer) {
-    return SUBJECT.employer
-  }
-  return SUBJECT.applicant
-}
-
-/**
  * 库里一行门槛条文 → `lib/rules` 认的 `Requirement`。
  *
  * 只做列名映射,一个判定都不做 —— 判定是 `evaluateRequirements` 的活,本域不重写它。
@@ -2147,6 +2133,20 @@ export function toRequirement(row: ReqRow): Requirement {
     pageUrl: text(row.page_url),
     fetched: text(row.fetched),
   }
+}
+
+/**
+ * 门槛行的 subject 列 → 两个合法值之一。不是 employer 的一律按 applicant 读 ——
+ * 这两个搞混,句子本身就是假的(「你要开满一年」vs「雇主要开满一年」)。
+ *
+ * @param raw 库里的 subject 列。
+ * @returns applicant 或 employer。
+ */
+export function subjectOf(raw: SubjectOfIn): SubjectOfOut {
+  if (text(raw) === SUBJECT.employer) {
+    return SUBJECT.employer
+  }
+  return SUBJECT.applicant
 }
 
 // =========================================================================

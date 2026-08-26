@@ -207,6 +207,16 @@ export const F_SCORE = 'score'
 export const LANG_ZH = 'zh'
 
 /**
+ * 语言码:英文(langOf 收窄的判据,老链口径:非 en/ko 一律 zh)。
+ */
+export const LANG_EN = 'en'
+
+/**
+ * 语言码:韩文(langOf 收窄的判据)。
+ */
+export const LANG_KO = 'ko'
+
+/**
  * 可抓官网的 URL 形状(company 场景 web_fetch 的门槛)。
  */
 export const HTTP_RE = /^https?:\/\//
@@ -260,6 +270,38 @@ export const SLASH_SEP = '/'
  * 空格粘接(调查来源 URL、句间)。
  */
 export const SPACE_SEP = ' '
+
+/**
+ * 无缝粘接(助手轮多个文本块直连成一段正文)。
+ */
+export const BLANK_SEP = ''
+
+/**
+ * 可选段/子句/事实行的缺省:该格没数据整段不出,拼进模板原样消失
+ * (简体令段、LMIA 子句、海洋省规则、年薪段、通道子句等同一口径)。
+ */
+export const SEG_NONE = ''
+
+/**
+ * 串格的「没有」:查无/未设/非串槽一律空串 —— 下游 filter(isNonempty)/orDashOf
+ * 与 `!== ''` 判空同口径(emptyOf 词汇的本体值)。
+ */
+export const TEXT_NONE = ''
+
+/**
+ * 累积串的起点(已知块、档案块、流缓冲/全文;缓冲清空即回起点)。
+ */
+export const TEXT_START = ''
+
+/**
+ * 省码缺或空:省全名给空串,供 filter(isNonempty) 从地点串里剔除。
+ */
+export const PROV_NONE = ''
+
+/**
+ * llm 空产出抛 chatError 时不带附言(busy 那条才带毫秒数)。
+ */
+export const ERR_MSG_NONE = ''
 
 /**
  * 档案匹配依据行的行首。
@@ -453,11 +495,6 @@ export const E_NOT_FOUND = 'not found'
  * 错误体:限流。
  */
 export const E_RATE_LIMITED = 'rate limited'
-
-/**
- * 错误体:上游模型不可用(老链 502 同文)。
- */
-export const E_LLM_DOWN = '大模型不可用。'
 
 /**
  * 魁北克省码(独立体系判据)。

@@ -35,27 +35,6 @@ export function provName(input: ProvNameIn): string {
 }
 
 /**
- * 岗位行的地点格 → 显示地点(省码 → 全称仅用于显示)。
- *
- * @param j 职位的地点格。
- * @returns 拆解后的显示地点。
- */
-export function parseLoc(j: LocJob): ParsedLoc {
-  let country = LOC_NONE
-  if (j.country != null && j.country !== '') {
-    country = j.country
-  } else if (j.province != null && j.province !== '') {
-    country = COUNTRY_CANADA
-  }
-  return {
-    country: country,
-    prov: PROV_NAMES[(j.province || LOC_NONE).toUpperCase()] || j.province || LOC_NONE,
-    city: j.city || LOC_NONE,
-    district: j.district || LOC_NONE,
-  }
-}
-
-/**
  * Google 地图搜索链接。
  *
  * @param q 查询串。
@@ -88,6 +67,27 @@ export function mapQuery(input: MapQueryIn): string {
     return [L.district, L.city, L.prov].filter(Boolean).join(SEP_COMMA)
   }
   return [input.job.address || L.district, L.city, L.prov].filter(Boolean).join(SEP_COMMA)
+}
+
+/**
+ * 岗位行的地点格 → 显示地点(省码 → 全称仅用于显示)。
+ *
+ * @param j 职位的地点格。
+ * @returns 拆解后的显示地点。
+ */
+export function parseLoc(j: LocJob): ParsedLoc {
+  let country = LOC_NONE
+  if (j.country != null && j.country !== '') {
+    country = j.country
+  } else if (j.province != null && j.province !== '') {
+    country = COUNTRY_CANADA
+  }
+  return {
+    country: country,
+    prov: PROV_NAMES[(j.province || LOC_NONE).toUpperCase()] || j.province || LOC_NONE,
+    city: j.city || LOC_NONE,
+    district: j.district || LOC_NONE,
+  }
 }
 
 /**

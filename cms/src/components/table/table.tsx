@@ -27,6 +27,8 @@ import css from './table.module.css'
 
 /**
  * 公共简单表(白卡壳或裸表)。
+ * E8-08 hover 规范(Frank「可点才有态」):行本身不可点 → 行 hover 摘除
+ * (原 #f9fafb 全行态误导);行内链接/钮的 hover 由 main.css 全局规则(a:hover 加深)接管。
  *
  * @param props 列声明、行与可选的分页/壳形开关(各字段说明见 TableIn)。
  * @returns 表格。
@@ -79,8 +81,6 @@ export function Table<T>({
       <table ref={tableRef} className={css.table} style={{ minWidth, tableLayout: widths.layout }}>
         <TableHead cols={cols} sort={r.sort} toggleSort={r.toggleSort} widths={widths} />
         <tbody>
-          {/* E8-08 hover 规范(Frank「可点才有态」):行本身不可点 → 行 hover 摘除(原 #f9fafb 全行态误导);
-              行内链接/钮的 hover 由 main.css 全局规则(a:hover 加深)接管 */}
           {trs}
           {foot}
         </tbody>

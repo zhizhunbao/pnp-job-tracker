@@ -129,6 +129,20 @@ export const TRANSLATE_ERR_NAME = 'TranslateError'
 export const UPSTREAM_HEAD = 'upstream '
 
 // =========================================================================
+// 数据库层(lib/db)—— 摸池失败(2026-08-26 自 new Error 收编)
+// =========================================================================
+
+/**
+ * 摸不到连接池的身份(数据库没连上,或 payload 用的不是 postgres adapter)。
+ */
+export const DB_ERR_NAME = 'DbPoolError'
+
+/**
+ * 摸池失败的话术(与原 new Error 逐字一致,生产日志靠它认)。
+ */
+export const DB_POOL_MSG = 'database: payload.db.pool 不存在 —— 数据库没连上,或 payload 用的不是 postgres adapter'
+
+// =========================================================================
 // 交接域(lib/mart)—— seed 读 mart 文件的三种失败(2026-08-26 形制批自 new Error 收编)
 // =========================================================================
 
@@ -182,6 +196,21 @@ export const MART_NO_SOURCE_TAIL = ' exists (upload lost? rolling back)'
  * 我们这侧掐断时报的话。
  */
 export const TRANSLATE_TIMEOUT = 'timeout'
+
+// =========================================================================
+// 顾问域(lib/advisor)—— 流式起头失败(2026-08-26 自 new Error 收编)
+// =========================================================================
+
+/**
+ * 顾问流式起头失败的身份(pi 循环一个字没吐就失败,controller.error 交给前端走 error 态)。
+ */
+export const ADVISOR_ERR_NAME = 'AdvisorLlmError'
+
+/**
+ * 顾问流式起头失败的话术(与原 new Error 逐字一致,老链 502 同文;
+ * 原 advisor/constants 的 E_LLM_DOWN 收编至此)。
+ */
+export const ADVISOR_LLM_DOWN_MSG = '大模型不可用。'
 
 // =========================================================================
 // 4. 失败的话术

@@ -20,7 +20,7 @@ import {
   COMP_KEY, COOKIE_CUT, COOKIE_JOIN, COUNT_CACHE_MAX, COUNT_TTL_MS, COV, CURRENT_STATUSES, DIGIT_PICK_RE,
   DIMS_TTL_MS, DIR_ASC, DIR_DESC, DOLLAR, DRAW_STREAM_L10N, EE_KEY_L10N, EE_L10N, EE_SPLIT, EMAIL_RE, ENT_PAIRS,
   FACES_REQUEST_HDR, FACES_REQUEST_VAL, FK, FORM_CONTENT_TYPE, FV, HAS_DIGIT_RE, HAS_SUFFIX, HOW_APPLY_RE,
-  HREF_ENT_PAIRS, HTML_NONE, JB_APPLY_ANCHOR, JB_DESC_RE, JB_EXT_LINK_RE, JB_INNER_ENT_PAIRS, JB_LINK_NONE,
+  HREF_ENT_PAIRS, HTML_NONE, ISO_NONE, JB_APPLY_ANCHOR, JB_DESC_RE, JB_EXT_LINK_RE, JB_INNER_ENT_PAIRS, JB_LINK_NONE,
   JB_ORIGIN, JB_REQ_ANCHOR, JB_SECTION_CAP, JB_URL_RE, JD_BAD_HOST_172_RE, JD_BAD_HOST_RE, JD_BLOCK_BREAK_RE,
   JD_BUDGET_MARGIN, JD_DIGITS_RE, JD_FAILED_MAX, JD_FETCH_TIMEOUT_MS, JD_FIELD_NONE, JD_GEN_TIMEOUT_MS,
   JD_HEAD_JUNK_RE, JD_HEAD_MAX_LINES, JD_HOURS_VALUES, JD_HRS_RE, JD_HTML_CAP, JD_LINE_MIN, JD_MAX_LEN, JD_MIN_LEN,
@@ -119,48 +119,6 @@ export function scrubPii(text: string): string {
 // =========================================================================
 
 /**
- * 省清单覆盖判定(单一来源;没核对过的省一律保守:有清单数据也只算 partial,绝不冒充「查全了」)。
- *
- * @param input 省码与维度包。
- * @returns 覆盖档。
- */
-export function provListCoverage(input: CoverageIn): ProvListCoverage {
-  const declared = MAIN_LIST_COVERAGE[input.prov]
-  if (declared === COV.qc) {
-    return COV.qc
-  }
-  const rows: number[] = []
-  let hasNamed = false
-  for (const r of input.dims.pnpOccupations) {
-    if (r.province === input.prov) {
-      rows.push(1)
-      if (r.type !== TYPE_INELIGIBLE) {
-        hasNamed = true
-      }
-    }
-  }
-  if (declared == null) {
-    if (rows.length === 0) {
-      return COV.uncovered
-    }
-    return COV.partial
-  }
-  if (rows.length === 0 && declared !== COV.exclusion) {
-    return COV.uncovered
-  }
-  if (declared === COV.listed) {
-    if (hasNamed) {
-      return COV.listed
-    }
-    return COV.exclusion
-  }
-  if (declared === COV.partial) {
-    return COV.partial
-  }
-  return COV.exclusion
-}
-
-/**
  * 档案是否可用于匹配(全空档案不算建档)。
  *
  * @param p 规范化档案;null = 未建档。
@@ -177,43 +135,6 @@ export function hasProfile(p: MaybeProfile): boolean {
     return true
   }
   return p.targetProvinces.length > 0
-}
-
-/**
- * 原始 JSON 的一格 → 干净字符串数组(非数组/非字符串元素全丢)。
- * 入参含 undefined:json 袋按键取值,键缺席就是 undefined —— 消化点照实收
- * (开灯批 2026-08-26:undefined 只许被消化,不许被传递;本函数就是消化点)。
- *
- * @param v 原始格;键缺席时 undefined。
- * @returns 干净数组。
- */
-// eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:json 袋索引缺席就是 undefined,照实收(开灯批)
-function strListOf(v: ProfileJsonCell | undefined): StrList {
-  if (Array.isArray(v) === false) {
-    return []
-  }
-  const out: string[] = []
-  for (const x of v) {
-    if (typeof x === 'string' && x.trim() !== '') {
-      out.push(x.trim())
-    }
-  }
-  return out
-}
-
-/**
- * 原始 JSON 的一格 → 有限数或 null。
- * 入参含 undefined:同 strListOf,本函数是消化点(开灯批 2026-08-26)。
- *
- * @param v 原始格;键缺席时 undefined。
- * @returns 数;不是像样的数则 null。
- */
-// eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:json 袋索引缺席就是 undefined,照实收(开灯批)
-function maybeNumOf(v: ProfileJsonCell | undefined): MaybeNum {
-  if (typeof v === 'number' && Number.isFinite(v)) {
-    return v
-  }
-  return null
 }
 
 /**
@@ -250,6 +171,43 @@ export function normalizeProfile(raw: ProfileJsonOrNull): MatchProfile {
 }
 
 /**
+ * 原始 JSON 的一格 → 有限数或 null。
+ * 入参含 undefined:同 strListOf,本函数是消化点(开灯批 2026-08-26)。
+ *
+ * @param v 原始格;键缺席时 undefined。
+ * @returns 数;不是像样的数则 null。
+ */
+// eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:json 袋索引缺席就是 undefined,照实收(开灯批)
+function maybeNumOf(v: ProfileJsonCell | undefined): MaybeNum {
+  if (typeof v === 'number' && Number.isFinite(v)) {
+    return v
+  }
+  return null
+}
+
+/**
+ * 原始 JSON 的一格 → 干净字符串数组(非数组/非字符串元素全丢)。
+ * 入参含 undefined:json 袋按键取值,键缺席就是 undefined —— 消化点照实收
+ * (开灯批 2026-08-26:undefined 只许被消化,不许被传递;本函数就是消化点)。
+ *
+ * @param v 原始格;键缺席时 undefined。
+ * @returns 干净数组。
+ */
+// eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:json 袋索引缺席就是 undefined,照实收(开灯批)
+function strListOf(v: ProfileJsonCell | undefined): StrList {
+  if (Array.isArray(v) === false) {
+    return []
+  }
+  const out: string[] = []
+  for (const x of v) {
+    if (typeof x === 'string' && x.trim() !== '') {
+      out.push(x.trim())
+    }
+  }
+  return out
+}
+
+/**
  * 匹配档 → 序值(null 档 -1,排序沉底)。
  *
  * @param l 档;null = 未算。
@@ -267,40 +225,160 @@ export function matchRank(l: MaybeLevel): number {
 }
 
 /**
- * 规则 1:NOC 对口。2026-07-21 Frank 拍板「我干 IT 不一定非得软件开发」:同族分三档 ——
- * 精确 40 / 同小类(前 4 位)30 / 同族(前 3 位)20,跨小类的同领域岗不再拿 0 分。
+ * 匹配 = 档案 × 现有维度的运行时 join,零新增抓取(纯函数、无 IO、前后端同构)。
+ * 职业不对口封顶(2026-07-21 Frank「医疗/服务怎么也匹配进来了」):填了 NOC 却全不沾边的岗,
+ * 省清单+TEER 撑出的分不算「与我的匹配」—— 封顶 low;没填 NOC 的档案照旧按分数分档。
  *
  * @param input 档案、岗位与维度。
- * @returns 该规则的加分、理由与「全不沾边」旗。
+ * @returns 档、内部分与理由链。
  */
-function nocRule(input: RuleIn): NocRuleOut {
-  const p = input.profile
+export function match(input: MatchIn): MatchResult {
+  if (input.job.noc === '') {
+    return { level: LV.na, score: 0, reasons: [{ rule: RULE.noc, verdict: VD.na, key: RK.nocJobUncat, params: {}, source: null }] }
+  }
+  const noc = nocRule(input)
+  const prov = provRule(input)
+  const ee = eeRule(input)
+  const teer = teerRule(input)
+  const wage = wageRule(input)
+  const lmia = lmiaRule(input)
+  const score = noc.score + prov.score + ee.score + teer.score + wage.score + lmia.score
+  const reasons: MatchReason[] = []
+  for (const part of [noc.reasons, prov.reasons, ee.reasons, teer.reasons, wage.reasons, lmia.reasons]) {
+    for (const r of part) {
+      reasons.push(r)
+    }
+  }
+  let level: MatchLevel = LV.low
+  if (noc.nocMiss) {
+    level = LV.low
+  } else if (score >= SCORE_HIGH) {
+    level = LV.high
+  } else if (score >= SCORE_MID) {
+    level = LV.mid
+  }
+  return { level: level, score: score, reasons: reasons }
+}
+
+/**
+ * 规则 6:雇主外劳雇佣记录(E6-02)。B4-02 起只认技能股 +5 —— Frank「有 LMIA 但没法移民」:
+ * 农业/低薪股是季节性用工,给果园 +5 绿勾=误导技能类求职者;skilled==null(列未回填)回退旧口径。
+ *
+ * @param input 档案、岗位与维度。
+ * @returns 该规则的加分与理由。
+ */
+function lmiaRule(input: RuleIn): RuleScoreOut {
   const job = input.job
-  if (p.nocCodes.length === 0) {
-    return { score: 0, reasons: [{ rule: RULE.noc, verdict: VD.na, key: RK.nocNoProfile, params: {}, source: null }], nocMiss: false }
+  const skilled = job.lmiaPositionsSkilled
+  if (job.lmiaPositions == null || job.lmiaPositions <= 0) {
+    return { score: 0, reasons: [{ rule: RULE.lmia, verdict: VD.na, key: RK.lmiaNa, params: {}, source: null }] }
   }
-  if (p.nocCodes.includes(job.noc)) {
-    return { score: 40, reasons: [{ rule: RULE.noc, verdict: VD.pass, key: RK.nocExact, params: { noc: job.noc }, source: null }], nocMiss: false }
-  }
-  let minor = NOC_NONE
-  let submajor = NOC_NONE
-  for (const c of p.nocCodes) {
-    if (c.length === NOC_LEN && c.slice(0, NOC_MINOR_LEN) === job.noc.slice(0, NOC_MINOR_LEN) && minor === '') {
-      minor = c
-    }
-    if (c.length === NOC_LEN && c.slice(0, NOC_SUBMAJOR_LEN) === job.noc.slice(0, NOC_SUBMAJOR_LEN) && submajor === '') {
-      submajor = c
+  if (skilled == null) {
+    return {
+      score: 5,
+      reasons: [{ rule: RULE.lmia, verdict: VD.pass, key: RK.lmiaHas, params: { n: job.lmiaPositions, q: job.lmiaLastQuarter }, source: LMIA_SOURCE }],
     }
   }
-  if (minor !== '') {
-    return { score: 30, reasons: [{ rule: RULE.noc, verdict: VD.pass, key: RK.nocMinor, params: { noc: job.noc, yours: minor }, source: null }], nocMiss: false }
-  }
-  if (submajor !== '') {
-    return { score: 20, reasons: [{ rule: RULE.noc, verdict: VD.pass, key: RK.nocSubmajor, params: { noc: job.noc, yours: submajor }, source: null }], nocMiss: false }
+  if (skilled > 0) {
+    return {
+      score: 5,
+      reasons: [{ rule: RULE.lmia, verdict: VD.pass, key: RK.lmiaSkilled, params: { n: skilled, total: job.lmiaPositions, q: job.lmiaLastQuarter }, source: LMIA_SOURCE }],
+    }
   }
   return {
-    score: 0, nocMiss: true,
-    reasons: [{ rule: RULE.noc, verdict: VD.fail, key: RK.nocNone, params: { noc: job.noc, yours: p.nocCodes.join(SPACE + NOC_JOIN_SLASH + SPACE) }, source: null }],
+    score: 0,
+    reasons: [{ rule: RULE.lmia, verdict: VD.na, key: RK.lmiaLowOnly, params: { n: job.lmiaPositions, q: job.lmiaLastQuarter }, source: LMIA_SOURCE }],
+  }
+}
+
+/**
+ * 规则 5:工资信用(offer 可信度提示;低于当地中位太多在省提名工资要求上有风险)。
+ *
+ * @param input 档案、岗位与维度。
+ * @returns 该规则的加分与理由。
+ */
+function wageRule(input: RuleIn): RuleScoreOut {
+  const job = input.job
+  if (job.salaryAnnual == null || job.wageMedAnnual == null || job.wageMedAnnual === 0) {
+    return { score: 0, reasons: [{ rule: RULE.wage, verdict: VD.na, key: RK.wageNa, params: {}, source: null }] }
+  }
+  const pct = Math.round((job.salaryAnnual / job.wageMedAnnual - 1) * 100)
+  if (pct >= 0) {
+    return { score: 5, reasons: [{ rule: RULE.wage, verdict: VD.pass, key: RK.wageAbove, params: { pct: pct }, source: null }] }
+  }
+  if (pct >= -20) {
+    return { score: 0, reasons: [{ rule: RULE.wage, verdict: VD.warn, key: RK.wageNear, params: { pct: -pct }, source: null }] }
+  }
+  return { score: -5, reasons: [{ rule: RULE.wage, verdict: VD.warn, key: RK.wageBelow, params: { pct: -pct }, source: null }] }
+}
+
+/**
+ * 规则 4:TEER 可达(≤3 通用;4/5 须命中具名低 TEER 通道)。
+ *
+ * @param input 档案、岗位与维度。
+ * @returns 该规则的加分与理由。
+ */
+function teerRule(input: RuleIn): RuleScoreOut {
+  const job = input.job
+  if (job.teer == null) {
+    return { score: 0, reasons: [] }
+  }
+  if (job.teer <= 3) {
+    return { score: 10, reasons: [{ rule: RULE.teer, verdict: VD.pass, key: RK.teerOk, params: { teer: job.teer }, source: null }] }
+  }
+  if (job.pnpStream !== '') {
+    return { score: 10, reasons: [{ rule: RULE.teer, verdict: VD.pass, key: RK.teerChannel, params: { teer: job.teer, stream: job.pnpStream }, source: null }] }
+  }
+  return { score: -15, reasons: [{ rule: RULE.teer, verdict: VD.fail, key: RK.teerLow, params: { teer: job.teer }, source: null }] }
+}
+
+/**
+ * 规则 3:EE 类别距离(上次类别抽选 CRS vs 自报 CRS)。
+ *
+ * @param input 档案、岗位与维度。
+ * @returns 该规则的加分与理由。
+ */
+function eeRule(input: RuleIn): RuleScoreOut {
+  const p = input.profile
+  const job = input.job
+  if (job.eeCategory === '') {
+    return { score: 0, reasons: [{ rule: RULE.ee, verdict: VD.na, key: RK.eeNone, params: {}, source: null }] }
+  }
+  let row: RuleIn['dims']['eeCategories'][number] | null = null
+  for (const r of input.dims.eeCategories) {
+    if (r.noc === job.noc && r.drawCrs != null) {
+      row = r
+      break
+    }
+  }
+  if (row == null) {
+    for (const r of input.dims.eeCategories) {
+      if (r.label === job.eeCategory && r.drawCrs != null) {
+        row = r
+        break
+      }
+    }
+  }
+  if (row == null || row.drawCrs == null) {
+    return { score: 0, reasons: [{ rule: RULE.ee, verdict: VD.na, key: RK.eeNoDraw, params: { cat: job.eeCategory }, source: null }] }
+  }
+  const src = { label: row.label, url: row.url, fetched: row.fetched }
+  if (p.crs == null) {
+    return {
+      score: 0,
+      reasons: [{ rule: RULE.ee, verdict: VD.warn, key: RK.eeNoCrs, params: { cat: row.label, draw: row.drawCrs, date: row.drawDate.slice(0, 10) }, source: src }],
+    }
+  }
+  const diff = p.crs - row.drawCrs
+  if (diff >= 0) {
+    return {
+      score: 20,
+      reasons: [{ rule: RULE.ee, verdict: VD.pass, key: RK.eeAbove, params: { cat: row.label, crs: p.crs, draw: row.drawCrs, date: row.drawDate.slice(0, 10), diff: diff }, source: src }],
+    }
+  }
+  return {
+    score: 0,
+    reasons: [{ rule: RULE.ee, verdict: VD.warn, key: RK.eeBelow, params: { cat: row.label, crs: p.crs, draw: row.drawCrs, date: row.drawDate.slice(0, 10), gap: -diff }, source: src }],
   }
 }
 
@@ -380,161 +458,83 @@ function provRule(input: RuleIn): RuleScoreOut {
 }
 
 /**
- * 规则 3:EE 类别距离(上次类别抽选 CRS vs 自报 CRS)。
+ * 省清单覆盖判定(单一来源;没核对过的省一律保守:有清单数据也只算 partial,绝不冒充「查全了」)。
  *
- * @param input 档案、岗位与维度。
- * @returns 该规则的加分与理由。
+ * @param input 省码与维度包。
+ * @returns 覆盖档。
  */
-function eeRule(input: RuleIn): RuleScoreOut {
-  const p = input.profile
-  const job = input.job
-  if (job.eeCategory === '') {
-    return { score: 0, reasons: [{ rule: RULE.ee, verdict: VD.na, key: RK.eeNone, params: {}, source: null }] }
+export function provListCoverage(input: CoverageIn): ProvListCoverage {
+  const declared = MAIN_LIST_COVERAGE[input.prov]
+  if (declared === COV.qc) {
+    return COV.qc
   }
-  let row: RuleIn['dims']['eeCategories'][number] | null = null
-  for (const r of input.dims.eeCategories) {
-    if (r.noc === job.noc && r.drawCrs != null) {
-      row = r
-      break
-    }
-  }
-  if (row == null) {
-    for (const r of input.dims.eeCategories) {
-      if (r.label === job.eeCategory && r.drawCrs != null) {
-        row = r
-        break
+  const rows: number[] = []
+  let hasNamed = false
+  for (const r of input.dims.pnpOccupations) {
+    if (r.province === input.prov) {
+      rows.push(1)
+      if (r.type !== TYPE_INELIGIBLE) {
+        hasNamed = true
       }
     }
   }
-  if (row == null || row.drawCrs == null) {
-    return { score: 0, reasons: [{ rule: RULE.ee, verdict: VD.na, key: RK.eeNoDraw, params: { cat: job.eeCategory }, source: null }] }
+  if (declared == null) {
+    if (rows.length === 0) {
+      return COV.uncovered
+    }
+    return COV.partial
   }
-  const src = { label: row.label, url: row.url, fetched: row.fetched }
-  if (p.crs == null) {
-    return {
-      score: 0,
-      reasons: [{ rule: RULE.ee, verdict: VD.warn, key: RK.eeNoCrs, params: { cat: row.label, draw: row.drawCrs, date: row.drawDate.slice(0, 10) }, source: src }],
+  if (rows.length === 0 && declared !== COV.exclusion) {
+    return COV.uncovered
+  }
+  if (declared === COV.listed) {
+    if (hasNamed) {
+      return COV.listed
+    }
+    return COV.exclusion
+  }
+  if (declared === COV.partial) {
+    return COV.partial
+  }
+  return COV.exclusion
+}
+
+/**
+ * 规则 1:NOC 对口。2026-07-21 Frank 拍板「我干 IT 不一定非得软件开发」:同族分三档 ——
+ * 精确 40 / 同小类(前 4 位)30 / 同族(前 3 位)20,跨小类的同领域岗不再拿 0 分。
+ *
+ * @param input 档案、岗位与维度。
+ * @returns 该规则的加分、理由与「全不沾边」旗。
+ */
+function nocRule(input: RuleIn): NocRuleOut {
+  const p = input.profile
+  const job = input.job
+  if (p.nocCodes.length === 0) {
+    return { score: 0, reasons: [{ rule: RULE.noc, verdict: VD.na, key: RK.nocNoProfile, params: {}, source: null }], nocMiss: false }
+  }
+  if (p.nocCodes.includes(job.noc)) {
+    return { score: 40, reasons: [{ rule: RULE.noc, verdict: VD.pass, key: RK.nocExact, params: { noc: job.noc }, source: null }], nocMiss: false }
+  }
+  let minor = NOC_NONE
+  let submajor = NOC_NONE
+  for (const c of p.nocCodes) {
+    if (c.length === NOC_LEN && c.slice(0, NOC_MINOR_LEN) === job.noc.slice(0, NOC_MINOR_LEN) && minor === '') {
+      minor = c
+    }
+    if (c.length === NOC_LEN && c.slice(0, NOC_SUBMAJOR_LEN) === job.noc.slice(0, NOC_SUBMAJOR_LEN) && submajor === '') {
+      submajor = c
     }
   }
-  const diff = p.crs - row.drawCrs
-  if (diff >= 0) {
-    return {
-      score: 20,
-      reasons: [{ rule: RULE.ee, verdict: VD.pass, key: RK.eeAbove, params: { cat: row.label, crs: p.crs, draw: row.drawCrs, date: row.drawDate.slice(0, 10), diff: diff }, source: src }],
-    }
+  if (minor !== '') {
+    return { score: 30, reasons: [{ rule: RULE.noc, verdict: VD.pass, key: RK.nocMinor, params: { noc: job.noc, yours: minor }, source: null }], nocMiss: false }
+  }
+  if (submajor !== '') {
+    return { score: 20, reasons: [{ rule: RULE.noc, verdict: VD.pass, key: RK.nocSubmajor, params: { noc: job.noc, yours: submajor }, source: null }], nocMiss: false }
   }
   return {
-    score: 0,
-    reasons: [{ rule: RULE.ee, verdict: VD.warn, key: RK.eeBelow, params: { cat: row.label, crs: p.crs, draw: row.drawCrs, date: row.drawDate.slice(0, 10), gap: -diff }, source: src }],
+    score: 0, nocMiss: true,
+    reasons: [{ rule: RULE.noc, verdict: VD.fail, key: RK.nocNone, params: { noc: job.noc, yours: p.nocCodes.join(SPACE + NOC_JOIN_SLASH + SPACE) }, source: null }],
   }
-}
-
-/**
- * 规则 4:TEER 可达(≤3 通用;4/5 须命中具名低 TEER 通道)。
- *
- * @param input 档案、岗位与维度。
- * @returns 该规则的加分与理由。
- */
-function teerRule(input: RuleIn): RuleScoreOut {
-  const job = input.job
-  if (job.teer == null) {
-    return { score: 0, reasons: [] }
-  }
-  if (job.teer <= 3) {
-    return { score: 10, reasons: [{ rule: RULE.teer, verdict: VD.pass, key: RK.teerOk, params: { teer: job.teer }, source: null }] }
-  }
-  if (job.pnpStream !== '') {
-    return { score: 10, reasons: [{ rule: RULE.teer, verdict: VD.pass, key: RK.teerChannel, params: { teer: job.teer, stream: job.pnpStream }, source: null }] }
-  }
-  return { score: -15, reasons: [{ rule: RULE.teer, verdict: VD.fail, key: RK.teerLow, params: { teer: job.teer }, source: null }] }
-}
-
-/**
- * 规则 5:工资信用(offer 可信度提示;低于当地中位太多在省提名工资要求上有风险)。
- *
- * @param input 档案、岗位与维度。
- * @returns 该规则的加分与理由。
- */
-function wageRule(input: RuleIn): RuleScoreOut {
-  const job = input.job
-  if (job.salaryAnnual == null || job.wageMedAnnual == null || job.wageMedAnnual === 0) {
-    return { score: 0, reasons: [{ rule: RULE.wage, verdict: VD.na, key: RK.wageNa, params: {}, source: null }] }
-  }
-  const pct = Math.round((job.salaryAnnual / job.wageMedAnnual - 1) * 100)
-  if (pct >= 0) {
-    return { score: 5, reasons: [{ rule: RULE.wage, verdict: VD.pass, key: RK.wageAbove, params: { pct: pct }, source: null }] }
-  }
-  if (pct >= -20) {
-    return { score: 0, reasons: [{ rule: RULE.wage, verdict: VD.warn, key: RK.wageNear, params: { pct: -pct }, source: null }] }
-  }
-  return { score: -5, reasons: [{ rule: RULE.wage, verdict: VD.warn, key: RK.wageBelow, params: { pct: -pct }, source: null }] }
-}
-
-/**
- * 规则 6:雇主外劳雇佣记录(E6-02)。B4-02 起只认技能股 +5 —— Frank「有 LMIA 但没法移民」:
- * 农业/低薪股是季节性用工,给果园 +5 绿勾=误导技能类求职者;skilled==null(列未回填)回退旧口径。
- *
- * @param input 档案、岗位与维度。
- * @returns 该规则的加分与理由。
- */
-function lmiaRule(input: RuleIn): RuleScoreOut {
-  const job = input.job
-  const skilled = job.lmiaPositionsSkilled
-  if (job.lmiaPositions == null || job.lmiaPositions <= 0) {
-    return { score: 0, reasons: [{ rule: RULE.lmia, verdict: VD.na, key: RK.lmiaNa, params: {}, source: null }] }
-  }
-  if (skilled == null) {
-    return {
-      score: 5,
-      reasons: [{ rule: RULE.lmia, verdict: VD.pass, key: RK.lmiaHas, params: { n: job.lmiaPositions, q: job.lmiaLastQuarter }, source: LMIA_SOURCE }],
-    }
-  }
-  if (skilled > 0) {
-    return {
-      score: 5,
-      reasons: [{ rule: RULE.lmia, verdict: VD.pass, key: RK.lmiaSkilled, params: { n: skilled, total: job.lmiaPositions, q: job.lmiaLastQuarter }, source: LMIA_SOURCE }],
-    }
-  }
-  return {
-    score: 0,
-    reasons: [{ rule: RULE.lmia, verdict: VD.na, key: RK.lmiaLowOnly, params: { n: job.lmiaPositions, q: job.lmiaLastQuarter }, source: LMIA_SOURCE }],
-  }
-}
-
-/**
- * 匹配 = 档案 × 现有维度的运行时 join,零新增抓取(纯函数、无 IO、前后端同构)。
- * 职业不对口封顶(2026-07-21 Frank「医疗/服务怎么也匹配进来了」):填了 NOC 却全不沾边的岗,
- * 省清单+TEER 撑出的分不算「与我的匹配」—— 封顶 low;没填 NOC 的档案照旧按分数分档。
- *
- * @param input 档案、岗位与维度。
- * @returns 档、内部分与理由链。
- */
-export function match(input: MatchIn): MatchResult {
-  if (input.job.noc === '') {
-    return { level: LV.na, score: 0, reasons: [{ rule: RULE.noc, verdict: VD.na, key: RK.nocJobUncat, params: {}, source: null }] }
-  }
-  const noc = nocRule(input)
-  const prov = provRule(input)
-  const ee = eeRule(input)
-  const teer = teerRule(input)
-  const wage = wageRule(input)
-  const lmia = lmiaRule(input)
-  const score = noc.score + prov.score + ee.score + teer.score + wage.score + lmia.score
-  const reasons: MatchReason[] = []
-  for (const part of [noc.reasons, prov.reasons, ee.reasons, teer.reasons, wage.reasons, lmia.reasons]) {
-    for (const r of part) {
-      reasons.push(r)
-    }
-  }
-  let level: MatchLevel = LV.low
-  if (noc.nocMiss) {
-    level = LV.low
-  } else if (score >= SCORE_HIGH) {
-    level = LV.high
-  } else if (score >= SCORE_MID) {
-    level = LV.mid
-  }
-  return { level: level, score: score, reasons: reasons }
 }
 
 /**
@@ -573,18 +573,37 @@ export function statusEn(s: MaybeStr): MaybeStr {
 // =========================================================================
 
 /**
- * 省全名(小写)→ 省码;不是省名则空串。
+ * q 搜索公司名分支预解析(不限 LIMIT 保语义等价;多词逐词各查一组,下标与 splitQ 对齐)。
+ * companies trgm 索引 ms 级;`= ANY(数组)` 才能与 trgm 分支一起进位图 OR。
  *
- * @param nameLower 小写词组。
- * @returns 省码;不是省名空串。
+ * @param input 连接与筛选。
+ * @returns 原筛选 + qCompanyIds。
  */
-function provCodeOfLower(nameLower: string): string {
-  for (const [name, code] of Object.entries(PROV_CODE)) {
-    if (name.toLowerCase() === nameLower) {
-      return code
-    }
+async function resolveQCompanyIds(input: ResolveQIn): ResolveQOut {
+  let q = PARAM_NONE
+  const rawQ = input.filters[FK.q]
+  if (typeof rawQ === 'string') {
+    q = rawQ
   }
-  return PROV_CODE_NONE
+  const terms = splitQ(q)
+  if (terms.length === 0) {
+    return input.filters
+  }
+  const ids: number[][] = []
+  for (const t of terms) {
+    const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_IDS_BY_NAME, params: [PCT + t + PCT], map: passRow })
+    const one: number[] = []
+    for (const r of rows) {
+      one.push(Number(r.id))
+    }
+    ids.push(one)
+  }
+  const out: JobsFilters = {}
+  for (const [k, v] of Object.entries(input.filters)) {
+    out[k] = v
+  }
+  out[FK.qCompanyIds] = ids
+  return out
 }
 
 /**
@@ -618,37 +637,18 @@ export function splitQ(q: string): StrList {
 }
 
 /**
- * q 搜索公司名分支预解析(不限 LIMIT 保语义等价;多词逐词各查一组,下标与 splitQ 对齐)。
- * companies trgm 索引 ms 级;`= ANY(数组)` 才能与 trgm 分支一起进位图 OR。
+ * 省全名(小写)→ 省码;不是省名则空串。
  *
- * @param input 连接与筛选。
- * @returns 原筛选 + qCompanyIds。
+ * @param nameLower 小写词组。
+ * @returns 省码;不是省名空串。
  */
-async function resolveQCompanyIds(input: ResolveQIn): ResolveQOut {
-  let q = PARAM_NONE
-  const rawQ = input.filters[FK.q]
-  if (typeof rawQ === 'string') {
-    q = rawQ
-  }
-  const terms = splitQ(q)
-  if (terms.length === 0) {
-    return input.filters
-  }
-  const ids: number[][] = []
-  for (const t of terms) {
-    const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_IDS_BY_NAME, params: [PCT + t + PCT], map: passRow })
-    const one: number[] = []
-    for (const r of rows) {
-      one.push(Number(r.id))
+function provCodeOfLower(nameLower: string): string {
+  for (const [name, code] of Object.entries(PROV_CODE)) {
+    if (name.toLowerCase() === nameLower) {
+      return code
     }
-    ids.push(one)
   }
-  const out: JobsFilters = {}
-  for (const [k, v] of Object.entries(input.filters)) {
-    out[k] = v
-  }
-  out[FK.qCompanyIds] = ids
-  return out
+  return PROV_CODE_NONE
 }
 
 /**
@@ -956,31 +956,27 @@ export async function loadMatchDims(db: Db): MatchDimsOut {
 // =========================================================================
 
 /**
- * 一行的匹配档(未建档直接 null;规则在 match 一处)。
+ * SSR 首屏前 limit 行(筛选/翻页走 /api/jobs 分页)。
  *
- * @param input 原始行、档案与维度。
- * @returns 档;未建档 null。
+ * @param input 连接、分层态与维度。
+ * @returns 行、最近核对时刻与 FOMO 计数。
  */
-function rowMatchLevel(input: RowMatchIn): MaybeLevel {
-  if (input.profileOk === false) {
-    return null
+export async function loadJobRows(input: JobRowsIn): JobRowsOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.JOB_ROWS_LATEST, params: [input.limit], map: passJobRow })
+  let high = 0
+  let mid = 0
+  const jobs: JobRow[] = []
+  for (const j of rows) {
+    const level = rowMatchLevel({ row: j, profileOk: input.profileOk, profile: input.profile, dims: input.matchDims })
+    if (level === LV.high) {
+      high += 1
+    } else if (level === LV.mid) {
+      mid += 1
+    }
+    jobs.push(toJobRow({ row: j, matchLevel: level, pro: input.pro }))
   }
-  return match({ profile: input.profile, job: toMatchJob(input.row), dims: input.dims }).level
-}
-
-/**
- * pg 错误码(pg 的错误对象带 code;不是它的错空串)。体内那一步 `as PgFailure` 是跨边界断言:
- * code 是 pg 挂上去的,TS 看不见 —— 形状声明在 types.PgFailure。
- *
- * @param e 已收窄成 Error 的异常。
- * @returns 错误码;没有空串。
- */
-function pgCodeOf(e: CaughtError): string {
-  const withCode = e as PgFailure
-  if (typeof withCode.code === 'string') {
-    return withCode.code
-  }
-  return PG_CODE_NONE
+  const updatedAt = await checkedAt(input.db)
+  return { jobs: jobs, updatedAt: updatedAt, matchHigh: high, matchMid: mid }
 }
 
 /**
@@ -1023,27 +1019,31 @@ export async function checkedAt(db: Db): CheckedAtOut {
 }
 
 /**
- * SSR 首屏前 limit 行(筛选/翻页走 /api/jobs 分页)。
+ * pg 错误码(pg 的错误对象带 code;不是它的错空串)。体内那一步 `as PgFailure` 是跨边界断言:
+ * code 是 pg 挂上去的,TS 看不见 —— 形状声明在 types.PgFailure。
  *
- * @param input 连接、分层态与维度。
- * @returns 行、最近核对时刻与 FOMO 计数。
+ * @param e 已收窄成 Error 的异常。
+ * @returns 错误码;没有空串。
  */
-export async function loadJobRows(input: JobRowsIn): JobRowsOut {
-  const rows = await queryRows({ db: input.db, sql: SQL.JOB_ROWS_LATEST, params: [input.limit], map: passJobRow })
-  let high = 0
-  let mid = 0
-  const jobs: JobRow[] = []
-  for (const j of rows) {
-    const level = rowMatchLevel({ row: j, profileOk: input.profileOk, profile: input.profile, dims: input.matchDims })
-    if (level === LV.high) {
-      high += 1
-    } else if (level === LV.mid) {
-      mid += 1
-    }
-    jobs.push(toJobRow({ row: j, matchLevel: level, pro: input.pro }))
+function pgCodeOf(e: CaughtError): string {
+  const withCode = e as PgFailure
+  if (typeof withCode.code === 'string') {
+    return withCode.code
   }
-  const updatedAt = await checkedAt(input.db)
-  return { jobs: jobs, updatedAt: updatedAt, matchHigh: high, matchMid: mid }
+  return PG_CODE_NONE
+}
+
+/**
+ * 一行的匹配档(未建档直接 null;规则在 match 一处)。
+ *
+ * @param input 原始行、档案与维度。
+ * @returns 档;未建档 null。
+ */
+function rowMatchLevel(input: RowMatchIn): MaybeLevel {
+  if (input.profileOk === false) {
+    return null
+  }
+  return match({ profile: input.profile, job: toMatchJob(input.row), dims: input.dims }).level
 }
 
 /**
@@ -1112,92 +1112,6 @@ export async function loadJobsPage(input: JobsPageIn): JobsPageOut {
 }
 
 /**
- * 匹配视图列排序的取值(命中集在 TS 内存里,按列取原始行值;白名单外 null)。
- *
- * @param input 列 key 与原始行。
- * @returns 可比较的值;取不了 null。
- */
-function matchSortVal(input: SortValIn): Cell {
-  const j = input.j
-  switch (input.key) {
-    case CK.datePosted: return iso(j.date_posted)
-    case CK.score: return numOf(j.grade_channel)
-    case CK.salary: return numOf(j.salary_annual)
-    case CK.salaryYr: return numOf(j.salary_annual)
-    case CK.lastSeen: return iso(j.last_seen)
-    case CK.title: return strOf(j.title)
-    case CK.company: return strOf(j.company_name)
-    case CK.province: return strOf(j.province)
-    case CK.city: return strOf(j.city)
-    case CK.broad: return strOf(j.broad)
-    case CK.mid: return strOf(j.mid)
-    case CK.fine: return strOf(j.fine)
-    case CK.teer: return numOf(j.teer)
-    case CK.noc: return strOf(j.noc)
-    case CK.accessibility: return strOf(j.accessibility)
-    case CK.country: return strOf(j.country)
-    case CK.district: return strOf(j.district)
-    case CK.address: return strOf(j.address)
-    case CK.source: return strOf(j.source_label)
-    case CK.origin: return strOf(j.origin)
-    case CK.pnp: {
-      if (j.pnp_eligible === true) {
-        return 1
-      }
-      return 0
-    }
-    case CK.ee: return strOf(j.ee_category)
-    case CK.aip: {
-      if (j.aip === true) {
-        return 1
-      }
-      return 0
-    }
-    case CK.pilot: return strOf(j.pilot)
-    case CK.lmia: return numOf(j.lmia_positions)
-    case CK.status: return strOf(j.status)
-    case CK.closedAt: return iso(j.closed_at)
-    case CK.wageMedHr: return numOf(j.wage_med_hourly)
-    case CK.wageMedYr: return numOf(j.wage_med_annual)
-    case CK.vsMedian: {
-      const sVal = numOf(j.salary_annual)
-      const m = numOf(j.wage_med_annual)
-      if (sVal != null && m != null && m !== 0) {
-        return sVal / m
-      }
-      return null
-    }
-    default: return null
-  }
-}
-
-/**
- * 数字格词汇的本地短名(matchSortVal 里一列一次)。
- *
- * @param v 库格。
- * @returns 数;没有 null。
- */
-function numOf(v: NumCell): MaybeNum {
-  if (v == null) {
-    return null
-  }
-  return Number(v)
-}
-
-/**
- * 字符串格词汇的本地短名。
- *
- * @param v 库格。
- * @returns 串;没有空串。
- */
-function strOf(v: StrCell): string {
-  if (v == null) {
-    return CELL_NONE
-  }
-  return v
-}
-
-/**
  * 「我的匹配」视图(E10-01 P3):SQL 候选预筛(并集从宽,宁可多算不漏)→ TS 跑 match 留 high/mid
  * → 默认按档位降序(候选已按日期↓,stable sort 保同档内日期序)分页;表头点击在可见集内重排
  * (空值恒沉底)。匹配全放开(2026-07-21 拍板)。
@@ -1263,6 +1177,92 @@ export async function loadMatchPage(input: MatchPageIn): MatchPageOut {
     updatedAt = iso(updFirst.upd)
   }
   return { jobs: jobs, total: hits.length, matchHigh: matchHigh, matchMid: matchMid, updatedAt: updatedAt }
+}
+
+/**
+ * 匹配视图列排序的取值(命中集在 TS 内存里,按列取原始行值;白名单外 null)。
+ *
+ * @param input 列 key 与原始行。
+ * @returns 可比较的值;取不了 null。
+ */
+function matchSortVal(input: SortValIn): Cell {
+  const j = input.j
+  switch (input.key) {
+    case CK.datePosted: return iso(j.date_posted)
+    case CK.score: return numOf(j.grade_channel)
+    case CK.salary: return numOf(j.salary_annual)
+    case CK.salaryYr: return numOf(j.salary_annual)
+    case CK.lastSeen: return iso(j.last_seen)
+    case CK.title: return strOf(j.title)
+    case CK.company: return strOf(j.company_name)
+    case CK.province: return strOf(j.province)
+    case CK.city: return strOf(j.city)
+    case CK.broad: return strOf(j.broad)
+    case CK.mid: return strOf(j.mid)
+    case CK.fine: return strOf(j.fine)
+    case CK.teer: return numOf(j.teer)
+    case CK.noc: return strOf(j.noc)
+    case CK.accessibility: return strOf(j.accessibility)
+    case CK.country: return strOf(j.country)
+    case CK.district: return strOf(j.district)
+    case CK.address: return strOf(j.address)
+    case CK.source: return strOf(j.source_label)
+    case CK.origin: return strOf(j.origin)
+    case CK.pnp: {
+      if (j.pnp_eligible === true) {
+        return 1
+      }
+      return 0
+    }
+    case CK.ee: return strOf(j.ee_category)
+    case CK.aip: {
+      if (j.aip === true) {
+        return 1
+      }
+      return 0
+    }
+    case CK.pilot: return strOf(j.pilot)
+    case CK.lmia: return numOf(j.lmia_positions)
+    case CK.status: return strOf(j.status)
+    case CK.closedAt: return iso(j.closed_at)
+    case CK.wageMedHr: return numOf(j.wage_med_hourly)
+    case CK.wageMedYr: return numOf(j.wage_med_annual)
+    case CK.vsMedian: {
+      const sVal = numOf(j.salary_annual)
+      const m = numOf(j.wage_med_annual)
+      if (sVal != null && m != null && m !== 0) {
+        return sVal / m
+      }
+      return null
+    }
+    default: return null
+  }
+}
+
+/**
+ * 字符串格词汇的本地短名。
+ *
+ * @param v 库格。
+ * @returns 串;没有空串。
+ */
+function strOf(v: StrCell): string {
+  if (v == null) {
+    return CELL_NONE
+  }
+  return v
+}
+
+/**
+ * 数字格词汇的本地短名(matchSortVal 里一列一次)。
+ *
+ * @param v 库格。
+ * @returns 数;没有 null。
+ */
+function numOf(v: NumCell): MaybeNum {
+  if (v == null) {
+    return null
+  }
+  return Number(v)
 }
 
 // =========================================================================
@@ -1423,74 +1423,6 @@ export async function loadCompanyByJobId(input: CompanyByJobIn): CompanyOut {
 }
 
 /**
- * 公司 LMIA 获批职业拆分(#286;近两年,与 lmiaPositions 同窗口)。
- * 单独容缺查询:列没建/没灌 → 空数组弹框整块不渲,不并主 SELECT 防 42703 掀整个弹框。
- *
- * @param input 连接与公司主键。
- * @returns 获批职业行;容缺空数组。
- */
-async function lmiaNocsOf(input: LmiaNocsIn): LmiaNocsOut {
-  try {
-    const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_LMIA_NOCS, params: [input.companyId], map: passJsonRow })
-    const firstRow = rows[0]
-    if (firstRow == null) {
-      return []
-    }
-    const raw = firstRow.lmia_nocs
-    let dict: JsonObj | null = null
-    if (typeof raw === 'string') {
-      dict = JSON.parse(raw)
-    } else if (raw != null && typeof raw === 'object' && Array.isArray(raw) === false) {
-      dict = raw
-    }
-    if (dict == null) {
-      return []
-    }
-    const entries: [string, number][] = []
-    for (const noc of Object.keys(dict)) {
-      const n = Number(dict[noc])
-      if (NOC_RE.test(noc) && n > 0) {
-        entries.push([noc, n])
-      }
-    }
-    entries.sort(byEntryCountDesc)
-    if (entries.length === 0) {
-      return []
-    }
-    const codes: string[] = []
-    for (const [noc] of entries) {
-      codes.push(noc)
-    }
-    const nameRows = await queryRowsOrEmpty({ db: input.db, sql: SQL.NOC_TITLES_BY_CODES, params: [codes], map: passRow })
-    const names = new Map<string, Row>()
-    for (const r of nameRows) {
-      names.set(String(r.noc), r)
-    }
-    const out: LmiaNocRow[] = []
-    for (const [noc, positions] of entries) {
-      const r = names.get(noc)
-      let title = OCC_TITLE_NONE
-      let titleZh = OCC_TITLE_NONE
-      let titleKo = OCC_TITLE_NONE
-      if (r != null) {
-        title = String(r.title)
-        titleZh = String(r.title_zh)
-        titleKo = String(r.title_ko)
-      }
-      out.push({ noc: noc, positions: positions, title: title, titleZh: titleZh, titleKo: titleKo })
-    }
-    return out
-  } catch (e) {
-    let why = String(e)
-    if (e instanceof Error) {
-      why = e.message
-    }
-    log({ tag: JOBS_LOG.tag, text: JOBS_LOG.lmiaNocsProbeFailed + why })
-    return []
-  }
-}
-
-/**
  * 公司详情主体(slug 与 jobId 两个入口共用)。score_detail 那一步 `as` 是跨边界单断言:
  * json 列的四维明细由数据层写入方保证形状,TS 只看得到 JsonObj。
  *
@@ -1559,6 +1491,74 @@ async function fetchCompanyWhere(input: CompanyWhereIn): CompanyOut {
     lmiaStreams: strCell(c.lmia_streams), lmiaSkilled: numCell(c.lmia_positions_skilled), lmiaNocs: lmiaNocs,
     openCount: openCount,
     jobs: jr,
+  }
+}
+
+/**
+ * 公司 LMIA 获批职业拆分(#286;近两年,与 lmiaPositions 同窗口)。
+ * 单独容缺查询:列没建/没灌 → 空数组弹框整块不渲,不并主 SELECT 防 42703 掀整个弹框。
+ *
+ * @param input 连接与公司主键。
+ * @returns 获批职业行;容缺空数组。
+ */
+async function lmiaNocsOf(input: LmiaNocsIn): LmiaNocsOut {
+  try {
+    const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_LMIA_NOCS, params: [input.companyId], map: passJsonRow })
+    const firstRow = rows[0]
+    if (firstRow == null) {
+      return []
+    }
+    const raw = firstRow.lmia_nocs
+    let dict: JsonObj | null = null
+    if (typeof raw === 'string') {
+      dict = JSON.parse(raw)
+    } else if (raw != null && typeof raw === 'object' && Array.isArray(raw) === false) {
+      dict = raw
+    }
+    if (dict == null) {
+      return []
+    }
+    const entries: [string, number][] = []
+    for (const noc of Object.keys(dict)) {
+      const n = Number(dict[noc])
+      if (NOC_RE.test(noc) && n > 0) {
+        entries.push([noc, n])
+      }
+    }
+    entries.sort(byEntryCountDesc)
+    if (entries.length === 0) {
+      return []
+    }
+    const codes: string[] = []
+    for (const [noc] of entries) {
+      codes.push(noc)
+    }
+    const nameRows = await queryRowsOrEmpty({ db: input.db, sql: SQL.NOC_TITLES_BY_CODES, params: [codes], map: passRow })
+    const names = new Map<string, Row>()
+    for (const r of nameRows) {
+      names.set(String(r.noc), r)
+    }
+    const out: LmiaNocRow[] = []
+    for (const [noc, positions] of entries) {
+      const r = names.get(noc)
+      let title = OCC_TITLE_NONE
+      let titleZh = OCC_TITLE_NONE
+      let titleKo = OCC_TITLE_NONE
+      if (r != null) {
+        title = String(r.title)
+        titleZh = String(r.title_zh)
+        titleKo = String(r.title_ko)
+      }
+      out.push({ noc: noc, positions: positions, title: title, titleZh: titleZh, titleKo: titleKo })
+    }
+    return out
+  } catch (e) {
+    let why = String(e)
+    if (e instanceof Error) {
+      why = e.message
+    }
+    log({ tag: JOBS_LOG.tag, text: JOBS_LOG.lmiaNocsProbeFailed + why })
+    return []
   }
 }
 
@@ -1694,6 +1694,27 @@ export async function loadNocOpenCounts(input: NocCountsIn): NocCountsOut {
 }
 
 /**
+ * `loadTopNocs` 的 TTL 缓存壳(/plan/pr 决策页用;2026-08-22 自 lib/score 的表包缓存拆来)。
+ * 聚合表日更,10 分钟 TTL 只是挡「Google 落地页每请求一查」(prod-pool-wedge 口径)。
+ * ⚠️ lib/quiz/quizTop.ts 还有一份同职缓存 —— quiz 域重构批收拢到这儿(2026-08-22 记账)。
+ * 空榜不灌缓存:多半是查挂了,不把一次抖动钉死 10 分钟。
+ *
+ * @param input 连接与取几。
+ * @returns 热门职业行(TTL 内直接给缓存那一份)。
+ */
+export async function getTopNocs(input: TopNocsIn): TopNocsOut {
+  const hit = CACHE.topNocs.get(input.limit)
+  if (hit != null && Date.now() - hit.at <= TOP_NOCS_TTL_MS) {
+    return hit.rows
+  }
+  const rows = await loadTopNocs(input)
+  if (rows.length > 0) {
+    CACHE.topNocs.set(input.limit, { at: Date.now(), rows: rows })
+  }
+  return rows
+}
+
+/**
  * 热门职业清单(不手写,按库里在招量取前 N,自己随市场变)。主路读 ETL 聚合好的 noc_openings
  * (2026-08-12「把这个数据聚合好」:旧现算 200 行实测 3.2s);表没建/没灌回退现算,慢但不瞎 ——
  * 且大清单回退时不算中位薪资(percentile_cont 是查询大头,控件里也用不到)。
@@ -1720,27 +1741,6 @@ export async function loadTopNocs(input: TopNocsIn): TopNocsOut {
     medSel = MED_SELECT
   }
   return queryRows({ db: input.db, sql: SQL.searchNocByTitle(medSel), params: [n], map: toTopNoc })
-}
-
-/**
- * `loadTopNocs` 的 TTL 缓存壳(/plan/pr 决策页用;2026-08-22 自 lib/score 的表包缓存拆来)。
- * 聚合表日更,10 分钟 TTL 只是挡「Google 落地页每请求一查」(prod-pool-wedge 口径)。
- * ⚠️ lib/quiz/quizTop.ts 还有一份同职缓存 —— quiz 域重构批收拢到这儿(2026-08-22 记账)。
- * 空榜不灌缓存:多半是查挂了,不把一次抖动钉死 10 分钟。
- *
- * @param input 连接与取几。
- * @returns 热门职业行(TTL 内直接给缓存那一份)。
- */
-export async function getTopNocs(input: TopNocsIn): TopNocsOut {
-  const hit = CACHE.topNocs.get(input.limit)
-  if (hit != null && Date.now() - hit.at <= TOP_NOCS_TTL_MS) {
-    return hit.rows
-  }
-  const rows = await loadTopNocs(input)
-  if (rows.length > 0) {
-    CACHE.topNocs.set(input.limit, { at: Date.now(), rows: rows })
-  }
-  return rows
 }
 
 /**
@@ -1773,54 +1773,190 @@ export async function searchNocByTitle(input: NocSearchIn): NocSearchOut {
 // =========================================================================
 
 /**
- * 内网/环回地址挡板(SSRF:applyUrl 来自库,但外链是原站页里抽的)。
+ * 按 applyUrl 取 JD 正文(DB jobs.description,mart 灌入;空则懒抓)。出口统一脱敏 ——
+ * jobtext/advisor 都干净。
  *
- * @param u 解析后的 URL。
- * @returns 是否该拒抓。
+ * @param input 连接与投递 URL。
+ * @returns 脱敏正文;没有空串。
  */
-function badHost(u: UrlHandle): boolean {
-  if (JD_PROTO_RE.test(u.protocol) === false) {
-    return true
+export async function jobDescription(input: JdIn): JdOut {
+  if (input.applyUrl === '') {
+    return JD_NONE
   }
-  if (JD_BAD_HOST_RE.test(u.hostname)) {
-    return true
+  const rows = await queryRows({ db: input.db, sql: SQL.JD_BY_APPLY_URL, params: [input.applyUrl], map: passRow })
+  const first = rows[0]
+  if (first != null && first.description != null && first.description !== '') {
+    return scrubPii(String(first.description))
   }
-  return JD_BAD_HOST_172_RE.test(u.hostname)
+  return scrubPii(await lazyFetchJd(input))
 }
 
 /**
- * 拉一页 HTML(8s 超时、80 万字符封顶;任何失败回空串 —— 懒抓失败走负缓存,不值得抛)。
+ * 懒抓入口(#123):抓到即写库永久缓存;抓不到负缓存 10 分钟防连点;单飞防并发重复抓
+ * (改 `CACHE.jdInflight` / `CACHE.jdFailed`)。
  *
- * @param url 目标页。
- * @returns HTML;拉不到空串。
+ * @param input 连接与投递 URL。
+ * @returns 正文;抓不到空串(前端空态照旧引导官方原帖)。
  */
-async function fetchHtml(url: string): HtmlOut {
-  const u = new URL(url)
-  if (badHost(u)) {
-    return HTML_NONE
+function lazyFetchJd(input: JdIn): JdOut {
+  const neg = CACHE.jdFailed.get(input.applyUrl)
+  if (neg != null && Date.now() - neg < JD_NEG_TTL_MS) {
+    return Promise.resolve(JD_NONE)
   }
-  const ctrl = new AbortController()
-  const timer = setTimeout(function abortJd() {
-    ctrl.abort()
-  }, JD_FETCH_TIMEOUT_MS)
-  try {
-    const res = await fetch(url, {
-      headers: { [HDR_USER_AGENT]: JD_UA, Accept: ACCEPT_HTML }, redirect: REDIRECT_FOLLOW, signal: ctrl.signal,
-    })
-    if (res.ok === false) {
-      return HTML_NONE
-    }
-    return (await res.text()).slice(0, JD_HTML_CAP)
-  } catch (e) {
-    let why = String(e)
-    if (e instanceof Error) {
-      why = e.message
-    }
-    log({ tag: JOBS_LOG.tag, text: JOBS_LOG.jdFetchFailed + why })
-    return HTML_NONE
-  } finally {
-    clearTimeout(timer)
+  const flying = CACHE.jdInflight.get(input.applyUrl)
+  if (flying != null) {
+    return flying
   }
+  const p = fetchAndStore(input).finally(function clearInflight() {
+    CACHE.jdInflight.delete(input.applyUrl)
+  })
+  CACHE.jdInflight.set(input.applyUrl, p)
+  return p
+}
+
+/**
+ * 抓 + 写回(lazyFetchJd 的单飞体)。写库失败留痕不拦文本(下次点开重写)。
+ *
+ * @param input 连接与投递 URL。
+ * @returns 正文;抓不到空串。
+ */
+async function fetchAndStore(input: JdIn): JdOut {
+  const text = await doFetch(input.applyUrl)
+  if (text !== '') {
+    try {
+      await input.db.query(SQL.JD_UPDATE_BY_APPLY_URL, [text, input.applyUrl])
+    } catch (e) {
+      let why = String(e)
+      if (e instanceof Error) {
+        why = e.message
+      }
+      log({ tag: JOBS_LOG.tag, text: JOBS_LOG.jdWriteFailed + why })
+    }
+  } else {
+    CACHE.jdFailed.set(input.applyUrl, Date.now())
+    if (CACHE.jdFailed.size > JD_FAILED_MAX) {
+      CACHE.jdFailed.clear()
+    }
+  }
+  return text
+}
+
+/**
+ * 真正的抓取:JB 帖先试自有正文,空则抽外链抓原站;非 JB 直接通用抽取(≥300 字符才算抓到)。
+ *
+ * @param applyUrl 投递 URL。
+ * @returns 正文;抓不到空串。
+ */
+async function doFetch(applyUrl: string): JdOut {
+  const isJb = JB_URL_RE.test(applyUrl)
+  const first = await fetchHtml(applyUrl)
+  if (first === '') {
+    return JD_NONE
+  }
+  if (isJb === false) {
+    const t = stripTitleLine({ text: extractText(first), html: first })
+    if (t.length >= JD_MIN_LEN) {
+      return t
+    }
+    return JD_NONE
+  }
+  const own = jbOwnText(first)
+  if (own.length >= JD_MIN_LEN) {
+    return own
+  }
+  const ext = jbExternalLink(first)
+  if (ext === '') {
+    return JD_NONE
+  }
+  const originHtml = await fetchHtml(ext)
+  const t = stripTitleLine({ text: extractText(originHtml), html: originHtml })
+  if (t.length < JD_MIN_LEN) {
+    return JD_NONE
+  }
+  const ot = originTitle(originHtml)
+  if (ot !== '') {
+    return (ORIGIN_TITLE_HEAD + ot + NL + NL + t).slice(0, JD_MAX_LEN)
+  }
+  return t
+}
+
+/**
+ * 原站 <title> → 岗名标注(JB 会把聚合帖标题标准化成职业名,差异自解释不掩盖;
+ * 取最长的非通用段近似岗名,挑错也只是标注行,正文不受影响)。
+ *
+ * @param html 原站 HTML。
+ * @returns 岗名;取不出空串。
+ */
+function originTitle(html: string): string {
+  const m = TITLE_RE.exec(html)
+  if (m == null) {
+    return TITLE_NONE
+  }
+  let t = m[1]
+  if (t == null) {
+    return TITLE_NONE
+  }
+  for (const [re, to] of TITLE_ENT_PAIRS) {
+    t = t.replace(re, to)
+  }
+  const segs: string[] = []
+  for (const raw of t.split(TITLE_SPLIT_RE)) {
+    const seg = raw.trim()
+    if (seg.length >= TITLE_SEG_MIN && TITLE_JUNK_RE.test(seg) === false && TITLE_DOMAIN_RE.test(seg) === false) {
+      segs.push(seg)
+    }
+  }
+  let best = TITLE_NONE
+  for (const seg of segs) {
+    if (seg.length > best.length) {
+      best = seg
+    }
+  }
+  return best.replace(TITLE_TAIL_RE, STRIP_REPL).trim()
+}
+
+/**
+ * JB 官方页的外链(#140:href 是实体编码的,不解码带 query 的外链一律抓错页)。
+ *
+ * @param html JB 页 HTML。
+ * @returns 外链;没有空串。
+ */
+function jbExternalLink(html: string): string {
+  const m = JB_EXT_LINK_RE.exec(html)
+  if (m == null) {
+    return JB_LINK_NONE
+  }
+  let href = m[1]
+  if (href == null) {
+    return JB_LINK_NONE
+  }
+  for (const [re, to] of HREF_ENT_PAIRS) {
+    href = href.replace(re, to)
+  }
+  return href
+}
+
+/**
+ * 通用正文抽取(readability 极简版,零依赖):剥非内容块 → 块级转行 → 剥标签 → 反转义 → 压行 → 裁头部。
+ *
+ * @param html 原始 HTML。
+ * @returns 正文(≤15000 字符)。
+ */
+function extractText(html: string): string {
+  let t = html.replace(JD_STRIP_BLOCK_RE, SPACE)
+  t = t.replace(JD_BLOCK_BREAK_RE, NL)
+  t = t.replace(JD_TAG_RE, SPACE)
+  for (const [re, to] of ENT_PAIRS) {
+    t = t.replace(re, to)
+  }
+  const lines: string[] = []
+  for (const raw of t.split(NL)) {
+    const l = raw.replace(LINE_SPACES_RE, SPACE).trim()
+    if (l.length > JD_LINE_MIN) {
+      lines.push(l)
+    }
+  }
+  return trimHeadJunk(lines).join(NL).slice(0, JD_MAX_LEN)
 }
 
 /**
@@ -1875,29 +2011,6 @@ function trimHeadJunk(lines: StrList): StrList {
 }
 
 /**
- * 通用正文抽取(readability 极简版,零依赖):剥非内容块 → 块级转行 → 剥标签 → 反转义 → 压行 → 裁头部。
- *
- * @param html 原始 HTML。
- * @returns 正文(≤15000 字符)。
- */
-function extractText(html: string): string {
-  let t = html.replace(JD_STRIP_BLOCK_RE, SPACE)
-  t = t.replace(JD_BLOCK_BREAK_RE, NL)
-  t = t.replace(JD_TAG_RE, SPACE)
-  for (const [re, to] of ENT_PAIRS) {
-    t = t.replace(re, to)
-  }
-  const lines: string[] = []
-  for (const raw of t.split(NL)) {
-    const l = raw.replace(LINE_SPACES_RE, SPACE).trim()
-    if (l.length > JD_LINE_MIN) {
-      lines.push(l)
-    }
-  }
-  return trimHeadJunk(lines).join(NL).slice(0, JD_MAX_LEN)
-}
-
-/**
  * JB 详情页自有正文,两处都看(#141 实证:聚合帖没有结构区,但 property="description" 里有雇主原文)。
  *
  * @param html JB 页 HTML。
@@ -1928,62 +2041,6 @@ function jbOwnText(html: string): string {
     inner = inner.replace(re, to)
   }
   return extractText(inner)
-}
-
-/**
- * JB 官方页的外链(#140:href 是实体编码的,不解码带 query 的外链一律抓错页)。
- *
- * @param html JB 页 HTML。
- * @returns 外链;没有空串。
- */
-function jbExternalLink(html: string): string {
-  const m = JB_EXT_LINK_RE.exec(html)
-  if (m == null) {
-    return JB_LINK_NONE
-  }
-  let href = m[1]
-  if (href == null) {
-    return JB_LINK_NONE
-  }
-  for (const [re, to] of HREF_ENT_PAIRS) {
-    href = href.replace(re, to)
-  }
-  return href
-}
-
-/**
- * 原站 <title> → 岗名标注(JB 会把聚合帖标题标准化成职业名,差异自解释不掩盖;
- * 取最长的非通用段近似岗名,挑错也只是标注行,正文不受影响)。
- *
- * @param html 原站 HTML。
- * @returns 岗名;取不出空串。
- */
-function originTitle(html: string): string {
-  const m = TITLE_RE.exec(html)
-  if (m == null) {
-    return TITLE_NONE
-  }
-  let t = m[1]
-  if (t == null) {
-    return TITLE_NONE
-  }
-  for (const [re, to] of TITLE_ENT_PAIRS) {
-    t = t.replace(re, to)
-  }
-  const segs: string[] = []
-  for (const raw of t.split(TITLE_SPLIT_RE)) {
-    const seg = raw.trim()
-    if (seg.length >= TITLE_SEG_MIN && TITLE_JUNK_RE.test(seg) === false && TITLE_DOMAIN_RE.test(seg) === false) {
-      segs.push(seg)
-    }
-  }
-  let best = TITLE_NONE
-  for (const seg of segs) {
-    if (seg.length > best.length) {
-      best = seg
-    }
-  }
-  return best.replace(TITLE_TAIL_RE, STRIP_REPL).trim()
 }
 
 /**
@@ -2020,174 +2077,59 @@ function stripTitleLine(input: StripTitleIn): string {
 }
 
 /**
- * 真正的抓取:JB 帖先试自有正文,空则抽外链抓原站;非 JB 直接通用抽取(≥300 字符才算抓到)。
+ * 拉一页 HTML(8s 超时、80 万字符封顶;任何失败回空串 —— 懒抓失败走负缓存,不值得抛)。
  *
- * @param applyUrl 投递 URL。
- * @returns 正文;抓不到空串。
+ * @param url 目标页。
+ * @returns HTML;拉不到空串。
  */
-async function doFetch(applyUrl: string): JdOut {
-  const isJb = JB_URL_RE.test(applyUrl)
-  const first = await fetchHtml(applyUrl)
-  if (first === '') {
-    return JD_NONE
+async function fetchHtml(url: string): HtmlOut {
+  const u = new URL(url)
+  if (badHost(u)) {
+    return HTML_NONE
   }
-  if (isJb === false) {
-    const t = stripTitleLine({ text: extractText(first), html: first })
-    if (t.length >= JD_MIN_LEN) {
-      return t
+  const ctrl = new AbortController()
+  const timer = setTimeout(function abortJd() {
+    ctrl.abort()
+  }, JD_FETCH_TIMEOUT_MS)
+  try {
+    const res = await fetch(url, {
+      headers: { [HDR_USER_AGENT]: JD_UA, Accept: ACCEPT_HTML }, redirect: REDIRECT_FOLLOW, signal: ctrl.signal,
+    })
+    if (res.ok === false) {
+      return HTML_NONE
     }
-    return JD_NONE
+    return (await res.text()).slice(0, JD_HTML_CAP)
+  } catch (e) {
+    let why = String(e)
+    if (e instanceof Error) {
+      why = e.message
+    }
+    log({ tag: JOBS_LOG.tag, text: JOBS_LOG.jdFetchFailed + why })
+    return HTML_NONE
+  } finally {
+    clearTimeout(timer)
   }
-  const own = jbOwnText(first)
-  if (own.length >= JD_MIN_LEN) {
-    return own
-  }
-  const ext = jbExternalLink(first)
-  if (ext === '') {
-    return JD_NONE
-  }
-  const originHtml = await fetchHtml(ext)
-  const t = stripTitleLine({ text: extractText(originHtml), html: originHtml })
-  if (t.length < JD_MIN_LEN) {
-    return JD_NONE
-  }
-  const ot = originTitle(originHtml)
-  if (ot !== '') {
-    return (ORIGIN_TITLE_HEAD + ot + NL + NL + t).slice(0, JD_MAX_LEN)
-  }
-  return t
 }
 
 /**
- * 懒抓入口(#123):抓到即写库永久缓存;抓不到负缓存 10 分钟防连点;单飞防并发重复抓
- * (改 `CACHE.jdInflight` / `CACHE.jdFailed`)。
+ * 内网/环回地址挡板(SSRF:applyUrl 来自库,但外链是原站页里抽的)。
  *
- * @param input 连接与投递 URL。
- * @returns 正文;抓不到空串(前端空态照旧引导官方原帖)。
+ * @param u 解析后的 URL。
+ * @returns 是否该拒抓。
  */
-function lazyFetchJd(input: JdIn): JdOut {
-  const neg = CACHE.jdFailed.get(input.applyUrl)
-  if (neg != null && Date.now() - neg < JD_NEG_TTL_MS) {
-    return Promise.resolve(JD_NONE)
+function badHost(u: UrlHandle): boolean {
+  if (JD_PROTO_RE.test(u.protocol) === false) {
+    return true
   }
-  const flying = CACHE.jdInflight.get(input.applyUrl)
-  if (flying != null) {
-    return flying
+  if (JD_BAD_HOST_RE.test(u.hostname)) {
+    return true
   }
-  const p = fetchAndStore(input).finally(function clearInflight() {
-    CACHE.jdInflight.delete(input.applyUrl)
-  })
-  CACHE.jdInflight.set(input.applyUrl, p)
-  return p
-}
-
-/**
- * 抓 + 写回(lazyFetchJd 的单飞体)。写库失败留痕不拦文本(下次点开重写)。
- *
- * @param input 连接与投递 URL。
- * @returns 正文;抓不到空串。
- */
-async function fetchAndStore(input: JdIn): JdOut {
-  const text = await doFetch(input.applyUrl)
-  if (text !== '') {
-    try {
-      await input.db.query(SQL.JD_UPDATE_BY_APPLY_URL, [text, input.applyUrl])
-    } catch (e) {
-      let why = String(e)
-      if (e instanceof Error) {
-        why = e.message
-      }
-      log({ tag: JOBS_LOG.tag, text: JOBS_LOG.jdWriteFailed + why })
-    }
-  } else {
-    CACHE.jdFailed.set(input.applyUrl, Date.now())
-    if (CACHE.jdFailed.size > JD_FAILED_MAX) {
-      CACHE.jdFailed.clear()
-    }
-  }
-  return text
-}
-
-/**
- * 按 applyUrl 取 JD 正文(DB jobs.description,mart 灌入;空则懒抓)。出口统一脱敏 ——
- * jobtext/advisor 都干净。
- *
- * @param input 连接与投递 URL。
- * @returns 脱敏正文;没有空串。
- */
-export async function jobDescription(input: JdIn): JdOut {
-  if (input.applyUrl === '') {
-    return JD_NONE
-  }
-  const rows = await queryRows({ db: input.db, sql: SQL.JD_BY_APPLY_URL, params: [input.applyUrl], map: passRow })
-  const first = rows[0]
-  if (first != null && first.description != null && first.description !== '') {
-    return scrubPii(String(first.description))
-  }
-  return scrubPii(await lazyFetchJd(input))
+  return JD_BAD_HOST_172_RE.test(u.hostname)
 }
 
 // =========================================================================
 // 10. 职业竞争面(该职业各省在招;2026-08-22 自 lib/score 并入)
 // =========================================================================
-
-/**
- * 各省难度事实 → 省码 → 名额竞争比(省级,与职业无关;比值缺位的省不出键)。
- *
- * @param rows 难度事实行。
- * @returns 省码 → 比值。
- */
-function ratioMapOf(rows: OccDiffFacts): RatioMap {
-  const out: RatioMap = {}
-  for (const r of rows) {
-    if (r.ratio != null) {
-      out[r.province] = r.ratio
-    }
-  }
-  return out
-}
-
-/**
- * 计数行 → 省码 → 数。
- *
- * @param rows 按省计数行。
- * @returns 省码 → 数。
- */
-function countMapOf(rows: ProvCounts): CountMap {
-  const out: CountMap = {}
-  for (const r of rows) {
-    out[r.province] = r.n
-  }
-  return out
-}
-
-/**
- * 比值查表:没有这省保 null(名额竞争比官方可缺,不折 0)。
- *
- * @param input 表与省码。
- * @returns 比值;没有则 null。
- */
-function ratioOf(input: RatioOfIn): MaybeNum {
-  const v = input.map[input.key]
-  if (v == null) {
-    return null
-  }
-  return v
-}
-
-/**
- * 计数查表:没有这省是 0(GROUP BY 没出这省 = 一个都没有,「一个都没有」本身就是答案)。
- *
- * @param input 表与省码。
- * @returns 数;没有则 0。
- */
-function countOf(input: CountOfIn): number {
-  const v = input.map[input.key]
-  if (v == null) {
-    return 0
-  }
-  return v
-}
 
 /**
  * 该职业分省竞争面(2026-08-15 #307 排序单源化时自路由抽出;2026-08-22 自 lib/score 并入本域。
@@ -2240,6 +2182,64 @@ export async function loadOccCompetition(input: OccCompetitionIn): OccCompetitio
   return out
 }
 
+/**
+ * 计数查表:没有这省是 0(GROUP BY 没出这省 = 一个都没有,「一个都没有」本身就是答案)。
+ *
+ * @param input 表与省码。
+ * @returns 数;没有则 0。
+ */
+function countOf(input: CountOfIn): number {
+  const v = input.map[input.key]
+  if (v == null) {
+    return 0
+  }
+  return v
+}
+
+/**
+ * 比值查表:没有这省保 null(名额竞争比官方可缺,不折 0)。
+ *
+ * @param input 表与省码。
+ * @returns 比值;没有则 null。
+ */
+function ratioOf(input: RatioOfIn): MaybeNum {
+  const v = input.map[input.key]
+  if (v == null) {
+    return null
+  }
+  return v
+}
+
+/**
+ * 计数行 → 省码 → 数。
+ *
+ * @param rows 按省计数行。
+ * @returns 省码 → 数。
+ */
+function countMapOf(rows: ProvCounts): CountMap {
+  const out: CountMap = {}
+  for (const r of rows) {
+    out[r.province] = r.n
+  }
+  return out
+}
+
+/**
+ * 各省难度事实 → 省码 → 名额竞争比(省级,与职业无关;比值缺位的省不出键)。
+ *
+ * @param rows 难度事实行。
+ * @returns 省码 → 比值。
+ */
+function ratioMapOf(rows: OccDiffFacts): RatioMap {
+  const out: RatioMap = {}
+  for (const r of rows) {
+    if (r.ratio != null) {
+      out[r.province] = r.ratio
+    }
+  }
+  return out
+}
+
 // =========================================================================
 // 11. 界面显示(数据层值 → 界面词;2026-08-22 Frank「所有都按域来管理」自 i18n 迁回)
 // =========================================================================
@@ -2279,17 +2279,6 @@ export function streamDisplay(input: StreamDisplayIn): string {
 }
 
 /**
- * 官方通道名归一(小写、破折号统一、连空白折一)—— mart 里的破折号是 em dash,
- * 写死全串等于把编码问题埋进代码(pathVerdict 同款告诫)。
- *
- * @param s 官方通道名。
- * @returns 归一后的键。
- */
-function normReqStream(s: string): string {
-  return (s || PARAM_NONE).toLowerCase().replace(NORM_DASH_RE, NORM_DASH).replace(NORM_WS_RE, SPACE).trim()
-}
-
-/**
  * 官方通道名 → 显示短名(表里没有原样返回;语言缺省由调用端 `?? 'zh'` 兜,与 makeT 同)。
  *
  * @param input 官方通道名与界面语言。
@@ -2307,6 +2296,17 @@ export function reqStreamDisplay(input: ReqStreamDisplayIn): string {
     return hit.ko
   }
   return hit.zh
+}
+
+/**
+ * 官方通道名归一(小写、破折号统一、连空白折一)—— mart 里的破折号是 em dash,
+ * 写死全串等于把编码问题埋进代码(pathVerdict 同款告诫)。
+ *
+ * @param s 官方通道名。
+ * @returns 归一后的键。
+ */
+function normReqStream(s: string): string {
+  return (s || PARAM_NONE).toLowerCase().replace(NORM_DASH_RE, NORM_DASH).replace(NORM_WS_RE, SPACE).trim()
 }
 
 /**
@@ -2687,7 +2687,7 @@ export function iso(v: TimeLike | undefined): string {
     return v.toISOString()
   }
   if (v == null) {
-    return ''
+    return ISO_NONE
   }
   return String(v)
 }
@@ -2819,7 +2819,7 @@ export function toMatchJob(j: JobDbRow): MatchJob {
 export function mapPnpOcc(r: Row): PnpOcc {
   let program = text(r.program)
   if (program === '') {
-    program = 'PNP'
+    program = PROGRAM_PNP
   }
   return {
     province: text(r.province), stream: text(r.stream), label: text(r.label), type: text(r.type),
@@ -3085,6 +3085,18 @@ export function toProvCount(r: Row): ProvCount {
 }
 
 /**
+ * 一行各省难度(SQL.PROV_DIFFICULTY)→ 难度事实。json 解析(词汇 `jsonOrNull`)与
+ * comp 因子提取都在这里做完 —— functions 拿到的 ratio 即有效(2026-08-22 Frank:
+ * 值级清洗不进 functions)。
+ *
+ * @param r 原始行。
+ * @returns 洗净的一行。
+ */
+export function toOccDiffFact(r: OccDiffDbRow): OccDiffFact {
+  return { province: text(r.province), ratio: compRatioOf(jsonOrNull(r.difficulty)) }
+}
+
+/**
  * 词汇:解析好的难度 json → key='comp' 因子的比值;没有保 null。
  *
  * @param d 解析好的难度 json。
@@ -3103,15 +3115,13 @@ function compRatioOf(d: MaybeOccDiff): MaybeNum {
 }
 
 /**
- * 一行各省难度(SQL.PROV_DIFFICULTY)→ 难度事实。json 解析(词汇 `jsonOrNull`)与
- * comp 因子提取都在这里做完 —— functions 拿到的 ratio 即有效(2026-08-22 Frank:
- * 值级清洗不进 functions)。
+ * 一行市/区聚合(SQL.cityTotals / districtTotals)→ 三件套。
  *
- * @param r 原始行。
- * @returns 洗净的一行。
+ * @param r 库里的一行。
+ * @returns 洗净的聚合。
  */
-export function toOccDiffFact(r: OccDiffDbRow): OccDiffFact {
-  return { province: text(r.province), ratio: compRatioOf(jsonOrNull(r.difficulty)) }
+export function toCityAgg(r: Row): CityAgg {
+  return { openJobs: count(r.open_jobs), new7d: count(r.new7d), medSalary: roundOrNull(r.med_salary) }
 }
 
 /**
@@ -3127,16 +3137,6 @@ function roundOrNull(x: Cell | undefined): MaybeNum {
     return null
   }
   return Math.round(n)
-}
-
-/**
- * 一行市/区聚合(SQL.cityTotals / districtTotals)→ 三件套。
- *
- * @param r 库里的一行。
- * @returns 洗净的聚合。
- */
-export function toCityAgg(r: Row): CityAgg {
-  return { openJobs: count(r.open_jobs), new7d: count(r.new7d), medSalary: roundOrNull(r.med_salary) }
 }
 
 /**

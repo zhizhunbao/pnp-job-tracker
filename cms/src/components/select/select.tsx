@@ -23,6 +23,7 @@ import css from './select.module.css'
 
 /**
  * 量宽下拉。
+ * 镜像与真 select 吃同一份输入件基座(算一次两处共用 —— 分开算迟早走散)。
  *
  * @param props 值/选项/文案/宽档(见 SelectIn 逐格注释)。
  * @returns 下拉。
@@ -48,7 +49,6 @@ export function Select({ value, onChange, opts, all, labelOf, size = BOX_SIZE_DE
     lg: `${css.box} ${css.lg}`,
   }
   const boxCls = sizeCls[size]
-  // 镜像与真 select 吃同一份输入件基座(算一次两处共用 —— 分开算迟早走散)
   const base = inputClsOf({ size: SIZE_DEFAULT, search: false, extra: null })
   let selCls = `${base} ${css.overlay}`
   if (tap) {

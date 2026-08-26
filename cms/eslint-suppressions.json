@@ -34,54 +34,6 @@
       "count": 3
     }
   },
-  "src/components/auth/accountmenupop.tsx": {
-    "local/no-comment-in-function": {
-      "count": 1
-    },
-    "local/no-split-import": {
-      "count": 1
-    }
-  },
-  "src/components/auth/authform.tsx": {
-    "local/no-comment-in-function": {
-      "count": 3
-    }
-  },
-  "src/components/auth/functions.ts": {
-    "local/no-comment-in-function": {
-      "count": 3
-    }
-  },
-  "src/components/auth/hooks.ts": {
-    "local/no-comment-in-function": {
-      "count": 2
-    }
-  },
-  "src/components/banner/hooks.ts": {
-    "local/no-comment-in-function": {
-      "count": 1
-    }
-  },
-  "src/components/button/functions.ts": {
-    "local/no-comment-in-function": {
-      "count": 1
-    }
-  },
-  "src/components/footer/types.ts": {
-    "local/no-import-in-leaf": {
-      "count": 1
-    }
-  },
-  "src/components/header/hooks.ts": {
-    "local/no-comment-in-function": {
-      "count": 2
-    }
-  },
-  "src/components/header/types.ts": {
-    "local/no-import-in-leaf": {
-      "count": 1
-    }
-  },
   "src/components/i18n/hooks.ts": {
     "@stylistic/max-len": {
       "count": 1
@@ -90,81 +42,24 @@
       "count": 2
     }
   },
-  "src/components/i18n/types.ts": {
-    "local/no-import-in-leaf": {
-      "count": 1
-    }
-  },
-  "src/components/icons/functions.tsx": {
-    "local/no-comment-in-function": {
-      "count": 1
-    }
-  },
-  "src/components/icons/types.ts": {
-    "local/no-import-in-leaf": {
-      "count": 1
-    }
-  },
-  "src/components/modal/functions.ts": {
-    "local/no-comment-in-function": {
-      "count": 2
-    }
-  },
   "src/components/modal/hooks.ts": {
     "@stylistic/max-len": {
-      "count": 1
-    }
-  },
-  "src/components/search/types.ts": {
-    "local/no-import-in-leaf": {
-      "count": 1
-    }
-  },
-  "src/components/select/select.tsx": {
-    "local/no-comment-in-function": {
-      "count": 1
-    }
-  },
-  "src/components/table/functions.ts": {
-    "local/no-comment-in-function": {
-      "count": 2
-    }
-  },
-  "src/components/table/hooks.ts": {
-    "local/no-comment-in-function": {
-      "count": 4
-    }
-  },
-  "src/components/table/table.tsx": {
-    "local/no-comment-in-function": {
       "count": 1
     }
   },
   "src/lib/advisor/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 1
-    },
-    "local/jsdoc-tags": {
-      "count": 1
-    },
-    "local/no-bare-strings": {
-      "count": 25
     }
   },
   "src/lib/advisor/routes.ts": {
     "local/function-length": {
       "count": 1
     },
-    "local/no-bare-strings": {
-      "count": 11
-    },
     "local/no-literal-index": {
       "count": 2
     },
     "local/no-magic-number": {
-      "count": 1
-    },
-    "local/no-new-error": {
       "count": 1
     }
   },
@@ -173,19 +68,9 @@
       "count": 4
     }
   },
-  "src/lib/advisor/variables.ts": {
-    "local/doc-every-member": {
-      "count": 1
-    }
-  },
   "src/lib/agent/constants.ts": {
     "local/no-import-in-leaf": {
       "count": 1
-    }
-  },
-  "src/lib/agent/functions.ts": {
-    "local/step-down-order": {
-      "count": 11
     }
   },
   "src/lib/agent/types.ts": {
@@ -204,9 +89,6 @@
     },
     "local/no-magic-number": {
       "count": 6
-    },
-    "local/step-down-order": {
-      "count": 5
     }
   },
   "src/lib/consult/constants.ts": {
@@ -217,9 +99,6 @@
   "src/lib/consult/functions.ts": {
     "local/no-db-vocab-in-functions": {
       "count": 3
-    },
-    "local/step-down-order": {
-      "count": 27
     }
   },
   "src/lib/consult/routes.ts": {
@@ -230,47 +109,6 @@
   "src/lib/consult/types.ts": {
     "local/no-import-in-leaf": {
       "count": 4
-    }
-  },
-  "src/lib/db/functions.ts": {
-    "jsdoc/require-param": {
-      "count": 7
-    },
-    "jsdoc/require-returns": {
-      "count": 7
-    },
-    "local/jsdoc-tags": {
-      "count": 14
-    },
-    "local/no-new-error": {
-      "count": 1
-    },
-    "local/step-down-order": {
-      "count": 2
-    }
-  },
-  "src/lib/db/pool.ts": {
-    "jsdoc/require-returns": {
-      "count": 1
-    },
-    "local/jsdoc-tags": {
-      "count": 1
-    }
-  },
-  "src/lib/db/sql.ts": {
-    "jsdoc/require-param": {
-      "count": 37
-    },
-    "jsdoc/require-returns": {
-      "count": 29
-    },
-    "local/file-header": {
-      "count": 1
-    }
-  },
-  "src/lib/db/types.ts": {
-    "@eslint-community/eslint-comments/require-description": {
-      "count": 1
     }
   },
   "src/lib/employers/constants.ts": {
@@ -293,27 +131,11 @@
     },
     "local/no-magic-number": {
       "count": 8
-    },
-    "local/step-down-order": {
-      "count": 19
-    }
-  },
-  "src/lib/error/functions.ts": {
-    "local/step-down-order": {
-      "count": 1
     }
   },
   "src/lib/funnel/functions.ts": {
     "local/no-magic-number": {
       "count": 2
-    },
-    "local/step-down-order": {
-      "count": 1
-    }
-  },
-  "src/lib/gauge/functions.ts": {
-    "local/step-down-order": {
-      "count": 1
     }
   },
   "src/lib/i18n/server.ts": {
@@ -330,9 +152,6 @@
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 1
     },
-    "local/no-bare-strings": {
-      "count": 2
-    },
     "local/no-db-vocab-in-functions": {
       "count": 21
     },
@@ -341,9 +160,6 @@
     },
     "local/no-magic-number": {
       "count": 28
-    },
-    "local/step-down-order": {
-      "count": 34
     }
   },
   "src/lib/jobs/routes.ts": {
@@ -368,9 +184,6 @@
     },
     "local/no-magic-number": {
       "count": 5
-    },
-    "local/step-down-order": {
-      "count": 26
     }
   },
   "src/lib/llm/types.ts": {
@@ -384,11 +197,6 @@
   "src/lib/lmia/functions.ts": {
     "local/no-magic-number": {
       "count": 2
-    }
-  },
-  "src/lib/location/functions.ts": {
-    "local/step-down-order": {
-      "count": 1
     }
   },
   "src/lib/mail/functions.ts": {
@@ -414,26 +222,12 @@
       "count": 3
     },
     "local/no-import-in-leaf": {
-      "count": 3
-    },
-    "local/no-split-import": {
-      "count": 1
-    }
-  },
-  "src/lib/pathways/functions.ts": {
-    "local/step-down-order": {
       "count": 2
     }
   },
   "src/lib/plan/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 1
-    },
     "local/no-magic-number": {
       "count": 8
-    },
-    "local/step-down-order": {
-      "count": 10
     }
   },
   "src/lib/points/functions.ts": {
@@ -445,9 +239,6 @@
     },
     "local/no-db-vocab-in-functions": {
       "count": 13
-    },
-    "local/step-down-order": {
-      "count": 56
     }
   },
   "src/lib/points/types.ts": {
@@ -456,33 +247,16 @@
     }
   },
   "src/lib/quiz/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 27
-    },
     "local/no-magic-number": {
       "count": 12
-    },
-    "local/step-down-order": {
-      "count": 13
-    }
-  },
-  "src/lib/quiz/routes.ts": {
-    "local/no-split-import": {
-      "count": 1
     }
   },
   "src/lib/quota/functions.ts": {
-    "local/no-comment-in-function": {
-      "count": 5
-    },
     "local/no-literal-index": {
       "count": 1
     },
     "local/no-magic-number": {
       "count": 1
-    },
-    "local/step-down-order": {
-      "count": 4
     }
   },
   "src/lib/resume/functions.ts": {
@@ -491,31 +265,19 @@
     },
     "local/no-magic-number": {
       "count": 1
-    },
-    "local/step-down-order": {
-      "count": 2
     }
   },
   "src/lib/resume/routes.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 2
-    },
-    "local/no-split-import": {
-      "count": 1
     }
   },
   "src/lib/ruling/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 3
     },
-    "local/no-bare-strings": {
-      "count": 1
-    },
     "local/no-db-vocab-in-functions": {
       "count": 31
-    },
-    "local/step-down-order": {
-      "count": 126
     }
   },
   "src/lib/ruling/types.ts": {
@@ -545,9 +307,6 @@
   "src/lib/stats/functions.ts": {
     "local/no-db-vocab-in-functions": {
       "count": 2
-    },
-    "local/step-down-order": {
-      "count": 5
     }
   },
   "src/lib/stripe/routes.ts": {
@@ -557,11 +316,6 @@
   },
   "src/lib/stripe/types.ts": {
     "local/no-split-import": {
-      "count": 1
-    }
-  },
-  "src/lib/track/functions.ts": {
-    "local/step-down-order": {
       "count": 1
     }
   }

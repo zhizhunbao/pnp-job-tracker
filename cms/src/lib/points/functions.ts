@@ -123,22 +123,6 @@ function wordGroupOf(input: MatchIn): WordGroupOut {
 // =========================================================================
 
 /**
- * 通道名切成实词:小写、非字母当分隔、丢掉虚词与两字母以下的碎片。
- *
- * @param s 通道名。
- * @returns 实词。
- */
-function streamWords(s: StreamWordsIn): StreamWordsOut {
-  const out: string[] = []
-  for (const w of (s || STREAM_NONE).toLowerCase().replace(NON_ALPHA, SEP.space).split(SEP.space)) {
-    if (w.length > STREAM_WORD_MIN && STREAM_STOP.includes(w as typeof STREAM_STOP[number]) === false) {
-      out.push(w)
-    }
-  }
-  return out
-}
-
-/**
  * 抽选那一次说的是不是分值表这条通道。
  *
  * 🔴 **BC 现行是按通道分别设线**(近 12 次里 Build 97 / Care: Health 96 / Innovate 132 /
@@ -162,6 +146,22 @@ export function streamMatches(input: StreamMatchesIn): StreamMatchesOut {
     }
   }
   return true
+}
+
+/**
+ * 通道名切成实词:小写、非字母当分隔、丢掉虚词与两字母以下的碎片。
+ *
+ * @param s 通道名。
+ * @returns 实词。
+ */
+function streamWords(s: StreamWordsIn): StreamWordsOut {
+  const out: string[] = []
+  for (const w of (s || STREAM_NONE).toLowerCase().replace(NON_ALPHA, SEP.space).split(SEP.space)) {
+    if (w.length > STREAM_WORD_MIN && STREAM_STOP.includes(w as typeof STREAM_STOP[number]) === false) {
+      out.push(w)
+    }
+  }
+  return out
 }
 
 /**
@@ -313,6 +313,49 @@ function ageRangeOf(label: LabelIn): AgeRangeOut {
 // =========================================================================
 
 /**
+ * 每个官方因素怎么从档案取值。
+ *
+ * BC 的 `work` 是「同职业总年数」；SK 把它拆成近 5 年与 6-10 年两块相加;
+ * AB 的总经验按**月**分档，档案存年,这里换算(年取的是下界,换算后仍保守)。
+ *
+ * 没登记的因素返回 null —— 由调用方当「手动 / 自动项」处理,**不猜**。
+ *
+ * @param input 因素名、该因素的档位行与他自报的条件。
+ * @returns 命中的那一行;没登记或没命中则 null。
+ */
+function autoPick(input: AutoPickIn): PickOut {
+  const p = input.profile
+  const rows = input.rows
+  if (input.factor === AUTO_FACTOR.work) {
+    return pickByThreshold({ rows: rows, thresholdOf: yearsOf, want: p.expRecent + p.expOlder })
+  }
+  if (input.factor === AUTO_FACTOR.work5) {
+    return pickByThreshold({ rows: rows, thresholdOf: yearsOf, want: p.expRecent })
+  }
+  if (input.factor === AUTO_FACTOR.work610) {
+    return pickByThreshold({ rows: rows, thresholdOf: yearsOf, want: p.expOlder })
+  }
+  if (input.factor === AUTO_FACTOR.workMonths) {
+    return pickByThreshold({
+      rows: rows, thresholdOf: monthsOf, want: (p.expRecent + p.expOlder) * MONTHS_PER_YEAR,
+    })
+  }
+  if (input.factor === AUTO_FACTOR.education) {
+    return pickByThreshold({ rows: rows, thresholdOf: eduRankOf, want: EDU_RANK[p.edu] })
+  }
+  if (input.factor === AUTO_FACTOR.language || input.factor === AUTO_FACTOR.language1) {
+    return pickByThreshold({ rows: rows, thresholdOf: clbOf, want: p.clb1 })
+  }
+  if (input.factor === AUTO_FACTOR.language2) {
+    return pickByThreshold({ rows: rows, thresholdOf: clbOf, want: p.clb2 })
+  }
+  if (input.factor === AUTO_FACTOR.age) {
+    return pickByAge({ rows: rows, age: p.age })
+  }
+  return null
+}
+
+/**
  * 在档位里选「阈值 ≤ 你的值」中**最高**的那条。
  *
  * 🔴 全都比你高 = 该因素 0 分,**不能白送最低档分数**。
@@ -358,49 +401,6 @@ function pickByAge(input: PickByAgeIn): PickOut {
     if (range && input.age >= range.from && input.age <= range.to) {
       return r
     }
-  }
-  return null
-}
-
-/**
- * 每个官方因素怎么从档案取值。
- *
- * BC 的 `work` 是「同职业总年数」；SK 把它拆成近 5 年与 6-10 年两块相加;
- * AB 的总经验按**月**分档，档案存年,这里换算(年取的是下界,换算后仍保守)。
- *
- * 没登记的因素返回 null —— 由调用方当「手动 / 自动项」处理,**不猜**。
- *
- * @param input 因素名、该因素的档位行与他自报的条件。
- * @returns 命中的那一行;没登记或没命中则 null。
- */
-function autoPick(input: AutoPickIn): PickOut {
-  const p = input.profile
-  const rows = input.rows
-  if (input.factor === AUTO_FACTOR.work) {
-    return pickByThreshold({ rows: rows, thresholdOf: yearsOf, want: p.expRecent + p.expOlder })
-  }
-  if (input.factor === AUTO_FACTOR.work5) {
-    return pickByThreshold({ rows: rows, thresholdOf: yearsOf, want: p.expRecent })
-  }
-  if (input.factor === AUTO_FACTOR.work610) {
-    return pickByThreshold({ rows: rows, thresholdOf: yearsOf, want: p.expOlder })
-  }
-  if (input.factor === AUTO_FACTOR.workMonths) {
-    return pickByThreshold({
-      rows: rows, thresholdOf: monthsOf, want: (p.expRecent + p.expOlder) * MONTHS_PER_YEAR,
-    })
-  }
-  if (input.factor === AUTO_FACTOR.education) {
-    return pickByThreshold({ rows: rows, thresholdOf: eduRankOf, want: EDU_RANK[p.edu] })
-  }
-  if (input.factor === AUTO_FACTOR.language || input.factor === AUTO_FACTOR.language1) {
-    return pickByThreshold({ rows: rows, thresholdOf: clbOf, want: p.clb1 })
-  }
-  if (input.factor === AUTO_FACTOR.language2) {
-    return pickByThreshold({ rows: rows, thresholdOf: clbOf, want: p.clb2 })
-  }
-  if (input.factor === AUTO_FACTOR.age) {
-    return pickByAge({ rows: rows, age: p.age })
   }
   return null
 }
@@ -807,32 +807,6 @@ function pickByRange(input: PickByRangeIn): PickByRangeOut {
 }
 
 /**
- * 攒一项估分。
- *
- * @param input 内部键、短名、分、命中原文、出处与判定态。
- * @returns 那一项。
- */
-function estimateItem(input: EstimateItemIn): EstimateItemOut {
-  return {
-    factor: input.factor, label: input.label, points: input.points, matched: input.matched,
-    evidence: input.evidence, status: input.status,
-  }
-}
-
-/**
- * 命中那一行的出处。
- *
- * @param input 命中的那一行。
- * @returns 出处。
- */
-function eeEvidenceOf(input: EeEvidenceOfIn): EeEvidenceOfOut {
-  return {
-    url: input.r.url, fetched: input.r.fetched,
-    label: `${input.r.criterion}${SEP.dash}${input.r.pointsText}`,
-  }
-}
-
-/**
  * 一项「判不了」。
  *
  * 缺输入、或查不到能用的行 —— **不猜**,让上游去反问。
@@ -863,6 +837,32 @@ function hitItem(input: HitItemIn): EstimateItemOut {
     evidence: eeEvidenceOf({ r: input.r }),
     status: status,
   })
+}
+
+/**
+ * 攒一项估分。
+ *
+ * @param input 内部键、短名、分、命中原文、出处与判定态。
+ * @returns 那一项。
+ */
+function estimateItem(input: EstimateItemIn): EstimateItemOut {
+  return {
+    factor: input.factor, label: input.label, points: input.points, matched: input.matched,
+    evidence: input.evidence, status: input.status,
+  }
+}
+
+/**
+ * 命中那一行的出处。
+ *
+ * @param input 命中的那一行。
+ * @returns 出处。
+ */
+function eeEvidenceOf(input: EeEvidenceOfIn): EeEvidenceOfOut {
+  return {
+    url: input.r.url, fetched: input.r.fetched,
+    label: `${input.r.criterion}${SEP.dash}${input.r.pointsText}`,
+  }
 }
 
 /**
@@ -934,36 +934,57 @@ function crsEduSpecial(input: EduSpecialOfIn): EduSpecialOfOut {
 }
 
 /**
- * 学历挑行:两张联邦表同一套办法,只是匹配式与要不要去空白不同。
+ * 档案 → CRS 估分。
  *
- * @param input 候选行、学历档、学制年数与两把尺。
- * @returns 那一行;挑不出则 null。
+ * 配偶随行走「with a spouse」那张表,单身或配偶不随行走「without a spouse」。
+ *
+ * @param input 档案与官方联邦表全部行。
+ * @returns 合计、逐项、走的哪张表与判不了的那几项。
  */
-function pickEduRow(input: PickEduRowIn): PickByRangeOut {
-  const special = input.specialOf({ edu: input.edu })
-  if (special) {
-    for (const r of input.cand) {
-      let crit = r.criterion
-      if (input.trimCriterion) {
-        crit = r.criterion.trim()
-      }
-      if (special.test(crit)) {
-        return r
-      }
-    }
-    return null
+export function estimateCrs(input: EstimateIn): EstimateOut {
+  const p = input.profile
+  const withSpouse = p.married === true
+  let spouseCol = EE_COL_WITHOUT_SPOUSE
+  if (withSpouse) {
+    spouseCol = EE_COL_WITH_SPOUSE
   }
-  if (input.eduYears == null) {
-    return null
-  }
-  const scored: TierRow[] = []
-  for (const r of input.cand) {
-    const y = input.yearsOf(r.criterion)
-    if (y != null) {
-      scored.push({ r: r, th: y })
+  const rows: EeGridRow[] = []
+  for (const r of input.rows) {
+    if (r.grid === GRID.crs) {
+      rows.push(r)
     }
   }
-  return pickBestTier({ scored: scored, want: input.eduYears })
+  const one: PickerIn = { rows: rows, profile: p, spouseCol: spouseCol }
+
+  const breakdown: EstimateItem[] = [
+    pickAgeCrs(one),
+    pickEduCrs(one),
+    pickLang1Crs(one),
+    needsInfoItem({ factor: EE_KEY.clb2, label: EE_LABEL.clb2 }),
+    pickCanadaExpCrs(one),
+    pickCanadaStudyBonus(one),
+    pickEduComboCrs({
+      rows: rows, edu: p.edu, factor: EE_FACTOR.crsComboEduLang, want: p.clb,
+      key: EE_KEY.eduLangCombo, label: EE_LABEL.eduLangCombo,
+    }),
+    pickEduComboCrs({
+      rows: rows, edu: p.edu, factor: EE_FACTOR.crsComboEduExp,
+      want: monthsToYears(p.expCanadaMonths), key: EE_KEY.eduExpCombo, label: EE_LABEL.eduExpCombo,
+    }),
+    pickForeignComboCrs({
+      rows: rows, headingHas: EE_HEAD_GOOD_LANG, expForeignMonths: p.expForeignMonths,
+      want: p.clb, key: EE_KEY.foreignLangCombo, label: EE_LABEL.foreignLangCombo,
+    }),
+    pickForeignComboCrs({
+      rows: rows, headingHas: EE_HEAD_CANADA_EXP, expForeignMonths: p.expForeignMonths,
+      want: monthsToYears(p.expCanadaMonths), key: EE_KEY.foreignExpCombo,
+      label: EE_LABEL.foreignExpCombo,
+    }),
+  ]
+  return {
+    total: sumPoints({ breakdown: breakdown }), breakdown: breakdown, withSpouse: withSpouse,
+    needsInfo: needsInfoOf({ breakdown: breakdown }),
+  }
 }
 
 /**
@@ -1031,6 +1052,39 @@ function pickEduCrs(input: PickerIn): EstimateItemOut {
     factor: EE_KEY.edu, label: EE_LABEL.edu, r: hit, points: pts,
     matched: `${hit.criterion}${SEP.slash}${hit.columnLabel}`,
   })
+}
+
+/**
+ * 学历挑行:两张联邦表同一套办法,只是匹配式与要不要去空白不同。
+ *
+ * @param input 候选行、学历档、学制年数与两把尺。
+ * @returns 那一行;挑不出则 null。
+ */
+function pickEduRow(input: PickEduRowIn): PickByRangeOut {
+  const special = input.specialOf({ edu: input.edu })
+  if (special) {
+    for (const r of input.cand) {
+      let crit = r.criterion
+      if (input.trimCriterion) {
+        crit = r.criterion.trim()
+      }
+      if (special.test(crit)) {
+        return r
+      }
+    }
+    return null
+  }
+  if (input.eduYears == null) {
+    return null
+  }
+  const scored: TierRow[] = []
+  for (const r of input.cand) {
+    const y = input.yearsOf(r.criterion)
+    if (y != null) {
+      scored.push({ r: r, th: y })
+    }
+  }
+  return pickBestTier({ scored: scored, want: input.eduYears })
 }
 
 /**
@@ -1111,32 +1165,6 @@ function pickCanadaExpCrs(input: PickerIn): EstimateItemOut {
 }
 
 /**
- * 加拿大学习加分挑档:三年及以上一档,一到两年一档,不足一年没有档。
- *
- * @param input 候选行与学制年数。
- * @returns 那一行;没有则 null。
- */
-function pickStudyTier(input: PickStudyTierIn): PickByRangeOut {
-  if (input.years >= CRS_STUDY_LONG_YEARS) {
-    for (const r of input.cand) {
-      if (EE_CRIT_STUDY_LONG.test(r.criterion)) {
-        return r
-      }
-    }
-    return null
-  }
-  if (input.years >= CRS_STUDY_SHORT_YEARS) {
-    for (const r of input.cand) {
-      if (EE_CRIT_STUDY_SHORT.test(r.criterion)) {
-        return r
-      }
-    }
-    return null
-  }
-  return null
-}
-
-/**
  * CRS 加拿大学习加分(D 节,不分有无配偶)。
  *
  * 一到两年学制一档、三年及以上一档。**没有加拿大学历是硬结论 0**,不是判不了。
@@ -1180,73 +1208,29 @@ function pickCanadaStudyBonus(input: PickerIn): EstimateItemOut {
 }
 
 /**
- * C 节(技能可转移性)的子档门槛 —— 列名里带 CLB9 / CLB7 / 2 years or more / 1 year。
+ * 加拿大学习加分挑档:三年及以上一档,一到两年一档,不足一年没有档。
  *
- * @param input 列名原文。
- * @returns 门槛;读不出则 null。
+ * @param input 候选行与学制年数。
+ * @returns 那一行;没有则 null。
  */
-function comboSubTier(input: ComboSubTierIn): ComboSubTierOut {
-  const s = input.columnLabel
-  if (CRS_SUB_TIER.clb9.test(s)) {
-    return SUB_TIER_VALUE.clb9
+function pickStudyTier(input: PickStudyTierIn): PickByRangeOut {
+  if (input.years >= CRS_STUDY_LONG_YEARS) {
+    for (const r of input.cand) {
+      if (EE_CRIT_STUDY_LONG.test(r.criterion)) {
+        return r
+      }
+    }
+    return null
   }
-  if (CRS_SUB_TIER.clb7.test(s)) {
-    return SUB_TIER_VALUE.clb7
-  }
-  if (CRS_SUB_TIER.years2.test(s)) {
-    return SUB_TIER_VALUE.years2
-  }
-  if (CRS_SUB_TIER.year1.test(s)) {
-    return SUB_TIER_VALUE.year1
+  if (input.years >= CRS_STUDY_SHORT_YEARS) {
+    for (const r of input.cand) {
+      if (EE_CRIT_STUDY_SHORT.test(r.criterion)) {
+        return r
+      }
+    }
+    return null
   }
   return null
-}
-
-/**
- * 该学历在 C 节组合分表里对应哪一档。
- *
- * @param input 学历档。
- * @returns 匹配式。
- */
-function comboTierOf(input: ComboTierOfIn): ComboTierOfOut {
-  if (input.edu === EDU.doctorate) {
-    return CRS_COMBO_TIER.doctorate
-  }
-  if (input.edu === EDU.master) {
-    return CRS_COMBO_TIER.master
-  }
-  if (input.edu === EDU.highschool) {
-    return CRS_COMBO_TIER.highschool
-  }
-  return CRS_COMBO_TIER.other
-}
-
-/**
- * 组合分定档:门槛不超过他的值里最高的那一档。
- *
- * 🔴 **一档都够不到是确定的 0,不是判不了** —— 缺输入才是判不了,那一步在调用方就挡掉了。
- * 两个组合分(学历×、海外经验×)挑候选行的方式不同,但**定档与出行的方式一模一样**,
- * 所以收在这儿(2026-08-20:dupcheck 报出这 8 行逐字重复才抽的,不是先设计出来的)。
- *
- * @param input 带门槛的候选行、他的值与键名。
- * @returns 那一项。
- */
-function comboItem(input: ComboItemIn): EstimateItemOut {
-  const hit = pickBestTier({ scored: input.scored, want: input.want })
-  if (hit == null) {
-    return estimateItem({
-      factor: input.key, label: input.label, points: 0, matched: EE_NOTE.belowTier,
-      evidence: null, status: ITEM_STATUS.zero,
-    })
-  }
-  let pts = 0
-  if (hit.points != null) {
-    pts = hit.points
-  }
-  return hitItem({
-    factor: input.key, label: input.label, r: hit, points: pts,
-    matched: `${hit.criterion}${SEP.slash}${hit.columnLabel}`,
-  })
 }
 
 /**
@@ -1279,6 +1263,25 @@ function pickEduComboCrs(input: EduComboIn): EstimateItemOut {
     }
   }
   return comboItem({ scored: scored, want: input.want, key: input.key, label: input.label })
+}
+
+/**
+ * 该学历在 C 节组合分表里对应哪一档。
+ *
+ * @param input 学历档。
+ * @returns 匹配式。
+ */
+function comboTierOf(input: ComboTierOfIn): ComboTierOfOut {
+  if (input.edu === EDU.doctorate) {
+    return CRS_COMBO_TIER.doctorate
+  }
+  if (input.edu === EDU.master) {
+    return CRS_COMBO_TIER.master
+  }
+  if (input.edu === EDU.highschool) {
+    return CRS_COMBO_TIER.highschool
+  }
+  return CRS_COMBO_TIER.other
 }
 
 /**
@@ -1321,6 +1324,57 @@ function pickForeignComboCrs(input: ForeignComboIn): EstimateItemOut {
 }
 
 /**
+ * C 节(技能可转移性)的子档门槛 —— 列名里带 CLB9 / CLB7 / 2 years or more / 1 year。
+ *
+ * @param input 列名原文。
+ * @returns 门槛;读不出则 null。
+ */
+function comboSubTier(input: ComboSubTierIn): ComboSubTierOut {
+  const s = input.columnLabel
+  if (CRS_SUB_TIER.clb9.test(s)) {
+    return SUB_TIER_VALUE.clb9
+  }
+  if (CRS_SUB_TIER.clb7.test(s)) {
+    return SUB_TIER_VALUE.clb7
+  }
+  if (CRS_SUB_TIER.years2.test(s)) {
+    return SUB_TIER_VALUE.years2
+  }
+  if (CRS_SUB_TIER.year1.test(s)) {
+    return SUB_TIER_VALUE.year1
+  }
+  return null
+}
+
+/**
+ * 组合分定档:门槛不超过他的值里最高的那一档。
+ *
+ * 🔴 **一档都够不到是确定的 0,不是判不了** —— 缺输入才是判不了,那一步在调用方就挡掉了。
+ * 两个组合分(学历×、海外经验×)挑候选行的方式不同,但**定档与出行的方式一模一样**,
+ * 所以收在这儿(2026-08-20:dupcheck 报出这 8 行逐字重复才抽的,不是先设计出来的)。
+ *
+ * @param input 带门槛的候选行、他的值与键名。
+ * @returns 那一项。
+ */
+function comboItem(input: ComboItemIn): EstimateItemOut {
+  const hit = pickBestTier({ scored: input.scored, want: input.want })
+  if (hit == null) {
+    return estimateItem({
+      factor: input.key, label: input.label, points: 0, matched: EE_NOTE.belowTier,
+      evidence: null, status: ITEM_STATUS.zero,
+    })
+  }
+  let pts = 0
+  if (hit.points != null) {
+    pts = hit.points
+  }
+  return hitItem({
+    factor: input.key, label: input.label, r: hit, points: pts,
+    matched: `${hit.criterion}${SEP.slash}${hit.columnLabel}`,
+  })
+}
+
+/**
  * 逐项 → 判不了的那几项的内部键,**按逐项的次序**。
  *
  * 🔴 从 `breakdown` 派生,不靠一个在参数里被就地改的数组传出来 ——
@@ -1351,60 +1405,6 @@ function sumPoints(input: SumPointsIn): SumPointsOut {
     total += b.points
   }
   return total
-}
-
-/**
- * 档案 → CRS 估分。
- *
- * 配偶随行走「with a spouse」那张表,单身或配偶不随行走「without a spouse」。
- *
- * @param input 档案与官方联邦表全部行。
- * @returns 合计、逐项、走的哪张表与判不了的那几项。
- */
-export function estimateCrs(input: EstimateIn): EstimateOut {
-  const p = input.profile
-  const withSpouse = p.married === true
-  let spouseCol = EE_COL_WITHOUT_SPOUSE
-  if (withSpouse) {
-    spouseCol = EE_COL_WITH_SPOUSE
-  }
-  const rows: EeGridRow[] = []
-  for (const r of input.rows) {
-    if (r.grid === GRID.crs) {
-      rows.push(r)
-    }
-  }
-  const one: PickerIn = { rows: rows, profile: p, spouseCol: spouseCol }
-
-  const breakdown: EstimateItem[] = [
-    pickAgeCrs(one),
-    pickEduCrs(one),
-    pickLang1Crs(one),
-    needsInfoItem({ factor: EE_KEY.clb2, label: EE_LABEL.clb2 }),
-    pickCanadaExpCrs(one),
-    pickCanadaStudyBonus(one),
-    pickEduComboCrs({
-      rows: rows, edu: p.edu, factor: EE_FACTOR.crsComboEduLang, want: p.clb,
-      key: EE_KEY.eduLangCombo, label: EE_LABEL.eduLangCombo,
-    }),
-    pickEduComboCrs({
-      rows: rows, edu: p.edu, factor: EE_FACTOR.crsComboEduExp,
-      want: monthsToYears(p.expCanadaMonths), key: EE_KEY.eduExpCombo, label: EE_LABEL.eduExpCombo,
-    }),
-    pickForeignComboCrs({
-      rows: rows, headingHas: EE_HEAD_GOOD_LANG, expForeignMonths: p.expForeignMonths,
-      want: p.clb, key: EE_KEY.foreignLangCombo, label: EE_LABEL.foreignLangCombo,
-    }),
-    pickForeignComboCrs({
-      rows: rows, headingHas: EE_HEAD_CANADA_EXP, expForeignMonths: p.expForeignMonths,
-      want: monthsToYears(p.expCanadaMonths), key: EE_KEY.foreignExpCombo,
-      label: EE_LABEL.foreignExpCombo,
-    }),
-  ]
-  return {
-    total: sumPoints({ breakdown: breakdown }), breakdown: breakdown, withSpouse: withSpouse,
-    needsInfo: needsInfoOf({ breakdown: breakdown }),
-  }
 }
 
 // =========================================================================
@@ -1458,19 +1458,38 @@ function fswEduSpecial(input: EduSpecialOfIn): EduSpecialOfOut {
 }
 
 /**
- * 按官方因素名挑行。
+ * 档案 → FSW67 估分(联邦技术工人 67/100 资格分)。
  *
- * @param input FSW67 全部行与官方因素名。
- * @returns 那几行,保持原序。
+ * 🔴 与 CRS 排名分**不可相加**,是两把尺。
+ * FSW67 官方表不分有无配偶,`withSpouse` 只是原样回传供上游标注,不参与查表。
+ *
+ * @param input 档案与官方联邦表全部行。
+ * @returns 合计、逐项、有无配偶与判不了的那几项。
  */
-function fswRowsOf(input: FswRowsOfIn): FswRowsOfOut {
-  const out: EeGridRow[] = []
+export function estimateFsw67(input: EstimateIn): EstimateOut {
+  const rows: EeGridRow[] = []
   for (const r of input.rows) {
-    if (r.factor === input.factor) {
-      out.push(r)
+    if (r.grid === GRID.fsw67) {
+      rows.push(r)
     }
   }
-  return out
+  const one: FswPickerIn = { rows: rows, profile: input.profile }
+
+  const breakdown: EstimateItem[] = [
+    pickAgeFsw(one),
+    pickEduFsw(one),
+    pickLang1Fsw(one),
+    needsInfoItem({ factor: EE_KEY.clb2, label: EE_LABEL.clb2 }),
+    pickExpFsw(one),
+  ]
+  for (const item of pickAdaptabilityFsw(one)) {
+    breakdown.push(item)
+  }
+  return {
+    total: sumPoints({ breakdown: breakdown }), breakdown: breakdown,
+    withSpouse: input.profile.married === true,
+    needsInfo: needsInfoOf({ breakdown: breakdown }),
+  }
 }
 
 /**
@@ -1630,6 +1649,22 @@ function pickAdaptabilityFsw(input: FswPickerIn): AdaptOut {
 }
 
 /**
+ * 按官方因素名挑行。
+ *
+ * @param input FSW67 全部行与官方因素名。
+ * @returns 那几行,保持原序。
+ */
+function fswRowsOf(input: FswRowsOfIn): FswRowsOfOut {
+  const out: EeGridRow[] = []
+  for (const r of input.rows) {
+    if (r.factor === input.factor) {
+      out.push(r)
+    }
+  }
+  return out
+}
+
+/**
  * 适应性:加拿大学习经历那一项 —— 要满两学年全日制。
  *
  * @param input 官方那一行与档案。
@@ -1697,44 +1732,52 @@ function adaptWorkItem(input: AdaptItemIn): EstimateItemOut {
   })
 }
 
-/**
- * 档案 → FSW67 估分(联邦技术工人 67/100 资格分)。
- *
- * 🔴 与 CRS 排名分**不可相加**,是两把尺。
- * FSW67 官方表不分有无配偶,`withSpouse` 只是原样回传供上游标注,不参与查表。
- *
- * @param input 档案与官方联邦表全部行。
- * @returns 合计、逐项、有无配偶与判不了的那几项。
- */
-export function estimateFsw67(input: EstimateIn): EstimateOut {
-  const rows: EeGridRow[] = []
-  for (const r of input.rows) {
-    if (r.grid === GRID.fsw67) {
-      rows.push(r)
-    }
-  }
-  const one: FswPickerIn = { rows: rows, profile: input.profile }
-
-  const breakdown: EstimateItem[] = [
-    pickAgeFsw(one),
-    pickEduFsw(one),
-    pickLang1Fsw(one),
-    needsInfoItem({ factor: EE_KEY.clb2, label: EE_LABEL.clb2 }),
-    pickExpFsw(one),
-  ]
-  for (const item of pickAdaptabilityFsw(one)) {
-    breakdown.push(item)
-  }
-  return {
-    total: sumPoints({ breakdown: breakdown }), breakdown: breakdown,
-    withSpouse: input.profile.married === true,
-    needsInfo: needsInfoOf({ breakdown: breakdown }),
-  }
-}
-
 // =========================================================================
 // 8. 估分 × 抽选线
 // =========================================================================
+
+/**
+ * 够不够得着线。
+ *
+ * @param score 估分与线。
+ * @returns 够得着则 true。
+ */
+export function isAboveLine(score: ScoreLineIn): LineSideOut {
+  return lineStateOf(score) === LINE.above
+}
+
+/**
+ * 是不是确定够不着线。
+ *
+ * @param score 估分与线。
+ * @returns 够不着则 true。
+ */
+export function isBelowLine(score: ScoreLineIn): LineSideOut {
+  return lineStateOf(score) === LINE.below
+}
+
+/**
+ * 够得着时高出线多少分。
+ *
+ * 够不着或无从比较给 null —— 展示层据此决定出不出这个数。
+ *
+ * @param score 估分与线。
+ * @returns 高出多少;够不着或无从比较则 null。
+ */
+export function marginOf(score: ScoreLineIn): MarginOut {
+  if (lineStateOf(score) !== LINE.above) {
+    return null
+  }
+  if (score == null) {
+    return null
+  }
+  const value = score.value
+  const line = score.refLine
+  if (value == null || line == null) {
+    return null
+  }
+  return value - line
+}
 
 /**
  * 估分 × 最近抽选线的三态判定。
@@ -1780,89 +1823,100 @@ export function lineStateOf(score: ScoreLineIn): LineStateOut {
   return LINE.unknown
 }
 
-/**
- * 够不够得着线。
- *
- * @param score 估分与线。
- * @returns 够得着则 true。
- */
-export function isAboveLine(score: ScoreLineIn): LineSideOut {
-  return lineStateOf(score) === LINE.above
-}
-
-/**
- * 是不是确定够不着线。
- *
- * @param score 估分与线。
- * @returns 够不着则 true。
- */
-export function isBelowLine(score: ScoreLineIn): LineSideOut {
-  return lineStateOf(score) === LINE.below
-}
-
-/**
- * 够得着时高出线多少分。
- *
- * 够不着或无从比较给 null —— 展示层据此决定出不出这个数。
- *
- * @param score 估分与线。
- * @returns 高出多少;够不着或无从比较则 null。
- */
-export function marginOf(score: ScoreLineIn): MarginOut {
-  if (lineStateOf(score) !== LINE.above) {
-    return null
-  }
-  if (score == null) {
-    return null
-  }
-  const value = score.value
-  const line = score.refLine
-  if (value == null || line == null) {
-    return null
-  }
-  return value - line
-}
-
 // =========================================================================
 // 9. 曼省 EOI
 // =========================================================================
 
 /**
- * 按因素与种类挑曼省的行。
+ * 档案 → 曼省 EOI 估分。
  *
- * @param input 曼省全部行、因素名与种类。
- * @returns 那几行,保持原序。
+ * 🔴 曼省**单写一套**,不复用查表估分:语言按每项计分、标签用拼写数字与计数短语、
+ * 风险因子的 `factorMax` 是下限 —— 三处都要真改通用引擎,回归面盖到别的省。
+ * 完整论证见 `docs/implementation/C5-判定层pathVerdict-20260805.md` §三。
+ *
+ * **分值一分都不许在这里编**,全部来自官方分值表。
+ *
+ * @param input 官方分值表全部行与档案。
+ * @returns 曼省估分。
  */
-function mbRowsOf(input: MbRowsOfIn): RowsOfOut {
-  const out: ScoreFactor[] = []
-  for (const r of input.rows) {
-    if (r.factor === input.factor && r.kind === input.kind) {
-      out.push(r)
+export function estimateMbEoi(input: EstimateMbEoiIn): EstimateMbEoiOut {
+  const rows: ScoreFactor[] = []
+  for (const f of input.factors) {
+    if (f.province === MB) {
+      rows.push(f)
     }
   }
-  return out
+  const head = rows[0]
+  if (head == null) {
+    throw fail({ name: POINTS_ERR.name, msg: POINTS_ERR.noMbRows, code: null })
+  }
+  const one: MbPartIn = { rows: rows, profile: input.profile }
+  const parts: MbScorePart[] = [
+    mbLanguagePart(one), mbAgePart(one), mbWorkPart(one), mbEduPart(one),
+    mbAdaptPart(one), mbRiskPart(one),
+  ]
+  let raw = 0
+  for (const p of parts) {
+    raw += p.pts
+  }
+  let maxTotal = 0
+  let capped = raw
+  if (head.maxTotal != null) {
+    maxTotal = head.maxTotal
+    capped = Math.min(raw, head.maxTotal)
+  }
+  return {
+    province: MB, system: head.system, maxTotal: maxTotal, url: head.url,
+    guideEffective: head.guideEffective, fetched: head.fetched, parts: parts,
+    total: capped,
+  }
 }
 
 /**
- * 官方表里必须有的那一行 —— **少一行就抛**。
+ * 曼省语言那一块:**四项各自查表相加** + 第二官方语言一次性加分。
  *
- * 🔴 不静默补 0:官方表改版是要人去改抓取脚本的事,悄悄算出一个少了几百分的结果,
- * 比报错难查得多。
+ * 🔴 这是曼省单写一套的第一条理由:别的省语言是「查一次表 = 总分」,曼省的官方规则行写明
+ * 四项各自按同一张表打分后相加(CLB6 单项 20 → 四项 80)。
  *
- * @param input 候选行、匹配式与报错时的上下文。
- * @returns 那一行。
+ * @param input 曼省全部行与档案。
+ * @returns 那一块分。
  */
-function needRow(input: NeedRowIn): NeedRowOut {
-  for (const r of input.rows) {
-    if (input.re.test(r.label)) {
-      return r
-    }
+function mbLanguagePart(input: MbPartIn): MbPartOut {
+  const langRows = mbRowsOf({ rows: input.rows, factor: MB_FACTOR.language, kind: KIND.row })
+  const bands = mbBands({ clb: input.profile.clb })
+  let pts = 0
+  const hits: ScoreFactor[] = []
+  for (const clb of bands) {
+    const one = mbLangPick({ rows: langRows, clb: clb })
+    pts += one.pts
+    hits.push(one.row)
   }
-  throw fail({
-    name: POINTS_ERR.name,
-    msg: `${POINTS_ERR.rowMissingHead}${input.ctx}${POINTS_ERR.rowMissingTail}`,
-    code: null,
-  })
+  const lang2Rows = mbRowsOf({ rows: input.rows, factor: MB_FACTOR.language, kind: KIND.bonus })
+  let secondNote = MB_NOTE_NONE
+  const lang2 = lang2Rows[0]
+  if (input.profile.secondLangClb5Plus && lang2 != null) {
+    if (lang2.points != null) {
+      pts += lang2.points
+    }
+    secondNote = `${MB_JOIN.plus}${lang2.label}`
+  }
+  let max: number | null = null
+  const langFirst = langRows[0]
+  if (langFirst != null) {
+    max = langFirst.factorMax
+  }
+  let capped = pts
+  if (max != null) {
+    capped = Math.min(pts, max)
+  }
+  let firstHitLabel = MB_LABEL_NONE
+  if (hits.length > 0 && hits[0] != null) {
+    firstHitLabel = hits[0].label
+  }
+  return {
+    factor: MB_FACTOR.language, pts: capped, max: max,
+    matched: `${firstHitLabel}${MB_JOIN.times}${bands.length}${secondNote}`,
+  }
 }
 
 /**
@@ -1915,6 +1969,44 @@ function mbLangPick(input: MbLangPickIn): MbLangPickOut {
 }
 
 /**
+ * 语言摊平成四项 —— 单一数字表示四项同档。
+ *
+ * @param input 语言:单一数或四项数组。
+ * @returns 四项。
+ */
+function mbBands(input: MbBandsIn): MbBandsOut {
+  const one = input.clb
+  if (typeof one === 'number') {
+    return [one, one, one, one]
+  }
+  return [one.reading, one.writing, one.listening, one.speaking]
+}
+
+/**
+ * 曼省年龄那一块。
+ *
+ * @param input 曼省全部行与档案。
+ * @returns 那一块分。
+ */
+function mbAgePart(input: MbPartIn): MbPartOut {
+  const rows = mbRowsOf({ rows: input.rows, factor: MB_FACTOR.age, kind: KIND.row })
+  const row = mbAgePick({ rows: rows, age: input.profile.age })
+  let pts = 0
+  if (row.points != null) {
+    pts = row.points
+  }
+  let max: number | null = null
+  const rowsFirst = rows[0]
+  if (rowsFirst != null) {
+    max = rowsFirst.factorMax
+  }
+  return {
+    factor: MB_FACTOR.age, pts: pts, max: max,
+    matched: row.label,
+  }
+}
+
+/**
  * 曼省年龄:裸数字单年档、「21 to 45」区间、「50 or older」开区间三种写法。
  *
  * @param input 年龄档位行与他的年龄。
@@ -1944,183 +2036,6 @@ function mbAgePick(input: MbAgePickIn): MbRowOut {
   throw fail({
     name: POINTS_ERR.name, msg: `${POINTS_ERR.noAgeRowHead}${input.age}`, code: null,
   })
-}
-
-/**
- * 曼省工作年限档的年数 —— 官方用**拼写数字**(One / Two / Three / Four)。
- *
- * @param label 官方原文。
- * @returns 这一档的年数;读不出则 null。
- */
-function mbWorkYearsOf(label: LabelIn): MbWorkYearsOut {
-  if (MB_WORK_LESS.test(label)) {
-    return 0
-  }
-  const m = wordGroupOf({ re: MB_WORK_WORD, text: label.trim() })
-  if (m == null) {
-    return null
-  }
-  const word = m.word.toLowerCase()
-  if (word === WORD.one) {
-    return WORD_NUM.one
-  }
-  if (word === WORD.two) {
-    return WORD_NUM.two
-  }
-  if (word === WORD.three) {
-    return WORD_NUM.three
-  }
-  return WORD_NUM.four
-}
-
-/**
- * 曼省工作年限:就近取「≤ 你的年数」里最高的那档;一档都够不到退到最低档。
- *
- * @param input 工作年限档位行与他的整年数。
- * @returns 那一行。
- */
-function mbWorkPick(input: MbWorkPickIn): MbRowOut {
-  const scored: MbThresholdRow[] = []
-  for (const r of input.rows) {
-    const t = mbWorkYearsOf(r.label)
-    if (t != null) {
-      scored.push({ r: r, th: t })
-    }
-  }
-  let best: MbThresholdRow | null = null
-  for (const x of scored) {
-    if (x.th > input.years) {
-      continue
-    }
-    if (best == null || x.th > best.th) {
-      best = x
-    }
-  }
-  if (best == null) {
-    for (const x of scored) {
-      if (best == null || x.th < best.th) {
-        best = x
-      }
-    }
-  }
-  let bestRow: ScoreFactor | null = null
-  if (best != null) {
-    bestRow = best.r
-  }
-  return bestRow as ScoreFactor
-}
-
-/**
- * 曼省学历档对应哪一条官方标签。
- *
- * @param input 学历档。
- * @returns 匹配式。
- */
-function mbEduReOf(input: MbEduReOfIn): MbEduReOfOut {
-  if (input.edu === MB_EDU.masterOrDoctorate) {
-    return MB_EDU_RE.masterOrDoctorate
-  }
-  if (input.edu === MB_EDU.twoPrograms2yPlus) {
-    return MB_EDU_RE.twoPrograms2yPlus
-  }
-  if (input.edu === MB_EDU.oneProgram3yPlus) {
-    return MB_EDU_RE.oneProgram3yPlus
-  }
-  if (input.edu === MB_EDU.oneProgram2y) {
-    return MB_EDU_RE.oneProgram2y
-  }
-  if (input.edu === MB_EDU.oneYearProgram) {
-    return MB_EDU_RE.oneYearProgram
-  }
-  if (input.edu === MB_EDU.tradeCert) {
-    return MB_EDU_RE.tradeCert
-  }
-  return MB_EDU_RE.none
-}
-
-/**
- * 语言摊平成四项 —— 单一数字表示四项同档。
- *
- * @param input 语言:单一数或四项数组。
- * @returns 四项。
- */
-function mbBands(input: MbBandsIn): MbBandsOut {
-  const one = input.clb
-  if (typeof one === 'number') {
-    return [one, one, one, one]
-  }
-  return [one.reading, one.writing, one.listening, one.speaking]
-}
-
-/**
- * 曼省语言那一块:**四项各自查表相加** + 第二官方语言一次性加分。
- *
- * 🔴 这是曼省单写一套的第一条理由:别的省语言是「查一次表 = 总分」,曼省的官方规则行写明
- * 四项各自按同一张表打分后相加(CLB6 单项 20 → 四项 80)。
- *
- * @param input 曼省全部行与档案。
- * @returns 那一块分。
- */
-function mbLanguagePart(input: MbPartIn): MbPartOut {
-  const langRows = mbRowsOf({ rows: input.rows, factor: MB_FACTOR.language, kind: KIND.row })
-  const bands = mbBands({ clb: input.profile.clb })
-  let pts = 0
-  const hits: ScoreFactor[] = []
-  for (const clb of bands) {
-    const one = mbLangPick({ rows: langRows, clb: clb })
-    pts += one.pts
-    hits.push(one.row)
-  }
-  const lang2Rows = mbRowsOf({ rows: input.rows, factor: MB_FACTOR.language, kind: KIND.bonus })
-  let secondNote = MB_NOTE_NONE
-  const lang2 = lang2Rows[0]
-  if (input.profile.secondLangClb5Plus && lang2 != null) {
-    if (lang2.points != null) {
-      pts += lang2.points
-    }
-    secondNote = `${MB_JOIN.plus}${lang2.label}`
-  }
-  let max: number | null = null
-  const langFirst = langRows[0]
-  if (langFirst != null) {
-    max = langFirst.factorMax
-  }
-  let capped = pts
-  if (max != null) {
-    capped = Math.min(pts, max)
-  }
-  let firstHitLabel = MB_LABEL_NONE
-  if (hits.length > 0 && hits[0] != null) {
-    firstHitLabel = hits[0].label
-  }
-  return {
-    factor: MB_FACTOR.language, pts: capped, max: max,
-    matched: `${firstHitLabel}${MB_JOIN.times}${bands.length}${secondNote}`,
-  }
-}
-
-/**
- * 曼省年龄那一块。
- *
- * @param input 曼省全部行与档案。
- * @returns 那一块分。
- */
-function mbAgePart(input: MbPartIn): MbPartOut {
-  const rows = mbRowsOf({ rows: input.rows, factor: MB_FACTOR.age, kind: KIND.row })
-  const row = mbAgePick({ rows: rows, age: input.profile.age })
-  let pts = 0
-  if (row.points != null) {
-    pts = row.points
-  }
-  let max: number | null = null
-  const rowsFirst = rows[0]
-  if (rowsFirst != null) {
-    max = rowsFirst.factorMax
-  }
-  return {
-    factor: MB_FACTOR.age, pts: pts, max: max,
-    matched: row.label,
-  }
 }
 
 /**
@@ -2163,6 +2078,70 @@ function mbWorkPart(input: MbPartIn): MbPartOut {
 }
 
 /**
+ * 曼省工作年限:就近取「≤ 你的年数」里最高的那档;一档都够不到退到最低档。
+ *
+ * @param input 工作年限档位行与他的整年数。
+ * @returns 那一行。
+ */
+function mbWorkPick(input: MbWorkPickIn): MbRowOut {
+  const scored: MbThresholdRow[] = []
+  for (const r of input.rows) {
+    const t = mbWorkYearsOf(r.label)
+    if (t != null) {
+      scored.push({ r: r, th: t })
+    }
+  }
+  let best: MbThresholdRow | null = null
+  for (const x of scored) {
+    if (x.th > input.years) {
+      continue
+    }
+    if (best == null || x.th > best.th) {
+      best = x
+    }
+  }
+  if (best == null) {
+    for (const x of scored) {
+      if (best == null || x.th < best.th) {
+        best = x
+      }
+    }
+  }
+  let bestRow: ScoreFactor | null = null
+  if (best != null) {
+    bestRow = best.r
+  }
+  return bestRow as ScoreFactor
+}
+
+/**
+ * 曼省工作年限档的年数 —— 官方用**拼写数字**(One / Two / Three / Four)。
+ *
+ * @param label 官方原文。
+ * @returns 这一档的年数;读不出则 null。
+ */
+function mbWorkYearsOf(label: LabelIn): MbWorkYearsOut {
+  if (MB_WORK_LESS.test(label)) {
+    return 0
+  }
+  const m = wordGroupOf({ re: MB_WORK_WORD, text: label.trim() })
+  if (m == null) {
+    return null
+  }
+  const word = m.word.toLowerCase()
+  if (word === WORD.one) {
+    return WORD_NUM.one
+  }
+  if (word === WORD.two) {
+    return WORD_NUM.two
+  }
+  if (word === WORD.three) {
+    return WORD_NUM.three
+  }
+  return WORD_NUM.four
+}
+
+/**
  * 曼省学历那一块。
  *
  * @param input 曼省全部行与档案。
@@ -2187,6 +2166,34 @@ function mbEduPart(input: MbPartIn): MbPartOut {
     factor: MB_FACTOR.education, pts: pts, max: max,
     matched: row.label,
   }
+}
+
+/**
+ * 曼省学历档对应哪一条官方标签。
+ *
+ * @param input 学历档。
+ * @returns 匹配式。
+ */
+function mbEduReOf(input: MbEduReOfIn): MbEduReOfOut {
+  if (input.edu === MB_EDU.masterOrDoctorate) {
+    return MB_EDU_RE.masterOrDoctorate
+  }
+  if (input.edu === MB_EDU.twoPrograms2yPlus) {
+    return MB_EDU_RE.twoPrograms2yPlus
+  }
+  if (input.edu === MB_EDU.oneProgram3yPlus) {
+    return MB_EDU_RE.oneProgram3yPlus
+  }
+  if (input.edu === MB_EDU.oneProgram2y) {
+    return MB_EDU_RE.oneProgram2y
+  }
+  if (input.edu === MB_EDU.oneYearProgram) {
+    return MB_EDU_RE.oneYearProgram
+  }
+  if (input.edu === MB_EDU.tradeCert) {
+    return MB_EDU_RE.tradeCert
+  }
+  return MB_EDU_RE.none
 }
 
 /**
@@ -2266,6 +2273,28 @@ function mbAdaptPart(input: MbPartIn): MbPartOut {
     factor: MB_FACTOR.adaptability, pts: capped,
     max: groupMax, matched: notes.join(MB_JOIN.plus),
   }
+}
+
+/**
+ * 官方表里必须有的那一行 —— **少一行就抛**。
+ *
+ * 🔴 不静默补 0:官方表改版是要人去改抓取脚本的事,悄悄算出一个少了几百分的结果,
+ * 比报错难查得多。
+ *
+ * @param input 候选行、匹配式与报错时的上下文。
+ * @returns 那一行。
+ */
+function needRow(input: NeedRowIn): NeedRowOut {
+  for (const r of input.rows) {
+    if (input.re.test(r.label)) {
+      return r
+    }
+  }
+  throw fail({
+    name: POINTS_ERR.name,
+    msg: `${POINTS_ERR.rowMissingHead}${input.ctx}${POINTS_ERR.rowMissingTail}`,
+    code: null,
+  })
 }
 
 /**
@@ -2353,6 +2382,22 @@ function mbRiskPart(input: MbPartIn): MbPartOut {
 }
 
 /**
+ * 按因素与种类挑曼省的行。
+ *
+ * @param input 曼省全部行、因素名与种类。
+ * @returns 那几行,保持原序。
+ */
+function mbRowsOf(input: MbRowsOfIn): RowsOfOut {
+  const out: ScoreFactor[] = []
+  for (const r of input.rows) {
+    if (r.factor === input.factor && r.kind === input.kind) {
+      out.push(r)
+    }
+  }
+  return out
+}
+
+/**
  * 风险那两条按档案勾上。
  *
  * @param input 风险那几行与档案。
@@ -2373,54 +2418,59 @@ function mbRiskTicks(input: MbRiskTicksIn): MbRiskTicksOut {
   return ticks
 }
 
-/**
- * 档案 → 曼省 EOI 估分。
- *
- * 🔴 曼省**单写一套**,不复用查表估分:语言按每项计分、标签用拼写数字与计数短语、
- * 风险因子的 `factorMax` 是下限 —— 三处都要真改通用引擎,回归面盖到别的省。
- * 完整论证见 `docs/implementation/C5-判定层pathVerdict-20260805.md` §三。
- *
- * **分值一分都不许在这里编**,全部来自官方分值表。
- *
- * @param input 官方分值表全部行与档案。
- * @returns 曼省估分。
- */
-export function estimateMbEoi(input: EstimateMbEoiIn): EstimateMbEoiOut {
-  const rows: ScoreFactor[] = []
-  for (const f of input.factors) {
-    if (f.province === MB) {
-      rows.push(f)
-    }
-  }
-  const head = rows[0]
-  if (head == null) {
-    throw fail({ name: POINTS_ERR.name, msg: POINTS_ERR.noMbRows, code: null })
-  }
-  const one: MbPartIn = { rows: rows, profile: input.profile }
-  const parts: MbScorePart[] = [
-    mbLanguagePart(one), mbAgePart(one), mbWorkPart(one), mbEduPart(one),
-    mbAdaptPart(one), mbRiskPart(one),
-  ]
-  let raw = 0
-  for (const p of parts) {
-    raw += p.pts
-  }
-  let maxTotal = 0
-  let capped = raw
-  if (head.maxTotal != null) {
-    maxTotal = head.maxTotal
-    capped = Math.min(raw, head.maxTotal)
-  }
-  return {
-    province: MB, system: head.system, maxTotal: maxTotal, url: head.url,
-    guideEffective: head.guideEffective, fetched: head.fetched, parts: parts,
-    total: capped,
-  }
-}
-
 // =========================================================================
 // 10. 决策页官方表包（取数 + 单件缓存；2026-08-22 自 lib/score 并入）
 // =========================================================================
+
+/**
+ * 决策页首屏的官方表包(进程内单件缓存;2026-08-12 立,2026-08-22 自 lib/score 并入本域)。
+ * 抽选表(overview)留在 SSR:它是这页唯一的免费硬事实,要被爬到,不能等水合;
+ * 分值表由 `/api/points/factors` 按省懒取,不再随页面下发。
+ * topNocs 2026-08-22 起不进包 —— 那是 jobs 的题材,页面另取 `getTopNocs`(同 TTL)。
+ * 两张主表都空 = 多半是查挂了,不把一次抖动钉死 10 分钟。
+ *
+ * @param db 能打 SQL 的东西(池由调用方注进来)。
+ * @returns 表包(TTL 内直接给缓存那一份)。
+ */
+export async function getScoreTables(db: Db): ScoreTablesOut {
+  if (CACHE.scoreTables != null && Date.now() - CACHE.scoreTables.at <= SCORE_TTL_MS) {
+    return CACHE.scoreTables.data
+  }
+  const data = await loadScoreTables(db)
+  if (data.draws.length > 0 || data.factors.length > 0) {
+    CACHE.scoreTables = { at: Date.now(), data: data }
+  }
+  return data
+}
+
+/**
+ * 真去库里取一版表包(缓存判断在 `getScoreTables`):四条查询并行 ——
+ * 抽选近 200 轮、分值表全表、各省难度、省份维度 info。
+ *
+ * @param db 能打 SQL 的东西(池由调用方注进来)。
+ * @returns 组装好的表包。
+ */
+async function loadScoreTables(db: Db): ScoreTablesOut {
+  const [facts, factors, diffRows, infoRows] = await Promise.all([
+    queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PNP_DRAWS, params: [], map: toDrawFact }),
+    queryRowsOrEmpty({ db: db, sql: SQL.PNP_SCORE_FACTORS, params: [], map: toScoreFactor }),
+    queryRowsOrEmpty({ db: db, sql: SQL.PROV_DIFFICULTY_FETCHED, params: [], map: toDifficultyFact }),
+    queryRowsOrEmpty({ db: db, sql: SQL.PROVINCES_INFO, params: [], map: toProvInfoFact }),
+  ])
+  const competition: ProvCompetitions = []
+  for (const r of diffRows) {
+    const row = competitionRowOf(r)
+    if (row != null) {
+      competition.push(row)
+    }
+  }
+  attachExtras({ rows: competition, extras: infoExtrasOf(infoRows) })
+  competition.sort(byRatioAsc)
+  return {
+    overview: overviewOf(facts), drawsRecent: recentOf(facts), competition: competition,
+    draws: facts.map(drawOf), factors: factors, factorProvinces: factorProvincesOf(factors),
+  }
+}
 
 /**
  * 一行难度事实 → 名额竞争基础行(flow/series 由 `attachExtras` 再挂)。这里只剩业务取舍:
@@ -2478,20 +2528,6 @@ function attachExtras(input: CompetitionExtrasIn): void {
 }
 
 /**
- * 抽选事实 → 展示行(`DrawRow`;invitations 不进 —— 它只在 overview 出)。
- *
- * @param f 抽选事实。
- * @returns 展示行。
- */
-function drawOf(f: DrawFact): DrawRow {
-  const row: DrawRow = { province: f.province, kind: f.kind, drawDate: f.drawDate, stream: f.stream, score: f.score }
-  if (f.streamZh !== '') {
-    row.streamZh = f.streamZh
-  }
-  return row
-}
-
-/**
  * 每省最近一轮有分数线**或**邀请数的抽选(行序已按抽选日倒序;查不到的省不出行,
  * 纯事实零解释;联邦轮不进,见 `PNP_PROV_CODES`)。
  *
@@ -2543,6 +2579,20 @@ function recentOf(facts: DrawFacts): DrawRows {
 }
 
 /**
+ * 抽选事实 → 展示行(`DrawRow`;invitations 不进 —— 它只在 overview 出)。
+ *
+ * @param f 抽选事实。
+ * @returns 展示行。
+ */
+function drawOf(f: DrawFact): DrawRow {
+  const row: DrawRow = { province: f.province, kind: f.kind, drawDate: f.drawDate, stream: f.stream, score: f.score }
+  if (f.streamZh !== '') {
+    row.streamZh = f.streamZh
+  }
+  return row
+}
+
+/**
  * 已收录官方分值表的省清单(决策页据此把「本站没有表」的省单列出来)。
  *
  * @param factors 分值表全表。
@@ -2556,56 +2606,6 @@ function factorProvincesOf(factors: ScoreFactors): StrList {
     }
   }
   return Array.from(seen)
-}
-
-/**
- * 真去库里取一版表包(缓存判断在 `getScoreTables`):四条查询并行 ——
- * 抽选近 200 轮、分值表全表、各省难度、省份维度 info。
- *
- * @param db 能打 SQL 的东西(池由调用方注进来)。
- * @returns 组装好的表包。
- */
-async function loadScoreTables(db: Db): ScoreTablesOut {
-  const [facts, factors, diffRows, infoRows] = await Promise.all([
-    queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PNP_DRAWS, params: [], map: toDrawFact }),
-    queryRowsOrEmpty({ db: db, sql: SQL.PNP_SCORE_FACTORS, params: [], map: toScoreFactor }),
-    queryRowsOrEmpty({ db: db, sql: SQL.PROV_DIFFICULTY_FETCHED, params: [], map: toDifficultyFact }),
-    queryRowsOrEmpty({ db: db, sql: SQL.PROVINCES_INFO, params: [], map: toProvInfoFact }),
-  ])
-  const competition: ProvCompetitions = []
-  for (const r of diffRows) {
-    const row = competitionRowOf(r)
-    if (row != null) {
-      competition.push(row)
-    }
-  }
-  attachExtras({ rows: competition, extras: infoExtrasOf(infoRows) })
-  competition.sort(byRatioAsc)
-  return {
-    overview: overviewOf(facts), drawsRecent: recentOf(facts), competition: competition,
-    draws: facts.map(drawOf), factors: factors, factorProvinces: factorProvincesOf(factors),
-  }
-}
-
-/**
- * 决策页首屏的官方表包(进程内单件缓存;2026-08-12 立,2026-08-22 自 lib/score 并入本域)。
- * 抽选表(overview)留在 SSR:它是这页唯一的免费硬事实,要被爬到,不能等水合;
- * 分值表由 `/api/points/factors` 按省懒取,不再随页面下发。
- * topNocs 2026-08-22 起不进包 —— 那是 jobs 的题材,页面另取 `getTopNocs`(同 TTL)。
- * 两张主表都空 = 多半是查挂了,不把一次抖动钉死 10 分钟。
- *
- * @param db 能打 SQL 的东西(池由调用方注进来)。
- * @returns 表包(TTL 内直接给缓存那一份)。
- */
-export async function getScoreTables(db: Db): ScoreTablesOut {
-  if (CACHE.scoreTables != null && Date.now() - CACHE.scoreTables.at <= SCORE_TTL_MS) {
-    return CACHE.scoreTables.data
-  }
-  const data = await loadScoreTables(db)
-  if (data.draws.length > 0 || data.factors.length > 0) {
-    CACHE.scoreTables = { at: Date.now(), data: data }
-  }
-  return data
 }
 
 // =========================================================================
@@ -2666,6 +2666,51 @@ export function toScoreFactor(r: Row): ScoreFactor {
 }
 
 /**
+ * 一行各省难度(SQL.PROV_DIFFICULTY_FETCHED)→ 难度事实。json 解析(词汇 `jsonOrNull`)
+ * 与逐格拆解都在这里做完 —— functions 拿到的每格即有效,那边只剩「这行入不入选」的业务取舍
+ * (2026-08-22 Frank:值级清洗不进 functions)。
+ *
+ * @param r 库里的一行。
+ * @returns 洗净的一行。
+ */
+export function toDifficultyFact(r: DifficultyDbRow): DifficultyFact {
+  const d = jsonOrNull(r.difficulty)
+  const f = compFactorOf(d)
+  let tier = ''
+  let generated = ''
+  if (d != null) {
+    tier = text(d.tier)
+    generated = text(d.generated)
+  }
+  if (generated === '') {
+    generated = text(r.fetched)
+  }
+  let ratio: MaybeNum = null
+  let pool = 0
+  let quota = 0
+  let poolStudy: MaybeNum = null
+  let poolWork: MaybeNum = null
+  let poolYear = ''
+  let quotaYear = 0
+  let source = ''
+  if (f != null) {
+    ratio = numOrNull(f.value)
+    pool = numOrZero(f.pool)
+    quota = numOrZero(f.quota)
+    poolStudy = numOrNull(f.poolStudy)
+    poolWork = numOrNull(f.poolWork)
+    poolYear = text(f.asOf)
+    quotaYear = numOrZero(f.quotaYear)
+    source = text(f.source)
+  }
+  return {
+    province: text(r.province), ratio: ratio, tier: tier,
+    pool: pool, quota: quota, poolStudy: poolStudy, poolWork: poolWork,
+    poolYear: poolYear, quotaYear: quotaYear, generated: generated, source: source,
+  }
+}
+
+/**
  * 词汇:解析好的难度 json 里名额竞争那个因子(key='comp')。
  *
  * @param d 解析好的 difficulty json。
@@ -2698,45 +2743,26 @@ function numOrZero(x: NumCell): number {
 }
 
 /**
- * 词汇:上一年流量格 —— 官方缺位或 0 都落 null,0 在这一格的历史含义是「没取到」
- * (IRCC 月度表上一年缺位时源数据是 0),照旧不展示。
+ * 一行省份维度(SQL.PROVINCES_INFO)→ 省份维度事实(json 解析与增补拼装同上口径)。
  *
- * @param x json 里的上一年格。
- * @returns 上一年数;没有则 null。
+ * @param r 库里的一行。
+ * @returns 洗净的一行。
  */
-function prevYearOf(x: NumCell): MaybeNum {
-  const n = numOrNull(x)
-  if (n == null || n === 0) {
-    return null
-  }
-  return n
+export function toProvInfoFact(r: ProvInfoDbRow): ProvInfoFact {
+  return { code: text(r.code), extra: infoExtraOf(jsonOrNull(r.info)) }
 }
 
 /**
- * 词汇:英文月份缩写 → 两位月数;认不出空串(口径期就不带月)。
+ * 词汇:解析好的 info json → flow/series 两格增补(没有 json 就是两格 null)。
  *
- * @param name 英文月份缩写(如 'May')。
- * @returns 两位月数或空串。
+ * @param info 解析好的 info json。
+ * @returns 两格增补。
  */
-function monthNumOf(name: string): string {
-  const mm = MONTH_NUM[name]
-  if (mm == null) {
-    return ''
+function infoExtraOf(info: MaybeProvInfo): ProvInfoExtra {
+  if (info == null) {
+    return { flow: null, series: null }
   }
-  return mm
-}
-
-/**
- * 词汇:流量进行年 complete=false → 口径期带「至几月」;整年空串。
- *
- * @param v 某年的流量格。
- * @returns 两位月数或空串。
- */
-function flowMonthOf(v: FlowSeriesEntryJson): string {
-  if (v.complete === false) {
-    return monthNumOf(text(v.throughMonth))
-  }
-  return ''
+  return { flow: flowOf(info), series: seriesOf(info) }
 }
 
 /**
@@ -2761,6 +2787,21 @@ function flowOf(info: ProvInfoJson): MaybeFlow {
     period = year + PERIOD_SEP + mm
   }
   return { period: period, n: n, prevYear: prevYearOf(f.prev) }
+}
+
+/**
+ * 词汇:上一年流量格 —— 官方缺位或 0 都落 null,0 在这一格的历史含义是「没取到」
+ * (IRCC 月度表上一年缺位时源数据是 0),照旧不展示。
+ *
+ * @param x json 里的上一年格。
+ * @returns 上一年数;没有则 null。
+ */
+function prevYearOf(x: NumCell): MaybeNum {
+  const n = numOrNull(x)
+  if (n == null || n === 0) {
+    return null
+  }
+  return n
 }
 
 /**
@@ -2809,71 +2850,30 @@ function seriesOf(info: ProvInfoJson): MaybeSeries {
 }
 
 /**
- * 词汇:解析好的 info json → flow/series 两格增补(没有 json 就是两格 null)。
+ * 词汇:流量进行年 complete=false → 口径期带「至几月」;整年空串。
  *
- * @param info 解析好的 info json。
- * @returns 两格增补。
+ * @param v 某年的流量格。
+ * @returns 两位月数或空串。
  */
-function infoExtraOf(info: MaybeProvInfo): ProvInfoExtra {
-  if (info == null) {
-    return { flow: null, series: null }
+function flowMonthOf(v: FlowSeriesEntryJson): string {
+  if (v.complete === false) {
+    return monthNumOf(text(v.throughMonth))
   }
-  return { flow: flowOf(info), series: seriesOf(info) }
+  return ''
 }
 
 /**
- * 一行各省难度(SQL.PROV_DIFFICULTY_FETCHED)→ 难度事实。json 解析(词汇 `jsonOrNull`)
- * 与逐格拆解都在这里做完 —— functions 拿到的每格即有效,那边只剩「这行入不入选」的业务取舍
- * (2026-08-22 Frank:值级清洗不进 functions)。
+ * 词汇:英文月份缩写 → 两位月数;认不出空串(口径期就不带月)。
  *
- * @param r 库里的一行。
- * @returns 洗净的一行。
+ * @param name 英文月份缩写(如 'May')。
+ * @returns 两位月数或空串。
  */
-export function toDifficultyFact(r: DifficultyDbRow): DifficultyFact {
-  const d = jsonOrNull(r.difficulty)
-  const f = compFactorOf(d)
-  let tier = ''
-  let generated = ''
-  if (d != null) {
-    tier = text(d.tier)
-    generated = text(d.generated)
+function monthNumOf(name: string): string {
+  const mm = MONTH_NUM[name]
+  if (mm == null) {
+    return ''
   }
-  if (generated === '') {
-    generated = text(r.fetched)
-  }
-  let ratio: MaybeNum = null
-  let pool = 0
-  let quota = 0
-  let poolStudy: MaybeNum = null
-  let poolWork: MaybeNum = null
-  let poolYear = ''
-  let quotaYear = 0
-  let source = ''
-  if (f != null) {
-    ratio = numOrNull(f.value)
-    pool = numOrZero(f.pool)
-    quota = numOrZero(f.quota)
-    poolStudy = numOrNull(f.poolStudy)
-    poolWork = numOrNull(f.poolWork)
-    poolYear = text(f.asOf)
-    quotaYear = numOrZero(f.quotaYear)
-    source = text(f.source)
-  }
-  return {
-    province: text(r.province), ratio: ratio, tier: tier,
-    pool: pool, quota: quota, poolStudy: poolStudy, poolWork: poolWork,
-    poolYear: poolYear, quotaYear: quotaYear, generated: generated, source: source,
-  }
-}
-
-/**
- * 一行省份维度(SQL.PROVINCES_INFO)→ 省份维度事实(json 解析与增补拼装同上口径)。
- *
- * @param r 库里的一行。
- * @returns 洗净的一行。
- */
-export function toProvInfoFact(r: ProvInfoDbRow): ProvInfoFact {
-  return { code: text(r.code), extra: infoExtraOf(jsonOrNull(r.info)) }
+  return mm
 }
 
 // =========================================================================

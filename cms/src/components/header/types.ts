@@ -5,7 +5,18 @@
  * @author Frank
  * @time 2026-08-24 08:00:00
  */
-import type { Lang, TFn } from '@/lib/i18n'
+
+/**
+ * 语言码 —— 本域自声明(宪法 08-25「Lang 三字面量各域自抄」,2026-08-26 撤跨域 import;
+ * 与全站三语同集,加语言两处同改)。
+ */
+export type Lang = 'zh' | 'en' | 'ko'
+
+/**
+ * 界面语取词函数(与 lib/i18n 的 TFn 同形:键 + 可选插值 —— 宪法 08-25「types 自声明」,
+ * 2026-08-26 撤跨域 import 本域自抄,同 auth/types 先例;走样当场 tsc 红)。
+ */
+export type TFn = (key: string, vars?: Record<string, string | number>) => string
 
 /**
  * 顶栏高亮键(哪个导航项亮;stats/rank 并入把脉高亮、match 并入职位高亮)。

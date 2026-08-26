@@ -15,13 +15,13 @@ import css from './button.module.css'
  * (2026-08-24 拍板,调用点迁移批未做,类未写),急切构造会让首个按钮渲染就撞上
  * 规划位的缺类;按需取则只校验真用到的那一格,用到缺类仍当场炸(cssOf 的口径)。
  * sm/lg 都传按 sm 算。
+ * 基座只给**行动钮**:控件钮的形状由自己那一档定死,套上基座反而要一条条盖回去。
  *
  * @param x 变体与尺寸档。
  * @returns 拼好的 className。
  */
 export function btnClsOf(x: BtnClsIn): string {
   const cls = []
-  // 基座只给**行动钮**:控件钮的形状由自己那一档定死,套上基座反而要一条条盖回去。
   if (isAction(x.kind)) {
     cls.push(cssOf(css.btn))
     if (x.sm) {

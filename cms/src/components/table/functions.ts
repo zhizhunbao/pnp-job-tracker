@@ -10,6 +10,9 @@ import type { CellIn, SortRowsIn } from './types'
 /**
  * 客户端排序(简单表数据全量在手):null 恒沉底,方向乘 dir。
  * 不改原数组(消费端可能还握着原引用)。
+ * 体内先把 sort 收成局部常量再给内层比较器用:TS 的窄化不跨函数边界,
+ * 不这么收就得写 take!(禁令)。
+ * 比较器 cmp 的两参一返由 Array.prototype.sort 定死(宪法钦定的豁免形态)。
  *
  * @param x 原行、排序列与方向。
  * @returns 新数组。
@@ -19,11 +22,9 @@ export function sortRows<T>(x: SortRowsIn<T>): T[] {
   if (maybeTake == null) {
     return x.rows
   }
-  // 收成局部常量再给内层比较器用:TS 的窄化不跨函数边界,不这么收就得写 take!(禁令)。
   const take: (r: T) => string | number | null = maybeTake
   const dir = x.dir
 
-  // 比较器的两参一返由 Array.prototype.sort 定死(宪法钦定的豁免形态)。
   // eslint-disable-next-line local/one-parameter -- 库定死的比较器签名
   function cmp(a: T, b: T): number {
     const va = take(a)

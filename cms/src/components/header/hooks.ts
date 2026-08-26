@@ -81,6 +81,7 @@ export function useAcct(x: AcctHookIn): AcctState {
 /**
  * 桌面 hover 下拉整机(E8-07 E 统一交互):hover 即开、离开 150ms 延时关(斜着移进
  * 面板不闪关)、键盘 focus 可开、点击切换(触屏兜底)、焦点移出整块关。
+ * relatedTarget 是 DOM 的宽类型,contains 要 Node —— 跨边界断言收在 onBlur 体内那一行。
  *
  * @returns 机器面板(开合与四枚手柄)。
  */
@@ -113,7 +114,6 @@ export function useHoverOpen(): HoverOut {
   }
 
   function onBlur(e: React.FocusEvent<HTMLElement>) {
-    // relatedTarget 是 DOM 的宽类型,contains 要 Node —— 跨边界断言收在这一行。
     const next = e.relatedTarget as Node
     if (e.currentTarget.contains(next) === false) {
       setOpen(false)

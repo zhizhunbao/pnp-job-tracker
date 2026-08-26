@@ -12,6 +12,8 @@ import type { CarouselOut } from './types'
 /**
  * 背景轮播整机:8s 换一张(循环),hover 暂停,任一张图挂了整组作废(imgs 归 null,
  * 调用方回落渐变带 —— 发布零风险的兜底);系统偏好「减少动态」时静止在第一张。
+ * 定时器 effect 只依赖 [imgs, paused]:imgs 是从 props 派生的同一引用(死图/空组归 null);
+ * paused 变化要重挂定时器。
  *
  * @param images 图组;null/空 = 没图。
  * @returns 机器面板(可用图组、当前序、四枚手柄)。
@@ -48,7 +50,6 @@ export function useCarousel(images: readonly string[] | null): CarouselOut {
       clearInterval(id)
     }
     return off
-    // imgs 是从 props 派生的同一引用(死图/空组归 null);paused 变化要重挂定时器。
   }, [imgs, paused])
 
   function onEnter() {

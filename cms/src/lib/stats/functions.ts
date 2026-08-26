@@ -26,21 +26,6 @@ import type {
 } from './types'
 
 /**
- * pg 错误码(pg 的错误对象带 code;不是它的错空串)。体内那一步 `as PgFailure` 是跨边界断言:
- * code 是 pg 挂上去的,TS 看不见 —— 形状声明在 types 的 `PgFailure`。
- *
- * @param e 捕到的错误。
- * @returns pg 错误码;不是 pg 的错是空串。
- */
-function pgCodeOf(e: CaughtError): string {
-  const withCode = e as PgFailure
-  if (typeof withCode.code === 'string') {
-    return withCode.code
-  }
-  return PG_CODE_NONE
-}
-
-/**
  * 地区统计行(stats 表)。withMid=true 才带中类行(仅图表下钻用);默认只回大类层 ——
  * 既有页面(省页/对比/表格)口径不变不重复计数。
  * 缺列容错(E12-06 教训):mid 列 DDL 未落地时自动降级为无 mid 查询,行回退 mid='all',页面照常;
@@ -154,6 +139,22 @@ export async function loadCityStats(db: Db): CityRowsOut {
 }
 
 /**
+ * E8-14 ⑥ 通道筛选(Frank 2026-07-28:「哪些能走 ee pnp aip qc 的单独通道也需要筛选」):
+ * 只取**职业粒度能判定**的两条 —— 省提名具名清单(pnp_occupations)与联邦 EE 类别(ee_categories)。
+ * AIP 只有雇主级名单(职业粒度要先给统计表补列),QC 数据层没有职业清单 —— 两者不在此列,不假装能筛。
+ *
+ * @param db 数据库连接(池由调用方注进来)。
+ * @returns 两条通道的职业码清单。
+ */
+export async function loadChannelNocs(db: Db): ChannelNocsOut {
+  const [pnp, ee] = await Promise.all([
+    channelNocsOf({ db: db, sql: SQL.PNP_NOCS_DISTINCT }),
+    channelNocsOf({ db: db, sql: SQL.EE_NOCS_DISTINCT }),
+  ])
+  return { pnp: pnp, ee: ee }
+}
+
+/**
  * 单条通道码清单(缺表/缺列回空,其余照抛 —— 与 loadOccStats 同一容缺口径)。
  *
  * @param input 连接与语句。
@@ -181,19 +182,18 @@ async function channelNocsOf(input: ChannelNocsQueryIn): StrListOut {
 }
 
 /**
- * E8-14 ⑥ 通道筛选(Frank 2026-07-28:「哪些能走 ee pnp aip qc 的单独通道也需要筛选」):
- * 只取**职业粒度能判定**的两条 —— 省提名具名清单(pnp_occupations)与联邦 EE 类别(ee_categories)。
- * AIP 只有雇主级名单(职业粒度要先给统计表补列),QC 数据层没有职业清单 —— 两者不在此列,不假装能筛。
+ * pg 错误码(pg 的错误对象带 code;不是它的错空串)。体内那一步 `as PgFailure` 是跨边界断言:
+ * code 是 pg 挂上去的,TS 看不见 —— 形状声明在 types 的 `PgFailure`。
  *
- * @param db 数据库连接(池由调用方注进来)。
- * @returns 两条通道的职业码清单。
+ * @param e 捕到的错误。
+ * @returns pg 错误码;不是 pg 的错是空串。
  */
-export async function loadChannelNocs(db: Db): ChannelNocsOut {
-  const [pnp, ee] = await Promise.all([
-    channelNocsOf({ db: db, sql: SQL.PNP_NOCS_DISTINCT }),
-    channelNocsOf({ db: db, sql: SQL.EE_NOCS_DISTINCT }),
-  ])
-  return { pnp: pnp, ee: ee }
+function pgCodeOf(e: CaughtError): string {
+  const withCode = e as PgFailure
+  if (typeof withCode.code === 'string') {
+    return withCode.code
+  }
+  return PG_CODE_NONE
 }
 
 /**
@@ -332,6 +332,31 @@ export function toNocCode(r: Row): string {
 }
 
 /**
+ * 一行省份维度(SQL.PROVINCES_INFO)→ 省份维度事实。json 解析(词汇 `jsonOrNull`)与
+ * 体量提取都在这里做完 —— functions 拿到的 info 即有效(2026-08-22 Frank:
+ * 值级清洗不进 functions)。
+ *
+ * @param r 库里的一行。
+ * @returns 洗净的一行。
+ */
+export function toStatProvInfoFact(r: StatProvInfoDbRow): StatProvInfoFact {
+  return { code: text(r.code), info: provVolOf(jsonOrNull(r.info)) }
+}
+
+/**
+ * 解析好的 info json → 省卡体量四格(学签/TFWP/IMP/省提名 PR)。
+ *
+ * @param v 解析好的 info json。
+ * @returns 体量;没有则 null。
+ */
+function provVolOf(v: MaybeProvVolJson): MaybeProvVol {
+  if (v == null) {
+    return null
+  }
+  return { study: volNumOf(v.study), tfwp: volNumOf(v.tfwp), imp: volNumOf(v.imp), pnpPr: volNumOf(v.pnpPr) }
+}
+
+/**
  * 体量一格 json → 干净格(数缺位整格落 null,不给半格)。
  *
  * @param x json 里的体量格。
@@ -349,16 +374,13 @@ function volNumOf(x: MaybeProvVolNumJson): MaybeProvVolNum {
 }
 
 /**
- * 解析好的 info json → 省卡体量四格(学签/TFWP/IMP/省提名 PR)。
+ * 一行各省难度(SQL.PROV_DIFFICULTY)→ 难度事实(tier 的解析与提取同上口径)。
  *
- * @param v 解析好的 info json。
- * @returns 体量;没有则 null。
+ * @param r 库里的一行。
+ * @returns 洗净的一行。
  */
-function provVolOf(v: MaybeProvVolJson): MaybeProvVol {
-  if (v == null) {
-    return null
-  }
-  return { study: volNumOf(v.study), tfwp: volNumOf(v.tfwp), imp: volNumOf(v.imp), pnpPr: volNumOf(v.pnpPr) }
+export function toStatProvDiffFact(r: StatProvDiffDbRow): StatProvDiffFact {
+  return { province: text(r.province), tier: tierOf(jsonOrNull(r.difficulty)) }
 }
 
 /**
@@ -375,28 +397,6 @@ function tierOf(d: MaybeStatDiff): MaybeStr {
     return null
   }
   return d.tier
-}
-
-/**
- * 一行省份维度(SQL.PROVINCES_INFO)→ 省份维度事实。json 解析(词汇 `jsonOrNull`)与
- * 体量提取都在这里做完 —— functions 拿到的 info 即有效(2026-08-22 Frank:
- * 值级清洗不进 functions)。
- *
- * @param r 库里的一行。
- * @returns 洗净的一行。
- */
-export function toStatProvInfoFact(r: StatProvInfoDbRow): StatProvInfoFact {
-  return { code: text(r.code), info: provVolOf(jsonOrNull(r.info)) }
-}
-
-/**
- * 一行各省难度(SQL.PROV_DIFFICULTY)→ 难度事实(tier 的解析与提取同上口径)。
- *
- * @param r 库里的一行。
- * @returns 洗净的一行。
- */
-export function toStatProvDiffFact(r: StatProvDiffDbRow): StatProvDiffFact {
-  return { province: text(r.province), tier: tierOf(jsonOrNull(r.difficulty)) }
 }
 
 /**

@@ -17,5 +17,8 @@ export const CACHE: {
    */
   readsBy: Map<string, string>
 } = {
+  /**
+   * 起点是空表:进程启动/热重载后第一问必然 miss,由生成路径回填。
+   */
   readsBy: new Map<string, string>(),
 }

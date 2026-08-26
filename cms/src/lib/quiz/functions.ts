@@ -29,9 +29,13 @@
  */
 import {
   AGE, ANSWERS_KEY, CLB, CLB_V2_MAP, COLLECTION_USERS, CRED_INCLUDE, CRS, DECISIONS, EDU, EDU_YEARS, EMPTY,
-  EV_PAGEHIDE, EV_VISIBILITY, EXP, FACTS_CACHE_MAX, FIELD_SPECS, FRENCH_V2_MAP, IN_CANADA, JSON_MIME, LI_RE,
+  EV_PAGEHIDE, EV_VISIBILITY, EXP, FACTS_CACHE_MAX, FIELD_SPECS, FRENCH_V2_MAP, F_AGE_BAND, F_CANADA_EDU_BAND,
+  F_CLB_BAND, F_CRS_BAND, F_EDU_BAND, F_EDU_PROV, F_EDU_YEARS_BAND, F_EXP_BAND, F_FIELD_MATCH_BAND, F_FRENCH_BAND,
+  F_GOAL_BAND, F_OFFER_BAND, F_PERMIT_BAND, F_PGWP_BAND, F_PROV_BAND, F_RES_PROV, F_STATUS, F_STUDY_LEVEL_BAND,
+  F_STUDY_MONTHS_BAND, F_TOTAL_EXP_BAND, GOAL_PR, GOAL_WORK, IN_CANADA, JSON_MIME, LI_RE,
   LI_SET_OFF, LI_SET_ON, META_KEY, METHOD_PUT, NCLC, OLD_PR, OLD_QUIZ, PERMIT, PGWP, PREV_JSON_NONE, PROVS,
-  SCORE_ANSWERS_KEY, SCORE_EMPTY, STAGE_BASIC, STATE_HIDDEN, STATUS_NONE, STUDY_LEVEL, STUDY_MONTHS, TIER_FREE,
+  PROV_BC, PROV_ON, SCORE_ANSWERS_KEY, SCORE_EMPTY, STAGE_BASIC, STATE_HIDDEN, STATUS_NONE, STATUS_OVERSEAS,
+  STATUS_UNSURE, STR_NONE, STUDY_LEVEL, STUDY_MONTHS, TIER_FREE,
   TOTAL_EXP, TOTAL_V2_MAP, TTL, UNSURE_BAND, URL_ANSWERS
 } from './constants'
 import { CACHE } from './variables'
@@ -42,6 +46,62 @@ import type {
   SaveAnswersIn, SaveAnswersOut, ScoreAnswers, Stage, StoreFn, Tier, TopCachedIn, TopOut, TopRows, UnflagFn
 } from './types'
 import { HDR_CONTENT_TYPE } from '../http'
+
+/**
+ * 丢掉手上这份运行态。**换账号必须调** —— 内存是模块级的,不清就会把上一个人的答案
+ * 带给下一个登录的人(先前 localStorage 时代同病,只是没人注意)。测试也用它隔离用例。
+ *
+ * @returns 无。
+ */
+export function resetAnswersMemory(): void {
+  CACHE.mem = null
+  CACHE.memScore = null
+  CACHE.dirty = false
+  CACHE.retryN = 0
+  CACHE.hydrated = false
+}
+
+/**
+ * 写全卷(局部)。写入即同步目标省的两种表示 —— 只写一边会让另一个入口重新问一遍
+ * (那正是收敛掉的病)。
+ *
+ * @param patch 要改的格。
+ * @returns 写后的全卷。
+ */
+export function writeAnswers(patch: AnswersPatch): Answers {
+  const next: Answers = Object.assign({}, readAnswers(), patch)
+  if (patch.provBand != null && patch.provs == null) {
+    next.provs = provsFromBand(patch.provBand)
+  }
+  if (patch.provs != null && patch.provBand == null) {
+    next.provBand = bandFromProvs(patch.provs)
+  }
+  save(next)
+  return next
+}
+
+/**
+ * 读全卷(运行态 → 浏览器里待搬家的旧档 → 两个更旧的 key → 空卷)。
+ *
+ * @returns 全字段对齐的全卷。
+ */
+export function readAnswers(): Answers {
+  if (CACHE.mem != null) {
+    return normalize(CACHE.mem)
+  }
+  let legacy: RawDoc | null = null
+  if (typeof localStorage !== 'undefined') {
+    legacy = parse(localStorage.getItem(ANSWERS_KEY))
+  }
+  if (legacy != null) {
+    return normalize(legacy)
+  }
+  const old = migrate()
+  if (old != null) {
+    return normalize(old)
+  }
+  return Object.assign({}, EMPTY)
+}
 
 /**
  * localStorage 里的 json → 档对象(真会抛的 JSON.parse 接缝;坏的/空的给 null,
@@ -130,20 +190,6 @@ function migrate(): MaybeAnswers {
 }
 
 /**
- * 丢掉手上这份运行态。**换账号必须调** —— 内存是模块级的,不清就会把上一个人的答案
- * 带给下一个登录的人(先前 localStorage 时代同病,只是没人注意)。测试也用它隔离用例。
- *
- * @returns 无。
- */
-export function resetAnswersMemory(): void {
-  CACHE.mem = null
-  CACHE.memScore = null
-  CACHE.dirty = false
-  CACHE.retryN = 0
-  CACHE.hydrated = false
-}
-
-/**
  * 写运行态,语义真变了才排同步(逐字节比 normalize 后的 json)。
  *
  * @param a 新档。
@@ -158,48 +204,6 @@ function save(a: Answers): void {
   if (JSON.stringify(normalize(a)) !== before) {
     touched()
   }
-}
-
-/**
- * 读全卷(运行态 → 浏览器里待搬家的旧档 → 两个更旧的 key → 空卷)。
- *
- * @returns 全字段对齐的全卷。
- */
-export function readAnswers(): Answers {
-  if (CACHE.mem != null) {
-    return normalize(CACHE.mem)
-  }
-  let legacy: RawDoc | null = null
-  if (typeof localStorage !== 'undefined') {
-    legacy = parse(localStorage.getItem(ANSWERS_KEY))
-  }
-  if (legacy != null) {
-    return normalize(legacy)
-  }
-  const old = migrate()
-  if (old != null) {
-    return normalize(old)
-  }
-  return Object.assign({}, EMPTY)
-}
-
-/**
- * 写全卷(局部)。写入即同步目标省的两种表示 —— 只写一边会让另一个入口重新问一遍
- * (那正是收敛掉的病)。
- *
- * @param patch 要改的格。
- * @returns 写后的全卷。
- */
-export function writeAnswers(patch: AnswersPatch): Answers {
-  const next: Answers = Object.assign({}, readAnswers(), patch)
-  if (patch.provBand != null && patch.provs == null) {
-    next.provs = provsFromBand(patch.provBand)
-  }
-  if (patch.provs != null && patch.provBand == null) {
-    next.provBand = bandFromProvs(patch.provs)
-  }
-  save(next)
-  return next
 }
 
 /**
@@ -220,6 +224,20 @@ export function clearAnswers(): Answers {
 }
 
 /**
+ * 写分值卡档,语义真变了才排同步。
+ *
+ * @param a 新档。
+ * @returns 无。
+ */
+export function writeScoreAnswers(a: ScoreAnswers): void {
+  const before = JSON.stringify(readScoreAnswers())
+  CACHE.memScore = a
+  if (JSON.stringify(normalizeScore(a)) !== before) {
+    touched()
+  }
+}
+
+/**
  * 读分值卡档(运行态 → 浏览器里待搬家的旧档 → 空档)。
  *
  * @returns 全字段对齐的分值卡档。
@@ -236,59 +254,6 @@ export function readScoreAnswers(): ScoreAnswers {
 }
 
 /**
- * 写分值卡档,语义真变了才排同步。
- *
- * @param a 新档。
- * @returns 无。
- */
-export function writeScoreAnswers(a: ScoreAnswers): void {
-  const before = JSON.stringify(readScoreAnswers())
-  CACHE.memScore = a
-  if (JSON.stringify(normalizeScore(a)) !== before) {
-    touched()
-  }
-}
-
-/**
- * 答过三问没有(职位板判断弹不弹、拿 PR 判断要不要拉起选职业)。
- *
- * @param a 全卷。
- * @returns 答过 true。
- */
-export function answeredBasics(a: Answers): boolean {
-  return Boolean(a.done || a.status || a.nocs.length || a.provs.length)
-}
-
-/**
- * 有没有登录迹象 cookie。
- *
- * @returns 有 true。
- */
-function hasLoginTrace(): boolean {
-  try {
-    return typeof document !== 'undefined' && LI_RE.test(document.cookie)
-  } catch {
-    return false
-  }
-}
-
-/**
- * 置位/清除登录迹象 cookie。
- *
- * @param on 置位 true,清除 false。
- * @returns 无。
- */
-function setLoginTrace(on: boolean): void {
-  let cookie = LI_SET_OFF
-  if (on) {
-    cookie = LI_SET_ON
-  }
-  try {
-    document.cookie = cookie
-  } catch {}
-}
-
-/**
  * 浏览器里的旧档:搬完家就删,此后一个字节都不再往里写。
  *
  * @returns 无。
@@ -299,15 +264,6 @@ function dropLegacy(): void {
     localStorage.removeItem(SCORE_ANSWERS_KEY)
     localStorage.removeItem(META_KEY)
   } catch {}
-}
-
-/**
- * 同步载荷(基础卷 + 分值卡整份上行)。
- *
- * @returns json 串。
- */
-function payload(): string {
-  return JSON.stringify({ basic: readAnswers(), score: readScoreAnswers() })
 }
 
 /**
@@ -342,6 +298,17 @@ function firePush(): void {
 }
 
 /**
+ * 页面切到不可见时的兜底触发。
+ *
+ * @returns 无。
+ */
+function flushOnHidden(): void {
+  if (document.visibilityState === STATE_HIDDEN) {
+    flushOnLeave()
+  }
+}
+
+/**
  * 离开页面/切后台时把没推成功的改动用 sendBeacon 强推
  * (sendBeacon 只能 POST —— 端点同时收 PUT 与 POST,见 api/account/answers)。
  *
@@ -359,14 +326,12 @@ function flushOnLeave(): void {
 }
 
 /**
- * 页面切到不可见时的兜底触发。
+ * 同步载荷(基础卷 + 分值卡整份上行)。
  *
- * @returns 无。
+ * @returns json 串。
  */
-function flushOnHidden(): void {
-  if (document.visibilityState === STATE_HIDDEN) {
-    flushOnLeave()
-  }
+function payload(): string {
+  return JSON.stringify({ basic: readAnswers(), score: readScoreAnswers() })
 }
 
 /**
@@ -418,6 +383,35 @@ async function pushToServer(): PushedOut {
   } catch {
     scheduleRetry()
   }
+}
+
+/**
+ * 有没有登录迹象 cookie。
+ *
+ * @returns 有 true。
+ */
+function hasLoginTrace(): boolean {
+  try {
+    return typeof document !== 'undefined' && LI_RE.test(document.cookie)
+  } catch {
+    return false
+  }
+}
+
+/**
+ * 置位/清除登录迹象 cookie。
+ *
+ * @param on 置位 true,清除 false。
+ * @returns 无。
+ */
+function setLoginTrace(on: boolean): void {
+  let cookie = LI_SET_OFF
+  if (on) {
+    cookie = LI_SET_ON
+  }
+  try {
+    document.cookie = cookie
+  } catch {}
 }
 
 /**
@@ -520,6 +514,16 @@ export async function pullAndMerge(afterLogin: boolean = false): PulledOut {
   } catch {
     return false
   }
+}
+
+/**
+ * 答过三问没有(职位板判断弹不弹、拿 PR 判断要不要拉起选职业)。
+ *
+ * @param a 全卷。
+ * @returns 答过 true。
+ */
+export function answeredBasics(a: Answers): boolean {
+  return Boolean(a.done || a.status || a.nocs.length || a.provs.length)
 }
 
 /**
@@ -717,20 +721,7 @@ export function str(v: RawField): string {
   if (typeof v === 'string') {
     return v
   }
-  return ''
-}
-
-/**
- * 档里的一格 → 对象(不是对象给空对象)。
- *
- * @param v 原料格。
- * @returns 对象。
- */
-export function rec(v: RawField): RawDoc {
-  if (v != null && typeof v === 'object' && Array.isArray(v) === false) {
-    return v as RawDoc
-  }
-  return {}
+  return STR_NONE
 }
 
 /**
@@ -741,6 +732,36 @@ export function rec(v: RawField): RawDoc {
  */
 function isStr(x: RawCell): x is string {
   return typeof x === 'string'
+}
+
+/**
+ * 处境:'unsure' → undefined,引擎拿 null 落「判不了」,不替他猜
+ * (2026-08-12 Frank「每个选项都应该给一个不清楚的」)。
+ *
+ * @param v 处境码。
+ * @returns 引擎处境;不清楚不传。
+ */
+function statusAnswer(v: BandValue): EngineValue {
+  if (typeof v === 'string' && v !== '' && v !== STATUS_UNSURE) {
+    return v
+  }
+  return undefined
+}
+
+/**
+ * 许可档 → 许可码(境外不传;不清楚不传)。
+ *
+ * @param v 档位。
+ * @param all 全卷答案。
+ * @returns 许可码或不传。
+ */
+// eslint-disable-next-line local/one-parameter -- FieldDef.toAnswer 的形状定死两参(见 types.ts 的特批)
+function permitAnswer(v: BandValue, all: Answers): EngineValue {
+  const b = band(v)
+  if (inCanada(all) && b !== 0 && b !== UNSURE_BAND) {
+    return PERMIT[b]
+  }
+  return undefined
 }
 
 /**
@@ -764,36 +785,6 @@ function band(v: BandValue): number {
     return v
   }
   return 0
-}
-
-/**
- * 处境:'unsure' → undefined,引擎拿 null 落「判不了」,不替他猜
- * (2026-08-12 Frank「每个选项都应该给一个不清楚的」)。
- *
- * @param v 处境码。
- * @returns 引擎处境;不清楚不传。
- */
-function statusAnswer(v: BandValue): EngineValue {
-  if (typeof v === 'string' && v !== '' && v !== 'unsure') {
-    return v
-  }
-  return undefined
-}
-
-/**
- * 许可档 → 许可码(境外不传;不清楚不传)。
- *
- * @param v 档位。
- * @param all 全卷答案。
- * @returns 许可码或不传。
- */
-// eslint-disable-next-line local/one-parameter -- FieldDef.toAnswer 的形状定死两参(见 types.ts 的特批)
-function permitAnswer(v: BandValue, all: Answers): EngineValue {
-  const b = band(v)
-  if (inCanada(all) && b !== 0 && b !== UNSURE_BAND) {
-    return PERMIT[b]
-  }
-  return undefined
 }
 
 /**
@@ -920,10 +911,10 @@ function provAnswer(v: BandValue): EngineValue {
 function goalAnswer(v: BandValue): EngineValue {
   const b = band(v)
   if (b === 1) {
-    return 'pr'
+    return GOAL_PR
   }
   if (b === 2) {
-    return 'work'
+    return GOAL_WORK
   }
   return undefined
 }
@@ -1050,7 +1041,7 @@ function crsAnswer(v: BandValue): EngineValue {
  */
 // eslint-disable-next-line local/one-parameter -- 同 permitAnswer:toAnswer 契约两参
 function pgwpAnswer(v: BandValue, all: Answers): EngineValue {
-  if (all.status === 'overseas') {
+  if (all.status === STATUS_OVERSEAS) {
     return undefined
   }
   return PGWP[band(v)] || undefined
@@ -1118,26 +1109,26 @@ export function getFields(): FieldMap {
  */
 function fieldBehaviorOf(key: string): FieldBehavior {
   switch (key) {
-    case 'status': return { toAnswer: statusAnswer, visible: null, choiceVisible: null }
-    case 'permitBand': return { toAnswer: permitAnswer, visible: inCanada, choiceVisible: null }
-    case 'resProv': return { toAnswer: resProvAnswer, visible: inCanada, choiceVisible: null }
-    case 'eduBand': return { toAnswer: eduAnswer, visible: null, choiceVisible: null }
-    case 'ageBand': return { toAnswer: ageAnswer, visible: null, choiceVisible: null }
-    case 'totalExpBand': return { toAnswer: totalExpAnswer, visible: null, choiceVisible: null }
-    case 'clbBand': return { toAnswer: clbAnswer, visible: null, choiceVisible: null }
-    case 'expBand': return { toAnswer: expAnswer, visible: null, choiceVisible: expChoiceVisible }
-    case 'provBand': return { toAnswer: provAnswer, visible: null, choiceVisible: null }
-    case 'goalBand': return { toAnswer: goalAnswer, visible: null, choiceVisible: null }
-    case 'offerBand': return { toAnswer: offerAnswer, visible: null, choiceVisible: null }
-    case 'canadaEduBand': return { toAnswer: canadaEduAnswer, visible: null, choiceVisible: null }
-    case 'fieldMatchBand': return { toAnswer: fieldMatchAnswer, visible: hasCanadaEdu, choiceVisible: null }
-    case 'eduProv': return { toAnswer: eduProvAnswer, visible: hasCanadaEdu, choiceVisible: null }
-    case 'eduYearsBand': return { toAnswer: eduYearsAnswer, visible: hasCanadaEdu, choiceVisible: null }
-    case 'frenchBand': return { toAnswer: frenchAnswer, visible: null, choiceVisible: null }
-    case 'crsBand': return { toAnswer: crsAnswer, visible: null, choiceVisible: null }
-    case 'pgwpBand': return { toAnswer: pgwpAnswer, visible: null, choiceVisible: null }
-    case 'studyMonthsBand': return { toAnswer: studyMonthsAnswer, visible: null, choiceVisible: null }
-    case 'studyLevelBand': return { toAnswer: studyLevelAnswer, visible: null, choiceVisible: null }
+    case F_STATUS: return { toAnswer: statusAnswer, visible: null, choiceVisible: null }
+    case F_PERMIT_BAND: return { toAnswer: permitAnswer, visible: inCanada, choiceVisible: null }
+    case F_RES_PROV: return { toAnswer: resProvAnswer, visible: inCanada, choiceVisible: null }
+    case F_EDU_BAND: return { toAnswer: eduAnswer, visible: null, choiceVisible: null }
+    case F_AGE_BAND: return { toAnswer: ageAnswer, visible: null, choiceVisible: null }
+    case F_TOTAL_EXP_BAND: return { toAnswer: totalExpAnswer, visible: null, choiceVisible: null }
+    case F_CLB_BAND: return { toAnswer: clbAnswer, visible: null, choiceVisible: null }
+    case F_EXP_BAND: return { toAnswer: expAnswer, visible: null, choiceVisible: expChoiceVisible }
+    case F_PROV_BAND: return { toAnswer: provAnswer, visible: null, choiceVisible: null }
+    case F_GOAL_BAND: return { toAnswer: goalAnswer, visible: null, choiceVisible: null }
+    case F_OFFER_BAND: return { toAnswer: offerAnswer, visible: null, choiceVisible: null }
+    case F_CANADA_EDU_BAND: return { toAnswer: canadaEduAnswer, visible: null, choiceVisible: null }
+    case F_FIELD_MATCH_BAND: return { toAnswer: fieldMatchAnswer, visible: hasCanadaEdu, choiceVisible: null }
+    case F_EDU_PROV: return { toAnswer: eduProvAnswer, visible: hasCanadaEdu, choiceVisible: null }
+    case F_EDU_YEARS_BAND: return { toAnswer: eduYearsAnswer, visible: hasCanadaEdu, choiceVisible: null }
+    case F_FRENCH_BAND: return { toAnswer: frenchAnswer, visible: null, choiceVisible: null }
+    case F_CRS_BAND: return { toAnswer: crsAnswer, visible: null, choiceVisible: null }
+    case F_PGWP_BAND: return { toAnswer: pgwpAnswer, visible: null, choiceVisible: null }
+    case F_STUDY_MONTHS_BAND: return { toAnswer: studyMonthsAnswer, visible: null, choiceVisible: null }
+    case F_STUDY_LEVEL_BAND: return { toAnswer: studyLevelAnswer, visible: null, choiceVisible: null }
   }
   return { toAnswer: null, visible: null, choiceVisible: null }
 }
@@ -1168,10 +1159,10 @@ export function bandFromProvs(provs: MaybeProvList): number {
   if (provs == null || provs.length === 0) {
     return 0
   }
-  if (provs.length === 1 && provs[0] === 'BC') {
+  if (provs.length === 1 && provs[0] === PROV_BC) {
     return 1
   }
-  if (provs.length === 1 && provs[0] === 'ON') {
+  if (provs.length === 1 && provs[0] === PROV_ON) {
     return 2
   }
   return 4
@@ -1282,6 +1273,19 @@ export function normalizeScore(cur: RawScoreSource): ScoreAnswers {
     out.areaI = raw.areaI
   }
   return out
+}
+
+/**
+ * 档里的一格 → 对象(不是对象给空对象)。
+ *
+ * @param v 原料格。
+ * @returns 对象。
+ */
+export function rec(v: RawField): RawDoc {
+  if (v != null && typeof v === 'object' && Array.isArray(v) === false) {
+    return v as RawDoc
+  }
+  return {}
 }
 
 /**

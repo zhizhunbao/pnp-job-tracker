@@ -7,15 +7,17 @@
  */
 
 import {
-  CHAT_ERR_NAME, ERR_BY_STATUS, ERR_BY_TYPE, ERR_DEFAULT, ERR_FIELD_NONE, ERR_MSG_MAX, ERR_NAME, ERR_TAIL_NONE,
-  HTTP_ERROR_TYPE, LEGACY_TOO_LONG, LEGACY_TOO_LONG_TYPE, MART_ERR_NAME, MART_HEAD, MART_META_TAIL,
+  ADVISOR_ERR_NAME, ADVISOR_LLM_DOWN_MSG,
+  CHAT_ERR_NAME, DB_ERR_NAME, DB_POOL_MSG, ERR_BY_STATUS, ERR_BY_TYPE, ERR_DEFAULT, ERR_FIELD_NONE, ERR_MSG_MAX,
+  ERR_NAME, ERR_TAIL_NONE, HTTP_ERROR_TYPE, LEGACY_TOO_LONG, LEGACY_TOO_LONG_TYPE, MART_ERR_NAME, MART_HEAD, MART_META_TAIL,
   MART_NO_SOURCE_HEAD, MART_NO_SOURCE_MID, MART_NO_SOURCE_TAIL, MART_SHARD_MID, MART_SHARD_OF, MART_SHARD_TAIL,
   MSG_SEP, TRANSLATE_ERR_NAME,
 } from './constants'
 import type {
-  ChatErrorIn, ChatErrorOut, ChatFailure, FailIn, FailOut, GatewayErrorBody, GatewayErrorIn, GatewayErrorOfIn,
-  GatewayErrorOfOut, GatewayErrorOut, GatewayFailure, HasNameIn, HasNameOut, LlmErrorIn, LlmErrorOut, LlmFailure,
-  MartErrorOut, MartMetaErrorIn, MartShardErrorIn, MartSourceErrorIn, TranslateErrorIn, TranslateErrorOut,
+  AdvisorErrorOut, ChatErrorIn, ChatErrorOut, ChatFailure, DbErrorOut, FailIn, FailOut, GatewayErrorBody, GatewayErrorIn,
+  GatewayErrorOfIn, GatewayErrorOfOut, GatewayErrorOut, GatewayFailure, HasNameIn, HasNameOut, LlmErrorIn,
+  LlmErrorOut, LlmFailure, MartErrorOut, MartMetaErrorIn, MartShardErrorIn, MartSourceErrorIn, TranslateErrorIn,
+  TranslateErrorOut,
 } from './types'
 
 // =========================================================================
@@ -55,16 +57,6 @@ export function hasName(input: HasNameIn): HasNameOut {
  */
 export function llmError(input: LlmErrorIn): LlmErrorOut {
   return fail({ name: ERR_NAME.llm, msg: input.msg, code: input.code })
-}
-
-/**
- * 造一个网关层的失败。出口那一层再把码翻成给用户看的话。
- *
- * @param input 技术留痕与错误码。
- * @returns 网关层的失败。
- */
-export function gatewayError(input: GatewayErrorIn): GatewayErrorOut {
-  return fail({ name: ERR_NAME.gateway, msg: input.msg, code: input.code })
 }
 
 /**
@@ -126,6 +118,16 @@ export function gatewayErrorOf(input: GatewayErrorOfIn): GatewayErrorOfOut {
   return gatewayError({ msg: `${input.status} ${type || HTTP_ERROR_TYPE}${tail}`, code })
 }
 
+/**
+ * 造一个网关层的失败。出口那一层再把码翻成给用户看的话。
+ *
+ * @param input 技术留痕与错误码。
+ * @returns 网关层的失败。
+ */
+export function gatewayError(input: GatewayErrorIn): GatewayErrorOut {
+  return fail({ name: ERR_NAME.gateway, msg: input.msg, code: input.code })
+}
+
 // =========================================================================
 // 3. 逐行翻译链
 // =========================================================================
@@ -168,6 +170,19 @@ export function isChatError<Slots>(err: Error): err is ChatFailure<Slots> {
 }
 
 // =========================================================================
+// 数据库层(lib/db)—— 摸池失败(2026-08-26)
+// =========================================================================
+
+/**
+ * 造一个「摸不到连接池」的失败(dbOf 用;话术与原 new Error 逐字一致)。
+ *
+ * @returns 摸池失败。
+ */
+export function dbPoolError(): DbErrorOut {
+  return fail({ name: DB_ERR_NAME, msg: DB_POOL_MSG, code: null })
+}
+
+// =========================================================================
 // 交接域(lib/mart)—— seed 读 mart 文件的三种失败(2026-08-26 形制批)
 // =========================================================================
 
@@ -207,4 +222,18 @@ export function martSourceError(input: MartSourceErrorIn): MartErrorOut {
     msg: MART_NO_SOURCE_HEAD + input.tmp + MART_NO_SOURCE_MID + input.local + MART_NO_SOURCE_TAIL,
     code: null,
   })
+}
+
+// =========================================================================
+// 顾问域(lib/advisor)—— 流式起头失败(2026-08-26 自 new Error 收编)
+// =========================================================================
+
+/**
+ * 造一个「上游模型不可用」的失败(advisor 流式一个字没吐时 controller.error 用;
+ * 话术与原 new Error 逐字一致)。
+ *
+ * @returns 顾问流式起头失败。
+ */
+export function advisorLlmError(): AdvisorErrorOut {
+  return fail({ name: ADVISOR_ERR_NAME, msg: ADVISOR_LLM_DOWN_MSG, code: null })
 }

@@ -141,6 +141,7 @@ export function useAuthForm(x: AuthFormHookIn): AuthFormHookOut {
 /**
  * 点外面关弹层:按下落在 ref 外面就调 close(键盘出口另有 Esc,两条各管各的 ——
  * 键盘用户没有「点外面」)。
+ * DOM 事件目标是宽类型,contains 要 Node —— 跨边界断言收在 onDown 体内那一行。
  *
  * @param x 弹层根节点 ref、当前开合、关闭回调。
  * @returns 无。
@@ -151,7 +152,6 @@ export function useClickOutside(x: ClickOutsideIn) {
       return
     }
     function onDown(e: MouseEvent) {
-      // DOM 事件目标是宽类型,contains 要 Node —— 跨边界断言收在这一行。
       const target = e.target as Node
       if (x.ref.current != null && x.ref.current.contains(target) === false) {
         x.close()

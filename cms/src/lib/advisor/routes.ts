@@ -20,6 +20,7 @@
  * @time 2026-08-23 21:30:00
  */
 import { getDb } from '../db/server'
+import { advisorLlmError } from '../error'
 import { textResponseOf, BAD_REQUEST, NOT_FOUND, TOO_MANY } from '../http'
 import { hasProfile, match, normalizeProfile, reasonEn, statusEn } from '../jobs'
 import type { MatchDims, ProfileJson } from '../jobs'
@@ -33,11 +34,11 @@ import { PRO_ADVISOR_DAILY } from '../quota'
 import { denyBodyOf, checkLimit, freeGate, getUser, isPro } from '../quota/server'
 import { friendLlmReady } from '../llm'
 import {
-  CACHE_HIT, CACHE_MISS, CO_NAME_LEN_MAX, E_BAD_JSON, E_LLM_DOWN, E_NOT_FOUND,
+  CACHE_HIT, CACHE_MISS, CO_NAME_LEN_MAX, E_BAD_JSON, E_NOT_FOUND,
   E_RATE_LIMITED, ENV_DAILY_CAP, F_CITY_READ, F_COMPANY, F_IMMIGRATION, F_JD_READ, F_OCC_READ,
   F_PROV_READ, F_TITLE, GATE_BUF_MAX, GATE_MARK, GLOBAL_DAILY_CAP_DEFAULT, HTTP_RE, ID_SEP,
   JD_LEN_MAX, JD_NO, JD_YES, PREDICT_CHAT, PREDICT_COMPANY, PREDICT_DEFAULT, PREDICT_SIMPLE,
-  PROV_CODE_RE, QUOTA_KEY_GLOBAL, QUOTA_KEY_PRO_PREFIX, SIMPLE_FIELDS,
+  PROV_CODE_RE, QUOTA_KEY_GLOBAL, QUOTA_KEY_PRO_PREFIX, SIMPLE_FIELDS, TEXT_NONE, TEXT_START,
 } from './constants'
 import {
   blankOf, cacheKeyOf, chatPromptOf, chatSystemOf, cityFactsOf, cleanMessages, headersOf, langOf,
@@ -67,7 +68,7 @@ export async function advisorRoute(req: Request): Promise<Response> {
     field = wire.field
   }
   const lang = langOf(wire)
-  let bodyId = ''
+  let bodyId = TEXT_NONE
   if (typeof wire.id === 'string') {
     bodyId = wire.id
   }
@@ -98,8 +99,8 @@ export async function advisorRoute(req: Request): Promise<Response> {
   let keyId = bodyId
   if (field === F_OCC_READ) {
     const duties = await loadNocDuties({ db, noc: bodyId })
-    let d = ''
-    let r = ''
+    let d = TEXT_NONE
+    let r = TEXT_NONE
     if (duties != null) {
       d = duties.duties
       r = duties.requirements
@@ -109,7 +110,7 @@ export async function advisorRoute(req: Request): Promise<Response> {
     const code = bodyId.toUpperCase()
     if (PROV_CODE_RE.test(code)) {
       const card = await loadProvinceCard({ db, code })
-      let facts = ''
+      let facts = TEXT_NONE
       if (card != null) {
         facts = provFactsOf({ code, card })
       }
@@ -140,7 +141,7 @@ export async function advisorRoute(req: Request): Promise<Response> {
     return new Response(E_NOT_FOUND, { status: NOT_FOUND })
   }
 
-  let pf = ''
+  let pf = TEXT_START
   let userId: string | null = null
   if (user != null) {
     if (profileOk) {
@@ -172,7 +173,7 @@ export async function advisorRoute(req: Request): Promise<Response> {
     return new Response(E_RATE_LIMITED, { status: TOO_MANY })
   }
 
-  let jd = ''
+  let jd = TEXT_NONE
   if (field === F_TITLE || field === F_IMMIGRATION || field === F_JD_READ || isChat) {
     jd = (await jobDescription({ db, applyUrl: blankOf(job.applyUrl).trim() })).slice(0, JD_LEN_MAX)
   }
@@ -198,7 +199,7 @@ export async function advisorRoute(req: Request): Promise<Response> {
   }
 
   let system = systemOf(lang)
-  let prompt = ''
+  let prompt = TEXT_START
   if (isChat) {
     system = chatSystemOf({ job, jd, lang, pf })
     prompt = chatPromptOf({ messages })
@@ -221,7 +222,7 @@ export async function advisorRoute(req: Request): Promise<Response> {
   }
 
   const gated = field === F_COMPANY && isChat === false
-  const state = { open: gated === false, buf: '', full: '' }
+  const state = { open: gated === false, buf: TEXT_START, full: TEXT_START }
   const enc = new TextEncoder()
   const stream = new ReadableStream<Uint8Array>({
     start(controller): void {
@@ -243,11 +244,11 @@ export async function advisorRoute(req: Request): Promise<Response> {
         if (i >= 0) {
           state.open = true
           emit(state.buf.slice(i))
-          state.buf = ''
+          state.buf = TEXT_START
         } else if (state.buf.length > GATE_BUF_MAX) {
           state.open = true
           emit(state.buf)
-          state.buf = ''
+          state.buf = TEXT_START
         }
       }
 
@@ -263,7 +264,7 @@ export async function advisorRoute(req: Request): Promise<Response> {
 
       function failed(): void {
         if (state.full === '') {
-          controller.error(new Error(E_LLM_DOWN))
+          controller.error(advisorLlmError())
           return
         }
         controller.close()

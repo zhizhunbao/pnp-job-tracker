@@ -99,6 +99,8 @@ export function maxKeyOf(maximized: boolean): string {
  * 居中态白卡的运行时样式预算:只剩拖拽位移进 transform —— 每帧连续变化的像素,
  * 类是有限枚举装不下它(三档宽/高上限/过渡开关全类化进 module.css 了)。
  * 窄屏与全屏态样式全在类里,返回空对象。
+ * CSS 值整条留在体内:拆成 HEAD/MID/TAIL 三截之后就再没人看得出这是一条 translate3d,
+ * 与「抽常量是为了看懂」正好相反。用 3d 而非 translate 是为了吃 GPU 合成层(拖动不触发重排)。
  *
  * @param x 形态与位移。
  * @returns 白卡的 style。
@@ -109,9 +111,7 @@ export function cardStyleOf(x: CardStyleIn): React.CSSProperties {
   }
   let transform = TRANSFORM_NONE
   if (x.pos.x !== 0 || x.pos.y !== 0) {
-    // CSS 值整条留在这里:拆成 HEAD/MID/TAIL 三截之后就再没人看得出这是一条 translate3d,
-    // 与「抽常量是为了看懂」正好相反。用 3d 而非 translate 是为了吃 GPU 合成层(拖动不触发重排)。
-    // eslint-disable-next-line local/no-bare-strings -- 见上:CSS 值不拆片
+    // eslint-disable-next-line local/no-bare-strings -- 见本函数 JSDoc:CSS 值不拆片
     transform = `translate3d(${x.pos.x}px, ${x.pos.y}px, 0)`
   }
   return { transform }

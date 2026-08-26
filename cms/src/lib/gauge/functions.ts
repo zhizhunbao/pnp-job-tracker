@@ -33,18 +33,6 @@ import type {
 // =========================================================================
 
 /**
- * 地名规范化:小写、只留字母与空格、去掉首尾空白。
- *
- * 官方枚举表里的条目写的就是这个形态,两边同一把尺才比得上。
- *
- * @param s 原始地名。
- * @returns 规范化后的地名。
- */
-function normalizeName(s: NormalizeNameIn): NormalizeNameOut {
-  return (s || NAME_NONE).toLowerCase().replace(NON_LETTERS, NON_LETTERS_REPL).trim()
-}
-
-/**
  * 岗位地点 → 该省官方分档区域键(与 `pnp_requirements.appliesArea` 同一套值)。
  *
  * 🔴 **认不出返回空**,不硬塞档位 —— 上游据此只摆能确定的那半
@@ -105,6 +93,18 @@ function placeNames(input: PlaceNamesIn): PlaceNamesOut {
     }
   }
   return out
+}
+
+/**
+ * 地名规范化:小写、只留字母与空格、去掉首尾空白。
+ *
+ * 官方枚举表里的条目写的就是这个形态,两边同一把尺才比得上。
+ *
+ * @param s 原始地名。
+ * @returns 规范化后的地名。
+ */
+function normalizeName(s: NormalizeNameIn): NormalizeNameOut {
+  return (s || NAME_NONE).toLowerCase().replace(NON_LETTERS, NON_LETTERS_REPL).trim()
 }
 
 /**

@@ -18,21 +18,6 @@ import type {
 } from './types'
 
 /**
- * 按 key 找策略;没有则 null(通道 key 全集在 PathwayKey,正常打不到 null)。
- *
- * @param key 通道 key。
- * @returns 策略;没登记 null。
- */
-function strategyOf(key: string): MaybeStrategy {
-  for (const p of PATHWAYS) {
-    if (p.key === key) {
-      return p
-    }
-  }
-  return null
-}
-
-/**
  * 某条通道的某一类闸。**没登记 = 本站未收录**(unknown),与「官方不要求」意思相反,不许混
  * —— 举证责任在我们:notRequired 也要么带官方原句、要么带「读过这一页、页上没有」的 basis。
  *
@@ -48,6 +33,21 @@ export function gateOf(input: GateOfIn): GateRule {
     }
   }
   return { need: NEED_UNKNOWN, why: WHY_NO_SOURCE, url: null, fetched: null, note: null }
+}
+
+/**
+ * 按 key 找策略;没有则 null(通道 key 全集在 PathwayKey,正常打不到 null)。
+ *
+ * @param key 通道 key。
+ * @returns 策略;没登记 null。
+ */
+function strategyOf(key: string): MaybeStrategy {
+  for (const p of PATHWAYS) {
+    if (p.key === key) {
+      return p
+    }
+  }
+  return null
 }
 
 /**
@@ -112,6 +112,18 @@ export function uiOf(key: string): ResolvedUi {
 }
 
 /**
+ * 省 × 制度 聚合(profile-pathways 区域线行用)。表没建/查询失败 = [](queryRowsOrEmpty 留痕回空,
+ * 上游按「没数据」处理,不编)。池由调用方注进来(拍板③:db 只在边缘)。
+ *
+ * @param db 数据库连接(池由调用方注进来)。
+ * @returns 聚合行;拉不到空数组。
+ */
+export async function loadPilotQuota(db: Db): PilotQuotaOut {
+  const rows = await queryRowsOrEmpty({ db: db, sql: SQL.PILOT_QUOTA_COMMUNITIES, params: [], map: toPilotCommunity })
+  return aggregatePilotQuota(rows)
+}
+
+/**
  * 名额状态聚合本体(纯函数,tests/int 直接喂 fixture 行)。
  * 🔴 空 = 官网没写,不是没有限额:各和只对官网写了数的社区求,一个都没有 = null(禁折 0)。
  * type 里没有 RCIP/FCIP(社区名没接上 pilot-communities)的行不进聚合 —— 明细取法仍能看到它。
@@ -169,18 +181,6 @@ export function aggregatePilotQuota(rows: PilotCommunityRows): PilotQuotaAggs {
   const out = Array.from(groups.values())
   out.sort(byProvThenType)
   return out
-}
-
-/**
- * 省 × 制度 聚合(profile-pathways 区域线行用)。表没建/查询失败 = [](queryRowsOrEmpty 留痕回空,
- * 上游按「没数据」处理,不编)。池由调用方注进来(拍板③:db 只在边缘)。
- *
- * @param db 数据库连接(池由调用方注进来)。
- * @returns 聚合行;拉不到空数组。
- */
-export async function loadPilotQuota(db: Db): PilotQuotaOut {
-  const rows = await queryRowsOrEmpty({ db: db, sql: SQL.PILOT_QUOTA_COMMUNITIES, params: [], map: toPilotCommunity })
-  return aggregatePilotQuota(rows)
 }
 
 // =========================================================================

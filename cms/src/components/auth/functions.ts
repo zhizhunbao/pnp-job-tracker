@@ -118,7 +118,8 @@ export function quizDestinationOf(x: QuizDestIn): string | null {
 
 /**
  * 认证成功后的收尾:先拉服务端答案档与本地合并(新者胜;服务端无档则把浏览器旧答案
- * 送上去 —— dp.authGate「注册后答案自动存档」兑现处;失败不拦登录)。必须等它:
+ * 送上去 —— dp.authGate「注册后答案自动存档」兑现处;失败不拦登录 ——
+ * 网络失败:答案仍在浏览器,下次改动重试)。必须等它:
  * 下面读的就是合并后的答案。然后有问卷缺口先跳问卷,否则调 onDone 回原操作。
  * afterLogin=true:登录刚成功,迹象 cookie(#311 匿名不发请求的闸)还没置位,这一调必须绕闸发出。
  *
@@ -127,7 +128,6 @@ export function quizDestinationOf(x: QuizDestIn): string | null {
  */
 export async function finishAuth(x: FinishAuthIn) {
   await pullAndMerge(true).catch(function ignore() {
-    // 网络失败:答案仍在浏览器,下次改动重试
     return null
   })
   const destination = quizDestinationOf({ returnTo: x.returnTo })
@@ -195,12 +195,12 @@ export function registerErrKeyOf(x: RegisterErrIn): string {
 
 /**
  * 注册成功打点(umami 是站外脚本挂的全局,拿不到就算了)。
+ * window 上是外部脚本注入的全局形状(UmamiHost),跨边界断言收在体内那一处。
  *
  * @returns 无。
  */
 export function trackSignup() {
   try {
-    // 外部脚本注入的全局形状(UmamiHost),断言收在这一处。
     const w = window as UmamiHost
     if (w.umami != null) {
       w.umami.track(EVENT_SIGNUP)
@@ -284,15 +284,14 @@ export async function runAuthFlow(x: AuthFlowIn): Promise<AuthFlowOut> {
 }
 
 /**
- * 登出(失败也整页刷新 —— cookie 已失效时刷新同样落到匿名态)。
+ * 登出(失败也整页刷新 —— cookie 已失效时刷新同样落到匿名态;
+ * 网络失败也照刷:刷新后按真实 cookie 态渲染)。
  *
  * @returns 无(整页刷新)。
  */
 export async function logout() {
-  try {
-    await fetch(API_LOGOUT, { method: HTTP_POST, credentials: CREDENTIALS_INCLUDE })
-  } catch {
-    // 网络失败也照刷:刷新后按真实 cookie 态渲染
-  }
+  await fetch(API_LOGOUT, { method: HTTP_POST, credentials: CREDENTIALS_INCLUDE }).catch(function ignore() {
+    return null
+  })
   window.location.reload()
 }

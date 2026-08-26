@@ -33,21 +33,6 @@ import type {
 // =========================================================================
 
 /**
- * 这个 NOC 在不在搜索真实返回的候选里。
- *
- * @param input 这一趟的候选清单与要找的那个 NOC。
- * @returns 在不在清单里。
- */
-function inCandidates(input: InCandidatesIn): InCandidatesOut {
-  for (const c of input.candidates) {
-    if (c.noc === input.noc) {
-      return true
-    }
-  }
-  return false
-}
-
-/**
  * 模型挑的 NOC 只有在**候选里出现过**才算数 —— 它没法用查询结果之外的码蒙混过去。
  *
  * @param input 模型填的 NOC 与这一趟的候选清单。
@@ -68,9 +53,60 @@ export function acceptNoc(input: AcceptNocIn): AcceptNocOut {
   return null
 }
 
+/**
+ * 这个 NOC 在不在搜索真实返回的候选里。
+ *
+ * @param input 这一趟的候选清单与要找的那个 NOC。
+ * @returns 在不在清单里。
+ */
+function inCandidates(input: InCandidatesIn): InCandidatesOut {
+  for (const c of input.candidates) {
+    if (c.noc === input.noc) {
+      return true
+    }
+  }
+  return false
+}
+
 // =========================================================================
 // 2. 三个工具
 // =========================================================================
+
+/**
+ * set_slots / give_up 带 `terminate: true`,循环拿到就收工,不再多问一轮。
+ *
+ * @param input 库连接与这一趟的收件箱。
+ * @returns 三把工具,顺序就是模型看到的顺序。
+ */
+export function makeTools(input: MakeToolsIn): MakeToolsOut {
+  return [
+    searchTool({ pool: input.pool, out: input.out }),
+    setSlotsTool({ out: input.out }),
+    giveUpTool({ out: input.out }),
+  ]
+}
+
+/**
+ * 交回反问那把工具:execute 把模型自己交回的反问记下来就收工(放弃理由可不填)。
+ *
+ * @param input 这一趟的收件箱。
+ * @returns 交回反问那把工具。
+ */
+function giveUpTool(input: GiveUpToolIn): GiveUpToolOut {
+  async function executeGiveUp(_id: ToolCallId, args: ExecuteGiveUpIn): ExecuteGiveUpOut {
+    input.out.gaveUp = true
+    let reason = CLAIM_NONE
+    if (args.reason != null) {
+      reason = args.reason
+    }
+    const text = `${TOOL_REPLY.gaveUp}${reason}`.slice(0, MAX_REASON_CHARS)
+    return say({ text, details: { gaveUp: true }, stop: true })
+  }
+  return {
+    name: TOOLS.giveUp.name, label: TOOLS.giveUp.label, description: TOOL_DESC.giveUp,
+    parameters: GIVE_UP_PARAMS, execute: executeGiveUp,
+  }
+}
 
 /**
  * 拼一条工具回执:给模型看的文字 + 给我们自己读的 details + 这一步要不要收工。
@@ -80,6 +116,75 @@ export function acceptNoc(input: AcceptNocIn): AcceptNocOut {
  */
 function say<T>(input: SayIn<T>): SayOut<T> {
   return { content: [{ type: ROLE.text, text: input.text }], details: input.details, terminate: input.stop }
+}
+
+/**
+ * 记下槽位那把工具:execute 记下模型填的槽位并收工。只记账不判断 ——
+ * 采信统一在 §4 做,在回调里判等于把红线散进三个地方。
+ *
+ * @param input 这一趟的收件箱。
+ * @returns 记下槽位那把工具。
+ */
+function setSlotsTool(input: SetSlotsToolIn): SetSlotsToolOut {
+  async function executeSetSlots(_id: ToolCallId, args: ExecuteSetSlotsIn): ExecuteSetSlotsOut {
+    input.out.claim = args
+    return say({ text: TOOL_REPLY.recorded, details: args, stop: true })
+  }
+  return {
+    name: TOOLS.setSlots.name, label: TOOLS.setSlots.label, description: TOOL_DESC.setSlots,
+    parameters: SET_SLOTS_PARAMS, execute: executeSetSlots,
+  }
+}
+
+/**
+ * 查候选那把工具 —— execute 写在里面,因为它要往这一趟的收件箱里攒候选:
+ * 查一次候选,攒进收件箱,并把清单回给模型。execute 的两个参数是 pi 定的
+ * (它按位置传 toolCallId、args),第一位我们用不上。
+ *
+ * @param input 库连接与这一趟的收件箱。
+ * @returns 查职业候选那把工具。
+ */
+function searchTool(input: SearchToolIn): SearchToolOut {
+  async function executeSearch(_id: ToolCallId, args: ExecuteSearchIn): ExecuteSearchOut {
+    const query = args.query.trim().slice(0, MAX_QUERY_CHARS)
+    const hits = await searchCandidates({ pool: input.pool, query })
+    for (const hit of hits) {
+      input.out.candidates.push(hit)
+    }
+    const details: SearchDetails = { candidates: hits }
+    return say({ text: searchReply({ hits }), details, stop: false })
+  }
+  return {
+    name: TOOLS.search.name, label: TOOLS.search.label, description: TOOL_DESC.search,
+    parameters: SEARCH_PARAMS, execute: executeSearch,
+  }
+}
+
+/**
+ * 回给模型的那段话:候选清单,或者「一个都没有」。
+ *
+ * @param input 这一趟查到的候选。
+ * @returns 回给模型的那段话;一个候选都没有时是「一个都没有」。
+ */
+function searchReply(input: SearchReplyIn): SearchReplyOut {
+  if (input.hits.length === 0) {
+    return TOOL_REPLY.noCandidates
+  }
+  const lines: string[] = []
+  for (const hit of input.hits) {
+    lines.push(candidateLine({ hit }))
+  }
+  return `${SEARCH_RESULT_HINT}${NL}${lines.join(NL)}`
+}
+
+/**
+ * 一个候选渲染成一行:`NOC — 职业名`。
+ *
+ * @param input 一个候选。
+ * @returns `NOC — 职业名` 这一行。
+ */
+function candidateLine(input: CandidateLineIn): CandidateLineOut {
+  return `${input.hit.noc}${DASH}${input.hit.title}`
 }
 
 /**
@@ -127,111 +232,6 @@ async function searchCandidates(input: SearchCandidatesIn): SearchCandidatesOut 
   }
 }
 
-/**
- * 一个候选渲染成一行:`NOC — 职业名`。
- *
- * @param input 一个候选。
- * @returns `NOC — 职业名` 这一行。
- */
-function candidateLine(input: CandidateLineIn): CandidateLineOut {
-  return `${input.hit.noc}${DASH}${input.hit.title}`
-}
-
-/**
- * 回给模型的那段话:候选清单,或者「一个都没有」。
- *
- * @param input 这一趟查到的候选。
- * @returns 回给模型的那段话;一个候选都没有时是「一个都没有」。
- */
-function searchReply(input: SearchReplyIn): SearchReplyOut {
-  if (input.hits.length === 0) {
-    return TOOL_REPLY.noCandidates
-  }
-  const lines: string[] = []
-  for (const hit of input.hits) {
-    lines.push(candidateLine({ hit }))
-  }
-  return `${SEARCH_RESULT_HINT}${NL}${lines.join(NL)}`
-}
-
-/**
- * 查候选那把工具 —— execute 写在里面,因为它要往这一趟的收件箱里攒候选:
- * 查一次候选,攒进收件箱,并把清单回给模型。execute 的两个参数是 pi 定的
- * (它按位置传 toolCallId、args),第一位我们用不上。
- *
- * @param input 库连接与这一趟的收件箱。
- * @returns 查职业候选那把工具。
- */
-function searchTool(input: SearchToolIn): SearchToolOut {
-  async function executeSearch(_id: ToolCallId, args: ExecuteSearchIn): ExecuteSearchOut {
-    const query = args.query.trim().slice(0, MAX_QUERY_CHARS)
-    const hits = await searchCandidates({ pool: input.pool, query })
-    for (const hit of hits) {
-      input.out.candidates.push(hit)
-    }
-    const details: SearchDetails = { candidates: hits }
-    return say({ text: searchReply({ hits }), details, stop: false })
-  }
-  return {
-    name: TOOLS.search.name, label: TOOLS.search.label, description: TOOL_DESC.search,
-    parameters: SEARCH_PARAMS, execute: executeSearch,
-  }
-}
-
-/**
- * 记下槽位那把工具:execute 记下模型填的槽位并收工。只记账不判断 ——
- * 采信统一在 §4 做,在回调里判等于把红线散进三个地方。
- *
- * @param input 这一趟的收件箱。
- * @returns 记下槽位那把工具。
- */
-function setSlotsTool(input: SetSlotsToolIn): SetSlotsToolOut {
-  async function executeSetSlots(_id: ToolCallId, args: ExecuteSetSlotsIn): ExecuteSetSlotsOut {
-    input.out.claim = args
-    return say({ text: TOOL_REPLY.recorded, details: args, stop: true })
-  }
-  return {
-    name: TOOLS.setSlots.name, label: TOOLS.setSlots.label, description: TOOL_DESC.setSlots,
-    parameters: SET_SLOTS_PARAMS, execute: executeSetSlots,
-  }
-}
-
-/**
- * 交回反问那把工具:execute 把模型自己交回的反问记下来就收工(放弃理由可不填)。
- *
- * @param input 这一趟的收件箱。
- * @returns 交回反问那把工具。
- */
-function giveUpTool(input: GiveUpToolIn): GiveUpToolOut {
-  async function executeGiveUp(_id: ToolCallId, args: ExecuteGiveUpIn): ExecuteGiveUpOut {
-    input.out.gaveUp = true
-    let reason = CLAIM_NONE
-    if (args.reason != null) {
-      reason = args.reason
-    }
-    const text = `${TOOL_REPLY.gaveUp}${reason}`.slice(0, MAX_REASON_CHARS)
-    return say({ text, details: { gaveUp: true }, stop: true })
-  }
-  return {
-    name: TOOLS.giveUp.name, label: TOOLS.giveUp.label, description: TOOL_DESC.giveUp,
-    parameters: GIVE_UP_PARAMS, execute: executeGiveUp,
-  }
-}
-
-/**
- * set_slots / give_up 带 `terminate: true`,循环拿到就收工,不再多问一轮。
- *
- * @param input 库连接与这一趟的收件箱。
- * @returns 三把工具,顺序就是模型看到的顺序。
- */
-export function makeTools(input: MakeToolsIn): MakeToolsOut {
-  return [
-    searchTool({ pool: input.pool, out: input.out }),
-    setSlotsTool({ out: input.out }),
-    giveUpTool({ out: input.out }),
-  ]
-}
-
 // =========================================================================
 // 3. 入口
 // =========================================================================
@@ -259,69 +259,6 @@ export function passThroughMessages(ms: PassThroughMessagesIn): PassThroughMessa
  */
 function ignoreEvents(): IgnoreEventsOut {
   return
-}
-
-/**
- * 这一趟用哪个模型;id 允许 env 覆盖,换版本不用改代码。
- *
- * @returns 这一趟用的模型描述符,协议锁死 anthropic-messages。
- */
-function model(): ModelOut {
-  return {
-    id: process.env.ANTHROPIC_MODEL || MODEL_ID,
-    name: MODEL_NAME,
-    api: MODEL_API,
-    provider: MODEL_PROVIDER,
-    baseUrl: MODEL_BASE_URL,
-    reasoning: MODEL_REASONING,
-    input: [ROLE.text],
-    contextWindow: MODEL_CONTEXT_WINDOW,
-    maxTokens: MAX_TOKENS,
-    cost: { input: COST_INPUT, output: COST_OUTPUT, cacheRead: COST_CACHE_READ, cacheWrite: COST_CACHE_WRITE },
-  }
-}
-
-/**
- * 🔴 兜底失败 = 当它没发生过:任何错都吞掉、回 false,不许把主路径带崩。
- * 但**不许静默** —— 吞掉之前必须留痕,否则下次排查只能靠人肉撞见。
- * 尾参的 `stream as StreamFn` 是既有断言:pi-ai 的 stream 锁死 anthropic-messages,
- * StreamFn 要通吃所有 Api —— 逆变对不上,只能断言(模型就是 anthropic)。
- *
- * @param input 库连接、用户原话、API key、超时信号、收件箱。
- * @returns 跑完了没有;出错吞掉回 false,留痕已经写过。
- */
-async function runLoop(input: RunLoopIn): RunLoopOut {
-  try {
-    const first: TranscriptMessage = {
-      role: ROLE.user, content: input.text.slice(0, MAX_INPUT_CHARS), timestamp: Date.now(),
-    }
-    await runAgentLoop(
-      [first],
-      { systemPrompt: RESOLVE_SYSTEM, messages: [], tools: makeTools({ pool: input.pool, out: input.out }) },
-      { model: model(), apiKey: input.apiKey, maxTokens: MAX_TOKENS, convertToLlm: passThroughMessages },
-      ignoreEvents,
-      input.signal,
-      stream as StreamFn,
-    )
-    return true
-  } catch (e) {
-    let why = String(e)
-    if (e instanceof Error) {
-      why = e.message
-    }
-    log({ tag: AGENT_LOG.tag, text: `${AGENT_FN.runLoop}${AGENT_LOG.failedTail}${why}` })
-    return false
-  }
-}
-
-/**
- * 🔴 兜底默认是关着的,`AGENT_FALLBACK=1` 才开。
- * 没开就当这个模块不存在,调用方走它原来的反问,行为与从前逐字相同。
- *
- * @returns 这条兜底路开没开。
- */
-function agentFallbackOn(): AgentFallbackOnOut {
-  return process.env.AGENT_FALLBACK === FALLBACK_ON
 }
 
 /**
@@ -389,4 +326,67 @@ export async function resolveByAgent(input: ResolveByAgentIn): ResolveByAgentOut
     log({ tag: AGENT_LOG.tag, text: `${AGENT_FN.resolveByAgent}${AGENT_LOG.failedTail}${why}` })
     return null
   }
+}
+
+/**
+ * 🔴 兜底失败 = 当它没发生过:任何错都吞掉、回 false,不许把主路径带崩。
+ * 但**不许静默** —— 吞掉之前必须留痕,否则下次排查只能靠人肉撞见。
+ * 尾参的 `stream as StreamFn` 是既有断言:pi-ai 的 stream 锁死 anthropic-messages,
+ * StreamFn 要通吃所有 Api —— 逆变对不上,只能断言(模型就是 anthropic)。
+ *
+ * @param input 库连接、用户原话、API key、超时信号、收件箱。
+ * @returns 跑完了没有;出错吞掉回 false,留痕已经写过。
+ */
+async function runLoop(input: RunLoopIn): RunLoopOut {
+  try {
+    const first: TranscriptMessage = {
+      role: ROLE.user, content: input.text.slice(0, MAX_INPUT_CHARS), timestamp: Date.now(),
+    }
+    await runAgentLoop(
+      [first],
+      { systemPrompt: RESOLVE_SYSTEM, messages: [], tools: makeTools({ pool: input.pool, out: input.out }) },
+      { model: model(), apiKey: input.apiKey, maxTokens: MAX_TOKENS, convertToLlm: passThroughMessages },
+      ignoreEvents,
+      input.signal,
+      stream as StreamFn,
+    )
+    return true
+  } catch (e) {
+    let why = String(e)
+    if (e instanceof Error) {
+      why = e.message
+    }
+    log({ tag: AGENT_LOG.tag, text: `${AGENT_FN.runLoop}${AGENT_LOG.failedTail}${why}` })
+    return false
+  }
+}
+
+/**
+ * 这一趟用哪个模型;id 允许 env 覆盖,换版本不用改代码。
+ *
+ * @returns 这一趟用的模型描述符,协议锁死 anthropic-messages。
+ */
+function model(): ModelOut {
+  return {
+    id: process.env.ANTHROPIC_MODEL || MODEL_ID,
+    name: MODEL_NAME,
+    api: MODEL_API,
+    provider: MODEL_PROVIDER,
+    baseUrl: MODEL_BASE_URL,
+    reasoning: MODEL_REASONING,
+    input: [ROLE.text],
+    contextWindow: MODEL_CONTEXT_WINDOW,
+    maxTokens: MAX_TOKENS,
+    cost: { input: COST_INPUT, output: COST_OUTPUT, cacheRead: COST_CACHE_READ, cacheWrite: COST_CACHE_WRITE },
+  }
+}
+
+/**
+ * 🔴 兜底默认是关着的,`AGENT_FALLBACK=1` 才开。
+ * 没开就当这个模块不存在,调用方走它原来的反问,行为与从前逐字相同。
+ *
+ * @returns 这条兜底路开没开。
+ */
+function agentFallbackOn(): AgentFallbackOnOut {
+  return process.env.AGENT_FALLBACK === FALLBACK_ON
 }

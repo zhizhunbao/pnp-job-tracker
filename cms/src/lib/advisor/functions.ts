@@ -15,16 +15,16 @@ import { CHAT_CODE, chatError } from '../error'
 import { fill } from '../template'
 import { PROV_NAMES } from '../location'
 import {
-  API, ATLANTIC_PROVS, AUTH_HEADER, BASE, BEARER, BLOCK_TEXT, CACHE_VER, CO_ABOUT_LEN_MAX,
+  API, ATLANTIC_PROVS, AUTH_HEADER, BASE, BEARER, BLANK_SEP, BLOCK_TEXT, CACHE_VER, CO_ABOUT_LEN_MAX,
   CO_DESC_LEN_MAX, CO_SECTORS_LEN_MAX, CO_SOURCES_MAX, CO_WEB_LEN_MAX, COMMA_SEP, CONTEXT_WINDOW,
-  CT_TEXT, F_CITY_READ, F_CO_READ, F_COMPANY, F_IMMIGRATION, F_JD_READ, F_OCC_READ,
+  CT_TEXT, ERR_MSG_NONE, F_CITY_READ, F_CO_READ, F_COMPANY, F_IMMIGRATION, F_JD_READ, F_OCC_READ,
   F_PROV_READ, F_SCORE, F_TITLE, HDR_CONTENT_TYPE, HDR_X_CACHE, HDR_X_JD, HTML_SCRIPT_RE,
   HTML_STYLE_RE, HTML_TAG_RE, HTTP_RE, INDEMAND_NOC2,
-  ISO_DATE_LEN, K_DIV, KEY, KEY_PRO_PREFIX, KEY_SEP, LANG_NAMES, LANG_ZH, LOC_FACTS_LEN_MAX, LOC_KEY,
+  ISO_DATE_LEN, K_DIV, KEY, KEY_PRO_PREFIX, KEY_SEP, LANG_EN, LANG_KO, LANG_NAMES, LANG_ZH, LOC_FACTS_LEN_MAX, LOC_KEY,
   LOOP_TIMEOUT_MS, MESSAGE_UPDATE, MODEL_ID, NL, NL2, NO_KEY_PLACEHOLDER, NOC_GROUP_LEN, NOC_TEER_RE,
-  OCC_DUTY_LEN_MAX, OCC_DUTY_LINES_MAX, OCC_REQ_LEN_MAX, OCC_REQ_LINES_MAX, PCT_100, PROVIDER, QC_CODE, QUOTE,
-  REASON_PREFIX, ROLE_ASSISTANT, ROLE_USER, SAMPLING, SEMI_SEP, SIMPLE_FIELDS, SLASH_SEP, SPACE_SEP, TOOL_WEB_FETCH,
-  V1, WAGE_FIELDS, WEBFETCH_TEXT_MAX, WEBFETCH_TIMEOUT_MS, WS_RE,
+  OCC_DUTY_LEN_MAX, OCC_DUTY_LINES_MAX, OCC_REQ_LEN_MAX, OCC_REQ_LINES_MAX, PCT_100, PROV_NONE, PROVIDER, QC_CODE, QUOTE,
+  REASON_PREFIX, ROLE_ASSISTANT, ROLE_USER, SAMPLING, SEG_NONE, SEMI_SEP, SIMPLE_FIELDS, SLASH_SEP, SPACE_SEP,
+  TEXT_NONE, TEXT_START, TOOL_WEB_FETCH, V1, WAGE_FIELDS, WEBFETCH_TEXT_MAX, WEBFETCH_TIMEOUT_MS, WS_RE,
 } from './constants'
 import { WEB_FETCH_PARAMS } from './schemas'
 import {
@@ -104,7 +104,7 @@ export function chatSystemOf(input: ChatSystemIn): string {
  * @returns system 全文。
  */
 export function systemOf(lang: Lang): string {
-  let zhOnly = ''
+  let zhOnly = SEG_NONE
   if (lang === LANG_ZH) {
     zhOnly = ZH_ONLY
   }
@@ -169,7 +169,7 @@ function reasonLineOf(reason: string): string {
  */
 export function readerCtxOf(status: MaybeStr): string {
   if (status == null || status === '') {
-    return ''
+    return SEG_NONE
   }
   return fill({ tpl: READER_CTX_TPL, params: { status } })
 }
@@ -206,13 +206,13 @@ function companyPromptOf(input: CompanyPromptIn): string {
   const desc = trimOf(j.companyDescription).slice(0, CO_DESC_LEN_MAX)
   const sectors = trimOf(j.companySectors).slice(0, CO_SECTORS_LEN_MAX)
   const hasStored = desc !== '' || sectors !== ''
-  let webBrief = ''
+  let webBrief = TEXT_NONE
   let webSources: string[] = []
   if (input.web != null) {
     webBrief = trimOf(input.web.brief).slice(0, CO_WEB_LEN_MAX)
     webSources = input.web.sources
   }
-  let known = ''
+  let known = TEXT_START
   if (hasStored) {
     const subs: string[] = []
     if (sectors !== '') {
@@ -224,7 +224,7 @@ function companyPromptOf(input: CompanyPromptIn): string {
     known = CO_KNOWN_HEAD + subs.join(NL) + NL2
   }
   if (webBrief !== '') {
-    let srcSeg = ''
+    let srcSeg = SEG_NONE
     if (webSources.length > 0) {
       srcSeg = fill({ tpl: CO_KNOWN.sources, params: { v: webSources.slice(0, CO_SOURCES_MAX).join(SPACE_SEP) } })
     }
@@ -324,11 +324,11 @@ function coReadPromptOf(input: CoReadPromptIn): string {
   const j = input.job
   let spLine = CO_SPONSOR.none
   if (j.lmiaPositions != null && j.lmiaPositions > 0) {
-    let skilled = ''
+    let skilled = SEG_NONE
     if (j.lmiaPositionsSkilled != null) {
       skilled = fill({ tpl: CO_SPONSOR.skilledSeg, params: { v: j.lmiaPositionsSkilled } })
     }
-    let quarter = ''
+    let quarter = SEG_NONE
     if (j.lmiaLastQuarter != null && j.lmiaLastQuarter !== '') {
       quarter = fill({ tpl: CO_SPONSOR.quarterSeg, params: { v: j.lmiaLastQuarter } })
     }
@@ -392,7 +392,7 @@ function fieldPromptOf(input: FieldPromptIn): string {
 function immigrationPromptOf(input: ImmigrationPromptIn): string {
   const j = input.job
   const langName = langNameOf(input.lang)
-  let atlanticRule = ''
+  let atlanticRule = SEG_NONE
   if (ATLANTIC_PROVS.includes(emptyOf(j.province).toUpperCase())) {
     atlanticRule = fill({ tpl: ATLANTIC_RULE, params: { prov: provFullOf(j.province) } })
   }
@@ -440,7 +440,7 @@ function jobFactsOf(j: AdvisorJob): string {
     score: numOrDashOf(j.score), pnp: boolWordOf(j.pnpEligible), ee: orNoneOf(j.eeCategory),
     aip: boolWordOf(j.aip), acc: orDashOf(j.accessibility),
   } }))
-  let yr = ''
+  let yr = SEG_NONE
   if (j.salaryAnnual != null) {
     yr = fill({ tpl: YR_SEG, params: { v: kOf(j.salaryAnnual) } })
   }
@@ -485,7 +485,7 @@ function jobFactsOf(j: AdvisorJob): string {
  */
 function medianLineOf(j: AdvisorJob): string {
   if (j.wageMedAnnual == null) {
-    return ''
+    return SEG_NONE
   }
   return fill({ tpl: JOB_FACT.median, params: { hr: String(j.wageMedHourly), yr: kOf(j.wageMedAnnual) } })
 }
@@ -530,7 +530,7 @@ function scoreFactsOf(j: AdvisorJob): string {
  * @returns 三行信号块。
  */
 function pathFactsOf(j: AdvisorJob): string {
-  let stream = ''
+  let stream = SEG_NONE
   if (j.pnpStream != null && j.pnpStream !== '') {
     stream = fill({ tpl: STREAM_SEG, params: { v: j.pnpStream } })
   }
@@ -612,7 +612,7 @@ function locOf(j: AdvisorJob): string {
  */
 function provFullOf(code: MaybeStr): string {
   if (code == null || code === '') {
-    return ''
+    return PROV_NONE
   }
   const name = PROV_NAMES[code.toUpperCase()]
   if (name == null) {
@@ -706,7 +706,7 @@ function orDashOf(v: MaybeStr): string {
 // eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:数组下标缺席就是 undefined,照实收;联合入参是它的形状(开灯批)
 function emptyOf(v: MaybeStr | undefined): string {
   if (v == null) {
-    return ''
+    return TEXT_NONE
   }
   return v
 }
@@ -884,7 +884,7 @@ function userMsgOf(text: string): TranscriptMsg {
  */
 function textOf(message: TranscriptMsg): string {
   if (message.role !== ROLE_ASSISTANT) {
-    return ''
+    return TEXT_NONE
   }
   const parts: string[] = []
   for (const block of message.content) {
@@ -892,7 +892,7 @@ function textOf(message: TranscriptMsg): string {
       parts.push(block.text)
     }
   }
-  return parts.join('')
+  return parts.join(BLANK_SEP)
 }
 
 /**
@@ -915,7 +915,7 @@ function lastTextOf(input: LastTextIn): string {
   }
   const last = drafts[drafts.length - 1]
   if (last == null) {
-    throw chatError({ code: CHAT_CODE.llm, msg: '', slots: null })
+    throw chatError({ code: CHAT_CODE.llm, msg: ERR_MSG_NONE, slots: null })
   }
   return last
 }
@@ -1012,7 +1012,7 @@ export function provFactsOf(input: ProvFactsIn): string {
   if (diff != null) {
     factors = cellListOf(atOf({ obj: diff, key: LOC_KEY.factors }))
   }
-  let tier = ''
+  let tier = TEXT_NONE
   if (diff != null) {
     tier = slotCellOf(atOf({ obj: diff, key: LOC_KEY.tier }))
   }
@@ -1030,7 +1030,7 @@ export function provFactsOf(input: ProvFactsIn): string {
     pushVolLine({ out, obj: cellObjOf(atOf({ obj: info, key: LOC_KEY.imp })), tpl: LOC_FACT.imp })
     const alloc = cellObjOf(atOf({ obj: info, key: LOC_KEY.alloc }))
     if (isQc === false && alloc != null && cellNumOf(atOf({ obj: alloc, key: LOC_KEY.y2026 })) != null) {
-      let prev = ''
+      let prev = SEG_NONE
       if (cellNumOf(atOf({ obj: alloc, key: LOC_KEY.y2025 })) != null) {
         prev = fill({ tpl: LOC_FACT.allocPrevSeg, params: { v: slotCellOf(atOf({ obj: alloc, key: LOC_KEY.y2025 })) } })
       }
@@ -1052,7 +1052,7 @@ export function provFactsOf(input: ProvFactsIn): string {
  */
 function compSegOf(f: MaybeObj): string {
   if (f == null) {
-    return ''
+    return SEG_NONE
   }
   let asOf = slotCellOf(atOf({ obj: f, key: LOC_KEY.asOf }))
   if (asOf === '') {
@@ -1072,7 +1072,7 @@ function compSegOf(f: MaybeObj): string {
  */
 function trendSegOf(f: MaybeObj): string {
   if (f == null) {
-    return ''
+    return SEG_NONE
   }
   let v = cellNumOf(atOf({ obj: f, key: LOC_KEY.value }))
   if (v == null) {
@@ -1089,7 +1089,7 @@ function trendSegOf(f: MaybeObj): string {
  */
 function actSegOf(f: MaybeObj): string {
   if (f == null) {
-    return ''
+    return SEG_NONE
   }
   let inv = cellNumOf(atOf({ obj: f, key: LOC_KEY.invitations }))
   if (inv == null) {
@@ -1102,6 +1102,7 @@ function actSegOf(f: MaybeObj): string {
  * 体量行:{n}/{year} 两槽的对象格,格在才出行。
  *
  * @param input 输出数组、对象格与行模板。
+ * @returns 无(行推进 input.out)。
  */
 function pushVolLine(input: VolLineIn): void {
   if (input.obj == null) {
@@ -1253,7 +1254,7 @@ function slotCellOf(v: Cell): string {
   if (typeof v === 'string') {
     return v
   }
-  return ''
+  return TEXT_NONE
 }
 
 /**
@@ -1352,10 +1353,10 @@ export function makeEmptyJob(): AdvisorJob {
  * @returns 输出语言。
  */
 export function langOf(wire: AdvisorWire): Lang {
-  if (wire.lang === 'en') {
+  if (wire.lang === LANG_EN) {
     return wire.lang
   }
-  if (wire.lang === 'ko') {
+  if (wire.lang === LANG_KO) {
     return wire.lang
   }
   return LANG_ZH
@@ -1395,7 +1396,7 @@ export function matchJobOf(j: AdvisorJob): MatchJobCell {
     noc: emptyOf(j.noc), teer: teerOf(j.noc), province: emptyOf(j.province),
     pnpEligible: j.pnpEligible, pnpStream: emptyOf(j.pnpStream), eeCategory: emptyOf(j.eeCategory),
     salaryAnnual: j.salaryAnnual, wageMedAnnual: j.wageMedAnnual,
-    lmiaPositions: null, lmiaLastQuarter: '', lmiaPositionsSkilled: null,
+    lmiaPositions: null, lmiaLastQuarter: TEXT_NONE, lmiaPositionsSkilled: null,
   }
 }
 

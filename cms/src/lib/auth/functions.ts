@@ -63,6 +63,16 @@ export function googleConsentUrl(state: string): string {
 }
 
 /**
+ * 造一条 OAuth 流程 cookie(HttpOnly + Lax)。
+ *
+ * @param input cookie 名与值(值已按需 encode;maxAge 秒,0 = 立删)。
+ * @returns Set-Cookie 串。
+ */
+export function oauthCookie(input: OauthCookieIn): string {
+  return input.name + KV_EQ + input.value + FLOW_COOKIE_TAIL + input.maxAge + secureSuffix()
+}
+
+/**
  * https 站点的 cookie 追加 Secure(本地 http 不加,否则种不上)。
  *
  * @returns cookie 尾缀。
@@ -72,16 +82,6 @@ function secureSuffix(): string {
     return SECURE_TAIL
   }
   return SECURE_TAIL_NONE
-}
-
-/**
- * 造一条 OAuth 流程 cookie(HttpOnly + Lax)。
- *
- * @param input cookie 名与值(值已按需 encode;maxAge 秒,0 = 立删)。
- * @returns Set-Cookie 串。
- */
-export function oauthCookie(input: OauthCookieIn): string {
-  return input.name + KV_EQ + input.value + FLOW_COOKIE_TAIL + input.maxAge + secureSuffix()
 }
 
 /**
@@ -121,6 +121,65 @@ export function readCookie(input: ReadCookieIn): MaybeCookie {
 }
 
 /**
+ * 随机密码字节 → 两位 hex(map 传具名函数)。
+ *
+ * @param b 一个字节。
+ * @returns 两位 hex。
+ */
+function toHex(b: number): string {
+  return b.toString(16).padStart(2, HEX_PAD)
+}
+
+/**
+ * 登录回调的整条判定链：参数闸 → state 防 CSRF → 换 token → userinfo 红线 →
+ * 关联/创建并签会话 → 校验回跳路径。每一步失败都在这里留痕（AUTH_LOG），
+ * 路由只按 kind 拼响应 —— HTTP 芯里不再有判定（闸 routes-shape 的由来）。
+ *
+ * @param input 路由取好的五样原料。
+ * @returns 成败联合产物。
+ */
+export async function googleCallback(input: GoogleCallbackIn): CallbackOut {
+  if (GOOGLE_CLIENT_ID === '') {
+    log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_ENV_MISSING })
+    return { kind: K_FAIL }
+  }
+  if (input.error != null || input.code == null || input.code === '') {
+    let why: string = LOG_NO_CODE
+    if (input.error != null) {
+      why = input.error
+    }
+    log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_CONSENT + why })
+    return { kind: K_FAIL }
+  }
+  if (input.cookieState == null || input.stateParam !== input.cookieState) {
+    log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_STATE })
+    return { kind: K_FAIL }
+  }
+  const accessToken = await exchangeCode({ code: input.code })
+  if (accessToken == null) {
+    log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_TOKEN })
+    return { kind: K_FAIL }
+  }
+  const gu = await loadGoogleUser(accessToken)
+  if (gu == null) {
+    log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_EMAIL })
+    return { kind: K_FAIL }
+  }
+  let session: GoogleLogin
+  try {
+    session = await loginWithGoogle(gu)
+  } catch (e) {
+    let why = String(e)
+    if (e instanceof Error) {
+      why = e.message
+    }
+    log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_LOGIN + why })
+    return { kind: K_FAIL }
+  }
+  return { kind: K_OK, session: session, rt: safeReturnPath(input.rtRaw) }
+}
+
+/**
  * 回跳目标收窄:只收站内路径(防 open redirect),不合法回首页。
  *
  * @param raw cookie 里带回来的原料;没有是 null。
@@ -131,80 +190,6 @@ export function safeReturnPath(raw: MaybeCookie): string {
     return raw
   }
   return ROOT_PATH
-}
-
-/**
- * code 换 access_token(任一步失败给 null,原因由路由留痕后统一 302 fail)。
- *
- * @param input 授权码。
- * @returns access_token 或 null。
- */
-export async function exchangeCode(input: ExchangeIn): MaybeToken {
-  let res: Response | null = null
-  try {
-    res = await fetch(GOOGLE_TOKEN_URL, {
-      method: METHOD_POST, headers: { [HDR_CONTENT_TYPE]: FORM_MIME },
-      body: new URLSearchParams({
-        code: input.code, client_id: GOOGLE_CLIENT_ID, client_secret: GOOGLE_CLIENT_SECRET,
-        redirect_uri: SITE + CALLBACK_PATH, grant_type: GRANT_AUTH_CODE,
-      }),
-    })
-  } catch {
-    return null
-  }
-  if (res.ok === false) {
-    return null
-  }
-  let tok: TokenBody = { access_token: null }
-  try {
-    tok = await res.json()
-  } catch {
-    return null
-  }
-  if (typeof tok.access_token === 'string' && tok.access_token !== '') {
-    return tok.access_token
-  }
-  return null
-}
-
-/**
- * userinfo(openid 标准端点)。红线:只认 email_verified === true —— 邮箱没验证的一律 null。
- *
- * @param accessToken 换来的 access_token。
- * @returns 本域要的三格;任一步失败或邮箱未验证给 null。
- */
-export async function loadGoogleUser(accessToken: string): GoogleUserOut {
-  let res: Response | null = null
-  try {
-    res = await fetch(GOOGLE_USERINFO_URL, { headers: { Authorization: BEARER_PREFIX + accessToken } })
-  } catch {
-    return null
-  }
-  if (res.ok === false) {
-    return null
-  }
-  let ui: UserinfoBody
-  try {
-    ui = await res.json()
-  } catch {
-    return null
-  }
-  let email = EMAIL_NONE
-  if (typeof ui.email === 'string') {
-    email = ui.email.toLowerCase()
-  }
-  if (email === '' || ui.email_verified !== true) {
-    return null
-  }
-  let name: string | null = null
-  if (typeof ui.name === 'string' && ui.name !== '') {
-    name = String(ui.name).slice(0, 40)
-  }
-  let picture: string | null = null
-  if (typeof ui.picture === 'string' && ui.picture !== '') {
-    picture = ui.picture
-  }
-  return { email: email, name: name, picture: picture }
 }
 
 /**
@@ -273,16 +258,6 @@ export async function loginWithGoogle(input: GoogleLoginIn): GoogleLoginOut {
 }
 
 /**
- * 随机密码字节 → 两位 hex(map 传具名函数)。
- *
- * @param b 一个字节。
- * @returns 两位 hex。
- */
-function toHex(b: number): string {
-  return b.toString(16).padStart(2, HEX_PAD)
-}
-
-/**
  * 过滤仍在有效期内的会话条目(filter 传具名函数;闭包住当下时刻)。
  *
  * @param now 当下。
@@ -295,50 +270,75 @@ function makeAliveFilter(now: Clock): AliveFn {
 }
 
 /**
- * 登录回调的整条判定链：参数闸 → state 防 CSRF → 换 token → userinfo 红线 →
- * 关联/创建并签会话 → 校验回跳路径。每一步失败都在这里留痕（AUTH_LOG），
- * 路由只按 kind 拼响应 —— HTTP 芯里不再有判定（闸 routes-shape 的由来）。
+ * userinfo(openid 标准端点)。红线:只认 email_verified === true —— 邮箱没验证的一律 null。
  *
- * @param input 路由取好的五样原料。
- * @returns 成败联合产物。
+ * @param accessToken 换来的 access_token。
+ * @returns 本域要的三格;任一步失败或邮箱未验证给 null。
  */
-export async function googleCallback(input: GoogleCallbackIn): CallbackOut {
-  if (GOOGLE_CLIENT_ID === '') {
-    log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_ENV_MISSING })
-    return { kind: K_FAIL }
-  }
-  if (input.error != null || input.code == null || input.code === '') {
-    let why: string = LOG_NO_CODE
-    if (input.error != null) {
-      why = input.error
-    }
-    log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_CONSENT + why })
-    return { kind: K_FAIL }
-  }
-  if (input.cookieState == null || input.stateParam !== input.cookieState) {
-    log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_STATE })
-    return { kind: K_FAIL }
-  }
-  const accessToken = await exchangeCode({ code: input.code })
-  if (accessToken == null) {
-    log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_TOKEN })
-    return { kind: K_FAIL }
-  }
-  const gu = await loadGoogleUser(accessToken)
-  if (gu == null) {
-    log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_EMAIL })
-    return { kind: K_FAIL }
-  }
-  let session: GoogleLogin
+export async function loadGoogleUser(accessToken: string): GoogleUserOut {
+  let res: Response | null = null
   try {
-    session = await loginWithGoogle(gu)
-  } catch (e) {
-    let why = String(e)
-    if (e instanceof Error) {
-      why = e.message
-    }
-    log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_LOGIN + why })
-    return { kind: K_FAIL }
+    res = await fetch(GOOGLE_USERINFO_URL, { headers: { Authorization: BEARER_PREFIX + accessToken } })
+  } catch {
+    return null
   }
-  return { kind: K_OK, session: session, rt: safeReturnPath(input.rtRaw) }
+  if (res.ok === false) {
+    return null
+  }
+  let ui: UserinfoBody
+  try {
+    ui = await res.json()
+  } catch {
+    return null
+  }
+  let email = EMAIL_NONE
+  if (typeof ui.email === 'string') {
+    email = ui.email.toLowerCase()
+  }
+  if (email === '' || ui.email_verified !== true) {
+    return null
+  }
+  let name: string | null = null
+  if (typeof ui.name === 'string' && ui.name !== '') {
+    name = String(ui.name).slice(0, 40)
+  }
+  let picture: string | null = null
+  if (typeof ui.picture === 'string' && ui.picture !== '') {
+    picture = ui.picture
+  }
+  return { email: email, name: name, picture: picture }
+}
+
+/**
+ * code 换 access_token(任一步失败给 null,原因由路由留痕后统一 302 fail)。
+ *
+ * @param input 授权码。
+ * @returns access_token 或 null。
+ */
+export async function exchangeCode(input: ExchangeIn): MaybeToken {
+  let res: Response | null = null
+  try {
+    res = await fetch(GOOGLE_TOKEN_URL, {
+      method: METHOD_POST, headers: { [HDR_CONTENT_TYPE]: FORM_MIME },
+      body: new URLSearchParams({
+        code: input.code, client_id: GOOGLE_CLIENT_ID, client_secret: GOOGLE_CLIENT_SECRET,
+        redirect_uri: SITE + CALLBACK_PATH, grant_type: GRANT_AUTH_CODE,
+      }),
+    })
+  } catch {
+    return null
+  }
+  if (res.ok === false) {
+    return null
+  }
+  let tok: TokenBody = { access_token: null }
+  try {
+    tok = await res.json()
+  } catch {
+    return null
+  }
+  if (typeof tok.access_token === 'string' && tok.access_token !== '') {
+    return tok.access_token
+  }
+  return null
 }

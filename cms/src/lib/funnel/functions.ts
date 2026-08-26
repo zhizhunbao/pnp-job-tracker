@@ -45,6 +45,37 @@ export function toFunnelHit(input: FunnelHitIn): MaybeFunnelHit {
 }
 
 /**
+ * 旧五步的相邻转化率(四格)。**对话两步不许接进来** —— 两形态是并行对照,
+ * 混算会算出「报告 → 挂件打开」这种没有因果的比值,而这张表就是拿来做撤旧页判断的。
+ *
+ * @param counts 各步计数。
+ * @returns 四格转化率。
+ */
+export function stepRates(counts: StepCounts): RateList {
+  return ratesOf({ steps: LEGACY_STEPS, counts: counts })
+}
+
+/**
+ * 对话链的转化率(两格:打开 → 答复 → 反馈)。
+ *
+ * @param counts 各步计数。
+ * @returns 两格转化率。
+ */
+export function chatRates(counts: StepCounts): RateList {
+  return ratesOf({ steps: CHAT_STEPS, counts: counts })
+}
+
+/**
+ * PR 评估链的转化率(三格:打开 → 答完基础卷 → 进估分 → 估分答完)。
+ *
+ * @param counts 各步计数。
+ * @returns 三格转化率。
+ */
+export function decisionRates(counts: StepCounts): RateList {
+  return ratesOf({ steps: DECISION_STEPS, counts: counts })
+}
+
+/**
  * 一条链的相邻转化率;分母为 0 给 null(显示层出「—」,不许出 0% 或 NaN)。
  *
  * @param input 链与计数。
@@ -77,37 +108,6 @@ function ratesOf(input: RatesOfIn): RateList {
     }
   }
   return out
-}
-
-/**
- * 旧五步的相邻转化率(四格)。**对话两步不许接进来** —— 两形态是并行对照,
- * 混算会算出「报告 → 挂件打开」这种没有因果的比值,而这张表就是拿来做撤旧页判断的。
- *
- * @param counts 各步计数。
- * @returns 四格转化率。
- */
-export function stepRates(counts: StepCounts): RateList {
-  return ratesOf({ steps: LEGACY_STEPS, counts: counts })
-}
-
-/**
- * 对话链的转化率(两格:打开 → 答复 → 反馈)。
- *
- * @param counts 各步计数。
- * @returns 两格转化率。
- */
-export function chatRates(counts: StepCounts): RateList {
-  return ratesOf({ steps: CHAT_STEPS, counts: counts })
-}
-
-/**
- * PR 评估链的转化率(三格:打开 → 答完基础卷 → 进估分 → 估分答完)。
- *
- * @param counts 各步计数。
- * @returns 三格转化率。
- */
-export function decisionRates(counts: StepCounts): RateList {
-  return ratesOf({ steps: DECISION_STEPS, counts: counts })
 }
 
 /**

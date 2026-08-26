@@ -21,6 +21,10 @@ import css from './auth.module.css'
 
 /**
  * 四态表单。
+ * 体内三处 resetToken/returnTo/hero 的判空不是空转:props 是 `string | undefined`
+ * (React 可选属性),那几段 if 干的是**把 undefined 收成 null** ——
+ * 宪法「语言接缝在拿到的那一行当场收」说的正是它。
+ * 2026-08-25 折叠空转判空时误判过一次,tsc 当场拦下(TS2322),记在这免得再折。
  *
  * @param props 完成回调与入口参数(见 AuthFormIn 逐格注释)。
  * @returns 表单。
@@ -30,9 +34,6 @@ export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }:
   if (initialMode != null) {
     init = initialMode
   }
-  // 这三处不是空转:props 是 `string | undefined`(React 可选属性),这段 if 干的是
-  // **把 undefined 收成 null** —— 宪法「语言接缝在拿到的那一行当场收」说的正是它。
-  // 2026-08-25 折叠空转判空时误判过一次,tsc 当场拦下(TS2322),记在这免得再折。
   let token: string | null = null
   if (resetToken != null) {
     token = resetToken

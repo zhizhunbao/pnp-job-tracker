@@ -9,14 +9,12 @@
  */
 
 
-import type { GateKey, PathwayKey, StatusAsk } from './types'
-
 import type { Lang } from '../i18n'
 
 // 🔴 本文件是**通道数据本体**(Frank 2026-08-22 拍板:策略就是常量,并入常量抽屉;
 //    08-15「一条通道一个文件」的可查性由下面的分段横幅接续 —— 一通道一段,旁注原样)。
 //    形状注解是本文件唯一的一条 import 边;引用与判读的取证方式见文件头。
-import type { PathwayStrategy } from './types'
+import type { GateKey, PathwayKey, PathwayStrategy, StatusAsk } from './types'
 
 // =========================================================================
 // 1. 出处与默认值

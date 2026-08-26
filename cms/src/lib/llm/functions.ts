@@ -57,6 +57,32 @@ function ignore(): IgnoreOut {
 // =========================================================================
 
 /**
+ * 内容指纹钉在 prompt @0:**只给旧 /api/chat 那条链用**(见 constants 第 5 段)。
+ * 标记形状与 /api/translate 那侧统一([ref:…]),纯字母不含数字(不误伤 jdformat 的数字防幻觉校验)。
+ * 直连 /api/chat 的调用方(news-summarize)也用这个,别各写各的。
+ * 🔵 收拢掉的第二处重复:旧链的 `refPrompt(prompt, system)` 与翻译链的 `refLine(text, lang)` 逐字同形
+ * —— 差别只是拌进指纹的那一段是 system 还是语种,于是它变成了这里的 salt。
+ *
+ * @param input 正文,以及拌进指纹但不进正文的那一段。
+ * @returns 指纹行加正文,中间隔一个换行。
+ */
+export function refPrompt(input: RefPromptIn): RefPromptOut {
+  const tag = contentTag({ text: input.prompt + REF_SALT_SEP + input.salt })
+  return `${REF_HEAD}${tag}${REF_TAIL}${input.prompt}`
+}
+
+/**
+ * 两个种子拼成 14 字母 ≈ 64 bit 空间。
+ *
+ * @param input 要算指纹的内容。
+ * @returns 14 个字母的指纹。
+ */
+export function contentTag(input: ContentTagIn): ContentTagOut {
+  return alpha7({ n: fnv1a({ text: input.text, seed: FNV_SEED_A }) })
+    + alpha7({ n: fnv1a({ text: input.text, seed: FNV_SEED_B }) })
+}
+
+/**
  * 自己实现不引依赖;**只用 a-z 不带数字** —— jdformat 的防幻觉校验会拒收原文没有的多位数字,
  * 万一模型把指纹回显出来,纯字母不会误伤那条校验。
  *
@@ -85,32 +111,6 @@ function alpha7(input: Alpha7In): Alpha7Out {
     s += String.fromCharCode(ALPHA_ZERO + (x % ALPHA_BASE))
   }
   return s
-}
-
-/**
- * 两个种子拼成 14 字母 ≈ 64 bit 空间。
- *
- * @param input 要算指纹的内容。
- * @returns 14 个字母的指纹。
- */
-export function contentTag(input: ContentTagIn): ContentTagOut {
-  return alpha7({ n: fnv1a({ text: input.text, seed: FNV_SEED_A }) })
-    + alpha7({ n: fnv1a({ text: input.text, seed: FNV_SEED_B }) })
-}
-
-/**
- * 内容指纹钉在 prompt @0:**只给旧 /api/chat 那条链用**(见 constants 第 5 段)。
- * 标记形状与 /api/translate 那侧统一([ref:…]),纯字母不含数字(不误伤 jdformat 的数字防幻觉校验)。
- * 直连 /api/chat 的调用方(news-summarize)也用这个,别各写各的。
- * 🔵 收拢掉的第二处重复:旧链的 `refPrompt(prompt, system)` 与翻译链的 `refLine(text, lang)` 逐字同形
- * —— 差别只是拌进指纹的那一段是 system 还是语种,于是它变成了这里的 salt。
- *
- * @param input 正文,以及拌进指纹但不进正文的那一段。
- * @returns 指纹行加正文,中间隔一个换行。
- */
-export function refPrompt(input: RefPromptIn): RefPromptOut {
-  const tag = contentTag({ text: input.prompt + REF_SALT_SEP + input.salt })
-  return `${REF_HEAD}${tag}${REF_TAIL}${input.prompt}`
 }
 
 // =========================================================================
@@ -289,66 +289,83 @@ async function readV1Sse(input: ReadV1SseIn): ReadV1SseOut {
 // =========================================================================
 
 /**
- * 网关能不能用:地址和钥匙都配了才算。
+ * 回包的第 0 条候选;choices 缺席/空数组统一在这儿收成 null(开灯批 2026-08-26,
+ * 顺带把 chatV1 压回行数限)。
  *
- * @returns 地址与钥匙都配了就是 true。
+ * @param parsed 解析好的回包。
+ * @returns 第 0 条候选;没有 null。
  */
-export function friendLlmReady(): FriendLlmReadyOut {
-  return Boolean(GATEWAY_BASE && GATEWAY_KEY)
+function v1ChoiceOf(parsed: V1Response): MaybeV1Choice {
+  if (parsed.choices == null) {
+    return null
+  }
+  const c0 = parsed.choices[0]
+  if (c0 == null) {
+    return null
+  }
+  return c0
 }
 
 /**
- * system 与 prompt 各占一条消息 —— 都进同一条链,不拆顶层参数。
+ * 老签名(失败静默 null),现有调用方零改动:jdformat / companyResearch / advisor 的降级路径靠它。
+ * 要错误码的调用方(简历对照)用 friendChatOrThrow。留痕在上面那一层已经打过,这里只负责不抛。
  *
- * @param input 正文与可选的 system。
- * @returns 网关认的消息数组,system 排第一条。
+ * @param input 调用参数。
+ * @returns 这一趟的结果;失败返回 null(留痕在上一层已经打过)。
  */
-function gatewayMessages(input: GatewayMessagesIn): GatewayMessagesOut {
-  const messages: GatewayMessage[] = []
-  if (input.system) {
-    messages.push({ role: ROLE.system, content: input.system })
+export async function friendChat(input: FriendChatIn): FriendChatMaybeOut {
+  try {
+    return await friendChatOrThrow(input)
+  } catch {
+    return null
   }
-  messages.push({ role: ROLE.user, content: input.prompt })
-  return messages
 }
 
 /**
- * 信任边界校验用的字符数:上游按 messages 所有 content 之和算。
+ * 会抛错的版本:失败一律 GatewayFailure(带 code;运行时 name 仍是 `FriendLlmError`),调用方按码各说各话。
+ * webSearch → 只走旧链;否则 /v1 优先,upstream/offline 才回退旧链(tooLong/authKey/badRequest 不回退:
+ * 旧链同样会失败,退了只是把错误换个说法)。回退与回退再失败都留痕 ——
+ * 回退是异常态不能静默发生,catch 里也不许什么都不留(铁律)。
  *
- * @param input 整个消息数组。
- * @returns 所有 content 的字符数之和。
+ * @param input 调用参数。
+ * @returns 这一趟的结果。失败一律抛 GatewayFailure(带码)。
  */
-function charCount(input: CharCountIn): CharCountOut {
-  let n = 0
-  for (const m of input.messages) {
-    n += m.content.length
+export async function friendChatOrThrow(input: FriendChatIn): FriendChatOut {
+  if (friendLlmReady() === false) {
+    throw gatewayError({ msg: GATEWAY_MSG.notConfigured, code: FRIEND_CODE.offline })
   }
-  return n
-}
-
-/**
- * 发一次 /v1。stream 由调用方定 —— 空答案原地重来那次要的正是「同样的 body、不要流」。
- *
- * @param input 这一趟的调用参数、消息数组、要不要流、看门狗。
- * @returns 原始响应。
- */
-function sendV1(input: SendV1In): SendV1Out {
-  const body: V1Request = { model: GATEWAY_MODEL, messages: input.messages }
-  if (input.stream) {
-    body.stream = true
+  if (input.webSearch) {
+    return chatLegacy(input)
   }
-  if (input.call.maxTokens) {
-    body.max_tokens = Math.min(input.call.maxTokens, FRIEND_MAX_TOKENS)
+  try {
+    return await chatV1(input)
+  } catch (e) {
+    let code: string = ERR_DEFAULT
+    if (e instanceof Error && isGatewayError(e)) {
+      code = e.code
+    }
+    if (code !== FRIEND_CODE.upstream && code !== FRIEND_CODE.offline) {
+      throw e
+    }
+    let why = WHY_NONE
+    if (e instanceof Error) {
+      why = e.message.slice(0, LOG_MSG_MAX)
+    }
+    log({ tag: LLM_LOG.tag, text: `${LLM_LOG.v1FailHead}${code}${LLM_LOG.paren}${why}${LLM_LOG.parenEnd}${LLM_LOG.v1FailTail}` })
+    try {
+      return await chatLegacy(input)
+    } catch (e2) {
+      let why2 = WHY_NONE
+      if (e2 instanceof Error) {
+        why2 = e2.message.slice(0, LOG_MSG_MAX)
+      }
+      log({
+        tag: LLM_LOG.tag,
+        text: `${LLM_FN.friendChatOrThrow}${LLM_LOG.failedTail}${LLM_LOG.fallbackFailed}${why2}`,
+      })
+      throw e2
+    }
   }
-  if (input.call.temperature != null) {
-    body.temperature = input.call.temperature
-  }
-  const extraHeaders: Record<string, string> = {}
-  if (input.call.noCache) {
-    body.cache = false
-    extraHeaders[HEADER.noCache] = HEADER.noCacheOn
-  }
-  return postJson({ path: PATH_V1, body, extraHeaders, watch: input.watch })
 }
 
 /**
@@ -424,7 +441,6 @@ async function chatV1(input: FriendChatIn): FriendChatOut {
   return { answer, sources: [], cached: xCache === CACHE_HIT, via: VIA.v1, xCache }
 }
 
-
 /**
  * 回包里进日志的三样元数据(用量与收尾原因);回包没带的用「missing」占位。
  *
@@ -453,23 +469,7 @@ function v1LogMetaOf(body: MaybeV1Response): V1LogMeta {
   return { promptTok: promptTok, complTok: complTok, finish: finish }
 }
 
-/**
- * 回包的第 0 条候选;choices 缺席/空数组统一在这儿收成 null(开灯批 2026-08-26,
- * 顺带把 chatV1 压回行数限)。
- *
- * @param parsed 解析好的回包。
- * @returns 第 0 条候选;没有 null。
- */
-function v1ChoiceOf(parsed: V1Response): MaybeV1Choice {
-  if (parsed.choices == null) {
-    return null
-  }
-  const c0 = parsed.choices[0]
-  if (c0 == null) {
-    return null
-  }
-  return c0
-}
+
 /**
  * /v1 回包里取答案正文;取不到就空串(空答案由调用方按「绝不交出去」的兜底处理)。
  *
@@ -503,22 +503,58 @@ function orText(input: OrTextIn): OrTextOut {
   }
   return input.v
 }
+/**
+ * 发一次 /v1。stream 由调用方定 —— 空答案原地重来那次要的正是「同样的 body、不要流」。
+ *
+ * @param input 这一趟的调用参数、消息数组、要不要流、看门狗。
+ * @returns 原始响应。
+ */
+function sendV1(input: SendV1In): SendV1Out {
+  const body: V1Request = { model: GATEWAY_MODEL, messages: input.messages }
+  if (input.stream) {
+    body.stream = true
+  }
+  if (input.call.maxTokens) {
+    body.max_tokens = Math.min(input.call.maxTokens, FRIEND_MAX_TOKENS)
+  }
+  if (input.call.temperature != null) {
+    body.temperature = input.call.temperature
+  }
+  const extraHeaders: Record<string, string> = {}
+  if (input.call.noCache) {
+    body.cache = false
+    extraHeaders[HEADER.noCache] = HEADER.noCacheOn
+  }
+  return postJson({ path: PATH_V1, body, extraHeaders, watch: input.watch })
+}
 
 /**
- * 上游给对象就取 url,给字符串就用它自己;两者都空 → 空串,被 filter 丢掉。
- * `typeof x === '…'` 的右边必须是字面量:换成常量 TS 就不做类型窄化了(语言限制,不是偷懒)。
+ * 信任边界校验用的字符数:上游按 messages 所有 content 之和算。
  *
- * @param input 上游给的一条来源。
- * @returns URL;取不到就是空串。
+ * @param input 整个消息数组。
+ * @returns 所有 content 的字符数之和。
  */
-function sourceUrl(input: SourceUrlIn): SourceUrlOut {
-  if (typeof input.source === 'string') {
-    return input.source
+function charCount(input: CharCountIn): CharCountOut {
+  let n = 0
+  for (const m of input.messages) {
+    n += m.content.length
   }
-  if (input.source == null || input.source.url == null) {
-    return SOURCE_URL_NONE
+  return n
+}
+
+/**
+ * system 与 prompt 各占一条消息 —— 都进同一条链,不拆顶层参数。
+ *
+ * @param input 正文与可选的 system。
+ * @returns 网关认的消息数组,system 排第一条。
+ */
+function gatewayMessages(input: GatewayMessagesIn): GatewayMessagesOut {
+  const messages: GatewayMessage[] = []
+  if (input.system) {
+    messages.push({ role: ROLE.system, content: input.system })
   }
-  return String(input.source.url)
+  messages.push({ role: ROLE.user, content: input.prompt })
+  return messages
 }
 
 /**
@@ -588,121 +624,34 @@ async function chatLegacy(input: FriendChatIn): FriendChatOut {
 }
 
 /**
- * 会抛错的版本:失败一律 GatewayFailure(带 code;运行时 name 仍是 `FriendLlmError`),调用方按码各说各话。
- * webSearch → 只走旧链;否则 /v1 优先,upstream/offline 才回退旧链(tooLong/authKey/badRequest 不回退:
- * 旧链同样会失败,退了只是把错误换个说法)。回退与回退再失败都留痕 ——
- * 回退是异常态不能静默发生,catch 里也不许什么都不留(铁律)。
+ * 上游给对象就取 url,给字符串就用它自己;两者都空 → 空串,被 filter 丢掉。
+ * `typeof x === '…'` 的右边必须是字面量:换成常量 TS 就不做类型窄化了(语言限制,不是偷懒)。
  *
- * @param input 调用参数。
- * @returns 这一趟的结果。失败一律抛 GatewayFailure(带码)。
+ * @param input 上游给的一条来源。
+ * @returns URL;取不到就是空串。
  */
-export async function friendChatOrThrow(input: FriendChatIn): FriendChatOut {
-  if (friendLlmReady() === false) {
-    throw gatewayError({ msg: GATEWAY_MSG.notConfigured, code: FRIEND_CODE.offline })
+function sourceUrl(input: SourceUrlIn): SourceUrlOut {
+  if (typeof input.source === 'string') {
+    return input.source
   }
-  if (input.webSearch) {
-    return chatLegacy(input)
+  if (input.source == null || input.source.url == null) {
+    return SOURCE_URL_NONE
   }
-  try {
-    return await chatV1(input)
-  } catch (e) {
-    let code: string = ERR_DEFAULT
-    if (e instanceof Error && isGatewayError(e)) {
-      code = e.code
-    }
-    if (code !== FRIEND_CODE.upstream && code !== FRIEND_CODE.offline) {
-      throw e
-    }
-    let why = WHY_NONE
-    if (e instanceof Error) {
-      why = e.message.slice(0, LOG_MSG_MAX)
-    }
-    log({ tag: LLM_LOG.tag, text: `${LLM_LOG.v1FailHead}${code}${LLM_LOG.paren}${why}${LLM_LOG.parenEnd}${LLM_LOG.v1FailTail}` })
-    try {
-      return await chatLegacy(input)
-    } catch (e2) {
-      let why2 = WHY_NONE
-      if (e2 instanceof Error) {
-        why2 = e2.message.slice(0, LOG_MSG_MAX)
-      }
-      log({
-        tag: LLM_LOG.tag,
-        text: `${LLM_FN.friendChatOrThrow}${LLM_LOG.failedTail}${LLM_LOG.fallbackFailed}${why2}`,
-      })
-      throw e2
-    }
-  }
+  return String(input.source.url)
 }
 
 /**
- * 老签名(失败静默 null),现有调用方零改动:jdformat / companyResearch / advisor 的降级路径靠它。
- * 要错误码的调用方(简历对照)用 friendChatOrThrow。留痕在上面那一层已经打过,这里只负责不抛。
+ * 网关能不能用:地址和钥匙都配了才算。
  *
- * @param input 调用参数。
- * @returns 这一趟的结果;失败返回 null(留痕在上一层已经打过)。
+ * @returns 地址与钥匙都配了就是 true。
  */
-export async function friendChat(input: FriendChatIn): FriendChatMaybeOut {
-  try {
-    return await friendChatOrThrow(input)
-  } catch {
-    return null
-  }
+export function friendLlmReady(): FriendLlmReadyOut {
+  return Boolean(GATEWAY_BASE && GATEWAY_KEY)
 }
 
 // =========================================================================
 // 6. 三个后端:一条字节流
 // =========================================================================
-
-/**
- * friend 通道要的两段:system 合并成一段,其余合并成 prompt。
- *
- * @param input 整轮消息。
- * @returns system 合成一段、其余合成一段。
- */
-function splitMessages(input: SplitMessagesIn): SplitMessagesOut {
-  const systems: string[] = []
-  const turns: string[] = []
-  for (const m of input.messages) {
-    if (m.role === ROLE.system) {
-      systems.push(m.content)
-    } else {
-      turns.push(m.content)
-    }
-  }
-  return { system: systems.join(PARA) || undefined, prompt: turns.join(PARA) }
-}
-
-/**
- * anthropic 通道:system 拆到顶层参数。
- *
- * @param input 整轮消息。
- * @returns 合并后的 system;一条都没有时是空串。
- */
-function systemOf(input: SystemOfIn): SystemOfOut {
-  const systems: string[] = []
-  for (const m of input.messages) {
-    if (m.role === ROLE.system) {
-      systems.push(m.content)
-    }
-  }
-  return systems.join(PARA)
-}
-
-/**
- * 除 system 外的轮次,原样带过去。
- *
- * @param input 整轮消息。
- * @returns 除 system 之外的轮次,顺序不变。
- */
-function turnsOf(input: TurnsOfIn): TurnsOfOut {
-  const turns: TurnsOfOut = []
-  for (const m of input.messages) {
-    if (m.role !== ROLE.system) {
-      turns.push({ role: m.role, content: m.content })
-    }
-  }
-  return turns
-}
 
 /**
  * 回包里只要文本块 —— 判 type 就把联合窄化到 TextBlock,不用断言。
@@ -721,54 +670,20 @@ function textOf(input: TextOfIn): TextOfOut {
 }
 
 /**
- * 非法 URL/非 http(s) → 不声明工具(行为同无 URL);域名白名单锁定到该 URL 自己的 host。
+ * fetchUrl(E6-03):给 anthropic 后端声明服务端 web_fetch 工具,让模型现场抓该 URL(公司官网)做 grounding。
+ * 只在 anthropic 生效(ollama 无此能力,忽略);域名白名单锁定到该 URL 自己的 host,输入侧 max_content_tokens 封顶。
  *
- * @param input 要抓的官网 URL,可以不给。
- * @returns 工具声明;没给 URL 或 URL 不合法时返回 null。
+ * @param input 整轮消息、输出上限、可选的官网 URL。
+ * @returns 文本增量的字节流,三个后端形状一致。
  */
-function webFetchTool(input: WebFetchToolIn): WebFetchToolOut {
-  if (input.fetchUrl == null || input.fetchUrl === '') {
-    return null
+export function streamChat(input: StreamChatIn): StreamChatOut {
+  if (PROVIDER === BACKEND.friend) {
+    return friendStream({ messages: input.messages, maxTokens: input.maxTokens })
   }
-  try {
-    const u = new URL(input.fetchUrl)
-    if (u.protocol !== PROTOCOL.http && u.protocol !== PROTOCOL.https) {
-      return null
-    }
-    return {
-      type: WEB_FETCH.type,
-      name: WEB_FETCH.name,
-      max_uses: WEB_FETCH.maxUses,
-      allowed_domains: [u.hostname],
-      max_content_tokens: WEB_FETCH.maxContentTokens,
-    }
-  } catch {
-    return null
+  if (PROVIDER === BACKEND.anthropic) {
+    return anthropicStream(input)
   }
-}
-
-/**
- * friend 是非流式后端:整段答案包成单 chunk 流,advisor 路由/前端打字机零改动;fetchUrl grounding 忽略(同 ollama)。
- *
- * maxTokens 现在真生效(2026-08-04 换 /v1 端点,实测 finish_reason=length);temperature 沿用对话侧的 0.4。
- *
- * @param input 整轮消息与输出上限。
- * @returns 把整段答案包成单块的字节流。网关连不上时抛 LlmFailure。
- */
-async function friendStream(input: BackendStreamIn): BackendStreamOut {
-  const { system, prompt } = splitMessages({ messages: input.messages })
-  const r = await friendChat({
-    prompt, system, timeoutMs: FRIEND_CALL_TIMEOUT_MS, maxTokens: input.maxTokens, temperature: FRIEND_STREAM_TEMP,
-  })
-  if (r == null) {
-    throw llmError({ msg: LLM_MSG.friendOffline, code: null })
-  }
-  return new ReadableStream({
-    start(controller) {
-      controller.enqueue(new TextEncoder().encode(r.answer))
-      controller.close()
-    },
-  })
+  return ollamaStream({ messages: input.messages, maxTokens: input.maxTokens })
 }
 
 /**
@@ -886,20 +801,105 @@ async function anthropicStream(input: AnthropicStreamIn): BackendStreamOut {
 }
 
 /**
- * fetchUrl(E6-03):给 anthropic 后端声明服务端 web_fetch 工具,让模型现场抓该 URL(公司官网)做 grounding。
- * 只在 anthropic 生效(ollama 无此能力,忽略);域名白名单锁定到该 URL 自己的 host,输入侧 max_content_tokens 封顶。
+ * 非法 URL/非 http(s) → 不声明工具(行为同无 URL);域名白名单锁定到该 URL 自己的 host。
  *
- * @param input 整轮消息、输出上限、可选的官网 URL。
- * @returns 文本增量的字节流,三个后端形状一致。
+ * @param input 要抓的官网 URL,可以不给。
+ * @returns 工具声明;没给 URL 或 URL 不合法时返回 null。
  */
-export function streamChat(input: StreamChatIn): StreamChatOut {
-  if (PROVIDER === BACKEND.friend) {
-    return friendStream({ messages: input.messages, maxTokens: input.maxTokens })
+function webFetchTool(input: WebFetchToolIn): WebFetchToolOut {
+  if (input.fetchUrl == null || input.fetchUrl === '') {
+    return null
   }
-  if (PROVIDER === BACKEND.anthropic) {
-    return anthropicStream(input)
+  try {
+    const u = new URL(input.fetchUrl)
+    if (u.protocol !== PROTOCOL.http && u.protocol !== PROTOCOL.https) {
+      return null
+    }
+    return {
+      type: WEB_FETCH.type,
+      name: WEB_FETCH.name,
+      max_uses: WEB_FETCH.maxUses,
+      allowed_domains: [u.hostname],
+      max_content_tokens: WEB_FETCH.maxContentTokens,
+    }
+  } catch {
+    return null
   }
-  return ollamaStream({ messages: input.messages, maxTokens: input.maxTokens })
+}
+
+/**
+ * 除 system 外的轮次,原样带过去。
+ *
+ * @param input 整轮消息。
+ * @returns 除 system 之外的轮次,顺序不变。
+ */
+function turnsOf(input: TurnsOfIn): TurnsOfOut {
+  const turns: TurnsOfOut = []
+  for (const m of input.messages) {
+    if (m.role !== ROLE.system) {
+      turns.push({ role: m.role, content: m.content })
+    }
+  }
+  return turns
+}
+
+/**
+ * anthropic 通道:system 拆到顶层参数。
+ *
+ * @param input 整轮消息。
+ * @returns 合并后的 system;一条都没有时是空串。
+ */
+function systemOf(input: SystemOfIn): SystemOfOut {
+  const systems: string[] = []
+  for (const m of input.messages) {
+    if (m.role === ROLE.system) {
+      systems.push(m.content)
+    }
+  }
+  return systems.join(PARA)
+}
+
+/**
+ * friend 是非流式后端:整段答案包成单 chunk 流,advisor 路由/前端打字机零改动;fetchUrl grounding 忽略(同 ollama)。
+ *
+ * maxTokens 现在真生效(2026-08-04 换 /v1 端点,实测 finish_reason=length);temperature 沿用对话侧的 0.4。
+ *
+ * @param input 整轮消息与输出上限。
+ * @returns 把整段答案包成单块的字节流。网关连不上时抛 LlmFailure。
+ */
+async function friendStream(input: BackendStreamIn): BackendStreamOut {
+  const { system, prompt } = splitMessages({ messages: input.messages })
+  const r = await friendChat({
+    prompt, system, timeoutMs: FRIEND_CALL_TIMEOUT_MS, maxTokens: input.maxTokens, temperature: FRIEND_STREAM_TEMP,
+  })
+  if (r == null) {
+    throw llmError({ msg: LLM_MSG.friendOffline, code: null })
+  }
+  return new ReadableStream({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode(r.answer))
+      controller.close()
+    },
+  })
+}
+
+/**
+ * friend 通道要的两段:system 合并成一段,其余合并成 prompt。
+ *
+ * @param input 整轮消息。
+ * @returns system 合成一段、其余合成一段。
+ */
+function splitMessages(input: SplitMessagesIn): SplitMessagesOut {
+  const systems: string[] = []
+  const turns: string[] = []
+  for (const m of input.messages) {
+    if (m.role === ROLE.system) {
+      systems.push(m.content)
+    } else {
+      turns.push(m.content)
+    }
+  }
+  return { system: systems.join(PARA) || undefined, prompt: turns.join(PARA) }
 }
 
 // =========================================================================
@@ -907,38 +907,52 @@ export function streamChat(input: StreamChatIn): StreamChatOut {
 // =========================================================================
 
 /**
- * friend 通道走网关,顺带把元信息回传给调用方。
+ * 要一整段答案,不需要流。简历解析这类「一次调用抽结构化 JSON」的活走它。
  *
- * maxTokens 现在真发出去(旧结论「上游不收长度参数」已随 /v1 端点作废,见 constants 第 2 段)。
- * 网关的错误码在这里翻成给用户看的话;认不出的按「连不上」说(路由再决定 HTTP 状态,见 api/resume-match)。
+ * 走哪个后端由 input.provider 定,不传就跟全局 LLM_PROVIDER;三条通道的差别对调用方不可见。
  *
- * @param input 出口的入参(回调与停摆闸都用得上)。
- * @returns 整段答案。失败抛 LlmFailure,话术已按错误码翻好。
+ * @param input 整轮消息、输出上限,以及各调用点自己的通道与回调。
+ * @returns 整段答案。
  */
-async function completeFriend(input: CompleteFriendIn): CompleteBackendOut {
-  const { system, prompt } = splitMessages({ messages: input.messages })
-  const call: FriendChatIn = {
-    prompt, system, timeoutMs: FRIEND_CALL_TIMEOUT_MS, maxTokens: input.maxTokens, temperature: input.temperature,
+export function completeText(input: CompleteTextIn): CompleteTextOut {
+  const prov = input.provider || PROVIDER
+  if (prov === BACKEND.friend) {
+    return completeFriend(input)
   }
-  if (input.onDelta) {
-    call.onDelta = input.onDelta
+  if (prov === BACKEND.anthropic) {
+    return completeAnthropic({ messages: input.messages, maxTokens: input.maxTokens })
   }
-  if (input.stallMs) {
-    call.stallMs = input.stallMs
+  return completeOllama({ messages: input.messages, maxTokens: input.maxTokens })
+}
+
+/**
+ * ollama 通道在本地一次性补全。
+ *
+ * @param input 整轮消息与输出上限。
+ * @returns 整段答案。连不上或非 200 时抛 LlmFailure。
+ */
+async function completeOllama(input: CompleteBackendIn): CompleteBackendOut {
+  let r: Response
+  const body: OllamaRequest = {
+    model: OLLAMA_MODEL, think: false, stream: false, messages: input.messages,
+    options: { temperature: OLLAMA_COMPLETE_TEMP, num_predict: input.maxTokens },
   }
-  let r: FriendResult
   try {
-    r = await friendChatOrThrow(call)
-  } catch (e) {
-    if (e instanceof Error && isGatewayError(e)) {
-      throw llmError({ msg: FRIEND_MSG[e.code], code: e.code })
-    }
-    throw llmError({ msg: LLM_MSG.friendOffline, code: null })
+    r = await fetch(`${OLLAMA_URL}${PATH_OLLAMA}`, {
+      method: POST, headers: { [HEADER.contentType]: HEADER.json },
+      body: JSON.stringify(body),
+    })
+  } catch {
+    throw llmError({ msg: LLM_MSG.ollamaOffline, code: null })
   }
-  if (input.onMeta != null) {
-    input.onMeta({ cached: r.cached, via: r.via, xCache: r.xCache })
+  if (r.ok === false) {
+    throw llmError({ msg: `${LLM_MSG.ollamaStatusHead}${r.status}${LLM_MSG.ollamaStatusTail}`, code: null })
   }
-  return r.answer
+  const parsed: OllamaResponse = await r.json()
+  if (parsed.message != null && parsed.message.content != null) {
+    return parsed.message.content
+  }
+  return ANSWER_NONE
 }
 
 /**
@@ -977,52 +991,38 @@ async function completeAnthropic(input: CompleteBackendIn): CompleteBackendOut {
 }
 
 /**
- * ollama 通道在本地一次性补全。
+ * friend 通道走网关,顺带把元信息回传给调用方。
  *
- * @param input 整轮消息与输出上限。
- * @returns 整段答案。连不上或非 200 时抛 LlmFailure。
+ * maxTokens 现在真发出去(旧结论「上游不收长度参数」已随 /v1 端点作废,见 constants 第 2 段)。
+ * 网关的错误码在这里翻成给用户看的话;认不出的按「连不上」说(路由再决定 HTTP 状态,见 api/resume-match)。
+ *
+ * @param input 出口的入参(回调与停摆闸都用得上)。
+ * @returns 整段答案。失败抛 LlmFailure,话术已按错误码翻好。
  */
-async function completeOllama(input: CompleteBackendIn): CompleteBackendOut {
-  let r: Response
-  const body: OllamaRequest = {
-    model: OLLAMA_MODEL, think: false, stream: false, messages: input.messages,
-    options: { temperature: OLLAMA_COMPLETE_TEMP, num_predict: input.maxTokens },
+async function completeFriend(input: CompleteFriendIn): CompleteBackendOut {
+  const { system, prompt } = splitMessages({ messages: input.messages })
+  const call: FriendChatIn = {
+    prompt, system, timeoutMs: FRIEND_CALL_TIMEOUT_MS, maxTokens: input.maxTokens, temperature: input.temperature,
   }
+  if (input.onDelta) {
+    call.onDelta = input.onDelta
+  }
+  if (input.stallMs) {
+    call.stallMs = input.stallMs
+  }
+  let r: FriendResult
   try {
-    r = await fetch(`${OLLAMA_URL}${PATH_OLLAMA}`, {
-      method: POST, headers: { [HEADER.contentType]: HEADER.json },
-      body: JSON.stringify(body),
-    })
-  } catch {
-    throw llmError({ msg: LLM_MSG.ollamaOffline, code: null })
+    r = await friendChatOrThrow(call)
+  } catch (e) {
+    if (e instanceof Error && isGatewayError(e)) {
+      throw llmError({ msg: FRIEND_MSG[e.code], code: e.code })
+    }
+    throw llmError({ msg: LLM_MSG.friendOffline, code: null })
   }
-  if (r.ok === false) {
-    throw llmError({ msg: `${LLM_MSG.ollamaStatusHead}${r.status}${LLM_MSG.ollamaStatusTail}`, code: null })
+  if (input.onMeta != null) {
+    input.onMeta({ cached: r.cached, via: r.via, xCache: r.xCache })
   }
-  const parsed: OllamaResponse = await r.json()
-  if (parsed.message != null && parsed.message.content != null) {
-    return parsed.message.content
-  }
-  return ANSWER_NONE
-}
-
-/**
- * 要一整段答案,不需要流。简历解析这类「一次调用抽结构化 JSON」的活走它。
- *
- * 走哪个后端由 input.provider 定,不传就跟全局 LLM_PROVIDER;三条通道的差别对调用方不可见。
- *
- * @param input 整轮消息、输出上限,以及各调用点自己的通道与回调。
- * @returns 整段答案。
- */
-export function completeText(input: CompleteTextIn): CompleteTextOut {
-  const prov = input.provider || PROVIDER
-  if (prov === BACKEND.friend) {
-    return completeFriend(input)
-  }
-  if (prov === BACKEND.anthropic) {
-    return completeAnthropic({ messages: input.messages, maxTokens: input.maxTokens })
-  }
-  return completeOllama({ messages: input.messages, maxTokens: input.maxTokens })
+  return r.answer
 }
 
 // =========================================================================
@@ -1036,117 +1036,6 @@ export function completeText(input: CompleteTextIn): CompleteTextOut {
  */
 export function translateReady(): TranslateReadyOut {
   return friendLlmReady()
-}
-
-/**
- * 上游爱加粗爱起标题,逐行对位不要这些装饰。
- *
- * @param input 一段译文。
- * @returns 去掉加粗与标题记号之后的正文。
- */
-function stripMd(input: StripMdIn): StripMdOut {
-  return input.text.replace(MD_BOLD, KEEP_GROUP1).replace(MD_HEADING, MD_DROP).replace(MD_STARS, MD_DROP)
-}
-
-/**
- * 按编号解析(部分容错版):返回 编号→译文 映射,缺号/空段就是缺,不抛
- *
- * @param input 上游回来的整段编号译文。
- * @returns 编号到译文的映射;缺号就是缺,不抛。
- */
-function parseNumbered(input: ParseNumberedIn): ParseNumberedOut {
-  const parts = input.text.split(NUMBERED_SPLIT)
-  const d: ParseNumberedOut = new Map()
-  for (let i = 1; i + 1 < parts.length + 1; i += 2) {
-    let part = PART_NONE
-    const nextPart = parts[i + 1]
-    if (nextPart != null) {
-      part = nextPart
-    }
-    const t = stripMd({ text: part }).trim()
-    if (t) {
-      d.set(Number(parts[i]), t)
-    }
-  }
-  return d
-}
-
-/**
- * 一块里的行加上 `[n] ` 编号 —— 对位靠的就是它。
- *
- * @param input 这一块的行。
- * @returns 编好号的一整段,行间用换行。
- */
-function numberLines(input: NumberLinesIn): NumberLinesOut {
-  const out: string[] = []
-  for (let j = 0; j < input.lines.length; j++) {
-    out.push(`${NUMBER_HEAD}${j + 1}${NUMBER_TAIL}${input.lines[j]}`)
-  }
-  return out.join(SSE_LINE_SEP)
-}
-
-/**
- * 一块 ≤8 行:失败自动重试一次(吸收 ngrok 抖动);一行都没解析到才算本次失败。
- *
- * @param input 这一块的行、目标语种、总超时。
- * @returns 编号到译文的映射;两次都一行没解到就返回 null。
- */
-async function translateChunk(input: TranslateChunkIn): TranslateChunkOut {
-  const numbered = numberLines({ lines: input.lines })
-  for (let attempt = 0; attempt < TRANSLATE_TRIES; attempt++) {
-    try {
-      const resp = await fetch(`${GATEWAY_BASE}${PATH_TRANSLATE}`, {
-        method: POST, signal: input.signal,
-        headers: { [HEADER.contentType]: HEADER.json, [HEADER.apiKey]: GATEWAY_KEY },
-        body: JSON.stringify({
-          text: refPrompt({ prompt: numbered, salt: input.lang }),
-          source_lang: TRANSLATE_SOURCE,
-          target_lang: input.lang,
-        }),
-      })
-      if (resp.ok === false) {
-        throw translateError({ msg: `${UPSTREAM_HEAD}${resp.status}`, code: TRANSLATE_CODE.upstream })
-      }
-      const parsed: TranslateResponse = await resp.json()
-      const m = parseNumbered({ text: String(parsed.translated_text || UPSTREAM_TEXT_NONE) })
-      if (m.size) {
-        return m
-      }
-    } catch {
-      if (input.signal.aborted) {
-        throw translateError({ msg: TRANSLATE_TIMEOUT, code: TRANSLATE_CODE.timeout })
-      }
-    }
-  }
-  return null
-}
-
-/**
- * 逐行翻译:返回与 lines 等长的数组,null=该行没翻到(调用方保留原文)。
- * 全 null = 服务整体不可用,调用方按错误处理。
- * 🔵 #181(Frank「有时候能翻译,有时候失败」):首版各自整块编号翻+缺号整块拒收 —— 朋友 qwen(ngrok)
- * 时通时断、长批(15+ 行)对位易漏号,一个号漏掉全部作废,表现为「时灵时不灵」。修:
- * ① 分块 ≤8 行;② 失败块自动重试一次;③ 部分容错:缺号行=null(调用方保留英文),不再整块拒收
- * —— 编号映射下缺号只是「没翻到」,不构成错行风险(对位红线不破)。
- *
- * @param input 整批要翻的行、目标语种、总超时。
- * @returns 与入参等长的数组,null 表示该行没翻到。
- */
-export async function translateLinesAligned(input: TranslateLinesIn): TranslateLinesOut {
-  const out: (string | null)[] = new Array(input.lines.length).fill(null)
-  for (let i = 0; i < input.lines.length; i += TRANSLATE_CHUNK) {
-    const chunk = input.lines.slice(i, i + TRANSLATE_CHUNK)
-    const got = await translateChunk({ lines: chunk, lang: input.lang, signal: input.signal })
-    if (got) {
-      for (let j = 0; j < chunk.length; j++) {
-        const t = got.get(j + 1)
-        if (t) {
-          out[i + j] = t
-        }
-      }
-    }
-  }
-  return out
 }
 
 /**
@@ -1220,6 +1109,117 @@ export async function translateSectioned(input: SectionedIn): SectionedPOut {
     }
   }
   return { text: result.join(SSE_LINE_SEP), full: full }
+}
+
+/**
+ * 逐行翻译:返回与 lines 等长的数组,null=该行没翻到(调用方保留原文)。
+ * 全 null = 服务整体不可用,调用方按错误处理。
+ * 🔵 #181(Frank「有时候能翻译,有时候失败」):首版各自整块编号翻+缺号整块拒收 —— 朋友 qwen(ngrok)
+ * 时通时断、长批(15+ 行)对位易漏号,一个号漏掉全部作废,表现为「时灵时不灵」。修:
+ * ① 分块 ≤8 行;② 失败块自动重试一次;③ 部分容错:缺号行=null(调用方保留英文),不再整块拒收
+ * —— 编号映射下缺号只是「没翻到」,不构成错行风险(对位红线不破)。
+ *
+ * @param input 整批要翻的行、目标语种、总超时。
+ * @returns 与入参等长的数组,null 表示该行没翻到。
+ */
+export async function translateLinesAligned(input: TranslateLinesIn): TranslateLinesOut {
+  const out: (string | null)[] = new Array(input.lines.length).fill(null)
+  for (let i = 0; i < input.lines.length; i += TRANSLATE_CHUNK) {
+    const chunk = input.lines.slice(i, i + TRANSLATE_CHUNK)
+    const got = await translateChunk({ lines: chunk, lang: input.lang, signal: input.signal })
+    if (got) {
+      for (let j = 0; j < chunk.length; j++) {
+        const t = got.get(j + 1)
+        if (t) {
+          out[i + j] = t
+        }
+      }
+    }
+  }
+  return out
+}
+
+/**
+ * 一块 ≤8 行:失败自动重试一次(吸收 ngrok 抖动);一行都没解析到才算本次失败。
+ *
+ * @param input 这一块的行、目标语种、总超时。
+ * @returns 编号到译文的映射;两次都一行没解到就返回 null。
+ */
+async function translateChunk(input: TranslateChunkIn): TranslateChunkOut {
+  const numbered = numberLines({ lines: input.lines })
+  for (let attempt = 0; attempt < TRANSLATE_TRIES; attempt++) {
+    try {
+      const resp = await fetch(`${GATEWAY_BASE}${PATH_TRANSLATE}`, {
+        method: POST, signal: input.signal,
+        headers: { [HEADER.contentType]: HEADER.json, [HEADER.apiKey]: GATEWAY_KEY },
+        body: JSON.stringify({
+          text: refPrompt({ prompt: numbered, salt: input.lang }),
+          source_lang: TRANSLATE_SOURCE,
+          target_lang: input.lang,
+        }),
+      })
+      if (resp.ok === false) {
+        throw translateError({ msg: `${UPSTREAM_HEAD}${resp.status}`, code: TRANSLATE_CODE.upstream })
+      }
+      const parsed: TranslateResponse = await resp.json()
+      const m = parseNumbered({ text: String(parsed.translated_text || UPSTREAM_TEXT_NONE) })
+      if (m.size) {
+        return m
+      }
+    } catch {
+      if (input.signal.aborted) {
+        throw translateError({ msg: TRANSLATE_TIMEOUT, code: TRANSLATE_CODE.timeout })
+      }
+    }
+  }
+  return null
+}
+
+/**
+ * 按编号解析(部分容错版):返回 编号→译文 映射,缺号/空段就是缺,不抛
+ *
+ * @param input 上游回来的整段编号译文。
+ * @returns 编号到译文的映射;缺号就是缺,不抛。
+ */
+function parseNumbered(input: ParseNumberedIn): ParseNumberedOut {
+  const parts = input.text.split(NUMBERED_SPLIT)
+  const d: ParseNumberedOut = new Map()
+  for (let i = 1; i + 1 < parts.length + 1; i += 2) {
+    let part = PART_NONE
+    const nextPart = parts[i + 1]
+    if (nextPart != null) {
+      part = nextPart
+    }
+    const t = stripMd({ text: part }).trim()
+    if (t) {
+      d.set(Number(parts[i]), t)
+    }
+  }
+  return d
+}
+
+/**
+ * 上游爱加粗爱起标题,逐行对位不要这些装饰。
+ *
+ * @param input 一段译文。
+ * @returns 去掉加粗与标题记号之后的正文。
+ */
+function stripMd(input: StripMdIn): StripMdOut {
+  return input.text.replace(MD_BOLD, KEEP_GROUP1).replace(MD_HEADING, MD_DROP).replace(MD_STARS, MD_DROP)
+}
+
+/**
+ * 一块里的行加上 `[n] ` 编号 —— 对位靠的就是它。
+ *
+ * @param input 这一块的行。
+ * @returns 编好号的一整段,行间用换行。
+ */
+function numberLines(input: NumberLinesIn): NumberLinesOut {
+  const out: string[] = []
+  for (let j = 0; j < input.lines.length; j++) {
+    out.push(`${NUMBER_HEAD}${j + 1}${NUMBER_TAIL}${input.lines[j]}`)
+  }
+  return out.join(SSE_LINE_SEP)
 }
 
 /**

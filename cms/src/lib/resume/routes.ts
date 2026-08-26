@@ -27,9 +27,10 @@ import { freeGate, getUser, getUserOrNull, isPro } from '../quota/server'
 import {
   BLANKS2, BLANKS3_RE, BODY_TEXT_NONE, CLB_MAX, CLB_MIN, CODE_TIMEOUT, CODE_TOO_LONG, CR_DROP, CR_RE, DAILY_FREE, DATE_LEN, DETAIL_CAP, ERR_LOG_CAP, EXTRACT_CHARS_MAX, EXTRACT_OUT_MAX, EXTRACT_TEXT_MIN, EXTRACT_TOKENS_MAX, E_AUTH, E_BUSY, E_LIMIT, E_LLM, E_LOGIN, E_NOFILE, E_NO_JD, E_PARSE, E_SCAN, E_SIZE, E_TOO_LONG, E_TOO_SHORT, FIELD_FILE, JD_DB_NONE, JD_LEN_MIN, LANG_FALLBACK_EN, LLM_TEXT_NONE, LOG_DASH, MATCH_PROVIDER, MATCH_TEMPERATURE, MATCH_TOKENS_FREE, MATCH_TOKENS_PRO, META_VIA_LEGACY, MIN_RESUME, ONE_SPACE, RESUME_MAX_BYTES, RESUME_SAVE_CAP, REWRITE_CAP, ROLE_SYSTEM, ROLE_USER, SPACES_RE, TEST_MAIL_SUFFIX, TITLES_N_MAX, TITLE_Q_LEN_MAX, TITLE_Q_LEN_MIN, USES_CELL_NONE, USES_SEP, WS_ALL_RE,
 } from './constants'
-import { extractText, gateMatch, ieltsToClb, matchPrompt, nocCandidatesOf } from './functions'
+import {
+  extractText, gateMatch, ieltsToClb, matchPrompt, nocCandidatesOf, normalizeRows, parseLlmJson,
+} from './functions'
 import { EXTRACT_SYSTEM } from './prompts'
-import { normalizeRows, parseLlmJson } from './functions'
 import type { ExtractData, MatchBody, MatchUsesProfile, MaybeNum } from './types'
 
 /**

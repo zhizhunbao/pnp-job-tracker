@@ -22,20 +22,6 @@ import { CACHE } from './variables'
 import type { MaybeDenyBody, FreeGated, FreeGateIn, MaybeRawUser, MaybeUser, QuotaPairs, ReqHeaders, ReqLike, UserOut } from './types'
 
 /**
- * 从请求 headers(httpOnly payload-token cookie)解出当前用户;未登录 null。
- * 体内 `as` 是跨边界断言:payload.auth 的用户形状由 payload 定,本域只读 RawUser 那几格,
- * 缺席格在 rows 的 toSessionUser 里当场收。
- *
- * @param headers 请求头。
- * @returns 会话用户;未登录是 null。
- */
-export async function getUser(headers: ReqHeaders): UserOut {
-  const payload = await getPayload({ config: await config })
-  const { user } = await payload.auth({ headers })
-  return toSessionUser(user as MaybeRawUser)
-}
-
-/**
  * 同 getUser，但鉴权层抛错当未登录（查挂不该把业务端点打成 500；
  * 匿名可用的端点落到匿名帽）。原先三个路由各自写 catch 具名函数，
  * 同一个决定拄了三遍 —— 2026-08-23 收进本域。
@@ -52,16 +38,17 @@ export async function getUserOrNull(headers: ReqHeaders): UserOut {
 }
 
 /**
- * 时长包语义:到期日在未来 = Pro。没有订阅状态机。
+ * 从请求 headers(httpOnly payload-token cookie)解出当前用户;未登录 null。
+ * 体内 `as` 是跨边界断言:payload.auth 的用户形状由 payload 定,本域只读 RawUser 那几格,
+ * 缺席格在 rows 的 toSessionUser 里当场收。
  *
- * @param user 会话用户(未登录 null)。
- * @returns 是否 Pro 期内。
+ * @param headers 请求头。
+ * @returns 会话用户;未登录是 null。
  */
-export function isPro(user: MaybeUser): boolean {
-  if (user == null || user.proUntil == null) {
-    return false
-  }
-  return new Date(user.proUntil) > new Date()
+export async function getUser(headers: ReqHeaders): UserOut {
+  const payload = await getPayload({ config: await config })
+  const { user } = await payload.auth({ headers })
+  return toSessionUser(user as MaybeRawUser)
 }
 
 /**
@@ -75,18 +62,43 @@ export function ipOf(req: ReqLike): string {
 }
 
 /**
- * 今日已用次数(只读):试用额度可见化用(第 5 轮 #16)——
- * 用户该知道还剩几次,而不是突然 402。
+ * 统一闸(#124 统一免费额度池):免费登录超池 → 402(前端升级卡);
+ * 匿名超 IP 池 → 429;放行时给剩余数(headers 直接展开进响应)。
+ * Pro 不限(advisor 全局帽/Pro 日帽照旧,由各路由自己叠)。
  *
- * @param key 计数键。
- * @returns 今日次数;没记录是 0。
+ * @param input 当前用户与请求头。
+ * @returns 裁决(block 非 null 就直接返回它)。
  */
-export function usedToday(key: string): number {
-  const b = CACHE.buckets.get(key)
-  if (b != null && b.day === day()) {
-    return b.n
+export function freeGate(input: FreeGateIn): FreeGated {
+  const user = input.user
+  const pro = isPro(user)
+  if (user != null && pro === false && checkLimit([[KEY_FREE_USER + String(user.id), FREE_DAILY_TRIES]]) === false) {
+    return { deny: DENY_USER, left: 0, headers: {} }
   }
-  return 0
+  if (user == null && checkLimit([[KEY_FREE_IP + ipOfHeaders(input.headers), ANON_DAILY_TRIES]]) === false) {
+    return { deny: DENY_IP, left: null, headers: {} }
+  }
+  let left: number | null = null
+  if (user != null && pro === false) {
+    left = Math.max(0, FREE_DAILY_TRIES - usedToday(KEY_FREE_USER + String(user.id)))
+  }
+  if (left != null) {
+    return { deny: null, left: left, headers: { [HDR_FREE_LEFT]: String(left) } }
+  }
+  return { deny: null, left: null, headers: {} }
+}
+
+/**
+ * 时长包语义:到期日在未来 = Pro。没有订阅状态机。
+ *
+ * @param user 会话用户(未登录 null)。
+ * @returns 是否 Pro 期内。
+ */
+export function isPro(user: MaybeUser): boolean {
+  if (user == null || user.proUntil == null) {
+    return false
+  }
+  return new Date(user.proUntil) > new Date()
 }
 
 /**
@@ -124,30 +136,18 @@ export function checkLimit(quotas: QuotaPairs): boolean {
 }
 
 /**
- * 统一闸(#124 统一免费额度池):免费登录超池 → 402(前端升级卡);
- * 匿名超 IP 池 → 429;放行时给剩余数(headers 直接展开进响应)。
- * Pro 不限(advisor 全局帽/Pro 日帽照旧,由各路由自己叠)。
+ * 今日已用次数(只读):试用额度可见化用(第 5 轮 #16)——
+ * 用户该知道还剩几次,而不是突然 402。
  *
- * @param input 当前用户与请求头。
- * @returns 裁决(block 非 null 就直接返回它)。
+ * @param key 计数键。
+ * @returns 今日次数;没记录是 0。
  */
-export function freeGate(input: FreeGateIn): FreeGated {
-  const user = input.user
-  const pro = isPro(user)
-  if (user != null && pro === false && checkLimit([[KEY_FREE_USER + String(user.id), FREE_DAILY_TRIES]]) === false) {
-    return { deny: DENY_USER, left: 0, headers: {} }
+export function usedToday(key: string): number {
+  const b = CACHE.buckets.get(key)
+  if (b != null && b.day === day()) {
+    return b.n
   }
-  if (user == null && checkLimit([[KEY_FREE_IP + ipOfHeaders(input.headers), ANON_DAILY_TRIES]]) === false) {
-    return { deny: DENY_IP, left: null, headers: {} }
-  }
-  let left: number | null = null
-  if (user != null && pro === false) {
-    left = Math.max(0, FREE_DAILY_TRIES - usedToday(KEY_FREE_USER + String(user.id)))
-  }
-  if (left != null) {
-    return { deny: null, left: left, headers: { [HDR_FREE_LEFT]: String(left) } }
-  }
-  return { deny: null, left: null, headers: {} }
+  return 0
 }
 
 /**
@@ -205,6 +205,12 @@ export function day(): string {
  * payload.auth 的用户 → 会话用户(缺席格 undefined 在这儿 `== null` 一网收成 null;
  * 没登录照旧 null)。
  *
+ * 值级清洗走 db 词汇表(2026-08-21 定的四个词),不手搓:
+ * `text()` = 「文本格空值折空串」,口径全站一份。手写成 `let email = ''` 加一段 if
+ * 是把同一个决定又抄一遍 —— 抄一遍就多一处会走散的口径。
+ * role / proUntil / profile 直接透传:它们的 `| null` 是**真的没有**(库里就可空),
+ * 折成别的值等于替库编事实。
+ *
  * @param u payload 交回来的用户。
  * @returns 会话用户;没登录是 null。
  */
@@ -212,10 +218,5 @@ export function toSessionUser(u: MaybeRawUser): MaybeUser {
   if (u == null) {
     return null
   }
-  // 值级清洗走 db 词汇表(2026-08-21 定的四个词),不手搓:
-  // `text()` = 「文本格空值折空串」,口径全站一份。手写成 `let email = ''` 加一段 if
-  // 是把同一个决定又抄一遍 —— 抄一遍就多一处会走散的口径。
-  // role / proUntil / profile 直接透传:它们的 `| null` 是**真的没有**(库里就可空),
-  // 折成别的值等于替库编事实。
   return { id: u.id, email: text(u.email), role: u.role, proUntil: u.proUntil, profile: u.profile }
 }

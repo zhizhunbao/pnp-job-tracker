@@ -24,6 +24,55 @@ import type {
 } from './types'
 
 /**
+ * pdf 解析器 destroy 失败的吞错(资源清理失败不该盖过已拿到的文本)。
+ *
+ * @param e 捕到的错误。
+ * @returns 无。
+ */
+function ignoreDestroyFailure(e: CaughtError): void {
+  log({ tag: RESUME_LOG.tag, text: RESUME_LOG.destroyFailed + e.message })
+}
+
+/**
+ * 简历文件 → 纯文本(内存解析)。只管 pdf/docx。
+ * 加密 PDF/损坏文件等 → 统一走 parse 失败回退;真实错误必须留痕 ——
+ * 2026-08-03 生产 PDF 必败查了两轮,才发现 catch 把 module/引擎错误也吞了。
+ *
+ * @param input 文件名与字节。
+ * @returns 文本;解析不了 text=null 且 err 说明原因。
+ */
+export async function extractText(input: ExtractIn): ExtractOut {
+  const parts = input.name.toLowerCase().split(EXT_SEP)
+  const ext = parts[parts.length - 1]
+  try {
+    if (ext === EXT_PDF) {
+      shimPdfGlobals()
+      const { PDFParse } = await import('pdf-parse')
+      const parser = new PDFParse({ data: new Uint8Array(input.buf) })
+      try {
+        const got = await parser.getText()
+        return { text: got.text, err: ERR_NONE }
+      } finally {
+        await parser.destroy().catch(ignoreDestroyFailure)
+      }
+    }
+    if (ext === EXT_DOCX) {
+      const mod = await import('mammoth')
+      const got = await mod.default.extractRawText({ buffer: input.buf })
+      return { text: got.value, err: ERR_NONE }
+    }
+  } catch (e) {
+    let err = String(e)
+    if (e instanceof Error) {
+      err = e.name + RESUME_LOG.errSep + e.message
+    }
+    log({ tag: RESUME_LOG.tag, text: RESUME_LOG.extractFailed + ext + RESUME_LOG.errSep + err.slice(0, ERR_SLICE) })
+    return { text: null, err: err }
+  }
+  return { text: null, err: ERR_UNSUPPORTED }
+}
+
+/**
  * pdfjs 5.x 模块初始化引用 DOM 全局(DOMMatrix 等)。本机/Windows 由 @napi-rs/canvas 原生包顶上;
  * 生产 Linux 上它加载不成 → 「Failed to load external module pdf-parse: DOMMatrix is not defined」
  * (2026-08-03 生产实撞,detail 探针抓到)。文本抽取不做矩阵运算,垫最小 stub 让模块能初始化即可。
@@ -83,55 +132,6 @@ function shimPdfGlobals(): void {
       lineTo() {}
     }
   }
-}
-
-/**
- * pdf 解析器 destroy 失败的吞错(资源清理失败不该盖过已拿到的文本)。
- *
- * @param e 捕到的错误。
- * @returns 无。
- */
-function ignoreDestroyFailure(e: CaughtError): void {
-  log({ tag: RESUME_LOG.tag, text: RESUME_LOG.destroyFailed + e.message })
-}
-
-/**
- * 简历文件 → 纯文本(内存解析)。只管 pdf/docx。
- * 加密 PDF/损坏文件等 → 统一走 parse 失败回退;真实错误必须留痕 ——
- * 2026-08-03 生产 PDF 必败查了两轮,才发现 catch 把 module/引擎错误也吞了。
- *
- * @param input 文件名与字节。
- * @returns 文本;解析不了 text=null 且 err 说明原因。
- */
-export async function extractText(input: ExtractIn): ExtractOut {
-  const parts = input.name.toLowerCase().split(EXT_SEP)
-  const ext = parts[parts.length - 1]
-  try {
-    if (ext === EXT_PDF) {
-      shimPdfGlobals()
-      const { PDFParse } = await import('pdf-parse')
-      const parser = new PDFParse({ data: new Uint8Array(input.buf) })
-      try {
-        const got = await parser.getText()
-        return { text: got.text, err: ERR_NONE }
-      } finally {
-        await parser.destroy().catch(ignoreDestroyFailure)
-      }
-    }
-    if (ext === EXT_DOCX) {
-      const mod = await import('mammoth')
-      const got = await mod.default.extractRawText({ buffer: input.buf })
-      return { text: got.value, err: ERR_NONE }
-    }
-  } catch (e) {
-    let err = String(e)
-    if (e instanceof Error) {
-      err = e.name + RESUME_LOG.errSep + e.message
-    }
-    log({ tag: RESUME_LOG.tag, text: RESUME_LOG.extractFailed + ext + RESUME_LOG.errSep + err.slice(0, ERR_SLICE) })
-    return { text: null, err: err }
-  }
-  return { text: null, err: ERR_UNSUPPORTED }
 }
 
 /**
@@ -270,26 +270,6 @@ export async function nocCandidatesOf(input: NocCandidatesIn): NocCandidatesOut 
 // =========================================================================
 
 /**
- * LLM 输出收口·第一步:整体 JSON.parse,且要求结果是对象(模型偶发给裸数组/标量,
- * 对照吃不了,交给第二步截取)。catch 是收口算法的分支切换,不是降级。
- * 体内 `as` 是跨边界断言:JSON.parse 的返回没有形状。
- *
- * @param t 修剪过的模型原文。
- * @returns 一个 JSON 对象;不是对象或坏 JSON 是 null。
- */
-function wholeJsonOf(t: string): ParsedJson {
-  try {
-    const whole = JSON.parse(t) as ParsedJson
-    if (whole != null && typeof whole === 'object' && Array.isArray(whole) === false) {
-      return whole
-    }
-    return null
-  } catch {
-    return null
-  }
-}
-
-/**
  * LLM 输出收口:先整体 parse(wholeJsonOf),不行再取第一个平衡的大括号块
  * (模型偶发裹说明文字)。最终收不出来返回 null,由调用方给用户报「对照失败」。
  *
@@ -322,6 +302,26 @@ export function parseLlmJson(text: string): ParsedJson {
     }
   }
   return null
+}
+
+/**
+ * LLM 输出收口·第一步:整体 JSON.parse,且要求结果是对象(模型偶发给裸数组/标量,
+ * 对照吃不了,交给第二步截取)。catch 是收口算法的分支切换,不是降级。
+ * 体内 `as` 是跨边界断言:JSON.parse 的返回没有形状。
+ *
+ * @param t 修剪过的模型原文。
+ * @returns 一个 JSON 对象;不是对象或坏 JSON 是 null。
+ */
+function wholeJsonOf(t: string): ParsedJson {
+  try {
+    const whole = JSON.parse(t) as ParsedJson
+    if (whole != null && typeof whole === 'object' && Array.isArray(whole) === false) {
+      return whole
+    }
+    return null
+  } catch {
+    return null
+  }
 }
 
 /**

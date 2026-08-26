@@ -47,19 +47,6 @@ import { HDR_USER_AGENT } from '../http'
 // =========================================================================
 
 /**
- * 一格 URL 参数收窄成定长干净串(参数缺席收成空串)。
- *
- * @param input 原始值与上限。
- * @returns 干净串。
- */
-function clip(input: ClipIn): string {
-  if (input.value == null) {
-    return FILTER_UNSET
-  }
-  return input.value.trim().slice(0, input.max)
-}
-
-/**
  * URL 参数 → 规范化筛选(SSR 与 API 共用一份,避免两端口径漂移)。
  * 不合法的值一律落空/落默认,不瞎猜。
  *
@@ -102,34 +89,16 @@ export function normalizeEmployerFilters(input: NormalizeFiltersIn): EmployerFil
 }
 
 /**
- * 制度匹配:用**子串** —— 'RCIP+FCIP' 的双标社区对 RCIP 与 FCIP 两个筛选都算数。
+ * 一格 URL 参数收窄成定长干净串(参数缺席收成空串)。
  *
- * @param input 行的制度值与选中的制度。
- * @returns 是否保留。
+ * @param input 原始值与上限。
+ * @returns 干净串。
  */
-export function programMatches(input: ProgramMatchesIn): boolean {
-  if (input.program === '') {
-    return true
+function clip(input: ClipIn): string {
+  if (input.value == null) {
+    return FILTER_UNSET
   }
-  return input.rowProgram.includes(input.program)
-}
-
-/**
- * 职业匹配口径(**本域最要紧的一条**):名录**没写**职业的行,选了 NOC 时照常保留。
- * 空 nocs = 官方名录这一行没列职业清单(RCIP/FCIP 绝大多数如此),不是「该雇主不招这个职业」——
- * 当成不匹配剔掉 = 拿我们的数据缺口冒充官方的排除,用户会错过大半个名录。
- *
- * @param input 行的职业码与选中的职业码。
- * @returns 是否保留。
- */
-export function nocMatches(input: NocMatchesIn): boolean {
-  if (input.noc === '') {
-    return true
-  }
-  if (input.rowNocs.length === 0) {
-    return true
-  }
-  return input.rowNocs.includes(input.noc)
+  return input.value.trim().slice(0, input.max)
 }
 
 /**
@@ -161,6 +130,37 @@ export function applyEmployerFilters(input: ApplyEmployerFiltersIn): EmployerRow
     out.push(r)
   }
   return out
+}
+
+/**
+ * 职业匹配口径(**本域最要紧的一条**):名录**没写**职业的行,选了 NOC 时照常保留。
+ * 空 nocs = 官方名录这一行没列职业清单(RCIP/FCIP 绝大多数如此),不是「该雇主不招这个职业」——
+ * 当成不匹配剔掉 = 拿我们的数据缺口冒充官方的排除,用户会错过大半个名录。
+ *
+ * @param input 行的职业码与选中的职业码。
+ * @returns 是否保留。
+ */
+export function nocMatches(input: NocMatchesIn): boolean {
+  if (input.noc === '') {
+    return true
+  }
+  if (input.rowNocs.length === 0) {
+    return true
+  }
+  return input.rowNocs.includes(input.noc)
+}
+
+/**
+ * 制度匹配:用**子串** —— 'RCIP+FCIP' 的双标社区对 RCIP 与 FCIP 两个筛选都算数。
+ *
+ * @param input 行的制度值与选中的制度。
+ * @returns 是否保留。
+ */
+export function programMatches(input: ProgramMatchesIn): boolean {
+  if (input.program === '') {
+    return true
+  }
+  return input.rowProgram.includes(input.program)
 }
 
 /**
@@ -228,71 +228,17 @@ export function pageSlice(input: PageSliceIn): EmployerRows {
 // =========================================================================
 
 /**
- * 指定雇主名录整表(6,680 行 × 7 短字段)带 TTL 缓存取数。
- * 过期先回旧值、后台单飞刷新,只有冷启动第一请求真等(改 `CACHE.designated` / `CACHE.designatedInflight`)。
+ * 雇主板 SSR 首屏(两个入口路由共用一份;口径由**路径段**定,不由 query 改写 ——
+ * 入口契约:/employers/designated?program=…&prov=… 与 /employers/hiring?prov=…&noc=… 必须直达且预置筛选)。
  *
- * @param db 数据库连接(池由调用方注进来)。
- * @returns 名录整表。
+ * @param input searchParams、口径与连接。
+ * @returns 第一页 + 预置筛选。
  */
-function fetchAllDesignated(db: Db): DesignatedRowsOut {
-  const hot = CACHE.designated
-  if (hot != null && Date.now() - hot.at < CACHE_TTL_MS) {
-    return Promise.resolve(hot.rows)
-  }
-  if (CACHE.designatedInflight == null) {
-    CACHE.designatedInflight = queryRowsOrEmpty({ db: db, sql: SQL.DESIGNATED_ALL, params: [], map: toDesignatedRow })
-      .then(function remember(rows) {
-        CACHE.designated = { at: Date.now(), rows: rows }
-        return rows
-      })
-      .finally(function clearInflight() {
-        CACHE.designatedInflight = null
-      })
-  }
-  if (hot != null) {
-    return Promise.resolve(hot.rows)
-  }
-  return CACHE.designatedInflight
-}
-
-/**
- * 职业人话名(站规:代码不裸奔)。查不到的码不进映射,展示层原样显示 5 位码。
- *
- * @param input 能打 SQL 的东西与要查的码。
- * @returns 码 → 三语名。
- */
-async function nocTitlesOf(input: NocTitlesIn): NocTitlesOut {
-  const list: string[] = []
-  for (const c of input.codes) {
-    if (NOC_RE.test(c)) {
-      list.push(c)
-    }
-  }
-  const capped = list.slice(0, NOC_TITLES_MAX)
-  if (capped.length === 0) {
-    return {}
-  }
-  const pairs = await queryRowsOrEmpty({ db: input.db, sql: SQL.NOC_TITLES_FOR_EMPLOYERS, params: [capped], map: toNocTitlePair })
-  const out: NocTitleMap = {}
-  for (const p of pairs) {
-    if (p.noc !== '') {
-      out[p.noc] = p.title
-    }
-  }
-  return out
-}
-
-/**
- * 空的一页(池没拿到 / 查挂了都回它,绝不 500 —— 前端保底继续用 SSR 那一页)。
- *
- * @param input 当前筛选与页大小。
- * @returns 空表。
- */
-function emptyEmployerPage(input: EmptyPageIn): EmployerPage {
-  return {
-    mode: input.filters.mode, rows: [], total: 0, page: input.filters.page, pageSize: input.pageSize,
-    facets: { provs: [], programs: [], cities: [], nocs: [] }, fetched: FETCHED_NONE, nocTitles: {},
-  }
+export async function employersBoardProps(input: BoardPropsIn): BoardPropsOut {
+  const filters = normalizeEmployerFilters({ get: getterOf(input.sp), defMode: input.mode })
+  filters.mode = input.mode
+  const initial = await loadEmployerPage({ db: input.db, filters: filters, pageSize: EMP_SSR_ROWS })
+  return { initial: initial, initialFilters: filters }
 }
 
 /**
@@ -376,17 +322,71 @@ export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerP
 }
 
 /**
- * 雇主板 SSR 首屏(两个入口路由共用一份;口径由**路径段**定,不由 query 改写 ——
- * 入口契约:/employers/designated?program=…&prov=… 与 /employers/hiring?prov=…&noc=… 必须直达且预置筛选)。
+ * 指定雇主名录整表(6,680 行 × 7 短字段)带 TTL 缓存取数。
+ * 过期先回旧值、后台单飞刷新,只有冷启动第一请求真等(改 `CACHE.designated` / `CACHE.designatedInflight`)。
  *
- * @param input searchParams、口径与连接。
- * @returns 第一页 + 预置筛选。
+ * @param db 数据库连接(池由调用方注进来)。
+ * @returns 名录整表。
  */
-export async function employersBoardProps(input: BoardPropsIn): BoardPropsOut {
-  const filters = normalizeEmployerFilters({ get: getterOf(input.sp), defMode: input.mode })
-  filters.mode = input.mode
-  const initial = await loadEmployerPage({ db: input.db, filters: filters, pageSize: EMP_SSR_ROWS })
-  return { initial: initial, initialFilters: filters }
+function fetchAllDesignated(db: Db): DesignatedRowsOut {
+  const hot = CACHE.designated
+  if (hot != null && Date.now() - hot.at < CACHE_TTL_MS) {
+    return Promise.resolve(hot.rows)
+  }
+  if (CACHE.designatedInflight == null) {
+    CACHE.designatedInflight = queryRowsOrEmpty({ db: db, sql: SQL.DESIGNATED_ALL, params: [], map: toDesignatedRow })
+      .then(function remember(rows) {
+        CACHE.designated = { at: Date.now(), rows: rows }
+        return rows
+      })
+      .finally(function clearInflight() {
+        CACHE.designatedInflight = null
+      })
+  }
+  if (hot != null) {
+    return Promise.resolve(hot.rows)
+  }
+  return CACHE.designatedInflight
+}
+
+/**
+ * 职业人话名(站规:代码不裸奔)。查不到的码不进映射,展示层原样显示 5 位码。
+ *
+ * @param input 能打 SQL 的东西与要查的码。
+ * @returns 码 → 三语名。
+ */
+async function nocTitlesOf(input: NocTitlesIn): NocTitlesOut {
+  const list: string[] = []
+  for (const c of input.codes) {
+    if (NOC_RE.test(c)) {
+      list.push(c)
+    }
+  }
+  const capped = list.slice(0, NOC_TITLES_MAX)
+  if (capped.length === 0) {
+    return {}
+  }
+  const pairs = await queryRowsOrEmpty({ db: input.db, sql: SQL.NOC_TITLES_FOR_EMPLOYERS, params: [capped], map: toNocTitlePair })
+  const out: NocTitleMap = {}
+  for (const p of pairs) {
+    if (p.noc !== '') {
+      out[p.noc] = p.title
+    }
+  }
+  return out
+}
+
+/**
+ * 空的一页(池没拿到 / 查挂了都回它,绝不 500 —— 前端保底继续用 SSR 那一页)。
+ *
+ * @param input 当前筛选与页大小。
+ * @returns 空表。
+ */
+function emptyEmployerPage(input: EmptyPageIn): EmployerPage {
+  return {
+    mode: input.filters.mode, rows: [], total: 0, page: input.filters.page, pageSize: input.pageSize,
+    facets: { provs: [], programs: [], cities: [], nocs: [] }, fetched: FETCHED_NONE, nocTitles: {},
+  }
 }
 
 /**
@@ -417,20 +417,32 @@ function getterOf(sp: SearchParams): ParamGetter {
 // =========================================================================
 
 /**
- * 拼 B4 探测列的 SELECT/GROUP BY 片段(`c.` 前缀逗号串;一列没探到就是空串,SQL 退回原样)。
+ * 在招担保雇主整表带 TTL 缓存取数(策略同名录:过期先回旧值、后台单飞刷新;
+ * 改 `CACHE.sponsors` / `CACHE.sponsorsInflight`)。
  *
- * @param cols 探到的列名。
- * @returns SQL 片段。
+ * @param input 连接与注入的雇主判定引擎(2026-08-23 收牌批)。
+ * @returns 全量担保行(缓存行全站共享,消费端不许原地改)。
  */
-function factColsFragment(cols: StrList): string {
-  if (cols.length === 0) {
-    return SQL_FRAG_NONE
+export function loadSponsorEmployers(input: SponsorsIn): SponsorRowsOut {
+  const db = input.db
+  const hot = CACHE.sponsors
+  if (hot != null && Date.now() - hot.at < CACHE_TTL_MS) {
+    return Promise.resolve(hot.rows)
   }
-  const parts: string[] = []
-  for (const c of cols) {
-    parts.push(COL_PREFIX + c)
+  if (CACHE.sponsorsInflight == null) {
+    CACHE.sponsorsInflight = loadSponsors({ db: db, judge: input.judge })
+      .then(function remember(rows) {
+        CACHE.sponsors = { at: Date.now(), rows: rows }
+        return rows
+      })
+      .finally(function clearInflight() {
+        CACHE.sponsorsInflight = null
+      })
   }
-  return JOIN_COMMA + parts.join(JOIN_COMMA)
+  if (hot != null) {
+    return Promise.resolve(hot.rows)
+  }
+  return CACHE.sponsorsInflight
 }
 
 /**
@@ -470,48 +482,46 @@ async function loadSponsors(input: SponsorsIn): SponsorRowsOut {
 }
 
 /**
- * 在招担保雇主整表带 TTL 缓存取数(策略同名录:过期先回旧值、后台单飞刷新;
- * 改 `CACHE.sponsors` / `CACHE.sponsorsInflight`)。
+ * 拼 B4 探测列的 SELECT/GROUP BY 片段(`c.` 前缀逗号串;一列没探到就是空串,SQL 退回原样)。
  *
- * @param input 连接与注入的雇主判定引擎(2026-08-23 收牌批)。
- * @returns 全量担保行(缓存行全站共享,消费端不许原地改)。
+ * @param cols 探到的列名。
+ * @returns SQL 片段。
  */
-export function loadSponsorEmployers(input: SponsorsIn): SponsorRowsOut {
-  const db = input.db
-  const hot = CACHE.sponsors
-  if (hot != null && Date.now() - hot.at < CACHE_TTL_MS) {
-    return Promise.resolve(hot.rows)
+function factColsFragment(cols: StrList): string {
+  if (cols.length === 0) {
+    return SQL_FRAG_NONE
   }
-  if (CACHE.sponsorsInflight == null) {
-    CACHE.sponsorsInflight = loadSponsors({ db: db, judge: input.judge })
-      .then(function remember(rows) {
-        CACHE.sponsors = { at: Date.now(), rows: rows }
-        return rows
-      })
-      .finally(function clearInflight() {
-        CACHE.sponsorsInflight = null
-      })
+  const parts: string[] = []
+  for (const c of cols) {
+    parts.push(COL_PREFIX + c)
   }
-  if (hot != null) {
-    return Promise.resolve(hot.rows)
-  }
-  return CACHE.sponsorsInflight
+  return JOIN_COMMA + parts.join(JOIN_COMMA)
 }
 
 /**
- * LMIA 表:有获批记录的行,按新近度排序,瘦身切装。
+ * 把脉页橱窗三分表(#313;SSR 切前 SE_SSR_ROWS 行与 API 全量共用)。
+ * 缓存行全站共享:三个板各自产新数组新对象,均不动缓存。
+ *
+ * @param rows 缓存全量行。
+ * @returns 三分表。
+ */
+export function buildSponsorBoards(rows: SponsorRows): SponsorBoards {
+  return { lmia: lmiaBoard(rows), named: namedBoard(rows), aip: aipBoard(rows) }
+}
+
+/**
+ * AIP 表:指定雇主行,保持聚合序。
  *
  * @param rows 缓存全量行。
  * @returns 该表数据。
  */
-function lmiaBoard(rows: SponsorRows): SponsorBoardData {
+function aipBoard(rows: SponsorRows): SponsorBoardData {
   const hit: SponsorEmployerRow[] = []
   for (const r of rows) {
-    if (r.lmiaPositions > 0) {
+    if (r.aip === true) {
       hit.push(r)
     }
   }
-  hit.sort(byLmiaRecency)
   return { top: hit.map(toSlimSponsorRow), total: hit.length }
 }
 
@@ -547,30 +557,20 @@ function namedBoard(rows: SponsorRows): SponsorBoardData {
 }
 
 /**
- * AIP 表:指定雇主行,保持聚合序。
+ * LMIA 表:有获批记录的行,按新近度排序,瘦身切装。
  *
  * @param rows 缓存全量行。
  * @returns 该表数据。
  */
-function aipBoard(rows: SponsorRows): SponsorBoardData {
+function lmiaBoard(rows: SponsorRows): SponsorBoardData {
   const hit: SponsorEmployerRow[] = []
   for (const r of rows) {
-    if (r.aip === true) {
+    if (r.lmiaPositions > 0) {
       hit.push(r)
     }
   }
+  hit.sort(byLmiaRecency)
   return { top: hit.map(toSlimSponsorRow), total: hit.length }
-}
-
-/**
- * 把脉页橱窗三分表(#313;SSR 切前 SE_SSR_ROWS 行与 API 全量共用)。
- * 缓存行全站共享:三个板各自产新数组新对象,均不动缓存。
- *
- * @param rows 缓存全量行。
- * @returns 三分表。
- */
-export function buildSponsorBoards(rows: SponsorRows): SponsorBoards {
-  return { lmia: lmiaBoard(rows), named: namedBoard(rows), aip: aipBoard(rows) }
 }
 
 /**
@@ -620,17 +620,64 @@ export function applySponsorFilters(input: ApplySponsorFiltersIn): SponsorRows {
 // =========================================================================
 
 /**
- * 5 位码第二位当 TEER;不是像样的码则 null,不瞎猜。
+ * 多雇主对照聚合。零新抓取:companies + jobs 聚合 + stats.difficulty(E12-07)+ lib/jobs/match。
+ * Pro gate 在页面层(免费不调本函数);红线:摆事实不下结论、LMIA=历史事实≠担保(措辞在 i18n)。
  *
- * @param noc 职业码。
- * @returns TEER。
+ * @param input 连接、雇主名、已归一档案与匹配维度。
+ * @returns 对照行(不在库的名字直接跳过 —— 入口只来自库内行,正常不会发生)。
  */
-function teerOf(noc: string): MaybeTeer {
-  const d = noc[1]
-  if (noc.length === 5 && d != null && DIGIT_RE.test(d)) {
-    return Number(d)
+export async function compareEmployers(input: CompareIn): CompareOut {
+  const seen = new Set<string>()
+  const clean: string[] = []
+  for (const n of input.names) {
+    const t = n.trim()
+    if (t !== '' && seen.has(t) === false) {
+      seen.add(t)
+      clean.push(t)
+    }
   }
-  return null
+  const capped = clean.slice(0, CMP_MAX)
+  if (capped.length < 2) {
+    return []
+  }
+  const lower: string[] = []
+  for (const n of capped) {
+    lower.push(n.toLowerCase())
+  }
+  const cos = await queryRows({ db: input.db, sql: SQL.COMPANIES_FOR_COMPARE, params: [lower], map: passCompareCompany })
+  const out: CompareRow[] = []
+  for (const name of capped) {
+    let company: CompareCompanyDbRow | null = null
+    for (const c of cos) {
+      if (c.name != null && c.name.toLowerCase() === name.toLowerCase()) {
+        company = c
+        break
+      }
+    }
+    if (company == null) {
+      continue
+    }
+    const jobs = await queryRows({ db: input.db, sql: SQL.COMPANY_JOBS_FOR_COMPARE, params: [companyIdOf(company)], map: toCompareJob })
+    out.push(toCompareRow({ company: company, agg: companyAggOf({ jobs: jobs, profile: input.profile, dims: input.dims }) }))
+  }
+  const provSet = new Set<string>()
+  for (const r of out) {
+    if (r.mainProvince !== '') {
+      provSet.add(r.mainProvince)
+    }
+  }
+  if (provSet.size > 0) {
+    const pairs = await queryRowsOrEmpty({ db: input.db, sql: SQL.PROV_DIFFICULTY_ANY, params: [Array.from(provSet)], map: toDifficultyPair })
+    for (const r of out) {
+      for (const p of pairs) {
+        if (p.province === r.mainProvince) {
+          r.diffTier = p.tier
+          break
+        }
+      }
+    }
+  }
+  return out
 }
 
 /**
@@ -732,64 +779,17 @@ function mainProvinceOf(tally: ProvTally): string {
 }
 
 /**
- * 多雇主对照聚合。零新抓取:companies + jobs 聚合 + stats.difficulty(E12-07)+ lib/jobs/match。
- * Pro gate 在页面层(免费不调本函数);红线:摆事实不下结论、LMIA=历史事实≠担保(措辞在 i18n)。
+ * 5 位码第二位当 TEER;不是像样的码则 null,不瞎猜。
  *
- * @param input 连接、雇主名、已归一档案与匹配维度。
- * @returns 对照行(不在库的名字直接跳过 —— 入口只来自库内行,正常不会发生)。
+ * @param noc 职业码。
+ * @returns TEER。
  */
-export async function compareEmployers(input: CompareIn): CompareOut {
-  const seen = new Set<string>()
-  const clean: string[] = []
-  for (const n of input.names) {
-    const t = n.trim()
-    if (t !== '' && seen.has(t) === false) {
-      seen.add(t)
-      clean.push(t)
-    }
+function teerOf(noc: string): MaybeTeer {
+  const d = noc[1]
+  if (noc.length === 5 && d != null && DIGIT_RE.test(d)) {
+    return Number(d)
   }
-  const capped = clean.slice(0, CMP_MAX)
-  if (capped.length < 2) {
-    return []
-  }
-  const lower: string[] = []
-  for (const n of capped) {
-    lower.push(n.toLowerCase())
-  }
-  const cos = await queryRows({ db: input.db, sql: SQL.COMPANIES_FOR_COMPARE, params: [lower], map: passCompareCompany })
-  const out: CompareRow[] = []
-  for (const name of capped) {
-    let company: CompareCompanyDbRow | null = null
-    for (const c of cos) {
-      if (c.name != null && c.name.toLowerCase() === name.toLowerCase()) {
-        company = c
-        break
-      }
-    }
-    if (company == null) {
-      continue
-    }
-    const jobs = await queryRows({ db: input.db, sql: SQL.COMPANY_JOBS_FOR_COMPARE, params: [companyIdOf(company)], map: toCompareJob })
-    out.push(toCompareRow({ company: company, agg: companyAggOf({ jobs: jobs, profile: input.profile, dims: input.dims }) }))
-  }
-  const provSet = new Set<string>()
-  for (const r of out) {
-    if (r.mainProvince !== '') {
-      provSet.add(r.mainProvince)
-    }
-  }
-  if (provSet.size > 0) {
-    const pairs = await queryRowsOrEmpty({ db: input.db, sql: SQL.PROV_DIFFICULTY_ANY, params: [Array.from(provSet)], map: toDifficultyPair })
-    for (const r of out) {
-      for (const p of pairs) {
-        if (p.province === r.mainProvince) {
-          r.diffTier = p.tier
-          break
-        }
-      }
-    }
-  }
-  return out
+  return null
 }
 
 // =========================================================================
@@ -931,34 +931,6 @@ async function investigate(input: InvestigateIn): InvestigateOut {
 }
 
 /**
- * 公司名归一(与 etl/clean/_enrich_company_facts.py 同门槛):小写、标点归空格、去法定后缀、缩空白。
- *
- * @param s 原名。
- * @returns 归一后的名。
- */
-function normCompanyName(s: string): string {
-  return s.toLowerCase().replace(PUNCT_RE, SPACE).replace(SUFFIX_RE, SPACE).replace(SPACES_RE, SPACE).trim()
-}
-
-/**
- * 打一次 Wikidata API(format=json 由这里补;非 2xx 抛给调用方的 catch)。
- *
- * @param input 查询参数与中断句柄。
- * @returns 响应信封。
- */
-async function wdGet(input: WdGetIn): WdGetOut {
-  const qs = new URLSearchParams(input.params)
-  qs.set(FORMAT_KEY, FORMAT_JSON)
-  const r = await fetch(WD_API + URL_QS + qs.toString(), {
-    signal: input.signal, headers: { [HDR_USER_AGENT]: WD_UA },
-  })
-  if (r.ok === false) {
-    throw fail({ name: ERR_NAME.wikidata, msg: String(r.status), code: null })
-  }
-  return r.json()
-}
-
-/**
  * Wikidata 严格名称匹配(移植批量脚本,批量退役后这是唯一查询点)。门槛与批量版一致:
  * en 标签/别名归一后**全等** + 有英文维基条目才算知名;不机翻,别名只收官方跨语言标签。
  * #279:zh 裸标签常是 zh-TW/zh-HK 繁体 → 优先简体变体,都没有才退 zh(ETL 侧同款取序)。
@@ -1019,6 +991,34 @@ async function wikidataLookup(name: string): WikidataOut {
   } finally {
     clearTimeout(timer)
   }
+}
+
+/**
+ * 公司名归一(与 etl/clean/_enrich_company_facts.py 同门槛):小写、标点归空格、去法定后缀、缩空白。
+ *
+ * @param s 原名。
+ * @returns 归一后的名。
+ */
+function normCompanyName(s: string): string {
+  return s.toLowerCase().replace(PUNCT_RE, SPACE).replace(SUFFIX_RE, SPACE).replace(SPACES_RE, SPACE).trim()
+}
+
+/**
+ * 打一次 Wikidata API(format=json 由这里补;非 2xx 抛给调用方的 catch)。
+ *
+ * @param input 查询参数与中断句柄。
+ * @returns 响应信封。
+ */
+async function wdGet(input: WdGetIn): WdGetOut {
+  const qs = new URLSearchParams(input.params)
+  qs.set(FORMAT_KEY, FORMAT_JSON)
+  const r = await fetch(WD_API + URL_QS + qs.toString(), {
+    signal: input.signal, headers: { [HDR_USER_AGENT]: WD_UA },
+  })
+  if (r.ok === false) {
+    throw fail({ name: ERR_NAME.wikidata, msg: String(r.status), code: null })
+  }
+  return r.json()
 }
 
 /**
@@ -1217,20 +1217,16 @@ export async function loadCompanyBrief(input: CompanyBriefIn): MaybeStrOut {
 // =========================================================================
 
 /**
- * 数组格的词汇:pg 的 array_agg 列,null 收成空数组,元素逐个过 text。
+ * `DESIGNATED_ALL` 一行 → 干净的名录行。
  *
- * @param x 库回的数组格。
- * @returns 干净的字符串数组。
+ * @param r 原始行。
+ * @returns 收窄后的名录行。
  */
-export function strList(x: StrListCell): StrList {
-  if (x == null) {
-    return []
+export function toDesignatedRow(r: DesignatedDbRow): DesignatedRow {
+  return {
+    name: text(r.name), province: text(r.province), location: text(r.location),
+    source: text(r.source), nocs: text(r.nocs), url: text(r.url), fetched: fmtFetched(text(r.fetched)),
   }
-  const out: string[] = []
-  for (const v of x) {
-    out.push(text(v))
-  }
-  return out
 }
 
 /**
@@ -1245,35 +1241,6 @@ export function fmtFetched(v: string): string {
     return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`
   }
   return s.slice(0, DATE_LEN)
-}
-
-/**
- * 名录 nocs 串 → 5 位码数组(逗号/空格/顿号混排都吃;非 5 位的碎片丢弃,不瞎猜)。
- *
- * @param nocs 名录原文。
- * @returns 去重后的 5 位码。
- */
-export function nocList(nocs: string): StrList {
-  const seen = new Set<string>()
-  for (const piece of nocs.split(NOC_SPLIT_RE)) {
-    if (NOC_RE.test(piece)) {
-      seen.add(piece)
-    }
-  }
-  return Array.from(seen)
-}
-
-/**
- * `DESIGNATED_ALL` 一行 → 干净的名录行。
- *
- * @param r 原始行。
- * @returns 收窄后的名录行。
- */
-export function toDesignatedRow(r: DesignatedDbRow): DesignatedRow {
-  return {
-    name: text(r.name), province: text(r.province), location: text(r.location),
-    source: text(r.source), nocs: text(r.nocs), url: text(r.url), fetched: fmtFetched(text(r.fetched)),
-  }
 }
 
 /**
@@ -1297,6 +1264,22 @@ export function toEmployerRow(r: DesignatedRow): EmployerRow {
     name: r.name, province: r.province, where: r.location,
     program: r.source, nocs: nocList(r.nocs), openJobs: null, url: r.url,
   }
+}
+
+/**
+ * 名录 nocs 串 → 5 位码数组(逗号/空格/顿号混排都吃;非 5 位的碎片丢弃,不瞎猜)。
+ *
+ * @param nocs 名录原文。
+ * @returns 去重后的 5 位码。
+ */
+export function nocList(nocs: string): StrList {
+  const seen = new Set<string>()
+  for (const piece of nocs.split(NOC_SPLIT_RE)) {
+    if (NOC_RE.test(piece)) {
+      seen.add(piece)
+    }
+  }
+  return Array.from(seen)
 }
 
 /**
@@ -1403,6 +1386,23 @@ export function toSponsorRow(input: ToSponsorRowIn): SponsorEmployerRow {
     streams: strList(r.streams),
     verdict: input.verdict,
   }
+}
+
+/**
+ * 数组格的词汇:pg 的 array_agg 列,null 收成空数组,元素逐个过 text。
+ *
+ * @param x 库回的数组格。
+ * @returns 干净的字符串数组。
+ */
+export function strList(x: StrListCell): StrList {
+  if (x == null) {
+    return []
+  }
+  const out: string[] = []
+  for (const v of x) {
+    out.push(text(v))
+  }
+  return out
 }
 
 /**

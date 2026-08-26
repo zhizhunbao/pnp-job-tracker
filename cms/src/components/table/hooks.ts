@@ -22,6 +22,7 @@ import type {
  * 数据换了(如切省)回第一页,不停在越界页 —— 回页在渲染中对比上一批行完成
  * (React 官方「adjusting state during render」形态,2026-08-26 由 effect 改写:
  * effect 里同步 setState 会多提交一帧旧页,react-hooks/set-state-in-effect 也拦)。
+ * 排序三态循环:首点降序 → 再点升序 → 三点取消(回落入库序)。
  *
  * @param x 列声明、行、每页行数。
  * @returns 机器面板(当前页行、排序态与翻页手柄)。
@@ -38,7 +39,6 @@ export function useRows<T>(x: RowsIn<T>): RowsOut<T> {
 
   function toggleSort(key: string) {
     function next(s: SortState): SortState {
-      // 三态循环:首点降序 → 再点升序 → 三点取消(回落入库序)。
       if (s == null || s.key !== key) {
         return { key, dir: -1 }
       }
@@ -168,6 +168,7 @@ export function useColWidths<T>(x: ColWidthsIn<T>): ColWidthsOut<T> {
 /**
  * 量一遍列宽:各列真实内容宽 → 占总宽的百分比(百分比而非 px:容器变窄仍按比例缩)。
  * 表还没上屏(总宽 0)或哪一列的表头还没挂上 → 给 null,这一轮不锁,下一帧再来。
+ * 显式列宽不参与量宽(调用方已定死版式),原样带过。
  *
  * @param x 列声明、表元素与表头元素表。
  * @returns 列 key → 百分比串;null = 这轮量不了。
@@ -183,7 +184,6 @@ function measureCols<T>(x: MeasureIn<T>): Record<string, string> | null {
   const m: Record<string, string> = {}
   for (const c of x.cols) {
     if (c.width != null) {
-      // 显式列宽不参与量宽(调用方已定死版式)
       m[c.key] = c.width
       continue
     }

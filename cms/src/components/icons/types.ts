@@ -4,6 +4,8 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+
+// eslint-disable-next-line local/no-import-in-leaf -- 图标 props 的形状由 lucide 库定(SVG 全属性面),本域抄不得也不该抄;特批牌形态,同 stripe/types
 import type { LucideProps } from 'lucide-react'
 
 /**

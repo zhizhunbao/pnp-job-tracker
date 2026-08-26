@@ -18,30 +18,6 @@ import type { MaybeTrackData, TrackData, UmamiLike } from './types'
 import { HDR_CONTENT_TYPE_LC } from '../http'
 
 /**
- * 只挑得出低基数枚举的那一个值当分组;NOC 这类高基数的不传(会把日聚合表撑成明细表)。
- *
- * @param data 埋点附加值。
- * @returns 低基数分组值;没有则空串。
- */
-function pickProp(data: MaybeTrackData): string {
-  if (data == null) {
-    return PROP_NONE
-  }
-  let v: string | number | null = null
-  if (data.plan != null) {
-    v = data.plan
-  } else if (data.kind != null) {
-    v = data.kind
-  } else if (data.card != null) {
-    v = data.card
-  }
-  if (typeof v === 'string') {
-    return v
-  }
-  return PROP_NONE
-}
-
-/**
  * 上报一条功能事件(umami + 命中漏斗白名单时的第一方 /api/funnel/track)。
  * 埋点永远不该弄崩页面 —— 两条腿各自吞错。
  * sendBeacon 优先:页面跳走也送得出去(pricing 打开后立刻跳转的场景);不支持退 fetch keepalive。
@@ -93,6 +69,30 @@ function trackFirstParty(event: string, data?: TrackData): void {
   } catch {
     return
   }
+}
+
+/**
+ * 只挑得出低基数枚举的那一个值当分组;NOC 这类高基数的不传(会把日聚合表撑成明细表)。
+ *
+ * @param data 埋点附加值。
+ * @returns 低基数分组值;没有则空串。
+ */
+function pickProp(data: MaybeTrackData): string {
+  if (data == null) {
+    return PROP_NONE
+  }
+  let v: string | number | null = null
+  if (data.plan != null) {
+    v = data.plan
+  } else if (data.kind != null) {
+    v = data.kind
+  } else if (data.card != null) {
+    v = data.card
+  }
+  if (typeof v === 'string') {
+    return v
+  }
+  return PROP_NONE
 }
 
 /**
