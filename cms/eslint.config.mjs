@@ -1685,7 +1685,8 @@ const localRules = {
     //    然后 page.tsx 只允许用 components 拼凑」「page 只拼 components 不允许自己建组件」
     //    「需要建规则,建闸门先」)。页面从此不是域,只是门:取参 → getDb 注入域函数 →
     //    拼组件;排版下沉成组件,判断下沉进 lib 域。存量走 --suppress-rule 记基线当账单,
-    //    派批清零;ui/ 桶(Shell/JobsTable 们)并不并 components 待 Frank 拍,先照进账单。
+    //    派批清零。组件唯一的家 = src/components/ 一域一目录(旧 (frontend)/ui/ 桶已在
+    //    先前批次并入,CLAUDE.md 的目录树是旧的 —— 2026-08-26 Frank 现场纠正)。
     'route-file-names': {
       meta: {
         type: 'suggestion',
@@ -2541,8 +2542,7 @@ const eslintConfig = [
   {
     // ── 页面域形制闸(2026-08-26 Frank「需要建规则,建闸门先」):路由目录只住框架定名文件、
     //    page.tsx 只拼大写组件不许自建 —— 两条规则自带文件名判定,这里只管开闸。
-    //    存量走 --suppress-rule 记基线当账单派批清零;增量从立闸起锁死。
-    //    ui/ 桶并不并 components 待 Frank 拍板,先照进账单不豁免(基线只紧不松兜着)。──────
+    //    存量走 --suppress-rule 记基线当账单派批清零;增量从立闸起锁死。──────────────────
     files: ['src/app/(frontend)/**/*.tsx'],
     plugins: { local: localRules },
     rules: { 'local/route-file-names': 'error', 'local/page-compose-only': 'error' },
