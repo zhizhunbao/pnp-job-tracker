@@ -11,47 +11,30 @@ import css from './button.module.css'
 
 /**
  * 按钮的类名预算:基座 + 尺寸档 + 变体 + 调用方追加类。
- * 变体 → 类是查表(键完整性由 Record<ButtonKind, string> 管);sm/lg 都传按 sm 算。
+ * 变体与类**同名**,按需取一格 —— 不急切构造全表:十二个控件钮变体是规划位
+ * (2026-08-24 拍板,调用点迁移批未做,类未写),急切构造会让首个按钮渲染就撞上
+ * 规划位的缺类;按需取则只校验真用到的那一格,用到缺类仍当场炸(cssOf 的口径)。
+ * sm/lg 都传按 sm 算。
  *
  * @param x 变体与尺寸档。
  * @returns 拼好的 className。
  */
 export function btnClsOf(x: BtnClsIn): string {
-  const kindCls: Record<ButtonKind, string> = {
-    primary: cssOf(css.primary),
-    pro: cssOf(css.pro),
-    secondary: cssOf(css.secondary),
-    ai: cssOf(css.ai),
-    ghost: cssOf(css.ghost),
-    danger: cssOf(css.danger),
-    icon: cssOf(css.icon),
-    iconGhost: cssOf(css.iconGhost),
-    box: cssOf(css.box),
-    step: cssOf(css.step),
-    tab: cssOf(css.tab),
-    drop: cssOf(css.drop),
-    seg: cssOf(css.seg),
-    menu: cssOf(css.menu),
-    groupRow: cssOf(css.groupRow),
-    dot: cssOf(css.dot),
-    linkText: cssOf(css.linkText),
-    linkDim: cssOf(css.linkDim),
-  }
   const cls = []
   // 基座只给**行动钮**:控件钮的形状由自己那一档定死,套上基座反而要一条条盖回去。
   if (isAction(x.kind)) {
-    cls.push(css.btn)
+    cls.push(cssOf(css.btn))
     if (x.sm) {
-      cls.push(css.sm)
+      cls.push(cssOf(css.sm))
     } else if (x.lg) {
-      cls.push(css.lg)
+      cls.push(cssOf(css.lg))
     }
   } else {
-    cls.push(css.ctl)
+    cls.push(cssOf(css.ctl))
   }
-  cls.push(kindCls[x.kind])
+  cls.push(cssOf(css[x.kind]))
   if (x.active) {
-    cls.push(css.on)
+    cls.push(cssOf(css.on))
   }
   if (x.className != null) {
     cls.push(x.className)
