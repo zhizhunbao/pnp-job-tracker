@@ -1643,6 +1643,44 @@ const localRules = {
       },
     },
 
+    // 🔴 tsx 组件体内不许声明内嵌函数(2026-08-26 Frank 立,样张 select.tsx 的 labelFor →
+    //    functions.ts 的 optionLabelOf):闭包变量改 XxxIn 显式入参,纯派生用 xxxOf、
+    //    逐项事件手柄用 makeXxx 工厂。只查 .tsx(组件与页面;.ts 的 makeSelectChange 这类
+    //    工厂体内函数不在此列)。两类天然豁免:
+    //    ① make* 工厂体内 —— 返回函数是它的本业(七词表钦定),体内那只函数就是产品;
+    //    ② 库回调的函数**实参**(useEffect(function migrate(){…})/.map(function f(){…}))——
+    //       那是「递交」不是「声明」,AST 上是 FunctionExpression,本判据只看 FunctionDeclaration。
+    'no-nested-function': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          nested:
+            '`{{ inner }}` 声明在 `{{ outer }}` 体内。tsx 不许内嵌函数 —— 迁到本域 functions.ts:'
+            + '闭包变量改 XxxIn 显式入参(纯派生 xxxOf / 逐项手柄 makeXxx 工厂;样张 select 的 optionLabelOf)。',
+        },
+      },
+      create(context) {
+        if (!/\.tsx$/.test(context.filename ?? '')) return {}
+        function enclosingFn(node) {
+          for (let n = node.parent; n; n = n.parent) {
+            if (n.type === 'FunctionDeclaration' || n.type === 'FunctionExpression' || n.type === 'ArrowFunctionExpression') return n
+          }
+          return null
+        }
+        return {
+          FunctionDeclaration(node) {
+            const outer = enclosingFn(node)
+            if (outer == null) return
+            let outerName = '(匿名)'
+            if (outer.type === 'FunctionDeclaration' && outer.id) outerName = outer.id.name
+            if (/^make[A-Z]/.test(outerName)) return
+            context.report({ node, messageId: 'nested', data: { inner: node.id?.name ?? '(匿名)', outer: outerName } })
+          },
+        }
+      },
+    },
+
     // 🔴 值级清洗不进 functions(2026-08-22 Frank:「functions 层,进来的所有参数都保证他是有效的」,
     // 当天看 stats 的 tierOf 判空实拍)。判据取最机械的一条:db 词汇表(text/count/numOrNull/
     // textOrNull/show/jsonOrNull)只许 rows.ts 用 —— functions.ts 里 import 这些词,
@@ -2389,6 +2427,14 @@ const eslintConfig = [
   //    排在前面的 'off' 会被后面任何一个 'error' 重新打开(2026-08-25 实撞:
   //    这块本来插在 db 块之前,后面 `files: REFACTORED` 那块又把三条开了回去,
   //    于是豁免看着写了、其实一条没生效)。同一个机制今晚咬过两次,另一次是桶闸。
+  {
+    // ── tsx 内嵌函数闸(2026-08-26 Frank 立;样张 select 批,存量走 --suppress-rule
+    //    记入基线当账单,派批清零)。范围 = 组件域 + (frontend) 页面域;(payload) 是
+    //    Payload 生成的管理台壳,不进。──────────────────────────────────────────
+    files: ['src/components/**/*.tsx', 'src/app/(frontend)/**/*.tsx'],
+    plugins: { local: localRules },
+    rules: { 'local/no-nested-function': 'error' },
+  },
   // ── mart 的三条具名豁免已撤(2026-08-26 Frank「mart 不要豁免 重构一下」)────────
   // 08-25 那块豁免的三个论据在形制批里逐条落了地,豁免随之失去存在理由:
   // · 列白名单(裸串论据)搬进 lib/mart/constants 的 COLS_*(常量文件本来就是放数的地方);

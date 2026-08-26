@@ -538,6 +538,9 @@ cd cms && npm run dev                            # 开发:localhost:3000(读写�
 - 在 `types.ts` / `constants.ts` 里 import(形状本域自己声明,依赖只走 `functions.ts`)
 - **没数出重复就抽公共**(先数消费者:只有一个的不是公共);把**行为**复制一份当「自己声明」
 - 写匿名函数、`any` / `unknown`、`as unknown as X` 双重断言、对象展开 `...`;给纯函数套 `try/catch`
+- **tsx 组件体内声明内嵌函数**(2026-08-26 立,闸 `no-nested-function`,样张 select 批:
+  迁到本域 functions.ts,闭包变量改 `XxxIn` 显式入参,纯派生 `xxxOf`、逐项手柄 `makeXxx` 工厂;
+  `make*` 工厂体内与库回调的函数**实参**豁免;范围 = components + (frontend) 页面域)
 - 写三目(词汇表 `lib/db/functions.ts` 与 tsx 除外);把 `?` 用在 type 的属性签名之外 ——
   可选参数 `(x?: T)`、可选链 `?.` 仍禁;契约里写 `| undefined`,或新写 `| null` 表示「没有」
   (改用 `?:`,见上;外部库定死的形状逐行 disable 写理由,不设整层豁免)
