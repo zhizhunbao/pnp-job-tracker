@@ -1,4 +1,4 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+﻿# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
 /node_modules
@@ -49,11 +49,10 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 
-# eslint 增量缓存(2026-08-25:全量 2 分 14 秒 → 热跑 10 秒)
+# eslint å¢žé‡ç¼“å­˜(2026-08-25:å…¨é‡ 2 åˆ† 14 ç§’ â†’ çƒ­è·‘ 10 ç§’)
 .eslintcache
 
 
-# eslint 分域报告(scripts/lint-report.mjs 产出,不进库)
-/lint-reports
+# eslint åˆ†åŸŸæŠ¥å‘Š(scripts/lint-report.mjs äº§å‡º,ä¸è¿›åº“)
+/reports
 
-test-reports/

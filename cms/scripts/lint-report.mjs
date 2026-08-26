@@ -16,7 +16,8 @@
  * 用法:`npm run lint:report`(全量)/ `npm run lint:report -- <规则名>`(过滤视图)。
  * 范围只有 lib 与 components(2026-08-26 Frank 收窄):app/collections/tests 不在本报告里,
  * 那边冒新错这里不响,收口仍以全量 `npm run lint` 为准。
- * 报告落 lint-reports/<本地时间戳>.md,目录已进 .gitignore,不进库。
+ * 报告落 reports/lint-<本地时间戳>.md(2026-08-26 Frank:lint-reports 并入统一的
+ * reports/,与 vitest 的 JSON 同屋),目录已进 .gitignore,不进库。
  *
  * @author Frank
  * @time 2026-08-25 22:40:00
@@ -32,9 +33,9 @@ import path from 'node:path'
 const SEV_ERROR = 2
 
 /**
- * 报告目录(相对 cms/,已 gitignore)。
+ * 报告目录(相对 cms/,已 gitignore;lint 与 vitest 报告同屋)。
  */
-const OUT_DIR = 'lint-reports'
+const OUT_DIR = 'reports'
 
 /**
  * 结果 JSON 的上限(全量报告可能上 MB)。
