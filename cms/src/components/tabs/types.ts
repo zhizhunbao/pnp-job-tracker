@@ -150,3 +150,65 @@ export type SectionTabsIn = {
    */
   tone?: SectionTone | null
 }
+
+/**
+ * 无参无返的钮点击手柄形状(页签点击是这一形)。
+ */
+export type ClickFn = () => void
+
+/**
+ * 收页签元素的回调 ref 形状(React 挂载时交回元素、卸载时交回 null)。
+ */
+export type TabRefFn = (el: HTMLButtonElement | null) => void
+
+/**
+ * useTabKeys(页签焦点机)的入参(2026-08-26 Frank 立「tsx 组件体内不许声明内嵌函数」,
+ * 原 Tabs 体内的 focusOf / onKey / setRef 三枚一并迁出)。
+ */
+export type TabKeysHookIn = {
+  /**
+   * 页签清单。
+   */
+  items: TabItem[]
+
+  /**
+   * 当前选中的 key。
+   */
+  value: string
+
+  /**
+   * 切换回调。
+   */
+  onChange: (key: string) => void
+}
+
+/**
+ * useTabKeys 交回的机器面板(页签元素表整台机器自己拿着,不出 hooks 文件 ——
+ * 渲染期把 ref 交给普通函数会被 react-hooks/refs 拦,手法同 table 的 thRefOf)。
+ */
+export type TabKeysHookOut = {
+  /**
+   * 收表页签元素的回调 ref 工厂(逐枚页签取一枚)。
+   */
+  refOf: (key: string) => TabRefFn
+
+  /**
+   * 键盘导航手柄(挂到每个页签的 onKeyDown)。
+   */
+  onKey: TabKeysFn
+}
+
+/**
+ * makeTabClick 的入参(2026-08-26 同批:原 Tabs 循环体内的 click 迁出)。
+ */
+export type TabClickIn = {
+  /**
+   * 切换回调。
+   */
+  onChange: (key: string) => void
+
+  /**
+   * 这一枚页签的身份键。
+   */
+  key: string
+}

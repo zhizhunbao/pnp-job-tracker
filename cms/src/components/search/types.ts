@@ -37,3 +37,18 @@ export type SearchIn = {
   size?: InputSize
 }
 
+/**
+ * 无参无返的钮点击手柄形状(清除钮是这一形)。
+ */
+export type ClickFn = () => void
+
+/**
+ * makeSearchClear 的入参(2026-08-26 Frank 立「tsx 组件体内不许声明内嵌函数」,
+ * 原 Search 体内的 clear 迁出,闭包的改值回调改走这格显式入参)。
+ */
+export type SearchClearIn = {
+  /**
+   * 改值回调(清除 = 交回空查询词)。
+   */
+  onChange: (v: string) => void
+}

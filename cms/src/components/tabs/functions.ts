@@ -5,7 +5,7 @@
  * @time 2026-08-24 04:30:00
  */
 import { KEY_END, KEY_HOME, KEY_LEFT, KEY_RIGHT } from './constants'
-import type { TabItem, TabKeysFn, TabKeysIn } from './types'
+import type { ClickFn, TabClickIn, TabItem, TabKeysFn, TabKeysIn } from './types'
 
 /**
  * 造一枚键盘导航手柄(WAI-ARIA tabs 模式):← → 相邻循环、Home/End 跳两端,
@@ -55,4 +55,18 @@ export function makeTabKeys(x: TabKeysIn): TabKeysFn {
   }
 
   return onKey
+}
+
+/**
+ * 造一枚页签的点击手柄(2026-08-26 同批,自 Tabs 的循环体内迁出)。
+ *
+ * @param x 切换回调与这一枚的身份键。
+ * @returns 挂到 button 上的 onClick。
+ */
+export function makeTabClick(x: TabClickIn): ClickFn {
+  function click() {
+    x.onChange(x.key)
+  }
+
+  return click
 }

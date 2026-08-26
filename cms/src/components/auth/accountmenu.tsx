@@ -15,6 +15,7 @@ import { useEscClose } from '@/components/modal'
 import { AccountMenuPop } from './accountmenupop'
 import { Avatar } from './avatar'
 import { ARIA_MENU, AVATAR_SIZE_MENU, MAIL_AT, NAME_FALLBACK, PRO_UNTIL_NONE, TITLE_NONE } from './constants'
+import { makeAccountMenuHandles } from './functions'
 import { useClickOutside } from './hooks'
 import type { AccountMenuIn } from './types'
 import css from './auth.module.css'
@@ -28,23 +29,13 @@ import css from './auth.module.css'
 export function AccountMenu({ t, email, displayName, avatar, isPro, proUntil, onPricing }: AccountMenuIn) {
   const [menu, setMenu] = useState(false)
   const menuRef = useRef<HTMLSpanElement>(null)
-  useClickOutside({ ref: menuRef, open: menu, close: closeMenu })
-  useEscClose(closeMenu)
-
-  function closeMenu() {
-    setMenu(false)
+  let onPricingIn: (() => void) | null = null
+  if (onPricing != null) {
+    onPricingIn = onPricing
   }
-
-  function toggleMenu() {
-    setMenu(menu === false)
-  }
-
-  function clickUpgrade() {
-    setMenu(false)
-    if (onPricing != null) {
-      onPricing()
-    }
-  }
+  const handles = makeAccountMenuHandles({ open: menu, setOpen: setMenu, onPricing: onPricingIn })
+  useClickOutside({ ref: menuRef, open: menu, close: handles.closeMenu })
+  useEscClose(handles.closeMenu)
 
   let shortName = NAME_FALLBACK
   if (displayName != null && displayName.trim() !== '') {
@@ -71,12 +62,16 @@ export function AccountMenu({ t, email, displayName, avatar, isPro, proUntil, on
   }
   let onUpgrade: (() => void) | null = null
   if (isPro === false && onPricing != null) {
-    onUpgrade = clickUpgrade
+    onUpgrade = handles.clickUpgrade
   }
 
   return (
     <span ref={menuRef} className={css.menuWrap}>
-      <button onClick={toggleMenu} title={btnTitle} aria-haspopup={ARIA_MENU} aria-expanded={menu} className={btnCls}>
+      <button onClick={handles.toggleMenu}
+        title={btnTitle}
+        aria-haspopup={ARIA_MENU}
+        aria-expanded={menu}
+        className={btnCls}>
         <Avatar src={avatar} name={shortName} email={email} size={AVATAR_SIZE_MENU} />
       </button>
       {menu && (

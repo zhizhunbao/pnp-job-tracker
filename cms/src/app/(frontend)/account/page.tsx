@@ -11,6 +11,7 @@ import { IconStar, IconUser } from '@/components/icons'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { ProfileForm, type ProfileValue } from './ProfileForm'
+import { makeNickKey } from './functions'
 import { SavedSearchList } from './SavedSearchList'
 import { SavedJobsList } from './SavedJobsList'
 import { ResumeArchive } from './ResumeArchive'
@@ -68,15 +69,6 @@ export default function AccountPage() {
   // 昵称就地编辑(E11-01):null=不在编辑;字符串=编辑值。保存走 Payload PATCH /api/users/:id(本人可改)
   const [nick, setNick] = useState<string | null>(null)
   const [nickBusy, setNickBusy] = useState(false)
-  // 昵称框的键盘出口:Enter 存、Esc 取消(收成具名函数 —— 组件区禁匿名箭头)
-  function onNickKey(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter') {
-      saveNick()
-    }
-    if (e.key === 'Escape') {
-      setNick(null)
-    }
-  }
 
   const saveNick = async () => {
     if (nick == null || !me) return
@@ -89,6 +81,9 @@ export default function AccountPage() {
       await refresh(); setNick(null)
     } catch { /* 留在编辑态,可重试 */ } finally { setNickBusy(false) }
   }
+  // 昵称框的键盘出口:Enter 存、Esc 取消(行为随 2026-08-26「tsx 不许内嵌函数」
+  // 迁进 ./functions 的 makeNickKey;摆在 saveNick 之后是因为工厂当场就要吃它)
+  const onNickKey = makeNickKey({ saveNick, setNick })
 
   const buy = async (plan: '30' | '90') => {
     setBuying(true); setBuyErr('')

@@ -13,6 +13,7 @@ import { Search } from '@/components/search'
 import { POPULAR_NOCS } from '../account/profileOptions'
 import { IconCheck, IconSearch, IconX } from '@/components/icons'
 import { QuizNav, QuizStyle, QuizTitle } from './QuizUI'
+import { makeSearch } from './functions'
 import { Button } from '@/components/button'
 import { UI } from '@/components/colors'
 import { shortOcc } from './EntryQuiz'
@@ -57,14 +58,8 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
   ))
   const [q, setQ] = useState('')
   const [cands, setCands] = useState<Cand[]>([])
-  // 搜索框改值:清空即连候选一起清(原先这句写在自搭清除钮的 onClick 里,
-  // 2026-08-24 换 field 域的 Search 后收进这一处)
-  function onSearch(v: string) {
-    setQ(v)
-    if (v === '') {
-      setCands([])
-    }
-  }
+  // 搜索框改值(行为与理由随 2026-08-26「tsx 不许内嵌函数」迁进 ./functions 的 makeSearch)
+  const onSearch = makeSearch({ setQ, setCands })
 
   const [searching, setSearching] = useState(false)
   // 首屏先用内置常用清单,不让冷启动的全表 GROUP BY 把题目冻成骨架 8 秒。

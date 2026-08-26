@@ -11,13 +11,17 @@ import {
   API_FORGOT, API_LOGIN, API_LOGOUT, API_RESET, API_USERS, AVATAR_PALETTE, BODY_NONE, CREDENTIALS_INCLUDE,
   EVENT_SIGNUP, FLOW_DONE, FLOW_ERR, FLOW_SENT, HASH_BASE, HTTP_BAD_REQUEST, HTTP_POST, KEY_ERR_CRED, KEY_ERR_EXISTS,
   KEY_ERR_GENERIC, KEY_ERR_RESET_BAD, KEY_ERR_WEAK_PW, KEY_SUBMIT_FORGOT, KEY_SUBMIT_LOGIN, KEY_SUBMIT_REG,
-  KEY_SUBMIT_RESET, LOCALE_DEFAULT, LOCALE_KEY, MIME_JSON, MODE_FORGOT, MODE_REGISTER, MODE_RESET, PATH_GOOGLE_AUTH,
+  KEY_SUBMIT_RESET, LOCALE_DEFAULT, LOCALE_KEY, MIME_JSON, MODE_FORGOT, MODE_LOGIN, MODE_REGISTER, MODE_RESET,
+  PATH_GOOGLE_AUTH,
   AVATAR_COLOR_NONE, PATH_ROOT, PW_CLASSES_MEDIUM, PW_CLASSES_STRONG, PW_CLASS_RES, PW_LONG_LEN, PW_LV_MEDIUM,
   PW_LV_STRONG, PW_LV_WEAK,
   PW_MIN_LEN, P_JOB, P_NEXT, P_QUIZ, QS_RETURN_TO, QUIZ_DECISION_PR, QUIZ_ON, QUIZ_PATH, QUIZ_STAGE_BASIC,
   REGISTER_EXISTS_RE, REGISTER_WEAK_PW_RE, SAFE_PATH_RE, TOKEN_NONE,
 } from './constants'
-import type { AuthFlowIn, AuthFlowOut, FinishAuthIn, PwLevel, QuizDestIn, RegisterErrIn, UmamiHost } from './types'
+import type {
+  AccountMenuHandlesIn, AccountMenuHandlesOut, AuthFlowIn, AuthFlowOut, AuthFooterHandlesIn, AuthFooterHandlesOut,
+  FinishAuthIn, PwLevel, QuizDestIn, RegisterErrIn, UmamiHost,
+} from './types'
 import { HDR_CONTENT_TYPE } from '@/lib/http'
 
 /**
@@ -294,4 +298,57 @@ export async function logout() {
     return null
   })
   window.location.reload()
+}
+
+/**
+ * 造账户下拉的三枚手柄(2026-08-26 Frank 立「tsx 组件体内不许声明内嵌函数」,
+ * 自 AccountMenu 体内迁出)。同一台开合状态机,一个工厂发齐 —— 拆成三个工厂
+ * 只会把「谁在写这一格态」摊到三处。
+ *
+ * @param x 当前开合、写开合的 setter 与升级回调。
+ * @returns 关 / 翻面 / 升级三枚具名手柄。
+ */
+export function makeAccountMenuHandles(x: AccountMenuHandlesIn): AccountMenuHandlesOut {
+  function closeMenu() {
+    x.setOpen(false)
+  }
+
+  function toggleMenu() {
+    x.setOpen(x.open === false)
+  }
+
+  function clickUpgrade() {
+    x.setOpen(false)
+    if (x.onPricing != null) {
+      x.onPricing()
+    }
+  }
+
+  return { closeMenu, toggleMenu, clickUpgrade }
+}
+
+/**
+ * 造表单页脚的三枚态切换手柄(2026-08-26 同批,自 AuthFooter 体内迁出)。
+ *
+ * @param x 当前态与切态回调。
+ * @returns 回登录 / 登录↔注册对切 / 去找回三枚具名手柄。
+ */
+export function makeAuthFooterHandles(x: AuthFooterHandlesIn): AuthFooterHandlesOut {
+  function toLogin() {
+    x.onMode(MODE_LOGIN)
+  }
+
+  function toggle() {
+    if (x.mode === MODE_LOGIN) {
+      x.onMode(MODE_REGISTER)
+      return
+    }
+    x.onMode(MODE_LOGIN)
+  }
+
+  function toForgot() {
+    x.onMode(MODE_FORGOT)
+  }
+
+  return { toLogin, toggle, toForgot }
 }

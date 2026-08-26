@@ -1,14 +1,4 @@
 {
-  "src/app/(frontend)/account/ProfileForm.tsx": {
-    "local/no-nested-function": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/account/page.tsx": {
-    "local/no-nested-function": {
-      "count": 1
-    }
-  },
   "src/app/(frontend)/employers/Employers.tsx": {
     "@eslint-community/eslint-comments/require-description": {
       "count": 1
@@ -27,9 +17,6 @@
   "src/app/(frontend)/jobs/Jobs.tsx": {
     "@eslint-community/eslint-comments/require-description": {
       "count": 3
-    },
-    "local/no-nested-function": {
-      "count": 1
     }
   },
   "src/app/(frontend)/jobs/PnpScoreCard.tsx": {
@@ -47,51 +34,6 @@
       "count": 3
     }
   },
-  "src/app/(frontend)/quiz/OccPicker.tsx": {
-    "local/no-nested-function": {
-      "count": 1
-    }
-  },
-  "src/components/auth/accountmenu.tsx": {
-    "local/no-nested-function": {
-      "count": 3
-    }
-  },
-  "src/components/auth/authfooter.tsx": {
-    "local/no-nested-function": {
-      "count": 3
-    }
-  },
-  "src/components/banner/bannerdots.tsx": {
-    "local/no-nested-function": {
-      "count": 1
-    }
-  },
-  "src/components/header/accountlite.tsx": {
-    "local/no-nested-function": {
-      "count": 6
-    }
-  },
-  "src/components/header/drawergroup.tsx": {
-    "local/no-nested-function": {
-      "count": 1
-    }
-  },
-  "src/components/header/header.tsx": {
-    "local/no-nested-function": {
-      "count": 2
-    }
-  },
-  "src/components/header/langswitch.tsx": {
-    "local/no-nested-function": {
-      "count": 1
-    }
-  },
-  "src/components/header/mobiledrawer.tsx": {
-    "local/no-nested-function": {
-      "count": 2
-    }
-  },
   "src/components/i18n/hooks.ts": {
     "@stylistic/max-len": {
       "count": 1
@@ -103,26 +45,6 @@
   "src/components/modal/hooks.ts": {
     "@stylistic/max-len": {
       "count": 1
-    }
-  },
-  "src/components/pager/pager.tsx": {
-    "local/no-nested-function": {
-      "count": 2
-    }
-  },
-  "src/components/search/search.tsx": {
-    "local/no-nested-function": {
-      "count": 1
-    }
-  },
-  "src/components/table/tablehead.tsx": {
-    "local/no-nested-function": {
-      "count": 4
-    }
-  },
-  "src/components/tabs/tabs.tsx": {
-    "local/no-nested-function": {
-      "count": 4
     }
   },
   "src/lib/advisor/functions.ts": {

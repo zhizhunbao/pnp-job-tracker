@@ -225,3 +225,24 @@ export type CarouselOut = {
    */
   fail: () => void
 }
+
+/**
+ * 圆点点击手柄形状(点这一颗就切到它对应的那张)。
+ */
+export type DotPickFn = () => void
+
+/**
+ * makeDotPick 的入参(2026-08-26 Frank 立「tsx 组件体内不许声明内嵌函数」,
+ * 原 BannerDots 循环体内的 pickThis 迁出,闭包的图序改走这格显式入参)。
+ */
+export type DotPickIn = {
+  /**
+   * 切图回调。
+   */
+  pick: (i: number) => void
+
+  /**
+   * 这一颗点对应的图序。
+   */
+  i: number
+}

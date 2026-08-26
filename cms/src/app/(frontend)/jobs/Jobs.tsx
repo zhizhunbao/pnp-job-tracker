@@ -32,6 +32,7 @@ import { filterSig, URL_TO_FILTER, DIRECT_URL_KEY, type JobFilters } from './fil
 import { type TFn } from '@/lib/i18n'
 import { eeDisplay, streamDisplay } from '@/lib/jobs'
 import { COLS_COOKIE } from './columns.shared'
+import { makeAgeText } from './functions'
 import { type ColKey, type FieldGroup, type Plan, type Dims, type JobRow, isDirect, sourceLabel } from '@/lib/jobs'
 import { PROV_NAMES, mapQuery, mapsUrl, parseLoc, provName } from '@/lib/location'
 import { FIELD_GROUP, COLUMNS, DEFAULT_COLS, NOWRAP_COLS, PREF_KEY, PRO_COLS, cellActionable, cellActive, cellOf, writeColsCookie } from './Table'
@@ -840,14 +841,8 @@ export default function Jobs({ jobs: initialJobs, updatedAt: initialUpdatedAt, d
               <span key={k} title={tip} onClick={cellActionable(k) ? stop(() => open(k, txt)) : undefined}
                 className={cellActionable(k) ? `jtChip act tone-${tone}` : `jtChip tone-${tone}`}>{txt}</span>
             )
-            // 挂帖时长(Frank 走查过的本地午夜解析坑,现已收在 lib/time 的 daysSince):
-            // 「今天」与「N 天」两句文案归调用方,组件只管版式
-            function ageText(n: number): string {
-              if (n === 0) {
-                return `(${t('cell.today')})`
-              }
-              return `(${t('fact.daysUpVal', { n })})`
-            }
+            // 挂帖时长的文案(行为与理由随 2026-08-26「tsx 不许内嵌函数」迁进 ./functions 的 makeAgeText)
+            const ageText = makeAgeText({ t })
             // #200(Frank「岗位名称中文翻译默认都加上」):手机卡职位名挂 NOC 官方职业名译名(界面语言;与在招职位/弹框标题同款)
             const nz = nocLocalTitle({ row: dims.nocDescriptions.find((d) => d.noc === j.noc) || null, lang })
             // 通道胶囊排(批A 追拍「每个岗位都要列 teer,pnp,ee 胶囊;aip/qc 单独列;什么都走不了就不用列」):

@@ -11,6 +11,7 @@ import { Button } from '@/components/button'
 import { Chip } from '@/components/chip'
 import { Notice } from '@/components/notice'
 import { POPULAR_NOCS, CLB_OPTS, CRS_OPTS, PGWP_OPTS, clbActive, crsActive, pgwpActive, type Opt } from './profileOptions'
+import { makeAddTyped } from './functions'
 
 type NocOpt = { noc: string; title: string }
 export type ProfileValue = {
@@ -56,21 +57,10 @@ export function ProfileForm({ t, userId, initial, onSaved }: { t: TFn; userId: s
     return opts.filter((o) => !nocs.includes(o.noc) && (o.noc.startsWith(s) || o.title.toLowerCase().includes(s))).slice(0, 8)
   }, [q, opts, nocs])
 
-  // 输入框里敲的东西直接加:5 位码按码加,否则加命中的第一条。
-  // (原先埋在 input 的 onKeyDown 箭头里 —— 换 field 域的 Search 后,键盘出口归
-  //  组件域统一定,这条页面专属行为提成具名函数并给一个显式的钮。)
-  function addTyped() {
-    const v = q.trim()
-    if (/^\d{5}$/.test(v)) {
-      addNoc(v)
-      return
-    }
-    if (hits[0] != null) {
-      addNoc(hits[0].noc)
-    }
-  }
-
   const addNoc = (code: string) => { if (code && !nocs.includes(code)) setNocs([...nocs, code]); setQ('') }
+  // 输入框里敲的东西直接加(行为与注释随 2026-08-26「tsx 不许内嵌函数」迁进 ./functions 的 makeAddTyped;
+  // 摆在 addNoc 之后是因为工厂当场就要吃它,提到前面会撞上 const 的暂时性死区)
+  const addTyped = makeAddTyped({ q, hits, addNoc })
   // 职位名解析(§3.4 藏码):noc-descriptions 官方名优先 → 热门大白话标签 → 兜底码
   const nocTitle = (code: string): string => {
     const o = opts.find((x) => x.noc === code)

@@ -367,3 +367,64 @@ export type MeasureIn<T> = {
    */
   ths: Record<string, HTMLTableCellElement | null>
 }
+
+/**
+ * 无参无返的钮点击手柄形状(表头点击是这一形)。
+ */
+export type ClickFn = () => void
+
+/**
+ * 列宽拖手的手柄形状(指针按下即起手拖)。
+ */
+export type GripFn = (e: React.PointerEvent) => void
+
+/**
+ * makeHeadClick 的入参(2026-08-26 Frank 立「tsx 组件体内不许声明内嵌函数」,
+ * 原 TableHead 循环体内的 clickHead 迁出,闭包的列身份与可排序位改走显式入参)。
+ */
+export type HeadClickIn = {
+  /**
+   * 本列可不可排序(不可排序的表头点了不动)。
+   */
+  sortable: boolean
+
+  /**
+   * 本列的 key。
+   */
+  key: string
+
+  /**
+   * 点表头切排序。
+   */
+  toggleSort: (key: string) => void
+}
+
+/**
+ * makeGrip 的入参(2026-08-26 同批:原 TableHead 循环体内的 grip 迁出)。
+ */
+export type GripIn = {
+  /**
+   * 起手拖列宽(列宽机器面板上的那一枚)。
+   */
+  startResize: (x: ResizeIn) => void
+
+  /**
+   * 被拖的列 key。
+   */
+  key: string
+}
+
+/**
+ * widthStyleOf 的入参(2026-08-26 同批:原 TableHead 循环体内的 widthStyle 迁出)。
+ */
+export type WidthStyleIn<T> = {
+  /**
+   * 取本列此刻该用的宽;null = 交给浏览器。
+   */
+  widthOf: (col: Col<T>) => string | number | null
+
+  /**
+   * 本列声明。
+   */
+  col: Col<T>
+}

@@ -12,10 +12,9 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
-import { useRef } from 'react'
-
 import { ID_PANEL_SEG, ID_PREFIX_DEFAULT, ID_SEP, ROLE_TAB, ROLE_TABLIST } from './constants'
-import { makeTabKeys } from './functions'
+import { makeTabClick } from './functions'
+import { useTabKeys } from './hooks'
 import type { TabsIn } from './types'
 import css from './tabs.module.css'
 
@@ -26,33 +25,12 @@ import css from './tabs.module.css'
  * @returns 选项卡条。
  */
 export function Tabs({ items, value, onChange, ariaLabel, idPrefix = ID_PREFIX_DEFAULT }: TabsIn) {
-  const refs = useRef<Record<string, HTMLButtonElement | null>>({})
-
-  function focusOf(key: string): HTMLButtonElement | null {
-    const el = refs.current[key]
-    if (el == null) {
-      return null
-    }
-    return el
-  }
-
-  function onKey(e: React.KeyboardEvent) {
-    const handle = makeTabKeys({ items, value, onChange, focusOf })
-    handle(e)
-  }
-
+  const keys = useTabKeys({ items, value, onChange })
   const btns = []
   for (const it of items) {
     const on = it.key === value
-
-    function setRef(el: HTMLButtonElement | null) {
-      refs.current[it.key] = el
-    }
-
-    function click() {
-      onChange(it.key)
-    }
-
+    const setRef = keys.refOf(it.key)
+    const click = makeTabClick({ onChange, key: it.key })
     let cls = css.tab
     let badgeCls = css.badge
     let tabIndex = -1
@@ -74,7 +52,7 @@ export function Tabs({ items, value, onChange, ariaLabel, idPrefix = ID_PREFIX_D
         aria-controls={`${idPrefix}${ID_SEP}${ID_PANEL_SEG}${ID_SEP}${it.key}`}
         tabIndex={tabIndex}
         onClick={click}
-        onKeyDown={onKey}
+        onKeyDown={keys.onKey}
         className={cls}>
         {it.label}
         {badge}

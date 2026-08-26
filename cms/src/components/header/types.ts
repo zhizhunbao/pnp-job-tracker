@@ -357,3 +357,144 @@ export type WithOnIn = {
    */
   on: boolean
 }
+
+/**
+ * 无参无返的钮点击手柄形状(顶栏开合、抽屉组标题、语言钮都是这一形)。
+ */
+export type ClickFn = () => void
+
+/**
+ * makeAccountLiteHandles 的入参(2026-08-26 Frank 立「tsx 组件体内不许声明内嵌函数」,
+ * 原 AccountLite 体内的六枚手柄迁出,闭包的两枚 setter 改走显式入参)。
+ */
+export type AccountLiteHandlesIn = {
+  /**
+   * 写登录框开态的 setter。
+   */
+  setAuth: (v: AuthOpen) => void
+
+  /**
+   * 写定价框开合的 setter。
+   */
+  setPricing: (v: boolean) => void
+}
+
+/**
+ * makeAccountLiteHandles 交回的六枚手柄(登录框与定价框两台开合机,
+ * 同属账户区这一处状态,一个工厂发齐 —— 拆成六个工厂只会把「谁在写哪一格」摊到六处)。
+ */
+export type AccountLiteHandlesOut = {
+  /**
+   * 以登录态开认证框。
+   */
+  openLogin: ClickFn
+
+  /**
+   * 以注册态开认证框。
+   */
+  openRegister: ClickFn
+
+  /**
+   * 关认证框。
+   */
+  closeAuth: ClickFn
+
+  /**
+   * 认证完成:整页刷新(刷新后按真实 cookie 态渲染)。
+   */
+  reload: ClickFn
+
+  /**
+   * 开定价框(账户下拉的「升级 Pro」)。
+   */
+  openPricing: ClickFn
+
+  /**
+   * 关定价框。
+   */
+  closePricing: ClickFn
+}
+
+/**
+ * makeDrawerHandles 的入参(2026-08-26 同批:原 Header 体内的
+ * openDrawer/closeDrawer 迁出,闭包的 setter 改走显式入参)。
+ */
+export type DrawerHandlesIn = {
+  /**
+   * 写抽屉开合的 setter。
+   */
+  setOpen: (v: boolean) => void
+}
+
+/**
+ * makeDrawerHandles 交回的两枚手柄(同一台抽屉开合机)。
+ */
+export type DrawerHandlesOut = {
+  /**
+   * 汉堡钮:开抽屉。
+   */
+  openDrawer: ClickFn
+
+  /**
+   * 遮罩/× :关抽屉。
+   */
+  closeDrawer: ClickFn
+}
+
+/**
+ * makeGroupClick 的入参(2026-08-26 同批:原 DrawerGroup 体内的 click 迁出,
+ * 闭包的组键改走显式入参)。
+ */
+export type GroupClickIn = {
+  /**
+   * 点组标题:开/收自己。
+   */
+  onToggle: (key: string) => void
+
+  /**
+   * 这一组的身份键。
+   */
+  groupKey: string
+}
+
+/**
+ * 抽屉分组的单开切换手柄形状(参数是被点的组键)。
+ */
+export type GroupToggleFn = (key: string) => void
+
+/**
+ * makeGroupToggle 的入参(2026-08-26 同批:原 MobileDrawer 体内的 toggleGrp 迁出,
+ * 闭包的当前展开组与 setter 改走显式入参)。
+ */
+export type GroupToggleIn = {
+  /**
+   * 当前展开的组键;'' = 都收着(再点自己就收回这个值)。
+   */
+  openKey: string
+
+  /**
+   * 收着时的组键(点自己回落到它)。
+   */
+  noneKey: string
+
+  /**
+   * 写展开组键的 setter。
+   */
+  setOpenKey: (k: string) => void
+}
+
+/**
+ * makeLangPick 的入参(2026-08-26 同批:原 LangSwitch 循环体内的 pick 迁出,
+ * 闭包的语言码改走显式入参)。
+ */
+export type LangPickIn = {
+  /**
+   * 换语言。
+   */
+  setLang: (l: Lang) => void
+
+  /**
+   * 这一枚钮对应的语言码。
+   */
+  code: Lang
+}

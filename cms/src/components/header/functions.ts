@@ -4,8 +4,11 @@
  * @author Frank
  * @time 2026-08-24 08:00:00
  */
-import { ACCT_IN, ACCT_OUT, EMAIL_UNKNOWN } from './constants'
-import type { AcctState, AcctUser, MeJson, WithOnIn } from './types'
+import { ACCT_IN, ACCT_OUT, AUTH_CLOSED, AUTH_LOGIN, AUTH_REGISTER, EMAIL_UNKNOWN } from './constants'
+import type {
+  AccountLiteHandlesIn, AccountLiteHandlesOut, AcctState, AcctUser, ClickFn, DrawerHandlesIn, DrawerHandlesOut,
+  GroupClickIn, GroupToggleFn, GroupToggleIn, LangPickIn, MeJson, WithOnIn,
+} from './types'
 import css from './header.module.css'
 
 /**
@@ -88,4 +91,119 @@ export function loadAuthModal() {
 // eslint-disable-next-line local/no-bare-strings -- 同上:`typeof import()` 的说明符是类型位,TS 只收字面量
 function pickAuthModal(m: typeof import('@/components/auth')) {
   return m.AuthModal
+}
+
+/**
+ * 造二级页账户区的六枚手柄(2026-08-26 Frank 立「tsx 组件体内不许声明内嵌函数」,
+ * 自 AccountLite 体内迁出)。登录框与定价框两台开合机同属账户区这一处状态,
+ * 一个工厂发齐 —— 拆成六个工厂只会把「谁在写哪一格」摊到六处。
+ *
+ * @param x 写认证框态与定价框开合的两枚 setter。
+ * @returns 开登录 / 开注册 / 关认证 / 刷新 / 开定价 / 关定价 六枚具名手柄。
+ */
+export function makeAccountLiteHandles(x: AccountLiteHandlesIn): AccountLiteHandlesOut {
+  function openLogin() {
+    x.setAuth(AUTH_LOGIN)
+  }
+
+  function openRegister() {
+    x.setAuth(AUTH_REGISTER)
+  }
+
+  function closeAuth() {
+    x.setAuth(AUTH_CLOSED)
+  }
+
+  function reload() {
+    window.location.reload()
+  }
+
+  function openPricing() {
+    x.setPricing(true)
+  }
+
+  function closePricing() {
+    x.setPricing(false)
+  }
+
+  return { openLogin, openRegister, closeAuth, reload, openPricing, closePricing }
+}
+
+/**
+ * 造顶栏抽屉的开合两枚手柄(2026-08-26 同批,自 Header 体内迁出)。
+ *
+ * @param x 写抽屉开合的 setter。
+ * @returns 开 / 关两枚具名手柄。
+ */
+export function makeDrawerHandles(x: DrawerHandlesIn): DrawerHandlesOut {
+  function openDrawer() {
+    x.setOpen(true)
+  }
+
+  function closeDrawer() {
+    x.setOpen(false)
+  }
+
+  return { openDrawer, closeDrawer }
+}
+
+/**
+ * 造抽屉分组的单开切换手柄(2026-08-26 同批,自 MobileDrawer 体内迁出)。
+ * 再点已展开的那一组 = 收回「都收着」档。
+ *
+ * @param x 当前展开组键、收着档的键与写它的 setter。
+ * @returns 挂到各组标题上的切换手柄(参数是被点的组键)。
+ */
+export function makeGroupToggle(x: GroupToggleIn): GroupToggleFn {
+  function toggleGrp(key: string) {
+    if (x.openKey === key) {
+      x.setOpenKey(x.noneKey)
+      return
+    }
+    x.setOpenKey(key)
+  }
+
+  return toggleGrp
+}
+
+/**
+ * 造一个抽屉分组标题的点击手柄(2026-08-26 同批,自 DrawerGroup 体内迁出)。
+ * 逐组手柄要闭包住自己那一格组键,走工厂形态。
+ *
+ * @param x 切换回调与这一组的身份键。
+ * @returns 挂到组标题钮上的 onClick。
+ */
+export function makeGroupClick(x: GroupClickIn): ClickFn {
+  function click() {
+    x.onToggle(x.groupKey)
+  }
+
+  return click
+}
+
+/**
+ * 造一枚语言钮的点击手柄(2026-08-26 同批,自 LangSwitch 的循环体内迁出)。
+ * 逐枚手柄要闭包住自己那一格语言码,走工厂形态。
+ *
+ * @param x 换语言回调与这一枚钮的语言码。
+ * @returns 挂到这枚钮上的 onClick。
+ */
+export function makeLangPick(x: LangPickIn): ClickFn {
+  function pick() {
+    x.setLang(x.code)
+  }
+
+  return pick
+}
+
+/**
+ * 吃掉冒泡(抽屉面板自身的点击不该落到遮罩上关掉整个抽屉)。
+ * 2026-08-26 同批,自 MobileDrawer 体内的 stop 迁出 —— 零闭包,不必造工厂。
+ * 签名由 React 的事件手柄定死。
+ *
+ * @param e 点击事件。
+ * @returns 无。
+ */
+export function stopClick(e: React.MouseEvent) {
+  e.stopPropagation()
 }

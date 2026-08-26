@@ -10,6 +10,7 @@
  */
 import { IconChevronLeft, IconChevronRight } from '@/components/icons'
 import { NEXT_ARIA, PAGE_SEP, PREV_ARIA } from './constants'
+import { makePagerHandles } from './functions'
 import type { PagerIn } from './types'
 import css from './pager.module.css'
 
@@ -20,24 +21,17 @@ import css from './pager.module.css'
  * @returns 翻页行。
  */
 export function Pager({ page, max, note, onPage }: PagerIn) {
-  function prev() {
-    onPage(Math.max(0, page - 1))
-  }
-
-  function next() {
-    onPage(Math.min(max - 1, page + 1))
-  }
-
+  const handles = makePagerHandles({ page, max, onPage })
   return (
     <div className={css.pager}>
       {note != null && <span>{note}</span>}
       {max > 1 && (
         <span className={css.nav}>
-          <button aria-label={PREV_ARIA} className={css.btn} disabled={page === 0} onClick={prev}>
+          <button aria-label={PREV_ARIA} className={css.btn} disabled={page === 0} onClick={handles.prev}>
             <IconChevronLeft />
           </button>
           <span className={css.num}>{page + 1}{PAGE_SEP}{max}</span>
-          <button aria-label={NEXT_ARIA} className={css.btn} disabled={page >= max - 1} onClick={next}>
+          <button aria-label={NEXT_ARIA} className={css.btn} disabled={page >= max - 1} onClick={handles.next}>
             <IconChevronRight />
           </button>
         </span>

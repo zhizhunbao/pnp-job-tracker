@@ -10,9 +10,9 @@
  */
 import { cssOf } from '@/components/css'
 import { ALIGN_RIGHT } from './constants'
-import { cls } from './functions'
+import { cls, makeGrip, makeHeadClick, stopGripClick, widthStyleOf } from './functions'
 import { SortMark } from './sortmark'
-import type { Col, TableHeadIn } from './types'
+import type { TableHeadIn } from './types'
 import css from './table.module.css'
 
 /**
@@ -32,28 +32,8 @@ export function TableHead<T>({ cols, sort, toggleSort, widths }: TableHeadIn<T>)
       dir = sort.dir
     }
 
-    function clickHead() {
-      if (sortable) {
-        toggleSort(c.key)
-      }
-    }
-
-    function grip(e: React.PointerEvent) {
-      widths.startResize({ e, key: c.key })
-    }
-
-    function stopGripClick(e: React.MouseEvent) {
-      e.stopPropagation()
-    }
-
-    function widthStyle(col: Col<T>): React.CSSProperties {
-      const w = widths.widthOf(col)
-      if (w == null) {
-        return {}
-      }
-      return { width: w }
-    }
-
+    const clickHead = makeHeadClick({ sortable, key: c.key, toggleSort })
+    const grip = makeGrip({ startResize: widths.startResize, key: c.key })
     ths.push(
       <th key={c.key}
         ref={widths.thRefOf(c.key)}
@@ -67,7 +47,7 @@ export function TableHead<T>({ cols, sort, toggleSort, widths }: TableHeadIn<T>)
         )}
         onClick={clickHead}
         // eslint-disable-next-line react/forbid-dom-props -- 列宽是拖出来/量出来的运行时数据
-        style={widthStyle(c)}>
+        style={widthStyleOf({ widthOf: widths.widthOf, col: c })}>
         {c.label}
         <SortMark active={active} dir={dir} sortable={sortable} />
         <span className={css.grip} onPointerDown={grip} onClick={stopGripClick} />

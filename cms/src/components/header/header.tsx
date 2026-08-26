@@ -23,6 +23,7 @@ import { AccountLite } from './accountlite'
 import { HeaderNav } from './headernav'
 import { LangSwitch } from './langswitch'
 import { MobileDrawer } from './mobiledrawer'
+import { makeDrawerHandles } from './functions'
 import { useAcct } from './hooks'
 import type { ActiveKey, HeaderIn } from './types'
 import css from './header.module.css'
@@ -48,15 +49,7 @@ export function Header({ lang, setLang, t, active, sticky = false, accountArea, 
   }
   const acct = useAcct({ loggedIn: logged, hasAccountArea: hasArea })
   const [drawer, setDrawer] = useState(false)
-
-  function openDrawer() {
-    setDrawer(true)
-  }
-
-  function closeDrawer() {
-    setDrawer(false)
-  }
-
+  const handles = makeDrawerHandles({ setOpen: setDrawer })
   let headCls = css.header
   if (sticky) {
     headCls = `${css.header} ${css.sticky}`
@@ -69,7 +62,7 @@ export function Header({ lang, setLang, t, active, sticky = false, accountArea, 
     <header className={headCls}>
       <div className={css.bar}>
         <div className={css.brand}>
-          <button className={css.burger} onClick={openDrawer} aria-label={t('nav.menu')}><IconMenu /></button>
+          <button className={css.burger} onClick={handles.openDrawer} aria-label={t('nav.menu')}><IconMenu /></button>
           <LinkButton href={PATH_HOME} className={`${css.tapY} ${css.logo}`}>{BRAND_MARK}</LinkButton>
           <span className={css.tagline}>{t('tagline')}</span>
         </div>
@@ -82,7 +75,7 @@ export function Header({ lang, setLang, t, active, sticky = false, accountArea, 
           </div>
         </div>
       </div>
-      {drawer && <MobileDrawer t={t} active={activeIn} onClose={closeDrawer} />}
+      {drawer && <MobileDrawer t={t} active={activeIn} onClose={handles.closeDrawer} />}
     </header>
   )
 }

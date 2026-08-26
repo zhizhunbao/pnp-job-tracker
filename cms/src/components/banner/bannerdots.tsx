@@ -8,6 +8,7 @@
  * @time 2026-08-24 04:30:00
  */
 import { DOT_LABEL } from './constants'
+import { makeDotPick } from './functions'
 import type { BannerDotsIn } from './types'
 import css from './banner.module.css'
 
@@ -24,11 +25,7 @@ export function BannerDots({ imgs, cur, pick }: BannerDotsIn) {
   const dotEls = []
   for (let i = 0; i < imgs.length; i = i + 1) {
     let dotCls = css.dot
-
-    function pickThis() {
-      pick(i)
-    }
-
+    const pickThis = makeDotPick({ pick, i })
     if (i === cur) {
       dotCls = `${css.dot} ${css.dotOn}`
     }

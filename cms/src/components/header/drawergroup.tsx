@@ -9,7 +9,7 @@
 import { cssOf } from '@/components/css'
 import { IconChevronDown, IconChevronRight } from '@/components/icons'
 import { LinkButton } from '@/components/button'
-import { withOn } from './functions'
+import { makeGroupClick, withOn } from './functions'
 import type { DrawerGroupIn } from './types'
 import css from './header.module.css'
 
@@ -20,10 +20,7 @@ import css from './header.module.css'
  * @returns 组标题钮 + 展开的二级链。
  */
 export function DrawerGroup({ groupKey, label, openKey, onToggle, items }: DrawerGroupIn) {
-  function click() {
-    onToggle(groupKey)
-  }
-
+  const click = makeGroupClick({ onToggle, groupKey })
   let chev = <IconChevronRight />
   if (openKey === groupKey) {
     chev = <IconChevronDown />

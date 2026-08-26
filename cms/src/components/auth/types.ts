@@ -569,3 +569,86 @@ export type AccountMenuIn = {
    */
   onPricing?: () => void
 }
+
+/**
+ * 无参无返的钮点击手柄形状(账户菜单的开合与表单页脚的态切换钮都是这一形)。
+ */
+export type AuthActionFn = () => void
+
+/**
+ * makeAccountMenuHandles 的入参(2026-08-26 Frank 立「tsx 组件体内不许声明内嵌函数」,
+ * 原 AccountMenu 体内的 closeMenu/toggleMenu/clickUpgrade 迁出,闭包的开合态与
+ * 升级回调改走这几格显式入参)。
+ */
+export type AccountMenuHandlesIn = {
+  /**
+   * 下拉此刻开着没有(翻面手柄按它决定去哪一头)。
+   */
+  open: boolean
+
+  /**
+   * 写开合的 setter。
+   */
+  setOpen: (v: boolean) => void
+
+  /**
+   * 「升级 Pro」点击;null = 调用方没给,手柄只收下拉不再往下传。
+   */
+  onPricing: AuthActionFn | null
+}
+
+/**
+ * makeAccountMenuHandles 交回的三枚手柄(同一台开合状态机,一个工厂发齐)。
+ */
+export type AccountMenuHandlesOut = {
+  /**
+   * 关下拉(点外面与 Esc 两条关法共用同一枚)。
+   */
+  closeMenu: AuthActionFn
+
+  /**
+   * 头像钮:开合翻面。
+   */
+  toggleMenu: AuthActionFn
+
+  /**
+   * 「升级 Pro」:先收下拉,再交给调用方开自己的定价框。
+   */
+  clickUpgrade: AuthActionFn
+}
+
+/**
+ * makeAuthFooterHandles 的入参(2026-08-26 同批:原 AuthFooter 体内的
+ * toLogin/toggle/toForgot 迁出,闭包的当前态与切态回调改走显式入参)。
+ */
+export type AuthFooterHandlesIn = {
+  /**
+   * 当前态(登录↔注册的对切钮按它决定去哪一头)。
+   */
+  mode: AuthMode
+
+  /**
+   * 切换到指定态(顺带清报错,由调用方的机器负责)。
+   */
+  onMode: (m: AuthMode) => void
+}
+
+/**
+ * makeAuthFooterHandles 交回的三枚手柄(同一台四态机,一个工厂发齐)。
+ */
+export type AuthFooterHandlesOut = {
+  /**
+   * 回登录态(重置态与找回未发态的返回钮)。
+   */
+  toLogin: AuthActionFn
+
+  /**
+   * 登录↔注册对切。
+   */
+  toggle: AuthActionFn
+
+  /**
+   * 去找回密码态。
+   */
+  toForgot: AuthActionFn
+}

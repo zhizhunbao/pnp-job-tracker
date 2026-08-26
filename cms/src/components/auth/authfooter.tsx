@@ -11,6 +11,7 @@ import type { AuthFooterIn } from './types'
 import {
   BTN_TYPE_BUTTON, KEY_TO_LOGIN, KEY_TO_REG, MODE_FORGOT, MODE_LOGIN, MODE_REGISTER, MODE_RESET,
 } from './constants'
+import { makeAuthFooterHandles } from './functions'
 import css from './auth.module.css'
 
 /**
@@ -20,22 +21,7 @@ import css from './auth.module.css'
  * @returns 页脚钮组。
  */
 export function AuthFooter({ t, mode, sent, onMode }: AuthFooterIn) {
-  function toLogin() {
-    onMode(MODE_LOGIN)
-  }
-
-  function toggle() {
-    if (mode === MODE_LOGIN) {
-      onMode(MODE_REGISTER)
-    } else {
-      onMode(MODE_LOGIN)
-    }
-  }
-
-  function toForgot() {
-    onMode(MODE_FORGOT)
-  }
-
+  const handles = makeAuthFooterHandles({ mode, onMode })
   let toggleKey = KEY_TO_LOGIN
   if (mode === MODE_LOGIN) {
     toggleKey = KEY_TO_REG
@@ -43,17 +29,17 @@ export function AuthFooter({ t, mode, sent, onMode }: AuthFooterIn) {
   return (
     <>
       {(mode === MODE_LOGIN || mode === MODE_REGISTER) && (
-        <button type={BTN_TYPE_BUTTON} onClick={toggle} className={css.footToggle}>
+        <button type={BTN_TYPE_BUTTON} onClick={handles.toggle} className={css.footToggle}>
           {t(toggleKey)}
         </button>
       )}
       {mode === MODE_LOGIN && (
-        <button type={BTN_TYPE_BUTTON} onClick={toForgot} className={css.footForgot}>
+        <button type={BTN_TYPE_BUTTON} onClick={handles.toForgot} className={css.footForgot}>
           {t('acct.forgot')}
         </button>
       )}
       {(mode === MODE_RESET || (mode === MODE_FORGOT && sent === false)) && (
-        <button type={BTN_TYPE_BUTTON} onClick={toLogin} className={css.footBack}>
+        <button type={BTN_TYPE_BUTTON} onClick={handles.toLogin} className={css.footBack}>
           {t('acct.backLogin')}
         </button>
       )}

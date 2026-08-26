@@ -1,11 +1,12 @@
 /**
- * table 域的纯函数:排序、类名拼装与单元格取值(零 DOM 零 hook,node 里可测)。
+ * table 域的纯函数:排序、类名拼装与单元格取值(零 DOM 零 hook,node 里可测),
+ * 外加表头那几枚事件手柄的工厂(2026-08-26「tsx 组件体内不许声明内嵌函数」自 TableHead 迁入)。
  *
  * @author Frank
  * @time 2026-08-24 02:30:00
  */
 import { CLS_SEP, EMPTY_MARK } from './constants'
-import type { CellIn, SortRowsIn } from './types'
+import type { CellIn, ClickFn, GripFn, GripIn, HeadClickIn, SortRowsIn, WidthStyleIn } from './types'
 
 /**
  * 客户端排序(简单表数据全量在手):null 恒沉底,方向乘 dir。
@@ -87,4 +88,63 @@ export function cellOf<T>(x: CellIn<T>): React.ReactNode {
     return EMPTY_MARK
   }
   return String(v)
+}
+
+/**
+ * 造一列表头的排序点击手柄(2026-08-26 Frank 立「tsx 组件体内不许声明内嵌函数」,
+ * 自 TableHead 的循环体内迁出)。逐列手柄要闭包住自己那一格列身份,走工厂形态;
+ * 不可排序的列照样发一枚,点了不动 —— 省掉调用处的分支。
+ *
+ * @param x 可排序位、列 key 与切排序回调。
+ * @returns 挂到 th 上的 onClick。
+ */
+export function makeHeadClick(x: HeadClickIn): ClickFn {
+  function clickHead() {
+    if (x.sortable) {
+      x.toggleSort(x.key)
+    }
+  }
+
+  return clickHead
+}
+
+/**
+ * 造一列的列宽拖手手柄(2026-08-26 同批,自 TableHead 的循环体内迁出)。
+ *
+ * @param x 起手拖回调与被拖的列 key。
+ * @returns 挂到列分隔线上的 onPointerDown。
+ */
+export function makeGrip(x: GripIn): GripFn {
+  function grip(e: React.PointerEvent) {
+    x.startResize({ e, key: x.key })
+  }
+
+  return grip
+}
+
+/**
+ * 吃掉列分隔线上的点击冒泡(拖列宽不该顺手把这一列排了序)。
+ * 2026-08-26 同批,自 TableHead 体内的 stopGripClick 迁出 —— 零闭包,不必造工厂。
+ * 签名由 React 的事件手柄定死。
+ *
+ * @param e 点击事件。
+ * @returns 无。
+ */
+export function stopGripClick(e: React.MouseEvent) {
+  e.stopPropagation()
+}
+
+/**
+ * 一列的行内宽样式(2026-08-26 同批,自 TableHead 体内的 widthStyle 迁出)。
+ * 列宽是拖出来/量出来的运行时数据,经 style 进是正当通道(白名单见 tablehead 头注)。
+ *
+ * @param x 取宽函数与本列声明。
+ * @returns 带 width 的样式对象;取不到宽给空对象(交给浏览器)。
+ */
+export function widthStyleOf<T>(x: WidthStyleIn<T>): React.CSSProperties {
+  const w = x.widthOf(x.col)
+  if (w == null) {
+    return {}
+  }
+  return { width: w }
 }

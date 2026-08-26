@@ -8,7 +8,7 @@
  */
 import { cssOf } from '@/components/css'
 import { LANGS } from '@/lib/i18n'
-import { withOn } from './functions'
+import { makeLangPick, withOn } from './functions'
 import type { LangSwitchIn } from './types'
 import css from './header.module.css'
 
@@ -21,10 +21,7 @@ import css from './header.module.css'
 export function LangSwitch({ lang, setLang }: LangSwitchIn) {
   const btns = []
   for (const l of LANGS) {
-    function pick() {
-      setLang(l.code)
-    }
-
+    const pick = makeLangPick({ setLang, code: l.code })
     btns.push(
       <button key={l.code} className={withOn({ base: cssOf(css.langBtn), on: lang === l.code })} onClick={pick}>
         {l.label}

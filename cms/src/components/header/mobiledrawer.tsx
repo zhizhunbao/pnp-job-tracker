@@ -21,7 +21,7 @@ import {
   GRP_NONE, PATH_CASES, PATH_EMPLOYERS, PATH_HOME, PATH_NEWS, PATH_OCC, PATH_PLAN_PR, PATH_RESOURCES, PATH_START,
   PATH_TIMELINE,
 } from './constants'
-import { withOn } from './functions'
+import { makeGroupToggle, stopClick, withOn } from './functions'
 import { DrawerGroup } from './drawergroup'
 import { useMainPush } from './hooks'
 import type { MobileDrawerIn } from './types'
@@ -37,25 +37,14 @@ export function MobileDrawer({ t, active, onClose }: MobileDrawerIn) {
   const [openGrp, setOpenGrp] = useState(GRP_NONE)
   useMainPush()
 
-  function toggleGrp(key: string) {
-    if (openGrp === key) {
-      setOpenGrp(GRP_NONE)
-      return
-    }
-    setOpenGrp(key)
-  }
-
-  function stop(e: React.MouseEvent) {
-    e.stopPropagation()
-  }
-
+  const toggleGrp = makeGroupToggle({ openKey: openGrp, noneKey: GRP_NONE, setOpenKey: setOpenGrp })
   const onHome = active == null
   const onStart = active === A_START || active === A_STATS || active === A_RANK
   const onJobs = active === A_JOBS || active === A_MATCH
   const onNews = active === A_NEWS
   return createPortal(
     <div className={css.drawerMask} onClick={onClose}>
-      <div className={css.drawer} onClick={stop}>
+      <div className={css.drawer} onClick={stopClick}>
         <div className={css.drawerHead}>
           <span className={css.drawerBrand}>{BRAND_MARK}</span>
           <button className={css.drawerClose} onClick={onClose} aria-label={t('nav.menu')}><IconX /></button>
