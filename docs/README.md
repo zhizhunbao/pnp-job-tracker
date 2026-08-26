@@ -7,7 +7,7 @@
 
 | 读什么 | 是什么 |
 |---|---|
-| [`../CLAUDE.md`](../CLAUDE.md) | 设计宪法:理念、架构铁律、数据与展示约定。**长期不变**,65 行 |
+| [`../CLAUDE.md`](../CLAUDE.md) | 设计宪法:理念、架构铁律、数据与展示约定。**长期不变**,283 行 |
 | [`主线与支线-20260801.md`](主线与支线-20260801.md) | **判据只有一条**:能不能把「有人真的掏钱」往前推一格。开工前先对一眼 |
 | [`../STATUS.md`](../STATUS.md) | 当前状态 + 最近两轮交接。更早的在 [STATUS 存档](STATUS存档-2026H1.md) |
 | [`../prd.md`](../prd.md) | 产品定位与需求(v2 定位见头部标注) |
@@ -27,6 +27,7 @@
 | 动 cms/src/lib 目录组织 / 新建桶 / 客户端服务端分界 | [design/模块边界统一-20260819.md](design/模块边界统一-20260819.md) —— **08-19 已落地**,只移动不改逻辑:按域归子目录(verdict/score/employers/plan/stats),**每域两个门**(index=浏览器也能跑 / server=要连库,照 lib/jobs;单桶会把连接池打进浏览器包,tsc 全绿 build 才炸)+ plan.ts 改名 quota.ts + 收编 app 里两个错位的取数文件。**db/sql.ts 不拆**(Frank 08-17 已驳回一次);路由目录互引与组件大文件另立批次 |
 | **动数据覆盖口径 / 新鲜度 / 难度接线** | [design/数据资产盘点与不撒谎整改方案-20260803.md](design/数据资产盘点与不撒谎整改方案-20260803.md) —— 家底实盘(mart 24 表 + PNP 26 原料的**口径**)+ 五态 coverage 方案。**下判断前必读**:口径不写在表里,人和引擎都会把「专项通道」当「全省清单」 |
 | **接手先看:本轮未结清单** | [design/未结问题清单-20260803.md](design/未结问题清单-20260803.md) —— B0-B7 编号待办 + **数据盘点(有什么/缺什么)** + **每源该多新与定时状态** + 两条新铁律 + 本轮教训。新 session 从 §B 挨个做 |
+| **要用 LLM / 跑翻译 / 换模型** | 本页 **§六 本地模型服务器** —— 局域网有一台 24GB GPU 盒随便用,Frank 08-19 已授权 |
 | 智能客服 / AI 接入 | [design/智能客服-用朋友的模型-20260803.md](design/智能客服-用朋友的模型-20260803.md) —— LLM 只做抽槽+复述,结论权留引擎;模型走朋友的 ngrok qwen3.6 |
 | 当前批次排期(08-03 起) | [整体开发计划.md](整体开发计划.md) **§十 Sprint 5** —— B-A 不撒谎 / B-B 难度进决策 / B-C 入口对话,含 D11-D14 决策 |
 | 想知道某功能当初为什么这么做 | `implementation/<批次>/<序号>_<名字>.md`(一工作项一份,六节 + 勾选) |
@@ -63,3 +64,35 @@
   所以规矩不是「HEAD 不许带」,是 **commit message 里不许出现该字面量** ——
   要描述它就写「跳过标记」,别写标记本身。(写进**文件**里没事,Render 只读 commit message。)
   验法用 `/api/version`(返回 `RENDER_GIT_COMMIT`),别拿页面指纹或 CSS 字节数猜(误报过两次)。
+
+## 六、本地模型服务器(局域网,08-19 实测)
+
+> Frank 2026-08-19:「以后我们可以直接用这个模型,如果需要什么可以直接改。」
+> —— **这台盒子当自己的基建用**,选它当后端、拉模型、调参数不必逐次请示,做完报一声即可。
+
+| 项 | 值 |
+|---|---|
+| 地址 | `http://192.168.1.150:11434`(Ollama 原生 API,**无任何鉴权**,绑 `0.0.0.0`) |
+| 机器 | Ubuntu 24.04.4 · RTX 5090 Laptop **24 GB** · 62 GB 内存 · 磁盘余 1.5 T · ollama 0.30.6 |
+| 现有模型 | `qwen3.6:latest`(36B/262k ctx/vision·tools·thinking,23.9 G) · `gemma4:31b` · `deepseek-r1:32b` · `devstral-small-2`(393k ctx) · `codestral` · `bge-m3`(embedding) |
+| SSH | `ssh frank@192.168.1.150`(公钥已装,免密) |
+
+**怎么用**:直接打 HTTP,不需要 SSH、不需要 sudo。
+
+```bash
+curl -s http://192.168.1.150:11434/api/tags          # 看有哪些模型
+curl -s http://192.168.1.150:11434/api/generate -d '{"model":"qwen3.6:latest","prompt":"...","stream":false}'
+```
+
+站内接线样板见 `etl/news/scrape_immigration_news.py` 的 `call_llm`(env `NEWS_LLM_BASE`/`NEWS_LLM_MODEL`)。
+
+🔴 **生产(Render)够不到这台机器** —— 它在云上,局域网地址打不通。线上调用只能走朋友那条 ngrok
+(`TRANSLATE_API_BASE`,详见 §二「智能客服 / AI 接入」那份);**局域网直连只适用于本机开发与 ETL 批量**。
+
+**SSH 能干什么**:基本啥也干不了,别绕这条路。`frank` **不在 sudo 组**、**没有 `ollama` CLI**,
+且 ollama 不是宿主机的 systemd 服务,是 `lannie` 名下的 rootless 容器(模型在 `/root/.ollama`,无权访问)。
+凡是「`systemctl restart ollama`」「`ollama pull`」这类指挥都不成立,换模型一律走上面的 HTTP API。
+
+**两件仍要先问 Frank**:① **删已有模型**(盒子是 lannie 的,那六个不是我们放的);
+② **拉几十 G 的新模型**(先报体积)—— 24 G 显存已被 qwen3.6 占到 23.8 G,**两个大模型不能同时常驻**,
+换模型会触发换出。
