@@ -7,7 +7,7 @@
   "note": "PEI Occupations in Demand:须是清单内 NOC + PEI 雇主全职非季节性长期 offer,另有 1 年相关经验、18-59 岁、高中以上、CLB/NCLC 4 等条件。PEI 另有 Skilled Worker / Critical Worker / Intermediate Experience 等通道**不列职业**(按 offer + TEER 判)——不在本清单不等于 PE 走不通。口径取自官方申请指南 PDF(PEI 网页在 Radware 反爬后面,无法自动抓)。",
   "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/pei-pnp-workforce-streams",
   "sourceFile": "https://www.princeedwardisland.ca/sites/default/files/publications/pei_workforce_application_guide.pdf",
-  "fetched": "2026-08-21",
+  "fetched": "2026-08-26",
   "occupations": [
     {
       "noc": "33102",

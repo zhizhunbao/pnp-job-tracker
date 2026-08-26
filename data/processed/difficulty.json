@@ -1,5 +1,5 @@
 {
- "generated": "2026-08-21",
+ "generated": "2026-08-25",
  "trAsOf": "2026-04",
  "rows": [
   {
@@ -31,7 +31,7 @@
      "invitations": 2400,
      "tier": "easy",
      "source": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-invitations-apply",
-     "asOf": "2026-08-21"
+     "asOf": "2026-08-25"
     },
     {
      "key": "scoreLevel",
@@ -73,7 +73,7 @@
      "invitations": 2567,
      "tier": "easy",
      "source": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
-     "asOf": "2026-08-21"
+     "asOf": "2026-08-25"
     },
     {
      "key": "scoreLevel",
@@ -111,20 +111,20 @@
     },
     {
      "key": "activity",
-     "value": 17,
-     "invitations": 1872,
+     "value": 19,
+     "invitations": 2639,
      "tier": "easy",
      "source": "https://www.alberta.ca/aaip-processing-information",
-     "asOf": "2026-08-21"
+     "asOf": "2026-08-25"
     },
     {
      "key": "scoreLevel",
-     "value": 76,
+     "value": 79,
      "latestScore": 60,
      "scale": "WEOI",
      "tier": "tight",
      "source": "https://www.alberta.ca/aaip-processing-information",
-     "asOf": "2026-08-12"
+     "asOf": "2026-08-19"
     }
    ]
   },
@@ -182,7 +182,7 @@
      "invitations": 3166,
      "tier": "easy",
      "source": "https://immigratemanitoba.com/draws/",
-     "asOf": "2026-08-21"
+     "asOf": "2026-08-25"
     }
    ]
   },
@@ -233,7 +233,7 @@
      "invitations": 2587,
      "tier": "easy",
      "source": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/invitations-to-apply.html",
-     "asOf": "2026-08-21"
+     "asOf": "2026-08-25"
     }
    ]
   },
@@ -259,7 +259,7 @@
      "invitations": 2319,
      "tier": "easy",
      "source": "https://www.gov.nl.ca/immigration/invitations-to-apply-updates/",
-     "asOf": "2026-08-21"
+     "asOf": "2026-08-25"
     }
    ]
   },

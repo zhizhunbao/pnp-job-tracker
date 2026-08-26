@@ -1,6 +1,6 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-08-21",
+  "fetched": "2026-08-26",
   "provinces": {
     "BC": {
       "label": "BC PNP Skills Immigration",
@@ -147,6 +147,20 @@
       "scale": "WEOI",
       "url": "https://www.alberta.ca/aaip-processing-information",
       "draws": [
+        {
+          "date": "2026-08-19",
+          "stream": "Dedicated Health Care Pathway – non-Express Entry",
+          "note": "",
+          "score": 60,
+          "invitations": 24
+        },
+        {
+          "date": "2026-08-14",
+          "stream": "Alberta Opportunity Stream",
+          "note": "",
+          "score": 58,
+          "invitations": 743
+        },
         {
           "date": "2026-08-12",
           "stream": "Dedicated Health Care Pathway – Express Entry",
@@ -459,6 +473,13 @@
       "scale": null,
       "url": "https://www.gov.nl.ca/immigration/invitations-to-apply-updates/",
       "draws": [
+        {
+          "date": "2026-08-26",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 94, AIP – 46",
+          "score": null,
+          "invitations": 140
+        },
         {
           "date": "2026-08-18",
           "stream": "NLPNP + AIP (ITA batch)",

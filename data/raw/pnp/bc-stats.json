@@ -5,7 +5,7 @@
   "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
   "note": "BC PNP Skills Immigration 注册池按 SIRS 分数段的人数分布(官方定期更新)。配合 pnp_draws 里 BC 的「最低邀请分」使用:高于最近分数线 → 池中排位靠前;低于 → 分布表能读出差的每一档压着多少人。「<5」为官方隐私抑制值,原样保留。抽选史的 canonical 维度表归 build_draws.py,本表不重复。",
   "asOf": "2026-08-04",
-  "fetched": "2026-08-21",
+  "fetched": "2026-08-26",
   "pool": [
     {
       "scoreRange": "150+",
@@ -54,7 +54,7 @@
   ],
   "processing": {
     "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration",
-    "fetched": "2026-08-21",
+    "fetched": "2026-08-26",
     "asOf": "",
     "percentileLabel": "Generally, around 80% of cases will be processed within the following timelines",
     "rows": [

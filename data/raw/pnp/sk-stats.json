@@ -5,7 +5,7 @@
   "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/sinp-processing-statistics",
   "note": "SINP 处理时长为官方季度实测(80% 分位,掐掉最快最慢各 10%),官方注明不可用于预测未来申请;Nominations YTD 周一至周五每日更新,as-of 即 fetched 当天。政策事实:International Skilled Worker 的 Employment Offer 子类**不走 EOI 池**(官方 EOI 页明示只有 Occupations In-Demand 与 Express Entry 递 EOI)——有雇主 offer 即直接递申请,无抽选等待步骤。出处:https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-eoi-system",
   "quarter": "2026Q2",
-  "fetched": "2026-08-21",
+  "fetched": "2026-08-26",
   "processing": [
     {
       "group": "International Skilled Worker",
