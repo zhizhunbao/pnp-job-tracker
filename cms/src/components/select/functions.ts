@@ -4,7 +4,7 @@
  * @author Frank
  * @time 2026-08-24 10:00:00
  */
-import type { ListIn, SelectChangeFn, ShownIn } from './types'
+import type { ListIn, OptionLabelIn, SelectChangeFn, ShownIn } from './types'
 
 /**
  * 镜像文本该显示什么:有值走显示名,空值走「全部」档文案。
@@ -34,6 +34,20 @@ export function listOf(x: ListIn): readonly string[] {
     return [x.value, ...x.opts]
   }
   return x.opts
+}
+
+/**
+ * 一个选项的显示名:有显示名函数走它,没有就值当名(2026-08-26 Frank 立
+ * 「tsx 组件体内不许声明内嵌函数」,自 Select 体内的 labelFor 迁入 —— 样张)。
+ *
+ * @param x 显示名函数与这一项的值。
+ * @returns 显示名。
+ */
+export function optionLabelOf(x: OptionLabelIn): string {
+  if (x.labelOf != null) {
+    return x.labelOf(x.o)
+  }
+  return x.o
 }
 
 /**

@@ -77,6 +77,22 @@ export type ShownIn = {
 }
 
 /**
+ * optionLabelOf 的入参(2026-08-26 Frank 立「tsx 组件体内不许声明内嵌函数」,
+ * 原 Select 体内的 labelFor 迁出成纯函数,闭包的 labelOf 改走这格显式入参)。
+ */
+export type OptionLabelIn = {
+  /**
+   * 显示名函数;null = 原样。
+   */
+  labelOf: SelectLabelFn | null
+
+  /**
+   * 这一项的值。
+   */
+  o: string
+}
+
+/**
  * listOf 的入参。
  */
 export type ListIn = {

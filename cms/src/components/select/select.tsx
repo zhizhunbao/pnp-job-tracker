@@ -17,7 +17,7 @@
 import { cssOf } from '@/components/css'
 import { inputClsOf, SIZE_DEFAULT } from '@/components/input'
 import { BOX_SIZE_DEFAULT } from './constants'
-import { listOf, makeSelectChange, shownOf } from './functions'
+import { listOf, makeSelectChange, optionLabelOf, shownOf } from './functions'
 import type { SelectIn, SelectSize } from './types'
 import css from './select.module.css'
 
@@ -35,14 +35,6 @@ export function Select({ value, onChange, opts, all, labelOf, size = BOX_SIZE_DE
   }
   const shown = shownOf({ value, all, labelOf: labelIn })
   const list = listOf({ value, opts })
-
-  function labelFor(o: string): string {
-    if (labelOf != null) {
-      return labelOf(o)
-    }
-    return o
-  }
-
   const sizeCls: Record<SelectSize, string> = {
     sm: cssOf(css.box),
     md: `${css.box} ${css.md}`,
@@ -56,7 +48,7 @@ export function Select({ value, onChange, opts, all, labelOf, size = BOX_SIZE_DE
   }
   const opels = []
   for (const o of list) {
-    opels.push(<option key={o} value={o}>{labelFor(o)}</option>)
+    opels.push(<option key={o} value={o}>{optionLabelOf({ labelOf: labelIn, o })}</option>)
   }
   return (
     <span className={boxCls}>
