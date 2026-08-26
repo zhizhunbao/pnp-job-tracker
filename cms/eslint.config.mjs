@@ -1681,6 +1681,109 @@ const localRules = {
       },
     },
 
+    // 🔴 页面域形制两闸(2026-08-26 Frank 三连拍板:「每个页面应该只有一个 page.tsx,
+    //    然后 page.tsx 只允许用 components 拼凑」「page 只拼 components 不允许自己建组件」
+    //    「需要建规则,建闸门先」)。页面从此不是域,只是门:取参 → getDb 注入域函数 →
+    //    拼组件;排版下沉成组件,判断下沉进 lib 域。存量走 --suppress-rule 记基线当账单,
+    //    派批清零;ui/ 桶(Shell/JobsTable 们)并不并 components 待 Frank 拍,先照进账单。
+    'route-file-names': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          stray:
+            '`{{ base }}` 不是 Next 框架定名文件 —— 路由目录里只许住 page/layout/loading/error 这类框架文件,'
+            + '视觉件归 components/<页面域>/(2026-08-26 Frank「不允许自己建组件」)。',
+        },
+      },
+      create(context) {
+        const fname = context.filename ?? ''
+        if (!/[\\/]app[\\/]\(frontend\)[\\/].*\.tsx$/.test(fname)) return {}
+        // Next 框架定名清单:路由文件 + 元数据文件(opengraph/icon 一族是约定式 API,不是自建组件)。
+        const FRAMEWORK = new Set([
+          'page.tsx', 'layout.tsx', 'loading.tsx', 'error.tsx', 'global-error.tsx',
+          'not-found.tsx', 'template.tsx', 'default.tsx',
+          'opengraph-image.tsx', 'twitter-image.tsx', 'icon.tsx', 'apple-icon.tsx',
+        ])
+        const base = fname.split(/[\\/]/).pop() ?? ''
+        if (FRAMEWORK.has(base)) return {}
+        return {
+          Program(node) {
+            context.report({ node, messageId: 'stray', data: { base } })
+          },
+        }
+      },
+    },
+
+    'page-compose-only': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          htmlTag:
+            'page.tsx 里出现裸 HTML 标签 `<{{ tag }}>` —— 页面只许拼大写组件(容器用 Shell),'
+            + '这段排版说明有个组件还没被承认,下沉进 components/<页面域>/。',
+          extraJsx:
+            '`{{ fn }}` 不是默认导出却返回 JSX —— 这就是在 page.tsx 体内自建组件,'
+            + '搬去 components/<页面域>/ 落户(2026-08-26 Frank「不允许自己建组件」)。',
+        },
+      },
+      create(context) {
+        if (!/[\\/]app[\\/]\(frontend\)[\\/].*[\\/]?page\.tsx$/.test(context.filename ?? '')) return {}
+        // 默认导出的那个函数(含 export default function / export default 标识符两种写法)。
+        let defaultFn = null
+        const namedFns = new Map()
+        function enclosingTopFn(node) {
+          let top = null
+          for (let n = node; n; n = n.parent) {
+            if (n.type === 'FunctionDeclaration' || n.type === 'FunctionExpression' || n.type === 'ArrowFunctionExpression') top = n
+          }
+          return top
+        }
+        return {
+          FunctionDeclaration(node) {
+            if (node.id) namedFns.set(node.id.name, node)
+          },
+          ExportDefaultDeclaration(node) {
+            if (node.declaration.type === 'FunctionDeclaration') defaultFn = node.declaration
+            if (node.declaration.type === 'Identifier') defaultFn = namedFns.get(node.declaration.name) ?? null
+          },
+          JSXOpeningElement(node) {
+            // 小写标签名 = 裸 HTML;成员表达式(<Foo.Bar>)与大写开头放行,Fragment 是另一种节点不经这里。
+            if (node.name.type !== 'JSXIdentifier') return
+            const tag = node.name.name
+            if (/^[a-z]/.test(tag)) context.report({ node: node.name, messageId: 'htmlTag', data: { tag } })
+          },
+          'Program:exit'(program) {
+            // 离场再判「默认导出之外的 JSX」:此时 defaultFn 已定,无论 export 语句写在文件哪端。
+            const sourceCode = context.sourceCode ?? context.getSourceCode()
+            function walk(node) {
+              if (node == null || typeof node.type !== 'string') return
+              if (node.type === 'JSXElement' || node.type === 'JSXFragment') {
+                const top = enclosingTopFn(node)
+                if (top !== defaultFn) {
+                  let fn = '(匿名)'
+                  if (top != null && top.type === 'FunctionDeclaration' && top.id) fn = top.id.name
+                  context.report({ node, messageId: 'extraJsx', data: { fn } })
+                  return
+                }
+                return
+              }
+              for (const key of sourceCode.visitorKeys[node.type] ?? []) {
+                const child = node[key]
+                if (Array.isArray(child)) {
+                  for (const c of child) walk(c)
+                } else {
+                  walk(child)
+                }
+              }
+            }
+            walk(program)
+          },
+        }
+      },
+    },
+
     // 🔴 值级清洗不进 functions(2026-08-22 Frank:「functions 层,进来的所有参数都保证他是有效的」,
     // 当天看 stats 的 tierOf 判空实拍)。判据取最机械的一条:db 词汇表(text/count/numOrNull/
     // textOrNull/show/jsonOrNull)只许 rows.ts 用 —— functions.ts 里 import 这些词,
@@ -2434,6 +2537,15 @@ const eslintConfig = [
     files: ['src/components/**/*.tsx', 'src/app/(frontend)/**/*.tsx'],
     plugins: { local: localRules },
     rules: { 'local/no-nested-function': 'error' },
+  },
+  {
+    // ── 页面域形制闸(2026-08-26 Frank「需要建规则,建闸门先」):路由目录只住框架定名文件、
+    //    page.tsx 只拼大写组件不许自建 —— 两条规则自带文件名判定,这里只管开闸。
+    //    存量走 --suppress-rule 记基线当账单派批清零;增量从立闸起锁死。
+    //    ui/ 桶并不并 components 待 Frank 拍板,先照进账单不豁免(基线只紧不松兜着)。──────
+    files: ['src/app/(frontend)/**/*.tsx'],
+    plugins: { local: localRules },
+    rules: { 'local/route-file-names': 'error', 'local/page-compose-only': 'error' },
   },
   // ── mart 的三条具名豁免已撤(2026-08-26 Frank「mart 不要豁免 重构一下」)────────
   // 08-25 那块豁免的三个论据在形制批里逐条落了地,豁免随之失去存在理由:

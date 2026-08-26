@@ -73,7 +73,7 @@ function runEslint() {
   writeFileSync(emptyPath, '{}\n', 'utf8')
   const r = spawnSync(process.execPath, [
     path.join(CMS, 'node_modules', 'eslint', 'bin', 'eslint.js'),
-    'src/lib', 'src/components', '--format', 'json', '--suppressions-location', emptyPath,
+    'src/lib', 'src/components', 'src/app/(frontend)', '--format', 'json', '--suppressions-location', emptyPath,
   ], {
     cwd: CMS,
     encoding: 'utf8',
@@ -112,6 +112,8 @@ function readBaseline() {
 /**
  * 文件路径 → 域名:src/lib/<域> 与 src/components/<域> 各取子域名
  * (2026-08-26 Frank:components 也按子域列行,不再挤成一行),src 其余归 cms-other。
+ * 2026-08-26 页面域立闸(route-file-names / page-compose-only)后,(frontend) 也进报告:
+ * src/app/(frontend)/<路由>/ 记 page/<路由>,(frontend) 根下的散文件记 page —— 账单看不见等于没立。
  *
  * @param {string} file 绝对或相对路径。
  * @returns {string} 域名。
@@ -128,6 +130,13 @@ function domainOf(file) {
   }
   if (p.includes('src/components/')) {
     return 'components'
+  }
+  const page = p.match(/src\/app\/\(frontend\)\/([^/]+)\//)
+  if (page != null) {
+    return 'page/' + page[1]
+  }
+  if (p.includes('src/app/(frontend)/')) {
+    return 'page'
   }
   return 'cms-other'
 }

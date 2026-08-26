@@ -1,37 +1,288 @@
 {
+  "src/app/(frontend)/account/ProfileForm.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/account/ResumeArchive.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/account/SavedJobsList.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/account/SavedSearchList.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/account/page.tsx": {
+    "local/page-compose-only": {
+      "count": 25
+    }
+  },
+  "src/app/(frontend)/cases/Cases.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/cases/[slug]/Case.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/cases/page.tsx": {
+    "local/page-compose-only": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/chat/ChatAnswer.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/chat/ChatBox.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/chat/ChatLauncher.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/companies/[slug]/Company.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/companies/[slug]/page.tsx": {
+    "local/page-compose-only": {
+      "count": 1
+    }
+  },
   "src/app/(frontend)/employers/Employers.tsx": {
     "@eslint-community/eslint-comments/require-description": {
+      "count": 1
+    },
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/employers/Sponsors.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/employers/compare/Compare.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/funnel/Funnel.tsx": {
+    "local/route-file-names": {
       "count": 1
     }
   },
   "src/app/(frontend)/jobs/Advisor.tsx": {
     "@eslint-community/eslint-comments/require-description": {
       "count": 2
+    },
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/jobs/Company.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/jobs/ConditionGrid.tsx": {
+    "local/route-file-names": {
+      "count": 1
     }
   },
   "src/app/(frontend)/jobs/Jd.tsx": {
     "@eslint-community/eslint-comments/require-description": {
       "count": 3
+    },
+    "local/route-file-names": {
+      "count": 1
     }
   },
   "src/app/(frontend)/jobs/Jobs.tsx": {
     "@eslint-community/eslint-comments/require-description": {
       "count": 3
+    },
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/jobs/Lock.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/jobs/OnboardingWizard.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/jobs/Pnp.tsx": {
+    "local/route-file-names": {
+      "count": 1
     }
   },
   "src/app/(frontend)/jobs/PnpScoreCard.tsx": {
     "@eslint-community/eslint-comments/require-description": {
       "count": 4
+    },
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/jobs/PricingModal.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/jobs/ResumeMatchModal.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/jobs/Table.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/jobs/TripleVerdictModal.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/jobs/UpgradeModal.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/jobs/[id]/Job.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/jobs/[id]/OccReportCard.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/jobs/[id]/PathwaysCard.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/jobs/[id]/page.tsx": {
+    "local/page-compose-only": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/legal/Legal.tsx": {
+    "local/route-file-names": {
+      "count": 1
     }
   },
   "src/app/(frontend)/news/News.tsx": {
     "@eslint-community/eslint-comments/require-description": {
       "count": 2
+    },
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/occupations/Occupations.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/plan/QuizForm.tsx": {
+    "local/route-file-names": {
+      "count": 1
     }
   },
   "src/app/(frontend)/plan/pr/Decision.tsx": {
     "@eslint-community/eslint-comments/require-description": {
       "count": 3
+    },
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/plan/pr/ScoreLineCard.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/pricing/Pricing.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/quiz/EntryQuiz.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/quiz/OccPicker.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/quiz/ProvincePicker.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/quiz/QuizUI.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/rankings/Ranking.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/resources/Resources.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/resources/page.tsx": {
+    "local/page-compose-only": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/start/Pulse.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/stats/charts.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/stats/ui.tsx": {
+    "local/route-file-names": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/timeline/Timeline.tsx": {
+    "local/route-file-names": {
+      "count": 1
     }
   },
   "src/components/i18n/hooks.ts": {
