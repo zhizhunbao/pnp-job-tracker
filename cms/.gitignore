@@ -51,3 +51,7 @@ node_modules/
 
 # eslint 增量缓存(2026-08-25:全量 2 分 14 秒 → 热跑 10 秒)
 .eslintcache
+
+
+# eslint 分域报告(scripts/lint-report.mjs 产出,不进库)
+/lint-reports

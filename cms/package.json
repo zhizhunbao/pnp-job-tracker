@@ -12,6 +12,7 @@
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint . --cache",
     "lint:prune": "eslint src tests --prune-suppressions",
+    "lint:report": "node scripts/lint-report.mjs",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "eval:chat": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.eval.config.mts",
