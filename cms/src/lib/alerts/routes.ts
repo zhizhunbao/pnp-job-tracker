@@ -13,7 +13,7 @@ import { getDb } from '../db/server'
 import { loadAlertHits, loadMatchDims } from '../jobs/server'
 import type { JobsFilters } from '../jobs/server'
 import {
-  HDR_CONTENT_TYPE_LC, HDR_SEED_TOKEN, MIME_HTML, SERVER_ERROR, TEXT_UNAUTHORIZED, UNAUTHORIZED,
+  HDR_CONTENT_TYPE_LC, HDR_SEED_TOKEN, MIME_HTML, TEXT_UNAUTHORIZED, UNAUTHORIZED,
 } from '../http'
 import { fill } from '../template'
 import {

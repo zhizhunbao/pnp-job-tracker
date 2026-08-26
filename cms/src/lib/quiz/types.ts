@@ -342,7 +342,6 @@ export type Question = {
    * 选项过滤(目前只有一处:加拿大经验不得超过总经验)。先前是框架的字符串表达式,现在是普通函数。
    * 不过滤的给 null(2026-08-25 由 `?:` 改)。
    */
-  // eslint-disable-next-line local/one-parameter -- 两参由「答案 + 候选值」这对语义定
   choiceVisible: ((a: Answers, v: BandValue) => boolean) | null
 }
 
@@ -353,7 +352,6 @@ export type FieldDef = {
   /**
    * /api/report answers 的键名(缺省=字段名)。
    */
-  // eslint-disable-next-line local/no-optional -- 缺省=字段名是既有契约,补全会把 30 行写成同名复读
   engineKey?: string
 
   /**
@@ -375,7 +373,6 @@ export type FieldDef = {
    * 档位 → 引擎输入;原样透传的字段给 null(2026-08-25:原先是 `?:`,
    * 「没有」靠键的缺席表达 —— 改成显式 null,漏填当场 tsc 红)。
    */
-  // eslint-disable-next-line local/one-parameter -- 两参由「本题答案 + 全卷」这对语义定
   toAnswer: ((v: BandValue, all: Answers) => EngineValue) | null
 
   /**
@@ -407,7 +404,6 @@ export type Answers = {
   /**
    * 三问答完过(职位板据此判断还弹不弹)。
    */
-  // eslint-disable-next-line local/no-optional -- 存档形状:旧档没有这格,补必填会改已存 json 的字节
   done?: boolean
 
   /**
@@ -499,13 +495,11 @@ export type Answers = {
   /**
    * 法语题已是档位版(2026-08-16)。没有这个标记的是旧「是/否」答案,读时迁移。
    */
-  // eslint-disable-next-line local/no-optional -- 存档形状:标记缺席正是「旧档」的判据,不能补必填
   frenchV2?: boolean
 
   /**
    * 目标省「还不确定」——**答过了**,只是不限省(与「没答」不同)。
    */
-  // eslint-disable-next-line local/no-optional -- 存档形状:缺席=没答过这层语义
   provsAny?: boolean
 
   /**
@@ -513,7 +507,6 @@ export type Answers = {
    * 区间档改成整年档(9=不清楚不变)。没打标的旧答案读取时按旧引擎月数/下界迁移 ——
    * 同一个 band 数字两套语义,不迁移就是静默改答案。
    */
-  // eslint-disable-next-line local/no-optional -- 存档形状:标记缺席正是「旧档」的判据
   bandsV2?: boolean
 
   /**
@@ -558,20 +551,17 @@ export type ScoreAnswers = {
   /**
    * 基础卷没答 offer 时分值卡自问的那道;基础卷答过(ctx.hasOffer 有值)以基础卷为准。
    */
-  // eslint-disable-next-line local/no-optional -- 存档形状:缺席=分值卡也没问到
   hasOffer?: boolean
 
   /**
    * 时薪(加元/小时)。2026-08-16 补:先前只活在分值卡的 state 里,刷新即丢,更谈不上上行 ——
    * 而 BC SIRS 200 分里时薪+地区占 80 分,服务端拿不到就整省算不出。
    */
-  // eslint-disable-next-line local/no-optional -- 存档形状:缺席=没填过
   wage?: number
 
   /**
    * BC 工作地区档(与 wage 同批补)。
    */
-  // eslint-disable-next-line local/no-optional -- 存档形状:缺席=没填过
   areaI?: number
 }
 

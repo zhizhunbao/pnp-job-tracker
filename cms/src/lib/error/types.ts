@@ -149,31 +149,26 @@ export type GatewayErrorBody = {
   /**
    * 新链的标准结构。type 与 code 认哪个都行,message 只进留痕。
    */
-  // eslint-disable-next-line local/no-optional -- 上游回包形状:网关的 JSON 由上游定,缺席是事实
   error?: {
     /**
      * 上游给的错误种类。认它的表是 `ERR_BY_TYPE`。
      */
-    // eslint-disable-next-line local/no-optional -- 上游回包形状
     type?: string
 
     /**
      * 有些上游把种类放在这一格。两个都认,先 type 后 code。
      */
-    // eslint-disable-next-line local/no-optional -- 上游回包形状
     code?: string
 
     /**
      * 上游的说明。**只进留痕**,不进见客话术。
      */
-    // eslint-disable-next-line local/no-optional -- 上游回包形状
     message?: string
   }
 
   /**
    * 旧链的结构。超长报的就是这一句。
    */
-  // eslint-disable-next-line local/no-optional -- 上游回包形状(旧链)
   detail?: string
 }
 

@@ -3657,16 +3657,6 @@ export type ConcludeNeedsInfoIn = {
 export type ConcludeNeedsInfoOut = TripleConclusion | null
 
 /**
- * `profileWithOffer` 的入参。
- */
-export type ProfileWithOfferIn = {
-  /**
-   * 卡片用的判定档案。
-   */
-  p: TripleProfile
-}
-
-/**
  * `fastestRow` 的入参。
  */
 export type FastestRowIn = {

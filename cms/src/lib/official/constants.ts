@@ -7,7 +7,7 @@
  */
 
 
-import type { LangCode, Res, ResGroup } from './types'
+import type { LangCode, ResGroup } from './types'
 
 /**
  * 官方原文尾部悬空的「, or」(表格排版残留,显示时摘掉):那个 or 是官方**表格排版**

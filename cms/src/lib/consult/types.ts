@@ -1920,7 +1920,6 @@ export type OnEventIn = {
   /**
    * 那一刻的助手消息(累积形态),只有部分事件带它。
    */
-  // eslint-disable-next-line local/no-optional -- pi 的事件形状:缺席字段由库定,不是我们的契约
   message?: AgentMessage
 }
 
@@ -2592,7 +2591,6 @@ export type ToolArgs = {
   /**
    * 模型填的职业码;这把工具不带码时没有这一格。
    */
-  // eslint-disable-next-line local/no-optional -- 模型经 pi 交来的工具入参:带不带码由那把工具的 schema 定
   noc?: string
 }
 

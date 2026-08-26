@@ -25,7 +25,6 @@ export type TransFn = {
   /**
    * 当前语言(TFn 挂的只读字段;可缺 —— 外部形状)。
    */
-  // eslint-disable-next-line local/no-optional -- 镜像 i18n TFn 的形状:lang 在那边就是可选挂载字段
   lang?: LangCode
 }
 

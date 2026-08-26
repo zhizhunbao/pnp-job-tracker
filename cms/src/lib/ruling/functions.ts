@@ -64,7 +64,6 @@ import {
   EMP_UNIT,
   EVIDENCE_KIND,
   EXP_BASIS,
-  E_ANSWERS_REQUIRED,
   FACTOR,
   FACTOR_ROW,
   FED,
@@ -221,8 +220,8 @@ import type {
   ParseNocDictOut, ParseWageRuleIn, PathLeversIn, PathLeversOut, PathVerdictIn, PathVerdictOut, PathwayFactsIn,
   PathwayFactsOut, PathwayScore, PathwayVerdict, PermitCell, PermitOfIn, PermitOfOut, PersonRowsIn, PersonRowsOut,
   PickGateIn, PickGridFactorsIn, PickGridFactorsOut, PickOnLangRowIn, PickOnLangRowOut, PickScoreRowIn,
-  PickScoreRowOut, PickedFactor, PilotQuotaAgg, PlanRow, ProfileBody, ProfileOfOccupationIn, ProfileParse, ProfileSlotsIn,
-  ProfileWireIn, ProfileWireOut, ProfileWireRow, ProfileWithNocIn, ProfileWithOfferIn, ProvCompetition,
+  PickScoreRowOut, PickedFactor, PilotQuotaAgg, PlanRow, ProfileOfOccupationIn, ProfileSlotsIn,
+  ProfileWireIn, ProfileWireOut, ProfileWireRow, ProfileWithNocIn, ProvCompetition,
   ProvinceGridScoreIn, ProvinceOfIn, ProvinceOfOut, PushItemIn, QuoteOfOccIn, QuoteOfReqIn, RCell, RankedBlock,
   RankedJobRow, RankedPathway, RankedVerdict, RecentGraduateHoldsIn, RecentGraduateHoldsOut, RefDrawIn, RefDrawOut,
   ReqMonths, ReqRow, ReqsOfIn, ReqsOfOut, ResidenceGapIn, ResidenceGapOut, ResidenceReasonIn, ResidenceReasonOut,
@@ -4470,32 +4469,6 @@ function concludeNeedsInfo(input: ConcludeNeedsInfoIn): ConcludeNeedsInfoOut {
 }
 
 /**
- * 判定核用的那份档案 —— **offer 闸在这张卡恒视为已满足**。
- *
- * 带岗判定的前提就是「拿这份岗当目标」(2026-08-13 Frank:「缺 job offer 还用你判定啊?来这个网站
- * 不都是缺 job offer 的吗」)。这张卡回答的是「**拿下这份 offer 之后**还卡在哪」——比路行的语义
- * 本来就是 fastest after offer,拿「你现在没 offer」当拦路结论是对每个访客说同一句废话。
- *
- * 🔴 只改这张带岗卡:无岗初评(`/api/ruling/profile`)仍按真实答案判 offer 闸。
- *
- * @param input 卡片用的判定档案。
- * @returns 判定核认的档案,`hasOffer` 恒 true。
- */
-function profileWithOffer(input: ProfileWithOfferIn): VerdictProfile {
-  return {
-    age: input.p.age, married: input.p.married, clb: input.p.clb, edu: input.p.edu,
-    eduYears: input.p.eduYears, canadaStudy: input.p.canadaStudy, studyProvince: input.p.studyProvince,
-    noc: input.p.noc, teer: input.p.teer,
-    expCanadaMonths: input.p.expCanadaMonths, expForeignMonths: input.p.expForeignMonths,
-    foreignExpSelfEmployed: input.p.foreignExpSelfEmployed, status: input.p.status,
-    province: input.p.province, hasOffer: true, inCanada: input.p.inCanada,
-    fieldMatch: input.p.fieldMatch, frenchOk: input.p.frenchOk, permit: input.p.permit,
-    scoreProfile: input.p.scoreProfile, scoreRows: input.p.scoreRows, wage: input.p.wage,
-    areaI: input.p.areaI, scoreTicks: input.p.scoreTicks,
-  }
-}
-
-/**
  * 「offer 到手后哪条线最快」那一行。
  *
  * @param input 比路的那几行。
@@ -6147,9 +6120,13 @@ function nocOrNull(x: string): MaybeStr {
 }
 
 /**
- * 同一份引擎档案把 hasOffer 代成 true（L2-09 反事实）。与卡片侧的
- * profileWithOffer（收 TripleProfile，多三格）分开 —— 两边收的形不同，
- * 逐字段显式复制才看得见哪些格参与了反事实。
+ * 同一份引擎档案把 hasOffer 代成 true(L2-09 反事实)。逐字段显式复制,
+ * 才看得见哪些格参与了反事实。
+ * 带岗判定的前提就是「拿这份岗当目标」(2026-08-13 Frank:「缺 job offer 还用你判定啊?
+ * 来这个网站不都是缺 job offer 的吗」)—— 比路语义本来就是 fastest after offer。
+ * 🔴 无岗初评(`/api/ruling/profile`)仍按真实答案判 offer 闸。
+ * (卡片侧原有一份收 TripleProfile 的 profileWithOffer,消费者退役成死码后
+ * 2026-08-26 删除,上面那段决策记录并入本条。)
  *
  * @param p 原档案。
  * @returns hasOffer=true 的副本。

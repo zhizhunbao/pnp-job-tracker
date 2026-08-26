@@ -26,9 +26,8 @@ import {
 import { loadAnswers, saveAnswers } from './functions'
 import { CACHE } from './variables'
 import type {
-  AnswersBody, DropFn, FactsStoreFn, FirstStoreFn, Json, StoreFn, TopOut, TopRows, UnflagFn,
+  AnswersBody, Json,
 } from './types'
-import type { Db } from '../db'
 
 /**
  * GET /api/quiz:入口三问的只读分发器(付费漏斗重设计-20260726)。匿名可用 ——

@@ -18,7 +18,7 @@ import {
 } from './constants'
 import { MATCH_REWRITE, MATCH_SYSTEM, MATCH_USER, OUT_LANG, OUT_LANG_DEFAULT } from './prompts'
 import type {
-  CaughtError, ExtractIn, ExtractOut, GateMatchIn, Gated, IeltsCells, MatchMessages, MatchPromptIn, MatchRows,
+  CaughtError, ExtractIn, ExtractOut, GateMatchIn, Gated, MatchMessages, MatchPromptIn, MatchRows,
   MaybeIelts, MaybeNum, NocCandidate, NocCandidatesIn, NocCandidatesOut, JsonObj, MaybeMatchRows, NocSimDbRow,
   NocTitleDbRow, NocTitleRow, ParsedJson,
 } from './types'

@@ -600,7 +600,6 @@ export type EventIn = {
   /**
    * 那一刻的助手消息(累积形态),只有部分事件带它。
    */
-  // eslint-disable-next-line local/no-optional -- pi 的事件形状:缺席字段由库定,不是我们的契约
   message?: TranscriptMsg
 }
 

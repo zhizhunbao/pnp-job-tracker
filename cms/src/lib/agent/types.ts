@@ -123,13 +123,11 @@ export type SlotsClaim = {
   /**
    * 模型认为用户提过的省码。白名单过滤在 `cleanProvs`,这里只是原样收着。
    */
-  // eslint-disable-next-line local/no-optional -- 模型经 pi 交来的槽位:填不填由工具 schema(TypeBox Optional)定
   provinces?: string[]
 
   /**
    * 一句「为什么挑它」。只进日志,不给用户看。
    */
-  // eslint-disable-next-line local/no-optional -- 模型经 pi 交来的槽位:填不填由工具 schema(TypeBox Optional)定
   reason?: string
 }
 

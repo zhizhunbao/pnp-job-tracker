@@ -85,7 +85,6 @@ import type {
   EngineValue,
   FactsStoreFn,
   FieldBehavior,
-  FieldDef,
   FieldMap,
   FieldNames,
   FirstStoreFn,
@@ -811,19 +810,6 @@ export function rec(v: RawField): RawDoc {
  */
 function isStr(x: RawCell): x is string {
   return typeof x === 'string'
-}
-
-/**
- * 三语文本的紧凑构造(题面表逐行调用,摆开写会把整张表撑到三倍)。
- *
- * @param en 英文。
- * @param zh 中文。
- * @param ko 韩文。
- * @returns 三语对象。
- */
-// eslint-disable-next-line local/one-parameter -- 三语构造:题面表逐行调用,(en, zh, ko) 三参就是它的人体工学
-function l(en: string, zh: string, ko: string): L {
-  return { zh, en, ko }
 }
 
 /**

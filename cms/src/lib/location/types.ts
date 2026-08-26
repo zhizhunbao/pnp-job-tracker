@@ -108,7 +108,6 @@ export type CleanProvsIn = {
   /**
    * 模型给的省码清单(原料就是可缺的模型输出;undefined 在函数第一行收)。
    */
-  // eslint-disable-next-line local/no-optional -- 三个调用点的原料是模型输出的可缺字段,由这一格收
   raw?: string[]
 }
 

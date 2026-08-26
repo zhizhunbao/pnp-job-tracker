@@ -5,7 +5,7 @@
  * @time 2026-08-24 02:30:00
  */
 import { CLS_SEP, EMPTY_MARK } from './constants'
-import type { CellIn, Col, SortRowsIn } from './types'
+import type { CellIn, SortRowsIn } from './types'
 
 /**
  * 客户端排序(简单表数据全量在手):null 恒沉底,方向乘 dir。

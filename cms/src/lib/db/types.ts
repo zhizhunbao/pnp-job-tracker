@@ -32,12 +32,10 @@ export type PayloadWithPool = {
   /**
    * payload 的 db adapter。
    */
-  // eslint-disable-next-line local/no-optional -- 别人家的对象:Payload 实例的形状由 payload 定,这格只是我们摸它的门
   db?: {
     /**
      * postgres adapter 挂的连接池。用别的 adapter 时没有这一格 —— dbOf 会抛人话。
      */
-    // eslint-disable-next-line local/no-optional -- 别人家的对象:非 postgres adapter 身上真没有这格,缺席是事实
     pool?: DbPool
   }
 }

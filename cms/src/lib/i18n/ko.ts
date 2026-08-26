@@ -6,7 +6,7 @@
  * @time 2026-08-22 20:00:00
  */
 
-import { caseZh, consultZh, jobsZh, legalZh, quizZh, reportZh, siteZh } from './zh'
+import { consultZh, jobsZh, legalZh, quizZh, reportZh, siteZh } from './zh'
 // =========================================================================
 // 判定与报告(原 report.ts)
 // =========================================================================

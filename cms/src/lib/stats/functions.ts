@@ -14,7 +14,7 @@
 import { queryRows, queryRowsOrEmpty, SQL, jsonOrNull, numOrNull, text, textOrNull } from '../db'
 import type { Db } from '../db'
 import {
-  BROAD_SLUGS, CITY_LIMIT, OCC_COL_NONE, OCC_COL_PREFIX, OCC_EXTRA_COLUMNS, PG_UNDEFINED_COLUMN,
+  CITY_LIMIT, OCC_COL_NONE, OCC_COL_PREFIX, OCC_EXTRA_COLUMNS, PG_UNDEFINED_COLUMN,
   PG_UNDEFINED_TABLE, PG_CODE_NONE, STAT_SOURCE_FIELDS, MAX_FINE_ROWS, EMPTY_TOP_CITIES, MID_ALL,
 } from './constants'
 import type {

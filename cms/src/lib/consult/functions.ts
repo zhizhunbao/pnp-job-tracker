@@ -66,7 +66,7 @@ import type {
   OrNone2In, OrNoneIn, OrNoneOut, PermitFactsOut, PermitResult, PermitRow, PointsFactsOut, PointsResult, PointsRow,
   ProvOfOut, Reply, RetryNoteIn, RunGatesIn, RunGatesOut, RunIn, SearchOccupationsIn, SearchOccupationsOut, SegIn,
   SseBytes, SsePacket, StatusFactIn, StatusWordOfOut, StepOccLineIn, TakeIn, ThreadIdIn, ThresholdsFactsOut,
-  ThresholdsResult, ThresholdsRow, Tool, ToolArgs, Turn, TurnList, VerdictFactsIn, VerdictFactsOut,
+  ThresholdsResult, ThresholdsRow, Tool, ToolArgs, TurnList, VerdictFactsIn, VerdictFactsOut,
   RuleResult, VerdictProfile,
   VerdictProfileOfIn, SubjectOfIn, SubjectOfOut, DrawDbRow, EeDbRow, NocSearchRow, NocHit, OccFlatRow, OccFlat,
   OpsDbRow, OpsRow, PermitDbRow, PointsDbRow, ProvOpenRow, ReqRow, ToTitleTeerIn, TitleTeer,

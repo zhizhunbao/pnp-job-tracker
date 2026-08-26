@@ -48,7 +48,6 @@ export type TFn = ((key: string, vars?: TVars) => string) & {
   /**
    * 挂载的当前语言(分类名等维度表显示名按它取列,见 lib/noc catName)。
    */
-  // eslint-disable-next-line local/no-optional -- 挂载字段:makeT 造出来才有,函数值本身没有
   lang?: Lang
 }
 
