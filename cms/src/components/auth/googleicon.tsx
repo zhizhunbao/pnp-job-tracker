@@ -9,16 +9,7 @@
  */
 
 import {
-  G_BLUE,
-  G_GREEN,
-  G_ICON_PX,
-  G_PATH_BLUE,
-  G_PATH_GREEN,
-  G_PATH_RED,
-  G_PATH_YELLOW,
-  G_RED,
-  G_VIEW_BOX,
-  G_YELLOW,
+  G_BLUE, G_GREEN, G_ICON_PX, G_PATH_BLUE, G_PATH_GREEN, G_PATH_RED, G_PATH_YELLOW, G_RED, G_VIEW_BOX, G_YELLOW,
 } from './constants'
 import css from './auth.module.css'
 

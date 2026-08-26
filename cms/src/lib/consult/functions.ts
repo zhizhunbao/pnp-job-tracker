@@ -148,8 +148,9 @@ async function searchOccupations(input: SearchOccupationsIn): SearchOccupationsO
   const like = `${LIKE_ANY}${input.query.replace(LIKE_SPECIAL, LIKE_ESCAPE)}${LIKE_ANY}`
   const all = await queryRows({ db: input.db, sql: SQL.NOC_LIST_WITH_TITLES, params: [like, SEARCH_LIMIT], map: toNocHit })
   let top = 0
-  if (all.length) {
-    top = all[0].n
+  const allFirst = all[0]
+  if (allFirst != null) {
+    top = allFirst.n
   }
   const hits: Candidate[] = []
   for (const hit of all) {
@@ -1053,6 +1054,9 @@ function findRawMarkup(answer: string): FindRawMarkupOut {
  */
 function firstLineOf(input: FirstLineOfIn): string {
   const head = input.answer.trim().split(NL)[0]
+  if (head == null) {
+    return SEG_NONE
+  }
   const stop = head.indexOf(FULL_STOP)
   let line = head
   if (stop >= 0) {
@@ -1605,7 +1609,11 @@ function lastDraftOf(input: LastDraftOfIn): string {
   if (drafts.length === 0) {
     throw chatError({ code: CHAT_CODE.llm, msg: FAIL_MSG.emptyDraft, slots: null })
   }
-  return drafts[drafts.length - 1]
+  const last = drafts[drafts.length - 1]
+  if (last == null) {
+    throw chatError({ code: CHAT_CODE.llm, msg: SEG_NONE, slots: null })
+  }
+  return last
 }
 
 /**
@@ -1969,10 +1977,11 @@ export function toProvOpen(r: ProvOpenRow): JobsRow {
  * @returns 收窄后的对象。
  */
 export function toTitleTeer(rows: ToTitleTeerIn): TitleTeer {
-  if (rows.length === 0) {
+  const rowsFirst = rows[0]
+  if (rowsFirst == null) {
     return { title: '', teer: null }
   }
-  return { title: text(rows[0].title), teer: numOrNull(rows[0].teer) }
+  return { title: text(rowsFirst.title), teer: numOrNull(rowsFirst.teer) }
 }
 
 /**

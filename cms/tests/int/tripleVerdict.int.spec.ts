@@ -572,7 +572,7 @@ describe('#287 金标 · 时间窗与换省对照', () => {
       state: 'info', tier: 'paid',
       params: { prov: 'BC', basisProv: 'NS', stream: 'BC PNP Care: health targeted ITA / Health Authority stream', list: 'BC 医疗' },
     })
-    expect(rows[0].evidence?.fetched).toBe('2026-08-09')
+    expect(rows[0]?.evidence?.fetched).toBe('2026-08-09')
   })
 
   it('没填目标省 → 换省对照落缺口并点名问 targetProvinces', () => {

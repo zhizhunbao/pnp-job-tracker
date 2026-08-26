@@ -8,7 +8,7 @@
  * @time 2026-08-21 23:20:43
  */
 
-import { queryRows, queryRowsOrEmpty, SQL, count, numOrNull, text, textOrNull } from '../db'
+import { firstOf, queryRows, queryRowsOrEmpty, SQL, count, numOrNull, text, textOrNull } from '../db'
 import type { Db } from '../db'
 import { ERR_NAME, fail } from '../error'
 import { hasProfile, match } from '../jobs'
@@ -16,85 +16,15 @@ import type { MatchJob } from '../jobs'
 import { friendChat } from '../llm'
 import { EMP_LOG, log } from '../log'
 import {
-  ALIAS_NONE,
-  BRIEF_MAX,
-  BRIEF_MIN,
-  BRIEF_V2_MARK,
-  CACHE_TTL_MS,
-  CAP_MODE,
-  CAP_NOC,
-  CAP_PAGE,
-  CAP_PROGRAM,
-  CAP_PROV,
-  CAP_TEXT,
-  CMP_MAX,
-  COL_PREFIX,
-  CSV_BOM,
-  CSV_EMPTY,
-  CSV_HEAD,
-  CSV_NL,
-  CSV_QUOTE,
-  CSV_QUOTE_ESC,
-  CSV_QUOTE_G_RE,
-  CSV_QUOTE_RE,
-  CSV_SEP,
-  CSV_YES,
-  DATE8_RE,
-  DATE_LEN,
-  DIGIT_RE,
-  EMP_PROGRAMS,
-  EMP_SSR_ROWS,
-  ENWIKI_BASE,
-  FACT_COLS,
-  FETCHED_NONE,
-  FILTER_UNSET,
-  FORMAT_JSON,
-  FORMAT_KEY,
-  HTTP_URL_RE,
-  JOIN_COMMA,
-  LEVEL,
-  LMIA_QUARTER_NONE,
-  MODE,
-  NOC_RE,
-  NOC_SPLIT_RE,
-  NOC_TITLES_MAX,
-  NOT_FOUND_RE,
-  PAGE_MAX,
-  PARAM,
-  PIPE,
-  PROVINCE_NONE,
-  PROV_RE,
-  PUNCT_RE,
-  RESEARCH_TIMEOUT_MS,
-  SITE_LINE_DROP,
-  SITE_LINE_RE,
-  SITE_PICK_RE,
-  SORT_SKILLED,
-  SPACE,
-  SPACES_RE,
-  SPACE_GLOBAL_RE,
-  SQL_FRAG_NONE,
-  SUFFIX_RE,
-  UNDERSCORE,
-  URL_QS,
-  VERDICT_ORDER,
-  VIEW,
-  WD_ACTION_ENTITIES,
-  WD_ACTION_SEARCH,
-  WD_API,
-  WD_LANGS,
-  WD_LANG_EN,
-  WD_LANG_KO,
-  WD_LANG_ZH,
-  WD_LANG_ZH_CN,
-  WD_LANG_ZH_HANS,
-  WD_LIMIT,
-  WD_PROPS,
-  WD_SITE_EN,
-  WD_TIMEOUT_MS,
-  WD_TYPE_ITEM,
-  WD_UA,
-  WEBSITE_NONE,
+  ALIAS_NONE, BRIEF_MAX, BRIEF_MIN, BRIEF_V2_MARK, CACHE_TTL_MS, CAP_MODE, CAP_NOC, CAP_PAGE, CAP_PROGRAM, CAP_PROV,
+  CAP_TEXT, CMP_MAX, COL_PREFIX, CSV_BOM, CSV_EMPTY, CSV_HEAD, CSV_NL, CSV_QUOTE, CSV_QUOTE_ESC, CSV_QUOTE_G_RE,
+  CSV_QUOTE_RE, CSV_SEP, CSV_YES, DATE8_RE, DATE_LEN, DIGIT_RE, EMP_PROGRAMS, EMP_SSR_ROWS, ENWIKI_BASE, FACT_COLS,
+  FETCHED_NONE, FILTER_UNSET, FORMAT_JSON, FORMAT_KEY, HTTP_URL_RE, JOIN_COMMA, LEVEL, LMIA_QUARTER_NONE, MODE,
+  NOC_RE, NOC_SPLIT_RE, NOC_TITLES_MAX, NOT_FOUND_RE, PAGE_MAX, PARAM, PIPE, PROVINCE_NONE, PROV_RE, PUNCT_RE,
+  RESEARCH_TIMEOUT_MS, SITE_LINE_DROP, SITE_LINE_RE, SITE_PICK_RE, SORT_SKILLED, SPACE, SPACES_RE, SPACE_GLOBAL_RE,
+  SQL_FRAG_NONE, SUFFIX_RE, UNDERSCORE, URL_QS, VERDICT_ORDER, VIEW, WD_ACTION_ENTITIES, WD_ACTION_SEARCH, WD_API,
+  WD_LANGS, WD_LANG_EN, WD_LANG_KO, WD_LANG_ZH, WD_LANG_ZH_CN, WD_LANG_ZH_HANS, WD_LIMIT, WD_PROPS, WD_SITE_EN,
+  WD_TIMEOUT_MS, WD_TYPE_ITEM, WD_UA, WEBSITE_NONE
 } from './constants'
 import { RESEARCH_PROMPT_HEAD, RESEARCH_PROMPT_TAIL, RESEARCH_SEARCH_TAIL, RESEARCH_SYSTEM } from './prompts'
 import { CACHE } from './variables'
@@ -472,10 +402,11 @@ function getterOf(sp: SearchParams): ParamGetter {
       return null
     }
     if (Array.isArray(v)) {
-      if (v.length === 0) {
+      const v0 = v[0]
+      if (v0 == null) {
         return null
       }
-      return v[0]
+      return v0
     }
     return v
   }
@@ -601,8 +532,9 @@ function namedBoard(rows: SponsorRows): SponsorBoardData {
       rec = 1
     }
     let rank = 1
-    if (VERDICT_ORDER[r.verdict.state] != null) {
-      rank = VERDICT_ORDER[r.verdict.state]
+    const orderHit = VERDICT_ORDER[r.verdict.state]
+    if (orderHit != null) {
+      rank = orderHit
     }
     ranked.push({ row: r, rank: rank, rec: rec })
   }
@@ -694,8 +626,9 @@ export function applySponsorFilters(input: ApplySponsorFiltersIn): SponsorRows {
  * @returns TEER。
  */
 function teerOf(noc: string): MaybeTeer {
-  if (noc.length === 5 && DIGIT_RE.test(noc[1])) {
-    return Number(noc[1])
+  const d = noc[1]
+  if (noc.length === 5 && d != null && DIGIT_RE.test(d)) {
+    return Number(d)
   }
   return null
 }
@@ -721,8 +654,9 @@ function companyAggOf(input: CompanyAggIn): CompareAgg {
   for (const j of input.jobs) {
     if (j.province !== '') {
       let cur = 0
-      if (provCount[j.province] != null) {
-        cur = provCount[j.province]
+      const seen = provCount[j.province]
+      if (seen != null) {
+        cur = seen
       }
       provCount[j.province] = cur + 1
     }
@@ -763,8 +697,9 @@ function companyAggOf(input: CompanyAggIn): CompareAgg {
     avgScore = Math.round(sum / scores.length)
   }
   let medSalary: number | null = null
-  if (sals.length > 0) {
-    medSalary = Math.round(sals[Math.floor(sals.length / 2)])
+  const salMid = sals[Math.floor(sals.length / 2)]
+  if (salMid != null) {
+    medSalary = Math.round(salMid)
   }
   let matchHigh: number | null = null
   let matchMid: number | null = null
@@ -787,9 +722,9 @@ function companyAggOf(input: CompanyAggIn): CompareAgg {
 function mainProvinceOf(tally: ProvTally): string {
   let mainProvince = PROVINCE_NONE
   let best = 0
-  for (const prov of Object.keys(tally)) {
-    if (tally[prov] > best) {
-      best = tally[prov]
+  for (const [prov, n] of Object.entries(tally)) {
+    if (n > best) {
+      best = n
       mainProvince = prov
     }
   }
@@ -871,17 +806,15 @@ export async function compareEmployers(input: CompareIn): CompareOut {
  */
 export async function companyRow(input: CompanyRowIn): CompanyRowOut {
   const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_AI_BRIEF, params: [input.name], map: passCompanyBrief })
-  let row: CompanyBriefDbRow | null = null
-  if (rows.length > 0) {
-    row = rows[0]
-  }
+  let row = firstOf(rows)
   if (row == null) {
     try {
       const ins = await queryRows({ db: input.db, sql: SQL.COMPANY_INSERT_LAZY, params: [input.name], map: passCompanyBrief })
-      if (ins.length === 0) {
+      const insFirst = firstOf(ins)
+      if (insFirst == null) {
         return null
       }
-      row = { id: ins[0].id, ai_brief: null, ai_website: null, ai_sources: null, ai_fetched: null }
+      row = { id: insFirst.id, ai_brief: null, ai_website: null, ai_sources: null, ai_fetched: null }
     } catch (e) {
       let why = String(e)
       if (e instanceof Error) {
@@ -976,8 +909,15 @@ async function investigate(input: InvestigateIn): InvestigateOut {
   const brief = r.answer.replace(SITE_LINE_RE, SITE_LINE_DROP).trim()
   let website = WEBSITE_NONE
   const siteMatch = r.answer.match(SITE_PICK_RE)
-  if (siteMatch != null && HTTP_URL_RE.test(siteMatch[1])) {
-    website = siteMatch[1]
+  let siteUrl = null
+  if (siteMatch != null) {
+    const g1 = siteMatch[1]
+    if (g1 != null) {
+      siteUrl = g1
+    }
+  }
+  if (siteUrl != null && HTTP_URL_RE.test(siteUrl)) {
+    website = siteUrl
   }
   if (brief === '' || NOT_FOUND_RE.test(brief) || brief.length < BRIEF_MIN || brief.length > BRIEF_MAX) {
     return null
@@ -1269,10 +1209,7 @@ function blankIfNull(v: MaybeNum): string {
  */
 export async function loadCompanyBrief(input: CompanyBriefIn): MaybeStrOut {
   const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_BRIEF_BY_NAME, params: [input.name], map: toBriefCell })
-  if (rows.length === 0) {
-    return null
-  }
-  return rows[0]
+  return firstOf(rows)
 }
 
 // =========================================================================

@@ -4,6 +4,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { cssOf } from '@/components/css'
 import { CLS_SEP } from './constants'
 import type { ShellBottom, ShellClsIn, ShellTop } from './types'
 import css from './shell.module.css'
@@ -18,16 +19,16 @@ import css from './shell.module.css'
  */
 export function shellClsOf(x: ShellClsIn): string {
   const topCls: Record<ShellTop, string> = {
-    0: css.top0,
-    14: css.top14,
-    16: css.top16,
-    18: css.top18,
-    32: css.top32,
-    40: css.top40,
+    0: cssOf(css.top0),
+    14: cssOf(css.top14),
+    16: cssOf(css.top16),
+    18: cssOf(css.top18),
+    32: cssOf(css.top32),
+    40: cssOf(css.top40),
   }
   const bottomCls: Record<ShellBottom, string> = {
-    0: css.bottom0,
-    40: css.bottom40,
+    0: cssOf(css.bottom0),
+    40: cssOf(css.bottom40),
   }
   const cls = [css.shell]
   if (x.top != null) {

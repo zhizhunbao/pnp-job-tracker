@@ -28,91 +28,18 @@
  * 撤掉框架后收成本站自己的最小形状 —— 全部是必答单选,类型与必答不用逐题再声明一遍。
  */
 import {
-  AGE,
-  ANSWERS_KEY,
-  CLB,
-  CLB_V2_MAP,
-  COLLECTION_USERS,
-  CRED_INCLUDE,
-  CRS,
-  DECISIONS,
-  EDU,
-  EDU_YEARS,
-  EMPTY,
-  EV_PAGEHIDE,
-  EV_VISIBILITY,
-  EXP,
-  FACTS_CACHE_MAX,
-  FIELD_SPECS,
-  FRENCH_V2_MAP,
-  IN_CANADA,
-  JSON_MIME,
-  LI_RE,
-  LI_SET_OFF,
-  LI_SET_ON,
-  META_KEY,
-  METHOD_PUT,
-  NCLC,
-  OLD_PR,
-  OLD_QUIZ,
-  PERMIT,
-  PGWP,
-  PREV_JSON_NONE,
-  PROVS,
-  SCORE_ANSWERS_KEY,
-  SCORE_EMPTY,
-  STAGE_BASIC,
-  STATE_HIDDEN,
-  STATUS_NONE,
-  STUDY_LEVEL,
-  STUDY_MONTHS,
-  TIER_FREE,
-  TOTAL_EXP,
-  TOTAL_V2_MAP,
-  TTL,
-  UNSURE_BAND,
-  URL_ANSWERS,
+  AGE, ANSWERS_KEY, CLB, CLB_V2_MAP, COLLECTION_USERS, CRED_INCLUDE, CRS, DECISIONS, EDU, EDU_YEARS, EMPTY,
+  EV_PAGEHIDE, EV_VISIBILITY, EXP, FACTS_CACHE_MAX, FIELD_SPECS, FRENCH_V2_MAP, IN_CANADA, JSON_MIME, LI_RE,
+  LI_SET_OFF, LI_SET_ON, META_KEY, METHOD_PUT, NCLC, OLD_PR, OLD_QUIZ, PERMIT, PGWP, PREV_JSON_NONE, PROVS,
+  SCORE_ANSWERS_KEY, SCORE_EMPTY, STAGE_BASIC, STATE_HIDDEN, STATUS_NONE, STUDY_LEVEL, STUDY_MONTHS, TIER_FREE,
+  TOTAL_EXP, TOTAL_V2_MAP, TTL, UNSURE_BAND, URL_ANSWERS
 } from './constants'
 import { CACHE } from './variables'
 import type {
-  Answers,
-  AnswersDoc,
-  AnswersOut,
-  AnswersPatch,
-  BandValue,
-  DropFn,
-  EngineAnswers,
-  EngineValue,
-  FactsStoreFn,
-  FieldBehavior,
-  FieldMap,
-  FieldNames,
-  FirstStoreFn,
-  L,
-  LoadAnswersIn,
-  MaybeAnswers,
-  MaybeProvList,
-  MaybeRawDoc,
-  NameFilter,
-  ProvList,
-  PulledOut,
-  PushedOut,
-  RawAnswersSource,
-  RawCell,
-  RawDoc,
-  RawField,
-  RawScoreSource,
-  RawText,
-  SaveAnswersIn,
-  SaveAnswersOut,
-  ScoreAnswers,
-  Stage,
-  StoreFn,
-  Tier,
-  TopCachedIn,
-  TopOut,
-  TopRows,
-  UnflagFn,
+  Answers, AnswersDoc, AnswersOut, AnswersPatch, BandValue, DropFn, EngineAnswers, EngineValue, FactsStoreFn,
+  FieldBehavior, FieldMap, FieldNames, FirstStoreFn, L, LoadAnswersIn, MaybeAnswers, MaybeProvList, MaybeRawDoc,
+  NameFilter, ProvList, PulledOut, PushedOut, RawAnswersSource, RawCell, RawDoc, RawField, RawScoreSource, RawText,
+  SaveAnswersIn, SaveAnswersOut, ScoreAnswers, Stage, StoreFn, Tier, TopCachedIn, TopOut, TopRows, UnflagFn
 } from './types'
 import { HDR_CONTENT_TYPE } from '../http'
 
@@ -691,7 +618,11 @@ function makeMissingFilter(a: Answers): NameFilter {
  * @returns 批首是 free 题 true。
  */
 export function batchLeadsFree(names: FieldNames): boolean {
-  const def = getFields()[names[0]]
+  const head = names[0]
+  if (head == null) {
+    return false
+  }
+  const def = getFields()[head]
   if (def == null) {
     return false
   }
@@ -1093,8 +1024,9 @@ function frenchAnswer(v: BandValue): EngineValue {
   if (b === UNSURE_BAND) {
     return undefined
   }
-  if (b >= 1) {
-    return NCLC[b] >= 5
+  const nclc = NCLC[b]
+  if (b >= 1 && nclc != null) {
+    return nclc >= 5
   }
   return undefined
 }

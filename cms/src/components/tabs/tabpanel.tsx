@@ -8,6 +8,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { cssOf } from '@/components/css'
 import { CLS_NONE, ID_PANEL_SEG, ID_PREFIX_DEFAULT, ID_SEP, ROLE_TABPANEL } from './constants'
 import type { TabPanelIn } from './types'
 import css from './tabs.module.css'
@@ -21,7 +22,7 @@ import css from './tabs.module.css'
 export function TabPanel({ tabKey, active, idPrefix = ID_PREFIX_DEFAULT, children }: TabPanelIn) {
   let cls = CLS_NONE
   if (active === false) {
-    cls = css.off
+    cls = cssOf(css.off)
   }
   return (
     <div role={ROLE_TABPANEL}

@@ -91,8 +91,8 @@ function teerRange(list: string[]): string {
   const parts: string[] = []
   for (let i = 0; i < ns.length;) {
     let j = i
-    while (j + 1 < ns.length && ns[j + 1] === ns[j] + 1) j++
-    parts.push(i === j ? String(ns[i]) : `${ns[i]}–${ns[j]}`)
+    while (j + 1 < ns.length && ns[j + 1] === (ns[j] ?? Number.NaN) + 1) j++
+    parts.push(i === j ? String(ns[i] ?? '') : `${ns[i] ?? ''}–${ns[j] ?? ''}`)
     i = j + 1
   }
   return parts.join('、')
@@ -269,7 +269,7 @@ function VRow({ state, label, main, sub }: { state: string; label: string; main:
   // 结论文字按状态配色(2026-08-13 Frank:「瓦片那种风格不是很清晰吗?还可以给瓦片的文字配色」);
   // 中性初筛(coarse)不配灰 —— 结论是主文案,#9ca3af 当主文案就是没墨了,退回深灰。
   // info 态 2026-08-16 Frank「感叹号去掉 颜色去掉」:摆事实不报警,深灰无符号(符号见下面的跳过表)
-  const color = state === 'coarse' || state === 'info' ? '#374151' : ic.fg
+  const color = state === 'coarse' || state === 'info' ? '#374151' : (ic?.fg ?? '#374151')
   return (
     // 判定瓦片 = 与事实瓦片同一套解剖(Frank 拍板瓦片式):灰标签在上、加粗结论在下、说明降级,
     // 与事实瓦片同一副四列栅格(Frank:「不需要这么长」)。区别只有一处:结论带状态色 +
@@ -281,7 +281,7 @@ function VRow({ state, label, main, sub }: { state: string; label: string; main:
       <div style={{ fontSize: 13, fontWeight: 600, color, lineHeight: 1.5 }}>
         {/* 中性点/问号/信息号不渲染(2026-08-13「前面不需要问号吧」+ 2026-08-16「感叹号去掉」——
             事实态措辞自解释,符号是再说一遍);✓/!/✗ 留着,那是判定行的扫读信号 */}
-        {ic.ch !== '•' && ic.ch !== '?' && ic.ch !== 'i' ? <span aria-hidden style={{ marginRight: 5 }}>{ic.ch}</span> : null}
+        {ic != null && ic.ch !== '•' && ic.ch !== '?' && ic.ch !== 'i' ? <span aria-hidden style={{ marginRight: 5 }}>{ic.ch}</span> : null}
         {main}
       </div>
       {sub ? <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.55, marginTop: 2 }}>{sub}</div> : null}

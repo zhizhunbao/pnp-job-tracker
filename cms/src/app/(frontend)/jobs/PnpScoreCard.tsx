@@ -69,12 +69,14 @@ const mergeStoredProfile = (p: SelfProfile, stored: Partial<SelfProfile>): SelfP
 const wageRowAt = (rows: ScoreFactor[], wage: number): ScoreFactor | null => {
   const hits = rows.filter((r) => {
     const nums = (r.label.match(/\d+(?:\.\d+)?/g) || []).map(Number)
-    if (!nums.length) return false
-    if (/less than|under/i.test(r.label)) return wage < nums[0]
-    if (/or higher|or more|and above/i.test(r.label)) return wage >= nums[0]
-    return nums.length >= 2 && wage >= nums[0] && wage <= nums[1]
+    const n0 = nums[0]
+    if (n0 == null) return false
+    if (/less than|under/i.test(r.label)) return wage < n0
+    if (/or higher|or more|and above/i.test(r.label)) return wage >= n0
+    const n1 = nums[1]
+    return n1 != null && wage >= n0 && wage <= n1
   })
-  return hits.length === 1 ? hits[0] : null
+  return hits.length === 1 ? (hits[0] ?? null) : null
 }
 
 type ExtraChoice = { key: string; text: string; active: boolean; apply: () => void }
@@ -186,7 +188,8 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
     for (const [k, allowed] of Object.entries(limits || {})) {
       // Object.entries 在 Partial 上会连 undefined 一起给出来(TS 那边看不见),先挡一道
       if (!allowed?.length) continue
-      if (!allowed.includes(p[k as 'clb1'] as number)) p[k as 'clb1'] = allowed[0]
+      const firstAllowed = allowed[0]
+      if (firstAllowed != null && !allowed.includes(p[k as 'clb1'] as number)) p[k as 'clb1'] = firstAllowed
     }
     return p
   })
@@ -303,15 +306,16 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
     if (factor === 'workLocationCanada') {
       return basics.expBand === 1 ? Object.fromEntries(rows.map((r) => [r.seq, false])) : null
     }
-    if (factor === 'language' && rows.length === 1 && /both english and french/i.test(rows[0].label)) {
-      const th = /(?:CLB|NCLC)[^0-9]*(\d+)/i.exec(rows[0].label)
+    const langRow = rows[0]
+    if (factor === 'language' && rows.length === 1 && langRow != null && /both english and french/i.test(langRow.label)) {
+      const th = /(?:CLB|NCLC)[^0-9]*(\d+)/i.exec(langRow.label)
       if (!th) return null
       const n = Number(th[1])
       if (!basics.frenchBand || basics.frenchBand === 9) return null      // 没答/不清楚 → 推不出
       const fr = NCLC[basics.frenchBand] ?? 0
-      if (fr < n) return { [rows[0].seq]: false }                          // 法语侧就不够,整条必否
+      if (fr < n) return { [langRow.seq]: false }                          // 法语侧就不够,整条必否
       if (!basics.clbBand) return null
-      return { [rows[0].seq]: (CLB[basics.clbBand] ?? 0) >= n }
+      return { [langRow.seq]: (CLB[basics.clbBand] ?? 0) >= n }
     }
     return null
   }
@@ -392,7 +396,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
       if (derived) {
         for (const [seq, on] of Object.entries(derived)) derivedTicks[`${prov}:${g.factor}:${seq}`] = on
         const hit = g.rows.filter((r) => derived[r.seq])
-        derivedEcho.push(g.rows.length === 1
+        derivedEcho.push(g.rows.length === 1 && g.rows[0] != null
           ? { key: `${prov}:${g.factor}:0`, prov, label: label({ raw: g.rows[0].label, lang }),
             value: t(hit.length ? 'ps.yes' : 'ps.no') }
           : { key: `${prov}:${g.factor}:0`, prov, label: t('ps.f.' + g.factor) || g.factor,
@@ -408,7 +412,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
         // 勾上一条就把同簇的另一条放下 —— 算分本来就只取簇内最大的那条,UI 放任两个都勾
         // 等于显示与口径分叉(用户勾了 8 和 6,以为 14,实际只算 8)
         const cluster: number[] = []
-        chunk.forEach((r, idx) => cluster.push(idx === 0 ? 0 : (r.xorPrev ? cluster[idx - 1] : cluster[idx - 1] + 1)))
+        chunk.forEach((r, idx) => cluster.push(idx === 0 ? 0 : (r.xorPrev ? (cluster[idx - 1] ?? 0) : (cluster[idx - 1] ?? 0) + 1)))
         const setOn = (r: ScoreFactor, on: boolean) => {
           const mine = cluster[chunk.indexOf(r)]
           setTicks((m) => {
@@ -418,9 +422,10 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
           })
         }
         const screenKey = `${prov}:${g.factor}:${i}`
-        if (chunk.length === 1) {
+        const chunkOnly = chunk[0]
+        if (chunk.length === 1 && chunkOnly != null) {
           // 只有一条的组不摆一个孤零零的勾选框 —— 退回是/否单选,标题就是那一条
-          const r = chunk[0]
+          const r = chunkOnly
           addChoices(screenKey, t('ps.q.meet', { condition: label({ raw: r.label, lang }) }), [
             { key: 'yes', text: t('ps.yes'), active: isOn(r), apply: () => setOn(r, true) },
             { key: 'no', text: t('ps.no'), active: !isOn(r), apply: () => setOn(r, false) },
@@ -549,7 +554,10 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
     const offerRows = mine.filter((f) => f.factor === 'offer' && f.kind === 'row')
     if (offerRows.length) {
       // #304:offer 行只认基础卷的「有」(offerYes);没答/答没有 → 0 分,不再有自问兜底
-      overrides.offer = { pts: offerYes ? (offerRows[0].points ?? 0) : 0, matched: offerRows[0].label, source: 'tick' }
+      const offerHead = offerRows[0]
+      if (offerHead != null) {
+        overrides.offer = { pts: offerYes ? (offerHead.points ?? 0) : 0, matched: offerHead.label, source: 'tick' }
+      }
     }
     for (const name of Array.from(new Set(mine.filter((f) => f.kind === 'row').map((f) => f.factor)))) {
       // 这些因素已有 profile/job 映射;其余因素由用户直接选择官方档位。
@@ -588,8 +596,10 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   const [openProv, setOpenProv] = useState<string | null>(null)
 
   if (!scores.length) return null
+  const scoresHead = scores[0]
+  if (scoresHead == null) return null
   const resolvedOpen = openProv === '__closed' ? ''
-    : (openProv ?? (scores.some((x) => x.province === ctx.province) ? ctx.province! : scores[0].province))
+    : (openProv ?? (scores.some((x) => x.province === ctx.province) ? ctx.province! : scoresHead.province))
 
   // 结果区的加分勾选清单与算分同口径:#304 关闸时 offer 前提族不摆(勾了也不计分=摆着骗人);
   // #305 推导出的因子不摆(值由基础卷答案定,勾选框改不动它)
@@ -719,14 +729,14 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
         <Tabs
           idPrefix="ps-prov"
           ariaLabel={t('ps.resultTitle')}
-          value={resolvedOpen || scores[0].province}
+          value={resolvedOpen || scoresHead.province}
           onChange={setOpenProv}
           // 选项卡上只放省名:合计分在选中省的面板里就是最大的那个数,标签上再挂一遍是同一件事说两遍
           items={scores.map((s) => ({ key: s.province, label: t('prov.' + s.province) || s.province }))}
         />
       </div>
       {scores.map((s) => {
-        const open = s.province === (resolvedOpen || scores[0].province)
+        const open = s.province === (resolvedOpen || scoresHead.province)
         const list = bonusOf(s.province)
         // #304:offer 勾选框只在基础卷答了「有 offer」时摆(闸门与算分同口径,没答不等于有)
         const offerRow = ctx.hasOffer === true

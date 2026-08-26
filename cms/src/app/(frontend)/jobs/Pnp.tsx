@@ -48,7 +48,7 @@ export function PnpDrawsBlock({ province, lang, draws, limit }: { province: stri
   return (
     <div>
       {/* Frank 走查#9:卡要正式 title(原小灰头提为 'mcardHead');#G 去内层 marginBottom(外层卡已有底距) */}
-      <div className="mcardHead">{reform ? t('pnpdraws.nowTitle') : t('pnpdraws.title', { label: src?.label })}</div>
+      <div className="mcardHead">{reform ? t('pnpdraws.nowTitle') : t('pnpdraws.title', { label: src?.label ?? '' })}</div>
       {/* 改制省:列现行规则(项 | 内容 两列左对齐),不再铺已关闭通道的历史 */}
       {reform ? (
         <div className="pnpReform">
@@ -460,8 +460,8 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
 
 // 公司名归一(镜像 etl/clean/05c_flag_aip.py 的 norm_name)—— 用于把岗位公司名匹配回 AIP 指定雇主记录
 const AIP_SUFFIX = /\b(inc|incorporated|ltd|limited|llp|llc|corp|corporation|co|company|enr|ltee|ltée|holdings?|group|services?|enterprises?)\b\.?/gi
-export const normName = (name?: string) => (name || '').toLowerCase()
-  .split(/\bo\/a\b|\bdba\b|\bd\/b\/a\b/)[0]
+export const normName = (name?: string) => ((name || '').toLowerCase()
+  .split(/\bo\/a\b|\bdba\b|\bd\/b\/a\b/)[0] ?? '')
   .replace(AIP_SUFFIX, ' ').replace(/[^a-z0-9& ]/g, ' ').replace(/\s+/g, ' ').trim()
 const ATLANTIC = new Set(['NL', 'NB', 'NS', 'PE'])
 // ── 批A #134 通道直判(Frank「直接判断这个岗能不能走这个通道」)──────────────
@@ -608,6 +608,7 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
   const vCell = (r: MMRow) => {
     if (r.v === '—') return <span className="pnpDash">—</span>
     const v = VERDICT_ICON[r.verdict]
+    if (v == null) return <span className="pnpDash">—</span>
     return (
       <span className="pnpVwrap">
         <span title={r.vTip} className={'pnpVpill ' + r.verdict}>

@@ -14,7 +14,7 @@
 
 import { log, RULING_LOG } from '../log'
 import { getDb } from '../db/server'
-import { numOrNull, queryRowsOrEmpty, SQL, text, count, jsonOrNull, textOrNull } from '../db'
+import { firstOf, firstOr, numOrNull, queryRowsOrEmpty, SQL, text, count, jsonOrNull, textOrNull } from '../db'
 import type { Db } from '../db'
 import { CACHE } from './variables'
 import { evaluateRequirements, teerHit } from '../gauge'
@@ -25,162 +25,24 @@ import { askLabels, fieldMatchExemptionOf, gateLabels, gateOf, PATHWAYS, regionP
 import { pickOutside, rankRows } from '../plan'
 import type { RankCtx } from '../plan'
 import {
-  AB_LOCAL_EXP,
-  AIP_PROVINCES,
-  AIP_SOURCE,
-  AMP,
-  AND_WORD,
-  APPLIES_OFFER,
-  AREA_I_MAX,
-  ASKABLE_FACTORS,
-  AVAIL,
-  BASIS,
-  BASIS_MIN_YEARS,
-  BLOCKED_BY,
-  BLOCK_COST,
-  CARD_SLOT,
-  CARD_STATE,
-  CASES,
-  CASE_C01,
-  CASE_ID,
-  CASE_TIERS,
-  CLB_IN_LABEL,
-  CLB_TARGET_DEFAULT,
-  COMPARE_ROLE,
-  COMP_KEY,
-  CONDITION,
-  CRS_GRID_LABEL,
-  DATE_LEN,
-  DATE_LEN_DAY,
-  DESIGNATION_MULTI,
-  EDU,
-  EDU_KEY_VALUES,
-  EDU_TO_MB,
-  EMPLOYMENT_OFFER_STREAM,
-  EMPTY_JSON,
-  EMP_FACTOR,
-  EMP_KEY,
-  EMP_STATE,
-  EMP_UNIT,
-  EVIDENCE_KIND,
-  EXP_BASIS,
-  FACTOR,
-  FACTOR_ROW,
-  FED,
-  FIRST_OFFICIAL_LANGUAGE,
-  FULL_TIME_IN_LABEL,
-  GATE_ASK,
-  GATE_KEYS,
-  GATE_KEY_STATUS_IN_CANADA,
-  GATE_NEED,
-  GATE_OF,
-  GATE_OFFER,
-  GRID,
-  GRID_AUTO_FACTORS,
-  HTTP,
-  INDEMAND,
-  ITEM,
-  JOB_ROW_RANK,
-  KEY_FCIP,
-  KEY_PREFIX,
-  KEY_RCIP,
-  KEY_SUFFIX_NOT_COLLECTED,
-  KIND_RULE,
-  LEVER,
-  MB_ADAPT_EDU_YEARS,
-  MB_EDU,
-  MB_EDU_YEARS,
-  MB_RISK_STUDY,
-  MB_RISK_WORK,
-  MB_SWM_STREAM,
-  MONTHS,
-  MONTHS_PER_YEAR,
-  NAME_KEEP,
-  NL_DESIGNATED_LABEL,
-  NOC5_RE,
-  NOC_CODE,
-  NOC_TEER_RE,
-  NO_ANSWER,
-  NO_BLOCK_COST,
-  NO_EVIDENCE,
-  NO_PARAM,
-  NO_PROVINCE_RANK,
-  NO_SEGMENT,
-  NO_SOURCE,
-  NO_TEXT,
-  OA_SPLIT,
-  OCC_INELIGIBLE,
-  OCC_LIST_NONE,
-  ON_GRAD_MIN_YEARS,
-  OPS_METRIC,
-  OPT_IN_GATES,
-  PERMIT,
-  PERMIT_KINDS,
-  PERMIT_VALUES,
-  PILOT_KEY_SEP,
-  PROV,
-  PROV2_RE,
-  PROVINCE_CODE,
-  PROVINCE_LOCAL_EXP,
-  PROV_OR_TERR_RE,
-  PV_KEY,
-  PV_KEY_LANG_GAP,
-  PV_TEXT,
-  RANK,
-  REASON,
-  REASON_EXCLUDED,
-  REASON_GAP,
-  RECENT_ON_GRADUATE,
-  REQ_FACTOR,
-  REQ_UNIT,
-  ROW_KEY_RE,
-  ROW_SEQ_MAX,
-  SCORE_FACTOR,
-  SECTOR_PUBLIC,
-  SEP,
-  SINK,
-  SLOT,
-  SLOTS_OF_FACTOR,
-  SOURCE_PROFILE,
-  SPACE,
-  STATE,
-  STATE_OF_RULE,
-  STATUS,
-  STATUS_MAP,
-  STATUS_OF,
-  STATUS_OVERSEAS,
-  SUBJECT,
-  SUM_KIND,
-  TEER5_NOC,
-  TEER_DIGIT,
-  TEER_LOWEST,
-  TEER_MAX,
-  TEER_RANGE_PARTS,
-  TEER_REASONS_SHOWN,
-  TEER_STREAM,
-  TICKS_N_MAX,
-  TICK_KEY_RE,
-  TIER,
-  TIER_BASIS,
-  TIER_BOUND,
-  TIER_OF,
-  TTL,
-  TV_EMP,
-  TV_EMP_PREFIX,
-  TV_LABEL,
-  TV_NEXT,
-  TV_OCC,
-  TV_PERSON,
-  TV_PERSON_PREFIX,
-  TV_SUM,
-  TV_YOU,
-  UNKNOWN_BLOCK_COST,
-  VERDICT,
-  VERDICT_EXCLUDED,
-  VERDICT_RANK,
-  WAGE_MAX,
-  WAGE_RULE_DEFAULT,
-  WIRE_ERR,
+  AB_LOCAL_EXP, AIP_PROVINCES, AIP_SOURCE, AMP, AND_WORD, APPLIES_OFFER, AREA_I_MAX, ASKABLE_FACTORS, AVAIL, BASIS,
+  BASIS_MIN_YEARS, BLOCKED_BY, BLOCK_COST, CARD_SLOT, CARD_STATE, CASES, CASE_C01, CASE_ID, CASE_TIERS, CLB_IN_LABEL,
+  CLB_TARGET_DEFAULT, COMPARE_ROLE, COMP_KEY, CONDITION, CRS_GRID_LABEL, DATE_LEN, DATE_LEN_DAY, DESIGNATION_MULTI,
+  EDU, EDU_KEY_VALUES, EDU_TO_MB, EMPLOYMENT_OFFER_STREAM, EMPTY_JSON, EMP_FACTOR, EMP_KEY, EMP_STATE, EMP_UNIT,
+  EVIDENCE_KIND, EXP_BASIS, FACTOR, FACTOR_ROW, FED, FIRST_OFFICIAL_LANGUAGE, FULL_TIME_IN_LABEL, GATE_ASK,
+  GATE_KEYS, GATE_KEY_STATUS_IN_CANADA, GATE_NEED, GATE_OF, GATE_OFFER, GRID, GRID_AUTO_FACTORS, HTTP, INDEMAND,
+  ITEM, JOB_ROW_RANK, KEY_FCIP, KEY_PREFIX, KEY_RCIP, KEY_SUFFIX_NOT_COLLECTED, KIND_RULE, LEVER, MB_ADAPT_EDU_YEARS,
+  MB_EDU, MB_EDU_YEARS, MB_RISK_STUDY, MB_RISK_WORK, MB_SWM_STREAM, MONTHS, MONTHS_PER_YEAR, NAME_KEEP,
+  NL_DESIGNATED_LABEL, NOC5_RE, NOC_CODE, NOC_TEER_RE, NO_ANSWER, NO_BLOCK_COST, NO_EVIDENCE, NO_PARAM,
+  NO_PROVINCE_RANK, NO_SEGMENT, NO_SOURCE, NO_TEXT, OA_SPLIT, OCC_INELIGIBLE, OCC_LIST_NONE, ON_GRAD_MIN_YEARS,
+  OPS_METRIC, OPT_IN_GATES, PERMIT, PERMIT_KINDS, PERMIT_VALUES, PILOT_KEY_SEP, PROV, PROV2_RE, PROVINCE_CODE,
+  PROVINCE_LOCAL_EXP, PROV_OR_TERR_RE, PV_KEY, PV_KEY_LANG_GAP, PV_TEXT, RANK, REASON, REASON_EXCLUDED, REASON_GAP,
+  RECENT_ON_GRADUATE, REQ_FACTOR, REQ_UNIT, ROW_KEY_RE, ROW_SEQ_MAX, SCORE_FACTOR, SECTOR_PUBLIC, SEP, SINK, SLOT,
+  SLOTS_OF_FACTOR, SOURCE_PROFILE, SPACE, STATE, STATE_OF_RULE, STATUS, STATUS_MAP, STATUS_OF, STATUS_OVERSEAS,
+  SUBJECT, SUM_KIND, TEER5_NOC, TEER_DIGIT, TEER_LOWEST, TEER_MAX, TEER_RANGE_PARTS, TEER_REASONS_SHOWN, TEER_STREAM,
+  TICKS_N_MAX, TICK_KEY_RE, TIER, TIER_BASIS, TIER_BOUND, TIER_OF, TTL, TV_EMP, TV_EMP_PREFIX, TV_LABEL, TV_NEXT,
+  TV_OCC, TV_PERSON, TV_PERSON_PREFIX, TV_SUM, TV_YOU, UNKNOWN_BLOCK_COST, VERDICT, VERDICT_EXCLUDED, VERDICT_RANK,
+  WAGE_MAX, WAGE_RULE_DEFAULT, WIRE_ERR
 } from './constants'
 import type {
   AfterMap, AfterOfferWire, AnswerBag, AnswerBoolIn, AnswerBoolOut, AnswerNumIn, AnswerNumOut, AnswerTextIn,
@@ -368,11 +230,11 @@ export function matchDesignation(input: MatchDesignationIn): MatchDesignationOut
   }
   let source = NO_SOURCE
   if (sources.size === 1) {
-    source = Array.from(sources)[0]
+    source = firstOr(Array.from(sources), NO_SOURCE)
   }
   let row: NameRow | null = null
   if (hits.length === 1) {
-    row = hits[0]
+    row = firstOf(hits)
   }
   return { row, count: hits.length, source }
 }
@@ -459,8 +321,8 @@ export function employerVerdict(input: EmployerVerdictIn): EmployerVerdict {
   const acc: EmpAcc = { items: [], failed: [], missing: [] }
 
   const yearsRows = empRowsOf({ reqs: input.reqs, province: input.province, factor: EMP_FACTOR.years })
-  if (yearsRows.length > 0) {
-    const yearsRow = yearsRows[0]
+  const yearsRow = firstOf(yearsRows)
+  if (yearsRow != null) {
     let needYears: number | null = null
     if (yearsRow.value != null) {
       needYears = yearsRow.value
@@ -891,10 +753,7 @@ function lowestMonthsRow(input: LowestMonthsRowIn): LowestMonthsRowOut {
   if (lowest != null) {
     return lowest.r
   }
-  if (input.pool.length === 0) {
-    return null
-  }
-  return input.pool[0]
+  return firstOf(input.pool)
 }
 
 /**
@@ -1062,10 +921,7 @@ function refDraw(input: RefDrawIn): RefDrawOut {
   if (input.spec.drawFallbackProvinceWide !== true) {
     return null
   }
-  if (scored.length === 0) {
-    return null
-  }
-  return scored[0]
+  return firstOf(scored)
 }
 
 /**
@@ -1502,10 +1358,10 @@ function provinceGridScore(input: ProvinceGridScoreIn): MaybeScore {
       all.push(f)
     }
   }
-  if (all.length === 0) {
+  const head = firstOf(all)
+  if (head == null) {
     return undefined
   }
-  const head = all[0]
   if (gridMatchesStream({ head: head, spec: input.spec }) === false) {
     return undefined
   }
@@ -1673,9 +1529,15 @@ function fedLangApplies(input: FedLangAppliesIn): boolean {
     return false
   }
   const [, spec] = m
+  if (spec == null) {
+    return false
+  }
   const parts = spec.split(SEP.hyphen).map(Number)
   if (parts.length === TEER_RANGE_PARTS) {
     const [first, second] = parts
+    if (first == null || second == null) {
+      return false
+    }
     return input.teer >= Math.min(first, second) && input.teer <= Math.max(first, second)
   }
   return parts.includes(input.teer)
@@ -1848,21 +1710,24 @@ function listRequiredReason(input: ListRequiredReasonIn): ListRequiredReasonOut 
         onList = true; break 
       }
     }
-    if (list.length > 0 && onList === false) {
+    const listFirst = list[0]
+    if (listFirst != null && onList === false) {
       listExcluded = true
-      let anchor: ReqRow = input.rows[0]
+      let anchor = firstOf(input.rows)
       for (const r of input.rows) {
         if (r.factor === FACTOR.experience) {
-          anchor = r; break 
+          anchor = r; break
         }
       }
-      reasons.push({
-        kind: REASON.excluded,
-        text: `${noc}${PV_TEXT.notOnListMid}${list[0].stream}${PV_TEXT.oidClosedTail}`,
-        key: PV_KEY.occNotOnList, params: { noc: noc, stream: list[0].stream },
-        quote: quoteOfReq({ r: anchor }),
-        evidence: evOfReq({ r: anchor }),
-      })
+      if (anchor != null) {
+        reasons.push({
+          kind: REASON.excluded,
+          text: `${noc}${PV_TEXT.notOnListMid}${listFirst.stream}${PV_TEXT.oidClosedTail}`,
+          key: PV_KEY.occNotOnList, params: { noc: noc, stream: listFirst.stream },
+          quote: quoteOfReq({ r: anchor }),
+          evidence: evOfReq({ r: anchor }),
+        })
+      }
     }
   }
   return { reasons: reasons, listExcluded: listExcluded }
@@ -2311,7 +2176,8 @@ function mbWarnings(input: MbWarningsIn): MbWarningsOut {
     }
   }
   mbScored.sort(byDrawDateDesc)
-  if (mbScored.length > 0) {
+  const mbTop = firstOf(mbScored)
+  if (mbTop != null) {
     const drawParts: string[] = []
     for (const d of mbScored) {
       let note = NO_SEGMENT
@@ -2329,7 +2195,7 @@ function mbWarnings(input: MbWarningsIn): MbWarningsOut {
       kind: REASON.gap,
       text: `${PV_TEXT.scoreHead}${input.mbTotal}${PV_TEXT.ceilingMid}${ceilText}${PV_TEXT.recentDraws}${lines}`,
       key: PV_KEY.mbScore, params: { score: input.mbTotal, ceiling: ceilText, lines },
-      evidence: evOfDraw({ d: mbScored[0] }),
+      evidence: evOfDraw({ d: mbTop }),
     })
   }
   return reasons
@@ -3256,7 +3122,8 @@ function obstacleRank(input: ObstacleRankIn): number {
     return RANK.offer
   }
   if (input.v.blockedBy) {
-    const ranked = RANK[input.v.blockedBy]
+    const rankTable: Record<string, number> = RANK
+    const ranked = rankTable[input.v.blockedBy]
     if (ranked != null) {
       return ranked
     }
@@ -3517,7 +3384,7 @@ function occNoListRow(input: OccNoListRowIn): TripleRow {
   }
   let only: NamedList | null = null
   if (lists.length === 1) {
-    only = lists[0]
+    only = firstOf(lists)
   }
   const labels: string[] = []
   for (const l of lists) {
@@ -4351,11 +4218,11 @@ function concludeOpen(input: ConcludeOpenIn): ConcludeOpenOut {
       open.push(x)
     }
   }
-  if (open.length === 0) {
+  open.sort(byTierAsc)
+  const top = firstOf(open)
+  if (top == null) {
     return null
   }
-  open.sort(byTierAsc)
-  const top = open[0]
   let tierParam: string | number = NO_PARAM
   let tierLabel: string | number = TV_LABEL.unknownValue
   if (top.c.tier != null) {
@@ -4386,11 +4253,12 @@ function concludeBlocked(input: ConcludeBlockedIn): ConcludeBlockedOut {
       blocked.push({ x: x, cost: blockCost(x.v.blockedBy) })
     }
   }
-  if (blocked.length === 0) {
+  blocked.sort(byCostAsc)
+  const topBlocked = firstOf(blocked)
+  if (topBlocked == null) {
     return null
   }
-  blocked.sort(byCostAsc)
-  const top = blocked[0].x
+  const top = topBlocked.x
   let need = 0
   if (top.v.blockedBy === FACTOR.language) {
     for (const r of top.v.reasons) {
@@ -4457,13 +4325,14 @@ function concludeNeedsInfo(input: ConcludeNeedsInfoIn): ConcludeNeedsInfoOut {
       slots.push(s)
     }
   }
-  if (slots.length === 0) {
+  const needsFirst = firstOf(needs)
+  if (slots.length === 0 || needsFirst == null) {
     return null
   }
   return {
-    kind: SUM_KIND.needsInfo, key: TV_SUM.needsInfo, pathway: needs[0].c.key,
-    params: { slots: slots, route: needs[0].c.key, prov: input.job.province, count: needs.length },
-    label: `${TV_LABEL.sumNeedsInfoHead}${needs[0].c.key}${TV_LABEL.sumUndecidableMid}`
+    kind: SUM_KIND.needsInfo, key: TV_SUM.needsInfo, pathway: needsFirst.c.key,
+    params: { slots: slots, route: needsFirst.c.key, prov: input.job.province, count: needs.length },
+    label: `${TV_LABEL.sumNeedsInfoHead}${needsFirst.c.key}${TV_LABEL.sumUndecidableMid}`
       + `${slots.join(SEP.comma)}`,
   }
 }
@@ -4777,10 +4646,12 @@ function tripleProfileOf(input: TripleProfileOfIn): TripleProfile {
     inCanada = statusRaw !== STATUS_OVERSEAS
   }
   let status: string | null = null
+  const statusTable: Record<string, string> = STATUS_OF
+  const statusMapped = statusTable[statusRaw]
   if (permitLeft != null && permitLeft > 0) {
     status = STATUS_OF.pgwp
-  } else if (STATUS_OF[statusRaw] != null) {
-    status = STATUS_OF[statusRaw]
+  } else if (statusMapped != null) {
+    status = statusMapped
   }
   let familySize = answerNum({ v: up.familySize })
   if (familySize == null) {
@@ -5984,8 +5855,9 @@ export function parseProfileBody(body: MaybeProfileBody): MaybeProfileParse {
     }
   }
   let noc = NO_ANSWER
-  if (nocs.length > 0) {
-    noc = nocs[0]
+  const noc0 = firstOf(nocs)
+  if (noc0 != null) {
+    noc = noc0
   } else if (NOC5_RE.test(String(cellOr(answers.noc)))) {
     noc = String(answers.noc)
   }
@@ -6072,7 +5944,8 @@ export function parseProfileBody(body: MaybeProfileBody): MaybeProfileParse {
  * @param x json 里的一格。
  * @returns 标量原值；缺席/非标量是空串。
  */
-function cellOr(x: RCell): ScalarCell {
+// eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:袋索引缺席就是 undefined,照实收(开灯批 2026-08-26)
+function cellOr(x: RCell | undefined): ScalarCell {
   if (typeof x === 'string' || typeof x === 'number' || typeof x === 'boolean') {
     return x
   }
@@ -6085,7 +5958,8 @@ function cellOr(x: RCell): ScalarCell {
  * @param x json 里的一格。
  * @returns 布尔；不是布尔是 null。
  */
-function cellBoolOf(x: RCell): MaybeBool {
+// eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:同 cellOr(开灯批)
+function cellBoolOf(x: RCell | undefined): MaybeBool {
   if (typeof x === 'boolean') {
     return x
   }
@@ -6098,7 +5972,8 @@ function cellBoolOf(x: RCell): MaybeBool {
  * @param x json 里的一格。
  * @returns 数；解不出是 null。
  */
-function finiteOf(x: RCell): MaybeNum {
+// eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:同 cellOr(开灯批)
+function finiteOf(x: RCell | undefined): MaybeNum {
   const n = Number(x)
   if (Number.isFinite(n)) {
     return n
@@ -6391,8 +6266,8 @@ function excludedRowOf(row: SplitRow): ExcludedRowWire {
       break
     }
   }
-  if (hit == null && row.reasons.length > 0) {
-    hit = row.reasons[0]
+  if (hit == null) {
+    hit = firstOf(row.reasons)
   }
   let reason: ExcludedRowWire['reason'] = null
   if (hit != null) {
@@ -6424,7 +6299,8 @@ function excludedRowOf(row: SplitRow): ExcludedRowWire {
  * @param v 库里的 subject 列。
  * @returns applicant 或 employer。
  */
-export function subjectOf(v: Cell): SubjectOfOut {
+// eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:行索引缺席就是 undefined,照实收(开灯批)
+export function subjectOf(v: Cell | undefined): SubjectOfOut {
   if (text(v) === SUBJECT.employer) {
     return SUBJECT.employer
   }
@@ -6686,7 +6562,8 @@ export function toCompetitionPair(r: ProfileDiffDbRow): CompetitionPair {
  * @param x json 里的一格。
  * @returns 数；不是标量或解不出是 null。
  */
-function scalarNumOf(x: RCell): MaybeNum {
+// eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:同 cellOr(开灯批)
+function scalarNumOf(x: RCell | undefined): MaybeNum {
   if (typeof x === 'number' || typeof x === 'string') {
     return numOrNull(x)
   }
@@ -6699,7 +6576,8 @@ function scalarNumOf(x: RCell): MaybeNum {
  * @param x json 里的一格。
  * @returns 文本；不是字符串是空串。
  */
-function scalarTextOf(x: RCell): string {
+// eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:同 cellOr(开灯批)
+function scalarTextOf(x: RCell | undefined): string {
   if (typeof x === 'string') {
     return x
   }

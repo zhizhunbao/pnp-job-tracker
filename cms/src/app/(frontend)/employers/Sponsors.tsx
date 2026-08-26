@@ -37,7 +37,7 @@ function verdictCell(r: SponsorEmployerRow, t: TFn): { text: string; color: stri
   const v = r.verdict
   if (v.state === 'public') return { text: t('se.verdict.public'), color: '#9ca3af' }
   if (v.state === 'met') return { text: `✓ ${t('se.verdict.met')}`, color: UI.ok }
-  if (v.state === 'short') return { text: `✗ ${t('se.verdict.short', { items: v.failed.map((f) => t(VERDICT_FACTOR_KEY[f])).join(t('se.where.sep')) })}`, color: UI.danger }
+  if (v.state === 'short') return { text: `✗ ${t('se.verdict.short', { items: v.failed.map((f) => t(VERDICT_FACTOR_KEY[f] ?? '')).join(t('se.where.sep')) })}`, color: UI.danger }
   return { text: t('se.verdict.unknown'), color: '#9ca3af' }
 }
 // showVerdict:调用方(SponsorBoard)算好的 hasVerdictSignal(rows) 结果——整批全 unknown 时不传/传 false,
@@ -68,7 +68,7 @@ export function sponsorEmployerCols(t: TFn, lang: Lang, kind: SponsorKind, showV
   const VERDICT_RANK: Record<string, number> = { met: 0, short: 1, public: 2, unknown: 3 }
   const verdict = {
     key: 'verdict', label: t('se.col.verdict'), nowrap: true,
-    sort: (r: SponsorEmployerRow) => VERDICT_RANK[r.verdict.state],
+    sort: (r: SponsorEmployerRow) => VERDICT_RANK[r.verdict.state] ?? null,
     render: (r: SponsorEmployerRow) => { const c = verdictCell(r, t); return <span style={{ color: c.color, fontWeight: c.color === '#9ca3af' ? 400 : 700 }}>{c.text}</span> },
   }
   // 「下一步」动作列 08-10 Frank 拍掉(「点公司名不就能跳转了吗?为什么还多了一列按钮」):

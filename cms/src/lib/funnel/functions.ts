@@ -52,14 +52,21 @@ export function toFunnelHit(input: FunnelHitIn): MaybeFunnelHit {
  */
 function ratesOf(input: RatesOfIn): RateList {
   const out: RateList = []
-  for (let i = 1; i < input.steps.length; i++) {
+  for (const [i, step] of input.steps.entries()) {
+    if (i === 0) {
+      continue
+    }
+    const prevStep = input.steps[i - 1]
+    if (prevStep == null) {
+      continue
+    }
     let from = 0
-    const f = input.counts[input.steps[i - 1]]
+    const f = input.counts[prevStep]
     if (f != null) {
       from = f
     }
     let to = 0
-    const tv = input.counts[input.steps[i]]
+    const tv = input.counts[step]
     if (tv != null) {
       to = tv
     }

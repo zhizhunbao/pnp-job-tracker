@@ -5659,9 +5659,11 @@ export type AnswerBag = Record<string, Cell | Cell[]>
  */
 export type AnswerNumIn = {
   /**
-   * 那一格的原值。
+   * 那一格的原值;答案袋按键取值,键缺席时 undefined(answerNum 是消化点,
+   * 照实收、就地兑换 —— 开灯批 2026-08-26)。
    */
-  v: Cell | Cell[]
+  // eslint-disable-next-line local/no-undefined-type -- 消化点:答案袋索引缺席就是 undefined,照实收(开灯批)
+  v: Cell | Cell[] | undefined
 }
 
 /**
@@ -5735,12 +5737,14 @@ export type BoolOfIn = {
   /**
    * 服务端档案那一格。
    */
-  fromProfile: Cell | Cell[]
+  // eslint-disable-next-line local/no-undefined-type -- 消化点:同 v(开灯批)
+  fromProfile: Cell | Cell[] | undefined
 
   /**
    * 本地答案那一格。
    */
-  fromAnswers: Cell | Cell[]
+  // eslint-disable-next-line local/no-undefined-type -- 消化点:同 v(开灯批)
+  fromAnswers: Cell | Cell[] | undefined
 }
 
 /**
@@ -5755,7 +5759,8 @@ export type ProvinceOfIn = {
   /**
    * 那一格的原值。
    */
-  v: Cell | Cell[]
+  // eslint-disable-next-line local/no-undefined-type -- 消化点:答案袋索引缺席就是 undefined,照实收(开灯批)
+  v: Cell | Cell[] | undefined
 }
 
 /**
@@ -5770,7 +5775,8 @@ export type PermitOfIn = {
   /**
    * 那一格的原值。
    */
-  v: Cell | Cell[]
+  // eslint-disable-next-line local/no-undefined-type -- 消化点:答案袋索引缺席就是 undefined,照实收(开灯批)
+  v: Cell | Cell[] | undefined
 }
 
 /**
@@ -6225,7 +6231,8 @@ export type AnswerBoolIn = {
   /**
    * 那一格的原值。
    */
-  v: Cell | Cell[]
+  // eslint-disable-next-line local/no-undefined-type -- 消化点:答案袋索引缺席就是 undefined,照实收(开灯批)
+  v: Cell | Cell[] | undefined
 }
 
 /**
@@ -6240,7 +6247,8 @@ export type AnswerTextIn = {
   /**
    * 那一格的原值。
    */
-  v: Cell | Cell[]
+  // eslint-disable-next-line local/no-undefined-type -- 消化点:答案袋索引缺席就是 undefined,照实收(开灯批)
+  v: Cell | Cell[] | undefined
 }
 
 /**

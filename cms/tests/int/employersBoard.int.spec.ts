@@ -169,7 +169,7 @@ describe('loadEmployerPage', () => {
     expect(p.pageSize).toBe(50)
     const last = await loadEmployerPage({ db: pool, filters: F({ page: 2 }), pageSize: 50 })
     expect(last.rows).toHaveLength(37)
-    expect(last.rows[0].name).not.toBe(p.rows[0].name)
+    expect(last.rows[0]?.name).not.toBe(p.rows[0]?.name)
   })
 
   it('筛选改变命中行数,且空职业行不被筛掉', async () => {

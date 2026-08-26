@@ -39,7 +39,7 @@ describe('match rules v1', () => {
   it('unclassified job → na (不硬塞)', () => {
     const r = match({ profile: dev, job: job({ noc: '' }), dims })
     expect(r.level).toBe('na')
-    expect(r.reasons[0].key).toBe('match.r.noc.jobUncat')
+    expect(r.reasons[0]?.key).toBe('match.r.noc.jobUncat')
   })
 
   it('dev × ON tech job:NOC 对口 + 省具名 + EE 差 11 分 → high,依据链指回维度', () => {

@@ -10,191 +10,34 @@
 
 import { FRIEND_INPUT_MAX, friendChat } from '../llm'
 import { HDR_ACCEPT, HDR_CONTENT_TYPE, HDR_COOKIE, HDR_REFERER, HDR_USER_AGENT, METHOD_POST } from '../http'
-import { queryRows, queryRowsOrEmpty, SQL, count, jsonOrNull, numOrNull, text, textOrNull } from '../db'
+import { queryRows, queryRowsOrEmpty, SQL, count, firstOf, firstOr, jsonOrNull, numOrNull, text, textOrNull } from '../db'
 import type { Db } from '../db'
 import { JOBS_LOG, log } from '../log'
 import { fill } from '../template'
 import {
-  ACCEPT_ANY,
-  ACCEPT_HTML,
-  AMP,
-  AMP_ENT_RE,
-  APPLY_SLICE_LEN,
-  APPLY_TIMEOUT_MS,
-  BLOCKED_SRC,
-  BLOCKED_SRC_NONE,
-  BROAD_NOCS_MAX,
-  CAND_CAP,
-  CAT_LEVEL,
-  CELL_NONE,
-  CK,
-  CNT_SEP,
-  COLON_END_RE,
-  COL_PROVINCE,
-  COMMA,
-  COMPANY_SLUG_COND,
-  COMP_KEY,
-  COOKIE_CUT,
-  COOKIE_JOIN,
-  COUNT_CACHE_MAX,
-  COUNT_TTL_MS,
-  COV,
-  CURRENT_STATUSES,
-  DIGIT_PICK_RE,
-  DIMS_TTL_MS,
-  DIR_ASC,
-  DIR_DESC,
-  DOLLAR,
-  DRAW_STREAM_L10N,
-  EE_KEY_L10N,
-  EE_L10N,
-  EE_SPLIT,
-  EMAIL_RE,
-  ENT_PAIRS,
-  FACES_REQUEST_HDR,
-  FACES_REQUEST_VAL,
-  FK,
-  FORM_CONTENT_TYPE,
-  FV,
-  HAS_DIGIT_RE,
-  HAS_SUFFIX,
-  HOW_APPLY_RE,
-  HREF_ENT_PAIRS,
-  HTML_NONE,
-  JB_APPLY_ANCHOR,
-  JB_DESC_RE,
-  JB_EXT_LINK_RE,
-  JB_INNER_ENT_PAIRS,
-  JB_LINK_NONE,
-  JB_ORIGIN,
-  JB_REQ_ANCHOR,
-  JB_SECTION_CAP,
-  JB_URL_RE,
-  JD_BAD_HOST_172_RE,
-  JD_BAD_HOST_RE,
-  JD_BLOCK_BREAK_RE,
-  JD_BUDGET_MARGIN,
-  JD_DIGITS_RE,
-  JD_FAILED_MAX,
-  JD_FETCH_TIMEOUT_MS,
-  JD_FIELD_NONE,
-  JD_GEN_TIMEOUT_MS,
-  JD_HEAD_JUNK_RE,
-  JD_HEAD_MAX_LINES,
-  JD_HOURS_VALUES,
-  JD_HRS_RE,
-  JD_HTML_CAP,
-  JD_LINE_MIN,
-  JD_MAX_LEN,
-  JD_MIN_LEN,
-  JD_NEG_TTL_MS,
-  JD_NONE,
-  JD_ORPHAN_LEN,
-  JD_OUT_MAX_BASE,
-  JD_OUT_MAX_RATIO,
-  JD_OUT_MIN_LEN,
-  JD_PARA_LEN,
-  JD_PROTO_RE,
-  JD_SECTION_MARKS,
-  JD_STRIP_BLOCK_RE,
-  JD_TAG_RE,
-  JD_TAIL_STRIP_RE,
-  JD_TERM_RE,
-  JD_TERM_VALUES,
-  JD_UA,
-  JSF_FORM_BASE,
-  JSF_KEY_JOBID,
-  JSF_KEY_JSJOBID,
-  LANG_EN,
-  LANG_KO,
-  LEVEL_RANK,
-  LINE_SPACES_RE,
-  LMIA_SOURCE,
-  LV,
-  MAIL_AT,
-  MAIL_DOMAIN_NONE,
-  MAIL_NONE,
-  MAIL_RE,
-  MAIL_SKIP_SUFFIXES,
-  MAIL_SKIP_WORD,
-  MAIN_LIST_COVERAGE,
-  MARK_HEAD,
-  MARK_TAIL,
-  MED_SELECT,
-  NL,
-  NOC_JOIN_SLASH,
-  NOC_LEN,
-  NOC_MINOR_LEN,
-  NOC_NONE,
-  NOC_RE,
-  NOC_SEARCH_MIN,
-  NOC_SUBMAJOR_LEN,
-  NORM_DASH,
-  NORM_DASH_RE,
-  NORM_WS_RE,
-  NO_LIST_PROVINCES,
-  OCC_TITLE_NONE,
-  OPEN_COND,
-  ORDER_DATE_TAIL,
-  ORDER_DEFAULT_COL,
-  ORDER_FRESH,
-  ORIGIN_TITLE_HEAD,
-  PARAM_NONE,
-  PCT,
-  PG_CODE_NONE,
-  PG_UNDEFINED_COLUMN,
-  PG_UNDEFINED_TABLE,
-  PHONE_RE,
-  PII_MASK,
-  PREV_LINE_NONE,
-  PROGRAM_PNP,
-  PROOF_TTL_MS,
-  PROV_CODE,
-  PROV_CODE_NONE,
-  PROV_MAX_WORDS,
-  PROV_PREFIX_TRIM_RE,
-  PRO_SORTS,
-  Q_MAX_TERMS,
-  Q_SHORT_LEN,
-  REDIRECT_FOLLOW,
-  REQ_STREAM_L10N,
-  RK,
-  RULE,
-  SCORE_HIGH,
-  SCORE_MID,
-  SEARCH_COLS,
-  SEEKER_ACTION_RE,
-  SEEKER_JOBID_RE,
-  SEP_KEY,
-  SORT_COLUMNS,
-  SORT_MATCH_KEY,
-  SORT_NONE,
-  SPACE,
-  SPACES_RE,
-  SQL_SEG_NONE,
-  SRC_DASH,
-  SRC_JOB_BANK,
-  STAMP_NONE,
-  STREAM_L10N,
-  STREAM_NOTE_NONE,
-  STRIP_REPL,
-  T45_COND_PROVS,
-  T45_NL,
-  TITLE_DOMAIN_RE,
-  TITLE_ENT_PAIRS,
-  TITLE_JUNK_RE,
-  TITLE_NONE,
-  TITLE_RE,
-  TITLE_SEG_MIN,
-  TITLE_SPLIT_RE,
-  TITLE_TAIL_RE,
-  TOP_NOCS_MAX,
-  TOP_NOCS_TTL_MS,
-  TOP_NOCS_WITH_MED,
-  TYPE_INELIGIBLE,
-  UNCAT,
-  VD,
-  W,
+  ACCEPT_ANY, ACCEPT_HTML, AMP, AMP_ENT_RE, APPLY_SLICE_LEN, APPLY_TIMEOUT_MS, BLOCKED_SRC, BLOCKED_SRC_NONE,
+  BROAD_NOCS_MAX, CAND_CAP, CAT_LEVEL, CELL_NONE, CK, CNT_SEP, COLON_END_RE, COL_PROVINCE, COMMA, COMPANY_SLUG_COND,
+  COMP_KEY, COOKIE_CUT, COOKIE_JOIN, COUNT_CACHE_MAX, COUNT_TTL_MS, COV, CURRENT_STATUSES, DIGIT_PICK_RE,
+  DIMS_TTL_MS, DIR_ASC, DIR_DESC, DOLLAR, DRAW_STREAM_L10N, EE_KEY_L10N, EE_L10N, EE_SPLIT, EMAIL_RE, ENT_PAIRS,
+  FACES_REQUEST_HDR, FACES_REQUEST_VAL, FK, FORM_CONTENT_TYPE, FV, HAS_DIGIT_RE, HAS_SUFFIX, HOW_APPLY_RE,
+  HREF_ENT_PAIRS, HTML_NONE, JB_APPLY_ANCHOR, JB_DESC_RE, JB_EXT_LINK_RE, JB_INNER_ENT_PAIRS, JB_LINK_NONE,
+  JB_ORIGIN, JB_REQ_ANCHOR, JB_SECTION_CAP, JB_URL_RE, JD_BAD_HOST_172_RE, JD_BAD_HOST_RE, JD_BLOCK_BREAK_RE,
+  JD_BUDGET_MARGIN, JD_DIGITS_RE, JD_FAILED_MAX, JD_FETCH_TIMEOUT_MS, JD_FIELD_NONE, JD_GEN_TIMEOUT_MS,
+  JD_HEAD_JUNK_RE, JD_HEAD_MAX_LINES, JD_HOURS_VALUES, JD_HRS_RE, JD_HTML_CAP, JD_LINE_MIN, JD_MAX_LEN, JD_MIN_LEN,
+  JD_NEG_TTL_MS, JD_NONE, JD_ORPHAN_LEN, JD_OUT_MAX_BASE, JD_OUT_MAX_RATIO, JD_OUT_MIN_LEN, JD_PARA_LEN, JD_PROTO_RE,
+  JD_SECTION_MARKS, JD_STRIP_BLOCK_RE, JD_TAG_RE, JD_TAIL_STRIP_RE, JD_TERM_RE, JD_TERM_VALUES, JD_UA, JSF_FORM_BASE,
+  JSF_KEY_JOBID, JSF_KEY_JSJOBID, LANG_EN, LANG_KO, LEVEL_RANK, LINE_SPACES_RE, LMIA_SOURCE, LV, MAIL_AT,
+  MAIL_DOMAIN_NONE, MAIL_NONE, MAIL_RE, MAIL_SKIP_SUFFIXES, MAIL_SKIP_WORD, MAIN_LIST_COVERAGE, MARK_HEAD, MARK_TAIL,
+  MED_SELECT, NL, NOC_JOIN_SLASH, NOC_LEN, NOC_MINOR_LEN, NOC_NONE, NOC_RE, NOC_SEARCH_MIN, NOC_SUBMAJOR_LEN,
+  NORM_DASH, NORM_DASH_RE, NORM_WS_RE, NO_LIST_PROVINCES, OCC_TITLE_NONE, OPEN_COND, ORDER_DATE_TAIL,
+  ORDER_DEFAULT_COL, ORDER_FRESH, ORIGIN_TITLE_HEAD, PARAM_NONE, PCT, PG_CODE_NONE, PG_UNDEFINED_COLUMN,
+  PG_UNDEFINED_TABLE, PHONE_RE, PII_MASK, PREV_LINE_NONE, PROGRAM_PNP, PROOF_TTL_MS, PROV_CODE, PROV_CODE_NONE,
+  PROV_MAX_WORDS, PROV_PREFIX_TRIM_RE, PRO_SORTS, Q_MAX_TERMS, Q_SHORT_LEN, REDIRECT_FOLLOW, REQ_STREAM_L10N, RK,
+  RULE, SCORE_HIGH, SCORE_MID, SEARCH_COLS, SEEKER_ACTION_RE, SEEKER_JOBID_RE, SEP_KEY, SORT_COLUMNS, SORT_MATCH_KEY,
+  SORT_NONE, SPACE, SPACES_RE, SQL_SEG_NONE, SRC_DASH, SRC_JOB_BANK, STAMP_NONE, STREAM_L10N, STREAM_NOTE_NONE,
+  STRIP_REPL, T45_COND_PROVS, T45_NL, TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE, TITLE_NONE, TITLE_RE,
+  TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_TTL_MS, TOP_NOCS_WITH_MED, TYPE_INELIGIBLE,
+  UNCAT, VD, W
 } from './constants'
 import { JD_FORMAT_PROMPT_HEAD, REASON_EN, STATUS_EN } from './prompts'
 import { CACHE } from './variables'
@@ -338,11 +181,14 @@ export function hasProfile(p: MaybeProfile): boolean {
 
 /**
  * 原始 JSON 的一格 → 干净字符串数组(非数组/非字符串元素全丢)。
+ * 入参含 undefined:json 袋按键取值,键缺席就是 undefined —— 消化点照实收
+ * (开灯批 2026-08-26:undefined 只许被消化,不许被传递;本函数就是消化点)。
  *
- * @param v 原始格。
+ * @param v 原始格;键缺席时 undefined。
  * @returns 干净数组。
  */
-function strListOf(v: ProfileJsonCell): StrList {
+// eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:json 袋索引缺席就是 undefined,照实收(开灯批)
+function strListOf(v: ProfileJsonCell | undefined): StrList {
   if (Array.isArray(v) === false) {
     return []
   }
@@ -357,11 +203,13 @@ function strListOf(v: ProfileJsonCell): StrList {
 
 /**
  * 原始 JSON 的一格 → 有限数或 null。
+ * 入参含 undefined:同 strListOf,本函数是消化点(开灯批 2026-08-26)。
  *
- * @param v 原始格。
+ * @param v 原始格;键缺席时 undefined。
  * @returns 数;不是像样的数则 null。
  */
-function maybeNumOf(v: ProfileJsonCell): MaybeNum {
+// eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:json 袋索引缺席就是 undefined,照实收(开灯批)
+function maybeNumOf(v: ProfileJsonCell | undefined): MaybeNum {
   if (typeof v === 'number' && Number.isFinite(v)) {
     return v
   }
@@ -411,7 +259,11 @@ export function matchRank(l: MaybeLevel): number {
   if (l == null) {
     return -1
   }
-  return LEVEL_RANK[l]
+  const r = LEVEL_RANK[l]
+  if (r == null) {
+    return -1
+  }
+  return r
 }
 
 /**
@@ -727,9 +579,9 @@ export function statusEn(s: MaybeStr): MaybeStr {
  * @returns 省码;不是省名空串。
  */
 function provCodeOfLower(nameLower: string): string {
-  for (const name of Object.keys(PROV_CODE)) {
+  for (const [name, code] of Object.entries(PROV_CODE)) {
     if (name.toLowerCase() === nameLower) {
-      return PROV_CODE[name]
+      return code
     }
   }
   return PROV_CODE_NONE
@@ -792,8 +644,8 @@ async function resolveQCompanyIds(input: ResolveQIn): ResolveQOut {
     ids.push(one)
   }
   const out: JobsFilters = {}
-  for (const k of Object.keys(input.filters)) {
-    out[k] = input.filters[k]
+  for (const [k, v] of Object.entries(input.filters)) {
+    out[k] = v
   }
   out[FK.qCompanyIds] = ids
   return out
@@ -830,8 +682,7 @@ export function buildJobsWhere(input: BuildWhereIn): JobsWhere {
     return v === true || v === FV.trueStr || v === FV.oneStr
   }
   const terms = splitQ(s(FK.q))
-  for (let i = 0; i < terms.length; i++) {
-    const term = terms[i]
+  for (const [i, term] of terms.entries()) {
     const ph = param(PCT + term + PCT)
     const branches: string[] = []
     for (const c of SEARCH_COLS) {
@@ -994,8 +845,9 @@ function orderByClause(input: OrderByIn): string {
     key = SORT_NONE
   }
   let col = ORDER_DEFAULT_COL
-  if (key !== '' && SORT_COLUMNS[key] != null) {
-    col = SORT_COLUMNS[key]
+  const sortCol = SORT_COLUMNS[key]
+  if (key !== '' && sortCol != null) {
+    col = sortCol
   }
   let d = DIR_DESC
   if (dir === FV.asc) {
@@ -1148,8 +1000,9 @@ export async function checkedAt(db: Db): CheckedAtOut {
   let v = STAMP_NONE
   try {
     const rows = await queryRows({ db: db, sql: SQL.ETL_HEARTBEAT, params: [], map: passRow })
-    if (rows.length > 0) {
-      v = iso(rows[0].last_seed)
+    const first = rows[0]
+    if (first != null) {
+      v = iso(first.last_seed)
     }
   } catch (e) {
     if (e instanceof Error && pgCodeOf(e) === PG_UNDEFINED_TABLE) {
@@ -1160,8 +1013,9 @@ export async function checkedAt(db: Db): CheckedAtOut {
   }
   if (v === '') {
     const rows = await queryRows({ db: db, sql: SQL.JOBS_MAX_LAST_SEEN, params: [], map: passRow })
-    if (rows.length > 0) {
-      v = iso(rows[0].upd)
+    const first = rows[0]
+    if (first != null) {
+      v = iso(first.upd)
     }
   }
   CACHE.checked = { v: v, ts: now }
@@ -1238,8 +1092,9 @@ export async function loadJobsPage(input: JobsPageIn): JobsPageOut {
   }
   let total = 0
   if (cntRows != null) {
-    if (cntRows.length > 0) {
-      total = Number(cntRows[0].n)
+    const cntFirst = cntRows[0]
+    if (cntFirst != null) {
+      total = Number(cntFirst.n)
     }
     if (CACHE.counts.size > COUNT_CACHE_MAX) {
       CACHE.counts.clear()
@@ -1403,8 +1258,9 @@ export async function loadMatchPage(input: MatchPageIn): MatchPageOut {
     jobs.push(toJobRow({ row: h.j, matchLevel: h.level, pro: input.pro }))
   }
   let updatedAt = STAMP_NONE
-  if (updRows.length > 0) {
-    updatedAt = iso(updRows[0].upd)
+  const updFirst = updRows[0]
+  if (updFirst != null) {
+    updatedAt = iso(updFirst.upd)
   }
   return { jobs: jobs, total: hits.length, matchHigh: matchHigh, matchMid: matchMid, updatedAt: updatedAt }
 }
@@ -1424,11 +1280,12 @@ export async function loadJobById(input: JobByIdIn): JobByIdOut {
     return null
   }
   const rows = await queryRows({ db: input.db, sql: SQL.JOB_BY_ID, params: [input.id], map: passJobRow })
-  if (rows.length === 0) {
+  const first = rows[0]
+  if (first == null) {
     return null
   }
-  const level = rowMatchLevel({ row: rows[0], profileOk: input.profileOk, profile: input.profile, dims: input.matchDims })
-  return toJobRow({ row: rows[0], matchLevel: level, pro: input.pro })
+  const level = rowMatchLevel({ row: first, profileOk: input.profileOk, profile: input.profile, dims: input.matchDims })
+  return toJobRow({ row: first, matchLevel: level, pro: input.pro })
 }
 
 /**
@@ -1479,9 +1336,10 @@ export async function loadRelatedJobs(input: RelatedIn): RelatedOut {
   }
   const probe = await queryRows({ db: input.db, sql: SQL.levelHasJobs(lvNames), params: params, map: passRow })
   let fallbackLevel: 'fine' | 'mid' | 'broad' | null = null
-  if (probe.length > 0) {
+  const probeFirst = probe[0]
+  if (probeFirst != null) {
     for (const [lv] of levels) {
-      if (probe[0][lv + HAS_SUFFIX] === true && fallbackLevel == null) {
+      if (probeFirst[lv + HAS_SUFFIX] === true && fallbackLevel == null) {
         fallbackLevel = lv
       }
     }
@@ -1512,8 +1370,9 @@ export async function loadTotalAndProof(db: Db): ProofOut {
     }
   }
   let v = { total: 0, named: 0, lmia: 0 }
-  if (rows.length > 0) {
-    v = { total: Number(rows[0].n), named: Number(rows[0].named), lmia: Number(rows[0].lmia) }
+  const first = rows[0]
+  if (first != null) {
+    v = { total: Number(first.n), named: Number(first.named), lmia: Number(first.lmia) }
   }
   CACHE.proof = { v: v, ts: Date.now() }
   return v
@@ -1548,8 +1407,9 @@ export async function loadCompanyByJobId(input: CompanyByJobIn): CompanyOut {
   if (detail != null && detail.address === '') {
     try {
       const rows = await queryRows({ db: input.db, sql: SQL.JOB_ADDRESS_BY_ID, params: [input.jobId], map: passRow })
-      if (rows.length > 0 && rows[0].address != null && rows[0].address !== '') {
-        detail.address = String(rows[0].address)
+      const first = rows[0]
+      if (first != null && first.address != null && first.address !== '') {
+        detail.address = String(first.address)
       }
     } catch (e) {
       let why = String(e)
@@ -1572,10 +1432,11 @@ export async function loadCompanyByJobId(input: CompanyByJobIn): CompanyOut {
 async function lmiaNocsOf(input: LmiaNocsIn): LmiaNocsOut {
   try {
     const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_LMIA_NOCS, params: [input.companyId], map: passJsonRow })
-    if (rows.length === 0) {
+    const firstRow = rows[0]
+    if (firstRow == null) {
       return []
     }
-    const raw = rows[0].lmia_nocs
+    const raw = firstRow.lmia_nocs
     let dict: JsonObj | null = null
     if (typeof raw === 'string') {
       dict = JSON.parse(raw)
@@ -1638,10 +1499,10 @@ async function lmiaNocsOf(input: LmiaNocsIn): LmiaNocsOut {
  */
 async function fetchCompanyWhere(input: CompanyWhereIn): CompanyOut {
   const rows = await queryRows({ db: input.db, sql: SQL.companyDetail(input.where), params: [input.param], map: passJsonRow })
-  if (rows.length === 0) {
+  const c = rows[0]
+  if (c == null) {
     return null
   }
-  const c = rows[0]
   const companyId = Number(c.id)
   const [jr, cntRows, lmiaNocs] = await Promise.all([
     queryRows({ db: input.db, sql: SQL.COMPANY_OPEN_JOBS, params: [companyId], map: toCompanyJob }),
@@ -1660,20 +1521,23 @@ async function fetchCompanyWhere(input: CompanyWhereIn): CompanyOut {
     }
   }
   let openCount = jr.length
-  if (cntRows.length > 0 && cntRows[0].n != null) {
-    openCount = Number(cntRows[0].n)
+  const cnt = cntRows[0]
+  if (cnt != null && cnt.n != null) {
+    openCount = Number(cnt.n)
   }
   let scoreDetail: CompanyDetail['scoreDetail'] = null
   if (c.score_detail != null && typeof c.score_detail === 'object' && Array.isArray(c.score_detail) === false) {
     scoreDetail = c.score_detail as CompanyDetail['scoreDetail']
   }
-  const strCell = function strCell(v: JsonCell): string {
+  // eslint-disable-next-line local/no-undefined-type -- 消化点:json 行索引缺席就是 undefined,照实收(开灯批)
+  const strCell = function strCell(v: JsonCell | undefined): string {
     if (v == null) {
       return CELL_NONE
     }
     return String(v)
   }
-  const numCell = function numCell(v: JsonCell): MaybeNum {
+  // eslint-disable-next-line local/no-undefined-type -- 消化点:同上(开灯批)
+  const numCell = function numCell(v: JsonCell | undefined): MaybeNum {
     if (v == null) {
       return null
     }
@@ -1748,15 +1612,17 @@ export async function loadQuizFacts(input: QuizFactsIn): QuizFactsOut {
     queryRows({ db: input.db, sql: SQL.NOC_TITLE_ONE, params: [input.noc], map: passRow }),
     queryRowsOrEmpty({ db: input.db, sql: SQL.NOC_EMPLOYER_COUNT, params: [input.noc, Array.from(NO_LIST_PROVINCES)], map: passRow }),
   ])
-  if (tot.length === 0 || tot[0].open == null || Number(tot[0].open) === 0) {
+  const t = tot[0]
+  if (t == null || t.open == null || Number(t.open) === 0) {
     return null
   }
-  const t = tot[0]
   let d: Row = {}
-  if (desc.length > 0) {
-    d = desc[0]
+  const descFirst = desc[0]
+  if (descFirst != null) {
+    d = descFirst
   }
-  const strCell = function strCell(v: Cell): string {
+  // eslint-disable-next-line local/no-undefined-type -- 消化点:行索引缺席就是 undefined,照实收(开灯批)
+  const strCell = function strCell(v: Cell | undefined): string {
     if (v == null) {
       return CELL_NONE
     }
@@ -1775,8 +1641,9 @@ export async function loadQuizFacts(input: QuizFactsIn): QuizFactsOut {
     byProv.push({ province: strCell(r.province), n: Number(r.n), eligible: Number(r.eligible) })
   }
   let sponsors = 0
-  if (spon.length > 0 && spon[0].n != null) {
-    sponsors = Number(spon[0].n)
+  const sponFirst = spon[0]
+  if (sponFirst != null && sponFirst.n != null) {
+    sponsors = Number(sponFirst.n)
   }
   let teer: MaybeNum = null
   if (t.teer != null) {
@@ -1965,8 +1832,8 @@ async function fetchHtml(url: string): HtmlOut {
  */
 function trimHeadJunk(lines: StrList): StrList {
   let bound = -1
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].length >= JD_PARA_LEN) {
+  for (const [i, line] of lines.entries()) {
+    if (line.length >= JD_PARA_LEN) {
       bound = i
       break
     }
@@ -1977,14 +1844,17 @@ function trimHeadJunk(lines: StrList): StrList {
     bound = Math.min(bound, JD_HEAD_MAX_LINES)
   }
   const head: string[] = []
-  for (let i = 0; i < bound; i++) {
-    const l = lines[i]
+  for (const [i, l] of lines.entries()) {
+    if (i >= bound) {
+      break
+    }
     if (JD_HEAD_JUNK_RE.test(l)) {
       continue
     }
     let prevKept = PREV_LINE_NONE
-    if (head.length > 0) {
-      prevKept = head[head.length - 1]
+    const lastKept = head[head.length - 1]
+    if (lastKept != null) {
+      prevKept = lastKept
     }
     if (l.length < JD_ORPHAN_LEN && HAS_DIGIT_RE.test(l) === false && COLON_END_RE.test(l) === false && COLON_END_RE.test(prevKept) === false) {
       continue
@@ -1995,8 +1865,8 @@ function trimHeadJunk(lines: StrList): StrList {
   for (const l of head) {
     out.push(l)
   }
-  for (let i = bound; i < lines.length; i++) {
-    out.push(lines[i])
+  for (const l of lines.slice(bound)) {
+    out.push(l)
   }
   if (out.length * 2 < lines.length) {
     return lines
@@ -2051,6 +1921,9 @@ function jbOwnText(html: string): string {
     return JD_NONE
   }
   let inner = m[1]
+  if (inner == null) {
+    return JD_NONE
+  }
   for (const [re, to] of JB_INNER_ENT_PAIRS) {
     inner = inner.replace(re, to)
   }
@@ -2069,6 +1942,9 @@ function jbExternalLink(html: string): string {
     return JB_LINK_NONE
   }
   let href = m[1]
+  if (href == null) {
+    return JB_LINK_NONE
+  }
   for (const [re, to] of HREF_ENT_PAIRS) {
     href = href.replace(re, to)
   }
@@ -2088,6 +1964,9 @@ function originTitle(html: string): string {
     return TITLE_NONE
   }
   let t = m[1]
+  if (t == null) {
+    return TITLE_NONE
+  }
   for (const [re, to] of TITLE_ENT_PAIRS) {
     t = t.replace(re, to)
   }
@@ -2119,6 +1998,9 @@ function stripTitleLine(input: StripTitleIn): string {
     return input.text
   }
   let raw = m[1]
+  if (raw == null) {
+    return input.text
+  }
   for (const [re, to] of TITLE_ENT_PAIRS) {
     raw = raw.replace(re, to)
   }
@@ -2238,8 +2120,9 @@ export async function jobDescription(input: JdIn): JdOut {
     return JD_NONE
   }
   const rows = await queryRows({ db: input.db, sql: SQL.JD_BY_APPLY_URL, params: [input.applyUrl], map: passRow })
-  if (rows.length > 0 && rows[0].description != null && rows[0].description !== '') {
-    return scrubPii(String(rows[0].description))
+  const first = rows[0]
+  if (first != null && first.description != null && first.description !== '') {
+    return scrubPii(String(first.description))
   }
   return scrubPii(await lazyFetchJd(input))
 }
@@ -2490,15 +2373,13 @@ export function dropProvPrefix(input: DropProvPrefixIn): string {
  */
 export async function loadProvinceCard(input: ProvinceCardIn): ProvinceCardOut {
   const infoRows = await queryRows({ db: input.db, sql: SQL.PROVINCE_INFO_ONE, params: [input.code], map: toInfoCell })
-  if (infoRows.length === 0) {
+  const infoFirst = infoRows[0]
+  if (infoFirst == null) {
     return null
   }
   const diffRows = await queryRows({ db: input.db, sql: SQL.PROV_DIFFICULTY_ONE, params: [input.code], map: toDiffCell })
-  let difficulty: JsonCell = null
-  if (diffRows.length > 0) {
-    difficulty = diffRows[0]
-  }
-  return { info: infoRows[0], difficulty: difficulty }
+  const difficulty: JsonCell = firstOr(diffRows, null)
+  return { info: infoFirst, difficulty: difficulty }
 }
 
 /**
@@ -2517,18 +2398,9 @@ export async function loadCityCard(input: CityCardIn): CityCardOut {
     queryRows({ db: input.db, sql: SQL.CITY_DESIGNATED_COUNT, params: [input.city, input.prov], map: toCountN }),
     queryRows({ db: input.db, sql: SQL.CITY_DLI_COUNT, params: [input.city, input.prov], map: toCountN }),
   ])
-  let base: CityAgg = { openJobs: 0, new7d: 0, medSalary: null }
-  if (aggRows.length > 0) {
-    base = aggRows[0]
-  }
-  let aipEmployers = 0
-  if (aipRows.length > 0) {
-    aipEmployers = aipRows[0]
-  }
-  let dliCount = 0
-  if (dliCountRows.length > 0) {
-    dliCount = dliCountRows[0]
-  }
+  const base = firstOr(aggRows, { openJobs: 0, new7d: 0, medSalary: null })
+  const aipEmployers = firstOr(aipRows, 0)
+  const dliCount = firstOr(dliCountRows, 0)
   let district: DistrictCard | null = null
   if (input.district !== '') {
     const [dAggRows, dBroads, dEmps] = await Promise.all([
@@ -2536,9 +2408,10 @@ export async function loadCityCard(input: CityCardIn): CityCardOut {
       queryRows({ db: input.db, sql: SQL.districtByBroad(SQL.OPEN_COND), params: [input.city, input.prov, input.district], map: toBroadCount }),
       queryRows({ db: input.db, sql: SQL.districtEmployers(SQL.OPEN_COND), params: [input.city, input.prov, input.district], map: toDistrictEmployer }),
     ])
-    if (dAggRows.length > 0) {
+    const dAggFirst = dAggRows[0]
+    if (dAggFirst != null) {
       district = {
-        openJobs: dAggRows[0].openJobs, new7d: dAggRows[0].new7d, medSalary: dAggRows[0].medSalary,
+        openJobs: dAggFirst.openJobs, new7d: dAggFirst.new7d, medSalary: dAggFirst.medSalary,
         topBroads: dBroads, topEmployers: dEmps,
       }
     }
@@ -2586,7 +2459,10 @@ export async function loadApplyEmail(postingUrl: string): ApplyMailOut {
   }
   const cookieParts: string[] = []
   for (const c of first.headers.getSetCookie()) {
-    cookieParts.push(c.split(COOKIE_CUT)[0])
+    const head = c.split(COOKIE_CUT)[0]
+    if (head != null) {
+      cookieParts.push(head)
+    }
   }
   const cookies = cookieParts.join(COOKIE_JOIN)
   const html = await first.text()
@@ -2596,6 +2472,10 @@ export async function loadApplyEmail(postingUrl: string): ApplyMailOut {
     return MAIL_NONE
   }
   const jid = jidM[1]
+  const action = actionM[1]
+  if (jid == null || action == null) {
+    return MAIL_NONE
+  }
   const form = new URLSearchParams(JSF_FORM_BASE)
   form.set(JSF_KEY_JSJOBID, jid)
   form.set(JSF_KEY_JOBID, jid)
@@ -2606,7 +2486,7 @@ export async function loadApplyEmail(postingUrl: string): ApplyMailOut {
   if (cookies !== '') {
     h[HDR_COOKIE] = cookies
   }
-  const second = await fetch(JB_ORIGIN + actionM[1].replace(AMP_ENT_RE, AMP), {
+  const second = await fetch(JB_ORIGIN + action.replace(AMP_ENT_RE, AMP), {
     method: METHOD_POST, headers: h, body: form.toString(), signal: AbortSignal.timeout(APPLY_TIMEOUT_MS),
   }).catch(nullFetch)
   if (second == null || second.ok === false) {
@@ -2682,10 +2562,7 @@ export function emptySimilar(_e: Error): SimilarList {
  */
 export async function loadJdFormatted(input: JdFormattedIn): MaybeStrOut {
   const rows = await queryRows({ db: input.db, sql: SQL.JD_FORMATTED_BY_URL, params: [input.url], map: toJdFormattedCell })
-  if (rows.length === 0) {
-    return null
-  }
-  return rows[0]
+  return firstOf(rows)
 }
 
 /**
@@ -2696,10 +2573,7 @@ export async function loadJdFormatted(input: JdFormattedIn): MaybeStrOut {
  */
 export async function loadJdState(input: JdFormattedIn): JdStateOut {
   const rows = await queryRows({ db: input.db, sql: SQL.JD_STATE_BY_URL, params: [input.url], map: toJdStateRow })
-  if (rows.length === 0) {
-    return null
-  }
-  return rows[0]
+  return firstOf(rows)
 }
 
 /**
@@ -2793,10 +2667,7 @@ function validateJdFormatted(out: string, src: string): boolean {
  */
 export async function loadApplyUrlById(input: ApplyUrlIn): MaybeStrOut {
   const rows = await queryRows({ db: input.db, sql: SQL.JOB_APPLY_URL_BY_ID, params: [input.jobId], map: toApplyUrlCell })
-  if (rows.length === 0) {
-    return null
-  }
-  return rows[0]
+  return firstOf(rows)
 }
 
 // =========================================================================
@@ -2807,10 +2678,11 @@ export async function loadApplyUrlById(input: ApplyUrlIn): MaybeStrOut {
  * 时间格词汇:pg timestamp 回来是 Date、文本列是字符串、可空 —— 归一成 ISO 串(空落空串)。
  * 入参放宽到库标量:窄行(Row)的时间格在类型上是 Cell,运行时才是 Date,这里一网收干净。
  *
- * @param v 库回的时间格。
+ * @param v 库回的时间格;行索引缺席时 undefined(消化点,开灯批 2026-08-26)。
  * @returns ISO 串;没有则空串。
  */
-export function iso(v: TimeLike): string {
+// eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:行索引缺席就是 undefined,照实收(开灯批)
+export function iso(v: TimeLike | undefined): string {
   if (v instanceof Date) {
     return v.toISOString()
   }
@@ -3248,7 +3120,8 @@ export function toOccDiffFact(r: OccDiffDbRow): OccDiffFact {
  * @param x 库里的数字格。
  * @returns 取整后的数;缺位 null。
  */
-function roundOrNull(x: Cell): MaybeNum {
+// eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:行索引缺席就是 undefined,照实收(开灯批)
+function roundOrNull(x: Cell | undefined): MaybeNum {
   const n = numOrNull(x)
   if (n == null) {
     return null

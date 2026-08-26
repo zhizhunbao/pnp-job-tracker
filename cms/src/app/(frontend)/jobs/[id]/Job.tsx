@@ -55,7 +55,7 @@ export default function Job({ job, plan, dims, related }: {
     job.mid && job.mid !== '未分类' ? { txt: catName({ t, value: job.mid }), href: `/?broad=${encodeURIComponent(job.broad || '')}&mid=${encodeURIComponent(job.mid)}` } : null,
     job.fine && job.fine !== '未分类' ? { txt: catName({ t, value: job.fine }), href: `/?fine=${encodeURIComponent(job.fine)}` } : null,
   ].filter(Boolean)) as { txt: string; href: string }[])
-    .filter((s, i, arr) => i === 0 || s.txt !== arr[i - 1].txt)
+    .filter((s, i, arr) => i === 0 || s.txt !== arr[i - 1]?.txt)
 
   // 相似职位的兜底去处:筛选参数与面包屑同一套(?prov / ?fine|mid|broad),按级给键,不新造口径。
   // 文案定长,不把职业名插进句子:NOC 官方职业名可以长到

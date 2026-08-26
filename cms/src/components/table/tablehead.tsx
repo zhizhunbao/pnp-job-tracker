@@ -8,6 +8,7 @@
  * @author Frank
  * @time 2026-08-24 11:00:00
  */
+import { cssOf } from '@/components/css'
 import { ALIGN_RIGHT } from './constants'
 import { cls } from './functions'
 import { SortMark } from './sortmark'
@@ -58,7 +59,7 @@ export function TableHead<T>({ cols, sort, toggleSort, widths }: TableHeadIn<T>)
         ref={widths.thRefOf(c.key)}
         title={c.thTip}
         className={cls(
-          css.th,
+          cssOf(css.th),
           sortable && css.sortable,
           c.thTip != null && css.tip,
           c.align === ALIGN_RIGHT && css.right,

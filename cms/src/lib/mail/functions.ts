@@ -10,16 +10,8 @@
 import crypto from 'crypto'
 import { log, MAIL_LOG } from '../log'
 import {
-  BEARER_PREFIX,
-  FROM,
-  HEX_ENC,
-  HMAC_ALGO,
-  HMAC_KEY_NONE,
-  JSON_MIME,
-  MAIL_ENABLED,
-  METHOD_POST,
-  RESEND_URL,
-  UNSUB_PREFIX,
+  BEARER_PREFIX, FROM, HEX_ENC, HMAC_ALGO, HMAC_KEY_NONE, JSON_MIME, MAIL_ENABLED, METHOD_POST, RESEND_URL,
+  UNSUB_PREFIX
 } from './constants'
 import type { MailUserId, SendMailIn, SentOut } from './types'
 import { HDR_CONTENT_TYPE } from '../http'

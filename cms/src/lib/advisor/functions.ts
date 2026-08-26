@@ -667,7 +667,11 @@ export function teerOf(noc: MaybeStr): MaybeNum {
  * @returns 语言名。
  */
 function langNameOf(lang: Lang): string {
-  return LANG_NAMES[lang]
+  const name = LANG_NAMES[lang]
+  if (name == null) {
+    return lang
+  }
+  return name
 }
 
 /**
@@ -699,7 +703,8 @@ function orDashOf(v: MaybeStr): string {
  * @param v 原值。
  * @returns 串(可空串)。
  */
-function emptyOf(v: MaybeStr): string {
+// eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:数组下标缺席就是 undefined,照实收;联合入参是它的形状(开灯批)
+function emptyOf(v: MaybeStr | undefined): string {
   if (v == null) {
     return ''
   }
@@ -908,10 +913,11 @@ function lastTextOf(input: LastTextIn): string {
   if (input.aborted) {
     throw chatError({ code: CHAT_CODE.busy, msg: String(LOOP_TIMEOUT_MS), slots: null })
   }
-  if (drafts.length === 0) {
+  const last = drafts[drafts.length - 1]
+  if (last == null) {
     throw chatError({ code: CHAT_CODE.llm, msg: '', slots: null })
   }
-  return drafts[drafts.length - 1]
+  return last
 }
 
 /**
@@ -1418,6 +1424,7 @@ export function headersOf(input: HeadersOfIn): HeaderMap {
  * @param v 原值。
  * @returns 串。
  */
-export function blankOf(v: MaybeStr): string {
+// eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:同 emptyOf(开灯批)
+export function blankOf(v: MaybeStr | undefined): string {
   return emptyOf(v)
 }

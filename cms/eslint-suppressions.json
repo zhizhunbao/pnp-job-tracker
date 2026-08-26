@@ -142,7 +142,7 @@
   },
   "src/lib/advisor/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 5
+      "count": 1
     },
     "local/jsdoc-tags": {
       "count": 1
@@ -215,9 +215,6 @@
     }
   },
   "src/lib/consult/functions.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 1
-    },
     "local/no-db-vocab-in-functions": {
       "count": 3
     },
@@ -283,7 +280,7 @@
   },
   "src/lib/employers/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 13
+      "count": 2
     },
     "local/no-bare-strings": {
       "count": 4
@@ -292,7 +289,7 @@
       "count": 7
     },
     "local/no-literal-index": {
-      "count": 4
+      "count": 2
     },
     "local/no-magic-number": {
       "count": 8
@@ -302,17 +299,11 @@
     }
   },
   "src/lib/error/functions.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 2
-    },
     "local/step-down-order": {
       "count": 1
     }
   },
   "src/lib/funnel/functions.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 4
-    },
     "local/no-magic-number": {
       "count": 2
     },
@@ -323,11 +314,6 @@
   "src/lib/gauge/functions.ts": {
     "local/step-down-order": {
       "count": 1
-    }
-  },
-  "src/lib/i18n/functions.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 2
     }
   },
   "src/lib/i18n/server.ts": {
@@ -342,7 +328,7 @@
   },
   "src/lib/jobs/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 18
+      "count": 1
     },
     "local/no-bare-strings": {
       "count": 2
@@ -375,7 +361,7 @@
   },
   "src/lib/llm/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 2
+      "count": 1
     },
     "local/no-literal-index": {
       "count": 4
@@ -396,9 +382,6 @@
     }
   },
   "src/lib/lmia/functions.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 1
-    },
     "local/no-magic-number": {
       "count": 2
     }
@@ -417,9 +400,6 @@
     "local/no-bare-strings": {
       "count": 12
     },
-    "local/no-literal-index": {
-      "count": 2
-    },
     "local/no-new-error": {
       "count": 3
     },
@@ -435,7 +415,7 @@
       "count": 10
     },
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 3
+      "count": 2
     },
     "curly": {
       "count": 7
@@ -495,11 +475,6 @@
       "count": 1
     }
   },
-  "src/lib/noc/functions.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 2
-    }
-  },
   "src/lib/official/constants.ts": {
     "@typescript-eslint/naming-convention": {
       "count": 1
@@ -510,7 +485,7 @@
   },
   "src/lib/official/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 2
+      "count": 1
     }
   },
   "src/lib/pathways/constants.ts": {
@@ -530,9 +505,6 @@
     }
   },
   "src/lib/plan/functions.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 2
-    },
     "local/no-bare-strings": {
       "count": 1
     },
@@ -545,7 +517,7 @@
   },
   "src/lib/points/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 9
+      "count": 4
     },
     "local/no-bare-strings": {
       "count": 2
@@ -563,9 +535,6 @@
     }
   },
   "src/lib/quiz/functions.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 12
-    },
     "local/no-bare-strings": {
       "count": 27
     },
@@ -596,14 +565,11 @@
     }
   },
   "src/lib/resume/functions.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 1
-    },
     "local/no-bare-strings": {
       "count": 1
     },
     "local/no-magic-number": {
-      "count": 2
+      "count": 1
     },
     "local/step-down-order": {
       "count": 2
@@ -619,7 +585,7 @@
   },
   "src/lib/ruling/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 17
+      "count": 3
     },
     "local/no-bare-strings": {
       "count": 1
@@ -656,9 +622,6 @@
     }
   },
   "src/lib/stats/functions.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 1
-    },
     "local/no-db-vocab-in-functions": {
       "count": 2
     },
@@ -667,9 +630,6 @@
     }
   },
   "src/lib/stripe/routes.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 2
-    },
     "local/no-magic-number": {
       "count": 1
     }
@@ -679,15 +639,7 @@
       "count": 1
     }
   },
-  "src/lib/template.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 1
-    }
-  },
   "src/lib/track/functions.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 3
-    },
     "local/step-down-order": {
       "count": 1
     }

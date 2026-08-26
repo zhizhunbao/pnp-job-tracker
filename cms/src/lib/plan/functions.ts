@@ -78,8 +78,7 @@ function decorate<T extends RankableRow>(input: RankIn<T>): DecoratedRows<T> {
     }
   }
   const out: DecoratedRows<T> = []
-  for (let i = 0; i < input.rows.length; i++) {
-    const row = input.rows[i]
+  for (const [i, row] of input.rows.entries()) {
     const n = input.ctx.jobsOf(row)
     let band = 0
     const hit = bandRank.get(bandOf(row))
@@ -134,21 +133,18 @@ export function pickOutside<T extends RankableRow>(input: OutsideIn<T>): MaybeOu
   const ranked = decorate({ rows: input.rows, ctx: input.ctx })
   ranked.sort(byPlanOrder)
   let insideIdx = -1
-  for (let i = 0; i < ranked.length; i++) {
-    if (input.targets.includes(ranked[i].row.province)) {
+  let insideBest: T | null = null
+  for (const [i, d] of ranked.entries()) {
+    if (input.targets.includes(d.row.province)) {
       insideIdx = i
+      insideBest = d.row
       break
     }
   }
-  let insideBest: T | null = null
-  if (insideIdx >= 0) {
-    insideBest = ranked[insideIdx].row
-  }
-  for (let i = 0; i < ranked.length; i++) {
+  for (const [i, d] of ranked.entries()) {
     if (insideIdx >= 0 && i >= insideIdx) {
       break
     }
-    const d = ranked[i]
     if (PROV_RE.test(d.row.province) === false || input.targets.includes(d.row.province)) {
       continue
     }
@@ -320,8 +316,9 @@ function drawStep(p: PlanPathInput): PlanStep {
       why = fill({ tpl: PLAN_TEXT.oneRoundWhy, params: { province: p.province } })
     }
     let evidence: PlanStep['evidence'] = null
-    if (rows.length > 0) {
-      evidence = rows[0].evidence
+    const rowsFirst = rows[0]
+    if (rowsFirst != null) {
+      evidence = rowsFirst.evidence
     }
     return { kind: STEP.draw, factor: CADENCE_FACTOR, months: null, basis: BASIS_NONE, availability: availability, why: why, evidence: evidence }
   }
@@ -335,14 +332,23 @@ function drawStep(p: PlanPathInput): PlanStep {
   }
   days.sort(byDateAsc)
   let sum = 0
-  for (let i = 1; i < days.length; i++) {
-    sum += (Date.parse(days[i]) - Date.parse(days[i - 1])) / DAY_MS
+  let prevDay: string | null = null
+  for (const day of days) {
+    if (prevDay != null) {
+      sum += (Date.parse(day) - Date.parse(prevDay)) / DAY_MS
+    }
+    prevDay = day
   }
   const avg = sum / (days.length - 1)
+  const dayFirst = days[0]
+  const evFirst = rows[0]
+  if (dayFirst == null || evFirst == null) {
+    return stepOf({ kind: STEP.draw, factor: CADENCE_FACTOR, months: null, basis: BASIS_NONE, availability: AV.ok, why: WHY_NONE, evidence: null })
+  }
   return stepOf({
     kind: STEP.draw, factor: CADENCE_FACTOR, months: round1(avg / DAYS_PER_MONTH),
-    basis: fill({ tpl: PLAN_TEXT.cadenceBasis, params: { from: days[0], rounds: days.length, avgDays: Math.round(avg) } }),
-    availability: AV.ok, why: WHY_NONE, evidence: rows[0].evidence,
+    basis: fill({ tpl: PLAN_TEXT.cadenceBasis, params: { from: dayFirst, rounds: days.length, avgDays: Math.round(avg) } }),
+    availability: AV.ok, why: WHY_NONE, evidence: evFirst.evidence,
   })
 }
 
@@ -383,7 +389,8 @@ function processingStep(p: PlanPathInput): PlanStep {
       return m.scope === p.processingScope
     })
   }
-  if (scoped.length !== 1) {
+  const m = scoped[0]
+  if (scoped.length !== 1 || m == null) {
     let factor = PROCESSING_KEY
     if (p.processingScope != null && p.processingScope !== '') {
       factor = p.processingScope
@@ -394,7 +401,6 @@ function processingStep(p: PlanPathInput): PlanStep {
     }
     return { kind: STEP.processing, factor: factor, months: null, basis: BASIS_NONE, availability: AV.notCollected, why: why, evidence: null }
   }
-  const m = scoped[0]
   let months: MaybeNum = null
   if (m.value != null) {
     months = monthsFromUnit({ value: m.value, unit: m.unit })
@@ -622,14 +628,21 @@ export async function fetchTimeline(db: Db): TimelineOut {
     const dates = Array.from(new Set(g.dates))
     dates.sort(byDateAsc)
     let gapSum = 0
-    for (let i = 1; i < dates.length; i++) {
-      gapSum += daysBetween({ from: dates[i - 1], to: dates[i] })
+    let prevDate: string | null = null
+    for (const d of dates) {
+      if (prevDate != null) {
+        gapSum += daysBetween({ from: prevDate, to: d })
+      }
+      prevDate = d
     }
     let avgGapDays: MaybeNum = null
     if (dates.length > 1) {
       avgGapDays = Math.round(gapSum / (dates.length - 1))
     }
     const last = dates[dates.length - 1]
+    if (last == null) {
+      continue
+    }
     cadence.push({
       prov: g.prov, stream: g.stream, scale: g.scale,
       last: last, daysSince: daysBetween({ from: last, to: today }),
@@ -669,7 +682,8 @@ export async function fetchTimeline(db: Db): TimelineOut {
  * @param v 库回的时间格。
  * @returns 十位日期;没有则空串。
  */
-export function day(v: TimeLike): string {
+// eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:行索引缺席就是 undefined,照实收(开灯批)
+export function day(v: TimeLike | undefined): string {
   if (v instanceof Date) {
     return v.toISOString().slice(0, 10)
   }

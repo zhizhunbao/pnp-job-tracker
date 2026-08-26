@@ -56,7 +56,8 @@ export function dbOf(payload: PayloadWithPool): DbPool {
  * 联合带 boolean 是因为库标量整格(ruling 的 Cell)就含它 —— String(true)='true' 无害;
  * 真想显示布尔列先问自己要显示什么词。
  */
-export function text(x: string | number | boolean | null): string {
+// eslint-disable-next-line local/no-undefined-type -- 消化点:行/袋索引缺席就是 undefined,照实收、就地兑换(开灯批 2026-08-26)
+export function text(x: string | number | boolean | null | undefined): string {
   if (x == null) {
     return ''
   }
@@ -67,7 +68,8 @@ export function text(x: string | number | boolean | null): string {
  * 计数 → 数字,空值落 0。**只给「个数」类的列用** —— 「一个都没有」本身就是答案,0 无害。
  * 收 `string` 是因为 pg 的 numeric/bigint 按字符串交回来。
  */
-export function count(x: number | string | boolean | null): number {
+// eslint-disable-next-line local/no-undefined-type -- 消化点:同 text(开灯批)
+export function count(x: number | string | boolean | null | undefined): number {
   if (x == null) {
     return 0
   }
@@ -81,7 +83,8 @@ export function count(x: number | string | boolean | null): number {
  * 空串与解析不出的一并落 null(2026-08-21 收拢 ruling 的 numOf 时抓到的岔:
  * `Number('')` 是 **0** —— 空串折成 0 正是这个词要防的「替官方编数」)。
  */
-export function numOrNull(x: number | string | boolean | null): number | null {
+// eslint-disable-next-line local/no-undefined-type -- 消化点:同 text(开灯批)
+export function numOrNull(x: number | string | boolean | null | undefined): number | null {
   if (x == null || x === '') {
     return null
   }
@@ -97,7 +100,8 @@ export function numOrNull(x: number | string | boolean | null): number | null {
  * scale(分制名)这类「官方没写就是没写」的列,折成空串会和「写了空」混掉。
  * (2026-08-21 收拢 ruling 词对时补的第五个词;语义表见默认值架构卷宗。)
  */
-export function textOrNull(x: string | number | boolean | null): string | null {
+// eslint-disable-next-line local/no-undefined-type -- 消化点:同 text(开灯批)
+export function textOrNull(x: string | number | boolean | null | undefined): string | null {
   if (x == null) {
     return null
   }
@@ -118,6 +122,41 @@ export function show(x: number | null): string {
 }
 
 /**
+ * **行级接缝词**:行清单 → 首行;零行 = null。前面的词管「格」的空值,这个管「行」的
+ * 缺席 —— 数组下标是语言接缝(缺席是 undefined),这个词把它兑换成 null(我们的「没有」)。
+ * ⚠️ 对「必须恰一行」的断言场景别用它:那是吞错,该让零行炸响。
+ * (开灯批 2026-08-26 进表:noUncheckedIndexedAccess 揭出全站几十处 `rows[0]` 手写判空,
+ * 语义表见默认值架构卷宗 §2.1。)
+ *
+ * @param rows 行清单。
+ * @returns 首行;零行 null。
+ */
+export function firstOf<T>(rows: T[]): T | null {
+  const first = rows[0]
+  if (first == null) {
+    return null
+  }
+  return first
+}
+
+/**
+ * 行清单 → 首行;零行折默认值。🔴 只给「缺行 = 中性默认」的查询(计数聚合的 0、
+ * 空壳兜底行);「官方可空」的行拿它折默认 = 编数,同 `count` 的禁区(2026-08-26 进表)。
+ * 双参是 `firstOf` 的带默认变体,与 sort 比较器同理由:第二参就是这个词的语义本体。
+ *
+ * @param rows 行清单。
+ * @param or 零行时的默认值(必须「中性」,不许拿它编造官方没给的行)。
+ * @returns 首行或默认值。
+ */
+export function firstOr<T>(rows: T[], or: T): T {
+  const first = rows[0]
+  if (first == null) {
+    return or
+  }
+  return first
+}
+
+/**
  * 🔴 json 格词汇:jsonb 驱动交**对象**照放,文本列绕行交**字符串**当场 JSON.parse,
  * 解析不出**留痕落 null**(不静默、不编数)。`R` 由那一格在行形状(XxxDbRow)上声明的
  * 对象形状推出,体内 `as R` 是跨边界断言:JSON.parse 的返回没有形状,形状由 ETL 写入方保证。
@@ -127,7 +166,8 @@ export function show(x: number | null): string {
  * @param x 库回的 json 格(对象 / JSON 串 / null)。
  * @returns 解析好的对象;没有或坏的是 null。
  */
-export function jsonOrNull<R>(x: R | string | null): R | null {
+// eslint-disable-next-line local/no-undefined-type -- 消化点:同 text(开灯批)
+export function jsonOrNull<R>(x: R | string | null | undefined): R | null {
   if (x == null) {
     return null
   }

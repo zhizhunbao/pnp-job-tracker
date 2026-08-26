@@ -10,27 +10,11 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import {
-  COL_W_FALLBACK,
-  COL_W_MIN,
-  EV_POINTERMOVE,
-  EV_POINTERUP,
-  LAYOUT_LOCKED,
-  PCT_DECIMALS,
-  PCT_UNIT,
-  SIG_SEP,
-  SIG_TAIL,
+  COL_W_FALLBACK, COL_W_MIN, EV_POINTERMOVE, EV_POINTERUP, LAYOUT_LOCKED, PCT_DECIMALS, PCT_UNIT, SIG_SEP, SIG_TAIL,
 } from './constants'
 import { sortRows } from './functions'
 import type {
-  Col,
-  ColWidthsIn,
-  ColWidthsOut,
-  MeasureIn,
-  ResizeIn,
-  RowsIn,
-  RowsOut,
-  RunResizeIn,
-  SortState,
+  Col, ColWidthsIn, ColWidthsOut, MeasureIn, ResizeIn, RowsIn, RowsOut, RunResizeIn, SortState,
 } from './types'
 
 /**
@@ -139,8 +123,11 @@ export function useColWidths<T>(x: ColWidthsIn<T>): ColWidthsOut<T> {
     if (dragged != null) {
       return dragged
     }
-    if (pct != null && pct[col.key] != null) {
-      return pct[col.key]
+    if (pct != null) {
+      const p = pct[col.key]
+      if (p != null) {
+        return p
+      }
     }
     if (col.width != null) {
       return col.width
@@ -216,8 +203,8 @@ function runResize(x: RunResizeIn) {
   function move(ev: PointerEvent) {
     function put(w: Record<string, number>): Record<string, number> {
       const next: Record<string, number> = {}
-      for (const k of Object.keys(w)) {
-        next[k] = w[k]
+      for (const [k, v] of Object.entries(w)) {
+        next[k] = v
       }
       next[x.key] = Math.max(COL_W_MIN, x.from + ev.clientX - sx)
       return next

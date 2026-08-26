@@ -11,6 +11,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { cssOf } from '@/components/css'
 import { JobCardRow } from './jobcardrow'
 import { TextButton } from './textbutton'
 import type { CardLink, JobCardIn } from './types'
@@ -51,7 +52,7 @@ export function JobCard({
   if (company != null || companyBadge != null) {
     companyCell = (
       <>
-        {company != null && <TextButton v={company} className={css.co} />}
+        {company != null && <TextButton v={company} className={cssOf(css.co)} />}
         {companyBadge}
       </>
     )
@@ -72,7 +73,7 @@ export function JobCard({
   return (
     <div data-tap-card onClick={onCardClick} className={css.jcard}>
       <div className={css.top}>
-        <TextButton v={titleLink} className={css.title} />
+        <TextButton v={titleLink} className={cssOf(css.title)} />
         {action != null && <span className={css.actSlot}>{action}</span>}
       </div>
       {note != null && <div className={css.note}>{note}</div>}

@@ -98,6 +98,7 @@ const DEAD_PROV_ORDER = ['BC', 'AB', 'SK', 'MB', 'ON', 'NB', 'NS', 'PE', 'NL']
 // E13-07 通道档(Frank 08-06 深夜四档拍板):rank 越小越难——榜 A 默认难的在上;
 // 药丸字面自解释(tooltips 已全撤):双/单头点名绿青,无点名灰,仅雇主担保红=「别为它来」
 const TIER_RANK: Record<string, number> = { employer: 0, ee: 1, fed: 2, prov: 3, both: 4 }
+const TIER_FALLBACK = { bg: 'transparent', fg: 'inherit', bd: 'transparent' }
 const TIER_COLORS: Record<string, { bg: string; fg: string; bd: string }> = {
   both: { bg: '#dcfce7', fg: '#166534', bd: '#bbf7d0' },
   prov: { bg: '#dcfce7', fg: '#166534', bd: '#bbf7d0' },
@@ -312,8 +313,8 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
     if (!ps.length && !fed) return <span style={{ color: UI.text3 }}>{t('pulse.provs.none')}</span>
     return (
       <span style={{ display: 'inline-flex', gap: 4, flexWrap: 'wrap' }}>
-        {ps.map((p) => pill(TIER_COLORS.prov, t('pulse.tier.provOne', { p }), p))}
-        {fed ? pill(TIER_COLORS.fed, t('pulse.tier.fedOne')) : null}
+        {ps.map((p) => pill(TIER_COLORS.prov ?? TIER_FALLBACK, t('pulse.tier.provOne', { p }), p))}
+        {fed ? pill(TIER_COLORS.fed ?? TIER_FALLBACK, t('pulse.tier.fedOne')) : null}
       </span>
     )
   }
@@ -838,7 +839,8 @@ export function Pulse({ stats }: { stats: HomeStats }) {
                 {provRows.map((r) => {
                   const ex = stats.provExtra[r.province]
                   const work = (ex?.info?.tfwp?.n ?? 0) + (ex?.info?.imp?.n ?? 0)
-                  const tier = ex?.tier && DIFF_COLORS[ex.tier] ? ex.tier : null
+                  const tierC = ex?.tier != null ? DIFF_COLORS[ex.tier] : undefined
+                  const tier = tierC != null && ex?.tier != null ? ex.tier : null
                   const on = r.province === prov
                   return (
                     <button key={r.province} onClick={() => setProv(r.province)} className="cardHover"
@@ -846,7 +848,7 @@ export function Pulse({ stats }: { stats: HomeStats }) {
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
                         <span style={{ fontWeight: 700, fontSize: 14.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{SHORT_PROV[r.province] || PROV_NAME[r.province] || r.province}</span>
                         <span style={{ color: UI.text3, fontWeight: 400, fontSize: 12.5, flexShrink: 0 }}>{r.province}</span>
-                        {tier ? <span style={{ marginLeft: 'auto', flexShrink: 0, whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: DIFF_COLORS[tier].bg, color: DIFF_COLORS[tier].fg, border: `1px solid ${DIFF_COLORS[tier].bd}` }}>{t('diff.' + tier)}</span> : null}
+                        {tier && tierC ? <span style={{ marginLeft: 'auto', flexShrink: 0, whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: tierC.bg, color: tierC.fg, border: `1px solid ${tierC.bd}` }}>{t('diff.' + tier)}</span> : null}
                       </div>
                       <div style={{ fontSize: 12.5, color: UI.text2, marginTop: 6, lineHeight: 1.9 }}>
                         {kv(t('stats.openJobs'), <strong>{r.openJobs != null ? num(r.openJobs) : '—'}</strong>)}

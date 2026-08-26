@@ -7,17 +7,8 @@
  */
 import { createContext, useContext, useEffect, useState } from 'react'
 import {
-  ERR_NONE,
-  EV_MOUSEDOWN,
-  FIELD_EMPTY,
-  FLOW_ERR,
-  FLOW_SENT,
-  HISTORY_TITLE_UNUSED,
-  MODE_BACK_TO,
-  OAUTH_FAIL,
-  OAUTH_PARAM,
-  QS_NONE,
-  QS_PREFIX,
+  ERR_NONE, EV_MOUSEDOWN, FIELD_EMPTY, FLOW_ERR, FLOW_SENT, HISTORY_TITLE_UNUSED, MODE_BACK_TO, OAUTH_FAIL,
+  OAUTH_PARAM, QS_NONE, QS_PREFIX,
 } from './constants'
 import { finishAuth, googleHrefOf, localeOf, runAuthFlow } from './functions'
 import type { AuthFormHookIn, AuthFormHookOut, AuthMode, ClickOutsideIn } from './types'

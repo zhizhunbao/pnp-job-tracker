@@ -9,26 +9,12 @@
  * @author Frank
  * @time 2026-08-24 08:00:00
  */
+import { cssOf } from '@/components/css'
 import { IconChart, IconClipboard, IconCompass, IconNews, IconUsers } from '@/components/icons'
 import { LinkButton } from '@/components/button'
 import {
-  A_EMPLOYERS,
-  A_JOBS,
-  A_MATCH,
-  A_NEWS,
-  A_PATHWAYS,
-  A_RANK,
-  A_START,
-  A_STATS,
-  PATH_CASES,
-  PATH_EMPLOYERS,
-  PATH_HOME,
-  PATH_NEWS,
-  PATH_OCC,
-  PATH_PLAN_PR,
-  PATH_RESOURCES,
-  PATH_START,
-  PATH_TIMELINE,
+  A_EMPLOYERS, A_JOBS, A_MATCH, A_NEWS, A_PATHWAYS, A_RANK, A_START, A_STATS, PATH_CASES, PATH_EMPLOYERS, PATH_HOME,
+  PATH_NEWS, PATH_OCC, PATH_PLAN_PR, PATH_RESOURCES, PATH_START, PATH_TIMELINE,
 } from './constants'
 import { withOn } from './functions'
 import { NavDrop } from './navdrop'
@@ -47,16 +33,16 @@ export function HeaderNav({ t, active }: HeaderNavIn) {
   const onNews = active === A_NEWS
   return (
     <div className={css.nav}>
-      <LinkButton href={PATH_START} className={withOn({ base: css.navLink, on: onStart })}>
+      <LinkButton href={PATH_START} className={withOn({ base: cssOf(css.navLink), on: onStart })}>
         <IconChart /> {t('pulse.entry')}
       </LinkButton>
-      <LinkButton href={PATH_HOME} className={withOn({ base: css.navLink, on: onJobs })}>
+      <LinkButton href={PATH_HOME} className={withOn({ base: cssOf(css.navLink), on: onJobs })}>
         <IconClipboard /> {t('nav.jobs')}
       </LinkButton>
-      <LinkButton href={PATH_PLAN_PR} className={withOn({ base: css.navLink, on: active === A_PATHWAYS })}>
+      <LinkButton href={PATH_PLAN_PR} className={withOn({ base: cssOf(css.navLink), on: active === A_PATHWAYS })}>
         <IconCompass /> {t('plan.pr.title')}
       </LinkButton>
-      <LinkButton href={PATH_EMPLOYERS} className={withOn({ base: css.navLink, on: active === A_EMPLOYERS })}>
+      <LinkButton href={PATH_EMPLOYERS} className={withOn({ base: cssOf(css.navLink), on: active === A_EMPLOYERS })}>
         <IconUsers /> {t('nav.employers')}
       </LinkButton>
       <NavDrop label={t('nav.library')}

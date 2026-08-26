@@ -40,8 +40,9 @@ function shimPdfGlobals(): void {
     g.DOMMatrix = class DOMMatrix {
       a = 1; b = 0; c = 0; d = 1; e = 0; f = 0
       constructor(init: number[] = []) {
-        if (Array.isArray(init) && init.length === 6) {
-          [this.a, this.b, this.c, this.d, this.e, this.f] = init
+        const [a, b, c, d, e, f] = init
+        if (a != null && b != null && c != null && d != null && e != null && f != null) {
+          this.a = a; this.b = b; this.c = c; this.d = d; this.e = e; this.f = f
         }
       }
       translate() {

@@ -34,7 +34,7 @@ const REG: ExampleItem[] = [{ key: 'chat.ex.reg1' }, { key: 'chat.ex.reg2' }, { 
 const nocTitle = (t: TFn, code: string): string | null => {
   const key = POPULAR_NOCS.find((p) => p.noc === code)?.key
   if (!key) return null
-  return t(key).split(' / ')[0].trim()
+  return (t(key).split(' / ')[0] ?? '').trim()
 }
 
 /**

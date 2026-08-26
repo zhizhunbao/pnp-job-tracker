@@ -76,7 +76,7 @@ export async function quizToProfile(a: QuizAnswers): Promise<void> {
 // 只在「、」「及」处切(不切「和」——中文译名里「汽车服务技师卡车和公共汽车机械师」切了会更怪)。
 export const shortOcc = (name: string): string => {   // landing 行情卡同用这把刀(2026-07-30 v2)
   let s = (name || '').replace(/[、,]?\s*(?:及|和)?其?(?:他)?相关[^、,]*(?:职业|工作)$/, '').trim()
-  s = s.split(/[、,]/)[0].trim()
-  s = s.split(/及/)[0].trim()
+  s = (s.split(/[、,]/)[0] ?? '').trim()
+  s = (s.split(/及/)[0] ?? '').trim()
   return s || name
 }

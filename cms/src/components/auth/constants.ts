@@ -96,6 +96,11 @@ export const CREDENTIALS_INCLUDE = 'include'
  * 重置密码时手上没有邮件 token 的写法:原样把空串发上去,由服务端判无效。
  * 空串在这一格的意思是「链接里没带 token」—— 前端自己抢着判,等于再编一套失败理由。
  */
+/**
+ * 头像色兜底:调色板空(不可能态,开灯批的显式落空)时不给色。
+ */
+export const AVATAR_COLOR_NONE = ''
+
 export const TOKEN_NONE = ''
 
 /**

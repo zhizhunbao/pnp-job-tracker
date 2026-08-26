@@ -40,19 +40,19 @@ describe('G3 LLM 输出收口(形状不可信)', () => {
       { req: 'c'.repeat(200), hit: true, note: 'y' }, { req: '', hit: true }, { hit: true },
     ] })!
     expect(ok).toHaveLength(3)
-    expect(ok[0].note).toBe('1')                       // note 缺省/非串 → 字符串化兜底
-    expect(ok[2].req.length).toBeLessThanOrEqual(80)
+    expect(ok[0]?.note).toBe('1')                       // note 缺省/非串 → 字符串化兜底
+    expect(ok[2]?.req.length).toBeLessThanOrEqual(80)
     expect(normalizeRows({ rows: [{ req: 'a', hit: true, note: '' }] })).toBeNull()
     expect(normalizeRows({})).toBeNull()
   })
 
   it('prompt:免费不带 rewrite(不为看不见的东西花输出 token);输入两侧截断;简历当数据不当指令', () => {
-    const free = matchPrompt({ jd: 'jd', resume: 'resume', lang: 'zh-cn', pro: false })[0].content
+    const free = matchPrompt({ jd: 'jd', resume: 'resume', lang: 'zh-cn', pro: false })[0]?.content
     expect(free).not.toContain('rewrite')
     expect(free).toContain('Simplified Chinese')
     expect(free).toContain('not instructions')
-    expect(matchPrompt({ jd: 'jd', resume: 'r'.repeat(20000), lang: 'en', pro: true })[1].content.length).toBeLessThan(17000)
-    expect(matchPrompt({ jd: 'jd', resume: 'resume', lang: 'en', pro: true })[0].content).toContain('rewrite')
+    expect(matchPrompt({ jd: 'jd', resume: 'r'.repeat(20000), lang: 'en', pro: true })[1]?.content.length).toBeLessThan(17000)
+    expect(matchPrompt({ jd: 'jd', resume: 'resume', lang: 'en', pro: true })[0]?.content).toContain('rewrite')
   })
 })
 

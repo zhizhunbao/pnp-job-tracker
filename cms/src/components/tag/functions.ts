@@ -4,6 +4,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { cssOf } from '@/components/css'
 import type { TagVariant } from './types'
 import css from './tag.module.css'
 
@@ -17,12 +18,12 @@ import css from './tag.module.css'
  */
 export function tagClsOf(variant: TagVariant): string {
   const variantCls: Record<TagVariant, string> = {
-    region: css.region,
-    federal: css.federal,
-    imp: css.imp,
-    warn: css.warn,
-    ok: css.ok,
-    pro: css.pro,
+    region: cssOf(css.region),
+    federal: cssOf(css.federal),
+    imp: cssOf(css.imp),
+    warn: cssOf(css.warn),
+    ok: cssOf(css.ok),
+    pro: cssOf(css.pro),
   }
   return `${css.tag} ${variantCls[variant]}`
 }

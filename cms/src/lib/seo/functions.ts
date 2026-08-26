@@ -133,8 +133,9 @@ export async function loadCompanyShardCount(input: ShardCountIn): ShardCountOut 
  */
 function shardsOf(rows: number[]): number {
   let n = 0
-  if (rows.length > 0) {
-    n = rows[0]
+  const rowsFirst = rows[0]
+  if (rowsFirst != null) {
+    n = rowsFirst
   }
   return Math.max(1, Math.ceil(n / SHARD_SIZE))
 }

@@ -9,18 +9,8 @@ import { useEffect, useRef, useState } from 'react'
 
 import { useSsrSession } from '@/components/auth'
 import {
-  ACCT_IN,
-  ACCT_LOADING,
-  ACCT_OUT,
-  API_ME,
-  CRED_INCLUDE,
-  HOVER_CLOSE_MS,
-  OVERFLOW_LOCK,
-  PUSH_RESET_MS,
-  PUSH_TRANSITION,
-  PUSH_X,
-  SEL_MAIN,
-  STYLE_RESET,
+  ACCT_IN, ACCT_LOADING, ACCT_OUT, API_ME, CRED_INCLUDE, HOVER_CLOSE_MS, OVERFLOW_LOCK, PUSH_RESET_MS,
+  PUSH_TRANSITION, PUSH_X, SEL_MAIN, STYLE_RESET,
 } from './constants'
 import { emptyUser, meToAcct } from './functions'
 import type { AcctHookIn, AcctPhase, AcctState, HoverOut, MeJson } from './types'

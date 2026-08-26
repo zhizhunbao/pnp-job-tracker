@@ -42,6 +42,7 @@ export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplet
   const at = Math.min(idx, Math.max(names.length - 1, 0))
   useEffect(() => { onStepChange?.(at, names.length) }, [at, names.length, onStepChange])
   const name = names[at]
+  if (name == null) return null
   const f = getFields()[name]
   if (!f) return null
   const q = f.q

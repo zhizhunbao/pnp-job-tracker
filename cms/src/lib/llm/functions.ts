@@ -18,7 +18,7 @@ import {
   ALPHA_BASE, ALPHA_LEN, ALPHA_ZERO, ANSWER_NONE, ANTHROPIC_MODEL, BACKEND, BLOCK_TEXT, BULLET_PREFIX, BULLET_RE, CACHE_HIT, CONTENT_TYPE_NONE, DELTA_NONE, DETAIL_NONE, E_TRANSLATE_UNAVAILABLE, FNV_PRIME, FNV_SEED_A, FNV_SEED_B, FRIEND_CALL_TIMEOUT_MS, FRIEND_INPUT_MAX, FRIEND_MAX_TOKENS, FRIEND_STREAM_TEMP, GATEWAY_BASE, GATEWAY_KEY, GATEWAY_MODEL, GATEWAY_TIMEOUT_MS, HEADER, KEEP_GROUP1, LEGACY_SOURCE_MAX, MD_BOLD, MD_DROP, MD_HEADING, MD_STARS, NEWS_BODY_CAP, NOT_STATED_RE, NUMBERED_SPLIT, NUMBER_HEAD, NUMBER_TAIL, OLLAMA_COMPLETE_TEMP, OLLAMA_MODEL, OLLAMA_STREAM_TEMP, OLLAMA_URL, PARA, PARA_JOIN, PARA_SPLIT_RE, PART_NONE, PATH_LEGACY, PATH_OLLAMA, PATH_TRANSLATE, PATH_V1, POST, PREFIX_NONE, PROTOCOL, PROVIDER, REF_HEAD, REF_SALT_SEP, REF_TAIL, ROLE, SALT_NONE, SOURCE_URL_NONE, SSE_BLOCK_SEP, SSE_DATA, SSE_DATA_LEN, SSE_DONE, SSE_LINE_SEP, STALL, STOP_REFUSAL, STREAM_EVENT, SUMMARY_BODY_CAP, SUMMARY_MIN_LEN, TAIL_NONE, TEXT_START, TRANSLATED_EMPTY, TRANSLATE_CHUNK, TRANSLATE_ROUTE_TIMEOUT_MS, TRANSLATE_SOURCE, TRANSLATE_TRIES, UPSTREAM_TEXT_NONE, VIA, WEB_FETCH, WHY_NONE,
 } from './constants'
 import type {
-  Alpha7In, Alpha7Out, AnthropicMessage, AnthropicParams, AnthropicStreamIn, AnthropicStreamParams, ArmOut, BackendStreamIn, BackendStreamOut, CharCountIn, CharCountOut, CompleteBackendIn, CompleteBackendOut, CompleteFriendIn, CompleteTextIn, CompleteTextOut, ContentTagIn, ContentTagOut, EmptyTextOut, Fnv1aIn, Fnv1aOut, FriendChatIn, FriendChatMaybeOut, FriendChatOut, FriendLlmReadyOut, FriendResult, GatewayMessage, GatewayMessagesIn, GatewayMessagesOut, IgnoreOut, LegacyRequest, LegacyResponse, MakeWatchIn, MakeWatchOut, NullJsonOut, NumberLinesIn, NumberLinesOut, OllamaRequest, OllamaResponse, OnEndOut, OnErrorIn, OnErrorOut, OnTextIn, OnTextOut, OrTextIn, OrTextOut, ParasStrictIn, ParasStrictOut, ParseNumberedIn, ParseNumberedOut, PlainLinesIn, PostJsonIn, PostJsonOut, ReadV1SseIn, ReadV1SseOut, RefPromptIn, RefPromptOut, SectionJob, SectionedIn, SectionedPOut, SendV1In, SendV1Out, SourceUrlIn, SourceUrlOut, SplitMessagesIn, SplitMessagesOut, StreamChatIn, StreamChatOut, StripMdIn, StripMdOut, SummarizeNewsIn, SummarizeNewsOut, SystemOfIn, SystemOfOut, TextOfIn, TextOfOut, TranslateChunkIn, TranslateChunkOut, TranslateLinesIn, TranslateLinesOut, TranslateReadyOut, TranslateResponse, TurnsOfIn, TurnsOfOut, V1AnswerOfIn, V1AnswerOfOut, V1Request, V1Response, WatchWhy, WebFetchToolIn, WebFetchToolOut,
+  Alpha7In, Alpha7Out, AnthropicMessage, AnthropicParams, AnthropicStreamIn, AnthropicStreamParams, ArmOut, BackendStreamIn, BackendStreamOut, CharCountIn, CharCountOut, CompleteBackendIn, CompleteBackendOut, CompleteFriendIn, CompleteTextIn, CompleteTextOut, ContentTagIn, ContentTagOut, EmptyTextOut, Fnv1aIn, Fnv1aOut, FriendChatIn, FriendChatMaybeOut, FriendChatOut, FriendLlmReadyOut, FriendResult, GatewayMessage, GatewayMessagesIn, GatewayMessagesOut, IgnoreOut, LegacyRequest, LegacyResponse, MakeWatchIn, MakeWatchOut, MaybeV1Choice, MaybeV1Response, NullJsonOut, NumberLinesIn, NumberLinesOut, OllamaRequest, OllamaResponse, OnEndOut, OnErrorIn, OnErrorOut, OnTextIn, OnTextOut, OrTextIn, OrTextOut, ParasStrictIn, ParasStrictOut, ParseNumberedIn, ParseNumberedOut, PlainLinesIn, PostJsonIn, PostJsonOut, ReadV1SseIn, ReadV1SseOut, RefPromptIn, RefPromptOut, SectionJob, SectionedIn, SectionedPOut, SendV1In, SendV1Out, SourceUrlIn, SourceUrlOut, SplitMessagesIn, SplitMessagesOut, StreamChatIn, StreamChatOut, StripMdIn, StripMdOut, SummarizeNewsIn, SummarizeNewsOut, SystemOfIn, SystemOfOut, TextOfIn, TextOfOut, TranslateChunkIn, TranslateChunkOut, TranslateLinesIn, TranslateLinesOut, TranslateReadyOut, TranslateResponse, TurnsOfIn, TurnsOfOut, V1AnswerOfIn, V1AnswerOfOut, V1LogMeta, V1Request, V1Response, WatchWhy, WebFetchToolIn, WebFetchToolOut,
 } from './types'
 
 // =========================================================================
@@ -190,8 +190,8 @@ async function postJson(input: PostJsonIn): PostJsonOut {
     [HEADER.contentType]: HEADER.json,
     [HEADER.auth]: HEADER.bearer + GATEWAY_KEY,
   }
-  for (const name of Object.keys(input.extraHeaders)) {
-    headers[name] = input.extraHeaders[name]
+  for (const [name, v] of Object.entries(input.extraHeaders)) {
+    headers[name] = v
   }
   try {
     return await fetch(`${GATEWAY_BASE}${input.path}`, {
@@ -262,8 +262,8 @@ async function readV1Sse(input: ReadV1SseIn): ReadV1SseOut {
         try {
           const parsed: V1Response = JSON.parse(raw)
           let t = DELTA_NONE
-          if (parsed.choices != null && parsed.choices.length > 0) {
-            const choice = parsed.choices[0]
+          const choice = v1ChoiceOf(parsed)
+          if (choice != null) {
             if (choice.delta != null && choice.delta.content != null) {
               t = choice.delta.content
             } else if (choice.message != null && choice.message.content != null) {
@@ -413,6 +413,25 @@ async function chatV1(input: FriendChatIn): FriendChatOut {
   if (answer === '') {
     throw gatewayError({ msg: `${GATEWAY_MSG.emptyChoices}${orText({ v: xCache, fallback: LLM_LOG.none })}${GATEWAY_MSG.parenEnd}`, code: FRIEND_CODE.empty })
   }
+  const meta = v1LogMetaOf(body)
+  log({
+    tag: LLM_LOG.tag,
+    text: `${LLM_LOG.v1Ok}${streamed}${LLM_LOG.xCache}${orText({ v: xCache, fallback: LLM_LOG.none })}${LLM_LOG.in}${chars}${LLM_LOG.ch}`
+      + `${LLM_LOG.out}${answer.length}${LLM_LOG.ch}${LLM_LOG.tok}${meta.promptTok}`
+      + `${LLM_LOG.slash}${meta.complTok}`
+      + `${LLM_LOG.finish}${meta.finish}`,
+  })
+  return { answer, sources: [], cached: xCache === CACHE_HIT, via: VIA.v1, xCache }
+}
+
+
+/**
+ * 回包里进日志的三样元数据(用量与收尾原因);回包没带的用「missing」占位。
+ *
+ * @param body 解析好的回包;没有 null。
+ * @returns 三样元数据。
+ */
+function v1LogMetaOf(body: MaybeV1Response): V1LogMeta {
   let promptTok: string | number = LLM_LOG.missing
   let complTok: string | number = LLM_LOG.missing
   if (body != null && body.usage != null) {
@@ -424,19 +443,33 @@ async function chatV1(input: FriendChatIn): FriendChatOut {
     }
   }
   let finish: string = LLM_LOG.missing
-  if (body != null && body.choices != null && body.choices.length > 0 && body.choices[0].finish_reason != null) {
-    finish = body.choices[0].finish_reason
+  let finishChoice = null
+  if (body != null) {
+    finishChoice = v1ChoiceOf(body)
   }
-  log({
-    tag: LLM_LOG.tag,
-    text: `${LLM_LOG.v1Ok}${streamed}${LLM_LOG.xCache}${orText({ v: xCache, fallback: LLM_LOG.none })}${LLM_LOG.in}${chars}${LLM_LOG.ch}`
-      + `${LLM_LOG.out}${answer.length}${LLM_LOG.ch}${LLM_LOG.tok}${promptTok}`
-      + `${LLM_LOG.slash}${complTok}`
-      + `${LLM_LOG.finish}${finish}`,
-  })
-  return { answer, sources: [], cached: xCache === CACHE_HIT, via: VIA.v1, xCache }
+  if (finishChoice != null && finishChoice.finish_reason != null) {
+    finish = finishChoice.finish_reason
+  }
+  return { promptTok: promptTok, complTok: complTok, finish: finish }
 }
 
+/**
+ * 回包的第 0 条候选;choices 缺席/空数组统一在这儿收成 null(开灯批 2026-08-26,
+ * 顺带把 chatV1 压回行数限)。
+ *
+ * @param parsed 解析好的回包。
+ * @returns 第 0 条候选;没有 null。
+ */
+function v1ChoiceOf(parsed: V1Response): MaybeV1Choice {
+  if (parsed.choices == null) {
+    return null
+  }
+  const c0 = parsed.choices[0]
+  if (c0 == null) {
+    return null
+  }
+  return c0
+}
 /**
  * /v1 回包里取答案正文;取不到就空串(空答案由调用方按「绝不交出去」的兜底处理)。
  *
@@ -447,7 +480,11 @@ function v1AnswerOf(input: V1AnswerOfIn): V1AnswerOfOut {
   if (input.body == null || input.body.choices == null || input.body.choices.length === 0) {
     return ANSWER_NONE
   }
-  const msg = input.body.choices[0].message
+  const answerChoice = input.body.choices[0]
+  if (answerChoice == null) {
+    return ANSWER_NONE
+  }
+  const msg = answerChoice.message
   if (msg == null || msg.content == null) {
     return ANSWER_NONE
   }
@@ -1022,8 +1059,9 @@ function parseNumbered(input: ParseNumberedIn): ParseNumberedOut {
   const d: ParseNumberedOut = new Map()
   for (let i = 1; i + 1 < parts.length + 1; i += 2) {
     let part = PART_NONE
-    if (i + 1 < parts.length) {
-      part = parts[i + 1]
+    const nextPart = parts[i + 1]
+    if (nextPart != null) {
+      part = nextPart
     }
     const t = stripMd({ text: part }).trim()
     if (t) {
@@ -1124,12 +1162,20 @@ export async function translateSectioned(input: SectionedIn): SectionedPOut {
   const lines = input.text.split(SSE_LINE_SEP)
   const jobs: SectionJob[] = []
   for (let idx = 0; idx < lines.length; idx++) {
-    let l = lines[idx].trim()
+    const rawLine = lines[idx]
+    if (rawLine == null) {
+      continue
+    }
+    let l = rawLine.trim()
     let prefix = PREFIX_NONE
     const mk = input.marks.exec(l)
     if (mk != null) {
-      prefix = mk[1]
-      l = mk[2].trim()
+      const g1 = mk[1]
+      const g2 = mk[2]
+      if (g1 != null && g2 != null) {
+        prefix = g1
+        l = g2.trim()
+      }
     }
     if (l === '' || NOT_STATED_RE.test(l)) {
       continue
@@ -1137,8 +1183,11 @@ export async function translateSectioned(input: SectionedIn): SectionedPOut {
     if (input.bullets) {
       const b = BULLET_RE.exec(l)
       if (b != null) {
-        prefix = prefix + BULLET_PREFIX
-        l = b[2]
+        const g2 = b[2]
+        if (g2 != null) {
+          prefix = prefix + BULLET_PREFIX
+          l = g2
+        }
       }
     }
     jobs.push({ idx: idx, prefix: prefix, body: l })
@@ -1162,10 +1211,10 @@ export async function translateSectioned(input: SectionedIn): SectionedPOut {
   }
   const result = lines.slice()
   let full = true
-  for (let i = 0; i < jobs.length; i++) {
+  for (const [i, job] of jobs.entries()) {
     const t = translated[i]
     if (t != null) {
-      result[jobs[i].idx] = jobs[i].prefix + t
+      result[job.idx] = job.prefix + t
     } else {
       full = false
     }
@@ -1203,12 +1252,12 @@ export async function translatePlainLines(input: PlainLinesIn): SectionedPOut {
   }
   const out: string[] = []
   let full = true
-  for (let i = 0; i < lines.length; i++) {
+  for (const [i, srcLine] of lines.entries()) {
     const t = translated[i]
     if (t != null) {
       out.push(t)
     } else {
-      out.push(lines[i])
+      out.push(srcLine)
       full = false
     }
   }

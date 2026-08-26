@@ -10,7 +10,7 @@ const fpBuckets = new Map<string, { h: string; n: number }>()
 
 export function middleware(req: NextRequest) {
   if (req.nextUrl.pathname === '/api/users/forgot-password' && req.method === 'POST') {
-    const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'local'
+    const ip = ((req.headers.get('x-forwarded-for') || '').split(',')[0] || '').trim() || 'local'
     const h = new Date().toISOString().slice(0, 13)  // 小时粒度
     const b = fpBuckets.get(ip)
     const n = b && b.h === h ? b.n : 0

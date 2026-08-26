@@ -4,6 +4,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { cssOf } from '@/components/css'
 import { CLS_SEP } from './constants'
 import type { NoticeClsIn, NoticeKind } from './types'
 import css from './notice.module.css'
@@ -17,10 +18,10 @@ import css from './notice.module.css'
  */
 export function noticeClsOf(x: NoticeClsIn): string {
   const kindCls: Record<NoticeKind, string> = {
-    warn: css.warn,
-    err: css.err,
-    info: css.info,
-    ok: css.ok,
+    warn: cssOf(css.warn),
+    err: cssOf(css.err),
+    info: cssOf(css.info),
+    ok: cssOf(css.ok),
   }
   const cls = [css.notice, kindCls[x.kind]]
   if (x.className != null) {

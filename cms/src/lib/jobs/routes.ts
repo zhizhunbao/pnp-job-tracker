@@ -275,7 +275,11 @@ export async function jobsApplyhowRoute(req: Request): Promise<Response> {
   if (JB_POSTING_RE.test(raw) === false) {
     return Response.json({ email: MAIL_NONE })
   }
-  const key = raw.split(URL_CUT_RE)[0]
+  const keyHead = raw.split(URL_CUT_RE)[0]
+  let key = PARAM_NONE
+  if (keyHead != null) {
+    key = keyHead
+  }
   const hit = CACHE.applyMail.get(key)
   if (hit != null) {
     return Response.json({ email: hit })

@@ -278,7 +278,7 @@ export const BLOCK_COST: Record<string, number> = {
  * 与 `BLOCK_COST` 是两把不同的尺:那把量「这道闸多难拆」,这把量「这条通道整体排在哪」,
  * 所以它多出 none / unknown / excluded 三档。两张表的**相对次序必须一致**,改一张要回头对另一张。
  */
-export const RANK: Record<string, number> = {
+export const RANK = {
   /**
    * 一道闸都不差 —— 现在就能走。
    */
@@ -2660,7 +2660,7 @@ export const SUM_KIND = {
  *
  * 🔴 **不补默认**:对不上就 null(needs-info 是实话)。
  */
-export const STATUS_OF: Record<string, string> = {
+export const STATUS_OF = {
   /**
    * 持 PGWP。
    */

@@ -13,50 +13,12 @@ import { AUTH_LOG, log } from '../log'
 import { getFieldsToSign, getPayload, jwtSign } from 'payload'
 import config from '@/payload.config'
 import {
-  BEARER_PREFIX,
-  CALLBACK_PATH,
-  CONSENT_STATIC,
-  COOKIE_PREFIX_DEFAULT,
-  COOKIE_RE_HEAD,
-  COOKIE_RE_TAIL,
-  EMAIL_NONE,
-  FLOW_COOKIE_TAIL,
-  FORM_MIME,
-  GOOGLE_AUTH_URL,
-  GOOGLE_CLIENT_ID,
-  GOOGLE_CLIENT_SECRET,
-  GOOGLE_TOKEN_URL,
-  GOOGLE_USERINFO_URL,
-  GRANT_AUTH_CODE,
-  HEX_PAD,
-  HEX_SEP,
-  HTTPONLY_TAIL,
-  HTTPS_PREFIX,
-  KV_EQ,
-  K_FAIL,
-  K_OK,
-  LI_PAIR,
-  LOG_CONSENT,
-  LOG_EMAIL,
-  LOG_ENV_MISSING,
-  LOG_LOGIN,
-  LOG_NO_CODE,
-  LOG_STATE,
-  LOG_TOKEN,
-  METHOD_POST,
-  PARAM_CLIENT_ID,
-  PARAM_REDIRECT,
-  PARAM_STATE,
-  PROVIDER_GOOGLE,
-  RETURN_RE,
-  ROOT_PATH,
-  SECURE_TAIL,
-  SECURE_TAIL_NONE,
-  SESSION_COOKIE_TAIL,
-  SITE,
-  SSR_TOKEN_COOKIE,
-  TOKEN_NAME_TAIL,
-  USERS,
+  BEARER_PREFIX, CALLBACK_PATH, CONSENT_STATIC, COOKIE_PREFIX_DEFAULT, COOKIE_RE_HEAD, COOKIE_RE_TAIL, EMAIL_NONE,
+  FLOW_COOKIE_TAIL, FORM_MIME, GOOGLE_AUTH_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_TOKEN_URL,
+  GOOGLE_USERINFO_URL, GRANT_AUTH_CODE, HEX_PAD, HEX_SEP, HTTPONLY_TAIL, HTTPS_PREFIX, KV_EQ, K_FAIL, K_OK, LI_PAIR,
+  LOG_CONSENT, LOG_EMAIL, LOG_ENV_MISSING, LOG_LOGIN, LOG_NO_CODE, LOG_STATE, LOG_TOKEN, METHOD_POST,
+  PARAM_CLIENT_ID, PARAM_REDIRECT, PARAM_STATE, PROVIDER_GOOGLE, RETURN_RE, ROOT_PATH, SECURE_TAIL, SECURE_TAIL_NONE,
+  SESSION_COOKIE_TAIL, SITE, SSR_TOKEN_COOKIE, TOKEN_NAME_TAIL, USERS
 } from './constants'
 import type {
   AliveFn, CallbackOut, GoogleCallbackIn, Clock, ConfigWithPrefix, ExchangeIn, GoogleLogin, GoogleLoginIn, GoogleLoginOut, GoogleUserOut,
@@ -151,7 +113,11 @@ export function readCookie(input: ReadCookieIn): MaybeCookie {
   if (hit == null) {
     return null
   }
-  return hit[1]
+  const v = hit[1]
+  if (v == null) {
+    return null
+  }
+  return v
 }
 
 /**
@@ -291,8 +257,8 @@ export async function loginWithGoogle(input: GoogleLoginIn): GoogleLoginOut {
   }
   sessions.push({ id: sid, createdAt: now.toISOString(), expiresAt: new Date(now.getTime() + tokenExpiration * 1000).toISOString() })
   const data: Record<string, string | SessionEntry[]> = { sessions: sessions }
-  for (const k of Object.keys(backfill)) {
-    data[k] = backfill[k]
+  for (const [k, v] of Object.entries(backfill)) {
+    data[k] = v
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- payload 生成型接缝(理由见函数 JSDoc)
   await payload.update({ collection: USERS, id: user.id, overrideAccess: true, data: data as any })

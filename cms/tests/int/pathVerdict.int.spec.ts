@@ -199,7 +199,7 @@ describe('金标 ①:排除两条,各带官方 quote', () => {
     const pe5 = run({ ...C01, noc: '65200', teer: 5 }).find((v) => v.key === 'PE-sw')!
     const hard = pe5.reasons.filter((r) => r.kind === 'excluded')
     expect(hard).toHaveLength(1)
-    expect(hard[0].quote).toContain('named NOC list')
+    expect(hard[0]?.quote).toContain('named NOC list')
   })
 
   it('PEI 在需清单里确实只有助工 75110、没有木匠 72310(排除理由的事实底座)', () => {
@@ -281,7 +281,7 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
     const lastBuild = data.draws.filter((d) => d.province === 'BC' && /Build: Construction Trades/.test(d.stream) && d.score != null)
       .sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1))[0]
     expect(lastBuild, 'BC Build 抽选行不该消失').toBeTruthy()
-    expect(build.reasons.some((r) => r.text.includes(String(lastBuild.score)) && /最低邀请分/.test(r.text))).toBe(true)
+    expect(build.reasons.some((r) => r.text.includes(String(lastBuild?.score)) && /最低邀请分/.test(r.text))).toBe(true)
     expect(build.score, 'BC 没有自评估分器 → 不给 score,只摆线').toBeUndefined()
   })
 
@@ -324,7 +324,7 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
       const tiers = list.filter((v) => obstacle(v) === r).map((v) => v.tier ?? 9)
       expect(tiers, `难度 ${r} 档内 tier 应升序`).toEqual([...tiers].sort((a, b) => a - b))
     }
-    expect(list[list.length - 1].verdict).toBe('excluded')
+    expect(list[list.length - 1]?.verdict).toBe('excluded')
   })
 
   it('语言差档不再冒充「现在就能走」:联邦 EE 被标 blockedBy=language 并让位', () => {
@@ -339,7 +339,7 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
     }, data)
     const ee = weak.find((v) => v.key === 'FED-EE')!
     expect(ee.blockedBy).toBe('language')
-    expect(weak[0].key).not.toBe('FED-EE')
+    expect(weak[0]?.key).not.toBe('FED-EE')
     // 理由还在(判定卡照旧摆官方门槛),只是不再顶到方案第一位
     expect(ee.reasons.some((r) => r.kind === 'gap' && /语言门槛/.test(r.text))).toBe(true)
   })
@@ -499,16 +499,16 @@ describe('金标 ③:AIP 门槛已入库,判得了', () => {
     it(`teer-0-3 闭区间:TEER ${teer} 的 offer 挑得到 AIP 语言行 CLB 5`, () => {
       const rows = aipLangOf(teer)
       expect(rows, `TEER ${teer} 一条语言行都没挑到`).toHaveLength(1)
-      expect(rows[0].text).toContain('CLB 5')
-      expect(rows[0].kind).toBe('met')                    // C01 是 CLB 6
-      expect(rows[0].quote).toContain('CLB 5 for job offer in TEER 0, 1, 2 or 3')
+      expect(rows[0]?.text).toContain('CLB 5')
+      expect(rows[0]?.kind).toBe('met')                    // C01 是 CLB 6
+      expect(rows[0]?.quote).toContain('CLB 5 for job offer in TEER 0, 1, 2 or 3')
     })
   }
 
   it('teer-4:TEER 4 走 CLB 4 那一档,不串到 CLB 5', () => {
     const rows = aipLangOf(4)
     expect(rows).toHaveLength(1)
-    expect(rows[0].text).toContain('CLB 4')
+    expect(rows[0]?.text).toContain('CLB 4')
   })
 
   it('未收录语言门槛的假话不再出现(TEER 1/2 曾是重灾区)', () => {
@@ -863,7 +863,7 @@ describe('#301 官方分值表接线', () => {
     // 线只许来自抽选行
     const line = data.draws.filter((d) => d.province === 'AB' && d.kind === 'draw' && d.score != null
       && /Alberta Opportunity/i.test(d.stream)).sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1))[0]
-    expect(ab.score!.refLine).toBe(line.score)
+    expect(ab.score!.refLine).toBe(line?.score)
   })
 
   it('分值一分不许编:估分等于官方行加出来的数(拿 pnpSelfScore 独立算一遍对账)', () => {
@@ -905,10 +905,10 @@ describe('jobPathways:72310 TEER 2 的职业级名单', () => {
 
   it('14 条全出;按经验门槛升序;NL(0 月)第一;PE 清单排除沉底', () => {
     expect(rows).toHaveLength(14)
-    expect(rows[0].key).toBe('NL-intl-grad')
-    expect(rows[0].months).toBe(0)
-    expect(rows[rows.length - 1].key).toBe('PE-sw')
-    expect(rows[rows.length - 1].excludedByList).toBe(true)
+    expect(rows[0]?.key).toBe('NL-intl-grad')
+    expect(rows[0]?.months).toBe(0)
+    expect(rows[rows.length - 1]?.key).toBe('PE-sw')
+    expect(rows[rows.length - 1]?.excludedByList).toBe(true)
     const months = rows.filter((r) => !r.excludedByList && r.availability === 'ok').map((r) => r.months as number)
     expect(months).toEqual([...months].sort((a, b) => a - b))
   })

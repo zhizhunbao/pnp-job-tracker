@@ -50,7 +50,10 @@ export function AccountMenu({ t, email, displayName, avatar, isPro, proUntil, on
   if (displayName != null && displayName.trim() !== '') {
     shortName = displayName.trim()
   } else if (email != null) {
-    shortName = email.split(MAIL_AT)[0]
+    const head = email.split(MAIL_AT)[0]
+    if (head != null) {
+      shortName = head
+    }
   }
   let btnTitle = TITLE_NONE
   if (displayName != null && displayName.trim() !== '') {

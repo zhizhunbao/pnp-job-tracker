@@ -93,7 +93,7 @@ const gateStatesOf = (v: PathwayVerdict): Partial<Record<GateKey, GateState>> =>
 }
 
 /** 库里没有该通道的门槛行时引擎的早退形态(见文件头「坑」) */
-const isNoReqStub = (v: PathwayVerdict): boolean => v.reasons.length === 1 && v.reasons[0].key === 'pv.noReq'
+const isNoReqStub = (v: PathwayVerdict): boolean => v.reasons.length === 1 && v.reasons[0]?.key === 'pv.noReq'
 
 /** 判定的逐字节指纹,**去掉 tierBasis**。
  *  tierBasis(#319)按设计就是 `status` 的函数:在读学生的「再攒 N 个月」要等毕业拿到工签才开始走,
@@ -131,15 +131,16 @@ const withFrags = (...frags: Frag[]): VerdictProfile => Object.assign({}, BASE, 
 function pairwise(groups: Frag[][]): Frag[] {
   const live = groups.filter((g) => g.length > 0)
   if (!live.length) return [{}]
-  if (live.length === 1) return live[0]
+  const liveOnly = live[0]
+  if (live.length === 1 && liveOnly != null) return liveOnly
   const out: Frag[] = []
   for (let i = 0; i < live.length; i++) {
     for (let j = i + 1; j < live.length; j++) {
-      for (let a = 0; a < live[i].length; a++) {
-        for (let b = 0; b < live[j].length; b++) {
+      for (let a = 0; a < (live[i]?.length ?? 0); a++) {
+        for (let b = 0; b < (live[j]?.length ?? 0); b++) {
           const merged: Frag = {}
           live.forEach((g, k) => {
-            Object.assign(merged, k === i ? live[i][a] : k === j ? live[j][b] : g[(a + b + k) % g.length])
+            Object.assign(merged, k === i ? live[i]?.[a] ?? {} : k === j ? live[j]?.[b] ?? {} : g[(a + b + k) % g.length] ?? {})
           })
           out.push(merged)
         }
@@ -483,7 +484,7 @@ describe('铁律④:通道没声明的闸,它读的字段怎么摇都不许影�
         })
         const first = shots[0]
         for (const s of shots.slice(1)) {
-          if (s.json !== first.json) bad.push(`${spec.key} 不该读 ${String(field)},但 ${first.frag} 与 ${s.frag} 判定不同`)
+          if (s.json !== first?.json) bad.push(`${spec.key} 不该读 ${String(field)},但 ${first?.frag} 与 ${s.frag} 判定不同`)
         }
       }
     }

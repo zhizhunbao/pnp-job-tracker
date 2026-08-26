@@ -314,10 +314,11 @@ function nocScore(input: NocScoreIn): NocScoreOut {
     }
   }
   hits.sort(byLengthDesc)
-  if (hits.length === 0) {
+  const hitsFirst = hits[0]
+  if (hitsFirst == null) {
     return NOC_MISS
   }
-  return hits[0].length
+  return hitsFirst.length
 }
 
 /**
@@ -470,10 +471,11 @@ function pickLanguageRow(input: PickLanguageRowIn): PickLanguageRowOut {
     }
   }
   scored.sort(byScoreDesc)
-  if (scored.length === 0) {
+  const scoredFirst = scored[0]
+  if (scoredFirst == null) {
     return null
   }
-  return scored[0].r
+  return scoredFirst.r
 }
 
 /**
@@ -601,20 +603,21 @@ function tenureResult(input: FactorIn): FactorOneOut {
       rows.push(r)
     }
   }
-  if (rows.length === 0) {
+  rows.sort(byValueAsc)
+  const rowsFirst = rows[0]
+  if (rowsFirst == null) {
     return null
   }
-  rows.sort(byValueAsc)
   let tiers: RuleResult['tiers'] = tiersOfCondition({ rows: rows })
   if (rows.length <= 1) {
     tiers = null
   }
   return {
     factor: FACTOR.experience, subject: SUBJECT.applicant, basis: BASIS.employerTenure,
-    verdict: ITEM.unknown, need: rows[0].value, needLow: null, have: null, short: null,
-    unit: rows[0].unit,
+    verdict: ITEM.unknown, need: rowsFirst.value, needLow: null, have: null, short: null,
+    unit: rowsFirst.unit,
     tiers: tiers,
-    evidence: evidenceOf({ r: rows[0] }),
+    evidence: evidenceOf({ r: rowsFirst }),
   }
 }
 
@@ -797,10 +800,10 @@ function languageExemptResult(input: FactorIn): FactorOneOut {
  */
 function wageResult(input: FactorIn): FactorOneOut {
   const rows = rowsOfFactor({ reqs: input.reqs, factor: FACTOR.wage, subject: SUBJECT.applicant })
-  if (rows.length === 0) {
+  const wage = rows[0]
+  if (wage == null) {
     return null
   }
-  const wage = rows[0]
   let need = wage.value
   if (wage.basis === BASIS.occMedian) {
     need = input.profile.annualIncome
@@ -825,10 +828,10 @@ function employerYearsResult(input: FactorIn): FactorOneOut {
   const rows = rowsOfFactor({
     reqs: input.reqs, factor: FACTOR.empYears, subject: SUBJECT.employer,
   })
-  if (rows.length === 0) {
+  const row = rows[0]
+  if (row == null) {
     return null
   }
-  const row = rows[0]
   return {
     factor: FACTOR.empYears, subject: SUBJECT.employer, verdict: ITEM.unknown, need: row.value,
     needLow: null, have: null, short: null, unit: row.unit, basis: null, tiers: null, evidence: evidenceOf({ r: row }),
@@ -854,18 +857,20 @@ function employerTieredResults(input: FactorIn): FactorManyOut {
         rows.push(r)
       }
     }
-    if (rows.length === 0) {
+    rows.sort(byValueDesc)
+    const rowsTop = rows[0]
+    if (rowsTop == null) {
       continue
     }
-    rows.sort(byValueDesc)
     let needLow: number | null = null
-    if (rows.length > 1) {
-      needLow = rows[rows.length - 1].value
+    const rowsTail = rows[rows.length - 1]
+    if (rows.length > 1 && rowsTail != null) {
+      needLow = rowsTail.value
     }
     out.push({
-      factor: factor, subject: SUBJECT.employer, verdict: ITEM.unknown, need: rows[0].value,
+      factor: factor, subject: SUBJECT.employer, verdict: ITEM.unknown, need: rowsTop.value,
       needLow: needLow,
-      have: null, short: null, unit: rows[0].unit, basis: null, evidence: evidenceOf({ r: rows[0] }),
+      have: null, short: null, unit: rowsTop.unit, basis: null, evidence: evidenceOf({ r: rowsTop }),
       tiers: tiersOfArea({ rows: rows }),
     })
   }

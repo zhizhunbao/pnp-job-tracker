@@ -100,8 +100,9 @@ export function martPaths(name: string): MartPathsOut {
       return [single]
     }
   }
-  if (fs.existsSync(dirs[0]) === false && fs.existsSync(dirs[1]) === false) {
-    throw new Error(`mart no data source: neither ${dirs[0]} nor ${dirs[1]} exists (upload lost? rolling back)`)
+  const [dirA, dirB] = dirs
+  if (dirA != null && dirB != null && fs.existsSync(dirA) === false && fs.existsSync(dirB) === false) {
+    throw new Error(`mart no data source: neither ${dirA} nor ${dirB} exists (upload lost? rolling back)`)
   }
   return []
 }

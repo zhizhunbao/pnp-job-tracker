@@ -7,6 +7,7 @@
  * @author Frank
  * @time 2026-08-24 08:00:00
  */
+import { cssOf } from '@/components/css'
 import { IconChevronDown } from '@/components/icons'
 import { LinkButton } from '@/components/button'
 import { withOn } from './functions'
@@ -29,12 +30,13 @@ export function NavDrop({ label, icon, highlight, items }: NavDropIn) {
       on = true
     }
     links.push(
-      <LinkButton key={it.href} href={it.href} className={withOn({ base: css.dropItem, on })}>{it.label}</LinkButton>,
+      <LinkButton key={it.href} href={it.href}
+        className={withOn({ base: cssOf(css.dropItem), on })}>{it.label}</LinkButton>,
     )
   }
   return (
     <span className={css.dropWrap} onMouseEnter={h.enter} onMouseLeave={h.leave} onFocus={h.enter} onBlur={h.onBlur}>
-      <button className={withOn({ base: css.dropBtn, on: highlight })} onClick={h.toggle}>
+      <button className={withOn({ base: cssOf(css.dropBtn), on: highlight })} onClick={h.toggle}>
         {icon} {label} <span className={css.dropCaret}><IconChevronDown /></span>
       </button>
       {h.open && <span className={css.dropPanel}>{links}</span>}

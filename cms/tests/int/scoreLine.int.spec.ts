@@ -112,7 +112,7 @@ describe('排序里的位置', () => {
       row({ key: 'ab-above', province: 'AB', aboveLine: true }),
       row({ key: 'on-home', province: 'ON' }),
     ], ctx: home })
-    expect(out[0].key).toBe('on-home')
+    expect(out[0]?.key).toBe('on-home')
   })
 
   it('够得着也翻不过 0 岗沉底', () => {

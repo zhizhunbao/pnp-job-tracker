@@ -241,6 +241,36 @@ export type V1Choice = {
 }
 
 /**
+ * 第 0 条候选或没有(v1ChoiceOf 的返回)。
+ */
+export type MaybeV1Choice = V1Choice | null
+
+/**
+ * 回包或没有(网关 JSON 解不出时是 null)。
+ */
+export type MaybeV1Response = V1Response | null
+
+/**
+ * 回包里进日志的三样元数据(v1LogMetaOf 的返回)。
+ */
+export type V1LogMeta = {
+  /**
+   * 送进去的 token 数;回包没带用「missing」占位。
+   */
+  promptTok: string | number
+
+  /**
+   * 吐出来的 token 数;同上占位。
+   */
+  complTok: string | number
+
+  /**
+   * 收尾原因;同上占位。
+   */
+  finish: string
+}
+
+/**
  * /v1 的回包。
  */
 export type V1Response = {

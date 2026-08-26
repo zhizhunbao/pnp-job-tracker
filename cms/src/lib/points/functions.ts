@@ -449,10 +449,10 @@ export function scoreProvince(input: ScoreProvinceIn): ScoreProvinceOut {
       all.push(f)
     }
   }
-  if (all.length === 0) {
+  const head = all[0]
+  if (head == null) {
     return null
   }
-  const head = all[0]
 
   const names: string[] = []
   for (const f of all) {
@@ -503,10 +503,11 @@ function factorPart(input: FactorPartIn): FactorPartOut {
   const bonusRows = rowsOf({ rows: mine, kind: KIND.bonus })
   let group = GROUP_NONE
   let max = 0
-  if (mine.length > 0) {
-    group = mine[0].factorGroup || GROUP_NONE
-    if (mine[0].factorMax != null) {
-      max = mine[0].factorMax
+  const mineFirst = mine[0]
+  if (mineFirst != null) {
+    group = mineFirst.factorGroup || GROUP_NONE
+    if (mineFirst.factorMax != null) {
+      max = mineFirst.factorMax
     }
   }
 
@@ -623,8 +624,7 @@ export function bonusPoints(input: BonusPointsIn): BonusPointsOut {
   let sum = 0
   let groupBest = 0
   let inGroup = false
-  for (let i = 0; i < list.length; i += 1) {
-    const b = list[i]
+  for (const [i, b] of list.entries()) {
     const on = Boolean(input.ticks[`${input.prefix}${TICK_SEP}${i}`])
     let bPts = 0
     if (b.points != null) {
@@ -634,7 +634,8 @@ export function bonusPoints(input: BonusPointsIn): BonusPointsOut {
     if (on) {
       mine = bPts
     }
-    if (i + 1 < list.length && list[i + 1].xorPrev) {
+    const nextB = list[i + 1]
+    if (nextB != null && nextB.xorPrev) {
       inGroup = true
       groupBest = Math.max(groupBest, mine)
       continue
@@ -2072,16 +2073,17 @@ function mbLanguagePart(input: MbPartIn): MbPartOut {
   }
   const lang2Rows = mbRowsOf({ rows: input.rows, factor: MB_FACTOR.language, kind: KIND.bonus })
   let secondNote = MB_NOTE_NONE
-  if (input.profile.secondLangClb5Plus && lang2Rows.length > 0) {
-    const lang2 = lang2Rows[0]
+  const lang2 = lang2Rows[0]
+  if (input.profile.secondLangClb5Plus && lang2 != null) {
     if (lang2.points != null) {
       pts += lang2.points
     }
     secondNote = `${MB_JOIN.plus}${lang2.label}`
   }
   let max: number | null = null
-  if (langRows.length > 0) {
-    max = langRows[0].factorMax
+  const langFirst = langRows[0]
+  if (langFirst != null) {
+    max = langFirst.factorMax
   }
   let capped = pts
   if (max != null) {
@@ -2111,8 +2113,9 @@ function mbAgePart(input: MbPartIn): MbPartOut {
     pts = row.points
   }
   let max: number | null = null
-  if (rows.length > 0) {
-    max = rows[0].factorMax
+  const rowsFirst = rows[0]
+  if (rowsFirst != null) {
+    max = rowsFirst.factorMax
   }
   return {
     factor: MB_FACTOR.age, pts: pts, max: max,
@@ -2137,16 +2140,17 @@ function mbWorkPart(input: MbPartIn): MbPartOut {
   }
   const bonusRows = mbRowsOf({ rows: input.rows, factor: MB_FACTOR.work, kind: KIND.bonus })
   let licensedNote = MB_NOTE_NONE
-  if (input.profile.employerLicenseRecognized && bonusRows.length > 0) {
-    const bonus = bonusRows[0]
+  const bonus = bonusRows[0]
+  if (input.profile.employerLicenseRecognized && bonus != null) {
     if (bonus.points != null) {
       pts += bonus.points
     }
     licensedNote = `${MB_JOIN.plus}${bonus.label}`
   }
   let max: number | null = null
-  if (rows.length > 0) {
-    max = rows[0].factorMax
+  const rowsFirst = rows[0]
+  if (rowsFirst != null) {
+    max = rowsFirst.factorMax
   }
   let capped = pts
   if (max != null) {
@@ -2175,8 +2179,9 @@ function mbEduPart(input: MbPartIn): MbPartOut {
     pts = row.points
   }
   let max: number | null = null
-  if (rows.length > 0) {
-    max = rows[0].factorMax
+  const rowsFirst = rows[0]
+  if (rowsFirst != null) {
+    max = rowsFirst.factorMax
   }
   return {
     factor: MB_FACTOR.education, pts: pts, max: max,
@@ -2206,9 +2211,10 @@ function mbAdaptPart(input: MbPartIn): MbPartOut {
     }
     connHits.push(r.label)
   }
+  const connFirst = connRows[0]
   let connMax: number | null = null
-  if (connRows.length > 0) {
-    connMax = connRows[0].factorMax
+  if (connFirst != null) {
+    connMax = connFirst.factorMax
   }
   if (connMax != null) {
     connPts = Math.min(connPts, connMax)
@@ -2222,18 +2228,20 @@ function mbAdaptPart(input: MbPartIn): MbPartOut {
   const regionalRows = mbRowsOf({
     rows: input.rows, factor: MB_FACTOR.adaptRegional, kind: KIND.row,
   })
+  const regionalFirst = regionalRows[0]
   let regionalPts = 0
-  if (adapt.regionalOutsideWinnipeg && regionalRows.length > 0 && regionalRows[0].points != null) {
-    regionalPts = regionalRows[0].points
+  if (adapt.regionalOutsideWinnipeg && regionalFirst != null && regionalFirst.points != null) {
+    regionalPts = regionalFirst.points
   }
 
+  const demandFirst = demandRows[0]
   let groupMax: number | null = null
-  if (connRows.length > 0 && connRows[0].groupMax != null) {
-    groupMax = connRows[0].groupMax
-  } else if (demandRows.length > 0 && demandRows[0].groupMax != null) {
-    groupMax = demandRows[0].groupMax
-  } else if (regionalRows.length > 0 && regionalRows[0].groupMax != null) {
-    groupMax = regionalRows[0].groupMax
+  if (connFirst != null && connFirst.groupMax != null) {
+    groupMax = connFirst.groupMax
+  } else if (demandFirst != null && demandFirst.groupMax != null) {
+    groupMax = demandFirst.groupMax
+  } else if (regionalFirst != null && regionalFirst.groupMax != null) {
+    groupMax = regionalFirst.groupMax
   }
   const sum = connPts + demandPts + regionalPts
   const notes: string[] = []
@@ -2242,8 +2250,8 @@ function mbAdaptPart(input: MbPartIn): MbPartOut {
     demandNote = MB_NOTE.demand
   }
   let regionalNote = MB_NOTE_NONE
-  if (adapt.regionalOutsideWinnipeg && regionalRows.length > 0) {
-    regionalNote = regionalRows[0].label
+  if (adapt.regionalOutsideWinnipeg && regionalFirst != null) {
+    regionalNote = regionalFirst.label
   }
   for (const one of [connHits.join(MB_JOIN.semi), demandNote, regionalNote]) {
     if (one) {
@@ -2324,9 +2332,10 @@ function mbRiskPart(input: MbPartIn): MbPartOut {
   let pts = bonusPoints({
     list: rows, prefix: prefix, ticks: mbRiskTicks({ rows: rows, profile: input.profile }),
   })
+  const riskFirst = rows[0]
   let floor: number | null = null
-  if (rows.length > 0) {
-    floor = rows[0].factorMax
+  if (riskFirst != null) {
+    floor = riskFirst.factorMax
   }
   if (floor != null) {
     pts = Math.max(pts, floor)
@@ -2352,8 +2361,8 @@ function mbRiskPart(input: MbPartIn): MbPartOut {
 function mbRiskTicks(input: MbRiskTicksIn): MbRiskTicksOut {
   const ticks: Record<string, boolean> = {}
   const prefix = `${MB}${TICK_SEP}${MB_FACTOR.risk}${TICK_SEP}`
-  for (let i = 0; i < input.rows.length; i += 1) {
-    const label = input.rows[i].label
+  for (const [i, row] of input.rows.entries()) {
+    const label = row.label
     if (MB_RISK_RE.foreignWork.test(label) && input.profile.riskForeignWork) {
       ticks[`${prefix}${i}`] = true
     }
@@ -2383,10 +2392,10 @@ export function estimateMbEoi(input: EstimateMbEoiIn): EstimateMbEoiOut {
       rows.push(f)
     }
   }
-  if (rows.length === 0) {
+  const head = rows[0]
+  if (head == null) {
     throw fail({ name: POINTS_ERR.name, msg: POINTS_ERR.noMbRows, code: null })
   }
-  const head = rows[0]
   const one: MbPartIn = { rows: rows, profile: input.profile }
   const parts: MbScorePart[] = [
     mbLanguagePart(one), mbAgePart(one), mbWorkPart(one), mbEduPart(one),

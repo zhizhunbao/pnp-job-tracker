@@ -106,13 +106,19 @@ export function checkLimit(quotas: QuotaPairs): boolean {
       cur.push(0)
     }
   }
-  for (let i = 0; i < quotas.length; i++) {
-    if (cur[i] >= quotas[i][1]) {
+  for (const [i, q] of quotas.entries()) {
+    const c = cur[i]
+    if (c != null && c >= q[1]) {
       return false
     }
   }
-  for (let i = 0; i < quotas.length; i++) {
-    CACHE.buckets.set(quotas[i][0], { day: today, n: cur[i] + 1 })
+  for (const [i, q] of quotas.entries()) {
+    let c = 0
+    const seen = cur[i]
+    if (seen != null) {
+      c = seen
+    }
+    CACHE.buckets.set(q[0], { day: today, n: c + 1 })
   }
   return true
 }
@@ -171,7 +177,11 @@ function ipOfHeaders(headers: ReqHeaders): string {
   if (fwd == null) {
     return IP_LOCAL
   }
-  const first = fwd.split(COMMA)[0].trim()
+  const head = fwd.split(COMMA)[0]
+  if (head == null) {
+    return IP_LOCAL
+  }
+  const first = head.trim()
   if (first === '') {
     return IP_LOCAL
   }

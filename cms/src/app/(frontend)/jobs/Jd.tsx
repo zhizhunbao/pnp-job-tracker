@@ -113,7 +113,7 @@ export function JdTextView({ text, max = 4000 }: { text: string; max?: number })
 const jdParseSecs = (s: string): Record<string, string> => {
   const parts = s.split(/\[(ROLE|REQS|PAY|WORKHOURS|APPLY)\]/)
   const secs: Record<string, string> = {}
-  for (let i = 1; i + 1 < parts.length + 1; i += 2) secs[parts[i]] = (parts[i + 1] || '').trim()
+  for (let i = 1; i + 1 < parts.length + 1; i += 2) { const pk = parts[i]; if (pk != null) secs[pk] = (parts[i + 1] || '').trim() }
   return secs
 }
 // 「缺节」判定放宽(Frank 2026-07-22「不需要加括号吧」):模型指令要 (not stated),但实测会漂成

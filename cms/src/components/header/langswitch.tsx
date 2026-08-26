@@ -6,6 +6,7 @@
  * @author Frank
  * @time 2026-08-24 08:00:00
  */
+import { cssOf } from '@/components/css'
 import { LANGS } from '@/lib/i18n'
 import { withOn } from './functions'
 import type { LangSwitchIn } from './types'
@@ -25,7 +26,7 @@ export function LangSwitch({ lang, setLang }: LangSwitchIn) {
     }
 
     btns.push(
-      <button key={l.code} className={withOn({ base: css.langBtn, on: lang === l.code })} onClick={pick}>
+      <button key={l.code} className={withOn({ base: cssOf(css.langBtn), on: lang === l.code })} onClick={pick}>
         {l.label}
       </button>,
     )

@@ -286,10 +286,10 @@ describe('PnpScoreCard target questionnaire', () => {
     expect(onQuestionnaireProgress).toHaveBeenLastCalledWith({ done: 0, total: 4 })
     const rows = onQuestionnaireAnswers.mock.lastCall?.[0] as { key: string; value: string; filled: boolean }[]
     const derived = Object.fromEntries(rows.map((r) => [r.key, r]))
-    expect(derived['AB:eduLocationCanada:0'].filled).toBe(true)
-    expect(derived['AB:eduLocationCanada:0'].value).toBeTruthy()           // 命中「本省完成」那行的官方行文
-    expect(derived['AB:workLocationCanada:0'].value).toBe('否')            // 0 个月加拿大经验 → 恒无
-    expect(derived['AB:language:0'].value).toBe('是')                      // CLB 7 + NCLC 5 → 双语 4+ 成立
+    expect(derived['AB:eduLocationCanada:0']?.filled).toBe(true)
+    expect(derived['AB:eduLocationCanada:0']?.value).toBeTruthy()           // 命中「本省完成」那行的官方行文
+    expect(derived['AB:workLocationCanada:0']?.value).toBe('否')            // 0 个月加拿大经验 → 恒无
+    expect(derived['AB:language:0']?.value).toBe('是')                      // CLB 7 + NCLC 5 → 双语 4+ 成立
     await act(async () => root.unmount())
     container.remove()
   })

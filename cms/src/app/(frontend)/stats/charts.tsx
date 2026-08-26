@@ -205,18 +205,29 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels, firstSc
         })
         const val = (k: number, pi: number) => {
           if (cellProv[k] !== pi) return null                 // 每个省只在自己那格有柱
-          return byNoc.get(ks[cellOcc[k]].noc)?.get(PROVS[pi])?.jobs ?? 0
+          const occ = ks[cellOcc[k] ?? -1]
+          if (occ == null) return 0
+          return byNoc.get(occ.noc)?.get(PROVS[pi] ?? '')?.jobs ?? 0
         }
         // barGap:'-100%' = 各省系列叠在同一格里 → 每格只有一根柱,占满该格
         series = PROVS.map((p, pi) => ({ ...bar(provLabel(p), axis.map((_, k) => val(k, pi)), pi),
           barGap: '-100%', barCategoryGap: '12%' }))
-        med = axis.map((_, k) => (cellProv[k] < 0 ? null
-          : byNoc.get(ks[cellOcc[k]].noc)?.get(PROVS[cellProv[k]])?.med ?? null))
+        med = axis.map((_, k) => {
+          const cp = cellProv[k] ?? -1
+          const occ = ks[cellOcc[k] ?? -1]
+          if (cp < 0 || occ == null) return null
+          return byNoc.get(occ.noc)?.get(PROVS[cp] ?? '')?.med ?? null
+        })
         // 簇间距那格没数 → connectNulls 让线跨过去,全图仍是连续一根
         provMed = [{ name: medName, type: 'line', yAxisIndex: 1, data: med, symbol: 'circle',
           symbolSize: 3, connectNulls: true, z: 6, lineStyle: { width: 1.4, color: '#111827' },
           itemStyle: { color: '#111827' } }]
-        cellTitle = (k: number) => (cellProv[k] < 0 ? null : `${occName(ks[cellOcc[k]])}　${provLabel(PROVS[cellProv[k]])}`)
+        cellTitle = (k: number) => {
+          const cp = cellProv[k] ?? -1
+          const occ = ks[cellOcc[k] ?? -1]
+          if (cp < 0 || occ == null) return null
+          return `${occName(occ)}　${provLabel(PROVS[cp] ?? '')}`
+        }
         end = Math.min(100, (firstScreen * (P + 1) / Math.max(axis.length, 1)) * 100)   // 首屏约 firstScreen 个职业
       } else series = [bar(t('stats.openJobs'), ks.map((o) => o.openJobs), 0)]
     } else if (xKey === 'prov') {

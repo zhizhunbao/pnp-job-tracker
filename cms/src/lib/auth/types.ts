@@ -163,7 +163,7 @@ export type MaybeCookie = string | null
 /**
  * 会话两条 Set-Cookie 串(token 在前、迹象在后)。
  */
-export type SessionCookieList = string[]
+export type SessionCookieList = [string, string]
 
 /**
  * `loadGoogleUser` 的返回。

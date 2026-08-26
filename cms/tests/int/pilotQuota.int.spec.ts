@@ -88,9 +88,9 @@ describe('aggregatePilotQuota(省 × 制度聚合契约)', () => {
       row({ community: 'B', asOf: '2026-08-14' }),
     ])
     expect(out).toHaveLength(1)
-    expect(out[0].firstComeN).toBe(1)
-    expect(out[0].communities).toBe(2)
-    expect(out[0].asOf).toBe('2026-08-14')
+    expect(out[0]?.firstComeN).toBe(1)
+    expect(out[0]?.communities).toBe(2)
+    expect(out[0]?.asOf).toBe('2026-08-14')
   })
   it('type 没接上 pilot-communities 的行不进聚合(空 type 不猜制度)', () => {
     expect(aggregatePilotQuota([row({ type: '' })])).toEqual([])

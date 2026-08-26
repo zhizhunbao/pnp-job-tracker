@@ -9,7 +9,13 @@ const PENDING_CAP = 10   // 单用户待审上限(防灌水;审核过了就释�
 const BODY_MAX = 1000
 
 const mask = (u: { displayName?: string | null; email?: string | null }) => {
-  const name = (u.displayName || '').trim() || (u.email || '').split('@')[0]
+  let name = (u.displayName || '').trim()
+  if (name === '') {
+    const head = (u.email || '').split('@')[0]
+    if (head != null) {
+      name = head
+    }
+  }
   return name.length <= 3 ? `${name}***` : `${name.slice(0, 3)}***`
 }
 

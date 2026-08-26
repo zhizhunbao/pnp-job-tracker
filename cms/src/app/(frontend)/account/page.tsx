@@ -122,7 +122,7 @@ export default function AccountPage() {
               <button key={k} onClick={() => setSec(k)}
                 style={{ textAlign: 'left', padding: '8px 12px', fontSize: 13.5, border: 'none', borderRadius: 8, cursor: 'pointer', whiteSpace: 'nowrap',
                   background: sec === k ? '#eef2ff' : 'transparent', color: sec === k ? '#1d4ed8' : '#374151', fontWeight: sec === k ? 600 : 400 }}>
-                {label.split(/[((]/)[0].trim()}
+                {(label.split(/[((]/)[0] ?? '').trim()}
               </button>
             ))}
             {!narrow && <div style={{ borderTop: '1px solid #f3f4f6', margin: '6px 0' }} />}

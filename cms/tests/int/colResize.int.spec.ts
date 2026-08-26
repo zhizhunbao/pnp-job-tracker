@@ -25,7 +25,7 @@ describe('拖列:Excel 式(右边整体让位,左边不动)', () => {
     const out = resizeColWidths(base, 1, 260, floors)
     expect(out[2]).toBe(base[2])          // 中间列没被动
     expect(out[3]).toBe(base[3])
-    expect(out[4]).toBe(base[4] - 60)     // 最右那列独自让出 60
+    expect(out[4]).toBe((base[4] ?? Number.NaN) - 60)     // 最右那列独自让出 60
   })
 
   it('最右列让到下限后,继续往左找让位列(全在被拖列右侧,自右向左依次让)', () => {
@@ -39,7 +39,7 @@ describe('拖列:Excel 式(右边整体让位,左边不动)', () => {
     const out = resizeColWidths(base, 1, 150, floors)
     expect(out[0]).toBe(base[0])
     expect(out[1]).toBe(150)
-    expect(out[4]).toBe(base[4] + 50)
+    expect(out[4]).toBe((base[4] ?? Number.NaN) + 50)
     expect(sum(out)).toBe(sum(base))
   })
 
@@ -48,7 +48,7 @@ describe('拖列:Excel 式(右边整体让位,左边不动)', () => {
     //         列0   列1   列2(缺 250)  列3(缺 30)  列4=操作(不缺)
     const maxes = [100, 200, 400, 150, 80]
     const out = resizeColWidths(base, 1, 150, floors, maxes)
-    expect(out[2]).toBe(base[2] + 50)     // 缺口最大的列接手
+    expect(out[2]).toBe((base[2] ?? Number.NaN) + 50)     // 缺口最大的列接手
     expect(out[4]).toBe(base[4])          // 「操作」一动不动
     expect(out[0]).toBe(base[0])
     expect(sum(out)).toBe(sum(base))
@@ -57,7 +57,7 @@ describe('拖列:Excel 式(右边整体让位,左边不动)', () => {
   it('缩窄:右侧缺口都补平了 → 给内容最长的那列(仍不是恒短的最右列)', () => {
     const maxes = [100, 200, 150, 120, 80]   // 右侧各列都已 ≥ 自己的内容宽
     const out = resizeColWidths(base, 1, 150, floors, maxes)
-    expect(out[2]).toBe(base[2] + 50)
+    expect(out[2]).toBe((base[2] ?? Number.NaN) + 50)
     expect(out[4]).toBe(base[4])
     expect(sum(out)).toBe(sum(base))
   })

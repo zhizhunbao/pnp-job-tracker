@@ -136,6 +136,7 @@ function FeaturedGrid({ t, lang, slides }: { t: TFn; lang: Lang; slides: NewsHer
   }, [n, paused])
   if (!n) return null
   const hero = slides[idx % n]
+  if (hero == null) return null
   const side = slides.filter((_, i) => i !== idx % n).slice(0, 4)
   const aiSum = lang === 'zh' ? hero.summaryZh : lang === 'ko' ? hero.summaryKo : null
   const summary = (aiSum || hero.excerpt || '') as string
@@ -268,7 +269,7 @@ export function News({ items, hero, cmtCounts }: { items: NewsCard[]; hero: News
 const COMMENTS_ON = true
 function CommentRow({ cm, t, loggedIn, onReply, replying }: { cm: NewsComment; t: TFn; loggedIn: boolean; onReply?: () => void; replying?: boolean }) {
   const av = (
-    <span className={cm.official ? 'nwCmtAv official' : 'nwCmtAv'}>{(cm.authorName || '?')[0].toUpperCase()}</span>
+    <span className={cm.official ? 'nwCmtAv official' : 'nwCmtAv'}>{((cm.authorName || '?')[0] ?? '?').toUpperCase()}</span>
   )
   return (
     <div className="nwCmt">

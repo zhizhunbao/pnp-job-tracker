@@ -19,14 +19,7 @@ import { PricingModal } from '@/app/(frontend)/jobs/PricingModal'
 import { AccountMenu } from '@/components/auth'
 import { Button } from '@/components/button'
 import {
-  ACCT_IN,
-  ACCT_LOADING,
-  ARIA_TRUE,
-  AUTH_CLOSED,
-  AUTH_LOGIN,
-  AUTH_REGISTER,
-  KIND_LOGIN,
-  KIND_REGISTER,
+  ACCT_IN, ACCT_LOADING, ARIA_TRUE, AUTH_CLOSED, AUTH_LOGIN, AUTH_REGISTER, KIND_LOGIN, KIND_REGISTER,
 } from './constants'
 import { loadAuthModal } from './functions'
 import type { AccountLiteIn, AuthOpen } from './types'

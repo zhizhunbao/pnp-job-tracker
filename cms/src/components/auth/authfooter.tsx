@@ -9,13 +9,7 @@
  */
 import type { AuthFooterIn } from './types'
 import {
-  BTN_TYPE_BUTTON,
-  KEY_TO_LOGIN,
-  KEY_TO_REG,
-  MODE_FORGOT,
-  MODE_LOGIN,
-  MODE_REGISTER,
-  MODE_RESET,
+  BTN_TYPE_BUTTON, KEY_TO_LOGIN, KEY_TO_REG, MODE_FORGOT, MODE_LOGIN, MODE_REGISTER, MODE_RESET,
 } from './constants'
 import css from './auth.module.css'
 

@@ -203,6 +203,7 @@ suite('advisor 评测批(新链网格 + 老链初判对拍)', () => {
 
   it('新链 chat 冒烟(休眠场景不失守)', async () => {
     const p = picked[0]
+    if (p == null) throw new Error('no probe job')
     const r = await callNew({ field: 'title', id: p.id, lang: 'zh', messages: [{ role: 'user', content: '这个岗对 PGWP 快到期的人合适吗?' }] })
     results.push({ chain: 'new', field: 'chat', lang: 'zh', jobId: p.id, title: p.row.title, status: r.status, ms: r.ms, text: r.text, probes: r.status === 200 && r.text.length > 20 ? [] : [{ kind: `http/${r.status}`, detail: r.text.slice(0, 120) }] })
     console.log(`  new chat/zh/#${p.id} ${r.status} ${r.ms}ms len=${r.text.length}`)

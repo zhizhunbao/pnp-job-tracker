@@ -4,6 +4,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { cssOf } from '@/components/css'
 import { ACTION_KINDS, CLS_SEP } from './constants'
 import type { BtnClsIn, ButtonKind } from './types'
 import css from './button.module.css'
@@ -17,24 +18,24 @@ import css from './button.module.css'
  */
 export function btnClsOf(x: BtnClsIn): string {
   const kindCls: Record<ButtonKind, string> = {
-    primary: css.primary,
-    pro: css.pro,
-    secondary: css.secondary,
-    ai: css.ai,
-    ghost: css.ghost,
-    danger: css.danger,
-    icon: css.icon,
-    iconGhost: css.iconGhost,
-    box: css.box,
-    step: css.step,
-    tab: css.tab,
-    drop: css.drop,
-    seg: css.seg,
-    menu: css.menu,
-    groupRow: css.groupRow,
-    dot: css.dot,
-    linkText: css.linkText,
-    linkDim: css.linkDim,
+    primary: cssOf(css.primary),
+    pro: cssOf(css.pro),
+    secondary: cssOf(css.secondary),
+    ai: cssOf(css.ai),
+    ghost: cssOf(css.ghost),
+    danger: cssOf(css.danger),
+    icon: cssOf(css.icon),
+    iconGhost: cssOf(css.iconGhost),
+    box: cssOf(css.box),
+    step: cssOf(css.step),
+    tab: cssOf(css.tab),
+    drop: cssOf(css.drop),
+    seg: cssOf(css.seg),
+    menu: cssOf(css.menu),
+    groupRow: cssOf(css.groupRow),
+    dot: cssOf(css.dot),
+    linkText: cssOf(css.linkText),
+    linkDim: cssOf(css.linkDim),
   }
   const cls = []
   // 基座只给**行动钮**:控件钮的形状由自己那一档定死,套上基座反而要一条条盖回去。

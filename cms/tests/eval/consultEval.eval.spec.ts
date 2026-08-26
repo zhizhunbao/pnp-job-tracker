@@ -108,6 +108,7 @@ suite('新链评测批(金标语料 + 生产日志回放)', () => {
       const problems: string[] = []
       const oldOnly: string[] = []
       const last = turns[turns.length - 1]
+      if (last == null) throw new Error('无轮次: ' + c.id)
       if (turns.length < c.turns.length) problems.push(`第 ${turns.length} 轮 err=${last.err},后续轮未跑`)
       if (c.expectErr) {
         // 老链闸的产物:新链答上算赢,只在报告里记一笔口径差

@@ -73,8 +73,8 @@ export function textBlocks(text: string): Block[] {
     if (!m) { para.push(s); continue }
     flush()
     const last = out[out.length - 1]
-    if (last && last.type === 'ul') last.items.push(m[1])
-    else out.push({ type: 'ul', items: [m[1]] })
+    if (last && last.type === 'ul') last.items.push(m[1] ?? '')
+    else out.push({ type: 'ul', items: [m[1] ?? ''] })
   }
   flush()
   return out

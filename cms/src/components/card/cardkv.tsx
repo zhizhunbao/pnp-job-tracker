@@ -8,6 +8,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { cssOf } from '@/components/css'
 import { CELL_CLS_NONE } from './constants'
 import type { CardKvIn } from './types'
 import css from './card.module.css'
@@ -24,7 +25,7 @@ export function CardKV({ items }: CardKvIn) {
   for (const it of items) {
     let cls = CELL_CLS_NONE
     if (it.wide) {
-      cls = css.wide
+      cls = cssOf(css.wide)
     }
     cells.push(
       <div key={i} className={cls}>

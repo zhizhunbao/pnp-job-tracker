@@ -27,7 +27,7 @@ const CO_SECS: [string, string][] = [['WHAT', 'co.f.what'], ['BASE', 'co.f.base'
 const coParseSecs = (s: string): Record<string, string> => {
   const parts = s.split(/\[(WHAT|BASE|SIZE|FOUNDED|NOTE)\]/)
   const secs: Record<string, string> = {}
-  for (let i = 1; i + 1 <= parts.length - 1; i += 2) secs[parts[i]] = (parts[i + 1] || '').trim()
+  for (let i = 1; i + 1 <= parts.length - 1; i += 2) { const pk = parts[i]; if (pk != null) secs[pk] = (parts[i + 1] || '').trim() }
   return secs
 }
 // flat=公司弹框扁平(#186 Frank「先别用卡片」,无卡框);默认 false=公司详情页仍用 CARD_MD。
@@ -86,8 +86,8 @@ export function CompanyBriefCards({ brief, website, fetched, t, trans, flat, sou
           <div key={m} className={flat ? 'coSec flat' : 'coSec'}>
             <div className={secHead}>{t(key)}</div>
             <div className={secBodyCls}>
-              {secs[m].trim()}
-              {zhBlock(m, secs[m].trim())}
+              {(secs[m] ?? '').trim()}
+              {zhBlock(m, (secs[m] ?? '').trim())}
             </div>
           </div>
         )
@@ -194,8 +194,8 @@ function parseCoStreams(streams: string, t: TFn): { label: string; count: string
   if (!streams) return []
   return streams.split(/[·•]/).map((p) => p.trim()).filter(Boolean).map((p) => {
     const m = p.match(/^(.+?)\s+([\d,]+)$/)
-    const rawName = m ? m[1].trim() : p
-    const count = m ? m[2] : ''
+    const rawName = m?.[1]?.trim() ?? p
+    const count = m?.[2] ?? ''
     const low = rawName.toLowerCase()
     if (/high wage/.test(low)) return { label: t('co.spStream.high'), count, skilled: true }
     if (/global talent/.test(low)) return { label: t('co.spStream.gts'), count, skilled: true }

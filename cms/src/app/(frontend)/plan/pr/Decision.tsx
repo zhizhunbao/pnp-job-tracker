@@ -419,8 +419,8 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
       ...(occMismatch ? { warn: t('dp.warnOcc') } : {}) },
     { key: 'status', prov: '', group: G.who, label: t('dp.sum.status'), value: choiceText('status') || unparsed, filled: !!choiceText('status') },
     // 拆闸批两题只对境内处境回显(与题的显隐同源):境外用户不摆两个永远「待填写」的格
-    ...(getFields().permitBand.visible?.(bands) ? [{ key: 'permitBand', prov: '', group: G.who, label: t('dp.sum.permit'), value: choiceText('permitBand') || unparsed, filled: !!choiceText('permitBand') }] : []),
-    ...(getFields().resProv.visible?.(bands) ? [{ key: 'resProv', prov: '', group: G.who, label: t('dp.sum.resProv'), value: choiceText('resProv') || unparsed, filled: !!choiceText('resProv') }] : []),
+    ...(getFields().permitBand?.visible?.(bands) ? [{ key: 'permitBand', prov: '', group: G.who, label: t('dp.sum.permit'), value: choiceText('permitBand') || unparsed, filled: !!choiceText('permitBand') }] : []),
+    ...(getFields().resProv?.visible?.(bands) ? [{ key: 'resProv', prov: '', group: G.who, label: t('dp.sum.resProv'), value: choiceText('resProv') || unparsed, filled: !!choiceText('resProv') }] : []),
     { key: 'eduBand', prov: '', group: G.edu, label: t('dp.sum.edu'), value: choiceText('eduBand') || unparsed, filled: !!choiceText('eduBand') },
     { key: 'ageBand', prov: '', group: G.who, label: t('dp.sum.age'), value: choiceText('ageBand') || unparsed, filled: !!choiceText('ageBand') },
     { key: 'clbBand', prov: '', group: G.lang, label: t('dp.sum.clb'), value: choiceText('clbBand') || unparsed, filled: !!choiceText('clbBand') },
@@ -441,8 +441,8 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
     { key: 'offerBand', prov: '', group: G.work, label: t('dp.sum.offer'), value: choiceText('offerBand') || unparsed, filled: !!choiceText('offerBand') },
     { key: 'canadaEduBand', prov: '', group: G.edu, label: t('dp.sum.canadaEdu'), value: choiceText('canadaEduBand') || unparsed, filled: !!choiceText('canadaEduBand') },
     // 专业对口两题同样只对「有加拿大学历」的人回显(与题的显隐同源)
-    ...(getFields().fieldMatchBand.visible?.(bands) ? [{ key: 'fieldMatchBand', prov: '', group: G.edu, label: t('dp.sum.fieldMatch'), value: choiceText('fieldMatchBand') || unparsed, filled: !!choiceText('fieldMatchBand') }] : []),
-    ...(getFields().eduProv.visible?.(bands) ? [{ key: 'eduProv', prov: '', group: G.edu, label: t('dp.sum.eduProv'), value: choiceText('eduProv') || unparsed, filled: !!choiceText('eduProv') }] : []),
+    ...(getFields().fieldMatchBand?.visible?.(bands) ? [{ key: 'fieldMatchBand', prov: '', group: G.edu, label: t('dp.sum.fieldMatch'), value: choiceText('fieldMatchBand') || unparsed, filled: !!choiceText('fieldMatchBand') }] : []),
+    ...(getFields().eduProv?.visible?.(bands) ? [{ key: 'eduProv', prov: '', group: G.edu, label: t('dp.sum.eduProv'), value: choiceText('eduProv') || unparsed, filled: !!choiceText('eduProv') }] : []),
     // 学制年数(#316 新题):有加拿大学历才问,格随题显隐同源
     ...(getFields().eduYearsBand?.visible?.(bands) ? [{ key: 'eduYearsBand', prov: '', group: G.edu, label: t('dp.sum.eduYears'), value: choiceText('eduYearsBand') || unparsed, filled: !!choiceText('eduYearsBand') }] : []),
     // 法语(FCIP 的定义性门槛):全员都问,所以格子也无条件摆 —— 2026-08-15 首版漏了这一格,
@@ -505,7 +505,7 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
   const clbLower = clbRange[0] ?? 0
   const totalExpLower = totalRange[0] ?? 0
   // SK 把经验拆成「近 5 年 / 6-10 年」,总经验推不出分段,只能让用户自己答 —— 但仍受总经验封顶。
-  const splitCap = totalRange.length ? [0, 1, 2, 3, 4, 5].filter((n) => n <= totalRange[totalRange.length - 1]) : []
+  const splitCap = totalRange.length ? [0, 1, 2, 3, 4, 5].filter((n) => n <= (totalRange[totalRange.length - 1] ?? 0)) : []
   const scoreLimits = {
     clb1: clbRange.length ? clbRange : undefined,
     expRecent: (hasSplitWork ? splitCap : totalRange).length ? (hasSplitWork ? splitCap : totalRange) : undefined,
@@ -612,7 +612,7 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
       // 2026-08-16 Frank「为什么点哪个弹框都弹出第一个问题」:分值卡如今只出**当前页签省**的题,
       // 点的若是别省的格子,那道题根本不在题单里 → findIndex 落空 → 停在第一题。
       // 所以点格先把段落切到那道题所在的省,再定位。
-      const p = key.split(':')[0]
+      const p = key.split(':')[0] ?? ''
       if (/^[A-Z]{2}$/.test(p)) setScoreProv(p)
       setQuizFocus('')
       setScoreFocus((f) => ({ key, nonce: (f?.nonce ?? 0) + 1 }))
@@ -786,7 +786,8 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
                       : null
                     const shown = jobProvExtra ? [...shownBase, jobProvExtra] : shownBase
                     // 榜首 0 岗照旧一句实话(「0 不是少,是没有」);null 数据缺失同句提示
-                    const topEmpty = profilePaths.length > 0 && (jobsOf(profilePaths[0]) ?? 0) === 0
+                    const topHead = profilePaths[0]
+                    const topEmpty = topHead != null && (jobsOf(topHead) ?? 0) === 0
                     const rows = shown.map((row, index) => {
                       // 通道特性一次取齐(2026-08-15 C 批:前端读字段不认 key)
                       const ui = uiOf(row.key)
@@ -913,7 +914,7 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
                       push(r.gapKey)
                       for (const k of r.gapsAll) {
                         const m = /^pv\.gate\.([a-z]+(?:\.[a-zA-Z]+)?)\.gap$/.exec(k)
-                        if (m) push(m[1] === 'offer' ? r.gapKey : m[1])
+                        if (m && m[1] != null) push(m[1] === 'offer' ? r.gapKey : m[1])
                       }
                       // 拿 offer 后仍差别的闸(afterOfferGap 族):是缺口不是时长,归这一列
                       if (r.waitAfterOffer && !r.waitTier && !r.afterOk && !r.dataGap) out.push({ text: r.stateText, tone: 'warn' })
@@ -1465,7 +1466,7 @@ export function Decision({ overview, drawsRecent = [], competition = [], tvJob, 
                     onTile={(key) => startQuiz(key)}
                     rows={scoreRows.filter((r) => (r.prov ? r.prov === p
                       // 共用题只在**真要它**的省下出现(BC 没有 language2,就不该问第二语言)
-                      : !PROFILE_FACTOR[r.key] || scoreFactors.some((f) => f.province === p && PROFILE_FACTOR[r.key].includes(f.factor))))} />
+                      : !PROFILE_FACTOR[r.key] || scoreFactors.some((f) => f.province === p && (PROFILE_FACTOR[r.key] ?? []).includes(f.factor))))} />
                 )}>
                 {quizSection}
               </ScoreLineCard>

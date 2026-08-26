@@ -10,14 +10,8 @@
 import { IconClipboard, IconCompass, IconSave, IconSettings, IconStar, IconTarget, IconUser } from '@/components/icons'
 import { LinkButton } from '@/components/button'
 import {
-  ARIA_MENU,
-  PATH_ACCOUNT,
-  PATH_ACCOUNT_FAVS,
-  PATH_ACCOUNT_PROFILE,
-  PATH_ACCOUNT_SAVED,
-  PATH_ACCOUNT_SJOBS,
-  PATH_MATCH,
-  QUIZ_PATH,
+  ARIA_MENU, PATH_ACCOUNT, PATH_ACCOUNT_FAVS, PATH_ACCOUNT_PROFILE, PATH_ACCOUNT_SAVED, PATH_ACCOUNT_SJOBS,
+  PATH_MATCH, QUIZ_PATH,
 } from './constants'
 import { PRO_LABEL } from './constants'
 import { logout } from './functions'

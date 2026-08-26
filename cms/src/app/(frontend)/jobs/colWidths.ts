@@ -33,6 +33,12 @@ type Alloc = { key: string; head: number; word: number; p90: number; max: number
 /** 任何列都不低于这个宽(表头量不到时的兜底) */
 const FLOOR = 44
 
+/** 数组格的读值兜底(开灯批 2026-08-26:数字数组下标缺席就是 undefined,就地折默认) */
+function nOf(v: number | undefined, or: number): number {
+  if (v == null) { return or }
+  return v
+}
+
 /**
  * 拖列的**纯算法**(Excel 式,2026-08-16):把第 idx 列拉到 want 宽,总宽恒定不变。
  *   · idx 左边的列一律不动(先前全局重分,左边会跟着跳 —— Frank「有时候左边的列移动」)
@@ -48,13 +54,13 @@ export function resizeColWidths(base: number[], idx: number, want: number, floor
   const donors = idx < w.length - 1
     ? Array.from({ length: w.length - 1 - idx }, (_, n) => w.length - 1 - n)
     : Array.from({ length: idx }, (_, n) => idx - 1 - n)
-  let need = Math.max(floors[idx] ?? FLOOR, want) - base[idx]
-  if (need < 0) { w[takerOf(donors, w, maxes)] -= need; need = 0 }   // 缩窄:整块给一列(见下)
+  let need = Math.max(floors[idx] ?? FLOOR, want) - nOf(base[idx], FLOOR)
+  if (need < 0) { const t = takerOf(donors, w, maxes); w[t] = nOf(w[t], FLOOR) - need; need = 0 }   // 缩窄:整块给一列(见下)
   for (const d of donors) {
     if (need === 0) break
-    const give = Math.min(need, w[d] - (floors[d] ?? FLOOR)); w[d] -= give; need -= give
+    const give = Math.min(need, nOf(w[d], FLOOR) - (floors[d] ?? FLOOR)); w[d] = nOf(w[d], FLOOR) - give; need -= give
   }
-  w[idx] = base[idx] + (Math.max(floors[idx] ?? FLOOR, want) - base[idx] - need)
+  w[idx] = nOf(base[idx], FLOOR) + (Math.max(floors[idx] ?? FLOOR, want) - nOf(base[idx], FLOOR) - need)
   return w.map((x) => Math.round(x))
 }
 
@@ -65,10 +71,10 @@ export function resizeColWidths(base: number[], idx: number, want: number, floor
  * 缺口最大的优先;都补平了(或压根没量到内容)就给内容最长的那列;maxes 缺席才退回最右一列。
  */
 function takerOf(donors: number[], w: number[], maxes?: number[]): number {
-  if (!maxes) return donors[0]
-  const gap = (i: number) => Math.max(0, (maxes[i] ?? 0) - w[i])
-  const best = donors.reduce((a, b) => (gap(b) > gap(a) ? b : a), donors[0])
-  return gap(best) > 0 ? best : donors.reduce((a, b) => ((maxes[b] ?? 0) > (maxes[a] ?? 0) ? b : a), donors[0])
+  if (!maxes) return nOf(donors[0], 0)
+  const gap = (i: number) => Math.max(0, (maxes[i] ?? 0) - nOf(w[i], 0))
+  const best = donors.reduce((a, b) => (gap(b) > gap(a) ? b : a), nOf(donors[0], 0))
+  return gap(best) > 0 ? best : donors.reduce((a, b) => ((maxes[b] ?? 0) > (maxes[a] ?? 0) ? b : a), nOf(donors[0], 0))
 }
 
 /**
@@ -80,14 +86,14 @@ function allocateColWidths(cols: Alloc[], avail: number): Record<string, number>
   const flex: Alloc[] = []
   let room = avail
   for (const c of cols) {
-    if (c.pinned != null) { out[c.key] = Math.round(c.pinned); room -= out[c.key] }
+    if (c.pinned != null) { const pw = Math.round(c.pinned); out[c.key] = pw; room -= pw }
     else flex.push(c)
   }
   if (!flex.length) return out
 
   // ① 表头优先(顺带保底:再挤也不把一个词拦腰断成「Newfoundlan / d」)
   for (const c of flex) out[c.key] = Math.max(FLOOR, c.head, c.word)
-  let extra = room - flex.reduce((s, c) => s + out[c.key], 0)
+  let extra = room - flex.reduce((s, c) => s + nOf(out[c.key], 0), 0)
 
   // ② 内容:先把各列补到 p90(九成的值不折行),还有余再补到最长值。
   //    **缺口小的先补满**:薪资/省市这种原子值只差几十像素,补满就彻底不折行;
@@ -95,30 +101,32 @@ function allocateColWidths(cols: Alloc[], avail: number): Record<string, number>
   //    挤压全压在本来就要多行的文本列上(和 Frank「哪个最宽优先缩哪个」同一个意思)。
   for (const target of ['p90', 'max'] as const) {
     if (extra <= 0) break
-    let rest = flex.map((c) => ({ key: c.key, want: Math.max(0, c[target] - out[c.key]) }))
+    let rest = flex.map((c) => ({ key: c.key, want: Math.max(0, c[target] - nOf(out[c.key], 0)) }))
       .filter((x) => x.want > 0).sort((a, b) => a.want - b.want)
     while (rest.length && extra > 0) {
-      if (rest[0].want <= extra / rest.length) {        // 均分下来够它补满 → 先把它喂饱,剩下的再分
-        out[rest[0].key] += rest[0].want
-        extra -= rest[0].want
+      const restHead = rest[0]
+      if (restHead == null) { break }
+      if (restHead.want <= extra / rest.length) {        // 均分下来够它补满 → 先把它喂饱,剩下的再分
+        out[restHead.key] = nOf(out[restHead.key], 0) + restHead.want
+        extra -= restHead.want
         rest = rest.slice(1)
         continue
       }
       const restWant = rest.reduce((s, x) => s + x.want, 0)   // 谁都补不满了 → 按缺口比例分掉余量
-      for (const x of rest) out[x.key] += extra * (x.want / restWant)
+      for (const x of rest) out[x.key] = nOf(out[x.key], 0) + extra * (x.want / restWant)
       extra = 0
     }
   }
 
   // ③ 还有剩:给内容最长的那列(通常是职位/公司),别摊给恒短值列
-  if (extra > 0) out[flex.reduce((a, b) => (b.max > a.max ? b : a)).key] += extra
+  if (extra > 0) { const widest = flex.reduce((a, b) => (b.max > a.max ? b : a)).key; out[widest] = nOf(out[widest], 0) + extra }
 
   // 整数化:小数列宽会让 1px 列分隔线落在半个设备像素上被吃掉(Frank 实拍「列的竖线怎么没了」)。
   // 四舍五入后把误差补回最宽那列,保证总和不多不少 = avail。
   let sum = 0
-  for (const c of flex) { out[c.key] = Math.round(out[c.key]); sum += out[c.key] }
+  for (const c of flex) { const rounded = Math.round(nOf(out[c.key], 0)); out[c.key] = rounded; sum += rounded }
   const drift = room - sum
-  if (drift !== 0) out[flex.reduce((a, b) => (b.max > a.max ? b : a)).key] += drift
+  if (drift !== 0) { const widest = flex.reduce((a, b) => (b.max > a.max ? b : a)).key; out[widest] = nOf(out[widest], 0) + drift }
   return out
 }
 
@@ -199,14 +207,14 @@ export function useColWidths(opts: {
       const cells = cellsOf(i).sort((a, b) => a - b)
       // 九成位而不是最大值:整列宽度不该被一条超长值绑架(一条「Manufacturing and utilities」
       // 能把大分类撑到 249px,右边几列全被压到底线反而更折行)。最长值留给「还有余量」那步。
-      const p90 = cells.length ? cells[Math.min(cells.length - 1, Math.floor(cells.length * 0.9))] : 0
+      const p90 = cells.length ? nOf(cells[Math.min(cells.length - 1, Math.floor(cells.length * 0.9))], 0) : 0
       m[key] = { head: (th ? contentW(th) : 0) + pad, word: 0, p90: p90 + pad, max: (cells[cells.length - 1] ?? 0) + pad }
     })
     // 第二趟:整表按 min-content 摊开(允许折行)→ 每格的 Range 宽 = 它最宽的那一行 = 最长的那个词。
     // 这就是「列的下限」:比它还窄就会出现「Newfoundlan / d and Labrador」这种断词。
     table.classList.remove('jtMeasure')
     table.style.width = 'min-content'
-    keys.forEach((key, i) => { m[key].word = Math.max(...cellsOf(i), 0) + pad })
+    keys.forEach((key, i) => { const mk = m[key]; if (mk != null) { mk.word = Math.max(...cellsOf(i), 0) + pad } })
     table.style.tableLayout = prev.tl
     table.style.width = prev.w
     table.style.minWidth = prev.mw
@@ -284,15 +292,17 @@ export function useColWidths(opts: {
     const idx = order.indexOf(key)
     if (idx < 0 || base.length !== order.length) return
     const floorOf = (i: number) => {
-      const m = measuredRef.current[order[i]]
+      const k = order[i]
+      if (k == null) { return FLOOR }
+      const m = measuredRef.current[k]
       return Math.max(FLOOR, m?.head ?? FLOOR, m?.word ?? FLOOR)
     }
     const floors = order.map((_, i) => floorOf(i))
     const maxes = order.map((k) => measuredRef.current[k]?.max ?? 0)   // 缩窄时按内容决定谁接手
     const startX = e.clientX
     const onMove = (ev: MouseEvent) => {
-      const w = resizeColWidths(base, idx, Math.round(base[idx] + (ev.clientX - startX)), floors, maxes)
-      setManual(Object.fromEntries(order.map((k, i) => [k, w[i]])))
+      const w = resizeColWidths(base, idx, Math.round(nOf(base[idx], FLOOR) + (ev.clientX - startX)), floors, maxes)
+      setManual(Object.fromEntries(order.map((k, i) => [k, nOf(w[i], FLOOR)])))
     }
     const onUp = () => {
       document.removeEventListener('mousemove', onMove)

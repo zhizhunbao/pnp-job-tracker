@@ -5,11 +5,9 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { cssOf } from '@/components/css'
 import {
-  CLS_SEP,
-  MAX_KEY,
-  RESTORE_KEY,
-  TRANSFORM_NONE,
+  CLS_SEP, MAX_KEY, RESTORE_KEY, TRANSFORM_NONE,
 } from './constants'
 import type { CardStyleIn, ClsIn, ClsOut, ModalSize } from './types'
 import css from './modal.module.css'
@@ -44,19 +42,19 @@ export function stopClick(e: React.MouseEvent) {
  */
 export function clsOf(x: ClsIn): ClsOut {
   const narrowCard: Record<ModalSize, string> = {
-    sm: css.narrowSm,
-    md: css.narrowFull,
-    lg: css.narrowFull,
+    sm: cssOf(css.narrowSm),
+    md: cssOf(css.narrowFull),
+    lg: cssOf(css.narrowFull),
   }
   const narrowOverlay: Record<ModalSize, string> = {
-    sm: css.overlayNarrowSm,
-    md: css.overlayNarrowFull,
-    lg: css.overlayNarrowFull,
+    sm: cssOf(css.overlayNarrowSm),
+    md: cssOf(css.overlayNarrowFull),
+    lg: cssOf(css.overlayNarrowFull),
   }
   const sizeCls: Record<ModalSize, string> = {
-    sm: css.sm,
-    md: css.md,
-    lg: css.lg,
+    sm: cssOf(css.sm),
+    md: cssOf(css.md),
+    lg: cssOf(css.lg),
   }
   const card = [css.card]
   const overlay = [css.overlay]
@@ -127,5 +125,5 @@ export function cardStyleOf(x: CardStyleIn): React.CSSProperties {
  * @returns 遮罩 className(半透黑全屏底;z-index 由调用方按层级给)。
  */
 export function overlayCls(): string {
-  return css.overlay
+  return cssOf(css.overlay)
 }

@@ -547,7 +547,7 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
             : aiStatus === 'limited' ? <LockedText t={t} loggedIn={plan.loggedIn} msg={t('advisor.limit429')} ctaLabel={!plan.loggedIn ? t('advisor.limitCta') : undefined} />
             : aiStatus === 'error' ? <p className="advNote sm">{t('cat.aiErr')}</p>
             : aiStatus === 'loading' ? <p className="advNote">{t('advisor.loading')}</p>
-            : <div className="advAi">{renderAI(ai.split('❓')[0])}{aiStatus === 'streaming' && <span className="advCaret">▋</span>}</div>}
+            : <div className="advAi">{renderAI(ai.split('❓')[0] ?? '')}{aiStatus === 'streaming' && <span className="advCaret">▋</span>}</div>}
         </div>
       )}
 
@@ -692,7 +692,7 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
             : aiStatus === 'limited' ? <LockedText t={t} loggedIn={plan.loggedIn} msg={t('advisor.limit429')} ctaLabel={!plan.loggedIn ? t('advisor.limitCta') : undefined} />
             : aiStatus === 'error' ? <p className="advNote sm">{t('cat.aiErr')}</p>
             : aiStatus === 'loading' ? <p className="advNote">{t('advisor.loading')}</p>
-            : <div className="advAi">{renderAI(ai.split('❓')[0])}{aiStatus === 'streaming' && <span className="advCaret">▋</span>}</div>}
+            : <div className="advAi">{renderAI(ai.split('❓')[0] ?? '')}{aiStatus === 'streaming' && <span className="advCaret">▋</span>}</div>}
         </div>
       )}
       <div className="cardMd">
@@ -725,7 +725,7 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
               // 改制省(ON)近 180 天的抽选全在改制之前 —— 不加注就与下方「旧 8 条流已关闭」自相矛盾。
               // 判定走同一份 pnpDraws:改制日之后一条都没有才加注,新 EOI 一开抽注自动消失。
               act && [t('diff.k.act'), t('diff.v.act', { n: act.value }),
-                t(STREAM_REFORM[job.province || ''] && !pnpDraws.some((x) => x.province === job.province && x.kind !== 'notice' && x.drawDate >= STREAM_REFORM[job.province || ''].since)
+                t(STREAM_REFORM[job.province || ''] != null && !pnpDraws.some((x) => x.province === job.province && x.kind !== 'notice' && x.drawDate >= (STREAM_REFORM[job.province || '']?.since ?? '9999-99-99'))
                   ? 'diff.n.actOld' : 'diff.n.act', { m: num(act.invitations || 0) })],
               score && [t('diff.k.score'), t('diff.v.score', { s: score.latestScore }), t('diff.n.score', { p: score.value, sc: score.scale || '—' })],
             ].filter(Boolean).flatMap((r, i) => {

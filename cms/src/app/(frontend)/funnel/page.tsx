@@ -46,15 +46,15 @@ export default async function FunnelPage() {
   const chainRate = new Map<string, number | null>()
   for (const [steps, fn] of [[CHAT_STEPS, chatRates], [DECISION_STEPS, decisionRates]] as const) {
     const rs = fn(counts30)
-    steps.slice(1).forEach((step, i) => chainRate.set(step, rs[i]))
+    steps.slice(1).forEach((step, i) => chainRate.set(step, rs[i] ?? null))
   }
   // ② 不给「比上一步」(2026-08-03 第一次读这张表就撞到:① 8 次、② 16 次 = 200%)。
   // 职位详情页**不是**报告的唯一来路 —— 首页 CTA 直接进 /plan/pr 的占了绝大多数(实测 16 里 12 条是 pr 卡),
   // 拿 ① 当 ② 的分母算出来的百分比没有意义。③④⑤ 是真父子关系,照旧给。
   const rows: FunnelRow[] = FUNNEL_STEPS.map((s, i) => ({
-    step: s, label: LABEL[s], d30: sum(s, 'd30'), d7: sum(s, 'd7'), d1: sum(s, 'd1'),
+    step: s, label: LABEL[s] ?? s, d30: sum(s, 'd30'), d7: sum(s, 'd7'), d1: sum(s, 'd1'),
     rate: chainRate.has(s) ? chainRate.get(s) ?? null
-      : i === 0 || s === 'report-open' || i >= LEGACY_STEPS.length ? null : rates[i - 1],
+      : i === 0 || s === 'report-open' || i >= LEGACY_STEPS.length ? null : rates[i - 1] ?? null,
   }))
   const group = (event: string) =>
     raw.filter((r) => r.event === event && r.prop).sort((a, b) => b.d30 - a.d30).map((r) => ({ prop: r.prop, n: r.d30 }))

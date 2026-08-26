@@ -4,6 +4,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { cssOf } from '@/components/css'
 import type { BannerModule } from './types'
 import css from './banner.module.css'
 
@@ -17,12 +18,12 @@ import css from './banner.module.css'
  */
 export function moduleClsOf(module: BannerModule): string {
   const moduleCls: Record<BannerModule, string> = {
-    home: css.jobs,
-    jobs: css.jobs,
-    pathways: css.pathways,
-    rank: css.rank,
-    stats: css.stats,
-    news: css.news,
+    home: cssOf(css.jobs),
+    jobs: cssOf(css.jobs),
+    pathways: cssOf(css.pathways),
+    rank: cssOf(css.rank),
+    stats: cssOf(css.stats),
+    news: cssOf(css.news),
   }
   return moduleCls[module]
 }

@@ -13,7 +13,7 @@
  * @time 2026-08-22 19:27:15
  */
 
-import { queryRows, SQL, text } from '../db'
+import { firstOf, queryRows, SQL, text } from '../db'
 import { BROAD_COLOR, KEY_BROAD, KEY_CAT, LANG_KO, LANG_ZH, NA, NAME_NONE } from './constants'
 import { CACHE } from './variables'
 import type { Cat, CatLabelRows, CatNameIn, MaybeBroad, NocDutiesIn, NocDutiesOut, NocDutiesRow, NocLocalTitleIn, PickNameIn, Row } from './types'
@@ -141,10 +141,7 @@ export function colorOf(broad: MaybeBroad): Cat {
  */
 export async function loadNocDuties(input: NocDutiesIn): NocDutiesOut {
   const rows = await queryRows({ db: input.db, sql: SQL.NOC_DUTIES_BY_CODE, params: [input.noc], map: toNocDutiesRow })
-  if (rows.length === 0) {
-    return null
-  }
-  return rows[0]
+  return firstOf(rows)
 }
 
 // =========================================================================

@@ -37,9 +37,9 @@ describe('NLPNP Annex A 数据实况', () => {
     expect(new Set(nlRows.map((r) => r.factor))).toEqual(new Set([
       'education', 'work5', 'work610', 'language1', 'age', 'connection',
     ]))
-    expect(nlRows[0].maxTotal).toBe(100)
-    expect(nlRows[0].passMark).toBe(67)
-    expect(nlRows[0].system).toContain('(Express Entry Skilled Worker)')
+    expect(nlRows[0]?.maxTotal).toBe(100)
+    expect(nlRows[0]?.passMark).toBe(67)
+    expect(nlRows[0]?.system).toContain('(Express Entry Skilled Worker)')
     for (const row of nlRows) {
       expect(row.url).toBe('https://www.gov.nl.ca/immigration/files/AnnexA_PNP.pdf')
       expect(row.fetched).toBeTruthy()
@@ -88,8 +88,8 @@ describe('AAIP Worker EOI 数据实况', () => {
       'education', 'eduLocationCanada', 'language', 'workMonths', 'workLocationCanada',
       'age', 'familyAlberta', 'offer', 'offerSector', 'offerArea', 'regulated',
     ]))
-    expect(abRows[0].maxTotal).toBe(100)
-    expect(abRows[0].passMark).toBeNull()
+    expect(abRows[0]?.maxTotal).toBe(100)
+    expect(abRows[0]?.passMark).toBeNull()
     const gI = abRows.find((r) => r.factorGroup === 'I')!, gII = abRows.find((r) => r.factorGroup === 'II')!
     expect(gI.groupMax).toBe(69)
     expect(gII.groupMax).toBe(31)

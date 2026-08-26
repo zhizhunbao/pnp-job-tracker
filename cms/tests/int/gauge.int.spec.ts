@@ -169,7 +169,7 @@ describe('ON(OINP)—— 雇主侧与技工分档', () => {
     const rev = byFactor(rs, 'empRevenue')
     expect(rev.verdict).toBe('unknown')
     expect(rev.tiers?.map((t) => t.value)).toEqual([1000000, 500000, 250000])
-    expect(rev.tiers?.[0].area).toBe('gta')
+    expect(rev.tiers?.[0]?.area).toBe('gta')
     const staff = byFactor(rs, 'empStaff')
     expect([staff.need, staff.needLow]).toEqual([5, 3])
   })

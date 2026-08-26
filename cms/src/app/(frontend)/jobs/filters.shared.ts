@@ -47,7 +47,7 @@ export function toSearchParams(sp: Record<string, string | string[] | undefined>
   const u = new URLSearchParams()
   for (const [k, v] of Object.entries(sp || {})) {
     if (typeof v === 'string') u.set(k, v)
-    else if (Array.isArray(v) && v.length) u.set(k, v[0])   // 同名参数重复出现:取第一个,与 sp.get 同语义
+    else if (Array.isArray(v) && v.length) u.set(k, v[0] ?? '')   // 同名参数重复出现:取第一个,与 sp.get 同语义
   }
   return u
 }

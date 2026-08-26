@@ -13,7 +13,7 @@ import { FREE_ADVISOR_TRIES, FREE_JOBTEXT_TRIES, FREE_MATCH_JOBS_PER_DAY, PRO_AD
 
 export type PriceCaps = { advisor: number; jobtext: number; match: number; proAdvisor: number }
 export const CLIENT_CAPS: PriceCaps = { advisor: FREE_ADVISOR_TRIES, jobtext: FREE_JOBTEXT_TRIES, match: FREE_MATCH_JOBS_PER_DAY, proAdvisor: PRO_ADVISOR_DAILY }
-const [P30, P90] = (process.env.NEXT_PUBLIC_PRICE_DISPLAY || 'CA$19,CA$39').split(',').map((s) => s.trim())
+const [P30 = 'CA$19', P90 = 'CA$39'] = (process.env.NEXT_PUBLIC_PRICE_DISPLAY || 'CA$19,CA$39').split(',').map((s) => s.trim())
 
 // #74:价格锚点数学单一来源(PricingCard 与 UpgradeModal 共用,不许 fork)
 const num = (s: string) => parseFloat(s.replace(/[^\d.]/g, '')) || 0

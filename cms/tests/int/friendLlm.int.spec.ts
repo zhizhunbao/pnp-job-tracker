@@ -20,6 +20,7 @@ function stubFetch(responses: Array<{ status: number; body: any; headers?: Recor
   vi.stubGlobal('fetch', vi.fn(async (url: string, init: any) => {
     calls.push({ url: String(url), body: JSON.parse(init.body), headers: init.headers })
     const r = responses[Math.min(i++, responses.length - 1)]
+    if (r == null) throw new Error('stubFetch: no response configured')
     return new Response(JSON.stringify(r.body), { status: r.status, headers: { 'content-type': 'application/json', ...(r.headers || {}) } })
   }))
   return calls
@@ -37,19 +38,19 @@ describe('friendLlm 主通道 = /v1/chat/completions', () => {
     const r = await friendChatOrThrow({ prompt: 'hi', system: 'sys', maxTokens: 24, temperature: 0.1 })
 
     expect(calls).toHaveLength(1)
-    expect(calls[0].url).toMatch(/\/v1\/chat\/completions$/)
-    expect(calls[0].body.max_tokens).toBe(24)
-    expect(calls[0].body.temperature).toBe(0.1)
-    expect(calls[0].body.messages).toEqual([{ role: 'system', content: 'sys' }, { role: 'user', content: 'hi' }])
-    expect(calls[0].body.messages[1].content).not.toContain('[ref:')   // 上游缓存键已哈希完整请求
-    expect(calls[0].headers.Authorization).toMatch(/^Bearer /)
+    expect(calls[0]?.url).toMatch(/\/v1\/chat\/completions$/)
+    expect(calls[0]?.body.max_tokens).toBe(24)
+    expect(calls[0]?.body.temperature).toBe(0.1)
+    expect(calls[0]?.body.messages).toEqual([{ role: 'system', content: 'sys' }, { role: 'user', content: 'hi' }])
+    expect(calls[0]?.body.messages[1]?.content).not.toContain('[ref:')   // 上游缓存键已哈希完整请求
+    expect(calls[0]?.headers.Authorization).toMatch(/^Bearer /)
     expect(r).toMatchObject({ answer: 'hello', via: 'v1', xCache: 'MISS', cached: false })
   })
 
   it('max_tokens 封到上游上限 8192;x-cache: HIT → cached=true', async () => {
     const calls = stubFetch([{ ...V1_OK, headers: { 'x-cache': 'HIT' } }])
     const r = await friendChatOrThrow({ prompt: 'hi', maxTokens: 99_999 })
-    expect(calls[0].body.max_tokens).toBe(8192)
+    expect(calls[0]?.body.max_tokens).toBe(8192)
     expect(r.cached).toBe(true)
     expect(r.xCache).toBe('HIT')
   })
@@ -91,8 +92,8 @@ describe('friendLlm 回退旧 /api/chat', () => {
     const r = await friendChatOrThrow({ prompt: 'hi', system: 'sys' })
 
     expect(calls.map((c) => new URL(c.url).pathname)).toEqual(['/v1/chat/completions', '/api/chat'])
-    expect(calls[1].body.prompt).toMatch(/^\[ref:[a-z]{14}\]\n/)
-    expect(calls[1].body.system).toBe('sys')
+    expect(calls[1]?.body.prompt).toMatch(/^\[ref:[a-z]{14}\]\n/)
+    expect(calls[1]?.body.system).toBe('sys')
     expect(r).toMatchObject({ answer: 'legacy hello', via: 'legacy', xCache: null })
   })
 
@@ -105,8 +106,8 @@ describe('friendLlm 回退旧 /api/chat', () => {
     const calls = stubFetch([{ status: 200, body: { answer: 'a', sources: [{ url: 'https://x.ca' }], cached: true } }])
     const r = await friendChatOrThrow({ prompt: 'hi', webSearch: true, searchQuery: 'q' })
     expect(calls).toHaveLength(1)
-    expect(calls[0].url).toMatch(/\/api\/chat$/)
-    expect(calls[0].body.web_search).toBe(true)
+    expect(calls[0]?.url).toMatch(/\/api\/chat$/)
+    expect(calls[0]?.body.web_search).toBe(true)
     expect(r).toMatchObject({ sources: ['https://x.ca'], cached: true, via: 'legacy' })
   })
 })

@@ -4,6 +4,7 @@
  * @author Frank
  * @time 2026-08-24 15:00:00
  */
+import { cssOf } from '@/components/css'
 import { CLS_SEP } from './constants'
 import type { ChangeFn, InputClsIn, InputSize } from './types'
 import css from './input.module.css'
@@ -16,9 +17,9 @@ import css from './input.module.css'
  */
 export function inputClsOf(x: InputClsIn): string {
   const bySize: Record<InputSize, string> = {
-    sm: css.inputSm,
-    md: css.inputMd,
-    lg: css.inputLg,
+    sm: cssOf(css.inputSm),
+    md: cssOf(css.inputMd),
+    lg: cssOf(css.inputLg),
   }
   const out = [css.input, bySize[x.size]]
   if (x.search) {

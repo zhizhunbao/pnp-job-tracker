@@ -14,6 +14,7 @@
  * @author Frank
  * @time 2026-08-24 10:00:00
  */
+import { cssOf } from '@/components/css'
 import { inputClsOf, SIZE_DEFAULT } from '@/components/input'
 import { BOX_SIZE_DEFAULT } from './constants'
 import { listOf, makeSelectChange, shownOf } from './functions'
@@ -42,7 +43,7 @@ export function Select({ value, onChange, opts, all, labelOf, size = BOX_SIZE_DE
   }
 
   const sizeCls: Record<SelectSize, string> = {
-    sm: css.box,
+    sm: cssOf(css.box),
     md: `${css.box} ${css.md}`,
     lg: `${css.box} ${css.lg}`,
   }

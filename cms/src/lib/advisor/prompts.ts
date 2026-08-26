@@ -192,7 +192,7 @@ export const ASK: Record<string, string> = {
  * 初判/公司的分段标题(#125 砍与整理版重复;#161 分析改方案;#162 回退首节描述性标题 ——
  * 问句标题逼出「死胡同」措辞,直接违反弹框规范红线)。
  */
-export const HEADINGS: Record<string, {
+export const HEADINGS: Record<'zh' | 'en' | 'ko', {
   /**
    * 公司初判四段。
    */
@@ -444,7 +444,7 @@ export const READER_CTX_TPL = '\nReader\'s self-reported situation: {status}. Tr
  * 岗位事实行模板(E4-04 §3.5 每行带来源短标注;拼装在 functions.jobFacts,
  * 缺格行不出 —— 红线:没数据别答)。槽位名 = 行内容。
  */
-export const JOB_FACT: Record<string, string> = {
+export const JOB_FACT = {
   /**
    * 标题行。
    */
@@ -514,7 +514,7 @@ export const JOB_FACT: Record<string, string> = {
 /**
  * 通道档驱动因子的措辞碎片(scoreFacts 拼 drivers 用)。
  */
-export const DRIVER: Record<string, string> = {
+export const DRIVER = {
   /**
    * 省清单命中(`{v}` = stream 名)。
    */
@@ -559,7 +559,7 @@ export const DRIVER: Record<string, string> = {
 /**
  * 职业速读的事实块标签。
  */
-export const OCC_FACT: Record<string, string> = {
+export const OCC_FACT = {
   /**
    * 头行(三槽)。
    */
@@ -599,7 +599,7 @@ export const CHAT_JD_HEAD = '\n\nReal job posting excerpt:\n"""\n'
 /**
  * 公司速读的担保信号三态(coRead)。
  */
-export const CO_SPONSOR: Record<string, string> = {
+export const CO_SPONSOR = {
   /**
    * 有 LMIA 记录(`{tot}`/`{skilled}`/`{quarter}` 三槽,后两槽可空串)。
    */
@@ -629,7 +629,7 @@ export const CO_SPONSOR: Record<string, string> = {
 /**
  * 公司速读事实行标签。
  */
-export const CO_FACT: Record<string, string> = {
+export const CO_FACT = {
   /**
    * 公司行。
    */
@@ -664,7 +664,7 @@ export const CO_HEAD_TPL = 'Company: {company}\nLocation: {loc}\nWebsite: {site}
 /**
  * 公司已知事实的子行。
  */
-export const CO_KNOWN: Record<string, string> = {
+export const CO_KNOWN = {
   /**
    * 行业子行。
    */
@@ -701,7 +701,7 @@ export const HEADINGS_INSTR = 'Explain under these headings (keep the 【】 bra
  * 契约换 id 制后这块由服务端用同一取数函数(loadProvinceCard/loadCityCard)重建,
  * 保证与面板同数;措辞一字不改(eval 对拍的前提)。
  */
-export const LOC_FACT: Record<string, string> = {
+export const LOC_FACT = {
   /**
    * 省头行(`{name}` 全名、`{code}` 省码)。
    */
@@ -889,7 +889,7 @@ export const JD_READ_TAIL = 'Base everything STRICTLY on the posting; do not inv
 /**
  * 喂进事实行的取值词汇(这些词模型会读到,归 prompts 不归 constants)。
  */
-export const VAL: Record<string, string> = {
+export const VAL = {
   /**
    * 缺格占位(全表通用)。
    */

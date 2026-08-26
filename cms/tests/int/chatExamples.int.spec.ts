@@ -43,14 +43,14 @@ describe('pickExamples —— 已建档(真人 33102 案例:找工中/CLB 6/PGWP
     const items = pickExamples(true, anchor, en)
     expect(items.map((x) => x.key)).toEqual(['chat.ex.pgwp', 'chat.ex.occProv', 'chat.ex.clbProv'])
     // 🔴 三句全部织入职业名(编排层无档案读方向,句里无职业首轮必撞 noOcc)
-    expect(items[0].params).toEqual({ title: 'PSW', noc: '33102', m: 18 })
-    expect(items[1].params).toEqual({ noc: '33102', title: 'PSW', prov: 'British Columbia' })
-    expect(items[2].params).toEqual({ title: 'PSW', noc: '33102', clb: 6, prov: 'British Columbia' })
+    expect(items[0]?.params).toEqual({ title: 'PSW', noc: '33102', m: 18 })
+    expect(items[1]?.params).toEqual({ noc: '33102', title: 'PSW', prov: 'British Columbia' })
+    expect(items[2]?.params).toEqual({ title: 'PSW', noc: '33102', clb: 6, prov: 'British Columbia' })
     // 渲成句子也断言一遍(t 本身是确定性的字典查找,顺带锁住插值不漏参)
-    expect(en(items[0].key, items[0].params)).toBe('I am a PSW (NOC 33102) with 18 months left on my PGWP — is there still time to make this work?')
+    expect(en(items[0]?.key ?? '', items[0]?.params)).toBe('I am a PSW (NOC 33102) with 18 months left on my PGWP — is there still time to make this work?')
     // 🔴 occProv/occCmp 必须带「NOC 」前缀:literalNoc(NOC_IN_TEXT)只认 NOC 字样打头的五位码,
     //    裸码开头曾在生产被抽槽模型抄成 31102(2026-08-09 终验实撞),整份回答前提全错。
-    expect(en(items[1].key, items[1].params)).toBe('NOC 33102 (PSW) — does this have a shot in British Columbia?')
+    expect(en(items[1]?.key ?? '', items[1]?.params)).toBe('NOC 33102 (PSW) — does this have a shot in British Columbia?')
   })
 
   it('③档带码的句子渲出来必须被 literalNoc 接住(三语)——裸码开头模型会抄错(生产实撞 31102)', () => {
@@ -65,14 +65,14 @@ describe('pickExamples —— 已建档(真人 33102 案例:找工中/CLB 6/PGWP
 
   it('中文档同一份档案:职业名/省名走中文字典,不是英文残留', () => {
     const items = pickExamples(true, anchor, zh)
-    expect(items[1].params).toEqual({ noc: '33102', title: '护理员', prov: '不列颠哥伦比亚' })
-    expect(zh(items[1].key, items[1].params)).toBe('NOC 33102(护理员)在 不列颠哥伦比亚 有戏吗?')
+    expect(items[1]?.params).toEqual({ noc: '33102', title: '护理员', prov: '不列颠哥伦比亚' })
+    expect(zh(items[1]?.key ?? '', items[1]?.params)).toBe('NOC 33102(护理员)在 不列颠哥伦比亚 有戏吗?')
   })
 
   it('目标省填了两个 → 职业候选换成两省比对句(occCmp),不是单省 occProv', () => {
     const items = pickExamples(true, { ...anchor, targetProvinces: ['BC', 'NS'] }, en)
     expect(items.map((x) => x.key)).toEqual(['chat.ex.pgwp', 'chat.ex.occCmp', 'chat.ex.clbProv'])
-    expect(items[1].params).toEqual({ noc: '33102', title: 'PSW', prov: 'British Columbia', prov2: 'Nova Scotia' })
+    expect(items[1]?.params).toEqual({ noc: '33102', title: 'PSW', prov: 'British Columbia', prov2: 'Nova Scotia' })
   })
 })
 
@@ -85,7 +85,7 @@ describe('pickExamples —— 缺槽补位(不足 3 条候选时用②档句子�
   it('有职业+PGWP 但无目标省 → 只有 PGWP 候选成句,后面用 reg1/reg2 补到 3 条', () => {
     const items = pickExamples(true, { nocCodes: ['33102'], pgwpMonthsLeft: 9 }, en)
     expect(items.map((x) => x.key)).toEqual(['chat.ex.pgwp', 'chat.ex.reg1', 'chat.ex.reg2'])
-    expect(items[0].params).toEqual({ title: 'PSW', noc: '33102', m: 9 })
+    expect(items[0]?.params).toEqual({ title: 'PSW', noc: '33102', m: 9 })
   })
 
   it('NOC 不在热门集里(查不到人话职业名)→ 三个候选全部跳过(句里无职业必撞 noOcc),退回静态示范', () => {

@@ -14,6 +14,7 @@
  * @author Frank
  * @time 2026-08-24 02:30:00
  */
+import { cssOf } from '@/components/css'
 import { Pager } from '@/components/pager'
 import { ALIGN_RIGHT } from './constants'
 import { cellOf, cls } from './functions'
@@ -55,7 +56,7 @@ export function Table<T>({
       tds.push(
         <td key={c.key}
           className={cls(
-            css.td,
+            cssOf(css.td),
             c.align === ALIGN_RIGHT && css.right,
             c.nowrap === true && css.nowrap,
             c.className,
@@ -69,7 +70,7 @@ export function Table<T>({
   }
 
   return (
-    <div className={cls(css.shell, bare && css.bare)}>
+    <div className={cls(cssOf(css.shell), bare && css.bare)}>
       {header}
       {/* eslint-disable-next-line react/forbid-dom-props -- 表最小宽与布局模式是运行时数据(量宽完成才锁 fixed) */}
       <table ref={widths.tableRef} className={css.table} style={{ minWidth, tableLayout: widths.layout }}>

@@ -80,14 +80,14 @@ function specsOf(): Spec[] {
     if (lb >= 0 && between.includes(']') === false) {
       const rb = balancedAt({ text: SRC, from: lb, open: '[', close: ']' })
       const colText = SRC.slice(lb, rb + 1)
-      const cols = [...colText.matchAll(/'([a-z_0-9]+)'/g)].map(function pick(g) { return g[1] })
+      const cols = [...colText.matchAll(/'([a-z_0-9]+)'/g)].map(function pick(g) { return g[1] ?? '' })
       const arrow = SRC.indexOf('=>', rb)
       const ob = SRC.indexOf('{', arrow)
       if (arrow >= 0 && ob >= 0) {
         const cb = balancedAt({ text: SRC, from: ob, open: '{', close: '}' })
         const body = SRC.slice(ob, cb + 1)
-        const keys = [...body.matchAll(/(?:^|[{,\s])([a-z_0-9]+)\s*:/g)].map(function pick(g) { return g[1] })
-        out.push({ table, cols, keys })
+        const keys = [...body.matchAll(/(?:^|[{,\s])([a-z_0-9]+)\s*:/g)].map(function pick(g) { return g[1] ?? '' })
+        out.push({ table: table ?? '', cols, keys })
       }
     }
     m = head.exec(SRC)

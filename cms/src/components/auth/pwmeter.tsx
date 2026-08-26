@@ -7,6 +7,7 @@
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
+import { cssOf } from '@/components/css'
 import { PW_HINT_SEP, PW_METER_KEYS } from './constants'
 import { pwStrength } from './functions'
 import type { PwMeterIn } from './types'
@@ -21,10 +22,10 @@ import css from './auth.module.css'
 export function PwMeter({ t, pw }: PwMeterIn) {
   const lv = pwStrength(pw)
   const lvCls: Record<number, string> = {
-    0: css.lv0,
-    1: css.lv1,
-    2: css.lv2,
-    3: css.lv3,
+    0: cssOf(css.lv0),
+    1: cssOf(css.lv1),
+    2: cssOf(css.lv2),
+    3: cssOf(css.lv3),
   }
   const segs = []
   for (let i = 1; i <= 3; i = i + 1) {

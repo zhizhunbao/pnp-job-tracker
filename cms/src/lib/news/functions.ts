@@ -6,7 +6,7 @@
  * @time 2026-08-23 12:40:00
  */
 
-import { queryRows, SQL, text, textOrNull } from '../db'
+import { firstOf, queryRows, SQL, text, textOrNull } from '../db'
 import { NEWS_BODY_COL, NEWS_SUMMARY_COL } from './constants'
 import type { NewsSummaryOut, NewsSummaryRow, NewsSummarySaveIn, NewsTransIn, NewsTransOut, NewsTransRow, NewsTransSaveIn, Row, SavedOut } from './types'
 
@@ -17,11 +17,12 @@ import type { NewsSummaryOut, NewsSummaryRow, NewsSummarySaveIn, NewsTransIn, Ne
  * @returns 源行；查无这条是 null。
  */
 export async function loadNewsForTranslate(input: NewsTransIn): NewsTransOut {
-  const rows = await queryRows({ db: input.db, sql: SQL.newsBodyForTranslate(NEWS_BODY_COL[input.lang]), params: [input.slug], map: toNewsTransRow })
-  if (rows.length === 0) {
+  const col = NEWS_BODY_COL[input.lang]
+  if (col == null) {
     return null
   }
-  return rows[0]
+  const rows = await queryRows({ db: input.db, sql: SQL.newsBodyForTranslate(col), params: [input.slug], map: toNewsTransRow })
+  return firstOf(rows)
 }
 
 
@@ -32,7 +33,11 @@ export async function loadNewsForTranslate(input: NewsTransIn): NewsTransOut {
  * @returns 落库即返。
  */
 export async function saveNewsTranslation(input: NewsTransSaveIn): SavedOut {
-  await input.db.query(SQL.newsSetTranslation(NEWS_BODY_COL[input.lang]), [input.body, input.slug])
+  const col = NEWS_BODY_COL[input.lang]
+  if (col == null) {
+    return
+  }
+  await input.db.query(SQL.newsSetTranslation(col), [input.body, input.slug])
 }
 
 
@@ -44,11 +49,12 @@ export async function saveNewsTranslation(input: NewsTransSaveIn): SavedOut {
  * @returns 源行；查无这条是 null。
  */
 export async function loadNewsForSummary(input: NewsTransIn): NewsSummaryOut {
-  const rows = await queryRows({ db: input.db, sql: SQL.newsForSummary(NEWS_SUMMARY_COL[input.lang]), params: [input.slug], map: toNewsSummaryRow })
-  if (rows.length === 0) {
+  const col = NEWS_SUMMARY_COL[input.lang]
+  if (col == null) {
     return null
   }
-  return rows[0]
+  const rows = await queryRows({ db: input.db, sql: SQL.newsForSummary(col), params: [input.slug], map: toNewsSummaryRow })
+  return firstOf(rows)
 }
 
 
@@ -59,7 +65,11 @@ export async function loadNewsForSummary(input: NewsTransIn): NewsSummaryOut {
  * @returns 落库即返。
  */
 export async function saveNewsSummary(input: NewsSummarySaveIn): SavedOut {
-  await input.db.query(SQL.newsSetSummary(NEWS_SUMMARY_COL[input.lang]), [input.summary, input.slug])
+  const col = NEWS_SUMMARY_COL[input.lang]
+  if (col == null) {
+    return
+  }
+  await input.db.query(SQL.newsSetSummary(col), [input.summary, input.slug])
 }
 
 // =========================================================================

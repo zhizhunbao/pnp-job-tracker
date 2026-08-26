@@ -336,9 +336,9 @@ export async function runAlerts(input: RunIn): RunOut {
     if (pairs.length > 0) {
       const conds: string[] = []
       const cparams: string[] = [cut7]
-      for (let i = 0; i < pairs.length; i++) {
+      for (const [i, pair] of pairs.entries()) {
         conds.push(PAIR_L + (i * 2 + 2) + PAIR_M + (i * 2 + 3) + PAIR_R)
-        cparams.push(pairs[i].province, pairs[i].broad)
+        cparams.push(pair.province, pair.broad)
       }
       const cr = await input.db.query(SQL.alertNewCount(conds.join(OR_SEP)), cparams)
       if (cr.rows[0] != null && cr.rows[0].n != null) {
@@ -477,8 +477,7 @@ export function weeklyProfileHtml(input: ProfileHtmlIn): string {
     langs = [L_ZH]
   }
   const heads: string[] = []
-  for (let i = 0; i < langs.length; i++) {
-    const L = langs[i]
+  for (const [i, L] of langs.entries()) {
     let style = PROFILE_HEAD_STYLE_NONE
     if (i > 0) {
       style = PROFILE_HEAD_DIM
@@ -486,7 +485,11 @@ export function weeklyProfileHtml(input: ProfileHtmlIn): string {
     const head = fill({ tpl: WK_HEAD[L], params: { d: input.dimsOf(L), n: input.stat.newN, e: input.stat.eligN, m: kSal(input.stat.medSal) } })
     heads.push(fill({ tpl: PROFILE_HEAD_P, params: { style: style, head: head } }))
   }
-  const F = langs[0]
+  let F: MailLang = L_EN
+  const langsFirst = langs[0]
+  if (langsFirst != null) {
+    F = langsFirst
+  }
   return fill({
     tpl: PROFILE_SHELL,
     params: {
