@@ -8,12 +8,14 @@
 
 import {
   CHAT_ERR_NAME, ERR_BY_STATUS, ERR_BY_TYPE, ERR_DEFAULT, ERR_FIELD_NONE, ERR_MSG_MAX, ERR_NAME, ERR_TAIL_NONE,
-  HTTP_ERROR_TYPE, LEGACY_TOO_LONG, LEGACY_TOO_LONG_TYPE, MSG_SEP, TRANSLATE_ERR_NAME,
+  HTTP_ERROR_TYPE, LEGACY_TOO_LONG, LEGACY_TOO_LONG_TYPE, MART_ERR_NAME, MART_HEAD, MART_META_TAIL,
+  MART_NO_SOURCE_HEAD, MART_NO_SOURCE_MID, MART_NO_SOURCE_TAIL, MART_SHARD_MID, MART_SHARD_OF, MART_SHARD_TAIL,
+  MSG_SEP, TRANSLATE_ERR_NAME,
 } from './constants'
 import type {
   ChatErrorIn, ChatErrorOut, ChatFailure, FailIn, FailOut, GatewayErrorBody, GatewayErrorIn, GatewayErrorOfIn,
   GatewayErrorOfOut, GatewayErrorOut, GatewayFailure, HasNameIn, HasNameOut, LlmErrorIn, LlmErrorOut, LlmFailure,
-  TranslateErrorIn, TranslateErrorOut,
+  MartErrorOut, MartMetaErrorIn, MartShardErrorIn, MartSourceErrorIn, TranslateErrorIn, TranslateErrorOut,
 } from './types'
 
 // =========================================================================
@@ -163,4 +165,46 @@ export function chatError<Slots>(input: ChatErrorIn<Slots>): ChatErrorOut<Slots>
  */
 export function isChatError<Slots>(err: Error): err is ChatFailure<Slots> {
   return hasName({ err, name: CHAT_ERR_NAME })
+}
+
+// =========================================================================
+// 交接域(lib/mart)—— seed 读 mart 文件的三种失败(2026-08-26 形制批)
+// =========================================================================
+
+/**
+ * 造一个「meta 声明无效」的失败(片数解析不出或小于 1)。
+ *
+ * @param input 出事的 meta 文件名。
+ * @returns mart 文件失败。
+ */
+export function martMetaError(input: MartMetaErrorIn): MartErrorOut {
+  return fail({ name: MART_ERR_NAME, msg: MART_HEAD + input.file + MART_META_TAIL, code: null })
+}
+
+/**
+ * 造一个「分片缺失」的失败(半程上传 → 整事务回滚)。
+ *
+ * @param input 表名、缺的片号与总片数。
+ * @returns mart 文件失败。
+ */
+export function martShardError(input: MartShardErrorIn): MartErrorOut {
+  return fail({
+    name: MART_ERR_NAME,
+    msg: MART_HEAD + input.name + MART_SHARD_MID + input.k + MART_SHARD_OF + input.parts + MART_SHARD_TAIL,
+    code: null,
+  })
+}
+
+/**
+ * 造一个「数据目录全无」的失败(本轮上传丢失,如部署重启清 /tmp → 整事务回滚)。
+ *
+ * @param input 两级目录路径。
+ * @returns mart 文件失败。
+ */
+export function martSourceError(input: MartSourceErrorIn): MartErrorOut {
+  return fail({
+    name: MART_ERR_NAME,
+    msg: MART_NO_SOURCE_HEAD + input.tmp + MART_NO_SOURCE_MID + input.local + MART_NO_SOURCE_TAIL,
+    code: null,
+  })
 }

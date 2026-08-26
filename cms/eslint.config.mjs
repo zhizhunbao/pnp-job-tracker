@@ -1131,25 +1131,30 @@ const localRules = {
       },
     },
 
-    // ── 禁 `?`(2026-08-21 Frank 拍板「禁止用 ?」)────────────────────────────────
-    // 设计讨论定案:`?:` 是「写的人省 10 秒,后面所有读的人每次都得防一手」的坏交换;
-    // 终态 = 字段全声明、可空显式 `| null`、构造处格格交代 —— 拿 TS 当强类型语言用。
-    // 两种形态一把抓:`?:` 可选属性/可选参数、`?.` 可选链。
-    // 豁免:① `to*` 命名的行映射/采信函数体内(边界收窄本来就要摸「可能没有」);
-    //      ② 描述**别人家对象**的形状挂逐行 disable 并写明理由(pi 的事件、Payload 的内部结构);
-    //      ③ tsx 不管(React props 的 `?` 是框架惯例)。
-    // 开闸:consult=error,全站其余 .ts=warn(整改清单),迁完一域升一个。
+    // ── 禁 `?`:只在 type 的属性签名上放行(2026-08-21 立,2026-08-25 缩小)──────────
+    // 原判(2026-08-21 Frank「禁止用 ?」):`?:` 是「写的人省 10 秒,后面所有读的人每次
+    // 都得防一手」的坏交换,终态 = 字段全声明、可空显式 `| null`、构造处格格交代。
+    // 2026-08-25 Frank 改判「只允许 type 有,其他位置不许有」:
+    //   ① type/interface 的属性签名 → 放行,并且**契约里的「没有」改用缺席表达**:
+    //      `x: number | null` 一律写成 `x?: number`。全站只剩一种「没有」,不再是
+    //      null 与缺席并存(那才是读的人要想两次的真正来源)。`| undefined` 仍不许显式写
+    //      (见 `no-undefined-type`)—— 同一件事只留 `?:` 一种写法。
+    //   ② 可选参数 `(x?: T)` → 照旧禁。一个函数一个参数、入参用自己的 `XxxIn` type,
+    //      那格「可以不传」是 `XxxIn` 里的属性说了算,不是签名上再开一道。
+    //   ③ 可选链 `?.` → 照旧禁。声明说得清「这格可能没有」,取值处就写显式 if,
+    //      不是一路点下去把每层的「没有」一起吞掉。
+    // 豁免:`to*` 命名的行映射/采信函数体内的 `?.`(边界收窄本来就要摸「可能没有」);tsx 不管。
     'no-optional': {
       meta: {
         type: 'suggestion',
         schema: [],
         messages: {
-          prop:
-            '`{{ name }}?` 可选属性/参数 —— 字段要全声明,可空写成 `{{ name }}: T | null`,'
-            + '构造处显式给 null。描述外部对象的形状要豁免就逐行 disable 并写明是谁家的。',
+          param:
+            '`{{ name }}?` 可选参数 —— 参数位不许带 `?`。一个函数一个参数,'
+            + '「可以不传」写进入参 type(`XxxIn`)的那格属性上,签名上不再开第二道。',
           chain:
-            '`?.` 可选链 —— 自家数据每格都该保证存在(顶多是 null):直接取,或显式 if/报错。'
-            + '边界摸别人家对象的,收进 `to*` 采信/映射函数里。',
+            '`?.` 可选链 —— 自家数据每格要么有、要么在 type 上声明成 `?:`,读的时候写显式 if,'
+            + '别一路点下去把每层的「没有」一起吞掉。边界摸别人家对象的,收进 `to*` 采信/映射函数里。',
         },
       },
       create(context) {
@@ -1163,18 +1168,13 @@ const localRules = {
           return false
         }
         return {
-          TSPropertySignature(node) {
-            if (!node.optional) return
-            const name = node.key?.name ?? node.key?.value ?? '(计算键)'
-            context.report({ node, messageId: 'prop', data: { name } })
-          },
           Identifier(node) {
-            // 可选参数 `(x?: T)`:只看真在参数位上的
+            // 可选参数 `(x?: T)`:只看真在参数位上的 —— type 里的属性签名 2026-08-25 起放行
             if (!node.optional) return
             const p = node.parent
             const isParam = p && (p.type === 'FunctionDeclaration' || p.type === 'FunctionExpression' ||
               p.type === 'ArrowFunctionExpression' || p.type === 'TSFunctionType' || p.type === 'TSMethodSignature')
-            if (isParam) context.report({ node, messageId: 'prop', data: { name: node.name } })
+            if (isParam) context.report({ node, messageId: 'param', data: { name: node.name } })
           },
           ChainExpression(node) {
             if (inMapper(node)) return
@@ -2230,9 +2230,11 @@ const eslintConfig = [
     rules: { 'local/no-ternary-branch': 'error' },
   },
   {
-    // ── 禁 `?`:全站 warn = 整改清单(2026-08-21 Frank「禁止用 ?」,consult 先清零)──
-    // db 原本整层豁免,2026-08-21 晚 Frank「? 也不允许」后收回:剩 3 处真边界
-    // (PayloadWithPool 描述别人家对象、pg 的 params 签名)进清单,迁移时逐行特批或改掉。
+    // ── 禁 `?`:已重构名单内 error(2026-08-21 立,2026-08-25 缩小)──────────────────
+    // 原本 type 的属性签名、可选参数、可选链三样一把抓。2026-08-25 Frank「只允许 type 有」:
+    // 属性签名放行(契约里的「没有」改用缺席表达,见规则本体的注释),参数位与 `?.` 照旧禁。
+    // db 原本整层豁免,2026-08-21 晚收回后剩 3 处真边界进了基线;其中 PayloadWithPool 那类
+    // 「描述别人家对象的形状」现在合法了,下次跑 `npm run lint:prune` 会被收掉,不必手动清。
     files: REFACTORED,
     ignores: ['src/lib/consult/**'],
     plugins: { local: localRules },
@@ -2387,34 +2389,12 @@ const eslintConfig = [
   //    排在前面的 'off' 会被后面任何一个 'error' 重新打开(2026-08-25 实撞:
   //    这块本来插在 db 块之前,后面 `files: REFACTORED` 那块又把三条开了回去,
   //    于是豁免看着写了、其实一条没生效)。同一个机制今晚咬过两次,另一次是桶闸。
-  {
-    // ── seed 装载规格的具名豁免(2026-08-25 Frank「mart 修啊」)────────────────────
-    // `mart/routes.ts` 是**声明式的装载规格表**:每条 = [mart 文件, 库表, 列白名单, 行映射器]。
-    // 946 处违规里 768 处是三类,而这三类**照闸改会让文件更糟**,逐条说明:
-    //
-    // · no-bare-strings(604):那些「裸串」是**数据库的列名**(`['noc','province','title_zh',…]`)。
-    //   它们是库的词汇不是我们的值,给每个起名(`COL_NOC = 'noc'`)只会多一层跳转;
-    //   而且白名单本身就是数据 —— 文件头写着「改 collection 字段必须同步这里的列白名单」。
-    //
-    // · no-arrow-function(54):那些箭头是**行映射器**,一表一个,紧挨着它的列白名单。
-    //   提成具名顶层函数就把「列白名单 ↔ 映射器」这一对拆开了 —— 而这一对必须逐字对齐
-    //   (对不上不报错:`insertBatch` 里 `r[c] ?? null` 会把缺的列**静默写成 NULL**,
-    //    多出的键**静默丢掉**)。2026-08-25 立了 tests/int/martSpec 锁这条不变量,
-    //   两个变异探针验过能抓到;拆开只会让人更容易改飘。
-    //
-    // · no-comment-in-function(110):那些是 ⚠️ **运维警告**,逐条写着「这一列是新加的,
-    //   必须先在生产跑 docs/sql/xxx.sql,否则整个 seed 事务回滚(/seed 500 且无 body)」。
-    //   按闸搬进 JSDoc = 把警告从它警告的那一行搬走 —— 这条路直灌生产库,不能这么办。
-    //
-    // 其余 178 处(no-nullish / no-bang / routes-shape 等)**不豁免**,留在基线里等形制批。
-    files: ['src/lib/mart/routes.ts'],
-    plugins: { local: localRules },
-    rules: {
-      'local/no-bare-strings': 'off',
-      'local/no-arrow-function': 'off',
-      'local/no-comment-in-function': 'off',
-    },
-  },
+  // ── mart 的三条具名豁免已撤(2026-08-26 Frank「mart 不要豁免 重构一下」)────────
+  // 08-25 那块豁免的三个论据在形制批里逐条落了地,豁免随之失去存在理由:
+  // · 列白名单(裸串论据)搬进 lib/mart/constants 的 COLS_*(常量文件本来就是放数的地方);
+  // · 行映射器(箭头论据)提成 functions 的具名 to*,「白名单 ↔ 映射器」的逐字对齐
+  //   改由 tests/int/martSpec 运行时对拍锁死(比紧挨着摆更强);
+  // · 运维警告(函数内注释论据)挂到各 COLS_* 的 JSDoc 上 —— 警告跟着它警告的那张表走。
 ]
 
 export default eslintConfig

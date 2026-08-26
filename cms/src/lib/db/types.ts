@@ -91,6 +91,81 @@ export type QueryRowsIn<R> = {
 }
 
 /**
+ * `sql.insertRows` 的入参(seed 批量 INSERT 的拼版面;2026-08-26 mart 形制批)。
+ */
+export type SqlInsertRowsIn = {
+  /**
+   * 目标表名。
+   */
+  table: string
+
+  /**
+   * 列清单(占位符按 行数 × 列数 铺开)。
+   */
+  cols: readonly string[]
+
+  /**
+   * 本批行数。
+   */
+  rowCount: number
+
+  /**
+   * ON CONFLICT 等后缀;无后缀传空串。
+   */
+  suffix: string
+}
+
+/**
+ * `sql.newsUpsertSuffix` 的入参。
+ */
+export type SqlNewsUpsertIn = {
+  /**
+   * news 全列清单(slug/created_at 不参与更新)。
+   */
+  cols: readonly string[]
+
+  /**
+   * 懒翻译/速读缓存列(按「body_en 真变了才清」处理)。
+   */
+  cache: readonly string[]
+}
+
+/**
+ * `sql.companiesUpsertSuffix` 的入参。
+ */
+export type SqlCompaniesUpsertIn = {
+  /**
+   * 按 EXCLUDED 直写、且参与「真变了才写」比较的列。
+   */
+  plain: readonly string[]
+
+  /**
+   * 走 COALESCE 保旧值的列。
+   */
+  coalesce: readonly string[]
+}
+
+/**
+ * `sql.jobsUpsertSuffix` 的入参。
+ */
+export type SqlJobsUpsertIn = {
+  /**
+   * jobs 全列清单。
+   */
+  cols: readonly string[]
+
+  /**
+   * 更新分支不碰的列(身份键与首见/末见/建档时刻)。
+   */
+  fixed: readonly string[]
+
+  /**
+   * 走 COALESCE 保旧值的列。
+   */
+  coalesce: readonly string[]
+}
+
+/**
  * 事务用的独占连接。**用完必须 release**(先例:seed/route.ts 的事务体,
  * BEGIN/COMMIT/ROLLBACK + finally release)。
  */

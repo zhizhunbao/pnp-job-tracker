@@ -9,15 +9,15 @@
 export type {
   ChatErrCode, ChatErrorIn, ChatErrorOut, ChatFailure, FailIn, FailOut, Failure, FriendErrCode,
   GatewayErrorBody, GatewayErrorIn, GatewayErrorOfIn, GatewayErrorOfOut, GatewayErrorOut, GatewayFailure,
-  HasNameIn, HasNameOut, LlmErrorIn, LlmErrorOut, LlmFailure, TranslateErrCode, TranslateErrorIn,
-  TranslateErrorOut, TranslateFailure,
+  HasNameIn, HasNameOut, LlmErrorIn, LlmErrorOut, LlmFailure, MartErrorOut, MartMetaErrorIn, MartShardErrorIn,
+  MartSourceErrorIn, TranslateErrCode, TranslateErrorIn, TranslateErrorOut, TranslateFailure,
 } from './types'
 export {
   CHAT_CODE, CHAT_ERR_NAME, ERR_BY_STATUS, ERR_BY_TYPE, ERR_DEFAULT, ERR_MSG_MAX, ERR_NAME, FRIEND_CODE,
-  FRIEND_MSG, GATEWAY_MSG, LEGACY_TOO_LONG, LEGACY_TOO_LONG_TYPE, LLM_MSG, POINTS_ERR, TRANSLATE_CODE,
-  TRANSLATE_ERR_NAME, TRANSLATE_TIMEOUT, UPSTREAM_HEAD,
+  FRIEND_MSG, GATEWAY_MSG, LEGACY_TOO_LONG, LEGACY_TOO_LONG_TYPE, LLM_MSG, MART_ERR_NAME, POINTS_ERR,
+  TRANSLATE_CODE, TRANSLATE_ERR_NAME, TRANSLATE_TIMEOUT, UPSTREAM_HEAD,
 } from './constants'
 export {
   chatError, fail, gatewayError, gatewayErrorOf, hasName, isChatError, isGatewayError, isLlmError, llmError,
-  translateError,
+  martMetaError, martShardError, martSourceError, translateError,
 } from './functions'

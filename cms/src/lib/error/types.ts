@@ -291,3 +291,57 @@ export type ChatErrorIn<Slots> = {
  * `chatError` 的返回:对话编排的失败。
  */
 export type ChatErrorOut<Slots> = ChatFailure<Slots>
+
+// =========================================================================
+// 交接域(lib/mart)—— seed 读 mart 文件的失败(2026-08-26 形制批)
+// =========================================================================
+
+/**
+ * mart 文件失败(meta 无效 / 分片缺失 / 目录全无);没有域内错误码,code 恒 null。
+ */
+export type MartErrorOut = FailOut<null>
+
+/**
+ * `martMetaError` 的入参。
+ */
+export type MartMetaErrorIn = {
+  /**
+   * 出事的 meta 文件名(含 `__meta` 后缀,不含扩展名)。
+   */
+  file: string
+}
+
+/**
+ * `martShardError` 的入参。
+ */
+export type MartShardErrorIn = {
+  /**
+   * 表名。
+   */
+  name: string
+
+  /**
+   * 缺的那一片(1 起,给人读的序号)。
+   */
+  k: number
+
+  /**
+   * meta 声明的总片数。
+   */
+  parts: number
+}
+
+/**
+ * `martSourceError` 的入参。
+ */
+export type MartSourceErrorIn = {
+  /**
+   * tmpdir 侧目录。
+   */
+  tmp: string
+
+  /**
+   * 本地回退目录。
+   */
+  local: string
+}

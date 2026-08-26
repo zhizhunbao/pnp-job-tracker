@@ -128,6 +128,56 @@ export const TRANSLATE_ERR_NAME = 'TranslateError'
  */
 export const UPSTREAM_HEAD = 'upstream '
 
+// =========================================================================
+// 交接域(lib/mart)—— seed 读 mart 文件的三种失败(2026-08-26 形制批自 new Error 收编)
+// =========================================================================
+
+/**
+ * mart 文件失败的身份(meta 无效 / 分片缺失 / 目录全无共用 —— 都是「本轮上传坏了,
+ * 整事务回滚」这一种事故)。
+ */
+export const MART_ERR_NAME = 'MartFileError'
+
+/**
+ * mart 失败话术的公共头(后接文件名)。
+ */
+export const MART_HEAD = 'mart '
+
+/**
+ * meta 声明无效的尾话。
+ */
+export const MART_META_TAIL = ' invalid'
+
+/**
+ * 分片缺失话术:表名后、片号前的那截。
+ */
+export const MART_SHARD_MID = ' shard '
+
+/**
+ * 分片缺失话术:片号/总片数的分隔。
+ */
+export const MART_SHARD_OF = '/'
+
+/**
+ * 分片缺失的尾话(半程上传 → 回滚)。
+ */
+export const MART_SHARD_TAIL = ' missing (partial upload? rolling back)'
+
+/**
+ * 目录全无的头话(两个目录都不存在 = 本轮上传丢失)。
+ */
+export const MART_NO_SOURCE_HEAD = 'mart no data source: neither '
+
+/**
+ * 目录全无话术:两个目录名之间的那截。
+ */
+export const MART_NO_SOURCE_MID = ' nor '
+
+/**
+ * 目录全无的尾话。
+ */
+export const MART_NO_SOURCE_TAIL = ' exists (upload lost? rolling back)'
+
 /**
  * 我们这侧掐断时报的话。
  */

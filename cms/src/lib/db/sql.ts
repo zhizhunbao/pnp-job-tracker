@@ -13,6 +13,8 @@
 // 分段:1. 片段  2. 职位列表/分页/匹配  3. 职位单条与相关  4. 公司  5. 职业(NOC)
 //       6. 站级数字与提醒  7. 答题事实数  8. 统计/难度/职业报告  9. 雇主
 
+import type { SqlCompaniesUpsertIn, SqlInsertRowsIn, SqlJobsUpsertIn, SqlNewsUpsertIn } from './types'
+
 // =========================================================================
 // 1. 片段 —— 多条语句共用的列清单与条件,单独命名以免各处再抄一遍
 // =========================================================================
@@ -1297,12 +1299,13 @@ export const NOC_LIST_WITH_TITLES = `SELECT d.noc, COALESCE(d.title, '') title, 
        ORDER BY count(*) DESC LIMIT $2`
 
 // =========================================================================
-// 27. 灌库(seed)—— 只收**固定语句**
+// 27. 灌库(seed)—— 固定语句 + 动态拼版
 // =========================================================================
-// ⚠️ 这里没有 seed 的全部 SQL:按表名/列清单**现拼**的那些(DELETE FROM ${table}、
-//    ON CONFLICT DO UPDATE SET 的列差子句、临时表)留在 app/seed/route.ts —— 它们是
-//    随数据形状生成的**机制**,不是可以摆在这儿读的语句;搬过来只会变成一堆看不懂的碎片。
-//    通用的批量 INSERT 骨架在 ./database.ts 的 insertMany。
+// ⚠️ 原判(2026-08-21):按表名/列清单**现拼**的那些留在 seed 路由,「搬过来只会变成
+//    一堆看不懂的碎片」。2026-08-26 mart 形制批改判:前提变了 —— seed 芯进了
+//    lib/mart/functions,而 functions 禁裸字符串,SQL 文本只剩这一个家;且现拼的
+//    不再是碎片,是**整条语句的拼版函数**(列清单从 mart 常量进,SQL 的形在这儿),
+//    介质收拢的老判据反而要求它们住这里。通用的批量 INSERT 骨架在 ./database.ts 的 insertMany。
 
 /**
  * seed 前解锁 news 的 Payload 文档锁。
@@ -1399,6 +1402,159 @@ export const TEMP_DEAD_EXT = `CREATE TEMP TABLE dead_ext (external_id text PRIMA
  * 本轮抓到的全部 external_id,用于「本次未见」反连接
  */
 export const TEMP_SEEN_EXT = `CREATE TEMP TABLE seen_ext (external_id text PRIMARY KEY) ON COMMIT DROP`
+
+// ── seed 事务体与动态拼版(2026-08-26 mart 形制批,自 seed 芯迁入)──
+/**
+ * 开事务(seed 全程单事务:任一步失败整体回滚,不再有半写状态)。
+ */
+export const TX_BEGIN = `BEGIN`
+
+/**
+ * 提交事务。
+ */
+export const TX_COMMIT = `COMMIT`
+
+/**
+ * 回滚事务。
+ */
+export const TX_ROLLBACK = `ROLLBACK`
+
+/**
+ * #118 表级哈希态的建表(幂等;-1/-2/-3 哨兵语义见 lib/mart/constants)。
+ */
+export const SEED_STATE_CREATE = `CREATE TABLE IF NOT EXISTS seed_state (name text PRIMARY KEY, hash text NOT NULL)`
+
+/**
+ * 判死临时表灌完后喂统计(临时表无自动统计,给规划器选反连接计划)。
+ */
+export const ANALYZE_DEAD_EXT = `ANALYZE dead_ext`
+
+/**
+ * 见过临时表灌完后喂统计(同上)。
+ */
+export const ANALYZE_SEEN_EXT = `ANALYZE seen_ext`
+
+/**
+ * 清某维度表在 payload_locked_documents_rels 里的关联(B7 教训:漏了会整事务炸)。
+ *
+ * @param table 维度表名(对应关联列 `<table>_id`)。
+ * @returns DELETE 语句。
+ */
+export const clearLockedRels = (table: string) => `DELETE FROM payload_locked_documents_rels WHERE ${table}_id IS NOT NULL`
+
+/**
+ * 清空一张维度表(dims 的「清空 + 重灌」半边)。
+ *
+ * @param table 表名。
+ * @returns DELETE 语句。
+ */
+export const deleteAll = (table: string) => `DELETE FROM ${table}`
+
+/**
+ * 分批多行 INSERT 的整条语句:占位符按 行数 × 列数 铺开(参数扁平化归调用方)。
+ *
+ * @param x 表名、列清单、本批行数与 ON CONFLICT 等后缀。
+ * @returns INSERT 语句。
+ */
+export const insertRows = (x: SqlInsertRowsIn) => {
+  const groups: string[] = []
+  for (let ri = 0; ri < x.rowCount; ri++) {
+    const phs: string[] = []
+    for (let ci = 0; ci < x.cols.length; ci++) {
+      phs.push('$' + String(ri * x.cols.length + ci + 1))
+    }
+    groups.push('(' + phs.join(',') + ')')
+  }
+  return `INSERT INTO ${x.table} (${x.cols.join(',')}) VALUES ${groups.join(',')} ${x.suffix}`
+}
+
+/**
+ * stats_daily 的 UPSERT 后缀:按 (date,province,broad) 更新当天那批,往前的日期一律不动。
+ */
+export const STATS_DAILY_UPSERT = `ON CONFLICT (date, province, broad) DO UPDATE SET open_jobs=EXCLUDED.open_jobs, new7d=EXCLUDED.new7d,
+         median_salary_annual=EXCLUDED.median_salary_annual, named_jobs=EXCLUDED.named_jobs, closed=EXCLUDED.closed, updated_at=EXCLUDED.updated_at`
+
+/**
+ * news 的 UPSERT 后缀:缓存列先按「body_en 真变了才清」处理(防错位陈译),
+ * 其余业务列(除 slug/created_at)按 EXCLUDED 直写。
+ *
+ * @param x 全列清单与缓存列清单。
+ * @returns ON CONFLICT 子句。
+ */
+export const newsUpsertSuffix = (x: SqlNewsUpsertIn) => {
+  const stale: string[] = []
+  for (const c of x.cache) {
+    stale.push(`${c}=CASE WHEN news.body_en IS DISTINCT FROM EXCLUDED.body_en THEN NULL ELSE news.${c} END`)
+  }
+  const sets: string[] = []
+  for (const c of x.cols) {
+    if (c === 'slug' || c === 'created_at') {
+      continue
+    }
+    sets.push(`${c}=EXCLUDED.${c}`)
+  }
+  return `ON CONFLICT (slug) DO UPDATE SET ${stale.join(',')}, ${sets.join(',')}`
+}
+
+/**
+ * companies 的 UPSERT 后缀(2026-07-25 跳过未变行):普通列按 EXCLUDED 直写并参与
+ * IS DISTINCT FROM 比较;COALESCE 列保旧值并按 COALESCE 后的终值比较(与 SET 一一对应);
+ * updated_at 直写但不参与比较 —— 数据没变就不该跳。
+ *
+ * @param x 普通列与 COALESCE 列清单。
+ * @returns ON CONFLICT 子句(含 WHERE「任一业务列真变了才写」)。
+ */
+export const companiesUpsertSuffix = (x: SqlCompaniesUpsertIn) => {
+  const sets: string[] = []
+  for (const c of x.plain) {
+    sets.push(`${c}=EXCLUDED.${c}`)
+  }
+  sets.push(`updated_at=EXCLUDED.updated_at`)
+  for (const c of x.coalesce) {
+    sets.push(`${c}=COALESCE(EXCLUDED.${c}, companies.${c})`)
+  }
+  const changed: string[] = []
+  for (const c of x.plain) {
+    changed.push(`companies.${c} IS DISTINCT FROM EXCLUDED.${c}`)
+  }
+  for (const c of x.coalesce) {
+    changed.push(`companies.${c} IS DISTINCT FROM COALESCE(EXCLUDED.${c}, companies.${c})`)
+  }
+  return `ON CONFLICT (slug) DO UPDATE SET ${sets.join(',')} WHERE ${changed.join(' OR ')}`
+}
+
+/**
+ * jobs 的 UPSERT 后缀:更新分支不碰身份/首见列,last_seen 与 COALESCE 列保旧值;
+ * 「真变了才写」的比较面同 companies(last_seen 归 COALESCE 组 —— 增量抓取只重抓
+ * 最近几天的帖,老帖 lastSeen 原样透传比不出差异 → 大多数行整行免写)。
+ *
+ * @param x 全列清单、不碰的列与 COALESCE 列。
+ * @returns ON CONFLICT 子句(含 WHERE)。
+ */
+export const jobsUpsertSuffix = (x: SqlJobsUpsertIn) => {
+  const sets: string[] = []
+  for (const c of x.cols) {
+    if (x.fixed.includes(c) || x.coalesce.includes(c)) {
+      continue
+    }
+    sets.push(`${c}=EXCLUDED.${c}`)
+  }
+  for (const c of x.coalesce) {
+    sets.push(`${c}=COALESCE(EXCLUDED.${c}, jobs.${c})`)
+  }
+  sets.push(`last_seen=COALESCE(EXCLUDED.last_seen, jobs.last_seen)`)
+  const changed: string[] = []
+  for (const c of x.cols) {
+    if (x.fixed.includes(c) || c === 'updated_at' || x.coalesce.includes(c)) {
+      continue
+    }
+    changed.push(`jobs.${c} IS DISTINCT FROM EXCLUDED.${c}`)
+  }
+  for (const c of [...x.coalesce, 'last_seen']) {
+    changed.push(`jobs.${c} IS DISTINCT FROM COALESCE(EXCLUDED.${c}, jobs.${c})`)
+  }
+  return `ON CONFLICT (external_id) DO UPDATE SET ${sets.join(',')} WHERE ${changed.join(' OR ')}`
+}
 
 /**
  * 单省的 info 列(/api/jobs/province 地点弹框;info 是 mart 挂的 IRCC 体量数 jsonb)。
