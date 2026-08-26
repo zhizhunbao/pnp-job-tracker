@@ -1,6 +1,10 @@
 /**
  * 提醒域的形状 —— 本域自己声明(两处 `import type` 特批:db 基础设施叶子、
- * jobs 的匹配引擎输入行,那是引擎的契约,抄一份就是两份真相)。
+ * payload 句柄由库定)。
+ *
+ * 🔵 2026-08-25 Frank 落锤:jobs 的匹配引擎形状(MatchDims/MatchJob)原先挂特批牌引进来
+ * (牌上的理由是「引擎契约,抄一份就是两份真相」),按「先自己写自己的,等最后都稳定了
+ * 再看要不要抽公共层」改为本域全格照抄 —— 引擎收的是结构,全格照抄就结构兼容,接缝零断言。
  *
  * @author Frank
  * @time 2026-08-22 19:27:15
@@ -8,8 +12,6 @@
 
 
 import type { Db } from '../db'
-// eslint-disable-next-line local/no-import-in-leaf -- 匹配引擎的输入行与维度表形状归 jobs 域(引擎契约,特批牌形态)
-import type { MatchDims, MatchJob } from '../jobs'
 // eslint-disable-next-line local/no-import-in-leaf -- payload 句柄形状由库定（特批牌形态）；注入而非自取是为解 payload.config → mail 的环
 import type { Payload } from 'payload'
 
@@ -359,6 +361,159 @@ export type QuietInfo = {
    * 当前 ET 小时。
    */
   etHour: number
+}
+
+/**
+ * 省提名职业清单维度一行 —— **本域全格照抄**(2026-08-25 撤 jobs 跨域 import;
+ * 整张 dims 要喂给 jobs 的 match 引擎,少一格结构就不兼容,所以不做「只声明真读的格」瘦身)。
+ */
+export type PnpOccDim = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 通道人话名。
+   */
+  label: string
+
+  /**
+   * 清单类型(ineligible=排除)。
+   */
+  type: string
+
+  /**
+   * 职业码。
+   */
+  noc: string
+
+  /**
+   * 官方页。
+   */
+  url: string
+
+  /**
+   * 抓取时刻。
+   */
+  fetched: string
+}
+
+/**
+ * EE 类别维度一行 —— 本域全格照抄(同上判);weekly 信里读 label/drawCrs/drawDate 三格,
+ * 其余格是喂引擎用的。
+ */
+export type EeCatDim = {
+  /**
+   * 类别 slug。
+   */
+  category: string
+
+  /**
+   * 类别人话名。
+   */
+  label: string
+
+  /**
+   * 职业码。
+   */
+  noc: string
+
+  /**
+   * 上次抽选 CRS;null = 无记录。
+   */
+  drawCrs: number | null
+
+  /**
+   * 上次抽选日期。
+   */
+  drawDate: string
+
+  /**
+   * 官方页。
+   */
+  url: string
+
+  /**
+   * 抓取时刻。
+   */
+  fetched: string
+}
+
+/**
+ * 匹配维度表 —— 本域全格照抄(同上判),路由 loadMatchDims 预载注入。
+ */
+export type MatchDims = {
+  /**
+   * 省提名职业清单维度。
+   */
+  pnpOccupations: PnpOccDim[]
+
+  /**
+   * EE 类别维度。
+   */
+  eeCategories: EeCatDim[]
+}
+
+/**
+ * 匹配引擎输入行 —— 本域全格照抄(同上判):toMatchJob 构造它、整行喂给 match 引擎,
+ * 少一格 tsc 就拦不住漏字段。
+ */
+export type MatchJob = {
+  /**
+   * 职业码。
+   */
+  noc: string
+
+  /**
+   * TEER;null = 未分类。
+   */
+  teer: number | null
+
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 粗筛信号。
+   */
+  pnpEligible: boolean
+
+  /**
+   * 具名省清单命中。
+   */
+  pnpStream: string
+
+  /**
+   * EE 类别命中。
+   */
+  eeCategory: string
+
+  /**
+   * 年薪;null = 没写。
+   */
+  salaryAnnual: number | null
+
+  /**
+   * 当地中位年薪;null = 未收录。
+   */
+  wageMedAnnual: number | null
+
+  /**
+   * 雇主近两年 LMIA 获批数;null = 无记录。
+   */
+  lmiaPositions: number | null
+
+  /**
+   * 最近获批季度;空串 = 无。
+   */
+  lmiaLastQuarter: string
+
+  /**
+   * 技能股获批数;null = 列未回填(保 null,不折 0)。
+   */
+  lmiaPositionsSkilled: number | null
 }
 
 /**

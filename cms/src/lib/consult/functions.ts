@@ -23,13 +23,12 @@ import { streamSimple } from '@earendil-works/pi-ai/api/openai-completions'
 import type { Model } from '@earendil-works/pi-ai'
 import { acceptNoc, passThroughMessages } from '../agent'
 import type { TranscriptMessage } from '../agent'
-import type { VerdictProfile } from '../ruling'
 import { cleanProvs } from '../location'
 import { chatError, CHAT_CODE } from '../error'
 import { CHAT_FN, CHAT_LOG, GATE_LOG, log } from '../log'
 import { queryRows, show, SQL, text, count, numOrNull } from '../db'
 import { evaluateRequirements } from '../gauge'
-import type { Requirement, RuleProfile, RuleResult } from '../gauge'
+import type { Requirement, RuleProfile } from '../gauge'
 import {
   ANSWER_PENDING, API, ARG_NONE, AS_FOLLOWS, AUTH_HEADER, AVAIL, A_CAP, BASE, BEARER, BOLD_RE, CLAIMS_CAP, CLAIM_TEXT_CAP,
   COLLECTION_CHAT_LOGS, CONSULT_STEP, CONSULT_STEP_OCC_TPL, CONTEXT_WINDOW, CUT_MIN_RATIO, DRAW_LIMIT, EARLIER_HEAD,
@@ -68,6 +67,7 @@ import type {
   ProvOfOut, Reply, RetryNoteIn, RunGatesIn, RunGatesOut, RunIn, SearchOccupationsIn, SearchOccupationsOut, SegIn,
   SseBytes, SsePacket, StatusFactIn, StatusWordOfOut, StepOccLineIn, TakeIn, ThreadIdIn, ThresholdsFactsOut,
   ThresholdsResult, ThresholdsRow, Tool, ToolArgs, Turn, TurnList, VerdictFactsIn, VerdictFactsOut,
+  RuleResult, VerdictProfile,
   VerdictProfileOfIn, SubjectOfIn, SubjectOfOut, DrawDbRow, EeDbRow, NocSearchRow, NocHit, OccFlatRow, OccFlat,
   OpsDbRow, OpsRow, PermitDbRow, PointsDbRow, ProvOpenRow, ReqRow, ToTitleTeerIn, TitleTeer,
 } from './types'

@@ -14,20 +14,16 @@
  * 只声明本域**真正读的那几格** —— 引擎那头多一个字段,不必跟着改一次;真读不到会当场 tsc 红。
  * 跨域的重复与边界,等所有域都重构完再一起谈。
  *
+ * 🔵 2026-08-25 Frank 落锤执行上面那句:撤掉曾打脸它的四个跨域 type import
+ * (quota / jobs / pathways / plan),照第 0 段的方式自声明本域真读的格。
+ * `Db` 留着 —— 它是基础设施叶子(宪法「域之间不互相取」的例外清单),不是平级的域;
+ * 公共层要不要抽,等各域都稳定后 Frank 统一判。
+ *
  * @author Frank
  * @time 2026-08-20 01:40:00
  */
 
-// eslint-disable-next-line local/no-import-in-leaf -- 鉴权层「人」的形状归 quota(会话契约),与本文件借 db/jobs 形状同一特批形态
-import type { SessionUser as QuotaSession } from '../quota'
 import type { Db } from '../db'
-// eslint-disable-next-line local/no-import-in-leaf -- 职业竞争面行的形状归 jobs 域（特批牌形态）
-import type { OccCompetitionRow } from '../jobs'
-// eslint-disable-next-line local/no-import-in-leaf -- 试点名额聚合的形状归 pathways 域（特批牌形态）
-import type { PilotQuotaAgg } from '../pathways'
-// eslint-disable-next-line local/no-import-in-leaf -- 排序行的最小形状归 plan 域（jobsOf 回调的参型由它定；特批牌形态）
-import type { RankableRow } from '../plan'
-
 
 // =========================================================================
 // 0. 判定域自己的底表与档案形状
@@ -43,12 +39,12 @@ export type SubjectKind = 'applicant' | 'employer'
 /**
  * 本站问得到的学历档。
  */
-export type EduBand =   | 'doctorate' | 'master' | 'bachelor' | 'tradeCert' | 'diploma2y' | 'cert1y' | 'highschool'
+export type EduBand = | 'doctorate' | 'master' | 'bachelor' | 'tradeCert' | 'diploma2y' | 'cert1y' | 'highschool'
 
 /**
  * MPNP EOI 的学历档。
  */
-export type MbEduBand =   | 'masterOrDoctorate' | 'twoPrograms2yPlus' | 'oneProgram3yPlus' | 'oneProgram2y'
+export type MbEduBand = | 'masterOrDoctorate' | 'twoPrograms2yPlus' | 'oneProgram3yPlus' | 'oneProgram2y'
   | 'oneYearProgram' | 'tradeCert' | 'none'
 
 /**
@@ -4033,9 +4029,9 @@ export type OccupationListReasonsOut = {
    */
   reasons: VerdictReason[]
 
-   /**
-   * 缺的槽(没答职业时点名 noc)。
-   */
+  /**
+  * 缺的槽(没答职业时点名 noc)。
+  */
   missingSlots: string[]
 
   /**
@@ -6301,9 +6297,10 @@ export type DirectoryRowIn = {
  */
 export type TripleWireOfIn = {
   /**
-   * 当前这个人(入口 getUser 后注进来;未登录 null;鉴权层的形状起本地别名)。
+   * 当前这个人(入口 getUser 后注进来;未登录 null;鉴权层的形状本域不认识字段,
+   * 收 `AuthUser`,进域后由 `sessionOf` 转成本域形状 —— 2026-08-25 撤 quota 跨域 import)。
    */
-  user: QuotaSession | null
+  user: AuthUser
 
   /**
    * Pro 与否(入口 isPro(user) 后注进来 —— isPro 住 quota 服务端半边,functions 不借门)。
@@ -7006,6 +7003,86 @@ export type ProfileParse = {
 }
 
 /**
+ * 该职业在各省的竞争面一行 —— **本域自声明**(2026-08-25 Frank:「先自己写自己的,
+ * 等最后都稳定了再看要不要抽公共层」),不从 `lib/jobs` 取。只声明本域真读的五格:
+ * `province` 定行,四个在招数列按通道的 jobsSource 口径取数(`makeJobsOf` 按键索引);
+ * jobs 那头的 new30d / avgDaysOpen / ratio 本域不读,不跟着声明。
+ */
+export type OccCompetitionRow = {
+  /**
+   * 两位省码。
+   */
+  province: string
+
+  /**
+   * 全省在招岗数(普通省提名口径)。
+   */
+  openJobs: number
+
+  /**
+   * 该省 AIP 指定雇主 ∩ 本职业的在招数。
+   */
+  aipJobs: number
+
+  /**
+   * 该省 RCIP 试点社区 ∩ 本职业的在招数。
+   */
+  rcipJobs: number
+
+  /**
+   * 该省 FCIP 试点社区 ∩ 本职业的在招数。
+   */
+  fcipJobs: number
+}
+
+/**
+ * RCIP/FCIP 名额状态的省×制度聚合 —— **本域自声明**(同上判),不从 `lib/pathways` 取。
+ * 这格整体透传进 `ProfileWireRow.pilotQuota` 下发前端,前端读的是本契约 ——
+ * 所以八格全声明,不做「只声明真读的格」瘦身。
+ */
+export type PilotQuotaAgg = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * RCIP | FCIP(身兼两制的社区计入两组)。
+   */
+  type: string
+
+  /**
+   * 官网写了名额状态的社区数(没写的社区不在本表)。
+   */
+  communities: number
+
+  /**
+   * 其中官网明说先到先得的社区数。
+   */
+  firstComeN: number
+
+  /**
+   * 有数社区的名额求和;一个都没有 = null(官方可空,不折 0)。
+   */
+  quotaSum: number | null
+
+  /**
+   * 只汇总官网自报「剩余名额」的社区;没有 = null。
+   */
+  remainingSum: number | null
+
+  /**
+   * 只汇总官网自报「每轮上限」的社区;没有 = null。
+   */
+  perIntakeSum: number | null
+
+  /**
+   * 各社区 as_of 取最大(ISO 日期字符串)。
+   */
+  asOf: string
+}
+
+/**
  * `buildProfileWire` 的入参（取数全在路由完成，这里纯组装）。
  */
 export type ProfileWireIn = {
@@ -7061,9 +7138,22 @@ export type ProfileWireOut = {
 }
 
 /**
- * plan 排序行的本地名（jobsOf 回调收它 —— 参型由 plan 定，收窄会逆变报错）。
+ * plan 排序行 —— **本域自声明**(2026-08-25 Frank 落锤,替掉原先 `= RankableRow` 别名;
+ * 只声明 jobsOf 真读的两格)。原注释「参型由 plan 定,收窄会逆变报错」的方向说反了:
+ * 声明**更少**的格是把参数位放宽 —— plan 的 RankableRow 结构上可赋给它,
+ * `rankRows` 的泛型照收;声明 plan 没有的格才会炸。
  */
-export type PlanRow = RankableRow
+export type PlanRow = {
+  /**
+   * 通道 key(uiOf 按它取 jobsSource 口径)。
+   */
+  key: string
+
+  /**
+   * 省码('FED' 或两字码;非省级行 jobsOf 回 null)。
+   */
+  province: string
+}
 
 /**
  * 「该省该职业在招岗数」取数回调（RankCtx.jobsOf 的形状）。

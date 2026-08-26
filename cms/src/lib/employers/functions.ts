@@ -107,12 +107,10 @@ import type {
   NocTitleMap, NocTitlesIn, NocTitlesOut, NormalizeFiltersIn, OccRowsOut, PageSliceIn, ParamGetter, ProgramMatchesIn,
   ProvTally, RankedSponsor, SearchParams, SponsorBoardData, SponsorBoards, SponsorEmployerRow, SponsorRows,
   SponsorRowsOut, StrList, WdEntity, WdGetIn, WdGetOut, WikidataHitOrNull, WikidataOut, ColumnDbRow, CompareJob,
-  CompareJobDbRow, DesignatedDbRow, DesignatedRow, DifficultyDbRow, DifficultyObj, DifficultyPair, HiringDbRow,
-  HiringRow, IdCell, MaybeStr, NocTitleDbRow, NocTitlePair, OccDbRow, OccRow, ReqDbRow, SponsorDbRow, StrListCell,
-  ToCompareRowIn, ToSponsorRowIn, SponsorsIn,
+  CompareJobDbRow, DesignatedDbRow, DesignatedRow, DifficultyDbRow, DifficultyObj, DifficultyPair, EmployerFacts,
+  HiringDbRow, HiringRow, IdCell, MaybeStr, NocTitleDbRow, NocTitlePair, OccDbRow, OccRow, ReqDbRow, ReqRow,
+  SponsorDbRow, StrListCell, ToCompareRowIn, ToSponsorRowIn, SponsorsIn,
 } from './types'
-import type { Requirement } from '../gauge'
-import type { EmployerFacts } from '../ruling'
 import { HDR_USER_AGENT } from '../http'
 // =========================================================================
 // 1. 雇主板:筛选口径(纯函数,int 测试直打这里)
@@ -1414,7 +1412,7 @@ export function toColumnName(r: ColumnDbRow): string {
  * @param r 原始行。
  * @returns 判定引擎认的门槛行。
  */
-export function toEmployerReq(r: ReqDbRow): Requirement {
+export function toEmployerReq(r: ReqDbRow): ReqRow {
   let op = text(r.op)
   if (op === '') {
     op = '>='

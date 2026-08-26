@@ -24,8 +24,6 @@ import {
 import { askLabels, fieldMatchExemptionOf, gateLabels, gateOf, PATHWAYS, regionProvincesOf, uiOf } from '../pathways'
 import { pickOutside, rankRows } from '../plan'
 import type { RankCtx } from '../plan'
-import type { PilotQuotaAgg } from '../pathways'
-import type { OccCompetitionRow } from '../jobs'
 import {
   AB_LOCAL_EXP,
   AIP_PROVINCES,
@@ -223,7 +221,7 @@ import type {
   ParseNocDictOut, ParseWageRuleIn, PathLeversIn, PathLeversOut, PathVerdictIn, PathVerdictOut, PathwayFactsIn,
   PathwayFactsOut, PathwayScore, PathwayVerdict, PermitCell, PermitOfIn, PermitOfOut, PersonRowsIn, PersonRowsOut,
   PickGateIn, PickGridFactorsIn, PickGridFactorsOut, PickOnLangRowIn, PickOnLangRowOut, PickScoreRowIn,
-  PickScoreRowOut, PickedFactor, PlanRow, ProfileBody, ProfileOfOccupationIn, ProfileParse, ProfileSlotsIn,
+  PickScoreRowOut, PickedFactor, PilotQuotaAgg, PlanRow, ProfileBody, ProfileOfOccupationIn, ProfileParse, ProfileSlotsIn,
   ProfileWireIn, ProfileWireOut, ProfileWireRow, ProfileWithNocIn, ProfileWithOfferIn, ProvCompetition,
   ProvinceGridScoreIn, ProvinceOfIn, ProvinceOfOut, PushItemIn, QuoteOfOccIn, QuoteOfReqIn, RCell, RankedBlock,
   RankedJobRow, RankedPathway, RankedVerdict, RecentGraduateHoldsIn, RecentGraduateHoldsOut, RefDrawIn, RefDrawOut,

@@ -11,10 +11,11 @@
 import type { AgentMessage, AgentTool, AgentToolResult } from '@earendil-works/pi-agent-core'
 import type { Payload } from 'payload'
 import type { Model, Static, TSchema } from '@earendil-works/pi-ai'
-import type { Requirement, RuleResult } from '../gauge'
+// 🔵 2026-08-25 Frank 落锤清账:gauge(Requirement/RuleResult)、i18n(Lang)、
+// ruling(PathwayVerdict/VerdictData/VerdictProfile)六个跨域 type import 全撤,
+// 按「先自己写自己的,等最后都稳定了再看要不要抽公共层」改为本域自声明(第 4 段前的判定形状块)。
+// Requirement 本文件本来就没用到,engine 伴随形状照旧走 functions.ts 那条合法边。
 import type { Db } from '../db'
-import type { Lang } from '../i18n'
-import type { PathwayVerdict, VerdictData, VerdictProfile } from '../ruling'
 import type { CLAIMS_PARAMS, CRS_PARAMS, NOC_PARAMS, NOC_PROVS_PARAMS, PERMIT_PARAMS, PROV_PARAMS, SEARCH_PARAMS, VERDICT_PARAMS } from './schemas'
 
 // =========================================================================
@@ -582,6 +583,355 @@ export type ReplyDetails = {
  * 每把工具**各带自己的 schema 泛型**,这样工具表数组本身就合法,不必拿断言去顶。
  */
 export type Tool<P extends TSchema> = AgentTool<P, ReplyDetails>
+
+/**
+ * 语言码 —— 本域自声明(2026-08-25 撤 i18n 跨域 import;与全站三语同集,加语言两处同改)。
+ */
+export type Lang = 'zh' | 'en' | 'ko'
+
+/**
+ * 门槛条文管的是申请人侧还是雇主侧 —— 本域自声明(2026-08-25 撤 gauge 跨域 import)。
+ */
+export type ReqSubject = 'applicant' | 'employer'
+
+/**
+ * 一条门槛的判定结论档 —— 本域自声明(同上判)。
+ */
+export type RuleVerdict = 'pass' | 'fail' | 'unknown'
+
+/**
+ * 分地区档的一格(BC 大温/其余那类两档门槛)—— 本域自声明(同上判)。
+ */
+export type AreaTier = {
+  /**
+   * 地区名。
+   */
+  area: string
+
+  /**
+   * 该档阈值;null = 官方没写。
+   */
+  value: number | null
+}
+
+/**
+ * 门槛条文的出处 —— 本域只声明真读的三格(gauge 那头五格 ⊆ 它;与 Fact 的两格
+ * `Evidence` 不同型:这边还要拿 `label`(官方原文)当事实的标签与引文)。
+ */
+export type ReqEvidence = {
+  /**
+   * 官方原文。
+   */
+  label: string
+
+  /**
+   * 官方页面地址。
+   */
+  url: string
+
+  /**
+   * 本站抓取日。
+   */
+  fetched: string
+}
+
+/**
+ * 一条门槛的判定结果 —— **本域全格照抄**(2026-08-25 撤 gauge 跨域 import;
+ * 行从 gauge 的 evaluateRequirements 流进来,同形即兼容;`evidence` 收本域的
+ * 三格 `ReqEvidence`,gauge 那头五格 ⊆ 它)。
+ */
+export type RuleResult = {
+  /**
+   * 门槛项。
+   */
+  factor: string
+
+  /**
+   * 申请人侧/雇主侧。
+   */
+  subject: ReqSubject
+
+  /**
+   * 计算基准;null = 没写。
+   */
+  basis: string | null
+
+  /**
+   * 判定结论档。
+   */
+  verdict: RuleVerdict
+
+  /**
+   * 官方阈值;null = 判不了。
+   */
+  need: number | null
+
+  /**
+   * 阈值下界(区间门槛);null = 非区间。
+   */
+  needLow: number | null
+
+  /**
+   * 用户侧的值;null = 没答。
+   */
+  have: number | null
+
+  /**
+   * 差多少;null = 算不出。
+   */
+  short: number | null
+
+  /**
+   * 单位。
+   */
+  unit: string
+
+  /**
+   * 分地区档;null = 不分档。
+   */
+  tiers: AreaTier[] | null
+
+  /**
+   * 出处。
+   */
+  evidence: ReqEvidence
+}
+
+/**
+ * 学历档 —— 本域自声明(2026-08-25 撤 ruling 跨域 import;VerdictProfile 的一格)。
+ */
+export type EduBand = 'doctorate' | 'master' | 'bachelor' | 'tradeCert' | 'diploma2y' | 'cert1y' | 'highschool'
+
+/**
+ * 打分制要的那半档案 —— 本域自声明(同上判;VerdictProfile.scoreProfile 的形状)。
+ */
+export type GridProfile = {
+  /**
+   * 学历档。
+   */
+  edu: EduBand
+
+  /**
+   * 近 5 年内同职业全职年数(0-5)。
+   */
+  expRecent: number
+
+  /**
+   * 再往前(6-10 年前)的年数(0-5)。
+   */
+  expOlder: number
+
+  /**
+   * 首考语言 CLB(0 = 没有成绩)。
+   */
+  clb1: number
+
+  /**
+   * 第二官方语言 CLB(0 = 没有)。
+   */
+  clb2: number
+
+  /**
+   * 年龄。
+   */
+  age: number
+}
+
+/**
+ * 判定引擎收的档案 —— **本域全格照抄**(2026-08-25 撤 ruling 跨域 import):
+ * `verdictProfileOf` 亲手构造它,声明少一格 tsc 就拦不住漏字段(静默降级),所以不瘦身。
+ * 每格 null = 没答,**绝不猜** —— 语义与引擎那头逐格一致。
+ */
+export type VerdictProfile = {
+  /**
+   * 年龄;没答 null,不猜。
+   */
+  age: number | null
+
+  /**
+   * 配偶是否随行申请。
+   */
+  married: boolean | null
+
+  /**
+   * 四项最低 CLB。
+   */
+  clb: number | null
+
+  /**
+   * 学历档。
+   */
+  edu: EduBand | null
+
+  /**
+   * 学制年数。
+   */
+  eduYears: number | null
+
+  /**
+   * 有无加拿大学历。
+   */
+  canadaStudy: boolean | null
+
+  /**
+   * 在哪个省读的书,两位省码。
+   */
+  studyProvince: string | null
+
+  /**
+   * 五位职业码;拿不到就判不了职业相关的闸,不猜。
+   */
+  noc: string | null
+
+  /**
+   * 该职业的 TEER。
+   */
+  teer: number | null
+
+  /**
+   * 同职业加拿大受雇经验月数。
+   */
+  expCanadaMonths: number | null
+
+  /**
+   * 海外同职业经验月数(与加拿大经验分开存)。
+   */
+  expForeignMonths: number | null
+
+  /**
+   * 海外经验是否全为自雇。
+   */
+  foreignExpSelfEmployed: boolean | null
+
+  /**
+   * 处境:pgwp / study / worker / other。
+   */
+  status: string | null
+
+  /**
+   * 现居省('TERR' = 三个领地)。
+   */
+  province: string | null
+
+  /**
+   * 手上有没有 job offer。
+   */
+  hasOffer: boolean | null
+
+  /**
+   * 人是否已在加拿大境内。
+   */
+  inCanada: boolean | null
+
+  /**
+   * 加拿大学历的专业与目标职业对不对口。
+   */
+  fieldMatch: boolean | null
+
+  /**
+   * 法语是否达到 FCIP 要的 NCLC 5 四项。
+   */
+  frenchOk: boolean | null
+
+  /**
+   * 持的是哪种许可;'none' = 访客或已过期,null = 没答。
+   */
+  permit: 'study' | 'pgwp' | 'work' | 'none' | null
+
+  /**
+   * 打分制要的那半档案;缺席 = 没走打分流程。
+   */
+  scoreProfile?: Partial<GridProfile>
+
+  /**
+   * 用户在打分表上逐项选的档(因素键 → 选中的分);缺席 = 没答过。
+   */
+  scoreRows?: Record<string, number>
+
+  /**
+   * 时薪(加元/小时);缺席 = 没走打分流程,null = 答了没有。
+   */
+  wage?: number | null
+
+  /**
+   * BC 工作地区档(官方 area 行的下标);缺席/null 同上。
+   */
+  areaI?: number | null
+
+  /**
+   * 打分表上的勾选项(因素键 → 勾没勾);缺席 = 没答过。
+   */
+  scoreTicks?: Record<string, boolean>
+}
+
+/**
+ * 判定理由一条 —— **本域只声明真读的三格**(2026-08-25 撤 ruling 跨域 import;
+ * 行从注入的判定引擎流进来,verdictFacts 只读 kind/quote/evidence)。
+ */
+export type VerdictReason = {
+  /**
+   * 这条理由是哪一类。
+   */
+  kind: 'excluded' | 'gap' | 'met' | 'needs-info'
+
+  /**
+   * 官方原句;excluded 必带,其余可缺席。
+   */
+  quote?: string
+
+  /**
+   * 出处;引擎那头五格 ⊆ 本域两格 Evidence。
+   */
+  evidence?: Evidence
+}
+
+/**
+ * 一条通道的判定行 —— **本域只声明真读的格**(2026-08-25 撤 ruling 跨域 import;
+ * 行从注入的判定引擎流进来,verdictFacts 只读这几格;引擎那头多一格不必跟着改)。
+ */
+export type PathwayVerdict = {
+  /**
+   * 'FED' 或省码。
+   */
+  province: string
+
+  /**
+   * 官方通道名。
+   */
+  stream: string
+
+  /**
+   * 判定档;'viable' 只表示「没有判不了的项」,差一道闸也是它。
+   */
+  verdict: 'excluded' | 'viable' | 'needs-info'
+
+  /**
+   * offer 后等多久的档;excluded = null。
+   */
+  tier: 0 | 1 | 2 | 3 | null
+
+  /**
+   * 最难的那道闸;缺席 = 没有(引擎那头是窄联合,本域只当文本用)。
+   */
+  blockedBy?: string
+
+  /**
+   * 判不了时缺的档案槽;缺席 = 不缺。
+   */
+  missingSlots?: string[]
+
+  /**
+   * 逐条理由。
+   */
+  reasons: VerdictReason[]
+}
+
+/**
+ * 判定底表 —— **本域不认识它的字段,只负责透传**(2026-08-25 撤 ruling 跨域 import;
+ * 形状归 ruling:注入的取数函数交回来,原样递给注入的判定引擎,本域零处读它 ——
+ * 与 ruling 的 AuthUser 同一形态,跨边界断言只住路由注入那一处)。
+ */
+export type VerdictData = object
 
 /**
  * 判定底表的取数函数(ruling 的 loadVerdictTables 由路由注进来 ——

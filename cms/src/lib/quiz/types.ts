@@ -1,20 +1,295 @@
 /**
- * 答题域的形状 —— 本域自己声明(三处 `import type` 特批:i18n 的语言码、points 的自条件档、
- * jobs 的热门职业行,都是别家拥有的形状,抄一份就是两份真相)。
+ * 答题域的形状 —— 本域自己声明(两处 `import type` 特批:db 基础设施叶子、payload 句柄归库)。
+ *
+ * 🔵 2026-08-25 Frank 落锤:原先挂特批牌引进来的三处跨域形状(i18n 的 Lang、points 的
+ * SelfProfile、jobs 的四个行形状)全部撤掉,按「先自己写自己的,等最后都稳定了再看要不要
+ * 抽公共层」改为本域自声明 —— 结构相同 tsc 两头都认,接缝零断言;三语齐不齐照样是 tsc 红
+ * (`L = Record<Lang, string>` 的机制没变,只是 Lang 换成本域的那份)。
  *
  * @author Frank
  * @time 2026-08-18 04:36:46
  */
 
-// eslint-disable-next-line local/no-import-in-leaf -- 题面三语跟全站语言机制走,加语言 tsc 点名靠它(特批牌形态)
-import type { Lang } from '../i18n'
-// eslint-disable-next-line local/no-import-in-leaf -- 分值卡 profile 格的形状归 points 域(特批牌形态)
-import type { SelfProfile } from '../points'
-// eslint-disable-next-line local/no-import-in-leaf -- 热门职业行/事实卡/计数行的形状归 jobs 域(特批牌形态)
-import type { BroadNoc, NocOpenCount, QuizFacts, TopNoc } from '../jobs'
 import type { Db } from '../db'
 // eslint-disable-next-line local/no-import-in-leaf -- Payload Local API 的句柄形状归库(同 mail/types 的 PayloadHandle 特批)
 import type { Payload } from 'payload'
+
+/**
+ * 语言码 —— 本域自声明(2026-08-25 撤 i18n 跨域 import;与全站三语同集,加语言两处同改)。
+ */
+export type Lang = 'zh' | 'en' | 'ko'
+
+/**
+ * 学历档 —— 本域自声明(2026-08-25 撤 points 跨域 import;档位键与打分表同集)。
+ */
+export type EduKey = 'doctorate' | 'master' | 'bachelor' | 'tradeCert' | 'diploma2y' | 'cert1y' | 'highschool'
+
+/**
+ * 「你的条件」的一套值 —— 本域自声明(2026-08-25 撤 points 跨域 import;
+ * 分值卡答案的存档形状,points 引擎收的是结构,同形即兼容)。
+ */
+export type SelfProfile = {
+  /**
+   * 学历档。
+   */
+  edu: EduKey
+
+  /**
+   * 近 5 年内同职业全职年数(0-5)。
+   */
+  expRecent: number
+
+  /**
+   * 再往前(6-10 年前)的年数(0-5)。
+   */
+  expOlder: number
+
+  /**
+   * 首考语言 CLB;0 = 没有成绩。
+   */
+  clb1: number
+
+  /**
+   * 第二官方语言 CLB;0 = 没有。
+   */
+  clb2: number
+
+  /**
+   * 年龄。
+   */
+  age: number
+}
+
+/**
+ * 热门职业一行 —— 本域自声明(2026-08-25 撤 jobs 跨域 import;注入的取数函数返回它,
+ * 整行进缓存再下发,全格照抄)。
+ */
+export type TopNoc = {
+  /**
+   * 职业码。
+   */
+  noc: string
+
+  /**
+   * 官方英文名。
+   */
+  title: string
+
+  /**
+   * 中文名。
+   */
+  titleZh: string
+
+  /**
+   * 窄位中文名。
+   */
+  titleZhShort: string
+
+  /**
+   * 窄位韩文名。
+   */
+  titleKoShort: string
+
+  /**
+   * 窄位英文名。
+   */
+  titleEnShort: string
+
+  /**
+   * 大类。
+   */
+  broad: string
+
+  /**
+   * 在招数。
+   */
+  open: number
+
+  /**
+   * 可提名数。
+   */
+  eligible: number
+
+  /**
+   * 中位年薪;null = 大清单不算。
+   */
+  medianSalary: number | null
+}
+
+/**
+ * 大类下的职业一行 —— 本域自声明(同上判;jobs 的 loadBroadNocs 返回它,整行下发)。
+ */
+export type BroadNoc = {
+  /**
+   * 职业码。
+   */
+  noc: string
+
+  /**
+   * 官方英文名。
+   */
+  title: string
+
+  /**
+   * 中文名。
+   */
+  titleZh: string
+
+  /**
+   * 窄位中文名。
+   */
+  titleZhShort: string
+
+  /**
+   * 窄位韩文名。
+   */
+  titleKoShort: string
+
+  /**
+   * 窄位英文名。
+   */
+  titleEnShort: string
+
+  /**
+   * 大类。
+   */
+  broad: string
+
+  /**
+   * 在招数。
+   */
+  open: number
+
+  /**
+   * 可提名数。
+   */
+  eligible: number
+}
+
+/**
+ * 在招/可提名计数一格 —— 本域自声明(同上判)。
+ */
+export type NocOpenCount = {
+  /**
+   * 在招数。
+   */
+  open: number
+
+  /**
+   * 可提名数。
+   */
+  eligible: number
+}
+
+/**
+ * 通道命中计数一行 —— 本域自声明(QuizFacts 的嵌套格)。
+ */
+export type QuizStreamCount = {
+  /**
+   * 通道。
+   */
+  stream: string
+
+  /**
+   * 命中岗数。
+   */
+  n: number
+}
+
+/**
+ * 分省计数一行 —— 本域自声明(QuizFacts 的嵌套格)。
+ */
+export type QuizProvCount = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 在招数。
+   */
+  n: number
+
+  /**
+   * 可提名数。
+   */
+  eligible: number
+}
+
+/**
+ * 职业事实卡 —— 本域自声明(同上判;jobs 的 loadQuizFacts 返回它,整卡进缓存再下发)。
+ */
+export type QuizFacts = {
+  /**
+   * 职业码。
+   */
+  noc: string
+
+  /**
+   * TEER;null = 未分类。
+   */
+  teer: number | null
+
+  /**
+   * 官方英文名。
+   */
+  title: string
+
+  /**
+   * 中文名。
+   */
+  titleZh: string
+
+  /**
+   * 窄位中文名。
+   */
+  titleZhShort: string
+
+  /**
+   * 窄位韩文名。
+   */
+  titleKoShort: string
+
+  /**
+   * 窄位英文名。
+   */
+  titleEnShort: string
+
+  /**
+   * 在招数。
+   */
+  open: number
+
+  /**
+   * 可提名数。
+   */
+  eligible: number
+
+  /**
+   * 具名省清单命中岗数。
+   */
+  named: number
+
+  /**
+   * 分通道命中计数。
+   */
+  streams: QuizStreamCount[]
+
+  /**
+   * 分省计数。
+   */
+  byProv: QuizProvCount[]
+
+  /**
+   * 中位年薪;null = 未算(官方可空,不折 0)。
+   */
+  medianSalary: number | null
+
+  /**
+   * 有担保凭证的雇主数。
+   */
+  sponsors: number
+}
 
 /**
  * 结论落免费区还是锁区。

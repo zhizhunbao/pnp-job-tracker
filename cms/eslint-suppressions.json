@@ -232,7 +232,7 @@
   },
   "src/lib/consult/types.ts": {
     "local/no-import-in-leaf": {
-      "count": 7
+      "count": 4
     }
   },
   "src/lib/db/functions.ts": {
@@ -299,11 +299,6 @@
     },
     "local/step-down-order": {
       "count": 19
-    }
-  },
-  "src/lib/employers/types.ts": {
-    "local/no-import-in-leaf": {
-      "count": 2
     }
   },
   "src/lib/error/functions.ts": {
@@ -395,9 +390,6 @@
   "src/lib/llm/types.ts": {
     "local/no-import-in-leaf": {
       "count": 1
-    },
-    "local/no-optional": {
-      "count": 44
     },
     "local/no-undefined-type": {
       "count": 1
@@ -566,9 +558,6 @@
     }
   },
   "src/lib/points/types.ts": {
-    "local/no-optional": {
-      "count": 8
-    },
     "local/no-undefined-type": {
       "count": 1
     }
@@ -643,9 +632,6 @@
     }
   },
   "src/lib/ruling/types.ts": {
-    "local/no-optional": {
-      "count": 56
-    },
     "local/no-undefined-type": {
       "count": 6
     }

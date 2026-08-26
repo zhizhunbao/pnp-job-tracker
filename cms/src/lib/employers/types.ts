@@ -12,11 +12,11 @@
  * @time 2026-08-21 23:20:43
  */
 
-import type { EmployerFacts, EmployerVerdict, ReqRow } from '../ruling'
+// 🔵 2026-08-25 Frank 落锤清账:ruling(EmployerFacts/EmployerVerdict/ReqRow)与
+// jobs(MatchDims/MatchProfile)的五个跨域 type import 全撤,按「先自己写自己的,
+// 等最后都稳定了再看要不要抽公共层」改为本域自声明 —— 引擎收的是结构,全格照抄即兼容;
+// EmployerVerdict 不再另立,判定函数直接用本域 SponsorVerdict 收返回值(state/failed ⊆ 引擎返回)。
 import type { Db } from '../db'
-// 对照线的档案与维度形状归 jobs 域(match 引擎在那儿),这里只透传不拆读 ——
-// 自声明要复制四层嵌套形状,引擎一改这里就悄悄失配;jobs 重构时再回头判这条边(no-import-in-leaf 挂账)。
-import type { MatchDims, MatchProfile } from '../jobs'
 
 /**
  * 名录一行(SQL `DESIGNATED_ALL` 映射后的干净行)。
@@ -593,6 +593,137 @@ export type CompareRow = {
 export type CompareRows = CompareRow[]
 
 /**
+ * 分型码 —— 本域自声明(2026-08-25 撤 jobs 跨域 import;MatchProfile 的一格)。
+ */
+export type CurrentStatus = 'overseas' | 'studying' | 'working' | 'jobhunting' | 'pr'
+
+/**
+ * 匹配档案 —— **本域全格照抄**(2026-08-25 撤 jobs 跨域 import;整份要喂给 jobs 的
+ * match 引擎,少一格结构就不兼容,不做「只声明真读的格」瘦身)。
+ */
+export type MatchProfile = {
+  /**
+   * 自报职业码。
+   */
+  nocCodes: string[]
+
+  /**
+   * 语言 CLB;null = 未填。
+   */
+  clb: number | null
+
+  /**
+   * 自报 CRS;null = 未填。
+   */
+  crs: number | null
+
+  /**
+   * 目标省(偏好不是资格)。
+   */
+  targetProvinces: string[]
+
+  /**
+   * PGWP 剩余月数;null = 未填。
+   */
+  pgwpMonthsLeft: number | null
+
+  /**
+   * 分型;null = 未填。
+   */
+  currentStatus: CurrentStatus | null
+}
+
+/**
+ * 省提名职业清单维度一行 —— 本域全格照抄(MatchDims 的嵌套格,同上判)。
+ */
+export type PnpOccDim = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 通道人话名。
+   */
+  label: string
+
+  /**
+   * 清单类型(ineligible=排除)。
+   */
+  type: string
+
+  /**
+   * 职业码。
+   */
+  noc: string
+
+  /**
+   * 官方页。
+   */
+  url: string
+
+  /**
+   * 抓取时刻。
+   */
+  fetched: string
+}
+
+/**
+ * EE 类别维度一行 —— 本域全格照抄(MatchDims 的嵌套格,同上判)。
+ */
+export type EeCatDim = {
+  /**
+   * 类别 slug。
+   */
+  category: string
+
+  /**
+   * 类别人话名。
+   */
+  label: string
+
+  /**
+   * 职业码。
+   */
+  noc: string
+
+  /**
+   * 上次抽选 CRS;null = 无记录。
+   */
+  drawCrs: number | null
+
+  /**
+   * 上次抽选日期。
+   */
+  drawDate: string
+
+  /**
+   * 官方页。
+   */
+  url: string
+
+  /**
+   * 抓取时刻。
+   */
+  fetched: string
+}
+
+/**
+ * 匹配维度表 —— 本域全格照抄(2026-08-25 撤 jobs 跨域 import;整张喂给 match 引擎)。
+ */
+export type MatchDims = {
+  /**
+   * 省提名职业清单维度。
+   */
+  pnpOccupations: PnpOccDim[]
+
+  /**
+   * EE 类别维度。
+   */
+  eeCategories: EeCatDim[]
+}
+
+/**
  * `compareEmployers` 的入参。
  */
 export type CompareIn = {
@@ -969,6 +1100,158 @@ export type BoardPropsOut = Promise<BoardProps>
 export type SponsorRowsOut = Promise<SponsorEmployerRow[]>
 
 /**
+ * 判定要吃的公司事实 —— **本域自声明**(2026-08-25 撤 ruling 跨域 import;
+ * `employerFactsOf` 构造它、整份喂给注入的判定引擎,全格照抄)。
+ */
+export type EmployerFacts = {
+  /**
+   * 成立年份;查不到就是 null,判定落 unknown(08-10 三路实测多数无源,已结案)。
+   */
+  foundedYear: number | null
+
+  /**
+   * 在册状态;仅透传展示,判定不吃它。
+   */
+  registryStatus: string | null
+
+  /**
+   * 雇员数估计;估计值不许当官方数用,措辞层要说清是估的。
+   */
+  staffEst: number | null
+
+  /**
+   * 估算来源(懒查 AI / Wikidata),只标注证据性质。
+   */
+  staffEstSrc: string | null
+
+  /**
+   * 'public' = 公共部门,整体旁路。
+   */
+  sector: string | null
+}
+
+/**
+ * 门槛条文管的是申请人侧还是雇主侧(ReqRow 的一格)。
+ */
+export type SubjectKind = 'applicant' | 'employer'
+
+/**
+ * 判定引擎认的门槛行 —— **本域全格照抄**(2026-08-25 撤 ruling 跨域 import;
+ * `toEmployerReq` 构造它:判定用不到的列给空值占位,阈值官方可空 `numOrNull` 保 null)。
+ */
+export type ReqRow = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 制度(本域恒 'PNP')。
+   */
+  program: string
+
+  /**
+   * 通道(本域不分通道,空串占位)。
+   */
+  stream: string
+
+  /**
+   * 申请人侧/雇主侧(本域恒 'employer')。
+   */
+  subject: SubjectKind
+
+  /**
+   * 门槛项。
+   */
+  factor: string
+
+  /**
+   * 比较符(库里空则缺省 '>=')。
+   */
+  op: string
+
+  /**
+   * 阈值;官方可空保 null,折 0 = 替官方编数。
+   */
+  value: number | null
+
+  /**
+   * 阈值原文(本域空串占位)。
+   */
+  valueText: string
+
+  /**
+   * 单位。
+   */
+  unit: string
+
+  /**
+   * 适用 TEER(本域空串占位)。
+   */
+  appliesTeer: string
+
+  /**
+   * 适用职业码(本域空串占位)。
+   */
+  appliesNoc: string
+
+  /**
+   * 排除职业码(本域空串占位)。
+   */
+  excludesNoc: string
+
+  /**
+   * 适用地区。
+   */
+  appliesArea: string
+
+  /**
+   * 适用条件(本域空串占位)。
+   */
+  appliesCondition: string
+
+  /**
+   * 家庭人数档;本域用不到,null 占位。
+   */
+  familySize: number | null
+
+  /**
+   * 计算基准(本域空串占位)。
+   */
+  basis: string
+
+  /**
+   * 官方原文(本域空串占位)。
+   */
+  label: string
+
+  /**
+   * 官方节号(本域空串占位)。
+   */
+  section: string
+
+  /**
+   * 官方生效日(本域空串占位)。
+   */
+  effective: string
+
+  /**
+   * 出处 URL(本域空串占位)。
+   */
+  url: string
+
+  /**
+   * 出处页 URL(本域空串占位)。
+   */
+  pageUrl: string
+
+  /**
+   * 抓取日(本域空串占位)。
+   */
+  fetched: string
+}
+
+/**
  * 雇主判定引擎收的参(与 ruling 的 employerVerdict 门面同形;本域只声明自己读的格)。
  */
 export type EmployerJudgeIn = {
@@ -996,8 +1279,10 @@ export type EmployerJudgeIn = {
 /**
  * 雇主判定引擎(ruling 的 employerVerdict,由入口注进来 —— 2026-08-23 收牌批,
  * 经 index 桶取会把 ruling/functions 的 payload 链拉进浏览器包,毒丸实拦)。
+ * 返回值收本域的 `SponsorVerdict`(2026-08-25 撤 ruling 跨域 import:引擎返回的整树
+ * state/failed 两格 ⊆ 它,结构兼容,本域不另立 EmployerVerdict)。
  */
-export type EmployerJudgeFn = (input: EmployerJudgeIn) => EmployerVerdict
+export type EmployerJudgeFn = (input: EmployerJudgeIn) => SponsorVerdict
 
 /**
  * 带注入判定的取数入参(loadSponsorEmployers/loadSponsors 全链同形)。

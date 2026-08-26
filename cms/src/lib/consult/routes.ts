@@ -9,8 +9,12 @@
  * PRO_CHAT_DAILY。多轮记忆不落库:history 由前端传。
  * 留痕(threadIdOf/turnOf/logChat)原是 lib/chat/log.ts 幸存件,单消费者不导出,住本文件;
  * chat_logs 列形状一字不动(生产面板与复现率仪表盘都靠它)。
- * 跨边界断言两处:`await req.json() as ChatBody`(网络 body 先收再逐格验)与
- * `user.profile as ChatUserProfile`(quota 的档案格是递归 json,只读声明的那几格)。
+ * 跨边界断言三处:`await req.json() as ChatBody`(网络 body 先收再逐格验)、
+ * `user.profile as ChatUserProfile`(quota 的档案格是递归 json,只读声明的那几格)与
+ * judgeVerdictAdapter 里的 `input.data as RulingVerdictData`(2026-08-25 撤跨域 type 批:
+ * consult 的 `VerdictData` 是不透明透传格 —— 本域零处读它,同 ruling 的 AuthUser 形态,
+ * 而 pathVerdict 要 ruling 自己的底表形状,两个类型没有共同属性,断言只住那一行;
+ * profile 与返回行是全格照抄/子集声明,结构兼容不经断言。测试侧同款住 tests/helpers/judge.ts)。
  *
  * @author Frank
  * @time 2026-08-23 07:40:00
@@ -20,6 +24,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getDb } from '../db/server'
 import { loadVerdictTables, pathVerdict } from '../ruling/server'
+import type { VerdictData as RulingVerdictData } from '../ruling'
 import { isChatError } from '../error'
 import { HDR_CACHE_CONTROL, HDR_CONTENT_TYPE_LC, TOO_MANY } from '../http'
 import type { Lang } from '../i18n'
@@ -34,7 +39,8 @@ import {
 } from './constants'
 import { consult, logChat, sseChunk, threadIdOf } from './functions'
 import type {
-  ChatBody, ChatOut, ChatPayloadHandle, ChatUserProfile, Fact, Profile, SsePacket, Turn,
+  ChatBody, ChatOut, ChatPayloadHandle, ChatUserProfile, Fact, JudgeVerdictIn, PathwayVerdict, Profile,
+  SsePacket, Turn,
 } from './types'
 
 /**
@@ -140,12 +146,15 @@ export async function consultChatRoute(req: Request): Promise<Response> {
           return
         }
       }
+      function judgeVerdictAdapter(input: JudgeVerdictIn): PathwayVerdict[] {
+        return pathVerdict({ profile: input.profile, data: input.data as RulingVerdictData })
+      }
       try {
         pl = await getPayload({ config: await config })
         const db = await getDb()
         const r = await consult({
           db: db, text: text, lang: lang, profile: profile, history: history,
-          loadVerdict: loadVerdictTables, judgeVerdict: pathVerdict,
+          loadVerdict: loadVerdictTables, judgeVerdict: judgeVerdictAdapter,
           onStep: function onStep(s: string): void {
             steps.push(s)
             send({ step: s })
