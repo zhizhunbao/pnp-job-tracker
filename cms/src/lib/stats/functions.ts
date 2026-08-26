@@ -353,7 +353,7 @@ function provVolOf(v: MaybeProvVolJson): MaybeProvVol {
   if (v == null) {
     return null
   }
-  return { study: volNumOf(v.study), tfwp: volNumOf(v.tfwp), imp: volNumOf(v.imp), pnpPr: volNumOf(v.pnpPr) }
+  return { study: toVolNum(v.study), tfwp: toVolNum(v.tfwp), imp: toVolNum(v.imp), pnpPr: toVolNum(v.pnpPr) }
 }
 
 /**
@@ -362,7 +362,7 @@ function provVolOf(v: MaybeProvVolJson): MaybeProvVol {
  * @param x json 里的体量格。
  * @returns 干净格;缺数是 null。
  */
-function volNumOf(x: MaybeProvVolNumJson): MaybeProvVolNum {
+function toVolNum(x: MaybeProvVolNumJson): MaybeProvVolNum {
   if (x == null) {
     return null
   }

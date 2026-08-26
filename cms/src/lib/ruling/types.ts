@@ -4986,9 +4986,9 @@ export type PathwayFactsOut = {
 }
 
 /**
- * `subjectOf` 的返回:门槛行的两个合法主语之一。
+ * `toSubject` 的返回:门槛行的两个合法主语之一。
  */
-export type SubjectOfOut = 'applicant' | 'employer'
+export type ToSubjectOut = 'applicant' | 'employer'
 
 /**
  * `loadVerdictTables` 的返回:判定层六张底表。
@@ -5672,13 +5672,47 @@ export type AnswerNumIn = {
 export type AnswerNumOut = number | null
 
 /**
- * `tripleJobOf` 的入参。
+ * `toTripleJob` 的入参。
  */
-export type TripleJobOfIn = {
+export type ToTripleJobIn = {
   /**
    * 库里那一行岗位。
    */
   row: Row
+}
+
+/**
+ * `toTripleWireFact` 的返回:`TRIPLE_WIRE_JOB` 那一行洗净后的四样东西。
+ *
+ * 这一行**一行多用** —— 岗位、公司两格、双语职业名同源于一条查询,所以配一张形状
+ * 一次洗完(2026-08-26 取代原先的 `passRow` 原样通过)。
+ */
+export type TripleWireFact = {
+  /**
+   * 判定卡认的岗位。
+   */
+  job: TripleJob
+
+  /**
+   * 公司主键;这份岗没挂公司(或列为空)则 null —— **不折 0**,
+   * 0 会让公司侧那两条补充查询白跑一趟。
+   */
+  companyId: number | null
+
+  /**
+   * 公司名;库里没填是空串。名录按名字匹配,空串 = 不去查名录。
+   */
+  companyName: string
+
+  /**
+   * NOC 职业名的中文;库里没译是空串。
+   */
+  nocTitleZh: string
+
+  /**
+   * NOC 职业名的韩文;库里没译是空串。
+   */
+  nocTitleKo: string
 }
 
 /**
@@ -5929,9 +5963,14 @@ export type WireError = {
  */
 export type TripleCompanyOfIn = {
   /**
-   * 库里那一行岗位(公司名与公司主键都在上面)。
+   * 公司名(已由 `toTripleWireFact` 洗净;库里没填是空串)。
    */
-  row: Row
+  companyName: string
+
+  /**
+   * 公司主键(已由 `toTripleWireFact` 洗净);这份岗没挂公司则 null。
+   */
+  companyId: number | null
 
   /**
    * 公司注册事实。边缘入口(`buildTripleWire`)先查好传进来(拍板③:db 只在边缘)——
@@ -6281,9 +6320,9 @@ export type GetDesignatedEmployersIn = {
 export type GetDesignatedEmployersOut = Promise<DesignatedEmployerRow[]>
 
 /**
- * `directoryRow` 的入参。
+ * `toDirectoryRow` 的入参。
  */
-export type DirectoryRowIn = {
+export type ToDirectoryRowIn = {
   /**
    * 库里那一行名录。
    */

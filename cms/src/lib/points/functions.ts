@@ -2695,12 +2695,12 @@ export function toDifficultyFact(r: DifficultyDbRow): DifficultyFact {
   let source = ''
   if (f != null) {
     ratio = numOrNull(f.value)
-    pool = numOrZero(f.pool)
-    quota = numOrZero(f.quota)
+    pool = toNumOrZero(f.pool)
+    quota = toNumOrZero(f.quota)
     poolStudy = numOrNull(f.poolStudy)
     poolWork = numOrNull(f.poolWork)
     poolYear = text(f.asOf)
-    quotaYear = numOrZero(f.quotaYear)
+    quotaYear = toNumOrZero(f.quotaYear)
     source = text(f.source)
   }
   return {
@@ -2734,7 +2734,7 @@ function compFactorOf(d: MaybeDifficulty): MaybeCompFactor {
  * @param x json 里的数字格。
  * @returns 数;缺位是 0。
  */
-function numOrZero(x: NumCell): number {
+function toNumOrZero(x: NumCell): number {
   const n = numOrNull(x)
   if (n == null) {
     return 0
@@ -2762,7 +2762,7 @@ function infoExtraOf(info: MaybeProvInfo): ProvInfoExtra {
   if (info == null) {
     return { flow: null, series: null }
   }
-  return { flow: flowOf(info), series: seriesOf(info) }
+  return { flow: toFlow(info), series: toSeries(info) }
 }
 
 /**
@@ -2771,7 +2771,7 @@ function infoExtraOf(info: MaybeProvInfo): ProvInfoExtra {
  * @param info 解析好的 info json。
  * @returns 流量;缺年份或缺数是 null。
  */
-function flowOf(info: ProvInfoJson): MaybeFlow {
+function toFlow(info: ProvInfoJson): MaybeFlow {
   const f = info.studyFlow
   if (f == null) {
     return null
@@ -2786,7 +2786,7 @@ function flowOf(info: ProvInfoJson): MaybeFlow {
   if (mm !== '') {
     period = year + PERIOD_SEP + mm
   }
-  return { period: period, n: n, prevYear: prevYearOf(f.prev) }
+  return { period: period, n: n, prevYear: toPrevYear(f.prev) }
 }
 
 /**
@@ -2796,7 +2796,7 @@ function flowOf(info: ProvInfoJson): MaybeFlow {
  * @param x json 里的上一年格。
  * @returns 上一年数;没有则 null。
  */
-function prevYearOf(x: NumCell): MaybeNum {
+function toPrevYear(x: NumCell): MaybeNum {
   const n = numOrNull(x)
   if (n == null || n === 0) {
     return null
@@ -2811,7 +2811,7 @@ function prevYearOf(x: NumCell): MaybeNum {
  * @param info 解析好的 info json。
  * @returns 序列;三格全缺是 null。
  */
-function seriesOf(info: ProvInfoJson): MaybeSeries {
+function toSeries(info: ProvInfoJson): MaybeSeries {
   if (info.trSeries == null && info.flowSeries == null && info.alloc == null) {
     return null
   }
@@ -2835,7 +2835,7 @@ function seriesOf(info: ProvInfoJson): MaybeSeries {
         continue
       }
       let period = y
-      const mm = flowMonthOf(v)
+      const mm = toFlowMonth(v)
       if (mm !== '') {
         period = y + PERIOD_SEP + mm
       }
@@ -2855,7 +2855,7 @@ function seriesOf(info: ProvInfoJson): MaybeSeries {
  * @param v 某年的流量格。
  * @returns 两位月数或空串。
  */
-function flowMonthOf(v: FlowSeriesEntryJson): string {
+function toFlowMonth(v: FlowSeriesEntryJson): string {
   if (v.complete === false) {
     return monthNumOf(text(v.throughMonth))
   }

@@ -17,7 +17,7 @@ export {
 export {
   loadCityCard, loadMatchDims, loadProvinceCard, pnpOnly, scrubPii, searchNocByTitle, splitQ,
 } from './functions'
-export { mapEeCat, mapPnpOcc } from './functions'
+export { toEeCat, toPnpOcc } from './functions'
 export type { AlertHit, CompanyDetail, JobsFilters, RelatedJob, SimilarEmployer, SsrDims, TopNoc } from './types'
 export {
   jobsJdformatRoute, jobsJdTranslateRoute, jobsApplyhowRoute, jobsCityRoute, jobsCompanyRoute, jobsCompetitionRoute, jobsDimsRoute,

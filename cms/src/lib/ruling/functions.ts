@@ -97,8 +97,8 @@ import type {
   TripleProfileOfIn, TripleRow, TripleVerdictIn, TripleWireOfIn, TripleWireOfOut, TripleWireRow, UniversalValueIn,
   UniversalValueOut, VerdictDrawRow, VerdictLever, VerdictProfile, VerdictRankIn, VerdictReason, VerdictReasonsIn,
   VerdictReasonsOut, WagePointsIn, WageRule, WireRowOfIn, WireRowsIn, WireRowsOut, WireScore, WorkPermitSoonIn,
-  WorstGapIn, WorstGapOut, CompetitionPair, DirectoryRowIn, OpsStatRow, ProfileDiffDbRow, ProvCountRow, Row,
-  SubjectOfOut, TripleJob, TripleJobOfIn,
+  WorstGapIn, WorstGapOut, CompetitionPair, ToDirectoryRowIn, OpsStatRow, ProfileDiffDbRow, ProvCountRow, Row,
+  ToSubjectOut, TripleJob, ToTripleJobIn, TripleWireFact,
 } from './types'
 
 /**
@@ -419,27 +419,28 @@ export async function buildTripleWire(input: BuildTripleWireIn): BuildTripleWire
   if (Number.isInteger(input.id) === false || input.id <= 0) {
     return { error: WIRE_ERR.jobRequired, status: HTTP.badRequest }
   }
-  const found = await oneRow({ db: input.db, sql: SQL.TRIPLE_WIRE_JOB, params: [input.id], map: passRow })
+  const found = await oneRow({ db: input.db, sql: SQL.TRIPLE_WIRE_JOB, params: [input.id], map: toTripleWireFact })
   if (found == null) {
     return { error: WIRE_ERR.notFound, status: HTTP.notFound }
   }
 
-  const job = tripleJobOf({ row: found })
-  const cid = numOrNull(found.company_id)
+  const job = found.job
+  const cid = found.companyId
   let facts: EmployerFacts | null = null
   if (cid != null) {
-    facts = await oneRow({ db: input.db, sql: SQL.COMPANY_REGISTRY_FACTS, params: [cid], map: employerFactsOf })
+    facts = await oneRow({ db: input.db, sql: SQL.COMPANY_REGISTRY_FACTS, params: [cid], map: toEmployerFacts })
   }
   let nocsRaw: string | null = null
   if (cid != null) {
-    nocsRaw = await oneRow({ db: input.db, sql: SQL.COMPANY_LMIA_NOCS, params: [cid], map: lmiaNocsCellOf })
+    nocsRaw = await oneRow({ db: input.db, sql: SQL.COMPANY_LMIA_NOCS, params: [cid], map: toLmiaNocsCell })
   }
   let dir: DesignatedEmployerRow[] = []
-  if (text(found.company_name) !== '' && job.province !== '') {
+  if (found.companyName !== '' && job.province !== '') {
     dir = await input.designatedOf({ province: job.province })
   }
   const company = tripleCompanyOf({
-    row: found, province: job.province, facts: facts, nocsRaw: nocsRaw, dir: dir,
+    companyName: found.companyName, companyId: cid, province: job.province,
+    facts: facts, nocsRaw: nocsRaw, dir: dir,
   })
   const profile = tripleProfileOf({ up: input.profile, answers: input.answers })
   const card = tripleVerdict({ job: job, company: company, profile: profile, data: input.data })
@@ -447,7 +448,7 @@ export async function buildTripleWire(input: BuildTripleWireIn): BuildTripleWire
   return {
     ok: true,
     jobId: card.jobId, noc: card.noc, nocName: card.nocName, teer: card.teer, province: card.province,
-    nocTitleZh: text(found.noc_title_zh), nocTitleKo: text(found.noc_title_ko),
+    nocTitleZh: found.nocTitleZh, nocTitleKo: found.nocTitleKo,
     conclusion: card.conclusion,
     availability: card.availability,
     loggedIn: input.loggedIn, pro: input.pro,
@@ -2042,21 +2043,24 @@ function wireRows(input: WireRowsIn): WireRowsOut {
 }
 
 /**
- * 库里那一行岗位 + 公司侧两查的结果 + 名录匹配 → 判定卡认的那家公司。
+ * 洗净的公司两格 + 公司侧两查的结果 + 名录匹配 → 判定卡认的那家公司。
  * 公司侧两查与名录取数由边缘入口(`buildTripleWire`)先做好传进来(拍板③:db 只在边缘),
  * 本函数纯拼装。
+ *
+ * 2026-08-26:公司名与公司主键改由行构造器 `toTripleWireFact` 洗好传进来 ——
+ * 值级清洗只许住 `to*`(闸 `no-db-vocab-in-functions`),本函数入参一律已有效。
  *
  * 名录匹配的口径 = **完全匹配**(规范化后公司名 == 名录名的任一 o/a 名段)。
  * 老口径的双向子串包含会把 `Esso` 匹进 `Wheeler Accessories`(2026-08-09 全量审计坐实)。
  * 认不出 = designation 为 null 且 matches 为 0(本站的缺口,**不写「未被指定」**);
  * 多配 = designation 为 null 且 matches 为 N(只报家数,不点名加盟法人)。
  *
- * @param input 库里那一行岗位、省码、公司侧两查的结果与名录候选行。
+ * @param input 洗净的公司名与公司主键、省码、公司侧两查的结果与名录候选行。
  * @returns 判定卡认的那家公司。
  */
 function tripleCompanyOf(input: TripleCompanyOfIn): TripleCompanyOfOut {
-  const name = text(input.row.company_name)
-  const cid = numOrNull(input.row.company_id)
+  const name = input.companyName
+  const cid = input.companyId
   let facts: EmployerFacts = { foundedYear: null, registryStatus: null, staffEst: null, staffEstSrc: null, sector: null }
   if (input.facts != null) {
     facts = input.facts
@@ -2157,8 +2161,9 @@ function designatedRow(input: DesignatedRowIn): DesignatedRowOut {
 /**
  * 打一条只取第一行的查询,并把那一行过一遍映射 —— 回来的就是干净的 `R`(`queryRows` 的单行版)。
  *
- * `TRIPLE_WIRE_JOB` 那条暂用 `passRow` 原样通过:那一行一行多用(岗位 + 公司两格 + 双语标题),
- * 要配一张完整行形状才好换,归行映射统一批。
+ * `TRIPLE_WIRE_JOB` 那条原先暂用 `passRow` 原样通过:那一行一行多用(岗位 + 公司两格 + 双语标题),
+ * 要配一张完整行形状才好换,归行映射统一批。2026-08-26 那张形状配齐了 ——
+ * 换成 `toTripleWireFact` 一次洗净四样,`passRow` 在本域再无消费者,随之退役。
  *
  * 查挂了**留痕后**回 null,不让公司侧的补充查询拖垮主体(B3 那几列可能还没建)——
  * 但不许静默:「这家没数据」和「这条 SQL 一直在报错」在日志里必须分得开。
@@ -5656,7 +5661,7 @@ export async function getDesignatedEmployers(input: GetDesignatedEmployersIn): G
     const res = await db.query(SQL.DESIGNATED_BY_PROV, [prov])
     rows = []
     for (const d of res.rows) {
-      rows.push(directoryRow({ row: d }))
+      rows.push(toDirectoryRow({ row: d }))
     }
   } catch (e) {
     let why = String(e)
@@ -6304,7 +6309,7 @@ function excludedRowOf(row: SplitRow): ExcludedRowWire {
 export function toRequirement(r: Row): ReqRow {
   return {
     province: text(r.province), program: text(r.program), stream: text(r.stream),
-    subject: subjectOf(r.subject),
+    subject: toSubject(r.subject),
     factor: text(r.factor), op: text(r.op), value: numOrNull(r.value), valueText: text(r.value_text),
     unit: text(r.unit), appliesTeer: text(r.applies_teer), appliesNoc: text(r.applies_noc),
     excludesNoc: text(r.excludes_noc), appliesArea: text(r.applies_area),
@@ -6322,7 +6327,7 @@ export function toRequirement(r: Row): ReqRow {
  * @returns applicant 或 employer。
  */
 // eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:行索引缺席就是 undefined,照实收(开灯批)
-export function subjectOf(v: Cell | undefined): SubjectOfOut {
+export function toSubject(v: Cell | undefined): ToSubjectOut {
   if (text(v) === SUBJECT.employer) {
     return SUBJECT.employer
   }
@@ -6405,12 +6410,34 @@ export function toDesignated(r: Row): DesignatedEmployerRow {
 }
 
 /**
+ * `TRIPLE_WIRE_JOB` 的行构造器:那一行**一行多用**(岗位 + 公司两格 + 双语职业名),
+ * 四样在这里一次洗净。
+ *
+ * 2026-08-26 配齐这张形状,取代原先的 `passRow` 原样通过 —— 值级清洗只许住 `to*`
+ * (闸 `no-db-vocab-in-functions`),`buildTripleWire` 与 `tripleCompanyOf` 拿到的每一格都已有效。
+ * 公司主键走 `numOrNull` 保住 null:**这份岗没挂公司**与「公司主键是 0」不是一回事,
+ * 折 0 会让下游白查一趟注册事实。
+ *
+ * @param r 库里那一行。
+ * @returns 洗净的那一行。
+ */
+function toTripleWireFact(r: Row): TripleWireFact {
+  return {
+    job: toTripleJob({ row: r }),
+    companyId: numOrNull(r.company_id),
+    companyName: text(r.company_name),
+    nocTitleZh: text(r.noc_title_zh),
+    nocTitleKo: text(r.noc_title_ko),
+  }
+}
+
+/**
  * 库里一行岗位 → 判定卡认的岗位。
  *
  * @param input 库里那一行。
  * @returns 判定卡认的岗位。
  */
-export function tripleJobOf(input: TripleJobOfIn): TripleJob {
+export function toTripleJob(input: ToTripleJobIn): TripleJob {
   const r = input.row
   return {
     id: Number(r.id), title: text(r.title), noc: text(r.noc), nocName: text(r.noc_title),
@@ -6428,7 +6455,7 @@ export function tripleJobOf(input: TripleJobOfIn): TripleJob {
  * @param f 库里那一行。
  * @returns 雇主判定认的事实。
  */
-export function employerFactsOf(f: Row): EmployerFacts {
+export function toEmployerFacts(f: Row): EmployerFacts {
   return {
     foundedYear: numOrNull(f.founded_year),
     registryStatus: text(f.registry_status),
@@ -6444,18 +6471,8 @@ export function employerFactsOf(f: Row): EmployerFacts {
  * @param row 库里那一行。
  * @returns 那一格的文本。
  */
-export function lmiaNocsCellOf(row: Row): string {
+export function toLmiaNocsCell(row: Row): string {
   return text(row.lmia_nocs)
-}
-
-/**
- * 原样通过的行映射 —— 只给「一行多用、还没配完整行形状」的查询当占位(见 `oneRow` 的 JSDoc)。
- *
- * @param row 原始行。
- * @returns 原样的那一行。
- */
-export function passRow(row: Row): Row {
-  return row
 }
 
 /**
@@ -6465,7 +6482,7 @@ export function passRow(row: Row): Row {
  * @param input 库里那一行。
  * @returns 判定认的那一行。
  */
-export function directoryRow(input: DirectoryRowIn): DesignatedEmployerRow {
+export function toDirectoryRow(input: ToDirectoryRowIn): DesignatedEmployerRow {
   const d = input.row
   const url = text(d.url) || undefined
   const fetched = text(d.fetched).slice(0, DATE_LEN_DAY) || undefined
@@ -6532,22 +6549,22 @@ export function toCompetitionPair(r: ProfileDiffDbRow): CompetitionPair {
   if (factor == null || typeof factor !== 'object' || Array.isArray(factor)) {
     return { province: province, comp: null }
   }
-  const ratio = scalarNumOf(factor.value)
+  const ratio = toScalarNum(factor.value)
   if (ratio == null) {
     return { province: province, comp: null }
   }
   let pool = 0
-  const poolN = scalarNumOf(factor.pool)
+  const poolN = toScalarNum(factor.pool)
   if (poolN != null) {
     pool = poolN
   }
   let quota = 0
-  const quotaN = scalarNumOf(factor.quota)
+  const quotaN = toScalarNum(factor.quota)
   if (quotaN != null) {
     quota = quotaN
   }
   let quotaYear = 0
-  const qyN = scalarNumOf(factor.quotaYear)
+  const qyN = toScalarNum(factor.quotaYear)
   if (qyN != null) {
     quotaYear = qyN
   }
@@ -6563,7 +6580,7 @@ export function toCompetitionPair(r: ProfileDiffDbRow): CompetitionPair {
  * @returns 数；不是标量或解不出是 null。
  */
 // eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:同 cellOr(开灯批)
-function scalarNumOf(x: RCell | undefined): MaybeNum {
+function toScalarNum(x: RCell | undefined): MaybeNum {
   if (typeof x === 'number' || typeof x === 'string') {
     return numOrNull(x)
   }

@@ -474,7 +474,7 @@ async function loadSponsors(input: SponsorsIn): SponsorRowsOut {
       province = r.provs[0]
     }
     const verdict = input.judge({
-      facts: employerFactsOf(r), province: province, reqs: reqs, nowYear: nowYear,
+      facts: toEmployerFacts(r), province: province, reqs: reqs, nowYear: nowYear,
     })
     out.push(toSponsorRow({ row: r, verdict: verdict }))
   }
@@ -657,7 +657,7 @@ export async function compareEmployers(input: CompareIn): CompareOut {
     if (company == null) {
       continue
     }
-    const jobs = await queryRows({ db: input.db, sql: SQL.COMPANY_JOBS_FOR_COMPARE, params: [companyIdOf(company)], map: toCompareJob })
+    const jobs = await queryRows({ db: input.db, sql: SQL.COMPANY_JOBS_FOR_COMPARE, params: [toCompanyId(company)], map: toCompareJob })
     out.push(toCompareRow({ company: company, agg: companyAggOf({ jobs: jobs, profile: input.profile, dims: input.dims }) }))
   }
   const provSet = new Set<string>()
@@ -844,7 +844,7 @@ export async function companyRow(input: CompanyRowIn): CompanyRowOut {
     }
     cached = { brief: row.ai_brief, website: website, sources: sources, fetched: fetched }
   }
-  return { id: companyIdOf(row), cached: cached }
+  return { id: toCompanyId(row), cached: cached }
 }
 
 /**
@@ -1352,7 +1352,7 @@ export function toEmployerReq(r: ReqDbRow): ReqRow {
  * @param r 原始行。
  * @returns 公司事实。
  */
-export function employerFactsOf(r: SponsorDbRow): EmployerFacts {
+export function toEmployerFacts(r: SponsorDbRow): EmployerFacts {
   return {
     foundedYear: numOrNull(r.founded_year),
     registryStatus: textOrNull(r.registry_status),
@@ -1376,14 +1376,14 @@ export function toSponsorRow(input: ToSponsorRowIn): SponsorEmployerRow {
     aliasZh: text(r.alias_zh), aliasKo: text(r.alias_ko),
     sponsorGrade: numOrNull(r.sponsor_grade),
     openJobs: count(r.open_jobs), city: text(r.city),
-    provs: strList(r.provs), nocs: strList(r.nocs), cities: strList(r.cities),
+    provs: toStrList(r.provs), nocs: toStrList(r.nocs), cities: toStrList(r.cities),
     aip: r.aip === true, named: r.named === true,
-    openJobsAip: count(r.open_jobs_aip), provsAip: strList(r.provs_aip),
+    openJobsAip: count(r.open_jobs_aip), provsAip: toStrList(r.provs_aip),
     lmiaPositions: count(r.lmia_positions),
     lmiaPositionsSkilled: numOrNull(r.lmia_positions_skilled),
     lmiaLastQuarter: text(r.lmia_last_quarter),
     lmia4q: count(r.lmia_positions_4q), lmia2q: count(r.lmia_positions_2q), lmia1q: count(r.lmia_positions_1q),
-    streams: strList(r.streams),
+    streams: toStrList(r.streams),
     verdict: input.verdict,
   }
 }
@@ -1394,7 +1394,7 @@ export function toSponsorRow(input: ToSponsorRowIn): SponsorEmployerRow {
  * @param x 库回的数组格。
  * @returns 干净的字符串数组。
  */
-export function strList(x: StrListCell): StrList {
+export function toStrList(x: StrListCell): StrList {
   if (x == null) {
     return []
   }
@@ -1462,7 +1462,7 @@ export function passCompanyBrief(r: CompanyBriefDbRow): CompanyBriefDbRow {
  * @param r 有 id 格的行。
  * @returns companies 主键;没有像样的主键则 0。
  */
-export function companyIdOf(r: IdCell): number {
+export function toCompanyId(r: IdCell): number {
   return count(r.id)
 }
 

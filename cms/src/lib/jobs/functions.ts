@@ -878,9 +878,9 @@ export async function loadSsrDims(db: Db): SsrDimsOut {
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_NOC_CATEGORIES, params: [], map: toNocCat }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_SOURCES, params: [], map: passRow }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_EXPERIENCE_LEVELS, params: [], map: passRow }),
-    queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PNP_OCCUPATIONS, params: [], map: mapPnpOcc }),
+    queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PNP_OCCUPATIONS, params: [], map: toPnpOcc }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PNP_DRAWS, params: [], map: toPnpDraw }),
-    queryRowsOrEmpty({ db: db, sql: SQL.DIMS_EE_CATEGORIES, params: [], map: mapEeCat }),
+    queryRowsOrEmpty({ db: db, sql: SQL.DIMS_EE_CATEGORIES, params: [], map: toEeCat }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_FIELD_SOURCES, params: [], map: toFieldSource }),
     queryRowsOrEmpty({ db: db, sql: SQL.NEWS_SLIM_60, params: [], map: toNewsSlim }),
   ])
@@ -2816,7 +2816,7 @@ export function toMatchJob(j: JobDbRow): MatchJob {
  * @param r 原始行(SQL 别名 camelCase)。
  * @returns 省清单行。
  */
-export function mapPnpOcc(r: Row): PnpOcc {
+export function toPnpOcc(r: Row): PnpOcc {
   let program = text(r.program)
   if (program === '') {
     program = PROGRAM_PNP
@@ -2834,7 +2834,7 @@ export function mapPnpOcc(r: Row): PnpOcc {
  * @param r 原始行(SQL 别名 camelCase)。
  * @returns EE 类别行。
  */
-export function mapEeCat(r: Row): EeOcc {
+export function toEeCat(r: Row): EeOcc {
   return {
     category: text(r.category), label: text(r.label), noc: text(r.noc), teer: numOrNull(r.teer),
     title: text(r.title), url: text(r.url), fetched: text(r.fetched),
@@ -3093,7 +3093,7 @@ export function toProvCount(r: Row): ProvCount {
  * @returns 洗净的一行。
  */
 export function toOccDiffFact(r: OccDiffDbRow): OccDiffFact {
-  return { province: text(r.province), ratio: compRatioOf(jsonOrNull(r.difficulty)) }
+  return { province: text(r.province), ratio: toCompRatio(jsonOrNull(r.difficulty)) }
 }
 
 /**
@@ -3102,7 +3102,7 @@ export function toOccDiffFact(r: OccDiffDbRow): OccDiffFact {
  * @param d 解析好的难度 json。
  * @returns 比值;没有则 null。
  */
-function compRatioOf(d: MaybeOccDiff): MaybeNum {
+function toCompRatio(d: MaybeOccDiff): MaybeNum {
   if (d == null || d.factors == null) {
     return null
   }
@@ -3121,7 +3121,7 @@ function compRatioOf(d: MaybeOccDiff): MaybeNum {
  * @returns 洗净的聚合。
  */
 export function toCityAgg(r: Row): CityAgg {
-  return { openJobs: count(r.open_jobs), new7d: count(r.new7d), medSalary: roundOrNull(r.med_salary) }
+  return { openJobs: count(r.open_jobs), new7d: count(r.new7d), medSalary: toRoundedNum(r.med_salary) }
 }
 
 /**
@@ -3131,7 +3131,7 @@ export function toCityAgg(r: Row): CityAgg {
  * @returns 取整后的数;缺位 null。
  */
 // eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:行索引缺席就是 undefined,照实收(开灯批)
-function roundOrNull(x: Cell | undefined): MaybeNum {
+function toRoundedNum(x: Cell | undefined): MaybeNum {
   const n = numOrNull(x)
   if (n == null) {
     return null

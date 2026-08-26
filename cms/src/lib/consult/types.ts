@@ -2210,14 +2210,14 @@ export type OrNone2In = {
 export type OrNoneOut = string | number
 
 /**
- * `subjectOf` 的入参:库里的 subject 列。
+ * `toSubject` 的入参:库里的 subject 列。
  */
-export type SubjectOfIn = string | null
+export type ToSubjectIn = string | null
 
 /**
- * `subjectOf` 的返回:两个合法值之一。
+ * `toSubject` 的返回:两个合法值之一。
  */
-export type SubjectOfOut = 'applicant' | 'employer'
+export type ToSubjectOut = 'applicant' | 'employer'
 
 /**
  * `statusWordOf` 的返回:引擎词表里的词;不在表里就 null。

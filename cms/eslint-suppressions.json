@@ -96,11 +96,6 @@
       "count": 2
     }
   },
-  "src/lib/consult/functions.ts": {
-    "local/no-db-vocab-in-functions": {
-      "count": 3
-    }
-  },
   "src/lib/consult/routes.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 1
@@ -122,9 +117,6 @@
     },
     "local/no-bare-strings": {
       "count": 4
-    },
-    "local/no-db-vocab-in-functions": {
-      "count": 7
     },
     "local/no-literal-index": {
       "count": 2
@@ -151,9 +143,6 @@
   "src/lib/jobs/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 1
-    },
-    "local/no-db-vocab-in-functions": {
-      "count": 21
     },
     "local/no-literal-index": {
       "count": 15
@@ -235,10 +224,7 @@
       "count": 4
     },
     "local/no-bare-strings": {
-      "count": 2
-    },
-    "local/no-db-vocab-in-functions": {
-      "count": 13
+      "count": 1
     }
   },
   "src/lib/points/types.ts": {
@@ -275,9 +261,6 @@
   "src/lib/ruling/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 3
-    },
-    "local/no-db-vocab-in-functions": {
-      "count": 31
     }
   },
   "src/lib/ruling/types.ts": {
@@ -302,11 +285,6 @@
   "src/lib/seo/types.ts": {
     "local/no-import-in-leaf": {
       "count": 1
-    }
-  },
-  "src/lib/stats/functions.ts": {
-    "local/no-db-vocab-in-functions": {
-      "count": 2
     }
   },
   "src/lib/stripe/routes.ts": {

@@ -1101,7 +1101,7 @@ export type SponsorRowsOut = Promise<SponsorEmployerRow[]>
 
 /**
  * 判定要吃的公司事实 —— **本域自声明**(2026-08-25 撤 ruling 跨域 import;
- * `employerFactsOf` 构造它、整份喂给注入的判定引擎,全格照抄)。
+ * `toEmployerFacts` 构造它、整份喂给注入的判定引擎,全格照抄)。
  */
 export type EmployerFacts = {
   /**

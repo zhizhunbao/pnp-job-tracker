@@ -68,7 +68,7 @@ import type {
   SseBytes, SsePacket, StatusFactIn, StatusWordOfOut, StepOccLineIn, TakeIn, ThreadIdIn, ThresholdsFactsOut,
   ThresholdsResult, ThresholdsRow, Tool, ToolArgs, TurnList, VerdictFactsIn, VerdictFactsOut,
   RuleResult, VerdictProfile,
-  VerdictProfileOfIn, SubjectOfIn, SubjectOfOut, DrawDbRow, EeDbRow, NocSearchRow, NocHit, OccFlatRow, OccFlat,
+  VerdictProfileOfIn, ToSubjectIn, ToSubjectOut, DrawDbRow, EeDbRow, NocSearchRow, NocHit, OccFlatRow, OccFlat,
   OpsDbRow, OpsRow, PermitDbRow, PointsDbRow, ProvOpenRow, ReqRow, ToTitleTeerIn, TitleTeer,
 } from './types'
 // =========================================================================
@@ -795,7 +795,7 @@ function pointsFacts(r: PointsResult): PointsFactsOut {
       label: `${row.grid}${LABEL.pointsHead}${row.sectionLabel || row.heading}${LABEL.dash}${row.criterion || row.factor}${col}`,
       quote: `${row.grid}${SEP.dot}${row.criterion || row.heading}`,
       value: row.points,
-      valueText: row.pointsText || show(row.points),
+      valueText: row.pointsText,
       unit: UNIT.points,
       evidence: row.evidence,
     }))
@@ -814,7 +814,10 @@ function pointsFacts(r: PointsResult): PointsFactsOut {
  * @returns 判定引擎认的档案,缺的槽全是 null。
  */
 function verdictProfileOf(input: VerdictProfileOfIn): VerdictProfile {
-  const said = text(input.profile.status)
+  let status: StatusWordOfOut = null
+  if (input.profile.status != null) {
+    status = statusWordOf(input.profile.status)
+  }
   return {
     age: null,
     married: null,
@@ -828,7 +831,7 @@ function verdictProfileOf(input: VerdictProfileOfIn): VerdictProfile {
     expCanadaMonths: null,
     expForeignMonths: null,
     foreignExpSelfEmployed: null,
-    status: statusWordOf(said),
+    status: status,
     province: null,
     hasOffer: null,
     inCanada: null,
@@ -2080,6 +2083,8 @@ export function toPermitRow(r: PermitDbRow): PermitRow {
 
 /**
  * 计分表行 → `PointsRow`。points 走 `numOrNull` —— 官方写 n/a 就是 null,原文在 pointsText。
+ * `points_text` 为空时用 `show(points)` 补出展示形态(2026-08-26 从 `pointsFacts` 下沉到这里:
+ * `show` 是 db 显示词汇,只许行构造器体内用,业务函数拿到的 `pointsText` 一律已可直接显示)。
  *
  * @param r 原始行。
  * @returns 收窄后的行。
@@ -2095,7 +2100,7 @@ export function toPointsRow(r: PointsDbRow): PointsRow {
     criterion: text(r.criterion),
     columnLabel: text(r.column_label),
     points: numOrNull(r.points),
-    pointsText: text(r.points_text),
+    pointsText: text(r.points_text) || show(numOrNull(r.points)),
     evidence: { url: text(r.url), fetched: text(r.fetched) },
   }
 }
@@ -2113,7 +2118,7 @@ export function toRequirement(row: ReqRow): Requirement {
     province: text(row.province),
     program: text(row.program),
     stream: text(row.stream),
-    subject: subjectOf(row.subject),
+    subject: toSubject(row.subject),
     factor: text(row.factor),
     op: text(row.op),
     value: numOrNull(row.value),
@@ -2142,7 +2147,7 @@ export function toRequirement(row: ReqRow): Requirement {
  * @param raw 库里的 subject 列。
  * @returns applicant 或 employer。
  */
-export function subjectOf(raw: SubjectOfIn): SubjectOfOut {
+export function toSubject(raw: ToSubjectIn): ToSubjectOut {
   if (text(raw) === SUBJECT.employer) {
     return SUBJECT.employer
   }

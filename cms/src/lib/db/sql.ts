@@ -955,7 +955,7 @@ export const NEWS_SLIM_60 = `SELECT region, title, date, slug FROM news ORDER BY
 // 🔴 **numeric 列回来是字符串**(实测:teer / score / invitations / draw_crs / draw_size)。
 //    Local API 那边它们是数字,所以调用点原来写的 `typeof x === 'number' ? x : null` 一换路
 //    就会把这些值**静默判成 null**(抽选分数线、TEER 档整列消失,还不报错)。数字一律经 num() 归一。
-// 🔴 列名 `AS "camelCase"` 对齐 Local API 的字段名 —— 这样 lib/jobs 的 mapPnpOcc / mapEeCat
+// 🔴 列名 `AS "camelCase"` 对齐 Local API 的字段名 —— 这样 lib/jobs 的 toPnpOcc / toEeCat
 //    一套映射同时喂两条路,不用各写一份(那正是分叉的起点)。
 // 排序照抄原来 payload.find 的 sort;它没给 sort 的用 `ORDER BY id`(实测这八张表 created_at 全表同值,
 // 按创建时间排等于全是并列,id 序才是可复现的那个)。
