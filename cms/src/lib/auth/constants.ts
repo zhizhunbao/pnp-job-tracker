@@ -169,8 +169,9 @@ export const COOKIE_RE_HEAD = '(?:^|;\\s*)'
 
 /**
  * Cookie 头取值正则的尾半(捕获组)。
+ * 组名 `v` = 这个 cookie 的值(到下一个分号为止);取值走 `hit.groups.v`,不按位置数括号。
  */
-export const COOKIE_RE_TAIL = '=([^;]+)'
+export const COOKIE_RE_TAIL = '=(?<v>[^;]+)'
 
 /**
  * 站内回跳兜底(首页)。

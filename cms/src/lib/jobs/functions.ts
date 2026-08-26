@@ -755,7 +755,10 @@ export function buildJobsWhere(input: BuildWhereIn): JobsWhere {
     } else {
       const m = DIGIT_PICK_RE.exec(s(FK.teer))
       if (m != null) {
-        conds.push(W.teerEq + param(Number(m[1])))
+        const g = m.groups
+        if (g != null && g.teer != null) {
+          conds.push(W.teerEq + param(Number(g.teer)))
+        }
       }
     }
   }
@@ -1897,7 +1900,11 @@ function originTitle(html: string): string {
   if (m == null) {
     return TITLE_NONE
   }
-  let t = m[1]
+  const g = m.groups
+  if (g == null) {
+    return TITLE_NONE
+  }
+  let t = g.title
   if (t == null) {
     return TITLE_NONE
   }
@@ -1931,7 +1938,11 @@ function jbExternalLink(html: string): string {
   if (m == null) {
     return JB_LINK_NONE
   }
-  let href = m[1]
+  const g = m.groups
+  if (g == null) {
+    return JB_LINK_NONE
+  }
+  let href = g.href
   if (href == null) {
     return JB_LINK_NONE
   }
@@ -2038,7 +2049,11 @@ function jbOwnText(html: string): string {
   if (m == null) {
     return JD_NONE
   }
-  let inner = m[1]
+  const g = m.groups
+  if (g == null) {
+    return JD_NONE
+  }
+  let inner = g.inner
   if (inner == null) {
     return JD_NONE
   }
@@ -2059,7 +2074,11 @@ function stripTitleLine(input: StripTitleIn): string {
   if (m == null) {
     return input.text
   }
-  let raw = m[1]
+  const g = m.groups
+  if (g == null) {
+    return input.text
+  }
+  let raw = g.title
   if (raw == null) {
     return input.text
   }
@@ -2476,8 +2495,13 @@ export async function loadApplyEmail(postingUrl: string): ApplyMailOut {
   if (actionM == null || jidM == null) {
     return MAIL_NONE
   }
-  const jid = jidM[1]
-  const action = actionM[1]
+  const jidG = jidM.groups
+  const actionG = actionM.groups
+  if (jidG == null || actionG == null) {
+    return MAIL_NONE
+  }
+  const jid = jidG.jid
+  const action = actionG.action
   if (jid == null || action == null) {
     return MAIL_NONE
   }
@@ -2527,10 +2551,10 @@ function pickMail(s: string): string {
     return MAIL_NONE
   }
   for (const m of matches) {
-    const at = m.split(MAIL_AT)
+    const [, domain] = m.split(MAIL_AT)
     let d = MAIL_DOMAIN_NONE
-    if (at[1] != null) {
-      d = at[1].toLowerCase()
+    if (domain != null) {
+      d = domain.toLowerCase()
     }
     if (d === '' || d.includes(MAIL_SKIP_WORD)) {
       continue
@@ -2601,13 +2625,19 @@ export async function generateJdFormatted(input: GenerateJdIn): GenerateJdOut {
   let out = r.answer
   let term = JD_FIELD_NONE
   const termM = JD_TERM_RE.exec(out)
-  if (termM != null && termM[1] != null) {
-    term = termM[1].toLowerCase()
+  if (termM != null) {
+    const termG = termM.groups
+    if (termG != null && termG.term != null) {
+      term = termG.term.toLowerCase()
+    }
   }
   let hrs = JD_FIELD_NONE
   const hrsM = JD_HRS_RE.exec(out)
-  if (hrsM != null && hrsM[1] != null) {
-    hrs = hrsM[1].toLowerCase()
+  if (hrsM != null) {
+    const hrsG = hrsM.groups
+    if (hrsG != null && hrsG.hrs != null) {
+      hrs = hrsG.hrs.toLowerCase()
+    }
   }
   out = out.replace(JD_TAIL_STRIP_RE, STRIP_REPL).trim()
   const ok = validateJdFormatted(out, src)
@@ -3370,5 +3400,7 @@ export function byHitValDesc(a: RankedHit, b: RankedHit): number {
  */
 // eslint-disable-next-line local/one-parameter, local/typed-signature -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byEntryCountDesc(a: [string, number], b: [string, number]): number {
-  return b[1] - a[1]
+  const [, aN] = a
+  const [, bN] = b
+  return bN - aN
 }

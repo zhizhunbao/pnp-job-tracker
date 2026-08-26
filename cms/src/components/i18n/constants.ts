@@ -32,8 +32,9 @@ export const COOKIE_RE_HEAD = '(?:^|;\\s*)'
 /**
  * 正则后半段(拼在 cookie 名之后):取到下一个分号为止。
  * 用 `+` 不是 `*` —— 空值的 cookie 视同没有。
+ * 组名 `v` = 这个 cookie 的值;取值走 `m.groups.v`,不按位置数括号。
  */
-export const COOKIE_RE_TAIL = '=([^;]+)'
+export const COOKIE_RE_TAIL = '=(?<v>[^;]+)'
 
 /**
  * cookie 名里要转义的字符 —— 正则源码里 `.` 是通配符,不转义会匹配到别的名字。

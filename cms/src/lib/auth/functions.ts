@@ -114,7 +114,11 @@ export function readCookie(input: ReadCookieIn): MaybeCookie {
   if (hit == null) {
     return null
   }
-  const v = hit[1]
+  const g = hit.groups
+  if (g == null) {
+    return null
+  }
+  const v = g.v
   if (v == null) {
     return null
   }

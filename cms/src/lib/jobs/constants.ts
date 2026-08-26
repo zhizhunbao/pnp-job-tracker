@@ -407,8 +407,10 @@ export const TOP_NOCS_TTL_MS = 600_000
 
 /**
  * 单个数字(fTeer 里挑数字)。
+ *
+ * 捕获组 `teer`:挑中的那位数字(TEER 档 0-5)。
  */
-export const DIGIT_PICK_RE = /(\d)/
+export const DIGIT_PICK_RE = /(?<teer>\d)/
 
 /**
  * 分类未匹配时的占位(fTeer 筛选的「未分类」值也是它)。
@@ -604,18 +606,24 @@ export const JB_SECTION_CAP = 60_000
 
 /**
  * JB 微数据字段(聚合帖大头;#141 实证 property="description" 里有雇主原文)。
+ *
+ * 捕获组 `inner`:description 容器里的内层 HTML(还带实体编码,取出后再反转义)。
  */
-export const JB_DESC_RE = /property="description"[^>]*>([\s\S]{0,80000}?)<\/(?:div|section|span|p)>/i
+export const JB_DESC_RE = /property="description"[^>]*>(?<inner>[\s\S]{0,80000}?)<\/(?:div|section|span|p)>/i
 
 /**
  * JB 外链锚(#140:href 是 HTML 实体编码,不解码带 query 的外链一律抓错页)。
+ *
+ * 捕获组 `href`:外链原文(实体编码态,取出后再反转义)。
  */
-export const JB_EXT_LINK_RE = /id="externalJobLink"[^>]*href="([^"]+)"/
+export const JB_EXT_LINK_RE = /id="externalJobLink"[^>]*href="(?<href>[^"]+)"/
 
 /**
  * 原站 <title>(岗名标注行;JB 会把聚合帖标题标准化成职业名,差异自解释不掩盖)。
+ *
+ * 捕获组 `title`:<title> 的内文(3-200 字符,还带实体编码)。
  */
-export const TITLE_RE = /<title>([^<]{3,200})<\/title>/i
+export const TITLE_RE = /<title>(?<title>[^<]{3,200})<\/title>/i
 
 /**
  * <title> 分段符(各站顺序不一:竖线分段/连字符分段)。
@@ -2406,13 +2414,17 @@ export const JB_ORIGIN = 'https://www.jobbank.gc.ca'
 
 /**
  * 投递表单与 action 抽取(JSF 页面结构)。
+ *
+ * 捕获组 `action`:表单 action 路径(实体编码态,拼到 JB_ORIGIN 后面前先还原 &amp;)。
  */
-export const SEEKER_ACTION_RE = /<form id="seekeractivity"[^>]*action="([^"]+)"/
+export const SEEKER_ACTION_RE = /<form id="seekeractivity"[^>]*action="(?<action>[^"]+)"/
 
 /**
  * 表单里岗位 id 的抽取。
+ *
+ * 捕获组 `jid`:岗位 id(纯数字,partial 提交时填进 jsjobid 与 jobid 两格)。
  */
-export const SEEKER_JOBID_RE = /id="seekeractivity:jobid"[^>]*value="(\d+)"/
+export const SEEKER_JOBID_RE = /id="seekeractivity:jobid"[^>]*value="(?<jid>\d+)"/
 
 /**
  * action 里的 HTML 实体还原(&amp; → &)。
@@ -2546,13 +2558,17 @@ export const JD_HOURS_VALUES: string[] = ['full', 'part']
 
 /**
  * 输出尾部 [TERM]= 行的抽取。
+ *
+ * 捕获组 `term`:雇佣期限词(小写后须落在 JD_TERM_VALUES 里才采信)。
  */
-export const JD_TERM_RE = /\[TERM\]=\s*(\w+)/
+export const JD_TERM_RE = /\[TERM\]=\s*(?<term>\w+)/
 
 /**
  * 输出尾部 [HRS]= 行的抽取。
+ *
+ * 捕获组 `hrs`:工时类型词(小写后须落在 JD_HOURS_VALUES 里才采信)。
  */
-export const JD_HRS_RE = /\[HRS\]=\s*(\w+)/
+export const JD_HRS_RE = /\[HRS\]=\s*(?<hrs>\w+)/
 
 /**
  * 把尾部字段行从正文里剥掉。

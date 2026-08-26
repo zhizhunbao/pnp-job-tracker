@@ -90,8 +90,8 @@ export function useLangState(initial: Lang): LangStateOut {
       const re = new RegExp(COOKIE_RE_HEAD + LANG_COOKIE.replace(DOT_RE, DOT_ESCAPED) + COOKIE_RE_TAIL)
       const m = document.cookie.match(re)
       let cookieVal: string | null = null
-      if (m != null && m[1] != null) {
-        cookieVal = m[1]
+      if (m != null && m.groups != null && m.groups.v != null) {
+        cookieVal = m.groups.v
       }
       if (parseLang(cookieVal) != null) {
         return

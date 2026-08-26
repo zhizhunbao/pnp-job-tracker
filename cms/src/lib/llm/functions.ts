@@ -1308,13 +1308,13 @@ export async function translateParasStrict(input: ParasStrictIn): ParasStrictOut
  * @returns 去过 Markdown 的速读；太短/没给/语种不认是 null。
  */
 export async function summarizeNews(input: SummarizeNewsIn): SummarizeNewsOut {
-  const pair = NEWS_SUMMARY_INSTR[input.lang]
-  if (pair == null) {
+  const instr = NEWS_SUMMARY_INSTR[input.lang]
+  if (instr == null) {
     return null
   }
   const r = await friendChat({
-    prompt: pair[0] + SUMMARY_TITLE_HEAD + input.title + SUMMARY_BODY_HEAD + input.en.slice(0, SUMMARY_BODY_CAP),
-    system: pair[1],
+    prompt: instr.prompt + SUMMARY_TITLE_HEAD + input.title + SUMMARY_BODY_HEAD + input.en.slice(0, SUMMARY_BODY_CAP),
+    system: instr.system,
     webSearch: false,
     timeoutMs: TRANSLATE_ROUTE_TIMEOUT_MS,
   })

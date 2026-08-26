@@ -198,11 +198,6 @@ export const COL_PREFIX = 'c.'
 export const JOIN_COMMA = ', '
 
 /**
- * 一个数字字符(TEER 位校验)。
- */
-export const DIGIT_RE = /\d/
-
-/**
  * 一个空格(公司名归一的替换目标)。
  */
 export const SPACE = ' '
@@ -377,6 +372,13 @@ export const NOC_TITLES_MAX = 500
 export const NOC_LEN = 5
 
 /**
+ * 职业码第二位(TEER 位)的具名捕获:组名 `teer`。
+ * 首位写 `[\s\S]` 不写 `.` —— `.` 不吃换行,库存里带换行的脏码会从「第二位是数字」被误判成「不像样」。
+ * 不锚尾、不校验其余位:长度归 `NOC_LEN` 判,其余位有脏字仍要读得出 TEER(理由见 `NOC_LEN`)。
+ */
+export const NOC_TEER_RE = /^[\s\S](?<teer>\d)/
+
+/**
  * 排序后取中位数的折半除数:`sals[floor(length / MEDIAN_HALF)]`。
  * 偶数条取偏上那一格(不取两格平均)—— 与旧实现一致,岗位薪资只是展示口径,不做统计学中位数。
  */
@@ -408,9 +410,9 @@ export const BRIEF_MAX = 900
 export const SITE_LINE_RE = /\[SITE\]=[^\n]*/g
 
 /**
- * K 调查:从官网标记行提取 URL。
+ * K 调查:从官网标记行提取 URL。组名 `url`;取值走 `siteMatch.groups.url`,不按位置数括号。
  */
-export const SITE_PICK_RE = /\[SITE\]=\s*(\S+)/
+export const SITE_PICK_RE = /\[SITE\]=\s*(?<url>\S+)/
 
 /**
  * K 调查:合法官网 URL。

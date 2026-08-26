@@ -18,9 +18,10 @@ import { EMP_LOG, log } from '../log'
 import {
   ALIAS_NONE, BRIEF_MAX, BRIEF_MIN, BRIEF_V2_MARK, CACHE_TTL_MS, CAP_MODE, CAP_NOC, CAP_PAGE, CAP_PROGRAM, CAP_PROV,
   CAP_TEXT, CMP_MAX, CMP_MIN, COL_PREFIX, CSV_BOM, CSV_EMPTY, CSV_HEAD, CSV_NL, CSV_QUOTE, CSV_QUOTE_ESC,
-  CSV_QUOTE_G_RE, CSV_QUOTE_RE, CSV_SEP, CSV_YES, DATE8_DASHED, DATE8_RE, DATE_LEN, DIGIT_RE, EMP_PROGRAMS,
+  CSV_QUOTE_G_RE, CSV_QUOTE_RE, CSV_SEP, CSV_YES, DATE8_DASHED, DATE8_RE, DATE_LEN, EMP_PROGRAMS,
   EMP_SSR_ROWS, ENWIKI_BASE, FACT_COLS, FETCHED_NONE, FILTER_UNSET, FORMAT_JSON, FORMAT_KEY, HTTP_URL_RE,
-  JOIN_COMMA, LEVEL, LMIA_QUARTER_NONE, MEDIAN_HALF, MODE, NOC_LEN, NOC_RE, NOC_SPLIT_RE, NOC_TITLES_MAX,
+  JOIN_COMMA, LEVEL, LMIA_QUARTER_NONE, MEDIAN_HALF, MODE, NOC_LEN, NOC_RE, NOC_SPLIT_RE, NOC_TEER_RE,
+  NOC_TITLES_MAX,
   NOT_FOUND_RE, PAGE_MAX, PARAM, PIPE, PROVINCE_NONE, PROV_RE, PUNCT_RE,
   RESEARCH_TIMEOUT_MS, SITE_LINE_DROP, SITE_LINE_RE, SITE_PICK_RE, SORT_SKILLED, SPACE, SPACES_RE, SPACE_GLOBAL_RE,
   SQL_FRAG_NONE, SUFFIX_RE, UNDERSCORE, URL_QS, VERDICT_ORDER, VIEW, WD_ACTION_ENTITIES, WD_ACTION_SEARCH, WD_API,
@@ -786,11 +787,22 @@ function mainProvinceOf(tally: ProvTally): string {
  * @returns TEER。
  */
 function teerOf(noc: string): MaybeTeer {
-  const d = noc[1]
-  if (noc.length === NOC_LEN && d != null && DIGIT_RE.test(d)) {
-    return Number(d)
+  if (noc.length !== NOC_LEN) {
+    return null
   }
-  return null
+  const hit = NOC_TEER_RE.exec(noc)
+  if (hit == null) {
+    return null
+  }
+  const g = hit.groups
+  if (g == null) {
+    return null
+  }
+  const teer = g.teer
+  if (teer == null) {
+    return null
+  }
+  return Number(teer)
 }
 
 // =========================================================================
@@ -911,10 +923,10 @@ async function investigate(input: InvestigateIn): InvestigateOut {
   let website = WEBSITE_NONE
   const siteMatch = r.answer.match(SITE_PICK_RE)
   let siteUrl = null
-  if (siteMatch != null) {
-    const g1 = siteMatch[1]
-    if (g1 != null) {
-      siteUrl = g1
+  if (siteMatch != null && siteMatch.groups != null) {
+    const url = siteMatch.groups.url
+    if (url != null) {
+      siteUrl = url
     }
   }
   if (siteUrl != null && HTTP_URL_RE.test(siteUrl)) {

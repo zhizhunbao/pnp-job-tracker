@@ -118,19 +118,19 @@ export function checkLimit(quotas: QuotaPairs): boolean {
       cur.push(0)
     }
   }
-  for (const [i, q] of quotas.entries()) {
+  for (const [i, [, limit]] of quotas.entries()) {
     const c = cur[i]
-    if (c != null && c >= q[1]) {
+    if (c != null && c >= limit) {
       return false
     }
   }
-  for (const [i, q] of quotas.entries()) {
+  for (const [i, [key]] of quotas.entries()) {
     let c = 0
     const seen = cur[i]
     if (seen != null) {
       c = seen
     }
-    CACHE.buckets.set(q[0], { day: today, n: c + 1 })
+    CACHE.buckets.set(key, { day: today, n: c + 1 })
   }
   return true
 }

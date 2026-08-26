@@ -37,9 +37,6 @@
   "src/components/i18n/hooks.ts": {
     "@stylistic/max-len": {
       "count": 1
-    },
-    "local/no-literal-index": {
-      "count": 2
     }
   },
   "src/components/modal/hooks.ts": {
@@ -72,11 +69,6 @@
       "count": 4
     }
   },
-  "src/lib/auth/functions.ts": {
-    "local/no-literal-index": {
-      "count": 1
-    }
-  },
   "src/lib/consult/constants.ts": {
     "local/no-import-in-leaf": {
       "count": 2
@@ -103,9 +95,6 @@
     },
     "local/no-bare-strings": {
       "count": 2
-    },
-    "local/no-literal-index": {
-      "count": 2
     }
   },
   "src/lib/i18n/server.ts": {
@@ -121,9 +110,6 @@
   "src/lib/jobs/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 1
-    },
-    "local/no-literal-index": {
-      "count": 15
     }
   },
   "src/lib/legal/constants.ts": {
@@ -136,9 +122,6 @@
   },
   "src/lib/llm/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 1
-    },
-    "local/no-literal-index": {
       "count": 1
     }
   },
@@ -181,11 +164,6 @@
   },
   "src/lib/points/types.ts": {
     "local/no-undefined-type": {
-      "count": 1
-    }
-  },
-  "src/lib/quota/functions.ts": {
-    "local/no-literal-index": {
       "count": 1
     }
   },
