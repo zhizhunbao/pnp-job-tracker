@@ -1250,9 +1250,9 @@ function makeToolGates(input: MakeToolGatesIn): MakeToolGatesOut {
   const box = input.box
 
   async function beforeToolCall(ctx: BeforeToolCallIn): BeforeToolCallOut {
-    const args = ctx.args as ToolArgs
+    const args = ctx.args as ToolArgs | null
     let noc = ARG_NONE
-    if (args && typeof args.noc === 'string') {
+    if (args != null && typeof args.noc === 'string') {
       noc = args.noc.trim()
     }
     if (noc === '') {

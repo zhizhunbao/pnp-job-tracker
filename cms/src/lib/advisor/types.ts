@@ -734,9 +734,25 @@ export type AdvisorWire = {
   lang: string | null
 
   /**
-   * 追问轮;缺省当一次性初判。
+   * 追问轮;缺省当一次性初判。**归一前形状**:body 是外人拼的,不许借干净的 ChatMsg
+   * (声明成字面量联合会把 cleanMessages 的角色白名单判成恒真 —— 2026-08-26 批 A 实撞)。
    */
-  messages: ChatMsgList | null
+  messages: WireMsg[] | null
+}
+
+/**
+ * 网络来的一条消息(归一前形状,cleanMessages 洗成 ChatMsg)。
+ */
+export type WireMsg = {
+  /**
+   * 角色原文;白名单(user/assistant)过滤在 cleanMessages,不在类型上撒谎。
+   */
+  role: string | null
+
+  /**
+   * 文本内容;非字符串的行整条丢弃。
+   */
+  content: string | null
 }
 
 /**

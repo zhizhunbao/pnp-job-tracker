@@ -103,7 +103,7 @@ function storeCookieLang(l: Lang): void {
  */
 export function makeT(lang: Lang): TFn {
   const all = messagesOf()
-  const dict = all[lang] || all.zh
+  const dict = all[lang]
 
   // eslint-disable-next-line local/no-optional, local/one-parameter -- TFn 的形态(两参、第二参可省)由全站调用点定,见 TFn 的特批
   function take(key: string, vars?: TVars): string {

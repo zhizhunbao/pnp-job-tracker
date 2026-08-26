@@ -142,7 +142,7 @@
   },
   "src/lib/advisor/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 6
+      "count": 5
     },
     "local/jsdoc-tags": {
       "count": 1
@@ -216,7 +216,7 @@
   },
   "src/lib/consult/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 2
+      "count": 1
     },
     "local/no-db-vocab-in-functions": {
       "count": 3
@@ -327,7 +327,7 @@
   },
   "src/lib/i18n/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 3
+      "count": 2
     }
   },
   "src/lib/i18n/server.ts": {
