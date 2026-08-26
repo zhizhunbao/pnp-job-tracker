@@ -55,12 +55,6 @@
   "src/lib/advisor/routes.ts": {
     "local/function-length": {
       "count": 1
-    },
-    "local/no-literal-index": {
-      "count": 2
-    },
-    "local/no-magic-number": {
-      "count": 1
     }
   },
   "src/lib/advisor/types.ts": {
@@ -78,17 +72,9 @@
       "count": 4
     }
   },
-  "src/lib/alerts/functions.ts": {
-    "local/no-magic-number": {
-      "count": 12
-    }
-  },
   "src/lib/auth/functions.ts": {
     "local/no-literal-index": {
       "count": 1
-    },
-    "local/no-magic-number": {
-      "count": 6
     }
   },
   "src/lib/consult/constants.ts": {
@@ -116,17 +102,9 @@
       "count": 2
     },
     "local/no-bare-strings": {
-      "count": 4
-    },
-    "local/no-literal-index": {
       "count": 2
     },
-    "local/no-magic-number": {
-      "count": 8
-    }
-  },
-  "src/lib/funnel/functions.ts": {
-    "local/no-magic-number": {
+    "local/no-literal-index": {
       "count": 2
     }
   },
@@ -146,14 +124,6 @@
     },
     "local/no-literal-index": {
       "count": 15
-    },
-    "local/no-magic-number": {
-      "count": 28
-    }
-  },
-  "src/lib/jobs/routes.ts": {
-    "local/no-magic-number": {
-      "count": 1
     }
   },
   "src/lib/legal/constants.ts": {
@@ -169,10 +139,7 @@
       "count": 1
     },
     "local/no-literal-index": {
-      "count": 4
-    },
-    "local/no-magic-number": {
-      "count": 5
+      "count": 1
     }
   },
   "src/lib/llm/types.ts": {
@@ -181,16 +148,6 @@
     },
     "local/no-undefined-type": {
       "count": 1
-    }
-  },
-  "src/lib/lmia/functions.ts": {
-    "local/no-magic-number": {
-      "count": 2
-    }
-  },
-  "src/lib/mail/functions.ts": {
-    "local/no-magic-number": {
-      "count": 2
     }
   },
   "src/lib/official/constants.ts": {
@@ -214,11 +171,6 @@
       "count": 2
     }
   },
-  "src/lib/plan/functions.ts": {
-    "local/no-magic-number": {
-      "count": 8
-    }
-  },
   "src/lib/points/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 4
@@ -232,24 +184,13 @@
       "count": 1
     }
   },
-  "src/lib/quiz/functions.ts": {
-    "local/no-magic-number": {
-      "count": 12
-    }
-  },
   "src/lib/quota/functions.ts": {
     "local/no-literal-index": {
-      "count": 1
-    },
-    "local/no-magic-number": {
       "count": 1
     }
   },
   "src/lib/resume/functions.ts": {
     "local/no-bare-strings": {
-      "count": 1
-    },
-    "local/no-magic-number": {
       "count": 1
     }
   },
@@ -284,11 +225,6 @@
   },
   "src/lib/seo/types.ts": {
     "local/no-import-in-leaf": {
-      "count": 1
-    }
-  },
-  "src/lib/stripe/routes.ts": {
-    "local/no-magic-number": {
       "count": 1
     }
   },

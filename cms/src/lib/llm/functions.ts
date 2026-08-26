@@ -15,7 +15,7 @@ import {
 } from '@/lib/error'
 import { LLM_FN, LLM_LOG, LOG_MSG_MAX, log } from '@/lib/log'
 import {
-  ALPHA_BASE, ALPHA_LEN, ALPHA_ZERO, ANSWER_NONE, ANTHROPIC_MODEL, BACKEND, BLOCK_TEXT, BULLET_PREFIX, BULLET_RE, CACHE_HIT, CONTENT_TYPE_NONE, DELTA_NONE, DETAIL_NONE, E_TRANSLATE_UNAVAILABLE, FNV_PRIME, FNV_SEED_A, FNV_SEED_B, FRIEND_CALL_TIMEOUT_MS, FRIEND_INPUT_MAX, FRIEND_MAX_TOKENS, FRIEND_STREAM_TEMP, GATEWAY_BASE, GATEWAY_KEY, GATEWAY_MODEL, GATEWAY_TIMEOUT_MS, HEADER, KEEP_GROUP1, LEGACY_SOURCE_MAX, MD_BOLD, MD_DROP, MD_HEADING, MD_STARS, NEWS_BODY_CAP, NOT_STATED_RE, NUMBERED_SPLIT, NUMBER_HEAD, NUMBER_TAIL, OLLAMA_COMPLETE_TEMP, OLLAMA_MODEL, OLLAMA_STREAM_TEMP, OLLAMA_URL, PARA, PARA_JOIN, PARA_SPLIT_RE, PART_NONE, PATH_LEGACY, PATH_OLLAMA, PATH_TRANSLATE, PATH_V1, POST, PREFIX_NONE, PROTOCOL, PROVIDER, REF_HEAD, REF_SALT_SEP, REF_TAIL, ROLE, SALT_NONE, SOURCE_URL_NONE, SSE_BLOCK_SEP, SSE_DATA, SSE_DATA_LEN, SSE_DONE, SSE_LINE_SEP, STALL, STOP_REFUSAL, STREAM_EVENT, SUMMARY_BODY_CAP, SUMMARY_MIN_LEN, TAIL_NONE, TEXT_START, TRANSLATED_EMPTY, TRANSLATE_CHUNK, TRANSLATE_ROUTE_TIMEOUT_MS, TRANSLATE_SOURCE, TRANSLATE_TRIES, UPSTREAM_TEXT_NONE, VIA, WEB_FETCH, WHY_NONE,
+  ALPHA_BASE, ALPHA_LEN, ALPHA_ZERO, ANSWER_NONE, ANTHROPIC_MODEL, BACKEND, BLOCK_TEXT, BULLET_PREFIX, BULLET_RE, BYTE_MASK, BYTE_SHIFT, CACHE_HIT, CONTENT_TYPE_NONE, DELTA_NONE, DETAIL_NONE, E_TRANSLATE_UNAVAILABLE, FNV_PRIME, FNV_SEED_A, FNV_SEED_B, FRIEND_CALL_TIMEOUT_MS, FRIEND_INPUT_MAX, FRIEND_MAX_TOKENS, FRIEND_STREAM_TEMP, GATEWAY_BASE, GATEWAY_KEY, GATEWAY_MODEL, GATEWAY_TIMEOUT_MS, HEADER, KEEP_GROUP1, LEGACY_SOURCE_MAX, MD_BOLD, MD_DROP, MD_HEADING, MD_STARS, NEWS_BODY_CAP, NOT_STATED_RE, NUMBERED_PAIR_STEP, NUMBERED_SPLIT, NUMBER_HEAD, NUMBER_TAIL, OLLAMA_COMPLETE_TEMP, OLLAMA_MODEL, OLLAMA_STREAM_TEMP, OLLAMA_URL, PARA, PARA_JOIN, PARA_SPLIT_RE, PART_NONE, PATH_LEGACY, PATH_OLLAMA, PATH_TRANSLATE, PATH_V1, POST, PREFIX_NONE, PROTOCOL, PROVIDER, REF_HEAD, REF_SALT_SEP, REF_TAIL, ROLE, SALT_NONE, SOURCE_URL_NONE, SSE_BLOCK_SEP, SSE_DATA, SSE_DATA_LEN, SSE_DONE, SSE_LINE_SEP, STALL, STOP_REFUSAL, STREAM_EVENT, SUMMARY_BODY_CAP, SUMMARY_MIN_LEN, TAIL_NONE, TEXT_START, TRANSLATED_EMPTY, TRANSLATE_CHUNK, TRANSLATE_ROUTE_TIMEOUT_MS, TRANSLATE_SOURCE, TRANSLATE_TRIES, UPSTREAM_TEXT_NONE, VIA, WEB_FETCH, WHY_NONE,
 } from './constants'
 import type {
   Alpha7In, Alpha7Out, AnthropicMessage, AnthropicParams, AnthropicStreamIn, AnthropicStreamParams, ArmOut, BackendStreamIn, BackendStreamOut, CharCountIn, CharCountOut, CompleteBackendIn, CompleteBackendOut, CompleteFriendIn, CompleteTextIn, CompleteTextOut, ContentTagIn, ContentTagOut, EmptyTextOut, Fnv1aIn, Fnv1aOut, FriendChatIn, FriendChatMaybeOut, FriendChatOut, FriendLlmReadyOut, FriendResult, GatewayMessage, GatewayMessagesIn, GatewayMessagesOut, IgnoreOut, LegacyRequest, LegacyResponse, MakeWatchIn, MakeWatchOut, MaybeV1Choice, MaybeV1Response, NullJsonOut, NumberLinesIn, NumberLinesOut, OllamaRequest, OllamaResponse, OnEndOut, OnErrorIn, OnErrorOut, OnTextIn, OnTextOut, OrTextIn, OrTextOut, ParasStrictIn, ParasStrictOut, ParseNumberedIn, ParseNumberedOut, PlainLinesIn, PostJsonIn, PostJsonOut, ReadV1SseIn, ReadV1SseOut, RefPromptIn, RefPromptOut, SectionJob, SectionedIn, SectionedPOut, SendV1In, SendV1Out, SourceUrlIn, SourceUrlOut, SplitMessagesIn, SplitMessagesOut, StreamChatIn, StreamChatOut, StripMdIn, StripMdOut, SummarizeNewsIn, SummarizeNewsOut, SystemOfIn, SystemOfOut, TextOfIn, TextOfOut, TranslateChunkIn, TranslateChunkOut, TranslateLinesIn, TranslateLinesOut, TranslateReadyOut, TranslateResponse, TurnsOfIn, TurnsOfOut, V1AnswerOfIn, V1AnswerOfOut, V1LogMeta, V1Request, V1Response, WatchWhy, WebFetchToolIn, WebFetchToolOut,
@@ -93,8 +93,8 @@ function fnv1a(input: Fnv1aIn): Fnv1aOut {
   let h = input.seed
   for (let i = 0; i < input.text.length; i++) {
     const c = input.text.charCodeAt(i)
-    h = Math.imul(h ^ (c & 0xff), FNV_PRIME)
-    h = Math.imul(h ^ (c >>> 8), FNV_PRIME)
+    h = Math.imul(h ^ (c & BYTE_MASK), FNV_PRIME)
+    h = Math.imul(h ^ (c >>> BYTE_SHIFT), FNV_PRIME)
   }
   return h >>> 0
 }
@@ -1059,8 +1059,7 @@ export async function translateSectioned(input: SectionedIn): SectionedPOut {
     let prefix = PREFIX_NONE
     const mk = input.marks.exec(l)
     if (mk != null) {
-      const g1 = mk[1]
-      const g2 = mk[2]
+      const [, g1, g2] = mk
       if (g1 != null && g2 != null) {
         prefix = g1
         l = g2.trim()
@@ -1072,7 +1071,7 @@ export async function translateSectioned(input: SectionedIn): SectionedPOut {
     if (input.bullets) {
       const b = BULLET_RE.exec(l)
       if (b != null) {
-        const g2 = b[2]
+        const [, , g2] = b
         if (g2 != null) {
           prefix = prefix + BULLET_PREFIX
           l = g2
@@ -1184,7 +1183,7 @@ async function translateChunk(input: TranslateChunkIn): TranslateChunkOut {
 function parseNumbered(input: ParseNumberedIn): ParseNumberedOut {
   const parts = input.text.split(NUMBERED_SPLIT)
   const d: ParseNumberedOut = new Map()
-  for (let i = 1; i + 1 < parts.length + 1; i += 2) {
+  for (let i = 1; i + 1 < parts.length + 1; i += NUMBERED_PAIR_STEP) {
     let part = PART_NONE
     const nextPart = parts[i + 1]
     if (nextPart != null) {

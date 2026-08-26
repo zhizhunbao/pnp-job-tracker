@@ -48,9 +48,36 @@ export const SAVED_SHOW = 20
 export const DIM_PAIRS = 3
 
 /**
+ * 一轮提醒里每次 payload.find 的扫描上限(用户、saved-search、免费用户三处同一口径):
+ * 一轮跑不完剩下的靠游标语义下一轮自然续,不在单轮里无限翻页把整批拖超时。
+ */
+export const SCAN_LIMIT = 1000
+
+/**
+ * 单个用户取多少条收藏来做周报摘要(摘要只列 SAVED_SHOW 条,多取是为了算在招/已下架比例)。
+ */
+export const SAVED_LIMIT = 200
+
+/**
+ * ISO 时间戳截到日的长度(`2026-08-26T…` 前 10 位 = `YYYY-MM-DD`):
+ * 库里 date_posted 是 date 列,比较基准要日不要时分秒。
+ */
+export const ISO_DATE_LEN = 10
+
+/**
+ * 中位年薪折成「多少 K」的除数(1 K = 1000 加元),配 `SAL_K` 模板用。
+ */
+export const K_DIV = 1000
+
+/**
  * 档案 NOC 码的合法形状(五位数字)。
  */
 export const NOC_RE = /^\d{5}$/
+
+/**
+ * 省码的合法长度(两位字母,如 ON/BC):档案里的目标省逐个验形,长度不对的丢掉不猜。
+ */
+export const PROV_CODE_LEN = 2
 
 /**
  * 静默时段默认起点(多伦多时间 20:00;2026-08-16 Frank「晚上不要给我用户发邮件」)。
@@ -406,21 +433,6 @@ export const PROV_COND_NONE = ''
 export const PAIR_KEY_SEP = '|'
 
 /**
- * (省, 大类) 计数条件的三段(拼位次参数)。
- */
-export const PAIR_L = '(province = $'
-
-/**
- * 中段。
- */
-export const PAIR_M = ' AND broad = $'
-
-/**
- * 尾段。
- */
-export const PAIR_R = ')'
-
-/**
  * 收藏画像对在标题里的省·类连接符。
  */
 export const DIM_JOIN = '\u00b7'
@@ -429,11 +441,6 @@ export const DIM_JOIN = '\u00b7'
  * 多个画像对之间的分隔。
  */
 export const DIMS_LIST_SEP = ' / '
-
-/**
- * OR 连接。
- */
-export const OR_SEP = ' OR '
 
 /**
  * ?preview 的周报档取值。

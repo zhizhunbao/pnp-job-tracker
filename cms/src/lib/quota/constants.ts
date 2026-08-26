@@ -84,6 +84,12 @@ export const KEY_FREE_USER = 'free:u:'
 export const KEY_FREE_IP = 'free:'
 
 /**
+ * 十位日期(YYYY-MM-DD)的字符数:计数桶按日分,ISO 串截到日为止用它。
+ * 后面的 `T…Z` 是时刻,带上就成了「按毫秒分桶」,每次调用都是新的一天,免费额度等于没限。
+ */
+export const DATE10_LEN = 10
+
+/**
  * 放行时带给前端的剩余次数响应头。
  */
 export const HDR_FREE_LEFT = 'X-Free-Left'

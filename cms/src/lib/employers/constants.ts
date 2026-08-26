@@ -31,6 +31,11 @@ export const SE_SSR_ROWS = 50
 export const CMP_MAX = 4
 
 /**
+ * 对照最少几家:一家没得比,凑不满两家直接回空表(不是错,是没内容可对照)。
+ */
+export const CMP_MIN = 2
+
+/**
  * 对照选择篮的 localStorage 键(名录行/公司弹框共写)。
  */
 export const CMP_KEY = 'cmpEmployers1'
@@ -306,8 +311,18 @@ export const PROV_RE = /^[A-Z]{2}$/
 
 /**
  * 名录抓取日的八位紧凑写法(20260419)。
+ * 三个捕获组 = 年(`$1`)、月(`$2`)、日(`$3`),`fmtFetched` 靠
+ * `s.replace(DATE8_RE, '$1-$2-$3')` 一行转成 YYYY-MM-DD —— 照日期库(dayjs/luxon)的行规走,
+ * 免得用五个 slice 下标把年月日的边界抄第二遍。锚点 `^…$` 不动:仍然是「整串八位」才算数,
+ * 加组不改 `.test()` 的判定。
  */
-export const DATE8_RE = /^\d{8}$/
+export const DATE8_RE = /^(\d{4})(\d{2})(\d{2})$/
+
+/**
+ * `DATE8_RE` 三个捕获组的重排模板:年-月-日,即 YYYY-MM-DD。
+ * 单列一个名字是因为 `$1`/`$2`/`$3` 的次序是**和上面那条正则绑死的**,两处要一起改。
+ */
+export const DATE8_DASHED = '$1-$2-$3'
 
 /**
  * NOC 串的切分符:任何非数字段(逗号/空格/顿号混排都吃)。
@@ -353,6 +368,19 @@ export const PAGE_MAX = 9999
  * 职业人话名一次最多查几个码。
  */
 export const NOC_TITLES_MAX = 500
+
+/**
+ * 职业码的位数:官方 NOC 2021 一律五位数字。`teerOf` 拿它认「这是不是一个像样的码」——
+ * 只判长度不判全数字,是为了让「第二位是数字、其余位有脏字」的库存行仍能读出 TEER,
+ * 不是漏了校验(严格形状另有 `NOC_RE`)。
+ */
+export const NOC_LEN = 5
+
+/**
+ * 排序后取中位数的折半除数:`sals[floor(length / MEDIAN_HALF)]`。
+ * 偶数条取偏上那一格(不取两格平均)—— 与旧实现一致,岗位薪资只是展示口径,不做统计学中位数。
+ */
+export const MEDIAN_HALF = 2
 
 /**
  * 日期展示截断长度(YYYY-MM-DD)。

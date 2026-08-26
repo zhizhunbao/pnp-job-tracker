@@ -17,10 +17,11 @@ import { friendChat } from '../llm'
 import { EMP_LOG, log } from '../log'
 import {
   ALIAS_NONE, BRIEF_MAX, BRIEF_MIN, BRIEF_V2_MARK, CACHE_TTL_MS, CAP_MODE, CAP_NOC, CAP_PAGE, CAP_PROGRAM, CAP_PROV,
-  CAP_TEXT, CMP_MAX, COL_PREFIX, CSV_BOM, CSV_EMPTY, CSV_HEAD, CSV_NL, CSV_QUOTE, CSV_QUOTE_ESC, CSV_QUOTE_G_RE,
-  CSV_QUOTE_RE, CSV_SEP, CSV_YES, DATE8_RE, DATE_LEN, DIGIT_RE, EMP_PROGRAMS, EMP_SSR_ROWS, ENWIKI_BASE, FACT_COLS,
-  FETCHED_NONE, FILTER_UNSET, FORMAT_JSON, FORMAT_KEY, HTTP_URL_RE, JOIN_COMMA, LEVEL, LMIA_QUARTER_NONE, MODE,
-  NOC_RE, NOC_SPLIT_RE, NOC_TITLES_MAX, NOT_FOUND_RE, PAGE_MAX, PARAM, PIPE, PROVINCE_NONE, PROV_RE, PUNCT_RE,
+  CAP_TEXT, CMP_MAX, CMP_MIN, COL_PREFIX, CSV_BOM, CSV_EMPTY, CSV_HEAD, CSV_NL, CSV_QUOTE, CSV_QUOTE_ESC,
+  CSV_QUOTE_G_RE, CSV_QUOTE_RE, CSV_SEP, CSV_YES, DATE8_DASHED, DATE8_RE, DATE_LEN, DIGIT_RE, EMP_PROGRAMS,
+  EMP_SSR_ROWS, ENWIKI_BASE, FACT_COLS, FETCHED_NONE, FILTER_UNSET, FORMAT_JSON, FORMAT_KEY, HTTP_URL_RE,
+  JOIN_COMMA, LEVEL, LMIA_QUARTER_NONE, MEDIAN_HALF, MODE, NOC_LEN, NOC_RE, NOC_SPLIT_RE, NOC_TITLES_MAX,
+  NOT_FOUND_RE, PAGE_MAX, PARAM, PIPE, PROVINCE_NONE, PROV_RE, PUNCT_RE,
   RESEARCH_TIMEOUT_MS, SITE_LINE_DROP, SITE_LINE_RE, SITE_PICK_RE, SORT_SKILLED, SPACE, SPACES_RE, SPACE_GLOBAL_RE,
   SQL_FRAG_NONE, SUFFIX_RE, UNDERSCORE, URL_QS, VERDICT_ORDER, VIEW, WD_ACTION_ENTITIES, WD_ACTION_SEARCH, WD_API,
   WD_LANGS, WD_LANG_EN, WD_LANG_KO, WD_LANG_ZH, WD_LANG_ZH_CN, WD_LANG_ZH_HANS, WD_LIMIT, WD_PROPS, WD_SITE_EN,
@@ -637,7 +638,7 @@ export async function compareEmployers(input: CompareIn): CompareOut {
     }
   }
   const capped = clean.slice(0, CMP_MAX)
-  if (capped.length < 2) {
+  if (capped.length < CMP_MIN) {
     return []
   }
   const lower: string[] = []
@@ -744,7 +745,7 @@ function companyAggOf(input: CompanyAggIn): CompareAgg {
     avgScore = Math.round(sum / scores.length)
   }
   let medSalary: number | null = null
-  const salMid = sals[Math.floor(sals.length / 2)]
+  const salMid = sals[Math.floor(sals.length / MEDIAN_HALF)]
   if (salMid != null) {
     medSalary = Math.round(salMid)
   }
@@ -786,7 +787,7 @@ function mainProvinceOf(tally: ProvTally): string {
  */
 function teerOf(noc: string): MaybeTeer {
   const d = noc[1]
-  if (noc.length === 5 && d != null && DIGIT_RE.test(d)) {
+  if (noc.length === NOC_LEN && d != null && DIGIT_RE.test(d)) {
     return Number(d)
   }
   return null
@@ -1238,7 +1239,7 @@ export function toDesignatedRow(r: DesignatedDbRow): DesignatedRow {
 export function fmtFetched(v: string): string {
   const s = v.trim()
   if (DATE8_RE.test(s)) {
-    return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`
+    return s.replace(DATE8_RE, DATE8_DASHED)
   }
   return s.slice(0, DATE_LEN)
 }

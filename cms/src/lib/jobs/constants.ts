@@ -566,6 +566,13 @@ export const JD_HEAD_MAX_LINES = 40
 export const JD_ORPHAN_LEN = 30
 
 /**
+ * 头部裁剪允许的最大缩水倍数:裁完不足原行数的 1/2(即缩了 2 倍以上)就判误杀,
+ * 整体回退不裁 —— trimHeadJunk 的注释里那句「裁没了一半以上视为误杀」就是这个数。
+ * 判定写成 `out.length * 倍数 < lines.length` 的乘法式,不做除法,免得整数行数被浮点搅进来。
+ */
+export const JD_HEAD_SHRINK_MAX = 2
+
+/**
  * 非内容块(整块剥掉)。
  */
 export const JD_STRIP_BLOCK_RE = /(?:<(script|style|noscript|nav|header|footer|svg|form)[^>]*>[\s\S]*?<\/\1>)/gi
@@ -725,6 +732,12 @@ export const PROV_NAME: Record<string, string> = {
  * 省名最长几个词(Newfoundland and Labrador / Prince Edward Island = 3;splitQ 粘省名用)。
  */
 export const PROV_MAX_WORDS = 3
+
+/**
+ * 省名最短几个词:splitQ 从长到短试着把相邻词粘成省名,粘到 2 个词为止 ——
+ * 单个词已经是原样的搜索词,不必再当「粘出来的省名」试一遍。
+ */
+export const PROV_MIN_WORDS = 2
 
 /**
  * WHERE 片段(前缀式的在 functions 里接占位符;整句式的原样进 conds)。
@@ -1212,6 +1225,12 @@ export const COMMA = ','
 export const DOLLAR = '$'
 
 /**
+ * 邮件提醒那条 SQL 的 WHERE 从第几个占位符起编号:$1 被 since(时间下限)占了,
+ * 筛选条件只能从 $2 开始 —— 列表页那条没有 since,照旧从 $1 起。
+ */
+export const ALERT_WHERE_START = 2
+
+/**
  * 排序兜底:最新发现在前(#159:date_posted 只有日期没时间,当天最早抓的那批会钉在榜首一整天;
  * first_seen DESC 让榜单随每小时抓取真正滚动;仍是纯时间序不掺分数,#127 意图不变)。
  */
@@ -1570,6 +1589,119 @@ export const NOC_SUBMAJOR_LEN = 3
  * NOC 码全长。
  */
 export const NOC_LEN = 5
+
+/**
+ * TEER「通用可达」的上限档:0-3 一律算够得着(CLAUDE.md 数据约定里
+ * 「pnpEligible = TEER 0-3 或在紧缺低 TEER 通道清单」的前半句)。
+ */
+export const TEER_GENERAL_MAX = 3
+
+/**
+ * 低 TEER 档的下界:teer ≥ 4 就是 TEER4-5,E13-09 的三类通过理由
+ *(NL=offer 即可 / MB·NS·NB·PE=先同雇主 6 个月 / 其余开放)按它分流。
+ */
+export const TEER_LOW_MIN = 4
+
+/**
+ * 比值 → 百分数的换算倍率:wageRule 把 salary/median - 1 说成「高/低百分之几」给用户看。
+ */
+export const PCT_SCALE = 100
+
+/**
+ * 「贴近中位」的容忍下界(百分数,负值):低于当地中位但没低过 20% 的,只提示不扣分;
+ * 再低才按 PTS.wageBelow 扣 —— 省提名的工资要求上,差中位太多的 offer 确实有风险。
+ */
+export const WAGE_NEAR_PCT_MIN = -20
+
+/**
+ * 匹配引擎的分值表(**生产评分口径**:六条规则各档加减多少分,全站只有这一处)。
+ * 键与 RK 的理由键同名 —— 一条理由配一格分值,两张表左右对得上。
+ * 各规则分值汇总后再过 SCORE_HIGH / SCORE_MID 两道线,得出 high/mid/low 档。
+ * ⚠️ 改这里就是改产品:板上每个岗的档位、匹配视图的排序都跟着动 —— 不是重构能顺手调的东西。
+ */
+export const PTS = {
+  /**
+   * NOC 精确命中:+40。2026-07-21 Frank「我干 IT 不一定非得软件开发」定下同族三档,这是最高的一档。
+   */
+  nocExact: 40,
+
+  /**
+   * NOC 同小类(前 4 位相同):+30。三档的中档。
+   */
+  nocMinor: 30,
+
+  /**
+   * NOC 同族(前 3 位相同,如 212x=计算机专业类):+20。三档的低档,跨小类的同领域岗不再拿 0 分。
+   */
+  nocSubmajor: 20,
+
+  /**
+   * 省清单点名该 NOC:+30。公开职业清单上写着的,是这套规则里最硬的正面信号。
+   */
+  provNamed: 30,
+
+  /**
+   * 省清单把该 NOC 排除在外:-20。排除式省份的排除清单命中,明确不可。
+   */
+  provExcluded: -20,
+
+  /**
+   * 本站没有该省清单数据、但岗位带 pnpEligible 粗筛旗:+15。
+   * 与下面 provEligible 同分是有意的 —— 分数走 TEER 粗筛同档,差别只在理由说的是实话(uncovered)。
+   */
+  provUncovered: 15,
+
+  /**
+   * 有该省清单数据、NOC 没被点名也没被排除、岗位带 pnpEligible 粗筛旗:+15。
+   */
+  provEligible: 15,
+
+  /**
+   * 有该省清单数据且岗位连 pnpEligible 粗筛都不过:-10。
+   */
+  provNone: -10,
+
+  /**
+   * 自报 CRS 够得上该 EE 类别上次抽选分:+20。
+   */
+  eeAbove: 20,
+
+  /**
+   * TEER 0-3 通用可达:+10。
+   */
+  teerOk: 10,
+
+  /**
+   * TEER4-5 但命中具名低 TEER 通道:+10。与 teerOk 同分 —— 够得着就是够得着,通道岗不打折。
+   */
+  teerChannel: 10,
+
+  /**
+   * TEER4-5 且没有通道兜着:-15。这套规则里最重的一笔扣分。
+   */
+  teerLow: -15,
+
+  /**
+   * 工资达到或高于当地中位:+5。
+   */
+  wageAbove: 5,
+
+  /**
+   * 工资低于当地中位超过 WAGE_NEAR_PCT_MIN:-5。
+   */
+  wageBelow: -5,
+
+  /**
+   * 雇主有外劳雇佣记录、但技能股列(lmia_positions_skilled)还没回填:+5(回退旧口径)。
+   */
+  lmiaHas: 5,
+
+  /**
+   * 雇主的外劳雇佣记录里有技能股:+5。B4-02 起只认这一种 —— Frank「有 LMIA 但没法移民」:
+   * 农业/低薪股是季节性用工,给果园 +5 绿勾等于误导技能类求职者。
+   */
+  lmiaSkilled: 5,
+} as const
 
 
 /**
@@ -2104,6 +2236,13 @@ export const JOBS_PAGE_SIZE = 50
  * 页码上限(乱传大数也不至于让 OFFSET 飞走)。
  */
 export const PAGE_N_MAX = 100000
+
+/**
+ * parseInt 的十进制基数。URL 参数是外人给的串,`?page=012` 之类的前导零不能被当成八进制,
+ * 基数一律显式写死。⚠️ 这里不能换成 Number():`?page=12abc` 走 parseInt 得 12、走 Number() 得 NaN,
+ * 两者语义不同,换掉就是悄悄改了容错口径。
+ */
+export const RADIX_DEC = 10
 
 /**
  * 直招开关参数名。

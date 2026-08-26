@@ -8,7 +8,8 @@
 
 import { SQL } from '../db'
 import {
-  ALIAS, CHAT_STEPS, DECISION_STEPS, HOST_NONE, LEGACY_STEPS, LOCAL_HOST_RE, PROP_OK, SOURCE,
+  ALIAS, CHAT_STEPS, DECISION_STEPS, HOST_NONE, LEGACY_STEPS, LOCAL_HOST_RE, PROP_OK, RATE_ROUND_DIV,
+  RATE_ROUND_SCALE, SOURCE,
 } from './constants'
 import type { FunnelHitIn, HostHeadersIn, MaybeFunnelHit, RateList, RatesOfIn, RecordHitIn, RecordedOut, StepCounts } from './types'
 
@@ -102,7 +103,7 @@ function ratesOf(input: RatesOfIn): RateList {
       to = tv
     }
     if (from > 0) {
-      out.push(Math.round((to / from) * 1000) / 10)
+      out.push(Math.round((to / from) * RATE_ROUND_SCALE) / RATE_ROUND_DIV)
     } else {
       out.push(null)
     }

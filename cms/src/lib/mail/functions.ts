@@ -10,8 +10,8 @@
 import crypto from 'crypto'
 import { log, MAIL_LOG } from '../log'
 import {
-  BEARER_PREFIX, FROM, HEX_ENC, HMAC_ALGO, HMAC_KEY_NONE, JSON_MIME, MAIL_ENABLED, METHOD_POST, RESEND_URL,
-  UNSUB_PREFIX
+  BEARER_PREFIX, ERR_BODY_LEN, FROM, HEX_ENC, HMAC_ALGO, HMAC_KEY_NONE, JSON_MIME, MAIL_ENABLED, METHOD_POST,
+  RESEND_URL, UNSUB_PREFIX, UNSUB_TOKEN_LEN
 } from './constants'
 import type { MailUserId, SendMailIn, SentOut } from './types'
 import { HDR_CONTENT_TYPE } from '../http'
@@ -33,7 +33,7 @@ export async function sendMail(input: SendMailIn): SentOut {
       body: JSON.stringify({ from: FROM, to: [input.to], subject: input.subject, html: input.html }),
     })
     if (r.ok === false) {
-      log({ tag: MAIL_LOG.tag, text: MAIL_LOG.sendFailed + r.status + MAIL_LOG.sep + (await r.text()).slice(0, 200) })
+      log({ tag: MAIL_LOG.tag, text: MAIL_LOG.sendFailed + r.status + MAIL_LOG.sep + (await r.text()).slice(0, ERR_BODY_LEN) })
     }
     return r.ok
   } catch (e) {
@@ -54,5 +54,5 @@ export async function sendMail(input: SendMailIn): SentOut {
  * @returns 16 位 hex token。
  */
 export function unsubToken(userId: MailUserId): string {
-  return crypto.createHmac(HMAC_ALGO, process.env.PAYLOAD_SECRET || HMAC_KEY_NONE).update(UNSUB_PREFIX + userId).digest(HEX_ENC).slice(0, 16)
+  return crypto.createHmac(HMAC_ALGO, process.env.PAYLOAD_SECRET || HMAC_KEY_NONE).update(UNSUB_PREFIX + userId).digest(HEX_ENC).slice(0, UNSUB_TOKEN_LEN)
 }

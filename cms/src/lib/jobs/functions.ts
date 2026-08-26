@@ -14,8 +14,9 @@ import { queryRows, queryRowsOrEmpty, SQL, count, firstOf, firstOr, jsonOrNull, 
 import type { Db } from '../db'
 import { JOBS_LOG, log } from '../log'
 import { fill } from '../template'
+import { ymd } from '../time'
 import {
-  ACCEPT_ANY, ACCEPT_HTML, AMP, AMP_ENT_RE, APPLY_SLICE_LEN, APPLY_TIMEOUT_MS, BLOCKED_SRC, BLOCKED_SRC_NONE,
+  ACCEPT_ANY, ACCEPT_HTML, ALERT_WHERE_START, AMP, AMP_ENT_RE, APPLY_SLICE_LEN, APPLY_TIMEOUT_MS, BLOCKED_SRC, BLOCKED_SRC_NONE,
   BROAD_NOCS_MAX, CAND_CAP, CAT_LEVEL, CELL_NONE, CK, CNT_SEP, COLON_END_RE, COL_PROVINCE, COMMA, COMPANY_SLUG_COND,
   COMP_KEY, COOKIE_CUT, COOKIE_JOIN, COUNT_CACHE_MAX, COUNT_TTL_MS, COV, CURRENT_STATUSES, DIGIT_PICK_RE,
   DIMS_TTL_MS, DIR_ASC, DIR_DESC, DOLLAR, DRAW_STREAM_L10N, EE_KEY_L10N, EE_L10N, EE_SPLIT, EMAIL_RE, ENT_PAIRS,
@@ -23,21 +24,23 @@ import {
   HREF_ENT_PAIRS, HTML_NONE, ISO_NONE, JB_APPLY_ANCHOR, JB_DESC_RE, JB_EXT_LINK_RE, JB_INNER_ENT_PAIRS, JB_LINK_NONE,
   JB_ORIGIN, JB_REQ_ANCHOR, JB_SECTION_CAP, JB_URL_RE, JD_BAD_HOST_172_RE, JD_BAD_HOST_RE, JD_BLOCK_BREAK_RE,
   JD_BUDGET_MARGIN, JD_DIGITS_RE, JD_FAILED_MAX, JD_FETCH_TIMEOUT_MS, JD_FIELD_NONE, JD_GEN_TIMEOUT_MS,
-  JD_HEAD_JUNK_RE, JD_HEAD_MAX_LINES, JD_HOURS_VALUES, JD_HRS_RE, JD_HTML_CAP, JD_LINE_MIN, JD_MAX_LEN, JD_MIN_LEN,
+  JD_HEAD_JUNK_RE, JD_HEAD_MAX_LINES, JD_HEAD_SHRINK_MAX, JD_HOURS_VALUES, JD_HRS_RE, JD_HTML_CAP, JD_LINE_MIN, JD_MAX_LEN, JD_MIN_LEN,
   JD_NEG_TTL_MS, JD_NONE, JD_ORPHAN_LEN, JD_OUT_MAX_BASE, JD_OUT_MAX_RATIO, JD_OUT_MIN_LEN, JD_PARA_LEN, JD_PROTO_RE,
   JD_SECTION_MARKS, JD_STRIP_BLOCK_RE, JD_TAG_RE, JD_TAIL_STRIP_RE, JD_TERM_RE, JD_TERM_VALUES, JD_UA, JSF_FORM_BASE,
   JSF_KEY_JOBID, JSF_KEY_JSJOBID, LANG_EN, LANG_KO, LEVEL_RANK, LINE_SPACES_RE, LMIA_SOURCE, LV, MAIL_AT,
   MAIL_DOMAIN_NONE, MAIL_NONE, MAIL_RE, MAIL_SKIP_SUFFIXES, MAIL_SKIP_WORD, MAIN_LIST_COVERAGE, MARK_HEAD, MARK_TAIL,
   MED_SELECT, NL, NOC_JOIN_SLASH, NOC_LEN, NOC_MINOR_LEN, NOC_NONE, NOC_RE, NOC_SEARCH_MIN, NOC_SUBMAJOR_LEN,
   NORM_DASH, NORM_DASH_RE, NORM_WS_RE, NO_LIST_PROVINCES, OCC_TITLE_NONE, OPEN_COND, ORDER_DATE_TAIL,
-  ORDER_DEFAULT_COL, ORDER_FRESH, ORIGIN_TITLE_HEAD, PARAM_NONE, PCT, PG_CODE_NONE, PG_UNDEFINED_COLUMN,
+  ORDER_DEFAULT_COL, ORDER_FRESH, ORIGIN_TITLE_HEAD, PARAM_NONE, PCT, PCT_SCALE, PG_CODE_NONE, PG_UNDEFINED_COLUMN,
   PG_UNDEFINED_TABLE, PHONE_RE, PII_MASK, PREV_LINE_NONE, PROGRAM_PNP, PROOF_TTL_MS, PROV_CODE, PROV_CODE_NONE,
-  PROV_MAX_WORDS, PROV_PREFIX_TRIM_RE, PRO_SORTS, Q_MAX_TERMS, Q_SHORT_LEN, REDIRECT_FOLLOW, REQ_STREAM_L10N, RK,
+  PROV_MAX_WORDS, PROV_MIN_WORDS, PROV_PREFIX_TRIM_RE, PRO_SORTS, PTS, Q_MAX_TERMS, Q_SHORT_LEN, REDIRECT_FOLLOW,
+  REQ_STREAM_L10N, RK,
   RULE, SCORE_HIGH, SCORE_MID, SEARCH_COLS, SEEKER_ACTION_RE, SEEKER_JOBID_RE, SEP_KEY, SORT_COLUMNS, SORT_MATCH_KEY,
   SORT_NONE, SPACE, SPACES_RE, SQL_SEG_NONE, SRC_DASH, SRC_JOB_BANK, STAMP_NONE, STREAM_L10N, STREAM_NOTE_NONE,
-  STRIP_REPL, T45_COND_PROVS, T45_NL, TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE, TITLE_NONE, TITLE_RE,
+  STRIP_REPL, T45_COND_PROVS, T45_NL, TEER_GENERAL_MAX, TEER_LOW_MIN, TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE,
+  TITLE_NONE, TITLE_RE,
   TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_TTL_MS, TOP_NOCS_WITH_MED, TYPE_INELIGIBLE,
-  UNCAT, VD, W
+  UNCAT, VD, W, WAGE_NEAR_PCT_MIN
 } from './constants'
 import { JD_FORMAT_PROMPT_HEAD, REASON_EN, STATUS_EN } from './prompts'
 import { CACHE } from './variables'
@@ -275,13 +278,13 @@ function lmiaRule(input: RuleIn): RuleScoreOut {
   }
   if (skilled == null) {
     return {
-      score: 5,
+      score: PTS.lmiaHas,
       reasons: [{ rule: RULE.lmia, verdict: VD.pass, key: RK.lmiaHas, params: { n: job.lmiaPositions, q: job.lmiaLastQuarter }, source: LMIA_SOURCE }],
     }
   }
   if (skilled > 0) {
     return {
-      score: 5,
+      score: PTS.lmiaSkilled,
       reasons: [{ rule: RULE.lmia, verdict: VD.pass, key: RK.lmiaSkilled, params: { n: skilled, total: job.lmiaPositions, q: job.lmiaLastQuarter }, source: LMIA_SOURCE }],
     }
   }
@@ -302,14 +305,14 @@ function wageRule(input: RuleIn): RuleScoreOut {
   if (job.salaryAnnual == null || job.wageMedAnnual == null || job.wageMedAnnual === 0) {
     return { score: 0, reasons: [{ rule: RULE.wage, verdict: VD.na, key: RK.wageNa, params: {}, source: null }] }
   }
-  const pct = Math.round((job.salaryAnnual / job.wageMedAnnual - 1) * 100)
+  const pct = Math.round((job.salaryAnnual / job.wageMedAnnual - 1) * PCT_SCALE)
   if (pct >= 0) {
-    return { score: 5, reasons: [{ rule: RULE.wage, verdict: VD.pass, key: RK.wageAbove, params: { pct: pct }, source: null }] }
+    return { score: PTS.wageAbove, reasons: [{ rule: RULE.wage, verdict: VD.pass, key: RK.wageAbove, params: { pct: pct }, source: null }] }
   }
-  if (pct >= -20) {
+  if (pct >= WAGE_NEAR_PCT_MIN) {
     return { score: 0, reasons: [{ rule: RULE.wage, verdict: VD.warn, key: RK.wageNear, params: { pct: -pct }, source: null }] }
   }
-  return { score: -5, reasons: [{ rule: RULE.wage, verdict: VD.warn, key: RK.wageBelow, params: { pct: -pct }, source: null }] }
+  return { score: PTS.wageBelow, reasons: [{ rule: RULE.wage, verdict: VD.warn, key: RK.wageBelow, params: { pct: -pct }, source: null }] }
 }
 
 /**
@@ -323,13 +326,13 @@ function teerRule(input: RuleIn): RuleScoreOut {
   if (job.teer == null) {
     return { score: 0, reasons: [] }
   }
-  if (job.teer <= 3) {
-    return { score: 10, reasons: [{ rule: RULE.teer, verdict: VD.pass, key: RK.teerOk, params: { teer: job.teer }, source: null }] }
+  if (job.teer <= TEER_GENERAL_MAX) {
+    return { score: PTS.teerOk, reasons: [{ rule: RULE.teer, verdict: VD.pass, key: RK.teerOk, params: { teer: job.teer }, source: null }] }
   }
   if (job.pnpStream !== '') {
-    return { score: 10, reasons: [{ rule: RULE.teer, verdict: VD.pass, key: RK.teerChannel, params: { teer: job.teer, stream: job.pnpStream }, source: null }] }
+    return { score: PTS.teerChannel, reasons: [{ rule: RULE.teer, verdict: VD.pass, key: RK.teerChannel, params: { teer: job.teer, stream: job.pnpStream }, source: null }] }
   }
-  return { score: -15, reasons: [{ rule: RULE.teer, verdict: VD.fail, key: RK.teerLow, params: { teer: job.teer }, source: null }] }
+  return { score: PTS.teerLow, reasons: [{ rule: RULE.teer, verdict: VD.fail, key: RK.teerLow, params: { teer: job.teer }, source: null }] }
 }
 
 /**
@@ -363,22 +366,23 @@ function eeRule(input: RuleIn): RuleScoreOut {
     return { score: 0, reasons: [{ rule: RULE.ee, verdict: VD.na, key: RK.eeNoDraw, params: { cat: job.eeCategory }, source: null }] }
   }
   const src = { label: row.label, url: row.url, fetched: row.fetched }
+  const drawDay = ymd(row.drawDate)
   if (p.crs == null) {
     return {
       score: 0,
-      reasons: [{ rule: RULE.ee, verdict: VD.warn, key: RK.eeNoCrs, params: { cat: row.label, draw: row.drawCrs, date: row.drawDate.slice(0, 10) }, source: src }],
+      reasons: [{ rule: RULE.ee, verdict: VD.warn, key: RK.eeNoCrs, params: { cat: row.label, draw: row.drawCrs, date: drawDay }, source: src }],
     }
   }
   const diff = p.crs - row.drawCrs
   if (diff >= 0) {
     return {
-      score: 20,
-      reasons: [{ rule: RULE.ee, verdict: VD.pass, key: RK.eeAbove, params: { cat: row.label, crs: p.crs, draw: row.drawCrs, date: row.drawDate.slice(0, 10), diff: diff }, source: src }],
+      score: PTS.eeAbove,
+      reasons: [{ rule: RULE.ee, verdict: VD.pass, key: RK.eeAbove, params: { cat: row.label, crs: p.crs, draw: row.drawCrs, date: drawDay, diff: diff }, source: src }],
     }
   }
   return {
     score: 0,
-    reasons: [{ rule: RULE.ee, verdict: VD.warn, key: RK.eeBelow, params: { cat: row.label, crs: p.crs, draw: row.drawCrs, date: row.drawDate.slice(0, 10), gap: -diff }, source: src }],
+    reasons: [{ rule: RULE.ee, verdict: VD.warn, key: RK.eeBelow, params: { cat: row.label, crs: p.crs, draw: row.drawCrs, date: drawDay, gap: -diff }, source: src }],
   }
 }
 
@@ -420,25 +424,25 @@ function provRule(input: RuleIn): RuleScoreOut {
     }
   }
   if (named != null) {
-    score += 30
+    score += PTS.provNamed
     reasons.push({
       rule: RULE.prov, verdict: VD.pass, key: RK.provNamed, params: { prov: prov, label: named.label, noc: job.noc },
       source: { label: named.label, url: named.url, fetched: named.fetched },
     })
   } else if (excluded != null) {
-    score -= 20
+    score += PTS.provExcluded
     reasons.push({
       rule: RULE.prov, verdict: VD.fail, key: RK.provExcluded, params: { prov: prov, label: excluded.label, noc: job.noc },
       source: { label: excluded.label, url: excluded.url, fetched: excluded.fetched },
     })
   } else if (provListCoverage({ prov: prov, dims: input.dims }) === COV.uncovered) {
     if (job.pnpEligible) {
-      score += 15
+      score += PTS.provUncovered
     }
     reasons.push({ rule: RULE.prov, verdict: VD.na, key: RK.provUncovered, params: { prov: prov }, source: null })
   } else if (job.pnpEligible) {
-    score += 15
-    const t45 = job.teer != null && job.teer >= 4
+    score += PTS.provEligible
+    const t45 = job.teer != null && job.teer >= TEER_LOW_MIN
     let key: string = RK.provGeneric
     if (t45) {
       if (prov === T45_NL) {
@@ -451,7 +455,7 @@ function provRule(input: RuleIn): RuleScoreOut {
     }
     reasons.push({ rule: RULE.prov, verdict: VD.pass, key: key, params: { prov: prov }, source: null })
   } else {
-    score -= 10
+    score += PTS.provNone
     reasons.push({ rule: RULE.prov, verdict: VD.fail, key: RK.provNone, params: { prov: prov }, source: null })
   }
   return { score: score, reasons: reasons }
@@ -513,7 +517,7 @@ function nocRule(input: RuleIn): NocRuleOut {
     return { score: 0, reasons: [{ rule: RULE.noc, verdict: VD.na, key: RK.nocNoProfile, params: {}, source: null }], nocMiss: false }
   }
   if (p.nocCodes.includes(job.noc)) {
-    return { score: 40, reasons: [{ rule: RULE.noc, verdict: VD.pass, key: RK.nocExact, params: { noc: job.noc }, source: null }], nocMiss: false }
+    return { score: PTS.nocExact, reasons: [{ rule: RULE.noc, verdict: VD.pass, key: RK.nocExact, params: { noc: job.noc }, source: null }], nocMiss: false }
   }
   let minor = NOC_NONE
   let submajor = NOC_NONE
@@ -526,10 +530,10 @@ function nocRule(input: RuleIn): NocRuleOut {
     }
   }
   if (minor !== '') {
-    return { score: 30, reasons: [{ rule: RULE.noc, verdict: VD.pass, key: RK.nocMinor, params: { noc: job.noc, yours: minor }, source: null }], nocMiss: false }
+    return { score: PTS.nocMinor, reasons: [{ rule: RULE.noc, verdict: VD.pass, key: RK.nocMinor, params: { noc: job.noc, yours: minor }, source: null }], nocMiss: false }
   }
   if (submajor !== '') {
-    return { score: 20, reasons: [{ rule: RULE.noc, verdict: VD.pass, key: RK.nocSubmajor, params: { noc: job.noc, yours: submajor }, source: null }], nocMiss: false }
+    return { score: PTS.nocSubmajor, reasons: [{ rule: RULE.noc, verdict: VD.pass, key: RK.nocSubmajor, params: { noc: job.noc, yours: submajor }, source: null }], nocMiss: false }
   }
   return {
     score: 0, nocMiss: true,
@@ -624,7 +628,7 @@ export function splitQ(q: string): StrList {
   let i = 0
   while (i < raw.length) {
     let take = 1
-    for (let n = Math.min(PROV_MAX_WORDS, raw.length - i); n >= 2; n--) {
+    for (let n = Math.min(PROV_MAX_WORDS, raw.length - i); n >= PROV_MIN_WORDS; n--) {
       if (provCodeOfLower(raw.slice(i, i + n).join(SPACE).toLowerCase()) !== '') {
         take = n
         break
@@ -1055,8 +1059,9 @@ function rowMatchLevel(input: RowMatchIn): MaybeLevel {
 export async function loadJobsPage(input: JobsPageIn): JobsPageOut {
   const w = buildJobsWhere({ filters: await resolveQCompanyIds({ db: input.db, filters: input.filters }), startIndex: 1 })
   const order = orderByClause({ sort: input.sort, pro: input.pro })
-  const limPh = DOLLAR + String(w.params.length + 1)
-  const offPh = DOLLAR + String(w.params.length + 2)
+  const limIdx = w.params.length + 1
+  const limPh = DOLLAR + String(limIdx)
+  const offPh = DOLLAR + String(limIdx + 1)
   const now = Date.now()
   const cntKey = w.sql + CNT_SEP + JSON.stringify(w.params)
   const hot = CACHE.counts.get(cntKey)
@@ -1484,7 +1489,7 @@ async function fetchCompanyWhere(input: CompanyWhereIn): CompanyOut {
     industry: strCell(c.industry), sectors: strCell(c.sectors), aliasZh: strCell(c.alias_zh), aliasKo: strCell(c.alias_ko),
     wikiUrl: strCell(c.wiki_url), sponsorGrade: numCell(c.sponsor_grade),
     scoreDetail: scoreDetail, aiBrief: strCell(c.ai_brief), aiWebsite: strCell(c.ai_website),
-    aiSources: sources, aiFetched: iso(strCell(c.ai_fetched)).slice(0, 10),
+    aiSources: sources, aiFetched: ymd(iso(strCell(c.ai_fetched))),
     description: strCell(c.description), address: strCell(c.address), province: strCell(c.region),
     lmiaPositions: numCell(c.lmia_positions), lmiaLmias: numCell(c.lmia_lmias),
     lmiaLastQuarter: strCell(c.lmia_last_quarter),
@@ -1582,7 +1587,7 @@ export async function loadSimilarEmployers(input: SimilarIn): SimilarOut {
  * @returns 命中行与被跳过的筛选键。
  */
 export async function loadAlertHits(input: AlertHitsIn): AlertHitsOut {
-  const w = buildJobsWhere({ filters: await resolveQCompanyIds({ db: input.db, filters: input.filters }), startIndex: 2 })
+  const w = buildJobsWhere({ filters: await resolveQCompanyIds({ db: input.db, filters: input.filters }), startIndex: ALERT_WHERE_START })
   const params: WhereParam[] = [input.since]
   for (const p of w.params) {
     params.push(p)
@@ -2004,7 +2009,7 @@ function trimHeadJunk(lines: StrList): StrList {
   for (const l of lines.slice(bound)) {
     out.push(l)
   }
-  if (out.length * 2 < lines.length) {
+  if (out.length * JD_HEAD_SHRINK_MAX < lines.length) {
     return lines
   }
   return out

@@ -32,10 +32,12 @@ import {
   EV_PAGEHIDE, EV_VISIBILITY, EXP, FACTS_CACHE_MAX, FIELD_SPECS, FRENCH_V2_MAP, F_AGE_BAND, F_CANADA_EDU_BAND,
   F_CLB_BAND, F_CRS_BAND, F_EDU_BAND, F_EDU_PROV, F_EDU_YEARS_BAND, F_EXP_BAND, F_FIELD_MATCH_BAND, F_FRENCH_BAND,
   F_GOAL_BAND, F_OFFER_BAND, F_PERMIT_BAND, F_PGWP_BAND, F_PROV_BAND, F_RES_PROV, F_STATUS, F_STUDY_LEVEL_BAND,
-  F_STUDY_MONTHS_BAND, F_TOTAL_EXP_BAND, GOAL_PR, GOAL_WORK, IN_CANADA, JSON_MIME, LI_RE,
-  LI_SET_OFF, LI_SET_ON, META_KEY, METHOD_PUT, NCLC, OLD_PR, OLD_QUIZ, PERMIT, PGWP, PREV_JSON_NONE, PROVS,
-  PROV_BC, PROV_ON, SCORE_ANSWERS_KEY, SCORE_EMPTY, STAGE_BASIC, STATE_HIDDEN, STATUS_NONE, STATUS_OVERSEAS,
-  STATUS_UNSURE, STR_NONE, STUDY_LEVEL, STUDY_MONTHS, TIER_FREE,
+  F_STUDY_MONTHS_BAND, F_TOTAL_EXP_BAND, GOAL_PR, GOAL_PR_BAND, GOAL_WORK, GOAL_WORK_BAND, IN_CANADA, JSON_MIME,
+  LI_RE, LI_SET_OFF, LI_SET_ON, META_KEY, METHOD_PUT, NCLC, NCLC_MIN, OLD_PR, OLD_QUIZ, PERMIT, PGWP,
+  PREV_JSON_NONE, PROVS, PROV_BAND_ANY, PROV_BAND_BC, PROV_BAND_NONE, PROV_BAND_ON, PROV_BC, PROV_ON,
+  PUSH_RETRY_MAX, RETRY_BASE_MS, RETRY_FACTOR,
+  SCORE_ANSWERS_KEY, SCORE_EMPTY, STAGE_BASIC, STATE_HIDDEN, STATUS_NONE, STATUS_OVERSEAS,
+  STATUS_UNSURE, STR_NONE, STUDY_LEVEL, STUDY_MONTHS, SYNC_DEBOUNCE_MS, TIER_FREE,
   TOTAL_EXP, TOTAL_V2_MAP, TTL, UNSURE_BAND, URL_ANSWERS
 } from './constants'
 import { CACHE } from './variables'
@@ -45,7 +47,7 @@ import type {
   NameFilter, ProvList, PulledOut, PushedOut, RawAnswersSource, RawCell, RawDoc, RawField, RawScoreSource, RawText,
   SaveAnswersIn, SaveAnswersOut, ScoreAnswers, Stage, StoreFn, Tier, TopCachedIn, TopOut, TopRows, UnflagFn
 } from './types'
-import { HDR_CONTENT_TYPE } from '../http'
+import { HDR_CONTENT_TYPE, UNAUTHORIZED } from '../http'
 
 /**
  * 丢掉手上这份运行态。**换账号必须调** —— 内存是模块级的,不清就会把上一个人的答案
@@ -284,7 +286,7 @@ function touched(): void {
   if (CACHE.syncTimer != null) {
     clearTimeout(CACHE.syncTimer)
   }
-  CACHE.syncTimer = setTimeout(firePush, 800)
+  CACHE.syncTimer = setTimeout(firePush, SYNC_DEBOUNCE_MS)
 }
 
 /**
@@ -365,7 +367,7 @@ async function pushToServer(): PushedOut {
       method: METHOD_PUT, credentials: CRED_INCLUDE, headers: { [HDR_CONTENT_TYPE]: JSON_MIME },
       body: payload(),
     })
-    if (r.status === 401) {
+    if (r.status === UNAUTHORIZED) {
       CACHE.loggedIn = false
       setLoginTrace(false)
       CACHE.dirty = false
@@ -420,10 +422,10 @@ function setLoginTrace(on: boolean): void {
  * @returns 无。
  */
 function scheduleRetry(): void {
-  if (CACHE.retryN >= 3 || CACHE.retryTimer != null) {
+  if (CACHE.retryN >= PUSH_RETRY_MAX || CACHE.retryTimer != null) {
     return
   }
-  const wait = 2000 * 3 ** CACHE.retryN
+  const wait = RETRY_BASE_MS * RETRY_FACTOR ** CACHE.retryN
   CACHE.retryN += 1
   CACHE.retryTimer = setTimeout(fireRetry, wait)
 }
@@ -458,7 +460,7 @@ export async function pullAndMerge(afterLogin: boolean = false): PulledOut {
   }
   try {
     const r = await fetch(URL_ANSWERS, { credentials: CRED_INCLUDE })
-    if (r.status === 401) {
+    if (r.status === UNAUTHORIZED) {
       CACHE.loggedIn = false
       setLoginTrace(false)
       return false
@@ -910,10 +912,10 @@ function provAnswer(v: BandValue): EngineValue {
  */
 function goalAnswer(v: BandValue): EngineValue {
   const b = band(v)
-  if (b === 1) {
+  if (b === GOAL_PR_BAND) {
     return GOAL_PR
   }
-  if (b === 2) {
+  if (b === GOAL_WORK_BAND) {
     return GOAL_WORK
   }
   return undefined
@@ -1017,7 +1019,7 @@ function frenchAnswer(v: BandValue): EngineValue {
   }
   const nclc = NCLC[b]
   if (b >= 1 && nclc != null) {
-    return nclc >= 5
+    return nclc >= NCLC_MIN
   }
   return undefined
 }
@@ -1157,15 +1159,15 @@ export function provsFromBand(b: number): ProvList {
  */
 export function bandFromProvs(provs: MaybeProvList): number {
   if (provs == null || provs.length === 0) {
-    return 0
+    return PROV_BAND_NONE
   }
   if (provs.length === 1 && provs[0] === PROV_BC) {
-    return 1
+    return PROV_BAND_BC
   }
   if (provs.length === 1 && provs[0] === PROV_ON) {
-    return 2
+    return PROV_BAND_ON
   }
-  return 4
+  return PROV_BAND_ANY
 }
 
 /**
@@ -1234,8 +1236,8 @@ export function normalize(cur: RawAnswersSource): Answers {
  * @returns 新档。
  */
 export function totalV2(b: number): number {
-  if (b === 9) {
-    return 9
+  if (b === UNSURE_BAND) {
+    return UNSURE_BAND
   }
   const hit = TOTAL_V2_MAP[b]
   if (hit != null) {

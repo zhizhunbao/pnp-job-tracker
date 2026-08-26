@@ -33,6 +33,13 @@ export const HMAC_ALGO = 'sha256'
 export const HEX_ENC = 'hex'
 
 /**
+ * 退订 token 截多少位 hex(sha256 出 64 位,只取前 16 位进链接):
+ * 够长到猜不着,又短到能塞进一行退订 URL。改这个数会让**已发出去的**退订链接全部失效,
+ * 改前先想清楚存量邮件。
+ */
+export const UNSUB_TOKEN_LEN = 16
+
+/**
  * Resend 发信端点。
  */
 export const RESEND_URL = 'https://api.resend.com/emails'
@@ -51,6 +58,12 @@ export const BEARER_PREFIX = 'Bearer '
  * 发信请求的内容类型。
  */
 export const JSON_MIME = 'application/json'
+
+/**
+ * 发信失败时,Resend 回的报文进日志截多少字:留痕要够看清是哪种拒绝(域名没验、
+ * 收件人被拒、限流),又不能把整段 HTML 错误页灌进日志。
+ */
+export const ERR_BODY_LEN = 200
 
 /**
  * 签名密钥没配时的空密钥:`PAYLOAD_SECRET` 缺席时 HMAC 用空串当 key。

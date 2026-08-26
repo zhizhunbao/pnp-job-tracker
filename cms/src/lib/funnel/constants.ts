@@ -98,6 +98,18 @@ export const CHAT_STEPS = FUNNEL_STEPS.slice(5, 8)
 export const DECISION_STEPS = FUNNEL_STEPS.slice(11, 15)
 
 /**
+ * 转化率取整前的放大倍数:比值 ×1000。100 是「折成百分数」,再 ×10 是给小数点后留一位 ——
+ * 两件事乘在一起才是这一格。与 RATE_ROUND_DIV 成对,改一个另一个必须跟着改。
+ */
+export const RATE_ROUND_SCALE = 1000
+
+/**
+ * 取整之后除回去的那一格:÷10,把 RATE_ROUND_SCALE 多乘的一位小数还原成百分数
+ * (例:0.4237 → 423.7 → 424 → 42.4)。
+ */
+export const RATE_ROUND_DIV = 10
+
+/**
  * 本机来源判定(host 白名单)。
  */
 export const LOCAL_HOST_RE = /^(localhost|127\.0\.0\.1|\[::1\]|0\.0\.0\.0)(:\d+)?$/

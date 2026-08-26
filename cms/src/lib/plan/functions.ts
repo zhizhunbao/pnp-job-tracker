@@ -22,9 +22,10 @@ import { queryRows, SQL, numOrNull, text } from '../db'
 import { DAY_MS } from '@/lib/time'
 import type { Db } from '../db'
 import {
-  AV, BAND_A, BAND_NONE, BAND_Y, BAND_Z, BASIS_NONE, CADENCE_FACTOR, CERT, CMP, DATE_NONE, DAYS_PER_MONTH, GROUP_SEP,
-  KIND_NOTICE, NA_TEXT, NOT_TIME_CONVERTIBLE, PLAN_NOTES, PLAN_TEXT, PROCESSING_KEY, PROV_FED, PROV_RE, SLOT_NONE,
-  SPACE, STEP, SUBJECT_EMPLOYER, TEXT_NONE, THIN_MIN, TV, UNIT_HEADS, WHY_NONE,
+  AV, BAND_A, BAND_NONE, BAND_Y, BAND_Z, BASIS_NONE, CADENCE_FACTOR, CERT, CMP, DATE10_LEN, DATE_NONE, DAYS_PER_MONTH,
+  DAYS_PER_WEEK, DRAW_ROWS_MIN, GROUP_SEP, KIND_NOTICE, MONTHS_PER_YEAR, NA_TEXT, NOT_TIME_CONVERTIBLE, PLAN_NOTES,
+  PLAN_TEXT, PROCESSING_KEY, PROV_FED, PROV_RE, ROUND_TENTHS_SCALE, SLOT_NONE, SPACE, STEP, SUBJECT_EMPLOYER,
+  TEXT_NONE, THIN_MIN, TV, UNIT_HEADS, WHY_NONE,
 } from './constants'
 import { fill } from '../template'
 import type {
@@ -270,7 +271,7 @@ function blockersOf(rows: ThresholdRows): PlanBlockers {
  * @returns 一位小数。
  */
 function round1(n: number): number {
-  return Math.round(n * 10) / 10
+  return Math.round(n * ROUND_TENTHS_SCALE) / ROUND_TENTHS_SCALE
 }
 
 /**
@@ -385,10 +386,10 @@ function monthsFromUnit(input: MonthsIn): MaybeNum {
     return round1(input.value)
   }
   if (u.startsWith(UNIT_HEADS.year)) {
-    return round1(input.value * 12)
+    return round1(input.value * MONTHS_PER_YEAR)
   }
   if (u.startsWith(UNIT_HEADS.week)) {
-    return round1((input.value * 7) / DAYS_PER_MONTH)
+    return round1((input.value * DAYS_PER_WEEK) / DAYS_PER_MONTH)
   }
   if (u.startsWith(UNIT_HEADS.day)) {
     return round1(input.value / DAYS_PER_MONTH)
@@ -415,7 +416,7 @@ function drawStep(p: PlanPathInput): PlanStep {
   if (d != null) {
     rows = d.rows
   }
-  if (d == null || d.availability !== AV.ok || rows.length < 2) {
+  if (d == null || d.availability !== AV.ok || rows.length < DRAW_ROWS_MIN) {
     let availability: Availability = AV.notCollected
     if (d != null) {
       availability = d.availability
@@ -571,7 +572,7 @@ export async function fetchTimeline(db: Db): TimelineOut {
     queryRows({ db: db, sql: SQL.EE_CATEGORIES_LATEST, params: [], map: passRow }),
     queryRows({ db: db, sql: SQL.NEWS_RECENT, params: [], map: passRow }),
   ])
-  const today = new Date().toISOString().slice(0, 10)
+  const today = new Date().toISOString().slice(0, DATE10_LEN)
 
   const events: TlEvent[] = []
   for (const r of draws) {
@@ -685,12 +686,12 @@ function daysBetween(input: DaysIn): number {
 // eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:行索引缺席就是 undefined,照实收(开灯批)
 export function day(v: TimeLike | undefined): string {
   if (v instanceof Date) {
-    return v.toISOString().slice(0, 10)
+    return v.toISOString().slice(0, DATE10_LEN)
   }
   if (v == null) {
     return DATE_NONE
   }
-  return String(v).slice(0, 10)
+  return String(v).slice(0, DATE10_LEN)
 }
 
 /**

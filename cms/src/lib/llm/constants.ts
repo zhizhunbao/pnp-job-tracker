@@ -254,6 +254,19 @@ export const FNV_SEED_B = 0x9e3779b9
 export const FNV_PRIME = 0x01000193
 
 /**
+ * 低字节掩码 0xff:fnv1a 是**逐字节**吃输入的,而 JS 的 `charCodeAt` 回的是 16 位码元,
+ * 所以本域把一个码元拆成低、高两个字节各拌一轮 —— 这个数取低八位。
+ * 🔴 算法结构常数,不是可调参数:指纹进的是翻译缓存键,改一个比特全站缓存当场失效。
+ */
+export const BYTE_MASK = 0xff
+
+/**
+ * 取高字节的右移位数(一个字节 8 位),与 `BYTE_MASK` 是同一件事的另一半。
+ * 🔴 同上,动不得。
+ */
+export const BYTE_SHIFT = 8
+
+/**
  * 一个种子摊成几个字母。
  */
 export const ALPHA_LEN = 7
@@ -306,6 +319,13 @@ export const TRANSLATE_SOURCE = 'en'
  * 按编号切:`[1] …` —— 指纹那行纯字母匹配不到它,天然落在 parts[0] 被丢弃。
  */
 export const NUMBERED_SPLIT = /\n?\[(\d+)\]\s*/
+
+/**
+ * 走 `NUMBERED_SPLIT` 切完的数组步长:带捕获组的 `split` 会把编号也留在结果里,
+ * 于是从下标 1 起是「编号、正文、编号、正文…」两格一对,遍历要两格两格地跨。
+ * 值绑死在上面那条正则的**捕获组个数**上(一个组 = 一格编号),两处要一起改。
+ */
+export const NUMBERED_PAIR_STEP = 2
 
 /**
  * 编号行的形状。

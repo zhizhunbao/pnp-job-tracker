@@ -117,10 +117,10 @@ export async function advisorRoute(req: Request): Promise<Response> {
       job = makeLocJob({ province: code, facts })
     }
   } else if (field === F_CITY_READ) {
-    const parts = bodyId.split(ID_SEP)
-    const city = blankOf(parts[0])
-    const prov = blankOf(parts[1]).toUpperCase()
-    const district = blankOf(parts[2])
+    const [cityPart, provPart, districtPart] = bodyId.split(ID_SEP)
+    const city = blankOf(cityPart)
+    const prov = blankOf(provPart).toUpperCase()
+    const district = blankOf(districtPart)
     if (city !== '' && PROV_CODE_RE.test(prov)) {
       const card = await loadCityCard({ db, city, prov, district })
       job = makeLocJob({ province: prov, facts: cityFactsOf({ city, prov, district, card }) })

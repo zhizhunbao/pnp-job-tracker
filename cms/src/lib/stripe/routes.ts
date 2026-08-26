@@ -17,7 +17,7 @@ import { log, STRIPE_LOG } from '../log'
 import { getUser } from '../quota/server'
 import {
   CANCEL_PATH, COLLECTION_USERS, E_BAD_SIG, E_INTERNAL, E_LOGIN, E_NOT_CONFIGURED, E_PRICE,
-  E_UNKNOWN_PLAN, HANDLED_EVENTS, MODE_PAYMENT, PAID, PLANS, PM_ALIPAY, PM_CARD, PM_WECHAT, SIG_HEADER,
+  E_UNKNOWN_PLAN, HANDLED_EVENTS, MODE_PAYMENT, PAID, PLANS, PM_ALIPAY, PM_CARD, PM_WECHAT, RADIX_DEC, SIG_HEADER,
   ENV_ON, LOG_MSG_NONE, REQ_FIELD_NONE, SUCCESS_PATH, WECHAT_CLIENT_WEB,
 } from './constants'
 import { getStripe } from './functions'
@@ -124,7 +124,7 @@ export async function stripeWebhookRoute(req: Request): Promise<Response> {
   if (session.metadata != null && session.metadata.days != null) {
     daysRaw = session.metadata.days
   }
-  const days = parseInt(daysRaw, 10)
+  const days = parseInt(daysRaw, RADIX_DEC)
   const userId = session.client_reference_id
   if (Number.isFinite(days) === false || days <= 0 || userId == null || userId === '') {
     return Response.json({ received: true })

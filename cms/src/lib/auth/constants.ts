@@ -188,9 +188,48 @@ export const USERS = 'users'
 export const COOKIE_PREFIX_DEFAULT = 'payload'
 
 /**
+ * 会话 token 的兜底有效期(秒)。collection 的 auth.tokenExpiration 没配时用它 ——
+ * 7200 秒(2 小时)与 Payload 自己的默认同值(payload/dist/collections/config/defaults),
+ * 对齐是故意的:签 token 与写 sessions.expiresAt 都读这一格,和框架错开就会签出
+ * 一个「jwt 还没过期、会话条目已经过期」的票据,jwt 策略当场拒收。
+ */
+export const TOKEN_EXPIRATION_DEFAULT_S = 7200
+
+/**
+ * 一秒的毫秒数。tokenExpiration 的单位是秒,而 Date 算的是毫秒 ——
+ * 会话条目的 expiresAt 要用它把秒换成毫秒再加到当下时刻上。
+ */
+export const SECOND_MS = 1000
+
+/**
+ * Google 昵称入库的长度上限(字符数)。userinfo 的 name 是外部数据,长度不由我们说了算,
+ * 超出的截掉:昵称只用来显示,而 displayName 那一列不该被一串超长文本占着。
+ */
+export const NAME_LEN_MAX = 40
+
+/**
  * hex 补位字符(随机密码字节转两位 hex)。
  */
 export const HEX_PAD = '0'
+
+/**
+ * 十六进制的基数(`Number.toString` 的进制参数)——「转成 hex」这件事的另一半,
+ * 与 HEX_PAD / HEX_BYTE_LEN 同组:改进制这三格要一起改。
+ */
+export const HEX_RADIX = 16
+
+/**
+ * 一个字节写成 hex 的宽度:两位。字节值小于 16 时 `toString(16)` 只给一位,
+ * 不补到两位,拼出来的整串长度就对不上、也不再是逐字节可切的(见 HEX_SEP)。
+ */
+export const HEX_BYTE_LEN = 2
+
+/**
+ * 新用户随机密码的字节数。24 字节 → 48 位 hex(见 HEX_SEP 的注释)。
+ * 这串密码用户并不持有(走 Google 或忘记密码自设),它唯一的作用是别让账号留着空密码 ——
+ * 长度往下调等于降低这道兜底的强度。
+ */
+export const PASSWORD_BYTE_LEN = 24
 
 /**
  * OAuth 参数名:code(回调收授权码)。

@@ -5,7 +5,10 @@
  * @time 2026-08-22 23:00:00
  */
 
-import { AGRI_P2, EXEMPT_CAREGIVER, NOC_HEALTH_P1, PROV_MEDIAN_HOURLY, PROV_NONE, TRADES_P2, WAGE_HIGH, WAGE_LOW } from './constants'
+import {
+  AGRI_P2, EXEMPT_CAREGIVER, FULL_YEAR_HOURS, NOC_GROUP_LEN, NOC_HEALTH_P1, PROV_MEDIAN_HOURLY, PROV_NONE,
+  TRADES_P2, WAGE_HIGH, WAGE_LOW,
+} from './constants'
 import type { LmiaWageClass, LmiaWageClassIn } from './types'
 
 /**
@@ -23,7 +26,7 @@ export function isExemptSector(noc: string): boolean {
     return true
   }
   const p1 = noc[0]
-  const p2 = noc.slice(0, 2)
+  const p2 = noc.slice(0, NOC_GROUP_LEN)
   if (p1 === NOC_HEALTH_P1) {
     return true
   }
@@ -47,7 +50,7 @@ export function lmiaWageClass(input: LmiaWageClassIn): LmiaWageClass {
   if (thr == null || input.salaryAnnual == null) {
     return null
   }
-  if (input.salaryAnnual / 2080 >= thr) {
+  if (input.salaryAnnual / FULL_YEAR_HOURS >= thr) {
     return WAGE_HIGH
   }
   return WAGE_LOW

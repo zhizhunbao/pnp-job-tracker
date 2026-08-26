@@ -22,7 +22,7 @@ import {
 } from '../llm'
 import { denyBodyOf, checkLimit, freeGate, getUser, ipOf, isPro } from '../quota/server'
 import {
-  AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, CITY_PARAM_LEN_MAX, DIMS_CACHE_CONTROL, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT, JD_LIMIT_PREFIX, JD_TRANS_MARKS_RE, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, MAIL_NONE, NOC5_RE, PAGE_N_MAX, PARAM_NONE, PROV2_RE, P_CITY, P_CODE, P_DIR, P_DIRECT, P_DISTRICT, P_NOC, P_PAGE, P_PROV, P_SORT, P_URL, P_VIEW, SORT_NONE, STAMP_NONE, TRUE_ONE, TRUE_WORD, URL_CUT_RE, VIEW_MATCH,
+  AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, CITY_PARAM_LEN_MAX, DIMS_CACHE_CONTROL, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT, JD_LIMIT_PREFIX, JD_TRANS_MARKS_RE, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, MAIL_NONE, NOC5_RE, PAGE_N_MAX, PARAM_NONE, PROV2_RE, P_CITY, P_CODE, P_DIR, P_DIRECT, P_DISTRICT, P_NOC, P_PAGE, P_PROV, P_SORT, P_URL, P_VIEW, RADIX_DEC, SORT_NONE, STAMP_NONE, TRUE_ONE, TRUE_WORD, URL_CUT_RE, VIEW_MATCH,
 } from './constants'
 import {
   emptySimilar, loadApplyEmail, loadCompanyByJobId, loadJobsPage, loadMatchPage, loadOccCompetition, loadSimilarEmployers, generateJdFormatted, hasProfile, jobDescription, loadBigDims, loadCityCard, loadJdFormatted, loadJdState, loadMatchDims, loadProvinceCard, normalizeProfile,
@@ -54,7 +54,7 @@ export async function jobsRoute(req: Request): Promise<Response> {
   }
   const filters = draft as JobsFilters
   let page = 0
-  const pageRaw = parseInt(String(sp.get(P_PAGE)), 10)
+  const pageRaw = parseInt(String(sp.get(P_PAGE)), RADIX_DEC)
   if (Number.isFinite(pageRaw) && pageRaw > 0) {
     page = Math.min(PAGE_N_MAX, pageRaw)
   }

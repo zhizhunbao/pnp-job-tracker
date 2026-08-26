@@ -136,6 +136,14 @@ export const ENV_ON = '1'
 export const REQ_FIELD_NONE = ''
 
 /**
+ * 十进制基数:`parseInt(session.metadata.days, RADIX_DEC)` 的第二个参数。
+ * 🔴 不省、也不换成 `Number()` —— metadata 是 Stripe 那头带回来的**外部串**,不保证纯数字:
+ * 省掉基数会让 `'0x10'` 这种被当十六进制读成 16;换 `Number()` 则把带尾巴的
+ * `'30 days'` 从 30 变成 NaN。两样都改了语义,而这一格是往用户账上拨的**天数**。
+ */
+export const RADIX_DEC = 10
+
+/**
  * 捕到的东西不是 Error(没有 message 可读)时,留痕正文那一格。
  * 日志于是只剩前缀,至少还看得出是哪一步挂的;
  * 不为了凑一句话去 String(e) —— 那印出来的可能是「object Object」,比空还难查。

@@ -13,7 +13,7 @@ import { fill } from '../template'
 import { log, RESUME_LOG } from '../log'
 import {
   CLAMP, ERR_SLICE, ERR_UNSUPPORTED, EXT_DOCX, EXT_PDF, EXT_SEP, FREE_ROWS, IELTS_CLB, NOC_CAND_MAX, ROLE_SYSTEM,
-  ROLE_USER, BRACE_CLOSE, BRACE_OPEN, NOTE_MAX, REQ_MAX, ROWS_MAX, ROWS_MIN, ERR_NONE, REWRITE_NONE,
+  ROLE_USER, BRACE_CLOSE, BRACE_OPEN, NOTE_MAX, REQ_MAX, RGBA_BYTES, ROWS_MAX, ROWS_MIN, ERR_NONE, REWRITE_NONE,
   TITLE_PENDING,
 } from './constants'
 import { MATCH_REWRITE, MATCH_SYSTEM, MATCH_USER, OUT_LANG, OUT_LANG_DEFAULT } from './prompts'
@@ -120,7 +120,7 @@ function shimPdfGlobals(): void {
       constructor(w: number, h: number) {
         this.width = w
         this.height = h
-        this.data = new Uint8ClampedArray(w * h * 4)
+        this.data = new Uint8ClampedArray(w * h * RGBA_BYTES)
       }
     }
   }

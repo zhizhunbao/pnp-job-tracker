@@ -55,6 +55,13 @@ export const CLB = [0, 0, 4, 5, 6, 7, 8, 9, 10]
 export const NCLC = [0, 0, 4, 5, 6, 7, 8]
 
 /**
+ * 法语「够用」的界(frenchAnswer 把法语档折成布尔时以它为准:NCLC ≥5 为 true,
+ * 不会或只到 NCLC 4 为 false;「不清楚」不折,照旧不传)。引擎只收布尔 ——
+ * 界划在哪由这一格说了算,改它等于改所有法语判定的口径。
+ */
+export const NCLC_MIN = 5
+
+/**
  * 加拿大经验档 → 月数。a1「没有」= 0 个月,是答案不是缺答。
  */
 export const EXP = [0, 0, 6, 18, 30]
@@ -287,6 +294,29 @@ export const LI_SET_OFF = 'o2p_li=; path=/; max-age=0; samesite=lax'
 export const CRED_INCLUDE = 'include'
 
 /**
+ * 写档防抖窗口(毫秒)。连点选项时不至于每答一下发一次 PUT ——
+ * 窗口拉长省请求但丢答案的窗口跟着变大(离开页面那一刻靠 beacon 兜底,见 flushOnLeave),
+ * 800ms 是「答完一题会停顿」与「别让没推上去的改动挂太久」之间的取值。
+ */
+export const SYNC_DEBOUNCE_MS = 800
+
+/**
+ * 推档失败的重试次数上限。三次不成就等下次改动 ——
+ * 再拖下去多半是会话没了(401 那支已经单独处理),重试只是白发请求。
+ */
+export const PUSH_RETRY_MAX = 3
+
+/**
+ * 退避重试的第一等待(毫秒)。第 n 次重试等 RETRY_BASE_MS × RETRY_FACTOR^n:2s → 6s → 18s。
+ */
+export const RETRY_BASE_MS = 2000
+
+/**
+ * 退避倍数:每重试一次等待乘 3(见 RETRY_BASE_MS 的梯子)。
+ */
+export const RETRY_FACTOR = 3
+
+/**
  * 免费档的档名(batchLeadsFree 的判值)。
  */
 export const TIER_FREE = 'free'
@@ -439,6 +469,18 @@ export const GOAL_PR = 'pr'
 export const GOAL_WORK = 'work'
 
 /**
+ * 诉求题「容易拿身份」的档位(goalAnswer 按它折出 GOAL_PR)。
+ * 与 FIELD_SPECS.goalBand 的选项 value 同源,改要一起改。
+ */
+export const GOAL_PR_BAND = 1
+
+/**
+ * 诉求题「先找到工作」的档位(goalAnswer 按它折出 GOAL_WORK)。
+ * 与 FIELD_SPECS.goalBand 的选项 value 同源,改要一起改。
+ */
+export const GOAL_WORK_BAND = 2
+
+/**
  * 单选 BC 那一档的省码(bandFromProvs 的判值:省码组只装这一个省才折回档位 1,
  * 与 PROVS[1] 那格同源)。
  */
@@ -449,6 +491,28 @@ export const PROV_BC = 'BC'
  * 与 PROVS[2] 那格同源)。
  */
 export const PROV_ON = 'ON'
+
+/**
+ * 目标省档「还没答」那一格(bandFromProvs 收到空省码组时回它;PROVS[0] 是空数组)。
+ */
+export const PROV_BAND_NONE = 0
+
+/**
+ * 目标省档「只看 BC」(与 PROVS[1] 同源,见 PROV_BC)。
+ */
+export const PROV_BAND_BC = 1
+
+/**
+ * 目标省档「只看 ON」(与 PROVS[2] 同源,见 PROV_ON)。
+ */
+export const PROV_BAND_ON = 2
+
+/**
+ * 目标省档「不限省」(a4「先看哪个够得着」)。**是 4 不是 5** —— 海洋四省挂在 5,
+ * 理由见 PROVS 的注释:4 已经在生产用了,改它的含义会把已存档案里的「不限省」
+ * 静默变成「海洋四省」。省码组落不进前三档的一律折回它。
+ */
+export const PROV_BAND_ANY = 4
 
 /**
  * 档里的一格不是字符串时给的值(行构造器 str 的兜底):空串 = 「没答」,与 STATUS_NONE

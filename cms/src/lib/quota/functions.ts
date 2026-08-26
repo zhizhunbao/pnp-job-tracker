@@ -15,7 +15,7 @@ import { text } from '../db'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { DENY_IP, DENY_USER,
-  ANON_DAILY_TRIES, COMMA, FREE_DAILY_TRIES, HDR_FREE_LEFT, HDR_FWD, IP_LOCAL, KEY_FREE_IP, KEY_FREE_USER,
+  ANON_DAILY_TRIES, COMMA, DATE10_LEN, FREE_DAILY_TRIES, HDR_FREE_LEFT, HDR_FWD, IP_LOCAL, KEY_FREE_IP, KEY_FREE_USER,
   TEXT_RATE_LIMITED, TEXT_UPGRADE,
 } from './constants'
 import { CACHE } from './variables'
@@ -198,7 +198,7 @@ function ipOfHeaders(headers: ReqHeaders): string {
  * @returns 'YYYY-MM-DD'。
  */
 export function day(): string {
-  return new Date().toISOString().slice(0, 10)
+  return new Date().toISOString().slice(0, DATE10_LEN)
 }
 
 /**

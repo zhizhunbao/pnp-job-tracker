@@ -20,11 +20,11 @@ import { ALERT_MATCH_LEVEL } from '../quota'
 import {
   ALERT_MIN_GAP_MS, BADGE_CLOSED, BADGE_OPEN, DIMS_FALLBACK, DIMS_LIST_SEP, DIMS_NATION, DIMS_PROVS, DIMS_SEP,
   DIM_JOIN, DIM_PAIRS, DRAW_ABOVE, DRAW_BELOW, DRAW_P, DRAW_WINDOW_MS, DRY_ON, EMAIL_SHELL, ET_ZONE, FIELD_NONE,
-  HI_LINE, HTML_SEP, JOB_PATH, LOCALE_NONE, LOOKBACK_MS, L_EN, L_KO, L_ZH, MATCH_TOP,
-  NOC_RE, OPEN_BOARD, OR_SEP, PAIR_KEY_SEP, PAIR_L, PAIR_M, PAIR_R, PREVIEW_WEEKLY,
-  PROFILE_HEAD_DIM, PROFILE_HEAD_P, PROFILE_HEAD_STYLE_NONE, PROFILE_SHELL, PROV_COND, PROV_COND_NONE,
+  HI_LINE, HTML_SEP, ISO_DATE_LEN, JOB_PATH, K_DIV, LOCALE_NONE, LOOKBACK_MS, L_EN, L_KO, L_ZH, MATCH_TOP,
+  NOC_RE, OPEN_BOARD, PAIR_KEY_SEP, PREVIEW_WEEKLY,
+  PROFILE_HEAD_DIM, PROFILE_HEAD_P, PROFILE_HEAD_STYLE_NONE, PROFILE_SHELL, PROV_CODE_LEN, PROV_COND, PROV_COND_NONE,
   QUIET_END_DEF, QUIET_START_DEF,
-  SAL_K, SAL_NONE, SAVED_SHOW, SITE, ST_OPEN, SUBJ_MATCH, SUBJ_SAVED, SUBJ_SEARCH, SUBJ_WK, TABLE_JOBS,
+  SAL_K, SAL_NONE, SAVED_LIMIT, SAVED_SHOW, SCAN_LIMIT, SITE, ST_OPEN, SUBJ_MATCH, SUBJ_SAVED, SUBJ_SEARCH, SUBJ_WK, TABLE_JOBS,
   COL_SAVED_JOBS, COL_SEARCHES, COL_USERS, ET_LOCALE, HOUR_NUMERIC, K_COUNTS, K_PREVIEW, LEVEL_HIGH,
   LEVEL_MID, SEP_LOC,
   TITLE_NONE, TR_JOB, TR_PROFILE, TR_WEEKLY, UNSUB_MSG_DONE, UNSUB_MSG_FAIL, UNSUB_MSG_INVALID, UNSUB_PAGE,
@@ -82,7 +82,7 @@ export async function runAlerts(input: RunIn): RunOut {
     usersChecked: 0, searchesChecked: 0, weeklyChecked: 0, skippedFilters: [],
   }
 
-  const cut = new Date(Date.now() - DRAW_WINDOW_MS).toISOString().slice(0, 10)
+  const cut = new Date(Date.now() - DRAW_WINDOW_MS).toISOString().slice(0, ISO_DATE_LEN)
   const byLabel = new Map<string, DrawCat>()
   for (const c of input.dims.eeCategories) {
     if (c.drawCrs != null && c.drawDate >= cut) {
@@ -91,7 +91,7 @@ export async function runAlerts(input: RunIn): RunOut {
   }
   const newDraws = [...byLabel.values()]
   const users = await payload.find({
-    collection: COL_USERS, limit: 1000, depth: 0, overrideAccess: true,
+    collection: COL_USERS, limit: SCAN_LIMIT, depth: 0, overrideAccess: true,
     where: { proUntil: { greater_than: now } },
   })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- payload 生成型接缝(读的格见文件头)
@@ -152,7 +152,7 @@ export async function runAlerts(input: RunIn): RunOut {
     }
   }
 
-  const searches = await payload.find({ collection: COL_SEARCHES, limit: 1000, depth: 1, overrideAccess: true })
+  const searches = await payload.find({ collection: COL_SEARCHES, limit: SCAN_LIMIT, depth: 1, overrideAccess: true })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- payload 生成型接缝(读的格见文件头)
   for (const sdoc of searches.docs as any[]) {
     out.searchesChecked++
@@ -195,9 +195,9 @@ export async function runAlerts(input: RunIn): RunOut {
   }
 
   const weekAgo = new Date(Date.now() - WEEK_MS).toISOString()
-  const cut7 = new Date(Date.now() - WEEK_MS).toISOString().slice(0, 10)
+  const cut7 = new Date(Date.now() - WEEK_MS).toISOString().slice(0, ISO_DATE_LEN)
   const freeUsers = await payload.find({
-    collection: COL_USERS, limit: 1000, depth: 0, overrideAccess: true,
+    collection: COL_USERS, limit: SCAN_LIMIT, depth: 0, overrideAccess: true,
     where: { and: [
       { or: [{ proUntil: { exists: false } }, { proUntil: { less_than: now } }] },
       { or: [{ weeklyOptOut: { not_equals: true } }, { weeklyOptOut: { exists: false } }] },
@@ -212,7 +212,7 @@ export async function runAlerts(input: RunIn): RunOut {
     if (u.email == null || u.email === '') {
       continue
     }
-    const sj = await payload.find({ collection: COL_SAVED_JOBS, limit: 200, depth: 0, overrideAccess: true, where: { user: { equals: u.id } } })
+    const sj = await payload.find({ collection: COL_SAVED_JOBS, limit: SAVED_LIMIT, depth: 0, overrideAccess: true, where: { user: { equals: u.id } } })
     if (sj.docs.length === 0) {
       const nocs: string[] = []
       if (u.profile != null && Array.isArray(u.profile.nocCodes)) {
@@ -225,7 +225,7 @@ export async function runAlerts(input: RunIn): RunOut {
       const provs: string[] = []
       if (u.profile != null && Array.isArray(u.profile.targetProvinces)) {
         for (const x of u.profile.targetProvinces) {
-          if (typeof x === 'string' && x.length === 2) {
+          if (typeof x === 'string' && x.length === PROV_CODE_LEN) {
             provs.push(x)
           }
         }
@@ -334,13 +334,13 @@ export async function runAlerts(input: RunIn): RunOut {
     const pairs = [...byPair.values()]
     let newN = 0
     if (pairs.length > 0) {
-      const conds: string[] = []
-      const cparams: string[] = [cut7]
-      for (const [i, pair] of pairs.entries()) {
-        conds.push(PAIR_L + (i * 2 + 2) + PAIR_M + (i * 2 + 3) + PAIR_R)
-        cparams.push(pair.province, pair.broad)
+      const pairProvs: string[] = []
+      const pairBroads: string[] = []
+      for (const pair of pairs) {
+        pairProvs.push(pair.province)
+        pairBroads.push(pair.broad)
       }
-      const cr = await input.db.query(SQL.alertNewCount(conds.join(OR_SEP)), cparams)
+      const cr = await input.db.query(SQL.ALERT_NEW_COUNT_BY_PAIRS, [cut7, pairProvs, pairBroads])
       if (cr.rows[0] != null && cr.rows[0].n != null) {
         newN = cr.rows[0].n
       }
@@ -510,7 +510,7 @@ function kSal(n: MaybeMoney): string {
   if (n == null) {
     return SAL_NONE
   }
-  return fill({ tpl: SAL_K, params: { k: Math.round(n / 1000) } })
+  return fill({ tpl: SAL_K, params: { k: Math.round(n / K_DIV) } })
 }
 
 /**

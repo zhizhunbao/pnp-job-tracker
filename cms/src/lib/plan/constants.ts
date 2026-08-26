@@ -13,6 +13,29 @@
  */
 export const DAYS_PER_MONTH = 30.4375
 
+/**
+ * 一年几个月:年 → 月的换算因子(`monthsFromUnit` 认出 "year" 词头时乘它)。
+ * 历法定值,和 `DAYS_PER_MONTH` 的「平均月长」不同 —— 这个是准的,不是平均出来的。
+ */
+export const MONTHS_PER_YEAR = 12
+
+/**
+ * 一周几天:周 → 月要先过天(`value * DAYS_PER_WEEK / DAYS_PER_MONTH`),
+ * 官方文书里「2 weeks」这类颗粒度最常见,单列一个名字免得和月长混着读。
+ */
+export const DAYS_PER_WEEK = 7
+
+/**
+ * 四舍五入到 0.1 个月用的缩放因子:先乘它取整、再除回来。
+ * 为什么是 10 —— 精度到一位小数为止,理由见 `DAYS_PER_MONTH` 的注释(两位小数是假精确)。
+ */
+export const ROUND_TENTHS_SCALE = 10
+
+/**
+ * 算得出抽选节奏的最少轮次:两轮才有一个间隔,一轮 = 一个点,画不出周期(红线②)。
+ */
+export const DRAW_ROWS_MIN = 2
+
 /*
  * (MS_PER_DAY 2026-08-24 撤编:天毫秒收进 lib/time 的 DAY_MS —— 原先本域、
  * lib/stripe 与四处裸 86400000 各写各的)
@@ -370,6 +393,12 @@ export const TEXT_NONE = ''
  * 与 TEXT_NONE 分开:那个是文本列的空,这个是**时间列**的空 —— 日期一格编不得,起名才分得开。
  */
 export const DATE_NONE = ''
+
+/**
+ * 十位日期(YYYY-MM-DD)的字符数:ISO 串截到日为止用它,后面的 `T…Z` 是时刻,时间线不要。
+ * 与 `DATE_NONE` 摆一起 —— 一个说这格空了写什么,一个说这格有值时留多长。
+ */
+export const DATE10_LEN = 10
 
 /**
  * 整份方案的口径说明(复述层照此措辞,不是成品文案)。

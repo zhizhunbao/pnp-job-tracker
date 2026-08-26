@@ -854,12 +854,20 @@ export const ALERT_NOC_TITLE = `SELECT COALESCE(title_zh, '') zh, COALESCE(title
 export const ALERT_JOBS_BY_IDS = `SELECT id, status, province, broad FROM jobs WHERE id = ANY($1::int[])`
 
 /**
- * 订阅条件下的新岗计数。a1=条件片段,$1=起始日。
+ * 收藏画像的 (省, 大类) 对在本周的新岗计数。$1=起始日,$2=省码数组,$3=大类数组。
  *
- * @param a1 订阅条件片段。
- * @returns 新岗计数 SELECT 语句。
+ * 两个数组按**位置**成对:`unnest($2), unnest($3)` 并列在同一个 SELECT 目标列表里,
+ * PG 按位置拉链展开(同长必须,调用方是同一次循环推的两个数组),于是第 i 个省配第 i 个大类
+ * —— 要的就是这个成对语义,不是两维笛卡尔积。
+ *
+ * 2026-08-26 换掉原先的条件片段版 `alertNewCount(a1)`:那版在域里按 `(province = $2 AND
+ * broad = $3) OR …` 手拼占位符、参数位靠 `i * 2 + 2` 算,参数个数随收藏数浮动。改数组参数后
+ * 参数固定三个,序号算术连同拼接一起退役(口径逐字节不变:对已去重、双格非空,IN 对 NULL 列
+ * 同样不命中)。
  */
-export const alertNewCount = (a1: string) => `SELECT count(*)::int AS n FROM jobs WHERE status = 'open' AND date_posted >= $1 AND (${a1})`
+export const ALERT_NEW_COUNT_BY_PAIRS = `SELECT count(*)::int AS n FROM jobs
+       WHERE status = 'open' AND date_posted >= $1
+         AND (province, broad) IN (SELECT unnest($2::text[]), unnest($3::text[]))`
 
 // =========================================================================
 // 17. 职业竞争度(API)

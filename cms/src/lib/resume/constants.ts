@@ -87,6 +87,14 @@ export const EXT_PDF = 'pdf'
 export const EXT_DOCX = 'docx'
 
 /**
+ * 一个像素占几字节:pdf.js 初始化要的 `ImageData` 平台垫片按 RGBA 四通道各一字节开缓冲区
+ * (`new Uint8ClampedArray(w * h * RGBA_BYTES)`)。
+ * Canvas 规范定死的数,不是可调参数 —— 本站只抽文本不画图,这块缓冲区实际不落像素,
+ * 但尺寸得对,否则 pdf.js 自检当场炸。
+ */
+export const RGBA_BYTES = 4
+
+/**
  * 不认识的文件类型的失败原因(路由据此给用户报「格式不支持」)。
  */
 export const ERR_UNSUPPORTED = 'unsupported'
