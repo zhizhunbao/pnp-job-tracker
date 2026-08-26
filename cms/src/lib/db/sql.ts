@@ -1,17 +1,22 @@
-// 全站 SQL 语句。**只有 SQL,没有业务逻辑** —— 想找某条查询到底查了什么,只来这一个文件。
-//
-// 与本域其余文件的分工:
-//   · types/functions/server 管「怎么执行」(形状、词汇表、取池),不认识任何一张表;
-//   · 本文件管「执行什么」,不碰连接、不做映射、不判业务。
-//
-// 两种形态:
-//   · 大写常量 = 固定语句(值一律走 $1/$2 占位符,别用字符串拼值 —— 那是注入)
-//   · 小写函数 = 语句模板,拼的只能是**结构**(列清单、WHERE 片段、ORDER BY),值仍走占位符
-//
-// 列名是 Payload 的 snake_case(老坑 5):改 collection 字段要同步这里。
-//
-// 分段:1. 片段  2. 职位列表/分页/匹配  3. 职位单条与相关  4. 公司  5. 职业(NOC)
-//       6. 站级数字与提醒  7. 答题事实数  8. 统计/难度/职业报告  9. 雇主
+/**
+ * 全站 SQL 语句。**只有 SQL,没有业务逻辑** —— 想找某条查询到底查了什么,只来这一个文件。
+ *
+ * 与本域其余文件的分工:
+ *   · types/functions/server 管「怎么执行」(形状、词汇表、取池),不认识任何一张表;
+ *   · 本文件管「执行什么」,不碰连接、不做映射、不判业务。
+ *
+ * 两种形态:
+ *   · 大写常量 = 固定语句(值一律走 $1/$2 占位符,别用字符串拼值 —— 那是注入)
+ *   · 小写函数 = 语句模板,拼的只能是**结构**(列清单、WHERE 片段、ORDER BY),值仍走占位符
+ *
+ * 列名是 Payload 的 snake_case(老坑 5):改 collection 字段要同步这里。
+ *
+ * 分段:1. 片段  2. 职位列表/分页/匹配  3. 职位单条与相关  4. 公司  5. 职业(NOC)
+ *       6. 站级数字与提醒  7. 答题事实数  8. 统计/难度/职业报告  9. 雇主
+ *
+ * @author Frank
+ * @time 2026-08-17 19:25:36
+ */
 
 import type { SqlCompaniesUpsertIn, SqlInsertRowsIn, SqlJobsUpsertIn, SqlNewsUpsertIn } from './types'
 
@@ -59,12 +64,23 @@ export const JOB_ROWS_LATEST = `SELECT ${JOB_COLUMNS} ${JOB_FROM}
 
 /**
  * 分页列表。where/cond/order 都是**结构**片段(buildJobsWhere / orderByClause 产出),值仍在 params 里
+ *
+ * @param where 筛选条件片段。
+ * @param dedupe 去重口径片段(DEDUPE_COND 或恒真)。
+ * @param order ORDER BY 子句。
+ * @param limitPh LIMIT 的占位符($n)。
+ * @param offsetPh OFFSET 的占位符($n)。
+ * @returns 分页 SELECT 语句。
  */
 export const jobsPage = (where: string, dedupe: string, order: string, limitPh: string, offsetPh: string) =>
   `SELECT ${JOB_COLUMNS} ${JOB_FROM} WHERE ${where} AND ${dedupe} ${order} LIMIT ${limitPh} OFFSET ${offsetPh}`
 
 /**
  * 分页列表的总数,与 jobsPage 同一份 where/dedupe 口径 —— 两处分开改就会「页数对不上行数」。
+ *
+ * @param where 筛选条件片段(与 jobsPage 同一份)。
+ * @param dedupe 去重口径片段(同上)。
+ * @returns 计数 SELECT 语句。
  */
 export const jobsPageCount = (where: string, dedupe: string) =>
   `SELECT count(*)::int n ${JOB_FROM} WHERE ${where} AND ${dedupe}`
@@ -78,12 +94,20 @@ export const MATCH_PAGE = `SELECT ${JOB_COLUMNS} ${JOB_FROM}
 
 /**
  * 排序子句:列与方向都来自白名单(SORT_COLUMNS),不是用户原样字符串
+ *
+ * @param col 排序列(白名单值)。
+ * @param dir 方向 ASC/DESC(白名单值)。
+ * @param tiebreak 同值时的决胜列。
+ * @returns ORDER BY 子句。
  */
 export const orderBy = (col: string, dir: string, tiebreak: string) =>
   `ORDER BY ${col} ${dir} NULLS LAST, ${tiebreak}`
 
 /**
  * 关键词命中公司名 → 转成 company_id 子查询(跨表 OR 谓词会让 planner 只能全表扫)
+ *
+ * @param placeholder ILIKE 词的占位符($n)。
+ * @returns company_id IN 子查询片段。
  */
 export const companyIdInByName = (placeholder: string) =>
   `j.company_id IN (SELECT id FROM companies WHERE name ILIKE ${placeholder})`
@@ -126,6 +150,9 @@ export const RELATED_SAME_OCC = `SELECT ${REL_COLS} ${JOB_FROM}
  * 相关职位都落空时的兜底探测:一次问清「本省在 fine/mid/broad 各级还有没有在招岗」,
  * 每级一个 EXISTS 列($1=省,$2 起依次是各级的分类值)。
  * 列名是级别名(白名单 fine|mid|broad),不是用户输入;分类值仍走占位符。
+ *
+ * @param levels 要探测的级别名清单(白名单值,决定列名与占位符个数)。
+ * @returns 逐级 EXISTS 的 SELECT 语句。
  */
 export const levelHasJobs = (levels: readonly string[]) =>
   `SELECT ${levels.map((lv, i) => `EXISTS(SELECT 1 FROM jobs WHERE province = $1 AND ${lv} = $${i + 2} AND COALESCE(status,'open') <> 'closed') AS ${lv}_has`).join(', ')}`
@@ -136,6 +163,9 @@ export const levelHasJobs = (levels: readonly string[]) =>
 
 /**
  * cond 二选一:按 slug,或按「这条岗属于哪家公司」的子查询(见 COMPANY_BY_JOB_ID_COND)
+ *
+ * @param cond WHERE 条件片段(两种口径二选一)。
+ * @returns 公司详情 SELECT 语句。
  */
 export const companyDetail = (cond: string) =>
   `SELECT c.id, c.name, c.slug, c.website, c.website_source, c.industry, c.sectors, c.alias_zh, c.alias_ko, c.wiki_url,
@@ -215,6 +245,9 @@ export const BROAD_NOCS = `SELECT noc, title, title_zh, title_zh_short, title_ko
 
 /**
  * medianCol:要中位薪资时传那一列的表达式,不要时传空串(省一次昂贵的 percentile_cont)
+ *
+ * @param medianCol 中位薪资列的表达式;不要时空串。
+ * @returns 职业搜索 SELECT 语句。
  */
 export const searchNocByTitle = (medianCol: string) =>
   `SELECT j.noc, COALESCE(d.title, '') title, COALESCE(d.title_zh, '') title_zh, COALESCE(d.title_zh_short, '') title_zh_short,
@@ -253,6 +286,9 @@ export const NOC_BY_TITLE_LIKE = `SELECT d.noc, COALESCE(d.title,'') title, COAL
 
 /**
  * cond = 统计口径的 WHERE 片段(在架/去重等)
+ *
+ * @param cond 统计口径的条件片段。
+ * @returns 总量/具名/LMIA 三数 SELECT 语句。
  */
 export const totalAndProof = (cond: string) =>
   `SELECT count(*) FILTER (WHERE ${cond})::int AS n,
@@ -272,6 +308,9 @@ export const JOBS_MAX_LAST_SEEN = `SELECT max(last_seen) AS upd FROM jobs`
 
 /**
  * 邮件提醒命中:上次发信之后新出现的岗
+ *
+ * @param where 订阅条件片段($1=上次发信时刻)。
+ * @returns 命中岗 SELECT 语句。
  */
 export const alertHits = (where: string) =>
   `SELECT j.id, j.title, j.city, j.province, j.salary_text, c.name AS company_name
@@ -311,8 +350,6 @@ export const QUIZ_FACTS_STREAMS = `SELECT j.pnp_stream stream, count(*)::int n
 // 8. 统计 / 难度 / 职业报告
 // =========================================================================
 
-// ── lib/consult(原 chat/reportFacts,旧链 2026-08-21 删)──
-
 /**
  * 某职业各省在招数(含具名通道数与学徒友好数)。consult 的 lookup_jobs 吃它。$1=NOC。
  */
@@ -321,7 +358,6 @@ export const PROV_OPEN_BY_PROV = `SELECT province, count(*)::int open,
               count(*) FILTER (WHERE apprentice_friendly)::int apprentice
        FROM jobs WHERE COALESCE(status,'open') <> 'closed' AND noc = $1 AND COALESCE(province,'') <> ''
        GROUP BY province`
-
 
 /**
  * 各省打分表全量(ruling 的判定底表之一)。
@@ -337,15 +373,11 @@ export const NOC_TITLE_TEER = `SELECT COALESCE(s.title_en, d.title, '') title, s
        FROM noc_descriptions d LEFT JOIN stats_occupation s ON s.noc = d.noc AND s.province = 'all'
        WHERE d.noc = $1 LIMIT 1`
 
-
-
 /**
  * 各省全职业难度分(stats 表 broad=all 那行)。
  */
 export const PROV_DIFFICULTY = `SELECT province, difficulty FROM stats
        WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL`
-
-// ── jobs/functions.ts(loadOccCompetition;2026-08-22 自 lib/score 并入)──
 
 /**
  * 职业竞争度:各省在架量(实时)/30 天新增/平均在架天数(后两列走快照)。$1=码数组。
@@ -368,7 +400,6 @@ export const OCC_COMPETITION_BY_PROV = `SELECT j.province AS province, COUNT(*):
         GROUP BY j.province, s.new30d, s.avg_days_open
         ORDER BY open_jobs DESC`
 
-
 /**
  * ⚠️ **名字撒谎:只数 AIP 岗**(aip=true)。各省该职业的 AIP 在招数。$1=码数组。改名欠账,别按名字用。
  */
@@ -390,15 +421,12 @@ export const PROV_OPEN_COUNT_BROAD = `SELECT province, COUNT(*)::int AS n FROM j
         WHERE COALESCE(status, 'open') <> 'closed' AND COALESCE(is_dup, false) = false AND COALESCE(pilot, '') LIKE '%FCIP%' AND noc = ANY($1) AND province <> ''
         GROUP BY province`
 
-// ── points/functions.ts(getScoreTables;2026-08-22 自 lib/score 并入)──
-
 /**
  * 各省难度分 + 抓取日(报告要标数据新鲜度时用这条,不用 PROV_DIFFICULTY)。
  */
 export const PROV_DIFFICULTY_FETCHED = `SELECT province, difficulty, fetched FROM stats
         WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL`
 
-// ── 补:单引号写的那条 ──
 /**
  * 省份维度表的 code 与 info json。
  */
@@ -408,14 +436,10 @@ export const PROVINCES_INFO = `SELECT code, info FROM provinces`
 // 9. 雇主 —— 官方名录 / 在招 / 担保
 // =========================================================================
 
-// ── employers/directory.ts ──
-
 /**
  * 官方清单全量(名录页用,带排序)。
  */
 export const PNP_OCCUPATIONS_ALL = `SELECT province, stream, label, type, noc, name, url, fetched FROM pnp_occupations ORDER BY province ASC, stream ASC, noc ASC`
-
-// ── employers/designatedEmployers.ts ──
 
 /**
  * AIP 指定雇主名录全量。
@@ -443,8 +467,6 @@ export const NOC_TITLES_FOR_EMPLOYERS = `SELECT s.noc AS noc, COALESCE(s.title_e
        FROM stats_occupation s LEFT JOIN noc_descriptions d ON d.noc = s.noc
       WHERE s.province = 'all' AND s.noc = ANY($1)`
 
-// ── employers/sponsorEmployers.ts ──
-
 /**
  * companies 表列存在性探测(additive 列上生产前后代码都能跑)。$1=列名数组。
  */
@@ -457,6 +479,10 @@ export const PNP_REQ_EMPLOYER = `SELECT province, factor, op, value, unit, appli
 
 /**
  * 担保雇主榜主查询:LMIA/AIP/具名通道三路并一张表。a1/a2=有无 additive 列时的列清单差。
+ *
+ * @param a1 SELECT 侧的附加列片段(additive 列在时非空)。
+ * @param a2 GROUP BY 侧的对应片段。
+ * @returns 担保雇主榜 SELECT 语句。
  */
 export const sponsorEmployers = (a1: string, a2: string) => `
     SELECT c.name, c.slug, c.industry, c.alias_zh, c.alias_ko, c.sponsor_grade,
@@ -480,15 +506,11 @@ export const sponsorEmployers = (a1: string, a2: string) => `
     HAVING BOOL_OR(j.aip) OR BOOL_OR(COALESCE(j.pnp_stream, '') <> '') OR COALESCE(c.lmia_positions, 0) > 0
     ORDER BY open_jobs DESC, c.name ASC`
 
-// ── lib/ruling(原 verdict/verdictCache)──
-
 /**
  * 某省的 AIP 指定雇主。$1=省。
  */
 export const DESIGNATED_BY_PROV = `SELECT name, province, location, is_tech, source, nocs, url, fetched
        FROM designated_employers WHERE province = $1`
-
-// ── employers/employerCompare.ts ──
 
 /**
  * 雇主对比:按名字(小写)取一批公司事实列。$1=名字数组。
@@ -512,8 +534,6 @@ export const PROV_DIFFICULTY_ANY = `SELECT province, difficulty FROM stats WHERE
 // 10. 试点(RCIP/FCIP)名额
 // =========================================================================
 
-// ── pathways/pilotQuota.ts ──
-
 /**
  * 试点(RCIP/FCIP)社区级名额三件套(先到先得/每期/剩余,各带 quote 与 url)。
  */
@@ -526,8 +546,6 @@ export const PILOT_QUOTA_COMMUNITIES = `SELECT community, province, type, first_
 // =========================================================================
 // 11. 抽选 / 时间线 / 榜单
 // =========================================================================
-
-// ── plan/timeline.ts ──
 
 /**
  * 抽选记录全量(plan 的时间线按省抽节奏用)。
@@ -545,7 +563,6 @@ export const EE_CATEGORIES_LATEST = `SELECT DISTINCT ON (category) category, lab
  */
 export const NEWS_RECENT = `SELECT region, title, date, slug, importance, url FROM news ORDER BY date DESC LIMIT 90`
 
-// ── lib/jobs/dims.ts(档案匹配吃的两张清单)──
 // 🔴 **口径写在 WHERE 里**:省提名匹配只吃 `program='PNP'` 的清单行 —— AIP 背书是另一条路,
 //    混进来会让「命中/被排除」判在错的项目上(同 lib/jobs/queries.ts 的 pnpOnly,那条注释 2026 年就写下了)。
 //    2026-08-18 前这一路走的是 Payload Local API 且**没有这道滤**,于是 advisor 与 alerts 的匹配
@@ -561,8 +578,6 @@ export const MATCH_PNP_OCCUPATIONS = `SELECT province, label, type, noc, url, fe
  * 档案匹配吃的 EE 类别清单。
  */
 export const MATCH_EE_CATEGORIES = `SELECT category, label, noc, draw_crs, draw_date, url, fetched FROM ee_categories`
-
-// ── rankings.ts ──
 
 /**
  * 榜单页有哪些 slug。
@@ -581,8 +596,6 @@ export const RANKING_ROWS = `SELECT slug, rank, kind, external_id, title, compan
 // 12. 判定与案例
 // =========================================================================
 
-// ── lib/ruling(原 verdict/tripleWire)──
-
 /**
  * 三合一判定的职位事实行(带公司名与 NOC 三语名)。$1=职位 id。
  */
@@ -599,9 +612,6 @@ export const TRIPLE_WIRE_JOB = `SELECT j.id, j.title, j.noc, j.teer, j.province,
  * 公司注册事实(成立年/状态/雇员估计)。$1=公司 id。
  */
 export const COMPANY_REGISTRY_FACTS = `SELECT founded_year, registry_status, staff_est, staff_est_src, sector FROM companies WHERE id = $1`
-
-
-// ── lib/ruling(原 verdict/caseFacts)──
 
 /**
  * 案例页:某职业各省在架量与学徒友好量。$1=NOC。
@@ -623,20 +633,11 @@ export const PNP_OPS_STATS = `SELECT DISTINCT ON (province, metric) province, me
 // 13. 公司调研 / JD 正文
 // =========================================================================
 
-// ── employers/companyResearch.ts ──
-
 /**
  * 懒查询建档:公司不存在时插一行占位(source=ai-lazy)。$1=公司名。
  */
 export const COMPANY_INSERT_LAZY = `INSERT INTO companies (name, source, updated_at, created_at) VALUES ($1, 'ai-lazy', now(), now()) RETURNING id`
 
-// ── jobDescription.ts ──
-
-
-
-// ── jobs/jdFetch.ts ──
-
-// ── 补:单引号写的五条 ──
 /**
  * 公司 AI 简报缓存读取。$1=公司名(小写匹配)。
  */
@@ -666,8 +667,6 @@ export const JD_UPDATE_BY_APPLY_URL = `UPDATE jobs SET description = $1 WHERE ap
 // 14. 统计页(/stats)
 // =========================================================================
 
-// ── stats/functions.ts ──
-
 /**
  * 统计页·中类粒度全量行(图表下钻用)。2026-08-22 stats 定型批:原 statsByMid/statsByBroad
  * 两个模板函数的 WHERE 片段全站只用过两种取值,固化成下面三条常量,模板退役。
@@ -690,7 +689,6 @@ export const STATS_FALLBACK_BROAD = `SELECT province, broad, open_jobs, new7d, m
               named_jobs, stream_labels, aip_jobs, top_cities, fetched
        FROM stats ORDER BY open_jobs DESC NULLS LAST`
 
-
 /**
  * stats_occupation 列存在性探测(additive 列护栏)。$1=列名数组。
  */
@@ -706,6 +704,9 @@ export const STATS_OCC_BASE = `s.noc, s.province, s.title_zh, s.title_zh_short, 
 
 /**
  * 统计页·职业粒度行。a1=逐列探测出的附加列(', s.列名' 串;探测理由见 stats 域 OCC_EXTRA_COLUMNS)。
+ *
+ * @param a1 探测出的附加列片段(', s.列名' 串;没有时空串)。
+ * @returns 职业统计 SELECT 语句。
  */
 export const statsOccupations = (a1: string) => `SELECT ${STATS_OCC_BASE}${a1}
        FROM stats_occupation s LEFT JOIN noc_descriptions d ON d.noc = s.noc
@@ -737,8 +738,6 @@ export const EE_NOCS_DISTINCT = `SELECT DISTINCT noc FROM ee_categories WHERE no
 // 15. 城市 / 社区页
 // =========================================================================
 
-// ── app/api/jobs/city/route.ts ──
-
 /**
  * 「岗还在招」的条件片段(市/区聚合几条 SQL 共用的 a1 实参;status 空当 open)。
  */
@@ -746,6 +745,9 @@ export const OPEN_COND = `COALESCE(j.status,'open') = 'open'`
 
 /**
  * 城市页三数:在架/7 天新增/中位薪资。$1=城市,$2=省,a1=在架口径片段。
+ *
+ * @param a1 在架口径片段(OPEN_COND)。
+ * @returns 城市三数 SELECT 语句。
  */
 export const cityTotals = (a1: string) => `SELECT COUNT(*)::int AS open_jobs,
               COUNT(*) FILTER (WHERE j.date_posted >= NOW() - INTERVAL '7 day')::int AS new7d,
@@ -754,6 +756,9 @@ export const cityTotals = (a1: string) => `SELECT COUNT(*)::int AS open_jobs,
 
 /**
  * 城市页大类分布前 3。$1=城市,$2=省。
+ *
+ * @param a1 在架口径片段(OPEN_COND)。
+ * @returns 大类分布 SELECT 语句。
  */
 export const cityByBroad = (a1: string) => `SELECT j.broad, COUNT(*)::int AS n FROM jobs j
        WHERE j.city = $1 AND j.province = $2 AND ${a1} AND j.broad IS NOT NULL AND j.broad <> '未分类'
@@ -771,6 +776,9 @@ export const CITY_DESIGNATED_COUNT = `SELECT COUNT(*)::int AS n FROM designated_
 
 /**
  * 社区页三数(区级)。$1=城市,$2=省,$3=区。
+ *
+ * @param a1 在架口径片段(OPEN_COND)。
+ * @returns 社区三数 SELECT 语句。
  */
 export const districtTotals = (a1: string) => `SELECT COUNT(*)::int AS open_jobs,
                 COUNT(*) FILTER (WHERE j.date_posted >= NOW() - INTERVAL '7 day')::int AS new7d,
@@ -784,6 +792,9 @@ export const CITY_DLI_COUNT = `SELECT COUNT(*)::int AS n FROM dli WHERE city = $
 
 /**
  * 社区页大类分布前 3。$1=城市,$2=省,$3=区。
+ *
+ * @param a1 在架口径片段(OPEN_COND)。
+ * @returns 大类分布 SELECT 语句。
  */
 export const districtByBroad = (a1: string) => `SELECT j.broad, COUNT(*)::int AS n FROM jobs j
          WHERE j.district = $3 AND j.city = $1 AND j.province = $2 AND ${a1} AND j.broad IS NOT NULL AND j.broad <> '未分类'
@@ -791,6 +802,9 @@ export const districtByBroad = (a1: string) => `SELECT j.broad, COUNT(*)::int AS
 
 /**
  * 社区页在招雇主前 4。$1=城市,$2=省,$3=区。
+ *
+ * @param a1 在架口径片段(OPEN_COND)。
+ * @returns 在招雇主 SELECT 语句。
  */
 export const districtEmployers = (a1: string) => `SELECT c.name, c.slug, COUNT(*)::int AS n FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
          WHERE j.district = $3 AND j.city = $1 AND j.province = $2 AND ${a1} AND c.name IS NOT NULL
@@ -799,8 +813,6 @@ export const districtEmployers = (a1: string) => `SELECT c.name, c.slug, COUNT(*
 // =========================================================================
 // 16. 邮件提醒
 // =========================================================================
-
-// ── app/api/alerts/run/route.ts ──
 
 /**
  * 提醒批:上次游标之后的新岗池(按分排,封顶 2000)。$1=上次发信时刻。
@@ -812,6 +824,9 @@ export const ALERT_JOBS = `SELECT j.id, j.title, j.city, j.province, j.salary_te
 
 /**
  * 提醒邮件里的职业事实数(量/可提名/中位)。$1=起始日,$2=码数组,a1=省筛选片段。
+ *
+ * @param a1 省筛选片段(全国时空串)。
+ * @returns 职业事实数 SELECT 语句。
  */
 export const alertOccStats = (a1: string) => `SELECT count(*)::int n, count(*) FILTER (WHERE j.pnp_eligible)::int elig,
                 percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual) med
@@ -819,6 +834,9 @@ export const alertOccStats = (a1: string) => `SELECT count(*)::int n, count(*) F
 
 /**
  * 提醒邮件里的样例岗 3 条(按薪资)。$1=起始日,$2=码数组,a1=省筛选片段。
+ *
+ * @param a1 省筛选片段(全国时空串)。
+ * @returns 样例岗 SELECT 语句。
  */
 export const alertSampleJobs = (a1: string) => `SELECT j.title, COALESCE(c.name,'') company, COALESCE(j.salary_text,'') sal
          FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
@@ -837,6 +855,9 @@ export const ALERT_JOBS_BY_IDS = `SELECT id, status, province, broad FROM jobs W
 
 /**
  * 订阅条件下的新岗计数。a1=条件片段,$1=起始日。
+ *
+ * @param a1 订阅条件片段。
+ * @returns 新岗计数 SELECT 语句。
  */
 export const alertNewCount = (a1: string) => `SELECT count(*)::int AS n FROM jobs WHERE status = 'open' AND date_posted >= $1 AND (${a1})`
 
@@ -844,7 +865,6 @@ export const alertNewCount = (a1: string) => `SELECT count(*)::int AS n FROM job
 // 17. 职业竞争度(API)
 // =========================================================================
 
-// ── app/api/jobs/competition/route.ts ──
 // 2026-08-22 段内四条(OCC_COMP/AIP/RCIP/FCIP_BY_PROV 单 noc 版)退役:路由改吃
 // jobs/functions.loadOccCompetition 的数组版(§8 那组)—— 单 noc 版还在读
 // stats_occupation 日快照,与 2026-08-16「在招是显示多少就查多少」的实时口径岔开。
@@ -853,7 +873,6 @@ export const alertNewCount = (a1: string) => `SELECT count(*)::int AS n FROM job
 // 18. JD 整理回写
 // =========================================================================
 
-// ── lib/jobs/routes.ts jobsJdformatRoute ──
 /**
  * JD 整理稿回写(带时间戳)。$1=整理稿,$2=职位 id。
  */
@@ -874,14 +893,9 @@ export const JD_SET_EMP_HOURS = `UPDATE jobs SET employment_hours = $1 WHERE id 
  */
 export const JD_STATE_BY_URL = `SELECT id, employment_term, employment_hours, jd_formatted FROM jobs WHERE apply_url = $1 LIMIT 1`
 
-
-// ── lib/jobs/routes.ts jobsJdformatRoute ──
-
 // =========================================================================
 // 19. 新闻与评论
 // =========================================================================
-
-// ── app/(frontend)/news/page.tsx ──
 
 /**
  * 新闻列表页 60 条。
@@ -902,10 +916,11 @@ export const NEWS_LIST_REGION = `SELECT region, title, date, slug, og_image AS "
  */
 export const NEWS_COMMENT_COUNTS = `SELECT news_slug AS slug, count(*)::int AS n FROM comments WHERE status = 'approved' GROUP BY news_slug`
 
-// ── app/(frontend)/news/[slug]/page.tsx ──
-
 /**
  * 新闻详情单条。a1=按界面语言选的摘要列,$1=slug。
+ *
+ * @param a1 按界面语言选的摘要列名。
+ * @returns 新闻详情 SELECT 语句。
  */
 export const newsBySlug = (a1: string) => `SELECT region, title, date, slug, url, og_image AS "ogImage", body_en AS "bodyEn", body_zh AS "bodyZh", body_ko AS "bodyKo",
             summary_zh AS "summaryZh", summary_ko AS "summaryKo", ${a1} AS "summaryEn",
@@ -928,8 +943,6 @@ export const NEWS_COMMENTS_FLAT = `SELECT c.id, NULL AS "parentId", false AS pin
                      c.author_name AS "authorName", c.body, to_char(c.created_at, 'YYYY-MM-DD') AS date
               FROM comments c LEFT JOIN users u ON u.id = c.user_id
               WHERE c.news_slug = $1 AND c.status = 'approved' ORDER BY c.created_at ASC LIMIT 200`
-
-// ── app/(frontend)/jobs/page.tsx ──
 
 /**
  * 职位板首屏侧栏的新闻瘦列 60 条。
@@ -1001,8 +1014,6 @@ export const DIMS_FIELD_SOURCES = `SELECT field, kind, publisher, url, title, de
 // 20. 站点地图(分片)
 // =========================================================================
 
-// ── app/(frontend)/jobs/sitemap.ts ──
-
 /**
  * 站点地图的在架口径片段(⚠️ 与 OPEN_COND 不是一个口径:这里无表别名、`<> 'closed'`
  * 把 NULL 与其它状态都算在架 —— sitemap 宁多收不漏收;2026-08-23 自 app 文件搬入,
@@ -1012,16 +1023,20 @@ export const SITEMAP_ACTIVE = `COALESCE(status,'open') <> 'closed'`
 
 /**
  * 职位站点地图分片计数。a1=在架口径片段。
+ *
+ * @param a1 在架口径片段(SITEMAP_ACTIVE)。
+ * @returns 计数 SELECT 语句。
  */
 export const jobsSitemapCount = (a1: string) => `SELECT count(*)::int AS n FROM jobs WHERE ${a1}`
 
 /**
  * 职位站点地图一片。a1=口径片段,$1=页大小,$2=偏移。
+ *
+ * @param a1 在架口径片段(SITEMAP_ACTIVE)。
+ * @returns 分片 SELECT 语句。
  */
 export const jobsSitemapPage = (a1: string) => `SELECT id, last_seen FROM jobs WHERE ${a1}
        ORDER BY id ASC LIMIT $1 OFFSET $2`
-
-// ── app/(frontend)/companies/sitemap.ts ──
 
 /**
  * 公司站点地图的 FROM/WHERE 骨架(有 slug 且有在架岗)。
@@ -1031,11 +1046,17 @@ export const CO_SITEMAP_FROM = `FROM companies c JOIN jobs j ON j.company_id = c
 
 /**
  * 公司站点地图计数。a1=FROM 骨架。
+ *
+ * @param a1 FROM/WHERE 骨架(CO_SITEMAP_FROM)。
+ * @returns 计数 SELECT 语句。
  */
 export const coSitemapCount = (a1: string) => `SELECT count(DISTINCT c.id)::int AS n ${a1}`
 
 /**
  * 公司站点地图一片。a1=FROM 骨架,$1=页大小,$2=偏移。
+ *
+ * @param a1 FROM/WHERE 骨架(CO_SITEMAP_FROM)。
+ * @returns 分片 SELECT 语句。
  */
 export const coSitemapPage = (a1: string) => `SELECT c.slug, max(j.last_seen) AS last_seen ${a1}
        GROUP BY c.id, c.slug
@@ -1044,8 +1065,6 @@ export const coSitemapPage = (a1: string) => `SELECT c.slug, max(j.last_seen) AS
 // =========================================================================
 // 21. 漏斗看板(/funnel)
 // =========================================================================
-
-// ── app/(frontend)/funnel/page.tsx ──
 
 /**
  * 漏斗看板:各事件 30/7/1 天计数。
@@ -1067,8 +1086,6 @@ export const FUNNEL_USERS = `SELECT count(pro_until)::int pro,
 // 22. 详情页 SSR / OG 图 / 初评表
 // =========================================================================
 
-// ── app/(frontend)/jobs/[id]/page.tsx ──
-
 /**
  * 详情页 SSR 的 JD 正文。$1=职位 id。
  */
@@ -1080,15 +1097,11 @@ export const JD_BY_JOB_ID = `SELECT description FROM jobs WHERE id = $1 LIMIT 1`
 export const JOB_META_BY_ID = `SELECT j.title, c.name AS company, j.city, j.province, j.salary_text, j.status FROM jobs j
      LEFT JOIN companies c ON c.id = j.company_id WHERE j.id = $1 LIMIT 1`
 
-// ── app/(frontend)/jobs/[id]/opengraph-image.tsx ──
-
 /**
  * OG 图用的瘦行。$1=职位 id。
  */
 export const JOB_OG_BY_ID = `SELECT j.title, c.name AS company, j.city, j.province, j.salary_text, j.salary, j.pnp_eligible, j.teer FROM jobs j
        LEFT JOIN companies c ON c.id = j.company_id WHERE j.id = $1 LIMIT 1`
-
-// ── app/(frontend)/plan/pr/page.tsx ──
 
 /**
  * /plan/pr 页的职位锚点行。$1=职位 id。
@@ -1096,8 +1109,6 @@ export const JOB_OG_BY_ID = `SELECT j.title, c.name AS company, j.city, j.provin
 export const PR_PLAN_JOBS = `SELECT j.id, j.title, j.noc, j.teer, COALESCE(j.pnp_stream,'') AS pnp_stream,
                 COALESCE(c.name,'') AS company, COALESCE(j.city,'') AS city, COALESCE(j.province,'') AS province
          FROM jobs j LEFT JOIN companies c ON c.id = j.company_id WHERE j.id = $1 LIMIT 1`
-
-// ── app/(frontend)/start/page.tsx ──
 
 /**
  * 起步页的职业全清单(选职业下拉)。
@@ -1120,27 +1131,35 @@ export const NEWS_RECENT_80 = `SELECT * FROM news ORDER BY date DESC, id DESC LI
 // 23. 翻译 / 摘要缓存(按界面语言选列)
 // =========================================================================
 
-// ── lib/news/routes.ts newsTranslateRoute ──
-
 /**
  * 取英文正文 + 目标语缓存列。a1=缓存列名,$1=slug。
+ *
+ * @param a1 目标语缓存列名(白名单值)。
+ * @returns 取正文 SELECT 语句。
  */
 export const newsBodyForTranslate = (a1: string) => `SELECT body_en AS en, ${a1} AS cached FROM news WHERE slug = $1 LIMIT 1`
 
 /**
  * 写回某语言的翻译。a1=列名,$1=译文,$2=slug。
+ *
+ * @param a1 目标语列名(白名单值)。
+ * @returns 写回 UPDATE 语句。
  */
 export const newsSetTranslation = (a1: string) => `UPDATE news SET ${a1} = $1 WHERE slug = $2`
 
-// ── lib/news/routes.ts newsSummarizeRoute ──
-
 /**
  * 取标题、英文正文 + 摘要缓存列。a1=缓存列名,$1=slug。
+ *
+ * @param a1 摘要缓存列名(白名单值)。
+ * @returns 取正文 SELECT 语句。
  */
 export const newsForSummary = (a1: string) => `SELECT title, body_en AS en, ${a1} AS cached FROM news WHERE slug = $1 LIMIT 1`
 
 /**
  * 写回某语言的摘要。a1=列名,$1=摘要,$2=slug。
+ *
+ * @param a1 摘要缓存列名(白名单值)。
+ * @returns 写回 UPDATE 语句。
  */
 export const newsSetSummary = (a1: string) => `UPDATE news SET ${a1} = $1 WHERE slug = $2`
 
@@ -1148,32 +1167,28 @@ export const newsSetSummary = (a1: string) => `UPDATE news SET ${a1} = $1 WHERE 
 // 24. 埋点与零散查询
 // =========================================================================
 
-// ── app/api/funnel/track/route.ts ──
-
 /**
  * 埋点自增(按天/事件/prop 一行,冲突 +1)。$1=事件,$2=prop。
  */
 export const FUNNEL_EVENT_UPSERT = `INSERT INTO funnel_events (day, event, prop, n) VALUES (CURRENT_DATE, $1, $2, 1)
        ON CONFLICT (day, event, prop) DO UPDATE SET n = funnel_events.n + 1`
 
-// ── app/api/stats/fine/route.ts ──
-
 /**
  * 某省某大类某中类下的细类分布。$1..$3=省/大类/中类,a1=行数。
+ *
+ * @param a1 LIMIT 行数(代码里的常量,不是用户输入)。
+ * @returns 细类分布 SELECT 语句。
  */
 export const fineCounts = (a1: string | number) => `SELECT fine, count(*)::int AS n FROM jobs
      WHERE status = 'open' AND province = $1 AND broad = $2 AND mid = $3
        AND fine IS NOT NULL AND fine <> '' AND fine <> '未分类'
      GROUP BY fine ORDER BY n DESC LIMIT ${a1}`
 
-// ── app/api/jobs/province/route.ts ──
-
 /**
  * 单省难度分。$1=省。
  */
 export const PROV_DIFFICULTY_ONE = `SELECT difficulty FROM stats WHERE province = $1 AND broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL LIMIT 1`
 
-// ── 补:单引号写的四条 ──
 /**
  * 职业的职责与要求原文(JD 对照用)。$1=NOC。
  */
@@ -1197,8 +1212,6 @@ export const JOB_APPLY_URL_BY_ID = `SELECT apply_url FROM jobs WHERE id = $1 LIM
 // =========================================================================
 // 25. AI 顾问的事实取数(lib/consult 的 11 把工具 + lib/ruling 的判定底表)
 // =========================================================================
-
-// ── lib/consult/functions.ts 与 lib/ruling/functions.ts ──
 
 /**
  * 清单收录扁平行(consult 的 lookup_coverage)。
@@ -1266,7 +1279,6 @@ export const PNP_OCCUPATIONS_FULL = `SELECT province, stream, label, program, ty
 export const PNP_DRAWS_FULL = `SELECT province, label, scale, kind, draw_date, stream, score, invitations, note, url, fetched
             FROM pnp_draws WHERE COALESCE(draw_date,'') <> '' ORDER BY draw_date DESC`
 
-
 /**
  * 计分表全量(ruling 判定底表;与 EE_POINTS_GRID 分开:那条带筛选参数)。
  */
@@ -1283,9 +1295,6 @@ export const DESIGNATED_BY_PROV_2 = `SELECT name, province, location, is_tech, s
 // =========================================================================
 // 26. 职业检索(lib/consult 的 search_occupations 与 lib/agent 共用)
 // =========================================================================
-
-
-
 
 /**
  * 职业检索:标题/官方要求文本命中且**库里真有 ≥5 个在招岗**的码(0 打头的管理类剔除)。$1=ILIKE 词,$2=行数。
@@ -1350,7 +1359,6 @@ export const CLEAR_DUPS_CLOSED = `UPDATE jobs SET is_dup = false WHERE status <>
 export const HEARTBEAT_UPSERT = `INSERT INTO etl_heartbeat (id, last_seed) VALUES (1, now())
       ON CONFLICT (id) DO UPDATE SET last_seed = now()`
 
-// ── 补:单引号写的几条 ──
 /**
  * 各 mart 文件上次灌库的哈希(变了才重灌)。
  */
@@ -1391,8 +1399,6 @@ export const COMPANIES_IDS_BY_SLUGS = `SELECT id, slug FROM companies WHERE slug
  */
 export const SEEN_EXT_INSERT = `INSERT INTO seen_ext (external_id) SELECT unnest($1::text[])`
 
-
-// ── seed 的两张临时表(固定语句;ON COMMIT DROP 随事务清理) ──
 /**
  * 实测判死、需立即下架的岗;主键让反连接走索引探测,下架从超时降到秒级
  */
@@ -1403,7 +1409,6 @@ export const TEMP_DEAD_EXT = `CREATE TEMP TABLE dead_ext (external_id text PRIMA
  */
 export const TEMP_SEEN_EXT = `CREATE TEMP TABLE seen_ext (external_id text PRIMARY KEY) ON COMMIT DROP`
 
-// ── seed 事务体与动态拼版(2026-08-26 mart 形制批,自 seed 芯迁入)──
 /**
  * 开事务(seed 全程单事务:任一步失败整体回滚,不再有半写状态)。
  */

@@ -26,6 +26,8 @@ import type { DbPool } from './types'
 /**
  * 手里没有 payload 实例时用这个。
  * getPayload 自身按 config 记忆化,重复调用拿的是同一个实例、同一个池,不会多开连接。
+ *
+ * @returns 连接池(payload postgres adapter 挂的那一个)。
  */
 export async function getDb(): Promise<DbPool> {
   return dbOf(await getPayload({ config: await config }))

@@ -15,7 +15,7 @@ export type QueryResult = {
   /**
    * 行。any 是照实说:运行时保证只能靠域里的行映射函数,泛型装不出来。
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 行的真形状只有运行时的映射函数能保证,标注装不出来(见上句)
   rows: any[]
 
   /**
