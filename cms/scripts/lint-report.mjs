@@ -109,7 +109,8 @@ function readBaseline() {
 }
 
 /**
- * 文件路径 → 域名:src/lib/<域> 取域名,components 归 components,src 其余归 cms-other。
+ * 文件路径 → 域名:src/lib/<域> 与 src/components/<域> 各取子域名
+ * (2026-08-26 Frank:components 也按子域列行,不再挤成一行),src 其余归 cms-other。
  *
  * @param {string} file 绝对或相对路径。
  * @returns {string} 域名。
@@ -119,6 +120,10 @@ function domainOf(file) {
   const lib = p.match(/src\/lib\/([^/]+)\//)
   if (lib != null) {
     return 'lib/' + lib[1]
+  }
+  const comp = p.match(/src\/components\/([^/]+)\//)
+  if (comp != null) {
+    return 'components/' + comp[1]
   }
   if (p.includes('src/components/')) {
     return 'components'
@@ -229,7 +234,9 @@ function main() {
       md.push(`### ${id}(${grp.lines.length})`, '', ...grp.lines, '')
     }
   }
-  const outFile = path.join(path.resolve(CMS, OUT_DIR), `lint-${stamp}.md`)
+  const outDir = path.resolve(CMS, OUT_DIR)
+  mkdirSync(outDir, { recursive: true })
+  const outFile = path.join(outDir, `lint-${stamp}.md`)
   writeFileSync(outFile, md.join('\n'), 'utf8')
   console.log(`\n合计 活 error ${totalE} / 活 warn ${totalW} / 基线欠账 ${totalB},耗时 ${((Date.now() - t0) / 1000).toFixed(1)}s`)
   console.log(`报告:${path.relative(process.cwd(), outFile)}`)
