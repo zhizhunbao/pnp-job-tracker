@@ -2,7 +2,7 @@
 // 入口契约不变:/employers/designated?program=AIP&prov=NS 仍直达并预置筛选(初评表「查雇主」的落点)。
 import { employersBoardProps } from '@/lib/employers/server'
 import { getDb } from '@/lib/db/server'
-import { Employers } from '../Employers'
+import { Employers } from '@/components/employers'
 
 export const dynamic = 'force-dynamic'
 

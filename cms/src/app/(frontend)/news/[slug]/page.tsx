@@ -5,8 +5,7 @@ import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getUser } from '@/lib/quota/server'
-import { NewsDetail } from '../News'
-import { newsRegionName, type NewsComment, type NewsRow } from '../shared'
+import { NewsDetail, newsRegionName, type NewsComment, type NewsRow } from '@/components/news'
 import { SQL } from '@/lib/db'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'

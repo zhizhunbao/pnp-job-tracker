@@ -6,7 +6,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getUser } from '@/lib/quota/server'
 import { loadCompanyBySlug, loadSimilarEmployers } from '@/lib/jobs/server'
-import Company from './Company'
+import { Company } from '@/components/companies'
 
 export const dynamic = 'force-dynamic'
 

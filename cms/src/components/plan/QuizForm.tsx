@@ -6,7 +6,7 @@
 // 而版式全部来自 quiz/QuizUI(与选工作页共用同一套,Frank「保证所有答题页面一致」)。
 import { useEffect, useState } from 'react'
 
-import { QuizChoices, QuizNav, QuizTitle, pickL, type L } from '../quiz/QuizUI'
+import { QuizChoices, QuizNav, QuizTitle, pickL, type L } from '@/components/quiz'
 import type { Lang, TFn } from '@/lib/i18n'
 import { getFields, fieldsOf, type Answers, type Stage } from '@/lib/quiz'
 

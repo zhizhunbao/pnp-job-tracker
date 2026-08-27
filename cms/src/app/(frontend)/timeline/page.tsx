@@ -1,7 +1,7 @@
 // 政策时间线页(C6-01):SSR 三查合并(照 rankings 模式);SEO=generateMetadata。
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { Timeline } from './Timeline'
+import { Timeline } from '@/components/timeline'
 import { fetchTimeline } from '@/lib/plan/server'
 
 export const dynamic = 'force-dynamic'

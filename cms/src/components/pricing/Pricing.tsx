@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { AuthModal } from '@/components/auth'
-import { PricingCard, type PriceCaps } from '../jobs/PricingModal'
+import { PricingCard, type PriceCaps } from '@/components/jobs'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { Shell } from '@/components/shell'

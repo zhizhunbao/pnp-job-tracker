@@ -7,8 +7,8 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { LANGS } from '@/lib/i18n'
 import { useLang } from '@/components/i18n'
-import { JobBody } from '../Jd'                    // 正文身体:整页与弹框渲的是同一棵树
-import { JobMiniRow } from '../Company'
+import { JobBody } from './Jd'                    // 正文身体:整页与弹框渲的是同一棵树
+import { JobMiniRow } from './Company'
 import { type Plan, type JobRow, type NocDesc } from '@/lib/jobs'
 import { type RelatedJob } from '@/lib/jobs/server'
 import { catName, nocLocalTitle, registerCatLabels } from '@/lib/noc'

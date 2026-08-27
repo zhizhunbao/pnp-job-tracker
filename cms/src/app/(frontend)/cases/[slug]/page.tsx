@@ -9,7 +9,7 @@ import { CASES } from '@/lib/ruling'
 import { caseAnswer, casePages, getVerdictData } from '@/lib/ruling/server'
 import { getDb } from '@/lib/db/server'
 import { ssrLang } from '@/lib/i18n/server'
-import { Case } from './Case'
+import { Case } from '@/components/cases'
 
 // 🔴 **不要加回 generateStaticParams**(2026-08-11 实撞):它与 force-dynamic 同时存在时,
 // 这一页会在**构建期**被预渲染,之后无论库里怎么变、页面都停在部署那一刻 ——

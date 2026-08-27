@@ -1,61 +1,11 @@
 {
-  "src/app/(frontend)/account/ProfileForm.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/account/ResumeArchive.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/account/SavedJobsList.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/account/SavedSearchList.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
   "src/app/(frontend)/account/page.tsx": {
     "local/page-compose-only": {
       "count": 25
     }
   },
-  "src/app/(frontend)/cases/Cases.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/cases/[slug]/Case.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
   "src/app/(frontend)/cases/page.tsx": {
     "local/page-compose-only": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/chat/ChatAnswer.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/chat/ChatBox.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/chat/ChatLauncher.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/companies/[slug]/Company.tsx": {
-    "local/route-file-names": {
       "count": 1
     }
   },
@@ -64,199 +14,8 @@
       "count": 1
     }
   },
-  "src/app/(frontend)/employers/Employers.tsx": {
-    "@eslint-community/eslint-comments/require-description": {
-      "count": 1
-    },
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/employers/Sponsors.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/employers/compare/Compare.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/funnel/Funnel.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/jobs/Advisor.tsx": {
-    "@eslint-community/eslint-comments/require-description": {
-      "count": 2
-    },
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/jobs/Company.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/jobs/ConditionGrid.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/jobs/Jd.tsx": {
-    "@eslint-community/eslint-comments/require-description": {
-      "count": 3
-    },
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/jobs/Jobs.tsx": {
-    "@eslint-community/eslint-comments/require-description": {
-      "count": 3
-    },
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/jobs/Lock.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/jobs/OnboardingWizard.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/jobs/Pnp.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/jobs/PnpScoreCard.tsx": {
-    "@eslint-community/eslint-comments/require-description": {
-      "count": 4
-    },
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/jobs/PricingModal.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/jobs/ResumeMatchModal.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/jobs/Table.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/jobs/TripleVerdictModal.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/jobs/UpgradeModal.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/jobs/[id]/Job.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/jobs/[id]/OccReportCard.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/jobs/[id]/PathwaysCard.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
   "src/app/(frontend)/jobs/[id]/page.tsx": {
     "local/page-compose-only": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/legal/Legal.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/news/News.tsx": {
-    "@eslint-community/eslint-comments/require-description": {
-      "count": 2
-    },
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/occupations/Occupations.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/plan/QuizForm.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/plan/pr/Decision.tsx": {
-    "@eslint-community/eslint-comments/require-description": {
-      "count": 3
-    },
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/plan/pr/ScoreLineCard.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/pricing/Pricing.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/quiz/EntryQuiz.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/quiz/OccPicker.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/quiz/ProvincePicker.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/quiz/QuizUI.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/rankings/Ranking.tsx": {
-    "local/route-file-names": {
-      "count": 1
-    }
-  },
-  "src/app/(frontend)/resources/Resources.tsx": {
-    "local/route-file-names": {
       "count": 1
     }
   },
@@ -265,24 +24,814 @@
       "count": 1
     }
   },
-  "src/app/(frontend)/start/Pulse.tsx": {
-    "local/route-file-names": {
+  "src/components/account/ProfileForm.tsx": {
+    "@stylistic/brace-style": {
+      "count": 8
+    },
+    "@stylistic/max-len": {
+      "count": 14
+    },
+    "@stylistic/object-property-newline": {
+      "count": 4
+    },
+    "curly": {
+      "count": 4
+    },
+    "func-style": {
+      "count": 4
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 15
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 34
+    },
+    "local/no-bang": {
+      "count": 4
+    },
+    "local/no-bare-strings": {
+      "count": 81
+    },
+    "local/no-comment-in-function": {
+      "count": 14
+    },
+    "local/no-nullish": {
+      "count": 7
+    },
+    "no-restricted-syntax": {
+      "count": 1
+    },
+    "no-ternary": {
+      "count": 8
+    },
+    "react/forbid-dom-props": {
+      "count": 19
+    },
+    "react/no-multi-comp": {
       "count": 1
     }
   },
-  "src/app/(frontend)/stats/charts.tsx": {
-    "local/route-file-names": {
+  "src/components/account/ResumeArchive.tsx": {
+    "@stylistic/max-len": {
+      "count": 6
+    },
+    "@stylistic/object-property-newline": {
+      "count": 17
+    },
+    "func-style": {
+      "count": 1
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 4
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 5
+    },
+    "local/no-bang": {
+      "count": 2
+    },
+    "local/no-bare-strings": {
+      "count": 29
+    },
+    "local/no-comment-in-function": {
+      "count": 3
+    },
+    "local/no-object-spread": {
+      "count": 4
+    },
+    "no-ternary": {
+      "count": 3
+    },
+    "react/forbid-dom-props": {
+      "count": 11
+    }
+  },
+  "src/components/account/SavedJobsList.tsx": {
+    "@stylistic/brace-style": {
+      "count": 2
+    },
+    "@stylistic/max-len": {
+      "count": 5
+    },
+    "@stylistic/object-property-newline": {
+      "count": 4
+    },
+    "func-style": {
+      "count": 2
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 8
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 18
+    },
+    "local/no-bang": {
+      "count": 7
+    },
+    "local/no-bare-strings": {
+      "count": 59
+    },
+    "local/no-comment-in-function": {
+      "count": 5
+    },
+    "local/no-object-spread": {
+      "count": 1
+    },
+    "no-ternary": {
+      "count": 5
+    },
+    "react/forbid-dom-props": {
+      "count": 13
+    },
+    "react/forbid-elements": {
       "count": 1
     }
   },
-  "src/app/(frontend)/stats/ui.tsx": {
-    "local/route-file-names": {
+  "src/components/account/SavedSearchList.tsx": {
+    "@stylistic/brace-style": {
+      "count": 2
+    },
+    "@stylistic/max-len": {
+      "count": 2
+    },
+    "func-style": {
+      "count": 2
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 4
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 9
+    },
+    "local/no-bare-strings": {
+      "count": 18
+    },
+    "local/no-nullish": {
+      "count": 1
+    },
+    "no-ternary": {
+      "count": 3
+    },
+    "react/forbid-dom-props": {
+      "count": 7
+    }
+  },
+  "src/components/account/functions.ts": {
+    "local/doc-every-member": {
+      "count": 1
+    },
+    "local/no-bare-strings": {
+      "count": 3
+    }
+  },
+  "src/components/account/profileOptions.ts": {
+    "func-style": {
+      "count": 3
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 4
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 3
+    },
+    "local/no-bare-strings": {
+      "count": 40
+    },
+    "no-ternary": {
+      "count": 11
+    }
+  },
+  "src/components/account/types.ts": {
+    "local/doc-every-member": {
+      "count": 2
+    }
+  },
+  "src/components/cases/Case.tsx": {
+    "@stylistic/brace-style": {
+      "count": 6
+    },
+    "@stylistic/max-len": {
+      "count": 13
+    },
+    "@stylistic/object-property-newline": {
+      "count": 9
+    },
+    "curly": {
+      "count": 3
+    },
+    "func-style": {
+      "count": 6
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 5
+    },
+    "local/doc-multiline": {
+      "count": 1
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 17
+    },
+    "local/no-bang": {
+      "count": 2
+    },
+    "local/no-bare-strings": {
+      "count": 99
+    },
+    "local/no-comment-in-function": {
+      "count": 21
+    },
+    "local/no-nullish": {
+      "count": 6
+    },
+    "local/no-object-spread": {
+      "count": 2
+    },
+    "no-ternary": {
+      "count": 21
+    },
+    "react/forbid-dom-props": {
+      "count": 39
+    },
+    "react/forbid-elements": {
+      "count": 2
+    },
+    "react/no-multi-comp": {
+      "count": 2
+    }
+  },
+  "src/components/cases/Cases.tsx": {
+    "@stylistic/max-len": {
+      "count": 5
+    },
+    "@stylistic/object-property-newline": {
+      "count": 4
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 2
+    },
+    "local/no-bare-strings": {
+      "count": 30
+    },
+    "react/forbid-dom-props": {
+      "count": 6
+    },
+    "react/forbid-elements": {
       "count": 1
     }
   },
-  "src/app/(frontend)/timeline/Timeline.tsx": {
-    "local/route-file-names": {
+  "src/components/chat/ChatAnswer.tsx": {
+    "@stylistic/brace-style": {
+      "count": 12
+    },
+    "@stylistic/object-property-newline": {
+      "count": 7
+    },
+    "curly": {
+      "count": 6
+    },
+    "func-style": {
+      "count": 6
+    },
+    "local/component-file-names": {
       "count": 1
+    },
+    "local/component-name-match": {
+      "count": 2
+    },
+    "local/doc-every-member": {
+      "count": 35
+    },
+    "local/doc-multiline": {
+      "count": 1
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 18
+    },
+    "local/no-bang": {
+      "count": 11
+    },
+    "local/no-bare-strings": {
+      "count": 69
+    },
+    "local/no-comment-in-function": {
+      "count": 21
+    },
+    "local/no-literal-index": {
+      "count": 2
+    },
+    "local/no-nullish": {
+      "count": 3
+    },
+    "no-ternary": {
+      "count": 12
+    },
+    "react/forbid-dom-props": {
+      "count": 1
+    },
+    "react/forbid-elements": {
+      "count": 1
+    },
+    "react/no-multi-comp": {
+      "count": 1
+    }
+  },
+  "src/components/chat/ChatBox.tsx": {
+    "@stylistic/brace-style": {
+      "count": 40
+    },
+    "@stylistic/max-len": {
+      "count": 18
+    },
+    "@stylistic/object-property-newline": {
+      "count": 5
+    },
+    "curly": {
+      "count": 20
+    },
+    "func-style": {
+      "count": 6
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 18
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 65
+    },
+    "local/no-bang": {
+      "count": 24
+    },
+    "local/no-bare-strings": {
+      "count": 177
+    },
+    "local/no-comment-in-function": {
+      "count": 49
+    },
+    "local/no-double-assertion": {
+      "count": 1
+    },
+    "local/no-nullish": {
+      "count": 8
+    },
+    "local/no-object-spread": {
+      "count": 4
+    },
+    "local/one-parameter": {
+      "count": 1
+    },
+    "no-ternary": {
+      "count": 39
+    },
+    "react/forbid-dom-props": {
+      "count": 5
+    },
+    "react/forbid-elements": {
+      "count": 2
+    }
+  },
+  "src/components/chat/ChatLauncher.tsx": {
+    "@stylistic/brace-style": {
+      "count": 59
+    },
+    "@stylistic/max-len": {
+      "count": 2
+    },
+    "@stylistic/object-property-newline": {
+      "count": 1
+    },
+    "curly": {
+      "count": 29
+    },
+    "func-style": {
+      "count": 16
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 9
+    },
+    "local/doc-multiline": {
+      "count": 1
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 61
+    },
+    "local/no-bang": {
+      "count": 25
+    },
+    "local/no-bare-strings": {
+      "count": 137
+    },
+    "local/no-class": {
+      "count": 1
+    },
+    "local/no-comment-in-function": {
+      "count": 63
+    },
+    "local/no-object-spread": {
+      "count": 3
+    },
+    "no-ternary": {
+      "count": 22
+    },
+    "react/forbid-dom-props": {
+      "count": 2
+    },
+    "react/no-multi-comp": {
+      "count": 1
+    }
+  },
+  "src/components/chat/chatExamples.ts": {
+    "@stylistic/max-len": {
+      "count": 2
+    },
+    "curly": {
+      "count": 8
+    },
+    "func-style": {
+      "count": 2
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 8
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 10
+    },
+    "local/no-bang": {
+      "count": 13
+    },
+    "local/no-bare-strings": {
+      "count": 29
+    },
+    "local/no-literal-index": {
+      "count": 1
+    },
+    "local/no-nullish": {
+      "count": 8
+    },
+    "local/one-parameter": {
+      "count": 2
+    },
+    "no-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/companies/Company.tsx": {
+    "@stylistic/max-len": {
+      "count": 4
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 3
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 1
+    },
+    "local/no-bang": {
+      "count": 1
+    },
+    "local/no-bare-strings": {
+      "count": 31
+    },
+    "local/no-comment-in-function": {
+      "count": 6
+    },
+    "no-ternary": {
+      "count": 6
+    },
+    "react/forbid-dom-props": {
+      "count": 10
+    },
+    "react/forbid-elements": {
+      "count": 2
+    }
+  },
+  "src/components/employers/Compare.tsx": {
+    "@stylistic/brace-style": {
+      "count": 4
+    },
+    "@stylistic/max-len": {
+      "count": 18
+    },
+    "@stylistic/object-property-newline": {
+      "count": 5
+    },
+    "func-style": {
+      "count": 2
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 8
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 27
+    },
+    "local/no-bang": {
+      "count": 1
+    },
+    "local/no-bare-strings": {
+      "count": 114
+    },
+    "local/no-comment-in-function": {
+      "count": 6
+    },
+    "local/no-literal-index": {
+      "count": 1
+    },
+    "local/no-nullish": {
+      "count": 4
+    },
+    "local/no-object-spread": {
+      "count": 1
+    },
+    "local/no-split-import": {
+      "count": 1
+    },
+    "no-ternary": {
+      "count": 22
+    },
+    "react/forbid-dom-props": {
+      "count": 27
+    },
+    "react/forbid-elements": {
+      "count": 3
+    }
+  },
+  "src/components/employers/Employers.tsx": {
+    "@eslint-community/eslint-comments/require-description": {
+      "count": 1
+    },
+    "@stylistic/brace-style": {
+      "count": 8
+    },
+    "@stylistic/max-len": {
+      "count": 30
+    },
+    "curly": {
+      "count": 10
+    },
+    "func-style": {
+      "count": 2
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 2
+    },
+    "local/doc-multiline": {
+      "count": 2
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 49
+    },
+    "local/no-bang": {
+      "count": 6
+    },
+    "local/no-bare-strings": {
+      "count": 136
+    },
+    "local/no-comment-in-function": {
+      "count": 17
+    },
+    "local/no-nullish": {
+      "count": 3
+    },
+    "local/no-object-spread": {
+      "count": 6
+    },
+    "local/no-split-import": {
+      "count": 1
+    },
+    "local/one-parameter": {
+      "count": 2
+    },
+    "no-ternary": {
+      "count": 32
+    },
+    "react/forbid-dom-props": {
+      "count": 33
+    },
+    "react/forbid-elements": {
+      "count": 3
+    }
+  },
+  "src/components/employers/Sponsors.tsx": {
+    "@stylistic/brace-style": {
+      "count": 2
+    },
+    "@stylistic/max-len": {
+      "count": 17
+    },
+    "@stylistic/object-property-newline": {
+      "count": 5
+    },
+    "curly": {
+      "count": 7
+    },
+    "func-style": {
+      "count": 1
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 9
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 25
+    },
+    "local/no-bang": {
+      "count": 1
+    },
+    "local/no-bare-strings": {
+      "count": 59
+    },
+    "local/no-comment-in-function": {
+      "count": 8
+    },
+    "local/no-nullish": {
+      "count": 4
+    },
+    "local/one-parameter": {
+      "count": 3
+    },
+    "no-ternary": {
+      "count": 22
+    },
+    "react/forbid-dom-props": {
+      "count": 23
+    },
+    "react/forbid-elements": {
+      "count": 2
+    }
+  },
+  "src/components/funnel/Funnel.tsx": {
+    "@stylistic/max-len": {
+      "count": 4
+    },
+    "@stylistic/object-property-newline": {
+      "count": 3
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 15
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 10
+    },
+    "local/no-bare-strings": {
+      "count": 49
+    },
+    "local/no-comment-in-function": {
+      "count": 6
+    },
+    "local/no-object-spread": {
+      "count": 3
+    },
+    "no-ternary": {
+      "count": 1
+    },
+    "react/forbid-dom-props": {
+      "count": 16
     }
   },
   "src/components/i18n/hooks.ts": {
@@ -290,8 +839,2059 @@
       "count": 1
     }
   },
+  "src/components/jobs/Advisor.tsx": {
+    "@eslint-community/eslint-comments/require-description": {
+      "count": 2
+    },
+    "@stylistic/brace-style": {
+      "count": 87
+    },
+    "@stylistic/max-len": {
+      "count": 95
+    },
+    "@stylistic/no-trailing-spaces": {
+      "count": 1
+    },
+    "@stylistic/object-property-newline": {
+      "count": 4
+    },
+    "curly": {
+      "count": 36
+    },
+    "func-style": {
+      "count": 18
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 2
+    },
+    "local/doc-every-member": {
+      "count": 110
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 4
+    },
+    "local/no-arrow-function": {
+      "count": 104
+    },
+    "local/no-bang": {
+      "count": 57
+    },
+    "local/no-bare-strings": {
+      "count": 622
+    },
+    "local/no-comment-in-function": {
+      "count": 151
+    },
+    "local/no-nullish": {
+      "count": 5
+    },
+    "local/no-object-spread": {
+      "count": 12
+    },
+    "local/no-split-import": {
+      "count": 2
+    },
+    "local/one-parameter": {
+      "count": 3
+    },
+    "no-restricted-syntax": {
+      "count": 1
+    },
+    "no-ternary": {
+      "count": 140
+    },
+    "object-shorthand": {
+      "count": 1
+    },
+    "react/forbid-dom-props": {
+      "count": 14
+    },
+    "react/forbid-elements": {
+      "count": 4
+    },
+    "react/no-multi-comp": {
+      "count": 8
+    }
+  },
+  "src/components/jobs/Company.tsx": {
+    "@stylistic/brace-style": {
+      "count": 28
+    },
+    "@stylistic/max-len": {
+      "count": 51
+    },
+    "@stylistic/object-property-newline": {
+      "count": 9
+    },
+    "curly": {
+      "count": 25
+    },
+    "func-style": {
+      "count": 8
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 7
+    },
+    "local/doc-every-member": {
+      "count": 51
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 62
+    },
+    "local/no-bang": {
+      "count": 50
+    },
+    "local/no-bare-strings": {
+      "count": 250
+    },
+    "local/no-comment-in-function": {
+      "count": 60
+    },
+    "local/no-literal-index": {
+      "count": 2
+    },
+    "local/no-nullish": {
+      "count": 13
+    },
+    "local/no-object-spread": {
+      "count": 2
+    },
+    "local/one-parameter": {
+      "count": 1
+    },
+    "no-ternary": {
+      "count": 102
+    },
+    "react/forbid-dom-props": {
+      "count": 7
+    },
+    "react/forbid-elements": {
+      "count": 12
+    },
+    "react/no-multi-comp": {
+      "count": 6
+    }
+  },
+  "src/components/jobs/ConditionGrid.tsx": {
+    "@stylistic/max-len": {
+      "count": 3
+    },
+    "@stylistic/object-property-newline": {
+      "count": 7
+    },
+    "curly": {
+      "count": 2
+    },
+    "func-style": {
+      "count": 1
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 9
+    },
+    "local/doc-multiline": {
+      "count": 4
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 17
+    },
+    "local/no-bang": {
+      "count": 6
+    },
+    "local/no-bare-strings": {
+      "count": 38
+    },
+    "local/no-comment-in-function": {
+      "count": 2
+    },
+    "local/no-nullish": {
+      "count": 1
+    },
+    "no-ternary": {
+      "count": 11
+    },
+    "react/forbid-dom-props": {
+      "count": 8
+    }
+  },
+  "src/components/jobs/Jd.tsx": {
+    "@eslint-community/eslint-comments/require-description": {
+      "count": 3
+    },
+    "@stylistic/brace-style": {
+      "count": 65
+    },
+    "@stylistic/max-len": {
+      "count": 47
+    },
+    "@stylistic/object-property-newline": {
+      "count": 2
+    },
+    "curly": {
+      "count": 36
+    },
+    "func-style": {
+      "count": 17
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 5
+    },
+    "local/doc-every-member": {
+      "count": 32
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 2
+    },
+    "local/no-arrow-function": {
+      "count": 74
+    },
+    "local/no-bang": {
+      "count": 45
+    },
+    "local/no-bare-strings": {
+      "count": 442
+    },
+    "local/no-comment-in-function": {
+      "count": 87
+    },
+    "local/no-literal-index": {
+      "count": 4
+    },
+    "local/no-object-spread": {
+      "count": 1
+    },
+    "local/one-parameter": {
+      "count": 1
+    },
+    "no-ternary": {
+      "count": 60
+    },
+    "react/forbid-dom-props": {
+      "count": 2
+    },
+    "react/forbid-elements": {
+      "count": 6
+    },
+    "react/no-multi-comp": {
+      "count": 5
+    }
+  },
+  "src/components/jobs/Job.tsx": {
+    "@stylistic/brace-style": {
+      "count": 2
+    },
+    "@stylistic/max-len": {
+      "count": 10
+    },
+    "@stylistic/object-property-newline": {
+      "count": 9
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 20
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 11
+    },
+    "local/no-bang": {
+      "count": 3
+    },
+    "local/no-bare-strings": {
+      "count": 64
+    },
+    "local/no-comment-in-function": {
+      "count": 26
+    },
+    "local/no-object-spread": {
+      "count": 1
+    },
+    "no-ternary": {
+      "count": 15
+    },
+    "react/forbid-dom-props": {
+      "count": 13
+    },
+    "react/forbid-elements": {
+      "count": 4
+    }
+  },
+  "src/components/jobs/Jobs.tsx": {
+    "@eslint-community/eslint-comments/require-description": {
+      "count": 3
+    },
+    "@stylistic/brace-style": {
+      "count": 91
+    },
+    "@stylistic/max-len": {
+      "count": 70
+    },
+    "@stylistic/object-property-newline": {
+      "count": 23
+    },
+    "curly": {
+      "count": 52
+    },
+    "func-style": {
+      "count": 26
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 32
+    },
+    "local/doc-multiline": {
+      "count": 1
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 166
+    },
+    "local/no-bang": {
+      "count": 43
+    },
+    "local/no-bare-strings": {
+      "count": 437
+    },
+    "local/no-comment-in-function": {
+      "count": 232
+    },
+    "local/no-nullish": {
+      "count": 16
+    },
+    "local/no-object-spread": {
+      "count": 7
+    },
+    "local/no-split-import": {
+      "count": 2
+    },
+    "no-restricted-syntax": {
+      "count": 3
+    },
+    "no-ternary": {
+      "count": 99
+    },
+    "object-shorthand": {
+      "count": 2
+    },
+    "react/forbid-dom-props": {
+      "count": 4
+    },
+    "react/forbid-elements": {
+      "count": 5
+    },
+    "react/no-multi-comp": {
+      "count": 1
+    }
+  },
+  "src/components/jobs/Lock.tsx": {
+    "@stylistic/max-len": {
+      "count": 4
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 2
+    },
+    "local/doc-every-member": {
+      "count": 9
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 1
+    },
+    "local/no-bare-strings": {
+      "count": 7
+    },
+    "react/no-multi-comp": {
+      "count": 1
+    }
+  },
+  "src/components/jobs/OccReportCard.tsx": {
+    "@stylistic/brace-style": {
+      "count": 4
+    },
+    "@stylistic/max-len": {
+      "count": 4
+    },
+    "@stylistic/object-property-newline": {
+      "count": 3
+    },
+    "curly": {
+      "count": 3
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 15
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 8
+    },
+    "local/no-bang": {
+      "count": 4
+    },
+    "local/no-bare-strings": {
+      "count": 18
+    },
+    "local/no-comment-in-function": {
+      "count": 6
+    },
+    "local/no-nullish": {
+      "count": 2
+    },
+    "no-ternary": {
+      "count": 5
+    },
+    "react/forbid-dom-props": {
+      "count": 5
+    },
+    "react/no-multi-comp": {
+      "count": 1
+    }
+  },
+  "src/components/jobs/OnboardingWizard.tsx": {
+    "@stylistic/brace-style": {
+      "count": 16
+    },
+    "@stylistic/max-len": {
+      "count": 18
+    },
+    "@stylistic/object-property-newline": {
+      "count": 7
+    },
+    "curly": {
+      "count": 10
+    },
+    "func-style": {
+      "count": 7
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 12
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 38
+    },
+    "local/no-bang": {
+      "count": 4
+    },
+    "local/no-bare-strings": {
+      "count": 147
+    },
+    "local/no-comment-in-function": {
+      "count": 14
+    },
+    "local/no-nullish": {
+      "count": 2
+    },
+    "local/no-object-spread": {
+      "count": 1
+    },
+    "no-ternary": {
+      "count": 21
+    },
+    "react/forbid-dom-props": {
+      "count": 30
+    },
+    "react/no-multi-comp": {
+      "count": 1
+    }
+  },
+  "src/components/jobs/PathwaysCard.tsx": {
+    "@stylistic/brace-style": {
+      "count": 4
+    },
+    "@stylistic/max-len": {
+      "count": 4
+    },
+    "@stylistic/object-property-newline": {
+      "count": 6
+    },
+    "curly": {
+      "count": 6
+    },
+    "func-style": {
+      "count": 2
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 10
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 10
+    },
+    "local/no-bang": {
+      "count": 6
+    },
+    "local/no-bare-strings": {
+      "count": 39
+    },
+    "local/no-comment-in-function": {
+      "count": 3
+    },
+    "no-ternary": {
+      "count": 9
+    },
+    "react/forbid-dom-props": {
+      "count": 9
+    }
+  },
+  "src/components/jobs/Pnp.tsx": {
+    "@stylistic/brace-style": {
+      "count": 16
+    },
+    "@stylistic/max-len": {
+      "count": 54
+    },
+    "@stylistic/object-property-newline": {
+      "count": 10
+    },
+    "curly": {
+      "count": 50
+    },
+    "func-style": {
+      "count": 6
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 7
+    },
+    "local/doc-every-member": {
+      "count": 56
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 3
+    },
+    "local/no-arrow-function": {
+      "count": 73
+    },
+    "local/no-bang": {
+      "count": 33
+    },
+    "local/no-bare-strings": {
+      "count": 317
+    },
+    "local/no-comment-in-function": {
+      "count": 71
+    },
+    "local/no-literal-index": {
+      "count": 2
+    },
+    "local/no-nullish": {
+      "count": 15
+    },
+    "local/no-object-spread": {
+      "count": 2
+    },
+    "local/no-split-import": {
+      "count": 1
+    },
+    "local/one-parameter": {
+      "count": 3
+    },
+    "no-ternary": {
+      "count": 70
+    },
+    "react/forbid-dom-props": {
+      "count": 2
+    },
+    "react/forbid-elements": {
+      "count": 2
+    },
+    "react/no-multi-comp": {
+      "count": 7
+    }
+  },
+  "src/components/jobs/PnpScoreCard.tsx": {
+    "@eslint-community/eslint-comments/require-description": {
+      "count": 4
+    },
+    "@stylistic/brace-style": {
+      "count": 22
+    },
+    "@stylistic/max-len": {
+      "count": 58
+    },
+    "@stylistic/object-property-newline": {
+      "count": 32
+    },
+    "curly": {
+      "count": 46
+    },
+    "func-style": {
+      "count": 19
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 74
+    },
+    "local/doc-multiline": {
+      "count": 8
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 191
+    },
+    "local/no-bang": {
+      "count": 68
+    },
+    "local/no-bare-strings": {
+      "count": 346
+    },
+    "local/no-comment-in-function": {
+      "count": 127
+    },
+    "local/no-literal-index": {
+      "count": 4
+    },
+    "local/no-nullish": {
+      "count": 36
+    },
+    "local/no-object-spread": {
+      "count": 18
+    },
+    "no-ternary": {
+      "count": 86
+    },
+    "react/forbid-dom-props": {
+      "count": 47
+    },
+    "react/forbid-elements": {
+      "count": 1
+    },
+    "react/no-multi-comp": {
+      "count": 2
+    }
+  },
+  "src/components/jobs/PricingModal.tsx": {
+    "@stylistic/brace-style": {
+      "count": 8
+    },
+    "@stylistic/max-len": {
+      "count": 14
+    },
+    "@stylistic/object-property-newline": {
+      "count": 10
+    },
+    "curly": {
+      "count": 2
+    },
+    "func-style": {
+      "count": 6
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 2
+    },
+    "local/doc-every-member": {
+      "count": 26
+    },
+    "local/doc-multiline": {
+      "count": 1
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 15
+    },
+    "local/no-bang": {
+      "count": 1
+    },
+    "local/no-bare-strings": {
+      "count": 87
+    },
+    "local/no-comment-in-function": {
+      "count": 17
+    },
+    "local/no-object-spread": {
+      "count": 4
+    },
+    "no-ternary": {
+      "count": 7
+    },
+    "react/forbid-dom-props": {
+      "count": 25
+    },
+    "react/forbid-elements": {
+      "count": 1
+    },
+    "react/no-multi-comp": {
+      "count": 3
+    }
+  },
+  "src/components/jobs/ResumeMatchModal.tsx": {
+    "@stylistic/brace-style": {
+      "count": 10
+    },
+    "@stylistic/max-len": {
+      "count": 14
+    },
+    "@stylistic/object-property-newline": {
+      "count": 6
+    },
+    "curly": {
+      "count": 6
+    },
+    "func-style": {
+      "count": 2
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 17
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 17
+    },
+    "local/no-bang": {
+      "count": 8
+    },
+    "local/no-bare-strings": {
+      "count": 87
+    },
+    "local/no-comment-in-function": {
+      "count": 15
+    },
+    "local/no-nullish": {
+      "count": 1
+    },
+    "no-ternary": {
+      "count": 17
+    },
+    "react/forbid-dom-props": {
+      "count": 20
+    },
+    "react/forbid-elements": {
+      "count": 1
+    }
+  },
+  "src/components/jobs/Table.tsx": {
+    "@stylistic/brace-style": {
+      "count": 105
+    },
+    "@stylistic/max-len": {
+      "count": 37
+    },
+    "@stylistic/object-property-newline": {
+      "count": 24
+    },
+    "curly": {
+      "count": 3
+    },
+    "func-style": {
+      "count": 6
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 50
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 10
+    },
+    "local/no-bang": {
+      "count": 16
+    },
+    "local/no-bare-strings": {
+      "count": 332
+    },
+    "local/no-comment-in-function": {
+      "count": 22
+    },
+    "local/no-nullish": {
+      "count": 1
+    },
+    "local/no-split-import": {
+      "count": 1
+    },
+    "local/one-parameter": {
+      "count": 1
+    },
+    "no-restricted-syntax": {
+      "count": 1
+    },
+    "no-ternary": {
+      "count": 52
+    },
+    "react/forbid-elements": {
+      "count": 1
+    }
+  },
+  "src/components/jobs/TripleVerdictModal.tsx": {
+    "@stylistic/brace-style": {
+      "count": 8
+    },
+    "@stylistic/max-len": {
+      "count": 20
+    },
+    "@stylistic/object-property-newline": {
+      "count": 38
+    },
+    "curly": {
+      "count": 24
+    },
+    "func-style": {
+      "count": 4
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 2
+    },
+    "local/doc-every-member": {
+      "count": 73
+    },
+    "local/doc-multiline": {
+      "count": 10
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 2
+    },
+    "local/no-arrow-function": {
+      "count": 25
+    },
+    "local/no-bang": {
+      "count": 9
+    },
+    "local/no-bare-strings": {
+      "count": 204
+    },
+    "local/no-comment-in-function": {
+      "count": 47
+    },
+    "local/no-nullish": {
+      "count": 17
+    },
+    "local/no-object-spread": {
+      "count": 3
+    },
+    "local/one-parameter": {
+      "count": 4
+    },
+    "no-ternary": {
+      "count": 51
+    },
+    "react/forbid-dom-props": {
+      "count": 24
+    },
+    "react/forbid-elements": {
+      "count": 2
+    },
+    "react/no-multi-comp": {
+      "count": 4
+    }
+  },
+  "src/components/jobs/UpgradeModal.tsx": {
+    "@stylistic/brace-style": {
+      "count": 8
+    },
+    "@stylistic/max-len": {
+      "count": 9
+    },
+    "@stylistic/object-property-newline": {
+      "count": 9
+    },
+    "func-style": {
+      "count": 1
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 2
+    },
+    "local/doc-every-member": {
+      "count": 10
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 12
+    },
+    "local/no-bare-strings": {
+      "count": 48
+    },
+    "local/no-comment-in-function": {
+      "count": 6
+    },
+    "local/no-object-spread": {
+      "count": 3
+    },
+    "no-ternary": {
+      "count": 4
+    },
+    "react/forbid-dom-props": {
+      "count": 11
+    },
+    "react/no-multi-comp": {
+      "count": 1
+    }
+  },
+  "src/components/jobs/colWidths.shared.ts": {
+    "curly": {
+      "count": 2
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 4
+    },
+    "local/doc-multiline": {
+      "count": 2
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 1
+    },
+    "local/no-bang": {
+      "count": 1
+    },
+    "local/no-bare-strings": {
+      "count": 2
+    },
+    "local/no-comment-in-function": {
+      "count": 1
+    }
+  },
+  "src/components/jobs/colWidths.ts": {
+    "@stylistic/brace-style": {
+      "count": 33
+    },
+    "@stylistic/max-len": {
+      "count": 6
+    },
+    "curly": {
+      "count": 19
+    },
+    "func-style": {
+      "count": 6
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 21
+    },
+    "local/doc-multiline": {
+      "count": 8
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 47
+    },
+    "local/no-bang": {
+      "count": 17
+    },
+    "local/no-bare-strings": {
+      "count": 28
+    },
+    "local/no-comment-in-function": {
+      "count": 47
+    },
+    "local/no-double-assertion": {
+      "count": 1
+    },
+    "local/no-nullish": {
+      "count": 18
+    },
+    "local/no-object-spread": {
+      "count": 1
+    },
+    "local/one-parameter": {
+      "count": 4
+    },
+    "no-ternary": {
+      "count": 12
+    }
+  },
+  "src/components/jobs/columns.shared.ts": {
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/doc-multiline": {
+      "count": 1
+    },
+    "local/file-header": {
+      "count": 1
+    }
+  },
+  "src/components/jobs/filters.shared.ts": {
+    "@stylistic/object-property-newline": {
+      "count": 17
+    },
+    "curly": {
+      "count": 4
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 22
+    },
+    "local/doc-multiline": {
+      "count": 6
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 1
+    },
+    "local/no-bang": {
+      "count": 1
+    },
+    "local/no-bare-strings": {
+      "count": 27
+    },
+    "local/no-comment-in-function": {
+      "count": 1
+    },
+    "local/no-nullish": {
+      "count": 1
+    },
+    "no-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/jobs/functions.ts": {
+    "local/no-bare-strings": {
+      "count": 4
+    }
+  },
+  "src/components/legal/Legal.tsx": {
+    "@stylistic/max-len": {
+      "count": 3
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 2
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 3
+    },
+    "local/no-bare-strings": {
+      "count": 22
+    },
+    "local/no-comment-in-function": {
+      "count": 2
+    },
+    "no-ternary": {
+      "count": 2
+    },
+    "react/forbid-dom-props": {
+      "count": 8
+    },
+    "react/forbid-elements": {
+      "count": 1
+    }
+  },
   "src/components/modal/hooks.ts": {
     "@stylistic/max-len": {
+      "count": 1
+    }
+  },
+  "src/components/news/News.tsx": {
+    "@eslint-community/eslint-comments/require-description": {
+      "count": 2
+    },
+    "@stylistic/brace-style": {
+      "count": 30
+    },
+    "@stylistic/max-len": {
+      "count": 22
+    },
+    "@stylistic/object-property-newline": {
+      "count": 13
+    },
+    "curly": {
+      "count": 21
+    },
+    "func-style": {
+      "count": 11
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 2
+    },
+    "local/doc-every-member": {
+      "count": 32
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 54
+    },
+    "local/no-bang": {
+      "count": 17
+    },
+    "local/no-bare-strings": {
+      "count": 260
+    },
+    "local/no-comment-in-function": {
+      "count": 35
+    },
+    "local/no-literal-index": {
+      "count": 1
+    },
+    "local/no-nullish": {
+      "count": 1
+    },
+    "local/no-object-spread": {
+      "count": 3
+    },
+    "no-ternary": {
+      "count": 32
+    },
+    "react/forbid-dom-props": {
+      "count": 2
+    },
+    "react/forbid-elements": {
+      "count": 5
+    },
+    "react/no-multi-comp": {
+      "count": 9
+    }
+  },
+  "src/components/news/shared.ts": {
+    "@stylistic/max-len": {
+      "count": 1
+    },
+    "@stylistic/object-property-newline": {
+      "count": 11
+    },
+    "curly": {
+      "count": 2
+    },
+    "func-style": {
+      "count": 2
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 26
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 2
+    },
+    "local/no-bare-strings": {
+      "count": 15
+    },
+    "no-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/occupations/Occupations.tsx": {
+    "@stylistic/brace-style": {
+      "count": 4
+    },
+    "@stylistic/max-len": {
+      "count": 11
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 8
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 9
+    },
+    "local/no-bang": {
+      "count": 2
+    },
+    "local/no-bare-strings": {
+      "count": 36
+    },
+    "local/no-comment-in-function": {
+      "count": 5
+    },
+    "react/forbid-dom-props": {
+      "count": 12
+    },
+    "react/forbid-elements": {
+      "count": 2
+    }
+  },
+  "src/components/plan/Decision.tsx": {
+    "@eslint-community/eslint-comments/require-description": {
+      "count": 3
+    },
+    "@stylistic/brace-style": {
+      "count": 56
+    },
+    "@stylistic/max-len": {
+      "count": 142
+    },
+    "@stylistic/object-property-newline": {
+      "count": 99
+    },
+    "curly": {
+      "count": 33
+    },
+    "func-style": {
+      "count": 29
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 99
+    },
+    "local/doc-multiline": {
+      "count": 16
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 198
+    },
+    "local/no-bang": {
+      "count": 135
+    },
+    "local/no-bare-strings": {
+      "count": 664
+    },
+    "local/no-comment-in-function": {
+      "count": 350
+    },
+    "local/no-double-assertion": {
+      "count": 1
+    },
+    "local/no-literal-index": {
+      "count": 5
+    },
+    "local/no-nullish": {
+      "count": 56
+    },
+    "local/no-object-spread": {
+      "count": 26
+    },
+    "local/no-split-import": {
+      "count": 1
+    },
+    "no-ternary": {
+      "count": 210
+    },
+    "react/forbid-dom-props": {
+      "count": 119
+    },
+    "react/forbid-elements": {
+      "count": 6
+    }
+  },
+  "src/components/plan/QuizForm.tsx": {
+    "@stylistic/brace-style": {
+      "count": 2
+    },
+    "@stylistic/max-len": {
+      "count": 2
+    },
+    "curly": {
+      "count": 4
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 13
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 7
+    },
+    "local/no-bang": {
+      "count": 4
+    },
+    "local/no-bare-strings": {
+      "count": 3
+    },
+    "local/no-comment-in-function": {
+      "count": 7
+    },
+    "no-ternary": {
+      "count": 5
+    }
+  },
+  "src/components/plan/ScoreLineCard.tsx": {
+    "@stylistic/brace-style": {
+      "count": 2
+    },
+    "@stylistic/max-len": {
+      "count": 13
+    },
+    "@stylistic/object-property-newline": {
+      "count": 34
+    },
+    "curly": {
+      "count": 2
+    },
+    "func-style": {
+      "count": 3
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 14
+    },
+    "local/doc-multiline": {
+      "count": 8
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 19
+    },
+    "local/no-bang": {
+      "count": 5
+    },
+    "local/no-bare-strings": {
+      "count": 97
+    },
+    "local/no-comment-in-function": {
+      "count": 15
+    },
+    "local/no-nullish": {
+      "count": 8
+    },
+    "local/no-object-spread": {
+      "count": 2
+    },
+    "no-ternary": {
+      "count": 34
+    },
+    "react/forbid-dom-props": {
+      "count": 35
+    },
+    "react/no-multi-comp": {
+      "count": 1
+    }
+  },
+  "src/components/pricing/Pricing.tsx": {
+    "@stylistic/max-len": {
+      "count": 3
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 3
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 5
+    },
+    "local/no-bare-strings": {
+      "count": 26
+    },
+    "local/no-comment-in-function": {
+      "count": 9
+    },
+    "local/no-nullish": {
+      "count": 1
+    },
+    "no-ternary": {
+      "count": 2
+    },
+    "react/forbid-dom-props": {
+      "count": 6
+    },
+    "react/forbid-elements": {
+      "count": 1
+    }
+  },
+  "src/components/quiz/EntryQuiz.tsx": {
+    "@stylistic/brace-style": {
+      "count": 2
+    },
+    "@stylistic/comma-dangle": {
+      "count": 1
+    },
+    "@stylistic/max-len": {
+      "count": 1
+    },
+    "@stylistic/object-property-newline": {
+      "count": 6
+    },
+    "curly": {
+      "count": 2
+    },
+    "func-style": {
+      "count": 2
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 19
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 5
+    },
+    "local/no-bang": {
+      "count": 2
+    },
+    "local/no-bare-strings": {
+      "count": 15
+    },
+    "local/no-comment-in-function": {
+      "count": 9
+    },
+    "local/no-nullish": {
+      "count": 5
+    },
+    "local/no-object-spread": {
+      "count": 5
+    },
+    "no-ternary": {
+      "count": 5
+    }
+  },
+  "src/components/quiz/OccPicker.tsx": {
+    "@stylistic/brace-style": {
+      "count": 22
+    },
+    "@stylistic/max-len": {
+      "count": 18
+    },
+    "curly": {
+      "count": 15
+    },
+    "func-style": {
+      "count": 3
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 18
+    },
+    "local/doc-multiline": {
+      "count": 1
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 70
+    },
+    "local/no-bang": {
+      "count": 19
+    },
+    "local/no-bare-strings": {
+      "count": 100
+    },
+    "local/no-comment-in-function": {
+      "count": 47
+    },
+    "local/no-nullish": {
+      "count": 4
+    },
+    "local/no-object-spread": {
+      "count": 10
+    },
+    "no-ternary": {
+      "count": 25
+    },
+    "react/forbid-dom-props": {
+      "count": 13
+    },
+    "react/no-multi-comp": {
+      "count": 1
+    }
+  },
+  "src/components/quiz/ProvincePicker.tsx": {
+    "@stylistic/brace-style": {
+      "count": 2
+    },
+    "@stylistic/object-property-newline": {
+      "count": 10
+    },
+    "func-style": {
+      "count": 1
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 7
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 7
+    },
+    "local/no-bang": {
+      "count": 4
+    },
+    "local/no-bare-strings": {
+      "count": 27
+    },
+    "local/no-comment-in-function": {
+      "count": 1
+    },
+    "no-ternary": {
+      "count": 12
+    },
+    "react/forbid-dom-props": {
+      "count": 3
+    }
+  },
+  "src/components/quiz/QuizUI.tsx": {
+    "@stylistic/max-len": {
+      "count": 2
+    },
+    "@stylistic/object-property-newline": {
+      "count": 10
+    },
+    "func-style": {
+      "count": 4
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 4
+    },
+    "local/doc-every-member": {
+      "count": 25
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 8
+    },
+    "local/no-bare-strings": {
+      "count": 62
+    },
+    "local/no-comment-in-function": {
+      "count": 2
+    },
+    "local/no-object-spread": {
+      "count": 2
+    },
+    "no-ternary": {
+      "count": 8
+    },
+    "react/forbid-dom-props": {
+      "count": 6
+    },
+    "react/no-multi-comp": {
+      "count": 6
+    }
+  },
+  "src/components/rankings/Ranking.tsx": {
+    "@stylistic/brace-style": {
+      "count": 2
+    },
+    "@stylistic/max-len": {
+      "count": 32
+    },
+    "@stylistic/object-property-newline": {
+      "count": 4
+    },
+    "curly": {
+      "count": 1
+    },
+    "func-style": {
+      "count": 1
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 2
+    },
+    "local/doc-every-member": {
+      "count": 11
+    },
+    "local/doc-multiline": {
+      "count": 1
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 42
+    },
+    "local/no-bang": {
+      "count": 1
+    },
+    "local/no-bare-strings": {
+      "count": 117
+    },
+    "local/no-comment-in-function": {
+      "count": 25
+    },
+    "local/no-literal-index": {
+      "count": 1
+    },
+    "local/no-nullish": {
+      "count": 12
+    },
+    "local/no-split-import": {
+      "count": 1
+    },
+    "no-ternary": {
+      "count": 21
+    },
+    "react/forbid-dom-props": {
+      "count": 35
+    },
+    "react/forbid-elements": {
+      "count": 5
+    },
+    "react/no-multi-comp": {
+      "count": 3
+    }
+  },
+  "src/components/resources/Resources.tsx": {
+    "@stylistic/max-len": {
+      "count": 7
+    },
+    "@stylistic/no-trailing-spaces": {
+      "count": 1
+    },
+    "@stylistic/object-property-newline": {
+      "count": 6
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 7
+    },
+    "local/no-bare-strings": {
+      "count": 39
+    },
+    "local/no-comment-in-function": {
+      "count": 4
+    },
+    "no-ternary": {
+      "count": 2
+    },
+    "react/forbid-dom-props": {
+      "count": 11
+    },
+    "react/forbid-elements": {
+      "count": 1
+    }
+  },
+  "src/components/start/Pulse.tsx": {
+    "@stylistic/brace-style": {
+      "count": 28
+    },
+    "@stylistic/max-len": {
+      "count": 94
+    },
+    "@stylistic/object-property-newline": {
+      "count": 42
+    },
+    "curly": {
+      "count": 23
+    },
+    "func-style": {
+      "count": 24
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 102
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 3
+    },
+    "local/no-arrow-function": {
+      "count": 168
+    },
+    "local/no-bang": {
+      "count": 25
+    },
+    "local/no-bare-strings": {
+      "count": 457
+    },
+    "local/no-comment-in-function": {
+      "count": 116
+    },
+    "local/no-literal-index": {
+      "count": 2
+    },
+    "local/no-nullish": {
+      "count": 36
+    },
+    "local/no-object-spread": {
+      "count": 2
+    },
+    "no-ternary": {
+      "count": 103
+    },
+    "object-shorthand": {
+      "count": 2
+    },
+    "react/forbid-dom-props": {
+      "count": 97
+    },
+    "react/forbid-elements": {
+      "count": 7
+    },
+    "react/no-multi-comp": {
+      "count": 6
+    }
+  },
+  "src/components/stats/charts.tsx": {
+    "@stylistic/brace-style": {
+      "count": 12
+    },
+    "@stylistic/max-len": {
+      "count": 37
+    },
+    "@stylistic/object-property-newline": {
+      "count": 58
+    },
+    "curly": {
+      "count": 16
+    },
+    "func-style": {
+      "count": 15
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 30
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 92
+    },
+    "local/no-bang": {
+      "count": 22
+    },
+    "local/no-bare-strings": {
+      "count": 232
+    },
+    "local/no-comment-in-function": {
+      "count": 74
+    },
+    "local/no-double-assertion": {
+      "count": 3
+    },
+    "local/no-literal-index": {
+      "count": 1
+    },
+    "local/no-nullish": {
+      "count": 25
+    },
+    "local/no-object-spread": {
+      "count": 3
+    },
+    "no-ternary": {
+      "count": 52
+    },
+    "react/forbid-dom-props": {
+      "count": 32
+    },
+    "react/no-multi-comp": {
+      "count": 2
+    }
+  },
+  "src/components/stats/ui.tsx": {
+    "@stylistic/max-len": {
+      "count": 5
+    },
+    "func-style": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 3
+    },
+    "local/doc-every-member": {
+      "count": 9
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 4
+    },
+    "local/no-bang": {
+      "count": 1
+    },
+    "local/no-bare-strings": {
+      "count": 41
+    },
+    "local/no-comment-in-function": {
+      "count": 6
+    },
+    "local/no-nullish": {
+      "count": 2
+    },
+    "no-ternary": {
+      "count": 4
+    },
+    "react/forbid-dom-props": {
+      "count": 11
+    },
+    "react/no-multi-comp": {
+      "count": 2
+    }
+  },
+  "src/components/timeline/Timeline.tsx": {
+    "@stylistic/brace-style": {
+      "count": 14
+    },
+    "@stylistic/max-len": {
+      "count": 18
+    },
+    "@stylistic/object-property-newline": {
+      "count": 2
+    },
+    "func-style": {
+      "count": 3
+    },
+    "local/component-file-names": {
+      "count": 1
+    },
+    "local/component-name-match": {
+      "count": 1
+    },
+    "local/doc-every-member": {
+      "count": 7
+    },
+    "local/file-header": {
+      "count": 1
+    },
+    "local/function-length": {
+      "count": 1
+    },
+    "local/no-arrow-function": {
+      "count": 20
+    },
+    "local/no-bang": {
+      "count": 6
+    },
+    "local/no-bare-strings": {
+      "count": 115
+    },
+    "local/no-comment-in-function": {
+      "count": 10
+    },
+    "local/no-nullish": {
+      "count": 2
+    },
+    "no-ternary": {
+      "count": 7
+    },
+    "react/forbid-dom-props": {
+      "count": 32
+    },
+    "react/forbid-elements": {
       "count": 1
     }
   },

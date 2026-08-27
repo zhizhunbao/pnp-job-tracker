@@ -1,6 +1,6 @@
 'use client'
 // 隐私政策(E4-02)。文案模板级自拟,不构成法律意见。
-import { Legal } from '../Legal'
+import { Legal } from '@/components/legal'
 import { legalDocs } from '@/lib/legal'
 import { IconLock } from '@/components/icons'
 

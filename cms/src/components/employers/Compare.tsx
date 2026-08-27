@@ -15,7 +15,7 @@ import { Notice } from '@/components/notice'
 import { Shell } from '@/components/shell'
 import { Tag } from '@/components/tag'
 import { Table } from '@/components/table'
-import { PricingModal } from '../../jobs/PricingModal'
+import { PricingModal } from '@/components/jobs'
 import { IconScale, IconStar } from '@/components/icons'
 import { CMP_KEY, type CompareRow } from '@/lib/employers'
 

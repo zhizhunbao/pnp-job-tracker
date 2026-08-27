@@ -4,7 +4,7 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { PnpScoreCard } from '@/app/(frontend)/jobs/PnpScoreCard'
+import { PnpScoreCard } from '@/components/jobs'
 import type { TFn } from '@/lib/i18n'
 import type { ScoreFactor } from '@/lib/points'
 import { resetAnswersMemory } from '@/lib/quiz'

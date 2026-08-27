@@ -12,7 +12,7 @@ import { getTopNocs } from '@/lib/jobs/server'
 import { headers } from 'next/headers'
 import { tripleWireOf, type TripleWire } from '@/lib/ruling/server'
 import { getUser, isPro } from '@/lib/quota/server'
-import { Decision, type TvJob } from './Decision'
+import { Decision, type TvJob } from '@/components/plan'
 import { SQL } from '@/lib/db'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'

@@ -5,7 +5,7 @@
 // 三条铁律(E8-09 §1)不变:一页一域、一条信息一个家、公司页全事实层免费。
 import { LANGS } from '@/lib/i18n'
 import { useLang } from '@/components/i18n'
-import { CompanyBody } from '../../jobs/Company'   // 公司身体与职位板弹框同源(拆分前住在 JobsTable 里)
+import { CompanyBody } from '@/components/jobs'   // 公司身体与职位板弹框同源(拆分前住在 JobsTable 里)
 import { provName } from '@/lib/location'
 import { type CompanyDetail, type SimilarEmployer } from '@/lib/jobs/server'
 import { Header } from '@/components/header'

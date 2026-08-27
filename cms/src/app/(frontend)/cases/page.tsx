@@ -3,7 +3,7 @@
 import { makeT } from '@/lib/i18n'
 import type { Metadata } from 'next'
 import { CASES } from '@/lib/ruling'
-import { Cases } from './Cases'
+import { Cases } from '@/components/cases'
 
 export const metadata: Metadata = {
   title: '加拿大移民常见案例 — 真实处境与判定结论 | Offer2PR',

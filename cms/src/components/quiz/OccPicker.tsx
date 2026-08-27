@@ -10,7 +10,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Search } from '@/components/search'
 
-import { POPULAR_NOCS } from '../account/profileOptions'
+import { POPULAR_NOCS } from '@/components/account'
 import { IconCheck, IconSearch, IconX } from '@/components/icons'
 import { QuizNav, QuizStyle, QuizTitle } from './QuizUI'
 import { makeSearch } from './functions'

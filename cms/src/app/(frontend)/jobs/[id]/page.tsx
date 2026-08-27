@@ -10,7 +10,7 @@ import { getUser, isPro } from '@/lib/quota/server'
 import { FREE_MATCH_JOBS_PER_DAY } from '@/lib/quota'
 import { hasProfile, normalizeProfile } from '@/lib/jobs'
 import { loadJobById, loadRelatedJobs } from '@/lib/jobs/server'
-import Job from './Job'
+import { Job } from '@/components/jobs'
 import { SQL } from '@/lib/db'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'

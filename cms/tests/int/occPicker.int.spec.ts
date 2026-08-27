@@ -2,7 +2,7 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { OccPicker } from '@/app/(frontend)/quiz/OccPicker'
+import { OccPicker } from '@/components/quiz'
 import type { TFn } from '@/lib/i18n'
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true

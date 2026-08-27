@@ -20,7 +20,7 @@ import { Button } from '@/components/button'
 import { JobCard } from '@/components/card'
 import { gradeColor } from '@/components/colors'
 import { BROAD_SLUGS } from '@/lib/stats'   // 大类的行业顺序(镜像 etl/noc_buckets.BROADS)
-import { quizToProfile, readQuiz } from '../quiz/EntryQuiz'   // 答案读写与落档(弹框本体已退役,2026-07-31 统一答题)
+import { quizToProfile, readQuiz } from '@/components/quiz'   // 答案读写与落档(弹框本体已退役,2026-07-31 统一答题)
 import { ActModal, AdvisorModal } from './Advisor'
 import { eeIsDormant, eeLastDraw } from './Pnp'
 import { AuthModal } from '@/components/auth'

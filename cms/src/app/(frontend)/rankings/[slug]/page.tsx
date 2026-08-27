@@ -1,7 +1,7 @@
 // 榜单页(E5-02,PRD F8):零前端计算 —— 只 SELECT rankings 表渲染(计算在 etl/10_build_rankings.py)。
 // 行只含事实字段 + 官方链接(E4-03 约束);SEO 主体 = generateMetadata。
 import { notFound, permanentRedirect } from 'next/navigation'
-import { Ranking } from '../Ranking'
+import { Ranking } from '@/components/rankings'
 import { RANKING_SLUGS } from '@/lib/rankings'
 import { getDb } from '@/lib/db/server'
 import { loadRankingRows, loadRankingSlugs } from '@/lib/rankings/server'

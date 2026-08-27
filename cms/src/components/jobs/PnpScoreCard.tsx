@@ -13,7 +13,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ymd } from '@/lib/time'
 
-import { QuizChecks, QuizChoices, QuizNav, QuizSub, QuizTitle } from '../quiz/QuizUI'
+import { QuizChecks, QuizChoices, QuizNav, QuizSub, QuizTitle } from '@/components/quiz'
 import type { Lang, TFn } from '@/lib/i18n'
 import { officialLabel as label } from '@/lib/official'
 import { CLB, NCLC, pullAndMerge, readAnswers, readScoreAnswers, writeAnswers, writeScoreAnswers, type ScoreAnswers } from '@/lib/quiz'

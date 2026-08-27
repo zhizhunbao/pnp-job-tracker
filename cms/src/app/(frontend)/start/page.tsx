@@ -14,7 +14,7 @@ import { normalizeProfile } from '@/lib/jobs'
 import { checkedAt, loadTotalAndProof } from '@/lib/jobs/server'
 import { loadOccStats, loadProvExtra } from '@/lib/stats/server'
 import { PROVS } from '@/lib/stats'
-import { Pulse, type HomeStats } from './Pulse'
+import { Pulse, type HomeStats } from '@/components/start'
 import { buildSponsorBoards, loadSponsorEmployers, SE_SSR_ROWS } from '@/lib/employers/server'
 import { employerVerdict } from '@/lib/ruling/server'
 import { SQL } from '@/lib/db'   // SQL 文本全在那儿,本文件只管取数与组装

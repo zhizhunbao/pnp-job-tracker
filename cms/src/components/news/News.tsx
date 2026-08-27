@@ -8,7 +8,7 @@
 // 转载姿势四件套(E4-03 框架):© 出处方 · 非官方声明 · 原文链接 ↗ · 官方发布日期。
 import { useEffect, useMemo, useState } from 'react'
 import { type Lang, type TFn } from '@/lib/i18n'
-import { useLang } from '../stats/ui'
+import { useLang } from '@/components/stats'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { BackButton } from '@/components/button'

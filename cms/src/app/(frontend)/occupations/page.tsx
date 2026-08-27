@@ -1,7 +1,7 @@
 // 紧缺职业清单页(B4-01):SSR 直查 pnp_occupations(183 行,一页展示);SEO 主体=generateMetadata。
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { Occupations } from './Occupations'
+import { Occupations } from '@/components/occupations'
 import { loadOccupations } from '@/lib/employers/server'
 
 export const dynamic = 'force-dynamic'

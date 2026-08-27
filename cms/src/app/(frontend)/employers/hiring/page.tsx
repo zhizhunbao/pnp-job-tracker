@@ -3,7 +3,7 @@
 // 口径:该省该职业正在招人的雇主,来自本站每日职位库(不是官方名录)。
 import { employersBoardProps } from '@/lib/employers/server'
 import { getDb } from '@/lib/db/server'
-import { Employers } from '../Employers'
+import { Employers } from '@/components/employers'
 
 export const dynamic = 'force-dynamic'
 

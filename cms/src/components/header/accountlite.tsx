@@ -6,8 +6,9 @@
  * 登录/注册钮就地开 AuthModal(2026-08-09「为什么要跳到 jobtable 页面再弹框」;
  * 按需载,header 常驻包不背它)。Pro 钮不进 header(2026-07-18「没有意义」)。
  * 2026-08-24 自 Header 拆出(一个 tsx 一个组件)。
- * ⚠️ 过渡边:PricingModal 还住在 app/(frontend)/jobs(定价件未域化),
- * 这条 components → app 的 import 待 pricing 域化后换桶。
+ * ⚠️ 过渡边:PricingModal 2026-08-26 随页面域搬家落户 components/jobs(定价件未域化),
+ * 这里点文件不走 jobs 桶 —— 走桶会把 header 与 jobs 焊成环(jobs/Jobs 反过来引 header 桶),
+ * import/no-cycle 当场报错。待 pricing 件自己成域后换桶。
  *
  * @author Frank
  * @time 2026-08-24 08:00:00
@@ -15,7 +16,7 @@
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
 
-import { PricingModal } from '@/app/(frontend)/jobs/PricingModal'
+import { PricingModal } from '@/components/jobs/PricingModal'
 import { AccountMenu } from '@/components/auth'
 import { Button } from '@/components/button'
 import { ACCT_IN, ACCT_LOADING, ARIA_TRUE, AUTH_CLOSED, KIND_LOGIN, KIND_REGISTER } from './constants'

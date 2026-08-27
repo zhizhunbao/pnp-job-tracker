@@ -6,7 +6,7 @@
 //   · 下限=表头不折行,让到底了继续找左边的让位列
 import { describe, it, expect } from 'vitest'
 
-import { resizeColWidths } from '@/app/(frontend)/jobs/colWidths'
+import { resizeColWidths } from '@/components/jobs'
 
 const sum = (a: number[]) => a.reduce((s, x) => s + x, 0)
 

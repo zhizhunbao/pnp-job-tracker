@@ -2,7 +2,7 @@
 // 三问的**答案层**(组件本体已于 2026-07-31 退役 —— Frank「不需要弹框答题了,统一一下答题功能」:
 // 四选一的题归 /plan/* 的 SurveyJS 答题器,选职业归 quiz/OccPicker,弹框问卷不再存在)。
 // 这里只剩三样还有人用的东西:读答案(readQuiz)、注册后落档(quizToProfile)、职业名砍尾(shortOcc)。
-import { OB_SEEN_KEY } from '../jobs/OnboardingWizard'
+import { OB_SEEN_KEY } from '@/components/jobs/OnboardingWizard'
 import { ANSWERS_KEY, answeredBasics, readAnswers, toEngineAnswers, type Answers } from '@/lib/quiz'
 
 // 记忆键收敛到 lib/quiz/answers 一个 key(2026-07-31 统一题库):三问与拿 PR 的答案同住一份,

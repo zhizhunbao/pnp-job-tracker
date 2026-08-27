@@ -7,7 +7,7 @@ import type { CompareRow } from '@/lib/employers'
 import { compareEmployers } from '@/lib/employers/server'
 import { getDb } from '@/lib/db/server'
 import { hasProfile, normalizeProfile } from '@/lib/jobs'
-import { Compare } from './Compare'
+import { Compare } from '@/components/employers'
 
 export const dynamic = 'force-dynamic'
 

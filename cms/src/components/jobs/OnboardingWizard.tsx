@@ -10,7 +10,7 @@ import { Chip } from '@/components/chip'
 import { hasProfile, normalizeProfile, type MatchProfile, type ProfileJson } from '@/lib/jobs'
 import {
   POPULAR_NOCS, CLB_OPTS, CRS_OPTS, PGWP_OPTS, clbActive, crsActive, pgwpActive, type Opt,
-} from '../account/profileOptions'
+} from '@/components/account'
 
 // 首访自动弹一次的记忆键(单一来源;Jobs 也用它判定+置位)
 export const OB_SEEN_KEY = 'jobs_onboarding_v1'

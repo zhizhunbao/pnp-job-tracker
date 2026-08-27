@@ -3,8 +3,8 @@
 // 护栏:任一查询失败 → 对应块留空(宁可留空,页面不 500;comments 表未建时同理)。
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { News } from './News'
-import type { NewsCard, NewsHero } from './shared'
+import { News } from '@/components/news'
+import type { NewsCard, NewsHero } from '@/components/news'
 import { SQL } from '@/lib/db'   // SQL 文本全在那儿,本文件只管取数与组装
 
 export const dynamic = 'force-dynamic'

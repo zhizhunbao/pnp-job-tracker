@@ -3,7 +3,7 @@
 import { headers } from 'next/headers'
 import { getUser, isPro } from '@/lib/quota/server'
 import { FREE_ADVISOR_TRIES, FREE_JOBTEXT_TRIES, FREE_MATCH_JOBS_PER_DAY, PRO_ADVISOR_DAILY } from '@/lib/quota'
-import { Pricing } from './Pricing'
+import { Pricing } from '@/components/pricing'
 
 export const dynamic = 'force-dynamic'
 

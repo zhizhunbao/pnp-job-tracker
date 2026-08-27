@@ -2,7 +2,7 @@ import React from 'react'
 import './main.css'
 import { LangProvider } from '@/components/i18n'
 import { SessionProvider } from '@/components/auth'
-import { ChatLauncher } from './chat/ChatLauncher'
+import { ChatLauncher } from '@/components/chat'
 import { ssrLang } from '@/lib/i18n/server'
 import { ssrHasSession } from '@/lib/auth/server'
 
