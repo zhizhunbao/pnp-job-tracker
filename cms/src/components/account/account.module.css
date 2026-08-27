@@ -1,0 +1,751 @@
+/*
+ * account 页面域的私有样式(2026-08-26 自 app/(frontend)/account/page.tsx 的内联样式
+ * 逐格迁类,值一个不改 —— 页面改造成「纯拼装门」那一批,闸 local/page-compose-only)。
+ * 窄屏分叉不写三目:每个会变的块开一个 `.xxxNarrow` 修饰类,由 functions.ts 的 clsOf
+ * 按 narrow 布尔拼上去(基座在前、修饰在后,同文件后者盖前者)。
+ */
+
+/*
+ * 全页最外层:渐变底 + 撑满视口高的纵向列(顶栏 / 正文 / 页脚三段)。
+ */
+.shell {
+  /*
+   * 账户页的渐变底(160° 从冷白到淡靛再回冷白),全站只有本页用。
+   */
+  background: linear-gradient(160deg,#f8fafc 0%,#eef2ff 55%,#f8fafc 100%);
+
+  /*
+   * 至少撑满一屏 —— 内容少时页脚也压在屏底,不会浮在半空。
+   */
+  min-height: 100vh;
+
+  /*
+   * 顶栏 / 正文 / 页脚纵向排。
+   */
+  display: flex;
+
+  /*
+   * 纵向。
+   */
+  flex-direction: column;
+
+  /*
+   * 跟随系统字体。
+   */
+  font-family: system-ui, sans-serif;
+
+  /*
+   * 正文默认字色(近黑的深灰)。
+   */
+  color: #1f2937;
+}
+
+/*
+ * sidebar + 内容区的两列容器(2026-07-16 Frank「我的账户需要一个 sidebar」拍板,
+ * 此前是四卡分离):左 = 节导航 + 退出登录,右 = 选中节的卡。
+ * 宽 860 是本页专属读宽,不走全站 1320 正文轨。
+ */
+.columns {
+  /*
+   * 本页读宽上限。
+   */
+  max-width: 860px;
+
+  /*
+   * 窄于上限的视口吃满整宽。
+   */
+  width: 100%;
+
+  /*
+   * 上下 2.5rem 留白,左右 auto 居中。
+   */
+  margin: 2.5rem auto;
+
+  /*
+   * 两列并排。
+   */
+  display: flex;
+
+  /*
+   * 桌面态横排(窄屏由 .columnsNarrow 改纵排)。
+   */
+  flex-direction: row;
+
+  /*
+   * 两列间距。
+   */
+  gap: 16px;
+
+  /*
+   * 两卡各自高度自适应,顶端对齐 —— 不让短卡被拉成和长卡一样高。
+   */
+  align-items: flex-start;
+
+  /*
+   * 内衬算进宽度,不然 padding 会把 860 撑破。
+   */
+  box-sizing: border-box;
+
+  /*
+   * 左右 1rem 安全边(手机贴边难点)。
+   */
+  padding: 0 1rem;
+
+  /*
+   * 吃掉顶栏与页脚之间的剩余高度,但不被压缩 —— 页脚才压得住屏底。
+   */
+  flex: 1 0 auto;
+}
+
+/*
+ * 窄屏(手机)分叉:两列改上下叠。
+ */
+.columnsNarrow {
+  /*
+   * sidebar 变顶部一条,内容卡在它下面。
+   */
+  flex-direction: column;
+}
+
+/*
+ * 左列 sidebar 卡(与全局 .card 壳叠用:白底描边圆角归 .card,密度与排布归这里)。
+ */
+.side {
+  /*
+   * 卡内衬(比正文卡紧一档 —— 装的是一列小钮)。
+   */
+  padding: 0.7rem;
+
+  /*
+   * 桌面态固定宽(窄屏由 .sideNarrow 改成满宽)。
+   */
+  width: 190px;
+
+  /*
+   * 不许被右列挤窄。
+   */
+  flex-shrink: 0;
+
+  /*
+   * 节钮按列排。
+   */
+  display: flex;
+
+  /*
+   * 桌面态纵排(窄屏由 .sideNarrow 改横排)。
+   */
+  flex-direction: column;
+
+  /*
+   * 钮与钮的间距(贴得紧才像一组)。
+   */
+  gap: 2px;
+
+  /*
+   * 窄屏横排时一行放不下就换行,不横滚。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 内衬算进宽度,190 是含内衬的外观宽。
+   */
+  box-sizing: border-box;
+}
+
+/*
+ * 窄屏分叉:sidebar 变顶部横排条。
+ */
+.sideNarrow {
+  /*
+   * 顶部条吃满整宽。
+   */
+  width: 100%;
+
+  /*
+   * 节钮横着排成一条。
+   */
+  flex-direction: row;
+}
+
+/*
+ * 右列内容卡(同样与全局 .card 壳叠用)。
+ */
+.main {
+  /*
+   * 吃掉 sidebar 之外的全部宽度。
+   */
+  flex: 1;
+
+  /*
+   * flex 子项默认 min-width:auto 会被长内容撑破;归零才让内部的省略号生效。
+   */
+  min-width: 0;
+
+  /*
+   * 内衬算进宽度。
+   */
+  box-sizing: border-box;
+}
+
+/*
+ * 窄屏分叉:内容卡吃满整宽(桌面态**不设** width,由 flex:1 分配 —— 所以这一格
+ * 只能是修饰类,写进 .main 会把桌面态的分配盖掉)。
+ */
+.mainNarrow {
+  /*
+   * 满宽。
+   */
+  width: 100%;
+}
+
+/*
+ * 节导航钮(概览/移民档案/收藏/邮件提醒/已存筛选/升级 Pro):未选中态。
+ */
+.navBtn {
+  /*
+   * 文字左对齐 —— 一列钮的左边缘要齐。
+   */
+  text-align: left;
+
+  /*
+   * 上下 8、左右 12 内衬。
+   */
+  padding: 8px 12px;
+
+  /*
+   * 侧栏字号(比正文小半档)。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 无描边(靠底色区分选中)。
+   */
+  border: none;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 节名不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 未选中无底。
+   */
+  background: transparent;
+
+  /*
+   * 未选中灰字。
+   */
+  color: #374151;
+
+  /*
+   * 未选中常规字重。
+   */
+  font-weight: 400;
+}
+
+/*
+ * 节导航钮的选中态(淡靛底 + 品牌蓝字 + 半粗)。写在 .navBtn 之后,同权重后者胜。
+ */
+.navBtnActive {
+  /*
+   * 选中淡靛底。
+   */
+  background: #eef2ff;
+
+  /*
+   * 选中品牌蓝字。
+   */
+  color: #1d4ed8;
+
+  /*
+   * 选中半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 节钮与退出登录之间的分隔线(只在桌面纵排时渲染 —— 窄屏横排里一条横线会把
+ * 那一行切断,所以窄屏根本不渲这个节点)。
+ */
+.navDivider {
+  /*
+   * 一条最浅的灰线。
+   */
+  border-top: 1px solid #f3f4f6;
+
+  /*
+   * 上下各留 6px。
+   */
+  margin: 6px 0;
+}
+
+/*
+ * 退出登录钮(组件统一 P2 #113:退出登录 = ghost 灰,危险性弱的操作走 B 映射)。
+ * ⚠️ 类名写两遍是**故意**的:它要盖住 button 域 .btn/.ghost 里的同名属性
+ * (内衬、字号、字重、字色),而跨文件的单类同权重靠先后顺序决定胜负、顺序又由
+ * 打包器定 —— 重复一次把权重抬到 (0,2,0),结果与原先的内联样式一致且不依赖顺序。
+ */
+.logoutBtn.logoutBtn {
+  /*
+   * 与上面的节钮左边缘对齐。
+   */
+  text-align: left;
+
+  /*
+   * 与节钮同内衬(盖掉 .ghost 的零内衬)。
+   */
+  padding: 8px 12px;
+
+  /*
+   * 与节钮同字号。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 常规字重(盖掉 .btn 的 600)—— 退出不该比节名更抢眼。
+   */
+  font-weight: 400;
+
+  /*
+   * 更弱一档的灰(盖掉 .ghost 的品牌蓝)。
+   */
+  color: #9ca3af;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 概览节的页面标题。
+ */
+.h1 {
+  /*
+   * 卡内标题字号(不用全站 H1 那档 —— 这是卡里的标题)。
+   */
+  font-size: 18px;
+
+  /*
+   * 上 0、下 14px。
+   */
+  margin: 0 0 14px;
+}
+
+/*
+ * 支付成功提示(Stripe 回跳 ?ok=1)与下方身份行的距离。
+ */
+.payOk {
+  /*
+   * 与身份行留 12px。
+   */
+  margin-bottom: 12px;
+}
+
+/*
+ * 身份头一行(E11-01):头像 + 昵称 + 邮箱。
+ */
+.idRow {
+  /*
+   * 头像与右侧文字块并排。
+   */
+  display: flex;
+
+  /*
+   * 文字块相对头像竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 头像与文字的间距。
+   */
+  gap: 12px;
+
+  /*
+   * 与下方套餐行的距离。
+   */
+  margin-bottom: 14px;
+}
+
+/*
+ * 身份头右侧的文字列(昵称一行 + 邮箱一行)。
+ */
+.idCol {
+  /*
+   * 归零才让邮箱那行的省略号生效(同 .main 的理由)。
+   */
+  min-width: 0;
+}
+
+/*
+ * 昵称的**看**态:名字 + 改名铅笔。
+ */
+.nickView {
+  /*
+   * 名字与铅笔并排。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 名字与铅笔的间距。
+   */
+  gap: 8px;
+}
+
+/*
+ * 昵称本身(空则回退邮箱前缀,回退在 functions 的 nickShownOf 里算)。
+ */
+.nickName {
+  /*
+   * 身份行主字号。
+   */
+  font-size: 16px;
+
+  /*
+   * 半粗 —— 这一行的主角。
+   */
+  font-weight: 600;
+
+  /*
+   * 近黑(比正文更重一档)。
+   */
+  color: #111827;
+}
+
+/*
+ * 改名铅笔钮。#219 触控靶 ≥40:原来靠 padding + 负 margin 拼出来只有 ~37×35,
+ * 手机上点不准。改成显式 40×40 的 inline-flex 方框(行高由 52px 头像撑着,
+ * 不会把这行顶高)。
+ */
+.nickEdit {
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 弱灰 —— 是次要操作,不跟名字抢。
+   */
+  color: #9ca3af;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 内衬归零,靶子大小改由下面的 min-width/min-height 说。
+   */
+  padding: 0;
+
+  /*
+   * 铅笔字符的字号。
+   */
+  font-size: 15px;
+
+  /*
+   * 触控靶宽 ≥40(#219)。
+   */
+  min-width: 40px;
+
+  /*
+   * 触控靶高 ≥40(#219)。
+   */
+  min-height: 40px;
+
+  /*
+   * 行内块 + flex:让铅笔在 40×40 的方框里居中,又不脱离这一行的文本流。
+   */
+  display: inline-flex;
+
+  /*
+   * 方框内竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 方框内水平居中。
+   */
+  justify-content: center;
+
+  /*
+   * 名字变长也不许把靶子压小。
+   */
+  flex-shrink: 0;
+}
+
+/*
+ * 昵称的**编**态:输入框 + 保存钮。
+ */
+.nickEditRow {
+  /*
+   * 输入框与保存钮并排。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 比看态紧一档(输入框自己带内衬)。
+   */
+  gap: 6px;
+}
+
+/*
+ * 邮箱行(不可改,只作身份佐证)。
+ */
+.email {
+  /*
+   * 小一档字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 次要灰。
+   */
+  color: #6b7280;
+
+  /*
+   * 与昵称那行贴紧。
+   */
+  margin-top: 2px;
+
+  /*
+   * 超宽裁掉(配 .idCol 的 min-width:0)。
+   */
+  overflow: hidden;
+
+  /*
+   * 裁掉的部分显示省略号 —— 邮箱不许折行也不许硬截。
+   */
+  text-overflow: ellipsis;
+}
+
+/*
+ * 套餐行的容器(Pro 到期日 / 免费档二选一)。
+ */
+.plan {
+  /*
+   * 正文字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 行高 2 —— 单独一行时上下留白够,不贴着上面的身份行。
+   */
+  line-height: 2;
+}
+
+/*
+ * Pro 在期:琥珀 + 半粗(付费态的全站配色)。
+ */
+.planPro {
+  /*
+   * 琥珀深字。
+   */
+  color: #b45309;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 免费档:次要灰,不强调(免费不是错误,只是没升级)。
+ */
+.planFree {
+  /*
+   * 次要灰。
+   */
+  color: #6b7280;
+}
+
+/*
+ * 购买节的小标题。
+ */
+.buyTitle {
+  /*
+   * 节内小标题字号。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 正文灰。
+   */
+  color: #374151;
+}
+
+/*
+ * 30 天 / 90 天两钮并排的一行。
+ */
+.buyRow {
+  /*
+   * 两钮并排均分。
+   */
+  display: flex;
+
+  /*
+   * 两钮间距。
+   */
+  gap: 10px;
+}
+
+/*
+ * 时长包购买钮的基座(E3-03;H 卡片规格 #114 E-I 批:页面内卡片一律平面描边,
+ * 阴影只给弹框与下拉,所以这里没有 box-shadow)。配色由下面的 30/90 两个修饰类给。
+ */
+.buyBtn {
+  /*
+   * 各占所在 flex 格的整宽(两钮等宽)。
+   */
+  width: 100%;
+
+  /*
+   * 上下 10、左右 0(宽度已由 width 定死)。
+   */
+  padding: 10px 0;
+
+  /*
+   * 行动钮字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 无描边(实心钮)。
+   */
+  border: none;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 9px;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 与上面的小标题留 14px。
+   */
+  margin-top: 14px;
+
+  /*
+   * 常态不透明(下单中由 .buyBtnBusy 压到 0.6)。
+   */
+  opacity: 1;
+}
+
+/*
+ * 30 天档:标准行动蓝。
+ */
+.buyBtn30 {
+  /*
+   * 行动蓝底。
+   */
+  background: #2563eb;
+
+  /*
+   * 白字。
+   */
+  color: #fff;
+}
+
+/*
+ * 90 天档:深一档的蓝(更划算的那档更重)。
+ */
+.buyBtn90 {
+  /*
+   * 深行动蓝底。
+   */
+  background: #1d4ed8;
+
+  /*
+   * 白字。
+   */
+  color: #fff;
+}
+
+/*
+ * 下单中(等 Stripe Checkout URL)。写在基座之后才盖得住它的 opacity:1。
+ */
+.buyBtnBusy {
+  /*
+   * 压暗表示正在处理。
+   */
+  opacity: 0.6;
+}
+
+/*
+ * 拿不到 Checkout URL 时的错误行。
+ */
+.buyErr {
+  /*
+   * 错误红。
+   */
+  color: #dc2626;
+
+  /*
+   * 小一档字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 与两钮留 8px。
+   */
+  margin-top: 8px;
+}
+
+/*
+ * 购买注脚(到期日顺延那句)。
+ */
+.buyNote {
+  /*
+   * 最小一档字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 最弱一档灰 —— 注脚不许抢钮的注意力。
+   */
+  color: #9ca3af;
+
+  /*
+   * 与上方留 8px。
+   */
+  margin-top: 8px;
+}

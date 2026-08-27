@@ -1,9 +1,4 @@
 {
-  "src/app/(frontend)/account/page.tsx": {
-    "local/page-compose-only": {
-      "count": 25
-    }
-  },
   "src/app/(frontend)/cases/page.tsx": {
     "local/page-compose-only": {
       "count": 1

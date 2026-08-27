@@ -2,35 +2,18 @@
 // 账户状态页(E3-02):仅已登录态(Pro 到期/档案/购买/登出;Stripe 回跳落点)。
 // 登录入口全站只有一个 = /jobs 顶栏弹框(用户定):未登录访问本页 → 跳回 /jobs?login=1 自动弹框。
 // E3-03:时长包购买入口(30/90 天)——前端只拿 Checkout URL 跳转,回跳 ?ok=1 提示(到期日由 webhook 拨)。
+// 2026-08-26:页面改造成「纯拼装门」(闸 local/page-compose-only)——排版全部下沉进
+// components/account/,这里只剩 state、事件处理器与大写组件的拼装。
 import { resetAnswersMemory } from '@/lib/quiz'
-import { Input } from '@/components/input'
 import { useEffect, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { useIsNarrow } from '@/components/modal'
-import { IconStar, IconUser } from '@/components/icons'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
-import { ProfileForm, type ProfileValue, makeNickKey, SavedSearchList, SavedJobsList, ResumeArchive } from '@/components/account'
-import { Avatar } from '@/components/auth'
-import { Button } from '@/components/button'
-import { Notice } from '@/components/notice'
-
-// profile 上的简历存档两键(E11-08)只在本页读显示,不进 ProfileForm 的表单值 → 就地扩类型,不动 ProfileValue
-type ProfileWithResume = ProfileValue & { resumeText?: string | null; resumeSavedAt?: string | null }
-type Me = { id: string | number; email: string; role?: string; proUntil?: string | null; profile?: ProfileWithResume | null; displayName?: string | null; avatar?: string | null; locale?: string | null } | null
+import { AccountBuyPanel, AccountColumns, AccountNav, AccountOverview, AccountRedirect, AccountShell, ProfileForm, ResumeArchive, SavedJobsList, SavedSearchList, makeNickKey, type Me, type Sec } from '@/components/account'
 
 // 答题条件条(AnswersRow)2026-08-04 摘除:整条蓝条的存在意义就是把人送去 /plan/job(看结果 / 去答题),
 // 而答题卡功能已摘入口、只保留路由。档案节现在直接是 ProfileForm + 简历存档。
-
-function RedirectToLogin() {
-  useEffect(() => { window.location.replace('/?login=1') }, [])
-  return null
-}
-
-// H 卡片规格(#114 E-I 批):页面内卡片一律平面描边,阴影只给弹框/下拉
-const btn: React.CSSProperties = { width: '100%', padding: '10px 0', fontSize: 14, fontWeight: 600, border: 'none', borderRadius: 9, cursor: 'pointer', marginTop: 14 }
-
-type Sec = 'overview' | 'profile' | 'favs' | 'sjobs' | 'saved' | 'buy'
 
 export default function AccountPage() {
   const [sec, setSec] = useState<Sec>('overview')
@@ -99,91 +82,43 @@ export default function AccountPage() {
   const pro = !!me?.proUntil && new Date(me.proUntil) > new Date()
 
   return (
-    <div style={{ background: 'linear-gradient(160deg,#f8fafc 0%,#eef2ff 55%,#f8fafc 100%)', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
+    <AccountShell>
       {/* 全站共享顶栏/页脚(2026-07-16 用户拍板统一 header/footer);账户在本页为当前态不再链自己 */}
       <Header lang={lang} setLang={setLangSaved} t={t} active="account" />
 
-      {!checked ? null : me ? (
-        // sidebar + 内容区(2026-07-16 用户拍板「我的账户需要一个 sidebar」;此前的四卡分离演进):
-        // 左=节导航(概览/移民档案/邮件提醒/升级 Pro)+ 退出登录,右=选中节的卡;窄屏 sidebar 变顶部横排
-        <div style={{ maxWidth: 860, width: '100%', margin: '2.5rem auto', display: 'flex', flexDirection: narrow ? 'column' : 'row', gap: 16, alignItems: 'flex-start', boxSizing: 'border-box', padding: '0 1rem', flex: '1 0 auto' }}>
-          <aside className="card" style={{ padding: '0.7rem', width: narrow ? '100%' : 190, flexShrink: 0, display: 'flex', flexDirection: narrow ? 'row' : 'column', gap: 2, flexWrap: 'wrap', boxSizing: 'border-box' }}>
-            {/* sidebar 标签复用各节标题键,裁掉括号说明(「升级 Pro(一次性时长包…)」进侧栏太长) */}
-            {([['overview', t('acct.title')], ['profile', t('prof.title')], ['favs', t('fav.title')], ['sjobs', t('sj.title')], ['saved', t('ss.title')], ['buy', t('acct.buyTitle')]] as [Sec, string][]).map(([k, label]) => (
-              <button key={k} onClick={() => setSec(k)}
-                style={{ textAlign: 'left', padding: '8px 12px', fontSize: 13.5, border: 'none', borderRadius: 8, cursor: 'pointer', whiteSpace: 'nowrap',
-                  background: sec === k ? '#eef2ff' : 'transparent', color: sec === k ? '#1d4ed8' : '#374151', fontWeight: sec === k ? 600 : 400 }}>
-                {(label.split(/[((]/)[0] ?? '').trim()}
-              </button>
-            ))}
-            {!narrow && <div style={{ borderTop: '1px solid #f3f4f6', margin: '6px 0' }} />}
-            {/* 组件统一 P2(#113):退出登录=ghost 灰(危险性弱操作,B映射) */}
-            <Button kind="ghost" onClick={logout} style={{ textAlign: 'left', padding: '8px 12px', fontSize: 13.5, fontWeight: 400, color: '#9ca3af', whiteSpace: 'nowrap' }}>{t('acct.logout')}</Button>
-          </aside>
-          <main className="card" style={{ flex: 1, minWidth: 0, width: narrow ? '100%' : undefined, boxSizing: 'border-box' }}>
-            {sec === 'overview' && (<>
-              <h1 style={{ fontSize: 18, margin: '0 0 14px' }}>{t('acct.title')}</h1>
-              {payOk && <Notice kind="ok" style={{ marginBottom: 12 }}>{t('acct.payOk')}</Notice>}
-              {/* 身份头(E11-01):头像 + 昵称(可改,空回退邮箱前缀)+ 邮箱 */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                <Avatar src={me.avatar} name={me.displayName || me.email} email={me.email} size={52} />
-                <div style={{ minWidth: 0 }}>
-                  {nick == null ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 16, fontWeight: 600, color: '#111827' }}>{me.displayName?.trim() || me.email.split('@')[0]}</span>
-                      {/* #219 触控靶 ≥40:原来靠 padding+负 margin 拼出来只有 ~37×35,手机上点不准。
-                          改成显式 40×40 的 inline-flex 方框(行高由 52px 头像撑着,不会把这行顶高)。 */}
-                      <button onClick={() => setNick(me.displayName || '')} title={t('acct.nick')} aria-label={t('acct.nick')}
-                        style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', padding: 0, fontSize: 15,
-                          minWidth: 40, minHeight: 40, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✎</button>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span className="acctNickBox">
-                        <Input value={nick} onChange={setNick} placeholder={t('acct.nickPh')}
-                          maxLength={40} autoFocus size="sm" onKeyDown={onNickKey} />
-                      </span>
-                      <Button sm onClick={saveNick} disabled={nickBusy}>{nickBusy ? '…' : t('acct.nickSave')}</Button>
-                    </div>
-                  )}
-                  <div style={{ fontSize: 13, color: '#6b7280', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis' }}>{me.email}</div>
-                </div>
-              </div>
-              <div style={{ fontSize: 14, lineHeight: 2 }}>
-                <div>{pro
-                  ? <span style={{ color: '#b45309', fontWeight: 600 }}><IconStar /> {t('acct.plan.pro', { d: (me.proUntil || '').slice(0, 10) })}</span>
-                  : <span style={{ color: '#6b7280' }}>{t('acct.plan.free')}</span>}
-                </div>
-              </div>
-            </>)}
-            {/* 移民档案(E5-00):匹配层输入;key 按 id 防换号残留 */}
-            {sec === 'profile' && (<>
-              <ProfileForm key={String(me.id)} t={t} userId={me.id} initial={me.profile ?? null} />
-              {/* 简历存档(E11-08):能看能删是能存的前提,与「存」同批上线 */}
-              <ResumeArchive key={'ra' + String(me.id)} t={t} userId={me.id} text={me.profile?.resumeText} savedAt={me.profile?.resumeSavedAt} />
-            </>)}
-            {/* 已保存筛选(E5-03):邮件提醒管理 */}
-            {/* 我的收藏(#62A):同一收藏数据的纯列表视图,独立成节 */}
-            {sec === 'favs' && <SavedJobsList t={t} variant="favs" />}
-            {sec === 'sjobs' && <SavedJobsList t={t} userId={me.id} weeklyOptOut={!!(me as { weeklyOptOut?: boolean }).weeklyOptOut} />}
-            {sec === 'saved' && <SavedSearchList t={t} />}
-            {/* 时长包购买(E3-03):Pro 也可续买,到期日顺延 */}
-            {sec === 'buy' && (<>
-              <div style={{ fontSize: 13.5, fontWeight: 600, color: '#374151' }}>{t('acct.buyTitle')}</div>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button onClick={() => buy('30')} disabled={buying} style={{ ...btn, background: '#2563eb', color: '#fff', opacity: buying ? 0.6 : 1 }}>{t('acct.buy30')}</button>
-                <button onClick={() => buy('90')} disabled={buying} style={{ ...btn, background: '#1d4ed8', color: '#fff', opacity: buying ? 0.6 : 1 }}>{t('acct.buy90')}</button>
-              </div>
-              {buyErr && <div style={{ color: '#dc2626', fontSize: 13, marginTop: 8 }}>{buyErr}</div>}
-              <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 8 }}>{t('acct.buyNote')}</div>
-            </>)}
-          </main>
-        </div>
-      ) : (
-        // 未登录:回首页弹登录框(不渲染独立登录页)
-        <RedirectToLogin />
+      {checked && me != null && (
+        <AccountColumns narrow={narrow}
+          nav={<AccountNav sec={sec} narrow={narrow} t={t} onPick={setSec} onLogout={logout} />}>
+          {sec === 'overview' && (
+            <AccountOverview me={me}
+              pro={pro}
+              payOk={payOk}
+              nick={nick}
+              nickBusy={nickBusy}
+              t={t}
+              onNickEdit={() => setNick(me.displayName || '')}
+              onNickChange={setNick}
+              onNickSave={saveNick}
+              onNickKey={onNickKey} />
+          )}
+          {/* 移民档案(E5-00):匹配层输入;key 按 id 防换号残留 */}
+          {sec === 'profile' && (<>
+            <ProfileForm key={String(me.id)} t={t} userId={me.id} initial={me.profile ?? null} />
+            {/* 简历存档(E11-08):能看能删是能存的前提,与「存」同批上线 */}
+            <ResumeArchive key={'ra' + String(me.id)} t={t} userId={me.id} text={me.profile?.resumeText} savedAt={me.profile?.resumeSavedAt} />
+          </>)}
+          {/* 已保存筛选(E5-03):邮件提醒管理 */}
+          {/* 我的收藏(#62A):同一收藏数据的纯列表视图,独立成节 */}
+          {sec === 'favs' && <SavedJobsList t={t} variant="favs" />}
+          {sec === 'sjobs' && <SavedJobsList t={t} userId={me.id} weeklyOptOut={!!(me as { weeklyOptOut?: boolean }).weeklyOptOut} />}
+          {sec === 'saved' && <SavedSearchList t={t} />}
+          {/* 时长包购买(E3-03):Pro 也可续买,到期日顺延 */}
+          {sec === 'buy' && <AccountBuyPanel t={t} buying={buying} buyErr={buyErr} onBuy={buy} />}
+        </AccountColumns>
       )}
+      {/* 未登录:回首页弹登录框(不渲染独立登录页) */}
+      {checked && me == null && <AccountRedirect />}
       <Footer t={t} />
-    </div>
+    </AccountShell>
   )
 }
