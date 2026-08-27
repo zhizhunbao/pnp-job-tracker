@@ -6,6 +6,8 @@
  * 2026-08-26 续:page.tsx 改造成「纯拼装门」,页面里的排版拆成 AccountShell /
  * AccountColumns / AccountNav / AccountOverview / AccountBuyPanel / AccountRedirect
  * 六件(闸 local/page-compose-only)。AccountNickname / AccountPlanLine 是域内小件不出桶。
+ * 同日再收一刀(Frank「还是有一堆函数啊」,闸 local/page-no-logic):state/effect/handler
+ * 收进 hooks 的 useAccountPage,门只拿面板;makeNickKey 与 Me/Sec 随之只剩域内消费,出桶名单裁掉。
  * 对应 lib 域:lib/profile。
  *
  * @author Claude
@@ -17,12 +19,11 @@ export { AccountNav } from './accountnav'
 export { AccountOverview } from './accountoverview'
 export { AccountRedirect } from './accountredirect'
 export { AccountShell } from './accountshell'
+export { useAccountPage } from './hooks'
 export { ProfileForm } from './ProfileForm'
 export type { ProfileValue } from './ProfileForm'
 export { ResumeArchive } from './ResumeArchive'
 export { SavedJobsList } from './SavedJobsList'
 export { SavedSearchList } from './SavedSearchList'
-export { makeNickKey } from './functions'
-export type { Me, Sec } from './types'
 export { CLB_OPTS, CRS_OPTS, PGWP_OPTS, POPULAR_NOCS, clbActive, crsActive, pgwpActive } from './profileOptions'
 export type { Opt } from './profileOptions'

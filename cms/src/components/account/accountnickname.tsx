@@ -6,13 +6,16 @@
  * 2026-08-26 自 app/(frontend)/account/page.tsx 迁出(页面「纯拼装门」改造批):
  * 原先的三目改成两支 if/else 各自 return,内联样式逐格迁进 account.module.css。
  * 域内自用件,不出桶(只有 AccountOverview 在用)。
+ * 同日 Frank 追加「<button 这种不允许直接使用」:改名铅笔改经 Button(素底,
+ * #219 触控靶样式在加倍类里)。
  *
  * @author Frank
  * @time 2026-08-26 20:30:20
  */
 import { Input } from '@/components/input'
 import { Button } from '@/components/button'
-import { NICK_BOX_CLS, NICK_EDIT_MARK, NICK_INPUT_SIZE, NICK_LEN_MAX } from './constants'
+import { cssOf } from '@/components/css'
+import { NICK_BOX_CLS, NICK_EDIT_MARK, NICK_INPUT_SIZE, NICK_LEN_MAX, PLAIN_BTN_KIND } from './constants'
 import { nickSaveLabelOf } from './functions'
 import type { AccountNicknameIn } from './types'
 import css from './account.module.css'
@@ -28,10 +31,11 @@ export function AccountNickname({ shown, nick, nickBusy, t, onEdit, onChange, on
     return (
       <div className={css.nickView}>
         <span className={css.nickName}>{shown}</span>
-        <button onClick={onEdit}
+        <Button kind={PLAIN_BTN_KIND}
+          onClick={onEdit}
           title={t('acct.nick')}
-          aria-label={t('acct.nick')}
-          className={css.nickEdit}>{NICK_EDIT_MARK}</button>
+          ariaLabel={t('acct.nick')}
+          className={cssOf(css.nickEdit)}>{NICK_EDIT_MARK}</Button>
       </div>
     )
   }

@@ -9,23 +9,60 @@
  * @time 2026-08-26 15:28:17
  */
 import { cssOf } from '@/components/css'
-import { CARD_CLS, CLS_SEP, EMAIL_AT, NICK_BUSY_MARK, PLAN_30, PLAN_90, SEC_LABEL_CUT_RE, TEXT_NONE } from './constants'
+import { resetAnswersMemory } from '@/lib/quiz'
+import {
+  CARD_CLS,
+  CLS_SEP,
+  CRED_INCLUDE,
+  EMAIL_AT,
+  EV_CHECKOUT,
+  HDR_CONTENT_TYPE,
+  METHOD_PATCH,
+  METHOD_POST,
+  MIME_JSON,
+  NICK_BUSY_MARK,
+  PLAN_30,
+  PLAN_90,
+  QP_OK,
+  QP_OK_ON,
+  QP_SEC,
+  SEC_LABEL_CUT_RE,
+  SEC_TABS,
+  TEXT_NONE,
+  URL_CHECKOUT,
+  URL_LOGOUT,
+  URL_ME,
+  URL_USER_HEAD,
+} from './constants'
 import type {
   AddTypedFn,
   AddTypedIn,
   BuyBtnClsIn,
+  BuyFn,
+  BuyIn,
   BuyPickFn,
   BuyPickIn,
   BuyPlan,
+  CheckoutRespJson,
+  LogoutIn,
+  Me,
+  MeRespJson,
   NarrowClsIn,
   NavBtnClsIn,
   NavLabelIn,
+  NickEditIn,
   NickKeyFn,
   NickKeyIn,
   NickSaveLabelIn,
   NickShownIn,
+  ProOfIn,
+  RefreshFn,
+  RefreshIn,
+  SaveNickIn,
+  Sec,
   SecPickFn,
   SecPickIn,
+  UmamiWindow,
 } from './types'
 import css from './account.module.css'
 
@@ -213,4 +250,183 @@ export function makeBuyPick(x: BuyPickIn): BuyPickFn {
   return function pickPlan(): void {
     x.onBuy(x.plan)
   }
+}
+
+/**
+ * Stripe 回跳成功标记:地址栏带 `?ok=1` 才算付成(E3-03;别的值一律当没付,
+ * 到期日由 webhook 拨,前端只出提示)。
+ *
+ * @returns 回跳带成功标记 = true。
+ */
+export function okFlagOf(): boolean {
+  return new URLSearchParams(window.location.search).get(QP_OK) === QP_OK_ON
+}
+
+/**
+ * 账户下拉深链(E11-02):`?sec=`(profile/favs/sjobs/saved/buy/overview)直落对应节。
+ * 白名单就是 SEC_TABS 的键 —— 不在表里的值不认,返回 null 让页面留在默认节。
+ *
+ * @returns 深链点名的节;没带或不认识是 null。
+ */
+export function secLinkOf(): Sec | null {
+  const s = new URLSearchParams(window.location.search).get(QP_SEC)
+  if (s == null) {
+    return null
+  }
+  for (const tab of SEC_TABS) {
+    if (tab.sec === s) {
+      return tab.sec
+    }
+  }
+  return null
+}
+
+/**
+ * 造一枚重查登录态的手柄:GET /api/users/me(带 cookie),响应体按 MeRespJson
+ * 跨边界断言收形。网络错/解析错一律按未登录读(与改造前 `.catch(setMe(null))`
+ * 同口径),checked 成败都落 —— 不落页面会卡在空白。
+ *
+ * @param x 要拨的两格 state。
+ * @returns 重查手柄(登入登出、存昵称之后都要调)。
+ */
+export function makeRefresh(x: RefreshIn): RefreshFn {
+  return async function refresh(): Promise<void> {
+    try {
+      const r = await fetch(URL_ME, { credentials: CRED_INCLUDE })
+      const d = await r.json() as MeRespJson
+      let user: Me = null
+      if (d != null && d.user != null) {
+        user = d.user
+      }
+      x.setMe(user)
+    } catch {
+      x.setMe(null)
+    } finally {
+      x.setChecked(true)
+    }
+  }
+}
+
+/**
+ * 造一枚退出登录的手柄:POST 登出清服务端会话,再清手上那份答案内存,最后重查一次。
+ * 答案跟着会话一起丢是 2026-08-16 的拍板(缓存撤了之后答案住内存):不清的话,
+ * 同一浏览器换个号登录,上一个人的答案会被当成「他的」推到新账号名下。
+ *
+ * @param x 重查手柄。
+ * @returns 登出手柄。
+ */
+export function makeLogout(x: LogoutIn): () => Promise<void> {
+  return async function logout(): Promise<void> {
+    await fetch(URL_LOGOUT, { method: METHOD_POST, credentials: CRED_INCLUDE })
+    resetAnswersMemory()
+    await x.refresh()
+  }
+}
+
+/**
+ * 造一枚进昵称编辑态的手柄(E11-01):编辑种子 = 现显示名,没有显示名从空串起编
+ * (与改造前 `me.displayName || ''` 同口径)。
+ *
+ * @param x 当前登录人与编辑值的落格。
+ * @returns 点铅笔的手柄。
+ */
+export function makeNickEdit(x: NickEditIn): () => void {
+  return function onNickEdit(): void {
+    let seed = TEXT_NONE
+    if (x.me != null && x.me.displayName != null) {
+      seed = x.me.displayName
+    }
+    x.setNick(seed)
+  }
+}
+
+/**
+ * 造一枚存昵称的手柄(E11-01):PATCH `/api/users/:id`(本人可改),成功后重查并
+ * 退出编辑态;失败不动编辑值 —— 留在编辑态,可重试。
+ *
+ * @param x 编辑现值、登录人与三个落格。
+ * @returns 保存手柄。
+ */
+export function makeSaveNick(x: SaveNickIn): () => Promise<void> {
+  return async function saveNick(): Promise<void> {
+    if (x.nick == null || x.me == null) {
+      return
+    }
+    x.setNickBusy(true)
+    try {
+      await fetch(URL_USER_HEAD + x.me.id, {
+        method: METHOD_PATCH,
+        credentials: CRED_INCLUDE,
+        headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+        body: JSON.stringify({ displayName: x.nick.trim() }),
+      })
+      await x.refresh()
+      x.setNick(null)
+    } catch {
+      x.setNickBusy(false)
+      return
+    }
+    x.setNickBusy(false)
+  }
+}
+
+/**
+ * 造一枚发起购买的手柄(E3-03):前端只拿 Checkout URL 跳转,成功回跳 /account?ok=1。
+ * 先发 umami 的 checkout 事件(E7-02;统计对象由环境注入,按 UmamiWindow 跨边界断言收形,
+ * 没有就不发、发挂了不挡购买);响应体按 CheckoutRespJson 收形,`r.ok` 假或 url
+ * 缺席/空串都算失败出话术(与改造前 `!d?.url` 同口径),不静默。
+ *
+ * @param x 取词函数与两格 state。
+ * @returns 发起购买的手柄(收 30/90 档位)。
+ */
+export function makeBuy(x: BuyIn): BuyFn {
+  return async function buy(plan: BuyPlan): Promise<void> {
+    x.setBuying(true)
+    x.setBuyErr(TEXT_NONE)
+    const w = window as UmamiWindow
+    try {
+      if (w.umami != null) {
+        w.umami.track(EV_CHECKOUT, { plan })
+      }
+    } catch {
+      x.setBuyErr(TEXT_NONE)
+    }
+    try {
+      const r = await fetch(URL_CHECKOUT, {
+        method: METHOD_POST,
+        credentials: CRED_INCLUDE,
+        headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+        body: JSON.stringify({ plan }),
+      })
+      let d: CheckoutRespJson | null = null
+      try {
+        d = await r.json() as CheckoutRespJson
+      } catch {
+        d = null
+      }
+      if (r.ok === false || d == null || d.url == null || d.url === TEXT_NONE) {
+        x.setBuyErr(x.t('acct.payErr'))
+        return
+      }
+      window.location.href = d.url
+    } catch {
+      x.setBuyErr(x.t('acct.payErr'))
+    } finally {
+      x.setBuying(false)
+    }
+  }
+}
+
+/**
+ * Pro 在期判定:proUntil 有值且晚于现在。空串与 null 都按免费读
+ * (与改造前 `!!me?.proUntil && new Date(…) > new Date()` 同口径)。
+ *
+ * @param x 当前登录人。
+ * @returns Pro 在期 = true。
+ */
+export function proOf(x: ProOfIn): boolean {
+  if (x.me == null || x.me.proUntil == null || x.me.proUntil === TEXT_NONE) {
+    return false
+  }
+  return new Date(x.me.proUntil) > new Date()
 }

@@ -200,8 +200,10 @@
 
 /*
  * 节导航钮(概览/移民档案/收藏/邮件提醒/已存筛选/升级 Pro):未选中态。
+ * 类名写两遍抬权重:2026-08-26 起本钮经 Button(kind ghost)渲染("<button 这种不允许直接使用"),
+ * 要稳赢 button 域 .btn/.ghost 的同权重声明且不赌打包顺序(先例 .logoutBtn)。
  */
-.navBtn {
+.navBtn.navBtn {
   /*
    * 文字左对齐 —— 一列钮的左边缘要齐。
    */
@@ -255,8 +257,10 @@
 
 /*
  * 节导航钮的选中态(淡靛底 + 品牌蓝字 + 半粗)。写在 .navBtn 之后,同权重后者胜。
+ * 类名写两遍抬权重:2026-08-26 起本钮经 Button(kind ghost)渲染("<button 这种不允许直接使用"),
+ * 要稳赢 button 域 .btn/.ghost 的同权重声明且不赌打包顺序(先例 .logoutBtn)。
  */
-.navBtnActive {
+.navBtnActive.navBtnActive {
   /*
    * 选中淡靛底。
    */
@@ -431,8 +435,10 @@
  * 改名铅笔钮。#219 触控靶 ≥40:原来靠 padding + 负 margin 拼出来只有 ~37×35,
  * 手机上点不准。改成显式 40×40 的 inline-flex 方框(行高由 52px 头像撑着,
  * 不会把这行顶高)。
+ * 类名写两遍抬权重:2026-08-26 起本钮经 Button(kind ghost)渲染("<button 这种不允许直接使用"),
+ * 要稳赢 button 域 .btn/.ghost 的同权重声明且不赌打包顺序(先例 .logoutBtn)。
  */
-.nickEdit {
+.nickEdit.nickEdit {
   /*
    * 无描边。
    */
@@ -622,8 +628,10 @@
 /*
  * 时长包购买钮的基座(E3-03;H 卡片规格 #114 E-I 批:页面内卡片一律平面描边,
  * 阴影只给弹框与下拉,所以这里没有 box-shadow)。配色由下面的 30/90 两个修饰类给。
+ * 类名写两遍抬权重:2026-08-26 起本钮经 Button(kind ghost)渲染("<button 这种不允许直接使用"),
+ * 要稳赢 button 域 .btn/.ghost 的同权重声明且不赌打包顺序(先例 .logoutBtn)。
  */
-.buyBtn {
+.buyBtn.buyBtn {
   /*
    * 各占所在 flex 格的整宽(两钮等宽)。
    */
@@ -672,8 +680,10 @@
 
 /*
  * 30 天档:标准行动蓝。
+ * 类名写两遍抬权重:2026-08-26 起本钮经 Button(kind ghost)渲染("<button 这种不允许直接使用"),
+ * 要稳赢 button 域 .btn/.ghost 的同权重声明且不赌打包顺序(先例 .logoutBtn)。
  */
-.buyBtn30 {
+.buyBtn30.buyBtn30 {
   /*
    * 行动蓝底。
    */
@@ -687,8 +697,10 @@
 
 /*
  * 90 天档:深一档的蓝(更划算的那档更重)。
+ * 类名写两遍抬权重:2026-08-26 起本钮经 Button(kind ghost)渲染("<button 这种不允许直接使用"),
+ * 要稳赢 button 域 .btn/.ghost 的同权重声明且不赌打包顺序(先例 .logoutBtn)。
  */
-.buyBtn90 {
+.buyBtn90.buyBtn90 {
   /*
    * 深行动蓝底。
    */
@@ -702,8 +714,10 @@
 
 /*
  * 下单中(等 Stripe Checkout URL)。写在基座之后才盖得住它的 opacity:1。
+ * 类名写两遍抬权重:2026-08-26 起本钮经 Button(kind ghost)渲染("<button 这种不允许直接使用"),
+ * 要稳赢 button 域 .btn/.ghost 的同权重声明且不赌打包顺序(先例 .logoutBtn)。
  */
-.buyBtnBusy {
+.buyBtnBusy.buyBtnBusy {
   /*
    * 压暗表示正在处理。
    */

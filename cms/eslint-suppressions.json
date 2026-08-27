@@ -1,21 +1,204 @@
 {
+  "src/app/(frontend)/about/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/cases/[slug]/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 15
+    },
+    "local/page-no-logic": {
+      "count": 4
+    }
+  },
   "src/app/(frontend)/cases/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 2
+    },
     "local/page-compose-only": {
       "count": 1
+    },
+    "local/page-no-logic": {
+      "count": 2
     }
   },
   "src/app/(frontend)/companies/[slug]/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 6
+    },
     "local/page-compose-only": {
+      "count": 1
+    },
+    "local/page-no-logic": {
+      "count": 3
+    }
+  },
+  "src/app/(frontend)/employers/compare/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 2
+    },
+    "local/page-no-logic": {
+      "count": 2
+    }
+  },
+  "src/app/(frontend)/employers/designated/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 2
+    },
+    "local/page-no-logic": {
       "count": 1
     }
   },
+  "src/app/(frontend)/employers/hiring/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 3
+    },
+    "local/page-no-logic": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/employers/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 3
+    }
+  },
+  "src/app/(frontend)/funnel/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 15
+    },
+    "local/page-no-logic": {
+      "count": 16
+    }
+  },
+  "src/app/(frontend)/jobs/[id]/opengraph-image.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 4
+    }
+  },
   "src/app/(frontend)/jobs/[id]/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 26
+    },
     "local/page-compose-only": {
+      "count": 1
+    },
+    "local/page-no-logic": {
+      "count": 5
+    }
+  },
+  "src/app/(frontend)/jobs/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 27
+    },
+    "local/page-no-logic": {
+      "count": 5
+    }
+  },
+  "src/app/(frontend)/layout.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 11
+    }
+  },
+  "src/app/(frontend)/legal/disclaimer/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/legal/privacy/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/legal/terms/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 2
+    }
+  },
+  "src/app/(frontend)/news/[slug]/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 7
+    },
+    "local/page-no-logic": {
+      "count": 11
+    }
+  },
+  "src/app/(frontend)/news/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 7
+    },
+    "local/page-no-logic": {
+      "count": 9
+    }
+  },
+  "src/app/(frontend)/occupations/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 1
+    },
+    "local/page-no-logic": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/opengraph-image.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 3
+    }
+  },
+  "src/app/(frontend)/plan/pr/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 18
+    },
+    "local/page-no-logic": {
+      "count": 6
+    }
+  },
+  "src/app/(frontend)/pricing/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 2
+    }
+  },
+  "src/app/(frontend)/rankings/[slug]/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 4
+    },
+    "local/page-no-logic": {
+      "count": 1
+    }
+  },
+  "src/app/(frontend)/rankings/page.tsx": {
+    "local/jsdoc-comments-only": {
       "count": 1
     }
   },
   "src/app/(frontend)/resources/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 2
+    },
     "local/page-compose-only": {
+      "count": 1
+    },
+    "local/page-no-logic": {
+      "count": 2
+    }
+  },
+  "src/app/(frontend)/start/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 42
+    },
+    "local/page-no-logic": {
+      "count": 37
+    }
+  },
+  "src/app/(frontend)/timeline/page.tsx": {
+    "local/jsdoc-comments-only": {
+      "count": 1
+    },
+    "local/page-no-logic": {
       "count": 1
     }
   },
@@ -50,6 +233,9 @@
     "local/function-length": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 20
+    },
     "local/no-arrow-function": {
       "count": 34
     },
@@ -73,6 +259,9 @@
     },
     "react/forbid-dom-props": {
       "count": 19
+    },
+    "react/forbid-elements": {
+      "count": 2
     },
     "react/no-multi-comp": {
       "count": 1
@@ -100,6 +289,9 @@
     "local/file-header": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 6
+    },
     "local/no-arrow-function": {
       "count": 5
     },
@@ -120,6 +312,9 @@
     },
     "react/forbid-dom-props": {
       "count": 11
+    },
+    "react/forbid-elements": {
+      "count": 4
     }
   },
   "src/components/account/SavedJobsList.tsx": {
@@ -147,6 +342,9 @@
     "local/file-header": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 8
+    },
     "local/no-arrow-function": {
       "count": 18
     },
@@ -169,7 +367,7 @@
       "count": 13
     },
     "react/forbid-elements": {
-      "count": 1
+      "count": 2
     }
   },
   "src/components/account/SavedSearchList.tsx": {
@@ -194,6 +392,9 @@
     "local/file-header": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 1
+    },
     "local/no-arrow-function": {
       "count": 9
     },
@@ -208,6 +409,9 @@
     },
     "react/forbid-dom-props": {
       "count": 7
+    },
+    "react/forbid-elements": {
+      "count": 1
     }
   },
   "src/components/account/functions.ts": {
@@ -231,6 +435,9 @@
     "local/file-header": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 25
+    },
     "local/no-arrow-function": {
       "count": 3
     },
@@ -244,6 +451,36 @@
   "src/components/account/types.ts": {
     "local/doc-every-member": {
       "count": 2
+    }
+  },
+  "src/components/auth/accountmenu.tsx": {
+    "react/forbid-elements": {
+      "count": 1
+    }
+  },
+  "src/components/auth/accountmenupop.tsx": {
+    "react/forbid-elements": {
+      "count": 2
+    }
+  },
+  "src/components/auth/authfooter.tsx": {
+    "react/forbid-elements": {
+      "count": 3
+    }
+  },
+  "src/components/auth/authform.tsx": {
+    "react/forbid-elements": {
+      "count": 1
+    }
+  },
+  "src/components/banner/bannerdots.tsx": {
+    "react/forbid-elements": {
+      "count": 1
+    }
+  },
+  "src/components/card/procard.tsx": {
+    "react/forbid-elements": {
+      "count": 1
     }
   },
   "src/components/cases/Case.tsx": {
@@ -279,6 +516,9 @@
     },
     "local/function-length": {
       "count": 1
+    },
+    "local/jsdoc-comments-only": {
+      "count": 26
     },
     "local/no-arrow-function": {
       "count": 17
@@ -327,6 +567,9 @@
     "local/file-header": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 4
+    },
     "local/no-arrow-function": {
       "count": 2
     },
@@ -371,6 +614,9 @@
     "local/function-length": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 39
+    },
     "local/no-arrow-function": {
       "count": 18
     },
@@ -396,7 +642,7 @@
       "count": 1
     },
     "react/forbid-elements": {
-      "count": 1
+      "count": 5
     },
     "react/no-multi-comp": {
       "count": 1
@@ -433,6 +679,9 @@
     "local/function-length": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 75
+    },
     "local/no-arrow-function": {
       "count": 65
     },
@@ -464,7 +713,7 @@
       "count": 5
     },
     "react/forbid-elements": {
-      "count": 2
+      "count": 8
     }
   },
   "src/components/chat/ChatLauncher.tsx": {
@@ -501,6 +750,9 @@
     "local/function-length": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 111
+    },
     "local/no-arrow-function": {
       "count": 61
     },
@@ -525,6 +777,9 @@
     "react/forbid-dom-props": {
       "count": 2
     },
+    "react/forbid-elements": {
+      "count": 7
+    },
     "react/no-multi-comp": {
       "count": 1
     }
@@ -548,6 +803,9 @@
     "local/file-header": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 17
+    },
     "local/no-arrow-function": {
       "count": 10
     },
@@ -570,6 +828,11 @@
       "count": 1
     }
   },
+  "src/components/chip/chip.tsx": {
+    "react/forbid-elements": {
+      "count": 1
+    }
+  },
   "src/components/companies/Company.tsx": {
     "@stylistic/max-len": {
       "count": 4
@@ -582,6 +845,9 @@
     },
     "local/file-header": {
       "count": 1
+    },
+    "local/jsdoc-comments-only": {
+      "count": 11
     },
     "local/no-arrow-function": {
       "count": 1
@@ -602,7 +868,7 @@
       "count": 10
     },
     "react/forbid-elements": {
-      "count": 2
+      "count": 3
     }
   },
   "src/components/employers/Compare.tsx": {
@@ -632,6 +898,9 @@
     },
     "local/function-length": {
       "count": 1
+    },
+    "local/jsdoc-comments-only": {
+      "count": 9
     },
     "local/no-arrow-function": {
       "count": 27
@@ -701,6 +970,9 @@
     "local/function-length": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 26
+    },
     "local/no-arrow-function": {
       "count": 49
     },
@@ -763,6 +1035,9 @@
     "local/file-header": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 25
+    },
     "local/no-arrow-function": {
       "count": 25
     },
@@ -810,6 +1085,9 @@
     "local/file-header": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 9
+    },
     "local/no-arrow-function": {
       "count": 10
     },
@@ -827,6 +1105,34 @@
     },
     "react/forbid-dom-props": {
       "count": 16
+    },
+    "react/forbid-elements": {
+      "count": 1
+    }
+  },
+  "src/components/header/drawergroup.tsx": {
+    "react/forbid-elements": {
+      "count": 1
+    }
+  },
+  "src/components/header/header.tsx": {
+    "react/forbid-elements": {
+      "count": 1
+    }
+  },
+  "src/components/header/langswitch.tsx": {
+    "react/forbid-elements": {
+      "count": 1
+    }
+  },
+  "src/components/header/mobiledrawer.tsx": {
+    "react/forbid-elements": {
+      "count": 1
+    }
+  },
+  "src/components/header/navdrop.tsx": {
+    "react/forbid-elements": {
+      "count": 1
     }
   },
   "src/components/i18n/hooks.ts": {
@@ -871,6 +1177,9 @@
     "local/function-length": {
       "count": 4
     },
+    "local/jsdoc-comments-only": {
+      "count": 194
+    },
     "local/no-arrow-function": {
       "count": 104
     },
@@ -908,7 +1217,7 @@
       "count": 14
     },
     "react/forbid-elements": {
-      "count": 4
+      "count": 16
     },
     "react/no-multi-comp": {
       "count": 8
@@ -945,6 +1254,9 @@
     "local/function-length": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 89
+    },
     "local/no-arrow-function": {
       "count": 62
     },
@@ -976,7 +1288,7 @@
       "count": 7
     },
     "react/forbid-elements": {
-      "count": 12
+      "count": 19
     },
     "react/no-multi-comp": {
       "count": 6
@@ -1013,6 +1325,9 @@
     "local/function-length": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 6
+    },
     "local/no-arrow-function": {
       "count": 17
     },
@@ -1033,6 +1348,9 @@
     },
     "react/forbid-dom-props": {
       "count": 8
+    },
+    "react/forbid-elements": {
+      "count": 1
     }
   },
   "src/components/jobs/Jd.tsx": {
@@ -1069,6 +1387,9 @@
     "local/function-length": {
       "count": 2
     },
+    "local/jsdoc-comments-only": {
+      "count": 151
+    },
     "local/no-arrow-function": {
       "count": 74
     },
@@ -1097,7 +1418,7 @@
       "count": 2
     },
     "react/forbid-elements": {
-      "count": 6
+      "count": 13
     },
     "react/no-multi-comp": {
       "count": 5
@@ -1125,6 +1446,9 @@
     "local/function-length": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 32
+    },
     "local/no-arrow-function": {
       "count": 11
     },
@@ -1147,7 +1471,7 @@
       "count": 13
     },
     "react/forbid-elements": {
-      "count": 4
+      "count": 5
     }
   },
   "src/components/jobs/Jobs.tsx": {
@@ -1184,6 +1508,9 @@
     "local/function-length": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 264
+    },
     "local/no-arrow-function": {
       "count": 166
     },
@@ -1218,7 +1545,7 @@
       "count": 4
     },
     "react/forbid-elements": {
-      "count": 5
+      "count": 16
     },
     "react/no-multi-comp": {
       "count": 1
@@ -1239,6 +1566,9 @@
     },
     "local/file-header": {
       "count": 1
+    },
+    "local/jsdoc-comments-only": {
+      "count": 15
     },
     "local/no-arrow-function": {
       "count": 1
@@ -1274,6 +1604,9 @@
     },
     "local/file-header": {
       "count": 1
+    },
+    "local/jsdoc-comments-only": {
+      "count": 27
     },
     "local/no-arrow-function": {
       "count": 8
@@ -1331,6 +1664,9 @@
     "local/function-length": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 25
+    },
     "local/no-arrow-function": {
       "count": 38
     },
@@ -1354,6 +1690,9 @@
     },
     "react/forbid-dom-props": {
       "count": 30
+    },
+    "react/forbid-elements": {
+      "count": 3
     },
     "react/no-multi-comp": {
       "count": 1
@@ -1387,6 +1726,9 @@
     "local/file-header": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 13
+    },
     "local/no-arrow-function": {
       "count": 10
     },
@@ -1404,6 +1746,9 @@
     },
     "react/forbid-dom-props": {
       "count": 9
+    },
+    "react/forbid-elements": {
+      "count": 1
     }
   },
   "src/components/jobs/Pnp.tsx": {
@@ -1436,6 +1781,9 @@
     },
     "local/function-length": {
       "count": 3
+    },
+    "local/jsdoc-comments-only": {
+      "count": 117
     },
     "local/no-arrow-function": {
       "count": 73
@@ -1471,7 +1819,7 @@
       "count": 2
     },
     "react/forbid-elements": {
-      "count": 2
+      "count": 4
     },
     "react/no-multi-comp": {
       "count": 7
@@ -1513,6 +1861,9 @@
     },
     "local/function-length": {
       "count": 1
+    },
+    "local/jsdoc-comments-only": {
+      "count": 155
     },
     "local/no-arrow-function": {
       "count": 191
@@ -1582,6 +1933,9 @@
     "local/function-length": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 22
+    },
     "local/no-arrow-function": {
       "count": 15
     },
@@ -1604,7 +1958,7 @@
       "count": 25
     },
     "react/forbid-elements": {
-      "count": 1
+      "count": 3
     },
     "react/no-multi-comp": {
       "count": 3
@@ -1641,6 +1995,9 @@
     "local/function-length": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 19
+    },
     "local/no-arrow-function": {
       "count": 17
     },
@@ -1663,7 +2020,7 @@
       "count": 20
     },
     "react/forbid-elements": {
-      "count": 1
+      "count": 3
     }
   },
   "src/components/jobs/Table.tsx": {
@@ -1694,6 +2051,9 @@
     "local/function-length": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 80
+    },
     "local/no-arrow-function": {
       "count": 10
     },
@@ -1722,7 +2082,7 @@
       "count": 52
     },
     "react/forbid-elements": {
-      "count": 1
+      "count": 2
     }
   },
   "src/components/jobs/TripleVerdictModal.tsx": {
@@ -1759,6 +2119,9 @@
     "local/function-length": {
       "count": 2
     },
+    "local/jsdoc-comments-only": {
+      "count": 80
+    },
     "local/no-arrow-function": {
       "count": 25
     },
@@ -1787,7 +2150,7 @@
       "count": 24
     },
     "react/forbid-elements": {
-      "count": 2
+      "count": 5
     },
     "react/no-multi-comp": {
       "count": 4
@@ -1818,6 +2181,9 @@
     "local/file-header": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 13
+    },
     "local/no-arrow-function": {
       "count": 12
     },
@@ -1835,6 +2201,9 @@
     },
     "react/forbid-dom-props": {
       "count": 11
+    },
+    "react/forbid-elements": {
+      "count": 4
     },
     "react/no-multi-comp": {
       "count": 1
@@ -1855,6 +2224,9 @@
     },
     "local/file-header": {
       "count": 1
+    },
+    "local/jsdoc-comments-only": {
+      "count": 4
     },
     "local/no-arrow-function": {
       "count": 1
@@ -1897,6 +2269,9 @@
     "local/function-length": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 49
+    },
     "local/no-arrow-function": {
       "count": 47
     },
@@ -1934,6 +2309,9 @@
     },
     "local/file-header": {
       "count": 1
+    },
+    "local/jsdoc-comments-only": {
+      "count": 8
     }
   },
   "src/components/jobs/filters.shared.ts": {
@@ -1954,6 +2332,9 @@
     },
     "local/file-header": {
       "count": 1
+    },
+    "local/jsdoc-comments-only": {
+      "count": 14
     },
     "local/no-arrow-function": {
       "count": 1
@@ -1995,6 +2376,9 @@
     "local/file-header": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 6
+    },
     "local/no-arrow-function": {
       "count": 3
     },
@@ -2014,9 +2398,19 @@
       "count": 1
     }
   },
+  "src/components/modal/constants.ts": {
+    "local/jsdoc-comments-only": {
+      "count": 1
+    }
+  },
   "src/components/modal/hooks.ts": {
     "@stylistic/max-len": {
       "count": 1
+    }
+  },
+  "src/components/modal/modal.tsx": {
+    "react/forbid-elements": {
+      "count": 2
     }
   },
   "src/components/news/News.tsx": {
@@ -2053,6 +2447,9 @@
     "local/function-length": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 61
+    },
     "local/no-arrow-function": {
       "count": 54
     },
@@ -2081,7 +2478,7 @@
       "count": 2
     },
     "react/forbid-elements": {
-      "count": 5
+      "count": 14
     },
     "react/no-multi-comp": {
       "count": 9
@@ -2108,6 +2505,9 @@
     },
     "local/file-header": {
       "count": 1
+    },
+    "local/jsdoc-comments-only": {
+      "count": 4
     },
     "local/no-arrow-function": {
       "count": 2
@@ -2138,6 +2538,9 @@
     "local/file-header": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 7
+    },
     "local/no-arrow-function": {
       "count": 9
     },
@@ -2153,6 +2556,11 @@
     "react/forbid-dom-props": {
       "count": 12
     },
+    "react/forbid-elements": {
+      "count": 2
+    }
+  },
+  "src/components/pager/pager.tsx": {
     "react/forbid-elements": {
       "count": 2
     }
@@ -2194,6 +2602,9 @@
     "local/function-length": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 366
+    },
     "local/no-arrow-function": {
       "count": 198
     },
@@ -2228,7 +2639,7 @@
       "count": 119
     },
     "react/forbid-elements": {
-      "count": 6
+      "count": 13
     }
   },
   "src/components/plan/QuizForm.tsx": {
@@ -2252,6 +2663,9 @@
     },
     "local/file-header": {
       "count": 1
+    },
+    "local/jsdoc-comments-only": {
+      "count": 16
     },
     "local/no-arrow-function": {
       "count": 7
@@ -2303,6 +2717,9 @@
     "local/function-length": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 25
+    },
     "local/no-arrow-function": {
       "count": 19
     },
@@ -2327,6 +2744,9 @@
     "react/forbid-dom-props": {
       "count": 35
     },
+    "react/forbid-elements": {
+      "count": 2
+    },
     "react/no-multi-comp": {
       "count": 1
     }
@@ -2346,6 +2766,9 @@
     },
     "local/file-header": {
       "count": 1
+    },
+    "local/jsdoc-comments-only": {
+      "count": 12
     },
     "local/no-arrow-function": {
       "count": 5
@@ -2396,6 +2819,9 @@
     },
     "local/file-header": {
       "count": 1
+    },
+    "local/jsdoc-comments-only": {
+      "count": 25
     },
     "local/no-arrow-function": {
       "count": 5
@@ -2450,6 +2876,9 @@
     "local/function-length": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 60
+    },
     "local/no-arrow-function": {
       "count": 70
     },
@@ -2473,6 +2902,9 @@
     },
     "react/forbid-dom-props": {
       "count": 13
+    },
+    "react/forbid-elements": {
+      "count": 5
     },
     "react/no-multi-comp": {
       "count": 1
@@ -2500,6 +2932,9 @@
     "local/file-header": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 4
+    },
     "local/no-arrow-function": {
       "count": 7
     },
@@ -2517,6 +2952,9 @@
     },
     "react/forbid-dom-props": {
       "count": 3
+    },
+    "react/forbid-elements": {
+      "count": 2
     }
   },
   "src/components/quiz/QuizUI.tsx": {
@@ -2541,6 +2979,9 @@
     "local/file-header": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 25
+    },
     "local/no-arrow-function": {
       "count": 8
     },
@@ -2558,6 +2999,9 @@
     },
     "react/forbid-dom-props": {
       "count": 6
+    },
+    "react/forbid-elements": {
+      "count": 2
     },
     "react/no-multi-comp": {
       "count": 6
@@ -2593,6 +3037,9 @@
     },
     "local/file-header": {
       "count": 1
+    },
+    "local/jsdoc-comments-only": {
+      "count": 33
     },
     "local/no-arrow-function": {
       "count": 42
@@ -2647,6 +3094,9 @@
     "local/file-header": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 6
+    },
     "local/no-arrow-function": {
       "count": 7
     },
@@ -2662,6 +3112,11 @@
     "react/forbid-dom-props": {
       "count": 11
     },
+    "react/forbid-elements": {
+      "count": 1
+    }
+  },
+  "src/components/search/search.tsx": {
     "react/forbid-elements": {
       "count": 1
     }
@@ -2697,6 +3152,9 @@
     "local/function-length": {
       "count": 3
     },
+    "local/jsdoc-comments-only": {
+      "count": 181
+    },
     "local/no-arrow-function": {
       "count": 168
     },
@@ -2728,7 +3186,7 @@
       "count": 97
     },
     "react/forbid-elements": {
-      "count": 7
+      "count": 9
     },
     "react/no-multi-comp": {
       "count": 6
@@ -2762,6 +3220,9 @@
     "local/function-length": {
       "count": 1
     },
+    "local/jsdoc-comments-only": {
+      "count": 86
+    },
     "local/no-arrow-function": {
       "count": 92
     },
@@ -2792,6 +3253,9 @@
     "react/forbid-dom-props": {
       "count": 32
     },
+    "react/forbid-elements": {
+      "count": 3
+    },
     "react/no-multi-comp": {
       "count": 2
     }
@@ -2811,6 +3275,9 @@
     },
     "local/file-header": {
       "count": 1
+    },
+    "local/jsdoc-comments-only": {
+      "count": 10
     },
     "local/no-arrow-function": {
       "count": 4
@@ -2833,8 +3300,16 @@
     "react/forbid-dom-props": {
       "count": 11
     },
+    "react/forbid-elements": {
+      "count": 1
+    },
     "react/no-multi-comp": {
       "count": 2
+    }
+  },
+  "src/components/tabs/tabs.tsx": {
+    "react/forbid-elements": {
+      "count": 1
     }
   },
   "src/components/timeline/Timeline.tsx": {
@@ -2864,6 +3339,9 @@
     },
     "local/function-length": {
       "count": 1
+    },
+    "local/jsdoc-comments-only": {
+      "count": 12
     },
     "local/no-arrow-function": {
       "count": 20

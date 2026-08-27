@@ -492,3 +492,266 @@ export type AccountBuyPanelIn = {
    */
   onBuy: (plan: BuyPlan) => void
 }
+
+/**
+ * 语言三字面量(宪法:各域自抄,不跨域借形状)。与 components/i18n 的取值一致,
+ * 结构相同即兼容 —— 少一门语言 tsc 当场红。
+ */
+export type AccountLang = 'zh' | 'en' | 'ko'
+
+/**
+ * `/api/users/me` 的响应体(线格式,归一前形状:键可能不在,`== null` 一网兜住)。
+ */
+export type MeRespJson = {
+  /**
+   * 登录人;未登录时缺席或 null。
+   */
+  user?: AccountUser | null
+}
+
+/**
+ * `/api/stripe/checkout` 的响应体(线格式:拿不到 url = 发起失败)。
+ */
+export type CheckoutRespJson = {
+  /**
+   * Stripe Checkout 的跳转地址;发起失败时缺席或 null。
+   */
+  url?: string | null
+}
+
+/**
+ * 环境注入的 umami 统计对象的形状(只声明本域真用的 track 一格)。
+ */
+export type UmamiLike = {
+  /**
+   * 上报一个事件(E7-02:Checkout 发起)。
+   */
+  track: (event: string, data: Record<string, string>) => void
+}
+
+/**
+ * 带 umami 的 window(归一前形状:统计脚本没加载时缺席)。
+ */
+export type UmamiWindow = {
+  /**
+   * 环境注入的统计对象;没有就不发。
+   */
+  umami?: UmamiLike
+}
+
+/**
+ * useAccountPage 状态机器的面板:门(page.tsx)只拿这一份 + 拼组件
+ * (2026-08-26 Frank 看完拼装版实拍「还是有一堆函数啊」—— state/effect/handler
+ * 全部收进 hooks,门里不再有任何函数体;闸 local/page-no-logic)。
+ */
+export type AccountPanel = {
+  /**
+   * 当前语言(LangProvider 初值由服务端 cookie 定)。
+   */
+  lang: AccountLang
+
+  /**
+   * 切语言并落 cookie(直递 Header)。
+   */
+  setLang: (l: AccountLang) => void
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 窄屏 = true(sidebar 变顶部横排)。
+   */
+  narrow: boolean
+
+  /**
+   * 当前节。
+   */
+  sec: Sec
+
+  /**
+   * 登录人;null = 未登录或还没查完(配 checked 分辨)。
+   */
+  me: Me
+
+  /**
+   * me 查完 = true(没查完先不渲主体,免闪未登录跳转)。
+   */
+  checked: boolean
+
+  /**
+   * Stripe 回跳带 `?ok=1` = true。
+   */
+  payOk: boolean
+
+  /**
+   * 正在等 Checkout URL = true。
+   */
+  buying: boolean
+
+  /**
+   * 发起购买的错误话术;空串 = 没出错。
+   */
+  buyErr: string
+
+  /**
+   * 昵称编辑值;null = 不在编辑。
+   */
+  nick: string | null
+
+  /**
+   * 昵称正在存 = true。
+   */
+  nickBusy: boolean
+
+  /**
+   * Pro 在期 = true。
+   */
+  pro: boolean
+
+  /**
+   * 切节。
+   */
+  onPick: (s: Sec) => void
+
+  /**
+   * 退出登录(清服务端会话 + 本地答案内存)。
+   */
+  onLogout: () => void
+
+  /**
+   * 点铅笔进昵称编辑态(种子 = 现显示名)。
+   */
+  onNickEdit: () => void
+
+  /**
+   * 昵称编辑框改值。
+   */
+  onNickChange: (v: string) => void
+
+  /**
+   * 点保存昵称。
+   */
+  onNickSave: () => void
+
+  /**
+   * 昵称编辑框的键盘出口(Enter 存、Esc 取消)。
+   */
+  onNickKey: NickKeyFn
+
+  /**
+   * 点某一档发起购买。
+   */
+  onBuy: (plan: BuyPlan) => void
+}
+
+/**
+ * makeRefresh 的入参(登录态查询要拨的两格 state)。
+ */
+export type RefreshIn = {
+  /**
+   * 落查询结果(null = 未登录)。
+   */
+  setMe: (m: Me) => void
+
+  /**
+   * 落「查完了」标记(成败都落,免得页面卡在空白)。
+   */
+  setChecked: (v: boolean) => void
+}
+
+/**
+ * 重查登录态的手柄。
+ */
+export type RefreshFn = () => Promise<void>
+
+/**
+ * makeLogout 的入参。
+ */
+export type LogoutIn = {
+  /**
+   * 登出后重查一次,落回未登录渲染。
+   */
+  refresh: RefreshFn
+}
+
+/**
+ * makeNickEdit 的入参(进编辑态要读的现值与要拨的格)。
+ */
+export type NickEditIn = {
+  /**
+   * 当前登录人(读显示名当编辑种子)。
+   */
+  me: Me
+
+  /**
+   * 落昵称编辑值(字符串 = 进入编辑态)。
+   */
+  setNick: (v: string | null) => void
+}
+
+/**
+ * makeSaveNick 的入参(存昵称要读的现值与要拨的格)。
+ */
+export type SaveNickIn = {
+  /**
+   * 当前编辑值;null = 不在编辑(直接返回)。
+   */
+  nick: string | null
+
+  /**
+   * 当前登录人(取 id 拼 PATCH 地址);null 直接返回。
+   */
+  me: Me
+
+  /**
+   * 成功后退出编辑态。
+   */
+  setNick: (v: string | null) => void
+
+  /**
+   * 拨忙态(存中禁保存钮)。
+   */
+  setNickBusy: (v: boolean) => void
+
+  /**
+   * 存完重查,显示名立刻换新。
+   */
+  refresh: RefreshFn
+}
+
+/**
+ * makeBuy 的入参(发起购买要用的取词与两格 state)。
+ */
+export type BuyIn = {
+  /**
+   * 取词函数(失败话术 acct.payErr)。
+   */
+  t: TFn
+
+  /**
+   * 拨下单忙态。
+   */
+  setBuying: (v: boolean) => void
+
+  /**
+   * 拨错误话术(空串 = 清掉)。
+   */
+  setBuyErr: (v: string) => void
+}
+
+/**
+ * 发起购买的手柄(收档位)。
+ */
+export type BuyFn = (plan: BuyPlan) => Promise<void>
+
+/**
+ * proOf 的入参。
+ */
+export type ProOfIn = {
+  /**
+   * 当前登录人;null 按免费读。
+   */
+  me: Me
+}

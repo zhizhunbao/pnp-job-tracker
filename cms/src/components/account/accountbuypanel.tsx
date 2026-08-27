@@ -5,11 +5,13 @@
  * 跳转,到期日由 webhook 拨(回跳 /account?ok=1 出成功提示)。
  * 2026-08-26 自 app/(frontend)/account/page.tsx 迁出(页面「纯拼装门」改造批):
  * 原先共用的 btn 样式对象与两钮配色全部迁进 account.module.css,忙态压暗改修饰类。
+ * 同日 Frank 追加「<button 这种不允许直接使用」:两档购买钮改经 Button(素底,配色由加倍类定)。
  *
  * @author Frank
  * @time 2026-08-26 20:30:20
  */
-import { PLAN_30, PLAN_90 } from './constants'
+import { Button } from '@/components/button'
+import { PLAIN_BTN_KIND, PLAN_30, PLAN_90 } from './constants'
 import { buyBtnClsOf, makeBuyPick } from './functions'
 import type { AccountBuyPanelIn } from './types'
 import css from './account.module.css'
@@ -25,12 +27,14 @@ export function AccountBuyPanel({ t, buying, buyErr, onBuy }: AccountBuyPanelIn)
     <>
       <div className={css.buyTitle}>{t('acct.buyTitle')}</div>
       <div className={css.buyRow}>
-        <button onClick={makeBuyPick({ plan: PLAN_30, onBuy })}
+        <Button kind={PLAIN_BTN_KIND}
+          onClick={makeBuyPick({ plan: PLAN_30, onBuy })}
           disabled={buying}
-          className={buyBtnClsOf({ plan: PLAN_30, busy: buying })}>{t('acct.buy30')}</button>
-        <button onClick={makeBuyPick({ plan: PLAN_90, onBuy })}
+          className={buyBtnClsOf({ plan: PLAN_30, busy: buying })}>{t('acct.buy30')}</Button>
+        <Button kind={PLAIN_BTN_KIND}
+          onClick={makeBuyPick({ plan: PLAN_90, onBuy })}
           disabled={buying}
-          className={buyBtnClsOf({ plan: PLAN_90, busy: buying })}>{t('acct.buy90')}</button>
+          className={buyBtnClsOf({ plan: PLAN_90, busy: buying })}>{t('acct.buy90')}</Button>
       </div>
       {buyErr !== '' && <div className={css.buyErr}>{buyErr}</div>}
       <div className={css.buyNote}>{t('acct.buyNote')}</div>

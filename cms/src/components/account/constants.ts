@@ -100,6 +100,13 @@ export const SEC_TABS = [
 export const LOGOUT_BTN_KIND = 'ghost'
 
 /**
+ * 定制样式钮的统一底座(2026-08-26 Frank「<button 这种不允许直接使用」——
+ * 裸 <button> 一律改经 button 族):ghost 底最素,视觉全由本域的加倍类定形,
+ * Button 只出统一的语义与可达性(disabled/aria)。
+ */
+export const PLAIN_BTN_KIND = 'ghost'
+
+/**
  * 支付成功提示的色档(notice 四色里的绿:成功)。Stripe 回跳带 `?ok=1` 时出这一条 ——
  * 钱已经付了,这是**成功**不是警告,所以不是琥珀。
  */
@@ -111,6 +118,76 @@ export const PAY_OK_KIND = 'ok'
  * 路径打错是**静默 404**,所以必须在这里有名字有注释。
  */
 export const LOGIN_URL = '/?login=1'
+
+/**
+ * 默认落点节:进页先看概览(深链 `?sec=` 命中时由 effect 再改)。
+ */
+export const SEC_DEFAULT = 'overview'
+
+/**
+ * Stripe 回跳成功标记的查询参数名(`/account?ok=1`,由 checkout 的 success_url 带回)。
+ */
+export const QP_OK = 'ok'
+
+/**
+ * 回跳成功标记的「真」值(E3-03:只认 `ok=1`,别的值一律当没付)。
+ */
+export const QP_OK_ON = '1'
+
+/**
+ * 账户下拉深链的查询参数名(E11-02:`?sec=` 直落对应节,取值域 = SEC_TABS 的键)。
+ */
+export const QP_SEC = 'sec'
+
+/**
+ * 当前登录人接口(Payload 的 me 端点;带 cookie 才认得出人)。
+ */
+export const URL_ME = '/api/users/me'
+
+/**
+ * 登出接口(POST;清的是服务端会话,本地答案内存另由 resetAnswersMemory 清)。
+ */
+export const URL_LOGOUT = '/api/users/logout'
+
+/**
+ * 发起时长包购买的接口(POST plan → 回 Checkout URL,E3-03)。
+ */
+export const URL_CHECKOUT = '/api/stripe/checkout'
+
+/**
+ * 改用户资料的接口前缀(PATCH `/api/users/:id`,本人可改;昵称保存走这里)。
+ */
+export const URL_USER_HEAD = '/api/users/'
+
+/**
+ * fetch 的凭据档:同源带 cookie(账户页所有请求都要认人)。
+ */
+export const CRED_INCLUDE = 'include'
+
+/**
+ * POST 方法字(登出与发起购买)。
+ */
+export const METHOD_POST = 'POST'
+
+/**
+ * PATCH 方法字(改昵称)。
+ */
+export const METHOD_PATCH = 'PATCH'
+
+/**
+ * JSON 请求体的头名。
+ */
+export const HDR_CONTENT_TYPE = 'Content-Type'
+
+/**
+ * JSON 请求体的媒体类型。
+ */
+export const MIME_JSON = 'application/json'
+
+/**
+ * Checkout 发起的统计事件名(E7-02;umami 由环境注入,没有就不发)。
+ */
+export const EV_CHECKOUT = 'checkout'
 
 /**
  * 30 天时长包的档位标识(发给 /api/stripe/checkout 的 plan 值,也是 umami 事件的属性值)。

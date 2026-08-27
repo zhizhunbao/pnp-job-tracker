@@ -1716,6 +1716,91 @@ const localRules = {
       },
     },
 
+    'jsdoc-comments-only': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          form:
+            '非 JSDoc 注释(2026-08-26 Frank「不允许非 JSDoc 的注释」)—— 组件域与页面域的注释'
+            + '只有一种形:声明上的 /** */。行注释、裸块注释、JSX 里的 {/* */} 都要挂回它解释的那个'
+            + '声明的 JSDoc(文件级的进文件头块);eslint 指令豁免。lib 的段横幅是宪法形制,不在本闸射程。',
+        },
+      },
+      create(context) {
+        // 只查组件域与 (frontend) 页面域 —— lib 的 // 段横幅是 2026-08-19 定的宪法形制,别误伤。
+        const f = context.filename ?? ''
+        const inScope = /[\\/]src[\\/]components[\\/]/.test(f) || /[\\/]app[\\/]\(frontend\)[\\/]/.test(f)
+        if (!inScope) return {}
+        function isDirective(text) {
+          const t = text.trim()
+          return t.startsWith('eslint-') || t.startsWith('eslint ') || t.startsWith('global ')
+            || t.startsWith('@ts-') || t.startsWith('c8 ') || t.startsWith('istanbul ')
+        }
+        return {
+          Program() {
+            const sourceCode = context.sourceCode ?? context.getSourceCode()
+            for (const c of sourceCode.getAllComments()) {
+              if (isDirective(c.value)) continue
+              if (c.type === 'Block' && c.value.startsWith('*')) continue
+              context.report({ loc: c.loc, messageId: 'form' })
+            }
+          },
+        }
+      },
+    },
+
+    'page-no-logic': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          fn:
+            'page.tsx 体内出现函数体(`{{ kind }}`)—— 门里只许一行 useXxxPage() + 拼装'
+            + '(2026-08-26 Frank 看完拼装版实拍「还是有一堆函数啊」):state/effect/handler '
+            + '全部收进本页面域组件桶的 hooks.ts 状态机器,样板 components/account/hooks.ts 的 useAccountPage。',
+        },
+      },
+      create(context) {
+        if (!/[\\/]app[\\/]\(frontend\)[\\/].*[\\/]?page\.tsx$/.test(context.filename ?? '')) return {}
+        // 默认导出的组件函数本体放行;其余一切函数节点(声明/表达式/箭头,含 effect 与
+        // JSX 属性里的内联 handler)都算「门里长了逻辑」。
+        let defaultFn = null
+        const namedFns = new Map()
+        function check(node) {
+          if (node === defaultFn) return
+          context.report({ node, messageId: 'fn', data: { kind: node.type } })
+        }
+        return {
+          FunctionDeclaration(node) {
+            if (node.id) namedFns.set(node.id.name, node)
+          },
+          ExportDefaultDeclaration(node) {
+            if (node.declaration.type === 'FunctionDeclaration') defaultFn = node.declaration
+            if (node.declaration.type === 'Identifier') defaultFn = namedFns.get(node.declaration.name) ?? null
+          },
+          'Program:exit'(program) {
+            const sourceCode = context.sourceCode ?? context.getSourceCode()
+            function walk(node) {
+              if (node == null || typeof node.type !== 'string') return
+              if (node.type === 'FunctionDeclaration' || node.type === 'FunctionExpression' || node.type === 'ArrowFunctionExpression') {
+                check(node)
+              }
+              for (const key of sourceCode.visitorKeys[node.type] ?? []) {
+                const child = node[key]
+                if (Array.isArray(child)) {
+                  for (const c of child) walk(c)
+                } else {
+                  walk(child)
+                }
+              }
+            }
+            walk(program)
+          },
+        }
+      },
+    },
+
     'page-compose-only': {
       meta: {
         type: 'suggestion',
@@ -2471,9 +2556,17 @@ const eslintConfig = [
       // 裸 <a> 禁(2026-08-24 Frank「弄个 button 实际是 a 标签,统一,不裸写 a 标签」
       // 「都放到 button 里面」):一律经 button 族的 LinkButton(rel 逻辑收拢在它一处;
       // Button href/BackButton 体内也经它);全站唯一裸 <a> 在 linkbutton.tsx(下面单独关闸)。
-      'react/forbid-elements': ['error', { forbid: [{ element: 'a', message: '裸 <a> 禁:经 button 族的 LinkButton(钮形走 Button href/BackButton)' }] }],
+      'react/forbid-elements': ['error', { forbid: [
+        { element: 'a', message: '裸 <a> 禁:经 button 族的 LinkButton(钮形走 Button href/BackButton)' },
+        // 2026-08-26 Frank 看 account 样张实拍「<button 这种不允许直接使用」:可点的东西
+        // 一律经 Button(定制样式钮走 kind ghost + 本域加倍类,样板 account 的 PLAIN_BTN_KIND);
+        // 唯一的裸 <button> 出口在 button/button.tsx(下面单独关闸)。存量记基线派批清零。
+        { element: 'button', message: '裸 <button> 禁:一律经 button 族的 Button(定制样式走 kind ghost + 本域加倍类,样板 account/PLAIN_BTN_KIND)' },
+      ] }],
       'local/component-file-names': 'error',
       'local/component-name-match': 'error',
+      // 注释只许 JSDoc(2026-08-26 Frank「不允许非 JSDoc 的注释」;规则体内有 lib 段横幅的免伤判)。
+      'local/jsdoc-comments-only': 'error',
       // 2026-08-24 Frank 实拍 `rel="noreferrer"` 查不出来:这条闸 lib 侧开了一年,
       // 组件区一次都没开过 —— 而「常量抽出来是为了挂注释」在前端最要紧(参数最多)。
       // JSX 属性值、文本子节点、空串一起进闸(规则实现同日补齐这三样)。
@@ -2508,8 +2601,9 @@ const eslintConfig = [
     },
   },
   {
-    // ── linkbutton 是裸 <a> 的唯一出口:关掉禁令(别处一律经它)──
-    files: ['src/components/button/linkbutton.tsx'],
+    // ── linkbutton 是裸 <a> 的唯一出口、button 是裸 <button> 的唯一出口:
+    //    关掉禁令(别处一律经它们;<button> 那半 2026-08-26 Frank 追加)──
+    files: ['src/components/button/linkbutton.tsx', 'src/components/button/button.tsx'],
     rules: { 'react/forbid-elements': 'off' },
   },
   {
@@ -2545,7 +2639,13 @@ const eslintConfig = [
     //    存量走 --suppress-rule 记基线当账单派批清零;增量从立闸起锁死。──────────────────
     files: ['src/app/(frontend)/**/*.tsx'],
     plugins: { local: localRules },
-    rules: { 'local/route-file-names': 'error', 'local/page-compose-only': 'error' },
+    rules: {
+      'local/route-file-names': 'error',
+      'local/page-compose-only': 'error',
+      'local/page-no-logic': 'error',
+      // 注释只许 JSDoc(2026-08-26 Frank;组件域那份开在闸 A 块里,这里管页面域)。
+      'local/jsdoc-comments-only': 'error',
+    },
   },
   // ── mart 的三条具名豁免已撤(2026-08-26 Frank「mart 不要豁免 重构一下」)────────
   // 08-25 那块豁免的三个论据在形制批里逐条落了地,豁免随之失去存在理由:
