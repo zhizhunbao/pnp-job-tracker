@@ -21,6 +21,26 @@
 >   它们以内联形式压过类,把 32 处残留卡在那儿,要迁得连调用点一起改;
 >   ④ 批 D 欠账②(真 Pro 号生产验判定卡直渲,待 Frank 亲手)。展开见下方交接 + 记忆 `next-session-status`。
 >
+> **📍 2026-08-26 全天:report-driven 还账 + 页面域形制革命(9 提交,全部本地未 push)**
+> - **lib 还账三批全清**:no-db-vocab 77(行构造器归 `to*`,ruling 的 passRow 退役换 toTripleWireFact)、
+>   魔数 90(jobs 评分权重收成 PTS 表与 RK 键一一同名;alerts 手拼 SQL 占位符退役换 unnest 数组参数;
+>   DATE8_RE 捕获组替切片下标)、literal-index 22(正则全改具名捕获组)。lib 侧基线 267→70。
+> - **页面域形制五闸落地**(Frank 当天连环拍板,详见记忆 `page-compose-doctrine`):
+>   `route-file-names` / `page-compose-only` / `page-no-logic` / `forbid-elements` 加 button 档 /
+>   `jsdoc-comments-only`。59 个路由散件全量 git mv 迁 `components/` 18 桶(纯移动机器证明),
+>   quiz/chat/stats 三个纯组件窝目录消失,路由树 = 26 个页面目录每个只剩 page.tsx。
+> - **account 样张定稿**(d1367747 + 72368e68):门 = 文件头 JSDoc + 一行 `useAccountPage()` + 纯拼装;
+>   状态机器住 `components/account/hooks.ts`,八个 make* 工厂住 functions.ts(口径注释=工厂 JSDoc);
+>   四处钮经 Button(素底 ghost + 加倍类,`PLAIN_BTN_KIND`);page/account 账单归零。
+> - **账本首次盖住全站 tsx**:活 error 0 / warn 194(react-hooks 欠账本)/ 基线 22,698
+>   (大头是 jsdoc-only 闸曝光的组件域 `//` 注释存量,增量已锁死)。四道闸全绿(vitest 476 / build)。
+> - **⏭️ 下轮开工项(Frank 已定):25 页照 account 样张铺开**,四批 ——
+>   批1 薄页 12(about/legal×3/pricing/resources/rankings×2/occupations/timeline/cases×2,机械抄样张);
+>   批2 中页 6(news×2/companies/employers×4);批3 重页 4(start 79 条/funnel/plan/根首页);
+>   批4 jobs 两页(全站基准,改完必须浏览器实拍)。批1、2 可并行派工,验收 = 该 page/ 域从账单消失 + 四道闸绿。
+> - 未结:9 提交未 push(push 即 Render 部署,上线后拉 /account 验换版);组件域 2.2 万条注释/裸钮
+>   长线滚动批;alerts 域零测试覆盖(任务片已挂);样张仅机器比对样式等价,未做登录态浏览器实拍。
+>
 > **📍 2026-08-18 凌晨续:四个 ui 侧样式对象退役 → 类(本轮第二件,已提交未推送)**
 > - **这是结构问题不是 CSS 问题**,所以先定形态再迁:`CARD_SHELL`/`CARD_MD`、`ctrl`、`PILL_BTN`、`link`
 >   **全变成类**(Frank 拍板),加料留内联。判据是实测的加料率 —— 「留对象」的唯一好处就是能展开加料,
