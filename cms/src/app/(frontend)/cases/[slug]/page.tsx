@@ -17,7 +17,8 @@
 import { notFound } from 'next/navigation'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
-import { Case, CasesShell } from '@/components/cases'
+import { Case } from '@/components/cases'
+import { Frame } from '@/components/shell'
 import { getDb } from '@/lib/db/server'
 import { ssrLang } from '@/lib/i18n/server'
 import { caseMeta, loadCasePage } from '@/lib/ruling/server'
@@ -49,10 +50,10 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
     notFound()
   }
   return (
-    <CasesShell>
+    <Frame>
       <Header active="pathways" />
       <Case caseId={props.caseId} answer={props.answer} />
       <Footer />
-    </CasesShell>
+    </Frame>
   )
 }

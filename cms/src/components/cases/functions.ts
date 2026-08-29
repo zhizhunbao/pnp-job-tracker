@@ -8,16 +8,19 @@
  * @time 2026-08-27 01:30:00
  */
 import { cssOf } from '@/components/css'
+import { makeT } from '@/lib/i18n'
 import { dropProvPrefix } from '@/lib/jobs'
+import { CASES } from '@/lib/ruling'
 import { track } from '@/lib/track'
 import type { CaseAnswer, OpsFacts, PathwayVerdict, VerdictReason } from '@/lib/ruling/server'
 import {
   CASE_KEY_HEAD, CASE_LABEL_TAIL, CASE_Q_TAIL, EV_INDEX_PAGE, EV_TO_QUIZ, FED_CODE, KIND_NEEDS_INFO, LANG_ZH,
-  OPS_POOL_AT_KEY, OPS_POOL_KEY, OPS_POOL_ON_KEY, PCT_TENTH_DIV, PCT_TENTH_SCALE, PROV_KEY_HEAD, QUOTE_CLOSE,
-  QUOTE_OPEN, QUOTE_ZH_CLOSE, QUOTE_ZH_OPEN, REASONS_MAX, TEXT_NONE, TIER_KEY_HEAD, URL_CASE_HEAD, VERDICT_EXCLUDED,
-  YEAR_RE,
+  LD_CONTEXT, LD_CONTEXT_KEY, LD_ITEM_TYPE, LD_LIST_TYPE, LD_TYPE_KEY, LIST_POS_BASE, OPS_POOL_AT_KEY,
+  OPS_POOL_KEY, OPS_POOL_ON_KEY, PCT_TENTH_DIV, PCT_TENTH_SCALE, PROV_KEY_HEAD, QUOTE_CLOSE, QUOTE_OPEN,
+  QUOTE_ZH_CLOSE, QUOTE_ZH_OPEN, REASONS_MAX, TEXT_NONE, TIER_KEY_HEAD, URL_CASE_HEAD, URL_SITE_HEAD,
+  VERDICT_EXCLUDED, YEAR_RE,
 } from './constants'
-import type { CaseTierBand, TFn } from './types'
+import type { CaseListItem, CaseTierBand, TFn } from './types'
 import css from './cases.module.css'
 
 /**
@@ -468,4 +471,32 @@ export function supplyBitsOf(x: {
     bits.push(x.t('case.ops.approved', { pct, ok: x.o.nominated, no: x.o.refused, period: ytd }))
   }
   return bits
+}
+
+/**
+ * 索引页的 JSON-LD(schema.org ItemList):有事实层的处境各出一条,让搜索引擎
+ * 认出这是一张列表。2026-08-29 自 cases/page.tsx 的散常量下沉(页面门只许拼装);
+ * `@context`/`@type` 两个键名是 schema.org 线格式定死的,走 constants 的键常量
+ * 以计算属性拼,不写裸串。
+ *
+ * @returns 序列化好的整串(页面门直接塞进 script 体)。
+ */
+export function casesJsonLd(): string {
+  const items: CaseListItem[] = []
+  for (const c of CASES) {
+    if (c.page === '') {
+      continue
+    }
+    items.push({
+      [LD_TYPE_KEY]: LD_ITEM_TYPE,
+      position: items.length + LIST_POS_BASE,
+      name: makeT(LANG_ZH)(caseLabelKeyOf({ id: c.id })),
+      url: URL_SITE_HEAD + URL_CASE_HEAD + c.page,
+    })
+  }
+  return JSON.stringify({
+    [LD_CONTEXT_KEY]: LD_CONTEXT,
+    [LD_TYPE_KEY]: LD_LIST_TYPE,
+    itemListElement: items,
+  })
 }

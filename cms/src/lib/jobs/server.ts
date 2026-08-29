@@ -9,7 +9,7 @@
 
 export { PROV_NAME } from './constants'
 export {
-  buildJobsWhere, checkedAt, loadAlertHits, loadBroadNocs, loadCompanyByJobId, loadCompanyBySlug,
+  buildJobsWhere, checkedAt, companyJsonOf, loadAlertHits, loadBroadNocs, loadCompanyByJobId, loadCompanyBySlug,
   loadJobById, loadJobRows, loadJobsPage, loadMatchPage, loadNocOpenCounts, loadQuizFacts,
   loadOccCompetition, loadRelatedJobs, loadSimilarEmployers, loadSsrDims, loadTopNocs,
   getTopNocs, getSsrDims, loadTotalAndProof, jobDescription, jobPostingJsonOf,

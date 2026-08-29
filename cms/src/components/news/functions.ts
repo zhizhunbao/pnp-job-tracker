@@ -6,10 +6,15 @@
  * regionNameOf 拼标题,标了指令就把它锁进客户端边界。
  * 2026-08-27 换装批自 News.tsx 的组件体与 shared.ts 拆户而来;原 `newsRegionName` /
  * `newsPublisher` 按七词表更名 `regionNameOf` / `publisherOf`(纯派生 = `xxxOf`)。
+ * 2026-08-29 页面门清闸批:两个门里的五条取数(列表 / 头条 / 评论数 / 单条库行 / 评论)
+ * 连同它们的 `.then` 洗行下沉成本文件尾段的 `load*` + `to*` —— 方案 A(样张 start):
+ * 连接池由页面门 `getPayload` + `dbOf` 取好注进来,本文件照旧一个 `/server` 门都不 import,
+ * 浏览器仍打包得动。护栏(任一查询失败 → 对应块留空)与 schema 容错的两次回退一字未改。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
+import { SQL } from '@/lib/db'
 import { PROV_NAME } from '@/lib/stats'
 import { cssOf } from '@/components/css'
 import {
@@ -18,7 +23,7 @@ import {
   HDR_CONTENT_TYPE, IMP_MIN, LANG_KO, LANG_ZH, METHOD_POST, MIME_JSON, NEWS_REGIONS, PARA_SEP_RE,
   PUBLISHER_FEDERAL, PUBLISHER_PROV_HEAD, PUBLISHER_QC, REGION_FEDERAL, REGION_IMG_CODES, REGION_IMG_HEAD,
   REGION_IMG_TAIL, REGION_QC, REPLIES_OPEN_MAX, SIDE_MAX, SLIDE_MS, STATE_BUSY, STATE_ERR, STATE_IDLE,
-  STATE_SENT, TEXT_CANADA, TEXT_IRCC, TEXT_NONE, TIP_SEP, URL_NEWS_HEAD,
+  STATE_SENT, SUMMARY_EN_COL, SUMMARY_NULL_COL, TEXT_CANADA, TEXT_IRCC, TEXT_NONE, TIP_SEP, URL_NEWS_HEAD,
 } from './constants'
 import type {
   ClickFn, CommentCountIn, CommentSubmitIn, CommentsOfIn, DateIn, DayGroupsOfIn, DeadIn, ExpandLabelIn,
@@ -28,6 +33,8 @@ import type {
   RepliesAtIn, ReplySubmitIn, ReplyToggleIn, SendDisabledIn, ShownItemsOfIn, SlideAriaIn, SlidePickIn,
   NewsCard, SlideTimerIn, SlidesAtIn, SlugIn, SmallIn, StepIn, SumClickIn, SumLabelIn, TextChangeFn,
   TextChangeIn, ThreadOpenIn, TransAtOfIn, TransClickIn, TransLabelIn,
+  NewsCardRowIn, NewsCmtCountDbRow, NewsCmtCounts, NewsCommentsAtIn, NewsDbRow, NewsFirstRowIn, NewsHeroRowIn,
+  NewsListIn, NewsSlugIn,
 } from './types'
 import css from './news.module.css'
 
@@ -1255,4 +1262,180 @@ export function isSendDisabled(x: SendDisabledIn): boolean {
  */
 export function slideAriaOf(x: SlideAriaIn): string {
   return ARIA_SLIDE_HEAD + String(x.i + 1)
+}
+
+/**
+ * 列表卡的行构造器:importance 库里是 numeric,pg 驱动交回字符串,这里转成数字;
+ * 没评过的照旧保 null —— 不折 0,那会把「没评」说成「最低分」。
+ *
+ * @param x `NEWS_LIST` 交回的原始行。
+ * @returns 列表卡。
+ */
+function toNewsCard(x: NewsCardRowIn): NewsCard {
+  let importance: number | null = null
+  if (x.row.importance != null) {
+    importance = Number(x.row.importance)
+  }
+  return {
+    region: x.row.region,
+    title: x.row.title,
+    date: x.row.date,
+    slug: x.row.slug,
+    ogImage: x.row.ogImage,
+    excerpt: x.row.excerpt,
+    importance,
+    importanceNote: x.row.importanceNote,
+  }
+}
+
+/**
+ * 头条行的行构造器:同上转 importance,再带上两门速读。
+ * 这条查询自带 `importance IS NOT NULL`,所以这里不判空(判了反而假装它可能没有)。
+ *
+ * @param x `NEWS_LIST_REGION` 交回的原始行。
+ * @returns 头条行。
+ */
+function toNewsHero(x: NewsHeroRowIn): NewsHero {
+  return {
+    region: x.row.region,
+    title: x.row.title,
+    date: x.row.date,
+    slug: x.row.slug,
+    ogImage: x.row.ogImage,
+    excerpt: x.row.excerpt,
+    importance: Number(x.row.importance),
+    importanceNote: x.row.importanceNote,
+    summaryZh: x.row.summaryZh,
+    summaryKo: x.row.summaryKo,
+  }
+}
+
+/**
+ * 列表条目取数(`NEWS_LIST`,按日期倒序最近 60 条)。
+ * 护栏与原来的页面门一字不差:查询挂了这一块留空,页面照渲不 500。
+ *
+ * @param x 数据库连接(方案 A:由页面门注进来)。
+ * @returns 列表卡清单;查询失败给空清单。
+ */
+export async function loadNewsCards(x: NewsListIn): Promise<NewsCard[]> {
+  const rows: NewsCard[] = []
+  try {
+    const res = await x.db.query(SQL.NEWS_LIST)
+    const raw = res.rows as NewsCard[]
+    for (const r of raw) {
+      rows.push(toNewsCard({ row: r }))
+    }
+  } catch {
+    return []
+  }
+  return rows
+}
+
+/**
+ * 头条区取数(`NEWS_LIST_REGION`,importance 最高的 5 条)。
+ * 护栏同上:查询挂了轮播整块不出,列表照常。
+ *
+ * @param x 数据库连接。
+ * @returns 头条清单;查询失败给空清单。
+ */
+export async function loadNewsHeroes(x: NewsListIn): Promise<NewsHero[]> {
+  const rows: NewsHero[] = []
+  try {
+    const res = await x.db.query(SQL.NEWS_LIST_REGION)
+    const raw = res.rows as NewsHero[]
+    for (const r of raw) {
+      rows.push(toNewsHero({ row: r }))
+    }
+  } catch {
+    return []
+  }
+  return rows
+}
+
+/**
+ * 每条动态的过审评论数(`NEWS_COMMENT_COUNTS`)。
+ * 护栏同上,且 comments 表还没建时走的正是这条 catch —— 计数整表空着,列表照渲。
+ *
+ * @param x 数据库连接。
+ * @returns slug → 条数;查询失败给空表。
+ */
+export async function loadNewsCommentCounts(x: NewsListIn): Promise<NewsCmtCounts> {
+  const counts: NewsCmtCounts = {}
+  try {
+    const res = await x.db.query(SQL.NEWS_COMMENT_COUNTS)
+    const raw = res.rows as NewsCmtCountDbRow[]
+    for (const r of raw) {
+      counts[r.slug] = r.n
+    }
+  } catch {
+    return {}
+  }
+  return counts
+}
+
+/**
+ * 跑一发 `newsBySlug` 并取第一行。
+ *
+ * @param x 数据库连接、英文摘要那一格取的列名、slug。
+ * @returns 库行;这条 slug 库里没有就给 null。
+ */
+async function firstNewsRow(x: NewsFirstRowIn): Promise<NewsDbRow | null> {
+  const res = await x.db.query(SQL.newsBySlug(x.col), [x.slug])
+  const rows = res.rows as NewsDbRow[]
+  const row = rows[0]
+  if (row == null) {
+    return null
+  }
+  return row
+}
+
+/**
+ * 单条动态的库行。
+ * schema 容错(P1f 事故教训:引用未建列把全部详情页打成 404):先按真列名查,
+ * summary_en 没建时那一发会报错,退回 NULL 版再查一次;DDL 到位自动走回真列名。
+ *
+ * @param x 数据库连接与 slug。
+ * @returns 库行;查不到或两发都挂了给 null。
+ */
+export async function loadNewsRow(x: NewsSlugIn): Promise<NewsDbRow | null> {
+  try {
+    return await firstNewsRow({ db: x.db, col: SUMMARY_EN_COL, slug: x.slug })
+  } catch {
+    try {
+      return await firstNewsRow({ db: x.db, col: SUMMARY_NULL_COL, slug: x.slug })
+    } catch {
+      return null
+    }
+  }
+}
+
+/**
+ * 跑一发取评论的语句并交回原始行。
+ *
+ * @param x 数据库连接、语句文本与 slug。
+ * @returns 评论行,按 created_at ASC(楼序在组件里排)。
+ */
+async function newsCommentsAt(x: NewsCommentsAtIn): Promise<NewsComment[]> {
+  const res = await x.db.query(x.sql, [x.slug])
+  return res.rows as NewsComment[]
+}
+
+/**
+ * 这条动态的过审评论。
+ * 先走 F 件(E8-07)的楼中楼版;parent_id/pinned 列还没建(DDL 未跑)时那一发会报错,
+ * 回退老的平铺版。comments 表未建 / 两发都挂 → 空列表,详情页照常渲。
+ *
+ * @param x 数据库连接与 slug。
+ * @returns 评论清单;查不到给空清单。
+ */
+export async function loadNewsComments(x: NewsSlugIn): Promise<NewsComment[]> {
+  try {
+    return await newsCommentsAt({ db: x.db, sql: SQL.NEWS_COMMENTS_THREADED, slug: x.slug })
+  } catch {
+    try {
+      return await newsCommentsAt({ db: x.db, sql: SQL.NEWS_COMMENTS_FLAT, slug: x.slug })
+    } catch {
+      return []
+    }
+  }
 }

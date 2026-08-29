@@ -1798,3 +1798,16 @@ export const SOURCE_TICK = 'tick'
  * 「你的条件」一格的形态:下拉。
  */
 export const FIELD_SELECT = 'select'
+
+/**
+ * 热门职业榜一次取多少行 —— /plan/pr 的门在 SSR 里取好,答题器的职业候选用它。
+ */
+export const TOP_NOCS_LIMIT = 24
+
+/**
+ * SSR 先算那一版判定的等待上限(毫秒)。
+ * 🔴 **SSR 不许阻塞页面**:判定拿不到/慢了就当没有,首屏照出,客户端再取(它本来就会取)。
+ *    数据面有单件缓存(实测 getVerdictData 冷 2.3s、热 0ms;名录冷 97ms、热 0ms)——
+ *    热进程里这一步几乎免费,但**冷启那一次不能让整页跟着等**,更不能因为它挂了页面就白屏。
+ */
+export const SSR_WIRE_MS = 1500

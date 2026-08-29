@@ -5,46 +5,13 @@
  */
 
 /*
- * 全页最外层:灰白底 + 撑满视口高的纵向列(顶栏 / 正文 / 页脚三段)。
- */
-.wrap {
-  /*
-   * 全站灰白底(colors 域变量)。
-   */
-  background: var(--bg);
-
-  /*
-   * 至少撑满一屏 —— 内容少时页脚也压在屏底。
-   */
-  min-height: 100vh;
-
-  /*
-   * 顶栏 / 正文 / 页脚纵向排。
-   */
-  display: flex;
-
-  /*
-   * 纵向。
-   */
-  flex-direction: column;
-
-  /*
-   * 跟随系统字体。
-   */
-  font-family: system-ui, sans-serif;
-
-  /*
-   * 正文默认字色(近黑的深灰)。
-   */
-  color: #1f2937;
-}
-
-/*
  * #300 触控靶:640 断点下 summary 实测 23px,指头点不准;只扩点击区不动桌面版式
- * (原先是 Case.tsx 里一段内联 \3c style>,迁类后收进本域)。
+ * (原先是 Case.tsx 里一段内联 \3c style>,迁类后收进本域)。2026-08-29 挂点自
+ * .wrap 换 .grow:CasesShell(.wrap)是全站 Frame 的克隆,退役;summary 全在
+ * 详情正文(.grow)之内,收窄挂点值不变(font/color 两格 body 同值已有)。
  */
 @media (width <= 640px) {
-  .wrap summary {
+  .grow summary {
     /*
      * 触控最小高(#219 同源标准)。
      */

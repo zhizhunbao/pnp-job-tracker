@@ -15,7 +15,9 @@
  * @time 2026-08-28 00:30:00
  */
 import { headers } from 'next/headers'
-import { Decision, type TvJob } from '@/components/plan'
+import {
+  Decision, SSR_WIRE_MS, TOP_NOCS_LIMIT, emptyJobRows, nullWire, raceWire, ssrWireOf, type TvJob,
+} from '@/components/plan'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
 import { Frame } from '@/components/shell'
@@ -38,7 +40,7 @@ export default async function PlanPrPage({ searchParams }: { searchParams: Promi
   /** 表包(points)与热门职业榜(jobs)2026-08-22 拆开取,各自 TTL 缓存;池由页面注入(拍板③) */
   const db = await getDb()
   const [{ overview, drawsRecent, competition }, topNocs] = await Promise.all([
-    getScoreTables(db), getTopNocs({ db, limit: 24 }),
+    getScoreTables(db), getTopNocs({ db, limit: TOP_NOCS_LIMIT }),
   ])
 
   /** `?job=` 带岗进来 → 三项结果直接并入本页(轻查:判定本体在 `/api/ruling/verdict`,这里只要表头四样) */
@@ -47,7 +49,7 @@ export default async function PlanPrPage({ searchParams }: { searchParams: Promi
   if (Number.isFinite(jobId) && jobId > 0) {
     const { rows } = await db.query(
       SQL.PR_PLAN_JOBS, [jobId],
-    ).catch(() => ({ rows: [] as Record<string, unknown>[], rowCount: null }))
+    ).catch(emptyJobRows)
     if (rows.length) {
       const r = rows[0]
       const teer = Number(r.teer)
@@ -66,19 +68,17 @@ export default async function PlanPrPage({ searchParams }: { searchParams: Promi
    * 🔴 **SSR 不许阻塞页面**:判定拿不到/慢了就当没有,首屏照出,客户端再取(它本来就会取)。
    *    数据面有单件缓存(实测 getVerdictData 冷 2.3s、热 0ms;名录冷 97ms、热 0ms)——
    *    热进程里这一步几乎免费,但**冷启那一次不能让整页跟着等**,更不能因为它挂了页面就白屏。
+   * 2026-08-29 形制批:认人 + 判定那段与赛跑本身下沉 components/plan 的 ssrWireOf / raceWire
+   * (门里不许有函数体),三支服务端函数由本门注进去;赛跑语义与等待上限一个字没变。
    */
   let initialVerdict: TripleWire | null = null
   if (tvJob) {
-    /**
-     * 超时句柄挂在一个本地容器上,而不是给 `let` 重新赋值 —— 后者被 react-hooks/immutability
-     * 判成「渲染完成后改变量」。赛跑语义一个字没变:谁先回谁算,回来后照旧把定时器清掉。
-     */
-    const timeout: { handle: ReturnType<typeof setTimeout> | null } = { handle: null }
-    const wire = await Promise.race([
-      (async () => { const u = await getUser(await headers()).catch(() => null); return tripleWireOf({ id: tvJob.id, answers: null, user: u, pro: isPro(u) }) })().catch(() => null),
-      new Promise<null>((resolve) => { timeout.handle = setTimeout(() => resolve(null), 1500) }),
-    ])
-    if (timeout.handle) clearTimeout(timeout.handle)
+    const wire = await raceWire({
+      task: ssrWireOf({
+        id: tvJob.id, head: headers(), loadUser: getUser, pro: isPro, judge: tripleWireOf,
+      }).catch(nullWire),
+      ms: SSR_WIRE_MS,
+    })
     if (wire && !('error' in wire)) initialVerdict = wire
   }
 

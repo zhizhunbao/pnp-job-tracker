@@ -11,11 +11,16 @@
  * 🔴 桶本身与 types/constants/functions 都**不带 `'use client'`**(老坑 6):
  * 服务端页面(generateMetadata / SQL 取数)与客户端视图共用这几张形状与取名函数。
  * 对应 lib 域:lib/news(速读与翻译两条 HTTP 芯)。
+ * 2026-08-29 页面门清闸批:两个门的取数(`load*` 五条)与 meta 截断长度也从这里出 ——
+ * 门里只剩取参、`getPayload` + `dbOf` 取池、一行装配与拼大写组件。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
+export { META_DESC_LEN_MAX } from './constants'
 export { News } from './news'
 export { NewsDetail } from './newsdetail'
-export { regionNameOf } from './functions'
+export {
+  loadNewsCards, loadNewsCommentCounts, loadNewsComments, loadNewsHeroes, loadNewsRow, regionNameOf,
+} from './functions'
 export type { NewsCard, NewsComment, NewsDbRow, NewsHero } from './types'

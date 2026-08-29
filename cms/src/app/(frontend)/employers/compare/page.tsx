@@ -1,5 +1,11 @@
-// 多雇主对比页(D3 / E5-06):SSR gate——Pro 才聚合真值;免费/匿名=示例模糊态(真数据不出服务端)。
-// 入口=名录行/公司弹框「+ 对比」(localStorage 选择,URL ?names=a|b|c 落地);sitemap 不收录(Pro 页无 SEO 价值)。
+/**
+ * 多雇主对比页(D3 / E5-06)的门:SSR gate——Pro 才聚合真值;免费/匿名=示例模糊态
+ * (真数据不出服务端)。入口=名录行/公司弹框「+ 对比」(localStorage 选择,
+ * URL `?names=a|b|c` 落地);sitemap 不收录(Pro 页无 SEO 价值)。
+ *
+ * @author Frank
+ * @time 2026-07-20 12:21:35
+ */
 import { headers } from 'next/headers'
 import { getUser, isPro } from '@/lib/quota/server'
 import { loadMatchDims } from '@/lib/jobs/server'
@@ -7,26 +13,36 @@ import type { CompareRow } from '@/lib/employers'
 import { compareEmployers } from '@/lib/employers/server'
 import { getDb } from '@/lib/db/server'
 import { hasProfile, normalizeProfile, type ProfileJson } from '@/lib/jobs'
-import { Compare } from '@/components/employers'
+import { Compare, COMPARE_MIN_ROWS, compareNamesOf, noDimsOf } from '@/components/employers'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
 import { Frame } from '@/components/shell'
 
 export const dynamic = 'force-dynamic'
 
+/**
+ * 本页的 SEO 头(Pro 页不进索引;内容写死,用常量形不用函数形)。
+ */
 export const metadata = {
   title: 'Compare employers — LMIA record, AIP status & immigration signals side by side | Offer2PR',
   robots: { index: false },
 }
 
+/**
+ * 对比页的门:取参 + 身份判定 + 一行装配 + 拼壳与正文。真值只在 Pro 且选够两家时才聚合,
+ * 其余一律走示例模糊态(免费/匿名看得到形态、看不到数)。
+ *
+ * @param x Next 递来的查询参数。
+ * @returns 整页。
+ */
 export default async function CompareEmployersPage({ searchParams }: { searchParams: Promise<{ names?: string }> }) {
   const sp = await searchParams
-  const names = String(sp?.names || '').split('|').map((s) => s.trim()).filter(Boolean)
+  const names = compareNamesOf({ names: sp?.names })
   const user = await getUser(await headers())
   const pro = isPro(user)
   let rows: CompareRow[] = []
-  if (pro && names.length >= 2) {
-    const dims = await loadMatchDims(await getDb()).catch(() => null)
+  if (pro && names.length >= COMPARE_MIN_ROWS) {
+    const dims = await loadMatchDims(await getDb()).catch(noDimsOf)
     /**
      * 跨域形状接缝:quota 域声明的 users.profile 允许嵌套对象,jobs 域的 ProfileJson 只到扁平格
      * (两域各自声明自己的形状,不互相取 —— 宪法)。断言只住这一处,收窄由 normalizeProfile 逐格做。

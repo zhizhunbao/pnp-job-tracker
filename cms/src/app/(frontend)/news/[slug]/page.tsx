@@ -12,6 +12,9 @@
  * 2026-08-27 换装批:壳件拼装收进门里(样张 account)—— 整页外框走 shell 桶的 Frame,
  * 顶栏与页脚在这里拼,NewsDetail 只出 Shell 轨往下的视图(原 NewsShell 随之撤编);
  * 同批 `NewsRow` 按三段律更名 `NewsDbRow`(它是 newsBySlug 那条 SQL 的原始行)。
+ * 2026-08-29 清闸批:原门里的 `loadRow` 与评论那两发查询下沉 components/news 的 functions
+ * (`loadNewsRow` / `loadNewsComments`,方案 A 注入连接池)—— 上面两段 schema 容错与评论
+ * 回退的口径原样搬进那两个函数的 JSDoc,一字未改;门里只剩取参、取池、装配与拼组件。
  *
  * @author Frank
  * @time 2026-07-18 00:00:00
@@ -23,28 +26,11 @@ import config from '@/payload.config'
 import { getUser } from '@/lib/quota/server'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
-import { NewsDetail, regionNameOf, type NewsComment, type NewsDbRow } from '@/components/news'
+import { META_DESC_LEN_MAX, NewsDetail, loadNewsComments, loadNewsRow, regionNameOf } from '@/components/news'
 import { Frame } from '@/components/shell'
-import { SQL } from '@/lib/db'
 import { dbOf } from '@/lib/db/server'
 
 export const dynamic = 'force-dynamic'
-
-/**
- * 取这条动态的库行(summary_en 缺列时自动退回 NULL 版)。
- *
- * @param slug 详情页地址的最后一段。
- * @returns 库行;查不到给 null。
- */
-async function loadRow(slug: string): Promise<NewsDbRow | null> {
-  const payload = await getPayload({ config: await config })
-  const pool = dbOf(payload)
-  const q = (withEn: boolean) => pool.query(
-    SQL.newsBySlug(withEn ? 'summary_en' : 'NULL'), [slug])
-  return q(true)
-    .then((r: { rows: NewsDbRow[] }) => r.rows[0] ?? null)
-    .catch(() => q(false).then((r: { rows: NewsDbRow[] }) => r.rows[0] ?? null).catch(() => null))
-}
 
 /**
  * 每篇独立落地页的标题与描述(标题带官方原标题与发布机关)。
@@ -54,12 +40,12 @@ async function loadRow(slug: string): Promise<NewsDbRow | null> {
  */
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const row = await loadRow(slug)
+  const row = await loadNewsRow({ db: dbOf(await getPayload({ config: await config })), slug })
   if (!row) return {}
   const who = row.region === 'federal' ? 'IRCC' : `${regionNameOf({ region: row.region })} PNP`
   return {
     title: `${row.title} — ${who} ${row.date} | Offer2PR`,
-    description: `${(row.bodyEn || '').replace(/\s+/g, ' ').slice(0, 160)}…`,
+    description: `${(row.bodyEn || '').replace(/\s+/g, ' ').slice(0, META_DESC_LEN_MAX)}…`,
   }
 }
 
@@ -71,17 +57,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
  */
 export default async function NewsDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const row = await loadRow(slug)
-  if (!row) notFound()
   const payload = await getPayload({ config: await config })
-  const pool = dbOf(payload)
-  const comments: NewsComment[] = await pool
-    .query(SQL.NEWS_COMMENTS_THREADED, [slug])
-    .then((r: { rows: NewsComment[] }) => r.rows)
-    .catch(() => pool
-      .query(SQL.NEWS_COMMENTS_FLAT, [slug])
-      .then((r: { rows: NewsComment[] }) => r.rows)
-      .catch(() => []))
+  const db = dbOf(payload)
+  const row = await loadNewsRow({ db, slug })
+  if (!row) notFound()
+  const comments = await loadNewsComments({ db, slug })
   const user = await getUser(await headers())
   return (
     <Frame>

@@ -11,7 +11,8 @@
  * @time 2026-08-26 19:28:00
  */
 export { Compare } from './compare'
+export { COMPARE_MIN_ROWS } from './constants'
 export { Employers } from './employers'
-export { hasVerdictSignal, sponsorEmployerColsOf, toSponsorCellRows } from './functions'
+export { compareNamesOf, hasVerdictSignal, noDimsOf, sponsorEmployerColsOf, toSponsorCellRows } from './functions'
 export { SponsorCard } from './sponsorcard'
 export type { SponsorCellRow, SponsorKind } from './types'

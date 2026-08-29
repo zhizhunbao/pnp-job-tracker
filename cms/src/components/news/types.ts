@@ -6,10 +6,13 @@
  * 2026-08-27 换装批自 shared.ts 拆户而来(常量去 constants.ts、取名函数去 functions.ts);
  * 同批按三段律把原 `NewsRow` 更名 `NewsDbRow` —— 它是 `newsBySlug` 那条 SQL 的原始行,
  * `XxxRow` 那个后缀在七后缀里指的是对外展示行,占着它会认错东西。
+ * 2026-08-29 页面门清闸批:两个门里的取数下沉本域 functions,取数入参的形状落在这里 ——
+ * 唯一的 import 是 lib/db 的连接面(基础设施叶子,`no-import-in-leaf` 钦定的那一格特批)。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
+import type { DbPool } from '@/lib/db'
 
 /**
  * 界面语取词函数(与 lib/i18n 的 TFn 同形:键 + 可选插值 —— 宪法 08-25「types 自声明」,
@@ -1854,4 +1857,111 @@ export type NewsDetailHookIn = {
    * 这条动态的库行(带 SSR 已有的速读与译文)。
    */
   row: NewsDbRow
+}
+
+/**
+ * 每条动态的过审评论数表:键 = slug,值 = 条数。查不到的 slug 在表里缺席
+ * (不折 0 —— 列表那一格自己判「有没有」)。
+ */
+export type NewsCmtCounts = Record<string, number>
+
+/**
+ * 过审评论数的库行(`NEWS_COMMENT_COUNTS` 那条 SQL 的原始行)。
+ */
+export type NewsCmtCountDbRow = {
+  /**
+   * 详情页地址的最后一段(库里那列叫 news_slug,SQL 里已改名 slug)。
+   */
+  slug: string
+
+  /**
+   * 这条动态的过审评论条数。
+   */
+  n: number
+}
+
+/**
+ * 三条列表查询(`loadNewsCards` / `loadNewsHeroes` / `loadNewsCommentCounts`)的入参
+ * —— 方案 A:连接池由页面门 `getPayload` + `dbOf` 取好注进来,本域一个 `/server` 门都不 import。
+ */
+export type NewsListIn = {
+  /**
+   * 数据库连接。
+   */
+  db: DbPool
+}
+
+/**
+ * 单条动态取库行(`loadNewsRow`)与取过审评论(`loadNewsComments`)的入参。
+ */
+export type NewsSlugIn = {
+  /**
+   * 数据库连接(同上,由页面门注进来)。
+   */
+  db: DbPool
+
+  /**
+   * 详情页地址的最后一段。
+   */
+  slug: string
+}
+
+/**
+ * `firstNewsRow` 的入参:一条 `newsBySlug` 语句要的两格。
+ */
+export type NewsFirstRowIn = {
+  /**
+   * 数据库连接。
+   */
+  db: DbPool
+
+  /**
+   * 英文摘要那一格取哪个列 —— 真列名,或 schema 缺列时的 `NULL` 占位。
+   */
+  col: string
+
+  /**
+   * 详情页地址的最后一段。
+   */
+  slug: string
+}
+
+/**
+ * `newsCommentsAt` 的入参:哪条语句、哪条动态。
+ */
+export type NewsCommentsAtIn = {
+  /**
+   * 数据库连接。
+   */
+  db: DbPool
+
+  /**
+   * 取评论的 SQL 文本(楼中楼版,或 parent_id/pinned 缺列时的老版)。
+   */
+  sql: string
+
+  /**
+   * 详情页地址的最后一段。
+   */
+  slug: string
+}
+
+/**
+ * `toNewsCard` 的入参。
+ */
+export type NewsCardRowIn = {
+  /**
+   * `NEWS_LIST` 交回的原始行。
+   */
+  row: NewsCard
+}
+
+/**
+ * `toNewsHero` 的入参。
+ */
+export type NewsHeroRowIn = {
+  /**
+   * `NEWS_LIST_REGION` 交回的原始行。
+   */
+  row: NewsHero
 }

@@ -4463,6 +4463,16 @@ export type JobMetaIn = {
 }
 
 /**
+ * `companyJsonOf` 的入参(公司页的 Organization JSON-LD 要拼的那份档案)。
+ */
+export type CompanyJsonIn = {
+  /**
+   * 库里查好的公司档案。
+   */
+  company: CompanyDetail
+}
+
+/**
  * JSON-LD 逐格填的入参(正在拼的对象与本岗)。
  */
 export type LdPutIn = {

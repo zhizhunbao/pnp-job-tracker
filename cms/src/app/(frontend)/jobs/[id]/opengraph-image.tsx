@@ -1,12 +1,25 @@
-// E8-07:职位页动态 og 分享图(1200×630)——链接贴进微信/小红书/TG 出卡片图,模板一次写好两万岗零手工。
-// 文案全走英文/数字(职位名/公司/城市本就是英文),避免 ImageResponse 内嵌 CJK 字体的体积与兼容问题。
+/**
+ * E8-07:职位页动态 og 分享图(1200×630)——链接贴进微信/小红书/TG 出卡片图,模板一次写好两万岗零手工。
+ * 文案全走英文/数字(职位名/公司/城市本就是英文),避免 ImageResponse 内嵌 CJK 字体的体积与兼容问题。
+ * SQL 文本全在 `@/lib/db` 的 SQL 里,本文件只管取数与组装;
+ * 版面尺寸(画布、字号、边距、圆角、截断长度)2026-08-29 形制批全数下沉 components/jobs 的 constants。
+ *
+ * @author Frank
+ * @time 2026-07-20 14:25:54
+ */
 import { ImageResponse } from 'next/og'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { SQL } from '@/lib/db'   // SQL 文本全在那儿,本文件只管取数与组装
+import {
+  OG_BOLD, OG_BRAND_GAP, OG_BRAND_SIZE, OG_CHIP_GAP, OG_CHIP_RADIUS, OG_CHIP_SIZE, OG_CHIP_TOP,
+  OG_COMPANY_LEN, OG_COMPANY_SIZE, OG_COMPANY_TOP, OG_DOMAIN_SIZE, OG_FOOT_SIZE, OG_FOOT_TOP, OG_H,
+  OG_META_GAP, OG_META_SIZE, OG_META_TOP, OG_PAD, OG_SALARY_LEN, OG_TITLE_LEN, OG_TITLE_LH,
+  OG_TITLE_SIZE, OG_W,
+} from '@/components/jobs'
+import { SQL } from '@/lib/db'
 import { dbOf } from '@/lib/db/server'
 
-export const size = { width: 1200, height: 630 }
+export const size = { width: OG_W, height: OG_H }
 export const contentType = 'image/png'
 export const alt = 'Job posting on Offer2PR'
 
@@ -66,37 +79,41 @@ export default async function Image({ params }: { params: Promise<{ id: string }
     const res = await pool.query(
       SQL.JOB_OG_BY_ID, [Number(id)])
     r = res.rows[0] || null
-  } catch { /* 查库失败 → 兜底品牌图 */ }
+  } catch {
+    /**
+     * 查库失败 → 兜底品牌图。
+     */
+  }
 
-  const title = (r?.title || 'Canadian jobs with immigration signals').slice(0, 90)
+  const title = (r?.title || 'Canadian jobs with immigration signals').slice(0, OG_TITLE_LEN)
   const loc = r ? [r.city, r.province].filter(Boolean).join(', ') : ''
   const salary = r?.salary_text || r?.salary || ''
   const chips = r ? [r.pnp_eligible ? 'PNP-eligible' : '', r.teer != null ? `TEER ${r.teer}` : ''].filter(Boolean) : []
   return new ImageResponse(
     (
-      <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', background: '#ffffff', padding: 64, fontFamily: 'sans-serif' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ fontSize: 34, fontWeight: 700, color: '#2563eb', display: 'flex' }}>🍁 Offer2PR</div>
-          <div style={{ fontSize: 22, color: '#9ca3af', display: 'flex' }}>offer2pr.com</div>
+      <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', background: '#ffffff', padding: OG_PAD, fontFamily: 'sans-serif' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: OG_BRAND_GAP }}>
+          <div style={{ fontSize: OG_BRAND_SIZE, fontWeight: OG_BOLD, color: '#2563eb', display: 'flex' }}>🍁 Offer2PR</div>
+          <div style={{ fontSize: OG_DOMAIN_SIZE, color: '#9ca3af', display: 'flex' }}>offer2pr.com</div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center' }}>
-          <div style={{ fontSize: 58, fontWeight: 700, color: '#111827', lineHeight: 1.2, display: 'flex' }}>{title}</div>
-          {r?.company ? <div style={{ fontSize: 34, color: '#374151', marginTop: 18, display: 'flex' }}>{String(r.company).slice(0, 60)}</div> : null}
-          <div style={{ display: 'flex', gap: 24, marginTop: 14 }}>
-            {loc ? <div style={{ fontSize: 28, color: '#6b7280', display: 'flex' }}>{loc}</div> : null}
-            {salary ? <div style={{ fontSize: 28, color: '#15803d', display: 'flex' }}>{String(salary).slice(0, 40)}</div> : null}
+          <div style={{ fontSize: OG_TITLE_SIZE, fontWeight: OG_BOLD, color: '#111827', lineHeight: OG_TITLE_LH, display: 'flex' }}>{title}</div>
+          {r?.company ? <div style={{ fontSize: OG_COMPANY_SIZE, color: '#374151', marginTop: OG_COMPANY_TOP, display: 'flex' }}>{String(r.company).slice(0, OG_COMPANY_LEN)}</div> : null}
+          <div style={{ display: 'flex', gap: OG_META_GAP, marginTop: OG_META_TOP }}>
+            {loc ? <div style={{ fontSize: OG_META_SIZE, color: '#6b7280', display: 'flex' }}>{loc}</div> : null}
+            {salary ? <div style={{ fontSize: OG_META_SIZE, color: '#15803d', display: 'flex' }}>{String(salary).slice(0, OG_SALARY_LEN)}</div> : null}
           </div>
           {chips.length ? (
-            <div style={{ display: 'flex', gap: 12, marginTop: 22 }}>
+            <div style={{ display: 'flex', gap: OG_CHIP_GAP, marginTop: OG_CHIP_TOP }}>
               {chips.map((c) => (
-                <div key={c} style={{ display: 'flex', fontSize: 24, color: '#1d4ed8', background: '#eff6ff', border: '2px solid #bfdbfe', borderRadius: 999, padding: '6px 22px' }}>{c}</div>
+                <div key={c} style={{ display: 'flex', fontSize: OG_CHIP_SIZE, color: '#1d4ed8', background: '#eff6ff', border: '2px solid #bfdbfe', borderRadius: OG_CHIP_RADIUS, padding: '6px 22px' }}>{c}</div>
               ))}
             </div>
           ) : null}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '2px solid #e5e7eb', paddingTop: 22 }}>
-          <div style={{ fontSize: 24, color: '#6b7280', display: 'flex' }}>Daily-updated job board · PNP / EE / wage signals</div>
-          <div style={{ fontSize: 24, color: '#2563eb', display: 'flex' }}>offer2pr.com/jobs/{id}</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '2px solid #e5e7eb', paddingTop: OG_FOOT_TOP }}>
+          <div style={{ fontSize: OG_FOOT_SIZE, color: '#6b7280', display: 'flex' }}>Daily-updated job board · PNP / EE / wage signals</div>
+          <div style={{ fontSize: OG_FOOT_SIZE, color: '#2563eb', display: 'flex' }}>offer2pr.com/jobs/{id}</div>
         </div>
       </div>
     ),

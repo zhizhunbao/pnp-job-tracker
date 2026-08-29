@@ -23,7 +23,8 @@ import { CompareSkilledCell } from './compareskilledcell'
 import {
   AIP_MARK, ALIGN_RIGHT, BRIEF_LEN_MAX, BRIEF_TAIL, BROAD_KEY_HEAD, CLS_SEP, COL_LIST_KEY, COL_LMIA_KEY,
   COL_NAME_KEY, COL_NOC_KEY, COL_OPEN_KEY, COL_PROGRAM_KEY, COL_SKILLED_KEY, COL_VERDICT_KEY, COL_W1_KEY,
-  COL_W2_KEY, COL_W4_KEY, COL_WHERE_KEY, DASH_MARK, DEMO_A_KEY, DEMO_B_KEY, DEMO_C_KEY, DEMO_CO_A, DEMO_CO_B,
+  COL_W2_KEY, COL_W4_KEY, COL_WHERE_KEY, COMPARE_NAME_SEP, DASH_MARK, DEMO_A_KEY, DEMO_B_KEY, DEMO_C_KEY,
+  DEMO_CO_A, DEMO_CO_B,
   DEMO_CO_C, DEMO_METRIC_KEY, DEMO_NAMED_A, DEMO_NAMED_B, DEMO_NAMED_C, DEMO_OPEN_A, DEMO_OPEN_B, DEMO_OPEN_C,
   DEMO_PROV_A, DEMO_PROV_B, DEMO_PROV_C, DEMO_SKILLED_A, DEMO_SKILLED_B, DEMO_SKILLED_C, DIFF_KEY_HEAD,
   DIFF_TAG, DIFF_VARIANT_NONE, DIM_AIP_KEY, DIM_AVG_KEY, DIM_BRIEF_KEY, DIM_INDUSTRY_KEY, DIM_LMIA_KEY,
@@ -53,7 +54,7 @@ import { SkilledCell } from './skilledcell'
 import { SponsorNameCell } from './sponsornamecell'
 import type {
   AliasIn, BoardUrlIn, CardClickFn, CardClickIn, CardNoteIn, CellFn, ClearIn, ClickFn, CompareCellRow,
-  CompareCellRowIn, CompareCellRowsIn, CompareDemoRow, CompareDim, CompareDimsIn, CompareMatchParts,
+  CompareCellRowIn, CompareCellRowsIn, CompareDemoRow, CompareDim, CompareDimsIn, CompareMatchParts, CompareNamesIn,
   CompareProvParts, CompareRow, DiffVariant, DimValueIn, DrawerToggleIn,
   EmpCol, EmployerCellRow, EmployerCellRowIn, EmployerCellRowsIn, EmployerColsIn, EmployerFilters,
   EmployerMode,
@@ -1291,6 +1292,39 @@ function forgetCompare(): void {
 export function clearCompare(): void {
   forgetCompare()
   window.location.href = EMP_URL
+}
+
+/**
+ * 把对照页 URL `?names=` 那一格切成雇主名清单:按竖线切、逐段去首尾空白、丢掉空段
+ * (`a||b` 或结尾多一根竖线,都不该变成一个空名字拿去查库)。
+ *
+ * @param x URL 上 names 参数的原样值。
+ * @returns 去过空白的雇主名清单;参数没带时给空清单。
+ */
+export function compareNamesOf(x: CompareNamesIn): string[] {
+  let raw = TEXT_NONE
+  if (x.names != null) {
+    raw = x.names
+  }
+  const names: string[] = []
+  for (const part of raw.split(COMPARE_NAME_SEP)) {
+    const name = part.trim()
+    if (name !== TEXT_NONE) {
+      names.push(name)
+    }
+  }
+  return names
+}
+
+/**
+ * 匹配维度包取不到时的兜底值(对照页 `loadMatchDims(...).catch(noDimsOf)` 用):
+ * 维度包只影响「与我的匹配」那一列出不出,取不到就当这一列没有维度可算,
+ * 对照表本身照出 —— 不能因为它把整页拖没。签名(零参)由 `Promise.catch` 定死。
+ *
+ * @returns 恒为 null。
+ */
+export function noDimsOf(): null {
+  return null
 }
 
 /**

@@ -1701,13 +1701,21 @@ const localRules = {
       },
       create(context) {
         if (!/\.tsx$/.test(context.filename ?? '')) return {}
+        // 2026-08-29 Next 元数据函数特赦(页面规范化批实撞):generateMetadata 一族由框架
+        // 按名从路由文件提取,迁去 functions.ts 就读不到了(和路由段配置同一类平台契约)。
+        // 只在 app/ 路由树内放行,只赦名字 —— 体内写法仍受其余闸管;表是封闭的(Next 约定式 API)。
+        const NEXT_FNS = new Set(['generateMetadata', 'generateViewport', 'generateImageMetadata', 'generateStaticParams'])
+        const inApp = /[\\/]src[\\/]app[\\/]/.test(context.filename ?? '')
         return {
           Program(node) {
             const fns = []
             for (const st of node.body) {
               let d = st
               if (st.type === 'ExportNamedDeclaration' || st.type === 'ExportDefaultDeclaration') d = st.declaration
-              if (d != null && d.type === 'FunctionDeclaration') fns.push(d)
+              if (d != null && d.type === 'FunctionDeclaration') {
+                if (inApp && d.id != null && NEXT_FNS.has(d.id.name)) continue
+                fns.push(d)
+              }
             }
             for (const f of fns.slice(1)) {
               context.report({
@@ -1740,8 +1748,13 @@ const localRules = {
         // 2026-08-27 Next 路由段配置白名单(funnel 批实撞):`export const dynamic = 'force-dynamic'`
         // 一族由框架 SWC **静态提取字面量**,换成 import 的常量会被静默忽略(配置失效且不报错)。
         // 按「框架定死的形状」整体放行,只在 app/ 路由树内生效 —— 组件域不许拿这些名字当借口。
-        const ROUTE_SEGMENT = new Set(['dynamic', 'revalidate', 'fetchCache', 'runtime', 'preferredRegion', 'maxDuration', 'dynamicParams'])
+        // 2026-08-29 页面规范化批追加:`metadata`/`viewport` 同为框架按名提取的路由文件导出;
+        // opengraph-image/twitter-image/icon 一族的 `size`/`contentType`/`alt` 是元数据图约定
+        // (Next 静态读它们出 <meta> 尺寸与响应头),只在这几个定名文件里放行。
+        const ROUTE_SEGMENT = new Set(['dynamic', 'revalidate', 'fetchCache', 'runtime', 'preferredRegion', 'maxDuration', 'dynamicParams', 'metadata', 'viewport'])
+        const OG_EXPORTS = new Set(['size', 'contentType', 'alt'])
         const inApp = /[\\/]src[\\/]app[\\/]/.test(context.filename ?? '')
+        const inOgFile = inApp && /[\\/](opengraph-image|twitter-image|icon|apple-icon)\.tsx$/.test(context.filename ?? '')
         function deadValue(init) {
           if (init == null) return false
           if (init.type === 'Literal' || init.type === 'TemplateLiteral') return true
@@ -1761,6 +1774,9 @@ const localRules = {
             if (!top) return
             for (const d of node.declarations) {
               if (inApp && d.id?.type === 'Identifier' && ROUTE_SEGMENT.has(d.id.name)) {
+                continue
+              }
+              if (inOgFile && d.id?.type === 'Identifier' && OG_EXPORTS.has(d.id.name)) {
                 continue
               }
               if (deadValue(d.init)) {
@@ -1856,10 +1872,19 @@ const localRules = {
         if (!/[\\/]app[\\/]\(frontend\)[\\/].*[\\/]?page\.tsx$/.test(context.filename ?? '')) return {}
         // 默认导出的组件函数本体放行;其余一切函数节点(声明/表达式/箭头,含 effect 与
         // JSX 属性里的内联 handler)都算「门里长了逻辑」。
+        // 2026-08-29 追加 Next 元数据函数特赦(同 one-function-per-tsx 的 NEXT_FNS,理由见那边):
+        // 只赦**顶层**的框架定名 FunctionDeclaration 本体,体内再嵌函数照旧拦。
+        const NEXT_FNS = new Set(['generateMetadata', 'generateViewport', 'generateImageMetadata', 'generateStaticParams'])
         let defaultFn = null
         const namedFns = new Map()
+        function isNextFn(node) {
+          if (node.type !== 'FunctionDeclaration' || node.id == null || !NEXT_FNS.has(node.id.name)) return false
+          const p = node.parent
+          return p?.type === 'Program' || (p?.type === 'ExportNamedDeclaration' && p.parent?.type === 'Program')
+        }
         function check(node) {
           if (node === defaultFn) return
+          if (isNextFn(node)) return
           context.report({ node, messageId: 'fn', data: { kind: node.type } })
         }
         return {

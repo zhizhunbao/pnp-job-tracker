@@ -1932,6 +1932,17 @@ export type PricingSetIn = {
 }
 
 /**
+ * compareNamesOf 的入参。归一前形状(Next 递来的查询参数原样格),所以带 `?:`。
+ */
+export type CompareNamesIn = {
+  /**
+   * 对照页 URL 上 `?names=` 那一格的原样值:选中的几个雇主名用竖线连成一串。
+   * 参数没带时这个键压根不存在(不是「空字符串」),照实写成真可选。
+   */
+  names?: string
+}
+
+/**
  * 担保雇主手机卡里的一条键值行。
  */
 export type SponsorKv = {

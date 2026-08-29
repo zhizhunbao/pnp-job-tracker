@@ -51,7 +51,8 @@ import { CACHE } from './variables'
 import type {
   AlertHit, AlertHitsIn, AlertHitsOut, ApplyMailOut, ApplyUrlIn, BigDimsIn, BigDimsOut, BroadCount, BroadNoc,
   BroadNocsIn, BroadNocsOut, BuildWhereIn, CaughtError, Cell, CheckedAtOut, CityAgg, CityCardIn, CityCardOut,
-  CityDim, CompanyByJobIn, CompanyBySlugIn, CompanyDetail, CompanyJobRow, CompanyOut, CompanyWhereIn, CountMap,
+  CityDim, CompanyByJobIn, CompanyBySlugIn, CompanyDetail, CompanyJobRow, CompanyJsonIn, CompanyOut, CompanyWhereIn,
+  CountMap,
   CountOfIn, CoverageIn, DesigDim, DistrictCard, DistrictDim, DistrictEmployerRow, DliTop, DrawStreamNoteIn,
   DropProvPrefixIn, EeCatDim, EeDisplayIn, EeKeyDisplayIn, EeOcc, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut,
   JdFormattedIn, JdIn, JdOut, JdStateOut, JdStateRow, JobByIdIn, JobByIdOut, JobDbRow, JobMeta, JobMetaFact,
@@ -3789,4 +3790,50 @@ function metaLocOf(row: JobMetaFact): string {
     parts.push(row.province)
   }
   return parts.join(SEO_LOC_SEP)
+}
+
+/**
+ * 公司页的 Organization JSON-LD(公开事实层;缺值不编 —— 官网、维基条目、地址
+ * 三格各自缺席就不出那一格,不拿空串占位)。
+ * 2026-08-29 页面规范化批自 `app/(frontend)/companies/[slug]/page.tsx` 迁入
+ * (页面门里不许有函数体;形照同域的 jobPostingJsonOf)。
+ *
+ * @param input 库里查好的公司档案。
+ * @returns 可直接塞进 script 标签的 JSON 串。
+ */
+export function companyJsonOf(input: CompanyJsonIn): string {
+  const co = input.company
+  const ld: JsonObj = {}
+  ld[LD_KEY_CONTEXT] = LD_CONTEXT
+  ld[LD_KEY_TYPE] = LD_ORGANIZATION
+  ld.name = co.name
+  if (co.website !== CELL_NONE) {
+    ld.url = co.website
+  }
+  if (co.wikiUrl !== CELL_NONE) {
+    ld.sameAs = co.wikiUrl
+  }
+  if (co.address !== CELL_NONE || co.province !== CELL_NONE) {
+    ld.address = companyAddressLdOf(co)
+  }
+  return JSON.stringify(ld)
+}
+
+/**
+ * 公司地址那一格(PostalAddress):街址与省格各自有才出,国别是本站口径的固定值。
+ *
+ * @param co 公司档案。
+ * @returns 地址子对象。
+ */
+function companyAddressLdOf(co: CompanyDetail): JsonObj {
+  const addr: JsonObj = {}
+  addr[LD_KEY_TYPE] = LD_POSTAL
+  if (co.address !== CELL_NONE) {
+    addr.streetAddress = co.address
+  }
+  if (co.province !== CELL_NONE) {
+    addr.addressRegion = co.province
+  }
+  addr.addressCountry = LD_COUNTRY
+  return addr
 }

@@ -5,6 +5,7 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+export { SITE_JSON_LD } from './constants'
 export { Frame } from './frame'
 export { Shell } from './shell'
 export type { FrameIn, ShellBottom, ShellIn, ShellTop } from './types'

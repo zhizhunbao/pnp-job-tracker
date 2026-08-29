@@ -957,3 +957,63 @@ export const TRACK_ASK = 'se-ask-chat'
  * 埋点名:点了 S6 的职位板入口大钮。
  */
 export const TRACK_CTA = 'landing_cta_browse'
+
+/**
+ * 站级分享图的画布宽(px)。1200×630 是各家分享卡的通用比例,改了会被自己裁一刀。
+ */
+export const OG_W = 1200
+
+/**
+ * 站级分享图的画布高(px),同上。
+ */
+export const OG_H = 630
+
+/**
+ * 站级分享图里加粗那行的字重。
+ */
+export const OG_BOLD = 700
+
+/**
+ * 品牌字(🍁 Offer2PR)的字号(px):站级图只有品牌,所以给到最大一档。
+ */
+export const OG_BRAND_SIZE = 84
+
+/**
+ * 品牌字底下那句英文说明的字号(px)。
+ */
+export const OG_TAGLINE_SIZE = 36
+
+/**
+ * 英文说明距品牌字的上边距(px)。
+ */
+export const OG_TAGLINE_TOP = 24
+
+/**
+ * 四枚信号胶囊之间的间距(px)。
+ */
+export const OG_CHIP_GAP = 16
+
+/**
+ * 胶囊那一行距英文说明的上边距(px)。
+ */
+export const OG_CHIP_TOP = 34
+
+/**
+ * 信号胶囊的字号(px)。
+ */
+export const OG_CHIP_SIZE = 26
+
+/**
+ * 信号胶囊的圆角(px):取一个远大于半高的数 = 药丸形。
+ */
+export const OG_CHIP_RADIUS = 999
+
+/**
+ * 底部域名的字号(px)。
+ */
+export const OG_DOMAIN_SIZE = 28
+
+/**
+ * 底部域名距胶囊行的上边距(px)。
+ */
+export const OG_DOMAIN_TOP = 40

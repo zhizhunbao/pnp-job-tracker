@@ -139,6 +139,7 @@ import type {
   ScoreCardMachine, ScoreCardPanel, ShowResultsIn,
   BonusTickRow, BonusTicksMakeIn, CheckChangeIn, OfferTickRowIn, ScoreCheckChangeFn, ScoreChoiceRow,
   ScoreSelectChangeFn, SelectChangeIn, StreamOfProvIn, SwitchTextIn,
+  EmptyJobRows, PlanWire, RaceTimer, RaceWireIn, SsrWireIn,
 } from './types'
 import css from './plan.module.css'
 
@@ -9016,4 +9017,71 @@ export function makeInputChange(x: SelectChangeIn): ScoreChangeFn {
   return function onChange(e: React.ChangeEvent<HTMLInputElement>): void {
     x.onPick(e.target.value)
   }
+}
+
+/**
+ * 岗位轻查挂掉时的空结果面。`?job=` 那条查询是锦上添花:挂了就当没带岗,
+ * 页面照常出 —— 宁可少一块,不许整页跟着倒。
+ *
+ * @returns 零行的结果面。
+ */
+export function emptyJobRows(): EmptyJobRows {
+  return { rows: [], rowCount: null }
+}
+
+/**
+ * 认人挂了 = 当匿名。SSR 这一版本来就按「登录档案 / 无本地答案」算,
+ * 认不出人只是少了档案那一半,判定照跑。
+ *
+ * @returns 没有登录用户。
+ */
+export function nullUser(): null {
+  return null
+}
+
+/**
+ * 判定挂了的空值:SSR 这一版拿不到就当没有,客户端挂载后自己再取一次。
+ *
+ * @returns 没有。
+ */
+export function nullWire(): null {
+  return null
+}
+
+/**
+ * 判定卡**服务端先算一版**(2026-08-12):先前整张卡都在客户端取,一进页面先盯 ~1.5s 的骨架条。
+ * 服务端读不到 localStorage,所以这一版按「登录档案 / 无本地答案」算;客户端拿到本地答案后再刷一次。
+ * 认人与判定两支都由页面门注进来(本桶一个 `/server` 门都不 import,浏览器照样打包得动),
+ * 用的仍是同一支 tripleWireOf,与 `/api/ruling/verdict` 一条口径(付费闸也在里面,SSR 不会多漏一行)。
+ *
+ * @param x 岗位号、请求头那只 promise,以及注进来的认人 / Pro 判定 / 三项判定。
+ * @returns 判定线格。
+ */
+export async function ssrWireOf(x: SsrWireIn): Promise<PlanWire> {
+  const user = await x.loadUser(await x.head).catch(nullUser)
+  return x.judge({ id: x.id, answers: null, user, pro: x.pro(user) })
+}
+
+/**
+ * 让判定和一只计时器赛跑:谁先回谁算,回来后照旧把定时器清掉。
+ * 计时器句柄挂在一个本地容器上,而不是给 `let` 重新赋值 —— 后者被
+ * react-hooks/immutability 判成「渲染完成后改变量」。
+ *
+ * @param x 在跑的那件事与等它的上限。
+ * @returns 判定线格;计时器先到就是 null。
+ */
+export async function raceWire(x: RaceWireIn): Promise<PlanWire | null> {
+  const timer: RaceTimer = { handle: null }
+  const wire = await Promise.race([
+    x.task,
+    new Promise<null>(function arm(resolve) {
+      timer.handle = setTimeout(function fire() {
+        resolve(null)
+      }, x.ms)
+    }),
+  ])
+  if (timer.handle) {
+    clearTimeout(timer.handle)
+  }
+  return wire
 }

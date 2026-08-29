@@ -500,6 +500,16 @@ export type CompanyPanelData = {
 export type CompanyAiNoteKind = 'brief' | 'lazy' | 'panel'
 
 /**
+ * CompaniesJsonLd(公司页结构化数据)的 props。
+ */
+export type CompaniesJsonLdIn = {
+  /**
+   * 已序列化好的 JSON-LD 串(拼装在 lib/jobs 的 companyJsonOf)。
+   */
+  json: string
+}
+
+/**
  * Company(公司详情页正文)的 props。
  */
 export type CompanyIn = {

@@ -367,3 +367,21 @@ export const CLS_CARD_HOVER = 'cardHover'
  * 类名之间的分隔(拼全局规范类与本域 module 类时用)。
  */
 export const CLS_SEP = ' '
+
+/**
+ * 详情页那条查询里英文摘要取的真列名。
+ * schema 容错(P1f 事故教训:引用未建列把全部详情页打成 404):这一列建了才走它。
+ */
+export const SUMMARY_EN_COL = 'summary_en'
+
+/**
+ * 英文摘要列没建时的占位。第一发查询报错就换它重来一次 —— DDL 到位后自动走回真列名,
+ * 不必改代码。
+ */
+export const SUMMARY_NULL_COL = 'NULL'
+
+/**
+ * 详情页 meta description 取原文前多少个字符。160 是搜索结果摘要的惯用截断长度,
+ * 再长搜索引擎自己也会截。
+ */
+export const META_DESC_LEN_MAX = 160

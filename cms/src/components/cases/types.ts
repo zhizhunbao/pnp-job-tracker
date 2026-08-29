@@ -33,13 +33,29 @@ export type CaseLeadIn = {
 }
 
 /**
- * CasesShell(处境页外框)的 props。
+ * schema.org 的 ListItem 一条(索引页 JSON-LD 用)。
  */
-export type CasesShellIn = {
+export type CaseListItem = {
   /**
-   * 整页内容(顶栏 + 正文 + 页脚,由页面门拼好递进来)。
+   * schema.org 类型名,固定 'ListItem'。
    */
-  children: React.ReactNode
+  // eslint-disable-next-line local/no-bare-strings -- '@type' 是 schema.org 线格式定死的键名,types.ts 不许 import,只能就地写
+  '@type': string
+
+  /**
+   * 列表序号(从 1 起)。
+   */
+  position: number
+
+  /**
+   * 列表项名称(中文处境标签 —— 收录主体是中文长尾词)。
+   */
+  name: string
+
+  /**
+   * 处境详情页的绝对链接。
+   */
+  url: string
 }
 
 /**

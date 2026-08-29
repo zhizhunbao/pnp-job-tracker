@@ -355,6 +355,12 @@ export const COMPARE_EMP_KEY_HEAD = 'e'
 export const COMPARE_MIN_ROWS = 2
 
 /**
+ * 对照页 URL `?names=` 里雇主名之间的分隔符。挑竖线是因为公司名本身常带逗号、
+ * 顿号与空格(「Maple Health Group, Inc.」),拿那些当分隔符会把一个名字劈成两半。
+ */
+export const COMPARE_NAME_SEP = '|'
+
+/**
  * 模糊样例表的指标列 key。
  */
 export const DEMO_METRIC_KEY = 'metric'

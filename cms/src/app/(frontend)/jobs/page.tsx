@@ -24,8 +24,8 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { Footer } from '@/components/footer'
 import {
-  COLS_COOKIE, COLW_COOKIE, DEFAULT_COLW_SEED, Jobs, JobsHeader, colsFromCookie, jobsMetaOf,
-  parseColWidthSeed, parseJobFilters, toJobPlan, toSearchParams,
+  COLS_COOKIE, COLW_COOKIE, DEFAULT_COLW_SEED, FIRST_SCREEN_ROWS, Jobs, JobsHeader, colsFromCookie,
+  jobsMetaOf, parseColWidthSeed, parseJobFilters, toJobPlan, toSearchParams,
 } from '@/components/jobs'
 import { Frame } from '@/components/shell'
 import { dbOf } from '@/lib/db/server'
@@ -33,11 +33,6 @@ import { hasProfile, normalizeProfile, type ProfileJson } from '@/lib/jobs'
 import { getSsrDims, loadJobRows, loadJobsPage, loadTotalAndProof, pnpOnly } from '@/lib/jobs/server'
 import { getUser, isPro } from '@/lib/quota/server'
 import type { JobFact, SessionUser } from '@/components/jobs'
-
-/**
- * 首屏行数(2026-07-05 用户拍板):SSR 只带最近这么多行秒开。
- */
-const FIRST_SCREEN_ROWS = 50
 
 export const dynamic = 'force-dynamic'
 

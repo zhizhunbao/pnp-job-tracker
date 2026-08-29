@@ -17,6 +17,10 @@ import type { Answers, ScoreAnswers } from '@/lib/quiz'
 import type { DrawRow, ProvCompetition, ScoreFactor, SelfProfile } from '@/lib/points'
 // eslint-disable-next-line local/no-import-in-leaf -- lib/jobs 的职业分省竞争行,原样进表;重抄必脱节
 import type { OccCompetitionRow } from '@/lib/jobs'
+// eslint-disable-next-line local/no-import-in-leaf -- lib/quota 服务端两支的签名,页面门把它们注进来(跨域只留注入这一条边);重抄必脱节
+import type { getUser, isPro } from '@/lib/quota/server'
+// eslint-disable-next-line local/no-import-in-leaf -- lib/ruling 三项判定的签名,同上由页面门注入;重抄必脱节
+import type { tripleWireOf } from '@/lib/ruling/server'
 
 /**
  * 界面语言(三字面量各域自抄)。
@@ -9876,4 +9880,97 @@ export type ScoreEchoIn = {
    * 整卷答完的出口。
    */
   onComplete?: ClickFn
+}
+
+/**
+ * 页面门注进来的「认人」函数(lib/quota 服务端半边:它连库,本桶不许 import 它的门)。
+ */
+export type PlanUserFn = typeof getUser
+
+/**
+ * 页面门注进来的「是不是 Pro」判定(同上,住 lib/quota 服务端半边)。
+ */
+export type PlanProFn = typeof isPro
+
+/**
+ * 页面门注进来的三项判定(lib/ruling 服务端半边;与 `/api/ruling/verdict` 同一支,
+ * 付费闸在它里面,SSR 不会多漏一行)。
+ */
+export type PlanJudgeFn = typeof tripleWireOf
+
+/**
+ * 三项判定下发的那份线格。本域**零处读它的字段**(原样透传给客户端视图),
+ * 所以形状直接取判定那支的返回,不重抄一份。
+ */
+export type PlanWire = Awaited<ReturnType<PlanJudgeFn>>
+
+/**
+ * 赛跑用的计时器句柄容器。挂在容器上而不是给 `let` 重新赋值 —— 后者被
+ * react-hooks/immutability 判成「渲染完成后改变量」。
+ */
+export type RaceTimer = {
+  /**
+   * `setTimeout` 的句柄;还没起表时是 null。
+   */
+  handle: ReturnType<typeof setTimeout> | null
+}
+
+/**
+ * `ssrWireOf` 的入参。
+ */
+export type SsrWireIn = {
+  /**
+   * 岗位号。
+   */
+  id: number
+
+  /**
+   * 请求头那只**还没 await 的** promise:认人这一步也要落在计时器管辖内。
+   */
+  head: Promise<Parameters<PlanUserFn>[0]>
+
+  /**
+   * 认人(页面门注入)。
+   */
+  loadUser: PlanUserFn
+
+  /**
+   * 是不是 Pro(页面门注入)。
+   */
+  pro: PlanProFn
+
+  /**
+   * 三项判定(页面门注入)。
+   */
+  judge: PlanJudgeFn
+}
+
+/**
+ * `raceWire` 的入参。
+ */
+export type RaceWireIn = {
+  /**
+   * 已经在跑的那件事(判定);它先回就用它的结果。
+   */
+  task: Promise<PlanWire | null>
+
+  /**
+   * 等它的上限,毫秒;计时器先到就当没有。
+   */
+  ms: number
+}
+
+/**
+ * 岗位轻查挂掉时的空结果面(形状对齐 pg 的结果面,只用得上 rows)。
+ */
+export type EmptyJobRows = {
+  /**
+   * 零行。
+   */
+  rows: Record<string, unknown>[]
+
+  /**
+   * 影响行数:查询没跑成,记「没有」。
+   */
+  rowCount: null
 }

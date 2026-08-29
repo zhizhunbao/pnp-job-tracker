@@ -7,6 +7,9 @@
  * 2026-08-27 换装批:壳件拼装收进门里(Frank「组装只许在 (frontend) 页面门里」,
  * 样张 account)—— 整页外框走 shell 桶的通用件 Frame,顶栏与页脚在这里拼,
  * News 只出 Shell 轨往下的视图(原 NewsShell 随之撤编)。
+ * 2026-08-29 清闸批:三条查询与它们的洗行下沉 components/news 的 functions
+ * (`loadNewsCards` / `loadNewsHeroes` / `loadNewsCommentCounts`,方案 A 注入连接池)——
+ * 门里只剩取池、并发装配与拼大写组件,护栏口径一字未改。
  *
  * @author Frank
  * @time 2026-07-18 00:00:00
@@ -15,10 +18,8 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
-import { News } from '@/components/news'
-import type { NewsCard, NewsHero } from '@/components/news'
+import { News, loadNewsCards, loadNewsCommentCounts, loadNewsHeroes } from '@/components/news'
 import { Frame } from '@/components/shell'
-import { SQL } from '@/lib/db'
 import { dbOf } from '@/lib/db/server'
 
 export const dynamic = 'force-dynamic'
@@ -36,20 +37,12 @@ export const metadata = {
  */
 export default async function NewsPage() {
   const payload = await getPayload({ config: await config })
-  const pool = dbOf(payload)
-  const itemsP = pool
-    .query(SQL.NEWS_LIST)
-    .then((r: { rows: NewsCard[] }) => r.rows.map((n) => ({ ...n, importance: n.importance == null ? null : Number(n.importance) })))
-    .catch(() => [])
-  const heroP = pool
-    .query(SQL.NEWS_LIST_REGION)
-    .then((r: { rows: NewsHero[] }) => r.rows.map((n) => ({ ...n, importance: Number(n.importance) })))
-    .catch(() => [])
-  const cmtP = pool
-    .query(SQL.NEWS_COMMENT_COUNTS)
-    .then((r: { rows: { slug: string; n: number }[] }) => Object.fromEntries(r.rows.map((x) => [x.slug, x.n])))
-    .catch(() => ({}))
-  const [items, hero, cmtCounts] = await Promise.all([itemsP, heroP, cmtP])
+  const db = dbOf(payload)
+  const [items, hero, cmtCounts] = await Promise.all([
+    loadNewsCards({ db }),
+    loadNewsHeroes({ db }),
+    loadNewsCommentCounts({ db }),
+  ])
   return (
     <Frame>
       <Header active="news" />

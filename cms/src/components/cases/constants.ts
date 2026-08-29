@@ -46,6 +46,41 @@ export const FED_CODE = 'FED'
 export const URL_CASE_HEAD = '/cases/'
 
 /**
+ * 站点域名(JSON-LD 里的 url 必须是绝对地址,拼在 URL_CASE_HEAD 前面)。
+ */
+export const URL_SITE_HEAD = 'https://offer2pr.com'
+
+/**
+ * schema.org ItemList 的 position 起点(规范从 1 数,数组下标从 0 数,差这一个)。
+ */
+export const LIST_POS_BASE = 1
+
+/**
+ * JSON-LD 的上下文键名(schema.org 线格式定死,以计算属性拼,不写裸串)。
+ */
+export const LD_CONTEXT_KEY = '@context'
+
+/**
+ * JSON-LD 的类型键名(schema.org 线格式定死)。
+ */
+export const LD_TYPE_KEY = '@type'
+
+/**
+ * JSON-LD 的上下文值(schema.org 规范地址)。
+ */
+export const LD_CONTEXT = 'https://schema.org'
+
+/**
+ * 列表整体的 schema.org 类型名。
+ */
+export const LD_LIST_TYPE = 'ItemList'
+
+/**
+ * 列表单条的 schema.org 类型名。
+ */
+export const LD_ITEM_TYPE = 'ListItem'
+
+/**
  * 「测测我自己的」CTA 的去处(决策页直接开答题)。
  */
 export const URL_QUIZ = '/plan/pr?quiz=1'
@@ -190,3 +225,8 @@ export const SHELL_TOP = 16
  * 正文轨下内衬档(px;处境页收尾多留一口气)。
  */
 export const SHELL_BOTTOM = 40
+
+/**
+ * JSON-LD 脚本标签的 MIME(结构化数据的约定值)。
+ */
+export const MIME_LD_JSON = 'application/ld+json'
