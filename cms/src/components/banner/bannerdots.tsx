@@ -7,7 +7,8 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
-import { DOT_LABEL } from './constants'
+import { Button } from '@/components/button'
+import { DOT_IMGS_MIN, DOT_LABEL, PLAIN_BTN_KIND } from './constants'
 import { makeDotPick } from './functions'
 import type { BannerDotsIn } from './types'
 import css from './banner.module.css'
@@ -19,7 +20,7 @@ import css from './banner.module.css'
  * @returns 圆点排,或 null(不渲染)。
  */
 export function BannerDots({ imgs, cur, pick }: BannerDotsIn) {
-  if (imgs.length < 2) {
+  if (imgs.length < DOT_IMGS_MIN) {
     return null
   }
   const dotEls = []
@@ -30,9 +31,13 @@ export function BannerDots({ imgs, cur, pick }: BannerDotsIn) {
       dotCls = `${css.dot} ${css.dotOn}`
     }
     dotEls.push(
-      <button key={imgs[i]} aria-label={`${DOT_LABEL} ${i + 1}`} onClick={pickThis} className={css.dotBtn}>
+      <Button key={imgs[i]}
+        kind={PLAIN_BTN_KIND}
+        ariaLabel={`${DOT_LABEL} ${i + 1}`}
+        onClick={pickThis}
+        className={css.dotBtn}>
         <span className={dotCls} />
-      </button>,
+      </Button>,
     )
   }
   return (

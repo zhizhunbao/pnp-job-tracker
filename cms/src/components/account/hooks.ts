@@ -45,12 +45,14 @@ export function useAccountPage(): AccountPanel {
   const [nickBusy, setNickBusy] = useState(false)
 
   useEffect(function readPayOk() {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 故意分两步:地址栏参数只有浏览器里读得到,服务端画首帧时没有,活过来后再补
     setPayOk(okFlagOf())
   }, [])
 
   useEffect(function readSecLink() {
     const s = secLinkOf()
     if (s != null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 故意分两步:地址栏参数只有浏览器里读得到,服务端画首帧时没有,活过来后再补
       setSec(s)
     }
   }, [])

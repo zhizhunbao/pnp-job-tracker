@@ -17,10 +17,10 @@ import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 
 import { IconMenu } from '@/components/icons'
-import { LinkButton } from '@/components/button'
+import { Button, LinkButton } from '@/components/button'
 
 import { useLang } from '@/components/i18n'
-import { BRAND_MARK, PATH_HOME } from './constants'
+import { BRAND_MARK, PATH_HOME, PLAIN_BTN_KIND } from './constants'
 import { AccountLite } from './accountlite'
 import { HeaderNav } from './headernav'
 import { LangSwitch } from './langswitch'
@@ -66,7 +66,10 @@ export function Header({ sticky = false, accountArea, loggedIn }: HeaderIn) {
     <header className={headCls}>
       <div className={css.bar}>
         <div className={css.brand}>
-          <button className={css.burger} onClick={handles.openDrawer} aria-label={t('nav.menu')}><IconMenu /></button>
+          <Button kind={PLAIN_BTN_KIND}
+            className={css.burger}
+            onClick={handles.openDrawer}
+            ariaLabel={t('nav.menu')}><IconMenu /></Button>
           <LinkButton href={PATH_HOME} className={`${css.tapY} ${css.logo}`}>{BRAND_MARK}</LinkButton>
           <span className={css.tagline}>{t('tagline')}</span>
         </div>

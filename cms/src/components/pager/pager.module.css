@@ -121,6 +121,18 @@
    * 紧凑内衬。
    */
   padding: 2px 10px;
+
+  /*
+   * 冻结格(2026-08-29 裸 <button> 换装批补写):翻页箭头改经 Button 的 ghost 档后,
+   * 基座 .btn 会带进 font-weight 600,而这枚钮上线以来吃的是浏览器默认 400。
+   * 换装批只换钮不改渲染值,所以显式写死旧值。
+   */
+  font-weight: 400;
+
+  /*
+   * 允许折行(同上,冻结格:基座 .btn 带 nowrap)。
+   */
+  white-space: normal;
 }
 
 /*

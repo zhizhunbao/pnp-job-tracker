@@ -17,10 +17,10 @@ import {
 } from './constants'
 import { MatchResCell } from './matchrescell'
 import type {
-  BusyMarkIn, CheckChangeFn, CleanupFn, ClickFn, ErrKeyIn, ExtOfIn, ExtractFileIn, ExtractRespJson, FilePickFn,
+  BusyMarkIn, CheckChangeFn, CleanupFn, ClickFn, ErrKeyIn, ExtOfIn, ExtractFileIn, ExtractRespJson,
   IsTextFileIn, LiveFlag, LoadArchiveIn, MatchBodyIn, MatchCol, MatchColsIn, MatchFact, MatchRespJson,
-  MatchRowFact, MeRespJson, PickFileIn, PickFileNowIn, PrefillFn, PrefillIn, ReadPickedFileIn, ResumeChangeIn,
-  RunClsIn, RunIn, SaveToggleIn, TextChangeFn, ToMatchFactIn, ToMatchRowIn, UploadClickIn, UploadClsIn,
+  MatchRowFact, MeRespJson, PickFileNowIn, PrefillFn, PrefillIn, ReadPickedFileIn,
+  RunClsIn, RunIn, SaveToggleIn, ToMatchFactIn, ToMatchRowIn, UploadClsIn,
 } from './types'
 import css from './resume.module.css'
 
@@ -157,21 +157,6 @@ async function loadArchive(x: LoadArchiveIn): Promise<void> {
 }
 
 /**
- * 造粘贴框的改值手柄:敲一个字就算「用户自己动过手」,同时撤掉存档小注 ——
- * 框里的已经不是存档那一份了。
- *
- * @param x 动手旗子与两个落格。
- * @returns 改值手柄。
- */
-export function makeResumeChange(x: ResumeChangeIn): TextChangeFn {
-  return function onResumeChange(e: React.ChangeEvent<HTMLTextAreaElement>): void {
-    x.touched.current = true
-    x.setArchAt(TEXT_NONE)
-    x.setResume(e.target.value)
-  }
-}
-
-/**
  * 造存档勾选的切换手柄(默认不勾是 E11-08 的隐私红线:不勾 = 行为同以前,简历只在内存里)。
  *
  * @param x 勾选态的落格。
@@ -184,56 +169,15 @@ export function makeSaveToggle(x: SaveToggleIn): CheckChangeFn {
 }
 
 /**
- * 造上传钮的点击手柄:去点那个不出面的文件选择框,系统窗才弹得出来。
- *
- * @param x 文件选择框的 ref。
- * @returns 点击手柄。
- */
-export function makeUploadClick(x: UploadClickIn): ClickFn {
-  return function onUpload(): void {
-    if (x.fileRef.current == null) {
-      return
-    }
-    x.fileRef.current.click()
-  }
-}
-
-/**
- * 造选完文件的手柄(2026-08-03 Frank 把上传从 G3 二期提上来):没选到文件就什么都不做。
- *
- * @param x 取词函数、动手旗子、选择框 ref 与四个落格。
- * @returns 选完文件的手柄。
- */
-export function makePickFile(x: PickFileIn): FilePickFn {
-  return function onPickFile(e: React.ChangeEvent<HTMLInputElement>): void {
-    if (e.target.files == null) {
-      return
-    }
-    const file = e.target.files.item(0)
-    if (file == null) {
-      return
-    }
-    void pickFile({
-      file,
-      t: x.t,
-      touched: x.touched,
-      fileRef: x.fileRef,
-      setResume: x.setResume,
-      setArchAt: x.setArchAt,
-      setErr: x.setErr,
-      setReading: x.setReading,
-    })
-  }
-}
-
-/**
- * makePickFile 的真身(async;外壳只把 Promise 收掉)。读完清空选择框的值 ——
+ * usePickFile 的真身(async;外壳只把 Promise 收掉)。读完清空选择框的值 ——
  * 不清的话同一个文件再选一次不会触发改值事件。
+ * 2026-08-29 refs 批:外壳(原 makePickFile)迁去 hooks.ts 改成 usePickFile,
+ * 这个真身留在纯件这边,只多一个 export。
  *
  * @param x 选中的文件、取词函数、动手旗子、选择框 ref 与四个落格。
  * @returns 无。
  */
-async function pickFile(x: PickFileNowIn): Promise<void> {
+export async function pickFile(x: PickFileNowIn): Promise<void> {
   x.touched.current = true
   x.setArchAt(TEXT_NONE)
   x.setErr(TEXT_NONE)

@@ -7,9 +7,10 @@
  * @author Frank
  * @time 2026-08-24 14:00:00
  */
+import { Button } from '@/components/button'
 import { IconSearch, IconX } from '@/components/icons'
 import { AUTOCOMPLETE_OFF, inputClsOf, makeChange } from '@/components/input'
-import { CLEAR_ARIA, ENTER_HINT_SEARCH, SIZE_LG, TYPE_BUTTON } from './constants'
+import { CLEAR_ARIA, ENTER_HINT_SEARCH, PLAIN_BTN_KIND, SIZE_LG, TYPE_BUTTON } from './constants'
 import { makeSearchClear } from './functions'
 import type { SearchIn } from './types'
 import css from './search.module.css'
@@ -34,9 +35,13 @@ export function Search({ value, onChange, placeholder, size = SIZE_LG }: SearchI
         enterKeyHint={ENTER_HINT_SEARCH}
         autoComplete={AUTOCOMPLETE_OFF} />
       {value !== '' && (
-        <button type={TYPE_BUTTON} className={css.searchClear} onClick={clear} aria-label={CLEAR_ARIA}>
+        <Button kind={PLAIN_BTN_KIND}
+          type={TYPE_BUTTON}
+          className={css.searchClear}
+          onClick={clear}
+          ariaLabel={CLEAR_ARIA}>
           <IconX />
-        </button>
+        </Button>
       )}
     </span>
   )

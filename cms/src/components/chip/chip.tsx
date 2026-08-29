@@ -8,6 +8,8 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { Button } from '@/components/button'
+import { PLAIN_BTN_KIND } from './constants'
 import { chipClsOf } from './functions'
 import type { ChipIn } from './types'
 
@@ -23,6 +25,9 @@ export function Chip({ active = false, hot = false, onClick, title, className, c
     extra = className
   }
   return (
-    <button className={chipClsOf({ active, hot, extra })} onClick={onClick} title={title}>{children}</button>
+    <Button kind={PLAIN_BTN_KIND}
+      className={chipClsOf({ active, hot, extra })}
+      onClick={onClick}
+      title={title}>{children}</Button>
   )
 }

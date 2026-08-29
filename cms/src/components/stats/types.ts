@@ -9,7 +9,7 @@
  * @author Frank
  * @time 2026-08-28 12:43:43
  */
-// eslint-disable-next-line local/no-import-in-leaf -- lib/stats 的引擎契约,对外 API 不许变;重抄必脱节,牌形同 companies/types.ts
+// eslint-disable-next-line local/no-import-in-leaf -- 引擎输出形状特批(牌形同 companies/types.ts):lib/stats 契约,对外 API 冻结、本域只透传
 import type { CityRow, OccRow, StatRow } from '@/lib/stats'
 // eslint-disable-next-line local/no-import-in-leaf -- echarts 实例的形状由库定死(init 的返回值),自抄一份等于替库维护它的方法表
 import type { EChartsCoreOption, EChartsType } from 'echarts'

@@ -9,8 +9,11 @@
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
+import { Button } from '@/components/button'
 import { Notice } from '@/components/notice'
-import { BTN_TYPE_BUTTON, MODE_FORGOT, MODE_LOGIN, MODE_REGISTER, MODE_RESET, NOTICE_OK } from './constants'
+import {
+  BTN_TYPE_BUTTON, MODE_FORGOT, MODE_LOGIN, MODE_REGISTER, MODE_RESET, NOTICE_OK, PLAIN_BTN_KIND,
+} from './constants'
 import { AuthFields } from './authfields'
 import { AuthFooter } from './authfooter'
 import { AuthHero } from './authhero'
@@ -58,9 +61,9 @@ export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }:
       {f.mode === MODE_FORGOT && f.sent && (
         <div>
           <Notice kind={NOTICE_OK}>{t('acct.forgotSent')}</Notice>
-          <button type={BTN_TYPE_BUTTON} onClick={f.backFromSent} className={css.sentBack}>
+          <Button kind={PLAIN_BTN_KIND} type={BTN_TYPE_BUTTON} onClick={f.backFromSent} className={css.sentBack}>
             {t('acct.backLogin')}
-          </button>
+          </Button>
         </div>
       )}
       {(f.mode !== MODE_FORGOT || f.sent === false) && (

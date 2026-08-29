@@ -7,7 +7,9 @@
  * @time 2026-08-24 04:30:00
  */
 import { useEffect, useRef, useState } from 'react'
-import { DRAG_IGNORE_SEL, EV_CHANGE, EV_KEYDOWN, KEY_ESC, MQ_MAX_WIDTH_HEAD, MQ_MAX_WIDTH_TAIL, NARROW_BP } from './constants'
+import {
+  DRAG_IGNORE_SEL, EV_CHANGE, EV_KEYDOWN, KEY_ESC, MQ_MAX_WIDTH_HEAD, MQ_MAX_WIDTH_TAIL, NARROW_BP,
+} from './constants'
 import { elOf } from './functions'
 import type { CardIn, CardOut, DragPos, DragStart, OverlayHandlers } from './types'
 

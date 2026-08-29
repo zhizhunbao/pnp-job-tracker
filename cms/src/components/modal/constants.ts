@@ -6,6 +6,11 @@
  * 39 处消费端(Advisor/Decision/Case…)还在 spread 它们拼运行时样式 —— 各消费域
  * 形制化批里逐个类化,届时这三个常量退役(2026-08-24 modal 域刀 A 记)。
  *
+ * SCRIM 2026-08-24 撤编:自带壳的重弹框改用 functions 的 overlayCls() 拿类,
+ * 值的单一来源回到 modal.module.css 的 .overlay;同日 scrim 这个舞台术语
+ * 按 Frank 拍板统一改叫 overlay。(2026-08-29 从 MODAL_SHADOW 与 CARD 之间的
+ * 悬空块注释挪进文件头 —— 它解释的是一个已经不存在的声明,挂不上任何一格。)
+ *
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
@@ -19,12 +24,6 @@ export const MODAL_RADIUS = 14
  * 弹框投影(规范值)。
  */
 export const MODAL_SHADOW = '0 24px 60px rgba(0,0,0,.3)'
-
-/*
- * (SCRIM 2026-08-24 撤编:自带壳的重弹框改用 functions 的 overlayCls() 拿类,
- *  值的单一来源回到 modal.module.css 的 .overlay;同日 scrim 这个舞台术语
- *  按 Frank 拍板统一改叫 overlay)
- */
 
 /**
  * 白卡规范(圆角/投影/内滚动收敛)。镜像 .card 类。
@@ -201,3 +200,10 @@ export const MQ_MAX_WIDTH_HEAD = '(max-width: '
  * 窄屏媒体查询的后半段。
  */
 export const MQ_MAX_WIDTH_TAIL = 'px)'
+
+/**
+ * 定制样式钮的统一底座(2026-08-26 Frank「<button 这种不允许直接使用」——
+ * 裸 <button> 一律改经 button 族):ghost 底最素,视觉全由本域的加倍类定形,
+ * Button 只出统一的语义与可达性(disabled/aria)。
+ */
+export const PLAIN_BTN_KIND = 'ghost'

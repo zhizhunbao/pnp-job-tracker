@@ -49,7 +49,7 @@ import css from './jobs.module.css'
  * @returns 整块板。
  */
 export function Jobs(props: JobsIn) {
-  const b = useJobsBoard(props)
+  const [b, headRowRef, boxRef] = useJobsBoard(props)
   return (
     <div className={cssOf(css.page)}>
       <div className={cssOf(css.main)}>
@@ -63,7 +63,7 @@ export function Jobs(props: JobsIn) {
             })}
               proof={proofTextOf({ t: b.t, named: b.proof.named, lmia: b.proof.lmia })} />
           } />
-        <BoardFilters b={b} />
+        <BoardFilters b={b} boxRef={boxRef} />
         {b.matchView === false && <MatchEntry label={b.t('mv.entry')} onClick={b.gate.onToggle} />}
         {b.matchView && (
           <MatchBar text={mvBarTextOf({ t: b.t, totals: b.data.matchTotals })}
@@ -71,7 +71,7 @@ export function Jobs(props: JobsIn) {
             onExit={b.gate.onToggle} />
         )}
         {b.data.swapping && <BoardLoading text={b.t('loading')} />}
-        <BoardTable b={b} />
+        <BoardTable b={b} headRowRef={headRowRef} />
         <BoardCards b={b} />
         <MoreLine b={b} />
       </div>

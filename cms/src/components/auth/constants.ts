@@ -256,6 +256,18 @@ export const PW_CLASS_RES = [/[a-z]/, /[A-Z]/, /\d/, /[^a-zA-Z0-9]/]
 export const PW_METER_KEYS = ['acct.pw.short', 'acct.pw.weak', 'acct.pw.medium', 'acct.pw.strong']
 
 /**
+ * 强度条画几段。三段对应「弱、中、强」三档非零强度(第 0 档「太短」一段不亮),
+ * 所以段数恒等于最高档号 PW_LV_MAX —— 两个值同源但概念不同,各写各的名字。
+ */
+export const PW_SEG_COUNT = 3
+
+/**
+ * 最高强度档号(= PW_METER_KEYS 的末位下标)。到了这一档就没有「补强提示」可给,
+ * 那截话只在 0 < lv < PW_LV_MAX 时拼。
+ */
+export const PW_LV_MAX = 3
+
+/**
  * 强度档文案与「补强提示」之间的分隔,两侧的空格属于这个值(拼出来是同一行里的
  * 两截话,不是两条并列信息)。只有弱、中两档拼这一截,强档没有可补的。
  */
@@ -395,6 +407,13 @@ export const SUBMIT_BUSY_LABEL = '…'
  * (现在或以后)落进 form 里,点一下就是一次提交 —— 显式写死。
  */
 export const BTN_TYPE_BUTTON = 'button'
+
+/**
+ * 定制样式钮的统一底座(2026-08-26 Frank「<button 这种不允许直接使用」——
+ * 裸 <button> 一律改经 button 族):ghost 底最素,视觉全由本域的加倍类定形,
+ * Button 只出统一的语义与可达性(disabled/aria)。
+ */
+export const PLAIN_BTN_KIND = 'ghost'
 
 /**
  * 报错提醒框的色:notice 域四色里的红。与 FLOW_ERR 同值不同事 ——

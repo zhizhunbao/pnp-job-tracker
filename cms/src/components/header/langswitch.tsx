@@ -6,8 +6,10 @@
  * @author Frank
  * @time 2026-08-24 08:00:00
  */
+import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { LANGS } from '@/lib/i18n'
+import { PLAIN_BTN_KIND } from './constants'
 import { makeLangPick, withOn } from './functions'
 import type { LangSwitchIn } from './types'
 import css from './header.module.css'
@@ -23,9 +25,12 @@ export function LangSwitch({ lang, setLang }: LangSwitchIn) {
   for (const l of LANGS) {
     const pick = makeLangPick({ setLang, code: l.code })
     btns.push(
-      <button key={l.code} className={withOn({ base: cssOf(css.langBtn), on: lang === l.code })} onClick={pick}>
+      <Button key={l.code}
+        kind={PLAIN_BTN_KIND}
+        className={withOn({ base: cssOf(css.langBtn), on: lang === l.code })}
+        onClick={pick}>
         {l.label}
-      </button>,
+      </Button>,
     )
   }
   return <div className={css.langWrap}>{btns}</div>

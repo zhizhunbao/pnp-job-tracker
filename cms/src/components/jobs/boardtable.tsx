@@ -21,16 +21,16 @@ import { ColGroup } from './colgroup'
 import { EmptyNote } from './emptynote'
 import { HeadCell } from './headcell'
 import { SkeletonRow } from './skeletonrow'
-import type { BoardPanelIn } from './types'
+import type { BoardTableIn } from './types'
 import css from './jobs.module.css'
 
 /**
  * 渲染职位主表。
  *
- * @param props 职位板整台状态机。
+ * @param props 职位板整台状态机与表头锚点。
  * @returns 表格(换血中出骨架行,一行都没有出空态)。
  */
-export function BoardTable({ b }: BoardPanelIn) {
+export function BoardTable({ b, headRowRef }: BoardTableIn) {
   const heads = []
   for (const h of headCellsOf(b)) {
     heads.push(<HeadCell key={h.k} h={h} />)
@@ -53,7 +53,7 @@ export function BoardTable({ b }: BoardPanelIn) {
       <table className={tableClsOf(b.cols.cw.ready)} style={{ width: b.cols.cw.tableWidth }}>
         {b.cols.cw.ready && <ColGroup b={b} />}
         <thead>
-          <tr ref={b.cols.headRowRef} className={cssOf(css.headRow)}>{heads}</tr>
+          <tr ref={headRowRef} className={cssOf(css.headRow)}>{heads}</tr>
         </thead>
         <tbody>
           {body}

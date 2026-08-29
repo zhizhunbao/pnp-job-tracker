@@ -14,12 +14,12 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { IconX } from '@/components/icons'
-import { LinkButton } from '@/components/button'
+import { Button, LinkButton } from '@/components/button'
 
 import {
   A_EMPLOYERS, A_JOBS, A_MATCH, A_NEWS, A_PATHWAYS, A_RANK, A_START, A_STATS, BRAND_MARK, GRP_INFO, GRP_LIB,
   GRP_NONE, PATH_CASES, PATH_EMPLOYERS, PATH_HOME, PATH_NEWS, PATH_OCC, PATH_PLAN_PR, PATH_RESOURCES, PATH_START,
-  PATH_TIMELINE,
+  PATH_TIMELINE, PLAIN_BTN_KIND,
 } from './constants'
 import { makeGroupToggle, stopClick, withOn } from './functions'
 import { DrawerGroup } from './drawergroup'
@@ -47,7 +47,10 @@ export function MobileDrawer({ t, active, onClose }: MobileDrawerIn) {
       <div className={css.drawer} onClick={stopClick}>
         <div className={css.drawerHead}>
           <span className={css.drawerBrand}>{BRAND_MARK}</span>
-          <button className={css.drawerClose} onClick={onClose} aria-label={t('nav.menu')}><IconX /></button>
+          <Button kind={PLAIN_BTN_KIND}
+            className={css.drawerClose}
+            onClick={onClose}
+            ariaLabel={t('nav.menu')}><IconX /></Button>
         </div>
         <nav className={css.drawerNav}>
           <LinkButton href={PATH_HOME} className={withOn({ base: cssOf(css.drawerItem), on: onHome })}>

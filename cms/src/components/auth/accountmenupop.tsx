@@ -8,10 +8,10 @@
  * @time 2026-08-24 01:30:00
  */
 import { IconClipboard, IconSave, IconSettings, IconStar, IconTarget, IconUser } from '@/components/icons'
-import { LinkButton } from '@/components/button'
+import { Button, LinkButton } from '@/components/button'
 import {
   ARIA_MENU, PATH_ACCOUNT, PATH_ACCOUNT_FAVS, PATH_ACCOUNT_PROFILE, PATH_ACCOUNT_SAVED, PATH_ACCOUNT_SJOBS,
-  PATH_MATCH, PRO_LABEL,
+  PATH_MATCH, PLAIN_BTN_KIND, PRO_LABEL,
 } from './constants'
 import { logout } from './functions'
 import type { AccountMenuPopIn } from './types'
@@ -49,12 +49,14 @@ export function AccountMenuPop({ t, email, shortName, isPro, proUntil, onUpgrade
       <LinkButton href={PATH_ACCOUNT_SAVED} className={css.menuItem}><IconSave /> {t('ss.title')}</LinkButton>
       <LinkButton href={PATH_ACCOUNT} className={css.menuItem}><IconSettings /> {t('nav.acctTab')}</LinkButton>
       {onUpgrade != null && (
-        <button onClick={onUpgrade} className={`${css.menuItem} ${css.menuItemPro}`}>
+        <Button kind={PLAIN_BTN_KIND} onClick={onUpgrade} className={`${css.menuItem} ${css.menuItemPro}`}>
           <IconStar /> {t('up.cta2')}
-        </button>
+        </Button>
       )}
       <div className={`${css.menuHr} ${css.menuHrTight}`} />
-      <button onClick={logout} className={`${css.menuItem} ${css.menuItemDim}`}>{t('acct.logout')}</button>
+      <Button kind={PLAIN_BTN_KIND}
+        onClick={logout}
+        className={`${css.menuItem} ${css.menuItemDim}`}>{t('acct.logout')}</Button>
     </div>
   )
 }

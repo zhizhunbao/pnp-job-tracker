@@ -68,6 +68,19 @@ export const REDUCED_MOTION_MQ = '(prefers-reduced-motion: reduce)'
 export const DOT_LABEL = 'bg'
 
 /**
+ * 圆点排要渲染出来,至少得有几张图。只有一张时整排不画 —— 一颗孤零零的点既切不了图,
+ * 又让人以为还有别的张可以点。
+ */
+export const DOT_IMGS_MIN = 2
+
+/**
+ * 定制样式钮的统一底座(2026-08-26 Frank「<button 这种不允许直接使用」——
+ * 裸 <button> 一律改经 button 族):ghost 底最素,视觉全由本域的加倍类定形,
+ * Button 只出统一的语义与可达性(disabled/aria)。
+ */
+export const PLAIN_BTN_KIND = 'ghost'
+
+/**
  * 背景图的致谢文字,挂在 img 的 title 上(鼠标悬停可见)。图全部取自 Wikimedia Commons
  * 的实景照(出处逐张记在 `cms/public/img/banners/SOURCES.md`),画面上不压水印 ——
  * 致谢改挂这里,既标了出处又不弄脏画面。这是出处站点的**专名**,不随界面语言变,

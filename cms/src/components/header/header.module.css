@@ -222,6 +222,25 @@
    * 不许被压扁。
    */
   flex-shrink: 0;
+
+  /*
+   * 以下三格是 2026-08-29 裸 <button> 换装批补写的**冻结格**:这枚钮改经 Button 的
+   * ghost 档后,基座 .btn 会带进 font-weight 600 / white-space nowrap / padding 0,
+   * 而它上线以来吃的一直是浏览器给 <button> 的默认值。换装批只换钮不改渲染值,
+   * 所以把旧值显式写死在本域。(☰ 是纯图标钮,前两格眼下没有消费者;
+   * padding 那格有 —— 44 触控靶是 border-box,内衬变了内容框就变。)
+   */
+  font-weight: 400;
+
+  /*
+   * 允许折行(同上,冻结格)。
+   */
+  white-space: normal;
+
+  /*
+   * 内衬(同上,冻结格:浏览器给 <button> 的默认 1px 6px)。
+   */
+  padding: 1px 6px;
 }
 
 /*
@@ -628,6 +647,19 @@
    * 非当前灰。
    */
   color: #6b7280;
+
+  /*
+   * 常规字重(2026-08-29 裸 <button> 换装批补写:语言钮从裸 button 改经 Button 的
+   * ghost 档,基座 .btn 带 font-weight 600 —— 不写死三枚语言钮会一起变粗,
+   * 当前/非当前就靠底色分不出层次了)。
+   */
+  font-weight: 400;
+
+  /*
+   * 允许折行(同上,基座 .btn 带 nowrap)。三枚语言钮的字都是单个词、折不了行,
+   * 写这一条纯粹是让换装前后的计算样式逐格相等,不留「大概不影响」的口子。
+   */
+  white-space: normal;
 }
 
 /*
@@ -912,6 +944,22 @@
    * ✕ 字号。
    */
   font-size: 14px;
+
+  /*
+   * 冻结格(2026-08-29 裸 <button> 换装批补写,理由同 .burger 的三格):
+   * 基座 .btn 会带进 600,这枚钮上线以来吃的是浏览器默认 400。
+   */
+  font-weight: 400;
+
+  /*
+   * 允许折行(同上,冻结格)。
+   */
+  white-space: normal;
+
+  /*
+   * 内衬(同上,冻结格:浏览器给 <button> 的默认 1px 6px;44 触控靶是 border-box)。
+   */
+  padding: 1px 6px;
 }
 
 /*
@@ -1102,6 +1150,17 @@
    * 可点手型。
    */
   cursor: pointer;
+
+  /*
+   * 常规字重(2026-08-29 裸 <button> 换装批补写:基座 .btn 带 font-weight 600,
+   * 不写死组标题会比它底下的二级条目还粗)。
+   */
+  font-weight: 400;
+
+  /*
+   * 允许折行(同上,基座 .btn 带 nowrap;抽屉是窄屏件,长组名要能折)。
+   */
+  white-space: normal;
 }
 
 /*

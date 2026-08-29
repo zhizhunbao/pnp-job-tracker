@@ -408,18 +408,27 @@ export type SeedJson = {
 }
 
 /**
- * useColWidths 的入参。
+ * 表头 `<tr>` 的活引用(量宽的锚点,同时用于定位 table / 容器)。
+ * 🔴 2026-08-29:凡是要它的 hook 一律把它收成**独立的一格**(第一个参数),别的入参照旧
+ * 收在自己的 `XxxIn` 里;交回视图层时同样单独一格,不塞进面板。理由是 `react-hooks/refs`
+ * 闸:ref 一旦裹进复合对象,那个对象的**每一次读取**都算「渲染期读 ref」,于是整块面板
+ * 在组件里一格都读不了。留一个具名别名,是让这条约定在签名上一眼看得见。
+ */
+export type HeadRowRef = React.RefObject<HTMLTableRowElement | null>
+
+/**
+ * 浮层外框(字段面板)的活引用。单独一格传的理由同 `HeadRowRef`。
+ */
+export type BoxRef = React.RefObject<HTMLDivElement | null>
+
+/**
+ * useColWidths 的入参(表头锚点不在这里,见 `HeadRowRef`)。
  */
 export type ColWidthsIn = {
   /**
    * 当前可见列(顺序即渲染顺序)。
    */
   keys: string[]
-
-  /**
-   * 表头 `<tr>`(量宽的锚点,同时用于定位 table / 容器)。
-   */
-  headRowRef: React.RefObject<HTMLTableRowElement | null>
 
   /**
    * 数据指纹:列集/语言/当前这批行 —— 变了就重量。
@@ -867,11 +876,6 @@ export type BoardColsPanel = {
   onOpen: ClickFn
 
   /**
-   * 字段面板的外框(点它之外就关)。
-   */
-  boxRef: React.RefObject<HTMLDivElement | null>
-
-  /**
    * 勾/取消一列。
    */
   onCol: (k: JobColKey) => void
@@ -897,11 +901,6 @@ export type BoardColsPanel = {
   cw: ColWidthsPanel
 
   /**
-   * 表头 `<tr>`(量宽锚点)。
-   */
-  headRowRef: React.RefObject<HTMLTableRowElement | null>
-
-  /**
    * 固定左列的累计偏移(键 = 列键,值 = 左偏移像素)。
    */
   stickyLeft: Record<string, number>
@@ -916,6 +915,12 @@ export type BoardColsPanel = {
    */
   lastFrozen: string
 }
+
+/**
+ * useBoardCols 交回的三格:列面板 + 字段浮层外框 + 表头锚点。
+ * 两个 ref 单独成格(不进面板)的理由见 `HeadRowRef`。
+ */
+export type BoardColsOut = [BoardColsPanel, BoxRef, HeadRowRef]
 
 /**
  * 弹框层面板:这一屏上开着哪些浮层。
@@ -1103,6 +1108,12 @@ export type JobsBoardPanel = {
 }
 
 /**
+ * useJobsBoard 交回的三格:整台面板 + 表头锚点 + 字段浮层外框。
+ * 两个 ref 单独成格(不进面板)的理由见 `HeadRowRef`。
+ */
+export type JobsBoardOut = [JobsBoardPanel, HeadRowRef, BoxRef]
+
+/**
  * Jobs(职位板)的 props —— 全部由服务端门算好传进来。
  */
 export type JobsIn = {
@@ -1180,6 +1191,38 @@ export type BoardPanelIn = {
    * 职位板整台状态机。
    */
   b: JobsBoardPanel
+}
+
+/**
+ * BoardTable(职位主表)的 props:整台状态机 + 表头锚点。
+ * 锚点单独一格递(不塞进 `b`)的理由见 `HeadRowRef`。
+ */
+export type BoardTableIn = {
+  /**
+   * 职位板整台状态机。
+   */
+  b: JobsBoardPanel
+
+  /**
+   * 表头 `<tr>` 的活引用,只用来挂 `ref={}`。
+   */
+  headRowRef: HeadRowRef
+}
+
+/**
+ * 一路把字段浮层外框递到 ColFields 的件(筛选区 → 输入行 → 字段钮)共用的 props。
+ * 外框单独一格递(不塞进 `b`)的理由见 `BoxRef`。
+ */
+export type BoardBoxIn = {
+  /**
+   * 职位板整台状态机。
+   */
+  b: JobsBoardPanel
+
+  /**
+   * 字段浮层外框的活引用,末端只用来挂 `ref={}`。
+   */
+  boxRef: BoxRef
 }
 
 /**
@@ -4046,14 +4089,10 @@ export type ColWidthsPanelIn = {
   setManual: (w: Record<string, number>) => void
 
   /**
-   * 列集的活引用(拖列要用)。
+   * 拖列竖线的手柄。两个活引用(列集 / 量宽结果)留在 useColWidths 里就地做成手柄再传进来 ——
+   * ref 不许裹进复合入参,见 `HeadRowRef` 的说明。
    */
-  keysRef: React.RefObject<string[]>
-
-  /**
-   * 量宽结果的活引用(拖列要用)。
-   */
-  measuredRef: React.RefObject<Record<string, ColMeasure>>
+  startResize: (i: ColResizeStartIn) => void
 }
 
 /**
@@ -4087,14 +4126,9 @@ export type SeedCookieIn = {
 }
 
 /**
- * useWrapWidth 的入参。
+ * useWrapWidth 的入参(表头锚点不在这里,见 `HeadRowRef`)。
  */
 export type WrapWidthIn = {
-  /**
-   * 表头锚点。
-   */
-  headRowRef: React.RefObject<HTMLTableRowElement | null>
-
   /**
    * 列集签名(换列要重挂)。
    */
@@ -4107,18 +4141,13 @@ export type WrapWidthIn = {
 }
 
 /**
- * useFrozenCols 的入参。
+ * useFrozenCols 的入参(表头锚点不在这里,见 `HeadRowRef`)。
  */
 export type FrozenHookIn = {
   /**
    * 当前列。
    */
   shown: ColSpec[]
-
-  /**
-   * 表头锚点。
-   */
-  headRowRef: React.RefObject<HTMLTableRowElement | null>
 
   /**
    * 列宽机器。
@@ -4152,14 +4181,9 @@ export type FrozenPanel = {
 }
 
 /**
- * useOutsideClose 的入参。
+ * useOutsideClose 的入参(浮层外框不在这里,见 `BoxRef`)。
  */
 export type OutsideCloseIn = {
-  /**
-   * 浮层外框(点它之外就关)。
-   */
-  boxRef: React.RefObject<HTMLDivElement | null>
-
   /**
    * 开着没。
    */

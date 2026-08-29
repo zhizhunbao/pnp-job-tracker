@@ -146,49 +146,6 @@
       "count": 1
     }
   },
-  "src/components/account/functions.ts": {
-    "local/no-bare-strings": {
-      "count": 2
-    }
-  },
-  "src/components/auth/accountmenu.tsx": {
-    "react/forbid-elements": {
-      "count": 1
-    }
-  },
-  "src/components/auth/accountmenupop.tsx": {
-    "react/forbid-elements": {
-      "count": 2
-    }
-  },
-  "src/components/auth/authfooter.tsx": {
-    "react/forbid-elements": {
-      "count": 3
-    }
-  },
-  "src/components/auth/authform.tsx": {
-    "react/forbid-elements": {
-      "count": 1
-    }
-  },
-  "src/components/auth/pwmeter.tsx": {
-    "local/no-magic-number": {
-      "count": 2
-    }
-  },
-  "src/components/banner/bannerdots.tsx": {
-    "local/no-magic-number": {
-      "count": 1
-    },
-    "react/forbid-elements": {
-      "count": 1
-    }
-  },
-  "src/components/card/procard.tsx": {
-    "react/forbid-elements": {
-      "count": 1
-    }
-  },
   "src/components/cases/Case.tsx": {
     "@stylistic/brace-style": {
       "count": 2
@@ -490,11 +447,6 @@
       "count": 1
     }
   },
-  "src/components/chip/chip.tsx": {
-    "react/forbid-elements": {
-      "count": 1
-    }
-  },
   "src/components/companies/Company.tsx": {
     "@stylistic/max-len": {
       "count": 4
@@ -740,36 +692,6 @@
       "count": 1
     }
   },
-  "src/components/header/drawergroup.tsx": {
-    "react/forbid-elements": {
-      "count": 1
-    }
-  },
-  "src/components/header/header.tsx": {
-    "react/forbid-elements": {
-      "count": 1
-    }
-  },
-  "src/components/header/langswitch.tsx": {
-    "react/forbid-elements": {
-      "count": 1
-    }
-  },
-  "src/components/header/mobiledrawer.tsx": {
-    "react/forbid-elements": {
-      "count": 1
-    }
-  },
-  "src/components/header/navdrop.tsx": {
-    "react/forbid-elements": {
-      "count": 1
-    }
-  },
-  "src/components/i18n/hooks.ts": {
-    "@stylistic/max-len": {
-      "count": 1
-    }
-  },
   "src/components/jobs/Job.tsx": {
     "@stylistic/brace-style": {
       "count": 2
@@ -953,21 +875,6 @@
       "count": 1
     }
   },
-  "src/components/modal/constants.ts": {
-    "local/jsdoc-comments-only": {
-      "count": 1
-    }
-  },
-  "src/components/modal/hooks.ts": {
-    "@stylistic/max-len": {
-      "count": 1
-    }
-  },
-  "src/components/modal/modal.tsx": {
-    "react/forbid-elements": {
-      "count": 2
-    }
-  },
   "src/components/news/News.tsx": {
     "@eslint-community/eslint-comments/require-description": {
       "count": 2
@@ -1088,11 +995,6 @@
     "react/forbid-dom-props": {
       "count": 12
     },
-    "react/forbid-elements": {
-      "count": 2
-    }
-  },
-  "src/components/pager/pager.tsx": {
     "react/forbid-elements": {
       "count": 2
     }
@@ -1924,11 +1826,6 @@
       "count": 3
     }
   },
-  "src/components/search/search.tsx": {
-    "react/forbid-elements": {
-      "count": 1
-    }
-  },
   "src/components/start/Pulse.tsx": {
     "@stylistic/brace-style": {
       "count": 24
@@ -2007,11 +1904,6 @@
     },
     "react/no-multi-comp": {
       "count": 6
-    }
-  },
-  "src/components/tabs/tabs.tsx": {
-    "react/forbid-elements": {
-      "count": 1
     }
   },
   "src/components/timeline/Timeline.tsx": {

@@ -54,6 +54,7 @@ export function useAdvisorSection(x: AdvisorSectionIn): AdvisorPanel {
       return
     }
     const ctrl = new AbortController()
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 这一发流式请求的开场:清正文、挂 loading,必须与开请求同一拍
     setText(TEXT_NONE)
     setStatus(ADV_LOADING)
     streamAdvisor({ job, lang, field, signal: ctrl.signal, onChunk: setText, onFreeLeft: setFreeLeft })
@@ -185,6 +186,7 @@ export function useFloatPanel(x: FloatPanelHookIn): FloatPanelOut {
   useEffect(function loadPref() {
     const p = readPrefOf(prefKey)
     if (p.full) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 故意分两步:localStorage 在用户浏览器里,服务端画首帧读不到,页面活过来后再补真实偏好
       setFullPref(true)
     }
     if (p.w != null && p.h != null) {
@@ -374,6 +376,7 @@ export function useAdvisorLong(x: AdvisorLongIn): AdvisorLongPanel {
       return
     }
     const ctrl = new AbortController()
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 这一发长文请求的开场:清三格、挂 loading,必须与开请求同一拍
     setText(TEXT_NONE)
     setStatus(ADV_LOADING)
     setSug(TEXT_NONE)

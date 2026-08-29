@@ -19,13 +19,13 @@ import css from './chat.module.css'
 /**
  * composer(输入条 + 发送钮)。
  *
- * @param props 面板(逐格注释见下方内联形状)。
+ * @param props 面板与输入框引用(逐格注释见 ChatComposerIn)。
  * @returns composer 一条。
  */
-export function ChatComposer({ p }: ChatComposerIn) {
+export function ChatComposer({ p, taEl }: ChatComposerIn) {
   return (
     <div className={`${css.cbComposer} ${css.cbCol}`}>
-      <textarea ref={p.taEl}
+      <textarea ref={taEl}
         className={css.cbIn}
         rows={1}
         value={p.input}

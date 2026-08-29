@@ -8,7 +8,7 @@
  * @time 2026-08-24 01:30:00
  */
 import { cssOf } from '@/components/css'
-import { PW_HINT_SEP, PW_METER_KEYS } from './constants'
+import { PW_HINT_SEP, PW_LV_MAX, PW_METER_KEYS, PW_SEG_COUNT } from './constants'
 import { pwStrength } from './functions'
 import type { PwMeterIn } from './types'
 import css from './auth.module.css'
@@ -28,7 +28,7 @@ export function PwMeter({ t, pw }: PwMeterIn) {
     3: cssOf(css.lv3),
   }
   const segs = []
-  for (let i = 1; i <= 3; i = i + 1) {
+  for (let i = 1; i <= PW_SEG_COUNT; i = i + 1) {
     let segCls = css.meterSeg
     if (i <= lv) {
       segCls = `${css.meterSeg} ${css.meterOn}`
@@ -41,7 +41,7 @@ export function PwMeter({ t, pw }: PwMeterIn) {
       <div className={css.meterRow}>{segs}</div>
       <div className={css.meterText}>
         {key != null && t(key)}
-        {lv > 0 && lv < 3 && <span className={css.meterHint}>{PW_HINT_SEP}{t('acct.pw.hint')}</span>}
+        {lv > 0 && lv < PW_LV_MAX && <span className={css.meterHint}>{PW_HINT_SEP}{t('acct.pw.hint')}</span>}
       </div>
     </div>
   )

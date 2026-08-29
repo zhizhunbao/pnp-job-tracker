@@ -20,16 +20,16 @@ import css from './chat.module.css'
 /**
  * 启动器。
  *
- * @param props 面板与「本路由窄屏藏球」档(逐格注释见下方内联形状)。
+ * @param props 面板、启动器引用与「本路由窄屏藏球」档(逐格注释见 ChatDockIn)。
  * @returns 启动器一块;面板开着时由调用方不渲。
  */
-export function ChatDock({ p, narrowOff }: ChatDockIn) {
+export function ChatDock({ p, dockEl, narrowOff }: ChatDockIn) {
   let dockCls = css.clDock
   if (narrowOff) {
     dockCls = `${css.clDock} ${css.clNarrowOff}`
   }
   return (
-    <div ref={p.dockEl}
+    <div ref={dockEl}
       className={dockCls}
       // eslint-disable-next-line react/forbid-dom-props -- 运行时几何:避让实测距离或用户拖过的自定义位,非静态样式
       style={p.dockStyle}

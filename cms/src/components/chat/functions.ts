@@ -4,6 +4,10 @@
  * 不留函数体,效果体也在这儿以 make*Effect 工厂给出,壳里只调)。
  * 2026-08-27 换装批自 ChatBox/ChatAnswer/ChatLauncher/chatExamples 四件收拢;
  * 原文的取样、事故与拍板注释全数随迁到各函数头上。
+ * 2026-08-29 摘 ref 那批:**渲染期收 ref 的那八个工厂**(发话、贴底滚动、composer
+ * 键盘/聚焦、启动器点击/拖动、缩放把手、标题栏拖动)改名 use* 迁去 hooks.ts ——
+ * 普通函数在渲染期收 ref 被 react-hooks/refs 判违规,hook 形态才是豁免的那种;
+ * 这里留下的是纯件(不碰 ref 的工厂、几何、排版、读流与真身 sendNow)。
  *
  * @author Frank
  * @time 2026-08-27 02:30:00
@@ -11,26 +15,26 @@
 import { POPULAR_NOCS } from '@/components/profile'
 import { track } from '@/lib/track'
 import {
-  BAR_H_MIN, BAR_SCAN_SEL, BLOCK_P, BLOCK_UL, BOTTOM_ZERO, BOX_LS_KEY, BRAND_NAME, BTN_SEL, BULLET_RE, CLB_VAR,
+  BAR_H_MIN, BAR_SCAN_SEL, BLOCK_P, BLOCK_UL, BOTTOM_ZERO, BOX_LS_KEY, BRAND_NAME, BULLET_RE, CLB_VAR,
   COARSE_MQ, COPIED_MS, CRED_INCLUDE, DIR_E, DIR_N, DIR_S, DIR_W, DISPLAY_FLEX, DOCK_BTN, DOCK_GAP, DOCK_LS_KEY,
-  DRAG_SLOP, EDGE_GAP, EV_ANSWER, EV_EXAMPLE, EV_FEEDBACK, EV_OPEN, EV_OPTION, EV_SUBMIT, EV_W_CLOSE, EV_W_DOCK_DRAG,
-  EV_W_DRAG, EV_W_FALLBACK, EV_W_MAX, EV_W_MIN, EV_W_OPEN, EV_W_RESET, EV_W_RESIZE, EV_W_RESTORE, EV_W_STUCK,
-  EVT_KEYDOWN, EVT_MQ_CHANGE, EVT_POINTERCANCEL, EVT_POINTERMOVE, EVT_POINTERUP, EVT_RESIZE, EVT_SCROLL,
+  EDGE_GAP, EV_ANSWER, EV_EXAMPLE, EV_FEEDBACK, EV_OPTION, EV_SUBMIT, EV_W_CLOSE,
+  EV_W_FALLBACK, EV_W_MAX, EV_W_MIN, EV_W_OPEN, EV_W_RESET, EV_W_RESTORE, EV_W_STUCK,
+  EVT_KEYDOWN, EVT_MQ_CHANGE, EVT_RESIZE, EVT_SCROLL,
   EXAMPLES_ANON, EXAMPLES_MAX, EXAMPLES_REG, FAULT_KEY, FAULT_LLM, FAULT_NET, GRAB_MOVE, GUIDE_KEY, H_AUTO,
   HDR_CONTENT_TYPE, HDR_CONTENT_TYPE_LOW, HINT_DELAY_MS, HINT_HIDE_MS, HINT_KEY, HINT_MAX, HISTORY_MAX, HTTP_RE,
-  JOBS_DETAIL_RE, K_EX_CLB_PROV, K_EX_OCC_CMP, K_EX_OCC_PROV, K_EX_PGWP, KEY_DOT, KEY_ENTER, KEY_ESC, LOCALE_NUM,
+  JOBS_DETAIL_RE, K_EX_CLB_PROV, K_EX_OCC_CMP, K_EX_OCC_PROV, K_EX_PGWP, KEY_DOT, KEY_ESC, LOCALE_NUM,
   LS_OFF, LS_ON, MAIN_SEL, MAX_LS_KEY, MEM_NOC_MAX, MEM_PROV_MAX, METHOD_POST, MIME_JSON, MIME_SSE, NARROW_OFF_RE,
   NOC5_RE, NOC_LABEL_HEAD, NOC_WRAP_CLOSE, NOC_WRAP_OPEN, OPEN_EVT, OPT_SELF_PICK, OPTIONS_MAX, PANEL_H_MIN,
-  PANEL_W_MIN, PLAN_HEAD, POINTER_MOUSE, POPOVER_OPEN_SEL, POS_AUTO, POS_FIXED, POS_STICKY, PR_HEAD, PREFILL_MAX,
-  PROF_ST_HEAD, PX, RESET_ASK_MS, RETRYABLE, ROLE_ASSISTANT, ROLE_USER, SECS_TICK_MS, SELECT_NONE, SSE_BLOCK_SEP,
-  SSE_DATA_HEAD, SSE_DONE, SSE_LINE_SEP, STATUS_SLUGS, STICK_SLACK, TA_H_MAX, TEXT_NONE, TH_COPIED_MS,
+  PANEL_W_MIN, PLAN_HEAD, POPOVER_OPEN_SEL, POS_AUTO, POS_FIXED, POS_STICKY, PR_HEAD, PREFILL_MAX,
+  PROF_ST_HEAD, PX, RESET_ASK_MS, RETRYABLE, ROLE_ASSISTANT, ROLE_USER, SECS_TICK_MS, SSE_BLOCK_SEP,
+  SSE_DATA_HEAD, SSE_DONE, SSE_LINE_SEP, STATUS_SLUGS, TA_H_MAX, TEXT_NONE, TH_COPIED_MS,
   TITLE_SLASH_SEP, UNIT_PCT, UNIT_SEP, URL_CHAT, URL_ME, WARN_POPOVER, WARN_STUCK, WARN_WATCHDOG, WATCHDOG2_MS,
   WATCHDOG_MS, WIDE_MQ, WWW_RE} from './constants'
 import type {
-  Answer, AnswerOption, AnswerOptions, Block, Box, ChatBoxPanel, ChatLang, ChatMe, ChatProfile, ChatSlots,
-  ClampDockIn, ComposerChangeEvent, ComposerKeyEvent, DockPos, ErrBody, ExampleItem, ExamplesIn, Fact, Fault,
+  Answer, AnswerOption, AnswerOptions, Block, Box, ChatBoxPanel, ChatMe, ChatProfile, ChatSlots,
+  ClampDockIn, ComposerChangeEvent, DockPos, ErrBody, ExampleItem, ExamplesIn, Fact, Fault,
   GrabDir, GrabStart, LazyBoxModule, MeBody, Msg, MutBool, MutBox, NocOpt, PrefillDetail, ReadSseIn, SendIn,
-  SetTurns, SseFrame, StepsToggleEvent, StepsToggleIn, TFn, ThreadScrollEvent, Turn, TurnPatch,
+  SetTurns, SseFrame, StepsToggleEvent, StepsToggleIn, TFn, Turn, TurnPatch, UseSendIn,
   WebSource} from './types'
 
 /**
@@ -749,85 +753,17 @@ export function finishTurn(x: {
 }
 
 /**
- * 造发话手柄(新一轮或重试):POST /api/consult/chat,流式(SSE)与 JSON 两条路。
- * 流式:轨迹逐条、正文按句、撤回清屏不留半段(服务端撤回的理由恰是「这一稿要被
- * 换掉」);终局一律走 finishTurn。JSON:引导码渲助手气泡并把光标还回输入框,
- * 认得的故障码原样用、认不得的落 net(busy 走 JSON 是真会发生的:纯联邦问句
- * 没有「认出职业」那一格,流压根没开)。
+ * useSend 的真身(async;外壳只是把 Promise 收掉)。
+ * 2026-08-29 摘 ref 那批:外壳 makeSend 收 taEl/stick 两枚 ref,渲染期被
+ * react-hooks/refs 判违规,于是改名 useSend 迁进 hooks.ts;真身与两条分支是
+ * 纯件,留在这里,依赖包改指 types 的 UseSendIn(跨文件不再反取 Parameters)。
  *
- * @param x 本轮状态与全部落格。
- * @returns 发话手柄。
- */
-export function makeSend(x: {
-  /**
-   * 当前轮次表(取历史与稳定记忆)。
-   */
-  turns: Turn[]
-
-  /**
-   * 有一轮在跑(闸:同时只可能有一轮)。
-   */
-  busy: boolean
-
-  /**
-   * 界面语言(服务端按它写轨迹与答复)。
-   */
-  lang: ChatLang
-
-  /**
-   * 取词函数(引导话术)。
-   */
-  t: TFn
-
-  /**
-   * 轮次表落格。
-   */
-  setTurns: SetTurns
-
-  /**
-   * 输入框落格(发出即清)。
-   */
-  setInput: (v: string) => void
-
-  /**
-   * 秒数落格(新一轮清零重计)。
-   */
-  setSecs: (v: number) => void
-
-  /**
-   * 忙态落格。
-   */
-  setBusy: (v: boolean) => void
-
-  /**
-   * 贴底引用(发话即回贴底)。
-   */
-  stick: MutBool
-
-  /**
-   * 输入框引用(清高度、引导轮还光标)。
-   */
-  taEl: React.RefObject<HTMLTextAreaElement | null>
-
-  /**
-   * 答复落地后重查登录档案(空态例句跟着换)。
-   */
-  refreshMe: () => void
-}): (s: SendIn) => void {
-  return function send(s: SendIn): void {
-    void sendNow(x, s)
-  }
-}
-
-/**
- * makeSend 的真身(async;外壳只是把 Promise 收掉)。
- *
- * @param x makeSend 的依赖包。
+ * @param x useSend 的依赖包。
  * @param s 要发的句与重试位。
  * @returns 无。
  */
-// eslint-disable-next-line local/one-parameter -- 与 makeSend 成对的内部真身:依赖包与发话参数天然两包,合并只是造第三个壳
-async function sendNow(x: Parameters<typeof makeSend>[0], s: SendIn): Promise<void> {
+// eslint-disable-next-line local/one-parameter -- 与 useSend 成对的内部真身:依赖包与发话参数天然两包,合并只是造第三个壳
+export async function sendNow(x: UseSendIn, s: SendIn): Promise<void> {
   const q = s.q.trim()
   if (q === '' || x.busy) {
     return
@@ -894,9 +830,9 @@ async function sendNow(x: Parameters<typeof makeSend>[0], s: SendIn): Promise<vo
  */
 async function streamedTurn(g: {
   /**
-   * makeSend 的依赖包。
+   * useSend 的依赖包。
    */
-  x: Parameters<typeof makeSend>[0]
+  x: UseSendIn
 
   /**
    * 这一轮的位置。
@@ -961,9 +897,9 @@ async function streamedTurn(g: {
  */
 async function jsonTurn(g: {
   /**
-   * makeSend 的依赖包。
+   * useSend 的依赖包。
    */
-  x: Parameters<typeof makeSend>[0]
+  x: UseSendIn
 
   /**
    * 这一轮的位置。
@@ -1088,66 +1024,6 @@ export function optionsOf(x: {
 }
 
 /**
- * 造历史区的滚动手柄:离底不足 STICK_SLACK 算贴底,新内容来了跟着滚 ——
- * 用户往回翻看旧答复时别把他甩到底。
- *
- * @param x 贴底引用。
- * @returns 滚动手柄。
- */
-export function makeThreadScroll(x: {
-  /**
-   * 贴底引用。
-   */
-  stick: MutBool
-}): (e: ThreadScrollEvent) => void {
-  return function onScroll(e: ThreadScrollEvent): void {
-    const el = e.currentTarget
-    x.stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < STICK_SLACK
-  }
-}
-
-/**
- * 造输入框键盘手柄:Enter 发送 / Shift+Enter 换行(IME 组合中不发);
- * 触屏上 Enter 是换行不是发送(手机上写三句话被 Enter 截断很恼人),
- * ⌘/Ctrl+Enter 仍强制发送。
- *
- * @param x 触屏引用、现输入与发话手柄。
- * @returns 键盘手柄。
- */
-export function makeComposerKey(x: {
-  /**
-   * 触屏引用。
-   */
-  coarse: MutBool
-
-  /**
-   * 输入框现值。
-   */
-  input: string
-
-  /**
-   * 发话手柄。
-   */
-  send: (s: SendIn) => void
-}): (e: ComposerKeyEvent) => void {
-  return function onKeyDown(e: ComposerKeyEvent): void {
-    if (e.key !== KEY_ENTER) {
-      return
-    }
-    if (e.nativeEvent.isComposing === true) {
-      return
-    }
-    if (e.shiftKey) {
-      return
-    }
-    if (x.coarse.current === false || e.metaKey || e.ctrlKey) {
-      e.preventDefault()
-      x.send({ q: x.input, at: null })
-    }
-  }
-}
-
-/**
  * 造输入框改值手柄:随内容长高到 TA_H_MAX 封顶。
  *
  * @param x 输入框落格。
@@ -1163,27 +1039,6 @@ export function makeComposerChange(x: {
     x.setInput(e.target.value)
     e.target.style.height = H_AUTO
     e.target.style.height = Math.min(e.target.scrollHeight, TA_H_MAX) + PX
-  }
-}
-
-/**
- * 造输入框首次聚焦手柄:chat-open 只打第一次(每次点回输入框都算会把口径撑爆)。
- *
- * @param x 已打过的引用。
- * @returns 聚焦手柄。
- */
-export function makeComposerFocus(x: {
-  /**
-   * 已打过 chat-open 的引用。
-   */
-  opened: MutBool
-}): () => void {
-  return function onFocus(): void {
-    if (x.opened.current) {
-      return
-    }
-    x.opened.current = true
-    track(EV_OPEN)
   }
 }
 
@@ -1570,173 +1425,16 @@ export function makeResetStep(x: {
 }
 
 /**
- * 造启动器的点击手柄:拖完松手的那一下 click 要压掉,不然拖完必弹面板。
- *
- * @param x 拖动判定引用与打开手柄。
- * @returns 点击手柄。
- */
-export function makeDockClick(x: {
-  /**
-   * 这一轮指针是拖动。
-   */
-  dragged: MutBool
-
-  /**
-   * 打开面板。
-   */
-  show: () => void
-}): () => void {
-  return function dockClick(): void {
-    if (x.dragged.current) {
-      x.dragged.current = false
-      return
-    }
-    x.show()
-  }
-}
-
-/**
- * 造启动器拖动的按下手柄(2026-08-06 Frank「图标可自由拖动到任意位置,防挡内容」):
- * 位移超过 DRAG_SLOP 才算拖;监听挂 window(指针拖出钮外也要跟得住);
- * 松手落盘 localStorage(隐私模式:这次生效,下次不记得)。
- *
- * @param x 启动器引用、拖动判定引用与位置落格。
- * @returns 按下手柄。
- */
-export function makeDockDown(x: {
-  /**
-   * 启动器 DOM 引用。
-   */
-  dockEl: React.RefObject<HTMLDivElement | null>
-
-  /**
-   * 这一轮指针是拖动(松手后压掉那次 click)。
-   */
-  dragged: MutBool
-
-  /**
-   * 位置落格。
-   */
-  setDockPos: (v: DockPos) => void
-}): (e: React.PointerEvent) => void {
-  return function dockDown(e: React.PointerEvent): void {
-    if (e.pointerType === POINTER_MOUSE && e.button !== 0) {
-      return
-    }
-    const d = x.dockEl.current
-    if (d == null) {
-      return
-    }
-    const r = d.getBoundingClientRect()
-    const s = { px: e.clientX, py: e.clientY, x: r.left, y: r.top }
-    x.dragged.current = false
-    let last: DockPos | null = null
-    function onMove(ev: PointerEvent): void {
-      const dx = ev.clientX - s.px
-      const dy = ev.clientY - s.py
-      if (x.dragged.current === false && Math.hypot(dx, dy) < DRAG_SLOP) {
-        return
-      }
-      x.dragged.current = true
-      last = clampDockOf({ p: { x: s.x + dx, y: s.y + dy }, w: DOCK_BTN, h: DOCK_BTN })
-      x.setDockPos(last)
-    }
-    function onUp(): void {
-      window.removeEventListener(EVT_POINTERMOVE, onMove)
-      window.removeEventListener(EVT_POINTERUP, onUp)
-      window.removeEventListener(EVT_POINTERCANCEL, onUp)
-      document.body.style.userSelect = TEXT_NONE
-      if (last == null) {
-        return
-      }
-      try {
-        localStorage.setItem(DOCK_LS_KEY, JSON.stringify(last))
-      } catch {
-        ignoreNetErr()
-      }
-      track(EV_W_DOCK_DRAG)
-    }
-    document.body.style.userSelect = SELECT_NONE
-    window.addEventListener(EVT_POINTERMOVE, onMove)
-    window.addEventListener(EVT_POINTERUP, onUp)
-    window.addEventListener(EVT_POINTERCANCEL, onUp)
-  }
-}
-
-/**
- * 造缩放/拖动把手的按下手柄工厂:dir='move' 抓标题栏整体拖,其余按方向拉边
- * (拉左/上边时对边钉住:撞到最小值后左沿不许再走,否则面板被「推着」横向漂移 ——
- * 缩到底还在动是手感最糟的那种 resize)。每帧都过 clampBoxOf —— 钳制发生在
- * **过程中**不是松手时,否则拖出视口再回弹会闪。监听挂 window 不挂元素:
- * 指针拖出面板外(缩放时必然会)也要跟得住。
- *
- * @param x 面板引用、最新框引用与框落格。
- * @returns 按方向造按下手柄的工厂。
- */
-export function makeGripDownOf(x: {
-  /**
-   * 面板 DOM 引用。
-   */
-  panelEl: React.RefObject<HTMLDivElement | null>
-
-  /**
-   * 拖拽过程中的最新框(pointerup 时落盘,不靠 setState 回调)。
-   */
-  lastBox: MutBox
-
-  /**
-   * 框落格。
-   */
-  setBox: (v: Box) => void
-}): (d: GrabDir) => (e: React.PointerEvent) => void {
-  return function gripDownOf(d: GrabDir): (e: React.PointerEvent) => void {
-    return function gripDown(e: React.PointerEvent): void {
-      if (x.panelEl.current == null || e.button !== 0) {
-        return
-      }
-      e.preventDefault()
-      const r = x.panelEl.current.getBoundingClientRect()
-      const s = { px: e.clientX, py: e.clientY, x: r.left, y: r.top, w: r.width, h: r.height }
-      function onMove(ev: PointerEvent): void {
-        const nb = clampBoxOf({ b: grabbedBoxOf({ s, d, dx: ev.clientX - s.px, dy: ev.clientY - s.py }) })
-        x.lastBox.current = nb
-        x.setBox(nb)
-      }
-      function onUp(): void {
-        window.removeEventListener(EVT_POINTERMOVE, onMove)
-        window.removeEventListener(EVT_POINTERUP, onUp)
-        window.removeEventListener(EVT_POINTERCANCEL, onUp)
-        document.body.style.userSelect = TEXT_NONE
-        try {
-          if (x.lastBox.current != null) {
-            localStorage.setItem(BOX_LS_KEY, JSON.stringify(x.lastBox.current))
-          }
-        } catch {
-          ignoreNetErr()
-        }
-        if (d === GRAB_MOVE) {
-          track(EV_W_DRAG)
-        } else {
-          track(EV_W_RESIZE)
-        }
-      }
-      document.body.style.userSelect = SELECT_NONE
-      window.addEventListener(EVT_POINTERMOVE, onMove)
-      window.addEventListener(EVT_POINTERUP, onUp)
-      window.addEventListener(EVT_POINTERCANCEL, onUp)
-    }
-  }
-}
-
-/**
  * 拖动/缩放中的下一帧框(纯几何):move 整体平移;拉边改宽高,拉左/上边对边钉住 ——
  * 撞到最小值后左沿不许再走,否则面板被「推着」横向漂移(缩到底还在动是手感最糟的
  * 那种 resize)。钳制由调用方过 clampBoxOf。
+ * 2026-08-29 摘 ref 那批起对本桶导出:唯一消费者 useGripDownOf 跟着 ref 迁去了
+ * hooks.ts,而这段是纯几何,留在纯件这边。
  *
  * @param g 起始几何、方向与位移。
  * @returns 未钳制的下一帧框。
  */
-function grabbedBoxOf(g: {
+export function grabbedBoxOf(g: {
   /**
    * 按下时的起始几何。
    */
@@ -1787,41 +1485,6 @@ function grabbedBoxOf(g: {
     }
   }
   return { x: bx, y: by, w: bw, h: bh }
-}
-
-/**
- * 造标题栏按下手柄:桌面非全屏 = 拖动把手;按在钮上时不拖(不然点「收起」会先
- * 被当成一次 0 像素的拖动)。
- *
- * @param x 桌面档、全屏档与把手工厂。
- * @returns 按下手柄。
- */
-export function makeHeadDown(x: {
-  /**
-   * 桌面档。
-   */
-  wide: boolean
-
-  /**
-   * 全屏档(没得拖)。
-   */
-  max: boolean
-
-  /**
-   * 把手工厂(dir 固定 move)。
-   */
-  gripDownOf: (d: GrabDir) => (e: React.PointerEvent) => void
-}): (e: React.PointerEvent) => void {
-  return function headDown(e: React.PointerEvent): void {
-    if (x.wide === false || x.max) {
-      return
-    }
-    const target = e.target as HTMLElement
-    if (target.closest(BTN_SEL) != null) {
-      return
-    }
-    x.gripDownOf(GRAB_MOVE)(e)
-  }
 }
 
 /**
@@ -2558,6 +2221,8 @@ export function makePick(x: {
 
 /**
  * 造「自己说」的点击手柄:埋点 + 光标回输入框(输入框就在下面)。
+ * 2026-08-29 摘 ref 那批:输入框引用不再挂在面板上(见 ChatBoxOut),
+ * 这里改调面板的 focusInput 手柄 —— 判空口径原样搬进 hooks 的 useFocusInput。
  *
  * @param x 面板。
  * @returns 点选手柄。
@@ -2570,9 +2235,7 @@ export function makeSelf(x: {
 }): () => void {
   return function self(): void {
     track(EV_OPTION, { pick: OPT_SELF_PICK })
-    if (x.p.taEl.current != null) {
-      x.p.taEl.current.focus()
-    }
+    x.p.focusInput()
   }
 }
 

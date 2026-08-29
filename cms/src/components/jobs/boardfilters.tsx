@@ -12,19 +12,19 @@ import { cssOf } from '@/components/css'
 import { FilterRow } from './filterrow'
 import { FoldFilters } from './foldfilters'
 import { PickedRow } from './pickedrow'
-import type { BoardPanelIn } from './types'
+import type { BoardBoxIn } from './types'
 import css from './jobs.module.css'
 
 /**
  * 渲染筛选区。
  *
- * @param props 职位板整台状态机。
+ * @param props 职位板整台状态机与字段浮层外框(只过路,末端是 ColFields)。
  * @returns 三段筛选。
  */
-export function BoardFilters({ b }: BoardPanelIn) {
+export function BoardFilters({ b, boxRef }: BoardBoxIn) {
   return (
     <div className={cssOf(css.filters)}>
-      <FilterRow b={b} />
+      <FilterRow b={b} boxRef={boxRef} />
       {b.filters.fold && <FoldFilters b={b} />}
       {b.filters.showPicked && <PickedRow b={b} />}
     </div>

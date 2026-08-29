@@ -10,7 +10,7 @@
  */
 import { cssOf } from '@/components/css'
 import { resetAnswersMemory } from '@/lib/quiz'
-import {
+import { KEY_ENTER, KEY_ESCAPE,
   BUSY_MARK, CARD_CLS, CLS_SEP, CRED_INCLUDE, EMAIL_AT, EV_CHECKOUT, EV_WEEKLY, FAV_NOTE_KEY, FAV_TITLE_KEY,
   HDR_CONTENT_TYPE, METHOD_DELETE, METHOD_PATCH, METHOD_POST, MIME_JSON, PLAN_30, PLAN_90, Q_SEARCH_HEAD, QP_OK,
   QP_OK_ON, QP_SEC, SEC_LABEL_CUT_RE, SEC_TABS, SJ_NOTE_KEY, SJ_STATUS_DEFAULT, SJ_STATUS_TABS, SJ_TITLE_KEY,
@@ -35,10 +35,10 @@ import css from './account.module.css'
  */
 export function makeNickKey(x: NickKeyIn): NickKeyFn {
   return function onNickKey(e): void {
-    if (e.key === 'Enter') {
+    if (e.key === KEY_ENTER) {
       x.saveNick()
     }
-    if (e.key === 'Escape') {
+    if (e.key === KEY_ESCAPE) {
       x.setNick(null)
     }
   }

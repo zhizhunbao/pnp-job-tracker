@@ -41,7 +41,7 @@ export default async function HiringEmployersPage({ searchParams }: { searchPara
   return (
     <Frame>
       <Header />
-      <Employers {...props} />
+      <Employers initial={props.initial} initialFilters={props.initialFilters} />
       <Footer />
     </Frame>
   )

@@ -103,6 +103,31 @@
   color: #6b7280;
 
   /*
+   * 清除号的落地字号(2026-08-29 裸 <button> 换装批补写)。这枚钮从裸 <button> 改经
+   * Button 的 ghost 档,而基座 .btn 带 font-size: 13px —— 全站图标是 1em(见 icons 域的
+   * ICON_SIZE),钮的字号就是 ✕ 的边长,不写死这里 ✕ 会从 13.3333 缩到 13。
+   * 13.3333px 是这枚钮上线以来的实际渲染值(浏览器给 button 的默认字号,
+   * 本域从没声明过);换装批只换钮不改渲染值,所以按实测值冻在这里。
+   * 要不要并进设计系统的 13px 归后面的形态收拢批判,不在本批射程。
+   */
+  font-size: 13.3333px;
+
+  /*
+   * 冻结格(同上批):基座 .btn 会带进 font-weight 600,旧值是浏览器默认 400。
+   */
+  font-weight: 400;
+
+  /*
+   * 允许折行(同上,冻结格:基座 .btn 带 nowrap)。
+   */
+  white-space: normal;
+
+  /*
+   * 内衬(同上,冻结格:浏览器给 <button> 的默认 1px 6px;30 触控靶是 border-box)。
+   */
+  padding: 1px 6px;
+
+  /*
    * 可点手型。
    */
   cursor: pointer;

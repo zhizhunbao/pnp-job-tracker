@@ -40,7 +40,7 @@ export default async function DesignatedEmployersPage({ searchParams }: { search
   return (
     <Frame>
       <Header />
-      <Employers {...props} />
+      <Employers initial={props.initial} initialFilters={props.initialFilters} />
       <Footer />
     </Frame>
   )

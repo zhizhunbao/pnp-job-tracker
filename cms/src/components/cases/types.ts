@@ -7,7 +7,7 @@
  * @author Frank
  * @time 2026-08-27 01:30:00
  */
-// eslint-disable-next-line local/no-import-in-leaf -- 判定核输出是几十格的引擎契约,重抄必脱节;特批牌形态,同 icons/types
+// eslint-disable-next-line local/no-import-in-leaf -- 引擎输出形状特批(宪法:引用引擎输出的形状走逐行 import type,先例 icons/types):判定核几十格契约,本域只透传不读格
 import type { CaseAnswer, PathwayVerdict, VerdictReason } from '@/lib/ruling/server'
 
 /**

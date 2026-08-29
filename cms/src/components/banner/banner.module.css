@@ -623,6 +623,32 @@
    * 水平居中。
    */
   justify-content: center;
+
+  /*
+   * 冻结格(2026-08-29 裸 <button> 换装批补写):圆点钮改经 Button 的 ghost 档后,
+   * 基座 .btn 会带进 font-weight 600,旧值是浏览器给 <button> 的默认 400。
+   * 钮里只有一颗 6×6 的 span,这一格眼下没有消费者 —— 写死是为了换装前后逐格同值,
+   * 也为了将来往钮里放字时不会莫名其妙变粗。
+   */
+  font-weight: 400;
+
+  /*
+   * 允许折行(同上,冻结格:基座 .btn 带 nowrap)。
+   */
+  white-space: normal;
+
+  /*
+   * 字号(同上,冻结格):基座 .btn 带 13px,旧值是浏览器给 <button> 的默认 13.3333px。
+   * 钮里只有一颗定死 6px 的圆点,没有随字号走的东西。
+   */
+  font-size: 13.3333px;
+
+  /*
+   * 前景色(同上,冻结格):基座的 ghost 档带品牌蓝,旧值是浏览器默认的 ButtonText。
+   * 圆点靠自己的 background 上色,这一格没有消费者;上面 border: none 之后边框色
+   * 也画不出来(border-color 缺省跟着 color 走,连带冻住)。
+   */
+  color: #000000;
 }
 
 /*

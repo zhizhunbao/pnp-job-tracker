@@ -10,6 +10,8 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { Button } from '@/components/button'
+import { PLAIN_BTN_KIND } from './constants'
 import type { ProCardIn } from './types'
 import css from './card.module.css'
 
@@ -27,7 +29,7 @@ export function ProCard({ text, cta, onClick, overlay = false }: ProCardIn) {
   return (
     <div className={cls}>
       <span className={css.proText}>{text}</span>
-      <button className={css.proBtn} onClick={onClick}>{cta}</button>
+      <Button kind={PLAIN_BTN_KIND} className={css.proBtn} onClick={onClick}>{cta}</Button>
     </div>
   )
 }

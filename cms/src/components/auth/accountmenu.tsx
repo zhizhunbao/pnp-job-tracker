@@ -11,10 +11,13 @@
  */
 import { useRef, useState } from 'react'
 
+import { Button } from '@/components/button'
 import { useEscClose } from '@/components/modal'
 import { AccountMenuPop } from './accountmenupop'
 import { Avatar } from './avatar'
-import { ARIA_MENU, AVATAR_SIZE_MENU, MAIL_AT, NAME_FALLBACK, PRO_UNTIL_NONE, TITLE_NONE } from './constants'
+import {
+  ARIA_MENU, AVATAR_SIZE_MENU, MAIL_AT, NAME_FALLBACK, PLAIN_BTN_KIND, PRO_UNTIL_NONE, TITLE_NONE,
+} from './constants'
 import { makeAccountMenuHandles } from './functions'
 import { useClickOutside } from './hooks'
 import type { AccountMenuIn } from './types'
@@ -67,13 +70,14 @@ export function AccountMenu({ t, email, displayName, avatar, isPro, proUntil, on
 
   return (
     <span ref={menuRef} className={css.menuWrap}>
-      <button onClick={handles.toggleMenu}
+      <Button kind={PLAIN_BTN_KIND}
+        onClick={handles.toggleMenu}
         title={btnTitle}
-        aria-haspopup={ARIA_MENU}
-        aria-expanded={menu}
+        haspopup={ARIA_MENU}
+        expanded={menu}
         className={btnCls}>
         <Avatar src={avatar} name={shortName} email={email} size={AVATAR_SIZE_MENU} />
-      </button>
+      </Button>
       {menu && (
         <AccountMenuPop t={t}
           email={email}

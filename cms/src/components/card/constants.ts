@@ -37,3 +37,10 @@ export const CARD_CLS = 'card'
  * 收的是字符串,而 `class=""` 与不写 class 在 DOM 上等价。
  */
 export const CELL_CLS_NONE = ''
+
+/**
+ * 定制样式钮的统一底座(2026-08-26 Frank「<button 这种不允许直接使用」——
+ * 裸 <button> 一律改经 button 族):ghost 底最素,视觉全由本域的加倍类定形,
+ * Button 只出统一的语义与可达性(disabled/aria)。
+ */
+export const PLAIN_BTN_KIND = 'ghost'

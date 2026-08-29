@@ -17,7 +17,7 @@
 import { AuthModal } from '@/components/auth'
 import { QuizStyle } from '@/components/quiz'
 import { QuizHead } from './quizhead'
-import { QuizSteps } from './quizsteps'
+import { QuizPad } from './quizpad'
 import { QuizTools } from './quiztools'
 import { ScoreHolder } from './scoreholder'
 import { AUTH_MODE_REGISTER } from './constants'
@@ -46,7 +46,7 @@ export function QuizSection({ d, topNocs }: QuizSectionIn) {
           {shown && <QuizTools d={d} />}
           {shown && <QuizHead d={d} />}
           {shown && scoreStep === false && (
-            <div ref={d.pad.padRef}><QuizSteps d={d} topNocs={topNocs} /></div>
+            <QuizPad padRef={d.pad.padRef} d={d} topNocs={topNocs} />
           )}
           {shown && scoreStep && tablesPendingOf(d) && <div aria-hidden className={css.quizSkeleton} />}
           <ScoreHolder d={d} open={d.flow.open} scoreStep={scoreStep} />

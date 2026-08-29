@@ -657,7 +657,7 @@ export type LoadArchiveIn = {
 }
 
 /**
- * makeResumeChange 的入参。
+ * useResumeChange 的入参。
  */
 export type ResumeChangeIn = {
   /**
@@ -687,7 +687,7 @@ export type SaveToggleIn = {
 }
 
 /**
- * makeUploadClick 的入参。
+ * useUploadClick 的入参。
  */
 export type UploadClickIn = {
   /**
@@ -697,7 +697,7 @@ export type UploadClickIn = {
 }
 
 /**
- * makePickFile 的入参。
+ * usePickFile 的入参。
  */
 export type PickFileIn = {
   /**
@@ -737,7 +737,7 @@ export type PickFileIn = {
 }
 
 /**
- * pickFile 的入参(makePickFile 交出去的手柄从事件里取到文件后,整摊交给它)。
+ * pickFile 的入参(usePickFile 交出去的手柄从事件里取到文件后,整摊交给它)。
  */
 export type PickFileNowIn = {
   /**

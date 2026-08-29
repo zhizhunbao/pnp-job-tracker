@@ -16,8 +16,9 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { Button } from '@/components/button'
 import { useLang } from '@/components/i18n'
-import { CLOSE_ARIA, SIZE_DEFAULT, Z_MODAL } from './constants'
+import { CLOSE_ARIA, PLAIN_BTN_KIND, SIZE_DEFAULT, Z_MODAL } from './constants'
 import { cardStyleOf, clsOf, maxKeyOf, stopClick } from './functions'
 import { IconX, MaxIcon } from '@/components/icons'
 import { useCard, useEscClose, useIsNarrow, useOverlayClose } from './hooks'
@@ -73,11 +74,18 @@ export function Modal({
         <div className={css.acts} onClick={stopClick}>
           {actions}
           {resizable && narrow === false && (
-            <button onClick={card.toggleMax} aria-label={maxLabel} title={maxLabel} className={css.iconBtn}>
+            <Button kind={PLAIN_BTN_KIND}
+              onClick={card.toggleMax}
+              ariaLabel={maxLabel}
+              title={maxLabel}
+              className={css.iconBtn}>
               <MaxIcon maximized={card.maximized} />
-            </button>
+            </Button>
           )}
-          <button onClick={onClose} aria-label={CLOSE_ARIA} className={css.iconBtn}><IconX /></button>
+          <Button kind={PLAIN_BTN_KIND}
+            onClick={onClose}
+            ariaLabel={CLOSE_ARIA}
+            className={css.iconBtn}><IconX /></Button>
         </div>
         {children}
       </div>

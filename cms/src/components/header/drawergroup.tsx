@@ -8,7 +8,8 @@
  */
 import { cssOf } from '@/components/css'
 import { IconChevronDown, IconChevronRight } from '@/components/icons'
-import { LinkButton } from '@/components/button'
+import { Button, LinkButton } from '@/components/button'
+import { PLAIN_BTN_KIND } from './constants'
 import { makeGroupClick, withOn } from './functions'
 import type { DrawerGroupIn } from './types'
 import css from './header.module.css'
@@ -40,9 +41,9 @@ export function DrawerGroup({ groupKey, label, openKey, onToggle, items }: Drawe
   }
   return (
     <>
-      <button className={css.drawerGrpBtn} onClick={click}>
+      <Button kind={PLAIN_BTN_KIND} className={css.drawerGrpBtn} onClick={click}>
         <span>{label}</span><span className={css.drawerChev}>{chev}</span>
-      </button>
+      </Button>
       {subs}
     </>
   )

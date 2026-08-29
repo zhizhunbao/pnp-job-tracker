@@ -28,7 +28,7 @@ import css from './chat.module.css'
  * @returns 对话框整块。
  */
 export function ChatBox({ compact = false, autoFocus = false, prefill = TEXT_NONE }: ChatBoxIn) {
-  const p = useChatBox({ prefill, autoFocus })
+  const { p, threadEl, taEl } = useChatBox({ prefill, autoFocus })
   const turns = []
   for (const [i, turn] of p.turns.entries()) {
     turns.push(<ChatTurn key={i} p={p} turn={turn} i={i} />)
@@ -39,11 +39,11 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = TEXT_NON
   }
   const card = (
     <div className={css.cbCard}>
-      <div ref={p.threadEl} className={threadCls} onScroll={p.onScroll}>
+      <div ref={threadEl} className={threadCls} onScroll={p.onScroll}>
         <ChatExamples p={p} />
         {turns}
       </div>
-      <ChatComposer p={p} />
+      <ChatComposer p={p} taEl={taEl} />
       <ChatDisclaimer p={p} />
     </div>
   )

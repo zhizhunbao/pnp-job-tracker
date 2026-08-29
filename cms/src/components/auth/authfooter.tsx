@@ -7,9 +7,10 @@
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
+import { Button } from '@/components/button'
 import type { AuthFooterIn } from './types'
 import {
-  BTN_TYPE_BUTTON, KEY_TO_LOGIN, KEY_TO_REG, MODE_FORGOT, MODE_LOGIN, MODE_REGISTER, MODE_RESET,
+  BTN_TYPE_BUTTON, KEY_TO_LOGIN, KEY_TO_REG, MODE_FORGOT, MODE_LOGIN, MODE_REGISTER, MODE_RESET, PLAIN_BTN_KIND,
 } from './constants'
 import { makeAuthFooterHandles } from './functions'
 import css from './auth.module.css'
@@ -29,19 +30,19 @@ export function AuthFooter({ t, mode, sent, onMode }: AuthFooterIn) {
   return (
     <>
       {(mode === MODE_LOGIN || mode === MODE_REGISTER) && (
-        <button type={BTN_TYPE_BUTTON} onClick={handles.toggle} className={css.footToggle}>
+        <Button kind={PLAIN_BTN_KIND} type={BTN_TYPE_BUTTON} onClick={handles.toggle} className={css.footToggle}>
           {t(toggleKey)}
-        </button>
+        </Button>
       )}
       {mode === MODE_LOGIN && (
-        <button type={BTN_TYPE_BUTTON} onClick={handles.toForgot} className={css.footForgot}>
+        <Button kind={PLAIN_BTN_KIND} type={BTN_TYPE_BUTTON} onClick={handles.toForgot} className={css.footForgot}>
           {t('acct.forgot')}
-        </button>
+        </Button>
       )}
       {(mode === MODE_RESET || (mode === MODE_FORGOT && sent === false)) && (
-        <button type={BTN_TYPE_BUTTON} onClick={handles.toLogin} className={css.footBack}>
+        <Button kind={PLAIN_BTN_KIND} type={BTN_TYPE_BUTTON} onClick={handles.toLogin} className={css.footBack}>
           {t('acct.backLogin')}
-        </button>
+        </Button>
       )}
     </>
   )

@@ -13,18 +13,18 @@ import { BTN_SECONDARY, SPACE } from './constants'
 import { IconSettings } from '@/components/icons'
 import { fieldsBtnClsOf } from './functions'
 import { ColPanel } from './colpanel'
-import type { BoardPanelIn } from './types'
+import type { BoardBoxIn } from './types'
 import css from './jobs.module.css'
 
 /**
  * 渲染字段钮与浮层。
  *
- * @param props 职位板整台状态机。
+ * @param props 职位板整台状态机与字段浮层外框。
  * @returns 字段钮(展开时带浮层)。
  */
-export function ColFields({ b }: BoardPanelIn) {
+export function ColFields({ b, boxRef }: BoardBoxIn) {
   return (
-    <div ref={b.cols.boxRef} className={`${cssOf(css.hideNarrow)} ${cssOf(css.colWrap)}`}>
+    <div ref={boxRef} className={`${cssOf(css.hideNarrow)} ${cssOf(css.colWrap)}`}>
       <Button kind={BTN_SECONDARY} onClick={b.cols.onOpen} className={fieldsBtnClsOf()}>
         <IconSettings />{SPACE}{b.t('fields', { n: b.cols.shown.length })}
       </Button>

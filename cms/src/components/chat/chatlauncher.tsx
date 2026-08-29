@@ -44,7 +44,7 @@ const LazyChatBox = dynamic(loadChatBox, { ssr: false, loading: ChatLoading })
  * @returns 挂件整块。
  */
 export function ChatLauncher() {
-  const p = useChatLauncher()
+  const { p, panelEl, dockEl } = useChatLauncher()
   const rawPath = usePathname()
   let path = PATH_ROOT
   if (rawPath != null && rawPath !== '') {
@@ -65,8 +65,8 @@ export function ChatLauncher() {
   }
   return (
     <>
-      {p.open === false && <ChatDock p={p} narrowOff={isNarrowOffPath({ path })} />}
-      <div ref={p.panelEl}
+      {p.open === false && <ChatDock p={p} dockEl={dockEl} narrowOff={isNarrowOffPath({ path })} />}
+      <div ref={panelEl}
         popover={POPOVER_MANUAL}
         role={ROLE_DIALOG}
         aria-label={p.t('chat.title')}

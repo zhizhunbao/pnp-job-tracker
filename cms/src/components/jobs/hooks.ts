@@ -47,16 +47,16 @@ import {
 } from './functions'
 import type {
   AccountAreaPanel, Alloc, AllocOfIn, AppendRowsIn, ApplyBarIn, ApplyBarPanel, ApplyEmailPickIn, ApplyHowJson,
-  ApplyHowPanel, ApplyResumeIn, ApplyStage, AuthDoneIn, BlockedKeys, BoardColsHookIn, BoardColsPanel,
-  BoardDataHookIn, BoardDataPanel, BoardFiltersHookIn, BoardFiltersHookOut, ColMeasure, ColsToggleIn, ColWidthSeed,
-  ColWidthsIn, ColWidthsPanel, ColWidthsPanelIn, DimsJson, EscCloseIn, FieldRouterIn, FilterState, FmtWhy, FontsDoc,
-  FrozenHookIn, FrozenPanel, HydrateIn, IntentProfileIn, JdFormatPanel, JdStatus, JdTextHookIn, JdTextPanel,
-  JdTransHookIn, JdTransPanel, JobBodyIn, JobBodyPanel, JobColKey, JobDetailPanel, JobDims, JobFact, JobFilters,
-  JobIn, JobPlan, JobsBoardPanel, JobsIn, JobsPageJson, MatchGateHookIn, MatchGatePanel, MatchProfileFact,
-  MatchTotals, MeJson, ModalsHookIn, ModalsHookOut, NeedIntentIn, OpenApplyIn, OpenMatchIn, OutsideCloseIn,
-  PopupState, ProfileJsonFact, ProofCount, SavedAddIn, SavedEditIn, SavedEntry, SavedHookIn, SavedListJson,
-  SavedPanel, SavedPostJson, SaveSearchIn, SeedCookieIn, SortState, TableWidthIn, TransJson, TranslateIn,
-  TransStatus, UmamiWindow, UpsellKind, WrapWidthIn,
+  ApplyHowPanel, ApplyResumeIn, ApplyStage, AuthDoneIn, BlockedKeys, BoardColsHookIn, BoardColsOut, BoardColsPanel,
+  BoardDataHookIn, BoardDataPanel, BoardFiltersHookIn, BoardFiltersHookOut, BoxRef, ColMeasure, ColResizeIn,
+  ColResizeStartIn, ColsToggleIn, ColWidthSeed, ColWidthsIn, ColWidthsPanel, ColWidthsPanelIn, DimsJson, EscCloseIn,
+  FieldRouterIn, FilterState, FmtWhy, FontsDoc, FrozenHookIn, FrozenPanel, HeadRowRef, HydrateIn, IntentProfileIn,
+  JdFormatPanel, JdStatus, JdTextHookIn, JdTextPanel, JdTransHookIn, JdTransPanel, JobBodyIn, JobBodyPanel, JobColKey,
+  JobDetailPanel, JobDims, JobFact, JobFilters, JobIn, JobPlan, JobsBoardOut, JobsBoardPanel, JobsIn, JobsPageJson,
+  MatchGateHookIn, MatchGatePanel, MatchProfileFact, MatchTotals, MeJson, ModalsHookIn, ModalsHookOut, NeedIntentIn,
+  OpenApplyIn, OpenMatchIn, OutsideCloseIn, PopupState, ProfileJsonFact, ProofCount, SavedAddIn, SavedEditIn,
+  SavedEntry, SavedHookIn, SavedListJson, SavedPanel, SavedPostJson, SaveSearchIn, SeedCookieIn, SortState,
+  TableWidthIn, TransJson, TranslateIn, TransStatus, UmamiWindow, UpsellKind, WrapWidthIn,
 } from './types'
 
 /**
@@ -78,10 +78,12 @@ if (typeof window !== 'undefined') {
  * 「没量到」的均分状态)。触发点二见 useWrapWidth,触发点三见 makeColResize。
  * 换列集 → 手动宽作废(新列在固定布局里会塌成 0)。
  *
- * @param x 列集、表头锚点、数据指纹、格内边距与 cookie 种子。
+ * @param headRowRef 表头锚点(单独一格收,理由见 types.ts 的 `HeadRowRef`)。
+ * @param x 列集、数据指纹、格内边距与 cookie 种子。
  * @returns 列宽面板。
  */
-export function useColWidths(x: ColWidthsIn): ColWidthsPanel {
+// eslint-disable-next-line local/one-parameter -- 第二个参数是 ref:react-hooks/refs 闸不许 ref 裹进 XxxIn
+export function useColWidths(headRowRef: HeadRowRef, x: ColWidthsIn): ColWidthsPanel {
   const [measured, setMeasured] = useState<Record<string, ColMeasure>>({})
   const [wrapW, setWrapW] = useState(0)
   const [manual, setManual] = useState<Record<string, number>>({})
@@ -93,7 +95,6 @@ export function useColWidths(x: ColWidthsIn): ColWidthsPanel {
     keysRef.current = x.keys
     measuredRef.current = measured
   })
-  const headRowRef = x.headRowRef
   const pad = x.pad
   const dataKey = x.dataKey
   useIsoLayoutEffect(function remeasureOnDataKey() {
@@ -109,7 +110,7 @@ export function useColWidths(x: ColWidthsIn): ColWidthsPanel {
     doneKey.current = dataKey
   })
   useFontRemeasure(doneKey)
-  useWrapWidth({ headRowRef, keysKey, setWrapW })
+  useWrapWidth(headRowRef, { keysKey, setWrapW })
   const [prevKeysKey, setPrevKeysKey] = useState(keysKey)
   if (prevKeysKey !== keysKey) {
     setPrevKeysKey(keysKey)
@@ -123,9 +124,21 @@ export function useColWidths(x: ColWidthsIn): ColWidthsPanel {
     wrapW,
     manual,
     setManual,
-    keysRef,
-    measuredRef,
+    startResize: useColResize({ keysRef, measuredRef, setManual }),
   })
+}
+
+/**
+ * 拖列竖线的手柄:两个活引用(列集 / 量宽结果)在这里收下,做成手柄再往下交。
+ * 拖列口径本身没搬,仍是 ./functions 的 makeColResize;这层只是**收 ref 的那道门**——
+ * react-hooks/refs 闸只放行 `use*` 收 ref,渲染期把 ref 交给普通函数一律算越界
+ * (哪怕工厂体内要等按下竖线才读它)。
+ *
+ * @param x 列集与量宽结果的活引用、手动宽的写口。
+ * @returns 按下竖线的手柄。
+ */
+function useColResize(x: ColResizeIn): (i: ColResizeStartIn) => void {
+  return makeColResize(x)
 }
 
 /**
@@ -174,12 +187,13 @@ function fontFacesOf(): Promise<unknown> | null {
 /**
  * 触发点二:容器宽变了(窗口缩放/侧栏开合)—— 内容自然宽不变,只要重分即可。
  *
- * @param x 表头锚点、列集签名与容器宽的写口。
+ * @param headRowRef 表头锚点(单独一格收,理由见 types.ts 的 `HeadRowRef`)。
+ * @param x 列集签名与容器宽的写口。
  * @returns 无。
  */
-function useWrapWidth(x: WrapWidthIn): void {
+// eslint-disable-next-line local/one-parameter -- 第二个参数是 ref:react-hooks/refs 闸不许 ref 裹进 XxxIn
+function useWrapWidth(headRowRef: HeadRowRef, x: WrapWidthIn): void {
   const setWrapW = x.setWrapW
-  const headRowRef = x.headRowRef
   useEffect(function watchWrapWidth() {
     const head = headRowRef.current
     if (head == null || typeof ResizeObserver === 'undefined') {
@@ -237,7 +251,7 @@ function useColWidthsPanel(x: ColWidthsPanelIn): ColWidthsPanel {
     width: makeColWidth({ measuredReady, px, useSeed, seed: x.seed, keys: x.keys }),
     tableWidth: tableWidthOf({ measuredReady, overflow, total }),
     overflow: measuredReady && overflow,
-    startResize: makeColResize({ keysRef: x.keysRef, measuredRef: x.measuredRef, setManual }),
+    startResize: x.startResize,
     autoFit,
     hasManual: Object.keys(x.manual).length > 0,
     reset: autoFit,
@@ -361,6 +375,7 @@ export function useAccountArea(plan: JobPlan): AccountAreaPanel {
   useEffect(function openFromUrl() {
     const opened = authFromUrl()
     if (opened.mode !== false) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 服务端首帧读不到地址栏,先按不开框画;活过来才能读参数、洗参数
       setResetTok(opened.token)
       setAuth(opened.mode)
     }
@@ -706,10 +721,13 @@ async function postSavedSearch(x: SaveSearchIn): Promise<string> {
  * 有 cookie 时服务端已渲对的列、initialCols 已传入 → 直接 return,不进迁移。
  * 换列集 → useColWidths 自己重量重分(手动宽同时作废)。
  *
+ * 两个 DOM 锚点(字段浮层外框、表头 `<tr>`)不进面板,跟着面板一起当**独立的返回格**交出去 ——
+ * 理由见 types.ts 的 `HeadRowRef`:ref 裹进面板,面板在组件里就一格都读不了。
+ *
  * @param x cookie 列集与列宽种子、界面语言与当前这批行。
- * @returns 列面板。
+ * @returns 列面板、字段浮层外框与表头锚点三格。
  */
-function useBoardCols(x: BoardColsHookIn): BoardColsPanel {
+function useBoardCols(x: BoardColsHookIn): BoardColsOut {
   const [visible, setVisible] = useState<JobColKey[]>(initialColsOf(x.initialCols))
   const [open, setOpen] = useState(false)
   const boxRef = useRef<HTMLDivElement>(null)
@@ -728,7 +746,7 @@ function useBoardCols(x: BoardColsHookIn): BoardColsPanel {
   function closePanel(): void {
     setOpen(false)
   }
-  useOutsideClose({ boxRef, open, onClose: closePanel })
+  useOutsideClose(boxRef, { open, onClose: closePanel })
   function save(next: JobColKey[]): void {
     writeColsCookie(next)
     writeColsPref(next)
@@ -736,20 +754,17 @@ function useBoardCols(x: BoardColsHookIn): BoardColsPanel {
   }
   const shown = shownColsOf(visible)
   const shownKey = colsKeyOf(shown)
-  const cw = useColWidths({
+  const cw = useColWidths(headRowRef, {
     keys: keysOf(shown),
-    headRowRef,
     dataKey: dataKeyOf({ shownKey, lang: x.lang, rows: x.rows }),
     pad: CELL_PAD,
     seed: x.initialColW,
   })
-  const frozen = useFrozenCols({ shown, headRowRef, cw, shownKey })
-  return {
+  const frozen = useFrozenCols(headRowRef, { shown, cw, shownKey })
+  const panel: BoardColsPanel = {
     shown,
     visible,
     open,
-    boxRef,
-    headRowRef,
     cw,
     onOpen: function togglePanel(): void {
       setOpen(open === false)
@@ -770,6 +785,7 @@ function useBoardCols(x: BoardColsHookIn): BoardColsPanel {
     frozenSet: frozen.frozenSet,
     lastFrozen: frozen.lastFrozen,
   }
+  return [panel, boxRef, headRowRef]
 }
 
 /**
@@ -811,13 +827,14 @@ function colsInverted(visible: JobColKey[]): JobColKey[] {
  * 固定左列:先量固定列实宽 → 算累计 left,再贴 sticky(先计算再显示)。
  * 列宽变了必须重量的理由见 stickyOffsetsOf 的 JSDoc。
  *
- * @param x 当前列、表头锚点、列宽机器与列集签名。
+ * @param headRowRef 表头锚点(单独一格收,理由见 types.ts 的 `HeadRowRef`)。
+ * @param x 当前列、列宽机器与列集签名。
  * @returns 冻结集、累计偏移与最后一枚固定列。
  */
-function useFrozenCols(x: FrozenHookIn): FrozenPanel {
+// eslint-disable-next-line local/one-parameter -- 第二个参数是 ref:react-hooks/refs 闸不许 ref 裹进 XxxIn
+function useFrozenCols(headRowRef: HeadRowRef, x: FrozenHookIn): FrozenPanel {
   const frozenKeys = frozenKeysOf(x.shown)
   const [stickyLeft, setStickyLeft] = useState<Record<string, number>>({})
-  const headRowRef = x.headRowRef
   const frozenKey = frozenKeys.join(COMMA)
   const colwKey = widthsKeyOf({ shown: x.shown, cw: x.cw })
   const overflow = x.cw.overflow
@@ -877,8 +894,10 @@ function useBoardData(x: BoardDataHookIn): BoardDataPanel {
   }
   const fresh = page === 0
   const query = jobsQueryOf({ cur: x.cur, sort: x.sort, matchView: x.matchView, page })
-  const skipFirst = firstFetch.current && fresh && x.matchView === false && filterSig(x.cur) === ssrSig.current
+  const curSig = filterSig(x.cur)
+  const freshList = fresh && x.matchView === false
   useEffect(function loadPage() {
+    const skipFirst = firstFetch.current && freshList && curSig === ssrSig.current
     firstFetch.current = false
     if (skipFirst) {
       return
@@ -1064,6 +1083,7 @@ function useBoardModals(x: ModalsHookIn): ModalsHookOut {
     if (loggedIn === false || profileOk || obSeen()) {
       return
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 服务端首帧读不到 localStorage,先按不开引导画;活过来再看弹过没
     setWizard(true)
   }, [loggedIn, profileOk])
   function closeBoth(): void {
@@ -1147,11 +1167,12 @@ function useEscClose(x: EscCloseIn): void {
 /**
  * 点其它地方关掉浮层(字段面板)。
  *
- * @param x 浮层外框、开着没与关的动作。
+ * @param boxRef 浮层外框(单独一格收,理由见 types.ts 的 `BoxRef`)。
+ * @param x 开着没与关的动作。
  * @returns 无。
  */
-function useOutsideClose(x: OutsideCloseIn): void {
-  const boxRef = x.boxRef
+// eslint-disable-next-line local/one-parameter -- 第一个参数是 ref:react-hooks/refs 闸不许 ref 裹进 XxxIn
+function useOutsideClose(boxRef: BoxRef, x: OutsideCloseIn): void {
   const onClose = x.onClose
   const open = x.open
   useEffect(function watchOutside() {
@@ -1181,10 +1202,13 @@ function useOutsideClose(x: OutsideCloseIn): void {
  * 分类维表随维度一起登记给 catName —— 名字住 noc_categories(broad_en/broad_ko),
  * 分类换一版就不必再往 i18n 里手加 17×3 个键(#256 那类事故的同一个根)。
  *
+ * 两个 DOM 锚点(表头 `<tr>`、字段浮层外框)跟面板并列交出去,由页面件一路 props 递给
+ * 真正挂 `ref={}` 的那两件 —— 理由见 types.ts 的 `HeadRowRef`。
+ *
  * @param props 服务端门算好的全部输入。
- * @returns 职位板面板。
+ * @returns 职位板面板、表头锚点与字段浮层外框三格。
  */
-export function useJobsBoard(props: JobsIn): JobsBoardPanel {
+export function useJobsBoard(props: JobsIn): JobsBoardOut {
   const [lang, , t] = useLang()
   const plan = planOf(props)
   const matchRequested = props.initialMatchView === true && plan.loggedIn && plan.profileOk
@@ -1208,7 +1232,7 @@ export function useJobsBoard(props: JobsIn): JobsBoardPanel {
     onLimit: onUpsellSs,
   })
   const data = useBoardData({ props, dims, cur: filters.cur, sort, matchView })
-  const cols = useBoardCols({
+  const [cols, boxRef, headRowRef] = useBoardCols({
     initialCols: props.initialCols,
     initialColW: colwSeedOf(props),
     lang,
@@ -1219,7 +1243,7 @@ export function useJobsBoard(props: JobsIn): JobsBoardPanel {
   useBoardUrlSync(filters.snap)
   const saved = useSavedJobs({ plan, onAnon: onUpsellLock })
   const blocked = useBlockedKeys(data.dims)
-  return {
+  const panel: JobsBoardPanel = {
     t,
     lang,
     plan,
@@ -1249,6 +1273,7 @@ export function useJobsBoard(props: JobsIn): JobsBoardPanel {
     moreText: t('loadMore', { n: data.total - data.rows.length }),
     proof: proofOf(props),
   }
+  return [panel, headRowRef, boxRef]
 }
 
 /**
@@ -1621,6 +1646,11 @@ async function saveQuizAnswers(): Promise<void> {
  * 第 25 轮 #114:失败态拆三种 —— quota = 额度用完(重试无用不给钮)/ fail = 生成失败(可重试)/
  * notext = 无正文(不显示失败行)。#201:JD 已免费,付费墙态退役;limited = 宽松防滥用闸偶发。
  *
+ * 换岗 / 点重试(resetKey 变了)时两颗开关归零:**在渲染期就地比对上一次的 resetKey**,
+ * 不挂 effect —— effect 会先拿旧开关态渲一帧再纠正(展开着原文切下一个岗会闪一下),
+ * 而这正是 React 官方 you-might-not-need-an-effect 里「跟着 prop 变化调状态」的形制;
+ * 本文件的 useColWidths(换列集清手动宽)与 useBoardData(换页签回第 0 页)是同一副写法。
+ *
  * @param x 本岗、界面语言、分层态与额度回传。
  * @returns JD 身体面板。
  */
@@ -1632,10 +1662,12 @@ export function useJobBody(x: JobBodyIn): JobBodyPanel {
   const apply = useApplyHow(x.job)
   const [showOrig, setShowOrig] = useState(false)
   const [aiOn, setAiOn] = useState(false)
-  useEffect(function resetToggles() {
+  const [prevResetKey, setPrevResetKey] = useState(fmt.resetKey)
+  if (prevResetKey !== fmt.resetKey) {
+    setPrevResetKey(fmt.resetKey)
     setShowOrig(false)
     setAiOn(false)
-  }, [fmt.resetKey])
+  }
   return {
     t,
     text: jd.text,
@@ -1689,6 +1721,7 @@ function useJdText(x: JdTextHookIn): JdTextPanel {
   const onFreeLeft = x.onFreeLeft
   useEffect(function loadJdText() {
     const ctrl = new AbortController()
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 拉正文前的起手式:换岗先清上一岗的文,清和拉必须同一拍
     setStatus(JD_LOADING)
     setText(TEXT_NONE)
     fetchJobText(url, ctrl.signal)
@@ -1742,6 +1775,7 @@ function useJdFormat(job: JobFact): JdFormatPanel {
   const url = strOf(job.applyUrl)
   useEffect(function loadFmt() {
     const ctrl = new AbortController()
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 拉整理版前的起手式:undefined = 整理中,换岗或点重试先回这一态
     setFmt(undefined)
     fetch(URL_API_JD_FORMAT, {
       method: METHOD_POST,
@@ -1811,6 +1845,8 @@ function fmtOrNull(tx: string): string | null {
 /**
  * 中文对照(参考分类弹框):整理版逐句翻(行位保真);拿到后前端存一份,切换零延迟。
  * #129:首次拉取才计埋点(纯开合不计)。
+ * 换岗信号变了就把对照三格归零:同 useJobBody,**渲染期就地比对**不挂 effect,
+ * 免得上一岗的译文在新岗上多显示一帧。
  *
  * @param x 本岗、界面语言与换岗信号。
  * @returns 对照态与开关。
@@ -1821,11 +1857,13 @@ function useJdTrans(x: JdTransHookIn): JdTransPanel {
   const [transStatus, setTransStatus] = useState<TransStatus>(TRANS_IDLE)
   const url = strOf(x.job.applyUrl)
   const lang = x.lang
-  useEffect(function resetTrans() {
+  const [prevResetKey, setPrevResetKey] = useState(x.resetKey)
+  if (prevResetKey !== x.resetKey) {
+    setPrevResetKey(x.resetKey)
     setShowTrans(false)
     setTrans(null)
     setTransStatus(TRANS_IDLE)
-  }, [x.resetKey])
+  }
   async function onToggle(): Promise<void> {
     if (trans != null) {
       setShowTrans(showTrans === false)
@@ -1880,6 +1918,7 @@ function useApplyHow(job: JobFact): ApplyHowPanel {
   const [done, setDone] = useState(false)
   const url = strOf(job.applyUrl)
   useEffect(function loadApplyHow() {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 懒查邮箱前的起手式:换岗先清上一岗的,非 JB 岗当场收工
     setEmail(TEXT_NONE)
     if (JB_POSTING_RE.test(url) === false) {
       setDone(true)

@@ -11,15 +11,15 @@
  * @author Frank
  * @time 2026-08-28 00:30:00
  */
-// eslint-disable-next-line local/no-import-in-leaf -- lib/quiz 的答案档与分值卡存档,原样交给读写函数与答题器;重抄必脱节
+// eslint-disable-next-line local/no-import-in-leaf -- 引擎输出形状特批(先例 icons/types):lib/quiz 答案档,本域零处读格、原样透传读写函数与答题器
 import type { Answers, ScoreAnswers } from '@/lib/quiz'
-// eslint-disable-next-line local/no-import-in-leaf -- lib/points 的官方表与抽选记录,原样透传给 PnpScoreCard/ScoreLineCard;重抄必脱节
+// eslint-disable-next-line local/no-import-in-leaf -- 引擎输出形状特批:lib/points 官方表与抽选记录,零处读格、原样透传 PnpScoreCard/ScoreLineCard
 import type { DrawRow, ProvCompetition, ScoreFactor, SelfProfile } from '@/lib/points'
-// eslint-disable-next-line local/no-import-in-leaf -- lib/jobs 的职业分省竞争行,原样进表;重抄必脱节
+// eslint-disable-next-line local/no-import-in-leaf -- 引擎输出形状特批:lib/jobs 竞争行,零处读格、原样进表
 import type { OccCompetitionRow } from '@/lib/jobs'
-// eslint-disable-next-line local/no-import-in-leaf -- lib/quota 服务端两支的签名,页面门把它们注进来(跨域只留注入这一条边);重抄必脱节
+// eslint-disable-next-line local/no-import-in-leaf -- 注入边签名特批:getUser/isPro 的签名由 lib/quota 定死,页面门只借形状(typeof),跨域只留这一条边
 import type { getUser, isPro } from '@/lib/quota/server'
-// eslint-disable-next-line local/no-import-in-leaf -- lib/ruling 三项判定的签名,同上由页面门注入;重抄必脱节
+// eslint-disable-next-line local/no-import-in-leaf -- 注入边签名特批:tripleWireOf 的签名由 lib/ruling 定死,页面门注入本域只借形状(typeof)
 import type { tripleWireOf } from '@/lib/ruling/server'
 
 /**
@@ -2840,6 +2840,28 @@ export type DrawsCardRowIn = {
  * QuizSection(问卷弹框整段)的 props。
  */
 export type QuizSectionIn = {
+  /**
+   * 决策页整机。
+   */
+  d: DecisionPanel
+
+  /**
+   * 热门职业榜(选职业控件首帧即终态,一个请求都不发)。
+   */
+  topNocs: TopNoc[]
+}
+
+/**
+ * QuizPad(题区容器)的 props。ref 单独一格递进来,不从 `d` 里现取 ——
+ * 同一个组件里只要出现一次 `ref={d.…}`,`d` 整只会被 react-hooks/refs
+ * 判成 ref,它后面每一格读值都跟着报(2026-08-29 探针实证)。
+ */
+export type QuizPadIn = {
+  /**
+   * 题区容器(把题区顶回视口时量它)。
+   */
+  padRef: React.RefObject<HTMLDivElement | null>
+
   /**
    * 决策页整机。
    */

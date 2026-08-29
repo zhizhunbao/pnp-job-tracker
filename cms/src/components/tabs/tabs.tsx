@@ -12,7 +12,8 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
-import { ID_PANEL_SEG, ID_PREFIX_DEFAULT, ID_SEP, ROLE_TAB, ROLE_TABLIST } from './constants'
+import { Button } from '@/components/button'
+import { ID_PANEL_SEG, ID_PREFIX_DEFAULT, ID_SEP, PLAIN_BTN_KIND, ROLE_TAB, ROLE_TABLIST } from './constants'
 import { makeTabClick } from './functions'
 import { useTabKeys } from './hooks'
 import type { TabsIn } from './types'
@@ -44,19 +45,20 @@ export function Tabs({ items, value, onChange, ariaLabel, idPrefix = ID_PREFIX_D
       badge = <span className={badgeCls}>{it.badge}</span>
     }
     btns.push(
-      <button key={it.key}
-        ref={setRef}
+      <Button key={it.key}
+        kind={PLAIN_BTN_KIND}
+        btnRef={setRef}
         role={ROLE_TAB}
         id={`${idPrefix}${ID_SEP}${it.key}`}
-        aria-selected={on}
-        aria-controls={`${idPrefix}${ID_SEP}${ID_PANEL_SEG}${ID_SEP}${it.key}`}
+        ariaSelected={on}
+        ariaControls={`${idPrefix}${ID_SEP}${ID_PANEL_SEG}${ID_SEP}${it.key}`}
         tabIndex={tabIndex}
         onClick={click}
         onKeyDown={keys.onKey}
         className={cls}>
         {it.label}
         {badge}
-      </button>,
+      </Button>,
     )
   }
 

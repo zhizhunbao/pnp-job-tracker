@@ -8,8 +8,9 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { Button } from '@/components/button'
 import { IconChevronLeft, IconChevronRight } from '@/components/icons'
-import { NEXT_ARIA, PAGE_SEP, PREV_ARIA } from './constants'
+import { NEXT_ARIA, PAGE_SEP, PLAIN_BTN_KIND, PREV_ARIA } from './constants'
 import { makePagerHandles } from './functions'
 import type { PagerIn } from './types'
 import css from './pager.module.css'
@@ -27,13 +28,21 @@ export function Pager({ page, max, note, onPage }: PagerIn) {
       {note != null && <span>{note}</span>}
       {max > 1 && (
         <span className={css.nav}>
-          <button aria-label={PREV_ARIA} className={css.btn} disabled={page === 0} onClick={handles.prev}>
+          <Button kind={PLAIN_BTN_KIND}
+            ariaLabel={PREV_ARIA}
+            className={css.btn}
+            disabled={page === 0}
+            onClick={handles.prev}>
             <IconChevronLeft />
-          </button>
+          </Button>
           <span className={css.num}>{page + 1}{PAGE_SEP}{max}</span>
-          <button aria-label={NEXT_ARIA} className={css.btn} disabled={page >= max - 1} onClick={handles.next}>
+          <Button kind={PLAIN_BTN_KIND}
+            ariaLabel={NEXT_ARIA}
+            className={css.btn}
+            disabled={page >= max - 1}
+            onClick={handles.next}>
             <IconChevronRight />
-          </button>
+          </Button>
         </span>
       )}
     </div>

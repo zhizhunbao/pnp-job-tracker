@@ -143,6 +143,12 @@
 /*
  * 窗口图标钮(域内自用类;外部消费端还在用 constants 的 iconBtnS 过渡导出,
  * 值与它逐格相等 —— 各消费域类化后常量退役,这个类成唯一真相)。
+ *
+ * 末尾三格(font-weight / white-space / padding)是 2026-08-29 裸 <button> 换装批的
+ * **冻结格**:本域的钮改经 Button 的 ghost 档后,基座 .btn 会带进 600 / nowrap / 0,
+ * 而这枚钮上线以来吃的是浏览器给 <button> 的默认 400 / normal / 1px 6px。
+ * 换装批只换钮不改渲染值,所以把旧值显式写死。这三格不破坏上面「与 iconBtnS 逐格相等」
+ * 那条:走常量 spread 的消费端仍是裸 <button>,同样的三个值由浏览器给它,渲染一致。
  */
 .iconBtn {
   border: none;
@@ -158,4 +164,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-weight: 400;
+  white-space: normal;
+  padding: 1px 6px;
 }

@@ -348,3 +348,13 @@ export const EV_WEEKLY = 'weekly-optin'
  * 周报开关勾选框的 input 类型字(DOM 定值;平台串起名挂注释)。
  */
 export const CHECKBOX_TYPE = 'checkbox'
+
+/**
+ * 键盘事件的回车键名(平台定值串,打错是静默失效 —— 昵称框「Enter 存」用)。
+ */
+export const KEY_ENTER = 'Enter'
+
+/**
+ * 键盘事件的退出键名(昵称框「Esc 取消」用)。
+ */
+export const KEY_ESCAPE = 'Escape'

@@ -596,6 +596,12 @@
    * 可点手型。
    */
   cursor: pointer;
+
+  /*
+   * 允许折行(2026-08-29 裸 <button> 换装批补写:改经 Button 后基座 .btn 带
+   * white-space: nowrap,而这枚是整行居中的长句切换钮 —— 窄屏放不下要能折)。
+   */
+  white-space: normal;
 }
 
 /*
@@ -646,6 +652,17 @@
    * 下划线(和上面的切换钮区分层级)。
    */
   text-decoration: underline;
+
+  /*
+   * 常规字重(2026-08-29 裸 <button> 换装批补写:基座 .btn 带 font-weight 600,
+   * 不写死这枚灰小字会变粗,和它「弱一档」的定位相反)。
+   */
+  font-weight: 400;
+
+  /*
+   * 允许折行(同上,基座 .btn 带 nowrap;这枚是整行居中的独立一行)。
+   */
+  white-space: normal;
 }
 
 /*
@@ -691,6 +708,16 @@
    * 可点手型。
    */
   cursor: pointer;
+
+  /*
+   * 常规字重(2026-08-29 裸 <button> 换装批补写,理由同 .footForgot)。
+   */
+  font-weight: 400;
+
+  /*
+   * 允许折行(同上)。
+   */
+  white-space: normal;
 }
 
 /*
@@ -731,6 +758,16 @@
    * 与成功框留 12px。
    */
   margin-top: 12px;
+
+  /*
+   * 常规字重(2026-08-29 裸 <button> 换装批补写,理由同 .footForgot)。
+   */
+  font-weight: 400;
+
+  /*
+   * 允许折行(同上)。
+   */
+  white-space: normal;
 }
 
 /*
@@ -861,6 +898,34 @@
    * 圆钮。
    */
   border-radius: 50%;
+
+  /*
+   * 冻结格(2026-08-29 裸 <button> 换装批补写):头像钮改经 Button 的 ghost 档后,
+   * 基座 .btn 会带进 font-weight 600,旧值是浏览器给 <button> 的默认 400。
+   * 钮里只有一枚 Avatar(图走 img 的 width/height,首字母走 .avatarBadge 自带的
+   * 色与字重 + 行内 fontSize),这一格眼下没有消费者 —— 写死是为了换装前后逐格同值。
+   */
+  font-weight: 400;
+
+  /*
+   * 允许折行(同上,冻结格:基座 .btn 带 nowrap)。
+   */
+  white-space: normal;
+
+  /*
+   * 字号(同上,冻结格):基座 .btn 带 13px,旧值是浏览器给 <button> 的默认 13.3333px。
+   * 钮里没有随字号走的东西(头像图吃 img 的 width/height,首字母吃 Avatar 传的行内
+   * fontSize),写死纯粹是让换装前后逐格同值。
+   */
+  font-size: 13.3333px;
+
+  /*
+   * 前景色(同上,冻结格):基座的 ghost 档带品牌蓝,旧值是浏览器给 <button> 的
+   * 默认 ButtonText(本机 rgb(0,0,0))。同样没有消费者 —— 头像的白字由 .avatarBadge
+   * 自己定,上面 border: none 之后边框色也画不出来(border-color 缺省就跟着 color 走,
+   * 这一格连带冻住)。强制配色模式下 UA 照旧盖过作者值,写死不影响高对比。
+   */
+  color: #000000;
 }
 
 /*
@@ -1186,6 +1251,13 @@
    * 行高(条目垂直呼吸)。
    */
   line-height: 1.7;
+
+  /*
+   * 常规字重(2026-08-29 裸 <button> 换装批补写:条目从裸 button 改经 Button 的 ghost 档,
+   * 基座 .btn 带 font-weight 600 —— 这里不写死,登出条目就会从 400 悄悄变粗。
+   * 升级条目要的粗由下面的 .menuItemPro 自己盖回来)。
+   */
+  font-weight: 400;
 }
 
 /*

@@ -25,16 +25,16 @@ import {
   matchLabelOf, slotOf,
 } from './functions'
 import { ColFields } from './colfields'
-import type { BoardPanelIn } from './types'
+import type { BoardBoxIn } from './types'
 import css from './jobs.module.css'
 
 /**
  * 渲染常用筛选一行。
  *
- * @param props 职位板整台状态机。
+ * @param props 职位板整台状态机与字段浮层外框(只过路,末端是 ColFields)。
  * @returns 一行控件。
  */
-export function FilterRow({ b }: BoardPanelIn) {
+export function FilterRow({ b, boxRef }: BoardBoxIn) {
   const f = b.filters
   return (
     <div className={cssOf(css.ctl)}>
@@ -68,7 +68,7 @@ export function FilterRow({ b }: BoardPanelIn) {
       {b.data.updatedAt !== TEXT_NONE && (
         <span className={cssOf(css.updated)}>{b.updatedText}</span>
       )}
-      <ColFields b={b} />
+      <ColFields b={b} boxRef={boxRef} />
     </div>
   )
 }

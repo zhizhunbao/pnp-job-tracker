@@ -568,6 +568,68 @@ export type SendIn = {
 }
 
 /**
+ * 发话机器的依赖包(useSend 的入参,sendNow 与两条分支的真身共用同一包)。
+ * 2026-08-29 自 useSend 的内联形状提出来:真身住 functions、机器住 hooks,
+ * 两边要指同一个形状,就不能再用 `Parameters<typeof …>` 反着取(那要跨文件取值)。
+ */
+export type UseSendIn = {
+  /**
+   * 当前轮次表(取历史与稳定记忆)。
+   */
+  turns: Turn[]
+
+  /**
+   * 有一轮在跑(闸:同时只可能有一轮)。
+   */
+  busy: boolean
+
+  /**
+   * 界面语言(服务端按它写轨迹与答复)。
+   */
+  lang: ChatLang
+
+  /**
+   * 取词函数(引导话术)。
+   */
+  t: TFn
+
+  /**
+   * 轮次表落格。
+   */
+  setTurns: SetTurns
+
+  /**
+   * 输入框落格(发出即清)。
+   */
+  setInput: (v: string) => void
+
+  /**
+   * 秒数落格(新一轮清零重计)。
+   */
+  setSecs: (v: number) => void
+
+  /**
+   * 忙态落格。
+   */
+  setBusy: (v: boolean) => void
+
+  /**
+   * 贴底引用(发话即回贴底)。
+   */
+  stick: MutBool
+
+  /**
+   * 输入框引用(清高度、引导轮还光标)。
+   */
+  taEl: React.RefObject<HTMLTextAreaElement | null>
+
+  /**
+   * 答复落地后重查登录档案(空态例句跟着换)。
+   */
+  refreshMe: () => void
+}
+
+/**
  * 对话面板(useChatBox 出,chatbox 与子件拼装用)。
  */
 export type ChatBoxPanel = {
@@ -632,14 +694,9 @@ export type ChatBoxPanel = {
   thread: string | null
 
   /**
-   * 历史区 DOM 引用(贴底跟随)。
+   * 聚焦输入框(「自己说」把光标还回输入框用;引用留在机器里,面板本身不带 ref)。
    */
-  threadEl: React.RefObject<HTMLDivElement | null>
-
-  /**
-   * 输入框 DOM 引用(聚焦/量高)。
-   */
-  taEl: React.RefObject<HTMLTextAreaElement | null>
+  focusInput: () => void
 
   /**
    * 发一句话(新一轮或重试)。
@@ -675,6 +732,29 @@ export type ChatBoxPanel = {
    * 复制会话 ID。
    */
   onCopyThread: () => void
+}
+
+/**
+ * 对话面板整机的出参(useChatBox 出):面板与两枚 DOM 引用分开交出 ——
+ * ref 只用来写 `ref={}`,不进面板对象。2026-08-29 摘 ref 那批立:
+ * 渲染期从装着 ref 的对象上取任何一格,react-hooks/refs 都判成「渲染中读 ref」,
+ * 于是整个 p 沿途的读全部中招(实测 chatbox/chatcomposer 两件 23 条)。
+ */
+export type ChatBoxOut = {
+  /**
+   * 对话面板(状态 + 手柄)。
+   */
+  p: ChatBoxPanel
+
+  /**
+   * 历史区 DOM 引用(贴底跟随)。
+   */
+  threadEl: React.RefObject<HTMLDivElement | null>
+
+  /**
+   * 输入框 DOM 引用(聚焦/量高)。
+   */
+  taEl: React.RefObject<HTMLTextAreaElement | null>
 }
 
 /**
@@ -852,16 +932,6 @@ export type LauncherPanel = {
   dockStyle: React.CSSProperties
 
   /**
-   * 面板 DOM 引用(popover 调度与看门狗量高)。
-   */
-  panelEl: React.RefObject<HTMLDivElement | null>
-
-  /**
-   * 启动器 DOM 引用(避让测量与拖动)。
-   */
-  dockEl: React.RefObject<HTMLDivElement | null>
-
-  /**
    * 打开面板(点开过 = 轻提示永久不再出)。
    */
   show: () => void
@@ -905,6 +975,27 @@ export type LauncherPanel = {
    * 造一枚缩放把手的按下手柄。
    */
   gripDownOf: (d: GripDir) => (e: React.PointerEvent) => void
+}
+
+/**
+ * 挂件壳整机的出参(useChatLauncher 出):壳面板与两枚 DOM 引用分开交出,
+ * 理由同 ChatBoxOut(ref 只用来写 `ref={}`,不进面板对象)。
+ */
+export type LauncherOut = {
+  /**
+   * 挂件面板(状态 + 手柄)。
+   */
+  p: LauncherPanel
+
+  /**
+   * 面板 DOM 引用(popover 调度与看门狗量高)。
+   */
+  panelEl: React.RefObject<HTMLDivElement | null>
+
+  /**
+   * 启动器 DOM 引用(避让测量与拖动)。
+   */
+  dockEl: React.RefObject<HTMLDivElement | null>
 }
 
 /**
@@ -1196,6 +1287,11 @@ export type ChatComposerIn = {
    * 对话面板。
    */
   p: ChatBoxPanel
+
+  /**
+   * 输入框 DOM 引用(单独一格交进来:ref 不进面板对象,见 ChatBoxOut)。
+   */
+  taEl: React.RefObject<HTMLTextAreaElement | null>
 }
 
 /**
@@ -1216,6 +1312,11 @@ export type ChatDockIn = {
    * 挂件面板。
    */
   p: LauncherPanel
+
+  /**
+   * 启动器 DOM 引用(单独一格交进来:ref 不进面板对象,见 LauncherOut)。
+   */
+  dockEl: React.RefObject<HTMLDivElement | null>
 
   /**
    * 本路由的手机端连圆球也不出(走查 #298)。
