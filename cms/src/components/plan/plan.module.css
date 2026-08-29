@@ -1,0 +1,4014 @@
+/*
+ * plan 域(/plan/pr 决策页)的私有样式。2026-08-28 换装批自 Decision.tsx 的 103 处内联样式
+ * 与 5 段内联 <style> 逐格迁类,值一个不改;色值凡在 colors 域有名字的走 CSS 变量
+ * (--bg/--primary/--ok/--text/--text2/--text3/--border/--hairline),页面私有的几枚
+ * (标题近黑、蓝底浅蓝、琥珀警示、绿底、描边浅蓝)留字面量并挂注释。
+ * 第二段(ScoreLineCard 与 QuizForm)的样式已于同日按同样的分段续入,
+ * 本文件的分段命名(卡壳 / 初评 / 竞争 / 抽选 / 问卷 / 条件)给它们留着位置。
+ */
+
+/*
+ * 顶栏与页脚之间的正文段(整页外框已由 shell 域的 Frame 承担)。字体与主文字色
+ * 原先写在整页最外层那个 div 上,随外框上交页面门之后由这一层继续往下传。
+ */
+.main {
+  /*
+   * 正文段吃掉多余高度,页脚被推到视口底。
+   */
+  flex: 1 0 auto;
+
+  /*
+   * 全站系统字体栈。
+   */
+  font-family: system-ui, sans-serif;
+
+  /*
+   * 正文主文字色(本页私有,不是全站色板成员)。
+   */
+  color: #1f2937;
+}
+
+/*
+ * Shell 轨内的满宽内容列(banner 与全部卡片共用这一条轨)。
+ */
+.track {
+  /*
+   * 占满 Shell 给的宽度。
+   */
+  width: 100%;
+}
+
+/*
+ * ===== 卡壳与公共小件 =====
+ */
+
+/*
+ * 白卡(全页卡片的统一底座:白底 + 描边 + 圆角 + 内衬 + 卡间距)。
+ */
+.card {
+  /*
+   * 卡片白。
+   */
+  background: #ffffff;
+
+  /*
+   * 描边灰(colors 域变量)。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 卡片圆角。
+   */
+  border-radius: 12px;
+
+  /*
+   * 卡内衬(上下 14、左右 16)。
+   */
+  padding: 14px 16px;
+
+  /*
+   * 卡与卡之间只留下边距。
+   */
+  margin: 0 0 10px;
+}
+
+/*
+ * 初评卡的内衬档:四边一律 16(表格与手机卡都要更宽的呼吸)。
+ */
+.cardWide {
+  /*
+   * 四边 16。
+   */
+  padding: 16px;
+}
+
+/*
+ * 卡内二级标题。
+ */
+.h2 {
+  /*
+   * 标题字号。
+   */
+  font-size: 16px;
+
+  /*
+   * 标题字重。
+   */
+  font-weight: 700;
+
+  /*
+   * 标题近黑(本页私有,不是全站色板成员)。
+   */
+  color: #111827;
+
+  /*
+   * 与卡内正文的间距。
+   */
+  margin: 0 0 10px;
+}
+
+/*
+ * 标题的贴顶变体:排在弹性行里时由行本身管间距,标题自己不许再留外边距。
+ */
+.h2Flat {
+  /*
+   * 交给外层行排布。
+   */
+  margin: 0;
+}
+
+/*
+ * 标题的不折行变体(英文态 375 上「Your details」会被计数胶囊挤成两行 ——
+ * 真放不下时让胶囊换行,标题保持一行)。
+ */
+.h2Nowrap {
+  /*
+   * 交给外层行排布。
+   */
+  margin: 0;
+
+  /*
+   * 标题永不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 计数胶囊(已答 n/N)。
+ */
+.pill {
+  /*
+   * 胶囊圆角。
+   */
+  border-radius: 999px;
+
+  /*
+   * 胶囊内衬。
+   */
+  padding: 2px 8px;
+
+  /*
+   * 胶囊字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 胶囊字重。
+   */
+  font-weight: 600;
+
+  /*
+   * 数字等宽:计数跳动时胶囊宽度不抖。
+   */
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 计数胶囊的答满态:浅蓝底 + 品牌蓝字。
+ */
+.pillDone {
+  /*
+   * 浅蓝底(本页私有,不是全站色板成员)。
+   */
+  background: #eff6ff;
+
+  /*
+   * 品牌蓝字。
+   */
+  color: var(--primary);
+}
+
+/*
+ * 计数胶囊的欠账态:页面灰底 + 浅灰字。
+ */
+.pillTodo {
+  /*
+   * 页底灰。
+   */
+  background: var(--bg);
+
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 本页的素钮底座(2026-08-26 Frank「<button 这种不允许直接使用」——
+ * 裸钮一律经 button 族的 Button kind=ghost,视觉全由这枚加倍类定形)。
+ */
+.btn.btn {
+  /*
+   * 描边灰。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 主文字色。
+   */
+  color: var(--text);
+
+  /*
+   * 钮圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 钮内衬(上下 5、左右 14)。
+   */
+  padding: 5px 14px;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 钮字重(素钮不加粗)。
+   */
+  font-weight: 400;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 跟随正文字体。
+   */
+  font-family: inherit;
+
+  /*
+   * 钮内文字不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 素钮的选中态(年份 chips 与职业 chips 共用):蓝描边 + 蓝字 + 浅蓝底 + 半粗。
+ */
+.btnPicked.btnPicked {
+  /*
+   * 蓝描边。
+   */
+  border-color: var(--primary);
+
+  /*
+   * 蓝字。
+   */
+  color: var(--primary);
+
+  /*
+   * 浅蓝底(本页私有)。
+   */
+  background: #eff6ff;
+
+  /*
+   * 选中态加粗到半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 「开始评估」态的入口钮(一题没答时是本页唯一的主行动):品牌蓝实底。
+ */
+.btnStart.btnStart {
+  /*
+   * 品牌蓝实底。
+   */
+  background: var(--primary);
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+
+  /*
+   * 蓝描边(与实底同色,几何与素钮一致)。
+   */
+  border: 1px solid var(--primary);
+
+  /*
+   * 主行动加粗到半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 主行动比素钮再大一档。
+   */
+  padding: 6px 16px;
+
+  /*
+   * 主行动字号。
+   */
+  font-size: 13px;
+}
+
+/*
+ * 「继续作答」态的入口钮(有欠账):浅蓝底 + 蓝字 + 蓝描边。
+ */
+.btnResume.btnResume {
+  /*
+   * 浅蓝底(本页私有)。
+   */
+  background: #eff6ff;
+
+  /*
+   * 蓝字。
+   */
+  color: var(--primary);
+
+  /*
+   * 蓝描边。
+   */
+  border: 1px solid var(--primary);
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 「修改条件」态的入口钮(整卷答满):白底素钮 + 半粗。
+ */
+.btnEdit.btnEdit {
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 主文字色。
+   */
+  color: var(--text);
+
+  /*
+   * 描边灰。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 数字格的等宽体(比值、名额、在招数、日期这类要竖着对齐的数)。
+ */
+.num {
+  /*
+   * 数字等宽。
+   */
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 「—」的灰字(0 与「—」意思不同:0 是「没有」,横杠是「这一格没有数据」)。
+ */
+.dash {
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 卡尾的口径脚注(竞争表与职业竞争表共用)。
+ */
+.note {
+  /*
+   * 脚注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 脚注行距。
+   */
+  line-height: 1.6;
+
+  /*
+   * 与表的间距。
+   */
+  margin-top: 8px;
+}
+
+/*
+ * 表头灰字小注(存量快照月、名额年度、流量口径这类全表一致的日期)。
+ */
+.thSub {
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11px;
+
+  /*
+   * 小注常规字重(表头本身是粗的)。
+   */
+  font-weight: 400;
+
+  /*
+   * 与主表头词的间隔。
+   */
+  margin-left: 5px;
+}
+
+/*
+ * 省份格:省全名 + 两位省码灰注(人话名做主文案,代码当灰字小注)。
+ */
+.provCell {
+  /*
+   * 两段并排。
+   */
+  display: flex;
+
+  /*
+   * 基线对齐:两段字号不同也踩同一条线。
+   */
+  align-items: baseline;
+
+  /*
+   * 两段间隔。
+   */
+  gap: 6px;
+
+  /*
+   * 允许被压缩,省名那半才截得动。
+   */
+  min-width: 0;
+}
+
+/*
+ * 省全名:放不下时省略号,灰码永不截(灰码只有两个字符,截了就没意义)。
+ */
+.provName {
+  /*
+   * 允许被压缩。
+   */
+  min-width: 0;
+
+  /*
+   * 溢出裁掉。
+   */
+  overflow: hidden;
+
+  /*
+   * 裁掉的地方给省略号。
+   */
+  text-overflow: ellipsis;
+
+  /*
+   * 单行,才会触发省略号。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 两位省码的灰注。
+ */
+.provCode {
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 永不被压缩(灰码不许截)。
+   */
+  flex-shrink: 0;
+}
+
+/*
+ * ===== 可行通道初评 =====
+ */
+
+/*
+ * 初评卡标题行:标题 + 粗筛小注 + 右上角动作钮同排。
+ */
+.planHead {
+  /*
+   * 标题字号。
+   */
+  font-size: 16px;
+
+  /*
+   * 标题字重。
+   */
+  font-weight: 700;
+
+  /*
+   * 标题近黑(本页私有)。
+   */
+  color: #111827;
+
+  /*
+   * 顶部不留外边距(下边距按两档另给)。
+   */
+  margin: 0;
+
+  /*
+   * 标题与右上角动作同排。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 窄屏放不下就换行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 各段间隔。
+   */
+  gap: 8px;
+}
+
+/*
+ * 粗筛态的标题下边距:底下紧跟着一句职业小注,间距收窄。
+ */
+.planHeadTight {
+  /*
+   * 粗筛态下边距。
+   */
+  margin-bottom: 4px;
+}
+
+/*
+ * 个人档态的标题下边距:底下直接是表,间距照常。
+ */
+.planHeadLoose {
+  /*
+   * 个人档态下边距。
+   */
+  margin-bottom: 10px;
+}
+
+/*
+ * 标题旁的「粗筛」小注(只按职业判的那一档)。
+ */
+.planCoarseTag {
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 小注常规字重(标题是粗的,小注不跟)。
+   */
+  font-weight: 400;
+}
+
+/*
+ * 标题行右上角的动作区(补目标省 / 重挑岗位)。
+ */
+.planActions {
+  /*
+   * 推到行尾。
+   */
+  margin-left: auto;
+
+  /*
+   * 两颗钮并排。
+   */
+  display: inline-flex;
+
+  /*
+   * 钮间隔。
+   */
+  gap: 8px;
+
+  /*
+   * 窄屏放不下就换行。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 粗筛态标题下那句职业小注。
+ */
+.planCoarseSub {
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 次级文字灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 与表的间距。
+   */
+  margin: 0 0 10px;
+}
+
+/*
+ * 初评还没回来时的占位条(加载区必占位:不许先空着再把表顶下来)。
+ */
+.planSkeleton {
+  /*
+   * 占位条高(约等于一行表加表头)。
+   */
+  height: 58px;
+
+  /*
+   * 占位条圆角。
+   */
+  border-radius: 9px;
+
+  /*
+   * 页底灰。
+   */
+  background: var(--bg);
+}
+
+/*
+ * 一条通道都判不出来时的空态文案。
+ */
+.planEmpty {
+  /*
+   * 正文字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 次级文字灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 空态行距。
+   */
+  line-height: 1.65;
+}
+
+/*
+ * 手机卡列(职位卡形态)。display 走类不走内联:2026-08-15 实撞 ——
+ * 内联 display:grid 压过媒体查询的 display:none,桌面上卡片藏不掉,表格与卡片双份渲染。
+ */
+.planCards {
+  /*
+   * 单列网格。
+   */
+  display: grid;
+
+  /*
+   * 卡间距。
+   */
+  gap: 8px;
+}
+
+/*
+ * 桌面表格(与手机卡两选一,SSR 时两份都在 DOM 里)。
+ */
+.planTbl {
+  /*
+   * 桌面默认出表格。
+   */
+  display: block;
+}
+
+/*
+ * 名次圆牌。
+ */
+.rank {
+  /*
+   * 圆牌宽。
+   */
+  width: 24px;
+
+  /*
+   * 圆牌高。
+   */
+  height: 24px;
+
+  /*
+   * 正圆。
+   */
+  border-radius: 999px;
+
+  /*
+   * 网格居中:数字在圆心。
+   */
+  display: grid;
+
+  /*
+   * 双向居中。
+   */
+  place-items: center;
+
+  /*
+   * 名次字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 名次字重。
+   */
+  font-weight: 700;
+}
+
+/*
+ * 榜首圆牌:蓝底白字。
+ */
+.rankTop {
+  /*
+   * 品牌蓝实底。
+   */
+  background: var(--primary);
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+}
+
+/*
+ * 其余名次圆牌:灰底灰字。
+ */
+.rankPlain {
+  /*
+   * 页底灰。
+   */
+  background: var(--bg);
+
+  /*
+   * 次级文字灰。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 通道格:通道名 + 省码 + 「本岗所在省」标。
+ */
+.pathCell {
+  /*
+   * 三段并排。
+   */
+  display: flex;
+
+  /*
+   * 基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 段间隔。
+   */
+  gap: 8px;
+
+  /*
+   * 允许被压缩,通道名那半才截得动。
+   */
+  min-width: 0;
+}
+
+/*
+ * 通道名:一行放不下就省略号(官方原名不许我们编短名,列里截、卡里全)。
+ */
+.pathName {
+  /*
+   * 通道名近黑(本页私有)。
+   */
+  color: #111827;
+
+  /*
+   * 通道名加粗。
+   */
+  font-weight: 700;
+
+  /*
+   * 单行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 溢出裁掉。
+   */
+  overflow: hidden;
+
+  /*
+   * 裁掉的地方给省略号。
+   */
+  text-overflow: ellipsis;
+}
+
+/*
+ * 通道格里的省码灰注。
+ */
+.pathProv {
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 永不被压缩。
+   */
+  flex-shrink: 0;
+}
+
+/*
+ * 表格里的「本岗所在省」标(#325 补的那行不冒充名次,靠这枚标说清它是谁)。
+ */
+.jobProvTag {
+  /*
+   * 标字号(表格里比卡片里再小一档)。
+   */
+  font-size: 10.5px;
+
+  /*
+   * 标蓝字(本页私有)。
+   */
+  color: #1d4ed8;
+
+  /*
+   * 浅蓝底(本页私有)。
+   */
+  background: #eff6ff;
+
+  /*
+   * 胶囊圆角。
+   */
+  border-radius: 999px;
+
+  /*
+   * 标内衬。
+   */
+  padding: 1px 7px;
+
+  /*
+   * 永不被压缩。
+   */
+  flex-shrink: 0;
+}
+
+/*
+ * 手机卡上的「本岗所在省」标(占的是职位卡的发布时间槽)。
+ */
+.jobProvTagCard {
+  /*
+   * 标蓝字(本页私有)。
+   */
+  color: #1d4ed8;
+
+  /*
+   * 浅蓝底(本页私有)。
+   */
+  background: #eff6ff;
+
+  /*
+   * 胶囊圆角。
+   */
+  border-radius: 999px;
+
+  /*
+   * 标内衬。
+   */
+  padding: 1px 7px;
+}
+
+/*
+ * 推荐原因胶囊的基座(「还差」与「还要多久」两列共用;色档见下面四枚)。
+ */
+.tonePill {
+  /*
+   * 胶囊圆角。
+   */
+  border-radius: 999px;
+
+  /*
+   * 胶囊内衬。
+   */
+  padding: 3px 9px;
+
+  /*
+   * 胶囊字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 胶囊字重。
+   */
+  font-weight: 600;
+
+  /*
+   * 胶囊内文字不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 达标档:绿字浅绿底(只给「够得着且没被门槛卡住」那一档)。
+ */
+.toneOk {
+  /*
+   * 通过绿。
+   */
+  color: var(--ok);
+
+  /*
+   * 浅绿底(本页私有)。
+   */
+  background: #ecfdf5;
+}
+
+/*
+ * 信息档:蓝字浅蓝底(「拿到 offer 即可申请」是信息态不是达标态,不抢绿)。
+ */
+.toneInfo {
+  /*
+   * 标蓝字(本页私有)。
+   */
+  color: #1d4ed8;
+
+  /*
+   * 浅蓝底(本页私有)。
+   */
+  background: #eff6ff;
+}
+
+/*
+ * 缺口档:琥珀字浅琥珀底。
+ */
+.toneWarn {
+  /*
+   * 琥珀警示字(本页私有)。
+   */
+  color: #92400e;
+
+  /*
+   * 浅琥珀底(本页私有)。
+   */
+  background: #fffbeb;
+}
+
+/*
+ * 静音档:灰字灰底 ——「本站没收录条文」这枚是我们的窟窿,不许染成「你不行」的琥珀。
+ */
+.toneMute {
+  /*
+   * 次级文字灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 页底灰。
+   */
+  background: var(--bg);
+}
+
+/*
+ * 缺口列的胶囊排(一格里可能并排几枚)。
+ */
+.pillRow {
+  /*
+   * 胶囊横排。
+   */
+  display: flex;
+
+  /*
+   * 胶囊间隔。
+   */
+  gap: 6px;
+
+  /*
+   * 放不下就换行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 数字列右对齐,胶囊跟着靠右。
+   */
+  justify-content: flex-end;
+}
+
+/*
+ * 竞争格的两行叠放(发放规则做主文案、官网数字做灰字小注)。
+ */
+.compStack {
+  /*
+   * 行内块:随列右对齐。
+   */
+  display: inline-block;
+
+  /*
+   * 两行都靠右。
+   */
+  text-align: right;
+}
+
+/*
+ * 竞争格第二行的灰字小注。
+ */
+.compSub {
+  /*
+   * 另起一行。
+   */
+  display: block;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11px;
+
+  /*
+   * 小注常规字重。
+   */
+  font-weight: 400;
+
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 数字等宽。
+   */
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 表格操作列的钮排。
+ */
+.actCell {
+  /*
+   * 钮横排。
+   */
+  display: inline-flex;
+
+  /*
+   * 钮间隔。
+   */
+  gap: 6px;
+
+  /*
+   * 放不下就换行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 靠右。
+   */
+  justify-content: flex-end;
+}
+
+/*
+ * 表格里的「查岗位」钮:蓝实底(这一列的主行动)。
+ */
+.actGo.actGo {
+  /*
+   * 行内块。
+   */
+  display: inline-block;
+
+  /*
+   * 品牌蓝实底。
+   */
+  background: var(--primary);
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+
+  /*
+   * 钮圆角。
+   */
+  border-radius: 7px;
+
+  /*
+   * 钮内衬。
+   */
+  padding: 4px 10px;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 钮字重。
+   */
+  font-weight: 600;
+
+  /*
+   * 钮不带下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 钮内文字不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 表格里的「查雇主」钮:白底蓝字浅蓝描边(次行动)。
+ */
+.actEmp.actEmp {
+  /*
+   * 行内块。
+   */
+  display: inline-block;
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 品牌蓝字。
+   */
+  color: var(--primary);
+
+  /*
+   * 浅蓝描边(本页私有)。
+   */
+  border: 1px solid #bfdbfe;
+
+  /*
+   * 钮圆角。
+   */
+  border-radius: 7px;
+
+  /*
+   * 钮内衬(带描边所以上下各收 1)。
+   */
+  padding: 3px 10px;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 钮字重。
+   */
+  font-weight: 600;
+
+  /*
+   * 钮不带下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 钮内文字不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 手机卡的动作行(2026-08-16 Frank「按钮放到右下角」:与卡片右列数字同一条竖线)。
+ */
+.cardActs {
+  /*
+   * 钮横排。
+   */
+  display: flex;
+
+  /*
+   * 钮间隔。
+   */
+  gap: 8px;
+
+  /*
+   * 靠右下。
+   */
+  justify-content: flex-end;
+}
+
+/*
+ * 手机卡的「查岗位」钮(比表格里那颗大一档,手指点得到)。
+ */
+.cardActGo.cardActGo {
+  /*
+   * 行内块。
+   */
+  display: inline-block;
+
+  /*
+   * 品牌蓝实底。
+   */
+  background: var(--primary);
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+
+  /*
+   * 钮圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 钮内衬。
+   */
+  padding: 6px 14px;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 钮字重。
+   */
+  font-weight: 600;
+
+  /*
+   * 钮不带下划线。
+   */
+  text-decoration: none;
+}
+
+/*
+ * 手机卡的「查雇主」钮。
+ */
+.cardActEmp.cardActEmp {
+  /*
+   * 行内块。
+   */
+  display: inline-block;
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 品牌蓝字。
+   */
+  color: var(--primary);
+
+  /*
+   * 浅蓝描边(本页私有)。
+   */
+  border: 1px solid #bfdbfe;
+
+  /*
+   * 钮圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 钮内衬(带描边所以上下各收 1)。
+   */
+  padding: 5px 14px;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 钮字重。
+   */
+  font-weight: 600;
+
+  /*
+   * 钮不带下划线。
+   */
+  text-decoration: none;
+}
+
+/*
+ * 手机卡薪资位放的是竞争度/名额状态:中性事实,压掉职位卡那一格的绿
+ * (那绿是「钱多是好事」的语义,套在竞争度上是错的)。
+ */
+.cardSalary {
+  /*
+   * 主文字色。
+   */
+  color: var(--text);
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 手机卡地点位放的是在招岗数。
+ */
+.cardLoc {
+  /*
+   * 次级文字灰。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 榜首 0 岗的实话(「0 不是少,是没有」)。
+ */
+.topEmpty {
+  /*
+   * 脚注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 琥珀警示字(本页私有)。
+   */
+  color: #92400e;
+
+  /*
+   * 脚注行距。
+   */
+  line-height: 1.6;
+
+  /*
+   * 与表的间距。
+   */
+  margin-top: 8px;
+}
+
+/*
+ * 省外更优提示行(措辞两边对照 + 一键并省)。
+ */
+.outside {
+  /*
+   * 文案与钮同排。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 段间隔。
+   */
+  gap: 8px;
+
+  /*
+   * 窄屏放不下就换行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 与表的间距。
+   */
+  margin-top: 8px;
+}
+
+/*
+ * 省外提示的文案。
+ */
+.outsideText {
+  /*
+   * 正文小一档。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 次级文字灰。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 粗筛态卡尾那句说明。
+ */
+.coarseNote {
+  /*
+   * 脚注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 脚注行距。
+   */
+  line-height: 1.6;
+
+  /*
+   * 与表的间距。
+   */
+  margin-top: 12px;
+}
+
+/*
+ * ===== 各省名额竞争 / 该职业分省竞争 =====
+ */
+
+/*
+ * 年份 chips 与职业 chips 的行。
+ */
+.chipRow {
+  /*
+   * chips 横排。
+   */
+  display: flex;
+
+  /*
+   * chip 间隔。
+   */
+  gap: 8px;
+
+  /*
+   * 放不下就换行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 与标题、与表各自的间距。
+   */
+  margin: 2px 0 10px;
+}
+
+/*
+ * 竞争表的手机卡列。
+ */
+.compCards {
+  /*
+   * 手机默认出卡片。
+   */
+  display: block;
+}
+
+/*
+ * 竞争表的桌面表格。
+ */
+.compTbl {
+  /*
+   * 桌面默认出表格。
+   */
+  display: block;
+}
+
+/*
+ * 竞争卡一行(省名 + 省码 + 比值 + 一行灰字明细)。
+ */
+.compRow {
+  /*
+   * 行间细线。
+   */
+  border-top: 1px solid var(--hairline);
+
+  /*
+   * 行内衬。
+   */
+  padding: 8px 0;
+
+  /*
+   * 各段并排。
+   */
+  display: flex;
+
+  /*
+   * 基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 段间隔。
+   */
+  gap: 6px;
+
+  /*
+   * 明细那段换行到第二行。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 卡片里的省名。
+ */
+.rowProv {
+  /*
+   * 省名字号。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 省名近黑(本页私有)。
+   */
+  color: #111827;
+}
+
+/*
+ * 卡片里的省码灰注。
+ */
+.rowCode {
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+}
+
+/*
+ * 卡片右侧的主数字(比值 / 在招数 / 分数线)。
+ */
+.rowNum {
+  /*
+   * 推到行尾。
+   */
+  margin-left: auto;
+
+  /*
+   * 主数字字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 主数字字重。
+   */
+  font-weight: 600;
+
+  /*
+   * 数字等宽。
+   */
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 竞争卡的第二行明细(学签/工签存量、名额、流量)。
+ */
+.rowMeta {
+  /*
+   * 独占一整行。
+   */
+  width: 100%;
+
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 数字等宽。
+   */
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 职业竞争表的手机卡列。
+ */
+.occCards {
+  /*
+   * 手机默认出卡片。
+   */
+  display: block;
+}
+
+/*
+ * 职业竞争表的桌面表格。
+ */
+.occTbl {
+  /*
+   * 桌面默认出表格。
+   */
+  display: block;
+}
+
+/*
+ * 职业竞争卡一行。
+ */
+.occRow {
+  /*
+   * 行间细线。
+   */
+  border-top: 1px solid var(--hairline);
+
+  /*
+   * 行内衬。
+   */
+  padding: 8px 0;
+}
+
+/*
+ * 职业竞争卡的头行(省名 + 省码 + 在招数)。
+ */
+.rowHead {
+  /*
+   * 各段并排。
+   */
+  display: flex;
+
+  /*
+   * 基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 段间隔。
+   */
+  gap: 6px;
+}
+
+/*
+ * 职业竞争卡的第二行明细(近 30 天新增、平均在招天数)。
+ */
+.occMeta {
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 与头行的间距。
+   */
+  margin-top: 2px;
+
+  /*
+   * 数字等宽。
+   */
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * ===== 各省最近抽选 =====
+ */
+
+/*
+ * 抽选表的手机卡列。
+ */
+.drawCards {
+  /*
+   * 手机默认出卡片。
+   */
+  display: block;
+}
+
+/*
+ * 抽选表的桌面表格。
+ */
+.drawTbl {
+  /*
+   * 桌面默认出表格。
+   */
+  display: block;
+}
+
+/*
+ * 抽选卡一行。
+ */
+.drawRow {
+  /*
+   * 行间细线。
+   */
+  border-top: 1px solid var(--hairline);
+
+  /*
+   * 行内衬。
+   */
+  padding: 8px 0;
+}
+
+/*
+ * 抽选卡的邀请数行。
+ */
+.drawInv {
+  /*
+   * 标与数各据一端。
+   */
+  display: flex;
+
+  /*
+   * 段间隔。
+   */
+  gap: 8px;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 与头行的间距。
+   */
+  margin-top: 2px;
+}
+
+/*
+ * 抽选卡邀请数本身。
+ */
+.drawInvNum {
+  /*
+   * 推到行尾。
+   */
+  margin-left: auto;
+
+  /*
+   * 数字等宽。
+   */
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 抽选卡的日期与通道名行。
+ */
+.drawWhen {
+  /*
+   * 日期与通道名并排。
+   */
+  display: flex;
+
+  /*
+   * 段间隔。
+   */
+  gap: 8px;
+
+  /*
+   * 正文小一档。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 次级文字灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 与上一行的间距。
+   */
+  margin-top: 2px;
+}
+
+/*
+ * 抽选卡里的日期。
+ */
+.drawDate {
+  /*
+   * 数字等宽。
+   */
+  font-variant-numeric: tabular-nums;
+
+  /*
+   * 日期永不被压缩。
+   */
+  flex-shrink: 0;
+}
+
+/*
+ * 抽选卡里的通道名:官方原名放不下就换行,不截(我们没有权力给它编个短名)。
+ */
+.drawStream {
+  /*
+   * 允许被压缩。
+   */
+  min-width: 0;
+
+  /*
+   * 长单词也允许在任意位置断行。
+   */
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 抽选表的省份格(比别处的省份格紧一档)。
+ */
+.drawProvCell {
+  /*
+   * 两段并排。
+   */
+  display: flex;
+
+  /*
+   * 基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 两段间隔。
+   */
+  gap: 5px;
+}
+
+/*
+ * 抽选表的日期列。
+ */
+.drawDateCell {
+  /*
+   * 数字等宽。
+   */
+  font-variant-numeric: tabular-nums;
+
+  /*
+   * 次级文字灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 正文小一档。
+   */
+  font-size: 12.5px;
+}
+
+/*
+ * 抽选表的通道列:整格独占一行,官方原名照实换行不截(走查 #297)。
+ */
+.drawStreamCell {
+  /*
+   * 独占一行。
+   */
+  display: block;
+
+  /*
+   * 次级文字灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 长单词也允许在任意位置断行。
+   */
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 抽选表的邀请数列。
+ */
+.drawInvCell {
+  /*
+   * 数字等宽。
+   */
+  font-variant-numeric: tabular-nums;
+
+  /*
+   * 次级文字灰。
+   */
+  color: var(--text2);
+}
+
+/*
+ * ===== 问卷弹框 =====
+ */
+
+/*
+ * 收框态的结果区(答满估分题后就地变回卡内的「各省估分」结果):上面画一道分隔线。
+ */
+.quizResult {
+  /*
+   * 与上文的间距。
+   */
+  margin-top: 14px;
+
+  /*
+   * 分隔线与结果的间距。
+   */
+  padding-top: 12px;
+
+  /*
+   * 分隔细线。
+   */
+  border-top: 1px solid var(--hairline);
+}
+
+/*
+ * 问卷遮罩的层级(叠加层 z=60,盖在判定面板之上)。遮罩本体的半透黑与居中
+ * 由 modal 域的 overlay 类给,这里只补层级与窄屏贴边。
+ */
+.quizOverlay {
+  /*
+   * 叠加层层级。
+   */
+  z-index: 60;
+}
+
+/*
+ * 问卷白卡(镜像 modal 域的白卡规范 + 本页的宽高与内衬档)。
+ * 不套 <Modal>:分值卡的答案与结果都在它的本地 state,搬容器 = React 重挂 = 答案清零,
+ * 所以这里只就地换皮,不搬树。
+ */
+.quizCard {
+  /*
+   * 给卡内绝对定位的工具排当参照系。
+   */
+  position: relative;
+
+  /*
+   * 卡片白。
+   */
+  background: #ffffff;
+
+  /*
+   * 弹框规范圆角。
+   */
+  border-radius: 14px;
+
+  /*
+   * 弹框规范投影。
+   */
+  box-shadow: 0 24px 60px rgb(0 0 0 / 30%);
+
+  /*
+   * 卡内滚到头不把滚动传给遮罩后面的页面。
+   */
+  overscroll-behavior: contain;
+
+  /*
+   * 桌面宽:760 封顶,窗口更窄时跟着窗口。
+   */
+  width: min(760px, 100%);
+
+  /*
+   * 桌面高上限。
+   */
+  max-height: 85vh;
+
+  /*
+   * 卡内滚动。
+   */
+  overflow-y: auto;
+
+  /*
+   * 桌面内衬。
+   */
+  padding: 24px 24px 20px;
+}
+
+/*
+ * 弹框右上角的工具排(重置 + 关闭)。
+ */
+.quizTools {
+  /*
+   * 贴卡片右上角。
+   */
+  position: absolute;
+
+  /*
+   * 距卡顶 12。
+   */
+  top: 12px;
+
+  /*
+   * 距卡右 12。
+   */
+  right: 12px;
+
+  /*
+   * 两颗钮并排。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 钮间隔。
+   */
+  gap: 6px;
+
+  /*
+   * 浮在卡内容之上。
+   */
+  z-index: 20;
+}
+
+/*
+ * 弹框图标钮(镜像 modal 域的窗口图标钮规范:两颗一样大才叫一排)。
+ */
+.iconBtn.iconBtn {
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 浅灰底(本页私有)。
+   */
+  background: #f3f4f6;
+
+  /*
+   * 小圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 钮宽。
+   */
+  width: 30px;
+
+  /*
+   * 钮高。
+   */
+  height: 30px;
+
+  /*
+   * 钮内字号(× 号)。
+   */
+  font-size: 16px;
+
+  /*
+   * 图标灰(本页私有)。
+   */
+  color: #6b7280;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 行高压到 1,× 号才竖直居中。
+   */
+  line-height: 1;
+
+  /*
+   * 工具排挤的时候钮不许被压扁。
+   */
+  flex-shrink: 0;
+
+  /*
+   * 行内弹性盒:图标居中用。
+   */
+  display: inline-flex;
+
+  /*
+   * 图标竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 图标水平居中。
+   */
+  justify-content: center;
+
+  /*
+   * 图标钮不留内衬(压过按钮族的尺寸档)。
+   */
+  padding: 0;
+}
+
+/*
+ * 弹框头(标题 + 省名 + 计数胶囊)。
+ */
+.quizHead {
+  /*
+   * 各段并排。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 段间隔。
+   */
+  gap: 8px;
+
+  /*
+   * 给右上角工具排让位。
+   */
+  padding-right: 84px;
+
+  /*
+   * 与进度条的间距。
+   */
+  margin-bottom: 12px;
+}
+
+/*
+ * 弹框头里的省名(估分段才出:这一段的题是按省出的)。
+ */
+.quizProv {
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 弹框进度条的槽。
+ */
+.quizBar {
+  /*
+   * 槽高。
+   */
+  height: 4px;
+
+  /*
+   * 槽圆角。
+   */
+  border-radius: 999px;
+
+  /*
+   * 分隔细线色当槽底。
+   */
+  background: var(--hairline);
+
+  /*
+   * 填充条超出部分裁掉。
+   */
+  overflow: hidden;
+
+  /*
+   * 与题目的间距。
+   */
+  margin: 0 0 18px;
+}
+
+/*
+ * 进度条的填充(宽度是运行时百分比,由组件按已答/总数逐行特批下发)。
+ */
+.quizBarFill {
+  /*
+   * 填满槽高。
+   */
+  height: 100%;
+
+  /*
+   * 与槽同圆角。
+   */
+  border-radius: 999px;
+
+  /*
+   * 品牌蓝。
+   */
+  background: var(--primary);
+
+  /*
+   * 答一题动一格,不跳。
+   */
+  transition: width 0.2s;
+}
+
+/*
+ * 选职业页标题下那句小注。
+ */
+.occSub {
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 贴着标题(标题自带下边距,这里往回收 10)。
+   */
+  margin: -10px 0 13px;
+
+  /*
+   * 小注行距。
+   */
+  line-height: 1.55;
+}
+
+/*
+ * 估分段还在等分值表时的占位块(加载区必占位)。
+ */
+.quizSkeleton {
+  /*
+   * 占位块高。
+   */
+  height: 120px;
+
+  /*
+   * 占位块圆角。
+   */
+  border-radius: 9px;
+
+  /*
+   * 页底灰。
+   */
+  background: var(--bg);
+}
+
+/*
+ * 藏而不卸:分值卡的答案与结果都在它的本地 state,基础段答题时只许藏,不许卸载。
+ */
+.hidden {
+  /*
+   * 整块不出现在版面里。
+   */
+  display: none;
+}
+
+/*
+ * 没有分值表那句说明里的出处链接(举证口径:官方不打分要带原句出处)。
+ */
+.srcLink {
+  /*
+   * 三级文字浅灰(出处是小注,不抢正文)。
+   */
+  color: var(--text3);
+}
+
+/*
+ * ===== 申请人条件摘要 =====
+ */
+
+/*
+ * 摘要卡头行(标题 + 计数胶囊 + 右侧入口钮)。
+ */
+.condHead {
+  /*
+   * 各段并排。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 段间隔。
+   */
+  gap: 12px;
+
+  /*
+   * 窄屏放不下就换行。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 摘要卡头行的左半(标题 + 胶囊),吃掉剩余宽度。
+ */
+.condHeadMain {
+  /*
+   * 允许被压缩。
+   */
+  min-width: 0;
+
+  /*
+   * 吃掉剩余宽度。
+   */
+  flex: 1;
+}
+
+/*
+ * 标题与计数胶囊那一行。
+ */
+.condTitleRow {
+  /*
+   * 两段并排。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 段间隔。
+   */
+  gap: 8px;
+
+  /*
+   * 真放不下时让胶囊换行,标题保持一行。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 摘要卡头行右侧的入口钮区。
+ */
+.condActions {
+  /*
+   * 推到行尾。
+   */
+  margin-left: auto;
+
+  /*
+   * 钮横排。
+   */
+  display: flex;
+
+  /*
+   * 钮间隔。
+   */
+  gap: 8px;
+
+  /*
+   * 钮不许被压扁。
+   */
+  flex-shrink: 0;
+}
+
+/*
+ * 条件格网格区(与头行之间画一道分隔线)。
+ */
+.condGrid {
+  /*
+   * 与头行的间距。
+   */
+  margin-top: 14px;
+
+  /*
+   * 分隔线与网格的间距。
+   */
+  padding-top: 12px;
+
+  /*
+   * 分隔细线。
+   */
+  border-top: 1px solid var(--hairline);
+}
+
+/*
+ * ===== 手机 / 桌面二选一 =====
+ * 表格与卡片两份都在 DOM 里(SSR 要被爬到),由媒体查询选出一份。
+ */
+
+@media (width <= 640px) {
+  /*
+   * 手机不出初评表格。
+   */
+  .planTbl {
+    /*
+     * 整块不出现在版面里。
+     */
+    display: none;
+  }
+
+  /*
+   * 手机不出竞争表格。
+   */
+  .compTbl {
+    /*
+     * 整块不出现在版面里。
+     */
+    display: none;
+  }
+
+  /*
+   * 手机不出职业竞争表格。
+   */
+  .occTbl {
+    /*
+     * 整块不出现在版面里。
+     */
+    display: none;
+  }
+
+  /*
+   * 手机不出抽选表格。
+   */
+  .drawTbl {
+    /*
+     * 整块不出现在版面里。
+     */
+    display: none;
+  }
+
+  /*
+   * 手机弹框贴边全屏(遮罩不留内衬)。
+   */
+  .quizOverlay {
+    /*
+     * 遮罩贴边。
+     */
+    padding: 0;
+  }
+
+  /*
+   * 手机弹框铺满整屏。
+   */
+  .quizCard {
+    /*
+     * 全屏不留圆角。
+     */
+    border-radius: 0;
+
+    /*
+     * 满宽。
+     */
+    width: 100%;
+
+    /*
+     * 满高。
+     */
+    height: 100%;
+
+    /*
+     * 高上限跟着视口。
+     */
+    max-height: 100vh;
+
+    /*
+     * 手机内衬。
+     */
+    padding: 20px 14px 16px;
+  }
+}
+
+@media (width >= 641px) {
+  /*
+   * 桌面不出初评手机卡。
+   */
+  .planCards {
+    /*
+     * 整块不出现在版面里。
+     */
+    display: none;
+  }
+
+  /*
+   * 桌面不出竞争手机卡。
+   */
+  .compCards {
+    /*
+     * 整块不出现在版面里。
+     */
+    display: none;
+  }
+
+  /*
+   * 桌面不出职业竞争手机卡。
+   */
+  .occCards {
+    /*
+     * 整块不出现在版面里。
+     */
+    display: none;
+  }
+
+  /*
+   * 桌面不出抽选手机卡。
+   */
+  .drawCards {
+    /*
+     * 整块不出现在版面里。
+     */
+    display: none;
+  }
+}
+
+/*
+ * ===== 估分与抽选线 =====
+ * 2026-08-28 换装批第二段:自 ScoreLineCard.tsx 的内联样式与那段内联 <style> 逐格迁类,
+ * 值一个不改。白卡壳、卡内二级标题、计数胶囊三样复用上面既有的
+ * .card / .h2 + .h2Nowrap / CountPill,不再抄第二份。
+ */
+
+/*
+ * 卡头行(标题区在左,动作区推到右;窄屏放不下时整段换行)。
+ */
+.lineHead {
+  /*
+   * 标题区与动作区并排。
+   */
+  display: flex;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+
+  /*
+   * 两区间隔。
+   */
+  gap: 12px;
+
+  /*
+   * 放不下就换行(动作钮永不被挤出卡外)。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 卡头行的标题区:吃掉剩余宽度,并允许被压缩(不压缩的话长标题会把动作区顶出去)。
+ */
+.lineHeadMain {
+  /*
+   * 允许被压缩到比内容还窄。
+   */
+  min-width: 0;
+
+  /*
+   * 吃掉剩余宽度。
+   */
+  flex: 1;
+}
+
+/*
+ * 标题与计数胶囊那一行。
+ */
+.lineTitleRow {
+  /*
+   * 标题与胶囊并排。
+   */
+  display: flex;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+
+  /*
+   * 标题与胶囊的间隔。
+   */
+  gap: 8px;
+
+  /*
+   * 真放不下时让胶囊换行(标题那半由 .h2Nowrap 保住一行)。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 卡头右上角的动作区:次要在左、主要在右(2026-08-16 Frank「也应该放到右上角」——
+ * 「改省份」自页签末位挪来,页签只管切省,不混动作)。
+ */
+.lineActs {
+  /*
+   * 推到行尾。
+   */
+  margin-left: auto;
+
+  /*
+   * 两颗钮并排。
+   */
+  display: flex;
+
+  /*
+   * 钮间隔。
+   */
+  gap: 8px;
+
+  /*
+   * 永不被压缩(钮上的字不许折行)。
+   */
+  flex-shrink: 0;
+}
+
+/*
+ * 估分卡的次要动作钮(「改省份」)。加倍类压住 button 族的基座,视觉全在这里定形。
+ */
+.lineBtn.lineBtn {
+  /*
+   * 描边灰。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 主文字色。
+   */
+  color: var(--text);
+
+  /*
+   * 钮圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 次要钮内衬。
+   */
+  padding: 6px 14px;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 跟随正文字体。
+   */
+  font-family: inherit;
+
+  /*
+   * 钮内文字不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 估分卡主动作钮的素态(答满之后是「改答案」,不再是本段的主行动)。
+ * 左右各比次要钮宽 2px —— 主动作的热区本来就该更大。
+ */
+.lineMainBtn.lineMainBtn {
+  /*
+   * 描边灰。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 主文字色。
+   */
+  color: var(--text);
+
+  /*
+   * 钮圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 主钮内衬。
+   */
+  padding: 6px 16px;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 跟随正文字体。
+   */
+  font-family: inherit;
+
+  /*
+   * 钮内文字不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 主动作钮的主态(还没选省 → 先选省;选了省还没答满 → 算我的分):品牌蓝实底。
+ */
+.lineMainBtnOn.lineMainBtnOn {
+  /*
+   * 蓝描边(与实底同色,几何与素态一致)。
+   */
+  border: 1px solid var(--primary);
+
+  /*
+   * 品牌蓝实底。
+   */
+  background: var(--primary);
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+}
+
+/*
+ * 省页签条与卡头的间距。
+ */
+.lineTabs {
+  /*
+   * 与卡头的间距。
+   */
+  margin-top: 14px;
+}
+
+/*
+ * 该省估分题条件格与上文的间距。
+ */
+.lineTiles {
+  /*
+   * 与上文的间距。
+   */
+  margin-top: 12px;
+}
+
+/*
+ * 估分卡的提示框底座(结论行与两句引导共用这一形)。
+ */
+.lineNote {
+  /*
+   * 提示框圆角。
+   */
+  border-radius: 9px;
+
+  /*
+   * 提示框内衬。
+   */
+  padding: 10px 12px;
+
+  /*
+   * 只留上边距。
+   */
+  margin: 12px 0 0;
+
+  /*
+   * 提示字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 二级文字色。
+   */
+  color: var(--text2);
+
+  /*
+   * 提示行距。
+   */
+  line-height: 1.45;
+}
+
+/*
+ * 提示框的达标态:浅绿底 + 浅绿描边(够得着才染绿,别的态一律素色)。
+ */
+.lineNoteOk {
+  /*
+   * 浅绿底(本页私有,不是全站色板成员)。
+   */
+  background: #f0fdf4;
+
+  /*
+   * 浅绿描边(本页私有)。
+   */
+  border: 1px solid #bbf7d0;
+}
+
+/*
+ * 提示框的素态:页底灰 + 灰虚线描边(虚线说明这是提示不是结论)。
+ */
+.lineNoteMute {
+  /*
+   * 页底灰。
+   */
+  background: var(--bg);
+
+  /*
+   * 灰虚线描边。
+   */
+  border: 1px dashed var(--border);
+}
+
+/*
+ * 结论行的第一行:「你在某省的估分是 N」。
+ */
+.lineYours {
+  /*
+   * 结论字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 结论字重。
+   */
+  font-weight: 700;
+}
+
+/*
+ * 结论第一行的达标态:深绿字。
+ */
+.lineYoursOk {
+  /*
+   * 深绿字(本页私有,不是全站色板成员)。
+   */
+  color: #15803d;
+}
+
+/*
+ * 结论第一行的素态:主文字色(够不着与「取决于加分项」都用它 —— 不许染红吓人)。
+ */
+.lineYoursPlain {
+  /*
+   * 主文字色。
+   */
+  color: var(--text);
+}
+
+/*
+ * 结论行的第二行:一句话说清够不够线。
+ */
+.lineSub {
+  /*
+   * 副行字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 与第一行的间距。
+   */
+  margin-top: 3px;
+
+  /*
+   * 副行行距。
+   */
+  line-height: 1.45;
+}
+
+/*
+ * 结论第二行的达标态:墨绿字。
+ */
+.lineSubOk {
+  /*
+   * 墨绿字(本页私有,不是全站色板成员)。
+   */
+  color: #166534;
+}
+
+/*
+ * 结论第二行的素态:二级文字色。
+ */
+.lineSubPlain {
+  /*
+   * 二级文字色。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 抽选线那一段的上边界(2026-08-16 Frank「虽然在一个 section,但是也应该有一个明显的
+ * 边界吧」):上半是你要动手的(结论 + 估分题),下半是不用动手的参照(官方抽选线)。
+ * 一条实线加一个小标题,不靠留白硬分。
+ */
+.lineDrawsHead {
+  /*
+   * 与上文的间距。
+   */
+  margin-top: 14px;
+
+  /*
+   * 边界线与小标题的间距。
+   */
+  padding-top: 12px;
+
+  /*
+   * 边界实线(比卡内细线重一档 —— 它分的是两类内容,不是两行)。
+   */
+  border-top: 1px solid var(--border);
+}
+
+/*
+ * 抽选线那一段的小标题。
+ */
+.lineDrawsTitle {
+  /*
+   * 小标题字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 小标题字重。
+   */
+  font-weight: 700;
+
+  /*
+   * 主文字色。
+   */
+  color: var(--text);
+
+  /*
+   * 与下方清单的间距。
+   */
+  margin-bottom: 2px;
+}
+
+/*
+ * 抽选线的手机卡列(375 上四列会挤成两行,所以手机走卡片)。
+ */
+.lineCards {
+  /*
+   * 手机默认出卡片。
+   */
+  display: block;
+
+  /*
+   * 与小标题的间距。
+   */
+  margin-top: 10px;
+}
+
+/*
+ * 抽选线的桌面表格。
+ */
+.lineTbl {
+  /*
+   * 桌面默认出表格。
+   */
+  display: block;
+}
+
+/*
+ * 抽选线手机卡的一行。
+ */
+.lineRow {
+  /*
+   * 行间细线。
+   */
+  border-top: 1px solid var(--hairline);
+
+  /*
+   * 行内衬。
+   */
+  padding: 8px 0;
+}
+
+/*
+ * 手机卡的头行(通道名 + 差值)。
+ */
+.lineRowHead {
+  /*
+   * 通道名与差值并排。
+   */
+  display: flex;
+
+  /*
+   * 基线对齐(两边字号不同,基线对齐才不错位)。
+   */
+  align-items: baseline;
+
+  /*
+   * 段间隔。
+   */
+  gap: 6px;
+}
+
+/*
+ * 手机卡里的官方通道名。走查 #297:官方原名不许截断,放不下就换行 ——
+ * 长单词也得断,不然会把差值顶出卡外。
+ */
+.lineRowName {
+  /*
+   * 通道名字号。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 通道名近黑(本页私有)。
+   */
+  color: #111827;
+
+  /*
+   * 允许被压缩。
+   */
+  min-width: 0;
+
+  /*
+   * 长单词也断行(不截断)。
+   */
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 手机卡头行右侧的差值。
+ */
+.lineRowGap {
+  /*
+   * 推到行尾。
+   */
+  margin-left: auto;
+}
+
+/*
+ * 手机卡的副行(抽选日期 + 分数线)。
+ */
+.lineRowMeta {
+  /*
+   * 日期与分数线并排。
+   */
+  display: flex;
+
+  /*
+   * 段间隔。
+   */
+  gap: 8px;
+
+  /*
+   * 副行字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 与头行的间距。
+   */
+  margin-top: 2px;
+}
+
+/*
+ * 手机卡副行里的抽选日期。
+ */
+.lineRowDate {
+  /*
+   * 数字等宽:日期竖着对得齐。
+   */
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 手机卡副行里的分数线。
+ */
+.lineRowCut {
+  /*
+   * 推到行尾。
+   */
+  margin-left: auto;
+
+  /*
+   * 二级文字色(比日期重一档 —— 它是这一行的正主)。
+   */
+  color: var(--text2);
+
+  /*
+   * 数字等宽。
+   */
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 通道名的中文灰注。只在 zh 界面出 —— 官方原名是事实,译名是辅助,不许盖掉原名。
+ * 手机卡与桌面表共用这一枚:手机卡的父元素是 <b>,所以字重要显式写回常规,
+ * 桌面表的父元素本来就是常规体,写不写都一样。
+ */
+.lineStreamZh {
+  /*
+   * 灰注独占一行。
+   */
+  display: block;
+
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 常规体(压住 <b> 的粗体继承)。
+   */
+  font-weight: 400;
+
+  /*
+   * 与原名的间距。
+   */
+  margin-top: 1px;
+}
+
+/*
+ * 桌面表的通道列。走查 #297 同一条:官方原名不许截断,放不下就换行。
+ */
+.lineStreamCell {
+  /*
+   * 原名与灰注竖排。
+   */
+  display: block;
+
+  /*
+   * 通道名近黑(本页私有)。
+   */
+  color: #111827;
+
+  /*
+   * 长单词也断行(不截断)。
+   */
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 桌面表的日期列。
+ */
+.lineDateCell {
+  /*
+   * 数字等宽:日期竖着对得齐。
+   */
+  font-variant-numeric: tabular-nums;
+
+  /*
+   * 二级文字色。
+   */
+  color: var(--text2);
+
+  /*
+   * 日期字号。
+   */
+  font-size: 12.5px;
+}
+
+/*
+ * 桌面表的分数线列。
+ */
+.lineCutCell {
+  /*
+   * 分数线字重。
+   */
+  font-weight: 600;
+
+  /*
+   * 分数线近黑(本页私有)。
+   */
+  color: #111827;
+}
+
+/*
+ * 「你」那一列的差值。
+ */
+.lineGap {
+  /*
+   * 差值字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 差值字重。
+   */
+  font-weight: 700;
+
+  /*
+   * 数字等宽:正负号与数字竖着对得齐。
+   */
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 差值的达标态:深绿字(这一轮的线你够得着)。
+ */
+.lineGapOk {
+  /*
+   * 深绿字(本页私有,不是全站色板成员)。
+   */
+  color: #15803d;
+}
+
+/*
+ * 差值的欠缺态:三级文字浅灰。差多少是事实,但不许染红 ——
+ * 加分项还没勾满时它随时会变。
+ */
+.lineGapBad {
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 差值缺位时的横杠:通道对不上就不给差值(线是事实照摆,「你」那一栏留空)——
+ * 拿别的通道的线比你的分是错的对照。用描边灰而不是文字灰:它比一个真值还要淡一档。
+ */
+.lineGapNone {
+  /*
+   * 横杠字号(与差值同档,不然行高会跳)。
+   */
+  font-size: 13px;
+
+  /*
+   * 描边灰。
+   */
+  color: var(--border);
+}
+
+@media (width <= 640px) {
+  /*
+   * 手机不出抽选线表格。
+   */
+  .lineTbl {
+    /*
+     * 整块不出现在版面里。
+     */
+    display: none;
+  }
+}
+
+@media (width >= 641px) {
+  /*
+   * 桌面不出抽选线手机卡。
+   */
+  .lineCards {
+    /*
+     * 整块不出现在版面里。
+     */
+    display: none;
+  }
+}
+
+/*
+ * ── 分值卡(省提名自评打分 + 跨省对照)──────────────────────────────────────
+ * 2026-08-28 换装批自 PnpScoreCard.tsx 的 47 处内联样式逐格迁类,值一个不改;
+ * 色值凡在 colors 域有名字的走 CSS 变量,卡内私有的几枚(描边灰、正文深灰、合计蓝、
+ * 蓝底浅蓝、绿底、琥珀底)留字面量并挂注释。
+ */
+
+/*
+ * 结果区标题。制度名不再跟在标题后面串一行(375 下折两行还对不齐)—— 各省页签里各自带。
+ */
+.psTitle {
+  /*
+   * 卡内二级标题字号。
+   */
+  font-size: 16px;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 700;
+
+  /*
+   * 标题近黑。
+   */
+  color: var(--text);
+
+  /*
+   * 只留底边距,顶边由外层卡给。
+   */
+  margin: 0 0 10px;
+}
+
+/*
+ * 「你的条件」里一格的标签。
+ */
+.psLabel {
+  /*
+   * 标签字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 二级文字灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 与控件之间留一线。
+   */
+  margin-bottom: 3px;
+}
+
+/*
+ * 「你的条件」里一格的下拉与数字输入(同一副外观,两种控件共用)。
+ */
+.psSelect {
+  /*
+   * 占满这一格。
+   */
+  width: 100%;
+
+  /*
+   * 控件高度。
+   */
+  height: 34px;
+
+  /*
+   * 描边灰(本卡私有,比全站 --border 深一档,好让控件从白底上立起来)。
+   */
+  border: 1px solid #d1d5db;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 控件字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 白底。
+   */
+  background: var(--card);
+
+  /*
+   * 左右内边距。
+   */
+  padding: 0 8px;
+}
+
+/*
+ * 答题屏里的时薪输入:同一副外观,但按题卡的尺度放大 —— 两位数字秒答,一分不差。
+ */
+.psWage {
+  /*
+   * 占满可用宽度(再由 max-width 收住)。
+   */
+  width: 100%;
+
+  /*
+   * 题卡里的控件高度。
+   */
+  height: 44px;
+
+  /*
+   * 不占满整行:时薪只有两三位数,拉通一行反而看不出该填什么。
+   */
+  max-width: 220px;
+
+  /*
+   * 描边灰(同 psSelect)。
+   */
+  border: 1px solid #d1d5db;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 题卡里的控件字号。
+   */
+  font-size: 15px;
+
+  /*
+   * 白底。
+   */
+  background: var(--card);
+
+  /*
+   * 左右内边距。
+   */
+  padding: 0 8px;
+}
+
+/*
+ * 「你的条件」网格。126 = 375 手机上正好两列:弹框内宽 301 − 卡片左右 padding 28 = 273,
+ * 126×2+10=262 放得下(先试的 132 差 1px 就掉回一列 —— 算的时候别忘了减卡片自己的 padding)。
+ * 纯 CSS auto-fit,不做 JS 宽度探测。
+ */
+.psGrid {
+  /*
+   * 网格排布。
+   */
+  display: grid;
+
+  /*
+   * 放得下就多一列,放不下自动掉回一列。
+   */
+  grid-template-columns: repeat(auto-fit, minmax(126px, 1fr));
+
+  /*
+   * 格间距。
+   */
+  gap: 10px;
+}
+
+/*
+ * 省页签那一条。
+ */
+.psTabs {
+  /*
+   * 与上面的内容拉开。
+   */
+  margin-top: 12px;
+}
+
+/*
+ * 一个省的面板内容。
+ */
+.psPanel {
+  /*
+   * 只留顶部内边距,左右由外层卡给。
+   */
+  padding: 12px 0 0;
+}
+
+/*
+ * 合计分与差距那一行。
+ */
+.psTotalRow {
+  /*
+   * 一行排开。
+   */
+  display: flex;
+
+  /*
+   * 大小号数字按基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 项间距。
+   */
+  gap: 10px;
+
+  /*
+   * 窄屏放不下就换行。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 这个省的合计分。
+ */
+.psTotal {
+  /*
+   * 面板里最大的那个数。
+   */
+  font-size: 22px;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 700;
+
+  /*
+   * 合计蓝(本卡私有,比全站 --primary 深一档)。
+   */
+  color: #1d4ed8;
+
+  /*
+   * 等宽数字,换省时数字不跳。
+   */
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 合计分后面的满分。只在官方公布了总分上限时才出。
+ */
+.psTotalMax {
+  /*
+   * 比合计分小两档。
+   */
+  font-size: 13px;
+
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 不跟着合计分加粗。
+   */
+  font-weight: 500;
+}
+
+/*
+ * 分制全名(官方原名,灰字小注)。
+ */
+.psSystem {
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 与对照线的差距,靠右。
+ */
+.psGap {
+  /*
+   * 推到行尾。
+   */
+  margin-left: auto;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 半粗,读的人一眼找得到结论。
+   */
+  font-weight: 650;
+
+  /*
+   * 「差 12 分」不许折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 差距缺位:通道对不上就不给差分结论。
+ */
+.psGapNone {
+  /*
+   * 冷灰(本卡私有,比文字灰更淡一档,表示这不是一个结论)。
+   */
+  color: #94a3b8;
+}
+
+/*
+ * 差距达标:这一轮的线你够得着。
+ */
+.psGapOk {
+  /*
+   * 达标绿。
+   */
+  color: var(--ok);
+}
+
+/*
+ * 差距欠缺:还差几分。
+ */
+.psGapWarn {
+  /*
+   * 琥珀警示。
+   */
+  color: var(--warn);
+}
+
+/*
+ * 加分项那一段。
+ */
+.psBonus {
+  /*
+   * 与上下拉开。
+   */
+  margin: 10px 0 8px;
+}
+
+/*
+ * 加分项网格:一行两个事实(条目、+N)拆成列 —— 外层 auto-fit 决定几列。
+ */
+.psBonusGrid {
+  /*
+   * 网格排布。
+   */
+  display: grid;
+
+  /*
+   * 放得下就多一列。
+   */
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+
+  /*
+   * 行距紧、列距宽。
+   */
+  gap: 4px 16px;
+}
+
+/*
+ * 加分项一条 = [勾选框 | 条目 | +N] 三列 —— +N 单独成列才对得齐(别塞回文字尾巴上)。
+ */
+.psTick {
+  /*
+   * 三列网格。
+   */
+  display: grid;
+
+  /*
+   * 勾选框与分值各占自己的宽,条目吃剩下的。
+   */
+  grid-template-columns: max-content 1fr max-content;
+
+  /*
+   * 三列按基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 列间距。
+   */
+  column-gap: 5px;
+
+  /*
+   * 条目字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 正文深灰(本卡私有,不是全站色板成员)。
+   */
+  color: #374151;
+
+  /*
+   * 整条都是点击目标。
+   */
+  cursor: pointer;
+
+  /*
+   * 官方原文常折两行,行距放开。
+   */
+  line-height: 1.7;
+}
+
+/*
+ * 加分项的勾选框:条目按基线对齐,勾选框按自己那一格居中,不然它会吊在第一行的基线上。
+ */
+.psTickBox {
+  /*
+   * 这一格内垂直居中。
+   */
+  align-self: center;
+}
+
+/*
+ * 加分项的分值。MB 有负分 bonus(Risk Assessment -100):符号跟着分值走,别拼出「+-100」。
+ */
+.psTickPts {
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 等宽数字,跨条对齐。
+   */
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 分项网格。「12 / 40」是两个事实 —— 拆成 得分 / 上限 两列(斜杠自成一列),数字才跨行对齐。
+ * 标签列吃 max-content、数字列右对齐:两张省卡等宽,数字列因此也跨卡对齐。
+ */
+.psParts {
+  /*
+   * 网格排布。
+   */
+  display: grid;
+
+  /*
+   * 标签 / 弹性空隙 / 得分 / 上限 四列。
+   */
+  grid-template-columns: max-content 1fr max-content max-content;
+
+  /*
+   * 列间距。
+   */
+  column-gap: 6px;
+
+  /*
+   * 行间距。
+   */
+  row-gap: 2px;
+
+  /*
+   * 分项字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 按基线对齐。
+   */
+  align-items: baseline;
+}
+
+/*
+ * 分项的因素名。
+ */
+.psPartName {
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 名字横跨前两列(吃掉那道弹性空隙)。
+   */
+  grid-column: 1 / 3;
+}
+
+/*
+ * 分项的得分。
+ */
+.psPartPts {
+  /*
+   * 正文深灰(本卡私有)。
+   */
+  color: #374151;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 等宽数字。
+   */
+  font-variant-numeric: tabular-nums;
+
+  /*
+   * 右对齐,个位跨行对齐。
+   */
+  text-align: right;
+
+  /*
+   * 两位数的宽度,一位数也不塌。
+   */
+  min-width: 22px;
+}
+
+/*
+ * 分项的上限。
+ */
+.psPartMax {
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 等宽数字。
+   */
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * NL 的适用范围说明(它的分制是 EE Skilled Worker 100 分制,与别省不是一回事)。
+ */
+.psScopeNote {
+  /*
+   * 与上面的分项拉开。
+   */
+  margin-top: 8px;
+
+  /*
+   * 内边距。
+   */
+  padding: 7px 9px;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 极浅蓝底(本卡私有的信息态底色)。
+   */
+  background: #eff6ff;
+
+  /*
+   * 深蓝字。
+   */
+  color: var(--primary-deep);
+
+  /*
+   * 说明字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 行距。
+   */
+  line-height: 1.55;
+}
+
+/*
+ * 对照结论块(线在哪、你差多少)。
+ */
+.psLineNote {
+  /*
+   * 与上面的分项拉开。
+   */
+  margin-top: 8px;
+
+  /*
+   * 内边距。
+   */
+  padding: 8px 10px;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 结论字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 行距。
+   */
+  line-height: 1.6;
+}
+
+/*
+ * 没有可用的线:灰底灰字 —— 这不是一个结论,是「拿不到锚」。
+ */
+.psLineNone {
+  /*
+   * 页面底灰。
+   */
+  background: var(--bg);
+
+  /*
+   * 二级文字灰。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 够得着:浅绿底深绿字。
+ */
+.psLineOk {
+  /*
+   * 极浅绿底(本卡私有)。
+   */
+  background: #f0fdf4;
+
+  /*
+   * 深绿字(本卡私有,比 --ok 深一档,压得住绿底)。
+   */
+  color: #166534;
+}
+
+/*
+ * 够不着:浅琥珀底琥珀字。差多少是事实,不染红 —— 加分项还没勾满时它随时会变。
+ */
+.psLineBad {
+  /*
+   * 极浅琥珀底(本卡私有)。
+   */
+  background: #fffbeb;
+
+  /*
+   * 琥珀警示。
+   */
+  color: var(--warn);
+}
+
+/*
+ * 「换省」这一步具体怎么走(官方给的 offer 分)。
+ */
+.psSwitch {
+  /*
+   * 正文字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 正文深灰(本卡私有)。
+   */
+  color: #374151;
+
+  /*
+   * 与上面拉开。
+   */
+  margin-top: 6px;
+
+  /*
+   * 行距。
+   */
+  line-height: 1.6;
+}
+
+/*
+ * 该省同职业在招数(免费事实,不评价「更容易」)。
+ */
+.psJobs {
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 二级文字灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 与上面拉开。
+   */
+  margin-top: 4px;
+}
+
+/*
+ * 官方出处那一段。
+ */
+.psSources {
+  /*
+   * 最小字号。
+   */
+  font-size: 11px;
+
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 与上面拉开。
+   */
+  margin-top: 8px;
+
+  /*
+   * 行距。
+   */
+  line-height: 1.7;
+}
+
+/*
+ * 官方出处逐省一条,一行排开。
+ */
+.psSourceRow {
+  /*
+   * 一行排开。
+   */
+  display: flex;
+
+  /*
+   * 省多了就换行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 条间距。
+   */
+  gap: 12px;
+
+  /*
+   * 与上面留一线。
+   */
+  margin-top: 2px;
+}
+
+/*
+ * 官方出处链接。
+ */
+.psSourceLink {
+  /*
+   * 全站链接蓝。
+   */
+  color: var(--primary);
+
+  /*
+   * 不画下划线(整段本来就是灰字小注,下划线会把它抬得太重)。
+   */
+  text-decoration: none;
+}
+
+/*
+ * 官方出处后面的日期灰注。生效日期并进出处那一行,不单占一行。
+ */
+.psSourceDate {
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+}
