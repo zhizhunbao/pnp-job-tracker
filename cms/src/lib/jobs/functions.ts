@@ -11,7 +11,8 @@
 import { FRIEND_INPUT_MAX, friendChat } from '../llm'
 import { HDR_ACCEPT, HDR_CONTENT_TYPE, HDR_COOKIE, HDR_REFERER, HDR_USER_AGENT, METHOD_POST } from '../http'
 import { queryRows, queryRowsOrEmpty, SQL, count, firstOf, firstOr, jsonOrNull, numOrNull, text, textOrNull } from '../db'
-import type { Db } from '../db'
+import type {
+  Db } from '../db'
 import { JOBS_LOG, log } from '../log'
 import { fill } from '../template'
 import { ymd } from '../time'
@@ -68,6 +69,7 @@ import type {
   ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut, SimilarEmployer, SimilarIn, SimilarList, SimilarOut, SortValIn,
   SsrDimsOut, StrCell, StreamDisplayIn, StripTitleIn, StrList, TimeLike, ToJobRowIn, TopNoc, TopNocsIn, TopNocsOut,
   UrlHandle, WhereParam,
+  JobOgDbRow, JobOgFact, JobOgLoadIn, JobOgOut, MaybeJobOgRow,
 } from './types'
 // =========================================================================
 // 1. 来源与 PII
@@ -3374,6 +3376,45 @@ export function toApplyUrlCell(r: Row): MaybeStr {
   return textOrNull(r.apply_url)
 }
 
+/**
+ * og 库行 → 可画事实(值级清洗全在这:标题兜底、城市省合并、薪资取位、徽章拼装;
+ * 长度截断不在这 —— 截多长是版面尺寸,归门的 OG_* 常量)。行为与迁出前逐字同口径:
+ * 查无行给品牌兜底句,其余格给空串/空表。
+ *
+ * @param r 库行;null = 查无/查挂。
+ * @returns og 事实。
+ */
+export function toJobOgFact(r: MaybeJobOgRow): JobOgFact {
+  if (r == null) {
+    return { title: 'Canadian jobs with immigration signals', company: null, loc: '', salary: '', chips: [] }
+  }
+  let title = 'Canadian jobs with immigration signals'
+  if (r.title != null && r.title !== '') {
+    title = r.title
+  }
+  const locParts: string[] = []
+  if (r.city != null && r.city !== '') {
+    locParts.push(r.city)
+  }
+  if (r.province != null && r.province !== '') {
+    locParts.push(r.province)
+  }
+  let salary = ''
+  if (r.salary_text != null && r.salary_text !== '') {
+    salary = r.salary_text
+  } else if (r.salary != null && r.salary !== '') {
+    salary = String(r.salary)
+  }
+  const chips: string[] = []
+  if (r.pnp_eligible === true) {
+    chips.push('PNP-eligible')
+  }
+  if (r.teer != null) {
+    chips.push('TEER ' + r.teer)
+  }
+  return { title: title, company: textOrNull(r.company), loc: locParts.join(', '), salary: salary, chips: chips }
+}
+
 // =========================================================================
 // 回调(callbacks 抽屉 2026-08-23 撤编后的固定尾段;签名由外部库/语言定死,逐行特批)
 // =========================================================================
@@ -3670,6 +3711,32 @@ export async function loadJobMeta(input: JobMetaLoadIn): JobMetaOut {
     db: input.db, sql: SQL.JOB_META_BY_ID, params: [input.id], map: toJobMeta,
   })
   return firstOr(rows, null)
+}
+
+/**
+ * og 分享图的取数(2026-08-29 自 jobs/[id]/opengraph-image.tsx 迁入,门里零逻辑):
+ * 按 id 取一行并洗成可画的格;号不合法、查不到、查库抛错一律给品牌兜底事实 ——
+ * og 图请求不该 500(分享卡宁可出品牌图,不出裂图)。
+ *
+ * @param x 连接与岗位号。
+ * @returns 洗净的 og 事实(永不 null)。
+ */
+export async function loadJobOg(x: JobOgLoadIn): JobOgOut {
+  const id = Number(x.id)
+  if (Number.isFinite(id) === false) {
+    return toJobOgFact(null)
+  }
+  try {
+    const res = await x.db.query(SQL.JOB_OG_BY_ID, [id])
+    let row: JobOgDbRow | null = null
+    const hit = res.rows[0]
+    if (hit != null) {
+      row = hit as JobOgDbRow
+    }
+    return toJobOgFact(row)
+  } catch {
+    return toJobOgFact(null)
+  }
 }
 
 /**

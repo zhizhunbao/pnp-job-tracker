@@ -25,5 +25,5 @@ export {
   jobsProvinceRoute, jobsRoute, jobsTextRoute,
 } from './routes'
 export {
-  loadApplyUrlById, loadJdFormatted, loadJdState,
+  loadApplyUrlById, loadJdFormatted, loadJdState, loadJobOg,
 } from './functions'

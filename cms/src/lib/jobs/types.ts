@@ -4528,6 +4528,108 @@ export type JobMetaFact = {
 export type JobMetaOut = Promise<JobMetaFact | null>
 
 /**
+ * `SQL.JOB_OG_BY_ID` 回来的那一行(2026-08-29 自 jobs/[id]/opengraph-image.tsx 迁入,
+ * 门里零类型)—— 列名即库列名,全格可空(LEFT JOIN 的公司名、未抽到薪资的岗都是 NULL)。
+ */
+export type JobOgDbRow = {
+  /**
+   * 职位名。
+   */
+  title: string | null
+
+  /**
+   * 公司名(LEFT JOIN,查无公司是 NULL)。
+   */
+  company: string | null
+
+  /**
+   * 城市。
+   */
+  city: string | null
+
+  /**
+   * 省码。
+   */
+  province: string | null
+
+  /**
+   * 薪资原文(抽不到是 NULL)。
+   */
+  salary_text: string | null
+
+  /**
+   * 薪资归一值(pg 的 numeric 回来可能是串)。
+   */
+  salary: string | number | null
+
+  /**
+   * 粗筛的省提名信号。
+   */
+  pnp_eligible: boolean | null
+
+  /**
+   * TEER 档(未分类是 NULL)。
+   */
+  teer: number | null
+}
+
+/**
+ * og 分享图要画的洗净格(toJobOgFact 产出;长度截断留在门的版式 JSX 里 ——
+ * 截多长是版面尺寸的事,归 OG_* 常量管)。
+ */
+export type JobOgFact = {
+  /**
+   * 标题;查无此岗/查库失败给品牌兜底句。
+   */
+  title: string
+
+  /**
+   * 公司名;没有 null(版式那一行整行不出)。
+   */
+  company: string | null
+
+  /**
+   * 「城市, 省」合并好的一段;两格都空是空串。
+   */
+  loc: string
+
+  /**
+   * 薪资展示串(原文优先,其次归一值);没有是空串。
+   */
+  salary: string
+
+  /**
+   * 徽章清单(PNP-eligible / TEER n;最多两枚,没有是空表)。
+   */
+  chips: string[]
+}
+
+/**
+ * og 库行或查无(toJobOgFact 的入参;查挂/号不合法也走 null)。
+ */
+export type MaybeJobOgRow = JobOgDbRow | null
+
+/**
+ * `loadJobOg` 的返回(永不 null —— 查不到给品牌兜底事实)。
+ */
+export type JobOgOut = Promise<JobOgFact>
+
+/**
+ * `loadJobOg` 的入参。
+ */
+export type JobOgLoadIn = {
+  /**
+   * 数据库连接(池由调用方注进来)。
+   */
+  db: Db
+
+  /**
+   * 岗位号(URL 段原串,数字化在体内做)。
+   */
+  id: string
+}
+
+/**
  * `loadJobMeta` 的入参。
  */
 export type JobMetaLoadIn = {

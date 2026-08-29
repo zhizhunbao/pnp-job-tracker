@@ -13,7 +13,7 @@
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
-// eslint-disable-next-line local/no-import-in-leaf -- lib/stats 的引擎契约,原样透传给同源 MarketChart;重抄必脱节
+// eslint-disable-next-line local/no-import-in-leaf -- 引擎输出形状特批(先例 icons/types):lib/stats 契约,零处读格、原样透传同源 MarketChart
 import type { OccRow, ProvExtra, StatRow } from '@/lib/stats'
 // eslint-disable-next-line local/no-import-in-leaf -- lib/employers 的引擎契约,原样透传给 employers 桶的洗行函数与卡片
 import type { SponsorEmployerRow } from '@/lib/employers'

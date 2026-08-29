@@ -1813,14 +1813,14 @@ const localRules = {
       create(context) {
         const fname = context.filename ?? ''
         // 2026-08-29 Frank「frontend 能包含哪些文件能不能锁死了」:射程从 .tsx 扩到 .ts ——
-        // 路由树里 .ts 只许 sitemap.ts(分片地图,位置=URL);main.css 不经 eslint,由 review 盯。
+        // 路由树里 .ts 已无合法住户(sitemap.ts 08-29 随归目录批退役);main.css 由钩子按任意后缀兜。
         if (!/[\\/]app[\\/]\(frontend\)[\\/].*\.tsx?$/.test(fname)) return {}
-        // Next 框架定名清单:路由文件 + 元数据文件(opengraph/icon 一族是约定式 API,不是自建组件)。
+        // Next 框架定名清单 —— 只列**现役**四名(2026-08-29 Frank「没用到的都排除」:
+        // loading/error/not-found/template/default/twitter-image/icon 一族框架名现在没用到,
+        // 不预开;哪天真要用,加名先过 Frank)。与 .githooks/pre-push 的 FRONTEND_ALLOW 同表
+        // (那边多一个 main.css —— css 不经 eslint,由钩子按任意后缀兜)。
         const FRAMEWORK = new Set([
-          'page.tsx', 'layout.tsx', 'loading.tsx', 'error.tsx', 'global-error.tsx',
-          'not-found.tsx', 'template.tsx', 'default.tsx',
-          'opengraph-image.tsx', 'twitter-image.tsx', 'icon.tsx', 'apple-icon.tsx',
-          'sitemap.ts',
+          'page.tsx', 'layout.tsx', 'opengraph-image.tsx',
         ])
         const base = fname.split(/[\\/]/).pop() ?? ''
         if (FRAMEWORK.has(base)) return {}
@@ -1976,6 +1976,9 @@ const localRules = {
           extraJsx:
             '`{{ fn }}` 不是默认导出却返回 JSX —— 这就是在 page.tsx 体内自建组件,'
             + '搬去 components/<页面域>/ 落户(2026-08-26 Frank「不允许自己建组件」)。',
+          spread:
+            'page.tsx 里的 JSX 展开 {...x} —— 门里传了什么要看得见:字段写全,'
+            + '或把整包收成组件的一格具名 prop(2026-08-29 Frank 拍板,对象展开禁令补圈 JSX 位)。',
         },
       },
       create(context) {
@@ -2003,6 +2006,11 @@ const localRules = {
             if (node.name.type !== 'JSXIdentifier') return
             const tag = node.name.name
             if (/^[a-z]/.test(tag)) context.report({ node: node.name, messageId: 'htmlTag', data: { tag } })
+          },
+          // 2026-08-29 Frank「这种三个 ... 的写法没检查出来吗」:对象展开禁令原本没圈 JSX 位,
+          // 门里 {...props} 把「传了什么」整个藏起来 —— 字段写全,或把整包收成组件的一格具名 prop。
+          JSXSpreadAttribute(node) {
+            context.report({ node, messageId: 'spread' })
           },
           'Program:exit'(program) {
             // 离场再判「默认导出之外的 JSX」:此时 defaultFn 已定,无论 export 语句写在文件哪端。
@@ -2778,7 +2786,18 @@ const eslintConfig = [
       '@stylistic/no-trailing-spaces': 'error',
     },
   },
-  {
+    {
+    // ── og 域特区(2026-08-29 Frank 拍板立域时定):ImageResponse/satori 只吃**内联
+    //    style 对象**,css module 在图渲染管线里物理不存在 —— forbid-dom-props 在这儿
+    //    禁的是唯一可用的介质;'flex'/'column'/十六进制色是 satori 的线格式词汇,
+    //    不是散文案,no-bare-strings 不适用。只豁免这两条,其余组件闸照咬。
+    files: ['src/components/og/**/*.tsx'],
+    rules: {
+      'react/forbid-dom-props': 'off',
+      'local/no-bare-strings': 'off',
+    },
+  },
+{
     // ── linkbutton 是裸 <a> 的唯一出口、button 是裸 <button> 的唯一出口:
     //    关掉禁令(别处一律经它们;<button> 那半 2026-08-26 Frank 追加)──
     files: ['src/components/button/linkbutton.tsx', 'src/components/button/button.tsx'],
