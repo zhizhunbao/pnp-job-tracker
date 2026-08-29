@@ -46,7 +46,7 @@ const BC_REQS: Requirement[] = [
   R({ subject: 'employer', factor: 'empStaff', value: 5, unit: 'employees', appliesArea: 'metro-vancouver', section: '6.8' }),
   R({ subject: 'employer', factor: 'empStaff', value: 3, unit: 'employees', appliesArea: 'rest-of-bc', section: '6.8' }),
 ]
-const P = (o: object = {}) => ({ teer: 2, clb: null, canadianExpMonths: null, totalExpMonths: null, familySize: null, annualIncome: null, incomeIsOccMedian: true, area: null, ...o }) as any
+const P = (o: Partial<RuleProfile> = {}): RuleProfile => ({ noc: null, teer: 2, clb: null, canadianExpMonths: null, totalExpMonths: null, familySize: null, annualIncome: null, incomeIsOccMedian: true, area: null, ...o })
 const byFactor = (rs: ReturnType<typeof evaluateRequirements>, f: string) => rs.find((r) => r.factor === f)!
 
 describe('evaluateRequirements —— 判定口径', () => {

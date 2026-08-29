@@ -1265,6 +1265,39 @@ export const DIR_DESC = 'DESC'
 export const DIR_ASC = 'ASC'
 
 // =========================================================================
+// 「原帖没写」的判据(整理版里那一格该不该占行;2026-08-28 自 components/jobs/Jd.tsx 迁入)
+// =========================================================================
+
+/**
+ * 「缺节」判定放宽(Frank 2026-07-22「不需要加括号吧」):模型指令要 `(not stated)`,
+ * 但实测会漂成 `(none stated)` / `(not specified)` / `(not mentioned)`……
+ * 严格只认一种,变体就会被当正文渲成「(none stated) ↗」。括号可有可无,
+ * not/none/n\/a + stated/specified/mentioned/provided/available/applicable/listed 一律算缺节。
+ */
+export const JD_NONE_RE = /^\(?\s*(not|none|n\/a)(\s+(stated|specified|mentioned|provided|available|applicable|listed))?\s*\)?$/i
+
+/**
+ * #198(Frank「这句话删掉」指 "Not stated in the results."):模型偶尔写整句而非短语 ——
+ * 起手是「not/none/no + stated/specified/…/information」且短句即当缺项(不占行)。
+ */
+export const JD_NONE_LOOSE_RE = /^\(?\s*(not|none|no)\s+(stated|specified|mentioned|provided|available|applicable|listed|information)\b/i
+
+/**
+ * 上一条「短句」的长度上限:再长就是正文里正常提到「not available」,不是缺项标记。
+ */
+export const JD_NONE_LOOSE_MAX = 50
+
+/**
+ * #186:缺节变体常以「- (not stated)」bullet 形式混在有内容的节里 —— 先剥前缀再判。
+ */
+export const JD_DASH_PREFIX_RE = /^-\s*/
+
+/**
+ * 判缺节时的空文本:入参缺席、或剥完前缀什么都不剩,两种都当「没有」。
+ */
+export const JD_NONE_TEXT = ''
+
+// =========================================================================
 // JD 抽取的实体与拼装字面量
 // =========================================================================
 
@@ -2794,3 +2827,208 @@ export const STREAM_NOTE_NONE = ''
  */
 export const STRIP_REPL = ''
 
+
+/**
+ * 首屏整包维度的进程内缓存时长(10 分钟)。维度表随 seed 小时级更新,10 分钟陈旧完全可接受。
+ */
+export const SSR_DIMS_TTL_MS = 600_000
+
+/**
+ * 环境里配的站点根地址;没配就是 undefined,由 siteBaseOf 退兜底。
+ */
+export const SITE_ENV = process.env.NEXT_PUBLIC_SITE_URL
+
+/**
+ * 站点根地址的兜底(canonical 要绝对地址;没配环境变量就用生产域)。
+ */
+export const SITE_FALLBACK = 'https://offer2pr.com'
+
+/**
+ * 站点根地址末尾那条斜杠(拼 canonical 前先剥,免得出现两条)。
+ */
+export const SITE_TAIL_RE = /\/$/
+
+/**
+ * 详情页 canonical 的路径前缀。
+ */
+export const JOB_PATH = '/jobs/'
+
+/**
+ * JSON-LD 里 description 的封顶长度(懒抓上限是 15000,这里留点页面重量余地)。
+ */
+export const JD_SEO_MAX = 12000
+
+/**
+ * JSON-LD 的 schema 上下文。
+ */
+export const LD_CONTEXT = 'https://schema.org'
+
+/**
+ * JSON-LD 的类型:职位。
+ */
+export const LD_JOB_POSTING = 'JobPosting'
+
+/**
+ * JSON-LD 的类型:机构。
+ */
+export const LD_ORGANIZATION = 'Organization'
+
+/**
+ * JSON-LD 的类型:地点。
+ */
+export const LD_PLACE = 'Place'
+
+/**
+ * JSON-LD 的类型:邮寄地址。
+ */
+export const LD_POSTAL = 'PostalAddress'
+
+/**
+ * JSON-LD 的类型:金额。
+ */
+export const LD_MONETARY = 'MonetaryAmount'
+
+/**
+ * JSON-LD 的类型:量值。
+ */
+export const LD_QUANTITATIVE = 'QuantitativeValue'
+
+/**
+ * JSON-LD 的国家码(全站只收加拿大岗)。
+ */
+export const LD_COUNTRY = 'CA'
+
+/**
+ * JSON-LD 的薪资币种。
+ */
+export const LD_CURRENCY = 'CAD'
+
+/**
+ * JSON-LD 的薪资周期。
+ */
+export const LD_UNIT_YEAR = 'YEAR'
+
+/**
+ * 雇佣类型:兼职。
+ */
+export const LD_PART_TIME = 'PART_TIME'
+
+/**
+ * 雇佣类型:临时(非永久合同)。
+ */
+export const LD_TEMPORARY = 'TEMPORARY'
+
+/**
+ * 雇佣类型:全职。
+ */
+export const LD_FULL_TIME = 'FULL_TIME'
+
+/**
+ * 日期截到「年-月-日」的长度。
+ */
+export const DATE_LEN = 10
+
+/**
+ * 拼装串里岗名与公司名之间的破折号。
+ */
+export const SEO_DASH = ' — '
+
+/**
+ * 拼装串里地点的左括号。
+ */
+export const SEO_PAREN_L = ' ('
+
+/**
+ * 拼装串里地点的右括号。
+ */
+export const SEO_PAREN_R = ')'
+
+/**
+ * 拼装串里「市, 省」的分隔。
+ */
+export const SEO_LOC_SEP = ', '
+
+/**
+ * JSON 串里所有的 `<`(见 escapeLd 的理由)。
+ */
+export const LD_LT_RE = /</g
+
+/**
+ * `<` 的 Unicode 转义序列。
+ */
+export const LD_LT_ESC = '\u003c'
+
+/**
+ * 兼职的工时值。
+ */
+export const HOURS_PART = 'part'
+
+/**
+ * 全职的工时值。
+ */
+export const HOURS_FULL = 'full'
+
+/**
+ * 永久合同的雇佣期值。
+ */
+export const TERM_PERMANENT = 'permanent'
+
+/**
+ * 已下架的状态值。
+ */
+export const STATUS_CLOSED_WORD = 'closed'
+
+/**
+ * JSON-LD 的上下文键(schema.org 规定的键名,打错整条作废)。
+ */
+export const LD_KEY_CONTEXT = '@context'
+
+/**
+ * JSON-LD 的类型键。
+ */
+export const LD_KEY_TYPE = '@type'
+
+/**
+ * 站名(SEO 标题的末段)。
+ */
+export const SITE_NAME = 'Offer2PR'
+
+/**
+ * SEO 标题里各段之间的竖线。
+ */
+export const META_BAR = ' | '
+
+/**
+ * 查不到那一岗时的标题。
+ */
+export const META_NOT_FOUND = 'Job not found | Offer2PR'
+
+/**
+ * 描述里岗名与雇主之间的介词。
+ */
+export const META_AT = ' at '
+
+/**
+ * 描述里地点前的介词。
+ */
+export const META_IN = ' in '
+
+/**
+ * 描述里的句号。
+ */
+export const META_DOT = '.'
+
+/**
+ * 描述里的一个空格。
+ */
+export const META_SPACE = ' '
+
+/**
+ * 没写雇主时描述里的说法。
+ */
+export const META_SOME_EMPLOYER = 'a Canadian employer'
+
+/**
+ * 描述的固定收尾(差异化信号 + 中文事实句;88% 流量是英文,中文那半给搜中文的人)。
+ */
+export const META_TAIL = ' Immigration signals: PNP streams, EE categories, wage vs ESDC median. 加拿大职位与移民信号。'

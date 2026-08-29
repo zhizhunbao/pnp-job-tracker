@@ -12,15 +12,16 @@ export {
   buildJobsWhere, checkedAt, loadAlertHits, loadBroadNocs, loadCompanyByJobId, loadCompanyBySlug,
   loadJobById, loadJobRows, loadJobsPage, loadMatchPage, loadNocOpenCounts, loadQuizFacts,
   loadOccCompetition, loadRelatedJobs, loadSimilarEmployers, loadSsrDims, loadTopNocs,
-  getTopNocs, loadTotalAndProof, jobDescription,
+  getTopNocs, getSsrDims, loadTotalAndProof, jobDescription, jobPostingJsonOf,
 } from './functions'
 export {
   loadCityCard, loadMatchDims, loadProvinceCard, pnpOnly, scrubPii, searchNocByTitle, splitQ,
 } from './functions'
 export { toEeCat, toPnpOcc } from './functions'
 export type { AlertHit, CompanyDetail, JobsFilters, RelatedJob, SimilarEmployer, SsrDims, TopNoc } from './types'
+
 export {
-  jobsJdformatRoute, jobsJdTranslateRoute, jobsApplyhowRoute, jobsCityRoute, jobsCompanyRoute, jobsCompetitionRoute, jobsDimsRoute,
+  jobsIdMetaRoute, jobsJdformatRoute, jobsJdTranslateRoute, jobsApplyhowRoute, jobsCityRoute, jobsCompanyRoute, jobsCompetitionRoute, jobsDimsRoute,
   jobsProvinceRoute, jobsRoute, jobsTextRoute,
 } from './routes'
 export {

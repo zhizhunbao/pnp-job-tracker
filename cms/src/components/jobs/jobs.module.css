@@ -1,0 +1,1837 @@
+/*
+ * jobs 页面域的私有样式(2026-08-28 换装批):职位板页壳 / 筛选行 / 主表 / 手机卡片流,
+ * 与职位详情的 JD 正文轨 / 五节整理版 / 投递栏。
+ *
+ * 来源三处,值逐格照搬不改:
+ * · main.css 第 13、14、15 段(它们本就是 2026-08-17 从 Jobs.tsx / Table.tsx / Jd.tsx 迁出去的,
+ *   现在跟着组件回本域,main.css 那三段同批删掉);
+ * · Jobs.tsx 与 Job.tsx 里剩下的内联 style;
+ * · Job.tsx 里那段注入的 \3c style> 字符串(返回钮的 :active 缩放)。
+ *
+ * **仍留在全局层**的三个类是**全站共用**的,不是本域的:`.cardMd`(白卡)、`.pill`(胶囊钮)、
+ * `.link`(站内蓝链)—— 名字在 constants.ts 里挂着注释,改名要连 main.css 一起改。
+ *
+ * 布尔分叉不写三目:每个会变的块开一个修饰类,由调用方按布尔拼上去(基座在前、修饰在后,
+ * 同文件后者盖前者)。逐格判定色(薪资有值才绿、走不了才灰)先在 functions.ts 算成色档,
+ * 再由 CELL_TONE_CLS 换成这里的一个类 —— 那是判定结果,不是排版。
+ */
+
+/*
+ * ── 1. 页壳 ──────────────────────────────────────────────────────────────
+ */
+
+/*
+ * 职位板整段(白底):Frame 的灰底之上铺一层白,与旧 .jbPage 同色,页脚之上不留灰。
+ */
+.page {
+  flex: 1 0 auto;
+  background: #ffffff;
+  color: #1f2937;
+}
+
+/*
+ * 正文轨(与 Header 头轨同宽)。
+ */
+.main {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/*
+ * 筛选区:输入行 / 折叠区 / 已选行三段竖排。
+ */
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 1rem 0;
+}
+
+/*
+ * 横幅副标里的证言(N 岗命中清单 / N 家雇主有外劳记录)。
+ * ⚠️ Jobs.tsx 那条注释说它「窄屏整条隐藏,与 .pbStat 同一条媒体查询」——
+ * 全站 grep 不到任何对应规则,那条媒体查询从来没写过,375 上它照样显示。
+ * 这里只还原它原本的左边距,不顺手改行为(改了就不是纯迁移了)。
+ */
+.proof {
+  margin-left: 10px;
+}
+
+/*
+ * 顶栏账户区(登录/注册/用户下拉一组)。
+ */
+.acct {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/*
+ * ── 2. 筛选行 ────────────────────────────────────────────────────────────
+ */
+
+/*
+ * 一条控件行(桌面 flex 换行,手机靠 flexWrap 自然折)。
+ */
+.ctl {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/*
+ * 筛选行里的量宽下拉:让壳按当前选中文案自然占宽,不再被上限截字(2026-08-29 Frank 报障
+ * 「更多筛选下拉宽度坍缩」)。
+ * 病灶:量宽下拉的壳(components/select 的 `.box`)带 150px 上限,而镜像 `overflow: hidden` ——
+ * 文案一超上限就被裁,select 自己的文字于是钻到原生箭头底下。实测(1280,EN 界面)
+ * 「All major groups」「All occupations」「Pilot community」三格量到的余量只剩 18.5–27.6px,
+ * 不够放下箭头(约 20px),末字被压;中文界面每格余量 30px 正好躲过,所以只在英文露馅 ——
+ * 而排版验收是英文优先(88% 流量)。
+ * 落点选在这里而不是 select 域:上限是那个共用件的默认档,别的板(雇主板/就业把脉)还靠它
+ * 收着宽度;职位板这一行要的是「不截字」,就由本行自己解除上限。
+ * 选择器带 `:has(> select)`,只认量宽下拉那种壳 —— 同在这一行的搜索框壳、组名、职业胶囊不受影响。
+ */
+.ctl > span:has(> select) {
+  max-width: max-content;
+}
+
+/*
+ * 折叠区里每组前面的组名。
+ */
+.filtLabel {
+  font-size: 12px;
+  color: #9ca3af;
+  min-width: 28px;
+  white-space: nowrap;
+}
+
+/*
+ * 搜索框(手机整行独占,见断点段)。
+ */
+.search {
+  flex: 0 1 260px;
+  min-width: 160px;
+}
+
+/*
+ * 与同行下拉对齐的 38 高钮。
+ */
+.btn38 {
+  height: 38px;
+  color: #374151;
+}
+
+/*
+ * 钮内一行排开(图标 + 文字 + 角标)。
+ */
+.btnRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/*
+ * 激活态一律走这一个修饰类(不再逐属性写三元)。
+ */
+.btnOn {
+  background: #eff6ff;
+  border-color: #2563eb;
+  color: #1d4ed8;
+}
+
+/*
+ * 激活且要加粗的那一档(匹配视图入口)。
+ */
+.btnBold {
+  font-weight: 600;
+}
+
+/*
+ * 「更多筛选」的激活计数徽标。
+ */
+.foldN {
+  background: #2563eb;
+  color: #ffffff;
+  border-radius: 999px;
+  font-size: 10.5px;
+  padding: 0 6px;
+  line-height: 15px;
+}
+
+/*
+ * 「更多筛选」的展开箭头。
+ */
+.foldCaret {
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+/*
+ * 更新时间:顶到本行最右(#202:不进窄屏隐藏,手机随 flexWrap 落到下方仍看得见心跳)。
+ */
+.updated {
+  color: #9ca3af;
+  font-size: 12px;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+/*
+ * 折叠区外框。
+ */
+.fold {
+  border: 1px dashed #d1d5db;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/*
+ * 勾选型筛选。
+ */
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  background: #ffffff;
+  white-space: nowrap;
+}
+
+/*
+ * 勾上的那一档:浅靛底。
+ */
+.checkOn {
+  background: #eef2ff;
+}
+
+/*
+ * ── 3. 字段选择器 ────────────────────────────────────────────────────────
+ */
+
+/*
+ * 字段钮与它的浮层的定位外框。
+ */
+.colWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/*
+ * 字段浮层。
+ */
+.colPanel {
+  position: absolute;
+  top: 110%;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 12%);
+  padding: 8px;
+  z-index: 20;
+  min-width: 210px;
+}
+
+/*
+ * 浮层顶上的一排快捷钮。
+ */
+.colHead {
+  display: flex;
+  gap: 6px;
+  padding: 2px 4px 6px;
+  border-bottom: 1px solid #f3f4f6;
+  margin-bottom: 4px;
+}
+
+/*
+ * 快捷钮。
+ * font-weight 2026-08-29 补(同 .actBtn):ghost 型吃到 `.btn` 基座的 600,
+ * HEAD 这三颗是常规字重 —— 只有「核心列」那一颗加粗(见 .colBtnMain)。
+ */
+.colBtn {
+  flex: 1;
+  white-space: nowrap;
+  padding: 4px 8px;
+  font-size: 12.5px;
+  font-weight: 400;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  background: #f9fafb;
+  color: #374151;
+  cursor: pointer;
+}
+
+/*
+ * 「核心列」那一颗(默认档,亮蓝)。
+ */
+.colBtnMain {
+  font-weight: 600;
+  color: #2563eb;
+  border-color: #bfdbfe;
+}
+
+/*
+ * 浮层里的一列。
+ */
+.colOpt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  font-size: 13px;
+  color: #1f2937;
+  cursor: pointer;
+}
+
+/*
+ * 固定列:灰着不可取消。
+ */
+.colOptFixed {
+  color: #9ca3af;
+  cursor: default;
+}
+
+/*
+ * ── 4. 已选行 ────────────────────────────────────────────────────────────
+ */
+
+/*
+ * 对这套条件的操作钮。
+ */
+.picked {
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #ffffff;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/*
+ * 「清除筛选」。
+ */
+.pickedDanger {
+  color: #b91c1c;
+}
+
+/*
+ * 「保存此筛选」。
+ */
+.pickedSave {
+  background: #eef2ff;
+  color: #3730a3;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/*
+ * 两颗操作钮贴右。
+ */
+.pickedAct {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 8px;
+}
+
+/*
+ * 职业胶囊:值是 NOC 码(精确),显示的是人话名(代码不裸奔)。
+ */
+.nocPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/*
+ * 撤掉本条职业。
+ */
+.nocX {
+  border: none;
+  background: none;
+  color: #60a5fa;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1;
+  padding: 0;
+}
+
+/*
+ * ── 5. 匹配视图入口条与状态条 ────────────────────────────────────────────
+ */
+
+/*
+ * 窄屏专属入口条(dd24-#111:桌面顶栏本就有匹配钮,手机上它折进侧滑抽屉首屏不可见)。
+ */
+.mvEntry {
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  border-radius: 9px;
+  padding: 9px 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+/*
+ * 匹配视图状态条(E5-05):说明口径 + 退出。
+ */
+.mvBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  padding: 7px 12px;
+  margin-bottom: 8px;
+  font-size: 12.5px;
+}
+
+/*
+ * 状态条正文。
+ */
+.mvText {
+  color: #1e40af;
+  flex: 1;
+  min-width: 200px;
+}
+
+/*
+ * 退出匹配视图。
+ */
+.mvExit {
+  border: none;
+  background: none;
+  padding: 0;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 400;
+}
+
+/*
+ * ── 6. 换血中(第 0 页在拉)─────────────────────────────────────────────
+ */
+
+/*
+ * #83(Frank「点我的匹配先跳医疗再跳科技」):整表换血期旧行原样挂着零提示,
+ * 视觉像跳两次 —— 顶上出一条「更新中」。
+ */
+.loading {
+  font-size: 12.5px;
+  color: #2563eb;
+  padding: 4px 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/*
+ * 转圈。
+ */
+.spin {
+  width: 10px;
+  height: 10px;
+  border: 2px solid #bfdbfe;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/*
+ * 换血期旧行半透明,不让视觉像「跳了两次」。
+ */
+.dim {
+  opacity: 0.45;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+/*
+ * ── 7. 主表 ──────────────────────────────────────────────────────────────
+ */
+
+/*
+ * 表格外框。⚠️ 量宽要靠它拿可分宽度(functions.ts 的 closest 选择器按 css 模块名取)。
+ */
+.tableWrap {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+/*
+ * 表格本体:默认 auto 布局顶一帧,量完(绘制前)即换固定布局。
+ */
+.table {
+  min-width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  table-layout: auto;
+}
+
+/*
+ * 量好宽之后换固定布局(colgroup 说了算)。
+ */
+.tableFixed {
+  table-layout: fixed;
+}
+
+/*
+ * 表头行。
+ */
+.headRow {
+  text-align: left;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/*
+ * 表头格。Frank 走查#23:表头完全显示 —— 去省略截断;#23b「header 的宽度不要变」:
+ * 一律不折行,表头挤不下就把标签本身收短(如「年薪(折算)」→「年薪」),不靠换行救。
+ */
+.th {
+  padding: 8px 6px;
+  color: #374151;
+  font-weight: 600;
+  white-space: nowrap;
+  user-select: none;
+  position: relative;
+}
+
+/*
+ * 可排序的表头格。
+ */
+.thSortable {
+  cursor: pointer;
+  overflow: hidden;
+}
+
+/*
+ * 当前按它排的那一列。
+ */
+.thOn {
+  color: #2563eb;
+}
+
+/*
+ * 操作列固定是最后一列(COLUMNS 里 always 且末位),:not(:last-child) 恰好等于原来的 isLast 判断。
+ */
+.th:not(:last-child) {
+  border-right: 1px solid #e5e7eb;
+}
+
+/*
+ * 排序提示符。
+ */
+.sortHint {
+  color: #d1d5db;
+  font-size: 11px;
+}
+
+/*
+ * 当前按它排时的提示符。
+ */
+.sortHintOn {
+  color: #2563eb;
+}
+
+/*
+ * 列右缘竖线:拖动钉死本列宽 / 双击该列回归自动。
+ */
+.resize {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 13px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 2;
+}
+
+.resize:hover {
+  background: #93c5fd;
+}
+
+.resize:active {
+  background: #3b82f6;
+}
+
+/*
+ * 数据格。格距(7px 6px)、越界裁剪、断词规则都在这儿 —— 格子里唯一还内联的是
+ * 逐格判定色里的动态色(大分类跟着 NOC 分类走)与冻结列的 sticky 偏移,那两样是算出来的。
+ */
+.td {
+  padding: 7px 6px;
+  vertical-align: top;
+}
+
+/*
+ * 冻结列内联 border-right:none 盖掉这条(inline 压得过类),sticky 下的竖线走 inset 阴影。
+ */
+.td:not(:last-child) {
+  border-right: 1px solid #f3f4f6;
+}
+
+/*
+ * 裁剪与断词只给**数据格**:固定布局下长英文值(NS Critical Vacancies)会溢出压到隔壁列。
+ * 操作列不挂 —— 它装的是按钮,原代码就没给它这两条,给了会把钮裁掉。
+ */
+.cell {
+  overflow: hidden;
+  overflow-wrap: break-word;
+  cursor: default;
+}
+
+/*
+ * #175:hover 高亮只随可点格(可点必有态,不可点必无)。
+ */
+.cellAct {
+  cursor: pointer;
+}
+
+.cellAct:hover {
+  background: #eff6ff;
+}
+
+/*
+ * 数据行。
+ */
+.row {
+  border-bottom: 1px solid #f3f4f6;
+  background: #ffffff;
+}
+
+/*
+ * 斑马纹的另一档。
+ */
+.rowAlt {
+  background: #fcfcfd;
+}
+
+/*
+ * 换血骨架行:格距仍是老的 12(它不参与列宽计算,不跟 .td 走)。
+ * #99(走查):进「我的匹配」换血期别把上一屏的默认(全「低」)行透出来压在
+ * 「只显示高/中」横幅下 —— 自相矛盾。
+ */
+.skelTd {
+  padding: 7px 12px;
+  vertical-align: top;
+  border-right: 1px solid #f3f4f6;
+}
+
+/*
+ * 骨架条。
+ */
+.skelBar {
+  display: block;
+  height: 12px;
+  border-radius: 4px;
+  background: #f1f3f5;
+}
+
+/*
+ * 一行都没有(表格版)。
+ */
+.empty {
+  padding: 24px;
+  text-align: center;
+  color: #9ca3af;
+}
+
+/*
+ * 一行都没有(卡片版)。
+ */
+.emptyCards {
+  padding: 24px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+/*
+ * 空态里的「去建档」链接。
+ */
+.emptyLink {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+/*
+ * 行内操作钮(E8-12:3x8/12 改 2x7/11.5,图标撤,每行都有一颗所以轻一档)。
+ */
+.actCell {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/*
+ * 收藏钮。
+ * 2026-08-29 换装回归修:这颗换装后走 button 族 ghost 型,`.btn` 基座会顶进来字重 600
+ * 与字号 13(原形是裸 <button>:11.5px、字重随表格继承 400)。整条写成**加倍类**(0,2,0)
+ * 压住基座,不靠两张表谁先谁后;字重显式写回 400。
+ */
+.actBtn.actBtn {
+  white-space: nowrap;
+  padding: 2px 7px;
+  font-size: 11.5px;
+  font-weight: 400;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #374151;
+  cursor: pointer;
+}
+
+/*
+ * 已收藏。同样加倍类 —— 基座压住之后,修饰档还得压得过加倍了的 `.actBtn`。
+ */
+.actBtnOn.actBtnOn {
+  color: #b45309;
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+/*
+ * ── 8. 单元格内部(Pro 锁位 / 匹配档 / 紧缺通道 / 建档引导)────────────────
+ */
+
+/*
+ * Pro 列锁标:打码占位数 + 锁(#152「这儿有个数」比一把锁更能让人判断值不值)。
+ */
+.lock {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: #b45309;
+  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+/*
+ * 打码的假占位数(真值服务端就没下发)。
+ */
+.lockMask {
+  filter: blur(4px);
+  user-select: none;
+  color: #4b5563;
+}
+
+/*
+ * 匹配档 chip 与紧缺通道徽章:同一形态两套色。
+ */
+.match {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/*
+ * 高匹配。
+ */
+.matchHigh {
+  background: #dcfce7;
+  color: #166534;
+}
+
+/*
+ * 中匹配。
+ */
+.matchMid {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+/*
+ * 低匹配。
+ */
+.matchLow {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+/*
+ * 不适用。
+ */
+.matchNa {
+  background: #fafafa;
+  color: #c4c4c8;
+}
+
+/*
+ * 强档 = 省点名招,全列唯一加底色的一档。
+ */
+.stream {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #fef3c7;
+  color: #b45309;
+  font-weight: 500;
+  display: inline-block;
+}
+
+/*
+ * 未建档时的引导链。
+ */
+.needProfile {
+  font-size: 12px;
+  color: #2563eb;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/*
+ * ── 9. 单元格色档(判定结果,不是排版)───────────────────────────────────
+ */
+
+/*
+ * 站内蓝链色(职位名/公司名/省/市)。
+ * 2026-08-29 换装回归修:换装时这个类根本没挂上去(见 boardcell 头注),链接就吃了
+ * 全局 `a { color: currentColor }` + 浏览器默认下划线。挂回来并把两格都写全:
+ * 色走 `--primary`(全站蓝的名字,值 #2563eb),下划线去掉;字号不写 —— 由表格继承 13.5。
+ */
+.link {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+/*
+ * 大分类:色值由 NOC 分类表逐类给(动态),类只管字重。
+ */
+.cat {
+  font-weight: 500;
+}
+
+/*
+ * 深灰正文。
+ */
+.slate {
+  color: #4b5563;
+}
+
+/*
+ * 深灰小字。
+ */
+.slateSm {
+  color: #4b5563;
+  font-size: 12.5px;
+}
+
+/*
+ * 近黑(区名)。
+ */
+.ink {
+  color: #1f2937;
+}
+
+/*
+ * 浅灰(无值)。
+ */
+.muted {
+  color: #9ca3af;
+}
+
+/*
+ * 浅灰小字。
+ */
+.mutedSm {
+  color: #9ca3af;
+  font-size: 12.5px;
+}
+
+/*
+ * 更浅的灰小字(「这一格没有信号」那一档)。
+ */
+.faintSm {
+  color: #d1d5db;
+  font-size: 12.5px;
+}
+
+/*
+ * 中灰小字(发布时间)。
+ */
+.graySm {
+  color: #6b7280;
+  font-size: 12.5px;
+}
+
+/*
+ * 绿(有可信薪资)。
+ */
+.money {
+  color: #15803d;
+}
+
+/*
+ * 绿小字(首发 / 在招)。
+ */
+.moneySm {
+  color: #15803d;
+  font-size: 12.5px;
+}
+
+/*
+ * 绿半粗小字(可提名)。
+ */
+.moneyMd {
+  color: #15803d;
+  font-weight: 500;
+  font-size: 12.5px;
+}
+
+/*
+ * 绿粗(高于中位)。
+ */
+.vsUp {
+  color: #15803d;
+  font-weight: 600;
+}
+
+/*
+ * 琥珀粗(低于中位)。
+ */
+.vsDown {
+  color: #b45309;
+  font-weight: 600;
+}
+
+/*
+ * 紫小字(魁省 N/A)。
+ */
+.purpleSm {
+  color: #7c3aed;
+  font-size: 12.5px;
+}
+
+/*
+ * 红小字(官方具名排除)。
+ */
+.redSm {
+  color: #b91c1c;
+  font-size: 12.5px;
+}
+
+/*
+ * 红粗小字(身份预筛红旗)。
+ */
+.redBoldSm {
+  color: #b91c1c;
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+/*
+ * 琥珀小字(AIP 在指定名单)。
+ */
+.amberSm {
+  color: #b45309;
+  font-size: 12.5px;
+}
+
+/*
+ * 青小字(试点社区)。
+ */
+.cyanSm {
+  color: #0e7490;
+  font-size: 12.5px;
+}
+
+/*
+ * 蓝绿半粗小字(外劳记录)。
+ */
+.tealSm {
+  color: #0f766e;
+  font-weight: 500;
+  font-size: 12.5px;
+}
+
+/*
+ * 蓝小字(EE 命中)。
+ */
+.blueSm {
+  color: #2563eb;
+  font-size: 12.5px;
+}
+
+/*
+ * 不加色(继承格子默认)—— 有名字才好在展示行里表态。
+ */
+.plain {
+  color: inherit;
+}
+
+/*
+ * 原子值列:内容单行不换行。
+ */
+.nowrap {
+  white-space: nowrap;
+}
+
+/*
+ * 文本列:允许多行,以便表格压进容器宽度不横向滚动。
+ */
+.wrapCell {
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+/*
+ * ── 10. 手机卡片流 ───────────────────────────────────────────────────────
+ */
+
+/*
+ * 卡片流:默认不出(≤640 断点才显,见下段)。CSS 双渲染 = 零水合差异。
+ */
+.cards {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/*
+ * 胶囊统一规格(08-10「所有胶囊的风格可以改成一样的吗」):几何对齐,
+ * 语义色是数据(一个字段一套色),经 --cbg/--cfg/--cbd 传入。
+ */
+.chip {
+  font-size: 12px;
+  padding: 2px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  background: var(--cbg);
+  color: var(--cfg);
+  border: 1px solid var(--cbd);
+  cursor: default;
+}
+
+/*
+ * 可点的那一枚。
+ */
+.chipAct {
+  cursor: pointer;
+}
+
+/*
+ * TEER 档:中性灰。
+ */
+.toneGray {
+  --cbg: #f3f4f6;
+  --cfg: #6b7280;
+  --cbd: #e5e7eb;
+}
+
+/*
+ * 可提名 / 具名紧缺通道。
+ */
+.toneAmber {
+  --cbg: #fef3c7;
+  --cfg: #92400e;
+  --cbd: #fde68a;
+}
+
+/*
+ * 官方具名不受理。
+ */
+.toneRed {
+  --cbg: #fee2e2;
+  --cfg: #b91c1c;
+  --cbd: #fecaca;
+}
+
+/*
+ * EE 类别命中。
+ */
+.toneBlue {
+  --cbg: #dbeafe;
+  --cfg: #1e40af;
+  --cbd: #bfdbfe;
+}
+
+/*
+ * AIP 在指定名单。
+ */
+.toneOrange {
+  --cbg: #ffedd5;
+  --cfg: #9a3412;
+  --cbd: #fed7aa;
+}
+
+/*
+ * 魁省(独立体系)。
+ */
+.tonePurple {
+  --cbg: #f3e8ff;
+  --cfg: #7c3aed;
+  --cbd: #e9d5ff;
+}
+
+/*
+ * LMIA 获批记录。
+ */
+.toneTeal {
+  --cbg: #ccfbf1;
+  --cfg: #0f766e;
+  --cbd: #99f6e4;
+}
+
+/*
+ * 担保档。
+ */
+.toneIndigo {
+  --cbg: #eff6ff;
+  --cfg: #1d4ed8;
+  --cbd: #bfdbfe;
+}
+
+/*
+ * 试点社区。
+ */
+.toneSky {
+  --cbg: #e0f2fe;
+  --cfg: #075985;
+  --cbd: #e0f2fe;
+}
+
+/*
+ * 卡上市/省两段链接。
+ */
+.cardLink {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+/*
+ * 市与省之间的逗号。
+ */
+.cardSep {
+  color: #9ca3af;
+}
+
+/*
+ * 卡右上角的星标(#167⑩:胶囊都归卡底那排,右上角只留星标 —— 它是按钮不是胶囊)。
+ */
+.star {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1;
+  color: #c4c9d4;
+}
+
+/*
+ * 已收藏。
+ */
+.starOn {
+  color: #b45309;
+}
+
+/*
+ * 「显示更多」那一行(点击分页,不随滚动自动加载 —— 用户拍板)。
+ */
+.more {
+  text-align: center;
+  padding: 12px;
+  font-size: 12.5px;
+  color: #9ca3af;
+}
+
+/*
+ * 在途的「显示更多」。
+ */
+.moreBusy {
+  opacity: 0.6;
+}
+
+/*
+ * ── 11. 断点显隐(CSS 双渲染,零水合差异)────────────────────────────────
+ */
+
+/*
+ * 窄屏专属件:默认不出。
+ */
+.onlyNarrow {
+  display: none;
+}
+
+@media (width <= 640px) {
+  /*
+   * #212(第 26 轮体检续):筛选行控件 38px 手机点不稳,统一 40(桌面维持 38)。
+   */
+  .ctl select,
+  .ctl button,
+  .ctl input {
+    min-height: 40px;
+  }
+
+  /*
+   * 星标热区撑到 40,靠负 margin 抵消,视觉不变。
+   */
+  .star {
+    min-width: 40px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: -8px -8px -8px 0;
+  }
+
+  /*
+   * 搜索框手机端整行独占(顶栏搜索带已退役,搜索归筛选区首格)。
+   */
+  .search {
+    flex: 1 0 100%;
+    height: 40px;
+  }
+
+  .hideNarrow {
+    display: none;
+  }
+
+  /*
+   * 匹配切换手机端走窄屏入口条,筛选行那颗藏起来,两处不同时出现。
+   */
+  .wideOnly {
+    display: none;
+  }
+
+  .tableWrap {
+    display: none;
+  }
+
+  .cards {
+    display: flex;
+  }
+
+  .onlyNarrow {
+    display: flex;
+  }
+
+  /*
+   * #217(第 27 轮体检判真):「更多(剩 N 个)」按钮 29px,命中测试不达标 —— 撑到 40
+   * 只影响手机,桌面一像素不动。2026-08-28 随组件自 main.css 的触控靶段迁入,值不改。
+   */
+  .more button {
+    min-height: 40px;
+  }
+}
+
+/*
+ * 量自然宽用:整表临时不折行、按内容撑开,量完立刻摘掉 —— 只存在一帧,不进画面。
+ */
+.measure td,
+.measure th {
+  white-space: nowrap;
+  overflow: visible;
+}
+
+/*
+ * 量宽时把列宽拖拽条藏掉:它是 position:absolute;right:0,量内容的 Range 会把它算进去,
+ * 于是每个表头都被量成「整列宽」(实测 vs 中位表头量出 132px,真实文字只要 56px)。
+ */
+.measure .resize {
+  display: none;
+}
+
+/*
+ * ── 12. JD:NOC 官方职责/要求 ────────────────────────────────────────────
+ */
+
+/*
+ * 小标题(带抓取日期)。
+ */
+.nocHead {
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: #9ca3af;
+}
+
+/*
+ * 条目列表。
+ */
+.nocList {
+  margin: 3px 0 0;
+  padding-left: 18px;
+  font-size: 12.5px;
+  color: #4b5563;
+  line-height: 1.55;
+}
+
+/*
+ * ── 13. JD:原文保真轨 ──────────────────────────────────────────────────
+ */
+
+/*
+ * 正文轨。
+ */
+.raw {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+/*
+ * 空行 = 段距。
+ */
+.gap {
+  height: 6px;
+}
+
+/*
+ * 数据层给的「• 」列表符,悬挂缩进。
+ */
+.bullet {
+  padding-left: 22px;
+  text-indent: -8px;
+}
+
+/*
+ * 大节头。首行不留上边距:renderLine 对每一行(含空行)都产出一个 div,
+ * 所以「第一行」恒等于 :first-child。
+ */
+.h1 {
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+/*
+ * 子节头。
+ */
+.h2 {
+  margin-top: 8px;
+  font-weight: 700;
+  color: #374151;
+}
+
+.h1:first-child,
+.h2:first-child {
+  margin-top: 0;
+}
+
+/*
+ * 正文统一缩进(公司弹框的扁平节同值,#188 对齐的就是这里)。
+ */
+.indent {
+  padding-left: 14px;
+}
+
+/*
+ * 邮箱/长 URL。
+ */
+.indentWrap {
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 原帖未提及。
+ */
+.indentNone {
+  color: #9ca3af;
+}
+
+/*
+ * 行内「Label:」。
+ */
+.label {
+  color: #374151;
+}
+
+/*
+ * ── 14. JD:五节整理版 ──────────────────────────────────────────────────
+ */
+
+/*
+ * 整理版正文轨。
+ */
+.fmt {
+  font-size: 13px;
+  line-height: 1.75;
+  color: #374151;
+}
+
+/*
+ * 一节。
+ */
+.sec {
+  margin-bottom: 8px;
+}
+
+/*
+ * 节小标题。
+ */
+.secHead {
+  font-weight: 700;
+  color: #111827;
+}
+
+/*
+ * 列表节。
+ */
+.bullets {
+  margin: 0;
+  padding-left: 30px;
+}
+
+/*
+ * 「怎么投」里的官方原帖链接。
+ */
+.jdLink {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+/*
+ * 逐句中文对照(与资讯页对照同规范:蓝条 + 深蓝字)。
+ */
+.zh {
+  margin: 2px 0 4px;
+  padding: 1px 0 1px 10px;
+  border-left: 3px solid #dbeafe;
+  color: #1e40af;
+  font-weight: 400;
+}
+
+/*
+ * ── 15. JD:AI 正文 ─────────────────────────────────────────────────────
+ */
+
+/*
+ * AI 文本里的【小标题】。
+ */
+.aiHead {
+  display: block;
+  margin-bottom: 2px;
+  color: #111827;
+  margin-top: 10px;
+}
+
+/*
+ * 首个【小标题】不留上距。
+ */
+.aiHeadFirst {
+  margin-top: 0;
+}
+
+/*
+ * AI 文本的一段(保留换行)。
+ */
+.aiPara {
+  white-space: pre-wrap;
+}
+
+/*
+ * ── 16. JD:主面板 ─────────────────────────────────────────────────────
+ */
+
+/*
+ * 已下架横幅(2026-08-03):closed 岗页面照旧保留可访问(已收录不 404),但必须当面说清 ——
+ * Google 招聘富结果把人直接送到详情页,他不经列表、看不到「状态」列,点了申请才撞过期页。
+ */
+.closed {
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin: 2px 0 10px;
+  font-size: 12.5px;
+  color: #92400e;
+}
+
+/*
+ * 顶部钮行。
+ */
+.acts {
+  display: flex;
+  gap: 8px;
+  margin: 2px 0 12px;
+  flex-wrap: wrap;
+}
+
+/*
+ * 翻译在途。
+ */
+.pillBusy {
+  opacity: 0.6;
+}
+
+/*
+ * 「打开完整页」那颗(它是链接不是钮)。
+ * 2026-08-29 Frank 落锤:几何照**钦定真值** `verdict.module.css` 的 `.tvPill`
+ * (职位板胶囊统一规格,08-10「所有胶囊的风格可以改成一样的吗」就是照它对齐的)——
+ * 蓝系浅底浅描边、12px、圆角 999、上下 2 左右 12。
+ * 写成**加倍类**(0,2,0):这颗同时挂着全局 `.pill`(0,1,0,白底 12.5/5px 13px),
+ * 靠文件先后取胜太脆,加倍类让本条无论表怎么合并都压得住。
+ * 同排「显示中文对照 / AI 速读」不挂本类 —— 它俩定死是纯文链形(蓝、无边、无底)。
+ */
+.pillLink.pillLink {
+  text-decoration: none;
+  display: inline-block;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  padding: 2px 12px;
+  font-size: 12px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/*
+ * AI 速读展开时的高亮态。
+ */
+.pillOn {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+/*
+ * 灰注。
+ */
+.mutedNote {
+  color: #9ca3af;
+}
+
+/*
+ * 灰注(上下 4)。
+ */
+.mutedM4 {
+  margin: 4px 0;
+}
+
+/*
+ * 灰注(上 4 下 10)。
+ */
+.mutedM4b {
+  margin: 4px 0 10px;
+}
+
+/*
+ * 空态里的「查看官方页」。
+ */
+.emptyBtn {
+  display: inline-block;
+  background: #2563eb;
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/*
+ * 整理版状态行。
+ */
+.aiNote {
+  font-size: 11.5px;
+  color: #9ca3af;
+  margin-bottom: 6px;
+}
+
+/*
+ * 状态行里的文字钮(看原文 / 重试)。
+ */
+.aiBtn {
+  border: none;
+  background: none;
+  padding: 0;
+  margin-left: 8px;
+  color: #2563eb;
+  cursor: pointer;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+/*
+ * 额度用完时给匿名用户的那句登录提额说明。
+ */
+.quotaLogin {
+  margin-left: 8px;
+}
+
+/*
+ * 底部来源行(republish 合规)。
+ */
+.src {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #f3f4f6;
+  font-size: 11.5px;
+  color: #9ca3af;
+  overflow-wrap: anywhere;
+}
+
+/*
+ * #239(第 30 轮体检):只报**域名** —— 出处照样看得见、点得开,合规不受影响,
+ * 行内一行放得下(整条 URL 在 375 上折两行又长又丑)。
+ */
+.srcLink {
+  color: #6b7280;
+  text-decoration: none;
+}
+
+/*
+ * ── 17. JD:投递栏(E9-04:正文之后常驻)───────────────────────────────
+ */
+
+/*
+ * fixed 抽离文档流后补回高度,免得来源行被压住。
+ */
+.barPad {
+  height: 63px;
+}
+
+/*
+ * 页面内 sticky 吸底。
+ */
+.bar {
+  position: sticky;
+  bottom: 0;
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  margin-top: auto;
+  padding: 10px 0 14px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  z-index: 5;
+}
+
+/*
+ * 窄屏整页:fixed 贴屏底(sticky 只在父容器盒内吸底,整页版父级是白卡)。
+ */
+.barFixed {
+  position: fixed;
+  left: 0;
+  right: 0;
+  margin-top: 0;
+  padding: 10px 16px calc(14px + env(safe-area-inset-bottom));
+  z-index: 40;
+}
+
+/*
+ * 色语义:靛 = AI 功能。
+ */
+.btnMatch {
+  background: #eef2ff;
+  color: #4338ca;
+  border: 1px solid #c7d2fe;
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/*
+ * 已下架岗(2026-08-03):主钮还写「前往投递」等于继续把人往死链上送 —— 降级成灰色的
+ * 「查看官方页」。不直接禁掉:closed 有一部分来自「本次未见+30天」的推断(非逐帖实测),
+ * 留个口子让用户自己核。
+ */
+.btnClosed {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/*
+ * 投递主钮。
+ */
+.btnApply {
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/*
+ * 拿不到全文时的提示(不开对照弹框空转)。
+ */
+.noJd {
+  font-size: 13.5px;
+  color: #6b7280;
+  padding-top: 8px;
+}
+
+/*
+ * ── 18. 职位详情整页 ─────────────────────────────────────────────────────
+ */
+
+/*
+ * 详情正文的窄读列(壳内 860,#173 惯例)。
+ */
+.detail {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+/*
+ * 面包屑:职位板 › 省 › 大类 › 中类 › 小类;末段「本岗」由 H1 承担不重复。
+ */
+.crumbs {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 8px;
+  line-height: 1.7;
+}
+
+/*
+ * 面包屑里的一段链接。
+ */
+.crumbLink {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+/*
+ * 白卡定位框(返回钮贴它的右上角)。
+ */
+.card {
+  position: relative;
+}
+
+/*
+ * 返回(Frank 走查#18,2026-07-25):右上角文字钮,直接走浏览器返回 —— 保留滚动位置与
+ * 筛选状态,不重拉数据;2026-07-28 改走 goBackOr:新标签页(站内「打开完整页」一律 _blank)
+ * 无处可回时落职位板,不再点了没反应。
+ */
+.back {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: #374151;
+  background: #ffffff;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 0.06s;
+}
+
+.back:active {
+  transform: scale(0.95);
+}
+
+/*
+ * 在途态只靠灰底 + 降透明(2026-08-06 Frank「前面为什么出现三个…」:文案前拼「… 」只添困惑)。
+ */
+.backBusy {
+  background: #f3f4f6;
+  opacity: 0.7;
+}
+
+/*
+ * H1:右侧留出返回钮的位置。
+ */
+.title {
+  margin: 0 0 2px;
+  font-size: 22px;
+  line-height: 1.35;
+  color: #111827;
+  padding-right: 120px;
+}
+
+/*
+ * 职位名译名对照(#151 口径,与公司页在招职位同款)。
+ */
+.titleAlias {
+  font-size: 13px;
+  color: #9ca3af;
+  margin-bottom: 8px;
+}
+
+/*
+ * 相似职位卡的标题。
+ */
+.relHead {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 6px;
+}
+
+/*
+ * 分组小标题代替逐行标注(同一组三行都写「同省同职业」是重复文案)。
+ */
+.relGroup {
+  font-size: 11.5px;
+  color: #9ca3af;
+  margin: 6px 0 2px;
+}
+
+/*
+ * 兜底链(2026-08-11 Frank 追加):同公司与同职业都零在招时,卡里原本什么都不剩 ——
+ * 下架页又成死路。给一条筛好的职位板链接,让他至少还有下一步可点。
+ */
+.relFallback {
+  color: #2563eb;
+  text-decoration: none;
+  font-size: 13px;
+  display: inline-block;
+  padding: 4px 0;
+}

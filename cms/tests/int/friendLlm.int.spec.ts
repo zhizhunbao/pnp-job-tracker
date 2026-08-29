@@ -11,13 +11,40 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { isGatewayError } from '@/lib/error'
 import { FRIEND_INPUT_MAX, friendChatOrThrow } from '@/lib/llm'
 
-type Call = { url: string; body: any; headers: Record<string, string> }
+/** 录下来的请求体:只声明用例断言时读的那几格(/v1 与旧链两种形状合一) */
+type CallBody = {
+  /** /v1:上限 token 数 */
+  max_tokens: number
+  /** /v1:温度 */
+  temperature: number
+  /** /v1:消息数组 */
+  messages: Array<{ role: string; content: string }>
+  /** 旧链:带 [ref:] 指纹的提示词 */
+  prompt: string
+  /** 旧链:系统提示 */
+  system: string
+  /** 旧链:是否联网搜 */
+  web_search: boolean
+}
+
+/** 被测代码调 fetch 时给的第二参 —— stub 侧只读这三格 */
+type FetchInit = {
+  /** 请求体 JSON 文本(录请求时 JSON.parse 它) */
+  body: string
+  /** 请求头 */
+  headers: Record<string, string>
+  /** 取消信号(看门狗用例靠它收尾) */
+  signal: AbortSignal
+}
+
+type Call = { url: string; body: CallBody; headers: Record<string, string> }
 
 // 每个用例给一串「按调用顺序返回的响应」;顺便把请求录下来断言
-function stubFetch(responses: Array<{ status: number; body: any; headers?: Record<string, string> }>) {
+// body 只被 JSON.stringify 原样吐回去、一个字段都不读 → 不透明化成 object(宪法「透传格不透明化」)
+function stubFetch(responses: Array<{ status: number; body: object; headers?: Record<string, string> }>) {
   const calls: Call[] = []
   let i = 0
-  vi.stubGlobal('fetch', vi.fn(async (url: string, init: any) => {
+  vi.stubGlobal('fetch', vi.fn(async (url: string, init: FetchInit) => {
     calls.push({ url: String(url), body: JSON.parse(init.body), headers: init.headers })
     const r = responses[Math.min(i++, responses.length - 1)]
     if (r == null) throw new Error('stubFetch: no response configured')
@@ -125,7 +152,7 @@ describe('friendLlm 停摆看门狗', () => {
   /** 响应头永远不来(冷启动卡在连接那头):只有 abort 能结束它 */
   function stubHang() {
     const calls: string[] = []
-    vi.stubGlobal('fetch', vi.fn((url: string, init: any) => new Promise((_ok, rej) => {
+    vi.stubGlobal('fetch', vi.fn((url: string, init: FetchInit) => new Promise((_ok, rej) => {
       calls.push(String(url))
       init.signal.addEventListener('abort', () => rej(new DOMException('aborted', 'AbortError')))
     })))
@@ -134,7 +161,7 @@ describe('friendLlm 停摆看门狗', () => {
 
   /** 头秒回,body 按 script 逐块吐;close=false → 吐完就装死(还连着,但一个字都不来) */
   function stubStream(script: Array<{ text: string; delay: number }>, close: boolean) {
-    vi.stubGlobal('fetch', vi.fn(async (_url: string, init: any) => {
+    vi.stubGlobal('fetch', vi.fn(async (_url: string, init: FetchInit) => {
       const signal: AbortSignal = init.signal
       let ctl!: ReadableStreamDefaultController<Uint8Array>
       const body = new ReadableStream<Uint8Array>({

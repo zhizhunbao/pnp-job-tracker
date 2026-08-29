@@ -4,17 +4,65 @@ import { ImageResponse } from 'next/og'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { SQL } from '@/lib/db'   // SQL 文本全在那儿,本文件只管取数与组装
+import { dbOf } from '@/lib/db/server'
 
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 export const alt = 'Job posting on Offer2PR'
 
+/**
+ * `SQL.JOB_OG_BY_ID` 回来的那一行 —— 列名即库列名,全格可空(LEFT JOIN 的公司名、
+ * 未抽到薪资的岗都会是 NULL)。2026-08-27 lint 还账批把原来的 `any` 换成本形状,
+ * 取值表达式一个字没动。
+ */
+type JobOgDbRow = {
+  /**
+   * 职位名。
+   */
+  title: string | null
+
+  /**
+   * 公司名(LEFT JOIN,查无公司是 NULL)。
+   */
+  company: string | null
+
+  /**
+   * 城市。
+   */
+  city: string | null
+
+  /**
+   * 省码。
+   */
+  province: string | null
+
+  /**
+   * 薪资原文(抽不到是 NULL)。
+   */
+  salary_text: string | null
+
+  /**
+   * 薪资归一值(pg 的 numeric 回来可能是串)。
+   */
+  salary: string | number | null
+
+  /**
+   * 粗筛的省提名信号。
+   */
+  pnp_eligible: boolean | null
+
+  /**
+   * TEER 档(未分类是 NULL)。
+   */
+  teer: number | null
+}
+
 export default async function Image({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  let r: any = null
+  let r: JobOgDbRow | null = null
   try {
     const payload = await getPayload({ config: await config })
-    const pool = (payload.db as any).pool
+    const pool = dbOf(payload)
     const res = await pool.query(
       SQL.JOB_OG_BY_ID, [Number(id)])
     r = res.rows[0] || null

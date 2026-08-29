@@ -3416,6 +3416,11 @@ export type JobsCache = {
   } | null
 
   /**
+   * 首屏 SSR 的整包维度(10 分钟 TTL,理由见 variables.ts 那一格);null = 冷。
+   */
+  ssrDims: SsrDimsCache | null
+
+  /**
    * WHERE 签名 → 总数微缓存(30s;300 组防涨)。
    */
   counts: Map<string, CountSlot>
@@ -4410,4 +4415,169 @@ export type JdTransBody = {
    * 目标语种；不在白名单 400。
    */
   lang: string | null
+}
+
+/**
+ * 首屏维度的进程内缓存(整包 + 拉到的时刻)。
+ */
+export type SsrDimsCache = {
+  /**
+   * 整包维度。
+   */
+  dims: SsrDims
+
+  /**
+   * 拉到的时刻(毫秒)。
+   */
+  ts: number
+}
+
+/**
+ * `jobPostingJsonOf` 的入参。
+ */
+export type JobPostingIn = {
+  /**
+   * 本岗(分层管线洗好的整行)。
+   */
+  job: JobRow
+
+  /**
+   * 库里存着的 JD 正文;空串 = 没有,退回拼装串。
+   */
+  jdText: string
+}
+
+/**
+ * `jobMetaOf` 的入参(Next 传进来的路由段)。
+ */
+export type JobMetaIn = {
+  /**
+   * 动态段。
+   */
+  params: Promise<{
+    /**
+     * 岗位号。
+     */
+    id: string
+  }>
+}
+
+/**
+ * JSON-LD 逐格填的入参(正在拼的对象与本岗)。
+ */
+export type LdPutIn = {
+  /**
+   * 正在拼的对象(就地填)。
+   */
+  ld: JsonObj
+
+  /**
+   * 本岗。
+   */
+  job: JobRow
+}
+
+/**
+ * 详情页 SEO 头要用的那一行(洗净的事实)。
+ */
+export type JobMetaFact = {
+  /**
+   * 岗名。
+   */
+  title: string
+
+  /**
+   * 公司名;'' = 这条帖没写雇主。
+   */
+  company: string
+
+  /**
+   * 市;'' = 没有。
+   */
+  city: string
+
+  /**
+   * 省码;'' = 没有。
+   */
+  province: string
+
+  /**
+   * 帖面薪资(清洗产物);'' = 没有。
+   */
+  salaryText: string
+
+  /**
+   * 在招 / 已下架。
+   */
+  status: string
+}
+
+/**
+ * `loadJobMeta` 的返回(查不到给 null)。
+ */
+export type JobMetaOut = Promise<JobMetaFact | null>
+
+/**
+ * `loadJobMeta` 的入参。
+ */
+export type JobMetaLoadIn = {
+  /**
+   * 数据库连接(池由调用方注进来)。
+   */
+  db: Db
+
+  /**
+   * 岗位号。
+   */
+  id: number
+}
+
+/**
+ * `jobMetaOut` 的入参。
+ */
+export type JobMetaOutIn = {
+  /**
+   * SEO 瘦行;null = 查不到。
+   */
+  row: JobMetaFact | null
+
+  /**
+   * 岗位号(拼 canonical 用)。
+   */
+  id: string
+}
+
+/**
+ * Next 的 metadata 对象里本域真给的那几格。
+ */
+export type JobMeta = {
+  /**
+   * 标题。
+   */
+  title: string
+
+  /**
+   * 描述;「未找到」那一档不给。
+   */
+  description?: string
+
+  /**
+   * canonical;「未找到」那一档不给。
+   */
+  alternates?: {
+    /**
+     * 绝对地址。
+     */
+    canonical: string
+  }
+
+  /**
+   * 收录开关;只有 closed 与「未找到」两档给它。
+   */
+  robots?: {
+    /**
+     * 进不进索引。
+     */
+    index: boolean
+  }
 }

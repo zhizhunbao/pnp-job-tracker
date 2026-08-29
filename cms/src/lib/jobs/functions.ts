@@ -16,52 +16,57 @@ import { JOBS_LOG, log } from '../log'
 import { fill } from '../template'
 import { ymd } from '../time'
 import {
-  ACCEPT_ANY, ACCEPT_HTML, ALERT_WHERE_START, AMP, AMP_ENT_RE, APPLY_SLICE_LEN, APPLY_TIMEOUT_MS, BLOCKED_SRC, BLOCKED_SRC_NONE,
-  BROAD_NOCS_MAX, CAND_CAP, CAT_LEVEL, CELL_NONE, CK, CNT_SEP, COLON_END_RE, COL_PROVINCE, COMMA, COMPANY_SLUG_COND,
-  COMP_KEY, COOKIE_CUT, COOKIE_JOIN, COUNT_CACHE_MAX, COUNT_TTL_MS, COV, CURRENT_STATUSES, DIGIT_PICK_RE,
-  DIMS_TTL_MS, DIR_ASC, DIR_DESC, DOLLAR, DRAW_STREAM_L10N, EE_KEY_L10N, EE_L10N, EE_SPLIT, EMAIL_RE, ENT_PAIRS,
-  FACES_REQUEST_HDR, FACES_REQUEST_VAL, FK, FORM_CONTENT_TYPE, FV, HAS_DIGIT_RE, HAS_SUFFIX, HOW_APPLY_RE,
-  HREF_ENT_PAIRS, HTML_NONE, ISO_NONE, JB_APPLY_ANCHOR, JB_DESC_RE, JB_EXT_LINK_RE, JB_INNER_ENT_PAIRS, JB_LINK_NONE,
-  JB_ORIGIN, JB_REQ_ANCHOR, JB_SECTION_CAP, JB_URL_RE, JD_BAD_HOST_172_RE, JD_BAD_HOST_RE, JD_BLOCK_BREAK_RE,
-  JD_BUDGET_MARGIN, JD_DIGITS_RE, JD_FAILED_MAX, JD_FETCH_TIMEOUT_MS, JD_FIELD_NONE, JD_GEN_TIMEOUT_MS,
-  JD_HEAD_JUNK_RE, JD_HEAD_MAX_LINES, JD_HEAD_SHRINK_MAX, JD_HOURS_VALUES, JD_HRS_RE, JD_HTML_CAP, JD_LINE_MIN, JD_MAX_LEN, JD_MIN_LEN,
-  JD_NEG_TTL_MS, JD_NONE, JD_ORPHAN_LEN, JD_OUT_MAX_BASE, JD_OUT_MAX_RATIO, JD_OUT_MIN_LEN, JD_PARA_LEN, JD_PROTO_RE,
-  JD_SECTION_MARKS, JD_STRIP_BLOCK_RE, JD_TAG_RE, JD_TAIL_STRIP_RE, JD_TERM_RE, JD_TERM_VALUES, JD_UA, JSF_FORM_BASE,
-  JSF_KEY_JOBID, JSF_KEY_JSJOBID, LANG_EN, LANG_KO, LEVEL_RANK, LINE_SPACES_RE, LMIA_SOURCE, LV, MAIL_AT,
+  ACCEPT_ANY, ACCEPT_HTML, ALERT_WHERE_START, AMP, AMP_ENT_RE, APPLY_SLICE_LEN, APPLY_TIMEOUT_MS, BLOCKED_SRC,
+  BLOCKED_SRC_NONE, BROAD_NOCS_MAX, CAND_CAP, CAT_LEVEL, CELL_NONE, CK, CNT_SEP, COL_PROVINCE, COLON_END_RE, COMMA,
+  COMP_KEY, COMPANY_SLUG_COND, COOKIE_CUT, COOKIE_JOIN, COUNT_CACHE_MAX, COUNT_TTL_MS, COV, CURRENT_STATUSES,
+  DATE_LEN, DIGIT_PICK_RE, DIMS_TTL_MS, DIR_ASC, DIR_DESC, DOLLAR, DRAW_STREAM_L10N, EE_KEY_L10N, EE_L10N, EE_SPLIT,
+  EMAIL_RE, ENT_PAIRS, FACES_REQUEST_HDR, FACES_REQUEST_VAL, FK, FORM_CONTENT_TYPE, FV, HAS_DIGIT_RE, HAS_SUFFIX,
+  HOURS_FULL, HOURS_PART, HOW_APPLY_RE, HREF_ENT_PAIRS, HTML_NONE, ISO_NONE, JB_APPLY_ANCHOR, JB_DESC_RE,
+  JB_EXT_LINK_RE, JB_INNER_ENT_PAIRS, JB_LINK_NONE, JB_ORIGIN, JB_REQ_ANCHOR, JB_SECTION_CAP, JB_URL_RE,
+  JD_BAD_HOST_172_RE, JD_BAD_HOST_RE, JD_BLOCK_BREAK_RE, JD_BUDGET_MARGIN, JD_DASH_PREFIX_RE, JD_DIGITS_RE,
+  JD_FAILED_MAX, JD_FETCH_TIMEOUT_MS, JD_FIELD_NONE, JD_GEN_TIMEOUT_MS, JD_HEAD_JUNK_RE, JD_HEAD_MAX_LINES,
+  JD_HEAD_SHRINK_MAX, JD_HOURS_VALUES, JD_HRS_RE, JD_HTML_CAP, JD_LINE_MIN, JD_MAX_LEN, JD_MIN_LEN, JD_NEG_TTL_MS,
+  JD_NONE, JD_NONE_LOOSE_MAX, JD_NONE_LOOSE_RE, JD_NONE_RE, JD_NONE_TEXT, JD_ORPHAN_LEN, JD_OUT_MAX_BASE,
+  JD_OUT_MAX_RATIO, JD_OUT_MIN_LEN, JD_PARA_LEN, JD_PROTO_RE, JD_SECTION_MARKS, JD_SEO_MAX, JD_STRIP_BLOCK_RE,
+  JD_TAG_RE, JD_TAIL_STRIP_RE, JD_TERM_RE, JD_TERM_VALUES, JD_UA, JOB_PATH, JSF_FORM_BASE, JSF_KEY_JOBID,
+  JSF_KEY_JSJOBID, LANG_EN, LANG_KO, LD_CONTEXT, LD_COUNTRY, LD_CURRENCY, LD_FULL_TIME, LD_JOB_POSTING,
+  LD_KEY_CONTEXT, LD_KEY_TYPE, LD_LT_ESC, LD_LT_RE, LD_MONETARY, LD_ORGANIZATION, LD_PART_TIME, LD_PLACE, LD_POSTAL,
+  LD_QUANTITATIVE, LD_TEMPORARY, LD_UNIT_YEAR, LEVEL_RANK, LINE_SPACES_RE, LMIA_SOURCE, LV, MAIL_AT,
   MAIL_DOMAIN_NONE, MAIL_NONE, MAIL_RE, MAIL_SKIP_SUFFIXES, MAIL_SKIP_WORD, MAIN_LIST_COVERAGE, MARK_HEAD, MARK_TAIL,
-  MED_SELECT, NL, NOC_JOIN_SLASH, NOC_LEN, NOC_MINOR_LEN, NOC_NONE, NOC_RE, NOC_SEARCH_MIN, NOC_SUBMAJOR_LEN,
-  NORM_DASH, NORM_DASH_RE, NORM_WS_RE, NO_LIST_PROVINCES, OCC_TITLE_NONE, OPEN_COND, ORDER_DATE_TAIL,
-  ORDER_DEFAULT_COL, ORDER_FRESH, ORIGIN_TITLE_HEAD, PARAM_NONE, PCT, PCT_SCALE, PG_CODE_NONE, PG_UNDEFINED_COLUMN,
-  PG_UNDEFINED_TABLE, PHONE_RE, PII_MASK, PREV_LINE_NONE, PROGRAM_PNP, PROOF_TTL_MS, PROV_CODE, PROV_CODE_NONE,
-  PROV_MAX_WORDS, PROV_MIN_WORDS, PROV_PREFIX_TRIM_RE, PRO_SORTS, PTS, Q_MAX_TERMS, Q_SHORT_LEN, REDIRECT_FOLLOW,
-  REQ_STREAM_L10N, RK,
-  RULE, SCORE_HIGH, SCORE_MID, SEARCH_COLS, SEEKER_ACTION_RE, SEEKER_JOBID_RE, SEP_KEY, SORT_COLUMNS, SORT_MATCH_KEY,
-  SORT_NONE, SPACE, SPACES_RE, SQL_SEG_NONE, SRC_DASH, SRC_JOB_BANK, STAMP_NONE, STREAM_L10N, STREAM_NOTE_NONE,
-  STRIP_REPL, T45_COND_PROVS, T45_NL, TEER_GENERAL_MAX, TEER_LOW_MIN, TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE,
-  TITLE_NONE, TITLE_RE,
-  TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_TTL_MS, TOP_NOCS_WITH_MED, TYPE_INELIGIBLE,
-  UNCAT, VD, W, WAGE_NEAR_PCT_MIN
+  MED_SELECT, META_AT, META_BAR, META_DOT, META_IN, META_NOT_FOUND, META_SOME_EMPLOYER, META_SPACE, META_TAIL, NL,
+  NO_LIST_PROVINCES, NOC_JOIN_SLASH, NOC_LEN, NOC_MINOR_LEN, NOC_NONE, NOC_RE, NOC_SEARCH_MIN, NOC_SUBMAJOR_LEN,
+  NORM_DASH, NORM_DASH_RE, NORM_WS_RE, OCC_TITLE_NONE, OPEN_COND, ORDER_DATE_TAIL, ORDER_DEFAULT_COL, ORDER_FRESH,
+  ORIGIN_TITLE_HEAD, PARAM_NONE, PCT, PCT_SCALE, PG_CODE_NONE, PG_UNDEFINED_COLUMN, PG_UNDEFINED_TABLE, PHONE_RE,
+  PII_MASK, PREV_LINE_NONE, PRO_SORTS, PROGRAM_PNP, PROOF_TTL_MS, PROV_CODE, PROV_CODE_NONE, PROV_MAX_WORDS,
+  PROV_MIN_WORDS, PROV_PREFIX_TRIM_RE, PTS, Q_MAX_TERMS, Q_SHORT_LEN, REDIRECT_FOLLOW, REQ_STREAM_L10N, RK, RULE,
+  SCORE_HIGH, SCORE_MID, SEARCH_COLS, SEEKER_ACTION_RE, SEEKER_JOBID_RE, SEO_DASH, SEO_LOC_SEP, SEO_PAREN_L,
+  SEO_PAREN_R, SEP_KEY, SITE_ENV, SITE_FALLBACK, SITE_TAIL_RE, SITE_NAME, SORT_COLUMNS, SORT_MATCH_KEY, SORT_NONE, SPACE, SPACES_RE,
+  SQL_SEG_NONE, SRC_DASH, SRC_JOB_BANK, SSR_DIMS_TTL_MS, STAMP_NONE, STATUS_CLOSED_WORD, STREAM_L10N,
+  STREAM_NOTE_NONE, STRIP_REPL, T45_COND_PROVS, T45_NL, TEER_GENERAL_MAX, TEER_LOW_MIN, TERM_PERMANENT,
+  TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE, TITLE_NONE, TITLE_RE, TITLE_SEG_MIN, TITLE_SPLIT_RE,
+  TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_TTL_MS, TOP_NOCS_WITH_MED, TYPE_INELIGIBLE, UNCAT, VD, W, WAGE_NEAR_PCT_MIN,
 } from './constants'
 import { JD_FORMAT_PROMPT_HEAD, REASON_EN, STATUS_EN } from './prompts'
 import { CACHE } from './variables'
 import type {
-  AlertHitsIn, AlertHitsOut, ApplyMailOut, ApplyUrlIn, BigDimsIn, BigDimsOut, BroadNocsIn, BroadNocsOut,
-  BuildWhereIn, CaughtError, Cell, CheckedAtOut, CityAgg, CityCardIn, CityCardOut, CompanyByJobIn, CompanyBySlugIn,
-  CompanyDetail, CompanyOut, CompanyWhereIn, CountMap, CountOfIn, CoverageIn, DistrictCard, DrawStreamNoteIn,
-  DropProvPrefixIn, EeDisplayIn, EeKeyDisplayIn, GenerateJdIn, GenerateJdOut, HtmlOut, JdFormattedIn, JdIn, JdOut,
-  JdStateOut, JobByIdIn, JobByIdOut, JobDbRow, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn, JobsPageOut,
-  JobsWhere, JsonCell, JsonObj, LmiaNocRow, LmiaNocsIn, LmiaNocsOut, MatchDims, MatchDimsOut, MatchIn, MatchLevel,
-  MatchPageIn, MatchPageOut, MatchProfile, MatchReason, MatchResult, MaybeLevel, MaybeNum, MaybeProfile, MaybeStr,
-  MaybeStrOut, NameOption, NocCountsIn, NocCountsOut, NocOpenCount, NocRuleOut, NocSearchIn, NocSearchOut, NumCell,
-  OccCompetitionIn, OccCompetitionOut, OccCompetitionRows, OccDiffFacts, OrderByIn, PgFailure, PnpOcc, PnpOccs,
-  ProfileJsonCell, ProfileJsonOrNull, ProofOut, ProvCounts, ProvListCoverage, ProvOption, ProvinceCardIn,
-  ProvinceCardOut, QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount, RankedHit, RatioMap, RatioOfIn,
-  RelatedIn, RelatedOut, ReqStreamDisplayIn, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut,
-  SimilarEmployer, SimilarIn, SimilarList, SimilarOut, SortValIn, SsrDimsOut, StrCell, StrList,
-  StreamDisplayIn, StripTitleIn, TopNocsIn, TopNocsOut, UrlHandle, WhereParam, AlertHit, BroadCount, BroadNoc,
-  CityDim, CompanyJobRow, DesigDim, DistrictDim, DistrictEmployerRow, DliTop, EeCatDim, EeOcc, FieldSource,
-  JdStateRow, JsonRow, MatchJob, MaybeOccDiff, NewsSlim, NocCat, NocDescDim, NocHit, OccDiffDbRow, OccDiffFact,
-  OccOpen, PnpDraw, PnpOccDim, ProvCount, RelatedJob, TimeLike, ToJobRowIn, TopNoc,
+  AlertHit, AlertHitsIn, AlertHitsOut, ApplyMailOut, ApplyUrlIn, BigDimsIn, BigDimsOut, BroadCount, BroadNoc,
+  BroadNocsIn, BroadNocsOut, BuildWhereIn, CaughtError, Cell, CheckedAtOut, CityAgg, CityCardIn, CityCardOut,
+  CityDim, CompanyByJobIn, CompanyBySlugIn, CompanyDetail, CompanyJobRow, CompanyOut, CompanyWhereIn, CountMap,
+  CountOfIn, CoverageIn, DesigDim, DistrictCard, DistrictDim, DistrictEmployerRow, DliTop, DrawStreamNoteIn,
+  DropProvPrefixIn, EeCatDim, EeDisplayIn, EeKeyDisplayIn, EeOcc, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut,
+  JdFormattedIn, JdIn, JdOut, JdStateOut, JdStateRow, JobByIdIn, JobByIdOut, JobDbRow, JobMeta, JobMetaFact,
+  JobMetaLoadIn, JobMetaOut, JobMetaOutIn, JobPostingIn, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn, JobsPageOut,
+  JobsWhere, JsonCell, JsonObj, JsonRow, LdPutIn, LmiaNocRow, LmiaNocsIn, LmiaNocsOut, MatchDims, MatchDimsOut,
+  MatchIn, MatchJob, MatchLevel, MatchPageIn, MatchPageOut, MatchProfile, MatchReason, MatchResult, MaybeLevel,
+  MaybeNum, MaybeOccDiff, MaybeProfile, MaybeStr, MaybeStrOut, NameOption, NewsSlim, NocCat, NocCountsIn,
+  NocCountsOut, NocDescDim, NocHit, NocOpenCount, NocRuleOut, NocSearchIn, NocSearchOut, NumCell, OccCompetitionIn,
+  OccCompetitionOut, OccCompetitionRows, OccDiffDbRow, OccDiffFact, OccDiffFacts, OccOpen, OrderByIn, PgFailure,
+  PnpDraw, PnpOcc, PnpOccDim, PnpOccs, ProfileJsonCell, ProfileJsonOrNull, ProofOut, ProvCount, ProvCounts,
+  ProvinceCardIn, ProvinceCardOut, ProvListCoverage, ProvOption, QuizFactsIn, QuizFactsOut, QuizProvCount,
+  QuizStreamCount, RankedHit, RatioMap, RatioOfIn, RelatedIn, RelatedJob, RelatedOut, ReqStreamDisplayIn, ResolveQIn,
+  ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut, SimilarEmployer, SimilarIn, SimilarList, SimilarOut, SortValIn,
+  SsrDimsOut, StrCell, StreamDisplayIn, StripTitleIn, StrList, TimeLike, ToJobRowIn, TopNoc, TopNocsIn, TopNocsOut,
+  UrlHandle, WhereParam,
 } from './types'
 // =========================================================================
 // 1. 来源与 PII
@@ -870,6 +875,30 @@ function orderByClause(input: OrderByIn): string {
 // =========================================================================
 // 4. 维度(首屏 + 匹配维度)
 // =========================================================================
+
+/**
+ * 首屏整包维度(带 10 分钟单件缓存)。2026-07-28 Frank「职位板返回有时候老慢了」的根因之一:
+ * 首屏 SSR 每次都重拉 8 张维度表(pnp-occupations ≤5000 行 + ee-categories 2000 +
+ * noc-categories 1000…),0.25CPU 小库上就是 1-2 秒 —— 这与 /api/jobs 里那层缓存治的是同一个病
+ * (2026-07-19「排序 3-4 秒」),当时只治了排序那条路,没治首页。串行实测旁证:同为动态页的
+ * /pricing TTFB 0.13s,职位板 1.6~3.4s。
+ * 维度表随 seed 小时级更新,10 分钟陈旧完全可接受;单实例部署,进程缓存即全局缓存。
+ * **只缓存与用户无关的维度** —— 职位行/总数/更新时间照常每次现查(页头「更新时间」不能陈旧)。
+ * 2026-08-28 换装批自 app/(frontend)/jobs/page.tsx 迁入:页面门里不许有函数体,而这层缓存
+ * 本来就是取数层的事。
+ *
+ * @param db 数据库连接(池由调用方注进来)。
+ * @returns 整包维度。
+ */
+export async function getSsrDims(db: Db): SsrDimsOut {
+  const hit = CACHE.ssrDims
+  if (hit != null && Date.now() - hit.ts < SSR_DIMS_TTL_MS) {
+    return hit.dims
+  }
+  const dims = await loadSsrDims(db)
+  CACHE.ssrDims = { dims: dims, ts: Date.now() }
+  return dims
+}
 
 /**
  * 首屏维度(2026-08-18 从 page.tsx 搬下来:同一份数据两条路两套映射,口径迟早分叉)。
@@ -2151,6 +2180,33 @@ function badHost(u: UrlHandle): boolean {
   return JD_BAD_HOST_172_RE.test(u.hostname)
 }
 
+/**
+ * 「这句话是不是『没有』」的唯一收口:整理版里模型该说「原帖没写」的那一格。
+ *
+ * 判定放宽(Frank 2026-07-22「不需要加括号吧」):模型指令要 `(not stated)`,但实测会漂成
+ * `(none stated)` / `(not specified)` / `(not mentioned)`…… 严格只认一种,变体就会被当正文
+ * 渲成「(none stated) ↗」。括号可有可无,not/none + stated/specified/mentioned/… 一律算缺。
+ * #198(Frank「这句话删掉」指 "Not stated in the results."):模型偶尔写整句而非短语 ——
+ * 起手是「not/none/no + stated/…/information」且短句即当缺项(不占行)。
+ * #186:变体常以「- (not stated)」bullet 形式混在有内容的节里,所以先剥「- 」再判。
+ *
+ * 2026-08-28 自 components/jobs/Jd.tsx 迁入(Frank 拍板):「什么算没有」是**数据口径**不是视图 ——
+ * 职位 JD 与公司简介两边都在读它,留在视图层就等于给口径开了个岔。
+ *
+ * @param s 一行文本;空串按「没有」算。
+ * @returns 这一行是不是「没有」。
+ */
+export function isJdNone(s: string): boolean {
+  const b = s.trim().replace(JD_DASH_PREFIX_RE, STRIP_REPL)
+  if (b === JD_NONE_TEXT) {
+    return true
+  }
+  if (JD_NONE_RE.test(b)) {
+    return true
+  }
+  return b.length < JD_NONE_LOOSE_MAX && JD_NONE_LOOSE_RE.test(b)
+}
+
 // =========================================================================
 // 10. 职业竞争面(该职业各省在招;2026-08-22 自 lib/score 并入)
 // =========================================================================
@@ -3403,4 +3459,334 @@ export function byEntryCountDesc(a: [string, number], b: [string, number]): numb
   const [, aN] = a
   const [, bN] = b
   return bN - aN
+}
+
+/**
+ * JobPosting JSON-LD(Google 求职富结果):只放公开事实,缺值不编 ——
+ * validThrough 仅 closed 岗给真实下架时间。
+ * 2026-08-17 拍板把 description 换成真正文:Google 的规范里它**必填**且要求「完整职位描述」,
+ * 而这里一直塞的是标题拼公司拼地点的 60 来字回声 —— 库里 46,315 个在架岗有 38,854 个存着真正文
+ * (81% 超 300 字),从来没进过页面。当天 Search Console 实测:富结果占全部搜索曝光 94%,
+ * 曝光自 7-24 峰值 7,861 连跌三周到 1,102(−86%)。**空壳描述是目前最强的解释,也是最便宜的修法。**
+ * 库里没有正文就退回原来那串拼装 —— 空着不行,缺了整条 JobPosting 作废。
+ * 2026-08-28 换装批自 app/(frontend)/jobs/[id]/page.tsx 迁入(页面门里不许有函数体)。
+ *
+ * @param input 本岗与库里存着的正文。
+ * @returns 可直接塞进 script 标签的 JSON 串(`<` 已转义,见下)。
+ */
+export function jobPostingJsonOf(input: JobPostingIn): string {
+  const job = input.job
+  const ld: JsonObj = {}
+  ld[LD_KEY_CONTEXT] = LD_CONTEXT
+  ld[LD_KEY_TYPE] = LD_JOB_POSTING
+  ld.title = job.title
+  ld.jobLocation = jobLocationOf(job)
+  ld.description = seoDescriptionOf(input)
+  putPosted({ ld, job })
+  putValidThrough({ ld, job })
+  putEmploymentType({ ld, job })
+  putHiringOrg({ ld, job })
+  putBaseSalary({ ld, job })
+  putApplyUrl({ ld, job })
+  return escapeLd(JSON.stringify(ld))
+}
+
+/**
+ * 发布日(截到年月日;库里没有就不放这一格)。
+ *
+ * @param x 正在拼的对象与本岗。
+ * @returns 无。
+ */
+function putPosted(x: LdPutIn): void {
+  const d = x.job.datePosted.slice(0, DATE_LEN)
+  if (d !== ISO_NONE) {
+    x.ld.datePosted = d
+  }
+}
+
+/**
+ * 有效期:只有 closed 岗给真实下架时间(在招岗给一个日期等于替官方编截止日)。
+ *
+ * @param x 正在拼的对象与本岗。
+ * @returns 无。
+ */
+function putValidThrough(x: LdPutIn): void {
+  if (x.job.status === STATUS_CLOSED_WORD && x.job.closedAt !== ISO_NONE) {
+    x.ld.validThrough = x.job.closedAt.slice(0, DATE_LEN)
+  }
+}
+
+/**
+ * 雇佣类型:兼职优先,其次非永久合同算临时,再次全职;都判不出就不放这一格。
+ *
+ * @param x 正在拼的对象与本岗。
+ * @returns 无。
+ */
+function putEmploymentType(x: LdPutIn): void {
+  if (x.job.employmentHours === HOURS_PART) {
+    x.ld.employmentType = LD_PART_TIME
+    return
+  }
+  if (x.job.employmentTerm !== ISO_NONE && x.job.employmentTerm !== TERM_PERMANENT) {
+    x.ld.employmentType = LD_TEMPORARY
+    return
+  }
+  if (x.job.employmentHours === HOURS_FULL) {
+    x.ld.employmentType = LD_FULL_TIME
+  }
+}
+
+/**
+ * 招聘方(没有公司名就不放这一格 —— 规范允许缺,编一个「某加拿大雇主」进结构化数据是造假)。
+ *
+ * @param x 正在拼的对象与本岗。
+ * @returns 无。
+ */
+function putHiringOrg(x: LdPutIn): void {
+  if (x.job.company === ISO_NONE) {
+    return
+  }
+  const org: JsonObj = {}
+  org[LD_KEY_TYPE] = LD_ORGANIZATION
+  org.name = x.job.company
+  if (x.job.officialUrl !== ISO_NONE) {
+    org.sameAs = x.job.officialUrl
+  }
+  x.ld.hiringOrganization = org
+}
+
+/**
+ * 工作地(国家写死加拿大 —— 全站只收加拿大岗;市/省缺就不放那一格)。
+ *
+ * @param job 本岗。
+ * @returns 地点对象。
+ */
+function jobLocationOf(job: JobRow): JsonObj {
+  const addr: JsonObj = {}
+  addr[LD_KEY_TYPE] = LD_POSTAL
+  addr.addressCountry = LD_COUNTRY
+  if (job.city !== ISO_NONE) {
+    addr.addressLocality = job.city
+  }
+  if (job.province !== ISO_NONE) {
+    addr.addressRegion = job.province
+  }
+  const place: JsonObj = {}
+  place[LD_KEY_TYPE] = LD_PLACE
+  place.address = addr
+  return place
+}
+
+/**
+ * 薪资(只放折算年薪 —— 帖面原文单位五花八门,进结构化数据会被当成年薪读错)。
+ *
+ * @param x 正在拼的对象与本岗。
+ * @returns 无。
+ */
+function putBaseSalary(x: LdPutIn): void {
+  if (x.job.salaryAnnual == null) {
+    return
+  }
+  const value: JsonObj = {}
+  value[LD_KEY_TYPE] = LD_QUANTITATIVE
+  value.value = x.job.salaryAnnual
+  value.unitText = LD_UNIT_YEAR
+  const pay: JsonObj = {}
+  pay[LD_KEY_TYPE] = LD_MONETARY
+  pay.currency = LD_CURRENCY
+  pay.value = value
+  x.ld.baseSalary = pay
+}
+
+/**
+ * 原帖链接(缺就不放这一格)。
+ *
+ * @param x 正在拼的对象与本岗。
+ * @returns 无。
+ */
+function putApplyUrl(x: LdPutIn): void {
+  if (x.job.applyUrl !== ISO_NONE) {
+    x.ld.url = x.job.applyUrl
+  }
+}
+
+/**
+ * description:库里有真正文就用真的(封顶见 JD_SEO_MAX),没有才退回拼装串。
+ *
+ * @param input 本岗与库里存着的正文。
+ * @returns 描述。
+ */
+function seoDescriptionOf(input: JobPostingIn): string {
+  const real = input.jdText.slice(0, JD_SEO_MAX)
+  if (real !== ISO_NONE) {
+    return real
+  }
+  const loc = locWordsOf(input.job)
+  return input.job.title + SEO_DASH + input.job.company + SEO_PAREN_L + loc + SEO_PAREN_R
+}
+
+/**
+ * 拼装串里的「市, 省」。
+ *
+ * @param job 本岗。
+ * @returns 地点串;两格都空给空串。
+ */
+function locWordsOf(job: JobRow): string {
+  const parts: StrList = []
+  if (job.city !== ISO_NONE) {
+    parts.push(job.city)
+  }
+  if (job.province !== ISO_NONE) {
+    parts.push(job.province)
+  }
+  return parts.join(SEO_LOC_SEP)
+}
+
+/**
+ * 🔴 `JSON.stringify` **不转义 `<`**,而这串要走 dangerouslySetInnerHTML —— 正文是从雇主站
+ * 抓来的第三方内容,里面一旦出现 `</script>` 就会提前闭合脚本、后面的字符当 HTML 解析(XSS)。
+ * 把 `<` 全部转成 Unicode 转义序列:JSON 解析出来是同一个字符,却再也拼不出闭合标签。
+ * 信任边界不上砧板(CLAUDE.md)。
+ *
+ * @param json 序列化好的串。
+ * @returns 转义过的串。
+ */
+function escapeLd(json: string): string {
+  return json.replace(LD_LT_RE, LD_LT_ESC)
+}
+
+/**
+ * 详情页 SEO 头要用的那一行(瘦查询,不走分层管线 —— 它只取公开列)。
+ *
+ * @param input 连接与岗位号。
+ * @returns 那一行;号不合法或查不到给 null。
+ */
+export async function loadJobMeta(input: JobMetaLoadIn): JobMetaOut {
+  if (Number.isFinite(input.id) === false) {
+    return null
+  }
+  const rows = await queryRowsOrEmpty({
+    db: input.db, sql: SQL.JOB_META_BY_ID, params: [input.id], map: toJobMeta,
+  })
+  return firstOr(rows, null)
+}
+
+/**
+ * SEO 瘦行 → 事实(值级清洗在这儿做完:每一格都已是可直接拼进标题的串)。
+ *
+ * @param r 库行。
+ * @returns 事实。
+ */
+function toJobMeta(r: Row): JobMetaFact {
+  return {
+    title: text(r.title),
+    company: text(r.company),
+    city: text(r.city),
+    province: text(r.province),
+    salaryText: text(r.salary_text),
+    status: text(r.status),
+  }
+}
+
+/**
+ * 详情页的 SEO 头。closed 岗页面保留可访问(已收录不 404)但不再让新收录 —— 那是过期内容,
+ * 进新索引只会把人送到死链上。查不到的岗给一个不进索引的「未找到」头。
+ *
+ * @param input 那一行与岗位号。
+ * @returns Next 的 metadata 对象。
+ */
+export function jobMetaOut(input: JobMetaOutIn): JobMeta {
+  const canonical = siteBaseOf() + JOB_PATH + input.id
+  if (input.row == null) {
+    return { title: META_NOT_FOUND, robots: { index: false } }
+  }
+  const meta: JobMeta = {
+    title: metaTitleOf(input.row),
+    description: metaDescriptionOf(input.row),
+    alternates: { canonical: canonical },
+  }
+  if (input.row.status === STATUS_CLOSED_WORD) {
+    meta.robots = { index: false }
+  }
+  return meta
+}
+
+/**
+ * 站点根地址:配了环境变量就用它(末尾那条斜杠先剥,免得 canonical 出现两条),没配用生产域。
+ *
+ * @returns 站点根地址。
+ */
+function siteBaseOf(): string {
+  if (SITE_ENV == null) {
+    return SITE_FALLBACK
+  }
+  return SITE_ENV.replace(SITE_TAIL_RE, ISO_NONE)
+}
+
+/**
+ * 标题:岗名 — 公司 | 市, 省 | 站名。缺的那截不出,不留空的连接符。
+ *
+ * @param row SEO 瘦行。
+ * @returns 标题。
+ */
+function metaTitleOf(row: JobMetaFact): string {
+  let out = row.title
+  if (row.company !== ISO_NONE) {
+    out = out + SEO_DASH + row.company
+  }
+  const loc = metaLocOf(row)
+  if (loc !== ISO_NONE) {
+    out = out + META_BAR + loc
+  }
+  return out + META_BAR + SITE_NAME
+}
+
+/**
+ * 描述:一句英文事实 + 一句中文事实(88% 流量是英文,中文那半给搜中文的人)。
+ *
+ * @param row SEO 瘦行。
+ * @returns 描述。
+ */
+function metaDescriptionOf(row: JobMetaFact): string {
+  let out = row.title + META_AT + metaCompanyOf(row)
+  const loc = metaLocOf(row)
+  if (loc !== ISO_NONE) {
+    out = out + META_IN + loc
+  }
+  out = out + META_DOT
+  if (row.salaryText !== ISO_NONE) {
+    out = out + META_SPACE + row.salaryText + META_DOT
+  }
+  return out + META_TAIL
+}
+
+/**
+ * 描述里的雇主名:没有公司名就说「一家加拿大雇主」——「本站未收录」在这一句里读不通,
+ * 而这不是「官方不公布」,只是这条帖没写雇主。
+ *
+ * @param row SEO 瘦行。
+ * @returns 雇主名。
+ */
+function metaCompanyOf(row: JobMetaFact): string {
+  if (row.company === ISO_NONE) {
+    return META_SOME_EMPLOYER
+  }
+  return row.company
+}
+
+/**
+ * 「市, 省」;两格都空给空串。
+ *
+ * @param row SEO 瘦行。
+ * @returns 地点串。
+ */
+function metaLocOf(row: JobMetaFact): string {
+  const parts: StrList = []
+  if (row.city !== ISO_NONE) {
+    parts.push(row.city)
+  }
+  if (row.province !== ISO_NONE) {
+    parts.push(row.province)
+  }
+  return parts.join(SEO_LOC_SEP)
 }

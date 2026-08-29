@@ -19,6 +19,7 @@ import path from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
 
 import { getDb } from '@/lib/db/server'
+import type { Db } from '@/lib/db'
 import { consult } from '@/lib/consult/server'
 import { loadVerdictTables } from '@/lib/ruling/server'
 import { judgeWithRuling } from '../helpers/judge'
@@ -58,7 +59,7 @@ const caseResults: CaseResult[] = []
 const prodResults: ProdResult[] = []
 
 /** 一轮:同 logReplay 的形状 —— 抛错收成 code,耗时量出来。 */
-async function runTurn(db: any, text: string, lang: 'zh' | 'en' | 'ko', history: { role: 'user' | 'assistant'; content: string }[], asked: string[]): Promise<TurnResult> {
+async function runTurn(db: Db, text: string, lang: 'zh' | 'en' | 'ko', history: { role: 'user' | 'assistant'; content: string }[], asked: string[]): Promise<TurnResult> {
   const t0 = Date.now()
   let err: string | null = null
   let out = { answer: '', facts: [] as ConsultFact[], noc: null as string | null, degraded: false }
@@ -169,7 +170,6 @@ function writeReport(cs: CaseResult[], ps: ProdResult[]): void {
   const day = new Date().toISOString().slice(0, 10)
 
   const cTurns = cs.flatMap((r) => r.turns)
-  const cAnswered = cTurns.filter((t) => !t.err)
   const cHits = cTurns.flatMap((t) => t.cardHits)
 
   const pOk = ps.filter((p) => !p.turn.err)
@@ -205,7 +205,6 @@ function writeReport(cs: CaseResult[], ps: ProdResult[]): void {
   md.push(`## 金标语料(${cs.length} 条)`)
   md.push('')
   for (const r of cs) {
-    const last = r.turns[r.turns.length - 1]
     md.push(`### ${r.id}${r.hard ? '(hard)' : ''} ${r.pass ? '✓' : '✗'} — ${r.note}`)
     if (r.problems.length) md.push(`- 问题:${r.problems.join(';')}`)
     if (r.oldOnly.length) md.push(`- 口径差:${r.oldOnly.join(';')}`)

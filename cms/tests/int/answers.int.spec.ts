@@ -2,7 +2,7 @@
 // 锁死三件事:① 老答案迁得过来(丢了=让用户重答,红线);② 目标省两种表示始终同步
 // (只写一边 → 另一个入口会重新问一遍,那正是这次收敛掉的病);③ 档位→引擎输入的换算与重构前逐字一致。
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { ANSWERS_KEY, DECISIONS, getFields, KNOWN_NO_FREE_LEAD, answeredBasics, batchLeadsFree, fieldsOf, pullAndMerge, readAnswers, readScoreAnswers, resetAnswersMemory, toEngineAnswers, writeAnswers, type Answers } from '@/lib/quiz'
+import { DECISIONS, getFields, KNOWN_NO_FREE_LEAD, answeredBasics, batchLeadsFree, fieldsOf, pullAndMerge, readAnswers, readScoreAnswers, resetAnswersMemory, toEngineAnswers, writeAnswers, type Answers } from '@/lib/quiz'
 
 const OLD_QUIZ = 'jobs_quiz_v1'
 const OLD_PR = 'plan_pr_v1'

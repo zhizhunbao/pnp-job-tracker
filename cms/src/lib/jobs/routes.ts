@@ -25,10 +25,29 @@ import {
   AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, CITY_PARAM_LEN_MAX, DIMS_CACHE_CONTROL, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT, JD_LIMIT_PREFIX, JD_TRANS_MARKS_RE, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, MAIL_NONE, NOC5_RE, PAGE_N_MAX, PARAM_NONE, PROV2_RE, P_CITY, P_CODE, P_DIR, P_DIRECT, P_DISTRICT, P_NOC, P_PAGE, P_PROV, P_SORT, P_URL, P_VIEW, RADIX_DEC, SORT_NONE, STAMP_NONE, TRUE_ONE, TRUE_WORD, URL_CUT_RE, VIEW_MATCH,
 } from './constants'
 import {
-  emptySimilar, loadApplyEmail, loadCompanyByJobId, loadJobsPage, loadMatchPage, loadOccCompetition, loadSimilarEmployers, generateJdFormatted, hasProfile, jobDescription, loadBigDims, loadCityCard, loadJdFormatted, loadJdState, loadMatchDims, loadProvinceCard, normalizeProfile,
+  emptySimilar, loadApplyEmail, loadCompanyByJobId, loadJobsPage, loadMatchPage, loadOccCompetition, loadSimilarEmployers, generateJdFormatted, hasProfile, jobDescription, jobMetaOut, loadBigDims, loadCityCard, loadJdFormatted, loadJdState, loadJobMeta, loadMatchDims, loadProvinceCard, normalizeProfile,
 } from './functions'
 import { CACHE } from './variables'
-import type { CompanyBody, JdTransBody, JdUrlBody, JobsFilters, MatchDims, MaybeStr, ProfileJson } from './types'
+import type {
+  CompanyBody, JdTransBody, JdUrlBody, JobMeta, JobMetaIn, JobsFilters, MatchDims, MaybeStr, ProfileJson,
+} from './types'
+
+/**
+ * /jobs/[id] 的 SEO 头 —— Next 的 generateMetadata,页面门只做一行转发(门里不许有函数体)。
+ * 名字照「routes 名 ↔ URL 机械映射」来:`/jobs/[id]` 的元数据芯 = jobsIdMetaRoute。
+ * 2026-08-28 换装批自 app/(frontend)/jobs/[id]/page.tsx 迁入:它要连库,而页面域的组件桶是
+ * 浏览器可打包的那一半,放不下 —— routes 是本域唯一允许 `getDb` 的抽屉,而它也确实是
+ * 这条路由的服务端契约之一(Next 在同一次请求里调它)。
+ *
+ * @param input Next 传进来的路由段。
+ * @returns metadata 对象。
+ */
+export async function jobsIdMetaRoute(input: JobMetaIn): Promise<JobMeta> {
+  const seg = await input.params
+  const db = await getDb()
+  const row = await loadJobMeta({ db: db, id: Number(seg.id) })
+  return jobMetaOut({ row: row, id: seg.id })
+}
 
 /**
  * GET /api/jobs:职位列表服务端分页/筛选/搜索(E10-01 P2,取代旧「一次拉 20k blob 前端过滤」)。
