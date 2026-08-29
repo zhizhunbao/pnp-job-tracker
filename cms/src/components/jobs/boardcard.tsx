@@ -16,7 +16,7 @@
  */
 import { JobCard } from '@/components/card'
 import { DateAge, TimeText } from '@/components/time'
-import { COL, GRAIN_SECOND, SPACE, TEXT_NONE } from './constants'
+import { COL, GRAIN_MINUTE, SPACE, TEXT_NONE } from './constants'
 import {
   boardCardViewOf, makeCardFieldClick, makeCardTitleClick, makeChipClick, makeSaveToggle, someOf,
 } from './functions'
@@ -62,7 +62,7 @@ export function BoardCard({ b, job }: BoardCardIn) {
       }
       chips={chips}
       footer={job.lastSeen !== TEXT_NONE && (
-        <>{b.t('col.lastSeen')}{SPACE}<TimeText iso={job.lastSeen} grain={GRAIN_SECOND} /></>
+        <>{b.t('col.lastSeen')}{SPACE}<TimeText iso={job.lastSeen} grain={GRAIN_MINUTE} /></>
       )} />
   )
 }

@@ -7,11 +7,11 @@
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
-import { IconClipboard, IconCompass, IconSave, IconSettings, IconStar, IconTarget, IconUser } from '@/components/icons'
+import { IconClipboard, IconSave, IconSettings, IconStar, IconTarget, IconUser } from '@/components/icons'
 import { LinkButton } from '@/components/button'
 import {
   ARIA_MENU, PATH_ACCOUNT, PATH_ACCOUNT_FAVS, PATH_ACCOUNT_PROFILE, PATH_ACCOUNT_SAVED, PATH_ACCOUNT_SJOBS,
-  PATH_MATCH, PRO_LABEL, QUIZ_PATH,
+  PATH_MATCH, PRO_LABEL,
 } from './constants'
 import { logout } from './functions'
 import type { AccountMenuPopIn } from './types'
@@ -41,7 +41,6 @@ export function AccountMenuPop({ t, email, shortName, isPro, proUntil, onUpgrade
       </LinkButton>
       <div className={css.menuSect}>{t('menu.sect.job')}</div>
       <LinkButton href={PATH_MATCH} className={css.menuItem}><IconTarget /> {t('mv.entry')}</LinkButton>
-      <LinkButton href={QUIZ_PATH} className={css.menuItem}><IconCompass /> {t('plan.pr.title')}</LinkButton>
       <LinkButton href={PATH_ACCOUNT_FAVS} className={css.menuItem}><IconStar /> {t('fav.title')}</LinkButton>
       <LinkButton href={PATH_ACCOUNT_SJOBS} className={css.menuItem}><IconClipboard /> {t('sj.title')}</LinkButton>
       <div className={css.menuHr} />

@@ -19,7 +19,7 @@ import { DENY_IP, DENY_USER,
   TEXT_RATE_LIMITED, TEXT_UPGRADE,
 } from './constants'
 import { CACHE } from './variables'
-import type { MaybeDenyBody, FreeGated, FreeGateIn, MaybeRawUser, MaybeUser, QuotaPairs, ReqHeaders, ReqLike, UserOut } from './types'
+import type { MaybeDenyBody, FreeGated, FreeGateIn, MaybeRawUser, MaybeStr, MaybeUser, QuotaPairs, ReqHeaders, ReqLike, UserOut } from './types'
 
 /**
  * 同 getUser，但鉴权层抛错当未登录（查挂不该把业务端点打成 500；
@@ -218,5 +218,27 @@ export function toSessionUser(u: MaybeRawUser): MaybeUser {
   if (u == null) {
     return null
   }
-  return { id: u.id, email: text(u.email), role: u.role, proUntil: u.proUntil, profile: u.profile }
+  return {
+    id: u.id,
+    email: text(u.email),
+    role: u.role,
+    proUntil: u.proUntil,
+    displayName: strOrNullOf(u.displayName),
+    avatar: strOrNullOf(u.avatar),
+    profile: u.profile,
+  }
+}
+
+/**
+ * 别人家的对象上的可缺格 → 本域的「有或 null」(undefined 与空串都收成 null;
+ * 空串的显示名/头像等于没设,下游判一次 null 就够)。
+ *
+ * @param v 原值。
+ * @returns 非空串或 null。
+ */
+function strOrNullOf(v: MaybeStr): MaybeStr {
+  if (v == null || v === '') {
+    return null
+  }
+  return v
 }

@@ -77,10 +77,26 @@ export type SessionUser = {
   proUntil: string | null
 
   /**
+   * 显示名;没设过则 null。2026-08-29 补格:SSR 分层态早先漏了这格,职位板头像
+   * 只好拿邮箱首字母,和二级页(/api/users/me 有这格)一人两个字母(Frank 实拍)。
+   */
+  displayName: string | null
+
+  /**
+   * 头像 URL(OAuth 带回);没有则 null。与 displayName 同批补格,理由同上。
+   */
+  avatar: string | null
+
+  /**
    * 档案 jsonb(答题/匹配那套;本域不读内容,只透传给 jobs 的 normalizeProfile)。
    */
   profile: ProfileObj | null
 }
+
+/**
+ * 有内容的串或没有(toSessionUser 洗格的入出参:undefined/空串收成 null)。
+ */
+export type MaybeStr = string | null
 
 /**
  * 会话用户或没登录。
@@ -116,6 +132,16 @@ export type RawUser = {
    * Pro 到期日。
    */
   proUntil: string | null
+
+  /**
+   * 显示名(2026-08-29 补格,见 SessionUser.displayName)。
+   */
+  displayName: string | null
+
+  /**
+   * 头像 URL(2026-08-29 补格)。
+   */
+  avatar: string | null
 
   /**
    * 档案 jsonb。

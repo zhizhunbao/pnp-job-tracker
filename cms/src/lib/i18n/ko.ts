@@ -555,7 +555,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'col.company': '회사명', 'col.title': '직책', 'col.noc': 'NOC', 'col.accessibility': '경력 수준',
   'col.country': '국가', 'col.province': '주/도', 'col.city': '시', 'col.district': '구/군', 'col.address': '주소',
   'col.salary': '급여', 'col.salaryYr': '연봉', 'col.wageMedHr': '중위 시급', 'col.wageMedYr': '중위 연봉', 'col.vsMedian': '중위 대비', 'col.source': '출처', 'col.origin': '채널', 'col.direct': '게시',
-  'col.pnp': 'PNP', 'col.ee': 'EE', 'col.aip': 'AIP', 'col.pilot': '시범 커뮤니티', 'col.lmia': 'LMIA 이력', 'col.eligibility': '비자 플래그', 'col.status': '상태', 'col.firstSeen': '최초 수집', 'col.lastSeen': '업데이트 시각', 'col.closedAt': '마감일', 'col.score': '이민 경로',
+  'col.pnp': 'PNP', 'col.ee': 'EE', 'col.aip': 'AIP', 'col.pilot': '시범 커뮤니티', 'col.lmia': 'LMIA 이력', 'col.eligibility': '비자 플래그', 'col.status': '상태', 'col.firstSeen': '최초 수집', 'col.lastSeen': '마지막 확인', 'col.closedAt': '마감일', 'col.score': '이민 경로',
   'cell.elig.no_sponsorship': '🚫 스폰서 불가 명시', 'cell.elig.pr_required': '🚫 시민권/PR 한정',
   'eligOnly': '스폰서 불가/PR 한정 제외', 'eligOnly.tip': 'JD에 「스폰서 불가」「시민권/PR 한정」이 명시된 공고 제외; 미검출≠스폰서 보장, 명시가 없을 뿐',
   'fact.elig': '비자 플래그', 'fact.eligQuote': 'JD 원문', 'fact.eligNote': 'JD 원문 기반 검출(정밀도 우선); 「—」= 해당 표현 미검출, 스폰서 제공을 의미하지 않음',

@@ -558,7 +558,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'col.company': 'Company', 'col.title': 'Title', 'col.noc': 'NOC', 'col.accessibility': 'Level',
   'col.country': 'Country', 'col.province': 'Province', 'col.city': 'City', 'col.district': 'District', 'col.address': 'Address',
   'col.salary': 'Salary', 'col.salaryYr': 'Annual', 'col.wageMedHr': 'Median $/hr', 'col.wageMedYr': 'Median $/yr', 'col.vsMedian': 'vs median', 'col.source': 'Source', 'col.origin': 'Channel', 'col.direct': 'Posting',
-  'col.pnp': 'PNP', 'col.ee': 'EE', 'col.aip': 'AIP', 'col.pilot': 'Pilot community', 'col.lmia': 'LMIA history', 'col.eligibility': 'Visa flags', 'col.status': 'Status', 'col.firstSeen': 'First seen', 'col.lastSeen': 'Updated', 'col.closedAt': 'Closed', 'col.score': 'Pathway',
+  'col.pnp': 'PNP', 'col.ee': 'EE', 'col.aip': 'AIP', 'col.pilot': 'Pilot community', 'col.lmia': 'LMIA history', 'col.eligibility': 'Visa flags', 'col.status': 'Status', 'col.firstSeen': 'First seen', 'col.lastSeen': 'Last seen', 'col.closedAt': 'Closed', 'col.score': 'Pathway',
   'cell.elig.no_sponsorship': '🚫 No sponsorship', 'cell.elig.pr_required': '🚫 PR/citizen only',
   'eligOnly': 'Hide no-sponsor/PR-only', 'eligOnly.tip': 'Hide jobs whose JD explicitly says "no sponsorship" or "citizens/PR only"; no flag ≠ sponsorship guaranteed — it just isn’t stated',
   'fact.elig': 'Visa flag', 'fact.eligQuote': 'JD quote', 'fact.eligNote': 'Detected from the JD text (precision-first); "—" means no such wording was found — not that the employer sponsors',

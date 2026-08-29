@@ -606,7 +606,7 @@ export const jobsZh = {
   'col.company': '公司', 'col.title': '职位', 'col.noc': 'NOC', 'col.accessibility': '经验级别',
   'col.country': '国家', 'col.province': '省', 'col.city': '市', 'col.district': '区', 'col.address': '地址',
   'col.salary': '薪资', 'col.salaryYr': '年薪', 'col.wageMedHr': '中位时薪', 'col.wageMedYr': '中位年薪', 'col.vsMedian': 'vs 中位', 'col.source': '来源', 'col.origin': '渠道', 'col.direct': '发布',
-  'col.pnp': 'PNP', 'col.ee': 'EE', 'col.aip': 'AIP', 'col.pilot': '试点社区', 'col.lmia': '外劳记录', 'col.eligibility': '身份预筛', 'col.status': '状态', 'col.firstSeen': '首次收录', 'col.lastSeen': '更新时间', 'col.closedAt': '下架时间', 'col.score': '通道',
+  'col.pnp': 'PNP', 'col.ee': 'EE', 'col.aip': 'AIP', 'col.pilot': '试点社区', 'col.lmia': '外劳记录', 'col.eligibility': '身份预筛', 'col.status': '状态', 'col.firstSeen': '首次收录', 'col.lastSeen': '最后可见', 'col.closedAt': '下架时间', 'col.score': '通道',
   'cell.elig.no_sponsorship': '🚫 明确不担保', 'cell.elig.pr_required': '🚫 须 PR/公民',
   'eligOnly': '排除不担保/须 PR', 'eligOnly.tip': '排除 JD 里明确写了「不提供担保」或「仅限公民/PR」的岗;未检出≠保证担保,只是没写',
   'fact.elig': '身份预筛', 'fact.eligQuote': 'JD 原句', 'fact.eligNote': '数据层按 JD 原文检测(精确优先宁可漏);「—」= 未检出此类表述,不代表雇主提供担保',
