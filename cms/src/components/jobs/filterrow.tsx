@@ -7,6 +7,10 @@
  * 「我的匹配」(2026-08-16 顶栏改「职位」后):切换落回板内 —— 它是这块板的一个视图,不是一个页面;
  * 桌面在这条筛选行,手机走窄屏入口条,两处不同时出现。
  * 2026-08-28 换装批自 Jobs.tsx 提出成文件。
+ * 「清除筛选」2026-08-29 Frank 实拍归位到本行(「我的匹配」之后):2026-08-16 它随「保存此筛选」
+ * 一起下到「已选」行,可没选职业时那一行就只剩它一颗,孤零零挂在右侧第二行 —— 一颗钮撑不起一行。
+ * 显隐条件不动(anyFilter,有筛选才出);「保存此筛选」照旧留在「已选」行(它是对条件的操作,
+ * 且只对登录用户出)。样式换 .clearFilt:形照旧,高度对齐本行的 38(理由在那条 CSS 注释里)。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -15,7 +19,7 @@ import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Search } from '@/components/search'
 import { Select } from '@/components/select'
-import { BTN_SECONDARY, FK, SELECT_SM, TEXT_NONE } from './constants'
+import { BTN_GHOST, BTN_SECONDARY, FK, SELECT_SM, TEXT_NONE } from './constants'
 import {
   foldBtnClsOf, foldCaretOf, makeBroadChange, makeCatLabel, makeProvChange, makeProvLabel, matchBtnClsOf,
   matchLabelOf, slotOf,
@@ -56,6 +60,11 @@ export function FilterRow({ b }: BoardPanelIn) {
       <Button kind={BTN_SECONDARY} onClick={b.gate.onToggle} className={matchBtnClsOf(b.matchView)}>
         {matchLabelOf({ t: b.t, matchView: b.matchView })}
       </Button>
+      {f.anyFilter && (
+        <Button kind={BTN_GHOST} onClick={f.onClear} className={cssOf(css.clearFilt)}>
+          {b.t('clear')}
+        </Button>
+      )}
       {b.data.updatedAt !== TEXT_NONE && (
         <span className={cssOf(css.updated)}>{b.updatedText}</span>
       )}

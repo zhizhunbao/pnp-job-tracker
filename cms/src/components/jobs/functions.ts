@@ -75,7 +75,8 @@ import type {
   MailtoIn, MapHrefIn, MatchLabelIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn,
   MeasureWordIn, MidOptsIn, MoreLabelIn, MvBarTextIn, NextSortIn, NocCategoryDoc, NocCatRow, NocDescDoc, NocDescFact,
   NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NoTextIn, NumOrIn, OrigLabelIn, PageSigIn, PayFallbackForIn,
-  PlanProfileIn, PnpOccRow, PrefixLabelIn, ProMatchIn, ProofTextIn, ProvFullIn, ProvWordIn, RankOfIn, ResizeBindIn,
+  PickedShownIn, PlanProfileIn, PnpOccRow, PrefixLabelIn, ProMatchIn, ProofTextIn, ProvFullIn, ProvWordIn, RankOfIn,
+  ResizeBindIn,
   RoundIn, SavedEntry, SavedListJson, SaveLabelIn, SaveToggleIn, SeedFilterIn, SeedJson, SeedValueIn, SessionUser,
   ShowFallbackIn, ShowFormattedIn, ShowRelatedIn, ShowSourceIn, SlotIn, SortMarkIn, SortState, StickyOffsetsIn,
   SubOfIn, SubTextIn, SugOut, TakerIn, TextFn, TFn, ThWidthIn, TransLabelIn, TransShownIn, TransStatus,
@@ -2620,6 +2621,24 @@ export function anyFilterOf(x: FilterCountIn): boolean {
     }
   }
   return false
+}
+
+/**
+ * 「已选」行渲不渲(2026-08-29:「清除筛选」搬回输入行之后立的判据)。
+ * 这一行今天只装两件:职业(NOC)胶囊、「保存此筛选」(登录才出)——
+ * 两件都没有时整行不渲,否则一个空 div 照样吃掉筛选区 8px 的 gap。
+ *
+ * @param x 有没有筛选、职业胶囊的显示名与登录态。
+ * @returns 渲 = true。
+ */
+export function pickedShownOf(x: PickedShownIn): boolean {
+  if (x.anyFilter === false) {
+    return false
+  }
+  if (x.nocLabel !== TEXT_NONE) {
+    return true
+  }
+  return x.loggedIn
 }
 
 /**

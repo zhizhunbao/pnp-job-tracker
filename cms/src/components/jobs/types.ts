@@ -792,6 +792,11 @@ export type BoardFiltersPanel = {
   anyFilter: boolean
 
   /**
+   * 「已选」行渲不渲(2026-08-29:清除筛选搬回输入行后,这一行可能一件都不剩)。
+   */
+  showPicked: boolean
+
+  /**
    * 折叠区里有几项被选中(徽标计数)。
    */
   foldActive: number
@@ -3446,6 +3451,11 @@ export type BoardDataHookIn = {
   props: JobsIn
 
   /**
+   * 维度表(2026-08-29 由 useBoardDims 提到整台最上面,本 hook 与筛选 hook 共用同一份)。
+   */
+  dims: JobDims
+
+  /**
    * 当前非默认筛选。
    */
   cur: JobFilters
@@ -3529,6 +3539,26 @@ export type FilterCountIn = {
    * 只看直发岗。
    */
   directOnly: boolean
+}
+
+/**
+ * pickedShownOf 的入参。
+ */
+export type PickedShownIn = {
+  /**
+   * 有没有任何筛选在生效。
+   */
+  anyFilter: boolean
+
+  /**
+   * 职业(NOC)胶囊的显示名;'' = 没选职业。
+   */
+  nocLabel: string
+
+  /**
+   * 登录了没(「保存此筛选」只对登录用户出)。
+   */
+  loggedIn: boolean
 }
 
 /**

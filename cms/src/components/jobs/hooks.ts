@@ -30,7 +30,7 @@ import {
   TEXT_STATUS, TRACK_AI_READ_JD, TRACK_APPLY, TRACK_JD_MATCH_OPEN, TRACK_JD_OPEN, TRACK_JD_TRANSLATE, TRACK_KEY_KIND,
   TRACK_KEY_MODE, TRACK_KIND_PAGE, TRACK_MATCH_VIEW, TRACK_MATCH_VIEW_QUIZ, TRACK_MODE_EMAIL, TRACK_MODE_WEB,
   TRACK_SAVE_JOB, TRACK_SAVE_SEARCH, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UPSELL_LOCK, UPSELL_LOGIN, UPSELL_SS,
-  URL_ACCOUNT, URL_API_APPLY_HOW, URL_API_JD_FORMAT, URL_API_JD_TRANSLATE, URL_API_JOBS, URL_API_JOBS_DIMS,
+  URL_API_APPLY_HOW, URL_API_JD_FORMAT, URL_API_JD_TRANSLATE, URL_API_JOBS, URL_API_JOBS_DIMS,
   URL_API_SAVED_JOB_BY_JOB, URL_API_SAVED_JOB_BY_JOB_TAIL, URL_API_SAVED_JOBS, URL_API_SAVED_JOBS_LIST,
   URL_API_SAVED_SEARCHES, URL_API_USERS_ME, URL_BOARD, URL_BOARD_BACK, URL_BOARD_MATCH, URL_TO_FILTER, VAL_MATCH,
   VAL_ON, WIDTH_FULL, WINDOW_FEATURES,
@@ -40,7 +40,8 @@ import {
   colsKeyOf, colWidthSeedValue, curFiltersOf, dataKeyOf, defaultColsOf, emptyLinkOf, emptyTextOf, fetchJobText,
   filterOptsOf, filterSig, foldActiveOf, frozenKeysOf, hasQuizNocs, initialColsOf, initialFiltersOf, jobDetailViewOf,
   jobsQueryOf, keysOf, lastOf, mailtoOf, makeColResize, makeColWidth, makeNocName, markObSeen, matchHrefOf,
-  measureColWidths, nextSortOf, nocLabelOf, obSeen, pageSigOf, readColsPref, replaceQuery, savedMapOf, saveFiltersOf,
+  measureColWidths, nextSortOf, nocLabelOf, obSeen, pageSigOf, pickedShownOf, readColsPref, replaceQuery, savedMapOf,
+  saveFiltersOf,
   seedFilter, setterOf, shownColsOf, slotOf, stickyOffsetsOf, strOf, strOrNull, togglableColsOf, updatedTextOf,
   widthsKeyOf, writeColsCookie, writeColsPref, writeColWidthCookie,
 } from './functions'
@@ -397,6 +398,10 @@ export function useAccountArea(plan: JobPlan): AccountAreaPanel {
  * 已登录未建档才开引导 wizard(E11-05②,原直跳 /account)。
  * 2026-08-04:手里没有职业答案的先去 /account 建档 —— 原先送去 /plan/job 答题(答题卡已摘入口),
  * 而匹配吃的就是档案里的职业/目标省,建档是保留下来的那条路;有答案的照旧弹登录。
+ * 🔴 2026-08-29 Frank 令改判:**匿名点它一律就地弹登录框**,那条「没答案 → 跳 /account」的支路撤销 ——
+ * 它把 2026-07-11「不要先跳转页面再弹窗」那条拍板在半边人身上又踩了一遍(/account 落地照样弹框,
+ * 只是先白跳一次页)。埋点仍按有没有职业答案分两个 tag 记,好继续看这两拨人的转化差。
+ * 登录成功后的去处不动(returnTo = 匹配视图)。
  *
  * @param x 分层态、当前视图与取词函数。
  * @returns 三态闸面板。
@@ -409,12 +414,10 @@ export function useMatchGate(x: MatchGateHookIn): MatchGatePanel {
   const matchView = x.matchView
   const onToggle = useCallback(function toggleMatchView(): void {
     if (loggedIn === false) {
-      if (hasQuizNocs()) {
-        setLogin(true)
-        return
+      if (hasQuizNocs() === false) {
+        track(TRACK_MATCH_VIEW_QUIZ)
       }
-      track(TRACK_MATCH_VIEW_QUIZ)
-      window.location.href = URL_ACCOUNT
+      setLogin(true)
       return
     }
     if (profileOk === false) {
@@ -618,6 +621,8 @@ function useBoardFilters(x: BoardFiltersHookIn): BoardFiltersHookOut {
     return filterOptsOf({ dims, prov, city, broad, mid })
   }, [dims, prov, city, broad, mid])
   const nameOf = makeNocName({ dims, lang: x.lang })
+  const anyFilter = anyFilterOf({ fState, directOnly })
+  const nocLabel = nocLabelOf({ fNoc: slotOf({ fState, k: FK.noc }), nameOf, lang: x.lang })
   const t = x.t
   const onLimit = x.onLimit
   const lang = x.lang
@@ -642,7 +647,8 @@ function useBoardFilters(x: BoardFiltersHookIn): BoardFiltersHookOut {
     panel: {
       fState,
       opts,
-      anyFilter: anyFilterOf({ fState, directOnly }),
+      anyFilter,
+      showPicked: pickedShownOf({ anyFilter, nocLabel, loggedIn: x.plan.loggedIn }),
       foldActive: foldActiveOf({ fState, directOnly }),
       fold,
       onFold: function toggleFold(): void {
@@ -650,7 +656,7 @@ function useBoardFilters(x: BoardFiltersHookIn): BoardFiltersHookOut {
       },
       directOnly,
       onDirect: setDirectOnly,
-      nocLabel: nocLabelOf({ fNoc: slotOf({ fState, k: FK.noc }), nameOf, lang }),
+      nocLabel,
       onNocClear: function clearNoc(): void {
         setterOf({ fState, k: FK.noc })(TEXT_NONE)
       },
@@ -857,14 +863,12 @@ function useBoardData(x: BoardDataHookIn): BoardDataPanel {
   const [rows, setRows] = useState<JobFact[]>(x.props.jobs)
   const [total, setTotal] = useState(totalOf(x.props))
   const [updatedAt, setUpdatedAt] = useState(strOf(x.props.updatedAt))
-  const [dims, setDims] = useState(dimsOf(x.props))
   const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(false)
   const [matchTotals, setMatchTotals] = useState<MatchTotals | null>(null)
   const reqSeq = useRef(0)
   const firstFetch = useRef(true)
   const ssrSig = useRef(filterSig(initialFiltersOf(x.props.initialFilters)))
-  useBigDims(setDims)
   const pageSig = pageSigOf({ cur: x.cur, sort: x.sort, matchView: x.matchView })
   const [prevPageSig, setPrevPageSig] = useState(pageSig)
   if (prevPageSig !== pageSig) {
@@ -907,7 +911,7 @@ function useBoardData(x: BoardDataHookIn): BoardDataPanel {
     rows,
     total,
     updatedAt,
-    dims,
+    dims: x.dims,
     loading,
     matchTotals,
     swapping: loading && fresh,
@@ -915,6 +919,24 @@ function useBoardData(x: BoardDataHookIn): BoardDataPanel {
       setPage(page + 1)
     },
   }
+}
+
+/**
+ * 维度表整台:首屏那份(SSR 瘦身后 cities/districts/designatedEmployers/nocDescriptions 是空表)
+ * + /api/jobs/dims 补回来的四张大表。
+ * 🔴 2026-08-29 Frank 实拍「更多筛选里全部市/全部区两只下拉没数据」的病灶就在这一格的归属:
+ * 08-28 拆件时这份 state 落在 useBoardData 里,而 useBoardFilters 只能拿到 props 的那份(空表),
+ * 于是市/区选项永远是空 —— 省/大类看着正常,是因为 provinces/nocCategories 随 SSR 一起来。
+ * 两个 hook 又不能互相取(data 要 filters.cur 算查询串),所以把这一格提到整台的最上面,
+ * 两边都收它当入参(与拆件前的单份 state 同源)。
+ *
+ * @param props 组件收到的 props(首屏那份维度)。
+ * @returns 合并后的维度表。
+ */
+function useBoardDims(props: JobsIn): JobDims {
+  const [dims, setDims] = useState(dimsOf(props))
+  useBigDims(setDims)
+  return dims
 }
 
 /**
@@ -1176,15 +1198,16 @@ export function useJobsBoard(props: JobsIn): JobsBoardPanel {
   function onUpsellSs(): void {
     setUpsell(UPSELL_SS)
   }
+  const dims = useBoardDims(props)
   const filters = useBoardFilters({
     initialFilters: initialFiltersOf(props.initialFilters),
-    dims: dimsOf(props),
+    dims,
     lang,
     t,
     plan,
     onLimit: onUpsellSs,
   })
-  const data = useBoardData({ props, cur: filters.cur, sort, matchView })
+  const data = useBoardData({ props, dims, cur: filters.cur, sort, matchView })
   const cols = useBoardCols({
     initialCols: props.initialCols,
     initialColW: colwSeedOf(props),

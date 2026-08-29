@@ -126,6 +126,24 @@
 }
 
 /*
+ * 「清除筛选」(2026-08-29 Frank 实拍自「已选」行搬回本行,见 filterrow.tsx 头注)。
+ * 照 .picked 的形(白底 + 灰描边 + 12.5px 粗字)、.pickedDanger 的红字,只把高度换成本行的 38 ——
+ * 「一行里的控件必须齐平」。不复用那两个类是因为 .picked 写死 30 高且排在本文件后面,压不住。
+ */
+.clearFilt {
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #b91c1c;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/*
  * 钮内一行排开(图标 + 文字 + 角标)。
  */
 .btnRow {

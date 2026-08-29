@@ -8,6 +8,9 @@
  * 「保存此筛选」2026-08-16 Frank「保存此筛选没有必要吧」→ 留:它是「简化操作才收费」那条
  * 定价原则的落点(下次一键回到这套条件),但它是对**条件**的操作,归这一行,不再占输入行的地方。
  * 2026-08-28 换装批自 Jobs.tsx 提出成文件。
+ * 「清除筛选」2026-08-29 Frank 实拍搬回筛选行(见 filterrow.tsx 头注):没选职业时这一行原本
+ * 只剩它一颗孤钮。它一走,本行就可能一件都不剩(匿名 + 非职业筛选)—— 空 div 照样吃 .filters
+ * 那 8px 的 gap,所以渲不渲改由 `filters.showPicked` 说了算,不再只看 anyFilter。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -39,10 +42,6 @@ export function PickedRow({ b }: BoardPanelIn) {
         </span>
       )}
       <span className={cssOf(css.pickedAct)}>
-        <Button kind={BTN_GHOST} onClick={f.onClear}
-          className={`${cssOf(css.picked)} ${cssOf(css.pickedDanger)}`}>
-          {b.t('clear')}
-        </Button>
         {b.plan.loggedIn && (
           <Button kind={BTN_GHOST} onClick={f.onSaveSearch}
             className={`${cssOf(css.picked)} ${cssOf(css.pickedSave)}`}>

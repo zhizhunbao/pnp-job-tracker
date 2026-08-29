@@ -8,6 +8,8 @@
  * RCIP/FCIP 试点社区(E6-11):yes = 任一命中,RCIP/FCIP = 指定类型。
  * GAP1③:排除 JD 明确不担保/须 PR 的岗(红旗 = 数据层检测;未检出 = 通过,非担保保证)。
  * 2026-08-28 换装批自 Jobs.tsx 提出成文件。
+ * 2026-08-29 Frank 实拍:「仅雇主直发」「排除不担保/须 PR」两颗复选框的 title 悬浮提示撤掉 ——
+ * 2026-08-06 拍板「消费页 tooltips 全撤,靠列名自解释」的两条漏网。只撤属性,label 文案照旧。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -70,12 +72,11 @@ export function FoldFilters({ b }: BoardPanelIn) {
         <Select value={slotOf({ fState: f.fState, k: FK.vs })}
           onChange={makeSlotChange({ fState: f.fState, k: FK.vs })}
           opts={OPTS_VS} all={b.t('all.vs')} labelOf={makePrefixLabel({ t: b.t, prefix: K_VS })} />
-        <label className={checkClsOf(f.directOnly)} title={b.t('directOnly.tip')}>
+        <label className={checkClsOf(f.directOnly)}>
           <input type={INPUT_CHECKBOX} checked={f.directOnly} onChange={makeCheckChange(f.onDirect)} />
           {b.t('directOnly')}
         </label>
-        <label className={checkClsOf(slotOf({ fState: f.fState, k: FK.elig }) === ELIG_OK)}
-          title={b.t('eligOnly.tip')}>
+        <label className={checkClsOf(slotOf({ fState: f.fState, k: FK.elig }) === ELIG_OK)}>
           <input type={INPUT_CHECKBOX} checked={slotOf({ fState: f.fState, k: FK.elig }) === ELIG_OK}
             onChange={makeEligChange(f.fState)} />
           {b.t('eligOnly')}
