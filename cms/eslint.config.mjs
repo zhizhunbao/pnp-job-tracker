@@ -1220,7 +1220,9 @@ const localRules = {
         // 2026-08-23 扩到 routes.ts（Frank「还有一大堆写死的常量」）：HTTP 芯同样不许裸字
         // 2026-08-24 自守正则补 `x?`:`icons/functions.tsx` 这类抽屉的 tsx 形态原先整份跳过
         //    —— 文件挂着五道闸,一条都没生效过。
-        if (!/(functions|routes)\.tsx?$/.test(context.filename ?? '')) return {}
+        // 2026-08-27 扩到全部 tsx(Frank「tsx 也不许有魔术数字和常量」):size={19} 这类
+        //    JSX 属性裸数同样要进 constants.ts 起名;射程仍由各 files 块控制。
+        if (!/(functions|routes)\.tsx?$|\.tsx$/.test(context.filename ?? '')) return {}
         return {
           Literal(node) {
             if (typeof node.value !== 'number') return
@@ -1676,6 +1678,95 @@ const localRules = {
             if (outer.type === 'FunctionDeclaration' && outer.id) outerName = outer.id.name
             if (/^make[A-Z]/.test(outerName)) return
             context.report({ node, messageId: 'nested', data: { inner: node.id?.name ?? '(匿名)', outer: outerName } })
+          },
+        }
+      },
+    },
+
+    // 🔴 一个 tsx 只住一个渲染 function(2026-08-27 Frank 立,样张 chat 桶的 chatloading:
+    //    loadChatBox/pickChatBox 迁 functions.ts,文件只剩 ChatLoading)。tsx 是组件的家,
+    //    不是函数的家:非渲染函数归本域 functions.ts;第二个组件说明该拆文件(一件一文件)。
+    //    顶层数量判定与 no-nested-function(体内嵌套)互补,两闸合起来 = tsx 顶层至多一个
+    //    function 声明、体内零声明。存量(jobs/news/start 等旧形文件 20 个)走 --suppress-rule
+    //    记基线当账单,随换装批清零;增量从立闸起锁死。
+    'one-function-per-tsx': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          extra:
+            '`{{ name }}` 是本文件第二个顶层 function(首个是 `{{ first }}`)。tsx 只住一个渲染 function ——'
+            + '非渲染函数迁本域 functions.ts;又一个组件就拆成自己的文件。',
+        },
+      },
+      create(context) {
+        if (!/\.tsx$/.test(context.filename ?? '')) return {}
+        return {
+          Program(node) {
+            const fns = []
+            for (const st of node.body) {
+              let d = st
+              if (st.type === 'ExportNamedDeclaration' || st.type === 'ExportDefaultDeclaration') d = st.declaration
+              if (d != null && d.type === 'FunctionDeclaration') fns.push(d)
+            }
+            for (const f of fns.slice(1)) {
+              context.report({
+                node: f.id ?? f,
+                messageId: 'extra',
+                data: { name: f.id?.name ?? '(默认导出)', first: fns[0].id?.name ?? '(默认导出)' },
+              })
+            }
+          },
+        }
+      },
+    },
+
+    // 🔴 tsx 顶层不许住死值常量(2026-08-27 Frank「tsx 也不许有魔术数字和常量」的常量半;
+    //    数字半走 no-magic-number 的 tsx 扩射)。判据沿「constants.ts 最多到 JSON」:
+    //    JSON 装得下的死值(标量、串、正则、字面量表)归 constants.ts;装不下的运行时构造
+    //    (`dynamic(...)` 懒组件这类调用产物)本来就进不了 constants(它不许 import),放行。
+    'no-constant-in-tsx': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          constant:
+            '`{{ name }}` 是 tsx 顶层的死值常量 —— JSON 装得下的值归本域 constants.ts,'
+            + '给它名字和 JSDoc;tsx 只住组件。',
+        },
+      },
+      create(context) {
+        if (!/\.tsx$/.test(context.filename ?? '')) return {}
+        // 2026-08-27 Next 路由段配置白名单(funnel 批实撞):`export const dynamic = 'force-dynamic'`
+        // 一族由框架 SWC **静态提取字面量**,换成 import 的常量会被静默忽略(配置失效且不报错)。
+        // 按「框架定死的形状」整体放行,只在 app/ 路由树内生效 —— 组件域不许拿这些名字当借口。
+        const ROUTE_SEGMENT = new Set(['dynamic', 'revalidate', 'fetchCache', 'runtime', 'preferredRegion', 'maxDuration', 'dynamicParams'])
+        const inApp = /[\\/]src[\\/]app[\\/]/.test(context.filename ?? '')
+        function deadValue(init) {
+          if (init == null) return false
+          if (init.type === 'Literal' || init.type === 'TemplateLiteral') return true
+          if (init.type === 'UnaryExpression') return deadValue(init.argument)
+          if (init.type === 'ArrayExpression') return init.elements.every(deadValue)
+          if (init.type === 'ObjectExpression') {
+            return init.properties.every(function propDead(p) {
+              return p.type === 'Property' && deadValue(p.value)
+            })
+          }
+          return false
+        }
+        return {
+          VariableDeclaration(node) {
+            const p = node.parent
+            const top = p?.type === 'Program' || (p?.type === 'ExportNamedDeclaration' && p.parent?.type === 'Program')
+            if (!top) return
+            for (const d of node.declarations) {
+              if (inApp && d.id?.type === 'Identifier' && ROUTE_SEGMENT.has(d.id.name)) {
+                continue
+              }
+              if (deadValue(d.init)) {
+                context.report({ node: d, messageId: 'constant', data: { name: d.id?.name ?? '(解构)' } })
+              }
+            }
           },
         }
       },
@@ -2147,7 +2238,11 @@ const eslintConfig = [
     // tsc 全绿、build 全绿,**只有测试炸**(`PNP_PROVINCES is not iterable`,模块初始化时读到半成品)。
     // 这是 build 之后的第四类问题,前三道闸没有一道管得了,只有这条规则管得了。
     // maxDepth 留默认(全深度);ignoreExternal 跳过 node_modules,不然它去爬整棵依赖树。
-    rules: { 'import/no-cycle': ['error', { ignoreExternal: true }] },
+    // allowUnsafeDynamicCyclicDependency(2026-08-27):`import()` 是懒加载边不是初始化边 ——
+    // 它只在被调用那一刻执行,不参与模块初始化顺序,本闸防的初始化炸够不着它。
+    // 实例:chat 的 loadChatBox 迁进 functions.ts(一个 tsx 一个渲染 function 批)后,
+    // functions →(动态)→ chatbox → functions 被判环,而 chatbox 本来就是独立懒 chunk。
+    rules: { 'import/no-cycle': ['error', { ignoreExternal: true, allowUnsafeDynamicCyclicDependency: true }] },
   },
   {
     // 自定规则挂在这里(见文件顶上那段):plugins 的键就是规则名的前缀。
@@ -2389,6 +2484,9 @@ const eslintConfig = [
       'local/no-magic-number': 'error',
       'local/no-split-import': 'error',
       'local/no-import-in-leaf': 'error',
+      // functions.ts 顶层只许 function(2026-08-27 Frank「functions 也不允许有魔术数字
+      // 和常量」:魔数半上面早开着,常量半原先只罩 lib —— 组件域的 functions.ts 补上)。
+      'local/functions-file-no-variables': 'error',
     },
   },
   {
@@ -2608,7 +2706,7 @@ const eslintConfig = [
   },
   {
     // ── 组件域闸 B:常量表形制(Frank「json 也格式化,换行 对齐」):逐键一行 ──
-    files: ['src/components/{footer,modal,title,shell,tag,chip,row,pager,colors,button,notice,grid,tabs,card,banner,auth,i18n,header,table,icons,time,input,search,select}/constants.ts'],
+    files: ['src/components/{footer,modal,title,shell,tag,chip,row,pager,colors,button,notice,grid,tabs,card,banner,auth,i18n,header,table,icons,time,input,search,select,companies,employers}/constants.ts'],
     plugins: { '@stylistic': stylistic },
     rules: {
       '@stylistic/object-curly-newline': ['error', { ObjectExpression: { multiline: true, minProperties: 3 } }],
@@ -2631,7 +2729,16 @@ const eslintConfig = [
     //    Payload 生成的管理台壳,不进。──────────────────────────────────────────
     files: ['src/components/**/*.tsx', 'src/app/(frontend)/**/*.tsx'],
     plugins: { local: localRules },
-    rules: { 'local/no-nested-function': 'error' },
+    rules: {
+      'local/no-nested-function': 'error',
+      // 顶层数量那半(2026-08-27 Frank「tsx 只允许一个渲染 function」,规则注释见声明处)。
+      'local/one-function-per-tsx': 'error',
+      // tsx 魔术数字与死值常量(2026-08-27 Frank「tsx 也不许有魔术数字和常量」):
+      // 数字半是 no-magic-number 的 tsx 扩射(components 的 ts 半在 REFACTORED+COMPONENTS
+      // 那块早就开着),这里把 (frontend) 页面的 tsx 一并罩进来。
+      'local/no-magic-number': 'error',
+      'local/no-constant-in-tsx': 'error',
+    },
   },
   {
     // ── 页面域形制闸(2026-08-26 Frank「需要建规则,建闸门先」):路由目录只住框架定名文件、
