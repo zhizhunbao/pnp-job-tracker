@@ -131,9 +131,10 @@ export type HeaderIn = {
   lang?: string
 
   /**
-   * 过渡格,同上:旧调用点的语言写口,体内不读。
+   * 过渡格,同上:旧调用点的语言写口,体内不读。三字面量本域自抄(参数逆变:
+   * 槽写 string 反而收不下老调用点的 (l: Lang) => void)。
    */
-  setLang?: (l: string) => void
+  setLang?: (l: 'zh' | 'en' | 'ko') => void
 
   /**
    * 过渡格,同上:旧调用点的取词函数,体内不读。
