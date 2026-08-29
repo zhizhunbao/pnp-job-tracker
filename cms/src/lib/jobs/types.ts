@@ -4692,4 +4692,35 @@ export type JobMeta = {
      */
     index: boolean
   }
+
+  /**
+   * 分享图(2026-08-30 og 归目录批:约定件退役,og:image 改显式指 /og/job-<id>.png;
+   * 「未找到」那一档不给 —— 继承 layout 的站点图)。
+   */
+  openGraph?: {
+    /**
+     * 图清单(就一张职位卡)。
+     */
+    images: {
+      /**
+       * 图地址(相对,metadataBase 补全)。
+       */
+      url: string
+
+      /**
+       * 画布宽(px;版式主在 components/og,这两枚死值各家一份)。
+       */
+      width: number
+
+      /**
+       * 画布高(px)。
+       */
+      height: number
+
+      /**
+       * 替代文本。
+       */
+      alt: string
+    }[]
+  }
 }

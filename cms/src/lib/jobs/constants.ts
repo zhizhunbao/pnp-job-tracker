@@ -3032,3 +3032,29 @@ export const META_SOME_EMPLOYER = 'a Canadian employer'
  * 描述的固定收尾(差异化信号 + 中文事实句;88% 流量是英文,中文那半给搜中文的人)。
  */
 export const META_TAIL = ' Immigration signals: PNP streams, EE categories, wage vs ESDC median. 加拿大职位与移民信号。'
+
+/**
+ * 职位分享图地址头(2026-08-30 og 归目录批:约定件退役,og:image 显式指
+ * /og/job-<id>.png;图的版式与出图芯在 components/og,这里只拼地址)。
+ */
+export const OG_JOB_PATH_HEAD = '/og/job-'
+
+/**
+ * 职位分享图地址尾。
+ */
+export const OG_JOB_PATH_TAIL = '.png'
+
+/**
+ * 分享图画布宽(px;版式主在 components/og 的 OG_W,死值各家一份)。
+ */
+export const OG_IMG_W = 1200
+
+/**
+ * 分享图画布高(px)。
+ */
+export const OG_IMG_H = 630
+
+/**
+ * 职位分享图替代文本。
+ */
+export const OG_IMG_ALT = 'Job posting on Offer2PR'

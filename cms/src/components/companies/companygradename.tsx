@@ -1,6 +1,7 @@
 'use client'
 /**
- * 带档色的档名(四维评分里那个彩字):档位 → 色由 colors 域的 gradeColor 算,
+ * 带档色的档名(四维评分里那个彩字):档位 → 色由本域 functions 的 gradeColorOf 算
+ * (2026-08-30 colors 域退役,函数随唯一消费者迁入本桶),
  * 这里只负责把算出来的色挂上去。
  * 2026-08-28 拆域批自 jobs/Company.tsx 的 gname 闭包重写成件。
  *
@@ -9,7 +10,7 @@
  * @author Frank
  * @time 2026-08-28 18:13:09
  */
-import { gradeColor } from '@/components/colors'
+import { gradeColorOf } from './functions'
 import type { CompanyGradeNameIn } from './types'
 
 /**
@@ -21,6 +22,6 @@ import type { CompanyGradeNameIn } from './types'
 export function CompanyGradeName({ grade, name }: CompanyGradeNameIn) {
   return (
     // eslint-disable-next-line react/forbid-dom-props -- 档色由 gradeColor 按档位算出,是运行时值
-    <b style={{ color: gradeColor(grade) }}>{name}</b>
+    <b style={{ color: gradeColorOf(grade) }}>{name}</b>
   )
 }

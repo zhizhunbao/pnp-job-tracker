@@ -1749,15 +1749,12 @@ const localRules = {
         // 一族由框架 SWC **静态提取字面量**,换成 import 的常量会被静默忽略(配置失效且不报错)。
         // 按「框架定死的形状」整体放行,只在 app/ 路由树内生效 —— 组件域不许拿这些名字当借口。
         // 2026-08-29 页面规范化批追加:`metadata`/`viewport` 同为框架按名提取的路由文件导出;
-        // opengraph-image/twitter-image/icon 一族的 `size`/`contentType`/`alt` 是元数据图约定
-        // (Next 静态读它们出 <meta> 尺寸与响应头),只在这几个定名文件里放行。
+        // (opengraph-image 约定件 2026-08-30 归目录批退役,size/contentType/alt 特赦随之出列。)
         // ⚠️ 同日 Frank 收窄(「page 也不允许其他函数,也不允许常量」):metadata/viewport
         // 只放行 `= 桶常量`(标识符)的一行转发形 —— 内容写成字面量对象照拦,内容归桶 constants。
         const ROUTE_SEGMENT = new Set(['dynamic', 'revalidate', 'fetchCache', 'runtime', 'preferredRegion', 'maxDuration', 'dynamicParams'])
         const META_FORWARD = new Set(['metadata', 'viewport'])
-        const OG_EXPORTS = new Set(['size', 'contentType', 'alt'])
         const inApp = /[\\/]src[\\/]app[\\/]/.test(context.filename ?? '')
-        const inOgFile = inApp && /[\\/](opengraph-image|twitter-image|icon|apple-icon)\.tsx$/.test(context.filename ?? '')
         function deadValue(init) {
           if (init == null) return false
           if (init.type === 'Literal' || init.type === 'TemplateLiteral') return true
@@ -1780,9 +1777,6 @@ const localRules = {
                 continue
               }
               if (inApp && d.id?.type === 'Identifier' && META_FORWARD.has(d.id.name) && d.init?.type === 'Identifier') {
-                continue
-              }
-              if (inOgFile && d.id?.type === 'Identifier' && OG_EXPORTS.has(d.id.name)) {
                 continue
               }
               if (deadValue(d.init)) {
@@ -1815,12 +1809,12 @@ const localRules = {
         // 2026-08-29 Frank「frontend 能包含哪些文件能不能锁死了」:射程从 .tsx 扩到 .ts ——
         // 路由树里 .ts 已无合法住户(sitemap.ts 08-29 随归目录批退役);main.css 由钩子按任意后缀兜。
         if (!/[\\/]app[\\/]\(frontend\)[\\/].*\.tsx?$/.test(fname)) return {}
-        // Next 框架定名清单 —— 只列**现役**四名(2026-08-29 Frank「没用到的都排除」:
+        // Next 框架定名清单 —— 只列**现役**两名(2026-08-30 og 归目录批 opengraph-image 退役;08-29「没用到的都排除」:
         // loading/error/not-found/template/default/twitter-image/icon 一族框架名现在没用到,
         // 不预开;哪天真要用,加名先过 Frank)。与 .githooks/pre-push 的 FRONTEND_ALLOW 同表
         // (那边多一个 main.css —— css 不经 eslint,由钩子按任意后缀兜)。
         const FRAMEWORK = new Set([
-          'page.tsx', 'layout.tsx', 'opengraph-image.tsx',
+          'page.tsx', 'layout.tsx',
         ])
         const base = fname.split(/[\\/]/).pop() ?? ''
         if (FRAMEWORK.has(base)) return {}

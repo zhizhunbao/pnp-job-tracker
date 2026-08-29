@@ -569,3 +569,54 @@ export const KEY_STREAM_LOW = 'co.spStream.low'
  * 农业股的显示名文案键。
  */
 export const KEY_STREAM_AGRI = 'co.spStream.agri'
+
+/**
+ * 通道档色阶(2026-08-30 colors 域退役随迁:UI 映射表零消费者、gradeColor 只剩本桶
+ * 一个消费者 —— 单消费者不住共享叶子,函数与色阶跟着唯一主人回家;色值是档位语义色,
+ * 不进 main.css 变量)。
+ */
+/**
+ * 通道档色阶阈值:≥5 深绿(E12-08:5/4 绿深浅、3 默认、2 琥珀、1/缺 灰;
+ * 移民通道档与公司担保档共用同一套 —— 都是「1-5 档」,一个值一种颜色只该定义一次)。
+ */
+export const GRADE_DEEP_GREEN_MIN = 5
+
+/**
+ * 通道档色阶阈值:≥4 绿。
+ */
+export const GRADE_GREEN_MIN = 4
+
+/**
+ * 通道档色阶阈值:≥3 默认灰黑。
+ */
+export const GRADE_NEUTRAL_MIN = 3
+
+/**
+ * 通道档色阶阈值:≥2 琥珀。
+ */
+export const GRADE_AMBER_MIN = 2
+
+/**
+ * 5 档色:深绿(green-800)。
+ */
+export const GRADE_C_5 = '#166534'
+
+/**
+ * 4 档色:绿(green-700)。
+ */
+export const GRADE_C_4 = 'var(--ok)'
+
+/**
+ * 3 档色:默认灰黑(gray-700)。
+ */
+export const GRADE_C_3 = '#374151'
+
+/**
+ * 2 档色:琥珀(amber-700)。
+ */
+export const GRADE_C_2 = 'var(--warn)'
+
+/**
+ * 1 档/缺档色:灰(gray-400)。
+ */
+export const GRADE_C_NONE = 'var(--text3)'

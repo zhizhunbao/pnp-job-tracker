@@ -12,6 +12,7 @@ import { LangProvider } from '@/components/i18n'
 import { SessionProvider } from '@/components/auth'
 import { ChatLauncher } from '@/components/chat'
 import { JsonLd } from '@/components/jsonld'
+import { OG_H, OG_SITE_ALT, OG_W } from '@/components/og'
 import { SITE_JSON_LD } from '@/components/shell'
 import { headers } from 'next/headers'
 import { ssrLang } from '@/lib/i18n/server'
@@ -22,6 +23,15 @@ import { getUserOrNull } from '@/lib/quota/server'
  * 站点默认 metadata(各页 generateMetadata 覆盖)。
  */
 export const metadata = {
+
+  /**
+   * 站点默认分享图(2026-08-30 og 归目录批:根 opengraph-image.tsx 约定件退役,
+   * og:image 改显式指 /og/site.png —— 相对地址由 metadataBase 补全;
+   * 各页不自设 openGraph 时继承这里,与旧约定件的兜底语义一致)。
+   */
+  openGraph: {
+    images: [{ url: '/og/site.png', width: OG_W, height: OG_H, alt: OG_SITE_ALT }],
+  },
   /**
    * E13-01:不设 metadataBase 时 og:image 按请求 HOST 拼 URL,Render 容器内 HOST=localhost:10000,
    * 分享卡全挂;fallback 必须=正式域(⚠️ Docker 构建拿不到 Render env,robots.ts 同款惯例)。

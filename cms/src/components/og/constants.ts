@@ -194,3 +194,21 @@ export const OG_SITE_ALT = 'Offer2PR — Canadian jobs with immigration signals'
  * 职位卡的替代文本。
  */
 export const OG_JOB_ALT = 'Job posting on Offer2PR'
+
+/**
+ * 万图壳的分发件名:站点通用卡(2026-08-30 og 归目录批,Frank「这个也能抽成目录吗/
+ * 全修了」:两个 opengraph-image.tsx 约定件退役,分享图与 sitemap 同款 —— 对外
+ * /og/ 一个前缀、app/og/[file]/route.ts 一个壳;og:image 标签改由 metadata 显式指图,
+ * 微信/Google 每次分享现抓页面读 meta,换址零损失)。
+ */
+export const OG_FILE_SITE = 'site.png'
+
+/**
+ * 职位卡件名形(具名捕获组 n = 岗位号)。
+ */
+export const OG_JOB_FILE_RE = /^job-(?<n>\d+)\.png$/
+
+/**
+ * URL 路径段分隔符(壳取末段件名用;与 seo 域同名同义,各家一份)。
+ */
+export const OG_PATH_SEP = '/'

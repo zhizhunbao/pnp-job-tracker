@@ -19,6 +19,8 @@ import { isJdNone } from '@/lib/jobs'
 import { provName } from '@/lib/location'
 import { track } from '@/lib/track'
 import {
+  GRADE_AMBER_MIN, GRADE_C_2, GRADE_C_3, GRADE_C_4, GRADE_C_5, GRADE_C_NONE, GRADE_DEEP_GREEN_MIN,
+  GRADE_GREEN_MIN, GRADE_NEUTRAL_MIN,
   CARD_HEAD_CLS, CARD_MD_CLS, CH_C_AMBER, CH_C_DEEP, CH_C_GRAY, CH_C_GREEN, CH_C_NONE,
   CH_GRADE_AMBER_MIN, CH_GRADE_DEEP_MIN, CH_GRADE_GRAY_MIN, CH_GRADE_GREEN_MIN, CLS_SEP, CO_SEC_BASE,
   CO_SEC_KEYS, CO_SEC_SPLIT_RE, CO_STREAM_COUNT_RE, CO_STREAM_SPLIT_RE, DASH_EM, DESC_MIN_LEN, FAME_PROVS_MIN,
@@ -939,4 +941,33 @@ export function makeLoadPanel(x: LoadPanelIn): LoadFn {
       body: JSON.stringify({ jobId: x.jobId }),
     }).then(read).then(land).catch(fall)
   }
+}
+
+/**
+ * 通道档(1-5)→ 档色:5 深绿、4 绿、3 默认灰黑、2 琥珀、1/缺 灰。
+ * 2026-08-30 自退役的 colors 域迁入改名 gradeColorOf(纯派生归 xxxOf;体逐字未动)。
+ * (scoreColor 0-100 版随加权分退役;签名沿旧 API 收 undefined —— 存量调用方
+ * 有直接传可选字段的,收窄留给消费页形制化批。)
+ *
+ * @param g 档位;null/undefined = 缺档。
+ * @returns 十六进制色(值与名字都在 constants,这里只做阈值判定)。
+ */
+// eslint-disable-next-line local/no-undefined-type -- 旧 API 存量调用方直传可选字段,收窄另批(迁入原样带牌)
+export function gradeColorOf(g: number | null | undefined): string {
+  if (g == null) {
+    return GRADE_C_NONE
+  }
+  if (g >= GRADE_DEEP_GREEN_MIN) {
+    return GRADE_C_5
+  }
+  if (g >= GRADE_GREEN_MIN) {
+    return GRADE_C_4
+  }
+  if (g >= GRADE_NEUTRAL_MIN) {
+    return GRADE_C_3
+  }
+  if (g >= GRADE_AMBER_MIN) {
+    return GRADE_C_2
+  }
+  return GRADE_C_NONE
 }
