@@ -1,0 +1,1203 @@
+/*
+ * verdict 域(一键三合一判定区与申请人条件格)的私有样式。2026-08-28 换装批自
+ * TripleVerdictModal.tsx / ConditionGrid.tsx 的内联样式与两处 <style> 注入逐格迁类,
+ * 值一个不改;色值凡在 colors 域有名字的走 CSS 变量(--card/--border/--primary/
+ * --primary-deep/--text/--text2/--text3/--ok/--warn),瓦片自己那套浅底与几枚
+ * 判定色(排除红、条件格的实线/虚线灰)是本域私有,留字面量并挂注释。
+ */
+
+/*
+ * 入口卡(小档:弹框卡头)。白卡三格(底/描边/圆角)照全局 .card 逐格抄一份 ——
+ * 本域自足,不赌全局类与模块类的顺序。
+ */
+.entryCard {
+  /*
+   * 白底。
+   */
+  background: var(--card);
+
+  /*
+   * 描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 卡圆角(全站白卡同一档)。
+   */
+  border-radius: 12px;
+
+  /*
+   * 卡内衬(上下 12、左右 16)。
+   */
+  padding: 12px 16px;
+
+  /*
+   * 与下面内容的间距。
+   */
+  margin: 0 0 14px;
+}
+
+/*
+ * 入口卡(大档:职位详情页版式,标题更大、上间距在头不在尾)。
+ */
+.entryCardLg {
+  /*
+   * 白底。
+   */
+  background: var(--card);
+
+  /*
+   * 描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 卡圆角。
+   */
+  border-radius: 12px;
+
+  /*
+   * 卡内衬(上下 14、左右 16)。
+   */
+  padding: 14px 16px;
+
+  /*
+   * 与上面内容的间距。
+   */
+  margin: 12px 0 0;
+}
+
+/*
+ * 入口卡标题(小档)。零解释句:标题 + 按钮就是全部。
+ */
+.entryTitle {
+  /*
+   * 卡头字号。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 700;
+
+  /*
+   * 近黑。
+   */
+  color: var(--text);
+
+  /*
+   * 与按钮的间距。
+   */
+  margin-bottom: 8px;
+}
+
+/*
+ * 入口卡标题(大档)。
+ */
+.entryTitleLg {
+  /*
+   * 详情页标题字号。
+   */
+  font-size: 14.5px;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 700;
+
+  /*
+   * 近黑。
+   */
+  color: var(--text);
+
+  /*
+   * 与按钮的间距。
+   */
+  margin-bottom: 10px;
+}
+
+/*
+ * 入口卡主按钮(小档)。类名写两遍抬权重:本钮经 Button(kind ghost)渲染
+ * (「<button 这种不允许直接使用」),要稳赢 button 域 .btn/.ghost 的同权重声明
+ * 且不赌打包顺序(先例 account 的 .logoutBtn)。
+ */
+.entryBtn.entryBtn {
+  /*
+   * 品牌蓝底(主行动)。
+   */
+  background: var(--primary);
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 钮圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 钮内衬(上下 7、左右 16)。
+   */
+  padding: 7px 16px;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 钮字重。
+   */
+  font-weight: 600;
+
+  /*
+   * 钮文字不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 入口卡主按钮(大档:详情页,按钮更胖一档)。
+ */
+.entryBtnLg.entryBtnLg {
+  /*
+   * 品牌蓝底。
+   */
+  background: var(--primary);
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 钮圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 钮内衬(上下 11、左右 20)。
+   */
+  padding: 11px 20px;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 钮字重。
+   */
+  font-weight: 600;
+
+  /*
+   * 钮文字不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 一段一张卡,每张自包含(Frank 2026-08-12:「section 分多个卡片,每个卡片都是
+ * 自包含的」)—— 卡内自带标题与出处,读到哪一张都不必回头看上一张。
+ */
+.card {
+  /*
+   * 白底。
+   */
+  background: var(--card);
+
+  /*
+   * 描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 卡圆角。
+   */
+  border-radius: 12px;
+
+  /*
+   * 卡内衬(上 14、左右 18、下 12)。
+   */
+  padding: 14px 18px 12px;
+
+  /*
+   * 卡间距。
+   */
+  margin: 0 0 10px;
+}
+
+/*
+ * 卡头:标题左、动作右上角(全站按钮同一款,不再是行内蓝链接)。
+ */
+.cardHead {
+  /*
+   * 一行两端排开。
+   */
+  display: flex;
+
+  /*
+   * 标题与钮竖向居中。
+   */
+  align-items: center;
+
+  /*
+   * 标题与钮之间的间距。
+   */
+  gap: 10px;
+
+  /*
+   * 与卡内容的间距。
+   */
+  margin-bottom: 8px;
+}
+
+/*
+ * 卡标题:与 Decision 的 H2 同一档(16/700)—— 全页所有卡标题一个字号。
+ */
+.cardTitle {
+  /*
+   * 卡标题字号。
+   */
+  font-size: 16px;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 700;
+
+  /*
+   * 近黑。
+   */
+  color: var(--text);
+
+  /*
+   * 占满剩下的宽(动作钮靠右)。
+   */
+  flex: 1;
+
+  /*
+   * 允许被挤窄(长标题不撑破卡头)。
+   */
+  min-width: 0;
+}
+
+/*
+ * 「你的条件」卡标题与计数胶囊同排(标题旁挂两段计数:8 基础 + 9 估分)。
+ */
+.condTitle {
+  /*
+   * 行内排一排。
+   */
+  display: inline-flex;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+
+  /*
+   * 标题与胶囊之间的间距。
+   */
+  gap: 8px;
+
+  /*
+   * 窄屏胶囊换行。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 事实瓦片与判定瓦片同一副四列栅格**流式续排**(2026-08-14 Frank
+ * 「为什么这个三个卡片一行」——先前两组各自起行 3+2,并进一个栅格后 4+1,
+ * 与申请人条件卡同节奏)。本职位与雇主资质两张卡共用这一套。
+ */
+.answers {
+  /*
+   * 网格。
+   */
+  display: grid;
+
+  /*
+   * 格间距。
+   */
+  gap: 8px;
+
+  /*
+   * 桌面四列,每列可被压到 0 宽(长值折行而不撑破栅格)。
+   */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (width <= 640px) {
+  /*
+   * 手机两列(手机优先:小红书是纯手机流量)。
+   */
+  .answers {
+    /*
+     * 手机两列。
+     */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/*
+ * 卡内首个栅格与卡标题之间的一点呼吸(本职位卡)。
+ */
+.answersTop {
+  /*
+   * 与标题的间距。
+   */
+  margin-top: 4px;
+}
+
+/*
+ * 瓦片的公共解剖(判定瓦片与事实瓦片同族,2026-08-14 Frank
+ * 「英文和中文一行也没对齐」后逐值统一)。
+ */
+.tile {
+  /*
+   * 允许被挤窄(长值折行而不撑破栅格)。
+   */
+  min-width: 0;
+
+  /*
+   * 瓦片浅底(本域私有,不是全站色板成员)。
+   */
+  background: #f8fafc;
+
+  /*
+   * 瓦片描边(本域私有,比全站描边再淡一档)。
+   */
+  border: 1px solid #eef2f7;
+
+  /*
+   * 瓦片圆角(比白卡小一档)。
+   */
+  border-radius: 9px;
+
+  /*
+   * 瓦片内衬(上 7、左右 10、下 8)。
+   */
+  padding: 7px 10px 8px;
+}
+
+/*
+ * 瓦片的灰标签(这一格判的是什么)。
+ */
+.tileLabel {
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 标签字号。
+   */
+  font-size: 11px;
+
+  /*
+   * 行距。
+   */
+  line-height: 1.35;
+
+  /*
+   * 与结论的间距。
+   */
+  margin-bottom: 2px;
+}
+
+/*
+ * 判定瓦片的加粗结论(配色由状态类给)。
+ */
+.tileMain {
+  /*
+   * 结论字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 加粗(它是主文案)。
+   */
+  font-weight: 600;
+
+  /*
+   * 行距。
+   */
+  line-height: 1.5;
+}
+
+/*
+ * 判定瓦片的灰字小注(说明降级)。
+ */
+.tileSub {
+  /*
+   * 小注字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 灰字。
+   */
+  color: var(--text2);
+
+  /*
+   * 行距。
+   */
+  line-height: 1.55;
+
+  /*
+   * 与结论的间距。
+   */
+  margin-top: 2px;
+}
+
+/*
+ * 事实瓦片的值(不配状态色;长值折行不截断 —— 名字不截断是铁律)。
+ */
+.factValue {
+  /*
+   * 深灰(本域私有,不是全站色板成员)。
+   */
+  color: #374151;
+
+  /*
+   * 值字号(与判定结论同一档)。
+   */
+  font-size: 13px;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 行距。
+   */
+  line-height: 1.5;
+
+  /*
+   * 长英文名断行,不横向撑破。break-word 是废弃别名(新写法 overflow-wrap: anywhere),
+   * 但两者的 min-content 计算不完全一样 —— 换装批只搬不改值,换写法留给视检批。
+   */
+
+  /* stylelint-disable-next-line declaration-property-value-keyword-no-deprecated -- 换装保值 */
+  word-break: break-word;
+}
+
+/*
+ * 事实瓦片的灰字小注(#326 帖面原名):形态照判定瓦片的小注,一字不改 ——
+ * 同族瓦片一个长相,只多一条断行。
+ */
+.factSub {
+  /*
+   * 小注字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 灰字。
+   */
+  color: var(--text2);
+
+  /*
+   * 行距。
+   */
+  line-height: 1.55;
+
+  /*
+   * 与值的间距。
+   */
+  margin-top: 2px;
+
+  /*
+   * 长英文名断行。break-word 是废弃别名,换装批只搬不改值(理由同 .factValue)。
+   */
+
+  /* stylelint-disable-next-line declaration-property-value-keyword-no-deprecated -- 换装保值 */
+  word-break: break-word;
+}
+
+/*
+ * 结论前面那个扫读符号(✓/!/✗)与文字的间距。
+ */
+.sign {
+  /*
+   * 与结论文字的间距。
+   */
+  margin-right: 5px;
+}
+
+/*
+ * 达标态的结论配色(2026-08-13 Frank:「还可以给瓦片的文字配色」)。
+ */
+.mainPass {
+  /*
+   * 通过绿。
+   */
+  color: var(--ok);
+}
+
+/*
+ * 差着一截的结论配色。
+ */
+.mainGap {
+  /*
+   * 警示琥珀。
+   */
+  color: var(--warn);
+}
+
+/*
+ * 被排除的结论配色。
+ */
+.mainExcluded {
+  /*
+   * 排除红(本域私有:比全站 --danger 深一档,判定行不当报错用)。
+   */
+  color: #b91c1c;
+}
+
+/*
+ * 判不了的结论配色(判不了就说判不了,不编)。
+ */
+.mainUnknown {
+  /*
+   * 灰字。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 中性初筛与摆事实两态的结论配色:不配灰 —— 结论是主文案,浅灰当主文案就是没墨了,
+ * 退回深灰(2026-08-16 Frank「感叹号去掉 颜色去掉」)。
+ */
+.mainPlain {
+  /*
+   * 深灰(本域私有)。
+   */
+  color: #374151;
+}
+
+/*
+ * 引擎给了本域没排版的状态时的兜底配色(原查表落在 info 档的字色上)。
+ */
+.mainFallback {
+  /*
+   * 深蓝。
+   */
+  color: var(--primary-deep);
+}
+
+/*
+ * 判定取不回来时的错误留痕行(出错不静默)。
+ */
+.err {
+  /*
+   * 正文字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 灰字。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 加载占位卡(铁律:加载区必占位)。白卡三格照 .card 抄,只是内衬不同。
+ */
+.skelCard {
+  /*
+   * 白底。
+   */
+  background: var(--card);
+
+  /*
+   * 描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 卡圆角。
+   */
+  border-radius: 12px;
+
+  /*
+   * 卡内衬(上下 14、左右 18)。
+   */
+  padding: 14px 18px;
+}
+
+/*
+ * 加载占位的一根横条。
+ */
+.skelBar {
+  /*
+   * 条高。
+   */
+  height: 12px;
+
+  /*
+   * 条圆角。
+   */
+  border-radius: 4px;
+
+  /*
+   * 占位灰(本域私有)。
+   */
+  background: #f1f3f5;
+
+  /*
+   * 条间距。
+   */
+  margin: 14px 0;
+}
+
+/*
+ * 卡头右上角的弱操作钮(改答案)。类名写两遍抬权重,理由同 .entryBtn。
+ */
+.ghostBtn.ghostBtn {
+  /*
+   * 白底(压在白卡上要自己有底)。
+   */
+  background: #ffffff;
+
+  /*
+   * 深灰字(盖掉 .ghost 的品牌蓝:弱操作不是主行动)。
+   */
+  color: #374151;
+
+  /*
+   * 描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 钮圆角(盖掉 .ghost 的零圆角)。
+   */
+  border-radius: 8px;
+
+  /*
+   * 钮内衬(上下 8、左右 16;盖掉 .ghost 的零内衬)。
+   */
+  padding: 8px 16px;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 钮字重。
+   */
+  font-weight: 600;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 跟随页面字体(原先是裸 <button>,浏览器默认会换成系统字体)。
+   */
+  font-family: inherit;
+
+  /*
+   * 钮文字不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 卡头右上角的弱操作链接(看职位 / 该雇主在招职位)—— 长相与 .ghostBtn 逐值相同,
+ * 多两条把 <a> 摆成钮的声明。经 LinkButton 渲染(裸 <a> 禁),它不带底类,
+ * 所以这一条不必抬权重。
+ */
+.ghostLink {
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 深灰字。
+   */
+  color: #374151;
+
+  /*
+   * 描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 钮圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 钮内衬(上下 8、左右 16)。
+   */
+  padding: 8px 16px;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 钮字重。
+   */
+  font-weight: 600;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 跟随页面字体。
+   */
+  font-family: inherit;
+
+  /*
+   * 钮文字不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 钮形链接不出下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 行内块:能设内衬、能排进卡头。
+   */
+  display: inline-block;
+}
+
+/*
+ * 卡头右上角的主行动钮(去建档)。类名写两遍抬权重,理由同 .entryBtn。
+ */
+.primaryBtn.primaryBtn {
+  /*
+   * 品牌蓝底。
+   */
+  background: var(--primary);
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 钮圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 钮内衬(上下 8、左右 16)。
+   */
+  padding: 8px 16px;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 钮字重。
+   */
+  font-weight: 600;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 跟随页面字体。
+   */
+  font-family: inherit;
+
+  /*
+   * 钮文字不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 申请人条件格的网格(三列;摘要卡与带岗态判定卡②共用 —— 同一种东西一个长相)。
+ */
+.cgGrid {
+  /*
+   * 网格。
+   */
+  display: grid;
+
+  /*
+   * 格间距。
+   */
+  gap: 8px;
+
+  /*
+   * 桌面三列。
+   */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (width <= 640px) {
+  /*
+   * 手机两列。
+   */
+  .cgGrid {
+    /*
+     * 手机两列。
+     */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/*
+ * 一格条件(整格可点,点进那道题)。类名写两遍抬权重:本格经 Button(kind ghost)
+ * 渲染,要盖掉 .btn 的行内块与不折行。
+ */
+.cgTile.cgTile {
+  /*
+   * 允许被挤窄。
+   */
+  min-width: 0;
+
+  /*
+   * 通栏一格(盖掉 .btn 的 inline-block)。
+   */
+  display: block;
+
+  /*
+   * 题面与答案左对齐(它是一格信息,不是一枚钮的文字)。
+   */
+  text-align: left;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 跟随页面字体(原先是裸 <button>)。
+   */
+  font-family: inherit;
+
+  /*
+   * 常规字重(盖掉 .btn 的 600;粗细由格内两行各自说了算)。
+   */
+  font-weight: 400;
+
+  /*
+   * 题面照常折行(盖掉 .btn 的 nowrap)。
+   */
+  white-space: normal;
+
+  /*
+   * 格圆角(与瓦片同一档)。
+   */
+  border-radius: 9px;
+
+  /*
+   * 格内衬(上下 8、左右 10)。
+   */
+  padding: 8px 10px;
+}
+
+/*
+ * 答过的格:实线浅底(与判定/事实瓦片同族)。
+ */
+.cgTileFilled.cgTileFilled {
+  /*
+   * 瓦片浅底。
+   */
+  background: #f8fafc;
+
+  /*
+   * 实线描边。
+   */
+  border: 1px solid #eef2f7;
+}
+
+/*
+ * 没答的格:虚线待填(一眼看得出还欠哪几题)。
+ */
+.cgTileEmpty.cgTileEmpty {
+  /*
+   * 更淡的底。
+   */
+  background: #fafafa;
+
+  /*
+   * 虚线描边(本域私有的待填灰)。
+   */
+  border: 1px dashed #cbd5e1;
+}
+
+/*
+ * 格内的题面。
+ */
+.cgLabel {
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 题面字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 行距。
+   */
+  line-height: 1.35;
+
+  /*
+   * 与答案的间距。
+   */
+  margin-bottom: 2px;
+}
+
+/*
+ * 与当前岗位不匹配的小标(2026-08-14 Frank「加个图标标一下」):琥珀胶囊,不带长句。
+ */
+.cgWarn {
+  /*
+   * 琥珀浅底(本域私有)。
+   */
+  background: #fffbeb;
+
+  /*
+   * 琥珀深字(本域私有)。
+   */
+  color: #92400e;
+
+  /*
+   * 胶囊圆角。
+   */
+  border-radius: 999px;
+
+  /*
+   * 胶囊内衬(上下 1、左右 7)。
+   */
+  padding: 1px 7px;
+
+  /*
+   * 胶囊字号(比题面再小一档)。
+   */
+  font-size: 10.5px;
+
+  /*
+   * 胶囊字重。
+   */
+  font-weight: 600;
+
+  /*
+   * 与题面的间距。
+   */
+  margin-left: 6px;
+
+  /*
+   * 胶囊文字不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 格内的答案(答过与没答共用的解剖)。
+ */
+.cgVal {
+  /*
+   * 答案字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 行距。
+   */
+  line-height: 1.45;
+
+  /*
+   * 长答案照常折行。
+   */
+  white-space: normal;
+
+  /*
+   * 长英文答案断行,不撑破格子。break-word 是废弃别名,换装批只搬不改值(理由同 .factValue)。
+   */
+
+  /* stylelint-disable-next-line declaration-property-value-keyword-no-deprecated -- 换装保值 */
+  word-break: break-word;
+}
+
+/*
+ * 答过的答案:近黑加粗(它是主文案)。
+ */
+.cgValFilled {
+  /*
+   * 近黑(本域私有,比 --text 淡一档)。
+   */
+  color: #1f2937;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 没答的答案:浅灰常规(「待填写」不该跟真答案抢眼)。
+ */
+.cgValEmpty {
+  /*
+   * 待填灰(本域私有)。
+   */
+  color: #94a3b8;
+
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
+}
+
+/*
+ * 第一组小类别:紧贴上文,不留额外间距。
+ */
+.cgGroup {
+  /*
+   * 无上间距。
+   */
+  margin-top: 0;
+}
+
+/*
+ * 第二组起的小类别:与上一组拉开。
+ */
+.cgGroupGap {
+  /*
+   * 组间距。
+   */
+  margin-top: 14px;
+}
+
+/*
+ * 小类别的名字。
+ */
+.cgGroupName {
+  /*
+   * 组名字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 半粗(它是分组头,不是正文)。
+   */
+  font-weight: 600;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 与本组格子的间距。
+   */
+  margin-bottom: 6px;
+}
+
+/*
+ * 省页签那一条(共用题在上、省专属题按省分真选项卡)。
+ */
+.cgTabs {
+  /*
+   * 上 12、下 10(与上面的格子和下面的面板各留一档)。
+   */
+  margin: 12px 0 10px;
+}
+
+/*
+ * 职位板胶囊排尾的入口 pill(蓝系,与判定胶囊同排但按钮感明显)。
+ * 2026-08-28 换装批:原 `TV_PILL` 内联样式常量零消费者,几何值留在这里 ——
+ * 职位板的胶囊统一规格(08-10 Frank「所有胶囊的风格可以改成一样的吗」)
+ * 就是照它对齐的(12px / 圆角 999 / 1px 边框),jobs 桶换装(波 B)时照此取值。
+ */
+.tvPill {
+  /*
+   * 蓝系浅描边。
+   */
+  border: 1px solid #bfdbfe;
+
+  /*
+   * 胶囊圆角。
+   */
+  border-radius: 999px;
+
+  /*
+   * 胶囊内衬(上下 2、左右 12)。
+   */
+  padding: 2px 12px;
+
+  /*
+   * 胶囊字号(全站胶囊统一 12)。
+   */
+  font-size: 12px;
+
+  /*
+   * 蓝系浅底。
+   */
+  background: #eff6ff;
+
+  /*
+   * 蓝系深字。
+   */
+  color: #1d4ed8;
+
+  /*
+   * 胶囊字重。
+   */
+  font-weight: 600;
+
+  /*
+   * 胶囊文字不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 可点手型(它是入口不是标签)。
+   */
+  cursor: pointer;
+}

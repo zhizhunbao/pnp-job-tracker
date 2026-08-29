@@ -1,0 +1,795 @@
+/*
+ * advisor 域的私有样式:内嵌初判段(段头 / 额度灰注 / 正文 / 打字机光标 / 重试)。
+ * 2026-08-28 拆域批自 main.css 第 15 段(它本就是 2026-08-17 从 jobs/Jd.tsx 迁出去的)
+ * 随组件迁入本域,值一个不改。
+ *
+ * 段的**壳**归消费方(Frank「AI 顾问和职位描述分成两个卡片」「不要卡片套卡片」):
+ * 详情页包进独立卡、JD 弹框包分隔线段 —— 这里只管段内。
+ */
+
+/*
+ * 段标题(卡标题级,每卡必有 title)。
+ */
+.head {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 6px;
+}
+
+/*
+ * 剩余次数灰注(「·」杂糅退役 —— 改空格灰注)。
+ */
+.left {
+  color: #9ca3af;
+  font-weight: 400;
+  font-size: 11.5px;
+  margin-left: 8px;
+}
+
+/*
+ * 在途 / 失败的一行灰注。
+ */
+.note {
+  margin: 0;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+/*
+ * 正文。
+ */
+.body {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: #374151;
+}
+
+/*
+ * 流式打字机光标。
+ */
+.caret {
+  color: #9ca3af;
+}
+
+/*
+ * 重试(2026-07-25 用户:有时候 AI 解析会失败,需要有重试按钮)。
+ */
+.retry {
+  border: none;
+  background: none;
+  padding: 0;
+  margin-left: 8px;
+  color: #2563eb;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/*
+ * ── 完整弹框族(2026-08-28 换装批自 main.css 第 20 段与 Advisor.tsx 的内联样式迁入,
+ *    值逐格相等)────────────────────────────────────────────────────────────────
+ * 原样式住全局层是因为 Advisor.tsx 当时还在路由树里;整件重写进本桶后它们只有这一个
+ * 消费者,按「只有一个消费者的东西不该住共享叶子」收进域内。全局层那份本批不动
+ * (不碰 main.css),等它的旧消费者删干净了随主表一起清。
+ * 仍走全局类名常量的七个(cardMd / mcardHead / gridK / gridV / gridN / pill 的兄弟们):
+ * 白卡壳、卡标题是跨域共用的词汇,事实网格三格是 grid 域的单元格角色词汇,不是顾问专有。
+ */
+
+/*
+ * 一块事实(组间留白靠下边距 —— Frank 走查#8:卡片底部横线退役)。
+ */
+.factsBox {
+  margin-bottom: 14px;
+}
+
+/*
+ * 一块事实底下的口径注。
+ */
+.factsNote {
+  margin-top: 7px;
+  font-size: 11.5px;
+  color: #9ca3af;
+  line-height: 1.5;
+}
+
+/*
+ * 身份行(标签 + 值)。左右负边距把高亮底色撑出内容边界,亮起来才像一整行。
+ */
+.kv {
+  display: flex;
+  gap: 10px;
+  padding: 3px 6px;
+  margin: 0 -6px;
+  font-size: 13px;
+}
+
+/*
+ * 可高亮的那几组(点哪个字段哪行亮)。
+ */
+.hl {
+  border-radius: 6px;
+}
+
+/*
+ * 标签列(定宽档见 .w64 / .w88 / .w128;不许被值挤扁)。
+ */
+.kvK {
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+/*
+ * 亮起来的那一行。
+ */
+.kvOn {
+  background: #eff6ff;
+}
+
+/*
+ * 亮起来那一行的标签也跟着变蓝加粗 —— 底色之外再给一道,不指望用户只靠底色分辨。
+ */
+.kvOn .kvK {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+/*
+ * 名单类的紧凑行(校名/雇主名那种:没有标签列,基线对齐)。
+ */
+.kvTight {
+  gap: 8px;
+  align-items: baseline;
+}
+
+/*
+ * 标签列窄档(地点卡:标签都是一两个字)。
+ */
+.w64 {
+  min-width: 64px;
+}
+
+/*
+ * 标签列常规档(分类卡)。
+ */
+.w88 {
+  min-width: 88px;
+}
+
+/*
+ * 标签列宽档(市/区体量卡:标签是整句)。
+ */
+.w128 {
+  min-width: 128px;
+}
+
+/*
+ * 值列。
+ */
+.kvV {
+  flex: 1;
+  color: #374151;
+}
+
+/*
+ * 长值断行(地址那种没有空格的长串,不断行会把整行撑破)。
+ * 写 overflow-wrap 不写 `word-break: break-word`:后者是同一效果的**过时别名**
+ * (标准里它就等于 overflow-wrap: break-word),stylelint 会拦。
+ */
+.brk {
+  overflow-wrap: break-word;
+}
+
+/*
+ * 身份行里作为值的蓝链(地点卡的地图链接、区级雇主卡的公司页链接)。
+ * 与全局 `.link`(main.css 第 5 段,走 --primary 变量)分开:这一处历来写死自己的蓝,
+ * 迁类时值一个不改 —— 要并到变量上是配色批的活,不是换装批的。
+ */
+.valueLink {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+/*
+ * 地图链接(比正文小一档 —— 它是行内的去处不是内容)。
+ */
+.mapLink {
+  font-size: 12.5px;
+}
+
+/*
+ * 未标注的灰字(J1 2026-07-19 Frank:未标注显灰字,不再让整行消失)。
+ */
+.muted {
+  color: #9ca3af;
+}
+
+/*
+ * JD 摘录的小标题。
+ */
+.excerptHead {
+  font-size: 11.5px;
+  color: #9ca3af;
+}
+
+/*
+ * 上面有别的事实行时才留上距。
+ */
+.excerptGap {
+  margin-top: 8px;
+}
+
+/*
+ * JD 摘录的占位/空态一行(在途、限流、没收录到正文三种都走它)。
+ */
+.excerpt {
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: #9ca3af;
+}
+
+/*
+ * 灰字小注(代码不裸奔:人话名做主文案,NOC 码/省码/TFWP 这类代码当灰字小注)。
+ */
+.gnote {
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/*
+ * 灰字小注的小一档(跟在体量卡人话名后面的代码)。
+ */
+.gnoteS {
+  font-size: 11px;
+}
+
+/*
+ * 灰字小注的卡标题档(跟在卡标题后面,要一段间距才不粘着)。
+ */
+.gnoteM {
+  font-size: 11.5px;
+  margin-left: 8px;
+}
+
+/*
+ * 抓取日期灰注(#191 对齐:全角括号退役 → 空格灰注,与公司简介检索日期同款)。
+ */
+.fetched {
+  font-size: 11.5px;
+  font-weight: 400;
+  color: #9ca3af;
+  margin-left: 8px;
+}
+
+/*
+ * 官方职责/任职要求的逐条列表。
+ */
+.duties {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12.5px;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+/*
+ * 逐句对照的译文行(蓝色左竖条 + 深蓝字:一眼看出这行是译文不是原文)。
+ */
+.zh {
+  margin: 2px 0 4px;
+  padding: 1px 0 1px 10px;
+  border-left: 3px solid #dbeafe;
+  color: #1e40af;
+}
+
+/*
+ * 分类弹框顶部的两钮条。
+ */
+.actsRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+/*
+ * 字段/地点弹框顶部的三钮条(Frank 走查#2「只要弹框就直接显示这三个按钮」)。
+ */
+.acts2 {
+  display: flex;
+  gap: 8px;
+  margin: 2px 0 12px;
+  flex-wrap: wrap;
+}
+
+/*
+ * 药丸钮。类名写两遍抬权重:本钮经 Button(kind ghost)渲染(「<button 这种不允许
+ * 直接使用」),要稳赢 button 域 .btn/.ghost 的同权重声明且不赌打包顺序
+ * (先例 account 的 .logoutBtn、companies 的 .pill)。
+ */
+.pill.pill {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 13px;
+  font-size: 12.5px;
+  background: var(--card);
+  color: #374151;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/*
+ * 开着的那颗药丸(浅蓝底浅蓝边蓝字)。
+ */
+.pillOn.pillOn {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+/*
+ * 前置占位的药丸(灰显 disabled,待该弹框接入 AI/专属页后点亮)。
+ */
+.pillOff.pillOff {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/*
+ * 在翻译中的药丸(点了就别再点)。
+ */
+.pillBusy.pillBusy {
+  opacity: 0.6;
+}
+
+/*
+ * 药丸形态的链接(「打开完整页 ↗」;链接经 LinkButton 渲染,它只管标签语义不带样式)。
+ */
+.pillLink {
+  text-decoration: none;
+  display: inline-block;
+}
+
+/*
+ * 弹框内的一行灰注(在途 / 失败)。
+ */
+.modalNote {
+  margin: 0;
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+/*
+ * 卡内的那一档灰注小一号(分类/地点的 AI 速读卡)。
+ */
+.modalNoteSm {
+  font-size: 13px;
+}
+
+/*
+ * 弹框内的 AI 正文。
+ */
+.aiText {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #374151;
+}
+
+/*
+ * 弹框内的重试钮(2026-07-25 用户:有时候 AI 解析会失败,需要有重试按钮)。
+ * 加倍写抬权重,理由同 .pill。
+ */
+.modalRetry.modalRetry {
+  border: none;
+  background: none;
+  padding: 0;
+  margin-left: 8px;
+  color: #2563eb;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/*
+ * 卡标题与右侧标签同行(移民难度卡:标题 + 难度档药丸)。
+ */
+.cardHeadRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/*
+ * 移民难度档的药丸(三档色阶由下面三个修饰类给的变量决定,与 /stats 难度卡同源)。
+ */
+.diff {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--dbg);
+  color: var(--dfg);
+  border: 1px solid var(--dbd);
+}
+
+/*
+ * 宽松档(绿)。
+ */
+.diffEasy {
+  --dbg: #dcfce7;
+  --dfg: #166534;
+  --dbd: #bbf7d0;
+}
+
+/*
+ * 中等档(琥珀)。
+ */
+.diffMid {
+  --dbg: #fef3c7;
+  --dfg: #b45309;
+  --dbd: #fde68a;
+}
+
+/*
+ * 紧档(靛)。⚠️ 紧不用红:难度紧不是坏消息,是「这条路要排队」,红会读成「你不行」。
+ */
+.diffTight {
+  --dbg: #eef2ff;
+  --dfg: #3730a3;
+  --dbd: #e0e7ff;
+}
+
+/*
+ * 体量卡的三列网格(Frank 走查#6:标签 | 数值 | 年份注,跨行对齐;
+ * Frank 2026-07-26「每列都保证左对齐」—— 数值列原为右对齐,与其他卡不一致)。
+ */
+.vol {
+  display: grid;
+  grid-template-columns: max-content max-content 1fr;
+  column-gap: 12px;
+  row-gap: 4px;
+  font-size: 13px;
+  align-items: baseline;
+}
+
+/*
+ * 半粗的值(数值列与判词)。
+ */
+.bold {
+  font-weight: 600;
+}
+
+/*
+ * 魁北克独立体系说明(Frank 走查#4:非 QC 的来源注删,这一条是实义,保留)。
+ */
+.qc {
+  font-size: 11.5px;
+  color: #9ca3af;
+  margin-top: 8px;
+  line-height: 1.6;
+}
+
+/*
+ * 名单(AIP 指定雇主那种一行一条)。
+ */
+.list {
+  display: grid;
+  row-gap: 2px;
+}
+
+/*
+ * 名单的一行。
+ */
+.listRow {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 13px;
+  color: #374151;
+}
+
+/*
+ * 名单里的名字(占满剩余宽,长名字不截断)。
+ */
+.listName {
+  flex: 1;
+  min-width: 0;
+}
+
+/*
+ * 名字后面的标(科技岗那种),不换行。
+ */
+.listTag {
+  font-size: 11px;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+/*
+ * 遮罩层的层级(遮罩本体的半透黑走 modal 域的 .overlay —— 自带壳的重弹框
+ * 不套 Modal 组件,但遮罩必须与全站同一份)。
+ */
+.scrim {
+  z-index: 50;
+}
+
+/*
+ * 浮层白卡。位置与尺寸是运行时像素(见 functions 的 panelStyleOf),这里只给形态:
+ * 纵向列 + 内滚动 + 白卡三格(圆角/投影/滚动收敛,值照 modal 域的 CARD 规范逐格抄)。
+ * position 固定在视口:浮层不随页面滚动。类名加倍写抬权重,理由同 .pill。
+ */
+.panel.panel {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 24px 60px rgb(0 0 0 / 30%);
+  overscroll-behavior: contain;
+}
+
+/*
+ * 全屏态(窄屏强制走这一档):贴四边、去圆角。
+ */
+.panelFull.panelFull {
+  inset: 0;
+  border-radius: 0;
+}
+
+/*
+ * 浮层标题栏 = 拖动手柄(所以给移动光标,并禁掉选字 —— 拖的时候不该把标题选中)。
+ */
+.panelHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 20px 10px;
+  cursor: move;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/*
+ * 标题栏紧凑档(职位描述弹框)。
+ */
+.panelHeadTight {
+  padding: 16px 20px 8px;
+}
+
+/*
+ * 全屏态的标题栏不给拖动光标 —— 全屏本来就拖不动。
+ */
+.panelHeadFull {
+  cursor: default;
+}
+
+/*
+ * 标题栏左块(标题过长时靠它把省略号交给子元素)。
+ */
+.headL {
+  min-width: 0;
+}
+
+/*
+ * 页眉那行灰色小标(#174:「AI 顾问 · 移民 · 免费今日剩 N 次」两个「·」退役 ——
+ * 分组名与次数改空格灰注;靛色随 #108 杂色归一改灰)。
+ */
+.kicker {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+/*
+ * 灰色小标里的副段(分组名 / 剩余次数)。
+ */
+.kickerSub {
+  color: #9ca3af;
+  font-weight: 400;
+  margin-left: 8px;
+}
+
+/*
+ * 弹框大标题(岗位名/公司名;名字不截断是全站规矩,这里是**单行浮层标题**的例外 ——
+ * 标题栏是固定高的一行,换行会把窗口钮挤下去,所以给省略号)。
+ */
+.title {
+  margin: 4px 0 0;
+  font-size: 17px;
+  color: #111827;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * 大标题下的界面语译名(#199 Frank「chiropractor 怎么没有翻译呢」)。
+ */
+.sub {
+  font-size: 12.5px;
+  color: #9ca3af;
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * 窗口钮排(全屏/关闭;挤的时候不许被压扁)。
+ */
+.winActs {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/*
+ * 窗口图标钮(全屏/关闭两颗一样大才叫一排;值照 modal 域的 iconBtn 规范逐格抄)。
+ * 类名加倍写抬权重,理由同 .pill。
+ */
+.iconBtn.iconBtn {
+  border: none;
+  background: #f3f4f6;
+  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
+  color: #6b7280;
+  cursor: pointer;
+  line-height: 1;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/*
+ * 浮层正文(可滚动的那一段)。
+ */
+.panelBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 20px 20px;
+}
+
+/*
+ * 正文的 JD 档:整栏读正文。2026-07-25 用户「穿墙」—— 底部原 20px 内衬在 sticky
+ * 投递栏下方留缝,滚动到底 JD 从缝里透出卡片圆角外,所以底内衬归 0,底部留白改由
+ * 投递栏自带。Frank 走查#22:滚动容器改纵向弹性列,让投递栏在内容短时也贴底。
+ */
+.panelBodyJd {
+  padding: 4px 20px 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #374151;
+  display: flex;
+  flex-direction: column;
+}
+
+/*
+ * 右下角的拉伸视觉提示三角(只是提示,事件走下面那八块透明手柄)。
+ */
+.grip {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  background: linear-gradient(135deg, transparent 50%, #cbd5e1 50%);
+}
+
+/*
+ * 八向拉伸手柄的底座(透明,只吃指针事件;各向的边距与光标见下面八条)。
+ */
+.handle {
+  position: absolute;
+}
+
+/*
+ * 上边条(左右各让开 14px 给角块)。
+ */
+.edgeN {
+  top: 0;
+  left: 14px;
+  right: 14px;
+  height: 6px;
+  cursor: ns-resize;
+}
+
+/*
+ * 下边条。
+ */
+.edgeS {
+  bottom: 0;
+  left: 14px;
+  right: 14px;
+  height: 6px;
+  cursor: ns-resize;
+}
+
+/*
+ * 左边条(上下各让开 14px 给角块)。
+ */
+.edgeW {
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 6px;
+  cursor: ew-resize;
+}
+
+/*
+ * 右边条。
+ */
+.edgeE {
+  right: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 6px;
+  cursor: ew-resize;
+}
+
+/*
+ * 左上角块。
+ */
+.edgeNw {
+  top: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+}
+
+/*
+ * 右上角块。
+ */
+.edgeNe {
+  top: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nesw-resize;
+}
+
+/*
+ * 左下角块。
+ */
+.edgeSw {
+  bottom: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nesw-resize;
+}
+
+/*
+ * 右下角块。
+ */
+.edgeSe {
+  bottom: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+}
+
+/*
+ * LMIA 这条路走得通的判词(绿:高薪类不受冻结 / 低薪但豁免行业)。
+ */
+.lmiaOk {
+  color: #15803d;
+  font-weight: 500;
+}
+
+/*
+ * LMIA 这条路今年可能被冻的判词(琥珀:低薪非豁免,大城市可能冻结)。
+ * ⚠️ 不用红 —— 「可能」不是「不行」,红会读成一个我们给不出的结论。
+ */
+.lmiaWarn {
+  color: #b45309;
+  font-weight: 500;
+}

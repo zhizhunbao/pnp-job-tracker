@@ -1,0 +1,2119 @@
+/*
+ * pnp 域(省提名与联邦 EE 事实区块)的私有样式。2026-08-28 换装批自 main.css 第 16 段
+ * (与第 14 段那一小块窄屏重排)逐条抄进来,值一个不改;色值凡在 colors 域有名字的走
+ * CSS 变量(--primary/--primary-deep/--ok/--warn/--danger/--text/--text2/--text3/
+ * --border/--hairline/--bg/--card),只在这一族里出现的几枚(命中琥珀、EE 命中浅蓝、
+ * 深灰正文、斑马纹底)留字面量并挂注释。
+ * ⚠️ 本批**不动 main.css**(七工并行,那份是公共面):原第 16 段留在那儿成了没有消费者的
+ * 死样式,连同 `.cardMd`/`.mcardHead`/`.gridK`/`.pill` 这几个多消费者全局词汇一起,
+ * 归收口批处置 —— 那几个词这里按「消费页域化时随行收进来」的老规矩各抄了一份(值逐格相等)。
+ * 四处把 JS 判断换成 CSS 原生能力(原样保留):斑马纹 :nth-child(even)(原 i % 2)、
+ * 分组分隔线 .cat + .cat(原三连三元 —— 用相邻兄弟而不是 :first-child,因为卡里第一个
+ * 子元素是标题不是分组)、职业行的组内细线 :not(:first-child)、判定行末行不划线 :not(:last-child)。
+ */
+
+/*
+ * 弹框里的白卡壳(自全局 .cardMd 抄值:12/16 内衬 + 下边距 14,全站最常用的那一档)。
+ * #C 一致性:各卡原先手写过一遍这几格,换用统一卡常量后值与原手写完全一致,这里照抄那一份。
+ */
+.card {
+  /*
+   * 白底(colors 域变量)。
+   */
+  background: var(--card);
+
+  /*
+   * 描边灰。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 统一圆角。
+   */
+  border-radius: 12px;
+
+  /*
+   * 卡内衬。
+   */
+  padding: 12px 16px;
+
+  /*
+   * 卡与卡的间距。
+   */
+  margin-bottom: 14px;
+}
+
+/*
+ * 卡标题(自全局 .mcardHead 抄值)。Frank 走查#9:卡要正式 title,不再是小灰头。
+ */
+.cardHead {
+  /*
+   * 标题字号。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 700;
+
+  /*
+   * 主文字色。
+   */
+  color: var(--text);
+
+  /*
+   * 与正文的间距。
+   */
+  margin-bottom: 6px;
+}
+
+/*
+ * 改制省的现行规则块(项 | 内容 两列左对齐)。
+ */
+.reform {
+  /*
+   * 与上下文的间距。
+   */
+  margin: 2px 0 6px;
+}
+
+/*
+ * 规则的项格(自全局 .gridK 抄值:事实网格的标签格)。
+ */
+.ruleK {
+  /*
+   * 标签灰。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 规则的内容格。
+ */
+.ruleV {
+  /*
+   * 深灰正文(本族私有,不是全站色板成员)。
+   */
+  color: #374151;
+}
+
+/*
+ * 抽选表:四列跨行对齐(日期 / 流名 / 最低分 / 份邀请),不是逐行 flex
+ * (2026-07-25 Frank 走查#12:整块一个 grid,列宽跨行对齐)。
+ */
+.draws {
+  /*
+   * 细边框。
+   */
+  border: 1px solid var(--hairline);
+
+  /*
+   * 圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 网格布局。
+   */
+  display: grid;
+
+  /*
+   * 四列:日期与两个数值格按内容定宽,流名吃剩余宽。
+   */
+  grid-template-columns: max-content 1fr max-content max-content;
+
+  /*
+   * 各格按基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 列间距。
+   */
+  column-gap: 10px;
+
+  /*
+   * 行间距(抽选行贴紧)。
+   */
+  row-gap: 2px;
+
+  /*
+   * 上下内衬。
+   */
+  padding: 4px 0;
+}
+
+/*
+ * 一条抽选都没有:整块不出(改制省只列现行规则时就是这种)。
+ */
+.draws.empty {
+  /*
+   * 不占位。
+   */
+  display: none;
+}
+
+/*
+ * 通告行(如 ON 2026-06 改制):跨全部列的一条琥珀提示。
+ */
+.notice {
+  /*
+   * 跨满四列。
+   */
+  grid-column: 1 / -1;
+
+  /*
+   * 行内衬。
+   */
+  padding: 5px 10px;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 警示琥珀。
+   */
+  color: var(--warn);
+
+  /*
+   * 浅琥珀底(本族私有)。
+   */
+  background: #fffbeb;
+}
+
+/*
+ * 抽选行的外壳。桌面 display:contents 原样吃外层四列网格(逐行对齐效果不变);
+ * ≤640px 改用 grid-template-areas 两行,见文件末尾那段(#268 的 375 走查)。
+ */
+.drawRow {
+  /*
+   * 自身不成盒,四个格直接落进外层网格。
+   */
+  display: contents;
+}
+
+/*
+ * 抽选行的日期格。
+ */
+.date {
+  /*
+   * 左内衬(整块 grid 不给行内衬,首格自己补)。
+   */
+  padding-left: 10px;
+
+  /*
+   * 等宽数字(日期上下对齐)。
+   */
+  font-variant-numeric: tabular-nums;
+
+  /*
+   * 浅灰小字。
+   */
+  color: var(--text3);
+
+  /*
+   * 日期不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+}
+
+/*
+ * 抽选行的流名格。
+ */
+.stream {
+  /*
+   * 允许被压缩(1fr 列里的省略号要靠它)。
+   */
+  min-width: 0;
+
+  /*
+   * 深灰正文。
+   */
+  color: #374151;
+
+  /*
+   * 溢出交给省略号。
+   */
+  overflow: hidden;
+
+  /*
+   * 省略号收尾。
+   */
+  text-overflow: ellipsis;
+
+  /*
+   * 单行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+}
+
+/*
+ * 抽选行的最低分格。
+ */
+.score {
+  /*
+   * 数值加粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 数值右对齐。
+   */
+  text-align: right;
+
+  /*
+   * 深灰正文。
+   */
+  color: #374151;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+}
+
+/*
+ * 抽选行的邀请数格。
+ */
+.inv {
+  /*
+   * 右内衬(末格自己补)。
+   */
+  padding-right: 10px;
+
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 数值右对齐。
+   */
+  text-align: right;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+}
+
+/*
+ * 改制省:改制日之前的旧轮次压暗(它们属于已关闭的通道)。
+ */
+.date.dim,
+.stream.dim {
+  /*
+   * 压暗档。
+   */
+  opacity: 0.55;
+}
+
+/*
+ * zh 态英文流名 + 中文灰注:块级子元素天然不受父 span 的 nowrap/ellipsis 约束(#280)。
+ */
+.streamZh {
+  /*
+   * 自成一行。
+   */
+  display: block;
+
+  /*
+   * 灰注字号。
+   */
+  font-size: 11px;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 中文名允许折行。
+   */
+  white-space: normal;
+
+  /*
+   * 不裁。
+   */
+  overflow: visible;
+
+  /*
+   * 不出省略号。
+   */
+  text-overflow: clip;
+}
+
+/*
+ * 细边框盒(公告、清单、历史轮次、联邦轮次共用的那层框)。
+ */
+.box {
+  /*
+   * 细边框。
+   */
+  border: 1px solid var(--hairline);
+
+  /*
+   * 圆角。
+   */
+  border-radius: 8px;
+}
+
+/*
+ * 裁掉溢出(斑马纹在圆角处不出血)。
+ */
+.box.clip {
+  /*
+   * 裁边。
+   */
+  overflow: hidden;
+}
+
+/*
+ * 只往上留白。
+ */
+.box.mt {
+  /*
+   * 上 6。
+   */
+  margin: 6px 0 0;
+}
+
+/*
+ * 上下都留白。
+ */
+.box.my {
+  /*
+   * 上下 6。
+   */
+  margin: 6px 0;
+}
+
+/*
+ * 与上文留 4px 的一层(依据链列表)。
+ */
+.mt4 {
+  /*
+   * 上 4。
+   */
+  margin-top: 4px;
+}
+
+/*
+ * 与上文留 6px 的一层(展开钮那一行、类别职业清单)。
+ */
+.mt6 {
+  /*
+   * 上 6。
+   */
+  margin-top: 6px;
+}
+
+/*
+ * 吃掉剩余宽的那一格(清单行里的职业名)。
+ */
+.flex1 {
+  /*
+   * 占满剩余。
+   */
+  flex: 1;
+}
+
+/*
+ * 空值符。
+ */
+.dash {
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 灰注(译名、口径注、NOC 码)。
+ */
+.note {
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 灰注字号。
+   */
+  font-size: 11px;
+}
+
+/*
+ * 职业名后的界面语言译名(次行灰注)。
+ */
+.zh {
+  /*
+   * 自成一行。
+   */
+  display: block;
+
+  /*
+   * 灰注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 译名不跟着命中行加粗。
+   */
+  font-weight: 400;
+}
+
+/*
+ * 文字钮(全类别全景那颗)。加倍类:钮经 button 族之后要盖住它的基座,
+ * 原件是一颗零内衬的裸 <button>,这里逐条还原它的长相。
+ */
+.linkBtn.linkBtn {
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 零内衬。
+   */
+  padding: 0;
+
+  /*
+   * 品牌蓝。
+   */
+  color: var(--primary);
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 小注字号(盖掉钮基座的 13)。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 常规字重(盖掉钮基座的 600)。
+   */
+  font-weight: 400;
+}
+
+/*
+ * 展开更多轮次那颗钮(同上,只是上面多留一点白)。
+ */
+.moreBtn.moreBtn {
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 只在上面留白。
+   */
+  padding: 6px 0 0;
+
+  /*
+   * 品牌蓝。
+   */
+  color: var(--primary);
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
+}
+
+/*
+ * 本省最新公告的一行。
+ */
+.newsRow {
+  /*
+   * 一行两格。
+   */
+  display: flex;
+
+  /*
+   * 基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 格间距。
+   */
+  gap: 8px;
+
+  /*
+   * 行内衬。
+   */
+  padding: 4px 10px;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+}
+
+/*
+ * 公告日期。
+ */
+.newsDate {
+  /*
+   * 等宽数字。
+   */
+  font-variant-numeric: tabular-nums;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 日期不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 公告标题链接(整行可点)。
+ */
+.newsLink {
+  /*
+   * 吃掉剩余宽。
+   */
+  flex: 1;
+
+  /*
+   * 允许被压缩(省略号要靠它)。
+   */
+  min-width: 0;
+
+  /*
+   * 品牌蓝。
+   */
+  color: var(--primary);
+
+  /*
+   * 不出下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 溢出交给省略号。
+   */
+  overflow: hidden;
+
+  /*
+   * 省略号收尾(名字不截断,窄位才靠它)。
+   */
+  text-overflow: ellipsis;
+
+  /*
+   * 单行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 担保引流卡的凭证行(AIP 指定 / LMIA 获批)。
+ */
+.splRow {
+  /*
+   * 正文字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 行距(两条凭证读着不挤)。
+   */
+  line-height: 1.75;
+
+  /*
+   * 深灰正文。
+   */
+  color: #374151;
+}
+
+/*
+ * 担保引流卡的操作行。
+ */
+.splActs {
+  /*
+   * 一行排开。
+   */
+  display: flex;
+
+  /*
+   * 钮间距。
+   */
+  gap: 8px;
+
+  /*
+   * 窄屏换行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 与凭证行的间距。
+   */
+  margin-top: 8px;
+}
+
+/*
+ * 药丸形的站内链接(Frank 2026-08-08「按钮风格保持一致」:与「打开完整页 ↗」同款)。
+ * 自全局 .pill 抄值,再叠上原 .pnpPillLink 那三条(链接不出下划线、行内块、不折行)。
+ */
+.pillLink {
+  /*
+   * 描边灰。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 药丸圆角。
+   */
+  border-radius: 999px;
+
+  /*
+   * 药丸内衬。
+   */
+  padding: 5px 13px;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 白底。
+   */
+  background: var(--card);
+
+  /*
+   * 深灰正文。
+   */
+  color: #374151;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 链接不出下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 行内块(内衬才吃得住)。
+   */
+  display: inline-block;
+
+  /*
+   * 钮文字不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 判定卡里的「凭什么」小字(通用档的说明、魁省的制度说明)。
+ */
+.why {
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 与判定行的间距。
+   */
+  margin-top: 6px;
+
+  /*
+   * 行距(整句读得下去)。
+   */
+  line-height: 1.7;
+}
+
+/*
+ * 判定药丸的底座。
+ */
+.verdict {
+  /*
+   * 行内块。
+   */
+  display: inline-block;
+
+  /*
+   * 药丸内衬。
+   */
+  padding: 1px 10px;
+
+  /*
+   * 药丸圆角。
+   */
+  border-radius: 999px;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 结论不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 能走:绿。
+ */
+.verdict.verdictOk {
+  /*
+   * 浅绿底(本族私有)。
+   */
+  background: #dcfce7;
+
+  /*
+   * 通过绿。
+   */
+  color: var(--ok);
+}
+
+/*
+ * 提示:琥珀。
+ */
+.verdict.verdictWarn {
+  /*
+   * 浅琥珀底。
+   */
+  background: #fef3c7;
+
+  /*
+   * 警示琥珀。
+   */
+  color: var(--warn);
+}
+
+/*
+ * 排除:红。
+ */
+.verdict.verdictFail {
+  /*
+   * 浅红底。
+   */
+  background: #fee2e2;
+
+  /*
+   * 深红字(比 --danger 深一档,这一族私有)。
+   */
+  color: #b91c1c;
+}
+
+/*
+ * 走不了:灰。
+ */
+.verdict.verdictNa {
+  /*
+   * 灰底。
+   */
+  background: var(--hairline);
+
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 清单头后面那个条数。
+ */
+.count {
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 常规字重(标题粗,它不跟着粗)。
+   */
+  font-weight: 400;
+
+  /*
+   * 与标题的间距。
+   */
+  margin-left: 6px;
+
+  /*
+   * 小字。
+   */
+  font-size: 12px;
+}
+
+/*
+ * 省清单的一行职业。
+ */
+.row {
+  /*
+   * 一行几格。
+   */
+  display: flex;
+
+  /*
+   * 基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 格间距。
+   */
+  gap: 8px;
+
+  /*
+   * 行内衬。
+   */
+  padding: 4px 10px;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 深灰正文。
+   */
+  color: #374151;
+}
+
+/*
+ * 省清单的职业码格。
+ */
+.noc {
+  /*
+   * 等宽数字。
+   */
+  font-variant-numeric: tabular-nums;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 命中本岗那一行:琥珀高亮。
+ */
+.row.hit {
+  /*
+   * 浅琥珀底。
+   */
+  background: #fef3c7;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 深琥珀字。
+   */
+  color: #92400e;
+}
+
+/*
+ * 命中行里的职业码跟着变色(不然浅灰在琥珀底上读不出来)。
+ */
+.row.hit .noc {
+  /*
+   * 深琥珀字。
+   */
+  color: #92400e;
+}
+
+/*
+ * 清单行末尾的小标(「你的职业」「GTA 限制」)。
+ */
+.tagS {
+  /*
+   * 小字。
+   */
+  font-size: 11px;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 弱化档的小标(GTA 限制比「你的职业」浅一档)。
+ */
+.tagS.muted {
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 清单末尾的展开开关(Frank 走查#14:开关从清单头移到列表末尾)。加倍类还原原件那层 div。
+ */
+.foldMore.foldMore {
+  /*
+   * 通栏一行。
+   */
+  display: block;
+
+  /*
+   * 占满卡宽。
+   */
+  width: 100%;
+
+  /*
+   * 文字左对齐(钮基座会居中)。
+   */
+  text-align: left;
+
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 零内衬。
+   */
+  padding: 0;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 点它不选中文字。
+   */
+  user-select: none;
+
+  /*
+   * 与清单的间距。
+   */
+  margin-top: 6px;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 品牌蓝。
+   */
+  color: var(--primary);
+
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
+
+  /*
+   * 长文案允许折行。
+   */
+  white-space: normal;
+}
+
+/*
+ * 联邦轮次的口径注(近 N 轮里各类各占几轮)。
+ */
+.fedHead {
+  /*
+   * 小字。
+   */
+  font-size: 12px;
+
+  /*
+   * 深灰正文。
+   */
+  color: #374151;
+}
+
+/*
+ * 联邦轮次的一行。
+ */
+.fedRow {
+  /*
+   * 一行几格。
+   */
+  display: flex;
+
+  /*
+   * 基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 格间距。
+   */
+  gap: 8px;
+
+  /*
+   * 行内衬。
+   */
+  padding: 4px 10px;
+
+  /*
+   * 小字。
+   */
+  font-size: 12px;
+}
+
+/*
+ * 斑马纹(原来是 JS 的 i % 2,换成 CSS 原生能力)。
+ */
+.fedRow:nth-child(even) {
+  /*
+   * 极浅灰底(本族私有)。
+   */
+  background: #fafafa;
+}
+
+/*
+ * 轮次类型格(色是数据,由 tsx 逐行给;这里只管几何)。
+ */
+.fedType {
+  /*
+   * 吃掉剩余宽。
+   */
+  flex: 1;
+
+  /*
+   * 允许被压缩。
+   */
+  min-width: 0;
+
+  /*
+   * 溢出交给省略号。
+   */
+  overflow: hidden;
+
+  /*
+   * 省略号收尾。
+   */
+  text-overflow: ellipsis;
+
+  /*
+   * 单行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 分数线格(联邦轮次与类别历史共用)。
+ */
+.fedCrs {
+  /*
+   * 等宽数字。
+   */
+  font-variant-numeric: tabular-nums;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 近黑正文(本族私有)。
+   */
+  color: #1f2937;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 邀请数格。
+ */
+.fedIta {
+  /*
+   * 等宽数字。
+   */
+  font-variant-numeric: tabular-nums;
+
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 联邦轮次卡末尾那句法语通道说明。
+ */
+.fedNote {
+  /*
+   * 灰注字号。
+   */
+  font-size: 11px;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 与列表的间距。
+   */
+  margin-top: 6px;
+}
+
+/*
+ * EE 判定行。
+ */
+.eeVerdict {
+  /*
+   * 标题字号。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 未命中:浅灰。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 命中:品牌蓝。
+ */
+.eeVerdict.on {
+  /*
+   * 品牌蓝。
+   */
+  color: var(--primary);
+}
+
+/*
+ * 一个类别的分组。
+ */
+.cat {
+  /*
+   * 分组自身不带样式,只作分隔的锚点(相邻兄弟才划线)。
+   */
+  display: block;
+}
+
+/*
+ * 分组分隔:第一组不带线。用相邻兄弟而非 :first-child —— 卡里第一个子元素是标题。
+ */
+.cat + .cat {
+  /*
+   * 线上留白。
+   */
+  padding-top: 8px;
+
+  /*
+   * 细分隔线。
+   */
+  border-top: 1px solid var(--hairline);
+
+  /*
+   * 线外留白。
+   */
+  margin-top: 8px;
+}
+
+/*
+ * 类别名。
+ */
+.catName {
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 700;
+
+  /*
+   * 主文字色。
+   */
+  color: var(--text);
+}
+
+/*
+ * 大一号档(清单卡的类别名自己就是标题,比抽选卡里的大一档)。
+ */
+.catName.lg {
+  /*
+   * 标题字号。
+   */
+  font-size: 13.5px;
+}
+
+/*
+ * 类别清单的折叠头(类别名 + 条数 + 折叠记号)。加倍类还原原件那层 div。
+ */
+.catHead.catHead {
+  /*
+   * 一行三格。
+   */
+  display: flex;
+
+  /*
+   * 占满卡宽。
+   */
+  width: 100%;
+
+  /*
+   * 文字左对齐。
+   */
+  text-align: left;
+
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 零内衬。
+   */
+  padding: 0;
+
+  /*
+   * 基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 格间距。
+   */
+  gap: 6px;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 点它不选中文字。
+   */
+  user-select: none;
+
+  /*
+   * 常规字重(粗细由类别名自己定)。
+   */
+  font-weight: 400;
+
+  /*
+   * 长类别名允许折行。
+   */
+  white-space: normal;
+}
+
+/*
+ * 类别里的职业条数。
+ */
+.catN {
+  /*
+   * 小字。
+   */
+  font-size: 12px;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 折叠记号(推到行尾)。
+ */
+.catCaret {
+  /*
+   * 顶到最右。
+   */
+  margin-left: auto;
+
+  /*
+   * 小字。
+   */
+  font-size: 12px;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 最近抽选那一行(分数线 / 日期 / 邀请数)。加倍类还原原件那层 div ——
+ * 有历史可展开时它是一颗钮,没有时仍是一层 div,两种形态共用这一份长相。
+ */
+.drawLine.drawLine {
+  /*
+   * 通栏一行。
+   */
+  display: block;
+
+  /*
+   * 占满卡宽。
+   */
+  width: 100%;
+
+  /*
+   * 文字左对齐。
+   */
+  text-align: left;
+
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 零内衬。
+   */
+  padding: 0;
+
+  /*
+   * 小字。
+   */
+  font-size: 12px;
+
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 与类别名的间距。
+   */
+  margin-top: 3px;
+
+  /*
+   * 点它不选中文字。
+   */
+  user-select: none;
+
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
+
+  /*
+   * 长句允许折行。
+   */
+  white-space: normal;
+}
+
+/*
+ * 有历史可展开:给手型。
+ */
+.drawLine.clickable {
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 历史轮次的折叠记号(跟在抽选行末尾)。
+ */
+.histTog {
+  /*
+   * 与抽选行文字的间距。
+   */
+  margin-left: 6px;
+
+  /*
+   * 品牌蓝。
+   */
+  color: var(--primary);
+}
+
+/*
+ * 历史轮次的一行。
+ */
+.histRow {
+  /*
+   * 一行三格。
+   */
+  display: flex;
+
+  /*
+   * 基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 格间距。
+   */
+  gap: 10px;
+
+  /*
+   * 行内衬。
+   */
+  padding: 4px 10px;
+
+  /*
+   * 小字。
+   */
+  font-size: 12px;
+}
+
+/*
+ * 斑马纹(同联邦轮次)。
+ */
+.histRow:nth-child(even) {
+  /*
+   * 极浅灰底。
+   */
+  background: #fafafa;
+}
+
+/*
+ * 历史轮次的邀请数格(吃掉剩余宽)。
+ */
+.histIta {
+  /*
+   * 占满剩余。
+   */
+  flex: 1;
+
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * EE 类别清单的一行职业。
+ */
+.occRow {
+  /*
+   * 一行几格。
+   */
+  display: flex;
+
+  /*
+   * 基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 格间距。
+   */
+  gap: 10px;
+
+  /*
+   * 行内衬。
+   */
+  padding: 5px 8px;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 命中行的高亮底要跟着圆角。
+   */
+  border-radius: 6px;
+
+  /*
+   * 深灰正文。
+   */
+  color: #374151;
+}
+
+/*
+ * 组内细线(第一行不划)。
+ */
+.occRow:not(:first-child) {
+  /*
+   * 极浅分隔线。
+   */
+  border-top: 1px solid var(--bg);
+}
+
+/*
+ * EE 类别清单的职业码格。
+ */
+.occNoc {
+  /*
+   * 等宽数字。
+   */
+  font-variant-numeric: tabular-nums;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 职业码不被压缩。
+   */
+  flex-shrink: 0;
+}
+
+/*
+ * 命中本岗那一行:浅蓝高亮(与省清单的琥珀分开 —— 两套清单不是一回事)。
+ */
+.occRow.hit {
+  /*
+   * 浅蓝底(本族私有)。
+   */
+  background: #dbeafe;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 深蓝字。
+   */
+  color: var(--primary-deep);
+}
+
+/*
+ * 命中行里的职业码跟着变色。
+ */
+.occRow.hit .occNoc {
+  /*
+   * 深蓝字。
+   */
+  color: var(--primary-deep);
+}
+
+/*
+ * 职业行末尾的技能层级小标。
+ */
+.teer {
+  /*
+   * 小字。
+   */
+  font-size: 11px;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 匹配总档那枚小字(跟在卡标题后面)。
+ */
+.level {
+  /*
+   * 与标题的间距。
+   */
+  margin-left: 10px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 高匹配:深绿。
+ */
+.level.levelHigh {
+  /*
+   * 深绿(本族私有,比 --ok 深一档)。
+   */
+  color: #166534;
+}
+
+/*
+ * 中匹配:深蓝。
+ */
+.level.levelMid {
+  /*
+   * 深蓝。
+   */
+  color: var(--primary-deep);
+}
+
+/*
+ * 低匹配:次级灰。
+ */
+.level.levelLow {
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 不适用:浅灰。
+ */
+.level.levelNa {
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 依据链的一行(一维度一段;分隔线分组,不再卡片套卡片)。
+ */
+.mmRow {
+  /*
+   * 上下内衬。
+   */
+  padding: 7px 0;
+}
+
+/*
+ * 段间分隔线(末段不划)。
+ */
+.mmRow:not(:last-child) {
+  /*
+   * 细分隔线。
+   */
+  border-bottom: 1px solid var(--hairline);
+}
+
+/*
+ * 依据链一行的头(维度名左、判定药丸右)。
+ */
+.mmHead {
+  /*
+   * 两端排开。
+   */
+  display: flex;
+
+  /*
+   * 两端对齐。
+   */
+  justify-content: space-between;
+
+  /*
+   * 垂直居中。
+   */
+  align-items: center;
+
+  /*
+   * 间距。
+   */
+  gap: 8px;
+
+  /*
+   * 窄屏换行。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 维度名。
+ */
+.mmDim {
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 「本岗 / 我的」两行:标签列 max-content 自适应,值一行放全 ——
+ * 长值窄屏悬挂缩进折行,永不截断省略。
+ */
+.mmKv {
+  /*
+   * 两列网格。
+   */
+  display: grid;
+
+  /*
+   * 标签列按内容定宽,值列吃剩余。
+   */
+  grid-template-columns: max-content minmax(0, 1fr);
+
+  /*
+   * 列间距。
+   */
+  column-gap: 8px;
+
+  /*
+   * 行间距。
+   */
+  row-gap: 1px;
+
+  /*
+   * 与头的间距。
+   */
+  margin-top: 3px;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 中灰正文(本族私有)。
+   */
+  color: #4b5563;
+
+  /*
+   * 行距。
+   */
+  line-height: 1.55;
+}
+
+/*
+ * 「本岗 / 我的」的标签格。
+ */
+.mmK {
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 判定药丸的外壳(药丸 + 将来的来源位)。
+ */
+.vWrap {
+  /*
+   * 行内弹性盒。
+   */
+  display: inline-flex;
+
+  /*
+   * 垂直居中。
+   */
+  align-items: center;
+
+  /*
+   * 间距。
+   */
+  gap: 5px;
+
+  /*
+   * 不被压缩。
+   */
+  flex-shrink: 0;
+}
+
+/*
+ * 依据链的判定药丸(底色随判定 —— 裸色字浮在白底上没有归属感)。
+ */
+.vPill {
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 药丸内衬。
+   */
+  padding: 2px 8px;
+
+  /*
+   * 药丸圆角。
+   */
+  border-radius: 999px;
+
+  /*
+   * 结论不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 符合:绿。
+ */
+.vPill.pillPass {
+  /*
+   * 浅绿底。
+   */
+  background: #dcfce7;
+
+  /*
+   * 通过绿。
+   */
+  color: var(--ok);
+}
+
+/*
+ * 提示:琥珀。
+ */
+.vPill.pillWarn {
+  /*
+   * 浅琥珀底。
+   */
+  background: #fef3c7;
+
+  /*
+   * 警示琥珀。
+   */
+  color: var(--warn);
+}
+
+/*
+ * 不符合:红。
+ */
+.vPill.pillFail {
+  /*
+   * 浅红底。
+   */
+  background: #fee2e2;
+
+  /*
+   * 危险红。
+   */
+  color: var(--danger);
+}
+
+/*
+ * 不适用:灰。
+ */
+.vPill.pillNa {
+  /*
+   * 灰底。
+   */
+  background: var(--hairline);
+
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+}
+
+/*
+ * #268(375 走查):4 列固定网格在窄屏把流名压成 3-4 字母(Fra…/Occ…/Skil…)——
+ * 行改两层:流名整行(不截断,自然折行),日期/分数/邀请数落次行灰字。
+ * grid-area 重排,不依赖 DOM 顺序(桌面顺序仍是 date/stream/score/inv,靠 display:contents
+ * 吃外层网格,两处互不干扰)。
+ */
+@media (width <= 640px) {
+  .drawRow {
+    /*
+     * 自己成网格(不再 display:contents)。
+     */
+    display: grid;
+
+    /*
+     * 跨满外层四列。
+     */
+    grid-column: 1/-1;
+
+    /*
+     * 次行三格:日期与分数按内容定宽,邀请数吃剩余。
+     */
+    grid-template-columns: auto auto 1fr;
+
+    /*
+     * 两行:流名整行,其余落次行。
+     */
+    grid-template-areas: "stream stream stream" "date score inv";
+
+    /*
+     * 列间距。
+     */
+    column-gap: 8px;
+
+    /*
+     * 行间距。
+     */
+    row-gap: 2px;
+
+    /*
+     * 行内衬(桌面靠首末格补,窄屏由整行补)。
+     */
+    padding: 6px 10px;
+  }
+
+  .drawRow .stream {
+    /*
+     * 流名整行。
+     */
+    grid-area: stream;
+
+    /*
+     * 折行不截断。
+     */
+    white-space: normal !important;
+
+    /*
+     * 不裁。
+     */
+    overflow: visible !important;
+
+    /*
+     * 不出省略号。
+     */
+    text-overflow: clip !important;
+
+    /*
+     * 长词也断得开。
+     */
+    overflow-wrap: break-word;
+
+    /*
+     * 整行不再缩进。
+     */
+    padding-left: 0 !important;
+  }
+
+  .drawRow .date {
+    /*
+     * 落次行首格。
+     */
+    grid-area: date;
+
+    /*
+     * 整行内衬已由外层给。
+     */
+    padding-left: 0 !important;
+
+    /*
+     * 次行一律左对齐。
+     */
+    text-align: left !important;
+  }
+
+  .drawRow .score {
+    /*
+     * 落次行中格。
+     */
+    grid-area: score;
+
+    /*
+     * 次行一律左对齐。
+     */
+    text-align: left !important;
+  }
+
+  .drawRow .inv {
+    /*
+     * 落次行末格。
+     */
+    grid-area: inv;
+
+    /*
+     * 整行内衬已由外层给。
+     */
+    padding-right: 0 !important;
+
+    /*
+     * 次行一律左对齐。
+     */
+    text-align: left !important;
+  }
+}

@@ -1,0 +1,470 @@
+/*
+ * resume 域(简历对照 JD)的私有样式。2026-08-28 换装批自 ResumeMatchModal.tsx 的
+ * 内联样式逐格迁类,值一个不改;色值凡在 colors 域有名字的走 CSS 变量(--ok/--danger/
+ * --text/--text2/--text3/--border/--bg/--primary),对照钮那三枚靛蓝(底/字/描边)
+ * 是本域私有色,留字面量并挂注释。
+ */
+
+/*
+ * 登录墙那一行(匿名不给对照,一句话 + 直达登录)。
+ */
+.loginNote {
+  /*
+   * 与标题的间距(上 16、下 4 —— 下面就没东西了,不用留太多)。
+   */
+  margin: 16px 0 4px;
+
+  /*
+   * 正文小半档。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 次级灰(colors 域变量)。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 登录墙里那个去登录的链接(经 button 族的 LinkButton 渲染,长相归本域)。
+ */
+.loginLink {
+  /*
+   * 品牌蓝(colors 域变量 —— 原内联 UI.primary 就是它)。
+   */
+  color: var(--primary);
+
+  /*
+   * 弹框里的文字链不出下划线。
+   */
+  text-decoration: none;
+}
+
+/*
+ * 标题下面那一屏(结果与输入表单共用同一档间距)。
+ */
+.pane {
+  /*
+   * 与标题的间距。
+   */
+  margin-top: 12px;
+}
+
+/*
+ * 右列命中态:绿(colors 域变量)。
+ */
+.hit {
+  /*
+   * 通过绿。
+   */
+  color: var(--ok);
+}
+
+/*
+ * 右列缺失态:红(缺的排在前面,那才是要补的)。
+ */
+.miss {
+  /*
+   * 危险红。
+   */
+  color: var(--danger);
+}
+
+/*
+ * 尾行「覆盖 M/N」。
+ */
+.cover {
+  /*
+   * 小注字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 内衬(上 8、下 2 —— 紧接着就是打码区)。
+   */
+  padding: 8px 0 2px;
+}
+
+/*
+ * 付费档的简历重写建议(整段原样展示,换行照留)。
+ */
+.rewrite {
+  /*
+   * 与打码区的间距。
+   */
+  margin-top: 12px;
+
+  /*
+   * 正文小半档。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 近黑正文色。
+   */
+  color: var(--text);
+
+  /*
+   * 保留模型给的换行与缩进。
+   */
+  white-space: pre-wrap;
+
+  /*
+   * 页面底灰(与白弹框区分出「这是一块引文」)。
+   */
+  background: var(--bg);
+
+  /*
+   * 描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 引文块圆角(比钮大一档)。
+   */
+  border-radius: 10px;
+
+  /*
+   * 块内衬(上下 10、左右 12)。
+   */
+  padding: 10px 12px;
+}
+
+/*
+ * 「已存进档案」那一句(存了才说;一行一条,不与剩余次数挤同一行)。
+ */
+.savedNote {
+  /*
+   * 最小字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 通过绿。
+   */
+  color: var(--ok);
+
+  /*
+   * 与上一块的间距。
+   */
+  margin-top: 8px;
+}
+
+/*
+ * 底部两条灰字小注(今天还剩几次、免费额度说明 —— 同一档形态)。
+ */
+.dimNote {
+  /*
+   * 最小字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 三级浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 与上一块的间距。
+   */
+  margin-top: 8px;
+}
+
+/*
+ * 简历粘贴框。
+ */
+.paste {
+  /*
+   * 吃满弹框宽。
+   */
+  width: 100%;
+
+  /*
+   * 描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 输入框圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 框内衬。
+   */
+  padding: 10px;
+
+  /*
+   * 正文字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 近黑正文色。
+   */
+  color: var(--text);
+
+  /*
+   * 只许纵向拉高(横向拉会撑破弹框)。
+   */
+  resize: vertical;
+
+  /*
+   * 内衬算进宽里 —— 不然 100% + padding 会横向溢出。
+   */
+  box-sizing: border-box;
+}
+
+/*
+ * 预填来自存档的小注(灰字说清「这不是你刚贴的」+ 存档日期)。
+ */
+.archNote {
+  /*
+   * 最小字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 三级浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 紧贴粘贴框下沿。
+   */
+  margin-top: 6px;
+}
+
+/*
+ * 错误行(文件读不出、对照失败都落这里)。
+ */
+.errNote {
+  /*
+   * 比小注大半档 —— 错误要看得见。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 危险红。
+   */
+  color: var(--danger);
+
+  /*
+   * 紧贴粘贴框下沿。
+   */
+  margin-top: 6px;
+}
+
+/*
+ * 文件选择框本身不出面(系统窗由上传钮点开)。
+ */
+.fileInput {
+  /*
+   * 不占位也不显示。
+   */
+  display: none;
+}
+
+/*
+ * 存档勾选那一行。**单占一行**:375 上「上传 + 对照 + 这句」三件挤一行必折
+ * (实测文案宽度已超剩余槽)。
+ */
+.saveLabel {
+  /*
+   * 勾选框与文字横排。
+   */
+  display: flex;
+
+  /*
+   * 勾选框与文字居中对齐。
+   */
+  align-items: center;
+
+  /*
+   * 勾选框与文字的间距。
+   */
+  gap: 8px;
+
+  /*
+   * 与粘贴框那组的间距。
+   */
+  margin-top: 10px;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 整行可点(label 包着勾选框)。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 存档勾选框。
+ */
+.saveBox {
+  /*
+   * 不许被长文案压扁。
+   */
+  flex-shrink: 0;
+}
+
+/*
+ * 存档勾选那句文案。
+ */
+.saveText {
+  /*
+   * 允许被压窄(否则 flex 项按内容撑,省略号永远不生效)。
+   */
+  min-width: 0;
+
+  /*
+   * 超出部分裁掉。
+   */
+  overflow: hidden;
+
+  /*
+   * 裁在哪里画省略号。
+   */
+  text-overflow: ellipsis;
+
+  /*
+   * 不折行(这一行折了就把两个钮顶下去)。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 底部两个钮那一行(上传在左、对照在右)。
+ */
+.actions {
+  /*
+   * 两个钮横排。
+   */
+  display: flex;
+
+  /*
+   * 两端排开。
+   */
+  justify-content: space-between;
+
+  /*
+   * 高度居中对齐。
+   */
+  align-items: center;
+
+  /*
+   * 窄屏挤到一起时的最小间距。
+   */
+  gap: 10px;
+
+  /*
+   * 与存档勾选行的间距。
+   */
+  margin-top: 8px;
+}
+
+/*
+ * 上传钮(白底描边的弱操作)。类名写两遍抬权重:本钮经 Button(kind ghost)渲染
+ * (「<button 这种不允许直接使用」),要稳赢 button 域 .btn/.ghost 的同权重声明
+ * 且不赌打包顺序(先例 account 的 .logoutBtn)。
+ */
+.uploadBtn.uploadBtn {
+  /*
+   * 白底(盖掉 .ghost 的无底 —— 它压在白卡上要自己有底,原内联就是白)。
+   */
+  background: #ffffff;
+
+  /*
+   * 次级灰字(盖掉 .ghost 的品牌蓝:上传不是主行动)。
+   */
+  color: var(--text2);
+
+  /*
+   * 描边(盖掉 .ghost 的无描边)。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 钮圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 钮内衬(上下 8、左右 14)。
+   */
+  padding: 8px 14px;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 中等字重(盖掉 .btn 的 600 —— 弱操作不抢主钮的份量)。
+   */
+  font-weight: 500;
+}
+
+/*
+ * 对照钮(靛蓝浅底的主行动)。类名写两遍抬权重,理由同上。
+ */
+.runBtn.runBtn {
+  /*
+   * 靛蓝浅底(本域私有色 indigo-50,不是全站色板成员)。
+   */
+  background: #eef2ff;
+
+  /*
+   * 靛蓝字(本域私有色 indigo-700)。
+   */
+  color: #4338ca;
+
+  /*
+   * 靛蓝描边(本域私有色 indigo-200)。
+   */
+  border: 1px solid #c7d2fe;
+
+  /*
+   * 钮圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 钮内衬(上下 8、左右 16 —— 比上传钮宽一档,它是主行动)。
+   */
+  padding: 8px 16px;
+
+  /*
+   * 钮字号大半档。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 粗字重。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 钮的忙碌态(读文件 / 对照请求在飞)。类名写两遍抬权重,理由同上;
+ * 光标那格 button 域的 .btn:disabled 已经给了,这里只管变浅。
+ */
+.dim.dim {
+  /*
+   * 变浅到六成(原内联 opacity 0.6)。
+   */
+  opacity: 0.6;
+}
