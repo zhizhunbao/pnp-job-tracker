@@ -1197,7 +1197,7 @@
 /*
  * 窄屏专属件:默认不出。
  */
-.onlyNarrow {
+.onlyNarrow.onlyNarrow {
   display: none;
 }
 
@@ -1250,7 +1250,7 @@
     display: flex;
   }
 
-  .onlyNarrow {
+  .onlyNarrow.onlyNarrow {
     display: flex;
   }
 
