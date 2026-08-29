@@ -39,9 +39,16 @@ import {
   AccountNav,
   AccountOverview,
   AccountRedirect,
+  RA_KEY_HEAD,
   ResumeArchive,
   SavedJobsList,
   SavedSearchList,
+  SEC_BUY,
+  SEC_FAVS,
+  SEC_OVERVIEW,
+  SEC_PROFILE,
+  SEC_SAVED,
+  SEC_SJOBS,
   SHELL_BOTTOM,
   SHELL_TOP,
   useAccountPage,
@@ -58,13 +65,13 @@ export default function AccountPage() {
   const a = useAccountPage()
   return (
     <Frame>
-      <Header active="account" />
+      <Header />
 
       <Shell top={SHELL_TOP} bottom={SHELL_BOTTOM}>
         {a.checked && a.me != null && (
           <AccountColumns narrow={a.narrow}
             nav={<AccountNav sec={a.sec} narrow={a.narrow} t={a.t} onPick={a.onPick} onLogout={a.onLogout} />}>
-            {a.sec === 'overview' && (
+            {a.sec === SEC_OVERVIEW && (
               <AccountOverview me={a.me}
                 pro={a.pro}
                 payOk={a.payOk}
@@ -76,14 +83,14 @@ export default function AccountPage() {
                 onNickSave={a.onNickSave}
                 onNickKey={a.onNickKey} />
             )}
-            {a.sec === 'profile' && (<>
+            {a.sec === SEC_PROFILE && (<>
               <ProfileForm key={String(a.me.id)} t={a.t} userId={a.me.id} initial={a.me.profile ?? null} />
-              <ResumeArchive key={'ra' + String(a.me.id)} t={a.t} userId={a.me.id} text={a.me.profile?.resumeText} savedAt={a.me.profile?.resumeSavedAt} />
+              <ResumeArchive key={RA_KEY_HEAD + String(a.me.id)} t={a.t} userId={a.me.id} text={a.me.profile?.resumeText} savedAt={a.me.profile?.resumeSavedAt} />
             </>)}
-            {a.sec === 'favs' && <SavedJobsList t={a.t} variant="favs" />}
-            {a.sec === 'sjobs' && <SavedJobsList t={a.t} userId={a.me.id} weeklyOptOut={!!(a.me as { weeklyOptOut?: boolean }).weeklyOptOut} />}
-            {a.sec === 'saved' && <SavedSearchList t={a.t} />}
-            {a.sec === 'buy' && <AccountBuyPanel t={a.t} buying={a.buying} buyErr={a.buyErr} onBuy={a.onBuy} />}
+            {a.sec === SEC_FAVS && <SavedJobsList t={a.t} variant={SEC_FAVS} />}
+            {a.sec === SEC_SJOBS && <SavedJobsList t={a.t} userId={a.me.id} weeklyOptOut={!!(a.me as { weeklyOptOut?: boolean }).weeklyOptOut} />}
+            {a.sec === SEC_SAVED && <SavedSearchList t={a.t} />}
+            {a.sec === SEC_BUY && <AccountBuyPanel t={a.t} buying={a.buying} buyErr={a.buyErr} onBuy={a.onBuy} />}
           </AccountColumns>
         )}
         {a.checked && a.me == null && <AccountRedirect />}

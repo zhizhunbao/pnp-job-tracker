@@ -4452,14 +4452,14 @@ export type JobPostingIn = {
  */
 export type JobMetaIn = {
   /**
-   * 动态段。
+   * 能 query 的东西(门里 getDb 注入)。
    */
-  params: Promise<{
-    /**
-     * 岗位号。
-     */
-    id: string
-  }>
+  db: Db
+
+  /**
+   * 岗位号(URL 段原串;数字化在体内做)。
+   */
+  id: string
 }
 
 /**

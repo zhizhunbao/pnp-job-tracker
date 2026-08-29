@@ -8,11 +8,13 @@
  */
 import { permanentRedirect } from 'next/navigation'
 
+import { URL_SHELF_GONE } from '@/components/employers'
+
 /**
  * 下架页的门:整页 308 到把脉页,不渲任何正文。
  *
  * @returns 无(permanentRedirect 直接中断渲染)。
  */
 export default function EmployersPage() {
-  permanentRedirect('/start')
+  permanentRedirect(URL_SHELF_GONE)
 }

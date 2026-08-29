@@ -12,8 +12,10 @@ import { LangProvider } from '@/components/i18n'
 import { SessionProvider } from '@/components/auth'
 import { ChatLauncher } from '@/components/chat'
 import { SITE_JSON_LD } from '@/components/shell'
+import { headers } from 'next/headers'
 import { ssrLang } from '@/lib/i18n/server'
-import { ssrHasSession } from '@/lib/auth/server'
+import { ssrSessionSeed } from '@/lib/auth/server'
+import { getUserOrNull } from '@/lib/quota/server'
 
 /**
  * 站点默认 metadata(各页 generateMetadata 覆盖)。
@@ -53,6 +55,17 @@ export const metadata = {
  * 读屏器按顺序读到最后;在 LangProvider 内:壳文案跟全站同一份语言状态。
  * /start 自己判断不显示(那页有内联 ChatBox)。
  *
+ * 下面两条是 2026-08-29 形制批从体内原样上提的记录(闸 local/no-comment-in-function:
+ * 门里不留函数体注释),一句未删。
+ *
+ * 界面语言在这里读**一次**(cookie → Accept-Language),往下靠 LangProvider 的 context 分发:
+ * 各页 page.tsx 不必传 prop,各视图不必自己读 localStorage —— 首帧就是对的语言,不再闪一下中文。
+ *
+ * 登录态同样在这里读**一次**(cookie 里有没有会话票据),往下靠 SessionProvider 分发:
+ * header 的账户区首帧就按终态占宽,不再「先 32px 占位、水合后撑到 84px」把导航拽偏。
+   * 2026-08-29 从布尔升格成身份种子(有票据才认人,匿名零开销):二级页头像原先要等
+   * /api/users/me,切页先画占位点再换字母(Frank「来回闪」实拍),SSR 首帧直接带字母。
+ *
  * @param props children = 各路由的页面。
  * @returns 整份文档。
  */
@@ -61,17 +74,8 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   const umamiSrc = process.env.NEXT_PUBLIC_UMAMI_SRC
   const umamiId = process.env.NEXT_PUBLIC_UMAMI_ID
 
-  /**
-   * 界面语言在这里读**一次**(cookie → Accept-Language),往下靠 LangProvider 的 context 分发:
-   * 各页 page.tsx 不必传 prop,各视图不必自己读 localStorage —— 首帧就是对的语言,不再闪一下中文。
-   */
   const lang = await ssrLang()
-
-  /**
-   * 登录态同样在这里读**一次**(cookie 里有没有会话票据),往下靠 SessionProvider 分发:
-   * header 的账户区首帧就按终态占宽,不再「先 32px 占位、水合后撑到 84px」把导航拽偏。
-   */
-  const hasSession = await ssrHasSession()
+  const session = await ssrSessionSeed({ headers: await headers(), loadUser: getUserOrNull })
 
   return (
     <html lang={lang}>
@@ -81,7 +85,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
       </head>
       <body>
         <LangProvider initial={lang}>
-          <SessionProvider initial={hasSession}>
+          <SessionProvider initial={session}>
             <main>{children}</main>
             <ChatLauncher />
           </SessionProvider>

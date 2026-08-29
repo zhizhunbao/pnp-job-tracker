@@ -4,10 +4,14 @@
  * @author Frank
  * @time 2026-08-24 08:00:00
  */
-import { ACCT_IN, ACCT_OUT, AUTH_CLOSED, AUTH_LOGIN, AUTH_REGISTER, EMAIL_UNKNOWN } from './constants'
+import {
+  ACCT_IN, ACCT_OUT, AUTH_CLOSED, AUTH_LOGIN, AUTH_REGISTER, EMAIL_UNKNOWN, PATH_ACTIVE, PATH_SEP,
+} from './constants'
 import type {
+  ActiveKey,
   AccountLiteHandlesIn, AccountLiteHandlesOut, AcctState, AcctUser, ClickFn, DrawerHandlesIn, DrawerHandlesOut,
   GroupClickIn, GroupToggleFn, GroupToggleIn, LangPickIn, MeJson, WithOnIn,
+  SsrSeed,
 } from './types'
 import css from './header.module.css'
 
@@ -26,12 +30,50 @@ export function withOn(x: WithOnIn): string {
 }
 
 /**
+ * 当前路径该亮哪盏导航灯(2026-08-29 Frank 拍板:高亮由 Header 按 pathname 自判,
+ * 每页手填 active 的旧形退役)。按 PATH_ACTIVE 的顺序做前缀匹配,首条命中生效;
+ * 不在表里的路径不亮灯。
+ *
+ * @param x 当前 pathname(usePathname 给的)。
+ * @returns 高亮键;没灯给 null。
+ */
+export function activeOf(x: {
+  /**
+   * 当前路径(如 '/plan/pr')。
+   */
+  path: string
+}): ActiveKey | null {
+  for (const [head, key] of PATH_ACTIVE) {
+    if (head === PATH_SEP) {
+      if (x.path === PATH_SEP) {
+        return key
+      }
+      continue
+    }
+    if (x.path === head || x.path.startsWith(head + PATH_SEP)) {
+      return key
+    }
+  }
+  return null
+}
+
+/**
  * 空身份壳(loading/out 态的 u)。
  *
  * @returns 四格全空的身份。
  */
 export function emptyUser(): AcctUser {
   return { email: EMAIL_UNKNOWN, displayName: null, avatar: null, pro: false }
+}
+
+/**
+ * 首帧种子 → 账户身份(SSR 直接有字母,头像不再等接口;pro 由到期日当场折)。
+ *
+ * @param s 首帧会话种子。
+ * @returns 账户身份四格。
+ */
+export function seedUser(s: SsrSeed): AcctUser {
+  return { email: s.email, displayName: s.displayName, avatar: s.avatar, pro: proOf(s.proUntil) }
 }
 
 /**

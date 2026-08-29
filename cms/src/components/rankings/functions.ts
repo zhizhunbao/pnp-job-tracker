@@ -777,12 +777,14 @@ export function toRankJobCard(r: RankJobCellRow): RankJobCardParts {
  * 榜单页交给 Next 的 SEO 主体(E5-02,PRD F8:SEO 主体 = generateMetadata)。
  * 固定两榜各有自己的一份;每日榜是一族,按大类拼。白名单外的 slug 一个键都不发 ——
  * 那条路的尽头是 404,发一个空标题反而把它渲成一个「有标题的错页」。
+ * 2026-08-29 形制批:入参从 Next 的线形状(带 `params` 那只 promise)改回本域一参形 ——
+ * 拆 promise 留在页面门里,本函数只认一个 slug,于是它也不必再是 async。
  *
- * @param x Next 传进来的路由段。
+ * @param x 这一榜的 slug(页面门 await 完路由段后递进来)。
  * @returns 这一榜的 title 与 description。
  */
-export async function rankingMetaOf(x: RankingMetaIn): Promise<RankingMeta> {
-  const { slug } = await x.params
+export function rankingMetaOf(x: RankingMetaIn): RankingMeta {
+  const slug = x.slug
   const hit = RANK_META[slug]
   if (hit != null) {
     return { title: hit.title, description: hit.desc }

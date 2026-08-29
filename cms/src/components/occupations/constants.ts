@@ -83,3 +83,26 @@ export const COUNT_GAP = ' '
  * 「没有」的空文本(抓取日缺席、职业名缺席时的判空基准)。与 companies/cases 域同名同义,各家一份。
  */
 export const TEXT_NONE = ''
+
+/**
+ * 本页的 SEO 头(清单页是收录主体:标题带「省提名通道紧缺职业清单」,
+ * 描述里先说清「命中 = 粗筛信号,非资格认定」)。
+ * 住这里而不是页面门里:门里不留死值常量,页面门只 `export const metadata = OCC_META`
+ * 一行转发(2026-08-29 Frank「框架导出的内容也一律来自桶」,形照 start 的 START_META;
+ * 原先那个 generateMetadata 无参、返回死值,改成常量形)。
+ */
+export const OCC_META = {
+  /**
+   * 浏览器标签与搜索结果标题。
+   */
+  title: 'Provincial in-demand occupation lists (PNP named streams) | Offer2PR',
+
+  /**
+   * 搜索结果摘要(英文优先 —— 88% 流量来自 Google;中文一句压在后面)。
+   * 「命中 = 粗筛信号,非资格认定」是站规四类保留解释之一,不许删。
+   */
+  description:
+    'Named occupation lists of provincial nominee streams across Canada, refreshed weekly from official pages,'
+    + ' with NOC codes and official source links. Being listed is a rough signal, not an eligibility decision.'
+    + ' 各省省提名通道紧缺职业清单,NOC 码+官方来源链,周更。',
+}

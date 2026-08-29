@@ -21,7 +21,7 @@ export {
   homeCoreOf, homeStatsOf, loadCatOptions, loadOccOptions, nullProof, nullUser, provPresetOf, putHomeCache,
 } from './functions'
 export {
-  DRAWS_LIMIT, HEADER_ACTIVE, NEWS_LIMIT, OG_BOLD, OG_BRAND_SIZE, OG_CHIP_GAP, OG_CHIP_RADIUS,
+  DRAWS_LIMIT, NEWS_LIMIT, OG_BOLD, OG_BRAND_SIZE, OG_CHIP_GAP, OG_CHIP_RADIUS,
   OG_CHIP_SIZE, OG_CHIP_TOP, OG_DOMAIN_SIZE, OG_DOMAIN_TOP, OG_H, OG_TAGLINE_SIZE, OG_TAGLINE_TOP,
   OG_W, START_META,
 } from './constants'

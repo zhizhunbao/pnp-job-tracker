@@ -10,6 +10,8 @@
  * 它本来就只有本域的 ScoreHolder 一个消费者;同日换装批把它整体重写成小写件形制
  * (出题机器与算分派生下沉 functions.ts、九格状态收进 hooks.ts、内联样式迁 plan.module.css、
  * 排版拆成十四件一件一文件),对外只留 PnpScoreCard 这一个名字,props 一格未动。
+ * 2026-08-29 页面门清闸批:决策页的 SEO 头收成 PLAN_PR_META 从这里出
+ * (门里除框架定名导出外零函数零常量,内容一律来自桶)。
  * 🔴 桶本身与 types/constants 都**不带 `'use client'`**:页面门(服务端)要用 TvJob 与
  * OverviewDraw 这两张形状拼 props。
  * 对应 lib 域:lib/quiz、lib/pathways、lib/ruling、lib/points。
@@ -17,7 +19,7 @@
  * @author Frank
  * @time 2026-08-28 00:30:00
  */
-export { SSR_WIRE_MS, TOP_NOCS_LIMIT } from './constants'
+export { PLAN_PR_META, SSR_WIRE_MS, TOP_NOCS_LIMIT, WIRE_ERROR_KEY } from './constants'
 export { Decision } from './decision'
 export { PnpScoreCard } from './pnpscorecard'
 export { emptyJobRows, nullWire, raceWire, ssrWireOf } from './functions'

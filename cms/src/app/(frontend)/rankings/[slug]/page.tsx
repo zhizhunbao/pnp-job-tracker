@@ -24,7 +24,20 @@ import { Frame } from '@/components/shell'
 
 export const dynamic = 'force-dynamic'
 
-export const generateMetadata = rankingMetaOf
+/**
+ * 榜单页的 SEO 头:两榜各有一份固定文案,每日榜按大类拼;白名单外的 slug 一个键都不发。
+ * 拼装在 components/rankings 的 rankingMetaOf 里(2026-08-29 Frank「generateMetadata
+ * 体内只许一行 return 调桶的函数」),门里只剩拆参 —— 原先是
+ * `export const generateMetadata = rankingMetaOf` 的 C 形,那把框架的线形状
+ * (带 `params` 那只 promise)压进了桶的签名;同日形制批改回 A 形。
+ *
+ * @param x Next 递来的路由参数。
+ * @returns 这一榜的 title 与 description。
+ */
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  return rankingMetaOf({ slug })
+}
 
 /**
  * 榜单页的门:白名单先验 + 取这一榜的行与当天有数据的榜,没有别的。
@@ -44,7 +57,7 @@ export default async function RankingPage({ params }: { params: Promise<{ slug: 
   const [items, slugs] = await Promise.all([loadRankingRows({ db, slug }), loadRankingSlugs(db)])
   return (
     <Frame>
-      <Header active="rank" />
+      <Header />
       <Ranking slug={slug} items={items} slugs={slugs} />
       <Footer />
     </Frame>

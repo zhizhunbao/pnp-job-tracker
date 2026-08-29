@@ -159,12 +159,18 @@ export type AuthFlowOut = {
  */
 export type FinishAuthIn = {
   /**
+   * 这次认证是哪种(register 才进补题漏斗;login/reset 留在原页 ——
+   * 2026-08-29 Frank「不应该在哪个页面就保留在哪个页面吗」拍板)。
+   */
+  mode: AuthMode
+
+  /**
    * 回跳路径;null = 当前页。
    */
   returnTo: string | null
 
   /**
-   * 无问卷缺口时的完成回调。
+   * 不进漏斗时的完成回调。
    */
   onDone: () => void
 }
@@ -458,11 +464,43 @@ export type AuthFormHookOut = {
 /**
  * SessionProvider 的 props。
  */
+/**
+ * 首帧会话种子(SessionProvider 的值;与 lib/auth 的同名形状全格照抄)。
+ */
+export type SessionSeed = {
+  /**
+   * 有没有会话票据(首帧按登录/匿名占位)。
+   */
+  in: boolean
+
+  /**
+   * 邮箱;匿名为空串。in=true 且空串 = 有票据但认人失败,header 回落拉接口。
+   */
+  email: string
+
+  /**
+   * 显示名;没设 null。
+   */
+  displayName: string | null
+
+  /**
+   * 头像 URL;没有 null。
+   */
+  avatar: string | null
+
+  /**
+   * Pro 到期日(ISO);非 Pro null。
+   */
+  proUntil: string | null
+}
+
 export type SessionProviderIn = {
   /**
-   * 服务端算好的首帧登录态(layout 的 ssrHasSession() 下来)。
+   * 服务端算好的首帧会话种子(layout 的 ssrSessionSeed() 下来;2026-08-29 从布尔
+   * 升格成身份格,治二级页头像切页闪 —— 形状与 lib/auth 的 SessionSeed 全格照抄,
+   * 跨域不取各家一份)。
    */
-  initial: boolean
+  initial: SessionSeed
 
   /**
    * 子树。

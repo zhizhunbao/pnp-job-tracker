@@ -70,6 +70,15 @@ type JobOgDbRow = {
   teer: number | null
 }
 
+/**
+ * 职位页 og 图的门:按 id 取那一行 → 组装 1200×630 的图。
+ *
+ * catch 那一支的记录(2026-08-29 形制批自体内原样上提,一句未删):
+ * 查库失败 → 兜底品牌图。
+ *
+ * @param x Next 递来的路由参数。
+ * @returns 分享卡片图。
+ */
 export default async function Image({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   let r: JobOgDbRow | null = null
@@ -80,9 +89,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
       SQL.JOB_OG_BY_ID, [Number(id)])
     r = res.rows[0] || null
   } catch {
-    /**
-     * 查库失败 → 兜底品牌图。
-     */
+    r = null
   }
 
   const title = (r?.title || 'Canadian jobs with immigration signals').slice(0, OG_TITLE_LEN)

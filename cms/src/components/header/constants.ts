@@ -118,6 +118,38 @@ export const A_EMPLOYERS = 'employers'
 export const A_NEWS = 'news'
 
 /**
+ * 资料库下拉的高亮键(职业清单 / 官方资源 / 常见案例三页共用;2026-08-29 立,
+ * 此前清单页借用 employers 高亮是历史遗留)。
+ */
+export const A_LIBRARY = 'library'
+
+/**
+ * 路径段分隔符(activeOf 拼「前缀 + 段界」判断用,防 /news 误吃 /newsroom)。
+ */
+export const PATH_SEP = '/'
+
+/**
+ * 路径头→高亮键映射(2026-08-29 Frank「你直接在这加合适么」拍板:高亮由 Header
+ * 按 pathname 自判,active prop 退役 —— 每页手填就是 occupations 亮错「雇主」的病根)。
+ * 顺序即匹配序:前缀命中第一条生效;不在表里的路径不亮灯(companies 详情沿旧行为)。
+ * 根路径 '/' 就是职位板(offer2pr.com 不带 /jobs 后缀的拍板)。
+ */
+export const PATH_ACTIVE = [
+  ['/start', 'start'],
+  ['/rankings', 'rank'],
+  ['/plan', 'pathways'],
+  ['/employers', 'employers'],
+  ['/occupations', 'library'],
+  ['/resources', 'library'],
+  ['/cases', 'library'],
+  ['/news', 'news'],
+  ['/timeline', 'news'],
+  ['/account', 'account'],
+  ['/jobs', 'jobs'],
+  ['/', 'jobs'],
+] as const
+
+/**
  * 账户区三态:身份未知(不在 SessionProvider 下的存量路径才会出现)。
  */
 export const ACCT_LOADING = 'loading'

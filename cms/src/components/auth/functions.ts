@@ -124,7 +124,10 @@ export function quizDestinationOf(x: QuizDestIn): string | null {
  * 认证成功后的收尾:先拉服务端答案档与本地合并(新者胜;服务端无档则把浏览器旧答案
  * 送上去 —— dp.authGate「注册后答案自动存档」兑现处;失败不拦登录 ——
  * 网络失败:答案仍在浏览器,下次改动重试)。必须等它:
- * 下面读的就是合并后的答案。然后有问卷缺口先跳问卷,否则调 onDone 回原操作。
+ * 下面读的就是合并后的答案。然后**只有注册**才查问卷缺口进补题漏斗;
+ * 登录/重置一律留在原页调 onDone(2026-08-29 Frank 实拍「每次登录都弹这个框」,
+ * 拍板「在哪个页面就保留在哪个页面」—— 老用户登录被整页拽去 /plan/pr?quiz=1 是打扰,
+ * 注册闸的地基只管新身份)。
  * afterLogin=true:登录刚成功,迹象 cookie(#311 匿名不发请求的闸)还没置位,这一调必须绕闸发出。
  *
  * @param x 回跳路径与完成回调。
@@ -134,27 +137,28 @@ export async function finishAuth(x: FinishAuthIn) {
   await pullAndMerge(true).catch(function ignore() {
     return null
   })
-  const destination = quizDestinationOf({ returnTo: x.returnTo })
-  if (destination != null) {
-    window.location.assign(destination)
-    return
+  if (x.mode === MODE_REGISTER) {
+    const destination = quizDestinationOf({ returnTo: x.returnTo })
+    if (destination != null) {
+      window.location.assign(destination)
+      return
+    }
   }
   x.onDone()
 }
 
 /**
- * Google 整页 OAuth 的跳转地址(E9-04b):优先问卷缺口地址,其次调用方 returnTo,
- * 最后当前页。
+ * Google 整页 OAuth 的跳转地址(E9-04b):调用方 returnTo 优先,其次当前页。
+ * 2026-08-29 撤掉「优先问卷缺口地址」:OAuth 分不清新老用户,老用户每次 Google 登录
+ * 都被拽去 /plan/pr?quiz=1(Frank「在哪个页面就保留在哪个页面」拍板与 finishAuth 同令);
+ * 新用户的补题由 /plan/pr 答题入口自己的注册闸兜底,漏斗不在登录动线上开口。
  *
  * @param x 调用方回跳路径。
  * @returns 带 returnTo 的 /api/auth/google 地址。
  */
 export function googleHrefOf(x: QuizDestIn): string {
   let rt = window.location.pathname + window.location.search
-  const qd = quizDestinationOf(x)
-  if (qd != null) {
-    rt = qd
-  } else if (x.returnTo != null && x.returnTo !== '') {
+  if (x.returnTo != null && x.returnTo !== '') {
     rt = x.returnTo
   }
   return PATH_GOOGLE_AUTH + QS_RETURN_TO + encodeURIComponent(rt)

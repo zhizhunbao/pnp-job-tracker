@@ -13,7 +13,7 @@
  * dd24-#107:B2 瘦身时把 profile 硬置 null,投递栏(E9-04)上线后成了坑 —— 详情页直入的
  * 已建档用户点投递被当无档案弹空白向导;user 本来就在手上,传真实档案零额外查询。
  *
- * 2026-08-28 换装批收成标准形:SEO 头转发给 lib/jobs 的 jobsIdMetaRoute,JSON-LD 拼装下沉
+ * 2026-08-28 换装批收成标准形:SEO 头的芯在 lib/jobs 的 jobsIdMetaRoute(08-29 改 A 形一行转发),JSON-LD 拼装下沉
  * 进 lib/jobs 的 jobPostingJsonOf,脚本标签成件 JobJsonLd(门里不许有函数体、不许裸标签)。
  *
  * @author Frank
@@ -27,7 +27,7 @@ import config from '@/payload.config'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
 import {
-  EMPTY_MATCH_DIMS, EMPTY_RELATED, Job, JobJsonLd, toCatLabelList, toJobPlan, toNocDescList,
+  EMPTY_MATCH_DIMS, EMPTY_RELATED, Job, JobJsonLd, STATUS_CLOSED, toCatLabelList, toJobPlan, toNocDescList,
 } from '@/components/jobs'
 import { Frame } from '@/components/shell'
 import { SQL } from '@/lib/db'
@@ -39,7 +39,17 @@ import type { NocCategoryDoc, NocDescDoc, RelatedJobs, SessionUser } from '@/com
 
 export const dynamic = 'force-dynamic'
 
-export const generateMetadata = jobsIdMetaRoute
+/**
+ * 详情页的 SEO 头:A 形 —— Next 的 params Promise 线形状在门里拆参,
+ * 芯 jobsIdMetaRoute 收本域一参形(db 注入;2026-08-29 Frank 定形,C 形禁)。
+ *
+ * @param x Next 递来的路由参数。
+ * @returns 标题与描述。
+ */
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  return jobsIdMetaRoute({ db: dbOf(await getPayload({ config: await config })), id })
+}
 
 /**
  * 职位详情页的门。
@@ -67,7 +77,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
   }
 
   let related: RelatedJobs = EMPTY_RELATED
-  if (job.status === 'closed') {
+  if (job.status === STATUS_CLOSED) {
     related = await loadRelatedJobs({
       db,
       job: {
@@ -115,7 +125,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
     <>
       <JobJsonLd json={jobPostingJsonOf({ job, jdText })} />
       <Frame>
-        <Header loggedIn={user != null} active="jobs" />
+        <Header loggedIn={user != null} />
         <Job job={job} plan={plan}
           dims={{ nocDesc: toNocDescList(nocDescDocs), nocCategories: toCatLabelList(nocCategoryDocs) }}
           related={related} />

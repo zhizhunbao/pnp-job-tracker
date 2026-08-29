@@ -12,12 +12,13 @@
  * 服务端页面(generateMetadata / SQL 取数)与客户端视图共用这几张形状与取名函数。
  * 对应 lib 域:lib/news(速读与翻译两条 HTTP 芯)。
  * 2026-08-29 页面门清闸批:两个门的取数(`load*` 五条)与 meta 截断长度也从这里出 ——
- * 门里只剩取参、`getPayload` + `dbOf` 取池、一行装配与拼大写组件。
+ * 门里只剩取参、`getPayload` + `dbOf` 取池、一行装配与拼大写组件;
+ * 同批列表页的 SEO 头收成 NEWS_META(门里除框架定名导出外零函数零常量,内容一律来自桶)。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
-export { META_DESC_LEN_MAX } from './constants'
+export { META_DESC_LEN_MAX, NEWS_META } from './constants'
 export { News } from './news'
 export { NewsDetail } from './newsdetail'
 export {

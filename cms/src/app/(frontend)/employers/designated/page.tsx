@@ -8,7 +8,7 @@
  */
 import { employersBoardProps } from '@/lib/employers/server'
 import { getDb } from '@/lib/db/server'
-import { Employers } from '@/components/employers'
+import { Employers, MODE_DESIGNATED, designatedMetaOf } from '@/components/employers'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
 import { Frame } from '@/components/shell'
@@ -17,19 +17,15 @@ export const dynamic = 'force-dynamic'
 
 /**
  * 名录页的 metadata:标题按「省 + 口径」加范围前缀,直达链接进来时标题就说清看的是哪一档。
+ * 拼装在 components/employers 的 designatedMetaOf 里(2026-08-29 Frank
+ * 「generateMetadata 体内只许一行 return 调桶的函数」),门里只剩取参。
  *
- * @param x Next 递来的查询参数。
+ * @param x Next 递来的路由参数。
  * @returns 标题与描述。
  */
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ program?: string; prov?: string }> }) {
   const sp = await searchParams
-  const program = ['AIP', 'RCIP', 'FCIP'].includes(String(sp.program ?? '')) ? String(sp.program) : ''
-  const prov = /^[A-Z]{2}$/.test(String(sp.prov ?? '')) ? String(sp.prov) : ''
-  const scope = [prov, program].filter(Boolean).join(' ')
-  return {
-    title: `${scope ? scope + ' ' : ''}Designated employers | Offer2PR`,
-    description: 'Employers designated under AIP / RCIP / FCIP, from official community and provincial lists. Being designated does not mean the employer is hiring — check open jobs. 指定雇主名录(AIP/RCIP/FCIP),官方名录周更;被指定不等于在招。',
-  }
+  return designatedMetaOf(sp)
 }
 
 /**
@@ -40,10 +36,10 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
  * @returns 整页。
  */
 export default async function DesignatedEmployersPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const props = await employersBoardProps({ sp: await searchParams, mode: 'designated', db: await getDb() })
+  const props = await employersBoardProps({ sp: await searchParams, mode: MODE_DESIGNATED, db: await getDb() })
   return (
     <Frame>
-      <Header active="employers" />
+      <Header />
       <Employers {...props} />
       <Footer />
     </Frame>

@@ -34,7 +34,9 @@ import type {
 
 /**
  * /jobs/[id] 的 SEO 头 —— Next 的 generateMetadata,页面门只做一行转发(门里不许有函数体)。
- * 名字照「routes 名 ↔ URL 机械映射」来:`/jobs/[id]` 的元数据芯 = jobsIdMetaRoute。
+ * 名字照「routes 名 ↔ URL 机械映射」来:`/jobs/[id]` 的元数据芯。2026-08-29 定形批:
+ * 门里只许 A 形(generateMetadata 函数声明 + 一行转发),Next 的 params Promise 线形状
+ * 拆参回门,本函数收本域一参形(db 由门注入,与其余 routes 同律)。
  * 2026-08-28 换装批自 app/(frontend)/jobs/[id]/page.tsx 迁入:它要连库,而页面域的组件桶是
  * 浏览器可打包的那一半,放不下 —— routes 是本域唯一允许 `getDb` 的抽屉,而它也确实是
  * 这条路由的服务端契约之一(Next 在同一次请求里调它)。
@@ -43,10 +45,8 @@ import type {
  * @returns metadata 对象。
  */
 export async function jobsIdMetaRoute(input: JobMetaIn): Promise<JobMeta> {
-  const seg = await input.params
-  const db = await getDb()
-  const row = await loadJobMeta({ db: db, id: Number(seg.id) })
-  return jobMetaOut({ row: row, id: seg.id })
+  const row = await loadJobMeta({ db: input.db, id: Number(input.id) })
+  return jobMetaOut({ row: row, id: input.id })
 }
 
 /**

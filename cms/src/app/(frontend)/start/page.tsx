@@ -25,7 +25,7 @@ import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
 import { Frame } from '@/components/shell'
 import {
-  DRAWS_LIMIT, HEADER_ACTIVE, NEWS_LIMIT, Pulse, START_META, cachedHomeOf, emptyOccRows, emptyProvExtra,
+  DRAWS_LIMIT, NEWS_LIMIT, Pulse, START_META, cachedHomeOf, emptyOccRows, emptyProvExtra,
   emptyQueryResult, emptySponsorRows, emptyText, homeCoreOf, homeStatsOf, loadCatOptions, loadOccOptions,
   nullProof, nullUser, provPresetOf, putHomeCache,
 } from '@/components/start'
@@ -82,7 +82,7 @@ export default async function PulsePage() {
   const upd = await checkedAt(db).catch(emptyText)
   return (
     <Frame>
-      <Header active={HEADER_ACTIVE} />
+      <Header />
       <Pulse stats={homeStatsOf({ core, provPreset: provPresetOf({ user }), checkedAt: upd })} />
       <Footer />
     </Frame>

@@ -21,17 +21,17 @@
  */
 export {
   BANNER_COOKIE, COLS_COOKIE, COLW_COOKIE, DEFAULT_COLW_SEED, EMPTY_MATCH_DIMS, EMPTY_RELATED,
-  FIRST_SCREEN_ROWS, OG_BOLD, OG_BRAND_GAP, OG_BRAND_SIZE, OG_CHIP_GAP, OG_CHIP_RADIUS, OG_CHIP_SIZE,
+  BOARD_META, FIRST_SCREEN_ROWS, OG_BOLD, OG_BRAND_GAP, OG_BRAND_SIZE, OG_CHIP_GAP, OG_CHIP_RADIUS, OG_CHIP_SIZE,
   OG_CHIP_TOP, OG_COMPANY_LEN, OG_COMPANY_SIZE, OG_COMPANY_TOP, OG_DOMAIN_SIZE, OG_FOOT_SIZE, OG_FOOT_TOP,
   OG_H, OG_META_GAP, OG_META_SIZE, OG_META_TOP, OG_PAD, OG_SALARY_LEN, OG_TITLE_LEN, OG_TITLE_LH,
-  OG_TITLE_SIZE, OG_W,
+  OG_TITLE_SIZE, OG_W, P_VIEW, STATUS_CLOSED, VAL_MATCH,
 } from './constants'
 export { Job } from './job'
 export { Jobs } from './jobs'
 export { JobsHeader } from './jobsheader'
 export { JobJsonLd } from './jobjsonld'
 export {
-  colsFromCookie, jobsMetaOf, parseColWidthSeed, parseJobFilters, resizeColWidths, toCatLabelList,
+  colsFromCookie, parseColWidthSeed, parseJobFilters, resizeColWidths, toCatLabelList,
   toJobPlan, toNocDescList, toSearchParams,
 } from './functions'
 export type {

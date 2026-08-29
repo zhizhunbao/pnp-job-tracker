@@ -65,7 +65,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
   const user = await getUser(await headers())
   return (
     <Frame>
-      <Header active="news" />
+      <Header />
       <NewsDetail row={row} comments={comments} loggedIn={!!user} />
       <Footer />
     </Frame>

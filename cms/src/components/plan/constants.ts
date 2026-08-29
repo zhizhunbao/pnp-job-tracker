@@ -1811,3 +1811,31 @@ export const TOP_NOCS_LIMIT = 24
  *    热进程里这一步几乎免费,但**冷启那一次不能让整页跟着等**,更不能因为它挂了页面就白屏。
  */
 export const SSR_WIRE_MS = 1500
+
+/**
+ * 判定线格上「这是一条错」的那一格的键名(`{ error: … }`)。页面门拿它探测线格:
+ * 身上有这个键 = 判定没算成,SSR 那一版当没有(首屏照出,客户端再取)。
+ * 探测用**键在不在**而不是比值 —— 错的内容会变(话术、错误码),而「有没有这一格」是契约。
+ * 这一格是与 `/api/ruling/verdict` 共用的那条线格的一部分,改名要连它一起改。
+ */
+export const WIRE_ERROR_KEY = 'error'
+
+/**
+ * 决策页(/plan/pr)的 SEO 头。住这里而不是页面门里:门里不留死值常量,页面门只
+ * `export const metadata = PLAN_PR_META` 一行转发(2026-08-29 Frank「框架导出的内容
+ * 也一律来自桶」,形照 start 的 START_META)。
+ */
+export const PLAN_PR_META = {
+  /**
+   * 浏览器标签与搜索结果标题。
+   */
+  title: 'PR assessment — per-job verdict, latest PNP draws | Offer2PR',
+
+  /**
+   * 搜索结果摘要(英文优先 —— 88% 流量来自 Google;中文一句压在后面)。
+   * 说的是这一页的两样免费硬事实:各省最近抽选分数线,与逐岗的三项判定。
+   */
+  description:
+    'Employer offer → provincial nomination: latest draw cutoffs by province and a per-job three-part verdict.'
+    + ' 雇主 offer → 省提名:各省最近抽选分数线与逐岗三项判定。',
+}

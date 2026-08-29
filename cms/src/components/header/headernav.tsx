@@ -13,7 +13,8 @@ import { cssOf } from '@/components/css'
 import { IconChart, IconClipboard, IconCompass, IconNews, IconUsers } from '@/components/icons'
 import { LinkButton } from '@/components/button'
 import {
-  A_EMPLOYERS, A_JOBS, A_MATCH, A_NEWS, A_PATHWAYS, A_RANK, A_START, A_STATS, PATH_CASES, PATH_EMPLOYERS, PATH_HOME,
+  A_EMPLOYERS, A_JOBS, A_LIBRARY, A_MATCH, A_NEWS, A_PATHWAYS, A_RANK, A_START, A_STATS, PATH_CASES,
+  PATH_EMPLOYERS, PATH_HOME,
   PATH_NEWS, PATH_OCC, PATH_PLAN_PR, PATH_RESOURCES, PATH_START, PATH_TIMELINE,
 } from './constants'
 import { withOn } from './functions'
@@ -47,7 +48,7 @@ export function HeaderNav({ t, active }: HeaderNavIn) {
       </LinkButton>
       <NavDrop label={t('nav.library')}
         icon={<IconUsers />}
-        highlight={false}
+        highlight={active === A_LIBRARY}
         items={[
           { href: PATH_OCC, label: t('dir.occ.title') },
           { href: PATH_RESOURCES, label: t('res.entry') },

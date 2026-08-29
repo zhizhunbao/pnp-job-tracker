@@ -26,11 +26,14 @@ import {
   COL_W2_KEY, COL_W4_KEY, COL_WHERE_KEY, COMPARE_NAME_SEP, DASH_MARK, DEMO_A_KEY, DEMO_B_KEY, DEMO_C_KEY,
   DEMO_CO_A, DEMO_CO_B,
   DEMO_CO_C, DEMO_METRIC_KEY, DEMO_NAMED_A, DEMO_NAMED_B, DEMO_NAMED_C, DEMO_OPEN_A, DEMO_OPEN_B, DEMO_OPEN_C,
-  DEMO_PROV_A, DEMO_PROV_B, DEMO_PROV_C, DEMO_SKILLED_A, DEMO_SKILLED_B, DEMO_SKILLED_C, DIFF_KEY_HEAD,
+  DEMO_PROV_A, DEMO_PROV_B, DEMO_PROV_C, DEMO_SKILLED_A, DEMO_SKILLED_B, DEMO_SKILLED_C,
+  DESIGNATED_DESC, DESIGNATED_TITLE_TAIL, DIFF_KEY_HEAD,
   DIFF_TAG, DIFF_VARIANT_NONE, DIM_AIP_KEY, DIM_AVG_KEY, DIM_BRIEF_KEY, DIM_INDUSTRY_KEY, DIM_LMIA_KEY,
   DIM_MATCH_KEY, DIM_NAMED_KEY, DIM_OPEN_KEY, DIM_PROV_KEY, DIM_QUARTER_KEY, DIM_SAL_KEY, DIM_SKILLED_KEY,
-  CTL_CLS, EMP_API_URL, EMP_PATH_HEAD, EMP_URL, EV_VIEW_JOBS, HOME_SEARCH_HEAD, JOBS_SEARCH_HEAD, KEY_SEP, KIND_AIP,
-  KIND_LMIA, KIND_NAMED, LABEL_SEP, LANG_KO, LANG_ZH, LINK_SELECTOR, MODE_DESIGNATED, MODE_HIRING,
+  CTL_CLS, EMP_API_URL, EMP_PATH_HEAD, EMP_URL, EV_VIEW_JOBS, HIRING_DESC, HIRING_TITLE_TAIL,
+  HOME_SEARCH_HEAD, JOBS_SEARCH_HEAD, KEY_SEP, KIND_AIP,
+  KIND_LMIA, KIND_NAMED, LABEL_SEP, LANG_KO, LANG_ZH, LINK_SELECTOR,
+  META_PROGRAMS, META_PROV_RE, META_SCOPE_SEP, MODE_DESIGNATED, MODE_HIRING,
   MODE_KEY_HEAD,
   MONEY_DIV, MONEY_HEAD,
   MONEY_TAIL, NOC_SHOW_MAX, PAGE_SIZE_FALLBACK, PROV_KEY_HEAD, P_CITY, P_MODE, P_NOC, P_PAGE, P_PROGRAM,
@@ -55,10 +58,11 @@ import { SponsorNameCell } from './sponsornamecell'
 import type {
   AliasIn, BoardUrlIn, CardClickFn, CardClickIn, CardNoteIn, CellFn, ClearIn, ClickFn, CompareCellRow,
   CompareCellRowIn, CompareCellRowsIn, CompareDemoRow, CompareDim, CompareDimsIn, CompareMatchParts, CompareNamesIn,
-  CompareProvParts, CompareRow, DiffVariant, DimValueIn, DrawerToggleIn,
+  CompareProvParts, CompareRow, DesignatedMetaIn, DesignatedMetaOut, DiffVariant, DimValueIn, DrawerToggleIn,
   EmpCol, EmployerCellRow, EmployerCellRowIn, EmployerCellRowsIn, EmployerColsIn, EmployerFilters,
   EmployerMode,
-  EmployerNocParts, FilterPickIn, FiltersIn, ListClsIn, LoadBoardIn, MaxPageIn, MoneyIn, MoreBtnClsIn,
+  EmployerNocParts, FilterPickIn, FiltersIn, HiringMetaIn, HiringMetaOut,
+  ListClsIn, LoadBoardIn, MaxPageIn, MoneyIn, MoreBtnClsIn,
   NocLabelIn, NocLabelListIn, NocNameFn, NoteTextIn, PageFn, PickFn, ProvNameIn, SponsorCellRow,
   SponsorCellRowIn, SponsorCellRowsIn, SponsorColsIn, SponsorColsWordsIn, SponsorEmployerRow, SponsorKindIn,
   PricingSetIn, TextByFiltersIn, VerdictFact, VerdictFactIn, VerdictToneIn, WhereTextIn, WithQIn,
@@ -1795,4 +1799,46 @@ export function makePricingSet(x: PricingSetIn): ClickFn {
     x.setPricing(x.open)
   }
   return onPricing
+}
+
+/**
+ * 拼 `/employers/designated` 的 SEO 头:标题按「省 + 口径」加范围前缀,直达链接进来时
+ * 标题就说清看的是哪一档。两个限定词都不认(没带,或不在白名单/不是两位省码)时前缀为空,
+ * 标题退回固定尾巴 —— 随手编的参数不会被渲进 `<title>`。
+ * 2026-08-29 形制批自 `app/(frontend)/employers/designated/page.tsx` 的 generateMetadata
+ * 体下沉(门里除框架定名导出外零函数零常量),取值口径与判定顺序一个字没改。
+ *
+ * @param x Next 递来的查询参数(await 之后的原样格)。
+ * @returns 标题与描述。
+ */
+export function designatedMetaOf(x: DesignatedMetaIn): DesignatedMetaOut {
+  const scope: string[] = []
+  if (x.prov != null && META_PROV_RE.test(x.prov)) {
+    scope.push(x.prov)
+  }
+  if (x.program != null && META_PROGRAMS.includes(x.program)) {
+    scope.push(x.program)
+  }
+  let head = TEXT_NONE
+  if (scope.length > 0) {
+    head = scope.join(META_SCOPE_SEP) + META_SCOPE_SEP
+  }
+  return { title: head + DESIGNATED_TITLE_TAIL, description: DESIGNATED_DESC }
+}
+
+/**
+ * 拼 `/employers/hiring` 的 SEO 头:标题按省码加范围前缀,直达链接进来时标题就说清
+ * 看的是哪一省。省码不认(没带或不是两位大写字母)时前缀为空,标题退回固定尾巴。
+ * 2026-08-29 形制批自 `app/(frontend)/employers/hiring/page.tsx` 的 generateMetadata
+ * 体下沉(门里除框架定名导出外零函数零常量),取值口径一个字没改。
+ *
+ * @param x Next 递来的查询参数(await 之后的原样格)。
+ * @returns 标题与描述。
+ */
+export function hiringMetaOf(x: HiringMetaIn): HiringMetaOut {
+  let head = TEXT_NONE
+  if (x.prov != null && META_PROV_RE.test(x.prov)) {
+    head = x.prov + META_SCOPE_SEP
+  }
+  return { title: head + HIRING_TITLE_TAIL, description: HIRING_DESC }
 }

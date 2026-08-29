@@ -13,7 +13,7 @@ import type { CompareRow } from '@/lib/employers'
 import { compareEmployers } from '@/lib/employers/server'
 import { getDb } from '@/lib/db/server'
 import { hasProfile, normalizeProfile, type ProfileJson } from '@/lib/jobs'
-import { Compare, COMPARE_MIN_ROWS, compareNamesOf, noDimsOf } from '@/components/employers'
+import { Compare, COMPARE_META, COMPARE_MIN_ROWS, compareNamesOf, noDimsOf } from '@/components/employers'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
 import { Frame } from '@/components/shell'
@@ -21,16 +21,18 @@ import { Frame } from '@/components/shell'
 export const dynamic = 'force-dynamic'
 
 /**
- * 本页的 SEO 头(Pro 页不进索引;内容写死,用常量形不用函数形)。
+ * 本页的 SEO 头(内容住桶 constants 的 COMPARE_META,门里只一行转发 ——
+ * 2026-08-29 Frank「框架导出的内容也一律来自桶」;导出名是框架定的,必须留在本文件)。
  */
-export const metadata = {
-  title: 'Compare employers — LMIA record, AIP status & immigration signals side by side | Offer2PR',
-  robots: { index: false },
-}
+export const metadata = COMPARE_META
 
 /**
  * 对比页的门:取参 + 身份判定 + 一行装配 + 拼壳与正文。真值只在 Pro 且选够两家时才聚合,
  * 其余一律走示例模糊态(免费/匿名看得到形态、看不到数)。
+ *
+ * 跨域形状接缝(2026-08-29 形制批自 `normalizeProfile` 那一行上方原样上提,一句未删):
+ * quota 域声明的 users.profile 允许嵌套对象,jobs 域的 ProfileJson 只到扁平格
+ * (两域各自声明自己的形状,不互相取 —— 宪法)。断言只住这一处,收窄由 normalizeProfile 逐格做。
  *
  * @param x Next 递来的查询参数。
  * @returns 整页。
@@ -43,16 +45,12 @@ export default async function CompareEmployersPage({ searchParams }: { searchPar
   let rows: CompareRow[] = []
   if (pro && names.length >= COMPARE_MIN_ROWS) {
     const dims = await loadMatchDims(await getDb()).catch(noDimsOf)
-    /**
-     * 跨域形状接缝:quota 域声明的 users.profile 允许嵌套对象,jobs 域的 ProfileJson 只到扁平格
-     * (两域各自声明自己的形状,不互相取 —— 宪法)。断言只住这一处,收窄由 normalizeProfile 逐格做。
-     */
     const p = normalizeProfile(user?.profile as ProfileJson | null)
     rows = await compareEmployers({ db: await getDb(), names, profile: hasProfile(p) ? p : null, dims })
   }
   return (
     <Frame>
-      <Header active="employers" />
+      <Header />
       <Compare rows={rows} pro={pro} loggedIn={!!user} />
       <Footer />
     </Frame>

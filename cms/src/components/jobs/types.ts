@@ -5894,29 +5894,9 @@ export type UpsellReasonIn = {
 }
 
 /**
- * 顶栏高亮键(本域自抄:职位板与它的匹配视图两档)。
- */
-export type HeaderKey = 'jobs' | 'match'
-
-/**
  * 登录框开哪一档(本域自抄)。
  */
 export type AuthMode = 'login' | 'register' | 'reset'
-
-/**
- * 职位板 SEO 头里本域真给的那两格。
- */
-export type BoardMeta = {
-  /**
-   * 标题。
-   */
-  title: string
-
-  /**
-   * 描述。
-   */
-  description: string
-}
 
 /**
  * 会话用户身上本域真读的那几格。`displayName` / `avatar` 两格可能压根不存在

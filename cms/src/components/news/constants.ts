@@ -385,3 +385,24 @@ export const SUMMARY_NULL_COL = 'NULL'
  * 再长搜索引擎自己也会截。
  */
 export const META_DESC_LEN_MAX = 160
+
+/**
+ * 列表页(/news)的 SEO 头。住这里而不是页面门里:门里不留死值常量,页面门只
+ * `export const metadata = NEWS_META` 一行转发(2026-08-29 Frank「框架导出的内容
+ * 也一律来自桶」,形照 start 的 START_META)。
+ */
+export const NEWS_META = {
+  /**
+   * 浏览器标签与搜索结果标题。
+   */
+  title: 'Canada immigration news — official IRCC & provincial PNP updates | Offer2PR',
+
+  /**
+   * 搜索结果摘要(英文优先 —— 88% 流量来自 Google;中文一句压在后面)。
+   * 「每 12 小时刷新」是这一页的保鲜承诺,与抓取役的节律对齐,改节律要一起改。
+   */
+  description:
+    'Latest official immigration announcements from IRCC and 7 provincial nominee programs'
+    + ' (BC, AB, SK, MB, ON, QC, NS), aggregated with sources and dates. Refreshed every 12 hours.'
+    + ' 加拿大移民最新政策动态:联邦 IRCC 与 7 省官方发布聚合,注明出处与日期,每 12 小时刷新。',
+}

@@ -11,7 +11,7 @@ import {
   OAUTH_PARAM, QS_NONE, QS_PREFIX,
 } from './constants'
 import { finishAuth, googleHrefOf, localeOf, runAuthFlow } from './functions'
-import type { AuthFormHookIn, AuthFormHookOut, AuthMode, ClickOutsideIn } from './types'
+import type { SessionSeed, AuthFormHookIn, AuthFormHookOut, AuthMode, ClickOutsideIn } from './types'
 
 /**
  * 首帧登录态上下文(照 LangProvider 先例,治 SSR 先猜后纠的抖动:二级页 SSR 恒渲
@@ -19,7 +19,7 @@ import type { AuthFormHookIn, AuthFormHookOut, AuthMode, ClickOutsideIn } from '
  * 是服务端,值从 layout 的 ssrHasSession() 下来)。undefined = 不在 Provider 下。
  * 上下文对象是 react 的接缝件,住机器抽屉不住 variables(它不随运行变)。
  */
-const SessionCtx = createContext<boolean | undefined>(undefined)
+const SessionCtx = createContext<SessionSeed | undefined>(undefined)
 
 /**
  * SessionProvider 组件要用的上下文本体(域内取,不出桶)。
@@ -31,11 +31,12 @@ export function sessionCtxOf() {
 }
 
 /**
- * 首帧登录态。undefined = 不在 Provider 下(测试/存量路径)→ 调用方维持原 loading 占位。
+ * 首帧会话种子。undefined = 不在 Provider 下(测试/存量路径)→ 调用方维持原 loading 占位。
+ * 2026-08-29 从布尔升格成身份格(治二级页头像切页闪)。
  *
- * @returns 首帧是否已登录;undefined = 无从得知。
+ * @returns 首帧种子;undefined = 无从得知。
  */
-export function useSsrSession(): boolean | undefined {
+export function useSsrSession(): SessionSeed | undefined {
   return useContext(SessionCtx)
 }
 
@@ -127,7 +128,7 @@ export function useAuthForm(x: AuthFormHookIn): AuthFormHookOut {
         return
       }
       setPw(FIELD_EMPTY)
-      await finishAuth({ returnTo: x.returnTo, onDone: x.onDone })
+      await finishAuth({ mode, returnTo: x.returnTo, onDone: x.onDone })
     } catch {
       setErr(x.t('acct.err.generic'))
     } finally {

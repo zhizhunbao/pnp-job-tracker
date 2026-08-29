@@ -230,3 +230,22 @@ export const SHELL_BOTTOM = 40
  * JSON-LD 脚本标签的 MIME(结构化数据的约定值)。
  */
 export const MIME_LD_JSON = 'application/ld+json'
+
+/**
+ * 索引页的 SEO 头(收录主体是中文长尾词,单份定稿不随界面语言切换)。
+ * 住这里而不是页面门里:门里不留死值常量,页面门只 `export const metadata = CASES_META`
+ * 一行转发(2026-08-29 Frank「generateMetadata 统一放到桶里」,形照 start 的 START_META)。
+ */
+export const CASES_META = {
+  /**
+   * 浏览器标签与搜索结果标题。
+   */
+  title: '加拿大移民常见案例 — 真实处境与判定结论 | Offer2PR',
+
+  /**
+   * 搜索结果摘要(中文主打,英文一句压在后面给英文位检索)。
+   */
+  description:
+    '安省毕业木匠、海外厨师 CLB 5、PGWP 只剩 8 个月……16 个真实移民处境,每条给官方数据支撑的判定。'
+    + 'Common Canadian immigration cases with data-backed verdicts.',
+}

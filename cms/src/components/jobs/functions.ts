@@ -30,13 +30,13 @@ import { fmtLocal, fmtLocalSec, ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
   ACC_UNKNOWN, AI_BOLD_RE, AI_GAP_RE, AI_GAP_TO, AI_LEAD_BLANK_RE, AI_TAIL_BLANK_RE, APPLY_MAIL_RE, AT, AUTH_LOGIN,
-  AUTH_REGISTER, AUTH_RESET, BLOCK_KEY_SEP, BOARD_META_DESC, BOARD_META_TITLE, BROAD_ORDER_LAST, CANADA_MAIL_SUFFIX,
+  AUTH_REGISTER, AUTH_RESET, BLOCK_KEY_SEP, BROAD_ORDER_LAST, CANADA_MAIL_SUFFIX,
   CARET_CLOSED, CARET_DOWN, CARET_OPEN, CARET_RIGHT, CELL_TONE_CLS, CHIP, CHIP_TONE_CLS, COL, COL_FLOOR, COLS_COOKIE,
   COLS_MAX_AGE_S, COLUMNS, COLW_COOKIE, COLW_MAX_AGE_S, COMMA, COMPANY_MIN_LEN, COMPANY_SUFFIX_RE, COOKIE_EQ,
   COOKIE_PATH_AGE, COOKIE_SAMESITE, CSS_BORDER_NONE, CSS_STICKY, CURSOR_COL_RESIZE, CURSOR_NONE, DASH, DATE_LEN,
   DEFAULT_COLS, DIR_ASC, DIR_DESC, DIRECT_URL_KEY, DISPOSITION_NONE, EE_PREFIX, ELIG_OK, EV_MOUSE_MOVE, EV_MOUSE_UP,
   FIELD_GROUP, FILTER_PROV, FILTER_Q, FK, FK_DIRECT, FMT_QUOTA, FOLD_KEYS, FROZEN_COLS, FROZEN_EDGE_SHADOW,
-  FROZEN_LINE_SHADOW, FROZEN_Z, GC_MAIL_SUFFIX, HDR_FREE_LEFT, HEAD_BG, HEAD_LINE, HEADER_JOBS, HEADER_MATCH,
+  FROZEN_LINE_SHADOW, FROZEN_Z, GC_MAIL_SUFFIX, HDR_FREE_LEFT, HEAD_BG, HEAD_LINE,
   HTTP_PAYMENT, HTTP_TOO_MANY, JB_MAIL_HOST, JD_ALT_SEP, JD_BARE_LABEL_RE, JD_BULLET_MARK, JD_BULLET_PREFIX,
   JD_BULLET_RE, JD_DASH_PREFIX_RE, JD_DONE, JD_DUP_MAX_LEN, JD_EMPHASIS_RE, JD_EMPTY, JD_ESC_RE, JD_ESC_TO,
   JD_GLUE_TPL, JD_HR_DASH_TPL, JD_HR_LABELS, JD_HR_LINE_TO, JD_HR_LINE_TPL, JD_INLINE_LABELS, JD_INLINE_TPL, JD_KIND,
@@ -62,14 +62,14 @@ import {
 } from './constants'
 import type {
   AgeTextFn, AgeTextIn, AiNoteTextIn, AliasOfIn, Alloc, AllocateIn, AnyRouteIn, ApplyFiltersIn, ApplyLabelIn,
-  AuthFromUrlOut, AuthMode, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView, BoardMeta, BoolFn,
+  AuthFromUrlOut, AuthMode, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView, BoolFn,
   CapSugIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone, CellView, CellWidthsIn, ChipClickIn,
   ChipIn, ChipPushBlockIn, ChipPushIn, ChipPushQcIn, ChipSpec, ChipSpecsIn, CityOptsIn, ClearFiltersIn, ClickFn,
   ColActionIn, ColMeasure, ColOptionView, ColResizeIn, ColResizeStartIn, ColSpec, ColStatsIn, ColWant, ColWidthFnIn,
   ColWidthSeed, CookieIn, CrumbSeg, CurFiltersIn, DataKeyIn, DescOpenIn, DistOptsIn, DonorsIn, DragIn,
   FallbackHrefIn, FallbackTextIn, FallbackValueIn, FieldOpenIn, FillIn, FilterCountIn, FilterOpts, FilterOptsIn,
   FilterState, FilterValueIn, FineOptsIn, FixedNoteIn, FoldBtnClsIn, FrozenStyleIn, FullHrefIn, GapIn, HeadCellAtIn,
-  HeadCellView, HeadClsIn, HeaderKey, HeadTitleIn, JdLinesIn, JdLineView, JdPair, JdPairsIn, JdPayIn, JdReIn,
+  HeadCellView, HeadClsIn, HeadTitleIn, JdLinesIn, JdLineView, JdPair, JdPairsIn, JdPayIn, JdReIn,
   JdSecHeadIn, JdSecModeIn, JdSectionMode, JdSectionsIn, JdSectionView, JobColKey, JobDetailIn, JobDetailView,
   JobDims, JobFact, JobFilters, JobPlan, JobPlanIn, JobsBoardPanel, JobsQueryIn, JobTextOut, KMoneyIn, MailBodyIn,
   MailtoIn, MapHrefIn, MatchLabelIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn,
@@ -3326,20 +3326,6 @@ export function aiHeadClsOf(i: number): string {
 }
 
 /**
- * 顶栏高亮键:职位板与它的匹配视图分两档(2026-08-17 Frank「切换到职位的时候,职位没有高亮」——
- * 首页原来不传 active,于是「职位」那项永远不亮)。
- *
- * @param matchView 在不在匹配视图。
- * @returns 高亮键。
- */
-export function headerActiveOf(matchView: boolean): HeaderKey {
-  if (matchView) {
-    return HEADER_MATCH
-  }
-  return HEADER_JOBS
-}
-
-/**
  * 五节整理版 → 逐节的展示行。J3 五节整理版(2026-07-19 Frank 批):节头加粗独立行,
  * 节内一条一行(W 规范:禁「·」「/」杂糅);(not stated) → 「原帖未提及」灰字,缺节不脑补。
  * trans = 同结构译文(行位保真)→ 节内按行号逐句对照。
@@ -4769,15 +4755,6 @@ export function upsellReturnOf(upsell: UpsellKind): string | undefined {
     return URL_BOARD_MATCH
   }
   return undefined
-}
-
-/**
- * 职位板的 SEO 头(静态;页面门只做一行转发 —— 门里不许有函数体)。
- *
- * @returns metadata 对象。
- */
-export function jobsMetaOf(): BoardMeta {
-  return { title: BOARD_META_TITLE, description: BOARD_META_DESC }
 }
 
 /**

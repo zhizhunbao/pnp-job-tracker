@@ -1751,7 +1751,10 @@ const localRules = {
         // 2026-08-29 页面规范化批追加:`metadata`/`viewport` 同为框架按名提取的路由文件导出;
         // opengraph-image/twitter-image/icon 一族的 `size`/`contentType`/`alt` 是元数据图约定
         // (Next 静态读它们出 <meta> 尺寸与响应头),只在这几个定名文件里放行。
-        const ROUTE_SEGMENT = new Set(['dynamic', 'revalidate', 'fetchCache', 'runtime', 'preferredRegion', 'maxDuration', 'dynamicParams', 'metadata', 'viewport'])
+        // ⚠️ 同日 Frank 收窄(「page 也不允许其他函数,也不允许常量」):metadata/viewport
+        // 只放行 `= 桶常量`(标识符)的一行转发形 —— 内容写成字面量对象照拦,内容归桶 constants。
+        const ROUTE_SEGMENT = new Set(['dynamic', 'revalidate', 'fetchCache', 'runtime', 'preferredRegion', 'maxDuration', 'dynamicParams'])
+        const META_FORWARD = new Set(['metadata', 'viewport'])
         const OG_EXPORTS = new Set(['size', 'contentType', 'alt'])
         const inApp = /[\\/]src[\\/]app[\\/]/.test(context.filename ?? '')
         const inOgFile = inApp && /[\\/](opengraph-image|twitter-image|icon|apple-icon)\.tsx$/.test(context.filename ?? '')
@@ -1774,6 +1777,9 @@ const localRules = {
             if (!top) return
             for (const d of node.declarations) {
               if (inApp && d.id?.type === 'Identifier' && ROUTE_SEGMENT.has(d.id.name)) {
+                continue
+              }
+              if (inApp && d.id?.type === 'Identifier' && META_FORWARD.has(d.id.name) && d.init?.type === 'Identifier') {
                 continue
               }
               if (inOgFile && d.id?.type === 'Identifier' && OG_EXPORTS.has(d.id.name)) {
@@ -1912,6 +1918,45 @@ const localRules = {
               }
             }
             walk(program)
+          },
+        }
+      },
+    },
+
+    // 🔴 页面门里的字符串也一律来自桶(2026-08-29 Frank 实拍 /employers 门里的
+    //    permanentRedirect('/start') 问「这种不允许,有检查出来吗」—— no-bare-strings 只盯
+    //    比较位,参数位/JSX 属性位的裸串漏网)。豁免只有四类:import 说明符、'use client'
+    //    这类指令序言、路由段配置的字面量值(dynamic = 'force-dynamic' 一族是框架契约,
+    //    值必须留在门里)、类型位(TS 节点下的字面量是形状不是值)。
+    'page-strings-from-bucket': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          bare:
+            '页面门里的裸字符串 {{ text }} —— 门里除框架定名导出外零常量,'
+            + '串进本页面域桶的 constants.ts 起名挂 JSDoc 再 import。',
+        },
+      },
+      create(context) {
+        if (!/[\\/]app[\\/]\(frontend\)[\\/].*[\\/]?page\.tsx$/.test(context.filename ?? '')) return {}
+        const SEGMENT = new Set(['dynamic', 'revalidate', 'fetchCache', 'runtime', 'preferredRegion', 'maxDuration', 'dynamicParams'])
+        function exempt(node) {
+          for (let n = node; n; n = n.parent) {
+            if (n.type === 'ImportDeclaration' || n.type === 'ExportNamedDeclaration' || n.type === 'ExportAllDeclaration') return true
+            if (typeof n.type === 'string' && n.type.startsWith('TS')) return true
+            if (n.type === 'ExpressionStatement' && n.parent?.type === 'Program') return true
+            if (n.type === 'VariableDeclarator' && n.id?.type === 'Identifier' && SEGMENT.has(n.id.name)) return true
+          }
+          return false
+        }
+        return {
+          Literal(node) {
+            if (typeof node.value !== 'string') return
+            // 空串是「没有」的成语(判空/兜底),不是魔术值 —— 与 no-bare-strings 同口径豁免。
+            if (node.value === '') return
+            if (exempt(node)) return
+            context.report({ node, messageId: 'bare', data: { text: JSON.stringify(node.value).slice(0, 40) } })
           },
         }
       },
@@ -2629,6 +2674,13 @@ const eslintConfig = [
     rules: { 'local/no-comment-in-function': 'error' },
   },
   {
+    // ── 函数内注释:页面域(2026-08-29 Frank「代码内部不要有注释」,实看 compare 门
+    //    体内那块跨域断言说明后圈进来)—— 说明上提到所在声明/函数的 JSDoc。
+    files: ['src/app/(frontend)/**/*.{ts,tsx}'],
+    plugins: { local: localRules },
+    rules: { 'local/no-comment-in-function': 'error' },
+  },
+  {
     // ── 禁 undefined 出现在类型里:全站 warn = 整改清单(2026-08-21 Frank「都不允许」)──
     // consult 与 db 已清零升 error(各自的块);其余按清单清,清完一个域升一个。
     files: REFACTORED,
@@ -2774,6 +2826,7 @@ const eslintConfig = [
     rules: {
       'local/route-file-names': 'error',
       'local/page-compose-only': 'error',
+      'local/page-strings-from-bucket': 'error',
       'local/page-no-logic': 'error',
       // 注释只许 JSDoc(2026-08-26 Frank;组件域那份开在闸 A 块里,这里管页面域)。
       'local/jsdoc-comments-only': 'error',

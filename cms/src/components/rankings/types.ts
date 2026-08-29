@@ -811,19 +811,12 @@ export type CompanyColsIn = {
 }
 
 /**
- * 榜单页 SEO 主体的入参(Next 定死的 generateMetadata 形状:一个带 params 的对象)。
+ * 榜单页 SEO 主体的入参。2026-08-29 形制批从「Next 定死的 generateMetadata 形状
+ * (一个带 `params: Promise<…>` 的对象)」改回本域一参形 —— 框架的线形状不该压进桶的签名,
+ * 拆 promise 那一步留在页面门里(门里 `export async function generateMetadata` 收框架参数,
+ * await 完只递一个 slug 进来)。随之退役的 RankingParams 只有这一个消费者,同批删除。
  */
 export type RankingMetaIn = {
-  /**
-   * 路由段(Next 15 起是 Promise)。
-   */
-  params: Promise<RankingParams>
-}
-
-/**
- * 榜单页的路由段。
- */
-export type RankingParams = {
   /**
    * 榜 slug。
    */

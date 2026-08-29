@@ -94,6 +94,46 @@ export const SHELL_BOTTOM = 40
 export const SEC_LABEL_CUT_RE = /[((]/
 
 /**
+ * 概览节的节标识(同 URL 深链 `?sec=` 的取值)。它同时是**默认落点**,见下面的 SEC_DEFAULT ——
+ * 那一格直接引它,不再抄第二遍字面量(同一个节两个名字,改一处漏一处就是死链)。
+ */
+export const SEC_OVERVIEW = 'overview'
+
+/**
+ * 移民档案节的节标识(档案表单 + 简历存档同住这一节)。
+ */
+export const SEC_PROFILE = 'profile'
+
+/**
+ * 我的收藏节的节标识(#62A:同一份收藏数据的纯列表视图)。
+ * 它也是收藏列表件的视图档名 —— 那一件按 `variant='favs'` 从看板切成纯列表,
+ * 说的是同一件事(这一节要的是收藏视图),所以两处共用这一个名字。
+ */
+export const SEC_FAVS = 'favs'
+
+/**
+ * 收藏看板节的节标识(E9-01:想投/已投/面试中/offer 四档看板)。
+ */
+export const SEC_SJOBS = 'sjobs'
+
+/**
+ * 已保存筛选节的节标识(E5-03:邮件提醒管理)。
+ */
+export const SEC_SAVED = 'saved'
+
+/**
+ * 时长包购买节的节标识(E3-03:Pro 也可续买,到期日顺延)。
+ */
+export const SEC_BUY = 'buy'
+
+/**
+ * 简历存档件 React key 的键头(拼上用户号 = 这个人的那一份存档)。
+ * 它与档案表单的 key 必须**不同**:两件并排住在档案节里,key 撞上会被 React 当成同一个位置,
+ * 换号时留着上一个人的内部状态(存档是隐私内容,残留 = 串号)。
+ */
+export const RA_KEY_HEAD = 'ra'
+
+/**
  * 节导航表:键 = 节标识(同 URL 深链 `?sec=` 的取值),labelKey = 该节标题的 i18n 键。
  * 侧栏标签**复用各节标题键**而不是另起一套侧栏文案 —— 两处叫法必须一致,
  * 分成两套键迟早对不上(裁括号说明的活交给 functions 的 navLabelOf)。
@@ -136,8 +176,10 @@ export const LOGIN_URL = '/?login=1'
 
 /**
  * 默认落点节:进页先看概览(深链 `?sec=` 命中时由 effect 再改)。
+ * 值直接引 SEC_OVERVIEW —— 「默认是哪一节」是这一格要说的事,「概览节叫什么」是那一格的事,
+ * 两格同值但不是同一件事,所以留两个名字、只留一份字面量。
  */
-export const SEC_DEFAULT = 'overview'
+export const SEC_DEFAULT = SEC_OVERVIEW
 
 /**
  * Stripe 回跳成功标记的查询参数名(`/account?ok=1`,由 checkout 的 success_url 带回)。

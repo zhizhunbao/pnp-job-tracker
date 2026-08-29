@@ -14,7 +14,7 @@
  */
 // eslint-disable-next-line local/no-import-in-leaf -- 只 import type,靠 satisfies 让打错的键当场 tsc 红;运行时零依赖
 import type {
-  AuthMode, CellKind, CellTone, ColSpec, Disposition, HeaderKey, JdLineKind, JobColKey, JobTextStatus,
+  AuthMode, CellKind, CellTone, ColSpec, Disposition, JdLineKind, JobColKey, JobTextStatus,
   SortDir,
 } from './types'
 
@@ -2970,16 +2970,6 @@ export const APPLY_AUTH = 'auth'
 export const APPLY_INTENT = 'intent'
 
 /**
- * 顶栏高亮键:职位板。
- */
-export const HEADER_JOBS: HeaderKey = 'jobs'
-
-/**
- * 顶栏高亮键:板内切到「我的匹配」视图时改标这一档。
- */
-export const HEADER_MATCH: HeaderKey = 'match'
-
-/**
  * 整理版一节的渲染档:「怎么投」整节缺又有邮箱 / 整节缺只出官方短链 / 有内容且逐行链官方 /
  * 薪资整节缺但帖面有薪资 / 整节缺 / 有内容。
  */
@@ -3139,16 +3129,23 @@ export const BANNER_MODULE = 'jobs'
 export const BANNER_TITLE = 'Jobs'
 
 /**
- * 职位板的 SEO 标题(88% 流量来自 Google,标题里就把三样差异化信号写全)。
+ * 职位板的 SEO 头(静态定稿;门里只 `export const metadata = BOARD_META` 一行转发 ——
+ * 2026-08-29 Frank 定形:静态 B 形/动态 A 形,`= jobsMetaOf` 的 C 形随之退役)。
+ * 标题:88% 流量来自 Google,把三样差异化信号写全;描述英文主打、中文一句压后。
  */
-export const BOARD_META_TITLE = 'Canadian jobs with immigration signals — PNP · EE · wages | Offer2PR'
+export const BOARD_META = {
+  /**
+   * 浏览器标签与搜索结果标题。
+   */
+  title: 'Canadian jobs with immigration signals — PNP · EE · wages | Offer2PR',
 
-/**
- * 职位板的 SEO 描述。
- */
-export const BOARD_META_DESC = 'Daily-updated job board across all 10 provinces: PNP named streams, '
-  + 'EE categories, wages vs ESDC median, profile matching. '
-  + '全加拿大日更职位板:省提名通道/EE 类别/工资对比/档案匹配。'
+  /**
+   * 搜索结果摘要。
+   */
+  description: 'Daily-updated job board across all 10 provinces: PNP named streams, '
+    + 'EE categories, wages vs ESDC median, profile matching. '
+    + '全加拿大日更职位板:省提名通道/EE 类别/工资对比/档案匹配。',
+}
 
 /**
  * 详情页不要匹配维度(E8-11 B2:页面砍到只剩 JD,匹配级与 PNP/EE 维度不再取)。

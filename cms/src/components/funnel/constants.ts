@@ -275,3 +275,11 @@ export const URL_HOME = '/'
  * 裸 <button> 一律改经 button 族):ghost 底最素,视觉全由本域的加倍类定形。
  */
 export const PLAIN_BTN_KIND = 'ghost'
+
+/**
+ * 看得见这一页的角色码(users.role 里的值)。🔴 只有 admin 看得见,其余一律 notFound()
+ * —— 不是隐藏,是**不存在**(转化数据不该对外)。所以这一格是**门禁**不是显示值:
+ * 拼错一个字母不会报错,只会把整页对所有人关上(或者更糟,对所有人打开)。
+ * lib/quota 里没有同义常量(那域只管 Pro 与配额,不认角色),本域自己声明一份。
+ */
+export const ROLE_ADMIN = 'admin'

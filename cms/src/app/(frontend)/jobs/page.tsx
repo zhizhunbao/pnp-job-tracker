@@ -24,8 +24,9 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { Footer } from '@/components/footer'
 import {
-  COLS_COOKIE, COLW_COOKIE, DEFAULT_COLW_SEED, FIRST_SCREEN_ROWS, Jobs, JobsHeader, colsFromCookie,
-  jobsMetaOf, parseColWidthSeed, parseJobFilters, toJobPlan, toSearchParams,
+  COLS_COOKIE, COLW_COOKIE, DEFAULT_COLW_SEED, FIRST_SCREEN_ROWS, Jobs, JobsHeader, P_VIEW, VAL_MATCH,
+  BOARD_META,
+  colsFromCookie, parseColWidthSeed, parseJobFilters, toJobPlan, toSearchParams,
 } from '@/components/jobs'
 import { Frame } from '@/components/shell'
 import { dbOf } from '@/lib/db/server'
@@ -36,7 +37,11 @@ import type { JobFact, SessionUser } from '@/components/jobs'
 
 export const dynamic = 'force-dynamic'
 
-export const generateMetadata = jobsMetaOf
+/**
+ * 本页的 SEO 头(内容住桶 constants 的 BOARD_META,门里只一行转发 ——
+ * 2026-08-29 Frank 定形:静态 B 形;导出名是框架定的,必须留在本文件)。
+ */
+export const metadata = BOARD_META
 
 /**
  * 职位板的门。
@@ -48,7 +53,7 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
   const sp = toSearchParams(await searchParams)
   const filters = parseJobFilters(sp)
   const filtered = Object.keys(filters).length > 0
-  const initialMatchView = sp.get('view') === 'match'
+  const initialMatchView = sp.get(P_VIEW) === VAL_MATCH
 
   const payload = await getPayload({ config: await config })
   const db = dbOf(payload)

@@ -23,10 +23,30 @@ import {
 } from './constants'
 import type {
   AliveFn, CallbackOut, GoogleCallbackIn, Clock, ConfigWithPrefix, ExchangeIn, GoogleLogin, GoogleLoginIn, GoogleLoginOut, GoogleUserOut,
-  HasSessionOut, MaybeCookie, MaybeToken, OauthCookieIn, ReadCookieIn, SessionCookieList, SessionEntry,
+  HasSessionOut, MaybeCookie, SessionSeedIn, SessionSeedOut, MaybeToken, OauthCookieIn, ReadCookieIn, SessionCookieList, SessionEntry,
   TokenBody, UserinfoBody,
 } from './types'
 import { HDR_CONTENT_TYPE } from '../http'
+
+/**
+ * 首帧会话种子:无票据给匿名种子(绝大多数流量零开销);有票据用注入的认人函数
+ * 取身份四格;有票据但认不出(过期/库抖)给「in=true 身份空」—— 消费端保持登录占位
+ * 并回落拉接口,不把登录用户闪成匿名。
+ *
+ * @param x 请求头与注入的认人函数。
+ * @returns 首帧会话种子。
+ */
+export async function ssrSessionSeed(x: SessionSeedIn): SessionSeedOut {
+  const has = await ssrHasSession()
+  if (has === false) {
+    return { in: false, email: EMAIL_NONE, displayName: null, avatar: null, proUntil: null }
+  }
+  const u = await x.loadUser(x.headers)
+  if (u == null) {
+    return { in: true, email: EMAIL_NONE, displayName: null, avatar: null, proUntil: null }
+  }
+  return { in: true, email: u.email, displayName: u.displayName, avatar: u.avatar, proUntil: u.proUntil }
+}
 
 /**
  * 首帧有没有会话票据。取不到 cookie 的极端情形按匿名占位 ——

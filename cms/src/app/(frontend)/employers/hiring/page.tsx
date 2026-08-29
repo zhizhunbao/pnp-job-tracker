@@ -9,7 +9,7 @@
  */
 import { employersBoardProps } from '@/lib/employers/server'
 import { getDb } from '@/lib/db/server'
-import { Employers } from '@/components/employers'
+import { Employers, MODE_HIRING, hiringMetaOf } from '@/components/employers'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
 import { Frame } from '@/components/shell'
@@ -18,17 +18,15 @@ export const dynamic = 'force-dynamic'
 
 /**
  * 在招页的 metadata:标题按省码加范围前缀,直达链接进来时标题就说清看的是哪一省。
+ * 拼装在 components/employers 的 hiringMetaOf 里(2026-08-29 Frank
+ * 「generateMetadata 体内只许一行 return 调桶的函数」),门里只剩取参。
  *
- * @param x Next 递来的查询参数。
+ * @param x Next 递来的路由参数。
  * @returns 标题与描述。
  */
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ prov?: string }> }) {
   const sp = await searchParams
-  const prov = /^[A-Z]{2}$/.test(String(sp.prov ?? '')) ? String(sp.prov) : ''
-  return {
-    title: `${prov ? prov + ' ' : ''}Employers hiring now | Offer2PR`,
-    description: 'Employers with open postings for this occupation in this province, from our daily job crawl. 该省该职业正在招人的雇主,来自本站每日抓取的职位库。',
-  }
+  return hiringMetaOf(sp)
 }
 
 /**
@@ -39,10 +37,10 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
  * @returns 整页。
  */
 export default async function HiringEmployersPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const props = await employersBoardProps({ sp: await searchParams, mode: 'hiring', db: await getDb() })
+  const props = await employersBoardProps({ sp: await searchParams, mode: MODE_HIRING, db: await getDb() })
   return (
     <Frame>
-      <Header active="employers" />
+      <Header />
       <Employers {...props} />
       <Footer />
     </Frame>

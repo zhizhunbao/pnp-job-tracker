@@ -8,20 +8,16 @@
  * @author Frank
  * @time 2026-08-27 01:30:00
  */
-import type { Metadata } from 'next'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
-import { Cases, CasesJsonLd } from '@/components/cases'
+import { CASES_META, Cases, CasesJsonLd } from '@/components/cases'
 import { Frame } from '@/components/shell'
 
 /**
- * 本页的 SEO 头(索引页是收录主体;内容写死,用常量形不用函数形)。
+ * 本页的 SEO 头(内容住桶 constants 的 CASES_META,门里只一行转发 ——
+ * 2026-08-29 Frank「统一放到桶里」;导出名是框架定的,必须留在本文件)。
  */
-export const metadata: Metadata = {
-  title: '加拿大移民常见案例 — 真实处境与判定结论 | Offer2PR',
-  description:
-    '安省毕业木匠、海外厨师 CLB 5、PGWP 只剩 8 个月……16 个真实移民处境,每条给官方数据支撑的判定。Common Canadian immigration cases with data-backed verdicts.',
-}
+export const metadata = CASES_META
 
 /**
  * 索引页的门:JSON-LD + 外框里拼壳与正文。JSON-LD 是 cases 桶的域内小件

@@ -13,6 +13,7 @@
  * @author Frank
  * @time 2026-08-27 03:00:00
  */
+export { ROLE_ADMIN } from './constants'
 export { Funnel } from './funnel'
 export { toFunnelBoard, toFunnelEventFact, toFunnelPayFact } from './functions'
 export type { FunnelBoard, FunnelCellRow, FunnelEventFact, FunnelPayFact } from './types'

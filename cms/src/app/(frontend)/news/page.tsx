@@ -18,17 +18,17 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
-import { News, loadNewsCards, loadNewsCommentCounts, loadNewsHeroes } from '@/components/news'
+import { NEWS_META, News, loadNewsCards, loadNewsCommentCounts, loadNewsHeroes } from '@/components/news'
 import { Frame } from '@/components/shell'
 import { dbOf } from '@/lib/db/server'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata = {
-  title: 'Canada immigration news — official IRCC & provincial PNP updates | Offer2PR',
-  description:
-    'Latest official immigration announcements from IRCC and 7 provincial nominee programs (BC, AB, SK, MB, ON, QC, NS), aggregated with sources and dates. Refreshed every 12 hours. 加拿大移民最新政策动态:联邦 IRCC 与 7 省官方发布聚合,注明出处与日期,每 12 小时刷新。',
-}
+/**
+ * 本页的 SEO 头(内容住桶 constants 的 NEWS_META,门里只一行转发 ——
+ * 2026-08-29 Frank「框架导出的内容也一律来自桶」;导出名是框架定的,必须留在本文件)。
+ */
+export const metadata = NEWS_META
 
 /**
  * 动态列表页的门:三条查询并发取数 + 大写组件的拼装,没有别的。
@@ -45,7 +45,7 @@ export default async function NewsPage() {
   ])
   return (
     <Frame>
-      <Header active="news" />
+      <Header />
       <News items={items} hero={hero} cmtCounts={cmtCounts} />
       <Footer />
     </Frame>

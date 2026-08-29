@@ -16,7 +16,8 @@
  */
 import { headers } from 'next/headers'
 import {
-  Decision, SSR_WIRE_MS, TOP_NOCS_LIMIT, emptyJobRows, nullWire, raceWire, ssrWireOf, type TvJob,
+  Decision, PLAN_PR_META, SSR_WIRE_MS, TOP_NOCS_LIMIT, WIRE_ERROR_KEY, emptyJobRows, nullWire, raceWire,
+  ssrWireOf, type TvJob,
 } from '@/components/plan'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
@@ -30,20 +31,41 @@ import { tripleWireOf, type TripleWire } from '@/lib/ruling/server'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata = {
-  title: 'PR assessment — per-job verdict, latest PNP draws | Offer2PR',
-  description: 'Employer offer → provincial nomination: latest draw cutoffs by province and a per-job three-part verdict. 雇主 offer → 省提名:各省最近抽选分数线与逐岗三项判定。',
-}
+/**
+ * 本页的 SEO 头(内容住桶 constants 的 PLAN_PR_META,门里只一行转发 ——
+ * 2026-08-29 Frank「框架导出的内容也一律来自桶」;导出名是框架定的,必须留在本文件)。
+ */
+export const metadata = PLAN_PR_META
 
+/**
+ * 决策页的门:取参 + 取池 + 三段并发取数 + 拼壳与正文。下面三条是 2026-08-29 形制批从
+ * 体内原样上提的记录(闸 local/no-comment-in-function:门里不留函数体注释),一句未删。
+ *
+ * 取数:表包(points)与热门职业榜(jobs)2026-08-22 拆开取,各自 TTL 缓存;
+ * 池由页面注入(拍板③)。
+ *
+ * 带岗进来:`?job=` 带岗 → 三项结果直接并入本页(轻查:判定本体在 `/api/ruling/verdict`,
+ * 这里只要表头四样)。
+ *
+ * 判定卡**服务端先算一版**(2026-08-12):先前整张卡都在客户端取,一进页面先盯 ~1.5s 的骨架条。
+ * 服务端读不到 localStorage,所以这一版按「登录档案 / 无本地答案」算;客户端拿到本地答案后再刷一次。
+ * 同一个 tripleWireOf,与 `/api/ruling/verdict` 一条口径(付费闸也在里面,SSR 不会多漏一行)。
+ * 🔴 **SSR 不许阻塞页面**:判定拿不到/慢了就当没有,首屏照出,客户端再取(它本来就会取)。
+ *    数据面有单件缓存(实测 getVerdictData 冷 2.3s、热 0ms;名录冷 97ms、热 0ms)——
+ *    热进程里这一步几乎免费,但**冷启那一次不能让整页跟着等**,更不能因为它挂了页面就白屏。
+ * 2026-08-29 形制批:认人 + 判定那段与赛跑本身下沉 components/plan 的 ssrWireOf / raceWire
+ * (门里不许有函数体),三支服务端函数由本门注进去;赛跑语义与等待上限一个字没变。
+ *
+ * @param x Next 递来的查询参数。
+ * @returns 整页。
+ */
 export default async function PlanPrPage({ searchParams }: { searchParams: Promise<{ job?: string }> }) {
   const sp = await searchParams
-  /** 表包(points)与热门职业榜(jobs)2026-08-22 拆开取,各自 TTL 缓存;池由页面注入(拍板③) */
   const db = await getDb()
   const [{ overview, drawsRecent, competition }, topNocs] = await Promise.all([
     getScoreTables(db), getTopNocs({ db, limit: TOP_NOCS_LIMIT }),
   ])
 
-  /** `?job=` 带岗进来 → 三项结果直接并入本页(轻查:判定本体在 `/api/ruling/verdict`,这里只要表头四样) */
   let tvJob: TvJob | null = null
   const jobId = Number(sp.job)
   if (Number.isFinite(jobId) && jobId > 0) {
@@ -61,16 +83,6 @@ export default async function PlanPrPage({ searchParams }: { searchParams: Promi
     }
   }
 
-  /**
-   * 判定卡**服务端先算一版**(2026-08-12):先前整张卡都在客户端取,一进页面先盯 ~1.5s 的骨架条。
-   * 服务端读不到 localStorage,所以这一版按「登录档案 / 无本地答案」算;客户端拿到本地答案后再刷一次。
-   * 同一个 tripleWireOf,与 `/api/ruling/verdict` 一条口径(付费闸也在里面,SSR 不会多漏一行)。
-   * 🔴 **SSR 不许阻塞页面**:判定拿不到/慢了就当没有,首屏照出,客户端再取(它本来就会取)。
-   *    数据面有单件缓存(实测 getVerdictData 冷 2.3s、热 0ms;名录冷 97ms、热 0ms)——
-   *    热进程里这一步几乎免费,但**冷启那一次不能让整页跟着等**,更不能因为它挂了页面就白屏。
-   * 2026-08-29 形制批:认人 + 判定那段与赛跑本身下沉 components/plan 的 ssrWireOf / raceWire
-   * (门里不许有函数体),三支服务端函数由本门注进去;赛跑语义与等待上限一个字没变。
-   */
   let initialVerdict: TripleWire | null = null
   if (tvJob) {
     const wire = await raceWire({
@@ -79,12 +91,12 @@ export default async function PlanPrPage({ searchParams }: { searchParams: Promi
       }).catch(nullWire),
       ms: SSR_WIRE_MS,
     })
-    if (wire && !('error' in wire)) initialVerdict = wire
+    if (wire && !(WIRE_ERROR_KEY in wire)) initialVerdict = wire
   }
 
   return (
     <Frame>
-      <Header active="pathways" />
+      <Header />
       <Decision overview={overview} drawsRecent={drawsRecent} competition={competition}
         tvJob={tvJob} topNocs={topNocs} initialVerdict={initialVerdict} />
       <Footer />

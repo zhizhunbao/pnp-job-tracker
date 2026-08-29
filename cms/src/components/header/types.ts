@@ -19,10 +19,44 @@ export type Lang = 'zh' | 'en' | 'ko'
 export type TFn = (key: string, vars?: Record<string, string | number>) => string
 
 /**
- * 顶栏高亮键(哪个导航项亮;stats/rank 并入把脉高亮、match 并入职位高亮)。
+ * 顶栏高亮键(哪个导航项亮;stats/rank 并入把脉高亮、match 并入职位高亮;
+ * library = 资料库下拉三页 —— 2026-08-29 Frank 实拍:职业清单页亮着「雇主」,
+ * 看着像点错了跳去雇主,实为清单页历史上挂在雇主名录下的遗留高亮)。
  */
-export type ActiveKey = 'rank' | 'stats' | 'account' | 'pathways' | 'news' | 'employers' | 'start' | 'match' | 'jobs'
+export type ActiveKey =
+  'rank' | 'stats' | 'account' | 'pathways' | 'news' | 'employers' | 'start' | 'match' | 'jobs' | 'library'
 
+
+/**
+ * 首帧会话种子里本域读的格(auth 桶 SessionSeed 全格照抄 —— 跨域不取,各家一份;
+ * 2026-08-29 头像切页闪修复:SSR 首帧直接带身份)。
+ */
+export type SsrSeed = {
+  /**
+   * 有没有会话票据。
+   */
+  in: boolean
+
+  /**
+   * 邮箱;匿名为空串;in=true 且空串 = 认人失败,回落拉接口。
+   */
+  email: string
+
+  /**
+   * 显示名;没设 null。
+   */
+  displayName: string | null
+
+  /**
+   * 头像 URL;没有 null。
+   */
+  avatar: string | null
+
+  /**
+   * Pro 到期日(ISO);非 Pro null。
+   */
+  proUntil: string | null
+}
 
 /**
  * 账户区三态。
@@ -119,13 +153,8 @@ export type AcctHookIn = {
  */
 export type HeaderIn = {
   /**
-   * 高亮键(可省 = 首页态)。
-   */
-  active?: ActiveKey
-
-
-  /**
-   * 吸顶(职位板用)。
+   * 吸顶(职位板用)。高亮键 2026-08-29 退役:由 Header 按 pathname 自判
+   * (每页手填 active 是 occupations 亮错「雇主」的病根)。
    */
   sticky?: boolean
 

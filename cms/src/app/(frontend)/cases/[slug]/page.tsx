@@ -51,7 +51,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
   }
   return (
     <Frame>
-      <Header active="pathways" />
+      <Header />
       <Case caseId={props.caseId} answer={props.answer} />
       <Footer />
     </Frame>

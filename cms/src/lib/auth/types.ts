@@ -280,3 +280,86 @@ export type CallbackOutcome = {
  * `googleCallback` 的返回。
  */
 export type CallbackOut = Promise<CallbackOutcome>
+
+/**
+ * 首帧会话种子的身份格(loadUser 注入函数交回的用户里本域读的四格 ——
+ * 全量形状归 quota 域,跨域不取,按「只声明真读的格」自抄)。
+ */
+export type SeedUser = {
+  /**
+   * 邮箱。
+   */
+  email: string
+
+  /**
+   * 显示名;没设 null。
+   */
+  displayName: string | null
+
+  /**
+   * 头像 URL;没有 null。
+   */
+  avatar: string | null
+
+  /**
+   * Pro 到期日(ISO);非 Pro null。
+   */
+  proUntil: string | null
+}
+
+/**
+ * 认人函数的形状(由入口注入 —— 跨域只留这一条边,quota 的 getUserOrNull 对得上)。
+ */
+export type SeedLoaderFn = (headers: Headers) => Promise<SeedUser | null>
+
+/**
+ * 首帧会话种子(layout 服务端读一次、SessionProvider 往下分发)。2026-08-29 从布尔
+ * 升格成身份格:二级页头像原先要等 /api/users/me,切页先画占位点再换字母
+ * (Frank「来回闪」实拍);SSR 首帧直接带上是谁,字母不再闪。
+ */
+export type SessionSeed = {
+  /**
+   * 有没有会话票据(首帧按登录/匿名占位)。
+   */
+  in: boolean
+
+  /**
+   * 邮箱;匿名为空串。in=true 且空串 = 有票据但认人失败,消费端回落拉接口。
+   */
+  email: string
+
+  /**
+   * 显示名;没设 null。
+   */
+  displayName: string | null
+
+  /**
+   * 头像 URL;没有 null。
+   */
+  avatar: string | null
+
+  /**
+   * Pro 到期日(ISO);非 Pro null。
+   */
+  proUntil: string | null
+}
+
+/**
+ * `ssrSessionSeed` 的入参。
+ */
+export type SessionSeedIn = {
+  /**
+   * 请求头(认人要用;layout 里 await headers() 递进来)。
+   */
+  headers: Headers
+
+  /**
+   * 认人函数(入口注入,通常是 quota 的 getUserOrNull)。
+   */
+  loadUser: SeedLoaderFn
+}
+
+/**
+ * `ssrSessionSeed` 的返回。
+ */
+export type SessionSeedOut = Promise<SessionSeed>

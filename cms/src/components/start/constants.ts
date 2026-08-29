@@ -900,11 +900,6 @@ export const TAG_VARIANT_WARN = 'warn'
 export const PLAIN_BTN_KIND = 'ghost'
 
 /**
- * 顶栏高亮键(本页在顶栏上是「就业把脉」那一项)。
- */
-export const HEADER_ACTIVE = 'start'
-
-/**
  * 本页的 SEO 头(英文优先 —— 88% 流量来自 Google;中文一句压在后面)。
  * 住这里而不是页面门里:门里不留死值常量,页面门只 `export const metadata = START_META` 一行转发。
  */

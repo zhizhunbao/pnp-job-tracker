@@ -773,3 +773,73 @@ export const VERDICT_UNKNOWN = 'unknown'
  * (选不中,也不报错),整卡点击就会跟卡内链接重复导航一次。
  */
 export const LINK_SELECTOR = 'a'
+
+/**
+ * `/employers/compare` 的 SEO 头(Pro 页不进索引;内容写死,用常量形不用函数形)。
+ * 住这里而不是页面门里:门里不留死值常量,页面门只 `export const metadata = COMPARE_META`
+ * 一行转发(2026-08-29 Frank「框架导出的内容也一律来自桶」,形照 start 的 START_META)。
+ */
+export const COMPARE_META = {
+  /**
+   * 浏览器标签与搜索结果标题。
+   */
+  title: 'Compare employers — LMIA record, AIP status & immigration signals side by side | Offer2PR',
+
+  /**
+   * 不进索引:对比页是 Pro 功能,真值不出服务端,收录了也只能给到示例模糊态。
+   */
+  robots: { index: false },
+}
+
+/**
+ * `/employers/designated` 标题里范围前缀之后的固定尾巴(前缀由省码与制度拼,见 designatedMetaOf)。
+ */
+export const DESIGNATED_TITLE_TAIL = 'Designated employers | Offer2PR'
+
+/**
+ * `/employers/designated` 的搜索结果摘要(英文优先 —— 88% 流量来自 Google;
+ * 「被指定不等于在招」是站规四类保留解释里的口径说明,不许删成一句广告词)。
+ */
+export const DESIGNATED_DESC
+  = 'Employers designated under AIP / RCIP / FCIP, from official community and provincial lists.'
+  + ' Being designated does not mean the employer is hiring — check open jobs.'
+  + ' 指定雇主名录(AIP/RCIP/FCIP),官方名录周更;被指定不等于在招。'
+
+/**
+ * `/employers/hiring` 标题里范围前缀之后的固定尾巴(前缀是省码,见 hiringMetaOf)。
+ */
+export const HIRING_TITLE_TAIL = 'Employers hiring now | Offer2PR'
+
+/**
+ * `/employers/hiring` 的搜索结果摘要(口径:该省该职业正在招人的雇主来自本站每日职位库,
+ * 不是官方名录 —— 两块视图共用一件,描述里必须把来源分清)。
+ */
+export const HIRING_DESC
+  = 'Employers with open postings for this occupation in this province, from our daily job crawl.'
+  + ' 该省该职业正在招人的雇主,来自本站每日抓取的职位库。'
+
+/**
+ * 标题里认得的三个指定制度码。URL 上 `?program=` 只有落在这三个里才进标题前缀 ——
+ * 白名单之外一律当没带,免得把随手编的串渲进 `<title>`。
+ */
+export const META_PROGRAMS = ['AIP', 'RCIP', 'FCIP']
+
+/**
+ * 省码的形状(两位大写字母)。URL 上 `?prov=` 过不了它就当没带,同上。
+ */
+export const META_PROV_RE = /^[A-Z]{2}$/
+
+/**
+ * 标题里范围前缀各截之间、以及前缀与固定尾巴之间的空格(「NS AIP Designated employers」)。
+ * 全站禁「·」杂糅那条说的是多条并列信息,这里是同一个范围的两截限定词。
+ */
+export const META_SCOPE_SEP = ' '
+
+/**
+ * 货架页 `/employers` 下架后的去处(2026-08-08 Frank 拍板整页下架「这个页面就不要了」:
+ * 担保雇主的唯一承载 = 把脉页三分表橱窗)。路由本身保留,只做 308 —— 旧收录与外链不断链。
+ * ⚠️ 这条路径打错是**静默 404**(下架页正好没人盯),所以必须在这里有名字有注释。
+ * 说的不是「雇主板的入口」:`/employers/designated` 与 `/employers/hiring` 两个入口照旧活着,
+ * 下架的只有它们上面那层货架。
+ */
+export const URL_SHELF_GONE = '/start'

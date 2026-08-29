@@ -12,11 +12,14 @@ import {
   ACCT_IN, ACCT_LOADING, ACCT_OUT, API_ME, CRED_INCLUDE, HOVER_CLOSE_MS, OVERFLOW_LOCK, PUSH_RESET_MS,
   PUSH_TRANSITION, PUSH_X, SEL_MAIN, STYLE_RESET,
 } from './constants'
-import { emptyUser, meToAcct } from './functions'
+import { emptyUser, meToAcct, seedUser } from './functions'
 import type { AcctHookIn, AcctPhase, AcctState, HoverOut, MeJson } from './types'
 
 /**
  * 账户三态整机(2026-07-19 Frank「我的账户模块应该是登录之后才显示」上提到 header 级)。
+ * 2026-08-29 种子升格:SSR 首帧连**身份四格**一起给(治「切换页面头像来回闪」——
+ * 原先身份要等 /api/users/me,每次整页导航都先画占位点再换字母);种子带 email 就不再拉接口,
+ * in=true 但 email 空(认人失败)保持登录占位并回落拉接口。
  * 首帧登录态**由服务端给**(2026-08-17「点击切换的时候会先伸缩一下」:其余 20 页原本
  * 只能等 /api/users/me,那一下账户区从 32px 撑到 84px,导航整排被拽 52px;localStorage
  * 记上次结果治不了 —— 浏览器先照 SSR 的 HTML 画一帧)。优先级:宿主 prop(/jobs 有
@@ -37,9 +40,12 @@ export function useAcct(x: AcctHookIn): AcctState {
       }
     } else if (ssr != null) {
       phase = ACCT_OUT
-      if (ssr) {
+      if (ssr.in) {
         phase = ACCT_IN
       }
+    }
+    if (ssr != null && ssr.in && ssr.email !== '') {
+      return { state: ACCT_IN, u: seedUser(ssr) }
     }
     return { state: phase, u: emptyUser() }
   }
@@ -48,6 +54,9 @@ export function useAcct(x: AcctHookIn): AcctState {
 
   useEffect(function fetchMe() {
     if (x.loggedIn != null || x.hasAccountArea) {
+      return
+    }
+    if (ssr != null && (ssr.in === false || ssr.email !== '')) {
       return
     }
 
@@ -73,7 +82,7 @@ export function useAcct(x: AcctHookIn): AcctState {
     }
 
     fetch(API_ME, { credentials: CRED_INCLUDE }).then(readJson).then(applyMe).catch(onFail)
-  }, [x.loggedIn, x.hasAccountArea])
+  }, [x.loggedIn, x.hasAccountArea, ssr])
 
   return acct
 }

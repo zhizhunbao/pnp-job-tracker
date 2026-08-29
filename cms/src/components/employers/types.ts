@@ -1956,3 +1956,57 @@ export type SponsorKv = {
    */
   v: React.ReactNode
 }
+
+/**
+ * 一页 SEO 头的两格(Next 从 generateMetadata 的返回值里读它们)。
+ * 雇主板的两个入口(designated / hiring)共用这一张形状:标题都是「范围前缀 + 固定尾巴」,
+ * 描述都是各自定稿的一句,两格都保证有值(算不出范围时前缀为空,标题仍然成立)。
+ */
+export type PageMeta = {
+  /**
+   * `<title>`:范围前缀(省码 / 制度码)+ 该入口的固定尾巴。
+   */
+  title: string
+
+  /**
+   * 搜索结果里那段摘要,各入口一句定稿、不随参数变。
+   */
+  description: string
+}
+
+/**
+ * designatedMetaOf 的入参 —— 归一前形状(Next 递来的查询参数原样格),所以带 `?:`。
+ */
+export type DesignatedMetaIn = {
+  /**
+   * 直达链接上 `?program=` 那一格的原样值;落在三个指定制度码里才进标题前缀。
+   * 参数没带时这个键压根不存在(不是「空字符串」),照实写成真可选。
+   */
+  program?: string
+
+  /**
+   * 直达链接上 `?prov=` 那一格的原样值;两位大写省码才进标题前缀。同上,没带就是键不存在。
+   */
+  prov?: string
+}
+
+/**
+ * designatedMetaOf 的出参。
+ */
+export type DesignatedMetaOut = PageMeta
+
+/**
+ * hiringMetaOf 的入参 —— 归一前形状(Next 递来的查询参数原样格),所以带 `?:`。
+ */
+export type HiringMetaIn = {
+  /**
+   * 直达链接上 `?prov=` 那一格的原样值;两位大写省码才进标题前缀。
+   * 参数没带时这个键压根不存在(不是「空字符串」),照实写成真可选。
+   */
+  prov?: string
+}
+
+/**
+ * hiringMetaOf 的出参。
+ */
+export type HiringMetaOut = PageMeta

@@ -151,3 +151,28 @@ export const CHIP_CLEAR = ' ✕'
  * 拼 className 时各类之间的分隔符(HTML 的 class 属性按空白切词)。
  */
 export const CLS_SEP = ' '
+
+/**
+ * 这页的 SEO 头(时间线是全站唯一一处把省抽选、联邦 EE 抽选与官方政策公告排在一条轴上的页面,
+ * 描述里把这三路与「历史统计、不预测」的口径一并说清)。
+ * 住这里而不是页面门里:门里不留死值常量,页面门只 `export const metadata = TIMELINE_META`
+ * 一行转发(2026-08-29 Frank「框架导出的内容也一律来自桶」,形照 start 的 START_META;
+ * 原先那个 generateMetadata 无参、返回死值,改成常量形)。
+ */
+export const TIMELINE_META = {
+  /**
+   * 浏览器标签与搜索结果标题。
+   */
+  title: 'Canada immigration timeline — PNP & Express Entry draws, policy updates | Offer2PR',
+
+  /**
+   * 搜索结果摘要(英文优先 —— 88% 流量来自 Google;中文一句压在后面)。
+   * 「Historical facts with sources, no predictions」是本页的口径承诺:只排历史事实,
+   * 不预测下一次抽选 —— 删了这半句就等于默许读者拿它当预测看。
+   */
+  description:
+    'One timeline of provincial nominee draws (BC/AB/MB, with provincial scales), federal Express Entry'
+    + ' category draws, and official policy announcements across Canada — with draw cadence stats'
+    + ' (days since last draw, average interval). Historical facts with sources, no predictions.'
+    + ' 加拿大移民时间线:省抽选+联邦 EE 抽选+官方政策公告,含抽选节奏统计。',
+}

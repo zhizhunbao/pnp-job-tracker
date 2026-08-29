@@ -109,6 +109,14 @@ export const RANK_GAP = ' '
 export const URL_RANK_HEAD = '/rankings/'
 
 /**
+ * 裸路径 `/rankings` 的去处(第 25 轮 #120:这条路径原本 404 —— 站内零内链,但直输 URL
+ * 或外发贴里的链接会踩;周榜是这一组榜单的落点,所以 302 到它)。
+ * 由路径头与周榜 slug 拼出,不再抄一遍 `/rankings/weekly-top` —— 那两格已经各有名字,
+ * 再写一份字面量就是同一条地址有两处真相,改榜名时漏一处就把裸路径送回 404。
+ */
+export const URL_WEEKLY_TOP = URL_RANK_HEAD + SLUG_WEEKLY
+
+/**
  * 职位板按公司名搜索的地址头(拼上编码后的公司名 = 这家公司的在招岗)。
  */
 export const URL_JOBS_SEARCH_HEAD = '/?q='

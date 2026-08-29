@@ -21,7 +21,7 @@ import config from '@/payload.config'
 import { SQL, queryRowsOrEmpty } from '@/lib/db'
 import { dbOf } from '@/lib/db/server'
 import { getUserOrNull } from '@/lib/quota/server'
-import { Funnel, toFunnelBoard, toFunnelEventFact, toFunnelPayFact } from '@/components/funnel'
+import { Funnel, ROLE_ADMIN, toFunnelBoard, toFunnelEventFact, toFunnelPayFact } from '@/components/funnel'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
 import { Frame } from '@/components/shell'
@@ -35,7 +35,7 @@ export const dynamic = 'force-dynamic'
  */
 export default async function FunnelPage() {
   const user = await getUserOrNull(await headers())
-  if (user == null || user.role !== 'admin') {
+  if (user == null || user.role !== ROLE_ADMIN) {
     notFound()
   }
   const db = dbOf(await getPayload({ config: await config }))

@@ -18,13 +18,14 @@ import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
 import { Frame } from '@/components/shell'
 import { getDb } from '@/lib/db/server'
+import { SITE_FALLBACK } from '@/lib/jobs'
 import { companyJsonOf, loadCompanyBySlug, loadSimilarEmployers } from '@/lib/jobs/server'
 import { getUser } from '@/lib/quota/server'
 import type { SimilarEmployer } from '@/lib/jobs/server'
 
 export const dynamic = 'force-dynamic'
 
-const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com').replace(/\/$/, '')
+const SITE = (process.env.NEXT_PUBLIC_SITE_URL || SITE_FALLBACK).replace(/\/$/, '')
 
 /**
  * 公司页的 SEO 头:标题带地点、描述带行业与在招数。

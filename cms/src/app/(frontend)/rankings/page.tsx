@@ -9,11 +9,13 @@
  */
 import { redirect } from 'next/navigation'
 
+import { URL_WEEKLY_TOP } from '@/components/rankings'
+
 /**
  * 裸路径的门:只有一次跳转。
  *
  * @returns 无(整条路径重定向到周榜)。
  */
 export default function RankingsIndex() {
-  redirect('/rankings/weekly-top')
+  redirect(URL_WEEKLY_TOP)
 }
