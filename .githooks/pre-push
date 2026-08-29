@@ -26,8 +26,12 @@ echo "[pre-push] eslint $(echo $files | wc -w) 个改动文件…"
 # 2026-08-22 手写棒轮退役:warn 清单全部升 error,存量在 cms/eslint-suppressions.json 基线里
 # (ESLint 核心 bulk suppressions,v9.24+)。新违规直接拦;修掉存量后基线收紧跑 `npm run lint:prune`。
 # --pass-on-unpruned-suppressions:这里只 lint 改动文件,没被 lint 的文件的基线条目不算「没用上」。
-npx eslint --quiet --pass-on-unpruned-suppressions $files
-code=$?
+# 2026-08-29 实撞:换装大批一次推 700+ 文件,逐个拼参撞 Windows 命令行长度上限,
+# eslint 起都没起来就被当成「有 error」拦下 —— 改 xargs 分 50 一块喂,任意规模不炸;
+# xargs 聚合退出码(任一块非零则非零),拦截语义不变。
+code=0
+printf '%s
+' $files | xargs -n 50 npx eslint --quiet --pass-on-unpruned-suppressions || code=$?
 if [ $code -ne 0 ]; then
   echo "[pre-push] eslint 有 error,push 已拦 —— 修完再推(禁 --no-verify)。"
   exit $code
