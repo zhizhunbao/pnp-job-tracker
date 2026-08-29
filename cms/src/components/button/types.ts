@@ -118,6 +118,12 @@ export type ButtonIn = {
   ariaSelected?: boolean
 
   /**
+   * aria-pressed(赞/踩这类二态钮的选中态;2026-08-27 chat 换装批加,裸 button 禁令后
+   * 这一格只能从族里出)。
+   */
+  pressed?: boolean
+
+  /**
    * 键盘事件(页签组的 ← → Home End 导航)。
    */
   onKeyDown?: (e: React.KeyboardEvent) => void

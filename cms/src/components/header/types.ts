@@ -23,6 +23,7 @@ export type TFn = (key: string, vars?: Record<string, string | number>) => strin
  */
 export type ActiveKey = 'rank' | 'stats' | 'account' | 'pathways' | 'news' | 'employers' | 'start' | 'match' | 'jobs'
 
+
 /**
  * 账户区三态。
  */
@@ -117,21 +118,6 @@ export type AcctHookIn = {
  * Header 的 props。
  */
 export type HeaderIn = {
-  /**
-   * 当前语言。
-   */
-  lang: Lang
-
-  /**
-   * 换语言。
-   */
-  setLang: (l: Lang) => void
-
-  /**
-   * 界面语翻译函数。
-   */
-  t: TFn
-
   /**
    * 高亮键(可省 = 首页态)。
    */

@@ -18,6 +18,7 @@ import { useState } from 'react'
 import { IconMenu } from '@/components/icons'
 import { LinkButton } from '@/components/button'
 
+import { useLang } from '@/components/i18n'
 import { BRAND_MARK, PATH_HOME } from './constants'
 import { AccountLite } from './accountlite'
 import { HeaderNav } from './headernav'
@@ -29,12 +30,15 @@ import type { ActiveKey, HeaderIn } from './types'
 import css from './header.module.css'
 
 /**
- * 全站顶栏。
+ * 全站顶栏。语言三件(lang/setLang/t)2026-08-27 起自己在体内接 LangProvider
+ * (useLang)—— 此前由每个页面递进来,服务端页面门根本造不出这三样,拼壳被迫
+ * 包在整页视图件里;吸收之后两种门拼壳写法一致:`<Header active="…" />` 一行。
  *
- * @param props 语言/高亮/宿主件(见 HeaderIn 逐格注释)。
+ * @param props 高亮/宿主件(见 HeaderIn 逐格注释)。
  * @returns 顶栏。
  */
-export function Header({ lang, setLang, t, active, sticky = false, accountArea, loggedIn }: HeaderIn) {
+export function Header({ active, sticky = false, accountArea, loggedIn }: HeaderIn) {
+  const [lang, setLang, t] = useLang()
   let activeIn: ActiveKey | null = null
   if (active != null) {
     activeIn = active

@@ -114,3 +114,25 @@
    */
   padding-bottom: 40px;
 }
+
+/*
+ * 整页外框(2026-08-27 收拢:旧页最外层逐字重复的那个 div,进 shell 桶成 Frame 件)。
+ * 三段列让页脚被推到视口底;灰底与旧页 #f9fafb 同值,走全站变量。
+ */
+.frame {
+  /*
+   * 短页也撑满视口,页脚不上浮。
+   */
+  min-height: 100vh;
+
+  /*
+   * 纵向三段列(顶栏 / 正文 / 页脚)。
+   */
+  display: flex;
+  flex-direction: column;
+
+  /*
+   * 全站页底灰(= #f9fafb)。
+   */
+  background: var(--bg);
+}

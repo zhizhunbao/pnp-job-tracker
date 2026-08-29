@@ -42,6 +42,7 @@ export function Button({
   id,
   ariaControls,
   ariaSelected,
+  pressed,
   onKeyDown,
   btnRef,
   type,
@@ -67,6 +68,7 @@ export function Button({
       aria-expanded={expanded}
       aria-controls={ariaControls}
       aria-selected={ariaSelected}
+      aria-pressed={pressed}
       role={role}
       tabIndex={tabIndex}
       id={id}

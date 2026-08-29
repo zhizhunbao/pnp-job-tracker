@@ -153,7 +153,7 @@ button:not(:disabled):hover {
    3. 响应式:表 ⇄ 卡
 ===================================================== */
 
-/* E8-08 表卡双形态切换:桌面=表格,≤640=卡片(CSS 双渲染零水合差异,jtCards 同手法) */
+/* E8-08 表卡双形态切换:桌面=表格,≤640=卡片(CSS 双渲染零水合差异,职位板卡片流同手法) */
 .tcCards {
   display: none;
 }
@@ -313,12 +313,9 @@ button:not(:disabled):hover {
   }
 
   /* #217(第 27 轮体检判真):命中测试不达标的四处 —— /stats 三个下拉 28px 高、
-     「更多(剩 N 个)」按钮 29px、匹配视图同款。撑到 40 只影响手机,桌面一像素不动。 */
+     「更多(剩 N 个)」按钮 29px、匹配视图同款。撑到 40 只影响手机,桌面一像素不动。
+     职位板那两处 2026-08-28 随组件迁进 components/jobs/jobs.module.css(同一条断点、同一个值)。 */
   .stCtl select {
-    min-height: 40px;
-  }
-
-  .jtMore button {
     min-height: 40px;
   }
 
@@ -379,143 +376,12 @@ button:not(:disabled):hover {
 
 /* ===================================================
    11. 资讯 News(列表 + 详情 + 评论)
-   2026-08-17 从 news/News.tsx 迁出(原 NewsView.tsx)。
-   数据驱动的色(一省一色的图块与渐变)经 --tile / --tbg / --tfg
-   自定义属性从 tsx 传入 —— 值本身是数据,规则留在这里。
+   (整段 2026-08-27 换装批迁 components/news 域的 news.module.css,值逐格相等;
+   段头原有的两条决策记录 —— 2026-08-17 自 news/News.tsx 迁出、一省一色经
+   --tile/--tbg/--tfg 传入 —— 随迁到那个文件的头注释,后者同批改成一省一个修饰类。)
+   仍留在全局层的只有手机触控靶那条 `.nwChips button.tapPad`(见第 6 段):
+   它是**跨页规范**的一部分,靠 .nwChips 当限定前缀,形制同页脚的 .sfLinks a.tapPad。
 ===================================================== */
-.nwShell { background: var(--bg); min-height: 100vh; display: flex; flex-direction: column; font-family: system-ui, sans-serif; color: #1f2937; }
-.nwMain { flex: 1; }
-
-/* 地区标 + AI 重要度徽标(只给 5 分挂红「重要」,琥珀「关注」档 Frank 拍板删) */
-.nwRegion { background: #eef2ff; color: #3730a3; border-radius: 6px; padding: 1px 7px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
-.nwRegion.fed { background: #fee2e2; color: #b91c1c; }
-.nwImp { background: var(--danger); color: #fff; border-radius: 6px; padding: 1px 7px; font-size: 11px; font-weight: 700; white-space: nowrap; }
-
-/* 列表左侧地标图块(缺图退淡色字标;#206:NB/NL/PE 无图退联邦通用图,不拿别省照片冒充) */
-.nwTile { width: 96px; min-width: 96px; height: 64px; border-radius: 8px; overflow: hidden; }
-.nwTile.fallback { background: var(--tbg); color: var(--tfg); display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 700; }
-.nwTileCode { font-size: 20px; line-height: 1.2; }
-.nwTileCode.fed { font-size: 17px; }
-/* 副行一行内截断:联邦全名 96px 宽会折三行撑破定高 */
-.nwTileSub { font-size: 9.5px; font-weight: 500; opacity: .75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 88px; }
-.nwTileImg { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-/* 头条大图定高 300(2026-07-19 Frank「图片不一样大小到现在都没解决」——
-   此前 flex:1 弹性吃高度差,每张 slide 文字行数不同,图就忽大忽小;
-   高度差改由下方文字区吸收,图恒定) */
-.nwHero { height: 300px; position: relative; overflow: hidden; }
-.nwHero.fallback { background: var(--tile); display: flex; align-items: center; justify-content: center; }
-.nwHeroCode { color: rgba(255, 255, 255, .9); font-weight: 800; font-size: 38px; letter-spacing: 2px; text-transform: uppercase; }
-.nwHeroImg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.nwHeroScrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(17, 24, 39, 0) 45%, rgba(17, 24, 39, .55)); }
-.nwHeroTag { position: absolute; left: 16px; bottom: 10px; color: #fff; font-weight: 700; font-size: 14px; letter-spacing: 1.5px; text-shadow: 0 1px 4px rgba(0, 0, 0, .6); text-transform: uppercase; }
-
-/* 头条区:1 大 + 4 小 */
-.nwTop { display: grid; grid-template-columns: 1.6fr 1fr; gap: 14px; margin-bottom: 8px; }
-.nwBig { position: relative; background: #fff; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; text-decoration: none; color: inherit; display: flex; flex-direction: column; }
-.nwBigImg { position: relative; }
-.nwArrow { position: absolute; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; border: none; background: rgba(17, 24, 39, .45); color: #fff; font-size: 15px; cursor: pointer; line-height: 1; z-index: 2; }
-.nwArrow.prev { left: 10px; }
-.nwArrow.next { right: 10px; }
-.nwDots { position: absolute; left: 0; right: 0; bottom: 10px; display: flex; justify-content: center; gap: 6px; z-index: 2; }
-/* #212(第 26 轮体检续):钮改透明热区,视觉点挪进内层 span,手机撑 40 */
-.nwDot { width: 8px; height: 8px; border: none; padding: 0; background: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
-.nwDotIn { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, .45); }
-.nwDotIn.on { background: #fff; }
-/* 176=最长文案实测(徽标行 + 2 行标题 + 2 行摘要 + padding),整卡高度轮播恒定 */
-.nwBigBody { padding: 14px 18px 16px; flex: 1; min-height: 176px; }
-.nwMeta { display: flex; gap: 8px; align-items: baseline; font-size: 11.5px; color: var(--text3); margin-bottom: 6px; flex-wrap: wrap; }
-.nwNum { font-variant-numeric: tabular-nums; }
-.nwBigTitle { font-size: 19px; font-weight: 700; line-height: 1.35; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.nwBigSum { font-size: 13px; color: var(--text2); line-height: 1.7; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.nwAiTag { border: 1px solid #d1d5db; border-radius: 4px; padding: 0 5px; font-size: 10.5px; margin-right: 6px; color: var(--text3); }
-.nwSide { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 6px 16px 10px; }
-.nwSideH { font-size: 12.5px; color: var(--text3); font-weight: 600; margin: 10px 0 4px; letter-spacing: .5px; }
-.nwSideItem { display: block; padding: 10px 0; text-decoration: none; color: inherit; }
-.nwSideItem.sep { border-top: 1px solid var(--hairline); }
-.nwSideTitle { font-size: 13.5px; font-weight: 600; line-height: 1.45; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.nwSideMeta { display: flex; gap: 8px; align-items: baseline; font-size: 11.5px; color: var(--text3); margin-top: 3px; }
-
-/* 按日分组的时间线列表。行定高 128(Frank「卡片的宽度和高度也应该是固定的」):
-   标题 2 行、摘要 1 行截断,脚钉底 */
-.nwChips { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 14px; }
-.nwEmpty { color: var(--text3); font-size: 13.5px; margin-top: 16px; }
-.nwDay { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text3); margin: 16px 0 8px; font-variant-numeric: tabular-nums; }
-.nwDayLine { flex: 1; height: 1px; background: var(--border); }
-.nwRow { display: flex; gap: 14px; padding: 12px 14px; margin-bottom: 10px; text-decoration: none; color: inherit; align-items: flex-start; height: 128px; box-sizing: border-box; overflow: hidden; }
-.nwRowBody { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 4px; height: 100%; }
-.nwRowMeta { display: flex; gap: 8px; align-items: baseline; font-size: 11.5px; color: var(--text3); flex-wrap: wrap; white-space: nowrap; overflow: hidden; }
-.nwRowTitle { font-size: 15px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.nwRowExcerpt { font-size: 12.5px; color: var(--text2); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
-.nwRowFoot { display: flex; gap: 14px; font-size: 11.5px; color: var(--text3); margin-top: auto; }
-.nwRead { color: var(--primary); }
-.nwQc { color: var(--warn); }
-
-/* 评论区(F 件 v2):计数头 + 官方置顶楼 + 楼中楼一层 */
-.nwCmtSec { padding: 16px 18px; margin-top: 16px; }
-.nwCmtTitle { font-size: 14.5px; margin: 0 0 10px; }
-.nwCmtForm { margin-bottom: 12px; }
-.nwTextarea { width: 100%; box-sizing: border-box; border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; font-size: 13px; font-family: inherit; resize: vertical; }
-.nwTextarea.sm { padding: 7px 10px; }
-.nwCmtActions { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
-.nwSend { background: var(--primary); color: #fff; border: none; border-radius: 8px; padding: 6px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
-.nwSend.sm { margin-top: 4px; padding: 4px 14px; font-size: 12.5px; }
-.nwSend:disabled { background: #93c5fd; cursor: default; }
-.nwOk { font-size: 12.5px; color: var(--ok); }
-.nwErr { font-size: 12.5px; color: #b91c1c; }
-.nwLoginLink { display: block; border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; color: var(--primary); font-size: 13px; text-decoration: none; margin-bottom: 12px; }
-.nwThread { border-top: 1px solid var(--hairline); }
-.nwThread.pinned { border-top: none; background: #f8faff; border: 1px solid #e0e7ff; border-radius: 12px; padding: 0 14px; margin-bottom: 6px; }
-.nwCmt { display: flex; gap: 10px; padding: 10px 0; font-size: 13px; }
-.nwCmtAv { width: 30px; height: 30px; border-radius: 50%; background: #6366f1; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
-.nwCmtAv.official { background: var(--primary); }
-.nwCmtMain { min-width: 0; flex: 1; }
-.nwCmtHead { font-size: 11.5px; color: var(--text3); margin-bottom: 2px; }
-.nwCmtName { color: var(--text2); font-weight: 600; }
-.nwCmtName.official { color: #1d4ed8; }
-.nwCmtTag { margin-left: 6px; font-size: 10.5px; padding: 1px 6px; border-radius: 6px; background: #eff6ff; color: #1d4ed8; }
-.nwCmtTag.pinned { margin-left: 4px; background: #fffbeb; color: #92400e; }
-.nwCmtDate { margin-left: 8px; }
-.nwCmtText { white-space: pre-wrap; overflow-wrap: break-word; }
-.nwCmtReply { border: none; background: none; padding: 2px 0 0; font-size: 12px; color: var(--primary); font-weight: 400; cursor: pointer; }
-.nwCmtReply.on { color: #1d4ed8; font-weight: 700; }
-.nwReplyBox { margin: 0 0 10px 40px; }
-.nwReplies { margin: 0 0 4px 40px; border-left: 2px solid var(--hairline); padding-left: 12px; }
-.nwExpand { border: none; background: none; padding: 2px 0 8px; font-size: 12.5px; color: var(--primary); cursor: pointer; }
-
-/* 详情页:外轨 Shell 1320,阅读列 860 居中保行长可读 */
-.nwRead860 { max-width: 860px; margin: 0 auto; }
-.nwBack { margin-bottom: 12px; }
-.nwArticle { padding: 22px 26px; }
-.nwDetMeta { font-size: 11.5px; color: var(--text3); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
-.nwDetTitle { font-size: 21px; margin: 8px 0 4px; line-height: 1.4; }
-.nwDetSrc { font-size: 11.5px; color: var(--text3); margin-bottom: 12px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
-.nwLink { color: var(--primary); text-decoration: none; }
-.nwPill { border: 1px solid var(--border); background: #fff; color: var(--primary); border-radius: 999px; padding: 2px 10px; font-size: 11.5px; cursor: pointer; white-space: nowrap; }
-.nwPill.on { border-color: var(--primary); background: #eef2ff; }
-.nwPill:disabled { cursor: wait; }
-.nwQcNote { font-size: 12px; color: var(--warn); background: #fffbeb; border-radius: 8px; padding: 6px 10px; margin-bottom: 12px; }
-.nwSum { background: #eff6ff; border: 1px solid #dbeafe; border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; }
-.nwSumHead { font-size: 11px; color: #3b82f6; font-weight: 600; margin-bottom: 4px; }
-.nwSumGen { color: var(--text3); font-weight: 400; }
-.nwSumBody { font-size: 13.5px; color: #1e40af; line-height: 1.7; }
-.nwAiNote { font-size: 11.5px; color: var(--text3); margin-bottom: 10px; }
-.nwBody { font-size: 14px; line-height: 1.75; color: #374151; margin-top: 4px; }
-.nwPara { margin: 0 0 12px; }
-.nwPara > p { margin: 0; }
-/* 对照译文:段对段贴在原文下,左侧蓝条区分 */
-.nwTrans { margin: 4px 0 0; padding: 4px 0 4px 12px; border-left: 3px solid #dbeafe; color: #1e40af; font-size: 13.5px; }
-.nwTrans.tail { margin: 4px 0 12px; }
-
-/* v4 头条网格窄屏折单列;#212 手机触控靶:轮播箭头与圆点热区抬到 40 */
-@media (max-width: 760px) {
-  .nwTop { grid-template-columns: 1fr; }
-}
-@media (max-width: 640px) {
-  .nwDots { gap: 0; }
-  .nwDot { width: 40px; height: 40px; }
-  .nwArrow { width: 40px; height: 40px; }
-}
 
 /* ===================================================
    12. 事实原语:Row(ui/Row)+ Grid(ui/Grid)+ 打码锁 Lock(jobs/Lock)
@@ -554,275 +420,33 @@ button:not(:disabled):hover {
 .lkFoot { margin-top: 6px; font-size: 11.5px; color: #9ca3af; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 
 /* ===================================================
-   13. 职位主表单元格 Table
-   2026-08-17 从 jobs/Table.tsx(cellOf)迁出。
-   注意:这里只收「格子内部的节点」样式;格子自身的色/字重是**数据驱动**的
-   (一列一规则,如薪资有值才绿),仍由 cellOf 的 extra 对象逐格返回 —— 那不是
-   静态样式,是判定结果,搬进 CSS 等于把判定拆成几十个类。
+   13. 职位板与职位详情的**留守类**
+   2026-08-28 换装批:第 13/14/15 三段(职位主表单元格 / 职位板 / 职位描述)
+   随组件迁进 components/jobs/jobs.module.css 与 components/advisor/advisor.module.css,
+   这里只留**跨域还在用**的三条 —— 它们已经不是 jobs 的私有样式了。
 ===================================================== */
 
-/* Pro 列锁标:打码占位数 + 锁(#152「这儿有个数」比一把锁更能让人判断值不值) */
-.jtLock { border: none; background: none; padding: 0; cursor: pointer; color: #b45309; font: inherit; display: inline-flex; align-items: center; gap: 4px; }
-.jtLockMask { filter: blur(4px); user-select: none; color: #4b5563; }
-
-/* 匹配档 chip 与紧缺通道徽章:同一形态两套色 */
-.jtMatch, .jtStream { font-size: 12px; padding: 2px 8px; border-radius: 6px; }
-.jtMatch { font-weight: 600; white-space: nowrap; }
-.jtMatch.high { background: #dcfce7; color: #166534; }
-.jtMatch.mid { background: #dbeafe; color: #1e40af; }
-.jtMatch.low { background: #f3f4f6; color: #6b7280; }
-.jtMatch.na { background: #fafafa; color: #c4c4c8; }
-/* 强档=省点名招,全列唯一加底色的一档 */
-.jtStream { background: #fef3c7; color: #b45309; font-weight: 500; display: inline-block; }
-
-.jtNeedProfile { font-size: 12px; color: #2563eb; text-decoration: none; white-space: nowrap; }
-.jtDash { color: #d1d5db; }
-
-/* ===================================================
-   14. 职位板 Jobs(页壳 / 筛选行 / 主表 / 卡片流)
-   2026-08-17 从 jobs/Jobs.tsx 迁出,含原先写在组件里的那段
-   <style> 内联表(.jcellAct/.colResize/断点显隐/量宽用的 .jtMeasure)——
-   同一批 .jt* 规则散在两个地方比留在组件里更糟,一并收进来。
-   **仍留在组件里的是真·动态值**:列宽(useColWidths 量出来的像素)、
-   冻结列的 sticky left 与阴影、cellOf 返回的逐格判定色。
-===================================================== */
-
-.jbPage { background: #fff; color: #1f2937; min-height: 100vh; font-family: system-ui, sans-serif; display: flex; flex-direction: column; }
-.jbMain { max-width: 1320px; margin: 0 auto; padding: 1rem 1.25rem 1.5rem; width: 100%; box-sizing: border-box; flex: 1 0 auto; }
-.jbFilters { display: flex; flex-direction: column; gap: 8px; margin: 1rem 0; }
-/* 横幅副标里的证言(N 岗命中清单 / N 家雇主有外劳记录)。
-   ⚠️ Jobs.tsx 那条注释说它「窄屏整条隐藏,与 .pbStat 同一条媒体查询」——
-   全站 grep 不到任何 .pbProof 规则,那条媒体查询从来没写过,375 上它照样显示。
-   这里只还原它原本内联的左边距,不顺手改行为(改了就不是纯迁移了)。 */
-.pbProof { margin-left: 10px; }
-.jtAcct { display: inline-flex; align-items: center; gap: 10px; }
-/* 昵称编辑框的窄化壳(2026-08-24 换 field 域的 Input 后,宽度归调用方) */
+/* 昵称编辑框的窄化壳 —— 消费者是 components/account(NICK_BOX_CLS),宽度归调用方 */
 .acctNickBox { display: inline-block; width: 160px; }
 
-/* ── 筛选行 ───────────────────────────────────────── */
-/* .jtCtl 原先只在手机断点里出现(撑触控靶),桌面态的 flex 规则走 filtRow 对象 —— 合成一处 */
-.jtCtl { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-.jtFiltLabel { font-size: 12px; color: #9ca3af; min-width: 28px; white-space: nowrap; }
-.jtSearch { flex: 0 1 260px; min-width: 160px; }
-.jtBtn38 { height: 38px; color: #374151; }
-.jtBtn38.row { display: inline-flex; align-items: center; gap: 5px; }
-/* 激活态一律 .on(不再逐属性写三元) */
-.jtBtn38.on { background: #eff6ff; border-color: #2563eb; color: #1d4ed8; }
-.jtBtn38.on.bold { font-weight: 600; }
-.jtFoldN { background: #2563eb; color: #fff; border-radius: 999px; font-size: 10.5px; padding: 0 6px; line-height: 15px; }
-.jtFoldCaret { font-size: 10px; color: #9ca3af; }
-.jtUpdated { color: #9ca3af; font-size: 12px; white-space: nowrap; margin-left: auto; }
-.jtFold { border: 1px dashed #d1d5db; border-radius: 8px; padding: 10px 12px; background: #fafafa; display: flex; flex-direction: column; gap: 8px; }
-/* 勾选型筛选:外形吃 ui 的 ctrl 控件规格,选中浅靛底 */
-.jtCheck { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; background: #fff; white-space: nowrap; }
-.jtCheck.on { background: #eef2ff; }
+/* 逐句中文对照(蓝条 + 深蓝字):职位 JD 与**公司简介**两处同规范,
+   companies 域按 JD_ZH_CLS 直接挂它;jobs 那半已在自己的 module.css 里另有一份同值类 */
+.jdZh { margin: 2px 0 4px; padding: 1px 0 1px 10px; border-left: 3px solid #dbeafe; color: #1e40af; font-weight: 400; }
 
-/* 字段选择器面板 */
-.jtColWrap { position: relative; display: flex; align-items: center; gap: 10px; }
-/* 联动下拉:镜像文本在流内定宽(宽度贴当前选中值),select 绝对铺满不参与布局。
-   ⚠️ 镜像与 select 自身仍内联 {...ctrl}:它们要盖掉 ctrl 的 border 与 padding
-   (透明边 + paddingRight 38),而 ctrl 是 ui/Button.tsx 的样式对象——内联压得过类,
-   把这两条搬进类反而会被 ctrl 的内联值盖回去。等 ctrl 一起迁成类时再收。 */
-/* (.jtSel 2026-08-24 随量宽下拉收拢进 components/field 的 .box) */
-.jtColPanel { position: absolute; top: 110%; right: 0; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 10px 30px rgba(0, 0, 0, .12); padding: 8px; z-index: 20; min-width: 210px; }
-.jtColHead { display: flex; gap: 6px; padding: 2px 4px 6px; border-bottom: 1px solid #f3f4f6; margin-bottom: 4px; }
-.jtColBtn { flex: 1; white-space: nowrap; padding: 4px 8px; font-size: 12.5px; border: 1px solid #d1d5db; border-radius: 5px; background: #f9fafb; color: #374151; cursor: pointer; }
-.jtColBtn.main { font-weight: 600; color: #2563eb; border-color: #bfdbfe; }
-.jtColOpt { display: flex; align-items: center; gap: 8px; padding: 4px 6px; font-size: 13px; color: #1f2937; cursor: pointer; }
-.jtColOpt.fixed { color: #9ca3af; cursor: default; }
-
-/* ── 已选行 ───────────────────────────────────────── */
-.jtPicked { height: 30px; padding: 0 10px; border: 1px solid #e5e7eb; border-radius: 6px; background: #fff; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-.jtPicked.danger { color: #b91c1c; }
-.jtPicked.save { background: #eef2ff; color: #3730a3; display: inline-flex; align-items: center; gap: 6px; }
-.jtPickedAct { margin-left: auto; display: inline-flex; gap: 8px; }
-.jtNocPill { display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 10px; border-radius: 999px; background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
-.jtNocX { border: none; background: none; color: #60a5fa; cursor: pointer; font-size: 14px; line-height: 1; padding: 0; }
-
-/* ── 匹配视图入口条与状态条 ───────────────────────── */
-.jtMvEntry { width: 100%; align-items: center; justify-content: center; gap: 6px; background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; border-radius: 9px; padding: 9px 0; font-size: 13.5px; font-weight: 600; margin-bottom: 8px; cursor: pointer; }
-.jtMvBar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: #eff6ff; border: 1px solid #dbeafe; border-radius: 8px; padding: 7px 12px; margin-bottom: 8px; font-size: 12.5px; }
-.jtMvText { color: #1e40af; flex: 1; min-width: 200px; }
-.jtMvExit { border: none; background: none; padding: 0; color: #6b7280; cursor: pointer; font-size: 12.5px; }
-
-/* ── 换血中(第 0 页在拉)──────────────────────────── */
-.jtLoading { font-size: 12.5px; color: #2563eb; padding: 4px 2px; display: flex; align-items: center; gap: 6px; }
-.jtSpin { width: 10px; height: 10px; border: 2px solid #bfdbfe; border-top-color: #2563eb; border-radius: 50%; display: inline-block; animation: jtspin .7s linear infinite; }
-@keyframes jtspin { to { transform: rotate(360deg); } }
-/* 整表换血期旧行半透明,不让视觉像「跳了两次」(#83) */
-.jtTableWrap.dim, .jtCards.dim { opacity: .45; pointer-events: none; }
-.jtTableWrap.dim { transition: opacity .2s; }
-
-/* ── 主表 ─────────────────────────────────────────── */
-.jtTableWrap { border: 1px solid #e5e7eb; border-radius: 8px; overflow-x: auto; }
-.jtTable { min-width: 100%; border-collapse: collapse; font-size: 13.5px; table-layout: auto; }
-.jtTable.fixed { table-layout: fixed; }
-.jtHeadRow { text-align: left; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
-.jtTh { padding: 8px 6px; color: #374151; font-weight: 600; white-space: nowrap; user-select: none; position: relative; }
-.jtTh.sortable { cursor: pointer; overflow: hidden; }
-.jtTh.on { color: #2563eb; }
-/* 操作列固定是最后一列(COLUMNS 里 always 且末位),:not(:last-child) 恰好等于原来的 isLast 判断 */
-.jtTh:not(:last-child) { border-right: 1px solid #e5e7eb; }
-.jtSortHint { color: #d1d5db; font-size: 11px; }
-.jtSortHint.on { color: #2563eb; }
-.colResize { position: absolute; top: 0; right: 0; width: 13px; height: 100%; cursor: col-resize; z-index: 2; }
-.colResize:hover { background: #93c5fd; }
-.colResize:active { background: #3b82f6; }
-
-.jtTd { padding: 7px 6px; vertical-align: top; }
-.jtTd:not(:last-child) { border-right: 1px solid #f3f4f6; }
-/* 冻结列内联 border-right:none 盖掉上面这条(inline 压得过类),sticky 下的竖线走 inset 阴影 */
-/* 裁剪与断词只给**数据格**(.jcell):固定布局下长英文值(NS Critical Vacancies)会溢出压到隔壁列。
-   操作列不挂 —— 它装的是按钮,原代码就没给它这两条,给了会把钮裁掉。
-   cursor 同理分三态:数据格 default、可点数据格 pointer、操作列不设(auto)。 */
-.jtTd.jcell { overflow: hidden; overflow-wrap: break-word; cursor: default; }
-.jtTd.jcell.act { cursor: pointer; }
-.jcellAct:hover { background: #eff6ff !important; }
-.jrow { border-bottom: 1px solid #f3f4f6; background: #fff; }
-.jrow.alt { background: #fcfcfd; }
-/* 换血骨架行:格距仍是老的 12(它不参与列宽计算,不跟 .jtTd 走) */
-.jtSkelTd { padding: 7px 12px; vertical-align: top; border-right: 1px solid #f3f4f6; }
-.jtSkelBar { display: block; height: 12px; border-radius: 4px; background: #f1f3f5; }
-.jtEmpty { padding: 24px; text-align: center; color: #9ca3af; }
-.jtEmptyCards { padding: 24px; text-align: center; color: #9ca3af; font-size: 13px; }
-.jtEmptyLink { color: #2563eb; text-decoration: none; }
-
-/* 行内操作钮(#E8-12:3x8/12 改 2x7/11.5,图标撤,每行都有一颗所以轻一档) */
-.jtActCell { display: inline-flex; gap: 6px; align-items: center; }
-.jtActBtn { white-space: nowrap; padding: 2px 7px; font-size: 11.5px; border: 1px solid #d1d5db; border-radius: 5px; background: #fff; color: #374151; cursor: pointer; }
-.jtActBtn.on { color: #b45309; border-color: #fde68a; background: #fffbeb; }
-
-/* ── 手机卡片流 ───────────────────────────────────── */
-.jtCards { flex-direction: column; gap: 8px; }
-/* 胶囊统一规格(08-10「所有胶囊的风格可以改成一样的吗」):几何对齐 TV_PILL,
-   语义色是数据(一个字段一套色),经 --cbg/--cfg/--cbd 传入 */
-.jtChip { font-size: 12px; padding: 2px 12px; border-radius: 999px; white-space: nowrap; background: var(--cbg); color: var(--cfg); border: 1px solid var(--cbd); cursor: default; }
-.jtChip.act { cursor: pointer; }
-
-/* 胶囊的语义色(2026-08-18 从 Jobs.tsx 迁来):一种语义一条,底/字/框三个值住一处。
-   先前是调用点传裸 hex + 一张 bg→border 查表把第三个值补出来 —— 改一种颜色要动三个地方。 */
-.jtChip.tone-gray    { --cbg: #f3f4f6; --cfg: #6b7280; --cbd: #e5e7eb; }
-.jtChip.tone-amber   { --cbg: #fef3c7; --cfg: #92400e; --cbd: #fde68a; }
-.jtChip.tone-red     { --cbg: #fee2e2; --cfg: #b91c1c; --cbd: #fecaca; }
-.jtChip.tone-blue    { --cbg: #dbeafe; --cfg: #1e40af; --cbd: #bfdbfe; }
-.jtChip.tone-orange  { --cbg: #ffedd5; --cfg: #9a3412; --cbd: #fed7aa; }
-.jtChip.tone-purple  { --cbg: #f3e8ff; --cfg: #7c3aed; --cbd: #e9d5ff; }
-.jtChip.tone-teal    { --cbg: #ccfbf1; --cfg: #0f766e; --cbd: #99f6e4; }
-.jtChip.tone-indigo  { --cbg: #eff6ff; --cfg: #1d4ed8; --cbd: #bfdbfe; }
-.jtChip.tone-sky     { --cbg: #e0f2fe; --cfg: #075985; --cbd: #e0f2fe; }
-.jtCardLink { color: #2563eb; text-decoration: none; }
-.jtCardSep { color: #9ca3af; }
-.jtStar { border: none; background: none; padding: 0; cursor: pointer; font-size: 16px; line-height: 1; color: #c4c9d4; }
-.jtStar.on { color: #b45309; }
-.jtMore { text-align: center; padding: 12px; font-size: 12.5px; color: #9ca3af; }
-.jtMoreBtn.busy { opacity: .6; }
-
-/* ── 断点显隐(CSS 双渲染,零水合差异)──────────────── */
-.jtCards { display: none; }
-.jtOnlyNarrow { display: none; }
+/* 省提名抽选行的窄屏重排(#268,375 弹框「最近抽选」卡流名截断):行改两层 ——
+   流名整行(不截断,自然折行),日期/分数/邀请数落次行灰字。grid-area 重排不依赖 DOM 顺序
+   (桌面顺序仍是 date/stream/score/inv,靠 display:contents 吃外层网格,两处互不干扰)。
+   消费者是 components/pnp;它当初写在职位板那段里只是因为断点相同。 */
 .pnpDrawRow { display: contents; }
-@media (max-width: 1350px) { .jtTagline { display: none; } }
+
 @media (max-width: 640px) {
-  /* #212(第 26 轮体检续):筛选行控件 38px 手机点不稳,统一 40(桌面维持 38);
-     卡上星标与「显示更多」同理 —— 热区撑到 40,字号图标不动 */
-  .jtCtl select, .jtCtl button, .jtCtl input { min-height: 40px; }
-  .jtStar { min-width: 40px; min-height: 40px; display: inline-flex; align-items: center; justify-content: center; margin: -8px -8px -8px 0; }
-  /* 星标热区靠负 margin 抵消,视觉不变;其余小靶一律走全局 .tapPad(伪元素扩热区) */
-  /* 搜索框手机端整行独占(顶栏搜索带已退役,搜索归筛选区首格) */
-  .jtSearch { flex: 1 0 100% !important; height: 40px; }
-  .jtHideNarrow { display: none !important; }
-  /* 匹配切换手机端走窄屏入口条(jtOnlyNarrow),筛选行那颗藏起来,两处不同时出现 */
-  .jtWideOnly { display: none !important; }
-  .jtTableWrap { display: none !important; }
-  .jtCards { display: flex; }
-  .jtOnlyNarrow { display: flex; }
-  /* #268(375 弹框「最近抽选」卡流名截断):行改两层——流名整行(不截断,自然折行),
-     日期/分数/邀请数落次行灰字。grid-area 重排,不依赖 DOM 顺序(桌面顺序仍是 date/stream/score/inv,
-     靠 display:contents 吃外层网格,两处互不干扰) */
   .pnpDrawRow { display: grid; grid-column: 1/-1; grid-template-columns: auto auto 1fr; grid-template-areas: "stream stream stream" "date score inv"; column-gap: 8px; row-gap: 2px; padding: 6px 10px; }
   .pnpDrawRow .pdStream { grid-area: stream; white-space: normal !important; overflow: visible !important; text-overflow: clip !important; overflow-wrap: break-word; padding-left: 0 !important; }
   .pnpDrawRow .pdDate { grid-area: date; padding-left: 0 !important; text-align: left !important; }
   .pnpDrawRow .pdScore { grid-area: score; text-align: left !important; }
   .pnpDrawRow .pdInv { grid-area: inv; padding-right: 0 !important; text-align: left !important; }
 }
-/* 量自然宽用(见 measureNatural):整表临时不折行、按内容撑开,量完立刻摘掉 —— 只存在一帧,不进画面 */
-.jtMeasure td, .jtMeasure th { white-space: nowrap !important; overflow: visible !important; }
-/* 量宽时把列宽拖拽条藏掉:它是 position:absolute;right:0,量内容的 Range 会把它算进去,
-   于是每个表头都被量成「整列宽」(实测 vs 中位表头量出 132px,真实文字只要 56px) */
-.jtMeasure .colResize { display: none !important; }
 
-/* ===================================================
-   15. 职位描述 Jd(原文轨 / 五节整理版 / AI 速读 / 投递栏)
-   2026-08-17 从 jobs/Jd.tsx 迁出。
-   两处顺手用 CSS 原生能力替掉 JS 判断:节头的「首行不留上边距」
-   原来是 marginTop: i ? 12 : 0,现在走 :first-child ——
-   renderLine 对每一行(含空行)都产出一个 div,所以 i===0 恒等于 :first-child。
-   ⚠️ renderAI 里那个同款判断**没有**这么改:它对空段返回 null(不产出节点),
-   首个 null 会让 :first-child 落到下一个元素上,与原逻辑不等价。
-===================================================== */
-
-/* ── NOC 官方职责/要求 ────────────────────────────── */
-.jdNocHead { margin-top: 8px; font-size: 11.5px; color: #9ca3af; }
-.jdNocList { margin: 3px 0 0; padding-left: 18px; font-size: 12.5px; color: #4b5563; line-height: 1.55; }
-
-/* ── 原文保真轨 ───────────────────────────────────── */
-.jdRaw { margin: 4px 0 0; font-size: 12.5px; color: #4b5563; line-height: 1.6; }
-.jdGap { height: 6px; }                                    /* 空行=段距 */
-.jdBullet { padding-left: 22px; text-indent: -8px; }       /* 数据层给的「• 」列表符,悬挂缩进 */
-.jdH1 { margin-top: 12px; font-size: 14px; font-weight: 700; color: #111827; }
-.jdH2 { margin-top: 8px; font-weight: 700; color: #374151; }
-.jdH1:first-child, .jdH2:first-child { margin-top: 0; }
-.jdIndent { padding-left: 14px; }                          /* 正文统一缩进(公司弹框 .flatBody 同值,#188 对齐的就是这里) */
-.jdIndent.wrap { overflow-wrap: anywhere; }                /* 邮箱/长 URL */
-.jdIndent.none { color: #9ca3af; }                         /* 原帖未提及 */
-.jdLabel { color: #374151; }                               /* 行内「Label:」 */
-
-/* ── 五节整理版 ───────────────────────────────────── */
-.jdFmt { font-size: 13px; line-height: 1.75; color: #374151; }
-.jdSec { margin-bottom: 8px; }
-.jdSecHead { font-weight: 700; color: #111827; }
-.jdBullets { margin: 0; padding-left: 30px; }
-.jdLink { color: #2563eb; text-decoration: none; }
-/* 逐句中文对照(与资讯页对照同规范:蓝条 + 深蓝字)。调用方要改字号/上距就再挂 style —— 行内压得过类 */
-.jdZh { margin: 2px 0 4px; padding: 1px 0 1px 10px; border-left: 3px solid #dbeafe; color: #1e40af; font-weight: 400; }
-
-/* ── AI 速读段(壳归消费方,这里只管段内)──────────── */
-.jdAdvHead { font-size: 13.5px; font-weight: 700; color: #111827; margin-bottom: 6px; }
-.jdAdvLeft { color: #9ca3af; font-weight: 400; font-size: 11.5px; margin-left: 8px; }
-.jdAdvNote { margin: 0; font-size: 13px; color: #9ca3af; }
-.jdAdvBody { font-size: 13.5px; line-height: 1.7; color: #374151; }
-.jdCaret { color: #9ca3af; }                               /* 流式光标 ▋ */
-.jdRetry { border: none; background: none; padding: 0; margin-left: 8px; color: #2563eb; cursor: pointer; font-size: 13px; font-weight: 600; }
-/* renderAI 的【小节】头:上距仍内联(见本段抬头的 ⚠️) */
-.jdAiH { display: block; margin-bottom: 2px; color: #111827; }
-.jdAiP { white-space: pre-wrap; }
-
-/* ── 主面板 ───────────────────────────────────────── */
-.jdClosed { background: #fef3c7; border: 1px solid #fde68a; border-radius: 8px; padding: 6px 10px; margin: 2px 0 10px; font-size: 12.5px; color: #92400e; }
-.jdActs { display: flex; gap: 8px; margin: 2px 0 12px; flex-wrap: wrap; }
-.jdPill.busy { opacity: .6; }                              /* 翻译在途 */
-.jdPill.asLink { text-decoration: none; display: inline-block; }   /* 2026-08-18 由 .link 改名:裸 .link 让给真正的站内蓝链 */
-.jdMuted { color: #9ca3af; }
-.jdMuted.m4 { margin: 4px 0; }
-.jdMuted.m4b { margin: 4px 0 10px; }
-.jdEmptyBtn { display: inline-block; background: #2563eb; color: #fff; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; text-decoration: none; }
-.jdAiNote { font-size: 11.5px; color: #9ca3af; margin-bottom: 6px; }
-.jdAiBtn { border: none; background: none; padding: 0; margin-left: 8px; color: #2563eb; cursor: pointer; font-size: 11.5px; font-weight: 600; }
-.jdQuotaLogin { margin-left: 8px; }
-.jdSrc { margin-top: 12px; padding-top: 10px; border-top: 1px solid #f3f4f6; font-size: 11.5px; color: #9ca3af; overflow-wrap: anywhere; }
-.jdSrcLink { color: #6b7280; text-decoration: none; }
-
-/* ── 投递栏(E9-04:正文之后常驻)────────────────────
-   两态:页面内 sticky 吸底 / 弹框里 fixed 贴屏底(fixed 抽离文档流,
-   由 .jdBarPad 补回 63px 高度,免得来源行被压住)。 */
-.jdBarPad { height: 63px; }
-.jdBar { position: sticky; bottom: 0; background: #fff; border-top: 1px solid #e5e7eb; margin-top: auto; padding: 10px 0 14px; display: flex; gap: 8px; justify-content: flex-end; z-index: 5; }
-.jdBar.fixed { position: fixed; left: 0; right: 0; margin-top: 0; padding: 10px 16px calc(14px + env(safe-area-inset-bottom)); z-index: 40; }
-/* 色语义:靛=AI 功能,蓝=普通行动,灰=已下架岗降级出口(不直接禁掉,closed 有一部分是推断出来的) */
-.jdBtnMatch { background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; border-radius: 8px; padding: 9px 14px; font-size: 13.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-.jdBtnClosed { background: #f3f4f6; color: #6b7280; border: 1px solid #d1d5db; border-radius: 8px; padding: 9px 18px; font-size: 13.5px; font-weight: 600; text-decoration: none; }
-.jdBtnApply { background: #2563eb; color: #fff; border: none; border-radius: 8px; padding: 9px 18px; font-size: 13.5px; font-weight: 600; cursor: pointer; }
-.jdNoJd { font-size: 13.5px; color: #6b7280; padding-top: 8px; }
 
 /* ===================================================
    16. 省提名 / EE 弹框 Pnp

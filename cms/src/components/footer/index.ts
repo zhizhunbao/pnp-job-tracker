@@ -12,4 +12,3 @@
  * @time 2026-08-24 02:30:00
  */
 export { Footer } from './footer'
-export type { FooterIn } from './types'

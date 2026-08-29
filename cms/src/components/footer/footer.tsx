@@ -8,18 +8,20 @@
  * @author Frank
  * @time 2026-08-24 02:30:00
  */
+import { useLang } from '@/components/i18n'
 import { COPYRIGHT, LEGAL_LINKS, SF_LINKS_CLS, TAP_PAD_CLS } from './constants'
 import { LinkButton } from '@/components/button'
-import type { FooterIn } from './types'
 import css from './footer.module.css'
 
 /**
  * 全站共享页脚(2026-07-16 用户拍板「所有页面都应该用同一个 header 和 footer」)。
+ * 取词函数 2026-08-27 起自己在体内接 LangProvider(与 Header 同批吸收):
+ * 服务端页面门造不出 t,吸收后两种门都是 `<Footer />` 一行。
  *
- * @param props 界面语翻译函数(签名里的 { t } 是解构:props.t 拆进局部名)。
  * @returns 页脚。
  */
-export function Footer({ t }: FooterIn) {
+export function Footer() {
+  const [, , t] = useLang()
   const links = []
   for (const l of LEGAL_LINKS) {
     links.push(<LinkButton key={l.href} href={l.href} className={TAP_PAD_CLS}>{t(l.key)}</LinkButton>)

@@ -49,3 +49,13 @@ export type ShellClsIn = {
    */
   bottom: ShellBottom | null
 }
+
+/**
+ * Frame(整页外框)的 props。
+ */
+export type FrameIn = {
+  /**
+   * 整页内容(顶栏 / 正文 / 页脚)。
+   */
+  children: React.ReactNode
+}
