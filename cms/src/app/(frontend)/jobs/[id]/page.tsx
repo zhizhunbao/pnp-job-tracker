@@ -14,7 +14,7 @@
  * 已建档用户点投递被当无档案弹空白向导;user 本来就在手上,传真实档案零额外查询。
  *
  * 2026-08-28 换装批收成标准形:SEO 头的芯在 lib/jobs 的 jobsIdMetaRoute(08-29 改 A 形一行转发),JSON-LD 拼装下沉
- * 进 lib/jobs 的 jobPostingJsonOf,脚本标签成件 JobJsonLd(门里不许有函数体、不许裸标签)。
+ * 进 lib/jobs 的 jobPostingJsonOf,脚本壳走通用件 JsonLd(08-29 收拢;门里不许有函数体、不许裸标签)。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -27,10 +27,11 @@ import config from '@/payload.config'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
 import {
-  EMPTY_MATCH_DIMS, EMPTY_RELATED, Job, JobJsonLd, STATUS_CLOSED, toCatLabelList, toJobPlan, toNocDescList,
+  EMPTY_MATCH_DIMS, EMPTY_RELATED, Job, STATUS_CLOSED, toCatLabelList, toJobPlan, toNocDescList,
 } from '@/components/jobs'
 import { Frame } from '@/components/shell'
 import { SQL } from '@/lib/db'
+import { JsonLd } from '@/components/jsonld'
 import { dbOf } from '@/lib/db/server'
 import { hasProfile, normalizeProfile, type ProfileJson } from '@/lib/jobs'
 import { jobPostingJsonOf, jobsIdMetaRoute, loadJobById, loadRelatedJobs } from '@/lib/jobs/server'
@@ -123,7 +124,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
 
   return (
     <>
-      <JobJsonLd json={jobPostingJsonOf({ job, jdText })} />
+      <JsonLd json={jobPostingJsonOf({ job, jdText })} />
       <Frame>
         <Header loggedIn={user != null} />
         <Job job={job} plan={plan}

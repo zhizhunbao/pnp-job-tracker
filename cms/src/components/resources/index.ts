@@ -12,4 +12,4 @@
  */
 export { RES_META_DESC, RES_META_TITLE } from './constants'
 export { Resources } from './resources'
-export { ResJsonLd } from './resjsonld'
+export { resItemListJsonOf } from './functions'

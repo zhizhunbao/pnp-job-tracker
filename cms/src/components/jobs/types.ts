@@ -6056,12 +6056,3 @@ export type NocCategoryDoc = {
   fineKo?: string | null
 }
 
-/**
- * JobJsonLd 的 props。
- */
-export type JobJsonLdIn = {
-  /**
-   * 已序列化并转义过 `<` 的 JSON 串。
-   */
-  json: string
-}

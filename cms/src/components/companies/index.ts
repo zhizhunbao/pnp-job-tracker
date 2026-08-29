@@ -18,7 +18,6 @@
  * @author Frank
  * @time 2026-08-27 02:10:00
  */
-export { CompaniesJsonLd } from './companiesjsonld'
 export { Company } from './company'
 export { CompanyBody } from './companybody'
 export { CompanyPanel } from './companypanel'

@@ -835,11 +835,3 @@ export const META_PROV_RE = /^[A-Z]{2}$/
  */
 export const META_SCOPE_SEP = ' '
 
-/**
- * 货架页 `/employers` 下架后的去处(2026-08-08 Frank 拍板整页下架「这个页面就不要了」:
- * 担保雇主的唯一承载 = 把脉页三分表橱窗)。路由本身保留,只做 308 —— 旧收录与外链不断链。
- * ⚠️ 这条路径打错是**静默 404**(下架页正好没人盯),所以必须在这里有名字有注释。
- * 说的不是「雇主板的入口」:`/employers/designated` 与 `/employers/hiring` 两个入口照旧活着,
- * 下架的只有它们上面那层货架。
- */
-export const URL_SHELF_GONE = '/start'

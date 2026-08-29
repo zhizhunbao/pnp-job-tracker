@@ -3,7 +3,7 @@
  * 纯静态 curated —— 不取参、不连库,门里只有拼装。
  * 2026-08-28 换装批:壳件拼装收进门里(Frank「组装只许在 (frontend) 页面门里」,
  * 样张 companies)—— 整页外框走 shell 桶的通用件 Frame,顶栏与页脚在这里拼,
- * Resources 只出 Shell 轨往下的视图;ItemList 结构化数据成件 ResJsonLd
+ * Resources 只出 Shell 轨往下的视图;ItemList 串由本域 resItemListJsonOf 拼、壳走通用件 JsonLd(08-29 收拢)
  * (门里不许有裸标签,值的单一来源仍是 lib/official 的 RES)。
  *
  * @author Frank
@@ -12,7 +12,8 @@
 import type { Metadata } from 'next'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
-import { RES_META_DESC, RES_META_TITLE, ResJsonLd, Resources } from '@/components/resources'
+import { RES_META_DESC, RES_META_TITLE, Resources, resItemListJsonOf } from '@/components/resources'
+import { JsonLd } from '@/components/jsonld'
 import { Frame } from '@/components/shell'
 
 /**
@@ -28,7 +29,7 @@ export const metadata: Metadata = { title: RES_META_TITLE, description: RES_META
 export default function ResourcesPage() {
   return (
     <>
-      <ResJsonLd />
+      <JsonLd json={resItemListJsonOf()} />
       <Frame>
         <Header />
         <Resources />

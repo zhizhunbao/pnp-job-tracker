@@ -29,7 +29,6 @@ export {
 export { Job } from './job'
 export { Jobs } from './jobs'
 export { JobsHeader } from './jobsheader'
-export { JobJsonLd } from './jobjsonld'
 export {
   colsFromCookie, parseColWidthSeed, parseJobFilters, resizeColWidths, toCatLabelList,
   toJobPlan, toNocDescList, toSearchParams,

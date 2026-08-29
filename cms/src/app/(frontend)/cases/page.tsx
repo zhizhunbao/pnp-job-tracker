@@ -10,7 +10,8 @@
  */
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
-import { CASES_META, Cases, CasesJsonLd } from '@/components/cases'
+import { CASES_META, Cases, casesJsonLd } from '@/components/cases'
+import { JsonLd } from '@/components/jsonld'
 import { Frame } from '@/components/shell'
 
 /**
@@ -20,15 +21,15 @@ import { Frame } from '@/components/shell'
 export const metadata = CASES_META
 
 /**
- * 索引页的门:JSON-LD + 外框里拼壳与正文。JSON-LD 是 cases 桶的域内小件
- * CasesJsonLd(2026-08-29 散常量下沉+提件,页面门只许拼大写组件);外框 2026-08-29
+ * 索引页的门:JSON-LD + 外框里拼壳与正文。JSON-LD 串由 cases 桶的 casesJsonLd 拼,
+ * 壳走通用件 JsonLd(2026-08-29 收拢:script 壳五份克隆归一,通用形态单一出口);外框 2026-08-29
  * CasesShell 退役换全站 Frame(体是 Frame 逐字翻版,克隆壳违「通用形态单一出口」)。
  *
  * @returns 整页。
  */
 export default function CasesIndexPage() {
   return <>
-    <CasesJsonLd />
+    <JsonLd json={casesJsonLd()} />
     <Frame>
       <Header />
       <Cases />

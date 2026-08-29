@@ -14,7 +14,7 @@
  * @time 2026-08-26 19:28:00
  */
 export { Compare } from './compare'
-export { COMPARE_META, COMPARE_MIN_ROWS, MODE_DESIGNATED, MODE_HIRING, URL_SHELF_GONE } from './constants'
+export { COMPARE_META, COMPARE_MIN_ROWS, MODE_DESIGNATED, MODE_HIRING } from './constants'
 export { Employers } from './employers'
 export {
   compareNamesOf, designatedMetaOf, hasVerdictSignal, hiringMetaOf, noDimsOf, sponsorEmployerColsOf,

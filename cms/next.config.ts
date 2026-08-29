@@ -34,6 +34,10 @@ const nextConfig: NextConfig = {
       { source: '/plan/job', destination: '/plan/pr', statusCode: 301 },
       { source: '/plan/province', destination: '/plan/pr', statusCode: 301 },
       { source: '/plan/career', destination: '/plan/pr', statusCode: 301 },
+      // 货架页 08-08 拍板整页下架(「这个页面就不要了」):担保雇主唯一承载=把脉页三分表橱窗。
+      // 2026-08-29 Frank「下架为什么不直接删了」:门文件删掉,308 降位成这行配置(随本族用 301,
+      // 语义同为永久跳转);/employers/compare|designated|hiring 是子路径,source 精确匹配不误伤。
+      { source: '/employers', destination: '/start', statusCode: 301 },
     ]
   },
   images: {

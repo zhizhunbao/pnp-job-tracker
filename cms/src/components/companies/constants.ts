@@ -359,10 +359,6 @@ export const HDR_CONTENT_TYPE = 'Content-Type'
  */
 export const MIME_JSON = 'application/json'
 
-/**
- * JSON-LD 脚本标签的 MIME(结构化数据的约定值;跨域不互相取常量,本域自抄一份)。
- */
-export const MIME_LD_JSON = 'application/ld+json'
 
 /**
  * 「查到了」的状态码(K 调查接口 204/202 这类非 200 的成功码都算没查到,不渲孤儿块)。

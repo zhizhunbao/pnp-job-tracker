@@ -45,11 +45,6 @@ export const CLS_SEP = ' '
 export const LINK_TARGET_BLANK = '_blank'
 
 /**
- * 结构化数据脚本的 MIME(搜索引擎按它认出这是 JSON-LD)。
- */
-export const MIME_LD_JSON = 'application/ld+json'
-
-/**
  * JSON-LD 的词汇表地址(schema.org 定死的值)。
  */
 export const LD_CONTEXT = 'https://schema.org'

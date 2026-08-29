@@ -23,7 +23,7 @@
  * @time 2026-08-25 22:40:00
  */
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
@@ -246,6 +246,13 @@ function main() {
   }
   const outDir = path.resolve(CMS, OUT_DIR)
   mkdirSync(outDir, { recursive: true })
+  // 只留最新一份(2026-08-29 Frank「新报告生成要删除老报告」):同前缀的旧时间戳文件先清,
+  // 报告是当下的体检单不是史料,攒一堆只会让人翻错旧单。
+  for (const stale of readdirSync(outDir)) {
+    if (stale.startsWith('lint-') && stale.endsWith('.md')) {
+      rmSync(path.join(outDir, stale))
+    }
+  }
   const outFile = path.join(outDir, `lint-${stamp}.md`)
   writeFileSync(outFile, md.join('\n'), 'utf8')
   console.log(`\n合计 活 error ${totalE} / 活 warn ${totalW} / 基线欠账 ${totalB},耗时 ${((Date.now() - t0) / 1000).toFixed(1)}s`)

@@ -1812,12 +1812,15 @@ const localRules = {
       },
       create(context) {
         const fname = context.filename ?? ''
-        if (!/[\\/]app[\\/]\(frontend\)[\\/].*\.tsx$/.test(fname)) return {}
+        // 2026-08-29 Frank「frontend 能包含哪些文件能不能锁死了」:射程从 .tsx 扩到 .ts ——
+        // 路由树里 .ts 只许 sitemap.ts(分片地图,位置=URL);main.css 不经 eslint,由 review 盯。
+        if (!/[\\/]app[\\/]\(frontend\)[\\/].*\.tsx?$/.test(fname)) return {}
         // Next 框架定名清单:路由文件 + 元数据文件(opengraph/icon 一族是约定式 API,不是自建组件)。
         const FRAMEWORK = new Set([
           'page.tsx', 'layout.tsx', 'loading.tsx', 'error.tsx', 'global-error.tsx',
           'not-found.tsx', 'template.tsx', 'default.tsx',
           'opengraph-image.tsx', 'twitter-image.tsx', 'icon.tsx', 'apple-icon.tsx',
+          'sitemap.ts',
         ])
         const base = fname.split(/[\\/]/).pop() ?? ''
         if (FRAMEWORK.has(base)) return {}

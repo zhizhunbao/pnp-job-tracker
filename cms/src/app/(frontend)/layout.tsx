@@ -11,6 +11,7 @@ import './main.css'
 import { LangProvider } from '@/components/i18n'
 import { SessionProvider } from '@/components/auth'
 import { ChatLauncher } from '@/components/chat'
+import { JsonLd } from '@/components/jsonld'
 import { SITE_JSON_LD } from '@/components/shell'
 import { headers } from 'next/headers'
 import { ssrLang } from '@/lib/i18n/server'
@@ -80,7 +81,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang={lang}>
       <head>
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(SITE_JSON_LD) }} />
+        <JsonLd json={JSON.stringify(SITE_JSON_LD)} />
         {umamiSrc && umamiId ? <script defer src={umamiSrc} data-website-id={umamiId} /> : null}
       </head>
       <body>

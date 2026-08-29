@@ -227,11 +227,6 @@ export const SHELL_TOP = 16
 export const SHELL_BOTTOM = 40
 
 /**
- * JSON-LD 脚本标签的 MIME(结构化数据的约定值)。
- */
-export const MIME_LD_JSON = 'application/ld+json'
-
-/**
  * 索引页的 SEO 头(收录主体是中文长尾词,单份定稿不随界面语言切换)。
  * 住这里而不是页面门里:门里不留死值常量,页面门只 `export const metadata = CASES_META`
  * 一行转发(2026-08-29 Frank「generateMetadata 统一放到桶里」,形照 start 的 START_META)。

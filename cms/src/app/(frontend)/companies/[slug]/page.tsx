@@ -5,7 +5,7 @@
  * (slug 可能因岗全下线而空)。
  * 2026-08-29 页面规范化批收成标准形:取池改 lib/db 的 getDb 一行注入(原页内 loadCompany
  * 包装退役 —— 它的体与 getDb 逐字同义)、相似雇主的失败兜底由 `.catch` 箭头改 try/catch、
- * JSON-LD 拼装下沉进 lib/jobs 的 companyJsonOf、脚本标签成件 CompaniesJsonLd
+ * JSON-LD 拼装下沉进 lib/jobs 的 companyJsonOf、脚本壳走通用件 JsonLd(08-29 收拢)
  * (门里不许有函数体、不许有裸标签)。
  *
  * @author Frank
@@ -13,7 +13,8 @@
  */
 import { headers } from 'next/headers'
 
-import { CompaniesJsonLd, Company } from '@/components/companies'
+import { Company } from '@/components/companies'
+import { JsonLd } from '@/components/jsonld'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
 import { Frame } from '@/components/shell'
@@ -86,7 +87,7 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
   }
 
   return <>
-    <CompaniesJsonLd json={companyJsonOf({ company })} />
+    <JsonLd json={companyJsonOf({ company })} />
     <Frame>
       <Header loggedIn={!!user} />
       <Company company={company} similar={similar} />
