@@ -285,12 +285,16 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
     expect(build.score, 'BC 没有自评估分器 → 不给 score,只摆线').toBeUndefined()
   })
 
-  it('MB-swm 三条 warning:外省学习 −100 / 再叠外省工作 → 595 / 估分 695 天花板 715 对照 632 与 825', () => {
+  // 2026-08-29 换届:参照线从 632/825 换成 731/632 —— 官方 2026-08-27 Draw #278(大类 72
+  // 在曼就业 top-scoring 专场,score 731)与 2026-07-30 Draw #276(同型,632),原文在
+  // data/raw/pnp/draws.json。同日 Frank 判定旧 score-gulf 规则为 bug:专场线只展示不排除
+  //(见 lib/ruling verdictReasons 的 gulfLineApplies 注),故 MB-swm 维持 viable。
+  it('MB-swm 三条 warning:外省学习 −100 / 再叠外省工作 → 595 / 估分 695 天花板 715 对照 731 与 632', () => {
     const mb = byKey(list, 'MB-swm')
     expect(mb.score?.system).toBe('MPNP EOI')
     expect(mb.score?.value).toBe(695)
     expect(mb.score?.ceiling).toBe(715)
-    expect(mb.score?.refLine).toBe(632)
+    expect(mb.score?.refLine).toBe(731)
 
     const study = mb.reasons.find((r) => (r.quote ?? '') === 'Studies in another province')
     expect(study, '外省学习 −100 必须带官方档位标签').toBeTruthy()
@@ -302,8 +306,8 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
 
     const lines = mb.reasons.find((r) => /上界 715/.test(r.text))
     expect(lines).toBeTruthy()
+    expect(lines!.text).toContain('731')
     expect(lines!.text).toContain('632')
-    expect(lines!.text).toContain('825')
     expect(lines!.evidence?.url).toContain('immigratemanitoba.com')
 
     // 曼省的自雇/在学期间经验不计,官方原句在库里
@@ -608,12 +612,14 @@ describe('反事实:在曼省同一雇主攒满 12 个月之后', () => {
     expect(mb.reasons.some((r) => (r.quote ?? '') === 'Work experience in another province' && /595/.test(r.text))).toBe(true)
   })
 
-  it('同一年经验放在安省:安省 tier 归零,曼省反而被判死(先外省上班再 −100 → 天花板 615 < 632)', () => {
+  it('同一年经验放在安省:安省 tier 归零;曼省再扣 100 → 595,但专场线不判死(2026-08-29 规则修复)', () => {
+    // 2026-08-29 前这条断言 excluded —— 那是旧 score-gulf 拿「最近有分的线」当全员门槛的
+    // 产物,而 MB 只公布 top-scoring 职业专场的线(一般抽选无线),Frank 判其为 bug:
+    // 专场线只展示不排除。−100×2 的官方罚分事实照旧断言,户口本上的账一分不少。
     const onWork: VerdictProfile = { ...C01, expCanadaMonths: 12, province: 'ON' }
     expect(byKey(run(onWork), 'ON-workforce').tier).toBe(0)
-    // 曼省:外省工作经历不但不计,还再扣 100 → 语言拉满的上界都低于最近一轮抽选线 = 分数鸿沟
     const mb = byKey(run(onWork), 'MB-swm')
-    expect(mb.verdict).toBe('excluded')
+    expect(mb.verdict).toBe('viable')
     expect(mb.score?.value).toBe(595)
     expect(mb.score!.ceiling as number).toBeLessThan(mb.score!.refLine as number)
   })

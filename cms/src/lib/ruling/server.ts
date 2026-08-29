@@ -14,14 +14,15 @@
  */
 
 export {
-  buildTripleWire, caseAnswer, casePages, employerVerdict, getDesignatedEmployers, getVerdictData,
+  buildTripleWire, caseAnswer, caseMeta, casePages, employerVerdict, getDesignatedEmployers, getVerdictData,
+  loadCasePage,
   jobPathways, loadVerdictTables, matchDesignation, pathLevers, pathVerdict, tripleVerdict,
   pathwayMatchesTargets, splitDecorated, tripleWireOf,
 } from './functions'
 export { rulingPathwaysRoute, rulingProfileRoute, rulingVerdictGetRoute, rulingVerdictPostRoute } from './routes'
 
 export type {
-  AnswerBag, SplitRow, CaseAnswer, CasePageSpec, ClientAnswers, DesignatedEmployerRow, DesignatedLoader, EmployerFacts,
+  AnswerBag, SplitRow, CaseAnswer, CaseLang, CaseMeta, CaseMetaIn, CasePageFact, CasePageLoadIn, CasePageSpec, ClientAnswers, DesignatedEmployerRow, DesignatedLoader, EmployerFacts,
   EmployerVerdict, NameRow, OccupationRow, OpsFacts, PathLeverOpts, PathwayVerdict, ReqRow, Row, TripleCard,
   TripleCompany, TripleJob, TripleProfile, TripleWire, TripleWireResult, VerdictData, VerdictDrawRow,
   VerdictLever, VerdictProfile, VerdictReason,

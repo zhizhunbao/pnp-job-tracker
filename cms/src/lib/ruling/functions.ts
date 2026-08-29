@@ -22,11 +22,13 @@ import {
   estimateCrs, estimateMbEoi, gridStreamOf, isAboveLine, isBelowLine, scoreProvince, streamMatches,
 } from '../points'
 import { askLabels, fieldMatchExemptionOf, gateLabels, gateOf, PATHWAYS, regionProvincesOf, uiOf } from '../pathways'
+import { makeT } from '../i18n'
 import { pickOutside, rankRows } from '../plan'
 import type { RankCtx } from '../plan'
 import {
   AB_LOCAL_EXP, AIP_PROVINCES, AIP_SOURCE, AMP, AND_WORD, APPLIES_OFFER, AREA_I_MAX, ASKABLE_FACTORS, AVAIL, BASIS,
-  BASIS_MIN_YEARS, BLOCKED_BY, BLOCK_COST, CARD_SLOT, CARD_STATE, CASES, CASE_C01, CASE_ID, CASE_TIERS, CLB_IN_LABEL,
+  BASIS_MIN_YEARS, BLOCKED_BY, BLOCK_COST, CARD_SLOT, CARD_STATE, CASES, CASE_C01, CASE_DESC_SEP, CASE_ID,
+  CASE_KEY_HEAD, CASE_LABEL_TAIL, CASE_Q_TAIL, CASE_TIERS, CASE_TITLE_TAIL, CLB_IN_LABEL,
   CLB_TARGET_DEFAULT, COMPARE_ROLE, COMP_KEY, CONDITION, CRS_GRID_LABEL, DATE_LEN, DATE_LEN_DAY, DESIGNATION_MULTI,
   EDU, EDU_KEY_VALUES, EDU_TO_MB, EMPLOYMENT_OFFER_STREAM, EMPTY_JSON, EMP_FACTOR, EMP_KEY, EMP_STATE, EMP_UNIT,
   EVIDENCE_KIND, EXP_BASIS, FACTOR, FACTOR_ROW, FED, FIRST_OFFICIAL_LANGUAGE, FULL_TIME_IN_LABEL, GATE_ASK,
@@ -48,7 +50,8 @@ import type {
   AfterMap, AfterOfferWire, AnswerBag, AnswerBoolIn, AnswerBoolOut, AnswerNumIn, AnswerNumOut, AnswerTextIn,
   AnswerTextOut, ApplyOpsPeriodIn, ApplyOpsRowIn, AskableSlotIn, AskableSlotOut, Availability, AvailabilityOfIn,
   BasisParamIn, BasisParamOut, BlockCostIn, BlockedBy, BoolOfIn, BoolOfOut, BuildTripleWireIn, BuildTripleWireOut,
-  CardFollowupsIn, CardFollowupsOut, CardRuleProfileIn, CaseAnswerIn, CaseAnswerOut, CasePagesOut, CaseProfilesOut,
+  CardFollowupsIn, CardFollowupsOut, CardRuleProfileIn, CaseAnswerIn, CaseAnswerOut, CaseMetaIn, CaseMetaOut,
+  CasePageLoadIn, CasePageLoadOut, CasePagesOut, CaseProfilesOut,
   CaseTier, Cell, ClbBoostLeverIn, ClbBoostLeverOut, CompareRowsIn, CompareRowsOut, CompetitionMap,
   CompetitionMapOut, ConcludeBlockedIn, ConcludeBlockedOut, ConcludeIn, ConcludeNeedsInfoIn, ConcludeNeedsInfoOut,
   ConcludeOpenIn, ConcludeOpenOut, ConditionHoldsIn, ConditionHoldsOut, CountableMonthsIn, CountableMonthsOut,
@@ -2982,7 +2985,14 @@ function haveMonthsOf(input: HaveMonthsOfIn): HaveMonthsOfOut {
 function verdictReasons(input: VerdictReasonsIn): VerdictReasonsOut {
   const reasons: VerdictReason[] = []
   let blockedBy = input.blockedBy
-  const scoreGulf = input.score != null && input.score.ceiling != null
+ // 2026-08-29 Frank 判 bug 修复:score-gulf 只在参照线与本通道 stream **真匹配**时才有
+  // 排除力 —— refDraw 的省级 fallback(如 MB 只公布 top-scoring 职业专场的线)捡来的线
+  // 只是展示对照,拿它排除等于用别人的门槛关自己的门(实撞:MB #278 大类 72 专场线 731
+  // 把估分 695 的木匠整条判死,而曼省一般抽选根本不公布线)。FED-EE 等 stream 匹配的
+  // 通道(CEC 对 CEC)排除力照旧。
+  const gulfLineApplies = input.draw != null && input.spec.drawStream != null
+    && streamMatches({ drawStream: input.draw.stream, gridStream: input.spec.drawStream })
+ const scoreGulf = gulfLineApplies && input.score != null && input.score.ceiling != null
     && input.score.refLine != null && input.score.ceiling < input.score.refLine
   const excluded = input.listExcluded || scoreGulf
   for (const one of scoreGulfReason({ score: input.score, draw: input.draw, scoreGulf: scoreGulf })) {
@@ -6732,4 +6742,56 @@ export function byOpeningsDesc(a: RankedPathway, b: RankedPathway): number {
 // eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byCountDesc(a: TrainableRow, b: TrainableRow): number {
   return b.n - a.n
+}
+
+/**
+ * 处境页的服务端装配(2026-08-27 cases 样张单立,服务端页形态照 employers:
+ * 门 = 取参 + 一行装配调用 + 拼组件):slug → 白名单核验 → 判定底表(TTL 缓存)
+ * → 答案层。查无此 slug 或答案层抛错都给 null,门按 404 处理 —— 出半页空事实
+ * 不如不出;抛错必留痕(RULING_LOG.casePageFailed),不静默。
+ *
+ * @param x 页面 slug 与数据库连接(池由门注进来)。
+ * @returns 一页要的全部 props;查无此页或装配失败是 null。
+ */
+export async function loadCasePage(x: CasePageLoadIn): CasePageLoadOut {
+  const spec = casePages()[x.slug]
+  if (spec == null) {
+    return null
+  }
+  try {
+    const data = await getVerdictData()
+    const answer = await caseAnswer({ slug: x.slug, data, db: x.db })
+    if (answer == null) {
+      return null
+    }
+    return { caseId: spec.caseId, answer }
+  } catch (e) {
+    let why = NO_TEXT
+    if (e instanceof Error) {
+      why = e.message
+    }
+    log({ tag: RULING_LOG.tag, text: `${RULING_LOG.casePageFailed}${why}` })
+    return null
+  }
+}
+
+/**
+ * 处境页的 metadata(门里的 generateMetadata 取参、读语言后调这里)。
+ * 标题用**用户原话**,不用行话 —— 这一页要接的就是照着这句话搜过来的人。
+ * 语言跟站里同一套判据(cookie → Accept-Language),由门注入:爬虫不带 cookie、
+ * Accept-Language 多为 en,正是本站 88% 的流量所在,标题写死中文等于把
+ * 英文搜索结果拱手让人。
+ *
+ * @param x 页面 slug 与界面语言。
+ * @returns 标题与描述;查无此页给空对象(Next 用默认)。
+ */
+export function caseMeta(x: CaseMetaIn): CaseMetaOut {
+  const spec = casePages()[x.slug]
+  if (spec == null) {
+    return {}
+  }
+  const t = makeT(x.lang)
+  const q = t(CASE_KEY_HEAD + spec.caseId + CASE_Q_TAIL)
+  const label = t(CASE_KEY_HEAD + spec.caseId + CASE_LABEL_TAIL)
+  return { title: q + CASE_TITLE_TAIL, description: label + CASE_DESC_SEP + q }
 }

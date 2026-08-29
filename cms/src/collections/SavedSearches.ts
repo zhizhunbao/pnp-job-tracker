@@ -24,7 +24,7 @@ export const SavedSearches: CollectionConfig = {
     beforeChange: [async ({ req, data, operation }) => {
       if (operation === 'create' && req.user && !isAdmin(req)) {
         data.user = req.user.id  // 只能存给自己
-        const isPro = !!(req.user as any).proUntil && new Date((req.user as any).proUntil) > new Date()
+        const isPro = !!req.user.proUntil && new Date(req.user.proUntil) > new Date()
         const cap = isPro ? PRO_SAVED_SEARCHES : FREE_SAVED_SEARCHES
         const mine = await req.payload.count({ collection: 'saved-searches', where: { user: { equals: req.user.id } } })
         // APIError 消息才会透传客户端(裸 Error 被打码成 Something went wrong)——前端靠 'limit' 字样弹升级框

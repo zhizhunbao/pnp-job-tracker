@@ -568,6 +568,12 @@ export const RULING_LOG = {
    * 指定雇主名录按省查挂了(失败不缓存,下一次重试)。
    */
   directoryQueryFailed: 'designated employers query failed, not cached: ',
+
+  /**
+   * 处境页装配挂了(答案层查询/判定核抛错)。页面侧按 404 处理 —— 出半页空事实
+   * 不如不出;但不许静默,否则「这条 slug 没事实层」和「查询一直在报错」分不开。
+   */
+  casePageFailed: 'case page assembly failed, returning null: ',
 } as const
 
 /**

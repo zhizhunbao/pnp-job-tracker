@@ -40,7 +40,7 @@ export const Comments: CollectionConfig = {
         if (pending.totalDocs >= PENDING_CAP) throw new Error('too many pending comments')
         // F 件(E8-07)楼中楼:parent 只允许指向本文顶层已过审楼(一层封顶,审核台/排版可控);置顶=admin 专属
         if (data.parent != null) {
-          const p = await req.payload.findByID({ collection: 'comments', id: data.parent, depth: 0 }).catch(() => null) as any
+          const p = await req.payload.findByID({ collection: 'comments', id: data.parent, depth: 0 }).catch(() => null)
           if (!p || p.status !== 'approved' || p.parent != null || p.newsSlug !== data.newsSlug) throw new Error('invalid reply target')
         }
         data.pinned = false

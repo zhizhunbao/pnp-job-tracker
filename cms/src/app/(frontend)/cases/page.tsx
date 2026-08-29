@@ -1,9 +1,19 @@
-// 常见案例索引(SEO 落地页):16 个真实处境一页列全,做了事实层的带完整案例链接。
-// 内链职责从 /plan/pr 挪来(2026-08-13):处境详情页要被爬到,靠这一页 + 顶栏资料库入口。
-import { makeT } from '@/lib/i18n'
+/**
+ * 常见案例索引(SEO 落地页)的门:16 个真实处境一页列全,做了事实层的带完整案例
+ * 链接。内链职责从 /plan/pr 挪来(2026-08-13):处境详情页要被爬到,靠这一页 +
+ * 顶栏资料库入口。2026-08-27 cases 样张单:壳件(Header/Footer)拼装收回本门
+ * (Frank 新令「组装只许在 (frontend) 页面门里」;Header/Footer 语言自理,
+ * 服务端门直接拼)。
+ *
+ * @author Frank
+ * @time 2026-08-27 01:30:00
+ */
 import type { Metadata } from 'next'
+import { Footer } from '@/components/footer'
+import { Header } from '@/components/header'
+import { Cases, CasesShell } from '@/components/cases'
+import { makeT } from '@/lib/i18n'
 import { CASES } from '@/lib/ruling'
-import { Cases } from '@/components/cases'
 
 export const metadata: Metadata = {
   title: '加拿大移民常见案例 — 真实处境与判定结论 | Offer2PR',
@@ -19,9 +29,18 @@ const itemList = {
   })),
 }
 
+/**
+ * 索引页的门:JSON-LD + 外框里拼壳与正文。
+ *
+ * @returns 整页。
+ */
 export default function CasesIndexPage() {
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }} />
-    <Cases />
+    <CasesShell>
+      <Header />
+      <Cases />
+      <Footer />
+    </CasesShell>
   </>
 }

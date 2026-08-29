@@ -123,23 +123,6 @@ export type HeaderIn = {
    */
   active?: ActiveKey
 
-  /**
-   * 过渡格(2026-08-29):语言三件旧透传 —— Header 已体内自取 useLang,本格只为让
-   * 未随批落地的 cases/ruling 旧调用点(还在传 lang/setLang/t)过编译,体内不读。
-   * 那批收口摘掉调用点后,这三格同批删除。
-   */
-  lang?: string
-
-  /**
-   * 过渡格,同上:旧调用点的语言写口,体内不读。三字面量本域自抄(参数逆变:
-   * 槽写 string 反而收不下老调用点的 (l: Lang) => void)。
-   */
-  setLang?: (l: 'zh' | 'en' | 'ko') => void
-
-  /**
-   * 过渡格,同上:旧调用点的取词函数,体内不读。
-   */
-  t?: (k: string) => string
 
   /**
    * 吸顶(职位板用)。

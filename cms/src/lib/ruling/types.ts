@@ -7281,3 +7281,79 @@ export type MaybeCompetition = ProvCompetition | null
  * 该职业在各省的竞争面清单（jobs 行的本域清单名）。
  */
 export type OccRowsList = OccCompetitionRow[]
+
+/**
+ * 界面语言(三字面量各域自抄 —— 宪法 08-25「types 自声明」;与 lib/i18n 的
+ * Lang 同形,结构上兜得住)。
+ */
+export type CaseLang = 'zh' | 'en' | 'ko'
+
+/**
+ * `loadCasePage` 的入参(服务端页面门的装配口:db 由门注进来)。
+ */
+export type CasePageLoadIn = {
+  /**
+   * 页面 slug(来自路由参数)。
+   */
+  slug: string
+
+  /**
+   * 数据库连接(池由门注入)。
+   */
+  db: Db
+}
+
+/**
+ * 处境页一页要的全部 props(装配洗净后)。
+ */
+export type CasePageFact = {
+  /**
+   * 案例编号(视图按它取 i18n 的标题与原话,切语言才切得动)。
+   */
+  caseId: string
+
+  /**
+   * 判定核给的整份答案。
+   */
+  answer: CaseAnswer
+}
+
+/**
+ * `caseMeta` 的入参(语言由门读好注进来 —— 纯行为层不碰别域的 server 门)。
+ */
+export type CaseMetaIn = {
+  /**
+   * 页面 slug(来自路由参数)。
+   */
+  slug: string
+
+  /**
+   * 界面语言(门里 ssrLang() 读出来的那份:cookie → Accept-Language)。
+   */
+  lang: CaseLang
+}
+
+/**
+ * 处境页的 metadata(只出标题与描述两格;查无此页给空对象,Next 用默认)。
+ */
+export type CaseMeta = {
+  /**
+   * `<title>`:用户原话 + 站名尾巴;查无此页缺席。
+   */
+  title?: string
+
+  /**
+   * description:处境标签 + 原话;查无此页缺席。
+   */
+  description?: string
+}
+
+/**
+ * `loadCasePage` 的返回(异步:查无此页或装配失败给 null)。
+ */
+export type CasePageLoadOut = Promise<CasePageFact | null>
+
+/**
+ * `caseMeta` 的返回。
+ */
+export type CaseMetaOut = CaseMeta

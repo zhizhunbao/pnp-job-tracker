@@ -20,14 +20,7 @@ import css from './footer.module.css'
  *
  * @returns 页脚。
  */
-export function Footer(x: {
-  /**
-   * 过渡格(2026-08-29):旧调用点(cases/ruling 批未落)还在传 t,体内不读;
-   * 那批收口后同批删除本参。
-   */
-  t?: (k: string) => string
-}) {
-  void x
+export function Footer() {
 
   const [, , t] = useLang()
   const links = []

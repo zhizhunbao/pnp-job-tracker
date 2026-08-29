@@ -3176,3 +3176,30 @@ export const NO_ANSWER = ''
  * 用它反查该闸问的是不是工签,以决定要不要把工签追问挂出来。
  */
 export const GATE_KEY_STATUS_IN_CANADA = 'statusInCanada'
+
+/**
+ * 处境页 metadata 的 i18n 键头(`case.<id>.q` / `case.<id>.label` 的公共前缀)。
+ * 组件侧另有一份同义键头(跨域不互相取常量,各家一份)。
+ */
+export const CASE_KEY_HEAD = 'case.'
+
+/**
+ * 处境页「用户原话」键的尾巴。
+ */
+export const CASE_Q_TAIL = '.q'
+
+/**
+ * 处境页「处境标签」键的尾巴。
+ */
+export const CASE_LABEL_TAIL = '.label'
+
+/**
+ * 处境页 `<title>` 的站名尾巴(标题用**用户原话**,不用行话 —— 这一页要接的
+ * 就是照着这句话搜过来的人)。
+ */
+export const CASE_TITLE_TAIL = ' | Offer2PR'
+
+/**
+ * 处境页 description 里「标签。原话」之间的句号。
+ */
+export const CASE_DESC_SEP = '。'
