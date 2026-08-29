@@ -86,14 +86,16 @@ export const CORE_PAGES = [
   { path: '/rankings/weekly-top', priority: 0.9, freq: 'daily' },
 
   /**
-   * 担保倾向榜。
-   */
-  { path: '/rankings/sponsor-likely', priority: 0.9, freq: 'daily' },
-
-  /**
    * 把脉首页(/stats 全家退役后的唯一收录入口)。
    */
   { path: '/start', priority: 0.9, freq: 'daily' },
+
+  /**
+   * 常见案例索引(SEO 落地页,中文长尾收录主体;2026-08-29 补册 —— 处境页要被爬到
+   * 靠这一页 + 顶栏,册里此前漏了它。担保倾向榜同日出册:sponsor-likely 08-08 已下架,
+   * 今日降位成 301,再列就是喂 Google 跳转)。
+   */
+  { path: '/cases', priority: 0.8, freq: 'weekly' },
 ]
 
 /**
@@ -128,23 +130,26 @@ export const ROBOTS_UA = '*'
 
 /**
  * sitemapindex 首选路径(GSC 手动提交只认一个 URL,提交索引即覆盖全部分片 —— #156)。
+ * 2026-08-29 Frank「能不能只有一个入口/都放到一个目录」:全家收进 /sitemaps/ 一个前缀、
+ * 一个动态壳;旧 /sitemap-index.xml 与 /sitemap.xml 在 next.config 301 兜底(Google 认
+ * 站点地图跳转);分片旧址无 301 —— GSC 实查 Google 从未读到过它们(索引 7/21 后未重读)。
  */
-export const SITEMAP_INDEX_PATH = '/sitemap-index.xml'
+export const SITEMAP_INDEX_PATH = '/sitemaps/index.xml'
 
 /**
  * 平铺核心表路径。
  */
-export const SITEMAP_PATH = '/sitemap.xml'
+export const SITEMAP_PATH = '/sitemaps/core.xml'
 
 /**
  * 职位分片路径模板(`{n}` 槽 = 片号)。
  */
-export const JOB_SHARD_PATH = '/jobs/sitemap/{n}.xml'
+export const JOB_SHARD_PATH = '/sitemaps/jobs-{n}.xml'
 
 /**
  * 公司分片路径模板。
  */
-export const CO_SHARD_PATH = '/companies/sitemap/{n}.xml'
+export const CO_SHARD_PATH = '/sitemaps/companies-{n}.xml'
 
 /**
  * 职位详情页路径前缀(后接 id)。
@@ -196,3 +201,55 @@ export const CACHE_1H = 'public, max-age=3600'
  * 换行(functions 不许裸字面量,XML 行粘接用)。
  */
 export const NL = '\n'
+
+/**
+ * 万册壳的分发件名:索引。
+ */
+export const SM_FILE_INDEX = 'index.xml'
+
+/**
+ * 万册壳的分发件名:核心册。
+ */
+export const SM_FILE_CORE = 'core.xml'
+
+/**
+ * 职位分册件名形(捕获组 = 片号)。
+ */
+export const SM_JOBS_FILE_RE = /^jobs-(?<n>\d+)\.xml$/
+
+/**
+ * 公司分册件名形(捕获组 = 片号)。
+ */
+export const SM_CO_FILE_RE = /^companies-(?<n>\d+)\.xml$/
+
+/**
+ * urlset XML 头(sitemaps.org 0.9;此前核心/分片册由 Next Metadata 框架序列化,
+ * 2026-08-29 归目录批改走 route handler,序列化收回本域)。
+ */
+export const URLSET_XML_HEAD = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`
+
+/**
+ * urlset XML 尾。
+ */
+export const URLSET_XML_TAIL = '</urlset>'
+
+/**
+ * urlset 单条模板(与 Next Metadata 框架此前的输出同形,四格全给)。
+ */
+export const URLSET_ITEM_TPL = `<url>
+<loc>{loc}</loc>
+<lastmod>{mod}</lastmod>
+<changefreq>{freq}</changefreq>
+<priority>{pri}</priority>
+</url>`
+
+/**
+ * URL 路径段分隔符(万册壳取末段件名用)。
+ */
+export const PATH_SEP = '/'
+
+/**
+ * 空文本(模板槽没值时的占位;与 account 域同名同义,各家一份)。
+ */
+export const TEXT_NONE = ''

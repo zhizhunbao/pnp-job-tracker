@@ -13,13 +13,13 @@
  * @author Frank
  * @time 2026-08-28 12:49:56
  */
-import { notFound, permanentRedirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { getDb } from '@/lib/db/server'
 import { RANKING_SLUGS } from '@/lib/rankings'
 import { loadRankingRows, loadRankingSlugs } from '@/lib/rankings/server'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
-import { Ranking, SLUG_SPONSOR, URL_SPONSOR_GONE, rankingMetaOf } from '@/components/rankings'
+import { Ranking, rankingMetaOf } from '@/components/rankings'
 import { Frame } from '@/components/shell'
 
 export const dynamic = 'force-dynamic'
@@ -47,9 +47,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
  */
 export default async function RankingPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  if (slug === SLUG_SPONSOR) {
-    permanentRedirect(URL_SPONSOR_GONE)
-  }
   if (RANKING_SLUGS.has(slug) === false) {
     notFound()
   }

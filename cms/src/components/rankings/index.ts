@@ -12,6 +12,6 @@
  * @author Frank
  * @time 2026-08-28 12:49:56
  */
-export { SLUG_SPONSOR, URL_SPONSOR_GONE, URL_WEEKLY_TOP } from './constants'
+export { SLUG_SPONSOR } from './constants'
 export { rankingMetaOf } from './functions'
 export { Ranking } from './ranking'

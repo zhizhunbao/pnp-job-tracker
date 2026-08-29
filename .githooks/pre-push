@@ -7,6 +7,21 @@
 #
 # 生效需要一次性设置(每个 clone 一次):git config core.hooksPath .githooks
 
+# (frontend) 文件清单闸(2026-08-29 Frank「frontend 能包含哪些文件能不能锁死了」+「加到闸门」
+# +「没用到的都排除」):eslint 的 route-file-names 只圈得住 .ts/.tsx,css/图片等杂物它看不见 ——
+# 这里按**任意后缀**全目录点名。白名单只列**现役四名**(Next 框架定名三种 + main.css 全站样式
+# 入口唯一钦定特例);sitemap.ts 2026-08-29 随 sitemap 归目录批退役(全家在 app/sitemaps/
+# 一个动态壳);loading/error/not-found/icon 等框架名现在没用到,一律不预开 ——
+# 哪天真要用,加名先过 Frank。
+FRONTEND_ALLOW='^(page\.tsx|layout\.tsx|opengraph-image\.tsx|main\.css)$'
+strays=$(cd cms/src/app/'(frontend)' 2>/dev/null && find . -type f | sed 's|.*/||' | grep -Ev "$FRONTEND_ALLOW" | sort -u)
+if [ -n "$strays" ]; then
+  echo "[pre-push] (frontend) 里有清单外文件,push 已拦:"
+  echo "$strays" | sed 's/^/  - /'
+  echo "[pre-push] 路由树只住框架定名文件;视觉件归 components/<页面域>/,杂物别放这。"
+  exit 1
+fi
+
 upstream=$(git rev-parse --abbrev-ref '@{push}' 2>/dev/null || echo origin/main)
 # --diff-filter=d 排掉本批**删除**的路径(2026-08-24 实撞:域内文件批量改成小写后,
 # diff 会同时列出旧大写名与新小写名;Windows 文件系统不分大小写,下面的 [ -f ] 对早已

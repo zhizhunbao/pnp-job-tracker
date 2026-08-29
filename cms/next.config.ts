@@ -38,6 +38,21 @@ const nextConfig: NextConfig = {
       // 2026-08-29 Frank「下架为什么不直接删了」:门文件删掉,308 降位成这行配置(随本族用 301,
       // 语义同为永久跳转);/employers/compare|designated|hiring 是子路径,source 精确匹配不误伤。
       { source: '/employers', destination: '/start', statusCode: 301 },
+      // /companies 本无列表页(公司数据懒查询,详情只从职位行进),裸地址原是 404 的洞
+      // (2026-08-29 Frank「这个下面没用 page.tsx 还没处理」)—— 与 /employers 同令:
+      // 名录语义的承载=把脉页三分表橱窗(08-08 拍板),301 过去;/companies/<slug> 详情不受累。
+      { source: '/companies', destination: '/start', statusCode: 301 },
+      // /rankings 裸路径(#120:原本 404,站内零内链但直输 URL/外发贴链会踩)→ 302 到周榜。
+      // 2026-08-29 Frank「这种转发的都可以删了吧」:纯转发门一律降位本表,rankings/page.tsx 删除。
+      { source: '/rankings', destination: '/rankings/weekly-top', statusCode: 302 },
+      // sponsor-likely 榜 08-08 随雇主货架页一并下架(担保雇主唯一承载=把脉页),原在 [slug] 门里
+      // permanentRedirect 分支,同令降位;白名单外的 slug 照旧 404。
+      { source: '/rankings/sponsor-likely', destination: '/start', statusCode: 301 },
+      // sitemap 全家 2026-08-29 归 /sitemaps/ 一个目录(Frank「只有一个入口/都放到一个目录」):
+      // 旧入口与旧核心册是 Google 记住过的两条(GSC 提交 + 已读),301 兜底(Google 认地图跳转);
+      // 分片旧址不兜 —— GSC 实查 Google 从未读到过(索引 7/21 后未重读),改名零损失。
+      { source: '/sitemap-index.xml', destination: '/sitemaps/index.xml', statusCode: 301 },
+      { source: '/sitemap.xml', destination: '/sitemaps/core.xml', statusCode: 301 },
     ]
   },
   images: {

@@ -109,23 +109,11 @@ export const RANK_GAP = ' '
 export const URL_RANK_HEAD = '/rankings/'
 
 /**
- * 裸路径 `/rankings` 的去处(第 25 轮 #120:这条路径原本 404 —— 站内零内链,但直输 URL
- * 或外发贴里的链接会踩;周榜是这一组榜单的落点,所以 302 到它)。
- * 由路径头与周榜 slug 拼出,不再抄一遍 `/rankings/weekly-top` —— 那两格已经各有名字,
- * 再写一份字面量就是同一条地址有两处真相,改榜名时漏一处就把裸路径送回 404。
- */
-export const URL_WEEKLY_TOP = URL_RANK_HEAD + SLUG_WEEKLY
-
-/**
  * 职位板按公司名搜索的地址头(拼上编码后的公司名 = 这家公司的在招岗)。
+ * (裸路径 302 与 sponsor-likely 下架 301 两枚地址常量 2026-08-29 随纯转发门
+ * 降位 next.config redirects 一并退役 —— #120 与 08-08 的决策记录随迁配置行注释。)
  */
 export const URL_JOBS_SEARCH_HEAD = '/?q='
-
-/**
- * 公司榜下架后的去处(B2:sponsor-likely 曾并入 /employers;货架页 2026-08-08 下架 →
- * 直指把脉页橱窗,避免 308 双跳)。
- */
-export const URL_SPONSOR_GONE = '/start'
 
 /**
  * 外链新开页的 target(官方原帖与公司官网都不该顶掉本站这一页)。

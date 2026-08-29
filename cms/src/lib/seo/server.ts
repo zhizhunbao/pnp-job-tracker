@@ -4,8 +4,8 @@
  * @author Frank
  * @time 2026-08-23 23:30:00
  */
-export { sitemapIndexRoute } from './routes'
+export { sitemapFileRoute } from './routes'
 export {
-  loadCompanyShardCount, loadCompanyShardIds, loadCompanyShardPage,
-  loadJobShardCount, loadJobShardIds, loadJobShardPage,
+  loadCompanyShardCount, loadCompanyShardPage,
+  loadJobShardCount, loadJobShardPage,
 } from './functions'

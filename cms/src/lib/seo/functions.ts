@@ -14,11 +14,12 @@ import {
   CACHE_1H, CO_PAGE_PREFIX, CO_PRIORITY, CO_SHARD_PATH, CORE_PAGES, CT_XML, FREQ_WEEKLY,
   HDR_CACHE_CONTROL, HDR_CONTENT_TYPE, INDEX_ITEM_TPL, INDEX_XML_HEAD, INDEX_XML_TAIL,
   JOB_PAGE_PREFIX, JOB_PRIORITY, JOB_SHARD_PATH, NL, ROBOTS_ALLOW, ROBOTS_DISALLOW, ROBOTS_UA,
-  SHARD_SIZE, SITE, SITEMAP_INDEX_PATH, SITEMAP_PATH,
+  URLSET_ITEM_TPL, URLSET_XML_HEAD, URLSET_XML_TAIL,
+  PATH_SEP, SHARD_SIZE, SITE, SITEMAP_INDEX_PATH, SITEMAP_PATH, TEXT_NONE,
 } from './constants'
 import type {
-  CoShardDbRow, Freq, IndexXmlIn, JobShardDbRow, Robots, ShardCountIn, ShardCountOut, ShardId,
-  ShardIdsOut, ShardPageIn, ShardPageOut, Sitemap, SitemapEntry,
+  CoShardDbRow, Freq, IndexXmlIn, JobShardDbRow, Robots, ShardCountIn, ShardCountOut,
+  MaybeShardNo, ShardNoIn, ShardPageIn, ShardPageOut, Sitemap, SitemapEntry,
 } from './types'
 
 // =========================================================================
@@ -29,12 +30,13 @@ import type {
  * robots.txt(E7-03):放开公开页,挡 admin/api/账号;只指 sitemapindex + 平铺表 ——
  * 分片不逐条枚举(枚举数字写死正是撑爆 sitemap 的同一颗雷,2026-08-02 定案)。
  *
- * @returns Next 认的 robots 结构。
+ * @returns Next 认的 robots 结构(Sitemap 只声明入口一条 —— 2026-08-29 归目录批:
+ * 核心册在索引里挂着,再单列一行就是同一件事报两遍)。
  */
 export function robotsOf(): Robots {
   return {
     rules: [{ userAgent: ROBOTS_UA, allow: ROBOTS_ALLOW, disallow: ROBOTS_DISALLOW }],
-    sitemap: [`${SITE}${SITEMAP_INDEX_PATH}`, `${SITE}${SITEMAP_PATH}`],
+    sitemap: [`${SITE}${SITEMAP_INDEX_PATH}`],
   }
 }
 
@@ -70,27 +72,6 @@ function freqOf(v: string): Freq {
 // =========================================================================
 // 2. 分片(计数、白名单、单片;全纯收 db 注入)
 // =========================================================================
-
-/**
- * 职位分片白名单(Next 16 每次请求都 await generateSitemaps() 并用它校验片号 ——
- * 不列出的片号 404,所以片数与白名单必须同一函数算)。
- *
- * @param input 连接。
- * @returns [{id: 0..片数-1}]。
- */
-export async function loadJobShardIds(input: ShardCountIn): ShardIdsOut {
-  return idsOf(await loadJobShardCount(input))
-}
-
-/**
- * 公司分片白名单。
- *
- * @param input 连接。
- * @returns [{id: 0..片数-1}]。
- */
-export async function loadCompanyShardIds(input: ShardCountIn): ShardIdsOut {
-  return idsOf(await loadCompanyShardCount(input))
-}
 
 /**
  * 在招岗数 → 职位分片数。库不可达时回落 1 片(空片无害),绝不 0 片
@@ -138,20 +119,6 @@ function shardsOf(rows: number[]): number {
     n = rowsFirst
   }
   return Math.max(1, Math.ceil(n / SHARD_SIZE))
-}
-
-/**
- * 片数 → 白名单数组。
- *
- * @param n 片数。
- * @returns [{id}] 列表。
- */
-function idsOf(n: number): ShardId[] {
-  const out: ShardId[] = []
-  for (let i = 0; i < n; i += 1) {
-    out.push({ id: i })
-  }
-  return out
 }
 
 /**
@@ -254,6 +221,34 @@ export function indexXmlOf(input: IndexXmlIn): string {
 }
 
 /**
+ * urlset 序列化(核心/分片册;此前由 Next Metadata 框架文件序列化,2026-08-29 归目录批
+ * 全家改走一个 route handler,序列化收回本域 —— 输出与框架同形,四格全给)。
+ *
+ * @param entries 一册的条目。
+ * @returns 完整 XML 文本。
+ */
+export function urlsetXmlOf(entries: Sitemap): string {
+  const lines: string[] = [URLSET_XML_HEAD]
+  for (const e of entries) {
+    let mod: string = TEXT_NONE
+    if (e.lastModified != null) {
+      mod = new Date(e.lastModified).toISOString()
+    }
+    let freq: string = TEXT_NONE
+    if (e.changeFrequency != null) {
+      freq = e.changeFrequency
+    }
+    let pri: string = TEXT_NONE
+    if (e.priority != null) {
+      pri = String(e.priority)
+    }
+    lines.push(fill({ tpl: URLSET_ITEM_TPL, params: { loc: e.url, mod: mod, freq: freq, pri: pri } }))
+  }
+  lines.push(URLSET_XML_TAIL)
+  return lines.join(NL)
+}
+
+/**
  * sitemapindex 的响应头(XML 类型 + 一小时缓存)。
  *
  * @returns 键值对。
@@ -294,4 +289,32 @@ function toJobShardRow(r: JobShardDbRow): JobShardDbRow {
  */
 function toCoShardRow(r: CoShardDbRow): CoShardDbRow {
   return { slug: r.slug, last_seen: r.last_seen }
+}
+
+/**
+ * 请求 URL → 末段件名(万册壳的分发键;取不出给空串,让分发落到 404 支)。
+ *
+ * @param url 请求完整 URL。
+ * @returns 件名。
+ */
+export function fileOf(url: string): string {
+  const last = new URL(url).pathname.split(PATH_SEP).pop()
+  if (last == null) {
+    return TEXT_NONE
+  }
+  return last
+}
+
+/**
+ * 件名按分册形取片号(具名捕获组 `n`;不合形给 null)。
+ *
+ * @param x 分册形与件名。
+ * @returns 片号;不合形 null。
+ */
+export function shardNoOf(x: ShardNoIn): MaybeShardNo {
+  const m = x.re.exec(x.file)
+  if (m == null || m.groups == null) {
+    return null
+  }
+  return Number(m.groups.n)
 }

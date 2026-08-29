@@ -113,7 +113,8 @@ function readBaseline() {
  * 文件路径 → 域名:src/lib/<域> 与 src/components/<域> 各取子域名
  * (2026-08-26 Frank:components 也按子域列行,不再挤成一行),src 其余归 cms-other。
  * 2026-08-26 页面域立闸(route-file-names / page-compose-only)后,(frontend) 也进报告:
- * src/app/(frontend)/<路由>/ 记 page/<路由>,(frontend) 根下的散文件记 page —— 账单看不见等于没立。
+ * src/app/(frontend)/<路由>/ 记 frontend/<路由>,(frontend) 根下的散文件记 frontend
+ * (2026-08-29 Frank「这个前缀应该是 frontend 吧」,行名对齐目录名)—— 账单看不见等于没立。
  *
  * @param {string} file 绝对或相对路径。
  * @returns {string} 域名。
@@ -133,12 +134,19 @@ function domainOf(file) {
   }
   const page = p.match(/src\/app\/\(frontend\)\/([^/]+)\//)
   if (page != null) {
-    return 'page/' + page[1]
+    return 'frontend/' + page[1]
   }
   if (p.includes('src/app/(frontend)/')) {
-    return 'page'
+    return 'frontend'
   }
-  return 'cms-other'
+  // 兜不进任何域目录的散件按它真实所在的目录出行(2026-08-29 Frank
+  // 「cms-other 就改成具体是哪个目录就显示哪个目录」—— lib 根的共享叶子记 lib,
+  // components 根的记 components,别的照它的相对目录)。
+  const m = p.match(/src\/(.+)\/[^/]+$/)
+  if (m != null) {
+    return m[1]
+  }
+  return 'src'
 }
 
 /**
@@ -183,12 +191,14 @@ function main() {
       }
       byRuleFound.get(id).lines.push(`- ${rel}:${m.line} ${m.message}`)
     }
-    if (byRuleFound.size === 0) {
-      continue
-    }
     const d = domainOf(rel)
     if (byDomain.has(d) === false) {
+      // 零账域也登记一行 0/0/0(2026-08-29 Frank「报告怎么没包 frontend」——
+      // 页面域刚清零后从表里隐身,「没盖」和「零账」长得一样;现在扫过的域必出行)。
       byDomain.set(d, { liveErr: 0, liveWarn: 0, debt: 0, files: new Set(), byRule: new Map() })
+    }
+    if (byRuleFound.size === 0) {
+      continue
     }
     const g = byDomain.get(d)
     g.files.add(rel)

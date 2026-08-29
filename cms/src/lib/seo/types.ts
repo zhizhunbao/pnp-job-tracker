@@ -63,21 +63,6 @@ export type ShardPageIn = {
 export type ShardPageOut = Promise<Sitemap>
 
 /**
- * 框架分片白名单一项(generateSitemaps 的返回单元)。
- */
-export type ShardId = {
-  /**
-   * 片号。
-   */
-  id: number
-}
-
-/**
- * 分片白名单的返回。
- */
-export type ShardIdsOut = Promise<ShardId[]>
-
-/**
  * sitemapindex XML 拼装的入参。
  */
 export type IndexXmlIn = {
@@ -126,3 +111,23 @@ export type CoShardDbRow = {
    */
   last_seen: string | null
 }
+
+/**
+ * `shardNoOf` 的入参(万册壳分发:件名对分册形)。
+ */
+export type ShardNoIn = {
+  /**
+   * 分册件名形(具名捕获组 `n` = 片号)。
+   */
+  re: RegExp
+
+  /**
+   * 路径末段件名。
+   */
+  file: string
+}
+
+/**
+ * 片号或不合形。
+ */
+export type MaybeShardNo = number | null
