@@ -21,8 +21,8 @@ export {
   homeCoreOf, homeStatsOf, loadCatOptions, loadOccOptions, nullProof, nullUser, provPresetOf, putHomeCache,
 } from './functions'
 export {
-  DRAWS_LIMIT, NEWS_LIMIT, 
-  
-  START_META
+  DRAWS_LIMIT, NEWS_LIMIT,
+
+  START_META,
 } from './constants'
 export type { HomeStats } from './types'
