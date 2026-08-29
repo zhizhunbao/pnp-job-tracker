@@ -1,0 +1,1633 @@
+/*
+ * companies 域(公司详情页)的私有样式。2026-08-27 换装批自 Company.tsx 的内联样式
+ * 逐格迁类,值一个不改;色值凡在 colors 域有名字的走 CSS 变量(--bg/--primary/
+ * --text/--text2/--text3/--card/--border),页面私有的几枚(返回钮描边灰、面包屑末项字色)
+ * 留字面量并挂注释。
+ */
+
+/*
+ * 全页最外层不在本文件:原 company.tsx 那层容器(min-height 100vh + 纵向列 + 灰底)
+ * 在旧页里逐字重复十余处,2026-08-27 Frank 拍板收拢成 shell 域的通用件 Frame
+ * (「有重复才抽公共」),三格由它承担,本域不留克隆。
+ */
+
+/*
+ * 详情页的窄读轨(860):公司页是**读**的页面不是表格页,Shell 的 1320 轨里再收一档,
+ * 行长控制在一眼扫得完的宽度。
+ */
+.track {
+  /*
+   * 窄读轨宽。
+   */
+  max-width: 860px;
+
+  /*
+   * 居中。
+   */
+  margin: 0 auto;
+}
+
+/*
+ * 面包屑:职位板 › 省 › 公司(「公司」无独立索引页,不做死链;省作可点筛选)。
+ */
+.crumb {
+  /*
+   * 小注字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 灰字(colors 域变量)。
+   */
+  color: var(--text2);
+
+  /*
+   * 与下面头卡的间距。
+   */
+  margin-bottom: 8px;
+
+  /*
+   * 行距(面包屑窄屏会折行,松一点好点)。
+   */
+  line-height: 1.7;
+}
+
+/*
+ * 面包屑里的可点格(首页与省筛选两处)。
+ */
+.crumbLink {
+  /*
+   * 品牌蓝(colors 域变量 —— 原内联 #2563eb 就是它)。
+   */
+  color: var(--primary);
+
+  /*
+   * 面包屑不出下划线。
+   */
+  text-decoration: none;
+}
+
+/*
+ * 面包屑末项(当前页,不可点):比灰字深一档,读得出「就在这儿」。
+ */
+.crumbNow {
+  /*
+   * 深灰(本页私有,不是全站色板成员)。
+   */
+  color: #374151;
+}
+
+/*
+ * #200(Frank「还分卡片,类似类别」):CompanyBody 各段改回卡片 → 详情页不再套外层白卡
+ * (禁卡套卡);H1 单独一张头卡,下面 CompanyBody 卡片自铺(与弹框同源)。
+ * 白卡三格(底/描边/圆角)照全局 .card 逐格抄一份 —— 本域自足,不赌全局类与模块类的顺序。
+ */
+.headCard {
+  /*
+   * 右上角返回钮的定位基准。
+   */
+  position: relative;
+
+  /*
+   * 白底(colors 域变量)。
+   */
+  background: var(--card);
+
+  /*
+   * 描边(colors 域变量)。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 卡圆角(全站白卡同一档)。
+   */
+  border-radius: 12px;
+
+  /*
+   * 卡内衬(上下 14、左右 16)。
+   */
+  padding: 14px 16px;
+
+  /*
+   * 与下面 CompanyBody 首卡的间距。
+   */
+  margin-bottom: 14px;
+}
+
+/*
+ * 返回钮(Frank 走查 #18:右上角、浏览器返回,与职位详情页统一;底部返回同批删掉 ——
+ * 返回统一到头卡右上角)。类名写两遍抬权重:本钮经 Button(kind ghost)渲染
+ * (「<button 这种不允许直接使用」),要稳赢 button 域 .btn/.ghost 的同权重声明
+ * 且不赌打包顺序(先例 account 的 .logoutBtn)。
+ */
+.backBtn.backBtn {
+  /*
+   * 贴头卡右上角。
+   */
+  position: absolute;
+
+  /*
+   * 距卡顶 12。
+   */
+  top: 12px;
+
+  /*
+   * 距卡右 12。
+   */
+  right: 12px;
+
+  /*
+   * 描边灰(本页私有,不是全站色板成员)。
+   */
+  border: 1px solid #d1d5db;
+
+  /*
+   * 钮圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 钮内衬(上下 6、左右 14)。
+   */
+  padding: 6px 14px;
+
+  /*
+   * 钮字号(小半档 —— 它是弱操作)。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 深灰字(盖掉 .ghost 的品牌蓝:返回不是主行动)。
+   */
+  color: #374151;
+
+  /*
+   * 白底(盖掉 .ghost 的无底 —— 钮压在卡上要自己有底)。
+   */
+  background: #ffffff;
+
+  /*
+   * 常规字重(盖掉 .btn 的 600 —— 原先是裸 <button>,浏览器默认常规字重)。
+   */
+  font-weight: 400;
+
+  /*
+   * 钮文字不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 公司名(整页 H1)。
+ */
+.h1 {
+  /*
+   * 外边距清零(卡内衬已经给了间距)。
+   */
+  margin: 0;
+
+  /*
+   * H1 字号。
+   */
+  font-size: 22px;
+
+  /*
+   * 行距。
+   */
+  line-height: 1.35;
+
+  /*
+   * 近黑(colors 域变量)。
+   */
+  color: var(--text);
+
+  /*
+   * 给右上角返回钮留出的位置 —— 长公司名不许压到钮底下(名字不截断,让它折行)。
+   */
+  padding-right: 84px;
+}
+
+/*
+ * 公司名后的译名灰注(#151:界面语言的译名作灰注,英文界面不出)。
+ */
+.alias {
+  /*
+   * 浅灰(colors 域变量 —— 小注比正文再淡一档)。
+   */
+  color: var(--text3);
+
+  /*
+   * 小注字号(比 H1 小一大截,主次分明)。
+   */
+  font-size: 15px;
+
+  /*
+   * 常规字重(H1 的粗体不带到小注上)。
+   */
+  font-weight: 400;
+}
+
+/*
+ * ── 公司本体族(2026-08-28 拆域批自 main.css 第 17 段迁入,值逐格相等)──
+ * 原样式住全局层是因为 CompanyBody 当时还在 components/jobs 里;本体重写进本桶后
+ * 它们只有这一个消费者,按「只有一个消费者的东西不该住共享叶子」收进域内。
+ * 全局层那份本批不动(不碰 main.css),等它的旧消费者删干净了随主表一起清。
+ * 仍走全局类名常量的四个(CARD_MD_CLS / CARD_HEAD_CLS / JD_ZH_CLS / LINK_CLS):
+ * 白卡壳、卡标题、JD 对照条、正文蓝链是**跨域共用的词汇**,不是公司专有。
+ */
+
+/*
+ * AI 检索声明行(✨ + 检索日 + 「看来源 ▾」):三处同一套,只有外边距分三档。
+ */
+.ai {
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 浅灰。
+   */
+  color: #9ca3af;
+}
+
+/*
+ * 声明行在简介卡内的外边距。
+ */
+.aiBrief {
+  /*
+   * 上 2 下 8。
+   */
+  margin: 2px 0 8px;
+}
+
+/*
+ * 声明行在懒查 bare 态的外边距。
+ */
+.aiLazy {
+  /*
+   * 上 2 下 6。
+   */
+  margin: 2px 0 6px;
+}
+
+/*
+ * 声明行在基本信息卡内的外边距。
+ */
+.aiPanel {
+  /*
+   * 上 8 下 4。
+   */
+  margin: 8px 0 4px;
+}
+
+/*
+ * 「正在检索」占位行(懒查还没回来时;加载区必占位,别让卡片跳一下)。
+ */
+.aiWorking {
+  /*
+   * 上 2 下 12。
+   */
+  margin: 2px 0 12px;
+
+  /*
+   * 小字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 浅灰。
+   */
+  color: #9ca3af;
+}
+
+/*
+ * 检索日期(跟在声明后面,空格灰注 —— 全站禁「·」杂糅)。
+ */
+.fetched {
+  /*
+   * 与前文的间隔。
+   */
+  margin-left: 8px;
+}
+
+/*
+ * 「看来源」折叠钮。类名写两遍抬权重:本钮经 Button(kind ghost)渲染
+ * (2026-08-26 Frank「裸 button 不允许直接使用」),要稳赢 button 域 .btn/.ghost
+ * 的同权重声明且不赌打包顺序(先例 account 的 .logoutBtn)。
+ */
+.srcBtn.srcBtn {
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 零内衬(贴着声明文字)。
+   */
+  padding: 0;
+
+  /*
+   * 与前文的间隔。
+   */
+  margin-left: 8px;
+
+  /*
+   * 品牌蓝(可点)。
+   */
+  color: #2563eb;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 与声明同字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 半粗(它是这一行里唯一可点的东西)。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 来源清单的一行。
+ */
+.srcRow {
+  /*
+   * 长 URL 允许任意处断(不断就顶出屏幕)。
+   */
+  overflow-wrap: anywhere;
+
+  /*
+   * 行距。
+   */
+  margin-top: 2px;
+}
+
+/*
+ * 来源链接(灰字:它是出处不是行动)。
+ */
+.srcLink {
+  /*
+   * 中灰。
+   */
+  color: #6b7280;
+
+  /*
+   * 不出下划线。
+   */
+  text-decoration: none;
+}
+
+/*
+ * 简介卡底的官网行。
+ */
+.site {
+  /*
+   * 与正文的间距。
+   */
+  margin-top: 6px;
+}
+
+/*
+ * 官网链接。
+ */
+.siteLink {
+  /*
+   * 小字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 长 URL 允许任意处断。
+   */
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 地址链 / 去职位板链:**不**断词(原代码就没给 —— 地址断在街号中间反而读不出)。
+ */
+.link12 {
+  /*
+   * 小字号。
+   */
+  font-size: 12.5px;
+}
+
+/*
+ * 官网后面那句「来自检索」小注。
+ */
+.siteNote {
+  /*
+   * 与链接的间隔。
+   */
+  margin-left: 6px;
+
+  /*
+   * 浅灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 最小字号。
+   */
+  font-size: 11px;
+}
+
+/*
+ * 简介的一节。
+ */
+.sec {
+  /*
+   * 节距。
+   */
+  margin-bottom: 8px;
+}
+
+/*
+ * 扁平态的节距(#188:对齐 JD 整理版,竖向密度收紧)。
+ */
+.secFlat {
+  /*
+   * 节距收到 2。
+   */
+  margin-bottom: 2px;
+}
+
+/*
+ * 节内小标题。
+ */
+.secHead {
+  /*
+   * 粗体。
+   */
+  font-weight: 700;
+
+  /*
+   * 近黑。
+   */
+  color: #111827;
+
+  /*
+   * 小标题字号。
+   */
+  font-size: 13px;
+}
+
+/*
+ * 扁平态的节内小标题(#188:走 JD 次级头 —— 粗体深灰、字号随正文)。
+ */
+.secHeadFlat {
+  /*
+   * 深灰(比近黑退一档)。
+   */
+  color: #374151;
+
+  /*
+   * 字号随正文。
+   */
+  font-size: inherit;
+}
+
+/*
+ * 节内正文。
+ */
+.secBody {
+  /*
+   * 正文字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 正文灰。
+   */
+  color: #4b5563;
+
+  /*
+   * 行距(读的段落放松些)。
+   */
+  line-height: 1.7;
+
+  /*
+   * 与小标题的间距。
+   */
+  margin-top: 1px;
+}
+
+/*
+ * 扁平态正文的统一缩进(与 JD 正文 .jdIndent 同值 —— #188 对齐的就是它)。
+ */
+.flatBody {
+  /*
+   * 缩进 14。
+   */
+  padding-left: 14px;
+}
+
+/*
+ * 扁平态的外壳(无卡框,只留节距)。
+ */
+.flatSec {
+  /*
+   * 节距。
+   */
+  margin-bottom: 10px;
+}
+
+/*
+ * 扁平态的标题。
+ */
+.flatHead {
+  /*
+   * 粗体。
+   */
+  font-weight: 700;
+
+  /*
+   * 近黑。
+   */
+  color: #111827;
+}
+
+/*
+ * 中文对照行的几何微调(蓝竖条本身来自全局 .jdZh)。类名写两遍抬权重:
+ * 原先这两格是行内样式(压得过类),迁类后要稳赢 .jdZh 的 margin,不赌打包顺序。
+ */
+.zhLine.zhLine {
+  /*
+   * 与上面原文的间距。
+   */
+  margin-top: 3px;
+
+  /*
+   * 比原文小半档(它是注,不是正文)。
+   */
+  font-size: 12.5px;
+}
+
+/*
+ * 散文态的译文:整段译文保留原文的换行(五节格式那条是短句,不需要)。
+ */
+.zhProse.zhProse {
+  /*
+   * 保留换行。
+   */
+  white-space: pre-wrap;
+}
+
+/*
+ * 四维评分区:字号/行高/色**显式定在这里不靠继承** —— main.css 的 body 白字 18px
+ * 会吃掉裸继承的子元素(公司详情页实测中招;弹框有 13px 包裹层侥幸没事)。
+ */
+.grades {
+  /*
+   * 事实字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 深灰。
+   */
+  color: #374151;
+}
+
+/*
+ * 事实网格(维名 | 档名 | 依据 三列跨行对齐)。
+ * 🔴 2026-08-28 Frank 走查修的横向溢出就在这:通用 grid 域的 .grid 前两列是
+ * `max-content`,英文档名与「无记录」灰句在 375 上把整行顶出屏幕。这里三列都写成
+ * `minmax(0, …)` —— 桌面有空间时与 max-content 表现一致(该多宽还是多宽),
+ * 窄屏没空间时列可以收、字接着折行,收进容器宽度不再横滚。
+ */
+.facts {
+  /*
+   * 网格布局。
+   */
+  display: grid;
+
+  /*
+   * 前两列按内容定宽但可收,末列吃剩余宽也可收。
+   */
+  grid-template-columns: minmax(0, max-content) minmax(0, max-content) minmax(0, 1fr);
+
+  /*
+   * 行间距(事实行贴紧)。
+   */
+  row-gap: 3px;
+
+  /*
+   * 列间距。
+   */
+  column-gap: 14px;
+
+  /*
+   * 各格按基线对齐(数字与标签不上下跳)。
+   */
+  align-items: baseline;
+
+  /*
+   * 事实字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 一律左对齐(2026-07-26 Frank 走查拍板)。
+   */
+  text-align: left;
+}
+
+/*
+ * 事实网格的标签格(维名)。
+ */
+.factK {
+  /*
+   * 浅灰(标签比值退一档)。
+   */
+  color: #9ca3af;
+
+  /*
+   * 允许收窄(配合 .facts 的 minmax,窄屏折行不外溢)。
+   */
+  min-width: 0;
+
+  /*
+   * 长词允许任意处断。
+   */
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 事实网格的值格(档名 / 份数)。
+ */
+.factV {
+  /*
+   * 深灰。
+   */
+  color: #374151;
+
+  /*
+   * 等宽数字(数值竖向对齐)。
+   */
+  font-variant-numeric: tabular-nums;
+
+  /*
+   * 允许收窄。
+   */
+  min-width: 0;
+
+  /*
+   * 长词允许任意处断。
+   */
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 事实网格的注格(依据句)。
+ */
+.factN {
+  /*
+   * 浅灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 允许收窄。
+   */
+  min-width: 0;
+
+  /*
+   * 长句允许任意处断(英文依据句最长,375 上就靠这条不外溢)。
+   */
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 「无记录」灰句(🔴 语义红线:None = 无记录 ≠ 不担保)。
+ */
+.na {
+  /*
+   * 浅灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 长句允许任意处断(英文那句最长,375 上原先把整行顶出屏幕)。
+   */
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 章行(政府章 / 知名章)。
+ */
+.badges {
+  /*
+   * 横排。
+   */
+  display: flex;
+
+  /*
+   * 垂直居中。
+   */
+  align-items: center;
+
+  /*
+   * 章间距。
+   */
+  gap: 8px;
+
+  /*
+   * 放不下就换行(375 上两个章能各占一行)。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 与下面卡片的间距。
+   */
+  margin: 0 0 10px;
+}
+
+/*
+ * 一个章。
+ */
+.badge {
+  /*
+   * 最小字号。
+   */
+  font-size: 11px;
+
+  /*
+   * 药丸形。
+   */
+  border-radius: 999px;
+
+  /*
+   * 章内衬。
+   */
+  padding: 2px 9px;
+
+  /*
+   * 章文字不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 链接形态的章不带下划线。
+   */
+  text-decoration: none;
+}
+
+/*
+ * 政府 / 公共机构章(绿)。
+ */
+.badgeGov {
+  /*
+   * 绿字。
+   */
+  color: #15803d;
+
+  /*
+   * 浅绿底。
+   */
+  background: #f0fdf4;
+
+  /*
+   * 浅绿描边。
+   */
+  border: 1px solid #bbf7d0;
+}
+
+/*
+ * 知名章(蓝,可点跳维基)。
+ */
+.badgeWiki {
+  /*
+   * 蓝字。
+   */
+  color: #1d4ed8;
+
+  /*
+   * 浅蓝底。
+   */
+  background: #eff6ff;
+
+  /*
+   * 浅蓝描边。
+   */
+  border: 1px solid #bfdbfe;
+}
+
+/*
+ * 挂在卡标题旁的章(弹框形态:章行被壳收走,章跟着标题走)。
+ */
+.badgeInHead {
+  /*
+   * 与标题的间隔。
+   */
+  margin-left: 8px;
+
+  /*
+   * 常规字重(卡标题的 700 不带到章上)。
+   */
+  font-weight: 400;
+}
+
+/*
+ * 卡片内的职位行:左岗名右薪资城市。
+ */
+.jobRow {
+  /*
+   * 行内衬。
+   */
+  padding: 4px 0;
+
+  /*
+   * 两端排开。
+   */
+  display: flex;
+
+  /*
+   * 左右两段推开。
+   */
+  justify-content: space-between;
+
+  /*
+   * 基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 两段之间的最小间距。
+   */
+  gap: 10px;
+}
+
+/*
+ * 职位行左段(岗名 + 小注)。
+ */
+.jobL {
+  /*
+   * 允许收窄(长岗名折行,而不是把右段顶走)。
+   */
+  min-width: 0;
+}
+
+/*
+ * 岗名钮(弹框内点它叠开 JD 弹框)。类名写两遍抬权重(理由同 .srcBtn)。
+ */
+.jobBtn.jobBtn {
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 零内衬。
+   */
+  padding: 0;
+
+  /*
+   * 字随正文(钮不自带字号字重)。
+   */
+  font: inherit;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 左对齐(折行的第二行也要贴左)。
+   */
+  text-align: left;
+
+  /*
+   * 品牌蓝(它是链接语义)。
+   */
+  color: #2563eb;
+
+  /*
+   * 长岗名折行(button 基座的 nowrap 在这里会把行顶出屏幕)。
+   */
+  white-space: normal;
+}
+
+/*
+ * 岗名链接(页面形态)。
+ */
+.jobLink {
+  /*
+   * 岗名字号。
+   */
+  font-size: 13px;
+}
+
+/*
+ * 岗名下的灰字小注(NOC 译名)。
+ */
+.jobSub {
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 浅灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 与岗名的间距。
+   */
+  margin-top: 1px;
+
+  /*
+   * 行距。
+   */
+  line-height: 1.5;
+}
+
+/*
+ * 职位行右段(薪资 + 城市)。
+ */
+.jobR {
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 右段不折行(它短,折了反而难读)。
+   */
+  white-space: nowrap;
+
+  /*
+   * 不被左段挤扁。
+   */
+  flex-shrink: 0;
+
+  /*
+   * 右对齐。
+   */
+  text-align: right;
+}
+
+/*
+ * 薪资(绿色粗体 —— 这一行里最值钱的事实)。
+ */
+.jobPay {
+  /*
+   * 绿。
+   */
+  color: #15803d;
+
+  /*
+   * 粗体。
+   */
+  font-weight: 700;
+
+  /*
+   * 比城市大半档。
+   */
+  font-size: 12.5px;
+}
+
+/*
+ * 城市。
+ */
+.jobCity {
+  /*
+   * 浅灰。
+   */
+  color: #9ca3af;
+}
+
+/*
+ * 「展开其余 N 个」钮(#198:原地展开,不跳转)。类名写两遍抬权重(理由同 .srcBtn)。
+ */
+.showAll.showAll {
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 上下 2、左右 0(贴着职位行)。
+   */
+  padding: 2px 0;
+
+  /*
+   * 小字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 品牌蓝。
+   */
+  color: #2563eb;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 常规字重(原先是裸 button,浏览器默认常规字重)。
+   */
+  font-weight: 400;
+
+  /*
+   * 窄屏允许折行(button 基座的 nowrap 会把这句顶出屏幕)。
+   */
+  white-space: normal;
+}
+
+/*
+ * 回退去职位板看全部的那一行。
+ */
+.showAllBoard {
+  /*
+   * 与上面职位行的间距。
+   */
+  margin-top: 4px;
+}
+
+/*
+ * 身份与简介之间的分隔线(Frank 2026-07-23 效果图「中间横线可以」)。
+ */
+.hr {
+  /*
+   * 极浅的一条线。
+   */
+  border-top: 1px solid #f3f4f6;
+
+  /*
+   * 上 10 下 8。
+   */
+  margin: 10px 0 8px;
+}
+
+/*
+ * 收紧档的分隔线(获批职业拆分上面那条)。
+ */
+.hrTight {
+  /*
+   * 上 10 下 6。
+   */
+  margin: 10px 0 6px;
+}
+
+/*
+ * 简介内容的外框。
+ */
+.descWrap {
+  /*
+   * 与身份区的间距。
+   */
+  margin-top: 8px;
+}
+
+/*
+ * 名录厚简介正文。
+ */
+.desc {
+  /*
+   * 保留原文换行(名录里的分段是有意义的)。
+   */
+  white-space: pre-wrap;
+}
+
+/*
+ * 厚简介的出处小注(抓自官网)。
+ */
+.descSrc {
+  /*
+   * 与正文的间距。
+   */
+  margin-top: 4px;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 浅灰。
+   */
+  color: #9ca3af;
+}
+
+/*
+ * 「官网是搜出来的」小注(不是名录给的,如实说)。
+ */
+.siteSearched {
+  /*
+   * 与上面行的间距。
+   */
+  margin-top: 4px;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 浅灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 行距。
+   */
+  line-height: 1.5;
+}
+
+/*
+ * 技能类股的股名(绿)。
+ */
+.spSkilled {
+  /*
+   * 绿。
+   */
+  color: #15803d;
+}
+
+/*
+ * 非技能类股的股名(灰 —— 不是贬,只是不属于技能股)。
+ */
+.spUnskilled {
+  /*
+   * 浅灰。
+   */
+  color: #9ca3af;
+}
+
+/*
+ * 「技能类」小标签。
+ */
+.spTag {
+  /*
+   * 最小字号。
+   */
+  font-size: 10.5px;
+
+  /*
+   * 与股名的间隔。
+   */
+  margin-left: 4px;
+}
+
+/*
+ * 股别份数。
+ */
+.spN {
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
+}
+
+/*
+ * 技能类股的份数(加粗 —— 这一格才是移民视角要看的)。
+ */
+.spNOn {
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 获批职业拆分的小标题。
+ */
+.nocsHead {
+  /*
+   * 小标题字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 中灰。
+   */
+  color: #6b7280;
+
+  /*
+   * 与清单的间距。
+   */
+  margin-bottom: 4px;
+}
+
+/*
+ * 获批职业两列网格:职业名吃剩余宽、份数右列 max-content ——
+ * 与事实网格同规矩,只是这里名在左、数在右。
+ */
+.nocs {
+  /*
+   * 网格布局。
+   */
+  display: grid;
+
+  /*
+   * 名列可折行,数列按内容定宽。
+   */
+  grid-template-columns: minmax(0, 1fr) max-content;
+
+  /*
+   * 列间距。
+   */
+  column-gap: 14px;
+
+  /*
+   * 行间距。
+   */
+  row-gap: 3px;
+
+  /*
+   * 基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 事实字号。
+   */
+  font-size: 13px;
+}
+
+/*
+ * 职业名(禁截断 → 折行,#268 同判)。
+ */
+.nocName {
+  /*
+   * 长名允许任意处断。
+   */
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 职业名后的裸码灰字小注(代码不裸奔:人话名做主文案)。
+ */
+.nocCode {
+  /*
+   * 浅灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 最小字号。
+   */
+  font-size: 10.5px;
+
+  /*
+   * 与职业名的间隔。
+   */
+  margin-left: 6px;
+
+  /*
+   * 码不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 「其余 N 个职业」那一行的名格。
+ */
+.nocRest {
+  /*
+   * 浅灰(它是汇总不是事实行)。
+   */
+  color: #9ca3af;
+}
+
+/*
+ * 获批职业的数值格。
+ */
+.nocNum {
+  /*
+   * 右对齐(数值列恒右)。
+   */
+  text-align: right;
+}
+
+/*
+ * 「其余 N 个职业」那一行的数值格。
+ */
+.nocRestNum {
+  /*
+   * 浅灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
+
+  /*
+   * 右对齐。
+   */
+  text-align: right;
+}
+
+/*
+ * 相似雇主卡标题后的小注(说明这批是怎么选出来的)。
+ */
+.simSub {
+  /*
+   * 常规字重(标题的粗体不带到小注上)。
+   */
+  font-weight: 400;
+
+  /*
+   * 浅灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 与标题的间隔。
+   */
+  margin-left: 8px;
+}
+
+/*
+ * 相似雇主的一行。
+ */
+.simRow {
+  /*
+   * 事实字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 行内衬。
+   */
+  padding: 2px 0;
+
+  /*
+   * 两端排开。
+   */
+  display: flex;
+
+  /*
+   * 左右两段推开。
+   */
+  justify-content: space-between;
+
+  /*
+   * 基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 两段之间的最小间距。
+   */
+  gap: 10px;
+}
+
+/*
+ * 相似雇主的公司名。
+ */
+.simName {
+  /*
+   * 允许收窄(长公司名折行,而不是把右段顶走)。
+   */
+  min-width: 0;
+}
+
+/*
+ * 相似雇主右段(担保档名 + 在招数)。
+ */
+.simMeta {
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 右段不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 不被左段挤扁。
+   */
+  flex-shrink: 0;
+
+  /*
+   * 浅灰。
+   */
+  color: #9ca3af;
+}
+
+/*
+ * 在招数(跟在档名后面)。
+ */
+.simOpen {
+  /*
+   * 与档名的间隔。
+   */
+  margin-left: 8px;
+}
+
+/*
+ * 弹框顶部的钮条。
+ */
+.acts {
+  /*
+   * 横排。
+   */
+  display: flex;
+
+  /*
+   * 钮间距。
+   */
+  gap: 8px;
+
+  /*
+   * 上 2 下 12。
+   */
+  margin: 2px 0 12px;
+
+  /*
+   * 放不下就换行(375 上三个钮排两行)。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 药丸钮(弹框顶部三钮的底座)。全局层有一份同名同值的 .pill(多域共用),
+ * 这里留一份本域自己的:钮经 Button(kind ghost)渲染,类名写两遍才稳赢
+ * button 域 .btn/.ghost 的同权重声明,且不赌打包顺序。
+ */
+.pill.pill {
+  /*
+   * 描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 药丸形。
+   */
+  border-radius: 999px;
+
+  /*
+   * 钮内衬。
+   */
+  padding: 5px 13px;
+
+  /*
+   * 小字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 白底。
+   */
+  background: var(--card);
+
+  /*
+   * 深灰字。
+   */
+  color: #374151;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 开着的药丸钮(原先是行内样式,迁类后同样写两遍抬权重)。
+ */
+.pillOn.pillOn {
+  /*
+   * 浅蓝底。
+   */
+  background: #eff6ff;
+
+  /*
+   * 浅蓝描边。
+   */
+  border-color: #bfdbfe;
+
+  /*
+   * 蓝字。
+   */
+  color: #1d4ed8;
+}
+
+/*
+ * 「完整页 ↗」那颗药丸(它是链接不是钮)。
+ */
+.pillLink {
+  /*
+   * 不出下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 行内块(与钮同高)。
+   */
+  display: inline-block;
+}
+
+/*
+ * 弹框里的一行状态话(加载中 / 暂不可用)。
+ */
+.note {
+  /*
+   * 段落外边距清零。
+   */
+  margin: 0;
+
+  /*
+   * 事实字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 浅灰。
+   */
+  color: #9ca3af;
+}
+
+/*
+ * AI 速读卡的正文底座(弹框壳独有,页面不带)。
+ */
+.aiCard {
+  /*
+   * 正文字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 行距(读的段落放松些)。
+   */
+  line-height: 1.75;
+
+  /*
+   * 深灰。
+   */
+  color: #374151;
+}
+
+/*
+ * 公司身体的底座:字号 / 行高 / 色显式定在这里不靠继承(理由同 .grades)。
+ */
+.body {
+  /*
+   * 正文字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 行距。
+   */
+  line-height: 1.75;
+
+  /*
+   * 深灰。
+   */
+  color: #374151;
+}

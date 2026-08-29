@@ -1,0 +1,355 @@
+/*
+ * funnel 域(/funnel 转化漏斗内部看板)的私有样式。2026-08-27 换装批自 Funnel.tsx 的
+ * 内联样式与那块 <style> 标签逐格迁类,值一个不改;色值凡在 colors 域有名字的走 CSS 变量
+ * (--card/--border/--text2/--text3/--hairline/--warn),页面私有的一枚(尾行字色)
+ * 留字面量并挂注释。
+ */
+
+/*
+ * 整页白卡(这页只有一张卡,表与三条注都在里面)。
+ */
+.card {
+  /*
+   * 卡白底。
+   */
+  background: var(--card);
+
+  /*
+   * 卡描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 卡圆角(全站白卡同一档)。
+   */
+  border-radius: 12px;
+
+  /*
+   * 卡内衬(上下 16、左右 18)。
+   */
+  padding: 16px 18px;
+}
+
+/*
+ * 标题行:左边标题与小注,右边返回钮(钮靠 margin-left auto 推到最右)。
+ */
+.head {
+  /*
+   * 横向排开。
+   */
+  display: flex;
+
+  /*
+   * 顶对齐(标题是两行,钮跟第一行齐)。
+   */
+  align-items: flex-start;
+
+  /*
+   * 标题与钮之间的最小间隔。
+   */
+  gap: 12px;
+}
+
+/*
+ * 整页标题。
+ */
+.h1 {
+  /*
+   * H1 字号(内部页比消费页小一档)。
+   */
+  font-size: 19px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 外边距清零(卡内衬已经给了间距)。
+   */
+  margin: 0;
+}
+
+/*
+ * 标题下的口径小注。
+ */
+.sub {
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 浅灰(colors 域变量)。
+   */
+  color: var(--text3);
+
+  /*
+   * 贴着标题下面。
+   */
+  margin-top: 3px;
+}
+
+/*
+ * 右上返回钮。类名写两遍抬权重:本钮经 Button(kind ghost)渲染
+ * (「<button 这种不允许直接使用」),要稳赢 button 域 .btn/.ghost 的同权重声明
+ * 且不赌打包顺序(先例 account 的 .logoutBtn、companies 的 .backBtn)。
+ */
+.backBtn.backBtn {
+  /*
+   * 把钮推到标题行最右。
+   */
+  margin-left: auto;
+
+  /*
+   * 描边(colors 域变量)。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 白底(盖掉 .ghost 的无底)。
+   */
+  background: var(--card);
+
+  /*
+   * 次级灰字(盖掉 .ghost 的品牌蓝:返回不是主行动)。
+   */
+  color: var(--text2);
+
+  /*
+   * 钮圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 钮内衬(上下 6、左右 13)。
+   */
+  padding: 6px 13px;
+
+  /*
+   * 钮字号(小半档 —— 它是弱操作)。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 常规字重(盖掉 .btn 的 600 —— 原先是裸 <button>,浏览器默认常规字重)。
+   */
+  font-weight: 400;
+
+  /*
+   * 跟随页面字体(原内联 font-family: inherit 迁来:裸 <button> 默认用系统 UI 字体)。
+   */
+  font-family: inherit;
+
+  /*
+   * 钮文字不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 表与标题行之间的间距。
+ */
+.tableBox {
+  /*
+   * 与标题行的间距。
+   */
+  margin-top: 14px;
+}
+
+/*
+ * 「30 天」列的单元格:粗体(原先是 <b>)。选择器带 td 是有意的 —— 列级 class 同时落在
+ * <th> 与 <td> 上,表头本来就有自己的 600 字重,不该被这一格连带加粗。
+ */
+td.strong {
+  /*
+   * 粗体(= 浏览器 <b> 的默认字重)。
+   */
+  font-weight: 700;
+}
+
+/*
+ * 「比上一步」列的单元格:比正文再淡一档(它是派生值不是原始计数)。同样只落 <td>,
+ * 表头字色归表格域管。
+ */
+td.rate {
+  /*
+   * 浅灰(colors 域变量 —— 原内联 UI.text3 就是它)。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 手机上砍掉「7 天/昨天」两列:375 宽下五列会把步骤名折成「① 打开职/位详情」——
+ * 趋势在手机上不是重点,30 天与转化率才是。表本身仍在 overflow-x 容器里,页面不横滚。
+ * 这条**必须**同时落 <th> 与 <td>(列级 class 两边都挂),所以不带标签名限定。
+ */
+@media (width <= 640px) {
+  .narrowHide {
+    /*
+     * 整列不出。
+     */
+    display: none;
+  }
+}
+
+/*
+ * 尾行「⑥ 真实付费」的单元格。它是 colSpan 合并行不走列模型,所以自己排版 ——
+ * 四格逐字对齐 table 域的 .td token(改那边要跟着改这里)。
+ */
+.footTd {
+  /*
+   * 与表体单元格同一档内衬。
+   */
+  padding: 9px 12px;
+
+  /*
+   * 与表体单元格同一档字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 深灰字(本页私有,不是全站色板成员;= table 域 .td 的字色)。
+   */
+  color: #374151;
+
+  /*
+   * 与表体单元格同一条底线(colors 域变量)。
+   */
+  border-bottom: 1px solid var(--hairline);
+
+  /*
+   * 等宽数字(数字列上下对得齐)。
+   */
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 尾行第一格「⑥ 真实付费」。
+ */
+.footLabel {
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 尾行第二格:proUntil 有值的人数。
+ */
+.footCount {
+  /*
+   * 数字右对齐(与「30 天」列同口径)。
+   */
+  text-align: right;
+
+  /*
+   * 粗体(原先是 <b>,与「30 天」列同口径 —— 这一格是本行的主数)。
+   */
+  font-weight: 700;
+}
+
+/*
+ * 尾行第三格:走过 Checkout 的人数说明(横跨剩下三列)。
+ */
+.footNote {
+  /*
+   * 浅灰(colors 域变量)。
+   */
+  color: var(--text3);
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+}
+
+/*
+ * 分组行(锁区曝光按入口 / 打开定价按来路)。
+ */
+.propLine {
+  /*
+   * 与上面表格的间距。
+   */
+  margin-top: 12px;
+
+  /*
+   * 正文字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 次级灰字(colors 域变量)。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 紧跟在另一条分组行下面的那一条:间距收窄(两行是同一类信息,不用拉开)。
+ */
+.propLineTight {
+  /*
+   * 与上一条分组行的间距。
+   */
+  margin-top: 6px;
+}
+
+/*
+ * 分组行里的一条(维度串 + 次数)。
+ */
+.propItem {
+  /*
+   * 条与条之间的间隔(全站禁「·」杂糅,这里靠留白分条)。
+   */
+  margin-left: 10px;
+}
+
+/*
+ * 「② 那一格为什么空着」的脚注。
+ */
+.note {
+  /*
+   * 与上面内容的间距。
+   */
+  margin-top: 10px;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 浅灰(colors 域变量)。
+   */
+  color: var(--text3);
+
+  /*
+   * 行距(这句会折行,松一点好读)。
+   */
+  line-height: 1.6;
+}
+
+/*
+ * 一条计数都没有时的提示。
+ */
+.empty {
+  /*
+   * 与上面脚注的间距。
+   */
+  margin-top: 12px;
+
+  /*
+   * 正文字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 警示琥珀(colors 域变量 —— 原内联 #b45309 就是它):这不是错误,是「该去看看埋点」。
+   */
+  color: var(--warn);
+}

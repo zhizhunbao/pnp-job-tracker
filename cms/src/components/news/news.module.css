@@ -1,0 +1,2940 @@
+/*
+ * news 页面域的私有样式。2026-08-27 换装批自 main.css 第 11 段(资讯 News:列表 + 详情 +
+ * 评论)整段迁入,值逐格相等。原段的两条决策记录随迁:
+ * · 2026-08-17 这段是从 news/News.tsx(原 NewsView.tsx)迁出到 main.css 的;
+ * · 数据驱动的色(一省一色的图块与渐变)原先经 --tile / --tbg / --tfg 三个自定义属性
+ *   从 tsx 的行内 style 传进来 —— 本批改成一省一个修饰类(下面 gradXxx / mutedXxx 两族),
+ *   色值一个不改。改的理由是组件域的闸只认「静态样式进 module.css」:那三个属性的值
+ *   是**写死的**八省配色表,不是运行时算出来的数据,住在 tsx 里等于把色板拆成两半。
+ * 整页外框(撑满视口的灰底纵向三段列,原 .nwShell)不在本文件:2026-08-27 Frank 拍板
+ * 收拢成 shell 域的通用件 Frame,页面门直接拼;原框上那两条 font-family / color 与
+ * main.css 的 body 逐字同值、是冗余,随框一起删,正文段的 flex:1 由页脚自己的
+ * margin-top:auto 接管(原 .nwMain 同批退役)。
+ * 仍留在全局层的三个类(rowHover / cardHover / 手机触控靶的 nwChips button.tapPad)
+ * 是跨页规范,名字在 constants.ts 里挂着注释。
+ */
+
+/*
+ * ── 1. 地区标 + AI 重要度徽标 ───────────────────────────────────────────
+ */
+
+/*
+ * 地区标:省名/联邦名的小药丸(列表、头条、详情三处共用)。
+ */
+.region {
+  /*
+   * 淡靛底。
+   */
+  background: #eef2ff;
+
+  /*
+   * 靛字。
+   */
+  color: #3730a3;
+
+  /*
+   * 药丸圆角。
+   */
+  border-radius: 6px;
+
+  /*
+   * 内衬(上下 1、左右 7)。
+   */
+  padding: 1px 7px;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 地区名不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 联邦档的地区标:换成 IRCC 红(一省一色里联邦那一格)。
+ */
+.regionFed {
+  /*
+   * 淡红底。
+   */
+  background: #fee2e2;
+
+  /*
+   * 红字。
+   */
+  color: #b91c1c;
+}
+
+/*
+ * AI 重要度徽标(P1d 立、P1f 收窄):只给 5 分挂红「重要」—— 琥珀「关注」档 Frank
+ * 拍板删(没用)。hover 是一句理由 + 口径声明(AI 评,非资格判定)。
+ */
+.imp {
+  /*
+   * 危险红实底(真值在 main.css 的 :root)。
+   */
+  background: var(--danger);
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+
+  /*
+   * 药丸圆角。
+   */
+  border-radius: 6px;
+
+  /*
+   * 内衬(上下 1、左右 7)。
+   */
+  padding: 1px 7px;
+
+  /*
+   * 比地区标再小半档。
+   */
+  font-size: 11px;
+
+  /*
+   * 粗体(它要抢眼)。
+   */
+  font-weight: 700;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * ── 2. 列表左侧的地标图块 ───────────────────────────────────────────────
+ */
+
+/*
+ * 图块外框:定宽定高,与列表行的 128 定高配套。
+ */
+.tile {
+  /*
+   * 图块宽。
+   */
+  width: 96px;
+
+  /*
+   * 不许被 flex 压缩。
+   */
+  min-width: 96px;
+
+  /*
+   * 图块高。
+   */
+  height: 64px;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 图裁进圆角。
+   */
+  overflow: hidden;
+}
+
+/*
+ * 缺图兜底 = v4 淡色字标(#206:NB/NL/PE 没有地标图,不拿别省照片冒充)。
+ * 底色与字色由下面 mutedXxx 一族按地区给。
+ */
+.tileFallback {
+  /*
+   * 纵向排(代号在上,地名在下)。
+   */
+  display: flex;
+  flex-direction: column;
+
+  /*
+   * 横向居中。
+   */
+  align-items: center;
+
+  /*
+   * 纵向居中。
+   */
+  justify-content: center;
+
+  /*
+   * 字标粗体。
+   */
+  font-weight: 700;
+}
+
+/*
+ * 兜底字标的主行(省码)。
+ */
+.tileCode {
+  /*
+   * 主行字号。
+   */
+  font-size: 20px;
+
+  /*
+   * 紧凑行距(两行要塞进 64 高)。
+   */
+  line-height: 1.2;
+}
+
+/*
+ * 联邦档主行是四个字母(IRCC),比两位省码要小一档才不顶边。
+ */
+.tileCodeFed {
+  /*
+   * 联邦档主行字号。
+   */
+  font-size: 17px;
+}
+
+/*
+ * 兜底字标的副行(地名)。一行内截断:联邦全名在 96px 宽里会折三行撑破定高。
+ */
+.tileSub {
+  /*
+   * 副行字号。
+   */
+  font-size: 9.5px;
+
+  /*
+   * 中等字重。
+   */
+  font-weight: 500;
+
+  /*
+   * 比主行淡(它是小注)。
+   */
+  opacity: .75;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 溢出裁掉。
+   */
+  overflow: hidden;
+
+  /*
+   * 裁处补省略号。
+   */
+  text-overflow: ellipsis;
+
+  /*
+   * 留出左右各 4 的余量。
+   */
+  max-width: 88px;
+}
+
+/*
+ * 图块里的真实地标照。
+ */
+.tileImg {
+  /*
+   * 吃满图块宽。
+   */
+  width: 100%;
+
+  /*
+   * 吃满图块高。
+   */
+  height: 100%;
+
+  /*
+   * 等比裁剪填满(不变形)。
+   */
+  object-fit: cover;
+
+  /*
+   * 去掉行内图底部的基线空隙。
+   */
+  display: block;
+}
+
+/*
+ * ── 3. 缺图兜底的一省一色(原 --tbg / --tfg 两个自定义属性)──────────────
+ */
+
+/*
+ * 联邦(IRCC 红)。
+ */
+.mutedFederal {
+  /*
+   * 淡红底。
+   */
+  background: #fef2f2;
+
+  /*
+   * 红字。
+   */
+  color: #b91c1c;
+}
+
+/*
+ * 安大略。
+ */
+.mutedOn {
+  /*
+   * 淡青底。
+   */
+  background: #f0fdfa;
+
+  /*
+   * 青字。
+   */
+  color: #0f766e;
+}
+
+/*
+ * 卑诗。
+ */
+.mutedBc {
+  /*
+   * 淡紫底。
+   */
+  background: #f5f3ff;
+
+  /*
+   * 紫字。
+   */
+  color: #6d28d9;
+}
+
+/*
+ * 阿尔伯塔。
+ */
+.mutedAb {
+  /*
+   * 淡琥珀底。
+   */
+  background: #fffbeb;
+
+  /*
+   * 琥珀字。
+   */
+  color: #b45309;
+}
+
+/*
+ * 萨斯喀彻温。
+ */
+.mutedSk {
+  /*
+   * 淡绿底。
+   */
+  background: #f0fdf4;
+
+  /*
+   * 绿字。
+   */
+  color: #15803d;
+}
+
+/*
+ * 曼尼托巴。
+ */
+.mutedMb {
+  /*
+   * 淡黄底。
+   */
+  background: #fefce8;
+
+  /*
+   * 黄字。
+   */
+  color: #a16207;
+}
+
+/*
+ * 魁北克。
+ */
+.mutedQc {
+  /*
+   * 淡蓝底。
+   */
+  background: #eff6ff;
+
+  /*
+   * 蓝字。
+   */
+  color: #1d4ed8;
+}
+
+/*
+ * 新斯科舍。
+ */
+.mutedNs {
+  /*
+   * 淡天蓝底。
+   */
+  background: #ecfeff;
+
+  /*
+   * 天蓝字。
+   */
+  color: #0e7490;
+}
+
+/*
+ * 表里没有的地区(新省上线还没配色时的中性灰,不猜)。
+ */
+.mutedOther {
+  /*
+   * 中性浅灰底。
+   */
+  background: #f3f4f6;
+
+  /*
+   * 深灰字。
+   */
+  color: #374151;
+}
+
+/*
+ * ── 4. 头条大图 ─────────────────────────────────────────────────────────
+ */
+
+/*
+ * 头条图区定高 300(2026-07-19 Frank「图片不一样大小到现在都没解决」——
+ * 此前 flex:1 弹性吃高度差,每张 slide 文字行数不同,图就忽大忽小;
+ * 高度差改由下方文字区吸收,图恒定)。
+ * P1f(Frank「最好背景图能用真实的图片」):省份地标实景照(本站静态 /img/regions/,
+ * Wikimedia Commons 来源见 SOURCES.md,不外链不用 og 文字图)+ 底部渐变压字。
+ * 头条图**不用抓来的 og 图**(Frank「很多文字的图片不适合作为 banner」——政府 og 图
+ * 多为文字模板图,裁剪救不回);og 图只在详情页/原文里看。
+ */
+.hero {
+  /*
+   * 图区定高。
+   */
+  height: 300px;
+
+  /*
+   * 图/压字层/角标的定位基准。
+   */
+  position: relative;
+
+  /*
+   * 图裁进卡片。
+   */
+  overflow: hidden;
+}
+
+/*
+ * 缺图/加载失败退省色字标(底色由下面 gradXxx 一族给)。
+ */
+.heroFallback {
+  /*
+   * 字标居中排。
+   */
+  display: flex;
+
+  /*
+   * 横向居中。
+   */
+  align-items: center;
+
+  /*
+   * 纵向居中。
+   */
+  justify-content: center;
+}
+
+/*
+ * 兜底字标(省名/IRCC)。
+ */
+.heroCode {
+  /*
+   * 近白(压在渐变上,不用纯白免得刺眼)。
+   */
+  color: rgb(255 255 255 / 90%);
+
+  /*
+   * 特粗。
+   */
+  font-weight: 800;
+
+  /*
+   * 大字号(它是这一格唯一的视觉)。
+   */
+  font-size: 38px;
+
+  /*
+   * 字距拉开。
+   */
+  letter-spacing: 2px;
+
+  /*
+   * 一律大写。
+   */
+  text-transform: uppercase;
+}
+
+/*
+ * 头条实景照。
+ */
+.heroImg {
+  /*
+   * 铺满图区。
+   */
+  position: absolute;
+  inset: 0;
+
+  /*
+   * 吃满宽。
+   */
+  width: 100%;
+
+  /*
+   * 吃满高。
+   */
+  height: 100%;
+
+  /*
+   * 等比裁剪填满。
+   */
+  object-fit: cover;
+}
+
+/*
+ * 底部压字层:图下缘压深,角标白字才读得清。
+ */
+.heroScrim {
+  /*
+   * 铺满图区。
+   */
+  position: absolute;
+  inset: 0;
+
+  /*
+   * 上半透明、下半压深的渐变。
+   */
+  background: linear-gradient(180deg, rgb(17 24 39 / 0%) 45%, rgb(17 24 39 / 55%));
+}
+
+/*
+ * 图左下角的地名角标(角标水印已删 —— Frank 2026-07-18;Commons 致谢改挂 img 的
+ * title 悬停 + SOURCES.md)。
+ */
+.heroTag {
+  /*
+   * 贴图左下。
+   */
+  position: absolute;
+  left: 16px;
+  bottom: 10px;
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+
+  /*
+   * 粗体。
+   */
+  font-weight: 700;
+
+  /*
+   * 角标字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 字距拉开。
+   */
+  letter-spacing: 1.5px;
+
+  /*
+   * 压一层暗投影,压在浅色照片上也读得清。
+   */
+  text-shadow: 0 1px 4px rgb(0 0 0 / 60%);
+
+  /*
+   * 一律大写。
+   */
+  text-transform: uppercase;
+}
+
+/*
+ * ── 5. 缺图兜底的一省一渐变(原 --tile 自定义属性)────────────────────────
+ */
+
+/*
+ * 联邦(IRCC 红)。
+ */
+.gradFederal {
+  /*
+   * 红渐变。
+   */
+  background: linear-gradient(135deg, #b91c1c, #dc2626);
+}
+
+/*
+ * 安大略。
+ */
+.gradOn {
+  /*
+   * 青渐变。
+   */
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
+}
+
+/*
+ * 卑诗。
+ */
+.gradBc {
+  /*
+   * 紫渐变。
+   */
+  background: linear-gradient(135deg, #6d28d9, #a78bfa);
+}
+
+/*
+ * 阿尔伯塔。
+ */
+.gradAb {
+  /*
+   * 琥珀渐变。
+   */
+  background: linear-gradient(135deg, #b45309, #f59e0b);
+}
+
+/*
+ * 萨斯喀彻温。
+ */
+.gradSk {
+  /*
+   * 绿渐变。
+   */
+  background: linear-gradient(135deg, #15803d, #22c55e);
+}
+
+/*
+ * 曼尼托巴。
+ */
+.gradMb {
+  /*
+   * 黄渐变。
+   */
+  background: linear-gradient(135deg, #a16207, #eab308);
+}
+
+/*
+ * 魁北克。
+ */
+.gradQc {
+  /*
+   * 蓝渐变。
+   */
+  background: linear-gradient(135deg, #1d4ed8, #60a5fa);
+}
+
+/*
+ * 新斯科舍。
+ */
+.gradNs {
+  /*
+   * 天蓝渐变。
+   */
+  background: linear-gradient(135deg, #0e7490, #22d3ee);
+}
+
+/*
+ * 表里没有的地区(中性灰渐变,不猜配色)。
+ */
+.gradOther {
+  /*
+   * 灰渐变。
+   */
+  background: linear-gradient(135deg, #374151, #6b7280);
+}
+
+/*
+ * ── 6. 头条区:1 大 + 4 小 ──────────────────────────────────────────────
+ * v4 BBC/Reuters 式布局保留;v5 大卡恢复轮播(Frank 2026-07-18「这部分应该加个轮播
+ * 的功能」,推翻 v4「轮播退役」):5s 自动 + 圆点 + 箭头,hover 暂停,右列恒显其余 4 条。
+ * 高度固定(Frank「banner 的高度应该是固定的」):图区恒 300,标题/摘要行数截断,
+ * 不随内容抖。
+ */
+
+/*
+ * 头条区骨架:左大右小两栏。
+ */
+.top {
+  /*
+   * 两栏网格。
+   */
+  display: grid;
+
+  /*
+   * 左 1.6 份、右 1 份。
+   */
+  grid-template-columns: 1.6fr 1fr;
+
+  /*
+   * 两栏间距。
+   */
+  gap: 14px;
+
+  /*
+   * 与下方时间线的距离。
+   */
+  margin-bottom: 8px;
+}
+
+/*
+ * 大卡的外壳。2026-08-27 换装批新拆出来的一层:轮播的箭头与圆点原先长在链接**里面**,
+ * 点它们要靠 e.preventDefault() 拦住整卡跳转;裸 <button>/<a> 禁令之后钮一律经 button 族,
+ * 而族里的 onClick 不收事件(签名是无参),拦不住。改成把控件挪出链接、与链接**并排**
+ * 摆在这层外壳里(下面 .bigCtl 罩住图区那 300 高),点控件天然不触发跳转,几何一格不动。
+ * hover 暂停也挂在这层 —— 覆盖范围与原来那张整卡一致。
+ */
+.bigWrap {
+  /*
+   * 轮播控件层的定位基准(原先是链接自己)。
+   */
+  position: relative;
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 卡圆角(比普通白卡再大一档 —— 它是头条)。
+   */
+  border-radius: 14px;
+
+  /*
+   * 图与控件裁进圆角。
+   */
+  overflow: hidden;
+
+  /*
+   * 图区在上、文字区在下。
+   */
+  display: flex;
+  flex-direction: column;
+}
+
+/*
+ * 大卡本体(整卡是一条链接)。
+ */
+.big {
+  /*
+   * 吃满外壳高 —— 右列比左列高时,高度差由卡内的文字区吸收。
+   */
+  flex: 1;
+
+  /*
+   * 图区在上、文字区在下。
+   */
+  display: flex;
+  flex-direction: column;
+
+  /*
+   * 整卡链接不出下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 字色随内容各自定,不吃链接蓝。
+   */
+  color: inherit;
+}
+
+/*
+ * 图区包一层:图定高,与右列的高度差由下方文字区吸收。
+ */
+.bigImg {
+  /*
+   * 保留定位基准(图自己是绝对定位的)。
+   */
+  position: relative;
+}
+
+/*
+ * 轮播控件层:罩住图区那 300 高,箭头与圆点在它里面定位 —— 位置与原先锚在图区里
+ * 逐像素相同。整层不吃鼠标(pointer-events: none),只有箭头与圆点自己吃,
+ * 于是图区照旧整块可点、可跳转。
+ */
+.bigCtl {
+  /*
+   * 贴外壳顶,横向铺满。
+   */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+
+  /*
+   * 与图区等高(箭头的 top:50% 因此落在图区正中)。
+   */
+  height: 300px;
+
+  /*
+   * 这一层本身不挡点击。
+   */
+  pointer-events: none;
+}
+
+/*
+ * 轮播左右箭头(类名写两遍抬权重:钮经 Button(kind ghost)渲染,要稳赢 button 域
+ * .btn/.ghost 的同权重声明且不赌打包顺序 —— 先例 companies 的 .backBtn)。
+ */
+.arrow.arrow {
+  /*
+   * 竖直居中贴在图区两侧。
+   */
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+
+  /*
+   * 圆钮宽。
+   */
+  width: 30px;
+
+  /*
+   * 圆钮高。
+   */
+  height: 30px;
+
+  /*
+   * 正圆。
+   */
+  border-radius: 50%;
+
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 半透明深底(压在照片上也看得见)。
+   */
+  background: rgb(17 24 39 / 45%);
+
+  /*
+   * 白箭头。
+   */
+  color: #ffffff;
+
+  /*
+   * 箭头字形大小。
+   */
+  font-size: 15px;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 字形贴合圆心。
+   */
+  line-height: 1;
+
+  /*
+   * 压在图与压字层之上。
+   */
+  z-index: 2;
+
+  /*
+   * 控件层整层不吃鼠标,箭头自己要吃。
+   */
+  pointer-events: auto;
+
+  /*
+   * 零内衬(圆钮靠宽高定形)。
+   */
+  padding: 0;
+}
+
+/*
+ * 左箭头贴左。
+ */
+.arrowPrev.arrowPrev {
+  /*
+   * 距图区左缘 10。
+   */
+  left: 10px;
+}
+
+/*
+ * 右箭头贴右。
+ */
+.arrowNext.arrowNext {
+  /*
+   * 距图区右缘 10。
+   */
+  right: 10px;
+}
+
+/*
+ * 圆点排:贴图区底缘居中。
+ */
+.dots {
+  /*
+   * 横向铺满图区、贴底。
+   */
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+
+  /*
+   * 一排排开。
+   */
+  display: flex;
+
+  /*
+   * 整排居中。
+   */
+  justify-content: center;
+
+  /*
+   * 点与点的间距(手机断点收 0,靠热区自己撑开)。
+   */
+  gap: 6px;
+
+  /*
+   * 压在图与压字层之上。
+   */
+  z-index: 2;
+
+  /*
+   * 控件层整层不吃鼠标,圆点自己要吃。
+   */
+  pointer-events: auto;
+}
+
+/*
+ * 一颗圆点的热区。#212(第 26 轮体检续):钮原先**就是**那颗 8×8 的点,手指点不中 ——
+ * 钮改透明热区(手机断点撑到 40×40),视觉点挪进内层 span。
+ */
+.dot.dot {
+  /*
+   * 桌面热区宽(= 视觉点宽)。
+   */
+  width: 8px;
+
+  /*
+   * 桌面热区高。
+   */
+  height: 8px;
+
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 零内衬。
+   */
+  padding: 0;
+
+  /*
+   * 热区透明。
+   */
+  background: none;
+
+  /*
+   * 视觉点在热区里居中。
+   */
+  display: inline-flex;
+
+  /*
+   * 纵向居中。
+   */
+  align-items: center;
+
+  /*
+   * 横向居中。
+   */
+  justify-content: center;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 圆点的视觉本体(未选中态)。
+ */
+.dotIn {
+  /*
+   * 点宽。
+   */
+  width: 8px;
+
+  /*
+   * 点高。
+   */
+  height: 8px;
+
+  /*
+   * 正圆。
+   */
+  border-radius: 50%;
+
+  /*
+   * 半透明白(未选中)。
+   */
+  background: rgb(255 255 255 / 45%);
+}
+
+/*
+ * 当前那一张对应的圆点。
+ */
+.dotInOn {
+  /*
+   * 实白(选中)。
+   */
+  background: #ffffff;
+}
+
+/*
+ * 大卡文字区。min-height 176 = 最长文案实测(徽标行 + 2 行标题 + 2 行摘要 + 内衬),
+ * 整卡高度轮播恒定。
+ */
+.bigBody {
+  /*
+   * 内衬(上 14、左右 18、下 16)。
+   */
+  padding: 14px 18px 16px;
+
+  /*
+   * 吃掉图区之外的高度差。
+   */
+  flex: 1;
+
+  /*
+   * 文案最短时的保底高。
+   */
+  min-height: 176px;
+}
+
+/*
+ * 徽标 + 地区 + 日期那一行(大卡)。
+ */
+.meta {
+  /*
+   * 一行排开。
+   */
+  display: flex;
+
+  /*
+   * 各项间距。
+   */
+  gap: 8px;
+
+  /*
+   * 按文字基线对齐(药丸与日期高矮不一)。
+   */
+  align-items: baseline;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 与标题的距离。
+   */
+  margin-bottom: 6px;
+
+  /*
+   * 窄屏折行。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 日期这类数字:等宽数字,同位数上下对得齐。
+ */
+.num {
+  /*
+   * 等宽数字。
+   */
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 大卡标题(2 行截断)。
+ */
+.bigTitle {
+  /*
+   * 标题字号。
+   */
+  font-size: 19px;
+
+  /*
+   * 粗体。
+   */
+  font-weight: 700;
+
+  /*
+   * 行距。
+   */
+  line-height: 1.35;
+
+  /*
+   * 与摘要的距离。
+   */
+  margin-bottom: 8px;
+
+  /*
+   * 多行截断三件套。
+   */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+
+  /*
+   * 溢出裁掉。
+   */
+  overflow: hidden;
+}
+
+/*
+ * 大卡摘要(2 行截断)。
+ */
+.bigSum {
+  /*
+   * 正文小一档。
+   */
+  font-size: 13px;
+
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 行距放松(它是要读的)。
+   */
+  line-height: 1.7;
+
+  /*
+   * 多行截断三件套。
+   */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+
+  /*
+   * 溢出裁掉。
+   */
+  overflow: hidden;
+}
+
+/*
+ * 摘要前的「AI 速读」小标(说清这段是机器写的,不是官方原文)。
+ */
+.aiTag {
+  /*
+   * 细描边。
+   */
+  border: 1px solid #d1d5db;
+
+  /*
+   * 小圆角。
+   */
+  border-radius: 4px;
+
+  /*
+   * 内衬(上下 0、左右 5)。
+   */
+  padding: 0 5px;
+
+  /*
+   * 最小字号。
+   */
+  font-size: 10.5px;
+
+  /*
+   * 与摘要正文的距离。
+   */
+  margin-right: 6px;
+
+  /*
+   * 浅灰(它是小注)。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 右列小卡清单的外框。
+ */
+.side {
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 与大卡同一档圆角。
+   */
+  border-radius: 14px;
+
+  /*
+   * 内衬(上 6、左右 16、下 10)。
+   */
+  padding: 6px 16px 10px;
+}
+
+/*
+ * 右列小标题(「更多要闻」)。
+ */
+.sideH {
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 上 10、下 4。
+   */
+  margin: 10px 0 4px;
+
+  /*
+   * 字距略拉开。
+   */
+  letter-spacing: .5px;
+}
+
+/*
+ * 右列的一条(整条可点)。
+ */
+.sideItem {
+  /*
+   * 整条成块。
+   */
+  display: block;
+
+  /*
+   * 上下内衬。
+   */
+  padding: 10px 0;
+
+  /*
+   * 链接不出下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 字色随内容各自定。
+   */
+  color: inherit;
+}
+
+/*
+ * 第二条起在上方加一道细分隔线(第一条不加)。
+ */
+.sideItemSep {
+  /*
+   * 细线。
+   */
+  border-top: 1px solid var(--hairline);
+}
+
+/*
+ * 右列小卡标题(2 行截断)。
+ */
+.sideTitle {
+  /*
+   * 小卡标题字号。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 行距。
+   */
+  line-height: 1.45;
+
+  /*
+   * 近黑。
+   */
+  color: var(--text);
+
+  /*
+   * 多行截断三件套。
+   */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+
+  /*
+   * 溢出裁掉。
+   */
+  overflow: hidden;
+}
+
+/*
+ * 右列小卡的徽标 + 地区 + 日期行。
+ */
+.sideMeta {
+  /*
+   * 一行排开。
+   */
+  display: flex;
+
+  /*
+   * 各项间距。
+   */
+  gap: 8px;
+
+  /*
+   * 基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 与标题的距离。
+   */
+  margin-top: 3px;
+}
+
+/*
+ * ── 7. 按日分组的时间线列表 ─────────────────────────────────────────────
+ * 行定高 128(Frank「卡片的宽度和高度也应该是固定的」):标题 2 行、摘要 1 行截断,
+ * 脚钉底。
+ */
+
+/*
+ * 地区筛选药丸行。
+ */
+.chips {
+  /*
+   * 一行排开。
+   */
+  display: flex;
+
+  /*
+   * 药丸间距。
+   */
+  gap: 8px;
+
+  /*
+   * 窄屏折行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 上 10、下 14。
+   */
+  margin: 10px 0 14px;
+}
+
+/*
+ * 空态(筛完一条都没有)。
+ */
+.empty {
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 正文字号。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 与上方的距离。
+   */
+  margin-top: 16px;
+}
+
+/*
+ * 一天一条的日期分隔行。
+ */
+.day {
+  /*
+   * 日期与横线一行排开。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 日期与横线的间距。
+   */
+  gap: 8px;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 上 16、下 8。
+   */
+  margin: 16px 0 8px;
+
+  /*
+   * 等宽数字。
+   */
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 日期右边那条吃满剩余宽的细线。
+ */
+.dayLine {
+  /*
+   * 吃满剩余宽。
+   */
+  flex: 1;
+
+  /*
+   * 一像素高。
+   */
+  height: 1px;
+
+  /*
+   * 描边灰。
+   */
+  background: var(--border);
+}
+
+/*
+ * 时间线里的一条(整卡可点)。白卡三格(底/描边/圆角)照全局 .card 逐格抄一份 ——
+ * 本域自足,不赌全局类与模块类的顺序;hover 仍走全局 .cardHover(跨页规范)。
+ */
+.row {
+  /*
+   * 白底。
+   */
+  background: var(--card);
+
+  /*
+   * 描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 白卡圆角。
+   */
+  border-radius: 12px;
+
+  /*
+   * 图块在左、正文在右。
+   */
+  display: flex;
+
+  /*
+   * 图块与正文的间距。
+   */
+  gap: 14px;
+
+  /*
+   * 卡内衬(上下 12、左右 14)。
+   */
+  padding: 12px 14px;
+
+  /*
+   * 与下一条的距离。
+   */
+  margin-bottom: 10px;
+
+  /*
+   * 整卡链接不出下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 字色随内容各自定。
+   */
+  color: inherit;
+
+  /*
+   * 顶端对齐。
+   */
+  align-items: flex-start;
+
+  /*
+   * 行定高。
+   */
+  height: 128px;
+
+  /*
+   * 内衬算进定高。
+   */
+  box-sizing: border-box;
+
+  /*
+   * 超出定高的内容裁掉。
+   */
+  overflow: hidden;
+}
+
+/*
+ * 一条里的正文列。
+ */
+.rowBody {
+  /*
+   * 允许被压到 0(不写这格,长标题会把图块挤走)。
+   */
+  min-width: 0;
+
+  /*
+   * 吃满图块之外的宽。
+   */
+  flex: 1;
+
+  /*
+   * 纵向排。
+   */
+  display: flex;
+  flex-direction: column;
+
+  /*
+   * 各行间距。
+   */
+  gap: 4px;
+
+  /*
+   * 吃满行定高(脚才钉得住底)。
+   */
+  height: 100%;
+}
+
+/*
+ * 一条里的地区 + 徽标 + 日期行。
+ */
+.rowMeta {
+  /*
+   * 一行排开。
+   */
+  display: flex;
+
+  /*
+   * 各项间距。
+   */
+  gap: 8px;
+
+  /*
+   * 基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 允许折行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 单项不折。
+   */
+  white-space: nowrap;
+
+  /*
+   * 溢出裁掉(定高行不许被顶破)。
+   */
+  overflow: hidden;
+}
+
+/*
+ * 一条的标题(2 行截断)。
+ */
+.rowTitle {
+  /*
+   * 标题字号。
+   */
+  font-size: 15px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 行距。
+   */
+  line-height: 1.4;
+
+  /*
+   * 多行截断三件套。
+   */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+
+  /*
+   * 溢出裁掉。
+   */
+  overflow: hidden;
+}
+
+/*
+ * 一条的摘要(1 行截断)。
+ */
+.rowExcerpt {
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 行距。
+   */
+  line-height: 1.6;
+
+  /*
+   * 单行截断三件套。
+   */
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+
+  /*
+   * 溢出裁掉。
+   */
+  overflow: hidden;
+}
+
+/*
+ * 一条的脚行(评论数 + 阅读全文),钉在卡底。
+ */
+.rowFoot {
+  /*
+   * 一行排开。
+   */
+  display: flex;
+
+  /*
+   * 两项间距。
+   */
+  gap: 14px;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 把自己推到列底。
+   */
+  margin-top: auto;
+}
+
+/*
+ * 「阅读全文」。
+ */
+.readMore {
+  /*
+   * 品牌蓝(它是这一条的行动点)。
+   */
+  color: var(--primary);
+}
+
+/*
+ * 魁北克那条「不属 PNP」的小注(列表行内)。
+ */
+.qc {
+  /*
+   * 警示黄。
+   */
+  color: var(--warn);
+}
+
+/*
+ * ── 8. 评论区(F 件 v2)────────────────────────────────────────────────
+ * 计数头 + 官方置顶楼(admin 号发 + pinned,蓝底卡)+ 楼中楼一层(「展开 N 条回复」
+ * 折叠,≤3 直接展开)。不学匿名直发(信任边界):登录 + pending 审核制原样;
+ * 脱敏昵称快照照旧。
+ */
+
+/*
+ * 评论区整块(白卡三格照全局 .card 抄一份,本域自足)。
+ */
+.cmtSec {
+  /*
+   * 白底。
+   */
+  background: var(--card);
+
+  /*
+   * 描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 白卡圆角。
+   */
+  border-radius: 12px;
+
+  /*
+   * 卡内衬(上下 16、左右 18)。
+   */
+  padding: 16px 18px;
+
+  /*
+   * 与上方正文卡的距离。
+   */
+  margin-top: 16px;
+}
+
+/*
+ * 计数头(「N 条评论」)。
+ */
+.cmtTitle {
+  /*
+   * 小标题字号。
+   */
+  font-size: 14.5px;
+
+  /*
+   * 上 0、下 10。
+   */
+  margin: 0 0 10px;
+}
+
+/*
+ * 顶层发评论表单。
+ */
+.cmtForm {
+  /*
+   * 与第一座楼的距离。
+   */
+  margin-bottom: 12px;
+}
+
+/*
+ * 输入框(顶层与回复共用一套形)。
+ */
+.textarea {
+  /*
+   * 吃满宽。
+   */
+  width: 100%;
+
+  /*
+   * 内衬算进宽。
+   */
+  box-sizing: border-box;
+
+  /*
+   * 描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 内衬(上下 9、左右 12)。
+   */
+  padding: 9px 12px;
+
+  /*
+   * 正文字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 跟随页面字体(textarea 默认是等宽体)。
+   */
+  font-family: inherit;
+
+  /*
+   * 只许竖着拉。
+   */
+  resize: vertical;
+}
+
+/*
+ * 回复框:小一档内衬。
+ */
+.textareaSm {
+  /*
+   * 内衬(上下 7、左右 10)。
+   */
+  padding: 7px 10px;
+}
+
+/*
+ * 顶层表单的操作行(发送钮 + 结果提示)。
+ */
+.cmtActions {
+  /*
+   * 一行排开。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 钮与提示的间距。
+   */
+  gap: 12px;
+
+  /*
+   * 与输入框的距离。
+   */
+  margin-top: 6px;
+}
+
+/*
+ * 发送钮(类名写两遍抬权重,理由同 .arrow)。
+ */
+.send.send {
+  /*
+   * 品牌蓝实底。
+   */
+  background: var(--primary);
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+
+  /*
+   * 实底钮无描边。
+   */
+  border: none;
+
+  /*
+   * 钮圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 钮内衬(上下 6、左右 16)。
+   */
+  padding: 6px 16px;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 回复框的发送钮:小一档。
+ */
+.sendSm.sendSm {
+  /*
+   * 与回复框的距离。
+   */
+  margin-top: 4px;
+
+  /*
+   * 钮内衬(上下 4、左右 14)。
+   */
+  padding: 4px 14px;
+
+  /*
+   * 钮字号小半档。
+   */
+  font-size: 12.5px;
+}
+
+/*
+ * 发送钮的禁用态(空输入或在途)。
+ */
+.send.send:disabled {
+  /*
+   * 浅蓝。
+   */
+  background: #93c5fd;
+
+  /*
+   * 不可点就不给手型。
+   */
+  cursor: default;
+}
+
+/*
+ * 提交成功提示(「已提交,待审核」)。
+ */
+.ok {
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 成功绿。
+   */
+  color: var(--ok);
+}
+
+/*
+ * 失败提示(不静默降级)。
+ */
+.err {
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 错误红。
+   */
+  color: #b91c1c;
+}
+
+/*
+ * 未登录时那条去登录的引导(整条可点)。
+ */
+.loginLink {
+  /*
+   * 整条成块。
+   */
+  display: block;
+
+  /*
+   * 描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 内衬(上下 9、左右 12)。
+   */
+  padding: 9px 12px;
+
+  /*
+   * 品牌蓝。
+   */
+  color: var(--primary);
+
+  /*
+   * 正文字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 不出下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 与第一座楼的距离。
+   */
+  margin-bottom: 12px;
+}
+
+/*
+ * 一座楼(楼主 + 楼内回复)。
+ */
+.thread {
+  /*
+   * 楼与楼之间一道细线。
+   */
+  border-top: 1px solid var(--hairline);
+}
+
+/*
+ * 官方置顶楼:蓝底卡,与普通楼一眼分得开。
+ */
+.threadPinned {
+  /*
+   * 置顶楼不用分隔线(它自己是一张卡)。
+   */
+  border-top: none;
+
+  /*
+   * 极淡蓝底。
+   */
+  background: #f8faff;
+
+  /*
+   * 淡靛描边。
+   */
+  border: 1px solid #e0e7ff;
+
+  /*
+   * 卡圆角。
+   */
+  border-radius: 12px;
+
+  /*
+   * 左右内衬(上下留给楼内的行自己)。
+   */
+  padding: 0 14px;
+
+  /*
+   * 与下一座楼的距离。
+   */
+  margin-bottom: 6px;
+}
+
+/*
+ * 一条评论(头像 + 正文列)。
+ */
+.cmt {
+  /*
+   * 头像在左、正文在右。
+   */
+  display: flex;
+
+  /*
+   * 两者间距。
+   */
+  gap: 10px;
+
+  /*
+   * 上下内衬。
+   */
+  padding: 10px 0;
+
+  /*
+   * 正文字号。
+   */
+  font-size: 13px;
+}
+
+/*
+ * 头像(昵称首字母)。
+ */
+.cmtAv {
+  /*
+   * 头像宽。
+   */
+  width: 30px;
+
+  /*
+   * 头像高。
+   */
+  height: 30px;
+
+  /*
+   * 正圆。
+   */
+  border-radius: 50%;
+
+  /*
+   * 靛底(普通用户)。
+   */
+  background: #6366f1;
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+
+  /*
+   * 字母居中。
+   */
+  display: inline-flex;
+
+  /*
+   * 纵向居中。
+   */
+  align-items: center;
+
+  /*
+   * 横向居中。
+   */
+  justify-content: center;
+
+  /*
+   * 字母字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 粗体。
+   */
+  font-weight: 700;
+
+  /*
+   * 不许被 flex 压扁。
+   */
+  flex-shrink: 0;
+}
+
+/*
+ * 官方号的头像:换成品牌蓝。
+ */
+.cmtAvOfficial {
+  /*
+   * 品牌蓝底。
+   */
+  background: var(--primary);
+}
+
+/*
+ * 一条评论的正文列。
+ */
+.cmtMain {
+  /*
+   * 允许被压到 0(长词不许把头像挤走)。
+   */
+  min-width: 0;
+
+  /*
+   * 吃满头像之外的宽。
+   */
+  flex: 1;
+}
+
+/*
+ * 昵称 + 标 + 日期那一行。
+ */
+.cmtHead {
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 与正文的距离。
+   */
+  margin-bottom: 2px;
+}
+
+/*
+ * 昵称。
+ */
+.cmtName {
+  /*
+   * 次级灰(比小注深一档)。
+   */
+  color: var(--text2);
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 官方号的昵称:蓝字。
+ */
+.cmtNameOfficial {
+  /*
+   * 官方蓝。
+   */
+  color: #1d4ed8;
+}
+
+/*
+ * 「官方」标。
+ */
+.cmtTag {
+  /*
+   * 与昵称的距离。
+   */
+  margin-left: 6px;
+
+  /*
+   * 最小字号。
+   */
+  font-size: 10.5px;
+
+  /*
+   * 内衬(上下 1、左右 6)。
+   */
+  padding: 1px 6px;
+
+  /*
+   * 药丸圆角。
+   */
+  border-radius: 6px;
+
+  /*
+   * 淡蓝底。
+   */
+  background: #eff6ff;
+
+  /*
+   * 官方蓝字。
+   */
+  color: #1d4ed8;
+}
+
+/*
+ * 「置顶」标:换成琥珀(与官方标并排时分得开)。
+ */
+.cmtTagPinned {
+  /*
+   * 与前一枚标的距离(比官方标窄一档)。
+   */
+  margin-left: 4px;
+
+  /*
+   * 淡琥珀底。
+   */
+  background: #fffbeb;
+
+  /*
+   * 琥珀字。
+   */
+  color: #92400e;
+}
+
+/*
+ * 发表日期。
+ */
+.cmtDate {
+  /*
+   * 与前面那一项的距离。
+   */
+  margin-left: 8px;
+}
+
+/*
+ * 评论正文。
+ */
+.cmtText {
+  /*
+   * 保留用户敲的换行与空格。
+   */
+  white-space: pre-wrap;
+
+  /*
+   * 长串(网址这类)强制断行,不撑破楼。
+   */
+  overflow-wrap: break-word;
+}
+
+/*
+ * 「回复」钮(类名写两遍抬权重,理由同 .arrow)。
+ */
+.cmtReply.cmtReply {
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 内衬(上 2,其余 0)。
+   */
+  padding: 2px 0 0;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 品牌蓝。
+   */
+  color: var(--primary);
+
+  /*
+   * 常规字重(它是弱操作)。
+   */
+  font-weight: 400;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 回复框正开在这一条上:钮加重。
+ */
+.cmtReplyOn.cmtReplyOn {
+  /*
+   * 深蓝。
+   */
+  color: #1d4ed8;
+
+  /*
+   * 粗体。
+   */
+  font-weight: 700;
+}
+
+/*
+ * 楼中楼的回复框(与楼主的头像列对齐)。
+ */
+.replyBox {
+  /*
+   * 左缩进 40 = 头像宽 30 + 间距 10。
+   */
+  margin: 0 0 10px 40px;
+}
+
+/*
+ * 楼内回复列表。
+ */
+.replies {
+  /*
+   * 左缩进 40 = 头像宽 30 + 间距 10。
+   */
+  margin: 0 0 4px 40px;
+
+  /*
+   * 左侧一道竖线,一眼看出是楼中楼。
+   */
+  border-left: 2px solid var(--hairline);
+
+  /*
+   * 竖线与正文的距离。
+   */
+  padding-left: 12px;
+}
+
+/*
+ * 「展开 N 条回复」/「收起」(类名写两遍抬权重,理由同 .arrow)。
+ */
+.expand.expand {
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 内衬(上 2、下 8)。
+   */
+  padding: 2px 0 8px;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 品牌蓝。
+   */
+  color: var(--primary);
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+}
+
+/*
+ * ── 9. 详情页 ───────────────────────────────────────────────────────────
+ * 居中,官方版式,段内换行保真,对照翻译,评论区。
+ */
+
+/*
+ * 阅读列:外轨是 Shell 1320,这里再收一档 860 居中,保住一眼扫得完的行长。
+ */
+.track {
+  /*
+   * 阅读列宽。
+   */
+  max-width: 860px;
+
+  /*
+   * 居中。
+   */
+  margin: 0 auto;
+}
+
+/*
+ * 右上返回钮那一行。
+ */
+.back {
+  /*
+   * 与正文卡的距离。
+   */
+  margin-bottom: 12px;
+}
+
+/*
+ * 正文卡(白卡三格照全局 .card 抄一份,本域自足)。
+ */
+.article {
+  /*
+   * 白底。
+   */
+  background: var(--card);
+
+  /*
+   * 描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 白卡圆角。
+   */
+  border-radius: 12px;
+
+  /*
+   * 卡内衬(上下 22、左右 26)。
+   */
+  padding: 22px 26px;
+}
+
+/*
+ * 详情页的地区 + 徽标 + 发布日期行。
+ */
+.detMeta {
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 一行排开。
+   */
+  display: flex;
+
+  /*
+   * 各项间距。
+   */
+  gap: 8px;
+
+  /*
+   * 基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 窄屏折行。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 官方原标题(整页 H1)。
+ */
+.detTitle {
+  /*
+   * H1 字号。
+   */
+  font-size: 21px;
+
+  /*
+   * 上 8、下 4。
+   */
+  margin: 8px 0 4px;
+
+  /*
+   * 行距。
+   */
+  line-height: 1.4;
+}
+
+/*
+ * 转载姿势那一行:© 出处方 + 非官方声明 + 原文链 ↗ + 两枚开关钮。
+ * 底部不再重复原文钮(P1c)。
+ */
+.detSrc {
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 与正文的距离。
+   */
+  margin-bottom: 12px;
+
+  /*
+   * 一行排开。
+   */
+  display: flex;
+
+  /*
+   * 各项间距。
+   */
+  gap: 10px;
+
+  /*
+   * 基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 窄屏折行。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 原文链接。
+ */
+.link {
+  /*
+   * 品牌蓝。
+   */
+  color: var(--primary);
+
+  /*
+   * 不出下划线。
+   */
+  text-decoration: none;
+}
+
+/*
+ * AI 速读 / 对照开关那两枚药丸钮(类名写两遍抬权重,理由同 .arrow)。
+ */
+.pill.pill {
+  /*
+   * 描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 品牌蓝字。
+   */
+  color: var(--primary);
+
+  /*
+   * 药丸圆角。
+   */
+  border-radius: 999px;
+
+  /*
+   * 内衬(上下 2、左右 10)。
+   */
+  padding: 2px 10px;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 钮面不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 对照开着时的药丸:亮起来。
+ */
+.pillOn.pillOn {
+  /*
+   * 描边换品牌蓝。
+   */
+  border-color: var(--primary);
+
+  /*
+   * 淡靛底。
+   */
+  background: #eef2ff;
+}
+
+/*
+ * 生成/翻译在途:光标变等待(钮此时是禁用态)。
+ */
+.pill.pill:disabled {
+  /*
+   * 等待光标。
+   */
+  cursor: wait;
+}
+
+/*
+ * 魁北克那条「不属 PNP」的提示条(详情页)。
+ */
+.qcNote {
+  /*
+   * 小注字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 警示黄字。
+   */
+  color: var(--warn);
+
+  /*
+   * 淡琥珀底。
+   */
+  background: #fffbeb;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 内衬(上下 6、左右 10)。
+   */
+  padding: 6px 10px;
+
+  /*
+   * 与正文的距离。
+   */
+  margin-bottom: 12px;
+}
+
+/*
+ * AI 速读框(P1f):生成后常驻正文上方。
+ */
+.sum {
+  /*
+   * 淡蓝底。
+   */
+  background: #eff6ff;
+
+  /*
+   * 淡蓝描边。
+   */
+  border: 1px solid #dbeafe;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 10px;
+
+  /*
+   * 内衬(上下 10、左右 14)。
+   */
+  padding: 10px 14px;
+
+  /*
+   * 与正文的距离。
+   */
+  margin-bottom: 12px;
+}
+
+/*
+ * 速读框的标题行。
+ */
+.sumHead {
+  /*
+   * 最小字号。
+   */
+  font-size: 11px;
+
+  /*
+   * 亮蓝。
+   */
+  color: #3b82f6;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 与速读正文的距离。
+   */
+  margin-bottom: 4px;
+}
+
+/*
+ * 标题行里的「机器生成」小注。
+ */
+.sumGen {
+  /*
+   * 浅灰(它比标题再弱一档)。
+   */
+  color: var(--text3);
+
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
+}
+
+/*
+ * 速读正文。
+ */
+.sumBody {
+  /*
+   * 正文字号。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 深蓝(与框底同色系)。
+   */
+  color: #1e40af;
+
+  /*
+   * 行距放松。
+   */
+  line-height: 1.7;
+}
+
+/*
+ * 对照开着时那句机器翻译声明。
+ */
+.aiNote {
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 与正文的距离。
+   */
+  margin-bottom: 10px;
+}
+
+/*
+ * 官方英文原文正文区。
+ */
+.body {
+  /*
+   * 正文字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 行距放松(整篇公文要读得下去)。
+   */
+  line-height: 1.75;
+
+  /*
+   * 正文深灰。
+   */
+  color: #374151;
+
+  /*
+   * 与上方的距离。
+   */
+  margin-top: 4px;
+}
+
+/*
+ * 一段(原文 + 可能的对照译文)。
+ */
+.para {
+  /*
+   * 段间距。
+   */
+  margin: 0 0 12px;
+}
+
+/*
+ * 段里的原文 p:外边距归 .para 管。
+ */
+.para > p {
+  /*
+   * 外边距清零。
+   */
+  margin: 0;
+}
+
+/*
+ * 对照译文:段对段贴在原文下,左侧蓝条区分。
+ */
+.trans {
+  /*
+   * 与原文的距离。
+   */
+  margin: 4px 0 0;
+
+  /*
+   * 内衬(左 12 给蓝条留位)。
+   */
+  padding: 4px 0 4px 12px;
+
+  /*
+   * 左侧蓝条。
+   */
+  border-left: 3px solid #dbeafe;
+
+  /*
+   * 深蓝字。
+   */
+  color: #1e40af;
+
+  /*
+   * 比原文小半档。
+   */
+  font-size: 13.5px;
+}
+
+/*
+ * 译文段落多于原文时的尾部兜底(不吞译文)。
+ */
+.transTail {
+  /*
+   * 尾段自己补下边距(它没有原文段包着)。
+   */
+  margin: 4px 0 12px;
+}
+
+/*
+ * ── 10. 响应式 ──────────────────────────────────────────────────────────
+ * v4 头条网格窄屏折单列;#212 手机触控靶:轮播箭头与圆点热区抬到 40。
+ */
+
+@media (width <= 760px) {
+  /*
+   * 窄屏折单列(大卡在上、右列在下)。
+   */
+  .top {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (width <= 640px) {
+  /*
+   * 热区撑到 40 后点与点会挤在一起,间距归零由热区自己撑开。
+   */
+  .dots {
+    gap: 0;
+  }
+
+  /*
+   * 圆点热区抬到 40×40(视觉点仍是 8,它在内层 span 上)。
+   */
+  .dot.dot {
+    /*
+     * 热区宽。
+     */
+    width: 40px;
+
+    /*
+     * 热区高。
+     */
+    height: 40px;
+  }
+
+  /*
+   * 轮播箭头抬到 40×40。
+   */
+  .arrow.arrow {
+    /*
+     * 钮宽。
+     */
+    width: 40px;
+
+    /*
+     * 钮高。
+     */
+    height: 40px;
+  }
+}

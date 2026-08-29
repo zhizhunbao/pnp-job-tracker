@@ -6,8 +6,11 @@ import { loadMatchDims } from '@/lib/jobs/server'
 import type { CompareRow } from '@/lib/employers'
 import { compareEmployers } from '@/lib/employers/server'
 import { getDb } from '@/lib/db/server'
-import { hasProfile, normalizeProfile } from '@/lib/jobs'
+import { hasProfile, normalizeProfile, type ProfileJson } from '@/lib/jobs'
 import { Compare } from '@/components/employers'
+import { Footer } from '@/components/footer'
+import { Header } from '@/components/header'
+import { Frame } from '@/components/shell'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,8 +27,18 @@ export default async function CompareEmployersPage({ searchParams }: { searchPar
   let rows: CompareRow[] = []
   if (pro && names.length >= 2) {
     const dims = await loadMatchDims(await getDb()).catch(() => null)
-    const p = normalizeProfile((user as any)?.profile)
+    /**
+     * 跨域形状接缝:quota 域声明的 users.profile 允许嵌套对象,jobs 域的 ProfileJson 只到扁平格
+     * (两域各自声明自己的形状,不互相取 —— 宪法)。断言只住这一处,收窄由 normalizeProfile 逐格做。
+     */
+    const p = normalizeProfile(user?.profile as ProfileJson | null)
     rows = await compareEmployers({ db: await getDb(), names, profile: hasProfile(p) ? p : null, dims })
   }
-  return <Compare names={names} rows={rows} pro={pro} loggedIn={!!user} />
+  return (
+    <Frame>
+      <Header active="employers" />
+      <Compare rows={rows} pro={pro} loggedIn={!!user} />
+      <Footer />
+    </Frame>
+  )
 }

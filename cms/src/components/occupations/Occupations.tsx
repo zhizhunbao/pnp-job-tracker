@@ -1,66 +1,51 @@
 'use client'
-// 紧缺职业清单视图(B4-01):183 行按 省→通道 分组一页展示;行级官方来源链+抓取日(既有 url/fetched 列)。
-// 口径红线:清单命中=粗筛信号,非资格认定(dir.occ.note)。
-import { streamDisplay } from '@/lib/jobs'
-import { useLang } from '@/components/i18n'
-import { Header } from '@/components/header'
-import { Footer } from '@/components/footer'
+/**
+ * occupations 域的结构:/occupations 紧缺职业清单正文(B4-01)——
+ * 183 行按 省 → 通道 分组一页展示,通道表带抓取日(既有 fetched 列)。
+ * 🔴 口径红线:清单命中 = 粗筛信号,非资格认定(页顶那句 dir.occ.note 是保留类文案,不许删)。
+ * 语言 / 文案:全站一处(LangProvider),初值由服务端 cookie 定,所以正文自己接 useLang。
+ * 2026-08-28 换装批自 Occupations.tsx 整体重写成小写件形制:内联样式逐格迁
+ * occupations.module.css、分组与派生进 functions.ts、散值进 constants.ts、契约进 types.ts,
+ * 省小节 / 通道表 / 单元格各自成件;壳件(整页外框 / 顶栏 / 页脚)拼装归页面门(样张 companies),
+ * 本件只出 Shell 轨往下的视图。
+ *
+ * @author Frank
+ * @time 2026-08-28 00:10:00
+ */
 import { BANNER_IMGS, Banner } from '@/components/banner'
-import { UI } from '@/components/colors'
-import { Shell } from '@/components/shell'
-import { Tag } from '@/components/tag'
-import { Title } from '@/components/title'
-import { Table } from '@/components/table'
 import { IconClipboard } from '@/components/icons'
-import type { OccRow } from '@/lib/employers'
+import { useLang } from '@/components/i18n'
+import { Shell } from '@/components/shell'
+import { BANNER_MODULE, SHELL_TOP } from './constants'
+import { toProvGroups } from './functions'
+import { ProvNav } from './provnav'
+import { ProvSection } from './provsection'
+import type { OccupationsIn } from './types'
+import css from './occupations.module.css'
 
-export function Occupations({ rows }: { rows: OccRow[] }) {
-  const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
-
-  // 省→通道 两级分组(数据已按 province/stream/noc 排序)
-  const provs: { prov: string; streams: { stream: string; label: string; url: string; fetched: string; occ: OccRow[] }[] }[] = []
-  for (const r of rows) {
-    let p = provs[provs.length - 1]
-    if (!p || p.prov !== r.province) { p = { prov: r.province, streams: [] }; provs.push(p) }
-    let s = p.streams[p.streams.length - 1]
-    if (!s || s.stream !== r.stream) { s = { stream: r.stream, label: r.label, url: r.url, fetched: r.fetched, occ: [] }; p.streams.push(s) }
-    s.occ.push(r)
+/**
+ * 紧缺职业清单页正文。
+ *
+ * @param props 官方清单的全部行(逐格注释见 OccupationsIn)。
+ * @returns 正文(Shell 轨 + 页头横幅 + 口径注 + 省导航 + 逐省小节)。
+ */
+export function Occupations({ rows }: OccupationsIn) {
+  const [, , t] = useLang()
+  const provs = toProvGroups({ rows })
+  const sections = []
+  for (const p of provs) {
+    sections.push(<ProvSection key={p.prov} prov={p} t={t} />)
   }
-
   return (
-    <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
-      <Header lang={lang} setLang={setLangSaved} t={t} active="employers" />
-      <Shell top={16}>
-        <Banner module="jobs" icon={<IconClipboard />} title={t('dir.occ.title')} sub={t('dir.occ.sub')} images={BANNER_IMGS.jobs} />
-        <div style={{ fontSize: 12.5, color: '#6b7280', margin: '0 0 6px', lineHeight: 1.6 }}>{t('dir.occ.note')}</div>
-        {/* 省锚点导航 */}
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', margin: '0 0 8px', fontSize: 12.5 }}>
-          {provs.map((p) => <a key={p.prov} href={`#prov-${p.prov}`} style={{ color: UI.primary, textDecoration: 'none' }}>{t('pr.' + p.prov)}</a>)}
-        </div>
-        {provs.map((p) => (
-          <section key={p.prov} id={`prov-${p.prov}`}>
-            <Title>{t('pr.' + p.prov)} <Tag variant="region">{p.prov}</Tag></Title>
-            {p.streams.map((s) => (
-              // 组件统一 P2 余批(#110):通道表换公共 Table(排序/拖宽/hover 同 jobs 观感),通道标题走 header 槽
-              <div key={s.stream} style={{ margin: '0 0 14px' }}>
-                <Table<OccRow> rows={s.occ} rowKey={(r) => r.noc} header={
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', padding: '10px 12px 6px' }}>
-                    <span style={{ fontSize: 13.5, fontWeight: 700 }}>{streamDisplay({ t, label: s.stream }) || s.label || s.stream}</span>
-                    <span style={{ fontSize: 12, color: '#9ca3af' }}>{s.occ.length} NOC</span>
-                    {/* #106:官方来源外链撤(归拢到 /resources) */}
-                    {s.fetched && <span style={{ marginLeft: 'auto', fontSize: 11.5, color: '#9ca3af' }}>{t('dir.occ.fetched', { d: s.fetched })}</span>}
-                  </div>
-                } cols={[
-                  { key: 'noc', label: t('dir.occ.colNoc'), nowrap: true, sort: (r) => r.noc, render: (r) => <span style={{ color: '#9ca3af' }}>{r.noc}</span> },
-                  { key: 'name', label: t('dir.occ.colName'), sort: (r) => r.name || null, render: (r) => <span style={{ fontWeight: 600 }}>{r.name || '—'}</span> },
-                  { key: 'go', label: '', nowrap: true, render: (r) => <a href={`/?q=${encodeURIComponent(r.noc)}`} style={{ color: UI.primary, textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a> },
-                ]} />
-              </div>
-            ))}
-          </section>
-        ))}
-      </Shell>
-      <Footer t={t} />
-    </div>
+    <Shell top={SHELL_TOP}>
+      <Banner module={BANNER_MODULE}
+        icon={<IconClipboard />}
+        title={t('dir.occ.title')}
+        sub={t('dir.occ.sub')}
+        images={BANNER_IMGS.jobs} />
+      <div className={css.note}>{t('dir.occ.note')}</div>
+      <ProvNav provs={provs} t={t} />
+      {sections}
+    </Shell>
   )
 }

@@ -1,83 +1,63 @@
 'use client'
-// 漏斗五个数的显示层(主线 M2 / E7-05)。**内部页**:数据由服务端组件鉴权后传进来,这里零业务逻辑。
-// 文案只有中文 —— 这页只给 Frank 看,不是产品页面,翻三语是浪费。
-import { useLang } from '@/components/i18n'
-import { Header } from '@/components/header'
-import { Footer } from '@/components/footer'
-import { UI } from '@/components/colors'
+/**
+ * funnel 域的结构:/funnel 转化漏斗内部看板的正文(主线 M2 / E7-05)。
+ * **内部页**:数据由服务端门鉴权后洗好传进来,这里零业务逻辑。
+ * 文案只有中文 —— 这页只给 Frank 看,不是产品页面,翻三语是浪费。
+ * 2026-08-27 换装批自 Funnel.tsx 整体重写成小写件形制(内联样式与那块 <style> 标签
+ * 逐格迁 funnel.module.css、散值进 constants、列组与洗行进 functions、闭包函数退役);
+ * 同批壳件(整页外框 / 顶栏 / 页脚)拼装归页面门(Frank「组装只许在 (frontend) 页面门里」,
+ * 样张 account/companies),本件只出 Shell 轨往下的视图。
+ *
+ * @author Frank
+ * @time 2026-08-27 03:00:00
+ */
+import { Button } from '@/components/button'
+import { cssOf } from '@/components/css'
 import { Shell } from '@/components/shell'
 import { Table } from '@/components/table'
-import { goBackOr } from '@/components/button'
+import {
+  BACK_TEXT, EMPTY_TEXT, ENTRY_HEAD_TEXT, PLAIN_BTN_KIND, PRICING_HEAD_TEXT, RATE_NOTE_TEXT,
+  SUBTITLE_TEXT, TITLE_TEXT, URL_HOME,
+} from './constants'
+import { funnelColsOf, funnelRowKeyOf, makeGoBack } from './functions'
+import { FunnelPayRow } from './funnelpayrow'
+import { FunnelPropLine } from './funnelpropline'
+import type { FunnelCellRow, FunnelIn } from './types'
+import css from './funnel.module.css'
 
-export type FunnelRow = { step: string; label: string; d30: number; d7: number; d1: number; rate: number | null }
-
-// 尾行(foot 槽)自己排版:它是 colSpan 合并行,不走列模型;对齐 Table 的单元格 token
-const TD: React.CSSProperties = { padding: '9px 12px', fontSize: 13, color: '#374151', borderBottom: `1px solid ${UI.hairline}`, fontVariantNumeric: 'tabular-nums' }
-
-export function Funnel({ rows, pro, stripe, byEntry, byPricing = [] }: {
-  rows: FunnelRow[]; pro: number; stripe: number
-  byEntry: { prop: string; n: number }[]; byPricing?: { prop: string; n: number }[]
-}) {
-  const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
-  const empty = rows.every((r) => r.d30 === 0)
-
+/**
+ * 漏斗看板正文。
+ *
+ * @param props 服务端门洗好的整块看板数据(逐格注释见 FunnelBoard)。
+ * @returns 正文(Shell 轨 + 一张白卡:标题行、漏斗表、两条分组行、脚注与空态)。
+ */
+export function Funnel({ board }: FunnelIn) {
   return (
-    <>
-      {/* 手机上砍掉「7 天/昨天」两列:375 宽下五列会把步骤名折成「① 打开职/位详情」——
-          趋势在手机上不是重点,30 天与转化率才是。表本身仍在 overflow-x 容器里,页面不横滚 */}
-      <style>{`@media(max-width:640px){.fnCol{display:none}}`}</style>
-      <Header lang={lang} setLang={setLangSaved} t={t} />
-      <Shell>
-        <div style={{ background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, padding: '16px 18px' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-            <div>
-              <h1 style={{ fontSize: 19, fontWeight: 600, margin: 0 }}>漏斗五个数</h1>
-              <div style={{ fontSize: 12.5, color: UI.text3, marginTop: 3 }}>第一方计数,不受广告拦截器影响;转化率按 30 天合计</div>
-            </div>
-            <button onClick={() => goBackOr('/')} style={{ marginLeft: 'auto', border: `1px solid ${UI.border}`, background: '#fff', color: UI.text2, borderRadius: 8, padding: '6px 13px', fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>返回</button>
+    <Shell>
+      <div className={css.card}>
+        <div className={css.head}>
+          <div>
+            <h1 className={css.h1}>{TITLE_TEXT}</h1>
+            <div className={css.sub}>{SUBTITLE_TEXT}</div>
           </div>
-
-          {/* 2026-08-11(Frank「都改成一套」):这张表原是自造的裸 <table> —— 换公共 Table(bare=已在白卡内)。
-              尾行「⑥ 真实付费」带 colSpan,走新加的 foot 槽;窄屏藏两列仍用 .fnCol(列级 className) */}
-          <div style={{ marginTop: 14 }}>
-            <Table<FunnelRow> rows={rows} rowKey={(r) => r.step} bare
-              cols={[
-                { key: 'label', label: '步骤', nowrap: true, render: (r) => r.label },
-                { key: 'd30', label: '30 天', align: 'right', render: (r) => <b>{r.d30}</b> },
-                { key: 'd7', label: '7 天', align: 'right', className: 'fnCol', render: (r) => <>{r.d7}</> },
-                { key: 'd1', label: '昨天', align: 'right', className: 'fnCol', render: (r) => <>{r.d1}</> },
-                { key: 'rate', label: '比上一步', align: 'right', render: (r) => <span style={{ color: UI.text3 }}>{r.rate == null ? '—' : `${r.rate}%`}</span> },
-              ]}
-              foot={
-                <tr>
-                  <td style={{ ...TD, whiteSpace: 'nowrap' }}>⑥ 真实付费</td>
-                  <td style={{ ...TD, textAlign: 'right' }}><b>{pro}</b></td>
-                  <td style={{ ...TD, color: UI.text3, fontSize: 12.5 }} colSpan={3}>proUntil 有值;其中走过 Checkout 的 {stripe} 人</td>
-                </tr>
-              } />
-          </div>
-
-          {/* 曝光要能按入口分开看:详情页(jd)与报告页(rpt)是两条路,M3 分叉时得知道该改哪一条 */}
-          {byEntry.length > 0 && (
-            <div style={{ marginTop: 12, fontSize: 13, color: UI.text2 }}>
-              锁区曝光按入口(30 天):{byEntry.map((e) => <span key={e.prop} style={{ marginLeft: 10 }}>{e.prop} {e.n}</span>)}
-            </div>
-          )}
-          {/* 定价也要分来路:报告锁区 CTA 带 ?from=rpt-<卡>,其余算直达 —— 报告到底卖不卖得动就看这一行 */}
-          {byPricing.length > 0 && (
-            <div style={{ marginTop: 6, fontSize: 13, color: UI.text2 }}>
-              打开定价按来路(30 天):{byPricing.map((e) => <span key={e.prop} style={{ marginLeft: 10 }}>{e.prop} {e.n}</span>)}
-            </div>
-          )}
-          {/* ② 那一格空着是有意的:详情页不是报告的唯一来路(首页 CTA 直接进 /plan/pr),
-              拿 ① 当分母算出来的是 200% 这种数,不如不给 */}
-          <div style={{ marginTop: 10, fontSize: 12.5, color: UI.text3, lineHeight: 1.6 }}>
-            ② 不给「比上一步」:详情页不是报告的唯一来路(首页 CTA 直接进 /plan/pr),① 不是它的分母。
-          </div>
-          {empty && <div style={{ marginTop: 12, fontSize: 13, color: '#b45309' }}>还没有任何计数 —— 表刚建好,或事件还没打到生产。</div>}
+          <Button kind={PLAIN_BTN_KIND}
+            onClick={makeGoBack({ fallback: URL_HOME })}
+            className={cssOf(css.backBtn)}>
+            {BACK_TEXT}
+          </Button>
         </div>
-      </Shell>
-      <Footer t={t} />
-    </>
+        <div className={css.tableBox}>
+          <Table<FunnelCellRow> cols={funnelColsOf()}
+            rows={board.rows}
+            rowKey={funnelRowKeyOf}
+            bare
+            foot={<FunnelPayRow pay={board.pay} />} />
+        </div>
+        {board.byEntry.length > 0 && <FunnelPropLine head={ENTRY_HEAD_TEXT} items={board.byEntry} />}
+        {board.byPricing.length > 0 && <FunnelPropLine head={PRICING_HEAD_TEXT} items={board.byPricing} tight />}
+        <div className={css.note}>{RATE_NOTE_TEXT}</div>
+        {board.empty && <div className={css.empty}>{EMPTY_TEXT}</div>}
+      </div>
+    </Shell>
   )
 }

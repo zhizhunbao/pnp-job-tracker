@@ -1,0 +1,1285 @@
+/*
+ * employers 页面域的私有样式(2026-08-27 换装批自 Employers.tsx / Sponsors.tsx /
+ * Compare.tsx 的内联 style 与 Employers 尾部那段 \3c style> 字符串逐格迁类,值一个不改)。
+ * 布尔分叉不写三目:每个会变的块开一个修饰类,由 functions.ts 的 clsOf 一族按布尔拼上去
+ * (基座在前、修饰在后,同文件后者盖前者)。
+ * 仍留在全局层的几个类(.card / .tcCards / .tcTableWrap / .sbCtl)是历史位置,
+ * 名字在 constants.ts 里挂着注释,改名要连 main.css 一起改。
+ * 整页外框(撑满视口的灰底纵向三段列)2026-08-27 Frank 拍板收拢进 shell 桶的通用件 Frame,
+ * 本域不再克隆一份;旧内联框上那两条 font-family / color 与 main.css 的 body 逐字同值,
+ * 是冗余,随框一起删。
+ */
+
+/*
+ * ── 1. 雇主板骨架 ────────────────────────────────────────────────────────
+ */
+
+/*
+ * 正文段:可涨不可缩,把页脚顶到屏底。
+ */
+.body {
+  flex: 1 0 auto;
+}
+
+/*
+ * 标题行:H1 吃满剩余宽,返回钮贴右上(站规 new-page-back-button)。
+ */
+.head {
+  /*
+   * 标题与返回钮一行排开。
+   */
+  display: flex;
+
+  /*
+   * 顶端对齐 —— 标题折行时返回钮不跟着往下掉。
+   */
+  align-items: flex-start;
+
+  /*
+   * 两者之间的最小间距。
+   */
+  gap: 12px;
+
+  /*
+   * 与下面白卡的距离。
+   */
+  margin: 0 0 12px;
+}
+
+/*
+ * 页面 H1(口径名;范围不进 H1 —— 职位板同款,省/制度就在下面那行筛选里摆着)。
+ */
+.h1 {
+  /*
+   * 吃满返回钮之外的宽。
+   */
+  flex: 1;
+
+  /*
+   * 允许被压缩到 0 —— 不写这格,长标题会把返回钮挤出容器。
+   */
+  min-width: 0;
+
+  /*
+   * 站规 page-template-job-detail 的 H1 字号。
+   */
+  font-size: 22px;
+
+  /*
+   * 粗体。
+   */
+  font-weight: 700;
+
+  /*
+   * 近黑。
+   */
+  color: #111827;
+
+  /*
+   * 外边距归 .head 管。
+   */
+  margin: 0;
+
+  /*
+   * 行高。
+   */
+  line-height: 1.45;
+}
+
+/*
+ * 筛选 + 表 + 注文的白卡壳。
+ */
+.card {
+  /*
+   * 卡片白。
+   */
+  background: #ffffff;
+
+  /*
+   * 描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 圆角。
+   */
+  border-radius: 12px;
+
+  /*
+   * 内衬。
+   */
+  padding: 14px 16px;
+}
+
+/*
+ * ── 2. 筛选区 ────────────────────────────────────────────────────────────
+ */
+
+/*
+ * 常用一行 + 折叠抽屉的纵向容器。
+ */
+.filtCol {
+  /*
+   * 纵向两块。
+   */
+  display: flex;
+
+  /*
+   * 纵向。
+   */
+  flex-direction: column;
+
+  /*
+   * 两块之间。
+   */
+  gap: 8px;
+
+  /*
+   * 与加载条的距离。
+   */
+  margin-bottom: 12px;
+}
+
+/*
+ * 一行筛选控件(量宽下拉 2026-08-24 收拢进 components/select;md 档 = 原 170 宽)。
+ */
+.filtRow {
+  /*
+   * 控件横排。
+   */
+  display: flex;
+
+  /*
+   * 控件之间。
+   */
+  gap: 8px;
+
+  /*
+   * 窄屏换行(手机上一行摆不下四个下拉)。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 竖直居中对齐。
+   */
+  align-items: center;
+}
+
+/*
+ * 抽屉里每行前面的小标签(「地区」「职业」)。
+ */
+.filtLabel {
+  /*
+   * 小字。
+   */
+  font-size: 12px;
+
+  /*
+   * 三级灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 两个标签左边缘对齐(中文两字宽)。
+   */
+  min-width: 28px;
+
+  /*
+   * 标签不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 「更多筛选」折叠抽屉。
+ */
+.drawer {
+  /*
+   * 虚线描边 —— 与实线的白卡区分开,示意「这块是临时展开的」。
+   */
+  border: 1px dashed #d1d5db;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 内衬。
+   */
+  padding: 10px 12px;
+
+  /*
+   * 极淡的底,把抽屉从白卡上分出来。
+   */
+  background: #fafafa;
+
+  /*
+   * 里面两行纵向排。
+   */
+  display: flex;
+
+  /*
+   * 纵向。
+   */
+  flex-direction: column;
+
+  /*
+   * 两行之间。
+   */
+  gap: 8px;
+}
+
+/*
+ * 「更多筛选」钮的基座(高度由全局 .sbCtl 定,这里只管排布与字色)。
+ */
+.moreBtn {
+  /*
+   * 文字 + 徽标 + 箭头一行排开。
+   */
+  display: inline-flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 三者之间。
+   */
+  gap: 5px;
+
+  /*
+   * 常规态字色。
+   */
+  color: #374151;
+}
+
+/*
+ * 「更多筛选」钮的激活修饰:抽屉开着、或折叠里有生效筛选时亮起来。
+ */
+.moreBtnActive {
+  /*
+   * 淡蓝底。
+   */
+  background: #eff6ff;
+
+  /*
+   * 品牌蓝描边。
+   */
+  border-color: var(--primary);
+
+  /*
+   * 深蓝字。
+   */
+  color: #1d4ed8;
+}
+
+/*
+ * 折叠里生效筛选的计数徽标(职位板同款)。
+ */
+.moreBadge {
+  /*
+   * 品牌蓝底。
+   */
+  background: var(--primary);
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+
+  /*
+   * 全圆角药丸。
+   */
+  border-radius: 999px;
+
+  /*
+   * 极小字。
+   */
+  font-size: 10.5px;
+
+  /*
+   * 左右内衬(上下靠 line-height 定高)。
+   */
+  padding: 0 6px;
+
+  /*
+   * 药丸高度。
+   */
+  line-height: 15px;
+}
+
+/*
+ * 「更多筛选」钮尾巴上的开合箭头。
+ */
+.caret {
+  /*
+   * 比钮面文字再小一档。
+   */
+  font-size: 10px;
+
+  /*
+   * 三级灰 —— 它是状态指示,不该抢钮面文字。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 「清空」钮:危险红字(它抹掉用户已经点好的一串筛选)。
+ */
+.clearBtn {
+  color: #b91c1c;
+}
+
+/*
+ * 名录抓取日,贴到筛选行最右。
+ */
+.fetched {
+  /*
+   * 顶到行尾。
+   */
+  margin-left: auto;
+
+  /*
+   * 小字。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 三级灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 日期不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * ── 3. 加载态与列表区 ────────────────────────────────────────────────────
+ */
+
+/*
+ * 加载条:高度常驻占位 —— 数据在换时不出现「行没了又回来」的跳动。
+ */
+.loadBar {
+  /*
+   * 常驻高度(空着也占这么高)。
+   */
+  height: 18px;
+
+  /*
+   * 小字。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 品牌蓝。
+   */
+  color: var(--primary);
+
+  /*
+   * 转圈 + 文字一行。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 两者之间。
+   */
+  gap: 6px;
+}
+
+/*
+ * 加载转圈。
+ */
+.spin {
+  /*
+   * 直径。
+   */
+  width: 10px;
+
+  /*
+   * 直径。
+   */
+  height: 10px;
+
+  /*
+   * 淡蓝圈身。
+   */
+  border: 2px solid #bfdbfe;
+
+  /*
+   * 顶边换成品牌蓝 —— 转起来才看得出在转。
+   */
+  border-top-color: var(--primary);
+
+  /*
+   * 正圆。
+   */
+  border-radius: 50%;
+
+  /*
+   * 行内块(与文字同一行)。
+   */
+  display: inline-block;
+
+  /*
+   * 匀速自转。
+   */
+  animation: empspin 0.7s linear infinite;
+}
+
+/*
+ * 转圈的关键帧(原先写在 Employers.tsx 尾部的 \3c style> 字符串里)。
+ */
+@keyframes empspin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/*
+ * 表 / 卡 / 翻页的容器:最小高度常驻,换页时版式不塌。
+ */
+.list {
+  min-height: 220px;
+}
+
+/*
+ * 懒取中的修饰:半透明 + 屏蔽点击(别让用户点到马上要被换掉的那一页)。
+ */
+.listBusy {
+  /*
+   * 半透明。
+   */
+  opacity: 0.45;
+
+  /*
+   * 这一刻的行不接受点击。
+   */
+  pointer-events: none;
+
+  /*
+   * 淡入淡出,不闪。
+   */
+  transition: opacity 0.2s;
+}
+
+/*
+ * 表格上方的计数行。
+ */
+.note {
+  /*
+   * 一行。
+   */
+  display: flex;
+
+  /*
+   * 基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 预留的第二格间距。
+   */
+  gap: 10px;
+
+  /*
+   * 与表头的距离。
+   */
+  padding: 2px 2px 8px;
+}
+
+/*
+ * 计数文案。
+ */
+.noteText {
+  /*
+   * 比正文大半档。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 粗体。
+   */
+  font-weight: 700;
+}
+
+/*
+ * 手机卡片流上方的计数行(卡片形态没有表头,计数自己带内衬)。
+ */
+.cardsNote {
+  /*
+   * 同桌面计数。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 粗体。
+   */
+  font-weight: 700;
+
+  /*
+   * 与第一张卡的距离。
+   */
+  padding: 2px 2px 8px;
+}
+
+/*
+ * 手机卡片流的空态。
+ */
+.cardsEmpty {
+  /*
+   * 上下留白撑起空态区。
+   */
+  padding: 24px 12px;
+
+  /*
+   * 三级灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 小字。
+   */
+  font-size: 13px;
+
+  /*
+   * 居中。
+   */
+  text-align: center;
+}
+
+/*
+ * 翻页区:一条细线与列表分开。
+ */
+.pagerWrap {
+  /*
+   * 上内衬。
+   */
+  padding: 10px 2px 0;
+
+  /*
+   * 分隔细线。
+   */
+  border-top: 1px solid var(--hairline);
+
+  /*
+   * 与列表的距离。
+   */
+  margin-top: 8px;
+}
+
+/*
+ * 卡底口径注(保留类文案,一句):被指定 ≠ 在招。
+ */
+.foot {
+  /*
+   * 与上面的距离。
+   */
+  margin-top: 10px;
+
+  /*
+   * 小字。
+   */
+  font-size: 12px;
+
+  /*
+   * 三级灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 行高松一档,长句好读。
+   */
+  line-height: 1.6;
+}
+
+/*
+ * ── 4. 表 ⇄ 卡 断点(原 Employers.tsx 尾部 \3c style> 那段,值一个不改)──────────
+ */
+
+/*
+ * 桌面表格:默认藏,≥641 才出。
+ */
+.table {
+  display: none;
+}
+
+/*
+ * 手机卡片流:默认出(移动优先),≥641 藏。
+ */
+.cards {
+  /*
+   * 卡片纵向排。
+   */
+  display: flex;
+
+  /*
+   * 纵向。
+   */
+  flex-direction: column;
+
+  /*
+   * 卡片之间。
+   */
+  gap: 8px;
+}
+
+@media (width >= 641px) {
+  .table {
+    display: block;
+  }
+
+  .cards {
+    display: none;
+  }
+}
+
+/*
+ * ── 5. 格与小件(表格与卡片共用的字色/字重档)───────────────────────────────
+ */
+
+/*
+ * 缺数灰杠 / 灰注的通用灰。
+ */
+.dim {
+  color: #9ca3af;
+}
+
+/*
+ * 雇主名链接(表格里的主文案:品牌蓝 + 半粗 + 无下划线)。
+ */
+.nameLink {
+  /*
+   * 品牌蓝 —— 蓝色已说明可点。
+   */
+  color: var(--primary);
+
+  /*
+   * 无下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 半粗:它是这一行的主语。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 雇主名下的别名灰注(与抽选流名灰注同形态,无名不占位)。
+ */
+.alias {
+  /*
+   * 灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 小字。
+   */
+  font-size: 12px;
+
+  /*
+   * 与名字贴紧。
+   */
+  margin-top: 1px;
+}
+
+/*
+ * 职业格底下的 5 位码灰注(站规 ui-plain-language:人话名主文案 + 代码灰字小注)。
+ */
+.nocCodes {
+  /*
+   * 灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 比别名再小半档。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 与人话名贴紧。
+   */
+  margin-top: 1px;
+}
+
+/*
+ * 名录出处链(短链,比正文小一档 —— 它是出处不是主文案)。
+ */
+.listLink {
+  /*
+   * 品牌蓝。
+   */
+  color: var(--primary);
+
+  /*
+   * 无下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 小字。
+   */
+  font-size: 12.5px;
+}
+
+/*
+ * 数值格(在招岗数这类):粗体,数字要抢眼。
+ */
+.num {
+  font-weight: 700;
+}
+
+/*
+ * LMIA 一族的数值格:青绿 + 粗体(与在招数的黑粗区分 —— 那是本站口径,这是官方历史事实)。
+ */
+.teal {
+  /*
+   * 青绿。
+   */
+  color: #0f766e;
+
+  /*
+   * 粗体。
+   */
+  font-weight: 700;
+}
+
+/*
+ * 雇主门槛达标:通过绿 + 粗。
+ */
+.verdictOk {
+  /*
+   * 通过绿。
+   */
+  color: var(--ok);
+
+  /*
+   * 粗体。
+   */
+  font-weight: 700;
+}
+
+/*
+ * 雇主门槛差项:危险红 + 粗(它点名差在哪,信息量大)。
+ */
+.verdictNg {
+  /*
+   * 危险红。
+   */
+  color: var(--danger);
+
+  /*
+   * 粗体。
+   */
+  font-weight: 700;
+}
+
+/*
+ * 雇主门槛待核 / 公共部门旁路:灰 + 常规字重 —— 🔴 它**不是「不满足」**,
+ * 是我们查不到;字重压下去才不会被读成一个判定结果。
+ */
+.verdictDim {
+  /*
+   * 灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
+}
+
+/*
+ * 手机卡里的雇主门槛达标色(只有色 —— 粗由卡里那层 <b> 定,与桌面那三档分开写,
+ * 免得把 <b> 的粗压回常规)。
+ */
+.vOk {
+  color: var(--ok);
+}
+
+/*
+ * 手机卡里的雇主门槛差项色。
+ */
+.vNg {
+  color: var(--danger);
+}
+
+/*
+ * 手机卡里的雇主门槛待核与公共部门旁路色。🔴 它**不是「不满足」**,是我们查不到。
+ */
+.vDim {
+  color: #9ca3af;
+}
+
+/*
+ * 手机卡的雇主名行。
+ */
+.cardTitle {
+  /*
+   * 卡内标题字号。
+   */
+  font-size: 14.5px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 手机卡雇主名的链接(蓝字无下划线;卡内标题不加粗 —— 粗由 .cardTitle 定)。
+ */
+.cardLink {
+  /*
+   * 品牌蓝。
+   */
+  color: var(--primary);
+
+  /*
+   * 无下划线。
+   */
+  text-decoration: none;
+}
+
+/*
+ * 手机卡雇主名下的别名灰注。
+ */
+.cardAlias {
+  /*
+   * 小字。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 与名字贴紧。
+   */
+  margin-top: 2px;
+}
+
+/*
+ * 名录卡上的制度胶囊(AIP/RCIP/FCIP)。
+ */
+.progChip {
+  /*
+   * 淡靛底。
+   */
+  background: #eef2ff;
+
+  /*
+   * 深靛字。
+   */
+  color: #3730a3;
+
+  /*
+   * 小圆角。
+   */
+  border-radius: 6px;
+
+  /*
+   * 紧凑内衬。
+   */
+  padding: 1px 7px;
+
+  /*
+   * 小字。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * ── 6. 对照页 ────────────────────────────────────────────────────────────
+ */
+
+/*
+ * 返回钮那一行。
+ */
+.compareBack {
+  margin-bottom: 8px;
+}
+
+/*
+ * 对照页 H1(带天平图标)。
+ */
+.compareH1 {
+  /*
+   * 站规 H1 字号。
+   */
+  font-size: 22px;
+
+  /*
+   * 与口径注的距离。
+   */
+  margin: 0 0 6px;
+}
+
+/*
+ * 口径注(保留类文案:摆事实不下结论;LMIA = 历史事实 ≠ 担保)。
+ */
+.compareNote {
+  /*
+   * 小字。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 次级灰。
+   */
+  color: #6b7280;
+
+  /*
+   * 与正文的距离。
+   */
+  margin: 0 0 12px;
+
+  /*
+   * 行高松一档。
+   */
+  line-height: 1.6;
+}
+
+/*
+ * 免费态的三行价值点。
+ */
+.valueList {
+  /*
+   * 左侧留出项目符号的位置。
+   */
+  margin: 4px 0 12px 20px;
+
+  /*
+   * 正文字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 深灰。
+   */
+  color: #374151;
+
+  /*
+   * 行高拉开,三条各自成行好扫。
+   */
+  line-height: 2;
+}
+
+/*
+ * 模糊样例卡:遮罩要盖在它上面,所以自己当定位参照。
+ */
+.demoCard {
+  /*
+   * 遮罩的定位参照。
+   */
+  position: relative;
+
+  /*
+   * 模糊会溢出边界,裁掉。
+   */
+  overflow: hidden;
+
+  /*
+   * 样例表只有四行三列,不必吃满正文轨。
+   */
+  max-width: 680px;
+}
+
+/*
+ * 模糊掉的假值(真值不出服务端 —— 这里模糊的本来就是假数据)。
+ */
+.blur {
+  /*
+   * 糊到看得出是数字、读不出是几。
+   */
+  filter: blur(4px);
+
+  /*
+   * 选不中,免得有人复制走当真值。
+   */
+  user-select: none;
+}
+
+/*
+ * 盖在样例表上的遮罩层(说明 + 升级钮)。
+ */
+.demoOverlay {
+  /*
+   * 绝对定位。
+   */
+  position: absolute;
+
+  /*
+   * 铺满整张样例卡。
+   */
+  inset: 0;
+
+  /*
+   * 说明与钮一行排开。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 水平居中。
+   */
+  justify-content: center;
+
+  /*
+   * 两者之间。
+   */
+  gap: 10px;
+
+  /*
+   * 窄屏换行。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 「示例数据」药丸:琥珀描边 + 近乎不透明的白底 —— 它压在模糊层上,必须读得清。
+ */
+.demoBadge {
+  /*
+   * 近乎不透明的白。
+   */
+  background: rgb(255 255 255 / 92%);
+
+  /*
+   * 琥珀描边。
+   */
+  border: 1px solid #fde68a;
+
+  /*
+   * 琥珀字。
+   */
+  color: #92400e;
+
+  /*
+   * 小字。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 全圆角药丸。
+   */
+  border-radius: 999px;
+
+  /*
+   * 内衬。
+   */
+  padding: 5px 12px;
+}
+
+/*
+ * 通过绿的数值(技能类获批)。
+ */
+.ok {
+  color: var(--ok);
+}
+
+/*
+ * 关注琥珀的数值(具名岗)。
+ */
+.warn {
+  color: var(--warn);
+}
+
+/*
+ * 对照表里的站内蓝链(在招岗数点进职位搜)。
+ */
+.link {
+  /*
+   * 品牌蓝。
+   */
+  color: var(--primary);
+
+  /*
+   * 无下划线。
+   */
+  text-decoration: none;
+}
+
+/*
+ * 主要省那一格:省名与难度标签一行。
+ */
+.provCell {
+  /*
+   * 省名 + 标签横排。
+   */
+  display: inline-flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 两者之间。
+   */
+  gap: 6px;
+}
+
+/*
+ * 「与我的匹配」那一格:两行小字。
+ */
+.matchCell {
+  font-size: 12.5px;
+}
+
+/*
+ * 高匹配那一行。
+ */
+.matchHigh {
+  /*
+   * 通过绿。
+   */
+  color: var(--ok);
+
+  /*
+   * 半粗 —— 它是这一格的重点。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 中匹配那一行。
+ */
+.matchMid {
+  color: var(--primary);
+}
+
+/*
+ * 简介那一格:截断显示,全文挂在 title 上悬停看。
+ */
+.brief {
+  /*
+   * 比正文小一档 —— 长文本不该抢事实列。
+   */
+  font-size: 12px;
+
+  /*
+   * 行内块,好给宽上限。
+   */
+  display: inline-block;
+
+  /*
+   * 宽上限,免得一格把整列撑破。
+   */
+  max-width: 240px;
+}
+
+/*
+ * 对照表最左列的维度名。
+ */
+.dimLabel {
+  color: #9ca3af;
+}
+
+/*
+ * 带口径提示的维度名:虚下划线示意可悬停。
+ */
+.dimLabelTip {
+  text-decoration: underline dotted #d1d5db;
+}
+
+/*
+ * 对照表雇主列的表头。
+ */
+.headLabel {
+  font-size: 13.5px;
+}
+
+/*
+ * 表头雇主名下的别名灰注。
+ */
+.headAlias {
+  /*
+   * 独占一行,压在名字底下。
+   */
+  display: block;
+
+  /*
+   * 灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 常规字重 —— 表头本身是粗的,别名不跟着粗。
+   */
+  font-weight: 400;
+
+  /*
+   * 极小字。
+   */
+  font-size: 11.5px;
+}
+
+/*
+ * 表底的两枚动作钮。
+ */
+.compareActions {
+  /*
+   * 与表的距离。
+   */
+  margin-top: 12px;
+
+  /*
+   * 两枚钮一行。
+   */
+  display: flex;
+
+  /*
+   * 两者之间。
+   */
+  gap: 12px;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+}
+
+/*
+ * 「清空对比」:灰字常规 —— 它是弱操作,不该和「回名录」抢。
+ */
+.compareClear {
+  /*
+   * 灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
+}

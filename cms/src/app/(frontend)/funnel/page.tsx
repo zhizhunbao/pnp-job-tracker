@@ -1,73 +1,51 @@
-// 漏斗五个数(主线 M2 / E7-05):详情页 → 报告 → 锁区曝光 → pricing → 付费。
-// **只有 role=admin 看得见**;其余一律 notFound() —— 不是隐藏,是不存在(转化数据不该对外)。
-// 数据来源:第一方 funnel_events(按天计数,见 docs/sql/m2-funnel.sql);
-// 「真实付费」不数事件数 users —— 点击不是钱,proUntil 才是唯一付费真相。
+/**
+ * 漏斗五个数(主线 M2 / E7-05)的门:详情页 → 报告 → 锁区曝光 → pricing → 付费。
+ * **只有 role=admin 看得见**;其余一律 notFound() —— 不是隐藏,是不存在(转化数据不该对外)。
+ * 数据来源:第一方 funnel_events(按天计数,见 `docs/sql/m2-funnel.sql`);
+ * 「真实付费」不数事件数 users —— 点击不是钱,proUntil 才是唯一付费真相。
+ * 两条查询都走 `queryRowsOrEmpty`:表还没建 → 空页面照常渲染(说「还没有任何计数」),
+ * 不 500,且失败在 lib/log 留痕(不静默降级)。
+ *
+ * 2026-08-27 换装批:页面改造成「纯拼装门」(闸 local/page-compose-only + page-no-logic)
+ * —— 排版与算法全部下沉进 components/funnel/,门里只剩鉴权、两条取数与大写组件的拼装;
+ * 壳件(整页外框 Frame / 顶栏 / 页脚)拼装收回本门(Frank「组装只许在 (frontend) 页面门里」,
+ * 样张 account/companies/cases)。
+ *
+ * @author Frank
+ * @time 2026-08-27 03:00:00
+ */
 import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { getUser } from '@/lib/quota/server'
-import { CHAT_STEPS, DECISION_STEPS, FUNNEL_STEPS, LEGACY_STEPS, chatRates, decisionRates, stepRates } from '@/lib/funnel'
-import { Funnel, type FunnelRow } from '@/components/funnel'
-import { SQL } from '@/lib/db'   // SQL 文本全在那儿,本文件只管取数与组装
+import { SQL, queryRowsOrEmpty } from '@/lib/db'
+import { dbOf } from '@/lib/db/server'
+import { getUserOrNull } from '@/lib/quota/server'
+import { Funnel, toFunnelBoard, toFunnelEventFact, toFunnelPayFact } from '@/components/funnel'
+import { Footer } from '@/components/footer'
+import { Header } from '@/components/header'
+import { Frame } from '@/components/shell'
 
 export const dynamic = 'force-dynamic'
 
-const LABEL: Record<string, string> = {
-  'jd-open': '① 打开职位详情',
-  'report-open': '② 出报告',
-  'lock-seen': '③ 锁区被看到',
-  'pricing-open': '④ 打开定价',
-  'pay-click': '⑤ 点了付费',
-  // 对话形态与雇主线(并行链,不接在上面五步后面)
-  'chat-open': '对话 · 打开挂件', 'chat-answer': '对话 · 拿到答复', 'chat-feedback': '对话 · 赞踩',
-  'modal-pnp': '雇主 · PNP 弹框', 'pnp-employer-click': '雇主 · 点在招职位', 'se-view-jobs': '把脉 · 点雇主名',
-  // PR 评估形态(2026-08-11 补埋点:先前这页一条数都没有)
-  'dp-open': 'PR · 打开评估页', 'dp-quiz-done': 'PR · 答完 6 项', 'dp-score-start': 'PR · 进入估分', 'dp-score-done': 'PR · 估分答完',
-}
-
+/**
+ * 漏斗看板的门:鉴权 + 两条取数 + 拼装,没有别的。
+ *
+ * @returns 整页;非 admin 走 notFound()。
+ */
 export default async function FunnelPage() {
-  const user = await getUser(await headers()).catch(() => null)
-  if (user?.role !== 'admin') notFound()
-
-  const payload = await getPayload({ config: await config })
-  const pool = (payload.db as any).pool
-  const raw: { event: string; prop: string; d30: number; d7: number; d1: number }[] = await pool
-    .query(
-      SQL.FUNNEL_EVENTS,
-    )
-    .then((r: any) => r.rows.map((x: any) => ({ event: x.event, prop: x.prop ?? '', d30: Number(x.d30 ?? 0), d7: Number(x.d7 ?? 0), d1: Number(x.d1 ?? 0) })))
-    .catch(() => [])   // 表还没建 → 空页面照常渲染(说「还没有任何计数」),不 500
-
-  const sum = (step: string, k: 'd30' | 'd7' | 'd1') => raw.filter((r) => r.event === step).reduce((a, r) => a + r[k], 0)
-  const counts30 = Object.fromEntries(FUNNEL_STEPS.map((s) => [s, sum(s, 'd30')]))
-  const rates = stepRates(counts30)
-  // 三条链并行,各算各的相邻转化率(混算会算出「报告 → 打开评估页」这种没有因果的比值)
-  const chainRate = new Map<string, number | null>()
-  for (const [steps, fn] of [[CHAT_STEPS, chatRates], [DECISION_STEPS, decisionRates]] as const) {
-    const rs = fn(counts30)
-    steps.slice(1).forEach((step, i) => chainRate.set(step, rs[i] ?? null))
+  const user = await getUserOrNull(await headers())
+  if (user == null || user.role !== 'admin') {
+    notFound()
   }
-  // ② 不给「比上一步」(2026-08-03 第一次读这张表就撞到:① 8 次、② 16 次 = 200%)。
-  // 职位详情页**不是**报告的唯一来路 —— 首页 CTA 直接进 /plan/pr 的占了绝大多数(实测 16 里 12 条是 pr 卡),
-  // 拿 ① 当 ② 的分母算出来的百分比没有意义。③④⑤ 是真父子关系,照旧给。
-  const rows: FunnelRow[] = FUNNEL_STEPS.map((s, i) => ({
-    step: s, label: LABEL[s] ?? s, d30: sum(s, 'd30'), d7: sum(s, 'd7'), d1: sum(s, 'd1'),
-    rate: chainRate.has(s) ? chainRate.get(s) ?? null
-      : i === 0 || s === 'report-open' || i >= LEGACY_STEPS.length ? null : rates[i - 1] ?? null,
-  }))
-  const group = (event: string) =>
-    raw.filter((r) => r.event === event && r.prop).sort((a, b) => b.d30 - a.d30).map((r) => ({ prop: r.prop, n: r.d30 }))
-  const byEntry = group('lock-seen')
-  const byPricing = group('pricing-open')
-
-  // 真实付费两个数分开摆:proUntil 有值的(含人工赠送)与真走过 Checkout 的 —— 手工开的 Pro 不能冒充收款。
-  // 信号用 stripe_sessions(webhook 拨 proUntil 时写的 session id),**不用 stripe_customer_id**:
-  // 2026-08-01 实核 92 个用户里那一列一个都没有,拿它当付费信号会永远显示 0 = 假数。
-  const { pro, stripe } = await pool
-    .query(SQL.FUNNEL_USERS)
-    .then((r: any) => ({ pro: Number(r.rows[0]?.pro ?? 0), stripe: Number(r.rows[0]?.stripe ?? 0) }))
-    .catch(() => ({ pro: 0, stripe: 0 }))
-
-  return <Funnel rows={rows} pro={pro} stripe={stripe} byEntry={byEntry} byPricing={byPricing} />
+  const db = dbOf(await getPayload({ config: await config }))
+  const events = await queryRowsOrEmpty({ db, sql: SQL.FUNNEL_EVENTS, params: [], map: toFunnelEventFact })
+  const pays = await queryRowsOrEmpty({ db, sql: SQL.FUNNEL_USERS, params: [], map: toFunnelPayFact })
+  return (
+    <Frame>
+      <Header />
+      <Funnel board={toFunnelBoard({ events, pays })} />
+      <Footer />
+    </Frame>
+  )
 }

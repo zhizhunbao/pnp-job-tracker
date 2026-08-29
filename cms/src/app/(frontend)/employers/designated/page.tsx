@@ -3,6 +3,9 @@
 import { employersBoardProps } from '@/lib/employers/server'
 import { getDb } from '@/lib/db/server'
 import { Employers } from '@/components/employers'
+import { Footer } from '@/components/footer'
+import { Header } from '@/components/header'
+import { Frame } from '@/components/shell'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,5 +22,11 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 
 export default async function DesignatedEmployersPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const props = await employersBoardProps({ sp: await searchParams, mode: 'designated', db: await getDb() })
-  return <Employers {...props} />
+  return (
+    <Frame>
+      <Header active="employers" />
+      <Employers {...props} />
+      <Footer />
+    </Frame>
+  )
 }

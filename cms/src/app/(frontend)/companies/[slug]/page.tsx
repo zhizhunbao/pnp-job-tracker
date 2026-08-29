@@ -6,7 +6,11 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getUser } from '@/lib/quota/server'
 import { loadCompanyBySlug, loadSimilarEmployers } from '@/lib/jobs/server'
+import { dbOf } from '@/lib/db/server'
 import { Company } from '@/components/companies'
+import { Footer } from '@/components/footer'
+import { Header } from '@/components/header'
+import { Frame } from '@/components/shell'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,7 +18,7 @@ const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com').replac
 
 async function loadCompany(slug: string) {
   const payload = await getPayload({ config: await config })
-  const pool = (payload.db as any).pool
+  const pool = dbOf(payload)
   return loadCompanyBySlug({ db: pool, slug })
 }
 
@@ -39,18 +43,22 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
 
   if (!company) {
     // slug 拼错/公司被清:给个最小壳走 View 的 Notice(不 404 —— 已收录 slug 保留可访问)
-    return <Company company={{
-      name: slug, slug, website: '', websiteSource: '', industry: '', sectors: '', aliasZh: '', aliasKo: '',
-      wikiUrl: '', sponsorGrade: null, scoreDetail: null, aiBrief: '', aiWebsite: '', aiSources: [], aiFetched: '',
-      description: '', address: '', province: '',
-      lmiaPositions: null, lmiaLmias: null, lmiaLastQuarter: '', lmiaStreams: '', lmiaSkilled: null,
-      lmiaNocs: [], openCount: 0, jobs: [],
-    }} loggedIn={!!user} />
+    return <Frame>
+      <Header loggedIn={!!user} />
+      <Company company={{
+        name: slug, slug, website: '', websiteSource: '', industry: '', sectors: '', aliasZh: '', aliasKo: '',
+        wikiUrl: '', sponsorGrade: null, scoreDetail: null, aiBrief: '', aiWebsite: '', aiSources: [], aiFetched: '',
+        description: '', address: '', province: '',
+        lmiaPositions: null, lmiaLmias: null, lmiaLastQuarter: '', lmiaStreams: '', lmiaSkilled: null,
+        lmiaNocs: [], openCount: 0, jobs: [],
+      }} />
+      <Footer />
+    </Frame>
   }
 
   // 相似雇主(同省同行业;失败不拦页面)
   const payload = await getPayload({ config: await config })
-  const similar = await loadSimilarEmployers({ db: (payload.db as any).pool, province: company.province, industry: company.industry, excludeSlug: company.slug }).catch(() => [])
+  const similar = await loadSimilarEmployers({ db: dbOf(payload), province: company.province, industry: company.industry, excludeSlug: company.slug }).catch(() => [])
 
   // Organization JSON-LD(公开事实层;缺值不编)
   const jsonLd: Record<string, unknown> = {
@@ -63,6 +71,10 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
 
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-    <Company company={company} similar={similar} loggedIn={!!user} />
+    <Frame>
+      <Header loggedIn={!!user} />
+      <Company company={company} similar={similar} />
+      <Footer />
+    </Frame>
   </>
 }
