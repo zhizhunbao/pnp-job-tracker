@@ -43,10 +43,11 @@ export const NICK_BOX_CLS = 'acctNickBox'
 export const NICK_EDIT_MARK = '✎'
 
 /**
- * 昵称保存中的钮面文字(三点省略号)。它不是文案是**状态指示**,三语一样,
- * 所以不进 i18n —— 进了反而要为三门语言各写一遍同一个字符。
+ * 保存类钮忙态的钮面文字(三点省略号;昵称保存与档案保存共用)。它不是文案是
+ * **状态指示**,三语一样,所以不进 i18n —— 进了反而要为三门语言各写一遍同一个字符。
+ * (2026-08-27 换装批自 NICK_BUSY_MARK 扩名:档案保存钮的忙态是同一枚记号。)
  */
-export const NICK_BUSY_MARK = '…'
+export const BUSY_MARK = '…'
 
 /**
  * 邮箱的域名分隔符。昵称为空时显示名回退成邮箱的 @ 前缀 —— 切错这个字符
@@ -71,6 +72,20 @@ export const NICK_INPUT_SIZE = 'sm'
  * 头像在这里是主角;这个数同时撑着昵称那一行的行高(见 .nickEdit 的注释)。
  */
 export const AVATAR_SIZE_PX = 52
+
+/**
+ * 正文轨(Shell)的上内衬档(px)。2026-08-28 骨架归一批:上下留白从 AccountColumns
+ * 自带的 `margin: 2.5rem` 交给正文轨 —— 那是 45px(main.css 把 rem 基准冻结在 18px),
+ * 而 Shell 的档位表里没有 45,取最近的 40 档,余下的 5px 留在 .columns 的 margin 上,
+ * 成品间距仍与旧页逐像素相等(不为一个页面往全站档位表里加档)。
+ */
+export const SHELL_TOP = 40
+
+/**
+ * 正文轨(Shell)的下内衬档(px)。同上内衬:原 `margin-bottom: 2.5rem` = 45px
+ * 拆成 40 档 + .columns 留的 5px。⚠️ 必须点名 —— Shell 不传 bottom 是 32px 默认档。
+ */
+export const SHELL_BOTTOM = 40
 
 /**
  * sidebar 标签的裁切点:中英文两种左括号。侧栏标签复用各节的标题键,裁掉括号里的
@@ -198,3 +213,96 @@ export const PLAN_30 = '30'
  * 90 天时长包的档位标识(同上;Pro 也可续买,到期日顺延)。
  */
 export const PLAN_90 = '90'
+
+/**
+ * 收藏岗清单的拉取地址(E9-01;access 本人,按更新时间新前旧后)。
+ */
+export const URL_SAVED_JOBS_LIST = '/api/saved-jobs?limit=200&depth=0&sort=-updatedAt'
+
+/**
+ * 单条收藏的接口前缀(PATCH 改看板状态 / DELETE 移除,拼上记录 id)。
+ */
+export const URL_SAVED_JOB_HEAD = '/api/saved-jobs/'
+
+/**
+ * 已存筛选清单的拉取地址(E5-03;access 本人)。
+ */
+export const URL_SAVED_SEARCHES_LIST = '/api/saved-searches?limit=20&depth=0'
+
+/**
+ * 单条已存筛选的接口前缀(DELETE,拼上记录 id)。
+ */
+export const URL_SAVED_SEARCH_HEAD = '/api/saved-searches/'
+
+/**
+ * DELETE 方法字(移除收藏 / 删已存筛选)。
+ */
+export const METHOD_DELETE = 'DELETE'
+
+/**
+ * 收藏行「查看」链接的前缀:回职位板按职位名搜(拼上 encodeURIComponent 后的职位名)。
+ */
+export const Q_SEARCH_HEAD = '/?q='
+
+/**
+ * 看板状态下拉的档表(E9-01:想投/已投/面试中/offer)。key = 档名的 i18n 键
+ * (sj.st.*)。2026-08-27 自 SavedJobsList.tsx 的 STATUSES 迁入,键从拼串改整键落表。
+ */
+export const SJ_STATUS_TABS = [
+  { st: 'wish', key: 'sj.st.wish' },
+  { st: 'applied', key: 'sj.st.applied' },
+  { st: 'interview', key: 'sj.st.interview' },
+  { st: 'offer', key: 'sj.st.offer' },
+] as const
+
+/**
+ * 看板状态的默认档(没标过 = 想投;与旧渲染 `status || 'wish'` 同口径)。
+ */
+export const SJ_STATUS_DEFAULT = 'wish'
+
+/**
+ * 收藏节看板视图的标题键(sjTitleKeysOf 按 variant 二选一)。
+ */
+export const SJ_TITLE_KEY = 'sj.title'
+
+/**
+ * 收藏节看板视图的灰字小注键。
+ */
+export const SJ_NOTE_KEY = 'sj.note'
+
+/**
+ * 收藏节纯收藏视图(#62A variant='favs')的标题键。
+ */
+export const FAV_TITLE_KEY = 'fav.title'
+
+/**
+ * 收藏节纯收藏视图的灰字小注键。
+ */
+export const FAV_NOTE_KEY = 'fav.note'
+
+/**
+ * 职位名快照缺席时的占位横杠(不是数据,是「这格没有」的显示记号)。
+ */
+export const TITLE_NONE_MARK = '—'
+
+/**
+ * 收藏行里公司名与「查看」链接之间的全角空格(拉开一个汉字位,不用「·」——
+ * 全站禁点号杂糅)。
+ */
+export const SJ_SEP = '　'
+
+/**
+ * 移除收藏 × 钮的字符(同 NICK_EDIT_MARK 的理由:图标是内容不是样式)。
+ */
+export const DEL_MARK = '×'
+
+/**
+ * 周报开关的统计事件名(E5-07 §3.4 漏斗第 3 步:周报是留存钩的主力,
+ * 订阅/退订都要能看见 —— 退订量本身就是信号)。
+ */
+export const EV_WEEKLY = 'weekly-optin'
+
+/**
+ * 周报开关勾选框的 input 类型字(DOM 定值;平台串起名挂注释)。
+ */
+export const CHECKBOX_TYPE = 'checkbox'

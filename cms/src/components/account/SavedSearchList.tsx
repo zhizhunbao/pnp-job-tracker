@@ -1,43 +1,59 @@
 'use client'
-// 已保存筛选管理(E5-03):列表+删除。数据走 Payload REST(access 已限本人)。
-import { useEffect, useState } from 'react'
-import { TimeText } from '@/components/time'
-import type { TFn } from '@/lib/i18n'
+/**
+ * 已保存筛选管理(E5-03):列表 + 删除。数据走 Payload REST(access 已限本人);
+ * 一行 = 订阅名 + 最近提醒时刻(TimeText;没发过不渲)+ 删除钮(淡红底 ——
+ * 真删除,与收藏行的弱灰移除 × 不同档)。删除以服务端为准:DELETE 后重拉清单,
+ * 不做本地乐观移除。状态机器住 hooks 的 useSavedSearches。
+ * 2026-08-27 换装批自 SavedSearchList.tsx(PascalCase 迁移存量)整体重写。
+ *
+ * @author Frank
+ * @time 2026-08-27 22:00:00
+ */
+import { Button } from '@/components/button'
+import { cssOf } from '@/components/css'
 import { IconMail } from '@/components/icons'
+import { TimeText } from '@/components/time'
+import { PLAIN_BTN_KIND } from './constants'
+import { makeSearchDel } from './functions'
+import { useSavedSearches } from './hooks'
+import type { SavedSearchListIn } from './types'
+import css from './account.module.css'
 
-type SS = { id: string | number; name: string; lastNotifiedAt?: string | null }
-
-export function SavedSearchList({ t }: { t: TFn }) {
-  const [items, setItems] = useState<SS[] | null>(null)
-  const load = () => fetch('/api/saved-searches?limit=20&depth=0', { credentials: 'include' })
-    .then((r) => r.json()).then((d) => setItems(d?.docs ?? [])).catch(() => setItems([]))
-  useEffect(() => { load() }, [])
-
-  const del = async (id: SS['id']) => {
-    await fetch(`/api/saved-searches/${id}`, { method: 'DELETE', credentials: 'include' }).catch(() => {})
-    load()
+/**
+ * 已存筛选节。
+ *
+ * @param props 取词函数(见 SavedSearchListIn 逐格注释)。
+ * @returns 已存筛选整块。
+ */
+export function SavedSearchList({ t }: SavedSearchListIn) {
+  const p = useSavedSearches()
+  let body = null
+  if (p.items != null) {
+    if (p.items.length === 0) {
+      body = <div className={css.ssEmpty}>{t('ss.none')}</div>
+    } else {
+      const rows = []
+      for (const x of p.items) {
+        rows.push(
+          <div key={x.id} className={css.ssRow}>
+            <span className={css.ssName}><IconMail /> {x.name}</span>
+            {x.lastNotifiedAt != null && <TimeText iso={x.lastNotifiedAt} />}
+            <Button kind={PLAIN_BTN_KIND}
+              onClick={makeSearchDel({ id: x.id, refresh: p.refresh })}
+              className={cssOf(css.ssDel)}>
+              {t('ss.del')}
+            </Button>
+          </div>,
+        )
+      }
+      body = <div className={css.ssList}>{rows}</div>
+    }
   }
-
   return (
     <div>
-      <div style={{ fontSize: 13.5, fontWeight: 600, color: '#374151' }}><IconMail /> {t('ss.title')}</div>
-      <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>{t('ss.note')}</div>
-      {items === null ? null : items.length === 0 ? (
-        <div style={{ fontSize: 12.5, color: '#9ca3af', marginTop: 8 }}>{t('ss.none')}</div>
-      ) : (
-        <div style={{ marginTop: 8 }}>
-          {items.map((x) => (
-            <div key={x.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid #f9fafb', fontSize: 13 }}>
-              <span style={{ flex: 1, color: '#374151' }}><IconMail /> {x.name}</span>
-              {x.lastNotifiedAt ? <TimeText iso={x.lastNotifiedAt} /> : null}
-              <button onClick={() => del(x.id)}
-                style={{ border: 'none', background: '#fef2f2', color: '#b91c1c', borderRadius: 6, padding: '3px 10px', fontSize: 12, cursor: 'pointer' }}>
-                {t('ss.del')}
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+      <div className={css.secTitle}><IconMail /> {t('ss.title')}</div>
+      <div className={css.secHint}>{t('ss.note')}</div>
+      {body}
     </div>
   )
 }

@@ -6,44 +6,13 @@
  */
 
 /*
- * 全页最外层:渐变底 + 撑满视口高的纵向列(顶栏 / 正文 / 页脚三段)。
- */
-.shell {
-  /*
-   * 账户页的渐变底(160° 从冷白到淡靛再回冷白),全站只有本页用。
-   */
-  background: linear-gradient(160deg,#f8fafc 0%,#eef2ff 55%,#f8fafc 100%);
-
-  /*
-   * 至少撑满一屏 —— 内容少时页脚也压在屏底,不会浮在半空。
-   */
-  min-height: 100vh;
-
-  /*
-   * 顶栏 / 正文 / 页脚纵向排。
-   */
-  display: flex;
-
-  /*
-   * 纵向。
-   */
-  flex-direction: column;
-
-  /*
-   * 跟随系统字体。
-   */
-  font-family: system-ui, sans-serif;
-
-  /*
-   * 正文默认字色(近黑的深灰)。
-   */
-  color: #1f2937;
-}
-
-/*
  * sidebar + 内容区的两列容器(2026-07-16 Frank「我的账户需要一个 sidebar」拍板,
  * 此前是四卡分离):左 = 节导航 + 退出登录,右 = 选中节的卡。
- * 宽 860 是本页专属读宽,不走全站 1320 正文轨。
+ * 宽 860 是本页专属读宽,作为窄读列住在全站 1320 正文轨(Shell)里
+ * (2026-07-31「窄读列放壳内」;2026-08-28 骨架归一批落位)。
+ * 左右安全边(手机贴边难点)同批交给 Shell 的 1.25rem 正文轨内衬,本类不再自带
+ * `padding: 0 1rem`:两处都留会叠成 40.5px(1rem = 18px + 1.25rem = 22.5px)。
+ * 交出去之后手机上正文与顶栏/页脚的左右边缘对齐 —— 此前本页正文比它们各宽 4.5px。
  */
 .columns {
   /*
@@ -57,9 +26,11 @@
   width: 100%;
 
   /*
-   * 上下 2.5rem 留白,左右 auto 居中。
+   * 左右 auto 居中。上下留白 2026-08-28 大头交给外面的 Shell(top=40 / bottom=40):
+   * 原来的 2.5rem 在 18px 的 rem 基准下是 45px,档位表里没有 45,所以这里留 5px 补差
+   * —— 40 + 5 = 45,成品间距与旧页逐像素相等。两处都留满会叠成 90px。
    */
-  margin: 2.5rem auto;
+  margin: 5px auto;
 
   /*
    * 两列并排。
@@ -83,16 +54,14 @@
 
   /*
    * 内衬算进宽度,不然 padding 会把 860 撑破。
+   * (2026-08-28:左右内衬移交 Shell 之后本格暂时无内衬可算,留着以防这里再加。)
    */
   box-sizing: border-box;
 
   /*
-   * 左右 1rem 安全边(手机贴边难点)。
-   */
-  padding: 0 1rem;
-
-  /*
    * 吃掉顶栏与页脚之间的剩余高度,但不被压缩 —— 页脚才压得住屏底。
+   * (2026-08-28:本件改住 Shell 里之后这一格不再生效 —— Shell 是块级容器,
+   * 撑满改由 Frame 的纵向列 + 页脚自己的 margin-top:auto 管,渲染不变。)
    */
   flex: 1 0 auto;
 }
@@ -692,7 +661,7 @@
   /*
    * 白字。
    */
-  color: #fff;
+  color: #ffffff;
 }
 
 /*
@@ -709,7 +678,7 @@
   /*
    * 白字。
    */
-  color: #fff;
+  color: #ffffff;
 }
 
 /*
@@ -762,4 +731,708 @@
    * 与上方留 8px。
    */
   margin-top: 8px;
+}
+
+/*
+ * ── 以下自 2026-08-27 换装批迁入:ProfileForm / SavedJobsList / SavedSearchList /
+ *    ResumeArchive 四件的内联样式逐格迁类,值一个不改。──
+ */
+
+/*
+ * 各节的小标题(档案/收藏/订阅/简历存档四节共用;与 .buyTitle 同规格 ——
+ * 各节自带图标,合并成一个类会把「购买节」的历史注释挤走,所以另起同值类)。
+ */
+.secTitle {
+  /*
+   * 节内小标题字号。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 正文灰。
+   */
+  color: #374151;
+}
+
+/*
+ * 节标题下的灰字小注。
+ */
+.secHint {
+  /*
+   * 最小一档字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 最弱一档灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 与标题贴 4px。
+   */
+  margin-top: 4px;
+}
+
+/*
+ * 收藏清单的容器与抬头的距离。
+ */
+.sjList {
+  /*
+   * 与小注留 10px。
+   */
+  margin-top: 10px;
+}
+
+/*
+ * 收藏清单的空态行。
+ */
+.sjEmpty {
+  /*
+   * 空态字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 最弱一档灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 与小注留 12px。
+   */
+  margin-top: 12px;
+}
+
+/*
+ * 收藏清单里的一行(职位块 + 控件组)。
+ */
+.jobRow {
+  /*
+   * 两块并排。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 两块间距。
+   */
+  gap: 10px;
+
+  /*
+   * 上下内衬。
+   */
+  padding: 9px 0;
+
+  /*
+   * 行间最浅分隔线(压在行顶,首行也有 —— 与抬头隔开)。
+   */
+  border-top: 1px solid #f3f4f6;
+
+  /*
+   * 窄屏放不下时控件组整体换行(#53)。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 一行里的职位块(职位名 + 公司行)。
+ */
+.jobMain {
+  /*
+   * 吃掉控件组之外的宽度。
+   */
+  flex: 1;
+
+  /*
+   * 窄过这个宽就该把控件组挤去下一行,别把职位名压成一柱字。
+   */
+  min-width: 160px;
+}
+
+/*
+ * 职位名快照。
+ */
+.jobTitle {
+  /*
+   * 行主字号。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 近黑。
+   */
+  color: #1f2937;
+
+  /*
+   * 半粗 —— 这一行的主角。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 职位名下面的公司行(公司名 + 「查看」链接)。
+ */
+.jobSub {
+  /*
+   * 次行字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 最弱一档灰。
+   */
+  color: #9ca3af;
+}
+
+/*
+ * 公司行里的「查看」链接(回职位板按职位名搜)。
+ * 类名写两遍抬权重:本链接经 LinkButton 渲染,要稳赢 button 域的同权重声明。
+ */
+.jobView.jobView {
+  /*
+   * 行动蓝。
+   */
+  color: #2563eb;
+
+  /*
+   * 不带下划线(灰行里一点蓝已经够示意可点)。
+   */
+  text-decoration: none;
+}
+
+/*
+ * 一行右侧的控件组(状态下拉 + ×):#53 包成不换行小组,窄屏换行时一起走
+ * (× 单飞到卡片左下角会与行脱节)。
+ */
+.jobCtl {
+  /*
+   * 控件横排。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 控件间距。
+   */
+  gap: 8px;
+
+  /*
+   * 不许被职位块压缩(整组换行,不拆散)。
+   */
+  flex-shrink: 0;
+}
+
+/*
+ * 看板状态下拉(想投/已投/面试中/offer)。
+ */
+.jobStatusSel {
+  /*
+   * 下拉内衬。
+   */
+  padding: 4px 8px;
+
+  /*
+   * 下拉字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 描边。
+   */
+  border: 1px solid #d1d5db;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 6px;
+}
+
+/*
+ * 移除收藏的 × 钮。
+ * 类名写两遍抬权重:本钮经 Button(kind ghost)渲染(先例 .logoutBtn)。
+ */
+.rowDel.rowDel {
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 最弱一档灰(次要操作)。
+   */
+  color: #9ca3af;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * × 字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 左右各 2px 内衬。
+   */
+  padding: 0 2px;
+}
+
+/*
+ * 周报开关那一行(E9-02b:勾选框 + 说明,整行可点)。
+ */
+.weeklyRow {
+  /*
+   * 勾选框与文字并排。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 勾选框与文字的间距。
+   */
+  gap: 8px;
+
+  /*
+   * 与上方清单留 14px。
+   */
+  margin-top: 14px;
+
+  /*
+   * 分隔线之下再衬 10px。
+   */
+  padding-top: 10px;
+
+  /*
+   * 与清单之间一条最浅分隔线。
+   */
+  border-top: 1px solid #f3f4f6;
+
+  /*
+   * 开关说明字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 次要灰。
+   */
+  color: #6b7280;
+
+  /*
+   * 整行可点手型(label 包着勾选框)。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 已存筛选清单的容器与抬头的距离。
+ */
+.ssList {
+  /*
+   * 与小注留 8px。
+   */
+  margin-top: 8px;
+}
+
+/*
+ * 已存筛选的空态行。
+ */
+.ssEmpty {
+  /*
+   * 空态字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 最弱一档灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 与小注留 8px。
+   */
+  margin-top: 8px;
+}
+
+/*
+ * 已存筛选的一行(名字 + 最近提醒时间 + 删除钮)。
+ */
+.ssRow {
+  /*
+   * 三块并排。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 块间距。
+   */
+  gap: 8px;
+
+  /*
+   * 上下内衬。
+   */
+  padding: 6px 0;
+
+  /*
+   * 行间最浅分隔线。
+   */
+  border-bottom: 1px solid #f9fafb;
+
+  /*
+   * 行字号。
+   */
+  font-size: 13px;
+}
+
+/*
+ * 订阅名(吃掉其余宽度)。
+ */
+.ssName {
+  /*
+   * 吃掉时间与删除钮之外的宽度。
+   */
+  flex: 1;
+
+  /*
+   * 正文灰。
+   */
+  color: #374151;
+}
+
+/*
+ * 删除订阅钮(淡红底 + 深红字 —— 删除是destructive,与移除收藏的弱灰 × 不同档)。
+ * 类名写两遍抬权重:本钮经 Button(kind ghost)渲染(先例 .logoutBtn)。
+ */
+.ssDel.ssDel {
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 淡红底。
+   */
+  background: #fef2f2;
+
+  /*
+   * 深红字。
+   */
+  color: #b91c1c;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 6px;
+
+  /*
+   * 钮内衬。
+   */
+  padding: 3px 10px;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 简历存档节的外框(档案节内的下半段,与表单之间一条发丝线)。
+ */
+.raWrap {
+  /*
+   * 与上方表单留 18px。
+   */
+  margin-top: 18px;
+
+  /*
+   * 发丝线之下再衬 12px。
+   */
+  padding-top: 12px;
+
+  /*
+   * 与表单之间一条发丝线(全站发丝灰,值走 colors 域的 CSS 变量)。
+   */
+  border-top: 1px solid var(--hairline);
+}
+
+/*
+ * 简历存档的元信息一行(时间字数 + 操作钮组)。
+ */
+.raMetaRow {
+  /*
+   * 两块并排。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 块间距。
+   */
+  gap: 10px;
+
+  /*
+   * 窄屏放不下时钮组整体换行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 与标题贴 4px。
+   */
+  margin-top: 4px;
+}
+
+/*
+ * 元信息文字(存档时间 + 字符数)。
+ */
+.raMeta {
+  /*
+   * 吃掉钮组之外的宽度。
+   */
+  flex: 1;
+
+  /*
+   * 窄过这个宽就把钮组挤去下一行。
+   */
+  min-width: 150px;
+
+  /*
+   * 元信息字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 次要文字色(colors 域变量)。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 简历存档的空态行。
+ */
+.raEmpty {
+  /*
+   * 空态字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 三级文字色(colors 域变量)。
+   */
+  color: var(--text3);
+
+  /*
+   * 与标题留 6px。
+   */
+  margin-top: 6px;
+}
+
+/*
+ * 简历操作钮组(展开 + 清除/确认/取消)。
+ */
+.raCtl {
+  /*
+   * 钮横排。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 钮间距。
+   */
+  gap: 10px;
+
+  /*
+   * 不许被元信息压缩(整组换行,不拆散)。
+   */
+  flex-shrink: 0;
+}
+
+/*
+ * 简历操作钮的公共底(文字钮:无框无底 + #219 触控最小高)。
+ * 类名写两遍抬权重:本钮经 Button(kind ghost)渲染(先例 .logoutBtn)。
+ */
+.raBtn.raBtn {
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 上下 4、左右 2 内衬。
+   */
+  padding: 4px 2px;
+
+  /*
+   * 文字钮字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 钮面不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 触控最小高(#219)。
+   */
+  min-height: 32px;
+
+  /*
+   * 常规字重(确认清除那枚由修饰类加粗)。
+   */
+  font-weight: 400;
+}
+
+/*
+ * 展开/收起钮:主色。
+ * 类名写两遍抬权重:同上(先例 .logoutBtn)。
+ */
+.raView.raView {
+  /*
+   * 主行动色(colors 域变量)。
+   */
+  color: var(--primary);
+}
+
+/*
+ * 「确认清除」钮:危险红 + 半粗(不可逆操作要重)。
+ * 类名写两遍抬权重:同上(先例 .logoutBtn)。
+ */
+.raSure.raSure {
+  /*
+   * 危险红(colors 域变量)。
+   */
+  color: var(--danger);
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 「取消」与「清除」钮:三级灰(轻操作)。
+ * 类名写两遍抬权重:同上(先例 .logoutBtn)。
+ */
+.raPlain.raPlain {
+  /*
+   * 三级文字色(colors 域变量)。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 简历正文的就地展开块(只读)。
+ */
+.raText {
+  /*
+   * 与元信息行留 8px。
+   */
+  margin-top: 8px;
+
+  /*
+   * 展开上限,再长滚动。
+   */
+  max-height: 260px;
+
+  /*
+   * 纵向滚。
+   */
+  overflow-y: auto;
+
+  /*
+   * 保留简历原有换行。
+   */
+  white-space: pre-wrap;
+
+  /*
+   * 长词也断行,不横滚(break-word 关键字已废弃,现代等价写法)。
+   */
+  overflow-wrap: anywhere;
+
+  /*
+   * 正文字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 简历行距(读长文的密度)。
+   */
+  line-height: 1.7;
+
+  /*
+   * 正文灰。
+   */
+  color: #374151;
+
+  /*
+   * 底色(colors 域变量)。
+   */
+  background: var(--bg);
+
+  /*
+   * 描边(colors 域变量)。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 内衬。
+   */
+  padding: 8px 10px;
 }

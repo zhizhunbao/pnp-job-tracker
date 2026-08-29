@@ -1,0 +1,518 @@
+/*
+ * stats 域(就业把脉统计主图)的私有样式。2026-08-28 换装批自 charts.tsx 的内联样式
+ * 与那段注入的 <style> 标签逐格迁类,值一个不改;色值凡在 colors 域有名字的走 CSS 变量
+ * (--card/--border/--primary/--text3),页面私有的四枚(控件深灰字、分段钮选中底与字、
+ * 更多筛选虚线)留字面量并挂注释。
+ */
+
+/*
+ * 白卡壳的密度:壳本身(描边+圆角+白底)是全局 .card 那一份,各页密度不同的
+ * padding 留给调用方 —— 主图这一档是 12/14。
+ */
+.chartCard {
+  /*
+   * 卡内衬(上下 12、左右 14)。
+   */
+  padding: 12px 14px;
+}
+
+/*
+ * 常用控件那一行(搜索 + 横轴 + 分组 + 排序 + 更多)。控件区重设计的形态见
+ * functions.ts 的 makeMoreToggle:四行药丸 → 常用一行 + 更多筛选折叠。
+ */
+.ctlRow {
+  /*
+   * 横排。
+   */
+  display: flex;
+
+  /*
+   * 控件间距。
+   */
+  gap: 8px;
+
+  /*
+   * 竖直居中(下拉与文字标签不齐会看出来)。
+   */
+  align-items: center;
+
+  /*
+   * 窄屏折行(手机上这一行放不下五组控件)。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 与上面卡沿的距离(下方不留,紧接着就是图)。
+   */
+  margin: 8px 0 0;
+}
+
+/*
+ * 控件左边那个灰字标签(它是索引不是内容)。
+ */
+.ctlLabel {
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 最浅灰(colors 域变量)。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 原生下拉的统一长相。四组都是单选,药丸横铺白占竖向空间(效果图 Frank 过目后实施),
+ * 所以这里用原生 select 不用药丸。
+ */
+.sel {
+  /*
+   * 控件高(与分段钮组同高)。
+   */
+  height: 32px;
+
+  /*
+   * 描边(colors 域变量)。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 控件圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 白底(colors 域变量)。
+   */
+  background: var(--card);
+
+  /*
+   * 深灰字(本页私有,不是全站色板成员)。
+   */
+  color: #374151;
+
+  /*
+   * 控件字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 左右内衬。
+   */
+  padding: 0 8px;
+}
+
+/*
+ * 排序方向那两只钮挤成的一组(高低两向)。
+ */
+.segGroup {
+  /*
+   * 横排且能跟在文字后面。
+   */
+  display: inline-flex;
+
+  /*
+   * 一圈描边(两只钮共用)。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 组的圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 裁掉钮的直角(圆角靠这一句才生效)。
+   */
+  overflow: hidden;
+
+  /*
+   * 与下拉同高。
+   */
+  height: 32px;
+}
+
+/*
+ * 分段钮的未选态(加倍类压过 button 族 ghost 底座的字色与内衬)。
+ */
+.segBtn.segBtn {
+  /*
+   * 组已经有一圈描边,钮自己不再画。
+   */
+  border: none;
+
+  /*
+   * 左右内衬。
+   */
+  padding: 0 10px;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 可点。
+   */
+  cursor: pointer;
+
+  /*
+   * 白底(colors 域变量)。
+   */
+  background: var(--card);
+
+  /*
+   * 深灰字(本页私有)。
+   */
+  color: #374151;
+
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
+}
+
+/*
+ * 分段钮的选中态(淡蓝底 + 深蓝字 + 加粗,三样一起才读得出「就是这个」)。
+ */
+.segBtnOn.segBtnOn {
+  /*
+   * 极淡蓝底(本页私有)。
+   */
+  background: #eff6ff;
+
+  /*
+   * 深蓝字(本页私有)。
+   */
+  color: #1d4ed8;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 「更多筛选」的开合钮(加倍类压过 button 族 ghost 底座)。
+ */
+.moreBtn.moreBtn {
+  /*
+   * 与下拉同高。
+   */
+  height: 32px;
+
+  /*
+   * 描边(colors 域变量)。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 控件圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 白底(colors 域变量)。
+   */
+  background: var(--card);
+
+  /*
+   * 钮字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 深灰字(本页私有)。
+   */
+  color: #374151;
+
+  /*
+   * 左右内衬。
+   */
+  padding: 0 11px;
+
+  /*
+   * 可点。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 「更多筛选」钮上那个数字徽标(折叠起来时也看得见改过几格)。
+ */
+.badge {
+  /*
+   * 跟在钮文字后面。
+   */
+  display: inline-block;
+
+  /*
+   * 品牌蓝底(colors 域变量)。
+   */
+  background: var(--primary);
+
+  /*
+   * 白字(colors 域变量)。
+   */
+  color: var(--card);
+
+  /*
+   * 药丸形。
+   */
+  border-radius: 999px;
+
+  /*
+   * 徽标字号(全站最小的一档)。
+   */
+  font-size: 10.5px;
+
+  /*
+   * 左右内衬。
+   */
+  padding: 0 5px;
+
+  /*
+   * 与钮文字的间隔。
+   */
+  margin-left: 5px;
+}
+
+/*
+ * 「更多筛选」展开后那一行(通道 + 右轴 + 三级分类 + 最低岗数)。
+ */
+.morePanel {
+  /*
+   * 横排。
+   */
+  display: flex;
+
+  /*
+   * 控件间距。
+   */
+  gap: 8px;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 窄屏折行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 与常用那一行的距离。
+   */
+  margin-top: 10px;
+
+  /*
+   * 分隔线与控件之间的距离。
+   */
+  padding-top: 10px;
+
+  /*
+   * 虚线分隔(虚线读作「这是同一块的下半截」,实线会读成两块;本页私有色)。
+   */
+  border-top: 1px dashed #e5e7eb;
+}
+
+/*
+ * 「这几档只有横轴=职业时才成立」的灰字提示(空态引导类文案,四类留白之一)。
+ */
+.hint {
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 最浅灰(colors 域变量)。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 要全屏的那个容器(全屏钮绝对定位在它右上角;全屏时它自己撑满屏幕)。
+ */
+.fsBox {
+  /*
+   * 给全屏钮当定位参照。
+   */
+  position: relative;
+
+  /*
+   * 白底(全屏后屏幕其余部分也是白的,不露出页面灰底)。
+   */
+  background: var(--card);
+}
+
+/*
+ * 伪全屏:这台浏览器没有 Element.requestFullscreen 时(iOS WebKit 至今如此)容器自己铺满视口。
+ * 2026-08-28 Frank 实机反馈「手机端展示全屏不生效」后加;判定与进退状态机见 hooks 的
+ * useFullscreen。加倍类是为了压过 .fsBox 的 position:relative。
+ */
+.fsFallback.fsFallback {
+  /*
+   * 脱离文档流,钉在视口上。
+   */
+  position: fixed;
+
+  /*
+   * 四边贴满(上右下左都是 0)。
+   */
+  inset: 0;
+
+  /*
+   * 盖过页面上所有浮层:顶栏 30 / 底部操作条 40 / 挂件 45 / 遮罩 50 / 抽屉 60。
+   */
+  z-index: 70;
+}
+
+/*
+ * 全屏钮(加倍类压过 button 族 ghost 底座)。2026-08-01 Frank 队列⑥「主图手机端加全屏按钮」:
+ * 375 上图挤成一团,横过来看才读得动。
+ */
+.fsBtn.fsBtn {
+  /*
+   * 浮在图上。
+   */
+  position: absolute;
+
+  /*
+   * 距图顶。
+   */
+  top: 6px;
+
+  /*
+   * 距图右。
+   */
+  right: 6px;
+
+  /*
+   * 压在 canvas 之上。
+   */
+  z-index: 2;
+
+  /*
+   * 描边(colors 域变量)。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 钮圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 白底(colors 域变量)。
+   */
+  background: var(--card);
+
+  /*
+   * 深灰字(本页私有)。
+   */
+  color: #374151;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 钮内衬。
+   */
+  padding: 5px 10px;
+
+  /*
+   * 可点。
+   */
+  cursor: pointer;
+
+  /*
+   * 跟随页面字体(canvas 上的钮不继承会掉回浏览器默认字体)。
+   */
+  font-family: inherit;
+}
+
+/*
+ * echarts 的画布容器。高度是运行时数据(全屏时撑满视口),由组件逐行特批的 style 给。
+ */
+.chart {
+  /*
+   * 撑满卡宽。
+   */
+  width: 100%;
+
+  /*
+   * 换 option 时旧帧不许溢出容器(#128 残影那一路的兜底)。
+   */
+  overflow: hidden;
+}
+
+/*
+ * 可点的图才出小手(铁律「不能点就不要 hover 和小手」;系列那半在 constants 的 CURSOR_DEFAULT)。
+ */
+.clickable {
+  /*
+   * 小手。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 图底那行口径小注(法律免责与口径说明类文案,四类留白之一)。
+ */
+.note {
+  /*
+   * 最小字号。
+   */
+  font-size: 11px;
+
+  /*
+   * 最浅灰(colors 域变量)。
+   */
+  color: var(--text3);
+
+  /*
+   * 与图的距离。
+   */
+  margin-top: 6px;
+
+  /*
+   * 行距(这一段会折行)。
+   */
+  line-height: 1.6;
+}
+
+/*
+ * 桌面不出全屏钮(桌面本来就宽,用不上)。**伪全屏态例外**:那条路没有 ESC / 返回手势
+ * 可退,钮是唯一的出口 —— 手机横过来宽度可能越过 900(平板尤其),钮一藏人就困在里面了。
+ */
+@media (width >= 900px) {
+  .fsBox:not(.fsFallback) .fsBtn.fsBtn {
+    /*
+     * 整只钮不渲。
+     */
+    display: none;
+  }
+}
+
+/*
+ * #300(第 38 轮体检):全屏钮手机触控靶 ≥44。控件行 .mktCtl 的 44 规则在全局 main.css
+ * 的 640 块(单一来源),本域只管这一只钮。
+ */
+@media (width <= 640px) {
+  .fsBtn.fsBtn {
+    /*
+     * 触控靶高。
+     */
+    min-height: 44px;
+
+    /*
+     * 触控靶宽。
+     */
+    min-width: 44px;
+  }
+}

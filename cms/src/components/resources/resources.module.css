@@ -1,0 +1,246 @@
+/*
+ * resources 域(官方资源导航页)的私有样式。2026-08-28 换装批自 Resources.tsx 的内联样式
+ * 逐格迁类,值一个不改(React 内联的裸数字按 px 落);色值凡在 colors 域有名字的走 CSS 变量
+ * (--card/--border/--text3),页面私有的两枚(卡片名字的深灰、分区标题的深灰)留字面量并挂注释。
+ */
+
+/*
+ * 全页最外层与正文轨都不在本文件:灰底撑满视口那层是 shell 域的通用件 Frame(页面门拼),
+ * 限宽 1320 那层是 Shell(上内衬走它的 16 档)—— 两处都是全站共用件,本域不留克隆。
+ */
+
+/*
+ * 顶部搜索框那一行(Frank「上面带一个文本框搜索」):框本身归 search 域,这里只管上下留白。
+ */
+.searchRow {
+  /*
+   * 上下 14、左右不缩(与 banner 和第一个分区各留一口气)。
+   */
+  margin: 14px 0;
+}
+
+/*
+ * 空态:一条都没搜到时顶上这句话(空态引导是留下来的四类解释文案之一)。
+ */
+.empty {
+  /*
+   * 小字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 浅灰(colors 域变量 —— 空态不抢正文的注意力)。
+   */
+  color: var(--text3);
+
+  /*
+   * 居中(整轨就这一句话)。
+   */
+  text-align: center;
+
+  /*
+   * 上下各留 24,左右不缩。
+   */
+  padding: 24px 0;
+}
+
+/*
+ * 一个分类分区(小标题 + 它的网格)。
+ */
+.section {
+  /*
+   * 与下一个分区的间距。
+   */
+  margin-bottom: 18px;
+}
+
+/*
+ * 分区小标题(分类名)。
+ */
+.catTitle {
+  /*
+   * 比正文大半档 —— 它是分区的界碑,不是页面标题。
+   */
+  font-size: 14.5px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 深灰(本页私有,不是全站色板成员)。
+   */
+  color: #374151;
+
+  /*
+   * 上与左右清零,下留 8 给网格。
+   */
+  margin: 0 0 8px;
+}
+
+/*
+ * 每条一卡的密集网格(hao123 式):列宽自适应,窄屏自动落成单列。
+ */
+.grid {
+  /*
+   * 网格布局。
+   */
+  display: grid;
+
+  /*
+   * 列宽 220 起、有多少排多少;min(100%, 220px) 保证窄于 220 的视口不横向溢出。
+   */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+
+  /*
+   * 卡间距。
+   */
+  gap: 10px;
+}
+
+/*
+ * 一条资源一张可点卡(整卡跳官方页)。hover 走全局 cardHover 规范类,不在这里自造。
+ */
+.tile {
+  /*
+   * 整块可点(它是 <a>,默认行内)。
+   */
+  display: block;
+
+  /*
+   * 链接不出下划线(整卡就是钮,不是句中链接)。
+   */
+  text-decoration: none;
+
+  /*
+   * 白底(colors 域变量)。
+   */
+  background: var(--card);
+
+  /*
+   * 描边(colors 域变量)。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 卡圆角(密集网格里的小卡,比整页白卡收一档)。
+   */
+  border-radius: 10px;
+
+  /*
+   * 卡内衬(上下 10、左右 12)。
+   */
+  padding: 10px 12px;
+
+  /*
+   * hover 时描边与底色渐变过去,别硬切。
+   */
+  transition: border-color 0.12s, background 0.12s;
+
+  /*
+   * 网格格子默认 min-width auto,归零才让里面的长名字能省略号收尾而不是把列撑破。
+   */
+  min-width: 0;
+}
+
+/*
+ * 卡片第一行(资源名)。
+ */
+.tileHead {
+  /*
+   * 横向排(名字后面留着挂小标的位置)。
+   */
+  display: flex;
+
+  /*
+   * 纵向居中。
+   */
+  align-items: center;
+
+  /*
+   * 行内元素间距。
+   */
+  gap: 6px;
+
+  /*
+   * 主文案字号。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 近黑(本页私有,比全站 --text 淡半档)。
+   */
+  color: #1f2937;
+
+  /*
+   * 中等字重(名字是主文案,但不抢分区标题)。
+   */
+  font-weight: 500;
+}
+
+/*
+ * 资源名本身:一行放不下时用省略号收尾,不折行 —— 密集网格里卡高要齐,
+ * 折一行就把整排卡拉长。名字本身一个字没砍,砍的是这一格的显示宽度。
+ */
+.tileName {
+  /*
+   * 溢出裁掉。
+   */
+  overflow: hidden;
+
+  /*
+   * 裁掉的地方出省略号。
+   */
+  text-overflow: ellipsis;
+
+  /*
+   * 不折行(卡高固定,折行会把整排卡拉不齐)。
+   */
+  white-space: nowrap;
+
+  /*
+   * flex 子项默认 min-width auto,归零省略号才生效。
+   */
+  min-width: 0;
+}
+
+/*
+ * 卡片第二行:这条资源拿来干什么(灰字小注,按界面语言取)。
+ */
+.tileUse {
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 浅灰(colors 域变量)。
+   */
+  color: var(--text3);
+
+  /*
+   * 行距。
+   */
+  line-height: 1.4;
+
+  /*
+   * 与上一行的间距。
+   */
+  margin-top: 2px;
+
+  /*
+   * 溢出裁掉。
+   */
+  overflow: hidden;
+
+  /*
+   * 裁掉的地方出省略号。
+   */
+  text-overflow: ellipsis;
+
+  /*
+   * 不折行(一行一条,卡高才齐)。
+   */
+  white-space: nowrap;
+}

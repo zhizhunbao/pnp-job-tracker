@@ -9,6 +9,14 @@
  * state/effect/handler 也全部收进 components/account/hooks.ts 的 useAccountPage,
  * 门里只剩一行 hook + 大写组件的拼装;注释一并收 JSDoc 形(闸 local/jsdoc-comments-only)。
  *
+ * 2026-08-28:骨架收编进全站标准形 —— 外框 Frame + 正文轨 Shell(2026-07-18 Frank
+ * 「每个页面的宽度应该是一样的」),本页专属的 860 读宽 AccountColumns 作为窄读列
+ * 住进壳内(2026-07-31「窄读列放壳内」)。原 AccountShell 退役,渐变底先暂存
+ * AccountTint 候选层;2026-08-28 Frank 拍板全站灰(渐变与灰亮度差不足 2%,
+ * 留渐变只多一个特例),该件同日删除,底色归 Frame 的 var(--bg) 一处。
+ * 上下留白由 Shell 的 top/bottom 档接手(各 40px = 原 AccountColumns 的 2.5rem),
+ * 左右安全边由正文轨的 1.25rem 接手。
+ *
  * 节槽注记(原散在 JSX 里的决策记录,收拢于此):
  * · 顶栏/页脚:全站共享(2026-07-16 用户拍板统一 header/footer);账户在本页为当前态不再链自己。
  * · 答题条件条(AnswersRow)2026-08-04 摘除:整条蓝条的存在意义就是把人送去 /plan/job
@@ -31,13 +39,15 @@ import {
   AccountNav,
   AccountOverview,
   AccountRedirect,
-  AccountShell,
-  ProfileForm,
   ResumeArchive,
   SavedJobsList,
   SavedSearchList,
+  SHELL_BOTTOM,
+  SHELL_TOP,
   useAccountPage,
 } from '@/components/account'
+import { ProfileForm } from '@/components/profile'
+import { Frame, Shell } from '@/components/shell'
 
 /**
  * 账户页的门:一行状态机器 + 大写组件的拼装,没有别的。
@@ -47,36 +57,39 @@ import {
 export default function AccountPage() {
   const a = useAccountPage()
   return (
-    <AccountShell>
-      <Header lang={a.lang} setLang={a.setLang} t={a.t} active="account" />
+    <Frame>
+      <Header active="account" />
 
-      {a.checked && a.me != null && (
-        <AccountColumns narrow={a.narrow}
-          nav={<AccountNav sec={a.sec} narrow={a.narrow} t={a.t} onPick={a.onPick} onLogout={a.onLogout} />}>
-          {a.sec === 'overview' && (
-            <AccountOverview me={a.me}
-              pro={a.pro}
-              payOk={a.payOk}
-              nick={a.nick}
-              nickBusy={a.nickBusy}
-              t={a.t}
-              onNickEdit={a.onNickEdit}
-              onNickChange={a.onNickChange}
-              onNickSave={a.onNickSave}
-              onNickKey={a.onNickKey} />
-          )}
-          {a.sec === 'profile' && (<>
-            <ProfileForm key={String(a.me.id)} t={a.t} userId={a.me.id} initial={a.me.profile ?? null} />
-            <ResumeArchive key={'ra' + String(a.me.id)} t={a.t} userId={a.me.id} text={a.me.profile?.resumeText} savedAt={a.me.profile?.resumeSavedAt} />
-          </>)}
-          {a.sec === 'favs' && <SavedJobsList t={a.t} variant="favs" />}
-          {a.sec === 'sjobs' && <SavedJobsList t={a.t} userId={a.me.id} weeklyOptOut={!!(a.me as { weeklyOptOut?: boolean }).weeklyOptOut} />}
-          {a.sec === 'saved' && <SavedSearchList t={a.t} />}
-          {a.sec === 'buy' && <AccountBuyPanel t={a.t} buying={a.buying} buyErr={a.buyErr} onBuy={a.onBuy} />}
-        </AccountColumns>
-      )}
-      {a.checked && a.me == null && <AccountRedirect />}
-      <Footer t={a.t} />
-    </AccountShell>
+      <Shell top={SHELL_TOP} bottom={SHELL_BOTTOM}>
+        {a.checked && a.me != null && (
+          <AccountColumns narrow={a.narrow}
+            nav={<AccountNav sec={a.sec} narrow={a.narrow} t={a.t} onPick={a.onPick} onLogout={a.onLogout} />}>
+            {a.sec === 'overview' && (
+              <AccountOverview me={a.me}
+                pro={a.pro}
+                payOk={a.payOk}
+                nick={a.nick}
+                nickBusy={a.nickBusy}
+                t={a.t}
+                onNickEdit={a.onNickEdit}
+                onNickChange={a.onNickChange}
+                onNickSave={a.onNickSave}
+                onNickKey={a.onNickKey} />
+            )}
+            {a.sec === 'profile' && (<>
+              <ProfileForm key={String(a.me.id)} t={a.t} userId={a.me.id} initial={a.me.profile ?? null} />
+              <ResumeArchive key={'ra' + String(a.me.id)} t={a.t} userId={a.me.id} text={a.me.profile?.resumeText} savedAt={a.me.profile?.resumeSavedAt} />
+            </>)}
+            {a.sec === 'favs' && <SavedJobsList t={a.t} variant="favs" />}
+            {a.sec === 'sjobs' && <SavedJobsList t={a.t} userId={a.me.id} weeklyOptOut={!!(a.me as { weeklyOptOut?: boolean }).weeklyOptOut} />}
+            {a.sec === 'saved' && <SavedSearchList t={a.t} />}
+            {a.sec === 'buy' && <AccountBuyPanel t={a.t} buying={a.buying} buyErr={a.buyErr} onBuy={a.onBuy} />}
+          </AccountColumns>
+        )}
+        {a.checked && a.me == null && <AccountRedirect />}
+      </Shell>
+
+      <Footer />
+    </Frame>
   )
 }

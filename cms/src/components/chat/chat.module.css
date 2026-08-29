@@ -1,0 +1,1206 @@
+/*
+ * chat 域(全站悬浮顾问)的私有样式。2026-08-27 换装批自 ChatBox / ChatAnswer /
+ * ChatLauncher 三个组件的内联 \3c style> 模板整体迁入,值一个不改;色值走 colors 域的
+ * CSS 变量。原模板里的决策注释全数保留(取样、事故与拍板都在各规则头上)。
+ * --cbW = 正文读列宽,--clB = 挂件离视口底的实测距离(由避让测量写入)。
+ */
+
+/* --cbW = **正文读列宽**(2026-08-04 Open WebUI 取样:它 860px,我们桌面小窗只有 354px ——
+           「Frank 在电脑上看到的就是别人手机上的观感」)。860 是上限不是宽度:
+           小于它的容器(375 手机 / 380 小窗)完全吃不到这条,自然还是满宽,不横滚不截字;
+           最大化(面板封 1100)才真的收到 860,并且**居中** —— 否则窗开大了正文仍是左边一条窄带。
+           挂在 .cbCard 上,提问气泡/答复/示例/composer 共用同一条中轴。 */
+.cbCard {
+  --cbW: 860px;
+
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cbTurn,
+.cbEmpty,
+.cbCol {
+  width: 100%;
+  max-width: var(--cbW);
+  margin-inline: auto;
+}
+
+/* 历史在上:自身滚动 + 高度封顶,composer 永远在视野里(聊天界面的通用形态,别再让输入框骑在历史上面) */
+.cbThread {
+  /* 滚轮只控制读列,滚到底不带动背景页(与弹框 CARD 同规矩,08-09 Frank) */
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  overflow-y: auto;
+  max-height: min(56vh, 520px);
+  padding: 2px;
+}
+
+.cbThread.cbNoScroll {
+  overflow: visible;
+  max-height: none;
+}
+
+/* compact(嵌在挂件面板里):卸掉自己的卡壳,历史区改成撑满父级剩余高度。
+           min-height:0 那三处是 flex 子项能真正收缩的前提,少一处历史区就把 composer 顶出面板。 */
+.cbFill {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.cbFill .cbCard {
+  flex: 1;
+  min-height: 0;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.cbFill .cbThread {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+}
+
+.cbFill .cbThread.cbNoScroll {
+  overflow-y: auto;
+} /* 空态在挂件里也要能滚(面板矮时三条示例放不下) */
+
+.cbTurn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* 提问气泡:靠右、封顶宽。**气泡只给用户消息** —— AI 答复满宽无气泡(见 CHAT_ANSWER_CSS .cbA),
+           长答复套气泡是可读性杀手。字号跟正文同一档(15/1.625),不然一问一答两种字看着像两个网站 */
+.cbQ {
+  align-self: flex-end;
+  max-width: min(88%, 560px);
+  background: #eff6ff;
+  color: var(--primary-deep);
+  border-radius: 12px 12px 4px;
+  padding: 9px 12px;
+  font-size: 15px;
+  line-height: 1.625;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* 空态示例按文字包裹,不把短问题的浅色背景铺满整条读列。
+           max-width:100% 是窄屏护栏:问题太长时仍在容器内换行,绝不横向溢出。 */
+.cbTry {
+  font-size: 12px;
+  color: var(--text3);
+}
+
+.cbEx {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+  margin-top: 6px;
+}
+
+.cbEx:hover {
+  border-color: #bfdbfe;
+  background: #f8fafc;
+}
+
+/* C6 选项卡(设计 §一):答复下方的决定卡。胶囊沿 .cbEx 形态;推荐项蓝框浅蓝底 + 绿徽标;
+           点击目标 ≥44px;标签一行放下(文案铁律:零逗号、禁口语腔)。只挂在**最后一轮**答复下,
+           下一轮开始自然消失 —— 永不堵嘴,输入框随时可用。 */
+.cbOpts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cbOptWhy {
+  font-size: 12px;
+  color: var(--text3);
+  line-height: 1.5;
+}
+
+.cbOpt.cbOpt {
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 12px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.cbOpt.cbOpt:hover {
+  border-color: #bfdbfe;
+  background: #f8fafc;
+}
+
+.cbOpt.cbOpt:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.cbOptRec.cbOptRec {
+  border-color: #93c5fd;
+  background: #f8fbff;
+}
+
+.cbOptTag {
+  background: #dcfce7;
+  color: var(--ok);
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 1px 7px;
+  font-size: 11.5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cbOptMain {
+  min-width: 0;
+}
+
+.cbOptLabel {
+  font-weight: 600;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cbOptCons {
+  font-size: 12px;
+  color: var(--text2);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 故障:低调行内一行(不是红色大块)。引导类走 .cbA 助手气泡,不进这里 */
+.cbFault {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  color: var(--text2);
+  line-height: 1.5;
+}
+
+.cbLink.cbLink {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--primary);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* 等待:工具轨迹(服务端按真实进度发)+ 打字指示 + 秒数。轨迹与正文都是真的,一格都不许编 */
+.cbStep {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text2);
+  overflow-wrap: anywhere;
+  padding-left: 14px;
+  position: relative;
+}
+
+.cbStep::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 0.62em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #93c5fd;
+}
+
+/* 轨迹折叠条:**等待期就已经是折叠的一行**(2026-08-04 改;原来等待期摊开)。
+           一行里装三样:活体记号(等待时的三点 / 落地后的三角)、一句话、真实耗时。
+           flex-wrap:365 上中文那句 + 耗时若放不下就折第二行,绝不横滚 */
+.cbSteps {
+  margin-bottom: 2px;
+}
+
+.cbSteps > summary {
+  list-style: none;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  padding: 3px 0;
+}
+
+.cbSteps > summary::-webkit-details-marker {
+  display: none;
+}
+
+.cbSteps > summary:hover {
+  color: var(--text2);
+}
+
+.cbSteps > summary:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.cbSteps[open] {
+  padding-bottom: 4px;
+}
+
+/* 三角只在「已落地」的那一行出(等待时左边站的是三点),所以挂在 span 上不挂 summary::before */
+.cbCar::before {
+  content: '\25B8';
+  font-size: 9px;
+  color: var(--text3);
+}
+
+.cbSteps[open] .cbCar::before {
+  content: '\25BE';
+}
+
+.cbSecs {
+  color: var(--text3);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Activity = 真轨迹 + 真档案 + 本轮真出处。默认仍收起，点开后才像 GPT 的 Activity 面板；
+           没有模型内部思维文本，只有系统确实执行过的步骤。 */
+.cbActivity {
+  margin-top: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fbfcfe;
+}
+
+.cbActSec + .cbActSec {
+  margin-top: 16px;
+}
+
+.cbActTitle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.cbActCount {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  background: var(--hairline);
+  border-radius: 999px;
+  padding: 1px 7px;
+}
+
+.cbStepDone::before {
+  background: #86efac;
+}
+
+.cbMem {
+  position: relative;
+  padding: 5px 0 5px 15px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text2);
+}
+
+.cbMem::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0.78em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #c4b5fd;
+}
+
+.cbActEmpty {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text3);
+}
+
+.cbMemLink {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.cbMemLink:hover {
+  text-decoration: underline;
+}
+
+.cbWebs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cbWeb {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.cbWeb:hover {
+  border-color: #bfdbfe;
+  color: var(--primary);
+}
+
+.cbWait {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text2);
+}
+
+.cbDots {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.cbDots i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #93c5fd;
+  animation: cb-blink 1.2s infinite;
+}
+
+/* 懒加载那份 JS 在路上(弱网几秒)。手机是全屏接管,没这行就是一张全屏白纸 */
+.clLoad {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.clLoad i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #93c5fd;
+  animation: cl-blink 1.2s infinite;
+}
+
+.cbDots i:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.cbDots i:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.clLoad i:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.clLoad i:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes cb-blink {
+  0%,
+  80%,
+  100% {
+    opacity: 0.28;
+  }
+
+  40% {
+    opacity: 1;
+  }
+}
+
+.cbCaret {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: var(--primary);
+  margin-left: 2px;
+  vertical-align: -2px;
+  animation: cb-blink 0.9s steps(1, end) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cbDots i,
+  .cbCaret {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+/* GPT 式 composer:默认是一条紧凑圆角输入条,文字变多才向上生长;发送钮固定在右下。
+           右侧 54px padding 是按钮的实体槽位,文字永远不会钻到按钮下面。 */
+
+/* 🔴 box-sizing:border-box 保证 padding 与 border 都算进同轴的 --cbW 内；
+           缺了它,全屏读列会比正文宽,窄屏还会把右侧发送钮裁掉。 */
+.cbComposer {
+  position: relative;
+  box-sizing: border-box;
+  min-height: 54px;
+  border: 1px solid var(--border);
+  border-radius: 27px;
+  background: var(--bg);
+  padding: 14px 54px 14px 18px;
+}
+
+.cbComposer:focus-within {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 10%);
+}
+
+/* 16px:小于 16 时 iOS Safari 聚焦会自动放大页面(手机优先站规,这是全站主输入) */
+.cbIn {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+  resize: none;
+  min-height: 24px;
+  height: 24px;
+  padding: 0;
+  background: transparent;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--text);
+  font-family: inherit;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.cbBar {
+  position: absolute;
+  right: 9px;
+  bottom: 9px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cbNum {
+  flex: 1;
+  min-width: 0;
+  font-size: 11.5px;
+  color: var(--text3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cbSend.cbSend {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.cbSend.cbSend:disabled {
+  background: #d1d5db;
+  color: #ffffff;
+  cursor: default;
+}
+
+.cbSend.cbSend:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.cbSend.cbSend:hover:not(:disabled) {
+  background: var(--primary-deep);
+}
+
+/* 免责小字:composer 正下方,弱到不抢输入框,但一直在视野里(答复滚上去了它还在)。
+           **不写 max-width** —— 它挂着 .cbCol,读列宽归 --cbW 管;这里再写一条同特异性的
+           max-width:100% 会因为在后面而赢掉,把它拉成满宽(实测 1074 vs 该有的 860)。 */
+.cbDisc {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text3);
+  margin-top: 6px;
+}
+
+/* 会话 ID:免责行末尾的等宽小字钮,点击复制(排查用,不喧宾) */
+.cbThreadId.cbThreadId {
+  font-weight: 400;
+  border: none;
+  background: none;
+  padding: 0;
+  margin-left: 8px;
+  font-size: 11px;
+  color: var(--text3);
+  font-family: ui-monospace, Consolas, monospace;
+  cursor: pointer;
+  text-decoration: underline dotted;
+}
+
+.cbThreadId.cbThreadId:hover {
+  color: var(--text2);
+}
+
+.cbMsg {
+  min-width: 0;
+}
+
+/* 排版基线(2026-08-04 对齐 Open WebUI 取样:15px / 1.625 / 段距 8px)。
+     **AI 答复满宽无气泡** —— 只有用户消息有气泡(.cbQ)。长答复套气泡是可读性杀手:
+     气泡把正文再挤窄一圈,还在每段两侧加一道视觉边界。
+     行宽上限不写死 ch:原来那行 max-width:74ch 在 380px 面板里从头到尾没生效过(74ch≈555px),
+     是行死 CSS。真正的行宽闸门放在 .cbTurn 的 --cbW(见 ChatBox),这里只保证不撑破容器。 */
+.cbA {
+  font-size: 15px;
+  line-height: 1.625;
+  color: var(--text);
+  overflow-wrap: anywhere;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* 段落:空行分段 → 8px 段距(最后一段不留)。pre-wrap 保住段内的软换行 */
+.cbP {
+  margin: 0 0 8px;
+  white-space: pre-wrap;
+}
+
+.cbP:last-child {
+  margin-bottom: 0;
+}
+
+/* 项目符号组:行首「- 」渲成这个。记号用 CSS 画,不用「·」这个字(站规:那是分隔号,不当记号使);
+     绝对定位的记号 = 真悬挂缩进,折行后续行自动对齐到 padding-left,不顶回行首 */
+.cbUl {
+  margin: 0 0 8px;
+}
+
+.cbUl:last-child {
+  margin-bottom: 0;
+}
+
+.cbLi {
+  position: relative;
+  padding-left: 14px;
+  margin-top: 4px;
+  white-space: pre-wrap;
+}
+
+.cbLi:first-child {
+  margin-top: 0;
+}
+
+.cbLi::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 0.66em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #bfdbfe;
+}
+
+/* 降级清单:同一套段落/项目符号排版,只多一道左细线 ——
+     把「这是原始事实,不是组织好的答复」说清楚,不用再加一句解释文案 */
+.cbSheet {
+  border-left: 2px solid var(--hairline);
+  padding-left: 12px;
+}
+
+/* 答复下方的操作条(复制 / 赞 / 踩)。图标 16px 但命中区 40×40(站规触控靶):
+     大量留白让三个钮看着轻,手指按着又不飘。**不用负 margin 去抵消那份留白**(GPT 那手):
+     线程是 overflow:auto 的,伸到容器左边以外会被裁掉半个命中区。glyph 因此比正文缩进约 12px,
+     跟项目符号的 14px 悬挂缩进正好同一档,看着是对齐的。
+     flex-wrap:375 上问句放不下就折到第二行,绝不横滚 */
+
+/* gap 8→0:三钮各自 40×40 触控靶(#276 底线)已经互留了足够空隙,再加 gap 图标就散了(08-09 Frank) */
+.cbActs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 0;
+  margin-top: 2px;
+}
+
+.cbAct.cbAct {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: var(--text3);
+  cursor: pointer;
+}
+
+.cbAct.cbAct:disabled {
+  cursor: default;
+}
+
+.cbAct.cbAct:hover:not(:disabled) {
+  color: var(--text2);
+  background: var(--hairline);
+}
+
+/* 选中态:选的那个亮起来,另一个留着但退到极淡 —— 「我点过了」得一眼看得出来 */
+.cbAct.cbAct:disabled:not(.cbVoted.cbVoted) {
+  opacity: 0.35;
+}
+
+.cbVoted.cbVoted {
+  color: var(--primary);
+}
+
+/* 出处开关:与三图标同行同高(40px 触控靶),箭头随 aria-expanded 翻向;清单容器只留一点顶距,
+     原「分割线+独占一行」的两行形态 08-09 Frank「放一行」撤掉 */
+.cbSrcTgl.cbSrcTgl {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  min-height: 40px;
+  font-family: inherit;
+}
+
+.cbSrcTgl.cbSrcTgl::before {
+  content: '\25B8';
+  font-size: 9px;
+  color: var(--text3);
+}
+
+.cbSrcTgl.cbSrcTgl[aria-expanded='true']::before {
+  content: '\25BE';
+}
+
+.cbSrcTgl.cbSrcTgl:hover {
+  color: var(--primary);
+}
+
+.cbSrc {
+  margin-top: 2px;
+}
+
+.cbCnt {
+  background: var(--hairline);
+  color: var(--text2);
+  border-radius: 999px;
+  padding: 0 7px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* 出处行:**一条一行**(标签 | 数值 | 官方站点名),375 上标签自己折行,数值与站名不折、不横滚(站规)。
+     站名列的封顶从 40% 换成 200px(2026-08-04 实测修):百分比 max-width 在 auto 网格轨道里是**循环依赖**
+     ——轨道按内容定宽,内容又按轨道取百分比,浏览器解出来的结果是把站名一律截到 72px。
+     实测三档全中:immigration-quebec.gouv.qc.ca 显示成「immig…」,连是谁说的都看不出来。
+     px 封顶没有这个循环:轨道 = min(域名实宽, 200px),最长的官方域名 181px 正好整条显示。 */
+.cbFact {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, auto);
+  gap: 2px 10px;
+  padding: 7px 0;
+  border-top: 1px solid var(--hairline);
+  align-items: baseline;
+  font-size: 13px;
+}
+
+.cbFactV {
+  text-align: right;
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.cbFactS {
+  max-width: 200px;
+  color: var(--primary);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+}
+
+.cbFactS:hover {
+  text-decoration: underline;
+}
+
+/* 追问 chip:整句放不进 375 的一行 → 允许折行(不是胶囊挤扁,是块状 chip),永不横向溢出 */
+.cbFus {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.cbFusT {
+  width: 100%;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text3);
+}
+
+.cbFu {
+  max-width: 100%;
+  text-align: left;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 7px 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--primary);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.cbFu:hover {
+  border-color: #bfdbfe;
+  background: #f8fafc;
+}
+
+/* touch-action:none = 手指按在启动器上就是要拖它,不让浏览器抢去当滚动(拖动手感的前提) */
+
+/* 走查 #298 终态:评估/处境两条动线的手机端连圆球也不出 —— 56×56 fixed 在 375 视口永久盖住
+   右下角内容,而顾问在这两条新动线上本就不导流(advisor-quality-gate);职位页照旧。
+   面板本身不受影响:页面里的「问 AI」入口 dispatch o2p:chat-open 仍能打开。 */
+@media (width <= 640px) {
+  .clNarrowOff {
+    display: none !important;
+  }
+}
+
+.clDock {
+  --clB: 16px;
+
+  position: fixed;
+  right: 16px;
+  bottom: calc(var(--clB) + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100vw - 32px);
+  touch-action: none;
+}
+
+.clBtn.clBtn {
+  width: 56px;
+  height: 56px;
+  flex: none;
+  border-radius: 50%;
+  border: none;
+  background: var(--primary);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgb(37 99 235 / 34%);
+  transition:
+    transform 0.08s,
+    background 0.12s;
+}
+
+.clBtn.clBtn:hover {
+  background: var(--primary-deep);
+}
+
+.clBtn.clBtn:active {
+  transform: scale(0.93);
+}
+
+/* 首访轻提示:一行放得下、点了直接开;不是气泡对话,不带尾巴 */
+.clHint.clHint {
+  font-weight: 400;
+  min-width: 0;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 12.5px;
+  line-height: 1.2;
+  font-family: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 6px 18px rgb(15 23 42 / 12%);
+}
+
+.clHint.clHint:hover {
+  border-color: #bfdbfe;
+}
+
+/* 面板:UA 给 [popover] 的 border/padding/margin/inset 全部要覆盖掉 */
+.clPanel {
+  --clB: 16px;
+
+  display: none;
+  position: fixed;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  inset: auto 16px calc(var(--clB) + env(safe-area-inset-bottom, 0px)) auto;
+  z-index: 45;
+  width: min(380px, calc(100vw - 32px));
+  height: min(600px, calc(100dvh - 96px));
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 20px 52px rgb(15 23 42 / 20%);
+}
+
+/* 🔴 可见性**只认 React 的 open**(它写出 .clOpen),不认 popover 开没开。
+   原来这里还有一条 .clPanel:popover-open{display:flex},两条规则各说各话:
+   ① 老引擎里 :popover-open 解析不了 → 整条被丢弃,可见性就悬在 showPopover 成没成功上;
+   ② 反向更阴 —— hidePopover 万一没生效,那条会把已经 open=false 的面板继续显示出来。
+   .clPanel.clOpen(0,2,0)压得过本文件的 .clPanel,也压得过 UA 那条
+   [popover]:not(:popover-open){display:none}(作者样式 > UA 样式),所以顶层与否都显示得出来。 */
+.clPanel.clOpen {
+  display: flex;
+}
+
+.clHead {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 8px 11px 14px;
+  border-bottom: 1px solid var(--hairline);
+  position: relative;
+  z-index: 1;
+}
+
+/* 缩放把手:透明、贴内边缘。8px 是「够得着又不误触」的档(macOS 窗口边框同量级)。
+   touch-action:none —— 不写的话触屏板/触屏上的拖动会被当成滚动手势吃掉 */
+.clGrip {
+  position: absolute;
+  z-index: 2;
+  touch-action: none;
+}
+
+.clGrip[data-d='n'] {
+  top: 0;
+  left: 10px;
+  right: 10px;
+  height: 8px;
+  cursor: ns-resize;
+}
+
+.clGrip[data-d='s'] {
+  bottom: 0;
+  left: 10px;
+  right: 10px;
+  height: 8px;
+  cursor: ns-resize;
+}
+
+.clGrip[data-d='w'] {
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 8px;
+  cursor: ew-resize;
+}
+
+.clGrip[data-d='e'] {
+  right: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 8px;
+  cursor: ew-resize;
+}
+
+.clGrip[data-d='nw'] {
+  top: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+}
+
+.clGrip[data-d='se'] {
+  bottom: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+}
+
+.clGrip[data-d='ne'] {
+  top: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nesw-resize;
+}
+
+.clGrip[data-d='sw'] {
+  bottom: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nesw-resize;
+}
+
+/* 重置(图标化,2026-08-06):形制同 .clWin.clWin;按下待确认时变红 —— 「这一下会清掉东西」得看得出来 */
+.clReset.clReset.clAsk {
+  background: #fef2f2;
+  color: var(--danger);
+}
+
+.clReset.clReset.clAsk:hover {
+  background: #fee2e2;
+}
+
+.clPanel:not(.clMaxed) .clHead {
+  cursor: move;
+} /* 标题栏即拖拽把手;全屏档没得拖 */
+.clTitle {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 右上三钮 + 重置:统一 Modal.tsx 的 iconBtnS 形制(30×30 圆角灰底灰字),与 job 弹框一致
+   (2026-08-06 Frank 拍板;Windows 风通栏钮与红色关闭悬停一并撤销) */
+.clWindowActions {
+  flex: none;
+  display: flex;
+  gap: 6px;
+}
+
+.clWin.clWin {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: #f3f4f6;
+  color: #6b7280;
+  border-radius: 8px;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.clWin.clWin:hover {
+  background: #e5e7eb;
+}
+
+.clWin.clWin:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* 全屏:面板完整接管浏览器视口。**行宽不靠窗宽管** ——
+   正文读列由 ChatBox 的 --cbW(860px,对齐 Open WebUI 取样)自己居中收窄,
+   所以全屏也不会出现「一行 90+ 词、眼睛回不到行首」。 */
+.clPanel.clMaxed {
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  border: none;
+  border-radius: 0;
+}
+
+/* 卡壳与历史区高度由 ChatBox 的 compact 自己管(它的 .cbFill),这里只给容器 —— 壳**不覆盖别人的类名** */
+.clBody {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px 12px;
+  overflow: hidden;
+}
+
+@keyframes cl-blink {
+  0%,
+  80%,
+  100% {
+    opacity: 0.28;
+  }
+
+  40% {
+    opacity: 1;
+  }
+}
+
+/* chunk 取不到(手机弱网 / 标签页跨了一次部署)。重载是**真的解法**:换回新哈希那份 */
+.clFail {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text2);
+  text-align: center;
+}
+
+.clRetry.clRetry {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  border-radius: 8px;
+  padding: 7px 16px;
+  cursor: pointer;
+}
+
+.clRetry.clRetry:hover {
+  border-color: #bfdbfe;
+}
+
+/* 手机:展开=全屏接管(缩在角落挤成一条没法读长答复);底部留出 iPhone 横条。
+   .clPanel.clMaxed 必须一起点名(它比单个 .clPanel 更具体),不点名的话
+   ——一个在桌面上按过全屏的人换到手机就会看到一个带内缩的窗,而不是全屏。 */
+@media (width <= 640px) {
+  .clPanel,
+  .clPanel.clMaxed {
+    inset: 0;
+    width: 100%;
+    height: 100dvh;
+    max-height: none;
+    border: none;
+    border-radius: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .clMin.clMin,
+  .clMax.clMax,
+  .clGrip {
+    display: none;
+  } /* 手机已经全屏:只留关闭钮 */
+  .clHead {
+    cursor: default;
+  } /* 全屏没什么可拖的 */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clBtn.clBtn {
+    transition: none;
+  }
+
+  .clLoad i {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+/* 出处行的标签格(原内联:允许收窄 + 次要字色)。 */
+.cbFactL {
+  min-width: 0;
+  color: var(--text2);
+}
+
+/* 行内可收窄的文本格(轨迹条那句/故障句/等待句共用的原内联 min-width:0)。 */
+.cbMin0 {
+  min-width: 0;
+}
+
+/* 故障行行首的警示记号(原内联 color:warn)。 */
+.cbWarnMark {
+  color: var(--warn);
+}
+
+/* 选项卡「自己说」那一枚的弱化标签(原内联:次要字色 + 常规字重)。 */
+.cbSelfLabel {
+  color: var(--text2);
+  font-weight: 400;
+}

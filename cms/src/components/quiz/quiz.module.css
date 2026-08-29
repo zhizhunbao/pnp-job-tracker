@@ -1,0 +1,738 @@
+/*
+ * quiz 域的私有样式。2026-08-28 换装批自 QuizUI.tsx / OccPicker.tsx / ProvincePicker.tsx
+ * 的内联样式逐格迁类,值一个不改;色值凡在 colors 域有名字的走 CSS 变量
+ * (--primary/--primary-deep/--text/--text2/--text3/--border/--hairline),
+ * 控件私有的几枚(选中底浅蓝、骨架底半透明白)留字面量并挂注释。
+ */
+
+/*
+ * 🔴 答题壳与选职业控件的**全局类**不在本文件:`.qzTitle` 一族由 QuizStyle 注入、
+ * `.occPill` 一族由 OccStyle 注入,两段整段留在 constants.ts 的 QUIZ_CSS / OCC_CSS ——
+ * 其中 `.plQuizPad`(plan 桶按字符串在用)、`.qzFill`(jobs 桶按字符串在用)、
+ * `.quizBar`(chat 桶的吸底避让按特征扫)、`.occPill` 与 `.occSelectedChip`
+ * (modal 桶的拖动忽略表按名字认)是**跨桶契约**,等同 main.css 的一段。
+ * 要迁 module.css 得连消费桶一起改,另立专批(2026-08-28 记)。
+ */
+
+/*
+ * 进度条整块(选工作是决定线第 1 步,也算一项 —— 从第一屏到最后一题同一套数)。
+ */
+.progress {
+  /*
+   * 与下面题干的间距。
+   */
+  margin: 0 0 26px;
+}
+
+/*
+ * 进度条的槽。
+ */
+.progressTrack {
+  /*
+   * 条高。
+   */
+  height: 5px;
+
+  /*
+   * 两头做成圆的。
+   */
+  border-radius: 999px;
+
+  /*
+   * 未填那一截的底(colors 域变量)。
+   */
+  background: var(--hairline);
+
+  /*
+   * 已填那一截不许溢出圆角。
+   */
+  overflow: hidden;
+}
+
+/*
+ * 进度条已填那一截(宽度是运行时数据,逐帧变,由 barStyleOf 逐行特批地给)。
+ */
+.progressFill {
+  /*
+   * 撑满槽高。
+   */
+  height: 100%;
+
+  /*
+   * 两头做成圆的。
+   */
+  border-radius: 999px;
+
+  /*
+   * 品牌蓝(colors 域变量)。
+   */
+  background: var(--primary);
+
+  /*
+   * 答一题涨一截,别硬跳。
+   */
+  transition: width 0.2s;
+}
+
+/*
+ * 进度条下面「已填 3/5 项」那一行。
+ */
+.progressNote {
+  /*
+   * 与条的间距。
+   */
+  margin: 6px 0 0;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 浅灰(colors 域变量)。
+   */
+  color: var(--text3);
+
+  /*
+   * 右对齐(与条的右端对齐)。
+   */
+  text-align: right;
+}
+
+/*
+ * 动作条左下的「上一题」与右端的旁路收卷钮(同一副长相 —— 两颗都是弱操作)。
+ * 类名写两遍抬权重:本钮经 Button(kind ghost)渲染(「<button 这种不允许直接使用」),
+ * 要稳赢 button 域 .btn/.ghost 的同权重声明且不赌打包顺序(先例 companies 的 .backBtn)。
+ */
+.prevBtn.prevBtn {
+  /*
+   * 描边(colors 域变量)。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 白底(盖掉 .ghost 的无底)。
+   */
+  background: #ffffff;
+
+  /*
+   * 次级灰字(盖掉 .ghost 的品牌蓝:上一题不是主行动)。
+   */
+  color: var(--text2);
+
+  /*
+   * 钮圆角(盖掉 .ghost 的清零)。
+   */
+  border-radius: 8px;
+
+  /*
+   * 钮内衬(盖掉 .ghost 的零内衬)。
+   */
+  padding: 11px 26px;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 跟随页面字族(原先是裸 <button>,浏览器默认会换成系统 UI 字族)。
+   */
+  font-family: inherit;
+}
+
+/*
+ * 动作条右端的「下一题」。定宽:文案从「下一题」变成「完成」时按钮不许跟着缩
+ * (缩一次 = 落点挪一次)。
+ */
+.nextBtn.nextBtn {
+  /*
+   * 钮内衬。
+   */
+  padding: 11px 26px;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 定宽下限(「下一题」与「完成」同宽)。
+   */
+  min-width: 118px;
+
+  /*
+   * 文字居中(定宽之后要自己居中)。
+   */
+  text-align: center;
+}
+
+/*
+ * 「下一题」的置灰态。类名写三遍:要压过 button 域的 `.primary:disabled`
+ * (同为两级权重,单靠打包顺序赌不起)。
+ */
+.nextBtnOff.nextBtnOff.nextBtnOff {
+  /*
+   * 灰底(colors 域变量)。
+   */
+  background: var(--hairline);
+
+  /*
+   * 浅灰字。
+   */
+  color: var(--text3);
+
+  /*
+   * 不可点就不给手型。
+   */
+  cursor: default;
+}
+
+/*
+ * 十省药丸的排(换行不横滚)。
+ */
+.provWrap {
+  /*
+   * 横向排开。
+   */
+  display: flex;
+
+  /*
+   * 放不下就换行(全站铁律:永不横滚)。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 药丸间距。
+   */
+  gap: 9px;
+}
+
+/*
+ * 一颗省药丸(「还不确定」那颗同款)。类名写两遍抬权重,理由同 .prevBtn。
+ */
+.provPill.provPill {
+  /*
+   * 触控靶高。
+   */
+  min-height: 40px;
+
+  /*
+   * 描边(colors 域变量)。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 药丸圆角。
+   */
+  border-radius: 999px;
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 近黑字(colors 域变量)。
+   */
+  color: var(--text);
+
+  /*
+   * 药丸内衬。
+   */
+  padding: 8px 15px;
+
+  /*
+   * 常规字重。
+   */
+  font-weight: 500;
+
+  /*
+   * 药丸字号。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 行距。
+   */
+  line-height: 1.35;
+
+  /*
+   * 跟随页面字族。
+   */
+  font-family: inherit;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 选中态的省药丸(与答题壳的选项卡片同一套配色)。
+ */
+.provPillOn.provPillOn {
+  /*
+   * 品牌蓝描边。
+   */
+  border-color: var(--primary);
+
+  /*
+   * 极浅蓝底(控件私有,不是全站色板成员)。
+   */
+  background: #eff6ff;
+
+  /*
+   * 深一档的品牌蓝字。
+   */
+  color: var(--primary-deep);
+
+  /*
+   * 选中加粗半档。
+   */
+  font-weight: 650;
+}
+
+/*
+ * 弹层形态的标题行(题干在左、关闭钮在右)。
+ */
+.occHead {
+  /*
+   * 横向排开。
+   */
+  display: flex;
+
+  /*
+   * 两者按文字基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 两端排开。
+   */
+  justify-content: space-between;
+
+  /*
+   * 两者最小间距。
+   */
+  gap: 10px;
+}
+
+/*
+ * 弹层右上角的关闭钮。类名写两遍抬权重,理由同 .prevBtn。
+ */
+.closeBtn.closeBtn {
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 浅灰(colors 域变量)。
+   */
+  color: var(--text3);
+
+  /*
+   * 叉的字号。
+   */
+  font-size: 18px;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 零内衬(叉自己就是热区,再加内衬会把标题行撑歪)。
+   */
+  padding: 0;
+}
+
+/*
+ * 搜索结果区(计数行 + 命中胶囊/空态)。
+ */
+.results {
+  /*
+   * 与下面分类页签的间距。
+   */
+  margin-bottom: 14px;
+}
+
+/*
+ * 一条都没搜到时那个虚线框。
+ */
+.noResult {
+  /*
+   * 虚线描边(colors 域变量)——虚线读作「这里本该有东西」。
+   */
+  border: 1px dashed var(--border);
+
+  /*
+   * 框圆角。
+   */
+  border-radius: 10px;
+
+  /*
+   * 框内衬。
+   */
+  padding: 18px 12px;
+
+  /*
+   * 文字居中。
+   */
+  text-align: center;
+
+  /*
+   * 空态字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 浅灰(colors 域变量)。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 底部「已选 N 个」汇总与上面胶囊排的间距。
+ */
+.selectedGap {
+  /*
+   * 与职业胶囊排的间距。
+   */
+  margin-top: 14px;
+}
+
+/*
+ * 「已选 N 个」那几个字。
+ */
+.selectedLabel {
+  /*
+   * 小注字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 次级灰(colors 域变量)。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 一个都没选时的引导句。
+ */
+.selectedEmpty {
+  /*
+   * 小注字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 浅灰(colors 域变量)。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 已选胶囊的排。**换行不横滑**(2026-08-04 Frank 实拍:选到第 4 个,最后那颗被卡片
+ * 右缘切成半透明的一截,桌面既没滚动条也没「还有更多」的提示)。先前的解法是横向滚动
+ * + 右缘渐隐 mask,但全站铁律是「永不横滚」(CLAUDE.md 展示约定),渐隐本身也读作
+ * 「排版坏了」。改成 flexWrap 让行高自适应:放不下就往下掉一行,一颗也不裁。
+ */
+.chipRow {
+  /*
+   * 横向排开。
+   */
+  display: flex;
+
+  /*
+   * 放不下就换行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 胶囊间距。
+   */
+  gap: 6px;
+
+  /*
+   * 一行内纵向居中。
+   */
+  align-items: center;
+}
+
+/*
+ * 已选胶囊上名字还没拉到时的占位条(与文字同高,避免拿到名字时行高跳一下)。
+ */
+.nameSkeleton {
+  /*
+   * 与文字同排。
+   */
+  display: inline-block;
+
+  /*
+   * 占位宽(按短职业名的量级取)。
+   */
+  width: 76px;
+
+  /*
+   * 与文字同高。
+   */
+  height: 0.85em;
+
+  /*
+   * 占位条圆角。
+   */
+  border-radius: 4px;
+
+  /*
+   * 半透明白(压在浅蓝胶囊上的占位,不是全站色板成员)。
+   */
+  background: rgb(255 255 255 / 45%);
+}
+
+/*
+ * 弹层形态底部那颗通栏钮。类名写两遍抬权重,理由同 .prevBtn。
+ */
+.wideBtn.wideBtn {
+  /*
+   * 通栏。
+   */
+  width: 100%;
+
+  /*
+   * 钮内衬(通栏所以左右不用给)。
+   */
+  padding: 11px 0;
+
+  /*
+   * 钮字号(比动作条那颗大半档 —— 它是这一屏唯一的出口)。
+   */
+  font-size: 15px;
+
+  /*
+   * 与上面汇总的间距。
+   */
+  margin-top: 14px;
+}
+
+/*
+ * 弹层形态的遮罩(职位板/详情页里打开选职业时走这条路)。
+ */
+.overlay {
+  /*
+   * 钉在视口上。
+   */
+  position: fixed;
+
+  /*
+   * 铺满视口。
+   */
+  inset: 0;
+
+  /*
+   * 半透明深灰遮罩(弹层私有,不是全站色板成员)。
+   */
+  background: rgb(17 24 39 / 45%);
+
+  /*
+   * 压在页面之上、挂件之下。
+   */
+  z-index: 80;
+
+  /*
+   * 用弹性布局把弹层摆到正中。
+   */
+  display: flex;
+
+  /*
+   * 纵向居中。
+   */
+  align-items: center;
+
+  /*
+   * 横向居中。
+   */
+  justify-content: center;
+
+  /*
+   * 窄屏时弹层与视口边缘留一圈(不许贴边)。
+   */
+  padding: 16px;
+}
+
+/*
+ * 弹层本体。
+ */
+.modal {
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 弹层圆角(比卡片再圆一档)。
+   */
+  border-radius: 14px;
+
+  /*
+   * 撑满可用宽(有 max-width 收着)。
+   */
+  width: 100%;
+
+  /*
+   * 宽度上限。
+   */
+  max-width: 520px;
+
+  /*
+   * 高度上限(超了自己滚,不把视口顶穿)。
+   */
+  max-height: 86vh;
+
+  /*
+   * 超出就滚(弹层是允许内层滚的唯一一处 —— 它本来就是一层浮窗)。
+   */
+  overflow: auto;
+
+  /*
+   * 弹层内衬(底部多 2px 给通栏钮留白)。
+   */
+  padding: 18px 18px 20px;
+}
+
+/*
+ * 分类清单在途时那一排骨架的第 1 档宽(六档循环,按分类页真胶囊的量级取)。
+ */
+.skelCat0 {
+  /*
+   * 骨架宽。
+   */
+  width: 104px;
+}
+
+/*
+ * 分类骨架第 2 档宽。
+ */
+.skelCat1 {
+  /*
+   * 骨架宽。
+   */
+  width: 146px;
+}
+
+/*
+ * 分类骨架第 3 档宽。
+ */
+.skelCat2 {
+  /*
+   * 骨架宽。
+   */
+  width: 122px;
+}
+
+/*
+ * 分类骨架第 4 档宽。
+ */
+.skelCat3 {
+  /*
+   * 骨架宽。
+   */
+  width: 168px;
+}
+
+/*
+ * 分类骨架第 5 档宽。
+ */
+.skelCat4 {
+  /*
+   * 骨架宽。
+   */
+  width: 112px;
+}
+
+/*
+ * 分类骨架第 6 档宽。
+ */
+.skelCat5 {
+  /*
+   * 骨架宽。
+   */
+  width: 138px;
+}
+
+/*
+ * 热门榜补位骨架的第 1 档宽(六档循环;按真胶囊「名字 + N 在招」的量级取,
+ * 占位与实物差得越少,填上去那一下越看不出来)。
+ */
+.skelTop0 {
+  /*
+   * 骨架宽。
+   */
+  width: 206px;
+}
+
+/*
+ * 补位骨架第 2 档宽。
+ */
+.skelTop1 {
+  /*
+   * 骨架宽。
+   */
+  width: 170px;
+}
+
+/*
+ * 补位骨架第 3 档宽。
+ */
+.skelTop2 {
+  /*
+   * 骨架宽。
+   */
+  width: 194px;
+}
+
+/*
+ * 补位骨架第 4 档宽。
+ */
+.skelTop3 {
+  /*
+   * 骨架宽。
+   */
+  width: 152px;
+}
+
+/*
+ * 补位骨架第 5 档宽。
+ */
+.skelTop4 {
+  /*
+   * 骨架宽。
+   */
+  width: 214px;
+}
+
+/*
+ * 补位骨架第 6 档宽。
+ */
+.skelTop5 {
+  /*
+   * 骨架宽。
+   */
+  width: 164px;
+}

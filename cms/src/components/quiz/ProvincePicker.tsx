@@ -1,66 +1,70 @@
 'use client'
+/**
+ * quiz 域的结构:选目标省(十省药丸 + 一颗「还不确定」)。
+ * 「还不确定」是**一等答案**,不是跳过(2026-08-12 Frank:「很多人不知道去哪个省,
+ * 比如国内的厨师」)。选它 = 不按省过滤,13 条通道全判一遍再按障碍难度排 ——
+ * 「该去哪个省」本来就该由我们回答,不该当成必答题拦在门口。
+ * 2026-08-28 换装批自 ProvincePicker.tsx(本文件的前身,git mv 保历史)整体重写成
+ * 小写件形制:两格状态收进 hooks.ts、手柄下沉 functions.ts、内联样式迁 quiz.module.css、
+ * 药丸拆成一件一文件并改经 button 族。
+ *
+ * @author Frank
+ * @time 2026-08-28 04:10:00
+ */
+import { CANADA_PROVINCES, KEY_PROV_HEAD, TEXT_NONE } from './constants'
+import { ProvPill } from './provpill'
+import { QuizNav } from './quiznav'
+import { QuizSub } from './quizsub'
+import { QuizTitle } from './quiztitle'
+import { provNextOffOf } from './functions'
+import { useProvincePicker } from './hooks'
+import type { ProvincePickerIn } from './types'
+import css from './quiz.module.css'
 
-import { useState } from 'react'
-
-import { QuizNav, QuizSub, QuizTitle } from './QuizUI'
-import { UI } from '@/components/colors'
-import type { TFn } from '@/lib/i18n'
-
-export const CANADA_PROVINCES = ['BC', 'AB', 'SK', 'MB', 'ON', 'QC', 'NB', 'NS', 'PE', 'NL'] as const
-
-// 「还不确定」是**一等答案**,不是跳过(2026-08-12 Frank:「很多人不知道去哪个省,比如国内的厨师」)。
-// 选它 = 不按省过滤,13 条通道全判一遍再按障碍难度排 —— 「该去哪个省」本来就该由我们回答,
-// 不该当成必答题拦在门口。
-export function ProvincePicker({ t, initial, onChange, onDone, onBack, unsure, finishLabel, onFinish }: {
-  t: TFn
-  initial: string[]
-  onChange?: (provinces: string[]) => void
-  onDone: (provinces: string[], unsure?: boolean) => void
-  onBack?: () => void
-  unsure?: boolean
-  /** 旁路收卷钮(2026-08-16 Frank「这两个右下角都需要一个完成按钮」)——与基础题那颗同源:
-   *  改一个答案不用把答过的题再翻一遍。**当前选择随参数交出去**,由调用方落档后收卷。 */
-  finishLabel?: string
-  onFinish?: (provinces: string[], unsure?: boolean) => void
-}) {
-  const [selected, setSelected] = useState<string[]>(initial)
-  const [anyProv, setAnyProv] = useState(!!unsure)
-  const toggle = (province: string) => {
-    const next = selected.includes(province) ? selected.filter((code) => code !== province) : [...selected, province]
-    setAnyProv(false)                    // 选了具体省就不再是「还不确定」
-    setSelected(next)
-    onChange?.(next)
+/**
+ * 渲染选目标省页。
+ *
+ * @param props 取词函数、进来时已选的省码与「还不确定」态、收卷钮的字与四个出口。
+ * @returns 题干 + 药丸排 + 动作条。
+ */
+export function ProvincePicker({
+  t, initial, onChange, onDone, onBack, unsure, finishLabel, onFinish,
+}: ProvincePickerIn) {
+  const d = useProvincePicker({ initial, unsure, onChange, onDone, onFinish })
+  const off = provNextOffOf({ selected: d.selected, anyProv: d.anyProv })
+  const pills = []
+  for (const code of CANADA_PROVINCES) {
+    pills.push(
+      <ProvPill key={code}
+        label={t(KEY_PROV_HEAD + code)}
+        on={d.selected.includes(code)}
+        onPick={d.pickOf(code)} />,
+    )
   }
-
+  let hint = TEXT_NONE
+  if (off) {
+    hint = t('quiz.pickProvince')
+  }
+  let done = TEXT_NONE
+  if (finishLabel != null && off === false) {
+    done = finishLabel
+  }
   return (
     <>
       <QuizTitle>{t('quiz.q3')}</QuizTitle>
       <QuizSub>{t('quiz.q3multiSub')}</QuizSub>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 9 }}>
-        {CANADA_PROVINCES.map((province) => {
-          const on = selected.includes(province)
-          return (
-            <button type="button" key={province} aria-pressed={on} onClick={() => toggle(province)}
-              style={{ minHeight: 40, border: `1px solid ${on ? UI.primary : UI.border}`, borderRadius: 999,
-                background: on ? '#eff6ff' : '#fff', color: on ? UI.primaryDeep : UI.text,
-                padding: '8px 15px', font: `${on ? 650 : 500} 13.5px/1.35 inherit`, cursor: 'pointer' }}>
-              {t('prov.' + province)}
-            </button>
-          )
-        })}
-        <button type="button" aria-pressed={anyProv}
-          onClick={() => { setAnyProv(true); setSelected([]); onChange?.([]) }}
-          style={{ minHeight: 40, border: `1px solid ${anyProv ? UI.primary : UI.border}`, borderRadius: 999,
-            background: anyProv ? '#eff6ff' : '#fff', color: anyProv ? UI.primaryDeep : UI.text,
-            padding: '8px 15px', font: `${anyProv ? 650 : 500} 13.5px/1.35 inherit`, cursor: 'pointer' }}>
-          {t('quiz.provAny')}
-        </button>
+      <div className={css.provWrap}>
+        {pills}
+        <ProvPill label={t('quiz.provAny')} on={d.anyProv} onPick={d.onAny} />
       </div>
-      <QuizNav prevLabel={t('plan.prev')} nextLabel={t('plan.next')} onPrev={onBack}
-        nextDisabled={!selected.length && !anyProv} onNext={() => onDone(selected, anyProv)}
-        hint={selected.length || anyProv ? undefined : t('quiz.pickProvince')}
-        doneLabel={finishLabel && (selected.length || anyProv) ? finishLabel : undefined}
-        onDone={onFinish ? () => onFinish(selected, anyProv) : undefined} />
+      <QuizNav prevLabel={t('plan.prev')}
+        nextLabel={t('plan.next')}
+        onPrev={onBack}
+        nextDisabled={off}
+        onNext={d.onNext}
+        hint={hint}
+        doneLabel={done}
+        onDone={d.onFinish} />
     </>
   )
 }

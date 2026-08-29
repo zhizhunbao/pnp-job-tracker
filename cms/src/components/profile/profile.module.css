@@ -1,0 +1,922 @@
+/*
+ * profile 域(移民档案)的私有样式。2026-08-27 Frank 拍板自 account 域拆出:
+ * 档案表单件的类整体迁入,值一个不改;secTitle/secHint 与 account 各留一份
+ * (跨域不互相取,形状重复先忍着 —— 各节抬头是同规格的两家事实)。
+ */
+
+/*
+ * 各节的小标题(档案/收藏/订阅/简历存档四节共用;与 .buyTitle 同规格 ——
+ * 各节自带图标,合并成一个类会把「购买节」的历史注释挤走,所以另起同值类)。
+ */
+.secTitle {
+  /*
+   * 节内小标题字号。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 正文灰。
+   */
+  color: #374151;
+}
+
+/*
+ * 节标题下的灰字小注。
+ */
+.secHint {
+  /*
+   * 最小一档字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 最弱一档灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 与标题贴 4px。
+   */
+  margin-top: 4px;
+}
+
+/*
+ * 档案表单的字段标签(分型/职业/英语/EE 分/工签/目标省六行)。
+ */
+.fieldLabel {
+  /*
+   * 标签字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 正文灰。
+   */
+  color: #374151;
+
+  /*
+   * 独占一行。
+   */
+  display: block;
+
+  /*
+   * 与上一块留 14px。
+   */
+  margin-top: 14px;
+}
+
+/*
+ * 字段标签下的更小一号说明(职业节的「热门职业」引导)。
+ */
+.fieldNote {
+  /*
+   * 最小档再低半级 —— 引导语比小注还轻。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 最弱一档灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 与标签贴 2px。
+   */
+  margin-top: 2px;
+}
+
+/*
+ * chips 一行(分型/热门职业/区间档/目标省共用):放不下就换行,不横滚。
+ */
+.chipsRow {
+  /*
+   * chips 横排。
+   */
+  display: flex;
+
+  /*
+   * 换行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * chip 间距。
+   */
+  gap: 8px;
+
+  /*
+   * 与上方标签留 6px。
+   */
+  margin-top: 6px;
+}
+
+/*
+ * 职业搜索的命中下拉框。
+ */
+.hitsBox {
+  /*
+   * 描边。
+   */
+  border: 1px solid #e5e7eb;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 6px;
+
+  /*
+   * 与搜索框贴 2px。
+   */
+  margin-top: 2px;
+
+  /*
+   * 最多八条上下,再多滚动。
+   */
+  max-height: 180px;
+
+  /*
+   * 纵向滚。
+   */
+  overflow-y: auto;
+
+  /*
+   * 白底(盖住页面渐变底)。
+   */
+  background: #ffffff;
+}
+
+/*
+ * 命中下拉框里的一行。
+ */
+.hitRow {
+  /*
+   * 行内衬。
+   */
+  padding: 6px 10px;
+
+  /*
+   * 命中行字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 行间最浅分隔线。
+   */
+  border-bottom: 1px solid #f9fafb;
+
+  /*
+   * 正文灰。
+   */
+  color: #374151;
+}
+
+/*
+ * 「加输入框里这一个」的小钮(白底描边蓝字;前身是 main.css 的全局 .profNocAdd,
+ * 2026-08-27 起该钮经 Button(ghost)渲染,值原样迁进本域 —— 全局那条留在
+ * main.css 不动,已无消费者)。
+ * 类名写两遍抬权重:要稳赢 button 域 .btn/.ghost 的同权重声明(先例 .logoutBtn)。
+ */
+.nocAdd.nocAdd {
+  /*
+   * 与搜索框留 6px。
+   */
+  margin-top: 6px;
+
+  /*
+   * 描边。
+   */
+  border: 1px solid #e5e7eb;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 6px;
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 行动蓝字。
+   */
+  color: #2563eb;
+
+  /*
+   * 小钮字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 小钮内衬。
+   */
+  padding: 4px 10px;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 常规字重(盖掉 .btn 的 600 —— 兜底小钮不抢主行动钮)。
+   */
+  font-weight: 400;
+}
+
+/*
+ * 已选职业的标签一行。
+ */
+.tagRow {
+  /*
+   * 标签横排。
+   */
+  display: flex;
+
+  /*
+   * 换行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 标签间距(比 chips 紧一档)。
+   */
+  gap: 6px;
+
+  /*
+   * 与上方留 8px。
+   */
+  margin-top: 8px;
+}
+
+/*
+ * 一枚已选职业标签(淡靛底 + 靛字)。
+ */
+.tagPill {
+  /*
+   * 淡靛底。
+   */
+  background: #eef2ff;
+
+  /*
+   * 靛字。
+   */
+  color: #3730a3;
+
+  /*
+   * 标签字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 标签内衬。
+   */
+  padding: 3px 8px;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 6px;
+}
+
+/*
+ * 标签上的 × 摘除钮。
+ * 类名写两遍抬权重:本钮经 Button(kind ghost)渲染,要稳赢 button 域
+ * .btn/.ghost 的同权重声明且不赌打包顺序(先例 .logoutBtn)。
+ */
+.tagDel.tagDel {
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 亮靛(比标签字轻一点,示意可点)。
+   */
+  color: #6366f1;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 与职业名留 4px。
+   */
+  margin-left: 4px;
+
+  /*
+   * 内衬归零(标签本身已有内衬)。
+   */
+  padding: 0;
+
+  /*
+   * 与标签同字号。
+   */
+  font-size: 12.5px;
+}
+
+/*
+ * 档案保存钮(通栏)。
+ * 类名写两遍抬权重:同上,要稳赢 button 域基座(先例 .logoutBtn)。
+ */
+.saveBtn.saveBtn {
+  /*
+   * 通栏。
+   */
+  width: 100%;
+
+  /*
+   * 与上方留 16px。
+   */
+  margin-top: 16px;
+
+  /*
+   * 钮面居中。
+   */
+  text-align: center;
+
+  /*
+   * 上下 9、左右 0(宽度已由 width 定死)。
+   */
+  padding: 9px 0;
+}
+
+/*
+ * 保存落地态的提示条(成/败两条 Notice 共用)与保存钮的距离。
+ */
+.saveNotice {
+  /*
+   * 与保存钮留 8px。
+   */
+  margin-top: 8px;
+}
+
+/*
+ * ── 以下是首访引导向导的样式(2026-08-28 换装批自 OnboardingWizard.tsx 的内联样式
+ *    迁入,值逐格照抄未改)。向导的行距比档案表单松一档(题面独占一屏,不是一长条表单),
+ *    所以它自带一套 chips 行,不复用表单的 .chipsRow。──
+ */
+
+/*
+ * 步数行(「第 N 步 · 共 M 步」)。右侧留出弹框关闭钮的位置。
+ */
+.obStepRow {
+  /*
+   * 横排。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 两端对齐(眼下只有左边一格,右边留给以后)。
+   */
+  justify-content: space-between;
+
+  /*
+   * 最小一档字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 中性灰。
+   */
+  color: #6b7280;
+
+  /*
+   * 给右上角的关闭钮让出 40px,文字不钻到钮底下。
+   */
+  padding-right: 40px;
+}
+
+/*
+ * 进度条的槽。
+ */
+.obBar {
+  /*
+   * 槽高。
+   */
+  height: 5px;
+
+  /*
+   * 淡靛底当槽。
+   */
+  background: #eef2ff;
+
+  /*
+   * 两头全圆。
+   */
+  border-radius: 99px;
+
+  /*
+   * 与步数行留 8px。
+   */
+  margin-top: 8px;
+
+  /*
+   * 填充条超出的部分裁掉。
+   */
+  overflow: hidden;
+}
+
+/*
+ * 进度条的填充(宽度是运行时算出来的,见 functions 的 obBarStyleOf)。
+ */
+.obBarFill {
+  /*
+   * 填满槽高。
+   */
+  height: 100%;
+
+  /*
+   * 品牌蓝。
+   */
+  background: #2563eb;
+
+  /*
+   * 走一步动一格,不跳。
+   */
+  transition: width 0.2s;
+}
+
+/*
+ * 价值前置的那一行(填完能得到什么)。
+ */
+.obValue {
+  /*
+   * 最小一档字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 品牌蓝(是承诺不是说明,给它颜色)。
+   */
+  color: #2563eb;
+
+  /*
+   * 与进度条留 10px。
+   */
+  margin-top: 10px;
+}
+
+/*
+ * 这一步的问句(向导一屏就问一句,字号比表单标签大两档)。
+ */
+.obQuestion {
+  /*
+   * 题面字号。
+   */
+  font-size: 16px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 近黑(全页最重的一行字)。
+   */
+  color: #111827;
+
+  /*
+   * 与价值行留 14px。
+   */
+  margin-top: 14px;
+}
+
+/*
+ * 向导的 chips 一行(分型 / 区间档 / 目标省共用):放不下就换行,不横滚。
+ */
+.obRow {
+  /*
+   * chips 横排。
+   */
+  display: flex;
+
+  /*
+   * 换行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * chip 间距。
+   */
+  gap: 8px;
+
+  /*
+   * 与题面留 10px。
+   */
+  margin-top: 10px;
+}
+
+/*
+ * 贴紧一档的 chips 一行(职业步的候选与热门两排,各自上面都带一句引导语,
+ * 与引导语之间不需要留满 10px)。
+ */
+.obRowTight {
+  /*
+   * chips 横排。
+   */
+  display: flex;
+
+  /*
+   * 换行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * chip 间距。
+   */
+  gap: 8px;
+
+  /*
+   * 与上一行留 8px。
+   */
+  margin-top: 8px;
+}
+
+/*
+ * 上传简历那一块的虚线框(虚线 = 这一步可跳过,不是必答)。
+ */
+.obResumeBox {
+  /*
+   * 与分型 chips 留 16px。
+   */
+  margin-top: 16px;
+
+  /*
+   * 框内衬。
+   */
+  padding: 10px 12px;
+
+  /*
+   * 淡靛虚线边。
+   */
+  border: 1.5px dashed #c7d2fe;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 9px;
+
+  /*
+   * 极淡靛底(与弹框白底分开)。
+   */
+  background: #f8faff;
+}
+
+/*
+ * 真正的文件框:藏起来,由上传钮替用户去点(浏览器自带的文件框长相各家不一,
+ * 统一不了)。
+ */
+.obFile {
+  /*
+   * 不占位也不显示。
+   */
+  display: none;
+}
+
+/*
+ * 上传钮与它右边那句提示排一行。
+ */
+.obResumeRow {
+  /*
+   * 横排。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 钮与提示之间 10px。
+   */
+  gap: 10px;
+
+  /*
+   * 窄屏放不下就把提示折到下一行。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 上传简历钮(靛实底 —— 这一步是本页唯一的省事入口,给它实底)。
+ * 类名写两遍抬权重:本钮经 Button(kind ghost)渲染,要稳赢 button 域 .btn/.ghost
+ * 的同权重声明且不赌打包顺序(先例 .logoutBtn)。
+ * 手型与禁用态的手型交给 button 域的基座管,这里不再声明。
+ */
+.obUpload.obUpload {
+  /*
+   * 实底钮无描边。
+   */
+  border: none;
+
+  /*
+   * 靛实底。
+   */
+  background: #4f46e5;
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 7px;
+
+  /*
+   * 钮内衬。
+   */
+  padding: 7px 14px;
+
+  /*
+   * 钮字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 解析中的上传钮:变淡,示意这会儿点不动(钮此时是禁用态)。
+ */
+.obUpload.obUpload:disabled {
+  /*
+   * 变淡。
+   */
+  opacity: 0.6;
+}
+
+/*
+ * 上传钮右边那句提示的常态(还没传 / 解析中)。
+ */
+.obHint {
+  /*
+   * 最小一档字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 中性灰。
+   */
+  color: #6b7280;
+}
+
+/*
+ * 解析成了的那句(绿:识别到几个职业方向)。
+ */
+.obHintOk {
+  /*
+   * 最小一档字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 成功绿。
+   */
+  color: #047857;
+}
+
+/*
+ * 解析没成的那句(琥珀:三种失败共用 —— 是提醒不是报错,后面还能手动点选)。
+ */
+.obHintWarn {
+  /*
+   * 最小一档字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 提醒琥珀。
+   */
+  color: #b45309;
+}
+
+/*
+ * 「从你的简历识别到:」那一行引导语。
+ */
+.obFrom {
+  /*
+   * 最小一档字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 靛字(与简历那一路的靛实底钮同色系,一眼看出这是简历给的)。
+   */
+  color: #4f46e5;
+
+  /*
+   * 与上一块留 8px。
+   */
+  margin-top: 8px;
+}
+
+/*
+ * 「热门职业」那一行引导语。
+ */
+.obNote {
+  /*
+   * 最小一档字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 最弱一档灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 与上一块留 8px。
+   */
+  margin-top: 8px;
+}
+
+/*
+ * 简历候选 chip 上跟在职业名后面的那串码(人话名做主文案,码当灰字小注)。
+ */
+.obCode {
+  /*
+   * 最弱一档灰。
+   */
+  color: #9ca3af;
+}
+
+/*
+ * 职业步末尾那句「没有?可跳过」。
+ */
+.obNocHint {
+  /*
+   * 比最小档再低半级 —— 兜底话术比引导语还轻。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 最弱一档灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 与热门 chips 留 10px。
+   */
+  margin-top: 10px;
+}
+
+/*
+ * 向导里已选职业的标签一行(与档案表单的 .tagRow 差在留白:向导这一行下面就是
+ * 底部钮组,离得近了会挤)。
+ */
+.obTagRow {
+  /*
+   * 标签横排。
+   */
+  display: flex;
+
+  /*
+   * 换行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 标签间距(比 chips 紧一档)。
+   */
+  gap: 6px;
+
+  /*
+   * 与上一块留 12px。
+   */
+  margin-top: 12px;
+}
+
+/*
+ * 底部钮组一行:左边跳过,右边上一步与下一步。
+ */
+.obActs {
+  /*
+   * 横排。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 两端对齐(跳过靠左,主行动靠右)。
+   */
+  justify-content: space-between;
+
+  /*
+   * 与题目区拉开 22px。
+   */
+  margin-top: 22px;
+}
+
+/*
+ * 右边那组(上一步 + 下一步)。
+ */
+.obActsRight {
+  /*
+   * 横排。
+   */
+  display: flex;
+
+  /*
+   * 两钮间距。
+   */
+  gap: 8px;
+}
+
+/*
+ * 「跳过这步」(最弱的一枚,像一截可点文字 —— 每一步都能跳,但不抢主行动)。
+ * 类名写两遍抬权重:同上,本钮经 Button(kind ghost)渲染。
+ */
+.obSkip.obSkip {
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 最弱一档灰。
+   */
+  color: #9ca3af;
+
+  /*
+   * 小钮字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 内衬归零(像文字不像钮)。
+   */
+  padding: 0;
+}
+
+/*
+ * 「上一步」(灰字常规字重:是退路不是行动)。
+ * 类名写两遍抬权重:同上。
+ */
+.obBack.obBack {
+  /*
+   * 中性灰。
+   */
+  color: #6b7280;
+
+  /*
+   * 常规字重(盖掉 .btn 的 600)。
+   */
+  font-weight: 400;
+
+  /*
+   * 主钮同档字号。
+   */
+  font-size: 13.5px;
+}
+
+/*
+ * 「下一步 / 终键」(主行动,底色与禁用浅蓝都走 button 域的 primary)。
+ * 类名写两遍抬权重:同上。
+ */
+.obNext.obNext {
+  /*
+   * 主钮字号。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 比默认档宽一点的内衬(它是这一屏的主行动)。
+   */
+  padding: 8px 18px;
+}

@@ -1,126 +1,67 @@
 'use client'
-// 政策时间线视图(C6-01):三路事件混排时间轴 + 抽选节奏块;省筛/类型筛纯客户端(事件 <100)。
-// 诚实红线:省分数带分制标注(≠CRS);节奏=历史统计,不预测下一次(tl.note 写死)。
-import { useMemo, useState, type KeyboardEvent } from 'react'
-import { useLang } from '@/components/i18n'
-import { Header } from '@/components/header'
-import { Footer } from '@/components/footer'
+/**
+ * timeline 域的结构:/timeline 政策时间线整块视图(C6-01)—— 三路事件(省抽选 /
+ * 省通告 / 政策公告)混排一条时间轴,上面压一排抽选节奏块。
+ * 省筛与类型筛纯客户端(本页事件不足百条,来回请求不值得)。
+ * 🔴 诚实红线两条:省的分数带分制标注(≠ CRS);节奏卡只报历史统计,**不预测下一次**。
+ * 页头 = Banner 图版(与 /news 共用移民动态模块的配色与图组);
+ * 二级导航 = 统一 SectionTabs(公告 | 时间线,2026-07-19 Frank 批提案:与 /news 互为切换)。
+ * 2026-08-28 换装批自 Timeline.tsx 整体重写成小写件形制:壳件(整页外框 / 顶栏 / 页脚)
+ * 拼装归页面门(样张 companies),本件只出 Shell 轨往下的视图;排版拆成小件、
+ * 状态收进 hooks.ts、内联样式逐格迁 timeline.module.css。
+ *
+ * @author Frank
+ * @time 2026-08-28 12:43:06
+ */
 import { BANNER_IMGS, Banner } from '@/components/banner'
-import { Chip } from '@/components/chip'
-import { UI } from '@/components/colors'
+import { IconNews } from '@/components/icons'
 import { Shell } from '@/components/shell'
 import { SectionTabs } from '@/components/tabs'
-import { Tag } from '@/components/tag'
 import { Title } from '@/components/title'
-import { IconNews } from '@/components/icons'
-import type { TlCadence, TlEvent } from '@/lib/plan/server'
+import { BANNER_MODULE, EVENTS_ANCHOR_ID, SHELL_TOP, TABS_TONE, URL_NEWS, URL_TIMELINE } from './constants'
+import { CadenceGrid } from './cadencegrid'
+import { EventList } from './eventlist'
+import { FilterChips } from './filterchips'
+import { provsOf, shownOf } from './functions'
+import { useTimeline } from './hooks'
+import type { TimelineIn } from './types'
+import css from './timeline.module.css'
 
-export function Timeline({ events, cadence, eeCadence }: {
-  events: TlEvent[]; cadence: TlCadence[]
-  eeCadence: { category: string; label: string; last: string; daysSince: number }[]
-}) {
-  const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
-  const [fProv, setFProv] = useState('')      // ''=全部;'FED'=联邦;两字码=省
-  const [fKind, setFKind] = useState('')      // ''=全部;draw;policy(notice 归 draw 组显示)
-  const [fStream, setFStream] = useState('')  // ''=全部;节奏卡点击带入的流名(=事件 title,分组键同源)
-
-  const provs = useMemo(() => [...new Set(events.map((e) => e.prov).filter(Boolean))].sort(), [events])
-  const shown = useMemo(() => events.filter((e) =>
-    (!fProv || (fProv === 'FED' ? e.prov === '' : e.prov === fProv)) &&
-    (!fKind || (fKind === 'draw' ? e.kind !== 'policy' : e.kind === 'policy')) &&
-    (!fStream || e.title === fStream)), [events, fProv, fKind, fStream])
-
-  // 节奏卡点击 → 事件流按该流过滤并滚过去(详情=历次抽选,数据已在同页)
-  const drillTo = (prov: string, stream: string) => {
-    setFProv(prov || 'FED'); setFKind('draw'); setFStream(stream)
-    document.getElementById('tl-events')?.scrollIntoView({ behavior: 'smooth' })
-  }
-  const cardClick = (prov: string, stream: string) => ({
-    role: 'button' as const, tabIndex: 0,
-    onClick: () => drillTo(prov, stream),
-    onKeyDown: (ev: KeyboardEvent) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); drillTo(prov, stream) } },
-  })
-
-  const provTag = (p: string) => p ? <Tag variant="region">{p}</Tag> : <Tag variant="federal">{t('tl.fed')}</Tag>
+/**
+ * 时间线整块视图:页头 + 二级导航 → 抽选节奏卡 → 筛选药丸 → 混排时间轴。
+ *
+ * @param props 三路数据(逐格注释见 TimelineIn)。
+ * @returns 正文(Shell 轨往下)。
+ */
+export function Timeline({ events, cadence, eeCadence }: TimelineIn) {
+  const p = useTimeline()
+  const shown = shownOf({ events, prov: p.prov, kind: p.kind, stream: p.stream })
   return (
-    <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
-      <Header lang={lang} setLang={setLangSaved} t={t} active="news" />
-      <Shell top={16}>
-        <Banner module="news" icon={<IconNews />} title={t('tl.title')} sub={t('tl.sub')} images={BANNER_IMGS.news} />
-        {/* 2026-07-19 Frank 批提案:统一二级 tab 条(与 /news 互为切换) */}
-        <SectionTabs tone="teal" tabs={[
-          { href: '/news', label: t('tl.tabNews') },
-          { href: '/timeline', label: t('tl.title'), active: true },
+    <Shell top={SHELL_TOP}>
+      <Banner module={BANNER_MODULE}
+        icon={<IconNews />}
+        title={p.t('tl.title')}
+        sub={p.t('tl.sub')}
+        images={BANNER_IMGS.news} />
+      <SectionTabs tone={TABS_TONE}
+        tabs={[
+          { href: URL_NEWS, label: p.t('tl.tabNews') },
+          { href: URL_TIMELINE, label: p.t('tl.title'), active: true },
         ]} />
-
-        {/* 抽选节奏(个人化钩 v1:省×流 距今/平均间隔;EE=距今) */}
-        <Title>{t('tl.cadence')}</Title>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 10, marginBottom: 8 }}>
-          {cadence.map((c) => (
-            <div key={c.prov + c.stream} {...cardClick(c.prov, c.stream)} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '10px 12px', fontSize: 12.5, cursor: 'pointer' }}>
-              <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 3 }}>
-                {provTag(c.prov)}<span style={{ fontWeight: 600, color: '#111827' }}>{c.stream}</span>
-                {c.scale && <span style={{ color: '#9ca3af', fontSize: 11 }}>{c.scale}</span>}
-                <span style={{ marginLeft: 'auto', color: UI.primary, fontSize: 11, whiteSpace: 'nowrap' }}>{t('tl.hist')}</span>
-              </div>
-              <div style={{ color: '#6b7280' }}>
-                {t('tl.last', { d: c.last })} · <b style={{ color: c.daysSince > (c.avgGapDays ?? 9999) ? UI.warn : '#374151' }}>{t('tl.daysSince', { n: c.daysSince })}</b>
-                {c.avgGapDays != null && <> · {t('tl.avgGap', { n: c.avgGapDays, m: c.draws })}</>}
-              </div>
-            </div>
-          ))}
-          {eeCadence.map((c) => (
-            <div key={c.category} {...cardClick('', c.label)} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '10px 12px', fontSize: 12.5, cursor: 'pointer' }}>
-              <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 3 }}>
-                <Tag variant="federal">EE</Tag><span style={{ fontWeight: 600, color: '#111827' }}>{c.label}</span>
-                <span style={{ color: '#9ca3af', fontSize: 11 }}>CRS</span>
-                <span style={{ marginLeft: 'auto', color: UI.primary, fontSize: 11, whiteSpace: 'nowrap' }}>{t('tl.hist')}</span>
-              </div>
-              <div style={{ color: '#6b7280' }}>{t('tl.last', { d: c.last })} · <b style={{ color: '#374151' }}>{t('tl.daysSince', { n: c.daysSince })}</b></div>
-            </div>
-          ))}
-        </div>
-
-        {/* 筛选 chips(手动切省/类型时清掉节奏卡带入的流过滤,避免空结果) */}
-        <div id="tl-events" style={{ scrollMarginTop: 12 }}><Title>{t('tl.events')}</Title></div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '0 0 6px' }}>
-          <Chip onClick={() => { setFProv(''); setFStream('') }} active={!fProv}>{t('all.prov')}</Chip>
-          <Chip onClick={() => { setFProv('FED'); setFStream('') }} active={fProv === 'FED'}>{t('tl.fed')}</Chip>
-          {provs.map((p) => <Chip key={p} onClick={() => { setFProv(p); setFStream('') }} active={fProv === p}>{t('pr.' + p)}</Chip>)}
-          <span style={{ width: 1, background: '#e5e7eb', margin: '0 4px' }} />
-          <Chip onClick={() => { setFKind(''); setFStream('') }} active={!fKind}>{t('tl.kindAll')}</Chip>
-          <Chip onClick={() => setFKind('draw')} active={fKind === 'draw'}>{t('tl.kindDraw')}</Chip>
-          <Chip onClick={() => { setFKind('policy'); setFStream('') }} active={fKind === 'policy'}>{t('tl.kindPolicy')}</Chip>
-          {fStream && <Chip onClick={() => setFStream('')} active={true}>{fStream} ✕</Chip>}
-        </div>
-
-        {/* 时间轴(左缘竖线+圆点) */}
-        <div style={{ borderLeft: '2px solid #e5e7eb', margin: '10px 0 0 7px', paddingLeft: 18 }}>
-          {shown.map((e, i) => (
-            <div key={i} style={{ position: 'relative', padding: '7px 0' }}>
-              <span style={{ position: 'absolute', left: -24, top: 14, width: 9, height: 9, borderRadius: '50%', background: e.kind === 'policy' ? '#0f766e' : '#2563eb', border: '2px solid #fff' }} />
-              <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '9px 13px', fontSize: 13 }}>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <span style={{ color: '#9ca3af', fontSize: 12, whiteSpace: 'nowrap' }}>{e.date}</span>
-                  {provTag(e.prov)}
-                  {e.kind === 'policy'
-                    ? <>{(e.importance ?? 0) >= 5 && <Tag variant="imp">{t('tl.imp')}</Tag>}
-                        <a href={`/news/${e.slug}`} style={{ color: UI.primary, textDecoration: 'none', fontWeight: 600 }}>{e.title}</a></>
-                    : <>
-                        <span style={{ fontWeight: 600, color: '#111827' }}>{e.kind === 'notice' ? t('tl.notice') : e.title}</span>
-                        {e.score != null && <span style={{ color: UI.ok, fontWeight: 600 }}>{t('tl.min', { n: e.score })}{e.scale && e.scale !== 'CRS' && <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: 11 }}> ({e.scale}{t('tl.notCrs')})</span>}</span>}
-                        {e.invitations != null && <span style={{ color: '#6b7280' }}>{t('tl.inv', { n: e.invitations })}</span>}
-                        {/* #106:官方来源外链撤(归拢到 /resources) */}
-                      </>}
-                </div>
-                {e.kind === 'notice' && e.note && <div style={{ color: '#6b7280', fontSize: 12.5, marginTop: 4 }}>{e.note}</div>}
-              </div>
-            </div>
-          ))}
-          {!shown.length && <div style={{ color: '#9ca3af', fontSize: 13, padding: '18px 0' }}>{t('tl.empty')}</div>}
-        </div>
-      </Shell>
-      <Footer t={t} />
-    </div>
+      <Title>{p.t('tl.cadence')}</Title>
+      <CadenceGrid t={p.t} cadence={cadence} eeCadence={eeCadence} drillOf={p.drillOf} />
+      <div id={EVENTS_ANCHOR_ID} className={css.anchor}><Title>{p.t('tl.events')}</Title></div>
+      <FilterChips t={p.t}
+        provs={provsOf({ events })}
+        prov={p.prov}
+        kind={p.kind}
+        stream={p.stream}
+        provPickOf={p.provPickOf}
+        onKindAll={p.onKindAll}
+        onKindDraw={p.onKindDraw}
+        onKindPolicy={p.onKindPolicy}
+        onStreamClear={p.onStreamClear} />
+      <EventList t={p.t} events={shown} />
+    </Shell>
   )
 }

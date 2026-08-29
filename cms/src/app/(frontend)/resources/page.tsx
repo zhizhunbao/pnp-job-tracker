@@ -1,26 +1,39 @@
-// 官方资源导航页(E4-05):SEO 落地页 + 把散落全站的官方链接归拢一页。纯静态 curated,零业务逻辑。
+/**
+ * 官方资源导航页(E4-05)的门:SEO 落地页 + 把散落全站的官方链接归拢一页。
+ * 纯静态 curated —— 不取参、不连库,门里只有拼装。
+ * 2026-08-28 换装批:壳件拼装收进门里(Frank「组装只许在 (frontend) 页面门里」,
+ * 样张 companies)—— 整页外框走 shell 桶的通用件 Frame,顶栏与页脚在这里拼,
+ * Resources 只出 Shell 轨往下的视图;ItemList 结构化数据成件 ResJsonLd
+ * (门里不许有裸标签,值的单一来源仍是 lib/official 的 RES)。
+ *
+ * @author Frank
+ * @time 2026-08-28 12:39:03
+ */
 import type { Metadata } from 'next'
-import { RES } from '@/lib/official'
-import { Resources } from '@/components/resources'
+import { Footer } from '@/components/footer'
+import { Header } from '@/components/header'
+import { RES_META_DESC, RES_META_TITLE, ResJsonLd, Resources } from '@/components/resources'
+import { Frame } from '@/components/shell'
 
-export const metadata: Metadata = {
-  title: '加拿大移民官方资源导航 — IRCC/省提名/工资/LMIA 官方入口 | Offer2PR',
-  description:
-    '加拿大移民官方资源一页汇总:IRCC 快速通道与 CRS、各省提名(PNP)、Job Bank 工资、LMIA/AIP 雇主担保、处理时间与费用、持牌顾问核验。Official Canadian immigration resources in one place.',
-}
+/**
+ * 页面元信息(两句话的值在 components/resources 的 constants.ts 挂注释)。
+ */
+export const metadata: Metadata = { title: RES_META_TITLE, description: RES_META_DESC }
 
-// ItemList JSON-LD(rich result):用 data.ts 单一来源,名称+官方 URL。
-const itemList = {
-  '@context': 'https://schema.org',
-  '@type': 'ItemList',
-  itemListElement: RES.flatMap((g) => g.items).map((it, i) => ({
-    '@type': 'ListItem', position: i + 1, name: it.name, url: it.url,
-  })),
-}
-
+/**
+ * 官方资源导航页的门:结构化数据 + 顶栏 / 正文 / 页脚三段。
+ *
+ * @returns 整页。
+ */
 export default function ResourcesPage() {
-  return <>
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }} />
-    <Resources />
-  </>
+  return (
+    <>
+      <ResJsonLd />
+      <Frame>
+        <Header />
+        <Resources />
+        <Footer />
+      </Frame>
+    </>
+  )
 }

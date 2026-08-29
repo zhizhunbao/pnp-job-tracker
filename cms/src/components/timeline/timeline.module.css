@@ -1,0 +1,563 @@
+/*
+ * timeline 域(政策时间线页)的私有样式。2026-08-28 换装批自 Timeline.tsx 的内联样式
+ * 逐格迁类,值一个不改;色值凡在 colors 域有名字的走 CSS 变量(--card/--border/--text/
+ * --text2/--text3/--primary/--warn/--ok),页面私有的两枚(节奏卡的深灰数字、政策圆点的青)
+ * 留字面量并挂注释。
+ */
+
+/*
+ * 全页最外层不在本文件:那层容器(撑满视口的灰底纵向列)2026-08-27 已收拢成 shell 域的
+ * 通用件 Frame(「有重复才抽公共」),由页面门套上,本域不留克隆。
+ */
+
+/*
+ * 抽选节奏卡的网格(个人化钩 v1):一行铺得下几张就几张,窄到手机时每张吃满整宽。
+ */
+.cadenceGrid {
+  /*
+   * 网格排布。
+   */
+  display: grid;
+
+  /*
+   * 每张卡最窄 300px,窄于 300 的屏改吃满整宽(min() 那半),余量均分。
+   */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+
+  /*
+   * 卡与卡的间距。
+   */
+  gap: 10px;
+
+  /*
+   * 与下面「事件」标题的间距。
+   */
+  margin-bottom: 8px;
+}
+
+/*
+ * 一张节奏卡(整卡可点 —— 点它把下面的事件流筛到这条流)。类名写两遍抬权重:
+ * 本卡经 Button(kind ghost)渲染(「<button 这种不允许直接使用」),要稳赢 button 域
+ * .btn/.ghost 的同权重声明且不赌打包顺序(先例 account 的 .logoutBtn、companies 的 .backBtn)。
+ */
+.card.card {
+  /*
+   * 白底(盖掉 .ghost 的无底)。
+   */
+  background: var(--card);
+
+  /*
+   * 描边(盖掉 .ghost 的无描边)。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 卡圆角(盖掉 .ghost 的直角)。
+   */
+  border-radius: 10px;
+
+  /*
+   * 卡内衬:上下 10、左右 12(盖掉 .ghost 的零内衬)。
+   */
+  padding: 10px 12px;
+
+  /*
+   * 卡内字号(小半档 —— 一张卡上两行统计)。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 常规字重(盖掉 .btn 的 600 —— 原先是 div,加粗的只有流名那一格)。
+   */
+  font-weight: 400;
+
+  /*
+   * 正文色照旧从页面继承(盖掉 .ghost 的品牌蓝:整卡不是链接,卡里各格自有色)。
+   */
+  color: inherit;
+
+  /*
+   * 继承页面字体(button 默认用系统 UI 字体,和正文不一致)。
+   */
+  font-family: inherit;
+
+  /*
+   * 块级(盖掉 .btn 的 inline-block:它是网格里的一格,要吃满这一格)。
+   */
+  display: block;
+
+  /*
+   * 整宽。
+   */
+  width: 100%;
+
+  /*
+   * 卡内文字左对齐(button 默认居中)。
+   */
+  text-align: left;
+
+  /*
+   * 卡内文字照常折行(盖掉 .btn 的不折行 —— 流名可以很长,名字不截断)。
+   */
+  white-space: normal;
+}
+
+/*
+ * 卡的头一行:省标 + 流名 + 分制 + 右端的口径小注。
+ */
+.cardHead {
+  /*
+   * 横排一行。
+   */
+  display: flex;
+
+  /*
+   * 各格间距。
+   */
+  gap: 6px;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 与下面统计行的间距。
+   */
+  margin-bottom: 3px;
+}
+
+/*
+ * 流名(卡上的主文案)。
+ */
+.stream {
+  /*
+   * 半粗(主文案)。
+   */
+  font-weight: 600;
+
+  /*
+   * 近黑。
+   */
+  color: var(--text);
+}
+
+/*
+ * 分制小注(SIRS/WEOI/CRS…;灰字小字跟在人话名后面)。
+ */
+.scale {
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11px;
+}
+
+/*
+ * 右端的口径小注:这张卡说的是**历史统计**,不预测下一次(伪权威红线)。
+ */
+.hist {
+  /*
+   * 推到行末。
+   */
+  margin-left: auto;
+
+  /*
+   * 品牌蓝。
+   */
+  color: var(--primary);
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11px;
+
+  /*
+   * 不折行(折了就读不出是一句口径声明)。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 卡的统计行(最近一期 / 距今多少天 / 平均间隔)。
+ */
+.cardBody {
+  /*
+   * 块级(原先是 div,换成 span 后要自己声明)。
+   */
+  display: block;
+
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 「距今 N 天」的常规档。
+ */
+.days {
+  /*
+   * 深灰(本页私有,不是全站色板成员)。
+   */
+  color: #374151;
+}
+
+/*
+ * 「距今 N 天」的琥珀档:比历史平均间隔还久 —— 这条流拖长了。
+ */
+.daysLate {
+  /*
+   * 警示琥珀。
+   */
+  color: var(--warn);
+}
+
+/*
+ * 事件流那一段的锚点(节奏卡点一下滚到这里)。
+ */
+.anchor {
+  /*
+   * 滚过来时头顶留一口气,标题不贴在视口最上沿。
+   */
+  scroll-margin-top: 12px;
+}
+
+/*
+ * 筛选药丸行(省 / 类型 / 流)。
+ */
+.chips {
+  /*
+   * 横排。
+   */
+  display: flex;
+
+  /*
+   * 药丸间距。
+   */
+  gap: 6px;
+
+  /*
+   * 放不下就折行(手机上省份药丸有十来枚)。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 只与下面的时间轴留距。
+   */
+  margin: 0 0 6px;
+}
+
+/*
+ * 省组与类型组之间的竖细线(两组筛的是不同的事,视觉上分开)。
+ */
+.sep {
+  /*
+   * 一根线的宽。
+   */
+  width: 1px;
+
+  /*
+   * 描边灰。
+   */
+  background: var(--border);
+
+  /*
+   * 左右各留一点。
+   */
+  margin: 0 4px;
+}
+
+/*
+ * 时间轴:左缘一条竖线,事件挂在它右边。
+ */
+.rail {
+  /*
+   * 左缘竖线。
+   */
+  border-left: 2px solid var(--border);
+
+  /*
+   * 上留 10、左移 7(让竖线对齐圆点的中线)。
+   */
+  margin: 10px 0 0 7px;
+
+  /*
+   * 竖线与卡片之间的距离(圆点就落在这段里)。
+   */
+  padding-left: 18px;
+}
+
+/*
+ * 轴上的一条(圆点的定位基准)。
+ */
+.event {
+  /*
+   * 圆点绝对定位的基准。
+   */
+  position: relative;
+
+  /*
+   * 条与条的上下间距。
+   */
+  padding: 7px 0;
+}
+
+/*
+ * 轴上的圆点(压在左缘竖线上)。
+ */
+.dot {
+  /*
+   * 脱离文档流,压到竖线上。
+   */
+  position: absolute;
+
+  /*
+   * 左移到竖线中线(负值 = 出卡片外)。
+   */
+  left: -24px;
+
+  /*
+   * 与卡内首行文字对齐的高度。
+   */
+  top: 14px;
+
+  /*
+   * 点的宽。
+   */
+  width: 9px;
+
+  /*
+   * 点的高。
+   */
+  height: 9px;
+
+  /*
+   * 正圆。
+   */
+  border-radius: 50%;
+
+  /*
+   * 白描边:把点从竖线上「抠」出来。
+   */
+  border: 2px solid var(--card);
+}
+
+/*
+ * 政策公告的点(青档,与抽选一眼分得开)。
+ */
+.dotPolicy {
+  /*
+   * 青(本页私有,不是全站色板成员)。
+   */
+  background: #0f766e;
+}
+
+/*
+ * 抽选与省通告的点(品牌蓝)。
+ */
+.dotDraw {
+  /*
+   * 品牌蓝。
+   */
+  background: var(--primary);
+}
+
+/*
+ * 轴上一条事件的白卡。
+ */
+.eventCard {
+  /*
+   * 白底。
+   */
+  background: var(--card);
+
+  /*
+   * 描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 卡圆角。
+   */
+  border-radius: 10px;
+
+  /*
+   * 卡内衬:上下 9、左右 13。
+   */
+  padding: 9px 13px;
+
+  /*
+   * 卡内字号。
+   */
+  font-size: 13px;
+}
+
+/*
+ * 事件卡的首行:日期 + 省标 + 标题与各项数字。
+ */
+.eventHead {
+  /*
+   * 横排一行。
+   */
+  display: flex;
+
+  /*
+   * 各格间距。
+   */
+  gap: 8px;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 放不下就折行(长流名 + 分数 + 邀请数在手机上排不下)。
+   */
+  flex-wrap: wrap;
+}
+
+/*
+ * 事件日期。
+ */
+.date {
+  /*
+   * 浅灰(它是坐标不是主文案)。
+   */
+  color: var(--text3);
+
+  /*
+   * 小一档字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 日期不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 政策公告的站内链接(点进 /news 详情页)。
+ */
+.newsLink {
+  /*
+   * 品牌蓝。
+   */
+  color: var(--primary);
+
+  /*
+   * 全站口径:内链不带下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 半粗(它是这一条的主文案)。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 抽选/省通告的标题(不可点 —— 官方来源外链已撤,归拢到 /resources)。
+ */
+.drawTitle {
+  /*
+   * 半粗(主文案)。
+   */
+  font-weight: 600;
+
+  /*
+   * 近黑。
+   */
+  color: var(--text);
+}
+
+/*
+ * 抽选的最低分。
+ */
+.score {
+  /*
+   * 通过绿(分数是这条事件里最要紧的一格)。
+   */
+  color: var(--ok);
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 分数后面的分制小注(诚实红线:省分不是 CRS,分制跟着分数出)。
+ */
+.scaleNote {
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 常规字重(分数的半粗不带到小注上)。
+   */
+  font-weight: 400;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 11px;
+}
+
+/*
+ * 抽选的邀请数。
+ */
+.inv {
+  /*
+   * 次级灰(比分数弱一档)。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 省通告的正文摘要(通告那一路真正的内容)。
+ */
+.note {
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 小半档字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 与首行的间距。
+   */
+  margin-top: 4px;
+}
+
+/*
+ * 空态:筛完一条不剩时的那句话。
+ */
+.empty {
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 正文字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 上下留白,不让它贴着筛选行。
+   */
+  padding: 18px 0;
+}

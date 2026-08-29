@@ -16,17 +16,13 @@ import { useLang } from '@/components/i18n'
 import { useIsNarrow } from '@/components/modal'
 import { SEC_DEFAULT, TEXT_NONE } from './constants'
 import {
-  makeBuy,
-  makeLogout,
-  makeNickEdit,
-  makeNickKey,
-  makeRefresh,
-  makeSaveNick,
-  okFlagOf,
-  proOf,
-  secLinkOf,
+  makeBuy, makeLoadSavedJobs, makeLoadSearches, makeLogout, makeNickEdit, makeNickKey, makeRefresh, makeResumeClear,
+  makeSaveNick, okFlagOf, proOf, resumeAtSeedOf, resumeCurSeedOf, secLinkOf,
 } from './functions'
-import type { AccountPanel, Me, Sec } from './types'
+import type {
+  AccountPanel, Me, ResumeHookIn, ResumePanel, SavedJobFact, SavedJobsHookIn, SavedJobsPanel, SavedSearchesPanel,
+  SavedSearchFact, Sec,
+} from './types'
 
 /**
  * 账户页整机:登录态查询与刷新、`?ok=`/`?sec=` 深链、昵称就地编辑(E11-01)、
@@ -62,7 +58,7 @@ export function useAccountPage(): AccountPanel {
   const refresh = makeRefresh({ setMe, setChecked })
 
   useEffect(function firstLoad() {
-    refresh()
+    makeRefresh({ setMe, setChecked })()
   }, [])
 
   const saveNick = makeSaveNick({ nick, me, setNick, setNickBusy, refresh })
@@ -88,5 +84,63 @@ export function useAccountPage(): AccountPanel {
     onNickSave: saveNick,
     onNickKey: makeNickKey({ saveNick, setNick }),
     onBuy: makeBuy({ t, setBuying, setBuyErr }),
+  }
+}
+
+/**
+ * 收藏岗清单整机(E9-01):挂载拉一次清单,行内改状态/移除靠面板递出的清单与落格;
+ * 周报退订态(E9-02b)显示语义取反在渲染层做。
+ *
+ * @param x 周报退订现状(favs 视图给 null)。
+ * @returns 收藏清单的面板。
+ */
+export function useSavedJobs(x: SavedJobsHookIn): SavedJobsPanel {
+  const [items, setItems] = useState<SavedJobFact[] | null>(null)
+  const [optOut, setOptOut] = useState<boolean>(x.weeklyOptOut === true)
+
+  useEffect(function firstLoad() {
+    makeLoadSavedJobs({ setItems })()
+  }, [])
+
+  return { items, setItems, optOut, setOptOut }
+}
+
+/**
+ * 已存筛选整机(E5-03):挂载拉一次清单;删除后由 refresh 重拉(删除以服务端为准,
+ * 不做本地乐观移除)。
+ *
+ * @returns 已存筛选的面板。
+ */
+export function useSavedSearches(): SavedSearchesPanel {
+  const [items, setItems] = useState<SavedSearchFact[] | null>(null)
+
+  useEffect(function firstLoad() {
+    makeLoadSearches({ setItems })()
+  }, [])
+
+  return { items, refresh: makeLoadSearches({ setItems }) }
+}
+
+/**
+ * 简历存档整机(E11-08 §2):正文与时刻的初值来自父页已拉到的档案(本件不自己拉),
+ * 展开与二次确认两格纯 UI 态;清除走工厂(先本地移除再跟投)。
+ *
+ * @param x 登录人 id 与档案两格。
+ * @returns 简历存档的面板。
+ */
+export function useResumeArchive(x: ResumeHookIn): ResumePanel {
+  const [cur, setCur] = useState<string>(resumeCurSeedOf(x))
+  const [at, setAt] = useState<string>(resumeAtSeedOf(x))
+  const [open, setOpen] = useState(false)
+  const [sure, setSure] = useState(false)
+
+  return {
+    cur,
+    at,
+    open,
+    sure,
+    setOpen,
+    setSure,
+    onClear: makeResumeClear({ userId: x.userId, setCur, setAt, setOpen, setSure }),
   }
 }
