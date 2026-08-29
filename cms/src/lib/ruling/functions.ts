@@ -2977,7 +2977,11 @@ function haveMonthsOf(input: HaveMonthsOfIn): HaveMonthsOfOut {
 /**
  * ⑤ 裁决:把经验、居住、省外院校、自雇、NL 名录这几件摆成句子,并判分数鸿沟。
  *
- * 分数鸿沟 = 语言拉满后的上界仍够不着最近一轮抽选线,那是攒时间也补不齐的(≠ 差一点点)。
+ * 分数鸿沟 = 语言拉满后的上界仍够不着**本通道 stream 真匹配**的那轮抽选线,那是攒时间也
+ * 补不齐的(≠ 差一点点)。2026-08-29 Frank 判 bug 收窄:refDraw 省级 fallback 捡来的线
+ * (如 MB 只公布 top-scoring 职业专场的线,一般抽选无线)只作展示对照,不再有排除力 ——
+ * 拿别人的门槛关自己的门,实撞是 MB #278 大类 72 专场线 731 把估分 695 的木匠整条判死。
+ * FED-EE 这类 stream 匹配的通道(CEC 对 CEC)排除力照旧。
  *
  * @param input 前四段攒下的全部中间态。
  * @returns 裁决类的理由、有没有硬伤,以及可能被自雇顶上的 blockedBy。
@@ -2985,14 +2989,9 @@ function haveMonthsOf(input: HaveMonthsOfIn): HaveMonthsOfOut {
 function verdictReasons(input: VerdictReasonsIn): VerdictReasonsOut {
   const reasons: VerdictReason[] = []
   let blockedBy = input.blockedBy
- // 2026-08-29 Frank 判 bug 修复:score-gulf 只在参照线与本通道 stream **真匹配**时才有
-  // 排除力 —— refDraw 的省级 fallback(如 MB 只公布 top-scoring 职业专场的线)捡来的线
-  // 只是展示对照,拿它排除等于用别人的门槛关自己的门(实撞:MB #278 大类 72 专场线 731
-  // 把估分 695 的木匠整条判死,而曼省一般抽选根本不公布线)。FED-EE 等 stream 匹配的
-  // 通道(CEC 对 CEC)排除力照旧。
   const gulfLineApplies = input.draw != null && input.spec.drawStream != null
     && streamMatches({ drawStream: input.draw.stream, gridStream: input.spec.drawStream })
- const scoreGulf = gulfLineApplies && input.score != null && input.score.ceiling != null
+  const scoreGulf = gulfLineApplies && input.score != null && input.score.ceiling != null
     && input.score.refLine != null && input.score.ceiling < input.score.refLine
   const excluded = input.listExcluded || scoreGulf
   for (const one of scoreGulfReason({ score: input.score, draw: input.draw, scoreGulf: scoreGulf })) {

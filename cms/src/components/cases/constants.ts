@@ -180,3 +180,13 @@ export const CELL_NUM_TAIL = 'n'
  * pv.fedLangOk 实撞,措辞键当 key 会重)。
  */
 export const REASON_KEY_HEAD = 'r'
+
+/**
+ * 正文轨上内衬档(px;Shell 的档位表取值)。
+ */
+export const SHELL_TOP = 16
+
+/**
+ * 正文轨下内衬档(px;处境页收尾多留一口气)。
+ */
+export const SHELL_BOTTOM = 40

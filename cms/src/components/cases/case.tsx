@@ -16,7 +16,7 @@
 import { BackButton } from '@/components/button'
 import { useLang } from '@/components/i18n'
 import { Shell } from '@/components/shell'
-import { URL_BACK } from './constants'
+import { SHELL_BOTTOM, SHELL_TOP, URL_BACK } from './constants'
 import { caseLabelKeyOf } from './functions'
 import { CaseAsked } from './caseasked'
 import { CaseBlocked } from './caseblocked'
@@ -37,7 +37,7 @@ export function Case({ caseId, answer }: CaseIn) {
   const [lang, , t] = useLang()
   return (
     <div className={css.grow}>
-      <Shell top={16} bottom={40}>
+      <Shell top={SHELL_TOP} bottom={SHELL_BOTTOM}>
         <div className={css.headRow}>
           <h1 className={css.h1}>{t(caseLabelKeyOf({ id: caseId }))}</h1>
           <BackButton href={URL_BACK} label={t('case.back')} />
