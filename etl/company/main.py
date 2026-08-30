@@ -32,7 +32,10 @@ def main() -> int:
     """跑默认链或 --only 点名的单步;返回进程退出码。"""
     args = sys.argv[1:]
     if len(args) >= 2 and args[0] == "--only":
-        picked = [(k, f) for k, f in TOOLS.items() if args[1] in k]
+        picked = []
+        for k, f in TOOLS.items():
+            if args[1] in k:
+                picked.append((k, f))
         if len(picked) == 0:
             print(f"✗ --only {args[1]} 没命中(可选:{'/'.join(TOOLS)})", flush=True)
             return 1

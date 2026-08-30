@@ -56,12 +56,6 @@ TEXT_JOIN_SEP = " "
 LIST_JOIN_SEP = ", "
 """行业标签等并列项的拼接符。"""
 
-MD_LINE_SEP = "\n"
-"""md 产出的行分隔。"""
-
-CN_ENUM_SEP = "、"
-"""中文枚举顿号(文案律:枚举用顿号)。"""
-
 DOT_SEP = "."
 """域名/ATS 名的点分隔。"""
 
@@ -70,17 +64,6 @@ SLUG_DASH = "-"
 
 SUFFIX_JSON = ".json"
 """三件产出的 json 后缀。"""
-
-SUFFIX_CSV = ".csv"
-"""三件产出的 csv 后缀。"""
-
-SUFFIX_MD = ".md"
-"""三件产出的 md 后缀。"""
-
-WRITE_MODE = "w"
-"""open 的写模式字符(零字符串令后连它也提名,函数体不留裸串)。"""
-URL_TRAIL_SLASH = "/"
-"""URL 尾斜杠(做显示标签时剥掉)。"""
 
 
 SLUG_RE = re.compile(r"[^a-z0-9]+")
@@ -132,26 +115,11 @@ KANATA_ADDR_SEL = "p.company__address"
 
 KANATA_COL_SEL = "div.col"
 """卡片里「Label: value」明细列。"""
-KANATA_STEM = "kanata-north"
-"""目录三件的共同文件名主干(.json/.csv/.md 同名同干)。"""
 
-COMPANY_CSV_FIELDS = ("name", "website", "email", "phone", "sectors", "address",
-                      "careers_page", "description", "region")
-"""目录 CSV 的列序(与 CompanyRow 九格同名同序)。"""
-
-CSV_BOM_ENCODING = "utf-8-sig"
-"""CSV 用带 BOM 的 UTF-8 —— Excel 双击直开不乱码(纯 utf-8 会把中文读成乱码)。"""
-
-SECTORS_PREVIEW_LEN = 40
-"""md 榜单里行业列的截断长度(表格一行放得下)。"""
-
-URL_LABEL_RE = re.compile(r"^https?://(www\.)?")
-"""官网 URL → 短标签:剥协议与 www 前缀(显示用,链接仍是全 URL)。"""
-
-KANATA_MD_TABLE_HEAD = ("| 公司 | 官网 | 行业 | 邮箱 | 电话 |", "|---|---|---|---|---|")
-"""md 榜单的表头两行。"""
 KANATA_PAGE_FIRST = "1"
 """AJAX 翻页参数:第一页(配 KANATA_PAGE_SIZE 一发全取)。"""
+KANATA_STEM = "kanata-north"
+"""目录产出的文件名主干(2026-08-30 简化后只剩 .json)。"""
 
 KANATA_LBL_WEBSITE = "Website"
 """卡片明细列的官网标签(目录站原文)。"""
@@ -168,28 +136,7 @@ KANATA_LBL_LOCATION = "Location"
 COL_TRIM_CHARS = " :"
 """「Label: value」取值后要剥的冒号与空格。"""
 
-KANATA_MD_TITLE_TPL = "# Kanata North 科技园企业名录(渥太华 · {n} 家)\n"
-"""md 标题行。"""
-
-KANATA_MD_SRC_LINE = "> 来源:Kanata North Business Association 会员目录(admin-ajax 逆向直取,非编造)。"
-"""md 来源行。"""
-
-KANATA_MD_TECH_TPL = "> 其中约 **{tech}** 家科技/工程相关。含官网+邮箱+电话,可直接联系——雇主 offer 路线的渥太华雇主全集。"
-"""md 科技占比行。"""
-
-KANATA_MD_NEXT_LINE = "> 下一步:解析各公司官网的 careers/ATS 页 → 抓真实在招。\n"
-"""md 下一步行。"""
-
-MD_LINK_TPL = "[{label}](<{url}>)"
-"""md 链接(尖括号裹 URL,防特殊字符断链)。"""
-
-KANATA_MD_ROW_TPL = "| {name} | {site} | {sectors} | {email} | {phone} |"
-"""md 榜单行。"""
-
-KANATA_MD_FOOT_TPL = "\n*由 etl/company 域生成。tech_only={flag}。*"
-"""md 脚注行。"""
-
-PRINT_KANATA_TPL = "Wrote {n} companies ({tech} tech) → {stem}.md / .csv / .json"
+PRINT_KANATA_TPL = "Wrote {n} companies ({tech} tech) → {out}.json"
 """kanata 步收尾报数。"""
 
 
@@ -216,13 +163,14 @@ CAREERS_PATH_RE = re.compile(r"career|jobs?", re.I)
 
 CAREERS_TIMEOUT_S = 12
 """探单个官网的超时。"""
-CAREERS_STEM_SUFFIX = "-careers"
-"""careers 三件的文件名后缀(接在目录 stem 后)。"""
 
-CAREERS_CSV_FIELDS = ("name", "careers_url", "ats", "website", "email", "sectors", "status", "note")
-"""careers CSV 的列序。"""
+CAREERS_WORKERS = 10
+"""careers 定位的并发线程数(原 CLI 参数,2026-08-30 一参令随入口零参化收编)。"""
+
 LINK_TAG = "a"
 """首页扫链接的标签名。"""
+CAREERS_STEM_SUFFIX = "-careers"
+"""careers 三件的文件名后缀(接在目录 stem 后)。"""
 
 NOTE_NO_CAREERS = "no careers page found"
 """探测结果备注:首页与常见路径都没招聘页。"""
@@ -233,34 +181,10 @@ STATUS_ERR_TPL = "ERR {name}"
 URL_ROOT_TPL = "{scheme}://{netloc}"
 """从最终响应 URL 还原站根(跟随重定向后再探常见路径)。"""
 
-CAREERS_MD_TITLE_TPL = "# {stem} · 公司招聘页定位(Stage 2)\n"
-"""careers md 标题行。"""
-
-CAREERS_MD_SUMMARY_TPL = "> {n} 家公司 → 找到 careers 页 **{found}** 家,其中 **{ats}** 家用标准 ATS(可直取职位 JSON)。"
-"""careers md 汇总行。"""
-
-CAREERS_MD_FIRSTPARTY_LINE = "> 全程访问公司**官网第一方**,非聚合站。下一步 Stage 3:从这些页/ATS 抓真实在招。\n"
-"""careers md 口径行。"""
-
-CAREERS_MD_TABLE_HEAD = ("| 公司 | careers 页 | ATS | 邮箱 |", "|---|---|---|---|")
-"""careers md 表头两行。"""
-
-CAREERS_MD_ROW_TPL = "| {name} | [开](<{url}>) | {ats} | {email} |"
-"""careers md 榜单行。"""
-
-MD_ATS_SELFBUILT = "自建"
-"""无标准 ATS 时的占位词。"""
-
-CAREERS_MD_MISSING_TPL = "\n_未找到公开 careers 页的 {n} 家(可能无招聘页/需深抓):_ {names}"
-"""careers md 未命中收尾行。"""
-
-MISSING_LIST_MAX = 40
-"""未命中清单最多点名几家(md 别拖成告示墙)。"""
-
 PRINT_CAREERS_RESOLVING_TPL = "Resolving careers pages for {n} companies ({workers} workers)..."
 """careers 步开工报数。"""
 
-PRINT_CAREERS_DONE_TPL = "Done — {found}/{n} careers pages, {ats} via ATS.\n  {stem}.md"
+PRINT_CAREERS_DONE_TPL = "Done — {found}/{n} careers pages, {ats} via ATS.\n  {out}"
 """careers 步收尾报数。"""
 
 PRINT_ATS_DIST_LABEL = "ATS 分布:"

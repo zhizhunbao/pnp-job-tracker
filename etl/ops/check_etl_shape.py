@@ -34,6 +34,35 @@ KEY_CALLS = {"get", "setdefault", "pop"}
 EXEMPT_VALUES = {"", "w"}
 
 
+BANNED_NODES = {
+    ast.Lambda: "lambda",
+    ast.ListComp: "列表推导",
+    ast.SetComp: "集合推导",
+    ast.DictComp: "字典推导",
+    ast.GeneratorExp: "生成器表达式",
+}
+
+
+def banned_syntax(text: str) -> list[tuple[int, str]]:
+    """⑥⑦ 号规则:lambda/推导式/多参或带默认值的函数,返回 (行号, 说法)。"""
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        return []
+    found: list[tuple[int, str]] = []
+    for node in ast.walk(tree):
+        label = BANNED_NODES.get(type(node))
+        if label is not None:
+            found.append((node.lineno, label))
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            n_params = len(node.args.args) + len(node.args.posonlyargs) + len(node.args.kwonlyargs)
+            if n_params > 1:
+                found.append((node.lineno, f"函数 {node.name} 有 {n_params} 个参数(一参令)"))
+            if len(node.args.defaults) > 0 or len(node.args.kw_defaults) > 0:
+                found.append((node.lineno, f"函数 {node.name} 带默认值参数(可选参数禁,cms 同律)"))
+    return found
+
+
 def string_literals(text: str) -> list[tuple[int, str]]:
     """functions.py 的零字符串扫描:返回 (行号, 截断片段) 清单,豁免见文件头 ⑤。"""
     try:
@@ -88,6 +117,8 @@ def scan() -> tuple[list[str], list[str]]:
                                 f"(归 constants;2026-08-30 Frank 否决段首常量,Ruff 无此规则故住本闸)")
                 for lineno, frag in string_literals(text):
                     hard.append(f"{rel}:{lineno} functions 体内字符串「{frag}」(零字符串令,提名进 constants)")
+                for lineno, label in banned_syntax(text):
+                    hard.append(f"{rel}:{lineno} {label}(显式循环令/一参令,2026-08-30)")
     return sorted(hard), sorted(soft)
 
 

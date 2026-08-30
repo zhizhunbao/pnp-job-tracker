@@ -11,7 +11,7 @@ scrape_kanata_directory 写、folders/careers/enrich 读 —— 四文件同一�
 enrich 自己的缓存记录形状是单消费者,留在它文件里。
 本文件只许 import typing/标准库(叶子不 import 业务件,cms 同律)。
 """
-from typing import TypedDict
+from typing import Protocol, TypedDict
 
 
 class CompanyRow(TypedDict):
@@ -94,4 +94,109 @@ class EnrichRecord(TypedDict, total=False):
 
     sectors: str
     """行业词(meta keywords 前四个)。"""
+
+class HttpResponseLike(Protocol):
+    """httpx 响应里本域真用的格(Protocol 自声明,cms「只声明真读的格」同律)。"""
+
+    text: str
+    """响应体文本。"""
+
+    status_code: int
+    """HTTP 状态码。"""
+
+    is_success: bool
+    """2xx 判定。"""
+
+
+class HttpClientLike(Protocol):
+    """httpx 客户端里本域真用的格:只有 get(库类型不进叶子,结构化自声明)。
+
+    方法签名按「本域怎么调」收窄(url + params/timeout 两个可选键参);
+    默认值是库形状特批(cms「库定死签名的除外」同律)。
+    Pyrefly 对 Protocol 实参判定保守,不认 httpx.Client 的结构等价 ——
+    装配点用 typing.cast 喂真客户端(断言只住装配点,cms 同律)。
+    """
+
+    def get(self, url: str, *, params: dict | None = None,
+            timeout: float | None = None) -> HttpResponseLike:
+        """GET 一个 URL;params/timeout 按需传。"""
+        ...
+
+
+class FetchTextIn(TypedDict, total=False):
+    """fetch_text 的入参(一参令:多入参收形状,2026-08-30)。"""
+
+    client: HttpClientLike
+    """复用的 httpx 客户端(真用的格见 HttpClientLike)。"""
+
+    url: str
+    """要取的页面。"""
+
+    want_status: bool
+    """True 时 4xx 以上也按「没有」返回空串;缺席=False。"""
+
+
+class GuardMatchIn(TypedDict):
+    """guard_match 的入参(client=None 死分支 2026-08-30 随一参令砍:全部调用方都带 client)。"""
+
+    client: HttpClientLike
+    """复用的 httpx 客户端(首页标题复核用)。"""
+
+    name: str
+    """公司名。"""
+
+    dom: str
+    """候选裸域。"""
+
+
+class DdgFindIn(TypedDict):
+    """ddg_find 的入参。"""
+
+    client: HttpClientLike
+    """复用的 httpx 客户端。"""
+
+    name: str
+    """公司名。"""
+
+    province: str
+    """省码(进搜索词)。"""
+
+
+class FindWebsitesIn(TypedDict):
+    """find_websites 的入参。"""
+
+    cache: dict
+    """增量缓存(原地更新)。"""
+
+    targets: dict
+    """有官网公司表(原地追加命中)。"""
+
+    nosite: dict
+    """无官网公司表。"""
+
+    find_limit: int
+    """本轮 DDG 预算。"""
+
+
+class PickTodoIn(TypedDict):
+    """pick_todo 的入参。"""
+
+    cache: dict
+    """增量缓存。"""
+
+    targets: dict
+    """有官网公司表。"""
+
+    refresh_days: int
+    """成功记录多久后刷新。"""
+
+
+class FetchProfileIn(TypedDict):
+    """fetch_profile 的入参。"""
+
+    client: HttpClientLike
+    """复用的 httpx 客户端。"""
+
+    info: dict
+    """目标公司(name/website/found)。"""
 
