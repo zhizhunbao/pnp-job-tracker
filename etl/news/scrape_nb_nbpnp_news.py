@@ -12,7 +12,7 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from _scrape_base import iso_date, section_body, slugify
+from fetch.functions import iso_date, section_body, slugify
 
 LIST_URL = "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/notice.html"
 

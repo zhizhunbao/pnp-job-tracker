@@ -65,7 +65,7 @@ max-args = 1
 # 编号主管线与根上基础设施/库(批3 前存量)
 "etl/[0-9]*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/_paths.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/_scrape_base.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/fetch/functions.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/noc.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 # ⚠ noc_buckets 另豁免 F601(重复字典键 9 处:金融/行政/法律/教育/社会服务/体育/销售/零售/运输)——
 # python 语义=后键赢,前键是死行;哪个该赢是**分类口径判定**(改分类必跑 audit_noc_classes),

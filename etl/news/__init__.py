@@ -1,6 +1,6 @@
 """
 news 域:官方移民新闻聚合(E12-06,母/子脚本框架首个原生样板)。
-母脚本 _scrape_base 驱动子源(IRCC Atom + 省官方页)→ raw/news/news.json 按 URL 累积去重;
+母脚本 fetch.functions 驱动子源(IRCC Atom + 省官方页)→ raw/news/news.json 按 URL 累积去重;
 新增条目直调 Anthropic(haiku)中文翻译+速读随行存(key 未设只抓原文,下轮自动补翻)。
 只刷 raw 不灌库;逐子源 try/except 隔离:一省源改版只丢该省。
 

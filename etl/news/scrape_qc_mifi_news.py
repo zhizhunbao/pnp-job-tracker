@@ -14,7 +14,7 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from _scrape_base import iso_date
+from fetch.functions import iso_date
 
 
 def parse_qc(html: str) -> list[dict]:

@@ -4,7 +4,7 @@
        docs/implementation/E12-移民路径引擎/06 §4;SK 无专页/PE Radware 挡/NL 无新闻页,不硬上)
   OUT: raw/news/news.json   (按 URL 累积去重;一子源挂只丢该子源;只增不缩防线)
 
-抓取通用件全在 etl/_scrape_base.py(#55 §2.5 母/子框架,news=首个原生样板);本文件只做
+抓取通用件全在 etl/fetch.py(#55 §2.5 母/子框架,news=首个原生样板);本文件只做
 两件事:① 声明子源清单交给母跑;② 对新增条目直调 Anthropic(haiku,与顾问同模型)产出
 段对段中文翻译 bodyZh + 速读 summaryZh,随行存 raw = 幂等缓存(只对没翻过的条目调用)。
 ANTHROPIC_API_KEY 未设 = 跳过翻译只抓原文(运维项:key 进 docker/.env,Frank 拍板 2026-07-18);
@@ -20,9 +20,9 @@ from pathlib import Path
 
 import httpx
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一级)有 _paths/_scrape_base
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一级)有 _paths/_fetch
 import _paths
-import _scrape_base
+from fetch import functions as fetch
 from scrape_ab_aaip_news import SOURCE as AB
 from scrape_bc_pnp_news import SOURCE as BC
 from scrape_ircc_newsroom import SOURCE as IRCC
@@ -174,7 +174,7 @@ def translate_missing(out_file: Path) -> None:
             except Exception as e:  # noqa: BLE001  # 单条失败不断轮,留空下轮重试
                 print(f"  ! translate[{lang}] {it['url']}: {type(e).__name__}: {e}")
     if done:
-        _scrape_base.atomic_write_json(out_file, data)
+        fetch.atomic_write_json(out_file, data)
     # 第25轮 #119:budget=0 是拍板过的停摆,原「剩 N 下轮续」逐轮刷屏像有活没干完 —— 如实说停用
     if MAX_TRANSLATE_PER_RUN == 0:
         print(f"translate: 预翻停用(budget=0),{len(todo)} 条走线上懒翻")
@@ -228,7 +228,7 @@ def score_missing(out_file: Path) -> None:
             except Exception as e:  # noqa: BLE001
                 print(f"  ! score {it['url']}: {type(e).__name__}: {e}")
     if done:
-        _scrape_base.atomic_write_json(out_file, data)
+        fetch.atomic_write_json(out_file, data)
     print(f"score: {done}/{len(todo)} 条打分")
 
 
@@ -277,13 +277,13 @@ def translate_titles_missing(out_file: Path) -> None:
             except Exception as e:  # noqa: BLE001  # 单条失败不断轮,留空下轮重试
                 print(f"  ! translate_titles {it['url']}: {type(e).__name__}: {e}")
     if done:
-        _scrape_base.atomic_write_json(out_file, data)
+        fetch.atomic_write_json(out_file, data)
     print(f"translate_titles: {done}/{len(todo)} 条" +
           (f"(剩 {len(todo) - done} 下轮续)" if len(todo) > done else ""))
 
 
 if __name__ == "__main__":
-    _scrape_base.run(SOURCES, OUT_FILE)
+    fetch.run(SOURCES, OUT_FILE)
     score_missing(OUT_FILE)          # 重要度:轻量必跑(新条目才有徽标/上 banner)
     translate_missing(OUT_FILE)      # 全文翻译:预翻已停(budget 0),恢复=调 NEWS_TRANSLATE_BUDGET
     translate_titles_missing(OUT_FILE)  # 标题中文灰注(E13-06):独立预算,默认开(NEWS_TITLE_TRANSLATE_BUDGET)

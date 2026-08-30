@@ -2,7 +2,7 @@
 check_etl_shape — etl 形制自查役(分域批3,2026-08-29)。
 
 Ruff 管不住的三条形制,这里当闸(判据见 docs/design/etl分域-20260829.md §4/§5):
-  ① 域间禁 import:域内文件只许引基础设施叶子(_paths/_scrape_base/_steps/noc/noc_buckets/grades)
+  ① 域间禁 import:域内文件只许引基础设施叶子(_paths/fetch/_steps/noc/noc_buckets/grades/crawl)
      与本域邻居,不许引别的域 —— 零基线,违规即红;
   ② IN_/OUT_ 显式路径常量:build_*/scrape_*/enrich_* 模块顶部必须声明(宪法既有);
   ③ 一域一门:域内只有 main.py 许带 `if __name__`(步骤模块该收成 run(),新写就范)。
@@ -23,7 +23,7 @@ DOMAINS = ["company", "dli", "ee", "employers", "fsa", "ircc", "lmia",
 # crawl 2026-08-30 批A 升格基础设施(判据:被十几个 build 当地基读缓存 ——「换掉它
 # 业务一个字不用改」;正门 from crawl.cache import …,path-hack 黑通道批B 拆光)
 
-INFRA = {"_paths", "_scrape_base", "_steps", "_log", "noc", "noc_buckets", "grades", "crawl"}
+INFRA = {"_paths", "fetch", "_steps", "_log", "noc", "noc_buckets", "grades", "crawl"}
 
 IMPORT_RE = re.compile(r"^(?:from|import)\s+([A-Za-z_][A-Za-z0-9_]*)", re.M)
 INOUT_RE = re.compile(r"^(?:IN|OUT)_[A-Z0-9_]*\s*=", re.M)

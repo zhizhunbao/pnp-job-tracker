@@ -1,4 +1,5 @@
-"""_scrape_base — 抓取母脚本(#55 §2.5 模板方法;E12-06 news 为首个原生样板)。
+"""fetch.functions — 抓取母脚本(#55 §2.5 模板方法;E12-06 news 为首个原生样板;
+2026-08-30 由单文件 etl/_fetch.py 升格目录域,常量拆 fetch/constants.py)。
 
 母管「怎么抓」的一切通用件,子脚本只填「抓哪 + 怎么从该站挑出行」:
   · httpx client(UA / 超时 / 重试 / 详情页频控)
@@ -36,24 +37,9 @@ from urllib.parse import urljoin
 import httpx
 from bs4 import BeautifulSoup
 
-BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-              "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
-# 伪装 UA 全站单一来源(2026-08-30 批A 收拢:本件 Chrome/120 与 company 的 131 已漂移,取新)
+from fetch.constants import (BROWSER_UA, DATE_RE, DETAIL_SLEEP, MAX_AGE_DAYS,
+                             MAX_DETAIL_PER_RUN, MIN_TOTAL, POLITE_UA, RETRIES, TIMEOUT)
 
-POLITE_UA = "Mozilla/5.0 (compatible; PNPJobTracker/1.0; +https://offer2pr.com)"
-# 自报家门的礼貌 UA(抓第三方官网/搜索用;与伪装档用途相反,两档并存是设计)
-
-UA = BROWSER_UA
-# 旧名别名(news 子源体系沿用;新代码一律用 BROWSER_UA/POLITE_UA 两个明确档名)
-TIMEOUT = 30
-RETRIES = 2                 # 每 URL 最多 1+2 次
-DETAIL_SLEEP = 1.0          # 详情页抓取间隔(礼貌频控)
-MAX_DETAIL_PER_RUN = 15     # 每轮每子源最多抓 N 个详情页(12h 一轮,追平只是时间问题)
-MAX_AGE_DAYS = 400          # 只收这个窗口内的条目(AB 页带 2020 年陈年更新,旧闻不进站)
-MIN_TOTAL = 10              # 全轮防线:合并后至少 N 条(首轮 ~几十条,低于此 = 结构性故障)
-
-MONTHS = "January|February|March|April|May|June|July|August|September|October|November|December"
-DATE_RE = re.compile(rf"({MONTHS})\s+(\d{{1,2}}),?\s+(20\d\d)", re.I)
 
 
 # ---------- 抓取 ----------
@@ -157,7 +143,8 @@ def extract_detail(html: str, body_selector: str | None = None) -> tuple[str | N
     段落间 \\n\\n、段内 <br> 保留为 \\n;抽不到正文返回空串(只卡片不出详情,不硬造)。"""
     soup = BeautifulSoup(html, "html.parser")
     og = soup.find("meta", property="og:image")
-    og_image = og.get("content") if og and og.get("content") else None
+    og_val = og.get("content") if og else None
+    og_image = str(og_val) if og_val else None   # bs4 属性可能给 AttributeValueList,str() 收窄(company 同例)
     scope = (soup.select_one(body_selector) if body_selector else None) \
         or soup.find("main") or soup.find("article") or soup.body
     if scope is None:

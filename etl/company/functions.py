@@ -24,7 +24,7 @@ from bs4 import BeautifulSoup
 
 import _paths
 from _log import err, say
-from _scrape_base import make_client, make_polite_client
+from fetch.functions import make_client, make_polite_client
 from company.constants import (
     ALIAS_SPLIT_RE, ATS_HOSTS, CAREERS_FILE, CAREERS_PATH_RE, CAREERS_RE,
     CAREERS_STEM_SUFFIX, CAREERS_TIMEOUT_S, CAREERS_WORKERS, COL_TRIM_CHARS,
