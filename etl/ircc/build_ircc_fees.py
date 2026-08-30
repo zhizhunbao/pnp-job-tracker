@@ -21,7 +21,7 @@ from pathlib import Path
 import httpx
 from bs4 import BeautifulSoup
 
-_HERE = Path(__file__).resolve().parent
+_HERE = Path(__file__).resolve().parent.parent  # 分域后上一级才是 etl/
 sys.path.insert(0, str(_HERE))
 import _paths  # noqa: E402
 

@@ -14,7 +14,7 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
 import _paths  # noqa: E402
 
 IN_TABLE = _paths.JVWS / "jvws-vacancies.json"

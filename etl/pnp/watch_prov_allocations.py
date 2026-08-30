@@ -28,7 +28,7 @@ if os.name == "nt":  # 本机控制台 cp1252 打不了 !/✗ 行里的中文;�
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
 import _paths  # noqa: E402
 
 IN_ALLOC = _paths.IRCC / "pnp_allocations.json"

@@ -31,7 +31,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 
 import httpx
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
 import _paths  # noqa: E402
 
 IN_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"      # 公司官网来源(employer + website)

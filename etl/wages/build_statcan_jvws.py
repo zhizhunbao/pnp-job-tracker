@@ -46,7 +46,7 @@ import sys
 import zipfile
 from datetime import date
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # 分域后上一级才是 etl/
 import _paths  # noqa: E402
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
