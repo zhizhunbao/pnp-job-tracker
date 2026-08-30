@@ -10,6 +10,6 @@ META = {
     "interval": 21600,        # 6h 一轮(官网快照不需要小时级新鲜度)
     "seed": False,
     "steps": [
-        ["python", "etl/enrich_companies.py", "--min-interval", "3600"],
+        ["python", "etl/company/enrich_company_websites.py", "--min-interval", "3600"],
     ],
 }

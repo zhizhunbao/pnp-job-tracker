@@ -21,7 +21,7 @@ from pathlib import Path
 
 import httpx
 
-_HERE = Path(__file__).resolve().parent
+_HERE = Path(__file__).resolve().parent.parent  # 分域后上一级才是 etl/
 sys.path.insert(0, str(_HERE))
 sys.path.insert(0, str(_HERE / "crawl"))  # converters(HTML→md)
 import _paths  # noqa: E402

@@ -1,7 +1,7 @@
 """pnp 源:省提名(PNP)/AIP 具名清单**实时刷新**(低频)。
 
 每省一个自包含 build 脚本(`etl/pnp/build_<prov>.py`)实时抓省政府页 → `raw/pnp/*.json`;
-AIP 指定雇主 `06_scrape_aip_employers.py` → `raw/aip/`。
+AIP 指定雇主 `pilot/scrape_aip_employers.py` → `raw/aip/`。
 **只刷 raw 参考表,不灌库** —— build 角色每轮 08→09→seed 会目录驱动消费这些表(最终一致,不抢 mart/seed)。
 复用 httpx 镜像(脚本只需 httpx+bs4,不需浏览器:AB/BC/SK/NS 源站直连 200)。
 """
@@ -23,14 +23,14 @@ META = {
         ["python", "etl/pnp/build_nl.py"],   # NL 优先处理职位(2026-08-03;职位名文本非 NOC,不参与打分)
         ["python", "etl/pnp/build_pe.py"],   # PE 在需职业 8 个(2026-08-03;走官方指南 PDF——PEI 网页在 Radware 后面)
         ["python", "etl/pnp/build_draws.py"],  # E6-04 省抽选事实(BC/AB/MB+ON通告;无 occupations 键,08 扫表跳过)
-        ["python", "etl/06_scrape_aip_employers.py"],  # AIP 指定雇主(NL/NB/NS;PE 仍 TODO)
-        ["python", "etl/build_field_sources.py"],     # 字段级来源注册表(E4-04:验证 URL+抽 title/meta)
-        ["python", "etl/build_dli.py"],               # PGWP 可申 DLI 子集(E12-03 旗舰②学校数据;IRCC 官方 JSON)
+        ["python", "etl/pilot/scrape_aip_employers.py"],  # AIP 指定雇主(NL/NB/NS;PE 仍 TODO)
+        ["python", "etl/ops/verify_field_source_pages.py"],     # 字段级来源注册表(E4-04:验证 URL+抽 title/meta)
+        ["python", "etl/dli/build_ircc_dli_pgwp.py"],               # PGWP 可申 DLI 子集(E12-03 旗舰②学校数据;IRCC 官方 JSON)
         # E6-11 批C(2026-08-15):18 试点社区指定雇主/职业清单周更;逐社区塌方保旧+「!」喊人,永远 exit 0 不拦役
-        ["python", "etl/build_pilot_details.py"],
+        ["python", "etl/pilot/build_pilot_details.py"],
         # 2026-08-15(Frank「没有竞争我怎么知道要不要选 RCIP」):RCIP 名额状态 —— 职业满额 /
         # 剩余名额 / 每轮上限 / 先到先得。读 crawl 缓存不外连,抓不到就少几行,永远 exit 0 不拦役
-        ["python", "etl/build_pilot_quota.py"],
+        ["python", "etl/pilot/build_pilot_quota.py"],
         # ↓ 自校失败会 exit 1 的步骤一律排在最后:本役是「一步失败就中止本役」,
         #   排前面会把后面的清单/DLI 一起拖掉(build_bc_sirs / build_sk_points 同理,故至今仍手动跑)。
         ["python", "etl/pnp/build_bc_req.py"],  # E13-01 BC 官方门槛(语言/最低收入/经验/雇主侧;解析不全则保留旧表 exit 1)
@@ -60,6 +60,6 @@ META = {
         # ↓ B3-1 新鲜度哨兵(2026-08-03)——上面第 40 行预言的那只表来了:按 etl/source_manifest.json
         #   逐文件核 fetched vs cadence,超期 exit 1 → 本轮记失败 → healthchecks 不 ping → 报警。
         #   钉死在最末尾:它红了不挡任何真实步骤,但让 ping 第一次证明「数据是新的」。
-        ["python", "etl/check_freshness.py"],
+        ["python", "etl/ops/check_freshness.py"],
     ],
 }

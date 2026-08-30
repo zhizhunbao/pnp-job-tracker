@@ -46,7 +46,7 @@ EE_BY_NOC = _score.EE_BY_NOC
 # E14-02:担保率分子(单季度 LMIA 获批岗位)按 NOC 从季度源 xlsx 直接聚合(见 §sponsor_of 下方)。
 # NOC 正则复用 build_lmia.py 的 _NOC_RE(单一来源,不复制口径);该模块名不以数字开头,可直接 import
 # (不需要像 08_score 那样走 importlib)。模块顶层无重活(只有函数/常量定义),import 安全。
-import build_lmia as _lmia_mod  # noqa: E402
+import lmia.build_esdc_lmia_employers as _lmia_mod  # noqa: E402  # 分域后按包路径取(etl/ 在 sys.path)
 
 
 def channel_tier(noc: str, teer) -> str | None:

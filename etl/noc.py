@@ -7,7 +7,7 @@ noc — NOC 2021 分类法(单一来源,数据层)。官方层级:TEER(第2位) 
 而 `^2 → IT` 这条兜底把 22 开头的各行业技术员全塞进「IT」(景观园艺技师、家电维修,Frank 实见)。
 官方自己就有完整层级,没有理由发明桶:
   大类 = Broad Category(第 1 位) · 中类 = Sub-major Group(前 3 位) · 小类 = Minor Group(前 4 位)
-名字来自 data/raw/noc/structure.json(etl/build_noc_structure.py 从 StatCan 开放 CSV 建,含三语)。
+名字来自 data/raw/noc/structure.json(etl/noc_facts/build_statcan_noc_structure.py 从 StatCan 开放 CSV 建,含三语)。
 """
 import json
 import os

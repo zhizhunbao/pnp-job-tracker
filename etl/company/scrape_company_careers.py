@@ -33,6 +33,8 @@ from urllib.parse import urljoin, urlparse
 import httpx
 from bs4 import BeautifulSoup
 
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一级)有 _paths 等共享库
 import _paths
 PROJECT_ROOT = _paths.ROOT
 OUT_DIR = _paths.RAW_COMPANIES

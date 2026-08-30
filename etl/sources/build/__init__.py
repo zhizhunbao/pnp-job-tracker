@@ -6,11 +6,11 @@
 """
 BUILD_STEPS = [
     ["python", "etl/clean/05e_flag_apprentice.py"],  # B1-3:官方标「不要经验/带训」+ 学徒标题 → apprentice_friendly
-    ["python", "etl/verify_expired.py"],        # #124 批C:死岗验尸(周节奏,7 天内跑过=秒退;判死帖 09 剔除出 mart)
+    ["python", "etl/ops/verify_expired.py"],        # #124 批C:死岗验尸(周节奏,7 天内跑过=秒退;判死帖 09 剔除出 mart)
     ["python", "etl/clean/04c_clean_ats_locations.py"],
     ["python", "etl/clean/04d_clean_salary.py"],
     ["python", "etl/clean/05c_flag_aip.py"],
-    ["python", "etl/build_pilots.py"],           # E6-11:试点社区名单(读 fed-rcip crawl 缓存,改版保旧不拦役)
+    ["python", "etl/pilot/build_pilot_communities.py"],           # E6-11:试点社区名单(读 fed-rcip crawl 缓存,改版保旧不拦役)
     ["python", "etl/clean/05f_flag_pilot.py"],   # E6-11:城市×省 → jobs.pilot/pilotCommunity(05c 同款一字段一脚本)
     ["python", "etl/clean/05d_noc_sanity.py"],  # #47:标题↔NOC 失配护栏(泛词标题×TEER0/1×低薪 → NOC 置空转未分类)
                                                 # 🔴 必须排在 04d 之后:它的判据里有「低薪」,读的是 04d 算出的 salaryAnnual

@@ -26,6 +26,8 @@ import json
 import re
 from pathlib import Path
 
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一级)有 _paths 等共享库
 import _paths
 PROJECT_ROOT = _paths.ROOT
 COMPANIES_DIR = _paths.COMPANIES

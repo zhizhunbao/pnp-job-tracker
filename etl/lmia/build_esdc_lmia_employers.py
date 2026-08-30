@@ -25,12 +25,12 @@ from pathlib import Path
 
 import httpx
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
 import _paths  # noqa: E402
 
 # norm_name 住在 clean/05c(数字开头模块名 → importlib 拉;单一来源,不复制)
 _spec = importlib.util.spec_from_file_location(
-    "flag_aip", Path(__file__).resolve().parent / "clean" / "05c_flag_aip.py")
+    "flag_aip", Path(__file__).resolve().parent.parent / "clean" / "05c_flag_aip.py")
 _mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
 norm_name = _mod.norm_name
