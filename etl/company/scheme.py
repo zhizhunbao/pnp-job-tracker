@@ -6,15 +6,26 @@ company 域行形状(三件套形制**全站样张**,2026-08-30)。
 名字 Frank 拍 scheme(压过 shapes 提议)。cms 侧照旧 types.ts,这是两方言唯一的名字分叉;
 运行时校验若来,另开抽屉不占此名。
 
-形状一律 **dataclass**(2026-08-30 Frank「还是有很多字段常量啊」定形):属性访问 r.name,
-字段键词汇从 functions 消失 —— json 进出边界的键只许住 functions 的 to_* 行构造器
-(cms「db 词汇只许 to* 体内」直译)与 dataclasses.asdict。
-库类型用 Protocol 只声明真用的格(cms「只声明真读的格」同律);字段默认值是形状语义
-(TypedDict total=False 的等价物),不违「函数禁默认参」。
-本文件只许 import typing/标准库。
+形状两档(2026-08-30 Frank 三拍定形):
+① **边界行形状 = pydantic BaseModel**(Frank「python 有这个优势可以用,没必要写一堆 to 函数」):
+  校验/默认值/别名兜底/model_validate 一站式,五只手写 to_* 退役 —— 这是 cms schemas.ts
+  (TypeBox 运行时校验)的 Python 对应物,scheme = types+schemas 合体;
+  use_attribute_docstrings=True 让逐格裸字符串 docstring 直接成为字段 description。
+② **域内接线形状(XxxIn)= dataclass**:不是外来数据,校验加不了值,保持轻。
+库类型用 Protocol 只声明真用的格;字段默认值是形状语义,不违「函数禁默认参」。
+import 两个洞:typing/标准库/pydantic + **本域 constants**(2026-08-30 开:兜底值与
+清洗词表进形状配置,单向边无环 —— 叶子律的域内松绑,跨域仍零)。
 """
 from dataclasses import dataclass
 from typing import Protocol
+
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
+
+from company.constants import HTTPS_PREFIX, KANATA_REGION_LABEL, URL_SCHEMES
+
+MODEL_CFG = ConfigDict(extra="ignore", populate_by_name=True, use_attribute_docstrings=True)
+"""边界模型统一配置:多余键忽略(外来 json 什么都可能带)、按字段名构造照常、
+逐格裸字符串 docstring 直接成为字段 description(pydantic 官方通道)。"""
 
 
 class HttpResponseLike(Protocol):
@@ -68,40 +79,41 @@ class TagLike(Protocol):
         ...
 
 
-@dataclass
-class CompanyRow:
-    """公司目录一行(kanata-north.json 的元素;目录站抓下来的原样九格,空值空串不缺席)。"""
+class CompanyRow(BaseModel):
+    """公司目录一行(九格;进域即校验:缺格补空串,老数据 employer 键兜 name,多余键忽略)。"""
 
-    name: str
-    """公司名(目录站原文)。"""
+    model_config = MODEL_CFG
+    """统一边界配置。"""
 
-    website: str
+    name: str = Field(default="", validation_alias=AliasChoices("name", "employer"))
+    """公司名(目录站原文;老引导数据的 employer 键兜底)。"""
+
+    website: str = ""
     """官网 URL;目录没给则空串。"""
 
-    email: str
+    email: str = ""
     """联系邮箱;可能空串(个人信息,只进 Admin 不公开展示)。"""
 
-    phone: str
+    phone: str = ""
     """联系电话;可能空串(同上)。"""
 
-    sectors: str
+    sectors: str = ""
     """行业标签原文(is_tech 的判据原料之一)。"""
 
-    address: str
+    address: str = ""
     """街道地址原文;可能空串。"""
 
-    careers_page: str
+    careers_page: str = ""
     """careers 页 URL;careers 步补写,抓不到为空串。"""
 
-    description: str
+    description: str = ""
     """公司简介原文(is_tech 的判据原料之二)。"""
 
-    region: str
-    """地域标识(数据分层「区」级)。"""
+    region: str = KANATA_REGION_LABEL
+    """地域标识(数据分层「区」级;缺格兜 Kanata 标签 —— 引导数据同源)。"""
 
 
-@dataclass
-class CareersProbe:
+class CareersProbe(BaseModel):
     """careers 探测一次的结果(全空 = 没找到;默认值=探测前的初态,形状语义)。"""
 
     careers_url: str = ""
@@ -117,37 +129,38 @@ class CareersProbe:
     """备注(如 no careers page found)。"""
 
 
-@dataclass
-class CareerScanRow:
+class CareerScanRow(BaseModel):
     """careers 步输出一行(-careers.json 的元素)= 目录行身份四格 + 探测四格。"""
 
-    name: str
+    model_config = MODEL_CFG
+    """统一边界配置。"""
+
+    name: str = ""
     """公司名。"""
 
-    website: str
+    website: str = ""
     """官网 URL。"""
 
-    sectors: str
+    sectors: str = ""
     """行业标签(带过来供人工翻查)。"""
 
-    email: str
+    email: str = ""
     """邮箱(同上)。"""
 
-    careers_url: str
+    careers_url: str = ""
     """招聘页 URL;没找到为空串。"""
 
-    ats: str
+    ats: str = ""
     """ATS 平台名。"""
 
-    status: str
+    status: str = ""
     """探测状态码/错误。"""
 
-    note: str
+    note: str = ""
     """探测备注。"""
 
 
-@dataclass
-class ProfileRow:
+class ProfileRow(BaseModel):
     """一司一档的 profile.json(身份档)。"""
 
     name: str
@@ -178,8 +191,7 @@ class ProfileRow:
     """简介。"""
 
 
-@dataclass
-class CareersFileRow:
+class CareersFileRow(BaseModel):
     """一司一档的 careers.json(招聘页档,三格)。"""
 
     careers_url: str
@@ -192,8 +204,7 @@ class CareersFileRow:
     """探测状态。"""
 
 
-@dataclass
-class IndexRow:
+class IndexRow(BaseModel):
     """一司一档根上 _index.json 的一行。"""
 
     slug: str
@@ -209,25 +220,43 @@ class IndexRow:
     """有没有招聘页档。"""
 
 
-@dataclass
-class PostingLead:
-    """postings.json 一帖里本域真读的四格(to_posting_lead 产)。"""
+class PostingLead(BaseModel):
+    """postings.json 一帖里本域真读的四格(model_validate 直进;清洗住 validator)。"""
 
-    employer: str
+    model_config = MODEL_CFG
+    """一帖几十个键,只读四格。"""
+
+    employer: str = ""
     """雇主名;空串=帖子没写。"""
 
-    website: str
-    """雇主官网;空串=没带。"""
+    website: str = ""
+    """雇主官网;空串=没带;裸域自动补 https(normalize_website)。"""
 
-    url: str
+    url: str = ""
     """帖子 URL(反查 JD .md 用)。"""
 
-    province: str
+    province: str = ""
     """省码(找官网搜索词用)。"""
 
+    @field_validator("employer", "website", "url", "province", mode="before")
+    @classmethod
+    def none_as_empty(cls, v: object) -> object:
+        """postings 里这些格可能是 null —— 统一折空串(原 to_posting_lead 的 or 空串兜底)。"""
+        if v is None:
+            return ""
+        return v
 
-@dataclass
-class SiteLead:
+    @field_validator("website", mode="after")
+    @classmethod
+    def normalize_website(cls, v: str) -> str:
+        """官网缺协议头就补 https(原 to_posting_lead 的值级清洗,搬进形状配置)。"""
+        site = v.strip()
+        if site and not site.startswith(URL_SCHEMES):
+            return HTTPS_PREFIX + site
+        return site
+
+
+class SiteLead(BaseModel):
     """有官网的目标公司(targets 表的值)。"""
 
     name: str
@@ -240,8 +269,7 @@ class SiteLead:
     """官网来路:空串=帖子自带;jd/searched=找官网命中(前端小字标注)。"""
 
 
-@dataclass
-class NositeLead:
+class NositeLead(BaseModel):
     """无官网的公司(nosite 表的值;岗数=搜索优先级)。"""
 
     name: str
@@ -254,14 +282,16 @@ class NositeLead:
     """该雇主的岗数(价值密度,岗多先搜)。"""
 
 
-@dataclass
-class EnrichRecord:
+class EnrichRecord(BaseModel):
     """官网富化缓存一行(company_enrich.json 的值;对外文件契约,09 汇装直读)。
 
-    空串=该格没走到/没取到(dataclass 化后统一空串,不再缺键;09 侧 .get 语义不变)。
+    空串=该格没走到/没取到(统一空串不缺键;09 侧 .get 语义不变);旧缓存多余键忽略。
     """
 
-    name: str
+    model_config = MODEL_CFG
+    """统一边界配置。"""
+
+    name: str = ""
     """公司名。"""
 
     website: str = ""
@@ -286,8 +316,7 @@ class EnrichRecord:
     """行业词。"""
 
 
-@dataclass
-class MetaOut:
+class MetaOut(BaseModel):
     """extract_meta 的产出(拿不到就空,不猜)。"""
 
     description: str
@@ -295,6 +324,26 @@ class MetaOut:
 
     sectors: str
     """行业词。"""
+
+class WpData(BaseModel):
+    """WP AJAX 信封的 data 层(只读 posts)。"""
+
+    model_config = MODEL_CFG
+    """统一边界配置。"""
+
+    posts: list[str] | str = ""
+    """卡片 HTML:可能是分片列表,也可能一整串。"""
+
+
+class WpEnvelope(BaseModel):
+    """WP AJAX 信封(原 to_wp_html 的键词汇,收进形状)。"""
+
+    model_config = MODEL_CFG
+    """统一边界配置。"""
+
+    data: WpData
+    """载荷层。"""
+
 
 
 @dataclass

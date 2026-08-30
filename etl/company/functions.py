@@ -3,8 +3,8 @@ company 域函数 —— 全部行为住这(三件套形制**全站样张**,2026
 方言律全集见 docs/design/etl分域-20260829.md §4)。
 
 四个步骤文件溶入本文件成四段,各段入口函数与原脚本同名(入口一律零参)。
-**零字符串令(终形)**:形状全 dataclass(属性访问,字段键消失);json 进出边界的键
-只许住 to_* 行构造器(cms「db 词汇只许 to* 体内」直译)与 dataclasses.asdict;
+**零字符串令(终形)**:边界行形状全 pydantic(Frank「有这个优势可以用」:校验/默认/
+别名兜底进 scheme,五只手写 to_* 退役,进域 model_validate、出域 model_dump);
 wire 词(头名/查询参数/属性名)用 constants 的 HDR_/P_ 词族;文案全 *_TPL 模板。
 **显式循环令**:禁推导/genexp/lambda;**内嵌禁令**:内部函数出户成顶层具名函数;
 **一参令**:函数至多一参,多入参收 scheme 的 XxxIn dataclass。
@@ -15,7 +15,6 @@ import html as html_lib
 import json
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import cast
@@ -46,18 +45,17 @@ from company.constants import (
     OUT_KANATA_DIR, P_ACTION, P_PAGED, P_PAGE_SIZE, P_QUERY, P_TAG_RE, POLITE_UA, PORT_SEP,
     PRINT_ATS_DIST_LABEL, PRINT_CAREERS_DONE_TPL, PRINT_CAREERS_RESOLVING_TPL,
     PRINT_ENRICH_DONE_TPL, PRINT_ENRICH_IN_TPL, PRINT_ENRICH_SKIP_TPL, PRINT_FIND_TPL,
-    PRINT_FOLDERS_TPL, PRINT_KANATA_TPL, PRINT_TARGETS_TPL, PROFILE_FILE, READ_ERRORS,
+    PRINT_ERR_TPL, PRINT_FOLDERS_TPL, PRINT_KANATA_TPL, PRINT_TARGETS_TPL, PROFILE_FILE, READ_ERRORS,
     RETRY_FAILED_DAYS, RETRY_NOSITE_DAYS, SCHEME_PREFIX, SITE_NAME_RE, SLUG_DASH,
     SLUG_DUP_TPL, SLUG_FALLBACK, SLUG_LEN_MAX, SLUG_RE, ST_FAIL, ST_FOUND, ST_NOSITE, ST_OK,
     STATUS_ERR_TPL, SUFFIX_JSON, TAG_STRIP_RE, TECH_TERMS, TEXT_ENCODING, TEXT_JOIN_SEP,
-    TITLE_RE, TITLE_SNIFF_LEN, URL_DEFAULT_SCHEME, URL_DOMAIN_RE, URL_ROOT_TPL, URL_SCHEMES,
-    WS_FOLD_RE, WWW_PREFIX,
+    TITLE_RE, TITLE_SNIFF_LEN, URL_DEFAULT_SCHEME, URL_DOMAIN_RE, URL_ROOT_TPL, WS_FOLD_RE, WWW_PREFIX,
 )
 from company.scheme import (
     CardColIn, CareerScanRow, CareersFileRow, CareersProbe, CompanyRow, DdgFindIn,
     EnrichRecord, FetchProfileIn, FetchTextIn, FindWebsitesIn, GuardMatchIn, HttpClientLike,
     IndexRow, MetaOut, MetaScanIn, NositeLead, PickTodoIn, PostingLead, ProfileRow,
-    SiteLead, SkipFindIn, TagLike,
+    SiteLead, SkipFindIn, TagLike, WpEnvelope,
 )
 
 # =========================================================================
@@ -131,7 +129,14 @@ def fetch_kanata_companies() -> list[CompanyRow]:
                                            P_PAGE_SIZE: KANATA_PAGE_SIZE})
         r.raise_for_status()
         payload = r.json()
-    soup = cast(TagLike, BeautifulSoup(to_wp_html(payload), HTML_PARSER))
+    posts = WpEnvelope.model_validate(payload).data.posts
+    if isinstance(posts, list):
+        doc = ""
+        for piece in posts:
+            doc += piece
+    else:
+        doc = posts
+    soup = cast(TagLike, BeautifulSoup(doc, HTML_PARSER))
     rows: list[CompanyRow] = []
     for card in soup.select(KANATA_CARD_SEL):
         row = card_company_row(card)
@@ -147,7 +152,7 @@ def scrape_kanata_directory() -> None:
     out = []
     tech_n = 0
     for r in rows:
-        out.append(asdict(r))
+        out.append(r.model_dump())
         if is_tech(r):
             tech_n += 1
     _paths.write_json((OUT_KANATA_DIR / KANATA_STEM).with_suffix(SUFFIX_JSON), out)
@@ -168,14 +173,14 @@ def build_company_folders() -> None:
     careers_by_name: dict[str, CareerScanRow] = {}
     if IN_FOLDERS_CAREERS.exists():
         for d in json.loads(IN_FOLDERS_CAREERS.read_text(encoding=TEXT_ENCODING)):
-            scan = to_career_scan_row(d)
+            scan = CareerScanRow.model_validate(d)
             careers_by_name[scan.name.lower()] = scan
     OUT_FOLDERS_ROOT.mkdir(parents=True, exist_ok=True)
     seen: dict[str, int] = {}
     made = careers_written = 0
     index = []
     for d in companies:
-        row = to_company_row(d)
+        row = CompanyRow.model_validate(d)
         if not row.name:
             continue
         slug = slugify(row.name)
@@ -190,16 +195,16 @@ def build_company_folders() -> None:
                              website=row.website, email=row.email, phone=row.phone,
                              sectors=row.sectors, address=row.address,
                              description=row.description)
-        _paths.write_json(folder / PROFILE_FILE, asdict(profile))
+        _paths.write_json(folder / PROFILE_FILE, profile.model_dump())
         made += 1
         scan = careers_by_name.get(row.name.lower())
         if scan and (scan.careers_url or scan.ats):
             _paths.write_json(folder / CAREERS_FILE,
-                              asdict(CareersFileRow(careers_url=scan.careers_url,
-                                                    ats=scan.ats, status=scan.status)))
+                              CareersFileRow(careers_url=scan.careers_url,
+                                             ats=scan.ats, status=scan.status).model_dump())
             careers_written += 1
-        index.append(asdict(IndexRow(slug=slug, name=row.name, website=row.website,
-                                     has_careers=bool(scan and scan.careers_url))))
+        index.append(IndexRow(slug=slug, name=row.name, website=row.website,
+                             has_careers=bool(scan and scan.careers_url)).model_dump())
     _paths.write_json(OUT_FOLDERS_ROOT / INDEX_FILE, index)
     print(PRINT_FOLDERS_TPL.format(region=KANATA_REGION_LABEL, made=made,
                                    careers=careers_written, root=OUT_FOLDERS_ROOT))
@@ -226,7 +231,8 @@ def fetch_text(x: FetchTextIn) -> str:
         if x.want_status and r.status_code >= 400:
             return ""
         return r.text
-    except Exception:  # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
+        print(PRINT_ERR_TPL.format(where=x.url, name=type(e).__name__, detail=e), flush=True)
         return ""
 
 
@@ -274,6 +280,7 @@ def find_careers(website: str) -> CareersProbe:
             out.note = NOTE_NO_CAREERS
     except Exception as e:  # noqa: BLE001
         out.status = STATUS_ERR_TPL.format(name=type(e).__name__)
+        print(PRINT_ERR_TPL.format(where=website, name=type(e).__name__, detail=e), flush=True)
     return out
 
 
@@ -286,7 +293,7 @@ def scrape_company_careers() -> None:
     """careers 定位入口:目录内 tech 公司并发探官网 → 落 -careers.json。"""
     targets: list[CompanyRow] = []
     for d in json.loads(IN_CAREERS_DIRECTORY.read_text(encoding=TEXT_ENCODING)):
-        row = to_company_row(d)
+        row = CompanyRow.model_validate(d)
         if row.website and is_tech(row):
             targets.append(row)
     print(PRINT_CAREERS_RESOLVING_TPL.format(n=len(targets), workers=CAREERS_WORKERS))
@@ -309,7 +316,7 @@ def scrape_company_careers() -> None:
     found_n = 0
     ats_n = 0
     for r in results:
-        out.append(asdict(r))
+        out.append(r.model_dump())
         if r.careers_url:
             found_n += 1
         if r.ats:
@@ -381,7 +388,8 @@ def guard_match(x: GuardMatchIn) -> bool:
             if t in text:
                 text_hits += 1
         return text_hits >= max(1, (len(toks) + 1) // 2)
-    except Exception:  # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
+        print(PRINT_ERR_TPL.format(where=x.dom, name=type(e).__name__, detail=e), flush=True)
         return False
 
 
@@ -393,13 +401,14 @@ def jd_domain_hints() -> dict[str, set[str]]:
     for p in IN_ENRICH_JD_DETAILS.rglob(MD_GLOB):
         try:
             m = JD_URL_LINE_RE.search(p.read_text(encoding=TEXT_ENCODING, errors=READ_ERRORS)[:JD_HEAD_LEN])
-        except Exception:  # noqa: BLE001, S112  # 探 4 万个 JD 文件,单个读不动是常态;行数在汇总层报
+        except Exception as e:  # noqa: BLE001, S112
+            print(PRINT_ERR_TPL.format(where=p, name=type(e).__name__, detail=e), flush=True)
             continue
         if m:
             url2md.setdefault(m.group(1).strip(), p)
     hints: dict[str, set[str]] = {}
     for j in json.loads(IN_ENRICH_POSTINGS.read_text(encoding=TEXT_ENCODING)):
-        lead = to_posting_lead(j)
+        lead = PostingLead.model_validate(j)
         if lead.website or not lead.employer:
             continue
         p = url2md.get(lead.url)
@@ -407,7 +416,8 @@ def jd_domain_hints() -> dict[str, set[str]]:
             continue
         try:
             body = p.read_text(encoding=TEXT_ENCODING, errors=READ_ERRORS)
-        except Exception:  # noqa: BLE001, S112  # 同上:海量文件探读,单个失败不值一条日志
+        except Exception as e:  # noqa: BLE001, S112
+            print(PRINT_ERR_TPL.format(where=p, name=type(e).__name__, detail=e), flush=True)
             continue
         doms: set[str] = set()
         for d in EMAIL_DOMAIN_RE.findall(body) + URL_DOMAIN_RE.findall(body):
@@ -426,7 +436,8 @@ def ddg_find(x: DdgFindIn) -> str:
         r = x.client.get(DDG_HTML_URL, params={P_QUERY: query}, timeout=DDG_TIMEOUT_S)
         if not r.is_success:
             return ""
-    except Exception:  # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
+        print(PRINT_ERR_TPL.format(where=x.name, name=type(e).__name__, detail=e), flush=True)
         return ""
     seen: list[str] = []
     for href in DDG_RESULT_RE.findall(r.text)[:DDG_SCAN_N]:
@@ -448,11 +459,15 @@ def now_iso() -> str:
 
 
 def days_since(iso: str) -> float:
-    """ISO 时刻距今的天数(解析不了按无穷大 —— 视同「早该刷新」)。"""
+    """ISO 时刻距今的天数;空串=没记录过,按无穷大(业务判空,不进 catch 免刷日志);
+    非空但坏的才留痕(永不吞异常令)。"""
+    if iso == "":
+        return 1e9
     try:
         dt = datetime.fromisoformat(iso.replace(ISO_Z, ISO_UTC_OFFSET))
         return (datetime.now(timezone.utc) - dt).total_seconds() / 86400
-    except Exception:  # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
+        print(PRINT_ERR_TPL.format(where=iso, name=type(e).__name__, detail=e), flush=True)
         return 1e9
 
 
@@ -505,7 +520,7 @@ def company_targets() -> tuple[dict[str, SiteLead], dict[str, NositeLead]]:
         for entry in IN_ENRICH_ATS.iterdir():
             ats_slugs.add(entry.name)
     for j in json.loads(IN_ENRICH_POSTINGS.read_text(encoding=TEXT_ENCODING)):
-        lead = to_posting_lead(j)
+        lead = PostingLead.model_validate(j)
         if not lead.employer:
             continue
         sl = slugify(lead.employer)
@@ -629,7 +644,7 @@ def enrich_company_websites() -> None:
     cache: dict[str, EnrichRecord] = {}
     if OUT_ENRICH_CACHE.exists():
         for sl, d in json.loads(OUT_ENRICH_CACHE.read_text(encoding=TEXT_ENCODING)).items():
-            cache[sl] = to_enrich_record(d)
+            cache[sl] = EnrichRecord.model_validate(d)
     targets, nosite = company_targets()
     print(PRINT_ENRICH_IN_TPL.format(path=IN_ENRICH_POSTINGS))
     found_jd, found_search = find_websites(FindWebsitesIn(cache=cache, targets=targets,
@@ -656,83 +671,9 @@ def enrich_company_websites() -> None:
     out: dict[str, dict] = {}
     total_ok = 0
     for sl, rec in cache.items():
-        out[sl] = asdict(rec)
+        out[sl] = rec.model_dump()
         if rec.status == ST_OK:
             total_ok += 1
     _paths.write_json(OUT_ENRICH_CACHE, out)
     print(PRINT_ENRICH_DONE_TPL.format(ok=ok, fail=fail, total=total_ok, n=len(cache),
                                        out=OUT_ENRICH_CACHE.name))
-# =========================================================================
-# 6. 行构造器 to_*(尾段 —— cms「rows 撤编并回 functions 当尾段」同位,2026-08-30
-#    Frank「to 函数放到最下面」;json/外源进域的唯一门:字段键词汇只许住这段与 asdict)
-# =========================================================================
-
-
-def to_wp_html(payload: dict) -> str:
-    """WP AJAX 信封 → 卡片 HTML(posts 可能是分片列表,拼起来)。"""
-    posts = payload["data"]["posts"]
-    if isinstance(posts, list):
-        doc = ""
-        for piece in posts:
-            doc += piece
-        return doc
-    return posts
-
-
-def to_company_row(d: dict) -> CompanyRow:
-    """目录 json 一行 → CompanyRow(缺格补空串;老引导数据的 employer 键当 name 兜底;
-    region 缺格兜 KANATA_REGION_LABEL)。"""
-    return CompanyRow(
-        name=d.get("name") or d.get("employer") or "",
-        website=d.get("website", ""),
-        email=d.get("email", ""),
-        phone=d.get("phone", ""),
-        sectors=d.get("sectors", ""),
-        address=d.get("address", ""),
-        careers_page=d.get("careers_page", ""),
-        description=d.get("description", ""),
-        region=d.get("region") or KANATA_REGION_LABEL,
-    )
-
-
-def to_career_scan_row(d: dict) -> CareerScanRow:
-    """-careers.json 一行 → CareerScanRow(缺格补空串)。"""
-    return CareerScanRow(
-        name=d.get("name", ""),
-        website=d.get("website", ""),
-        sectors=d.get("sectors", ""),
-        email=d.get("email", ""),
-        careers_url=d.get("careers_url", ""),
-        ats=d.get("ats", ""),
-        status=d.get("status", ""),
-        note=d.get("note", ""),
-    )
-
-
-def to_posting_lead(j: dict) -> PostingLead:
-    """postings.json 一帖 → 本域真读的四格(官网缺协议头就补 —— 值级清洗住 to*)。"""
-    site = (j.get("website") or "").strip()
-    if site and not site.startswith(URL_SCHEMES):
-        site = HTTPS_PREFIX + site
-    return PostingLead(
-        employer=j.get("employer") or "",
-        website=site,
-        url=j.get("url") or "",
-        province=j.get("province") or "",
-    )
-
-
-def to_enrich_record(d: dict) -> EnrichRecord:
-    """company_enrich.json 一行 → EnrichRecord(旧缓存缺键补空串)。"""
-    return EnrichRecord(
-        name=d.get("name", ""),
-        website=d.get("website", ""),
-        found=d.get("found", ""),
-        status=d.get("status", ""),
-        note=d.get("note", ""),
-        fetched=d.get("fetched", ""),
-        description=d.get("description", ""),
-        sectors=d.get("sectors", ""),
-    )
-
-

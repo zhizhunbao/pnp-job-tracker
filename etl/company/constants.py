@@ -323,6 +323,11 @@ ST_FAIL = "fail"
 
 ST_NOSITE = "nosite"
 """EnrichRecord.status:找不到官网,冷却 RETRY_NOSITE_DAYS。"""
+
+PRINT_ERR_TPL = "✗ {where} {name}: {detail}"
+"""吞而不哑的错误行(永不吞异常令,2026-08-30 Frank):不打断流程的 catch 也必须打这行;
+✗ 开头会被 auto_update 截获层自动升 ERROR 级。where=出事对象(url/域名/文件)。"""
+
 HTTPS_PREFIX = "https://"
 """补协议头/拼官网 URL 用。"""
 
