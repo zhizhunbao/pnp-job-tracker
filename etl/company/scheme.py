@@ -47,3 +47,51 @@ class CompanyRow(TypedDict):
 
     region: str
     """地域标识(如 kanata-north;数据分层「区」级)。"""
+
+class CareersProbe(TypedDict):
+    """careers 定位一步的结果行(careers 段写、一司一档段读 —— 两段共摸,入册)。"""
+
+    careers_url: str
+    """招聘页 URL;没找到为空串。"""
+
+    ats: str
+    """识别出的 ATS 平台名(greenhouse/lever/…);自建或未知为空串。"""
+
+    status: str
+    """首页 HTTP 状态码,或 "ERR <异常名>"。"""
+
+    note: str
+    """备注(如 no careers page found);无事为空串。"""
+
+
+class EnrichRecord(TypedDict, total=False):
+    """官网富化缓存一行(processed/company_enrich.json 的值;对外文件契约 —— 09 汇装直读)。
+
+    total=False:这是归一前形状 —— 各格按抓取阶段渐进出现(found 只有找官网命中才有,
+    description/sectors 只有 status=ok 才有),缺席=那一步没走到,如实保留。
+    """
+
+    name: str
+    """公司名(postings 里的 employer 原文)。"""
+
+    website: str
+    """官网 URL(自带或找官网命中)。"""
+
+    found: str
+    """官网来路:jd(JD 正文线索)| searched(DDG 搜索)—— mart 透传给前端小字。"""
+
+    status: str
+    """found(刚找到官网待抓)| ok(抓到简介)| fail(抓不到)| nosite(找不到官网,冷却)。"""
+
+    note: str
+    """失败原因(no meta / http 4xx / 异常名)。"""
+
+    fetched: str
+    """本记录的产出时刻(ISO,UTC);增量与冷却都按它算。"""
+
+    description: str
+    """官网简介(og:description / meta description / 首个长 <p>,截 DESC_LEN_MAX)。"""
+
+    sectors: str
+    """行业词(meta keywords 前四个)。"""
+

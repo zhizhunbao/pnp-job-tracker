@@ -1,9 +1,4 @@
 [
- "company/build_company_folders.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "company/build_company_folders.py: 缺 IN_/OUT_ 显式路径常量",
- "company/enrich_company_websites.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "company/scrape_company_careers.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "company/scrape_kanata_directory.py: 步骤模块带 __main__(一域一门,该收成 run())",
  "crawl/_fetch_ee_categories.py: 步骤模块带 __main__(一域一门,该收成 run())",
  "crawl/bfs_crawler.py: 步骤模块带 __main__(一域一门,该收成 run())",
  "crawl/check_crawl.py: 步骤模块带 __main__(一域一门,该收成 run())",
