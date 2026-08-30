@@ -1,213 +1,72 @@
-# PRD — PNP Job Tracker（加拿大移民友好职位 · 每日评分追踪器）
+# PRD v3 — offer2pr.com(用户故事版)
 
-> 版本 0.1 · 2026-06-20 —— **定位与分层已被 v2 取代，本文余下部分作为数据/评分/架构的历史依据保留。**
->
-> **v2（2026-07-03 采纳，全文见 [docs/产品重设计提案.md](docs/产品重设计提案.md)）**：
-> - **定位**：来加求职移民者的**三问决策平台**——去哪（地区职业统计/选城市）→ 投什么（职位板）→ 怎么拿身份（档案匹配）。营销人群收窄到走「雇主 offer → PNP」的留学生/PGWP 人群；数据仍全国全职业。
-> - **付费核 = 档案匹配**（用户档案 × 现有信号维度的运行时 join，「差 X 分」级结论 + 依据链）；AI 顾问降为个人化层的表达方式。免费层卖信任（citation/统计页/榜单）。
-> - **生命周期**：过渡型产品（3-6 个月）→ 月付不做年费、增长靠推荐与数据自动生成的内容循环（抽选快报 / 地区×职类 SEO 页矩阵）。
-> - 实现工作项：[E5-00 档案匹配](docs/implementation/E5-商业化功能/00_用户档案与匹配层.md) · [E5-04 地区统计](docs/implementation/E5-商业化功能/04_地区统计与城市对比v1.md)。
->
-> 一句话（v0.1 原文）：每天自动抓取加拿大科技职位，识别**地域 / 职业(NOC) / 是否指定雇主 / 能走哪条移民通道 / 对应政策文件 / 官网 / 投递链接**，按"对移民的价值"打分排序，输出每日更新的可投递清单。
+> 2026-08-30 重写(Frank 令:文档清仓从新开始,一律用户故事风格)。v0.1(2026-06-20 Kanata 时代)与 v2 头注(2026-07-03)全部退役,历史看 git。
+> **一句话定位:靠数据工程 + AI,替「分数不够、要靠雇主 offer / 地方通道翻盘」的人,把从看岗到拿身份的每一步查证与决策代劳。**
+> 干活判据看 [主线与支线](主线与支线-20260801.md);工程宪法看 [CLAUDE.md](../CLAUDE.md);雇主板专项见 [design/雇主板重构-20260830.md](design/雇主板重构-20260830.md)。
 
 ---
 
-## 1. 背景与问题
+## 1. 用户是谁
 
-**用户画像**：亚岗昆学院（渥太华）AI 证书 + Cloud 文凭（2026-09 入学）→ 叠成 3 年 PGWP；IT/科技背景（NOC 21231/21232/21211）；**Express Entry 裸分（CRS）不够**；已确定走**雇主 job offer 支持的省提名（PNP）**路线——优先**非 Express Entry 的 base 通道**（完全不看 CRS）。
+主力盘三画像(小红书中文流量为主,88% 页面流量是英文 Google 自然流量落职位页):
 
-**核心痛点**：
-1. **通用招聘站不可靠**：Job Bank 只覆盖真实雇主的 ~5-10%，且头部"雇主"多是中介/派遣（不会担保）。
-2. **聚合站无移民信号**：一个职位帖不告诉你雇主是否达 OINP 门槛、能否担保、走哪条通道。
-3. **信息分散**：职位、公司官网、移民政策、指定雇主名单分散各处，无法以"对我移民的价值"统一排序。
+- **小李,留学应届(PGWP)**:开放工签,谁都能雇他,但岗大多要经验、CRS 裸分不够,要靠雇主 offer 走省提名。Frank 本人 = 这个画像(亚岗昆 AI+Cloud,3 年 PGWP)。
+- **老张,旅转工**:没有工签,必须雇主愿做 LMIA 才能落地 —— 做过 LMIA 的雇主是他的全部机会面。
+- **小陈,试点翻盘**:盯大西洋/社区试点(AIP/RCIP/FCIP),offer 直通 PR 免 LMIA;一个社区指定雇主几十家,清单就是机会全集。
 
-**机会**：以**公司为中心**穷举某地域雇主 → 进各公司**官网第一方** careers 页抓真实在招 → 叠加移民规则与政策，打分排序。这是紧缩市场里最有效的打法（绕开挤破头的公开海投，直达能担保的雇主）。
+**不是客户**:高分人群(直接走 EE 大道)、有医疗等定向抽签背景的(有自己的快车道)。
 
----
+## 2. 用户故事(按旅程)
 
-## 2. 目标
+### 故事 A:发现 —— 「这个岗对移民有用吗」
 
-- **主目标**：产出一份**每日更新、按移民价值评分**的职位清单，每个职位带完整决策信息，可直接投递。
-- **非目标（暂）**：不做投递自动化；不做签证/移民申请代办；不替代持牌顾问意见。
+小李在 Google 搜岗,富结果(Google Jobs)直落本站职位详情页(最大入口,入口=出口=详情页,67.5% 只看一页)。同一个岗,别的站只有 JD,这里多一层移民视角:通道档、pnpEligible、vs 工资中位、雇主是否指定/有 LMIA 史。**每日更新、全国全职业**(Job Bank 全量 + ATS),来源统一显示「Job Bank」,middleman 已过滤。
 
----
+*做成的标志:落地页 3 秒内让他看出「这岗跟我的身份有什么关系」,并给他一个往下走的口(判定、雇主、锁区)。*
 
-## 3. 用户故事
+### 故事 B:决策 —— 「我到底能走哪条路」
 
-- 作为求职移民者，我每天打开 `latest.md`，就看到"今天最值得投的 N 个岗"，每个都标了**走哪条移民通道、对应政策文件、雇主官网、投递链接、评分**。
-- 我能按**地域**（渥太华/萨省/大西洋…）、**通道类型**（免 CRS 的 base / EE 对齐）、**应届友好度**筛选。
-- 我能看到**今日新增**的职位（增量 diff），不必重看旧的。
+小李点「PR 评估」进决策页 `/plan/pr`(全站第二大主动动作:dp-open 454 vs jd-open 3,090)。答题主干 + 三项判定:通道判定、官方计分、省抽选事实。**结论全部来自判定引擎(lib/ruling)一份口径**;表空时明确不估分,不拿旧规则凑数。答题前注册闸:身份先留下,「自动帮你做」才有落点。
 
----
+*做成的标志:答完题得到「你能走 X,差的是 Y」级结论 + 依据链;判定与顾问口径一字不差。*
 
-## 4. 核心功能
+### 故事 C:行动·岗驱动 —— 「见岗投岗」
 
-### F1. 多源职位采集
-- ✅ **Job Bank**（`jobbank_scraper.py`）：按 NOC 关键词 + 省份(`fprov`)抓，含中介标记。
-- ✅ **公司官网 ATS 第一方**（`ats_jobs.py`）：Greenhouse/Lever/BambooHR/Recruitee/SmartRecruiters/Workable 的公开 JSON。
-- ⏳ **LinkedIn / Indeed**（需用户账号登录，Playwright 持久 profile）：量最大，违反 ToS 风险自担。
-- ⏳ **CareerBeacon**（大西洋）。
+职位板按发布时间最新在前,筛选(省/职业/通道档/经验档),表卡双形态,手机优先(375px)。岗是短周期机会 —— 今天挂明天关,这页管「别错过」。
 
-### F2. 公司目录穷举（雇主全集，按地域）
-- ✅ Kanata North 科技园（`kanata_north_directory.py`，逆向 admin-ajax）：520 家，209 科技。
-- ⏳ Invest Ottawa / 萨省 Co.Labs / 阿省 Platform Calgary / 大西洋 Volta·Genesis·Venn 等。
+### 故事 D:行动·雇主驱动 —— 「圈定谁最可能要我,一家家经营」
 
-### F3. careers 页 + ATS 定位（`careers_finder.py`）
-- 进每家公司官网，定位 careers 页、识别 ATS 类型。
+雇主是长周期目标:offer 是雇主给的,担保是雇主做的。雇主板回答「谁最可能要我」——星级机会档(指定雇主 >> 在招+入门可及 > 技能类 LMIA 旁证)、身份预置视角(毕业生自动开「无经验可投」、旅转工升格 LMIA、试点省置顶指定雇主)。全部拍板与形制见 [雇主板重构-20260830](design/雇主板重构-20260830.md)。
 
-### F4. 富化（每职位附加）
-- **地域**：province / city。
-- **职业 NOC**：标题 → NOC 分类（21231/21232/21211/…）。
-- **是否指定雇主**：与 AIP 官方指定雇主名单（`aip_designated_employers.py`：NL/NB/NS）交叉匹配。
-- **能走哪条移民通道**：规则引擎（省 + NOC + TEER + 是否指定雇主 → 适用通道）。
-- **对应政策文件**：链到已爬政策原文（`data/crawl/<省>-immigration/...`）+ 官方 URL。
-- **官网 URL + 投递 URL**。
-- **是否中介/派遣**：垃圾过滤。
+### 故事 E:求证 —— 「中介说这家能担保,真的吗」
 
-### F5. 评分（0-100，**移民可行性权重最高**）
-见 §6 评分模型。
+小王把中介推荐的公司名输进雇主板搜索框:全库查证,命中摆指定归属 + LMIA 记录;查无 →「不在官方指定雇主清单内,警惕任何承诺担保的说法」。**「官方不公布」是需要举证的断言**(URL + 官方原句),举不出只说「本站未收录」—— 两者在用户那里意思相反,搞反 = 拿假前提教用户防中介。
 
-### F6. 每日更新 + 增量 diff
-- 定时运行全流程 → `data/jobs/daily/<日期>.{md,json}` + `latest.md`；标注"今日新增"（对比上次快照）。
-- 复用 `scripts/tracker/` 调度模式（来自原项目）。
+### 故事 F:陪跑 —— 「有人随时给我答疑,但不瞎说」
 
-### F7. 数据组织：一个公司 = 一个文件夹
-```
-data/companies/<region>/<company-slug>/
-  profile.json   身份(名称/官网/邮箱/电话/行业/地址)
-  careers.json   careers页 + ATS
-  jobs.json      该公司在招岗(第一方)
-  linkedin.json  LinkedIn 职位(需登录)
-  indeed.json    Indeed 职位(需登录)
-```
+顾问(对话)只答疑不下结论:每个数字每个结论只许逐字来自工具结果,工具调的就是判定引擎与库内事实 —— 顾问说的和页面显示的永远一个口径。新动线默认不挂顾问入口(质量闸)。
 
-### F8. 榜单 / Rankings（公开内容 + 引流）
-基于评分与抓取数据，定期生成**命名榜单**作为网站的可分享内容（利于 SEO/引流，契合"人人可查"）。现有数据即可出的榜单：
-- 🏆 渥太华最值得投科技岗 TOP N（按移民评分）
-- 🔥 渥太华科技雇主**招聘热度榜**（按在招岗数）
-- 🤝 "最可能担保移民"雇主榜（直接雇主 + 达 OINP 门槛 + 第一方招聘）
-- 🌊 大西洋 AIP 指定雇主中的**科技雇主榜**
-- 🆕 本周新增科技岗榜（增量 diff）· 💰 薪资榜 · 🎓 应届/co-op 友好雇主榜
+### 故事 G:付费 —— 「替我盯着、替我办了」
 
-实现：`08_score.py` 后由 `rankings.py` 派生命名榜单 → Payload `rankings` 内容 → 前端页面（如 `/ottawa/top-tech-jobs`、`/ottawa/most-hiring`），随每日刷新更新；地域可扩展（渥太华/萨省/大西洋…）。
+**事实与结论一律免费**(结论是转化诱饵);**收费只收「简化操作」**(2026-08-14 拍板):盯梢提醒(盯一家雇主/一类岗,出新岗、资格变动就推)、一键生成(报告/对照)、代查代办(担保历史深查、预填)。对标顾问费定价,月付不做年费(过渡型产品 3-6 个月生命周期假设)。
 
----
+*北极星:第一笔真实付费(M4);漏斗五个数已埋(funnel_events)。*
 
-## 5. 数据模型（每个 job）
+## 3. 商业与增长口径
 
-| 字段 | 说明 |
-|---|---|
-| company / slug | 公司名 / 唯一标识 |
-| title | 职位名 |
-| noc | 分类后的 NOC 代码 |
-| region / city / province | 地域 |
-| official_url | 公司官网 |
-| apply_url | 投递链接（第一方/ATS） |
-| salary / date_posted / source | 薪资 / 发布日 / 来源(ATS名) |
-| is_designated_employer | 是否 AIP 指定雇主 |
-| is_agency | 是否中介/派遣（True→不可担保） |
-| pnp_streams[] | 可走的省提名通道 |
-| policy_refs[] | 对应政策文件(本地路径 + 官方URL) |
-| accessibility | 应届友好度(co-op/junior/senior) |
-| score | 0-100 综合评分 |
-| first_seen / last_seen | 增量追踪 |
+- **价值主张**:真实数据 + 跨四级门槛代劳(不知在哪 → 不会抓 → 懒得查 → 要结论)。付费 = 省时间 + 避免错误决策。
+- **对标**:一亩三分地用论坛做信息共享,本站用数据工程 + AI 做同一件事;聚合是正业,评论后置。
+- **增长**:数据自动生成的内容循环(抽选快报、地区×职类 SEO 矩阵、Google Jobs 富结果);小红书手工投放冷启动。
 
----
+## 4. 数据与架构(一页,细则在 CLAUDE.md)
 
-## 6. 评分模型（满分 100）
+- **两段式**:`etl/`(Python:抓取→清洗→评分→mart)→ `cms/`(Payload + Next + Postgres)→ 公开页。**清洗下沉数据层,seed 只入库,前端只显示。**
+- **功能完全基于能抓到的数据**(Frank 总纲):每个展示格背后必须有源;抓不到的不编(雇员数/营业额永久结案先例)。
+- **口径单一**:判定、评分、星级只在数据层/判定层算一份,页面与顾问都只读。
+- **URL → 数据 → SQL 顺序不许倒**;补全数据与保鲜是永久主线。
 
-> **优先级：移民可行性最重**（用户确认）。权重可在配置中调。
+## 5. 不做
 
-| 维度 | 权重 | 评分逻辑 |
-|---|---:|---|
-| **移民可行性** | **40** | 大西洋指定雇主(AIP,免CRS) 40；ON/SK 非EE雇主通道 34；AB(AAIP,EE对齐) 30；大西洋非指定 14；BC/MB 20 |
-| NOC 匹配 | 25 | 核心(21231/21232/21211…) 25；相邻科技 15；非科技 0 |
-| 直接雇主(非中介) | 15 | 中介/派遣 0；直接雇主 15 |
-| 雇主像能担保 | 10 | 有官网+在目录+非staffing → 高（达 OINP 门槛概率）|
-| 应届友好度 | 10 | co-op/junior/intermediate +；senior-only 低 |
-| 新鲜度 | 加成 | 越新越靠前（同分时） |
-
----
-
-## 7. 架构 —— 两段式（公开网站）
-
-整个项目分两部分，通过数据库/API 解耦：
-
-```
-┌─ ② ETL（Python, etl/）──────────────┐         ┌─ ① CMS + 网站（Payload, cms/）────┐
-│ 抓取(F1/F2/F3) → 清洗 → 富化(F4)     │  写入   │ Payload Collections (Postgres)    │
-│ → 评分(F5)                          │ ──REST→ │ + Admin 后台(内容管理)            │
-│ 产物: 归一化+评分的 jobs/companies   │         │ + Next.js 公开前端(人人可查/筛选) │
-└─────────────────────────────────────┘         └───────────────────────────────────┘
-        定时(每日 cron/GitHub Actions)                    部署(Vercel/Railway)
-```
-
-- **② ETL（Python）= 数据抓取、清洗、入库**：现有 `etl/jobs/` 脚本（`jobbank_scraper` · `kanata_north_directory` · `company_directory` · `careers_finder` · `ats_jobs` · `aip_designated_employers` · `build_company_folders`）+ 待建 `enrich.py`（NOC/指定雇主/通道/政策）· `score.py`（评分）· `load.py`（写入 Payload REST API）· `daily.py`（编排+增量diff+调度）。
-- **① CMS（Payload）= 内容管理 + 网站**：定义 collections 作为数据模型与 API；Admin 后台供人工管理政策/通道/指定雇主等内容；Next.js 前端渲染可搜索/筛选的公开职位列表。
-- 数据源总索引：`data/sources/valuable-urls.md`。
-
-### Payload Collections（数据模型 = ETL 与网站的契约）
-
-| Collection | 关键字段 | 维护方 |
-|---|---|---|
-| **companies** | name, slug, website, email, phone, region, sectors, address, isDesignatedEmployer, source | ETL 写入 |
-| **jobs** | title, company(rel), noc, province/city/region, applyUrl, salary, datePosted, source, isAgency, pnpStreams(rel), policyRefs(rel), accessibility, **score**, firstSeen, lastSeen, status | ETL 写入 |
-| **pnpStreams** | key, name, province, isExpressEntry, requiresJobOffer, ignoresCRS, officialUrl, notes | 人工(CMS) |
-| **policyDocs** | title, stream(rel), province, sourceUrl, localPath, body | 人工(CMS)/ETL 关联 |
-| **designatedEmployers** | name, province, location, source(AIP) | ETL 写入(NL/NB/NS) |
-
-### ETL → CMS 契约
-- ETL 的最后一步 `load.py` 把归一化+评分后的 records 通过 **Payload REST API**（`POST /api/jobs`、`/api/companies`，API-key 鉴权）upsert 入库（按 slug/posting_id 去重）。
-- `pnpStreams` / `policyDocs` 为参考数据，在 Payload Admin 维护（= 内容管理）；ETL 富化时按 (省+NOC+指定雇主) 关联到对应 stream/policy。
-- `firstSeen/lastSeen/status` 支撑"今日新增"与下架检测。
-
-### 仓库结构
-```
-pnp-job-tracker/
-  etl/        Python 抓取·清洗·评分·入库（②）
-  cms/        Payload CMS + Next.js 公开网站（①）
-  data/       ETL 中间产物 + 政策原文(data/crawl/*-immigration)
-  prd.md
-```
-
----
-
-## 8. 移民通道 → 政策文件映射（规则引擎核心）
-
-| 条件 | 通道 | 政策文件（本地 + 官方） |
-|---|---|---|
-| 省=ON + TEER0-3 科技 | OINP 雇主Offer(合并新通道,待公布) | `data/crawl/on-immigration/.../oinp-employer-job-offer-international-student-stream.md` · ontario.ca |
-| 省=SK + 科技NOC | SINP 创新与科技人才(非EE) | `data/crawl/sk-immigration/.../sinp-innovation-tech-talent-pathway.md` · saskatchewan.ca |
-| 省=AB + AB科技雇主 | AAIP Accelerated Tech | `data/crawl/ab-immigration/md/aaip-accelerated-tech-pathway-nocs.md` · alberta.ca |
-| 省∈大西洋 + 指定雇主 | AIP(免CRS) | canada.ca/aip · 各省AIP页 |
-| 省=NL + ICT offer | NLPNP Priority Skills | gov.nl.ca/immigration |
-
----
-
-## 9. 技术栈
-
-- **② ETL**：Python 3.11；httpx（抓取）、beautifulsoup4（解析）、PyMuPDF（PDF名单）；输出 JSON 中间产物 → 经 Payload REST API 入库。调度：cron / GitHub Actions（每日）。
-- **① CMS + 网站**：**Payload CMS**（Node 24 已就绪）+ Next.js 前端；数据库 **Postgres**（关系型,适合 job↔company↔stream 关联）。部署 Vercel/Railway。
-- 反爬：JS 目录站逆向其数据接口；登录站（LinkedIn/Indeed）用 Playwright 持久 profile。
-
-> 公开网站注意：republish 抓取数据涉及来源 ToS / 版权 / 个人信息（已抓的雇主邮箱电话）。公开前需评估：仅展示职位+官方投递链接、不转载受版权内容、对个人联系方式做脱敏或仅 Admin 可见。
-
----
-
-## 10. 现状与路线图
-
-**已完成**（端到端跑通 1 个地域）：
-- Stage 1 目录：Kanata North 520 家
-- Stage 2 careers：134 家有招聘页，44 家标准 ATS
-- Stage 3 真实岗：18 家 ATS，250 科技岗 → 各公司 `jobs.json`
-- AIP 指定雇主名单：NL/NB/NS（科技仅 ~4%）
-- 数据源登记表 + 一公司一文件夹结构
-
-**下一步（按价值）**：
-1. `enrich.py` + `score.py`：富化（NOC/指定雇主/通道/**政策关联**）+ 评分 → 产出首版评分清单
-2. `daily.py`：每日编排 + 增量 diff + 调度
-3. 修 token 误判（如 CMC→huaweicanada）+ 攻 Workday（15 家）
-4. 扩地域：萨省/阿省目录
-5. LinkedIn/Indeed 登录采集（装 Playwright）
-
-**已知风险**：OINP 通道 2026-05-30 改制（合并版细则未出）；AIP 名单科技稀；登录采集违反 ToS。
+- 不做投递自动化、不做移民申请代办、不替代持牌顾问(免责长期挂)。
+- 不做全局机会榜(水量板块必然霸榜);不标「正规」;不编无源数据。
+- 判定是粗筛信号,永远配「≠ 资格认定」。
