@@ -61,81 +61,7 @@ from company.scheme import (
 )
 
 # =========================================================================
-# 1. 行构造器 to_*(json/外源进域的唯一门:字段键词汇只许住这段与 asdict,
-#    cms「db 词汇只许 to* 体内」直译;值级清洗也全在这做完)
-# =========================================================================
-
-
-def to_wp_html(payload: dict) -> str:
-    """WP AJAX 信封 → 卡片 HTML(posts 可能是分片列表,拼起来)。"""
-    posts = payload["data"]["posts"]
-    if isinstance(posts, list):
-        doc = ""
-        for piece in posts:
-            doc += piece
-        return doc
-    return posts
-
-
-def to_company_row(d: dict) -> CompanyRow:
-    """目录 json 一行 → CompanyRow(缺格补空串;老引导数据的 employer 键当 name 兜底;
-    region 缺格兜 KANATA_REGION_LABEL)。"""
-    return CompanyRow(
-        name=d.get("name") or d.get("employer") or "",
-        website=d.get("website", ""),
-        email=d.get("email", ""),
-        phone=d.get("phone", ""),
-        sectors=d.get("sectors", ""),
-        address=d.get("address", ""),
-        careers_page=d.get("careers_page", ""),
-        description=d.get("description", ""),
-        region=d.get("region") or KANATA_REGION_LABEL,
-    )
-
-
-def to_career_scan_row(d: dict) -> CareerScanRow:
-    """-careers.json 一行 → CareerScanRow(缺格补空串)。"""
-    return CareerScanRow(
-        name=d.get("name", ""),
-        website=d.get("website", ""),
-        sectors=d.get("sectors", ""),
-        email=d.get("email", ""),
-        careers_url=d.get("careers_url", ""),
-        ats=d.get("ats", ""),
-        status=d.get("status", ""),
-        note=d.get("note", ""),
-    )
-
-
-def to_posting_lead(j: dict) -> PostingLead:
-    """postings.json 一帖 → 本域真读的四格(官网缺协议头就补 —— 值级清洗住 to*)。"""
-    site = (j.get("website") or "").strip()
-    if site and not site.startswith(URL_SCHEMES):
-        site = HTTPS_PREFIX + site
-    return PostingLead(
-        employer=j.get("employer") or "",
-        website=site,
-        url=j.get("url") or "",
-        province=j.get("province") or "",
-    )
-
-
-def to_enrich_record(d: dict) -> EnrichRecord:
-    """company_enrich.json 一行 → EnrichRecord(旧缓存缺键补空串)。"""
-    return EnrichRecord(
-        name=d.get("name", ""),
-        website=d.get("website", ""),
-        found=d.get("found", ""),
-        status=d.get("status", ""),
-        note=d.get("note", ""),
-        fetched=d.get("fetched", ""),
-        description=d.get("description", ""),
-        sectors=d.get("sectors", ""),
-    )
-
-
-# =========================================================================
-# 2. 共享词汇(≥2 段消费才住这段;2026-08-30 收拢现场:slugify 两份、is_tech 两份
+# 1. 共享词汇(≥2 段消费才住这段;2026-08-30 收拢现场:slugify 两份、is_tech 两份
 #    连判据表都各抄一份且已漂移 —— 行为复制=口径开岔的活证据)
 # =========================================================================
 
@@ -159,7 +85,7 @@ def is_tech(c: CompanyRow) -> bool:
 
 
 # =========================================================================
-# 3. Kanata 目录抓取(Stage 1:雇主全集种子;休眠引导工具,手动 main --only kanata)
+# 2. Kanata 目录抓取(Stage 1:雇主全集种子;休眠引导工具,手动 main --only kanata)
 # =========================================================================
 
 
@@ -229,7 +155,7 @@ def scrape_kanata_directory() -> None:
 
 
 # =========================================================================
-# 4. 一司一档(Stage 1.5:扁平目录 → processed/ats/<slug>/;休眠引导工具)
+# 3. 一司一档(Stage 1.5:扁平目录 → processed/ats/<slug>/;休眠引导工具)
 # =========================================================================
 
 
@@ -280,7 +206,7 @@ def build_company_folders() -> None:
 
 
 # =========================================================================
-# 5. careers 页定位(Stage 2:进官网找招聘页+识别 ATS;休眠引导工具)
+# 4. careers 页定位(Stage 2:进官网找招聘页+识别 ATS;休眠引导工具)
 # =========================================================================
 
 
@@ -396,7 +322,7 @@ def scrape_company_careers() -> None:
 
 
 # =========================================================================
-# 6. 官网富化(E8-04 / D1=B + D2 找官网阶梯;唯一定时段 —— main 默认链只有它)
+# 5. 官网富化(E8-04 / D1=B + D2 找官网阶梯;唯一定时段 —— main 默认链只有它)
 # =========================================================================
 
 
@@ -736,3 +662,77 @@ def enrich_company_websites() -> None:
     _paths.write_json(OUT_ENRICH_CACHE, out)
     print(PRINT_ENRICH_DONE_TPL.format(ok=ok, fail=fail, total=total_ok, n=len(cache),
                                        out=OUT_ENRICH_CACHE.name))
+# =========================================================================
+# 6. 行构造器 to_*(尾段 —— cms「rows 撤编并回 functions 当尾段」同位,2026-08-30
+#    Frank「to 函数放到最下面」;json/外源进域的唯一门:字段键词汇只许住这段与 asdict)
+# =========================================================================
+
+
+def to_wp_html(payload: dict) -> str:
+    """WP AJAX 信封 → 卡片 HTML(posts 可能是分片列表,拼起来)。"""
+    posts = payload["data"]["posts"]
+    if isinstance(posts, list):
+        doc = ""
+        for piece in posts:
+            doc += piece
+        return doc
+    return posts
+
+
+def to_company_row(d: dict) -> CompanyRow:
+    """目录 json 一行 → CompanyRow(缺格补空串;老引导数据的 employer 键当 name 兜底;
+    region 缺格兜 KANATA_REGION_LABEL)。"""
+    return CompanyRow(
+        name=d.get("name") or d.get("employer") or "",
+        website=d.get("website", ""),
+        email=d.get("email", ""),
+        phone=d.get("phone", ""),
+        sectors=d.get("sectors", ""),
+        address=d.get("address", ""),
+        careers_page=d.get("careers_page", ""),
+        description=d.get("description", ""),
+        region=d.get("region") or KANATA_REGION_LABEL,
+    )
+
+
+def to_career_scan_row(d: dict) -> CareerScanRow:
+    """-careers.json 一行 → CareerScanRow(缺格补空串)。"""
+    return CareerScanRow(
+        name=d.get("name", ""),
+        website=d.get("website", ""),
+        sectors=d.get("sectors", ""),
+        email=d.get("email", ""),
+        careers_url=d.get("careers_url", ""),
+        ats=d.get("ats", ""),
+        status=d.get("status", ""),
+        note=d.get("note", ""),
+    )
+
+
+def to_posting_lead(j: dict) -> PostingLead:
+    """postings.json 一帖 → 本域真读的四格(官网缺协议头就补 —— 值级清洗住 to*)。"""
+    site = (j.get("website") or "").strip()
+    if site and not site.startswith(URL_SCHEMES):
+        site = HTTPS_PREFIX + site
+    return PostingLead(
+        employer=j.get("employer") or "",
+        website=site,
+        url=j.get("url") or "",
+        province=j.get("province") or "",
+    )
+
+
+def to_enrich_record(d: dict) -> EnrichRecord:
+    """company_enrich.json 一行 → EnrichRecord(旧缓存缺键补空串)。"""
+    return EnrichRecord(
+        name=d.get("name", ""),
+        website=d.get("website", ""),
+        found=d.get("found", ""),
+        status=d.get("status", ""),
+        note=d.get("note", ""),
+        fetched=d.get("fetched", ""),
+        description=d.get("description", ""),
+        sectors=d.get("sectors", ""),
+    )
+
+
