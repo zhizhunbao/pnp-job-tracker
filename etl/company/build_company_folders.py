@@ -23,20 +23,14 @@ Output: data/companies/<region>/<slug>/profile.json  (+ careers.json)
 """
 import argparse
 import json
-import re
 from pathlib import Path
 
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一级)有 _paths 等共享库
 import _paths
+from functions import slugify  # noqa: E402  # 域三件套(2026-08-30 样张批收拢)
 PROJECT_ROOT = _paths.ROOT
 COMPANIES_DIR = _paths.COMPANIES
-
-
-def slugify(name: str) -> str:
-    s = name.lower()
-    s = re.sub(r"[^a-z0-9]+", "-", s).strip("-")
-    return (s or "company")[:60].strip("-")
 
 
 def main() -> None:

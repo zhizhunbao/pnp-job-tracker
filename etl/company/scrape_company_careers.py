@@ -38,13 +38,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一�
 import _paths
 PROJECT_ROOT = _paths.ROOT
 OUT_DIR = _paths.RAW_COMPANIES
-USER_AGENT = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-)
-TECH_TERMS = ("software", "technolog", "information technology", "saas", "cyber", "data",
-              "artificial intelligence", "cloud", "semiconductor", "electronics",
-              "engineering", "computer", "digital", "developer", "wireless", "fintech", "network")
+# UA 与 tech 判据 2026-08-30 收进域三件套(constants/functions,样张批;
+# 本文件那份 TECH_TERMS 曾漂移少 3 词,收拢经过见 constants.TECH_TERMS 注释)
+from constants import BROWSER_UA as USER_AGENT  # noqa: E402
+from functions import is_tech  # noqa: E402
 # ATS platforms that power first-party careers pages (clean job feeds for Stage 3).
 ATS = ["greenhouse.io", "lever.co", "bamboohr", "myworkdayjobs", "workday", "ashbyhq",
        "jobvite", "icims", "smartrecruiters", "recruitee", "workable", "breezy.hr",
@@ -116,11 +113,6 @@ def _safe_get(client: httpx.Client, url: str, want_status: bool = False) -> str:
         return r.text
     except Exception:  # noqa: BLE001
         return ""
-
-
-def is_tech(c: dict) -> bool:
-    blob = (c.get("sectors", "") + " " + c.get("description", "")).lower()
-    return any(t in blob for t in TECH_TERMS)
 
 
 def main() -> None:

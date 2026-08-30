@@ -32,7 +32,8 @@ from urllib.parse import parse_qs, unquote, urlparse
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths  # noqa: E402
+import _paths
+from functions import slugify  # noqa: E402  # 域三件套(2026-08-30 样张批收拢)  # noqa: E402
 
 IN_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"      # 公司官网来源(employer + website)
 IN_JD_DETAILS = _paths.PROCESSED / "jobbank" / "details"      # 已抓 JD .md(找官网①:JD 正文域名线索)
@@ -160,10 +161,6 @@ def ddg_find(client: httpx.Client, name: str, province: str) -> str:
         if guard_match(name, dom, client):
             return "https://" + dom
     return ""
-
-
-def slugify(s: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "-", (s or "").lower()).strip("-")[:60] or "company"
 
 
 def now_iso() -> str:

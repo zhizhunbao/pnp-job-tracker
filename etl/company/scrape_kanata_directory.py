@@ -37,15 +37,9 @@ PROJECT_ROOT = _paths.ROOT
 OUT_DIR = _paths.RAW_COMPANIES
 AJAX = "https://www.kanatanorthba.com/wp-admin/admin-ajax.php"
 REFERER = "https://www.kanatanorthba.com/member-directory/"
-USER_AGENT = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-)
-# Sector keywords that mark a company as tech/IT-relevant for the user's NOCs.
-TECH_TERMS = ("software", "technolog", "information technology", " it ", "telecom", "saas",
-              "cyber", "data", "artificial intelligence", " ai", "cloud", "semiconductor",
-              "electronics", "engineering", "computer", "digital", "developer", "wireless",
-              "fintech", "network")
+# UA 与 tech 判据 2026-08-30 收进域三件套(constants/functions,样张批)
+from constants import BROWSER_UA as USER_AGENT  # noqa: E402
+from functions import is_tech  # noqa: E402
 
 
 def fetch_companies() -> list[dict]:
@@ -85,11 +79,6 @@ def fetch_companies() -> list[dict]:
             "region": "Ottawa · Kanata North (ON)",
         })
     return [r for r in rows if r["name"]]
-
-
-def is_tech(c: dict) -> bool:
-    blob = (c["sectors"] + " " + c["description"]).lower()
-    return any(t in blob for t in TECH_TERMS)
 
 
 def write_outputs(rows: list[dict], tech_only: bool) -> None:
