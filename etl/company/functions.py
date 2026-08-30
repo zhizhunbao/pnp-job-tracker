@@ -20,19 +20,19 @@ from pathlib import Path
 from typing import cast
 from urllib.parse import parse_qs, unquote, urljoin, urlparse
 
-import httpx
 from bs4 import BeautifulSoup
 
 import _paths
 from _log import err, say
+from _scrape_base import make_client, make_polite_client
 from company.constants import (
-    ALIAS_SPLIT_RE, ATS_HOSTS, BROWSER_UA, CAREERS_FILE, CAREERS_PATH_RE, CAREERS_RE,
+    ALIAS_SPLIT_RE, ATS_HOSTS, CAREERS_FILE, CAREERS_PATH_RE, CAREERS_RE,
     CAREERS_STEM_SUFFIX, CAREERS_TIMEOUT_S, CAREERS_WORKERS, COL_TRIM_CHARS,
     COMMON_CAREER_PATHS, DDG_GUARD_N, DDG_HTML_URL, DDG_QUERY_TPL, DDG_REDIRECT_PARAM,
     DDG_RESULT_RE, DDG_SCAN_N, DDG_TIMEOUT_S, DESC_LEN_MAX, DESC_P_MIN_LEN, DOT_SEP,
     EMAIL_DOMAIN_RE, ENRICH_LIMIT, ENRICH_MIN_INTERVAL_S, ENRICH_REFRESH_DAYS, FETCH_SLEEP_S,
     FETCH_TIMEOUT_S, FIND_CLIENT_TIMEOUT_S, FIND_LIMIT, FIND_SLEEP_S, FOUND_JD,
-    FOUND_SEARCHED, GENERIC_MAIL, GOV_DOMAIN_SUFFIX, GUARD_TIMEOUT_S, HDR_REFERER, HDR_UA,
+    FOUND_SEARCHED, GENERIC_MAIL, GOV_DOMAIN_SUFFIX, GUARD_TIMEOUT_S, HDR_REFERER,
     HREF_ATTR, HTML_PARSER, HTTPS_PREFIX, IN_CAREERS_DIRECTORY, IN_ENRICH_ATS,
     IN_ENRICH_JD_DETAILS, IN_ENRICH_POSTINGS, IN_FOLDERS_CAREERS, IN_FOLDERS_DIRECTORY,
     INDEX_FILE, ISO_UTC_OFFSET, ISO_Z, JD_HEAD_LEN, JD_URL_LINE_RE, KANATA_ADDR_SEL,
@@ -43,7 +43,7 @@ from company.constants import (
     KEYWORDS_TOP_N, LINK_TAG, LIST_JOIN_SEP, MD_GLOB, META_DESC_PATTERNS,
     META_KEYWORDS_PATTERNS, NAME_STOP, NAME_TOKEN_RE, NONALNUM_RE, NOT_OFFICIAL,
     NOTE_HTTP_TPL, NOTE_NO_CAREERS, NOTE_NO_META, OUT_ENRICH_CACHE, OUT_FOLDERS_ROOT,
-    OUT_KANATA_DIR, P_ACTION, P_PAGED, P_PAGE_SIZE, P_QUERY, P_TAG_RE, POLITE_UA, PORT_SEP,
+    OUT_KANATA_DIR, P_ACTION, P_PAGED, P_PAGE_SIZE, P_QUERY, P_TAG_RE, PORT_SEP,
     PRINT_ATS_DIST_LABEL, PRINT_CAREERS_DONE_TPL, PRINT_CAREERS_RESOLVING_TPL,
     PRINT_ENRICH_DONE_TPL, PRINT_ENRICH_IN_TPL, PRINT_ENRICH_SKIP_TPL, PRINT_FIND_TPL,
     PRINT_FOLDERS_TPL, PRINT_KANATA_TPL, PRINT_TARGETS_TPL, PROFILE_FILE, READ_ERRORS,
@@ -123,11 +123,11 @@ def fetch_kanata_companies() -> list[CompanyRow]:
     页面前端渲染,但数据从主题的 WordPress AJAX 一次可全量取回,
     每家公司一张卡片,解析九格;有名字的才收。
     """
-    with httpx.Client(headers={HDR_UA: BROWSER_UA, HDR_REFERER: KANATA_REFERER},
-                      follow_redirects=True, timeout=KANATA_TIMEOUT_S) as c:
+    with make_client(timeout=KANATA_TIMEOUT_S) as c:
         r = c.get(KANATA_AJAX_URL, params={P_ACTION: KANATA_AJAX_ACTION,
                                            P_PAGED: KANATA_PAGE_FIRST,
-                                           P_PAGE_SIZE: KANATA_PAGE_SIZE})
+                                           P_PAGE_SIZE: KANATA_PAGE_SIZE},
+                  headers={HDR_REFERER: KANATA_REFERER})
         r.raise_for_status()
         payload = r.json()
     posts = WpEnvelope.model_validate(payload).data.posts
@@ -245,8 +245,7 @@ def find_careers(website: str) -> CareersProbe:
     """
     out = CareersProbe()
     try:
-        with httpx.Client(headers={HDR_UA: BROWSER_UA}, follow_redirects=True,
-                          timeout=CAREERS_TIMEOUT_S) as c:
+        with make_client(timeout=CAREERS_TIMEOUT_S) as c:
             r = c.get(website)
             out.status = str(r.status_code)
             page = r.text
@@ -560,8 +559,7 @@ def find_websites(x: FindWebsitesIn) -> tuple[int, int]:
     """
     found_jd = found_search = 0
     hints = jd_domain_hints()
-    with httpx.Client(follow_redirects=True, timeout=FIND_CLIENT_TIMEOUT_S,
-                      headers={HDR_UA: POLITE_UA}, verify=False) as client:
+    with make_polite_client(timeout=FIND_CLIENT_TIMEOUT_S) as client:
         for sl, v in x.nosite.items():
             if sl in x.targets or should_skip_find(SkipFindIn(cache=x.cache, slug=sl)) or sl not in hints:
                 continue
@@ -658,8 +656,7 @@ def enrich_company_websites() -> None:
                                 refresh_days=ENRICH_REFRESH_DAYS))[:ENRICH_LIMIT]
     say(PRINT_TARGETS_TPL.format(targets=len(targets), cache=len(cache), todo=len(todo), limit=ENRICH_LIMIT))
     ok = fail = 0
-    with httpx.Client(follow_redirects=True, timeout=FETCH_TIMEOUT_S,
-                      headers={HDR_UA: POLITE_UA}, verify=False) as client:
+    with make_polite_client(timeout=FETCH_TIMEOUT_S) as client:
         for sl, lead in todo:
             rec = fetch_profile(FetchProfileIn(client=cast(HttpClientLike, client), lead=lead))
             if rec.status == ST_OK:

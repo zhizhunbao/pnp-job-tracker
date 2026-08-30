@@ -1,10 +1,4 @@
 [
- "crawl/_fetch_ee_categories.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "crawl/bfs_crawler.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "crawl/check_crawl.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "crawl/crawl_all.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "crawl/discover_sources.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "crawl/download_md.py: 步骤模块带 __main__(一域一门,该收成 run())",
  "dli/build_ircc_dli_pgwp.py: 步骤模块带 __main__(一域一门,该收成 run())",
  "ee/build_ircc_ee_categories.py: 步骤模块带 __main__(一域一门,该收成 run())",
  "ee/build_ircc_ee_categories.py: 缺 IN_/OUT_ 显式路径常量",

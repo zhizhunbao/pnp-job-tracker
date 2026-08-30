@@ -18,10 +18,12 @@ from pathlib import Path
 ETL = Path(__file__).resolve().parent.parent
 BASELINE = Path(__file__).resolve().parent / "etl_shape_baseline.json"
 
-DOMAINS = ["company", "crawl", "dli", "ee", "employers", "fsa", "ircc", "lmia",
+DOMAINS = ["company", "dli", "ee", "employers", "fsa", "ircc", "lmia",
            "news", "noc_facts", "ops", "pilot", "pnp", "wages"]
+# crawl 2026-08-30 批A 升格基础设施(判据:被十几个 build 当地基读缓存 ——「换掉它
+# 业务一个字不用改」;正门 from crawl.cache import …,path-hack 黑通道批B 拆光)
 
-INFRA = {"_paths", "_scrape_base", "_steps", "noc", "noc_buckets", "grades"}
+INFRA = {"_paths", "_scrape_base", "_steps", "_log", "noc", "noc_buckets", "grades", "crawl"}
 
 IMPORT_RE = re.compile(r"^(?:from|import)\s+([A-Za-z_][A-Za-z0-9_]*)", re.M)
 INOUT_RE = re.compile(r"^(?:IN|OUT)_[A-Z0-9_]*\s*=", re.M)

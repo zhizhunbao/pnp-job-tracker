@@ -36,8 +36,15 @@ from urllib.parse import urljoin
 import httpx
 from bs4 import BeautifulSoup
 
-UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-      "(KHTML, like Gecko) Chrome/120 Safari/537.36")
+BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+              "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
+# 伪装 UA 全站单一来源(2026-08-30 批A 收拢:本件 Chrome/120 与 company 的 131 已漂移,取新)
+
+POLITE_UA = "Mozilla/5.0 (compatible; PNPJobTracker/1.0; +https://offer2pr.com)"
+# 自报家门的礼貌 UA(抓第三方官网/搜索用;与伪装档用途相反,两档并存是设计)
+
+UA = BROWSER_UA
+# 旧名别名(news 子源体系沿用;新代码一律用 BROWSER_UA/POLITE_UA 两个明确档名)
 TIMEOUT = 30
 RETRIES = 2                 # 每 URL 最多 1+2 次
 DETAIL_SLEEP = 1.0          # 详情页抓取间隔(礼貌频控)
@@ -51,8 +58,16 @@ DATE_RE = re.compile(rf"({MONTHS})\s+(\d{{1,2}}),?\s+(20\d\d)", re.I)
 
 # ---------- 抓取 ----------
 
-def make_client() -> httpx.Client:
-    return httpx.Client(headers={"User-Agent": UA}, follow_redirects=True, timeout=TIMEOUT)
+def make_client(timeout: float = TIMEOUT) -> httpx.Client:
+    """伪装档客户端(gov 目录站/官网对无头 UA 挑剔);批A 起全站构造客户端只走这两个门。"""
+    return httpx.Client(headers={"User-Agent": BROWSER_UA}, follow_redirects=True, timeout=timeout)
+
+
+def make_polite_client(timeout: float = TIMEOUT) -> httpx.Client:
+    """礼貌档客户端(自报家门;抓杂牌公司官网,证书宽容是设计 —— 自签/过期站一大把,
+    宁可读到内容也不为 TLS 洁癖丢简介)。"""
+    return httpx.Client(headers={"User-Agent": POLITE_UA}, follow_redirects=True,
+                        timeout=timeout, verify=False)
 
 
 def fetch(client: httpx.Client, url: str, post_data: dict | None = None) -> str:

@@ -102,24 +102,29 @@ def load_units() -> list[dict]:
     return units
 
 
-def run_step(step: list[str]) -> bool:
-    """跑一个 step,逐行截获其 stdout/stderr → 套统一 loguru 前缀打印。"""
-    log.info("→ " + " ".join(step))
+def run_step(step: list[str], unit_log=None) -> bool:
+    """跑一个 step,逐行截获其 stdout/stderr → 套统一 loguru 前缀打印(前缀=角色·单元)。"""
+    ulog = unit_log if unit_log is not None else log
+    ulog.info("→ " + " ".join(step))
     env = {**os.environ, "PYTHONUNBUFFERED": "1", "PYTHONIOENCODING": "utf-8"}  # 子进程实时逐行 + utf-8 输出
     proc = subprocess.Popen(step, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                             text=True, encoding="utf-8", errors="replace", bufsize=1, env=env)
     for line in proc.stdout:                        # 子进程每行 → 统一前缀(去掉行尾换行)
         line = line.rstrip("\n")
         if line.strip():
-            log.log("ERROR" if line.lstrip().startswith(("✗", "!")) else "INFO", line)
+            ulog.log("ERROR" if line.lstrip().startswith(("✗", "!")) else "INFO", line)
     return proc.wait() == 0
 
 
 def run_once(meta: dict) -> bool:
-    """跑一个单元的一轮:顺序执行 steps,一步失败即中止本轮;seed=True 才在成功后灌库。"""
+    """跑一个单元的一轮:顺序执行 steps,一步失败即中止本轮;seed=True 才在成功后灌库。
+
+    日志前缀 = 角色·单元(2026-08-30 批A:多单元混流里每行可归属;单单元角色不变样)。
+    """
+    ulog = logger.bind(source=SOURCE if meta["name"] == SOURCE else f"{SOURCE}·{meta['name']}")
     for step in meta["steps"]:
-        if not run_step(step):
-            log.error("✗ 步骤失败,本轮中止,等下一轮重试")
+        if not run_step(step, ulog):
+            ulog.error("✗ 步骤失败,本轮中止,等下一轮重试")
             return False
     if meta.get("seed"):  # 仅 build 角色:增量 seed(mart 全量累积,不会误关旧岗)
         try:
