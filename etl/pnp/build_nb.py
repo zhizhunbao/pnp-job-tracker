@@ -43,13 +43,12 @@ import httpx
 
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE.parent))            # etl/ → _paths
-sys.path.insert(0, str(_HERE.parent / "crawl"))  # etl/crawl/ → converters(HTML→md)
 import _paths
-from converters import get_converter
+from crawl.functions import convert_md
+from crawl.scheme import ConvertIn
 
 PROVINCE = "NB"
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
-_PROFILE = {"content_selector": None, "remove_selectors": [], "css_file": None, "direct_suffix": None, "converter": None}
 URL = "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/notice.html"
 SPLIT = "regardless of sectors"     # 官方原文的分界句:此句之前=NAICS 72 条件性,之后=无条件
 _FOOD_NOTE = ("官方留了口子:雇主本身不属住宿餐饮业的同款岗仍可提交——本站无雇主行业字段,"
@@ -80,7 +79,7 @@ SECTOR_NOTICE = "2026-05-04 起 NB Experience pathway 新 ITA 只限 Healthcare/
 
 def fetch_md() -> str:
     html = httpx.get(URL, headers={"User-Agent": UA}, follow_redirects=True, timeout=40).text
-    md, _ = get_converter().convert(html, URL, _PROFILE)
+    md = convert_md(ConvertIn(html=html, url=URL, selector=None, removes=()))
     return md
 
 

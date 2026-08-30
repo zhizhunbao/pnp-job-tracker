@@ -80,7 +80,8 @@ max-args = 1
 "etl/auto_update.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 # 横切层与旧役册(整目录存量)
 "etl/clean/*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/crawl/**/*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+# crawl 2026-08-30 全溶:整目录豁免退役,只剩 walk/fetch_page/discover 复杂度拆分债(批C 还)。
+"etl/crawl/functions.py" = ["C901", "PLR0915"]
 "etl/sources/**/*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/pilot/extractors/*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 # 各域存量步骤文件(按动词前缀点名,一域一组;新域没有这些行 = 天然全严)

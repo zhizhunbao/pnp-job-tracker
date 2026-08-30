@@ -4,7 +4,7 @@
 社区 → Job Bank 城市映射是**人工核对表**(CITY_MAP,3.2 红线:宁漏勿错):
   · 单城社区:社区名即城市名(IRCC 官方表原文),对照 jobs.city 实测存在才映射
   · 区域型社区(West Kootenay/Peace Liard 等 6 个):界线未逐社区举证 → cities=[] 不参与打标,
-    种子已进 crawl(sources-canada.md 试点社区行),界线页举证后补
+    种子已进 crawl(crawl/constants.SEEDS),界线页举证后补
 口径:试点=社区推荐制且雇主须先被社区指定;本表只回答「岗在不在试点社区」这一层。
 
   IN : data/crawl/fed-rcip/manifest.json + html_cache(rural-franco-pilots.html 官方名单)

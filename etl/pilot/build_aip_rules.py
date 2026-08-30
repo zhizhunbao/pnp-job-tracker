@@ -32,9 +32,8 @@ from pathlib import Path
 
 _HERE = Path(__file__).resolve().parent.parent  # 分域后上一级才是 etl/
 sys.path.insert(0, str(_HERE))
-sys.path.insert(0, str(_HERE / "crawl"))
 import _paths
-from cache import get as crawl_get
+from crawl.functions import get_cached_page
 from bs4 import BeautifulSoup
 
 # ── IN(crawl 役产物;URL 是键,实体在 data/crawl/fed-aip/html_cache/)────────
@@ -59,7 +58,8 @@ def norm(t: str) -> str:
 
 def load(url: str) -> tuple:
     """只走 crawl 缓存:没爬到就报错,不偷偷 httpx 补(那正是「猜 URL」的老病根)。"""
-    html, fetched = crawl_get(url)
+    hit = get_cached_page(url)
+    html, fetched = hit.html, hit.fetched
     if not html:
         raise SystemExit(f"✗ crawl 缓存里没有这一页(先跑 etl/crawl/discover_sources.py fed-aip):{url}")
     main = BeautifulSoup(html, "html.parser").find("main")

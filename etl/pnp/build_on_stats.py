@@ -44,9 +44,8 @@ from bs4 import BeautifulSoup
 
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE.parent))            # etl/ → _paths
-sys.path.insert(0, str(_HERE.parent / "crawl"))  # etl/crawl/ → cache
 import _paths
-import cache
+from crawl.functions import get_cached_page
 
 # 官方原本发布处理时长+提名数的页(现 302 重定向 —— 见模块 docstring),仍记录原样 URL 供溯源
 SEED_URL = "https://www.ontario.ca/page/oinp-application-processing-times-and-nominations-issued"
@@ -99,7 +98,8 @@ def fetch_year_page(year: int) -> tuple:
     """(text, url, fetched) —— 缓存优先(on-oinp 种子已抓),缓存没有再 httpx 兜底;
     两边都拿不到或被反爬拦截 → (None, url, "")。"""
     url = UPDATES_URL_TPL.format(year=year)
-    html, fetched = cache.get(url)
+    hit = get_cached_page(url)
+    html, fetched = hit.html, hit.fetched
     if not html:
         try:
             r = httpx.get(url, headers=UA, follow_redirects=True, timeout=45)

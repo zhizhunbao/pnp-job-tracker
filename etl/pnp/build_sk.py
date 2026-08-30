@@ -18,13 +18,12 @@ import httpx
 
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE.parent))          # etl/ → _paths
-sys.path.insert(0, str(_HERE.parent / "crawl"))  # etl/crawl/ → converters(HTML→md)
 import _paths
-from converters import get_converter
+from crawl.functions import convert_md
+from crawl.scheme import ConvertIn
 
 PROVINCE = "SK"
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
-_PROFILE = {"content_selector": None, "remove_selectors": [], "css_file": None, "direct_suffix": None, "converter": None}
 _SK = ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/"
        "saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/")
 # 每条 = 一个 inclusion 具名通道(实时 URL / 输出文件 / 通道英文名 / 前端短标签)
@@ -136,7 +135,7 @@ def build_excluded() -> None:
 
 def fetch_md(url: str) -> str:
     html = httpx.get(url, headers={"User-Agent": UA}, follow_redirects=True, timeout=40).text
-    md, _ = get_converter().convert(html, url, _PROFILE)
+    md = convert_md(ConvertIn(html=html, url=url, selector=None, removes=()))
     return md
 
 

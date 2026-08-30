@@ -23,12 +23,11 @@ import httpx
 
 _HERE = Path(__file__).resolve().parent.parent  # 分域后上一级才是 etl/
 sys.path.insert(0, str(_HERE))
-sys.path.insert(0, str(_HERE / "crawl"))  # converters(HTML→md)
 import _paths
-from converters import get_converter
+from crawl.functions import convert_md
+from crawl.scheme import ConvertIn
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
-_PROFILE = {"content_selector": None, "remove_selectors": [], "css_file": None, "direct_suffix": None, "converter": None}
 
 BASE = "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/work/after-graduation"
 URL_ABOUT = BASE + "/about.html"
@@ -87,7 +86,7 @@ def norm(t: str) -> str:
 
 def fetch_norm(url: str) -> str:
     html = httpx.get(url, headers={"User-Agent": UA}, follow_redirects=True, timeout=40).text
-    md, _ = get_converter().convert(html, url, _PROFILE)
+    md = convert_md(ConvertIn(html=html, url=url, selector=None, removes=()))
     return norm(md)
 
 

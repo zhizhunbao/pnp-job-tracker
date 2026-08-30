@@ -41,9 +41,8 @@ from bs4 import BeautifulSoup
 
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE.parent))            # etl/ → _paths
-sys.path.insert(0, str(_HERE.parent / "crawl"))  # etl/crawl/ → cache
 import _paths
-import cache
+from crawl.functions import get_cached_page
 
 URL = "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply"
 # 处理时长页(同文另见 /immigrate-to-b-c/for-workers;取通道主页这一份)
@@ -75,7 +74,8 @@ def build_processing() -> tuple:
     """Skills Immigration 官方处理时长 → ({...}, [问题]);读 crawl 缓存,不发请求。
     单位原样保留官方的 months/weeks(见文件头口径),不换算。"""
     problems: list = []
-    html, fetched = cache.get(PROC_URL)
+    hit = get_cached_page(PROC_URL)
+    html, fetched = hit.html, hit.fetched
     if not html:
         return {}, [f"crawl 缓存里没有 {PROC_URL}(先跑 etl/crawl/discover_sources.py)"]
     soup = BeautifulSoup(html, "html.parser")

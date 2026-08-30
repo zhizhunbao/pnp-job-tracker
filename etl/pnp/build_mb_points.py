@@ -46,9 +46,8 @@ from bs4 import BeautifulSoup
 
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE.parent))            # etl/ → _paths
-sys.path.insert(0, str(_HERE.parent / "crawl"))  # etl/crawl/ → cache
 import _paths
-import cache
+from crawl.functions import get_cached_page
 
 PAGE_URL = "https://immigratemanitoba.com/mpnp/apply/eoi"
 MPNP_URL = "https://immigratemanitoba.com/mpnp"
@@ -75,7 +74,8 @@ def fetch() -> tuple:
         resp.raise_for_status()
         return resp.text, date.today().isoformat(), "live"
     except Exception as e:  # noqa: BLE001 — 网络/改版都不该崩脚本,回退缓存
-        html, fetched = cache.get(PAGE_URL)
+        hit = get_cached_page(PAGE_URL)
+        html, fetched = hit.html, hit.fetched
         if html:
             print(f"! httpx 实抓失败({e}),回退读取 crawl 缓存(抓取日 {fetched})")
             return html, fetched, "cache"

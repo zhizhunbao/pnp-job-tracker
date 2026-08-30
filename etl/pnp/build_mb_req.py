@@ -47,10 +47,10 @@ from bs4 import BeautifulSoup
 
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE.parent))           # etl/ → _paths
-sys.path.insert(0, str(_HERE.parent / "crawl"))  # etl/crawl/ → converters(HTML→md)+ cache(crawl 缓存)
 import _paths
-import cache
-from converters import get_converter
+from crawl.functions import get_cached_page
+from crawl.functions import convert_md
+from crawl.scheme import ConvertIn
 
 IDOL_URL = "https://immigratemanitoba.com/mpnp/idol/"
 SWO_URL = "https://immigratemanitoba.com/mpnp/skilled-worker/swo/eligibility/"
@@ -61,7 +61,6 @@ SWM_URL = "https://immigratemanitoba.com/mpnp/skilled-worker/swm/eligibility"
 EDI_URL = "https://immigratemanitoba.com/employer-services/edi/"
 OUT = _paths.PNP / "mb-req.json"
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
-_PROFILE = {"content_selector": None, "remove_selectors": [], "css_file": None, "direct_suffix": None, "converter": None}
 
 PROVINCE = "MB"
 PROGRAM = "PNP"
@@ -99,7 +98,7 @@ RE_SWM_EXCL = re.compile(
 def page_text(url: str, cache_first: bool = False) -> str:
     """页面正文纯文本。cache_first=True 时先查 crawl 缓存(每小时一轮的整站爬),
     缓存没有才发请求 —— 同一页不抓两遍(etl/crawl/cache.py)。"""
-    html = cache.get(url)[0] if cache_first else None
+    html = get_cached_page(url).html if cache_first else None
     if not html:
         html = httpx.get(url, headers={"User-Agent": UA}, follow_redirects=True, timeout=45).text
     soup = BeautifulSoup(html, "html.parser")
@@ -200,7 +199,7 @@ def main() -> None:
 
     # ── In-Demand 清单:逐职业 Minimum CLB ────────────────────────────────────
     html = httpx.get(IDOL_URL, headers={"User-Agent": UA}, follow_redirects=True, timeout=45).text
-    md, _ = get_converter().convert(html, IDOL_URL, _PROFILE)
+    md = convert_md(ConvertIn(html=html, url=IDOL_URL, selector=None, removes=()))
     occ: dict[str, tuple[int, int, str]] = {}    # noc → (teer, minCLB, title)
     conflicts = 0
     for ln in md.splitlines():

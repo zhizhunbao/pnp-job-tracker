@@ -35,9 +35,8 @@ from bs4 import BeautifulSoup
 
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE.parent))            # etl/ → _paths
-sys.path.insert(0, str(_HERE.parent / "crawl"))  # etl/crawl/ → cache
 import _paths
-import cache
+from crawl.functions import get_cached_page
 
 MONTHLY_URL = "https://immigratemanitoba.com/resources/data/monthly-data-{year}"
 ANNUAL_URL = "https://immigratemanitoba.com/resources/data/annual-report-{year}"
@@ -102,7 +101,8 @@ def sectioned_tables(soup) -> list:
 def latest(url_tpl: str, years: range) -> tuple:
     """crawl 缓存里最新的那一年:(year, url, html, fetched);一年都没有 → (None, "", None, "")。"""
     for y in years:
-        html, fetched = cache.get(url_tpl.format(year=y))
+        hit = get_cached_page(url_tpl.format(year=y))
+        html, fetched = hit.html, hit.fetched
         if html:
             return y, url_tpl.format(year=y), html, fetched
     return None, "", None, ""

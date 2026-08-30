@@ -4,7 +4,7 @@ build_ee_rules — 联邦 Express Entry 官方口径:**CRS/FSW 计分 + 语言�
 铁律「URL → 数据 → SQL」:先 grep `data/crawl/*/manifest.json` 确认 canada.ca 的 EE 区
 从未被覆盖(2026-08-05 实测:只有 fed-pgwp / fed-rcip 两个联邦 slug)→ 在
 `etl/crawl/discover_sources.py` 加 `fed-ee` 种子实爬(97 页)→ 本脚本只**读 crawl 缓存**
-(etl/crawl/cache.get),不自己猜 URL、不重复发请求。
+(crawl.functions.get_cached_page),不自己猜 URL、不重复发请求。
 
 一个关注点一个脚本(宪法 §清洗-3):CRS 计分与 CEC/FSW/FST 资格同源于同一次 fed-ee 爬取、
 共用同一套「HTML 表 → 窄表行」解析器,故一个脚本集中产出。
@@ -31,9 +31,8 @@ from bs4 import BeautifulSoup
 
 _HERE = Path(__file__).resolve().parent.parent  # 分域后上一级才是 etl/
 sys.path.insert(0, str(_HERE))
-sys.path.insert(0, str(_HERE / "crawl"))
 import _paths
-from cache import get as crawl_get
+from crawl.functions import get_cached_page
 
 # ── IN(crawl 役产物;URL 是键,实体在 html_cache/)───────────────────────────
 IN_CRAWL = _paths.CRAWL / "fed-ee"                      # manifest.json + html_cache/
@@ -78,7 +77,8 @@ def norm(t: str) -> str:
 
 def load(url: str) -> tuple[BeautifulSoup, str]:
     """只走 crawl 缓存:没爬到就报错,不偷偷 httpx 补(那正是「猜 URL」的老病根)。"""
-    html, fetched = crawl_get(url)
+    hit = get_cached_page(url)
+    html, fetched = hit.html, hit.fetched
     if not html:
         raise SystemExit(f"✗ crawl 缓存里没有这一页(先跑 etl/crawl/discover_sources.py fed-ee):{url}")
     return BeautifulSoup(html, "html.parser").find("main"), fetched

@@ -24,13 +24,12 @@ import httpx
 
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE.parent))          # etl/ → _paths
-sys.path.insert(0, str(_HERE.parent / "crawl"))  # etl/crawl/ → converters(HTML→md)
 import _paths
-from converters import get_converter
+from crawl.functions import convert_md
+from crawl.scheme import ConvertIn
 
 PROVINCE = "BC"
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
-_PROFILE = {"content_selector": None, "remove_selectors": [], "css_file": None, "direct_suffix": None, "converter": None}
 URL = ("https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/"
        "about-the-bc-provincial-nominee-program")
 # md 节标题(#### 小节 / ### Health Authority 大节)→ 桶;同桶多节取并集
@@ -59,7 +58,7 @@ NOC_LINE = re.compile(r"^(\d{5})\s+(.+?)\s*$")   # 页面职业行:"31301 Regist
 
 def fetch_md() -> str:
     html = httpx.get(URL, headers={"User-Agent": UA}, follow_redirects=True, timeout=40).text
-    md, _ = get_converter().convert(html, URL, _PROFILE)
+    md = convert_md(ConvertIn(html=html, url=URL, selector=None, removes=()))
     return md
 
 
