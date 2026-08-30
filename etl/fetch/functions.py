@@ -118,7 +118,7 @@ def parse_feed(xml: str) -> list[dict]:
 # =========================================================================
 
 
-def _el_text(el: Tag) -> str:
+def el_text_of(el: Tag) -> str:
     """元素 → 文本,块内 <br> 换行保真(联系人块的姓名/头衔/邮箱各占一行,P1c 修:原先压成一坨)。"""
     for br in el.find_all(TAG_BR):
         br.replace_with(LINE_SEP)
@@ -130,7 +130,7 @@ def _el_text(el: Tag) -> str:
     return LINE_SEP.join(lines)
 
 
-def _clip_tail(paras: list[str]) -> list[str]:
+def clip_tail(paras: list[str]) -> list[str]:
     """剥页尾样板:从第一个噪音标题(TAIL_NOISE)起全部丢弃。"""
     for i, p in enumerate(paras):
         if p.strip().lower().rstrip(TRAIL_COLON) in TAIL_NOISE:
@@ -158,10 +158,10 @@ def extract_detail(x: DetailIn) -> DetailOut:
         li = el.find_parent(TAG_LI)
         if li is not None and scope in li.parents:
             continue
-        txt = _el_text(el)
+        txt = el_text_of(el)
         if txt:
             paras.append((BULLET + txt) if el.name == TAG_LI else txt)
-    return DetailOut(og_image=og_image, body=PARA_SEP.join(_clip_tail(paras)))
+    return DetailOut(og_image=og_image, body=PARA_SEP.join(clip_tail(paras)))
 
 
 def section_body(x: SectionIn) -> str:
@@ -180,10 +180,10 @@ def section_body(x: SectionIn) -> str:
             li = el.find_parent(TAG_LI)
             if li is not None and (li is sib or sib in li.parents):
                 continue
-            txt = _el_text(el)
+            txt = el_text_of(el)
             if txt:
                 paras.append((BULLET + txt) if el.name == TAG_LI else txt)
-    return PARA_SEP.join(_clip_tail(paras))
+    return PARA_SEP.join(clip_tail(paras))
 
 
 def page_og_image(html: str) -> str | None:

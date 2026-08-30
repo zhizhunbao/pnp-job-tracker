@@ -95,7 +95,7 @@ def trigger_alerts() -> CallOut:
 # =========================================================================
 
 
-def _post_table(x: PostTableIn) -> None:
+def post_table(x: PostTableIn) -> None:
     """单表/单片 gzip POST;任一失败抛错(整步失败,防 /tmp 半新半旧)。"""
     gz = gzip.compress(x.body)
     r = x.client.post(MART_PATH_TPL.format(base=x.base, name=x.name), content=gz, headers=x.headers)
@@ -126,7 +126,7 @@ def upload_mart(x: UploadIn) -> None:
             body = f.read_bytes()
             rows = json.loads(body)
             if len(body) <= SHARD_BYTES or not isinstance(rows, list) or len(rows) < 2:
-                _post_table(PostTableIn(client=client, base=base, headers=headers,
+                post_table(PostTableIn(client=client, base=base, headers=headers,
                                         name=f.stem, body=body, label=f.name, say=x.say))
                 continue
             nparts = math.ceil(len(body) / SHARD_BYTES)
@@ -135,12 +135,12 @@ def upload_mart(x: UploadIn) -> None:
             for i in range(0, len(rows), per):
                 shards.append(rows[i:i + per])
             for k, shard in enumerate(shards):
-                _post_table(PostTableIn(
+                post_table(PostTableIn(
                     client=client, base=base, headers=headers,
                     name=PART_NAME_TPL.format(stem=f.stem, k=k),
                     body=json.dumps(shard, ensure_ascii=False).encode(),
                     label=PART_LABEL_TPL.format(name=f.name, k=k + 1, n=len(shards)), say=x.say))
-            _post_table(PostTableIn(
+            post_table(PostTableIn(
                 client=client, base=base, headers=headers,
                 name=META_NAME_TPL.format(stem=f.stem),
                 body=json.dumps([{K_PARTS: len(shards)}]).encode(),

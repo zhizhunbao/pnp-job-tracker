@@ -67,7 +67,7 @@ class BackupIn:
 
 @dataclass
 class PostTableIn:
-    """_post_table()(单表/单片上传)入参 —— 原内嵌闭包出户的显式上下文。"""
+    """post_table()(单表/单片上传)入参 —— 原内嵌闭包出户的显式上下文。"""
 
     client: HttpPostLike
     """上传客户端(httpx.Client 经装配点 cast 喂入)。"""

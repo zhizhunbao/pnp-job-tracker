@@ -125,6 +125,9 @@ def scan() -> tuple[list[str], list[str]]:
                     lineno = text.count(chr(10), 0, m.start()) + 1
                     hard.append(f"{rel}:{lineno} 裸 print(域内出口唯一 = _log.say/err)")
             if p.name == "functions.py":
+                for m in re.finditer(r"^(?:async +)?def +_", text, re.M):
+                    lineno = text.count(chr(10), 0, m.start()) + 1
+                    hard.append(f"{rel}:{lineno} 下划线前缀函数(2026-08-30 Frank:私有靠单消费者事实,不靠名字装饰)")
                 for m in re.finditer(r"^[A-Z][A-Z0-9_]* *=", text, re.M):
                     hard.append(f"{rel}: functions 顶层常量「{m.group(0).rstrip(' =')}」"
                                 f"(归 constants;2026-08-30 Frank 否决段首常量,Ruff 无此规则故住本闸)")

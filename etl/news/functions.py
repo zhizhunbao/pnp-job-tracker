@@ -44,7 +44,7 @@ from news.constants import (ANCHOR_SEP, COUNT_PAIR_TPL, DATE_ISO_FMT, DETAIL_SLE
                             WHERE_REBODY_TPL)
 
 
-def _load(out_file: Path) -> list[dict]:
+def load_items(out_file: Path) -> list[dict]:
     """读上一轮落盘的累积条目;文件不存在/损坏按空表起步(增量合并的底座)。"""
     if not out_file.exists():
         return []
@@ -68,7 +68,7 @@ def run(x: RunIn) -> None:
     · NEWS_REBODY=1:对存量条目重抓详情正文(锚点合成 url 的单页式源跳过);失败保留旧正文。
     """
     say(PRINT_OUT_TPL.format(out=x.out_file))
-    existing = _load(x.out_file)
+    existing = load_items(x.out_file)
     by_url: dict[str, dict] = {}
     for it in existing:
         by_url[it[K_URL]] = it
