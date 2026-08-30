@@ -605,7 +605,10 @@ const localRules = {
         // 造组件的**机器**(makeIcon 这类工厂)产 JSX 所以必须是 .tsx,但它不是组件 ——
         // 不进 JSX 树、不受 no-multi-comp 那套约束,住 functions 位才对。
         // 一个域两份 functions 仍然禁(下面按 basename 判重)。
-        const ALLOWED = ['constants.ts', 'variables.ts', 'types.ts', 'functions.ts', 'functions.tsx', 'hooks.ts', 'index.ts']
+        // server.ts:2026-08-30 og 首例(HTTP 芯住组件桶,Frank 点头)带来的两门制 ——
+        // 桶里真有沾库(payload/db)的芯时,index 只放浏览器安全半、芯走 server 门,
+        // 同 lib 的两门;没有沾库芯的桶不许建(空门=假形制)。
+        const ALLOWED = ['constants.ts', 'variables.ts', 'types.ts', 'functions.ts', 'functions.tsx', 'hooks.ts', 'index.ts', 'server.ts']
         const TSX_RE = /^[a-z][a-z0-9]*\.tsx$/
         return {
           Program(node) {

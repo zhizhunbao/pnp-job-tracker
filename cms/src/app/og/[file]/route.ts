@@ -7,7 +7,7 @@
  * @author Frank
  * @time 2026-08-30 00:30:00
  */
-import { ogFileResponse } from '@/components/og'
+import { ogFileResponse } from '@/components/og/server'
 import { getDb } from '@/lib/db/server'
 
 export const dynamic = 'force-dynamic'
