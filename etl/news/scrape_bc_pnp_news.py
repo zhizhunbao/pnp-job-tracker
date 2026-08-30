@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from fetch.functions import iso_date, section_body, slugify
+from fetch.scheme import SectionIn
 
 LIST_URL = "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/news"
 
@@ -25,7 +26,7 @@ def parse_bc(html: str) -> list[dict]:
         date = iso_date(h2.get_text(" ", strip=True))
         if not date or DATE_ONLY.fullmatch(h2.get_text(" ", strip=True).strip()) is None:
             continue                                     # 只认「整个标题就是日期」的 h2
-        body = section_body(h2, stop_names=("h2",))
+        body = section_body(SectionIn(heading=h2, stop_names=("h2",)))
         first_p = h2.find_next_sibling(lambda t: t.name == "p")
         strong = first_p.find(["strong", "b"]) if first_p else None
         title = re.sub(r"\s+", " ", strong.get_text(" ", strip=True)) if strong else \

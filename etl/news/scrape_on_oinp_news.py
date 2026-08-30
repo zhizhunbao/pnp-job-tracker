@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from fetch.functions import iso_date, section_body, slugify
+from fetch.scheme import SectionIn
 
 LIST_URL = "https://www.ontario.ca/page/2026-ontario-immigrant-nominee-program-updates"
 
@@ -25,7 +26,7 @@ def parse_on(html: str) -> list[dict]:
         title = re.sub(r"\s+", " ", h4.get_text(" ", strip=True))
         prev_h3 = h4.find_previous("h3")
         date = iso_date(prev_h3.get_text(" ", strip=True)) if prev_h3 else None
-        body = section_body(h4, stop_names=("h4", "h3", "h2"))
+        body = section_body(SectionIn(heading=h4, stop_names=("h4", "h3", "h2")))
         if not (title and date and body):
             continue
         anchor = h4.get("id") or f"{date}-{slugify(title)}"

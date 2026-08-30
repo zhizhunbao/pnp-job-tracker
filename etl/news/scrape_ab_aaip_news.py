@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from fetch.functions import iso_date, section_body, slugify
+from fetch.scheme import SectionIn
 
 LIST_URL = "https://www.alberta.ca/aaip-updates"
 
@@ -24,7 +25,7 @@ def parse_ab(html: str) -> list[dict]:
         head = re.sub(r"\s+", " ", h3.get_text(" ", strip=True))
         date = iso_date(head)
         title = head.split(":", 1)[1].strip() if ":" in head else head
-        body = section_body(h3, stop_names=("h3", "h2"))
+        body = section_body(SectionIn(heading=h3, stop_names=("h3", "h2")))
         if not (date and title and body):
             continue
         items.append({"title": title, "date": date, "url": f"{LIST_URL}#{date}-{slugify(title)}",

@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from fetch.functions import iso_date, section_body, slugify
+from fetch.scheme import SectionIn
 
 LIST_URL = "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/notice.html"
 
@@ -46,7 +47,7 @@ def parse_nb(html: str) -> list[dict]:
     for node in cur.find_all_next(re.compile(r"^h[23]$")):
         if node.name == "h2":          # 到下一个 H2(Past notices/Get in touch)即止
             break
-        body = section_body(node, stop_names=("h3", "h2"))
+        body = section_body(SectionIn(heading=node, stop_names=("h3", "h2")))
         if not body:
             continue
         date = _date_from(body)
