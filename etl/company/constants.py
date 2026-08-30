@@ -30,6 +30,27 @@ BROWSER_UA = (
 """浏览器伪装 UA(2026-08-30 收拢:kanata 与 careers 两份逐字相同 —— 目录站/官网对
 无头 UA 挑剔;enrich 自报家门的礼貌 UA 是另一件事,见 POLITE_UA)。"""
 
+HDR_UA = "User-Agent"
+"""请求头名(HDR_ 词族=头名,宪法命名词族)。"""
+
+HDR_REFERER = "Referer"
+"""请求头名:来源页。"""
+
+P_ACTION = "action"
+"""WordPress AJAX 查询参数名(P_ 词族=查询参数,宪法命名词族)。"""
+
+P_PAGED = "paged"
+"""WP 翻页参数名。"""
+
+P_PAGE_SIZE = "posts_per_page"
+"""WP 每页条数参数名。"""
+
+P_QUERY = "q"
+"""DDG 搜索词参数名。"""
+
+HREF_ATTR = "href"
+"""链接节点的属性名(a[HREF_ATTR])。"""
+
 TECH_TERMS = ("software", "technolog", "information technology", " it ", "telecom", "saas",
               "cyber", "data", "artificial intelligence", " ai", "cloud", "semiconductor",
               "electronics", "engineering", "computer", "digital", "developer", "wireless",

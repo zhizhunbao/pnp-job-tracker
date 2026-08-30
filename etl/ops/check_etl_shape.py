@@ -60,15 +60,23 @@ def banned_syntax(text: str) -> list[tuple[int, str]]:
                 found.append((node.lineno, f"函数 {node.name} 有 {n_params} 个参数(一参令)"))
             if len(node.args.defaults) > 0 or len(node.args.kw_defaults) > 0:
                 found.append((node.lineno, f"函数 {node.name} 带默认值参数(可选参数禁,cms 同律)"))
+            for inner in ast.walk(node):
+                if inner is not node and isinstance(inner, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    found.append((inner.lineno, f"内嵌函数 {inner.name}(出户成顶层,cms tsx 同律)"))
     return found
 
 
 def string_literals(text: str) -> list[tuple[int, str]]:
-    """functions.py 的零字符串扫描:返回 (行号, 截断片段) 清单,豁免见文件头 ⑤。"""
+    """functions.py 的零字符串扫描:返回 (行号, 截断片段) 清单,豁免见文件头 ⑤⑨。"""
     try:
         tree = ast.parse(text)
     except SyntaxError:
         return []
+    in_to: set[int] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name.startswith("to_"):
+            for sub in ast.walk(node):
+                in_to.add(id(sub))
     exempt: set[int] = set()
     for node in ast.walk(tree):
         if isinstance(node, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
@@ -77,11 +85,11 @@ def string_literals(text: str) -> list[tuple[int, str]]:
                     exempt.add(id(stmt.value))
         if isinstance(node, ast.Dict):
             for k in node.keys:
-                if isinstance(k, ast.Constant) and isinstance(k.value, str):
+                if isinstance(k, ast.Constant) and isinstance(k.value, str) and id(k) in in_to:
                     exempt.add(id(k))
-        if isinstance(node, ast.Subscript) and isinstance(node.slice, ast.Constant)                 and isinstance(node.slice.value, str):
+        if isinstance(node, ast.Subscript) and isinstance(node.slice, ast.Constant)                 and isinstance(node.slice.value, str) and id(node.slice) in in_to:
             exempt.add(id(node.slice))
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)                 and node.func.attr in KEY_CALLS and len(node.args) >= 1                 and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str):
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)                 and node.func.attr in KEY_CALLS and len(node.args) >= 1                 and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str)                 and id(node.args[0]) in in_to:
             exempt.add(id(node.args[0]))
     found: list[tuple[int, str]] = []
     for node in ast.walk(tree):
