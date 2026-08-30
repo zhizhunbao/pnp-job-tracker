@@ -262,7 +262,7 @@ def find_careers(website: str) -> CareersProbe:
             soup = BeautifulSoup(page, "html.parser")
             best = ""
             for a in soup.find_all("a", href=True):
-                href, text = a["href"], a.get_text(" ", strip=True)
+                href, text = str(a["href"]), a.get_text(" ", strip=True)
                 if any(x in href.lower() for x in ATS_HOSTS):
                     best = href
                     break
