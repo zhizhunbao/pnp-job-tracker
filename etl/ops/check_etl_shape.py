@@ -9,6 +9,7 @@ Ruff 管不住的三条形制,这里当闸(判据见 docs/design/etl分域-20260
 ②③ 存量走基线 etl/ops/etl_shape_baseline.json:新增违规即红;修掉存量后跑
 `python etl/ops/check_etl_shape.py --prune` 收紧基线 —— 只紧不松(同 cms suppressions 惯例)。
 """
+import ast
 import json
 import re
 import sys
@@ -26,6 +27,38 @@ IMPORT_RE = re.compile(r"^(?:from|import)\s+([A-Za-z_][A-Za-z0-9_]*)", re.M)
 INOUT_RE = re.compile(r"^(?:IN|OUT)_[A-Z0-9_]*\s*=", re.M)
 MAIN_RE = re.compile(r"^if __name__", re.M)
 STEP_PREFIX = ("build_", "scrape_", "enrich_")
+
+
+KEY_CALLS = {"get", "setdefault", "pop"}
+
+EXEMPT_VALUES = {"", "w"}
+
+
+def string_literals(text: str) -> list[tuple[int, str]]:
+    """functions.py 的零字符串扫描:返回 (行号, 截断片段) 清单,豁免见文件头 ⑤。"""
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        return []
+    exempt: set[int] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            for stmt in getattr(node, "body", []):
+                if isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Constant)                         and isinstance(stmt.value.value, str):
+                    exempt.add(id(stmt.value))
+        if isinstance(node, ast.Dict):
+            for k in node.keys:
+                if isinstance(k, ast.Constant) and isinstance(k.value, str):
+                    exempt.add(id(k))
+        if isinstance(node, ast.Subscript) and isinstance(node.slice, ast.Constant)                 and isinstance(node.slice.value, str):
+            exempt.add(id(node.slice))
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)                 and node.func.attr in KEY_CALLS and len(node.args) >= 1                 and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str):
+            exempt.add(id(node.args[0]))
+    found: list[tuple[int, str]] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str)                 and id(node) not in exempt and node.value not in EXEMPT_VALUES:
+            found.append((node.lineno, node.value[:24]))
+    return found
 
 
 def scan() -> tuple[list[str], list[str]]:
@@ -53,6 +86,8 @@ def scan() -> tuple[list[str], list[str]]:
                 for m in re.finditer(r"^[A-Z][A-Z0-9_]* *=", text, re.M):
                     hard.append(f"{rel}: functions 顶层常量「{m.group(0).rstrip(' =')}」"
                                 f"(归 constants;2026-08-30 Frank 否决段首常量,Ruff 无此规则故住本闸)")
+                for lineno, frag in string_literals(text):
+                    hard.append(f"{rel}:{lineno} functions 体内字符串「{frag}」(零字符串令,提名进 constants)")
     return sorted(hard), sorted(soft)
 
 

@@ -11,6 +11,9 @@ Frank「每个文件都得导入一下吗」拍的形):件套以 company.constan
 对标 cms 魔数收编批;只有零语义的琐碎字面量(空串、±1)留在体内。
 注释方言(2026-08-30 Frank「只允许 jsDoc 注释,不允许行内注释」):每个常量用
 **赋值后的裸字符串 docstring**,不用行内 #;段横幅三行框保留。
+零字符串令(2026-08-30 Frank「functions 不允许有字符串」):functions 里除字典键/空串/
+open 模式字符三类语法位外,一切字面量(含文案 f-string,改成本文件的 *_TPL 模板)住这;
+形制闸有 AST 硬规则兜底。
 """
 import re
 
@@ -35,6 +38,51 @@ TECH_TERMS = ("software", "technolog", "information technology", " it ", "teleco
 ⚠ 2026-08-30 收拢时发现两份已漂移:kanata 版 20 词,careers 版少 " it "/"telecom"/" ai"
 三个(后写的抄漏)—— 行为复制=口径开岔的现行犯。取超集;careers 阶段因此会多认
 少量公司为 tech,方向=查漏不是误杀。"""
+TEXT_ENCODING = "utf-8"
+"""文本读写的统一编码(CSV 的 BOM 特例见 CSV_BOM_ENCODING)。"""
+
+READ_ERRORS = "replace"
+"""读外来文本的容错模式:坏字节替换不炸(JD .md 里什么编码都可能有)。"""
+
+HTML_PARSER = "html.parser"
+"""bs4 解析器:标准库自带,免装 lxml(容器镜像瘦)。"""
+
+WS_FOLD_RE = re.compile(r"\s+")
+"""连续空白折一个(清抓来的文本)。"""
+
+TEXT_JOIN_SEP = " "
+"""折空白/拼 get_text 的单空格。"""
+
+LIST_JOIN_SEP = ", "
+"""行业标签等并列项的拼接符。"""
+
+MD_LINE_SEP = "\n"
+"""md 产出的行分隔。"""
+
+CN_ENUM_SEP = "、"
+"""中文枚举顿号(文案律:枚举用顿号)。"""
+
+DOT_SEP = "."
+"""域名/ATS 名的点分隔。"""
+
+SLUG_DASH = "-"
+"""slug 的连字符(折非字母数字 + 去首尾)。"""
+
+SUFFIX_JSON = ".json"
+"""三件产出的 json 后缀。"""
+
+SUFFIX_CSV = ".csv"
+"""三件产出的 csv 后缀。"""
+
+SUFFIX_MD = ".md"
+"""三件产出的 md 后缀。"""
+
+WRITE_MODE = "w"
+"""open 的写模式字符(零字符串令后连它也提名,函数体不留裸串)。"""
+URL_TRAIL_SLASH = "/"
+"""URL 尾斜杠(做显示标签时剥掉)。"""
+
+
 SLUG_RE = re.compile(r"[^a-z0-9]+")
 """slug 归一:连续非字母数字折一个 -。"""
 
@@ -102,6 +150,48 @@ URL_LABEL_RE = re.compile(r"^https?://(www\.)?")
 
 KANATA_MD_TABLE_HEAD = ("| 公司 | 官网 | 行业 | 邮箱 | 电话 |", "|---|---|---|---|---|")
 """md 榜单的表头两行。"""
+KANATA_PAGE_FIRST = "1"
+"""AJAX 翻页参数:第一页(配 KANATA_PAGE_SIZE 一发全取)。"""
+
+KANATA_LBL_WEBSITE = "Website"
+"""卡片明细列的官网标签(目录站原文)。"""
+
+KANATA_LBL_EMAIL = "Email"
+"""卡片明细列的邮箱标签。"""
+
+KANATA_LBL_PHONE = "Phone"
+"""卡片明细列的电话标签。"""
+
+KANATA_LBL_LOCATION = "Location"
+"""卡片明细列的地址标签(缺了才兜 company__address)。"""
+
+COL_TRIM_CHARS = " :"
+"""「Label: value」取值后要剥的冒号与空格。"""
+
+KANATA_MD_TITLE_TPL = "# Kanata North 科技园企业名录(渥太华 · {n} 家)\n"
+"""md 标题行。"""
+
+KANATA_MD_SRC_LINE = "> 来源:Kanata North Business Association 会员目录(admin-ajax 逆向直取,非编造)。"
+"""md 来源行。"""
+
+KANATA_MD_TECH_TPL = "> 其中约 **{tech}** 家科技/工程相关。含官网+邮箱+电话,可直接联系——雇主 offer 路线的渥太华雇主全集。"
+"""md 科技占比行。"""
+
+KANATA_MD_NEXT_LINE = "> 下一步:解析各公司官网的 careers/ATS 页 → 抓真实在招。\n"
+"""md 下一步行。"""
+
+MD_LINK_TPL = "[{label}](<{url}>)"
+"""md 链接(尖括号裹 URL,防特殊字符断链)。"""
+
+KANATA_MD_ROW_TPL = "| {name} | {site} | {sectors} | {email} | {phone} |"
+"""md 榜单行。"""
+
+KANATA_MD_FOOT_TPL = "\n*由 etl/company 域生成。tech_only={flag}。*"
+"""md 脚注行。"""
+
+PRINT_KANATA_TPL = "Wrote {n} companies ({tech} tech) → {stem}.md / .csv / .json"
+"""kanata 步收尾报数。"""
+
 
 
 
@@ -131,6 +221,51 @@ CAREERS_STEM_SUFFIX = "-careers"
 
 CAREERS_CSV_FIELDS = ("name", "careers_url", "ats", "website", "email", "sectors", "status", "note")
 """careers CSV 的列序。"""
+LINK_TAG = "a"
+"""首页扫链接的标签名。"""
+
+NOTE_NO_CAREERS = "no careers page found"
+"""探测结果备注:首页与常见路径都没招聘页。"""
+
+STATUS_ERR_TPL = "ERR {name}"
+"""探测异常时 status 格的形(异常类名)。"""
+
+URL_ROOT_TPL = "{scheme}://{netloc}"
+"""从最终响应 URL 还原站根(跟随重定向后再探常见路径)。"""
+
+CAREERS_MD_TITLE_TPL = "# {stem} · 公司招聘页定位(Stage 2)\n"
+"""careers md 标题行。"""
+
+CAREERS_MD_SUMMARY_TPL = "> {n} 家公司 → 找到 careers 页 **{found}** 家,其中 **{ats}** 家用标准 ATS(可直取职位 JSON)。"
+"""careers md 汇总行。"""
+
+CAREERS_MD_FIRSTPARTY_LINE = "> 全程访问公司**官网第一方**,非聚合站。下一步 Stage 3:从这些页/ATS 抓真实在招。\n"
+"""careers md 口径行。"""
+
+CAREERS_MD_TABLE_HEAD = ("| 公司 | careers 页 | ATS | 邮箱 |", "|---|---|---|---|")
+"""careers md 表头两行。"""
+
+CAREERS_MD_ROW_TPL = "| {name} | [开](<{url}>) | {ats} | {email} |"
+"""careers md 榜单行。"""
+
+MD_ATS_SELFBUILT = "自建"
+"""无标准 ATS 时的占位词。"""
+
+CAREERS_MD_MISSING_TPL = "\n_未找到公开 careers 页的 {n} 家(可能无招聘页/需深抓):_ {names}"
+"""careers md 未命中收尾行。"""
+
+MISSING_LIST_MAX = 40
+"""未命中清单最多点名几家(md 别拖成告示墙)。"""
+
+PRINT_CAREERS_RESOLVING_TPL = "Resolving careers pages for {n} companies ({workers} workers)..."
+"""careers 步开工报数。"""
+
+PRINT_CAREERS_DONE_TPL = "Done — {found}/{n} careers pages, {ats} via ATS.\n  {stem}.md"
+"""careers 步收尾报数。"""
+
+PRINT_ATS_DIST_LABEL = "ATS 分布:"
+"""收尾附打 ATS 平台分布的前缀。"""
+
 
 
 
@@ -217,14 +352,14 @@ FETCH_TIMEOUT_S = 8
 """富化抓首页超时。"""
 
 META_DESC_PATTERNS = (
-    "<meta[^>]+property=[\"']og:description[\"'][^>]+content=[\"']([^\"']+)[\"']",
-    "<meta[^>]+content=[\"']([^\"']+)[\"'][^>]+property=[\"']og:description[\"']",
-    "<meta[^>]+name=[\"']description[\"'][^>]+content=[\"']([^\"']+)[\"']",
-    "<meta[^>]+content=[\"']([^\"']+)[\"'][^>]+name=[\"']description[\"']",
+    re.compile("<meta[^>]+property=[\"']og:description[\"'][^>]+content=[\"']([^\"']+)[\"']", re.I | re.S),
+    re.compile("<meta[^>]+content=[\"']([^\"']+)[\"'][^>]+property=[\"']og:description[\"']", re.I | re.S),
+    re.compile("<meta[^>]+name=[\"']description[\"'][^>]+content=[\"']([^\"']+)[\"']", re.I | re.S),
+    re.compile("<meta[^>]+content=[\"']([^\"']+)[\"'][^>]+name=[\"']description[\"']", re.I | re.S),
 )
 """简介的四个来源模式,按置信序(og:description 两向 → meta description 两向)。"""
 
-META_KEYWORDS_PATTERNS = ("<meta[^>]+name=[\"']keywords[\"'][^>]+content=[\"']([^\"']+)[\"']",)
+META_KEYWORDS_PATTERNS = (re.compile("<meta[^>]+name=[\"']keywords[\"'][^>]+content=[\"']([^\"']+)[\"']", re.I | re.S),)
 """行业词来源(meta keywords)。"""
 
 DESC_P_MIN_LEN = 80
@@ -243,6 +378,84 @@ ST_FAIL = "fail"
 
 ST_NOSITE = "nosite"
 """EnrichRecord.status:找不到官网,冷却 RETRY_NOSITE_DAYS。"""
+HTTPS_PREFIX = "https://"
+"""补协议头/拼官网 URL 用。"""
+
+URL_SCHEMES = ("http://", "https://")
+"""「已带协议」判定表。"""
+
+SCHEME_PREFIX = "http"
+"""domain_of 的宽判:http/https 都算带协议。"""
+
+URL_DEFAULT_SCHEME = "http://"
+"""裸域补个协议好让 urlparse 出 netloc。"""
+
+PORT_SEP = ":"
+"""netloc 里剥端口。"""
+
+WWW_PREFIX = "www."
+"""归一化裸域时剥掉。"""
+
+GOV_DOMAIN_SUFFIX = ".gc.ca"
+"""联邦域一律不算公司官网。"""
+
+NONALNUM_RE = re.compile(r"[^a-z0-9]")
+"""域名核心串归一:剥掉一切非字母数字再与公司名 token 比对。"""
+
+MD_GLOB = "*.md"
+"""JD 详情缓存的文件模式。"""
+
+JD_URL_LINE_RE = re.compile(r"^url:\s*(.+)$", re.M)
+"""JD .md 头部的 url: 行(反查 posting ↔ 文件)。"""
+
+DDG_QUERY_TPL = '"{name}" {province} Canada'
+"""DDG 搜索词:公司名精确短语 + 省 + 国名。"""
+
+DDG_REDIRECT_PARAM = "uddg"
+"""DDG 跳转链里的真实目标参数名(/l/?uddg=<encoded>)。"""
+
+ISO_UTC_OFFSET = "+00:00"
+"""isoformat 的 UTC 尾巴(存储统一换 Z)。"""
+
+ISO_Z = "Z"
+"""fetched 时刻的 UTC 记号。"""
+
+P_TAG_RE = re.compile(r"<p[^>]*>(.*?)</p>", re.I | re.S)
+"""meta 全空时兜底扫 <p> 段落。"""
+
+TAG_STRIP_RE = re.compile(r"<[^>]+>")
+"""段落文本里剥标签。"""
+
+KEYWORDS_SPLIT_SEP = ","
+"""meta keywords 的分隔。"""
+
+FOUND_JD = "jd"
+"""EnrichRecord.found:官网来路 = JD 正文线索。"""
+
+FOUND_SEARCHED = "searched"
+"""EnrichRecord.found:官网来路 = DDG 搜索(前端加小字标注)。"""
+
+NOTE_NO_META = "no meta"
+"""富化失败原因:首页没有可提取的 meta。"""
+
+NOTE_HTTP_TPL = "http {status}"
+"""富化失败原因:HTTP 非 2xx。"""
+
+PRINT_ENRICH_SKIP_TPL = "距上次官网富化 {mins:.0f} 分钟(< {limit} 分钟),本轮跳过"
+"""自限流跳过的报数。"""
+
+PRINT_ENRICH_IN_TPL = "IN postings : {path}"
+"""富化步开工报输入。"""
+
+PRINT_FIND_TPL = "找官网: 无官网公司 {n} · 本轮 JD 线索 +{jd} · DDG +{search}(find-limit {limit})"
+"""找官网阶梯报数。"""
+
+PRINT_TARGETS_TPL = "目标公司(有官网,非 ATS): {targets} · 缓存: {cache} · 本轮抓: {todo}(limit {limit})"
+"""待抓池报数。"""
+
+PRINT_ENRICH_DONE_TPL = "本轮 ✓ {ok} 抓到 · ✗ {fail} 无内容/失败 · 累计成功 {total}/{n} 家 → {out}"
+"""富化步收尾报数。"""
+
 
 
 
@@ -291,6 +504,12 @@ CAREERS_FILE = "careers.json"
 
 INDEX_FILE = "_index.json"
 """一司一档根上的总索引文件名(下划线开头,排目录顶且不与 slug 撞)。"""
+SLUG_DUP_TPL = "{slug}-{n}"
+"""slug 撞名消歧:挂序号。"""
+
+PRINT_FOLDERS_TPL = "Region '{region}': {made} company folders created, {careers} with careers.json.\n  {root}"
+"""一司一档步收尾报数。"""
+
 
 
 IN_CAREERS_DIRECTORY = _paths.RAW_COMPANIES / "kanata-north.json"
