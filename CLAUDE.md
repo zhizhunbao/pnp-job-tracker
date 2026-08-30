@@ -1,7 +1,7 @@
 # CLAUDE.md — pnp-job-tracker 设计宪法
 
 > 本文件定义 AI 编程代理在本项目工作时必须遵守的行为准则与长期约定,每个 session 自动加载。
-> **当前状态/进度看 [STATUS.md](STATUS.md),产品需求看 [prd.md](prd.md)。**
+> **当前状态/进度看 [STATUS.md](STATUS.md),产品需求看 [prd.md](docs/prd.md)。**
 > **开工前先对一眼 [主线与支线](docs/主线与支线-20260801.md)**(判据:能不能把「有人真的掏钱」往前推一格);文档去哪找看 [docs/README.md](docs/README.md)。
 > 这里只放**长期不变**的理念与约定;具体进度、数字、待办不要写这里(会过时)。
 

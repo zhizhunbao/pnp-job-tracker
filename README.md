@@ -2,7 +2,7 @@
 
 每日更新、按移民价值评分的加拿大科技职位追踪器。识别 **地域 / NOC / 是否指定雇主 / 移民通道 / 政策文件 / 官网 / 投递链接**，面向"雇主 offer 省提名"路线。
 
-> 完整产品设计见 **[prd.md](prd.md)**。
+> 完整产品设计见 **[prd.md](docs/prd.md)**。
 
 ## 安装
 
@@ -31,4 +31,4 @@ uv venv && uv pip install -e .          # 或 uv sync
 
 ## 状态
 
-端到端跑通 Stage 1-3（渥太华 Kanata North）。下一步：`enrich.py` + `score.py`（NOC/指定雇主/通道/政策 + 评分）。详见 prd.md §10。
+端到端跑通 Stage 1-3（渥太华 Kanata North）。下一步：`enrich.py` + `score.py`（NOC/指定雇主/通道/政策 + 评分）。详见 docs/prd.md §10。
