@@ -2,7 +2,7 @@
 #   postgres  数据库(发布 :5432 给 host npm run dev;容器内用服务名 postgres 连)
 #   cms       Next/Payload 应用(仅 unattended profile 起,发布 :3001;本地开发用 host npm run dev 占 :3000)
 #   jobbank   抓 Job Bank → raw            (etl httpx 镜像)
-#   build     清洗→评分→mart→seed(灌库唯一角色,默认 curl host.docker.internal:3001/seed;本地测试可 export SEED_URL=…:3000)
+#   build     清洗→评分→mart→seed(灌库唯一角色,默认 curl host.docker.internal:3001/api/seed;本地测试可 export SEED_URL=…:3000)
 #
 # 用法:
 #   开发:        cd docker && docker compose up -d postgres        # 只起库,cms 用 host npm run dev
@@ -125,7 +125,7 @@ services:
       SOURCE: build
       HEALTHCHECK_PING_BUILD: ${HEALTHCHECK_PING_BUILD:-}
       SCRAPE_INTERVAL: '3600'      # 1h 兜底(#128;正常由 jobbank 新轮触发,这是上游卡住时的保底灌库节奏)
-      SEED_URL: ${SEED_URL:-http://host.docker.internal:3001/seed}  # 默认灌 docker cms(:3001);R3 起步档在 docker/.env 覆写为云端 https://pnp-cms.onrender.com/seed
+      SEED_URL: ${SEED_URL:-http://host.docker.internal:3001/api/seed}  # 默认灌 docker cms(:3001);R3 起步档在 docker/.env 覆写为云端 https://pnp-cms.onrender.com/api/seed
       SEED_TOKEN: ${SEED_TOKEN:-}  # 云端 seed 鉴权(docker/.env 注入;本地空=不带头);upload_mart 推 /api/mart 同用这对(E7-04,Supabase Storage 已退役)
       TZ: EST5EDT                  # 日志东部时区
 

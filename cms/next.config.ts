@@ -51,8 +51,10 @@ const nextConfig: NextConfig = {
       // sitemap 全家 2026-08-29 归 /sitemaps/ 一个目录(Frank「只有一个入口/都放到一个目录」):
       // 旧入口与旧核心册是 Google 记住过的两条(GSC 提交 + 已读),301 兜底(Google 认地图跳转);
       // 分片旧址不兜 —— GSC 实查 Google 从未读到过(索引 7/21 后未重读),改名零损失。
-      { source: '/sitemap-index.xml', destination: '/sitemaps/index.xml', statusCode: 301 },
-      { source: '/sitemap.xml', destination: '/sitemaps/core.xml', statusCode: 301 },
+      { source: '/sitemap-index.xml', destination: '/api/sitemaps/index.xml', statusCode: 301 },
+      { source: '/sitemap.xml', destination: '/api/sitemaps/core.xml', statusCode: 301 },
+      // 顶层 /sitemaps 只活了几小时(08-29→30),但 GSC 提交过且 Google 拉过一次,301 兜一轮。
+      { source: '/sitemaps/:file', destination: '/api/sitemaps/:file', statusCode: 301 },
     ]
   },
   images: {

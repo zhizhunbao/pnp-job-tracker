@@ -20,7 +20,7 @@ services:
 
   build:
     environment:
-      SEED_URL: http://cms:3000/seed   # 同网络直连服务名(生产不走 host.docker.internal)
+      SEED_URL: http://cms:3000/api/seed   # 同网络直连服务名(生产不走 host.docker.internal)
       SEED_TOKEN: ${SEED_TOKEN}
 
   caddy:                           # HTTPS 入口(自动签发/续期证书)

@@ -3035,9 +3035,9 @@ export const META_TAIL = ' Immigration signals: PNP streams, EE categories, wage
 
 /**
  * 职位分享图地址头(2026-08-30 og 归目录批:约定件退役,og:image 显式指
- * /og/job-<id>.png;图的版式与出图芯在 components/og,这里只拼地址)。
+ * /api/og/job-<id>.png(2026-08-30 三族进 api 批换址);版式与出图芯在 components/og,这里只拼地址)。
  */
-export const OG_JOB_PATH_HEAD = '/og/job-'
+export const OG_JOB_PATH_HEAD = '/api/og/job-'
 
 /**
  * 职位分享图地址尾。

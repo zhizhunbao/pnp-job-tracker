@@ -6,4 +6,4 @@
  * @author Frank
  * @time 2026-08-30 01:30:00
  */
-export { ogFileResponse } from './ogresponse'
+export { ogFileRoute } from './ogresponse'

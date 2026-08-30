@@ -25,7 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))  # 让 `import sources.
 import sources  # noqa: E402
 
 SOURCE = os.environ.get("SOURCE", "jobbank")
-SEED_URL = os.environ.get("SEED_URL", "http://host.docker.internal:3000/seed")
+SEED_URL = os.environ.get("SEED_URL", "http://host.docker.internal:3000/api/seed")
 SEED_TOKEN = os.environ.get("SEED_TOKEN", "")  # 生产必设(seed 端点鉴权,E2-02);本地 dev 可空
 ROUNDS = Path(__file__).resolve().parent.parent / "data" / ".rounds"  # 各源「本轮完成」标记(mtime)
 POLL = 30  # 消费者(如 build)轮询上游标记的间隔(秒)
@@ -92,7 +92,11 @@ def run_once(meta: dict) -> bool:
             return False
         # 邮件提醒(E5-03):seed 成功后触发匹配版 alerts(同一 token 鉴权;失败不影响本轮,下轮补)
         try:
-            alerts_url = SEED_URL.rsplit("/seed", 1)[0] + "/api/alerts/run"
+            # seed 正门 2026-08-30 迁 /api/seed(旧 /seed 双壳过渡);两种尾巴都认,反推出站点根
+    if SEED_URL.endswith("/api/seed"):
+        alerts_url = SEED_URL[: -len("/api/seed")] + "/api/alerts/run"
+    else:
+        alerts_url = SEED_URL.rsplit("/seed", 1)[0] + "/api/alerts/run"
             r = httpx.get(alerts_url, timeout=300,
                           headers={"x-seed-token": SEED_TOKEN} if SEED_TOKEN else None)
             if r.is_success:

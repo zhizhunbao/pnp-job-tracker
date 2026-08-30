@@ -30,7 +30,7 @@ export const metadata = {
    * 各页不自设 openGraph 时继承这里,与旧约定件的兜底语义一致)。
    */
   openGraph: {
-    images: [{ url: '/og/site.png', width: OG_W, height: OG_H, alt: OG_SITE_ALT }],
+    images: [{ url: '/api/og/site.png', width: OG_W, height: OG_H, alt: OG_SITE_ALT }],
   },
   /**
    * E13-01:不设 metadataBase 时 og:image 按请求 HOST 拼 URL,Render 容器内 HOST=localhost:10000,

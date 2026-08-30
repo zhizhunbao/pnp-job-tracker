@@ -114,9 +114,11 @@ export const CO_PRIORITY = 0.5
 export const FREQ_WEEKLY = 'weekly'
 
 /**
- * robots 放开的根。
+ * robots 放开的清单:根,加禁抓区里点名放行的两个洞(2026-08-30 三族进 api 批:
+ * og 分享图与 sitemap 的唯一读者就是爬虫,Twitter/Google 守 robots,不放行等于白做;
+ * seed 不开洞 —— 灌库端点本就该禁抓)。Google 按最长匹配,Allow 压得过 Disallow /api/。
  */
-export const ROBOTS_ALLOW = '/'
+export const ROBOTS_ALLOW = ['/', '/api/og/', '/api/sitemaps/']
 
 /**
  * robots 挡住的路径(admin/api/账号页不进索引)。
@@ -130,26 +132,27 @@ export const ROBOTS_UA = '*'
 
 /**
  * sitemapindex 首选路径(GSC 手动提交只认一个 URL,提交索引即覆盖全部分片 —— #156)。
- * 2026-08-29 Frank「能不能只有一个入口/都放到一个目录」:全家收进 /sitemaps/ 一个前缀、
+ * 2026-08-29「一个入口一个目录」收进 /sitemaps/;2026-08-30「三个都搬」再迁 /api/sitemaps/
+ * (robots 点名 Allow;GSC 同日二次割接)。原口径:全家一个前缀、
  * 一个动态壳;旧 /sitemap-index.xml 与 /sitemap.xml 在 next.config 301 兜底(Google 认
  * 站点地图跳转);分片旧址无 301 —— GSC 实查 Google 从未读到过它们(索引 7/21 后未重读)。
  */
-export const SITEMAP_INDEX_PATH = '/sitemaps/index.xml'
+export const SITEMAP_INDEX_PATH = '/api/sitemaps/index.xml'
 
 /**
  * 平铺核心表路径。
  */
-export const SITEMAP_PATH = '/sitemaps/core.xml'
+export const SITEMAP_PATH = '/api/sitemaps/core.xml'
 
 /**
  * 职位分片路径模板(`{n}` 槽 = 片号)。
  */
-export const JOB_SHARD_PATH = '/sitemaps/jobs-{n}.xml'
+export const JOB_SHARD_PATH = '/api/sitemaps/jobs-{n}.xml'
 
 /**
  * 公司分片路径模板。
  */
-export const CO_SHARD_PATH = '/sitemaps/companies-{n}.xml'
+export const CO_SHARD_PATH = '/api/sitemaps/companies-{n}.xml'
 
 /**
  * 职位详情页路径前缀(后接 id)。

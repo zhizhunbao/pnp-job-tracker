@@ -212,3 +212,8 @@ export const OG_JOB_FILE_RE = /^job-(?<n>\d+)\.png$/
  * URL 路径段分隔符(壳取末段件名用;与 seo 域同名同义,各家一份)。
  */
 export const OG_PATH_SEP = '/'
+
+/**
+ * 件名不合形的收场码(HTTP 404)。
+ */
+export const OG_NOT_FOUND = 404
