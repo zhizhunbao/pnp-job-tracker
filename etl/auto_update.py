@@ -1,17 +1,18 @@
 """
 auto_update — 纯调度器(不含任何源特定逻辑)。
 
-读环境变量 SOURCE → 加载 etl/sources/<SOURCE>/META → 循环跑它的 steps,
-按 SCRAPE_INTERVAL(缺省取 META 的 interval)定时;META["seed"] 为真才在跑完后灌库。
-任一步报错只记日志、不退出容器。
+2026-08-29 批2(域即役,一域一门)升级为**混合多单元**:
+读环境变量 SOURCE(=角色名)→ 本容器要跑的单元 =
+  ① 旧役册 etl/sources/<SOURCE>/META(管线角色 jobbank/ats/build/backup 仍住这);
+  ② 所有声明 META["role"] == SOURCE 的域(etl/<域>/__init__.py,入口一律 etl/<域>/main.py)。
+每个单元各有自己的 interval/seed/after,循环里独立计时,互不牵连。
+任一步报错只记日志、不退出容器;一单元失败不影响别的单元。
 
-日志:用 loguru 统一格式「时间 | 级别 | 源 | 消息」。**子进程(各 step 脚本)的 stdout 逐行截获后
-也套同一前缀**,所以容器日志每一行格式一致(脚本本身仍是普通 print,不依赖 loguru)。
-
-「抓什么内容、跑哪些步、多久一次」全在 etl/sources/<源>/ 里声明(见 docs/source-framework.md)。
-环境变量:SOURCE(默认 jobbank)/ SCRAPE_INTERVAL / SEED_URL
+日志:loguru 统一格式「时间 | 级别 | 源 | 消息」;子进程 stdout 逐行截获套同一前缀。
+环境变量:SOURCE(默认 jobbank)/ SCRAPE_INTERVAL(只覆盖旧役册单元)/ SEED_URL
 """
 import importlib
+import importlib.util
 import os
 import subprocess
 import sys
@@ -27,18 +28,22 @@ import sources  # noqa: E402
 SOURCE = os.environ.get("SOURCE", "jobbank")
 SEED_URL = os.environ.get("SEED_URL", "http://host.docker.internal:3000/api/seed")
 SEED_TOKEN = os.environ.get("SEED_TOKEN", "")  # 生产必设(seed 端点鉴权,E2-02);本地 dev 可空
-ROUNDS = Path(__file__).resolve().parent.parent / "data" / ".rounds"  # 各源「本轮完成」标记(mtime)
-POLL = 30  # 消费者(如 build)轮询上游标记的间隔(秒)
+ROUNDS = Path(__file__).resolve().parent.parent / "data" / ".rounds"  # 各单元「本轮完成」标记(mtime)
+POLL = 30  # 轮询间隔(秒):消费者盯上游标记 + 多单元到点检查共用
+ETL_DIR = Path(__file__).resolve().parent
+
+# 这些一级目录不是「域」,发现单元时跳过(sources=旧役册;clean=横切清洗层;其余非域)
+NOT_DOMAIN = {"sources", "clean", "__pycache__"}
 
 
-def mark_done() -> None:
-    """本源跑完一轮 → 更新自己的标记(下游靠它的 mtime 判断「有新轮次」)。"""
+def mark_done(name: str) -> None:
+    """单元跑完一轮 → 更新自己的标记(下游靠它的 mtime 判断「有新轮次」,如 build after=jobbank)。"""
     ROUNDS.mkdir(parents=True, exist_ok=True)
-    (ROUNDS / f"{SOURCE}.done").write_text(f"{time.time():.0f}")
+    (ROUNDS / f"{name}.done").write_text(f"{time.time():.0f}")
 
 
 def newest_upstream(after: list[str]) -> float:
-    """上游各源标记里最新的 mtime(都没有则 0)。"""
+    """上游各单元标记里最新的 mtime(都没有则 0)。"""
     t = 0.0
     for up in after:
         f = ROUNDS / f"{up}.done"
@@ -51,6 +56,48 @@ logger.remove()
 logger.add(sys.stderr, colorize=False,
            format="{time:YYYY-MM-DD HH:mm:ss} | {level: <5} | {extra[source]} | {message}")
 log = logger.bind(source=SOURCE)
+
+
+def load_units() -> list[dict]:
+    """收集本角色的全部单元:旧役册(若有)+ 声明 role==SOURCE 的域。
+
+    域的 META 只做声明(role/method/interval/seed),入口固定 etl/<域>/main.py ——
+    「跑哪些步」是域自己的事(main.py 里),调度器不再关心步骤清单。
+    """
+    units: list[dict] = []
+    if SOURCE in sources.NAMES:
+        meta = importlib.import_module(f"sources.{SOURCE}").META
+        units.append({
+            "name": SOURCE,
+            "steps": meta["steps"],
+            # SCRAPE_INTERVAL 只覆盖旧役册单元(compose 里 jobbank 等沿用此约定)
+            "interval": int(os.environ.get("SCRAPE_INTERVAL", meta.get("interval", 7200))),
+            "seed": meta.get("seed", False),
+            "after": meta.get("after"),
+            "ping": True,  # 旧役册单元 = 角色唯一单元,沿袭旧行为
+        })
+    for ini in sorted(ETL_DIR.glob("*/__init__.py")):
+        dom = ini.parent.name
+        if dom in NOT_DOMAIN or dom.startswith("_"):
+            continue
+        spec = importlib.util.spec_from_file_location(f"_dom_{dom}", ini)
+        mod = importlib.util.module_from_spec(spec)
+        try:
+            spec.loader.exec_module(mod)
+        except Exception as e:  # noqa: BLE001  # 某域 __init__ 坏了只丢该域,不拖垮容器
+            log.error(f"✗ 读域 {dom} 的 META 失败({type(e).__name__}: {e}),跳过该域")
+            continue
+        meta = getattr(mod, "META", None)
+        if isinstance(meta, dict) and meta.get("role") == SOURCE:
+            units.append({
+                "name": dom,
+                "steps": [["python", f"etl/{dom}/main.py"]],
+                "interval": int(meta.get("interval", 7200)),
+                "seed": meta.get("seed", False),
+                "after": meta.get("after"),
+                "ping": bool(meta.get("ping", False)),
+            })
+    return units
 
 
 def run_step(step: list[str]) -> bool:
@@ -67,6 +114,7 @@ def run_step(step: list[str]) -> bool:
 
 
 def run_once(meta: dict) -> bool:
+    """跑一个单元的一轮:顺序执行 steps,一步失败即中止本轮;seed=True 才在成功后灌库。"""
     for step in meta["steps"]:
         if not run_step(step):
             log.error("✗ 步骤失败,本轮中止,等下一轮重试")
@@ -92,11 +140,11 @@ def run_once(meta: dict) -> bool:
             return False
         # 邮件提醒(E5-03):seed 成功后触发匹配版 alerts(同一 token 鉴权;失败不影响本轮,下轮补)
         try:
-            # seed 正门 2026-08-30 迁 /api/seed(旧 /seed 双壳过渡);两种尾巴都认,反推出站点根
-    if SEED_URL.endswith("/api/seed"):
-        alerts_url = SEED_URL[: -len("/api/seed")] + "/api/alerts/run"
-    else:
-        alerts_url = SEED_URL.rsplit("/seed", 1)[0] + "/api/alerts/run"
+            # seed 正门 2026-08-29 迁 /api/seed(旧 /seed 双壳过渡);两种尾巴都认,反推出站点根
+            if SEED_URL.endswith("/api/seed"):
+                alerts_url = SEED_URL[: -len("/api/seed")] + "/api/alerts/run"
+            else:
+                alerts_url = SEED_URL.rsplit("/seed", 1)[0] + "/api/alerts/run"
             r = httpx.get(alerts_url, timeout=300,
                           headers={"x-seed-token": SEED_TOKEN} if SEED_TOKEN else None)
             if r.is_success:
@@ -105,8 +153,10 @@ def run_once(meta: dict) -> bool:
                 log.error(f"✗ alerts {r.status_code}: {r.text[:200]} —— 不影响本轮")
         except Exception as e:  # noqa: BLE001
             log.error(f"✗ alerts 失败({type(e).__name__}: {e})—— 不影响本轮")
-    # 监控心跳(E7-01):本轮全部成功 → ping healthchecks.io(env 缺省=本地开发不 ping)
-    ping = os.environ.get(f"HEALTHCHECK_PING_{SOURCE.upper()}", "")
+    # 监控心跳(E7-01):本轮全部成功且本单元持 ping 权 → ping healthchecks.io(env 缺省不 ping)。
+    # 批2 拆多单元后 ping 权收紧:每角色只授一只(META["ping"]=True),防「兄弟单元的 ping
+    # 遮住本单元失败」—— pnp 角色授给 ops 哨兵(freshness 绿 = 数据真新鲜,B3-1 语义保真)。
+    ping = os.environ.get(f"HEALTHCHECK_PING_{SOURCE.upper()}", "") if meta.get("ping") else ""
     if ping:
         try:
             httpx.get(ping, timeout=10)
@@ -117,31 +167,34 @@ def run_once(meta: dict) -> bool:
 
 
 def main() -> None:
-    if SOURCE not in sources.NAMES:
-        log.error(f"✗ 未知 SOURCE,可选: {', '.join(sources.NAMES)};退出")
+    units = load_units()
+    if not units:
+        log.error(f"✗ 角色 {SOURCE} 没有任何单元(旧役册与域 META 都没命中);"
+                  f"旧役册可选: {', '.join(sources.NAMES)};退出")
         raise SystemExit(1)
-    meta = importlib.import_module(f"sources.{SOURCE}").META
-    interval = int(os.environ.get("SCRAPE_INTERVAL", meta.get("interval", 7200)))
-    after = meta.get("after")  # 有 → 消费者模式:等这些上游源跑完才触发(而非独立计时)
-    if after:
-        log.info(f"消费者模式:上游 {after} 每轮完成后触发(兜底每 {interval}s 至少一次)"
-                 + (f",seed → {SEED_URL}" if meta.get("seed") else ""))
-    else:
-        log.info(f"生产者模式:每 {interval}s 一轮" + (f",seed → {SEED_URL}" if meta.get("seed") else ""))
+    for u in units:
+        u["last"] = 0.0  # 0 = 启动即到点(与旧行为一致:容器一起来先跑一轮)
+        u["consumed"] = 0.0
+        mode = f"消费者(上游 {u['after']},兜底 {u['interval']}s)" if u.get("after") else f"每 {u['interval']}s"
+        log.info(f"单元 {u['name']}:{mode}" + (f",seed → {SEED_URL}" if u.get("seed") else ""))
     while True:
-        log.info("===== 开始一轮 =====")
-        ok = run_once(meta)
-        mark_done()
-        log.info(f"===== {'完成' if ok else '未完整完成'} =====")
-        if after:  # 等上游出现「比刚消费的更新」的轮次,或兜底 interval 到
-            consumed = newest_upstream(after)
-            waited = 0
-            while newest_upstream(after) <= consumed and waited < interval:
-                time.sleep(POLL)
-                waited += POLL
-            log.info("检测到上游新轮次 → 触发" if waited < interval else f"兜底 {interval}s 到 → 触发")
-        else:
-            time.sleep(interval)
+        for u in units:
+            now = time.time()
+            if u.get("after"):
+                up = newest_upstream(u["after"])
+                due = up > u["consumed"] or now - u["last"] >= u["interval"]
+                if due:
+                    u["consumed"] = up
+            else:
+                due = now - u["last"] >= u["interval"]
+            if not due:
+                continue
+            log.info(f"===== {u['name']}:开始一轮 =====")
+            ok = run_once(u)
+            mark_done(u["name"])
+            u["last"] = time.time()
+            log.info(f"===== {u['name']}:{'完成' if ok else '未完整完成'} =====")
+        time.sleep(POLL)
 
 
 if __name__ == "__main__":

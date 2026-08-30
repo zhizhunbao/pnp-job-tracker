@@ -1,0 +1,18 @@
+"""
+pnp 域:省提名(PNP)具名清单/门槛/分值/运营统计**实时刷新**(低频)。
+
+每省一个自包含 build 脚本(build_<省>.py)实时抓省政府页 → raw/pnp/*.json。
+只刷 raw 参考表不灌库 —— build 角色每轮 08→09→seed 目录驱动消费(最终一致,不抢 mart/seed)。
+复用 httpx 镜像(脚本只需 httpx+bs4,不需浏览器:AB/BC/SK/NS 源站直连 200)。
+沿革:原 etl/sources/pnp 役册(2026-08-29 批2 域即役并入);AIP/试点/DLI/哨兵各回本域。
+
+META = 域即役的调度声明(2026-08-29 批2):role=挂哪个角色容器(SOURCE 环境变量),
+interval=本域一轮的间隔秒;入口固定 etl/pnp/main.py,步骤清单在 main.py 里。
+"""
+META = {
+    "role": "pnp",
+    "method": "httpx",
+    "interval": 604800,        # 周更:具名清单极少变(SCRAPE_INTERVAL 不覆盖域单元)
+    "seed": False,             # 只刷 raw 参考表,build 角色统一灌库(避免抢 mart/seed)
+    "ping": False,  # ping 权在本角色的指定单元(pnp 角色=ops 哨兵),防遮蔽
+}

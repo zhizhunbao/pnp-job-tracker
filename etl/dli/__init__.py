@@ -1,0 +1,13 @@
+"""
+dli 域:PGWP 可申 DLI 子集(E12-03,旗舰②学校数据;IRCC 官方 JSON)。
+
+META = 域即役的调度声明(2026-08-29 批2):role=挂哪个角色容器(SOURCE 环境变量),
+interval=本域一轮的间隔秒;入口固定 etl/dli/main.py,步骤清单在 main.py 里。
+"""
+META = {
+    "role": "pnp",
+    "method": "httpx",
+    "interval": 604800,        # 周更(原 pnp 役搭车频率不变)
+    "seed": False,
+    "ping": False,  # ping 权在本角色的指定单元(pnp 角色=ops 哨兵),防遮蔽
+}
