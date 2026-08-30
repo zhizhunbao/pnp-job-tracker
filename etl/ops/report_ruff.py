@@ -25,7 +25,7 @@ OUT_DIR = ROOT / "reports"
 BARE_RULES = "E4,E7,E9,F,ANN,D1,N,C901,PLR0913,PLR0915,BLE,S110,S112"
 """裸账规则集 = pyproject select 全集(--isolated 跑,连 E402 豁免也不认)。"""
 
-DISSOLVED = ("etl/company/", "etl/crawl/", "etl/fetch/", "etl/news/functions.py", "etl/news/scheme.py",
+DISSOLVED = ("etl/company/", "etl/crawl/", "etl/fetch/", "etl/load/", "etl/news/functions.py", "etl/news/scheme.py",
              "etl/news/constants.py", "etl/news/__init__.py", "etl/_log.py")
 """已溶区清单(五件形制已落地的文件面;新域溶完在此登记)。"""
 

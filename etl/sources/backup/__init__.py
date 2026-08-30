@@ -9,6 +9,6 @@ META = {
     "interval": 86400,        # 日更
     "seed": False,
     "steps": [
-        ["python", "etl/backup_db.py"],
+        ["python", "etl/load/main.py", "--only", "backup"],   # 2026-08-30 收编 load 域(旧壳过渡,收尾重启后删)
     ],
 }

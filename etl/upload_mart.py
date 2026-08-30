@@ -1,72 +1,19 @@
-"""upload_mart — 把 data/mart/*.json 逐表 gzip POST 到 cms 上传端点(E7-04 交接层)。
+"""过渡壳(2026-08-30 load 域收编,正身 etl/load/functions.py 的 upload_mart)。
 
-Render 上 cms 与 ETL 不共享磁盘 → build 每轮 09 之后跑本步,cms 落 /tmp/mart,
-随后同轮触发的 seed 优先读那里(Supabase Storage 已退役)。
-SEED_URL 未设 → 直接跳过(本地 dev / compose 同机模式,seed 直接读本地 data/mart)。
-任一表上传失败 → 退出码 1(auto_update 记步骤失败、本轮不触发 seed,防 /tmp 半新半旧)。
-
-Usage:  uv run python etl/upload_mart.py
+容器里 build 役旧进程的 BUILD_STEPS 仍指本路径,重启前必须可执行;役册已改指
+etl/load/main.py --only upload,收尾统一重启后删本壳。
 """
-import gzip
-import json
-import math
-import os
 import sys
 from pathlib import Path
-from urllib.parse import urlsplit
-
-import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import _paths
-
-SEED_URL = os.environ.get("SEED_URL", "")          # 例 https://offer2pr.com/seed → 端点走同源
-SEED_TOKEN = os.environ.get("SEED_TOKEN", "")
-# 超过就按行数分片:cms 是 512MB 实例,整文件 parse 27k 行 jobs(64MB)会 OOM(2026-07-16 实撞);
-# seed 侧逐片 parse→入库→释放。片序 name__part0..N-1,最后传 name__meta 声明片数(=提交语义,
-# 半程失败旧 meta 仍指旧的完整片集,seed 不会读到半新半旧)。
-SHARD_BYTES = 6 * 1024 * 1024
-
-
-def main() -> None:
-    if not SEED_URL:
-        print("SEED_URL 未配置,跳过上传(本地/同机模式,seed 读本地 mart)")
-        return
-    u = urlsplit(SEED_URL)
-    base = f"{u.scheme}://{u.netloc}"
-    files = sorted(_paths.MART.glob("*.json"))
-    if not files:
-        print("data/mart/ 为空,无可上传")
-        sys.exit(1)
-    headers = {"x-seed-token": SEED_TOKEN, "Content-Type": "application/gzip"}
-
-    with httpx.Client(timeout=120) as client:
-        def post(name: str, body: bytes, label: str) -> None:
-            gz = gzip.compress(body)
-            r = client.post(f"{base}/api/mart/{name}", content=gz, headers=headers)
-            try:
-                ok = r.status_code == 200 and r.json().get("ok") is True  # 502 返回 HTML,json() 炸也归失败
-            except Exception:
-                ok = False
-            if not ok:
-                print(f"✗ {label}: {r.status_code} {r.text[:200]}")
-                sys.exit(1)
-            print(f"✓ {label}  ({len(body) // 1024} KB → gz {len(gz) // 1024} KB)")
-
-        for f in files:
-            body = f.read_bytes()
-            rows = json.loads(body)  # 上传前校验合法 JSON(防半写文件污染 /tmp)
-            if len(body) <= SHARD_BYTES or not isinstance(rows, list) or len(rows) < 2:
-                post(f.stem, body, f.name)
-                continue
-            nparts = math.ceil(len(body) / SHARD_BYTES)
-            per = math.ceil(len(rows) / nparts)
-            parts = [rows[i:i + per] for i in range(0, len(rows), per)]
-            for k, part in enumerate(parts):
-                post(f"{f.stem}__part{k}", json.dumps(part, ensure_ascii=False).encode(), f"{f.name} [{k + 1}/{len(parts)}]")
-            post(f"{f.stem}__meta", json.dumps([{"parts": len(parts)}]).encode(), f"{f.name} meta(parts={len(parts)})")
-    print(f"上传完成:{len(files)} 张表 → {base}/api/mart/")
-
+from _log import err, say
+from load.functions import upload_mart
+from load.scheme import UploadIn
 
 if __name__ == "__main__":
-    main()
+    try:
+        upload_mart(UploadIn(say=say))
+    except Exception as e:  # noqa: BLE001
+        err("upload_mart", e)
+        sys.exit(1)

@@ -24,10 +24,11 @@ from loguru import logger
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # 让 `import sources.*` 可用(etl/ 进 path)
 import sources
+from load.functions import trigger_alerts, trigger_seed
 
 SOURCE = os.environ.get("SOURCE", "jobbank")
 SEED_URL = os.environ.get("SEED_URL", "http://host.docker.internal:3000/api/seed")
-SEED_TOKEN = os.environ.get("SEED_TOKEN", "")  # 生产必设(seed 端点鉴权,E2-02);本地 dev 可空
+# SEED_TOKEN 2026-08-30 随 seed HTTP 段收编 load 域(load.functions 直读 env;E2-02 鉴权语义不变)
 ROUNDS = Path(__file__).resolve().parent.parent / "data" / ".rounds"  # 各单元「本轮完成」标记(mtime)
 POLL = 30  # 轮询间隔(秒):消费者盯上游标记 + 多单元到点检查共用
 FAIL_RETRY = 3600  # 失败轮短重试(2026-08-30 立):周更役炸一下不再赔一周 —— 起因:Windows 卷
@@ -127,39 +128,19 @@ def run_once(meta: dict) -> bool:
             ulog.error("✗ 步骤失败,本轮中止,等下一轮重试")
             return False
     if meta.get("seed"):  # 仅 build 角色:增量 seed(mart 全量累积,不会误关旧岗)
-        try:
-            # 批量化后一轮通常 <1 分钟,但生产偶发慢轮(2026-08-14 连续 4 轮超 180s,600s 内能完):
-            # 超时设的是「放弃线」不是「期望值」,卡太紧=白跑一轮再重灌,放 600s
-            r = httpx.get(SEED_URL, timeout=600,
-                          headers={"x-seed-token": SEED_TOKEN} if SEED_TOKEN else None)
-            # 成功 = 2xx 且响应体 ok:true,别的一律算失败 —— 老版把任何响应都记「✓ seed 502」,
-            # 还带着失败状态去触发 alerts/心跳(E5-03 的自动提醒依赖这个判定,必须真实)
-            try:
-                ok = r.is_success and r.json().get("ok") is True
-            except Exception:  # noqa: BLE001  # 502/500 返回的是 HTML,json() 会炸
-                ok = False
-            if not ok:
-                log.error(f"✗ seed {r.status_code}: {r.text[:200]} —— mart 已落盘,下轮补")
-                return False
-            log.info(f"✓ seed {r.status_code}: {r.text[:200]}")
-        except Exception as e:  # noqa: BLE001
-            log.error(f"✗ seed 失败({type(e).__name__}: {e})—— mart 已落盘,cms 起来后下轮补")
+        # HTTP 细节 2026-08-30 收编 load 域(600s 放弃线/ok:true 真实判定/两种尾巴反推 alerts,
+        # 决策记录随迁 load.constants);load.functions 纯返回不打日志 —— 日志面与心跳判定留这。
+        out = trigger_seed()
+        if not out.ok:
+            log.error(f"✗ seed {out.status}: {out.body} —— mart 已落盘,下轮补(cms 没起也算这类)")
             return False
+        log.info(f"✓ seed {out.status}: {out.body}")
         # 邮件提醒(E5-03):seed 成功后触发匹配版 alerts(同一 token 鉴权;失败不影响本轮,下轮补)
-        try:
-            # seed 正门 2026-08-29 迁 /api/seed(旧 /seed 双壳过渡);两种尾巴都认,反推出站点根
-            if SEED_URL.endswith("/api/seed"):
-                alerts_url = SEED_URL[: -len("/api/seed")] + "/api/alerts/run"
-            else:
-                alerts_url = SEED_URL.rsplit("/seed", 1)[0] + "/api/alerts/run"
-            r = httpx.get(alerts_url, timeout=300,
-                          headers={"x-seed-token": SEED_TOKEN} if SEED_TOKEN else None)
-            if r.is_success:
-                log.info(f"✓ alerts {r.status_code}: {r.text[:200]}")
-            else:
-                log.error(f"✗ alerts {r.status_code}: {r.text[:200]} —— 不影响本轮")
-        except Exception as e:  # noqa: BLE001
-            log.error(f"✗ alerts 失败({type(e).__name__}: {e})—— 不影响本轮")
+        out = trigger_alerts()
+        if out.ok:
+            log.info(f"✓ alerts {out.status}: {out.body}")
+        else:
+            log.error(f"✗ alerts {out.status}: {out.body} —— 不影响本轮")
     # 监控心跳(E7-01):本轮全部成功且本单元持 ping 权 → ping healthchecks.io(env 缺省不 ping)。
     # 批2 拆多单元后 ping 权收紧:每角色只授一只(META["ping"]=True),防「兄弟单元的 ping
     # 遮住本单元失败」—— pnp 角色授给 ops 哨兵(freshness 绿 = 数据真新鲜,B3-1 语义保真)。

@@ -20,7 +20,7 @@ BUILD_STEPS = [
     ["python", "etl/09_build_mart.py"],
     ["python", "etl/10_build_rankings.py"],   # 榜单(E5-02:读 mart 纯聚合)
     ["python", "etl/11_build_stats.py"],      # 地区统计(E5-04:读 mart 纯聚合)
-    ["python", "etl/upload_mart.py"],   # E7-04:mart → gzip 推 cms /api/mart(SEED_URL 未设自动跳过)
+    ["python", "etl/load/main.py", "--only", "upload"],   # E7-04:mart → gzip 推 cms /api/mart(SEED_URL 未设自动跳过;2026-08-30 收编 load 域)
 ]
 
 META = {
