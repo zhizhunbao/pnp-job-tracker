@@ -5,12 +5,12 @@ company 域共享函数(三件套形制**全站样张**,2026-08-30 Frank「先�
 2026-08-30 收拢现场:slugify 两份(folders/enrich,语义同、细节各写各)、is_tech 两份
 (kanata/careers,连判据表 TECH_TERMS 都各抄一份且已漂移)。单消费者的函数
 (enrich 的 now_iso/days_since 等)留在原文件 —— 不是「都搬来」,是「重复才收」。
-依赖只有一条边:本文件 → 本域 constants/types(cms「functions → 别人」同律)。
+依赖只有一条边:本文件 → 本域 constants/scheme(cms「functions → 别人」同律)。
 """
 import re
 
 from constants import TECH_TERMS
-from shapes import CompanyRow
+from scheme import CompanyRow
 
 
 def slugify(s: str) -> str:

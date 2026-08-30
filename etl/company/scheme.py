@@ -1,9 +1,10 @@
 """
 company 域行形状(三件套形制**全站样张**,2026-08-30)。
 
-⚠ 抽屉名 Python 方言定 **shapes.py** 不叫 types.py(2026-08-30 实撞):域目录是脚本的
-sys.path[0],types.py 会遮蔽标准库 types 模块 —— 进程里 httpx/bs4 内部 import types
-拿到我们的文件当场炸。cms 侧照旧 types.ts,这是两种方言唯一的名字分叉。
+⚠ 抽屉名 Python 方言定 **scheme.py** 不叫 types.py(2026-08-30 两拍):types.py 会遮蔽
+标准库 types 模块(域目录=脚本 sys.path[0],httpx/bs4 内部 import types 当场炸,实撞);
+名字 Frank 拍 scheme(压过 shapes 提议)。cms 侧照旧 types.ts,这是两方言唯一的名字分叉;
+运行时校验若来,另开抽屉不占此名。
 
 进这个文件的判据:**形状被本域 ≥2 个文件共摸**。目录行 CompanyRow 由
 scrape_kanata_directory 写、folders/careers/enrich 读 —— 四文件同一形,够格。
