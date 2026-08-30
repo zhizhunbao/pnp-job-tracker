@@ -209,7 +209,8 @@ def main() -> None:
         if real:
             print(f"  ⚠ {lang} 撞车 {len(real)} 组(**要人工裁决**,写进 FIX 表):")
             for k, cs in real[:12]:
-                print(f"      「{k}」← {' / '.join(f'{c}={levels[c]['en'][:34]}' for c in cs)}")
+                joined = " / ".join(f"{c}={levels[c]['en'][:34]}" for c in cs)
+                print(f"      「{k}」← {joined}")
         else:
             print(f"  ✓ {lang} 无撞车(官方父子同名占位 {official} 组不算)")
 

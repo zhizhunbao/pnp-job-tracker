@@ -13,7 +13,7 @@ import json
 import os
 from pathlib import Path
 
-from noc_buckets import BUCKETS4, BUCKETS5, I18N, bucket_of
+from noc_buckets import BUCKETS5, I18N, bucket_of
 
 # 官方大分类(NOC 第 1 位)——**不再直接当浏览分类**(2026-08-03 拍板走本站分类树,
 # 理由见 noc_buckets 文件头:官方是统计口径,把 IT/工程/生物/园艺编在同一组)。

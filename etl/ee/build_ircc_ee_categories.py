@@ -72,7 +72,8 @@ def main() -> None:
                 for c in cats.values() if c["occupations"]]
     total = sum(len(c["occupations"]) for c in out_cats)
     if not out_cats:  # 源站改版/解析失败 → 保留旧表
-        print(f"⚠ 解析为空,保留旧表 {OUT}(源站可能改版,需人工核查)"); return
+        print(f"⚠ 解析为空,保留旧表 {OUT}(源站可能改版,需人工核查)")
+        return
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps({

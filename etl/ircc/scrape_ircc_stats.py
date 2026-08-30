@@ -123,7 +123,8 @@ def study_flow(ws) -> dict:
     yr_row = next(r for r in rows if sum(1 for c in r if str(c or "").strip().isdigit() and str(c or "").strip()[:2] == "20") > 3)
     mo_row = rows[rows.index(yr_row) + 2]
     starts = {str(c).strip(): i for i, c in enumerate(yr_row) if str(c or "").strip().isdigit()}
-    at = lambda r, i: num(r[i]) if i < len(r) else 0
+    def at(r, i):
+        return num(r[i]) if i < len(r) else 0
     out: dict[str, dict] = {}
     for r in rows:
         if not r:                                  # 前几行是标题/空行,长度可能为 0

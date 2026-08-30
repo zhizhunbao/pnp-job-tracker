@@ -1,0 +1,88 @@
+"""
+check_etl_shape — etl 形制自查役(分域批3,2026-08-29)。
+
+Ruff 管不住的三条形制,这里当闸(判据见 docs/design/etl分域-20260829.md §4/§5):
+  ① 域间禁 import:域内文件只许引基础设施叶子(_paths/_scrape_base/_steps/noc/noc_buckets/grades)
+     与本域邻居,不许引别的域 —— 零基线,违规即红;
+  ② IN_/OUT_ 显式路径常量:build_*/scrape_*/enrich_* 模块顶部必须声明(宪法既有);
+  ③ 一域一门:域内只有 main.py 许带 `if __name__`(步骤模块该收成 run(),新写就范)。
+②③ 存量走基线 etl/ops/etl_shape_baseline.json:新增违规即红;修掉存量后跑
+`python etl/ops/check_etl_shape.py --prune` 收紧基线 —— 只紧不松(同 cms suppressions 惯例)。
+"""
+import json
+import re
+import sys
+from pathlib import Path
+
+ETL = Path(__file__).resolve().parent.parent
+BASELINE = Path(__file__).resolve().parent / "etl_shape_baseline.json"
+
+DOMAINS = ["company", "crawl", "dli", "ee", "employers", "fsa", "ircc", "lmia",
+           "news", "noc_facts", "ops", "pilot", "pnp", "wages"]
+
+INFRA = {"_paths", "_scrape_base", "_steps", "noc", "noc_buckets", "grades"}
+
+IMPORT_RE = re.compile(r"^(?:from|import)\s+([A-Za-z_][A-Za-z0-9_]*)", re.M)
+INOUT_RE = re.compile(r"^(?:IN|OUT)_[A-Z0-9_]*\s*=", re.M)
+MAIN_RE = re.compile(r"^if __name__", re.M)
+STEP_PREFIX = ("build_", "scrape_", "enrich_")
+
+
+def scan() -> tuple[list[str], list[str]]:
+    """扫全部域文件,返回 (硬红清单=域间 import, 基线类清单=缺 IN/OUT + 多余 __main__)。"""
+    hard: list[str] = []
+    soft: list[str] = []
+    for dom in DOMAINS:
+        d = ETL / dom
+        if not d.is_dir():
+            continue
+        for p in d.rglob("*.py"):
+            if "__pycache__" in p.parts:
+                continue
+            rel = p.relative_to(ETL).as_posix()
+            text = p.read_text(encoding="utf-8", errors="replace")
+            for m in IMPORT_RE.finditer(text):
+                name = m.group(1)
+                if name in DOMAINS and name != dom:
+                    hard.append(f"{rel}: 域间 import「{name}」(只许基础设施叶子与本域)")
+            if p.name.startswith(STEP_PREFIX) and INOUT_RE.search(text) is None:
+                soft.append(f"{rel}: 缺 IN_/OUT_ 显式路径常量")
+            if p.name not in ("main.py",) and MAIN_RE.search(text) is not None:
+                soft.append(f"{rel}: 步骤模块带 __main__(一域一门,该收成 run())")
+    return sorted(hard), sorted(soft)
+
+
+def main() -> int:
+    """跑一轮形制自查;--prune 把当前 soft 违规写成新基线(只许变小,收紧)。"""
+    hard, soft = scan()
+    if not BASELINE.exists():
+        BASELINE.write_text(json.dumps(soft, ensure_ascii=False, indent=1), encoding="utf-8")
+        print(f"✓ 首建基线:{len(soft)} 条存量入册(此后只紧不松)")
+        return 0 if len(hard) == 0 else 1
+    known: list[str] = json.loads(BASELINE.read_text(encoding="utf-8"))
+    if "--prune" in sys.argv:
+        grown = [x for x in soft if x not in known]
+        if len(grown) > 0:
+            print("✗ prune 拒绝:基线只紧不松,先修掉新增违规:")
+            for x in grown:
+                print("  -", x)
+            return 1
+        BASELINE.write_text(json.dumps(soft, ensure_ascii=False, indent=1), encoding="utf-8")
+        print(f"✓ 基线收紧:{len(known)} → {len(soft)}")
+        return 0
+    fresh = [x for x in soft if x not in known]
+    for x in hard:
+        print("✗", x)
+    for x in fresh:
+        print("✗ 新增形制违规:", x)
+    fixed = [x for x in known if x not in soft]
+    if len(fixed) > 0:
+        print(f"ℹ 有 {len(fixed)} 条基线违规已修,跑 --prune 收紧")
+    if len(hard) > 0 or len(fresh) > 0:
+        return 1
+    print(f"✓ 形制自查过闸(基线存量 {len(soft)} 条滚动中)")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -118,7 +118,7 @@ def main():
         if not x["byHand"]:
             print(f"        {x['noc']} {x['zh'][:24]} {x['open']} 在招")
     bad = [x for x in rows if x["broad"] not in BROADS]
-    print(f"    ✅ 大类值全在本站清单内" if not bad else f"    ❌ {len(bad)} 个职业的大类不在清单里")
+    print("    ✅ 大类值全在本站清单内" if not bad else f"    ❌ {len(bad)} 个职业的大类不在清单里")
     print(f"    小类 == 中类(等于没有小类)                  : {nofine:>4} / {len(rows)}")
     mids = Counter(x["mid"] for x in rows)
     print("    最挤的中类(装的职业数):", "、".join(f"{m} {n}" for m, n in mids.most_common(6)))

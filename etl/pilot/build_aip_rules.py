@@ -198,7 +198,7 @@ RULES = [
      "quote": "If more than 7 people, for each additional family member, add $1,028"},
 ] + [
     {"page": "funds", "factor": "fundsMinimum", "op": ">=", "value": amount, "unit": "CAD",
-     "familySize": n, "basis": f"asOf=2025-07-29",
+     "familySize": n, "basis": "asOf=2025-07-29",
      "label": f"Minimum settlement funds for a family of {n}: ${amount:,} CAD",
      "quote": f"{n} ${amount:,}"}
     for n, amount in FUNDS_TABLE

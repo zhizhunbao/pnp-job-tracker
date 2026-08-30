@@ -23,6 +23,17 @@ if [ -n "$strays" ]; then
 fi
 
 upstream=$(git rev-parse --abbrev-ref '@{push}' 2>/dev/null || echo origin/main)
+
+# etl 写法闸(2026-08-29 分域批3):改动了 etl 的 .py 才跑 —— ruff(严打族全局开,
+# 存量按域挂 per-file-ignores,pyproject 里一域一行)+ 形制自查役(域间 import 零容忍、
+# IN/OUT 常量、一域一门 __main__,存量走 etl_shape_baseline.json 只紧不松)。
+etl_changed=$(git diff --name-only --diff-filter=d "$upstream"..HEAD 2>/dev/null | grep -E '^etl/.*\.py$')
+if [ -n "$etl_changed" ]; then
+  echo "[pre-push] etl 改动 $(echo "$etl_changed" | wc -l) 个 py,过 ruff + 形制闸…"
+  uv run --with ruff ruff check etl || { echo "[pre-push] ruff 有 error,push 已拦。"; exit 1; }
+  PYTHONIOENCODING=utf-8 uv run python etl/ops/check_etl_shape.py || { echo "[pre-push] etl 形制闸未过,push 已拦。"; exit 1; }
+  echo "[pre-push] etl 闸过。"
+fi
 # --diff-filter=d 排掉本批**删除**的路径(2026-08-24 实撞:域内文件批量改成小写后,
 # diff 会同时列出旧大写名与新小写名;Windows 文件系统不分大小写,下面的 [ -f ] 对早已
 # 不存在的 AccountMenu.tsx 照样成立 → 拿旧名送进 eslint,命中「文件名必须小写」当场拦 push。

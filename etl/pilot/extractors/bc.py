@@ -117,9 +117,9 @@ def north_okanagan_shuswap() -> dict:
     starts = 0
     for page in doc:
         cells = sorted(
-            (round(l["bbox"][1]), round(l["bbox"][0]),
-             _pdf_norm("".join(s["text"] for s in l["spans"])))
-            for b in page.get_text("dict")["blocks"] for l in b.get("lines", []))
+            (round(ln["bbox"][1]), round(ln["bbox"][0]),
+             _pdf_norm("".join(s["text"] for s in ln["spans"])))
+            for b in page.get_text("dict")["blocks"] for ln in b.get("lines", []))
         sector_ys = {y: t for y, x, t in cells if t and x < 260}
         starts += sum(1 for t in sector_ys.values() if t in NOS_SECTOR_STARTS)
         # 名列同一视觉行会被拆成多个同 y 碎片(如 'Aslan|Electrical,|…')→ 先按 y 拼回整行
@@ -184,9 +184,9 @@ def _nebc_parse_pdf(url: str) -> list[dict]:
     for page in doc:
         current = None  # 跨页折行极少且页首必有行号,按页重置防串行
         cells = sorted(
-            (round(l["bbox"][1]), round(l["bbox"][0]),
-             _pdf_norm("".join(s["text"] for s in l["spans"])))
-            for b in page.get_text("dict")["blocks"] for l in b.get("lines", []))
+            (round(ln["bbox"][1]), round(ln["bbox"][0]),
+             _pdf_norm("".join(s["text"] for s in ln["spans"])))
+            for b in page.get_text("dict")["blocks"] for ln in b.get("lines", []))
         for _y, x, t in cells:
             if not t or re.fullmatch(r"Page \d+", t):
                 continue

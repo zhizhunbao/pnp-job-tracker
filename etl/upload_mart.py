@@ -36,7 +36,8 @@ def main() -> None:
     base = f"{u.scheme}://{u.netloc}"
     files = sorted(_paths.MART.glob("*.json"))
     if not files:
-        print("data/mart/ 为空,无可上传"); sys.exit(1)
+        print("data/mart/ 为空,无可上传")
+        sys.exit(1)
     headers = {"x-seed-token": SEED_TOKEN, "Content-Type": "application/gzip"}
 
     with httpx.Client(timeout=120) as client:
@@ -48,7 +49,8 @@ def main() -> None:
             except Exception:
                 ok = False
             if not ok:
-                print(f"✗ {label}: {r.status_code} {r.text[:200]}"); sys.exit(1)
+                print(f"✗ {label}: {r.status_code} {r.text[:200]}")
+                sys.exit(1)
             print(f"✓ {label}  ({len(body) // 1024} KB → gz {len(gz) // 1024} KB)")
 
         for f in files:

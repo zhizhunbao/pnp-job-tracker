@@ -434,7 +434,7 @@ def main() -> None:
     rcip_missing_franco = [r for r in RULES if r["program"] == "RCIP" and r["page"] == "rcip_rural"
                            and norm(r["quote"]) not in pages["rcip_franco"]["text"]]
     if rcip_missing_franco:
-        print(f"✗ RCIP 引用在 Franco pilot 页上对不上(Rural/Franco 文案已经不一致?)—— 保留旧表,人工重核:")
+        print("✗ RCIP 引用在 Franco pilot 页上对不上(Rural/Franco 文案已经不一致?)—— 保留旧表,人工重核:")
         for r in rcip_missing_franco:
             print(f"✗   [{r['program']}/{r['factor']}] {r['quote'][:90]}")
         raise SystemExit(1)

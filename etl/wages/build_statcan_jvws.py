@@ -55,8 +55,8 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
 # ── 输入/输出全路径(先声明再用)──────────────────────────────────────
 PRODUCT_ID = 14100444                                    # 表 14-10-0444-01(WDS 8 位 productId,不含末位校验位)
 TABLE_NO = "14-10-0444-01"
-CUBE_URL = f"https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410044401"
-WDS_META = f"https://www150.statcan.gc.ca/t1/wds/rest/getCubeMetadata"
+CUBE_URL = "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410044401"
+WDS_META = "https://www150.statcan.gc.ca/t1/wds/rest/getCubeMetadata"
 WDS_CSV_LINK = f"https://www150.statcan.gc.ca/t1/wds/rest/getFullTableDownloadCSV/{PRODUCT_ID}/en"
 IN_ZIP = _paths.JVWS / f"{PRODUCT_ID}-eng.zip"            # 全表源缓存(gitignore,~97MB,可重下)
 OUT_TABLE = _paths.JVWS / "jvws-vacancies.json"           # 维护表(跟踪;近 N 季度过滤后 ~2-3MB)

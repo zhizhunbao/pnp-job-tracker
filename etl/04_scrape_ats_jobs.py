@@ -18,7 +18,6 @@ Output: data/companies/<region>/<slug>/jobs.json  +  data/companies/<region>-job
 import argparse
 import json
 import re
-from pathlib import Path
 
 import httpx
 
@@ -257,7 +256,7 @@ def fetch_workday(client, targets: list[tuple[str, str, str]]) -> list[dict]:
 def main() -> None:
     ap = argparse.ArgumentParser(description="Stage 3: pull jobs from company ATS feeds.")
     ap.add_argument("--region", default="ottawa-kanata-north")
-    args = ap.parse_args()
+    ap.parse_args()
     region_dir = COMPANIES_DIR  # _paths.COMPANIES 已含地域(processed/<region>/companies)
 
     summary, skipped = [], []

@@ -337,13 +337,16 @@ def main() -> None:
                         rec["status"] = "ok"
                         ok += 1
                     else:
-                        rec["status"] = "fail"; rec["note"] = "no meta"
+                        rec["status"] = "fail"
+                        rec["note"] = "no meta"
                         fail += 1
                 else:
-                    rec["status"] = "fail"; rec["note"] = f"http {r.status_code}"
+                    rec["status"] = "fail"
+                    rec["note"] = f"http {r.status_code}"
                     fail += 1
             except Exception as e:  # noqa: BLE001
-                rec["status"] = "fail"; rec["note"] = type(e).__name__
+                rec["status"] = "fail"
+                rec["note"] = type(e).__name__
                 fail += 1
             cache[sl] = rec
             time.sleep(0.2)  # 礼貌:轻微限速

@@ -62,7 +62,8 @@ def classify(heading: str):
 async def main() -> None:
     page = await bf._ensure_page()
     if page is None:
-        print("浏览器不可用(playwright 未装?用系统 python 跑)"); return
+        print("浏览器不可用(playwright 未装?用系统 python 跑)")
+        return
     await page.goto(URL, wait_until="domcontentloaded", timeout=45000)
     try:
         await page.wait_for_load_state("networkidle", timeout=8000)
