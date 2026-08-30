@@ -1320,6 +1320,22 @@ def build():
                                "location": r.get("community", ""), "isTech": False,
                                "source": r.get("type", "RCIP"), "nocs": "",
                                "url": r.get("url", ""), "fetched": _pe.get("fetched", "")})
+    # 指定雇主全同去重(2026-08-30 Frank 实拍:在招雇主板 Tim Hortons 同名同地连出五行 ——
+    # FCIP 官方 PDF 按分店列同名雇主,抽取层分店名/镇名没抽出来,五行落成逐字节全同;
+    # 全字段相同的行对用户是零信息复读,汇装点收敛成一行。⚠️ 只去**全同**行:
+    # 名同址不同/源不同的照留 —— 那是真事实;抽取层补分店维度另立台账(要核 PDF 结构)。
+    _seen_de: set[tuple] = set()
+    _deduped: list[dict] = []
+    for r in designated:
+        key = (r["name"], r.get("province", ""), r.get("location", ""), r.get("source", ""), r.get("nocs", ""))
+        if key in _seen_de:
+            continue
+        _seen_de.add(key)
+        _deduped.append(r)
+    if len(_deduped) != len(designated):
+        print(f"  designated 全同去重: {len(designated)} -> {len(_deduped)}")
+    designated = _deduped
+
     pilot_occupations_mart: list[dict] = []
     if IN_PILOT_OCC.exists():
         _po = json.loads(IN_PILOT_OCC.read_text(encoding="utf-8"))
