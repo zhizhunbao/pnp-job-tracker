@@ -2,7 +2,7 @@
 
 > 本文件定义 AI 编程代理在本项目工作时必须遵守的行为准则与长期约定,每个 session 自动加载。
 > **当前状态/进度看 [STATUS.md](STATUS.md),产品需求看 [prd.md](docs/prd.md)。**
-> **开工前先对一眼 [主线与支线](docs/主线与支线-20260801.md)**(判据:能不能把「有人真的掏钱」往前推一格);文档去哪找看 [docs/README.md](docs/README.md)。
+> **开工前先对一眼 [STATUS.md](STATUS.md) 的主线段**(判据:能不能把「有人真的掏钱」往前推一格);docs/ 只剩 prd、design/、sql/ 三样(2026-08-29 清仓)。
 > 这里只放**长期不变**的理念与约定;具体进度、数字、待办不要写这里(会过时)。
 
 ---
@@ -12,7 +12,7 @@
 - 需求**模糊时不要写代码,先提问** —— 但提问有配额,见下面「提问与假设的规矩」。
 - 动手前**明确列出你的假设**,并**一句话复述执行范围**:只做被点名的对象,宁窄勿宽;提案未逐条点头 = 未批准。
 - 先答三个定位问题:
-  1. 这是[主线](docs/主线与支线-20260801.md)哪一格?推不推进「有人真的掏钱」?(支线也做,但你得知道自己在做支线)
+  1. 这是[主线](STATUS.md)哪一格?推不推进「有人真的掏钱」?(支线也做,但你得知道自己在做支线)
   2. 动的是**数据层 `etl/`** 还是**展示层 `cms/`**?—— 清洗、换算、分类类需求几乎全属数据层(见下「清洗下沉到数据层」)。
   3. 落在 **raw → clean → mart → DB → 页面** 哪一层?改错层 = 下游全体白干。
 - 动 UI/动线前先找现成形态抄(职位板是全站基准),别新造一套;新动线/新组件先出效果图等点头。
@@ -132,7 +132,7 @@ pnp-job-tracker/
 │   │   └── resume/                 #     简历解析与匹配
 │   └── tests/                      #   int(vitest)、e2e(playwright)、eval(评测批)、cases
 ├── docker/                         # 无人值守:一役一 service(jobbank/pnp/crawl/ee/news/ircc/build/backup/cms)
-├── docs/                           # 先读 docs/README.md 路标;design/ 方案,implementation/ 卷宗,sql/ 生产 DDL
+├── docs/                           # prd.md(用户故事版)+ design/ 方案 + sql/ 生产 DDL(路标并在 STATUS.md)
 └── pyproject.toml                  # Python 依赖(uv)与 Ruff 配置
 ```
 
