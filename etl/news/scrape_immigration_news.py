@@ -175,7 +175,7 @@ def translate_missing(out_file: Path) -> None:
             except Exception as e:  # noqa: BLE001  # 单条失败不断轮,留空下轮重试
                 print(f"  ! translate[{lang}] {it['url']}: {type(e).__name__}: {e}")
     if done:
-        paths.write_json(out_file, data, indent=1)
+        paths.write_json(paths.WriteJsonIn(path=out_file, payload=data, indent=1))
     # 第25轮 #119:budget=0 是拍板过的停摆,原「剩 N 下轮续」逐轮刷屏像有活没干完 —— 如实说停用
     if MAX_TRANSLATE_PER_RUN == 0:
         print(f"translate: 预翻停用(budget=0),{len(todo)} 条走线上懒翻")
@@ -229,7 +229,7 @@ def score_missing(out_file: Path) -> None:
             except Exception as e:  # noqa: BLE001
                 print(f"  ! score {it['url']}: {type(e).__name__}: {e}")
     if done:
-        paths.write_json(out_file, data, indent=1)
+        paths.write_json(paths.WriteJsonIn(path=out_file, payload=data, indent=1))
     print(f"score: {done}/{len(todo)} 条打分")
 
 
@@ -278,7 +278,7 @@ def translate_titles_missing(out_file: Path) -> None:
             except Exception as e:  # noqa: BLE001  # 单条失败不断轮,留空下轮重试
                 print(f"  ! translate_titles {it['url']}: {type(e).__name__}: {e}")
     if done:
-        paths.write_json(out_file, data, indent=1)
+        paths.write_json(paths.WriteJsonIn(path=out_file, payload=data, indent=1))
     print(f"translate_titles: {done}/{len(todo)} 条" +
           (f"(剩 {len(todo) - done} 下轮续)" if len(todo) > done else ""))
 

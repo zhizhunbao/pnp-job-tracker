@@ -11,8 +11,9 @@ from paths.constants import (AIP, COMPANIES, CRAWL, DATA, DLI, EE, FSA, IRCC, JV
                              PROCESSED_JOBBANK, RAW, RAW_ATS, RAW_COMPANIES, RAW_JOBBANK, ROOT,
                              WAGES)
 from paths.functions import write_json
+from paths.scheme import WriteJsonIn
 
 BUCKET = (AIP, COMPANIES, CRAWL, DATA, DLI, EE, FSA, IRCC, JVWS, LMIA, MART, NEWS, NOC, PILOT,
           PNP, POLICY, PROCESSED, PROCESSED_ATS, PROCESSED_JOBBANK, RAW, RAW_ATS, RAW_COMPANIES,
-          RAW_JOBBANK, ROOT, WAGES, write_json)
+          RAW_JOBBANK, ROOT, WAGES, WriteJsonIn, write_json)
 """桶的全部出口(再导出名单;F401 的显式消费声明 —— 加常量记得同步两处)。"""

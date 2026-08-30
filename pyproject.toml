@@ -64,9 +64,6 @@ max-args = 1
 # ---- 存量豁免(只豁免「严打族」,E/F 语法错误照拦;摘行=该域形制就范完成)----
 # 编号主管线与根上基础设施/库(批3 前存量)
 "etl/[0-9]*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-# paths 2026-08-30 目录化(纯移动):write_json 注解与一参令随批C 就范。
-"etl/paths/functions.py" = ["ANN", "D1", "PLR0913"]
-"etl/paths/constants.py" = ["D1"]
 # 2026-08-30 一参令兑现(Frank:参数和返回值只允许一个):fetch 豁免清零;
 # news/functions 只剩 run() 复杂度拆分债(随批C news 溶解还)。
 "etl/news/functions.py" = ["C901", "PLR0915"]

@@ -156,7 +156,7 @@ def scrape_kanata_directory() -> None:
         out.append(r.model_dump())
         if is_tech(r):
             tech_n += 1
-    paths.write_json((OUT_KANATA_DIR / KANATA_STEM).with_suffix(SUFFIX_JSON), out)
+    paths.write_json(paths.WriteJsonIn(path=(OUT_KANATA_DIR / KANATA_STEM).with_suffix(SUFFIX_JSON), payload=out, indent=2))
     say(PRINT_KANATA_TPL.format(n=len(rows), tech=tech_n, out=OUT_KANATA_DIR / KANATA_STEM))
 
 
@@ -196,17 +196,16 @@ def build_company_folders() -> None:
                              website=row.website, email=row.email, phone=row.phone,
                              sectors=row.sectors, address=row.address,
                              description=row.description)
-        paths.write_json(folder / PROFILE_FILE, profile.model_dump())
+        paths.write_json(paths.WriteJsonIn(path=folder / PROFILE_FILE, payload=profile.model_dump(), indent=2))
         made += 1
         scan = careers_by_name.get(row.name.lower())
         if scan and (scan.careers_url or scan.ats):
-            paths.write_json(folder / CAREERS_FILE,
-                              CareersFileRow(careers_url=scan.careers_url,
-                                             ats=scan.ats, status=scan.status).model_dump())
+            paths.write_json(paths.WriteJsonIn(path=folder / CAREERS_FILE, payload=CareersFileRow(careers_url=scan.careers_url,
+                                             ats=scan.ats, status=scan.status).model_dump(), indent=2))
             careers_written += 1
         index.append(IndexRow(slug=slug, name=row.name, website=row.website,
                              has_careers=bool(scan and scan.careers_url)).model_dump())
-    paths.write_json(OUT_FOLDERS_ROOT / INDEX_FILE, index)
+    paths.write_json(paths.WriteJsonIn(path=OUT_FOLDERS_ROOT / INDEX_FILE, payload=index, indent=2))
     say(PRINT_FOLDERS_TPL.format(region=KANATA_REGION_LABEL, made=made,
                                  careers=careers_written, root=OUT_FOLDERS_ROOT))
 
@@ -322,7 +321,7 @@ def scrape_company_careers() -> None:
         if r.ats:
             ats_n += 1
             ats_dist[r.ats] = ats_dist.get(r.ats, 0) + 1
-    paths.write_json(stem.with_suffix(SUFFIX_JSON), out)
+    paths.write_json(paths.WriteJsonIn(path=stem.with_suffix(SUFFIX_JSON), payload=out, indent=2))
     say(PRINT_CAREERS_DONE_TPL.format(found=found_n, n=len(results),
                                         ats=ats_n, out=stem.with_suffix(SUFFIX_JSON)))
     say(PRINT_ATS_DIST_LABEL + str(ats_dist))
@@ -672,6 +671,6 @@ def enrich_company_websites() -> None:
         out[sl] = rec.model_dump()
         if rec.status == ST_OK:
             total_ok += 1
-    paths.write_json(OUT_ENRICH_CACHE, out)
+    paths.write_json(paths.WriteJsonIn(path=OUT_ENRICH_CACHE, payload=out, indent=2))
     say(PRINT_ENRICH_DONE_TPL.format(ok=ok, fail=fail, total=total_ok, n=len(cache),
                                      out=OUT_ENRICH_CACHE.name))

@@ -151,7 +151,7 @@ def run(x: RunIn) -> None:
         raise SystemExit(GUARD_SHRINK_TPL.format(n=len(merged), prev=len(existing)))
     if len(merged) < MIN_TOTAL:
         raise SystemExit(GUARD_FEW_TPL.format(n=len(merged), floor=MIN_TOTAL))
-    paths.write_json(x.out_file, {K_FETCHED: now_iso, K_ITEMS: merged}, indent=1)
+    paths.write_json(paths.WriteJsonIn(path=x.out_file, payload={K_FETCHED: now_iso, K_ITEMS: merged}, indent=1))
     per = {}
     for it in merged:
         per[it[K_REGION]] = per.get(it[K_REGION], 0) + 1

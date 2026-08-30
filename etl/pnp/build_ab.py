@@ -71,12 +71,12 @@ def main() -> None:
         print(f"  ✗ 抓取失败 aaip-ineligible.json: {type(e).__name__} {e}(保留旧表)")
     if occ1:
         # 2026-08-30 写盘换 paths.write_json(原子+Errno 22 重试;本文件=全域样张,起因见 paths 写盘段)
-        paths.write_json(paths.PNP / "aaip-ineligible.json", {
+        paths.write_json(paths.WriteJsonIn(path=paths.PNP / "aaip-ineligible.json", payload={
             "stream": "AAIP Alberta Opportunity Stream", "label": "AAIP 不符合清单",
             "province": "AB", "type": "ineligible", "url": AOS_URL, "fetched": date.today().isoformat(),
             "note": "除本表外 TEER0-5 都符合;原带 * 为条件性不符合,粗筛下按不符合处理。",
             "occupations": sorted(occ1, key=lambda x: x["noc"]),
-        })
+        }, indent=2))
         print(f"  ✓ AAIP 不符合清单  {len(occ1)} 个职业 → pnp/aaip-ineligible.json")
     elif occ1 is not None:
         print("  ✗ 没解析到不符合资格表(保留旧表)")
@@ -88,11 +88,11 @@ def main() -> None:
         occ2 = None
         print(f"  ✗ 抓取失败 ab-tech.json: {type(e).__name__} {e}(保留旧表)")
     if occ2:
-        paths.write_json(paths.PNP / "ab-tech.json", {
+        paths.write_json(paths.WriteJsonIn(path=paths.PNP / "ab-tech.json", payload={
             "stream": "AAIP Accelerated Tech Pathway", "label": "AB 科技",
             "province": "AB", "type": "indemand", "url": TECH_PDF_URL, "fetched": date.today().isoformat(),
             "occupations": sorted(occ2, key=lambda x: x["noc"]),
-        })
+        }, indent=2))
         print(f"  ✓ AB 科技         {len(occ2)} 个职业 → pnp/ab-tech.json")
     elif occ2 is not None:
         print("  ✗ Tech PDF 没解析到 NOC(保留旧表)")

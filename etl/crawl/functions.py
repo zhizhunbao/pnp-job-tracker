@@ -397,7 +397,7 @@ async def discover_urls(x: DiscoverIn) -> Path:
     manifest = {K_SEED_URL: seed_url, K_SLUG: spec.slug, K_TOTAL_URLS: len(ctx.discovered),
                 K_MAX_DEPTH: spec.depth, K_CRAWLED_AT: datetime.now().isoformat(),
                 K_PAGES: ctx.discovered}
-    paths.write_json(manifest_path, manifest, indent=2)
+    paths.write_json(paths.WriteJsonIn(path=manifest_path, payload=manifest, indent=2))
     await close_browser()
     say(PRINT_MANIFEST_TPL.format(n=len(ctx.discovered), path=manifest_path))
     return manifest_path
@@ -794,9 +794,8 @@ def discover_all() -> None:
         after = urls_of(manifest)
         added = sorted(after - before)
         gone = sorted(before - after)
-        paths.write_json(slug_dir / CHANGES_FILE,
-                          {K_SLUG: spec.slug, K_DATE: date.today().isoformat(),
-                           K_TOTAL: len(after), K_ADDED: added, K_GONE: gone}, indent=2)
+        paths.write_json(paths.WriteJsonIn(path=slug_dir / CHANGES_FILE, payload={K_SLUG: spec.slug, K_DATE: date.today().isoformat(),
+                           K_TOTAL: len(after), K_ADDED: added, K_GONE: gone}, indent=2))
         ok += 1
         if before and (added or gone):
             say(PRINT_RADAR_TPL.format(slug=spec.slug, added=len(added), gone=len(gone)))
@@ -881,9 +880,9 @@ async def fetch_ee_categories() -> None:
         out_cats.append({K_KEY: c[K_KEY], K_LABEL: c[K_LABEL],
                          K_OCCUPATIONS: sorted(c[K_OCCUPATIONS], key=ee_noc_of)})
     out_file = paths.EE / EE_OUT_FILE
-    paths.write_json(out_file, {K_SOURCE: EE_SOURCE_LABEL, K_URL: EE_URL,
+    paths.write_json(paths.WriteJsonIn(path=out_file, payload={K_SOURCE: EE_SOURCE_LABEL, K_URL: EE_URL,
                                  K_FETCHED: date.today().isoformat(),
-                                 K_CATEGORIES: out_cats}, indent=2)
+                                 K_CATEGORIES: out_cats}, indent=2))
     total = 0
     for c in out_cats:
         total += len(c[K_OCCUPATIONS])
