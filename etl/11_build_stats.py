@@ -44,7 +44,7 @@ NAMED_ANY: set = set().union(*_score.NAMED_STREAM_NOCS_BY_PROV.values()) if _sco
 EE_BY_NOC = _score.EE_BY_NOC
 
 # E14-02:担保率分子(单季度 LMIA 获批岗位)按 NOC 从季度源 xlsx 直接聚合(见 §sponsor_of 下方)。
-# NOC 正则复用 build_lmia.py 的 _NOC_RE(单一来源,不复制口径);该模块名不以数字开头,可直接 import
+# NOC 正则复用 lmia/build_esdc_lmia_employers.py 的 _NOC_RE(单一来源,不复制口径;分域后按包路径 import)
 # (不需要像 08_score 那样走 importlib)。模块顶层无重活(只有函数/常量定义),import 安全。
 import lmia.build_esdc_lmia_employers as _lmia_mod  # noqa: E402  # 分域后按包路径取(etl/ 在 sys.path)
 
@@ -79,7 +79,7 @@ def _comparable_quarter() -> str | None:
 
 
 def _lmia_positions_by_noc(quarter: str) -> dict[str, int]:
-    """单季度 xlsx(build_lmia.py 已缓存的同一份季度源,原地复用不重下)→ {noc: approved positions}
+    """单季度 xlsx(lmia/build_esdc_lmia_employers.py 已缓存的同一份季度源,原地复用不重下)→ {noc: approved positions}
     (全国口径——ESDC 表本没有省份维度上限,但 JVWS 分母本轮只取全国 NAT,省级担保率留后续批次)。
     ESDC LMIA 是穷举的行政记录,不是抽样调查:某 NOC 当季没出现 = 确实 0 件获批,不是官方抑制
     (与 JVWS 分母的 None 抑制语义不同,数字 0 在这里就是真 0,可以直接用)。

@@ -47,7 +47,7 @@ def fill_salary(j: dict) -> None:
 
 # ── 输入/输出全路径 ──────────────────────────────────────────────
 IN_JOBBANK = _paths.PROCESSED_JOBBANK / "postings.json"
-IN_EXPIRED = _paths.PROCESSED_JOBBANK / "expired_ids.json"   # #124 批C:verify_expired.py 判死累积
+IN_EXPIRED = _paths.PROCESSED_JOBBANK / "expired_ids.json"   # #124 批C:ops/verify_expired.py 判死累积
 IN_ATS_COMPANIES = _paths.COMPANIES                       # processed/ats/.../companies/<slug>/
 IN_SCORED = _paths.PROCESSED / "all-scored.json"
 IN_AIP = _paths.AIP / "aip-designated-employers.json"
@@ -57,7 +57,7 @@ IN_PILOT_EMP = _paths.PILOT / "pilot-employers.json"     # 批B:社区指定雇�
 IN_PILOT_OCC = _paths.PILOT / "pilot-occupations.json"   # 批B:社区 × 职业清单
 IN_PILOT_QUOTA = _paths.PILOT / "pilot-quota.json"       # 社区名额状态(build_pilot_quota.py 周更,quote-anchored)
 IN_NL_EMPLOYERS = _paths.PNP / "nl-employers.json"  # NL 官网指定雇主 645 家(C4-W4,含申报 NOC)
-IN_WAGES = _paths.WAGES / "wages.json"   # NOC×省 中位工资(build_wages.py 从 ESDC 开放数据建)
+IN_WAGES = _paths.WAGES / "wages.json"   # NOC×省 中位工资(wages/build_esdc_wage_medians.py 从 ESDC 开放数据建)
 IN_PNP = _paths.PNP                      # raw/pnp/*.json(各省具名通道:每文件一条通道)
 IN_PNP_DRAWS = _paths.PNP / "draws.json"  # 省抽选事实(BC/AB/MB+ON通告,build_draws.py 产,E6-04)
 # #280:抽选流名中文灰注缓存(etl/pnp/translate_draw_streams.py 本地 qwen 批译产,增量缓存)——
@@ -75,10 +75,10 @@ IN_SCORE_TABLES = [_paths.PNP / "bc-sirs.json", _paths.PNP / "sk-points.json", _
 # 一省一个文件,加省=往这个 list 里加一个(build_<省>_req.py 产,列同一套)。
 IN_REQ_TABLES = [_paths.PNP / f"{p}-req.json"
                  for p in ("bc", "on", "ab", "sk", "mb", "ns", "nb", "pe", "nl")] + [
-                 # B1-4:联邦 PGWP 规则库(province='FED' program='PGWP',build_pgwp.py 产,quote-anchored)。
+                 # B1-4:联邦 PGWP 规则库(province='FED' program='PGWP',ircc/build_ircc_pgwp_rules.py 产,quote-anchored)。
                  # 走同一张表=引擎 facts.requirements 免费拿到;FED 行不会漏进省级门槛节(那边按省名挑行)
                  _paths.IRCC / "pgwp_rules.json",
-                 # G8:联邦段官方规费(program='PR-fees',build_fees.py 产)—— 第三次复用,同上安全
+                 # G8:联邦段官方规费(program='PR-fees',ircc/build_ircc_fees.py 产)—— 第三次复用,同上安全
                  _paths.IRCC / "fees.json",
                  # G9:联邦 Express Entry 三个项目的资格门槛(province='FED',build_ee_rules.py 产,
                  # quote-anchored)。**一个文件三个项目** → program 逐行写在 requirements[].program
@@ -92,16 +92,16 @@ IN_REQ_TABLES = [_paths.PNP / f"{p}-req.json"
 # 一省一个文件,加省=往这个 list 里加一个;各省字段形状不同,按 province 分派(下面 build_pnp_ops_stats)。
 IN_PNP_STATS = [_paths.PNP / f"{p}-stats.json" for p in ("ab", "sk", "bc", "mb", "on")]
 IN_EE = _paths.EE / "federal-categories.json"  # 联邦 Express Entry 类别抽选(全国单一源)
-IN_EE_DRAWS = _paths.EE / "draws.json"          # 各类别最近一次抽选(CRS/日期/邀请数,build_ee_draws.py 产)
+IN_EE_DRAWS = _paths.EE / "draws.json"          # 各类别最近一次抽选(CRS/日期/邀请数,ee/build_ircc_ee_draws.py 产)
 # G9 联邦官方计分表(两套分,同一张窄表,grid 列区分)——build_ee_rules.py 产,只读 crawl 缓存。
 IN_EE_CRS = _paths.EE / "crs-grid.json"         # CRS 排名分 A/B/C/D 四段(rows)
 IN_EE_ELIG = _paths.EE / "fed-eligibility.json"  # 资格门槛(上面 IN_REQ_TABLES 消费)+ FSW 67 分表(selectionFactors)
 IN_EE_LANG = _paths.EE / "language-grid.json"    # T4–T26 语言成绩 ↔ CLB/NCLC(独立表,绝不参与 points 求和)
-IN_NOC_DESC = _paths.NOC / "descriptions.json"  # NOC 官方名+主要职责(build_noc_descriptions.py 产)
-IN_FIELD_SOURCES = _paths.RAW / "sources" / "field-sources.json"  # 字段级来源注册表(build_field_sources.py 产,E4-04)
-IN_DLI = _paths.DLI / "dli.json"                # PGWP 可申 DLI 子集(build_dli.py 产,E12-03)
-IN_LMIA = _paths.LMIA / "lmia-employers.json"   # ESDC 正面 LMIA 雇主聚合(build_lmia.py 产,E6-02)
-IN_ENRICH = _paths.PROCESSED / "company_enrich.json"  # 公司官网富化(简介/行业,enrich_companies.py 产,E8-04)
+IN_NOC_DESC = _paths.NOC / "descriptions.json"  # NOC 官方名+主要职责(noc_facts/build_statcan_noc_descriptions.py 产)
+IN_FIELD_SOURCES = _paths.RAW / "sources" / "field-sources.json"  # 字段级来源注册表(ops/verify_field_source_pages.py 产,E4-04)
+IN_DLI = _paths.DLI / "dli.json"                # PGWP 可申 DLI 子集(dli/build_ircc_dli_pgwp.py 产,E12-03)
+IN_LMIA = _paths.LMIA / "lmia-employers.json"   # ESDC 正面 LMIA 雇主聚合(lmia/build_esdc_lmia_employers.py 产,E6-02)
+IN_ENRICH = _paths.PROCESSED / "company_enrich.json"  # 公司官网富化(简介/行业,company/enrich_company_websites.py 产,E8-04)
 IN_NEWS = _paths.NEWS / "news.json"              # 官方移民新闻累积表(etl/news/ 产,E12-06)
 IN_IRCC_TR = _paths.IRCC / "temp_residents.json"      # E8-12 省弹框体量卡:学签/工签年末存量
 IN_IRCC_PR = _paths.IRCC / "pnp_admissions.json"      # PNP 类别 PR 登陆数
@@ -628,7 +628,7 @@ def build():
         scored = {s["externalId"]: s for s in json.loads(IN_SCORED.read_text(encoding="utf-8"))}
     wages = json.loads(IN_WAGES.read_text(encoding="utf-8")) if IN_WAGES.exists() else {}
 
-    # 公司官网富化(E8-04):slug → 简介/行业(enrich_companies.py 逐轮累积)。
+    # 公司官网富化(E8-04):slug → 简介/行业(company/enrich_company_websites.py 逐轮累积)。
     # 取:抓到简介的(ok)+ 找官网阶梯命中但简介待抓/抓失败的(found 带 website——官网本身就有展示价值)
     enrich = {}
     if IN_ENRICH.exists():
@@ -1221,7 +1221,7 @@ def build():
         noc_openings.sort(key=lambda r: (-r["open"], r["noc"]))   # 落盘即有序,消费端不用再排
 
 
-    # 字段级来源维度(E4-04):build_field_sources.py 已抓取验证,这里直通(缺文件→空表,宁可留空)
+    # 字段级来源维度(E4-04):ops/verify_field_source_pages.py 已抓取验证,这里直通(缺文件→空表,宁可留空)
     field_sources = []
     if IN_FIELD_SOURCES.exists():
         try:
@@ -1281,7 +1281,7 @@ def build():
                 "importance": r.get("importance"), "importanceNote": r.get("importanceNote") or None,
                 "citation": r.get("citation") or "", "fetched": r.get("fetchedAt") or nd.get("fetched", "")})
 
-    # PGWP 可申 DLI 子集(E12-03):build_dli.py 已过滤去重,这里直通并带上着陆页 url+抓取日期(逐行出处)
+    # PGWP 可申 DLI 子集(E12-03):dli/build_ircc_dli_pgwp.py 已过滤去重,这里直通并带上着陆页 url+抓取日期(逐行出处)
     dli = []
     if IN_DLI.exists():
         try:
