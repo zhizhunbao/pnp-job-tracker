@@ -75,4 +75,4 @@ cms/dev.log
 /.claude/*
 !/.claude/skills/
 # 🔴 但口令文件永不放行 —— 它在 .claude/ 与 .agents/ 各有一份,而当初正是「只点名一份」把另一份漏了出去
-/.claude/skills/**/credentials*.json
+/.claude/skills/**/credentials*.json/reports
