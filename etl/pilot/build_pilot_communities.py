@@ -21,14 +21,14 @@ from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths
+import paths
 
 if os.name == "nt":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
-IN_MANIFEST = _paths.CRAWL / "fed-rcip" / "manifest.json"
-OUT = _paths.PILOT / "pilot-communities.json"
+IN_MANIFEST = paths.CRAWL / "fed-rcip" / "manifest.json"
+OUT = paths.PILOT / "pilot-communities.json"
 print(f"IN_MANIFEST={IN_MANIFEST}\nOUT={OUT}", flush=True)
 
 # 社区 → Job Bank 城市(2026-08-15 生产库实测城市名;Sudbury 库里双写名并存都收)。
@@ -67,7 +67,7 @@ PROV_HINT = {"North Bay and Area": "ON", "Pictou County, NS": "NS", "Acadian Pen
 
 
 def main() -> None:
-    _paths.PILOT.mkdir(parents=True, exist_ok=True)
+    paths.PILOT.mkdir(parents=True, exist_ok=True)
     manifest = json.loads(IN_MANIFEST.read_text(encoding="utf-8"))
     page = next(p for p in manifest["pages"] if p["url"].endswith("rural-franco-pilots.html"))
     html = (IN_MANIFEST.parent / "html_cache" / page["html"]).read_text(encoding="utf-8", errors="replace")

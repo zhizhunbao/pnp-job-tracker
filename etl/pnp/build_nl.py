@@ -24,15 +24,15 @@ from pathlib import Path
 import httpx
 
 _HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(_HERE.parent))            # etl/ → _paths
-import _paths
+sys.path.insert(0, str(_HERE.parent))            # etl/ → paths
+import paths
 from crawl.functions import convert_md
 from crawl.scheme import ConvertIn
 
 PROVINCE = "NL"
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
 URL = "https://www.gov.nl.ca/immigration/excluded-positions/"
-OUT = _paths.PNP / "nl-priority.json"
+OUT = paths.PNP / "nl-priority.json"
 NOTE = ("NL 优先处理职位:免省级劳动力市场测试(Job Vacancy Assessment / AIP 招工测试)并优先处理。"
         "**不在表上不等于不能申请**,只是没有这份加速。官方给的是职位名称文本、不是 NOC 码,故本站不做 NOC 映射。")
 
@@ -81,7 +81,7 @@ def parse_positions(md: str) -> list[dict]:
 
 def main() -> None:
     print(f"OUT: {OUT}")
-    _paths.PNP.mkdir(parents=True, exist_ok=True)
+    paths.PNP.mkdir(parents=True, exist_ok=True)
     try:
         md = fetch_md(URL)
     except Exception as e:  # noqa: BLE001  抓取失败 → 保留旧表

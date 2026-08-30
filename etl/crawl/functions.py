@@ -24,8 +24,8 @@ import httpx
 from bs4 import BeautifulSoup, Comment, NavigableString, Tag
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths
-from _log import err, say
+import paths
+from log.functions import err, say
 from fetch.constants import BROWSER_UA, HDR_UA, LINE_SEP, PARA_SEP, PARSER_HTML, SPACE_SEP, WS_RE
 from crawl.constants import (ACCEPT_HTML, ACCEPT_LANGUAGE, ADMONITION_TITLE_CLASS, ADMONITION_WORDS, ATTR_ALT,
                              ATTR_CLASS, ATTR_SRC, ATTR_TITLE, BLANKS_RE, BLOCK_TAGS, BOLD_TAGS,
@@ -93,7 +93,7 @@ def get_cached_page(url: str) -> CacheHit:
     """
     want = url_variants_of(url)
     best = None
-    for man in sorted(_paths.CRAWL.glob(MANIFEST_GLOB)):
+    for man in sorted(paths.CRAWL.glob(MANIFEST_GLOB)):
         try:
             d = json.loads(man.read_text(encoding=ENC_UTF8))
         except Exception:  # noqa: BLE001, S112 — 单个 manifest 坏了不拖垮其余种子
@@ -340,7 +340,7 @@ async def discover_urls(x: DiscoverIn) -> Path:
     """一颗种子的 BFS 全程:层进并发抓 → html_cache 顺手落盘 → manifest 写盘;
     返回 manifest 路径。"""
     spec = x.spec
-    out_dir = _paths.CRAWL / spec.slug
+    out_dir = paths.CRAWL / spec.slug
     out_dir.mkdir(parents=True, exist_ok=True)
     manifest_path = out_dir / MANIFEST_FILE
     html_dir = out_dir / HTML_CACHE_DIR
@@ -397,7 +397,7 @@ async def discover_urls(x: DiscoverIn) -> Path:
     manifest = {K_SEED_URL: seed_url, K_SLUG: spec.slug, K_TOTAL_URLS: len(ctx.discovered),
                 K_MAX_DEPTH: spec.depth, K_CRAWLED_AT: datetime.now().isoformat(),
                 K_PAGES: ctx.discovered}
-    _paths.write_json(manifest_path, manifest, indent=2)
+    paths.write_json(manifest_path, manifest, indent=2)
     await close_browser()
     say(PRINT_MANIFEST_TPL.format(n=len(ctx.discovered), path=manifest_path))
     return manifest_path
@@ -772,7 +772,7 @@ def discover_all() -> None:
     ok = 0
     for cfg in SEEDS:
         spec = SeedSpec.model_validate(cfg)
-        slug_dir = _paths.CRAWL / spec.slug
+        slug_dir = paths.CRAWL / spec.slug
         manifest = slug_dir / MANIFEST_FILE
         prev = slug_dir / MANIFEST_PREV_FILE
         if manifest.exists():
@@ -794,7 +794,7 @@ def discover_all() -> None:
         after = urls_of(manifest)
         added = sorted(after - before)
         gone = sorted(before - after)
-        _paths.write_json(slug_dir / CHANGES_FILE,
+        paths.write_json(slug_dir / CHANGES_FILE,
                           {K_SLUG: spec.slug, K_DATE: date.today().isoformat(),
                            K_TOTAL: len(after), K_ADDED: added, K_GONE: gone}, indent=2)
         ok += 1
@@ -880,8 +880,8 @@ async def fetch_ee_categories() -> None:
     for c in cats.values():
         out_cats.append({K_KEY: c[K_KEY], K_LABEL: c[K_LABEL],
                          K_OCCUPATIONS: sorted(c[K_OCCUPATIONS], key=ee_noc_of)})
-    out_file = _paths.EE / EE_OUT_FILE
-    _paths.write_json(out_file, {K_SOURCE: EE_SOURCE_LABEL, K_URL: EE_URL,
+    out_file = paths.EE / EE_OUT_FILE
+    paths.write_json(out_file, {K_SOURCE: EE_SOURCE_LABEL, K_URL: EE_URL,
                                  K_FETCHED: date.today().isoformat(),
                                  K_CATEGORIES: out_cats}, indent=2)
     total = 0

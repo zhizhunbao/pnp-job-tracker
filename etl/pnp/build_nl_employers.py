@@ -33,7 +33,7 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths
+import paths
 
 PROVINCE = "NL"
 LABEL = "NL 官网指定雇主名录"
@@ -45,9 +45,9 @@ ENTRY_URL = ("https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-
              "atlantic-immigration-program/designated-employers")
 EMPLOYER_PREFIX = "https://www.gov.nl.ca/immigration/employer/"
 
-IN_MANIFEST = _paths.CRAWL / "nl-imm" / "manifest.json"
-IN_HTML_CACHE = _paths.CRAWL / "nl-imm" / "html_cache"
-OUT = _paths.PNP / "nl-employers.json"
+IN_MANIFEST = paths.CRAWL / "nl-imm" / "manifest.json"
+IN_HTML_CACHE = paths.CRAWL / "nl-imm" / "html_cache"
+OUT = paths.PNP / "nl-employers.json"
 
 NOC_CODE = re.compile(r"\d{3,5}")   # 裸码 3-5 位数字(4 位=NOC2016,5 位=NOC2021;3 位偶见,原样收)
 
@@ -116,7 +116,7 @@ def main() -> None:
         "url": ENTRY_URL, "fetched": fetched,
         "employers": employers,
     }
-    _paths.PNP.mkdir(parents=True, exist_ok=True)
+    paths.PNP.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(table, ensure_ascii=False, indent=2), encoding="utf-8")
 
     # ── 报告 ──────────────────────────────────────────────────────────

@@ -23,10 +23,10 @@ from bs4 import BeautifulSoup
 
 _HERE = Path(__file__).resolve().parent.parent  # 分域后上一级才是 etl/
 sys.path.insert(0, str(_HERE))
-import _paths
+import paths
 
 URL = "https://ircc.canada.ca/english/information/fees/fees.asp"
-OUT = _paths.IRCC / "fees.json"
+OUT = paths.IRCC / "fees.json"
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                     "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"}
 

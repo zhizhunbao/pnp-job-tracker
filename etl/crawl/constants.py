@@ -477,7 +477,7 @@ EE_URL = ("https://www.canada.ca/en/immigration-refugees-citizenship/services/im
 """EE 类别抽选页(ee_categories 回退工具的目标;canada.ca 走 Akamai,httpx 403 → 浏览器)。"""
 
 EE_OUT_FILE = "federal-categories.json"
-"""回退工具产出文件名(落 _paths.EE)。"""
+"""回退工具产出文件名(落 paths.EE)。"""
 
 EE_CAT_MAP = (("healthcare", "healthcare", "医疗社服"), ("Science", "stem", "STEM"),
               ("trade", "trade", "技工"), ("education", "education", "教育"),

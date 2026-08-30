@@ -17,8 +17,8 @@ from pathlib import Path
 import httpx
 
 _HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(_HERE.parent))          # etl/ → _paths
-import _paths
+sys.path.insert(0, str(_HERE.parent))          # etl/ → paths
+import paths
 from crawl.functions import convert_md
 from crawl.scheme import ConvertIn
 
@@ -128,7 +128,7 @@ def build_excluded() -> None:
         "url": EXCL_PAGE, "fetched": date.today().isoformat(), "effective": effective,
         "occupations": [{"noc": n, "name": nm} for n, nm in sorted(occ.items())],
     }
-    (_paths.PNP / "sk-excluded.json").write_text(json.dumps(table, ensure_ascii=False, indent=2), encoding="utf-8")
+    (paths.PNP / "sk-excluded.json").write_text(json.dumps(table, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"  ✓ {'SK 主线排除':<10} {len(occ):>3} 个职业 → pnp/sk-excluded.json  "
           f"(实时 {table['fetched']};官方标注更新 {effective or '未标'})")
 
@@ -153,7 +153,7 @@ def parse_occupations(md: str) -> list[dict]:
 
 
 def main() -> None:
-    _paths.PNP.mkdir(parents=True, exist_ok=True)
+    paths.PNP.mkdir(parents=True, exist_ok=True)
     for s in STREAMS:
         try:
             md = fetch_md(s["url"])
@@ -170,7 +170,7 @@ def main() -> None:
             "url": s["url"], "fetched": date.today().isoformat(),
             "occupations": occs,
         }
-        (_paths.PNP / s["out"]).write_text(json.dumps(table, ensure_ascii=False, indent=2), encoding="utf-8")
+        (paths.PNP / s["out"]).write_text(json.dumps(table, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"  ✓ {s['label']:<10} {len(occs):>3} 个职业 → pnp/{s['out']}  (实时 {table['fetched']})")
     build_excluded()   # 主线口径(排除式);三条专项通道之外单独一张表
 

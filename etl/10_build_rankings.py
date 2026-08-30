@@ -19,15 +19,15 @@ from datetime import date, timedelta
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import _paths
+import paths
 from noc_buckets import SLUGS as BROAD_SLUG  # 大类 zh → URL slug 段,单一来源在 noc_buckets
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-IN_JOBS = _paths.MART / "jobs.json"
-IN_COMPANIES = _paths.MART / "companies.json"
-OUT_RANKINGS = _paths.MART / "rankings.json"
+IN_JOBS = paths.MART / "jobs.json"
+IN_COMPANIES = paths.MART / "companies.json"
+OUT_RANKINGS = paths.MART / "rankings.json"
 
 WEEKLY_N = 50
 SPONSOR_N = 30

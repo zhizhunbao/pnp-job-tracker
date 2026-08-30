@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _log import err, say
+from log.functions import err, say
 from load.functions import upload_mart
 from load.scheme import UploadIn
 

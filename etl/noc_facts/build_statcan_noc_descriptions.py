@@ -16,11 +16,11 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths
+import paths
 
 URL = "https://www.statcan.gc.ca/en/subjects/standard/noc/2021/indexV1/noc-2021-v1.0-elements.csv"
-IN_CSV = _paths.NOC / "noc-elements.csv"          # 下载缓存(可重下)
-OUT = _paths.NOC / "descriptions.json"            # 维护表(09 消费)
+IN_CSV = paths.NOC / "noc-elements.csv"          # 下载缓存(可重下)
+OUT = paths.NOC / "descriptions.json"            # 维护表(09 消费)
 
 # 关注的 element 类型 → 输出键
 WANT = {"Main duties": "duties", "Employment requirements": "requirements"}

@@ -23,7 +23,7 @@ import httpx
 
 _HERE = Path(__file__).resolve().parent.parent  # 分域后上一级才是 etl/
 sys.path.insert(0, str(_HERE))
-import _paths
+import paths
 from crawl.functions import convert_md
 from crawl.scheme import ConvertIn
 
@@ -33,7 +33,7 @@ BASE = "https://www.canada.ca/en/immigration-refugees-citizenship/services/study
 URL_ABOUT = BASE + "/about.html"
 URL_ELIG = BASE + "/eligibility.html"
 
-OUT = _paths.IRCC / "pgwp_rules.json"
+OUT = paths.IRCC / "pgwp_rules.json"
 
 # 每行 = 一条官方规则:quote 必须逐字(归一化后)出现在 page 页面上,否则整表不更新。
 # subject 恒 applicant;stream 区分时长档/学位层级;数值语义见 basis(人读)与引擎(机读 factor+stream+value)。

@@ -9,7 +9,7 @@ wire 词(头名/查询参数/属性名)用 constants 的 HDR_/P_ 词族;文案�
 **显式循环令**:禁推导/genexp/lambda;**内嵌禁令**:内部函数出户成顶层具名函数;
 **一参令**:函数至多一参,多入参收 scheme 的 XxxIn dataclass。
 库类型经 scheme 的 Protocol(HttpClientLike/TagLike),cast 只住装配点。
-依赖单边:本文件 → constants/scheme + 基础设施叶子(_paths)。
+依赖单边:本文件 → constants/scheme + 基础设施叶子(paths)。
 """
 import html as html_lib
 import json
@@ -22,8 +22,8 @@ from urllib.parse import parse_qs, unquote, urljoin, urlparse
 
 from bs4 import BeautifulSoup
 
-import _paths
-from _log import err, say
+import paths
+from log.functions import err, say
 from fetch.functions import make_client, make_polite_client
 from company.constants import (
     ALIAS_SPLIT_RE, ATS_HOSTS, CAREERS_FILE, CAREERS_PATH_RE, CAREERS_RE,
@@ -156,7 +156,7 @@ def scrape_kanata_directory() -> None:
         out.append(r.model_dump())
         if is_tech(r):
             tech_n += 1
-    _paths.write_json((OUT_KANATA_DIR / KANATA_STEM).with_suffix(SUFFIX_JSON), out)
+    paths.write_json((OUT_KANATA_DIR / KANATA_STEM).with_suffix(SUFFIX_JSON), out)
     say(PRINT_KANATA_TPL.format(n=len(rows), tech=tech_n, out=OUT_KANATA_DIR / KANATA_STEM))
 
 
@@ -196,17 +196,17 @@ def build_company_folders() -> None:
                              website=row.website, email=row.email, phone=row.phone,
                              sectors=row.sectors, address=row.address,
                              description=row.description)
-        _paths.write_json(folder / PROFILE_FILE, profile.model_dump())
+        paths.write_json(folder / PROFILE_FILE, profile.model_dump())
         made += 1
         scan = careers_by_name.get(row.name.lower())
         if scan and (scan.careers_url or scan.ats):
-            _paths.write_json(folder / CAREERS_FILE,
+            paths.write_json(folder / CAREERS_FILE,
                               CareersFileRow(careers_url=scan.careers_url,
                                              ats=scan.ats, status=scan.status).model_dump())
             careers_written += 1
         index.append(IndexRow(slug=slug, name=row.name, website=row.website,
                              has_careers=bool(scan and scan.careers_url)).model_dump())
-    _paths.write_json(OUT_FOLDERS_ROOT / INDEX_FILE, index)
+    paths.write_json(OUT_FOLDERS_ROOT / INDEX_FILE, index)
     say(PRINT_FOLDERS_TPL.format(region=KANATA_REGION_LABEL, made=made,
                                  careers=careers_written, root=OUT_FOLDERS_ROOT))
 
@@ -322,7 +322,7 @@ def scrape_company_careers() -> None:
         if r.ats:
             ats_n += 1
             ats_dist[r.ats] = ats_dist.get(r.ats, 0) + 1
-    _paths.write_json(stem.with_suffix(SUFFIX_JSON), out)
+    paths.write_json(stem.with_suffix(SUFFIX_JSON), out)
     say(PRINT_CAREERS_DONE_TPL.format(found=found_n, n=len(results),
                                         ats=ats_n, out=stem.with_suffix(SUFFIX_JSON)))
     say(PRINT_ATS_DIST_LABEL + str(ats_dist))
@@ -672,6 +672,6 @@ def enrich_company_websites() -> None:
         out[sl] = rec.model_dump()
         if rec.status == ST_OK:
             total_ok += 1
-    _paths.write_json(OUT_ENRICH_CACHE, out)
+    paths.write_json(OUT_ENRICH_CACHE, out)
     say(PRINT_ENRICH_DONE_TPL.format(ok=ok, fail=fail, total=total_ok, n=len(cache),
                                      out=OUT_ENRICH_CACHE.name))

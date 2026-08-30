@@ -15,10 +15,10 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths
+import paths
 
 URL = "https://www.canada.ca/content/dam/ircc/documents/json/ee_rounds_123_en.json"
-OUT = _paths.EE / "draws.json"
+OUT = paths.EE / "draws.json"
 HIST_PER_CAT = 12          # 每类别保留轮次上限(展示够看趋势,不灌爆维度表)
 HIST_MONTHS = 24           # 同时限最近 24 个月(更早的轮次分数线已无参考意义)
 

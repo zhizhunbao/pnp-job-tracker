@@ -21,7 +21,7 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import _paths
+import paths
 
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
@@ -40,7 +40,7 @@ def detail_html_index() -> dict:
     """所有日期目录下已抓的详情 HTML:posting_id → path。详情每帖抓一次,但落在「抓取那天」的
     raw/jobbank/<日期>/details/ 下,故要跨日期目录查「是否已抓过」(日期升序,最新覆盖)。"""
     idx: dict[str, Path] = {}
-    root = _paths.RAW_JOBBANK
+    root = paths.RAW_JOBBANK
     if root.exists():
         for date_dir in sorted(p for p in root.iterdir() if p.is_dir()):
             for f in (date_dir / "details").glob("*.html"):
@@ -49,8 +49,8 @@ def detail_html_index() -> dict:
 
 
 def main() -> None:
-    jobs = json.loads((_paths.PROCESSED_JOBBANK / "postings.json").read_text(encoding="utf-8"))
-    raw_dir = _paths.RAW_JOBBANK / datetime.now().date().isoformat() / "details"  # 当天日期目录下
+    jobs = json.loads((paths.PROCESSED_JOBBANK / "postings.json").read_text(encoding="utf-8"))
+    raw_dir = paths.RAW_JOBBANK / datetime.now().date().isoformat() / "details"  # 当天日期目录下
     raw_dir.mkdir(parents=True, exist_ok=True)
     have = detail_html_index()  # 已抓过的(任意日期)→ 不重抓
 

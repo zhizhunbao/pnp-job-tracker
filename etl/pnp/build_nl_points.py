@@ -22,12 +22,12 @@ import fitz
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths
+import paths
 
 PDF_URL = "https://www.gov.nl.ca/immigration/files/AnnexA_PNP.pdf"
 PAGE_URL = ("https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/"
             "provincial-nominee-program/applicants/express-entry-skilled-worker/")
-OUT = _paths.PNP / "nl-points.json"
+OUT = paths.PNP / "nl-points.json"
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
 
 

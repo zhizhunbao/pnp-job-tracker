@@ -20,13 +20,13 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths
+import paths
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
     sys.stdout.reconfigure(encoding="utf-8")  # Windows 本地控制台 cp1252 打不出中文
 
 
-OUT_FILE = _paths.RAW / "sources" / "field-sources.json"   # 输出:字段→来源注册表(跟踪)
+OUT_FILE = paths.RAW / "sources" / "field-sources.json"   # 输出:字段→来源注册表(跟踪)
 
 UA = {"User-Agent": "Mozilla/5.0 (compatible; pnp-job-tracker source-verifier)"}
 TODAY = date.today().isoformat()

@@ -18,16 +18,16 @@ from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths
+import paths
 from pilot.extractors import EXTRACTORS
 
 if os.name == "nt":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
-IN_COMMUNITIES = _paths.PILOT / "pilot-communities.json"
-OUT_EMP = _paths.PILOT / "pilot-employers.json"
-OUT_OCC = _paths.PILOT / "pilot-occupations.json"
+IN_COMMUNITIES = paths.PILOT / "pilot-communities.json"
+OUT_EMP = paths.PILOT / "pilot-employers.json"
+OUT_OCC = paths.PILOT / "pilot-occupations.json"
 print(f"IN_COMMUNITIES={IN_COMMUNITIES}\nOUT_EMP={OUT_EMP}\nOUT_OCC={OUT_OCC}", flush=True)
 
 # 批B 基线(2026-08-15 实抽行数);哨兵=新抽 < 基线一半 → 疑似改版塌方,保旧。

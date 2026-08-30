@@ -19,10 +19,10 @@ if os.name == "nt":  # 本机控制台 cp1252 打不了 ·/中文;容器由 auto
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths
+import paths
 
-OUT_TR = _paths.IRCC / "temp_residents.json"
-OUT_PNP = _paths.IRCC / "pnp_admissions.json"
+OUT_TR = paths.IRCC / "temp_residents.json"
+OUT_PNP = paths.IRCC / "pnp_admissions.json"
 print(f"OUT_TR={OUT_TR}\nOUT_PNP={OUT_PNP}", flush=True)
 
 BASE = "https://www.ircc.canada.ca/opendata-donneesouvertes/data/"
@@ -37,7 +37,7 @@ SRC = {
     # Frank「是他们没公布还是我们没抓到」→ 存量是他们没发,流量是我们没抓。这一步补后者。
     "study_flow": BASE + "EN_ODP-TR-Study-IS_PT_study_level_sign.xlsx",
 }
-OUT_FLOW = _paths.IRCC / "study_flow.json"
+OUT_FLOW = paths.IRCC / "study_flow.json"
 PROV = {
     "Newfoundland and Labrador": "NL", "Prince Edward Island": "PE", "Nova Scotia": "NS",
     "New Brunswick": "NB", "Quebec": "QC", "Ontario": "ON", "Manitoba": "MB",
@@ -152,7 +152,7 @@ def study_flow(ws) -> dict:
 
 
 def main() -> None:
-    _paths.IRCC.mkdir(parents=True, exist_ok=True)
+    paths.IRCC.mkdir(parents=True, exist_ok=True)
     # fetched = 本轮抓取日(B3-3):要拿来下结论的数据必须知道是哪天的;新鲜度哨兵(check_freshness)也读它
     fetched = datetime.now(timezone.utc).date().isoformat()
     # 年份哨兵(2026-08-14):存量最新年份一变(IRCC 补发 2025)就大声喊 —— 竞争卡年份列会自动亮,

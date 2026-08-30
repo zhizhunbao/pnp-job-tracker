@@ -17,7 +17,7 @@ from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import _paths
+import paths
 
 REGION = "ottawa-kanata-north"
 
@@ -108,7 +108,7 @@ INDEMAND2 = {"21", "22", "31", "32", "72", "73", "42"}
 # 某省没文件 = 无 TEER4-5 专门通道,只吃 TEER0-3 粗筛(留空不猜,符合「宁可留空」)。
 def _load_pnp_tables() -> dict[str, dict]:
     out: dict[str, dict] = {}
-    pnp_dir = _paths.PNP
+    pnp_dir = paths.PNP
     if pnp_dir.exists():
         for f in sorted(pnp_dir.glob("*.json")):
             try:
@@ -154,7 +154,7 @@ for _p, _t in PNP_BY_PROV.items():
 # NOC → 类别中文标签;多类别罕见,出现则 / 连接。文件无 = 不标。
 def _load_ee() -> dict[str, str]:
     acc: dict[str, list[str]] = {}
-    f = _paths.EE / "federal-categories.json"
+    f = paths.EE / "federal-categories.json"
     if f.exists():
         try:
             data = json.loads(f.read_text(encoding="utf-8"))
@@ -329,7 +329,7 @@ def guess_prov(loc: str) -> str:
 
 def collect():
     """Yield (externalId, title, agency, province, hint_noc)."""
-    region_dir = _paths.COMPANIES  # 已含地域(processed/<region>/companies)
+    region_dir = paths.COMPANIES  # 已含地域(processed/<region>/companies)
     if region_dir.exists():
         for folder in region_dir.iterdir():
             if not folder.is_dir() or not (folder / "jobs.json").exists():
@@ -338,7 +338,7 @@ def collect():
             ag = bool(AGENCY_RE.search(prof.get("sectors", "") + " " + prof.get("name", "")))
             for j in json.loads((folder / "jobs.json").read_text(encoding="utf-8")).get("jobs", []):
                 yield (j.get("url") or f"{folder.name}:{j.get('title','')}", j.get("title", ""), ag, guess_prov(j.get("location", "")), "")
-    jb = _paths.PROCESSED_JOBBANK / "postings.json"
+    jb = paths.PROCESSED_JOBBANK / "postings.json"
     if jb.exists():
         for j in json.loads(jb.read_text(encoding="utf-8")):
             m = re.search(r"NOC\s*(\d{5})", j.get("search_occupation", ""))  # 搜索时用的 NOC(旧关键词模式)
@@ -362,8 +362,8 @@ def main() -> None:
                     "pnpEligible": pnp_eligible(noc, teer, prov),
                     "pnpStream": pnp_stream(noc, prov),
                     "eeCategory": EE_BY_NOC.get(noc) or None})
-    _paths.PROCESSED.mkdir(parents=True, exist_ok=True)
-    (_paths.PROCESSED / "all-scored.json").write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    paths.PROCESSED.mkdir(parents=True, exist_ok=True)
+    (paths.PROCESSED / "all-scored.json").write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Scored {len(out)} jobs → all-scored.json")
     print("TEER 分布:", dict(sorted(Counter(o["category"] for o in out).items())))
 

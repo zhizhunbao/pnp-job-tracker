@@ -18,7 +18,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths
+import paths
 
 IN_MANIFEST = Path(__file__).resolve().parent.parent / "source_manifest.json"  # 分域后清单仍在 etl/ 根
 
@@ -41,8 +41,8 @@ def main() -> None:
     over = {o["file"]: o for o in m.get("overrides", [])}
     rows: dict[str, dict] = {}  # rel path → {cadence_days, key, note}
     for d in m.get("defaults", []):
-        for f in glob.glob(str(_paths.DATA / d["glob"])):
-            rel = Path(f).relative_to(_paths.DATA).as_posix()
+        for f in glob.glob(str(paths.DATA / d["glob"])):
+            rel = Path(f).relative_to(paths.DATA).as_posix()
             rows[rel] = {"cadence_days": d["cadence_days"], "key": "fetched", "note": ""}
     for rel, o in over.items():
         rows[rel] = {"cadence_days": o["cadence_days"], "key": o.get("key", "fetched"), "note": o.get("note", "")}
@@ -51,7 +51,7 @@ def main() -> None:
     stale: list[str] = []
     for rel in sorted(rows):
         r = rows[rel]
-        path = _paths.DATA / rel
+        path = paths.DATA / rel
         if not path.exists():
             stale.append(f"✗ {rel}: 文件不存在(契约里在,盘上没有)")
             continue

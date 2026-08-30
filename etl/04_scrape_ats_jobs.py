@@ -21,9 +21,9 @@ import re
 
 import httpx
 
-import _paths
-PROJECT_ROOT = _paths.ROOT
-COMPANIES_DIR = _paths.COMPANIES
+import paths
+PROJECT_ROOT = paths.ROOT
+COMPANIES_DIR = paths.COMPANIES
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
 TECH_JOB = re.compile(
@@ -257,7 +257,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="Stage 3: pull jobs from company ATS feeds.")
     ap.add_argument("--region", default="ottawa-kanata-north")
     ap.parse_args()
-    region_dir = COMPANIES_DIR  # _paths.COMPANIES 已含地域(processed/<region>/companies)
+    region_dir = COMPANIES_DIR  # paths.COMPANIES 已含地域(processed/<region>/companies)
 
     summary, skipped = [], []
     with httpx.Client(headers={"User-Agent": UA}, follow_redirects=True, timeout=20) as client:

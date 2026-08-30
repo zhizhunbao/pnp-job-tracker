@@ -42,8 +42,8 @@ from pathlib import Path
 import httpx
 
 _HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(_HERE.parent))            # etl/ → _paths
-import _paths
+sys.path.insert(0, str(_HERE.parent))            # etl/ → paths
+import paths
 from crawl.functions import convert_md
 from crawl.scheme import ConvertIn
 
@@ -101,7 +101,7 @@ def parse_nocs(seg: str) -> list[dict]:
 
 
 def main() -> None:
-    _paths.PNP.mkdir(parents=True, exist_ok=True)
+    paths.PNP.mkdir(parents=True, exist_ok=True)
     try:
         md = fetch_md()
     except Exception as e:  # noqa: BLE001  抓取失败 → 保留旧表,不留空
@@ -126,7 +126,7 @@ def main() -> None:
                 "url": URL, "fetched": date.today().isoformat(),
                 "occupations": occs,
             }
-            (_paths.PNP / cfg["out"]).write_text(json.dumps(table, ensure_ascii=False, indent=2), encoding="utf-8")
+            (paths.PNP / cfg["out"]).write_text(json.dumps(table, ensure_ascii=False, indent=2), encoding="utf-8")
             print(f"  ✓ {cfg['label']:<14} {len(occs):>3} 个职业 → pnp/{cfg['out']}  (实时 {table['fetched']})")
     # 行业限制不做逐岗判定(见模块注释),但政策还在不在得盯着——变了要人工复核新闻文案
     low = md.lower()

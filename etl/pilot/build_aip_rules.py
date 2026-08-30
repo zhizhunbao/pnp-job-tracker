@@ -32,7 +32,7 @@ from pathlib import Path
 
 _HERE = Path(__file__).resolve().parent.parent  # 分域后上一级才是 etl/
 sys.path.insert(0, str(_HERE))
-import _paths
+import paths
 from crawl.functions import get_cached_page
 from bs4 import BeautifulSoup
 
@@ -47,7 +47,7 @@ IN_URL_LANG = _BASE + "/language-testing.html"                      # 语言 CLB
 IN_URL_EDU = _BASE + "/education-assessment.html"                   # 学历要求 + ECA
 
 # ── OUT ────────────────────────────────────────────────────────────────────
-OUT = _paths.IRCC / "aip_rules.json"
+OUT = paths.IRCC / "aip_rules.json"
 
 
 def norm(t: str) -> str:

@@ -20,8 +20,8 @@ from pathlib import Path
 import httpx
 
 _HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(_HERE.parent))          # etl/ → _paths
-import _paths
+sys.path.insert(0, str(_HERE.parent))          # etl/ → paths
+import paths
 from crawl.functions import convert_md
 from crawl.scheme import ConvertIn
 
@@ -117,13 +117,13 @@ def build_policy() -> None:
         "url": NS_MAIN_URL, "fetched": date.today().isoformat(),
         "facts": facts,     # ⚠️ 不叫 occupations:08_score 扫到没这个键就跳过
     }
-    (_paths.PNP / POLICY_OUT).write_text(json.dumps(table, ensure_ascii=False, indent=2), encoding="utf-8")
+    (paths.PNP / POLICY_OUT).write_text(json.dumps(table, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"  ✓ {'NS 主线口径':<10} {len(facts):>3} 条政策事实 → pnp/{POLICY_OUT}  "
           f"(实时 {table['fetched']};OID 清单{'为空' if oid_empty else '已非空⚠️'})")
 
 
 def main() -> None:
-    _paths.PNP.mkdir(parents=True, exist_ok=True)
+    paths.PNP.mkdir(parents=True, exist_ok=True)
     for s in STREAMS:
         try:
             md = fetch_md(s["url"])
@@ -140,7 +140,7 @@ def main() -> None:
             "url": s["url"], "fetched": date.today().isoformat(),
             "occupations": occs,
         }
-        (_paths.PNP / s["out"]).write_text(json.dumps(table, ensure_ascii=False, indent=2), encoding="utf-8")
+        (paths.PNP / s["out"]).write_text(json.dumps(table, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"  ✓ {s['label']:<10} {len(occs):>3} 个职业 → pnp/{s['out']}  (实时 {table['fetched']})")
     build_policy()   # 主线口径:官方不发清单这件事本身就是要留证的事实
 

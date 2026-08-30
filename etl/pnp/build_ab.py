@@ -18,8 +18,8 @@ import fitz  # pymupdf,解析 PDF
 import httpx
 from bs4 import BeautifulSoup
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一级)有 _paths
-import _paths
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一级)有 paths
+import paths
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
 AOS_URL = "https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility"
@@ -62,7 +62,7 @@ def parse_tech_pdf(data: bytes) -> list[dict]:
 
 
 def main() -> None:
-    _paths.PNP.mkdir(parents=True, exist_ok=True)
+    paths.PNP.mkdir(parents=True, exist_ok=True)
     # ① 不符合资格清单(exclusion,HTML 表)
     try:
         occ1 = parse_aos(httpx.get(AOS_URL, headers={"User-Agent": UA}, follow_redirects=True, timeout=30).text)
@@ -70,8 +70,8 @@ def main() -> None:
         occ1 = None
         print(f"  ✗ 抓取失败 aaip-ineligible.json: {type(e).__name__} {e}(保留旧表)")
     if occ1:
-        # 2026-08-30 写盘换 _paths.write_json(原子+Errno 22 重试;本文件=全域样张,起因见 _paths 写盘段)
-        _paths.write_json(_paths.PNP / "aaip-ineligible.json", {
+        # 2026-08-30 写盘换 paths.write_json(原子+Errno 22 重试;本文件=全域样张,起因见 paths 写盘段)
+        paths.write_json(paths.PNP / "aaip-ineligible.json", {
             "stream": "AAIP Alberta Opportunity Stream", "label": "AAIP 不符合清单",
             "province": "AB", "type": "ineligible", "url": AOS_URL, "fetched": date.today().isoformat(),
             "note": "除本表外 TEER0-5 都符合;原带 * 为条件性不符合,粗筛下按不符合处理。",
@@ -88,7 +88,7 @@ def main() -> None:
         occ2 = None
         print(f"  ✗ 抓取失败 ab-tech.json: {type(e).__name__} {e}(保留旧表)")
     if occ2:
-        _paths.write_json(_paths.PNP / "ab-tech.json", {
+        paths.write_json(paths.PNP / "ab-tech.json", {
             "stream": "AAIP Accelerated Tech Pathway", "label": "AB 科技",
             "province": "AB", "type": "indemand", "url": TECH_PDF_URL, "fetched": date.today().isoformat(),
             "occupations": sorted(occ2, key=lambda x: x["noc"]),

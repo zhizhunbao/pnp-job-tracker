@@ -30,11 +30,11 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths
+import paths
 
 URL = "https://www.statcan.gc.ca/en/subjects/standard/noc/2021/indexV1/noc-2021-v1.0-classification-structure.csv"
-IN_CSV = _paths.NOC / "noc-structure.csv"       # 下载缓存(可重下)
-OUT = _paths.NOC / "structure.json"             # 维护表(noc.py / 09 消费)
+IN_CSV = paths.NOC / "noc-structure.csv"       # 下载缓存(可重下)
+OUT = paths.NOC / "structure.json"             # 维护表(noc.py / 09 消费)
 
 OLLAMA = os.environ.get("OLLAMA_URL", "http://192.168.1.150:11434")
 MODEL = os.environ.get("OLLAMA_MODEL", "qwen3.6:latest")

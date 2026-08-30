@@ -36,7 +36,7 @@ import httpx
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths
+import paths
 
 POLICY_URL = "https://www.gov.nl.ca/immigration/4-skilled-worker-category-eligibility-criteria/"
 PAGE_URL = ("https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/"
@@ -45,7 +45,7 @@ PAGE_URL = ("https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-l
 # 现管经营 ≥2 年(特殊情形 1 年)+ 本地全职雇员(圣约翰斯区 ≥2 / 区外 ≥1)
 EMPLOYER_URL = ("https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/"
                 "provincial-nominee-program/employers/employer-criteria")
-OUT = _paths.PNP / "nl-req.json"
+OUT = paths.PNP / "nl-req.json"
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                     "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"}
 

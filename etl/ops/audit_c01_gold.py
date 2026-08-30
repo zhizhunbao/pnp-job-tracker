@@ -13,10 +13,10 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一级)有 _paths 等共享库
-import _paths
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一级)有 paths 等共享库
+import paths
 
-MART = _paths.MART
+MART = paths.MART
 
 fails: list[str] = []
 

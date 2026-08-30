@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from _log import err, say
+from log.functions import err, say
 from crawl.functions import discover_all, run_ee_categories
 
 SCHEDULED = [("discover", discover_all)]

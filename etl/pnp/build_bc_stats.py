@@ -40,14 +40,14 @@ import httpx
 from bs4 import BeautifulSoup
 
 _HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(_HERE.parent))            # etl/ → _paths
-import _paths
+sys.path.insert(0, str(_HERE.parent))            # etl/ → paths
+import paths
 from crawl.functions import get_cached_page
 
 URL = "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply"
 # 处理时长页(同文另见 /immigrate-to-b-c/for-workers;取通道主页这一份)
 PROC_URL = "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
-OUT = _paths.PNP / "bc-stats.json"
+OUT = paths.PNP / "bc-stats.json"
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                     "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"}
 

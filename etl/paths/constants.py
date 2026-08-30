@@ -1,7 +1,7 @@
-"""Single source of truth for the data/ layout.
+"""paths.constants — data/ 布局唯一真相(2026-08-30 由 _paths.py 目录化,内容纯移动)。
 
 When reorganizing data/, edit ONLY this file — every ETL script imports paths from
-here, so directory moves never require touching the scripts.
+here, so directory moves never require touching the scripts.(写盘惯例住 paths/functions.py)
 
 Layout — 统一约定 **raw/<源>/[<日期>/]内容**(抓取「方式」记在 etl/sources.py 的 method=,不进路径):
   data/
@@ -18,7 +18,7 @@ Layout — 统一约定 **raw/<源>/[<日期>/]内容**(抓取「方式」记在
 """
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent          # etl/_paths.py → project root
+ROOT = Path(__file__).resolve().parent.parent.parent   # etl/paths/constants.py → project root
 DATA = ROOT / "data"
 
 RAW = DATA / "raw"                                      # extract
@@ -50,34 +50,3 @@ COMPANIES = PROCESSED_ATS                               # 各公司文件夹的�
 PROCESSED_JOBBANK = PROCESSED / "jobbank"               # Job Bank 累积/去重/清洗后的 store(当前态,不按日期)
 
 MART = DATA / "mart"                                    # load: 09 产出的最终表(seed 灌库;R3 下 upload_mart 上传)
-
-# =========================================================================
-# 写盘惯例(2026-08-30 立,样张 pnp/build_ab.py):原子 + Errno 22 有界重试。
-# 起因:Windows 绑定卷间歇 OSError[Errno 22](48h 实测 12 次),叠加「一步失败中止本轮
-# + 失败照睡满周期」把 16/64 个源拖成 15-25 天陈账。写盘住这:_paths 本就是
-# data/ 布局唯一真相,每个脚本都已 import,不添新边。
-# =========================================================================
-
-def write_json(path, payload, *, indent=2):
-    """原子写 JSON:临时文件 + os.replace,OSError 重试 5 次退避(0.5s 起翻倍)。
-
-    只重试 OSError(卷抖动);TypeError 等序列化错误照抛 —— 那是代码病不是环境病。
-    """
-    import json as _json
-    import os as _os
-    import time as _time
-    tmp = path.with_suffix(path.suffix + ".tmp")
-    text = _json.dumps(payload, ensure_ascii=False, indent=indent)
-    delay = 0.5
-    for attempt in range(5):
-        try:
-            tmp.write_text(text, encoding="utf-8")
-            _os.replace(tmp, path)
-            return
-        except OSError as e:
-            if attempt == 4:
-                raise
-            print(f"⚠ 写盘 {path.name} 第 {attempt + 1} 次失败({e}),{delay}s 后重试", flush=True)
-            _time.sleep(delay)
-            delay *= 2
-

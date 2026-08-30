@@ -20,12 +20,12 @@ import re
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(_paths 在那)
-import _paths
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(paths 在那)
+import paths
 
 # ── 输入/输出全路径(先声明再用;原地清洗 → IN 与 OUT 同址)──────────────
-IN_COMPANIES_DIR = _paths.COMPANIES                  # processed/ontario/ottawa/kanata-north/companies/
-IN_JOBBANK_FILE = _paths.PROCESSED_JOBBANK / "postings.json"   # processed/jobbank/postings.json(原地清洗)
+IN_COMPANIES_DIR = paths.COMPANIES                  # processed/ontario/ottawa/kanata-north/companies/
+IN_JOBBANK_FILE = paths.PROCESSED_JOBBANK / "postings.json"   # processed/jobbank/postings.json(原地清洗)
 OUT_COMPANIES_DIR = IN_COMPANIES_DIR                  # 各 <slug>/jobs.json 原地写回
 OUT_JOBBANK_FILE = IN_JOBBANK_FILE                    # 原地写回
 
@@ -60,7 +60,7 @@ OTTAWA_COMMUNITIES = set(OTTAWA_DISTRICTS.values())  # 大渥太华社区名(用
 NON_CITY_PREFIXES = ("various location", "undetermined location", "various", "multiple location")
 
 # 全国 FSA→区 维度表(GeoNames 衍生,我们自己维护,无外部 API)。FSA → {main, hood, prov}
-_FSA_TABLE_PATH = _paths.FSA / "fsa-districts.json"
+_FSA_TABLE_PATH = paths.FSA / "fsa-districts.json"
 FSA_TABLE: dict[str, dict] = json.loads(_FSA_TABLE_PATH.read_text(encoding="utf-8")) if _FSA_TABLE_PATH.exists() else {}
 
 

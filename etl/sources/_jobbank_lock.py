@@ -15,10 +15,10 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
 
-import _paths
+import paths
 
 
-JOBBANK_STORE_LOCK = _paths.PROCESSED_JOBBANK / ".postings.lock"
+JOBBANK_STORE_LOCK = paths.PROCESSED_JOBBANK / ".postings.lock"
 
 
 def _lock(file_obj) -> None:

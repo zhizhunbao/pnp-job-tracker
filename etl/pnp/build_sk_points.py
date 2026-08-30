@@ -35,13 +35,13 @@ import httpx
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths
+import paths
 
 PAGE_URL = ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/"
             "saskatchewan-immigrant-nominee-program/assess-your-eligibility")
 SINP_URL = ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/"
             "saskatchewan-immigrant-nominee-program")
-OUT = _paths.PNP / "sk-points.json"
+OUT = paths.PNP / "sk-points.json"
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
 
 # 官方小节标题 → 本站因素键。顺序即匹配顺序,一行命中就切换当前因素。

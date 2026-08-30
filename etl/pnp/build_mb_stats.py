@@ -34,13 +34,13 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 
 _HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(_HERE.parent))            # etl/ → _paths
-import _paths
+sys.path.insert(0, str(_HERE.parent))            # etl/ → paths
+import paths
 from crawl.functions import get_cached_page
 
 MONTHLY_URL = "https://immigratemanitoba.com/resources/data/monthly-data-{year}"
 ANNUAL_URL = "https://immigratemanitoba.com/resources/data/annual-report-{year}"
-OUT = _paths.PNP / "mb-stats.json"
+OUT = paths.PNP / "mb-stats.json"
 
 PROVINCE = "MB"
 NOTE = ("MPNP 官方运营统计:年度配额与年初至今提名/拒/LAA/收件(月度数据页)、"

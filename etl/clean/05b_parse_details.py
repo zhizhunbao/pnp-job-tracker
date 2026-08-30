@@ -19,14 +19,14 @@ from pathlib import Path
 
 from bs4 import BeautifulSoup
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(_paths 在那)
-import _paths
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(paths 在那)
+import paths
 from sources._jobbank_lock import JOBBANK_STORE_LOCK, jobbank_store_lock
 
 _POSTING_RE = re.compile(r"/jobposting/(\d+)")
-IN_SNAP_ROOT = _paths.RAW_JOBBANK                      # 详情原始 HTML 在各 <日期>/details/ 下
-IN_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"     # 累积 store(原地富集)
-OUT_DETAILS = _paths.PROCESSED_JOBBANK / "details"           # 解析后的 .md
+IN_SNAP_ROOT = paths.RAW_JOBBANK                      # 详情原始 HTML 在各 <日期>/details/ 下
+IN_POSTINGS = paths.PROCESSED_JOBBANK / "postings.json"     # 累积 store(原地富集)
+OUT_DETAILS = paths.PROCESSED_JOBBANK / "details"           # 解析后的 .md
 
 GENERIC_EMAIL = {"gmail.com", "hotmail.com", "yahoo.com", "outlook.com", "live.com",
                  "icloud.com", "hotmail.ca", "yahoo.ca", "gmail.ca", "aol.com"}

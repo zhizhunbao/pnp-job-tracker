@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from _log import err, say
+from log.functions import err, say
 from company.functions import (
     build_company_folders, enrich_company_websites, scrape_company_careers, scrape_kanata_directory,
 )

@@ -33,11 +33,11 @@ import httpx
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths
+import paths
 
 STREAM_URL = "https://www.ontario.ca/page/ontario-workforce-priority-stream"
 EMPLOYER_URL = "https://www.ontario.ca/page/oinp-employer-job-offer-streams-employer-guide"
-OUT = _paths.PNP / "on-req.json"
+OUT = paths.PNP / "on-req.json"
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                    "(KHTML, like Gecko) Chrome/120 Safari/537.36"}
 

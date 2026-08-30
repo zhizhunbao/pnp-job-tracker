@@ -20,10 +20,10 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths
+import paths
 
-IN_OUT_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"
-IN_WAGES = _paths.WAGES / "wages.json"
+IN_OUT_POSTINGS = paths.PROCESSED_JOBBANK / "postings.json"
+IN_WAGES = paths.WAGES / "wages.json"
 
 # 泛词标题:整串精确匹配(小写、去首尾空白/标点后);只收「不含任何职业信息」的词
 GENERIC_TITLES = {

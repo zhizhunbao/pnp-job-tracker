@@ -18,10 +18,10 @@ from pathlib import Path
 import httpx
 from bs4 import BeautifulSoup
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一级)有 _paths
-import _paths
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一级)有 paths
+import paths
 
-OUT = _paths.PNP / "draws.json"
+OUT = paths.PNP / "draws.json"
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
 BC_URL = "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply"

@@ -40,12 +40,12 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths
+import paths
 
-IN_NAMED = _paths.PROCESSED / "named_employers.json"
-IN_REGISTRY_DIR = _paths.RAW / "corp-registry"
-OUT = _paths.PROCESSED / "employer_facts.json"
-ERR_LOG = _paths.PROCESSED / "employer_facts_errors.log"
+IN_NAMED = paths.PROCESSED / "named_employers.json"
+IN_REGISTRY_DIR = paths.RAW / "corp-registry"
+OUT = paths.PROCESSED / "employer_facts.json"
+ERR_LOG = paths.PROCESSED / "employer_facts_errors.log"
 print(f"IN_NAMED={IN_NAMED}\nIN_REGISTRY_DIR={IN_REGISTRY_DIR}\nOUT={OUT}", flush=True)
 
 # 公共部门识别(移植 etl/clean/_enrich_shelf_aliases.py PUB 正则,2026-08-08 hospital 词界已修版;

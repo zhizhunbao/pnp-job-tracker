@@ -11,13 +11,13 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from _log import err, say
+from log.functions import err, say
 from load.functions import backup_db, upload_mart
 from load.scheme import BackupIn, UploadIn
 
 
 def run_upload() -> None:
-    """upload 工具面(进度打点注 _log.say)。"""
+    """upload 工具面(进度打点注 log.functions.say)。"""
     upload_mart(UploadIn(say=say))
 
 

@@ -20,9 +20,9 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths
+import paths
 
-OUT_I18N = _paths.PROCESSED / "city_names_i18n.json"
+OUT_I18N = paths.PROCESSED / "city_names_i18n.json"
 
 # 城市 → (中文, 韩文)。收录门槛=该译名在中文/韩文媒体或移民社区确实通行,不是音译练习。
 CITIES: dict[str, tuple[str, str]] = {

@@ -2,7 +2,7 @@
 check_etl_shape — etl 形制自查役(分域批3,2026-08-29)。
 
 Ruff 管不住的三条形制,这里当闸(判据见 docs/design/etl分域-20260829.md §4/§5):
-  ① 域间禁 import:域内文件只许引基础设施叶子(_paths/fetch/_steps/noc/noc_buckets/grades/crawl)
+  ① 域间禁 import:域内文件只许引基础设施叶子(paths/log/fetch/_steps/noc/noc_buckets/grades/crawl)
      与本域邻居,不许引别的域 —— 零基线,违规即红;
   ② IN_/OUT_ 显式路径常量:build_*/scrape_*/enrich_* 模块顶部必须声明(宪法既有);
   ③ 一域一门:域内只有 main.py 许带 `if __name__`(步骤模块该收成 run(),新写就范)。
@@ -19,12 +19,13 @@ ETL = Path(__file__).resolve().parent.parent
 BASELINE = Path(__file__).resolve().parent / "etl_shape_baseline.json"
 
 DOMAINS = ["company", "crawl", "dli", "ee", "employers", "fetch", "fsa", "ircc", "lmia",
-           "load", "news", "noc_facts", "ops", "pilot", "pnp", "wages"]
+           "load", "log", "news", "noc_facts", "ops", "pilot", "pnp", "wages"]
+# paths 目录化未入册:write_json 默认值参数是存量形(一参令批C 收),入册即硬红 —— 就范再进
 # fetch/crawl 2026-08-30 零字符串溶完即入册(INFRA 身份不变:域可引;双重身份 = 既被扫也可被依赖)
 # crawl 2026-08-30 批A 升格基础设施(判据:被十几个 build 当地基读缓存 ——「换掉它
 # 业务一个字不用改」;正门 from crawl.cache import …,path-hack 黑通道批B 拆光)
 
-INFRA = {"_paths", "fetch", "_steps", "_log", "noc", "noc_buckets", "grades", "crawl"}
+INFRA = {"paths", "fetch", "_steps", "log", "noc", "noc_buckets", "grades", "crawl"}
 
 IMPORT_RE = re.compile(r"^(?:from|import)\s+([A-Za-z_][A-Za-z0-9_]*)", re.M)
 INOUT_RE = re.compile(r"^(?:IN|OUT)_[A-Z0-9_]*\s*=", re.M)
@@ -123,7 +124,7 @@ def scan() -> tuple[list[str], list[str]]:
             if p.name in ("functions.py", "main.py"):
                 for m in re.finditer(r"^\s*print\(", text, re.M):
                     lineno = text.count(chr(10), 0, m.start()) + 1
-                    hard.append(f"{rel}:{lineno} 裸 print(域内出口唯一 = _log.say/err)")
+                    hard.append(f"{rel}:{lineno} 裸 print(域内出口唯一 = log.functions.say/err)")
             if p.name == "functions.py":
                 for m in re.finditer(r"^(?:async +)?def +_", text, re.M):
                     lineno = text.count(chr(10), 0, m.start()) + 1

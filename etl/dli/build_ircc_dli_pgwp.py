@@ -18,7 +18,7 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths
+import paths
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -26,7 +26,7 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
 IN_URL = "https://www.canada.ca/content/dam/ircc/documents/json/dli/dli-full-list.json"   # 输入:IRCC 官方全量 DLI JSON
 # 出处用「人能读的着陆页」(E4-04 惯例),不是数据文件 URL
 LANDING = "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/prepare/designated-learning-institutions-list.html"
-OUT_FILE = _paths.DLI / "dli.json"                                                        # 输出:PGWP 子集(院校级)
+OUT_FILE = paths.DLI / "dli.json"                                                        # 输出:PGWP 子集(院校级)
 
 UA = {"User-Agent": "Mozilla/5.0 (compatible; pnp-job-tracker dli-builder)"}
 

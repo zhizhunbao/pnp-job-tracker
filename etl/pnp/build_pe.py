@@ -23,14 +23,14 @@ from pathlib import Path
 
 import httpx
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ → _paths
-import _paths
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ → paths
+import paths
 
 PROVINCE = "PE"
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 GUIDE_URL = "https://www.princeedwardisland.ca/sites/default/files/publications/pei_workforce_application_guide.pdf"
 PAGE_URL = "https://www.princeedwardisland.ca/en/information/office-of-immigration/pei-pnp-workforce-streams"
-OUT = _paths.PNP / "pe-oid.json"
+OUT = paths.PNP / "pe-oid.json"
 NOTE = ("PEI Occupations in Demand:须是清单内 NOC + PEI 雇主全职非季节性长期 offer,另有 1 年相关经验、"
         "18-59 岁、高中以上、CLB/NCLC 4 等条件。PEI 另有 Skilled Worker / Critical Worker / "
         "Intermediate Experience 等通道**不列职业**(按 offer + TEER 判)——不在本清单不等于 PE 走不通。"
@@ -43,7 +43,7 @@ MIN_EXPECTED = 5   # 低于此数视为解析异常(2026-08-03 实见 8 个)
 
 def main() -> None:
     print(f"OUT: {OUT}")
-    _paths.PNP.mkdir(parents=True, exist_ok=True)
+    paths.PNP.mkdir(parents=True, exist_ok=True)
     try:
         import fitz  # pymupdf(已在 pyproject 依赖里)
         pdf = httpx.get(GUIDE_URL, headers={"User-Agent": UA}, follow_redirects=True, timeout=60).content

@@ -1,14 +1,14 @@
 """load.scheme — 灌库层形状(一参令 XxxIn / 单返回值 Out)。
 
 functions 纯静默(日志不写在域里):进度打点经 say 回调注入(方案A 同款 ——
-调用方是谁就用谁的日志面;auto_update 常驻进程尤其不能被 _log 的 sink 重配劫持),
+调用方是谁就用谁的日志面;auto_update 常驻进程尤其不能被 log.functions 的 sink 重配劫持),
 触发类返回 CallOut 由调用方决定怎么打、怎么算成败。
 """
 from dataclasses import dataclass
 from typing import Callable, Protocol
 
 SayFn = Callable[[str], object]
-"""进度打点回调形(一行文本一调;门注 _log.say,auto_update 注 ulog.info)。"""
+"""进度打点回调形(一行文本一调;门注 log.functions.say,auto_update 注 ulog.info)。"""
 
 
 class HttpRespLike(Protocol):
@@ -54,7 +54,7 @@ class UploadIn:
     """upload_mart() 入参。"""
 
     say: SayFn
-    """进度打点回调(一行文本一调;门注 _log.say,别的调用方注自己的)。"""
+    """进度打点回调(一行文本一调;门注 log.functions.say,别的调用方注自己的)。"""
 
 
 @dataclass

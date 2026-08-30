@@ -18,7 +18,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import _paths
+import paths
 import noc as NOC  # NOC 分类法(单一来源)
 import grades as GR  # E12-08 档位(1-5,单一来源;职位三维+公司四维)
 from clean import visa_flag  # GAP1③ 身份预筛(JD 正文 → 红旗+quote)
@@ -46,70 +46,70 @@ def fill_salary(j: dict) -> None:
         LATE_SALARY[0] += 1
 
 # ── 输入/输出全路径 ──────────────────────────────────────────────
-IN_JOBBANK = _paths.PROCESSED_JOBBANK / "postings.json"
-IN_EXPIRED = _paths.PROCESSED_JOBBANK / "expired_ids.json"   # #124 批C:ops/verify_expired.py 判死累积
-IN_ATS_COMPANIES = _paths.COMPANIES                       # processed/ats/.../companies/<slug>/
-IN_SCORED = _paths.PROCESSED / "all-scored.json"
-IN_AIP = _paths.AIP / "aip-designated-employers.json"
-IN_PILOT = _paths.PILOT / "pilot-communities.json"   # RCIP/FCIP 试点社区(build_pilots 产,E6-11)
-IN_STATCAN = _paths.IRCC / "statcan_tr_prov.json"    # 竞争卡存量(StatCan 常住估算,方案C 2026-08-15)
-IN_PILOT_EMP = _paths.PILOT / "pilot-employers.json"     # 批B:社区指定雇主(人工核对整理,agent 抽取+抽查)
-IN_PILOT_OCC = _paths.PILOT / "pilot-occupations.json"   # 批B:社区 × 职业清单
-IN_PILOT_QUOTA = _paths.PILOT / "pilot-quota.json"       # 社区名额状态(build_pilot_quota.py 周更,quote-anchored)
-IN_NL_EMPLOYERS = _paths.PNP / "nl-employers.json"  # NL 官网指定雇主 645 家(C4-W4,含申报 NOC)
-IN_WAGES = _paths.WAGES / "wages.json"   # NOC×省 中位工资(wages/build_esdc_wage_medians.py 从 ESDC 开放数据建)
-IN_PNP = _paths.PNP                      # raw/pnp/*.json(各省具名通道:每文件一条通道)
-IN_PNP_DRAWS = _paths.PNP / "draws.json"  # 省抽选事实(BC/AB/MB+ON通告,build_draws.py 产,E6-04)
+IN_JOBBANK = paths.PROCESSED_JOBBANK / "postings.json"
+IN_EXPIRED = paths.PROCESSED_JOBBANK / "expired_ids.json"   # #124 批C:ops/verify_expired.py 判死累积
+IN_ATS_COMPANIES = paths.COMPANIES                       # processed/ats/.../companies/<slug>/
+IN_SCORED = paths.PROCESSED / "all-scored.json"
+IN_AIP = paths.AIP / "aip-designated-employers.json"
+IN_PILOT = paths.PILOT / "pilot-communities.json"   # RCIP/FCIP 试点社区(build_pilots 产,E6-11)
+IN_STATCAN = paths.IRCC / "statcan_tr_prov.json"    # 竞争卡存量(StatCan 常住估算,方案C 2026-08-15)
+IN_PILOT_EMP = paths.PILOT / "pilot-employers.json"     # 批B:社区指定雇主(人工核对整理,agent 抽取+抽查)
+IN_PILOT_OCC = paths.PILOT / "pilot-occupations.json"   # 批B:社区 × 职业清单
+IN_PILOT_QUOTA = paths.PILOT / "pilot-quota.json"       # 社区名额状态(build_pilot_quota.py 周更,quote-anchored)
+IN_NL_EMPLOYERS = paths.PNP / "nl-employers.json"  # NL 官网指定雇主 645 家(C4-W4,含申报 NOC)
+IN_WAGES = paths.WAGES / "wages.json"   # NOC×省 中位工资(wages/build_esdc_wage_medians.py 从 ESDC 开放数据建)
+IN_PNP = paths.PNP                      # raw/pnp/*.json(各省具名通道:每文件一条通道)
+IN_PNP_DRAWS = paths.PNP / "draws.json"  # 省抽选事实(BC/AB/MB+ON通告,build_draws.py 产,E6-04)
 # #280:抽选流名中文灰注缓存(etl/pnp/translate_draw_streams.py 本地 qwen 批译产,增量缓存)——
 # 缺这个文件(还没跑过批译)= streamZh 全列 None,前端优雅回退纯英文,不是报错
-IN_DRAW_STREAM_ZH = _paths.PROCESSED / "draw_stream_zh.json"
+IN_DRAW_STREAM_ZH = paths.PROCESSED / "draw_stream_zh.json"
 # 省提名官方打分表(E12-09)——一省一个文件,加省就往这个 list 里加,下面的组装逻辑不用改。
 # BC=SIRS 200 分制(build_bc_sirs.py 从官方 PDF 抓)/ SK=SINP Points Grid 110 分制(build_sk_points.py 抓官网表)
 # AB=AAIP Worker EOI Points Grid 100 分制(2026-08-14 加,官方 PDF 人工核对:
 #   data/crawl/ab-aaip/im-worker-stream-expression-of-interest-points-grid.pdf)
-IN_SCORE_TABLES = [_paths.PNP / "bc-sirs.json", _paths.PNP / "sk-points.json", _paths.PNP / "on-points.json",
-                   _paths.PNP / "mb-points.json", _paths.PNP / "nl-points.json", _paths.PNP / "ab-eoi-points.json"]
+IN_SCORE_TABLES = [paths.PNP / "bc-sirs.json", paths.PNP / "sk-points.json", paths.PNP / "on-points.json",
+                   paths.PNP / "mb-points.json", paths.PNP / "nl-points.json", paths.PNP / "ab-eoi-points.json"]
 # NL 只对 Express Entry Skilled Worker 使用 Annex A 100 分表(67 分门槛);普通 NL EOI 仍按公开优先标准择优,
 # 没有数值权重。两者不能混成“整个纽省都按 67 分”。
 # 省提名官方**门槛**(规则引擎第一刀)——打分表管「能打几分」,这张管「打分之前先要满足什么」。
 # 一省一个文件,加省=往这个 list 里加一个(build_<省>_req.py 产,列同一套)。
-IN_REQ_TABLES = [_paths.PNP / f"{p}-req.json"
+IN_REQ_TABLES = [paths.PNP / f"{p}-req.json"
                  for p in ("bc", "on", "ab", "sk", "mb", "ns", "nb", "pe", "nl")] + [
                  # B1-4:联邦 PGWP 规则库(province='FED' program='PGWP',ircc/build_ircc_pgwp_rules.py 产,quote-anchored)。
                  # 走同一张表=引擎 facts.requirements 免费拿到;FED 行不会漏进省级门槛节(那边按省名挑行)
-                 _paths.IRCC / "pgwp_rules.json",
+                 paths.IRCC / "pgwp_rules.json",
                  # G8:联邦段官方规费(program='PR-fees',ircc/build_ircc_fees.py 产)—— 第三次复用,同上安全
-                 _paths.IRCC / "fees.json",
+                 paths.IRCC / "fees.json",
                  # G9:联邦 Express Entry 三个项目的资格门槛(province='FED',build_ee_rules.py 产,
                  # quote-anchored)。**一个文件三个项目** → program 逐行写在 requirements[].program
                  # ('CEC'/'FSW'/'FST'),表级只有 province —— 下面按行覆盖 program,零新表
-                 _paths.EE / "fed-eligibility.json",
+                 paths.EE / "fed-eligibility.json",
                  # G-AIP:联邦大西洋移民计划(AIP)申请人门槛(province='FED' program='AIP',
                  # build_aip_rules.py 产,quote-anchored)——#287 一键三合一判定的硬前置
                  # (设计 docs/design/一键三合一判定-20260809.md §4:此前 AIP 申请人侧生产 0 行)
-                 _paths.IRCC / "aip_rules.json"]
+                 paths.IRCC / "aip_rules.json"]
 # G5 省级官方运营统计(配额/已发/剩余、积压游标、EOI 池、处理时长、SIRS 池分布)——
 # 一省一个文件,加省=往这个 list 里加一个;各省字段形状不同,按 province 分派(下面 build_pnp_ops_stats)。
-IN_PNP_STATS = [_paths.PNP / f"{p}-stats.json" for p in ("ab", "sk", "bc", "mb", "on")]
-IN_EE = _paths.EE / "federal-categories.json"  # 联邦 Express Entry 类别抽选(全国单一源)
-IN_EE_DRAWS = _paths.EE / "draws.json"          # 各类别最近一次抽选(CRS/日期/邀请数,ee/build_ircc_ee_draws.py 产)
+IN_PNP_STATS = [paths.PNP / f"{p}-stats.json" for p in ("ab", "sk", "bc", "mb", "on")]
+IN_EE = paths.EE / "federal-categories.json"  # 联邦 Express Entry 类别抽选(全国单一源)
+IN_EE_DRAWS = paths.EE / "draws.json"          # 各类别最近一次抽选(CRS/日期/邀请数,ee/build_ircc_ee_draws.py 产)
 # G9 联邦官方计分表(两套分,同一张窄表,grid 列区分)——build_ee_rules.py 产,只读 crawl 缓存。
-IN_EE_CRS = _paths.EE / "crs-grid.json"         # CRS 排名分 A/B/C/D 四段(rows)
-IN_EE_ELIG = _paths.EE / "fed-eligibility.json"  # 资格门槛(上面 IN_REQ_TABLES 消费)+ FSW 67 分表(selectionFactors)
-IN_EE_LANG = _paths.EE / "language-grid.json"    # T4–T26 语言成绩 ↔ CLB/NCLC(独立表,绝不参与 points 求和)
-IN_NOC_DESC = _paths.NOC / "descriptions.json"  # NOC 官方名+主要职责(noc_facts/build_statcan_noc_descriptions.py 产)
-IN_FIELD_SOURCES = _paths.RAW / "sources" / "field-sources.json"  # 字段级来源注册表(ops/verify_field_source_pages.py 产,E4-04)
-IN_DLI = _paths.DLI / "dli.json"                # PGWP 可申 DLI 子集(dli/build_ircc_dli_pgwp.py 产,E12-03)
-IN_LMIA = _paths.LMIA / "lmia-employers.json"   # ESDC 正面 LMIA 雇主聚合(lmia/build_esdc_lmia_employers.py 产,E6-02)
-IN_ENRICH = _paths.PROCESSED / "company_enrich.json"  # 公司官网富化(简介/行业,company/enrich_company_websites.py 产,E8-04)
-IN_NEWS = _paths.NEWS / "news.json"              # 官方移民新闻累积表(etl/news/ 产,E12-06)
-IN_IRCC_TR = _paths.IRCC / "temp_residents.json"      # E8-12 省弹框体量卡:学签/工签年末存量
-IN_IRCC_PR = _paths.IRCC / "pnp_admissions.json"      # PNP 类别 PR 登陆数
-IN_IRCC_ALLOC = _paths.IRCC / "pnp_allocations.json"  # PNP 年度提名配额(人工核对维护表)
-IN_IRCC_FLOW = _paths.IRCC / "study_flow.json"        # 新发学签流量(月度;2026-08-03 接入,存量停在 2024 时的当期口径)
-OUT_MART = _paths.DATA / "mart"
+IN_EE_CRS = paths.EE / "crs-grid.json"         # CRS 排名分 A/B/C/D 四段(rows)
+IN_EE_ELIG = paths.EE / "fed-eligibility.json"  # 资格门槛(上面 IN_REQ_TABLES 消费)+ FSW 67 分表(selectionFactors)
+IN_EE_LANG = paths.EE / "language-grid.json"    # T4–T26 语言成绩 ↔ CLB/NCLC(独立表,绝不参与 points 求和)
+IN_NOC_DESC = paths.NOC / "descriptions.json"  # NOC 官方名+主要职责(noc_facts/build_statcan_noc_descriptions.py 产)
+IN_FIELD_SOURCES = paths.RAW / "sources" / "field-sources.json"  # 字段级来源注册表(ops/verify_field_source_pages.py 产,E4-04)
+IN_DLI = paths.DLI / "dli.json"                # PGWP 可申 DLI 子集(dli/build_ircc_dli_pgwp.py 产,E12-03)
+IN_LMIA = paths.LMIA / "lmia-employers.json"   # ESDC 正面 LMIA 雇主聚合(lmia/build_esdc_lmia_employers.py 产,E6-02)
+IN_ENRICH = paths.PROCESSED / "company_enrich.json"  # 公司官网富化(简介/行业,company/enrich_company_websites.py 产,E8-04)
+IN_NEWS = paths.NEWS / "news.json"              # 官方移民新闻累积表(etl/news/ 产,E12-06)
+IN_IRCC_TR = paths.IRCC / "temp_residents.json"      # E8-12 省弹框体量卡:学签/工签年末存量
+IN_IRCC_PR = paths.IRCC / "pnp_admissions.json"      # PNP 类别 PR 登陆数
+IN_IRCC_ALLOC = paths.IRCC / "pnp_allocations.json"  # PNP 年度提名配额(人工核对维护表)
+IN_IRCC_FLOW = paths.IRCC / "study_flow.json"        # 新发学签流量(月度;2026-08-03 接入,存量停在 2024 时的当期口径)
+OUT_MART = paths.DATA / "mart"
 # 「还在板上」的 jobbank 帖号(verify_expired 拿它筛掉已 closed / 已被同名去重丢掉的帖,别白验)
-OUT_MART_OPEN_IDS = _paths.PROCESSED_JOBBANK / "mart_open_ids.json"
+OUT_MART_OPEN_IDS = paths.PROCESSED_JOBBANK / "mart_open_ids.json"
 
 PROV_FULL = {
     "ON": "Ontario", "QC": "Quebec", "BC": "British Columbia", "AB": "Alberta",
@@ -149,7 +149,7 @@ def guess_prov(loc: str) -> str:
 def build_jd_index() -> dict:
     """扫已抓的 JD .md(processed/jobbank/details + processed/ats),按 frontmatter `url` 建 url→路径 索引。"""
     idx: dict[str, "object"] = {}
-    for root in (_paths.PROCESSED / "jobbank" / "details", _paths.PROCESSED_ATS):
+    for root in (paths.PROCESSED / "jobbank" / "details", paths.PROCESSED_ATS):
         if not root.exists():
             continue
         for p in root.rglob("*.md"):
@@ -831,7 +831,7 @@ def build():
     # 知名依据=processed/company_facts.json 的 wiki(D 批产物;K 懒探索回填的 wiki 在 DB 侧,mart 不可见——
     # 代理可接受:facts 文件覆盖批量查过的存量,懒回填增量待下轮 facts 重导;fame 档差最多 1 档)。
     facts_wiki: set[str] = set()
-    facts_f = _paths.PROCESSED / "company_facts.json"
+    facts_f = paths.PROCESSED / "company_facts.json"
     if facts_f.exists():
         try:
             facts_wiki = {sl for sl, c in json.loads(facts_f.read_text(encoding="utf-8")).get("by_slug", {}).items() if c.get("wiki")}
@@ -890,7 +890,7 @@ def build():
     # #147/#151:NOC 职业名与城市名的中/韩译名(clean/04f、04g 产;**固定参考集翻一次永久用**)——
     # 缺文件/缺条目=留空,前端回退只显英文(宁可留空也不瞎猜;小镇本来就没有通行译名,不硬音译)
     def _load_i18n(fname: str) -> dict:
-        p = _paths.PROCESSED / fname
+        p = paths.PROCESSED / fname
         if not p.exists():
             return {}
         try:

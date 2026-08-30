@@ -27,11 +27,11 @@ import httpx
 from zhconv import convert as zh_convert
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths
+import paths
 
-IN_SHELF = _paths.PROCESSED / "shelf_companies.json"
-IN_INDUSTRY = _paths.PROCESSED / "shelf_industries.json"   # brand 遍行业锚(可缺,缺=全部只音译)
-OUT = _paths.PROCESSED / "shelf_aliases.json"
+IN_SHELF = paths.PROCESSED / "shelf_companies.json"
+IN_INDUSTRY = paths.PROCESSED / "shelf_industries.json"   # brand 遍行业锚(可缺,缺=全部只音译)
+OUT = paths.PROCESSED / "shelf_aliases.json"
 print(f"IN_SHELF={IN_SHELF}\nIN_INDUSTRY={IN_INDUSTRY}\nOUT={OUT}", flush=True)
 
 WD = "https://www.wikidata.org/w/api.php"

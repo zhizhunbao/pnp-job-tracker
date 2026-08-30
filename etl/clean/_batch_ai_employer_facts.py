@@ -26,11 +26,11 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths
+import paths
 
-IN_NAMED = _paths.PROCESSED / "named_employers.json"
-OUT = _paths.PROCESSED / "employer_facts.json"
-ENV_FILE = _paths.ROOT / "cms" / ".env"
+IN_NAMED = paths.PROCESSED / "named_employers.json"
+OUT = paths.PROCESSED / "employer_facts.json"
+ENV_FILE = paths.ROOT / "cms" / ".env"
 
 # 与 cms/src/lib/companyResearch.ts SYSTEM 提示词保持字面一致(只读该文件,没有改它;这里是 ETL 侧独立
 # 调用同一朋友端点的必要复刻——两处各自维护,改动需同步,已在两文件顶部互相点名)。

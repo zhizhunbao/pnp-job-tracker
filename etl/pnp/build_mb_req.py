@@ -46,8 +46,8 @@ import httpx
 from bs4 import BeautifulSoup
 
 _HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(_HERE.parent))           # etl/ → _paths
-import _paths
+sys.path.insert(0, str(_HERE.parent))           # etl/ → paths
+import paths
 from crawl.functions import get_cached_page
 from crawl.functions import convert_md
 from crawl.scheme import ConvertIn
@@ -59,7 +59,7 @@ SWM_URL = "https://immigratemanitoba.com/mpnp/skilled-worker/swm/eligibility"
 # 「owned and actively operated the business for at least three consecutive years」。
 # MPNP SWM 主线本身不设雇主年限数字(SWM 的 6 个月是申请人在职时长,见头注);EDI 是雇主端的申请通道。
 EDI_URL = "https://immigratemanitoba.com/employer-services/edi/"
-OUT = _paths.PNP / "mb-req.json"
+OUT = paths.PNP / "mb-req.json"
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 
 PROVINCE = "MB"

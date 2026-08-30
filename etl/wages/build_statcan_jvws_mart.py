@@ -15,10 +15,10 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths
+import paths
 
-IN_TABLE = _paths.JVWS / "jvws-vacancies.json"
-OUT_MART = _paths.MART / "jvws_vacancies.json"
+IN_TABLE = paths.JVWS / "jvws-vacancies.json"
+OUT_MART = paths.MART / "jvws_vacancies.json"
 
 # StatCan 质量码含义(WDS getCubeMetadata footnote #1,quote-anchored 见 build_jvws.py):
 # A-E = 已发布(A 最优,E 谨慎使用);F = 太不可靠不发布;'..' = 当期未采集;'x' = 保密抑制。

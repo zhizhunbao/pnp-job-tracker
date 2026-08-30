@@ -3,10 +3,10 @@ company 域常量 —— 域词汇表(三件套形制**全站样张**,2026-08-30
 +「enrich/scrape 这些都要重构到其他三个文件里」:步骤文件全溶,域=五件)。
 
 判据(照 cms 宪法同款):常量只装 JSON 装得下的(标量/字符串表/正则)+ IN/OUT 路径。
-唯一特批 import = `_paths`(2026-08-30 Frank 否决「functions 段首常量」提议:functions
+唯一特批 import = `paths`(2026-08-30 Frank 否决「functions 段首常量」提议:functions
 顶层只许函数)。本文件不做 sys.path bootstrap —— **只有门(main.py)插路径**(2026-08-30
 Frank「每个文件都得导入一下吗」拍的形):件套以 company.constants 包名被引,门先把 etl/
-摆上路径,_paths 自然可解。
+摆上路径,paths 自然可解。
 函数体字面量同日收编(Frank「函数内部也一堆常量啊」):正则/选择器/阈值/超时全部提名,
 对标 cms 魔数收编批;只有零语义的琐碎字面量(空串、±1)留在体内。
 注释方言(2026-08-30 Frank「只允许 jsDoc 注释,不允许行内注释」):每个常量用
@@ -17,7 +17,7 @@ open 模式字符三类语法位外,一切字面量(含文案 f-string,改成本
 """
 import re
 
-import _paths
+import paths
 
 # =========================================================================
 # 1. 共享词汇(≥2 段消费)
@@ -415,20 +415,20 @@ GENERIC_MAIL = {"gmail.com", "gmail.ca", "hotmail.com", "hotmail.ca", "yahoo.com
 """JD 里的通用邮箱域 —— 不是官网线索。"""
 
 # =========================================================================
-# 5. IN/OUT 路径(经 _paths 解析;「这步读什么写哪」全域一处可 grep)
+# 5. IN/OUT 路径(经 paths 解析;「这步读什么写哪」全域一处可 grep)
 # =========================================================================
 
-OUT_KANATA_DIR = _paths.RAW_COMPANIES
+OUT_KANATA_DIR = paths.RAW_COMPANIES
 """段2 目录三件(kanata-north.json/.csv/.md)的落盘目录。"""
 
-IN_FOLDERS_DIRECTORY = _paths.RAW_COMPANIES / "kanata-north.json"
+IN_FOLDERS_DIRECTORY = paths.RAW_COMPANIES / "kanata-north.json"
 """段3 输入:扁平公司目录(段2 的产物)。"""
 
-IN_FOLDERS_CAREERS = _paths.RAW_COMPANIES / "kanata-north-careers.json"
+IN_FOLDERS_CAREERS = paths.RAW_COMPANIES / "kanata-north-careers.json"
 """段3 输入:careers 定位结果(段4 的产物;可缺,缺则只写 profile)。"""
 
-OUT_FOLDERS_ROOT = _paths.COMPANIES
-"""段3 输出:一司一档的根(processed/ats;_paths.COMPANIES 已含地域语义)。"""
+OUT_FOLDERS_ROOT = paths.COMPANIES
+"""段3 输出:一司一档的根(processed/ats;paths.COMPANIES 已含地域语义)。"""
 PROFILE_FILE = "profile.json"
 """一司一档里的身份档文件名。"""
 
@@ -445,18 +445,18 @@ PRINT_FOLDERS_TPL = "Region '{region}': {made} company folders created, {careers
 
 
 
-IN_CAREERS_DIRECTORY = _paths.RAW_COMPANIES / "kanata-north.json"
+IN_CAREERS_DIRECTORY = paths.RAW_COMPANIES / "kanata-north.json"
 """段4 输入:扁平公司目录(段2 的产物)。"""
 
-IN_ENRICH_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"
+IN_ENRICH_POSTINGS = paths.PROCESSED_JOBBANK / "postings.json"
 """段5 输入:公司官网来源(employer + website)。"""
 
-IN_ENRICH_JD_DETAILS = _paths.PROCESSED / "jobbank" / "details"
+IN_ENRICH_JD_DETAILS = paths.PROCESSED / "jobbank" / "details"
 """段5 输入:已抓 JD .md(找官网①:JD 正文域名线索 —— 雇主自己写的,置信最高)。"""
 
-IN_ENRICH_ATS = _paths.PROCESSED_ATS
+IN_ENRICH_ATS = paths.PROCESSED_ATS
 """段5 输入:ATS 公司已自带 profile,跳过不富化。"""
 
-OUT_ENRICH_CACHE = _paths.PROCESSED / "company_enrich.json"
+OUT_ENRICH_CACHE = paths.PROCESSED / "company_enrich.json"
 """段5 输出:增量缓存(slug → EnrichRecord);09 汇装直读合并进 companies 行。"""
 

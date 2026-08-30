@@ -11,15 +11,15 @@ from datetime import date, timedelta
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths
+import paths
 
 # 2026-08-15 方案C(Frank「那就换 C 吧」):竞争比分子整体换 StatCan 常住估算口径 ——
 # IRCC 年末许可表停在 2024 且高估(含已离境者),StatCan 季度估算的才是「还在境内抢名额的人」。
 # temp_residents.json(IRCC)不再进本脚本;其余消费端(省弹框体量卡等)不受影响。
-IN_TR = _paths.IRCC / "statcan_tr_prov.json"
-IN_ALLOC = _paths.IRCC / "pnp_allocations.json"
-IN_DRAWS = _paths.PNP / "draws.json"
-OUT = _paths.PROCESSED / "difficulty.json"
+IN_TR = paths.IRCC / "statcan_tr_prov.json"
+IN_ALLOC = paths.IRCC / "pnp_allocations.json"
+IN_DRAWS = paths.PNP / "draws.json"
+OUT = paths.PROCESSED / "difficulty.json"
 print(f"IN_TR={IN_TR}\nIN_ALLOC={IN_ALLOC}\nIN_DRAWS={IN_DRAWS}\nOUT={OUT}", flush=True)
 
 PROVS = ["ON", "BC", "AB", "SK", "MB", "NS", "NB", "NL", "PE"]

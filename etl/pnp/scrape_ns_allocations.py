@@ -18,7 +18,7 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths
+import paths
 
 if os.name == "nt":  # 本机控制台 cp1252;容器由 auto_update 设 PYTHONIOENCODING
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
@@ -26,12 +26,12 @@ if os.name == "nt":  # 本机控制台 cp1252;容器由 auto_update 设 PYTHONIO
 
 API = "https://data.novascotia.ca/resource/8rf7-hw2p.json"
 PAGE = "https://data.novascotia.ca/Immigration-and-Migration/Annual-Allocations-for-Immigration-Programs/8rf7-hw2p"
-OUT = _paths.IRCC / "ns_allocations.json"
+OUT = paths.IRCC / "ns_allocations.json"
 print(f"OUT={OUT}", flush=True)
 
 
 def main() -> None:
-    _paths.IRCC.mkdir(parents=True, exist_ok=True)
+    paths.IRCC.mkdir(parents=True, exist_ok=True)
     try:
         r = httpx.get(API, timeout=60, headers={"User-Agent": "offer2pr-ns-alloc/1.0"})
         r.raise_for_status()

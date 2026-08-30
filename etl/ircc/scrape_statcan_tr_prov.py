@@ -28,9 +28,9 @@ if os.name == "nt":  # 本机控制台 cp1252 打不了 ✗/中文;容器由 aut
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths
+import paths
 
-OUT = _paths.IRCC / "statcan_tr_prov.json"
+OUT = paths.IRCC / "statcan_tr_prov.json"
 print(f"OUT={OUT}", flush=True)
 
 WDS = "https://www150.statcan.gc.ca/t1/wds/rest"
@@ -62,7 +62,7 @@ def member_ids() -> tuple[dict[str, int], dict[str, int]]:
 
 
 def main() -> None:
-    _paths.IRCC.mkdir(parents=True, exist_ok=True)
+    paths.IRCC.mkdir(parents=True, exist_ok=True)
     try:
         geo_ids, typ_ids = member_ids()
         if len(geo_ids) < 10 or len(typ_ids) < 3:

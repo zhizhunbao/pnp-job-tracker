@@ -16,12 +16,12 @@ import re
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(_paths 在那)
-import _paths
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(paths 在那)
+import paths
 
 # ── 输入/输出全路径(先声明再用;原地清洗 → IN 与 OUT 同址)──────────────
-IN_COMPANIES_DIR = _paths.COMPANIES                  # processed/ontario/ottawa/kanata-north/companies/
-IN_JOBBANK_FILE = _paths.PROCESSED_JOBBANK / "postings.json"   # processed/jobbank/postings.json(原地清洗)
+IN_COMPANIES_DIR = paths.COMPANIES                  # processed/ontario/ottawa/kanata-north/companies/
+IN_JOBBANK_FILE = paths.PROCESSED_JOBBANK / "postings.json"   # processed/jobbank/postings.json(原地清洗)
 OUT_COMPANIES_DIR = IN_COMPANIES_DIR                  # 各 <slug>/jobs.json 原地写回
 OUT_JOBBANK_FILE = IN_JOBBANK_FILE                    # 原地写回
 

@@ -23,9 +23,9 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths
+import paths
 
-OUT = _paths.IRCC / "npr_share.json"
+OUT = paths.IRCC / "npr_share.json"
 print(f"OUT={OUT}", flush=True)
 
 WDS = "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromVectorsAndLatestNPeriods"
@@ -50,7 +50,7 @@ def series(vector: int) -> dict[str, float]:
 
 
 def main() -> None:
-    _paths.IRCC.mkdir(parents=True, exist_ok=True)
+    paths.IRCC.mkdir(parents=True, exist_ok=True)
     try:
         pop, npr = series(V_POP), series(V_NPR)
     except Exception as e:  # noqa: BLE001  抓取失败 → 保留旧表(宁可留旧也不留空)

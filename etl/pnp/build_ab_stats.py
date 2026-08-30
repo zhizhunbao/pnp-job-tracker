@@ -30,10 +30,10 @@ import httpx
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths
+import paths
 
 URL = "https://www.alberta.ca/aaip-processing-information"
-OUT = _paths.PNP / "ab-stats.json"
+OUT = paths.PNP / "ab-stats.json"
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                     "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"}
 

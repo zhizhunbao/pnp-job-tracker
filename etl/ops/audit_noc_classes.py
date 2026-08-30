@@ -22,8 +22,8 @@ import sys
 from collections import Counter, defaultdict
 
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一级)有 _paths 等共享库
-from _paths import MART, PROCESSED
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一级)有 paths 等共享库
+from paths import MART, PROCESSED
 from noc import classify, official_broad_of
 from noc_buckets import BROADS, bucket_of
 

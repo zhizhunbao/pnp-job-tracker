@@ -24,8 +24,8 @@ from pathlib import Path
 
 from bs4 import BeautifulSoup
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(_paths / 05 在那)
-import _paths
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(paths / 05 在那)
+import paths
 from sources._jobbank_lock import JOBBANK_STORE_LOCK, jobbank_store_lock
 
 _s05 = importlib.import_module("05_scrape_jobbank")  # 模块名以数字开头 → 只能 importlib
@@ -46,8 +46,8 @@ def pid_of(r: dict) -> str:
     m = _POSTING_RE.search(r.get("url", ""))
     return m.group(1) if m else ""
 
-IN_SNAP_ROOT = _paths.RAW_JOBBANK                       # 列表 HTML 快照:<日期>/ 直接挂源下
-OUT_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"     # 累积 store
+IN_SNAP_ROOT = paths.RAW_JOBBANK                       # 列表 HTML 快照:<日期>/ 直接挂源下
+OUT_POSTINGS = paths.PROCESSED_JOBBANK / "postings.json"     # 累积 store
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")                 # 只认日期目录(排除 details/ 等)
 
 

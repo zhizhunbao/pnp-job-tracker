@@ -22,10 +22,10 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths
+import paths
 
-IN_NOC = _paths.MART / "noc_descriptions.json"
-OUT_I18N = _paths.PROCESSED / "noc_titles_i18n.json"
+IN_NOC = paths.MART / "noc_descriptions.json"
+OUT_I18N = paths.PROCESSED / "noc_titles_i18n.json"
 
 OLLAMA = os.environ.get("OLLAMA_URL", "http://192.168.1.150:11434")
 MODEL = os.environ.get("OLLAMA_MODEL", "qwen3.6:latest")

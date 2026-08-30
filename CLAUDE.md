@@ -52,7 +52,7 @@
 etl/ (Python: 抓取 → 清洗 → 评分, 写 data/) ──> cms/ (Payload + Next.js + Postgres) ──> 公开页
 ```
 
-- `etl/` 编号顺序执行,`etl/_paths.py` 是**唯一路径真相**(任何脚本不写死路径)。
+- `etl/` 编号顺序执行,`etl/paths/` 是**唯一路径真相**(任何脚本不写死路径)。
 - **分层(数据仓库式)**:raw(抽取)→ clean/(清洗按关注点)→ **mart(`09_build_mart.py` 产出 data/mart/,列对齐 DB,一文件=一张表)** → load(seed)。
 - `lib/mart`(壳在 `app/api/seed`)是**纯加载器**:只读 mart json → 灌库,不拼装不清洗。不带 `?reset=1` = 增量对账(未出现的岗 → closed)。
 - **DB**:事实表 jobs/companies;维度表 provinces/cities/districts/noc_categories/sources/experience_levels/designated_employers。Payload 管 schema/admin。
@@ -62,7 +62,7 @@ etl/ (Python: 抓取 → 清洗 → 评分, 写 data/) ──> cms/ (Payload + N
 
 ```
 pnp-job-tracker/
-├── etl/                       # 数据层(Python):_paths.py 路径真相;NN_*.py 主流水线(04 ATS,05/05b JB,08 评分,09 mart)
+├── etl/                       # 数据层(Python):paths.py 路径真相;NN_*.py 主流水线(04 ATS,05/05b JB,08 评分,09 mart)
 │   ├── clean/                 #   清洗脚本,一个关注点一个(04b 薪资抽取,04c 地点,04d 薪资归一,05x JB 解析)
 │   ├── sources/<源>/          #   源注册表:一子目录一役,META 声明 method/interval/seed/steps;auto_update.py 自动发现
 │   ├── pnp/ crawl/ news/      #   省 PNP 事实构建;官方站 URL 探索(政策雷达);官方新闻
@@ -85,7 +85,7 @@ pnp-job-tracker/
 
 **「脏活在脚本里干完,seed 只入库,前端只显示。」**
 
-1. 清洗脚本统一放 `etl/clean/`;每脚本顶部先声明 `IN_*`/`OUT_*` 全路径常量(经 `_paths` 解析,运行时打印)。
+1. 清洗脚本统一放 `etl/clean/`;每脚本顶部先声明 `IN_*`/`OUT_*` 全路径常量(经 `paths` 解析,运行时打印)。
 2. **一个「清洗关注点」一个脚本**(不是每字段一个、也不是每来源一个):一个关注点往往产出多个互相依赖的字段,同一脚本一次算清(04c 一次规范化 country/province/city/district/address —— 同源、共用社区映射);拆散 = 重复解析 + 复制共享表,反模式。
 3. 同一脚本对所有来源生效(ATS 和 JB 过同一套地点清洗)。
 4. 发现前端在清洗/换算 = 技术债,下沉成清洗脚本。
@@ -214,7 +214,7 @@ pnp-job-tracker/
 
 ## 技术栈与闸门
 
-**数据层(Python)**:3.11+,uv(`.venv/`);Ruff line-length 120 / py311。httpx + BS4/lxml;pymupdf / openpyxl / loguru;浏览器兜底 `.[browser]`。路径一律 pathlib 从 `_paths.py` 取。**依赖唯一真相 `pyproject.toml`**。**加新源 = 在 `etl/sources/<源>/__init__.py` 定义 META**,别改调度器。批量翻译走本地模型(Ollama)不烧付费 API。
+**数据层(Python)**:3.11+,uv(`.venv/`);Ruff line-length 120 / py311。httpx + BS4/lxml;pymupdf / openpyxl / loguru;浏览器兜底 `.[browser]`。路径一律 pathlib 从 `paths.py` 取。**依赖唯一真相 `pyproject.toml`**。**加新源 = 在 `etl/sources/<源>/__init__.py` 定义 META**,别改调度器。批量翻译走本地模型(Ollama)不烧付费 API。
 
 **展示层(TypeScript)**:Next 16 App Router(standalone)+ React 19 + Payload 3 + Postgres;TS strict。测试 vitest(int)+ playwright(e2e)+ 评测批(vitest.eval);**判定层测试**穷举输入断言性质 + 手写金标 + 变异探针,**禁快照矩阵**。动态加载文件要进 `next.config.ts` 的 `outputFileTracingIncludes`。站级聚合禁每请求现算(TTL 缓存);**上新筛选参数必查索引**(热筛选列缺索引打爆连接池 = 生产 500)。生产加列/建表:`docs/sql/` 手写 DDL 先行;新维度表给 `payload_locked_documents_rels` 补列,否则 seed 500 无 body。
 
@@ -228,7 +228,7 @@ cd cms && npm run dev                    # localhost:3000(读写生产!测试号
 # 改 collection 字段:显式 DB_PUSH=1 单次推(删列/改类型手写 SQL,提示删列必答 N);改 Jobs 字段后重启 dev 再重灌
 # seed 必带 token(直连生产,reset=1 会清库慎用):curl -H "x-seed-token: $SEED_TOKEN" localhost:3000/api/seed
 # 无人值守全栈:cd docker && docker compose --profile unattended up -d --build
-# 完整 ETL:04 → clean/04b → 04c → 04d → 05 → 05b → 08 → 09(走 _paths)
+# 完整 ETL:04 → clean/04b → 04c → 04d → 05 → 05b → 08 → 09(走 paths)
 ```
 
 ## 禁止事项 (Do NOT)

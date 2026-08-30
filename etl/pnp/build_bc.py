@@ -23,8 +23,8 @@ from pathlib import Path
 import httpx
 
 _HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(_HERE.parent))          # etl/ → _paths
-import _paths
+sys.path.insert(0, str(_HERE.parent))          # etl/ → paths
+import paths
 from crawl.functions import convert_md
 from crawl.scheme import ConvertIn
 
@@ -128,13 +128,13 @@ def build_ineligible() -> None:
         "effective": (m.group(1) if (m := INELIG_EFFECTIVE.search(text)) else ""),
         "occupations": [{"noc": n, "name": nm} for n, nm in sorted(occ.items())],
     }
-    (_paths.PNP / "bc-ineligible.json").write_text(json.dumps(table, ensure_ascii=False, indent=2), encoding="utf-8")
+    (paths.PNP / "bc-ineligible.json").write_text(json.dumps(table, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"  ✓ {'BC 不合格职业':<8} {len(occ):>3} 个职业 → pnp/bc-ineligible.json  "
           f"(实时 {table['fetched']};生效 {table['effective'] or '未标'})")
 
 
 def main() -> None:
-    _paths.PNP.mkdir(parents=True, exist_ok=True)
+    paths.PNP.mkdir(parents=True, exist_ok=True)
     build_ineligible()   # 主线排除清单(PDF);专项清单在下面
     try:
         md = fetch_md()
@@ -153,7 +153,7 @@ def main() -> None:
             "url": URL, "fetched": date.today().isoformat(),
             "occupations": occs,
         }
-        (_paths.PNP / cfg["out"]).write_text(json.dumps(table, ensure_ascii=False, indent=2), encoding="utf-8")
+        (paths.PNP / cfg["out"]).write_text(json.dumps(table, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"  ✓ {cfg['label']:<8} {len(occs):>3} 个职业 → pnp/{cfg['out']}  (实时 {table['fetched']})")
 
 

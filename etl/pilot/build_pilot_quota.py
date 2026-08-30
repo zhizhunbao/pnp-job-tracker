@@ -30,15 +30,15 @@ from urllib.parse import urljoin
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths
+import paths
 
 if os.name == "nt":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
-IN_CRAWL = _paths.DATA / "crawl"
-IN_COMMUNITIES = _paths.PILOT / "pilot-communities.json"
-OUT = _paths.PILOT / "pilot-quota.json"
+IN_CRAWL = paths.DATA / "crawl"
+IN_COMMUNITIES = paths.PILOT / "pilot-communities.json"
+OUT = paths.PILOT / "pilot-quota.json"
 print(f"IN_CRAWL={IN_CRAWL}\nIN_COMMUNITIES={IN_COMMUNITIES}\nOUT={OUT}", flush=True)
 
 # crawl slug → 社区官方名(与 pilot-communities.json 的 name 逐字一致,不然接不上既有表)

@@ -19,11 +19,11 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths
+import paths
 
-IN_JOBS = _paths.MART / "jobs.json"
-IN_COMPANIES = _paths.MART / "companies.json"
-OUT = _paths.PROCESSED / "company_facts.json"
+IN_JOBS = paths.MART / "jobs.json"
+IN_COMPANIES = paths.MART / "companies.json"
+OUT = paths.PROCESSED / "company_facts.json"
 print(f"IN_JOBS={IN_JOBS}\nIN_COMPANIES={IN_COMPANIES}\nOUT={OUT}", flush=True)
 
 WD = "https://www.wikidata.org/w/api.php"

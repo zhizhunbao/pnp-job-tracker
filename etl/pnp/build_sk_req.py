@@ -49,7 +49,7 @@ import httpx
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths
+import paths
 
 _SK = ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/"
        "saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/")
@@ -58,7 +58,7 @@ OID_URL = _SK + "international-skilled-worker-occupations-in-demand"
 # B2:雇主侧 —— 全体 SINP 雇主注册闸门(不在 sk-sinp crawl 缓存里,见文件头说明)
 EMPLOYER_URL = ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/hire-a-foreign-worker/"
                 "recruit-and-hire-workers-with-sinp/apply-for-a-certificate-of-registration")
-OUT = _paths.PNP / "sk-req.json"
+OUT = paths.PNP / "sk-req.json"
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                     "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"}
 

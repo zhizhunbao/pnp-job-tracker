@@ -30,11 +30,11 @@ import fitz  # PyMuPDF
 import httpx
 
 import sys
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一级)有 _paths 等共享库
-import _paths
-PROJECT_ROOT = _paths.ROOT
-OUT_DIR = _paths.AIP
-NL_EMP_DIR = _paths.POLICY / "nl-immigration" / "md" / "employer"
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一级)有 paths 等共享库
+import paths
+PROJECT_ROOT = paths.ROOT
+OUT_DIR = paths.AIP
+NL_EMP_DIR = paths.POLICY / "nl-immigration" / "md" / "employer"
 USER_AGENT = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
               "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
 PDFS = {

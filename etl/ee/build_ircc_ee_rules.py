@@ -31,11 +31,11 @@ from bs4 import BeautifulSoup
 
 _HERE = Path(__file__).resolve().parent.parent  # 分域后上一级才是 etl/
 sys.path.insert(0, str(_HERE))
-import _paths
+import paths
 from crawl.functions import get_cached_page
 
 # ── IN(crawl 役产物;URL 是键,实体在 html_cache/)───────────────────────────
-IN_CRAWL = _paths.CRAWL / "fed-ee"                      # manifest.json + html_cache/
+IN_CRAWL = paths.CRAWL / "fed-ee"                      # manifest.json + html_cache/
 _EE = ("https://www.canada.ca/en/immigration-refugees-citizenship/services/"
        "immigrate-canada/express-entry/")
 IN_URL_CRS = _EE + "check-score/crs-criteria.html"          # CRS 计分表(A/B/C/D 四段 20 张表)
@@ -62,9 +62,9 @@ IN_URL_LANG = _EE + "documents/language-test.html"          # 三个项目的最
 IN_URL_ECA = _EE + "documents/education-assessment.html"     # ECA 结果 → FSW 教育 selection factor 分
 
 # ── OUT ────────────────────────────────────────────────────────────────────
-OUT_CRS = _paths.EE / "crs-grid.json"
-OUT_ELIG = _paths.EE / "fed-eligibility.json"
-OUT_LANG = _paths.EE / "language-grid.json"
+OUT_CRS = paths.EE / "crs-grid.json"
+OUT_ELIG = paths.EE / "fed-eligibility.json"
+OUT_LANG = paths.EE / "language-grid.json"
 
 SECTION_RE = re.compile(r"^([A-D])\.\s+(.+?)\s*$")
 

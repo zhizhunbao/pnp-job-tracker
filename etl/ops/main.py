@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一级)有 _steps
-from _log import err, say
+from log.functions import err, say
 from _steps import run_steps
 from ops.report_ruff import run as run_report_ruff
 

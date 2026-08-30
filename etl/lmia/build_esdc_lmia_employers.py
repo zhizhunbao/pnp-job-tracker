@@ -26,7 +26,7 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths
+import paths
 
 # norm_name 住在 clean/05c(数字开头模块名 → importlib 拉;单一来源,不复制)
 _spec = importlib.util.spec_from_file_location(
@@ -38,8 +38,8 @@ norm_name = _mod.norm_name
 # ── 输入/输出全路径(先声明再用)──────────────────────────────────────
 CKAN_PKG = ("https://open.canada.ca/data/api/action/package_show"
             "?id=90fed587-1364-4f33-a9ee-208181dc0b97")
-IN_XLSX_DIR = _paths.LMIA                       # 季度源缓存 tfwp_YYYYqN_pos_en.xlsx(gitignore)
-OUT_TABLE = _paths.LMIA / "lmia-employers.json"  # 维护表(gitignore,可由缓存重建;09 消费)
+IN_XLSX_DIR = paths.LMIA                       # 季度源缓存 tfwp_YYYYqN_pos_en.xlsx(gitignore)
+OUT_TABLE = paths.LMIA / "lmia-employers.json"  # 维护表(gitignore,可由缓存重建;09 消费)
 
 KEEP_QUARTERS = int(os.environ.get("LMIA_QUARTERS", "8"))  # 近两年
 _QUARTER_RE = re.compile(r"tfwp_(\d{4}q\d)_pos_en\.xlsx$", re.I)

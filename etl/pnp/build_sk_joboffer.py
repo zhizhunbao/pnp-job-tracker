@@ -22,8 +22,8 @@ from pathlib import Path
 import httpx
 
 _HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(_HERE.parent))  # etl/ → _paths
-import _paths
+sys.path.insert(0, str(_HERE.parent))  # etl/ → paths
+import paths
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
 
@@ -31,7 +31,7 @@ PROVINCE = "SK"
 EXCL_PAGE = ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/"
              "by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/"
              "applicants-international-skilled-workers/occupation-restrictions-and-requirements")
-CRAWL_DIR = _paths.CRAWL / "sk-sinp"
+CRAWL_DIR = paths.CRAWL / "sk-sinp"
 
 # 两个 PDF,URL 从已抓页面(data/crawl/sk-sinp/)原文提取,不是猜的
 PDFS = [
@@ -126,7 +126,7 @@ def main() -> None:
         "url": EXCL_PAGE, "fetched": date.today().isoformat(),
         "occupations": occs,
     }
-    (_paths.PNP / JOBOFFER_OUT).write_text(json.dumps(table, ensure_ascii=False, indent=2), encoding="utf-8")
+    (paths.PNP / JOBOFFER_OUT).write_text(json.dumps(table, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"  ✓ SK Job Offer 排除 {len(occs):>3} 个职业 → pnp/{JOBOFFER_OUT}  (实时 {table['fetched']})")
 
     carpenter = next((o for o in occs if o["noc"] == "72310"), None)

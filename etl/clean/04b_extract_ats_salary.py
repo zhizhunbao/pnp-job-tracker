@@ -14,12 +14,12 @@ import re
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(_paths 在那)
-import _paths
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(paths 在那)
+import paths
 
 # ── 输入/输出全路径(先声明再用)──────────────────────────────────────
 # 输入:各公司 <slug>/jobs/*.md 描述 + <slug>/jobs.json;输出:原地写回 jobs.json 的 salary
-IN_COMPANIES_DIR = _paths.COMPANIES                  # processed/ontario/ottawa/kanata-north/companies/
+IN_COMPANIES_DIR = paths.COMPANIES                  # processed/ontario/ottawa/kanata-north/companies/
 OUT_COMPANIES_DIR = IN_COMPANIES_DIR                  # 原地写回
 
 AMOUNT = r"\$\s?\d[\d,]*(?:\.\d+)?"

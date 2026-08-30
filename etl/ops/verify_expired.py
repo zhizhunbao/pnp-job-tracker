@@ -32,11 +32,11 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths
+import paths
 
-IN_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"
-IN_MART_OPEN_IDS = _paths.PROCESSED_JOBBANK / "mart_open_ids.json"   # 09 上一轮落的「还在板上」帖号
-OUT_STATE = _paths.PROCESSED_JOBBANK / "expired_ids.json"
+IN_POSTINGS = paths.PROCESSED_JOBBANK / "postings.json"
+IN_MART_OPEN_IDS = paths.PROCESSED_JOBBANK / "mart_open_ids.json"   # 09 上一轮落的「还在板上」帖号
+OUT_STATE = paths.PROCESSED_JOBBANK / "expired_ids.json"
 
 RECHECK_DAYS = 7          # 活帖复检间隔(上次活着,7 天后可再验)
 # 单轮请求上限:候选 ≈5.5 万,7 天复检周期要求 ≈8k/天;900/轮 × 每轮约 2h ≈ 1万/天,刚够且不拖垮 seed

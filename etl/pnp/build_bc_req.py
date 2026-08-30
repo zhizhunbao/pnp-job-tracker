@@ -29,11 +29,11 @@ import fitz  # pymupdf
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths
+import paths
 
 PDF_URL = "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-si-program-guide-pdf"
 PAGE_URL = "https://www.welcomebc.ca/immigrate-to-b-c/for-workers"
-OUT = _paths.PNP / "bc-req.json"
+OUT = paths.PNP / "bc-req.json"
 
 PROVINCE = "BC"
 PROGRAM = "PNP"

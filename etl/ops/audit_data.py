@@ -20,11 +20,11 @@ from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths
+import paths
 
-IN_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"
-IN_SCORED = _paths.PROCESSED / "all-scored.json"
-OUT_FLAGS = _paths.PROCESSED / "audit-flags.json"
+IN_POSTINGS = paths.PROCESSED_JOBBANK / "postings.json"
+IN_SCORED = paths.PROCESSED / "all-scored.json"
+OUT_FLAGS = paths.PROCESSED / "audit-flags.json"
 
 # 加拿大邮编首字母 → 省(粗校验地理一致性)
 POSTAL_PROV = {
@@ -115,7 +115,7 @@ def main() -> None:
         print(f"  {cat:14} {len(rows):4} 行   e.g. {rows[0]['why']} — {rows[0]['employer']}")
     print(f"\n  合计可疑 {total} 行 / {n}({total * 100 // n}%) → 只需复查这些")
 
-    _paths.PROCESSED.mkdir(parents=True, exist_ok=True)
+    paths.PROCESSED.mkdir(parents=True, exist_ok=True)
     OUT_FLAGS.write_text(json.dumps(flags, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"  详情: {OUT_FLAGS}")
 

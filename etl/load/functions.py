@@ -5,8 +5,8 @@ etl/backup_db.py(原件转过渡壳,收尾统一重启后删)。将来经 Payloa
 REST 客户端也住这段位 —— API 的形等第一个真实消费者(雇主池灌库)来定,不预设。
 
 铁律不动:批量数据仍走 raw → mart → seed;本域只管「怎么送进去」,不拼装不清洗。
-本文件零日志依赖(不 import _log):auto_update 常驻进程会进程内直调 trigger_*,
-_log 模块 import 即重配 loguru sink,会劫持调度器的时间戳前缀 —— 故触发类纯返回
+本文件零日志依赖(不 import log.functions):auto_update 常驻进程会进程内直调 trigger_*,
+log.functions 模块 import 即重配 loguru sink,会劫持调度器的时间戳前缀 —— 故触发类纯返回
 CallOut,步骤类经 say 回调注入,日志面归调用方。
 """
 from __future__ import annotations
@@ -25,7 +25,7 @@ from typing import cast
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths
+import paths
 from load.constants import (ALERTS_PATH, ALERTS_TIMEOUT_S, API_SEED_SUFFIX, BACKUPS_DIR,
                             BACKUP_DONE_TPL, BACKUP_FAIL_TPL, BACKUP_OUT_TPL, BACKUP_PRUNE_TPL,
                             BACKUP_SKIP_MSG, CT_GZIP, DAY_S, DEFAULT_SEED_URL, DUMP_CMD,
@@ -114,7 +114,7 @@ def upload_mart(x: UploadIn) -> None:
         return
     parts = httpx.URL(seed_url)
     base = parts.scheme + SCHEME_SEP + parts.netloc.decode()
-    files = sorted(_paths.MART.glob(MART_GLOB))
+    files = sorted(paths.MART.glob(MART_GLOB))
     if len(files) == 0:
         raise RuntimeError(UPLOAD_EMPTY_MSG)
     headers = seed_headers()
@@ -161,7 +161,7 @@ def backup_db(x: BackupIn) -> None:
         x.say(BACKUP_SKIP_MSG)
         return
     keep_days = int(os.environ.get(ENV_KEEP_DAYS, KEEP_DAYS_DEFAULT))
-    backups = _paths.ROOT / BACKUPS_DIR
+    backups = paths.ROOT / BACKUPS_DIR
     backups.mkdir(exist_ok=True)
     out = backups / (date.today().isoformat() + SQL_GZ_SUFFIX)
     x.say(BACKUP_OUT_TPL.format(out=out))

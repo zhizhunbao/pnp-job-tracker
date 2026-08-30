@@ -15,13 +15,13 @@ import re
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(_paths 在那)
-import _paths
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(paths 在那)
+import paths
 
 # ── 输入/输出全路径(先声明再用)──────────────────────────────────────
-IN_AIP_LIST = _paths.AIP / "aip-designated-employers.json"  # 官方指定雇主名单(只读)
-IN_JOBBANK_FILE = _paths.PROCESSED_JOBBANK / "postings.json"       # 读雇主 → 写回 aip
-IN_COMPANIES_DIR = _paths.COMPANIES                                # ATS 各 <slug>/jobs.json
+IN_AIP_LIST = paths.AIP / "aip-designated-employers.json"  # 官方指定雇主名单(只读)
+IN_JOBBANK_FILE = paths.PROCESSED_JOBBANK / "postings.json"       # 读雇主 → 写回 aip
+IN_COMPANIES_DIR = paths.COMPANIES                                # ATS 各 <slug>/jobs.json
 OUT_JOBBANK_FILE = IN_JOBBANK_FILE                                 # 原地写回
 OUT_COMPANIES_DIR = IN_COMPANIES_DIR                               # 原地写回
 

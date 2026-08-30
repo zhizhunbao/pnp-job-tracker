@@ -2,8 +2,8 @@
 
 2026-08-30 从 fetch 迁回(Frank 定界:fetch 只做通用抓取与 API 直取,SOURCE 契约、
 行构造、节奏参数都是 news 的行词汇,归 news 域);通用件(客户端/feed 解析/正文抽取)
-仍从 fetch.functions 取。原 atomic_write_json 与 _paths.write_json 行为重复,退役 ——
-落盘改走 _paths.write_json(带 OSError 五次退避,吃到批A 的写盘抗抖)。
+仍从 fetch.functions 取。原 atomic_write_json 与 paths.write_json 行为重复,退役 ——
+落盘改走 paths.write_json(带 OSError 五次退避,吃到批A 的写盘抗抖)。
 
 子脚本契约(etl/news/scrape_*.py):
   SOURCE = {
@@ -28,8 +28,8 @@ from pathlib import Path
 from typing import cast
 from urllib.parse import urljoin
 
-import _paths
-from _log import err, say
+import paths
+from log.functions import err, say
 from fetch.functions import extract_detail, fetch, make_client, page_og_image, parse_feed
 from fetch.scheme import DetailIn, FetchIn, HttpClientLike
 from news.scheme import RunIn
@@ -151,7 +151,7 @@ def run(x: RunIn) -> None:
         raise SystemExit(GUARD_SHRINK_TPL.format(n=len(merged), prev=len(existing)))
     if len(merged) < MIN_TOTAL:
         raise SystemExit(GUARD_FEW_TPL.format(n=len(merged), floor=MIN_TOTAL))
-    _paths.write_json(x.out_file, {K_FETCHED: now_iso, K_ITEMS: merged}, indent=1)
+    paths.write_json(x.out_file, {K_FETCHED: now_iso, K_ITEMS: merged}, indent=1)
     per = {}
     for it in merged:
         per[it[K_REGION]] = per.get(it[K_REGION], 0) + 1

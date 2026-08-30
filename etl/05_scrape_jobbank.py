@@ -40,9 +40,9 @@ from urllib.parse import quote_plus
 import httpx
 from bs4 import BeautifulSoup
 
-import _paths
-PROJECT_ROOT = _paths.ROOT
-OUT_DIR = _paths.RAW_JOBBANK
+import paths
+PROJECT_ROOT = paths.ROOT
+OUT_DIR = paths.RAW_JOBBANK
 BASE = "https://www.jobbank.gc.ca/jobsearch/jobsearch"
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -168,7 +168,7 @@ def fetch_all_occupations_snapshots(provinces: list[str], since_days: int, max_p
     """各省全职业、按日期降序翻页:每页**原始 HTML** 整存进当天 listing 快照目录 + manifest。
     用页内日期判断翻到何处停(page_all_old,纯翻页控制);不解析合并(那在 clean/05_parse_jobbank.py)。"""
     cutoff = datetime.now().date() - timedelta(days=since_days)
-    snap_dir = _paths.RAW_JOBBANK / datetime.now().date().isoformat()  # 日期直接挂源下,与 details/ 平级
+    snap_dir = paths.RAW_JOBBANK / datetime.now().date().isoformat()  # 日期直接挂源下,与 details/ 平级
     snap_dir.mkdir(parents=True, exist_ok=True)
     manifest = {"fetched_at": datetime.now().isoformat(timespec="seconds"),
                 "since_days": since_days, "cutoff": cutoff.isoformat(), "pages": []}

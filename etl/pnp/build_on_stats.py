@@ -43,14 +43,14 @@ import httpx
 from bs4 import BeautifulSoup
 
 _HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(_HERE.parent))            # etl/ → _paths
-import _paths
+sys.path.insert(0, str(_HERE.parent))            # etl/ → paths
+import paths
 from crawl.functions import get_cached_page
 
 # 官方原本发布处理时长+提名数的页(现 302 重定向 —— 见模块 docstring),仍记录原样 URL 供溯源
 SEED_URL = "https://www.ontario.ca/page/oinp-application-processing-times-and-nominations-issued"
 UPDATES_URL_TPL = "https://www.ontario.ca/page/{year}-ontario-immigrant-nominee-program-updates"
-OUT = _paths.PNP / "on-stats.json"
+OUT = paths.PNP / "on-stats.json"
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                     "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"}
 

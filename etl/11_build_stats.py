@@ -23,7 +23,7 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import _paths
+import paths
 import noc as NOC  # E13-02:NOC 分类法(单一来源),给 stats_daily 的 closed 归 broad 桶用
 
 # E13-05:全国 occ 行的 pnpProvs 复用 08_score.pnp_eligible(禁复制判定逻辑)。
@@ -116,27 +116,27 @@ def _lmia_positions_by_noc(quarter: str) -> dict[str, int]:
 if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-IN_JOBS = _paths.MART / "jobs.json"
-IN_DIFF = _paths.PROCESSED / "difficulty.json"   # E12-07:省难度指数(04e 产出;缺文件=不挂,列留空)
-OUT_STATS = _paths.MART / "stats.json"
+IN_JOBS = paths.MART / "jobs.json"
+IN_DIFF = paths.PROCESSED / "difficulty.json"   # E12-07:省难度指数(04e 产出;缺文件=不挂,列留空)
+OUT_STATS = paths.MART / "stats.json"
 # E8-14 每日快照:只产出**今天这一天**的行,seed 按 (date,province,broad) UPSERT 追加,永不 DELETE。
 # 趋势图的唯一数据来源;历史补不回来 —— 落地那天才是第一个点,所以先于主图建起来。
-OUT_DAILY = _paths.MART / "stats_daily.json"
+OUT_DAILY = paths.MART / "stats_daily.json"
 # E8-14 主图的两个新粒度(现有 stats 是 省×大类×中类,出不了「具体职业」与「城市」两条横轴)
-IN_NOC_DESC = _paths.MART / "noc_descriptions.json"   # 职业名(官方名,已随 09 产出)
-OUT_OCC = _paths.MART / "stats_occupation.json"       # 职业 × 省(province='all' 为全国行)
-OUT_CITY = _paths.MART / "stats_city.json"            # 城市
+IN_NOC_DESC = paths.MART / "noc_descriptions.json"   # 职业名(官方名,已随 09 产出)
+OUT_OCC = paths.MART / "stats_occupation.json"       # 职业 × 省(province='all' 为全国行)
+OUT_CITY = paths.MART / "stats_city.json"            # 城市
 
 # E14-02:担保率(sponsor_rate)= LMIA 同季获批岗位数(分子,担保侧)÷ JVWS 同季全国空缺数(分母,全市场)。
 # 口径详见 docs/implementation/E14-全市场数据三角/02_担保率.md。只在 stats_occupation 的 province='all'
 # 全国行落值(与 pnpProvs/channelTier 同款做法——省级担保率需要省级 LMIA×NOC 拆分,本轮不做,YAGNI)。
-IN_LMIA_XLSX_DIR = _paths.LMIA                        # tfwp_YYYYqN_pos_en.xlsx 季度源(build_lmia.py 已缓存,原地复用不重下)
-IN_JVWS_RAW = _paths.JVWS / "jvws-vacancies.json"      # build_jvws.py 产,已按 StatCan 抑制规则把不可发布值设 None
+IN_LMIA_XLSX_DIR = paths.LMIA                        # tfwp_YYYYqN_pos_en.xlsx 季度源(build_lmia.py 已缓存,原地复用不重下)
+IN_JVWS_RAW = paths.JVWS / "jvws-vacancies.json"      # build_jvws.py 产,已按 StatCan 抑制规则把不可发布值设 None
 
 # E13-02(把脉首页,00_总设计与口径.md §3,v2 2026-08-06 晚修订)派生指标输入。ETL 只读写 data/,不碰 DB。
-IN_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"   # 累积当前态,有 date(发布日),推 new30d/new30d_prev/mom30d
-IN_EXPIRED = _paths.PROCESSED_JOBBANK / "expired_ids.json"  # verify_expired.py 的判死台账(dead: posting_id→判死时刻)——closed30d/stats_daily.closed 的源
-IN_CLOSED = _paths.MART / "closed_jobs.json"                # 09 写的实测判死名单(externalId+closedAt)——avg_days_open 只认它(不受本次 v2 修订影响)
+IN_POSTINGS = paths.PROCESSED_JOBBANK / "postings.json"   # 累积当前态,有 date(发布日),推 new30d/new30d_prev/mom30d
+IN_EXPIRED = paths.PROCESSED_JOBBANK / "expired_ids.json"  # verify_expired.py 的判死台账(dead: posting_id→判死时刻)——closed30d/stats_daily.closed 的源
+IN_CLOSED = paths.MART / "closed_jobs.json"                # 09 写的实测判死名单(externalId+closedAt)——avg_days_open 只认它(不受本次 v2 修订影响)
 
 # pulse_score 复合脉象分权重(设计文档 §3 写死,前端/后续改动不许绕过 ETL 改权重)
 # v2:动量分量从 net30d/openJobs 换成 mom30d(环比涨跌);v3:再换成 mom14d(理由见下),权重不变

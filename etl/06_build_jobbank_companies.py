@@ -19,12 +19,12 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import _paths
+import paths
 
 # ── 输入/输出全路径 ──────────────────────────────────────────────
-IN_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"   # 累积/清洗后的 store
-IN_DETAILS = _paths.PROCESSED_JOBBANK / "details"          # 解析后的帖子详情 .md(描述来源)
-OUT_ROOT = _paths.RAW_JOBBANK                         # raw/jobbank/<province>/<city>/companies/<slug>/
+IN_POSTINGS = paths.PROCESSED_JOBBANK / "postings.json"   # 累积/清洗后的 store
+IN_DETAILS = paths.PROCESSED_JOBBANK / "details"          # 解析后的帖子详情 .md(描述来源)
+OUT_ROOT = paths.RAW_JOBBANK                         # raw/jobbank/<province>/<city>/companies/<slug>/
 
 # 省码 → 目录名(全称,对齐 ATS 的 ontario/ottawa 风格)
 PROV_FULL = {

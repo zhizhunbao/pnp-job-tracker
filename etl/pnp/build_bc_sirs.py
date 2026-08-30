@@ -23,11 +23,11 @@ import fitz  # pymupdf
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths
+import paths
 
 PDF_URL = "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-si-program-guide-pdf"
 PAGE_URL = "https://www.welcomebc.ca/immigrate-to-b-c/for-workers"
-OUT = _paths.PNP / "bc-sirs.json"
+OUT = paths.PNP / "bc-sirs.json"
 
 WORK_ROW = re.compile(r"^(5 or more years|At least \d but less than \d years|Less than 1 year|No experience)$", re.I)
 EDU_ROW = re.compile(r"^(Doctoral|Master|Post-Graduate|Bachelor|Associate|Post-secondary Diploma|Secondary School)", re.I)

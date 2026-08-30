@@ -29,13 +29,13 @@ if os.name == "nt":  # 本机控制台 cp1252 打不了 !/✗ 行里的中文;�
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths
+import paths
 
-IN_ALLOC = _paths.IRCC / "pnp_allocations.json"
-IN_NS = _paths.IRCC / "ns_allocations.json"      # NS 官方开放数据(scrape_ns_allocations 产)→ 对账
-IN_CRAWL = _paths.CRAWL
-IN_NEWS = _paths.NEWS / "news.json"
-OUT_STATE = _paths.IRCC / "allocation_watch.json"
+IN_ALLOC = paths.IRCC / "pnp_allocations.json"
+IN_NS = paths.IRCC / "ns_allocations.json"      # NS 官方开放数据(scrape_ns_allocations 产)→ 对账
+IN_CRAWL = paths.CRAWL
+IN_NEWS = paths.NEWS / "news.json"
+OUT_STATE = paths.IRCC / "allocation_watch.json"
 print(f"IN_ALLOC={IN_ALLOC}\nIN_CRAWL={IN_CRAWL}\nIN_NEWS={IN_NEWS}\nOUT_STATE={OUT_STATE}", flush=True)
 
 # crawl slug → 省码(只扫有监视目标的省;联邦种子不扫 —— 名额公告发在省官网/省新闻)

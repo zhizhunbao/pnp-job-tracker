@@ -45,14 +45,14 @@ import httpx
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths
+import paths
 
 # 2026-08-12 换址:老地址 www2.gnb.ca/.../nb-skilled-worker-stream.html 现在 302 到新站的
 # **PNP 总览页**,而三份指南 PDF 挂在总览页下面的技术工人通道页上 —— 于是 guide_urls() 一份都找不到,
 # 自校 exit 1、NB 门槛表就此冻结(同 AIP 名录换版那次的静默失败,只是这次它是「保留旧表」而不是覆盖)。
 PAGE_URL = ("https://www.gnb.ca/en/topic/family-home-community/immigration/"
             "provincial-nominee-program/skilled-worker-stream.html")
-OUT = _paths.PNP / "nb-req.json"
+OUT = paths.PNP / "nb-req.json"
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                     "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"}
 

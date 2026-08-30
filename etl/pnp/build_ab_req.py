@@ -46,14 +46,14 @@ import httpx
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths
+import paths
 
 AOS_URL = "https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility"
 # B2(2026-08-08):雇主侧门槛的官方页——AOS eligibility 页正文里点名「must meet all Alberta job offer
 # and employer requirements」链到的页,alberta.ca 直连 200,不在 data/crawl/ab-aaip 缓存里(种子只爬了
 # AAIP 命名空间下的页,这条不在种子深度内),按铁律③(缓存没有→可 httpx 直取省官网)现抓。
 EMPLOYER_URL = "https://www.alberta.ca/job-offer-and-employer-requirements"
-OUT = _paths.PNP / "ab-req.json"
+OUT = paths.PNP / "ab-req.json"
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                     "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"}
 
