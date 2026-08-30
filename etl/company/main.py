@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from functions import (  # noqa: E402
+from functions import (
     build_company_folders, enrich_company_websites, scrape_company_careers, scrape_kanata_directory,
 )
 

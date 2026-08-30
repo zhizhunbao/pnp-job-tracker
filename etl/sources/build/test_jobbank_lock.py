@@ -16,9 +16,9 @@ from unittest import mock
 ETL = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ETL))
 
-from sources._jobbank_lock import jobbank_store_lock  # noqa: E402
-from sources.build import BUILD_STEPS, META  # noqa: E402
-from sources.build import run_locked  # noqa: E402
+from sources._jobbank_lock import jobbank_store_lock
+from sources.build import BUILD_STEPS, META
+from sources.build import run_locked
 
 
 class JobbankStoreLockTest(unittest.TestCase):

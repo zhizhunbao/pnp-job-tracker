@@ -28,7 +28,7 @@ import httpx
 from zhconv import convert as zh_convert
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths  # noqa: E402
+import _paths
 
 IN_DRAWS = _paths.PNP / "draws.json"
 OUT = _paths.PROCESSED / "draw_stream_zh.json"

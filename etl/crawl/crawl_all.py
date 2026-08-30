@@ -28,9 +28,9 @@ if os.name == "nt":
 _SELF = Path(__file__).resolve()
 sys.path.insert(0, str(_SELF.parent))  # bfs_crawler / download_md / converters
 
-import bfs_crawler  # noqa: E402
-import check_crawl  # noqa: E402
-import download_md  # noqa: E402
+import bfs_crawler
+import check_crawl
+import download_md
 
 DEFAULT_SOURCES = _SELF.parent / "sources-canada.md"
 DOCS_DIR = _SELF.parent.parent.parent / "data" / "crawl"

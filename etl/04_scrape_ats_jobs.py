@@ -37,7 +37,7 @@ WD_HOST_RE = re.compile(r"([a-z0-9-]+\.wd\d+\.myworkdayjobs\.com)/(?:[a-z]{2}-[A
 # Workday 公司多为全球招聘,客户端按地点过滤到 Ottawa 都会区
 OTTAWA_LOC = re.compile(r"ottawa|kanata|nepean|gloucester|orl[eé]ans|stittsville|manotick|barrhaven", re.I)
 
-from datetime import datetime, timezone  # noqa: E402
+from datetime import datetime, timezone
 
 ADDR_RE = re.compile(
     r"\d{1,5}\s+[A-Za-z0-9.\-' ]{2,40}?\b(?:Street|St|Road|Rd|Avenue|Ave|Boulevard|Blvd|Drive|Dr|Way|"

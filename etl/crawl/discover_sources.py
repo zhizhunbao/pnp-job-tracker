@@ -36,7 +36,7 @@ from pathlib import Path
 
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE.parent))
-import _paths  # noqa: E402  (统一路径真相;crawl 产物在 data/crawl/)
+import _paths  # 统一路径真相;crawl 产物在 data/crawl/
 
 CRAWLER = _HERE / "bfs_crawler.py"
 OUT_ROOT = _paths.DATA / "crawl"

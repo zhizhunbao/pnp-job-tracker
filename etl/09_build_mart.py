@@ -18,10 +18,10 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import _paths  # noqa: E402
-import noc as NOC  # noqa: E402  NOC 分类法(单一来源)
-import grades as GR  # noqa: E402  E12-08 档位(1-5,单一来源;职位三维+公司四维)
-from clean import visa_flag  # noqa: E402  GAP1③ 身份预筛(JD 正文 → 红旗+quote)
+import _paths
+import noc as NOC  # NOC 分类法(单一来源)
+import grades as GR  # E12-08 档位(1-5,单一来源;职位三维+公司四维)
+from clean import visa_flag  # GAP1③ 身份预筛(JD 正文 → 红旗+quote)
 
 # 公司名归一(o/a 前缀、公司后缀、标点)单一来源在 clean/05c —— LMIA 匹配与 AIP 用同一把尺子
 _spec = importlib.util.spec_from_file_location("flag_aip", Path(__file__).resolve().parent / "clean" / "05c_flag_aip.py")

@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一级)有 _steps
-from _steps import run_steps  # noqa: E402
+from _steps import run_steps
 
 STEPS = [
     ["python", "etl/ops/verify_field_source_pages.py"],  # 字段级来源注册表(E4-04:验证 URL+抽 title/meta)

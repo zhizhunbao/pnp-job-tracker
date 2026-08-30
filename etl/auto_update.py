@@ -23,7 +23,7 @@ import httpx
 from loguru import logger
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # 让 `import sources.*` 可用(etl/ 进 path)
-import sources  # noqa: E402
+import sources
 
 SOURCE = os.environ.get("SOURCE", "jobbank")
 SEED_URL = os.environ.get("SEED_URL", "http://host.docker.internal:3000/api/seed")

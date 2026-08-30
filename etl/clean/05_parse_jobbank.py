@@ -25,8 +25,8 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(_paths / 05 在那)
-import _paths  # noqa: E402
-from sources._jobbank_lock import JOBBANK_STORE_LOCK, jobbank_store_lock  # noqa: E402
+import _paths
+from sources._jobbank_lock import JOBBANK_STORE_LOCK, jobbank_store_lock
 
 _s05 = importlib.import_module("05_scrape_jobbank")  # 模块名以数字开头 → 只能 importlib
 parse_article = _s05.parse_article                  # 单一解析逻辑,不重复实现

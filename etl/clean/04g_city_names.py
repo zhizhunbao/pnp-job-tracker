@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths  # noqa: E402
+import _paths
 
 OUT_I18N = _paths.PROCESSED / "city_names_i18n.json"
 

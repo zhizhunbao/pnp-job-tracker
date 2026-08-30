@@ -22,7 +22,7 @@ import fitz
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths  # noqa: E402
+import _paths
 
 PDF_URL = "https://www.gov.nl.ca/immigration/files/AnnexA_PNP.pdf"
 PAGE_URL = ("https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/"

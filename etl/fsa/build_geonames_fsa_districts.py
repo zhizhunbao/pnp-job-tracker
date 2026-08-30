@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths  # noqa: E402
+import _paths
 
 IN_GEONAMES = _paths.FSA / "CA.txt"   # GeoNames 源(下载来的)
 OUT_TABLE = _paths.FSA / "fsa-districts.json"      # 我们维护的维度表

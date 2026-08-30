@@ -45,7 +45,7 @@ import httpx
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths  # noqa: E402
+import _paths
 
 # 2026-08-12 换址:老地址 www2.gnb.ca/.../nb-skilled-worker-stream.html 现在 302 到新站的
 # **PNP 总览页**,而三份指南 PDF 挂在总览页下面的技术工人通道页上 —— 于是 guide_urls() 一份都找不到,

@@ -40,7 +40,7 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths  # noqa: E402
+import _paths
 
 IN_NAMED = _paths.PROCESSED / "named_employers.json"
 IN_REGISTRY_DIR = _paths.RAW / "corp-registry"

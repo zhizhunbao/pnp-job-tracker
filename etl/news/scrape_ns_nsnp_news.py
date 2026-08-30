@@ -11,7 +11,7 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上两级)有 _scrape_base
-from _scrape_base import iso_date  # noqa: E402
+from _scrape_base import iso_date
 
 
 def parse_ns(html: str) -> list[dict]:

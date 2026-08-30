@@ -18,7 +18,7 @@ from urllib.parse import urlsplit
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import _paths  # noqa: E402
+import _paths
 
 SEED_URL = os.environ.get("SEED_URL", "")          # 例 https://offer2pr.com/seed → 端点走同源
 SEED_TOKEN = os.environ.get("SEED_TOKEN", "")

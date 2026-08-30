@@ -19,7 +19,7 @@ import httpx
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一级)有 _paths
-import _paths  # noqa: E402
+import _paths
 
 OUT = _paths.PNP / "draws.json"
 

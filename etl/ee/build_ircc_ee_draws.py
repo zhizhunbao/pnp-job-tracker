@@ -15,7 +15,7 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths  # noqa: E402
+import _paths
 
 URL = "https://www.canada.ca/content/dam/ircc/documents/json/ee_rounds_123_en.json"
 OUT = _paths.EE / "draws.json"

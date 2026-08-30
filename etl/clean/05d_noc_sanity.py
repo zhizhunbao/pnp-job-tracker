@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths  # noqa: E402
+import _paths
 
 IN_OUT_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"
 IN_WAGES = _paths.WAGES / "wages.json"

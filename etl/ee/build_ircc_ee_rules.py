@@ -32,8 +32,8 @@ from bs4 import BeautifulSoup
 _HERE = Path(__file__).resolve().parent.parent  # 分域后上一级才是 etl/
 sys.path.insert(0, str(_HERE))
 sys.path.insert(0, str(_HERE / "crawl"))
-import _paths  # noqa: E402
-from cache import get as crawl_get  # noqa: E402
+import _paths
+from cache import get as crawl_get
 
 # ── IN(crawl 役产物;URL 是键,实体在 html_cache/)───────────────────────────
 IN_CRAWL = _paths.CRAWL / "fed-ee"                      # manifest.json + html_cache/

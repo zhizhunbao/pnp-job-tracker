@@ -21,7 +21,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(_paths 在那)
-import _paths  # noqa: E402
+import _paths
 
 # ── 输入/输出全路径(先声明再用)──────────────────────────────────────
 IN_JOBBANK_FILE = _paths.PROCESSED_JOBBANK / "postings.json"   # 读 → 原地写回两个字段

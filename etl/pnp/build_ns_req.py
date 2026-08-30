@@ -38,7 +38,7 @@ import httpx
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths  # noqa: E402
+import _paths
 
 PAGE_URL = "https://liveinnovascotia.com/skilled-worker"
 OUT = _paths.PNP / "ns-req.json"

@@ -47,8 +47,8 @@ from bs4 import BeautifulSoup
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE.parent))            # etl/ → _paths
 sys.path.insert(0, str(_HERE.parent / "crawl"))  # etl/crawl/ → cache
-import _paths  # noqa: E402
-import cache  # noqa: E402
+import _paths
+import cache
 
 PAGE_URL = "https://immigratemanitoba.com/mpnp/apply/eoi"
 MPNP_URL = "https://immigratemanitoba.com/mpnp"

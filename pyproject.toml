@@ -40,6 +40,10 @@ target-version = "py311"
 # ANN 签名类型注解 / D1 缺 docstring(只查「有没有」,不查排版风格)/ N 命名 /
 # C90 复杂度 / PLR0915 语句数 / BLE 裸捕获 / S110+S112 吞错(try-except-pass/continue)
 select = ["E4", "E7", "E9", "F", "ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
+# E402 全局豁免(2026-08-30 Frank「行内注释都去掉」):etl 全域的 bootstrap 惯例是
+# sys.path.insert 先行再 import 本地件 —— 结构性成因,不值得每行挂 noqa 牌;摘牌后
+# import 区零行内注释。判断型特批(BLE001/S112)仍逐行挂牌,理由住所属声明的 docstring。
+ignore = ["E402"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 12

@@ -28,7 +28,7 @@ if os.name == "nt":  # 本机控制台 cp1252 打不了 ✗/中文;容器由 aut
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths  # noqa: E402
+import _paths
 
 OUT = _paths.IRCC / "statcan_tr_prov.json"
 print(f"OUT={OUT}", flush=True)

@@ -45,8 +45,8 @@ from bs4 import BeautifulSoup
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE.parent))            # etl/ → _paths
 sys.path.insert(0, str(_HERE.parent / "crawl"))  # etl/crawl/ → cache
-import _paths  # noqa: E402
-import cache  # noqa: E402
+import _paths
+import cache
 
 # 官方原本发布处理时长+提名数的页(现 302 重定向 —— 见模块 docstring),仍记录原样 URL 供溯源
 SEED_URL = "https://www.ontario.ca/page/oinp-application-processing-times-and-nominations-issued"

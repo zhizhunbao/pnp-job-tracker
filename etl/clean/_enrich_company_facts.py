@@ -19,7 +19,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths  # noqa: E402
+import _paths
 
 IN_JOBS = _paths.MART / "jobs.json"
 IN_COMPANIES = _paths.MART / "companies.json"

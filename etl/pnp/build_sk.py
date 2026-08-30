@@ -19,8 +19,8 @@ import httpx
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE.parent))          # etl/ → _paths
 sys.path.insert(0, str(_HERE.parent / "crawl"))  # etl/crawl/ → converters(HTML→md)
-import _paths  # noqa: E402
-from converters import get_converter  # noqa: E402
+import _paths
+from converters import get_converter
 
 PROVINCE = "SK"
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"

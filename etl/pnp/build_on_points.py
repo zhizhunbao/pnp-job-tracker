@@ -29,7 +29,7 @@ import httpx
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths  # noqa: E402
+import _paths
 
 PAGE_URL = "https://www.ontario.ca/page/ontario-workforce-priority-stream"
 OINP_URL = "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp"

@@ -46,7 +46,7 @@ import httpx
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths  # noqa: E402
+import _paths
 
 AOS_URL = "https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility"
 # B2(2026-08-08):雇主侧门槛的官方页——AOS eligibility 页正文里点名「must meet all Alberta job offer

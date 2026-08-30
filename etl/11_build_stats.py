@@ -23,14 +23,14 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import _paths  # noqa: E402
-import noc as NOC  # noqa: E402  E13-02:NOC 分类法(单一来源),给 stats_daily 的 closed 归 broad 桶用
+import _paths
+import noc as NOC  # E13-02:NOC 分类法(单一来源),给 stats_daily 的 closed 归 broad 桶用
 
 # E13-05:全国 occ 行的 pnpProvs 复用 08_score.pnp_eligible(禁复制判定逻辑)。
 # 08_score 是数字开头的模块名,不能直接 import;importlib 按路径加载——顶层只有表构建
 # (PNP_BY_PROV/EE_BY_NOC 读 json,轻量),重活(collect/main 扫全量岗位)都在 __main__ 守卫内,
 # 加载它不会触发那段重活。
-import importlib.util as _ilu  # noqa: E402
+import importlib.util as _ilu
 _score_spec = _ilu.spec_from_file_location("score08", Path(__file__).resolve().parent / "08_score.py")
 _score = _ilu.module_from_spec(_score_spec)
 _score_spec.loader.exec_module(_score)
@@ -46,7 +46,7 @@ EE_BY_NOC = _score.EE_BY_NOC
 # E14-02:担保率分子(单季度 LMIA 获批岗位)按 NOC 从季度源 xlsx 直接聚合(见 §sponsor_of 下方)。
 # NOC 正则复用 lmia/build_esdc_lmia_employers.py 的 _NOC_RE(单一来源,不复制口径;分域后按包路径 import)
 # (不需要像 08_score 那样走 importlib)。模块顶层无重活(只有函数/常量定义),import 安全。
-import lmia.build_esdc_lmia_employers as _lmia_mod  # noqa: E402  # 分域后按包路径取(etl/ 在 sys.path)
+import lmia.build_esdc_lmia_employers as _lmia_mod
 
 
 def channel_tier(noc: str, teer) -> str | None:

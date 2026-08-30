@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一级)有 _steps
-from _steps import run_steps  # noqa: E402
+from _steps import run_steps
 
 STEPS = [
     ["python", "etl/ircc/scrape_ircc_stats.py"],

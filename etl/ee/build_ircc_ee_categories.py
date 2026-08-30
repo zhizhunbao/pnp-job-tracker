@@ -19,7 +19,7 @@ import httpx
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths  # noqa: E402
+import _paths
 
 URL = ("https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/"
        "express-entry/rounds-invitations/category-based-selection.html")

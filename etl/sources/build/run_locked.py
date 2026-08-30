@@ -6,9 +6,9 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # etl/: sources + _paths
-import _paths  # noqa: E402
-from sources._jobbank_lock import JOBBANK_STORE_LOCK, jobbank_store_lock  # noqa: E402
-from sources.build import BUILD_STEPS  # noqa: E402
+import _paths
+from sources._jobbank_lock import JOBBANK_STORE_LOCK, jobbank_store_lock
+from sources.build import BUILD_STEPS
 
 
 def main() -> None:

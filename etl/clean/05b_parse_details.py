@@ -20,8 +20,8 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(_paths 在那)
-import _paths  # noqa: E402
-from sources._jobbank_lock import JOBBANK_STORE_LOCK, jobbank_store_lock  # noqa: E402
+import _paths
+from sources._jobbank_lock import JOBBANK_STORE_LOCK, jobbank_store_lock
 
 _POSTING_RE = re.compile(r"/jobposting/(\d+)")
 IN_SNAP_ROOT = _paths.RAW_JOBBANK                      # 详情原始 HTML 在各 <日期>/details/ 下

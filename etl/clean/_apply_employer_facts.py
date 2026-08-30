@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths  # noqa: E402
+import _paths
 
 IN_FACTS = _paths.PROCESSED / "employer_facts.json"
 OUT_SQL = _paths.ROOT / "docs" / "sql" / "emp-eligibility-facts-data.sql"

@@ -26,7 +26,7 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths  # noqa: E402
+import _paths
 
 # norm_name 住在 clean/05c(数字开头模块名 → importlib 拉;单一来源,不复制)
 _spec = importlib.util.spec_from_file_location(

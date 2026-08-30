@@ -21,7 +21,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(_paths 在那)
-import _paths  # noqa: E402
+import _paths
 
 # ── 输入/输出全路径(先声明再用;原地清洗 → IN 与 OUT 同址)──────────────
 IN_COMPANIES_DIR = _paths.COMPANIES                  # processed/ontario/ottawa/kanata-north/companies/

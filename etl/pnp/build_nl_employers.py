@@ -33,7 +33,7 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths  # noqa: E402
+import _paths
 
 PROVINCE = "NL"
 LABEL = "NL 官网指定雇主名录"

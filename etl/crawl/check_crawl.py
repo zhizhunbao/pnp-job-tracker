@@ -26,7 +26,7 @@ if os.name == "nt" and (getattr(sys.stdout, "encoding", "") or "").lower() != "u
 
 _SELF = Path(__file__).resolve()
 sys.path.insert(0, str(_SELF.parent))
-import browser_fetch  # noqa: E402 — looks_like_challenge
+import browser_fetch  # looks_like_challenge
 
 DOCS_DIR = _SELF.parent.parent.parent / "data" / "crawl"
 SOFT_404_TITLE_MARKERS = ("not found", "404", "introuvable", "page non trouv", "no longer available")

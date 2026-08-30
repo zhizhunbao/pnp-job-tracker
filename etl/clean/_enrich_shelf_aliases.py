@@ -27,7 +27,7 @@ import httpx
 from zhconv import convert as zh_convert
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths  # noqa: E402
+import _paths
 
 IN_SHELF = _paths.PROCESSED / "shelf_companies.json"
 IN_INDUSTRY = _paths.PROCESSED / "shelf_industries.json"   # brand 遍行业锚(可缺,缺=全部只音译)

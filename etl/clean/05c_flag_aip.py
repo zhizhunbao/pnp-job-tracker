@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(_paths 在那)
-import _paths  # noqa: E402
+import _paths
 
 # ── 输入/输出全路径(先声明再用)──────────────────────────────────────
 IN_AIP_LIST = _paths.AIP / "aip-designated-employers.json"  # 官方指定雇主名单(只读)

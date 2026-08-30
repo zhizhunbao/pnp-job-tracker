@@ -12,7 +12,7 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from _scrape_base import iso_date, section_body, slugify  # noqa: E402
+from _scrape_base import iso_date, section_body, slugify
 
 LIST_URL = "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/news"
 

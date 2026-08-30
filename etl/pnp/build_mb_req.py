@@ -48,9 +48,9 @@ from bs4 import BeautifulSoup
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE.parent))           # etl/ → _paths
 sys.path.insert(0, str(_HERE.parent / "crawl"))  # etl/crawl/ → converters(HTML→md)+ cache(crawl 缓存)
-import _paths  # noqa: E402
-import cache  # noqa: E402
-from converters import get_converter  # noqa: E402
+import _paths
+import cache
+from converters import get_converter
 
 IDOL_URL = "https://immigratemanitoba.com/mpnp/idol/"
 SWO_URL = "https://immigratemanitoba.com/mpnp/skilled-worker/swo/eligibility/"

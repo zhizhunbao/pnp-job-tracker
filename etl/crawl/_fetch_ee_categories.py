@@ -15,9 +15,9 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import browser_fetch as bf  # noqa: E402
+import browser_fetch as bf
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths  # noqa: E402
+import _paths
 
 URL = ("https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/"
        "express-entry/rounds-invitations/category-based-selection.html")

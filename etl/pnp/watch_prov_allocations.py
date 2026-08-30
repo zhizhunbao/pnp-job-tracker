@@ -29,7 +29,7 @@ if os.name == "nt":  # 本机控制台 cp1252 打不了 !/✗ 行里的中文;�
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths  # noqa: E402
+import _paths
 
 IN_ALLOC = _paths.IRCC / "pnp_allocations.json"
 IN_NS = _paths.IRCC / "ns_allocations.json"      # NS 官方开放数据(scrape_ns_allocations 产)→ 对账

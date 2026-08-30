@@ -32,7 +32,7 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths  # noqa: E402
+import _paths
 
 IN_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"
 IN_MART_OPEN_IDS = _paths.PROCESSED_JOBBANK / "mart_open_ids.json"   # 09 上一轮落的「还在板上」帖号

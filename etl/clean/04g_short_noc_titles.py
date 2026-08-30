@@ -32,7 +32,7 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths  # noqa: E402
+import _paths
 
 IN_NOC = _paths.MART / "noc_descriptions.json"
 OUT_I18N = _paths.PROCESSED / "noc_titles_i18n.json"

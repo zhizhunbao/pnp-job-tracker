@@ -26,8 +26,8 @@ import httpx
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _paths  # noqa: E402
-from constants import (  # noqa: E402
+import _paths
+from constants import (
     ALIAS_SPLIT_RE, ATS_HOSTS, BROWSER_UA, CAREERS_PATH_RE, CAREERS_RE, CAREERS_TIMEOUT_S,
     COMMON_CAREER_PATHS, DDG_GUARD_N, DDG_HTML_URL, DDG_RESULT_RE, DDG_SCAN_N, DDG_TIMEOUT_S,
     DESC_LEN_MAX, DESC_P_MIN_LEN, EMAIL_DOMAIN_RE, ENRICH_LIMIT, ENRICH_MIN_INTERVAL_S,
@@ -42,7 +42,7 @@ from constants import (  # noqa: E402
     RETRY_NOSITE_DAYS, SITE_NAME_RE, SLUG_FALLBACK, SLUG_LEN_MAX, SLUG_RE, TECH_TERMS,
     TITLE_RE, TITLE_SNIFF_LEN, URL_DOMAIN_RE,
 )
-from scheme import CareersProbe, CompanyRow, EnrichRecord  # noqa: E402
+from scheme import CareersProbe, CompanyRow, EnrichRecord
 
 # =========================================================================
 # 1. 共享词汇(≥2 段消费才住这段;2026-08-30 收拢现场:slugify 两份、is_tech 两份

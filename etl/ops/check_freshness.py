@@ -18,7 +18,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths  # noqa: E402
+import _paths
 
 IN_MANIFEST = Path(__file__).resolve().parent.parent / "source_manifest.json"  # 分域后清单仍在 etl/ 根
 

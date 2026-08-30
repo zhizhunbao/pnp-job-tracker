@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import _paths  # noqa: E402
+import _paths
 
 # ── 输入/输出全路径 ──────────────────────────────────────────────
 IN_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"   # 累积/清洗后的 store

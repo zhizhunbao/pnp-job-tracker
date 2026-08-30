@@ -20,7 +20,7 @@ from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
-import _paths  # noqa: E402
+import _paths
 
 IN_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"
 IN_SCORED = _paths.PROCESSED / "all-scored.json"
@@ -38,7 +38,7 @@ PROV_NAMES = {  # 市字段若等于这些(省名) → 错(全省岗只给了省
     "newfoundland and labrador", "nova scotia", "new brunswick", "prince edward island",
     "ontario", "quebec", "manitoba", "saskatchewan", "alberta", "british columbia",
 }
-import re  # noqa: E402
+import re
 
 _POSTAL = re.compile(r"\b([A-Za-z]\d[A-Za-z])\s*\d[A-Za-z]\d\b")
 

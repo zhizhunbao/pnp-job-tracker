@@ -42,8 +42,8 @@ from bs4 import BeautifulSoup
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE.parent))            # etl/ → _paths
 sys.path.insert(0, str(_HERE.parent / "crawl"))  # etl/crawl/ → cache
-import _paths  # noqa: E402
-import cache  # noqa: E402
+import _paths
+import cache
 
 URL = "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply"
 # 处理时长页(同文另见 /immigrate-to-b-c/for-workers;取通道主页这一份)
