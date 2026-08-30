@@ -55,9 +55,6 @@ def banned_syntax(text: str) -> list[tuple[int, str]]:
         if label is not None:
             found.append((node.lineno, label))
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            n_params = len(node.args.args) + len(node.args.posonlyargs) + len(node.args.kwonlyargs)
-            if n_params > 1:
-                found.append((node.lineno, f"函数 {node.name} 有 {n_params} 个参数(一参令)"))
             if len(node.args.defaults) > 0 or len(node.args.kw_defaults) > 0:
                 found.append((node.lineno, f"函数 {node.name} 带默认值参数(可选参数禁,cms 同律)"))
             for inner in ast.walk(node):

@@ -47,7 +47,7 @@ target-version = "py311"
 # E4/E7/E9/F = ruff 默认族(设了 select 会覆盖默认,必须显式带上);
 # ANN 签名类型注解 / D1 缺 docstring(只查「有没有」,不查排版风格)/ N 命名 /
 # C90 复杂度 / PLR0915 语句数 / BLE 裸捕获 / S110+S112 吞错(try-except-pass/continue)
-select = ["E4", "E7", "E9", "F", "ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
+select = ["E4", "E7", "E9", "F", "ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 # E402 全局豁免(2026-08-30 Frank「行内注释都去掉」):etl 全域的 bootstrap 惯例是
 # sys.path.insert 先行再 import 本地件 —— 结构性成因,不值得每行挂 noqa 牌;摘牌后
 # import 区零行内注释。判断型特批(BLE001/S112)仍逐行挂牌,理由住所属声明的 docstring。
@@ -56,48 +56,53 @@ ignore = ["E402"]
 [tool.ruff.lint.mccabe]
 max-complexity = 12
 
+[tool.ruff.lint.pylint]
+max-args = 1
+
 [tool.ruff.lint.per-file-ignores]
 # ---- 存量豁免(只豁免「严打族」,E/F 语法错误照拦;摘行=该域形制就范完成)----
 # 编号主管线与根上基础设施/库(批3 前存量)
-"etl/[0-9]*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/_paths.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/_scrape_base.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/noc.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
+"etl/[0-9]*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/_paths.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/_scrape_base.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/noc.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 # ⚠ noc_buckets 另豁免 F601(重复字典键 9 处:金融/行政/法律/教育/社会服务/体育/销售/零售/运输)——
 # python 语义=后键赢,前键是死行;哪个该赢是**分类口径判定**(改分类必跑 audit_noc_classes),
 # 台账待 Frank 拍,拍完删此行豁免(2026-08-29 批3 盘出)
 "etl/noc_buckets.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112", "F601"]
-"etl/grades.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/run_now.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/upload_mart.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/backup_db.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/auto_update.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
+"etl/grades.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/run_now.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/upload_mart.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/backup_db.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/auto_update.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 # 横切层与旧役册(整目录存量)
-"etl/clean/*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/crawl/**/*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/sources/**/*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/pilot/extractors/*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
+"etl/clean/*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/crawl/**/*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/sources/**/*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/pilot/extractors/*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 # 各域存量步骤文件(按动词前缀点名,一域一组;新域没有这些行 = 天然全严)
-"etl/pnp/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/pnp/scrape_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/pnp/watch_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/pnp/translate_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/ee/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/lmia/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/wages/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/dli/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/ircc/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/ircc/scrape_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/noc_facts/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/fsa/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/pilot/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/pilot/scrape_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/company/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/company/scrape_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/company/enrich_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/news/scrape_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/ops/audit_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/ops/check_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/ops/verify_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
-"etl/ops/scan_*.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112"]
+"etl/pnp/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/pnp/scrape_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/pnp/watch_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/pnp/translate_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/ee/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/lmia/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/wages/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/dli/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/ircc/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/ircc/scrape_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/noc_facts/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/fsa/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/pilot/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/pilot/scrape_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/company/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/company/scrape_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/company/enrich_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/news/scrape_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/ops/audit_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/ops/check_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/ops/verify_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/ops/scan_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/*/scheme.py" = ["PLR0913"]
+"etl/*/main.py" = ["PLR0913"]
 
