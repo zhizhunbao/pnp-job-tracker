@@ -326,7 +326,7 @@ def scrape_company_careers(process_all: bool = False, workers: int = 10) -> None
         lines.append(f"| {r['name']} | [开](<{r['careers_url']}>) | {r['ats'] or '自建'} | {r['email']} |")
     missing = [r for r in results if not r["careers_url"]]
     lines.append(f"\n_未找到公开 careers 页的 {len(missing)} 家(可能无招聘页/需深抓):_ "
-                 + "、".join(r["name"] for r in missing[:40]))
+                 + "、".join(str(r["name"]) for r in missing[:40]))
     stem.with_suffix(".md").write_text("\n".join(lines), encoding="utf-8")
     print(f"Done — {len(with_careers)}/{len(results)} careers pages, {len(with_ats)} via ATS.\n  {stem}.md")
     print("ATS 分布:", dict(Counter(r["ats"] for r in with_ats)))
