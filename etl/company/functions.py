@@ -24,6 +24,7 @@ import httpx
 from bs4 import BeautifulSoup
 
 import _paths
+from _log import err, say
 from company.constants import (
     ALIAS_SPLIT_RE, ATS_HOSTS, BROWSER_UA, CAREERS_FILE, CAREERS_PATH_RE, CAREERS_RE,
     CAREERS_STEM_SUFFIX, CAREERS_TIMEOUT_S, CAREERS_WORKERS, COL_TRIM_CHARS,
@@ -45,7 +46,7 @@ from company.constants import (
     OUT_KANATA_DIR, P_ACTION, P_PAGED, P_PAGE_SIZE, P_QUERY, P_TAG_RE, POLITE_UA, PORT_SEP,
     PRINT_ATS_DIST_LABEL, PRINT_CAREERS_DONE_TPL, PRINT_CAREERS_RESOLVING_TPL,
     PRINT_ENRICH_DONE_TPL, PRINT_ENRICH_IN_TPL, PRINT_ENRICH_SKIP_TPL, PRINT_FIND_TPL,
-    PRINT_ERR_TPL, PRINT_FOLDERS_TPL, PRINT_KANATA_TPL, PRINT_TARGETS_TPL, PROFILE_FILE, READ_ERRORS,
+    PRINT_FOLDERS_TPL, PRINT_KANATA_TPL, PRINT_TARGETS_TPL, PROFILE_FILE, READ_ERRORS,
     RETRY_FAILED_DAYS, RETRY_NOSITE_DAYS, SCHEME_PREFIX, SITE_NAME_RE, SLUG_DASH,
     SLUG_DUP_TPL, SLUG_FALLBACK, SLUG_LEN_MAX, SLUG_RE, ST_FAIL, ST_FOUND, ST_NOSITE, ST_OK,
     STATUS_ERR_TPL, SUFFIX_JSON, TAG_STRIP_RE, TECH_TERMS, TEXT_ENCODING, TEXT_JOIN_SEP,
@@ -156,7 +157,7 @@ def scrape_kanata_directory() -> None:
         if is_tech(r):
             tech_n += 1
     _paths.write_json((OUT_KANATA_DIR / KANATA_STEM).with_suffix(SUFFIX_JSON), out)
-    print(PRINT_KANATA_TPL.format(n=len(rows), tech=tech_n, out=OUT_KANATA_DIR / KANATA_STEM))
+    say(PRINT_KANATA_TPL.format(n=len(rows), tech=tech_n, out=OUT_KANATA_DIR / KANATA_STEM))
 
 
 # =========================================================================
@@ -206,8 +207,8 @@ def build_company_folders() -> None:
         index.append(IndexRow(slug=slug, name=row.name, website=row.website,
                              has_careers=bool(scan and scan.careers_url)).model_dump())
     _paths.write_json(OUT_FOLDERS_ROOT / INDEX_FILE, index)
-    print(PRINT_FOLDERS_TPL.format(region=KANATA_REGION_LABEL, made=made,
-                                   careers=careers_written, root=OUT_FOLDERS_ROOT))
+    say(PRINT_FOLDERS_TPL.format(region=KANATA_REGION_LABEL, made=made,
+                                 careers=careers_written, root=OUT_FOLDERS_ROOT))
 
 
 # =========================================================================
@@ -232,7 +233,7 @@ def fetch_text(x: FetchTextIn) -> str:
             return ""
         return r.text
     except Exception as e:  # noqa: BLE001
-        print(PRINT_ERR_TPL.format(where=x.url, name=type(e).__name__, detail=e), flush=True)
+        err(x.url, e)
         return ""
 
 
@@ -280,7 +281,7 @@ def find_careers(website: str) -> CareersProbe:
             out.note = NOTE_NO_CAREERS
     except Exception as e:  # noqa: BLE001
         out.status = STATUS_ERR_TPL.format(name=type(e).__name__)
-        print(PRINT_ERR_TPL.format(where=website, name=type(e).__name__, detail=e), flush=True)
+        err(website, e)
     return out
 
 
@@ -296,7 +297,7 @@ def scrape_company_careers() -> None:
         row = CompanyRow.model_validate(d)
         if row.website and is_tech(row):
             targets.append(row)
-    print(PRINT_CAREERS_RESOLVING_TPL.format(n=len(targets), workers=CAREERS_WORKERS))
+    say(PRINT_CAREERS_RESOLVING_TPL.format(n=len(targets), workers=CAREERS_WORKERS))
     results: list[CareerScanRow] = []
     with ThreadPoolExecutor(max_workers=CAREERS_WORKERS) as ex:
         futs = {}
@@ -323,9 +324,9 @@ def scrape_company_careers() -> None:
             ats_n += 1
             ats_dist[r.ats] = ats_dist.get(r.ats, 0) + 1
     _paths.write_json(stem.with_suffix(SUFFIX_JSON), out)
-    print(PRINT_CAREERS_DONE_TPL.format(found=found_n, n=len(results),
+    say(PRINT_CAREERS_DONE_TPL.format(found=found_n, n=len(results),
                                         ats=ats_n, out=stem.with_suffix(SUFFIX_JSON)))
-    print(PRINT_ATS_DIST_LABEL, ats_dist)
+    say(PRINT_ATS_DIST_LABEL + str(ats_dist))
 
 
 # =========================================================================
@@ -389,7 +390,7 @@ def guard_match(x: GuardMatchIn) -> bool:
                 text_hits += 1
         return text_hits >= max(1, (len(toks) + 1) // 2)
     except Exception as e:  # noqa: BLE001
-        print(PRINT_ERR_TPL.format(where=x.dom, name=type(e).__name__, detail=e), flush=True)
+        err(x.dom, e)
         return False
 
 
@@ -402,7 +403,7 @@ def jd_domain_hints() -> dict[str, set[str]]:
         try:
             m = JD_URL_LINE_RE.search(p.read_text(encoding=TEXT_ENCODING, errors=READ_ERRORS)[:JD_HEAD_LEN])
         except Exception as e:  # noqa: BLE001, S112
-            print(PRINT_ERR_TPL.format(where=p, name=type(e).__name__, detail=e), flush=True)
+            err(p, e)
             continue
         if m:
             url2md.setdefault(m.group(1).strip(), p)
@@ -417,7 +418,7 @@ def jd_domain_hints() -> dict[str, set[str]]:
         try:
             body = p.read_text(encoding=TEXT_ENCODING, errors=READ_ERRORS)
         except Exception as e:  # noqa: BLE001, S112
-            print(PRINT_ERR_TPL.format(where=p, name=type(e).__name__, detail=e), flush=True)
+            err(p, e)
             continue
         doms: set[str] = set()
         for d in EMAIL_DOMAIN_RE.findall(body) + URL_DOMAIN_RE.findall(body):
@@ -437,7 +438,7 @@ def ddg_find(x: DdgFindIn) -> str:
         if not r.is_success:
             return ""
     except Exception as e:  # noqa: BLE001
-        print(PRINT_ERR_TPL.format(where=x.name, name=type(e).__name__, detail=e), flush=True)
+        err(x.name, e)
         return ""
     seen: list[str] = []
     for href in DDG_RESULT_RE.findall(r.text)[:DDG_SCAN_N]:
@@ -467,7 +468,7 @@ def days_since(iso: str) -> float:
         dt = datetime.fromisoformat(iso.replace(ISO_Z, ISO_UTC_OFFSET))
         return (datetime.now(timezone.utc) - dt).total_seconds() / 86400
     except Exception as e:  # noqa: BLE001
-        print(PRINT_ERR_TPL.format(where=iso, name=type(e).__name__, detail=e), flush=True)
+        err(iso, e)
         return 1e9
 
 
@@ -639,23 +640,23 @@ def enrich_company_websites() -> None:
     if ENRICH_MIN_INTERVAL_S and OUT_ENRICH_CACHE.exists():
         age = time.time() - OUT_ENRICH_CACHE.stat().st_mtime
         if age < ENRICH_MIN_INTERVAL_S:
-            print(PRINT_ENRICH_SKIP_TPL.format(mins=age / 60, limit=ENRICH_MIN_INTERVAL_S // 60), flush=True)
+            say(PRINT_ENRICH_SKIP_TPL.format(mins=age / 60, limit=ENRICH_MIN_INTERVAL_S // 60))
             return
     cache: dict[str, EnrichRecord] = {}
     if OUT_ENRICH_CACHE.exists():
         for sl, d in json.loads(OUT_ENRICH_CACHE.read_text(encoding=TEXT_ENCODING)).items():
             cache[sl] = EnrichRecord.model_validate(d)
     targets, nosite = company_targets()
-    print(PRINT_ENRICH_IN_TPL.format(path=IN_ENRICH_POSTINGS))
+    say(PRINT_ENRICH_IN_TPL.format(path=IN_ENRICH_POSTINGS))
     found_jd, found_search = find_websites(FindWebsitesIn(cache=cache, targets=targets,
                                                           nosite=nosite, find_limit=FIND_LIMIT))
     for sl, c in cache.items():
         if sl not in targets and c.website and c.found:
             targets[sl] = SiteLead(name=c.name or sl, website=c.website, found=c.found)
-    print(PRINT_FIND_TPL.format(n=len(nosite), jd=found_jd, search=found_search, limit=FIND_LIMIT))
+    say(PRINT_FIND_TPL.format(n=len(nosite), jd=found_jd, search=found_search, limit=FIND_LIMIT))
     todo = pick_todo(PickTodoIn(cache=cache, targets=targets,
                                 refresh_days=ENRICH_REFRESH_DAYS))[:ENRICH_LIMIT]
-    print(PRINT_TARGETS_TPL.format(targets=len(targets), cache=len(cache), todo=len(todo), limit=ENRICH_LIMIT))
+    say(PRINT_TARGETS_TPL.format(targets=len(targets), cache=len(cache), todo=len(todo), limit=ENRICH_LIMIT))
     ok = fail = 0
     with httpx.Client(follow_redirects=True, timeout=FETCH_TIMEOUT_S,
                       headers={HDR_UA: POLITE_UA}, verify=False) as client:
@@ -675,5 +676,5 @@ def enrich_company_websites() -> None:
         if rec.status == ST_OK:
             total_ok += 1
     _paths.write_json(OUT_ENRICH_CACHE, out)
-    print(PRINT_ENRICH_DONE_TPL.format(ok=ok, fail=fail, total=total_ok, n=len(cache),
-                                       out=OUT_ENRICH_CACHE.name))
+    say(PRINT_ENRICH_DONE_TPL.format(ok=ok, fail=fail, total=total_ok, n=len(cache),
+                                     out=OUT_ENRICH_CACHE.name))

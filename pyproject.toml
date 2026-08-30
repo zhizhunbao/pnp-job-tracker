@@ -104,6 +104,7 @@ max-args = 1
 "etl/ops/check_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/ops/verify_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/ops/scan_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/_log.py" = ["PLR0913"]
 "etl/*/scheme.py" = ["PLR0913"]
 "etl/*/main.py" = ["PLR0913"]
 

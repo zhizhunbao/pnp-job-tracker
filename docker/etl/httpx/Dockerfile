@@ -10,5 +10,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certifi
     && echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(. /etc/os-release && echo $VERSION_CODENAME)-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
     && apt-get update && apt-get install -y --no-install-recommends postgresql-client-18 \
     && rm -rf /var/lib/apt/lists/*
-RUN pip install --no-cache-dir "httpx>=0.27" "beautifulsoup4>=4.12" "pymupdf>=1.24" "lxml>=5.0" "loguru>=0.7" "openpyxl>=3.1"  # openpyxl: build_lmia 解析 ESDC 季度 XLSX(E6-02)
+RUN pip install --no-cache-dir "httpx>=0.27" "beautifulsoup4>=4.12" "pymupdf>=1.24" "lxml>=5.0" "loguru>=0.7" "openpyxl>=3.1" "pydantic>=2.7"  # openpyxl: build_lmia 解析 ESDC 季度 XLSX(E6-02);pydantic: 边界行形状校验(2026-08-30 全域采用)
 CMD ["python", "etl/auto_update.py"]

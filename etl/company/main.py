@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from _log import err, say
 from company.functions import (
     build_company_folders, enrich_company_websites, scrape_company_careers, scrape_kanata_directory,
 )
@@ -37,19 +38,19 @@ def main() -> int:
             if args[1] in k:
                 picked.append((k, f))
         if len(picked) == 0:
-            print(f"✗ --only {args[1]} 没命中(可选:{'/'.join(TOOLS)})", flush=True)
+            say(f"✗ --only {args[1]} 没命中(可选:{'/'.join(TOOLS)})")
             return 1
         todo = picked
     else:
         todo = SCHEDULED
     for name, fn in todo:
-        print(f"→ {name}", flush=True)
+        say(f"→ {name}")
         try:
             fn()
         except Exception as e:  # noqa: BLE001
-            print(f"✗ {name} 失败({type(e).__name__}: {e}),本域本轮中止", flush=True)
+            err(name, e)
             return 1
-    print(f"✓ 本域 {len(todo)} 步全过", flush=True)
+    say(f"✓ 本域 {len(todo)} 步全过")
     return 0
 
 
