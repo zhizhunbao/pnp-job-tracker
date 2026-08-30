@@ -14,7 +14,6 @@ import csv
 import html as html_lib
 import json
 import re
-import sys
 import time
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -25,9 +24,11 @@ from urllib.parse import parse_qs, unquote, urljoin, urlparse
 import httpx
 from bs4 import BeautifulSoup
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import _paths
-from constants import (
+from company.constants import (
+    CAREERS_CSV_FIELDS, CAREERS_STEM_SUFFIX, COMPANY_CSV_FIELDS, CSV_BOM_ENCODING,
+    INDEX_FILE, KANATA_MD_TABLE_HEAD, KANATA_STEM, PROFILE_FILE, CAREERS_FILE,
+    SECTORS_PREVIEW_LEN, ST_FAIL, ST_FOUND, ST_NOSITE, ST_OK, URL_LABEL_RE,
     ALIAS_SPLIT_RE, ATS_HOSTS, BROWSER_UA, CAREERS_PATH_RE, CAREERS_RE, CAREERS_TIMEOUT_S,
     COMMON_CAREER_PATHS, DDG_GUARD_N, DDG_HTML_URL, DDG_RESULT_RE, DDG_SCAN_N, DDG_TIMEOUT_S,
     DESC_LEN_MAX, DESC_P_MIN_LEN, EMAIL_DOMAIN_RE, ENRICH_LIMIT, ENRICH_MIN_INTERVAL_S,
@@ -42,7 +43,7 @@ from constants import (
     RETRY_NOSITE_DAYS, SITE_NAME_RE, SLUG_FALLBACK, SLUG_LEN_MAX, SLUG_RE, TECH_TERMS,
     TITLE_RE, TITLE_SNIFF_LEN, URL_DOMAIN_RE,
 )
-from scheme import CareersProbe, CompanyRow, EnrichRecord
+from company.scheme import CareersProbe, CompanyRow, EnrichRecord
 
 # =========================================================================
 # 1. 共享词汇(≥2 段消费才住这段;2026-08-30 收拢现场:slugify 两份、is_tech 两份
@@ -125,26 +126,25 @@ def scrape_kanata_directory(tech_only: bool = False) -> None:
     """
     rows = fetch_kanata_companies()
     OUT_KANATA_DIR.mkdir(parents=True, exist_ok=True)
-    stem = OUT_KANATA_DIR / "kanata-north"
+    stem = OUT_KANATA_DIR / KANATA_STEM
     _paths.write_json(stem.with_suffix(".json"), rows)
-    fields = ["name", "website", "email", "phone", "sectors", "address", "careers_page", "description", "region"]
-    with open(stem.with_suffix(".csv"), "w", encoding="utf-8-sig", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=fields)
+    with open(stem.with_suffix(".csv"), "w", encoding=CSV_BOM_ENCODING, newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(COMPANY_CSV_FIELDS))
         w.writeheader()
-        w.writerows({k: r.get(k, "") for k in fields} for r in rows)
+        w.writerows({k: r.get(k, "") for k in COMPANY_CSV_FIELDS} for r in rows)
     tech_n = sum(1 for r in rows if is_tech(r))
     lines = [f"# Kanata North 科技园企业名录(渥太华 · {len(rows)} 家)\n",
              "> 来源:Kanata North Business Association 会员目录(admin-ajax 逆向直取,非编造)。",
              f"> 其中约 **{tech_n}** 家科技/工程相关。含官网+邮箱+电话,可直接联系——雇主 offer 路线的渥太华雇主全集。",
              "> 下一步:解析各公司官网的 careers/ATS 页 → 抓真实在招。\n",
-             "| 公司 | 官网 | 行业 | 邮箱 | 电话 |", "|---|---|---|---|---|"]
+             KANATA_MD_TABLE_HEAD[0], KANATA_MD_TABLE_HEAD[1]]
     shown = [r for r in rows if (not tech_only or is_tech(r))]
     for r in sorted(shown, key=lambda x: x["name"].lower()):
         site = ""
         if r["website"]:
-            label = re.sub(r"^https?://(www\.)?", "", r["website"]).rstrip("/")
+            label = URL_LABEL_RE.sub("", r["website"]).rstrip("/")
             site = f"[{label}](<{r['website']}>)"
-        lines.append(f"| {r['name']} | {site} | {r['sectors'][:40]} | {r['email']} | {r['phone']} |")
+        lines.append(f"| {r['name']} | {site} | {r['sectors'][:SECTORS_PREVIEW_LEN]} | {r['email']} | {r['phone']} |")
     lines.append(f"\n*由 etl/company 域生成。tech_only={tech_only}。*")
     stem.with_suffix(".md").write_text("\n".join(lines), encoding="utf-8")
     print(f"Wrote {len(rows)} companies ({tech_n} tech) → {stem}.md / .csv / .json")
@@ -194,11 +194,11 @@ def build_company_folders(region: str = "ottawa-kanata-north") -> None:
             "address": co.get("address", ""),
             "description": co.get("description", ""),
         }
-        _paths.write_json(folder / "profile.json", profile)
+        _paths.write_json(folder / PROFILE_FILE, profile)
         made += 1
         car = careers_by_name.get(name.lower())
         if car and (car.get("careers_url") or car.get("ats")):
-            _paths.write_json(folder / "careers.json", {
+            _paths.write_json(folder / CAREERS_FILE, {
                 "careers_url": car.get("careers_url", ""),
                 "ats": car.get("ats", ""),
                 "status": car.get("status", ""),
@@ -206,7 +206,7 @@ def build_company_folders(region: str = "ottawa-kanata-north") -> None:
             careers_written += 1
         index.append({"slug": slug, "name": name, "website": profile["website"],
                       "has_careers": bool(car and car.get("careers_url"))})
-    _paths.write_json(OUT_FOLDERS_ROOT / "_index.json", index)
+    _paths.write_json(OUT_FOLDERS_ROOT / INDEX_FILE, index)
     print(f"Region '{region}': {made} company folders created, "
           f"{careers_written} with careers.json.\n  {OUT_FOLDERS_ROOT}")
 
@@ -309,13 +309,12 @@ def scrape_company_careers(process_all: bool = False, workers: int = 10) -> None
             results.append({"name": c["name"], "website": c["website"],
                             "sectors": c.get("sectors", ""), "email": c.get("email", ""), **r})
     results.sort(key=lambda r: (r["ats"] == "", not r["careers_url"], r["name"].lower()))
-    stem = IN_CAREERS_DIRECTORY.with_name(IN_CAREERS_DIRECTORY.stem + "-careers")
+    stem = IN_CAREERS_DIRECTORY.with_name(IN_CAREERS_DIRECTORY.stem + CAREERS_STEM_SUFFIX)
     _paths.write_json(stem.with_suffix(".json"), results)
-    fields = ["name", "careers_url", "ats", "website", "email", "sectors", "status", "note"]
-    with open(stem.with_suffix(".csv"), "w", encoding="utf-8-sig", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=fields)
+    with open(stem.with_suffix(".csv"), "w", encoding=CSV_BOM_ENCODING, newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(CAREERS_CSV_FIELDS))
         w.writeheader()
-        w.writerows({k: r.get(k, "") for k in fields} for r in results)
+        w.writerows({k: r.get(k, "") for k in CAREERS_CSV_FIELDS} for r in results)
     with_careers = [r for r in results if r["careers_url"]]
     with_ats = [r for r in results if r["ats"]]
     lines = [f"# {IN_CAREERS_DIRECTORY.stem} · 公司招聘页定位(Stage 2)\n",
@@ -556,7 +555,7 @@ def find_websites(cache: dict, targets: dict, nosite: dict, find_limit: int) -> 
                     site = "https://" + dom
                     targets[sl] = {"name": v["name"], "website": site, "found": "jd"}
                     cache[sl] = {"name": v["name"], "website": site, "found": "jd",
-                                 "status": "found", "fetched": now_iso()}
+                                 "status": ST_FOUND, "fetched": now_iso()}
                     found_jd += 1
                     break
         budget = find_limit
@@ -570,10 +569,10 @@ def find_websites(cache: dict, targets: dict, nosite: dict, find_limit: int) -> 
             if site:
                 targets[sl] = {"name": v["name"], "website": site, "found": "searched"}
                 cache[sl] = {"name": v["name"], "website": site, "found": "searched",
-                             "status": "found", "fetched": now_iso()}
+                             "status": ST_FOUND, "fetched": now_iso()}
                 found_search += 1
             else:
-                cache[sl] = {"name": v["name"], "status": "nosite", "fetched": now_iso()}
+                cache[sl] = {"name": v["name"], "status": ST_NOSITE, "fetched": now_iso()}
             time.sleep(FIND_SLEEP_S)
     return found_jd, found_search
 
@@ -583,11 +582,11 @@ def pick_todo(cache: dict, targets: dict, refresh_days: int) -> list[tuple[str, 
     todo = []
     for sl, info in targets.items():
         c = cache.get(sl)
-        if c is None or c.get("status") == "found":
+        if c is None or c.get("status") == ST_FOUND:
             todo.append((sl, info))
-        elif c.get("status") == "ok" and days_since(c.get("fetched", "")) > refresh_days:
+        elif c.get("status") == ST_OK and days_since(c.get("fetched", "")) > refresh_days:
             todo.append((sl, info))
-        elif c.get("status") == "fail" and days_since(c.get("fetched", "")) > RETRY_FAILED_DAYS:
+        elif c.get("status") == ST_FAIL and days_since(c.get("fetched", "")) > RETRY_FAILED_DAYS:
             todo.append((sl, info))
     return todo
 
@@ -603,15 +602,15 @@ def fetch_profile(client: httpx.Client, info: dict) -> EnrichRecord:
             data = extract_meta(r.text)
             if data["description"] or data["sectors"]:
                 rec.update(data)
-                rec["status"] = "ok"
+                rec["status"] = ST_OK
             else:
-                rec["status"] = "fail"
+                rec["status"] = ST_FAIL
                 rec["note"] = "no meta"
         else:
-            rec["status"] = "fail"
+            rec["status"] = ST_FAIL
             rec["note"] = f"http {r.status_code}"
     except Exception as e:  # noqa: BLE001
-        rec["status"] = "fail"
+        rec["status"] = ST_FAIL
         rec["note"] = type(e).__name__
     return rec
 
@@ -653,7 +652,7 @@ def enrich_company_websites(limit: int = ENRICH_LIMIT,
                       headers={"User-Agent": POLITE_UA}, verify=False) as client:
         for sl, info in todo:
             rec = fetch_profile(client, info)
-            if rec.get("status") == "ok":
+            if rec.get("status") == ST_OK:
                 ok += 1
             else:
                 fail += 1
@@ -661,5 +660,5 @@ def enrich_company_websites(limit: int = ENRICH_LIMIT,
             time.sleep(FETCH_SLEEP_S)
     OUT_ENRICH_CACHE.parent.mkdir(parents=True, exist_ok=True)
     _paths.write_json(OUT_ENRICH_CACHE, cache)
-    total_ok = sum(1 for c in cache.values() if c.get("status") == "ok")
+    total_ok = sum(1 for c in cache.values() if c.get("status") == ST_OK)
     print(f"本轮 ✓ {ok} 抓到 · ✗ {fail} 无内容/失败 · 累计成功 {total_ok}/{len(cache)} 家 → {OUT_ENRICH_CACHE.name}")

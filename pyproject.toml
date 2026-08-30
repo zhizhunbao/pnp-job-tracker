@@ -24,6 +24,14 @@ browser = ["playwright>=1.45"]
 [tool.uv]
 package = false
 
+# =========================================================================
+# Pyrefly(IDE 静态解析;2026-08-30):运行时靠 sys.path.insert(etl/) 找 _paths 与各域包,
+# 静态工具不跟 sys.path —— 给它指同一个搜索根。域内引用一律包限定(company.constants),
+# 裸兄弟名退役:各域都有 constants.py,裸名会让静态工具拿错家的。
+# =========================================================================
+[tool.pyrefly]
+search-path = ["etl"]
+
 [tool.ruff]
 line-length = 120
 target-version = "py311"

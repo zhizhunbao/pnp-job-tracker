@@ -11,8 +11,8 @@ company 域唯一入口(一域一门;步骤 2026-08-30 全溶进 functions.py,�
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from functions import (
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from company.functions import (
     build_company_folders, enrich_company_websites, scrape_company_careers, scrape_kanata_directory,
 )
 

@@ -4,17 +4,16 @@ company 域常量 —— 域词汇表(三件套形制**全站样张**,2026-08-30
 
 判据(照 cms 宪法同款):常量只装 JSON 装得下的(标量/字符串表/正则)+ IN/OUT 路径。
 唯一特批 import = `_paths`(2026-08-30 Frank 否决「functions 段首常量」提议:functions
-顶层只许函数;路径写死字符串又违「脚本不写死路径」铁律 —— 给路径真相开唯一洞)。
+顶层只许函数)。本文件不做 sys.path bootstrap —— **只有门(main.py)插路径**(2026-08-30
+Frank「每个文件都得导入一下吗」拍的形):件套以 company.constants 包名被引,门先把 etl/
+摆上路径,_paths 自然可解。
 函数体字面量同日收编(Frank「函数内部也一堆常量啊」):正则/选择器/阈值/超时全部提名,
 对标 cms 魔数收编批;只有零语义的琐碎字面量(空串、±1)留在体内。
 注释方言(2026-08-30 Frank「只允许 jsDoc 注释,不允许行内注释」):每个常量用
 **赋值后的裸字符串 docstring**,不用行内 #;段横幅三行框保留。
 """
 import re
-import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import _paths
 
 # =========================================================================
@@ -85,6 +84,25 @@ KANATA_ADDR_SEL = "p.company__address"
 
 KANATA_COL_SEL = "div.col"
 """卡片里「Label: value」明细列。"""
+KANATA_STEM = "kanata-north"
+"""目录三件的共同文件名主干(.json/.csv/.md 同名同干)。"""
+
+COMPANY_CSV_FIELDS = ("name", "website", "email", "phone", "sectors", "address",
+                      "careers_page", "description", "region")
+"""目录 CSV 的列序(与 CompanyRow 九格同名同序)。"""
+
+CSV_BOM_ENCODING = "utf-8-sig"
+"""CSV 用带 BOM 的 UTF-8 —— Excel 双击直开不乱码(纯 utf-8 会把中文读成乱码)。"""
+
+SECTORS_PREVIEW_LEN = 40
+"""md 榜单里行业列的截断长度(表格一行放得下)。"""
+
+URL_LABEL_RE = re.compile(r"^https?://(www\.)?")
+"""官网 URL → 短标签:剥协议与 www 前缀(显示用,链接仍是全 URL)。"""
+
+KANATA_MD_TABLE_HEAD = ("| 公司 | 官网 | 行业 | 邮箱 | 电话 |", "|---|---|---|---|---|")
+"""md 榜单的表头两行。"""
+
 
 
 # =========================================================================
@@ -108,6 +126,12 @@ CAREERS_PATH_RE = re.compile(r"career|jobs?", re.I)
 
 CAREERS_TIMEOUT_S = 12
 """探单个官网的超时。"""
+CAREERS_STEM_SUFFIX = "-careers"
+"""careers 三件的文件名后缀(接在目录 stem 后)。"""
+
+CAREERS_CSV_FIELDS = ("name", "careers_url", "ats", "website", "email", "sectors", "status", "note")
+"""careers CSV 的列序。"""
+
 
 
 # =========================================================================
@@ -208,6 +232,18 @@ DESC_P_MIN_LEN = 80
 
 KEYWORDS_TOP_N = 4
 """keywords 只取前几个当行业词(后面的多是 SEO 灌水)。"""
+ST_FOUND = "found"
+"""EnrichRecord.status:刚找到官网,待抓简介。"""
+
+ST_OK = "ok"
+"""EnrichRecord.status:抓到简介/行业。"""
+
+ST_FAIL = "fail"
+"""EnrichRecord.status:抓不到(原因在 note),冷却 RETRY_FAILED_DAYS。"""
+
+ST_NOSITE = "nosite"
+"""EnrichRecord.status:找不到官网,冷却 RETRY_NOSITE_DAYS。"""
+
 
 
 NAME_STOP = {"the", "and", "inc", "incorporated", "ltd", "ltee", "limited", "llp", "llc", "corp",
@@ -247,6 +283,15 @@ IN_FOLDERS_CAREERS = _paths.RAW_COMPANIES / "kanata-north-careers.json"
 
 OUT_FOLDERS_ROOT = _paths.COMPANIES
 """段3 输出:一司一档的根(processed/ats;_paths.COMPANIES 已含地域语义)。"""
+PROFILE_FILE = "profile.json"
+"""一司一档里的身份档文件名。"""
+
+CAREERS_FILE = "careers.json"
+"""一司一档里的招聘页档文件名。"""
+
+INDEX_FILE = "_index.json"
+"""一司一档根上的总索引文件名(下划线开头,排目录顶且不与 slug 撞)。"""
+
 
 IN_CAREERS_DIRECTORY = _paths.RAW_COMPANIES / "kanata-north.json"
 """段4 输入:扁平公司目录(段2 的产物)。"""
