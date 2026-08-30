@@ -33,8 +33,15 @@ MAX_AGE_DAYS = 400
 MIN_TOTAL = 10
 """全轮防线:合并后至少 N 条(首轮 ~几十条,低于此 = 结构性故障)。"""
 
+SLUG_MAXLEN = 60
+"""slug 截断长度(2026-08-30 就范批:原是 slugify 的默认参数,全站零人调过这个旋钮 —— 简化律收成常量)。"""
+
 MONTHS = "January|February|March|April|May|June|July|August|September|October|November|December"
 """英文月份全称词表(只为拼 DATE_RE 存在)。"""
 
 DATE_RE = re.compile(rf"({MONTHS})\s+(\d{{1,2}}),?\s+(20\d\d)", re.I)
 """「June 24, 2026」式日期(月 日, 年;逗号可省,大小写不限)。"""
+
+TAIL_NOISE = {"page details", "report a problem on this page", "share this page",
+              "date modified", "about this site"}
+"""页尾样板段标题(canada.ca 等):详情页正文遇到这些标题就截断,不进正文。"""
