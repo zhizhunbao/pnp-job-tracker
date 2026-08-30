@@ -9,7 +9,6 @@ build_ab — AB AAIP 两份清单(**全实时抓** alberta.ca,httpx 即可;md �
 
 Usage:  uv run python etl/pnp/build_ab.py   (需 httpx+bs4+pymupdf,系统 python 没装 → .venv / docker etl 镜像)
 """
-import json
 import re
 import sys
 from datetime import date
@@ -71,12 +70,13 @@ def main() -> None:
         occ1 = None
         print(f"  ✗ 抓取失败 aaip-ineligible.json: {type(e).__name__} {e}(保留旧表)")
     if occ1:
-        (_paths.PNP / "aaip-ineligible.json").write_text(json.dumps({
+        # 2026-08-30 写盘换 _paths.write_json(原子+Errno 22 重试;本文件=全域样张,起因见 _paths 写盘段)
+        _paths.write_json(_paths.PNP / "aaip-ineligible.json", {
             "stream": "AAIP Alberta Opportunity Stream", "label": "AAIP 不符合清单",
             "province": "AB", "type": "ineligible", "url": AOS_URL, "fetched": date.today().isoformat(),
             "note": "除本表外 TEER0-5 都符合;原带 * 为条件性不符合,粗筛下按不符合处理。",
             "occupations": sorted(occ1, key=lambda x: x["noc"]),
-        }, ensure_ascii=False, indent=2), encoding="utf-8")
+        })
         print(f"  ✓ AAIP 不符合清单  {len(occ1)} 个职业 → pnp/aaip-ineligible.json")
     elif occ1 is not None:
         print("  ✗ 没解析到不符合资格表(保留旧表)")
@@ -88,11 +88,11 @@ def main() -> None:
         occ2 = None
         print(f"  ✗ 抓取失败 ab-tech.json: {type(e).__name__} {e}(保留旧表)")
     if occ2:
-        (_paths.PNP / "ab-tech.json").write_text(json.dumps({
+        _paths.write_json(_paths.PNP / "ab-tech.json", {
             "stream": "AAIP Accelerated Tech Pathway", "label": "AB 科技",
             "province": "AB", "type": "indemand", "url": TECH_PDF_URL, "fetched": date.today().isoformat(),
             "occupations": sorted(occ2, key=lambda x: x["noc"]),
-        }, ensure_ascii=False, indent=2), encoding="utf-8")
+        })
         print(f"  ✓ AB 科技         {len(occ2)} 个职业 → pnp/ab-tech.json")
     elif occ2 is not None:
         print("  ✗ Tech PDF 没解析到 NOC(保留旧表)")

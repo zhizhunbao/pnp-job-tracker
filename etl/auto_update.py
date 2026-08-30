@@ -30,6 +30,8 @@ SEED_URL = os.environ.get("SEED_URL", "http://host.docker.internal:3000/api/seed
 SEED_TOKEN = os.environ.get("SEED_TOKEN", "")  # 生产必设(seed 端点鉴权,E2-02);本地 dev 可空
 ROUNDS = Path(__file__).resolve().parent.parent / "data" / ".rounds"  # 各单元「本轮完成」标记(mtime)
 POLL = 30  # 轮询间隔(秒):消费者盯上游标记 + 多单元到点检查共用
+FAIL_RETRY = 3600  # 失败轮短重试(2026-08-30 立):周更役炸一下不再赔一周 —— 起因:Windows 卷
+                   # 间歇 Errno 22 + 「失败照睡满周期」把 16/64 源拖成 15-25 天陈账;成功才睡满 interval
 ETL_DIR = Path(__file__).resolve().parent
 
 # 这些一级目录不是「域」,发现单元时跳过(sources=旧役册;clean=横切清洗层;其余非域)
@@ -173,7 +175,7 @@ def main() -> None:
                   f"旧役册可选: {', '.join(sources.NAMES)};退出")
         raise SystemExit(1)
     for u in units:
-        u["last"] = 0.0  # 0 = 启动即到点(与旧行为一致:容器一起来先跑一轮)
+        u["next"] = 0.0  # 0 = 启动即到点(与旧行为一致:容器一起来先跑一轮)
         u["consumed"] = 0.0
         mode = f"消费者(上游 {u['after']},兜底 {u['interval']}s)" if u.get("after") else f"每 {u['interval']}s"
         log.info(f"单元 {u['name']}:{mode}" + (f",seed → {SEED_URL}" if u.get("seed") else ""))
@@ -182,18 +184,19 @@ def main() -> None:
             now = time.time()
             if u.get("after"):
                 up = newest_upstream(u["after"])
-                due = up > u["consumed"] or now - u["last"] >= u["interval"]
+                due = up > u["consumed"] or now >= u["next"]
                 if due:
                     u["consumed"] = up
             else:
-                due = now - u["last"] >= u["interval"]
+                due = now >= u["next"]
             if not due:
                 continue
             log.info(f"===== {u['name']}:开始一轮 =====")
             ok = run_once(u)
             mark_done(u["name"])
-            u["last"] = time.time()
-            log.info(f"===== {u['name']}:{'完成' if ok else '未完整完成'} =====")
+            wait = u["interval"] if ok else min(FAIL_RETRY, u["interval"])
+            u["next"] = time.time() + wait
+            log.info(f"===== {u['name']}:{'完成' if ok else f'未完整完成,{wait}s 后重试'} =====")
         time.sleep(POLL)
 
 
