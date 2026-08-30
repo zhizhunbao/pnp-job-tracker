@@ -49,6 +49,10 @@ def scan() -> tuple[list[str], list[str]]:
                 soft.append(f"{rel}: 缺 IN_/OUT_ 显式路径常量")
             if p.name not in ("main.py",) and MAIN_RE.search(text) is not None:
                 soft.append(f"{rel}: 步骤模块带 __main__(一域一门,该收成 run())")
+            if p.name == "functions.py":
+                for m in re.finditer(r"^[A-Z][A-Z0-9_]* *=", text, re.M):
+                    hard.append(f"{rel}: functions 顶层常量「{m.group(0).rstrip(' =')}」"
+                                f"(归 constants;2026-08-30 Frank 否决段首常量,Ruff 无此规则故住本闸)")
     return sorted(hard), sorted(soft)
 
 

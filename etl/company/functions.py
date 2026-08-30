@@ -4,8 +4,8 @@ company 域函数 —— 全部行为住这(三件套形制**全站样张**,2026
 
 四个步骤文件(scrape_kanata_directory / build_company_folders / scrape_company_careers /
 enrich_company_websites)2026-08-30 溶入本文件成四段,各段入口函数与原脚本同名;
-段首放该步的 IN_*/OUT_* 路径常量(方言判据:路径要经 _paths 解析,constants 叶子零 import,
-而「这步读什么写哪」该与函数同段少翻 —— 见 docs/design/etl分域-20260829.md §4)。
+IN/OUT 路径常量住 constants(2026-08-30 Frank 否决段首常量特批:**本文件顶层只许函数**,
+与 cms functions.ts 同律;constants 为此特批唯一 import _paths)。
 收拢判据照 cms 同律:重复才收(段1);单消费者函数留在自己的段里。
 写盘一律 _paths.write_json(原子+重试,本域=铺开首域)。
 依赖单边:本文件 → 本域 constants/scheme + 基础设施叶子(_paths)。
@@ -28,10 +28,19 @@ from bs4 import BeautifulSoup
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import _paths  # noqa: E402
 from constants import (  # noqa: E402
-    ATS_HOSTS, BROWSER_UA, CAREERS_RE, COMMON_CAREER_PATHS, DDG_HTML_URL, DESC_LEN_MAX,
-    ENRICH_LIMIT, ENRICH_MIN_INTERVAL_S, ENRICH_REFRESH_DAYS, FIND_LIMIT, GENERIC_MAIL,
-    KANATA_AJAX_URL, KANATA_REFERER, KANATA_REGION_LABEL, NAME_STOP, NOT_OFFICIAL, POLITE_UA,
-    RETRY_FAILED_DAYS, RETRY_NOSITE_DAYS, TECH_TERMS,
+    ALIAS_SPLIT_RE, ATS_HOSTS, BROWSER_UA, CAREERS_PATH_RE, CAREERS_RE, CAREERS_TIMEOUT_S,
+    COMMON_CAREER_PATHS, DDG_GUARD_N, DDG_HTML_URL, DDG_RESULT_RE, DDG_SCAN_N, DDG_TIMEOUT_S,
+    DESC_LEN_MAX, DESC_P_MIN_LEN, EMAIL_DOMAIN_RE, ENRICH_LIMIT, ENRICH_MIN_INTERVAL_S,
+    ENRICH_REFRESH_DAYS, FETCH_SLEEP_S, FETCH_TIMEOUT_S, FIND_CLIENT_TIMEOUT_S, FIND_LIMIT,
+    FIND_SLEEP_S, GENERIC_MAIL, GUARD_TIMEOUT_S, IN_CAREERS_DIRECTORY, IN_ENRICH_ATS,
+    IN_ENRICH_JD_DETAILS, IN_ENRICH_POSTINGS, IN_FOLDERS_CAREERS, IN_FOLDERS_DIRECTORY,
+    JD_HEAD_LEN, KANATA_ADDR_SEL, KANATA_AJAX_ACTION, KANATA_AJAX_URL, KANATA_CARD_SEL,
+    KANATA_COL_SEL, KANATA_DESC_SEL, KANATA_NAME_SEL, KANATA_PAGE_SIZE, KANATA_REFERER,
+    KANATA_REGION_LABEL, KANATA_TERMS_SEL, KANATA_TIMEOUT_S, KEYWORDS_TOP_N,
+    META_DESC_PATTERNS, META_KEYWORDS_PATTERNS, NAME_STOP, NAME_TOKEN_RE, NOT_OFFICIAL,
+    OUT_ENRICH_CACHE, OUT_FOLDERS_ROOT, OUT_KANATA_DIR, POLITE_UA, RETRY_FAILED_DAYS,
+    RETRY_NOSITE_DAYS, SITE_NAME_RE, SLUG_FALLBACK, SLUG_LEN_MAX, SLUG_RE, TECH_TERMS,
+    TITLE_RE, TITLE_SNIFF_LEN, URL_DOMAIN_RE,
 )
 from scheme import CareersProbe, CompanyRow, EnrichRecord  # noqa: E402
 
@@ -47,7 +56,7 @@ def slugify(s: str) -> str:
     2026-08-30 收拢:取 enrich 版(防 None 更稳);folders 版先截后 strip 的细节差
     在真实公司名上无行为差(两版对全部 520 个现存公司名重算比对同值)。
     """
-    return re.sub(r"[^a-z0-9]+", "-", (s or "").lower()).strip("-")[:60] or "company"
+    return SLUG_RE.sub("-", (s or "").lower()).strip("-")[:SLUG_LEN_MAX] or SLUG_FALLBACK
 
 
 def is_tech(c: CompanyRow) -> bool:
@@ -64,9 +73,6 @@ def is_tech(c: CompanyRow) -> bool:
 # 2. Kanata 目录抓取(Stage 1:雇主全集种子;休眠引导工具,手动 main --only kanata)
 # =========================================================================
 
-OUT_KANATA_DIR = _paths.RAW_COMPANIES
-"""目录三件(kanata-north.json/.csv/.md)的落盘目录。"""
-
 
 def fetch_kanata_companies() -> list[CompanyRow]:
     """逆向直取 Kanata North BA 会员目录(免浏览器)。
@@ -77,27 +83,27 @@ def fetch_kanata_companies() -> list[CompanyRow]:
     @returns 目录行清单(有名字的才收)。
     """
     with httpx.Client(headers={"User-Agent": BROWSER_UA, "Referer": KANATA_REFERER},
-                      follow_redirects=True, timeout=60) as c:
-        r = c.get(KANATA_AJAX_URL, params={"action": "elevatex_load_more_companies",
-                                           "paged": "1", "posts_per_page": "1000"})
+                      follow_redirects=True, timeout=KANATA_TIMEOUT_S) as c:
+        r = c.get(KANATA_AJAX_URL, params={"action": KANATA_AJAX_ACTION,
+                                           "paged": "1", "posts_per_page": KANATA_PAGE_SIZE})
         r.raise_for_status()
         payload = r.json()
     posts = payload["data"]["posts"]
     doc = "".join(posts) if isinstance(posts, list) else posts
     soup = BeautifulSoup(doc, "html.parser")
     rows: list[CompanyRow] = []
-    for art in soup.select("article.company"):
+    for art in soup.select(KANATA_CARD_SEL):
         def col(label: str) -> str:
             """卡片里 div.col 的「Label: value」取值。"""
-            for d in art.select("div.col"):
+            for d in art.select(KANATA_COL_SEL):
                 txt = re.sub(r"\s+", " ", d.get_text(" ", strip=True))
                 if txt.lower().startswith(label.lower()):
                     return txt[len(label):].strip(" :")
             return ""
-        name = art.select_one("h2.company__heading")
-        desc = art.select_one("p.company__description")
-        terms = art.select_one("div.company__terms")
-        addr = art.select_one("p.company__address")
+        name = art.select_one(KANATA_NAME_SEL)
+        desc = art.select_one(KANATA_DESC_SEL)
+        terms = art.select_one(KANATA_TERMS_SEL)
+        addr = art.select_one(KANATA_ADDR_SEL)
         rows.append({
             "name": name.get_text(strip=True) if name else "",
             "website": col("Website"),
@@ -147,15 +153,6 @@ def scrape_kanata_directory(tech_only: bool = False) -> None:
 # =========================================================================
 # 3. 一司一档(Stage 1.5:扁平目录 → processed/ats/<slug>/;休眠引导工具)
 # =========================================================================
-
-IN_FOLDERS_DIRECTORY = _paths.RAW_COMPANIES / "kanata-north.json"
-"""默认输入:扁平公司目录(段2 的产物)。"""
-
-IN_FOLDERS_CAREERS = _paths.RAW_COMPANIES / "kanata-north-careers.json"
-"""默认输入:careers 定位结果(段4 的产物;可缺,缺则只写 profile)。"""
-
-OUT_FOLDERS_ROOT = _paths.COMPANIES
-"""一司一档的根(processed/ats;_paths.COMPANIES 已含地域语义)。"""
 
 
 def build_company_folders(region: str = "ottawa-kanata-north") -> None:
@@ -218,9 +215,6 @@ def build_company_folders(region: str = "ottawa-kanata-north") -> None:
 # 4. careers 页定位(Stage 2:进官网找招聘页+识别 ATS;休眠引导工具)
 # =========================================================================
 
-IN_CAREERS_DIRECTORY = _paths.RAW_COMPANIES / "kanata-north.json"
-"""默认输入:扁平公司目录(段2 的产物)。"""
-
 
 def detect_ats(page: str) -> str:
     """页面 HTML 里认 ATS 平台(命中返回平台短名,没有为空串)。"""
@@ -259,7 +253,8 @@ def find_careers(website: str) -> CareersProbe:
     """
     out: CareersProbe = {"careers_url": "", "ats": "", "status": "", "note": ""}
     try:
-        with httpx.Client(headers={"User-Agent": BROWSER_UA}, follow_redirects=True, timeout=12) as c:
+        with httpx.Client(headers={"User-Agent": BROWSER_UA}, follow_redirects=True,
+                          timeout=CAREERS_TIMEOUT_S) as c:
             r = c.get(website)
             out["status"] = str(r.status_code)
             page = r.text
@@ -273,7 +268,7 @@ def find_careers(website: str) -> CareersProbe:
                     break
                 if CAREERS_RE.search(href) or CAREERS_RE.search(text or ""):
                     cand = urljoin(website, href)
-                    if re.search(r"career|jobs?", href, re.I):
+                    if CAREERS_PATH_RE.search(href):
                         best = cand
                         break
                     best = best or cand
@@ -342,23 +337,11 @@ def scrape_company_careers(process_all: bool = False, workers: int = 10) -> None
 # 5. 官网富化(E8-04 / D1=B + D2 找官网阶梯;唯一定时段 —— main 默认链只有它)
 # =========================================================================
 
-IN_ENRICH_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"
-"""公司官网来源(employer + website)。"""
-
-IN_ENRICH_JD_DETAILS = _paths.PROCESSED / "jobbank" / "details"
-"""已抓 JD .md(找官网①:JD 正文域名线索 —— 雇主自己写的,置信最高)。"""
-
-IN_ENRICH_ATS = _paths.PROCESSED_ATS
-"""ATS 公司已自带 profile,跳过不富化。"""
-
-OUT_ENRICH_CACHE = _paths.PROCESSED / "company_enrich.json"
-"""增量缓存(slug → EnrichRecord);09 汇装直读合并进 companies 行。"""
-
 
 def name_tokens(name: str) -> list[str]:
     """公司名 → 显著 token(去 o/a、dba 别名段与后缀/泛词/短词),供域名/标题匹配。"""
-    s = re.split(r"\bo/a\b|\bdba\b|\bd/b/a\b", (name or "").lower())[0]
-    toks = re.findall(r"[a-z0-9]{3,}", s)
+    s = ALIAS_SPLIT_RE.split((name or "").lower())[0]
+    toks = NAME_TOKEN_RE.findall(s)
     return [t for t in toks if t not in NAME_STOP]
 
 
@@ -395,10 +378,10 @@ def guard_match(name: str, dom: str, client: httpx.Client | None = None) -> bool
     if client is None:
         return False
     try:
-        r = client.get(f"https://{dom}", timeout=8)
-        head = r.text[:4000].lower()
-        m = re.search(r"<title[^>]*>(.*?)</title>", head, re.S)
-        site = re.search(r'og:site_name["\'][^>]+content=["\']([^"\']+)', head)
+        r = client.get(f"https://{dom}", timeout=GUARD_TIMEOUT_S)
+        head = r.text[:TITLE_SNIFF_LEN].lower()
+        m = TITLE_RE.search(head)
+        site = SITE_NAME_RE.search(head)
         text = f"{m.group(1) if m else ''} {site.group(1) if site else ''}"
         return sum(1 for t in toks if t in text) >= max(1, (len(toks) + 1) // 2)
     except Exception:  # noqa: BLE001
@@ -415,13 +398,11 @@ def jd_domain_hints() -> dict[str, set[str]]:
     url2md: dict[str, Path] = {}
     for p in IN_ENRICH_JD_DETAILS.rglob("*.md"):
         try:
-            m = re.search(r"^url:\s*(.+)$", p.read_text(encoding="utf-8", errors="replace")[:600], re.M)
+            m = re.search(r"^url:\s*(.+)$", p.read_text(encoding="utf-8", errors="replace")[:JD_HEAD_LEN], re.M)
         except Exception:  # noqa: BLE001, S112  # 探 4 万个 JD 文件,单个读不动是常态;行数在汇总层报
             continue
         if m:
             url2md.setdefault(m.group(1).strip(), p)
-    email_re = re.compile(r"[\w.+-]+@([\w-]+\.[\w.-]+)")
-    url_re = re.compile(r"https?://([\w-]+\.[\w.-]+)")
     hints: dict[str, set[str]] = {}
     for j in json.loads(IN_ENRICH_POSTINGS.read_text(encoding="utf-8")):
         if j.get("website") or not j.get("employer"):
@@ -433,7 +414,8 @@ def jd_domain_hints() -> dict[str, set[str]]:
             body = p.read_text(encoding="utf-8", errors="replace")
         except Exception:  # noqa: BLE001, S112  # 同上:海量文件探读,单个失败不值一条日志
             continue
-        doms = {domain_of(d) for d in email_re.findall(body)} | {domain_of(d) for d in url_re.findall(body)}
+        doms = ({domain_of(d) for d in EMAIL_DOMAIN_RE.findall(body)}
+                | {domain_of(d) for d in URL_DOMAIN_RE.findall(body)})
         doms = {d for d in doms if d and not is_blocked_domain(d)}
         if doms:
             hints.setdefault(slugify(j["employer"]), set()).update(doms)
@@ -449,20 +431,20 @@ def ddg_find(client: httpx.Client, name: str, province: str) -> str:
     @returns 命中的官网 URL;找不到/对不上为空串。
     """
     try:
-        r = client.get(DDG_HTML_URL, params={"q": f'"{name}" {province} Canada'}, timeout=12)
+        r = client.get(DDG_HTML_URL, params={"q": f'"{name}" {province} Canada'}, timeout=DDG_TIMEOUT_S)
         if not r.is_success:
             return ""
     except Exception:  # noqa: BLE001
         return ""
     seen: list[str] = []
-    for href in re.findall(r'class="result__a"[^>]+href="([^"]+)"', r.text)[:6]:
+    for href in DDG_RESULT_RE.findall(r.text)[:DDG_SCAN_N]:
         target = href
         if "uddg=" in href:
             target = unquote(parse_qs(urlparse(href).query).get("uddg", [""])[0])
         dom = domain_of(target)
         if dom and dom not in seen and not is_blocked_domain(dom):
             seen.append(dom)
-    for dom in seen[:3]:
+    for dom in seen[:DDG_GUARD_N]:
         if guard_match(name, dom, client):
             return "https://" + dom
     return ""
@@ -495,27 +477,22 @@ def extract_meta(page: str) -> dict:
     简介取 og:description / meta description,都没有兜首个 ≥80 字的 <p>;
     行业取 meta keywords 前四个。
     """
-    def meta(patterns: list[str]) -> str:
+    def meta(patterns: tuple[str, ...]) -> str:
         """按模式序取第一个非空 content。"""
         for pat in patterns:
             m = re.search(pat, page, re.I | re.S)
             if m and m.group(1).strip():
                 return m.group(1).strip()
         return ""
-    desc = meta([
-        r'<meta[^>]+property=["\']og:description["\'][^>]+content=["\']([^"\']+)["\']',
-        r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:description["\']',
-        r'<meta[^>]+name=["\']description["\'][^>]+content=["\']([^"\']+)["\']',
-        r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+name=["\']description["\']',
-    ])
+    desc = meta(META_DESC_PATTERNS)
     if not desc:
         for m in re.finditer(r"<p[^>]*>(.*?)</p>", page, re.I | re.S):
             txt = re.sub(r"<[^>]+>", "", m.group(1)).strip()
-            if len(txt) >= 80:
+            if len(txt) >= DESC_P_MIN_LEN:
                 desc = txt
                 break
-    kw = meta([r'<meta[^>]+name=["\']keywords["\'][^>]+content=["\']([^"\']+)["\']'])
-    sectors = ", ".join([k.strip() for k in kw.split(",")[:4] if k.strip()]) if kw else ""
+    kw = meta(META_KEYWORDS_PATTERNS)
+    sectors = ", ".join([k.strip() for k in kw.split(",")[:KEYWORDS_TOP_N] if k.strip()]) if kw else ""
     return {"description": clean_text(desc), "sectors": clean_text(sectors)}
 
 
@@ -569,7 +546,8 @@ def find_websites(cache: dict, targets: dict, nosite: dict, find_limit: int) -> 
         return c is not None and bool(c.get("website") or days_since(c.get("fetched", "")) <= RETRY_NOSITE_DAYS)
 
     hints = jd_domain_hints()
-    with httpx.Client(follow_redirects=True, timeout=10, headers={"User-Agent": POLITE_UA}, verify=False) as client:
+    with httpx.Client(follow_redirects=True, timeout=FIND_CLIENT_TIMEOUT_S,
+                      headers={"User-Agent": POLITE_UA}, verify=False) as client:
         for sl, v in nosite.items():
             if sl in targets or cache_skip(sl) or sl not in hints:
                 continue
@@ -596,7 +574,7 @@ def find_websites(cache: dict, targets: dict, nosite: dict, find_limit: int) -> 
                 found_search += 1
             else:
                 cache[sl] = {"name": v["name"], "status": "nosite", "fetched": now_iso()}
-            time.sleep(1.5)
+            time.sleep(FIND_SLEEP_S)
     return found_jd, found_search
 
 
@@ -671,7 +649,7 @@ def enrich_company_websites(limit: int = ENRICH_LIMIT,
     todo = pick_todo(cache, targets, refresh_days)[:limit]
     print(f"目标公司(有官网,非 ATS): {len(targets)} · 缓存: {len(cache)} · 本轮抓: {len(todo)}(limit {limit})")
     ok = fail = 0
-    with httpx.Client(follow_redirects=True, timeout=8,
+    with httpx.Client(follow_redirects=True, timeout=FETCH_TIMEOUT_S,
                       headers={"User-Agent": POLITE_UA}, verify=False) as client:
         for sl, info in todo:
             rec = fetch_profile(client, info)
@@ -680,7 +658,7 @@ def enrich_company_websites(limit: int = ENRICH_LIMIT,
             else:
                 fail += 1
             cache[sl] = rec
-            time.sleep(0.2)
+            time.sleep(FETCH_SLEEP_S)
     OUT_ENRICH_CACHE.parent.mkdir(parents=True, exist_ok=True)
     _paths.write_json(OUT_ENRICH_CACHE, cache)
     total_ok = sum(1 for c in cache.values() if c.get("status") == "ok")
