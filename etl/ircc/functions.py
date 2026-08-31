@@ -2,11 +2,13 @@
 ircc 域函数 —— 全部行为住这(照 company/pnp 全溶样张,方言律全集见
 docs/design/etl分域-20260829.md §4)。
 
-原 5 个步骤文件 + 一个横切步 2026-08-30 批C 溶入本文件,一步一段(段横幅三行框 + N. 编号,
+原 5 个步骤文件 2026-08-30 批C 溶入本文件,一步一段(段横幅三行框 + N. 编号,
 与 constants.py 同名同序镜像),各段入口函数与原脚本同名、一律零参,门(main.py)直调。
-⚠ 段5 的 clean/04e_difficulty.py **不溶**:它是清洗横切层文件(一个关注点一个脚本、跨源生效),
-本域只写一个零参包装函数把它按序跑起来(subprocess 先例:load.functions 的 pg_dump、
-wages.functions 的 curl)。
+⚠ 2026-08-31 批H2:原段5「省移民难度因子重算」整段退役 —— 那是 clean/04e_difficulty.py 的
+subprocess 包装(零参壳 build_clean_difficulty + constants 三常量),04e 本批归户成
+etl/ircc/build_ircc_difficulty.py 由门直调,包装没有存在的理由;它不溶进本文件,因为本文件是
+「抓官方源的五步」,难度指数是零网络的纯算件,独立成步骤文件更好单跑。沿革全文
+(含批F 换解释器那条坑)见 build_ircc_difficulty.py 头注释。原段6/7 顺次前移成段5/6。
 **零字符串令**:字面量全住 constants(文案 *_TPL 模板、JSON 键 K_ 词族、官方原句在 *_RULES);
 **显式循环令**:禁推导/genexp/lambda;**内嵌禁令**:内部函数出户成顶层具名函数;
 **一参令**:函数至多一参,多入参收 scheme 的 XxxIn dataclass,多返回值收 XxxOut。
@@ -22,7 +24,6 @@ log.functions(loguru),与 pnp/company/dli 等全溶域一致;本机跑一律带 
 依赖单边:本文件 → constants/scheme + 基础设施叶(paths / log / fetch / crawl)。
 """
 import json
-import subprocess
 import sys
 import urllib.request
 import re
@@ -40,8 +41,7 @@ from fetch.constants import HDR_UA, PARSER_HTML, WS_RE
 from crawl.functions import convert_md
 from crawl.scheme import ConvertIn
 from ircc.constants import (
-    BLANK_VALUES, COMMA, COORD_SEP, COORD_TPL, DIFFICULTY_FAIL_TPL,
-    DIFFICULTY_SCRIPT, ENC_UTF8, FEE_FACTOR, FEE_OP, FEE_UNIT, FEES_BIO_ITEMS, FEES_BULLET_TPL,
+    BLANK_VALUES, COMMA, COORD_SEP, COORD_TPL, ENC_UTF8, FEE_FACTOR, FEE_OP, FEE_UNIT, FEES_BIO_ITEMS, FEES_BULLET_TPL,
     FEES_DONE_TPL, FEES_DROP_TAGS, FEES_FAIL_HEADER, FEES_ITEMS, FEES_NOTE, FEES_PRINT_OUT_TPL,
     FEES_PROBLEM_ITEM_TPL, FEES_PROBLEM_NO_SECTION_TPL, FEES_PROBLEM_RPRF_TPL, FEES_PROGRAM,
     FEES_SECTION, FEES_SECTION_BIO, FEES_SEG_LEN, FEES_SOURCE, FEES_TIMEOUT_S, FEES_UA, FEES_URL,
@@ -689,26 +689,7 @@ def scrape_statcan_tr_prov() -> None:
 
 
 # =========================================================================
-# 5. 省移民难度因子重算(清洗横切层 04e 的包装;本域只负责按序跑起来)
-# =========================================================================
-
-
-def build_clean_difficulty() -> None:
-    """省移民难度指数重算 —— 调 etl/clean/04e_difficulty.py 子进程。
-
-    04e **不溶进本域**:clean/ 是清洗横切层(一个关注点一个脚本、跨源生效),它消费本域
-    前三步的 raw(statcan_tr_prov)+ 人工配额表 + pnp 域 draws,产出 processed/difficulty.json;
-    11_build_stats 读它挂进 mart。本域只负责按序把它跑起来。
-    子进程 stdout 直通(不 capture),与旧 _steps 一模一样;返回非零 → 抛错,
-    「一步失败中止本轮」的语义与旧 _steps 逐字相同。
-    """
-    proc = subprocess.run([sys.executable, str(DIFFICULTY_SCRIPT)])
-    if proc.returncode != 0:
-        raise RuntimeError(DIFFICULTY_FAIL_TPL.format(code=proc.returncode))
-
-
-# =========================================================================
-# 6. PGWP 规则库(B1-4;quote-anchored,引用消失即保留旧表 exit 1)
+# 5. PGWP 规则库(B1-4;quote-anchored,引用消失即保留旧表 exit 1)
 # =========================================================================
 
 
@@ -778,7 +759,7 @@ def build_ircc_pgwp_rules() -> None:
 
 
 # =========================================================================
-# 7. 联邦段官方规费(G8 v1;段落定位 + 交叉自校硬闸)
+# 6. 联邦段官方规费(G8 v1;段落定位 + 交叉自校硬闸)
 # =========================================================================
 
 

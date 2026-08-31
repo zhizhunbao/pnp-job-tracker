@@ -7,15 +7,21 @@
 AIP = Atlantic Immigration Program(NL/NB/NS/PE),是唯一公布「指定雇主名单」的通道。
 名单只覆盖大西洋四省,所以只有这些省的岗可能命中。
 
-Usage:  uv run python etl/clean/05c_flag_aip.py
+Usage:  uv run python etl/aip/main.py --only flag
+
+2026-08-31 批H2 归户搬家:自 etl/clean/05c_flag_aip.py 迁进 aip 域改此名
+(判据「谁的数据谁管」—— 它读的是本域产出 raw/aip/aip-designated-employers.json,
+写的是一个 AIP 专有字段;住 clean/ 只是因为它写回岗位表,那是「写到哪」不是「谁的口径」)。
+搬家批 —— 匹配逻辑一字未动,只去 `__main__` 收成 run()(一域一门,门在 aip/main.py)。
+⚠ norm_name 是**跨域单一来源**:lmia 域 importlib 拉它当聚合键(lmia/constants.py 的
+NORM_MODULE_PATH),mart 汇装拉它对 companies 做同一把尺子的 join —— 三处必须同一份实现,
+改这个函数等于改 LMIA 榜单与 AIP 匹配两处口径,别复制、别就地「优化」。
+样张 etl/ats/scrape_ats_jobs.py(同批同形:去 __main__ + 收 run() + 裸 `import paths`)。
 """
 import json
 import os
 import re
-import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(paths 在那)
 import paths
 
 # ── 输入/输出全路径(先声明再用)──────────────────────────────────────
@@ -88,5 +94,6 @@ def main() -> None:
     print(f"AIP flagged {flagged}/{total} jobs (employer on official AIP designated list).")
 
 
-if __name__ == "__main__":
+def run() -> None:
+    """本域步骤入口:官方指定雇主名单 × 岗位雇主名 → 就地写回 Job Bank / ATS 的 aip 字段。"""
     main()

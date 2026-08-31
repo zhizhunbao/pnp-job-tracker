@@ -6,8 +6,11 @@ SCHEDULED = 本域步骤真相 —— **顺序即语义,一步失败中止本轮
 自校失败会 exit 1 的两步(pgwp / fees)一律钉在末尾,失败拖不到任何人。
 (直调后这条硬闸由 SystemExit 兑现:functions 里的 fail_keep_old 走 sys.exit(1),
 不被 `except Exception` 接住,进程当场退出 1 —— 与旧的「子进程 exit 1 即中止」逐字同义。)
-⚠ difficulty 一步调的是 **etl/clean/04e_difficulty.py 子进程**:04e 是清洗横切层文件
-(一个关注点一个脚本、跨源生效),不属本域也不溶进来 —— 它消费上面三步的 raw。
+2026-08-31 批H2:difficulty 一步的 clean/04e 归户成 ircc/build_ircc_difficulty.py,本门随之
+从 subprocess 包装改直调 run()(旧判「04e 属清洗横切层不归本域」被消费面复验推翻 ——
+沿革全文见 build_ircc_difficulty.py 头注释)。它不溶进 functions.py:本域全溶件是抓官方源的
+五步,难度指数是**纯算件**(零网络、只吃前三步落好的 raw),独立成步骤文件更好单跑,
+门形照 ats 域步骤件同款直调 run()。
 调度声明(role/interval)在本域 __init__.py 的 META;auto_update 按 role 自动发现。
 一律从仓库根执行:
     python etl/ircc/main.py                # 默认链(6 步)
@@ -18,8 +21,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
+from ircc.build_ircc_difficulty import run as build_ircc_difficulty
 from ircc.functions import (
-    build_clean_difficulty, build_ircc_fees, build_ircc_pgwp_rules, scrape_ircc_stats,
+    build_ircc_fees, build_ircc_pgwp_rules, scrape_ircc_stats,
     scrape_statcan_npr, scrape_statcan_tr_prov,
 )
 
@@ -27,7 +31,7 @@ SCHEDULED = [
     ("stats", scrape_ircc_stats),
     ("npr", scrape_statcan_npr),
     ("tr_prov", scrape_statcan_tr_prov),
-    ("difficulty", build_clean_difficulty),
+    ("difficulty", build_ircc_difficulty),
     ("pgwp", build_ircc_pgwp_rules),
     ("fees", build_ircc_fees),
 ]
@@ -37,7 +41,7 @@ SCHEDULED = [
   scrape_ircc_stats       IRCC 官方 XLSX:学签/工签年末存量 + PNP 登陆数 + 新发学签流量
   scrape_statcan_npr      NPR 占总人口比(联邦「临时人口降到 5%」目标的唯一可核验刻度)
   scrape_statcan_tr_prov  StatCan 分省临时居民存量(IRCC 年末存量停在 2024 后的唯一分省刻度)
-  build_clean_difficulty  04e 重算难度因子(清洗横切层,消费上面三步的 raw)
+  build_ircc_difficulty   重算九省移民难度因子(纯算件,消费上面三步的 raw + pnp draws)
 
 ↓ 自校失败会 exit 1 的步骤钉在最后:本域是「一步失败就中止本轮」,排前面会把后面的一起拖掉。
 
@@ -49,7 +53,7 @@ TOOLS = {
     "stats": scrape_ircc_stats,
     "npr": scrape_statcan_npr,
     "tr_prov": scrape_statcan_tr_prov,
-    "difficulty": build_clean_difficulty,
+    "difficulty": build_ircc_difficulty,
     "pgwp": build_ircc_pgwp_rules,
     "fees": build_ircc_fees,
 }

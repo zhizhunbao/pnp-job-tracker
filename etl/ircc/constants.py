@@ -557,31 +557,11 @@ TRP_ROW_TPL = "      最新 {ref}: ON 仅学签 {study:,} · 仅工签 {work:,} 
 
 
 # =========================================================================
-# 5. 省移民难度因子重算(清洗横切层 04e 的包装;本域只负责按序跑起来)
-# =========================================================================
-
-DIFFICULTY_SCRIPT = paths.ROOT / "etl" / "clean" / "04e_difficulty.py"
-"""被调的清洗脚本(**不属本域、不溶进来**:clean/ 是清洗横切层,一个关注点一个脚本、
-跨源生效)。它消费本域前三步的 raw + pnp 域 draws + 人工配额表,产出 processed/difficulty.json;
-11_build_stats 读它挂进 mart。路径经 paths 解析,不写死相对路径。"""
-
-DIFFICULTY_PY_RETIRED_NOTE = "sys.executable"
-"""原 DIFFICULTY_PY = "python" 2026-08-31 批F 退役:裸 "python" 在 uv 环境下解析到基础解释器
-而非项目 .venv(jobbank 域实撞 ModuleNotFoundError;04e 只用标准库+paths 没炸纯属侥幸)——
-解释器改在 functions 侧取 sys.executable(constants 叶子不许 import sys),本常量只留沿革。"""
-"""跑子进程用的解释器名 —— **原 _steps.STEPS 的 `["python", ...]` 原值照搬**
-(容器与 uv run 下都解析到同一个 venv python;换 sys.executable 是行为变更,不在本批范围)。"""
-
-DIFFICULTY_FAIL_TPL = "04e 难度因子重算失败(exit {code}),本域本轮中止"
-"""子进程非零 → 抛错,「一步失败中止本轮」的语义与旧 _steps 逐字相同。"""
-
-
-# =========================================================================
-# 6. PGWP 规则库(B1-4;quote-anchored,引用消失即保留旧表 exit 1)
+# 5. PGWP 规则库(B1-4;quote-anchored,引用消失即保留旧表 exit 1)
 # =========================================================================
 
 OUT_PGWP = paths.IRCC / "pgwp_rules.json"
-"""段6 输出:raw/ircc/pgwp_rules.json。
+"""段5 输出:raw/ircc/pgwp_rules.json。
 设计 docs/design/PGWP规则库-20260803.md。形状对齐 raw/pnp/<省>-req.json
 (province='FED' program='PGWP',09 IN_REQ_TABLES 直接消费 → mart pnp_requirements →
 引擎 facts.requirements 免费拿到;pnp_draws 的 FED 行是同款先例)。
@@ -600,7 +580,7 @@ PGWP_URL_ELIG = PGWP_BASE + "/eligibility.html"
 
 PGWP_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
            "Chrome/120 Safari/537.36")
-"""段6 的伪装 UA(原脚本原值 Chrome/120)。⚠ 与 fetch.constants.BROWSER_UA(Chrome/131)
+"""段5 的伪装 UA(原脚本原值 Chrome/120)。⚠ 与 fetch.constants.BROWSER_UA(Chrome/131)
 不是一份 —— 2026-08-30 批C 是「行为逐字不变」的溶解批,抓取头不在本批变换范围内。"""
 
 PGWP_TIMEOUT_S = 40
@@ -680,10 +660,10 @@ crawl 役的 fed-pgwp 地图 diff 是第二道雷达)。规则是人工从原文
 
 PGWP_NOTE = ("quote-anchored:valueText=官方原文,本脚本每轮验证其仍在页面上;字段语义见 basis。"
              "多个合格课程可合并时长来确定 PGWP 长度;官方措辞为 may,不保证签发。")
-"""段6 表级口径注。"""
+"""段5 表级口径注。"""
 
 PGWP_PRINT_OUT_TPL = "OUT : {path}"
-"""段6 开工报输出。"""
+"""段5 开工报输出。"""
 
 PGWP_MISSING_TPL = "✗ {n}/{total} 条官方引用在页面上消失(改版?)—— 保留旧表,人工重核:"
 """引用核验未过的抬头。"""
@@ -695,15 +675,15 @@ PGWP_QUOTE_CLIP = 80
 """未过引用在日志里的截断长度。"""
 
 PGWP_DONE_TPL = "✓ {n} 条规则全部引用核验通过 → {out}"
-"""段6 收尾报数。"""
+"""段5 收尾报数。"""
 
 
 # =========================================================================
-# 7. 联邦段官方规费(G8 v1;段落定位 + 交叉自校硬闸)
+# 6. 联邦段官方规费(G8 v1;段落定位 + 交叉自校硬闸)
 # =========================================================================
 
 OUT_FEES = paths.IRCC / "fees.json"
-"""段7 输出:raw/ircc/fees.json。
+"""段6 输出:raw/ircc/fees.json。
 案例库 C14「中介开价 3 万值吗」的拆账原料。产出走 pnp_requirements 形状
 (province='FED' program='PR-fees',factor='fee',stream 区分条目)—— 第三次复用同一张表
 (PGWP 同款先例):零新表零 DDL,引擎 facts.requirements 免费拿到;requirementLines 不认识
@@ -715,7 +695,7 @@ FEES_URL = "https://ircc.canada.ca/english/information/fees/fees.asp"
 
 FEES_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
            "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
-"""段7 的伪装 UA(原脚本原值 Chrome/126)。"""
+"""段6 的伪装 UA(原脚本原值 Chrome/126)。"""
 
 FEES_TIMEOUT_S = 45
 """费用页抓取超时。"""
@@ -798,10 +778,10 @@ FEES_SOURCE = "IRCC — fee list (Economic immigration incl. Express Entry / PNP
 """表级来源名。"""
 
 FEES_NOTE = "官方原文锚在每行 valueText;RPRF = principal - principalNoRprf。省级申请费 = G8 二期。"
-"""段7 表级口径注。"""
+"""段6 表级口径注。"""
 
 FEES_PRINT_OUT_TPL = "OUT: {path}"
-"""段7 开工报输出(原脚本 `OUT:` 无空格,与段6 的 `OUT :` 不同,原样保留)。"""
+"""段6 开工报输出(原脚本 `OUT:` 无空格,与段5 的 `OUT :` 不同,原样保留)。"""
 
 FEES_PROBLEM_NO_SECTION_TPL = "没找到段落标题「{section}」(页面可能改版)"
 """段落定位失败。"""
@@ -820,4 +800,4 @@ FEES_BULLET_TPL = "   - {problem}"
 """自校未过的逐条明细。"""
 
 FEES_DONE_TPL = "✓ {n} 条费用: {by}"
-"""段7 收尾报数(by = stream → 金额)。"""
+"""段6 收尾报数(by = stream → 金额)。"""

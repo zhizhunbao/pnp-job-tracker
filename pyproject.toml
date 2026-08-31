@@ -64,7 +64,7 @@ max-args = 1
 [tool.ruff.lint.per-file-ignores]
 # ---- 存量豁免(只豁免「严打族」,E/F 语法错误照拦;摘行=该域形制就范完成)----
 # 编号主管线与根上基础设施/库(批3 前存量)
-"etl/[0-9]*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+# 编号主管线 2026-08-31 批H 全数迁 mart/jobbank 两域(etl/[0-9]*.py 行退役,豁免随迁下方)
 # 2026-08-30 一参令兑现(Frank:参数和返回值只允许一个):fetch 豁免清零;
 # news/functions 只剩 run() 复杂度拆分债(随批C news 溶解还)。
 "etl/news/functions.py" = ["C901", "PLR0915"]
@@ -73,7 +73,6 @@ max-args = 1
 # 台账待 Frank 拍,拍完删此行豁免(2026-08-29 批3 盘出;2026-08-31「noc 就叫 noc」并域,
 # 豁免随 I18N 表从 noc_buckets.py 搬家,其余全严格零豁免)
 "etl/noc/constants.py" = ["F601"]
-"etl/grades.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/run_now.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/auto_update.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 # 横切层与旧役册(整目录存量)
@@ -83,6 +82,23 @@ max-args = 1
 # 批F(2026-08-31 jobbank/ats 立域,搬家批):四个编号抓岗件迁域改名,存量债随行豁免,
 # 方言全溶随后续滚动批还账(摘行=就范完成);main/__init__ 新写零豁免
 "etl/jobbank/scrape_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+# 批H(2026-08-31 移动批)迁入件存量豁免(main/__init__ 新写零豁免;批I 全溶后摘)
+"etl/mart/score_mart_jobs.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/mart/build_mart.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/mart/build_mart_rankings.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/mart/build_mart_stats.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/mart/grades.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/mart/visa_flag.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/jobbank/parse_jobbank_postings.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/jobbank/parse_jobbank_details.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/jobbank/audit_jobbank_data.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/jobbank/verify_jobbank_expired.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/ats/extract_ats_salary.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/ircc/build_ircc_difficulty.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/aip/flag_aip_jobs.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/noc/translate_noc_titles.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/noc/shorten_noc_titles.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/noc/build_city_names.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/jobbank/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/ats/scrape_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 # extractors 私件群存量豁免随批E 拆三域从 pilot 分家(2026-08-31;函数体未动)。
@@ -94,8 +110,6 @@ max-args = 1
 # ee/ircc/company/noc_facts/fsa/pilot 的步骤文件已全溶,新五件天然全严。
 # 2026-08-31 批D ops 拆散:四行 etl/ops/* 豁免随目录退役;归根的岗位链随行两件按存量豁免,
 # 形制闸只剩两条复杂度拆分债(string_literals/scan,16>12),摘行=就范完成
-"etl/audit_data.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/verify_expired.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/check_shape.py" = ["C901"]
 # 锁测试随批F 从 sources/build 搬根(sources/** 整行豁免随役册退役,测试存量债单列)
 "etl/test_jobbank_lock.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]

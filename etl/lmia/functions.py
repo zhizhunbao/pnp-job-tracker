@@ -7,7 +7,8 @@ lmia 域函数 —— 全部行为住这(五件全溶,照样张 etl/company/func
 依赖单边:本文件 → constants/scheme + 基础设施叶子(paths 经 constants / log)。
 
 产出的是「雇主雇过外国人的历史事实」,不是「能担保」判定(实现文档 §0 语义红线);
-聚合键 = clean/05c 的 norm_name(与 AIP 匹配同一把尺子),那份实现不复制、importlib 拉。
+聚合键 = aip/flag_aip_jobs 的 norm_name(与 AIP 匹配同一把尺子;原 clean/05c,
+2026-08-31 批H2 归户),那份实现不复制、importlib 拉。
 """
 import importlib.util
 import os
@@ -36,7 +37,7 @@ from lmia.scheme import (
 
 
 def load_norm_name() -> NormNameFn:
-    """拉 clean/05c 的 norm_name(数字开头模块名常规 import 拉不动,走 importlib)。
+    """拉宿主文件的 norm_name(走 importlib:常规 import 会变成 lmia → aip 的域间 import)。
 
     单一来源不复制:雇主聚合键与 AIP 匹配必须是同一把尺子,复制一份=给口径开岔。
     """

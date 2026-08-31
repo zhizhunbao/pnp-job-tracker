@@ -18,7 +18,7 @@ import sys
 from datetime import date, timedelta
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 2026-08-31 批H:迁 mart/ 域,etl/ 上层在 parent.parent
 import paths
 from noc.constants import SLUGS as BROAD_SLUG  # 大类 zh → URL slug 段,单一来源在 noc/ 域(2026-08-31 并域)
 
@@ -138,5 +138,6 @@ def main() -> None:
     print(f"rankings: {len(rows)} 行 → {OUT_RANKINGS}")
 
 
-if __name__ == "__main__":
+def run() -> None:
+    """域门入口(2026-08-31 批H:__main__ 收成 run(),一域一门)。"""
     main()

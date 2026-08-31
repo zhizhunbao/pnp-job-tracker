@@ -7,14 +7,20 @@ Matches common phrasings: "Salary range: $X to $Y CAD", "Pay range - $X-$Y per y
 "Hiring salary range ... between $X - $Y", "$28.00 per hour", "$X - $Y CAD per hour",
 "compensation (based on 2,080 hours per year) ranges from $X to $Y".
 
-Usage:  uv run python etl/clean/04b_extract_ats_salary.py
+Usage:  uv run python etl/ats/main.py --only salary
+
+2026-08-31 批H2 归户搬家:自 etl/clean/04b_extract_ats_salary.py 迁进 ats 域改此名
+(判据「谁的数据谁管」—— 本件只对 ATS 生效,不是真横切:它读 ATS 各司 jobs/*.md、
+写回同一批 jobs.json,别的源一个字都不碰)。搬家批 —— 抽取逻辑一字未动,只去 `__main__`
+收成 run()(一域一门,门在 ats/main.py),门从 subprocess 包装改直调
+(旧包装 ats/main.py 的 extract_ats_salary/STEP_PY/SALARY_SCRIPT/STEP_FAIL_TPL 同批拆除;
+批F 立域时留 subprocess 是因为文件还住 clean/,归户后没有跨进程的理由)。
+样张 etl/ats/scrape_ats_jobs.py(同域同批同形:去 __main__ + 收 run() + 裸 `import paths`)。
 """
 import json
 import re
-import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(paths 在那)
 import paths
 
 # ── 输入/输出全路径(先声明再用)──────────────────────────────────────
@@ -86,5 +92,6 @@ def main() -> None:
     print(f"Extracted salary for {updated}/{total} ATS jobs (from .md descriptions)")
 
 
-if __name__ == "__main__":
+def run() -> None:
+    """本域步骤入口:从各司 jobs/*.md 描述里抽结构化薪资,就地补进 jobs.json 的 salary。"""
     main()

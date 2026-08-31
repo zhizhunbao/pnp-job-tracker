@@ -4,6 +4,9 @@
 一参令后显式传锁路径),build 链正身在 load(BUILD_CHAIN_CMDS + run_build_chain)。
 测试语义一字不变:① 第二进程等锁 ② 崩溃不留死锁 ③ 汇装链形状与顺序
 ④ 09 在互斥区内执行 ⑤⑥ 两个解析步在同一互斥区内发布。
+2026-08-31 批H 只跟路径不动语义:09 那一步在链里的说法变成 `etl/mart/main.py`(门内
+08→09→10→11 四步),两个解析件从 clean/ 归户 etl/jobbank/(parse_jobbank_postings /
+parse_jobbank_details)。
 Usage:  uv run python etl/test_jobbank_lock.py
 """
 from __future__ import annotations
@@ -74,11 +77,11 @@ class JobbankStoreLockTest(unittest.TestCase):
         self.assertEqual(build_metas[0]["only"], "", "build 役必须走默认链(整链持锁)")
         cmds = [list(c) for c in BUILD_CHAIN_CMDS]
         self.assertIn(["python", "etl/clean/04c_clean_ats_locations.py"], cmds)
-        self.assertIn(["python", "etl/clean/05c_flag_aip.py"], cmds)
+        self.assertIn(["python", "etl/aip/main.py", "--only", "flag"], cmds)
         self.assertIn(["python", "etl/clean/05e_flag_apprentice.py"], cmds)
-        self.assertIn(["python", "etl/09_build_mart.py"], cmds)
+        self.assertIn(["python", "etl/mart/main.py"], cmds)
         self.assertLess(cmds.index(["python", "etl/clean/04c_clean_ats_locations.py"]),
-                        cmds.index(["python", "etl/09_build_mart.py"]))
+                        cmds.index(["python", "etl/mart/main.py"]))
         self.assertLess(cmds.index(["python", "etl/rcip/main.py", "--only", "communities"]),
                         cmds.index(["python", "etl/clean/05f_flag_pilot.py"]))
 
@@ -104,7 +107,7 @@ class JobbankStoreLockTest(unittest.TestCase):
                 self.assertTrue(held, "upload ran outside the Job Bank mutex")
 
             steps = (("python", "etl/clean/04c_clean_ats_locations.py"),
-                     ("python", "etl/09_build_mart.py"))
+                     ("python", "etl/mart/main.py"))
             with mock.patch.object(load_functions, "jobbank_store_lock", real_temp_lock), \
                  mock.patch.object(load_functions, "BUILD_CHAIN_CMDS", steps), \
                  mock.patch.object(load_functions, "upload_mart", checked_upload), \
@@ -112,7 +115,7 @@ class JobbankStoreLockTest(unittest.TestCase):
                 load_functions.run_build_chain(BuildChainIn(say=quiet_say))
 
     def _parser_module(self, name: str):
-        spec = importlib.util.spec_from_file_location(f"clean_{name}", ETL / "clean" / f"{name}.py")
+        spec = importlib.util.spec_from_file_location(f"jobbank_{name}", ETL / "jobbank" / f"{name}.py")
         # pyrefly: ignore[bad-argument-type] — spec_from_file_location 只在路径不存在时给 None;此处是仓内固定文件,拿不到就该当场炸
         module = importlib.util.module_from_spec(spec)
         # pyrefly: ignore[missing-attribute] — spec_from_file_location 只在路径不存在时给 None;此处是仓内固定文件,拿不到就该当场炸
@@ -122,7 +125,7 @@ class JobbankStoreLockTest(unittest.TestCase):
         return module
 
     def test_actual_listing_parser_publishes_inside_same_mutex(self) -> None:
-        module = self._parser_module("05_parse_jobbank")
+        module = self._parser_module("parse_jobbank_postings")
         with tempfile.TemporaryDirectory() as td:
             held = False
             wrote = False
@@ -151,13 +154,13 @@ class JobbankStoreLockTest(unittest.TestCase):
                  mock.patch.object(module, "parse_snapshot", return_value=[row]), \
                  mock.patch.object(module, "load_postings", return_value={}), \
                  mock.patch.object(module, "write_postings", side_effect=checked_write), \
-                 mock.patch.object(sys, "argv", ["05_parse_jobbank.py"]), \
+                 mock.patch.object(sys, "argv", ["parse_jobbank_postings.py"]), \
                  mock.patch("builtins.print"):
                 module.main()
             self.assertTrue(wrote)
 
     def test_actual_detail_parser_publishes_inside_same_mutex(self) -> None:
-        module = self._parser_module("05b_parse_details")
+        module = self._parser_module("parse_jobbank_details")
         with tempfile.TemporaryDirectory() as td:
             held = False
             indexed = False
@@ -184,7 +187,7 @@ class JobbankStoreLockTest(unittest.TestCase):
                  mock.patch.object(module, "IN_POSTINGS", in_postings), \
                  mock.patch.object(module, "OUT_DETAILS", Path(td) / "details"), \
                  mock.patch.object(module, "detail_html_index", side_effect=checked_index), \
-                 mock.patch.object(sys, "argv", ["05b_parse_details.py"]), \
+                 mock.patch.object(sys, "argv", ["parse_jobbank_details.py"]), \
                  mock.patch("builtins.print"):
                 module.main()
             self.assertTrue(indexed)

@@ -4,13 +4,29 @@
 ④分数线水位=最新分在自身近 24 个月分布的分位(分制不可比红线:只跟自己比)。
 档位:easy/mid/tight(前端人话「机会较多/一般/竞争激烈」);因子 <2 个 → 总档 null 只列事实。
 红线:缺数留空不猜;逐因子带 source+asOf;禁概率。QC 不入(自有体系)。
+
+Usage:  uv run python etl/ircc/main.py --only difficulty
+
+2026-08-31 批H2 归户搬家:自 etl/clean/04e_difficulty.py 迁进 ircc 域改此名
+(2026-08-31 Frank 命名令:<动词>_<域/机构>_<内容> 三节要齐,首版 build_difficulty.py 缺中间节,当场改正)。
+沿革(逐条从被拆掉的包装件搬来,一条不丢):
+  · 批C(2026-08-30)ircc 五步全溶时本件**留在 clean/ 没溶**,理由记的是「clean 是清洗
+    横切层、跨源生效」;批H2 复验消费面推翻此判 —— 它的三个输入两个是 ircc 自己的 raw
+    (statcan_tr_prov)+ pnp draws + 人工配额表,产出 difficulty.json 只有 11_build_stats
+    一个消费者,不跨源生效,按「谁的数据谁管」归 ircc。
+  · 随之拆掉的包装三件:ircc/functions.py 的 build_clean_difficulty(subprocess 壳)、
+    ircc/constants.py 的 DIFFICULTY_SCRIPT / DIFFICULTY_FAIL_TPL,以及记「批F 把裸
+    `python` 换成 sys.executable」的 DIFFICULTY_PY_RETIRED_NOTE —— 换解释器那条坑
+    (uv 环境下裸 `python` 解析到基础解释器而非项目 .venv,批F 在 jobbank 域实撞
+    ModuleNotFoundError;04e 只用标准库 + paths 没炸纯属侥幸)随子进程一起消失。
+  · 「一步失败中止本轮」的硬闸改由本件抛出的异常兑现(门 main 捕获后 return 1),
+    与旧的「子进程非零即中止」同义。
+搬家批 —— 算法一字未动,只去 `__main__` 收成 run()、模块级 print 挪进 run() 首行
+(保持「→ difficulty」在前、路径行在后的旧输出序);样张 etl/ats/scrape_ats_jobs.py。
 """
 import json
-import sys
 from datetime import date, timedelta
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import paths
 
 # 2026-08-15 方案C(Frank「那就换 C 吧」):竞争比分子整体换 StatCan 常住估算口径 ——
@@ -20,7 +36,6 @@ IN_TR = paths.IRCC / "statcan_tr_prov.json"
 IN_ALLOC = paths.IRCC / "pnp_allocations.json"
 IN_DRAWS = paths.PNP / "draws.json"
 OUT = paths.PROCESSED / "difficulty.json"
-print(f"IN_TR={IN_TR}\nIN_ALLOC={IN_ALLOC}\nIN_DRAWS={IN_DRAWS}\nOUT={OUT}", flush=True)
 
 PROVS = ["ON", "BC", "AB", "SK", "MB", "NS", "NB", "NL", "PE"]
 # 竞争比分档阈(首跑分布:MB~12 SK~? AB~34 ON~77 BC~84 → 三档切 20/50;定案见设计文档 §4)
@@ -90,5 +105,11 @@ def main() -> None:
     print(f"done → {OUT}", flush=True)
 
 
-if __name__ == "__main__":
+def run() -> None:
+    """本域步骤入口:重算九省移民难度因子 → processed/difficulty.json。
+
+    首行的路径报数是原文件的模块级 print,搬家时挪进这里 —— 模块级会在门 import 时
+    就打出来,排到「→ difficulty」之前,与旧子进程的输出序不符。
+    """
+    print(f"IN_TR={IN_TR}\nIN_ALLOC={IN_ALLOC}\nIN_DRAWS={IN_DRAWS}\nOUT={OUT}", flush=True)
     main()

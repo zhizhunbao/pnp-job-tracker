@@ -3,7 +3,7 @@ check_shape — etl 形制自查(分域批3,2026-08-29;2026-08-31 批D 自 ops/ 
 开发工具与 auto_update 并列,pre-push 直调本文件)。
 
 Ruff 管不住的三条形制,这里当闸(判据见 docs/design/etl分域-20260829.md §4/§5):
-  ① 域间禁 import:域内文件只许引基础设施叶子(paths/log/fetch/noc/grades/crawl)
+  ① 域间禁 import:域内文件只许引基础设施叶子(paths/log/fetch/noc/crawl)
      与本域邻居,不许引别的域 —— 零基线,违规即红;
   ② IN_/OUT_ 显式路径常量:build_*/scrape_*/enrich_* 模块顶部必须声明(宪法既有);
   ③ 一域一门:域内只有 main.py 许带 `if __name__`(步骤模块该收成 run(),新写就范)。
@@ -22,8 +22,9 @@ ETL = Path(__file__).resolve().parent
 BASELINE = Path(__file__).resolve().parent / "etl_shape_baseline.json"
 
 DOMAINS = ["aip", "ats", "citations", "company", "crawl", "dli", "ee", "employers", "fcip",
-           "fetch", "fsa", "ircc", "jobbank", "lmia", "load", "log", "news", "noc", "paths",
-           "pnp", "rcip", "wages"]
+           "fetch", "fsa", "ircc", "jobbank", "lmia", "load", "log", "mart", "news", "noc",
+           "paths", "pnp", "rcip", "wages"]
+# mart 2026-08-31 批H 立域(Frank「可以」:08-11 跨源汇装四步 + grades 收编,回答「mart 怎么建」)
 # jobbank/ats 2026-08-31 批F 立域(Frank「jobbank 肯定是需要一个域的」,推翻「抓岗留根」旧判)
 # pilot 2026-08-31 批E 拆三域 rcip/fcip/aip 退役(Frank「拆成三个 很少有人有法语」)
 # noc_facts → noc(2026-08-31 Frank「noc 就叫 noc」:根上 noc.py/noc_buckets.py 两库并入,
@@ -34,7 +35,10 @@ DOMAINS = ["aip", "ats", "citations", "company", "crawl", "dli", "ee", "employer
 # crawl 2026-08-30 批A 升格基础设施(判据:被十几个 build 当地基读缓存 ——「换掉它
 # 业务一个字不用改」;正门 from crawl.cache import …,path-hack 黑通道批B 拆光)
 
-INFRA = {"paths", "fetch", "log", "noc", "grades", "crawl"}
+INFRA = {"paths", "fetch", "log", "noc", "crawl"}
+# grades 2026-08-31 批H 摘出:随 mart 立域收编为域内私件(唯一消费者 build_mart),
+# 不再是根上被谁都能引的基础设施叶
+
 # noc_buckets 2026-08-31 随「noc 就叫 noc」并入 noc/ 域,模块名退役摘出白名单;
 # _steps 2026-08-31 批D 随 ops 退役消费者清零删除(全溶域门一律直调)
 

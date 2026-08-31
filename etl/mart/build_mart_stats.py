@@ -22,16 +22,17 @@ from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 2026-08-31 批H:迁 mart/ 域,etl/ 上层在 parent.parent
 import paths
 from noc.functions import broad_of, teer_of  # E13-02:NOC 分类法(单一来源;2026-08-31 并为 noc/ 域),给 stats_daily 的 closed 归 broad 桶用
 
-# E13-05:全国 occ 行的 pnpProvs 复用 08_score.pnp_eligible(禁复制判定逻辑)。
-# 08_score 是数字开头的模块名,不能直接 import;importlib 按路径加载——顶层只有表构建
-# (PNP_BY_PROV/EE_BY_NOC 读 json,轻量),重活(collect/main 扫全量岗位)都在 __main__ 守卫内,
-# 加载它不会触发那段重活。
+# E13-05:全国 occ 行的 pnpProvs 复用评分件的 pnp_eligible(禁复制判定逻辑)。
+# 旧 08_score 是数字开头的模块名,不能直接 import;importlib 按路径加载——顶层只有表构建
+# (PNP_BY_PROV/EE_BY_NOC 读 json,轻量),重活(collect/main 扫全量岗位)全在函数体内,
+# 加载它不会触发那段重活(2026-08-31 批H:__main__ 收成 run(),同样不在加载时执行)。
+# 2026-08-31 批H 同域改名 08_score.py → mart/score_mart_jobs.py,importlib 按路径拉法不变。
 import importlib.util as _ilu
-_score_spec = _ilu.spec_from_file_location("score08", Path(__file__).resolve().parent / "08_score.py")
+_score_spec = _ilu.spec_from_file_location("score08", Path(__file__).resolve().parent / "score_mart_jobs.py")
 # pyrefly: ignore[bad-argument-type] — spec_from_file_location 只在路径不存在时给 None;此处是仓内固定文件,拿不到就该当场炸
 _score = _ilu.module_from_spec(_score_spec)
 # pyrefly: ignore[missing-attribute] — 同上,spec 非 None 时 loader 恒在
@@ -47,7 +48,14 @@ EE_BY_NOC = _score.EE_BY_NOC
 
 # E14-02:担保率分子(单季度 LMIA 获批岗位)按 NOC 从季度源 xlsx 直接聚合(见 §sponsor_of 下方)。
 # NOC 正则复用 lmia 域的 NOC_RE(单一来源,不复制口径;2026-08-30 lmia 全溶后改指 lmia/constants.py)。
-from lmia.constants import NOC_RE
+# 🔴 2026-08-31 批H:本件迁进 mart 域后,`from lmia.constants import ...` 撞形制闸①「域间禁
+# import」(在根上时不被扫,搬家把这条既有跨域边照出来了)。移动批不许改行为、也不许动 lmia,
+# 故就地按同一形声明本域副本(值逐字同 lmia/constants.py 的 NOC_RE)。
+# 2026-08-31 lead 判:**合规,不是口径分叉** —— 宪法「形状(type/词汇)重复先忍着,各域
+# 自己声明;行为(函数)重复才不许」(Lang 三字面量各域自抄同例);一条四字符正则是词汇
+# 不是判定逻辑。若哪天两边真漂移,形制闸的下一道「同名常量值对账」再收拢,现在不抽公共。
+NOC_RE = re.compile(r"^(\d{4,5})")
+"""ESDC 季度 xlsx 的 Occupation 列形如 "63200-Cooks",取前缀数字当 NOC(同 lmia/constants.NOC_RE)。"""
 
 
 def channel_tier(noc: str, teer) -> str | None:
@@ -495,5 +503,6 @@ def main() -> None:
     print(f"stats: {len(rows)} 行({provs} 省;大类层 {base} 行 + 中类层 {len(rows) - base} 行)→ {OUT_STATS}")
 
 
-if __name__ == "__main__":
+def run() -> None:
+    """域门入口(2026-08-31 批H:__main__ 收成 run(),一域一门)。"""
     main()

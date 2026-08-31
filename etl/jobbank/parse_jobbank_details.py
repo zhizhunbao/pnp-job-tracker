@@ -1,5 +1,5 @@
 """
-clean/05b_parse_details — 解析 Job Bank 详情页原始 HTML 快照 → 富集 processed postings
+jobbank/parse_jobbank_details — 解析 Job Bank 详情页原始 HTML 快照 → 富集 processed postings
 (address/date_detail/website)+ 写解析后的详情 .md。源框架 v2:抓取(05b)只存原始 HTML,
 解析在这里下沉到 clean → processed。从旧 05b 的「边抓边解析」拆出来的解析半。
 
@@ -9,7 +9,7 @@ detail_fetched=True,并写 processed/jobbank/details/<雇主_职位>.md(命名�
 
 IN  : data/raw/jobbank/<日期>/details/<posting_id>.html  (+ processed/jobbank/postings.json)
 OUT : processed/jobbank/postings.json(原地富集) + processed/jobbank/details/<...>.md
-Usage:  uv run python etl/clean/05b_parse_details.py
+Usage:  uv run python etl/jobbank/main.py --only parse_details
 """
 import json
 import os
@@ -247,5 +247,6 @@ def main() -> None:
           f"· {emp} with employment · {certs} with certificates → postings 富集 + {OUT_DETAILS}", flush=True)
 
 
-if __name__ == "__main__":
+def run() -> None:
+    """域门入口(2026-08-31 批H:__main__ 收成 run(),一域一门)。"""
     main()

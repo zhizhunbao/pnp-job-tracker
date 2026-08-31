@@ -15,7 +15,8 @@ MODEL_CFG = ConfigDict(extra="ignore", populate_by_name=True, use_attribute_docs
 """边界模型统一配置(照 company)。"""
 
 NormNameFn = Callable[[str], str]
-"""公司名归一函数形(clean/05c 的 norm_name;单一来源,importlib 拉进来当参数传)。"""
+"""公司名归一函数形(aip/flag_aip_jobs 的 norm_name,原 clean/05c、2026-08-31 批H2 归户;
+单一来源,importlib 拉进来当参数传)。"""
 
 
 class CkanResource(BaseModel):
@@ -152,7 +153,7 @@ class ParseQuarterIn:
     """累加目标(聚合键 → LmiaEmployer),就地改。"""
 
     norm_name: NormNameFn
-    """聚合键算法(clean/05c 单一来源)。"""
+    """聚合键算法(aip/flag_aip_jobs 单一来源;原 clean/05c,2026-08-31 批H2 归户)。"""
 
 
 @dataclass

@@ -3,7 +3,11 @@ noc 域唯一入口(一域一门;2026-08-31 批C 全溶,门直调函数 —— �
 样张 etl/company/main.py)。
 
 本域是**手动域**:SCHEDULED 为空(官方 NOC 分类一年不动几次,不进定时链;
-调度语义见 __init__ docstring),两个步骤全走 TOOLS 手动点名。
+调度语义见 __init__ docstring),全部步骤走 TOOLS 手动点名。
+2026-08-31 批H2 clean/ 横切层清算:三件译名件(原 clean/04f_translate_noc_titles、
+04g_short_noc_titles、04g_city_names)零调度零 import,验过产出仍被 09 汇装读(活的),
+按「谁的数据谁管」归户进来。它们是搬家批迁入件(本门直调步骤文件的 run(),
+不是直调 functions.py 段函数),方言全溶留后续滚动批;同形先例 etl/ats/main.py。
 一律从仓库根执行:
     python etl/noc/main.py --only structure                    # 官方层级 + 三语人话名
     python etl/noc/main.py --only structure --limit 5          # 只翻前 5 条(调试)
@@ -11,26 +15,41 @@ noc 域唯一入口(一域一门;2026-08-31 批C 全溶,门直调函数 —— �
     python etl/noc/main.py --only descriptions                 # 官方职业名 + 主要职责
     python etl/noc/main.py --only audit                        # 本站分类体检(控制台 + TSV)
     python etl/noc/main.py --only audit --all                  # 体检 + 全量逐条打印
+    python etl/noc/main.py --only titles [--limit N]           # NOC 职业名中/韩译名
+    python etl/noc/main.py --only short [--lang zh,ko,en]      # NOC 职业名三语窄位短名
+    python etl/noc/main.py --only cities                       # 城市中/韩通行译名(人工表)
 """
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
+from noc.build_city_names import run as build_city_names
 from noc.functions import audit_noc_classes, build_descriptions, build_structure
+from noc.shorten_noc_titles import run as shorten_noc_titles
+from noc.translate_noc_titles import run as translate_noc_titles
 
 SCHEDULED = []
-"""默认链(调度真相):空 —— 手动域,三个步骤官方改版/查账才重跑,全在 TOOLS。"""
+"""默认链(调度真相):空 —— 手动域,步骤官方改版/查账才重跑,全在 TOOLS。"""
 
 TOOLS = {
     "structure": build_structure,
     "descriptions": build_descriptions,
     "audit": audit_noc_classes,
+    "titles": translate_noc_titles,
+    "short": shorten_noc_titles,
+    "cities": build_city_names,
 }
 """全部可 --only 点名的步(本域只有手动件):
   structure     官方层级三级表 + 三语人话名(qwen 逐条翻,FIX/UI_FIX 手写档;撞车只报不改)
   descriptions  516 个 5 位 NOC 的官方名 + 主要职责 + 任职要求(职位弹框数据源)
   audit         逐职业体检本站分类 vs 官方组(2026-08-31 批D 从 ops 拆入;只读,产 TSV)
+  titles        NOC 官方职业名 → 中/韩译名(本地 qwen 逐条翻,不过校验留空;原 clean/04f)
+  short         NOC 职业名 → 中/韩/英窄位短名,补进同一张 i18n 表(原 clean/04g_short_noc_titles)
+  cities        城市中/韩通行译名(人工核定表,不用模型;原 clean/04g_city_names)
+                ⚠ 归属存疑待复判 —— 它不是 NOC 的东西,见 build_city_names.py 头注释
+titles/short/cities 三件 2026-08-31 批H2 从 clean/ 归户,产出被 09 汇装读(noc_titles_i18n.json
+与 city_names_i18n.json),都不进定时链 —— 官方参考集翻一次永久复用,重跑=手动点名。
 """
 
 

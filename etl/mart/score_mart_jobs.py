@@ -7,7 +7,7 @@ TEER = NOC 5-digit code's 2nd digit:
   0 管理 · 1 学位 · 2 大专/学徒(2年+) · 3 大专/培训 · 4 高中 · 5 无正式教育
 移民含义: TEER 0-3 = 技能岗,可走雇主Offer省提名(OINP等);TEER 4-5 受限,除非在紧缺清单。
 
-Usage:  uv run python etl/08_score.py
+Usage:  uv run python etl/mart/main.py --only score
 Output: data/output/all-scored.json
 """
 import json
@@ -16,7 +16,7 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 2026-08-31 批H:迁 mart/ 域,etl/ 上层在 parent.parent
 import paths
 
 REGION = "ottawa-kanata-north"
@@ -368,5 +368,6 @@ def main() -> None:
     print("TEER 分布:", dict(sorted(Counter(o["category"] for o in out).items())))
 
 
-if __name__ == "__main__":
+def run() -> None:
+    """域门入口(2026-08-31 批H:__main__ 收成 run(),一域一门)。"""
     main()

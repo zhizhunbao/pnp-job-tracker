@@ -11,15 +11,21 @@
 IN : (无外部输入,表就在本文件里)
 OUT: data/processed/city_names_i18n.json   (name|prov → {zh, ko})
 
-Usage:  uv run python etl/clean/04g_city_names.py
+Usage:  uv run python etl/noc/main.py --only cities
+
+2026-08-31 批H2 归户搬家:自 etl/clean/04g_city_names.py 迁进 noc 域改此名。
+本件零调度零 import(不在任何定时链/建表链上),是手动件 —— 故只进 noc/main.py 的
+TOOLS,不进 SCHEDULED(noc 本就是手动域,SCHEDULED 为空)。
+⚠ **归属存疑,待 lead/Frank 复判**:它产的是城市译名不是 NOC 译名,进 noc 域纯粹因为
+「三张 i18n 表同批同形、09 汇装时并排读」;按「谁的数据谁管」它更像地点侧(fsa/location)
+的东西。批H2 的派工点名了 noc,先照办,不在这批自作主张改判。
+搬家批 —— 逻辑一字未动,只去 `__main__` 收成 run()(一域一门);
+样张 etl/ats/scrape_ats_jobs.py(同批同形:去 __main__ + 收 run() + 裸 `import paths`)。
 """
 from __future__ import annotations
 
 import json
-import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import paths
 
 OUT_I18N = paths.PROCESSED / "city_names_i18n.json"
@@ -91,5 +97,6 @@ def main() -> None:
     print(f"✓ {len(out)} 个城市(人工核定;表外城市留空,前端只显英文)")
 
 
-if __name__ == "__main__":
+def run() -> None:
+    """本域手动件入口:人工核定的城市中/韩译名表 → processed/city_names_i18n.json。"""
     main()

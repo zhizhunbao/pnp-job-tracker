@@ -1,5 +1,5 @@
 """
-audit_data — 自动化数据质检(替代人工逐行检查)。
+audit_jobbank_data — 自动化数据质检(替代人工逐行检查)。
 
 跑一套校验规则覆盖全量,把**可疑的少数行**挑出来 → 你只需复查几十行,不必看几千行。
 只读,不改数据。报告打到控制台 + 写 data/output/audit-flags.json(分类的可疑行)。
@@ -12,14 +12,14 @@ audit_data — 自动化数据质检(替代人工逐行检查)。
   完整性      省份缺失、url 重复、未分类率
   分布        省份/TEER/评分 直方,便于一眼看异常
 
-Usage:  uv run python etl/audit_data.py
+Usage:  uv run python etl/jobbank/main.py --only audit
 """
 import json
 import sys
 from collections import Counter
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))  # 2026-08-31 批D:ops 拆散,岗位质检归根(岗位主管线随行,查的是 postings)
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 2026-08-31 批D:ops 拆散,岗位质检归根(岗位主管线随行,查的是 postings);批H 归户 jobbank 域,etl/ 上层在 parent.parent
 import paths
 
 IN_POSTINGS = paths.PROCESSED_JOBBANK / "postings.json"
@@ -120,5 +120,6 @@ def main() -> None:
     print(f"  详情: {OUT_FLAGS}")
 
 
-if __name__ == "__main__":
+def run() -> None:
+    """域门入口(2026-08-31 批H:__main__ 收成 run(),一域一门)。"""
     main()

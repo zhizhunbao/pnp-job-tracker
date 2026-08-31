@@ -1,5 +1,5 @@
 """
-clean/05_parse_jobbank — 解析 Job Bank 列表原始 HTML 快照 → 增量合并去重到
+jobbank/parse_jobbank_postings — 解析 Job Bank 列表原始 HTML 快照 → 增量合并去重到
 processed/jobbank/postings.json(累积 store)。源框架 v2:抓取(05)只存原始 HTML,
 解析在这里下沉到 clean → processed。这是从旧 05 的「边抓边解析」拆出来的解析半。
 
@@ -11,7 +11,7 @@ since-days 行过滤(早于 cutoff 的帖跳过,用 manifest 里的 cutoff 保�
 
 IN  : data/raw/jobbank/<date>/*.html (+ manifest.json)
 OUT : data/processed/jobbank/postings.json
-Usage:  uv run python etl/clean/05_parse_jobbank.py [--since-days N]
+Usage:  uv run python etl/jobbank/main.py --only parse   (窗口旗子:--since-days N)
 """
 import argparse
 import json
@@ -23,11 +23,12 @@ from pathlib import Path
 
 from bs4 import BeautifulSoup
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(paths / 05 在那)
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(paths 在那)
 import paths
 from paths import JOBBANK_STORE_LOCK, jobbank_store_lock  # 2026-08-31 批F:锁自 sources 收编 paths 基建叶
 
 # 2026-08-31 批F:抓取件迁 jobbank 域(编号名退役,importlib 数字名黑招随之退役)
+from jobbank import SINCE_DAYS
 from jobbank.scrape_jobbank_postings import parse_article, parse_date  # 单一解析逻辑,不重复实现
 
 # 只覆盖原始抓取字段 + posting_id(键的可靠来源),保留下游(04c/04d/05b)算出的
@@ -161,5 +162,23 @@ def main() -> None:
           f"{skipped_old} 跳过(早于 {cutoff}) · base {base} → {len(by_id)}", flush=True)
 
 
-if __name__ == "__main__":
+SINCE_DAYS_FLAG = "--since-days"
+"""窗口旗子名(与旧 CLI 逐字同名;门直调后仍从进程 argv 上捡它)。"""
+
+
+def since_days_argv() -> list[str]:
+    """本步该吃的那副 argv:进程上给了 `--since-days N` 就用它,没给退回本域 SINCE_DAYS
+    —— 与旧链子进程实参 `05_parse_jobbank.py --since-days <SINCE_DAYS>` 逐字同义。"""
+    argv = sys.argv[1:]
+    for i, a in enumerate(argv):
+        if a == SINCE_DAYS_FLAG and i + 1 < len(argv):
+            return [SINCE_DAYS_FLAG, argv[i + 1]]
+    return [SINCE_DAYS_FLAG, SINCE_DAYS]
+
+
+def run() -> None:
+    """域门入口(2026-08-31 批H:__main__ 收成 run(),一域一门)。
+    main() 的 argparse 认的旗子只有 --since-days,而门自己的 `--only xxx` 它不认 ——
+    先把 argv 换成本步该吃的那副,再进原 main(),行为 = 旧 CLI。"""
+    sys.argv = [sys.argv[0], *since_days_argv()]
     main()

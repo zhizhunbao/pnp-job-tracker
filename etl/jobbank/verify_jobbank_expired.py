@@ -20,7 +20,8 @@
   seed 见判死名单**立即置 closed(不等 30 天)**:410 是实锤事实,不该受「防误杀」的保守规则约束;
 - 节奏:每轮小批(MAX_CHECKS)连续排水,不做周聚合——一次 2.5k 帖 ≈20 分钟会拖垮那轮 seed 时效
   (enrich 拆独立角色的同一教训);积压几轮排完,稳态=每轮只验到复检期的,分钟级。
-  一次性排水(补历史欠账)走环境变量:VERIFY_MAX=5000 VERIFY_SLEEP=0.25 python etl/verify_expired.py
+  一次性排水(补历史欠账)走环境变量:
+  VERIFY_MAX=5000 VERIFY_SLEEP=0.25 python etl/jobbank/main.py --only expired
 """
 import json
 import os
@@ -31,7 +32,7 @@ from pathlib import Path
 
 import httpx
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))  # 2026-08-31 批D:ops 拆散,死岗验尸归根(岗位主管线随行;sources/build 直调)
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 2026-08-31 批D:ops 拆散,死岗验尸归根(岗位主管线随行;sources/build 直调);批H 归户 jobbank 域,etl/ 上层在 parent.parent
 import paths
 
 IN_POSTINGS = paths.PROCESSED_JOBBANK / "postings.json"
@@ -113,5 +114,6 @@ def main() -> None:
     print(f"verify_expired: 新判死 {dead_new} · 仍在招 {alive} · 网络错误跳过 {errs} · 累计死帖 {len(state['dead'])}")
 
 
-if __name__ == "__main__":
+def run() -> None:
+    """域门入口(2026-08-31 批H:__main__ 收成 run(),一域一门)。"""
     main()

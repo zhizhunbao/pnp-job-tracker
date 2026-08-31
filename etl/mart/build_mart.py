@@ -8,7 +8,7 @@ seed 从此只读 mart 直接灌库,不再在加载器里东拼西凑(中介过�
   对账表  closed_jobs.json(实测判死名单)  seen_ids.json(本轮**真实见过**的全部 posting id,
           含被展示去重丢掉的——seed 的下架对账只认它,展示去重不许有下架副作用)
 
-Usage:  uv run python etl/09_build_mart.py
+Usage:  uv run python etl/mart/main.py --only mart
 """
 import importlib.util
 import json
@@ -17,14 +17,16 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 2026-08-31 批H:迁 mart/ 域,etl/ 上层在 parent.parent
 import paths
 from noc.functions import broad_of, classify  # NOC 分类法(单一来源;2026-08-31「noc 就叫 noc」并为 noc/ 域)
-import grades as GR  # E12-08 档位(1-5,单一来源;职位三维+公司四维)
-from clean import visa_flag  # GAP1③ 身份预筛(JD 正文 → 红旗+quote)
+from mart import grades as GR  # E12-08 档位(1-5,单一来源;职位三维+公司四维;批H 随本域收编)
+from mart import visa_flag  # GAP1③ 身份预筛(JD 正文 → 红旗+quote;2026-08-31 批H 随域走 —— 唯一消费者在此,库随 grades 同例)
 
-# 公司名归一(o/a 前缀、公司后缀、标点)单一来源在 clean/05c —— LMIA 匹配与 AIP 用同一把尺子
-_spec = importlib.util.spec_from_file_location("flag_aip", Path(__file__).resolve().parent / "clean" / "05c_flag_aip.py")
+# 公司名归一(o/a 前缀、公司后缀、标点)单一来源在 AIP 打标件 —— LMIA 匹配与 AIP 用同一把尺子
+# (2026-08-31 批H2 该件自 clean/05c_flag_aip.py 迁 aip/flag_aip_jobs.py,此处只跟路径,
+#  仍走 importlib 按路径拉:域间禁 import,不能写成 from aip... 的正规 import)
+_spec = importlib.util.spec_from_file_location("flag_aip", paths.ROOT / "etl" / "aip" / "flag_aip_jobs.py")
 # pyrefly: ignore[bad-argument-type] — spec_from_file_location 只在路径不存在时给 None;此处是仓内固定文件,拿不到就该当场炸
 _mod = importlib.util.module_from_spec(_spec)
 # pyrefly: ignore[missing-attribute] — 同上,spec 非 None 时 loader 恒在
@@ -36,7 +38,7 @@ norm_name = _mod.norm_name
 # 落在「04d 跑完 → 09 建表」之间的新帖就没人给它算过薪资,带着空值进库(2026-08-05 实撞:
 # 00:22 跑 04d → 00:25 写入 24 条新帖 → 00:42 建表 → 那 24 条在页面上薪资列全空,下一轮才自愈)。
 # 编排顺序已把窗口从 20 分钟压到十几秒,但窗口不为零 —— **mart 是最终表,它不该依赖谁先跑**。
-_sal_spec = importlib.util.spec_from_file_location("clean_salary", Path(__file__).resolve().parent / "clean" / "04d_clean_salary.py")
+_sal_spec = importlib.util.spec_from_file_location("clean_salary", paths.ROOT / "etl" / "clean" / "04d_clean_salary.py")
 # pyrefly: ignore[bad-argument-type] — spec_from_file_location 只在路径不存在时给 None;此处是仓内固定文件,拿不到就该当场炸
 _sal_mod = importlib.util.module_from_spec(_sal_spec)
 # pyrefly: ignore[missing-attribute] — 同上,spec 非 None 时 loader 恒在
@@ -1412,5 +1414,6 @@ def main() -> None:
         print(f"  {table:22} {len(rows):5} 行")
 
 
-if __name__ == "__main__":
+def run() -> None:
+    """域门入口(2026-08-31 批H:__main__ 收成 run(),一域一门)。"""
     main()

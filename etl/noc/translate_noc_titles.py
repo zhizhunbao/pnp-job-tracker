@@ -9,7 +9,17 @@
 IN : data/mart/noc_descriptions.json      (09 产物,含 noc + title)
 OUT: data/processed/noc_titles_i18n.json  (noc → {zh, ko};幂等续跑,已翻的跳过)
 
-Usage:  uv run python etl/clean/04f_translate_noc_titles.py [--limit N]
+Usage:  uv run python etl/noc/main.py --only titles [--limit N]
+
+2026-08-31 批H2 归户搬家:自 etl/clean/04f_translate_noc_titles.py 迁进 noc 域改此名。
+clean/ 横切层清算的判据是「谁的数据谁管」:它吃 mart/noc_descriptions.json(本域 descriptions 一步的产物)、
+只翻 NOC 职业名,不对任何岗位行生效,不是真横切。
+本件零调度零 import(不在任何定时链/建表链上),是手动件 —— 故只进
+noc/main.py 的 TOOLS,不进 SCHEDULED(noc 本就是手动域,SCHEDULED 为空)。
+搬家批 —— 逻辑一字未动,只去 `__main__` 收成 run()(一域一门);旧 CLI 旗子原样能用
+(本件自己读 sys.argv,与 noc/functions.py 的 build_structure 同手法)。
+样张 etl/ats/scrape_ats_jobs.py(同批同形:去 __main__ + 收 run() + 裸 `import paths`)。
+
 """
 from __future__ import annotations
 
@@ -17,11 +27,9 @@ import json
 import os
 import re
 import sys
-from pathlib import Path
 
 import httpx
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import paths
 
 IN_NOC = paths.MART / "noc_descriptions.json"
@@ -140,5 +148,6 @@ def main() -> None:
     print(f"✓ {OUT_I18N}  ({full}/{len(rows)} 条中韩齐全;本轮成功 {n_ok} 留空 {n_skip})")
 
 
-if __name__ == "__main__":
+def run() -> None:
+    """本域手动件入口：NOC 官方职业名 → 中/韩译名（幂等续跑）。"""
     main()

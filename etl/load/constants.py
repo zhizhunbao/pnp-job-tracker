@@ -222,18 +222,15 @@ DEPLOY_PENDING_ROW_LEN = 110
 
 BUILD_CHAIN_CMDS = (
     ("python", "etl/clean/05e_flag_apprentice.py"),
-    ("python", "etl/verify_expired.py"),
+    ("python", "etl/jobbank/main.py", "--only", "expired"),
     ("python", "etl/clean/04c_clean_ats_locations.py"),
     ("python", "etl/clean/04d_clean_salary.py"),
-    ("python", "etl/clean/05c_flag_aip.py"),
+    ("python", "etl/aip/main.py", "--only", "flag"),
     ("python", "etl/rcip/main.py", "--only", "communities"),
     ("python", "etl/fcip/main.py", "--only", "communities"),
     ("python", "etl/clean/05f_flag_pilot.py"),
     ("python", "etl/clean/05d_noc_sanity.py"),
-    ("python", "etl/08_score.py"),
-    ("python", "etl/09_build_mart.py"),
-    ("python", "etl/10_build_rankings.py"),
-    ("python", "etl/11_build_stats.py"),
+    ("python", "etl/mart/main.py"),
     ("python", "etl/employers/main.py"),
 )
 """build 役(非抓取源,灌库唯一角色)的跨源汇装链:清洗打标 → 评分 → mart → 榜单/统计 →
@@ -241,9 +238,11 @@ BUILD_CHAIN_CMDS = (
 的子进程自调,收编后同进程直调,语义不变)。原 sources/build/__init__.py 的逐步注释
 逐字折此(2026-08-31 批F):
   05e_flag_apprentice   B1-3:官方标「不要经验/带训」+ 学徒标题 → apprentice_friendly
-  verify_expired        #124 批C:死岗验尸(周节奏,7 天内跑过=秒退;判死帖 09 剔除出 mart);
-                        2026-08-31 批D ops 拆散归根
-  04c_clean_ats_locations / 04d_clean_salary / 05c_flag_aip   跨源清洗与打标
+  jobbank --only expired #124 批C:死岗验尸(周节奏,7 天内跑过=秒退;判死帖 mart 剔除出表);
+                        2026-08-31 批D ops 拆散归根,批H 归户 jobbank 域(件即
+                        jobbank/verify_jobbank_expired.py,经本域门点名)
+  04c_clean_ats_locations / 04d_clean_salary   跨源清洗(ATS/JB 同一套)
+  aip --only flag        AIP 打标(2026-08-31 批H 归户 aip 域,原 clean/05c;跨役走域门)
   rcip/fcip communities E6-11:试点社区名单(读 fed-rcip crawl 缓存,改版保旧不拦役);
                         批C 溶进 pilot 域、批E 拆三域一步变两步,顺序不动仍在 05f 之前
   05f_flag_pilot        E6-11:城市×省 → jobs.pilot/pilotCommunity(05c 同款一字段一脚本)
@@ -251,7 +250,9 @@ BUILD_CHAIN_CMDS = (
                         🔴 必须排在 04d 之后:它的判据里有「低薪」,读的是 04d 算出的 salaryAnnual
   (官网富化已拆独立 enrich 角色,2026-07-16「分开来跑」拍板:每轮 10-17 分钟拖垮 seed 时效;
   本链只消费它落好的 company_enrich.json(09 合并),不再现抓)
-  08 → 09 → 10 → 11     评分 → mart → 榜单(E5-02 读 mart 纯聚合)→ 地区统计(E5-04 同)
+  mart/main             评分 → mart → 榜单(E5-02 读 mart 纯聚合)→ 地区统计(E5-04 同)。
+                        2026-08-31 批H:旧 08/09/10/11 四行迁 mart 域收成一门四步,
+                        门内顺序 = 原链顺序,一步失败中止(exit 非零 → 本链中止,语义不变)
   employers/main        雇主池两表(雇主板批一,2026-08-30:读 mart+LMIA+postings 纯聚合,须在 upload 前)
 整链持 Job Bank 仓锁(原 run_locked 同款:锁不拆成加锁/解锁两步 —— 任一步异常时调度层
 会立即中止,解锁步没机会执行;内核文件锁随进程退出自动释放)。"""
