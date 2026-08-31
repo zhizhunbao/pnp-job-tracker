@@ -14,4 +14,10 @@ class WriteJsonIn:
     """待序列化对象(dict/list;序列化错误照抛,那是代码病不是环境病)。"""
 
     indent: int
-    """JSON 缩进(mart/raw 惯例 2;大表 1 省体积)。"""
+    """JSON 缩进(mart/raw 惯例 2;大表 1 省体积;compact=True 时忽略)。"""
+
+    sort_keys: bool = False
+    """键排序落盘(wages 中位表惯例:diff 稳定;默认不排 = 常规档)。"""
+
+    compact: bool = False
+    """紧凑分隔符(",", ":")零缩进(16MB 级大表:体积与 seed 速度;2026-08-30 批D 收编时补格)。"""

@@ -100,3 +100,6 @@ RETRY_DELAY_S = 0.5
 
 RETRY_BACKOFF = 2
 """重试退避倍率。"""
+
+JSON_COMPACT_SEPS = (",", ":")
+"""紧凑落盘分隔符(compact=True 档)。"""

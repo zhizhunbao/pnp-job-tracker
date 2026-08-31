@@ -1,18 +1,22 @@
-"""news.functions — news 母框架(增量合并 → 防线 → 原子写盘;#55 §2.5 模板方法)。
+"""news.functions — news 全域行为(母框架 + 九个子源解析 + AI 翻译/打分;#55 §2.5 模板方法)。
 
 2026-08-30 从 fetch 迁回(Frank 定界:fetch 只做通用抓取与 API 直取,SOURCE 契约、
 行构造、节奏参数都是 news 的行词汇,归 news 域);通用件(客户端/feed 解析/正文抽取)
 仍从 fetch.functions 取。原 atomic_write_json 与 paths.write_json 行为重复,退役 ——
 落盘改走 paths.write_json(带 OSError 五次退避,吃到批A 的写盘抗抖)。
+2026-08-30 批C 子源溶解:七个 scrape_*.py 子源与入口脚本 scrape_immigration_news.py
+全溶进本文件(company 全溶样张同形),兄弟裸导入体系随之消亡;门 main.py 直调这里的
+四个零参入口(scrape_immigration_news / score_missing / translate_missing /
+translate_titles_missing),顺序即原入口脚本的 __main__ 四行。
 
-子脚本契约(etl/news/scrape_*.py):
-  SOURCE = {
+子源契约(news_sources() 的装配,母框架按键读):
+  {
       "region":   "MB",              # federal / 两字母省码(前端省筛选 chips 直接用)
       "list_url": "https://…/feed/", # 列表页或 feed URL
       "kind":     "rss",             # atom | rss | html
       "parse":    parse_fn,          # 仅 html:list_url 页 HTML → [{title, date, url, bodyEn?}]
                                      #   date=ISO;url 可相对(母 urljoin);带 bodyEn = 单页日期段落式
-                                     #   源(BC/ON/AB),母不再抓详情页
+                                     #   源(BC/ON/AB/NB),母不再抓详情页
       "citation": "https://…",       # 出处着陆页(E4-04 惯例:人能读的页;缺省 = list_url)
       "post_data": {...},            # 可选:列表页要 POST 表单才出结果时填(SK Sitecore 筛选)
       "body_selector": "div.x",      # 可选:详情页正文容器选择器(缺省 main/article 通用抽取)
@@ -28,20 +32,64 @@ from pathlib import Path
 from typing import cast
 from urllib.parse import urljoin
 
+import httpx
+from bs4 import BeautifulSoup
+
 import paths
 from log.functions import err, say
-from fetch.functions import extract_detail, fetch, make_client, page_og_image, parse_feed
-from fetch.scheme import DetailIn, FetchIn, HttpClientLike
-from news.scheme import RunIn
-from news.constants import (ANCHOR_SEP, COUNT_PAIR_TPL, DATE_ISO_FMT, DETAIL_SLEEP_S, ENC_UTF8,
-                            ENV_ON, ENV_REBODY, FEED_KINDS, GUARD_FEW_TPL, GUARD_SHRINK_TPL,
-                            K_BODY_EN, K_BODY_SELECTOR, K_BODY_ZH, K_CITATION, K_DATE, K_FETCHED,
-                            K_FETCHED_AT, K_ITEMS, K_KIND, K_LIST_URL, K_OG_IMAGE, K_PARSE,
-                            K_POST_DATA, K_REGION, K_SUMMARY_ZH, K_TITLE, K_URL, MAX_AGE_DAYS,
-                            MAX_DETAIL_PER_RUN, MIN_TOTAL, PAIR_SEP, PRINT_DEFERRED_TPL,
-                            PRINT_OUT_TPL, PRINT_REBODY_TPL, PRINT_REGION_TPL, PRINT_WROTE_TPL,
-                            TIMEOUT_S, TS_UTC_FMT, WHERE_DETAIL_TPL, WHERE_KEEP_TPL,
-                            WHERE_REBODY_TPL)
+from fetch.functions import (extract_detail, fetch, iso_date, make_client, page_og_image,
+                             parse_feed, section_body, slugify)
+from fetch.scheme import DetailIn, FetchIn, HttpClientLike, SectionIn
+from news.scheme import (CallLlmIn, CallTitleIn, LlmClientLike, LlmConfig, MakeLlmClientIn,
+                         NumberedIn, RunIn, TitleCheckIn, TranslateOneIn, TranslateTask)
+from news.constants import (AB_HEAD_SEL, AB_HEAD_SEP, AB_LIST_URL, AB_STOP_TAGS, ALIGN_SHOW_MAX,
+                            ANCHOR_SEP, ANCHOR_SLUG_TPL, ANCHOR_URL_TPL, ANTHROPIC_BASE,
+                            ANTHROPIC_VERSION, ATTR_ID, BC_DATE_ONLY_RE, BC_LIST_URL,
+                            BC_STOP_TAGS, BC_STRONG_TAGS, BC_TITLE_LEN_MAX, BODY_CAP, CJK_RE,
+                            COUNT_PAIR_TPL, DATE_ISO_FMT, DATE_ISO_TPL, DETAIL_SLEEP_S, ELLIPSIS,
+                            ENC_UTF8, ENV_API_KEY, ENV_LLM_BASE, ENV_LLM_MODEL, ENV_ON,
+                            ENV_REBODY, ENV_SCORE_BUDGET, ENV_TITLE_BUDGET,
+                            ENV_TRANSLATE_BUDGET, ERR_ALIGN_TPL, ERR_SENTINEL, FEED_KINDS,
+                            GUARD_FEW_TPL, GUARD_SHRINK_TPL, HDR_ANTHROPIC_VERSION, HDR_API_KEY,
+                            HREF_ATTR, HTML_PARSER, IMP_RE, IRCC_CITATION, IRCC_LIST_URL,
+                            K_BODY_EN, K_BODY_KO, K_BODY_SELECTOR, K_BODY_ZH, K_CITATION, K_DATE,
+                            K_FETCHED, K_FETCHED_AT, K_IMPORTANCE, K_IMPORTANCE_NOTE, K_ITEMS,
+                            K_KIND, K_LIST_URL, K_OG_IMAGE, K_PARSE, K_POST_DATA, K_REGION,
+                            K_SUMMARY_KO, K_SUMMARY_ZH, K_TITLE, K_TITLE_ZH, K_URL, KIND_ATOM,
+                            KIND_HTML, KIND_RSS, LANG_ZH, LANGS, LINE_SEP, LLM_LOCAL_MODEL_DEFAULT,
+                            LLM_MODEL, MAX_AGE_DAYS, MAX_DETAIL_PER_RUN, MB_BODY_SELECTOR,
+                            MB_CITATION, MB_LIST_URL, MD_BOLD_KEEP, MD_BOLD_MARK, MD_BOLD_RE,
+                            MD_HEAD_RE, MIN_TOTAL, MONTH_NUM, NB_CURRENT_HEAD, NB_DATE_RE,
+                            NB_EFFECTIVE_RE, NB_HEAD_RE, NB_LIST_URL, NB_SENT_SPLIT_RE,
+                            NB_STOP_TAGS, NB_TITLE_LEN_MAX, NS_CITATION, NS_LINK_SEL,
+                            NS_LIST_URL, NS_ROW_SEL, ON_LIST_URL, ON_STOP_TAGS, OUT_NEWS_FILE,
+                            P_CONTENT, P_MAX_TOKENS, P_MESSAGE, P_MESSAGES, P_MINISTRY_ID,
+                            P_MODEL, P_MONTH, P_NUM_PREDICT, P_OPTIONS, P_PROMPT, P_RESPONSE,
+                            P_ROLE, P_SC_ACTION, P_SC_CONTROLLER, P_STREAM, P_TEMPERATURE,
+                            P_TEXT, P_TEXT_BLOCK, P_THINK, P_YEAR, PAIR_SEP, PARA_SEP,
+                            PATH_ANTHROPIC_MESSAGES, PATH_OLLAMA_CHAT, PATH_OLLAMA_GENERATE,
+                            PRINT_DEFERRED_TPL, PRINT_LEFT_TPL, PRINT_OUT_TPL, PRINT_REBODY_TPL,
+                            PRINT_REGION_TPL, PRINT_SCORE_TPL, PRINT_TITLE_BAD_LEN,
+                            PRINT_TITLE_BAD_TPL, PRINT_TITLE_DONE_TPL, PRINT_TITLE_NONE,
+                            PRINT_TITLE_SKIP, PRINT_TRANSLATE_DONE_TPL, PRINT_TRANSLATE_NONE,
+                            PRINT_TRANSLATE_OFF_TPL, PRINT_TRANSLATE_SKIP, PRINT_WROTE_TPL,
+                            PROMPT, PROMPT_KO, PROMPT_SCORE, PROMPT_TITLE, QC_BODY_SELECTOR,
+                            QC_LINK_SEL, QC_LIST_URL, QC_ROW_SEL, REGION_AB, REGION_BC,
+                            REGION_FEDERAL, REGION_MB, REGION_NB, REGION_NS, REGION_ON,
+                            REGION_QC, REGION_SK, ROLE_USER, SCORE_BODY_LEN,
+                            SCORE_BUDGET_DEFAULT, SCORE_TIMEOUT_S, SCORE_TOKENS, SEG_RE, SEG_TPL,
+                            SENTINEL, SK_LIST_URL, SK_MINISTRY_ID, SK_ROW_SEL, SK_SC_ACTION,
+                            SK_SC_CONTROLLER, SK_URL_DATE_RE, TAG_H2, TAG_H3, TAG_H4, TAG_MAIN,
+                            TAG_P, TEXT_JOIN_SEP, THINK_RE, TIMEOUT_S, TITLE_BUDGET_DEFAULT,
+                            TITLE_LEN_SLACK, TITLE_STRIP_CHARS, TITLE_TEMPERATURE,
+                            TITLE_TIMEOUT_S, TITLE_TOKENS, TRANSLATE_BUDGET_DEFAULT,
+                            TRANSLATE_TIMEOUT_S, TRANSLATE_TOKENS, TS_UTC_FMT, URL_TAIL_SLASH,
+                            WHERE_DETAIL_TPL, WHERE_KEEP_TPL, WHERE_REBODY_TPL,
+                            WHERE_SCORE_TPL, WHERE_TITLE_TPL, WHERE_TRANSLATE_TPL, WS_FOLD_RE)
+
+# =========================================================================
+# 1. 母框架(增量合并 → 防线 → 原子写盘)
+# =========================================================================
 
 
 def load_items(out_file: Path) -> list[dict]:
@@ -159,3 +207,521 @@ def run(x: RunIn) -> None:
     for k, v in sorted(per.items()):
         per_parts.append(COUNT_PAIR_TPL.format(key=k, n=v))
     say(PRINT_WROTE_TPL.format(n=len(merged), parts=PAIR_SEP.join(per_parts)))
+
+
+def scrape_immigration_news() -> None:
+    """抓取步(门直调的第一件):九个子源交母框架跑一轮,落 OUT_NEWS_FILE。"""
+    run(RunIn(sources=news_sources(), out_file=OUT_NEWS_FILE))
+
+
+# =========================================================================
+# 2. 子源装配(SOURCE 契约 dict;顺序即抓取顺序)
+# =========================================================================
+
+
+def news_sources() -> list[dict]:
+    """九个子源的 SOURCE 清单(联邦锚点先行,省源按历史入册序 BC/AB/MB/NB/NS/ON/SK/QC)。
+
+    P0 2026-07-18 逐源实测:PE 被 Radware 挡、NL 无新闻页,不硬上(缺源写在册,不装有)。
+    """
+    ircc = {K_REGION: REGION_FEDERAL, K_LIST_URL: IRCC_LIST_URL, K_KIND: KIND_ATOM,
+            K_CITATION: IRCC_CITATION}
+    bc = {K_REGION: REGION_BC, K_LIST_URL: BC_LIST_URL, K_KIND: KIND_HTML,
+          K_PARSE: parse_bc, K_CITATION: BC_LIST_URL}
+    ab = {K_REGION: REGION_AB, K_LIST_URL: AB_LIST_URL, K_KIND: KIND_HTML,
+          K_PARSE: parse_ab, K_CITATION: AB_LIST_URL}
+    mb = {K_REGION: REGION_MB, K_LIST_URL: MB_LIST_URL, K_KIND: KIND_RSS,
+          K_CITATION: MB_CITATION, K_BODY_SELECTOR: MB_BODY_SELECTOR}
+    nb = {K_REGION: REGION_NB, K_LIST_URL: NB_LIST_URL, K_KIND: KIND_HTML,
+          K_PARSE: parse_nb, K_CITATION: NB_LIST_URL}
+    ns = {K_REGION: REGION_NS, K_LIST_URL: NS_LIST_URL, K_KIND: KIND_HTML,
+          K_PARSE: parse_ns, K_CITATION: NS_CITATION}
+    on = {K_REGION: REGION_ON, K_LIST_URL: ON_LIST_URL, K_KIND: KIND_HTML,
+          K_PARSE: parse_on, K_CITATION: ON_LIST_URL}
+    sk = {K_REGION: REGION_SK, K_LIST_URL: SK_LIST_URL, K_KIND: KIND_HTML,
+          K_PARSE: parse_sk, K_CITATION: SK_LIST_URL,
+          K_POST_DATA: {P_SC_CONTROLLER: SK_SC_CONTROLLER, P_SC_ACTION: SK_SC_ACTION,
+                        P_TEXT: "", P_YEAR: "", P_MONTH: "", P_MINISTRY_ID: SK_MINISTRY_ID}}
+    qc = {K_REGION: REGION_QC, K_LIST_URL: QC_LIST_URL, K_KIND: KIND_HTML,
+          K_PARSE: parse_qc, K_CITATION: QC_LIST_URL, K_BODY_SELECTOR: QC_BODY_SELECTOR}
+    return [ircc, bc, ab, mb, nb, ns, on, sk, qc]
+
+
+# =========================================================================
+# 3. 子源解析:AB(单页日期段落式,h3.goa-title =「日期: 标题」)
+# =========================================================================
+
+
+def parse_ab(html: str) -> list[dict]:
+    """AAIP Updates 页 → 条目行;日期/标题/正文缺一不收(不猜)。"""
+    soup = BeautifulSoup(html, HTML_PARSER)
+    items = []
+    for h3 in soup.select(AB_HEAD_SEL):
+        head = WS_FOLD_RE.sub(TEXT_JOIN_SEP, h3.get_text(TEXT_JOIN_SEP, strip=True))
+        date = iso_date(head)
+        title = head.split(AB_HEAD_SEP, 1)[1].strip() if AB_HEAD_SEP in head else head
+        body = section_body(SectionIn(heading=h3, stop_names=AB_STOP_TAGS))
+        if not (date and title and body):
+            continue
+        anchor = ANCHOR_SLUG_TPL.format(date=date, slug=slugify(title))
+        items.append({K_TITLE: title, K_DATE: date,
+                      K_URL: ANCHOR_URL_TPL.format(base=AB_LIST_URL, anchor=anchor),
+                      K_BODY_EN: body})
+    return items
+
+
+# =========================================================================
+# 4. 子源解析:BC(单页日期段落式,h2 = 裸日期)
+# =========================================================================
+
+
+def parse_bc(html: str) -> list[dict]:
+    """BC PNP News 页 → 条目行;标题取首段粗体,没有就取首段截断。"""
+    soup = BeautifulSoup(html, HTML_PARSER)
+    main = soup.find(TAG_MAIN) or soup.body
+    items = []
+    for h2 in main.find_all(TAG_H2):
+        head = h2.get_text(TEXT_JOIN_SEP, strip=True)
+        date = iso_date(head)
+        if not date or BC_DATE_ONLY_RE.fullmatch(head.strip()) is None:
+            continue
+        body = section_body(SectionIn(heading=h2, stop_names=BC_STOP_TAGS))
+        first_p = h2.find_next_sibling(TAG_P)
+        strong = first_p.find(BC_STRONG_TAGS) if first_p else None
+        title = WS_FOLD_RE.sub(TEXT_JOIN_SEP, strong.get_text(TEXT_JOIN_SEP, strip=True)) if strong else \
+            (body.split(PARA_SEP)[0][:BC_TITLE_LEN_MAX] if body else "")
+        if not (title and body):
+            continue
+        anchor = ANCHOR_SLUG_TPL.format(date=date, slug=slugify(title))
+        items.append({K_TITLE: title, K_DATE: date,
+                      K_URL: ANCHOR_URL_TPL.format(base=BC_LIST_URL, anchor=anchor),
+                      K_BODY_EN: body})
+    return items
+
+
+# =========================================================================
+# 5. 子源解析:NB(通告页,标题是通用词、日期藏正文)
+# =========================================================================
+
+
+def nb_date_from(body: str) -> str | None:
+    """从通告正文里提发布/生效日;提不出返回 None(无日期的通告不收)。"""
+    m = NB_DATE_RE.search(body)
+    return iso_date(m.group(0)) if m else None
+
+
+def nb_title_from(body: str) -> str:
+    """通告正文 → 标题:剥掉开头的 Effective 日期从句,再取首句(超长截断挂省略号)。"""
+    t = WS_FOLD_RE.sub(TEXT_JOIN_SEP, body.strip())
+    t = NB_EFFECTIVE_RE.sub("", t).strip()
+    first = NB_SENT_SPLIT_RE.split(t, maxsplit=1)[0].strip()
+    if len(first) > NB_TITLE_LEN_MAX:
+        return first[:NB_TITLE_LEN_MAX].rstrip() + ELLIPSIS
+    return first
+
+
+def parse_nb(html: str) -> list[dict]:
+    """NBPNP Important notices 页 → 条目行;只收 Current notices 段,同标题去重。"""
+    soup = BeautifulSoup(html, HTML_PARSER)
+    main = soup.find(TAG_MAIN) or soup.body
+    cur = None
+    for h in main.find_all(TAG_H2):
+        if NB_CURRENT_HEAD in h.get_text(TEXT_JOIN_SEP, strip=True).lower():
+            cur = h
+            break
+    if not cur:
+        return []
+    items = []
+    seen = set()
+    for node in cur.find_all_next(NB_HEAD_RE):
+        if node.name == TAG_H2:
+            break
+        body = section_body(SectionIn(heading=node, stop_names=NB_STOP_TAGS))
+        if not body:
+            continue
+        date = nb_date_from(body)
+        if not date:
+            continue
+        title = nb_title_from(body)
+        if not title or title in seen:
+            continue
+        seen.add(title)
+        anchor = node.get(ATTR_ID) or ANCHOR_SLUG_TPL.format(date=date, slug=slugify(title))
+        items.append({K_TITLE: title, K_DATE: date,
+                      K_URL: ANCHOR_URL_TPL.format(base=NB_LIST_URL, anchor=anchor),
+                      K_BODY_EN: body})
+    return items
+
+
+# =========================================================================
+# 6. 子源解析:NS(Drupal 分类列表,详情页由母抓)
+# =========================================================================
+
+
+def parse_ns(html: str) -> list[dict]:
+    """NSNP/AIP Program Updates 列表页 → 条目行(标题+链接+发布日)。"""
+    soup = BeautifulSoup(html, HTML_PARSER)
+    items = []
+    for row in soup.select(NS_ROW_SEL):
+        a = row.select_one(NS_LINK_SEL)
+        if not a:
+            continue
+        title = WS_FOLD_RE.sub(TEXT_JOIN_SEP, a.get_text(TEXT_JOIN_SEP, strip=True))
+        url = a[HREF_ATTR]
+        for h2 in row.select(TAG_H2):
+            h2.extract()
+        date = iso_date(row.get_text(TEXT_JOIN_SEP, strip=True))
+        if title and date:
+            items.append({K_TITLE: title, K_DATE: date, K_URL: url})
+    return items
+
+
+# =========================================================================
+# 7. 子源解析:ON(年度页,h4 为条目粒度)
+# =========================================================================
+
+
+def parse_on(html: str) -> list[dict]:
+    """OINP Updates 年度页 → 条目行;日期取前置最近的 h3,锚点优先用 h4 自带 id。"""
+    soup = BeautifulSoup(html, HTML_PARSER)
+    main = soup.find(TAG_MAIN) or soup.body
+    items = []
+    for h4 in main.find_all(TAG_H4):
+        title = WS_FOLD_RE.sub(TEXT_JOIN_SEP, h4.get_text(TEXT_JOIN_SEP, strip=True))
+        prev_h3 = h4.find_previous(TAG_H3)
+        date = iso_date(prev_h3.get_text(TEXT_JOIN_SEP, strip=True)) if prev_h3 else None
+        body = section_body(SectionIn(heading=h4, stop_names=ON_STOP_TAGS))
+        if not (title and date and body):
+            continue
+        anchor = h4.get(ATTR_ID) or ANCHOR_SLUG_TPL.format(date=date, slug=slugify(title))
+        items.append({K_TITLE: title, K_DATE: date,
+                      K_URL: ANCHOR_URL_TPL.format(base=ON_LIST_URL, anchor=anchor),
+                      K_BODY_EN: body})
+    return items
+
+
+# =========================================================================
+# 8. 子源解析:QC(TYPO3 Solr 结果页,详情页由母抓)
+# =========================================================================
+
+
+def parse_qc(html: str) -> list[dict]:
+    """quebec.ca 新闻搜索结果(按 MIFI 部委筛选)→ 条目行。"""
+    soup = BeautifulSoup(html, HTML_PARSER)
+    items = []
+    for li in soup.select(QC_ROW_SEL):
+        a = li.select_one(QC_LINK_SEL)
+        p = li.find(TAG_P)
+        date = iso_date(p.get_text(TEXT_JOIN_SEP, strip=True)) if p else None
+        if not (a and date):
+            continue
+        title = WS_FOLD_RE.sub(TEXT_JOIN_SEP, a.get_text(TEXT_JOIN_SEP, strip=True))
+        if title:
+            items.append({K_TITLE: title, K_DATE: date, K_URL: a[HREF_ATTR]})
+    return items
+
+
+# =========================================================================
+# 9. 子源解析:SK(Sitecore POST-only 结果区,日期从 URL 路径取)
+# =========================================================================
+
+
+def parse_sk(html: str) -> list[dict]:
+    """saskatchewan.ca 新闻 hub 结果区 → 条目行;URL 路径 /2026/july/16/ 即日期。"""
+    soup = BeautifulSoup(html, HTML_PARSER)
+    items = []
+    for a in soup.select(SK_ROW_SEL):
+        m = SK_URL_DATE_RE.search(a[HREF_ATTR])
+        month = MONTH_NUM.get(m.group(2).lower()) if m else None
+        if not month:
+            continue
+        title = WS_FOLD_RE.sub(TEXT_JOIN_SEP, a.get_text(TEXT_JOIN_SEP, strip=True))
+        if not title:
+            continue
+        items.append({K_TITLE: title, K_URL: a[HREF_ATTR],
+                      K_DATE: DATE_ISO_TPL.format(year=m.group(1), month=month,
+                                                  day=int(m.group(3)))})
+    return items
+
+
+# =========================================================================
+# 10. LLM 后端接线(局域网 Ollama 优先 / Anthropic 兜底;两个端点两只发射器)
+# =========================================================================
+
+
+def llm_config() -> LlmConfig:
+    """读环境定后端(NEWS_LLM_BASE 设了走局域网 Ollama,否则 Anthropic haiku)。
+
+    原入口脚本在模块导入时读一次,溶解后每个步骤入口现读 —— 一次进程内语义相同。
+    """
+    return LlmConfig(base=os.environ.get(ENV_LLM_BASE, "").strip().rstrip(URL_TAIL_SLASH),
+                     local_model=os.environ.get(ENV_LLM_MODEL, LLM_LOCAL_MODEL_DEFAULT),
+                     api_key=os.environ.get(ENV_API_KEY, "").strip())
+
+
+def make_llm_client(x: MakeLlmClientIn) -> httpx.Client:
+    """按后端造客户端:局域网盒零认证头,Anthropic 带 key 与版本头。"""
+    headers: dict = {}
+    base_url = x.cfg.base
+    if base_url == "":
+        base_url = ANTHROPIC_BASE
+        headers = {HDR_API_KEY: x.cfg.api_key, HDR_ANTHROPIC_VERSION: ANTHROPIC_VERSION}
+    return httpx.Client(base_url=base_url, timeout=x.timeout_s, headers=headers)
+
+
+def call_llm(x: CallLlmIn) -> str:
+    """单轮生成:Ollama /api/generate(think 关,剥 think 块双保险)或 Anthropic /v1/messages。"""
+    if x.cfg.base != "":
+        r = x.client.post(PATH_OLLAMA_GENERATE,
+                          json={P_MODEL: x.cfg.local_model, P_PROMPT: x.prompt,
+                                P_STREAM: False, P_THINK: False,
+                                P_OPTIONS: {P_NUM_PREDICT: x.tokens}})
+        r.raise_for_status()
+        return THINK_RE.sub("", r.json()[P_RESPONSE]).strip()
+    r = x.client.post(PATH_ANTHROPIC_MESSAGES,
+                      json={P_MODEL: LLM_MODEL, P_MAX_TOKENS: x.tokens,
+                            P_MESSAGES: [{P_ROLE: ROLE_USER, P_CONTENT: x.prompt}]})
+    r.raise_for_status()
+    text = ""
+    for block in r.json()[P_CONTENT]:
+        text += block.get(P_TEXT_BLOCK, "")
+    return text.strip()
+
+
+def call_title_llm(x: CallTitleIn) -> str:
+    """标题灰注一发:Ollama /api/chat + 提示词内 /no_think,取首行并剥引号。"""
+    r = x.client.post(PATH_OLLAMA_CHAT,
+                      json={P_MODEL: x.cfg.local_model, P_THINK: False, P_STREAM: False,
+                            P_OPTIONS: {P_TEMPERATURE: TITLE_TEMPERATURE,
+                                        P_NUM_PREDICT: TITLE_TOKENS},
+                            P_MESSAGES: [{P_ROLE: ROLE_USER, P_CONTENT: x.prompt}]})
+    r.raise_for_status()
+    out = (r.json().get(P_MESSAGE, {}).get(P_CONTENT) or "").strip()
+    out = THINK_RE.sub("", out).strip()
+    out = strip_md(out).strip(TITLE_STRIP_CHARS)
+    return out.splitlines()[0].strip() if out else ""
+
+
+def strip_md(s: str) -> str:
+    """剥 LLM 溜出来的 Markdown 记号(**粗体**/行首 #);正文是纯文本渲染,记号=噪音。"""
+    s = MD_BOLD_RE.sub(MD_BOLD_KEEP, s)
+    return MD_HEAD_RE.sub("", s).replace(MD_BOLD_MARK, "")
+
+
+# =========================================================================
+# 11. 全文翻译与速读(zh/ko 同编号协议;新增条目才调,随行存 raw = 幂等缓存)
+# =========================================================================
+
+
+def translate_missing() -> None:
+    """翻译步(门直调的第三件):按预算给缺译条目补速读+逐段译文,单条失败不断轮。"""
+    cfg = llm_config()
+    if cfg.base == "" and cfg.api_key == "":
+        say(PRINT_TRANSLATE_SKIP)
+        return
+    data = json.loads(OUT_NEWS_FILE.read_text(encoding=ENC_UTF8))
+    todo = pick_translate_todo(data[K_ITEMS])
+    if len(todo) == 0:
+        say(PRINT_TRANSLATE_NONE)
+        return
+    budget = int(os.environ.get(ENV_TRANSLATE_BUDGET, TRANSLATE_BUDGET_DEFAULT))
+    done = 0
+    with make_llm_client(MakeLlmClientIn(cfg=cfg, timeout_s=TRANSLATE_TIMEOUT_S)) as c:
+        client = cast(LlmClientLike, c)
+        for task in todo[:budget]:
+            try:
+                translate_one(TranslateOneIn(client=client, cfg=cfg, task=task))
+                done += 1
+            except Exception as e:  # noqa: BLE001
+                err(WHERE_TRANSLATE_TPL.format(lang=task.lang, url=task.item[K_URL]), e)
+    if done:
+        paths.write_json(paths.WriteJsonIn(path=OUT_NEWS_FILE, payload=data, indent=1))
+    if budget == 0:
+        say(PRINT_TRANSLATE_OFF_TPL.format(n=len(todo)))
+        return
+    line = PRINT_TRANSLATE_DONE_TPL.format(done=done, total=len(todo))
+    if len(todo) > done:
+        line = line + PRINT_LEFT_TPL.format(n=len(todo) - done)
+    say(line)
+
+
+def pick_translate_todo(items: list) -> list[TranslateTask]:
+    """待翻队列 =(条目, 目标语)对:zh 缺 summaryZh / ko 缺 summaryKo(各自独立补,预算按调用数计)。"""
+    todo: list[TranslateTask] = []
+    for it in items:
+        if not it.get(K_BODY_EN):
+            continue
+        for lang in LANGS:
+            if not it.get(summary_key_of(lang)):
+                todo.append(TranslateTask(item=it, lang=lang))
+    return todo
+
+
+def summary_key_of(lang: str) -> str:
+    """目标语 → 速读行键(队列判缺与回写共用同一把尺)。"""
+    if lang == LANG_ZH:
+        return K_SUMMARY_ZH
+    return K_SUMMARY_KO
+
+
+def translate_one(x: TranslateOneIn) -> None:
+    """一条一语:编号喂入 → 哨兵切分 → 速读/重要度/逐段译文就地补;失败抛出去留空重试。
+
+    grounding 红线:只喂抓到的官方正文,禁外推,展示层标「AI 翻译·以原文为准」。
+    重要度只在中文调用里产(单一来源);bodyZh 与速读同一次赋值 —— 对不齐就整条不落,
+    不留「有速读没正文」的半成品(前端按序配对的前提)。
+    """
+    it = x.task.item
+    paras = clip_paragraphs(it[K_BODY_EN])
+    tpl = PROMPT if x.task.lang == LANG_ZH else PROMPT_KO
+    prompt = tpl.format(title=it[K_TITLE], n=len(paras), body=number_paragraphs(paras))
+    text = call_llm(CallLlmIn(client=x.client, cfg=x.cfg, prompt=prompt, tokens=TRANSLATE_TOKENS))
+    summary, sep, body = text.partition(SENTINEL)
+    if not (sep and summary.strip() and body.strip()):
+        raise ValueError(ERR_SENTINEL)
+    summary = strip_md(summary.strip())
+    if x.task.lang == LANG_ZH:
+        first, _, rest = summary.partition(LINE_SEP)
+        m = IMP_RE.match(first.strip())
+        if m:
+            it[K_IMPORTANCE], it[K_IMPORTANCE_NOTE] = int(m.group(1)), m.group(2).strip()
+            summary = rest.strip()
+        it[K_SUMMARY_ZH], it[K_BODY_ZH] = summary, parse_numbered_body(
+            NumberedIn(body=body, total=len(paras)))
+        return
+    it[K_SUMMARY_KO], it[K_BODY_KO] = summary, parse_numbered_body(
+        NumberedIn(body=body, total=len(paras)))
+
+
+def clip_paragraphs(body_en: str) -> list[str]:
+    """按 BODY_CAP 截原文段落(整段计预算,不在段中间截断——截半段编号就废了)。
+
+    超长稿只翻前 N 整段,尾段对照缺=只显英文,不错位。
+    """
+    paras: list[str] = []
+    used = 0
+    for raw in body_en.split(PARA_SEP):
+        p = raw.strip()
+        if not p:
+            continue
+        if used + len(p) > BODY_CAP and paras:
+            break
+        paras.append(p)
+        used += len(p)
+    return paras
+
+
+def number_paragraphs(paras: list[str]) -> str:
+    """原文逐段挂 [1..N] 编号喂入(对齐协议 v2 的发送侧)。"""
+    lines = []
+    for i, p in enumerate(paras):
+        lines.append(SEG_TPL.format(n=i + 1, text=p))
+    return PARA_SEP.join(lines)
+
+
+def parse_numbered_body(x: NumberedIn) -> str:
+    """按编号解析译文 → 与原文同序同段数的正文;缺号/空段=抛错(整条重试,不出错位页面)。"""
+    parts = SEG_RE.split(x.body)
+    numbered: dict[int, str] = {}
+    for k, txt in zip(parts[1::2], parts[2::2]):
+        t = strip_md(txt).strip()
+        if t:
+            numbered[int(k)] = t
+    missing = []
+    for k in range(1, x.total + 1):
+        if k not in numbered:
+            missing.append(k)
+    if missing:
+        more = ELLIPSIS if len(missing) > ALIGN_SHOW_MAX else ""
+        raise ValueError(ERR_ALIGN_TPL.format(missing=missing[:ALIGN_SHOW_MAX], more=more, n=x.total))
+    out = []
+    for k in range(1, x.total + 1):
+        out.append(numbered[k])
+    return PARA_SEP.join(out)
+
+
+# =========================================================================
+# 12. 重要度打分(P1e 稳态:翻译走线上实时,重要度必须提前 —— banner TOP5/徽标/只看重要全靠它)
+# =========================================================================
+
+
+def score_missing() -> None:
+    """打分步(门直调的第二件):轻量必跑,给没有重要度的条目补 1-5 分与一句理由。"""
+    cfg = llm_config()
+    if cfg.base == "" and cfg.api_key == "":
+        return
+    data = json.loads(OUT_NEWS_FILE.read_text(encoding=ENC_UTF8))
+    todo = []
+    for it in data[K_ITEMS]:
+        if it.get(K_BODY_EN) and not it.get(K_IMPORTANCE):
+            todo.append(it)
+    if len(todo) == 0:
+        return
+    budget = int(os.environ.get(ENV_SCORE_BUDGET, SCORE_BUDGET_DEFAULT))
+    done = 0
+    with make_llm_client(MakeLlmClientIn(cfg=cfg, timeout_s=SCORE_TIMEOUT_S)) as c:
+        client = cast(LlmClientLike, c)
+        for it in todo[:budget]:
+            try:
+                prompt = PROMPT_SCORE.format(title=it[K_TITLE], body=it[K_BODY_EN][:SCORE_BODY_LEN])
+                text = call_llm(CallLlmIn(client=client, cfg=cfg, prompt=prompt, tokens=SCORE_TOKENS))
+                m = IMP_RE.match(text.splitlines()[0].strip()) if text else None
+                if m:
+                    it[K_IMPORTANCE], it[K_IMPORTANCE_NOTE] = int(m.group(1)), m.group(2).strip()
+                    done += 1
+            except Exception as e:  # noqa: BLE001
+                err(WHERE_SCORE_TPL.format(url=it[K_URL]), e)
+    if done:
+        paths.write_json(paths.WriteJsonIn(path=OUT_NEWS_FILE, payload=data, indent=1))
+    say(PRINT_SCORE_TPL.format(done=done, total=len(todo)))
+
+
+# =========================================================================
+# 13. 标题中文灰注(E13-06,与正文 bodyZh 独立;本地 Ollama-only)
+# =========================================================================
+
+
+def translate_titles_missing() -> None:
+    """标题步(门直调的第四件):独立预算给缺灰注的标题补一行中文;不过校验宁可留空。"""
+    cfg = llm_config()
+    if cfg.base == "":
+        say(PRINT_TITLE_SKIP)
+        return
+    data = json.loads(OUT_NEWS_FILE.read_text(encoding=ENC_UTF8))
+    todo = []
+    for it in data[K_ITEMS]:
+        if it.get(K_TITLE) and not it.get(K_TITLE_ZH):
+            todo.append(it)
+    if len(todo) == 0:
+        say(PRINT_TITLE_NONE)
+        return
+    budget = int(os.environ.get(ENV_TITLE_BUDGET, TITLE_BUDGET_DEFAULT))
+    done = 0
+    with make_llm_client(MakeLlmClientIn(cfg=cfg, timeout_s=TITLE_TIMEOUT_S)) as c:
+        client = cast(LlmClientLike, c)
+        for it in todo[:budget]:
+            try:
+                out = call_title_llm(CallTitleIn(client=client, cfg=cfg,
+                                                 prompt=PROMPT_TITLE.format(title=it[K_TITLE])))
+                if title_ok(TitleCheckIn(out=out, source=it[K_TITLE])):
+                    it[K_TITLE_ZH] = out
+                    done += 1
+                else:
+                    say(PRINT_TITLE_BAD_TPL.format(url=it[K_URL], out=out[:PRINT_TITLE_BAD_LEN]))
+            except Exception as e:  # noqa: BLE001
+                err(WHERE_TITLE_TPL.format(url=it[K_URL]), e)
+    if done:
+        paths.write_json(paths.WriteJsonIn(path=OUT_NEWS_FILE, payload=data, indent=1))
+    line = PRINT_TITLE_DONE_TPL.format(done=done, total=len(todo))
+    if len(todo) > done:
+        line = line + PRINT_LEFT_TPL.format(n=len(todo) - done)
+    say(line)
+
+
+def title_ok(x: TitleCheckIn) -> bool:
+    """标题译文过关校验:非空、含中文字符、不比原标题离谱地长(拦「展开成大段解读」的失败样)。"""
+    if x.out == "":
+        return False
+    if CJK_RE.search(x.out) is None:
+        return False
+    return len(x.out) <= len(x.source) + TITLE_LEN_SLACK

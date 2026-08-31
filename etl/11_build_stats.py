@@ -44,9 +44,8 @@ NAMED_ANY: set = set().union(*_score.NAMED_STREAM_NOCS_BY_PROV.values()) if _sco
 EE_BY_NOC = _score.EE_BY_NOC
 
 # E14-02:担保率分子(单季度 LMIA 获批岗位)按 NOC 从季度源 xlsx 直接聚合(见 §sponsor_of 下方)。
-# NOC 正则复用 lmia/build_esdc_lmia_employers.py 的 _NOC_RE(单一来源,不复制口径;分域后按包路径 import)
-# (不需要像 08_score 那样走 importlib)。模块顶层无重活(只有函数/常量定义),import 安全。
-import lmia.build_esdc_lmia_employers as _lmia_mod
+# NOC 正则复用 lmia 域的 NOC_RE(单一来源,不复制口径;2026-08-30 lmia 全溶后改指 lmia/constants.py)。
+from lmia.constants import NOC_RE
 
 
 def channel_tier(noc: str, teer) -> str | None:
@@ -103,7 +102,7 @@ def _lmia_positions_by_noc(quarter: str) -> dict[str, int]:
         if len(cells) < 8 or not cells[2]:          # Employer 空 = 尾部注释/空行
             continue
         _prov, _stream, _employer, _addr, occ, _inc, _lmias, positions = cells[:8]
-        m = _lmia_mod._NOC_RE.match(occ)
+        m = NOC_RE.match(occ)
         if not m:
             continue
         try:

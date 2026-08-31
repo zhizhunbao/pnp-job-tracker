@@ -12,8 +12,17 @@ import json
 import os
 import time
 
-from paths.constants import ENC_UTF8, RETRY_BACKOFF, RETRY_DELAY_S, RETRY_MAX, TMP_SUFFIX
+from paths.constants import (ENC_UTF8, JSON_COMPACT_SEPS, RETRY_BACKOFF, RETRY_DELAY_S,
+                             RETRY_MAX, TMP_SUFFIX)
 from paths.scheme import WriteJsonIn
+
+
+def dumped_of(x: WriteJsonIn) -> str:
+    """按三格档位序列化(compact 档紧凑分隔零缩进;否则按 indent;sort_keys 独立叠加)。"""
+    if x.compact:
+        return json.dumps(x.payload, ensure_ascii=False, sort_keys=x.sort_keys,
+                          separators=JSON_COMPACT_SEPS)
+    return json.dumps(x.payload, ensure_ascii=False, sort_keys=x.sort_keys, indent=x.indent)
 
 
 def write_json(x: WriteJsonIn) -> None:
@@ -22,7 +31,7 @@ def write_json(x: WriteJsonIn) -> None:
     只重试 OSError(卷抖动);TypeError 等序列化错误照抛 —— 那是代码病不是环境病。
     """
     tmp = x.path.with_suffix(x.path.suffix + TMP_SUFFIX)
-    text = json.dumps(x.payload, ensure_ascii=False, indent=x.indent)
+    text = dumped_of(x)
     delay = RETRY_DELAY_S
     for attempt in range(RETRY_MAX):
         try:
