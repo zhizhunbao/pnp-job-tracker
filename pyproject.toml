@@ -107,6 +107,9 @@ max-args = 1
 "etl/ops/verify_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/ops/scan_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/log/functions.py" = ["PLR0913"]
+# employers 2026-08-30 立域:产出行字段名即 DB 列名(camelCase = mart 全表既有惯例),
+# N815 是形制取舍不是债;其余全严格零豁免。
+"etl/employers/scheme.py" = ["N815"]
 "etl/*/scheme.py" = ["PLR0913"]
 "etl/*/main.py" = ["PLR0913"]
 
