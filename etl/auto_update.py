@@ -1,17 +1,17 @@
 """
 auto_update — 纯调度器(不含任何源特定逻辑)。
 
-2026-08-29 批2(域即役,一域一门)升级为**混合多单元**:
-读环境变量 SOURCE(=角色名)→ 本容器要跑的单元 =
-  ① 旧役册 etl/sources/<SOURCE>/META(管线角色 jobbank/ats/build/backup 仍住这);
-  ② 所有声明 META["role"] == SOURCE 的域(etl/<域>/__init__.py,入口一律 etl/<域>/main.py)。
-每个单元各有自己的 interval/seed/after,循环里独立计时,互不牵连。
-任一步报错只记日志、不退出容器;一单元失败不影响别的单元。
+2026-08-31 批F 收轨为**域 META 单轨**(Frank「sources build 最后就清掉了」——
+旧役册 sources/ 全退役:jobbank/ats 立域、build/backup 收编 load 域 METAS):
+读环境变量 SOURCE(=角色名)→ 本容器要跑的单元 = 所有声明 role == SOURCE 的域役
+(etl/<域>/__init__.py 的 META 单役,或 METAS 多役 —— load 首例:build+backup 两役
+同域,入口同门不同 --only)。每个单元各有自己的 interval/seed/after,循环里独立计时,
+互不牵连;任一步报错只记日志、不退出容器;一单元失败不影响别的单元。
+SCRAPE_INTERVAL 随役册退役失效(META 即节奏真相;compose 里的残留行同批摘除)。
 
 日志:loguru 统一格式「时间 | 级别 | 源 | 消息」;子进程 stdout 逐行截获套同一前缀。
-环境变量:SOURCE(默认 jobbank)/ SCRAPE_INTERVAL(只覆盖旧役册单元)/ SEED_URL
+环境变量:SOURCE(默认 jobbank)/ SEED_URL
 """
-import importlib
 import importlib.util
 import os
 import subprocess
@@ -22,8 +22,7 @@ from pathlib import Path
 import httpx
 from loguru import logger
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))  # 让 `import sources.*` 可用(etl/ 进 path)
-import sources
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # etl/ 进 path(域包与 load 直调)
 from load.functions import trigger_alerts, trigger_seed
 
 SOURCE = os.environ.get("SOURCE", "jobbank")
@@ -35,8 +34,8 @@ FAIL_RETRY = 3600  # 失败轮短重试(2026-08-30 立):周更役炸一下不再
                    # 间歇 Errno 22 + 「失败照睡满周期」把 16/64 源拖成 15-25 天陈账;成功才睡满 interval
 ETL_DIR = Path(__file__).resolve().parent
 
-# 这些一级目录不是「域」,发现单元时跳过(sources=旧役册;clean=横切清洗层;其余非域)
-NOT_DOMAIN = {"sources", "clean", "__pycache__"}
+# 这些一级目录不是「域」,发现单元时跳过(clean=横切清洗层;其余非域)
+NOT_DOMAIN = {"clean", "__pycache__"}
 
 
 def mark_done(name: str) -> None:
@@ -62,23 +61,14 @@ log = logger.bind(source=SOURCE)
 
 
 def load_units() -> list[dict]:
-    """收集本角色的全部单元:旧役册(若有)+ 声明 role==SOURCE 的域。
+    """收集本角色的全部单元:声明 role==SOURCE 的域役(META 单役 / METAS 多役)。
 
     域的 META 只做声明(role/method/interval/seed),入口固定 etl/<域>/main.py ——
     「跑哪些步」是域自己的事(main.py 里),调度器不再关心步骤清单。
+    METAS(2026-08-31 批F,load 首例)= 一域多役:每条自带 name 与可选 only,
+    入口同门不同 --only(build 默认链 / backup 单点)。
     """
     units: list[dict] = []
-    if SOURCE in sources.NAMES:
-        meta = importlib.import_module(f"sources.{SOURCE}").META
-        units.append({
-            "name": SOURCE,
-            "steps": meta["steps"],
-            # SCRAPE_INTERVAL 只覆盖旧役册单元(compose 里 jobbank 等沿用此约定)
-            "interval": int(os.environ.get("SCRAPE_INTERVAL", meta.get("interval", 7200))),
-            "seed": meta.get("seed", False),
-            "after": meta.get("after"),
-            "ping": True,  # 旧役册单元 = 角色唯一单元,沿袭旧行为
-        })
     for ini in sorted(ETL_DIR.glob("*/__init__.py")):
         dom = ini.parent.name
         if dom in NOT_DOMAIN or dom.startswith("_"):
@@ -90,11 +80,19 @@ def load_units() -> list[dict]:
         except Exception as e:  # noqa: BLE001  # 某域 __init__ 坏了只丢该域,不拖垮容器
             log.error(f"✗ 读域 {dom} 的 META 失败({type(e).__name__}: {e}),跳过该域")
             continue
-        meta = getattr(mod, "META", None)
-        if isinstance(meta, dict) and meta.get("role") == SOURCE:
+        metas = getattr(mod, "METAS", None)
+        if metas is None:
+            single = getattr(mod, "META", None)
+            metas = [single] if isinstance(single, dict) else []
+        for meta in metas:
+            if not isinstance(meta, dict) or meta.get("role") != SOURCE:
+                continue
+            step = ["python", f"etl/{dom}/main.py"]
+            if meta.get("only"):
+                step = step + ["--only", meta["only"]]
             units.append({
-                "name": dom,
-                "steps": [["python", f"etl/{dom}/main.py"]],
+                "name": meta.get("name", dom),
+                "steps": [step],
                 "interval": int(meta.get("interval", 7200)),
                 "seed": meta.get("seed", False),
                 "after": meta.get("after"),
@@ -143,7 +141,8 @@ def run_once(meta: dict) -> bool:
             log.error(f"✗ alerts {out.status}: {out.body} —— 不影响本轮")
     # 监控心跳(E7-01):本轮全部成功且本单元持 ping 权 → ping healthchecks.io(env 缺省不 ping)。
     # 批2 拆多单元后 ping 权收紧:每角色只授一只(META["ping"]=True),防「兄弟单元的 ping
-    # 遮住本单元失败」—— pnp 角色授给 ops 哨兵(freshness 绿 = 数据真新鲜,B3-1 语义保真)。
+    # 遮住本单元失败」—— pnp 角色授给 pnp 域(链尾 freshness 绿 = 数据真新鲜,B3-1 语义保真;
+    # 2026-08-31 批D ops 拆散后 ping 权随 freshness 迁 pnp)。
     ping = os.environ.get(f"HEALTHCHECK_PING_{SOURCE.upper()}", "") if meta.get("ping") else ""
     if ping:
         try:
@@ -157,8 +156,7 @@ def run_once(meta: dict) -> bool:
 def main() -> None:
     units = load_units()
     if not units:
-        log.error(f"✗ 角色 {SOURCE} 没有任何单元(旧役册与域 META 都没命中);"
-                  f"旧役册可选: {', '.join(sources.NAMES)};退出")
+        log.error(f"✗ 角色 {SOURCE} 没有任何单元(没有域声明 role={SOURCE},看 etl/*/__init__.py);退出")
         raise SystemExit(1)
     for u in units:
         u["next"] = 0.0  # 0 = 启动即到点(与旧行为一致:容器一起来先跑一轮)

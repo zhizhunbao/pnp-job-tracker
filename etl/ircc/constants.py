@@ -565,7 +565,10 @@ DIFFICULTY_SCRIPT = paths.ROOT / "etl" / "clean" / "04e_difficulty.py"
 跨源生效)。它消费本域前三步的 raw + pnp 域 draws + 人工配额表,产出 processed/difficulty.json;
 11_build_stats 读它挂进 mart。路径经 paths 解析,不写死相对路径。"""
 
-DIFFICULTY_PY = "python"
+DIFFICULTY_PY_RETIRED_NOTE = "sys.executable"
+"""原 DIFFICULTY_PY = "python" 2026-08-31 批F 退役:裸 "python" 在 uv 环境下解析到基础解释器
+而非项目 .venv(jobbank 域实撞 ModuleNotFoundError;04e 只用标准库+paths 没炸纯属侥幸)——
+解释器改在 functions 侧取 sys.executable(constants 叶子不许 import sys),本常量只留沿革。"""
 """跑子进程用的解释器名 —— **原 _steps.STEPS 的 `["python", ...]` 原值照搬**
 (容器与 uv run 下都解析到同一个 venv python;换 sys.executable 是行为变更,不在本批范围)。"""
 

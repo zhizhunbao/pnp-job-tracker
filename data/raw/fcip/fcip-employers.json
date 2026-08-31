@@ -1,0 +1,894 @@
+{
+ "fetched": "2026-08-31",
+ "note": "各社区官方公示的指定雇主名单(批C 自动刷新,pilot_extractors 逐社区抽取;塌方保旧)。『指定』≠『在招』;excluded/de-designated 已在抽取层剔除;Peace Liard 官方待公示。",
+ "rows": [
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Distillerie Fils du Roy",
+   "location": "Paquetville",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Dixie Lee",
+   "location": "Grande-Anse",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Dixie Lee",
+   "location": "Neguac",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Huitre Beausoleil",
+   "location": "Neguac",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Dépanneur Rapido",
+   "location": "Tracadie",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Everest Plastik",
+   "location": "Tracadie",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Espace Découverte",
+   "location": "Shippagan",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Notre Marché",
+   "location": "St-Isidore",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Magasin chez Bernard",
+   "location": "Tracadie",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Les Résidences MGR Chiasson",
+   "location": "Shippagan",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Pinokkio pizzeria, resto, bar",
+   "location": "Shippagan",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Maisons Suprêmes",
+   "location": "Tracadie",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Mitchan Sushi",
+   "location": "Caraquet",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Pub 981",
+   "location": "Neguac",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Pizza Delight",
+   "location": "Caraquet",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Malia spa et villégiature",
+   "location": "Lamèque",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "David votre épicier Indépendant",
+   "location": "Shippagan",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Groupe Roberts",
+   "location": "Tracadie",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Manoir Edith Pinet",
+   "location": "Paquetville",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "McDonald’s",
+   "location": "Tracadie",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Oxford Frozen Food",
+   "location": "Bois-Gagnon",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Tim Hortons",
+   "location": "Shippagan",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Subway",
+   "location": "Shippagan",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Tim Hortons",
+   "location": "Paquetville",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Tim Hortons",
+   "location": "Neguac",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Sub Royal",
+   "location": "Shippagan",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "UNI Coopération financière",
+   "location": "Caraquet",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Tim Hortons",
+   "location": "Tracadie",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Tim Hortons",
+   "location": "Caraquet",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Station du parc",
+   "location": "Paquetville",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Yuzu Sushi",
+   "location": "Tracadie",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Restaurant Chez Raymond",
+   "location": "Neguac",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Résidence Tracadie",
+   "location": "",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Villa Beauséjour",
+   "location": "Caraquet",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Résidence Vue Sur Mer",
+   "location": "Shippagan",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Résidence au Grain de Jouvence",
+   "location": "Shippagan",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "name": "Résidence St Isidore",
+   "location": "",
+   "url": "https://inspirepeninsuleacadienne.ca/wp-content/uploads/2026/08/Liste-des-employeurs-designes-PPICF-12-aout-2026.pdf"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "name": "Subway Wawa",
+   "location": "",
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip/fcip-employers"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "name": "Magpie Relay Motel & Resort",
+   "location": "",
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip/fcip-employers"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "name": "Realtime Cannabis",
+   "location": "",
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip/fcip-employers"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "name": "A1 STOP INC - Esso",
+   "location": "",
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip/fcip-employers"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "name": "A&W White River",
+   "location": "",
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip/fcip-employers"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "name": "White River Bar and Grill",
+   "location": "",
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip/fcip-employers"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "name": "Circle K - Wawa",
+   "location": "",
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip/fcip-employers"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "name": "Select INN Motel",
+   "location": "",
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip/fcip-employers"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "name": "Superior Children's Centre",
+   "location": "",
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip/fcip-employers"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "name": "White River Motel",
+   "location": "",
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip/fcip-employers"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "name": "White River Subway",
+   "location": "",
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip/fcip-employers"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "name": "Tim Hortons Wawa",
+   "location": "",
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip/fcip-employers"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "name": "Chapleau Health Services",
+   "location": "",
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip/fcip-employers"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "name": "GreenFirst Forest Products",
+   "location": "",
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip/fcip-employers"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "name": "Best Northern Motel & Restaurant",
+   "location": "",
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip/fcip-employers"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "name": "Pepco Corporation",
+   "location": "",
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip/fcip-employers"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "name": "Garderie-Jolys (Les petites Grenouilles)",
+   "location": "",
+   "url": "https://stpierre2021.municipalwebsites.ca/ckfinder/connector?command=Proxy&lang=en&type=Files&currentFolder=%2F&hash=c245c263ce0eced480effe66bbede6b4d46c15ae&fileName=Designated%20Employers%20V3(1).pdf"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "name": "Division Scolaire Franco-manitobaine – ECRB",
+   "location": "",
+   "url": "https://stpierre2021.municipalwebsites.ca/ckfinder/connector?command=Proxy&lang=en&type=Files&currentFolder=%2F&hash=c245c263ce0eced480effe66bbede6b4d46c15ae&fileName=Designated%20Employers%20V3(1).pdf"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "name": "Boulangerie St Pierre Bakery",
+   "location": "",
+   "url": "https://stpierre2021.municipalwebsites.ca/ckfinder/connector?command=Proxy&lang=en&type=Files&currentFolder=%2F&hash=c245c263ce0eced480effe66bbede6b4d46c15ae&fileName=Designated%20Employers%20V3(1).pdf"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "name": "St Pierre Subway",
+   "location": "",
+   "url": "https://stpierre2021.municipalwebsites.ca/ckfinder/connector?command=Proxy&lang=en&type=Files&currentFolder=%2F&hash=c245c263ce0eced480effe66bbede6b4d46c15ae&fileName=Designated%20Employers%20V3(1).pdf"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "name": "St Pierre Bigway",
+   "location": "",
+   "url": "https://stpierre2021.municipalwebsites.ca/ckfinder/connector?command=Proxy&lang=en&type=Files&currentFolder=%2F&hash=c245c263ce0eced480effe66bbede6b4d46c15ae&fileName=Designated%20Employers%20V3(1).pdf"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "name": "Assiniboine Credit Union – Saint Pierre Jolys Branch",
+   "location": "",
+   "url": "https://stpierre2021.municipalwebsites.ca/ckfinder/connector?command=Proxy&lang=en&type=Files&currentFolder=%2F&hash=c245c263ce0eced480effe66bbede6b4d46c15ae&fileName=Designated%20Employers%20V3(1).pdf"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "1st place Auto-repairs",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Acera Insurance",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "ARC Programs",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Argus Hospitality Kelowna",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Best Western Kelowna",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Big White Ski Resort",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Brandt’s Creek Pub",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Bubbles Car Wash",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Bubbles Drycleaner Inc",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Centre Culturel Francophone de l’Okanagan",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Chevrolet Kelowna",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "COBS Bread Governors Market",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Day Star Wall Systems Inc",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "De Dutch Kelowna",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Devon Transport Ltd",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Dragon King restaurant",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "El Taquero",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Firdaus Entreprise LTD",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Fraser Valley Wireless",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Garderie des libellules",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Gateway Casino and Entertainment LTD",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Girlfriends Brow Bar",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Grizzli Winery",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Growth Financial Corp dba Working Ventures Insurance Solutions",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Heating & Air Conditionning",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Hôtel Ramada Kelowna",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Interior Health",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Jumping Jack Childcare",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Qualicare",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Kelowna East Investments Ltd",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Kemp Harvey Kelowna",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Kelowna Gospel Mission",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "London Drugs Kelowna",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Milani Plumbing",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Millwoods Cabinetery",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Noir Kitchen",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Oasis Inn",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Precision Automobile",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Provincial Health Services Authority PHSA",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Sandman Hotel Group | The Sutton Place Hotels",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Smalka cellars LTD",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Source Electrical Services Ltd.",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Specialty Bakery Kelowna",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Starwatch Audio Video",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Super 8 Hotel La Quinta Kelowna",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Super 8 Hotel West Kelowna",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "The Jammery",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Tiara Doors & Moulding",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Trail Tire Kelowna",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Valorous Construction Ltd",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Westwood Cabinetry",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Xperience Kelowna",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  }
+ ]
+}

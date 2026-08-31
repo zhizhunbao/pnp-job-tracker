@@ -75,15 +75,21 @@ max-args = 1
 "etl/noc/constants.py" = ["F601"]
 "etl/grades.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/run_now.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/upload_mart.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/backup_db.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/auto_update.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 # 横切层与旧役册(整目录存量)
 "etl/clean/*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 # crawl 2026-08-30 全溶:整目录豁免退役,只剩 walk/fetch_page/discover 复杂度拆分债(批C 还)。
 "etl/crawl/functions.py" = ["C901", "PLR0915"]
-"etl/sources/**/*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/pilot/extractors/*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+# 批F(2026-08-31 jobbank/ats 立域,搬家批):四个编号抓岗件迁域改名,存量债随行豁免,
+# 方言全溶随后续滚动批还账(摘行=就范完成);main/__init__ 新写零豁免
+"etl/jobbank/scrape_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/jobbank/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/ats/scrape_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+# extractors 私件群存量豁免随批E 拆三域从 pilot 分家(2026-08-31;函数体未动)。
+# 收口时试摘实测 25 条真债(D103×15/ANN003×2/PLR0913×4/C901×2 等)—— 子工「零债」结论
+# 是豁免行生效下的假象,豁免放回,债随后续滚动批还(摘行=就范完成)
+"etl/rcip/extractors/*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/fcip/extractors/*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 # 各域存量步骤文件豁免(按动词前缀点名)2026-08-31 批C 全数摘除:
 # ee/ircc/company/noc_facts/fsa/pilot 的步骤文件已全溶,新五件天然全严。
 # 2026-08-31 批D ops 拆散:四行 etl/ops/* 豁免随目录退役;归根的岗位链随行两件按存量豁免,
@@ -91,6 +97,8 @@ max-args = 1
 "etl/audit_data.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/verify_expired.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/check_shape.py" = ["C901"]
+# 锁测试随批F 从 sources/build 搬根(sources/** 整行豁免随役册退役,测试存量债单列)
+"etl/test_jobbank_lock.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/log/functions.py" = ["PLR0913"]
 # employers 2026-08-30 立域:产出行字段名即 DB 列名(camelCase = mart 全表既有惯例),
 # N815 是形制取舍不是债;其余全严格零豁免。

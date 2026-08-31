@@ -28,6 +28,10 @@ import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import paths
+from paths import JOBBANK_STORE_LOCK, jobbank_store_lock
+from load.constants import (BUILD_CHAIN_CMDS, BUILD_CMD_SEP, BUILD_FAIL_TPL, BUILD_LOCK_DONE,
+                            BUILD_LOCK_OK, BUILD_LOCK_WAIT_TPL, BUILD_STEP_TPL)
+from load.scheme import BuildChainIn
 from load.constants import (ALERTS_PATH, ALERTS_TIMEOUT_S, API_SEED_SUFFIX, ARG_QUIET, BACKUPS_DIR,
                             BACKUP_DONE_TPL, BACKUP_FAIL_TPL, BACKUP_OUT_TPL, BACKUP_PRUNE_TPL,
                             BACKUP_SKIP_MSG, COMMIT_ROW_TPL, CT_GZIP, DAY_S, DEFAULT_SEED_URL,
@@ -297,3 +301,26 @@ def skip_marked_of(subject: str) -> bool:
         if marker in lowered:
             return True
     return False
+
+
+# =========================================================================
+# 5. 跨源汇装链(build 役;2026-08-31 批F 自 sources/build/run_locked.py 收编)
+# =========================================================================
+
+
+def run_build_chain(x: BuildChainIn) -> None:
+    """跑一轮完整 build:整链持 Job Bank 仓锁(汇装看到一份稳定的 postings.json),
+    顺序执行 BUILD_CHAIN_CMDS(argv[0] 的 "python" 换成 sys.executable —— 裸名在 uv 环境
+    解析到基础解释器,jobbank 域实撞;容器里两者同义),一步失败 sys.exit(rc) 中止本轮(SystemExit 穿透门,
+    锁随进程退出由内核释放);链尾直调 upload_mart(原役册末步子进程自调的收编形)。"""
+    x.say(BUILD_LOCK_WAIT_TPL.format(path=JOBBANK_STORE_LOCK))
+    with jobbank_store_lock(JOBBANK_STORE_LOCK):
+        x.say(BUILD_LOCK_OK)
+        for cmd in BUILD_CHAIN_CMDS:
+            x.say(BUILD_STEP_TPL.format(cmd=BUILD_CMD_SEP.join(cmd)))
+            result = subprocess.run([sys.executable] + list(cmd[1:]), cwd=paths.ROOT)
+            if result.returncode:
+                x.say(BUILD_FAIL_TPL.format(rc=result.returncode))
+                sys.exit(result.returncode)
+        upload_mart(UploadIn(say=x.say))
+    x.say(BUILD_LOCK_DONE)

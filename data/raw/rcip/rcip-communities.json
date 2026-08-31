@@ -1,0 +1,173 @@
+{
+ "fetched": "2026-08-31",
+ "source": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots.html",
+ "note": "IRCC 官方参与社区名单(fed-rcip crawl 缓存解析)。cities=人工核对的 Job Bank 城市映射,空=区域型社区界线未举证不打标(宁漏勿错);试点须雇主被社区指定,城市命中只是粗筛信号。",
+ "rows": [
+  {
+   "name": "Pictou County, NS",
+   "province": "NS",
+   "type": "RCIP",
+   "cities": [
+    "New Glasgow",
+    "Pictou",
+    "Stellarton",
+    "Trenton",
+    "Westville"
+   ],
+   "url": "https://pictoucountypartnership.com/rcip/"
+  },
+  {
+   "name": "North Bay and Area",
+   "province": "ON",
+   "type": "RCIP",
+   "cities": [
+    "North Bay"
+   ],
+   "url": "https://nbrcip.ca/"
+  },
+  {
+   "name": "Sudbury, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "cities": [
+    "Sudbury",
+    "Greater Sudbury"
+   ],
+   "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
+  },
+  {
+   "name": "Timmins, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "cities": [
+    "Timmins"
+   ],
+   "url": "https://timminsedc.com/immigration/"
+  },
+  {
+   "name": "Sault Ste. Marie, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "cities": [
+    "Sault Ste. Marie"
+   ],
+   "url": "https://welcometossm.com/rcip/"
+  },
+  {
+   "name": "Thunder Bay, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "cities": [
+    "Thunder Bay"
+   ],
+   "url": "https://gotothunderbay.ca/why-thunder-bay/immigration/"
+  },
+  {
+   "name": "Steinbach, MB",
+   "province": "MB",
+   "type": "RCIP",
+   "cities": [
+    "Steinbach"
+   ],
+   "url": "https://steinbachedc.com/rcip/"
+  },
+  {
+   "name": "Altona/Rhineland, MB",
+   "province": "MB",
+   "type": "RCIP",
+   "cities": [
+    "Altona"
+   ],
+   "url": "https://ared-rpga.com/immigration/rcip/"
+  },
+  {
+   "name": "Brandon, MB",
+   "province": "MB",
+   "type": "RCIP",
+   "cities": [
+    "Brandon"
+   ],
+   "url": "https://economicdevelopmentbrandon.com/rcip/rcip"
+  },
+  {
+   "name": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "RCIP",
+   "cities": [
+    "Moose Jaw"
+   ],
+   "url": "https://rcip.mjchamber.com/"
+  },
+  {
+   "name": "Claresholm, AB",
+   "province": "AB",
+   "type": "RCIP",
+   "cities": [
+    "Claresholm",
+    "Granum",
+    "Stavely"
+   ],
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "name": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "cities": [
+    "Nelson",
+    "Castlegar",
+    "Trail",
+    "Rossland",
+    "Kaslo",
+    "Nakusp",
+    "Creston",
+    "Grand Forks"
+   ],
+   "url": "https://wk-rnip.ca/"
+  },
+  {
+   "name": "North Okanagan Shuswap, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "cities": [
+    "Vernon",
+    "Salmon Arm",
+    "Armstrong",
+    "Enderby",
+    "Lumby",
+    "Coldstream",
+    "Lavington",
+    "Sicamous",
+    "Falkland",
+    "Sorrento",
+    "Blind Bay",
+    "Spallumcheen",
+    "Grindrod",
+    "Cherryville",
+    "Malakwa",
+    "Celista",
+    "Scotch Creek",
+    "Anglemont",
+    "Ashton Creek",
+    "Deep Creek"
+   ],
+   "url": "https://rcipnorthokanaganshuswap.com/"
+  },
+  {
+   "name": "Peace Liard, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "cities": [
+    "Fort St. John",
+    "Dawson Creek",
+    "Fort Nelson",
+    "Chetwynd",
+    "Tumbler Ridge",
+    "Taylor",
+    "Pouce Coupe",
+    "Hudson's Hope"
+   ],
+   "url": "https://www.nebcimmigration.ca/"
+  }
+ ]
+}

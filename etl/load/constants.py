@@ -215,3 +215,61 @@ DEPLOY_PENDING_SHOW_MAX = 8
 
 DEPLOY_PENDING_ROW_LEN = 110
 """差集清单单行截断长度(只影响打印)。"""
+
+# =========================================================================
+# 5. 跨源汇装链(build 役;2026-08-31 批F 自 sources/build 役册收编,sources 清仓)
+# =========================================================================
+
+BUILD_CHAIN_CMDS = (
+    ("python", "etl/clean/05e_flag_apprentice.py"),
+    ("python", "etl/verify_expired.py"),
+    ("python", "etl/clean/04c_clean_ats_locations.py"),
+    ("python", "etl/clean/04d_clean_salary.py"),
+    ("python", "etl/clean/05c_flag_aip.py"),
+    ("python", "etl/rcip/main.py", "--only", "communities"),
+    ("python", "etl/fcip/main.py", "--only", "communities"),
+    ("python", "etl/clean/05f_flag_pilot.py"),
+    ("python", "etl/clean/05d_noc_sanity.py"),
+    ("python", "etl/08_score.py"),
+    ("python", "etl/09_build_mart.py"),
+    ("python", "etl/10_build_rankings.py"),
+    ("python", "etl/11_build_stats.py"),
+    ("python", "etl/employers/main.py"),
+)
+"""build 役(非抓取源,灌库唯一角色)的跨源汇装链:清洗打标 → 评分 → mart → 榜单/统计 →
+雇主池;链尾 upload 在 run_build_chain 里直调(原役册末步 `load/main.py --only upload`
+的子进程自调,收编后同进程直调,语义不变)。原 sources/build/__init__.py 的逐步注释
+逐字折此(2026-08-31 批F):
+  05e_flag_apprentice   B1-3:官方标「不要经验/带训」+ 学徒标题 → apprentice_friendly
+  verify_expired        #124 批C:死岗验尸(周节奏,7 天内跑过=秒退;判死帖 09 剔除出 mart);
+                        2026-08-31 批D ops 拆散归根
+  04c_clean_ats_locations / 04d_clean_salary / 05c_flag_aip   跨源清洗与打标
+  rcip/fcip communities E6-11:试点社区名单(读 fed-rcip crawl 缓存,改版保旧不拦役);
+                        批C 溶进 pilot 域、批E 拆三域一步变两步,顺序不动仍在 05f 之前
+  05f_flag_pilot        E6-11:城市×省 → jobs.pilot/pilotCommunity(05c 同款一字段一脚本)
+  05d_noc_sanity        #47:标题↔NOC 失配护栏(泛词标题×TEER0/1×低薪 → NOC 置空转未分类)
+                        🔴 必须排在 04d 之后:它的判据里有「低薪」,读的是 04d 算出的 salaryAnnual
+  (官网富化已拆独立 enrich 角色,2026-07-16「分开来跑」拍板:每轮 10-17 分钟拖垮 seed 时效;
+  本链只消费它落好的 company_enrich.json(09 合并),不再现抓)
+  08 → 09 → 10 → 11     评分 → mart → 榜单(E5-02 读 mart 纯聚合)→ 地区统计(E5-04 同)
+  employers/main        雇主池两表(雇主板批一,2026-08-30:读 mart+LMIA+postings 纯聚合,须在 upload 前)
+整链持 Job Bank 仓锁(原 run_locked 同款:锁不拆成加锁/解锁两步 —— 任一步异常时调度层
+会立即中止,解锁步没机会执行;内核文件锁随进程退出自动释放)。"""
+
+BUILD_CMD_SEP = " "
+"""步骤 argv 打印拼接符。"""
+
+BUILD_LOCK_WAIT_TPL = "LOCK Job Bank store: {path} (waiting if producer is writing)"
+"""持锁前报行(生产者在写就等)。"""
+
+BUILD_LOCK_OK = "LOCK acquired: build round sees one stable postings.json"
+"""持锁成功报行。"""
+
+BUILD_STEP_TPL = "→ {cmd}"
+"""逐步报行。"""
+
+BUILD_FAIL_TPL = "✗ build step failed ({rc}); lock will be released"
+"""步骤失败报行(exit 非零中止本轮,锁随进程释放)。"""
+
+BUILD_LOCK_DONE = "LOCK released: jobbank may publish its next parsed snapshot"
+"""收口报行。"""

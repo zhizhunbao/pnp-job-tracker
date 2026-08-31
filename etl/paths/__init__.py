@@ -6,14 +6,15 @@ paths 域:data/ 布局唯一真相 + 原子写盘(基础设施叶,2026-08-30 由
 写盘惯例(2026-08-30 立,样张 pnp/build_ab.py):一律 paths.write_json —— 原子 +
 Errno 22 有界重试(Windows 绑定卷间歇抖动,48h 实测 12 次的病根药)。
 """
-from paths.constants import (AIP, COMPANIES, CRAWL, DATA, DLI, EE, FSA, IRCC, JVWS, LMIA, MART,
-                             NEWS, NOC, PILOT, PNP, POLICY, PROCESSED, PROCESSED_ATS,
-                             PROCESSED_JOBBANK, RAW, RAW_ATS, RAW_COMPANIES, RAW_JOBBANK, ROOT,
-                             WAGES)
-from paths.functions import write_json
+from paths.constants import (AIP, COMPANIES, CRAWL, DATA, DLI, EE, FCIP, FSA, IRCC,
+                             JOBBANK_STORE_LOCK, JVWS, LMIA, MART, NEWS, NOC, PILOT, PNP,
+                             POLICY, PROCESSED, PROCESSED_ATS, PROCESSED_JOBBANK, RAW, RAW_ATS,
+                             RAW_COMPANIES, RAW_JOBBANK, RCIP, ROOT, WAGES)
+from paths.functions import jobbank_store_lock, write_json
 from paths.scheme import WriteJsonIn
 
-BUCKET = (AIP, COMPANIES, CRAWL, DATA, DLI, EE, FSA, IRCC, JVWS, LMIA, MART, NEWS, NOC, PILOT,
-          PNP, POLICY, PROCESSED, PROCESSED_ATS, PROCESSED_JOBBANK, RAW, RAW_ATS, RAW_COMPANIES,
-          RAW_JOBBANK, ROOT, WAGES, WriteJsonIn, write_json)
+BUCKET = (AIP, COMPANIES, CRAWL, DATA, DLI, EE, FCIP, FSA, IRCC, JOBBANK_STORE_LOCK, JVWS,
+          LMIA, MART, NEWS, NOC, PILOT, PNP, POLICY, PROCESSED, PROCESSED_ATS,
+          PROCESSED_JOBBANK, RAW, RAW_ATS, RAW_COMPANIES, RAW_JOBBANK, RCIP, ROOT, WAGES,
+          WriteJsonIn, jobbank_store_lock, write_json)
 """桶的全部出口(再导出名单;F401 的显式消费声明 —— 加常量记得同步两处)。"""

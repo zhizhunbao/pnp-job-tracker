@@ -51,11 +51,13 @@ IN_EXPIRED = paths.PROCESSED_JOBBANK / "expired_ids.json"   # #124 批C:ops/veri
 IN_ATS_COMPANIES = paths.COMPANIES                       # processed/ats/.../companies/<slug>/
 IN_SCORED = paths.PROCESSED / "all-scored.json"
 IN_AIP = paths.AIP / "aip-designated-employers.json"
-IN_PILOT = paths.PILOT / "pilot-communities.json"   # RCIP/FCIP 试点社区(build_pilots 产,E6-11)
+# 批E(2026-08-31 pilot 拆三域 rcip/fcip,Frank「拆成三个 很少有人有法语」):试点四类产物
+# 一分为二,汇装读**并集**(mart 表形状不变;aip 两件路径未动)。顺序 rcip 前 fcip 后 = 旧文件内相对序
+IN_PILOT = [paths.RCIP / "rcip-communities.json", paths.FCIP / "fcip-communities.json"]   # RCIP/FCIP 试点社区(E6-11)
 IN_STATCAN = paths.IRCC / "statcan_tr_prov.json"    # 竞争卡存量(StatCan 常住估算,方案C 2026-08-15)
-IN_PILOT_EMP = paths.PILOT / "pilot-employers.json"     # 批B:社区指定雇主(人工核对整理,agent 抽取+抽查)
-IN_PILOT_OCC = paths.PILOT / "pilot-occupations.json"   # 批B:社区 × 职业清单
-IN_PILOT_QUOTA = paths.PILOT / "pilot-quota.json"       # 社区名额状态(build_pilot_quota.py 周更,quote-anchored)
+IN_PILOT_EMP = [paths.RCIP / "rcip-employers.json", paths.FCIP / "fcip-employers.json"]     # 批B:社区指定雇主(人工核对整理,agent 抽取+抽查)
+IN_PILOT_OCC = [paths.RCIP / "rcip-occupations.json", paths.FCIP / "fcip-occupations.json"]   # 批B:社区 × 职业清单
+IN_PILOT_QUOTA = [paths.RCIP / "rcip-quota.json", paths.FCIP / "fcip-quota.json"]       # 社区名额状态(quota 步周更,quote-anchored)
 IN_NL_EMPLOYERS = paths.PNP / "nl-employers.json"  # NL 官网指定雇主 645 家(C4-W4,含申报 NOC)
 IN_WAGES = paths.WAGES / "wages.json"   # NOC×省 中位工资(wages/build_esdc_wage_medians.py 从 ESDC 开放数据建)
 IN_PNP = paths.PNP                      # raw/pnp/*.json(各省具名通道:每文件一条通道)
@@ -574,20 +576,24 @@ def build_ee_language_grid(src) -> list:
     return out
 
 
-def build_pilot_quota(src, communities_src) -> list:
-    """RCIP/FCIP 社区名额状态(build_pilot_quota.py 产)→ pilot_quota 表。
+def build_pilot_quota(srcs, communities_srcs) -> list:
+    """RCIP/FCIP 社区名额状态(rcip/fcip 两域 quota 步产,批E 起两文件读并集)→ pilot_quota 表。
     一行 = 一社区(noc 空,社区级名额状态)或官网给的更细粒度(社区 × NOC 满额行,noc 非空)。
     宁缺勿猜:数值只透传官网原句里的数,缺 = None(官网没写 ≠ 0,firstCome 同理只有 True/None);
-    type 从 pilot-communities 关联,身兼两制 → 'RCIP+FCIP'(同 jobs.pilot 口径)。
-    文件缺失 → [](seed 侧 -1 跳过保留旧行);文件在但内容坏/0 行 → 抛错断整个 mart,
-    不许「清空+重灌 0 行」把生产表静默抹掉(22c8d6a 空灌事故同款防线)。
+    type 从两份 communities **并集**关联,身兼两制 → 'RCIP+FCIP'(同 jobs.pilot 口径;
+    Sudbury/Timmins 的 quota 行住 rcip 文件,type 仍须并集才判得出双身份)。
+    文件全缺 → [](seed 侧 -1 跳过保留旧行);文件在但**并集** 0 行 → 抛错断整个 mart,
+    不许「清空+重灌 0 行」把生产表静默抹掉(22c8d6a 空灌事故同款防线;
+    ⚠ 断言在并集不在单文件 —— fcip 四站官网全文不提名额,fcip-quota 0 行是举证过的事实)。
     """
-    if not src.exists():
+    live = [s for s in srcs if s.exists()]
+    if not live:
         return []
-    data = json.loads(src.read_text(encoding="utf-8"))
 
     types: dict[str, set] = {}
-    if communities_src.exists():
+    for communities_src in communities_srcs:
+        if not communities_src.exists():
+            continue
         for r in json.loads(communities_src.read_text(encoding="utf-8")).get("rows", []):
             types.setdefault(r["name"], set()).add(r.get("type", ""))
     type_of = {n: "+".join(t for t in ("RCIP", "FCIP") if t in s) for n, s in types.items()}
@@ -596,19 +602,21 @@ def build_pilot_quota(src, communities_src) -> list:
              "perIntake": None, "perIntakeQuote": "", "perIntakeUrl": "",
              "remaining": None, "remainingQuote": "", "remainingUrl": ""}
     out: list = []
-    for r in data.get("communities", []):
-        out.append({"community": r["community"], "province": r.get("province", ""),
-                    "type": type_of.get(r["community"], ""), "noc": "", "status": "",
-                    **{k: r.get(k, v) for k, v in blank.items()},
-                    "quote": "", "url": "", "asOf": r.get("asOf", "")})
-    for r in data.get("occupations", []):
-        out.append({"community": r["community"], "province": r.get("province", ""),
-                    "type": type_of.get(r["community"], ""), "noc": r.get("noc", ""),
-                    "status": r.get("status", ""), **blank,
-                    "quote": r.get("quote", ""), "url": r.get("url", ""), "asOf": r.get("asOf", "")})
+    for src in live:
+        data = json.loads(src.read_text(encoding="utf-8"))
+        for r in data.get("communities", []):
+            out.append({"community": r["community"], "province": r.get("province", ""),
+                        "type": type_of.get(r["community"], ""), "noc": "", "status": "",
+                        **{k: r.get(k, v) for k, v in blank.items()},
+                        "quote": "", "url": "", "asOf": r.get("asOf", "")})
+        for r in data.get("occupations", []):
+            out.append({"community": r["community"], "province": r.get("province", ""),
+                        "type": type_of.get(r["community"], ""), "noc": r.get("noc", ""),
+                        "status": r.get("status", ""), **blank,
+                        "quote": r.get("quote", ""), "url": r.get("url", ""), "asOf": r.get("asOf", "")})
 
     # 脚本级自检(抽取器契约,坏一行整步失败,别带病入库)
-    assert out, f"pilot_quota: {src} 存在但产出 0 行 —— 抽取器契约破了,不许空灌"
+    assert out, f"pilot_quota: {live} 存在但并集 0 行 —— 抽取器契约破了,不许空灌"
     for r in out:
         assert r["community"] and r["province"] and r["asOf"], f"pilot_quota 必填缺失: {r}"
         for k in ("firstCome", "perIntake", "remaining"):
@@ -668,8 +676,10 @@ def build():
 
     # E6-11 批C 尾巴:社区在收职业集合(岗位 NOC × 社区清单交叉 → jobs.pilotOcc,判定在此层:NOC 08 评分后才定)
     pilot_occ_sets: dict[str, set[str]] = {}
-    if IN_PILOT_OCC.exists():
-        for _r in json.loads(IN_PILOT_OCC.read_text(encoding="utf-8")).get("rows", []):
+    for _pf in IN_PILOT_OCC:
+        if not _pf.exists():
+            continue
+        for _r in json.loads(_pf.read_text(encoding="utf-8")).get("rows", []):
             if _r.get("noc"):
                 pilot_occ_sets.setdefault(_r["community"], set()).add(str(_r["noc"]))
 
@@ -1306,15 +1316,19 @@ def build():
 
     # RCIP/FCIP 试点社区维度(E6-11):cities 顿号连接,空=界线未举证不打标
     pilot_communities: list[dict] = []
-    if IN_PILOT.exists():
-        _pl = json.loads(IN_PILOT.read_text(encoding="utf-8"))
-        pilot_communities = [{"name": r["name"], "province": r["province"], "type": r["type"],
-                              "cities": "、".join(r.get("cities") or []), "url": r.get("url", ""),
-                              "fetched": _pl.get("fetched", "")} for r in _pl.get("rows", [])]
+    for _pf in IN_PILOT:
+        if not _pf.exists():
+            continue
+        _pl = json.loads(_pf.read_text(encoding="utf-8"))
+        pilot_communities += [{"name": r["name"], "province": r["province"], "type": r["type"],
+                               "cities": "、".join(r.get("cities") or []), "url": r.get("url", ""),
+                               "fetched": _pl.get("fetched", "")} for r in _pl.get("rows", [])]
     # 批B:社区指定雇主并入 designated_employers 维度(source=RCIP/FCIP,location=社区名,判定层按 source 显示制度名);
     # 社区 × 职业清单单独成表(sector_only 行留痕不硬编码)
-    if IN_PILOT_EMP.exists():
-        _pe = json.loads(IN_PILOT_EMP.read_text(encoding="utf-8"))
+    for _pf in IN_PILOT_EMP:
+        if not _pf.exists():
+            continue
+        _pe = json.loads(_pf.read_text(encoding="utf-8"))
         for r in _pe.get("rows", []):
             designated.append({"name": r["name"], "province": r.get("province", ""),
                                "location": r.get("community", ""), "isTech": False,
@@ -1337,13 +1351,15 @@ def build():
     designated = _deduped
 
     pilot_occupations_mart: list[dict] = []
-    if IN_PILOT_OCC.exists():
-        _po = json.loads(IN_PILOT_OCC.read_text(encoding="utf-8"))
-        pilot_occupations_mart = [{"community": r["community"], "province": r.get("province", ""),
-                                   "type": r.get("type", ""), "noc": r.get("noc", "") or "",
-                                   "title": r.get("title", ""), "sectorOnly": bool(r.get("sectorOnly")),
-                                   "url": r.get("url", ""), "fetched": _po.get("fetched", "")}
-                                  for r in _po.get("rows", [])]
+    for _pf in IN_PILOT_OCC:
+        if not _pf.exists():
+            continue
+        _po = json.loads(_pf.read_text(encoding="utf-8"))
+        pilot_occupations_mart += [{"community": r["community"], "province": r.get("province", ""),
+                                    "type": r.get("type", ""), "noc": r.get("noc", "") or "",
+                                    "title": r.get("title", ""), "sectorOnly": bool(r.get("sectorOnly")),
+                                    "url": r.get("url", ""), "fetched": _po.get("fetched", "")}
+                                   for r in _po.get("rows", [])]
 
     return {
         "companies": list(companies.values()), "jobs": jobs, "closed_jobs": closed_jobs,

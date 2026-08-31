@@ -46,7 +46,7 @@ services:
     environment:
       SOURCE: jobbank
       HEALTHCHECK_PING_JOBBANK: ${HEALTHCHECK_PING_JOBBANK:-}
-      SCRAPE_INTERVAL: '3600'      # 1h(2026-07-16 用户要求数据按小时更新;原 2h)
+      # SCRAPE_INTERVAL 2026-08-31 批F 退役:节奏真相=域 META(jobbank 域 3600;2026-07-16 拍板文字随迁)
       SINCE_DAYS: '3'
       TZ: EST5EDT                  # 日志用东部时区(glibc 原生,无需 tzdata);postgres 保持 UTC
 
@@ -55,7 +55,7 @@ services:
     environment:
       SOURCE: pnp
       HEALTHCHECK_PING_PNP: ${HEALTHCHECK_PING_PNP:-}
-      SCRAPE_INTERVAL: '3600'      # 1h(#128 Frank「都改成小时更,不知道什么时候有新数据」;原周更——抽选结果最多滞后一周不可接受)
+      # SCRAPE_INTERVAL 2026-08-31 批F 退役:节奏真相=pnp 域 META(3600;#128 拍板文字随迁,批2 周更回归已修)
       TZ: EST5EDT
 
   crawl:                           # 九省官方站 URL 探索 + 站点地图 diff(政策雷达;只产 data/crawl/,不灌库)
@@ -66,7 +66,7 @@ services:
     environment:
       SOURCE: crawl
       HEALTHCHECK_PING_CRAWL: ${HEALTHCHECK_PING_CRAWL:-}
-      SCRAPE_INTERVAL: '3600'      # 1h(2026-08-03 Frank 拍板,周更→日更→时更三连升;#128 同风格。负载 ~1,740 页/轮≈单站 0.2 req/s,有墙站并发已压 1)
+      # SCRAPE_INTERVAL 2026-08-31 批F 退役:节奏真相=crawl 域 META(3600;08-03 拍板与负载注记随迁)
       BROWSER_HEADLESS: '1'
       TZ: EST5EDT
 
@@ -75,7 +75,7 @@ services:
     environment:
       SOURCE: ee
       HEALTHCHECK_PING_EE: ${HEALTHCHECK_PING_EE:-}
-      SCRAPE_INTERVAL: '3600'      # 1h(#128 同拍;原月更——EE 抽选两周一轮,月更会漏)
+      # SCRAPE_INTERVAL 2026-08-31 批F 退役:节奏真相=ee 域 META(3600;#128 文字随迁,批2 月更回归已修)
       TZ: EST5EDT
     # 回退:源站重新上 Akamai 时恢复 crawl 重镜像(build dockerfile: docker/etl/crawl/Dockerfile + BROWSER_HEADLESS=1)
 
@@ -84,7 +84,7 @@ services:
     environment:
       SOURCE: news
       HEALTHCHECK_PING_NEWS: ${HEALTHCHECK_PING_NEWS:-}
-      SCRAPE_INTERVAL: '3600'      # 1h(#128 同拍;原 12h——公告发出后 1 小时内上站)
+      # SCRAPE_INTERVAL 2026-08-31 批F 退役:节奏真相=news 域 META(3600;#128 文字随迁,批2 12h 回归已修)
       # 翻译策略(Frank 2026-07-18 终版):ETL 预翻停用(budget 0)——翻译走线上实时(朋友 /api/translate,懒翻+DB缓存);
       # 恢复批量=把 NEWS_TRANSLATE_BUDGET 调回 >0(本地 NEWS_LLM_BASE / Anthropic 双后端仍在)
       NEWS_TRANSLATE_BUDGET: ${NEWS_TRANSLATE_BUDGET:-0}
@@ -100,21 +100,21 @@ services:
   #   <<: *etl
   #   environment:
   #     SOURCE: enrich
-  #     SCRAPE_INTERVAL: '21600'   # 6h
+  #     (SCRAPE_INTERVAL 已随批F 退役;亮回时节奏写 company 域 META)
   #     TZ: EST5EDT
 
   ircc:                            # IRCC 开放数据月更(E12-07 #116 难度指数:学签/工签存量+PNP 登陆;配额=人工维护表不在此)
     <<: *etl
     environment:
       SOURCE: ircc
-      SCRAPE_INTERVAL: '86400'     # 日更(#128:IRCC 开放数据官方月度发布,小时抓=每小时重下几十 MB XLSX 纯空转;日更当兜底)
+      # SCRAPE_INTERVAL 2026-08-31 批F 退役:节奏真相=ircc 域 META(86400;#128 文字随迁)
       TZ: EST5EDT
 
   backup:                          # 每日 pg_dump 生产库 → backups/(E7-01;家里机=运维盒)
     <<: *etl
     environment:
       SOURCE: backup
-      SCRAPE_INTERVAL: '86400'     # 日更
+      # SCRAPE_INTERVAL 2026-08-31 批F 退役:节奏真相=load 域 METAS backup 役(86400)
       BACKUP_DATABASE_URI: ${BACKUP_DATABASE_URI:-}   # docker/.env 注入 Supabase 连接串;空=跳过
       HEALTHCHECK_PING_BACKUP: ${HEALTHCHECK_PING_BACKUP:-}
       TZ: EST5EDT
@@ -124,7 +124,7 @@ services:
     environment:
       SOURCE: build
       HEALTHCHECK_PING_BUILD: ${HEALTHCHECK_PING_BUILD:-}
-      SCRAPE_INTERVAL: '3600'      # 1h 兜底(#128;正常由 jobbank 新轮触发,这是上游卡住时的保底灌库节奏)
+      # SCRAPE_INTERVAL 2026-08-31 批F 退役:节奏真相=load 域 METAS build 役(3600 兜底 + after=jobbank;#128 文字随迁)
       SEED_URL: ${SEED_URL:-http://host.docker.internal:3001/api/seed}  # 默认灌 docker cms(:3001);R3 起步档在 docker/.env 覆写为云端 https://pnp-cms.onrender.com/api/seed
       SEED_TOKEN: ${SEED_TOKEN:-}  # 云端 seed 鉴权(docker/.env 注入;本地空=不带头);upload_mart 推 /api/mart 同用这对(E7-04,Supabase Storage 已退役)
       TZ: EST5EDT                  # 日志东部时区

@@ -38,7 +38,7 @@ from fetch.constants import HDR_UA, PARSER_HTML, WS_RE
 from crawl.functions import convert_md
 from crawl.scheme import ConvertIn
 from ircc.constants import (
-    BLANK_VALUES, COMMA, COORD_SEP, COORD_TPL, DIFFICULTY_FAIL_TPL, DIFFICULTY_PY,
+    BLANK_VALUES, COMMA, COORD_SEP, COORD_TPL, DIFFICULTY_FAIL_TPL,
     DIFFICULTY_SCRIPT, ENC_UTF8, FEE_FACTOR, FEE_OP, FEE_UNIT, FEES_BIO_ITEMS, FEES_BULLET_TPL,
     FEES_DONE_TPL, FEES_DROP_TAGS, FEES_FAIL_HEADER, FEES_ITEMS, FEES_NOTE, FEES_PRINT_OUT_TPL,
     FEES_PROBLEM_ITEM_TPL, FEES_PROBLEM_NO_SECTION_TPL, FEES_PROBLEM_RPRF_TPL, FEES_PROGRAM,
@@ -699,7 +699,7 @@ def build_clean_difficulty() -> None:
     子进程 stdout 直通(不 capture),与旧 _steps 一模一样;返回非零 → 抛错,
     「一步失败中止本轮」的语义与旧 _steps 逐字相同。
     """
-    proc = subprocess.run([DIFFICULTY_PY, str(DIFFICULTY_SCRIPT)])
+    proc = subprocess.run([sys.executable, str(DIFFICULTY_SCRIPT)])
     if proc.returncode != 0:
         raise RuntimeError(DIFFICULTY_FAIL_TPL.format(code=proc.returncode))
 

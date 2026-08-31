@@ -14,7 +14,6 @@ OUT : data/processed/jobbank/postings.json
 Usage:  uv run python etl/clean/05_parse_jobbank.py [--since-days N]
 """
 import argparse
-import importlib
 import json
 import os
 import re
@@ -26,11 +25,10 @@ from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(paths / 05 在那)
 import paths
-from sources._jobbank_lock import JOBBANK_STORE_LOCK, jobbank_store_lock
+from paths import JOBBANK_STORE_LOCK, jobbank_store_lock  # 2026-08-31 批F:锁自 sources 收编 paths 基建叶
 
-_s05 = importlib.import_module("05_scrape_jobbank")  # 模块名以数字开头 → 只能 importlib
-parse_article = _s05.parse_article                  # 单一解析逻辑,不重复实现
-parse_date = _s05.parse_date
+# 2026-08-31 批F:抓取件迁 jobbank 域(编号名退役,importlib 数字名黑招随之退役)
+from jobbank.scrape_jobbank_postings import parse_article, parse_date  # 单一解析逻辑,不重复实现
 
 # 只覆盖原始抓取字段 + posting_id(键的可靠来源),保留下游(04c/04d/05b)算出的
 # country/district/salaryAnnual/address… 衍生字段。
@@ -138,7 +136,7 @@ def main() -> None:
 
     # 原始 HTML 解析不碰共享 store,放锁外做。读旧 store→合并→原子替换是一个写事务:
     # 若 build 已开轮就在这里等;若本事务先拿锁,build 会等到新帖完整落盘后再清洗。
-    with jobbank_store_lock():
+    with jobbank_store_lock(JOBBANK_STORE_LOCK):
         by_id = load_postings()
         base = len(by_id)
         added = updated = skipped_old = 0

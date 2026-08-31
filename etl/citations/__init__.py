@@ -12,7 +12,7 @@ interval=本域一轮的间隔秒;入口固定 etl/citations/main.py,步骤清�
 META = {
     "role": "pnp",
     "method": "httpx",
-    "interval": 604800,        # 周更(原 ops 役同频,着陆页 title/meta 极少变)
+    "interval": 3600,          # 1h(2026-08-31 Frank「都改成小时更新也不费劲」;原周更 —— 23 个 URL 一轮,量极小)
     "seed": False,             # 只刷 raw 注册表,build 角色统一灌库
     "ping": False,  # ping 权在 pnp 角色链尾的 freshness 哨兵(lead 批D 收口拍板),防遮蔽
 }

@@ -18,8 +18,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(p
 import paths
 
 # ── 输入/输出全路径(先声明再用)──────────────────────────────────────
-IN_PILOT_LIST = paths.PILOT / "pilot-communities.json"       # 社区名单+城市映射(只读)
-IN_PILOT_EMP = paths.PILOT / "pilot-employers.json"          # 批B:社区指定雇主名单(只读,可缺)
+# 批E(2026-08-31 pilot 拆三域):社区名单与雇主名单一分为二,本步读**并集**(打标口径不变)
+IN_PILOT_LIST = [paths.RCIP / "rcip-communities.json", paths.FCIP / "fcip-communities.json"]  # 社区名单+城市映射(只读)
+IN_PILOT_EMP = [paths.RCIP / "rcip-employers.json", paths.FCIP / "fcip-employers.json"]       # 批B:社区指定雇主名单(只读,可缺)
 IN_JOBBANK_FILE = paths.PROCESSED_JOBBANK / "postings.json"  # 读 city/province → 写回 pilot
 IN_COMPANIES_DIR = paths.COMPANIES                           # ATS 各 <slug>/jobs.json
 OUT_JOBBANK_FILE = IN_JOBBANK_FILE                            # 原地写回
@@ -42,25 +43,27 @@ def norm_name(name: str) -> str:
 def load_employers() -> dict[str, set[str]]:
     """社区名 → 该社区指定雇主的归一名集合(legal 名与 o/a 别名都入)。文件可缺(批B 渐进覆盖)。"""
     out: dict[str, set[str]] = {}
-    if not IN_PILOT_EMP.exists():
-        return out
-    for r in json.loads(IN_PILOT_EMP.read_text(encoding="utf-8")).get("rows", []):
-        names = out.setdefault(r.get("community", ""), set())
-        raw = r.get("name", "")
-        names.add(norm_name(raw))
-        m = re.search(r"\bo/a\b(.+)", raw, re.I)
-        if m:
-            names.add(norm_name(m.group(1)))
-        names.discard("")
+    for src in IN_PILOT_EMP:
+        if not src.exists():
+            continue
+        for r in json.loads(src.read_text(encoding="utf-8")).get("rows", []):
+            names = out.setdefault(r.get("community", ""), set())
+            raw = r.get("name", "")
+            names.add(norm_name(raw))
+            m = re.search(r"\bo/a\b(.+)", raw, re.I)
+            if m:
+                names.add(norm_name(m.group(1)))
+            names.discard("")
     return out
 
 
 def load_map() -> dict[tuple[str, str], list[dict]]:
     """(province, city) → 命中的社区行列表(同城可命中 RCIP+FCIP 两行)。"""
     out: dict[tuple[str, str], list[dict]] = {}
-    for r in json.loads(IN_PILOT_LIST.read_text(encoding="utf-8"))["rows"]:
-        for city in r.get("cities") or []:
-            out.setdefault((r["province"], city), []).append(r)
+    for src in IN_PILOT_LIST:
+        for r in json.loads(src.read_text(encoding="utf-8"))["rows"]:
+            for city in r.get("cities") or []:
+                out.setdefault((r["province"], city), []).append(r)
     return out
 
 

@@ -52,7 +52,7 @@
 etl/ (Python: 抓取 → 清洗 → 评分, 写 data/) ──> cms/ (Payload + Next.js + Postgres) ──> 公开页
 ```
 
-- `etl/` 编号顺序执行,`etl/paths/` 是**唯一路径真相**(任何脚本不写死路径)。
+- `etl/` 域即役(一域一门,调度看各域 META;2026-08-31 批F 后编号只剩 08-11 跨源汇装,挂 load 域 build 链),`etl/paths/` 是**唯一路径真相**(任何脚本不写死路径)。
 - **分层(数据仓库式)**:raw(抽取)→ clean/(清洗按关注点)→ **mart(`09_build_mart.py` 产出 data/mart/,列对齐 DB,一文件=一张表)** → load(seed)。
 - `lib/mart`(壳在 `app/api/seed`)是**纯加载器**:只读 mart json → 灌库,不拼装不清洗。不带 `?reset=1` = 增量对账(未出现的岗 → closed)。
 - **DB**:事实表 jobs/companies;维度表 provinces/cities/districts/noc_categories/sources/experience_levels/designated_employers。Payload 管 schema/admin。
@@ -62,9 +62,9 @@ etl/ (Python: 抓取 → 清洗 → 评分, 写 data/) ──> cms/ (Payload + N
 
 ```
 pnp-job-tracker/
-├── etl/                       # 数据层(Python):paths.py 路径真相;NN_*.py 主流水线(04 ATS,05/05b JB,08 评分,09 mart)
+├── etl/                       # 数据层(Python):paths/ 路径真相;抓岗在 jobbank/ ats/ 两域,08-11 = 跨源评分/mart/榜单/统计
 │   ├── clean/                 #   清洗脚本,一个关注点一个(04b 薪资抽取,04c 地点,04d 薪资归一,05x JB 解析)
-│   ├── sources/<源>/          #   源注册表:一子目录一役,META 声明 method/interval/seed/steps;auto_update.py 自动发现
+│   ├── <域>/                  #   一域一役:__init__ META/METAS 声明 role/interval,main 门;auto_update 自动发现(2026-08-31 批F:sources/ 役册退役)
 │   ├── pnp/ crawl/ news/      #   省 PNP 事实构建;官方站 URL 探索(政策雷达);官方新闻
 │   ├── noc.py noc_buckets.py  #   NOC 分类与 TEER 单一来源
 │   └── build_*.py audit_*.py  #   单源事实表(lmia/wages/dli/ee/…);自查役
@@ -214,7 +214,7 @@ pnp-job-tracker/
 
 ## 技术栈与闸门
 
-**数据层(Python)**:3.11+,uv(`.venv/`);Ruff line-length 120 / py311。httpx + BS4/lxml;pymupdf / openpyxl / loguru;浏览器兜底 `.[browser]`。路径一律 pathlib 从 `paths.py` 取。**依赖唯一真相 `pyproject.toml`**。**加新源 = 在 `etl/sources/<源>/__init__.py` 定义 META**,别改调度器。批量翻译走本地模型(Ollama)不烧付费 API。
+**数据层(Python)**:3.11+,uv(`.venv/`);Ruff line-length 120 / py311。httpx + BS4/lxml;pymupdf / openpyxl / loguru;浏览器兜底 `.[browser]`。路径一律 pathlib 从 `paths` 域取。**依赖唯一真相 `pyproject.toml`**。**加新源 = 开域**(2026-08-31 批F,sources/ 役册退役:mkdir etl/<域> + `__init__` META(一域多役用 METAS,load 先例)+ scrape/build 步 + main 门,见 [etl分域设计稿](docs/design/etl分域-20260829.md) §6.5 开域手册),别改调度器。批量翻译走本地模型(Ollama)不烧付费 API。
 
 **展示层(TypeScript)**:Next 16 App Router(standalone)+ React 19 + Payload 3 + Postgres;TS strict。测试 vitest(int)+ playwright(e2e)+ 评测批(vitest.eval);**判定层测试**穷举输入断言性质 + 手写金标 + 变异探针,**禁快照矩阵**。动态加载文件要进 `next.config.ts` 的 `outputFileTracingIncludes`。站级聚合禁每请求现算(TTL 缓存);**上新筛选参数必查索引**(热筛选列缺索引打爆连接池 = 生产 500)。生产加列/建表:`docs/sql/` 手写 DDL 先行;新维度表给 `payload_locked_documents_rels` 补列,否则 seed 500 无 body。
 
@@ -228,7 +228,7 @@ cd cms && npm run dev                    # localhost:3000(读写生产!测试号
 # 改 collection 字段:显式 DB_PUSH=1 单次推(删列/改类型手写 SQL,提示删列必答 N);改 Jobs 字段后重启 dev 再重灌
 # seed 必带 token(直连生产,reset=1 会清库慎用):curl -H "x-seed-token: $SEED_TOKEN" localhost:3000/api/seed
 # 无人值守全栈:cd docker && docker compose --profile unattended up -d --build
-# 完整 ETL:04 → clean/04b → 04c → 04d → 05 → 05b → 08 → 09(走 paths)
+# 完整 ETL:python etl/run_now.py(jobbank → pnp → ee → news → ircc → build;2026-08-31 批F 抓岗入域,编号只剩 08-11 跨源汇装)
 ```
 
 ## 禁止事项 (Do NOT)

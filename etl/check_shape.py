@@ -21,8 +21,11 @@ ETL = Path(__file__).resolve().parent
 # 迁 etl/ 根与 auto_update 并列;基线同迁 etl/etl_shape_baseline.json,pre-push 路径同步改
 BASELINE = Path(__file__).resolve().parent / "etl_shape_baseline.json"
 
-DOMAINS = ["citations", "company", "crawl", "dli", "ee", "employers", "fetch", "fsa", "ircc",
-           "lmia", "load", "log", "news", "noc", "paths", "pilot", "pnp", "wages"]
+DOMAINS = ["aip", "ats", "citations", "company", "crawl", "dli", "ee", "employers", "fcip",
+           "fetch", "fsa", "ircc", "jobbank", "lmia", "load", "log", "news", "noc", "paths",
+           "pnp", "rcip", "wages"]
+# jobbank/ats 2026-08-31 批F 立域(Frank「jobbank 肯定是需要一个域的」,推翻「抓岗留根」旧判)
+# pilot 2026-08-31 批E 拆三域 rcip/fcip/aip 退役(Frank「拆成三个 很少有人有法语」)
 # noc_facts → noc(2026-08-31 Frank「noc 就叫 noc」:根上 noc.py/noc_buckets.py 两库并入,
 # 双重身份同 fetch/crawl:既被扫也可被依赖)
 # ops 2026-08-31 批D 拆散退役(Frank「ops 不算域」:哨兵/审计归各查的域,工具归根);

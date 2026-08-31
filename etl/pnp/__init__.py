@@ -13,7 +13,8 @@ interval=本域一轮的间隔秒;入口固定 etl/pnp/main.py,步骤清单在 m
 META = {
     "role": "pnp",
     "method": "httpx",
-    "interval": 604800,        # 周更:具名清单极少变(SCRAPE_INTERVAL 不覆盖域单元)
+    "interval": 3600,          # 1h(#128 Frank「都改成小时更,不知道什么时候有新数据」。批2 换轨时被写成周更
+                               # —— 域单元不吃 SCRAPE_INTERVAL,#128 拍板被静默回归两天;2026-08-31 批F 修回)
     "seed": False,             # 只刷 raw 参考表,build 角色统一灌库(避免抢 mart/seed)
     "ping": True,   # 2026-08-31 批D:ops 拆散,本域链尾收编 watch+freshness 两哨兵,
                     # ping 权随 freshness 走(报警语义 = freshness 红了本轮不 ping;

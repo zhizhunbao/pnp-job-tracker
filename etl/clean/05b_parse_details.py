@@ -21,7 +21,7 @@ from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(paths 在那)
 import paths
-from sources._jobbank_lock import JOBBANK_STORE_LOCK, jobbank_store_lock
+from paths import JOBBANK_STORE_LOCK, jobbank_store_lock  # 2026-08-31 批F:锁自 sources 收编 paths 基建叶
 
 _POSTING_RE = re.compile(r"/jobposting/(\d+)")
 IN_SNAP_ROOT = paths.RAW_JOBBANK                      # 详情原始 HTML 在各 <日期>/details/ 下
@@ -186,7 +186,7 @@ def main() -> None:
     print(f"LOCK store       : {JOBBANK_STORE_LOCK}", flush=True)
     # 详情解析同时写 postings.json 与 details/*.md。两者作为一个发布事务持锁,
     # 防止 build 的 05e 读到新 md、却仍读到旧 postings(或反过来)。
-    with jobbank_store_lock():
+    with jobbank_store_lock(JOBBANK_STORE_LOCK):
         if not IN_POSTINGS.exists():
             print("没有 postings.json,跳过", flush=True)
             return

@@ -108,3 +108,11 @@ class PostTableIn:
 
     say: SayFn
     """进度打点回调。"""
+
+
+@dataclass
+class BuildChainIn:
+    """run_build_chain() 入参(2026-08-31 批F 汇装链收编)。"""
+
+    say: SayFn
+    """进度打点回调(一行文本一调;门注 log.functions.say)。"""

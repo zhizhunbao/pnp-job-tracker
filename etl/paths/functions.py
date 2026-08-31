@@ -11,8 +11,12 @@ data/ 布局唯一真相,每个脚本都已 import,不添新边。
 import json
 import os
 import time
+from contextlib import contextmanager
+from pathlib import Path
+from typing import Iterator
 
-from paths.constants import (ENC_UTF8, JSON_COMPACT_SEPS, RETRY_BACKOFF, RETRY_DELAY_S,
+from paths.constants import (ENC_UTF8, JSON_COMPACT_SEPS, LOCK_OPEN_MODE, LOCK_POLL_S,
+                             LOCK_SEED, OS_WINDOWS, RETRY_BACKOFF, RETRY_DELAY_S,
                              RETRY_MAX, TMP_SUFFIX)
 from paths.scheme import WriteJsonIn
 
@@ -43,3 +47,49 @@ def write_json(x: WriteJsonIn) -> None:
                 raise
             time.sleep(delay)
             delay *= RETRY_BACKOFF
+
+
+def lock_fd(file_obj: object) -> None:
+    """对已打开的锁文件加独占锁(Windows 走 msvcrt 轮询,Unix 走 flock 阻塞;
+    平台模块函数内懒导入 —— 对侧平台模块压根不存在,顶部导入会炸)。"""
+    if os.name == OS_WINDOWS:
+        import msvcrt
+        file_obj.seek(0)
+        while True:
+            try:
+                msvcrt.locking(file_obj.fileno(), msvcrt.LK_NBLCK, 1)
+                return
+            except OSError:
+                time.sleep(LOCK_POLL_S)
+    else:
+        import fcntl
+        fcntl.flock(file_obj.fileno(), fcntl.LOCK_EX)
+
+
+def unlock_fd(file_obj: object) -> None:
+    """解锁(与 lock_fd 平台对称)。"""
+    file_obj.seek(0)
+    if os.name == OS_WINDOWS:
+        import msvcrt
+        msvcrt.locking(file_obj.fileno(), msvcrt.LK_UNLCK, 1)
+    else:
+        import fcntl
+        fcntl.flock(file_obj.fileno(), fcntl.LOCK_UN)
+
+
+@contextmanager
+def jobbank_store_lock(lock_path: Path) -> Iterator[None]:
+    """持有 Job Bank 仓锁直到被守护的事务结束(2026-08-31 批F 自 sources/_jobbank_lock 收编;
+    调用方一律传 paths.JOBBANK_STORE_LOCK —— 原默认参形随一参令禁默认值退役,测试可传
+    临时路径)。生产者与 build 消费者跨容器共享绑定卷,内核锁保证「汇装看到的是一份
+    稳定的 postings.json」;进程亡锁自释。"""
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open(LOCK_OPEN_MODE) as lock_file:
+        if lock_file.tell() == 0:
+            lock_file.write(LOCK_SEED)
+            lock_file.flush()
+        lock_fd(lock_file)
+        try:
+            yield
+        finally:
+            unlock_fd(lock_file)

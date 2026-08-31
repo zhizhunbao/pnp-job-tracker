@@ -28,8 +28,8 @@ BARE_RULES = "E4,E7,E9,F,ANN,D1,N,C901,PLR0913,PLR0915,BLE,S110,S112"
 
 DISSOLVED = ("etl/company/", "etl/crawl/", "etl/dli/", "etl/employers/", "etl/fetch/",
              "etl/lmia/", "etl/load/", "etl/log/", "etl/paths/", "etl/pnp/", "etl/wages/",
-             "etl/news/", "etl/ee/", "etl/ircc/", "etl/noc/", "etl/fsa/", "etl/pilot/",
-             "etl/citations/")
+             "etl/news/", "etl/ee/", "etl/ircc/", "etl/noc/", "etl/fsa/", "etl/rcip/",
+             "etl/fcip/", "etl/aip/", "etl/citations/")
 """已溶区清单(五件形制已落地的文件面;新域溶完在此登记)。
 2026-08-31 批C 登记五域:ee/ircc(子工A)、noc(并 noc.py/noc_buckets.py 两库,
 「noc 就叫 noc」)、fsa、pilot(extractors 私件群随域,存量待批E 拆三域时就范);

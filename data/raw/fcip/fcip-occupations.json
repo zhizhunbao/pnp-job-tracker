@@ -1,0 +1,906 @@
+{
+ "fetched": "2026-08-31",
+ "note": "各社区官方优先/在收职业清单(批C 自动刷新;当前有效版)。sectorOnly=官方只给行业名。",
+ "rows": [
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "11102",
+   "title": "Conseillers financiers/conseillères financières",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "13110",
+   "title": "Adjoints administratifs/adjointes administratives",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "14201",
+   "title": "Commis de banque, d'assurance et d'autres services financiers",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "33102",
+   "title": "Aides-infirmiers/aides-infirmières, aides-soignants/aides-soignantes et préposés/préposées aux bénéficiaires",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "33103",
+   "title": "Assistants techniques/assistantes techniques en pharmacie et assistants/assistantes en pharmacie",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "33109",
+   "title": "Autre personnel de soutien des services de santé",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "41402",
+   "title": "Agents/agentes de développement économique et recherchistes et analystes en marketing",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "42201",
+   "title": "Travailleurs/travailleuses des services sociaux et communautaires",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "42202",
+   "title": "Éducateurs/éducatrices et aides-éducateurs/aide-éducatrices de la petite enfance",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "63200",
+   "title": "Cuisiniers/cuisinières",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "64100",
+   "title": "Vendeurs/vendeuses en commerce de détail et représentants/représentantes des ventes et des comptes en commerce de gros (non-technique)",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "64101",
+   "title": "Représentants/représentantes des ventes et des comptes - commerce de gros (non-technique)",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "65100",
+   "title": "Caissiers/caissières",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "65200",
+   "title": "Serveurs/serveuses d'aliments et de boissons",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "65201",
+   "title": "Serveurs/serveuses au comptoir, aides de cuisine et personnel de soutien assimilé",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "72106",
+   "title": "Soudeurs/soudeuses et opérateurs/opératrices de machines à souder et à braser",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "72200",
+   "title": "Électriciens/électriciennes (sauf électriciens industriels/électriciennes industrielles et de réseaux électriques)",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "72300",
+   "title": "Plombiers/plombières",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "72310",
+   "title": "Charpentiers-menuisiers/charpentières-menuisières",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "75101",
+   "title": "Manutentionnaires",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "75110",
+   "title": "Aides de soutien des métiers et manœuvres en construction",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "92012",
+   "title": "Surveillants/surveillantes dans la transformation des aliments et des boissons",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "92013",
+   "title": "Surveillants/surveillantes dans la fabrication de produits en caoutchouc et en plastique",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "94111",
+   "title": "Opérateurs/opératrices de machines de traitement des matières plastiques",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "noc": "95106",
+   "title": "Manœuvres dans la transformation des aliments et des boissons",
+   "sectorOnly": false,
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "32101",
+   "title": "Licensed practical nurses",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "32102",
+   "title": "Paramedical occupations",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "33102",
+   "title": "Nurse Aides, Orderlies, and Patient Service Associates",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "41220",
+   "title": "Secondary School Teachers",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "41221",
+   "title": "Elementary School Teacher",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "42202",
+   "title": "Early Childhood Educator (ECE)",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "44101",
+   "title": "Home Support Workers, Caregivers",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "62010",
+   "title": "Retail Sales Supervisor",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "62020",
+   "title": "Food Service Supervisor",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "62022",
+   "title": "Accommodation, travel, tourism and related services supervisors",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "63200",
+   "title": "Line Cooks",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "65100",
+   "title": "Cashiers",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "65201",
+   "title": "Food counter attendants, kitchen helpers and related support occupations",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "65310",
+   "title": "Light duty cleaners",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "72106",
+   "title": "Welders and related machine operators",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "72200",
+   "title": "Electricians",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "72310",
+   "title": "Carpenters",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "72400",
+   "title": "Construction Millwrights and industrial mechanics",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "72410",
+   "title": "Automotive service technicians, truck and bus mechanics and mechanical repairers",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "72429",
+   "title": "Other small engine and small equipment repairers",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "73201",
+   "title": "General building maintenance workers and building superintendents",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "73400",
+   "title": "Heavy Equipment Operator",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "75110",
+   "title": "Construction Trades Helpers and Labourers",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "83100",
+   "title": "Underground production and development miners",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "noc": "95103",
+   "title": "Labourers in wood, pulp and paper processing",
+   "sectorOnly": false,
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "14100",
+   "title": "General office support workers",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "12200",
+   "title": "Accounting technicians and bookkeepers",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "13110",
+   "title": "Administrative assistants",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "33102",
+   "title": "Nurse aides, orderlies and patient service associates",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "33109",
+   "title": "Other health service support workers",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "42202",
+   "title": "Early childhood educators and assistants",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "43100",
+   "title": "Teacher assistants",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "41302",
+   "title": "Religious leaders",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "41221",
+   "title": "Elementary and kindergarten teachers",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "41220",
+   "title": "Secondary school teachers",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "42201",
+   "title": "Social and community service workers",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "65201",
+   "title": "Counter attendants, kitchen helpers and related support occupations",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "63200",
+   "title": "Cooks",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "65310",
+   "title": "Light duty cleaners",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "63202",
+   "title": "Bakers and pastry chefs",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "65312",
+   "title": "Janitors, caretakers and heavy-duty cleaners",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "65100",
+   "title": "Cashiers",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "65102",
+   "title": "Store shelf stockers, clerks and order fillers",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "63100",
+   "title": "Insurance agents and brokers",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "64400",
+   "title": "Customer service representatives – financial institutions",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "72106",
+   "title": "Welders and related machine operators",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "72300",
+   "title": "Plumbers",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "72410",
+   "title": "Automotive service technicians, truck and bus mechanics",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "72411",
+   "title": "Auto body collision, refinishing and glass technicians and damage repair estimators",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "noc": "84120",
+   "title": "Specialized livestock workers and farm machinery operators",
+   "sectorOnly": false,
+   "url": "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "63202",
+   "title": "Bakers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "62024",
+   "title": "Cleaning supervisors",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "63200",
+   "title": "Cooks",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "60010",
+   "title": "Corporate sales managers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "64314",
+   "title": "Hotel front desk clerks",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "72310",
+   "title": "Carpenters",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "72200",
+   "title": "Electrician",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "72410",
+   "title": "Automotive service technicians, truck and bus mechanics, and mechanical repairers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "73209",
+   "title": "Other repairers and servicers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "73112",
+   "title": "Painters and decorators (except interior decorators)",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "72311",
+   "title": "Cabinetmakers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "73110",
+   "title": "Roofers and shinglers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "73102",
+   "title": "Plasterers, drywall installers and finishers, and lathers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "42202",
+   "title": "Early Childhood Educators and Assistants",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "44101",
+   "title": "Home support workers, caregivers, and related occupations",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "43100",
+   "title": "Elementary and secondary school teacher assistants",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "41210",
+   "title": "College and other vocational instructors",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "42201",
+   "title": "Social and community service workers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "33102",
+   "title": "Nurse aides, orderlies, and patient service associates",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "33109",
+   "title": "Other assisting occupations in support of health services",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "33101",
+   "title": "Medical laboratory assistants and related technical occupations",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "12200",
+   "title": "Accounting technicians and bookkeepers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "12011",
+   "title": "Supervisors of finance and insurance office workers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "12010",
+   "title": "Supervisors, general office and administrative support workers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "noc": "13100",
+   "title": "Administrative Officers",
+   "sectorOnly": false,
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  }
+ ]
+}

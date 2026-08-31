@@ -10,7 +10,7 @@ interval=本域一轮的间隔秒;入口固定 etl/news/main.py,步骤清单在 
 META = {
     "role": "news",
     "method": "httpx",
-    "interval": 43200,         # 12h:官方公告频率低,再快也只是空转
+    "interval": 3600,          # 1h(#128 同拍:公告发出后 1 小时内上站;批2 误写 12h,2026-08-31 批F 修回)
     "seed": False,
     "ping": True,   # 本角色的 healthchecks 心跳由本域发
 }

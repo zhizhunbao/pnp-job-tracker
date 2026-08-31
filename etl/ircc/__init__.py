@@ -9,7 +9,7 @@ interval=本域一轮的间隔秒;入口固定 etl/ircc/main.py,步骤清单在 
 META = {
     "role": "ircc",
     "method": "httpx",
-    "interval": 2592000,       # 月更:IRCC/StatCan 开放数据月度发布
+    "interval": 86400,         # 日更当兜底(#128:官方月度发布,小时抓纯空转;批2 误写月更,2026-08-31 批F 修回)
     "seed": False,
     "ping": True,   # 本角色的 healthchecks 心跳由本域发
 }

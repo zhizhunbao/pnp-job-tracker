@@ -4,12 +4,11 @@
     python etl/run_now.py                # 默认全链:jobbank → pnp → ee → news → ircc → build(build 含灌库)
     python etl/run_now.py jobbank        # 只跑指定役;可多个按序:python etl/run_now.py jobbank build
 
-步骤与 docker 役同一套(批2 域即役:名字先查旧役册 sources/<役>,再按角色收拢
-声明 role==名字 的域,各域跑 etl/<域>/main.py;也可直接给域名如 dli),进度实时打印;
+步骤与 docker 役同一套(2026-08-31 批F 单轨:按角色收拢声明 role==名字 的域役
+(META/METAS),各役跑 etl/<域>/main.py [--only 役];也可直接给域名如 dli),进度实时打印;
 与后台 docker 轮并行跑也安全(posting_id 去重、同日目录幂等、seed 增量对账)。
 build 的灌库步自动从 cms/.env 借 SEED_TOKEN,默认灌生产(SEED_URL 可用环境变量覆盖)。
 """
-import importlib
 import os
 import subprocess
 import sys
@@ -23,18 +22,14 @@ DEFAULT = ["jobbank", "pnp", "ee", "news", "ircc", "build"]
 
 
 def units_for(name: str) -> list[tuple[str, list[list[str]]]]:
-    """名字 → 步骤单元:旧役册命中收一单元;再收角色==名字的域;最后试「名字就是域」。"""
+    """名字 → 步骤单元:收角色==名字的域役(META 单役 / METAS 多役,2026-08-31 批F
+    随 sources 役册退役收单轨);也可直接给域名(如 dli)。"""
     units: list[tuple[str, list[list[str]]]] = []
-    try:
-        meta = importlib.import_module(f"sources.{name}").META
-        units.append((name, meta["steps"]))
-    except ModuleNotFoundError:
-        pass
     etl_dir = ROOT / "etl"
     import importlib.util as _u
     for ini in sorted(etl_dir.glob("*/__init__.py")):
         dom = ini.parent.name
-        if dom in ("sources", "clean") or dom.startswith("_"):
+        if dom in ("clean",) or dom.startswith("_"):
             continue
         spec = _u.spec_from_file_location(f"_dom_{dom}", ini)
         mod = _u.module_from_spec(spec)
@@ -42,9 +37,18 @@ def units_for(name: str) -> list[tuple[str, list[list[str]]]]:
             spec.loader.exec_module(mod)
         except Exception:  # noqa: BLE001  # 坏域只跳过,手动工具不因一域挂全链
             continue
-        meta = getattr(mod, "META", None)
-        if isinstance(meta, dict) and (meta.get("role") == name or dom == name):
-            units.append((dom, [["python", f"etl/{dom}/main.py"]]))
+        metas = getattr(mod, "METAS", None)
+        if metas is None:
+            single = getattr(mod, "META", None)
+            metas = [single] if isinstance(single, dict) else []
+        for meta in metas:
+            if not isinstance(meta, dict):
+                continue
+            if meta.get("role") == name or dom == name:
+                step = ["python", f"etl/{dom}/main.py"]
+                if meta.get("only"):
+                    step = step + ["--only", meta["only"]]
+                units.append((meta.get("name", dom), [step]))
     return units
 
 
@@ -67,7 +71,7 @@ def main() -> None:
     for role in roles:
         units = units_for(role)
         if len(units) == 0:
-            print(f"✗ 未知役/域 {role}(旧役册:jobbank/ats/build/backup;角色/域看 etl/*/__init__.py 的 META)", flush=True)
+            print(f"✗ 未知役/域 {role}(角色/域看 etl/*/__init__.py 的 META/METAS)", flush=True)
             continue
         steps = [st for _, ss in units for st in ss]
         print(f"\n===== {role}({'+'.join(n for n, _ in units)},{len(steps)} 步)=====", flush=True)

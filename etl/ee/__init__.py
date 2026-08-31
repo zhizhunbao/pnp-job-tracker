@@ -9,7 +9,7 @@ interval=本域一轮的间隔秒;入口固定 etl/ee/main.py,步骤清单在 ma
 META = {
     "role": "ee",
     "method": "httpx",
-    "interval": 2592000,       # 月更:EE 类别定义极少变
+    "interval": 3600,          # 1h(#128 同拍:EE 抽选两周一轮,月更会漏;批2 误写月更,2026-08-31 批F 修回)
     "seed": False,
     "ping": True,   # 本角色的 healthchecks 心跳由本域发
 }

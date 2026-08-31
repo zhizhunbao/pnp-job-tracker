@@ -1,0 +1,72 @@
+{
+ "fetched": "2026-08-31",
+ "source": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots.html",
+ "note": "IRCC 官方参与社区名单(fed-rcip crawl 缓存解析)。cities=人工核对的 Job Bank 城市映射,空=区域型社区界线未举证不打标(宁漏勿错);试点须雇主被社区指定,城市命中只是粗筛信号。",
+ "rows": [
+  {
+   "name": "Acadian Peninsula, NB",
+   "province": "NB",
+   "type": "FCIP",
+   "cities": [
+    "Caraquet",
+    "Shippagan",
+    "Tracadie",
+    "Tracadie-Sheila",
+    "Neguac",
+    "Lamèque"
+   ],
+   "url": "https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/"
+  },
+  {
+   "name": "Sudbury, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "cities": [
+    "Sudbury",
+    "Greater Sudbury"
+   ],
+   "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
+  },
+  {
+   "name": "Timmins, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "cities": [
+    "Timmins"
+   ],
+   "url": "https://timminsedc.com/immigration/"
+  },
+  {
+   "name": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "cities": [
+    "Chapleau",
+    "Dubreuilville",
+    "Wawa",
+    "White River",
+    "Hornepayne",
+    "Manitouwadge"
+   ],
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+  },
+  {
+   "name": "St. Pierre Jolys, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "cities": [
+    "St-Pierre-Jolys"
+   ],
+   "url": "https://villagestpierrejolys.ca/p/francophone-communities-immigration-pilot-program"
+  },
+  {
+   "name": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "cities": [
+    "Kelowna"
+   ],
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  }
+ ]
+}

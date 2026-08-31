@@ -1,0 +1,138 @@
+{
+ "note": "RCIP 社区名额状态;每行锚定官网原句(quote+url)。空 = 官网没写,不是没有限额。",
+ "communities": [
+  {
+   "firstCome": true,
+   "firstComeQuote": "Recommendations will be issued on a first-come, first-served basis throughout the year.",
+   "firstComeUrl": "https://ared-rpga.com/immigration/rcip-sector",
+   "community": "Altona/Rhineland, MB",
+   "province": "MB",
+   "asOf": "2026-08-14"
+  },
+  {
+   "firstCome": true,
+   "firstComeQuote": "The remaining quota will be awarded on a first-come, first-served basis.",
+   "firstComeUrl": "https://economicdevelopmentbrandon.com/rcip/rcip-sector-labour-market-priorities-list",
+   "community": "Brandon, MB",
+   "province": "MB",
+   "asOf": "2026-08-14"
+  },
+  {
+   "firstCome": true,
+   "firstComeQuote": "Per intake period, the Moose Jaw RCIP will issue up to 12 recommendations on a first come, first served basis Applications that contain multiple errors, are incomplete, or missing any relevant documents will lose their place in line and be returned to the employer.",
+   "firstComeUrl": "https://rcip.mjchamber.com/employers",
+   "perIntake": 12,
+   "perIntakeQuote": "Per intake period, the Moose Jaw RCIP will issue up to 12 recommendations on a first come, first served basis Applications that contain multiple errors, are incomplete, or missing any relevant documents will lose their place in line and be ret",
+   "perIntakeUrl": "https://rcip.mjchamber.com/employers",
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "asOf": "2026-08-14"
+  },
+  {
+   "remaining": 153,
+   "remainingQuote": "Before the end of the calendar year, we will utilize our remaining allocations (153)… Read More North Bay & Area RCIP 2026 Priority Occupation List Updates & Mid-Year Adjustments Jun 22, 2026 Effective July 1, 2026, the North Bay & Area Rural Community Immi",
+   "remainingUrl": "https://nbrcip.ca",
+   "community": "North Bay and Area",
+   "province": "ON",
+   "asOf": "2026-08-14"
+  },
+  {
+   "perIntake": 60,
+   "perIntakeQuote": "05 How applications are processed We are authorized to issue up to 60 candidate recommendations for the Northeast BC – Peace Liard region in the 2026 intake year.",
+   "perIntakeUrl": "https://www.nebcimmigration.ca/employers",
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "asOf": "2026-08-14"
+  },
+  {
+   "firstCome": true,
+   "firstComeQuote": "Per intake period, SED will issue up to 5 recommendations on a first come, first served basis.",
+   "firstComeUrl": "https://steinbachedc.com/rcip",
+   "perIntake": 5,
+   "perIntakeQuote": "Per intake period, SED will issue up to 5 recommendations on a first come, first served basis.",
+   "perIntakeUrl": "https://steinbachedc.com/rcip",
+   "community": "Steinbach, MB",
+   "province": "MB",
+   "asOf": "2026-08-14"
+  },
+  {
+   "firstCome": true,
+   "firstComeQuote": "Construction trades helpers and labourers 85100 – Livestock labourers *Maximum of 2 applications per year, to be distributed on a first come, first served basis.",
+   "firstComeUrl": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip",
+   "community": "Sudbury, ON",
+   "province": "ON",
+   "asOf": "2026-08-14"
+  },
+  {
+   "firstCome": true,
+   "firstComeQuote": "Applications are processed on a first come first serve basis.",
+   "firstComeUrl": "https://gotothunderbay.ca/rcip-faqs",
+   "community": "Thunder Bay, ON",
+   "province": "ON",
+   "asOf": "2026-08-14"
+  },
+  {
+   "perIntake": 3,
+   "perIntakeQuote": "We will issue three (3) allocations per month to ensure we are spreading our allocations out over the year, with the opportunity for excess allocations to be utilized at the end of the year.",
+   "perIntakeUrl": "https://claresholm-rcip.ca/",
+   "community": "Claresholm, AB",
+   "province": "AB",
+   "asOf": "2026-08-31"
+  },
+  {
+   "perIntake": 75,
+   "perIntakeQuote": "Approximately 75 Community Recommendations may be issued per intake, subject to remaining allocations, application quality, program priorities, and review outcomes.",
+   "perIntakeUrl": "https://westkootenayimmigration.ca/may-2026-rcip-intake-update/",
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "asOf": "2026-08-31"
+  }
+ ],
+ "occupations": [
+  {
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "noc": "63200",
+   "status": "full",
+   "asOf": "2026-08-14",
+   "url": "https://rcip.mjchamber.com",
+   "quote": "Home - Moose Jaw Rural Community Immigration Pilot Skip to content Employers Candidates Resources FAQ Contact Us • We have reached the maximum allowable recommendations under NOC 63200 Cooks and NOC 62010 Retail Supervisors for 2026 and can no longer accept application for these positions."
+  },
+  {
+   "community": "Moose Jaw, SK",
+   "province": "SK",
+   "noc": "62010",
+   "status": "full",
+   "asOf": "2026-08-14",
+   "url": "https://rcip.mjchamber.com",
+   "quote": "Home - Moose Jaw Rural Community Immigration Pilot Skip to content Employers Candidates Resources FAQ Contact Us • We have reached the maximum allowable recommendations under NOC 63200 Cooks and NOC 62010 Retail Supervisors for 2026 and can no longer accept application for these positions."
+  },
+  {
+   "community": "North Bay and Area",
+   "province": "ON",
+   "noc": "64410",
+   "status": "full",
+   "asOf": "2026-08-14",
+   "url": "https://nbrcip.ca",
+   "quote": "team has determined that the community’s current needs for Security Guards (NOC 64410) and Administrative Assistants (NOC 13110) have been successfully met."
+  },
+  {
+   "community": "North Bay and Area",
+   "province": "ON",
+   "noc": "13110",
+   "status": "full",
+   "asOf": "2026-08-14",
+   "url": "https://nbrcip.ca",
+   "quote": "team has determined that the community’s current needs for Security Guards (NOC 64410) and Administrative Assistants (NOC 13110) have been successfully met."
+  },
+  {
+   "community": "Peace Liard, BC",
+   "province": "BC",
+   "noc": "62010",
+   "status": "full",
+   "asOf": "2026-08-14",
+   "url": "https://www.nebcimmigration.ca/post/may-2026-candidate-intake-update",
+   "quote": "Important notice for Retail Sales Supervisor applicants (NOC 62010) We have reached the cap imposed by Immigration, Refugees and Citizenship Canada (IRCC) on recommendations for the Retail Sales Supervisor occupation (NOC 62010)."
+  }
+ ]
+}

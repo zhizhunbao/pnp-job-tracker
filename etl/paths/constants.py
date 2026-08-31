@@ -44,7 +44,17 @@ AIP = RAW / "aip"
 """AIP 指定雇主名单(aip-designated-employers.json/.md)。"""
 
 PILOT = RAW / "pilot"
-"""RCIP/FCIP 试点社区名单(pilot-communities.json,E6-11)。"""
+"""RCIP/FCIP 试点社区名单(pilot-communities.json,E6-11)。
+⚠ 2026-08-31 批E(pilot 拆三域)后退役中:新产物住 RCIP/FCIP 两目录,
+本常量只为迁移期消费者暂留,读点全切完即删。"""
+
+RCIP = RAW / "rcip"
+"""RCIP 乡村社区试点(2026-08-31 批E 拆三域:rcip-communities/employers/occupations/quota;
+双身份社区 Sudbury/Timmins 的产出行住这,type=RCIP+FCIP)。"""
+
+FCIP = RAW / "fcip"
+"""FCIP 法语社区试点(2026-08-31 批E:纯法语四社区 Kelowna/Acadian/St-Pierre/Superior East;
+Frank「很少有人有法语」—— 单拎让 RCIP 主流路径干净)。"""
 
 WAGES = RAW / "wages"
 """ESDC 工资:wages.json(维护表)+ wage*.csv(源)。"""
@@ -103,3 +113,22 @@ RETRY_BACKOFF = 2
 
 JSON_COMPACT_SEPS = (",", ":")
 """紧凑落盘分隔符(compact=True 档)。"""
+
+JOBBANK_STORE_LOCK = PROCESSED_JOBBANK / ".postings.lock"
+"""Job Bank 可变仓(postings.json)的跨进程锁文件(2026-08-31 批F 自 sources/_jobbank_lock
+收编 —— sources 役册清仓,锁属 data 访问基建,住 paths 叶)。生产者(jobbank 域解析步)与
+汇装消费者(load 域 build 链)在不同容器里共享绑定卷,锁定在文件旁一个稳定 inode 上;
+锁本体属于打开的文件描述符,进程崩溃/被杀由内核自动释放。⚠ 此文件在有进程持锁时
+永不替换/删除。"""
+
+LOCK_OPEN_MODE = "a+b"
+"""锁文件打开模式(append+binary:不截断、可写一字节种子)。"""
+
+LOCK_SEED = b"\0"
+"""锁文件的一字节种子(msvcrt.locking 需要至少一字节;Unix flock 只认 inode)。"""
+
+LOCK_POLL_S = 0.05
+"""Windows 非阻塞锁的轮询间隔秒(msvcrt 无阻塞档,LK_NBLCK 失败短睡重试)。"""
+
+OS_WINDOWS = "nt"
+"""os.name 的 Windows 值(锁实现平台分叉判据)。"""
