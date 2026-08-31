@@ -1,16 +1,21 @@
 """
-jobbank 域唯一入口(一域一门;2026-08-31 批F 立域,**搬家批**:三个抓岗件自编号主管线
-迁入改名,抓取逻辑一字未动 —— 方言全溶留后续滚动批,故本门直调步骤文件的 run(),
-不是全溶域那种直调 functions.py 段函数;门形样张 etl/ircc/main.py)。
+jobbank 域唯一入口(一域一门;七个步骤文件 2026-08-31 批I 全溶进 functions.py,本门直调
+段函数,不再 import 步骤模块 —— 全溶域的门形,样张 etl/company/main.py 与 etl/ircc/main.py)。
 
 SCHEDULED = 本域步骤真相 —— **顺序即语义,一步失败中止本轮**(四步逐字复刻旧
 sources/jobbank 役册 META.steps 的顺序与语义):抓 listing 快照 → 解析合并进
 postings.json → 抓详情 HTML → 解析详情。
-两个解析步 2026-08-31 批H **由 clean/ 子进程改直调 run()**:两件已归户本域
-(clean/05_parse_jobbank.py → parse_jobbank_postings.py、clean/05b_parse_details.py →
-parse_jobbank_details.py),文件进本域了就不再隔着子进程说话;解析逻辑一字未动,
-「一步失败中止本轮」由门的 try/except 兑现(与旧的「子进程非零即抛错」同义)。
-postings.json 的跨进程锁照旧只在解析件里持有(与 build 角色并发安全),本门不碰锁。
+沿革(逐字留档,批F/批H/批I 三笔一条不删):
+· 批F 立域(搬家批):三个抓岗件自编号主管线迁入改名,门直调步骤文件的 run()。
+· 批H:两个解析步由 clean/ 子进程改直调 run()(clean/05_parse_jobbank.py →
+  parse_jobbank_postings.py、clean/05b_parse_details.py → parse_jobbank_details.py),
+  文件进本域了就不再隔着子进程说话;audit 自根 audit_data.py、expired 自根
+  verify_expired.py 一并归户。
+· 批I 全溶:七个步骤文件溶成 functions.py 的八段(共享词汇一段 + 七步各一段),
+  run() 壳退役,门直调同名段函数;抓取步的实参(--all-occupations / --prov ALL /
+  --since-days / --max-pages 400)随旧 CLI 一起退役,值原样进 constants 当域常量。
+postings.json 的跨进程锁照旧只在两个解析段里持有(与 build 角色并发安全),本门不碰锁;
+「一步失败中止本轮」由段函数抛出的异常兑现(main 的 except 捕获后 return 1)。
 调度声明(role/interval)在本域 __init__.py 的 META;auto_update 按 role 自动发现。
 一律从仓库根执行:
     python etl/jobbank/main.py                    # 默认链(4 步)
@@ -20,14 +25,11 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from jobbank.audit_jobbank_data import run as audit_jobbank_data
-from jobbank.build_jobbank_companies import run as build_jobbank_companies
-from jobbank.parse_jobbank_details import run as parse_jobbank_details
-from jobbank.parse_jobbank_postings import run as parse_jobbank_postings
-from jobbank.scrape_jobbank_details import run as scrape_jobbank_details
-from jobbank.scrape_jobbank_postings import run as scrape_jobbank_postings
-from jobbank.verify_jobbank_expired import run as verify_jobbank_expired
 from log.functions import err, say
+from jobbank.functions import (
+    audit_jobbank_data, build_jobbank_companies, parse_jobbank_details, parse_jobbank_postings,
+    scrape_jobbank_details, scrape_jobbank_postings, verify_jobbank_expired,
+)
 
 SCHEDULED = [
     ("postings", scrape_jobbank_postings),
@@ -36,13 +38,12 @@ SCHEDULED = [
     ("parse_details", parse_jobbank_details),
 ]
 """默认链(调度真相):按序执行,一步抛错即中止本轮。四步与旧 sources/jobbank 役册
-META.steps 一一对应,实参也逐字沿用(抓取步的 --all-occupations / --prov ALL /
---since-days / --max-pages 400 内置在 scrape_jobbank_postings.chain_argv):
+META.steps 一一对应:
 
   postings       全职业 · 全省 · sort=D · 只存原始 HTML 快照(不解析不合并)
-  parse          快照 → postings.json 增量合并去重(持仓锁;旧 clean/05,批H 归户直调)
+  parse          快照 → postings.json 增量合并去重(持仓锁;旧 clean/05)
   details        逐帖抓详情页原始 HTML(增量:已抓过/已富集的跳过)
-  parse_details  详情 → 衍生字段 + details/*.md(同一事务持仓锁;旧 clean/05b,批H 归户直调)
+  parse_details  详情 → 衍生字段 + details/*.md(同一事务持仓锁;旧 clean/05b)
 """
 
 TOOLS = {

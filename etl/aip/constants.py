@@ -558,3 +558,59 @@ to immigrate to Canada based on the size of your family」,Updated July 29, 2025
 一行一个家庭规模档,用 familySize 列(schema 已有,ON/其余省份门槛表同款用法)而不是
 塞进 basis 编码。**2026-08-31 批C 全溶时把原来的 `FUNDS_TABLE` 推导式展开成 7 条字面量**
 (推导式在方言律④下退役;FUNDS_TABLE 常量随之退役),展开结果与旧脚本逐条比对相等。"""
+
+
+# =========================================================================
+# 4. flag 步(官方名录 × 岗位雇主名 → 岗位表的 aip 字段)
+# =========================================================================
+
+IN_AIP_LIST = OUT_AIP_JSON
+"""段4 输入①:段2 自己落的四省指定雇主名录(域内前后步,同一文件两个身份 ——
+路径写两遍就是两份真相,故取别名不复制)。"""
+
+IN_OUT_POSTINGS = paths.PROCESSED_JOBBANK / "postings.json"
+"""段4 输入②兼输出①:Job Bank 全国岗位表(读雇主名 → 原地写回 aip 字段)。"""
+
+IN_OUT_COMPANIES_DIR = paths.COMPANIES
+"""段4 输入③兼输出②:ATS 各 <slug>/jobs.json 的根目录(原地写回)。"""
+
+ATS_JOBS_GLOB = "jobs.json"
+"""ATS 岗位文件名(rglob 模式)。"""
+
+ATLANTIC = {"NL", "NB", "NS", "PE"}
+"""AIP 只限大西洋四省;别省同名 franchise 不算。"""
+
+INDENT_2 = 2
+"""岗位表落盘缩进(与 05/05b 抓岗件一致,原值)。"""
+
+K_AIP = "aip"
+"""岗位行键:是否 AIP 指定雇主(本步产出的唯一字段)。"""
+
+K_JOBS = "jobs"
+"""ATS 岗位文件的行清单键。"""
+
+SUFFIX_RE = re.compile(
+    r"\b(inc|incorporated|ltd|limited|llp|llc|corp|corporation|co|company|enr|ltee|lt[eé]e|"
+    r"holdings?|group|services?|enterprises?)\b\.?", re.I)
+"""公司后缀词(归一时整体去掉;原脚本常量名 `_SUFFIX`,溶段时按「主题_角色」改名,值一字未改)。"""
+
+ALIAS_SPLIT_RE = re.compile(r"\bo/a\b|\bdba\b|\bd/b/a\b|\bo\.a\.\b")
+"""「operating as」别名分隔:切开取前面的主名(输入已小写,故不带 re.I,原值)。"""
+
+ALIAS_RE = re.compile(r"\bo/a\b(.+)", re.I)
+"""名录行里的 o/a 别名(别名也单独入集合,两种写法都能匹配到)。"""
+
+KEEP_RE = re.compile(r"[^a-z0-9& ]")
+"""归一后允许保留的字符之外的一切(标点全换空格)。"""
+
+FLAG_IN_LIST_TPL = "IN aip list      : {path}"
+"""段4 开工报输入名录(原脚本对齐空格原样保留)。"""
+
+FLAG_IN_OUT_TPL = "IN/OUT job bank  : {path}"
+"""段4 开工报原地写回的岗位表(同上,对齐空格原样)。"""
+
+FLAG_NAMES_TPL = "  designated employers (normalized): {n}"
+"""段4 报归一化后的名录规模。"""
+
+FLAG_DONE_TPL = "AIP flagged {flagged}/{total} jobs (employer on official AIP designated list)."
+"""段4 收尾报命中数(原脚本英文原句,原样保留)。"""

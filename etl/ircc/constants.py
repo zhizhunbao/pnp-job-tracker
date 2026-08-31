@@ -801,3 +801,111 @@ FEES_BULLET_TPL = "   - {problem}"
 
 FEES_DONE_TPL = "✓ {n} 条费用: {by}"
 """段6 收尾报数(by = stream → 金额)。"""
+
+
+# =========================================================================
+# 7. 省移民难度指数(E12-07;纯算件,零网络,只吃前三步落好的 raw + pnp draws)
+# =========================================================================
+
+IN_TR_PROV = OUT_TR_PROV
+"""段7 输入①:段4 自己落的分省临时居民存量(域内前后步,同一文件两个身份 —— 路径写两遍
+就是两份真相,故取别名不复制)。
+2026-08-15 方案C(Frank「那就换 C 吧」):竞争比分子整体换 StatCan 常住估算口径 ——
+IRCC 年末许可表停在 2024 且高估(含已离境者),StatCan 季度估算的才是「还在境内抢名额的人」。
+temp_residents.json(IRCC)不再进本段;其余消费端(省弹框体量卡等)不受影响。"""
+
+IN_ALLOC = paths.IRCC / "pnp_allocations.json"
+"""段7 输入②:人工核定的九省 PNP 配额表(逐年官方原句 + 出处,不是本域抓的)。"""
+
+IN_DRAWS = paths.PNP / "draws.json"
+"""段7 输入③:pnp 域的省抽选记录(仅 BC/AB/MB/ON/NL/NB 有官方抽选数据)。"""
+
+OUT_DIFFICULTY = paths.PROCESSED / "difficulty.json"
+"""段7 输出:processed/difficulty.json(唯一消费者 = mart 的 build_mart_stats)。
+因子:①竞争比=(学签+工签存量)÷ PNP 配额(横向可比,纯人数);②配额趋势=2026/2025-1
+(腰斩类硬事件压档);③抽选活跃=近 180 天抽选次数+邀请量;④分数线水位=最新分在自身近
+24 个月分布的分位(分制不可比红线:只跟自己比)。
+档位:easy/mid/tight(前端人话「机会较多/一般/竞争激烈」)。
+红线:缺数留空不猜;逐因子带 source+asOf;禁概率。QC 不入(自有体系)。"""
+
+DIFF_PROVS = ["ON", "BC", "AB", "SK", "MB", "NS", "NB", "NL", "PE"]
+"""段7 逐省重算的九省(QC 不在:自有体系不属 PNP)。"""
+
+COMP_EASY = 20
+"""竞争比 easy 档上界(首跑分布:MB~12 AB~34 ON~77 BC~84 → 三档切 20/50;定案见设计文档 §4)。"""
+
+COMP_TIGHT = 50
+"""竞争比 tight 档下界(同上一条的分档实据)。"""
+
+COMP_ROUND = 1
+"""竞争比的小数位。"""
+
+TREND_ROUND = 3
+"""配额趋势的小数位。"""
+
+TREND_TIGHT = -0.3
+"""配额腰斩线:趋势 ≤ -30% 直接压 tight(硬事件压档)。"""
+
+QUOTA_YEAR_LATEST = 2026
+"""配额取数优先年(有值就用它)。"""
+
+QUOTA_YEAR_PREV = 2025
+"""配额取数退档年(最新年没值时用)。"""
+
+ACTIVITY_DAYS = 180
+"""抽选活跃的回看窗(天)。"""
+
+ACTIVITY_EASY = 8
+"""窗内抽选次数 ≥ 此数 = easy。"""
+
+ACTIVITY_TIGHT = 2
+"""窗内抽选次数 ≤ 此数 = tight。"""
+
+SCORE_DAYS = 730
+"""分数线水位的回看窗(天;近 24 个月)。"""
+
+SCORE_MIN_DRAWS = 6
+"""窗内带分抽选少于此数就不出水位因子(样本太少的分位无意义)。"""
+
+SCORE_EASY_PCT = 40
+"""水位分位 < 此数 = easy。"""
+
+SCORE_TIGHT_PCT = 70
+"""水位分位 > 此数 = tight。"""
+
+ASOF_MONTH_LEN = 7
+"""季度参考日 → 快照月的截断长度(如 2026-04-01 取前 7 位;前端原样显示不再拼 -12)。"""
+
+TIER_EASY = "easy"
+"""档位:机会较多。"""
+
+TIER_MID = "mid"
+"""档位:一般。"""
+
+TIER_TIGHT = "tight"
+"""档位:竞争激烈。"""
+
+FACTOR_COMP = "comp"
+"""因子键:竞争比。"""
+
+FACTOR_QUOTA_TREND = "quotaTrend"
+"""因子键:配额趋势。"""
+
+FACTOR_ACTIVITY = "activity"
+"""因子键:抽选活跃。"""
+
+FACTOR_SCORE_LEVEL = "scoreLevel"
+"""因子键:分数线水位。"""
+
+K_SCALE = "scale"
+"""省抽选块键:分制(BC 的 SIRS 与 AB 的 CRS 不可比,只跟自己比)。"""
+
+DIFF_PRINT_TPL = "IN_TR={tr}\nIN_ALLOC={alloc}\nIN_DRAWS={draws}\nOUT={out}"
+"""段7 开工报四条路径(原脚本一次 print 四行,原样保留 —— 旧输出序是「→ difficulty」在前、
+路径行在后,故这行由入口函数首行打,不在模块级)。"""
+
+DIFF_ROW_TPL = "{prov}: tier={tier} comp={comp} factors={n}"
+"""段7 逐省报数(tier/comp 可能是 None,原 f-string 直接打 None,原样保留)。"""
+
+DIFF_DONE_TPL = "done → {path}"
+"""段7 收尾报输出路径。"""

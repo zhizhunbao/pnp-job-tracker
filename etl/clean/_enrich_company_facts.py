@@ -109,7 +109,9 @@ def main() -> None:
         else:
             r = wikidata_lookup(co)
             time.sleep(0.6)               # 温和限速
-        if r == ERR:
+        # `isinstance(r, str)` == `r == ERR`(wikidata_lookup 只在失败时返 str,见其签名 dict|str|None);
+        # 换成 isinstance 是为了让检查器把 r 收窄成 dict|None —— 下面那行才敢按键取(批I3 三板斧②)
+        if isinstance(r, str):
             n_err += 1
             continue                       # 失败不写缓存,下轮重试
         by_name[co] = {"wiki_checked": 1, **({"zh": r["zh"], "ko": r["ko"], "wiki": r["wiki"]} if r else {})}

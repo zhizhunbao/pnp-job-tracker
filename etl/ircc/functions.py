@@ -6,9 +6,11 @@ docs/design/etl分域-20260829.md §4)。
 与 constants.py 同名同序镜像),各段入口函数与原脚本同名、一律零参,门(main.py)直调。
 ⚠ 2026-08-31 批H2:原段5「省移民难度因子重算」整段退役 —— 那是 clean/04e_difficulty.py 的
 subprocess 包装(零参壳 build_clean_difficulty + constants 三常量),04e 本批归户成
-etl/ircc/build_ircc_difficulty.py 由门直调,包装没有存在的理由;它不溶进本文件,因为本文件是
-「抓官方源的五步」,难度指数是零网络的纯算件,独立成步骤文件更好单跑。沿革全文
-(含批F 换解释器那条坑)见 build_ircc_difficulty.py 头注释。原段6/7 顺次前移成段5/6。
+etl/ircc/build_ircc_difficulty.py 由门直调,包装没有存在的理由。原段6/7 顺次前移成段5/6。
+⚠ 2026-08-31 批I3 溶段:上面那个步骤文件也溶了 —— build_ircc_difficulty.py 整件进本文件
+成**段7**(编号接段尾,不插回链序位:它是零网络纯算件,与前六段的「抓官方源」不同类)。
+批H2 判它「独立成步骤文件更好单跑」的理由已不成立:门 `--only difficulty` 直调段函数一样单跑。
+沿革全文(含批F 换解释器那条坑)逐字随迁进段7 入口函数的 docstring,一条不丢。
 **零字符串令**:字面量全住 constants(文案 *_TPL 模板、JSON 键 K_ 词族、官方原句在 *_RULES);
 **显式循环令**:禁推导/genexp/lambda;**内嵌禁令**:内部函数出户成顶层具名函数;
 **一参令**:函数至多一参,多入参收 scheme 的 XxxIn dataclass,多返回值收 XxxOut。
@@ -27,7 +29,7 @@ import json
 import sys
 import urllib.request
 import re
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import cast
 from io import BytesIO
 
@@ -41,6 +43,11 @@ from fetch.constants import HDR_UA, PARSER_HTML, WS_RE
 from crawl.functions import convert_md
 from crawl.scheme import ConvertIn
 from ircc.constants import (
+    ACTIVITY_DAYS, ACTIVITY_EASY, ACTIVITY_TIGHT, ASOF_MONTH_LEN, COMP_EASY, COMP_ROUND,
+    COMP_TIGHT, DIFF_DONE_TPL, DIFF_PRINT_TPL, DIFF_PROVS, DIFF_ROW_TPL, FACTOR_ACTIVITY,
+    FACTOR_COMP, FACTOR_QUOTA_TREND, FACTOR_SCORE_LEVEL, IN_ALLOC, IN_DRAWS, IN_TR_PROV, K_SCALE,
+    OUT_DIFFICULTY, QUOTA_YEAR_LATEST, QUOTA_YEAR_PREV, SCORE_DAYS, SCORE_EASY_PCT,
+    SCORE_MIN_DRAWS, SCORE_TIGHT_PCT, TIER_EASY, TIER_MID, TIER_TIGHT, TREND_ROUND, TREND_TIGHT,
     BLANK_VALUES, COMMA, COORD_SEP, COORD_TPL, ENC_UTF8, FEE_FACTOR, FEE_OP, FEE_UNIT, FEES_BIO_ITEMS, FEES_BULLET_TPL,
     FEES_DONE_TPL, FEES_DROP_TAGS, FEES_FAIL_HEADER, FEES_ITEMS, FEES_NOTE, FEES_PRINT_OUT_TPL,
     FEES_PROBLEM_ITEM_TPL, FEES_PROBLEM_NO_SECTION_TPL, FEES_PROBLEM_RPRF_TPL, FEES_PROGRAM,
@@ -76,8 +83,11 @@ from ircc.constants import (
 )
 from ircc.scheme import (
     SheetLike,
-    ByProvIn, CellAtIn, CoordIn, FailIn, FeeRowIn, FlowGotIn, FlowMonthsIn, FlowTailIn,
-    FlowYearIn, ItemsOut, MemberIds, NprRowsIn, PgwpReqIn, QuartersIn, SectionItemsIn, YearTotals,
+    ActivityFactorIn, ActivityIn, ByProvIn, CellAtIn, CompFactorIn, CompIn, CoordIn, DiffDocIn,
+    DiffProvIn, DiffProvOut, DiffRowIn, DrawRow, FailIn, FeeRowIn, FlowGotIn, FlowMonthsIn,
+    FlowTailIn, FlowYearIn, ItemsOut, MemberIds, NprRowsIn, PgwpReqIn, PoolOut, QuartersIn,
+    QuotaOut, ScoreFactorIn, ScoreLevelIn, ScoredDraw, ScoredIn, SectionItemsIn, TrendFactorIn,
+    YearTotals,
 )
 
 # =========================================================================
@@ -884,3 +894,296 @@ def build_ircc_fees() -> None:
         K_REQUIREMENTS: reqs,
     }, indent=INDENT_1))
     say(FEES_DONE_TPL.format(n=len(reqs), by=fees_by_stream(reqs)))
+
+
+# =========================================================================
+# 7. 省移民难度指数(E12-07;纯算件,零网络,只吃前三步落好的 raw + pnp draws)
+# =========================================================================
+
+
+def build_ircc_difficulty() -> None:
+    """重算九省移民难度因子 → processed/difficulty.json(入口,门直调)。
+
+    IN : 段4 的分省临时居民存量 + 人工配额表 + pnp 域抽选记录
+    OUT: processed/difficulty.json
+    档位:easy/mid/tight;缺数留空不猜,逐因子带 source+asOf,禁概率。
+    2026-08-31 批I3 溶段:原 build_ircc_difficulty.py(批H2 由 clean/04e_difficulty.py 归户)
+    整件溶进本段,算法一字未动 —— 只按方言律拆件:字面量提名进 constants、推导式与 genexp
+    改显式 for、`sorted(key=lambda)` 出户成 scored_date_of、落盘键收进 to_* 行构造器。
+    沿革(逐条从被拆掉的包装件搬来,一条不丢):
+      · 批C(2026-08-30)ircc 五步全溶时它**留在 clean/ 没溶**,理由记的是「clean 是清洗
+        横切层、跨源生效」;批H2 复验消费面推翻此判 —— 三个输入两个是 ircc 自己的 raw
+        (statcan_tr_prov)+ pnp draws + 人工配额表,产出 difficulty.json 只有 mart 的
+        build_mart_stats 一个消费者,不跨源生效,按「谁的数据谁管」归 ircc。
+      · 随之拆掉的包装三件:functions.py 的 build_clean_difficulty(subprocess 壳)、
+        constants.py 的 DIFFICULTY_SCRIPT / DIFFICULTY_FAIL_TPL,以及记「批F 把裸
+        `python` 换成 sys.executable」的 DIFFICULTY_PY_RETIRED_NOTE —— 换解释器那条坑
+        (uv 环境下裸 `python` 解析到基础解释器而非项目 .venv,批F 在 jobbank 域实撞
+        ModuleNotFoundError;04e 只用标准库 + paths 没炸纯属侥幸)随子进程一起消失。
+      · 「一步失败中止本轮」的硬闸改由本函数抛出的异常兑现(门 main 捕获后 return 1),
+        与旧的「子进程非零即中止」同义;批I3 溶段后连步骤文件也没了,语义不变。
+    """
+    say(DIFF_PRINT_TPL.format(tr=IN_TR_PROV, alloc=IN_ALLOC, draws=IN_DRAWS, out=OUT_DIFFICULTY))
+    tr = json.loads(IN_TR_PROV.read_text(encoding=ENC_UTF8))
+    alloc = to_alloc_table(json.loads(IN_ALLOC.read_text(encoding=ENC_UTF8)))
+    draws = to_draws_table(json.loads(IN_DRAWS.read_text(encoding=ENC_UTF8)))
+    by_prov = tr.get(K_BY_PROV)
+    if not by_prov:
+        by_prov = {}
+    latest_ref = tr.get(K_LATEST_REF_PER)
+    if not latest_ref:
+        latest_ref = latest_ref_of(by_prov)
+    today = date.today()
+    tr_asof = latest_ref[:ASOF_MONTH_LEN]
+    rows = []
+    for prov in DIFF_PROVS:
+        got = difficulty_row(DiffProvIn(
+            prov=prov, by_prov=by_prov, latest_ref=latest_ref, tr_asof=tr_asof,
+            tr_source=tr.get(K_SOURCE, ""), alloc=alloc, draws=draws,
+            cut_activity=(today - timedelta(days=ACTIVITY_DAYS)).isoformat(),
+            cut_score=(today - timedelta(days=SCORE_DAYS)).isoformat(),
+            today_iso=today.isoformat()))
+        rows.append(got.row)
+        say(DIFF_ROW_TPL.format(prov=prov, tier=got.tier, comp=got.comp, n=got.n_factors))
+    doc = to_difficulty_doc(DiffDocIn(generated=today.isoformat(), tr_asof=tr_asof, rows=rows))
+    paths.write_json(paths.WriteJsonIn(path=OUT_DIFFICULTY, payload=doc, indent=INDENT_1))
+    say(DIFF_DONE_TPL.format(path=OUT_DIFFICULTY))
+
+
+def difficulty_row(x: DiffProvIn) -> DiffProvOut:
+    """一省 → 因子清单 + 总档。
+
+    合成:竞争比(全省可得的主导因子)定基档;配额腰斩(≤-30%)压到 tight;
+    竞争比缺 → 档 null(2026-07-20 调整:原「因子<2 不给档」会废掉 5 省,竞争比单因子
+    即够给档,卡上显依据数)。
+    """
+    factors: list = []
+    pool = to_pool(prov_cell_of(x))
+    quota = to_quota(prov_alloc_of(x))
+    comp = comp_ratio(CompIn(pool=pool.total, quota=quota.value))
+    if comp is not None and quota.value is not None:
+        factors.append(to_comp_factor(CompFactorIn(
+            value=comp, pool=pool.total, pool_study=pool.study, pool_work=pool.work,
+            quota=quota.value, quota_year=quota.year, source=x.tr_source, as_of=x.tr_asof)))
+    if quota.trend is not None:
+        factors.append(to_trend_factor(TrendFactorIn(
+            value=quota.trend, source=quota.source, as_of=str(QUOTA_YEAR_LATEST))))
+    factors += draw_factors(x)
+    tier = None
+    if comp is not None:
+        tier = tier_of_comp(comp)
+        if quota.trend is not None and quota.trend <= TREND_TIGHT:
+            tier = TIER_TIGHT
+    row = to_difficulty_row(DiffRowIn(prov=x.prov, tier=tier, factors=factors))
+    return DiffProvOut(row=row, tier=tier, comp=comp, n_factors=len(factors))
+
+
+def prov_cell_of(x: DiffProvIn) -> dict:
+    """一省在最新季度的证型格(省缺 / 该季缺 → 空格,原式两级 `or {}`)。"""
+    quarters = x.by_prov.get(x.prov)
+    if not quarters:
+        return {}
+    cell = quarters.get(x.latest_ref)
+    if not cell:
+        return {}
+    return cell
+
+
+def prov_alloc_of(x: DiffProvIn) -> dict:
+    """一省的配额行(缺省 → 空行,原式 `alloc.get(p) or {}`)。"""
+    row = x.alloc.get(x.prov)
+    if not row:
+        return {}
+    return row
+
+
+def comp_ratio(x: CompIn) -> float | None:
+    """竞争比 = 人数池 ÷ 配额;任一为空/零 → None(不出该因子)。"""
+    if x.pool and x.quota:
+        return round(x.pool / x.quota, COMP_ROUND)
+    return None
+
+
+def draw_factors(x: DiffProvIn) -> list:
+    """③④ 抽选活跃 + 分数线水位(只有官方公布抽选数据的省才出这两个因子)。"""
+    block = x.draws.get(x.prov)
+    if not block:
+        return []
+    rows = to_draw_rows(block)
+    if len(rows) == 0:
+        return []
+    factors = [to_activity_factor(activity_of(ActivityIn(
+        rows=rows, block=block, cut=x.cut_activity, today_iso=x.today_iso)))]
+    scored = scored_draws(ScoredIn(rows=rows, cut=x.cut_score))
+    if len(scored) < SCORE_MIN_DRAWS:
+        return factors
+    factors.append(to_score_factor(score_level_of(ScoreLevelIn(scored=scored, block=block))))
+    return factors
+
+
+def activity_of(x: ActivityIn) -> ActivityFactorIn:
+    """窗内抽选次数与邀请量合计(原列表推导 + genexp 拆成显式 for)。"""
+    n = 0
+    invitations = 0
+    for row in x.rows:
+        if row.date >= x.cut:
+            n += 1
+            invitations += row.invitations
+    return ActivityFactorIn(value=n, invitations=invitations, source=block_url_of(x.block),
+                            as_of=x.today_iso)
+
+
+def scored_draws(x: ScoredIn) -> list:
+    """窗内带分抽选,按日期升序(原 `sorted(key=lambda)`,lambda 出户成 scored_date_of)。"""
+    picked = []
+    for row in x.rows:
+        if row.score is None:
+            continue
+        if row.date < x.cut:
+            continue
+        picked.append(ScoredDraw(date=row.date, score=row.score))
+    return sorted(picked, key=scored_date_of)
+
+
+def scored_date_of(row: ScoredDraw) -> str:
+    """排序键:抽选日。"""
+    return row.date
+
+
+def score_level_of(x: ScoreLevelIn) -> ScoreFactorIn:
+    """最新分在窗内分布里的分位(≤ 最新分的场次占比,四舍五入到整数百分数)。"""
+    latest = x.scored[-1]
+    hit = 0
+    for row in x.scored:
+        if row.score <= latest.score:
+            hit += 1
+    return ScoreFactorIn(value=round(hit / len(x.scored) * PCT_SCALE), latest_score=latest.score,
+                         scale=block_scale_of(x.block), source=block_url_of(x.block),
+                         as_of=latest.date)
+
+
+def tier_of_comp(v: float) -> str:
+    """竞争比 → 档位。"""
+    if v < COMP_EASY:
+        return TIER_EASY
+    if v > COMP_TIGHT:
+        return TIER_TIGHT
+    return TIER_MID
+
+
+def tier_of_trend(v: float) -> str:
+    """配额趋势 → 档位(不降即 easy,腰斩即 tight)。"""
+    if v >= 0:
+        return TIER_EASY
+    if v <= TREND_TIGHT:
+        return TIER_TIGHT
+    return TIER_MID
+
+
+def tier_of_activity(n: int) -> str:
+    """窗内抽选次数 → 档位。"""
+    if n >= ACTIVITY_EASY:
+        return TIER_EASY
+    if n <= ACTIVITY_TIGHT:
+        return TIER_TIGHT
+    return TIER_MID
+
+
+def tier_of_score(pct: int) -> str:
+    """分数线水位分位 → 档位。"""
+    if pct < SCORE_EASY_PCT:
+        return TIER_EASY
+    if pct > SCORE_TIGHT_PCT:
+        return TIER_TIGHT
+    return TIER_MID
+
+
+def to_alloc_table(doc: dict) -> dict:
+    """配额表 → {省码: 配额行}(原字典推导拆成显式 for)。"""
+    table: dict = {}
+    for row in doc["rows"]:
+        table[row["prov"]] = row
+    return table
+
+
+def to_draws_table(doc: dict) -> dict:
+    """抽选表 → {省码: 省块}。"""
+    return doc["provinces"]
+
+
+def to_draw_rows(block: dict) -> list:
+    """一省抽选块 → 三格行清单(缺格兜底照原式:日期空串、邀请量 0)。"""
+    rows = []
+    for row in block.get("draws", []):
+        rows.append(DrawRow(date=row.get("date") or "", invitations=row.get("invitations") or 0,
+                            score=row.get("score")))
+    return rows
+
+
+def block_url_of(block: dict) -> str:
+    """一省抽选块的出处地址(缺 → 空串)。"""
+    return block.get(K_URL, "")
+
+
+def block_scale_of(block: dict) -> str:
+    """一省抽选块的分制(缺 → 空串;分制不可比红线:只跟自己比)。"""
+    return block.get(K_SCALE, "")
+
+
+def to_pool(cell: dict) -> PoolOut:
+    """一省一季度的证型格 → 学签池 / 工签池 / 合计。"""
+    study_only = cell.get("studyOnly") or 0
+    work_study = cell.get("workStudy") or 0
+    work_only = cell.get("workOnly") or 0
+    study = study_only + work_study
+    work = work_only + work_study
+    return PoolOut(study=study, work=work, total=study + work)
+
+
+def to_quota(row: dict) -> QuotaOut:
+    """配额行 → 取数(最新年有值优先,否则退上一年)+ 两年都有才出的趋势。"""
+    latest = row.get("y2026")
+    prev = row.get("y2025")
+    source = row.get("source", "")
+    trend = None
+    if latest and prev:
+        trend = round(latest / prev - 1, TREND_ROUND)
+    if latest:
+        return QuotaOut(value=latest, year=QUOTA_YEAR_LATEST, source=source, trend=trend)
+    return QuotaOut(value=prev, year=QUOTA_YEAR_PREV, source=source, trend=trend)
+
+
+def to_comp_factor(x: CompFactorIn) -> dict:
+    """竞争比因子行(落盘键顺序即文件契约,逐格写全)。"""
+    return {"key": FACTOR_COMP, "value": x.value, "pool": x.pool, "poolStudy": x.pool_study,
+            "poolWork": x.pool_work, "quota": x.quota, "quotaYear": x.quota_year,
+            "tier": tier_of_comp(x.value), "source": x.source, "asOf": x.as_of}
+
+
+def to_trend_factor(x: TrendFactorIn) -> dict:
+    """配额趋势因子行。"""
+    return {"key": FACTOR_QUOTA_TREND, "value": x.value, "tier": tier_of_trend(x.value),
+            "source": x.source, "asOf": x.as_of}
+
+
+def to_activity_factor(x: ActivityFactorIn) -> dict:
+    """抽选活跃因子行。"""
+    return {"key": FACTOR_ACTIVITY, "value": x.value, "invitations": x.invitations,
+            "tier": tier_of_activity(x.value), "source": x.source, "asOf": x.as_of}
+
+
+def to_score_factor(x: ScoreFactorIn) -> dict:
+    """分数线水位因子行。"""
+    return {"key": FACTOR_SCORE_LEVEL, "value": x.value, "latestScore": x.latest_score,
+            "scale": x.scale, "tier": tier_of_score(x.value), "source": x.source,
+            "asOf": x.as_of}
+
+
+def to_difficulty_row(x: DiffRowIn) -> dict:
+    """一省行。"""
+    return {"province": x.prov, "tier": x.tier, "factors": x.factors}
+
+
+def to_difficulty_doc(x: DiffDocIn) -> dict:
+    """落盘表。"""
+    return {"generated": x.generated, "trAsOf": x.tr_asof, "rows": x.rows}

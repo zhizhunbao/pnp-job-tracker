@@ -687,7 +687,9 @@ IN_STATS = paths.MART / "stats_occupation.json"
 不连库、不抓网。"""
 
 IN_DESCR = paths.MART / "noc_descriptions.json"
-"""输入:官方名 + 中文名(职业名的真相来源)。"""
+"""输入:官方名 + 中文名(职业名的真相来源)。
+段5(audit)、段6(titles)、段7(short)三段共读同一张表 —— 2026-08-31 批I3 溶段后
+消费者从一个变三个,路径写三遍就是三份真相,故在本处一次声明、三段共用。"""
 
 OUT_TSV = paths.PROCESSED / "noc_class_audit.tsv"
 """输出:全量逐条(拿去 Excel 里逐行看)。"""
@@ -838,3 +840,414 @@ K_PROVINCE = "province"
 
 PROVINCE_ALL = "all"
 """stats_occupation 的全国汇总行标记。"""
+
+
+# =========================================================================
+# 6. titles 步(NOC 官方职业名的中/韩译名;#147)
+# =========================================================================
+
+OUT_TITLES_I18N = paths.PROCESSED / "noc_titles_i18n.json"
+"""段6/段7 共同的产出表:noc → {zh, ko, zhShort, koShort, enShort}(幂等续跑,已翻的跳过)。
+09 汇装读它给职位/NOC 页出中韩名。
+
+**为什么值得翻**:NOC 是**固定参考集**(487 个 5 位码,官方极少改)—— 翻一次永久复用,
+不是每个岗位现翻;与「翻译走线上懒翻不提前批量」的拍板不冲突(那条针对的是**新闻正文**
+这类持续增量的内容)。
+口径(Frank 拍板「英文在前」):英文名仍是主文案,译名只作灰字小注 → 只需**准确**不需文采。
+职业名是术语,本地 qwen3.6 足够;逐条校验(非空/不回英文/长度合理),不过关留空
+——**宁可留空也不瞎猜**。"""
+
+CHAT_URL_TPL = "{base}/api/chat"
+"""本地模型的 chat 端点(段6/段7 共用)。
+⚠ 与段3 translate() 的 `/api/generate`(GEN_URL_TPL)**是两套调用,本批不合并**:
+端点不同、temperature 不同(0 vs 0.1)、还多带 num_predict,合并等于换模型输入 = 换产出。
+段3 那套只服务 structure 的层级名,段6/7 这套服务职业名与短名;两套之间只收拢真重复的
+部分(env 取值 —— ollama_base/ollama_model 三处原本各抄一份,溶段时收成一份)。"""
+
+CHAT_TIMEOUT_S = 90
+"""段6/段7 单次 chat 调用超时(两件原值一致)。"""
+
+CHAT_TEMPERATURE = 0.1
+"""段6/段7 的采样温度(两件原值一致;段3 是 0,不是一套)。"""
+
+TITLES_NUM_PREDICT = 60
+"""段6 的输出上限 token 数(段7 是 40 —— **两套 ask() 逐字比对后唯一的差异**,
+故收拢时把它收成入参而不是写死:超集 = 参数化,证据见交付报告)。"""
+
+TITLES_LANGS = ("zh", "ko")
+"""段6 要翻的两门语言(顺序即调用序)。"""
+
+ROLE_USER = "user"
+"""chat 请求体里的消息角色(段6/段7 都只发一条 user 消息)。"""
+
+TITLES_EMPTY_MARK = "—"
+"""段6 进度行里空中文译名的占位(原脚本 `cur.get('zh', '—')` 的默认值,与段3 的
+EMPTY_MARK「(空)」不是一个,别并)。"""
+
+TITLES_MIN_LEN = 1
+"""译名长度下界(严格大于:1 个字符的译名一律判失败,原式 `1 < len(out)`)。"""
+
+TITLES_MAX_LEN = 40
+"""译名长度上界(含)。"""
+
+TITLES_SAVE_EVERY = 20
+"""每翻多少条落一次盘(长跑中断不丢已翻结果)。"""
+
+TITLES_PROMPT_TPL = """把下面这个加拿大官方职业分类(NOC)的职业名称翻译成{lang}。
+
+规则:
+- 只输出译名本身,不要解释、不要引号、不要标点结尾。
+- 用该语言求职者习惯的职业称谓(如 Physiotherapists → 物理治疗师)。
+- 名称含「- 限定语」的保留限定(如 Senior managers - health → 高级经理 - 医疗)。
+- 保持简洁,不加「人员」「工作者」等冗余后缀,除非原文确实如此。
+- 术语注意:职业名里的 trades 指「工种/技工」不是贸易;developer 指「开发人员」不是开发商。
+
+职业名称:{title}"""
+"""段6 的提示词(原脚本 PROMPT,一字未改)。"""
+
+TERM_FIX = [
+    ("软件开发商", "软件开发员"), ("开发商和程序员", "开发人员和程序员"),
+    ("建筑贸易", "建筑技工"), ("电气贸易", "电气技工"), ("管道贸易", "管道技工"),
+    ("木工贸易", "木工工种"), ("机械贸易", "机械工种"), ("贸易和电信", "技工和电信"),
+    ("建筑 Trades", "建筑技工"), ("Trades", "技工"),
+]
+"""多义词纠正(首轮 487 条实测出的错,模型重跑还会错 → 修进代码而非手改数据):
+  trades  职业名里是「工种/技工」,不是贸易(Construction trades helpers ≠ 建筑贸易)
+  developer 是「开发人员」,不是开发商(开发商=厂商/地产商)
+只做**确定性替换**,不猜:命中才换,换不了保持原样。"""
+
+TITLES_IN_TPL = "IN : {path}"
+"""段6 开工报输入(原脚本对齐空格原样)。"""
+
+TITLES_OUT_TPL = "OUT: {path}"
+"""段6 开工报输出。"""
+
+TITLES_MODEL_TPL = "模型: {model} @ {base}"
+"""段6 开工报模型与地址。"""
+
+TITLES_TERM_FIX_TPL = "术语纠正:存量改了 {n} 条"
+"""段6 存量术语纠正的报数(改了才打)。"""
+
+TITLES_TODO_TPL = "待翻 {n} 条(已有 {have} 条)"
+"""段6 报本轮待翻量。"""
+
+TITLES_PROGRESS_TPL = "  {i}/{n} · 成功 {ok} · 留空 {skip} · 最新: {title} → {zh}"
+"""段6 的落盘进度行。"""
+
+TITLES_DONE_TPL = "✓ {path}  ({full}/{n} 条中韩齐全;本轮成功 {ok} 留空 {skip})"
+"""段6 收尾报数。"""
+
+CHAT_FAIL_TPL = "! 本地模型调用失败({name}: {detail}),本条留空"
+"""段6/段7 调用失败的留痕行(原两件都是静默 `return ''` —— 永不吞异常令,
+2026-08-31 批I3 溶段时补留痕,行首 `!` 走 auto_update 的错误通道;留空回退的行为一字未改)。"""
+
+
+# =========================================================================
+# 7. short 步(NOC 职业名的窄位短名,中/韩/英三语;E8-14 3.3,2026-08-02 扩到三语)
+# =========================================================================
+
+SHORT_NUM_PREDICT = 40
+"""段7 的输出上限 token 数(段6 是 60;见 TITLES_NUM_PREDICT 的收拢说明)。"""
+
+SHORT_SAVE_EVERY = 25
+"""段7 每压缩多少条落一次盘。"""
+
+SHORT_MIN_LEN = 1
+"""短名长度下界(严格大于,原式 `1 < len(out)`)。"""
+
+SHORT_ZH_MAX = 7
+"""中文短名上限:与图表横轴的截断阈值对齐(轴上超过 7 字才加省略号);先试 6 太紧,
+「保险房地产和金融经纪业经理」压成「保险金融经纪人」是好名字,却因 7 字被判失败。"""
+
+SHORT_KO_MAX = 12
+"""韩文短名上限(字符数)。"""
+
+SHORT_EN_MAX = 32
+"""英文短名上限(字符数)。"""
+
+LANG_EN = "en"
+"""语言码:英文(段7 里 en 的原料是官方名而不是译名,单拎出来判)。"""
+
+ARG_LANG = "--lang"
+"""段7 手动开关:只压某几门语言(逗号分隔)。"""
+
+ARG_FORCE = "--force"
+"""段7 手动开关:已有短名也重压。"""
+
+ARG_SEP = ","
+"""`--lang zh,ko,en` 的分隔符。"""
+
+LATIN3_RE = re.compile(r"[A-Za-z]{3,}")
+"""中文短名里混进的成串英文(≥3 个拉丁字母 = 模型把英文原样吐回来了)。"""
+
+SHORT_LATIN_RE = re.compile(r"[A-Za-z]")
+"""英文短名必须含的字符(与段3 的 LATIN_RE `[A-Za-z]{4,}` 不是一回事,别并)。"""
+
+BAD_PUNCT_RE = re.compile(r"[。,,、;;::!!??\"'`]")
+"""标点一律去掉;空格另说(韩/英要留词间空格)。"""
+
+BAD_PUNCT_ZH_RE = re.compile(r"[。,,、;;::!!??\"'`\s]")
+"""中文短名连空格都不该有。"""
+
+SHORT_RULES = """规则:
+- 只输出短名本身,不要解释、不要引号、不要标点。
+- 保留最能识别这个职业的核心词,砍掉「及相关职业」「和相关支持工作」这类分类学尾巴。
+- 并列的多个职业只保留**第一个、也是最主要的那个**。
+- 不许编造原文没有的职业。看不懂就照抄完整名的前几个词。"""
+"""三语提示词共用的规则段(原脚本常量名 `_RULES`,溶段时去下划线前缀,值一字未改)。"""
+
+SHORT_PROMPT_ZH = """把下面这个加拿大职业分类的职业名压缩成**不超过 7 个汉字**的短名。
+
+""" + SHORT_RULES + """
+- 用求职者口语里的叫法,例:
+    Cooks / 厨师 → 厨师
+    Food counter attendants, kitchen helpers and related support occupations → 餐饮服务员
+    Automotive service technicians, truck and bus mechanics and mechanical repairers → 汽修技师
+    Home child care providers → 儿童保育员
+    Construction trades helpers and labourers → 建筑小工
+    Retail salespersons and visual merchandisers → 零售店员
+
+英文原名:{en}
+完整名:{src}"""
+"""段7 中文提示词(原脚本 PROMPT_ZH,一字未改)。"""
+
+SHORT_PROMPT_KO = """把下面这个加拿大职业分类的职业名压缩成**不超过 12 个字符的韩语**短名(한국어).
+
+""" + SHORT_RULES + """
+- 用韩国求职者习惯的职业称谓,例:
+    Registered nurses and registered psychiatric nurses / 등록 간호사 및 등록 정신과 간호사 → 간호사
+    Software developers and programmers → 소프트웨어 개발자
+    Construction trades helpers and labourers → 건설 보조원
+
+英文原名:{en}
+完整名:{src}"""
+"""段7 韩文提示词(原脚本 PROMPT_KO,一字未改)。"""
+
+SHORT_PROMPT_EN = """Shorten this Canadian NOC occupation title to at most 32 characters, in English.
+
+Rules:
+- Output the short title only. No explanation, no quotes, no trailing punctuation.
+- Keep the core identifying words; drop taxonomy tails like "and related occupations".
+- If several occupations are listed, keep only the first and main one.
+- Never invent an occupation that is not in the original.
+- Examples:
+    Registered nurses and registered psychiatric nurses -> Registered nurses
+    Food counter attendants, kitchen helpers and related support occupations -> Food counter attendants
+    Automotive service technicians, truck and bus mechanics and mechanical repairers -> Auto service technicians
+
+Official title: {en}"""
+"""段7 英文提示词(原脚本 PROMPT_EN,一字未改)。"""
+
+SHORT_SRC_FALLBACK = "(none)"
+"""原料为空时喂给提示词的占位(原式 `src or '(none)'`)。"""
+
+SPECS = {
+    "zh": {"field": "zhShort", "src": "zh", "max": SHORT_ZH_MAX, "charset": CJK_RE,
+           "prompt": SHORT_PROMPT_ZH, "strip": BAD_PUNCT_ZH_RE},
+    "ko": {"field": "koShort", "src": "ko", "max": SHORT_KO_MAX, "charset": HANGUL_RE,
+           "prompt": SHORT_PROMPT_KO, "strip": BAD_PUNCT_RE},
+    "en": {"field": "enShort", "src": "en", "max": SHORT_EN_MAX, "charset": SHORT_LATIN_RE,
+           "prompt": SHORT_PROMPT_EN, "strip": BAD_PUNCT_RE},
+}
+"""三语规格:字段名 / 取哪个完整名当原料 / 长度上限 / 必须含哪种字符 / 提示词 / 要剥的标点。
+加一门语言=加一行,不改流程(段6 的 LANGS 同精神)。键词汇只在 to_short_spec() 体内出现。
+
+**为什么必须单独生成、不能靠规则截断**(实测证据,别再试规则):
+  · 485 个中文名跑完「切、/及/和」的规则,**仍有 145 个超过 7 字**;
+  · 而且规则会切出错名 ——「汽车服务技师卡车和公共汽车机械师及机械维修员」被切成
+    「汽车服务技师**卡车**」(原文 Automotive service technicians, truck and bus mechanics…,
+    中译漏了「技师」后的逗号,规则无从断)。
+**为什么可以放手改**(2026-07-28 Frank 追问「中文也是官方的名吗」查实):
+  NOC 2021 官方只有**英文与法文**,中文名本来就是本站用本地模型翻的(见段6)。
+  所以短名不是「篡改官方名」,只是把我们自己的译名写得更适合窄位显示。
+  **官方英文 title 一个字都不动**,永远是引用依据;完整译名 zh 也原样保留(弹框讲语义时要用)。"""
+
+SHORT_FIX = {
+    "63200": "厨师", "62200": "主厨",
+    "72410": "汽修技师", "72411": "钣金喷漆工",
+    "74203": "汽车服务工",
+    "13110": "行政助理", "12100": "高管助理",
+    "11200": "人力资源专员", "12101": "招聘专员",
+    "21301": "机械工程师", "22301": "机械技术员",
+    "00013": "高级经理-民生", "00014": "高级经理-贸易", "00015": "高级经理-工程",
+    "62101": "零售采购员", "14403": "采购文员",
+    "31111": "验光师", "32100": "配镜师",
+    "51100": "图书管理员", "14300": "图书馆助理",
+    "94142": "水产加工工", "95107": "水产普工",
+    "72405": "机械装配工", "94204": "装配检验工",
+    "94131": "纺织工", "95105": "纺织普工",
+    "83110": "伐木机械操作员", "84110": "油锯操作员",
+    "42102": "军队专业人员", "44200": "作战人员",
+    "40010": "政府经理-民生", "40011": "政府经理-经济",
+}
+"""短名撞车的人工裁决(按 NOC 码,照段6 的 TERM_FIX 先例)。
+模型逐条压缩,看不见「别的职业压出了同一个名字」,于是 Cooks 和 Chefs 双双变成「厨师」——
+图表横轴会出现两根都叫「厨师」的柱子。**中文本来分得清**(厨师/主厨),是译名丢了信息,
+所以修译名,不靠前端挂英文名打补丁。下面每一条都按官方英文名的实际语义定,不是随便改短
+(原逐条行内注,溶段时随迁进本 docstring,一条不丢):
+  63200/62200 Cooks / Chefs(TEER3 $41.6K vs TEER2 $57.5K)
+  72410/72411 机械维修 / 车身碰撞与喷漆
+  74203 Automotive service attendants(TEER4)
+  13110/12100 Administrative / Executive assistants
+  11200/12101 HR professionals / recruitment officers
+  21301/22301 工程师 / 技术员(TEER1 vs 2)
+  62101/14403 buyers / purchasing clerks
+  31111/32100 Optometrists / Opticians
+  51100/14300 Librarians / library assistants
+  94142/95107 plant workers / labourers(TEER4 vs 5)
+  40010/40011 Government managers - health/social vs economic analysis"""
+
+SHORT_FIX_KO = {
+    "63200": "요리사", "62200": "셰프",
+    "31111": "검안사", "32100": "안경사",
+    "00012": "고급관리자-금융", "00013": "고급관리자-보건",
+    "00014": "고급관리자-무역", "00015": "고급관리자-공학",
+    "22313": "항공전자정비사", "72404": "항공정비사",
+    "41300": "사회복지사", "42201": "지역사회복지원",
+    "72300": "배관공", "72301": "파이프피터",
+    "72410": "자동차정비사", "74203": "부품설치원",
+    "92015": "섬유가죽감독자", "92024": "제조감독자",
+}
+"""韩文短名的人工裁决(2026-08-02 首轮实测撞到的,与中文那三组**同源** ——
+官方英文本来就分得清 Cooks/Chefs、Optometrists/Opticians,是压缩时把区别丢了)。
+语义照中文 SHORT_FIX 对齐,不是随便改短。逐条(原行内注随迁):
+  63200/62200 Cooks / Chefs;31111/32100 Optometrists / Opticians
+  第二轮实跑撞车(照官方英文名与中文短名的语义分,不是随便改短):
+  22313/72404 仪表电气与航电 / 机体与检验
+  41300/42201 Social workers / Social and community service workers
+  72300/72301 Plumbers / Steamfitters·pipefitters
+  72410/74203 汽修技师 / 零件安装与服务(TEER4)
+  92015/92024 纺织皮革主管 / 其他制造主管"""
+
+SHORT_FIX_EN: dict = {}
+"""英文短名的裁决表:官方名本身区分度高,首轮跑完看撞车报告再补
+(留空是**有意**的,不是忘了)。"""
+
+SHORT_FIX_BY_LANG = {"zh": SHORT_FIX, "ko": SHORT_FIX_KO, "en": SHORT_FIX_EN}
+"""语言码 → 该语言的人工裁决表(原脚本是 `(("zh", SHORT_FIX), ...)` 元组序列,
+溶段时收成映射表 —— 各语言写的是不同的列,遍历序不影响结果)。"""
+
+SHORT_DUP_SHOW_MAX = 20
+"""撞车报告最多列几组。"""
+
+SHORT_DUP_SEP = ", "
+"""撞车明细里多个 NOC 码的分隔。"""
+
+SHORT_IN_TPL = "IN : {path}"
+"""段7 开工报输入。"""
+
+SHORT_OUT_TPL = "OUT: {path}"
+"""段7 开工报输出。"""
+
+SHORT_MODEL_TPL = "模型: {model} @ {base}   语言: {langs}"
+"""段7 开工报模型、地址与本轮语言(原脚本三空格对齐,原样)。"""
+
+SHORT_TODO_TPL = "[{lang}] 待压缩 {n} 条(≤{cap} 的已直接复用)"
+"""段7 报本轮待压缩量。"""
+
+SHORT_SKIP_TPL = "  ✗ {noc} {src} → {out!r}(不过校验,留空回退长名)"
+"""段7 单条未过校验的留痕行。"""
+
+SHORT_PROGRESS_TPL = "  [{lang}] {i}/{n} 已写盘(成功 {ok} / 留空 {skip})"
+"""段7 的落盘进度行。"""
+
+SHORT_LANG_DONE_TPL = "[{lang}] 本轮成功 {ok} / 未过校验 {skip}"
+"""段7 单语言收尾报数。"""
+
+SHORT_DUP_WARN_TPL = "⚠ [{lang}] 短名撞车 {n} 组(补进裁决表再跑):"
+"""段7 撞车抬头 —— 两个职业压出同一个短名 = 列表/图表里出现两个同名条目,
+**必须报出来**,不能静默上线(中文那次 Cooks 与 Chefs 双双变「厨师」就是这么抓到的;
+新 NOC 进来时这里会再次亮)。"""
+
+SHORT_DUP_ROW_TPL = "   {name}: {codes}"
+"""段7 撞车逐组明细。"""
+
+SHORT_DUP_OK_TPL = "✓ [{lang}] 短名无撞车"
+"""段7 无撞车时的报行。"""
+
+SHORT_HAVE_TPL = "  [{lang}] 累计有短名 {n} 条"
+"""段7 报该语言累计有短名的条数。"""
+
+SHORT_DONE_TPL = "✓ {path}"
+"""段7 收尾报产出路径。"""
+
+
+# =========================================================================
+# 8. cities 步(城市名的中/韩通行译名;#151,人工核定清单不用模型)
+# =========================================================================
+
+OUT_CITY_I18N = paths.PROCESSED / "city_names_i18n.json"
+"""段8 输出:name|prov → {zh, ko}(09 汇装读)。
+
+**为什么不用模型**:首版让本地模型判断「有无通行译名」,实测 94 个城市里 93 个都给了中文名 ——
+小镇根本没有通行译名,模型在硬音译(Rivière-du-Loup→「洛普河」错成河名;Port Coquitlam→
+「波特科奎特兰」,而华人社区通行叫「高贵林」)。这类「看着像那么回事其实是编的」正是本项目
+红线(宁可留空也不瞎猜),且用户搜不到、用不上 = 纯噪音。
+于是改成**有限的人工核定表**:只收华人/韩人社区确实通行的城市名(大多是移民实际聚居地),
+表外一律留空 → 前端只显英文。加新城市=直接往 CITIES 里加一行,不需要跑模型。
+本件零调度零 import(不在任何定时链/建表链上),是手动件 —— 只进 noc/main.py 的 TOOLS。
+⚠ **归属存疑,待 lead/Frank 复判**:它产的是城市译名不是 NOC 译名,住 noc 域纯粹因为
+「三张 i18n 表同批同形、09 汇装时并排读」;按「谁的数据谁管」它更像地点侧(fsa/location)
+的东西。批H2 的派工点名了 noc,批I3 只溶不改判。"""
+
+CITIES = {
+    "Toronto|ON": ("多伦多", "토론토"),
+    "Mississauga|ON": ("密西沙加", "미시소가"),
+    "Brampton|ON": ("布兰普顿", "브램턴"),
+    "Markham|ON": ("万锦", "마컴"),
+    "Richmond Hill|ON": ("列治文山", "리치먼드힐"),
+    "Vaughan|ON": ("旺市", "본"),
+    "Scarborough|ON": ("士嘉堡", "스카버러"),
+    "North York|ON": ("北约克", "노스요크"),
+    "Etobicoke|ON": ("怡陶碧谷", "이토비코"),
+    "Ottawa|ON": ("渥太华", "오타와"),
+    "Hamilton|ON": ("汉密尔顿", "해밀턴"),
+    "London|ON": ("伦敦", "런던"),
+    "Windsor|ON": ("温莎", "윈저"),
+    "Waterloo|ON": ("滑铁卢", "워털루"),
+    "Kitchener|ON": ("基奇纳", "키치너"),
+    "Oakville|ON": ("奥克维尔", "오크빌"),
+    "Burlington|ON": ("伯灵顿", "벌링턴"),
+    "Kingston|ON": ("金斯顿", "킹스턴"),
+    "Guelph|ON": ("圭尔夫", "겔프"),
+    "Oshawa|ON": ("奥沙瓦", "오샤와"),
+    "Niagara Falls|ON": ("尼亚加拉瀑布城", "나이아가라폴스"),
+    "Vancouver|BC": ("温哥华", "밴쿠버"),
+    "Surrey|BC": ("素里", "서리"),
+    "Burnaby|BC": ("本拿比", "버나비"),
+    "Richmond|BC": ("列治文", "리치먼드"),
+    "Coquitlam|BC": ("高贵林", "코퀴틀람"),
+    "Port Coquitlam|BC": ("高贵林港", "포트코퀴틀람"),
+    "Victoria|BC": ("维多利亚", "빅토리아"),
+    "Abbotsford|BC": ("阿伯茨福德", "애보츠퍼드"),
+    "Kelowna|BC": ("基洛纳", "켈로나"),
+    "Nanaimo|BC": ("纳奈莫", "나나이모"),
+    "Calgary|AB": ("卡尔加里", "캘거리"),
+    "Edmonton|AB": ("埃德蒙顿", "에드먼턴"),
+    "Red Deer|AB": ("红鹿市", "레드디어"),
+    "Lethbridge|AB": ("莱斯布里奇", "레스브리지"),
+    "Montréal|QC": ("蒙特利尔", "몬트리올"),
+    "Montreal|QC": ("蒙特利尔", "몬트리올"),
+    "Québec|QC": ("魁北克市", "퀘벡시티"),
+    "Laval|QC": ("拉瓦尔", "라발"),
+    "Gatineau|QC": ("加蒂诺", "가티노"),
+    "Sherbrooke|QC": ("舍布鲁克", "셔브룩"),
+    "Winnipeg|MB": ("温尼伯", "위니펙"),
+    "Saskatoon|SK": ("萨斯卡通", "사스카툰"),
+    "Regina|SK": ("里贾纳", "리자이나"),
+    "Halifax|NS": ("哈利法克斯", "핼리팩스"),
+    "Moncton|NB": ("蒙克顿", "몽턴"),
+    "Fredericton|NB": ("弗雷德里克顿", "프레더릭턴"),
+    "Charlottetown|PE": ("夏洛特敦", "샬럿타운"),
+    "St. John's|NL": ("圣约翰斯", "세인트존스"),
+}
+"""城市 → (中文, 韩文)。收录门槛=该译名在中文/韩文媒体或移民社区确实通行,不是音译练习。
+落盘顺序即本表顺序,不排序(产物 diff 稳定)。
+原表按 安大略(21)/ 卑诗(10)/ 阿尔伯塔(4)/ 魁北克(6)/ 草原三省与大西洋(8)五组排列,
+分组的行内注释随方言律(注释只许 docstring)退役,组界即上面五段的断点。"""
+
+CITIES_OUT_TPL = "OUT: {path}"
+"""段8 开工报输出。"""
+
+CITIES_DONE_TPL = "✓ {n} 个城市(人工核定;表外城市留空,前端只显英文)"
+"""段8 收尾报数。"""

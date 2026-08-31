@@ -7,8 +7,8 @@ rules 与 flag 不进默认链,在 TOOLS 里:rules 随 crawl 缓存轮次手动�
 exit 1);flag 是 **load 建表链上的一步**(它要排在岗位抓取之后、建表之前,顺序归那条链
 排,不能在本域自己的定时轮里抢跑)—— 2026-08-31 批H2 从 clean/05c 归户进来,链上那行由
 lead 收口改成 `("python", "etl/aip/main.py", "--only", "flag")`。
-本门直调步骤文件的 run(),不是全溶域那种直调 functions.py 段函数(flag 是搬家批迁入件,
-方言全溶留后续滚动批;同形先例 etl/ats/main.py)。
+2026-08-31 批I3:flag 溶进 functions.py 段4,本域步骤文件清零,三步全是段函数直调
+(全溶域的门形)。
 调度声明(role/interval)在本域 __init__.py 的 META;auto_update 按 role 自动发现。
 一律从仓库根执行:
     python etl/aip/main.py                        # 默认链(一步)
@@ -19,8 +19,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
-from aip.flag_aip_jobs import run as flag_aip_jobs
-from aip.functions import build_aip_rules, scrape_aip_employers
+from aip.functions import build_aip_rules, flag_aip_jobs, scrape_aip_employers
 
 SCHEDULED = [
     ("employers", scrape_aip_employers),
@@ -37,7 +36,8 @@ TOOLS = {
   rules      AIP 申请人门槛库(引用核验未过即 exit 1)→ raw/ircc/aip_rules.json
              (原 pilot 域 TOOLS 键叫 aip_rules,批E 拆域后域名已说 AIP,键收成 rules)
   flag       employers 名单 × 岗位雇主名 → 就地写回 postings.json / ATS jobs.json 的 aip
-             (原 clean/05c_flag_aip.py,2026-08-31 批H2 归户;归 load 建表链排序,不进本域默认链)
+             (原 clean/05c_flag_aip.py,2026-08-31 批H2 归户、批I3 溶成 functions 段4;
+             归 load 建表链排序,不进本域默认链)
 """
 
 

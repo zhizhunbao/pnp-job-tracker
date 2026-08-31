@@ -1,17 +1,19 @@
 """
-ats 域唯一入口(一域一门;2026-08-31 批F 立域,**搬家批**:04 抓岗件自编号主管线
-迁入改名,抓取逻辑一字未动 —— 方言全溶留后续滚动批,故本门直调步骤文件的 run(),
-不是全溶域那种直调 functions.py 段函数;门形样张 etl/ircc/main.py)。
+ats 域唯一入口(一域一门;两个步骤文件 2026-08-31 批I 全溶进 functions.py,本门直调函数,
+不再 import 步骤模块 —— 全溶域的门形,样张 etl/company/main.py 与 etl/ircc/main.py)。
 
 SCHEDULED = 本域步骤真相 —— **顺序即语义,一步失败中止本轮**(两步逐字复刻旧
 sources/ats 役册 META.steps):抓各家 ATS 公开 JSON → 抽 ATS 结构化薪资。
-2026-08-31 批H2 归户:salary 一步的 clean/04b 迁进本域成 ats/extract_ats_salary.py
-(判据「谁的数据谁管」—— 它只读写 ATS 各司 jobs.json,不是真横切),本门随之
-**从 subprocess 包装改直调 run()**,与 scrape 一步同形。批F 的四件包装
-(extract_ats_salary / STEP_PY / SALARY_SCRIPT / STEP_FAIL_TPL)同批拆除;沿革留档:
-STEP_PY 当初钉 sys.executable 是因为本机 uv 环境下裸 `python` 解析到基础解释器而非项目
-.venv(批F 实撞 clean/05 起手 bs4 ModuleNotFoundError)—— 直调后进程只有一个,这条坑消失。
-「一步失败中止本轮」的硬闸改由 run() 抛出的异常兑现(main 的 except 捕获后 return 1),
+沿革(逐字留档,批F/批H2 的两条决策一条不删):
+· 批F 立域搬家,04 抓岗件自编号主管线迁入改名;salary 一步当时还住 clean/,门里是
+  subprocess 包装(STEP_PY 钉 sys.executable 是因为本机 uv 环境下裸 `python` 解析到基础
+  解释器而非项目 .venv —— 批F 实撞 clean/05 起手 bs4 ModuleNotFoundError)。
+· 批H2 归户:clean/04b 迁进本域成 ats/extract_ats_salary.py(判据「谁的数据谁管」——
+  它只读写 ATS 各司 jobs.json,不是真横切),门随之从 subprocess 改直调 run(),
+  四件包装(extract_ats_salary / STEP_PY / SALARY_SCRIPT / STEP_FAIL_TPL)同批拆除;
+  直调后进程只有一个,解释器那条坑消失。
+· 批I 全溶:两个步骤文件的 run() 壳退役,门直调 functions.py 的同名段函数。
+「一步失败中止本轮」由段函数抛出的异常兑现(main 的 except 捕获后 return 1),
 与旧的「子进程非零即中止」同义。
 调度声明(role/interval)在本域 __init__.py 的 META;auto_update 按 role 自动发现
 (⚠ compose 里 ats 服务现处注释态,没有容器在跑本域 —— 见 __init__ docstring)。
@@ -23,9 +25,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from ats.extract_ats_salary import run as extract_ats_salary
-from ats.scrape_ats_jobs import run as scrape_ats_jobs
 from log.functions import err, say
+from ats.functions import extract_ats_salary, scrape_ats_jobs
 
 SCHEDULED = [
     ("scrape", scrape_ats_jobs),

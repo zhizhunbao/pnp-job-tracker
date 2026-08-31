@@ -1,10 +1,17 @@
 """
-noc 域函数 —— 分类库(单一来源,08/09/10/11/employers 消费)+ 两个官方 CSV 步骤
-(structure / descriptions)。段横幅与 constants/scheme 同名同序镜像,段内 step-down。
+noc 域函数 —— 分类库(单一来源,08/09/10/11/employers 消费)+ 官方 CSV 两步
+(structure / descriptions)+ 体检 + 三张 i18n 表(titles / short / cities)。
+段横幅与 constants/scheme 同名同序镜像,段内 step-down。
 
 沿革:2026-08-31 Frank 拍板「noc 就叫 noc」—— 原根上 noc.py(分类函数)、
 noc_buckets.py(bucket_of)与 noc_facts/ 两个步骤文件全溶进本文件;
 行为逐字不变,金标 = 全码域 10 万 classify 探针 byte-identical + 两步产物重跑比对。
+2026-08-31 批I3 溶段:批H2 从 clean/ 归户进来的三件(translate_noc_titles /
+shorten_noc_titles / build_city_names)溶成段6/7/8,本域步骤文件清零。
+两处收拢有据可查:① 段6 与段7 的 /api/chat 调用**逐字相同、只差 num_predict**,
+合成 ask_chat 一份(差异收进入参 = 超集);② 三段各抄一份的 OLLAMA_URL / OLLAMA_MODEL
+取值合成 ollama_base / ollama_model。⚠ 段3 的 /api/generate 与段6/7 的 /api/chat
+**不是一套**(端点、temperature 都不同,合并等于换模型输入)—— 不合并,证据见交付报告。
 """
 import csv
 import datetime
@@ -17,8 +24,19 @@ from pathlib import Path
 
 import httpx
 
+import paths
 from log.functions import say
 from noc.constants import (
+    ARG_FORCE, ARG_LANG, ARG_SEP, CHAT_FAIL_TPL, CHAT_TEMPERATURE,
+    CHAT_TIMEOUT_S, CHAT_URL_TPL, CITIES, CITIES_DONE_TPL, CITIES_OUT_TPL, LANG_EN, LATIN3_RE,
+    OUT_CITY_I18N, OUT_TITLES_I18N, ROLE_USER, SHORT_DONE_TPL, SHORT_DUP_OK_TPL,
+    SHORT_DUP_ROW_TPL, SHORT_DUP_SEP, SHORT_DUP_SHOW_MAX, SHORT_DUP_WARN_TPL, SHORT_FIX_BY_LANG,
+    SHORT_HAVE_TPL, SHORT_IN_TPL, SHORT_LANG_DONE_TPL, SHORT_MIN_LEN, SHORT_MODEL_TPL,
+    SHORT_NUM_PREDICT, SHORT_OUT_TPL, SHORT_PROGRESS_TPL, SHORT_SAVE_EVERY, SHORT_SKIP_TPL,
+    SHORT_SRC_FALLBACK, SHORT_TODO_TPL, SPECS, TERM_FIX, TITLES_DONE_TPL, TITLES_EMPTY_MARK,
+    TITLES_IN_TPL, TITLES_LANGS, TITLES_MAX_LEN, TITLES_MIN_LEN, TITLES_MODEL_TPL,
+    TITLES_NUM_PREDICT, TITLES_OUT_TPL, TITLES_PROGRESS_TPL, TITLES_PROMPT_TPL,
+    TITLES_SAVE_EVERY, TITLES_TERM_FIX_TPL, TITLES_TODO_TPL,
     ARG_ALL, ARG_LIMIT, ARG_RETRANSLATE, AUDIT_HEAD_TPL, AUDIT_LABELS, AUDIT_ROW_TPL,
     BROAD_BAD_TPL, BROAD_HEAD_TPL, BROAD_MORE_TPL, BROAD_OK_MSG, BROAD_SHOW_MAX, BROADS,
     BUCKETS3, BUCKETS4, BUCKETS5, CACHE_HIT_TPL, CJK_RE,
@@ -46,8 +64,10 @@ from noc.constants import (
     ZH_SHOW_LEN, ZH_WIDE_LEN,
 )
 from noc.scheme import (
-    AuditRow, AuditSeedIn, BroadI18nIn, CheckIn, DescSeedIn, ElementRow, FillIn, FineIn, LabelIn,
-    LevelSeedIn, MidIn, OllamaIn, ParseIn, SmellHit, TranslateIn,
+    AskCountOut, AskShortIn, AskTitleIn, AuditRow, AuditSeedIn, BroadI18nIn, ChatIn, CheckIn,
+    DescSeedIn, DupReportIn, ElementRow, FillIn, FineIn, LabelIn, LevelSeedIn, MidIn, OllamaIn,
+    ParseIn, ShortLangIn, ShortOkIn, ShortSpec, ShortSrcIn, ShortTodo, SmellHit, TitleOkIn,
+    TitlesTodoIn, TranslateIn, TranslateTodoIn,
 )
 from noc.variables import CACHE
 
@@ -343,15 +363,9 @@ def translate(x: TranslateIn) -> str:
         prompt = UI_PROMPT_TPL.format(lang=LANGS[x.lang], title=x.title)
     else:
         prompt = PROMPT_TPL.format(lang=LANGS[x.lang], title=x.title)
-    base = os.environ.get(OLLAMA_ENV)
-    if base is None or base == "":
-        base = OLLAMA_DEFAULT
-    model = os.environ.get(MODEL_ENV)
-    if model is None or model == "":
-        model = MODEL_DEFAULT
     try:
-        r = httpx.post(GEN_URL_TPL.format(base=base), timeout=TRANSLATE_TIMEOUT_S,
-                       json=to_ollama_payload(OllamaIn(model=model, prompt=prompt)))
+        r = httpx.post(GEN_URL_TPL.format(base=ollama_base()), timeout=TRANSLATE_TIMEOUT_S,
+                       json=to_ollama_payload(OllamaIn(model=ollama_model(), prompt=prompt)))
         r.raise_for_status()
         raw = r.json().get(K_RESPONSE)
         if raw is None:
@@ -363,6 +377,26 @@ def translate(x: TranslateIn) -> str:
     if translation_ok(CheckIn(text=out, lang=x.lang, ui=x.ui)):
         return out
     return ""
+
+
+def ollama_base() -> str:
+    """本地模型地址(OLLAMA_URL 环境变量,缺/空退默认盒子)。
+
+    2026-08-31 批I3 收拢:原来段3 的 translate()、段6 的 ask()、段7 的 ask() 各抄一份
+    逐字相同的四行取值 —— 行为重复不许,合成本函数。取值与默认值一字未改。
+    """
+    base = os.environ.get(OLLAMA_ENV)
+    if base is None or base == "":
+        return OLLAMA_DEFAULT
+    return base
+
+
+def ollama_model() -> str:
+    """本地模型名(OLLAMA_MODEL 环境变量,缺/空退默认;三段共用,见 ollama_base)。"""
+    model = os.environ.get(MODEL_ENV)
+    if model is None or model == "":
+        return MODEL_DEFAULT
+    return model
 
 
 def translation_ok(x: CheckIn) -> bool:
@@ -744,3 +778,390 @@ def fine_label_of(row: AuditRow) -> str:
     if row.no_fine:
         return FINE_NO
     return FINE_YES
+
+
+# =========================================================================
+# 6. titles 步(NOC 官方职业名的中/韩译名;#147)
+# =========================================================================
+
+
+def translate_noc_titles() -> None:
+    """NOC 官方职业名 → 中/韩译名(幂等续跑;入口,门直调)。
+
+    IN : mart/noc_descriptions.json(descriptions 步的产物,含 noc + title)
+    OUT: processed/noc_titles_i18n.json(noc → {zh, ko};已翻的跳过)
+    手动开关(跟在 --only titles 后面):--limit N 只翻前 N 条。
+    2026-08-31 批H2 归户搬家:自 etl/clean/04f_translate_noc_titles.py 迁进 noc 域 ——
+    clean/ 横切层清算的判据是「谁的数据谁管」:它吃 mart/noc_descriptions.json(本域
+    descriptions 一步的产物)、只翻 NOC 职业名,不对任何岗位行生效,不是真横切。
+    2026-08-31 批I3 溶段:步骤文件整件溶进本文件成段6,逻辑一字未动 —— 只按方言律拆件
+    (提示词与阈值提名进 constants、推导式改显式 for、两参 ask 收 ChatIn、裸 print 改 say);
+    /api/chat 那套调用与段7 逐字相同,合成 ask_chat 一份(唯一差异 num_predict 收成入参)。
+    本件零调度零 import(不在任何定时链/建表链上),是手动件 —— 只进 main.py 的 TOOLS。
+    """
+    limit = 0
+    if ARG_LIMIT in sys.argv:
+        limit = int(sys.argv[sys.argv.index(ARG_LIMIT) + 1])
+    say(TITLES_IN_TPL.format(path=IN_DESCR))
+    say(TITLES_OUT_TPL.format(path=OUT_TITLES_I18N))
+    say(TITLES_MODEL_TPL.format(model=ollama_model(), base=ollama_base()))
+    OUT_TITLES_I18N.parent.mkdir(parents=True, exist_ok=True)
+    rows = json.loads(IN_DESCR.read_text(encoding=ENC_UTF8))
+    done = load_titles_i18n()
+    fix_existing_terms(done)
+    todo = titles_todo(TitlesTodoIn(rows=rows, done=done, limit=limit))
+    say(TITLES_TODO_TPL.format(n=len(todo), have=len(done)))
+    got = translate_todo(TranslateTodoIn(todo=todo, done=done))
+    write_titles_i18n(done)
+    full = 0
+    for v in done.values():
+        if v.get(K_ZH) and v.get(K_KO):
+            full += 1
+    say(TITLES_DONE_TPL.format(path=OUT_TITLES_I18N, full=full, n=len(rows),
+                               ok=got.n_ok, skip=got.n_skip))
+
+
+def load_titles_i18n() -> dict:
+    """产出表当前态(首跑没有文件 = 空表)。"""
+    if OUT_TITLES_I18N.exists() is False:
+        return {}
+    return json.loads(OUT_TITLES_I18N.read_text(encoding=ENC_UTF8))
+
+
+def write_titles_i18n(done: dict) -> None:
+    """产出表落盘(段6/段7 共用同一张表,缩进与原脚本一致)。"""
+    paths.write_json(paths.WriteJsonIn(path=OUT_TITLES_I18N, payload=done, indent=1))
+
+
+def fix_existing_terms(done: dict) -> None:
+    """存量也过一遍术语纠正(TERM_FIX 是后加的;已翻的不重跑模型,只做确定性替换)。"""
+    fixed = 0
+    for v in done.values():
+        if v.get(K_ZH):
+            got = fix_terms(v[K_ZH])
+            if got != v[K_ZH]:
+                v[K_ZH] = got
+                fixed += 1
+    if fixed:
+        write_titles_i18n(done)
+        say(TITLES_TERM_FIX_TPL.format(n=fixed))
+
+
+def fix_terms(text: str) -> str:
+    """多义词的确定性替换(命中才换,换不了保持原样)。"""
+    out = text
+    for bad, good in TERM_FIX:
+        out = out.replace(bad, good)
+    return out
+
+
+def titles_todo(x: TitlesTodoIn) -> list:
+    """待翻清单:有官方名 且 中韩没齐(原列表推导拆成显式 for)。"""
+    todo = []
+    for row in x.rows:
+        if not row.get(K_TITLE):
+            continue
+        cur = x.done.get(row[K_NOC])
+        if not cur:
+            cur = {}
+        if cur.get(K_ZH) and cur.get(K_KO):
+            continue
+        todo.append(row)
+    if x.limit:
+        return todo[:x.limit]
+    return todo
+
+
+def translate_todo(x: TranslateTodoIn) -> AskCountOut:
+    """逐条过模型补中韩两格,每 TITLES_SAVE_EVERY 条落一次盘;返回成功/留空计数。"""
+    n_ok = 0
+    n_skip = 0
+    i = 0
+    for row in x.todo:
+        i += 1
+        title = row[K_TITLE]
+        cur = x.done.setdefault(row[K_NOC], {})
+        for lang in TITLES_LANGS:
+            if cur.get(lang):
+                continue
+            out = ask_title(AskTitleIn(title=title, lang=lang))
+            if lang == K_ZH:
+                out = fix_terms(out)
+            if title_ok(TitleOkIn(text=out, src=title, lang=lang)):
+                cur[lang] = out
+                n_ok += 1
+            else:
+                n_skip += 1
+        if i % TITLES_SAVE_EVERY == 0 or i == len(x.todo):
+            write_titles_i18n(x.done)
+            say(TITLES_PROGRESS_TPL.format(i=i, n=len(x.todo), ok=n_ok, skip=n_skip,
+                                           title=title, zh=cur.get(K_ZH, TITLES_EMPTY_MARK)))
+    return AskCountOut(n_ok=n_ok, n_skip=n_skip)
+
+
+def ask_title(x: AskTitleIn) -> str:
+    """一条职业名 → 一门语言的译名(失败/超时返空,调用方留空不入库)。"""
+    return ask_chat(ChatIn(prompt=TITLES_PROMPT_TPL.format(lang=LANGS[x.lang], title=x.title),
+                           num_predict=TITLES_NUM_PREDICT))
+
+
+def title_ok(x: TitleOkIn) -> bool:
+    """校验:非空、长度合理、含目标语言字符、不是把英文原样吐回来。"""
+    out = x.text.strip()
+    if len(out) <= TITLES_MIN_LEN or len(out) > TITLES_MAX_LEN:
+        return False
+    if out.lower() == x.src.lower():
+        return False
+    if x.lang == K_ZH:
+        return bool(CJK_RE.search(out))
+    return bool(HANGUL_RE.search(out))
+
+
+def ask_chat(x: ChatIn) -> str:
+    """一次本地模型 /api/chat 调用;失败留痕返空。
+
+    段6 与段7 原本各抄一份**逐字相同**的实现,唯一差异是 num_predict(60 / 40)——
+    2026-08-31 批I3 收拢成一份,差异收进入参(超集 = 参数化)。
+    ⚠ 与段3 translate() 的 /api/generate 不是一套(端点、temperature 都不同),不合并。
+    原两件的 catch 是静默 `return ''`,溶段时补留痕(永不吞异常令);留空回退行为不变。
+    """
+    try:
+        r = httpx.post(CHAT_URL_TPL.format(base=ollama_base()), timeout=CHAT_TIMEOUT_S,
+                       json=to_chat_payload(x))
+        r.raise_for_status()
+        return to_chat_text(r.json())
+    except Exception as e:  # noqa: BLE001
+        say(CHAT_FAIL_TPL.format(name=type(e).__name__, detail=e))
+        return ""
+
+
+def to_chat_payload(x: ChatIn) -> dict:
+    """Ollama /api/chat 的请求体(两件原值逐字相同,只有 num_predict 由调用方给)。"""
+    return {"model": ollama_model(), "think": False, "stream": False,
+            "options": {"temperature": CHAT_TEMPERATURE, "num_predict": x.num_predict},
+            "messages": [{"role": ROLE_USER, "content": x.prompt}]}
+
+
+def to_chat_text(doc: dict) -> str:
+    """chat 响应 → 去空白的正文(缺格当空串)。"""
+    text = doc.get("message", {}).get("content")
+    if text is None:
+        return ""
+    return text.strip()
+
+
+# =========================================================================
+# 7. short 步(NOC 职业名的窄位短名,中/韩/英三语;E8-14 3.3)
+# =========================================================================
+
+
+def shorten_noc_titles() -> None:
+    """NOC 职业名 → 中/韩/英窄位短名,补进同一张 i18n 表(幂等续跑;入口,门直调)。
+
+    IN : mart/noc_descriptions.json(官方名)+ processed/noc_titles_i18n.json(段6 的完整译名)
+    OUT: 同一个 noc_titles_i18n.json,补 zhShort / koShort / enShort 三列
+    手动开关:--lang zh,ko,en 只压某几门;--limit N 每门只压前 N 条;--force 已有也重压。
+    2026-08-31 批H2 归户搬家:自 etl/clean/04g_short_noc_titles.py 迁进 noc 域(判据同段6:
+    它吃 mart/noc_descriptions.json + 段6 的译名,给同一张表补短名列,只关 NOC 一个参考集)。
+    2026-08-31 批I3 溶段:整件溶进本文件成段7,逻辑一字未动 —— 只按方言律拆件(提示词与
+    裁决表提名进 constants、内嵌 src_of 出户成 short_src_of、推导式改显式 for、
+    三参 ask 收 AskShortIn、函数体按 75 行上限拆成 shorten_lang / short_todo / report_short_dups)。
+    """
+    limit = 0
+    if ARG_LIMIT in sys.argv:
+        limit = int(sys.argv[sys.argv.index(ARG_LIMIT) + 1])
+    force = ARG_FORCE in sys.argv
+    langs = short_langs()
+    say(SHORT_IN_TPL.format(path=IN_DESCR))
+    say(SHORT_OUT_TPL.format(path=OUT_TITLES_I18N))
+    say(SHORT_MODEL_TPL.format(model=ollama_model(), base=ollama_base(),
+                               langs=ARG_SEP.join(langs)))
+    OUT_TITLES_I18N.parent.mkdir(parents=True, exist_ok=True)
+    rows = json.loads(IN_DESCR.read_text(encoding=ENC_UTF8))
+    done = load_titles_i18n()
+    en_of = to_en_of(rows)
+    for lang in langs:
+        shorten_lang(ShortLangIn(lang=lang, rows=rows, done=done, en_of=en_of,
+                                 limit=limit, force=force))
+    apply_short_fixes(done)
+    write_titles_i18n(done)
+    report_short_dups(DupReportIn(langs=langs, done=done))
+    say(SHORT_DONE_TPL.format(path=OUT_TITLES_I18N))
+
+
+def short_langs() -> list:
+    """本轮要压的语言(--lang zh,ko,en 点名;不给就是三语全压)。"""
+    if ARG_LANG in sys.argv:
+        return sys.argv[sys.argv.index(ARG_LANG) + 1].split(ARG_SEP)
+    return list(SPECS)
+
+
+def shorten_lang(x: ShortLangIn) -> None:
+    """压一门语言:够短的直接复用完整名,超长的逐条过模型,每 SHORT_SAVE_EVERY 条落盘。"""
+    spec = to_short_spec(x.lang)
+    todo = short_todo(x)
+    say(SHORT_TODO_TPL.format(lang=x.lang, n=len(todo), cap=spec.max_len))
+    n_ok = 0
+    n_skip = 0
+    i = 0
+    for item in todo:
+        i += 1
+        out = spec.strip.sub("", ask_short(AskShortIn(lang=x.lang, en=item.en, src=item.src)))
+        out = out.strip()
+        if short_ok(ShortOkIn(lang=x.lang, text=out, src=item.src)):
+            x.done.setdefault(item.noc, {})[spec.field] = out
+            n_ok += 1
+        else:
+            n_skip += 1
+            say(SHORT_SKIP_TPL.format(noc=item.noc, src=item.src, out=out))
+        if i % SHORT_SAVE_EVERY == 0 or i == len(todo):
+            write_titles_i18n(x.done)
+            say(SHORT_PROGRESS_TPL.format(lang=x.lang, i=i, n=len(todo), ok=n_ok, skip=n_skip))
+    say(SHORT_LANG_DONE_TPL.format(lang=x.lang, ok=n_ok, skip=n_skip))
+
+
+def short_todo(x: ShortLangIn) -> list:
+    """待压缩清单;顺手把「本来就够短」的直接写进产出表(不浪费一次调用也不引入新错)。"""
+    spec = to_short_spec(x.lang)
+    todo = []
+    for row in x.rows:
+        noc = row.get(K_NOC, "")
+        src = short_src_of(ShortSrcIn(lang=x.lang, noc=noc, en_of=x.en_of, done=x.done))
+        if not noc or not src:
+            continue
+        cur = x.done.get(noc)
+        if not cur:
+            cur = {}
+        if cur.get(spec.field) and x.force is False:
+            continue
+        if len(src) <= spec.max_len:
+            x.done.setdefault(noc, {})[spec.field] = src
+            continue
+        todo.append(ShortTodo(noc=noc, en=x.en_of.get(noc, ""), src=src))
+    if x.limit:
+        return todo[:x.limit]
+    return todo
+
+
+def short_src_of(x: ShortSrcIn) -> str:
+    """压缩原料:zh/ko 用段6 的完整译名,en 用官方英文名(官方名不动,短名另存一列)。"""
+    if x.lang == LANG_EN:
+        return x.en_of.get(x.noc, "")
+    cur = x.done.get(x.noc)
+    if not cur:
+        return ""
+    return cur.get(x.lang, "")
+
+
+def ask_short(x: AskShortIn) -> str:
+    """一条完整名 → 一门语言的短名(失败/超时返空)。"""
+    spec = to_short_spec(x.lang)
+    src = x.src
+    if not src:
+        src = SHORT_SRC_FALLBACK
+    return ask_chat(ChatIn(prompt=spec.prompt.format(en=x.en, src=src),
+                           num_predict=SHORT_NUM_PREDICT))
+
+
+def short_ok(x: ShortOkIn) -> bool:
+    """校验:够短、含该语言的字、不带标点、不比原名还长。
+
+    不过关留空 —— 宁可显示长名也不显示胡编的短名。
+    """
+    spec = to_short_spec(x.lang)
+    out = spec.strip.sub("", x.text).strip()
+    if len(out) <= SHORT_MIN_LEN or len(out) > spec.max_len:
+        return False
+    if spec.charset.search(out) is None:
+        return False
+    if x.lang == K_ZH and LATIN3_RE.search(out) is not None:
+        return False
+    if x.lang == K_KO and CJK_RE.search(out) is not None:
+        return False
+    if x.src and len(out) >= len(x.src):
+        return False
+    return True
+
+
+def apply_short_fixes(done: dict) -> None:
+    """人工裁决覆盖(始终生效,包括存量与 --force 重跑)。
+
+    模型逐条压缩,看不见「别的职业压出了同一个名字」,所以撞车只能人工裁决。
+    """
+    for lang, table in SHORT_FIX_BY_LANG.items():
+        field = to_short_spec(lang).field
+        for noc, fixed_name in table.items():
+            if noc in done:
+                done[noc][field] = fixed_name
+
+
+def report_short_dups(x: DupReportIn) -> None:
+    """撞车检测:两个职业压出同一个短名 = 列表/图表里出现两个同名条目 → **必须报出来**。
+
+    不能静默上线(中文那次 Cooks 与 Chefs 双双变「厨师」就是这么抓到的;
+    新 NOC 进来时这里会再次亮)。
+    """
+    for lang in x.langs:
+        field = to_short_spec(lang).field
+        groups: dict = defaultdict(list)
+        have = 0
+        for noc, v in x.done.items():
+            if v.get(field):
+                have += 1
+                groups[v[field]].append(noc)
+        dups = []
+        for name, codes in groups.items():
+            if len(codes) > 1:
+                dups.append((name, codes))
+        if len(dups) > 0:
+            say(SHORT_DUP_WARN_TPL.format(lang=lang, n=len(dups)))
+            for name, codes in dups[:SHORT_DUP_SHOW_MAX]:
+                say(SHORT_DUP_ROW_TPL.format(name=name, codes=SHORT_DUP_SEP.join(codes)))
+        else:
+            say(SHORT_DUP_OK_TPL.format(lang=lang))
+        say(SHORT_HAVE_TPL.format(lang=lang, n=have))
+
+
+def to_short_spec(lang: str) -> ShortSpec:
+    """三语规格表的一行 → 属性访问形(字典键只许住 to_* 行构造器体内)。"""
+    spec = SPECS[lang]
+    return ShortSpec(field=spec["field"], src=spec["src"], max_len=spec["max"],
+                     charset=spec["charset"], prompt=spec["prompt"], strip=spec["strip"])
+
+
+def to_en_of(rows: list) -> dict:
+    """官方名清单 → {noc: 官方英文名}(原字典推导拆成显式 for)。"""
+    en_of: dict = {}
+    for row in rows:
+        en_of[row.get("noc", "")] = row.get("title", "")
+    return en_of
+
+
+# =========================================================================
+# 8. cities 步(城市名的中/韩通行译名;#151,人工核定表不用模型)
+# =========================================================================
+
+
+def build_city_names() -> None:
+    """人工核定的城市中/韩译名表 → processed/city_names_i18n.json(入口,门直调)。
+
+    IN : 无外部输入(表就在 constants.CITIES 里)
+    OUT: processed/city_names_i18n.json(name|prov → {zh, ko})
+    2026-08-31 批H2 归户搬家:自 etl/clean/04g_city_names.py 迁进 noc 域;
+    2026-08-31 批I3 溶段:整件溶进本文件成段8,逻辑一字未动(字典推导拆成 to_city_i18n 的
+    显式 for、裸 print 改 say、落盘走 paths.write_json —— 产物 byte-identical 金标已验)。
+    归属存疑见 constants.OUT_CITY_I18N 的 docstring。
+    """
+    say(CITIES_OUT_TPL.format(path=OUT_CITY_I18N))
+    out = to_city_i18n(CITIES)
+    OUT_CITY_I18N.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_CITY_I18N, payload=out, indent=1))
+    say(CITIES_DONE_TPL.format(n=len(out)))
+
+
+def to_city_i18n(table: dict) -> dict:
+    """人工核定表 → 落盘形({名字|省: {zh, ko}};顺序即表序,不排序)。"""
+    out: dict = {}
+    for key, names in table.items():
+        out[key] = {"zh": names[0], "ko": names[1]}
+    return out

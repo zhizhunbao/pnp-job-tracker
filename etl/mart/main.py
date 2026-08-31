@@ -1,14 +1,14 @@
 """
-mart 域唯一入口(一域一门;2026-08-31 批H 立域,**移动批**:四个编号汇装件自根迁入改名,
-函数体一字未动 —— 方言全溶留后续滚动批,故本门直调步骤文件的 run(),不是全溶域那种
-直调 functions.py 段函数;门形样张 etl/jobbank/main.py)。
+mart 域唯一入口(一域一门;2026-08-31 批H 立域后同日批I 全溶 —— 六个文件(四个编号汇装件 +
+grades / visa_flag 两个私件库)溶进 constants/scheme/functions 三件,本门自此**直调函数**,
+不再 `from mart.build_mart import run`;门形样张 etl/pnp/main.py)。
 
 SCHEDULED = 本域步骤真相 —— **顺序即语义,一步失败中止本轮**(四步逐字复刻旧 build
 役册 08 → 09 → 10 → 11 的顺序):评分 → mart 主表 → 榜单 → 地区统计。
 本域**不自带役**(__init__ 无 META):load 域的 build 链把本门当一步点用,整链持 Job Bank
 仓锁,前后邻居(05d_noc_sanity / employers)不变。
 一律从仓库根执行:
-    python etl/mart/main.py                  # 默认链(4 步;09 约 9 分钟)
+    python etl/mart/main.py                  # 默认链(4 步;mart 主表约 9 分钟)
     python etl/mart/main.py --only rankings  # 单步调试(见 TOOLS)
 """
 import sys
@@ -16,10 +16,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
-from mart.build_mart import run as build_mart
-from mart.build_mart_rankings import run as build_mart_rankings
-from mart.build_mart_stats import run as build_mart_stats
-from mart.score_mart_jobs import run as score_mart_jobs
+from mart.functions import build_mart, build_mart_rankings, build_mart_stats, score_mart_jobs
 
 SCHEDULED = [
     ("score", score_mart_jobs),

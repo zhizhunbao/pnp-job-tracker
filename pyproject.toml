@@ -23,6 +23,11 @@ dependencies = [
 # 写在这里而不是只写 Dockerfile —— openpyxl 依赖真相分裂两处的教训(见 dependencies 注)。
 browser = ["playwright>=1.45"]
 
+[dependency-groups]
+# pyrefly 2026-08-31 批I 收口进依赖(此前 uv run --with 临时环境,每跑重搭;
+# 类型闸随批I 清零上线 pre-push,Frank 拍「要,但要便宜地进」)
+dev = ["pyrefly"]
+
 [tool.uv]
 package = false
 
@@ -81,26 +86,7 @@ max-args = 1
 "etl/crawl/functions.py" = ["C901", "PLR0915"]
 # 批F(2026-08-31 jobbank/ats 立域,搬家批):四个编号抓岗件迁域改名,存量债随行豁免,
 # 方言全溶随后续滚动批还账(摘行=就范完成);main/__init__ 新写零豁免
-"etl/jobbank/scrape_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 # 批H(2026-08-31 移动批)迁入件存量豁免(main/__init__ 新写零豁免;批I 全溶后摘)
-"etl/mart/score_mart_jobs.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/mart/build_mart.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/mart/build_mart_rankings.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/mart/build_mart_stats.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/mart/grades.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/mart/visa_flag.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/jobbank/parse_jobbank_postings.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/jobbank/parse_jobbank_details.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/jobbank/audit_jobbank_data.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/jobbank/verify_jobbank_expired.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/ats/extract_ats_salary.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/ircc/build_ircc_difficulty.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/aip/flag_aip_jobs.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/noc/translate_noc_titles.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/noc/shorten_noc_titles.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/noc/build_city_names.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/jobbank/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/ats/scrape_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 # extractors 私件群存量豁免随批E 拆三域从 pilot 分家(2026-08-31;函数体未动)。
 # 收口时试摘实测 25 条真债(D103×15/ANN003×2/PLR0913×4/C901×2 等)—— 子工「零债」结论
 # 是豁免行生效下的假象,豁免放回,债随后续滚动批还(摘行=就范完成)

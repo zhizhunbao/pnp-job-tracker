@@ -4,8 +4,12 @@ noc 域形状(照 pnp/company 样张;2026-08-31 并域批C)。
 全是域内接线形状(XxxIn)= dataclass:一参令下多入参收编的口袋,不是外来数据,
 校验加不了值。边界(StatCan CSV / structure.json)是 dict 直读,键词汇住 constants
 的 K_ 词族与 to_* 行构造器体内。段横幅与 constants/functions 同名同序镜像;
-第 2/4 段无形状,占位横幅保留镜像编号。
+第 2/4/8 段无形状,占位横幅保留镜像编号。
+2026-08-31 批I3 溶段:批H2 归户进来的三个步骤文件(translate_noc_titles / shorten_noc_titles /
+build_city_names)溶成段6/7/8,本段起的形状全是新增。`import re` 是标准库(叶子律允许):
+段7 的三语规格表带编译好的正则,ShortSpec 要给它一个真类型,裸 object 让检查器判不动。
 """
+import re
 from dataclasses import dataclass
 
 # =========================================================================
@@ -243,3 +247,210 @@ class SmellHit:
 
     expect: str
     """关键词指向的大类(是线索不是判决)。"""
+
+
+# =========================================================================
+# 6. titles 步(NOC 官方职业名的中/韩译名)
+# =========================================================================
+
+
+@dataclass
+class ChatIn:
+    """ask_chat() 入参:已排好版的提示词 + 输出上限。
+
+    段6/段7 原本各抄一份逐字相同的 /api/chat 调用,**唯一差异是 num_predict**(60 / 40)——
+    收拢时把它收成本格(超集 = 参数化),别再各写一份。
+    """
+
+    prompt: str
+    """喂给模型的整段提示词。"""
+
+    num_predict: int
+    """输出上限 token 数。"""
+
+
+@dataclass
+class AskTitleIn:
+    """ask_title() 入参:一条官方职业名 + 要翻成哪门语言。"""
+
+    title: str
+    """官方英文职业名。"""
+
+    lang: str
+    """语言码(zh / ko)。"""
+
+
+@dataclass
+class TitlesTodoIn:
+    """titles_todo() 入参:官方名清单 + 产出表当前态 + 本轮上限。"""
+
+    rows: list
+    """官方职业名清单(mart/noc_descriptions.json 读来的行)。"""
+
+    done: dict
+    """产出表当前态。"""
+
+    limit: int
+    """本轮最多翻几条(0 = 不限)。"""
+
+
+@dataclass
+class TranslateTodoIn:
+    """translate_todo() 入参:待翻清单 + 就地补格的产出表。"""
+
+    todo: list
+    """待翻的官方名行。"""
+
+    done: dict
+    """产出表当前态(就地补 zh/ko 两格)。"""
+
+
+@dataclass
+class AskCountOut:
+    """translate_todo() 出参:本轮成功与留空计数(原 print 直接取两个局部变量)。"""
+
+    n_ok: int
+    """写进表的译名条数。"""
+
+    n_skip: int
+    """未过校验、留空回退的条数。"""
+
+
+@dataclass
+class TitleOkIn:
+    """title_ok() 入参:模型给的译名 + 原文 + 语言码。"""
+
+    text: str
+    """模型输出。"""
+
+    src: str
+    """官方英文名(判「是不是把英文原样吐回来」)。"""
+
+    lang: str
+    """语言码。"""
+
+
+# =========================================================================
+# 7. short 步(NOC 职业名的窄位短名,中/韩/英三语)
+# =========================================================================
+
+
+@dataclass
+class ShortSpec:
+    """三语规格表的一行(属性访问形;字典键只许住 to_short_spec 体内)。"""
+
+    field: str
+    """短名落在产出表的哪一列(zhShort / koShort / enShort)。"""
+
+    src: str
+    """原料取哪一格(zh / ko / en)。"""
+
+    max_len: int
+    """短名长度上限。"""
+
+    charset: re.Pattern
+    """短名必须含的字符类。"""
+
+    prompt: str
+    """该语言的提示词模板。"""
+
+    strip: re.Pattern
+    """要剥掉的标点类。"""
+
+
+@dataclass
+class ShortTodo:
+    """一条待压缩(原三元组 `(noc, en, src)` 的形状化)。"""
+
+    noc: str
+    """5 位 NOC 码。"""
+
+    en: str
+    """官方英文名。"""
+
+    src: str
+    """要压缩的完整名(zh/ko 取译名,en 取官方名)。"""
+
+
+@dataclass
+class ShortSrcIn:
+    """short_src_of() 入参:取一条的压缩原料要的四格。"""
+
+    lang: str
+    """语言码。"""
+
+    noc: str
+    """5 位 NOC 码。"""
+
+    en_of: dict
+    """noc → 官方英文名。"""
+
+    done: dict
+    """产出表当前态(zh/ko 的原料从这里取)。"""
+
+
+@dataclass
+class AskShortIn:
+    """ask_short() 入参:语言码 + 官方英文名 + 完整名。"""
+
+    lang: str
+    """语言码。"""
+
+    en: str
+    """官方英文名。"""
+
+    src: str
+    """完整名(空则喂占位)。"""
+
+
+@dataclass
+class ShortOkIn:
+    """short_ok() 入参:模型给的短名 + 原料 + 语言码。"""
+
+    lang: str
+    """语言码。"""
+
+    text: str
+    """已剥标点的模型输出。"""
+
+    src: str
+    """压缩前的完整名(没压缩就不算数)。"""
+
+
+@dataclass
+class ShortLangIn:
+    """shorten_lang() / short_todo() 入参:压一门语言要的全部上下文。"""
+
+    lang: str
+    """语言码。"""
+
+    rows: dict
+    """官方职业名清单(mart/noc_descriptions.json 读来的行)。"""
+
+    done: dict
+    """产出表当前态(就地补列)。"""
+
+    en_of: dict
+    """noc → 官方英文名。"""
+
+    limit: int
+    """本轮最多压几条(0 = 不限)。"""
+
+    force: bool
+    """已有短名也重压。"""
+
+
+@dataclass
+class DupReportIn:
+    """report_short_dups() 入参:要查撞车的语言 + 产出表当前态。"""
+
+    langs: list
+    """本轮跑过的语言。"""
+
+    done: dict
+    """产出表当前态。"""
+
+
+# =========================================================================
+# 8. cities 步(纯常量段,无形状 —— 镜像占位)
+# =========================================================================

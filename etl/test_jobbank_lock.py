@@ -7,6 +7,11 @@
 2026-08-31 批H 只跟路径不动语义:09 那一步在链里的说法变成 `etl/mart/main.py`(门内
 08→09→10→11 四步),两个解析件从 clean/ 归户 etl/jobbank/(parse_jobbank_postings /
 parse_jobbank_details)。
+2026-08-31 批I 同样只跟宿主不动语义:jobbank 域全溶,两个解析件成了
+etl/jobbank/functions.py 的两段,入口函数与原脚本同名(parse_jobbank_postings /
+parse_jobbank_details),被 patch 的符号(jobbank_store_lock / latest_snapshot_dir /
+cutoff_of / fetched_at_of / parse_snapshot / load_postings / write_postings /
+detail_html_index / SCRAPED_KEYS / IN_POSTINGS / OUT_DETAILS)逐个原名健在。
 Usage:  uv run python etl/test_jobbank_lock.py
 """
 from __future__ import annotations
@@ -115,7 +120,7 @@ class JobbankStoreLockTest(unittest.TestCase):
                 load_functions.run_build_chain(BuildChainIn(say=quiet_say))
 
     def _parser_module(self, name: str):
-        spec = importlib.util.spec_from_file_location(f"jobbank_{name}", ETL / "jobbank" / f"{name}.py")
+        spec = importlib.util.spec_from_file_location(f"jobbank_{name}", ETL / "jobbank" / "functions.py")
         # pyrefly: ignore[bad-argument-type] — spec_from_file_location 只在路径不存在时给 None;此处是仓内固定文件,拿不到就该当场炸
         module = importlib.util.module_from_spec(spec)
         # pyrefly: ignore[missing-attribute] — spec_from_file_location 只在路径不存在时给 None;此处是仓内固定文件,拿不到就该当场炸
@@ -156,7 +161,7 @@ class JobbankStoreLockTest(unittest.TestCase):
                  mock.patch.object(module, "write_postings", side_effect=checked_write), \
                  mock.patch.object(sys, "argv", ["parse_jobbank_postings.py"]), \
                  mock.patch("builtins.print"):
-                module.main()
+                module.parse_jobbank_postings()
             self.assertTrue(wrote)
 
     def test_actual_detail_parser_publishes_inside_same_mutex(self) -> None:
@@ -189,7 +194,7 @@ class JobbankStoreLockTest(unittest.TestCase):
                  mock.patch.object(module, "detail_html_index", side_effect=checked_index), \
                  mock.patch.object(sys, "argv", ["parse_jobbank_details.py"]), \
                  mock.patch("builtins.print"):
-                module.main()
+                module.parse_jobbank_details()
             self.assertTrue(indexed)
 
 

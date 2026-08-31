@@ -46,7 +46,8 @@ def main() -> None:
 
     blanked: list[str] = []
     for j in jobs:
-        noc = j.get("noc") or ""
+        # 显式注解:`x or ""` 让检查器把 noc 收窄成空串字面量,noc[1] 当场判越界(批I3 三板斧②)
+        noc: str = j.get("noc") or ""
         title = (j.get("title") or "").strip().strip(".,!?:;·-—").lower()
         if len(noc) != 5 or title not in GENERIC_TITLES:
             continue

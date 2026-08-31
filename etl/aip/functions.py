@@ -14,7 +14,11 @@ aip.scheme。产物路径一字不动(raw/aip/ 两件 + raw/ircc/aip_rules.json)
 退出口径两档,逐步不同、逐字保留:
   · employers —— 单省塌方保旧,永不清空,正常返回;
   · aip_rules —— 引用核验未过 → 保留旧表 + SystemExit(1),门见 SystemExit 直接中止本轮。
-依赖单边:本文件 → constants/scheme + 基础设施叶(log / fetch / crawl)。
+2026-08-31 批I3 溶段:批H2 从 clean/05c_flag_aip.py 归户进来的 flag_aip_jobs.py 溶成**段4**,
+本域步骤文件清零。⚠ 段4 的 norm_name 是**跨域单一来源**:lmia 域 importlib 按路径拉它当
+雇主聚合键,本批把 lmia/constants.py 的 NORM_MODULE_PATH 从 aip/flag_aip_jobs.py 改指本文件
+(函数名 norm_name 保持不变,getattr 拿得到);别复制、别就地「优化」。
+依赖单边:本文件 → constants/scheme + 基础设施叶(paths / log / fetch / crawl)。
 """
 import html as html_lib
 import json
@@ -25,10 +29,14 @@ import fitz
 import httpx
 from bs4 import BeautifulSoup
 
+import paths
 from log.functions import err, say
 from fetch.constants import BROWSER_UA, HDR_UA, LINE_SEP, SPACE_SEP, WS_RE
 from crawl.functions import get_cached_page
 from aip.constants import (
+    ALIAS_RE, ALIAS_SPLIT_RE, ATLANTIC, ATS_JOBS_GLOB, FLAG_DONE_TPL, FLAG_IN_LIST_TPL,
+    FLAG_IN_OUT_TPL, FLAG_NAMES_TPL, IN_AIP_LIST, IN_OUT_COMPANIES_DIR, IN_OUT_POSTINGS, INDENT_2,
+    K_AIP, K_JOBS, KEEP_RE, SUFFIX_RE,
     BULLET, CDX_PARAMS, CDX_TIMEOUT_S, CDX_URL, EMP_OUT_TPL, EMP_PROV_TPL, EMP_TABLE_HEAD,
     EMP_TIMEOUT_S, ENC_UTF8, ERRORS_IGNORE, GUARD_KEEP_TPL, GUARD_NO_OLD, GUARD_WARN_TPL,
     HTML_PARSER, IN_NL_EMP_DIR, IN_URL_ELIG, K_EMPLOYER, K_FACTOR, K_FAMILY_SIZE, K_LOCATION,
@@ -46,8 +54,8 @@ from aip.constants import (
 )
 from aip.scheme import (
     SoupNodeLike,
-    GuardIn, MdRowIn, NlRowIn, PageEntryIn, PageOut, PdfBulletsIn, PdfRowIn, PeRowIn,
-    RequirementIn, RulesDocIn,
+    AipHitIn, FlagOut, GuardIn, MdRowIn, NlRowIn, PageEntryIn, PageOut, PdfBulletsIn, PdfRowIn,
+    PeRowIn, RequirementIn, RulesDocIn,
 )
 
 # =========================================================================
@@ -397,3 +405,105 @@ def to_rules_doc(x: RulesDocIn) -> dict:
     return {"province": RULES_PROVINCE, "program": RULES_PROGRAM, "url": IN_URL_ELIG,
             "fetched": date.today().isoformat(),
             "note": RULES_OUT_NOTE, "requirements": x.requirements}
+
+
+# =========================================================================
+# 4. flag 步(官方名录 × 岗位雇主名 → 岗位表的 aip 字段)
+# =========================================================================
+
+
+def flag_aip_jobs() -> None:
+    """官方指定雇主名单 × 岗位雇主名 → 就地写回 Job Bank / ATS 的 aip 字段(入口,门直调)。
+
+    「一字段一脚本」示例:本段只产出一个字段 `aip`(bool),来源单一(官方 AIP 指定雇主名单),
+    不依赖别的字段。读雇主名 → 归一化匹配 → 写回 aip。
+    AIP = Atlantic Immigration Program(NL/NB/NS/PE),是唯一公布「指定雇主名单」的通道。
+    名单只覆盖大西洋四省,所以只有这些省的岗可能命中。
+    2026-08-31 批H2 归户搬家:自 etl/clean/05c_flag_aip.py 迁进 aip 域(判据「谁的数据谁管」——
+    它读的是本域产出 raw/aip/aip-designated-employers.json,写的是一个 AIP 专有字段;住 clean/
+    只是因为它写回岗位表,那是「写到哪」不是「谁的口径」)。
+    2026-08-31 批I3 溶段:步骤文件 flag_aip_jobs.py 整件溶进本文件成段4,匹配逻辑一字未动 ——
+    只按方言律拆件(正则与文案提名进 constants、多返回值收 FlagOut、裸 print 改 say)。
+    落盘两档逐字保留:Job Bank 走原子写(临时文件 + os.replace,与 05/05b 一致,
+    现由 paths.write_json 兑现 —— 同一套 `.json.tmp` + os.replace);ATS 各文件走直写。
+    """
+    say(FLAG_IN_LIST_TPL.format(path=IN_AIP_LIST))
+    say(FLAG_IN_OUT_TPL.format(path=IN_OUT_POSTINGS))
+    names = load_aip_names()
+    say(FLAG_NAMES_TPL.format(n=len(names)))
+    got = flag_jobbank(names)
+    total = got.total + flag_ats_jobs()
+    say(FLAG_DONE_TPL.format(flagged=got.flagged, total=total))
+
+
+def norm_name(name: str) -> str:
+    """公司名归一:去 o/a 别名前缀、去公司后缀、去标点、压空格、小写。
+
+    ⚠ **跨域单一来源**:lmia 域按路径 importlib 拉本函数当聚合键(lmia/constants.py 的
+    NORM_MODULE_PATH,2026-08-31 批I3 随本件溶段从 aip/flag_aip_jobs.py 改指本文件),
+    mart 汇装拉它对 companies 做同一把尺子的 join —— 三处必须同一份实现,改这个函数等于改
+    LMIA 榜单与 AIP 匹配两处口径,别复制、别就地「优化」。
+    """
+    n = (name or "").lower()
+    n = ALIAS_SPLIT_RE.split(n)[0]
+    n = SUFFIX_RE.sub(SPACE_SEP, n)
+    n = KEEP_RE.sub(SPACE_SEP, n)
+    return WS_RE.sub(SPACE_SEP, n).strip()
+
+
+def load_aip_names() -> set:
+    """官方名单 → 归一化雇主名集合(同时收 legal 名和 o/a 别名两种写法)。"""
+    names: set = set()
+    for row in json.loads(IN_AIP_LIST.read_text(encoding=ENC_UTF8)):
+        raw = row.get(K_EMPLOYER, "")
+        names.add(norm_name(raw))
+        alias = ALIAS_RE.search(raw)
+        if alias:
+            names.add(norm_name(alias.group(1)))
+    names.discard("")
+    return names
+
+
+def flag_jobbank(names: set) -> FlagOut:
+    """Job Bank 全国岗位表逐行打 aip → 原子写回(表不存在 = 本轮没抓岗,零命中零过件)。"""
+    if IN_OUT_POSTINGS.exists() is False:
+        return FlagOut(flagged=0, total=0)
+    posts = json.loads(IN_OUT_POSTINGS.read_text(encoding=ENC_UTF8))
+    flagged = 0
+    total = 0
+    for job in posts:
+        total += 1
+        hit = aip_hit(AipHitIn(job=job, names=names))
+        job[K_AIP] = hit
+        if hit:
+            flagged += 1
+    paths.write_json(paths.WriteJsonIn(path=IN_OUT_POSTINGS, payload=posts, indent=INDENT_2))
+    return FlagOut(flagged=flagged, total=total)
+
+
+def aip_hit(x: AipHitIn) -> bool:
+    """一岗是否命中:省在大西洋四省 **且** 归一化雇主名在官方名单里。"""
+    if x.job.get(K_PROVINCE) not in ATLANTIC:
+        return False
+    return norm_name(x.job.get(K_EMPLOYER, "")) in x.names
+
+
+def flag_ats_jobs() -> int:
+    """ATS 公司岗一律 False,返回过件数。
+
+    ATS 公司岗在 Ottawa(ON),定义上不属 AIP(大西洋四省)→ 一律 False(保持字段一致)。
+    只有真改了的文件才落盘(原脚本 `changed` 开关,原样保留)。
+    """
+    total = 0
+    for jobs_json in IN_OUT_COMPANIES_DIR.rglob(ATS_JOBS_GLOB):
+        data = json.loads(jobs_json.read_text(encoding=ENC_UTF8))
+        changed = False
+        for job in data.get(K_JOBS, []):
+            total += 1
+            if job.get(K_AIP) is not False:
+                job[K_AIP] = False
+                changed = True
+        if changed:
+            jobs_json.write_text(json.dumps(data, ensure_ascii=False, indent=INDENT_2),
+                                 encoding=ENC_UTF8)
+    return total

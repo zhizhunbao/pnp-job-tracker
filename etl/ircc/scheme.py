@@ -6,11 +6,12 @@ sys.path[0] 时 httpx/bs4 内部 import types 当场炸)。
 本域形状两档:
 ① **域内接线形状 XxxIn** = dataclass —— 多入参函数的一参令载体(不是外来数据,不上 pydantic);
 ② **多返回值收编 XxxOut** = dataclass —— 原来 `return a, b` 的元组一律收成具名格。
-联邦产出行不上 pydantic:raw/ircc/*.json **逐格顺序即文件契约**(09 汇装、11_build_stats、
-本域 build_ircc_difficulty 直接读;后者原是 clean/04e,2026-08-31 批H2 归户),
-行构造留在 functions 的各段里按 K_ 键逐格写全,校验靠各步自校硬闸。
+联邦产出行不上 pydantic:raw/ircc/*.json **逐格顺序即文件契约**(09 汇装、11_build_stats
+直接读),行构造留在 functions 的各段里按 K_ 键逐格写全,校验靠各步自校硬闸。
 段编号 2026-08-31 批H2 随 functions/constants 同步前移:原段5(04e 包装,本段无形状)退役,
 原段6/7 成段5/6。
+2026-08-31 批I3 溶段:build_ircc_difficulty.py(批H2 归户时留的步骤文件)溶成段7,
+本段的形状全是新增 —— 落盘行仍走 to_* 行构造器逐格写全(json 键只许住 to_*)。
 import 只有标准库(叶子律:形状本域自声明,零跨域)。
 """
 from dataclasses import dataclass
@@ -240,3 +241,279 @@ class ItemsOut:
 
     problems: list
     """自校问题(非空即保留旧表)。"""
+
+
+# =========================================================================
+# 7. 省移民难度指数
+# =========================================================================
+
+
+@dataclass
+class PoolOut:
+    """to_pool() 出参:一省一季度的人数池三格。
+
+    双持两列各计一次(学签池 = 仅学签 + 学工双持,工签池 = 仅工签 + 学工双持)——
+    公式仍 = 两列相加,与旧 IRCC 口径同构,用户可自行验算。访客/庇护从不计入。
+    """
+
+    study: int
+    """学签池。"""
+
+    work: int
+    """工签池。"""
+
+    total: int
+    """合计(竞争比的分子)。"""
+
+
+@dataclass
+class QuotaOut:
+    """to_quota() 出参:一省的配额取数(最新年有值优先,否则退上一年)+ 两年都有才出的趋势。"""
+
+    value: int | None
+    """配额人数(两年都空 = None,该省不出竞争比因子)。"""
+
+    year: int
+    """这个配额是哪一年的。"""
+
+    source: str
+    """配额出处(源表逐年出处住 sources 子表,行级 source 恒缺 → 原式 `a.get('source', '')`
+    落的一直是空串,搬段时原样保留:改它等于改产物,不属本批)。"""
+
+    trend: float | None
+    """两年都有值才算的趋势(最新年 / 上一年 - 1);缺一年 = None,不出趋势因子。"""
+
+
+@dataclass
+class DrawRow:
+    """一条省抽选记录(只读三格:日期 / 邀请量 / 分数线)。"""
+
+    date: str
+    """抽选日(缺格当空串,原式 `x.get('date') or ''`)。"""
+
+    invitations: int
+    """邀请量(缺格当 0,原式 `x.get('invitations') or 0`)。"""
+
+    score: int | None
+    """分数线(缺 = 该场不进水位分布)。"""
+
+
+@dataclass
+class ScoredDraw:
+    """带分抽选(水位分位的样本:窗内 + 分数非空)。"""
+
+    date: str
+    """抽选日。"""
+
+    score: int
+    """分数线。"""
+
+
+@dataclass
+class CompIn:
+    """comp_ratio() 入参:竞争比的分子与分母。"""
+
+    pool: int
+    """人数池。"""
+
+    quota: int | None
+    """配额。"""
+
+
+@dataclass
+class CompFactorIn:
+    """to_comp_factor() 入参:竞争比因子行的各格。"""
+
+    value: float
+    """竞争比。"""
+
+    pool: int
+    """人数池合计。"""
+
+    pool_study: int
+    """学签池。"""
+
+    pool_work: int
+    """工签池。"""
+
+    quota: int
+    """配额。"""
+
+    quota_year: int
+    """配额年份。"""
+
+    source: str
+    """StatCan 分省存量表的来源。"""
+
+    as_of: str
+    """快照月(季度参考日截前 7 位)。"""
+
+
+@dataclass
+class TrendFactorIn:
+    """to_trend_factor() 入参:配额趋势因子行的各格。"""
+
+    value: float
+    """趋势(最新年 / 上一年 - 1)。"""
+
+    source: str
+    """配额表出处。"""
+
+    as_of: str
+    """趋势的年份标(原脚本写死最新配额年)。"""
+
+
+@dataclass
+class ActivityFactorIn:
+    """to_activity_factor() 入参:抽选活跃因子行的各格。"""
+
+    value: int
+    """窗内抽选次数。"""
+
+    invitations: int
+    """窗内邀请量合计。"""
+
+    source: str
+    """省抽选页地址。"""
+
+    as_of: str
+    """今天(活跃度是「截至今天回看 180 天」)。"""
+
+
+@dataclass
+class ScoreFactorIn:
+    """to_score_factor() 入参:分数线水位因子行的各格。"""
+
+    value: int
+    """最新分在窗内分布里的分位(百分数)。"""
+
+    latest_score: int
+    """最新一场的分数线。"""
+
+    scale: str
+    """该省的分制(分制不可比红线:只跟自己比)。"""
+
+    source: str
+    """省抽选页地址。"""
+
+    as_of: str
+    """最新一场的抽选日。"""
+
+
+@dataclass
+class ActivityIn:
+    """activity_of() 入参:一省的抽选行 + 活跃窗与今天。"""
+
+    rows: list
+    """该省全部抽选行(DrawRow)。"""
+
+    block: dict
+    """该省抽选块(取出处地址)。"""
+
+    cut: str
+    """活跃窗起始日。"""
+
+    today_iso: str
+    """今天(因子的 asOf)。"""
+
+
+@dataclass
+class ScoredIn:
+    """scored_draws() 入参:一省的抽选行 + 水位窗起始日。"""
+
+    rows: list
+    """该省全部抽选行(DrawRow)。"""
+
+    cut: str
+    """水位窗起始日。"""
+
+
+@dataclass
+class ScoreLevelIn:
+    """score_level_of() 入参:窗内带分抽选(已按日期升序)+ 该省抽选块。"""
+
+    scored: list
+    """带分抽选(ScoredDraw),末位 = 最新一场。"""
+
+    block: dict
+    """该省抽选块(取分制与出处地址)。"""
+
+
+@dataclass
+class DiffProvIn:
+    """difficulty_row() 入参:重算一省难度要的全部上下文。"""
+
+    prov: str
+    """省码。"""
+
+    by_prov: dict
+    """分省临时居民存量({省码: {季度: {证型: 值}}})。"""
+
+    latest_ref: str
+    """最新季度参考日。"""
+
+    tr_asof: str
+    """快照月。"""
+
+    tr_source: str
+    """分省存量表的来源。"""
+
+    alloc: dict
+    """配额表({省码: 配额行})。"""
+
+    draws: dict
+    """省抽选表({省码: 省块})。"""
+
+    cut_activity: str
+    """活跃窗起始日(今天减 180 天)。"""
+
+    cut_score: str
+    """水位窗起始日(今天减 730 天)。"""
+
+    today_iso: str
+    """今天(活跃因子的 asOf)。"""
+
+
+@dataclass
+class DiffProvOut:
+    """difficulty_row() 出参:落盘行 + 控制台报数要的三格(原 print 直接取局部变量)。"""
+
+    row: dict
+    """落盘的一省行。"""
+
+    tier: str | None
+    """总档(竞争比缺 → None,只列事实)。"""
+
+    comp: float | None
+    """竞争比(缺 → None)。"""
+
+    n_factors: int
+    """本省出了几个因子。"""
+
+
+@dataclass
+class DiffRowIn:
+    """to_difficulty_row() 入参:一省行的三格。"""
+
+    prov: str
+    """省码。"""
+
+    tier: str | None
+    """总档。"""
+
+    factors: list
+    """因子行清单。"""
+
+
+@dataclass
+class DiffDocIn:
+    """to_difficulty_doc() 入参:落盘表的三格。"""
+
+    generated: str
+    """生成日。"""
+
+    tr_asof: str
+    """分省存量的快照月(表级)。"""
+
+    rows: list
+    """九省行。"""

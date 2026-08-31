@@ -33,6 +33,8 @@ if [ -n "$etl_changed" ]; then
   uv run --with ruff ruff check etl || { echo "[pre-push] ruff 有 error,push 已拦。"; exit 1; }
   # 2026-08-31 批D:ops 拆散,形制闸迁根改名 etl/check_shape.py(基线同迁 etl/etl_shape_baseline.json)
   PYTHONIOENCODING=utf-8 uv run python etl/check_shape.py || { echo "[pre-push] etl 形制闸未过,push 已拦。"; exit 1; }
+  # 类型闸(2026-08-31 批I 清零后上线):pyrefly 全仓零错,新增类型错拦 push(挂牌=逐行带理由)
+  PYTHONIOENCODING=utf-8 uv run --group dev pyrefly check etl || { echo "[pre-push] pyrefly 类型闸未过,push 已拦。"; exit 1; }
   echo "[pre-push] etl 闸过。"
 fi
 # --diff-filter=d 排掉本批**删除**的路径(2026-08-24 实撞:域内文件批量改成小写后,
