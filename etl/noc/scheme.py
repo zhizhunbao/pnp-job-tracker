@@ -178,3 +178,68 @@ class ElementRow:
 
     desc: str
     """元素内容。"""
+
+
+# =========================================================================
+# 5. audit 步(逐职业体检 大类/中类/小类)
+# =========================================================================
+
+
+@dataclass
+class AuditSeedIn:
+    """to_audit_row 的入参:一行 stats + 该 NOC 的名字行。"""
+
+    stat: dict
+    """mart/stats_occupation 的一行(province=all 那批)。"""
+
+    desc: dict
+    """mart/noc_descriptions 里同码那行(缺席给空 dict)。"""
+
+
+@dataclass
+class AuditRow:
+    """一个职业的体检行(to_audit_row 产;报告与 TSV 共用)。"""
+
+    noc: str
+    """5 位 NOC 码。"""
+
+    teer: int | None
+    """TEER 档(非法码 None,照原脚本原样打印)。"""
+
+    broad: str
+    """本站大类。"""
+
+    mid: str
+    """本站中类(人话桶)。"""
+
+    fine: str
+    """本站小类。"""
+
+    zh: str
+    """中文职业名(stats 优先,退 descriptions;都没有留空)。"""
+
+    en: str
+    """官方英文职业名。"""
+
+    open_jobs: int
+    """在招量(全国汇总行)。"""
+
+    by_hand: bool
+    """有没有被桶表覆盖(硬检查:必须全覆盖)。"""
+
+    official: str
+    """官方第 1 位的组(对照用)。"""
+
+    no_fine: bool
+    """小类 == 中类:等于没分小类。"""
+
+
+@dataclass
+class SmellHit:
+    """③ 段的一条线索:名字像另一个大类的职业行。"""
+
+    row: AuditRow
+    """命中的体检行。"""
+
+    expect: str
+    """关键词指向的大类(是线索不是判决)。"""

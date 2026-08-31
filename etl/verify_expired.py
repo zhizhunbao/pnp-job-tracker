@@ -31,7 +31,7 @@ from pathlib import Path
 
 import httpx
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # 2026-08-31 批D:ops 拆散,死岗验尸归根(岗位主管线随行;sources/build 直调)
 import paths
 
 IN_POSTINGS = paths.PROCESSED_JOBBANK / "postings.json"

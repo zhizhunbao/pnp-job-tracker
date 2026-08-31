@@ -18,6 +18,8 @@ import os
 import subprocess
 import sys
 import time
+import urllib.error
+import urllib.request
 from datetime import date
 from pathlib import Path
 from typing import cast
@@ -26,17 +28,24 @@ import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import paths
-from load.constants import (ALERTS_PATH, ALERTS_TIMEOUT_S, API_SEED_SUFFIX, BACKUPS_DIR,
+from load.constants import (ALERTS_PATH, ALERTS_TIMEOUT_S, API_SEED_SUFFIX, ARG_QUIET, BACKUPS_DIR,
                             BACKUP_DONE_TPL, BACKUP_FAIL_TPL, BACKUP_OUT_TPL, BACKUP_PRUNE_TPL,
-                            BACKUP_SKIP_MSG, CT_GZIP, DAY_S, DEFAULT_SEED_URL, DUMP_CMD,
+                            BACKUP_SKIP_MSG, COMMIT_ROW_TPL, CT_GZIP, DAY_S, DEFAULT_SEED_URL,
+                            DEPLOY_BEHIND_TPL, DEPLOY_NO_LIVE_TPL, DEPLOY_NO_REMOTE_MSG,
+                            DEPLOY_OK_TPL, DEPLOY_PENDING_HEAD_TPL, DEPLOY_PENDING_ROW_LEN,
+                            DEPLOY_PENDING_ROW_TPL, DEPLOY_PENDING_SHOW_MAX, DEPLOY_SKIP_ONLY_TPL,
+                            DEPLOY_TIMEOUT_S, DEPLOY_VERSION_URL, DUMP_CMD, ENC_UTF8,
                             ENV_BACKUP_URI, ENV_DB_URI, ENV_KEEP_DAYS, ENV_SEED_TOKEN, ERR_BODY_TPL,
-                            ENV_SEED_URL, HDR_CONTENT_TYPE, HDR_SEED_TOKEN, K_OK, K_PARTS,
-                            ERRORS_REPLACE, KEEP_DAYS_DEFAULT, MART_GLOB, MART_PATH_TPL, MART_UPLOAD_TIMEOUT_S,
+                            ENV_SEED_URL, GIT_FETCH_CMD, GIT_LOG_CMD, GIT_RANGE_TPL,
+                            HDR_CONTENT_TYPE, HDR_SEED_TOKEN, K_COMMIT, K_OK, K_PARTS,
+                            ERRORS_REPLACE, KEEP_DAYS_DEFAULT, LS_REMOTE_CMD, MART_GLOB, MART_PATH_TPL, MART_UPLOAD_TIMEOUT_S,
                             META_LABEL_TPL, META_NAME_TPL, OLD_SEED_SUFFIX, PART_LABEL_TPL,
-                            PART_NAME_TPL, SEED_TIMEOUT_S, SHARD_BYTES, SQL_GZ_GLOB,
-                            SCHEME_SEP, SQL_GZ_SUFFIX, UPLOAD_DONE_TPL, UPLOAD_EMPTY_MSG, UPLOAD_FAIL_TPL,
+                            PART_NAME_TPL, SEED_TIMEOUT_S, SHA_SHOW_LEN, SHARD_BYTES, SKIP_MARKERS,
+                            SQL_GZ_GLOB,
+                            SCHEME_SEP, SQL_GZ_SUFFIX, TAB, UPLOAD_DONE_TPL, UPLOAD_EMPTY_MSG, UPLOAD_FAIL_TPL,
                             UPLOAD_OK_TPL, UPLOAD_SKIP_MSG)
-from load.scheme import BackupIn, CallOut, HttpPostLike, HttpRespLike, PostTableIn, UploadIn
+from load.scheme import (BackupIn, CallOut, DeployIn, HttpPostLike, HttpRespLike, PostTableIn,
+                         UnshippedIn, UploadIn)
 
 
 # =========================================================================
@@ -177,3 +186,114 @@ def backup_db(x: BackupIn) -> None:
             f.unlink()
             removed += 1
     x.say(BACKUP_PRUNE_TPL.format(days=keep_days, n=removed))
+
+
+# =========================================================================
+# 4. 部署哨兵(「push 成功 ≠ 上线」的解药;2026-08-31 批D 从 ops 拆入)
+# =========================================================================
+
+
+def check_deploy(x: DeployIn) -> None:
+    """线上跑的是哪个提交 —— 一次比对:远端 origin/main 的 SHA vs 线上 /api/version 报的 SHA。
+
+    2026-07-21 事故:Render 工作区 500 构建分钟耗尽,且 Build Pipeline 设了 $0 spend limit
+    (把 Render 本该自动补买的行为一并掐死),于是 #154-#159 六个提交全部 `Build blocked`,
+    生产钉在旧构建**整整一天**。期间 Frank 反复报「列表没更新」「面包屑还是三个商务」,
+    每一条都被当成独立的前端 bug 去查 —— 根因只有一个,症状六个。本步把它变成一句人话报警,
+    不必再去猜是不是代码写错了。
+
+    零依赖(标准库 urllib),不写库、不改任何状态,只读。
+    一致 return(门收 exit 0)/ 不一致 sys.exit(1);--quiet 只在异常时输出(挂 cron 用)。
+    """
+    quiet = ARG_QUIET in sys.argv
+    want = remote_head()
+    live = live_commit()
+    if want is None:
+        x.say(DEPLOY_NO_REMOTE_MSG)
+        return
+    if live is None:
+        x.say(DEPLOY_NO_LIVE_TPL.format(url=DEPLOY_VERSION_URL))
+        sys.exit(1)
+    if live.startswith(want[:SHA_SHOW_LEN]) or want.startswith(live[:SHA_SHOW_LEN]):
+        if quiet is False:
+            x.say(DEPLOY_OK_TPL.format(sha=live[:SHA_SHOW_LEN]))
+        return
+    pending = unshipped(UnshippedIn(live=live, want=want))
+    if pending is not None and len(pending) == 0:
+        if quiet is False:
+            x.say(DEPLOY_SKIP_ONLY_TPL.format(live=live[:SHA_SHOW_LEN], want=want[:SHA_SHOW_LEN]))
+        return
+    x.say(DEPLOY_BEHIND_TPL.format(want=want[:SHA_SHOW_LEN], live=live[:SHA_SHOW_LEN]))
+    if pending is not None and len(pending) > 0:
+        x.say(DEPLOY_PENDING_HEAD_TPL.format(n=len(pending)))
+        for p in pending[:DEPLOY_PENDING_SHOW_MAX]:
+            x.say(DEPLOY_PENDING_ROW_TPL.format(row=p[:DEPLOY_PENDING_ROW_LEN]))
+    sys.exit(1)
+
+
+def remote_head() -> str | None:
+    """取 origin/main 的 SHA;取不到 → None(调用方本轮跳过,拿不到基准不算故障)。"""
+    try:
+        out = subprocess.run(
+            list(LS_REMOTE_CMD),
+            capture_output=True, text=True, encoding=ENC_UTF8, errors=ERRORS_REPLACE,
+            timeout=DEPLOY_TIMEOUT_S, check=True,
+        ).stdout.strip()
+    except (subprocess.SubprocessError, OSError, IndexError):
+        return None
+    if out == "":
+        return None
+    return out.split()[0]
+
+
+def live_commit() -> str | None:
+    """线上 /api/version 报的提交 SHA;无响应/体不合规 → None(调用方按站点异常处理)。"""
+    try:
+        with urllib.request.urlopen(DEPLOY_VERSION_URL, timeout=DEPLOY_TIMEOUT_S) as r:
+            body = json.load(r)
+    except (urllib.error.URLError, json.JSONDecodeError, TimeoutError, OSError):
+        return None
+    commit = body.get(K_COMMIT)
+    if not commit:
+        return None
+    sha = commit.strip()
+    if sha == "":
+        return None
+    return sha
+
+
+def unshipped(x: UnshippedIn) -> list[str] | None:
+    """线上..origin/main 之间**该部署却没部署**的提交(带 skip 标记的不算)。
+
+    取不到本地对象(浅克隆/没 fetch)→ None,调用方退回旧的「只比 SHA」口径,宁可误报不漏报。
+    ⚠️ 必须显式 utf-8:Windows 上 text=True 走 cp1252,提交消息是中文 → 读取线程里
+    UnicodeDecodeError,而异常在 reader thread 里,外面只看到「拿不到」(2026-08-03 实撞)。
+    """
+    try:
+        subprocess.run(list(GIT_FETCH_CMD), capture_output=True, timeout=DEPLOY_TIMEOUT_S)
+        out = subprocess.run(
+            list(GIT_LOG_CMD) + [GIT_RANGE_TPL.format(live=x.live, want=x.want)],
+            capture_output=True, text=True, encoding=ENC_UTF8, errors=ERRORS_REPLACE,
+            timeout=DEPLOY_TIMEOUT_S, check=True,
+        ).stdout.strip()
+    except (subprocess.SubprocessError, OSError):
+        return None
+    pending: list[str] = []
+    if out == "":
+        return pending
+    for line in out.splitlines():
+        if TAB not in line:
+            continue
+        sha, subject = line.split(TAB, 1)
+        if skip_marked_of(subject) is False:
+            pending.append(COMMIT_ROW_TPL.format(h=sha, m=subject))
+    return pending
+
+
+def skip_marked_of(subject: str) -> bool:
+    """提交标题带不带 skip 标记(纯文档/纯数据提交本来就不该构建)。"""
+    lowered = subject.lower()
+    for marker in SKIP_MARKERS:
+        if marker in lowered:
+            return True
+    return False

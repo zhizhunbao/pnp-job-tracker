@@ -12,32 +12,42 @@ import io
 import json
 import os
 import sys
+from collections import Counter, defaultdict
 from pathlib import Path
 
 import httpx
 
 from log.functions import say
 from noc.constants import (
-    ARG_LIMIT, ARG_RETRANSLATE, BUCKETS3, BUCKETS4, BUCKETS5, CACHE_HIT_TPL, CJK_RE,
+    ARG_ALL, ARG_LIMIT, ARG_RETRANSLATE, AUDIT_HEAD_TPL, AUDIT_LABELS, AUDIT_ROW_TPL,
+    BROAD_BAD_TPL, BROAD_HEAD_TPL, BROAD_MORE_TPL, BROAD_OK_MSG, BROAD_SHOW_MAX, BROADS,
+    BUCKETS3, BUCKETS4, BUCKETS5, CACHE_HIT_TPL, CJK_RE,
     COL_CODE_DESC, COL_CODE_PREFIX, COL_EDESC, COL_ETYPE, COL_LEVEL, COL_TITLE, COLLISION_CODE_TPL,
     COLLISION_LANGS, COLLISION_OK_TPL, COLLISION_ROW_TPL, COLLISION_SEP, COLLISION_SHOW_MAX,
-    COLLISION_WARN_TPL, COLON, DESC_CACHE_TPL, DESC_DL_TPL, DESC_DONE_TPL, DESC_SOURCE,
+    COLLISION_WARN_TPL, COLON, COVER_BAD_TPL, COVER_OK_TPL, DESC_CACHE_TPL, DESC_DL_TPL,
+    DESC_DONE_TPL, DESC_SOURCE,
     DESC_TIMEOUT_S, DESC_UA, DESC_URL, DOWNLOAD_TPL, DUTIES_LEAD_SUFFIX, EMPTY_MARK, ENC_UTF8,
-    ENC_UTF8_SIG, ERRORS_REPLACE, FILL_KEYS, FIX, GEN_URL_TPL, HANGUL_RE, I18N, IN_DESC_CSV,
-    IN_LINE_TPL, IN_STRUCT_CSV, K_BROAD, K_BROAD_EN, K_BROAD_KO, K_BY_NOC, K_DUTIES, K_EN,
-    K_EN_SHORT, K_EN_UI, K_FETCHED, K_FINE, K_FINE_EN, K_FINE_KO, K_KO, K_KO_UI, K_LEVEL,
-    K_LEVELS, K_MID, K_MID_EN, K_MID_KO, K_REQUIREMENTS, K_RESPONSE, K_SOURCE, K_TEER,
-    K_TEER_LABEL, K_TITLE, K_URL, K_ZH, K_ZH_UI, LANGS,
-    LATIN_RE, LEVEL_COUNT_TPL, MODEL_DEFAULT, MODEL_ENV, NL, OFFICIAL_BROAD, OLLAMA_DEFAULT,
-    OLLAMA_ENV, OUT_DESC, OUT_LINE_TPL, OUT_STRUCT, PREFIXES, PROBE_NOCS, PROBE_TPL, PROGRESS_TPL,
-    PROMPT_TPL, QUOTE_STRIP, STRUCT_CACHE_MIN_BYTES, STRUCT_DONE_TPL, STRUCT_ENV,
+    ENC_UTF8_SIG, ERRORS_REPLACE, FILL_KEYS, FINE_NO, FINE_SHOW_LEN, FINE_YES, FIX, GEN_URL_TPL,
+    HAND_NO, HAND_YES, HANGUL_RE, HIT_HEAD_TPL, HIT_MORE_TPL, HIT_ROW_TPL, HIT_SHOW_MAX,
+    I18N, IN_DESC_CSV, IN_DESCR,
+    IN_LINE_TPL, IN_STATS, IN_STRUCT_CSV, K_BROAD, K_BROAD_EN, K_BROAD_KO, K_BY_NOC, K_DUTIES,
+    K_EN, K_EN_SHORT, K_EN_UI, K_FETCHED, K_FINE, K_FINE_EN, K_FINE_KO, K_KO, K_KO_UI, K_LEVEL,
+    K_LEVELS, K_MID, K_MID_EN, K_MID_KO, K_NOC, K_PROVINCE, K_REQUIREMENTS, K_RESPONSE, K_SOURCE,
+    K_TEER, K_TEER_LABEL, K_TITLE, K_URL, K_ZH, K_ZH_UI, LANGS,
+    LATIN_RE, LEVEL_COUNT_TPL, MID_ITEM_TPL, MID_TOP_MAX, MID_TOP_TPL, MISS_ROW_TPL,
+    MODEL_DEFAULT, MODEL_ENV, NL, NOFINE_TPL, OFFICIAL_BROAD, OLLAMA_DEFAULT,
+    OLLAMA_ENV, OUT_DESC, OUT_LINE_TPL, OUT_STRUCT, OUT_TSV, PREFIXES, PROBE_NOCS, PROBE_TPL,
+    PROGRESS_TPL, PROMPT_TPL, PROVINCE_ALL, QUOTE_STRIP, SEC1_HEAD, SEC2_HEAD, SEC3_HEAD, SMELL,
+    SRC_ITEM_TPL, SRC_SEP, STRUCT_CACHE_MIN_BYTES, STRUCT_DONE_TPL, STRUCT_ENV,
     STRUCT_TIMEOUT_S, STRUCTURE_URL, TEER_TPL, TITLE_FALLBACK, TITLE_SHOW_LEN, TODO_TPL,
-    TRANSLATE_FAIL_TPL, TRANSLATE_TIMEOUT_S, UI_BANNED, UI_FIX, UI_KEY_BY_LANG, UI_KEY_DEFAULT,
+    TRANSLATE_FAIL_TPL, TRANSLATE_TIMEOUT_S, TSV_DONE_TPL, TSV_HEADER, TSV_ROW_TPL,
+    UI_BANNED, UI_FIX, UI_KEY_BY_LANG, UI_KEY_DEFAULT,
     UI_MAX_LEN, UI_PROMPT_TPL, UNCLASSIFIED, UNIT_LEVEL, WANT_ELEMENTS, WANT_LEVELS, ZH_MAX_LEN,
+    ZH_SHOW_LEN, ZH_WIDE_LEN,
 )
 from noc.scheme import (
-    BroadI18nIn, CheckIn, DescSeedIn, ElementRow, FillIn, FineIn, LabelIn, LevelSeedIn, MidIn,
-    OllamaIn, ParseIn, TranslateIn,
+    AuditRow, AuditSeedIn, BroadI18nIn, CheckIn, DescSeedIn, ElementRow, FillIn, FineIn, LabelIn,
+    LevelSeedIn, MidIn, OllamaIn, ParseIn, SmellHit, TranslateIn,
 )
 from noc.variables import CACHE
 
@@ -512,3 +522,219 @@ def fetch_elements_csv() -> str:
 def to_desc_rec(x: DescSeedIn) -> dict:
     """一个 5 位 NOC 的空条目(职责/要求随行填充)。"""
     return {"noc": x.noc, "title": x.title, "duties": [], "requirements": []}
+
+
+# =========================================================================
+# 5. audit 步(逐职业体检 大类/中类/小类)
+# =========================================================================
+
+
+def audit_noc_classes() -> None:
+    """逐职业体检「大类 / 中类 / 小类」(只读,不改数据;入口,门直调)。
+
+    起因(2026-08-03 Frank 实机):选工作页「科技」这一类里蹲着「景观园艺技师」
+    「家电维修技师」。所以本步要回答三件事:
+    ① 每个大类里到底装了什么 —— 逐职业列出 大类/中类/小类/TEER/在招量;
+    ② 三级到底有多少是**真分过**的 —— 中/小类只有本域桶表点名覆盖的是人工确认过的,
+    其余走前缀兜底,而兜底出来的小类 == 中类(等于没有小类);
+    ③ 哪些看着不对 —— 关键词线索(园艺/维修/司机 出现在「科技」这种)。**是线索不是判决**:
+    大类 = NOC 第 1 位,是官方分组,本站只是给它起了个中文简称;所以「不对」多半不是
+    分错了,而是**简称起窄了**(第 2 组官方叫「自然与应用科学及相关职业」,本站叫「科技」
+    —— 园艺技师、家电维修技师在官方口径里本来就属于它)。
+
+    手动开关(跟在 --only audit 后面):--all 摘要 + 全量逐条打印。
+    """
+    rows = build_audit_rows()
+    say(AUDIT_HEAD_TPL.format(n=len(rows)))
+    report_broad_buckets(rows)
+    report_class_grade(rows)
+    report_smell_hits(rows)
+    write_audit_tsv(rows)
+
+
+def build_audit_rows() -> list[AuditRow]:
+    """mart 两张表 → 按在招量降序的体检行(只收 province=all 那批)。"""
+    names: dict = {}
+    for r in load_mart_rows(IN_DESCR):
+        names[r[K_NOC]] = r
+    rows: list[AuditRow] = []
+    for r in load_mart_rows(IN_STATS):
+        if r.get(K_PROVINCE) != PROVINCE_ALL:
+            continue
+        desc = names.get(r[K_NOC])
+        if desc is None:
+            desc = {}
+        rows.append(to_audit_row(AuditSeedIn(stat=r, desc=desc)))
+    return sorted(rows, key=row_open_key)
+
+
+def load_mart_rows(path: Path) -> list:
+    """读一张 mart 表(09 的产出;不连库、不抓网)。"""
+    return json.loads(path.read_text(encoding=ENC_UTF8))
+
+
+def to_audit_row(x: AuditSeedIn) -> AuditRow:
+    """一行 stats + 名字行 → 体检行(名字 stats 优先退 descriptions;键词汇只住本构造器)。"""
+    noc = x.stat["noc"]
+    c = classify(noc)
+    return AuditRow(
+        noc=noc, teer=c["teer"], broad=c["broad"], mid=c["mid"], fine=c["fine"],
+        zh=x.stat.get("titleZh") or x.desc.get("titleZh") or "",
+        en=x.stat.get("titleEn") or x.desc.get("title") or "",
+        open_jobs=x.stat.get("openJobs") or 0,
+        by_hand=bucket_of(noc) is not None,
+        official=official_broad_of(noc),
+        no_fine=c["fine"] == c["mid"],
+    )
+
+
+def row_open_key(row: AuditRow) -> int:
+    """排序键:在招量降序(原 lambda 出户成具名)。"""
+    return -row.open_jobs
+
+
+def report_broad_buckets(rows: list[AuditRow]) -> None:
+    """① 每个本站浏览分类里装了什么(括号=它们在官方属于哪一组)。"""
+    say(SEC1_HEAD)
+    show_all = ARG_ALL in sys.argv
+    by_broad: dict = defaultdict(list)
+    for row in rows:
+        by_broad[row.broad].append(row)
+    for label in AUDIT_LABELS:
+        lst = sorted(by_broad.get(label, []), key=row_open_key)
+        if len(lst) == 0:
+            continue
+        say(BROAD_HEAD_TPL.format(label=label, n=len(lst), open=open_sum_of(lst),
+                                  srcs=official_srcs_of(lst)))
+        shown = lst
+        if show_all is False:
+            shown = lst[:BROAD_SHOW_MAX]
+        for row in shown:
+            say(AUDIT_ROW_TPL.format(noc=row.noc, teer=row.teer, mid=row.mid,
+                                     fine=row.fine[:FINE_SHOW_LEN], zh=row.zh[:ZH_SHOW_LEN],
+                                     open=row.open_jobs))
+        if show_all is False and len(lst) > BROAD_SHOW_MAX:
+            say(BROAD_MORE_TPL.format(n=len(lst) - BROAD_SHOW_MAX, name=OUT_TSV.name))
+
+
+def open_sum_of(rows: list[AuditRow]) -> int:
+    """一组职业的在招量合计。"""
+    total = 0
+    for row in rows:
+        total += row.open_jobs
+    return total
+
+
+def official_srcs_of(rows: list[AuditRow]) -> str:
+    """一组职业的官方来源组计数(多到少;本站简称与官方组并排摆)。"""
+    counts: Counter = Counter()
+    for row in rows:
+        counts[row.official] += 1
+    parts = []
+    for name, n in counts.most_common():
+        parts.append(SRC_ITEM_TPL.format(k=name, v=n))
+    return SRC_SEP.join(parts)
+
+
+def report_class_grade(rows: list[AuditRow]) -> None:
+    """② 中/小类的成色:桶表覆盖、大类合法性、小类退化计数、最挤的中类。"""
+    say(SEC2_HEAD)
+    hand = 0
+    nofine = 0
+    bad = 0
+    for row in rows:
+        if row.by_hand:
+            hand += 1
+        if row.no_fine:
+            nofine += 1
+        if row.broad not in BROADS:
+            bad += 1
+    if hand == len(rows):
+        say(COVER_OK_TPL.format(hand=hand, n=len(rows)))
+    else:
+        say(COVER_BAD_TPL.format(n=len(rows) - hand))
+    for row in rows:
+        if row.by_hand is False:
+            say(MISS_ROW_TPL.format(noc=row.noc, zh=row.zh[:ZH_WIDE_LEN], open=row.open_jobs))
+    if bad == 0:
+        say(BROAD_OK_MSG)
+    else:
+        say(BROAD_BAD_TPL.format(n=bad))
+    say(NOFINE_TPL.format(n=nofine, total=len(rows)))
+    say(MID_TOP_TPL.format(items=crowded_mids_of(rows)))
+
+
+def crowded_mids_of(rows: list[AuditRow]) -> str:
+    """装的职业数最多的几个中类。"""
+    counts: Counter = Counter()
+    for row in rows:
+        counts[row.mid] += 1
+    parts = []
+    for mid, n in counts.most_common(MID_TOP_MAX):
+        parts.append(MID_ITEM_TPL.format(m=mid, n=n))
+    return SRC_SEP.join(parts)
+
+
+def report_smell_hits(rows: list[AuditRow]) -> None:
+    """③ 关键词线索:名字与所在大类对不上的行(命中 ≠ 分错,见本步 docstring)。"""
+    say(SEC3_HEAD)
+    show_all = ARG_ALL in sys.argv
+    hits: list[SmellHit] = []
+    for row in rows:
+        expect = smell_expect_of(row)
+        if expect is not None:
+            hits.append(SmellHit(row=row, expect=expect))
+    hits.sort(key=hit_open_key)
+    say(HIT_HEAD_TPL.format(n=len(hits)))
+    shown = hits
+    if show_all is False:
+        shown = hits[:HIT_SHOW_MAX]
+    for hit in shown:
+        say(HIT_ROW_TPL.format(noc=hit.row.noc, broad=hit.row.broad, expect=hit.expect,
+                               zh=hit.row.zh[:ZH_WIDE_LEN], open=hit.row.open_jobs))
+    if show_all is False and len(hits) > HIT_SHOW_MAX:
+        say(HIT_MORE_TPL.format(n=len(hits) - HIT_SHOW_MAX))
+
+
+def smell_expect_of(row: AuditRow) -> str | None:
+    """职业名命中关键词、且与所在大类不符时,返回关键词指向的大类;否则 None。"""
+    for words, expect in SMELL:
+        matched = False
+        for w in words:
+            if w in row.zh:
+                matched = True
+        if matched and row.broad != expect:
+            return expect
+    return None
+
+
+def hit_open_key(hit: SmellHit) -> int:
+    """③ 段排序键:在招量降序。"""
+    return -hit.row.open_jobs
+
+
+def write_audit_tsv(rows: list[AuditRow]) -> None:
+    """全量逐条落盘(utf-8-sig,拿去 Excel 里逐行看)并报路径。"""
+    OUT_TSV.parent.mkdir(parents=True, exist_ok=True)
+    parts = [TSV_HEADER]
+    for row in rows:
+        parts.append(TSV_ROW_TPL.format(
+            noc=row.noc, teer=row.teer, broad=row.broad, mid=row.mid, fine=row.fine,
+            zh=row.zh, en=row.en, open=row.open_jobs,
+            hand=hand_label_of(row), fine_flag=fine_label_of(row)))
+    OUT_TSV.write_text("".join(parts), encoding=ENC_UTF8_SIG, newline="")
+    say(TSV_DONE_TPL.format(path=OUT_TSV))
+
+
+def hand_label_of(row: AuditRow) -> str:
+    """TSV「中小类来源」列的说法。"""
+    if row.by_hand:
+        return HAND_YES
+    return HAND_NO
+
+
+def fine_label_of(row: AuditRow) -> str:
+    """TSV「有小类」列的说法。"""
+    if row.no_fine:
+        return FINE_NO
+    return FINE_YES

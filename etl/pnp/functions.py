@@ -14,9 +14,12 @@ docs/design/etl分域-20260829.md §4)。
 (与旧 _steps 跑子进程「一步失败即中止」同语义)。
 依赖单边:本文件 → constants/scheme + 基础设施叶(paths / log / fetch / crawl)。
 """
+import glob
 import json
+import re
 import sys
 from datetime import date, datetime, timezone
+from pathlib import Path
 from urllib.parse import urljoin
 
 import fitz
@@ -270,6 +273,34 @@ from pnp.scheme import (
     SkAllocOut, SkGroupIn, SkGroupNameIn, SkHeadIn, SkMathIn, SkPagesIn, SkPointsOut, SkProcOut, SliceIn, SwmOut,
     TenureIn, TenureOut, TextOfHtmlIn, TranslateIn, WindowProvIn, YearPageOut, YearValuesIn,
 )
+from pnp.constants import (
+    C01_APPLIES_JO, C01_APPLIES_OIDEE, C01_BAD_TPL, C01_D_COUNT_TPL, C01_D_JULY_TPL,
+    C01_D_ROUNDS_TPL, C01_DETAIL_TPL, C01_F_AGE, C01_F_EDU, C01_F_LANG, C01_F_RISK, C01_F_WORK,
+    C01_FAIL_SEP, C01_FAIL_TPL, C01_HAS_ONE_YEAR, C01_HAS_STUDIES, C01_HAS_TWO_YEARS,
+    C01_HIT_MAX_LEN, C01_HIT_SEP, C01_KIND_DRAW, C01_L_ADAPT, C01_L_AGE, C01_L_CLB6, C01_L_CLB8,
+    C01_L_EDU, C01_L_MB275, C01_L_MB276, C01_L_NB_JULY, C01_L_NB_ROUNDS, C01_L_NL_CARP,
+    C01_L_NL_COUNT, C01_L_ON_ALLOC, C01_L_ON_NOMS, C01_L_RISK_MAX, C01_L_RISK_STUDY,
+    C01_L_ROWS_TPL, C01_L_SK_72310, C01_L_SK_JO, C01_L_SK_OIDEE, C01_L_TOTAL, C01_L_WORK,
+    C01_MART_FILE_TPL, C01_MB275_DATE, C01_MB276_DATE, C01_METRIC_ALLOC, C01_METRIC_NOMS,
+    C01_NOC_CARPENTER, C01_NOTE_CONS, C01_OK_TPL, C01_PASS_TPL, C01_PERIOD_2025, C01_PROV_MB,
+    C01_PROV_NB, C01_PROV_NL, C01_PROV_ON, C01_PROV_SK, C01_T_DRAWS, C01_T_EMP, C01_T_OCC,
+    C01_T_OPS, C01_T_SCORE, C01_TYPE_INELIGIBLE, C01_YEAR_2026, FRESH_DATE_FMT, FRESH_K_CADENCE,
+    FRESH_K_DEFAULTS, FRESH_K_FILE, FRESH_K_GLOB, FRESH_K_KEY, FRESH_K_NOTE, FRESH_K_OVERRIDES,
+    FRESH_KEY_DEFAULT, FRESH_KEY_MTIME, FRESH_MANIFEST, FRESH_P_ALL_OK_TPL, FRESH_P_BADDATE_TPL,
+    FRESH_P_IN_TPL, FRESH_P_MISSING_TPL, FRESH_P_NOSTAMP_TPL, FRESH_P_OK_TPL,
+    FRESH_P_STALE_NOTE_TPL, FRESH_P_STALE_TPL, FRESH_P_SUMMARY_TPL, FRESH_STAMP_LEN,
+    GQ_CACHE_DIR, GQ_ERRORS_IGNORE, GQ_GATES, GQ_HITS_SHOW, GQ_K_CRAWLED_AT, GQ_K_HTML,
+    GQ_K_PAGES, GQ_K_STATUS, GQ_K_URL, GQ_MANIFEST_NAME, GQ_P_GATE_TPL, GQ_P_HEAD_TPL,
+    GQ_P_NO_CRAWL_TPL, GQ_P_NO_PAGES, GQ_P_PARSE_FAIL_TPL, GQ_P_PDF_FAIL_TPL,
+    GQ_P_PDF_FILE_TPL, GQ_P_PDF_HEAD_TPL, GQ_P_SENT_TPL, GQ_P_UNKNOWN_TPL, GQ_P_URL_TPL,
+    GQ_PAGES_MAX, GQ_PATHWAYS, GQ_PDF_HITS_SHOW, GQ_PDF_SENT_SHOW_LEN, GQ_PDF_SOURCES,
+    GQ_PDF_TIMEOUT_S, GQ_SENT_MAX, GQ_SENT_MIN, GQ_SENT_SHOW_LEN, GQ_SENT_SPLIT_RE,
+    GQ_STATUS_OK, GQ_UA, GQ_URL_SEP, K_DRAW_DATE, K_FACTOR_MAX, K_KIND, K_METRIC, K_PERIOD,
+    WS_FOLD,
+)
+"""批D 三段(35 金标体检 / 36 门槛取证器 / 37 新鲜度哨兵)的常量单列一块 ——
+主 import 块 230 行按字母序排满,批量插名易错行;ruff 未启 isort,双块合法。"""
+from pnp.scheme import GateText, GoldCheckIn, PtsIn, StampIn
 
 # =========================================================================
 # 1. 共享词汇(≥2 段消费:取页 / 抽文 / 解析 / 落盘 / 自校的公共件)
@@ -5660,3 +5691,376 @@ def watch_prov_allocations() -> None:
         run_allocation_watch()
     except Exception as e:  # noqa: BLE001
         say(WATCH_PRINT_CRASH_TPL.format(name=type(e).__name__, detail=e))
+
+# =========================================================================
+# 35. 金标体检(C01 马龙/木匠/72310;2026-08-31 批D 自 ops/audit_c01_gold.py 收编)
+# =========================================================================
+
+
+def audit_c01_gold() -> None:
+    """C4 金标审计入口(门直调,--only c01_gold):案例 C01 手工核对过的数字必须能从 mart
+    直接查出。任何一条不过 = 数据层 bug,不许改金标凑数;金标本身被数据推翻时
+    (如 645→639 家)先逐页核实、改案例文档、再改这里(带修正注记)。
+    C5 判定层(pathVerdict)沿用同一套断言当单测底座。
+    案例文档:docs/design/案例C01-马龙木匠路径-路径分析-20260805.md。
+    有红逐条打印后 exit 1(SystemExit 穿透门,当场中止)。"""
+    fails: list = []
+    c01_check_scores(fails)
+    c01_check_draws(fails)
+    c01_check_sk(fails)
+    c01_check_nl(fails)
+    c01_check_on(fails)
+    say("")
+    if len(fails) > 0:
+        say(C01_FAIL_TPL.format(n=len(fails), names=C01_FAIL_SEP.join(fails)))
+        sys.exit(1)
+    say(C01_PASS_TPL)
+
+
+def c01_check_scores(fails: list) -> None:
+    """① MPNP EOI 积分表(W2):马龙估分 695 的每个组件都在表里。"""
+    sf = []
+    for r in load_mart_rows(C01_T_SCORE):
+        if r[K_PROVINCE] == C01_PROV_MB:
+            sf.append(r)
+    say(C01_L_ROWS_TPL.format(n=len(sf)))
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_AGE, detail="",
+                           ok=score_row_exists(PtsIn(rows=sf, factor=C01_F_AGE, points=75, label_has=""))))
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_WORK, detail="",
+                           ok=score_row_exists(PtsIn(rows=sf, factor=C01_F_WORK, points=40,
+                                                     label_has=C01_HAS_ONE_YEAR))))
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_EDU, detail="",
+                           ok=score_row_exists(PtsIn(rows=sf, factor=C01_F_EDU, points=100,
+                                                     label_has=C01_HAS_TWO_YEARS))))
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_CLB6, detail="",
+                           ok=score_row_exists(PtsIn(rows=sf, factor=C01_F_LANG, points=20, label_has=""))))
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_CLB8, detail="",
+                           ok=score_row_exists(PtsIn(rows=sf, factor=C01_F_LANG, points=25, label_has=""))))
+    adapt = False
+    for r in sf:
+        if r[K_POINTS] == 500:
+            adapt = True
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_ADAPT, ok=adapt, detail=""))
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_RISK_STUDY, detail="",
+                           ok=score_row_exists(PtsIn(rows=sf, factor=C01_F_RISK, points=-100,
+                                                     label_has=C01_HAS_STUDIES))))
+    risk_max = False
+    for r in sf:
+        if r[K_FACTOR] == C01_F_RISK and r.get(K_FACTOR_MAX) == -200:
+            risk_max = True
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_RISK_MAX, ok=risk_max, detail=""))
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_TOTAL, detail="",
+                           ok=80 + 75 + 40 + 100 + 500 - 100 == 695))
+
+
+def c01_check_draws(fails: list) -> None:
+    """② MB 抽选分流(W1)+ ③ NB 定向邀请轮次(W1):632/825 各自成行,建筑类活跃度可数。"""
+    dr = load_mart_rows(C01_T_DRAWS)
+    hit276 = False
+    hit275 = False
+    cons = []
+    for r in dr:
+        if r[K_KIND] != C01_KIND_DRAW:
+            continue
+        if r[K_PROVINCE] == C01_PROV_MB:
+            if r[K_DRAW_DATE] == C01_MB276_DATE and r[K_SCORE] == 632:
+                hit276 = True
+            if r[K_DRAW_DATE] == C01_MB275_DATE and r[K_SCORE] == 825:
+                hit275 = True
+        if r[K_PROVINCE] == C01_PROV_NB:
+            note = r[K_NOTE] or ""
+            dd = r[K_DRAW_DATE] or ""
+            if C01_NOTE_CONS in note.lower() and dd.startswith(C01_YEAR_2026):
+                cons.append(r)
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_MB276, ok=hit276, detail=""))
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_MB275, ok=hit275, detail=""))
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_NB_ROUNDS, ok=len(cons) >= 5,
+                           detail=C01_D_ROUNDS_TPL.format(n=len(cons))))
+    inv = set()
+    for r in cons:
+        inv.add(r[K_INVITATIONS])
+    july = {58, 209, 114}
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_NB_JULY, ok=july <= inv,
+                           detail=C01_D_JULY_TPL.format(hit=sorted(inv & july))))
+
+
+def c01_check_sk(fails: list) -> None:
+    """④ SINP 适用范围(W3):排除清单只管 OID/EE,Employment Offer 不排 72310。"""
+    sk_excl = []
+    for r in load_mart_rows(C01_T_OCC):
+        if r[K_PROVINCE] == C01_PROV_SK and r[K_TYPE] == C01_TYPE_INELIGIBLE:
+            sk_excl.append(r)
+    oid_ee = []
+    jo = []
+    for r in sk_excl:
+        if r.get(K_APPLIES_TO) == C01_APPLIES_OIDEE:
+            oid_ee.append(r)
+        if r.get(K_APPLIES_TO) == C01_APPLIES_JO:
+            jo.append(r)
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_SK_OIDEE, ok=len(oid_ee) == 152,
+                           detail=C01_D_COUNT_TPL.format(n=len(oid_ee))))
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_SK_JO, ok=len(jo) == 14,
+                           detail=C01_D_COUNT_TPL.format(n=len(jo))))
+    carp_in_jo = False
+    for r in jo:
+        if r[K_NOC] == C01_NOC_CARPENTER:
+            carp_in_jo = True
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_SK_72310, ok=carp_in_jo is False, detail=""))
+
+
+def c01_check_nl(fails: list) -> None:
+    """⑤ NL 指定雇主(W4):639 家、3 家申报过木工(C01 原文 645/1 已修正)。"""
+    de = []
+    for r in load_mart_rows(C01_T_EMP):
+        if r[K_PROVINCE] == C01_PROV_NL:
+            de.append(r)
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_NL_COUNT, ok=len(de) == 639,
+                           detail=C01_D_COUNT_TPL.format(n=len(de))))
+    hits = []
+    for r in de:
+        nocs = r.get(K_NOCS) or ""
+        if C01_NOC_CARPENTER in nocs:
+            hits.append(r[K_NAME])
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_NL_CARP, ok=len(hits) == 3,
+                           detail=C01_HIT_SEP.join(hits)[:C01_HIT_MAX_LEN]))
+
+
+def c01_check_on(fails: list) -> None:
+    """⑥ OINP 运营(W5):配额/提名数入库;审理时长=举证过的 not-collected,不设断言。"""
+    alloc = False
+    noms = False
+    for r in load_mart_rows(C01_T_OPS):
+        if r[K_PROVINCE] != C01_PROV_ON:
+            continue
+        if r[K_METRIC] == C01_METRIC_ALLOC and r[K_VALUE] == 14119 and r[K_PERIOD] == C01_YEAR_2026:
+            alloc = True
+        if r[K_METRIC] == C01_METRIC_NOMS and r[K_VALUE] == 10750 and r[K_PERIOD] == C01_PERIOD_2025:
+            noms = True
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_ON_ALLOC, ok=alloc, detail=""))
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_ON_NOMS, ok=noms, detail=""))
+
+
+def gold_check(x: GoldCheckIn) -> None:
+    """打一行体检结果;不过则记名(名单非空 → 入口 exit 1)。"""
+    if x.ok:
+        line = C01_OK_TPL.format(name=x.name)
+    else:
+        line = C01_BAD_TPL.format(name=x.name)
+    if x.detail:
+        line = line + C01_DETAIL_TPL.format(detail=x.detail)
+    say(line)
+    if x.ok is False:
+        x.fails.append(x.name)
+
+
+def score_row_exists(x: PtsIn) -> bool:
+    """分值表里有没有「因子=某档分值(且 label 含某词)」的行。"""
+    for r in x.rows:
+        label = r[K_LABEL] or ""
+        if r[K_FACTOR] == x.factor and r[K_POINTS] == x.points and x.label_has.lower() in label.lower():
+            return True
+    return False
+
+
+def load_mart_rows(name: str) -> list:
+    """读一张 mart 表(一表一文件)。"""
+    return json.loads((paths.MART / C01_MART_FILE_TPL.format(name=name)).read_text(encoding=ENC_UTF8))
+
+
+# =========================================================================
+# 36. 门槛取证器(gate manifest;2026-08-31 批D 自 ops/scan_gate_quotes.py 收编)
+# =========================================================================
+
+
+def gate_quotes() -> None:
+    """门槛取证器入口(门直调,--only gate_quotes;可再跟通道名只扫点名的:
+    `python etl/pnp/main.py --only gate_quotes PE-sw BC-sw`,不跟 = 全部 13 条)。
+    从 crawl 缓存(与 WAF 通道的官方 PDF)里捞三类闸的**官方候选原句**,给人工核定用。
+    只读、只打印,不写任何东西。"""
+    keys = sys.argv[3:]
+    if len(keys) == 0:
+        keys = list(GQ_PATHWAYS)
+    for k in keys:
+        known = False
+        if k in GQ_PATHWAYS:
+            known = True
+            scan_gate_pathway(k)
+        if k in GQ_PDF_SOURCES:
+            known = True
+            say(GQ_P_PDF_HEAD_TPL.format(key=k, n=len(GQ_PDF_SOURCES[k])))
+            scan_gate_pdf(k)
+        if known is False:
+            say(GQ_P_UNKNOWN_TPL.format(key=k))
+
+
+def scan_gate_pathway(key: str) -> None:
+    """一条通道:crawl 缓存命中页里逐闸捞候选句(带出处 URL)。没抓到 = not-collected,不猜。"""
+    slug = GQ_PATHWAYS[key][0]
+    url_re = GQ_PATHWAYS[key][1]
+    man_path = paths.CRAWL / slug / GQ_MANIFEST_NAME
+    if not man_path.exists():
+        say(GQ_P_NO_CRAWL_TPL.format(key=key, slug=slug))
+        return
+    man = json.loads(man_path.read_text(encoding=ENC_UTF8))
+    pages = []
+    for p in man[GQ_K_PAGES]:
+        if p.get(GQ_K_STATUS) == GQ_STATUS_OK and re.search(url_re, p[GQ_K_URL], re.I):
+            pages.append(p)
+    at = man.get(GQ_K_CRAWLED_AT) or ""
+    say(GQ_P_HEAD_TPL.format(key=key, slug=slug, at=at[:FRESH_STAMP_LEN], n=len(pages)))
+    if len(pages) == 0:
+        say(GQ_P_NO_PAGES)
+        return
+    seen: set = set()
+    for gate, pat in GQ_GATES.items():
+        hits = []
+        for pg in pages[:GQ_PAGES_MAX]:
+            fname = pg.get(GQ_K_HTML)
+            if not fname:
+                continue
+            f = paths.CRAWL / slug / GQ_CACHE_DIR / fname
+            if not f.exists():
+                continue
+            text = gate_plain(f.read_text(encoding=ENC_UTF8, errors=GQ_ERRORS_IGNORE))
+            for s in gate_sentences(text):
+                if re.search(pat, s, re.I) and s not in seen:
+                    seen.add(s)
+                    hits.append((s, pg[GQ_K_URL]))
+        say(GQ_P_GATE_TPL.format(gate=gate, n=len(hits)))
+        for s, u in hits[:GQ_HITS_SHOW]:
+            say(GQ_P_SENT_TPL.format(sent=s[:GQ_SENT_SHOW_LEN]))
+            say(GQ_P_URL_TPL.format(url=u))
+
+
+def scan_gate_pdf(key: str) -> None:
+    """官方 PDF 里捞候选句(WAF 挡着 HTML、或页面把条件推给指南 PDF 的通道走这条;
+    与 build_pe_req 同一套解析器,不另立一套)。"""
+    for url in GQ_PDF_SOURCES.get(key) or []:
+        try:
+            data = httpx.get(url, headers=GQ_UA, follow_redirects=True,
+                             timeout=GQ_PDF_TIMEOUT_S).content
+            parts = []
+            with fitz.open(stream=data, filetype=FILETYPE_PDF) as doc:
+                for pg in doc:
+                    parts.append(pg.get_text())
+            text = WS_RE.sub(WS_FOLD, TEXT_JOIN_SEP.join(parts))
+        except Exception as e:  # noqa: BLE001
+            say(GQ_P_PDF_FAIL_TPL.format(err=e))
+            continue
+        say(GQ_P_PDF_FILE_TPL.format(name=url.rsplit(GQ_URL_SEP, 1)[-1], n=len(text)))
+        for gate, pat in GQ_GATES.items():
+            hits = []
+            for s in gate_sentences(text):
+                if re.search(pat, s, re.I):
+                    hits.append(s)
+            say(GQ_P_GATE_TPL.format(gate=gate, n=len(hits)))
+            for s in hits[:GQ_PDF_HITS_SHOW]:
+                say(GQ_P_SENT_TPL.format(sent=s[:GQ_PDF_SENT_SHOW_LEN]))
+
+
+def gate_plain(html: str) -> str:
+    """HTML → 压平正文(GateText 垫片;解析器炸了报一声用已收的半截,不静默 ——
+    原脚本 except: pass,2026-08-31 收编时按「出错不静默」补留痕,产出行为不变)。"""
+    p = GateText()
+    try:
+        p.feed(html)
+    except Exception as e:  # noqa: BLE001
+        say(GQ_P_PARSE_FAIL_TPL.format(err=e))
+    return WS_RE.sub(WS_FOLD, TEXT_JOIN_SEP.join(p.buf))
+
+
+def gate_sentences(text: str) -> list:
+    """正文 → 候选句(长度窗过滤,太短=导航碎片、太长=整段粘连)。"""
+    out = []
+    for s in GQ_SENT_SPLIT_RE.split(text):
+        s = s.strip()
+        if GQ_SENT_MIN <= len(s) <= GQ_SENT_MAX:
+            out.append(s)
+    return out
+
+
+# =========================================================================
+# 37. 新鲜度哨兵(B3-1;2026-08-31 批D 自 ops/check_freshness.py 收编,钉本域链尾)
+# =========================================================================
+
+
+def check_freshness() -> None:
+    """新鲜度哨兵入口(定时链最末步):按 source_manifest 契约逐文件核 fetched(或
+    checkedAt/mtime)与 cadence_days,超期打 ✗ 并 exit 1 —— 本轮记「未完整完成」→
+    本域不 ping healthchecks → 转红报警;钉在链尾,红了不挡前面的真实步骤。
+    病根(2026-08-03 实撞):healthchecks 的 ping 只证明脚本跑完,不证明数据是新的
+    (pnp 役每小时绿着,MB/NB 的表停在 8 天前;ON 抽选断档三个月没人发现)。"""
+    say(FRESH_P_IN_TPL.format(path=FRESH_MANIFEST))
+    m = json.loads(FRESH_MANIFEST.read_text(encoding=ENC_UTF8))
+    rows = freshness_rows(m)
+    today = datetime.now(timezone.utc).date()
+    stale: list = []
+    for rel in sorted(rows):
+        r = rows[rel]
+        path = paths.DATA / rel
+        if not path.exists():
+            stale.append(FRESH_P_MISSING_TPL.format(rel=rel))
+            continue
+        stamp = stamp_of(StampIn(path=path, key=r[FRESH_K_KEY]))
+        if not stamp:
+            stale.append(FRESH_P_NOSTAMP_TPL.format(rel=rel, key=r[FRESH_K_KEY]))
+            continue
+        try:
+            age = (today - datetime.strptime(stamp, FRESH_DATE_FMT).date()).days
+        except ValueError:
+            stale.append(FRESH_P_BADDATE_TPL.format(rel=rel, key=r[FRESH_K_KEY], stamp=repr(stamp)))
+            continue
+        if age > r[FRESH_K_CADENCE]:
+            if r[FRESH_K_NOTE]:
+                stale.append(FRESH_P_STALE_NOTE_TPL.format(rel=rel, stamp=stamp, age=age,
+                                                           cad=r[FRESH_K_CADENCE], note=r[FRESH_K_NOTE]))
+            else:
+                stale.append(FRESH_P_STALE_TPL.format(rel=rel, stamp=stamp, age=age,
+                                                      cad=r[FRESH_K_CADENCE]))
+        else:
+            say(FRESH_P_OK_TPL.format(rel=rel, stamp=stamp, age=age, cad=r[FRESH_K_CADENCE]))
+    if len(stale) > 0:
+        say("")
+        say(FRESH_P_SUMMARY_TPL.format(n=len(stale), total=len(rows)))
+        for s in stale:
+            say(s)
+        sys.exit(1)
+    say("")
+    say(FRESH_P_ALL_OK_TPL.format(n=len(rows)))
+
+
+def freshness_rows(m: dict) -> dict:
+    """契约展开:glob 默认档铺全量,再被逐文件覆盖档压过(rel path → 契约行)。"""
+    rows: dict = {}
+    for d in m.get(FRESH_K_DEFAULTS) or []:
+        for f in glob.glob(str(paths.DATA / d[FRESH_K_GLOB])):
+            rel = Path(f).relative_to(paths.DATA).as_posix()
+            rows[rel] = {FRESH_K_CADENCE: d[FRESH_K_CADENCE], FRESH_K_KEY: FRESH_KEY_DEFAULT,
+                         FRESH_K_NOTE: ""}
+    for o in m.get(FRESH_K_OVERRIDES) or []:
+        note = o.get(FRESH_K_NOTE)
+        if note is None:
+            note = ""
+        key = o.get(FRESH_K_KEY)
+        if key is None:
+            key = FRESH_KEY_DEFAULT
+        rows[o[FRESH_K_FILE]] = {FRESH_K_CADENCE: o[FRESH_K_CADENCE], FRESH_K_KEY: key,
+                                 FRESH_K_NOTE: note}
+    return rows
+
+
+def stamp_of(x: StampIn) -> str:
+    """取该文件的「数据是哪天的」:fetched/checkedAt 顶层键,或 mtime 兜底。
+    取不到返回空(坏 JSON 本身就是要报的病 —— 空戳会被上游记成「无戳」超期行,留痕在报告里)。"""
+    if x.key == FRESH_KEY_MTIME:
+        return datetime.fromtimestamp(x.path.stat().st_mtime, tz=timezone.utc).date().isoformat()
+    try:
+        d = json.loads(x.path.read_text(encoding=ENC_UTF8))
+    except Exception:  # noqa: BLE001, S110
+        return ""
+    v = None
+    if isinstance(d, dict):
+        v = d.get(x.key)
+    if v:
+        return str(v)[:FRESH_STAMP_LEN]
+    return ""

@@ -6,14 +6,23 @@ load 域唯一入口(一域一门;2026-08-30 立域,company 全溶门形)。
 一律从仓库根执行:
     python etl/load/main.py --only upload   # mart → gzip 分片 POST cms
     python etl/load/main.py --only backup   # pg_dump → backups/
+    python etl/load/main.py --only deploy   # origin/main SHA vs 线上 /api/version
+
+控制台强制 UTF-8(照 news/main.py 门形):Windows 控制台默认 cp1252,吐中文直接
+UnicodeEncodeError —— 挂 cron 时 deploy 哨兵的报警信息发不出来才是真事故
+(2026-08-31 批D 收 check_deploy 时随行,原脚本的模块级 reconfigure 移到门上,
+functions 顶层只许函数)。
 """
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 from log.functions import err, say
-from load.functions import backup_db, upload_mart
-from load.scheme import BackupIn, UploadIn
+from load.functions import backup_db, check_deploy, upload_mart
+from load.scheme import BackupIn, DeployIn, UploadIn
 
 
 def run_upload() -> None:
@@ -26,14 +35,24 @@ def run_backup() -> None:
     backup_db(BackupIn(say=say))
 
 
+def run_deploy() -> None:
+    """deploy 工具面(同上;不一致时步骤内 sys.exit(1),SystemExit 穿透门的 except)。"""
+    check_deploy(DeployIn(say=say))
+
+
 SCHEDULED = []
 """无默认链(本域步骤全由旧役册按各自节奏点名)。"""
 
 TOOLS = {
     "upload": run_upload,
     "backup": run_backup,
+    "deploy": run_deploy,
 }
-"""全部可 --only 点名的步。"""
+"""全部可 --only 点名的步:
+  upload  data/mart/*.json 逐表 gzip POST 到 cms(超限表分片 + meta 提交语义)
+  backup  pg_dump 生产库 → backups/,清理超龄旧份
+  deploy  部署哨兵:origin/main SHA vs 线上 /api/version(一致 exit 0 / 不一致 exit 1)
+"""
 
 
 def main() -> int:

@@ -86,10 +86,11 @@ max-args = 1
 "etl/pilot/extractors/*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 # 各域存量步骤文件豁免(按动词前缀点名)2026-08-31 批C 全数摘除:
 # ee/ircc/company/noc_facts/fsa/pilot 的步骤文件已全溶,新五件天然全严。
-"etl/ops/audit_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/ops/check_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/ops/verify_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/ops/scan_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+# 2026-08-31 批D ops 拆散:四行 etl/ops/* 豁免随目录退役;归根的岗位链随行两件按存量豁免,
+# 形制闸只剩两条复杂度拆分债(string_literals/scan,16>12),摘行=就范完成
+"etl/audit_data.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/verify_expired.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+"etl/check_shape.py" = ["C901"]
 "etl/log/functions.py" = ["PLR0913"]
 # employers 2026-08-30 立域:产出行字段名即 DB 列名(camelCase = mart 全表既有惯例),
 # N815 是形制取舍不是债;其余全严格零豁免。

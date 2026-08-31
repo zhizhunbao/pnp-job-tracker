@@ -15,5 +15,7 @@ META = {
     "method": "httpx",
     "interval": 604800,        # 周更:具名清单极少变(SCRAPE_INTERVAL 不覆盖域单元)
     "seed": False,             # 只刷 raw 参考表,build 角色统一灌库(避免抢 mart/seed)
-    "ping": False,  # ping 权在本角色的指定单元(pnp 角色=ops 哨兵),防遮蔽
+    "ping": True,   # 2026-08-31 批D:ops 拆散,本域链尾收编 watch+freshness 两哨兵,
+                    # ping 权随 freshness 走(报警语义 = freshness 红了本轮不 ping;
+                    # 角色内其余单元 dli/pilot/citations 一律 ping=False 防遮蔽)
 }

@@ -6,7 +6,7 @@
 """
 BUILD_STEPS = [
     ["python", "etl/clean/05e_flag_apprentice.py"],  # B1-3:官方标「不要经验/带训」+ 学徒标题 → apprentice_friendly
-    ["python", "etl/ops/verify_expired.py"],        # #124 批C:死岗验尸(周节奏,7 天内跑过=秒退;判死帖 09 剔除出 mart)
+    ["python", "etl/verify_expired.py"],        # #124 批C:死岗验尸(周节奏,7 天内跑过=秒退;判死帖 09 剔除出 mart);2026-08-31 批D ops 拆散归根
     ["python", "etl/clean/04c_clean_ats_locations.py"],
     ["python", "etl/clean/04d_clean_salary.py"],
     ["python", "etl/clean/05c_flag_aip.py"],

@@ -19,7 +19,7 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # 分域后上一级才是 etl/
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # 2026-08-31 批D:ops 拆散,岗位质检归根(岗位主管线随行,查的是 postings)
 import paths
 
 IN_POSTINGS = paths.PROCESSED_JOBBANK / "postings.json"

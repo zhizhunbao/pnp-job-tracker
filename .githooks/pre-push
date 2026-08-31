@@ -31,7 +31,8 @@ etl_changed=$(git diff --name-only --diff-filter=d "$upstream"..HEAD 2>/dev/null
 if [ -n "$etl_changed" ]; then
   echo "[pre-push] etl 改动 $(echo "$etl_changed" | wc -l) 个 py,过 ruff + 形制闸…"
   uv run --with ruff ruff check etl || { echo "[pre-push] ruff 有 error,push 已拦。"; exit 1; }
-  PYTHONIOENCODING=utf-8 uv run python etl/ops/check_etl_shape.py || { echo "[pre-push] etl 形制闸未过,push 已拦。"; exit 1; }
+  # 2026-08-31 批D:ops 拆散,形制闸迁根改名 etl/check_shape.py(基线同迁 etl/etl_shape_baseline.json)
+  PYTHONIOENCODING=utf-8 uv run python etl/check_shape.py || { echo "[pre-push] etl 形制闸未过,push 已拦。"; exit 1; }
   echo "[pre-push] etl 闸过。"
 fi
 # --diff-filter=d 排掉本批**删除**的路径(2026-08-24 实撞:域内文件批量改成小写后,

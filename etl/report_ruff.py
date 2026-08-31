@@ -6,18 +6,19 @@
 ③ 已溶区余账(应只剩挂账的复杂度拆分债,多一条 = 新债漏网)④ 存量区 top 30 文件
 (= 下一批溶解地图)。每批溶解收口跑一次,数字只许降。
 
-Usage:  uv run python etl/ops/main.py --only report_ruff
+Usage:  uv run python etl/report_ruff.py(2026-08-31 批D 起独立执行,ops 门退役)
 """
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from log.functions import say
 
-ROOT = Path(__file__).resolve().parents[2]
-"""仓库根(相对本文件定位,不写死绝对路径)。"""
+ROOT = Path(__file__).resolve().parents[1]
+"""仓库根(相对本文件定位,不写死绝对路径;2026-08-31 批D ops 拆散,
+写法债报告=开发工具迁 etl/ 根)。"""
 
 OUT_DIR = ROOT / "reports"
 """报告统一屋(cms lint-report 同惯例,已进 .gitignore)。"""
@@ -27,10 +28,12 @@ BARE_RULES = "E4,E7,E9,F,ANN,D1,N,C901,PLR0913,PLR0915,BLE,S110,S112"
 
 DISSOLVED = ("etl/company/", "etl/crawl/", "etl/dli/", "etl/employers/", "etl/fetch/",
              "etl/lmia/", "etl/load/", "etl/log/", "etl/paths/", "etl/pnp/", "etl/wages/",
-             "etl/news/", "etl/ee/", "etl/ircc/", "etl/noc/", "etl/fsa/", "etl/pilot/")
+             "etl/news/", "etl/ee/", "etl/ircc/", "etl/noc/", "etl/fsa/", "etl/pilot/",
+             "etl/citations/")
 """已溶区清单(五件形制已落地的文件面;新域溶完在此登记)。
 2026-08-31 批C 登记五域:ee/ircc(子工A)、noc(并 noc.py/noc_buckets.py 两库,
-「noc 就叫 noc」)、fsa、pilot(extractors 私件群随域,存量待批E 拆三域时就范)。"""
+「noc 就叫 noc」)、fsa、pilot(extractors 私件群随域,存量待批E 拆三域时就范);
+批D 登记 citations(自 ops/verify_field_source_pages 全溶新立)。"""
 
 TOP_N = 30
 """存量区榜单长度。"""
@@ -94,3 +97,7 @@ def run() -> int:
     out_file.write_text("\n".join(md), encoding="utf-8")
     say(str(out_file))
     return 0
+
+
+if __name__ == "__main__":
+    sys.exit(run())

@@ -5161,3 +5161,422 @@ WATCH_PRINT_DONE_TPL = "✓ 哨兵扫 {scanned} 份文本 · 监视 {provs} 省 
 
 WATCH_PRINT_CRASH_TPL = "✗ 哨兵异常退出({name}: {detail})—— 不拦役,下轮重试"
 """哨兵自身异常的报数(报错但不拦役)。"""
+
+
+# =========================================================================
+# 35. 金标体检(C01 马龙/木匠/72310;2026-08-31 批D 自 ops/audit_c01_gold.py 收编)
+# =========================================================================
+
+C01_T_SCORE = "pnp_score_factors"
+"""体检表:EOI 分值因子。"""
+
+C01_T_DRAWS = "pnp_draws"
+"""体检表:省抽选轮次。"""
+
+C01_T_OCC = "pnp_occupations"
+"""体检表:省职业清单(含排除)。"""
+
+C01_T_EMP = "designated_employers"
+"""体检表:指定雇主。"""
+
+C01_T_OPS = "pnp_ops_stats"
+"""体检表:省运营统计。"""
+
+C01_MART_FILE_TPL = "{name}.json"
+"""mart 一表一文件的文件名形。"""
+
+K_KIND = "kind"
+"""mart 行键:pnp_draws 的行类别(draw/notice)。"""
+
+K_DRAW_DATE = "drawDate"
+"""mart 行键:抽选日期。"""
+
+K_FACTOR_MAX = "factorMax"
+"""mart 行键:因子上限(MB 风险因子 −200)。"""
+
+K_METRIC = "metric"
+"""mart 行键:运营统计指标名。"""
+
+K_PERIOD = "period"
+"""mart 行键:运营统计期间。"""
+
+C01_PROV_MB = "MB"
+"""案例主省(曼省 EOI 打分)。"""
+
+C01_PROV_NB = "NB"
+"""对照省:NB 定向邀请轮次。"""
+
+C01_PROV_SK = "SK"
+"""对照省:SINP 排除清单适用范围。"""
+
+C01_PROV_NL = "NL"
+"""对照省:指定雇主计数。"""
+
+C01_PROV_ON = "ON"
+"""对照省:OINP 运营统计。"""
+
+C01_KIND_DRAW = "draw"
+"""pnp_draws 里「真实抽选」的行类别值。"""
+
+C01_F_AGE = "age"
+"""因子名:年龄。"""
+
+C01_F_WORK = "work"
+"""因子名:工作。"""
+
+C01_F_EDU = "education"
+"""因子名:学历。"""
+
+C01_F_LANG = "language"
+"""因子名:语言。"""
+
+C01_F_RISK = "risk"
+"""因子名:风险。"""
+
+C01_HAS_ONE_YEAR = "one year"
+"""label 命中词:工作 1 年档。"""
+
+C01_HAS_TWO_YEARS = "program of two years"
+"""label 命中词:两年制学历档。"""
+
+C01_HAS_STUDIES = "studies"
+"""label 命中词:外省学习风险档。"""
+
+C01_MB276_DATE = "2026-07-30"
+"""MB #276 抽选日(score 632)。"""
+
+C01_MB275_DATE = "2026-07-16"
+"""MB #275 抽选日(score 825;与 #276 的 193 分差从此可定量)。"""
+
+C01_NOTE_CONS = "construction trades"
+"""NB 定向轮次 note 命中词(建筑类)。"""
+
+C01_YEAR_2026 = "2026"
+"""NB 轮次年份前缀 / OINP 配额期间。"""
+
+C01_PERIOD_2025 = "2025"
+"""OINP 提名数期间。"""
+
+C01_TYPE_INELIGIBLE = "ineligible"
+"""pnp_occupations 排除行的 type 值。"""
+
+C01_APPLIES_OIDEE = "OID/EE"
+"""SK 排除清单适用范围:OID/EE 子类别。"""
+
+C01_APPLIES_JO = "Employment Offer"
+"""SK 排除清单适用范围:Job Offer 子类别。"""
+
+C01_NOC_CARPENTER = "72310"
+"""案例职业:木匠。"""
+
+C01_METRIC_ALLOC = "allocation"
+"""运营统计指标:年度配额。"""
+
+C01_METRIC_NOMS = "nominations_issued"
+"""运营统计指标:已发提名。"""
+
+C01_L_ROWS_TPL = "pnp_score_factors MB:{n} 行"
+"""开场报数行。"""
+
+C01_OK_TPL = "  ✓ {name}"
+"""单条体检过。"""
+
+C01_BAD_TPL = "  ✗ {name}"
+"""单条体检不过。"""
+
+C01_DETAIL_TPL = "  ({detail})"
+"""体检行的补充说明尾巴(有 detail 才拼)。"""
+
+C01_L_AGE = "MB 年龄 40 岁档 = 75"
+"""体检:年龄分档。"""
+
+C01_L_WORK = "MB 工作 1 年档 = 40"
+"""体检:工作分档。"""
+
+C01_L_EDU = "MB 两年制学历档 = 100"
+"""体检:学历分档。"""
+
+C01_L_CLB6 = "MB 语言 CLB6 单项 = 20(×4=80)"
+"""体检:语言 CLB6(语言按单项 CLB 打分:CLB6 每项 20 → 四项 80)。"""
+
+C01_L_CLB8 = "MB 语言 CLB8 单项 = 25(拉满多 20)"
+"""体检:语言 CLB8(每项 25 → 100,与 CLB6 差 20)。"""
+
+C01_L_ADAPT = "MB 适应性 500 满档存在"
+"""体检:适应性满档。"""
+
+C01_L_RISK_STUDY = "MB 风险:外省学习 −100"
+"""体检:外省学习风险扣分。"""
+
+C01_L_RISK_MAX = "MB 风险因子上限 −200"
+"""体检:风险因子上限。"""
+
+C01_L_TOTAL = "案例合计 695 可复现"
+"""体检:马龙估分 695 = 80+75+40+100+500−100。"""
+
+C01_L_MB276 = "MB #276(2026-07-30)score 632 成行"
+"""体检:MB 抽选 #276。"""
+
+C01_L_MB275 = "MB #275(2026-07-16)score 825 成行"
+"""体检:MB 抽选 #275。"""
+
+C01_L_NB_ROUNDS = "NB 2026 建筑类轮次 ≥5"
+"""体检:NB 定向轮次活跃度。"""
+
+C01_L_NB_JULY = "NB 7 月三轮(58/209/114)在列"
+"""体检:NB 七月三轮邀请数。"""
+
+C01_L_SK_OIDEE = "SK 排除清单 152 条全带 appliesTo=OID/EE"
+"""体检:SK 排除清单只管 OID/EE。"""
+
+C01_L_SK_JO = "SK Job Offer 排除清单已入(14 条)"
+"""体检:SK Job Offer 子清单。"""
+
+C01_L_SK_72310 = "72310 不在 Job Offer 排除清单"
+"""体检:木匠不被 Employment Offer 排除(C01 案例的关键前提)。"""
+
+C01_L_NL_COUNT = "NL 雇主 639 家"
+"""体检:NL 指定雇主总数(C01 原文 645/1 已修正为 639/3)。"""
+
+C01_L_NL_CARP = "NL 申报 72310 的 = 3 家"
+"""体检:NL 申报过木匠的雇主数。"""
+
+C01_L_ON_ALLOC = "OINP 2026 配额 14,119"
+"""体检:OINP 年度配额入库。"""
+
+C01_L_ON_NOMS = "OINP 2025 提名数 10,750"
+"""体检:OINP 提名数入库(审理时长=举证过的 not-collected,不设断言)。"""
+
+C01_D_ROUNDS_TPL = "实际 {n} 轮"
+"""detail:轮次计数。"""
+
+C01_D_COUNT_TPL = "实际 {n}"
+"""detail:行计数。"""
+
+C01_D_JULY_TPL = "命中 {hit}"
+"""detail:七月三轮命中集合。"""
+
+C01_HIT_SEP = "; "
+"""detail:雇主名清单分隔。"""
+
+C01_HIT_MAX_LEN = 90
+"""detail:雇主名清单截断长度。"""
+
+C01_PASS_TPL = "✓ 金标全绿"
+"""收口:全绿。"""
+
+C01_FAIL_TPL = "✗ {n} 条不过:{names}"
+"""收口:有红(逐条名单;任何一条不过 = 数据层 bug,不许改金标凑数;金标本身被数据
+推翻时先逐页核实、改案例文档、再改这里,带修正注记)。"""
+
+C01_FAIL_SEP = ", "
+"""收口:不过名单分隔。"""
+
+# =========================================================================
+# 36. 门槛取证器(gate manifest;2026-08-31 批D 自 ops/scan_gate_quotes.py 收编)
+# =========================================================================
+
+GQ_PATHWAYS: dict[str, tuple[str, str]] = {
+    "FED-EE":         ("fed-ee",       r"express-entry"),
+    "AIP":            ("fed-aip",      r"atlantic-immigration"),
+    "RCIP":           ("fed-rcip",     r"rural-community|rural-franco"),
+    "ON-workforce":   ("on-oinp",      r"ontario-workforce-priority-stream$"),
+    "NB-sw":          ("nb-imm",       r"."),
+    "NS-sw":          ("ns-root",      r"skilled-worker"),
+    "SK-offer":       ("sk-sinp",      r"employment-offer|international-skilled-worker"),
+    "MB-swm":         ("mb-mpnp",      r"skilled-worker/swm"),
+    "AB-opportunity": ("ab-aaip",      r"alberta-opportunity-stream(-eligibility)?$"),
+    "BC-sw":          ("bc-immigrate", r"skills-immigration|skilled-worker|eligibility"),
+    "BC-build":       ("bc-immigrate", r"skills-immigration|skilled-worker|eligibility"),
+    "NL-intl-grad":   ("nl-imm",       r"international-graduate"),
+    "PE-sw":          ("pe-imm",       r"."),
+}
+"""13 条通道 → (crawl slug, 页面 URL 必须命中的正则)。URL 形态取自各 manifest 实际抓到的页。
+设计见 docs/design/通道判定口径根治-20260812.md §3.1;只读缓存、只打印,不写任何东西;
+**不猜 URL**(页面来源全部来自 crawl manifest,铁律 URL→数据→SQL)。"""
+
+GQ_PDF_SOURCES: dict[str, list[str]] = {
+    "PE-sw": ["https://www.princeedwardisland.ca/sites/default/files/publications/pei_workforce_application_guide.pdf"],
+    "BC-sw": ["https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-si-program-guide-pdf"],
+    "BC-build": ["https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-si-program-guide-pdf"],
+}
+"""有些省的资格条文**根本不在 crawl 里**:官方 HTML 页挡在 WAF 后(PE 的 Radware)、或页面只写
+「完整条件见指南 PDF」(BC)。这类通道的原句要去官方 PDF 里捞 —— 否则取证器扫完 crawl 一无所获,
+就把「我们没抓」记成了「官方没写」(2026-08-12 实撞:PE-sw 三类闸全标 unknown,而门槛行本来就
+出自这份 PDF)。🔴 URL **不是猜的**:逐条抄自已在跑的 ETL 脚本里的常量,注明出处,改了那边这里
+也要跟 —— PE 抄自 build_pe_req 的 GUIDE_URL(HTML 页在 Radware 后面,文件服务器不挡);
+BC 两条抄自 build_bc_req 的 PDF_URL(welcomebc 那页原句把完整条件推给这份指南:
+「For complete information about eligibility and requirements, please see the Skills
+Immigration Program Guide.」)。"""
+
+GQ_GATES: dict[str, str] = {
+    "offer":            r"\bjob offer\b|\boffer of employment\b|\bemployment offer\b|\bfull-?time.{0,20}offer\b",
+    "statusInCanada":   r"\bwork permit\b|\bcurrently (?:working|living|residing)\b|\bvalid (?:status|temporary resident)\b|\bresiding in\b|\blegally (?:authorized|entitled) to work\b",
+    "credentialCanada": r"\bgraduat(?:e|ed|ion)\b.{0,60}\b(?:Canad|institution|university|college)|\bpost-?graduation work permit\b|\bPGWP\b|\bcredential from a\b",
+}
+"""三类闸的判据词。宁可多捞几句让人筛,也不要漏 —— 漏了就等于又一次「没有行=没有闸」。"""
+
+GQ_SKIP_TAGS = ("script", "style", "nav", "footer")
+"""取正文时跳过的标签(导航/脚注不算条文)。"""
+
+GQ_SENT_SPLIT_RE = re.compile(r"(?<=[.;:])\s+(?=[A-Z(])")
+"""候选句切分(句读后接大写或括号)。"""
+
+GQ_SENT_MIN = 25
+"""候选句最短长度(短于它的多半是导航碎片)。"""
+
+GQ_SENT_MAX = 320
+"""候选句最长长度(长于它的多半是整段粘连)。"""
+
+GQ_UA = {"User-Agent": "Mozilla/5.0 (compatible; offer2pr/1.0; +https://offer2pr.com)"}
+"""PDF 直取的自报家门头。"""
+
+GQ_PDF_TIMEOUT_S = 60
+"""PDF 下载超时。"""
+
+GQ_MANIFEST_NAME = "manifest.json"
+"""crawl 一 slug 一清单的文件名。"""
+
+GQ_CACHE_DIR = "html_cache"
+"""crawl 页面缓存子目录名。"""
+
+GQ_ERRORS_IGNORE = "ignore"
+"""读缓存页的容错模式(原脚本原值;坏字节直接丢,取证句子够用)。"""
+
+GQ_URL_SEP = "/"
+"""PDF 文件名从 URL 尾段截取的分隔符。"""
+
+GQ_P_PARSE_FAIL_TPL = "   ! HTML 解析器中途炸了({err})—— 用已收的半截正文继续"
+"""报行:解析器异常留痕(原脚本 except: pass 静默;2026-08-31 收编按「出错不静默」补报,
+产出行为不变 —— buf 里已收的文本照用)。"""
+
+GQ_K_PAGES = "pages"
+"""crawl manifest 键:页清单。"""
+
+GQ_K_STATUS = "status"
+"""manifest 页键:HTTP 状态。"""
+
+GQ_K_URL = "url"
+"""manifest 页键:页 URL。"""
+
+GQ_K_HTML = "html"
+"""manifest 页键:html_cache 文件名。"""
+
+GQ_K_CRAWLED_AT = "crawled_at"
+"""manifest 键:该轮抓取时刻。"""
+
+GQ_STATUS_OK = 200
+"""只扫抓成功的页。"""
+
+GQ_PAGES_MAX = 6
+"""每通道最多扫的页数(取证给人筛,不求穷尽)。"""
+
+GQ_HITS_SHOW = 3
+"""每闸最多展开的候选句数(crawl 侧)。"""
+
+GQ_PDF_HITS_SHOW = 6
+"""每闸最多展开的候选句数(PDF 侧)。"""
+
+GQ_SENT_SHOW_LEN = 230
+"""候选句打印截断(crawl 侧)。"""
+
+GQ_PDF_SENT_SHOW_LEN = 260
+"""候选句打印截断(PDF 侧)。"""
+
+GQ_P_NO_CRAWL_TPL = "\n### {key}  ❌ 无 crawl(slug={slug}) —— 按铁律落 not-collected,不猜"
+"""报行:该通道没有 crawl。"""
+
+GQ_P_HEAD_TPL = "\n### {key}  slug={slug}  抓于 {at}  命中页 {n}"
+"""报行:通道抬头。"""
+
+GQ_P_NO_PAGES = "   ❌ 该 slug 下没有匹配的页 —— 落 not-collected"
+"""报行:slug 有但页不匹配。"""
+
+GQ_P_GATE_TPL = "  ── {gate}: {n} 句"
+"""报行:单闸候选句计数。"""
+
+GQ_P_SENT_TPL = "     · {sent}"
+"""报行:候选句。"""
+
+GQ_P_URL_TPL = "       {url}"
+"""报行:候选句出处 URL。"""
+
+GQ_P_PDF_HEAD_TPL = "\n### {key}  官方 PDF 源 {n} 份"
+"""报行:PDF 源抬头。"""
+
+GQ_P_PDF_FILE_TPL = "  ── PDF {name}  {n} 字"
+"""报行:单份 PDF 抬头。"""
+
+GQ_P_PDF_FAIL_TPL = "   ❌ PDF 取不到({err})—— 落 not-collected,不猜"
+"""报行:PDF 取档失败。"""
+
+GQ_P_UNKNOWN_TPL = "未知通道 {key}"
+"""报行:点名了不存在的通道。"""
+
+# =========================================================================
+# 37. 新鲜度哨兵(B3-1;2026-08-31 批D 自 ops/check_freshness.py 收编,钉本域链尾)
+# =========================================================================
+
+FRESH_MANIFEST = paths.ROOT / "etl" / "source_manifest.json"
+"""源契约清单(glob 默认让新抓取产物自动进哨兵 —— 铁律 2「抓完必须入役」的机器面)。"""
+
+FRESH_K_DEFAULTS = "defaults"
+"""契约键:glob 默认档。"""
+
+FRESH_K_OVERRIDES = "overrides"
+"""契约键:逐文件覆盖档。"""
+
+FRESH_K_FILE = "file"
+"""覆盖档键:相对 data/ 的文件路径。"""
+
+FRESH_K_GLOB = "glob"
+"""默认档键:glob 模式。"""
+
+FRESH_K_CADENCE = "cadence_days"
+"""契约键:保鲜期天数。"""
+
+FRESH_K_KEY = "key"
+"""契约键:取「数据是哪天的」用哪个顶层键。"""
+
+FRESH_K_NOTE = "note"
+"""契约键:超期时的补充说明。"""
+
+FRESH_KEY_DEFAULT = "fetched"
+"""默认取戳键。"""
+
+FRESH_KEY_MTIME = "mtime"
+"""特殊取戳键:文件修改时刻兜底。"""
+
+FRESH_DATE_FMT = "%Y-%m-%d"
+"""戳的日期格式。"""
+
+FRESH_STAMP_LEN = 10
+"""戳截断长度(ISO 日期前 10 位)。"""
+
+FRESH_P_IN_TPL = "IN manifest : {path}"
+"""输入报行。"""
+
+FRESH_P_MISSING_TPL = "✗ {rel}: 文件不存在(契约里在,盘上没有)"
+"""超期行:文件缺席。"""
+
+FRESH_P_NOSTAMP_TPL = "✗ {rel}: 取不到 {key}(无戳的数据不能拿来下结论,见 B3-3)"
+"""超期行:无戳。"""
+
+FRESH_P_BADDATE_TPL = "✗ {rel}: {key}={stamp} 不是日期"
+"""超期行:戳不是日期(stamp 已 repr 后传入)。"""
+
+FRESH_P_OK_TPL = "· {rel}: {stamp}({age} 天前,限 {cad} 天)"
+"""在期行。"""
+
+FRESH_P_STALE_TPL = "✗ {rel}: {stamp}({age} 天前,限 {cad} 天)"
+"""超期行。"""
+
+FRESH_P_STALE_NOTE_TPL = "✗ {rel}: {stamp}({age} 天前,限 {cad} 天) —— {note}"
+"""超期行(带契约备注)。"""
+
+FRESH_P_SUMMARY_TPL = "✗ {n}/{total} 个源超期或无戳:"
+"""收口:有超期(随后逐行打印;exit 1 → 本轮记失败 → 不 ping → 报警;
+钉本域链尾:红了不挡前面的真实步骤,但让 ping 第一次证明「数据是新的」)。"""
+
+FRESH_P_ALL_OK_TPL = "✓ {n} 个源全部在保鲜期内"
+"""收口:全部在期。"""

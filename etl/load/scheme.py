@@ -66,6 +66,25 @@ class BackupIn:
 
 
 @dataclass
+class DeployIn:
+    """check_deploy() 入参。"""
+
+    say: SayFn
+    """报警/报平安的输出回调(同 UploadIn;门注 log.functions.say)。"""
+
+
+@dataclass
+class UnshippedIn:
+    """unshipped()(差集提交清单)入参。"""
+
+    live: str
+    """线上正在跑的提交 SHA。"""
+
+    want: str
+    """origin/main 的提交 SHA。"""
+
+
+@dataclass
 class PostTableIn:
     """post_table()(单表/单片上传)入参 —— 原内嵌闭包出户的显式上下文。"""
 

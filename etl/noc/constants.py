@@ -677,3 +677,164 @@ PROBE_TPL = "  {noc} {title}: {d} 职责 · {r} 要求"
 
 TITLE_FALLBACK = "?"
 """探针码查不到时的占位。"""
+
+# =========================================================================
+# 5. audit 步(逐职业体检 大类/中类/小类;原 ops/audit_noc_classes.py,2026-08-31 批D 并入)
+# =========================================================================
+
+IN_STATS = paths.MART / "stats_occupation.json"
+"""输入:每职业一行(province=all 那批带在招量与中位薪资)。数据源是 mart(09 的产出),
+不连库、不抓网。"""
+
+IN_DESCR = paths.MART / "noc_descriptions.json"
+"""输入:官方名 + 中文名(职业名的真相来源)。"""
+
+OUT_TSV = paths.PROCESSED / "noc_class_audit.tsv"
+"""输出:全量逐条(拿去 Excel 里逐行看)。"""
+
+OFFICIAL_BROAD_EN = {
+    "0": "Legislative and senior management occupations",
+    "1": "Business, finance and administration occupations",
+    "2": "Natural and applied sciences and related occupations",
+    "3": "Health occupations",
+    "4": "Occupations in education, law and social, community and government services",
+    "5": "Occupations in art, culture, recreation and sport",
+    "6": "Sales and service occupations",
+    "7": "Trades, transport and equipment operators and related occupations",
+    "8": "Natural resources, agriculture and related production occupations",
+    "9": "Occupations in manufacturing and utilities",
+}
+"""NOC 2021 官方大分类名(第 1 位)。本站的中文简称与它并排摆 —— 差在哪一眼就看得见。
+⚠ 零消费者:原 audit_noc_classes.py 里这张表定义了但没有一处读它(并排打印走的是本域
+official_broad_of → 第 1 段 OFFICIAL_BROAD 的中文简称);2026-08-31 批D 拆 ops 时按
+「行为逐字不变」原样搬来**不裁决**,退不退役(方言律⑨ 零消费者退役)待 Frank 拍。"""
+
+SMELL = [
+    (("园艺", "园林", "农场", "农业", "林业", "渔"), "农业"),
+    (("矿", "钻井", "爆破"), "矿业"),
+    (("焊", "电工", "机械师", "维修", "安装"), "技工"),
+    (("管道", "木工", "瓦工", "屋顶", "混凝土", "建筑工"), "建筑"),
+    (("司机", "驾驶", "货运"), "运输"),
+    (("仓储", "搬运", "供应链"), "物流"),
+    (("护士", "护理", "医生", "药剂", "牙科", "理疗"), "医疗"),
+    (("教师", "幼教", "讲师"), "教育"),
+    (("社工", "社区服务"), "社会服务"),
+    (("厨师", "厨工", "餐饮", "服务员"), "餐饮"),
+    (("客房", "酒店", "旅游", "住宿"), "住宿"),
+    (("清洁", "保洁"), "生活服务"),
+    (("收银", "导购", "零售销售"), "零售"),
+    (("软件", "程序员", "网页", "数据库", "网络安全"), "IT"),
+]
+"""关键词线索:职业名里出现这些词时,它「通常」属于右边那个大类。
+命中 ≠ 分错(见 audit_noc_classes 的 docstring);只是把该看的行挑出来,省得 494 条一条条扫。"""
+
+AUDIT_LABELS = BROADS + [UNCLASSIFIED]
+"""① 段的遍历顺序:本站大类清单 + 未分类兜底桶。"""
+
+ARG_ALL = "--all"
+"""手动开关:摘要 + 全量逐条打印(默认只打印每类前几条)。"""
+
+AUDIT_HEAD_TPL = "职业 {n} 个(mart/stats_occupation 的 province=all)\n"
+"""开场报行(尾部空行沿原脚本)。"""
+
+SEC1_HEAD = "=== ① 本站浏览分类里装了什么(括号=它们在官方属于哪一组) ==="
+"""① 段标题。"""
+
+BROAD_HEAD_TPL = "\n【{label}】 职业 {n} · 在招 {open:,}  ← 官方来源:{srcs}"
+"""① 段每个大类的抬头行。"""
+
+SRC_ITEM_TPL = "{k}×{v}"
+"""官方来源计数的单项说法。"""
+
+SRC_SEP = "、"
+"""官方来源计数 / 最挤中类的分隔(顿号,禁「·」「/」杂糅)。"""
+
+AUDIT_ROW_TPL = "    {noc}  T{teer}  {mid:<10}/{fine:<16} {zh:<22} {open:>6,} 在招"
+"""① 段逐职业行(fine/zh 已按 FINE_SHOW_LEN / ZH_SHOW_LEN 截断后入模板)。"""
+
+FINE_SHOW_LEN = 14
+"""① 段小类名截断长度(只影响打印,不影响数据)。"""
+
+ZH_SHOW_LEN = 20
+"""① 段中文名截断长度。"""
+
+ZH_WIDE_LEN = 24
+"""②③ 段中文名截断长度。"""
+
+BROAD_SHOW_MAX = 6
+"""① 段每个大类默认展开的职业数(--all 看全量)。"""
+
+BROAD_MORE_TPL = "    …… 其余 {n} 个(--all 看全量,或读 {name})"
+"""① 段折叠尾行。"""
+
+SEC2_HEAD = "\n=== ② 中/小类的成色 ==="
+"""② 段标题。"""
+
+COVER_OK_TPL = "    ✅ 映射覆盖: {hand} / {n}"
+"""② 段:桶表全覆盖。"""
+
+COVER_BAD_TPL = "    ❌ 漏映射 {n} 个(必须补进 noc/constants 的 BUCKETS 表,不许兜底):"
+"""② 段:有职业没被桶表覆盖(硬检查,没有兜底)。"""
+
+MISS_ROW_TPL = "        {noc} {zh} {open} 在招"
+"""② 段漏映射明细行。"""
+
+BROAD_OK_MSG = "    ✅ 大类值全在本站清单内"
+"""② 段:大类值全合法。"""
+
+BROAD_BAD_TPL = "    ❌ {n} 个职业的大类不在清单里"
+"""② 段:大类值越出 BROADS 清单。"""
+
+NOFINE_TPL = "    小类 == 中类(等于没有小类)                  : {n:>4} / {total}"
+"""② 段:小类退化计数(对齐空格沿原脚本)。"""
+
+MID_TOP_TPL = "    最挤的中类(装的职业数): {items}"
+"""② 段:最挤中类行(原 print 两参之间的一个空格已写进模板)。"""
+
+MID_ITEM_TPL = "{m} {n}"
+"""最挤中类的单项说法。"""
+
+MID_TOP_MAX = 6
+"""最挤中类展开个数。"""
+
+SEC3_HEAD = "\n=== ③ 关键词线索(命中 ≠ 分错,见文件头) ==="
+"""③ 段标题。"""
+
+HIT_HEAD_TPL = "    {n} 条名字与所在大类对不上:"
+"""③ 段计数行。"""
+
+HIT_ROW_TPL = "    {noc}  在「{broad}」里,名字像「{expect}」  {zh:<26} {open:>6,} 在招"
+"""③ 段明细行。"""
+
+HIT_SHOW_MAX = 20
+"""③ 段默认展开条数。"""
+
+HIT_MORE_TPL = "    …… 其余 {n} 条(--all)"
+"""③ 段折叠尾行。"""
+
+TSV_HEADER = "noc\tteer\t大类\t中类\t小类\t中文名\t官方英文名\t在招\t中小类来源\t有小类\n"
+"""全量 TSV 表头。"""
+
+TSV_ROW_TPL = "{noc}\t{teer}\t{broad}\t{mid}\t{fine}\t{zh}\t{en}\t{open}\t{hand}\t{fine_flag}\n"
+"""全量 TSV 数据行。"""
+
+HAND_YES = "人工"
+"""TSV「中小类来源」列:被桶表点名覆盖。"""
+
+HAND_NO = "前缀兜底"
+"""TSV「中小类来源」列:没被桶表覆盖。"""
+
+FINE_NO = "否"
+"""TSV「有小类」列:小类 == 中类(等于没有小类)。"""
+
+FINE_YES = "是"
+"""TSV「有小类」列:官方在这一级确有更细的划分。"""
+
+TSV_DONE_TPL = "\n全量已写:{path}"
+"""收口报行(带产出路径)。"""
+
+K_PROVINCE = "province"
+"""stats_occupation 行键:省(只收 province=all 那批)。"""
+
+PROVINCE_ALL = "all"
+"""stats_occupation 的全国汇总行标记。"""

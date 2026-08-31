@@ -11,7 +11,11 @@ sys.path[0] 时 httpx/bs4 内部 import types 当场炸)。
 import 两个洞:标准库 + 本域 constants(叶子律的域内松绑,跨域仍零)。
 """
 from dataclasses import dataclass
+from html.parser import HTMLParser
+from pathlib import Path
 from typing import Callable
+
+from pnp.constants import GQ_SKIP_TAGS
 
 ParseDrawsFn = Callable[[str], list]
 """省抽选解析器形(HTML 一进、抽选行清单一出;build_draws 的 BC/AB/MB/NL 四省共用调度)。"""
@@ -1166,3 +1170,90 @@ class ScanIn:
 
     hits: list
     """命中累加器。"""
+
+# =========================================================================
+# 35. 金标体检(C01;2026-08-31 批D 收编)
+# =========================================================================
+
+
+@dataclass
+class GoldCheckIn:
+    """gold_check 的入参:一条体检断言。"""
+
+    fails: list
+    """本轮失败名单(原地 append;体检跑完非空则 exit 1)。"""
+
+    name: str
+    """体检名(打印用,也是失败名单里的身份)。"""
+
+    ok: bool
+    """断言结果。"""
+
+    detail: str
+    """补充说明(空串=不拼尾巴)。"""
+
+
+@dataclass
+class PtsIn:
+    """score_row_exists 的入参:分值表里找一档。"""
+
+    rows: list
+    """MB 的 pnp_score_factors 行集。"""
+
+    factor: str
+    """因子名(age/work/education/language/risk)。"""
+
+    points: int
+    """该档分值。"""
+
+    label_has: str
+    """label 必须包含的子串(小写比对;空串=不限)。"""
+
+
+# =========================================================================
+# 36. 门槛取证器(2026-08-31 批D 收编)
+# =========================================================================
+
+
+class GateText(HTMLParser):
+    """HTML → 正文抽取器(标准库 HTMLParser 垫片 —— 「不用 class」的外部库例外:
+    库要求以子类回调收数据;跳 script/style/nav/footer,其余文本进 buf)。
+    住 scheme 因 functions 顶层只许函数(方言律②);状态是单次 feed 的局部累积,
+    每次解析新建实例,不跨调用共享。"""
+
+    def __init__(self) -> None:
+        """初始化空 buf 与跳层计数。"""
+        super().__init__()
+        self.buf: list[str] = []
+        self.skip = 0
+
+    def handle_starttag(self, tag: str, attrs: list) -> None:
+        """进跳过标签则计数 +1(库定死签名,attrs 不用)。"""
+        if tag in GQ_SKIP_TAGS:
+            self.skip += 1
+
+    def handle_endtag(self, tag: str) -> None:
+        """出跳过标签则计数 −1。"""
+        if tag in GQ_SKIP_TAGS and self.skip:
+            self.skip -= 1
+
+    def handle_data(self, data: str) -> None:
+        """不在跳过层的非空文本收进 buf。"""
+        if not self.skip and data.strip():
+            self.buf.append(data.strip())
+
+
+# =========================================================================
+# 37. 新鲜度哨兵(2026-08-31 批D 收编)
+# =========================================================================
+
+
+@dataclass
+class StampIn:
+    """stamp_of 的入参:取一个数据文件的「数据是哪天的」。"""
+
+    path: Path
+    """数据文件路径。"""
+
+    key: str
+    """取戳键(fetched/checkedAt 顶层键,或 mtime 兜底)。"""

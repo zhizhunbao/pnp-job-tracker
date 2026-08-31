@@ -134,3 +134,84 @@ SCHEME_SEP = "://"
 
 ERRORS_REPLACE = "replace"
 """子进程 stderr 解码容错档。"""
+
+ENC_UTF8 = "utf-8"
+"""子进程 stdout 解码编码(Windows 上 text=True 默认走 cp1252,必须显式指定)。"""
+
+DEPLOY_SITE = "https://offer2pr.com"
+"""生产站点根(部署哨兵比对的对象)。"""
+
+DEPLOY_VERSION_URL = f"{DEPLOY_SITE}/api/version"
+"""线上版本端点(报的是当前构建的提交 SHA)。"""
+
+DEPLOY_TIMEOUT_S = 20
+"""哨兵的网络/子进程放弃线。"""
+
+K_COMMIT = "commit"
+"""/api/version 响应体里的提交 SHA 键。"""
+
+SHA_SHOW_LEN = 12
+"""SHA 比对与打印的前缀长度。"""
+
+LS_REMOTE_CMD = ("git", "ls-remote", "origin", "refs/heads/main")
+"""取 origin/main 的 SHA。不用本地 HEAD —— 本地可能有没推的提交,那不该算「该上线的版本」。"""
+
+GIT_FETCH_CMD = ("git", "fetch", "--quiet", "origin")
+"""比差集前先把远端对象拉全(拉不到就退回只比 SHA)。"""
+
+GIT_LOG_CMD = ("git", "log", "--format=%h\t%s")
+"""差集提交清单(短 SHA + 制表符 + 标题)。"""
+
+GIT_RANGE_TPL = "{live}..{want}"
+"""差集区间(线上..origin/main)。"""
+
+TAB = "\t"
+"""git log 输出的列分隔。"""
+
+COMMIT_ROW_TPL = "{h} {m}"
+"""差集里一条提交的说法(短 SHA + 标题)。"""
+
+SKIP_MARKERS = ("[skip render]", "[skip ci]", "[skip cd]", "[no ci]")
+"""Render 只在 head 提交消息不含 skip 标记时才构建 —— 项目惯例:纯文档/纯数据提交一律带
+[skip render]。于是「线上 SHA 落后」有两种完全不同的含义,混为一谈的代价是哨兵天天喊狼来了、
+喊到没人信,正好毁掉它 2026-07-21 那次事故(六提交白躺一天)换来的价值:
+  · 差集里有**不带 skip** 的提交 → 真没上线,要报警
+  · 差集**全是带 skip** 的提交   → 本来就不该构建,线上是对的"""
+
+ARG_QUIET = "--quiet"
+"""手动开关:只在异常时输出(挂 cron 用)。"""
+
+DEPLOY_NO_REMOTE_MSG = "[部署哨兵] 取不到 origin/main(网络或 git remote 问题),本轮跳过"
+"""拿不到基准不算故障,别误报。"""
+
+DEPLOY_NO_LIVE_TPL = "[部署哨兵] ⚠ {url} 无响应 —— 站点可能挂了,或该端点尚未部署"
+"""线上版本端点无响应。"""
+
+DEPLOY_OK_TPL = "[部署哨兵] ✓ 线上 == origin/main ({sha})"
+"""线上就是最新提交。"""
+
+DEPLOY_SKIP_ONLY_TPL = ("[部署哨兵] ✓ 线上 {live} 落后 origin/main {want},"
+                        "但差的提交**全带 skip 标记**(纯文档/纯数据),本来就不该构建 —— 正常")
+"""差集全是 skip 标记提交 —— 不报警。"""
+
+DEPLOY_BEHIND_TPL = (
+    "[部署哨兵] ⚠ 线上不是最新提交 —— **代码推上去了但没上线**\n"
+    "    origin/main : {want}\n"
+    "    线上正在跑  : {live}\n"
+    "    先查 Render → pnp-cms → Events 有没有 `Build blocked`\n"
+    "    (最常见原因:构建分钟耗尽 + spend limit 拦住自动补买)\n"
+    "    在此之前,任何「改了怎么没生效」都不必当代码 bug 查。"
+)
+"""真没上线的报警块(2026-07-21 事故的解药:症状六个,根因只有一个)。"""
+
+DEPLOY_PENDING_HEAD_TPL = "    该上线却没上线的提交({n} 个):"
+"""差集清单抬头。"""
+
+DEPLOY_PENDING_ROW_TPL = "      · {row}"
+"""差集清单明细行。"""
+
+DEPLOY_PENDING_SHOW_MAX = 8
+"""差集清单最多展开条数。"""
+
+DEPLOY_PENDING_ROW_LEN = 110
+"""差集清单单行截断长度(只影响打印)。"""

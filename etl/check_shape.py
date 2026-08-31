@@ -1,13 +1,14 @@
 """
-check_etl_shape — etl 形制自查役(分域批3,2026-08-29)。
+check_shape — etl 形制自查(分域批3,2026-08-29;2026-08-31 批D 自 ops/ 迁根改此名,
+开发工具与 auto_update 并列,pre-push 直调本文件)。
 
 Ruff 管不住的三条形制,这里当闸(判据见 docs/design/etl分域-20260829.md §4/§5):
-  ① 域间禁 import:域内文件只许引基础设施叶子(paths/log/fetch/_steps/noc/noc_buckets/grades/crawl)
+  ① 域间禁 import:域内文件只许引基础设施叶子(paths/log/fetch/noc/grades/crawl)
      与本域邻居,不许引别的域 —— 零基线,违规即红;
   ② IN_/OUT_ 显式路径常量:build_*/scrape_*/enrich_* 模块顶部必须声明(宪法既有);
   ③ 一域一门:域内只有 main.py 许带 `if __name__`(步骤模块该收成 run(),新写就范)。
-②③ 存量走基线 etl/ops/etl_shape_baseline.json:新增违规即红;修掉存量后跑
-`python etl/ops/check_etl_shape.py --prune` 收紧基线 —— 只紧不松(同 cms suppressions 惯例)。
+②③ 存量走基线 etl/etl_shape_baseline.json:新增违规即红;修掉存量后跑
+`python etl/check_shape.py --prune` 收紧基线 —— 只紧不松(同 cms suppressions 惯例)。
 """
 import ast
 import json
@@ -15,19 +16,24 @@ import re
 import sys
 from pathlib import Path
 
-ETL = Path(__file__).resolve().parent.parent
+ETL = Path(__file__).resolve().parent
+# 2026-08-31 批D:ops 拆散(Frank「ops 不算域」),形制闸=查代码不查数据的开发工具,
+# 迁 etl/ 根与 auto_update 并列;基线同迁 etl/etl_shape_baseline.json,pre-push 路径同步改
 BASELINE = Path(__file__).resolve().parent / "etl_shape_baseline.json"
 
-DOMAINS = ["company", "crawl", "dli", "ee", "employers", "fetch", "fsa", "ircc", "lmia",
-           "load", "log", "news", "noc", "ops", "paths", "pilot", "pnp", "wages"]
+DOMAINS = ["citations", "company", "crawl", "dli", "ee", "employers", "fetch", "fsa", "ircc",
+           "lmia", "load", "log", "news", "noc", "paths", "pilot", "pnp", "wages"]
 # noc_facts → noc(2026-08-31 Frank「noc 就叫 noc」:根上 noc.py/noc_buckets.py 两库并入,
 # 双重身份同 fetch/crawl:既被扫也可被依赖)
+# ops 2026-08-31 批D 拆散退役(Frank「ops 不算域」:哨兵/审计归各查的域,工具归根);
+# citations 同批新立(字段级来源注册表,role=pnp)
 # fetch/crawl 2026-08-30 零字符串溶完即入册(INFRA 身份不变:域可引;双重身份 = 既被扫也可被依赖)
 # crawl 2026-08-30 批A 升格基础设施(判据:被十几个 build 当地基读缓存 ——「换掉它
 # 业务一个字不用改」;正门 from crawl.cache import …,path-hack 黑通道批B 拆光)
 
-INFRA = {"paths", "fetch", "_steps", "log", "noc", "grades", "crawl"}
-# noc_buckets 2026-08-31 随「noc 就叫 noc」并入 noc/ 域,模块名退役摘出白名单
+INFRA = {"paths", "fetch", "log", "noc", "grades", "crawl"}
+# noc_buckets 2026-08-31 随「noc 就叫 noc」并入 noc/ 域,模块名退役摘出白名单;
+# _steps 2026-08-31 批D 随 ops 退役消费者清零删除(全溶域门一律直调)
 
 IMPORT_RE = re.compile(r"^(?:from|import)\s+([A-Za-z_][A-Za-z0-9_]*)", re.M)
 INOUT_RE = re.compile(r"^(?:IN|OUT)_[A-Z0-9_]*\s*=", re.M)

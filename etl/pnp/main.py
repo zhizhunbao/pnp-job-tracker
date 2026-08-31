@@ -17,13 +17,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
 from pnp.functions import (
-    build_ab, build_ab_req, build_ab_stats, build_bc, build_bc_req, build_bc_sirs, build_bc_stats,
-    build_bc_stats_processing, build_draws, build_mb, build_mb_points, build_mb_req,
-    build_mb_req_swm, build_mb_stats, build_nb, build_nb_req, build_nl, build_nl_employers,
-    build_nl_points, build_nl_req, build_ns, build_ns_req, build_on_points, build_on_req,
-    build_on_stats, build_pe, build_pe_req, build_sk, build_sk_joboffer, build_sk_points,
-    build_sk_req, build_sk_stats, scrape_ns_allocations, translate_draw_streams,
-    watch_prov_allocations,
+    audit_c01_gold, build_ab, build_ab_req, build_ab_stats, build_bc, build_bc_req, build_bc_sirs,
+    build_bc_stats, build_bc_stats_processing, build_draws, build_mb, build_mb_points,
+    build_mb_req, build_mb_req_swm, build_mb_stats, build_nb, build_nb_req, build_nl,
+    build_nl_employers, build_nl_points, build_nl_req, build_ns, build_ns_req, build_on_points,
+    build_on_req, build_on_stats, build_pe, build_pe_req, build_sk, build_sk_joboffer,
+    build_sk_points, build_sk_req, build_sk_stats, check_freshness, gate_quotes,
+    scrape_ns_allocations, translate_draw_streams, watch_prov_allocations,
 )
 
 SCHEDULED = [
@@ -52,6 +52,8 @@ SCHEDULED = [
     ("sk_stats", build_sk_stats),
     ("ab_stats", build_ab_stats),
     ("bc_stats", build_bc_stats),
+    ("watch_allocations", watch_prov_allocations),
+    ("freshness", check_freshness),
 ]
 """默认链(调度真相):按序执行,一步抛错即中止本轮。逐步沿革与排序理由(原 STEPS 行内注释
 2026-08-30 批B 逐字搬进本 docstring —— 方言律「注释只许 docstring」):
@@ -99,6 +101,14 @@ SCHEDULED = [
   build_sk_stats         SINP:季度处理时长 + 配额三档 YTD(日更)+ 优先/受限行业
   build_ab_stats         AAIP:逐 stream 配额/已发/剩余 + 积压游标 + **EOI 池人数**(分母!)+ 64 轮抽选史
   build_bc_stats         BC PNP:注册池 **SIRS 分数分布**(三省分母里颗粒度最细;与 build_draws 同页,分工见段头)
+
+↓ 2026-08-31 批D(ops 拆散归各域)收编两步,接过原 ops 周更役的链尾语义;
+  **本域 META 同时接过 pnp 角色的 ping 权**(原在 ops):
+
+  watch_allocations      名额公告哨兵(只提醒不写表;自身失败不拦役 —— 函数体内自 catch)
+  check_freshness        新鲜度哨兵(B3-1)钉**最末**:超期 exit 1 → 本轮记失败 → 不 ping
+                         healthchecks → 报警;红了不挡前面的真实步骤,但让 ping 第一次
+                         证明「数据是新的」(原 ops 役同位同语义)
 """
 
 TOOLS = {
@@ -137,6 +147,9 @@ TOOLS = {
     "sk_joboffer": build_sk_joboffer,
     "draw_streams_zh": translate_draw_streams,
     "watch_allocations": watch_prov_allocations,
+    "freshness": check_freshness,
+    "c01_gold": audit_c01_gold,
+    "gate_quotes": gate_quotes,
 }
 """全部可 --only 点名的步(默认链 25 步 + 十个不进链的手动件)。
 不进默认链的十个及其理由:
@@ -149,7 +162,11 @@ TOOLS = {
   nl_employers         NL 指定雇主名录(纯读 crawl 缓存,不发请求)
   sk_joboffer          SK Job Offer 排除清单(另一张 PDF)
   draw_streams_zh      抽选流名中文灰注(本地 Ollama,批量翻译不进定时链)
-  watch_allocations    名额公告哨兵(只提醒不写表,自身失败不拦役)
+  watch_allocations    名额公告哨兵(只提醒不写表,自身失败不拦役;2026-08-31 批D 起进默认链尾)
+  freshness            新鲜度哨兵(批D 收编,默认链最末;单跑调试用)
+  c01_gold             C4 金标审计:案例 C01 的数字必须能从 mart 查出(批D 自 ops 收编,手动)
+  gate_quotes          门槛取证器:13 条通道三类闸的官方候选原句(批D 收编,手动;
+                       可再跟通道名只扫点名的,如 --only gate_quotes PE-sw)
 """
 
 

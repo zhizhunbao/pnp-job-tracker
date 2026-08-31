@@ -11,5 +11,5 @@ META = {
     "method": "httpx",
     "interval": 604800,        # 周更:名单/配额极少变
     "seed": False,
-    "ping": False,  # ping 权在本角色的指定单元(pnp 角色=ops 哨兵),防遮蔽
+    "ping": False,  # ping 权在本角色的指定单元(2026-08-31 批D 起 = pnp 域,链尾 freshness),防遮蔽
 }
