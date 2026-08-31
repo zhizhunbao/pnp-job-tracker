@@ -26,13 +26,16 @@ upstream=$(git rev-parse --abbrev-ref '@{push}' 2>/dev/null || echo origin/main)
 
 # etl 写法闸(2026-08-29 分域批3):改动了 etl 的 .py 才跑 —— ruff(严打族全局开,
 # 存量按域挂 per-file-ignores,pyproject 里一域一行)+ 形制自查役(域间 import 零容忍、
-# IN/OUT 常量、一域一门 __main__,存量走 etl_shape_baseline.json 只紧不松)。
+# IN/OUT 常量、一域一门 __main__、域文件名五件套白名单,
+# 存量走 etl/gate/etl_shape_baseline.json 只紧不松)。
 etl_changed=$(git diff --name-only --diff-filter=d "$upstream"..HEAD 2>/dev/null | grep -E '^etl/.*\.py$')
 if [ -n "$etl_changed" ]; then
   echo "[pre-push] etl 改动 $(echo "$etl_changed" | wc -l) 个 py,过 ruff + 形制闸…"
   uv run --with ruff ruff check etl || { echo "[pre-push] ruff 有 error,push 已拦。"; exit 1; }
   # 2026-08-31 批D:ops 拆散,形制闸迁根改名 etl/check_shape.py(基线同迁 etl/etl_shape_baseline.json)
-  PYTHONIOENCODING=utf-8 uv run python etl/check_shape.py || { echo "[pre-push] etl 形制闸未过,push 已拦。"; exit 1; }
+  # 2026-08-31 批K:根上五件管理层脚本全溶 gate/sched 两域,形制闸成 gate 域的一步
+  # (基线同迁 etl/gate/etl_shape_baseline.json;命中件 sys.exit(1) 穿门,退出码语义不变)
+  PYTHONIOENCODING=utf-8 uv run python etl/gate/main.py --only shape || { echo "[pre-push] etl 形制闸未过,push 已拦。"; exit 1; }
   # 类型闸(2026-08-31 批I 清零后上线):pyrefly 全仓零错,新增类型错拦 push(挂牌=逐行带理由)
   PYTHONIOENCODING=utf-8 uv run --group dev pyrefly check etl || { echo "[pre-push] pyrefly 类型闸未过,push 已拦。"; exit 1; }
   echo "[pre-push] etl 闸过。"

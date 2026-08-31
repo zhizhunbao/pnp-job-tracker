@@ -9,6 +9,10 @@ rcip 域形状(照 company/noc/pnp 样张;2026-08-31 批E 从 pilot 拆出)。
 批E 拆分改动:段号重编(原 pilot 第 3/4/5 段 → 本域第 2/3/4 段);
 ParseCommIn 去掉 franco_end 一格(本域只解析 Rural 那一节,Francophone h3 只当段终点,
 FCIP 段起点归 fcip.scheme 的同名形状)。其余 dataclass 名、字段名、docstring 逐字未改。
+
+批L 溶解改动(2026-08-31):extractors/ 私件群溶进本域,第 5~9 段随之立起 ——
+新形状全是**一参令下的入参口袋**(原私件的多参签名收编)与两处扫描状态
+(TbState / 累加器口袋),抽取器本身的出参仍按契约走 dict 直读(见 constants.EXTRACTORS_DOC)。
 """
 import re
 from dataclasses import dataclass
@@ -445,3 +449,201 @@ class CommDocIn:
 
     rows: list
     """全部社区行。"""
+
+
+# =========================================================================
+# 5. 社区抽取器登记(社区官方名 → 抽取函数;details 步的私件群)
+# =========================================================================
+
+# 本段无形状:登记表是 functions.community_extractors() 的返回 dict(名 → 无参函数),
+# 抽取函数的出参形状是抽取器群的对外契约(见 constants.EXTRACTORS_DOC),按契约走 dict 直读。
+
+# =========================================================================
+# 6. ON 五社区抽取(North Bay / Sudbury / Timmins / Sault Ste. Marie / Thunder Bay)
+# =========================================================================
+
+
+@dataclass
+class OnFetchIn:
+    """fetch_on_response 的入参:ON 段取页(北湾的 admin-ajax 要带查询参数,其余不带)。"""
+
+    url: str
+    """要取的地址。"""
+
+    params: dict
+    """查询参数(空 dict = 不带 —— 原脚本对普通页就是不传 params 的那一路)。"""
+
+
+@dataclass
+class UlBlockIn:
+    """on_ul_block 的入参:从某处起切出配对的一整个 <ul>。"""
+
+    html: str
+    """页面全文。"""
+
+    start: int
+    """起点(从这往后找第一个 <ul>)。"""
+
+
+@dataclass
+class TimminsRowsIn:
+    """timmins_name_rows 的入参:PDF 片段流 + 同 y 的 pilot 值索引。"""
+
+    lines: list
+    """(页号, y, x, 文字) 片段流,已按页/y/x 排序。"""
+
+    pilots: dict
+    """(页号, y) → pilot 列文字(空白 = 两试点均可)。"""
+
+
+@dataclass
+class TimminsPilotIn:
+    """timmins_pilot_at 的入参:在 pilot 索引里找同页、y 差 ≤3 的那一格。"""
+
+    pilots: dict
+    """(页号, y) → pilot 列文字。"""
+
+    page: int
+    """当前页号。"""
+
+    y: int
+    """当前行的 y。"""
+
+
+@dataclass
+class SsmPairsIn:
+    """ssm_take_pairs 的入参:一个行业段里的 NOC 对并进结果(结果与去重集原地累进)。"""
+
+    pairs: list
+    """(NOC 码, 职业名) 对清单。"""
+
+    rows: list
+    """职业行累加器。"""
+
+    seen: set
+    """已收的 (码, 名) 去重集(页面含同表两份副本)。"""
+
+
+@dataclass
+class TbState:
+    """Thunder Bay PDF 逐簇扫描的跨簇状态(跨页不重置 —— 原脚本即如此)。"""
+
+    pending: str
+    """上一簇只有名字没有地址时攒着的名字前缀(下一簇拼上)。"""
+
+    excluded: bool
+    """有没有进过「excluded from 2026」段:进了之后的行整段剔除。"""
+
+
+@dataclass
+class TbTakeIn:
+    """tb_take_cluster 的入参:一簇文字并进结果(结果与状态都原地累进)。"""
+
+    cluster: dict
+    """一个 y 聚簇({y, items})。"""
+
+    raw: list
+    """原始行累加器。"""
+
+    state: TbState
+    """跨簇状态。"""
+
+
+@dataclass
+class TbSideIn:
+    """tb_join_side 的入参:一簇里取某一列的文字。"""
+
+    items: list
+    """该簇的 (x, 文字) 片段清单。"""
+
+    left: bool
+    """True = 取左列(名字,x<290);False = 取右列(地址,x>=290)。"""
+
+
+# =========================================================================
+# 7. BC 三社区抽取(West Kootenay / North Okanagan Shuswap / Peace Liard)
+# =========================================================================
+
+
+@dataclass
+class NosSectorIn:
+    """nos_sector_at 的入参:在行业列里找与某个名字行同视觉行的行业名。"""
+
+    sector_ys: dict
+    """y → 行业列文字。"""
+
+    y: int
+    """名字行的 y(按 NOS_DY_ORDER 依次试 0/-1/+1)。"""
+
+
+@dataclass
+class NosPageIn:
+    """nos_scan_page 的入参:一页的格子流并进雇主名分组(分组原地累进)。"""
+
+    cells: list
+    """(y, x, 文字) 格子流,已排序。"""
+
+    parts: list
+    """雇主名分组累加器(一家一个 list,折行的续行 append 进去)。"""
+
+
+@dataclass
+class NebcNameIn:
+    """nebc_row_name 的入参:法定名与经营名(两名同一个就只留法定名)。"""
+
+    legal: str
+    """Legal Name 列拼出来的名字。"""
+
+    oa: str
+    """Operating As 列拼出来的名字(空 = 官方没给)。"""
+
+
+@dataclass
+class NebcPageIn:
+    """nebc_take_page 的入参:一页的格子流并进行清单(行清单原地累进)。"""
+
+    cells: list
+    """(y, x, 文字) 格子流,已排序。"""
+
+    rows: list
+    """行累加器(一行 = {legal: [...], oa: [...]})。"""
+
+
+# =========================================================================
+# 8. 草原五社区抽取(Moose Jaw / Claresholm / Steinbach / Altona-Rhineland / Brandon)
+# =========================================================================
+
+
+@dataclass
+class PdfLinkIn:
+    """prairie_pdf_url 的入参:从官方页里按特征发现 PDF 链接(不写死文件名)。"""
+
+    html: str
+    """官方页全文。"""
+
+    base_url: str
+    """相对链接的基准(urljoin 用)。"""
+
+    link_re: re.Pattern
+    """预编译好的链接正则(constants 里由 HREF_PATTERN_TPL 与 pattern 拼成)。"""
+
+    pattern: str
+    """链接特征原文 —— 只用在找不到时的报错里(报错文案与原脚本逐字一致)。"""
+
+
+@dataclass
+class RequireIn:
+    """prairie_require 的入参:解析 0 行即抛(宁缺勿猜,总控保旧)。"""
+
+    rows: list
+    """解析出来的行。"""
+
+    what: str
+    """报错时的名头(「Moose Jaw 雇主」这种)。"""
+
+
+# =========================================================================
+# 9. 大西洋一社区抽取(Pictou County)
+# =========================================================================
+
+# 本段无形状:Pictou 的三个函数各只收一个参(url / html / 文本行),不需要口袋。

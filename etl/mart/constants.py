@@ -235,6 +235,13 @@ K_SLUG = "slug"
 K_EXTERNAL_ID = "externalId"
 """外部 ID(loader 的 join 键)。"""
 
+PRINT_INOUT_COMPANIES_TPL = "IN/OUT companies : {dir}"
+"""跨源清洗三段(地点/薪资/试点)起手的「ATS 公司档原地清洗」路径行 —— 三段里两段用它,
+逐字沿用原 clean/04c/04d 的对齐空格。2026-08-31 批J 收进本段(≥2 段消费的判据)。"""
+
+PRINT_INOUT_JOBBANK_TPL = "IN/OUT job bank  : {out}"
+"""同上,Job Bank 累积 store 原地清洗的路径行(地点/薪资/试点三段全用)。"""
+
 # =========================================================================
 # 2. 档位库:职位三维档(E12-08,2026-07-20 Frank 拍板)
 # =========================================================================
@@ -1777,12 +1784,6 @@ MOD_AIP_NORM = "aip_norm"
 ATTR_NORM_NAME = "norm_name"
 """上件里要取的那个函数名。"""
 
-IN_CLEAN_SALARY_PY = paths.ROOT / "etl" / "clean" / "04d_clean_salary.py"
-"""薪资归一件(横切层,文件名以数字开头 —— 正规 import 语法上就不成立,只能按路径拉)。"""
-
-MOD_CLEAN_SALARY = "clean_salary"
-"""上件的模块名(spec 用)。"""
-
 IN_SCORED = OUT_SCORED
 """汇装层读的评分产物 = 评分步的落盘处(同一份,两个角色各自具名)。"""
 
@@ -2138,3 +2139,295 @@ CITY_ROWS_TPL = "stats_city: {n} 行 → {out}"
 
 STATS_ROWS_TPL = "stats: {n} 行({provs} 省;大类层 {base} 行 + 中类层 {mid} 行)→ {out}"
 """省级表报数。"""
+
+
+# =========================================================================
+# 17. 跨源清洗:地点(ATS + JB 同一套 country/province/city/district/address)
+# =========================================================================
+
+OUT_JOBBANK = IN_JOBBANK
+"""Job Bank 累积 store 的**原地写回**别名 —— 本域三个跨源清洗段(地点/薪资/试点)读它写它。
+2026-08-31 批J:clean/ 目录退役,三件按「谁的数据谁清洗」归户 mart(判据:它们跨源
+——ATS 与 JB 过同一套尺子——不归任何单源域)。"""
+
+IN_FSA_TABLE = paths.FSA / "fsa-districts.json"
+"""全国 FSA→区 维度表(GeoNames 衍生,我们自己维护,无外部 API)。FSA → {main, hood, prov}。
+⚠ 溶解前是模块顶的 import 期加载(`json.loads(...) if exists else {}`),现在改在段入口读一次
+经入参下传:constants 叶子只许 import re/date/paths,装不下读盘结果 —— 读的还是同一份、
+同样「文件缺就空表」,判定一格未改。"""
+
+OTTAWA_DISTRICTS = {
+    "kanata": "Kanata", "kanata north": "Kanata", "nepean": "Nepean", "gloucester": "Gloucester",
+    "orleans south": "Orléans", "orléans": "Orléans", "orleans": "Orléans",
+    "stittsville": "Stittsville", "manotick": "Manotick", "barrhaven": "Barrhaven",
+    "vanier": "Vanier", "cumberland": "Cumberland", "greely": "Greely", "carp": "Carp",
+    "dunrobin": "Dunrobin", "metcalfe": "Metcalfe", "osgoode": "Osgoode",
+    "richmond": "Richmond", "rockcliffe": "Rockcliffe",
+}
+"""大渥太华市社区:各种写法 → 规范名(Orléans 合并、Kanata North→Kanata)。"""
+
+OTTAWA_DISTRICT_KEYS = sorted(OTTAWA_DISTRICTS, key=len, reverse=True)
+"""社区名按长度降序(长的先试:「kanata north」要压过「kanata」)。
+原件每判一个岗都现排一次 `sorted(..., key=lambda kv: -len(kv[0]))`;lambda 是显式循环令
+禁的,且那是循环不变量 —— 提到常量层排一次,顺序逐字相同(Python 排序稳定,
+`key=len, reverse=True` 与 `key=-len` 升序对等长键给出同一相对序)。"""
+
+FSA_DISTRICT = {
+    "K2K": "Kanata", "K2L": "Kanata", "K2M": "Kanata", "K2T": "Kanata", "K2V": "Kanata",
+    "K2W": "Kanata",
+    "K2S": "Stittsville",
+    "K2J": "Barrhaven",
+    "K2H": "Nepean", "K2E": "Nepean", "K2G": "Nepean", "K2C": "Nepean",
+    "K1C": "Orléans", "K1E": "Orléans", "K4A": "Orléans",
+    "K1B": "Gloucester", "K1J": "Gloucester", "K1T": "Gloucester",
+    "K1K": "Vanier", "K1L": "Vanier",
+    "K4M": "Manotick", "K4P": "Greely",
+}
+"""邮编兜底:渥太华郊区 FSA(前3位)→ 社区。只收高置信度单一社区的 FSA;
+central Ottawa(K1A/K1N/K1P/K1R/K1S/K1Y/K2P…)跨多社区,不映射 → 留空(不瞎猜)。"""
+
+POSTAL_FSA_RE = re.compile(r"\b([A-Za-z]\d[A-Za-z])\s*\d[A-Za-z]\d\b")
+"""加拿大邮编 A1A 1A1 → 取 FSA(前三位)。"""
+
+OTTAWA_FSA_PREFIX = ("K1", "K2")
+"""邮编 K1*/K2* 几乎全是渥太华市(用邮编判定,避免 "Richmond Hill" 撞 Ottawa 社区名)。
+⚠ 原 clean/04c 里就是**声明了没人用**的一条(JB 那支写的是硬编码 K1/K2/K4 三元组,
+见 OTTAWA_JB_FSA);批J 溶解只搬不裁 —— 留着这条决策记录,裁不裁是另一批的事。"""
+
+OTTAWA_CITY = "Ottawa"
+"""大渥太华的规范市名(社区一律折叠回它)。"""
+
+OTTAWA_CITY_LOWER = "ottawa"
+"""判「文本里提到渥太华没有」用的小写词。"""
+
+OTTAWA_CITY_NAMES = set(OTTAWA_DISTRICTS) | {OTTAWA_CITY_LOWER}
+"""无邮编时:按 city 精确名判定(不子串匹配地址)。"""
+
+OTTAWA_COMMUNITIES = set(OTTAWA_DISTRICTS.values())
+"""大渥太华社区规范名集合(用于把 Kanata/Gloucester… 折叠回 city=Ottawa)。"""
+
+OTTAWA_JB_FSA = ("K1", "K2", "K4")
+"""Job Bank 那支判「大渥太华」的邮编前两位(比 ATS 那支多一个 K4:Orléans/Manotick/Greely)。"""
+
+FSA_PREFIX_LEN = 2
+"""上一条比的是 FSA 的前几位。"""
+
+NON_CITY_PREFIXES = ("various location", "undetermined location", "various", "multiple location")
+"""Job Bank 上「多地点/待定」占位词:不是真城市,city 留空(宁可留空也不瞎猜)。"""
+
+COUNTRY_CANADA = "Canada"
+"""清洗后 country 恒为它(全站只收加拿大岗)。"""
+
+WORD_BOUND_TPL = r"\b{key}\b"
+"""社区名整词匹配的正则模板(key 已 re.escape)。"""
+
+COMMA_SPACE_RE = re.compile(r"\s+,")
+"""地址里逗号前的空白(归一成纯逗号)。"""
+
+DIGIT_RE = re.compile(r"\d")
+"""地址里有没有数字 —— 没有街号/邮编的「City, ON」不算精确地址。"""
+
+TRIM_SPACE_COMMA = " ,"
+"""地址首尾要剥掉的空格与逗号。"""
+
+ATS_LOC_TPL = "{city} {addr}"
+"""ATS 岗判地点时把「地点字段 + 地址字段」拼一处再查社区/邮编。"""
+
+JB_LOC_TPL = "{city} {addr}"
+"""Job Bank 岗取邮编时同款拼法(两支各自成文,拼的字段不同源)。"""
+
+K_COUNTRY = "country"
+"""岗位行键:国家。"""
+
+K_ADDRESS = "address"
+"""岗位行键:精确地址(无街号则空)。"""
+
+K_CITY_RAW = "city_raw"
+"""岗位行键:原始市名。幂等靠它 —— 清洗读写同一个 city 字段会自污染(第二轮拿上一轮
+折叠过的 Ottawa 再折一次),故把原始值隔离存一格,永远从它清洗。"""
+
+K_MAIN = "main"
+"""FSA 维度表里的主地名格。"""
+
+K_HOOD = "hood"
+"""FSA 维度表里更细的社区格(main = 城市本身时用它)。"""
+
+PROV_MISSING_MARK = "?"
+"""收尾省份分布里缺省码的占位。"""
+
+PRINT_LOC_ATS_TPL = "ATS: kept {kept} Ottawa jobs, dropped {dropped} non-Ottawa."
+"""ATS 那一轮的报数(焦点区外的岗直接丢)。"""
+
+PRINT_LOC_BACKFILL_TPL = "Job Bank: 省份兜底补全 {n} 帖(同名城市唯一省)。"
+"""省份兜底命中时才打的一行。"""
+
+PRINT_LOC_DONE_TPL = "Job Bank: structured {n} postings across {provs} provinces {dist}."
+"""地点清洗收尾一行。"""
+
+
+# =========================================================================
+# 18. 跨源清洗:薪资(raw salary 串 → salaryAnnual / salaryText)
+# =========================================================================
+
+SAL_NUM_RE = re.compile(r"\d[\d,]*(?:\.\d+)?")
+"""无 $ 回退时认的裸数字。"""
+
+SAL_MONEY_RE = re.compile(r"\$\s?(\d[\d,]*(?:\.\d+)?)(?:\s*(?:-|–|—|to)\s*\$?\s?(\d[\d,]*(?:\.\d+)?))?")
+"""只取「$ 锚定」的金额(含范围):$24.74-31.37 / $700,000 to $775,000。
+避开杂数:工会号(CUPE 1975)、Phase 4、邮编等没有 $ 前缀的数字。"""
+
+SAL_EXTRA_RE = re.compile(r"\+|\bplus\b|\bcommission\b|\bbonus(?:es)?\b|\btips?\b|\bgratuit", re.I)
+"""佣金/奖金/补贴子句:该词及之后不算底薪("$25 hourly + $400 commission per sale" 只取 $25)。"""
+
+SAL_PAREN_MONEY_RE = re.compile(r"\([^)]*\$[^)]*\)")
+"""含 $ 的括号=换算注释("$40.39 ($6,552.07/mo)"),剥掉再解析;
+纯文字括号(to be negotiated)无害不动。"""
+
+SAL_PLAIN_OK = {"per", "hour", "hourly", "hr", "hrs", "h", "year", "yr", "yearly", "annually",
+                "annual", "annum", "month", "monthly", "mo", "week", "weekly", "wk", "weeks",
+                "biweekly", "bi", "day", "daily", "cad", "to", "a", "an", "and", "from",
+                "based", "on", "as", "with", "depending", "depends", "experience", "negotiable",
+                "commensurate", "starting", "wage", "rate", "salary", "pay"}
+"""无 $ 回退的白名单:纯数字+单位/连接/议薪词才可信("48.85 - 61.21"、
+"20-35/hr depending on experience"),其余("35% commission"、"CUPE 777"、
+"after 90 Days")一律不猜。"""
+
+SAL_WORD_RE = re.compile(r"[a-z]+")
+"""回退白名单比对时切出来的英文词。"""
+
+PERCENT_SIGN = "%"
+"""文本里带百分号 = 提成口径,一律不猜。"""
+
+SAL_UNIT_HR = "hr"
+"""薪资单位:时薪。"""
+
+SAL_UNIT_DAY = "day"
+"""薪资单位:日薪。"""
+
+SAL_UNIT_WK = "wk"
+"""薪资单位:周薪。"""
+
+SAL_UNIT_BIWK = "biwk"
+"""薪资单位:双周薪。"""
+
+SAL_UNIT_MO = "mo"
+"""薪资单位:月薪。"""
+
+SAL_UNIT_YR = "yr"
+"""薪资单位:年薪。"""
+
+SAL_MULT = {"hr": 2080, "day": 260, "wk": 52, "biwk": 26, "mo": 12, "yr": 1}
+"""年化倍数:时薪×2080、日薪×260(工作日)、周×52、双周×26、月×12。"""
+
+SAL_SUB = {"hr": "/hr", "day": "/day", "wk": "/wk", "biwk": "/2wk", "mo": "/mo", "yr": "/yr"}
+"""规范文本的单位后缀。"""
+
+SAL_BIWEEK_RE = re.compile(r"bi[-\s]?week|every\s+two\s+weeks|fortnight")
+"""双周口径(必须在 week 之前判)。"""
+
+SAL_DAILY_RE = re.compile(r"\bdaily\b|per\s+day|/\s?day")
+"""日薪口径(daily 单列,防 "per day" 落进兜底)。"""
+
+SAL_HOUR_RE = re.compile(r"hour|/\s?hr|hourly")
+"""时薪口径。"""
+
+SAL_MONTH_WORD = "month"
+"""月薪判词(子串)。"""
+
+SAL_WEEK_WORD = "week"
+"""周薪判词(子串;双周已在它之前判掉)。"""
+
+SAL_PER_UNIT_RE = re.compile(
+    r"\bper\s+(?:night|km|kilometre|kilometer|mile|sale|piece|load|trip|visit|session)\b", re.I)
+"""计次/计程价(per night/km/mile…):基数不是时间,无法年化;漏检会走 hi<2000→hr 兜底
+(DJ "$400-$500 per night" 折出 $93.6 万实撞)。搜 raw:计价词可能落在佣金剪切段里
+("$.30 commission per kilometre" 剪剩 "$.30")。只在单位兜底分支触发,不影响
+"$67,500 annually + commission per sale" 这类带明确时间单位的帖。"""
+
+SAL_ANNUAL_MAX = 1_000_000
+"""护栏(E7-04 回归:榜首出现 49.7 亿年薪 —— 源 typo 漏过旧过滤):
+全库合法最高年薪 ~$810K(医生岗),超限=源 typo,置 NULL 不猜。"""
+
+SAL_RATIO_MAX = 10
+"""合法区间高/低比 ≤~9;超限=源 typo(「$20.00 to $999.00 hourly」)→ 整条不可信。"""
+
+SAL_HOURLY_FOLD_MAX = 150
+"""E6-12 诚实年化:时薪中点>150 的全是出诊/计费价(医生 $200-400、验光师 $300-400)或
+可疑帖($200-300/hr 的 "software developer"),×2080 折出 $52-94 万冒充年薪霸占 salaryYr
+榜首;真高薪岗直接标 annually(皮肤科 $550K-850K)不受影响。超阈值=保留时薪文本,
+年薪置空不折算(ESDC 对医生类 NOC 的中位时薪本身就 $200+/hr 计费价口径 —— 高时薪
+不是异常值,×2080 才是)。"""
+
+SAL_GIG_HI_MAX = 2000
+"""计次价那条只在「将被兜底猜成时薪」的路径上拦(上限 <2000);也是「时薪还是年薪」
+兜底判定的分界。"""
+
+SAL_HOURLY_YR_MIN = 1000
+"""时薪值 ≥$1000 → 实为年薪(源误标)。"""
+
+SAL_MONTHLY_YR_MIN = 20_000
+"""月薪 ≥$2万 → 实为年薪(源误标,同上)。"""
+
+SAL_K_DIV = 1000
+"""年薪显示按千元折(「$96K」)。"""
+
+SAL_K_TPL = "${n}K"
+"""年薪档的一个金额说法。"""
+
+SAL_DOLLAR_TPL = "${n}"
+"""非年薪档的一个金额说法。"""
+
+SAL_ONE_TPL = "{money}{sub}"
+"""单值薪资的规范文本(如 "$35/hr")。"""
+
+SAL_RANGE_TPL = "{lo}–{hi}{sub}"
+"""区间薪资的规范文本(如 "$96K–$135K/yr";连接号是 EN dash,逐字沿用)。"""
+
+PRINT_SAL_DONE_TPL = "Salary cleaned: {updated} jobs updated · {priced}/{total} have a salary"
+"""薪资清洗收尾第一行。"""
+
+PRINT_SAL_GUARD_TPL = ("  护栏拦截 {guarded} 条置 NULL:离谱金额 {absurd} · 区间比>{ratio_max} "
+                       "{ratio} · 年化>{cap_max:,} {cap} · 计次价 {gig} · 时薪>{fold_max} {hifold}")
+"""薪资清洗收尾第二行(五道护栏各自的拦截数)。"""
+
+
+# =========================================================================
+# 19. 跨源清洗:试点打标(城市×省 → pilot / pilotCommunity / pilotEmployer)
+# =========================================================================
+
+PILOT_SUFFIX_RE = re.compile(
+    r"\b(inc|incorporated|ltd|limited|llp|llc|corp|corporation|co|company|enr|ltee|lt[eé]e|"
+    r"holdings?|group|services?|enterprises?)\b\.?", re.I)
+"""雇主名归一:法人后缀(与 aip 打标 / cms designationMatch.ts 同源口径)。
+⚠ 与本域 to_* 那边经 aip.norm_name 走的那把尺子**不是同一条正则**(词表不同):
+批J 溶解逐字保留原 clean/05f 自己的一份,谁该收敛是另一批的判定。"""
+
+PILOT_OA_SPLIT_RE = re.compile(r"\bo/a\b|\bdba\b|\bd/b/a\b|\bo\.a\.\b")
+"""归一第一刀:切掉 o/a 别名之后的部分,只留法人名。"""
+
+PILOT_OA_TAIL_RE = re.compile(r"\bo/a\b(.+)", re.I)
+"""建雇主索引时反过来取 o/a 后面那截 —— legal 名与别名都要能匹配上。"""
+
+PILOT_KEEP_RE = re.compile(r"[^a-z0-9& ]")
+"""归一第三刀:非字母数字与 & 一律折空格。"""
+
+K_CITIES = "cities"
+"""社区名单行里的城市清单键(区域型社区 cities=[] 不参与打标,宁漏勿错)。"""
+
+K_PILOT = "pilot"
+"""岗位行键:命中的试点类型('RCIP' / 'FCIP' / 'RCIP+FCIP';空 = 非试点社区)。"""
+
+K_PILOT_EMPLOYER = "pilotEmployer"
+"""岗位行键:雇主是否在**本社区**的官方指定名单上(强一级信号)。
+False ≠ 未指定 —— 名单未公布的社区一律 False,前端只做正向展示,禁反向解读。"""
+
+PRINT_PILOT_IN_TPL = "IN pilot list    : {srcs}"
+"""试点打标起手的社区名单路径行(两份文件的清单,逐字沿用原 05f 的 repr 打印)。"""
+
+PRINT_PILOT_MAP_TPL = ("  mapped (province, city) keys: {keys} · communities with "
+                       "employer list: {emps}")
+"""两张索引建好后的报数。"""
+
+PRINT_PILOT_DONE_TPL = ("pilot flagged {flagged}/{total} jobs (city inside an RCIP/FCIP "
+                        "community); designated-employer hits {emp_hits}.")
+"""试点打标收尾一行。"""

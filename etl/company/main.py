@@ -2,11 +2,12 @@
 company 域唯一入口(一域一门;步骤 2026-08-30 全溶进 functions.py,本门直调函数,
 不再 subprocess —— 全溶域的门形,样张;未溶域仍走 _steps 跑步器)。
 
-默认链只有官网富化(唯一定时步,挂 enrich 角色 6h);Kanata 三件是休眠引导工具
-(要扩 ATS 地域时手动跑),不进默认链 —— 语义与旧役册完全一致。
+默认链只有官网富化(唯一定时步,挂 enrich 角色 6h);Kanata 三件与雇主 D 富化(2026-08-31
+批J 自 clean/_enrich_company_facts.py 归户)是休眠引导/手动工具,不进默认链 ——
+语义与旧役册完全一致。
 一律从仓库根执行:
     python etl/company/main.py                 # 默认链(enrich)
-    python etl/company/main.py --only kanata   # 休眠工具:kanata / folders / careers / enrich
+    python etl/company/main.py --only kanata   # 手动件:kanata / folders / careers / facts
 """
 import sys
 from pathlib import Path
@@ -14,7 +15,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
 from company.functions import (
-    build_company_folders, enrich_company_websites, scrape_company_careers, scrape_kanata_directory,
+    build_company_folders, enrich_company_facts, enrich_company_websites, scrape_company_careers,
+    scrape_kanata_directory,
 )
 
 SCHEDULED = [("enrich", enrich_company_websites)]
@@ -25,8 +27,17 @@ TOOLS = {
     "folders": build_company_folders,
     "careers": scrape_company_careers,
     "enrich": enrich_company_websites,
+    "facts": enrich_company_facts,
 }
-"""全部可 --only 点名的步(含休眠引导工具)。"""
+"""全部可 --only 点名的步(含休眠引导工具)。
+
+  facts  雇主 D 富化(行业多数派 + Wikidata 中韩别名/知名);2026-08-31 批J 自
+         clean/_enrich_company_facts.py 归户全溶(判据:逐公司抓数据 = 公司域的活)。
+         ⛔ Wikidata 那半边已退役(#109/#111),别再批量跑;行业那半边可手动重跑。
+         **不进默认链**,与 Kanata 三件同属手动件。
+
+⚠ --only 是子串匹配:facts 与既有四键互不误命中(逐对核过)。
+"""
 
 
 def main() -> int:

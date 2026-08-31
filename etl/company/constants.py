@@ -460,3 +460,222 @@ IN_ENRICH_ATS = paths.PROCESSED_ATS
 OUT_ENRICH_CACHE = paths.PROCESSED / "company_enrich.json"
 """段5 输出:增量缓存(slug → EnrichRecord);09 汇装直读合并进 companies 行。"""
 
+IN_FACTS_JOBS = paths.MART / "jobs.json"
+"""段6 输入:mart 岗位表(算行业多数派用,零新抓取)。"""
+
+IN_FACTS_COMPANIES = paths.MART / "companies.json"
+"""段6 输入:mart 公司表(取公司名 + LMIA 技能岗数,定 Wikidata 候选)。"""
+
+OUT_FACTS = paths.PROCESSED / "company_facts.json"
+"""段6 输出:雇主 D 富化产物(by_slug 行业 + by_name 别名/知名)。入库由
+scratchpad 的 apply_company_facts.mjs 直写 companies(industry/alias_zh/alias_ko/wiki_url
+在 seed 白名单外,增量对账不动它们);重跑幂等,可周期性刷新。"""
+
+
+# =========================================================================
+# 6. 雇主 D 富化(行业 + 中韩别名 + 知名;2026-07-19 Frank 批「开工做雇主 D」)
+# =========================================================================
+
+WD_API_URL = "https://www.wikidata.org/w/api.php"
+"""Wikidata 的 action API 根。
+⛔ 本段的 Wikidata 那半边已退役(#109/#111,2026-07-20 Frank「不要提前跑」):别名/知名
+改 K 懒探索时并行查(cms/src/lib/companyResearch.ts,一家一生一次);**本段别再批量跑
+Wikidata**(1668 家网络失败近千,跑不完)。行业那半边(本地 mart 零网络)保留可手动重跑。"""
+
+WD_UA = "offer2pr-company-facts/1.0 (data enrichment; contact via site)"
+"""自报家门(本役身份)。"""
+
+HDR_USER_AGENT = "User-Agent"
+"""请求头名。"""
+
+QUERY_MARK = "?"
+"""URL 的查询串起始。"""
+
+P_SEARCH = "search"
+"""wbsearchentities 的查询词参数名。"""
+
+P_LANGUAGE = "language"
+"""搜索语言参数名。"""
+
+P_TYPE = "type"
+"""搜索实体类型参数名。"""
+
+P_LIMIT = "limit"
+"""搜索条数上限参数名。"""
+
+P_IDS = "ids"
+"""wbgetentities 的实体 id 清单参数名。"""
+
+P_PROPS = "props"
+"""wbgetentities 要取哪些属性的参数名。"""
+
+P_LANGUAGES = "languages"
+"""wbgetentities 要哪几种语言的参数名。"""
+
+P_FORMAT = "format"
+"""响应格式参数名。"""
+
+ACT_SEARCH = "wbsearchentities"
+"""按名搜实体。"""
+
+ACT_GET_ENTITIES = "wbgetentities"
+"""按 id 批量取实体。"""
+
+TYPE_ITEM = "item"
+"""只搜条目(不搜属性)。"""
+
+FORMAT_JSON = "json"
+"""响应格式。"""
+
+WD_PROPS = "labels|aliases|sitelinks"
+"""要的三样:标签、别名、跨站链接。"""
+
+WD_LANGUAGES = "en|zh|ko"
+"""要的三种语言。"""
+
+ID_SEP = "|"
+"""批量取实体时 id 的分隔符。"""
+
+WD_SEARCH_LIMIT = 3
+"""严格匹配:只看搜索前 3 个条目。"""
+
+WD_TIMEOUT_S = 20
+"""单次请求超时。"""
+
+WD_SLEEP_S = 0.6
+"""温和限速。"""
+
+LANG_EN = "en"
+"""英文标签/别名的语言键(严格名称匹配只认它)。"""
+
+LANG_ZH = "zh"
+"""中文标签键(官方条目名,不机翻)。"""
+
+LANG_KO = "ko"
+"""韩文标签键。"""
+
+K_SEARCH = "search"
+"""搜索响应体里的命中清单键。"""
+
+K_ID = "id"
+"""搜索命中行里的实体 id 键。"""
+
+K_ENTITIES = "entities"
+"""批量取实体的响应体键。"""
+
+K_LABELS = "labels"
+"""实体里的标签表键。"""
+
+K_ALIASES = "aliases"
+"""实体里的别名表键。"""
+
+K_VALUE = "value"
+"""标签/别名行里的文本键。"""
+
+K_SITELINKS = "sitelinks"
+"""实体里的跨站链接表键。"""
+
+K_ENWIKI = "enwiki"
+"""英文维基那条跨站链接的键。"""
+
+K_TITLE = "title"
+"""跨站链接里的条目标题键。"""
+
+WIKI_URL_PREFIX = "https://en.wikipedia.org/wiki/"
+"""英文维基条目 URL 前缀。"""
+
+WIKI_SPACE = " "
+"""条目标题里的空格(转下划线前的原样)。"""
+
+WIKI_UNDERSCORE = "_"
+"""维基 URL 里替空格的下划线。"""
+
+K_STATUS = "status"
+"""mart 岗位行键:开放/关闭。"""
+
+STATUS_OPEN = "open"
+"""岗位状态缺格时的默认值(与 mart 同口径)。"""
+
+STATUS_CLOSED = "closed"
+"""已关闭的岗不算行业票。"""
+
+K_COMPANY_SLUG = "companySlug"
+"""mart 岗位行键:所属公司 slug。"""
+
+K_BROAD = "broad"
+"""mart 岗位行键:NOC 大类中文值(前端 t('broad.*') 三语显示)。"""
+
+UNCLASSIFIED = "未分类"
+"""大类未分类 —— 不投行业票。"""
+
+K_SLUG = "slug"
+"""mart 公司行键:slug。"""
+
+K_NAME = "name"
+"""mart 公司行键:公司名。"""
+
+K_LMIA_POSITIONS_SKILLED = "lmiaPositionsSkilled"
+"""mart 公司行键:LMIA 技能岗获批数(定候选用)。"""
+
+K_BY_SLUG = "by_slug"
+"""产出体键:按 slug 索引的行业。"""
+
+K_BY_NAME = "by_name"
+"""产出体键:按公司名索引的 Wikidata 结果缓存。"""
+
+K_INDUSTRY = "industry"
+"""by_slug 行里的行业格。"""
+
+K_WIKI_CHECKED = "wiki_checked"
+"""by_name 行里的「查过了」标记 —— 幂等靠它(命中与确认未命中都记;失败的不写,自然重试)。"""
+
+K_ZH = "zh"
+"""by_name 行里的中文别名格。"""
+
+K_KO = "ko"
+"""by_name 行里的韩文别名格。"""
+
+K_WIKI = "wiki"
+"""by_name 行里的英文维基 URL 格(有它才算知名)。"""
+
+WIKI_CHECKED_MARK = 1
+"""「查过了」标记的值(逐字沿用原件的 1,不改成 True —— 落盘 JSON 会变形)。"""
+
+FACTS_SUFFIX_RE = re.compile(
+    r"\b(incorporated|inc|ltd|limited|llp|llc|corp|corporation|co|company|ltee|ltée|group|"
+    r"holdings?)\b\.?", re.I)
+"""公司名归一:法人后缀。⚠ 与本仓另外两把尺子(aip 的 norm_name、mart 试点段的
+PILOT_SUFFIX_RE)词表各不相同 —— 2026-08-31 批J 溶解逐字保留本件自己的一份,
+谁该收敛是另一批的判定(cms/src/lib/employers 那侧的注释也点名本件为同门槛来源)。"""
+
+FACTS_COMMA = ","
+"""归一时折成空格的逗号。"""
+
+CAND_MIN_JOBS = 3
+"""候选门槛①:在库开放岗 ≥3 家。"""
+
+CAND_MIN_LMIA_SKILLED = 10
+"""候选门槛②:LMIA 技能岗获批 ≥10(技能股大户)。"""
+
+FACTS_TICK = 50
+"""每查这么多家报一次进度并增量落盘(长跑中断不丢已查结果 —— 网络抖动是常态,
+一次全跑完是奢望)。"""
+
+FACTS_INDENT = 1
+"""产出落盘缩进(逐字沿用原件的 1)。"""
+
+PRINT_FACTS_IN_TPL = "IN_JOBS={jobs}\nIN_COMPANIES={companies}\nOUT={out}"
+"""起手三行输入输出(原件在模块顶 import 期打,溶解后归段入口第一句;内容逐字不变)。"""
+
+PRINT_FACTS_INDUSTRY_TPL = "industry: {n} 家(来自 {open_jobs} 开放岗)"
+"""行业多数派报数。"""
+
+PRINT_FACTS_CANDS_TPL = "wikidata 候选: {n} 家"
+"""候选数报数。"""
+
+PRINT_FACTS_TICK_TPL = "  {i}/{n} · wiki 命中 {hit} · 失败 {errs}"
+"""长跑心跳。"""
+
+PRINT_FACTS_DONE_TPL = "done → {out} · industry {n} · wiki {hit} · 有中/韩别名 {alias}"
+"""收尾一行。"""
+

@@ -5522,8 +5522,9 @@ GQ_P_UNKNOWN_TPL = "未知通道 {key}"
 # 37. 新鲜度哨兵(B3-1;2026-08-31 批D 自 ops/check_freshness.py 收编,钉本域链尾)
 # =========================================================================
 
-FRESH_MANIFEST = paths.ROOT / "etl" / "source_manifest.json"
-"""源契约清单(glob 默认让新抓取产物自动进哨兵 —— 铁律 2「抓完必须入役」的机器面)。"""
+FRESH_MANIFEST = paths.ROOT / "etl" / "sched" / "source_manifest.json"
+"""源契约清单(glob 默认让新抓取产物自动进哨兵 —— 铁律 2「抓完必须入役」的机器面)。
+2026-08-31 批K 随 sched 立域搬进 etl/sched/(调度契约归调度器管),本行只跟路径不动语义。"""
 
 FRESH_K_DEFAULTS = "defaults"
 """契约键:glob 默认档。"""

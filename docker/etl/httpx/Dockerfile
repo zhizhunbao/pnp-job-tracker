@@ -11,4 +11,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certifi
     && apt-get update && apt-get install -y --no-install-recommends postgresql-client-18 \
     && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir "httpx>=0.27" "beautifulsoup4>=4.12" "pymupdf>=1.24" "lxml>=5.0" "loguru>=0.7" "openpyxl>=3.1" "pydantic>=2.7"  # openpyxl: build_lmia 解析 ESDC 季度 XLSX(E6-02);pydantic: 边界行形状校验(2026-08-30 全域采用)
-CMD ["python", "etl/auto_update.py"]
+# 2026-08-31 批K:入口自 etl/auto_update.py 迁 etl/sched/main.py(调度器立域,默认链=守护循环,语义不变)
+CMD ["python", "etl/sched/main.py"]

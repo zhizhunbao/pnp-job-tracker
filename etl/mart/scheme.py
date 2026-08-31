@@ -27,26 +27,38 @@ from typing import Protocol
 # =========================================================================
 
 
-class SalaryModuleLike(Protocol):
-    """clean/04d_clean_salary.py 按路径拉进来的模块形 —— Protocol 自声明只真用的那一格
-    (ee 域 SoupNodeLike 先例;叶子律下 scheme 不 import 那个模块,裸 object 又让检查器判不动)。
-
-    为什么按路径拉:04d 住 `etl/clean/`(跨源清洗横切层,不是域),文件名以数字开头,
-    正规 import 语法上就不成立;域间禁 import 的形制闸也拦不到它 —— 但薪资归一必须与它
-    同一把尺子(见 constants.MART_LATE_SALARY_NOTE 的实撞记录)。
-    """
-
-    def apply_to(self, job: dict) -> bool:
-        """就地把 salary 原文算成 salaryText/salaryAnnual;算出来了返回 True(幂等,已有值不动)。"""
-        ...
-
-
 class NormNameLike(Protocol):
     """aip 域 functions.py 的 norm_name 形(公司名归一;LMIA 匹配与 AIP 打标同一把尺子)。"""
 
     def __call__(self, name: str) -> str:
         """公司名 → 归一键。"""
         ...
+
+
+@dataclass
+class SalaryGuards:
+    """五道薪资护栏各自的拦截计数(原 clean/04d 的模块级 GUARDED dict —— functions 顶层
+    不许有常量、更不许有可变状态,收成显式载体逐层传)。
+
+    住共享段而不是第 18 段:两处消费 —— 第 18 段(薪资清洗本体,收尾要报)与第 8 段
+    (岗位装配的薪资兜底,MartCtx 带一份、不报)。声明还必须排在 MartCtx 前面:
+    dataclass 的字段注解在建类那一刻求值,写在后面会 NameError。
+    """
+
+    absurd: int
+    """金额本身离谱(单个数 ≥ 年薪上限)。"""
+
+    ratio: int
+    """区间高/低比离谱。"""
+
+    cap: int
+    """年化后仍超顶。"""
+
+    gig: int
+    """计次/计程价,不年化。"""
+
+    hifold: int
+    """高时薪只展示不折年薪。"""
 
 
 @dataclass
@@ -525,8 +537,12 @@ class MartCtx:
     expired: set
     """验尸判死的 externalId(jb: 前缀形)。"""
 
-    apply_salary: SalaryModuleLike
-    """04d 薪资归一模块(按路径拉,兜底现算现补用)。"""
+    salary_guards: SalaryGuards
+    """薪资兜底现算现补时喂给 apply_salary_to 的护栏计数器。
+    ⚠ 2026-08-31 批J:薪资归一件溶进本域第 18 段后,这里不再拉模块对象(原
+    `apply_salary: SalaryModuleLike` 按路径拉 clean/04d),改成域内直调 —— 兜底走的
+    仍是同一把尺子(现在是字面上的同一个函数)。汇装这一路的护栏计数不报,
+    与溶解前拉模块时各自持有一份 GUARDED 的行为相同。"""
 
     companies: dict
     """slug → 公司行(装配中)。"""
@@ -2114,3 +2130,231 @@ class StatsCountsIn:
 
     city_rows: list
     """城市表。"""
+
+
+# =========================================================================
+# 17. 跨源清洗:地点
+# =========================================================================
+
+
+@dataclass
+class LocKeptOut:
+    """clean_ats_file() 出参:这一份 jobs.json 留下与丢弃的岗数。"""
+
+    kept: int
+    """留下的(焦点区内)。"""
+
+    dropped: int
+    """丢弃的(焦点区外)。"""
+
+
+@dataclass
+class OttawaLocIn:
+    """normalize_ottawa() 入参:ATS 岗的两个原始地点字段。"""
+
+    raw_city: str
+    """地点字段(源写法五花八门)。"""
+
+    raw_addr: str
+    """地址字段(可能带邮编)。"""
+
+
+@dataclass
+class ApplyLocIn:
+    """apply_location() 入参:把清洗结果写回岗位行。"""
+
+    job: dict
+    """岗位行(原地写五格)。"""
+
+    loc: dict
+    """清洗结果(country/province/city/district/address 五格)。"""
+
+
+@dataclass
+class JbLocIn:
+    """normalize_jobbank_location() 入参:JB 帖的省/市/地址 + FSA 维度表。"""
+
+    prov: str
+    """帖子省码(保留,不猜)。"""
+
+    city: str
+    """原始市名(读的是 city_raw,幂等的关键)。"""
+
+    addr: str
+    """地址(取邮编用)。"""
+
+    fsa_table: dict
+    """FSA → {main, hood, prov} 全国维度表(文件缺时空表)。"""
+
+
+# =========================================================================
+# 18. 跨源清洗:薪资
+# =========================================================================
+
+
+@dataclass
+class SalaryTally:
+    """薪资清洗一轮的三个报数。"""
+
+    total: int
+    """过了一遍的岗数(ATS + JB)。"""
+
+    priced: int
+    """带薪资原文的岗数。"""
+
+    updated: int
+    """真被改写了的岗数(幂等:值没变的不算)。"""
+
+
+@dataclass
+class SalaryTickIn:
+    """salary_tick() 入参:一个岗 + 两个累加器。"""
+
+    job: dict
+    """岗位行。"""
+
+    tally: SalaryTally
+    """三个报数(原地累加)。"""
+
+    guards: SalaryGuards
+    """五道护栏计数(原地累加)。"""
+
+
+@dataclass
+class ApplySalaryIn:
+    """apply_salary_to() 入参:一个岗 + 护栏计数。"""
+
+    job: dict
+    """岗位行(原地写 salaryAnnual/salaryText)。"""
+
+    guards: SalaryGuards
+    """护栏计数(原地累加)。"""
+
+
+@dataclass
+class SalaryParseIn:
+    """parse_salary() 入参:薪资原文 + 护栏计数。"""
+
+    raw: str
+    """源写的薪资串(任意格式)。"""
+
+    guards: SalaryGuards
+    """护栏计数(原地累加)。"""
+
+
+@dataclass
+class SalaryOut:
+    """parse_salary() 出参:年薪折算 + 规范显示文本。
+
+    三态各有含义:两格都有 = 正常;annual=None 且 text 非空 = 有信息但不能年化
+    (面议 / 按件计 / 高时薪);两格都 None = 源头自相矛盾,一个字都不显示。
+    """
+
+    annual: int | None
+    """年薪折算(排序/「vs 中位」用)。"""
+
+    text: str | None
+    """规范显示文本。"""
+
+
+@dataclass
+class SalaryUnitIn:
+    """salary_unit_of() 入参:判「这数是按什么周期给的」。"""
+
+    low: str
+    """已小写的解析源文本。"""
+
+    raw: str
+    """未剪的原文(计次价词可能落在被剪掉的佣金段里,只能搜它)。"""
+
+    hi: float
+    """区间上限(兜底判时薪还是年薪的分界)。"""
+
+    guards: SalaryGuards
+    """护栏计数(计次价那条在这里记)。"""
+
+
+@dataclass
+class UnitFixIn:
+    """unit_fixed_of() 入参:判出来的单位 + 区间下限(源误标纠正的判据)。"""
+
+    unit: str
+    """salary_unit_of() 判出来的周期单位。"""
+
+    lo: float
+    """区间下限(时薪 ≥$1000 / 月薪 ≥$2万 都说明填错栏了)。"""
+
+
+@dataclass
+class MoneyTextIn:
+    """money_text() 入参:区间两端 + 单位 + 后缀。"""
+
+    lo: float
+    """下限。"""
+
+    hi: float
+    """上限(等于下限时只显示一个数)。"""
+
+    unit: str
+    """薪资单位(年薪档按千元折)。"""
+
+    sub: str
+    """单位后缀("/hr"、"/yr"…)。"""
+
+
+@dataclass
+class MoneyIn:
+    """money_of() 入参:一个金额 + 它的单位档。"""
+
+    n: float
+    """金额。"""
+
+    unit: str
+    """薪资单位。"""
+
+
+# =========================================================================
+# 19. 跨源清洗:试点打标
+# =========================================================================
+
+
+@dataclass
+class PilotTally:
+    """试点打标一轮的三个报数。"""
+
+    flagged: int
+    """命中试点社区的帖数。"""
+
+    total: int
+    """过了一遍的岗数(JB + ATS,原脚本口径)。"""
+
+    emp_hits: int
+    """雇主同时在本社区指定名单上的岗数。"""
+
+
+@dataclass
+class PilotFlagIn:
+    """flag_pilot_row() 入参:一个岗 + 两张索引 + 报数。"""
+
+    job: dict
+    """岗位行(原地写三格)。"""
+
+    cmap: dict
+    """(province, city) → 命中的社区行清单。"""
+
+    emp: dict
+    """社区名 → 该社区指定雇主的归一名集合。"""
+
+    tally: PilotTally
+    """三个报数(原地累加)。"""
+
+
+@dataclass
+class PilotVerdictOut:
+    """pilot_verdict() 出参:类型串与社区名。"""
+
+    pilot: str
+    """'RCIP' / 'FCIP' / 'RCIP+FCIP'。"""
+
+    community: str
+    """社区名(同城多命中时取 RCIP 行的名)。"""

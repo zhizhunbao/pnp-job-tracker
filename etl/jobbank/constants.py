@@ -870,3 +870,115 @@ PRINT_VERIFY_HEAD_TPL = ("verify_expired: 候选 {cands} 帖(已跳过不在板�
 PRINT_VERIFY_DONE_TPL = ("verify_expired: 新判死 {dead} · 仍在招 {alive} · "
                          "网络错误跳过 {errs} · 累计死帖 {total}")
 """验尸收尾一行。"""
+
+
+# =========================================================================
+# 9. 无经验友好打标(B1-3:官方标「不要经验/带训」+ 学徒标题 → apprentice_friendly)
+# =========================================================================
+
+IN_ATS_COMPANIES = paths.COMPANIES
+"""ATS 各 <slug>/jobs.json 的根(processed/ats 已含地域语义)—— 打标段把 ATS 岗一律写
+False,保持字段一致。2026-08-31 批J:原 clean/05e 的 IN_COMPANIES_DIR 归户改名。"""
+
+APPRENTICE_URL_RE = re.compile(r"^url:\s*(\S+)", re.M)
+"""详情 md frontmatter 的 url 行(取到第一个空白为止)。
+⚠ 与本域 URL_LINE_RE(公司档段那条,取整行到行尾)**不是同一条**:两段历史取法本就不同,
+2026-08-31 批J 溶解逐字保留原件的写法,不顺手拉平(拉平=改行为)。"""
+
+ZERO_EXP_PHRASES = {"Will train", "No experience (will train)", "Experience an asset"}
+"""Job Bank 的 Experience 是枚举下拉,这三个值 = 官方写明不要求经验(其余是年限档,不猜语义)。"""
+
+APPRENTICE_TITLE_RE = re.compile(r"\bapprenti", re.I)
+"""apprentice / apprenti(e)(法语帖):学徒岗按定义是入行通道,聚合帖没有结构化区,
+标题是唯一信号。"""
+
+HEADING_EXPERIENCE = "Experience"
+"""JD 正文里独立成行的节名 —— 整行精确相等才算(「Experience and specialization」不算)。"""
+
+BULLET_TRIM_CHARS = "• "
+"""节内首行要剥掉的项目符号与空格(lstrip 的字符集;与本域 BULLET_PREFIX 的
+「换行 + 圆点 + 空格」不是一回事,后者是详情 md 的写出前缀)。"""
+
+K_EXPERIENCE_REQ = "experience_req"
+"""帖子行键:官方 Experience 短语原文 —— flag 的出处,一个关注点两个字段同源同段。"""
+
+K_APPRENTICE_FRIENDLY = "apprentice_friendly"
+"""帖子行键:是否「官方标为不要经验」(bool)。两个判据都不命中 → False,语义 =
+「没被官方标为不要经验」,不是「要经验」;漏标只会少数不会错数。"""
+
+PRINT_APPRENTICE_IN_TPL = "IN  details md  : {dir}"
+"""无经验打标起手的输入路径行(逐字沿用原 05e 的对齐空格)。"""
+
+PRINT_APPRENTICE_OUT_TPL = "IN/OUT job bank : {out}"
+"""同上,原地写回的 store 路径行。"""
+
+PRINT_APPRENTICE_PHRASES_TPL = "  md with Experience phrase: {n}"
+"""扫完 details md 的命中数一行。"""
+
+PRINT_APPRENTICE_DONE_TPL = ("apprentice_friendly {flagged}/{total} jobs "
+                             "(phrase {phrase} · title {title} · overlap {overlap}).")
+"""无经验打标收尾一行。"""
+
+
+# =========================================================================
+# 10. NOC 失配护栏(#47:泛词标题 × TEER0/1 × 薪资远低 → NOC 置空转未分类)
+# =========================================================================
+
+IN_WAGES = paths.WAGES / "wages.json"
+"""NOC×省 中位工资(wages 域维护)—— 护栏的「薪资远低」判据要跟这把尺子比。"""
+
+GENERIC_TITLES = {
+    "intern", "interns", "internship", "worker", "workers", "general worker",
+    "helper", "helpers", "general helper", "labourer", "laborer", "general labourer",
+    "general laborer", "trainee", "student", "staff", "employee", "team member",
+}
+"""泛词标题:整串精确匹配(小写、去首尾空白/标点后);只收「不含任何职业信息」的词
+—— 防误伤 apprentice mechanic 这类真带职业信息的标题。"""
+
+TITLE_TRIM_CHARS = ".,!?:;·-—"
+"""比对泛词表前从标题首尾剥掉的标点集。"""
+
+TEER_PRO_DIGITS = ("0", "1")
+"""TEER 0/1(NOC 第 2 位)才是「泛词标题配专业码」的荒谬组合。"""
+
+MEDIAN_RATIO = 0.6
+"""有中位:年薪低于中位的 60% 视为失配。"""
+
+ABS_FLOOR = 60_000
+"""无中位兜底:TEER 0/1 专业岗年薪下限(低于这个数 = 不可能是专业岗)。"""
+
+SANITY_WAGE_NATIONAL = "CA"
+"""护栏查中位时的全国兜底键。⚠ 逐字沿用原 clean/05d 的写法 —— wages.json 里的全国键
+其实是 NAT(mart 域用的是那个),这一支实际取不到值、护栏就落到 ABS_FLOOR 兜底那条。
+2026-08-31 批J 溶解只搬不改:改成 NAT 会改判定结果,那是另一批的事。"""
+
+NOC_LEN = 5
+"""NOC 码位数(不是 5 位的行不参与护栏)。"""
+
+K_NOC_BLANKED = "noc_blanked"
+"""帖子行键:置空前的原错标码(留痕,便于回查/若源修正可比对)。"""
+
+K_ANNUAL = "annual"
+"""wages.json 里「年薪中位」那一格的键。"""
+
+SANITY_SHOW_MAX = 10
+"""收尾最多展开几条被置空的帖(只影响打印)。"""
+
+MED_TPL = "${med:,.0f}"
+"""置空明细行里中位那一格的说法。"""
+
+MED_MISSING = "—"
+"""没有中位时那一格的占位。"""
+
+PRINT_SANITY_IN_TPL = "IN/OUT postings : {path}"
+"""护栏起手的 store 路径行(逐字沿用原 05d 的对齐空格)。"""
+
+PRINT_SANITY_WAGES_TPL = "IN wages        : {path}"
+"""护栏起手的中位表路径行。"""
+
+PRINT_SANITY_ROW_TPL = ("  {pid} | {title!r} @ {employer} | noc {noc} | "
+                        "${annual:,}/yr | med {med}")
+"""被置空的一帖明细行。"""
+
+PRINT_SANITY_DONE_TPL = "NOC 失配护栏:置空 {n} 帖(泛词标题 × TEER0/1 × 薪资远低)"
+"""护栏收尾一行。"""

@@ -7,6 +7,9 @@
 
 **形制**:三件套 constants / scheme / functions + 门 main(2026-08-31 批I 全溶;原六个文件
 ——四个编号汇装件 + 两个私件库——一步一段收进 functions,段横幅三文件同名同序镜像 16 段)。
+同日批J(clean/ 目录退役)再收三件**跨源清洗**成第 17/18/19 段:地点(原 04c)、薪资
+(原 04d)、试点打标(原 05f)—— 判据是「跨源」:ATS 与 JB 过同一套尺子,不归任何单源域。
+它们写的是 processed/(raw→clean 那一格),不是 data/mart/,只进 TOOLS 由 build 链点名。
 
 **本域不自带役**:无 META —— 汇装是 load 域 build 链按序点用的一段(谁的数据谁管的收口:
 跨源汇装不归任何单源,归 mart;批H 拍板点见 docs/design/etl分域-20260829.md 8/10)。

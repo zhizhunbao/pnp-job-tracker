@@ -18,6 +18,12 @@ fcip 域常量 —— 域词汇表(法语社区移民试点:社区名单、指�
   · 直连补抓整套(LIVE_* / CL_* / WK_*)是两个 RCIP 社区的破例,全部归 rcip,本域无直连件。
 常量**值**除上述拆分项外一字未改;extractors/ 私件群随本域(纯法语四社区抽取器)。
 
+批L 溶解改动(2026-08-31):extractors/ 私件群溶进本域五件 —— 本文件新增第 5~9 段
+(登记 + ON/BC/草原/大西洋四地区的常量),四个原文件头逐字存档在
+EXTRACTORS_DOC / ON_DOC / BC_DOC / PRAIRIE_DOC / ATL_DOC;抽取器里数出的同值抄本
+(UA×4、超时×4、去标签正则×4、<li> 正则×2、弯直引号×2)按「有重复才收」并进第 1 段共享词汇。
+与 rcip 第 1 段的同名常量仍是**镜像**(两域各留一份,改一边记得改另一边)。
+
 判据(照 cms 宪法同款):常量只装 JSON 装得下的(标量/字符串表/正则/配置 dict)+ IN/OUT 路径。
 唯一特批 import = `re` 与 `paths`(functions 顶层只许函数,IN/OUT 路径归这)。
 注释方言(2026-08-30):每个常量用**赋值后的裸字符串 docstring**,行内 # 退役。
@@ -55,6 +61,19 @@ K_NAME = "name"
 K_TYPE = "type"
 """行键:试点类型(RCIP / FCIP / RCIP+FCIP)。"""
 
+K_LOCATION = "location"
+"""雇主行键:地点(官方没给就空串 —— 宁缺勿猜,不拿社区名顶)。
+批L 溶解改动:抽取器群溶进本域后,四社区 `{"name": …, "location": …}` 的键词汇归此。"""
+
+K_NOC = "noc"
+"""职业行键:五位 NOC 码。"""
+
+K_TITLE = "title"
+"""职业行键:职业名(官方原文,附注从句已剪)。"""
+
+K_SECTOR_ONLY = "sectorOnly"
+"""职业行键:True = 官方只给了行业名,没给 NOC 码(本域四社区实测恒 False,形状与 rcip 对齐)。"""
+
 K_ROWS = "rows"
 """产出 JSON 顶层键:行清单(details/quota/communities 三步的读写口)。"""
 
@@ -72,6 +91,39 @@ K_HTML = "html"
 
 HTML_CACHE_DIR = "html_cache"
 """crawl 缓存实体目录名(manifest 同级)。"""
+
+UA_CHROME126 = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
+"""直连官方源的浏览器 UA —— **本域自留一份**:与 fetch.constants.BROWSER_UA(Chrome/131)
+不是同一个串,换成那份等于换 UA,不属「行为不变」的搬运。
+
+批L 溶解改动(2026-08-31):四个抽取器文件各自的 UA 抄本(on 是裸串、bc/prairie 是
+{"User-Agent": …} 的 dict、atl 是带 Accept-Language 的两键 dict)溶进来后数出四份同值,
+收成本常量一处 + 各段自己拼 headers;与 rcip.constants.UA_CHROME126 是**镜像**
+(两域各留一份,改一边记得改另一边)。"""
+
+TIMEOUT_S = 60
+"""直连官方源的超时秒数(四段共用;原四个文件各一份 TIMEOUT=60,rcip 侧镜像同名)。"""
+
+TAG_RE = re.compile(r"(?s)<[^>]+>")
+"""HTML 标签(去 tag 取纯文本)。
+批L 溶解改动:原住 quota 段(text_of_html 一个消费者),抽取器群溶进来后四段的去标签也用它
+(四个抽取器文件里的 `<[^>]+>` 抄本随之退役),移进共享段。"""
+
+LI_RE = re.compile(r"<li>(.*?)</li>", re.S)
+"""列表项(Superior East 与 Kelowna 两处的雇主 <ul> 共用同一条,值一字未改)。"""
+
+PRIORITY_OCC_ANCHOR = "Priority Occupations"
+"""官方页里「优先职业」段的标题锚(Kelowna 的 Google Doc 与 St. Pierre 的职业页共用)。"""
+
+FILETYPE_PDF = "pdf"
+"""fitz.open 的 filetype 档位名(St. Pierre 与 Acadian 两处 PDF 解析共用)。"""
+
+CURLY_QUOTE = "’"
+"""弯引号(PDF/网页里常见)。"""
+
+STRAIGHT_QUOTE = "'"
+"""直引号 —— 归一目标:草原段的 tidy(批B 底本口径)与大西洋段比对页眉前的归一共用。"""
 
 # =========================================================================
 # 2. details 步(社区指定雇主/职业清单自动刷新)
@@ -278,9 +330,6 @@ SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
 SCRIPT_STYLE_RE = re.compile(r"(?is)<(script|style).*?</\1>")
 """取正文前先拆掉的脚本/样式块。"""
 
-TAG_RE = re.compile(r"(?s)<[^>]+>")
-"""HTML 标签(去 tag 取纯文本)。"""
-
 QUOTE_BEFORE = 130
 """原句窗口:匹配点**之前**留多少字。"""
 
@@ -463,3 +512,326 @@ COMM_DONE_TPL = "  ✓ 社区 {n}(FCIP {fcip})· 已映射城市 {mapped} 个社
 """收尾报数行。
 批E 拆分改动(哨兵单侧化):原文案是「社区 {n}(RCIP {rcip} + FCIP {fcip})」,
 拆域后本域只产 FCIP 行,RCIP 那半句归 rcip.constants 同名常量。"""
+
+# =========================================================================
+# 5. 社区抽取器登记(社区官方名 → 抽取函数;details 步的私件群)
+# =========================================================================
+
+EXTRACTORS_DOC = """批C(E6-11,2026-08-15):法语社区名单抽取器注册表 —— 批B 一次性抽取转自动刷新。
+
+四个地区模块各自导出 EXTRACTORS: dict[社区官方名(与 raw/fcip/fcip-communities.json 的 name 一致), callable]。
+抽取函数签名(无参):
+    fn() -> {"employers": [{"name": str, "location": str}...],   # 官方当前指定雇主(excluded/de-designated 剔除)
+             "occupations": [{"noc": str5位或"", "title": str, "sectorOnly": bool}...],
+             "employersUrl": str, "occupationsUrl": str}
+约束:只用 stdlib + httpx + fitz(pymupdf) + re/json/csv;直连官方源带浏览器 UA;
+     解析不动摇的红线=宁缺勿猜,拿不准的行不要;抛异常即可 —— 总控(build_pilot_details)对该社区保旧+喊人。
+
+批E 拆分改动(2026-08-31,pilot 拆三域;Frank「拆成三个 很少有人有法语」):
+本注册表 = **纯法语四社区**(Kelowna, BC / Acadian Peninsula, NB / St. Pierre Jolys, MB /
+Superior East Region, ON),四个函数自 etl/pilot/extractors/ 的四个地区文件原样搬来(函数体一字未改),
+地区分文件的结构沿用(bc/atl/prairie/on),共用私件与 rcip 域两边各留一份镜像。
+⚠ fcip-communities.json 里还有 Sudbury, ON 与 Timmins, ON 两个**双身份社区**行,
+但它们的抽取器住 rcip 域(拍板点 8-②:IRCC 名单页两节都列它俩,抽取只做一次),
+本注册表**故意不含**它们 —— 总控查不到抽取器即跳过,fcip 产物只含纯法语四社区。
+
+批L 溶解改动(2026-08-31,Frank「都需要检查的」——域内 .py 只许七名,子目录不豁免):
+extractors/ 私件群(__init__ + atl/bc/on/prairie 四件)整体溶进本域五件 —— 四个地区文件
+成本文件第 6~9 段(常量)与 functions.py 同名同序四段(函数),注册表本身成
+functions.community_extractors() 构建函数;`_` 前缀私件名随溶退役成无下划线顶层名。
+上面这段签名契约与红线**逐字存档不改**,它是抽取器的对外约定。"""
+"""抽取器群的签名契约与红线(原 fcip/extractors/__init__.py 文件头,逐字折进)。"""
+
+SE_COMMUNITY = "Superior East Region, ON"
+"""ON 法语社区:Superior East Region(与 fcip-communities.json 的 name 逐字一致,下同)。"""
+
+KEL_COMMUNITY = "Kelowna, BC"
+"""BC 法语社区:Kelowna。"""
+
+SP_COMMUNITY = "St. Pierre Jolys, MB"
+"""草原法语社区:St. Pierre Jolys。"""
+
+ACAD_COMMUNITY = "Acadian Peninsula, NB"
+"""大西洋法语社区:Acadian Peninsula(官方站是法语,PPICF)。"""
+
+# =========================================================================
+# 6. ON 一社区抽取(Superior East Region)
+# =========================================================================
+
+ON_DOC = """on.py — ON 法语社区(Superior East Region)指定雇主/优先职业抽取器(E6-11 批C,2026-08-15)。
+
+社区(键=fcip-communities.json 官方名)与源:
+  Superior East Region, ON 雇主=fcip-employers 页 ul;职业=fcip 页文本块 NOC 行
+
+批E 拆分改动(2026-08-31,pilot 拆三域;Frank「拆成三个 很少有人有法语」):本文件自
+etl/pilot/extractors/on.py 拆出 —— SE_EMP_URL / SE_OCC_URL 两常量与 superior_east()
+**函数体一字未改**;共用私件 UA / TIMEOUT / _get / _clean / _cut_note 是与
+etl/rcip/extractors/on.py 的**镜像**(常量各域自抄先例:同一段代码两域各留一份,
+改一边记得改另一边)。ON 的其余五个社区留在 rcip 域,**其中 Sudbury/Timmins 是双身份社区**:
+IRCC 名单页 Rural 与 Francophone 两节都列它俩,抽取只在 rcip 做一次(拍板点 8-②),
+本域不重复抽取 —— 所以本文件只有 Superior East 一个键。
+
+红线:宁缺勿猜(excluded/de-designated 剔,拿不准的行不要);解析不到就抛异常,总控保旧。
+
+批L 溶解改动(2026-08-31):本段 = 原 fcip/extractors/on.py 的全部常量;UA / TIMEOUT /
+去标签正则三个抄本并进第 1 段,其余常量名一字未改;镜像关系不变(rcip 第 6 段是另一半)。"""
+"""本段的社区与源(原 fcip/extractors/on.py 文件头,逐字折进)。"""
+
+NOTE_DASH_RE = re.compile(r"\s[–—-]\s")
+"""职业名里的破折段分隔(空格夹破折号)—— cut_note 的分段器。"""
+
+NOTE_JOIN = " - "
+"""cut_note 保留下来的小写延续段的重接符(官方 NOC 名内部的破折段)。"""
+
+NOTE_STAR = "*"
+"""职业名尾注星号(cut_note 一并剥掉)。"""
+
+SE_EMP_URL = "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip/fcip-employers"
+"""Superior East 的指定雇主页。"""
+
+SE_OCC_URL = "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip"
+"""Superior East 的 FCIP 主页(职业散在 sppb 文本块里)。"""
+
+SE_LIST_RE = re.compile(r"Designated Employers</h3>.*?<ul>(.*?)</ul>", re.S)
+"""雇主名单:h3 标题后的第一个 ul。"""
+
+SE_NO_LIST = "Superior East: Designated Employers 列表不见了"
+"""名单缺失的异常说法。"""
+
+SE_BREAK_RE = re.compile(r"<(?:br[^>]*|/p|/h6)>")
+"""先按换行类标签断行,再统一去标签 —— 职业行才不会被并成一坨。"""
+
+SE_OCC_LINE_RE = re.compile(r"(\d{5})\s*(?:[–—-]\s*)?([A-Za-z].+)")
+"""职业行「12345 – Titre」(破折号可省;同码只收首见的)。"""
+
+SE_SHORT_TPL = "Superior East: employers={emp} occupations={occ}"
+"""任一份为空的异常说法(两份都得有,缺一即抛)。"""
+
+# =========================================================================
+# 7. BC 一社区抽取(Kelowna)
+# =========================================================================
+
+BC_DOC = """bc — BC 法语社区(Kelowna)指定雇主/优先职业抽取(E6-11 批C,2026-08-15)。
+
+社区与源(批B 2026-08-15 实测基线:雇主 52,职业 25):
+  Kelowna, BC                雇主=官方页 designated-employers__list 全量名单;职业=官方页「Priority occupation 2026」链接的 Google Doc
+
+批E 拆分改动(2026-08-31,pilot 拆三域;Frank「拆成三个 很少有人有法语」):本文件自
+etl/pilot/extractors/bc.py 拆出 —— KEL_URL 常量与 kelowna() **函数体一字未改**;
+共用私件 UA / TIMEOUT / _get / _text / _dedupe 是与 etl/rcip/extractors/bc.py 的**镜像**
+(常量各域自抄先例:同一段代码两域各留一份,改一边记得改另一边);
+BC 的另外三个社区(West Kootenay / North Okanagan Shuswap / Peace Liard)是乡村试点,留在 rcip 域。
+
+约定:剔 de-designated;not-hiring 保留(『指定』≠『在招』);宁缺勿猜 —— 结构对不上就抛异常,总控保旧。
+
+批L 溶解改动(2026-08-31):本段 = 原 fcip/extractors/bc.py 的全部常量;UA / TIMEOUT /
+去标签正则 / <li> 正则四个抄本并进第 1 段,其余常量名一字未改。"""
+"""本段的社区与源(原 fcip/extractors/bc.py 文件头,逐字折进)。"""
+
+KEL_URL = "https://www.sdecb.com/en/pilot-program/"
+"""Kelowna(SDECB)的试点页:雇主全量名单与职业 Doc 链接都在这。"""
+
+KEL_LIST_RE = re.compile(r"designated-employers__list.*?<ul>(.*?)</ul>", re.S)
+"""雇主全量名单的 ul。"""
+
+KEL_NO_LIST = "Kelowna 页找不到 designated-employers__list 全量名单"
+"""名单缺失的异常说法。"""
+
+KEL_NOT_HIRING_RE = re.compile(r"\s*\(not hiring[^)]*\)\s*$", re.I)
+"""名字尾巴的在招状态注记,剥掉(行保留 ——『指定』≠『在招』)。"""
+
+KEL_LOCATION = "Kelowna"
+"""本社区雇主的地点:官方名单不分列地址,全在 Kelowna(原脚本即写死此值)。"""
+
+KEL_DOC_RE = re.compile(r'<a[^>]+href="(https://docs\.google\.com/document/d/[A-Za-z0-9_-]+)'
+                        r'[^"]*"[^>]*>(?:(?!</a>).)*?Priority occupation', re.S)
+"""「Priority occupation 2026」按钮指向的官方 Google Doc(取到 doc id 为止)。"""
+
+KEL_NO_DOC = "Kelowna 页找不到 Priority occupation 的 Google Doc 链接"
+"""职业 Doc 链接缺失的异常说法。"""
+
+KEL_EXPORT_SUFFIX = "/export?format=txt"
+"""Google Doc 的纯文本导出口(拼在 doc id 后面)。"""
+
+KEL_NOC_RE = re.compile(r"\d{5}")
+"""独占一行的五位 NOC 码(**整行**比对);下一非空行 = 职业名。"""
+
+# =========================================================================
+# 8. 草原一社区抽取(St. Pierre Jolys)
+# =========================================================================
+
+PRAIRIE_DOC = """prairie — 草原区法语社区(St. Pierre Jolys, MB)指定雇主+优先职业抽取(E6-11 批C,2026-08-15)。
+
+社区与源(批B 实测口径;基线 雇主 6,职业 25):
+  St. Pierre Jolys, MB 雇主=官方 PDF(FCIP 主页发现链接,▪ 分条) 职业=priority 页 <li>
+
+批E 拆分改动(2026-08-31,pilot 拆三域;Frank「拆成三个 很少有人有法语」):本文件自
+etl/pilot/extractors/prairie.py 拆出 —— _SP_HOME / _SP_OCC_URL 两常量与 st_pierre_jolys()
+**函数体一字未改**;共用私件 UA / TIMEOUT / _DASH / _aia_context / _get / _pdf / _tidy /
+_clean / _find_pdf_url / _require 是与 etl/rcip/extractors/prairie.py 的**镜像**
+(常量各域自抄先例:同一段代码两域各留一份,改一边记得改另一边);草原区另外五个社区
+(Moose Jaw / Claresholm / Steinbach / Altona-Rhineland / Brandon)是乡村试点,留在 rcip 域。
+
+红线:宁缺勿猜 —— NOC 必须 5 位数字;解析为 0 行直接抛异常,总控(build_pilot_details)保旧。
+
+批L 溶解改动(2026-08-31):本段 = 原 fcip/extractors/prairie.py 的全部常量;UA / TIMEOUT /
+去标签正则 / 弯直引号四类抄本并进第 1 段,`_` 前缀常量名随溶去前缀(_SP_HOME → SP_HOME 等),
+值一字未改;AIA 补链整套(本域只有 Brandon 那条路的镜像,St. Pierre 站没触发过)照旧留段内。"""
+"""本段的社区与源(原 fcip/extractors/prairie.py 文件头,逐字折进)。"""
+
+PRAIRIE_DASH = r"[–—-]"
+"""官方页 en/em dash 与连字符混用 —— 本段各正则的破折号片段(原 _DASH)。"""
+
+HTTPS_PORT = 443
+"""AIA 补链探测的默认端口(URL 没写端口时)。"""
+
+CERT_FAIL_MARK = "CERTIFICATE_VERIFY_FAILED"
+"""证书校验失败的错误串 —— 只有它才走 AIA 补链重试,别的连接错照抛。"""
+
+CA_ISSUER_RE = re.compile(rb"http://[\x21-\x7e]+?\.(?:crt|cer|der|pem)")
+"""叶证书里的 CA Issuers 下载地址(二进制扫,证书是 DER)。"""
+
+PEM_MARK = b"BEGIN CERTIFICATE"
+"""下下来的中间证书是不是已经是 PEM(否则按 DER 转)。"""
+
+ASCII = "ascii"
+"""证书地址/PEM 文本的编码(证书里这些串都是 ASCII)。"""
+
+AIA_FAIL_TPL = "{host}: 叶证书无可用 CA Issuers URL,无法补链"
+"""补链无源时的异常说法 —— **绝不 verify=False**,补不上就失败。"""
+
+HREF_PATTERN_TPL = r'href="([^"]*(?:%s)[^"]*)"'
+"""按给定 pattern 找页内链接的正则模板(PDF 链接动态发现)。"""
+
+PDF_LINK_FAIL_TPL = "官方页找不到 PDF 链接(pattern={pattern})"
+"""动态发现 PDF 链接失败的异常说法。"""
+
+AMP_ENTITY = "&amp;"
+"""只还原这一个实体 —— 整串 unescape 会把查询串里的 &curren… 吃成 ¤(St. Pierre 实撞)。"""
+
+AMP = "&"
+"""AMP_ENTITY 的还原目标。"""
+
+REQUIRE_FAIL_TPL = "{what} 解析 0 行 —— 源疑似改版"
+"""草原段「解析 0 行」的异常说法。"""
+
+SP_HOME = "https://villagestpierrejolys.ca/p/francophone-communities-immigration-pilot-program"
+"""St. Pierre Jolys 的 FCIP 主页(雇主 PDF 链接在这)。"""
+
+SP_OCC_URL = "https://villagestpierrejolys.ca/p/priority-sectors-and-occupations"
+"""St. Pierre Jolys 的优先行业/职业页。"""
+
+SP_PDF_PATTERN = r"fileName=Designated[^\"]*\.pdf"
+"""雇主 PDF 的链接特征(站方用 fileName= 查询串挂附件;找不到时的报错也报它)。"""
+
+SP_PDF_RE = re.compile(HREF_PATTERN_TPL % SP_PDF_PATTERN, re.I)
+"""雇主 PDF 的链接正则(原 _find_pdf_url 每次现编,溶进来后预编译)。"""
+
+SP_BULLET = "▪"
+"""PDF 按 ▪ 分条,每条首个非空行 = 雇主名。"""
+
+SP_NOT_HIRING_RE = re.compile(r"\s*%s?\s*\[not\s*hiring\]\s*$" % PRAIRIE_DASH, re.I)
+"""名字尾巴的在招状态注记,剥离(行保留)。"""
+
+SP_DASH_FIX_RE = re.compile(r"(\w)-\s+(\w)")
+"""PDF 断行伪影「Franco- manitobaine」:连字号后被塞进了空格。"""
+
+SP_DASH_FIX_TO = r"\1-\2"
+"""伪影的补齐写法(把空格吃掉)。"""
+
+SP_OCC_RE = re.compile(r"<li>\s*(\d{5})\s*%s\s*(.*?)\s*</li>" % PRAIRIE_DASH, re.S)
+"""职业页的 <li> 行「12345 – Titre」。"""
+
+SP_EMP_LABEL = "St. Pierre Jolys 雇主"
+"""雇主 0 行时异常说法里的名头。"""
+
+SP_OCC_LABEL = "St. Pierre Jolys 职业"
+"""职业 0 行时异常说法里的名头。"""
+
+# =========================================================================
+# 9. 大西洋一社区抽取(Acadian Peninsula)
+# =========================================================================
+
+ATL_DOC = """批C(E6-11):Atlantic 法语社区名单抽取器。
+
+社区(键=raw/fcip/fcip-communities.json 的官方名):
+  - "Acadian Peninsula, NB"    — FCIP/PPICF,站 inspirepeninsuleacadienne.ca(法语;
+                                 雇主=官方 PDF,职业=项目页手风琴列表)
+
+批E 拆分改动(2026-08-31,pilot 拆三域;Frank「拆成三个 很少有人有法语」):本文件自
+etl/pilot/extractors/atl.py 拆出 —— ACAD_PAGE_URL / _ACAD_HEADER_PREFIXES 两常量与
+acadian_peninsula() **函数体一字未改**;共用私件 UA_HEADERS / _fetch / _pdf_lines / _clean
+是与 etl/rcip/extractors/atl.py 的**镜像**(常量各域自抄先例:同一段代码两域各留一份,
+改一边记得改另一边);Atlantic 的另一个社区 Pictou County, NS 是乡村试点,留在 rcip 域。
+
+红线:宁缺勿猜 —— 解析不到的行直接丢;数量掉出下限抛异常,总控保旧。
+PDF 链接不写死文件名(官方按日期换版),每次从页面重新发现最新版。
+
+批L 溶解改动(2026-08-31):本段 = 原 fcip/extractors/atl.py 的全部常量;UA_HEADERS 拆成
+第 1 段的 UA_CHROME126 + 本段的 HDR_ACCEPT_LANGUAGE / ATL_ACCEPT_LANG(头名归 HDR_ 词族),
+超时与去标签/弯引号抄本并进第 1 段,值一字未改。"""
+"""本段的社区与源(原 fcip/extractors/atl.py 文件头,逐字折进)。"""
+
+HDR_ACCEPT_LANGUAGE = "Accept-Language"
+"""语言偏好请求头名(HDR_ 头名词族)。"""
+
+ATL_ACCEPT_LANG = "en-CA,en;q=0.9,fr-CA;q=0.8"
+"""大西洋站点的语言偏好(英法双语站,给它英优先的实况值)。"""
+
+ACAD_PAGE_URL = (
+    "https://inspirepeninsuleacadienne.ca/"
+    "programme-pilote-immigration-communautes-francophones/"
+)
+"""Péninsule acadienne 的 PPICF 项目页(雇主 PDF 链接与职业手风琴都在这)。"""
+
+ACAD_PDF_RE = re.compile(r'href="(https?://[^"]*[Ll]iste-des-employeurs[^"]*\.pdf)"')
+"""雇主 PDF 链接:文件名带日期(Liste-des-employeurs-designes-PPICF-<date>.pdf),动态发现。"""
+
+ACAD_NO_PDF = "Acadian: 项目页找不到 Liste des employeurs PDF 链接"
+"""PDF 链接缺失的异常说法。"""
+
+ACAD_HEADER_PREFIXES = (
+    "commission de services",
+    "liste des employeurs",
+    "programme pilote",
+    "les employeurs suivants",
+    "pour la péninsule acadienne",
+    "nb :",
+    "nb:",
+)
+"""PDF 页眉/页脚固定句(比对前先做 ’→' 归一 + casefold)。"""
+
+ACAD_NOTE_RE = re.compile(r"\(\s*ne recrute pas[^)]*\)", re.IGNORECASE)
+"""「(ne recrute pas …)」括注 —— 行保留,仅去括注。"""
+
+ACAD_SPLIT_RE = re.compile(r"\s+[–—-]\s+")
+"""「Nom - Lieu」以空格夹连字符分隔(地名内部连字符如 St-Isidore 不受影响)。"""
+
+ACAD_SPLIT_MAX = 1
+"""只切第一处 —— 「Nom - Lieu」后面的破折号属于地名本身;职业行的 <br> 之后是备注,同样只取第一段。"""
+
+ACAD_PARTS_WITH_LOCATION = 2
+"""切出两段才有地点;个别行无地点(如 Résidence St Isidore),location 留空,宁缺勿猜。"""
+
+ACAD_ICON_RE = re.compile(r'<span class="elementor-icon-list-text">(.*?)</span>', re.S)
+"""职业手风琴的一条(同页其他 icon-list 是资格条文,靠行首 5 位码过滤)。"""
+
+ACAD_BR_RE = re.compile(r"<br\s*/?>")
+"""<br> 之后是限额备注,不入 title(只取第一段)。"""
+
+ACAD_OCC_RE = re.compile(r"^(\d{5})\s*[–—-]\s*(.+)$")
+"""职业行「12345 – Titre」(第 1 组=NOC 码,第 2 组=职业名)。
+批L 溶解改动:原写法是命名组 (?P<noc>…)/(?P<title>…),溶进本域后改成位置组 —— 组名
+与行键 K_NOC/K_TITLE 同字面会让读的人以为是同一个词汇;捕获内容与顺序一字未改。"""
+
+ACAD_MIN_EMP = 20
+"""雇主行数下限(官方 30+ 家量级),低于它即疑 PDF 版式变更。"""
+
+ACAD_MIN_OCC = 10
+"""职业行数下限(官方 25 条),低于它即疑页面改版。"""
+
+ACAD_EMP_SHORT_TPL = "Acadian: 雇主仅解析出 {n} 家,疑似 PDF 版式变更"
+"""雇主塌方的异常说法。"""
+
+ACAD_OCC_SHORT_TPL = "Acadian: 职业仅解析出 {n} 条,疑似页面改版"
+"""职业塌方的异常说法。"""

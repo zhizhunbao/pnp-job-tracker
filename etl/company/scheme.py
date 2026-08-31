@@ -461,3 +461,92 @@ class FetchProfileIn:
 
     lead: SiteLead
     """目标公司。"""
+
+
+@dataclass
+class WikiProbe:
+    """一次 Wikidata 查询的三态结果(2026-08-31 批J:原件用 `dict | str | None` 三型
+    + `__err__` 哨兵表达,收成一个显式形 —— 语义逐字对应)。
+
+    failed=True 对应原来的 ERR 哨兵:网络/限速失败,**不写缓存**、下轮重试
+    (与「查过确实没有」必须分开 —— 首跑 23/1666 偏低就是失败被记成了未命中)。
+    """
+
+    failed: bool
+    """请求失败(不缓存)。"""
+
+    found: bool
+    """严格匹配上且有英文维基条目(= 知名;别名与知名同一门槛)。"""
+
+    zh: str
+    """中文条目名(官方标签,不机翻)。"""
+
+    ko: str
+    """韩文条目名。"""
+
+    wiki: str
+    """英文维基条目 URL。"""
+
+
+@dataclass
+class EntityIn:
+    """entity_probe() 入参:一个 Wikidata 实体 + 归一后的目标名。"""
+
+    entity: dict
+    """wbgetentities 返回的一个实体。"""
+
+    target: str
+    """归一后的公司名(严格相等才收)。"""
+
+
+@dataclass
+class ProbeIn:
+    """facts_probe() 入参:公司名 + 上一轮缓存里它那一行。"""
+
+    name: str
+    """公司名(按名查)。"""
+
+    cached: dict
+    """上一轮 by_name 里这家的行(空 dict = 没查过)。"""
+
+
+@dataclass
+class FactsIndustryOut:
+    """industry_by_slug() 出参:行业多数派 + 投票明细 + 开放岗数。"""
+
+    industry: dict
+    """slug → 大类中文值(多数派)。"""
+
+    by_slug: dict
+    """slug → 大类计票(定候选还要用它数在库岗)。"""
+
+    n_open: int
+    """参与投票的开放岗数(报数用)。"""
+
+
+@dataclass
+class CandsIn:
+    """facts_candidates() 入参:两条候选门槛各自要的料。"""
+
+    by_slug: dict
+    """slug → 大类计票(数在库岗)。"""
+
+    name_of: dict
+    """slug → 公司名。"""
+
+    companies: list
+    """mart 公司行(取 LMIA 技能岗数)。"""
+
+
+@dataclass
+class SaveFactsIn:
+    """save_company_facts() 入参:落盘一次要的三份(原内嵌 save() 的闭包变量出户)。"""
+
+    industry: dict
+    """slug → 行业。"""
+
+    by_name: dict
+    """本轮查到的 by_name 行。"""
+
+    prev_names: dict
+    """上一轮的 by_name(旧缓存合并写:中途落盘不冲掉本轮还没遍历到的已查条目)。"""

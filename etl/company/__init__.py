@@ -2,6 +2,8 @@
 company 域:公司实体(目录穷举/一司一档/careers 定位/官网富化)。
 定时单元只有官网富化(E8-04 拆分沿革:原 enrich 役);Kanata 三件是休眠引导工具,手动跑。
 产出 company_enrich.json,build 角色下一轮 09 自然合并进 companies。
+2026-08-31 批J 再收一件手动件:雇主 D 富化(行业 + 中韩别名 + 知名,原
+clean/_enrich_company_facts.py),产 company_facts.json;Wikidata 那半边已退役,别批量跑。
 
 META = 域即役的调度声明(2026-08-29 批2):role=挂哪个角色容器(SOURCE 环境变量),
 interval=本域一轮的间隔秒;入口固定 etl/company/main.py,步骤清单在 main.py 里。

@@ -18,8 +18,16 @@ build_pnp_ops_stats 里的 add、stats 里的 sponsor_of/agg/flow_of 等内嵌�
 依赖单边:本文件 → constants/scheme + 基础设施叶(paths / log / noc)。NOC 分类法是单一来源
 (2026-08-31 Frank「noc 就叫 noc」,根上两库并成 noc/ 域):teer/broad/mid/fine 与三语名一律
 `from noc.functions import …`,本域一个字不重算。
-跨域件(aip 的 norm_name、clean/04d 的 apply_to)仍按路径拉:域间禁 import(形制闸①),
-且 04d 文件名以数字开头语法上就 import 不了 —— 装载点收在步骤入口一次,经 ctx 显式下传。
+跨域件(aip 的 norm_name)仍按路径拉:域间禁 import(形制闸①)—— 装载点收在步骤入口一次,
+经 ctx 显式下传。
+2026-08-31 **批J**(clean/ 目录退役,「谁的数据谁清洗」归户):三件**跨源**清洗溶进本文件
+成第 17/18/19 段 —— clean/04c 地点(clean_job_locations)、clean/04d 薪资(clean_job_salary)、
+clean/05f 试点打标(flag_job_pilot)。判据:它们对 ATS 与 JB 两源过同一套尺子,不归任何
+单源域,归跨源汇装的 mart。三段**不进本域默认链**(只在 TOOLS 里),跟的是 load 域 build 链
+的节奏 —— 那条链在评分/汇装之前 `--only locations` / `--only salary` / `--only pilot_flag`
+逐步点名,顺序与溶解前的 04c → 04d → …→ 05f 逐位相同。
+副作用一处:第 8 段的薪资兜底原来「按路径拉 clean/04d 取 apply_to」,现在直调本域第 18 段的
+apply_salary_to,`MartCtx.apply_salary` 随之换成 `salary_guards`(SalaryModuleLike 退役)。
 """
 import json
 import re
@@ -37,108 +45,128 @@ from noc.functions import broad_of, classify, teer_of
 from mart.constants import (
     AB_SPOT_METRICS, AB_SUMMARY_METRICS, ACC_POINTS, ACC_POINTS_DEFAULT, ACC_RULES, ACC_UNKNOWN,
     ACTIVE_BUSY, ACTIVE_MID, AGENCY_NOTE, AGENCY_RE, AGG_NEW_DAYS, AIP_PROVS, AIP_TEERS, ALL,
-    AND_ABOVE_RE, ATS_EXT_TPL, ATTR_NORM_NAME, AVG_DAYS_MIN_N, BC_PROC_LABEL_TPL, BC_PROC_METRIC_TPL,
-    BC_PROC_PLAIN_TPL, BC_PROC_SECTION, BENEFIT_RE, BENEFIT_WINDOW, BLANK_RUN_RE, BROAD_TRADES,
-    CAREGIVER_NOCS, CATEGORY_UNCLASSIFIED, CELPIP_TAIL_RE, CITY_I18N_KEY_TPL, CITY_ROWS_TPL, COLON,
-    COMMA, COUNT_WIDTH, COVERAGE_COMPLETE, CO_SALARY_CUTS, DAILY_DAYS, DAILY_DONE_TPL, DAILY_MIN,
-    DAILY_N, DAILY_ROWS_TPL, DAILY_SCORE_GATE, DAILY_SLUG_TPL, DATE_FMTS, DATE_FMT_ISO, DATE_FMT_LONG,
-    DATE_LEN, DEDUP_KEY_TPL, DESIGNATED_DEDUP_TPL, DRAW_KIND_DRAW, DRAW_KIND_NOTICE, DRAW_MAX,
-    DRAW_MAX_WIDE, DRAW_WIDE_PROVS, EDGE_PUNCT_RE, EE_ROUNDS_URL, EMPTY_VALUES, EMP_DIRECT, EMP_FULL,
-    EMP_HITS_GRADE, EMP_PERMANENT, EM_DASH, ENC_UTF8, ENRICH_KEYS, ENRICH_OK, EN_DASH, ERRORS_REPLACE,
-    ESCAPE_WINDOW, FAME_BIG_OPEN, FAME_MULTI_PROV, FAME_TINY_OPEN, FLAG_NO_SPONSORSHIP,
-    FLAG_PR_REQUIRED, FLOW_14D, FLOW_28D, FLOW_30D, FLOW_60D, FLOW_BLANK, FLOW_COUNT_TPL, FLOW_IN_TPL,
-    FLOW_NO_POSTINGS_TPL, FLOW_SERIES_YEARS, FRONTMATTER_RE, FRONT_URL_RE, GLOB_JSON, GLOB_MD,
-    GRADE_1, GRADE_2, GRADE_3, GRADE_4, GRADE_5, GRID_CRS, GRID_FSW67, HYPHEN, I18N_BLANK,
-    I18N_CITY_FILE, I18N_NOC_FILE, INDEMAND2, INDENT_2, IN_AIP, IN_AIP_NORM_PY, IN_ATS_COMPANIES,
-    IN_CLEAN_SALARY_PY, IN_COMPANY_FACTS, IN_DIFFICULTY, IN_DLI, IN_DRAW_STREAM_ZH, IN_EE_CATEGORIES,
-    IN_EE_CRS, IN_EE_DRAWS, IN_EE_ELIG, IN_EE_LANG, IN_ENRICH, IN_EXPIRED, IN_FIELD_SOURCES,
-    IN_IRCC_ALLOC, IN_IRCC_FLOW, IN_IRCC_PR, IN_IRCC_TR, IN_JD_ROOTS, IN_JOBBANK, IN_JVWS_RAW,
-    IN_LMIA, IN_LMIA_XLSX_DIR, IN_MART_CLOSED, IN_MART_COMPANIES, IN_MART_JOBS, IN_MART_NOC_DESC,
-    IN_NEWS, IN_NL_EMPLOYERS, IN_NOC_DESC, IN_PILOT, IN_PILOT_EMP, IN_PILOT_OCC, IN_PILOT_QUOTA,
-    IN_PNP_DIR, IN_PNP_DRAWS, IN_PNP_STATS, IN_REQ_TABLES, IN_SCORED, IN_SCORE_TABLES, IN_STATCAN,
-    IN_WAGES, ISO_PREFIX_RE, JB_EXT_PREFIX, JB_EXT_TPL, JD_DEDUP_MIN, JD_HEAD_LEN, JD_MATCH_TPL,
-    JD_NOISE, JOBBANK_HOST, JOBS_FILE, JVWS_NATIONAL, JVWS_SOURCE_NOTE, K_ACCESSIBILITY, K_AIP,
-    K_ALLOC, K_ALLOCATION, K_ANNUAL, K_ANY_TRADE, K_APPLY_URL, K_ASSESSING_UP_TO, K_AS_OF, K_ATS,
-    K_BLOCKED, K_BODY_EN, K_BROAD, K_BROAD_EN, K_BROAD_KO, K_BY_CATEGORY, K_BY_NOC, K_BY_PROV,
-    K_BY_SLUG, K_CAPPED_SECTORS, K_CATEGORIES, K_CATEGORY, K_CELLS, K_CITY, K_CLOSED30D, K_CLOSED_AT,
-    K_COMMITMENT_LABEL, K_COMMITMENT_MONTHS, K_COMMUNITIES, K_COMMUNITY, K_COMPANY_NAME,
-    K_COMPANY_SLUG, K_COUNT, K_DATE, K_DATE_POSTED, K_DEAD, K_DESCRIPTION, K_DISTRICT, K_DRAWS,
-    K_ELIGIBILITY_FLAG, K_ELIGIBILITY_QUOTE, K_ELIGIBLE, K_EMPLOYER, K_EMPLOYERS, K_EMPLOYMENT_HOURS,
-    K_EMPLOYMENT_TERM, K_ENHANCED_YTD, K_EOI_POOL, K_EXTERNAL_ID, K_FACTORS, K_FETCHED, K_FETCHED_AT,
-    K_FINE, K_FINE_EN, K_FINE_KO, K_FLOW_SERIES, K_FOUND, K_G, K_GENERATED, K_GROUP, K_GROUP_MAX,
-    K_HISTORY, K_INVENTORY, K_ITEMS, K_JOBS, K_KEY, K_LABEL, K_LABEL_YEAR, K_LEVEL_TEXT,
-    K_LMIA_LAST_QUARTER, K_LMIA_POSITIONS, K_LMIA_POSITIONS_SKILLED, K_LOCATION,
-    K_MEDIAN_SALARY_ANNUAL, K_MEDIAN_WAGE_ANNUAL, K_METRIC, K_MID, K_MID_EN, K_MID_KO, K_MOM14D,
-    K_MOM30D, K_MONTH, K_MONTHLY, K_NAME, K_NAMED_JOBS, K_NET30D, K_NEW14D, K_NEW14D_PREV, K_NEW30D,
-    K_NEW30D_PREV, K_NOC, K_NOCS, K_NOTICE, K_OCCUPATIONS, K_OFFICIAL_URL, K_OPEN, K_OPEN_JOBS,
-    K_OVERLAY, K_PERCENTILE_LABEL, K_PER_INTAKE, K_PILOT_COMMUNITY, K_PILOT_OCC, K_PNP_ELIGIBLE,
-    K_PNP_PR, K_PNP_STREAM, K_POOL, K_POSTING_ID, K_PRIORITY_SECTORS, K_PROCESSING, K_PROGRAM, K_PROV,
-    K_PROVINCE, K_PROVINCES, K_PULSE_SCORE, K_QUARTER, K_QUARTERS, K_QUARTERS_LIST, K_QUOTE, K_RAW,
-    K_REGION, K_REGISTRATIONS, K_REMAINING, K_REQUIREMENTS, K_ROWS, K_RULE, K_SAL, K_SALARY,
-    K_SALARY_ANNUAL, K_SALARY_TEXT, K_SCOPE, K_SCORE, K_SCORE_RANGE, K_SEARCH_OCCUPATION, K_SECTION,
-    K_SECTOR, K_SECTORS, K_SEEN_IDS, K_SELECTION_FACTORS, K_SLUG, K_SOURCE, K_SOURCE_LABEL, K_STAGE,
-    K_STATUS, K_STREAM, K_STREAMS, K_STREAM_KEY, K_STUDY_FLOW, K_SUMMARY, K_TABLES, K_TEER,
-    K_THROUGH_MONTH, K_TITLE, K_TR_SERIES, K_TYPE, K_UNIT, K_URL, K_VALUE, K_WAGE_HIGH_ANNUAL,
-    K_WAGE_LOW_ANNUAL, K_WAGE_MED_ANNUAL, K_WEBSITE, K_WEBSITE_SOURCE, K_WEEKS, K_WIKI, K_YEAR, K_ZH,
-    LANG_ABILITIES, LANG_PER_ABILITY, LANG_POINTS_PER_ABILITY, LANG_POINTS_TOTAL, LANG_POINTS_WORD,
-    LANG_TOTAL_WORD, LMIA_HEADER_WORD, LMIA_HIT_TPL, LMIA_MIN_COLS, LMIA_SOURCE_NOTE, LMIA_STREAM_SEP,
-    LMIA_STREAM_TOP, LMIA_STREAM_TPL, LMIA_XLSX_GLOB, LMIA_XLSX_TPL, MART_AGENCY_RE, MART_DONE_TPL,
-    MART_EXPIRED_TPL, MART_LATE_SALARY_TPL, MART_SEEN_TPL, MB_ANNUAL_PROC_METRICS, MB_EOI_SECTION_TPL,
+    AND_ABOVE_RE, ATS_EXT_TPL, ATS_LOC_TPL, ATTR_NORM_NAME, AVG_DAYS_MIN_N, BC_PROC_LABEL_TPL,
+    BC_PROC_METRIC_TPL, BC_PROC_PLAIN_TPL, BC_PROC_SECTION, BENEFIT_RE, BENEFIT_WINDOW,
+    BLANK_RUN_RE, BROAD_TRADES, CAREGIVER_NOCS, CATEGORY_UNCLASSIFIED, CELPIP_TAIL_RE,
+    CITY_I18N_KEY_TPL, CITY_ROWS_TPL, COLON, COMMA, COMMA_SPACE_RE, COUNTRY_CANADA, COUNT_WIDTH,
+    COVERAGE_COMPLETE, CO_SALARY_CUTS, DAILY_DAYS, DAILY_DONE_TPL, DAILY_MIN, DAILY_N,
+    DAILY_ROWS_TPL, DAILY_SCORE_GATE, DAILY_SLUG_TPL, DATE_FMTS, DATE_FMT_ISO, DATE_FMT_LONG,
+    DATE_LEN, DEDUP_KEY_TPL, DESIGNATED_DEDUP_TPL, DIGIT_RE, DRAW_KIND_DRAW, DRAW_KIND_NOTICE,
+    DRAW_MAX, DRAW_MAX_WIDE, DRAW_WIDE_PROVS, EDGE_PUNCT_RE, EE_ROUNDS_URL, EMPTY_VALUES,
+    EMP_DIRECT, EMP_FULL, EMP_HITS_GRADE, EMP_PERMANENT, EM_DASH, ENC_UTF8, ENRICH_KEYS, ENRICH_OK,
+    EN_DASH, ERRORS_REPLACE, ESCAPE_WINDOW, FAME_BIG_OPEN, FAME_MULTI_PROV, FAME_TINY_OPEN,
+    FLAG_NO_SPONSORSHIP, FLAG_PR_REQUIRED, FLOW_14D, FLOW_28D, FLOW_30D, FLOW_60D, FLOW_BLANK,
+    FLOW_COUNT_TPL, FLOW_IN_TPL, FLOW_NO_POSTINGS_TPL, FLOW_SERIES_YEARS, FRONTMATTER_RE,
+    FRONT_URL_RE, FSA_DISTRICT, FSA_PREFIX_LEN, GLOB_JSON, GLOB_MD, GRADE_1, GRADE_2, GRADE_3,
+    GRADE_4, GRADE_5, GRID_CRS, GRID_FSW67, HYPHEN, I18N_BLANK, I18N_CITY_FILE, I18N_NOC_FILE,
+    INDEMAND2, INDENT_2, IN_AIP, IN_AIP_NORM_PY, IN_ATS_COMPANIES, IN_COMPANY_FACTS, IN_DIFFICULTY,
+    IN_DLI, IN_DRAW_STREAM_ZH, IN_EE_CATEGORIES, IN_EE_CRS, IN_EE_DRAWS, IN_EE_ELIG, IN_EE_LANG,
+    IN_ENRICH, IN_EXPIRED, IN_FIELD_SOURCES, IN_FSA_TABLE, IN_IRCC_ALLOC, IN_IRCC_FLOW, IN_IRCC_PR,
+    IN_IRCC_TR, IN_JD_ROOTS, IN_JOBBANK, IN_JVWS_RAW, IN_LMIA, IN_LMIA_XLSX_DIR, IN_MART_CLOSED,
+    IN_MART_COMPANIES, IN_MART_JOBS, IN_MART_NOC_DESC, IN_NEWS, IN_NL_EMPLOYERS, IN_NOC_DESC,
+    IN_PILOT, IN_PILOT_EMP, IN_PILOT_OCC, IN_PILOT_QUOTA, IN_PNP_DIR, IN_PNP_DRAWS, IN_PNP_STATS,
+    IN_REQ_TABLES, IN_SCORED, IN_SCORE_TABLES, IN_STATCAN, IN_WAGES, ISO_PREFIX_RE, JB_EXT_PREFIX,
+    JB_EXT_TPL, JB_LOC_TPL, JD_DEDUP_MIN, JD_HEAD_LEN, JD_MATCH_TPL, JD_NOISE, JOBBANK_HOST,
+    JOBS_FILE, JVWS_NATIONAL, JVWS_SOURCE_NOTE, K_ACCESSIBILITY, K_ADDRESS, K_AIP, K_ALLOC,
+    K_ALLOCATION, K_ANNUAL, K_ANY_TRADE, K_APPLY_URL, K_ASSESSING_UP_TO, K_AS_OF, K_ATS, K_BLOCKED,
+    K_BODY_EN, K_BROAD, K_BROAD_EN, K_BROAD_KO, K_BY_CATEGORY, K_BY_NOC, K_BY_PROV, K_BY_SLUG,
+    K_CAPPED_SECTORS, K_CATEGORIES, K_CATEGORY, K_CELLS, K_CITIES, K_CITY, K_CITY_RAW, K_CLOSED30D,
+    K_CLOSED_AT, K_COMMITMENT_LABEL, K_COMMITMENT_MONTHS, K_COMMUNITIES, K_COMMUNITY,
+    K_COMPANY_NAME, K_COMPANY_SLUG, K_COUNT, K_COUNTRY, K_DATE, K_DATE_POSTED, K_DEAD,
+    K_DESCRIPTION, K_DISTRICT, K_DRAWS, K_ELIGIBILITY_FLAG, K_ELIGIBILITY_QUOTE, K_ELIGIBLE,
+    K_EMPLOYER, K_EMPLOYERS, K_EMPLOYMENT_HOURS, K_EMPLOYMENT_TERM, K_ENHANCED_YTD, K_EOI_POOL,
+    K_EXTERNAL_ID, K_FACTORS, K_FETCHED, K_FETCHED_AT, K_FINE, K_FINE_EN, K_FINE_KO, K_FLOW_SERIES,
+    K_FOUND, K_G, K_GENERATED, K_GROUP, K_GROUP_MAX, K_HISTORY, K_HOOD, K_INVENTORY, K_ITEMS,
+    K_JOBS, K_KEY, K_LABEL, K_LABEL_YEAR, K_LEVEL_TEXT, K_LMIA_LAST_QUARTER, K_LMIA_POSITIONS,
+    K_LMIA_POSITIONS_SKILLED, K_LOCATION, K_MAIN, K_MEDIAN_SALARY_ANNUAL, K_MEDIAN_WAGE_ANNUAL,
+    K_METRIC, K_MID, K_MID_EN, K_MID_KO, K_MOM14D, K_MOM30D, K_MONTH, K_MONTHLY, K_NAME,
+    K_NAMED_JOBS, K_NET30D, K_NEW14D, K_NEW14D_PREV, K_NEW30D, K_NEW30D_PREV, K_NOC, K_NOCS,
+    K_NOTICE, K_OCCUPATIONS, K_OFFICIAL_URL, K_OPEN, K_OPEN_JOBS, K_OVERLAY, K_PERCENTILE_LABEL,
+    K_PER_INTAKE, K_PILOT, K_PILOT_COMMUNITY, K_PILOT_EMPLOYER, K_PILOT_OCC, K_PNP_ELIGIBLE,
+    K_PNP_PR, K_PNP_STREAM, K_POOL, K_POSTING_ID, K_PRIORITY_SECTORS, K_PROCESSING, K_PROGRAM,
+    K_PROV, K_PROVINCE, K_PROVINCES, K_PULSE_SCORE, K_QUARTER, K_QUARTERS, K_QUARTERS_LIST,
+    K_QUOTE, K_RAW, K_REGION, K_REGISTRATIONS, K_REMAINING, K_REQUIREMENTS, K_ROWS, K_RULE, K_SAL,
+    K_SALARY, K_SALARY_ANNUAL, K_SALARY_TEXT, K_SCOPE, K_SCORE, K_SCORE_RANGE, K_SEARCH_OCCUPATION,
+    K_SECTION, K_SECTOR, K_SECTORS, K_SEEN_IDS, K_SELECTION_FACTORS, K_SLUG, K_SOURCE,
+    K_SOURCE_LABEL, K_STAGE, K_STATUS, K_STREAM, K_STREAMS, K_STREAM_KEY, K_STUDY_FLOW, K_SUMMARY,
+    K_TABLES, K_TEER, K_THROUGH_MONTH, K_TITLE, K_TR_SERIES, K_TYPE, K_UNIT, K_URL, K_VALUE,
+    K_WAGE_HIGH_ANNUAL, K_WAGE_LOW_ANNUAL, K_WAGE_MED_ANNUAL, K_WEBSITE, K_WEBSITE_SOURCE, K_WEEKS,
+    K_WIKI, K_YEAR, K_ZH, LANG_ABILITIES, LANG_PER_ABILITY, LANG_POINTS_PER_ABILITY,
+    LANG_POINTS_TOTAL, LANG_POINTS_WORD, LANG_TOTAL_WORD, LMIA_HEADER_WORD, LMIA_HIT_TPL,
+    LMIA_MIN_COLS, LMIA_SOURCE_NOTE, LMIA_STREAM_SEP, LMIA_STREAM_TOP, LMIA_STREAM_TPL,
+    LMIA_XLSX_GLOB, LMIA_XLSX_TPL, MART_AGENCY_RE, MART_DONE_TPL, MART_EXPIRED_TPL,
+    MART_LATE_SALARY_TPL, MART_SEEN_TPL, MB_ANNUAL_PROC_METRICS, MB_EOI_SECTION_TPL,
     MB_GROUP_LABEL_TPL, MB_INVENTORY_METRICS, MB_PROC_LABEL_TPL, MB_SECTION_TPL, MB_YTD_GROUPS,
     MB_YTD_TPL, METRIC_ALLOCATION, METRIC_ASSESSING, METRIC_EOI_POOL, METRIC_EOI_POOL_TOTAL,
-    METRIC_NOM_ENHANCED_YTD, METRIC_PRIORITY_SECTOR, METRIC_PROCESSING_WEEKS, METRIC_PROC_COMMITMENT,
-    METRIC_SIRS_POOL, MOD_AIP_NORM, MOD_CLEAN_SALARY, MOM_MIN_PREV, MONTHS_PER_QUARTER,
+    METRIC_NOM_ENHANCED_YTD, METRIC_PRIORITY_SECTOR, METRIC_PROCESSING_WEEKS,
+    METRIC_PROC_COMMITMENT, METRIC_SIRS_POOL, MOD_AIP_NORM, MOM_MIN_PREV, MONTHS_PER_QUARTER,
     MONTH_ABBR_LEN, MONTH_LEN, MV_ADJ_MAX, MV_ADJ_MIN, MV_ADJ_SCALE, NEWS_EXCERPT_MAX,
     NEWS_FROM_PREFIX, NEWS_MAX, NEWS_NOISE, NEWS_SLUG_N_TPL, NEWS_SLUG_TPL, NL, NOC_LEN,
-    NOC_MAJOR_LEN, NOC_RE, NOC_RULES, NON_PNP_PROV, NON_WORD_RE, NORM_RE, NUM_EXACT_RE, NUM_MIN_RE,
-    NUM_RANGE_MIN_RE, NUM_RANGE_RE, OCC_ROWS_TPL, ON_RE, ON_YEAR_METRICS, OP_GTE, ORIGIN_ATS,
-    ORIGIN_JOBBANK, OUT_CITY, OUT_DAILY, OUT_MART, OUT_MART_OPEN_IDS, OUT_OCC, OUT_RANKINGS,
-    OUT_SCORED, OUT_STATS, PARA_SEP, PAREN_CLOSE, PAREN_OPEN, PAREN_RE, PCT_SCALE, PE_DESIGNATED_URL,
-    PILOT_OCC_NO, PILOT_OCC_YES, PILOT_TYPES, PLUS, PNP_PROV_ORDER, PNP_TYPE_INDEMAND,
-    PNP_TYPE_INELIGIBLE, POSTING_URL_RE, PROFILE_FILE, PROGRAM_PNP, PROVS, PROV_AB, PROV_BC, PROV_FED,
-    PROV_FULL, PROV_MB, PROV_MODE_COND, PROV_MODE_DEAD, PROV_MODE_DIRECT, PROV_NL, PROV_ON, PROV_PE,
-    PROV_SK, PR_ESCAPE_RE, PULSE_ROUND, PULSE_W_MOM, PULSE_W_NAMED, PULSE_W_WAGE, QUARTERS_PER_YEAR,
+    NOC_MAJOR_LEN, NOC_RE, NOC_RULES, NON_CITY_PREFIXES, NON_PNP_PROV, NON_WORD_RE, NORM_RE,
+    NUM_EXACT_RE, NUM_MIN_RE, NUM_RANGE_MIN_RE, NUM_RANGE_RE, OCC_ROWS_TPL, ON_RE, ON_YEAR_METRICS,
+    OP_GTE, ORIGIN_ATS, ORIGIN_JOBBANK, OTTAWA_CITY, OTTAWA_CITY_LOWER, OTTAWA_CITY_NAMES,
+    OTTAWA_COMMUNITIES, OTTAWA_DISTRICTS, OTTAWA_DISTRICT_KEYS, OTTAWA_JB_FSA, OUT_CITY, OUT_DAILY,
+    OUT_JOBBANK, OUT_MART, OUT_MART_OPEN_IDS, OUT_OCC, OUT_RANKINGS, OUT_SCORED, OUT_STATS,
+    PARA_SEP, PAREN_CLOSE, PAREN_OPEN, PAREN_RE, PCT_SCALE, PERCENT_SIGN, PE_DESIGNATED_URL,
+    PILOT_KEEP_RE, PILOT_OA_SPLIT_RE, PILOT_OA_TAIL_RE, PILOT_OCC_NO, PILOT_OCC_YES,
+    PILOT_SUFFIX_RE, PILOT_TYPES, PLUS, PNP_PROV_ORDER, PNP_TYPE_INDEMAND, PNP_TYPE_INELIGIBLE,
+    POSTAL_FSA_RE, POSTING_URL_RE, PRINT_INOUT_COMPANIES_TPL, PRINT_INOUT_JOBBANK_TPL,
+    PRINT_LOC_ATS_TPL, PRINT_LOC_BACKFILL_TPL, PRINT_LOC_DONE_TPL, PRINT_PILOT_DONE_TPL,
+    PRINT_PILOT_IN_TPL, PRINT_PILOT_MAP_TPL, PRINT_SAL_DONE_TPL, PRINT_SAL_GUARD_TPL, PROFILE_FILE,
+    PROGRAM_PNP, PROVS, PROV_AB, PROV_BC, PROV_FED, PROV_FULL, PROV_MB, PROV_MISSING_MARK,
+    PROV_MODE_COND, PROV_MODE_DEAD, PROV_MODE_DIRECT, PROV_NL, PROV_ON, PROV_PE, PROV_SK,
+    PR_ESCAPE_RE, PULSE_ROUND, PULSE_W_MOM, PULSE_W_NAMED, PULSE_W_WAGE, QUARTERS_PER_YEAR,
     QUARTER_FILE_RE, QUARTER_MARK, QUARTER_MIN_LEN, QUOTA_BLANK, QUOTA_EMPTY_MSG, QUOTA_INT_TPL,
     QUOTA_OCC_TPL, QUOTA_PAIR_TPL, QUOTA_QUOTE_TPL, QUOTA_REQUIRED_TPL, QUOTA_URL_TPL,
     QUOTA_VALUE_KEYS, QUOTE_MAX, QUOTE_PAD, RANGE_EXACT, RANGE_MINIMUM, RANGE_RANGE, RANGE_TEXT,
-    RANK_DONE_TPL, RANK_IN_TPL, RANK_KIND_COMPANY, RANK_KIND_JOB, REQ_BASIS_SEP, REQ_NO_PROVINCE_TPL,
-    REQ_ROW_OVERRIDES, REQ_VALUE_CODE_TPL, SAFE_RE, SALARY_CUTS, SCALE_CRS, SCOPE_CATEGORY,
-    SCOPE_SCORE_RANGE, SCOPE_SECTOR, SCOPE_STAGE, SCOPE_STREAM, SCORE_DONE_TPL, SCORE_FACTOR_KINDS,
-    SCORE_INDEMAND, SCORE_KIND_ROW, SCORE_KIND_RULE, SCORE_MAX, SCORE_NAMED_STREAM, SCORE_NOT_AGENCY,
-    SCORE_OUTSIDE_ON, SCORE_RULE_KEYS, SCORE_TEER_TPL, SCORE_UNCLASSIFIED, SEARCH_NOC_RE, SEP_ZH,
-    SKIP_SLUGS, SK_ALLOCATION_METRICS, SK_CAPPED_METRICS, SK_PROC_LABEL_TPL, SLASH, SLUG_DAILY_TOP,
-    SLUG_DASH, SLUG_FALLBACK, SLUG_MAX, SLUG_RE, SLUG_SPONSOR_LIKELY, SLUG_UNKNOWN, SLUG_WEEKLY_TOP,
-    SNAKE_RE, SOURCE_AIP, SOURCE_JOB_BANK, SOURCE_PRETTY, SOURCE_RCIP, SPACE, SPONSOR_COUNT_TPL,
-    SPONSOR_DONE_TPL, SPONSOR_IN_TPL, SPONSOR_N, SPONSOR_NO_QUARTER, SPONSOR_RATE_ROUND,
-    SPONSOR_RECENT_Q, SPONSOR_SKILLED_HIGH, SPONSOR_STALE_Q, STATS_IN_TPL, STATS_NEW_DAYS,
-    STATS_ROWS_TPL, STATUS_CLOSED, STATUS_OPEN, STREAM_CLASH_TPL, STREAM_KEY_FIX, SUBJECT_APPLICANT,
+    RANK_DONE_TPL, RANK_IN_TPL, RANK_KIND_COMPANY, RANK_KIND_JOB, REQ_BASIS_SEP,
+    REQ_NO_PROVINCE_TPL, REQ_ROW_OVERRIDES, REQ_VALUE_CODE_TPL, SAFE_RE, SALARY_CUTS,
+    SAL_ANNUAL_MAX, SAL_BIWEEK_RE, SAL_DAILY_RE, SAL_DOLLAR_TPL, SAL_EXTRA_RE, SAL_GIG_HI_MAX,
+    SAL_HOURLY_FOLD_MAX, SAL_HOURLY_YR_MIN, SAL_HOUR_RE, SAL_K_DIV, SAL_K_TPL, SAL_MONEY_RE,
+    SAL_MONTHLY_YR_MIN, SAL_MONTH_WORD, SAL_MULT, SAL_NUM_RE, SAL_ONE_TPL, SAL_PAREN_MONEY_RE,
+    SAL_PER_UNIT_RE, SAL_PLAIN_OK, SAL_RANGE_TPL, SAL_RATIO_MAX, SAL_SUB, SAL_UNIT_BIWK,
+    SAL_UNIT_DAY, SAL_UNIT_HR, SAL_UNIT_MO, SAL_UNIT_WK, SAL_UNIT_YR, SAL_WEEK_WORD, SAL_WORD_RE,
+    SCALE_CRS, SCOPE_CATEGORY, SCOPE_SCORE_RANGE, SCOPE_SECTOR, SCOPE_STAGE, SCOPE_STREAM,
+    SCORE_DONE_TPL, SCORE_FACTOR_KINDS, SCORE_INDEMAND, SCORE_KIND_ROW, SCORE_KIND_RULE, SCORE_MAX,
+    SCORE_NAMED_STREAM, SCORE_NOT_AGENCY, SCORE_OUTSIDE_ON, SCORE_RULE_KEYS, SCORE_TEER_TPL,
+    SCORE_UNCLASSIFIED, SEARCH_NOC_RE, SEP_ZH, SKIP_SLUGS, SK_ALLOCATION_METRICS,
+    SK_CAPPED_METRICS, SK_PROC_LABEL_TPL, SLASH, SLUG_DAILY_TOP, SLUG_DASH, SLUG_FALLBACK,
+    SLUG_MAX, SLUG_RE, SLUG_SPONSOR_LIKELY, SLUG_UNKNOWN, SLUG_WEEKLY_TOP, SNAKE_RE, SOURCE_AIP,
+    SOURCE_JOB_BANK, SOURCE_PRETTY, SOURCE_RCIP, SPACE, SPONSOR_COUNT_TPL, SPONSOR_DONE_TPL,
+    SPONSOR_IN_TPL, SPONSOR_N, SPONSOR_NO_QUARTER, SPONSOR_RATE_ROUND, SPONSOR_RECENT_Q,
+    SPONSOR_SKILLED_HIGH, SPONSOR_STALE_Q, STATS_IN_TPL, STATS_NEW_DAYS, STATS_ROWS_TPL,
+    STATUS_CLOSED, STATUS_OPEN, STREAM_CLASH_TPL, STREAM_KEY_FIX, SUBJECT_APPLICANT,
     TABLE_COUNT_TPL, TABLE_FILE_TPL, TABLE_NAME_WIDTH, TEER_BASE, TEER_LABEL_TPL, TEER_NONE_SORT,
     TEER_SKILLED, TEER_SKILLED_MAX, TIER_BOTH, TIER_EE, TIER_EMPLOYER, TIER_FED, TIER_PROV,
-    TOP_CITIES_N, TOTAL_WORD, TR_SERIES_YEARS, TR_STOCK_KEYS, UNDERSCORE, UNIT_APPLICATIONS,
-    UNIT_DAYS, UNIT_FLAG, UNIT_MONTHS, UNIT_NOMINATIONS, UNIT_PEOPLE, UNIT_SPOTS, UNIT_TEXT,
-    UNIT_WEEKS, UNIVERSAL_DIRECT_PROVS, UNIVERSAL_PROVS, UTC_OFFSET, UTC_Z, VISA_RULES, WAGE_NATIONAL,
-    WEEKLY_DAYS, WEEKLY_DONE_TPL, WEEKLY_N, WP_TAIL_RE, WS_RE, YEAR_END_TPL, YEAR_LEN, YEAR_START_TPL
+    TOP_CITIES_N, TOTAL_WORD, TRIM_SPACE_COMMA, TR_SERIES_YEARS, TR_STOCK_KEYS, UNDERSCORE,
+    UNIT_APPLICATIONS, UNIT_DAYS, UNIT_FLAG, UNIT_MONTHS, UNIT_NOMINATIONS, UNIT_PEOPLE,
+    UNIT_SPOTS, UNIT_TEXT, UNIT_WEEKS, UNIVERSAL_DIRECT_PROVS, UNIVERSAL_PROVS, UTC_OFFSET, UTC_Z,
+    VISA_RULES, WAGE_NATIONAL, WEEKLY_DAYS, WEEKLY_DONE_TPL, WEEKLY_N, WORD_BOUND_TPL, WP_TAIL_RE,
+    WS_RE, YEAR_END_TPL, YEAR_LEN, YEAR_START_TPL,
 )
 from mart.scheme import (
-    AddJobIn, AtsExtIn, AtsJobIn, AvgDaysIn, BasisIn, CatI18nIn, ChannelTierIn, CityBuildIn,
-    CityRowIn, CityStatsIn, CityStatsRowIn, ClosedDaysIn, ClosedJobIn, CollectedJob, ColumnIn, CompanyAgg,
-    CompanyDetailIn, CompanyExtraIn, CompanyGradesIn, CompanyGradesOut, CompanyRowIn, CutsIn,
-    DailyRowIn, DifficultyIn, DirectOfIn, DistrictRowIn, DliRowIn, DrawBaseIn, DrawRowIn,
-    DrawsBuildIn, EeCategoryIn, EeDrawIn, EeDrawsOut, EePointsIn, EePointsRowIn, ExpandAppliesIn,
-    FactorBaseIn, FieldValuesIn, FillSalaryIn, FlowAddIn, FlowFinishIn, FlowOfIn, FlowRec,
-    FlowStatsOut, FlowWindows, GradeActiveIn, GradeCellIn, GradeChannelIn, GradeEmpIn, GradeFameIn,
-    GradeSalaryIn, GradeSponsorIn, JbExtIn, JdFlagIn, JobDetailIn, JobGradesIn, JobGradesOut,
-    JobRowIn, LangCellIn, LmiaFillIn, LmiaWindows, MartCtx, MbAnnualIn, MbBlockIn, ModuleLoadIn,
-    MomIn, MvScoreIn, NewsExcerptIn, NewsRowIn, NewsSlugIn, NlEmployerIn, NocDescIn, NocDescRowIn,
-    NocOpeningIn, NocOpeningsIn, NormNameLike, NoticeRowIn, NumericRangeOut, OccBaseIn, OccBuildIn,
-    OccNationalIn, OccRowIn, OpsCtx, OpsProvIn, OpsRowIn, OpsRowOut, PilotEmployerIn, PilotOccIn,
-    PilotQuotaIn, PilotRowIn, PnpJudgeIn, PnpMergeIn, PnpOccIn, PnpStreamBucketIn, PnpStreamIn,
-    PnpTables, ProvFillIn, ProvListIn, ProvinceRowIn, QuarterSumIn, QuotaRowIn, RankJobRowIn,
-    RankNamesIn, ReqRowIn, SalaryModuleLike, SayCountsIn, ScoreFactorIn, ScoreIn, ScoreRuleIn, ScoredRowIn,
-    SourceLabelIn, SponsorAgg, SponsorAggIn, SponsorBuildIn, SponsorBumpIn, SponsorCellIn, SponsorOfIn, SponsorRowIn,
-    SponsorSourcesOut, SponsorValueIn, StatValIn, StatValOut, StatsAggIn, StatsBuildIn, StatsCountsIn,
-    StatsRowIn, StockCellIn, StudyFlowIn, SubBaseIn, TableWriteIn, TrRefIn, TrRefOut, TrSeriesCellIn,
-    VisaEscapeIn, VisaFlagOut, VisaQuoteIn, WageOfIn
+    AddJobIn, ApplyLocIn, ApplySalaryIn, AtsExtIn, AtsJobIn, AvgDaysIn, BasisIn, CatI18nIn,
+    ChannelTierIn, CityBuildIn, CityRowIn, CityStatsIn, CityStatsRowIn, ClosedDaysIn, ClosedJobIn,
+    CollectedJob, ColumnIn, CompanyAgg, CompanyDetailIn, CompanyExtraIn, CompanyGradesIn,
+    CompanyGradesOut, CompanyRowIn, CutsIn, DailyRowIn, DifficultyIn, DirectOfIn, DistrictRowIn,
+    DliRowIn, DrawBaseIn, DrawRowIn, DrawsBuildIn, EeCategoryIn, EeDrawIn, EeDrawsOut, EePointsIn,
+    EePointsRowIn, ExpandAppliesIn, FactorBaseIn, FieldValuesIn, FillSalaryIn, FlowAddIn,
+    FlowFinishIn, FlowOfIn, FlowRec, FlowStatsOut, FlowWindows, GradeActiveIn, GradeCellIn,
+    GradeChannelIn, GradeEmpIn, GradeFameIn, GradeSalaryIn, GradeSponsorIn, JbExtIn, JbLocIn,
+    JdFlagIn, JobDetailIn, JobGradesIn, JobGradesOut, JobRowIn, LangCellIn, LmiaFillIn,
+    LmiaWindows, LocKeptOut, MartCtx, MbAnnualIn, MbBlockIn, ModuleLoadIn, MomIn, MoneyIn,
+    MoneyTextIn, MvScoreIn, NewsExcerptIn, NewsRowIn, NewsSlugIn, NlEmployerIn, NocDescIn,
+    NocDescRowIn, NocOpeningIn, NocOpeningsIn, NormNameLike, NoticeRowIn, NumericRangeOut,
+    OccBaseIn, OccBuildIn, OccNationalIn, OccRowIn, OpsCtx, OpsProvIn, OpsRowIn, OpsRowOut,
+    OttawaLocIn, PilotEmployerIn, PilotFlagIn, PilotOccIn, PilotQuotaIn, PilotRowIn, PilotTally,
+    PilotVerdictOut, PnpJudgeIn, PnpMergeIn, PnpOccIn, PnpStreamBucketIn, PnpStreamIn, PnpTables,
+    ProvFillIn, ProvListIn, ProvinceRowIn, QuarterSumIn, QuotaRowIn, RankJobRowIn, RankNamesIn,
+    ReqRowIn, SalaryGuards, SalaryOut, SalaryParseIn, SalaryTally, SalaryTickIn, SalaryUnitIn,
+    SayCountsIn, ScoreFactorIn, ScoreIn, ScoreRuleIn, ScoredRowIn, SourceLabelIn, SponsorAgg,
+    SponsorAggIn, SponsorBuildIn, SponsorBumpIn, SponsorCellIn, SponsorOfIn, SponsorRowIn,
+    SponsorSourcesOut, SponsorValueIn, StatValIn, StatValOut, StatsAggIn, StatsBuildIn,
+    StatsCountsIn, StatsRowIn, StockCellIn, StudyFlowIn, SubBaseIn, TableWriteIn, TrRefIn,
+    TrRefOut, TrSeriesCellIn, UnitFixIn, VisaEscapeIn, VisaFlagOut, VisaQuoteIn, WageOfIn,
 )
 
 
@@ -1106,13 +1134,16 @@ def source_label(x: SourceLabelIn) -> str:
 
 
 def fill_salary(x: FillSalaryIn) -> None:
-    """薪资兜底:有原文却没归一产物 → 当场补(apply_to 幂等,已有值一律不动)。
+    """薪资兜底:有原文却没归一产物 → 当场补(apply_salary_to 幂等,已有值一律不动)。
 
     为什么需要:抓取(jobbank 容器)与建表(build 容器)并行,jobbank 整文件重写
-    postings.json,落在「04d 跑完 → 09 建表」之间的新帖就没人给它算过薪资(2026-08-05 实撞,
-    详见 constants.MART_LATE_SALARY_NOTE)。**mart 是最终表,它不该依赖谁先跑。**
+    postings.json,落在「薪资清洗跑完 → 建表」之间的新帖就没人给它算过薪资(2026-08-05
+    实撞,详见 constants.MART_LATE_SALARY_NOTE)。**mart 是最终表,它不该依赖谁先跑。**
+    ⚠ 2026-08-31 批J:薪资清洗件溶进本域第 18 段后,这里从「按路径拉 clean/04d 的模块」
+    改成域内直调 apply_salary_to —— 同一把尺子的字面兑现,判定一格未改。
     """
-    if x.job.get(K_SALARY) and x.job.get(K_SALARY_TEXT) is None and x.ctx.apply_salary.apply_to(x.job):
+    if x.job.get(K_SALARY) and x.job.get(K_SALARY_TEXT) is None and apply_salary_to(
+            ApplySalaryIn(job=x.job, guards=x.ctx.salary_guards)):
         x.ctx.late_salary += 1
 
 
@@ -2964,8 +2995,10 @@ def to_closed_job_row(x: ClosedJobIn) -> dict:
 def load_module_by_path(x: ModuleLoadIn) -> object:
     """按文件路径拉一个模块(域间禁 import 的合法出口)。
 
-    两个消费点都不是「域」:aip 是域但形制闸①不许跨域正规 import;clean/04d 住横切层且
-    文件名以数字开头,`import` 语法上就不成立。装载点收在这一处,调用方拿到的是模块对象。
+    消费点只剩公司名归一一处:aip 是域,形制闸①不许跨域正规 import。
+    (原第二个消费点是 clean/04d 薪资归一件 —— 它住横切层且文件名以数字开头,`import`
+    语法上就不成立;2026-08-31 批J clean/ 退役、该件溶进本域第 18 段后,那一路改成域内
+    直调,按路径拉的理由随之消失。)装载点收在这一处,调用方拿到的是模块对象。
     """
     spec = spec_from_file_location(x.name, x.path)
     # pyrefly: ignore[bad-argument-type] — spec_from_file_location 只在路径不存在时给 None;此处是仓内固定文件,拿不到就该当场炸
@@ -2979,12 +3012,6 @@ def load_norm_name() -> NormNameLike:
     """公司名归一单一来源在 aip 域 —— LMIA 匹配与 AIP 打标用同一把尺子(路径沿革见常量 docstring)。"""
     mod = load_module_by_path(ModuleLoadIn(name=MOD_AIP_NORM, path=IN_AIP_NORM_PY))
     return cast(NormNameLike, getattr(mod, ATTR_NORM_NAME))
-
-
-def load_apply_salary() -> SalaryModuleLike:
-    """薪资归一(clean/04d)同一把尺子 —— 汇装层只做**兜底**,不是第二套清洗逻辑。"""
-    return cast(SalaryModuleLike,
-                load_module_by_path(ModuleLoadIn(name=MOD_CLEAN_SALARY, path=IN_CLEAN_SALARY_PY)))
 
 
 def new_mart_ctx() -> MartCtx:
@@ -3002,9 +3029,10 @@ def new_mart_ctx() -> MartCtx:
     wages: dict = {}
     if IN_WAGES.exists():
         wages = read_table(IN_WAGES)
+    guards = SalaryGuards(absurd=0, ratio=0, cap=0, gig=0, hifold=0)
     return MartCtx(scored=scored, wages=wages, enrich=load_enrich(),
                    pilot_occ_sets=load_pilot_occ_sets(), expired=load_expired_ids(),
-                   apply_salary=load_apply_salary(), companies={}, jobs=[], seen=set(),
+                   salary_guards=guards, companies={}, jobs=[], seen=set(),
                    seen_ext=set(), seen_ids=set(), dropped_expired=0, late_salary=0)
 
 
@@ -4028,3 +4056,486 @@ def to_city_stats_row(x: CityStatsRowIn) -> dict:
     row = {"city": x.city, "province": x.province, "fetched": x.today}
     row.update(to_agg_columns(StatsAggIn(jobs=x.jobs, cut7=x.cut7)))
     return row
+
+
+# =========================================================================
+# 17. 跨源清洗:地点(ATS + JB 同一套 country/province/city/district/address)
+# =========================================================================
+
+
+def clean_job_locations() -> None:
+    """本域步骤入口:把两源的地点洗成结构化五格,并把 ATS 岗筛到焦点区(Ottawa,严)。
+
+    原 clean/04c(2026-08-31 批J 归户:跨源清洗不归任何单源域,归 mart)。两源同一套尺子
+    —— 数据层(而不是前端)持有干净的地理:
+      · ATS 公司源:全球乱七八糟的地点 → 只留 Ottawa,其余丢弃;
+      · Job Bank:保留帖子省/市,靠邮编查全国 FSA 维度表补区。
+    社区(区)判定:① 文本里的社区名优先;② 文本没写但地址带加拿大邮编时,用高置信度的
+    渥太华郊区 FSA(邮编前3位)兜底。central Ottawa 的 FSA 不猜,留空。
+    """
+    say(PRINT_INOUT_COMPANIES_TPL.format(dir=IN_ATS_COMPANIES))
+    say(PRINT_INOUT_JOBBANK_TPL.format(out=OUT_JOBBANK))
+    kept = 0
+    dropped = 0
+    for jobs_json in IN_ATS_COMPANIES.rglob(JOBS_FILE):
+        out = clean_ats_file(jobs_json)
+        kept += out.kept
+        dropped += out.dropped
+    say(PRINT_LOC_ATS_TPL.format(kept=kept, dropped=dropped))
+    if not IN_JOBBANK.exists():
+        return
+    fsa_table: dict = {}
+    if IN_FSA_TABLE.exists():
+        fsa_table = read_table(IN_FSA_TABLE)
+    posts = read_rows(IN_JOBBANK)
+    for job in posts:
+        if not job.get(K_CITY_RAW):
+            job[K_CITY_RAW] = job.get(K_CITY, "")
+        apply_location(ApplyLocIn(job=job, loc=normalize_jobbank_location(
+            JbLocIn(prov=job.get(K_PROVINCE, ""), city=job.get(K_CITY_RAW, ""),
+                    addr=job.get(K_ADDRESS, ""), fsa_table=fsa_table))))
+    backfilled = backfill_provinces(posts)
+    if backfilled:
+        say(PRINT_LOC_BACKFILL_TPL.format(n=backfilled))
+    paths.write_json(paths.WriteJsonIn(path=OUT_JOBBANK, payload=posts, indent=INDENT_2))
+    dist: Counter = Counter()
+    for job in posts:
+        dist[job.get(K_PROVINCE, PROV_MISSING_MARK)] += 1
+    say(PRINT_LOC_DONE_TPL.format(n=len(posts), provs=len(dist), dist=dict(dist)))
+
+
+def clean_ats_file(jobs_json: Path) -> LocKeptOut:
+    """一份 ATS jobs.json:焦点区外的岗整行丢弃,留下的洗五格并回写 count。"""
+    data = read_table(jobs_json)
+    jobs = data.get(K_JOBS, [])
+    clean_jobs: list = []
+    kept = 0
+    dropped = 0
+    for job in jobs:
+        loc = normalize_ottawa(OttawaLocIn(raw_city=job.get(K_LOCATION, ""),
+                                           raw_addr=job.get(K_ADDRESS, "")))
+        if loc is None:
+            dropped += 1
+            continue
+        apply_location(ApplyLocIn(job=job, loc=loc))
+        clean_jobs.append(job)
+        kept += 1
+    if jobs:
+        data[K_JOBS] = clean_jobs
+        data[K_COUNT] = len(clean_jobs)
+        paths.write_json(paths.WriteJsonIn(path=jobs_json, payload=data, indent=INDENT_2))
+    return LocKeptOut(kept=kept, dropped=dropped)
+
+
+def normalize_ottawa(x: OttawaLocIn) -> dict | None:
+    """ATS 岗 → 五格;判不出是渥太华就返回 None(调用方丢弃这一行)。"""
+    raw = ATS_LOC_TPL.format(city=x.raw_city or "", addr=x.raw_addr or "")
+    text = raw.lower()
+    district = ottawa_district_of(text)
+    if district == "":
+        district = FSA_DISTRICT.get(fsa_of(raw), "")
+    if district == "" and OTTAWA_CITY_LOWER not in text:
+        return None
+    return {K_COUNTRY: COUNTRY_CANADA, K_PROVINCE: PROV_ON, K_CITY: OTTAWA_CITY,
+            K_DISTRICT: district, K_ADDRESS: clean_address(x.raw_addr)}
+
+
+def ottawa_district_of(text: str) -> str:
+    """文本里整词命中的社区规范名(长名先试);没命中给空串。"""
+    for key in OTTAWA_DISTRICT_KEYS:
+        if re.search(WORD_BOUND_TPL.format(key=re.escape(key)), text):
+            return OTTAWA_DISTRICTS[key]
+    return ""
+
+
+def fsa_of(s: str) -> str:
+    """从含邮编的文本取 FSA(前3位,大写);无邮编返回空串。"""
+    m = POSTAL_FSA_RE.search(s or "")
+    if m is None:
+        return ""
+    return m.group(1).upper()
+
+
+def clean_address(addr: str) -> str:
+    """统一格式;只有「City, ON」无街号/邮编的不算精确地址 → 空。"""
+    one = COMMA_SPACE_RE.sub(COMMA, (addr or "").strip())
+    one = WS_RE.sub(SPACE, one).strip(TRIM_SPACE_COMMA)
+    if DIGIT_RE.search(one):
+        return one
+    return ""
+
+
+def apply_location(x: ApplyLocIn) -> None:
+    """把清洗结果的五格写回岗位行。"""
+    x.job[K_COUNTRY] = x.loc[K_COUNTRY]
+    x.job[K_PROVINCE] = x.loc[K_PROVINCE]
+    x.job[K_CITY] = x.loc[K_CITY]
+    x.job[K_DISTRICT] = x.loc[K_DISTRICT]
+    x.job[K_ADDRESS] = x.loc[K_ADDRESS]
+
+
+def normalize_jobbank_location(x: JbLocIn) -> dict:
+    """Job Bank 多省:保留帖子省/市;区由**邮编 FSA 查全国维度表**(GeoNames)得到。
+
+    · 大渥太华社区(Kanata/Gloucester…,K1*/K2*/K4*)→ 折叠成 city=Ottawa + district=社区;
+    · 其余城市:表里 main≠城市 → district=main(如 Richmond Hill Southwest);
+      main=城市 → 用更细的 hood。
+    """
+    prov = (x.prov or "").strip().upper()
+    city_c = WS_RE.sub(SPACE, (x.city or "").strip())
+    if city_c.lower().startswith(NON_CITY_PREFIXES):
+        city_c = ""
+    fsa = fsa_of(JB_LOC_TPL.format(city=x.city or "", addr=x.addr or ""))
+    district = ""
+    entry = x.fsa_table.get(fsa)
+    if entry:
+        main = entry.get(K_MAIN, "")
+        hood = entry.get(K_HOOD, "")
+        if prov == PROV_ON and fsa[:FSA_PREFIX_LEN] in OTTAWA_JB_FSA and main in OTTAWA_COMMUNITIES:
+            city_c = OTTAWA_CITY
+            district = main
+        elif main and main.lower() != city_c.lower():
+            district = main
+        else:
+            district = hood
+    elif fsa and prov == PROV_ON and city_c.lower() in OTTAWA_CITY_NAMES:
+        district = OTTAWA_DISTRICTS.get(city_c.lower(), "")
+        if district:
+            city_c = OTTAWA_CITY
+    return {K_COUNTRY: COUNTRY_CANADA, K_PROVINCE: prov, K_CITY: city_c,
+            K_DISTRICT: district, K_ADDRESS: clean_address(x.addr)}
+
+
+def backfill_provinces(posts: list) -> int:
+    """省份兜底:Job Bank 偶尔漏填某帖的省。
+
+    若同一 city_raw 在别处出现且全数据集只映射到唯一省,用那个省补空(同名同源,非臆测);
+    名字跨省(London/Windsor…)则留空,不猜。返回补上的帖数。
+    """
+    city_provs: dict = defaultdict(set)
+    for job in posts:
+        key = (job.get(K_CITY_RAW) or "").strip().lower()
+        prov = (job.get(K_PROVINCE) or "").strip()
+        if key and prov:
+            city_provs[key].add(prov)
+    backfilled = 0
+    for job in posts:
+        if (job.get(K_PROVINCE) or "").strip():
+            continue
+        cands = city_provs.get((job.get(K_CITY_RAW) or "").strip().lower())
+        if cands and len(cands) == 1:
+            job[K_PROVINCE] = next(iter(cands))
+            backfilled += 1
+    return backfilled
+
+
+# =========================================================================
+# 18. 跨源清洗:薪资(raw salary 串 → salaryAnnual / salaryText)
+# =========================================================================
+
+
+def clean_job_salary() -> None:
+    """本域步骤入口:两源同一套尺子,把 salary 原文洗成 salaryAnnual + salaryText。
+
+    原 clean/04d(2026-08-31 批J 归户;更早住前端 parseSalary,按宪法「清洗归数据层」下沉)。
+    原地清洗:读哪个文件就写回哪个。
+    """
+    say(PRINT_INOUT_COMPANIES_TPL.format(dir=IN_ATS_COMPANIES))
+    say(PRINT_INOUT_JOBBANK_TPL.format(out=OUT_JOBBANK))
+    tally = SalaryTally(total=0, priced=0, updated=0)
+    guards = SalaryGuards(absurd=0, ratio=0, cap=0, gig=0, hifold=0)
+    for jobs_json in IN_ATS_COMPANIES.rglob(JOBS_FILE):
+        data = read_table(jobs_json)
+        changed = False
+        for job in data.get(K_JOBS, []):
+            if salary_tick(SalaryTickIn(job=job, tally=tally, guards=guards)):
+                changed = True
+        if changed:
+            paths.write_json(paths.WriteJsonIn(path=jobs_json, payload=data, indent=INDENT_2))
+    if IN_JOBBANK.exists():
+        postings = read_rows(IN_JOBBANK)
+        changed = False
+        for job in postings:
+            if salary_tick(SalaryTickIn(job=job, tally=tally, guards=guards)):
+                changed = True
+        if changed:
+            paths.write_json(paths.WriteJsonIn(path=OUT_JOBBANK, payload=postings,
+                                               indent=INDENT_2))
+    guarded = guards.absurd + guards.ratio + guards.cap + guards.gig + guards.hifold
+    say(PRINT_SAL_DONE_TPL.format(updated=tally.updated, priced=tally.priced, total=tally.total))
+    say(PRINT_SAL_GUARD_TPL.format(guarded=guarded, absurd=guards.absurd,
+                                   ratio_max=SAL_RATIO_MAX, ratio=guards.ratio,
+                                   cap_max=SAL_ANNUAL_MAX, cap=guards.cap, gig=guards.gig,
+                                   fold_max=SAL_HOURLY_FOLD_MAX, hifold=guards.hifold))
+
+
+def salary_tick(x: SalaryTickIn) -> bool:
+    """一个岗过一遍:累加报数,返回「这一行被改写了没有」。"""
+    x.tally.total += 1
+    if x.job.get(K_SALARY):
+        x.tally.priced += 1
+    if not apply_salary_to(ApplySalaryIn(job=x.job, guards=x.guards)):
+        return False
+    x.tally.updated += 1
+    return True
+
+
+def apply_salary_to(x: ApplySalaryIn) -> bool:
+    """读 raw salary → 写回 salaryAnnual/salaryText;有变化返回 True(幂等)。"""
+    out = parse_salary(SalaryParseIn(raw=x.job.get(K_SALARY) or "", guards=x.guards))
+    new_text = None
+    if x.job.get(K_SALARY):
+        new_text = out.text
+    if x.job.get(K_SALARY_ANNUAL) == out.annual and x.job.get(K_SALARY_TEXT) == new_text:
+        return False
+    x.job[K_SALARY_ANNUAL] = out.annual
+    x.job[K_SALARY_TEXT] = new_text
+    return True
+
+
+def parse_salary(x: SalaryParseIn) -> SalaryOut:
+    """任意格式 → (年薪数值, 规范文本)。
+
+    解析不出 → (None, 原文):「Salary to be negotiated」「$0.55 per km」这类**是真信息**,
+    原样给用户看。
+    源头自相矛盾 → (None, None):金额离谱 / 区间比离谱 / 年化超顶三类,**一个字都不显示**
+    (2026-08-05 Frank 拍板)。理由:这 6+111+2 条全是雇主填错栏 ——「$295,000.00 daily」是把
+    年薪填进了日薪格、「$500.00 hourly」是洁牙师标了十倍。原样透出去,用户会当成我们的数;
+    美化成「$500/hr」更糟 —— 那等于替源头的错误背书。**判不了就不说,别替官方/雇主圆场。**
+    """
+    if not x.raw:
+        return SalaryOut(annual=None, text=EM_DASH)
+    base = SAL_EXTRA_RE.split(x.raw, maxsplit=1)[0] or x.raw
+    stripped = SAL_PAREN_MONEY_RE.sub(SPACE, base)
+    text_src = base
+    if SAL_MONEY_RE.search(stripped):
+        text_src = stripped
+    amounts = salary_amounts(text_src)
+    nums = salary_nums_of(amounts)
+    if len(nums) == 0:
+        if has_absurd_amount(amounts):
+            x.guards.absurd += 1
+            return SalaryOut(annual=None, text=None)
+        return SalaryOut(annual=None, text=x.raw)
+    lo = min(nums)
+    hi = max(nums)
+    if hi / lo > SAL_RATIO_MAX:
+        x.guards.ratio += 1
+        return SalaryOut(annual=None, text=None)
+    got = salary_unit_of(SalaryUnitIn(low=text_src.lower(), raw=x.raw, hi=hi, guards=x.guards))
+    if got == "":
+        return SalaryOut(annual=None, text=x.raw)
+    unit = unit_fixed_of(UnitFixIn(unit=got, lo=lo))
+    annual = round(((lo + hi) / 2) * SAL_MULT[unit])
+    if annual > SAL_ANNUAL_MAX:
+        x.guards.cap += 1
+        return SalaryOut(annual=None, text=None)
+    text = money_text(MoneyTextIn(lo=lo, hi=hi, unit=unit, sub=SAL_SUB[unit]))
+    if unit == SAL_UNIT_HR and (lo + hi) / 2 > SAL_HOURLY_FOLD_MAX:
+        x.guards.hifold += 1
+        return SalaryOut(annual=None, text=text)
+    return SalaryOut(annual=annual, text=text)
+
+
+def salary_nums_of(amounts: list) -> list:
+    """只留落在合法区间里的金额(0 < n < 年薪上限)。"""
+    nums: list = []
+    for n in amounts:
+        if 0 < n < SAL_ANNUAL_MAX:
+            nums.append(n)
+    return nums
+
+
+def has_absurd_amount(amounts: list) -> bool:
+    """一个合法金额都没有时:里面是不是有离谱数(如 -$4,972,171,264)—— 是就整条不显示。"""
+    for n in amounts:
+        if n >= SAL_ANNUAL_MAX:
+            return True
+    return False
+
+
+def unit_fixed_of(x: UnitFixIn) -> str:
+    """源误标纠正:时薪值 ≥$1000、月薪 ≥$2万 —— 填错栏了,实为年薪。"""
+    if x.unit == SAL_UNIT_HR and x.lo >= SAL_HOURLY_YR_MIN:
+        return SAL_UNIT_YR
+    if x.unit == SAL_UNIT_MO and x.lo >= SAL_MONTHLY_YR_MIN:
+        return SAL_UNIT_YR
+    return x.unit
+
+
+def salary_amounts(text: str) -> list:
+    """优先取 $ 锚定金额;没有 $ 时回退全部数字,但仅限「纯薪资表达」(白名单词 + 无 %)。"""
+    vals: list = []
+    for a, b in SAL_MONEY_RE.findall(text):
+        if a:
+            vals.append(float(a.replace(COMMA, "")))
+        if b:
+            vals.append(float(b.replace(COMMA, "")))
+    if len(vals) > 0:
+        return vals
+    if PERCENT_SIGN in text:
+        return []
+    for word in SAL_WORD_RE.findall(text.lower()):
+        if word not in SAL_PLAIN_OK:
+            return []
+    out: list = []
+    for m in SAL_NUM_RE.findall(text):
+        out.append(float(m.replace(COMMA, "")))
+    return out
+
+
+def salary_unit_of(x: SalaryUnitIn) -> str:
+    """判周期单位(biweekly 必须在 week 之前;daily 单列)+ 常识兜底。
+
+    返回空串 = E6-12 计次/计程价那一条:基数不是时间,整条不年化(调用方原样给出原文)。
+    """
+    if SAL_BIWEEK_RE.search(x.low):
+        return SAL_UNIT_BIWK
+    if SAL_MONTH_WORD in x.low:
+        return SAL_UNIT_MO
+    if SAL_WEEK_WORD in x.low:
+        return SAL_UNIT_WK
+    if SAL_DAILY_RE.search(x.low):
+        return SAL_UNIT_DAY
+    if SAL_HOUR_RE.search(x.low):
+        return SAL_UNIT_HR
+    if x.hi < SAL_GIG_HI_MAX and SAL_PER_UNIT_RE.search(x.raw):
+        x.guards.gig += 1
+        return ""
+    if x.hi < SAL_GIG_HI_MAX:
+        return SAL_UNIT_HR
+    return SAL_UNIT_YR
+
+
+def money_text(x: MoneyTextIn) -> str:
+    """区间两端 → 规范显示文本(单值只显示一个数)。"""
+    lo_text = money_of(MoneyIn(n=x.lo, unit=x.unit))
+    if x.lo == x.hi:
+        return SAL_ONE_TPL.format(money=lo_text, sub=x.sub)
+    return SAL_RANGE_TPL.format(lo=lo_text, hi=money_of(MoneyIn(n=x.hi, unit=x.unit)), sub=x.sub)
+
+
+def money_of(x: MoneyIn) -> str:
+    """一个金额的说法:年薪档按千元折(「$96K」),其余取整(「$35」)。"""
+    if x.unit == SAL_UNIT_YR:
+        return SAL_K_TPL.format(n=round(x.n / SAL_K_DIV))
+    return SAL_DOLLAR_TPL.format(n=round(x.n))
+
+
+# =========================================================================
+# 19. 跨源清洗:试点打标(城市×省 → pilot / pilotCommunity / pilotEmployer)
+# =========================================================================
+
+
+def flag_job_pilot() -> None:
+    """本域步骤入口:岗在不在 RCIP/FCIP 试点社区(pilot / pilotCommunity / pilotEmployer)。
+
+    原 clean/05f(2026-08-31 批J 归户)。城市 × 省 精确匹配人工核对过的社区城市映射
+    (rcip/fcip 两域的 communities 步产,宁漏勿错:区域型社区 cities=[] 不参与)。
+    口径红线(E6-11 §5):试点是社区推荐制且雇主须先被社区指定,命中≠能走试点 —— 粗筛信号。
+    同城双试点(Sudbury/Timmins 同时在 RCIP 与 FCIP)→ pilot='RCIP+FCIP'。
+    批E(2026-08-31 pilot 拆三域):社区名单与雇主名单一分为二,本段读**并集**(打标口径不变)。
+    """
+    say(PRINT_PILOT_IN_TPL.format(srcs=IN_PILOT))
+    say(PRINT_INOUT_JOBBANK_TPL.format(out=OUT_JOBBANK))
+    cmap = load_pilot_city_map()
+    emp = load_pilot_employer_names()
+    say(PRINT_PILOT_MAP_TPL.format(keys=len(cmap), emps=len(emp)))
+    tally = PilotTally(flagged=0, total=0, emp_hits=0)
+    if IN_JOBBANK.exists():
+        posts = read_rows(IN_JOBBANK)
+        for job in posts:
+            flag_pilot_row(PilotFlagIn(job=job, cmap=cmap, emp=emp, tally=tally))
+        paths.write_json(paths.WriteJsonIn(path=OUT_JOBBANK, payload=posts, indent=INDENT_2))
+    blank_ats_pilot(tally)
+    say(PRINT_PILOT_DONE_TPL.format(flagged=tally.flagged, total=tally.total,
+                                    emp_hits=tally.emp_hits))
+
+
+def load_pilot_city_map() -> dict:
+    """(province, city) → 命中的社区行列表(同城可命中 RCIP+FCIP 两行)。"""
+    out: dict = {}
+    for src in IN_PILOT:
+        for row in read_table(src)[K_ROWS]:
+            for city in row.get(K_CITIES) or []:
+                out.setdefault((row[K_PROVINCE], city), []).append(row)
+    return out
+
+
+def load_pilot_employer_names() -> dict:
+    """社区名 → 该社区指定雇主的归一名集合(legal 名与 o/a 别名都入);文件可缺(批B 渐进覆盖)。"""
+    out: dict = {}
+    for src in IN_PILOT_EMP:
+        if not src.exists():
+            continue
+        for row in read_table(src).get(K_ROWS, []):
+            names = out.setdefault(row.get(K_COMMUNITY, ""), set())
+            raw = row.get(K_NAME, "")
+            names.add(norm_pilot_name(raw))
+            m = PILOT_OA_TAIL_RE.search(raw)
+            if m is not None:
+                names.add(norm_pilot_name(m.group(1)))
+            names.discard("")
+    return out
+
+
+def norm_pilot_name(name: str) -> str:
+    """雇主名归一(去 o/a 别名、去法人后缀、去标点小写)。"""
+    one = (name or "").lower()
+    one = PILOT_OA_SPLIT_RE.split(one)[0]
+    one = PILOT_SUFFIX_RE.sub(SPACE, one)
+    one = PILOT_KEEP_RE.sub(SPACE, one)
+    return WS_RE.sub(SPACE, one).strip()
+
+
+def flag_pilot_row(x: PilotFlagIn) -> None:
+    """一个 Job Bank 帖:命中社区就写三格,没命中一律写空。"""
+    x.tally.total += 1
+    hits = x.cmap.get((x.job.get(K_PROVINCE, ""), x.job.get(K_CITY, "")))
+    if not hits:
+        x.job[K_PILOT] = ""
+        x.job[K_PILOT_COMMUNITY] = ""
+        x.job[K_PILOT_EMPLOYER] = False
+        return
+    got = pilot_verdict(hits)
+    x.job[K_PILOT] = got.pilot
+    x.job[K_PILOT_COMMUNITY] = got.community
+    x.tally.flagged += 1
+    hit_emp = norm_pilot_name(x.job.get(K_EMPLOYER, "")) in x.emp.get(got.community, set())
+    x.job[K_PILOT_EMPLOYER] = hit_emp
+    if hit_emp:
+        x.tally.emp_hits += 1
+
+
+def pilot_verdict(hits: list) -> PilotVerdictOut:
+    """命中行 → (pilot, pilotCommunity)。类型去重排序保证 'RCIP+FCIP' 顺序稳定。
+
+    社区名:同城多命中时取 RCIP 行的名(社区名本就相同或同城,逗号连接会破一行一条铁律)。
+    """
+    uniq: list = []
+    for h in hits:
+        if h[K_TYPE] not in uniq:
+            uniq.append(h[K_TYPE])
+    name = hits[0][K_NAME]
+    for h in hits:
+        if h[K_TYPE] == SOURCE_RCIP:
+            name = h[K_NAME]
+            break
+    return PilotVerdictOut(pilot=PLUS.join(sorted(uniq, reverse=True)), community=name)
+
+
+def blank_ats_pilot(tally: PilotTally) -> None:
+    """ATS 公司岗在 Ottawa(非试点社区)→ 三格一律空(保持字段一致);已经空的不重写。"""
+    for jobs_json in IN_ATS_COMPANIES.rglob(JOBS_FILE):
+        data = read_table(jobs_json)
+        changed = False
+        for job in data.get(K_JOBS, []):
+            tally.total += 1
+            if (job.get(K_PILOT) != "" or job.get(K_PILOT_COMMUNITY) != ""
+                    or job.get(K_PILOT_EMPLOYER) is not False):
+                job[K_PILOT] = ""
+                job[K_PILOT_COMMUNITY] = ""
+                job[K_PILOT_EMPLOYER] = False
+                changed = True
+        if changed:
+            paths.write_json(paths.WriteJsonIn(path=jobs_json, payload=data, indent=INDENT_2))

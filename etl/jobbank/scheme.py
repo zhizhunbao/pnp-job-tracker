@@ -576,3 +576,81 @@ class VerifyOut:
 
     errs: int
     """网络错误跳过(保留活口,下轮再验)。"""
+
+
+# =========================================================================
+# 9. 无经验友好打标
+# =========================================================================
+
+
+@dataclass
+class ApprenticeTally:
+    """无经验打标的四个累计数(逐行改写的可变载体;原脚本四个局部变量的收编,
+    内嵌禁令下计数只能显式传 —— 同本域 DetailTally 的先例)。"""
+
+    flagged: int
+    """判为「不要经验」的帖数。"""
+
+    by_phrase: int
+    """靠官方 Experience 短语命中的帖数。"""
+
+    by_title: int
+    """靠标题 apprenti 命中的帖数。"""
+
+    total: int
+    """过了一遍的 Job Bank 帖数(ATS 那一轮不计入,原脚本口径)。"""
+
+
+@dataclass
+class ApprenticeRowIn:
+    """flag_apprentice_row() 入参:一帖 + 短语索引 + 累计数。"""
+
+    job: dict
+    """帖子行(原地写两个字段)。"""
+
+    phrases: dict
+    """帖号 → 官方 Experience 短语。"""
+
+    tally: ApprenticeTally
+    """四个累计数(原地累加)。"""
+
+
+# =========================================================================
+# 10. NOC 失配护栏
+# =========================================================================
+
+
+@dataclass
+class SanityRowIn:
+    """blank_mismatched_noc() 入参:一帖 + 中位工资表。"""
+
+    job: dict
+    """帖子行(命中才原地置空 noc 并留痕)。"""
+
+    wages: dict
+    """NOC×省 中位工资表(可为空表:文件缺时护栏落 ABS_FLOOR 兜底)。"""
+
+
+@dataclass
+class SanityWageIn:
+    """wage_median_of() 入参:查某 NOC 在某省的年薪中位。"""
+
+    wages: dict
+    """中位工资表。"""
+
+    noc: str
+    """五位 NOC 码。"""
+
+    province: str
+    """省码(空串照原脚本原样去查,查不到再走全国兜底键)。"""
+
+
+@dataclass
+class SanityJudgeIn:
+    """is_salary_mismatch() 入参:中位(可能没有)与本帖年薪。"""
+
+    med: float | None
+    """该 NOC 的年薪中位;None = 表里没有,走绝对下限那条。"""
+
+    annual: float
+    """本帖年薪折算(04d 算的;链序保证它先跑)。"""

@@ -79,24 +79,15 @@ max-args = 1
 # 台账待 Frank 拍,拍完删此行豁免(2026-08-29 批3 盘出;2026-08-31「noc 就叫 noc」并域,
 # 豁免随 I18N 表从 noc_buckets.py 搬家,其余全严格零豁免)
 "etl/noc/constants.py" = ["F601"]
-"etl/run_now.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/auto_update.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-# 横切层与旧役册(整目录存量)
-"etl/clean/*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+# clean 横切层 2026-08-31 批J 退役(五步归户 jobbank/mart,雇主富化归 company),豁免随目录摘尽
 # crawl 2026-08-30 全溶:整目录豁免退役,只剩 walk/fetch_page/discover 复杂度拆分债(批C 还)。
 "etl/crawl/functions.py" = ["C901", "PLR0915"]
-# extractors 私件群存量豁免随批E 拆三域从 pilot 分家(2026-08-31;函数体未动)。
-# 收口时试摘实测 25 条真债(D103×15/ANN003×2/PLR0913×4/C901×2 等)—— 子工「零债」结论
-# 是豁免行生效下的假象,豁免放回,债随后续滚动批还(摘行=就范完成)
-"etl/rcip/extractors/*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/fcip/extractors/*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+# extractors 2026-08-31 批L 全溶进 rcip/fcip 段,25 条债随溶清零,两行豁免摘尽
 # 各域存量步骤文件豁免(按动词前缀点名)2026-08-31 批C 全数摘除:
 # ee/ircc/company/noc_facts/fsa/pilot 的步骤文件已全溶,新五件天然全严。
 # 2026-08-31 批D ops 拆散:四行 etl/ops/* 豁免随目录退役;归根的岗位链随行两件按存量豁免,
 # 形制闸只剩两条复杂度拆分债(string_literals/scan,16>12),摘行=就范完成
-"etl/check_shape.py" = ["C901"]
 # 锁测试随批F 从 sources/build 搬根(sources/** 整行豁免随役册退役,测试存量债单列)
-"etl/test_jobbank_lock.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/log/functions.py" = ["PLR0913"]
 # employers 2026-08-30 立域:产出行字段名即 DB 列名(camelCase = mart 全表既有惯例),
 # N815 是形制取舍不是债;其余全严格零豁免。

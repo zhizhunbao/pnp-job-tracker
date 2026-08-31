@@ -4,6 +4,11 @@ docs/design/etl分域-20260829.md §4)。
 
 七个步骤文件 2026-08-31 批I 溶入本文件,一步一段(段横幅三行框 + N. 编号,与
 constants.py / scheme.py 同名同序镜像),各段入口函数与原脚本同名、一律零参,门直调。
+同日**批J**(clean/ 目录退役,「谁的数据谁清洗」归户)再溶两件进来当第 9/10 段:
+clean/05e_flag_apprentice → 无经验友好打标(flag_jobbank_apprentice),
+clean/05d_noc_sanity → NOC 失配护栏(guard_jobbank_noc_sanity)。两段都只碰本域自己的
+postings.json(外加把 ATS 岗写成一致的空值),故归 jobbank;它们**不进本域默认链** ——
+跟的是 load 域 build 链的节奏,由那条链 `--only apprentice` / `--only noc_sanity` 点名。
 **零字符串令**:字面量全住 constants(帖子行与 manifest 的键 K_ 词族、CSS 选择器 SEL_*、
 文案 *_TPL);**显式循环令**:禁推导/genexp/lambda(排序键提成具名函数);
 **一参令**:函数至多一参,多入参收 scheme 的 XxxIn dataclass,多返回值收 XxxOut;
@@ -39,57 +44,63 @@ from log.functions import err, say
 from fetch.functions import make_client
 from jobbank import SINCE_DAYS
 from jobbank.constants import (
-    ADDRESS_CLIP, ALL_PROVINCES, ATLANTIC, BLANK_LINES_RE, BLOCK_TAGS, BULLET_PREFIX,
-    CAT_AIP_OUT, CAT_CITY_IS_PROV, CAT_DISTRICT_OUT, CAT_OTTAWA_FALSE, CAT_POSTAL_MISMATCH,
-    CAT_PROV_MISSING, CAT_SALARY_HIGH, CAT_SALARY_LOW, CAT_URL_DUP, CHAIN_DELAY_S,
-    CHAIN_MAX_PAGES, CITY_PROV_RE, CLASS_ATTRIBUTE_VALUE, COMPANY_SLUG_MAX, DATE_DIR_RE,
-    DATE_FMTS, DATE_POSTED_PREFIX, DETAIL_HTML_TPL, DETAIL_MD_TPL, DETAIL_SLEEP_S,
-    DETAIL_SLUG_MAX, DETAIL_TICK, DETAIL_TIMEOUT_S, DETAIL_TMP_TPL, DIR_COMPANIES, DIR_DETAILS,
-    DIR_JOBS, DIRECT_MARK, EDUCATION_JOIN_SEP, EMAIL_DOMAIN_RE, EMAIL_SKIP_DOMAINS,
-    EMPLOYER_CLIP, EMPLOYER_FALLBACK, ENC_UTF8, ENV_ON, ENV_REPARSE, ENV_VERIFY_MAX,
-    ENV_VERIFY_SLEEP, ERR_PAGE_TPL, ESCAPED_HTML_RE, FILE_JOBS, FILE_PROFILE, FRONTMATTER_SEP,
-    GENERIC_EMAIL, GLOB_HTML, GLOB_MD, HEAD_TAGS, HEADING_CERTIFICATES, HEADING_EDUCATION,
-    HDR_UA, HOURS_FULL, HOURS_FULL_MARK, HOURS_PART, HOURS_PART_MARK, HREF_ATTR, HTTP_PREFIX,
-    HTTP_SCHEME, IN_DETAILS, IN_MART_OPEN_IDS, IN_POSTINGS, IN_SCORED, IN_SNAP_ROOT,
+    ABS_FLOOR, ADDRESS_CLIP, ALL_PROVINCES, APPRENTICE_TITLE_RE, APPRENTICE_URL_RE, ATLANTIC,
+    BLANK_LINES_RE, BLOCK_TAGS, BULLET_PREFIX, BULLET_TRIM_CHARS, CAT_AIP_OUT, CAT_CITY_IS_PROV,
+    CAT_DISTRICT_OUT, CAT_OTTAWA_FALSE, CAT_POSTAL_MISMATCH, CAT_PROV_MISSING, CAT_SALARY_HIGH,
+    CAT_SALARY_LOW, CAT_URL_DUP, CHAIN_DELAY_S, CHAIN_MAX_PAGES, CITY_PROV_RE,
+    CLASS_ATTRIBUTE_VALUE, COMPANY_SLUG_MAX, DATE_DIR_RE, DATE_FMTS, DATE_POSTED_PREFIX,
+    DETAIL_HTML_TPL, DETAIL_MD_TPL, DETAIL_SLEEP_S, DETAIL_SLUG_MAX, DETAIL_TICK, DETAIL_TIMEOUT_S,
+    DETAIL_TMP_TPL, DIR_COMPANIES, DIR_DETAILS, DIR_JOBS, DIRECT_MARK, EDUCATION_JOIN_SEP,
+    EMAIL_DOMAIN_RE, EMAIL_SKIP_DOMAINS, EMPLOYER_CLIP, EMPLOYER_FALLBACK, ENC_UTF8, ENV_ON,
+    ENV_REPARSE, ENV_VERIFY_MAX, ENV_VERIFY_SLEEP, ERR_PAGE_TPL, ESCAPED_HTML_RE, FILE_JOBS,
+    FILE_PROFILE, FRONTMATTER_SEP, GENERIC_EMAIL, GENERIC_TITLES, GLOB_HTML, GLOB_MD,
+    HEADING_EXPERIENCE, HEAD_TAGS, HEADING_CERTIFICATES, HEADING_EDUCATION, HDR_UA, HOURS_FULL,
+    HOURS_FULL_MARK, HOURS_PART, HOURS_PART_MARK, HREF_ATTR, HTTP_PREFIX, HTTP_SCHEME,
+    IN_ATS_COMPANIES, IN_DETAILS, IN_MART_OPEN_IDS, IN_POSTINGS, IN_SCORED, IN_SNAP_ROOT, IN_WAGES,
     ISO_DATE_FMT, JOB_MD_TPL, JOB_STEM_FALLBACK, JOBBANK_ORIGIN, JSON_INDENT, K_ADDRESS, K_AIP,
-    K_CATEGORY, K_CERTIFICATES, K_CHECKED, K_CITY, K_COMPANY, K_COUNT, K_CUTOFF, K_DATE,
-    K_DATE_DETAIL, K_DEAD, K_DESCRIPTION, K_DETAIL_FETCHED, K_DIRECT, K_DISTRICT, K_EDUCATION,
-    K_EMAIL, K_EMPLOYER, K_EMPLOYMENT_HOURS, K_EMPLOYMENT_TERM, K_EXTERNAL_ID, K_FETCHED_AT,
-    K_FILE, K_JOB_COUNT, K_JOBS, K_LAST_SEEN, K_NAME, K_NOC, K_PAGE, K_PAGES, K_PHONE,
-    K_POSTING_ID, K_PROV, K_PROVINCE, K_ROWS, K_SALARY, K_SALARY_ANNUAL, K_SINCE_DAYS, K_SLUG,
-    K_SOURCE, K_TITLE, K_URL, K_WEBSITE, K_WHY, KV_SEP, LABEL_LOCATION, LABEL_SALARY,
-    LINE_BREAK, LISTING_POSTING_RE, LISTING_RETRY_BACKOFF_S, LISTING_RETRY_N, LISTING_TIMEOUT_S,
-    LISTING_URL_TPL, MANIFEST_FILE, MD_DUP_TPL, MD_HEAD_LEN, MD_NAME_TPL, MISSING_MARK,
-    NOC_CODE_RE, OFFICIAL_DOMAINS, OTTAWA_FSA_PREFIX, OUT_DETAILS, OUT_FLAGS, OUT_POSTINGS,
-    OTTAWA_CITY, OUT_ROOT, OUT_SNAP_ROOT, OUT_STATE, PARA_BREAK, PARSER_HTML, PERCENT, PID_TAIL_LEN,
-    PID_URL_RE, POSTAL_PROV, POSTAL_RE, PRINT_AUDIT_CAT_TPL, PRINT_AUDIT_DIST,
-    PRINT_AUDIT_FLAGS_HEAD, PRINT_AUDIT_HEAD_TPL, PRINT_AUDIT_OUT_TPL, PRINT_AUDIT_PROV_TPL,
-    PRINT_AUDIT_TEER_TPL, PRINT_AUDIT_TOTAL_TPL, PRINT_AUDIT_UNCLASSIFIED_TPL,
-    PRINT_COMPANIES_DONE_TPL, PRINT_COMPANIES_IN_TPL, PRINT_COMPANIES_OUT_TPL,
-    PRINT_DETAIL_DONE_TPL, PRINT_DETAIL_HEAD_TPL, PRINT_DETAIL_TICK_TPL, PRINT_DETAILS_DONE_TPL,
-    PRINT_DETAILS_IN_TPL, PRINT_DETAILS_LOCK_TPL, PRINT_DETAILS_OUT_TPL, PRINT_LISTING_HEAD_TPL,
-    PRINT_MAX_PAGES_TPL, PRINT_NO_POSTINGS, PRINT_NO_SNAPSHOT, PRINT_PARSE_DONE_TPL,
-    PRINT_PARSE_IN_TPL, PRINT_PARSE_LOCK_TPL, PRINT_PARSE_OUT_TPL, PRINT_PROV_SAVED_TPL,
-    PRINT_RETRY_FAIL_TPL, PRINT_SNAPSHOT_TPL, PRINT_VERIFY_DONE_TPL, PRINT_VERIFY_HEAD_TPL,
-    PRINT_WROTE_TPL, PROFILE_KEYS, PROV_FULL, PROV_NAMES, PROV_ON, RATE_FLOOR_S, RECHECK_DAYS,
-    RICH_MIN_LEN, SALARY_MAX, SALARY_MIN, SCRAPED_KEYS, SEL_ADDRESS, SEL_ARTICLE, SEL_BUSINESS,
-    SEL_DATE, SEL_DATE_POSTED, SEL_DESCRIPTION, SEL_EMPLOYMENT_TYPE, SEL_H3_TITLE,
-    SEL_HIRING_ORG, SEL_JOB_SOURCE, SEL_LOCATION, SEL_NOC_NO, SEL_NOC_NO_CLASS, SEL_NOC_TITLE,
-    SEL_ORG_LINK, SEL_REQUIREMENTS, SEL_SALARY, SINCE_DAYS_FLAG, SKIP_TAGS, SLUG_DASH,
-    SLUG_FALLBACK, SLUG_RE, SNAP_PAGE_TPL, SOURCE_JOBBANK, SPACE_SEP, STEM_DUP_TPL,
-    STEM_FALLBACK, STEM_FILE_TPL, STEM_JOIN, SUFFIX_JSON_TMP, SUFFIX_TMP, TAG_A, TAG_BR, TAG_H4,
-    TAG_LI, TAG_SPAN, TAG_UL, TERM_MAP, TIMESPEC_SECONDS, UNCLASSIFIED, UNKNOWN_PROV,
+    K_ANNUAL, K_APPRENTICE_FRIENDLY, K_CATEGORY, K_CERTIFICATES, K_CHECKED, K_CITY, K_COMPANY,
+    K_COUNT, K_CUTOFF, K_DATE, K_DATE_DETAIL, K_DEAD, K_DESCRIPTION, K_DETAIL_FETCHED, K_DIRECT,
+    K_DISTRICT, K_EDUCATION, K_EMAIL, K_EMPLOYER, K_EMPLOYMENT_HOURS, K_EMPLOYMENT_TERM,
+    K_EXPERIENCE_REQ, K_EXTERNAL_ID, K_FETCHED_AT, K_FILE, K_JOB_COUNT, K_JOBS, K_LAST_SEEN,
+    K_NAME, K_NOC, K_NOC_BLANKED, K_PAGE, K_PAGES, K_PHONE, K_POSTING_ID, K_PROV, K_PROVINCE,
+    K_ROWS, K_SALARY, K_SALARY_ANNUAL, K_SINCE_DAYS, K_SLUG, K_SOURCE, K_TITLE, K_URL, K_WEBSITE,
+    K_WHY, KV_SEP, LABEL_LOCATION, LABEL_SALARY, LINE_BREAK, LISTING_POSTING_RE,
+    LISTING_RETRY_BACKOFF_S, LISTING_RETRY_N, LISTING_TIMEOUT_S, LISTING_URL_TPL, MANIFEST_FILE,
+    MD_DUP_TPL, MD_HEAD_LEN, MD_NAME_TPL, MEDIAN_RATIO, MED_MISSING, MED_TPL, MISSING_MARK,
+    NOC_CODE_RE, NOC_LEN, OFFICIAL_DOMAINS, OTTAWA_FSA_PREFIX, OUT_DETAILS, OUT_FLAGS,
+    OUT_POSTINGS, OTTAWA_CITY, OUT_ROOT, OUT_SNAP_ROOT, OUT_STATE, PARA_BREAK, PARSER_HTML,
+    PERCENT, PID_TAIL_LEN, PID_URL_RE, POSTAL_PROV, POSTAL_RE, PRINT_APPRENTICE_DONE_TPL,
+    PRINT_APPRENTICE_IN_TPL, PRINT_APPRENTICE_OUT_TPL, PRINT_APPRENTICE_PHRASES_TPL,
+    PRINT_AUDIT_CAT_TPL, PRINT_AUDIT_DIST, PRINT_AUDIT_FLAGS_HEAD, PRINT_AUDIT_HEAD_TPL,
+    PRINT_AUDIT_OUT_TPL, PRINT_AUDIT_PROV_TPL, PRINT_AUDIT_TEER_TPL, PRINT_AUDIT_TOTAL_TPL,
+    PRINT_AUDIT_UNCLASSIFIED_TPL, PRINT_COMPANIES_DONE_TPL, PRINT_COMPANIES_IN_TPL,
+    PRINT_COMPANIES_OUT_TPL, PRINT_DETAIL_DONE_TPL, PRINT_DETAIL_HEAD_TPL, PRINT_DETAIL_TICK_TPL,
+    PRINT_DETAILS_DONE_TPL, PRINT_DETAILS_IN_TPL, PRINT_DETAILS_LOCK_TPL, PRINT_DETAILS_OUT_TPL,
+    PRINT_LISTING_HEAD_TPL, PRINT_MAX_PAGES_TPL, PRINT_NO_POSTINGS, PRINT_NO_SNAPSHOT,
+    PRINT_PARSE_DONE_TPL, PRINT_PARSE_IN_TPL, PRINT_PARSE_LOCK_TPL, PRINT_PARSE_OUT_TPL,
+    PRINT_PROV_SAVED_TPL, PRINT_RETRY_FAIL_TPL, PRINT_SANITY_DONE_TPL, PRINT_SANITY_IN_TPL,
+    PRINT_SANITY_ROW_TPL, PRINT_SANITY_WAGES_TPL, PRINT_SNAPSHOT_TPL, PRINT_VERIFY_DONE_TPL,
+    PRINT_VERIFY_HEAD_TPL, PRINT_WROTE_TPL, PROFILE_KEYS, PROV_FULL, PROV_NAMES, PROV_ON,
+    RATE_FLOOR_S, RECHECK_DAYS, RICH_MIN_LEN, SALARY_MAX, SALARY_MIN, SANITY_SHOW_MAX,
+    SANITY_WAGE_NATIONAL, SCRAPED_KEYS, SEL_ADDRESS, SEL_ARTICLE, SEL_BUSINESS, SEL_DATE,
+    SEL_DATE_POSTED, SEL_DESCRIPTION, SEL_EMPLOYMENT_TYPE, SEL_H3_TITLE, SEL_HIRING_ORG,
+    SEL_JOB_SOURCE, SEL_LOCATION, SEL_NOC_NO, SEL_NOC_NO_CLASS, SEL_NOC_TITLE, SEL_ORG_LINK,
+    SEL_REQUIREMENTS, SEL_SALARY, SINCE_DAYS_FLAG, SKIP_TAGS, SLUG_DASH, SLUG_FALLBACK, SLUG_RE,
+    SNAP_PAGE_TPL, SOURCE_JOBBANK, SPACE_SEP, STEM_DUP_TPL, STEM_FALLBACK, STEM_FILE_TPL,
+    STEM_JOIN, SUFFIX_JSON_TMP, SUFFIX_TMP, TAG_A, TAG_BR, TAG_H4, TAG_LI, TAG_SPAN, TAG_UL,
+    TEER_PRO_DIGITS, TERM_MAP, TIMESPEC_SECONDS, TITLE_TRIM_CHARS, UNCLASSIFIED, UNKNOWN_PROV,
     URL_LINE_RE, URL_PARAM_SEP, UTC_OFFSET, UTC_Z, VERIFY_DATE_FMTS, VERIFY_DEAD_CODES,
     VERIFY_FRESH_DAYS, VERIFY_HEAD_BYTES, VERIFY_HOST, VERIFY_MARKER, VERIFY_MAX_DEFAULT,
     VERIFY_SLEEP_DEFAULT, VERIFY_TIMEOUT_S, VERIFY_UA, WHY_AIP_TPL, WHY_CITY_IS_PROV_TPL,
-    WHY_DISTRICT_TPL, WHY_OTTAWA_TPL, WHY_POSTAL_TPL, WHY_PROV_MISSING_TPL,
-    WHY_SALARY_HIGH_TPL, WHY_SALARY_LOW_TPL, WHY_URL_DUP, WS_RE,
+    WHY_DISTRICT_TPL, WHY_OTTAWA_TPL, WHY_POSTAL_TPL, WHY_PROV_MISSING_TPL, WHY_SALARY_HIGH_TPL,
+    WHY_SALARY_LOW_TPL, WHY_URL_DUP, WS_RE, ZERO_EXP_PHRASES,
 )
 from jobbank.scheme import (
-    AllOldIn, CandidateIn, CandidateOut, CategoryIn, CheckIn, CompanyIn, CutoffIn, DetailMdIn,
-    DetailTally, DupIn, EmploymentOut, FieldIn, EnrichIn, FlagIn, FlagRowIn, HttpClientLike, JobMdIn,
-    LabelIn, ListingIn, MergeIn, MergeOut, NeedIn, PageIn, PageOut, ProvinceIn, ReqIn, SaveIn,
-    ShouldParseIn, SoupNodeLike, StemIn, TickIn, VerifyIn, VerifyOut,
+    AllOldIn, ApprenticeRowIn, ApprenticeTally, CandidateIn, CandidateOut, CategoryIn, CheckIn,
+    CompanyIn, CutoffIn, DetailMdIn, DetailTally, DupIn, EmploymentOut, FieldIn, EnrichIn, FlagIn,
+    FlagRowIn, HttpClientLike, JobMdIn, LabelIn, ListingIn, MergeIn, MergeOut, NeedIn, PageIn,
+    PageOut, ProvinceIn, ReqIn, SanityJudgeIn, SanityRowIn, SanityWageIn, SaveIn, ShouldParseIn,
+    SoupNodeLike, StemIn, TickIn, VerifyIn, VerifyOut,
 )
 
 
@@ -1232,3 +1243,199 @@ def verify_batch(x: VerifyIn) -> VerifyOut:
                 alive += 1
             time.sleep(sleep_s)
     return VerifyOut(dead=dead, alive=alive, errs=errs)
+
+
+# =========================================================================
+# 9. 无经验友好打标(官方标「不要经验/带训」+ 学徒标题 → apprentice_friendly)
+# =========================================================================
+
+
+def flag_jobbank_apprentice() -> None:
+    """本域步骤入口:给每帖写 experience_req 原文 + apprentice_friendly 判定。
+
+    B1-3(2026-08-03,木匠案例):无经验用户的第一段路是「谁肯要 0 经验」。判据只认官方
+    写下的:① Job Bank 详情页结构化 Experience 短语(枚举值,详情解析段写进 details/*.md
+    的正文)= 雇主明说不要求经验;② 标题含 apprentice/apprenti(学徒岗按定义是入行通道,
+    聚合帖没有结构化区,标题是唯一信号)。两个都不命中 → False。
+    md → posting 用 frontmatter 的 url 对(url 含帖子号,精确;同名雇主+职位覆盖掉的 md
+    少量帖对不上 → 留 False,宁缺不猜)。
+    """
+    say(PRINT_APPRENTICE_IN_TPL.format(dir=IN_DETAILS))
+    say(PRINT_APPRENTICE_OUT_TPL.format(out=OUT_POSTINGS))
+    phrases = phrase_by_pid()
+    say(PRINT_APPRENTICE_PHRASES_TPL.format(n=len(phrases)))
+    tally = ApprenticeTally(flagged=0, by_phrase=0, by_title=0, total=0)
+    if IN_POSTINGS.exists():
+        posts = json.loads(IN_POSTINGS.read_text(encoding=ENC_UTF8))
+        for job in posts:
+            flag_apprentice_row(ApprenticeRowIn(job=job, phrases=phrases, tally=tally))
+        tmp = OUT_POSTINGS.with_suffix(SUFFIX_JSON_TMP)
+        tmp.write_text(json.dumps(posts, ensure_ascii=False, indent=JSON_INDENT),
+                       encoding=ENC_UTF8)
+        os.replace(tmp, OUT_POSTINGS)
+    blank_ats_apprentice()
+    say(PRINT_APPRENTICE_DONE_TPL.format(
+        flagged=tally.flagged, total=tally.total, phrase=tally.by_phrase, title=tally.by_title,
+        overlap=tally.by_phrase + tally.by_title - tally.flagged))
+
+
+def phrase_by_pid() -> dict:
+    """扫 details/*.md:frontmatter url 的帖子号 → Experience 短语(没有该节的不入映射)。"""
+    out: dict = {}
+    if not IN_DETAILS.exists():
+        return out
+    for f in IN_DETAILS.glob(GLOB_MD):
+        text = f.read_text(encoding=ENC_UTF8)
+        m = APPRENTICE_URL_RE.search(text)
+        if m is None:
+            continue
+        pid = PID_URL_RE.search(m.group(1))
+        if pid is None:
+            continue
+        phrase = experience_phrase(text)
+        if phrase != "":
+            out[pid.group(1)] = phrase
+    return out
+
+
+def experience_phrase(md_text: str) -> str:
+    """JD 正文里独立成行的「Experience」节 → 下一非空行(「Experience and specialization」不算)。"""
+    lines = []
+    for raw in md_text.split(LINE_BREAK):
+        lines.append(raw.strip())
+    for i, line in enumerate(lines):
+        if line == HEADING_EXPERIENCE:
+            for nxt in lines[i + 1:]:
+                if nxt != "":
+                    return nxt.lstrip(BULLET_TRIM_CHARS).strip()
+            return ""
+    return ""
+
+
+def flag_apprentice_row(x: ApprenticeRowIn) -> None:
+    """一帖:写 experience_req 原文 + apprentice_friendly 判定,并累加四个计数。"""
+    x.tally.total += 1
+    pid = str(x.job.get(K_POSTING_ID) or "")
+    phrase = x.phrases.get(pid, "")
+    x.job[K_EXPERIENCE_REQ] = phrase
+    hit_phrase = phrase in ZERO_EXP_PHRASES
+    hit_title = APPRENTICE_TITLE_RE.search(x.job.get(K_TITLE) or "") is not None
+    x.job[K_APPRENTICE_FRIENDLY] = hit_phrase or hit_title
+    if hit_phrase or hit_title:
+        x.tally.flagged += 1
+    if hit_phrase:
+        x.tally.by_phrase += 1
+    if hit_title:
+        x.tally.by_title += 1
+
+
+def blank_ats_apprentice() -> None:
+    """ATS(Kanata 科技公司)没有 Job Bank 结构化区,也不是学徒工种 → 一律 False
+    (保持字段一致);已经是 False 的文件不重写。"""
+    for jobs_json in IN_ATS_COMPANIES.rglob(FILE_JOBS):
+        data = json.loads(jobs_json.read_text(encoding=ENC_UTF8))
+        changed = False
+        for job in data.get(K_JOBS, []):
+            if job.get(K_APPRENTICE_FRIENDLY) is not False:
+                job[K_APPRENTICE_FRIENDLY] = False
+                changed = True
+        if changed:
+            jobs_json.write_text(json.dumps(data, ensure_ascii=False, indent=JSON_INDENT),
+                                 encoding=ENC_UTF8)
+
+
+# =========================================================================
+# 10. NOC 失配护栏(#47:泛词标题 × TEER0/1 × 薪资远低 → NOC 置空转未分类)
+# =========================================================================
+
+
+def guard_jobbank_noc_sanity() -> None:
+    """本域步骤入口:标题↔NOC 失配护栏(#47,2026-07-16 拍板「NOC 置空转未分类」)。
+
+    背景:聚合帖的 NOC 是源数据自带,偶发错标 —— 实锤案例:帖 49903220「intern」@ 肉店,
+    NOC 31102(全科医生)、时薪 $20-22,被评分链如实透传后借「医疗紧缺+SK 清单命中」冲到
+    weekly-top 榜首 90 分,砸引流榜可信度。
+    护栏(双条件都命中才动,宁可漏不误杀):① 标题是「无职业信息的泛词」;② NOC 是专业
+    层级(TEER 0/1)且薪资远低于该档。命中 → noc 置空:下游评分(基准/紧缺)与汇装
+    (分类/PNP/EE chip)全链自动转「未分类」,零硬塞。
+    🔴 **链序**:判据里的「薪资远低」读的是 mart 域 salary 段(原 clean/04d)算出的
+    salaryAnnual —— 本步必须排在它之后,由 load 域 BUILD_CHAIN_CMDS 的顺序保证
+    (2026-08-31 批J 溶解前后一字未动:原链 05d 就排在 04d 后面)。
+    """
+    say(PRINT_SANITY_IN_TPL.format(path=IN_POSTINGS))
+    say(PRINT_SANITY_WAGES_TPL.format(path=IN_WAGES))
+    if not IN_POSTINGS.exists():
+        say(PRINT_NO_POSTINGS)
+        return
+    jobs = json.loads(IN_POSTINGS.read_text(encoding=ENC_UTF8))
+    wages: dict = {}
+    if IN_WAGES.exists():
+        wages = json.loads(IN_WAGES.read_text(encoding=ENC_UTF8))
+    blanked: list = []
+    for job in jobs:
+        line = blank_mismatched_noc(SanityRowIn(job=job, wages=wages))
+        if line != "":
+            blanked.append(line)
+    if len(blanked) > 0:
+        tmp = OUT_POSTINGS.with_suffix(SUFFIX_JSON_TMP)
+        tmp.write_text(json.dumps(jobs, ensure_ascii=False, indent=JSON_INDENT),
+                       encoding=ENC_UTF8)
+        os.replace(tmp, OUT_POSTINGS)
+    say(PRINT_SANITY_DONE_TPL.format(n=len(blanked)))
+    for line in blanked[:SANITY_SHOW_MAX]:
+        say(line)
+
+
+def blank_mismatched_noc(x: SanityRowIn) -> str:
+    """双条件都命中 → noc 置空 + 留痕,返回明细行;不动的帖返回空串。
+
+    年薪那格加了 isinstance 收窄(检查器要求):原脚本只判 `not annual`,数值以外的值在
+    它那里会走到比较处当场 TypeError —— 实际数据里 salaryAnnual 只有 int|None 两态,
+    这里把「不是数」与「没有数」并成同一条不动,判定结果一格未改。
+    """
+    noc: str = x.job.get(K_NOC) or ""
+    title = (x.job.get(K_TITLE) or "").strip().strip(TITLE_TRIM_CHARS).lower()
+    if len(noc) != NOC_LEN or title not in GENERIC_TITLES:
+        return ""
+    if noc[1] not in TEER_PRO_DIGITS:
+        return ""
+    annual = x.job.get(K_SALARY_ANNUAL)
+    if not annual or not isinstance(annual, (int, float)):
+        return ""
+    med = wage_median_of(SanityWageIn(wages=x.wages, noc=noc,
+                                      province=x.job.get(K_PROVINCE) or ""))
+    if not is_salary_mismatch(SanityJudgeIn(med=med, annual=annual)):
+        return ""
+    x.job[K_NOC] = ""
+    x.job[K_NOC_BLANKED] = noc
+    return PRINT_SANITY_ROW_TPL.format(pid=x.job.get(K_POSTING_ID), title=x.job.get(K_TITLE),
+                                       employer=x.job.get(K_EMPLOYER), noc=noc, annual=annual,
+                                       med=med_text(med))
+
+
+def wage_median_of(x: SanityWageIn) -> float | None:
+    """该 NOC 的年薪中位:先本省,再全国兜底键;都没有(或不是数)给 None。"""
+    by_noc = x.wages.get(x.noc, {})
+    entry = by_noc.get(x.province)
+    if not entry:
+        entry = by_noc.get(SANITY_WAGE_NATIONAL)
+    if not entry:
+        return None
+    med = entry.get(K_ANNUAL)
+    if not isinstance(med, (int, float)):
+        return None
+    return med
+
+
+def is_salary_mismatch(x: SanityJudgeIn) -> bool:
+    """有中位 → 低于中位的 60% 算失配;没中位 → 低于绝对下限算失配。"""
+    if x.med:
+        return x.annual < x.med * MEDIAN_RATIO
+    return x.annual < ABS_FLOOR
+
+
+def med_text(med: float | None) -> str:
+    """明细行里中位那一格:有数按千分位,没有给破折号。"""
+    if med:
+        return MED_TPL.format(med=med)
+    return MED_MISSING

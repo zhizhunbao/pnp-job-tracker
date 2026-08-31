@@ -6,7 +6,9 @@ grades / visa_flag 两个私件库)溶进 constants/scheme/functions 三件,本�
 SCHEDULED = 本域步骤真相 —— **顺序即语义,一步失败中止本轮**(四步逐字复刻旧 build
 役册 08 → 09 → 10 → 11 的顺序):评分 → mart 主表 → 榜单 → 地区统计。
 本域**不自带役**(__init__ 无 META):load 域的 build 链把本门当一步点用,整链持 Job Bank
-仓锁,前后邻居(05d_noc_sanity / employers)不变。
+仓锁,前后邻居(jobbank --only noc_sanity / employers)不变。
+2026-08-31 批J(clean/ 退役):三个跨源清洗步归户本域,只进 TOOLS 不进 SCHEDULED ——
+build 链在默认链之前先 `--only locations` / `--only salary` / `--only pilot_flag` 各点一次。
 一律从仓库根执行:
     python etl/mart/main.py                  # 默认链(4 步;mart 主表约 9 分钟)
     python etl/mart/main.py --only rankings  # 单步调试(见 TOOLS)
@@ -16,7 +18,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
-from mart.functions import build_mart, build_mart_rankings, build_mart_stats, score_mart_jobs
+from mart.functions import (
+    build_mart, build_mart_rankings, build_mart_stats, clean_job_locations, clean_job_salary,
+    flag_job_pilot, score_mart_jobs,
+)
 
 SCHEDULED = [
     ("score", score_mart_jobs),
@@ -38,11 +43,23 @@ TOOLS = {
     "mart": build_mart,
     "rankings": build_mart_rankings,
     "stats": build_mart_stats,
+    "locations": clean_job_locations,
+    "salary": clean_job_salary,
+    "pilot_flag": flag_job_pilot,
 }
-"""全部可 --only 点名的步 = 默认链四步(本域无手动件)。
+"""全部可 --only 点名的步 = 默认链四步 + 三个跨源清洗步:
+
+  locations   ATS/JB 同一套地点清洗(country/province/city/district/address;ATS 岗筛焦点区)
+  salary      ATS/JB 同一套薪资归一(salaryAnnual / salaryText + 五道护栏)
+  pilot_flag  城市×省 → pilot / pilotCommunity / pilotEmployer(RCIP/FCIP 并集)
+
+三步 2026-08-31 批J 自 clean/04c、04d、05f 归户全溶(判据:跨源清洗不归任何单源域)。
+**不进本域默认链**:它们跟的是 load 域 build 链的节奏,在评分之前由那条链逐步点名,
+顺序与溶解前逐位相同(locations → salary →(aip/rcip/fcip)→ pilot_flag → jobbank noc_sanity)。
 
 ⚠ --only 是子串匹配(门形样张同款):`--only mart` 只命中 mart 本身,`--only s` 会同时
-命中 score 与 stats —— 要单点请写全名。
+命中 score / stats / salary —— 要单点请写全名。批J 三个新键与既有四键互不误命中
+(逐对核过:locations / salary / pilot_flag 既不含既有键、也不被既有键含)。
 """
 
 

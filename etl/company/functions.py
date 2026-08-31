@@ -3,6 +3,9 @@ company 域函数 —— 全部行为住这(三件套形制**全站样张**,2026
 方言律全集见 docs/design/etl分域-20260829.md §4)。
 
 四个步骤文件溶入本文件成四段,各段入口函数与原脚本同名(入口一律零参)。
+2026-08-31 **批J**(clean/ 目录退役,「谁的数据谁清洗」归户)再溶一件成第 6 段:
+clean/_enrich_company_facts.py → 雇主 D 富化(enrich_company_facts)。判据 = 逐公司抓数据
+是公司域的活;下划线私件名随溶解消失,只进 TOOLS 不进默认链(手动件)。
 **零字符串令(终形)**:边界行形状全 pydantic(Frank「有这个优势可以用」:校验/默认/
 别名兜底进 scheme,五只手写 to_* 退役,进域 model_validate、出域 model_dump);
 wire 词(头名/查询参数/属性名)用 constants 的 HDR_/P_ 词族;文案全 *_TPL 模板。
@@ -14,6 +17,9 @@ wire 词(头名/查询参数/属性名)用 constants 的 HDR_/P_ 词族;文案�
 import html as html_lib
 import json
 import time
+import urllib.parse
+import urllib.request
+from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
@@ -26,37 +32,46 @@ import paths
 from log.functions import err, say
 from fetch.functions import make_client, make_polite_client
 from company.constants import (
-    ALIAS_SPLIT_RE, ATS_HOSTS, CAREERS_FILE, CAREERS_PATH_RE, CAREERS_RE,
-    CAREERS_STEM_SUFFIX, CAREERS_TIMEOUT_S, CAREERS_WORKERS, COL_TRIM_CHARS,
-    COMMON_CAREER_PATHS, DDG_GUARD_N, DDG_HTML_URL, DDG_QUERY_TPL, DDG_REDIRECT_PARAM,
-    DDG_RESULT_RE, DDG_SCAN_N, DDG_TIMEOUT_S, DESC_LEN_MAX, DESC_P_MIN_LEN, DOT_SEP,
-    EMAIL_DOMAIN_RE, ENRICH_LIMIT, ENRICH_MIN_INTERVAL_S, ENRICH_REFRESH_DAYS, FETCH_SLEEP_S,
-    FETCH_TIMEOUT_S, FIND_CLIENT_TIMEOUT_S, FIND_LIMIT, FIND_SLEEP_S, FOUND_JD,
-    FOUND_SEARCHED, GENERIC_MAIL, GOV_DOMAIN_SUFFIX, GUARD_TIMEOUT_S, HDR_REFERER,
-    HREF_ATTR, HTML_PARSER, HTTPS_PREFIX, IN_CAREERS_DIRECTORY, IN_ENRICH_ATS,
-    IN_ENRICH_JD_DETAILS, IN_ENRICH_POSTINGS, IN_FOLDERS_CAREERS, IN_FOLDERS_DIRECTORY,
-    INDEX_FILE, ISO_UTC_OFFSET, ISO_Z, JD_HEAD_LEN, JD_URL_LINE_RE, KANATA_ADDR_SEL,
-    KANATA_AJAX_ACTION, KANATA_AJAX_URL, KANATA_CARD_SEL, KANATA_COL_SEL, KANATA_DESC_SEL,
-    KANATA_LBL_EMAIL, KANATA_LBL_LOCATION, KANATA_LBL_PHONE, KANATA_LBL_WEBSITE,
-    KANATA_NAME_SEL, KANATA_PAGE_FIRST, KANATA_PAGE_SIZE, KANATA_REFERER,
-    KANATA_REGION_LABEL, KANATA_STEM, KANATA_TERMS_SEL, KANATA_TIMEOUT_S, KEYWORDS_SPLIT_SEP,
-    KEYWORDS_TOP_N, LINK_TAG, LIST_JOIN_SEP, MD_GLOB, META_DESC_PATTERNS,
-    META_KEYWORDS_PATTERNS, NAME_STOP, NAME_TOKEN_RE, NONALNUM_RE, NOT_OFFICIAL,
-    NOTE_HTTP_TPL, NOTE_NO_CAREERS, NOTE_NO_META, OUT_ENRICH_CACHE, OUT_FOLDERS_ROOT,
-    OUT_KANATA_DIR, P_ACTION, P_PAGED, P_PAGE_SIZE, P_QUERY, P_TAG_RE, PORT_SEP,
-    PRINT_ATS_DIST_LABEL, PRINT_CAREERS_DONE_TPL, PRINT_CAREERS_RESOLVING_TPL,
+    ACT_GET_ENTITIES, ACT_SEARCH, ALIAS_SPLIT_RE, ATS_HOSTS, CAND_MIN_JOBS, CAND_MIN_LMIA_SKILLED,
+    CAREERS_FILE, CAREERS_PATH_RE, CAREERS_RE, CAREERS_STEM_SUFFIX, CAREERS_TIMEOUT_S,
+    CAREERS_WORKERS, COL_TRIM_CHARS, COMMON_CAREER_PATHS, DDG_GUARD_N, DDG_HTML_URL, DDG_QUERY_TPL,
+    DDG_REDIRECT_PARAM, DDG_RESULT_RE, DDG_SCAN_N, DDG_TIMEOUT_S, DESC_LEN_MAX, DESC_P_MIN_LEN,
+    DOT_SEP, EMAIL_DOMAIN_RE, ENRICH_LIMIT, ENRICH_MIN_INTERVAL_S, ENRICH_REFRESH_DAYS,
+    FACTS_COMMA, FACTS_INDENT, FACTS_SUFFIX_RE, FACTS_TICK, FETCH_SLEEP_S, FETCH_TIMEOUT_S,
+    FIND_CLIENT_TIMEOUT_S, FIND_LIMIT, FIND_SLEEP_S, FORMAT_JSON, FOUND_JD, FOUND_SEARCHED,
+    GENERIC_MAIL, GOV_DOMAIN_SUFFIX, GUARD_TIMEOUT_S, HDR_REFERER, HDR_USER_AGENT, HREF_ATTR,
+    HTML_PARSER, HTTPS_PREFIX, ID_SEP, IN_CAREERS_DIRECTORY, IN_ENRICH_ATS, IN_ENRICH_JD_DETAILS,
+    IN_ENRICH_POSTINGS, IN_FACTS_COMPANIES, IN_FACTS_JOBS, IN_FOLDERS_CAREERS,
+    IN_FOLDERS_DIRECTORY, INDEX_FILE, ISO_UTC_OFFSET, ISO_Z, JD_HEAD_LEN, JD_URL_LINE_RE,
+    KANATA_ADDR_SEL, KANATA_AJAX_ACTION, KANATA_AJAX_URL, KANATA_CARD_SEL, KANATA_COL_SEL,
+    KANATA_DESC_SEL, KANATA_LBL_EMAIL, KANATA_LBL_LOCATION, KANATA_LBL_PHONE, KANATA_LBL_WEBSITE,
+    KANATA_NAME_SEL, KANATA_PAGE_FIRST, KANATA_PAGE_SIZE, KANATA_REFERER, KANATA_REGION_LABEL,
+    KANATA_STEM, KANATA_TERMS_SEL, KANATA_TIMEOUT_S, KEYWORDS_SPLIT_SEP, KEYWORDS_TOP_N, K_ALIASES,
+    K_BROAD, K_BY_NAME, K_BY_SLUG, K_COMPANY_SLUG, K_ENTITIES, K_ENWIKI, K_ID, K_KO, K_LABELS,
+    K_LMIA_POSITIONS_SKILLED, K_NAME, K_SEARCH, K_SITELINKS, K_SLUG, K_STATUS, K_TITLE, K_VALUE,
+    K_WIKI, K_WIKI_CHECKED, K_ZH, LANG_EN, LANG_KO, LANG_ZH, LINK_TAG, LIST_JOIN_SEP, MD_GLOB,
+    META_DESC_PATTERNS, META_KEYWORDS_PATTERNS, NAME_STOP, NAME_TOKEN_RE, NONALNUM_RE,
+    NOT_OFFICIAL, NOTE_HTTP_TPL, NOTE_NO_CAREERS, NOTE_NO_META, OUT_ENRICH_CACHE, OUT_FACTS,
+    OUT_FOLDERS_ROOT, OUT_KANATA_DIR, PRINT_FACTS_CANDS_TPL, PRINT_FACTS_DONE_TPL,
+    PRINT_FACTS_INDUSTRY_TPL, PRINT_FACTS_IN_TPL, PRINT_FACTS_TICK_TPL, P_ACTION, P_FORMAT, P_IDS,
+    P_LANGUAGE, P_LANGUAGES, P_LIMIT, P_PAGED, P_PAGE_SIZE, P_PROPS, P_QUERY, P_SEARCH, P_TAG_RE,
+    PORT_SEP, PRINT_ATS_DIST_LABEL, PRINT_CAREERS_DONE_TPL, PRINT_CAREERS_RESOLVING_TPL,
     PRINT_ENRICH_DONE_TPL, PRINT_ENRICH_IN_TPL, PRINT_ENRICH_SKIP_TPL, PRINT_FIND_TPL,
-    PRINT_FOLDERS_TPL, PRINT_KANATA_TPL, PRINT_TARGETS_TPL, PROFILE_FILE, READ_ERRORS,
-    RETRY_FAILED_DAYS, RETRY_NOSITE_DAYS, SCHEME_PREFIX, SITE_NAME_RE, SLUG_DASH,
-    SLUG_DUP_TPL, SLUG_FALLBACK, SLUG_LEN_MAX, SLUG_RE, ST_FAIL, ST_FOUND, ST_NOSITE, ST_OK,
-    STATUS_ERR_TPL, SUFFIX_JSON, TAG_STRIP_RE, TECH_TERMS, TEXT_ENCODING, TEXT_JOIN_SEP,
-    TITLE_RE, TITLE_SNIFF_LEN, URL_DEFAULT_SCHEME, URL_DOMAIN_RE, URL_ROOT_TPL, WS_FOLD_RE, WWW_PREFIX,
+    PRINT_FOLDERS_TPL, PRINT_KANATA_TPL, PRINT_TARGETS_TPL, PROFILE_FILE, P_TYPE, QUERY_MARK,
+    READ_ERRORS, RETRY_FAILED_DAYS, RETRY_NOSITE_DAYS, SCHEME_PREFIX, SITE_NAME_RE, SLUG_DASH,
+    SLUG_DUP_TPL, SLUG_FALLBACK, SLUG_LEN_MAX, SLUG_RE, STATUS_CLOSED, STATUS_OPEN, ST_FAIL,
+    ST_FOUND, ST_NOSITE, ST_OK, STATUS_ERR_TPL, SUFFIX_JSON, TAG_STRIP_RE, TECH_TERMS,
+    TEXT_ENCODING, TEXT_JOIN_SEP, TITLE_RE, TITLE_SNIFF_LEN, TYPE_ITEM, UNCLASSIFIED,
+    URL_DEFAULT_SCHEME, URL_DOMAIN_RE, URL_ROOT_TPL, WD_API_URL, WD_LANGUAGES, WD_PROPS,
+    WD_SEARCH_LIMIT, WD_SLEEP_S, WD_TIMEOUT_S, WD_UA, WIKI_CHECKED_MARK, WIKI_SPACE,
+    WIKI_UNDERSCORE, WIKI_URL_PREFIX, WS_FOLD_RE, WWW_PREFIX,
 )
 from company.scheme import (
-    CardColIn, CareerScanRow, CareersFileRow, CareersProbe, CompanyRow, DdgFindIn,
-    EnrichRecord, FetchProfileIn, FetchTextIn, FindWebsitesIn, GuardMatchIn, HttpClientLike,
-    IndexRow, MetaOut, MetaScanIn, NositeLead, PickTodoIn, PostingLead, ProfileRow,
-    SiteLead, SkipFindIn, TagLike, WpEnvelope,
+    CandsIn, CardColIn, CareerScanRow, CareersFileRow, CareersProbe, CompanyRow, DdgFindIn,
+    EnrichRecord, EntityIn, FactsIndustryOut, FetchProfileIn, FetchTextIn, FindWebsitesIn,
+    GuardMatchIn, HttpClientLike, IndexRow, MetaOut, MetaScanIn, NositeLead, PickTodoIn,
+    PostingLead, ProbeIn, ProfileRow, SaveFactsIn, SiteLead, SkipFindIn, TagLike, WikiProbe,
+    WpEnvelope,
 )
 
 # =========================================================================
@@ -674,3 +689,209 @@ def enrich_company_websites() -> None:
     paths.write_json(paths.WriteJsonIn(path=OUT_ENRICH_CACHE, payload=out, indent=2))
     say(PRINT_ENRICH_DONE_TPL.format(ok=ok, fail=fail, total=total_ok, n=len(cache),
                                      out=OUT_ENRICH_CACHE.name))
+
+
+# =========================================================================
+# 6. 雇主 D 富化(行业 + 中韩别名 + 知名;休眠工具,手动 main --only facts)
+# =========================================================================
+
+
+def enrich_company_facts() -> None:
+    """本域步骤入口:雇主 D 富化(2026-07-19 Frank 批「开工做雇主 D」)。
+
+    ① 行业 = 该雇主在库开放岗的 NOC 大类多数派(mart/jobs.json,零新抓取);
+    ② 别名 = Wikidata 跨语言标签(zh/ko 官方条目名,不机翻;严格名称匹配,宁缺勿滥);
+    ③ 知名 = 有英文 Wikipedia 条目(sitelink)。
+    ⛔ ②③ 已退役(#109/#111,2026-07-20 Frank「不要提前跑」)——**别再批量跑 Wikidata**;
+    ①(本地 mart 零网络)保留可手动重跑,apply 手法 = scratchpad apply_company_facts.mjs
+    (STATUS 有记)。2026-08-31 批J 自 clean/_enrich_company_facts.py 归户全溶
+    (判据:逐公司抓数据 = 公司域的活;下划线私件名随溶解消失),故只进 TOOLS 不进默认链。
+    """
+    say(PRINT_FACTS_IN_TPL.format(jobs=IN_FACTS_JOBS, companies=IN_FACTS_COMPANIES, out=OUT_FACTS))
+    jobs = json.loads(IN_FACTS_JOBS.read_text(encoding=TEXT_ENCODING))
+    companies = json.loads(IN_FACTS_COMPANIES.read_text(encoding=TEXT_ENCODING))
+    name_of: dict = {}
+    for c in companies:
+        if c.get(K_SLUG):
+            name_of[c[K_SLUG]] = c.get(K_NAME, "")
+    got = industry_by_slug(jobs)
+    say(PRINT_FACTS_INDUSTRY_TPL.format(n=len(got.industry), open_jobs=got.n_open))
+    cands = facts_candidates(CandsIn(by_slug=got.by_slug, name_of=name_of, companies=companies))
+    say(PRINT_FACTS_CANDS_TPL.format(n=len(cands)))
+    prev: dict = {}
+    if OUT_FACTS.exists():
+        prev = json.loads(OUT_FACTS.read_text(encoding=TEXT_ENCODING))
+    prev_names = prev.get(K_BY_NAME, prev)
+    by_name: dict = {}
+    hit = 0
+    n_err = 0
+    for i, co in enumerate(cands):
+        probe = facts_probe(ProbeIn(name=co, cached=prev_names.get(co, {})))
+        if probe.failed:
+            n_err += 1
+            continue
+        by_name[co] = to_facts_record(probe)
+        if probe.found:
+            hit += 1
+        if (i + 1) % FACTS_TICK == 0:
+            say(PRINT_FACTS_TICK_TPL.format(i=i + 1, n=len(cands), hit=hit, errs=n_err))
+            save_company_facts(SaveFactsIn(industry=got.industry, by_name=by_name,
+                                           prev_names=prev_names))
+    save_company_facts(SaveFactsIn(industry=got.industry, by_name=by_name,
+                                   prev_names=prev_names))
+    with_alias = 0
+    for rec in by_name.values():
+        if rec.get(K_ZH) or rec.get(K_KO):
+            with_alias += 1
+    say(PRINT_FACTS_DONE_TPL.format(out=OUT_FACTS, n=len(got.industry), hit=hit, alias=with_alias))
+
+
+def industry_by_slug(jobs: list) -> FactsIndustryOut:
+    """开放岗按 companySlug 归组 → 大类多数派(大类值=数据层中文值,前端三语显示)。"""
+    by_slug: dict = defaultdict(Counter)
+    n_open = 0
+    for job in jobs:
+        if (job.get(K_STATUS) or STATUS_OPEN) == STATUS_CLOSED:
+            continue
+        slug = job.get(K_COMPANY_SLUG)
+        broad = job.get(K_BROAD)
+        if slug and broad and broad != UNCLASSIFIED:
+            by_slug[slug][broad] += 1
+            n_open += 1
+    industry: dict = {}
+    for slug, votes in by_slug.items():
+        industry[slug] = votes.most_common(1)[0][0]
+    return FactsIndustryOut(industry=industry, by_slug=by_slug, n_open=n_open)
+
+
+def facts_candidates(x: CandsIn) -> list:
+    """候选 = 技能股大户 或 在库岗 ≥3 —— 控制 Wikidata 查询量;按公司名查。"""
+    picked: set = set()
+    for slug, votes in x.by_slug.items():
+        if sum(votes.values()) >= CAND_MIN_JOBS:
+            picked.add(x.name_of.get(slug, ""))
+    for c in x.companies:
+        if (c.get(K_LMIA_POSITIONS_SKILLED) or 0) >= CAND_MIN_LMIA_SKILLED:
+            picked.add(c.get(K_NAME))
+    picked.discard(None)
+    picked.discard("")
+    return sorted(picked)
+
+
+def facts_probe(x: ProbeIn) -> WikiProbe:
+    """幂等:确实查过的不重查(命中与确认未命中都算查过);失败的没进缓存,自然重试。"""
+    if K_WIKI_CHECKED in x.cached:
+        if not x.cached.get(K_WIKI):
+            return WikiProbe(failed=False, found=False, zh="", ko="", wiki="")
+        return WikiProbe(failed=False, found=True, zh=x.cached[K_ZH], ko=x.cached[K_KO],
+                         wiki=x.cached[K_WIKI])
+    probe = wikidata_lookup(x.name)
+    time.sleep(WD_SLEEP_S)
+    return probe
+
+
+def wikidata_lookup(name: str) -> WikiProbe:
+    """严格匹配:搜索前 3 个条目,en 标签/别名归一后等于公司名才收。
+
+    2026-08-31 批J:原件的 `except Exception: return ERR` 是静默吞 —— 按永不吞异常令补
+    err() 留痕(返回值语义一字不改:failed=True 仍是不缓存、下轮重试)。
+    """
+    try:
+        hits = wd_get(search_params(name)).get(K_SEARCH, [])
+        ids: list = []
+        for h in hits:
+            ids.append(h[K_ID])
+        if len(ids) == 0:
+            return WikiProbe(failed=False, found=False, zh="", ko="", wiki="")
+        ents = wd_get(entity_params(ids)).get(K_ENTITIES, {})
+        target = norm_company_name(name)
+        for eid in ids:
+            probe = entity_probe(EntityIn(entity=ents.get(eid) or {}, target=target))
+            if probe.found:
+                return probe
+        return WikiProbe(failed=False, found=False, zh="", ko="", wiki="")
+    except Exception as e:  # noqa: BLE001 — 网络/限速什么错都可能,一律当失败保留活口
+        err(name, e)
+        return WikiProbe(failed=True, found=False, zh="", ko="", wiki="")
+
+
+def search_params(name: str) -> dict:
+    """wbsearchentities 的查询参数(按名搜条目,只看前 3 个)。"""
+    return {P_ACTION: ACT_SEARCH, P_SEARCH: name, P_LANGUAGE: LANG_EN, P_TYPE: TYPE_ITEM,
+            P_LIMIT: WD_SEARCH_LIMIT}
+
+
+def entity_params(ids: list) -> dict:
+    """wbgetentities 的查询参数(一发取回三样属性 × 三种语言)。"""
+    return {P_ACTION: ACT_GET_ENTITIES, P_IDS: ID_SEP.join(ids), P_PROPS: WD_PROPS,
+            P_LANGUAGES: WD_LANGUAGES}
+
+
+def wd_get(params: dict) -> dict:
+    """打一发 Wikidata action API,响应体按 JSON 读回。"""
+    full = dict(params)
+    full[P_FORMAT] = FORMAT_JSON
+    url = WD_API_URL + QUERY_MARK + urllib.parse.urlencode(full)
+    req = urllib.request.Request(url, headers={HDR_USER_AGENT: WD_UA})
+    with urllib.request.urlopen(req, timeout=WD_TIMEOUT_S) as r:
+        return json.load(r)
+
+
+def entity_probe(x: EntityIn) -> WikiProbe:
+    """一个实体:en 标签/别名严格等于目标名、且有英文维基条目 → 收(否则 found=False)。
+
+    无英文维基条目 = 不算知名,别名也不收(知名徽标与别名同一门槛)。
+    """
+    labels = x.entity.get(K_LABELS, {})
+    names: list = [labels.get(LANG_EN, {}).get(K_VALUE, "")]
+    for alias in x.entity.get(K_ALIASES, {}).get(LANG_EN, []):
+        names.append(alias.get(K_VALUE, ""))
+    matched = False
+    for one in names:
+        if one and norm_company_name(one) == x.target:
+            matched = True
+            break
+    if not matched:
+        return WikiProbe(failed=False, found=False, zh="", ko="", wiki="")
+    title = x.entity.get(K_SITELINKS, {}).get(K_ENWIKI, {}).get(K_TITLE)
+    if not title:
+        return WikiProbe(failed=False, found=False, zh="", ko="", wiki="")
+    return WikiProbe(failed=False, found=True,
+                     zh=labels.get(LANG_ZH, {}).get(K_VALUE, ""),
+                     ko=labels.get(LANG_KO, {}).get(K_VALUE, ""),
+                     wiki=WIKI_URL_PREFIX + urllib.parse.quote(
+                         title.replace(WIKI_SPACE, WIKI_UNDERSCORE)))
+
+
+def norm_company_name(s: str) -> str:
+    """公司名归一键:小写、去法人后缀、点与逗号折空格、缩空白。"""
+    one = FACTS_SUFFIX_RE.sub(TEXT_JOIN_SEP, (s or "").lower())
+    one = one.replace(DOT_SEP, TEXT_JOIN_SEP).replace(FACTS_COMMA, TEXT_JOIN_SEP)
+    return WS_FOLD_RE.sub(TEXT_JOIN_SEP, one).strip()
+
+
+def to_facts_record(probe: WikiProbe) -> dict:
+    """WikiProbe → by_name 的一行(键序即产出契约:wiki_checked 在前,命中才带三格)。"""
+    rec: dict = {"wiki_checked": WIKI_CHECKED_MARK}
+    if probe.found:
+        rec["zh"] = probe.zh
+        rec["ko"] = probe.ko
+        rec["wiki"] = probe.wiki
+    return rec
+
+
+def save_company_facts(x: SaveFactsIn) -> None:
+    """产出落盘(旧缓存合并写:中途落盘不冲掉本轮还没遍历到的已查条目)。"""
+    merged = dict(x.prev_names)
+    merged.update(x.by_name)
+    by_slug: dict = {}
+    for slug, value in x.industry.items():
+        by_slug[slug] = to_industry_cell(value)
+    paths.write_json(paths.WriteJsonIn(path=OUT_FACTS,
+                                       payload={K_BY_SLUG: by_slug, K_BY_NAME: merged},
+                                       indent=FACTS_INDENT))
+
+
+def to_industry_cell(value: str) -> dict:
+    """by_slug 的一格。"""
+    return {"industry": value}

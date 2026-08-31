@@ -221,33 +221,40 @@ DEPLOY_PENDING_ROW_LEN = 110
 # =========================================================================
 
 BUILD_CHAIN_CMDS = (
-    ("python", "etl/clean/05e_flag_apprentice.py"),
+    ("python", "etl/jobbank/main.py", "--only", "apprentice"),
     ("python", "etl/jobbank/main.py", "--only", "expired"),
-    ("python", "etl/clean/04c_clean_ats_locations.py"),
-    ("python", "etl/clean/04d_clean_salary.py"),
+    ("python", "etl/mart/main.py", "--only", "locations"),
+    ("python", "etl/mart/main.py", "--only", "salary"),
     ("python", "etl/aip/main.py", "--only", "flag"),
     ("python", "etl/rcip/main.py", "--only", "communities"),
     ("python", "etl/fcip/main.py", "--only", "communities"),
-    ("python", "etl/clean/05f_flag_pilot.py"),
-    ("python", "etl/clean/05d_noc_sanity.py"),
+    ("python", "etl/mart/main.py", "--only", "pilot_flag"),
+    ("python", "etl/jobbank/main.py", "--only", "noc_sanity"),
     ("python", "etl/mart/main.py"),
     ("python", "etl/employers/main.py"),
 )
 """build 役(非抓取源,灌库唯一角色)的跨源汇装链:清洗打标 → 评分 → mart → 榜单/统计 →
 雇主池;链尾 upload 在 run_build_chain 里直调(原役册末步 `load/main.py --only upload`
 的子进程自调,收编后同进程直调,语义不变)。原 sources/build/__init__.py 的逐步注释
-逐字折此(2026-08-31 批F):
-  05e_flag_apprentice   B1-3:官方标「不要经验/带训」+ 学徒标题 → apprentice_friendly
+逐字折此(2026-08-31 批F);**批J**(同日,clean/ 目录退役)把五个清洗步换成各自归户后的
+域门 `--only` 点名 —— **顺序逐位未动,产物逐字节相同**,换的只是谁来跑:
+  jobbank --only apprentice B1-3:官方标「不要经验/带训」+ 学徒标题 → apprentice_friendly。
+                        原 clean/05e_flag_apprentice.py,批J 归户 jobbank 域
   jobbank --only expired #124 批C:死岗验尸(周节奏,7 天内跑过=秒退;判死帖 mart 剔除出表);
                         2026-08-31 批D ops 拆散归根,批H 归户 jobbank 域(件即
                         jobbank/verify_jobbank_expired.py,经本域门点名)
-  04c_clean_ats_locations / 04d_clean_salary   跨源清洗(ATS/JB 同一套)
+  mart --only locations / mart --only salary   跨源清洗(ATS/JB 同一套):地点与薪资。
+                        原 clean/04c_clean_ats_locations.py / clean/04d_clean_salary.py,
+                        批J 归户 mart 域(判据:跨源,不归任何单源域)
   aip --only flag        AIP 打标(2026-08-31 批H 归户 aip 域,原 clean/05c;跨役走域门)
   rcip/fcip communities E6-11:试点社区名单(读 fed-rcip crawl 缓存,改版保旧不拦役);
-                        批C 溶进 pilot 域、批E 拆三域一步变两步,顺序不动仍在 05f 之前
-  05f_flag_pilot        E6-11:城市×省 → jobs.pilot/pilotCommunity(05c 同款一字段一脚本)
-  05d_noc_sanity        #47:标题↔NOC 失配护栏(泛词标题×TEER0/1×低薪 → NOC 置空转未分类)
-                        🔴 必须排在 04d 之后:它的判据里有「低薪」,读的是 04d 算出的 salaryAnnual
+                        批C 溶进 pilot 域、批E 拆三域一步变两步,顺序不动仍在打标之前
+  mart --only pilot_flag E6-11:城市×省 → jobs.pilot/pilotCommunity(一字段一关注点)。
+                        原 clean/05f_flag_pilot.py,批J 归户 mart 域
+  jobbank --only noc_sanity #47:标题↔NOC 失配护栏(泛词标题×TEER0/1×低薪 → NOC 置空转未分类)。
+                        原 clean/05d_noc_sanity.py,批J 归户 jobbank 域。
+                        🔴 必须排在 salary 之后:它的判据里有「低薪」,读的是那步算出的
+                        salaryAnnual —— 链序即语义,挪位就是改判定
   (官网富化已拆独立 enrich 角色,2026-07-16「分开来跑」拍板:每轮 10-17 分钟拖垮 seed 时效;
   本链只消费它落好的 company_enrich.json(09 合并),不再现抓)
   mart/main             评分 → mart → 榜单(E5-02 读 mart 纯聚合)→ 地区统计(E5-04 同)。

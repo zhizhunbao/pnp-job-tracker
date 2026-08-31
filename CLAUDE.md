@@ -52,7 +52,7 @@
 etl/ (Python: 抓取 → 清洗 → 评分, 写 data/) ──> cms/ (Payload + Next.js + Postgres) ──> 公开页
 ```
 
-- `etl/` 域即役(一域一门,调度看各域 META;2026-08-31 批F 后编号只剩 08-11 跨源汇装,挂 load 域 build 链),`etl/paths/` 是**唯一路径真相**(任何脚本不写死路径)。
+- `etl/` 域即役(一域一门,调度看各域 META/METAS;2026-08-31 批C~L 十一批收官:**全部代码住域,每域五件套** constants/scheme/functions/main/__init__,根上零散件清零),`etl/paths/` 是**唯一路径真相**(任何脚本不写死路径)。
 - **分层(数据仓库式)**:raw(抽取)→ clean/(清洗按关注点)→ **mart(`09_build_mart.py` 产出 data/mart/,列对齐 DB,一文件=一张表)** → load(seed)。
 - `lib/mart`(壳在 `app/api/seed`)是**纯加载器**:只读 mart json → 灌库,不拼装不清洗。不带 `?reset=1` = 增量对账(未出现的岗 → closed)。
 - **DB**:事实表 jobs/companies;维度表 provinces/cities/districts/noc_categories/sources/experience_levels/designated_employers。Payload 管 schema/admin。
@@ -62,12 +62,10 @@ etl/ (Python: 抓取 → 清洗 → 评分, 写 data/) ──> cms/ (Payload + N
 
 ```
 pnp-job-tracker/
-├── etl/                       # 数据层(Python):paths/ 路径真相;抓岗在 jobbank/ ats/ 两域,08-11 = 跨源评分/mart/榜单/统计
-│   ├── clean/                 #   清洗脚本,一个关注点一个(04b 薪资抽取,04c 地点,04d 薪资归一,05x JB 解析)
+├── etl/                       # 数据层(Python):26 域全五件套 —— 抓岗 jobbank/ats,汇装 mart(跨源清洗+评分+27 表),调度 sched,闸 gate
 │   ├── <域>/                  #   一域一役:__init__ META/METAS 声明 role/interval,main 门;auto_update 自动发现(2026-08-31 批F:sources/ 役册退役)
 │   ├── pnp/ crawl/ news/      #   省 PNP 事实构建;官方站 URL 探索(政策雷达);官方新闻
-│   ├── noc.py noc_buckets.py  #   NOC 分类与 TEER 单一来源
-│   └── build_*.py audit_*.py  #   单源事实表(lmia/wages/dli/ee/…);自查役
+│   └── noc/ paths/ log/ fetch/ crawl/  #   基建叶五片(分类法/路径+锁/日志/抓取件/官方站缓存),形制闸 INFRA 名单即此
 ├── data/                      # raw/<源>/ 原始 → processed/ 当前态 → mart/ 最终表;crawl/<slug>/manifest.json = 官方 URL 清单(**找官方数据先 grep 这里**)
 ├── cms/
 │   ├── src/collections/       #   Payload collection = 表 schema
@@ -85,9 +83,8 @@ pnp-job-tracker/
 
 **「脏活在脚本里干完,seed 只入库,前端只显示。」**
 
-1. 清洗脚本统一放 `etl/clean/`;每脚本顶部先声明 `IN_*`/`OUT_*` 全路径常量(经 `paths` 解析,运行时打印)。
-2. **一个「清洗关注点」一个脚本**(不是每字段一个、也不是每来源一个):一个关注点往往产出多个互相依赖的字段,同一脚本一次算清(04c 一次规范化 country/province/city/district/address —— 同源、共用社区映射);拆散 = 重复解析 + 复制共享表,反模式。
-3. 同一脚本对所有来源生效(ATS 和 JB 过同一套地点清洗)。
+1. **谁的数据谁清洗**(2026-08-31 Frank,clean/ 目录随批J 退役):单源清洗住**源域的段**(JB 解析/护栏在 jobbank,ATS 薪资抽取在 ats),跨源清洗住 **mart 域的段**(地点/薪资归一/试点打标 —— ATS 和 JB 过同一套,拆给单源=复制共享映射表)。每段 IN_*/OUT_* 全路径常量住域 constants(经 `paths` 解析,运行时打印)。
+2. **一个「清洗关注点」一个段**(不是每字段一个、也不是每来源一个):一个关注点往往产出多个互相依赖的字段,同段一次算清。
 4. 发现前端在清洗/换算 = 技术债,下沉成清洗脚本。
 
 ## 数据约定
@@ -98,7 +95,7 @@ pnp-job-tracker/
 - **公司级数据一律懒查询,禁批量预抓**(Frank 铁律);存量队列项执行前过懒化透镜。
 - **地点**:大渥太华社区(Kanata/Nepean/Orléans…)是「区」,统一 city=Ottawa;精确地址需含街号否则 address 留空;社区判定文本优先,邮编只用高置信郊区 FSA 兜底(central Ottawa 不猜)。
 - **来源真相**:Job Bank 聚合 indeed/Talent 等 → 统一显示「Job Bank」,`source` 保留原始板;`origin` 是发布渠道不代表雇主真假;中介已按公司名过滤。
-- **评分/PNP**:NOC → TEER → 每 TEER 评分(08_score)。`pnpEligible` = TEER 0-3 或紧缺低 TEER 清单;排除式省(AB;ON 排除集空=全职业)默认可、清单内不可 —— **粗筛信号,非资格认定**(QC 自成体系不属 PNP)。未匹配 NOC 标「未分类」,不硬塞。
+- **评分/PNP**:NOC → TEER → 每 TEER 评分(mart 域评分段)。`pnpEligible` = TEER 0-3 或紧缺低 TEER 清单;排除式省(AB;ON 排除集空=全职业)默认可、清单内不可 —— **粗筛信号,非资格认定**(QC 自成体系不属 PNP)。未匹配 NOC 标「未分类」,不硬塞。
 - **雇主机会口径**(2026-08-29,详见 [雇主板设计稿](docs/design/雇主板重构-20260829.md)):裸 LMIA 总量永不入排序(农业/医疗水量霸榜);证据必须按职业大类交叉;「名录」一词退役,统一「指定雇主」。
 
 ## 代码组织约定
@@ -228,7 +225,7 @@ cd cms && npm run dev                    # localhost:3000(读写生产!测试号
 # 改 collection 字段:显式 DB_PUSH=1 单次推(删列/改类型手写 SQL,提示删列必答 N);改 Jobs 字段后重启 dev 再重灌
 # seed 必带 token(直连生产,reset=1 会清库慎用):curl -H "x-seed-token: $SEED_TOKEN" localhost:3000/api/seed
 # 无人值守全栈:cd docker && docker compose --profile unattended up -d --build
-# 完整 ETL:python etl/run_now.py(jobbank → pnp → ee → news → ircc → build;2026-08-31 批F 抓岗入域,编号只剩 08-11 跨源汇装)
+# 完整 ETL:python etl/sched/main.py --only now(2026-08-31 批K 调度器域化;编号主管线已全数入域,mart 域=跨源清洗+汇装)
 ```
 
 ## 禁止事项 (Do NOT)
