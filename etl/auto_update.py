@@ -74,8 +74,10 @@ def load_units() -> list[dict]:
         if dom in NOT_DOMAIN or dom.startswith("_"):
             continue
         spec = importlib.util.spec_from_file_location(f"_dom_{dom}", ini)
+        # pyrefly: ignore[bad-argument-type] — spec_from_file_location 只在路径不存在时给 None;此处是仓内固定文件,拿不到就该当场炸
         mod = importlib.util.module_from_spec(spec)
         try:
+            # pyrefly: ignore[missing-attribute] — 同上,spec 非 None 时 loader 恒在
             spec.loader.exec_module(mod)
         except Exception as e:  # noqa: BLE001  # 某域 __init__ 坏了只丢该域,不拖垮容器
             log.error(f"✗ 读域 {dom} 的 META 失败({type(e).__name__}: {e}),跳过该域")
@@ -108,6 +110,7 @@ def run_step(step: list[str], unit_log=None) -> bool:
     env = {**os.environ, "PYTHONUNBUFFERED": "1", "PYTHONIOENCODING": "utf-8"}  # 子进程实时逐行 + utf-8 输出
     proc = subprocess.Popen(step, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                             text=True, encoding="utf-8", errors="replace", bufsize=1, env=env)
+    # pyrefly: ignore[not-iterable] — Popen 带 stdout=PIPE 时 proc.stdout 恒非 None(存根按无 PIPE 的形留了 None 档)
     for line in proc.stdout:                        # 子进程每行 → 统一前缀(去掉行尾换行)
         line = line.rstrip("\n")
         if line.strip():

@@ -113,8 +113,11 @@ class JobbankStoreLockTest(unittest.TestCase):
 
     def _parser_module(self, name: str):
         spec = importlib.util.spec_from_file_location(f"clean_{name}", ETL / "clean" / f"{name}.py")
+        # pyrefly: ignore[bad-argument-type] — spec_from_file_location 只在路径不存在时给 None;此处是仓内固定文件,拿不到就该当场炸
         module = importlib.util.module_from_spec(spec)
+        # pyrefly: ignore[missing-attribute] — spec_from_file_location 只在路径不存在时给 None;此处是仓内固定文件,拿不到就该当场炸
         assert spec.loader is not None
+        # pyrefly: ignore[missing-attribute] — 上一行 assert 已保证 loader 非 None;存根把 loader 标成 Loader|None
         spec.loader.exec_module(module)
         return module
 

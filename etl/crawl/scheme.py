@@ -2,16 +2,105 @@
 
 2026-08-30 全溶立(fetch 同日先例);种子册常量是 dict(JSON 装得下住 constants),
 进函数前经 SeedSpec.model_validate 洗成有效行(律⑨:边界行形状 = pydantic)。
-asyncio 原语与 httpx 客户端字段按存量宽型(object)登记,收紧挂批C(pyrefly 未覆盖本域)。
+asyncio 原语与 httpx 客户端字段原按存量宽型(object)登记,2026-08-31 批G 收紧成 Protocol
+(company/scheme.py 的 HttpClientLike/TagLike 样张):只声明本域真用的格,装配点 cast。
 """
 from asyncio import Lock, Semaphore
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Protocol
 
 from pydantic import BaseModel, ConfigDict
 
 MODEL_CFG = ConfigDict(extra="ignore", populate_by_name=True, use_attribute_docstrings=True)
 """域内 pydantic 统一配置(company 样张同款:多余键忽略)。"""
+
+
+class HttpHeadersLike(Protocol):
+    """httpx 响应头里本域真用的格:只有带默认值的 get。"""
+
+    def get(self, key: str, default: str) -> str:
+        """取一个头,缺席给默认值。"""
+        ...
+
+
+class HttpResponseLike(Protocol):
+    """httpx 异步响应里本域真用的格。"""
+
+    status_code: int
+    """HTTP 状态码。"""
+
+    text: str
+    """响应体文本。"""
+
+    url: object
+    """最终地址(跟随重定向后;本域只 str() 它当相对链接基准)。"""
+
+    headers: HttpHeadersLike
+    """响应头。"""
+
+    def raise_for_status(self) -> object:
+        """非 2xx 抛错。"""
+        ...
+
+
+class HttpAsyncClientLike(Protocol):
+    """httpx.AsyncClient 里本域真用的格:只有 get。
+
+    Pyrefly 对 Protocol 实参判定保守,不认 httpx.AsyncClient 的结构等价 ——
+    装配点用 typing.cast 喂真客户端(断言只住装配点)。
+    """
+
+    async def get(self, url: str) -> HttpResponseLike:
+        """GET 一个 URL(超时/重定向/请求头由客户端自带配置管)。"""
+        ...
+
+
+class MouseLike(Protocol):
+    """playwright 鼠标里本域真用的格:只有滚轮(懒加载滚出来)。"""
+
+    async def wheel(self, delta_x: int, delta_y: int) -> None:
+        """滚一段。"""
+        ...
+
+
+class PageLike(Protocol):
+    """playwright 标签页里本域真用的格(浏览器兜底 + EE 类别页两处消费)。
+
+    evaluate 声明为交回清单:本域两处调用一处丢弃结果、一处取行清单 —— 这是用法主张,
+    不是 playwright 的全量真相。方法签名库定死,一参令例外。
+    """
+
+    mouse: MouseLike
+    """鼠标。"""
+
+    async def title(self) -> str:
+        """当前标题(判人机验证页用)。"""
+        ...
+
+    async def goto(self, url: str, *, wait_until: str, timeout: int) -> object:
+        """导航到一页。"""
+        ...
+
+    async def wait_for_load_state(self, state: str, *, timeout: int) -> None:
+        """等到某个加载态。"""
+        ...
+
+    async def wait_for_function(self, expression: str, *, timeout: int) -> object:
+        """等一段 JS 判据成真(等人点验证框)。"""
+        ...
+
+    async def wait_for_timeout(self, timeout: int) -> None:
+        """干等一段毫秒。"""
+        ...
+
+    async def content(self) -> str:
+        """渲染后的整页 HTML。"""
+        ...
+
+    async def evaluate(self, expression: str) -> list:
+        """在页内跑一段 JS 并交回结果。"""
+        ...
 
 
 class SeedSpec(BaseModel):
@@ -105,8 +194,8 @@ class CrawlCtx:
     html_dir: Path
     """本 slug 的 html_cache 目录。"""
 
-    client: object
-    """httpx.AsyncClient(装配点直喂;类型收紧挂批C)。"""
+    client: HttpAsyncClientLike
+    """httpx.AsyncClient(装配点 cast 直喂)。"""
 
     sem: Semaphore
     """并发闸。"""

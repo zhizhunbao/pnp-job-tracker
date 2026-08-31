@@ -280,6 +280,7 @@ def parse_bc(html: str) -> list[dict]:
     soup = BeautifulSoup(html, HTML_PARSER)
     main = soup.find(TAG_MAIN) or soup.body
     items = []
+    # pyrefly: ignore[missing-attribute] — soup.body 只有空文档才是 None;正文容器拿不到即解析塌方,该炸
     for h2 in main.find_all(TAG_H2):
         head = h2.get_text(TEXT_JOIN_SEP, strip=True)
         date = iso_date(head)
@@ -325,6 +326,7 @@ def parse_nb(html: str) -> list[dict]:
     soup = BeautifulSoup(html, HTML_PARSER)
     main = soup.find(TAG_MAIN) or soup.body
     cur = None
+    # pyrefly: ignore[missing-attribute] — 同上
     for h in main.find_all(TAG_H2):
         if NB_CURRENT_HEAD in h.get_text(TEXT_JOIN_SEP, strip=True).lower():
             cur = h
@@ -386,6 +388,7 @@ def parse_on(html: str) -> list[dict]:
     soup = BeautifulSoup(html, HTML_PARSER)
     main = soup.find(TAG_MAIN) or soup.body
     items = []
+    # pyrefly: ignore[missing-attribute] — 同上
     for h4 in main.find_all(TAG_H4):
         title = WS_FOLD_RE.sub(TEXT_JOIN_SEP, h4.get_text(TEXT_JOIN_SEP, strip=True))
         prev_h3 = h4.find_previous(TAG_H3)
@@ -431,7 +434,7 @@ def parse_sk(html: str) -> list[dict]:
     soup = BeautifulSoup(html, HTML_PARSER)
     items = []
     for a in soup.select(SK_ROW_SEL):
-        m = SK_URL_DATE_RE.search(a[HREF_ATTR])
+        m = SK_URL_DATE_RE.search(cast(str, a[HREF_ATTR]))
         month = MONTH_NUM.get(m.group(2).lower()) if m else None
         if not month:
             continue
@@ -439,7 +442,9 @@ def parse_sk(html: str) -> list[dict]:
         if not title:
             continue
         items.append({K_TITLE: title, K_URL: a[HREF_ATTR],
+                      # pyrefly: ignore[missing-attribute] — m 为 None 时 month 也为 None,上方 `if not month: continue` 已拦住
                       K_DATE: DATE_ISO_TPL.format(year=m.group(1), month=month,
+                                                  # pyrefly: ignore[missing-attribute] — 同上
                                                   day=int(m.group(3)))})
     return items
 

@@ -94,7 +94,7 @@ def to_hr_yr(x: HourlyIn) -> WagePair | None:
 
 def to_wage_entry(x: WageEntryIn) -> dict:
     """一个 NOC×地区 的落盘 entry(low/high/year 缺则不写键,同源数据一并抽出)。"""
-    entry = {"hourly": x.median.hourly, "annual": x.median.annual}
+    entry: dict = {"hourly": x.median.hourly, "annual": x.median.annual}
     if x.low is not None:
         entry["lowHourly"] = x.low.hourly
         entry["lowAnnual"] = x.low.annual
@@ -215,6 +215,7 @@ def download_zip() -> None:
         say(JVWS_CACHED_TPL.format(path=IN_JVWS_ZIP))
         return
     IN_JVWS_ZIP.parent.mkdir(parents=True, exist_ok=True)
+    # pyrefly: ignore[bad-argument-type] — out_path=None 那一档 curl_get 必回响应体文本(落盘档才回 None)
     csv_url = to_csv_url(curl_get(CurlGetIn(url=JVWS_WDS_CSV_LINK, out_path=None,
                                             timeout=JVWS_ZIP_TIMEOUT_S)))
     say(JVWS_DOWNLOAD_TPL.format(url=csv_url))

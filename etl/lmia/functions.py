@@ -41,7 +41,9 @@ def load_norm_name() -> NormNameFn:
     单一来源不复制:雇主聚合键与 AIP 匹配必须是同一把尺子,复制一份=给口径开岔。
     """
     spec = importlib.util.spec_from_file_location(NORM_MODULE_NAME, NORM_MODULE_PATH)
+    # pyrefly: ignore[bad-argument-type] — spec_from_file_location 只在路径不存在时给 None;此处是仓内固定文件,拿不到就该当场炸
     mod = importlib.util.module_from_spec(spec)
+    # pyrefly: ignore[missing-attribute] — 同上,spec 非 None 时 loader 恒在
     spec.loader.exec_module(mod)
     return mod.norm_name
 
@@ -150,6 +152,7 @@ def parse_quarter(x: ParseQuarterIn) -> int:
     ws = wb.active
     header_seen = False
     kept = 0
+    # pyrefly: ignore[missing-attribute] — openpyxl 存根把 wb.active 标成可空(空工作簿档);这里是官方 xlsx,拿不到就该炸
     for row in ws.iter_rows(values_only=True):
         cells = cells_of(row)
         if not header_seen:

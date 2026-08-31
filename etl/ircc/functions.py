@@ -25,7 +25,9 @@ import json
 import subprocess
 import sys
 import urllib.request
+import re
 from datetime import date, datetime, timezone
+from typing import cast
 from io import BytesIO
 
 import httpx
@@ -73,6 +75,7 @@ from ircc.constants import (
     WDS_VECTOR_FAIL_TPL, YEAR_PREFIX, YEAR_TOTAL_OFFSET,
 )
 from ircc.scheme import (
+    SheetLike,
     ByProvIn, CellAtIn, CoordIn, FailIn, FeeRowIn, FlowGotIn, FlowMonthsIn, FlowTailIn,
     FlowYearIn, ItemsOut, MemberIds, NprRowsIn, PgwpReqIn, QuartersIn, SectionItemsIn, YearTotals,
 )
@@ -129,7 +132,7 @@ def cell_at(x: CellAtIn) -> int:
     return 0
 
 
-def sheet_rows(ws: object) -> list:
+def sheet_rows(ws: SheetLike) -> list:
     """工作表 → 行清单(read_only 工作簿 iter_rows 可重复遍历,两个解析器各自扫行)。"""
     rows = []
     for r in ws.iter_rows(values_only=True):
@@ -174,7 +177,7 @@ def prov_name_of(cell: object) -> str:
     return str(cell or "").replace(TOTAL_DASH_SUFFIX, "").replace(TOTAL_SUFFIX, "").strip()
 
 
-def latest_year_totals(ws: object) -> YearTotals:
+def latest_year_totals(ws: SheetLike) -> YearTotals:
     """年末存量表:省 Total 行(名列 0)× 年份列;取最新有数的年份列。"""
     rows = sheet_rows(ws)
     years = year_columns_of(year_header_of(rows))
@@ -197,7 +200,7 @@ def latest_year_totals(ws: object) -> YearTotals:
     return YearTotals(year=year_used, by_prov=out)
 
 
-def all_year_totals(ws: object) -> dict:
+def all_year_totals(ws: SheetLike) -> dict:
     """年末存量表:省 Total 行 × 全部年份列 → {year: {prov: n}}(2026-08-14 竞争卡年份筛选)。
 
     列有但整列空(发布年占位)不出;单元格 '--'(小值抑制)按 0(与 latest 同口径)。
@@ -250,7 +253,7 @@ def has_pnp_cell(r: list) -> bool:
     return False
 
 
-def pnp_latest_full_year(ws: object) -> YearTotals:
+def pnp_latest_full_year(ws: SheetLike) -> YearTotals:
     """PR 按省×类别表:块=类别行…「省 - Total」收尾;取「YYYY Total」最新完整年列的
     Provincial Nominee 组行。
 
@@ -336,7 +339,7 @@ def flow_year_row(x: FlowYearIn) -> dict:
     return {K_N: total, K_COMPLETE: len(x.got) == MONTHS_FULL, K_THROUGH_MONTH: x.got[-1][0]}
 
 
-def study_flow(ws: object) -> dict:
+def study_flow(ws: SheetLike) -> dict:
     """新发学签流量表 → {省码: {年: 年块}}(省 Total 行 × 年 × 月)。"""
     rows = sheet_rows(ws)
     yr_row = None
@@ -393,11 +396,11 @@ def flow_tail_of(x: FlowTailIn) -> str:
     return FLOW_TAIL_SEP.join(parts)
 
 
-def fetch_sheet(url: str) -> object:
+def fetch_sheet(url: str) -> SheetLike:
     """下载一张官方 XLSX → 活动工作表(read_only,省内存)。"""
     req = urllib.request.Request(url, headers={HDR_UA: STATS_UA})
     with urllib.request.urlopen(req, timeout=STATS_TIMEOUT_S) as r:
-        return openpyxl.load_workbook(BytesIO(r.read()), read_only=True).active
+        return cast(SheetLike, openpyxl.load_workbook(BytesIO(r.read()), read_only=True).active)
 
 
 def old_stock_years() -> dict:
@@ -757,14 +760,14 @@ def build_ircc_pgwp_rules() -> None:
     urls = {PGWP_PAGE_ABOUT: PGWP_URL_ABOUT, PGWP_PAGE_ELIG: PGWP_URL_ELIG}
     missing = []
     for r in PGWP_RULES:
-        if norm_pgwp(r[K_QUOTE]) not in pages[r[K_PAGE]]:
+        if norm_pgwp(str(r[K_QUOTE])) not in pages[str(r[K_PAGE])]:
             missing.append(r)
     if len(missing) > 0:
         fail_keep_old(FailIn(header=PGWP_MISSING_TPL.format(n=len(missing), total=len(PGWP_RULES)),
                              lines=pgwp_missing_lines(missing)))
     reqs = []
     for r in PGWP_RULES:
-        reqs.append(to_pgwp_req(PgwpReqIn(rule=r, url=urls[r[K_PAGE]])))
+        reqs.append(to_pgwp_req(PgwpReqIn(rule=r, url=urls[str(r[K_PAGE])])))
     paths.write_json(paths.WriteJsonIn(path=OUT_PGWP, payload={
         K_PROVINCE: PROVINCE_FED, K_PROGRAM: PGWP_PROGRAM, K_URL: PGWP_URL_ABOUT,
         K_FETCHED: today_iso(),
@@ -812,7 +815,7 @@ def section_items(x: SectionItemsIn) -> ItemsOut:
     return ItemsOut(reqs=reqs, problems=problems)
 
 
-def first_group_of(m: object) -> str:
+def first_group_of(m: re.Match[str]) -> str:
     """第一个非空捕获组(原 next(genexp) 的显式化)。"""
     for g in m.groups():
         if g:

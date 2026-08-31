@@ -174,11 +174,13 @@ def community_emp_rows(x: EmpPartIn) -> list:
     """
     rows: list = []
     if x.ok:
+        # pyrefly: ignore[unsupported-operation] — ok 为真即抽取成功,got 恒非 None(两格同生同灭)
         for r in x.got[K_EMPLOYERS]:
             if clean_name_of(r) == "":
                 continue
             rows.append(to_emp_row(DetailRowIn(community=x.name, province=x.province,
                                                ctype=x.ctype, raw=r,
+                                               # pyrefly: ignore[missing-attribute] — 同上
                                                url=x.got.get(K_EMPLOYERS_URL, ""))))
         return rows
     if x.got is not None and not (x.base == 0 and x.n == 0):
@@ -191,9 +193,11 @@ def community_occ_rows(x: OccPartIn) -> list:
     """一个社区本轮的职业行:刷新成功用新抽的,塌方喊一声用上一版的。"""
     rows: list = []
     if x.ok:
+        # pyrefly: ignore[unsupported-operation] — 同上
         for r in x.got[K_OCCUPATIONS]:
             rows.append(to_occ_row(DetailRowIn(community=x.name, province=x.province,
                                                ctype=x.ctype, raw=r,
+                                               # pyrefly: ignore[missing-attribute] — 同上
                                                url=x.got.get(K_OCCUPATIONS_URL, ""))))
         return rows
     if x.got is not None:
@@ -516,6 +520,7 @@ def province_hint_of(name: str) -> str:
     """社区的省码:人工表优先,否则从名字尾巴读(调用方已保证两者必有其一)。"""
     hint = PROV_HINT.get(name)
     if hint is None:
+        # pyrefly: ignore[missing-attribute] — 上一行已判 PROV_HINT 缺席;调用方保证人工表与名字尾巴必有其一(见 docstring)
         return PROV_RE.search(name).group(1)
     return hint
 

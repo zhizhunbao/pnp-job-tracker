@@ -11,11 +11,22 @@ clean/04e 直接读),行构造留在 functions 的各段里按 K_ 键逐格写�
 import 只有标准库(叶子律:形状本域自声明,零跨域)。
 """
 from dataclasses import dataclass
+from typing import Iterator, Protocol
 
 
 # =========================================================================
 # 1. 共享词汇(自校失败的抬头 + 逐条问题)
 # =========================================================================
+
+
+class SheetLike(Protocol):
+    """openpyxl 工作表形 —— Protocol 自声明只真用的格(company/scheme.py 的 TagLike 先例;
+    叶子律下 scheme 不 import openpyxl,裸 object 又让检查器判不动 —— 2026-08-31 批G 补形)。
+    read_only 工作簿的活动表恒在,拿不到即官方 XLSX 塌方该炸;装配点 cast。"""
+
+    def iter_rows(self, *, values_only: bool) -> Iterator[tuple]:
+        """逐行,每行是各格的值元组。"""
+        ...
 
 
 @dataclass

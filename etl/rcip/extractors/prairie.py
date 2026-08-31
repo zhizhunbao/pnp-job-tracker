@@ -117,6 +117,7 @@ def moose_jaw() -> dict:
     employers, seen = [], set()
     with _pdf(pdf_url) as doc:
         for page in doc:
+            # pyrefly: ignore[missing-attribute] — pymupdf get_text() 无参档位恒返回 str,存根把三档位并成 str|list|dict
             for raw in page.get_text().splitlines():
                 line = _tidy(raw)
                 if (not line or line.startswith("**") or len(line.split()) >= 8
@@ -185,6 +186,7 @@ def steinbach() -> dict:
     employers = []
     with _pdf(pdf_url) as doc:
         for page in doc:
+            # pyrefly: ignore[missing-attribute] — pymupdf get_text() 无参档位恒返回 str,存根把三档位并成 str|list|dict
             for raw in page.get_text().splitlines():
                 # PDF 排版伪影「Manitoba Health -Health…」→ 连字号两侧补齐空格
                 line = re.sub(r" -(?=[A-Za-z])", " - ", _tidy(raw))

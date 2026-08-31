@@ -16,6 +16,8 @@ docs/design/etl分域-20260829.md §4)。
 import sys
 from datetime import date, timedelta
 
+from typing import cast
+
 import httpx
 from bs4 import BeautifulSoup
 
@@ -53,6 +55,7 @@ from ee.constants import (
     TEXT_JOIN_SEP,
 )
 from ee.scheme import (
+    SoupNodeLike,
     BucketFillIn, CatBucket, CatMatch, DrawsOut, EcaMatch, EligFetchedIn, GridRowsIn, HeadingOut,
     LangBodyIn, LangCtx, LangCtxIn, LangRowIn, LangTableIn, LoadOut, MissingSayIn, PageCtx, PageIn,
     PreviousHeadingIn, ReqRowIn, SectionOfIn, TableOut, ValueColsIn,
@@ -85,7 +88,7 @@ def classify_category(heading: str) -> CatMatch:
     return CatMatch(key="", label="")
 
 
-def cell_texts(tr: object) -> list:
+def cell_texts(tr: SoupNodeLike) -> list:
     """一行 → 各 td 的压平文本。"""
     cells = []
     for td in tr.find_all(TAG_TD):
@@ -133,7 +136,7 @@ def fill_cat_bucket(x: BucketFillIn) -> None:
         x.bucket.occupations.append({K_NOC: noc, K_TEER: teer_of(cells), K_TITLE: title_of(cells)})
 
 
-def cat_buckets_of(soup: object) -> dict:
+def cat_buckets_of(soup: SoupNodeLike) -> dict:
     """整页 → 类别 key → 收集桶(表格上方最近的标题决定它属于哪一类)。"""
     cats: dict = {}
     for table in soup.find_all(TAG_TABLE):
@@ -177,7 +180,7 @@ def build_ircc_ee_categories() -> None:
     """
     r = httpx.get(CAT_URL, headers={HDR_UA: CAT_UA}, follow_redirects=True, timeout=CAT_TIMEOUT_S)
     r.raise_for_status()
-    soup = BeautifulSoup(r.text, PARSER_HTML)
+    soup = cast(SoupNodeLike, BeautifulSoup(r.text, PARSER_HTML))
     out_cats = out_categories_of(cat_buckets_of(soup))
     total = 0
     for c in out_cats:
@@ -200,7 +203,7 @@ def build_ircc_ee_categories() -> None:
 # =========================================================================
 
 
-def int_or_none(s: object) -> int | None:
+def int_or_none(s: str | None) -> int | None:
     """'1,234' → 1234;缺格/空/非数字 → None(不猜)。
 
     ⚠ 原 _int 的 `(s or "")` 口径**原样保留**(2026-08-30 批C 是行为逐字不变的溶解批):
@@ -213,7 +216,7 @@ def int_or_none(s: object) -> int | None:
         return None
 
 
-def draw_cat_key(name: object) -> str:
+def draw_cat_key(name: str | None) -> str:
     """drawName → 类别 key;不在词表里 = 空串(不 join,只留作 recent 参考)。"""
     n = (name or "").lower()
     for kw, key in DRAWS_CAT_MAP:
@@ -301,10 +304,11 @@ def load_page(url: str) -> LoadOut:
     hit = get_cached_page(url)
     if hit.html is None or hit.html == "":
         raise SystemExit(CACHE_MISS_TPL.format(url=url))
-    return LoadOut(main=BeautifulSoup(hit.html, PARSER_HTML).find(TAG_MAIN), fetched=hit.fetched)
+    main = cast(SoupNodeLike, BeautifulSoup(hit.html, PARSER_HTML).find(TAG_MAIN))
+    return LoadOut(main=main, fetched=hit.fetched)
 
 
-def page_updated(main: object) -> str:
+def page_updated(main: SoupNodeLike) -> str:
     """canada.ca「Page details」的官方改版日期(GCDS web component,不是 <time>)。找不到→空串。"""
     t = main.find(GCDS_DATE_TAG)
     if t:
@@ -312,7 +316,7 @@ def page_updated(main: object) -> str:
     return ""
 
 
-def parse_table(tbl: object) -> TableOut:
+def parse_table(tbl: SoupNodeLike) -> TableOut:
     """一张 HTML 表 → (第一列表头, 其余列表头, 数据行)。表头 = 第一个 tr。"""
     rows = []
     for tr in tbl.find_all(TAG_TR):
@@ -342,7 +346,7 @@ def as_points(text: str) -> int | None:
     return int(m.group(1).replace(COMMA, ""))
 
 
-def nearest_heading(tbl: object) -> HeadingOut:
+def nearest_heading(tbl: SoupNodeLike) -> HeadingOut:
     """回溯最近的标题链 → (section 字母, section 名, 本表小标题, 是否 breakdown 明细表)。"""
     heading = ""
     letter = ""
@@ -362,7 +366,7 @@ def nearest_heading(tbl: object) -> HeadingOut:
     return HeadingOut(letter=letter, label=label, heading=heading, is_detail=is_detail)
 
 
-def fsw_heading_of(tbl: object) -> HeadingOut:
+def fsw_heading_of(tbl: SoupNodeLike) -> HeadingOut:
     """FSW 67 分表的段固定成 FSW/Selection factors、恒明细(原 grid_rows 的 lambda 覆盖)。"""
     return HeadingOut(letter=FSW_SECTION_LETTER, label=FSW_SECTION_LABEL,
                       heading=nearest_heading(tbl).heading, is_detail=True)
@@ -410,7 +414,7 @@ def grid_rows(x: GridRowsIn) -> list:
     return out
 
 
-def crs_sections(main: object) -> list:
+def crs_sections(main: SoupNodeLike) -> list:
     """四段的官方 Maximum 原句原样收下(页面上没写的总分不替官方求和)。"""
     text = norm(main.get_text(TEXT_JOIN_SEP, strip=True))
     marks = []
@@ -564,7 +568,7 @@ def language_tables(x: PageIn) -> list:
     return out
 
 
-def eca_table_of(main: object) -> EcaMatch:
+def eca_table_of(main: SoupNodeLike) -> EcaMatch:
     """ECA 页里表头逐字等于 ECA_EXPECTED 的那张表(靠表头定位,不靠表序号)。"""
     table_no = 0
     for tbl in main.find_all(TAG_TABLE):
@@ -610,7 +614,7 @@ def missing_quotes(pages: dict) -> list:
     """引用逐字核验:归一化后仍在各自页面上的才算数,不在的整表不更新。"""
     out = []
     for r in RULES:
-        if norm(r[K_QUOTE]) not in pages[r[K_PAGE]].text:
+        if norm(str(r[K_QUOTE])) not in pages[r[K_PAGE]].text:
             out.append(r)
     return out
 
@@ -624,7 +628,7 @@ def franco_missing_quotes(pages: dict) -> list:
             continue
         if r[K_PAGE] != PAGE_RCIP_RURAL:
             continue
-        if norm(r[K_QUOTE]) not in franco:
+        if norm(str(r[K_QUOTE])) not in franco:
             out.append(r)
     return out
 

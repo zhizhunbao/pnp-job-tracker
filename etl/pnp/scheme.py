@@ -10,12 +10,120 @@ sys.path[0] 时 httpx/bs4 内部 import types 当场炸)。
 被 09 汇装读),行构造留在 functions 的表段里按 K_ 键逐格写全,校验靠各步自校硬闸。
 import 两个洞:标准库 + 本域 constants(叶子律的域内松绑,跨域仍零)。
 """
+import re
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Iterator, Protocol
 
 from pnp.constants import GQ_SKIP_TAGS
+
+
+class SoupNodeLike(Protocol):
+    """bs4 标签节点形 —— Protocol 自声明只真用的格(company/scheme.py 的 TagLike、
+    ee/scheme.py 的 SoupNodeLike 先例;叶子律下 scheme 不 import bs4,裸 object 又让
+    检查器判不动 —— 2026-08-31 Frank IDE 实拍 missing-attribute 后补形)。
+    find/find_previous 声明为非可选:这是本域的用法主张(找不到即炸=解析塌方该炸),
+    不是 bs4 的全量真相;方法签名库定死,一参令例外。"""
+
+    name: str
+    """标签名(判 <p>/<ul>/<table> 用)。"""
+
+    def __call__(self, *args: object, **kwargs: object) -> "list[SoupNodeLike]":
+        """soup(名字清单) = find_all 的简写(清场那步就这么写的)。"""
+        ...
+
+    def find_all(self, *args: object, **kwargs: object) -> "list[SoupNodeLike]":
+        """按标签名收后代清单。"""
+        ...
+
+    def find(self, *args: object, **kwargs: object) -> "SoupNodeLike":
+        """第一个命中的后代。"""
+        ...
+
+    def find_previous(self, *args: object, **kwargs: object) -> "SoupNodeLike":
+        """文档序向前第一个命中(表格找它上方最近的标题用)。"""
+        ...
+
+    def get_text(self, *args: object, **kwargs: object) -> str:
+        """压平文本。"""
+        ...
+
+    def get(self, *args: object, **kwargs: object) -> str | None:
+        """取属性值(本域只取 rowspan/colspan 这类单值属性,缺席 = None)。"""
+        ...
+
+    def __getitem__(self, key: str) -> str:
+        """按属性名直取(本域只取 href,单值;多值属性 bs4 会给清单,本域不碰)。"""
+        ...
+
+    def decompose(self) -> None:
+        """就地拆掉该节点(清场用)。"""
+        ...
+
+    def replace_with(self, *args: object, **kwargs: object) -> object:
+        """就地换成别的内容(<br> 换成换行符用)。"""
+        ...
+
+
+class PdfTableLike(Protocol):
+    """pymupdf 表格对象形 —— 本域只用它交回稀疏格矩阵。"""
+
+    def extract(self) -> list:
+        """一张表 → 逐行的格清单(空格是 None)。"""
+        ...
+
+
+class PdfTablesLike(Protocol):
+    """pymupdf TableFinder 形 —— 本域只取 tables 一格。"""
+
+    tables: list[PdfTableLike]
+    """该页找到的表清单。"""
+
+
+class PdfPageLike(Protocol):
+    """pymupdf 页对象形(只真用的两格;find_tables 声明为非可选,同 SoupNodeLike 的用法主张)。"""
+
+    def get_text(self, *args: object, **kwargs: object) -> str:
+        """整页文本。"""
+        ...
+
+    def find_tables(self, *args: object, **kwargs: object) -> PdfTablesLike:
+        """该页的表格查找器。"""
+        ...
+
+
+class PdfDocLike(Protocol):
+    """pymupdf 文档形 —— 本域只逐页遍历。"""
+
+    def __iter__(self) -> Iterator[PdfPageLike]:
+        """逐页。"""
+        ...
+
+
+class HttpResponseLike(Protocol):
+    """httpx 响应里本域真用的格(抽选名意译那一步)。"""
+
+    def raise_for_status(self) -> object:
+        """非 2xx 抛错。"""
+        ...
+
+    def json(self) -> dict:
+        """响应体 JSON。"""
+        ...
+
+
+class HttpClientLike(Protocol):
+    """httpx 客户端里本域真用的格:只有 post(company/scheme.py HttpClientLike 先例)。
+
+    Pyrefly 对 Protocol 实参判定保守,不认 httpx.Client 的结构等价 ——
+    装配点用 typing.cast 喂真客户端(断言只住装配点)。
+    """
+
+    def post(self, url: str, *, json: dict, timeout: float) -> HttpResponseLike:
+        """POST 一个 URL(本地 Ollama /api/generate)。"""
+        ...
+
 
 ParseDrawsFn = Callable[[str], list]
 """省抽选解析器形(HTML 一进、抽选行清单一出;build_draws 的 BC/AB/MB/NL 四省共用调度)。"""
@@ -254,7 +362,7 @@ class NoticeOfIn:
 class TenureIn:
     """swm_tenure_row() 入参:MB SWM 在职时长一行(原 build_swm 内嵌函数 tenure 出户)。"""
 
-    m: object
+    m: re.Match[str]
     """官方原句的正则命中(group(1)=整句、group(2)=数词)。"""
 
     months_per_unit: int
@@ -443,7 +551,7 @@ class EmployerRowIn:
 class TranslateIn:
     """qwen_translate() 入参。"""
 
-    client: object
+    client: HttpClientLike
     """复用的 httpx 客户端。"""
 
     name: str
@@ -629,7 +737,7 @@ class SirsSectionIn:
 class SirsCollectIn:
     """collect_sirs_tables() 入参:一张表的档位/加分就地并进四节的桶。"""
 
-    table: object
+    table: PdfTableLike
     """pymupdf 表格对象。"""
 
     buckets: dict
@@ -715,7 +823,7 @@ class SkPagesIn:
 class CollectTenureIn:
     """collect_tenure() 入参:一档 SWM 在职时长的解析结果并进累加器。"""
 
-    m: object
+    m: re.Match[str]
     """官方原句的正则命中。"""
 
     months_per_unit: int
@@ -846,7 +954,7 @@ class AbStatsAcc:
 class AbTableIn:
     """collect_ab_table() 入参。"""
 
-    table: object
+    table: SoupNodeLike
     """一张表。"""
 
     acc: AbStatsAcc
@@ -976,7 +1084,7 @@ class MbFactorOut:
 class MbSimpleIn:
     """mbp_simple_factor() 入参(Age / Work / Education 三个单表单选因子)。"""
 
-    table: object
+    table: SoupNodeLike
     """该因子的表。"""
 
     key: str
@@ -1140,7 +1248,7 @@ class MbSayIn:
 class MbAdaptStepIn:
     """mbp_adapt_step() 入参。"""
 
-    table: object
+    table: SoupNodeLike
     """Adaptability 那张表。"""
 
     factors: dict

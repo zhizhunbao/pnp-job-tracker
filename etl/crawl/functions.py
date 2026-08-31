@@ -18,6 +18,7 @@ import shutil
 import sys
 from datetime import date, datetime
 from pathlib import Path
+from typing import cast
 from urllib.parse import urldefrag, urljoin, urlparse
 
 import httpx
@@ -62,7 +63,8 @@ from crawl.constants import (ACCEPT_HTML, ACCEPT_LANGUAGE, ADMONITION_TITLE_CLAS
                              TAG_HR, TAG_IFRAME, TAG_IMG, TAG_OL, TAG_P, TAG_PRE, TAG_SOURCE,
                              TAG_TABLE, TAG_TR, TAG_VIDEO, TIMESPEC_SECONDS, TITLE_CHALLENGE_MARKERS, TITLE_COND_TPL,
                              URL_SLASH, SCHEME_SEP, VIEWPORT_H, VIEWPORT_W, WAIT_FN_TPL)
-from crawl.scheme import (CacheHit, ConvertIn, CrawlCtx, DiscoverIn, EeCat, FetchPageIn, InlineIn,
+from crawl.scheme import (HttpAsyncClientLike, PageLike,
+                          CacheHit, ConvertIn, CrawlCtx, DiscoverIn, EeCat, FetchPageIn, InlineIn,
                           PageRow, ScopeIn, SeedSpec, WalkIn)
 from crawl.variables import CACHE
 from fetch.constants import ATTR_HREF, TAG_BR, TAG_LI, TAG_TITLE
@@ -124,7 +126,7 @@ def is_challenge_html(html: str) -> bool:
     return False
 
 
-async def get_browser_page() -> object:
+async def get_browser_page() -> PageLike | None:
     """浏览器单例标签(带单件缓存;launch 一次,cf_clearance 随 profile 落盘复用);
     playwright 缺席/启动失败 → None(警告一次,后续 403 页跳过)。"""
     if CACHE.unavailable:
@@ -158,7 +160,7 @@ async def get_browser_page() -> object:
             return None
 
 
-async def is_page_challenged(page: object) -> bool:
+async def is_page_challenged(page: PageLike) -> bool:
     """当前标签是否停在人机验证页(按标题判词)。"""
     try:
         title = (await page.title()).lower()
@@ -324,7 +326,7 @@ async def fetch_page(x: FetchPageIn) -> list:
         children = []
         if x.depth < ctx.max_depth:
             for a_tag in soup.find_all(TAG_A, href=True):
-                abs_url = urljoin(base_url, a_tag[ATTR_HREF])
+                abs_url = urljoin(base_url, cast(str, a_tag[ATTR_HREF]))
                 norm = normalize_url(abs_url)
                 if norm in ctx.visited or norm in ctx.pending:
                     continue
@@ -360,7 +362,8 @@ async def discover_urls(x: DiscoverIn) -> Path:
     async with httpx.AsyncClient(follow_redirects=True, timeout=HTTP_TIMEOUT_S, verify=False,
                                  headers={HDR_UA: BROWSER_UA, HDR_ACCEPT: ACCEPT_HTML}) as client:
         ctx = CrawlCtx(seed_url=seed_url, keywords=tuple(keywords), max_depth=spec.depth,
-                       max_pages=spec.max_pages, html_dir=html_dir, client=client,
+                       max_pages=spec.max_pages, html_dir=html_dir,
+                       client=cast(HttpAsyncClientLike, client),
                        sem=asyncio.Semaphore(concurrency), lock=asyncio.Lock())
         ctx.visited.add(seed_url)
         current_level = [(seed_url, 0)]
@@ -421,6 +424,7 @@ def is_inside_pre(node: Tag | NavigableString) -> bool:
 def inline_children(x: InlineIn) -> str:
     """子节点行内文本拼接。"""
     parts = []
+    # pyrefly: ignore[missing-attribute] — InlineIn.node 的宽型是给 inline_text 入口用的;inline_children 只在它认定 Tag 之后被调用
     for child in x.node.children:
         parts.append(inline_text(InlineIn(node=child, url=x.url)))
     return "".join(parts)
@@ -444,7 +448,7 @@ def inline_text(x: InlineIn) -> str:
         text = inline_children(x=InlineIn(node=node, url=x.url))
         return MD_EM_TPL.format(text=text) if text.strip() else ""
     if tag == TAG_A:
-        href = node.get(ATTR_HREF, "")
+        href = cast(str, node.get(ATTR_HREF, ""))
         text = node.get_text(strip=True)
         if text and href:
             if not href.startswith(SKIP_HREF_PREFIXES):
@@ -454,7 +458,7 @@ def inline_text(x: InlineIn) -> str:
     if tag == TAG_BR:
         return LINE_SEP
     if tag == TAG_IMG:
-        src = node.get(ATTR_SRC, "")
+        src = cast(str, node.get(ATTR_SRC, ""))
         if src:
             src = urljoin(x.url, src)
         return MD_IMG_TPL.format(alt=node.get(ATTR_ALT, ""), src=src)
@@ -491,10 +495,13 @@ def table_lines_of(table: Tag) -> list:
 
 def code_lang_of(pre: Tag) -> str:
     """代码块语言(从 pre 与其内 code 的 class 里认;highlight/code 这类壳词不算)。"""
+    # pyrefly: ignore[bad-argument-type] — bs4 存根把 get 的 default 收成 AttributeValueList|str|None,class 缺席给 [] 是本域惯例
     classes = pre.get(ATTR_CLASS, [])
     code_tag = pre.find(TAG_CODE)
     if code_tag:
+        # pyrefly: ignore[unsupported-operation, bad-argument-type] — 同上;class 是多值属性,运行时两边都是 list
         classes = classes + code_tag.get(ATTR_CLASS, [])
+    # pyrefly: ignore[not-iterable] — 同上,上面两行的 default=[] 保证 classes 恒是 list
     for cls in classes:
         if not isinstance(cls, str):
             continue
@@ -592,6 +599,7 @@ def walk(x: WalkIn) -> None:
         return
 
     if tag in BLOCK_TAGS:
+        # pyrefly: ignore[no-matching-overload, bad-argument-type] — bs4 存根把 get 的 default 收成 AttributeValueList|str|None;class 是多值属性,运行时恒是 list
         classes = SPACE_SEP.join(node.get(ATTR_CLASS, []))
         is_admonition = False
         for w in ADMONITION_WORDS:
@@ -622,7 +630,7 @@ def walk(x: WalkIn) -> None:
             return
 
     if tag == TAG_A:
-        href = node.get(ATTR_HREF, "")
+        href = cast(str, node.get(ATTR_HREF, ""))
         text = node.get_text(strip=True)
         if text and href:
             if not href.startswith(SKIP_HREF_PREFIXES):
@@ -640,17 +648,17 @@ def walk(x: WalkIn) -> None:
 
     if tag == TAG_IMG:
         alt = node.get(ATTR_ALT, "")
-        src = node.get(ATTR_SRC, "")
+        src = cast(str, node.get(ATTR_SRC, ""))
         if src:
             src = urljoin(x.url, src)
             lines.append(MD_IMG_TPL.format(alt=alt, src=src))
         return
 
     if tag == TAG_VIDEO:
-        src = node.get(ATTR_SRC, "")
+        src = cast(str, node.get(ATTR_SRC, ""))
         source_tag = node.find(TAG_SOURCE)
         if not src and source_tag:
-            src = source_tag.get(ATTR_SRC, "")
+            src = cast(str, source_tag.get(ATTR_SRC, ""))
         if src:
             src = urljoin(x.url, src)
             lines.append("")

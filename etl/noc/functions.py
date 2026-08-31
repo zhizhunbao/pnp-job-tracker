@@ -81,7 +81,9 @@ def classify(noc: str | None) -> dict:
 
 def teer_of(noc: str | None) -> int | None:
     """TEER 档(NOC 第 2 位);非法码给 None(消费端标未分类,不硬塞)。"""
+    # pyrefly: ignore[unsupported-operation] — is_valid_noc 已判过「5 位且首位数字」,它不是 TypeGuard,检查器不跟着收窄
     if is_valid_noc(noc) and noc[1].isdigit():
+        # pyrefly: ignore[unsupported-operation] — 同上
         return int(noc[1])
     return None
 
@@ -113,6 +115,7 @@ def official_broad_of(noc: str | None) -> str:
     """官方第 1 位的组名(只给体检脚本对照用,不进库)。"""
     if not is_valid_noc(noc):
         return UNCLASSIFIED
+    # pyrefly: ignore[unsupported-operation] — 同上
     return OFFICIAL_BROAD.get(noc[0], UNCLASSIFIED)
 
 
@@ -146,6 +149,7 @@ def fine_of(x: FineIn) -> str:
         return UNCLASSIFIED
     if x.noc in BUCKETS5:
         return mid_of(MidIn(noc=x.noc, lang=x.lang))
+    # pyrefly: ignore[unsupported-operation] — 同上
     v = get_structure_levels().get(x.noc[:4])
     if v is None:
         v = {}
@@ -155,6 +159,7 @@ def fine_of(x: FineIn) -> str:
     ui = v.get(ui_key)
     if ui:
         return ui
+    # pyrefly: ignore[unsupported-operation] — 同上
     lbl = label_of(LabelIn(code=x.noc[:4], lang=x.lang))
     if lbl:
         return lbl
@@ -401,6 +406,7 @@ def report_collisions(levels: dict) -> None:
             cs = sorted(cs, key=len)
             same_branch = True
             for c in cs:
+                # pyrefly: ignore[missing-attribute] — key=len 让检查器把元素判成 Sized;cs 的元素是 NOC 码字符串
                 if not c.startswith(cs[0]):
                     same_branch = False
             if same_branch:

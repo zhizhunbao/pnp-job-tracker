@@ -49,6 +49,7 @@ def _pdf_lines(url: str) -> list[list[str]]:
     pages: list[list[str]] = []
     with fitz.open(stream=resp.content, filetype="pdf") as doc:
         for page in doc:
+            # pyrefly: ignore[missing-attribute] — pymupdf get_text() 无参档位恒返回 str,存根把三档位并成 str|list|dict
             lines = [ln.strip() for ln in page.get_text().splitlines()]
             pages.append([ln for ln in lines if ln])
     return pages

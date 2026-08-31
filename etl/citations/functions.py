@@ -66,7 +66,7 @@ def fetch_all_meta() -> dict:
         client = cast(HttpGetLike, raw_client)
         for dataset in DATASETS:
             meta_by_url[dataset[K_URL]] = fetch_meta(FetchIn(client=client,
-                                                             url=dataset[K_URL]))
+                                                             url=cast(str, dataset[K_URL])))
     return meta_by_url
 
 

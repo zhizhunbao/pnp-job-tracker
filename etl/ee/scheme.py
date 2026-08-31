@@ -11,11 +11,39 @@ sys.path[0] 时 httpx/bs4 内部 import types 当场炸)。
 import 只有标准库(叶子律:形状本域自声明,零跨域)。
 """
 from dataclasses import dataclass
+from typing import Protocol
 
 
 # =========================================================================
-# 1. 共享词汇(本段无形状 —— 共享的只有 today_iso / norm 两个纯函数)
+# 1. 共享词汇(SoupNodeLike + today_iso / norm 两个纯函数的形)
 # =========================================================================
+
+
+class SoupNodeLike(Protocol):
+    """bs4 标签节点形 —— Protocol 自声明只真用的格(HttpClientLike 先例;叶子律下
+    scheme 不 import bs4,裸 object 又让检查器判不动 —— 2026-08-31 Frank IDE 实拍
+    missing-attribute 后补形)。find/find_previous 声明为非可选:这是本域的用法主张
+    (找不到即炸=解析塌方该炸),不是 bs4 的全量真相;方法签名库定死,一参令例外。"""
+
+    def find_all(self, *args: object, **kwargs: object) -> "list[SoupNodeLike]":
+        """按标签名收后代清单。"""
+        ...
+
+    def find_all_previous(self, *args: object, **kwargs: object) -> "list[SoupNodeLike]":
+        """文档序向前收清单(表格找它上方最近的标题用)。"""
+        ...
+
+    def find(self, *args: object, **kwargs: object) -> "SoupNodeLike":
+        """第一个命中的后代。"""
+        ...
+
+    def find_previous(self, *args: object, **kwargs: object) -> "SoupNodeLike":
+        """文档序向前第一个命中。"""
+        ...
+
+    def get_text(self, *args: object, **kwargs: object) -> str:
+        """压平文本。"""
+        ...
 
 
 # =========================================================================
@@ -62,7 +90,7 @@ class BucketFillIn:
     bucket: CatBucket
     """要往里加职业的桶。"""
 
-    table: object
+    table: SoupNodeLike
     """本类别的一张 HTML 表。"""
 
 
@@ -91,7 +119,7 @@ class DrawsOut:
 class LoadOut:
     """load_page() 出参(原 (main, fetched) 元组收编)。"""
 
-    main: object
+    main: SoupNodeLike
     """页面的 <main> 容器(BeautifulSoup 节点)。"""
 
     fetched: str
@@ -102,7 +130,7 @@ class LoadOut:
 class PageIn:
     """「一页 + 出处 + 取回日」三件套入参(窄表 / 语言表 / ECA 教育表共用)。"""
 
-    main: object
+    main: SoupNodeLike
     """页面的 <main> 容器。"""
 
     url: str
@@ -131,7 +159,7 @@ class GridRowsIn:
 class SectionOfIn:
     """section_of() 入参:一张表 + FSW 开关。"""
 
-    table: object
+    table: SoupNodeLike
     """要判段的表。"""
 
     fsw_section: bool
@@ -173,7 +201,7 @@ class TableOut:
 class PreviousHeadingIn:
     """previous_heading() 入参(一参令)。"""
 
-    table: object
+    table: SoupNodeLike
     """本表节点。"""
 
     tag: str
@@ -193,7 +221,7 @@ class PageCtx:
     fetched: str
     """取回日。"""
 
-    main: object
+    main: SoupNodeLike
     """<main> 容器。"""
 
     text: str
@@ -218,7 +246,7 @@ class LangBodyIn:
 class LangCtxIn:
     """lang_ctx_of() 入参。"""
 
-    table: object
+    table: SoupNodeLike
     """语言表节点。"""
 
     table_no: int
@@ -286,7 +314,7 @@ class LangTableIn:
     table_no: int
     """官方表号。"""
 
-    table: object
+    table: SoupNodeLike
     """表节点。"""
 
     page: PageIn

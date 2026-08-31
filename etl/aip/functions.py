@@ -19,6 +19,7 @@ aip.scheme。产物路径一字不动(raw/aip/ 两件 + raw/ircc/aip_rules.json)
 import html as html_lib
 import json
 from datetime import date
+from typing import cast
 
 import fitz
 import httpx
@@ -44,6 +45,7 @@ from aip.constants import (
     WAYBACK_TIMEOUT_S, WAYBACK_TPL,
 )
 from aip.scheme import (
+    SoupNodeLike,
     GuardIn, MdRowIn, NlRowIn, PageEntryIn, PageOut, PdfBulletsIn, PdfRowIn, PeRowIn,
     RequirementIn, RulesDocIn,
 )
@@ -327,7 +329,7 @@ def build_aip_rules() -> None:
         say(RULES_IN_TPL.format(url=url, fetched=got.fetched))
     missing: list = []
     for r in RULES:
-        if norm(r[K_QUOTE]) not in pages[r[K_PAGE]][K_TEXT]:
+        if norm(str(r[K_QUOTE])) not in pages[r[K_PAGE]][K_TEXT]:
             missing.append(r)
     if len(missing) > 0:
         report_missing(missing)
@@ -354,7 +356,7 @@ def load(url: str) -> PageOut:
     hit = get_cached_page(url)
     if not hit.html:
         raise SystemExit(RULES_NO_CACHE_TPL.format(url=url))
-    main = BeautifulSoup(hit.html, HTML_PARSER).find(MAIN_TAG)
+    main = cast(SoupNodeLike, BeautifulSoup(hit.html, HTML_PARSER).find(MAIN_TAG))
     return PageOut(text=norm(main.get_text(SPACE_SEP, strip=True)), fetched=hit.fetched)
 
 

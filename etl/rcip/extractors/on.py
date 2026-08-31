@@ -154,6 +154,7 @@ def _timmins_pdf(data: bytes) -> list[dict]:
     doc = fitz.open(stream=data, filetype="pdf")
     lines = []
     for pi, page in enumerate(doc):
+        # pyrefly: ignore[bad-index] — pymupdf get_text("dict") 档位返回 dict,存根把三档位并成 str|list|dict
         for b in page.get_text("dict")["blocks"]:
             for ln in b.get("lines", []):
                 for s in ln["spans"]:
@@ -284,6 +285,7 @@ def _thunder_bay_pdf(data: bytes) -> list[dict]:
     pending, excluded = "", False
     for page in doc:
         spans = []
+        # pyrefly: ignore[bad-index] — pymupdf get_text("dict") 档位返回 dict,存根把三档位并成 str|list|dict
         for b in page.get_text("dict")["blocks"]:
             for ln in b.get("lines", []):
                 for s in ln["spans"]:

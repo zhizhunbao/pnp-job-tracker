@@ -49,7 +49,7 @@ KEY_CALLS = {"get", "setdefault", "pop"}
 EXEMPT_VALUES = {"", "w"}
 
 
-BANNED_NODES = {
+BANNED_NODES: dict[type, str] = {
     ast.Lambda: "lambda",
     ast.ListComp: "列表推导",
     ast.SetComp: "集合推导",
@@ -68,6 +68,7 @@ def banned_syntax(text: str) -> list[tuple[int, str]]:
     for node in ast.walk(tree):
         label = BANNED_NODES.get(type(node))
         if label is not None:
+            # pyrefly: ignore[missing-attribute] — BANNED_NODES 的键全是 stmt/expr 子类,命中即带 lineno;ast.AST 基类才没有
             found.append((node.lineno, label))
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             if len(node.args.defaults) > 0 or len(node.args.kw_defaults) > 0:

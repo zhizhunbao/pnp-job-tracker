@@ -121,6 +121,7 @@ def north_okanagan_shuswap() -> dict:
         cells = sorted(
             (round(ln["bbox"][1]), round(ln["bbox"][0]),
              _pdf_norm("".join(s["text"] for s in ln["spans"])))
+            # pyrefly: ignore[bad-index] — pymupdf get_text("dict") 档位返回 dict,存根把三档位并成 str|list|dict
             for b in page.get_text("dict")["blocks"] for ln in b.get("lines", []))
         sector_ys = {y: t for y, x, t in cells if t and x < 260}
         starts += sum(1 for t in sector_ys.values() if t in NOS_SECTOR_STARTS)
@@ -188,6 +189,7 @@ def _nebc_parse_pdf(url: str) -> list[dict]:
         cells = sorted(
             (round(ln["bbox"][1]), round(ln["bbox"][0]),
              _pdf_norm("".join(s["text"] for s in ln["spans"])))
+            # pyrefly: ignore[bad-index] — pymupdf get_text("dict") 档位返回 dict,存根把三档位并成 str|list|dict
             for b in page.get_text("dict")["blocks"] for ln in b.get("lines", []))
         for _y, x, t in cells:
             if not t or re.fullmatch(r"Page \d+", t):
@@ -209,6 +211,7 @@ def _nebc_parse_pdf(url: str) -> list[dict]:
         name = f"{legal} ({oa})" if oa and norm(oa) != norm(legal) else legal
         employers.append({"name": name, "location": ""})
     # PDF 自带总数(As of ... • N Designated Employers)对账,对不上=解析漏行,抛
+    # pyrefly: ignore[no-matching-overload] — pymupdf get_text() 无参档位恒返回 str,存根把三档位并成 str|list|dict
     full = "\n".join(p.get_text() for p in doc)
     m = re.search(r"(\d+)\s+Designated Employers", full)
     if m and int(m.group(1)) != len(employers):

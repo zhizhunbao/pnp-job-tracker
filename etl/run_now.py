@@ -32,8 +32,10 @@ def units_for(name: str) -> list[tuple[str, list[list[str]]]]:
         if dom in ("clean",) or dom.startswith("_"):
             continue
         spec = _u.spec_from_file_location(f"_dom_{dom}", ini)
+        # pyrefly: ignore[bad-argument-type] — spec_from_file_location 只在路径不存在时给 None;此处是仓内固定文件,拿不到就该当场炸
         mod = _u.module_from_spec(spec)
         try:
+            # pyrefly: ignore[missing-attribute] — 同上,spec 非 None 时 loader 恒在
             spec.loader.exec_module(mod)
         except Exception:  # noqa: BLE001  # 坏域只跳过,手动工具不因一域挂全链
             continue
@@ -64,6 +66,7 @@ def load_env() -> None:
 
 def main() -> None:
     if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
+        # pyrefly: ignore[missing-attribute] — typeshed 把 sys.stdout 标成 TextIO,运行时是 TextIOWrapper(带 reconfigure)
         sys.stdout.reconfigure(encoding="utf-8")
     roles = sys.argv[1:] or DEFAULT
     load_env()

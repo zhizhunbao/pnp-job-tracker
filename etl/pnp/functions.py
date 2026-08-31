@@ -13,6 +13,8 @@ docs/design/etl分域-20260829.md §4)。
 硬闸口径不变:自校未过 → 保留旧表 + sys.exit(1),门见 SystemExit 直接中止本轮
 (与旧 _steps 跑子进程「一步失败即中止」同语义)。
 依赖单边:本文件 → constants/scheme + 基础设施叶(paths / log / fetch / crawl)。
+库类型(bs4 节点 / pymupdf 页表 / httpx 客户端)经 scheme 的 Protocol 自声明只真用的格,
+`cast` 只住装配点(2026-08-31 批G,照 company/ee 样张;裸 object 会让检查器判不动)。
 """
 import glob
 import json
@@ -20,6 +22,7 @@ import re
 import sys
 from datetime import date, datetime, timezone
 from pathlib import Path
+from typing import cast
 from urllib.parse import urljoin
 
 import fitz
@@ -262,6 +265,7 @@ from pnp.constants import (
     ZH_TIMEOUT_S,
 )
 from pnp.scheme import (
+    HttpClientLike, PdfDocLike, SoupNodeLike,
     AbCheckIn, AbSectionIn, AbStatsAcc, AbStreamRowIn, AbTableIn, AreaMapIn, BuildTableIn, CellsOut, ColIn,
     CollectTenureIn, CountIn, DaysIn, EmployerRowIn, FactorCountsIn, FailIn, FetchHtmlIn, HasGroupIn, HitSrcIn,
     HitsIn, LatestIn, LatestOut, MbAdaptCollectIn, MbAdaptOut, MbAdaptStepIn, MbAdaptStepOut, MbAnnualOut, MbBlock,
@@ -322,7 +326,7 @@ def fetch_bytes(x: FetchHtmlIn) -> bytes:
     return httpx.get(x.url, headers={HDR_UA: BROWSER_UA}, follow_redirects=True, timeout=x.timeout_s).content
 
 
-def drop_junk_tags(soup: object) -> None:
+def drop_junk_tags(soup: SoupNodeLike) -> None:
     """就地拆掉 script/style/nav/header/footer(取正文前的通用清场)。"""
     for tag in soup(DROP_TAGS):
         tag.decompose()
@@ -330,7 +334,7 @@ def drop_junk_tags(soup: object) -> None:
 
 def text_of_html(x: TextOfHtmlIn) -> str:
     """页面原文 → 压平的纯文本(六份 page_text 抄本的共同体,差异走开关)。"""
-    soup = BeautifulSoup(x.html, PARSER_HTML)
+    soup = cast(SoupNodeLike, BeautifulSoup(x.html, PARSER_HTML))
     if x.drop_junk:
         drop_junk_tags(soup)
     node = soup
@@ -362,7 +366,7 @@ def fetch_md(url: str) -> str:
 def pdf_text(data: bytes) -> str:
     """PDF 字节 → 逐页文本拼接(各门槛步共用的第一步)。"""
     with fitz.open(stream=data, filetype=FILETYPE_PDF) as doc:
-        parts = []
+        parts: list = []
         for page in doc:
             parts.append(page.get_text())
     return LINE_JOIN_SEP.join(parts)
@@ -384,7 +388,7 @@ def teers(s: str) -> list:
     return out
 
 
-def cells(tr: object) -> list:
+def cells(tr: SoupNodeLike) -> list:
     """一行 → 压平后的各格文本。
 
     2026-08-30 批B 收拢:SK/AB/BC/MB 四份统计步抄本逐字相同;build_ab 表头行写的是
@@ -469,7 +473,7 @@ def noc_key_of(row: dict) -> str:
 
 def parse_ab_aos(html: str) -> list:
     """找列头含「NOC code」的表,抽 {noc,teer,name};去掉 NOC 星号(保守按不符合)。"""
-    soup = BeautifulSoup(html, PARSER_HTML)
+    soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
     for table in soup.find_all(TAG_TABLE):
         rows = table.find_all(TAG_TR)
         head = ""
@@ -992,13 +996,13 @@ def build_nb() -> None:
         say(PRINT_KEEP_OLD_TPL.format(what=NB_URL, name=type(e).__name__, detail=e))
         return
     for nt in NB_NOTICES:
-        notice = notice_of(NoticeOfIn(md=md, must=nt[K_MUST]))
+        notice = notice_of(NoticeOfIn(md=md, must=cast(tuple, nt[K_MUST])))
         if not notice:
             say(NB_PRINT_NO_NOTICE_TPL.format(key=nt[K_KEY]))
             continue
         segs = nb_notice_segs(notice)
         for key in (K_ANY, K_FOOD):
-            cfg = nt[key]
+            cfg = cast(dict, nt[key])
             occs = parse_nb_nocs(nb_seg_of(NbSegPickIn(segs=segs, key=key)))
             if not occs:
                 say(PRINT_NO_NOC_TPL.format(out=cfg[K_OUT]))
@@ -1156,7 +1160,7 @@ def fetch_draws_page(url: str) -> str:
     return r.text
 
 
-def int_of(s: object) -> int | None:
+def int_of(s: str | None) -> int | None:
     """'1,234' → 1234;空串/None/认不出一律 None(rowspan 等属性可能缺席)。"""
     try:
         return int(DRAWS_NUM_STRIP_RE.sub(EMPTY_JOIN, s or ""))
@@ -1192,7 +1196,7 @@ def first_of(e: tuple) -> str:
     return e[0]
 
 
-def expand_table(table: object) -> list:
+def expand_table(table: SoupNodeLike) -> list:
     """rowspan/colspan 展开成规则网格(BC 表日期/分数列大量 rowspan)。"""
     grid: list = []
     pending: dict = {}
@@ -1226,7 +1230,7 @@ def expand_table(table: object) -> list:
 
 def parse_bc_draws(html: str) -> list:
     """Skills Immigration ITA 表(表头含「ITA type」;Entrepreneur/池分布表不取)。"""
-    soup = BeautifulSoup(html, PARSER_HTML)
+    soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
     for table in soup.find_all(TAG_TABLE):
         grid = expand_table(table)
         if not grid or DRAWS_BC_HEAD_KW not in TEXT_JOIN_SEP.join(grid[0]).lower():
@@ -1251,7 +1255,7 @@ def parse_bc_draws(html: str) -> list:
 
 def parse_ab_draws(html: str) -> list:
     """「Draw information」表:Draw date / 流+参数 / 最低分 / 邀请数(线性,无 rowspan)。"""
-    soup = BeautifulSoup(html, PARSER_HTML)
+    soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
     for table in soup.find_all(TAG_TABLE):
         head = table.find(TAG_TR)
         if not head or DRAWS_AB_HEAD_KW not in head.get_text(TEXT_JOIN_SEP, strip=True).lower():
@@ -1270,7 +1274,7 @@ def parse_ab_draws(html: str) -> list:
     return []
 
 
-def is_mb_heading(tag: object) -> bool:
+def is_mb_heading(tag: SoupNodeLike) -> bool:
     """整段加粗的 <p>/<h2-4> 才算子标题(如「Skilled Worker Stream」「Francophone selection」);
     正文段落里夹 <strong> 强调的不算(全文字数要等于其唯一 <strong> 子节点的字数)。"""
     if tag.name not in MB_HEAD_TAGS:
@@ -1290,7 +1294,7 @@ def mb_block_name(x: MbBlockNameIn) -> str:
     return MB_BLOCK_NAME_TPL.format(heading=x.heading, desc=x.desc).strip(MB_BLOCK_NAME_STRIP)
 
 
-def mb_stream_blocks(art: object) -> list:
+def mb_stream_blocks(art: SoupNodeLike) -> list:
     """一期公告里常有多个「…were considered / Number of LAA issued / (可选)Ranking score…」小节
     (Occupation-specific / broad category / Francophone / Skilled Worker Stream 各一段)。
     分数线和 LAA 数官方总是写在同一个 <ul> 里 → 按 ul 配对,不会把 A 段的分算进 B 段。
@@ -1344,7 +1348,7 @@ def parse_mb_draws(html: str) -> list:
     """/draws/ 索引页 prose:每期一个 <article class=post>,标题 h2「…Draw #N」。
     能按 <ul> 配出「子标题 + 该段分数线 + 该段 LAA」时一段一行(mb_stream_blocks);
     配不出来(老格式)才退回一期一行、多分不猜的合并行为。"""
-    soup = BeautifulSoup(html, PARSER_HTML)
+    soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
     draws: list = []
     for art in soup.find_all(TAG_ARTICLE):
         m = MB_DRAW_NO_RE.search(art.get_text()[:MB_HEAD_SNIFF_LEN])
@@ -1482,7 +1486,7 @@ def parse_on_draws(html: str) -> list:
     """invitations 页:一张表一条通道,表头 Date issued / Number of invitations /
     Date profiles created / Score range / Notes。分数写成「57 and above」(区间下界)——
     取那个数当分数线,取不到就留空不猜。"""
-    soup = BeautifulSoup(html, PARSER_HTML)
+    soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
     draws: list = []
     for table in soup.find_all(TAG_TABLE):
         grid = expand_table(table)
@@ -1523,7 +1527,7 @@ def parse_on_draws(html: str) -> list:
 
 def parse_nl_draws(html: str) -> list:
     """NL ITA 批次表:| Date Issued | Number of ITAs Issued | Notes |。无分数线(官方不发)。"""
-    soup = BeautifulSoup(html, PARSER_LXML)
+    soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_LXML))
     draws: list = []
     for table in soup.find_all(TAG_TABLE):
         grid = expand_table(table)
@@ -1557,7 +1561,7 @@ def iso_nb_of(s: str) -> str | None:
     return iso_of(text)
 
 
-def nb_br_lines(cell: object) -> list:
+def nb_br_lines(cell: SoupNodeLike) -> list:
     """官方表格用 <br> 分隔多行(Pathways 可多条、Occupational categories 常见 5+ 条),
     不能直接 get_text 合并——那样逗号本就出现在类别名里(如「Education, social and community
     services」),会分不清是类别名内部逗号还是分隔符。按 <br> 切出原生的每行文本。"""
@@ -1570,7 +1574,7 @@ def nb_br_lines(cell: object) -> list:
     return out
 
 
-def is_bold_paragraph(tag: object) -> bool:
+def is_bold_paragraph(tag: SoupNodeLike) -> bool:
     """居中加粗段落(NB 的通道名挂在 <p><b> 里;原 lambda 退役)。"""
     return tag.name == TAG_P and tag.find(TAG_B) is not None
 
@@ -1590,7 +1594,7 @@ def nb_stream_of(x: NbStreamIn) -> str:
     return NB_DEFAULT_STREAM
 
 
-def nb_table_rows(table: object) -> dict:
+def nb_table_rows(table: SoupNodeLike) -> dict:
     """NB「标签: 值」两列表 → {标签小写: 值};多行格(pathways / 职业类别)按 <br> 切成清单。"""
     rows: dict = {}
     for tr in table.find_all(TAG_TR):
@@ -1607,7 +1611,7 @@ def nb_table_rows(table: object) -> dict:
     return rows
 
 
-def nb_base_stream(table: object) -> str:
+def nb_base_stream(table: SoupNodeLike) -> str:
     """通道名 = 表格前最近一个居中加粗段落(官方原文,如「New Brunswick Skilled Worker stream」)。"""
     head = table.find_previous(is_bold_paragraph)
     base = ""
@@ -1625,7 +1629,7 @@ def parse_nb_draws(html: str) -> list:
     每轮一段「<p><b>通道名</b></p> + <table>」,表格是「标签: 值」两列行(Date of draw /
     Cut-off date and time / Pathways(可无,如 AIP) / Invitations issued 或 Applications selected /
     Occupational categories selected)。按类别定向发邀请、官方不发分数线 —— score 恒 None。"""
-    soup = BeautifulSoup(html, PARSER_HTML)
+    soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
     draws: list = []
     for table in soup.find_all(TAG_TABLE):
         rows = nb_table_rows(table)
@@ -2400,7 +2404,7 @@ def build_on_points() -> None:
 # =========================================================================
 
 
-def clean_cell(c: object) -> str:
+def clean_cell(c: str | None) -> str:
     """PDF 表格一格 → 去换行去首尾空白的文本(空格返回空串)。"""
     return (c or "").replace(LINE_JOIN_SEP, TEXT_JOIN_SEP).strip()
 
@@ -2451,7 +2455,7 @@ def designation_rows(entries: list) -> list:
     return out
 
 
-def parse_bc_designations(doc: object) -> list:
+def parse_bc_designations(doc: PdfDocLike) -> list:
     """官方「Occupation → Eligible Professional Designations in B.C.」对照表(第 55 页)。
 
     表格是稀疏格且**跨行折行**:职业名、NOC 码、认证机构常落在相邻三行。
@@ -2463,7 +2467,7 @@ def parse_bc_designations(doc: object) -> list:
             continue
         for tb in page.find_tables().tables:
             entries: list = []
-            cur = None
+            cur: dict | None = None
             for row in tb.extract():
                 row_cells = nonempty_cells(row)
                 if not row_cells or row_cells[0].lower().startswith(SIRS_OCC_HEAD_WORD):
@@ -2487,7 +2491,7 @@ def parse_bc_designations(doc: object) -> list:
     return []
 
 
-def sirs_row_pattern(sec: str) -> object:
+def sirs_row_pattern(sec: str) -> re.Pattern[str]:
     """某一节的档位行判据。"""
     if sec == SIRS_SECTION_WORK:
         return SIRS_WORK_ROW_RE
@@ -2613,6 +2617,7 @@ def build_bc_sirs() -> None:
     with fitz.open(stream=fetch_bytes(FetchHtmlIn(url=BC_GUIDE_URL, timeout_s=BCR_TIMEOUT_S)),
                    filetype=FILETYPE_PDF) as doc:
         eff = ""
+        # pyrefly: ignore[no-matching-overload] — pymupdf 的 get_text() 无参档位恒返回 str,存根把三档位并成 str|list|dict
         m = SIRS_EFFECTIVE_RE.search(doc[SIRS_PREFACE_PAGE].get_text())
         if m:
             eff = iso_of_long_date(m.group(1))
@@ -2621,13 +2626,14 @@ def build_bc_sirs() -> None:
             buckets[key] = {K_ROWS: [], K_BONUS: []}
         for page in doc:
             try:
+                # pyrefly: ignore[missing-attribute] — pymupdf find_tables 有一条 return None 分支;真为 None 时的 AttributeError 由本 try 接住并 err() 留痕
                 tables = page.find_tables().tables
             except Exception as e:  # noqa: BLE001
                 err(page, e)
                 continue
             for tb in tables:
                 collect_sirs_tables(SirsCollectIn(table=tb, buckets=buckets))
-        designations = parse_bc_designations(doc)
+        designations = parse_bc_designations(cast(PdfDocLike, doc))
     for item in buckets[SIRS_SECTION_EDUCATION][K_BONUS]:
         if SIRS_DESIGNATION_RE.search(item[K_LABEL]):
             item[K_APPLIES_TO] = sirs_designation_scope(designations)
@@ -2657,7 +2663,7 @@ def build_bc_sirs() -> None:
 # =========================================================================
 
 
-def sk_first_line(td: object) -> str:
+def sk_first_line(td: SoupNodeLike) -> str:
     """一格的标签 = 第一行文字。官方把整段解释塞在同一格的 <ul> 里,解释不进标签。"""
     txt = td.get_text(LINE_JOIN_SEP, strip=True)
     return fold_ws(txt.split(LINE_JOIN_SEP)[0]).strip()
@@ -2671,7 +2677,7 @@ def sk_section_hit(label: str) -> tuple | None:
     return None
 
 
-def sk_points_table(soup: object) -> object:
+def sk_points_table(soup: SoupNodeLike) -> SoupNodeLike | None:
     """认表:含「FACTOR I」的那张表就是 Points Grid。"""
     for tb in soup.find_all(TAG_TABLE):
         if SKP_TABLE_ANCHOR in tb.get_text():
@@ -2716,7 +2722,7 @@ def sk_group_best(x: SkGroupIn) -> int:
     return best
 
 
-def sk_collect_factors(table: object) -> SkPointsOut:
+def sk_collect_factors(table: SoupNodeLike | None) -> SkPointsOut:
     """走一遍 Points Grid:分节切换 + 档位入桶 + 官方 MAXIMUM 行。"""
     factors: dict = {}
     official: dict = {}
@@ -2793,7 +2799,7 @@ def sk_math_problems(x: SkMathIn) -> list:
 def build_sk_points() -> None:
     """SK 分值表入口:官方 Points Grid 全表 + 官方自印的 MAXIMUM 行当自校硬闸。"""
     html = fetch_html(FetchHtmlIn(url=SKP_PAGE_URL, timeout_s=SKP_TIMEOUT_S))
-    soup = BeautifulSoup(html, PARSER_HTML)
+    soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
     grid_text = fold_ws(soup.get_text(TEXT_JOIN_SEP, strip=True))
     m = SKP_PASS_RE.search(grid_text)
     pass_mark = None
@@ -3345,7 +3351,8 @@ def is_ns_guide_link(href: str) -> bool:
 
 def ns_guide_url() -> str:
     """从通道页现取官方申请指南 PDF(目录名带月份,写死会抓到旧版)。"""
-    soup = BeautifulSoup(fetch_html(FetchHtmlIn(url=NS_MAIN_URL, timeout_s=NSR_TIMEOUT_S)), PARSER_HTML)
+    soup = cast(SoupNodeLike, BeautifulSoup(fetch_html(FetchHtmlIn(url=NS_MAIN_URL, timeout_s=NSR_TIMEOUT_S)),
+                                            PARSER_HTML))
     for a in soup.find_all(TAG_A, href=True):
         href = a[ATTR_HREF]
         if is_ns_guide_link(href):
@@ -3432,9 +3439,11 @@ def build_ns_req() -> None:
         K_PROVINCE: PROV_NS, K_PROGRAM: PROGRAM_PNP,
         K_SOURCE: NSR_SOURCE,
         K_URL: url, K_PAGE_URL: NS_MAIN_URL,
+        # pyrefly: ignore[missing-attribute] — 上方 `if not eff_m` 已把它并进 problems,problems 非空即 fail_zh 退出
         K_GUIDE_EFFECTIVE: eff_m.group(1), K_FETCHED: today_iso(),
         K_REQUIREMENTS: reqs,
     }, indent=INDENT_2))
+    # pyrefly: ignore[missing-attribute] — 同上,走到这 eff_m 恒非 None
     say(NSR_PRINT_DONE_TPL.format(path=OUT_NS_REQ, version=eff_m.group(1), n=len(reqs)))
     say_factor_counts(FactorCountsIn(reqs=reqs, order=NSR_FACTOR_ORDER, tpl=PRINT_FACTOR_TPL))
 
@@ -3477,7 +3486,7 @@ def nb_guide_urls() -> dict:
     """
     resp = httpx.get(NBR_PAGE_URL, headers={HDR_UA: BROWSER_UA}, follow_redirects=True,
                      timeout=NBR_TIMEOUT_S)
-    soup = BeautifulSoup(resp.text, PARSER_HTML)
+    soup = cast(SoupNodeLike, BeautifulSoup(resp.text, PARSER_HTML))
     found: dict = {}
     for a in soup.find_all(TAG_A, href=True):
         href = a[ATTR_HREF]
@@ -3487,7 +3496,7 @@ def nb_guide_urls() -> dict:
     return found
 
 
-def group1_or_unknown(m: object) -> str:
+def group1_or_unknown(m: re.Match[str] | None) -> str:
     """正则命中的第一组;没命中给 ?(逐份指南报数用)。"""
     if m:
         return m.group(1)
@@ -3678,9 +3687,11 @@ def build_pe_req() -> None:
         K_PROVINCE: PROV_PE, K_PROGRAM: PROGRAM_PNP,
         K_SOURCE: PER_SOURCE,
         K_URL: PE_GUIDE_URL, K_PAGE_URL: PE_PAGE_URL,
+        # pyrefly: ignore[missing-attribute] — 上方 `if not eff` 已把它并进 problems,problems 非空即 fail_zh 退出
         K_GUIDE_EFFECTIVE: eff.group(1), K_FETCHED: today_iso(),
         K_REQUIREMENTS: reqs,
     }, indent=INDENT_2))
+    # pyrefly: ignore[missing-attribute] — 同上,走到这 eff 恒非 None
     say(NSR_PRINT_DONE_TPL.format(path=OUT_PE_REQ, version=eff.group(1), n=len(reqs)))
     say_factor_counts(FactorCountsIn(reqs=reqs, order=NSR_FACTOR_ORDER, tpl=PRINT_FACTOR_TPL))
 
@@ -3881,7 +3892,7 @@ def build_nl_req() -> None:
 # =========================================================================
 
 
-def table_rows_of(table: object) -> list:
+def table_rows_of(table: SoupNodeLike) -> list:
     """一张表 → 行矩阵(各统计步共用)。"""
     rows: list = []
     for tr in table.find_all(TAG_TR):
@@ -3900,7 +3911,7 @@ def sk_processing_group(x: SkGroupNameIn) -> str:
     return SKS_GROUP_ISW
 
 
-def sk_processing(soup: object) -> SkProcOut:
+def sk_processing(soup: SoupNodeLike) -> SkProcOut:
     """所有两列表(类别 | N weeks)→ 处理时长清单 + 季度口径。"""
     processing: list = []
     quarter = ""
@@ -3923,7 +3934,7 @@ def sk_processing(soup: object) -> SkProcOut:
     return SkProcOut(processing=processing, quarter=quarter)
 
 
-def sk_allocation(soup: object) -> SkAllocOut:
+def sk_allocation(soup: SoupNodeLike) -> SkAllocOut:
     """配额表(表头含 Nominee Sector)→ 逐档配额与 YTD。"""
     allocation: list = []
     problems: list = []
@@ -3943,7 +3954,7 @@ def sk_allocation(soup: object) -> SkAllocOut:
     return SkAllocOut(allocation=allocation, problems=problems)
 
 
-def sk_priority_sectors(soup: object) -> list:
+def sk_priority_sectors(soup: SoupNodeLike) -> list:
     """优先行业名单(不设上限的那批)。"""
     text = soup.get_text(LINE_JOIN_SEP, strip=True).replace(SKS_APOSTROPHE_CURLY, SKS_APOSTROPHE_STRAIGHT)
     pm = SKS_PRIORITY_RE.search(text)
@@ -4015,7 +4026,7 @@ def build_sk_stats() -> None:
     """SK 运营统计入口:处理时长 + 配额三档 + 行业名单,三块任一异常保留旧表 exit 1。"""
     say(PRINT_OUT_TPL.format(path=OUT_SK_STATS))
     html = fetch_html(FetchHtmlIn(url=SKS_URL, timeout_s=SKS_TIMEOUT_S))
-    soup = BeautifulSoup(html, PARSER_HTML)
+    soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
     text = fold_ws(soup.get_text(TEXT_JOIN_SEP, strip=True))
     problems: list = []
     proc = sk_processing(soup)
@@ -4046,7 +4057,9 @@ def build_sk_stats() -> None:
         K_PRIORITY_SECTORS: priority, K_CAPPED_SECTORS: capped,
     }, indent=INDENT_2))
     say(SKS_PRINT_DONE_TPL.format(path=OUT_SK_STATS, quarter=proc.quarter, n=len(proc.processing),
+                                  # pyrefly: ignore[unsupported-operation] — sk_alloc_problems 在 total 为 None 时已记问题,problems 非空即 fail_zh 退出
                                   alloc=total[K_ALLOCATION], used=total[K_NOMINATIONS_YTD],
+                                  # pyrefly: ignore[unsupported-operation] — 同上,走到这 total 恒非 None
                                   pct=total[K_NOMINATIONS_YTD] / total[K_ALLOCATION],
                                   priority=len(priority), capped=len(capped)))
 
@@ -4064,7 +4077,7 @@ def num_or_text(s: str) -> object:
     return s
 
 
-def ab_as_of(soup: object) -> str:
+def ab_as_of(soup: SoupNodeLike) -> str:
     """页面自带的更新日(h2「2026 summary」上方独立一行日期);取正文里第一个能解析的日期。"""
     main_el = soup.find(TAG_MAIN)
     if not main_el:
@@ -4077,7 +4090,7 @@ def ab_as_of(soup: object) -> str:
     return ""
 
 
-def ab_section_of(table: object) -> str:
+def ab_section_of(table: SoupNodeLike) -> str:
     """该表属于哪个 stream:取前面最近的标题(官方每节一表)。"""
     h = table.find_previous(ABS_SECTION_TAGS)
     if not h:
@@ -4087,7 +4100,7 @@ def ab_section_of(table: object) -> str:
 
 def ab_stream_row(x: AbStreamRowIn) -> dict:
     """逐 stream 表一行(assessingUpTo 是文字格,不转数字)。"""
-    row = {K_STREAM: x.stream}
+    row: dict = {K_STREAM: x.stream}
     for key, v in zip(ABS_STREAM_KEYS, x.vals):
         if key == ABS_ASSESSING_KEY:
             row[key] = v
@@ -4190,7 +4203,7 @@ def build_ab_stats() -> None:
     """AB 运营统计入口:一页四堆(总表 / 逐 stream / EOI 池 / 抽选史)+ 硬闸自校。"""
     say(PRINT_OUT_TPL.format(path=OUT_AB_STATS))
     html = fetch_html(FetchHtmlIn(url=DRAWS_AB_URL, timeout_s=ABS_TIMEOUT_S))
-    soup = BeautifulSoup(html, PARSER_HTML)
+    soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
     problems: list = []
     as_of = ab_as_of(soup)
     if not as_of:
@@ -4213,6 +4226,7 @@ def build_ab_stats() -> None:
     say(ABS_PRINT_DONE_TPL.format(path=OUT_AB_STATS, as_of=as_of,
                                   alloc=acc.summary[ABS_ALLOC_KEY], issued=acc.summary[K_ISSUED],
                                   remaining=acc.summary[K_REMAINING], streams=len(acc.streams),
+                                  # pyrefly: ignore[unsupported-operation] — ab_stats_problems 已闸住空池/无 AOS 行,problems 非空即 fail_zh 退出
                                   pool=len(acc.eoi_pool), aos=aos[K_COUNT], draws=len(acc.draws)))
 
 
@@ -4221,7 +4235,7 @@ def build_ab_stats() -> None:
 # =========================================================================
 
 
-def bc_processing_rows(soup: object) -> list:
+def bc_processing_rows(soup: SoupNodeLike) -> list:
     """Skills Immigration 处理时长表(表头含 stage);认不出的时长写法一律不猜(表尾注等)。"""
     rows: list = []
     for tbl in soup.find_all(TAG_TABLE):
@@ -4246,7 +4260,7 @@ def build_bc_processing() -> ProcessingOut:
     hit = get_cached_page(BCS_PROC_URL)
     if not hit.html:
         return ProcessingOut(processing={}, problems=[BCS_PROBLEM_NO_CACHE_TPL.format(url=BCS_PROC_URL)])
-    soup = BeautifulSoup(hit.html, PARSER_HTML)
+    soup = cast(SoupNodeLike, BeautifulSoup(hit.html, PARSER_HTML))
     text = fold_ws(soup.get_text(TEXT_JOIN_SEP, strip=True))
     m = BCS_PCTL_RE.search(text)
     if not m:
@@ -4262,7 +4276,7 @@ def build_bc_processing() -> ProcessingOut:
                          problems=problems)
 
 
-def bc_pool_rows(soup: object) -> list:
+def bc_pool_rows(soup: SoupNodeLike) -> list:
     """注册池分数分布表(表头含 score range);「<5」这类隐私抑制值原样保留。"""
     pool: list = []
     for tbl in soup.find_all(TAG_TABLE):
@@ -4307,7 +4321,7 @@ def build_bc_stats() -> None:
     """BC 运营统计入口:池分布(实时抓)+ 处理时长(读缓存)。"""
     say(PRINT_OUT_TPL.format(path=OUT_BC_STATS))
     html = fetch_html(FetchHtmlIn(url=DRAWS_BC_URL, timeout_s=BCS_TIMEOUT_S))
-    soup = BeautifulSoup(html, PARSER_HTML)
+    soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
     text = fold_ws(soup.get_text(TEXT_JOIN_SEP, strip=True))
     problems: list = []
     as_of = bc_pool_as_of(text)
@@ -4418,8 +4432,10 @@ def neg_year_of(r: dict) -> int:
 def on_issued_row(x: OnYearIn) -> dict | None:
     """一页里「已发提名数」那一条:页面新→旧排列,取文档序最靠前的 = 该年最终(年末追加后)的数字。"""
     cands: list = []
+    # pyrefly: ignore[no-matching-overload] — 调用方 build_on_stats 已 `if page.text is None: continue`,进到这恒是 str
     for m in ONS_ISSUED_RE.finditer(x.page.text):
         cands.append((m.start(), num_strict(m.group(1)), int(m.group(2)), m.group(0)))
+    # pyrefly: ignore[no-matching-overload] — 同上
     for m in ONS_REACHED_RE.finditer(x.page.text):
         cands.append((m.start(), num_strict(m.group(2)), int(m.group(1)), m.group(0)))
     if not cands:
@@ -4435,6 +4451,7 @@ def on_issued_row(x: OnYearIn) -> dict | None:
 def on_alloc_rows(x: OnYearIn) -> list:
     """一页里的年度配额句(官方原句 quote-anchored,照抄不改写)。"""
     out: list = []
+    # pyrefly: ignore[no-matching-overload] — 调用方 build_on_stats 已 `if page.text is None: continue`,进到这恒是 str
     for m in ONS_ALLOC_RE.finditer(x.page.text):
         out.append({K_YEAR: int(m.group(1)), K_LABEL: fold_ws(m.group(0)).strip(),
                     K_VALUE: num_strict(m.group(2)), K_UNIT: ONS_UNIT_NOMINATIONS,
@@ -4499,7 +4516,7 @@ def build_on_stats() -> None:
 # =========================================================================
 
 
-def num_or_none(s: object) -> int | None:
+def num_or_none(s: str | None) -> int | None:
     """'6,239' → 6239;抑制值/不适用/空 → None(**绝不折成 0**,本表的立身之本)。"""
     text = (s or "").replace(COMMA, EMPTY_JOIN).strip()
     if NUM_ONLY_RE.fullmatch(text):
@@ -4507,14 +4524,14 @@ def num_or_none(s: object) -> int | None:
     return None
 
 
-def mb_soup_of(html: str) -> object:
+def mb_soup_of(html: str) -> SoupNodeLike:
     """月度页/年报的 soup(先拆噪音标签)。"""
-    soup = BeautifulSoup(html, PARSER_HTML)
+    soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
     drop_junk_tags(soup)
     return soup
 
 
-def sectioned_tables(soup: object) -> list:
+def sectioned_tables(soup: SoupNodeLike) -> list:
     """[(最近一个标题文本, 表格的行矩阵)] —— 表头本身认不出表(「Month|SW|BIS|Total」refusals 与
     applications received 一模一样),只有**上方的官方小标题**能唯一定位。"""
     out: list = []
@@ -4622,7 +4639,7 @@ def mb_inventory_block(x: MbInventoryIn) -> dict:
     }
 
 
-def mb_processing_rows(soup: object) -> list:
+def mb_processing_rows(soup: SoupNodeLike) -> list:
     """年报 §9 Processing Times:逐通道 批准/拒/总体 平均天数。"""
     proc: list = []
     for head, rows in sectioned_tables(soup):
@@ -4678,6 +4695,7 @@ def mb_monthly_block(x: MbMonthlyIn) -> MbMonthlyOut:
 def mb_annual_block(src: LatestOut) -> MbAnnualOut:
     """年报 §9 处理时长 + §10 EOI 池 + 服务承诺句。"""
     problems: list = []
+    # pyrefly: ignore[bad-argument-type] — 调用方 build_mb_stats 已 `if not annual_src.html` 记问题并 fail_zh 退出
     asoup = mb_soup_of(src.html)
     atext = fold_ws(asoup.get_text(TEXT_JOIN_SEP, strip=True))
     proc = mb_processing_rows(asoup)
@@ -4740,6 +4758,7 @@ def build_mb_stats() -> None:
         problems.append(MBS_PROBLEM_NO_ANNUAL)
     if problems:
         fail_zh(problems)
+    # pyrefly: ignore[bad-argument-type] — 上方 `if not monthly_src.html` 已记问题,problems 非空即 fail_zh 退出
     msoup = mb_soup_of(monthly_src.html)
     mtext = fold_ws(msoup.get_text(TEXT_JOIN_SEP, strip=True))
     alloc = None
@@ -4750,6 +4769,7 @@ def build_mb_stats() -> None:
         alloc_label = fold_ws(ma.group(1)).strip()
     else:
         problems.append(MBS_PROBLEM_NO_ALLOC)
+    # pyrefly: ignore[bad-argument-type] — latest_cached_year 找不到时 html 与 year 同为 None,上方 fail_zh 已拦住
     block = mb_monthly_block(MbMonthlyIn(tabs=sectioned_tables(msoup), year=monthly_src.year))
     problems += block.problems
     annual = mb_annual_block(annual_src)
@@ -4810,7 +4830,7 @@ def parse_pts(raw: str) -> int | None:
     return int(m.group(1))
 
 
-def row_texts(tr: object) -> list:
+def row_texts(tr: SoupNodeLike) -> list:
     """一行的各格文本(不折空白 —— 官方表里就没有多余空白)。"""
     out: list = []
     for c in tr.find_all(CELL_TAGS):
@@ -4818,7 +4838,7 @@ def row_texts(tr: object) -> list:
     return out
 
 
-def header_label(table: object) -> str:
+def header_label(table: SoupNodeLike) -> str:
     """表头第一格文字(认这是哪个因子表)。"""
     tr = table.find(TAG_TR)
     if not tr:
@@ -4829,7 +4849,7 @@ def header_label(table: object) -> str:
     return texts[0]
 
 
-def point_rows(table: object) -> list:
+def point_rows(table: SoupNodeLike) -> list:
     """[(子标题, label, raw_points)]——第一行(表头)跳过;第二格为空的行是子标题(不进数据);
     label 统一成 __MAXALL__(Maximum points,整个因子的官方上限)或
     __MAXSUB__(Maximum subtotal,当前子标题那一块的官方上限)。"""
@@ -4859,7 +4879,7 @@ def point_rows(table: object) -> list:
     return out
 
 
-def mbp_factor_tables(main_el: object) -> dict:
+def mbp_factor_tables(main_el: SoupNodeLike) -> dict:
     """页面上六张因子表(只认第一张,同页面不会重复,防御一下)。"""
     tables: dict = {}
     for t in main_el.find_all(TAG_TABLE):
@@ -4869,7 +4889,7 @@ def mbp_factor_tables(main_el: object) -> dict:
     return tables
 
 
-def mbp_language_factor(table: object) -> MbFactorOut:
+def mbp_language_factor(table: SoupNodeLike) -> MbFactorOut:
     """Language proficiency:First 按 per band 四项相加 + Second 一次性 25。"""
     rows: list = []
     bonus: list = []
@@ -4909,7 +4929,7 @@ def mbp_simple_factor(x: MbSimpleIn) -> MbFactorOut:
         if row.label == MBP_MAX_ALL_LABEL:
             official = parse_pts(row.raw)
             continue
-        item = {K_LABEL: mbp_clean(row.label), K_POINTS: parse_pts(row.raw)}
+        item: dict = {K_LABEL: mbp_clean(row.label), K_POINTS: parse_pts(row.raw)}
         if x.bonus_kw and item[K_LABEL].lower().startswith(x.bonus_kw):
             bonus.append(item)
         else:
@@ -4922,7 +4942,7 @@ def mbp_simple_factor(x: MbSimpleIn) -> MbFactorOut:
     return MbFactorOut(factor={K_ROWS: rows, K_BONUS: bonus, K_MAX: fmax}, problems=problems)
 
 
-def mbp_adapt_buckets(table: object) -> MbAdaptOut:
+def mbp_adapt_buckets(table: SoupNodeLike) -> MbAdaptOut:
     """Adaptability 表 → 三个子块 + 各自的官方 subtotal + 整个因子的官方上限。"""
     buckets: dict = {}
     sub_official: dict = {}
@@ -4939,7 +4959,7 @@ def mbp_adapt_buckets(table: object) -> MbAdaptOut:
     return MbAdaptOut(buckets=buckets, sub_official=sub_official, overall=overall)
 
 
-def mbp_risk_factor(table: object) -> MbFactorOut:
+def mbp_risk_factor(table: SoupNodeLike) -> MbFactorOut:
     """Risk assessment:唯一可负的因子,两项负分不互斥 → 存 bonus(可加总)。"""
     rows: list = []
     bonus: list = []
@@ -5012,7 +5032,7 @@ def build_mb_points() -> None:
     """MB EOI 分值表入口:六因子解析 + 官方 Maximum 行逐条对账 + 1000 分推导。"""
     say(PRINT_OUT_TPL.format(path=OUT_MB_POINTS))
     page = fetch_mb_eoi_page()
-    soup = BeautifulSoup(page.html, PARSER_HTML)
+    soup = cast(SoupNodeLike, BeautifulSoup(page.html, PARSER_HTML))
     main_el = soup.find(TAG_MAIN)
     if not main_el:
         main_el = soup
@@ -5227,7 +5247,7 @@ def build_nl_points() -> None:
 
 def parse_nl_employer(x: EmployerRowIn) -> dict | None:
     """单个雇主页 → {name, location, nocs, url};解不出雇主名 → None(页面异常,跳过不硬凑)。"""
-    soup = BeautifulSoup(x.html, PARSER_HTML)
+    soup = cast(SoupNodeLike, BeautifulSoup(x.html, PARSER_HTML))
     h1 = soup.find(TAG_H1, class_=NLE_ENTRY_TITLE_CLASS)
     if not h1:
         return None
@@ -5351,7 +5371,7 @@ def download_sk_pdfs() -> dict:
         except Exception as e:  # noqa: BLE001
             say(SKJ_PRINT_DL_FAIL_TPL.format(out=p[K_OUT], name=type(e).__name__, detail=e))
             continue
-        out_path = SKJ_CRAWL_DIR / p[K_OUT]
+        out_path = SKJ_CRAWL_DIR / cast(str, p[K_OUT])
         out_path.write_bytes(data)
         head = data[:SKJ_HEAD_BYTES]
         say(SKJ_PRINT_DL_TPL.format(mark=mark_of(head.startswith(SKJ_PDF_MAGIC)), desc=p[K_DESC],
@@ -5485,7 +5505,7 @@ def translate_draw_streams() -> None:
     done = 0
     with httpx.Client() as client:
         for i, name in enumerate(todo):
-            zh = qwen_translate(TranslateIn(client=client, name=name))
+            zh = qwen_translate(TranslateIn(client=cast(HttpClientLike, client), name=name))
             if zh:
                 cache[name] = {K_ZH: zh, K_TRANSLATED_AT: datetime.now(timezone.utc).isoformat()}
                 done += 1
@@ -5702,7 +5722,8 @@ def audit_c01_gold() -> None:
     直接查出。任何一条不过 = 数据层 bug,不许改金标凑数;金标本身被数据推翻时
     (如 645→639 家)先逐页核实、改案例文档、再改这里(带修正注记)。
     C5 判定层(pathVerdict)沿用同一套断言当单测底座。
-    案例文档:docs/design/案例C01-马龙木匠路径-路径分析-20260805.md。
+    案例文档已随 docs 清仓沉 git(原 docs/design/案例C01-…-20260805.md,git 历史可考);
+    修正注记就地写在各断言常量的 docstring 里,那就是活记录。
     有红逐条打印后 exit 1(SystemExit 穿透门,当场中止)。"""
     fails: list = []
     c01_check_scores(fails)
@@ -5809,19 +5830,19 @@ def c01_check_sk(fails: list) -> None:
 
 
 def c01_check_nl(fails: list) -> None:
-    """⑤ NL 指定雇主(W4):639 家、3 家申报过木工(C01 原文 645/1 已修正)。"""
+    """⑤ NL 指定雇主(W4):645 家、4 家申报过木工(沿革:C01 原文 645/1 → 08-05 核实 639/3 → 08-31 官方名录再变 645/4,注记在两常量 docstring)。"""
     de = []
     for r in load_mart_rows(C01_T_EMP):
         if r[K_PROVINCE] == C01_PROV_NL:
             de.append(r)
-    gold_check(GoldCheckIn(fails=fails, name=C01_L_NL_COUNT, ok=len(de) == 639,
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_NL_COUNT, ok=len(de) == 645,
                            detail=C01_D_COUNT_TPL.format(n=len(de))))
     hits = []
     for r in de:
         nocs = r.get(K_NOCS) or ""
         if C01_NOC_CARPENTER in nocs:
             hits.append(r[K_NAME])
-    gold_check(GoldCheckIn(fails=fails, name=C01_L_NL_CARP, ok=len(hits) == 3,
+    gold_check(GoldCheckIn(fails=fails, name=C01_L_NL_CARP, ok=len(hits) == 4,
                            detail=C01_HIT_SEP.join(hits)[:C01_HIT_MAX_LEN]))
 
 
@@ -5939,7 +5960,7 @@ def scan_gate_pdf(key: str) -> None:
         try:
             data = httpx.get(url, headers=GQ_UA, follow_redirects=True,
                              timeout=GQ_PDF_TIMEOUT_S).content
-            parts = []
+            parts: list = []
             with fitz.open(stream=data, filetype=FILETYPE_PDF) as doc:
                 for pg in doc:
                     parts.append(pg.get_text())

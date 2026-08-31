@@ -25,7 +25,9 @@ from clean import visa_flag  # GAP1③ 身份预筛(JD 正文 → 红旗+quote)
 
 # 公司名归一(o/a 前缀、公司后缀、标点)单一来源在 clean/05c —— LMIA 匹配与 AIP 用同一把尺子
 _spec = importlib.util.spec_from_file_location("flag_aip", Path(__file__).resolve().parent / "clean" / "05c_flag_aip.py")
+# pyrefly: ignore[bad-argument-type] — spec_from_file_location 只在路径不存在时给 None;此处是仓内固定文件,拿不到就该当场炸
 _mod = importlib.util.module_from_spec(_spec)
+# pyrefly: ignore[missing-attribute] — 同上,spec 非 None 时 loader 恒在
 _spec.loader.exec_module(_mod)
 norm_name = _mod.norm_name
 
@@ -35,7 +37,9 @@ norm_name = _mod.norm_name
 # 00:22 跑 04d → 00:25 写入 24 条新帖 → 00:42 建表 → 那 24 条在页面上薪资列全空,下一轮才自愈)。
 # 编排顺序已把窗口从 20 分钟压到十几秒,但窗口不为零 —— **mart 是最终表,它不该依赖谁先跑**。
 _sal_spec = importlib.util.spec_from_file_location("clean_salary", Path(__file__).resolve().parent / "clean" / "04d_clean_salary.py")
+# pyrefly: ignore[bad-argument-type] — spec_from_file_location 只在路径不存在时给 None;此处是仓内固定文件,拿不到就该当场炸
 _sal_mod = importlib.util.module_from_spec(_sal_spec)
+# pyrefly: ignore[missing-attribute] — 同上,spec 非 None 时 loader 恒在
 _sal_spec.loader.exec_module(_sal_mod)
 LATE_SALARY = [0]
 
@@ -1073,7 +1077,9 @@ def build():
                     "url": v.get("url", ""), "fetched": pd.get("fetched", "")}
             # 截断放宽(C4):普通省 8→12;NB 按类别定向邀请、一轮拆多行,判定层要数
             # 「某职业类别 2026 年被选中几轮」→ 给一年的量(48,与 build_draws.NB_MAX 一致)。
-            for dr in v.get("draws", [])[:48 if prov == "NB" else 12]:
+            # MB 2026-08-31 并入同档:同为一轮拆 4-5 行(总行+分流细分行),12 行只装两三轮,
+            # 08-27 新轮落地把 #275 的 825 细分行挤出窗口 —— c01 金标当场红,判据与 NB 全同。
+            for dr in v.get("draws", [])[:48 if prov in ("NB", "MB") else 12]:
                 stream = dr.get("stream", "")
                 pnp_draws.append({**base, "kind": "draw", "drawDate": dr.get("date"),
                                   "stream": stream, "streamZh": draw_stream_zh.get(stream), "score": dr.get("score"),

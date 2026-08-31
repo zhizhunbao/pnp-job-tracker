@@ -32,7 +32,9 @@ from noc.functions import broad_of, teer_of  # E13-02:NOC 分类法(单一来源
 # 加载它不会触发那段重活。
 import importlib.util as _ilu
 _score_spec = _ilu.spec_from_file_location("score08", Path(__file__).resolve().parent / "08_score.py")
+# pyrefly: ignore[bad-argument-type] — spec_from_file_location 只在路径不存在时给 None;此处是仓内固定文件,拿不到就该当场炸
 _score = _ilu.module_from_spec(_score_spec)
+# pyrefly: ignore[missing-attribute] — 同上,spec 非 None 时 loader 恒在
 _score_spec.loader.exec_module(_score)
 pnp_eligible = _score.pnp_eligible
 pnp_direct = _score.pnp_direct     # E13-09:拿 offer 即可(eligible−direct=「先省内工作 6 个月」灰行)
@@ -93,6 +95,7 @@ def _lmia_positions_by_noc(quarter: str) -> dict[str, int]:
     ws = wb.active
     out: dict[str, int] = defaultdict(int)
     header = None
+    # pyrefly: ignore[missing-attribute] — openpyxl 存根把 wb.active 标成可空(空工作簿档);这里是官方 xlsx,拿不到就该炸
     for row in ws.iter_rows(values_only=True):
         cells = ["" if c is None else str(c).strip() for c in row]
         if header is None:
@@ -113,6 +116,7 @@ def _lmia_positions_by_noc(quarter: str) -> dict[str, int]:
     return dict(out)
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
+    # pyrefly: ignore[missing-attribute] — typeshed 把 sys.stdout 标成 TextIO,运行时是 TextIOWrapper(带 reconfigure)
     sys.stdout.reconfigure(encoding="utf-8")
 
 IN_JOBS = paths.MART / "jobs.json"
@@ -463,7 +467,7 @@ def main() -> None:
     # mom14d=None(new14d_prev<5)的行该分量按组内均值计(_zscores 对 None 记 0)。
     by_prov_rows: dict[str, list] = defaultdict(list)
     for r in occ_rows:
-        by_prov_rows[r["province"]].append(r)
+        by_prov_rows[str(r["province"])].append(r)
     for rs in by_prov_rows.values():
         mom = [r.get("mom14d") for r in rs]
         named_ratio = [(r["namedJobs"] / r["openJobs"]) if r["openJobs"] else None for r in rs]

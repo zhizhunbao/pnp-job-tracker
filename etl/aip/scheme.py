@@ -10,10 +10,21 @@ crawl 缓存页 / 既有 raw json)一律 dict 直读,键词汇住 constants 的 
 dataclass 名、字段名、每条 docstring 逐字未改。
 """
 from dataclasses import dataclass
+from typing import Protocol
 
 # =========================================================================
 # 1. 共享词汇(纯常量段,无形状 —— 镜像占位)
 # =========================================================================
+
+
+class SoupNodeLike(Protocol):
+    """bs4 标签节点形 —— Protocol 自声明只真用的格(ee/pnp scheme 同款;叶子律下
+    scheme 不 import bs4,裸 object 又让检查器判不动 —— 2026-08-31 批G 补形)。
+    本域只用来压平 crawl 缓存页的正文;方法签名库定死,一参令例外。"""
+
+    def get_text(self, *args: object, **kwargs: object) -> str:
+        """压平文本。"""
+        ...
 
 # =========================================================================
 # 2. employers 步(AIP 官方指定雇主名录)

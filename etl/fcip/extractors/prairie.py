@@ -101,6 +101,7 @@ def st_pierre_jolys() -> dict:
     pdf_url = _find_pdf_url(_get(_SP_HOME).text, _SP_HOME, r"fileName=Designated[^\"]*\.pdf")
     employers = []
     with _pdf(pdf_url) as doc:
+        # pyrefly: ignore[no-matching-overload] — pymupdf get_text() 无参档位恒返回 str,存根把三档位并成 str|list|dict
         text = "\n".join(page.get_text() for page in doc)
     for chunk in text.split("▪")[1:]:  # PDF 按 ▪ 分条,每条首个非空行=雇主名
         name = next((_tidy(ln) for ln in chunk.splitlines() if ln.strip()), "")

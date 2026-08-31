@@ -15,6 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
+    # pyrefly: ignore[missing-attribute] — typeshed 把 sys.stdout 标成 TextIO,运行时是 TextIOWrapper(带 reconfigure)
     sys.stdout.reconfigure(encoding="utf-8")
 
 from log.functions import err, say
