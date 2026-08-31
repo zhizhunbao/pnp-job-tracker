@@ -9,6 +9,7 @@ dependencies = [
     "pymupdf>=1.24",
     "lxml>=5.0",
     "loguru>=0.7",
+    "zhconv>=1.4",  # 抽选流名灰注的繁简转换(2026-08-30 批B 收口:原只活在本机 venv,依赖真相归一;镜像解冻时随统一重启补装)
     # XLSX 解析:build_lmia(ESDC 季度表)与 scrape_ircc_stats(IRCC 开放数据年末存量)都要它。
     # 2026-08-03 补进来 —— 此前只写在 docker/etl/httpx/Dockerfile 里,依赖真相分裂两处,
     # 结果 .venv 跑不了 ircc 役(本地一跑就 ModuleNotFoundError,只有容器里能跑)。
@@ -84,10 +85,6 @@ max-args = 1
 "etl/sources/**/*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/pilot/extractors/*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 # 各域存量步骤文件(按动词前缀点名,一域一组;新域没有这些行 = 天然全严)
-"etl/pnp/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/pnp/scrape_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/pnp/watch_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/pnp/translate_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/ee/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/ircc/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/ircc/scrape_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]

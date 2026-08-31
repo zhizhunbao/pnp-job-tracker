@@ -1,0 +1,5662 @@
+"""
+pnp 域函数 —— 全部行为住这(照 company/crawl 全溶样张,方言律全集见
+docs/design/etl分域-20260829.md §4)。
+
+原 33 个步骤文件 2026-08-30 批B 溶入本文件,一步一段(段横幅三行框 + N. 编号,
+与 constants.py 同名同序镜像),各段入口函数与原脚本同名、一律零参,门(main.py)直调。
+**零字符串令**:字面量全住 constants(文案 *_TPL 模板、JSON 键 K_ 词族、官方原句 *_QUOTE);
+**显式循环令**:禁推导/genexp/lambda;**内嵌禁令**:内部函数出户成顶层具名函数;
+**一参令**:函数至多一参,多入参收 scheme 的 XxxIn dataclass,多返回值收 XxxOut。
+日志口径:域内不裸 print,报数走 log.functions.say;各步原有的「✗ …(保留旧表)」行
+原样保留(auto_update 按 ✗/! 行首升 ERROR 级,这就是本域的错误通道),
+原来静默 pass/continue 的 catch 一律补 err() 留痕(永不吞异常令)。
+硬闸口径不变:自校未过 → 保留旧表 + sys.exit(1),门见 SystemExit 直接中止本轮
+(与旧 _steps 跑子进程「一步失败即中止」同语义)。
+依赖单边:本文件 → constants/scheme + 基础设施叶(paths / log / fetch / crawl)。
+"""
+import json
+import sys
+from datetime import date, datetime, timezone
+from urllib.parse import urljoin
+
+import fitz
+import httpx
+from bs4 import BeautifulSoup
+
+import paths
+from log.functions import err, say
+from fetch.constants import BROWSER_UA, HDR_UA, PARSER_HTML, WS_RE
+from crawl.functions import convert_md, get_cached_page
+from crawl.scheme import ConvertIn
+from pnp.constants import (
+    ABR_BASIS_WINDOW_TPL, ABR_COND_LOCAL, ABR_EMPLOYER_URL, ABR_EMP_REVENUE_LABEL_TPL, ABR_EMP_REVENUE_RE,
+    ABR_EMP_STAFF_LABEL_TPL, ABR_EMP_STAFF_RE, ABR_EMP_STREAM, ABR_EMP_YEARS_LABEL_TPL, ABR_EMP_YEARS_RE,
+    ABR_EXP_AB_RE, ABR_EXP_ANY_RE, ABR_EXP_LABEL_TPL, ABR_FACTOR_ORDER, ABR_LANG_NOC_LABEL_TPL, ABR_LANG_NOC_RE,
+    ABR_LANG_TIERS, ABR_LANG_TIER_LABEL_TPL, ABR_LANG_TIER_RE, ABR_PROBLEM_EMPLOYER_TPL, ABR_PROBLEM_EXP,
+    ABR_PROBLEM_LANG_NOC, ABR_PROBLEM_LANG_ORDER_TPL, ABR_PROBLEM_LANG_TIERS_TPL, ABR_SECTION_EMPLOYER,
+    ABR_SECTION_EXP, ABR_SECTION_LANG, ABR_SECTION_LANG_TABLE, ABR_SOURCE, ABR_TIMEOUT_S, ABR_WHAT_EMP_REVENUE,
+    ABR_WHAT_EMP_STAFF, ABR_WHAT_EMP_YEARS, ABS_ALLOC_KEY, ABS_AOS_KW, ABS_ASSESSING_KEY, ABS_DRAW_MIN_COLS,
+    ABS_FALLBACK_X, ABS_HEAD_ALLOCATION, ABS_HEAD_DRAW, ABS_HEAD_STREAM, ABS_INT_RE, ABS_MIN_DRAWS, ABS_MIN_POOL,
+    ABS_MIN_STREAMS, ABS_NOTE, ABS_POOL_MIN_COLS, ABS_POOL_SANE, ABS_PRINT_DONE_TPL, ABS_PROBLEM_DRAWS_TPL,
+    ABS_PROBLEM_NO_ASOF, ABS_PROBLEM_NO_SUMMARY, ABS_PROBLEM_POOL_SANE, ABS_PROBLEM_POOL_TPL,
+    ABS_PROBLEM_STREAMS_TPL, ABS_PROBLEM_SUMMARY_TPL, ABS_SECTION_TAGS, ABS_SNIFF_LEN, ABS_SOURCE, ABS_STREAM_KEYS,
+    ABS_SUMMARY_KEYS, ABS_SUMMARY_KW, ABS_TIMEOUT_S, ABS_UPDATED_RE, AB_AOS_LABEL, AB_AOS_NOTE, AB_AOS_STREAM,
+    AB_AOS_TIMEOUT_S, AB_AOS_URL, AB_NOC5_RE, AB_NOC_STAR, AB_PDF_NOC_RE, AB_PRINT_AOS_TPL, AB_PRINT_NO_AOS,
+    AB_PRINT_NO_TECH, AB_PRINT_TECH_TPL, AB_TABLE_HEAD_KW, AB_TECH_LABEL, AB_TECH_PDF_URL, AB_TECH_STREAM,
+    AB_TECH_TIMEOUT_S, AREA_GTA, AREA_METRO, AREA_ON_LISTED, AREA_ON_OTHER, AREA_OUTSIDE_GTA, AREA_REST_BC,
+    AREA_REST_NL, AREA_ST_JOHNS, ATTR_COLSPAN, ATTR_HREF, ATTR_ROWSPAN, BCR_ALL_STREAMS, BCR_EMP_STAFF_LABEL_TPL,
+    BCR_EMP_STAFF_RE, BCR_EMP_STAFF_ROWS, BCR_EMP_YEARS_LABEL_TPL, BCR_EMP_YEARS_RE, BCR_EXP_LABEL_TPL, BCR_EXP_RE,
+    BCR_FACTOR_ORDER, BCR_FOOTER_DATE_RE, BCR_FURNITURE, BCR_INCOME_7PLUS_PREFIX, BCR_INCOME_LABEL_TPL,
+    BCR_INCOME_RE, BCR_INCOME_ROWS, BCR_INSIDE_WORD, BCR_LANG_CLB_RE, BCR_LANG_LABEL_TPL, BCR_LANG_NONE_LABEL_TPL,
+    BCR_LANG_NONE_RE, BCR_METRO_WORDS, BCR_OUTSIDE_WORD, BCR_PRINT_DONE_TPL, BCR_PROBLEM_EMP_STAFF_TPL,
+    BCR_PROBLEM_EMP_YEARS, BCR_PROBLEM_EXP, BCR_PROBLEM_INCOME_ORDER, BCR_PROBLEM_INCOME_SWAP,
+    BCR_PROBLEM_INCOME_TPL, BCR_PROBLEM_LANG, BCR_PROBLEM_LANG_NONE, BCR_REST_WORDS, BCR_SECTION_EMP_STAFF,
+    BCR_SECTION_EMP_YEARS, BCR_SECTION_EXP, BCR_SECTION_INCOME, BCR_SECTION_LANG, BCR_SKILLED_WORKER,
+    BCR_TIMEOUT_S, BCR_UNIT_CAD_YR, BCR_WITHIN_WORD, BCS_ASOF_RE, BCS_DUR_RE, BCS_MIN_POOL, BCS_MIN_STAGES,
+    BCS_NOTE, BCS_PCTL_RE, BCS_POOL_HEAD_KW, BCS_POOL_SANE, BCS_PRINT_DONE_TPL, BCS_PRINT_POOL_TPL,
+    BCS_PRINT_PROC_ONLY_TPL, BCS_PRINT_PROC_ROW_TPL, BCS_PRINT_STAGE_TPL, BCS_PROBLEM_NO_ASOF,
+    BCS_PROBLEM_NO_CACHE_TPL, BCS_PROBLEM_NO_PCTL, BCS_PROBLEM_POOL_SANE, BCS_PROBLEM_POOL_TPL,
+    BCS_PROBLEM_STAGES_TPL, BCS_PROC_URL, BCS_RANGE_RE, BCS_SOURCE, BCS_STAGE_HEAD_KW, BCS_TIMEOUT_S,
+    BCS_UNIT_SUFFIX, BC_BUCKETS, BC_GUIDE_SOURCE, BC_GUIDE_TIMEOUT_S, BC_GUIDE_URL, BC_HEADING_RE,
+    BC_INELIG_EFFECTIVE_RE, BC_INELIG_END_RE, BC_INELIG_LABEL, BC_INELIG_MIN, BC_INELIG_NOTE, BC_INELIG_ROW_RE,
+    BC_INELIG_SECTION_RE, BC_INELIG_STREAM, BC_NAME_TAIL_RE, BC_NOC_LINE_RE, BC_PRINT_INELIG_TPL,
+    BC_PRINT_NO_SECTION, BC_PRINT_PDF_FAIL_TPL, BC_PRINT_TOO_FEW_TPL, BC_SECTION_BUCKET, BC_URL,
+    BC_WORKERS_PAGE_URL, CELL_TAGS, COMMA, DATE_FMT_LONG, DIGIT_RE, DRAWS_AB_HEAD_KW, DRAWS_AB_LABEL,
+    DRAWS_AB_MIN_COLS, DRAWS_AB_SCALE, DRAWS_AB_URL, DRAWS_BC_HEAD_KW, DRAWS_BC_LABEL, DRAWS_BC_MIN_COLS,
+    DRAWS_BC_SCALE, DRAWS_BC_URL, DRAWS_MAX_PER_PROV, DRAWS_MB_LABEL, DRAWS_MB_SCALE, DRAWS_MB_URL, DRAWS_NB_LABEL,
+    DRAWS_NB_MAX, DRAWS_NB_PREV_URL, DRAWS_NB_URL, DRAWS_NL_LABEL, DRAWS_NL_URL, DRAWS_NOTE_CLIP,
+    DRAWS_NOTICE_CLIP, DRAWS_NUM_STRIP_RE, DRAWS_ON_INV_URL, DRAWS_ON_LABEL, DRAWS_ON_SCALE, DRAWS_ON_URL,
+    DRAWS_PRINT_DONE_TPL, DRAWS_PRINT_EMPTY_TPL, DRAWS_PRINT_FAIL_TPL, DRAWS_PRINT_MERGE_TPL,
+    DRAWS_PRINT_NB_FAIL_TPL, DRAWS_PRINT_NB_OK_TPL, DRAWS_PRINT_NB_PARTIAL_TPL, DRAWS_PRINT_OK_TPL,
+    DRAWS_PRINT_ON_FAIL_TPL, DRAWS_PRINT_ON_INV_FAIL_TPL, DRAWS_PRINT_ON_NO_ENTRY, DRAWS_PRINT_ON_OK_TPL,
+    DRAWS_SOURCE, DRAWS_STREAM_CLIP, DRAWS_TIMEOUT_S, DROP_TAGS, EMPTY_JOIN, ENC_UTF8, ERRORS_REPLACE,
+    FACTOR_EMP_REVENUE, FACTOR_EMP_STAFF, FACTOR_EMP_YEARS, FACTOR_EXPERIENCE, FACTOR_EXPERIENCE_EXCLUDED,
+    FACTOR_INCOME, FACTOR_LANGUAGE, FACTOR_LANGUAGE_EXEMPT, FACTOR_RESIDENCE, FACTOR_WAGE, FILETYPE_PDF,
+    HDR_ACCEPT_JSON, HEADER_WORDS, INDENT_1, INDENT_2, IN_ALLOC_TABLE, IN_CRAWL_DIR, IN_DRAWS_FOR_ZH, IN_NEWS_FILE,
+    IN_NL_HTML_CACHE, IN_NL_MANIFEST, K_ALLOCATION, K_ALLOC_PROGRAM, K_ALLOC_VALUE, K_ALLOC_YEAR, K_ANNUAL, K_ANY,
+    K_ANY_TRADE, K_API, K_APPLIES_AREA, K_APPLIES_CONDITION, K_APPLIES_NOC, K_APPLIES_TEER, K_APPLIES_TO,
+    K_APPLIES_TO_QUOTE, K_APPROVED_DAYS, K_AS_OF_LOWER, K_BAND_COUNT, K_BASIS, K_BODY_EN, K_BONUS, K_BY_PROGRAM,
+    K_CAPPED_SECTORS, K_CAP_AT, K_CATEGORY, K_CHECKED, K_CODELESS, K_COMMITMENT_LABEL, K_COMMITMENT_MONTHS,
+    K_COUNT, K_CRAWLED_AT, K_DATE, K_DESC, K_DESIGNATION, K_DETAIL, K_DRAWS, K_EFFECTIVE, K_EMPLOYERS,
+    K_ENHANCED_YTD, K_EOI_POOL, K_ERROR, K_EXCLUDES_NOC, K_FACTOR, K_FACTORS, K_FACTS, K_FAMILY_SIZE, K_FETCHED,
+    K_FIRST, K_FLOOR_AT, K_FMT, K_FOOD, K_GROUP, K_GROUP_MAX, K_GUIDE_EFFECTIVE, K_HTML, K_INVENTORY,
+    K_INVITATIONS, K_IN_ASSESSMENT, K_ISSUED, K_IS_REDIRECTED, K_ITEMS, K_KEY, K_LABEL, K_LABEL_YEAR, K_LOCATION,
+    K_MAX, K_MAX_TOTAL, K_MIN_SCORE, K_MODEL, K_MONTH, K_MONTHLY, K_MUST, K_N, K_NAME, K_NOC, K_NOCS,
+    K_NOMINATIONS_ISSUED, K_NOMINATIONS_YTD, K_NOTE, K_NOTICE, K_OCCUPATION, K_OCCUPATIONS, K_OP, K_OPTIONS, K_OUT,
+    K_OVERALL_DAYS, K_OVERLAY, K_PAGES, K_PAGE_REDIRECT, K_PAGE_URL, K_PASS_MARK, K_PCT, K_PENDING,
+    K_PERCENTILE_LABEL, K_POINTS, K_POOL, K_POSITIONS, K_PRIORITY_SECTORS, K_PROCESSING, K_PRODUCT,
+    K_PRODUCT_FORMATS, K_PRODUCT_FORMAT_ID, K_PROGRAM, K_PROMPT, K_PROV, K_PROVINCE, K_PROVINCES, K_QUARTER,
+    K_QUOTE, K_RAW, K_REFUSED_DAYS, K_REGION, K_REGISTRATIONS, K_REMAINING, K_REQUESTED_URL, K_REQUIREMENTS,
+    K_RESOLVED_URL, K_RESPONSE, K_ROWS, K_ROWS_LOWER, K_RULE, K_SCALE, K_SCOPE, K_SCORE, K_SCORE_RANGE, K_SECTION,
+    K_SECTOR, K_SEEN, K_SOURCE, K_SOURCE_FILE, K_SPOTS, K_SRC, K_STAGE, K_STATEMENT, K_STATUS, K_STREAM, K_STREAMS,
+    K_STREAM_FLAG, K_SUBJECT, K_SUMMARY, K_SYSTEM, K_TEER, K_TEMPERATURE, K_THROUGH, K_THROUGH_MONTH, K_TITLE,
+    K_TOTAL, K_TRANSLATED_AT, K_TYPE, K_UNIT, K_URL, K_VALUE, K_VALUE_TEXT, K_WATCH, K_WEEKS, K_XOR_WITH_PREV,
+    K_YEAR, K_ZH, LINE_JOIN_SEP, LIST_JOIN_SEP, MARK_BAD, MARK_OK, MBP_ADAPT, MBP_ADAPTABILITY_KEY,
+    MBP_ADAPT_CONNECTION, MBP_ADAPT_DEMAND, MBP_ADAPT_REGIONAL, MBP_ADAPT_REGIONAL_RULE, MBP_AGE_KEY,
+    MBP_CURLY_LEFT, MBP_CURLY_RIGHT, MBP_EDUCATION_KEY, MBP_FACTOR_TABLES, MBP_FIRST_SUB_PREFIX,
+    MBP_FOOTNOTE_STAR_RE, MBP_GROUP_ADAPTABILITY, MBP_LANGUAGE_KEY, MBP_LANG_BANDS, MBP_LANG_FIRST_LABEL_TPL,
+    MBP_LANG_RULE, MBP_LANG_SECOND_LABEL_TPL, MBP_MAX_ALL_LABEL, MBP_MAX_POINTS_WORD, MBP_MAX_ROW_RE,
+    MBP_MAX_SUB_LABEL, MBP_MAX_TOTAL, MBP_MPNP_URL, MBP_NOTE_CACHE, MBP_NOTE_LIVE, MBP_PAGE_URL, MBP_POINTS_RE,
+    MBP_PRINT_CACHE_TPL, MBP_PRINT_DONE_TPL, MBP_PRINT_FACTOR_TPL, MBP_PRINT_NO_PAGE_TPL,
+    MBP_PROBLEM_ADAPT_EMPTY_TPL, MBP_PROBLEM_ADAPT_NO_MAX, MBP_PROBLEM_ADAPT_SUB_TPL, MBP_PROBLEM_ADAPT_TOTAL_TPL,
+    MBP_PROBLEM_EMPTY_TPL, MBP_PROBLEM_LANG_HALF, MBP_PROBLEM_LANG_MAX_TPL, MBP_PROBLEM_MAX_TPL,
+    MBP_PROBLEM_MISSING_PREFIX, MBP_PROBLEM_RISK_EMPTY, MBP_PROBLEM_RISK_MAX_TPL, MBP_PROBLEM_TOTAL_TPL,
+    MBP_RISK_KEY, MBP_RISK_RULE, MBP_SIMPLE_FACTORS, MBP_SOURCE, MBP_STRAIGHT_QUOTE, MBP_SYSTEM, MBP_TIMEOUT_S,
+    MBP_WORK_KEY, MBR_BASIS_TENURE, MBR_COND_GRAD, MBR_DASH, MBR_EDI_LABEL_TPL, MBR_EDI_SECTION, MBR_EDI_STREAM,
+    MBR_EDI_URL, MBR_EDI_YEARS_RE, MBR_IDOL_LABEL_TPL, MBR_IDOL_ROW_RE, MBR_IDOL_SECTION, MBR_IDOL_STREAM,
+    MBR_MIN_OCC, MBR_MONTHS_PER_MONTH, MBR_MONTHS_PER_YEAR, MBR_PRINT_CONFLICT_TPL, MBR_PRINT_DONE_TPL,
+    MBR_PRINT_SWM_ONLY_TPL, MBR_PRINT_SWM_ROW_TPL, MBR_PROBLEM_EDI, MBR_PROBLEM_EDI_WORD_TPL, MBR_PROBLEM_IDOL_TPL,
+    MBR_PROBLEM_SWM_BASE, MBR_PROBLEM_SWM_EXCL, MBR_PROBLEM_SWM_GRAD, MBR_PROBLEM_SWO, MBR_PROBLEM_TENURE_WORD_TPL,
+    MBR_SOURCE, MBR_SWM_BASE_RE, MBR_SWM_EXCL_RE, MBR_SWM_GRAD_RE, MBR_SWM_GRAD_STREAM_TPL, MBR_SWM_SECTION,
+    MBR_SWM_STREAM, MBR_SWM_URL, MBR_SWO_FLOOR_RE, MBR_SWO_LABEL_TPL, MBR_SWO_SECTION, MBR_SWO_STREAM, MBR_SWO_URL,
+    MBR_TIMEOUT_S, MBS_ACTIVE_RE, MBS_ALLOC_RE, MBS_ANNUAL_SECTION_TPL, MBS_ANNUAL_URL_TPL, MBS_ANNUAL_YEARS_BACK,
+    MBS_COL_APPROVED, MBS_COL_IN_ASSESSMENT, MBS_COL_OVERALL, MBS_COL_PENDING, MBS_COL_REFUSED, MBS_COL_TOTAL,
+    MBS_COMMIT_RE, MBS_DAYS_RE, MBS_ENHANCED_HEAD, MBS_ENHANCED_LABEL, MBS_INVENTORY_HEAD, MBS_INVENTORY_SECTION,
+    MBS_MIN_PROCESSING, MBS_MONTHLY_SECTION_TPL, MBS_MONTHLY_URL_TPL, MBS_MONTHLY_YEARS_BACK, MBS_MONTH_STRIP_STAR,
+    MBS_MONTH_TPL, MBS_NOTE, MBS_PLAN, MBS_PRINT_ANNUAL_TPL, MBS_PRINT_MONTHLY_TPL, MBS_PRINT_POOL_TPL,
+    MBS_PRINT_PROC_TPL, MBS_PROBLEM_NO_ALLOC, MBS_PROBLEM_NO_ANNUAL, MBS_PROBLEM_NO_COL_TPL, MBS_PROBLEM_NO_COMMIT,
+    MBS_PROBLEM_NO_ENHANCED, MBS_PROBLEM_NO_INVENTORY, MBS_PROBLEM_NO_MONTHLY, MBS_PROBLEM_NO_POOL,
+    MBS_PROBLEM_NO_TOTAL_TPL, MBS_PROBLEM_PROCESSING_TPL, MBS_PROC_HEAD_KW, MBS_SECTION_TAGS, MBS_SOURCE_TPL,
+    MBS_TOTAL_ROW_PREFIX, MBS_UNKNOWN_MONTH, MB_BLOCK_NAME_CLIP, MB_BLOCK_NAME_STRIP, MB_BLOCK_NAME_TPL,
+    MB_BLOCK_TAGS, MB_BUCKETS, MB_BUCKET_MAIN, MB_BUCKET_RURAL, MB_DEFAULT_STREAM, MB_DRAW_DATE_RE,
+    MB_DRAW_NOTE_TPL, MB_DRAW_NO_RE, MB_HEADING_RE, MB_HEAD_MAX_LEN, MB_HEAD_SNIFF_LEN, MB_HEAD_TAGS, MB_IDOL_URL,
+    MB_LAA_RE, MB_MAIN_HEAD_RE, MB_PRINT_TABLE_TPL, MB_ROW_RE, MB_RURAL_KW, MB_SCORE_RE, MB_STREAM_MAX_LEN,
+    MB_STREAM_TAIL_RE, MD_TIMEOUT_S, MONTHS_TITLE, MONTH_NAMES, NBR_EXPERIENCE_NAME, NBR_EXPERIENCE_STREAM,
+    NBR_EXP_TENURE_RE, NBR_LANG_LABEL_TPL, NBR_LANG_RE, NBR_PAGE_URL, NBR_PATHWAYS, NBR_PDF_TIMEOUT_S,
+    NBR_PRINT_DONE_TPL, NBR_PRINT_NO_GUIDE_TPL, NBR_PRINT_PATHWAY_TPL, NBR_PROBLEM_LANG_DIFF_TPL,
+    NBR_PROBLEM_LANG_TPL, NBR_PROBLEM_NO_VERSION, NBR_PROBLEM_RESIDENCE, NBR_PROBLEM_TENURE, NBR_RESIDENCE_RE,
+    NBR_SECTION_EXP, NBR_SECTION_LANG, NBR_SECTION_RESIDENCE, NBR_SOURCE, NBR_STREAM, NBR_TIMEOUT_S, NBR_UNKNOWN,
+    NBR_VERSION_RE, NB_AIP_FULL, NB_AIP_SHORT, NB_APP_SELECTED_KEY, NB_CATEGORIES_KW, NB_CATEGORIES_TPL,
+    NB_DEFAULT_STREAM, NB_DRAW_DATE_KW, NB_INV_ISSUED_KEY, NB_LABEL_STRIP, NB_NAME_MAX, NB_NAME_STRIP,
+    NB_NOC_LINE_RE, NB_NOTICES, NB_NOTICE_SPLIT, NB_NO_DATA, NB_OCC_KW, NB_OCC_ROW_KEY, NB_ORDINAL_RE,
+    NB_ORDINAL_SUB, NB_PAGE_CURRENT_LABEL, NB_PAGE_ERR_TPL, NB_PAGE_HISTORY_LABEL, NB_PATHWAYS_KW,
+    NB_PRINT_NO_NOTICE_TPL, NB_PRINT_SECTOR_GONE_TPL, NB_PRINT_SECTOR_OK_TPL, NB_PRINT_TABLE_TPL,
+    NB_PROV_PREFIX_RE, NB_PROV_SHORT_SUB, NB_RANGE_RE, NB_RANGE_TPL, NB_SECTOR_DATE_KW, NB_SECTOR_KWS,
+    NB_SECTOR_NOTICE, NB_SPLIT_QUOTE, NB_STREAM_TAIL_RE, NB_STREAM_TPL, NB_TAIL_RE, NB_URL, NLE_EMPLOYER_PREFIX,
+    NLE_ENTRY_TITLE_CLASS, NLE_ENTRY_URL, NLE_FIELD_LOCATION, NLE_FIELD_NOCS, NLE_LABEL, NLE_NOC_CODE_RE,
+    NLE_NOC_PROBE, NLE_PRINT_DONE_TPL, NLE_PRINT_FETCHED_TPL, NLE_PRINT_IN_CACHE_TPL, NLE_PRINT_IN_MANIFEST_TPL,
+    NLE_PRINT_NOC_STATS_TPL, NLE_PRINT_NO_MANIFEST_TPL, NLE_PRINT_PROBE_TPL, NLE_PRINT_SKIPPED_TPL,
+    NLE_PRINT_TOTAL_CODES_TPL, NLE_SKIP_MORE, NLE_SKIP_SHOW, NLE_SOURCE, NLE_STATUS_OK, NLP_AGE_KEY,
+    NLP_AGE_LABELS, NLP_AGE_MAX, NLP_AGE_START, NLP_CLB_LABEL_TPL, NLP_CLB_ROW_RE, NLP_CLB_TAIL, NLP_CLB_TOP,
+    NLP_CONNECTION_KEY, NLP_CONN_LABELS, NLP_CONN_MAX, NLP_CONN_START, NLP_DASH_EM, NLP_DASH_EN, NLP_DASH_PLAIN,
+    NLP_EDUCATION_KEY, NLP_EDU_END, NLP_EDU_LABELS, NLP_EDU_MAX, NLP_EDU_START, NLP_EXPECTED, NLP_FAIL_BULLET,
+    NLP_FAIL_HEADER, NLP_LANGUAGE_KEY, NLP_LANG_MAX, NLP_LANG_START, NLP_MARK_RE, NLP_MAX_TOTAL, NLP_NUM_RE,
+    NLP_OR_TAIL_RE, NLP_PAGE_TIMEOUT_S, NLP_PAGE_URL, NLP_PASS_MARK, NLP_PDF_MAGIC, NLP_PDF_TIMEOUT_S, NLP_PDF_URL,
+    NLP_PRINT_DONE_TPL, NLP_PROBLEM_NOT_PDF, NLP_PROBLEM_PASS_TPL, NLP_PROBLEM_ROWS_TPL, NLP_PROBLEM_TOTAL,
+    NLP_QUOTE_LEFT, NLP_QUOTE_PLAIN, NLP_QUOTE_RIGHT, NLP_SOFT_HYPHEN, NLP_SOURCE, NLP_SYSTEM, NLP_TAG_RE,
+    NLP_TEXT_MODE, NLP_WORK5_KEY, NLP_WORK5_MAX, NLP_WORK5_START, NLP_WORK610_KEY, NLP_WORK610_MAX,
+    NLP_WORK610_START, NLP_WORK_GROUP, NLP_WORK_GROUP_MAX, NLP_WORK_TOTAL_IN_SUM, NLP_YEAR_LABEL_TPL, NLP_YEAR_ONE,
+    NLP_YEAR_ROW_RE, NLR_ALL_TEERS_RE, NLR_CLB_RE, NLR_EMPLOYER_URL, NLR_EMP_STREAM, NLR_EMP_YEARS_LABEL_TPL,
+    NLR_EMP_YEARS_RE, NLR_IG_AGE_RE, NLR_IG_EXPERIENCE_RE, NLR_IG_EXP_LABEL_TPL, NLR_IG_HOURS_RE,
+    NLR_IG_LANG_CLB_RE, NLR_IG_LANG_DISCRETION_RE, NLR_IG_LANG_LABEL_TPL, NLR_IG_LANG_NONE_LABEL_TPL,
+    NLR_IG_LANG_TEER4_RE, NLR_IG_LANG_URL, NLR_IG_MONTHS_RE, NLR_IG_PGWP_RE, NLR_IG_STREAM, NLR_IG_TEER4,
+    NLR_IG_TEER_RE, NLR_IG_URL, NLR_LANG_LABEL_TPL, NLR_LANG_NONE_LABEL_TPL, NLR_PAGE_URL, NLR_POLICY_URL,
+    NLR_PRINT_ROW_TPL, NLR_PROBLEM_EMPLOYER_TPL, NLR_PROBLEM_IG_CLB_TPL, NLR_PROBLEM_IG_EXPERIENCE,
+    NLR_PROBLEM_IG_TPL, NLR_PROBLEM_MULTI_CLB_TPL, NLR_PROBLEM_NO_ALL_TEERS, NLR_PROBLEM_NO_CLB,
+    NLR_PROBLEM_NO_TEST_TEERS, NLR_PROBLEM_TEER_MATH_TPL, NLR_SECTION_EMP_STAFF, NLR_SECTION_EMP_YEARS,
+    NLR_SECTION_IG, NLR_SECTION_IG_LANG, NLR_SECTION_LANG, NLR_SOURCE, NLR_STAFF_OUT_LABEL_TPL, NLR_STAFF_OUT_RE,
+    NLR_STAFF_SJ_LABEL_TPL, NLR_STAFF_SJ_RE, NLR_STREAM, NLR_TEST_TEERS_RE, NLR_TIMEOUT_S, NLR_WHAT_EMP_YEARS,
+    NLR_WHAT_IG_AGE, NLR_WHAT_IG_DISCRETION, NLR_WHAT_IG_HOURS, NLR_WHAT_IG_MONTHS, NLR_WHAT_IG_PGWP,
+    NLR_WHAT_IG_TEER, NLR_WHAT_IG_TEER4, NLR_WHAT_STAFF_OUT, NLR_WHAT_STAFF_SJ, NL_DETAIL_SPLIT_RE,
+    NL_DRAW_DATE_KW, NL_DRAW_ITA_KW, NL_DRAW_STREAM, NL_GROUP_RE, NL_HEADING_PREFIX, NL_ITEM_RE, NL_MD_LINK_RE,
+    NL_MD_LINK_SUB, NL_PRINT_DONE_TPL, NL_PRINT_FAIL_TPL, NL_PRINT_NO_POSITION, NL_PRINT_SECTOR_TPL,
+    NL_PRIORITY_LABEL, NL_PRIORITY_NOTE, NL_PRIORITY_STREAM, NL_PRIORITY_URL, NL_PROGRAM_PNP_AIP, NL_SECTOR_RE,
+    NL_TITLE_RSTRIP_DOT, NL_TITLE_STRIP_STAR, NOT_MARKED, NSR_EFFECTIVE_RE, NSR_EMP_LABEL_TPL, NSR_EMP_YEARS_RE,
+    NSR_EXP_LABEL_TPL, NSR_EXP_RE, NSR_FACTOR_ORDER, NSR_FURNITURE_RE, NSR_HOST, NSR_HTTP_PREFIX,
+    NSR_LANG_HI_LABEL_TPL, NSR_LANG_HI_RE, NSR_LANG_LO_LABEL_TPL, NSR_LANG_LO_RE, NSR_PDF_KW_LANG, NSR_PDF_KW_SKIP,
+    NSR_PDF_KW_STREAM, NSR_PDF_SUFFIX, NSR_PDF_TIMEOUT_S, NSR_PRINT_DONE_TPL, NSR_PRINT_GUIDE_TPL,
+    NSR_PRINT_NO_GUIDE, NSR_PROBLEM_LANG_HI, NSR_PROBLEM_LANG_LO, NSR_PROBLEM_LANG_ORDER_TPL,
+    NSR_PROBLEM_NO_VERSION, NSR_SECTION_EMPLOYER, NSR_SECTION_EXP, NSR_SECTION_LANG_HI, NSR_SECTION_LANG_LO,
+    NSR_SOURCE, NSR_STREAM, NSR_TIMEOUT_S, NS_ALLOC_API, NS_ALLOC_BAD_TPL, NS_ALLOC_MIN_LATEST_YEAR,
+    NS_ALLOC_MIN_YEARS, NS_ALLOC_NOTE, NS_ALLOC_NO_YEAR, NS_ALLOC_PAGE, NS_ALLOC_PRINT_FAIL_TPL,
+    NS_ALLOC_PRINT_OK_TPL, NS_ALLOC_PRINT_OUT_TPL, NS_ALLOC_PROG_AIP, NS_ALLOC_PROG_NSNP, NS_ALLOC_TIMEOUT_S,
+    NS_ALLOC_UA, NS_ASOF_RE, NS_FACT_NO_MAIN_LIST, NS_FACT_NO_MAIN_LIST_KEY, NS_FACT_OID_EMPTY, NS_FACT_OID_KEY,
+    NS_FACT_OID_NOT_EMPTY, NS_FACT_PRIORITY_KEY, NS_FACT_PRIORITY_TPL, NS_MAIN_URL, NS_NOC_PATTERNS,
+    NS_OID_EMPTY_QUOTE, NS_OID_EMPTY_WORD, NS_OID_KW, NS_OID_NOT_EMPTY_WORD, NS_POLICY_LABEL, NS_POLICY_STREAM,
+    NS_PRINT_NO_OID, NS_PRINT_NO_PRIORITY, NS_PRINT_POLICY_FAIL_TPL, NS_PRINT_POLICY_TPL, NS_PRIORITY_URL,
+    NS_STREAMS, NS_TEER_04_RE, NUM_ONLY_RE, ONP_CLEAN_HEAD_RE, ONP_CLEAN_STRIP, ONP_EXP_ALT_RE, ONP_EXP_KEY,
+    ONP_OINP_URL, ONP_POINTS_RE, ONP_POINTS_SANE_MAX, ONP_PRINT_DONE_TPL, ONP_PRINT_FACTOR_TPL,
+    ONP_PRINT_NO_SECTION, ONP_PROBLEM_BIG_TPL, ONP_PROBLEM_EMPTY_TPL, ONP_PROBLEM_MISSING_PREFIX,
+    ONP_PROBLEM_ORDER_TPL, ONP_SCORING_ANCHOR, ONP_SECTIONS, ONP_SENTENCE_RE, ONP_SOURCE, ONP_SYSTEM,
+    ONR_BASIS_EMPLOYER_TENURE, ONR_BASIS_OCC_MEDIAN, ONR_COND_RECENT_GRAD, ONR_EMPLOYER_URL,
+    ONR_EMP_REVENUE_LABEL_TPL, ONR_EMP_STAFF_LABEL_TPL, ONR_EMP_YEARS_LABEL_TPL, ONR_EMP_YEARS_RE, ONR_EXP_BASE_RE,
+    ONR_EXP_GRAD_RE, ONR_FACTOR_ORDER, ONR_LANG_45_LABEL_TPL, ONR_LANG_45_RE, ONR_LANG_EXEMPT_LABEL_TPL,
+    ONR_LANG_EXEMPT_RE, ONR_LANG_GENERAL_LABEL_TPL, ONR_LANG_GENERAL_RE, ONR_LANG_TRADES_EXCL_TPL,
+    ONR_LANG_TRADES_LABEL_TPL, ONR_LANG_TRADES_RE, ONR_PRINT_DONE_TPL, ONR_PROBLEM_EMP_YEARS, ONR_PROBLEM_EXP_BASE,
+    ONR_PROBLEM_EXP_GRAD, ONR_PROBLEM_LANG_45, ONR_PROBLEM_LANG_EXEMPT, ONR_PROBLEM_LANG_GENERAL,
+    ONR_PROBLEM_LANG_TRADES, ONR_PROBLEM_REV_ORDER_TPL, ONR_PROBLEM_REV_TPL, ONR_PROBLEM_STAFF_ORDER_TPL,
+    ONR_PROBLEM_STAFF_TPL, ONR_PROBLEM_WAGE, ONR_REV_GTA_RE, ONR_REV_GTA_WHERE, ONR_REV_LISTED_RE,
+    ONR_REV_LISTED_WHERE, ONR_REV_OTHER_RE, ONR_REV_OTHER_WHERE, ONR_REV_ROWS, ONR_SECTION_EMP_GENERAL,
+    ONR_SECTION_EMP_REVENUE, ONR_SECTION_EMP_STAFF, ONR_SECTION_EXP, ONR_SECTION_LANG, ONR_SECTION_LANG_TRADES,
+    ONR_SECTION_WAGE, ONR_SOURCE, ONR_STAFF_IN_WORD, ONR_STAFF_RE, ONR_STAFF_ROWS, ONR_STREAM, ONR_TEER_03,
+    ONR_TEER_45, ONR_TIMEOUT_S, ONR_TRADES_BLOCK_RE, ONR_TRADE_EXCL_RE, ONR_TRADE_LINE_RE, ONR_WAGE_LABEL,
+    ONR_WAGE_RE, ONS_ALLOC_RE, ONS_BLOCK_KW_CAPTCHA, ONS_BLOCK_KW_RADWARE, ONS_HTTP_OK, ONS_ISSUED_RE, ONS_NOTE,
+    ONS_PRINT_ALLOC_TPL, ONS_PRINT_ISSUED_TPL, ONS_PRINT_NO_PROCESSING, ONS_PRINT_REDIRECT_TPL,
+    ONS_PRINT_SKIPPED_TPL, ONS_PRINT_YEAR_VALUE_TPL, ONS_PROBLEM_EMPTY, ONS_REACHED_RE, ONS_REDIRECT_FAILED,
+    ONS_SECTION_TPL, ONS_SEED_URL, ONS_SOURCE, ONS_TIMEOUT_S, ONS_UNIT_NOMINATIONS, ONS_UPDATES_URL_TPL,
+    ONS_YEARS_BACK, ON_BLOB_AHEAD_NEW, ON_BLOB_AHEAD_OLD, ON_ENTRY_DATE_TPL, ON_ENTRY_NOYEAR_RE, ON_ENTRY_RE,
+    ON_INV_DATE_COL, ON_INV_DATE_KW, ON_INV_HEAD_KW, ON_INV_HEAD_TAGS, ON_INV_NOTES_KW, ON_INV_NUM_COL,
+    ON_INV_NUM_KW, ON_INV_RE, ON_INV_SCORE_COL, ON_INV_STREAM_CLIP, ON_LINE_MIN_LEN, ON_PAGE_YEAR_RE, ON_SCORE_RE,
+    ON_TAG_RE, ON_TAG_STRIP_RE, ON_TITLE_CLIP, ON_WORKFORCE_URL, OP_GE, OP_NONE, OUT_AAIP_INELIGIBLE_FILE,
+    OUT_AB_REQ, OUT_AB_STATS, OUT_AB_TECH_FILE, OUT_ALLOC_WATCH, OUT_BC_INELIGIBLE_FILE, OUT_BC_REQ, OUT_BC_SIRS,
+    OUT_BC_STATS, OUT_DRAWS, OUT_DRAW_STREAM_ZH, OUT_IRCC_DIR, OUT_MB_POINTS, OUT_MB_REQ, OUT_MB_STATS, OUT_NB_REQ,
+    OUT_NL_EMPLOYERS, OUT_NL_POINTS, OUT_NL_PRIORITY, OUT_NL_PRIORITY_FILE, OUT_NL_REQ, OUT_NS_ALLOCATIONS,
+    OUT_NS_POLICY_FILE, OUT_NS_REQ, OUT_ON_POINTS, OUT_ON_REQ, OUT_ON_STATS, OUT_PE_OID, OUT_PE_OID_FILE,
+    OUT_PE_REQ, OUT_PNP_DIR, OUT_SK_EXCLUDED_FILE, OUT_SK_JOBOFFER_FILE, OUT_SK_POINTS, OUT_SK_REQ, OUT_SK_STATS,
+    PARSER_LXML, PER_EFFECTIVE_RE, PER_EMP_LABEL_TPL, PER_EMP_STREAM, PER_EMP_YEARS_RE, PER_EXP_LABEL_TPL,
+    PER_EXP_OID_RE, PER_EXP_RE, PER_LANG_LABEL_TPL, PER_LANG_RE, PER_PROBLEM_EMPLOYER, PER_PROBLEM_EXP,
+    PER_PROBLEM_EXP_OID, PER_PROBLEM_LANG, PER_PROBLEM_LANG_MULTI_TPL, PER_PROBLEM_NO_VERSION,
+    PER_SECTION_EMPLOYER, PER_SECTION_EXP, PER_SECTION_LANG, PER_SKILLED_STREAM, PER_SOURCE, PER_STREAM,
+    PER_TEER_03, PE_GUIDE_TIMEOUT_S, PE_GUIDE_URL, PE_MIN_EXPECTED, PE_NAME_CLIP, PE_NOC_LINE_RE, PE_OID_LABEL,
+    PE_OID_NOTE, PE_OID_STREAM, PE_PAGE_URL, PE_PRINT_DONE_TPL, PE_PRINT_FAIL_TPL, PE_PRINT_NO_SECTION,
+    PE_PRINT_OCC_TPL, PE_PRINT_TOO_FEW_TPL, PE_SCAN_LEN, PE_SECTION_RE, PLURAL_S, PLUS_JOIN_SEP, PRINT_BULLET,
+    PRINT_DONE_PATH_TPL, PRINT_FACTOR15_TPL, PRINT_FACTOR_TPL, PRINT_KEEP_OLD_TPL, PRINT_NO_NOC_TPL, PRINT_OUT_TPL,
+    PRINT_SELFCHECK_FAIL, PRINT_TABLE10_TPL, PRINT_TABLE_TPL, PROBLEM_EMP_YEARS_MISSING, PROBLEM_EXP_MISSING,
+    PROBLEM_NO_EFFECTIVE, PROGRAM_PNP, PROV_AB, PROV_BC, PROV_MB, PROV_NB, PROV_NL, PROV_NS, PROV_ON, PROV_PE,
+    PROV_SK, REQ_SUBJECT_APPLICANT, REQ_SUBJECT_EMPLOYER, SEMI_JOIN_SEP, SIRS_ADDITIONAL_RE, SIRS_ANY_TRADE_RE,
+    SIRS_AREA_HEAD_KW, SIRS_AREA_MAX, SIRS_AREA_ROW_RE, SIRS_COLON, SIRS_DESIGNATION_RE, SIRS_DESIG_ANCHOR,
+    SIRS_DESIG_MIN, SIRS_EDU_HEAD_KW, SIRS_EDU_HEAD_KW2, SIRS_EDU_MAX, SIRS_EDU_ROW_RE, SIRS_EFFECTIVE_RE,
+    SIRS_HEAD_NOC_RE, SIRS_HEAD_STRIP_COLON, SIRS_HEAD_TRIM_RE, SIRS_INT_CELL_RE, SIRS_LANG_HEAD_KW, SIRS_LANG_MAX,
+    SIRS_LANG_ROW_RE, SIRS_MAX_TOTAL, SIRS_NOC_CELL_RE, SIRS_NOC_RE, SIRS_OCC_HEAD_WORD, SIRS_PREFACE_PAGE,
+    SIRS_PRINT_DESIG_TPL, SIRS_PRINT_DONE_TPL, SIRS_PRINT_SECTION_TPL, SIRS_PROBLEM_DESIG_TPL,
+    SIRS_PROBLEM_EMPTY_TPL, SIRS_PROBLEM_MAX_TPL, SIRS_SECTION_AREA, SIRS_SECTION_EDUCATION, SIRS_SECTION_LANGUAGE,
+    SIRS_SECTION_ORDER, SIRS_SECTION_WAGE, SIRS_SECTION_WORK, SIRS_SKIP_ROW_RE, SIRS_SYSTEM, SIRS_WAGE_CAP,
+    SIRS_WAGE_FLOOR, SIRS_WAGE_MAX, SIRS_WAGE_RULE, SIRS_WORK_MAX, SIRS_WORK_ROW_RE, SIRS_XOR_TAIL_RE,
+    SKJ_APPLIES_TO, SKJ_CODE_RE, SKJ_CRAWL_DIR, SKJ_DL_TPL, SKJ_HEAD_BYTES, SKJ_JOBOFFER_PDF, SKJ_LABEL, SKJ_NOTE,
+    SKJ_PDFS, SKJ_PDF_MAGIC, SKJ_PRINT_DL_FAIL_TPL, SKJ_PRINT_DL_TPL, SKJ_PRINT_DONE_TPL, SKJ_PRINT_NO_NOC,
+    SKJ_PRINT_NO_PDF, SKJ_PRINT_PROBE_HIT_TPL, SKJ_PRINT_PROBE_MISS, SKJ_PROBE_NOC, SKJ_ROW_RE, SKJ_STAR,
+    SKJ_STAR_PREFIX_RE, SKJ_STREAM, SKJ_TIMEOUT_S, SKP_ADDITIVE, SKP_DETAIL_TPL, SKP_GROUP_I, SKP_GROUP_II,
+    SKP_INT_CELL_RE, SKP_KIND_GROUP, SKP_MAX_ROW_RE, SKP_PAGE_URL, SKP_PASS_RE, SKP_PRINT_DONE_TPL,
+    SKP_PRINT_FACTOR_TPL, SKP_PROBLEM_EMPTY_TPL, SKP_PROBLEM_GROUP_II_TPL, SKP_PROBLEM_GROUP_I_TPL,
+    SKP_PROBLEM_NO_GROUP_TPL, SKP_PROBLEM_NO_PASS, SKP_PROBLEM_NO_TOTAL, SKP_PROBLEM_SUM_TPL, SKP_SECTIONS,
+    SKP_SINP_URL, SKP_SOURCE, SKP_SYSTEM, SKP_TABLE_ANCHOR, SKP_TIMEOUT_S, SKP_TOTAL_KEY, SKR_EMPLOYER_URL,
+    SKR_EMP_LABEL_TPL, SKR_EMP_STREAM, SKR_EMP_YEARS_RE, SKR_EO_URL, SKR_EXP_EO_RE, SKR_EXP_LABEL_TPL,
+    SKR_EXP_OID_RE, SKR_FACTOR_ORDER, SKR_LANG_LABEL_TPL, SKR_LANG_RE, SKR_OID_URL, SKR_PROBLEM_EMPLOYER,
+    SKR_PROBLEM_EXP_DIFF_TPL, SKR_PROBLEM_EXP_TPL, SKR_PROBLEM_EXP_WORD_TPL, SKR_PROBLEM_LANG_DIFF_TPL,
+    SKR_PROBLEM_LANG_TPL, SKR_SECTION_EMPLOYER, SKR_SECTION_EXP, SKR_SECTION_LANG, SKR_SOURCE, SKR_STREAM,
+    SKR_TIMEOUT_S, SKS_ALLOC_HEAD_KW, SKS_ALLOC_MIN_COLS, SKS_ALLOC_MIN_PARTS, SKS_APOSTROPHE_CURLY,
+    SKS_APOSTROPHE_STRAIGHT, SKS_APPLICANT_KW, SKS_CAPPED_RE, SKS_CAPPED_ROWS, SKS_EPA_KW, SKS_EXPERIENCE_ROWS,
+    SKS_GROUP_EPA, SKS_GROUP_ISW, SKS_GROUP_SECOND_REVIEW, SKS_GROUP_SK_EXPERIENCE, SKS_MIN_PRIORITY,
+    SKS_MIN_PROCESSING, SKS_NOTE, SKS_PRINT_DONE_TPL, SKS_PRIORITY_RE, SKS_PROBLEM_ALLOC_SUM,
+    SKS_PROBLEM_ALLOC_SWAP, SKS_PROBLEM_ALLOC_TPL, SKS_PROBLEM_BAD_ROW_TPL, SKS_PROBLEM_CAPPED_TPL,
+    SKS_PROBLEM_NO_EPA, SKS_PROBLEM_NO_QUARTER, SKS_PROBLEM_PRIORITY_TPL, SKS_PROBLEM_PROCESSING_TPL,
+    SKS_QUARTER_RE, SKS_QUARTER_TPL, SKS_REVIEW_KW, SKS_SOURCE, SKS_TIMEOUT_S, SKS_TOTAL_ROW, SKS_URL,
+    SKS_WEEKS_RE, SK_API_TIMEOUT_S, SK_EFFECTIVE_TPL, SK_EXCL_API, SK_EXCL_APPLIES_TO, SK_EXCL_APPLIES_TO_QUOTE,
+    SK_EXCL_CODE_RE, SK_EXCL_DL_TPL, SK_EXCL_LABEL, SK_EXCL_LOOKAHEAD, SK_EXCL_NOTE, SK_EXCL_PAGE, SK_EXCL_PRODUCT,
+    SK_EXCL_ROW_RE, SK_EXCL_SHORT_LABEL, SK_EXCL_STREAM, SK_EXCL_UPDATED_RE, SK_NOC_PATTERNS, SK_NOTE,
+    SK_PDF_TIMEOUT_S, SK_PRINT_EXCL_FAIL_TPL, SK_PRINT_EXCL_TPL, SK_PRINT_NO_EXCL, SK_PRINT_NO_FORMAT, SK_STREAMS,
+    STRIP_DOT_COMMA, STRIP_DOT_SPACE, STRIP_STAR_DOT, TAG_A, TAG_ARTICLE, TAG_B, TAG_BR, TAG_DD, TAG_DL, TAG_DT,
+    TAG_H1, TAG_LI, TAG_MAIN, TAG_P, TAG_STRONG, TAG_TABLE, TAG_TD, TAG_TR, TAG_UL, TEXT_JOIN_SEP, TYPE_INDEMAND,
+    TYPE_INELIGIBLE, TYPE_POLICY, TYPE_PRIORITY, UNIT_CAD_YR, UNIT_CLB, UNIT_EMPLOYEES, UNIT_MONTHS, UNIT_YEARS,
+    WATCH_ALLOC_RE, WATCH_CACHE_DIR, WATCH_HTML_GLOB, WATCH_KEY_TPL, WATCH_MAX_ALERTS, WATCH_NEWS_TEXT_TPL,
+    WATCH_NOM_RE, WATCH_NOTE, WATCH_NUM_RE, WATCH_N_MAX, WATCH_N_MIN, WATCH_PRINT_CRASH_TPL, WATCH_PRINT_DONE_TPL,
+    WATCH_PRINT_HIT_TPL, WATCH_PRINT_IN_OUT_TPL, WATCH_PRINT_MORE_TPL, WATCH_PRINT_NEWS_FAIL_TPL,
+    WATCH_PRINT_NO_TABLE, WATCH_PRINT_NS_DIFF_TPL, WATCH_PRINT_NS_FAIL_TPL, WATCH_PRINT_NS_MISSING_TPL,
+    WATCH_PROV_NAMES, WATCH_QUOTE_CLIP, WATCH_SLUG_PROV, WATCH_SRC_NEWS, WATCH_SRC_TPL, WATCH_TAG_RE, WATCH_WINDOW,
+    WATCH_YEAR_FIELD_RE, WATCH_YEAR_FIELD_TPL, WATCH_YEAR_MAX, WATCH_YEAR_MIN, WORD_N, ZH_CJK_RE, ZH_LOCALE_CN,
+    ZH_MAX_LEN, ZH_MODEL, ZH_OLLAMA_URL, ZH_PRINT_BAD_TPL, ZH_PRINT_DONE_TPL, ZH_PRINT_IN_OUT_TPL,
+    ZH_PRINT_PROGRESS_TPL, ZH_PRINT_TODO_TPL, ZH_PROMPT_TPL, ZH_SAVE_EVERY, ZH_STRIP_CHARS, ZH_TEMPERATURE,
+    ZH_TIMEOUT_S,
+)
+from pnp.scheme import (
+    AbCheckIn, AbSectionIn, AbStatsAcc, AbStreamRowIn, AbTableIn, AreaMapIn, BuildTableIn, CellsOut, ColIn,
+    CollectTenureIn, CountIn, DaysIn, EmployerRowIn, FactorCountsIn, FailIn, FetchHtmlIn, HasGroupIn, HitSrcIn,
+    HitsIn, LatestIn, LatestOut, MbAdaptCollectIn, MbAdaptOut, MbAdaptStepIn, MbAdaptStepOut, MbAnnualOut, MbBlock,
+    MbBlockNameIn, MbFactorOut, MbIdolOut, MbInventoryIn, MbMonthlyIn, MbMonthlyOut, MbPageOut, MbPlanIn,
+    MbPlanOut, MbSayIn, MbSimpleIn, MergeDrawsIn, NbGuidesOut, NbSegPickIn, NbSegsOut, NbStreamIn,
+    NlEmployerStatsIn, NlIgIn, NlpCheckIn, NocLinesIn, NoticeOfIn, OccProbeIn, OnChunkIn, OnColIn, OnDrawsOut,
+    OnEntryIn, OnYearIn, PageTextIn, PointRow, ProcessingOut, ProvinceDrawsIn, ReqIn, ReqsOut, RowsByLabelsIn,
+    ScanIn, SectionTableIn, SeenEntryIn, SelfCheckIn, SirsCollectIn, SirsProblemsIn, SirsSectionIn, SkAllocCheckIn,
+    SkAllocOut, SkGroupIn, SkGroupNameIn, SkHeadIn, SkMathIn, SkPagesIn, SkPointsOut, SkProcOut, SliceIn, SwmOut,
+    TenureIn, TenureOut, TextOfHtmlIn, TranslateIn, WindowProvIn, YearPageOut, YearValuesIn,
+)
+
+# =========================================================================
+# 1. 共享词汇(≥2 段消费:取页 / 抽文 / 解析 / 落盘 / 自校的公共件)
+# =========================================================================
+
+
+def fetch_html(x: FetchHtmlIn) -> str:
+    """取一页 HTML(伪装 UA + 跟随重定向)。
+
+    2026-08-30 批B 收拢:七份 UA 抄本(Chrome/120 六份、Chrome/126 一份)全部退役,
+    统一走 fetch.constants.BROWSER_UA(Chrome/131,批A 已定的全站单一来源)——
+    各省官网认的是「像不像浏览器」不是具体版本号,收拢后少七处各自陈旧的抄本。
+    """
+    return httpx.get(x.url, headers={HDR_UA: BROWSER_UA}, follow_redirects=True, timeout=x.timeout_s).text
+
+
+def fetch_bytes(x: FetchHtmlIn) -> bytes:
+    """取一份二进制(PDF 下载共用;参数与 fetch_html 同形)。"""
+    return httpx.get(x.url, headers={HDR_UA: BROWSER_UA}, follow_redirects=True, timeout=x.timeout_s).content
+
+
+def drop_junk_tags(soup: object) -> None:
+    """就地拆掉 script/style/nav/header/footer(取正文前的通用清场)。"""
+    for tag in soup(DROP_TAGS):
+        tag.decompose()
+
+
+def text_of_html(x: TextOfHtmlIn) -> str:
+    """页面原文 → 压平的纯文本(六份 page_text 抄本的共同体,差异走开关)。"""
+    soup = BeautifulSoup(x.html, PARSER_HTML)
+    if x.drop_junk:
+        drop_junk_tags(soup)
+    node = soup
+    if x.main_only:
+        found = soup.find(TAG_MAIN)
+        if found:
+            node = found
+    return WS_RE.sub(TEXT_JOIN_SEP, node.get_text(TEXT_JOIN_SEP, strip=True))
+
+
+def page_text(x: PageTextIn) -> str:
+    """取页 + 抽文一步到位;cache_first 时先查 crawl 缓存(同一页不抓两遍)。"""
+    html = ""
+    if x.cache_first:
+        hit = get_cached_page(x.url)
+        if hit.html:
+            html = hit.html
+    if not html:
+        html = fetch_html(FetchHtmlIn(url=x.url, timeout_s=x.timeout_s))
+    return text_of_html(TextOfHtmlIn(html=html, drop_junk=x.drop_junk, main_only=x.main_only))
+
+
+def fetch_md(url: str) -> str:
+    """取页 → 复用 crawl 的 HTML→md 转换器(六个清单步原本各抄一份,行为逐字相同)。"""
+    html = fetch_html(FetchHtmlIn(url=url, timeout_s=MD_TIMEOUT_S))
+    return convert_md(ConvertIn(html=html, url=url, selector=None, removes=()))
+
+
+def pdf_text(data: bytes) -> str:
+    """PDF 字节 → 逐页文本拼接(各门槛步共用的第一步)。"""
+    with fitz.open(stream=data, filetype=FILETYPE_PDF) as doc:
+        parts = []
+        for page in doc:
+            parts.append(page.get_text())
+    return LINE_JOIN_SEP.join(parts)
+
+
+def fold_ws(s: str) -> str:
+    """连续空白折一个空格(全域最常用的一步清洗)。"""
+    return WS_RE.sub(TEXT_JOIN_SEP, s)
+
+
+def teers(s: str) -> list:
+    """'2, 3, 4 or 5' → [2,3,4,5];官方就是这么写的,别自己推区间。
+
+    2026-08-30 批B 收拢:BC/AB/NS/NL/MB 五份抄本逐字相同,取其一。
+    """
+    out = []
+    for d in DIGIT_RE.findall(s):
+        out.append(int(d))
+    return out
+
+
+def cells(tr: object) -> list:
+    """一行 → 压平后的各格文本。
+
+    2026-08-30 批B 收拢:SK/AB/BC/MB 四份统计步抄本逐字相同;build_ab 表头行写的是
+    `["th","td"]` 反序,find_all 按文档序返回,与本序同值(收拢时核过)。
+    """
+    out = []
+    for td in tr.find_all(CELL_TAGS):
+        out.append(WS_RE.sub(TEXT_JOIN_SEP, td.get_text(TEXT_JOIN_SEP, strip=True)))
+    return out
+
+
+def is_header_row(name: str) -> bool:
+    """这一行是不是表头(NOC / OCCUPATION / OCCUPATION TITLE)。"""
+    return name.upper() in HEADER_WORDS
+
+
+def occ_rows_of(occ: dict) -> list:
+    """{noc: 职业名} → 按 NOC 排序的 [{noc, name}](六个清单步共用的出表形)。"""
+    rows = []
+    for noc, name in sorted(occ.items()):
+        rows.append({K_NOC: noc, K_NAME: name})
+    return rows
+
+
+def today_iso() -> str:
+    """今天的 ISO 日期(各表的 fetched 口径)。"""
+    return date.today().isoformat()
+
+
+def iso_of_long_date(s: str) -> str:
+    """「June 24, 2026」→ ISO 日期;认不出抛 ValueError 由调用方兜。"""
+    return datetime.strptime(s, DATE_FMT_LONG).date().isoformat()
+
+
+def fail_keep_old(x: FailIn) -> None:
+    """自校未过:抬头 + 逐条问题 → 退出码 1(**保留旧表不覆盖**)。
+
+    门直调本域函数,SystemExit 不被 `except Exception` 接住 —— 与旧 _steps 跑子进程时
+    「某步 exit 1 即中止本轮」逐字同语义。
+    """
+    say(x.header)
+    for p in x.problems:
+        say(x.bullet + TEXT_JOIN_SEP + str(p))
+    sys.exit(1)
+
+
+def fail_zh(problems: list) -> None:
+    """中文档自校未过(十几个步骤共用的那四行)。"""
+    fail_keep_old(FailIn(problems=problems, header=PRINT_SELFCHECK_FAIL, bullet=PRINT_BULLET))
+
+
+def write_pnp_table(x: BuildTableIn) -> None:
+    """一张表落 raw/pnp/ + 收尾报数(清单步共用的最后一步)。"""
+    paths.write_json(paths.WriteJsonIn(path=OUT_PNP_DIR / x.filename, payload=x.table, indent=INDENT_2))
+    say(x.line)
+
+
+def count_factor(x: SelfCheckIn) -> int:
+    """门槛清单里某个因素有几条(收尾报数用)。"""
+    n = 0
+    for r in x.reqs:
+        if r[K_FACTOR] == x.factor:
+            n += 1
+    return n
+
+
+def say_factor_counts(x: FactorCountsIn) -> None:
+    """逐因素报条数(七个门槛步共用的收尾三行;字宽档由调用方给模板)。"""
+    for f in x.order:
+        say(x.tpl.format(factor=f, n=count_factor(SelfCheckIn(reqs=x.reqs, factor=f))))
+
+
+# =========================================================================
+# 2. AB 具名清单(AOS 不符合资格表 + 加速科技通道 PDF)
+# =========================================================================
+
+
+def noc_key_of(row: dict) -> str:
+    """按 NOC 排序的键(原 lambda 退役)。"""
+    return row[K_NOC]
+
+
+def parse_ab_aos(html: str) -> list:
+    """找列头含「NOC code」的表,抽 {noc,teer,name};去掉 NOC 星号(保守按不符合)。"""
+    soup = BeautifulSoup(html, PARSER_HTML)
+    for table in soup.find_all(TAG_TABLE):
+        rows = table.find_all(TAG_TR)
+        head = ""
+        if rows:
+            head = TEXT_JOIN_SEP.join(cells(rows[0])).lower()
+        if AB_TABLE_HEAD_KW not in head:
+            continue
+        occs: dict = {}
+        for tr in rows[1:]:
+            c = cells(tr)
+            if len(c) < 3 or not AB_NOC5_RE.match(c[0]):
+                continue
+            noc = c[0].rstrip(AB_NOC_STAR)
+            teer = None
+            if c[1].isdigit():
+                teer = int(c[1])
+            occs.setdefault(noc, {K_NOC: noc, K_TEER: teer, K_NAME: fold_ws(c[2]).strip(STRIP_DOT_SPACE)})
+        return list(occs.values())
+    return []
+
+
+def parse_ab_tech(data: bytes) -> list:
+    """PDF 每行「##### 职业名」→ {noc,name}。"""
+    txt = pdf_text(data)
+    occs: dict = {}
+    for ln in txt.splitlines():
+        m = AB_PDF_NOC_RE.match(ln.strip())
+        if m:
+            occs.setdefault(m.group(1), {K_NOC: m.group(1), K_NAME: fold_ws(m.group(2)).strip(STRIP_DOT_SPACE)})
+    return list(occs.values())
+
+
+def build_ab() -> None:
+    """AB AAIP 两份清单入口:AOS 不符合资格表(exclusion)+ 加速科技通道(inclusion 具名)。
+
+    08_score 把「具名通道(stream)」与「资格 type」解耦:exclusion 省也能挂 inclusion 通道标签。
+    """
+    OUT_PNP_DIR.mkdir(parents=True, exist_ok=True)
+    occ1 = None
+    try:
+        occ1 = parse_ab_aos(fetch_html(FetchHtmlIn(url=AB_AOS_URL, timeout_s=AB_AOS_TIMEOUT_S)))
+    except Exception as e:  # noqa: BLE001
+        say(PRINT_KEEP_OLD_TPL.format(what=OUT_AAIP_INELIGIBLE_FILE, name=type(e).__name__, detail=e))
+    if occ1:
+        paths.write_json(paths.WriteJsonIn(path=OUT_PNP_DIR / OUT_AAIP_INELIGIBLE_FILE, payload={
+            K_STREAM: AB_AOS_STREAM, K_LABEL: AB_AOS_LABEL,
+            K_PROVINCE: PROV_AB, K_TYPE: TYPE_INELIGIBLE, K_URL: AB_AOS_URL, K_FETCHED: today_iso(),
+            K_NOTE: AB_AOS_NOTE,
+            K_OCCUPATIONS: sorted(occ1, key=noc_key_of),
+        }, indent=INDENT_2))
+        say(AB_PRINT_AOS_TPL.format(n=len(occ1)))
+    elif occ1 is not None:
+        say(AB_PRINT_NO_AOS)
+
+    occ2 = None
+    try:
+        occ2 = parse_ab_tech(fetch_bytes(FetchHtmlIn(url=AB_TECH_PDF_URL, timeout_s=AB_TECH_TIMEOUT_S)))
+    except Exception as e:  # noqa: BLE001
+        say(PRINT_KEEP_OLD_TPL.format(what=OUT_AB_TECH_FILE, name=type(e).__name__, detail=e))
+    if occ2:
+        paths.write_json(paths.WriteJsonIn(path=OUT_PNP_DIR / OUT_AB_TECH_FILE, payload={
+            K_STREAM: AB_TECH_STREAM, K_LABEL: AB_TECH_LABEL,
+            K_PROVINCE: PROV_AB, K_TYPE: TYPE_INDEMAND, K_URL: AB_TECH_PDF_URL, K_FETCHED: today_iso(),
+            K_OCCUPATIONS: sorted(occ2, key=noc_key_of),
+        }, indent=INDENT_2))
+        say(AB_PRINT_TECH_TPL.format(n=len(occ2)))
+    elif occ2 is not None:
+        say(AB_PRINT_NO_TECH)
+
+
+# =========================================================================
+# 3. BC 具名清单(2026 新政 Care/Build 五桶 + 主线排除清单 §3.11)
+# =========================================================================
+
+
+def parse_bc_buckets(md: str) -> dict:
+    """按节标题分桶抽 NOC 行;名字去掉尾部脚注记号(*/¹²³ 由转换器落成裸 * 或数字)。"""
+    out: dict = {}
+    for key in BC_BUCKETS:
+        out[key] = {}
+    bucket = None
+    for ln in md.splitlines():
+        h = BC_HEADING_RE.match(ln)
+        if h:
+            bucket = BC_SECTION_BUCKET.get(h.group(1).strip().lower())
+            continue
+        m = BC_NOC_LINE_RE.match(ln.strip())
+        if not (bucket and m):
+            continue
+        noc = m.group(1)
+        name = BC_NAME_TAIL_RE.sub(EMPTY_JOIN, fold_ws(m.group(2))).strip(STRIP_DOT_SPACE)
+        if name:
+            out[bucket].setdefault(noc, name)
+    return out
+
+
+def build_bc_ineligible() -> None:
+    """BC 指南 §3.11 排除清单 → raw/pnp/bc-ineligible.json。抓不到/条数异常 → 保留旧表。"""
+    try:
+        text = pdf_text(fetch_bytes(FetchHtmlIn(url=BC_GUIDE_URL, timeout_s=BC_GUIDE_TIMEOUT_S)))
+    except Exception as e:  # noqa: BLE001
+        say(BC_PRINT_PDF_FAIL_TPL.format(name=type(e).__name__, detail=e))
+        return
+    hits = []
+    for m in BC_INELIG_SECTION_RE.finditer(text):
+        hits.append(m.end())
+    if not hits:
+        say(BC_PRINT_NO_SECTION)
+        return
+    body = text[hits[-1]:]
+    end = BC_INELIG_END_RE.search(body)
+    if end:
+        body = body[:end.start()]
+    occ: dict = {}
+    for noc, name in BC_INELIG_ROW_RE.findall(body):
+        occ[noc] = fold_ws(name).strip(STRIP_DOT_COMMA)
+    if len(occ) < BC_INELIG_MIN:
+        say(BC_PRINT_TOO_FEW_TPL.format(n=len(occ), min_n=BC_INELIG_MIN))
+        return
+    effective = ""
+    eff_m = BC_INELIG_EFFECTIVE_RE.search(text)
+    if eff_m:
+        effective = eff_m.group(1)
+    fetched = today_iso()
+    table = {
+        K_STREAM: BC_INELIG_STREAM,
+        K_LABEL: BC_INELIG_LABEL, K_PROVINCE: PROV_BC, K_PROGRAM: PROGRAM_PNP,
+        K_TYPE: TYPE_INELIGIBLE, K_NOTE: BC_INELIG_NOTE,
+        K_URL: BC_GUIDE_URL, K_FETCHED: fetched,
+        K_EFFECTIVE: effective,
+        K_OCCUPATIONS: occ_rows_of(occ),
+    }
+    write_pnp_table(BuildTableIn(filename=OUT_BC_INELIGIBLE_FILE, table=table,
+                                 line=BC_PRINT_INELIG_TPL.format(label=BC_INELIG_LABEL, n=len(occ),
+                                                                 fetched=fetched,
+                                                                 effective=effective or NOT_MARKED)))
+
+
+def build_bc() -> None:
+    """BC 具名清单入口:先落主线排除清单(PDF),再按节标题分桶落五个专项清单。"""
+    OUT_PNP_DIR.mkdir(parents=True, exist_ok=True)
+    build_bc_ineligible()
+    try:
+        md = fetch_md(BC_URL)
+    except Exception as e:  # noqa: BLE001
+        say(PRINT_KEEP_OLD_TPL.format(what=BC_URL, name=type(e).__name__, detail=e))
+        return
+    buckets = parse_bc_buckets(md)
+    for key, cfg in BC_BUCKETS.items():
+        occs = occ_rows_of(buckets[key])
+        if not occs:
+            say(PRINT_NO_NOC_TPL.format(out=cfg[K_OUT]))
+            continue
+        fetched = today_iso()
+        table = {
+            K_STREAM: cfg[K_STREAM], K_LABEL: cfg[K_LABEL], K_PROVINCE: PROV_BC,
+            K_TYPE: TYPE_INDEMAND,
+            K_URL: BC_URL, K_FETCHED: fetched,
+            K_OCCUPATIONS: occs,
+        }
+        write_pnp_table(BuildTableIn(filename=cfg[K_OUT], table=table,
+                                     line=PRINT_TABLE_TPL.format(label=cfg[K_LABEL], n=len(occs),
+                                                                 out=cfg[K_OUT], fetched=fetched)))
+
+
+# =========================================================================
+# 4. SK 具名清单(三条 Talent Pathway + 主线排除清单 PDF)
+# =========================================================================
+
+
+def parse_noc_lines(x: NocLinesIn) -> list:
+    """md 逐行按给定正则序抽 NOC(首个命中的模式为准),去重、跳表头。
+
+    2026-08-30 批B 收拢:SK 与 NS 两份 parse_occupations 抄本逐字相同,差的只是正则表。
+    """
+    occ: dict = {}
+    for ln in x.md.splitlines():
+        m = None
+        for p in x.patterns:
+            hit = p.match(ln)
+            if hit:
+                m = hit
+                break
+        if not m:
+            continue
+        name = fold_ws(m.group(2)).strip(STRIP_STAR_DOT)
+        if is_header_row(name):
+            continue
+        occ.setdefault(m.group(1), name)
+    return occ_rows_of(occ)
+
+
+def fetch_json(x: FetchHtmlIn) -> dict:
+    """取一份 JSON(SK 出版物产品 API)。"""
+    return httpx.get(x.url, headers={HDR_UA: BROWSER_UA}, follow_redirects=True, timeout=x.timeout_s).json()
+
+
+def sk_excluded_occupations(text: str) -> dict:
+    """排除清单 PDF 全文 → {noc: 职业名}。
+
+    PDF 是两列表格,pymupdf 把 NOC 与职业名拆成相邻两行(「11100」\\n「Financial auditors…」);
+    少数导出会并成一行,两种都认。
+    """
+    lines = []
+    for ln in text.splitlines():
+        lines.append(ln.strip())
+    occ: dict = {}
+    for i, ln in enumerate(lines):
+        m = SK_EXCL_ROW_RE.match(ln)
+        if m:
+            noc, name = m.group(1), m.group(2)
+        elif SK_EXCL_CODE_RE.match(ln):
+            nxt = ""
+            for cand in lines[i + 1:i + SK_EXCL_LOOKAHEAD]:
+                if cand:
+                    nxt = cand
+                    break
+            if not nxt or not nxt[0].isalpha():
+                continue
+            noc, name = ln.strip(), nxt
+        else:
+            continue
+        name = fold_ws(name).strip(STRIP_DOT_SPACE)
+        if is_header_row(name):
+            continue
+        occ.setdefault(noc, name)
+    return occ
+
+
+def sk_official_updated(text: str) -> str:
+    """官方在 PDF 首页自己标的更新日期 → ISO;认不出返回空串。
+
+    这个日期比我们的 fetched 更该给用户看(这份表可能几年不动)。
+    """
+    u = SK_EXCL_UPDATED_RE.search(text)
+    if not u:
+        return ""
+    low = u.group(1).lower()
+    if low not in MONTH_NAMES:
+        return ""
+    return SK_EFFECTIVE_TPL.format(y=u.group(3), m=MONTH_NAMES.index(low) + 1, d=int(u.group(2)))
+
+
+def build_sk_excluded() -> None:
+    """SINP 排除清单(主线口径)→ raw/pnp/sk-excluded.json。抓不到/解析空 → 保留旧表。"""
+    try:
+        meta = fetch_json(FetchHtmlIn(url=SK_EXCL_API, timeout_s=SK_API_TIMEOUT_S))
+        formats = meta.get(K_PRODUCT_FORMATS)
+        fmt = None
+        if formats:
+            fmt = formats[0].get(K_PRODUCT_FORMAT_ID)
+        if not fmt:
+            say(SK_PRINT_NO_FORMAT)
+            return
+        pdf = fetch_bytes(FetchHtmlIn(url=SK_EXCL_DL_TPL.format(p=SK_EXCL_PRODUCT, f=fmt),
+                                      timeout_s=SK_PDF_TIMEOUT_S))
+    except Exception as e:  # noqa: BLE001
+        say(SK_PRINT_EXCL_FAIL_TPL.format(name=type(e).__name__, detail=e))
+        return
+    text = pdf_text(pdf)
+    occ = sk_excluded_occupations(text)
+    if not occ:
+        say(SK_PRINT_NO_EXCL)
+        return
+    effective = sk_official_updated(text)
+    fetched = today_iso()
+    table = {
+        K_STREAM: SK_EXCL_STREAM, K_LABEL: SK_EXCL_LABEL,
+        K_PROVINCE: PROV_SK, K_PROGRAM: PROGRAM_PNP, K_TYPE: TYPE_INELIGIBLE, K_NOTE: SK_EXCL_NOTE,
+        K_APPLIES_TO: SK_EXCL_APPLIES_TO, K_APPLIES_TO_QUOTE: SK_EXCL_APPLIES_TO_QUOTE,
+        K_URL: SK_EXCL_PAGE, K_FETCHED: fetched, K_EFFECTIVE: effective,
+        K_OCCUPATIONS: occ_rows_of(occ),
+    }
+    write_pnp_table(BuildTableIn(filename=OUT_SK_EXCLUDED_FILE, table=table,
+                                 line=SK_PRINT_EXCL_TPL.format(label=SK_EXCL_SHORT_LABEL, n=len(occ),
+                                                               fetched=fetched,
+                                                               effective=effective or NOT_MARKED)))
+
+
+def build_sk() -> None:
+    """SK 具名清单入口:三条 Talent Pathway(inclusion)+ 主线排除清单(exclusion)。"""
+    OUT_PNP_DIR.mkdir(parents=True, exist_ok=True)
+    for s in SK_STREAMS:
+        try:
+            md = fetch_md(s[K_URL])
+        except Exception as e:  # noqa: BLE001
+            say(PRINT_KEEP_OLD_TPL.format(what=s[K_OUT], name=type(e).__name__, detail=e))
+            continue
+        occs = parse_noc_lines(NocLinesIn(md=md, patterns=SK_NOC_PATTERNS))
+        if not occs:
+            say(PRINT_NO_NOC_TPL.format(out=s[K_OUT]))
+            continue
+        fetched = today_iso()
+        table = {
+            K_STREAM: s[K_STREAM], K_LABEL: s[K_LABEL], K_PROVINCE: PROV_SK,
+            K_TYPE: TYPE_INDEMAND, K_NOTE: SK_NOTE,
+            K_URL: s[K_URL], K_FETCHED: fetched,
+            K_OCCUPATIONS: occs,
+        }
+        write_pnp_table(BuildTableIn(filename=s[K_OUT], table=table,
+                                     line=PRINT_TABLE10_TPL.format(label=s[K_LABEL], n=len(occs),
+                                                                   out=s[K_OUT], fetched=fetched)))
+    build_sk_excluded()
+
+
+# =========================================================================
+# 5. NS 具名清单(紧缺空缺 / 毕业生两通道 + 主线政策事实)
+# =========================================================================
+
+
+def ns_oid_statement(oid_empty: bool) -> str:
+    """OID 通道的政策事实陈述(空表 = 官方原话;非空 = 该去人工复核了)。"""
+    if oid_empty:
+        return NS_FACT_OID_EMPTY
+    return NS_FACT_OID_NOT_EMPTY
+
+
+def ns_oid_word(oid_empty: bool) -> str:
+    """收尾报数里 OID 状态的措辞。"""
+    if oid_empty:
+        return NS_OID_EMPTY_WORD
+    return NS_OID_NOT_EMPTY_WORD
+
+
+def build_ns_policy() -> None:
+    """NS 主线口径 + 提名优先级 → raw/pnp/ns-policy.json。校验失败一律保留旧表并喊人。"""
+    try:
+        main_md = fetch_md(NS_MAIN_URL)
+        prio_md = fetch_md(NS_PRIORITY_URL)
+    except Exception as e:  # noqa: BLE001
+        say(NS_PRINT_POLICY_FAIL_TPL.format(name=type(e).__name__, detail=e))
+        return
+    low = main_md.lower()
+    oid_empty = NS_OID_EMPTY_QUOTE in low
+    if not oid_empty and NS_OID_KW not in low:
+        say(NS_PRINT_NO_OID)
+        return
+    facts = [{
+        K_KEY: NS_FACT_NO_MAIN_LIST_KEY,
+        K_STATEMENT: NS_FACT_NO_MAIN_LIST,
+        K_URL: NS_MAIN_URL,
+    }, {
+        K_KEY: NS_FACT_OID_KEY,
+        K_STATEMENT: ns_oid_statement(oid_empty),
+        K_URL: NS_MAIN_URL,
+    }]
+    hit = NS_TEER_04_RE.search(prio_md)
+    if hit:
+        facts.append({
+            K_KEY: NS_FACT_PRIORITY_KEY,
+            K_STATEMENT: NS_FACT_PRIORITY_TPL.format(hit=hit.group(0)),
+            K_URL: NS_PRIORITY_URL,
+        })
+    else:
+        say(NS_PRINT_NO_PRIORITY)
+    asof = NS_ASOF_RE.search(prio_md)
+    if asof:
+        facts[-1][K_AS_OF_LOWER] = asof.group(1) if facts[-1][K_KEY] == NS_FACT_PRIORITY_KEY \
+            else facts[-1].get(K_AS_OF_LOWER, "")
+    fetched = today_iso()
+    table = {
+        K_STREAM: NS_POLICY_STREAM, K_LABEL: NS_POLICY_LABEL,
+        K_PROVINCE: PROV_NS, K_PROGRAM: PROGRAM_PNP, K_TYPE: TYPE_POLICY, K_CODELESS: True,
+        K_URL: NS_MAIN_URL, K_FETCHED: fetched,
+        K_FACTS: facts,
+    }
+    write_pnp_table(BuildTableIn(filename=OUT_NS_POLICY_FILE, table=table,
+                                 line=NS_PRINT_POLICY_TPL.format(label=NS_POLICY_LABEL, n=len(facts),
+                                                                 fetched=fetched, oid=ns_oid_word(oid_empty))))
+
+
+def build_ns() -> None:
+    """NS 具名清单入口:两条专项通道 + 主线口径(官方不发清单这件事本身就是要留证的事实)。"""
+    OUT_PNP_DIR.mkdir(parents=True, exist_ok=True)
+    for s in NS_STREAMS:
+        try:
+            md = fetch_md(s[K_URL])
+        except Exception as e:  # noqa: BLE001
+            say(PRINT_KEEP_OLD_TPL.format(what=s[K_OUT], name=type(e).__name__, detail=e))
+            continue
+        occs = parse_noc_lines(NocLinesIn(md=md, patterns=NS_NOC_PATTERNS))
+        if not occs:
+            say(PRINT_NO_NOC_TPL.format(out=s[K_OUT]))
+            continue
+        fetched = today_iso()
+        table = {
+            K_STREAM: s[K_STREAM], K_LABEL: s[K_LABEL], K_PROVINCE: PROV_NS,
+            K_TYPE: TYPE_INDEMAND,
+            K_URL: s[K_URL], K_FETCHED: fetched,
+            K_OCCUPATIONS: occs,
+        }
+        write_pnp_table(BuildTableIn(filename=s[K_OUT], table=table,
+                                     line=PRINT_TABLE10_TPL.format(label=s[K_LABEL], n=len(occs),
+                                                                   out=s[K_OUT], fetched=fetched)))
+    build_ns_policy()
+
+
+# =========================================================================
+# 6. MB 具名清单(在需职业总表 + 乡镇在需)
+# =========================================================================
+
+
+def mb_bucket_of(title: str) -> str | None:
+    """节标题 → 桶:含 rural 归乡镇;「N – 大类」归总表;其余节(说明/注)不收。"""
+    if MB_RURAL_KW in title:
+        return MB_BUCKET_RURAL
+    if MB_MAIN_HEAD_RE.match(title):
+        return MB_BUCKET_MAIN
+    return None
+
+
+def parse_mb_buckets(md: str) -> dict:
+    """按节标题分桶抽 IDOL 表行。"""
+    out: dict = {}
+    for key in MB_BUCKETS:
+        out[key] = {}
+    bucket = None
+    for ln in md.splitlines():
+        h = MB_HEADING_RE.match(ln)
+        if h:
+            bucket = mb_bucket_of(h.group(1).strip().lower())
+            continue
+        m = MB_ROW_RE.match(ln.strip())
+        if bucket and m:
+            out[bucket].setdefault(m.group(1), fold_ws(m.group(2)).strip())
+    return out
+
+
+def build_mb() -> None:
+    """MB 在需职业入口:总表与乡镇表分两桶落盘(合并会让温尼伯岗误显在需)。"""
+    OUT_PNP_DIR.mkdir(parents=True, exist_ok=True)
+    try:
+        md = fetch_md(MB_IDOL_URL)
+    except Exception as e:  # noqa: BLE001
+        say(PRINT_KEEP_OLD_TPL.format(what=MB_IDOL_URL, name=type(e).__name__, detail=e))
+        return
+    buckets = parse_mb_buckets(md)
+    for key, cfg in MB_BUCKETS.items():
+        occs = occ_rows_of(buckets[key])
+        if not occs:
+            say(PRINT_NO_NOC_TPL.format(out=cfg[K_OUT]))
+            continue
+        fetched = today_iso()
+        table = {
+            K_STREAM: cfg[K_STREAM], K_LABEL: cfg[K_LABEL], K_PROVINCE: PROV_MB,
+            K_TYPE: TYPE_INDEMAND, K_NOTE: cfg[K_NOTE],
+            K_URL: MB_IDOL_URL, K_FETCHED: fetched,
+            K_OCCUPATIONS: occs,
+        }
+        write_pnp_table(BuildTableIn(filename=cfg[K_OUT], table=table,
+                                     line=MB_PRINT_TABLE_TPL.format(label=cfg[K_LABEL], n=len(occs),
+                                                                    out=cfg[K_OUT], fetched=fetched)))
+
+
+# =========================================================================
+# 7. NB 不受理职业清单(PNP 两表 + AIP 两表,叠加式排除)
+# =========================================================================
+
+
+def notice_of(x: NoticeOfIn) -> str:
+    """取整页里同时含这几个关键词的那条通告。
+
+    同页另有一条只讲 AIP 候选池、不带 NOC 清单的,靠 NAICS 72 分开。
+    """
+    for b in x.md.split(NB_NOTICE_SPLIT):
+        ok = True
+        for k in x.must:
+            if k not in b:
+                ok = False
+                break
+        if ok:
+            return b
+    return ""
+
+
+def nb_notice_segs(notice: str) -> NbSegsOut:
+    """一条通告按官方分界句切两段(之前 = NAICS 72 条件性,之后 = 不论行业)。"""
+    i = notice.find(NB_SPLIT_QUOTE)
+    if i > 0:
+        return NbSegsOut(food=notice[:i], any_sector=notice[i:])
+    return NbSegsOut(food="", any_sector=notice)
+
+
+def parse_nb_nocs(seg: str) -> list:
+    """一段通告里的「**NOC 63200** – Cooks」清单(末条会粘上后文正文,按 TAIL 截断)。"""
+    out: dict = {}
+    for m in NB_NOC_LINE_RE.finditer(seg):
+        name = NB_TAIL_RE.sub(EMPTY_JOIN, fold_ws(m.group(2))).strip(NB_NAME_STRIP)
+        if name:
+            out.setdefault(m.group(1), name[:NB_NAME_MAX])
+    return occ_rows_of(out)
+
+
+def nb_seg_of(x: NbSegPickIn) -> str:
+    """按 any / food 取对应那一段(原 segs.get(key, "") 的显式化)。"""
+    if x.key == K_FOOD:
+        return x.segs.food
+    return x.segs.any_sector
+
+
+def say_nb_sector_check(md: str) -> None:
+    """行业限制不做逐岗判定(见段首),但政策还在不在得盯着 —— 变了要人工复核新闻文案。"""
+    low = md.lower()
+    ok = NB_SECTOR_DATE_KW in low
+    for k in NB_SECTOR_KWS:
+        if k not in low:
+            ok = False
+    if ok:
+        say(NB_PRINT_SECTOR_OK_TPL.format(notice=NB_SECTOR_NOTICE))
+    else:
+        say(NB_PRINT_SECTOR_GONE_TPL.format(url=NB_URL))
+
+
+def build_nb() -> None:
+    """NB 不受理清单入口:同页两条通告 × 不论行业/住宿餐饮两段 = 四张表。"""
+    OUT_PNP_DIR.mkdir(parents=True, exist_ok=True)
+    try:
+        md = fetch_md(NB_URL)
+    except Exception as e:  # noqa: BLE001
+        say(PRINT_KEEP_OLD_TPL.format(what=NB_URL, name=type(e).__name__, detail=e))
+        return
+    for nt in NB_NOTICES:
+        notice = notice_of(NoticeOfIn(md=md, must=nt[K_MUST]))
+        if not notice:
+            say(NB_PRINT_NO_NOTICE_TPL.format(key=nt[K_KEY]))
+            continue
+        segs = nb_notice_segs(notice)
+        for key in (K_ANY, K_FOOD):
+            cfg = nt[key]
+            occs = parse_nb_nocs(nb_seg_of(NbSegPickIn(segs=segs, key=key)))
+            if not occs:
+                say(PRINT_NO_NOC_TPL.format(out=cfg[K_OUT]))
+                continue
+            fetched = today_iso()
+            table = {
+                K_STREAM: nt[K_STREAM], K_LABEL: cfg[K_LABEL], K_PROVINCE: PROV_NB,
+                K_PROGRAM: nt[K_PROGRAM], K_TYPE: TYPE_INELIGIBLE, K_OVERLAY: True, K_NOTE: cfg[K_NOTE],
+                K_URL: NB_URL, K_FETCHED: fetched,
+                K_OCCUPATIONS: occs,
+            }
+            write_pnp_table(BuildTableIn(filename=cfg[K_OUT], table=table,
+                                         line=NB_PRINT_TABLE_TPL.format(label=cfg[K_LABEL], n=len(occs),
+                                                                        out=cfg[K_OUT], fetched=fetched)))
+    say_nb_sector_check(md)
+
+
+# =========================================================================
+# 8. NL 优先处理职位(职位名文本非 NOC,不参与打分)
+# =========================================================================
+
+
+def parse_nl_positions(md: str) -> list:
+    """→ [{sector, group, title}]。行业小标题开一段,**粗体**是段内分组,编号/项目符号行是职位。"""
+    out: list = []
+    sector = ""
+    group = ""
+    for ln in md.splitlines():
+        line = ln.strip()
+        m_sector = NL_SECTOR_RE.match(line)
+        if m_sector:
+            sector = fold_ws(m_sector.group(1)).strip()
+            group = ""
+            continue
+        if not sector:
+            continue
+        m_group = NL_GROUP_RE.match(line)
+        if m_group:
+            group = m_group.group(1).strip()
+            continue
+        m_item = NL_ITEM_RE.match(line)
+        if m_item:
+            raw = NL_MD_LINK_RE.sub(NL_MD_LINK_SUB, m_item.group(1))
+            parts = NL_DETAIL_SPLIT_RE.split(raw, maxsplit=1)
+            detail = ""
+            if len(parts) > 1:
+                detail = fold_ws(parts[1]).strip()
+            title = fold_ws(parts[0]).strip().strip(NL_TITLE_STRIP_STAR).rstrip(NL_TITLE_RSTRIP_DOT)
+            if title:
+                row = {K_SECTOR: sector, K_GROUP: group, K_TITLE: title}
+                if detail:
+                    row[K_DETAIL] = detail
+                out.append(row)
+            continue
+        if line.startswith(NL_HEADING_PREFIX):
+            sector = ""
+            group = ""
+    return out
+
+
+def count_by_key(x: CountIn) -> int:
+    """清单里某个键等于某值的条数(收尾报数用)。"""
+    n = 0
+    for row in x.rows:
+        if row[x.key] == x.value:
+            n += 1
+    return n
+
+
+def build_nl() -> None:
+    """NL 优先处理职位入口:原样存 positions,**不硬映射 NOC**(官方给的是职位名文本)。"""
+    say(PRINT_OUT_TPL.format(path=OUT_NL_PRIORITY))
+    OUT_PNP_DIR.mkdir(parents=True, exist_ok=True)
+    try:
+        md = fetch_md(NL_PRIORITY_URL)
+    except Exception as e:  # noqa: BLE001
+        say(NL_PRINT_FAIL_TPL.format(name=type(e).__name__, detail=e))
+        return
+    positions = parse_nl_positions(md)
+    if not positions:
+        say(NL_PRINT_NO_POSITION)
+        return
+    fetched = today_iso()
+    table = {
+        K_STREAM: NL_PRIORITY_STREAM,
+        K_LABEL: NL_PRIORITY_LABEL, K_PROVINCE: PROV_NL, K_PROGRAM: NL_PROGRAM_PNP_AIP,
+        K_TYPE: TYPE_PRIORITY,
+        K_CODELESS: True,
+        K_NOTE: NL_PRIORITY_NOTE, K_URL: NL_PRIORITY_URL, K_FETCHED: fetched,
+        K_POSITIONS: positions,
+    }
+    sectors: set = set()
+    for p in positions:
+        sectors.add(p[K_SECTOR])
+    write_pnp_table(BuildTableIn(filename=OUT_NL_PRIORITY_FILE, table=table,
+                                 line=NL_PRINT_DONE_TPL.format(label=NL_PRIORITY_LABEL, n=len(positions),
+                                                               sectors=len(sectors), out=OUT_NL_PRIORITY_FILE,
+                                                               fetched=fetched)))
+    for s in sorted(sectors):
+        say(NL_PRINT_SECTOR_TPL.format(sector=s,
+                                       n=count_by_key(CountIn(rows=positions, key=K_SECTOR, value=s))))
+
+
+# =========================================================================
+# 9. PE 在需职业(走官方指南 PDF —— 网页在 Radware 后面)
+# =========================================================================
+
+
+def build_pe() -> None:
+    """PE 在需职业入口:指南 PDF 里逐个候选段往后扫一屏,取第一个真带 NOC 的。"""
+    say(PRINT_OUT_TPL.format(path=OUT_PE_OID))
+    OUT_PNP_DIR.mkdir(parents=True, exist_ok=True)
+    try:
+        text = pdf_text(fetch_bytes(FetchHtmlIn(url=PE_GUIDE_URL, timeout_s=PE_GUIDE_TIMEOUT_S)))
+    except Exception as e:  # noqa: BLE001
+        say(PE_PRINT_FAIL_TPL.format(name=type(e).__name__, detail=e))
+        return
+    hits = list(PE_SECTION_RE.finditer(text))
+    if not hits:
+        say(PE_PRINT_NO_SECTION)
+        return
+    occ: dict = {}
+    for m in hits:
+        found = PE_NOC_LINE_RE.findall(text[m.end():m.end() + PE_SCAN_LEN])
+        if len(found) >= PE_MIN_EXPECTED:
+            for noc, name in found:
+                occ.setdefault(noc, fold_ws(name).strip(STRIP_DOT_COMMA))
+            break
+    if len(occ) < PE_MIN_EXPECTED:
+        say(PE_PRINT_TOO_FEW_TPL.format(n=len(occ), min_n=PE_MIN_EXPECTED))
+        return
+    fetched = today_iso()
+    table = {
+        K_STREAM: PE_OID_STREAM, K_LABEL: PE_OID_LABEL,
+        K_PROVINCE: PROV_PE, K_PROGRAM: PROGRAM_PNP, K_TYPE: TYPE_INDEMAND, K_NOTE: PE_OID_NOTE,
+        K_URL: PE_PAGE_URL, K_SOURCE_FILE: PE_GUIDE_URL, K_FETCHED: fetched,
+        K_OCCUPATIONS: occ_rows_of(occ),
+    }
+    write_pnp_table(BuildTableIn(filename=OUT_PE_OID_FILE, table=table,
+                                 line=PE_PRINT_DONE_TPL.format(label=PE_OID_LABEL, n=len(occ),
+                                                               out=OUT_PE_OID_FILE, fetched=fetched)))
+    for noc, name in sorted(occ.items()):
+        say(PE_PRINT_OCC_TPL.format(noc=noc, name=name[:PE_NAME_CLIP]))
+
+
+# =========================================================================
+# 10. 省抽选事实(E6-04:BC / AB / MB / NB / NL 最近抽选 + ON 改制通告)
+# =========================================================================
+
+
+def fetch_draws_page(url: str) -> str:
+    """取一页抽选源(非 2xx 直接抛,由各省的兜底接住 → 保留旧数据)。"""
+    r = httpx.get(url, headers={HDR_UA: BROWSER_UA}, follow_redirects=True, timeout=DRAWS_TIMEOUT_S)
+    r.raise_for_status()
+    return r.text
+
+
+def int_of(s: object) -> int | None:
+    """'1,234' → 1234;空串/None/认不出一律 None(rowspan 等属性可能缺席)。"""
+    try:
+        return int(DRAWS_NUM_STRIP_RE.sub(EMPTY_JOIN, s or ""))
+    except (ValueError, TypeError):
+        return None
+
+
+def iso_of(s: str) -> str | None:
+    """「June 24, 2026」→ ISO;认不出返回 None(不猜)。"""
+    try:
+        return iso_of_long_date(s.strip())
+    except ValueError:
+        return None
+
+
+def draw_date_of(d: dict) -> str:
+    """抽选行的日期(排序键;原 lambda 退役)。"""
+    return d[K_DATE]
+
+
+def draw_date_or_empty_of(d: dict) -> str:
+    """抽选行的日期,缺键当空串(并回历史时旧行可能缺格)。"""
+    return d.get(K_DATE) or ""
+
+
+def draw_key_of(d: dict) -> tuple:
+    """抽选行的去重键(日期/通道/分/邀请数四格;composite key = 一个值,不算多返回值)。"""
+    return (d.get(K_DATE), d.get(K_STREAM), d.get(K_SCORE), d.get(K_INVITATIONS))
+
+
+def first_of(e: tuple) -> str:
+    """三元组的第一格(ON 更新条目按日期排序的键;原 lambda 退役)。"""
+    return e[0]
+
+
+def expand_table(table: object) -> list:
+    """rowspan/colspan 展开成规则网格(BC 表日期/分数列大量 rowspan)。"""
+    grid: list = []
+    pending: dict = {}
+    for tr in table.find_all(TAG_TR):
+        row: list = []
+        row_cells = tr.find_all(CELL_TAGS)
+        ci = 0
+        col = 0
+        while ci < len(row_cells) or col in pending:
+            if col in pending:
+                left, val = pending[col]
+                row.append(val)
+                pending[col] = (left - 1, val)
+                if left - 1 <= 0:
+                    del pending[col]
+                col += 1
+                continue
+            c = row_cells[ci]
+            ci += 1
+            text = fold_ws(c.get_text(TEXT_JOIN_SEP, strip=True))
+            span = int_of(c.get(ATTR_ROWSPAN)) or 1
+            wide = int_of(c.get(ATTR_COLSPAN)) or 1
+            for k in range(wide):
+                row.append(text)
+                if span > 1:
+                    pending[col + k] = (span - 1, text)
+            col += wide
+        grid.append(row)
+    return grid
+
+
+def parse_bc_draws(html: str) -> list:
+    """Skills Immigration ITA 表(表头含「ITA type」;Entrepreneur/池分布表不取)。"""
+    soup = BeautifulSoup(html, PARSER_HTML)
+    for table in soup.find_all(TAG_TABLE):
+        grid = expand_table(table)
+        if not grid or DRAWS_BC_HEAD_KW not in TEXT_JOIN_SEP.join(grid[0]).lower():
+            continue
+        draws: list = []
+        seen: set = set()
+        for row in grid[1:]:
+            if len(row) < DRAWS_BC_MIN_COLS:
+                continue
+            d = iso_of(row[0])
+            if not d:
+                continue
+            key = (d, row[1], int_of(row[3]), int_of(row[4]))
+            if key in seen:
+                continue
+            seen.add(key)
+            draws.append({K_DATE: d, K_STREAM: row[1], K_NOTE: row[2][:DRAWS_NOTE_CLIP],
+                          K_SCORE: int_of(row[3]), K_INVITATIONS: int_of(row[4])})
+        return draws[:DRAWS_MAX_PER_PROV]
+    return []
+
+
+def parse_ab_draws(html: str) -> list:
+    """「Draw information」表:Draw date / 流+参数 / 最低分 / 邀请数(线性,无 rowspan)。"""
+    soup = BeautifulSoup(html, PARSER_HTML)
+    for table in soup.find_all(TAG_TABLE):
+        head = table.find(TAG_TR)
+        if not head or DRAWS_AB_HEAD_KW not in head.get_text(TEXT_JOIN_SEP, strip=True).lower():
+            continue
+        draws: list = []
+        for tr in table.find_all(TAG_TR)[1:]:
+            c = cells(tr)
+            if len(c) < DRAWS_AB_MIN_COLS:
+                continue
+            d = iso_of(c[0])
+            if not d:
+                continue
+            draws.append({K_DATE: d, K_STREAM: c[1], K_NOTE: "",
+                          K_SCORE: int_of(c[2]), K_INVITATIONS: int_of(c[3])})
+        return draws[:DRAWS_MAX_PER_PROV]
+    return []
+
+
+def is_mb_heading(tag: object) -> bool:
+    """整段加粗的 <p>/<h2-4> 才算子标题(如「Skilled Worker Stream」「Francophone selection」);
+    正文段落里夹 <strong> 强调的不算(全文字数要等于其唯一 <strong> 子节点的字数)。"""
+    if tag.name not in MB_HEAD_TAGS:
+        return False
+    strongs = tag.find_all(TAG_STRONG)
+    if len(strongs) != 1:
+        return False
+    full = fold_ws(tag.get_text(TEXT_JOIN_SEP, strip=True))
+    inner = fold_ws(strongs[0].get_text(TEXT_JOIN_SEP, strip=True))
+    return bool(full) and full == inner and len(full) < MB_HEAD_MAX_LEN
+
+
+def mb_block_name(x: MbBlockNameIn) -> str:
+    """一个数据块的名字:同一子标题下第一个用子标题,之后的用「子标题 – 最近一段普通正文」。"""
+    if x.count == 1:
+        return x.heading
+    return MB_BLOCK_NAME_TPL.format(heading=x.heading, desc=x.desc).strip(MB_BLOCK_NAME_STRIP)
+
+
+def mb_stream_blocks(art: object) -> list:
+    """一期公告里常有多个「…were considered / Number of LAA issued / (可选)Ranking score…」小节
+    (Occupation-specific / broad category / Francophone / Skilled Worker Stream 各一段)。
+    分数线和 LAA 数官方总是写在同一个 <ul> 里 → 按 ul 配对,不会把 A 段的分算进 B 段。
+    每段的名字取「最近的整段加粗子标题」;同一子标题下第 2 个带数据的 ul(比如
+    「Occupation-specific selections」标题下,后面紧跟一段没有独立加粗标题的
+    「broad occupational category」选法)用其前面最近的普通段落原句去区分,不瞎归并。
+    找不到任何加粗子标题(老格式/改版)→ 返回空列表,调用方退回合并成一行的老逻辑。"""
+    blocks: list = []
+    heading = ""
+    desc = ""
+    count = 0
+    for tag in art.find_all(MB_BLOCK_TAGS):
+        if tag.name == TAG_UL:
+            parts = []
+            for li in tag.find_all(TAG_LI, recursive=False):
+                parts.append(li.get_text(strip=True))
+            li_text = TEXT_JOIN_SEP.join(parts)
+            m_laa = MB_LAA_RE.search(li_text)
+            if not m_laa:
+                continue
+            m_score = MB_SCORE_RE.search(li_text)
+            count += 1
+            name = mb_block_name(MbBlockNameIn(heading=heading, desc=desc, count=count))
+            score = None
+            if m_score:
+                score = int_of(m_score.group(1))
+            blocks.append(MbBlock(name=name[:MB_BLOCK_NAME_CLIP] or MB_DEFAULT_STREAM,
+                                  laa=int_of(m_laa.group(1)), score=score))
+            desc = ""
+            continue
+        text = fold_ws(tag.get_text(TEXT_JOIN_SEP, strip=True))
+        if is_mb_heading(tag):
+            heading = text
+            desc = ""
+            count = 0
+        elif text:
+            desc = text
+    return blocks
+
+
+def mb_legacy_stream(body: str) -> str:
+    """老格式回退:正文里找一行以 Stream/Pathway 结尾的短句当通道名。"""
+    for ln in body.split(LINE_JOIN_SEP):
+        s = ln.strip()
+        if MB_STREAM_TAIL_RE.search(s) and len(s) < MB_STREAM_MAX_LEN:
+            return s
+    return ""
+
+
+def parse_mb_draws(html: str) -> list:
+    """/draws/ 索引页 prose:每期一个 <article class=post>,标题 h2「…Draw #N」。
+    能按 <ul> 配出「子标题 + 该段分数线 + 该段 LAA」时一段一行(mb_stream_blocks);
+    配不出来(老格式)才退回一期一行、多分不猜的合并行为。"""
+    soup = BeautifulSoup(html, PARSER_HTML)
+    draws: list = []
+    for art in soup.find_all(TAG_ARTICLE):
+        m = MB_DRAW_NO_RE.search(art.get_text()[:MB_HEAD_SNIFF_LEN])
+        if not m:
+            continue
+        num = m.group(1)
+        body = art.get_text(LINE_JOIN_SEP, strip=True)
+        dm = MB_DRAW_DATE_RE.search(body)
+        d = None
+        if dm:
+            d = iso_of(dm.group(0))
+        if not d:
+            continue
+        blocks = mb_stream_blocks(art)
+        if blocks:
+            for b in blocks:
+                draws.append({K_DATE: d, K_STREAM: b.name, K_NOTE: MB_DRAW_NOTE_TPL.format(num=num),
+                              K_SCORE: b.score, K_INVITATIONS: b.laa})
+            continue
+        laas = []
+        for x in MB_LAA_RE.findall(body):
+            laas.append(int_of(x))
+        scores = []
+        for x in MB_SCORE_RE.findall(body):
+            scores.append(int_of(x))
+        score = None
+        if len(scores) == 1:
+            score = scores[0]
+        inv = None
+        if laas:
+            inv = laas[0]
+        draws.append({
+            K_DATE: d,
+            K_STREAM: mb_legacy_stream(body) or MB_DEFAULT_STREAM,
+            K_NOTE: MB_DRAW_NOTE_TPL.format(num=num),
+            K_SCORE: score,
+            K_INVITATIONS: inv,
+        })
+    draws.sort(key=draw_date_of, reverse=True)
+    return draws[:DRAWS_MAX_PER_PROV]
+
+
+def province_draws(x: ProvinceDrawsIn) -> dict:
+    """一省抽选:抓 → 解析 → 报数;抓不到/解析空一律**保留旧数据**(宁可留旧不留错)。"""
+    try:
+        draws = x.parse(fetch_draws_page(x.url))
+    except Exception as e:  # noqa: BLE001
+        say(DRAWS_PRINT_FAIL_TPL.format(prov=x.prov, name=type(e).__name__, detail=e))
+        return x.old.get(x.prov) or {}
+    if not draws:
+        say(DRAWS_PRINT_EMPTY_TPL.format(prov=x.prov))
+        return x.old.get(x.prov) or {}
+    say(DRAWS_PRINT_OK_TPL.format(prov=x.prov, n=len(draws), date=draws[0][K_DATE],
+                                  stream=draws[0][K_STREAM][:DRAWS_STREAM_CLIP],
+                                  score=draws[0][K_SCORE], inv=draws[0][K_INVITATIONS]))
+    return {K_LABEL: x.label, K_SCALE: x.scale, K_URL: x.url, K_DRAWS: draws}
+
+
+def on_text_lines(html: str) -> list:
+    """ON 更新页剥标签压平后的内容行(短于阈值的当版面碎片丢掉)。"""
+    body = ON_TAG_STRIP_RE.sub(TEXT_JOIN_SEP, html)
+    lines: list = []
+    for x in ON_TAG_RE.sub(LINE_JOIN_SEP, body).split(LINE_JOIN_SEP):
+        s = fold_ws(x).strip()
+        if len(s) > ON_LINE_MIN_LEN:
+            lines.append(s)
+    return lines
+
+
+def on_entry_of(x: OnEntryIn) -> tuple | None:
+    """第 i 行开头的更新条目 →(iso 日期, 标题, 正文片段);不是条目开头返回 None。
+
+    老格式:整行日期,标题在下一行;新格式:「August 4: 标题」同一行(年份从页面标题锚定)。
+    """
+    ln = x.lines[x.i]
+    if ON_ENTRY_RE.match(ln):
+        iso = iso_of(ln)
+        if not iso:
+            return None
+        title = ""
+        if x.i + 1 < len(x.lines):
+            title = x.lines[x.i + 1]
+        return (iso, title[:ON_TITLE_CLIP], TEXT_JOIN_SEP.join(x.lines[x.i + 1:x.i + ON_BLOB_AHEAD_OLD]))
+    m = ON_ENTRY_NOYEAR_RE.match(ln)
+    if not m or not x.page_year:
+        return None
+    iso = iso_of(ON_ENTRY_DATE_TPL.format(month=m.group(1), day=m.group(2), year=x.page_year))
+    if not iso:
+        return None
+    return (iso, m.group(3)[:ON_TITLE_CLIP], TEXT_JOIN_SEP.join(x.lines[x.i:x.i + ON_BLOB_AHEAD_NEW]))
+
+
+def parse_on(html: str) -> OnDrawsOut:
+    """ON 更新页 →(draws, notice)。页面是「日期行 + 标题行 + 正文」的更新流。"""
+    lines = on_text_lines(html)
+    ym = ON_PAGE_YEAR_RE.search(html)
+    page_year = None
+    if ym:
+        page_year = ym.group(1)
+    entries: list = []
+    for i in range(len(lines)):
+        entry = on_entry_of(OnEntryIn(lines=lines, i=i, page_year=page_year))
+        if entry is not None:
+            entries.append(entry)
+    if not entries:
+        return OnDrawsOut(draws=[], notice=None)
+    entries.sort(key=first_of, reverse=True)
+    draws: list = []
+    for iso, title, blob in entries:
+        m_inv = ON_INV_RE.search(blob)
+        if m_inv:
+            draws.append({K_DATE: iso, K_STREAM: title, K_SCORE: None,
+                          K_INVITATIONS: int_of(m_inv.group(1)), K_NOTE: ""})
+    latest = entries[0]
+    return OnDrawsOut(draws=draws[:DRAWS_MAX_PER_PROV], notice={K_DATE: latest[0], K_NOTE: latest[1]})
+
+
+def on_col_or(x: OnColIn) -> int:
+    """按关键词取列号,找不到用兜底列号(原 next((...), default) 的显式化)。"""
+    for i, name in enumerate(x.heads):
+        if x.header_kw in name:
+            return i
+    return x.fallback
+
+
+def on_note_col(heads: list) -> int | None:
+    """备注列的列号(表头以 notes 开头);没有返回 None。"""
+    for i, name in enumerate(heads):
+        if name.startswith(ON_INV_NOTES_KW):
+            return i
+    return None
+
+
+def parse_on_draws(html: str) -> list:
+    """invitations 页:一张表一条通道,表头 Date issued / Number of invitations /
+    Date profiles created / Score range / Notes。分数写成「57 and above」(区间下界)——
+    取那个数当分数线,取不到就留空不猜。"""
+    soup = BeautifulSoup(html, PARSER_HTML)
+    draws: list = []
+    for table in soup.find_all(TAG_TABLE):
+        grid = expand_table(table)
+        if not grid:
+            continue
+        head = TEXT_JOIN_SEP.join(grid[0]).lower()
+        if ON_INV_HEAD_KW not in head:
+            continue
+        h = table.find_previous(ON_INV_HEAD_TAGS)
+        stream = ""
+        if h:
+            stream = fold_ws(h.get_text(TEXT_JOIN_SEP, strip=True))[:ON_INV_STREAM_CLIP]
+        heads: list = []
+        for name in grid[0]:
+            heads.append(name.lower())
+        i_date = on_col_or(OnColIn(heads=heads, header_kw=ON_INV_DATE_KW, fallback=ON_INV_DATE_COL))
+        i_num = on_col_or(OnColIn(heads=heads, header_kw=ON_INV_NUM_KW, fallback=ON_INV_NUM_COL))
+        i_score = on_col_or(OnColIn(heads=heads, header_kw=ON_INV_HEAD_KW, fallback=ON_INV_SCORE_COL))
+        i_note = on_note_col(heads)
+        for row in grid[1:]:
+            if len(row) <= max(i_date, i_num, i_score):
+                continue
+            d = iso_of(row[i_date])
+            if not d:
+                continue
+            m_score = ON_SCORE_RE.search(row[i_score])
+            note = ""
+            if i_note is not None and len(row) > i_note:
+                note = row[i_note][:DRAWS_NOTE_CLIP]
+            score = None
+            if m_score:
+                score = int(m_score.group(1))
+            draws.append({K_DATE: d, K_STREAM: stream, K_NOTE: note,
+                          K_SCORE: score, K_INVITATIONS: int_of(row[i_num])})
+    draws.sort(key=draw_date_of, reverse=True)
+    return draws[:DRAWS_MAX_PER_PROV]
+
+
+def parse_nl_draws(html: str) -> list:
+    """NL ITA 批次表:| Date Issued | Number of ITAs Issued | Notes |。无分数线(官方不发)。"""
+    soup = BeautifulSoup(html, PARSER_LXML)
+    draws: list = []
+    for table in soup.find_all(TAG_TABLE):
+        grid = expand_table(table)
+        if not grid:
+            continue
+        head = TEXT_JOIN_SEP.join(grid[0]).lower()
+        if NL_DRAW_DATE_KW not in head or NL_DRAW_ITA_KW not in head:
+            continue
+        for row in grid[1:]:
+            if len(row) < 2:
+                continue
+            d = iso_of(row[0])
+            if not d:
+                continue
+            note = ""
+            if len(row) > 2:
+                note = fold_ws(row[2])[:DRAWS_NOTE_CLIP]
+            draws.append({K_DATE: d, K_STREAM: NL_DRAW_STREAM, K_NOTE: note,
+                          K_SCORE: None, K_INVITATIONS: int_of(row[1])})
+    draws.sort(key=draw_date_of, reverse=True)
+    return draws[:DRAWS_MAX_PER_PROV]
+
+
+def iso_nb_of(s: str) -> str | None:
+    """NB 官方日期常写成区间(「July 16 to 18, 2026」「October 6-7, 2025」)或带序数词
+    (「May 1st, 2026」)——区间取**最后一天**当抽选日(那天邀请才算发出);序数词去掉再喂 iso_of。"""
+    text = NB_ORDINAL_RE.sub(NB_ORDINAL_SUB, (s or "").strip())
+    m = NB_RANGE_RE.match(text)
+    if m:
+        text = NB_RANGE_TPL.format(mon=m.group(1), day2=m.group(2), yr=m.group(3))
+    return iso_of(text)
+
+
+def nb_br_lines(cell: object) -> list:
+    """官方表格用 <br> 分隔多行(Pathways 可多条、Occupational categories 常见 5+ 条),
+    不能直接 get_text 合并——那样逗号本就出现在类别名里(如「Education, social and community
+    services」),会分不清是类别名内部逗号还是分隔符。按 <br> 切出原生的每行文本。"""
+    for br in cell.find_all(TAG_BR):
+        br.replace_with(LINE_JOIN_SEP)
+    out: list = []
+    for x in cell.get_text(LINE_JOIN_SEP).split(LINE_JOIN_SEP):
+        if x.strip():
+            out.append(fold_ws(x).strip())
+    return out
+
+
+def is_bold_paragraph(tag: object) -> bool:
+    """居中加粗段落(NB 的通道名挂在 <p><b> 里;原 lambda 退役)。"""
+    return tag.name == TAG_P and tag.find(TAG_B) is not None
+
+
+def nb_stream_of(x: NbStreamIn) -> str:
+    """通道名 + pathway 清单的拼法(pathway 名里的 New Brunswick 缩成 NB)。"""
+    if x.pathways:
+        short: list = []
+        for p in x.pathways:
+            short.append(NB_PROV_PREFIX_RE.sub(NB_PROV_SHORT_SUB, p))
+        joined = PLUS_JOIN_SEP.join(short)
+        if x.base:
+            return NB_STREAM_TPL.format(base=x.base, paths=joined)
+        return joined
+    if x.base:
+        return x.base
+    return NB_DEFAULT_STREAM
+
+
+def nb_table_rows(table: object) -> dict:
+    """NB「标签: 值」两列表 → {标签小写: 值};多行格(pathways / 职业类别)按 <br> 切成清单。"""
+    rows: dict = {}
+    for tr in table.find_all(TAG_TR):
+        row_cells = tr.find_all(TAG_TD)
+        if len(row_cells) < 2:
+            continue
+        label = fold_ws(row_cells[0].get_text(TEXT_JOIN_SEP, strip=True)).rstrip(NB_LABEL_STRIP).lower()
+        if NB_OCC_KW in label and NB_CATEGORIES_KW in label:
+            rows[label] = nb_br_lines(row_cells[1])
+        elif label == NB_PATHWAYS_KW:
+            rows[label] = nb_br_lines(row_cells[1])
+        else:
+            rows[label] = fold_ws(row_cells[1].get_text(TEXT_JOIN_SEP, strip=True))
+    return rows
+
+
+def nb_base_stream(table: object) -> str:
+    """通道名 = 表格前最近一个居中加粗段落(官方原文,如「New Brunswick Skilled Worker stream」)。"""
+    head = table.find_previous(is_bold_paragraph)
+    base = ""
+    if head:
+        base = fold_ws(head.get_text(TEXT_JOIN_SEP, strip=True))
+    base = NB_STREAM_TAIL_RE.sub(EMPTY_JOIN, base).strip()
+    base = NB_PROV_PREFIX_RE.sub(EMPTY_JOIN, base)
+    if base.lower() == NB_AIP_FULL:
+        return NB_AIP_SHORT
+    return base
+
+
+def parse_nb_draws(html: str) -> list:
+    """ImmigrationNB 的「表格块」格式(当期页与 previous-invitations-*.html 通用):
+    每轮一段「<p><b>通道名</b></p> + <table>」,表格是「标签: 值」两列行(Date of draw /
+    Cut-off date and time / Pathways(可无,如 AIP) / Invitations issued 或 Applications selected /
+    Occupational categories selected)。按类别定向发邀请、官方不发分数线 —— score 恒 None。"""
+    soup = BeautifulSoup(html, PARSER_HTML)
+    draws: list = []
+    for table in soup.find_all(TAG_TABLE):
+        rows = nb_table_rows(table)
+        if NB_DRAW_DATE_KW not in rows:
+            continue
+        d = iso_nb_of(str(rows[NB_DRAW_DATE_KW]))
+        if not d:
+            continue
+        pathways = rows.get(NB_PATHWAYS_KW) or []
+        categories = rows.get(NB_OCC_ROW_KEY) or []
+        note = ""
+        if categories:
+            note = NB_CATEGORIES_TPL.format(names=LIST_JOIN_SEP.join(categories))
+        inv = int_of(rows.get(NB_INV_ISSUED_KEY) or rows.get(NB_APP_SELECTED_KEY))
+        draws.append({K_DATE: d,
+                      K_STREAM: nb_stream_of(NbStreamIn(base=nb_base_stream(table), pathways=pathways)),
+                      K_NOTE: note[:DRAWS_NOTE_CLIP], K_SCORE: None, K_INVITATIONS: inv})
+    draws.sort(key=draw_date_of, reverse=True)
+    return draws[:DRAWS_NB_MAX]
+
+
+def build_nb_draws(old: dict) -> dict:
+    """两页合并:当期页(最新一轮,~5 条)+ previous-invitations-2026.html(本年历史,~20+ 条)。
+    任一页抓失败不清空、拿另一页结果照跑(循 BC/AB「抓失败→保留旧数据」的兜底,但 NB 是两页,
+    两页都失败才真正退回旧数据)。"""
+    draws: list = []
+    errors: list = []
+    for label, url in ((NB_PAGE_CURRENT_LABEL, DRAWS_NB_URL), (NB_PAGE_HISTORY_LABEL, DRAWS_NB_PREV_URL)):
+        try:
+            draws += parse_nb_draws(fetch_draws_page(url))
+        except Exception as e:  # noqa: BLE001
+            errors.append(NB_PAGE_ERR_TPL.format(label=label, name=type(e).__name__, detail=e))
+    if not draws:
+        say(DRAWS_PRINT_NB_FAIL_TPL.format(errors=SEMI_JOIN_SEP.join(errors) or NB_NO_DATA))
+        return old.get(PROV_NB) or {}
+    if errors:
+        say(DRAWS_PRINT_NB_PARTIAL_TPL.format(errors=SEMI_JOIN_SEP.join(errors)))
+    seen: set = set()
+    merged: list = []
+    for d in draws:
+        key = (d[K_DATE], d[K_STREAM], d[K_INVITATIONS])
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(d)
+    merged.sort(key=draw_date_of, reverse=True)
+    merged = merged[:DRAWS_NB_MAX]
+    say(DRAWS_PRINT_NB_OK_TPL.format(n=len(merged), date=merged[0][K_DATE],
+                                     stream=merged[0][K_STREAM][:DRAWS_STREAM_CLIP],
+                                     score=merged[0][K_SCORE], inv=merged[0][K_INVITATIONS]))
+    return {K_LABEL: DRAWS_NB_LABEL, K_SCALE: None, K_URL: DRAWS_NB_URL, K_DRAWS: merged}
+
+
+def old_on_draws(old: dict) -> list:
+    """上一轮 ON 的抽选行(invitations 页抓不到时退回,不清空)。"""
+    return (old.get(PROV_ON) or {}).get(K_DRAWS) or []
+
+
+def build_on_draws(old: dict) -> dict:
+    """ON:通告取更新页(新通道细则的第一手动静),抽选记录取 invitations 页(带分数区间)。"""
+    try:
+        parsed = parse_on(fetch_draws_page(DRAWS_ON_URL))
+    except Exception as e:  # noqa: BLE001
+        say(DRAWS_PRINT_ON_FAIL_TPL.format(name=type(e).__name__, detail=e))
+        return old.get(PROV_ON) or {}
+    notice = parsed.notice
+    if not notice:
+        say(DRAWS_PRINT_ON_NO_ENTRY)
+        return old.get(PROV_ON) or {}
+    try:
+        draws = parse_on_draws(fetch_draws_page(DRAWS_ON_INV_URL))
+    except Exception as e:  # noqa: BLE001
+        say(DRAWS_PRINT_ON_INV_FAIL_TPL.format(name=type(e).__name__, detail=e))
+        draws = old_on_draws(old)
+    if not draws:
+        draws = old_on_draws(old)
+    scored = 0
+    for d in draws:
+        if d.get(K_SCORE) is not None:
+            scored += 1
+    say(DRAWS_PRINT_ON_OK_TPL.format(n=len(draws), scored=scored, date=notice[K_DATE],
+                                     note=notice[K_NOTE][:DRAWS_NOTICE_CLIP]))
+    scale = None
+    if scored:
+        scale = DRAWS_ON_SCALE
+    return {K_LABEL: DRAWS_ON_LABEL, K_SCALE: scale,
+            K_URL: DRAWS_ON_INV_URL, K_DRAWS: draws, K_NOTICE: notice}
+
+
+def merge_draws(x: MergeDrawsIn) -> list:
+    """本轮解析结果并回历史(抽选是**只增不减的历史**,少了只可能是我们没解析到)。"""
+    prev = (x.old.get(x.prov) or {}).get(K_DRAWS) or []
+    seen: set = set()
+    out: list = []
+    for d in list(x.new) + list(prev):
+        k = draw_key_of(d)
+        if k in seen:
+            continue
+        seen.add(k)
+        out.append(d)
+    out.sort(key=draw_date_or_empty_of, reverse=True)
+    if len(out) > len(x.new):
+        say(DRAWS_PRINT_MERGE_TPL.format(prov=x.prov, new=len(x.new), out=len(out)))
+    return out
+
+
+def old_provinces() -> dict:
+    """上一轮 draws.json 的 provinces 块(读不出当空,不拿半份数据盖好数据)。"""
+    if not OUT_DRAWS.exists():
+        return {}
+    try:
+        return json.loads(OUT_DRAWS.read_text(encoding=ENC_UTF8)).get(K_PROVINCES, {})
+    except Exception as e:  # noqa: BLE001
+        err(OUT_DRAWS, e)
+        return {}
+
+
+def build_draws() -> None:
+    """省抽选事实入口:五省实抓 + ON 通告,逐省并回历史后整表落盘。"""
+    say(PRINT_OUT_TPL.format(path=OUT_DRAWS))
+    old = old_provinces()
+    provinces = {
+        PROV_BC: province_draws(ProvinceDrawsIn(prov=PROV_BC, url=DRAWS_BC_URL, parse=parse_bc_draws,
+                                                scale=DRAWS_BC_SCALE, label=DRAWS_BC_LABEL, old=old)),
+        PROV_AB: province_draws(ProvinceDrawsIn(prov=PROV_AB, url=DRAWS_AB_URL, parse=parse_ab_draws,
+                                                scale=DRAWS_AB_SCALE, label=DRAWS_AB_LABEL, old=old)),
+        PROV_MB: province_draws(ProvinceDrawsIn(prov=PROV_MB, url=DRAWS_MB_URL, parse=parse_mb_draws,
+                                                scale=DRAWS_MB_SCALE, label=DRAWS_MB_LABEL, old=old)),
+        PROV_ON: build_on_draws(old),
+        PROV_NL: province_draws(ProvinceDrawsIn(prov=PROV_NL, url=DRAWS_NL_URL, parse=parse_nl_draws,
+                                                scale=None, label=DRAWS_NL_LABEL, old=old)),
+        PROV_NB: build_nb_draws(old),
+    }
+    for p, v in provinces.items():
+        if isinstance(v, dict) and v.get(K_DRAWS):
+            v[K_DRAWS] = merge_draws(MergeDrawsIn(prov=p, new=v[K_DRAWS], old=old))
+    kept: dict = {}
+    total = 0
+    for p, v in provinces.items():
+        if v:
+            kept[p] = v
+            total += len(v.get(K_DRAWS, []))
+    paths.write_json(paths.WriteJsonIn(path=OUT_DRAWS, payload={
+        K_SOURCE: DRAWS_SOURCE,
+        K_FETCHED: today_iso(),
+        K_PROVINCES: kept,
+    }, indent=INDENT_2))
+    say(DRAWS_PRINT_DONE_TPL.format(path=OUT_DRAWS, n=total, provs=len(kept)))
+
+
+# =========================================================================
+# 11. NS 官方年度配额(唯一上开放平台的省;Socrata API 免密钥)
+# =========================================================================
+
+
+def has_recent_ns_year(nsnp: dict) -> bool:
+    """NSNP 年序列里有没有 2024 及以后的年份(没有 = 疑似数据集改版)。"""
+    for y in nsnp:
+        if int(y) >= NS_ALLOC_MIN_LATEST_YEAR:
+            return True
+    return False
+
+
+def ns_allocations_by_program(rows: list) -> dict:
+    """Socrata 行 → {项目小写: {年: 名额}}。"""
+    by_prog: dict = {}
+    for row in rows:
+        prog = str(row.get(K_ALLOC_PROGRAM, "")).strip()
+        year = str(row.get(K_ALLOC_YEAR, "")).strip()
+        n = row.get(K_ALLOC_VALUE)
+        if prog and year.isdigit() and n is not None:
+            by_prog.setdefault(prog.lower(), {})[year] = int(n)
+    return by_prog
+
+
+def scrape_ns_allocations() -> None:
+    """NS 官方年度配额入口:Socrata 直取 → raw/ircc/ns_allocations.json。序列异常 → 保留旧表。"""
+    say(NS_ALLOC_PRINT_OUT_TPL.format(path=OUT_NS_ALLOCATIONS))
+    OUT_IRCC_DIR.mkdir(parents=True, exist_ok=True)
+    try:
+        r = httpx.get(NS_ALLOC_API, timeout=NS_ALLOC_TIMEOUT_S, headers={HDR_ACCEPT_JSON: NS_ALLOC_UA})
+        r.raise_for_status()
+        by_prog = ns_allocations_by_program(r.json())
+        nsnp = by_prog.get(NS_ALLOC_PROG_NSNP) or {}
+        if len(nsnp) < NS_ALLOC_MIN_YEARS or not has_recent_ns_year(nsnp):
+            raise RuntimeError(NS_ALLOC_BAD_TPL.format(n=len(nsnp), latest=max(nsnp, default=NS_ALLOC_NO_YEAR)))
+    except Exception as e:  # noqa: BLE001
+        say(NS_ALLOC_PRINT_FAIL_TPL.format(name=type(e).__name__, detail=e))
+        return
+    paths.write_json(paths.WriteJsonIn(path=OUT_NS_ALLOCATIONS, payload={
+        K_SOURCE: NS_ALLOC_PAGE, K_API: NS_ALLOC_API, K_FETCHED: today_iso(),
+        K_BY_PROGRAM: by_prog,
+        K_NOTE: NS_ALLOC_NOTE,
+    }, indent=INDENT_1))
+    latest = max(nsnp)
+    aip = (by_prog.get(NS_ALLOC_PROG_AIP) or {}).get(latest, 0)
+    say(NS_ALLOC_PRINT_OK_TPL.format(n=len(nsnp), first=min(nsnp), last=latest,
+                                     nsnp=nsnp[latest], aip=aip))
+
+
+# =========================================================================
+# 12. BC 门槛(E13-01:语言 / 最低家庭收入 / 经验 / 雇主侧;指南 PDF)
+# =========================================================================
+
+
+def to_bc_req(x: ReqIn) -> dict:
+    """BC 门槛一行(键序即文件契约:base 十二格 + factor 收尾;空串/None = 用本省缺省)。"""
+    teer = x.applies_teer
+    if teer is None:
+        teer = []
+    return {
+        K_STREAM: x.stream or BCR_ALL_STREAMS,
+        K_SUBJECT: x.subject or REQ_SUBJECT_APPLICANT,
+        K_OP: x.op or OP_GE,
+        K_VALUE: x.value,
+        K_VALUE_TEXT: x.value_text,
+        K_UNIT: x.unit,
+        K_APPLIES_TEER: teer,
+        K_APPLIES_AREA: x.applies_area,
+        K_FAMILY_SIZE: x.family_size,
+        K_BASIS: x.basis,
+        K_LABEL: x.label,
+        K_SECTION: x.section,
+        K_FACTOR: x.factor,
+    }
+
+
+def bc_flatten(raw: str) -> str:
+    """剥页眉页脚再把全文压成一行 —— 否则每个句子都被分页切成两半,正则得写成天书。"""
+    txt = raw
+    for pat in BCR_FURNITURE:
+        txt = pat.sub(TEXT_JOIN_SEP, txt)
+    return fold_ws(txt).strip()
+
+
+def bc_guide_effective(raw: str) -> str:
+    """生效日期:页脚每页都印,改版时可能只更新了改动页 → 取最新的那个(= 本版生效日)。"""
+    dates: set = set()
+    for d in BCR_FOOTER_DATE_RE.findall(raw):
+        dates.add(datetime.strptime(d, DATE_FMT_LONG).date())
+    if not dates:
+        return ""
+    return sorted(dates)[-1].isoformat()
+
+
+def plural_of(n: int) -> str:
+    """英文复数尾巴(1 年不加 s)。"""
+    if n > 1:
+        return PLURAL_S
+    return ""
+
+
+def bc_income_where(area: str) -> str:
+    """收入表 label 里的区域措辞。"""
+    if area == AREA_METRO:
+        return BCR_METRO_WORDS
+    return BCR_REST_WORDS
+
+
+def bc_staff_where(area: str) -> str:
+    """雇员数 label 里的大温内外措辞。"""
+    if area == AREA_METRO:
+        return BCR_INSIDE_WORD
+    return BCR_OUTSIDE_WORD
+
+
+def bc_language_reqs(txt: str) -> ReqsOut:
+    """3.4 语言:按 TEER 的 CLB 档 + TEER 0/1 的免交条款(两条都要,缺一进自校)。"""
+    rows: list = []
+    problems: list = []
+    m = BCR_LANG_CLB_RE.search(txt)
+    if m:
+        rows.append(to_bc_req(ReqIn(factor=FACTOR_LANGUAGE, op=OP_GE, value=int(m.group(2)), unit=UNIT_CLB,
+                                    applies_teer=teers(m.group(1)), section=BCR_SECTION_LANG,
+                                    label=BCR_LANG_LABEL_TPL.format(clb=m.group(2), band=m.group(1)))))
+    else:
+        problems.append(BCR_PROBLEM_LANG)
+    m_none = BCR_LANG_NONE_RE.search(txt)
+    if m_none:
+        rows.append(to_bc_req(ReqIn(factor=FACTOR_LANGUAGE, op=OP_NONE, applies_teer=teers(m_none.group(1)),
+                                    section=BCR_SECTION_LANG,
+                                    label=BCR_LANG_NONE_LABEL_TPL.format(band=m_none.group(1)))))
+    else:
+        problems.append(BCR_PROBLEM_LANG_NONE)
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def bc_income_problems(rows: list) -> list:
+    """3.10 收入表的两条合理性:随家庭人数递增、大温高于 BC 其余。"""
+    problems: list = []
+    if len(rows) != BCR_INCOME_ROWS:
+        problems.append(BCR_PROBLEM_INCOME_TPL.format(n=len(rows)))
+        return problems
+    metro_vals: list = []
+    rest_vals: list = []
+    for row in rows:
+        metro_vals.append(int(row[1].replace(COMMA, EMPTY_JOIN)))
+        rest_vals.append(int(row[2].replace(COMMA, EMPTY_JOIN)))
+    if metro_vals != sorted(metro_vals) or rest_vals != sorted(rest_vals):
+        problems.append(BCR_PROBLEM_INCOME_ORDER)
+    for a, b in zip(metro_vals, rest_vals):
+        if a <= b:
+            problems.append(BCR_PROBLEM_INCOME_SWAP)
+            break
+    return problems
+
+
+def bc_income_reqs(txt: str) -> ReqsOut:
+    """3.10 最低家庭收入(7 档 × 2 区域 = 14 行)。"""
+    rows: list = []
+    found = BCR_INCOME_RE.findall(txt)
+    for size, metro, rest in found:
+        n = BCR_INCOME_ROWS
+        if not size.startswith(BCR_INCOME_7PLUS_PREFIX):
+            n = int(size)
+        for area, val in ((AREA_METRO, metro), (AREA_REST_BC, rest)):
+            rows.append(to_bc_req(ReqIn(factor=FACTOR_INCOME, op=OP_GE,
+                                        value=int(val.replace(COMMA, EMPTY_JOIN)), unit=BCR_UNIT_CAD_YR,
+                                        applies_area=area, family_size=n, section=BCR_SECTION_INCOME,
+                                        label=BCR_INCOME_LABEL_TPL.format(size=size,
+                                                                          where=bc_income_where(area),
+                                                                          val=val))))
+    return ReqsOut(rows=rows, problems=bc_income_problems(found))
+
+
+def bc_experience_reqs(txt: str) -> ReqsOut:
+    """4.1(c) 技术工人通道的工作经验(近十年内 ≥2 年 TEER 0-3)。"""
+    rows: list = []
+    problems: list = []
+    m = BCR_EXP_RE.search(txt)
+    if m and m.group(1).lower() in WORD_N:
+        yrs = WORD_N[m.group(1).lower()]
+        rows.append(to_bc_req(ReqIn(stream=BCR_SKILLED_WORKER, factor=FACTOR_EXPERIENCE, op=OP_GE,
+                                    value=yrs * MBR_MONTHS_PER_YEAR, unit=UNIT_MONTHS,
+                                    section=BCR_SECTION_EXP,
+                                    label=BCR_EXP_LABEL_TPL.format(word=m.group(1).title(),
+                                                                   band=m.group(2)))))
+    else:
+        problems.append(BCR_PROBLEM_EXP)
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def bc_employer_reqs(txt: str) -> ReqsOut:
+    """6.7 / 6.8 雇主侧:在 BC 经营满 1 年 + 大温内外的全职雇员数。"""
+    rows: list = []
+    problems: list = []
+    m = BCR_EMP_YEARS_RE.search(txt)
+    if m and m.group(1).lower() in WORD_N:
+        years = WORD_N[m.group(1).lower()]
+        rows.append(to_bc_req(ReqIn(subject=REQ_SUBJECT_EMPLOYER, factor=FACTOR_EMP_YEARS, op=OP_GE,
+                                    value=years, unit=UNIT_YEARS, section=BCR_SECTION_EMP_YEARS,
+                                    label=BCR_EMP_YEARS_LABEL_TPL.format(word=m.group(1),
+                                                                         plural=plural_of(years)))))
+    else:
+        problems.append(BCR_PROBLEM_EMP_YEARS)
+    staff = BCR_EMP_STAFF_RE.findall(txt)
+    for where, word in staff:
+        if word.lower() not in WORD_N:
+            continue
+        area = AREA_REST_BC
+        if where.lower() == BCR_WITHIN_WORD:
+            area = AREA_METRO
+        rows.append(to_bc_req(ReqIn(subject=REQ_SUBJECT_EMPLOYER, factor=FACTOR_EMP_STAFF, op=OP_GE,
+                                    value=WORD_N[word.lower()], unit=UNIT_EMPLOYEES, applies_area=area,
+                                    section=BCR_SECTION_EMP_STAFF,
+                                    label=BCR_EMP_STAFF_LABEL_TPL.format(word=word,
+                                                                         where=bc_staff_where(area)))))
+    if len(staff) != BCR_EMP_STAFF_ROWS:
+        problems.append(BCR_PROBLEM_EMP_STAFF_TPL.format(n=len(staff)))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def build_bc_req() -> None:
+    """BC 门槛入口:指南 PDF → 四组门槛;任何一组没解析到就保留旧表 exit 1。"""
+    raw = pdf_text(fetch_bytes(FetchHtmlIn(url=BC_GUIDE_URL, timeout_s=BCR_TIMEOUT_S)))
+    eff = bc_guide_effective(raw)
+    txt = bc_flatten(raw)
+    reqs: list = []
+    problems: list = []
+    for part in (bc_language_reqs(txt), bc_income_reqs(txt),
+                 bc_experience_reqs(txt), bc_employer_reqs(txt)):
+        reqs += part.rows
+        problems += part.problems
+    if not eff:
+        problems.append(PROBLEM_NO_EFFECTIVE)
+    if problems:
+        fail_zh(problems)
+    OUT_BC_REQ.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_BC_REQ, payload={
+        K_PROVINCE: PROV_BC, K_PROGRAM: PROGRAM_PNP,
+        K_SOURCE: BC_GUIDE_SOURCE,
+        K_URL: BC_GUIDE_URL, K_PAGE_URL: BC_WORKERS_PAGE_URL,
+        K_GUIDE_EFFECTIVE: eff, K_FETCHED: today_iso(),
+        K_REQUIREMENTS: reqs,
+    }, indent=INDENT_2))
+    say(BCR_PRINT_DONE_TPL.format(path=OUT_BC_REQ, eff=eff, n=len(reqs)))
+    say_factor_counts(FactorCountsIn(reqs=reqs, order=BCR_FACTOR_ORDER, tpl=PRINT_FACTOR_TPL))
+
+
+# =========================================================================
+# 13. ON 门槛(E13-02:申请人语言/工资/经验 + 雇主侧年限/营业额/雇员数)
+# =========================================================================
+
+
+def to_on_req(x: ReqIn) -> dict:
+    """ON 门槛一行(base 十六格 + factor 收尾;appliesTeer 是**字符串**不是列表)。"""
+    teer = x.applies_teer
+    if teer is None:
+        teer = ""
+    return {
+        K_STREAM: x.stream or ONR_STREAM,
+        K_SUBJECT: x.subject or REQ_SUBJECT_APPLICANT,
+        K_OP: x.op or OP_GE,
+        K_VALUE: x.value,
+        K_VALUE_TEXT: x.value_text,
+        K_UNIT: x.unit,
+        K_APPLIES_TEER: teer,
+        K_APPLIES_NOC: x.applies_noc,
+        K_EXCLUDES_NOC: x.excludes_noc,
+        K_APPLIES_AREA: x.applies_area,
+        K_APPLIES_CONDITION: x.applies_condition,
+        K_FAMILY_SIZE: x.family_size,
+        K_BASIS: x.basis,
+        K_LABEL: x.label,
+        K_SECTION: x.section,
+        K_URL: x.url or ON_WORKFORCE_URL,
+        K_FACTOR: x.factor,
+    }
+
+
+def word_or_digit(tok: str) -> int | None:
+    """官方这两句写的是阿拉伯数字(6/12、3/12),不是英文数词 → 单独转,别套 WORD_N。"""
+    if tok.isdigit():
+        return int(tok)
+    return WORD_N.get(tok.lower())
+
+
+def on_trade_groups(stream_txt: str) -> list:
+    """技工白名单里的 NOC 大组前缀(72/73/82/83/93/6320/62200)。"""
+    block = ""
+    m = ONR_TRADES_BLOCK_RE.search(stream_txt)
+    if m:
+        block = m.group(1)
+    out: list = []
+    for hit in ONR_TRADE_LINE_RE.findall(block):
+        out.append(hit[0])
+    return out
+
+
+def on_trade_excludes(stream_txt: str) -> list:
+    """技工白名单里的两处「excluding … Group NNN」。"""
+    block = ""
+    m = ONR_TRADES_BLOCK_RE.search(stream_txt)
+    if m:
+        block = m.group(1)
+    return ONR_TRADE_EXCL_RE.findall(block)
+
+
+def on_trades_excl_tail(excl: list) -> str:
+    """技工 label 里的 excluding 片段;没有就空。"""
+    if not excl:
+        return ""
+    return ONR_LANG_TRADES_EXCL_TPL.format(excl=LIST_JOIN_SEP.join(excl))
+
+
+def on_language_reqs(stream_txt: str) -> ReqsOut:
+    """申请人语言:TEER 0-3 非技工 / TEER 4-5 / 技工低档(带 NOC 大组白名单)/ 免考条款。"""
+    rows: list = []
+    problems: list = []
+    general = ONR_LANG_GENERAL_RE.search(stream_txt)
+    t45 = ONR_LANG_45_RE.search(stream_txt)
+    trades = ONR_LANG_TRADES_RE.search(stream_txt)
+    if general:
+        rows.append(to_on_req(ReqIn(factor=FACTOR_LANGUAGE, value=int(general.group(1)), unit=UNIT_CLB,
+                                    applies_teer=ONR_TEER_03, section=ONR_SECTION_LANG,
+                                    label=ONR_LANG_GENERAL_LABEL_TPL.format(clb=general.group(1)))))
+    else:
+        problems.append(ONR_PROBLEM_LANG_GENERAL)
+    if t45:
+        rows.append(to_on_req(ReqIn(factor=FACTOR_LANGUAGE, value=int(t45.group(1)), unit=UNIT_CLB,
+                                    applies_teer=ONR_TEER_45, section=ONR_SECTION_LANG,
+                                    label=ONR_LANG_45_LABEL_TPL.format(clb=t45.group(1)))))
+    else:
+        problems.append(ONR_PROBLEM_LANG_45)
+    groups = on_trade_groups(stream_txt)
+    excl = on_trade_excludes(stream_txt)
+    if trades and groups:
+        rows.append(to_on_req(ReqIn(factor=FACTOR_LANGUAGE, value=int(trades.group(1)), unit=UNIT_CLB,
+                                    applies_teer=ONR_TEER_03,
+                                    applies_noc=COMMA.join(groups), excludes_noc=COMMA.join(excl),
+                                    section=ONR_SECTION_LANG_TRADES,
+                                    label=ONR_LANG_TRADES_LABEL_TPL.format(
+                                        clb=trades.group(1), groups=LIST_JOIN_SEP.join(groups),
+                                        excl=on_trades_excl_tail(excl)))))
+    else:
+        problems.append(ONR_PROBLEM_LANG_TRADES)
+    exempt = ONR_LANG_EXEMPT_RE.search(stream_txt)
+    if exempt:
+        rows.append(to_on_req(ReqIn(factor=FACTOR_LANGUAGE_EXEMPT, op=OP_NONE, applies_teer=ONR_TEER_03,
+                                    value=int(exempt.group(1)), unit=UNIT_YEARS, section=ONR_SECTION_LANG,
+                                    label=ONR_LANG_EXEMPT_LABEL_TPL.format(years=exempt.group(1)))))
+    else:
+        problems.append(ONR_PROBLEM_LANG_EXEMPT)
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def on_wage_reqs(emp_txt: str) -> ReqsOut:
+    """申请人工资档(basis=occMedian —— 阈值不是绝对数,而是该职业该地区的中位)。"""
+    rows: list = []
+    problems: list = []
+    if ONR_WAGE_RE.search(emp_txt):
+        rows.append(to_on_req(ReqIn(factor=FACTOR_WAGE, op=OP_GE, basis=ONR_BASIS_OCC_MEDIAN,
+                                    unit=UNIT_CAD_YR, url=ONR_EMPLOYER_URL, section=ONR_SECTION_WAGE,
+                                    label=ONR_WAGE_LABEL)))
+    else:
+        problems.append(ONR_PROBLEM_WAGE)
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def on_experience_reqs(stream_txt: str) -> ReqsOut:
+    """申请人工作经验(TEER 0-3,两档并行,同雇主同岗位在职时长)。"""
+    rows: list = []
+    problems: list = []
+    base = ONR_EXP_BASE_RE.search(stream_txt)
+    base_v = None
+    if base:
+        base_v = word_or_digit(base.group(1))
+    if base and base_v is not None:
+        rows.append(to_on_req(ReqIn(factor=FACTOR_EXPERIENCE, value=base_v, unit=UNIT_MONTHS,
+                                    basis=ONR_BASIS_EMPLOYER_TENURE, applies_teer=ONR_TEER_03,
+                                    section=ONR_SECTION_EXP, label=fold_ws(base.group(0)).strip())))
+    else:
+        problems.append(ONR_PROBLEM_EXP_BASE)
+    grad = ONR_EXP_GRAD_RE.search(stream_txt)
+    grad_v = None
+    if grad:
+        grad_v = word_or_digit(grad.group(1))
+    if grad and grad_v is not None:
+        rows.append(to_on_req(ReqIn(factor=FACTOR_EXPERIENCE, value=grad_v, unit=UNIT_MONTHS,
+                                    basis=ONR_BASIS_EMPLOYER_TENURE, applies_teer=ONR_TEER_03,
+                                    applies_condition=ONR_COND_RECENT_GRAD,
+                                    section=ONR_SECTION_EXP, label=fold_ws(grad.group(0)).strip())))
+    else:
+        problems.append(ONR_PROBLEM_EXP_GRAD)
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def on_employer_reqs(emp_txt: str) -> ReqsOut:
+    """雇主侧:经营年限 / 营业额三档 / 雇员数两档。"""
+    rows: list = []
+    problems: list = []
+    years = ONR_EMP_YEARS_RE.search(emp_txt)
+    if years and years.group(1).lower() in WORD_N:
+        rows.append(to_on_req(ReqIn(subject=REQ_SUBJECT_EMPLOYER, factor=FACTOR_EMP_YEARS,
+                                    value=WORD_N[years.group(1).lower()], unit=UNIT_YEARS,
+                                    url=ONR_EMPLOYER_URL, section=ONR_SECTION_EMP_GENERAL,
+                                    label=ONR_EMP_YEARS_LABEL_TPL.format(word=years.group(1)))))
+    else:
+        problems.append(ONR_PROBLEM_EMP_YEARS)
+    for area, pat, where in ((AREA_GTA, ONR_REV_GTA_RE, ONR_REV_GTA_WHERE),
+                             (AREA_ON_LISTED, ONR_REV_LISTED_RE, ONR_REV_LISTED_WHERE),
+                             (AREA_ON_OTHER, ONR_REV_OTHER_RE, ONR_REV_OTHER_WHERE)):
+        mm = pat.search(emp_txt)
+        if not mm:
+            problems.append(ONR_PROBLEM_REV_TPL.format(area=area))
+            continue
+        rows.append(to_on_req(ReqIn(subject=REQ_SUBJECT_EMPLOYER, factor=FACTOR_EMP_REVENUE,
+                                    value=int(mm.group(1).replace(COMMA, EMPTY_JOIN)),
+                                    unit=UNIT_CAD_YR, applies_area=area, url=ONR_EMPLOYER_URL,
+                                    section=ONR_SECTION_EMP_REVENUE,
+                                    label=ONR_EMP_REVENUE_LABEL_TPL.format(val=mm.group(1), where=where))))
+    staff = ONR_STAFF_RE.findall(emp_txt)
+    for where, n in staff:
+        area = AREA_OUTSIDE_GTA
+        side = BCR_OUTSIDE_WORD
+        if where.lower() == ONR_STAFF_IN_WORD:
+            area = AREA_GTA
+            side = BCR_INSIDE_WORD
+        rows.append(to_on_req(ReqIn(subject=REQ_SUBJECT_EMPLOYER, factor=FACTOR_EMP_STAFF, value=int(n),
+                                    unit=UNIT_EMPLOYEES, applies_area=area, url=ONR_EMPLOYER_URL,
+                                    section=ONR_SECTION_EMP_STAFF,
+                                    label=ONR_EMP_STAFF_LABEL_TPL.format(n=n, where=side))))
+    if len(staff) != ONR_STAFF_ROWS:
+        problems.append(ONR_PROBLEM_STAFF_TPL.format(n=len(staff)))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def area_value_map(x: AreaMapIn) -> dict:
+    """按 factor 挑出 {区域: 阈值}(档位合理性自校用)。"""
+    out: dict = {}
+    for r in x.reqs:
+        if r[K_FACTOR] == x.factor:
+            out[r[K_APPLIES_AREA]] = r[K_VALUE]
+    return out
+
+
+def on_tier_problems(reqs: list) -> list:
+    """档位合理性:营业额必须 GTA > 指定普查区 > 其余;雇员数 GTA > 外(读反了会把门槛说低)。"""
+    problems: list = []
+    rv = area_value_map(AreaMapIn(reqs=reqs, factor=FACTOR_EMP_REVENUE))
+    if len(rv) == ONR_REV_ROWS and not rv[AREA_GTA] > rv[AREA_ON_LISTED] > rv[AREA_ON_OTHER]:
+        problems.append(ONR_PROBLEM_REV_ORDER_TPL.format(rv=rv))
+    sv = area_value_map(AreaMapIn(reqs=reqs, factor=FACTOR_EMP_STAFF))
+    if len(sv) == ONR_STAFF_ROWS and not sv[AREA_GTA] > sv[AREA_OUTSIDE_GTA]:
+        problems.append(ONR_PROBLEM_STAFF_ORDER_TPL.format(sv=sv))
+    return problems
+
+
+def build_on_req() -> None:
+    """ON 门槛入口:通道页(申请人侧)+ 雇主指南页(雇主侧)两页各抓一遍。"""
+    stream_txt = page_text(PageTextIn(url=ON_WORKFORCE_URL, timeout_s=ONR_TIMEOUT_S,
+                                      drop_junk=False, main_only=True))
+    emp_txt = page_text(PageTextIn(url=ONR_EMPLOYER_URL, timeout_s=ONR_TIMEOUT_S,
+                                   drop_junk=False, main_only=True))
+    reqs: list = []
+    problems: list = []
+    for part in (on_language_reqs(stream_txt), on_wage_reqs(emp_txt),
+                 on_experience_reqs(stream_txt), on_employer_reqs(emp_txt)):
+        reqs += part.rows
+        problems += part.problems
+    problems += on_tier_problems(reqs)
+    if problems:
+        fail_zh(problems)
+    OUT_ON_REQ.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_ON_REQ, payload={
+        K_PROVINCE: PROV_ON, K_PROGRAM: PROGRAM_PNP,
+        K_SOURCE: ONR_SOURCE,
+        K_URL: ON_WORKFORCE_URL, K_PAGE_URL: ONR_EMPLOYER_URL,
+        K_GUIDE_EFFECTIVE: "", K_FETCHED: today_iso(),
+        K_REQUIREMENTS: reqs,
+    }, indent=INDENT_2))
+    say(ONR_PRINT_DONE_TPL.format(path=OUT_ON_REQ, n=len(reqs)))
+    say_factor_counts(FactorCountsIn(reqs=reqs, order=ONR_FACTOR_ORDER, tpl=PRINT_FACTOR15_TPL))
+
+
+# =========================================================================
+# 14. ON EOI 分值表(E12-09 第三个省;官方页印全了 scoring factors)
+# =========================================================================
+
+
+def max_points(rows: list) -> int:
+    """一组档位里的最高分;空组返回 0(等价 max(..., default=0),负分档也照实返回)。"""
+    best = None
+    for r in rows:
+        if best is None or r[K_POINTS] > best:
+            best = r[K_POINTS]
+    if best is None:
+        return 0
+    return best
+
+
+def sum_points(rows: list) -> int:
+    """一组档位的分值之和。"""
+    total = 0
+    for r in rows:
+        total += r[K_POINTS]
+    return total
+
+
+def points_list(rows: list) -> list:
+    """一组档位的分值清单(自校报数用)。"""
+    out: list = []
+    for r in rows:
+        out.append(r[K_POINTS])
+    return out
+
+
+def on_clean_label(label: str) -> str:
+    """去掉行首残留的连接词/标点;官方把 NOC、TEER、EOI 做成了链接,拍平后会粘在标签前后。"""
+    s = fold_ws(label).strip(ONP_CLEAN_STRIP)
+    return ONP_CLEAN_HEAD_RE.sub(EMPTY_JOIN, s).strip()
+
+
+def on_points_marks(body: str) -> list:
+    """各节的起点(按在正文中出现的位置排序),节的范围 = 本节起点 → 下一节起点。"""
+    marks: list = []
+    for key, pat, group in ONP_SECTIONS:
+        m = pat.search(body)
+        if m:
+            marks.append((m.start(), m.end(), key, group))
+    marks.sort()
+    return marks
+
+
+def on_points_rows(chunk: str) -> list:
+    """一节里的档位行:先定位每个「— N points」,标签取它前面那段文字里最后一个句子。"""
+    rows: list = []
+    cursor = 0
+    for m in ONP_POINTS_RE.finditer(chunk):
+        label = on_clean_label(ONP_SENTENCE_RE.split(chunk[cursor:m.start()])[-1])
+        cursor = m.end()
+        if label:
+            rows.append({K_LABEL: label, K_POINTS: int(m.group(1))})
+    return rows
+
+
+def on_points_chunk(x: OnChunkIn) -> str:
+    """一节的正文(安省经验那节要切掉第二套阶梯 —— 替代口径,不是加项)。"""
+    chunk = x.body[x.head_end:x.end]
+    if x.key == ONP_EXP_KEY:
+        cut = ONP_EXP_ALT_RE.search(chunk)
+        if cut:
+            return chunk[:cut.start()]
+    return chunk
+
+
+def on_points_problems(factors: dict) -> list:
+    """自校:11 个因素少一个、或某个因素的档位分数不是递减 / 出现异常大的分值。"""
+    problems: list = []
+    missing: list = []
+    for key, _pat, _group in ONP_SECTIONS:
+        if key not in factors:
+            missing.append(key)
+    if missing:
+        problems.append(ONP_PROBLEM_MISSING_PREFIX + LIST_JOIN_SEP.join(missing))
+    for key, f in factors.items():
+        pts = points_list(f[K_ROWS])
+        if pts != sorted(pts, reverse=True):
+            problems.append(ONP_PROBLEM_ORDER_TPL.format(key=key, pts=pts))
+        for p in pts:
+            if p > ONP_POINTS_SANE_MAX:
+                problems.append(ONP_PROBLEM_BIG_TPL.format(key=key, pts=pts))
+                break
+    return problems
+
+
+def build_on_points() -> None:
+    """ON EOI 分值表入口:官方页 scoring factors 段逐节解析 + 逐节自校。"""
+    txt = page_text(PageTextIn(url=ON_WORKFORCE_URL, timeout_s=ONR_TIMEOUT_S,
+                               drop_junk=False, main_only=True))
+    start = txt.find(ONP_SCORING_ANCHOR)
+    if start < 0:
+        say(ONP_PRINT_NO_SECTION)
+        sys.exit(1)
+    body = txt[start:]
+    marks = on_points_marks(body)
+    factors: dict = {}
+    problems: list = []
+    for i, mark in enumerate(marks):
+        pos, head_end, key, group = mark
+        end = len(body)
+        if i + 1 < len(marks):
+            end = marks[i + 1][0]
+        rows = on_points_rows(on_points_chunk(OnChunkIn(body=body, head_end=head_end, end=end, key=key)))
+        if not rows:
+            problems.append(ONP_PROBLEM_EMPTY_TPL.format(key=key))
+            continue
+        factors[key] = {K_GROUP: group, K_ROWS: rows, K_BONUS: [], K_MAX: max_points(rows)}
+    problems += on_points_problems(factors)
+    if problems:
+        fail_zh(problems)
+    OUT_ON_POINTS.parent.mkdir(parents=True, exist_ok=True)
+    total = 0
+    for f in factors.values():
+        total += f[K_MAX]
+    paths.write_json(paths.WriteJsonIn(path=OUT_ON_POINTS, payload={
+        K_PROVINCE: PROV_ON,
+        K_SYSTEM: ONP_SYSTEM,
+        K_MAX_TOTAL: None, K_PASS_MARK: None,
+        K_SOURCE: ONP_SOURCE,
+        K_URL: ON_WORKFORCE_URL, K_PAGE_URL: ONP_OINP_URL,
+        K_GUIDE_EFFECTIVE: "", K_FETCHED: today_iso(),
+        K_GROUP_MAX: {}, K_FACTORS: factors,
+    }, indent=INDENT_2))
+    say(ONP_PRINT_DONE_TPL.format(path=OUT_ON_POINTS, n=len(factors), total=total))
+    for key, f in factors.items():
+        say(ONP_PRINT_FACTOR_TPL.format(key=key, group=f[K_GROUP], rows=len(f[K_ROWS]), max_n=f[K_MAX]))
+
+
+# =========================================================================
+# 15. BC SIRS 分值表(200 分制;指南 PDF 逐表取 + 逐节自校)
+# =========================================================================
+
+
+def clean_cell(c: object) -> str:
+    """PDF 表格一格 → 去换行去首尾空白的文本(空格返回空串)。"""
+    return (c or "").replace(LINE_JOIN_SEP, TEXT_JOIN_SEP).strip()
+
+
+def nonempty_cells(row: list) -> list:
+    """PDF 稀疏格一行里的非空格。"""
+    out: list = []
+    for c in row:
+        v = clean_cell(c)
+        if v:
+            out.append(v)
+    return out
+
+
+def cells_of(row: list) -> CellsOut:
+    """一行 → (标签, 分值)。PDF 表格是稀疏格,取第一个非空格作标签、最后一个纯数字作分值。"""
+    vals = nonempty_cells(row)
+    if not vals:
+        return CellsOut(label="", points=None)
+    label = vals[0]
+    pts = None
+    for v in reversed(vals):
+        if SIRS_INT_CELL_RE.fullmatch(v):
+            pts = int(v)
+            break
+    if pts is not None and label == str(pts) and len(vals) > 1:
+        label = vals[0]
+    return CellsOut(label=fold_ws(label), points=pts)
+
+
+def is_designation_head(head: str) -> bool:
+    """对照表里「新起一条」的判据:Any Trade / 冒号结尾 / 第一格里带 NOC 码。"""
+    if SIRS_ANY_TRADE_RE.match(head):
+        return True
+    if head.endswith(SIRS_COLON):
+        return True
+    return SIRS_HEAD_NOC_RE.search(head) is not None
+
+
+def designation_rows(entries: list) -> list:
+    """把攒好的条目折成对外行(机构文字全空的条目丢掉)。"""
+    out: list = []
+    for e in entries:
+        joined = TEXT_JOIN_SEP.join(e[K_DESIGNATION])
+        if joined.strip():
+            out.append({K_OCCUPATION: e[K_OCCUPATION], K_NOC: e[K_NOC],
+                        K_DESIGNATION: fold_ws(joined).strip()})
+    return out
+
+
+def parse_bc_designations(doc: object) -> list:
+    """官方「Occupation → Eligible Professional Designations in B.C.」对照表(第 55 页)。
+
+    表格是稀疏格且**跨行折行**:职业名、NOC 码、认证机构常落在相邻三行。
+    规则:第一格以「:」结尾或写着 Any Trade = 新起一条;行内出现 NOC 码就挂到当前这条;
+    最后一格是机构文字,逐行拼接。
+    """
+    for page in doc:
+        if SIRS_DESIG_ANCHOR not in page.get_text():
+            continue
+        for tb in page.find_tables().tables:
+            entries: list = []
+            cur = None
+            for row in tb.extract():
+                row_cells = nonempty_cells(row)
+                if not row_cells or row_cells[0].lower().startswith(SIRS_OCC_HEAD_WORD):
+                    continue
+                head = row_cells[0]
+                if is_designation_head(head):
+                    cur = {K_OCCUPATION: SIRS_HEAD_TRIM_RE.sub(EMPTY_JOIN, head).strip(SIRS_HEAD_STRIP_COLON).strip(),
+                           K_NOC: "", K_DESIGNATION: []}
+                    entries.append(cur)
+                if cur is None:
+                    continue
+                m = SIRS_NOC_RE.search(TEXT_JOIN_SEP.join(row_cells))
+                if m:
+                    cur[K_NOC] = m.group(1)
+                tail = row_cells[-1]
+                if tail is not head and not SIRS_NOC_CELL_RE.fullmatch(tail) and not tail.endswith(SIRS_COLON):
+                    cur[K_DESIGNATION].append(tail)
+            out = designation_rows(entries)
+            if len(out) >= SIRS_DESIG_MIN:
+                return out
+    return []
+
+
+def sirs_row_pattern(sec: str) -> object:
+    """某一节的档位行判据。"""
+    if sec == SIRS_SECTION_WORK:
+        return SIRS_WORK_ROW_RE
+    if sec == SIRS_SECTION_EDUCATION:
+        return SIRS_EDU_ROW_RE
+    if sec == SIRS_SECTION_LANGUAGE:
+        return SIRS_LANG_ROW_RE
+    return SIRS_AREA_ROW_RE
+
+
+def has_work_row(rows: list) -> bool:
+    """这张表里有没有 work 节的档位行(表头认不出时的兜底判据)。"""
+    for cell in rows:
+        if SIRS_WORK_ROW_RE.match(cell.label):
+            return True
+    return False
+
+
+def sirs_section_of(x: SirsSectionIn) -> str:
+    """一张表属于哪一节(表头判词优先,认不出再看有没有 work 档位行)。"""
+    if SIRS_LANG_HEAD_KW in x.head:
+        return SIRS_SECTION_LANGUAGE
+    if x.head.startswith(SIRS_EDU_HEAD_KW) or SIRS_EDU_HEAD_KW2 in x.head:
+        return SIRS_SECTION_EDUCATION
+    if SIRS_AREA_HEAD_KW in x.head:
+        return SIRS_SECTION_AREA
+    if has_work_row(x.rows):
+        return SIRS_SECTION_WORK
+    return ""
+
+
+def sirs_bonus_sum(bonus: list) -> int:
+    """加分求和时,xor 组只取组内最大(官方「…, or」= 二选一)。"""
+    total = 0
+    prev = None
+    for x in bonus:
+        if x.get(K_XOR_WITH_PREV) and prev is not None:
+            total += max(0, x[K_POINTS] - prev)
+            prev = max(prev, x[K_POINTS])
+        else:
+            total += x[K_POINTS]
+            prev = x[K_POINTS]
+    return total
+
+
+def collect_sirs_tables(x: SirsCollectIn) -> None:
+    """一张表的档位/加分就地并进 buckets(work/education/language/area 四节)。"""
+    rows: list = []
+    for extracted in x.table.extract():
+        rows.append(cells_of(extracted))
+    head_parts: list = []
+    for cell in rows[:2]:
+        head_parts.append(cell.label)
+    sec = sirs_section_of(SirsSectionIn(head=TEXT_JOIN_SEP.join(head_parts).lower(), rows=rows))
+    if not sec:
+        return
+    pat = sirs_row_pattern(sec)
+    in_bonus = False
+    for cell in rows:
+        if not cell.label:
+            continue
+        if SIRS_ADDITIONAL_RE.match(cell.label):
+            in_bonus = True
+            continue
+        if SIRS_SKIP_ROW_RE.match(cell.label) or cell.points is None:
+            continue
+        bucket = K_ROWS
+        if in_bonus or not pat.match(cell.label):
+            bucket = K_BONUS
+        item = {K_LABEL: cell.label, K_POINTS: cell.points}
+        if bucket == K_BONUS and x.buckets[sec][K_BONUS] \
+                and SIRS_XOR_TAIL_RE.search(x.buckets[sec][K_BONUS][-1][K_LABEL]):
+            item[K_XOR_WITH_PREV] = True
+        x.buckets[sec][bucket].append(item)
+
+
+def sirs_designation_scope(designations: list) -> dict:
+    """执业资格那一行加分的适用范围(NOC → 机构 + 任何技工工种)。"""
+    nocs: dict = {}
+    any_trade = ""
+    for d in designations:
+        if d[K_NOC]:
+            nocs[d[K_NOC]] = d[K_DESIGNATION]
+        elif not any_trade:
+            any_trade = d[K_DESIGNATION]
+    return {K_NOCS: nocs, K_ANY_TRADE: any_trade}
+
+
+def sirs_factors(buckets: dict) -> dict:
+    """四节 + wage 规则 → factors 块(键序即文件契约:max 在前)。"""
+    factors: dict = {}
+    for sec, official in ((SIRS_SECTION_WORK, SIRS_WORK_MAX), (SIRS_SECTION_EDUCATION, SIRS_EDU_MAX),
+                          (SIRS_SECTION_LANGUAGE, SIRS_LANG_MAX)):
+        factors[sec] = {K_MAX: official, K_ROWS: buckets[sec][K_ROWS], K_BONUS: buckets[sec][K_BONUS]}
+    factors[SIRS_SECTION_WAGE] = {K_MAX: SIRS_WAGE_MAX, K_RULE: SIRS_WAGE_RULE,
+                                  K_FLOOR_AT: SIRS_WAGE_FLOOR, K_CAP_AT: SIRS_WAGE_CAP}
+    factors[SIRS_SECTION_AREA] = {K_MAX: SIRS_AREA_MAX, K_ROWS: buckets[SIRS_SECTION_AREA][K_ROWS],
+                                  K_BONUS: buckets[SIRS_SECTION_AREA][K_BONUS]}
+    return factors
+
+
+def sirs_problems(x: SirsProblemsIn) -> list:
+    """逐节自校:每节「最高可得」必须等于官方写的 Max。"""
+    problems: list = []
+    if not x.eff:
+        problems.append(PROBLEM_NO_EFFECTIVE)
+    if len(x.designations) < SIRS_DESIG_MIN:
+        problems.append(SIRS_PROBLEM_DESIG_TPL.format(n=len(x.designations)))
+    for key in SIRS_SECTION_ORDER:
+        f = x.factors[key]
+        best = max_points(f[K_ROWS]) + sirs_bonus_sum(f[K_BONUS])
+        if not f[K_ROWS]:
+            problems.append(SIRS_PROBLEM_EMPTY_TPL.format(key=key))
+        elif best != f[K_MAX]:
+            problems.append(SIRS_PROBLEM_MAX_TPL.format(key=key, best=best, official=f[K_MAX],
+                                                        rows=points_list(f[K_ROWS]),
+                                                        bonus=points_list(f[K_BONUS])))
+    return problems
+
+
+def build_bc_sirs() -> None:
+    """BC SIRS 分值表入口:指南 PDF 逐表取 → 四节 + wage 规则 + 执业资格对照表。"""
+    with fitz.open(stream=fetch_bytes(FetchHtmlIn(url=BC_GUIDE_URL, timeout_s=BCR_TIMEOUT_S)),
+                   filetype=FILETYPE_PDF) as doc:
+        eff = ""
+        m = SIRS_EFFECTIVE_RE.search(doc[SIRS_PREFACE_PAGE].get_text())
+        if m:
+            eff = iso_of_long_date(m.group(1))
+        buckets: dict = {}
+        for key in SIRS_SECTION_ORDER:
+            buckets[key] = {K_ROWS: [], K_BONUS: []}
+        for page in doc:
+            try:
+                tables = page.find_tables().tables
+            except Exception as e:  # noqa: BLE001
+                err(page, e)
+                continue
+            for tb in tables:
+                collect_sirs_tables(SirsCollectIn(table=tb, buckets=buckets))
+        designations = parse_bc_designations(doc)
+    for item in buckets[SIRS_SECTION_EDUCATION][K_BONUS]:
+        if SIRS_DESIGNATION_RE.search(item[K_LABEL]):
+            item[K_APPLIES_TO] = sirs_designation_scope(designations)
+    factors = sirs_factors(buckets)
+    problems = sirs_problems(SirsProblemsIn(eff=eff, designations=designations, factors=factors))
+    if problems:
+        fail_zh(problems)
+    OUT_BC_SIRS.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_BC_SIRS, payload={
+        K_PROVINCE: PROV_BC, K_SYSTEM: SIRS_SYSTEM, K_MAX_TOTAL: SIRS_MAX_TOTAL,
+        K_SOURCE: BC_GUIDE_SOURCE, K_URL: BC_GUIDE_URL, K_PAGE_URL: BC_WORKERS_PAGE_URL,
+        K_GUIDE_EFFECTIVE: eff, K_FETCHED: today_iso(), K_FACTORS: factors,
+    }, indent=INDENT_2))
+    say(SIRS_PRINT_DONE_TPL.format(path=OUT_BC_SIRS, eff=eff))
+    for key in SIRS_SECTION_ORDER:
+        say(SIRS_PRINT_SECTION_TPL.format(key=key, rows=len(factors[key][K_ROWS]),
+                                          bonus=len(factors[key][K_BONUS])))
+    with_noc = 0
+    for d in designations:
+        if d[K_NOC]:
+            with_noc += 1
+    say(SIRS_PRINT_DESIG_TPL.format(n=len(designations), with_noc=with_noc))
+
+
+# =========================================================================
+# 16. SK 分值表(SINP Points Grid,110 分制,60 分申请门槛)
+# =========================================================================
+
+
+def sk_first_line(td: object) -> str:
+    """一格的标签 = 第一行文字。官方把整段解释塞在同一格的 <ul> 里,解释不进标签。"""
+    txt = td.get_text(LINE_JOIN_SEP, strip=True)
+    return fold_ws(txt.split(LINE_JOIN_SEP)[0]).strip()
+
+
+def sk_section_hit(label: str) -> tuple | None:
+    """这一行是不是分节标题(顺序即匹配顺序,一行命中就切换)。"""
+    for pat, hit in SKP_SECTIONS:
+        if pat.match(label):
+            return hit
+    return None
+
+
+def sk_points_table(soup: object) -> object:
+    """认表:含「FACTOR I」的那张表就是 Points Grid。"""
+    for tb in soup.find_all(TAG_TABLE):
+        if SKP_TABLE_ANCHOR in tb.get_text():
+            return tb
+    return None
+
+
+def sk_row_points(tds: list) -> int | None:
+    """一行的分值(最后一格是纯数字才算)。"""
+    raw = ""
+    if len(tds) > 1:
+        raw = tds[-1].get_text(strip=True)
+    if SKP_INT_CELL_RE.fullmatch(raw):
+        return int(raw)
+    return None
+
+
+def sk_group_detail(x: SkGroupIn) -> str:
+    """某个分组内逐因素的「键=最高分」明细(自校报数用)。"""
+    parts: list = []
+    for key, f in x.factors.items():
+        if f[K_GROUP] == x.group:
+            parts.append(SKP_DETAIL_TPL.format(key=key, max_n=f[K_MAX]))
+    return LIST_JOIN_SEP.join(parts)
+
+
+def sk_group_sum(x: SkGroupIn) -> int:
+    """组内各因素最高分相加(组 I 的算法)。"""
+    total = 0
+    for f in x.factors.values():
+        if f[K_GROUP] == x.group:
+            total += f[K_MAX]
+    return total
+
+
+def sk_group_best(x: SkGroupIn) -> int:
+    """组内最大的那一块(组 II 官方是按子类二选一)。"""
+    best = 0
+    for f in x.factors.values():
+        if f[K_GROUP] == x.group and f[K_MAX] > best:
+            best = f[K_MAX]
+    return best
+
+
+def sk_collect_factors(table: object) -> SkPointsOut:
+    """走一遍 Points Grid:分节切换 + 档位入桶 + 官方 MAXIMUM 行。"""
+    factors: dict = {}
+    official: dict = {}
+    group = ""
+    factor = ""
+    rows: list = []
+    if table:
+        rows = table.find_all(TAG_TR)
+    for tr in rows:
+        tds = tr.find_all(TAG_TD)
+        if not tds:
+            continue
+        label = sk_first_line(tds[0])
+        pts = sk_row_points(tds)
+        mm = SKP_MAX_ROW_RE.match(label)
+        if mm and pts is not None:
+            official[mm.group(1).upper()] = pts
+            continue
+        hit = sk_section_hit(label)
+        if hit:
+            kind, val = hit
+            if kind == SKP_KIND_GROUP:
+                group = val
+                factor = ""
+            else:
+                factor = val
+                if factor:
+                    factors.setdefault(factor, {K_GROUP: group, K_ROWS: [], K_BONUS: []})
+            continue
+        if pts is None or not factor:
+            continue
+        bucket = K_ROWS
+        if factor in SKP_ADDITIVE:
+            bucket = K_BONUS
+        factors[factor][bucket].append({K_LABEL: label, K_POINTS: pts})
+    return SkPointsOut(factors=factors, official=official)
+
+
+def sk_head_problems(x: SkHeadIn) -> list:
+    """自校第一关:官方门槛分与三个 MAXIMUM 行都得在。"""
+    problems: list = []
+    if x.pass_mark is None:
+        problems.append(SKP_PROBLEM_NO_PASS)
+    for g in (SKP_GROUP_I, SKP_GROUP_II):
+        if x.group_max.get(g) is None:
+            problems.append(SKP_PROBLEM_NO_GROUP_TPL.format(g=g))
+    if x.max_total is None:
+        problems.append(SKP_PROBLEM_NO_TOTAL)
+    return problems
+
+
+def sk_math_problems(x: SkMathIn) -> list:
+    """自校第二关:分节最高可得 vs 官方印在表里的 MAXIMUM 行。"""
+    problems: list = []
+    best_i = sk_group_sum(SkGroupIn(factors=x.factors, group=SKP_GROUP_I))
+    best_ii = sk_group_best(SkGroupIn(factors=x.factors, group=SKP_GROUP_II))
+    if best_i != x.group_max[SKP_GROUP_I]:
+        problems.append(SKP_PROBLEM_GROUP_I_TPL.format(
+            best=best_i, official=x.group_max[SKP_GROUP_I],
+            detail=sk_group_detail(SkGroupIn(factors=x.factors, group=SKP_GROUP_I))))
+    if best_ii != x.group_max[SKP_GROUP_II]:
+        problems.append(SKP_PROBLEM_GROUP_II_TPL.format(
+            best=best_ii, official=x.group_max[SKP_GROUP_II],
+            detail=sk_group_detail(SkGroupIn(factors=x.factors, group=SKP_GROUP_II))))
+    if x.group_max[SKP_GROUP_I] + x.group_max[SKP_GROUP_II] != x.max_total:
+        problems.append(SKP_PROBLEM_SUM_TPL.format(i=x.group_max[SKP_GROUP_I],
+                                                   ii=x.group_max[SKP_GROUP_II], total=x.max_total))
+    for key, f in x.factors.items():
+        if not f[K_ROWS] and not f[K_BONUS]:
+            problems.append(SKP_PROBLEM_EMPTY_TPL.format(key=key))
+    return problems
+
+
+def build_sk_points() -> None:
+    """SK 分值表入口:官方 Points Grid 全表 + 官方自印的 MAXIMUM 行当自校硬闸。"""
+    html = fetch_html(FetchHtmlIn(url=SKP_PAGE_URL, timeout_s=SKP_TIMEOUT_S))
+    soup = BeautifulSoup(html, PARSER_HTML)
+    grid_text = fold_ws(soup.get_text(TEXT_JOIN_SEP, strip=True))
+    m = SKP_PASS_RE.search(grid_text)
+    pass_mark = None
+    if m:
+        pass_mark = int(m.group(1))
+    parsed = sk_collect_factors(sk_points_table(soup))
+    factors = parsed.factors
+    for f in factors.values():
+        f[K_MAX] = max_points(f[K_ROWS]) + sum_points(f[K_BONUS])
+    group_max = {SKP_GROUP_I: parsed.official.get(SKP_GROUP_I),
+                 SKP_GROUP_II: parsed.official.get(SKP_GROUP_II)}
+    max_total = parsed.official.get(SKP_TOTAL_KEY)
+    problems = sk_head_problems(SkHeadIn(pass_mark=pass_mark, group_max=group_max, max_total=max_total))
+    if problems:
+        fail_zh(problems)
+    problems = sk_math_problems(SkMathIn(factors=factors, group_max=group_max, max_total=max_total))
+    if problems:
+        fail_zh(problems)
+    OUT_SK_POINTS.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_SK_POINTS, payload={
+        K_PROVINCE: PROV_SK, K_SYSTEM: SKP_SYSTEM, K_MAX_TOTAL: max_total, K_PASS_MARK: pass_mark,
+        K_SOURCE: SKP_SOURCE, K_URL: SKP_PAGE_URL, K_PAGE_URL: SKP_SINP_URL,
+        K_GUIDE_EFFECTIVE: "", K_FETCHED: today_iso(),
+        K_GROUP_MAX: group_max, K_FACTORS: factors,
+    }, indent=INDENT_2))
+    say(SKP_PRINT_DONE_TPL.format(path=OUT_SK_POINTS, total=max_total, pass_mark=pass_mark))
+    for key, f in factors.items():
+        say(SKP_PRINT_FACTOR_TPL.format(key=key, group=f[K_GROUP], rows=len(f[K_ROWS]),
+                                        bonus=len(f[K_BONUS]), max_n=f[K_MAX]))
+
+
+# =========================================================================
+# 17. AB 门槛(AAIP AOS:语言按 TEER + 33102 单档、经验两「或」款、雇主侧三条)
+# =========================================================================
+
+
+def to_ab_req(x: ReqIn) -> dict:
+    """AB 门槛一行(base 十五格 + factor;**只有条件行才多带 appliesCondition** ——
+    键集不齐是既有文件事实,收编时逐格照抄,不擅自补齐)。"""
+    teer = x.applies_teer
+    if teer is None:
+        teer = []
+    row = {
+        K_STREAM: x.stream or AB_AOS_STREAM,
+        K_SUBJECT: x.subject or REQ_SUBJECT_APPLICANT,
+        K_OP: x.op or OP_GE,
+        K_VALUE: x.value,
+        K_VALUE_TEXT: x.value_text,
+        K_UNIT: x.unit,
+        K_APPLIES_TEER: teer,
+        K_APPLIES_NOC: x.applies_noc,
+        K_EXCLUDES_NOC: x.excludes_noc,
+        K_APPLIES_AREA: x.applies_area,
+        K_FAMILY_SIZE: x.family_size,
+        K_BASIS: x.basis,
+        K_LABEL: x.label,
+        K_SECTION: x.section,
+        K_URL: x.url or AB_AOS_URL,
+        K_FACTOR: x.factor,
+    }
+    if x.applies_condition:
+        row[K_APPLIES_CONDITION] = x.applies_condition
+    return row
+
+
+def ab_language_reqs(txt: str) -> ReqsOut:
+    """语言:按 TEER 两档 + NOC 33102 单独一档(appliesNoc → 引擎自动盖过通用档)。"""
+    rows: list = []
+    problems: list = []
+    tiers = ABR_LANG_TIER_RE.findall(txt)
+    for band, clb in tiers:
+        rows.append(to_ab_req(ReqIn(factor=FACTOR_LANGUAGE, value=int(clb), unit=UNIT_CLB,
+                                    applies_teer=teers(band), section=ABR_SECTION_LANG_TABLE,
+                                    label=ABR_LANG_TIER_LABEL_TPL.format(clb=clb, band=band))))
+    if len(tiers) != ABR_LANG_TIERS:
+        problems.append(ABR_PROBLEM_LANG_TIERS_TPL.format(n=len(tiers)))
+    else:
+        hi = int(tiers[0][1])
+        lo = int(tiers[1][1])
+        if not hi > lo:
+            problems.append(ABR_PROBLEM_LANG_ORDER_TPL.format(hi=hi, lo=lo))
+    m = ABR_LANG_NOC_RE.search(txt)
+    if m:
+        rows.append(to_ab_req(ReqIn(factor=FACTOR_LANGUAGE, value=int(m.group(3)), unit=UNIT_CLB,
+                                    applies_noc=m.group(1), section=ABR_SECTION_LANG,
+                                    label=ABR_LANG_NOC_LABEL_TPL.format(clb=m.group(3), noc=m.group(1),
+                                                                        name=m.group(2)))))
+    else:
+        problems.append(ABR_PROBLEM_LANG_NOC)
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def ab_experience_reqs(txt: str) -> ReqsOut:
+    """经验:两条「或」款各落一行(#320)——通用 24 个月 + 阿省境内 12 个月的条件行。"""
+    rows: list = []
+    problems: list = []
+    any_m = ABR_EXP_ANY_RE.search(txt)
+    ab_m = ABR_EXP_AB_RE.search(txt)
+    if any_m and ab_m:
+        label = ABR_EXP_LABEL_TPL.format(months=any_m.group(1), window=any_m.group(2),
+                                         ab_months=ab_m.group(1), ab_window=ab_m.group(2))
+        rows.append(to_ab_req(ReqIn(factor=FACTOR_EXPERIENCE, value=int(any_m.group(1)), unit=UNIT_MONTHS,
+                                    section=ABR_SECTION_EXP, label=label)))
+        rows.append(to_ab_req(ReqIn(factor=FACTOR_EXPERIENCE, value=int(ab_m.group(1)), unit=UNIT_MONTHS,
+                                    applies_condition=ABR_COND_LOCAL,
+                                    basis=ABR_BASIS_WINDOW_TPL.format(n=ab_m.group(2)),
+                                    section=ABR_SECTION_EXP, label=label)))
+    else:
+        problems.append(ABR_PROBLEM_EXP)
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def ab_employer_reqs(emp_txt: str) -> ReqsOut:
+    """雇主侧(B2)三条:经营年限 + 营业额 + 全职雇员数,全 province-wide 不分区。"""
+    rows: list = []
+    problems: list = []
+    m_years = ABR_EMP_YEARS_RE.search(emp_txt)
+    m_rev = ABR_EMP_REVENUE_RE.search(emp_txt)
+    m_staff = ABR_EMP_STAFF_RE.search(emp_txt)
+    for m, what in ((m_years, ABR_WHAT_EMP_YEARS), (m_rev, ABR_WHAT_EMP_REVENUE),
+                    (m_staff, ABR_WHAT_EMP_STAFF)):
+        if not m:
+            problems.append(ABR_PROBLEM_EMPLOYER_TPL.format(what=what))
+    if m_years and m_rev and m_staff:
+        rows.append(to_ab_req(ReqIn(stream=ABR_EMP_STREAM, subject=REQ_SUBJECT_EMPLOYER,
+                                    factor=FACTOR_EMP_YEARS, value=int(m_years.group(1)),
+                                    unit=UNIT_YEARS, url=ABR_EMPLOYER_URL, section=ABR_SECTION_EMPLOYER,
+                                    label=ABR_EMP_YEARS_LABEL_TPL.format(years=m_years.group(1)))))
+        rows.append(to_ab_req(ReqIn(stream=ABR_EMP_STREAM, subject=REQ_SUBJECT_EMPLOYER,
+                                    factor=FACTOR_EMP_REVENUE,
+                                    value=int(m_rev.group(1).replace(COMMA, EMPTY_JOIN)),
+                                    unit=UNIT_CAD_YR, url=ABR_EMPLOYER_URL, section=ABR_SECTION_EMPLOYER,
+                                    label=ABR_EMP_REVENUE_LABEL_TPL.format(val=m_rev.group(1)))))
+        rows.append(to_ab_req(ReqIn(stream=ABR_EMP_STREAM, subject=REQ_SUBJECT_EMPLOYER,
+                                    factor=FACTOR_EMP_STAFF, value=int(m_staff.group(1)),
+                                    unit=UNIT_EMPLOYEES, url=ABR_EMPLOYER_URL,
+                                    section=ABR_SECTION_EMPLOYER,
+                                    label=ABR_EMP_STAFF_LABEL_TPL.format(n=m_staff.group(1)))))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def build_ab_req() -> None:
+    """AB 门槛入口:AOS 资格页(申请人侧)+ job-offer-and-employer 页(雇主侧)。"""
+    say(PRINT_OUT_TPL.format(path=OUT_AB_REQ))
+    txt = page_text(PageTextIn(url=AB_AOS_URL, timeout_s=ABR_TIMEOUT_S,
+                               drop_junk=False, main_only=True))
+    reqs: list = []
+    problems: list = []
+    for part in (ab_language_reqs(txt), ab_experience_reqs(txt)):
+        reqs += part.rows
+        problems += part.problems
+    emp_txt = page_text(PageTextIn(url=ABR_EMPLOYER_URL, timeout_s=ABR_TIMEOUT_S,
+                                   drop_junk=False, main_only=True))
+    employer = ab_employer_reqs(emp_txt)
+    reqs += employer.rows
+    problems += employer.problems
+    if problems:
+        fail_zh(problems)
+    OUT_AB_REQ.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_AB_REQ, payload={
+        K_PROVINCE: PROV_AB, K_PROGRAM: PROGRAM_PNP,
+        K_SOURCE: ABR_SOURCE,
+        K_URL: AB_AOS_URL, K_PAGE_URL: AB_AOS_URL,
+        K_GUIDE_EFFECTIVE: "",
+        K_FETCHED: today_iso(),
+        K_REQUIREMENTS: reqs,
+    }, indent=INDENT_2))
+    say(ONR_PRINT_DONE_TPL.format(path=OUT_AB_REQ, n=len(reqs)))
+    say_factor_counts(FactorCountsIn(reqs=reqs, order=ABR_FACTOR_ORDER, tpl=PRINT_FACTOR_TPL))
+
+
+# =========================================================================
+# 18. SK 门槛(SINP 主线两页交叉核对 + 雇主注册闸门)
+# =========================================================================
+
+
+def to_sk_req(x: ReqIn) -> dict:
+    """SK 门槛一行(base 十五格 + factor)。"""
+    teer = x.applies_teer
+    if teer is None:
+        teer = []
+    return {
+        K_STREAM: x.stream or SKR_STREAM,
+        K_SUBJECT: x.subject or REQ_SUBJECT_APPLICANT,
+        K_OP: x.op or OP_GE,
+        K_VALUE: x.value,
+        K_VALUE_TEXT: x.value_text,
+        K_UNIT: x.unit,
+        K_APPLIES_TEER: teer,
+        K_APPLIES_NOC: x.applies_noc,
+        K_EXCLUDES_NOC: x.excludes_noc,
+        K_APPLIES_AREA: x.applies_area,
+        K_FAMILY_SIZE: x.family_size,
+        K_BASIS: x.basis,
+        K_LABEL: x.label,
+        K_SECTION: x.section,
+        K_URL: x.url or SKR_EO_URL,
+        K_FACTOR: x.factor,
+    }
+
+
+def mark_of(ok: object) -> str:
+    """两页交叉核对的「这页有没有」记号。"""
+    if ok:
+        return MARK_OK
+    return MARK_BAD
+
+
+def sk_language_reqs(x: SkPagesIn) -> ReqsOut:
+    """语言:两页都写 CLB 4,对不上就是读错了(不取其中一页了事)。"""
+    rows: list = []
+    problems: list = []
+    a = SKR_LANG_RE.search(x.eo)
+    b = SKR_LANG_RE.search(x.oid)
+    if not a or not b:
+        problems.append(SKR_PROBLEM_LANG_TPL.format(eo=mark_of(a), oid=mark_of(b)))
+    elif a.group(1) != b.group(1):
+        problems.append(SKR_PROBLEM_LANG_DIFF_TPL.format(eo=a.group(1), oid=b.group(1)))
+    else:
+        rows.append(to_sk_req(ReqIn(factor=FACTOR_LANGUAGE, value=int(a.group(1)), unit=UNIT_CLB,
+                                    section=SKR_SECTION_LANG,
+                                    label=SKR_LANG_LABEL_TPL.format(clb=a.group(1)))))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def sk_experience_reqs(x: SkPagesIn) -> ReqsOut:
+    """经验:两页都是「近 10 年内 1 年本职业全职经验」。"""
+    rows: list = []
+    problems: list = []
+    e = SKR_EXP_EO_RE.search(x.eo)
+    o = SKR_EXP_OID_RE.search(x.oid)
+    if not e or not o:
+        problems.append(SKR_PROBLEM_EXP_TPL.format(eo=mark_of(e), oid=mark_of(o)))
+    elif e.group(1).lower() not in WORD_N or o.group(1).lower() not in WORD_N:
+        problems.append(SKR_PROBLEM_EXP_WORD_TPL.format(eo=e.group(1), oid=o.group(1)))
+    elif WORD_N[e.group(1).lower()] != WORD_N[o.group(1).lower()] or e.group(2) != o.group(3):
+        problems.append(SKR_PROBLEM_EXP_DIFF_TPL.format(eo_years=e.group(1), eo_window=e.group(2),
+                                                        oid_years=o.group(1), oid_window=o.group(3)))
+    else:
+        yrs = WORD_N[e.group(1).lower()]
+        rows.append(to_sk_req(ReqIn(factor=FACTOR_EXPERIENCE, value=yrs * MBR_MONTHS_PER_YEAR,
+                                    unit=UNIT_MONTHS, section=SKR_SECTION_EXP,
+                                    label=SKR_EXP_LABEL_TPL.format(word=e.group(1).title(),
+                                                                   hours=o.group(2),
+                                                                   window=e.group(2)))))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def sk_employer_reqs(emp_txt: str) -> ReqsOut:
+    """雇主侧(B2):经营年限,全体 SINP 雇主的注册闸门,不分通道不分区。"""
+    rows: list = []
+    problems: list = []
+    m = SKR_EMP_YEARS_RE.search(emp_txt)
+    if not m:
+        problems.append(SKR_PROBLEM_EMPLOYER)
+    else:
+        months = int(m.group(1))
+        rows.append(to_sk_req(ReqIn(stream=SKR_EMP_STREAM, subject=REQ_SUBJECT_EMPLOYER,
+                                    url=SKR_EMPLOYER_URL, factor=FACTOR_EMP_YEARS, value=months,
+                                    unit=UNIT_MONTHS, section=SKR_SECTION_EMPLOYER,
+                                    label=SKR_EMP_LABEL_TPL.format(months=months))))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def build_sk_req() -> None:
+    """SK 门槛入口:EO / OID 两页交叉核对 + 雇主注册闸门页。"""
+    say(PRINT_OUT_TPL.format(path=OUT_SK_REQ))
+    pages = SkPagesIn(eo=page_text(PageTextIn(url=SKR_EO_URL, timeout_s=SKR_TIMEOUT_S,
+                                              drop_junk=False, main_only=True)),
+                      oid=page_text(PageTextIn(url=SKR_OID_URL, timeout_s=SKR_TIMEOUT_S,
+                                               drop_junk=False, main_only=True)))
+    reqs: list = []
+    problems: list = []
+    for part in (sk_language_reqs(pages), sk_experience_reqs(pages)):
+        reqs += part.rows
+        problems += part.problems
+    emp_txt = page_text(PageTextIn(url=SKR_EMPLOYER_URL, timeout_s=SKR_TIMEOUT_S,
+                                   drop_junk=False, main_only=True))
+    employer = sk_employer_reqs(emp_txt)
+    reqs += employer.rows
+    problems += employer.problems
+    if problems:
+        fail_zh(problems)
+    OUT_SK_REQ.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_SK_REQ, payload={
+        K_PROVINCE: PROV_SK, K_PROGRAM: PROGRAM_PNP,
+        K_SOURCE: SKR_SOURCE,
+        K_URL: SKR_EO_URL, K_PAGE_URL: SKR_OID_URL,
+        K_GUIDE_EFFECTIVE: "",
+        K_FETCHED: today_iso(),
+        K_REQUIREMENTS: reqs,
+    }, indent=INDENT_2))
+    say(ONR_PRINT_DONE_TPL.format(path=OUT_SK_REQ, n=len(reqs)))
+    say_factor_counts(FactorCountsIn(reqs=reqs, order=SKR_FACTOR_ORDER, tpl=PRINT_FACTOR_TPL))
+
+
+# =========================================================================
+# 19. MB 门槛(逐职业 Minimum CLB + SWO 下限 + SWM 在职时长 + EDI 雇主年限)
+# =========================================================================
+
+
+def to_mb_req(x: ReqIn) -> dict:
+    """MB 门槛一行(base 十六格 + factor)。"""
+    teer = x.applies_teer
+    if teer is None:
+        teer = []
+    return {
+        K_STREAM: x.stream or MBR_IDOL_STREAM,
+        K_SUBJECT: x.subject or REQ_SUBJECT_APPLICANT,
+        K_OP: x.op or OP_GE,
+        K_VALUE: x.value,
+        K_VALUE_TEXT: x.value_text,
+        K_UNIT: x.unit,
+        K_APPLIES_TEER: teer,
+        K_APPLIES_NOC: x.applies_noc,
+        K_EXCLUDES_NOC: x.excludes_noc,
+        K_APPLIES_AREA: x.applies_area,
+        K_APPLIES_CONDITION: x.applies_condition,
+        K_FAMILY_SIZE: x.family_size,
+        K_BASIS: x.basis,
+        K_LABEL: x.label,
+        K_SECTION: x.section,
+        K_URL: x.url or MB_IDOL_URL,
+        K_FACTOR: x.factor,
+    }
+
+
+def word_n_of(tok: str) -> int | None:
+    """英文数词或阿拉伯数字 → 数字;认不出返回 None。"""
+    n = WORD_N.get(tok.lower())
+    if n is not None:
+        return n
+    if tok.isdigit():
+        return int(tok)
+    return None
+
+
+def swm_tenure_row(x: TenureIn) -> TenureOut:
+    """SWM 在职时长一行(原 build_swm 内嵌函数 tenure 出户;闭包的 rows/problems 收进出参)。"""
+    n = word_n_of(x.m.group(2))
+    if n is None:
+        return TenureOut(row=None, problem=MBR_PROBLEM_TENURE_WORD_TPL.format(word=x.m.group(2)))
+    stream = MBR_SWM_STREAM
+    if x.cond:
+        stream = MBR_SWM_GRAD_STREAM_TPL.format(stream=MBR_SWM_STREAM)
+    row = to_mb_req(ReqIn(stream=stream, url=MBR_SWM_URL, factor=FACTOR_EXPERIENCE,
+                          value=n * x.months_per_unit, unit=UNIT_MONTHS,
+                          basis=MBR_BASIS_TENURE, applies_condition=x.cond, section=MBR_SWM_SECTION,
+                          label=fold_ws(x.m.group(1)).strip()))
+    return TenureOut(row=row, problem="")
+
+
+def collect_tenure(x: CollectTenureIn) -> None:
+    """一档在职时长的解析结果并进 rows/problems(两档共用)。"""
+    out = swm_tenure_row(TenureIn(m=x.m, months_per_unit=x.months_per_unit, cond=x.cond))
+    if out.row is not None:
+        x.rows.append(out.row)
+    if out.problem:
+        x.problems.append(out.problem)
+
+
+def build_mb_swm() -> SwmOut:
+    """SWM 在职时长两档 + 不计入时段 → (门槛行, 问题)。读 crawl 缓存,不发请求。
+
+    basis='employerTenure':量的是「在这家雇主连续全职多久」,不是同职业总经验(见段首红线)。
+    """
+    problems: list = []
+    rows: list = []
+    text = page_text(PageTextIn(url=MBR_SWM_URL, timeout_s=MBR_TIMEOUT_S,
+                                drop_junk=True, main_only=False, cache_first=True))
+    base = MBR_SWM_BASE_RE.search(text)
+    if base:
+        collect_tenure(CollectTenureIn(m=base, months_per_unit=MBR_MONTHS_PER_MONTH, cond="",
+                                       rows=rows, problems=problems))
+    else:
+        problems.append(MBR_PROBLEM_SWM_BASE)
+    grad = MBR_SWM_GRAD_RE.search(text)
+    if grad:
+        collect_tenure(CollectTenureIn(m=grad, months_per_unit=MBR_MONTHS_PER_YEAR,
+                                       cond=MBR_COND_GRAD, rows=rows, problems=problems))
+    else:
+        problems.append(MBR_PROBLEM_SWM_GRAD)
+    excl = MBR_SWM_EXCL_RE.search(text)
+    if excl:
+        rows.append(to_mb_req(ReqIn(stream=MBR_SWM_STREAM, url=MBR_SWM_URL,
+                                    factor=FACTOR_EXPERIENCE_EXCLUDED, op=OP_NONE,
+                                    basis=MBR_BASIS_TENURE, section=MBR_SWM_SECTION,
+                                    label=fold_ws(excl.group(1)).strip())))
+    else:
+        problems.append(MBR_PROBLEM_SWM_EXCL)
+    return SwmOut(rows=rows, problems=problems)
+
+
+def mb_idol_occupations(md: str) -> MbIdolOut:
+    """IDOL 表 → {noc: (teer, minCLB, title)};同一职业两张清单给了不同档 → 取高的并计数。"""
+    occ: dict = {}
+    conflicts = 0
+    for ln in md.splitlines():
+        r = MBR_IDOL_ROW_RE.match(ln.strip())
+        if not r:
+            continue
+        noc = r.group(1)
+        clb = int(r.group(4))
+        prev = occ.get(noc)
+        if prev and prev[1] != clb:
+            conflicts += 1
+            if clb <= prev[1]:
+                continue
+        occ[noc] = (int(r.group(2)), clb, fold_ws(r.group(3)).strip())
+    return MbIdolOut(occ=occ, conflicts=conflicts)
+
+
+def mb_swo_reqs() -> ReqsOut:
+    """SWO 资格页:TEER 4/5 的硬性语言下限。"""
+    rows: list = []
+    problems: list = []
+    m = MBR_SWO_FLOOR_RE.search(page_text(PageTextIn(url=MBR_SWO_URL, timeout_s=MBR_TIMEOUT_S,
+                                                     drop_junk=True, main_only=False, cache_first=True)))
+    if m:
+        rows.append(to_mb_req(ReqIn(stream=MBR_SWO_STREAM, url=MBR_SWO_URL, factor=FACTOR_LANGUAGE,
+                                    value=int(m.group(2)), unit=UNIT_CLB, applies_teer=teers(m.group(1)),
+                                    section=MBR_SWO_SECTION,
+                                    label=MBR_SWO_LABEL_TPL.format(band=m.group(1), clb=m.group(2)))))
+    else:
+        problems.append(MBR_PROBLEM_SWO)
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def mb_edi_reqs() -> ReqsOut:
+    """雇主侧(B2-4):EDI 经营年限(全省一档,无雇员数/营业额数字门槛)。"""
+    rows: list = []
+    problems: list = []
+    edi = MBR_EDI_YEARS_RE.search(page_text(PageTextIn(url=MBR_EDI_URL, timeout_s=MBR_TIMEOUT_S,
+                                                       drop_junk=True, main_only=False, cache_first=True)))
+    if not edi:
+        problems.append(MBR_PROBLEM_EDI)
+        return ReqsOut(rows=rows, problems=problems)
+    years = word_n_of(edi.group(1))
+    if years is None:
+        problems.append(MBR_PROBLEM_EDI_WORD_TPL.format(word=edi.group(1)))
+        return ReqsOut(rows=rows, problems=problems)
+    rows.append(to_mb_req(ReqIn(stream=MBR_EDI_STREAM, subject=REQ_SUBJECT_EMPLOYER,
+                                factor=FACTOR_EMP_YEARS, value=years, unit=UNIT_YEARS, url=MBR_EDI_URL,
+                                section=MBR_EDI_SECTION,
+                                label=MBR_EDI_LABEL_TPL.format(word=edi.group(1)))))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def build_mb_req() -> None:
+    """MB 门槛入口:SWM 在职时长 + SWO 语言下限 + 逐职业 Minimum CLB + EDI 雇主年限。"""
+    say(PRINT_OUT_TPL.format(path=OUT_MB_REQ))
+    reqs: list = []
+    problems: list = []
+    swm = build_mb_swm()
+    reqs += swm.rows
+    problems += swm.problems
+    swo = mb_swo_reqs()
+    reqs += swo.rows
+    problems += swo.problems
+    html = fetch_html(FetchHtmlIn(url=MB_IDOL_URL, timeout_s=MBR_TIMEOUT_S))
+    idol = mb_idol_occupations(convert_md(ConvertIn(html=html, url=MB_IDOL_URL, selector=None, removes=())))
+    if len(idol.occ) < MBR_MIN_OCC:
+        problems.append(MBR_PROBLEM_IDOL_TPL.format(n=len(idol.occ), min_n=MBR_MIN_OCC))
+    for noc, vals in sorted(idol.occ.items()):
+        teer, clb, title = vals
+        reqs.append(to_mb_req(ReqIn(factor=FACTOR_LANGUAGE, value=clb, unit=UNIT_CLB, applies_noc=noc,
+                                    applies_teer=[teer], section=MBR_IDOL_SECTION,
+                                    label=MBR_IDOL_LABEL_TPL.format(clb=clb, noc=noc, title=title,
+                                                                    teer=teer))))
+    edi = mb_edi_reqs()
+    reqs += edi.rows
+    problems += edi.problems
+    if problems:
+        fail_zh(problems)
+    OUT_MB_REQ.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_MB_REQ, payload={
+        K_PROVINCE: PROV_MB, K_PROGRAM: PROGRAM_PNP,
+        K_SOURCE: MBR_SOURCE,
+        K_URL: MB_IDOL_URL, K_PAGE_URL: MBR_SWO_URL,
+        K_GUIDE_EFFECTIVE: "",
+        K_FETCHED: today_iso(),
+        K_REQUIREMENTS: reqs,
+    }, indent=INDENT_2))
+    say(MBR_PRINT_DONE_TPL.format(path=OUT_MB_REQ, n=len(reqs), occ=len(idol.occ), swm=len(swm.rows)))
+    if idol.conflicts:
+        say(MBR_PRINT_CONFLICT_TPL.format(n=idol.conflicts))
+
+
+def build_mb_req_swm() -> None:
+    """只重算 SWM 在职时长(读 crawl 缓存,不联网);其余门槛原样保留。
+
+    原 `--swm-only` 命令行开关(2026-08-30 批B 随一参令退役)→ 门的 TOOLS 里点名这一步。
+    """
+    say(PRINT_OUT_TPL.format(path=OUT_MB_REQ))
+    swm = build_mb_swm()
+    if swm.problems:
+        fail_zh(swm.problems)
+    table = json.loads(OUT_MB_REQ.read_text(encoding=ENC_UTF8))
+    kept: list = []
+    for r in table.get(K_REQUIREMENTS, []):
+        if not str(r.get(K_STREAM, "")).startswith(MBR_SWM_STREAM):
+            kept.append(r)
+    table[K_REQUIREMENTS] = kept + swm.rows
+    paths.write_json(paths.WriteJsonIn(path=OUT_MB_REQ, payload=table, indent=INDENT_2))
+    say(MBR_PRINT_SWM_ONLY_TPL.format(path=OUT_MB_REQ, swm=len(swm.rows), kept=len(kept)))
+    for r in swm.rows:
+        say(MBR_PRINT_SWM_ROW_TPL.format(factor=r[K_FACTOR], op=r[K_OP], value=r[K_VALUE],
+                                         unit=r[K_UNIT], cond=r[K_APPLIES_CONDITION] or MBR_DASH))
+
+
+# =========================================================================
+# 20. NS 门槛(NSNP Skilled Worker;指南 PDF 链接从通道页现取)
+# =========================================================================
+
+
+def to_ns_req(x: ReqIn) -> dict:
+    """NS 门槛一行(base 十四格 + factor;**本省表不带 url 格**,逐格照抄既有文件)。"""
+    teer = x.applies_teer
+    if teer is None:
+        teer = []
+    return {
+        K_STREAM: x.stream or NSR_STREAM,
+        K_SUBJECT: x.subject or REQ_SUBJECT_APPLICANT,
+        K_OP: x.op or OP_GE,
+        K_VALUE: x.value,
+        K_VALUE_TEXT: x.value_text,
+        K_UNIT: x.unit,
+        K_APPLIES_TEER: teer,
+        K_APPLIES_NOC: x.applies_noc,
+        K_EXCLUDES_NOC: x.excludes_noc,
+        K_APPLIES_AREA: x.applies_area,
+        K_FAMILY_SIZE: x.family_size,
+        K_BASIS: x.basis,
+        K_LABEL: x.label,
+        K_SECTION: x.section,
+        K_FACTOR: x.factor,
+    }
+
+
+def is_ns_guide_link(href: str) -> bool:
+    """通道页上哪个链接是 Skilled Worker 英文申请指南 PDF(变更说明那份不要)。"""
+    low = href.lower()
+    if not low.endswith(NSR_PDF_SUFFIX):
+        return False
+    if NSR_PDF_KW_STREAM not in low or NSR_PDF_KW_LANG not in low:
+        return False
+    return NSR_PDF_KW_SKIP not in low
+
+
+def ns_guide_url() -> str:
+    """从通道页现取官方申请指南 PDF(目录名带月份,写死会抓到旧版)。"""
+    soup = BeautifulSoup(fetch_html(FetchHtmlIn(url=NS_MAIN_URL, timeout_s=NSR_TIMEOUT_S)), PARSER_HTML)
+    for a in soup.find_all(TAG_A, href=True):
+        href = a[ATTR_HREF]
+        if is_ns_guide_link(href):
+            if href.startswith(NSR_HTTP_PREFIX):
+                return href
+            return NSR_HOST + href
+    return ""
+
+
+def ns_language_reqs(txt: str) -> ReqsOut:
+    """语言两档(TEER 0-3 / TEER 4-5;读反了会把门槛说低)。"""
+    rows: list = []
+    problems: list = []
+    hi = NSR_LANG_HI_RE.search(txt)
+    lo = NSR_LANG_LO_RE.search(txt)
+    if hi:
+        rows.append(to_ns_req(ReqIn(factor=FACTOR_LANGUAGE, value=int(hi.group(2)), unit=UNIT_CLB,
+                                    applies_teer=teers(hi.group(1)), section=NSR_SECTION_LANG_HI,
+                                    label=NSR_LANG_HI_LABEL_TPL.format(clb=hi.group(2), band=hi.group(1)))))
+    else:
+        problems.append(NSR_PROBLEM_LANG_HI)
+    if lo:
+        rows.append(to_ns_req(ReqIn(factor=FACTOR_LANGUAGE, value=int(lo.group(2)), unit=UNIT_CLB,
+                                    applies_teer=teers(lo.group(1)), section=NSR_SECTION_LANG_LO,
+                                    label=NSR_LANG_LO_LABEL_TPL.format(clb=lo.group(2), band=lo.group(1)))))
+    else:
+        problems.append(NSR_PROBLEM_LANG_LO)
+    if hi and lo and not int(hi.group(2)) > int(lo.group(2)):
+        problems.append(NSR_PROBLEM_LANG_ORDER_TPL.format(hi=hi.group(2), lo=lo.group(2)))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def ns_experience_reqs(txt: str) -> ReqsOut:
+    """经验:近 5 年内 12 个整月且 ≥1,560 小时,须与所获 offer 相关的带薪工作。"""
+    rows: list = []
+    problems: list = []
+    e = NSR_EXP_RE.search(txt)
+    if e:
+        rows.append(to_ns_req(ReqIn(factor=FACTOR_EXPERIENCE, value=int(e.group(1)), unit=UNIT_MONTHS,
+                                    section=NSR_SECTION_EXP,
+                                    label=NSR_EXP_LABEL_TPL.format(months=e.group(1), years=e.group(2),
+                                                                   hours=e.group(3)))))
+    else:
+        problems.append(PROBLEM_EXP_MISSING)
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def ns_employer_reqs(txt: str) -> ReqsOut:
+    """雇主侧:在新斯科舍经营满 2 年(本站没有雇主事实,报告里只作雇主线索用)。"""
+    rows: list = []
+    problems: list = []
+    y = NSR_EMP_YEARS_RE.search(txt)
+    if y:
+        rows.append(to_ns_req(ReqIn(subject=REQ_SUBJECT_EMPLOYER, factor=FACTOR_EMP_YEARS,
+                                    value=int(y.group(1)), unit=UNIT_YEARS, section=NSR_SECTION_EMPLOYER,
+                                    label=NSR_EMP_LABEL_TPL.format(years=y.group(1)))))
+    else:
+        problems.append(PROBLEM_EMP_YEARS_MISSING)
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def build_ns_req() -> None:
+    """NS 门槛入口:通道页现取指南 PDF → 语言两档 + 经验 + 雇主经营年限。"""
+    say(PRINT_OUT_TPL.format(path=OUT_NS_REQ))
+    url = ns_guide_url()
+    if not url:
+        say(NSR_PRINT_NO_GUIDE)
+        sys.exit(1)
+    say(NSR_PRINT_GUIDE_TPL.format(url=url))
+    raw = pdf_text(fetch_bytes(FetchHtmlIn(url=url, timeout_s=NSR_PDF_TIMEOUT_S)))
+    eff_m = NSR_EFFECTIVE_RE.search(raw)
+    txt = fold_ws(NSR_FURNITURE_RE.sub(TEXT_JOIN_SEP, fold_ws(raw))).strip()
+    reqs: list = []
+    problems: list = []
+    for part in (ns_language_reqs(txt), ns_experience_reqs(txt), ns_employer_reqs(txt)):
+        reqs += part.rows
+        problems += part.problems
+    if not eff_m:
+        problems.append(NSR_PROBLEM_NO_VERSION)
+    if problems:
+        fail_zh(problems)
+    OUT_NS_REQ.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_NS_REQ, payload={
+        K_PROVINCE: PROV_NS, K_PROGRAM: PROGRAM_PNP,
+        K_SOURCE: NSR_SOURCE,
+        K_URL: url, K_PAGE_URL: NS_MAIN_URL,
+        K_GUIDE_EFFECTIVE: eff_m.group(1), K_FETCHED: today_iso(),
+        K_REQUIREMENTS: reqs,
+    }, indent=INDENT_2))
+    say(NSR_PRINT_DONE_TPL.format(path=OUT_NS_REQ, version=eff_m.group(1), n=len(reqs)))
+    say_factor_counts(FactorCountsIn(reqs=reqs, order=NSR_FACTOR_ORDER, tpl=PRINT_FACTOR_TPL))
+
+
+# =========================================================================
+# 21. NB 门槛(三份 pathway 指南 PDF 互校)
+# =========================================================================
+
+
+def to_nb_req(x: ReqIn) -> dict:
+    """NB 门槛一行(base 十五格 + factor)。"""
+    teer = x.applies_teer
+    if teer is None:
+        teer = []
+    return {
+        K_STREAM: x.stream or NBR_STREAM,
+        K_SUBJECT: x.subject or REQ_SUBJECT_APPLICANT,
+        K_OP: x.op or OP_GE,
+        K_VALUE: x.value,
+        K_VALUE_TEXT: x.value_text,
+        K_UNIT: x.unit,
+        K_APPLIES_TEER: teer,
+        K_APPLIES_NOC: x.applies_noc,
+        K_EXCLUDES_NOC: x.excludes_noc,
+        K_APPLIES_AREA: x.applies_area,
+        K_FAMILY_SIZE: x.family_size,
+        K_BASIS: x.basis,
+        K_LABEL: x.label,
+        K_SECTION: x.section,
+        K_URL: x.url or NBR_PAGE_URL,
+        K_FACTOR: x.factor,
+    }
+
+
+def nb_guide_urls() -> dict:
+    """从通道页现取三份指南 PDF(key = NBR_PATHWAYS 的官方 pathway 名)。
+
+    相对链接按**响应的最终 URL** 拼(urljoin),不写死主机名 —— 上一版把 www2.gnb.ca 焊死在这里,
+    官网换到 www.gnb.ca 之后即便找到链接也会拼出 404。下次再换址,这里不用再改。
+    """
+    resp = httpx.get(NBR_PAGE_URL, headers={HDR_UA: BROWSER_UA}, follow_redirects=True,
+                     timeout=NBR_TIMEOUT_S)
+    soup = BeautifulSoup(resp.text, PARSER_HTML)
+    found: dict = {}
+    for a in soup.find_all(TAG_A, href=True):
+        href = a[ATTR_HREF]
+        for key, name in NBR_PATHWAYS.items():
+            if key in href.lower():
+                found.setdefault(name, urljoin(str(resp.url), href))
+    return found
+
+
+def group1_or_unknown(m: object) -> str:
+    """正则命中的第一组;没命中给 ?(逐份指南报数用)。"""
+    if m:
+        return m.group(1)
+    return NBR_UNKNOWN
+
+
+def nb_read_guides(urls: dict) -> NbGuidesOut:
+    """逐份指南取 CLB 与版本,并留下 Experience 那份的正文(经验两条只在它里面找)。"""
+    clbs: dict = {}
+    versions: set = set()
+    exp_txt = ""
+    problems: list = []
+    for name, url in urls.items():
+        txt = fold_ws(pdf_text(fetch_bytes(FetchHtmlIn(url=url, timeout_s=NBR_PDF_TIMEOUT_S))))
+        if name == NBR_EXPERIENCE_NAME:
+            exp_txt = txt
+        m = NBR_LANG_RE.search(txt)
+        if m:
+            clbs[name] = int(m.group(1))
+        else:
+            problems.append(NBR_PROBLEM_LANG_TPL.format(name=name))
+        v = NBR_VERSION_RE.search(txt)
+        if v:
+            versions.add(v.group(1))
+        say(NBR_PRINT_PATHWAY_TPL.format(name=name, clb=group1_or_unknown(m),
+                                         version=group1_or_unknown(v)))
+    return NbGuidesOut(clbs=clbs, versions=versions, exp_txt=exp_txt, problems=problems)
+
+
+def build_nb_req() -> None:
+    """NB 门槛入口:三份指南互校语言 + Experience pathway 的在职时长与居住时长。"""
+    say(PRINT_OUT_TPL.format(path=OUT_NB_REQ))
+    urls = nb_guide_urls()
+    missing: list = []
+    for name in NBR_PATHWAYS.values():
+        if name not in urls:
+            missing.append(name)
+    if missing:
+        say(NBR_PRINT_NO_GUIDE_TPL.format(missing=LIST_JOIN_SEP.join(missing)))
+        sys.exit(1)
+    guides = nb_read_guides(urls)
+    problems = guides.problems
+    reqs: list = []
+    if len(set(guides.clbs.values())) > 1:
+        problems.append(NBR_PROBLEM_LANG_DIFF_TPL.format(clbs=guides.clbs))
+    elif guides.clbs:
+        clb = next(iter(guides.clbs.values()))
+        reqs.append(to_nb_req(ReqIn(factor=FACTOR_LANGUAGE, value=clb, unit=UNIT_CLB,
+                                    section=NBR_SECTION_LANG,
+                                    label=NBR_LANG_LABEL_TPL.format(
+                                        clb=clb, pathways=LIST_JOIN_SEP.join(sorted(guides.clbs))))))
+    if not guides.versions:
+        problems.append(NBR_PROBLEM_NO_VERSION)
+    tenure = NBR_EXP_TENURE_RE.search(guides.exp_txt)
+    if tenure:
+        reqs.append(to_nb_req(ReqIn(stream=NBR_EXPERIENCE_STREAM, factor=FACTOR_EXPERIENCE,
+                                    value=int(tenure.group(1)), unit=UNIT_MONTHS,
+                                    basis=MBR_BASIS_TENURE, url=urls[NBR_EXPERIENCE_NAME],
+                                    section=NBR_SECTION_EXP,
+                                    label=fold_ws(tenure.group(0)).strip().capitalize())))
+    else:
+        problems.append(NBR_PROBLEM_TENURE)
+    residence = NBR_RESIDENCE_RE.search(guides.exp_txt)
+    if residence:
+        reqs.append(to_nb_req(ReqIn(stream=NBR_EXPERIENCE_STREAM, factor=FACTOR_RESIDENCE,
+                                    value=int(residence.group(1)), unit=UNIT_MONTHS,
+                                    url=urls[NBR_EXPERIENCE_NAME], section=NBR_SECTION_RESIDENCE,
+                                    label=fold_ws(residence.group(0)).strip())))
+    else:
+        problems.append(NBR_PROBLEM_RESIDENCE)
+    if problems:
+        fail_zh(problems)
+    version = sorted(guides.versions)[-1]
+    OUT_NB_REQ.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_NB_REQ, payload={
+        K_PROVINCE: PROV_NB, K_PROGRAM: PROGRAM_PNP,
+        K_SOURCE: NBR_SOURCE,
+        K_URL: NBR_PAGE_URL, K_PAGE_URL: NBR_PAGE_URL,
+        K_GUIDE_EFFECTIVE: version, K_FETCHED: today_iso(),
+        K_REQUIREMENTS: reqs,
+    }, indent=INDENT_2))
+    say(NBR_PRINT_DONE_TPL.format(path=OUT_NB_REQ, version=version, n=len(reqs)))
+
+
+# =========================================================================
+# 22. PE 门槛(与 §9 同一份官方申请指南 PDF)
+# =========================================================================
+
+
+def to_pe_req(x: ReqIn) -> dict:
+    """PE 门槛一行(base 十五格 + factor)。"""
+    teer = x.applies_teer
+    if teer is None:
+        teer = []
+    return {
+        K_STREAM: x.stream or PER_STREAM,
+        K_SUBJECT: x.subject or REQ_SUBJECT_APPLICANT,
+        K_OP: x.op or OP_GE,
+        K_VALUE: x.value,
+        K_VALUE_TEXT: x.value_text,
+        K_UNIT: x.unit,
+        K_APPLIES_TEER: teer,
+        K_APPLIES_NOC: x.applies_noc,
+        K_EXCLUDES_NOC: x.excludes_noc,
+        K_APPLIES_AREA: x.applies_area,
+        K_FAMILY_SIZE: x.family_size,
+        K_BASIS: x.basis,
+        K_LABEL: x.label,
+        K_SECTION: x.section,
+        K_URL: x.url or PE_GUIDE_URL,
+        K_FACTOR: x.factor,
+    }
+
+
+def pe_language_reqs(txt: str) -> ReqsOut:
+    """语言:四条通道同一个数,取全篇出现的**唯一**值;出现两个不同值说明官方分了档,得人工看。"""
+    rows: list = []
+    problems: list = []
+    langs: set = set()
+    for x in PER_LANG_RE.findall(txt):
+        langs.add(int(x))
+    if not langs:
+        problems.append(PER_PROBLEM_LANG)
+    elif len(langs) > 1:
+        problems.append(PER_PROBLEM_LANG_MULTI_TPL.format(langs=sorted(langs)))
+    else:
+        clb = next(iter(langs))
+        rows.append(to_pe_req(ReqIn(factor=FACTOR_LANGUAGE, value=clb, unit=UNIT_CLB,
+                                    section=PER_SECTION_LANG,
+                                    label=PER_LANG_LABEL_TPL.format(clb=clb))))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def pe_experience_reqs(txt: str) -> ReqsOut:
+    """经验:Skilled Worker 通道 2 年,只挂 TEER 0-3(理由见段首)。"""
+    rows: list = []
+    problems: list = []
+    e = PER_EXP_RE.search(txt)
+    o = PER_EXP_OID_RE.search(txt)
+    if not e or e.group(1).lower() not in WORD_N or e.group(2).lower() not in WORD_N:
+        problems.append(PER_PROBLEM_EXP)
+    elif not o or o.group(1).lower() not in WORD_N:
+        problems.append(PER_PROBLEM_EXP_OID)
+    else:
+        yrs = WORD_N[e.group(1).lower()]
+        window = WORD_N[e.group(2).lower()]
+        rows.append(to_pe_req(ReqIn(stream=PER_SKILLED_STREAM, factor=FACTOR_EXPERIENCE,
+                                    value=yrs * MBR_MONTHS_PER_YEAR, unit=UNIT_MONTHS,
+                                    applies_teer=PER_TEER_03, section=PER_SECTION_EXP,
+                                    label=PER_EXP_LABEL_TPL.format(
+                                        years_word=e.group(1), months=yrs * MBR_MONTHS_PER_YEAR,
+                                        window_word=e.group(2), window=window,
+                                        oid_months=WORD_N[o.group(1).lower()] * MBR_MONTHS_PER_YEAR))))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def pe_employer_reqs(txt: str) -> ReqsOut:
+    """雇主侧(B2):经营年限,Employer Requirements - All Streams 段,全体通道通用。"""
+    rows: list = []
+    problems: list = []
+    m = PER_EMP_YEARS_RE.search(txt)
+    if not m or m.group(1).lower() not in WORD_N:
+        problems.append(PER_PROBLEM_EMPLOYER)
+    else:
+        rows.append(to_pe_req(ReqIn(stream=PER_EMP_STREAM, subject=REQ_SUBJECT_EMPLOYER,
+                                    factor=FACTOR_EMP_YEARS, value=WORD_N[m.group(1).lower()],
+                                    unit=UNIT_YEARS, section=PER_SECTION_EMPLOYER,
+                                    label=PER_EMP_LABEL_TPL.format(word=m.group(1)))))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def build_pe_req() -> None:
+    """PE 门槛入口:官方申请指南 PDF → 语言 + Skilled Worker 经验 + 雇主经营年限。"""
+    say(PRINT_OUT_TPL.format(path=OUT_PE_REQ))
+    txt = fold_ws(pdf_text(fetch_bytes(FetchHtmlIn(url=PE_GUIDE_URL, timeout_s=PE_GUIDE_TIMEOUT_S))))
+    reqs: list = []
+    problems: list = []
+    for part in (pe_language_reqs(txt), pe_experience_reqs(txt), pe_employer_reqs(txt)):
+        reqs += part.rows
+        problems += part.problems
+    eff = PER_EFFECTIVE_RE.search(txt)
+    if not eff:
+        problems.append(PER_PROBLEM_NO_VERSION)
+    if problems:
+        fail_zh(problems)
+    OUT_PE_REQ.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_PE_REQ, payload={
+        K_PROVINCE: PROV_PE, K_PROGRAM: PROGRAM_PNP,
+        K_SOURCE: PER_SOURCE,
+        K_URL: PE_GUIDE_URL, K_PAGE_URL: PE_PAGE_URL,
+        K_GUIDE_EFFECTIVE: eff.group(1), K_FETCHED: today_iso(),
+        K_REQUIREMENTS: reqs,
+    }, indent=INDENT_2))
+    say(NSR_PRINT_DONE_TPL.format(path=OUT_PE_REQ, version=eff.group(1), n=len(reqs)))
+    say_factor_counts(FactorCountsIn(reqs=reqs, order=NSR_FACTOR_ORDER, tpl=PRINT_FACTOR_TPL))
+
+
+# =========================================================================
+# 23. NL 门槛(Skilled Worker 语言两档 + 雇主侧三条 + International Graduate 通道)
+# =========================================================================
+
+
+def to_nl_req(x: ReqIn) -> dict:
+    """NL 门槛一行(base 十五格 + factor)。"""
+    teer = x.applies_teer
+    if teer is None:
+        teer = []
+    return {
+        K_STREAM: x.stream or NLR_STREAM,
+        K_SUBJECT: x.subject or REQ_SUBJECT_APPLICANT,
+        K_OP: x.op or OP_GE,
+        K_VALUE: x.value,
+        K_VALUE_TEXT: x.value_text,
+        K_UNIT: x.unit,
+        K_APPLIES_TEER: teer,
+        K_APPLIES_NOC: x.applies_noc,
+        K_EXCLUDES_NOC: x.excludes_noc,
+        K_APPLIES_AREA: x.applies_area,
+        K_FAMILY_SIZE: x.family_size,
+        K_BASIS: x.basis,
+        K_LABEL: x.label,
+        K_SECTION: x.section,
+        K_URL: x.url or NLR_POLICY_URL,
+        K_FACTOR: x.factor,
+    }
+
+
+def teer_text(band: list) -> str:
+    """TEER 档位清单 → 「0, 1, 2」文本(进 label 用)。"""
+    parts: list = []
+    for t in band:
+        parts.append(str(t))
+    return LIST_JOIN_SEP.join(parts)
+
+
+def nl_language_reqs(txt: str) -> ReqsOut:
+    """Skilled Worker 语言两档:要考的那档 + **算出来的**免考档(官方收窄了这里跟着变)。"""
+    rows: list = []
+    problems: list = []
+    all_m = NLR_ALL_TEERS_RE.search(txt)
+    test_m = NLR_TEST_TEERS_RE.search(txt)
+    clbs: set = set()
+    for x in NLR_CLB_RE.findall(txt):
+        clbs.add(int(x))
+    if not all_m:
+        problems.append(NLR_PROBLEM_NO_ALL_TEERS)
+    if not test_m:
+        problems.append(NLR_PROBLEM_NO_TEST_TEERS)
+    if not clbs:
+        problems.append(NLR_PROBLEM_NO_CLB)
+    elif len(clbs) > 1:
+        problems.append(NLR_PROBLEM_MULTI_CLB_TPL.format(clbs=sorted(clbs)))
+    if all_m and test_m and len(clbs) == 1:
+        clb = next(iter(clbs))
+        need = teers(test_m.group(1))
+        whole = teers(all_m.group(1))
+        exempt: list = []
+        for t in whole:
+            if t not in need:
+                exempt.append(t)
+        if not need or not exempt:
+            problems.append(NLR_PROBLEM_TEER_MATH_TPL.format(whole=whole, need=need))
+        else:
+            rows.append(to_nl_req(ReqIn(factor=FACTOR_LANGUAGE, value=clb, unit=UNIT_CLB,
+                                        applies_teer=need, section=NLR_SECTION_LANG,
+                                        label=NLR_LANG_LABEL_TPL.format(band=test_m.group(1), clb=clb))))
+            rows.append(to_nl_req(ReqIn(factor=FACTOR_LANGUAGE, op=OP_NONE, applies_teer=exempt,
+                                        section=NLR_SECTION_LANG,
+                                        label=NLR_LANG_NONE_LABEL_TPL.format(
+                                            exempt=teer_text(exempt), band=all_m.group(1)))))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def nl_employer_reqs(emp_txt: str) -> ReqsOut:
+    """雇主侧(B2-4):经营年限(全省)+ 本地全职雇员(圣约翰斯区/区外两档)。"""
+    rows: list = []
+    problems: list = []
+    m_years = NLR_EMP_YEARS_RE.search(emp_txt)
+    m_sj = NLR_STAFF_SJ_RE.search(emp_txt)
+    m_out = NLR_STAFF_OUT_RE.search(emp_txt)
+    for m, what in ((m_years, NLR_WHAT_EMP_YEARS), (m_sj, NLR_WHAT_STAFF_SJ),
+                    (m_out, NLR_WHAT_STAFF_OUT)):
+        if not m:
+            problems.append(NLR_PROBLEM_EMPLOYER_TPL.format(what=what))
+    if m_years and m_sj and m_out:
+        rows.append(to_nl_req(ReqIn(stream=NLR_EMP_STREAM, subject=REQ_SUBJECT_EMPLOYER,
+                                    factor=FACTOR_EMP_YEARS, value=int(m_years.group(1)),
+                                    unit=UNIT_YEARS, url=NLR_EMPLOYER_URL,
+                                    section=NLR_SECTION_EMP_YEARS,
+                                    label=NLR_EMP_YEARS_LABEL_TPL.format(years=m_years.group(1)))))
+        rows.append(to_nl_req(ReqIn(stream=NLR_EMP_STREAM, subject=REQ_SUBJECT_EMPLOYER,
+                                    factor=FACTOR_EMP_STAFF, value=int(m_sj.group(1)),
+                                    unit=UNIT_EMPLOYEES, applies_area=AREA_ST_JOHNS,
+                                    url=NLR_EMPLOYER_URL, section=NLR_SECTION_EMP_STAFF,
+                                    label=NLR_STAFF_SJ_LABEL_TPL.format(n=m_sj.group(1)))))
+        rows.append(to_nl_req(ReqIn(stream=NLR_EMP_STREAM, subject=REQ_SUBJECT_EMPLOYER,
+                                    factor=FACTOR_EMP_STAFF, value=int(m_out.group(1)),
+                                    unit=UNIT_EMPLOYEES, applies_area=AREA_REST_NL,
+                                    url=NLR_EMPLOYER_URL, section=NLR_SECTION_EMP_STAFF,
+                                    label=NLR_STAFF_OUT_LABEL_TPL.format(n=m_out.group(1)))))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def nl_ig_reqs(x: NlIgIn) -> ReqsOut:
+    """International Graduate 通道:语言两条 + **本站唯一一条「不设工作经验门槛」的省提名通道**。"""
+    rows: list = []
+    problems: list = []
+    m_pgwp = NLR_IG_PGWP_RE.search(x.ig_txt)
+    m_teer = NLR_IG_TEER_RE.search(x.ig_txt)
+    m_hours = NLR_IG_HOURS_RE.search(x.ig_txt)
+    m_months = NLR_IG_MONTHS_RE.search(x.ig_txt)
+    m_age = NLR_IG_AGE_RE.search(x.ig_txt)
+    m_t4 = NLR_IG_LANG_TEER4_RE.search(x.ig_lang_txt)
+    m_disc = NLR_IG_LANG_DISCRETION_RE.search(x.ig_lang_txt)
+    clbs: set = set()
+    for v in NLR_IG_LANG_CLB_RE.findall(x.ig_lang_txt):
+        clbs.add(int(v))
+    for m, what in ((m_pgwp, NLR_WHAT_IG_PGWP), (m_teer, NLR_WHAT_IG_TEER), (m_hours, NLR_WHAT_IG_HOURS),
+                    (m_months, NLR_WHAT_IG_MONTHS), (m_age, NLR_WHAT_IG_AGE),
+                    (m_t4, NLR_WHAT_IG_TEER4), (m_disc, NLR_WHAT_IG_DISCRETION)):
+        if not m:
+            problems.append(NLR_PROBLEM_IG_TPL.format(what=what))
+    if len(clbs) != 1:
+        problems.append(NLR_PROBLEM_IG_CLB_TPL.format(clbs=sorted(clbs)))
+    if not (m_pgwp and m_teer and m_hours and m_months and m_age and m_t4 and m_disc) or len(clbs) != 1:
+        return ReqsOut(rows=rows, problems=problems)
+    ig_clb = next(iter(clbs))
+    ig_teers = teers(m_teer.group(1))
+    rows.append(to_nl_req(ReqIn(stream=NLR_IG_STREAM, factor=FACTOR_LANGUAGE, value=ig_clb, unit=UNIT_CLB,
+                                applies_teer=NLR_IG_TEER4, url=NLR_IG_LANG_URL,
+                                section=NLR_SECTION_IG_LANG,
+                                label=NLR_IG_LANG_LABEL_TPL.format(clb=ig_clb))))
+    rows.append(to_nl_req(ReqIn(stream=NLR_IG_STREAM, factor=FACTOR_LANGUAGE, op=OP_NONE,
+                                applies_teer=ig_teers, url=NLR_IG_LANG_URL,
+                                section=NLR_SECTION_IG_LANG,
+                                label=NLR_IG_LANG_NONE_LABEL_TPL.format(teers=teer_text(ig_teers)))))
+    if NLR_IG_EXPERIENCE_RE.search(x.ig_txt):
+        problems.append(NLR_PROBLEM_IG_EXPERIENCE)
+        return ReqsOut(rows=rows, problems=problems)
+    all_teers = list(ig_teers)
+    all_teers.append(NLR_IG_TEER4[0])
+    rows.append(to_nl_req(ReqIn(stream=NLR_IG_STREAM, factor=FACTOR_EXPERIENCE, op=OP_NONE,
+                                applies_teer=all_teers, url=NLR_IG_URL, section=NLR_SECTION_IG,
+                                label=NLR_IG_EXP_LABEL_TPL.format(
+                                    pgwp=m_pgwp.group(2), months=m_months.group(1),
+                                    hours=m_hours.group(1), age_from=m_age.group(1),
+                                    age_to=m_age.group(2)))))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def build_nl_req() -> None:
+    """NL 门槛入口:Skilled Worker 语言两档 + 雇主侧三条 + International Graduate 通道。"""
+    say(PRINT_OUT_TPL.format(path=OUT_NL_REQ))
+    txt = page_text(PageTextIn(url=NLR_POLICY_URL, timeout_s=NLR_TIMEOUT_S,
+                               drop_junk=True, main_only=True))
+    reqs: list = []
+    problems: list = []
+    language = nl_language_reqs(txt)
+    reqs += language.rows
+    problems += language.problems
+    emp_txt = page_text(PageTextIn(url=NLR_EMPLOYER_URL, timeout_s=NLR_TIMEOUT_S,
+                                   drop_junk=True, main_only=True))
+    employer = nl_employer_reqs(emp_txt)
+    reqs += employer.rows
+    problems += employer.problems
+    ig = nl_ig_reqs(NlIgIn(
+        ig_txt=page_text(PageTextIn(url=NLR_IG_URL, timeout_s=NLR_TIMEOUT_S,
+                                    drop_junk=True, main_only=True)),
+        ig_lang_txt=page_text(PageTextIn(url=NLR_IG_LANG_URL, timeout_s=NLR_TIMEOUT_S,
+                                         drop_junk=True, main_only=True))))
+    reqs += ig.rows
+    problems += ig.problems
+    if problems:
+        fail_zh(problems)
+    OUT_NL_REQ.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_NL_REQ, payload={
+        K_PROVINCE: PROV_NL, K_PROGRAM: PROGRAM_PNP,
+        K_SOURCE: NLR_SOURCE,
+        K_URL: NLR_POLICY_URL, K_PAGE_URL: NLR_PAGE_URL,
+        K_GUIDE_EFFECTIVE: "",
+        K_FETCHED: today_iso(),
+        K_REQUIREMENTS: reqs,
+    }, indent=INDENT_2))
+    say(ONR_PRINT_DONE_TPL.format(path=OUT_NL_REQ, n=len(reqs)))
+    for r in reqs:
+        say(NLR_PRINT_ROW_TPL.format(teers=r[K_APPLIES_TEER], op=r[K_OP], value=r[K_VALUE]))
+
+
+# =========================================================================
+# 24. SK 运营统计(处理时长 + 配额用量 —— 全国唯一「配额 vs 已用」官方表)
+# =========================================================================
+
+
+def table_rows_of(table: object) -> list:
+    """一张表 → 行矩阵(各统计步共用)。"""
+    rows: list = []
+    for tr in table.find_all(TAG_TR):
+        rows.append(cells(tr))
+    return rows
+
+
+def sk_processing_group(x: SkGroupNameIn) -> str:
+    """一行处理时长归哪一组(按行内容归组,不赌表的出现顺序)。"""
+    if SKS_EPA_KW in x.name:
+        return SKS_GROUP_EPA
+    if SKS_APPLICANT_KW in x.name and SKS_REVIEW_KW in x.head:
+        return SKS_GROUP_SECOND_REVIEW
+    if x.name in SKS_EXPERIENCE_ROWS:
+        return SKS_GROUP_SK_EXPERIENCE
+    return SKS_GROUP_ISW
+
+
+def sk_processing(soup: object) -> SkProcOut:
+    """所有两列表(类别 | N weeks)→ 处理时长清单 + 季度口径。"""
+    processing: list = []
+    quarter = ""
+    for tbl in soup.find_all(TAG_TABLE):
+        rows = table_rows_of(tbl)
+        if not rows or len(rows[0]) != 2:
+            continue
+        q = SKS_QUARTER_RE.search(rows[0][1] or "")
+        if q:
+            quarter = SKS_QUARTER_TPL.format(year=q.group(2), q=q.group(1))
+        for r in rows[1:]:
+            if len(r) != 2:
+                continue
+            w = SKS_WEEKS_RE.search(r[1])
+            weeks = None
+            if w:
+                weeks = int(w.group(1))
+            processing.append({K_GROUP: sk_processing_group(SkGroupNameIn(name=r[0], head=rows[0][0])),
+                               K_CATEGORY: r[0], K_WEEKS: weeks, K_RAW: r[1]})
+    return SkProcOut(processing=processing, quarter=quarter)
+
+
+def sk_allocation(soup: object) -> SkAllocOut:
+    """配额表(表头含 Nominee Sector)→ 逐档配额与 YTD。"""
+    allocation: list = []
+    problems: list = []
+    for tbl in soup.find_all(TAG_TABLE):
+        rows = table_rows_of(tbl)
+        if not rows or SKS_ALLOC_HEAD_KW not in rows[0][0]:
+            continue
+        for r in rows[1:]:
+            if len(r) < SKS_ALLOC_MIN_COLS:
+                continue
+            try:
+                allocation.append({K_SECTOR: r[0],
+                                   K_ALLOCATION: int(r[1].replace(COMMA, EMPTY_JOIN)),
+                                   K_NOMINATIONS_YTD: int(r[2].replace(COMMA, EMPTY_JOIN))})
+            except ValueError:
+                problems.append(SKS_PROBLEM_BAD_ROW_TPL.format(row=r))
+    return SkAllocOut(allocation=allocation, problems=problems)
+
+
+def sk_priority_sectors(soup: object) -> list:
+    """优先行业名单(不设上限的那批)。"""
+    text = soup.get_text(LINE_JOIN_SEP, strip=True).replace(SKS_APOSTROPHE_CURLY, SKS_APOSTROPHE_STRAIGHT)
+    pm = SKS_PRIORITY_RE.search(text)
+    out: list = []
+    if not pm:
+        return out
+    for s in pm.group(2).split(LINE_JOIN_SEP):
+        if s.strip():
+            out.append(s.strip())
+    return out
+
+
+def sk_capped_sectors(text: str) -> list:
+    """受限行业(带百分比与绝对名额)。"""
+    out: list = []
+    for m in SKS_CAPPED_RE.finditer(text):
+        out.append({K_SECTOR: m.group(1).strip(), K_PCT: int(m.group(2)), K_SPOTS: int(m.group(3))})
+    return out
+
+
+def sk_total_row(allocation: list) -> dict | None:
+    """配额表的合计行。"""
+    for a in allocation:
+        if a[K_SECTOR].lower() == SKS_TOTAL_ROW:
+            return a
+    return None
+
+
+def sk_alloc_problems(x: SkAllocCheckIn) -> list:
+    """配额表自校:三档 + Total、分档之和、YTD 不得超配额。"""
+    problems: list = []
+    parts: list = []
+    for a in x.allocation:
+        if a is not x.total:
+            parts.append(a)
+    if not x.total or len(parts) < SKS_ALLOC_MIN_PARTS:
+        problems.append(SKS_PROBLEM_ALLOC_TPL.format(n=len(x.allocation)))
+        return problems
+    part_sum = 0
+    for p in parts:
+        part_sum += p[K_ALLOCATION]
+    if part_sum != x.total[K_ALLOCATION]:
+        problems.append(SKS_PROBLEM_ALLOC_SUM)
+    for a in x.allocation:
+        if a[K_NOMINATIONS_YTD] > a[K_ALLOCATION]:
+            problems.append(SKS_PROBLEM_ALLOC_SWAP)
+            break
+    return problems
+
+
+def count_valid_weeks(processing: list) -> int:
+    """处理时长里有几条真解析到周数。"""
+    n = 0
+    for p in processing:
+        if p[K_WEEKS] is not None:
+            n += 1
+    return n
+
+
+def has_group(x: HasGroupIn) -> bool:
+    """处理时长里有没有某一组。"""
+    for p in x.rows:
+        if p[K_GROUP] == x.group:
+            return True
+    return False
+
+
+def build_sk_stats() -> None:
+    """SK 运营统计入口:处理时长 + 配额三档 + 行业名单,三块任一异常保留旧表 exit 1。"""
+    say(PRINT_OUT_TPL.format(path=OUT_SK_STATS))
+    html = fetch_html(FetchHtmlIn(url=SKS_URL, timeout_s=SKS_TIMEOUT_S))
+    soup = BeautifulSoup(html, PARSER_HTML)
+    text = fold_ws(soup.get_text(TEXT_JOIN_SEP, strip=True))
+    problems: list = []
+    proc = sk_processing(soup)
+    if count_valid_weeks(proc.processing) < SKS_MIN_PROCESSING:
+        problems.append(SKS_PROBLEM_PROCESSING_TPL.format(n=count_valid_weeks(proc.processing)))
+    if not has_group(HasGroupIn(rows=proc.processing, group=SKS_GROUP_EPA)):
+        problems.append(SKS_PROBLEM_NO_EPA)
+    if not proc.quarter:
+        problems.append(SKS_PROBLEM_NO_QUARTER)
+    alloc = sk_allocation(soup)
+    problems += alloc.problems
+    total = sk_total_row(alloc.allocation)
+    problems += sk_alloc_problems(SkAllocCheckIn(allocation=alloc.allocation, total=total))
+    priority = sk_priority_sectors(soup)
+    capped = sk_capped_sectors(text)
+    if len(priority) < SKS_MIN_PRIORITY:
+        problems.append(SKS_PROBLEM_PRIORITY_TPL.format(n=len(priority)))
+    if len(capped) != SKS_CAPPED_ROWS:
+        problems.append(SKS_PROBLEM_CAPPED_TPL.format(n=len(capped)))
+    if problems:
+        fail_zh(problems)
+    OUT_SK_STATS.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_SK_STATS, payload={
+        K_PROVINCE: PROV_SK, K_PROGRAM: PROGRAM_PNP,
+        K_SOURCE: SKS_SOURCE, K_URL: SKS_URL, K_NOTE: SKS_NOTE,
+        K_QUARTER: proc.quarter, K_FETCHED: today_iso(),
+        K_PROCESSING: proc.processing, K_ALLOCATION: alloc.allocation,
+        K_PRIORITY_SECTORS: priority, K_CAPPED_SECTORS: capped,
+    }, indent=INDENT_2))
+    say(SKS_PRINT_DONE_TPL.format(path=OUT_SK_STATS, quarter=proc.quarter, n=len(proc.processing),
+                                  alloc=total[K_ALLOCATION], used=total[K_NOMINATIONS_YTD],
+                                  pct=total[K_NOMINATIONS_YTD] / total[K_ALLOCATION],
+                                  priority=len(priority), capped=len(capped)))
+
+
+# =========================================================================
+# 25. AB 运营统计(配额用量 + EOI 池内人数 + 抽选史 + 积压游标)
+# =========================================================================
+
+
+def num_or_text(s: str) -> object:
+    """'3,425' → 3425;文字格(Less than 10 / Not applicable)原样返回,不硬转。"""
+    stripped = s.replace(COMMA, EMPTY_JOIN).strip() or ABS_FALLBACK_X
+    if ABS_INT_RE.match(stripped):
+        return int(s.replace(COMMA, EMPTY_JOIN))
+    return s
+
+
+def ab_as_of(soup: object) -> str:
+    """页面自带的更新日(h2「2026 summary」上方独立一行日期);取正文里第一个能解析的日期。"""
+    main_el = soup.find(TAG_MAIN)
+    if not main_el:
+        main_el = soup
+    for m in ABS_UPDATED_RE.finditer(main_el.get_text(TEXT_JOIN_SEP, strip=True)[:ABS_SNIFF_LEN]):
+        try:
+            return iso_of_long_date(m.group(1))
+        except ValueError as e:
+            err(m.group(1), e)
+    return ""
+
+
+def ab_section_of(table: object) -> str:
+    """该表属于哪个 stream:取前面最近的标题(官方每节一表)。"""
+    h = table.find_previous(ABS_SECTION_TAGS)
+    if not h:
+        return ""
+    return fold_ws(h.get_text(TEXT_JOIN_SEP, strip=True))
+
+
+def ab_stream_row(x: AbStreamRowIn) -> dict:
+    """逐 stream 表一行(assessingUpTo 是文字格,不转数字)。"""
+    row = {K_STREAM: x.stream}
+    for key, v in zip(ABS_STREAM_KEYS, x.vals):
+        if key == ABS_ASSESSING_KEY:
+            row[key] = v
+        else:
+            row[key] = num_or_text(v)
+    return row
+
+
+def collect_ab_draws(x: AbSectionIn) -> None:
+    """抽选史表逐行入堆。"""
+    for r in x.rows[1:]:
+        if len(r) >= ABS_DRAW_MIN_COLS:
+            x.acc.draws.append({K_DATE: r[0], K_STREAM: r[1], K_MIN_SCORE: num_or_text(r[2]),
+                                K_INVITATIONS: num_or_text(r[3])})
+
+
+def collect_ab_pool(x: AbSectionIn) -> None:
+    """EOI 池表逐行入堆(表内有小节标题行,数字格为空 → 跳过,不存空值)。"""
+    for r in x.rows[1:]:
+        if len(r) >= ABS_POOL_MIN_COLS and r[1].strip():
+            x.acc.eoi_pool.append({K_STREAM: r[0], K_COUNT: num_or_text(r[1])})
+
+
+def collect_ab_summary(x: AbSectionIn) -> None:
+    """总表(2026 summary)四格入堆。"""
+    summary: dict = {}
+    for key, v in zip(ABS_SUMMARY_KEYS, x.rows[1]):
+        summary[key] = num_or_text(v)
+    x.acc.summary = summary
+
+
+def collect_ab_streams(x: AbSectionIn) -> None:
+    """逐 stream 表入堆:单行表(节名=stream)或多行表(首列=pathway 名)。"""
+    has_name_col = ABS_ALLOC_KEY not in x.head[0]
+    for r in x.rows[1:]:
+        vals = r
+        stream = x.section
+        if has_name_col:
+            vals = r[1:]
+            stream = r[0]
+        x.acc.streams.append(ab_stream_row(AbStreamRowIn(stream=stream, vals=vals)))
+
+
+def collect_ab_table(x: AbTableIn) -> None:
+    """一张表按表头归到 draws / eoiPool / summary / streams 四堆之一。"""
+    rows = table_rows_of(x.table)
+    if len(rows) < 2 or not rows[0]:
+        return
+    head: list = []
+    for h in rows[0]:
+        head.append(h.lower())
+    section = ab_section_of(x.table)
+    part = AbSectionIn(rows=rows, head=head, section=section, acc=x.acc)
+    if head[0].startswith(ABS_HEAD_DRAW):
+        collect_ab_draws(part)
+    elif head[0].startswith(ABS_HEAD_STREAM):
+        collect_ab_pool(part)
+    elif ABS_HEAD_ALLOCATION in head[0] and ABS_SUMMARY_KW in section.lower():
+        collect_ab_summary(part)
+    elif ABS_HEAD_ALLOCATION in TEXT_JOIN_SEP.join(head):
+        collect_ab_streams(part)
+
+
+def ab_pool_sane(eoi_pool: list) -> bool:
+    """EOI 池里有没有任何一个 stream 超过 1000 人(没有 = 疑似列错位)。"""
+    for r in eoi_pool:
+        if isinstance(r[K_COUNT], int) and r[K_COUNT] > ABS_POOL_SANE:
+            return True
+    return False
+
+
+def ab_stats_problems(x: AbCheckIn) -> list:
+    """AB 运营统计自校:总表对账 / 逐 stream / EOI 池 / 抽选史。"""
+    problems: list = []
+    if not x.acc.summary or not isinstance(x.acc.summary.get(ABS_ALLOC_KEY), int):
+        problems.append(ABS_PROBLEM_NO_SUMMARY)
+    elif isinstance(x.acc.summary.get(K_ISSUED), int) and isinstance(x.acc.summary.get(K_REMAINING), int) \
+            and x.acc.summary[K_ISSUED] + x.acc.summary[K_REMAINING] != x.acc.summary[ABS_ALLOC_KEY]:
+        problems.append(ABS_PROBLEM_SUMMARY_TPL.format(summary=x.acc.summary))
+    if len(x.acc.streams) < ABS_MIN_STREAMS:
+        problems.append(ABS_PROBLEM_STREAMS_TPL.format(n=len(x.acc.streams)))
+    if len(x.acc.eoi_pool) < ABS_MIN_POOL:
+        problems.append(ABS_PROBLEM_POOL_TPL.format(n=len(x.acc.eoi_pool)))
+    elif not ab_pool_sane(x.acc.eoi_pool):
+        problems.append(ABS_PROBLEM_POOL_SANE)
+    if len(x.acc.draws) < ABS_MIN_DRAWS:
+        problems.append(ABS_PROBLEM_DRAWS_TPL.format(n=len(x.acc.draws)))
+    return problems
+
+
+def ab_aos_pool(eoi_pool: list) -> dict | None:
+    """EOI 池里的 AOS 那一行(收尾报数用)。"""
+    for r in eoi_pool:
+        if ABS_AOS_KW in r[K_STREAM]:
+            return r
+    return None
+
+
+def build_ab_stats() -> None:
+    """AB 运营统计入口:一页四堆(总表 / 逐 stream / EOI 池 / 抽选史)+ 硬闸自校。"""
+    say(PRINT_OUT_TPL.format(path=OUT_AB_STATS))
+    html = fetch_html(FetchHtmlIn(url=DRAWS_AB_URL, timeout_s=ABS_TIMEOUT_S))
+    soup = BeautifulSoup(html, PARSER_HTML)
+    problems: list = []
+    as_of = ab_as_of(soup)
+    if not as_of:
+        problems.append(ABS_PROBLEM_NO_ASOF)
+    acc = AbStatsAcc(summary={}, streams=[], eoi_pool=[], draws=[])
+    for tbl in soup.find_all(TAG_TABLE):
+        collect_ab_table(AbTableIn(table=tbl, acc=acc))
+    problems += ab_stats_problems(AbCheckIn(acc=acc))
+    if problems:
+        fail_zh(problems)
+    OUT_AB_STATS.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_AB_STATS, payload={
+        K_PROVINCE: PROV_AB, K_PROGRAM: PROGRAM_PNP,
+        K_SOURCE: ABS_SOURCE, K_URL: DRAWS_AB_URL, K_NOTE: ABS_NOTE,
+        K_AS_OF_LOWER: as_of, K_FETCHED: today_iso(),
+        K_SUMMARY: acc.summary, K_STREAMS: acc.streams,
+        K_EOI_POOL: acc.eoi_pool, K_DRAWS: acc.draws,
+    }, indent=INDENT_2))
+    aos = ab_aos_pool(acc.eoi_pool)
+    say(ABS_PRINT_DONE_TPL.format(path=OUT_AB_STATS, as_of=as_of,
+                                  alloc=acc.summary[ABS_ALLOC_KEY], issued=acc.summary[K_ISSUED],
+                                  remaining=acc.summary[K_REMAINING], streams=len(acc.streams),
+                                  pool=len(acc.eoi_pool), aos=aos[K_COUNT], draws=len(acc.draws)))
+
+
+# =========================================================================
+# 26. BC 运营统计(注册池 SIRS 分数分布 + 官方处理时长)
+# =========================================================================
+
+
+def bc_processing_rows(soup: object) -> list:
+    """Skills Immigration 处理时长表(表头含 stage);认不出的时长写法一律不猜(表尾注等)。"""
+    rows: list = []
+    for tbl in soup.find_all(TAG_TABLE):
+        cs = table_rows_of(tbl)
+        if not cs or len(cs[0]) < 2 or BCS_STAGE_HEAD_KW not in cs[0][0].lower():
+            continue
+        for r in cs[1:]:
+            if len(r) < 2:
+                continue
+            d = BCS_DUR_RE.match(r[1].strip())
+            if not d:
+                continue
+            rows.append({K_STAGE: r[0].strip(), K_VALUE: int(d.group(1)),
+                         K_UNIT: d.group(2).lower() + BCS_UNIT_SUFFIX, K_RAW: r[1].strip()})
+        break
+    return rows
+
+
+def build_bc_processing() -> ProcessingOut:
+    """Skills Immigration 官方处理时长(读 crawl 缓存,不发请求;单位原样保留官方的 months/weeks)。"""
+    problems: list = []
+    hit = get_cached_page(BCS_PROC_URL)
+    if not hit.html:
+        return ProcessingOut(processing={}, problems=[BCS_PROBLEM_NO_CACHE_TPL.format(url=BCS_PROC_URL)])
+    soup = BeautifulSoup(hit.html, PARSER_HTML)
+    text = fold_ws(soup.get_text(TEXT_JOIN_SEP, strip=True))
+    m = BCS_PCTL_RE.search(text)
+    if not m:
+        problems.append(BCS_PROBLEM_NO_PCTL)
+    pctl_label = ""
+    if m:
+        pctl_label = fold_ws(m.group(1)).strip()
+    rows = bc_processing_rows(soup)
+    if len(rows) < BCS_MIN_STAGES:
+        problems.append(BCS_PROBLEM_STAGES_TPL.format(n=len(rows)))
+    return ProcessingOut(processing={K_URL: BCS_PROC_URL, K_FETCHED: hit.fetched, K_AS_OF_LOWER: "",
+                                     K_PERCENTILE_LABEL: pctl_label, K_ROWS: rows},
+                         problems=problems)
+
+
+def bc_pool_rows(soup: object) -> list:
+    """注册池分数分布表(表头含 score range);「<5」这类隐私抑制值原样保留。"""
+    pool: list = []
+    for tbl in soup.find_all(TAG_TABLE):
+        rows = table_rows_of(tbl)
+        if not rows or len(rows[0]) != 2 or BCS_POOL_HEAD_KW not in rows[0][0].lower():
+            continue
+        for r in rows[1:]:
+            if len(r) != 2:
+                continue
+            if not BCS_RANGE_RE.match(r[0].strip()):
+                continue
+            clean = r[1].replace(COMMA, EMPTY_JOIN).strip()
+            value = r[1]
+            if clean.isdigit():
+                value = int(clean)
+            pool.append({K_SCORE_RANGE: r[0], K_REGISTRATIONS: value})
+        break
+    return pool
+
+
+def bc_pool_sane(pool: list) -> bool:
+    """池分布里有没有任何一档超过 100 人(没有 = 疑似列错位)。"""
+    for r in pool:
+        if isinstance(r[K_REGISTRATIONS], int) and r[K_REGISTRATIONS] > BCS_POOL_SANE:
+            return True
+    return False
+
+
+def bc_pool_as_of(text: str) -> str:
+    """池分布的官方口径日;认不出返回空串。"""
+    m = BCS_ASOF_RE.search(text)
+    if not m:
+        return ""
+    try:
+        return iso_of_long_date(m.group(1))
+    except ValueError as e:
+        err(m.group(1), e)
+        return ""
+
+
+def build_bc_stats() -> None:
+    """BC 运营统计入口:池分布(实时抓)+ 处理时长(读缓存)。"""
+    say(PRINT_OUT_TPL.format(path=OUT_BC_STATS))
+    html = fetch_html(FetchHtmlIn(url=DRAWS_BC_URL, timeout_s=BCS_TIMEOUT_S))
+    soup = BeautifulSoup(html, PARSER_HTML)
+    text = fold_ws(soup.get_text(TEXT_JOIN_SEP, strip=True))
+    problems: list = []
+    as_of = bc_pool_as_of(text)
+    if not as_of:
+        problems.append(BCS_PROBLEM_NO_ASOF)
+    pool = bc_pool_rows(soup)
+    if len(pool) < BCS_MIN_POOL:
+        problems.append(BCS_PROBLEM_POOL_TPL.format(n=len(pool)))
+    elif not bc_pool_sane(pool):
+        problems.append(BCS_PROBLEM_POOL_SANE)
+    proc = build_bc_processing()
+    problems += proc.problems
+    if problems:
+        fail_zh(problems)
+    total_known = 0
+    for r in pool:
+        if isinstance(r[K_REGISTRATIONS], int):
+            total_known += r[K_REGISTRATIONS]
+    OUT_BC_STATS.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_BC_STATS, payload={
+        K_PROVINCE: PROV_BC, K_PROGRAM: PROGRAM_PNP,
+        K_SOURCE: BCS_SOURCE,
+        K_URL: DRAWS_BC_URL, K_NOTE: BCS_NOTE,
+        K_AS_OF_LOWER: as_of, K_FETCHED: today_iso(),
+        K_POOL: pool,
+        K_PROCESSING: proc.processing,
+    }, indent=INDENT_2))
+    say(BCS_PRINT_DONE_TPL.format(path=OUT_BC_STATS, as_of=as_of, n=len(pool), total=total_known))
+    for r in pool:
+        say(BCS_PRINT_POOL_TPL.format(rng=r[K_SCORE_RANGE], n=r[K_REGISTRATIONS]))
+    for r in proc.processing[K_ROWS]:
+        say(BCS_PRINT_STAGE_TPL.format(stage=r[K_STAGE], raw=r[K_RAW]))
+
+
+def build_bc_stats_processing() -> None:
+    """只重算处理时长(纯读 crawl 缓存,不联网);池分布保持旧值不动。
+
+    原 `--processing-only` 命令行开关(2026-08-30 批B 随一参令退役)→ 门的 TOOLS 里点名这一步。
+    """
+    say(PRINT_OUT_TPL.format(path=OUT_BC_STATS))
+    proc = build_bc_processing()
+    if proc.problems:
+        fail_zh(proc.problems)
+    table = json.loads(OUT_BC_STATS.read_text(encoding=ENC_UTF8))
+    table[K_PROCESSING] = proc.processing
+    paths.write_json(paths.WriteJsonIn(path=OUT_BC_STATS, payload=table, indent=INDENT_2))
+    say(BCS_PRINT_PROC_ONLY_TPL.format(path=OUT_BC_STATS, n=len(table.get(K_POOL, []))))
+    for r in proc.processing[K_ROWS]:
+        say(BCS_PRINT_PROC_ROW_TPL.format(stage=r[K_STAGE], raw=r[K_RAW]))
+
+
+# =========================================================================
+# 27. ON 运营统计(逐年更新页摘已发提名数 + 年度配额 + 官方重定向复核)
+# =========================================================================
+
+
+def num_strict(s: str) -> int:
+    """'14,119' → 14119(官方句子里的数,读不成数字就该炸)。"""
+    return int(s.replace(COMMA, EMPTY_JOIN))
+
+
+def is_blocked_page(text: str) -> bool:
+    """反爬拦截页(Radware / captcha)。"""
+    low = text.lower()
+    return ONS_BLOCK_KW_RADWARE in low or ONS_BLOCK_KW_CAPTCHA in low
+
+
+def fetch_on_year_page(year: int) -> YearPageOut:
+    """(text, url, fetched)——缓存优先(on-oinp 种子已抓),缓存没有再 httpx 兜底;
+    两边都拿不到或被反爬拦截 → text=None。"""
+    url = ONS_UPDATES_URL_TPL.format(year=year)
+    hit = get_cached_page(url)
+    html = hit.html
+    fetched = hit.fetched
+    if not html:
+        try:
+            r = httpx.get(url, headers={HDR_UA: BROWSER_UA}, follow_redirects=True, timeout=ONS_TIMEOUT_S)
+            if r.status_code == ONS_HTTP_OK:
+                html = r.text
+                fetched = today_iso()
+        except httpx.HTTPError as e:
+            err(url, e)
+    if not html:
+        return YearPageOut(text=None, url=url, fetched="")
+    text = text_of_html(TextOfHtmlIn(html=html, drop_junk=True, main_only=True))
+    if is_blocked_page(text):
+        return YearPageOut(text=None, url=url, fetched="")
+    return YearPageOut(text=text, url=url, fetched=fetched)
+
+
+def check_on_redirect() -> dict:
+    """实测 SEED_URL 现在指向哪 —— 官方登记的重定向 vs 抓取偶发失败,眼见为实。"""
+    try:
+        r = httpx.get(ONS_SEED_URL, headers={HDR_UA: BROWSER_UA}, follow_redirects=True,
+                      timeout=ONS_TIMEOUT_S)
+        return {K_REQUESTED_URL: ONS_SEED_URL, K_STATUS: r.status_code, K_RESOLVED_URL: str(r.url),
+                K_IS_REDIRECTED: str(r.url) != ONS_SEED_URL, K_CHECKED: today_iso()}
+    except httpx.HTTPError as e:
+        return {K_REQUESTED_URL: ONS_SEED_URL, K_STATUS: None, K_RESOLVED_URL: "",
+                K_IS_REDIRECTED: None, K_CHECKED: today_iso(), K_ERROR: str(e)}
+
+
+def neg_year_of(r: dict) -> int:
+    """按年份倒排的键(原 lambda 退役)。"""
+    return -r[K_YEAR]
+
+
+def on_issued_row(x: OnYearIn) -> dict | None:
+    """一页里「已发提名数」那一条:页面新→旧排列,取文档序最靠前的 = 该年最终(年末追加后)的数字。"""
+    cands: list = []
+    for m in ONS_ISSUED_RE.finditer(x.page.text):
+        cands.append((m.start(), num_strict(m.group(1)), int(m.group(2)), m.group(0)))
+    for m in ONS_REACHED_RE.finditer(x.page.text):
+        cands.append((m.start(), num_strict(m.group(2)), int(m.group(1)), m.group(0)))
+    if not cands:
+        return None
+    cands.sort(key=first_of)
+    _pos, value, year, label = cands[0]
+    return {K_YEAR: year, K_LABEL: fold_ws(label).strip(),
+            K_VALUE: value, K_UNIT: ONS_UNIT_NOMINATIONS,
+            K_SECTION: ONS_SECTION_TPL.format(year=x.year),
+            K_URL: x.page.url, K_FETCHED: x.page.fetched}
+
+
+def on_alloc_rows(x: OnYearIn) -> list:
+    """一页里的年度配额句(官方原句 quote-anchored,照抄不改写)。"""
+    out: list = []
+    for m in ONS_ALLOC_RE.finditer(x.page.text):
+        out.append({K_YEAR: int(m.group(1)), K_LABEL: fold_ws(m.group(0)).strip(),
+                    K_VALUE: num_strict(m.group(2)), K_UNIT: ONS_UNIT_NOMINATIONS,
+                    K_SECTION: ONS_SECTION_TPL.format(year=x.year),
+                    K_URL: x.page.url, K_FETCHED: x.page.fetched})
+    return out
+
+
+def say_year_values(x: YearValuesIn) -> None:
+    """逐年数字一行(配额 / 已发提名数共用)。"""
+    parts: list = []
+    for r in x.rows:
+        parts.append(ONS_PRINT_YEAR_VALUE_TPL.format(year=r[K_YEAR], value=r[K_VALUE]))
+    say(x.head + SEMI_JOIN_SEP.join(parts))
+
+
+def build_on_stats() -> None:
+    """ON 运营统计入口:逐年更新页摘配额与已发提名数;审理时长是举证过的空。"""
+    say(PRINT_OUT_TPL.format(path=OUT_ON_STATS))
+    problems: list = []
+    redirect = check_on_redirect()
+    say(ONS_PRINT_REDIRECT_TPL.format(status=redirect.get(K_STATUS),
+                                      resolved=redirect.get(K_RESOLVED_URL) or ONS_REDIRECT_FAILED))
+    allocation: list = []
+    nominations_issued: list = []
+    skipped_years: list = []
+    this_year = date.today().year
+    for year in range(this_year, this_year - ONS_YEARS_BACK, -1):
+        page = fetch_on_year_page(year)
+        if page.text is None:
+            skipped_years.append(year)
+            continue
+        allocation += on_alloc_rows(OnYearIn(page=page, year=year))
+        issued = on_issued_row(OnYearIn(page=page, year=year))
+        if issued is not None:
+            nominations_issued.append(issued)
+    if skipped_years:
+        say(ONS_PRINT_SKIPPED_TPL.format(years=sorted(skipped_years, reverse=True)))
+    if not allocation and not nominations_issued:
+        problems.append(ONS_PROBLEM_EMPTY)
+    if problems:
+        fail_zh(problems)
+    OUT_ON_STATS.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_ON_STATS, payload={
+        K_PROVINCE: PROV_ON, K_PROGRAM: PROGRAM_PNP,
+        K_SOURCE: ONS_SOURCE, K_URL: ONS_SEED_URL, K_NOTE: ONS_NOTE,
+        K_AS_OF_LOWER: "", K_FETCHED: today_iso(),
+        K_PAGE_REDIRECT: redirect,
+        K_PROCESSING: [],
+        K_ALLOCATION: allocation,
+        K_NOMINATIONS_ISSUED: sorted(nominations_issued, key=neg_year_of),
+    }, indent=INDENT_2))
+    say(PRINT_DONE_PATH_TPL.format(path=OUT_ON_STATS))
+    say_year_values(YearValuesIn(head=ONS_PRINT_ALLOC_TPL.format(n=len(allocation)), rows=allocation))
+    say_year_values(YearValuesIn(head=ONS_PRINT_ISSUED_TPL.format(n=len(nominations_issued)),
+                                 rows=sorted(nominations_issued, key=neg_year_of)))
+    say(ONS_PRINT_NO_PROCESSING)
+
+
+# =========================================================================
+# 28. MB 运营统计(月度数据页 + 年报 §9/§10;纯读 crawl 缓存,不发请求)
+# =========================================================================
+
+
+def num_or_none(s: object) -> int | None:
+    """'6,239' → 6239;抑制值/不适用/空 → None(**绝不折成 0**,本表的立身之本)。"""
+    text = (s or "").replace(COMMA, EMPTY_JOIN).strip()
+    if NUM_ONLY_RE.fullmatch(text):
+        return int(text)
+    return None
+
+
+def mb_soup_of(html: str) -> object:
+    """月度页/年报的 soup(先拆噪音标签)。"""
+    soup = BeautifulSoup(html, PARSER_HTML)
+    drop_junk_tags(soup)
+    return soup
+
+
+def sectioned_tables(soup: object) -> list:
+    """[(最近一个标题文本, 表格的行矩阵)] —— 表头本身认不出表(「Month|SW|BIS|Total」refusals 与
+    applications received 一模一样),只有**上方的官方小标题**能唯一定位。"""
+    out: list = []
+    head = ""
+    for el in soup.find_all(MBS_SECTION_TAGS):
+        if el.name == TAG_TABLE:
+            out.append((head, table_rows_of(el)))
+        else:
+            head = fold_ws(el.get_text(TEXT_JOIN_SEP, strip=True))
+    return out
+
+
+def sectioned_table_of(x: SectionTableIn) -> list:
+    """按官方小标题定位一张表(原 main 内嵌函数 table 出户)。"""
+    for head, rows in x.tabs:
+        if x.head_kw.lower() in head.lower():
+            return rows
+    return []
+
+
+def col_of(x: ColIn) -> int:
+    """表头里含该关键词的列号(找不到 -1)。"""
+    hdr: list = []
+    if x.rows:
+        for c in x.rows[0]:
+            hdr.append(c.lower())
+    for i, c in enumerate(hdr):
+        if x.header_kw.lower() in c:
+            return i
+    return -1
+
+
+def month_rows(rows: list) -> list:
+    """[(月名, 该行各格)] —— 只留月份行,丢掉 Total 与表尾注。"""
+    out: list = []
+    for r in rows[1:]:
+        if r and r[0].strip().rstrip(MBS_MONTH_STRIP_STAR).strip() in MONTHS_TITLE:
+            out.append((r[0].strip(), r))
+    return out
+
+
+def total_row(rows: list) -> list:
+    """表里的 Total 行(年初至今累计)。"""
+    for r in rows[1:]:
+        if r and r[0].strip().lower().startswith(MBS_TOTAL_ROW_PREFIX):
+            return r
+    return []
+
+
+def latest_cached_year(x: LatestIn) -> LatestOut:
+    """crawl 缓存里最新的那一年;一年都没有 → year=None。"""
+    for y in x.years:
+        url = x.url_tpl.format(year=y)
+        hit = get_cached_page(url)
+        if hit.html:
+            return LatestOut(year=y, url=url, html=hit.html, fetched=hit.fetched)
+    return LatestOut(year=None, url="", html=None, fetched="")
+
+
+def days_of(x: DaysIn) -> int | None:
+    """一行里第 i 格的「N days」(原 main 内嵌函数 days 出户)。"""
+    m = MBS_DAYS_RE.match(x.row[x.index].strip())
+    if not m:
+        return None
+    return num_or_none(m.group(1))
+
+
+def mb_plan_block(x: MbPlanIn) -> MbPlanOut:
+    """月度页一张表 → {section, rows};缺 Total 行或缺列都进自校。"""
+    rows = sectioned_table_of(SectionTableIn(tabs=x.tabs, head_kw=x.head_kw))
+    tot = total_row(rows)
+    if not tot:
+        return MbPlanOut(block={}, problems=[MBS_PROBLEM_NO_TOTAL_TPL.format(head=x.head_kw)])
+    problems: list = []
+    picked: list = []
+    for kw, scope in x.cols:
+        i = col_of(ColIn(rows=rows, header_kw=kw))
+        if i < 0 or i >= len(tot):
+            problems.append(MBS_PROBLEM_NO_COL_TPL.format(head=x.head_kw, kw=kw))
+            continue
+        picked.append({K_SCOPE: scope, K_LABEL: rows[0][i].strip(), K_VALUE: num_or_none(tot[i])})
+    return MbPlanOut(block={K_SECTION: x.head_kw, K_ROWS: picked}, problems=problems)
+
+
+def mb_inventory_block(x: MbInventoryIn) -> dict:
+    """库存块:只有**最新月**有意义(官方口径是每月首个工作日的快照)。"""
+    ia = col_of(ColIn(rows=x.rows, header_kw=MBS_COL_IN_ASSESSMENT))
+    pend = col_of(ColIn(rows=x.rows, header_kw=MBS_COL_PENDING))
+    tot_i = col_of(ColIn(rows=x.rows, header_kw=MBS_COL_TOTAL))
+    in_assessment = None
+    if ia >= 0:
+        in_assessment = num_or_none(x.last[ia])
+    pending = None
+    if pend >= 0:
+        pending = num_or_none(x.last[pend])
+    total = None
+    if tot_i >= 0:
+        total = num_or_none(x.last[tot_i])
+    return {
+        K_SECTION: MBS_INVENTORY_SECTION,
+        K_MONTH: MBS_MONTH_TPL.format(year=x.year, month=MONTHS_TITLE.index(x.month_name) + 1),
+        K_IN_ASSESSMENT: in_assessment,
+        K_PENDING: pending,
+        K_TOTAL: total,
+    }
+
+
+def mb_processing_rows(soup: object) -> list:
+    """年报 §9 Processing Times:逐通道 批准/拒/总体 平均天数。"""
+    proc: list = []
+    for head, rows in sectioned_tables(soup):
+        if col_of(ColIn(rows=rows, header_kw=MBS_PROC_HEAD_KW)) < 0:
+            continue
+        ia = col_of(ColIn(rows=rows, header_kw=MBS_COL_APPROVED))
+        ir = col_of(ColIn(rows=rows, header_kw=MBS_COL_REFUSED))
+        io = col_of(ColIn(rows=rows, header_kw=MBS_COL_OVERALL))
+        for r in rows[1:]:
+            if len(r) <= max(ia, ir, io) or not r[0].strip():
+                continue
+            proc.append({K_STREAM: r[0].strip(),
+                         K_APPROVED_DAYS: days_of(DaysIn(row=r, index=ia)),
+                         K_REFUSED_DAYS: days_of(DaysIn(row=r, index=ir)),
+                         K_OVERALL_DAYS: days_of(DaysIn(row=r, index=io))})
+        break
+    return proc
+
+
+def mb_monthly_block(x: MbMonthlyIn) -> MbMonthlyOut:
+    """月度页四张表 + 增强提名 + 库存 → monthly 块(键序即文件契约)。"""
+    problems: list = []
+    monthly: dict = {}
+    for key, head_kw, cols in MBS_PLAN:
+        part = mb_plan_block(MbPlanIn(tabs=x.tabs, head_kw=head_kw, cols=cols))
+        problems += part.problems
+        if part.block:
+            monthly[key] = part.block
+    enh_rows = sectioned_table_of(SectionTableIn(tabs=x.tabs, head_kw=MBS_ENHANCED_HEAD))
+    enh_tot = total_row(enh_rows)
+    enhanced = None
+    if len(enh_tot) > 1:
+        enhanced = num_or_none(enh_tot[1])
+    monthly[K_ENHANCED_YTD] = {K_SECTION: MBS_ENHANCED_HEAD, K_LABEL: MBS_ENHANCED_LABEL,
+                               K_VALUE: enhanced}
+    if enhanced is None:
+        problems.append(MBS_PROBLEM_NO_ENHANCED)
+    inv_rows = sectioned_table_of(SectionTableIn(tabs=x.tabs, head_kw=MBS_INVENTORY_HEAD))
+    months = month_rows(inv_rows)
+    if not months:
+        problems.append(MBS_PROBLEM_NO_INVENTORY)
+        monthly[K_INVENTORY] = {}
+        return MbMonthlyOut(monthly=monthly, problems=problems, through_month="")
+    last_name, last = months[-1]
+    monthly[K_INVENTORY] = mb_inventory_block(MbInventoryIn(rows=inv_rows, last=last,
+                                                            month_name=last_name, year=x.year))
+    period = MBS_MONTH_TPL.format(year=x.year, month=MONTHS_TITLE.index(last_name) + 1)
+    monthly[K_THROUGH] = period
+    monthly[K_THROUGH_MONTH] = last_name
+    return MbMonthlyOut(monthly=monthly, problems=problems, through_month=last_name)
+
+
+def mb_annual_block(src: LatestOut) -> MbAnnualOut:
+    """年报 §9 处理时长 + §10 EOI 池 + 服务承诺句。"""
+    problems: list = []
+    asoup = mb_soup_of(src.html)
+    atext = fold_ws(asoup.get_text(TEXT_JOIN_SEP, strip=True))
+    proc = mb_processing_rows(asoup)
+    if len(proc) < MBS_MIN_PROCESSING:
+        problems.append(MBS_PROBLEM_PROCESSING_TPL.format(n=len(proc)))
+    eoi_pool: dict = {}
+    ma_act = MBS_ACTIVE_RE.search(atext)
+    if ma_act:
+        eoi_pool = {K_VALUE: num_or_none(ma_act.group(1)), K_LABEL_YEAR: ma_act.group(2),
+                    K_LABEL: fold_ws(ma_act.group(0)).strip()}
+    else:
+        problems.append(MBS_PROBLEM_NO_POOL)
+    mc = MBS_COMMIT_RE.search(atext)
+    commitment = None
+    commitment_label = ""
+    if mc:
+        commitment = int(mc.group(2))
+        commitment_label = fold_ws(mc.group(1)).strip()
+    else:
+        problems.append(MBS_PROBLEM_NO_COMMIT)
+    block = {K_URL: src.url, K_FETCHED: src.fetched, K_YEAR: src.year,
+             K_SECTION: MBS_ANNUAL_SECTION_TPL.format(year=src.year),
+             K_COMMITMENT_MONTHS: commitment, K_COMMITMENT_LABEL: commitment_label,
+             K_PROCESSING: proc, K_EOI_POOL: eoi_pool}
+    return MbAnnualOut(block=block, problems=problems)
+
+
+def say_mb_stats(x: MbSayIn) -> None:
+    """MB 运营统计的收尾报数(月度 / 年报 / 池子 / 逐通道处理天数)。"""
+    inv = x.monthly.get(K_INVENTORY, {})
+    say(PRINT_DONE_PATH_TPL.format(path=OUT_MB_STATS))
+    say(MBS_PRINT_MONTHLY_TPL.format(year=x.monthly[K_YEAR],
+                                     month=x.through_month or MBS_UNKNOWN_MONTH,
+                                     alloc=x.monthly[K_ALLOCATION][K_VALUE],
+                                     nominations=x.monthly[K_NOMINATIONS_YTD][K_ROWS][0][K_VALUE],
+                                     enhanced=x.monthly[K_ENHANCED_YTD][K_VALUE],
+                                     total=inv.get(K_TOTAL),
+                                     in_assessment=inv.get(K_IN_ASSESSMENT), pending=inv.get(K_PENDING)))
+    say(MBS_PRINT_ANNUAL_TPL.format(year=x.annual[K_YEAR], commit=x.annual[K_COMMITMENT_MONTHS],
+                                    n=len(x.annual[K_PROCESSING])))
+    say(MBS_PRINT_POOL_TPL.format(year=x.annual[K_YEAR], value=x.annual[K_EOI_POOL].get(K_VALUE),
+                                  label=x.annual[K_EOI_POOL].get(K_LABEL)))
+    for p in x.annual[K_PROCESSING]:
+        say(MBS_PRINT_PROC_TPL.format(stream=p[K_STREAM], approved=p[K_APPROVED_DAYS],
+                                      refused=p[K_REFUSED_DAYS], overall=p[K_OVERALL_DAYS]))
+
+
+def build_mb_stats() -> None:
+    """MB 运营统计入口:月度页(配额/提名/库存)+ 年报(处理天数/服务承诺/EOI 池)。"""
+    say(PRINT_OUT_TPL.format(path=OUT_MB_STATS))
+    this_year = date.today().year
+    problems: list = []
+    monthly_src = latest_cached_year(LatestIn(url_tpl=MBS_MONTHLY_URL_TPL,
+                                              years=range(this_year, this_year - MBS_MONTHLY_YEARS_BACK, -1)))
+    annual_src = latest_cached_year(LatestIn(url_tpl=MBS_ANNUAL_URL_TPL,
+                                             years=range(this_year, this_year - MBS_ANNUAL_YEARS_BACK, -1)))
+    if not monthly_src.html:
+        problems.append(MBS_PROBLEM_NO_MONTHLY)
+    if not annual_src.html:
+        problems.append(MBS_PROBLEM_NO_ANNUAL)
+    if problems:
+        fail_zh(problems)
+    msoup = mb_soup_of(monthly_src.html)
+    mtext = fold_ws(msoup.get_text(TEXT_JOIN_SEP, strip=True))
+    alloc = None
+    alloc_label = ""
+    ma = MBS_ALLOC_RE.search(mtext)
+    if ma:
+        alloc = num_or_none(ma.group(2))
+        alloc_label = fold_ws(ma.group(1)).strip()
+    else:
+        problems.append(MBS_PROBLEM_NO_ALLOC)
+    block = mb_monthly_block(MbMonthlyIn(tabs=sectioned_tables(msoup), year=monthly_src.year))
+    problems += block.problems
+    annual = mb_annual_block(annual_src)
+    problems += annual.problems
+    if problems:
+        fail_zh(problems)
+    monthly = block.monthly
+    monthly[K_URL] = monthly_src.url
+    monthly[K_FETCHED] = monthly_src.fetched
+    monthly[K_YEAR] = monthly_src.year
+    monthly[K_SECTION] = MBS_MONTHLY_SECTION_TPL.format(year=monthly_src.year)
+    monthly[K_ALLOCATION] = {K_SECTION: MBS_ENHANCED_HEAD, K_LABEL: alloc_label, K_VALUE: alloc}
+    OUT_MB_STATS.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_MB_STATS, payload={
+        K_PROVINCE: PROV_MB, K_PROGRAM: PROGRAM_PNP,
+        K_SOURCE: MBS_SOURCE_TPL.format(m_year=monthly_src.year, a_year=annual_src.year),
+        K_URL: monthly_src.url, K_NOTE: MBS_NOTE,
+        K_AS_OF_LOWER: "",
+        K_FETCHED: monthly_src.fetched,
+        K_MONTHLY: monthly,
+        K_ANNUAL: annual.block,
+    }, indent=INDENT_2))
+    say_mb_stats(MbSayIn(monthly=monthly, annual=annual.block, through_month=block.through_month))
+
+
+# =========================================================================
+# 29. MB EOI 分值表(六因子 1000 分制;实抓优先、缓存兜底)
+# =========================================================================
+
+
+def fetch_mb_eoi_page() -> MbPageOut:
+    """先 httpx 实抓,抓不到回退 crawl 缓存;两边都没有就无法产出(exit 1)。"""
+    try:
+        resp = httpx.get(MBP_PAGE_URL, headers={HDR_UA: BROWSER_UA}, follow_redirects=True,
+                         timeout=MBP_TIMEOUT_S)
+        resp.raise_for_status()
+        return MbPageOut(html=resp.text, fetched=today_iso(), note=MBP_NOTE_LIVE)
+    except Exception as e:  # noqa: BLE001
+        hit = get_cached_page(MBP_PAGE_URL)
+        if hit.html:
+            say(MBP_PRINT_CACHE_TPL.format(detail=e, fetched=hit.fetched))
+            return MbPageOut(html=hit.html, fetched=hit.fetched, note=MBP_NOTE_CACHE)
+        say(MBP_PRINT_NO_PAGE_TPL.format(detail=e))
+        sys.exit(1)
+
+
+def mbp_clean(label: str) -> str:
+    """曲引号→直引号(官方页用 &#8217;),去掉脚注星号(Risk 那行「…province*」)。"""
+    s = label.replace(MBP_CURLY_RIGHT, MBP_STRAIGHT_QUOTE).replace(MBP_CURLY_LEFT, MBP_STRAIGHT_QUOTE)
+    return MBP_FOOTNOTE_STAR_RE.sub(EMPTY_JOIN, s).strip()
+
+
+def parse_pts(raw: str) -> int | None:
+    """分值格 → 数字(可为负);认不出返回 None。"""
+    m = MBP_POINTS_RE.match(raw.strip())
+    if not m:
+        return None
+    return int(m.group(1))
+
+
+def row_texts(tr: object) -> list:
+    """一行的各格文本(不折空白 —— 官方表里就没有多余空白)。"""
+    out: list = []
+    for c in tr.find_all(CELL_TAGS):
+        out.append(c.get_text(TEXT_JOIN_SEP, strip=True))
+    return out
+
+
+def header_label(table: object) -> str:
+    """表头第一格文字(认这是哪个因子表)。"""
+    tr = table.find(TAG_TR)
+    if not tr:
+        return ""
+    texts = row_texts(tr)
+    if not texts:
+        return ""
+    return texts[0]
+
+
+def point_rows(table: object) -> list:
+    """[(子标题, label, raw_points)]——第一行(表头)跳过;第二格为空的行是子标题(不进数据);
+    label 统一成 __MAXALL__(Maximum points,整个因子的官方上限)或
+    __MAXSUB__(Maximum subtotal,当前子标题那一块的官方上限)。"""
+    out: list = []
+    sub = ""
+    seen_header = False
+    for tr in table.find_all(TAG_TR):
+        texts = row_texts(tr)
+        if len(texts) < 2:
+            continue
+        label = texts[0]
+        raw = texts[1]
+        if not seen_header:
+            seen_header = True
+            continue
+        if raw.strip() == "":
+            sub = label
+            continue
+        m = MBP_MAX_ROW_RE.match(label)
+        if m:
+            key = MBP_MAX_SUB_LABEL
+            if m.group(1).lower() == MBP_MAX_POINTS_WORD:
+                key = MBP_MAX_ALL_LABEL
+            out.append(PointRow(sub=sub, label=key, raw=raw))
+            continue
+        out.append(PointRow(sub=sub, label=label, raw=raw))
+    return out
+
+
+def mbp_factor_tables(main_el: object) -> dict:
+    """页面上六张因子表(只认第一张,同页面不会重复,防御一下)。"""
+    tables: dict = {}
+    for t in main_el.find_all(TAG_TABLE):
+        key = MBP_FACTOR_TABLES.get(header_label(t))
+        if key and key not in tables:
+            tables[key] = t
+    return tables
+
+
+def mbp_language_factor(table: object) -> MbFactorOut:
+    """Language proficiency:First 按 per band 四项相加 + Second 一次性 25。"""
+    rows: list = []
+    bonus: list = []
+    official = None
+    problems: list = []
+    for row in point_rows(table):
+        if row.label == MBP_MAX_ALL_LABEL:
+            official = parse_pts(row.raw)
+            continue
+        item = {K_LABEL: MBP_LANG_FIRST_LABEL_TPL.format(label=mbp_clean(row.label)),
+                K_POINTS: parse_pts(row.raw)}
+        if row.sub.lower().startswith(MBP_FIRST_SUB_PREFIX):
+            rows.append(item)
+        else:
+            bonus.append({K_LABEL: MBP_LANG_SECOND_LABEL_TPL.format(label=mbp_clean(row.label)),
+                          K_POINTS: parse_pts(row.raw)})
+    first_max = max_points(rows)
+    second_sum = sum_points(bonus)
+    lang_max = first_max * MBP_LANG_BANDS + second_sum
+    if not rows or not bonus:
+        problems.append(MBP_PROBLEM_LANG_HALF)
+    if official is not None and lang_max != official:
+        problems.append(MBP_PROBLEM_LANG_MAX_TPL.format(first=first_max, second=second_sum,
+                                                        total=lang_max, official=official))
+    factor = {K_ROWS: rows, K_BONUS: bonus, K_BAND_COUNT: MBP_LANG_BANDS, K_MAX: lang_max,
+              K_RULE: MBP_LANG_RULE}
+    return MbFactorOut(factor=factor, problems=problems)
+
+
+def mbp_simple_factor(x: MbSimpleIn) -> MbFactorOut:
+    """Age / Work experience / Education:单表单选,官方 Maximum points 就是自算 max。"""
+    rows: list = []
+    bonus: list = []
+    official = None
+    problems: list = []
+    for row in point_rows(x.table):
+        if row.label == MBP_MAX_ALL_LABEL:
+            official = parse_pts(row.raw)
+            continue
+        item = {K_LABEL: mbp_clean(row.label), K_POINTS: parse_pts(row.raw)}
+        if x.bonus_kw and item[K_LABEL].lower().startswith(x.bonus_kw):
+            bonus.append(item)
+        else:
+            rows.append(item)
+    if not rows:
+        return MbFactorOut(factor={}, problems=[MBP_PROBLEM_EMPTY_TPL.format(key=x.key)])
+    fmax = max_points(rows) + sum_points(bonus)
+    if official is not None and fmax != official:
+        problems.append(MBP_PROBLEM_MAX_TPL.format(key=x.key, computed=fmax, official=official))
+    return MbFactorOut(factor={K_ROWS: rows, K_BONUS: bonus, K_MAX: fmax}, problems=problems)
+
+
+def mbp_adapt_buckets(table: object) -> MbAdaptOut:
+    """Adaptability 表 → 三个子块 + 各自的官方 subtotal + 整个因子的官方上限。"""
+    buckets: dict = {}
+    sub_official: dict = {}
+    overall = None
+    for row in point_rows(table):
+        if row.label == MBP_MAX_SUB_LABEL:
+            sub_official[row.sub] = parse_pts(row.raw)
+            continue
+        if row.label == MBP_MAX_ALL_LABEL:
+            overall = parse_pts(row.raw)
+            continue
+        buckets.setdefault(row.sub, []).append({K_LABEL: mbp_clean(row.label),
+                                                K_POINTS: parse_pts(row.raw)})
+    return MbAdaptOut(buckets=buckets, sub_official=sub_official, overall=overall)
+
+
+def mbp_risk_factor(table: object) -> MbFactorOut:
+    """Risk assessment:唯一可负的因子,两项负分不互斥 → 存 bonus(可加总)。"""
+    rows: list = []
+    bonus: list = []
+    official = None
+    problems: list = []
+    for row in point_rows(table):
+        if row.label == MBP_MAX_ALL_LABEL:
+            official = parse_pts(row.raw)
+            continue
+        pts = parse_pts(row.raw)
+        item = {K_LABEL: mbp_clean(row.label), K_POINTS: pts}
+        if pts and pts < 0:
+            bonus.append(item)
+        else:
+            rows.append(item)
+    if not rows and not bonus:
+        problems.append(MBP_PROBLEM_RISK_EMPTY)
+    risk_max = max_points(rows) + sum_points(bonus)
+    if official is not None and risk_max != official:
+        problems.append(MBP_PROBLEM_RISK_MAX_TPL.format(computed=risk_max, official=official))
+    return MbFactorOut(factor={K_ROWS: rows, K_BONUS: bonus, K_MAX: risk_max, K_RULE: MBP_RISK_RULE},
+                       problems=problems)
+
+
+def mbp_collect_adapt(x: MbAdaptCollectIn) -> list:
+    """三个 Adaptability 子块入 factors,返回自校问题。"""
+    problems: list = []
+    for sub_name, fkey in MBP_ADAPT:
+        rows = x.adapt.buckets.get(sub_name, [])
+        if not rows:
+            problems.append(MBP_PROBLEM_ADAPT_EMPTY_TPL.format(sub=sub_name))
+            continue
+        fmax = max_points(rows)
+        official = x.adapt.sub_official.get(sub_name)
+        if official is not None and fmax != official:
+            problems.append(MBP_PROBLEM_ADAPT_SUB_TPL.format(sub=sub_name, computed=fmax,
+                                                             official=official))
+        x.adapt_max[fkey] = fmax
+        x.factors[fkey] = {K_GROUP: MBP_GROUP_ADAPTABILITY, K_ROWS: rows, K_BONUS: [], K_MAX: fmax}
+    return problems
+
+
+def mbp_group_adapt(adapt_max: dict) -> int | None:
+    """Adaptability 组上限:connection + regional 与 demand 取大者;一块都没有 → None。"""
+    if not adapt_max:
+        return None
+    combined = adapt_max.get(MBP_ADAPT_CONNECTION, 0) + adapt_max.get(MBP_ADAPT_REGIONAL, 0)
+    return max(combined, adapt_max.get(MBP_ADAPT_DEMAND, 0))
+
+
+def mbp_adapt_step(x: MbAdaptStepIn) -> MbAdaptStepOut:
+    """Adaptability 整块:三个子因素入 factors + 组上限自校(官方原话「不能与 Manitoba Demand 叠加」)。"""
+    adapt = mbp_adapt_buckets(x.table)
+    adapt_max: dict = {}
+    problems = mbp_collect_adapt(MbAdaptCollectIn(adapt=adapt, factors=x.factors, adapt_max=adapt_max))
+    if MBP_ADAPT_REGIONAL in x.factors:
+        x.factors[MBP_ADAPT_REGIONAL][K_RULE] = MBP_ADAPT_REGIONAL_RULE
+    group_adapt = mbp_group_adapt(adapt_max)
+    if adapt.overall is None:
+        problems.append(MBP_PROBLEM_ADAPT_NO_MAX)
+    elif group_adapt != adapt.overall:
+        problems.append(MBP_PROBLEM_ADAPT_TOTAL_TPL.format(
+            computed=group_adapt, official=adapt.overall,
+            connection=adapt_max.get(MBP_ADAPT_CONNECTION), regional=adapt_max.get(MBP_ADAPT_REGIONAL),
+            demand=adapt_max.get(MBP_ADAPT_DEMAND)))
+    return MbAdaptStepOut(group_adapt=group_adapt, problems=problems)
+
+
+def build_mb_points() -> None:
+    """MB EOI 分值表入口:六因子解析 + 官方 Maximum 行逐条对账 + 1000 分推导。"""
+    say(PRINT_OUT_TPL.format(path=OUT_MB_POINTS))
+    page = fetch_mb_eoi_page()
+    soup = BeautifulSoup(page.html, PARSER_HTML)
+    main_el = soup.find(TAG_MAIN)
+    if not main_el:
+        main_el = soup
+    tables = mbp_factor_tables(main_el)
+    missing: list = []
+    for key in MBP_FACTOR_TABLES.values():
+        if key not in tables:
+            missing.append(key)
+    if missing:
+        fail_zh([MBP_PROBLEM_MISSING_PREFIX + LIST_JOIN_SEP.join(missing)])
+    factors: dict = {}
+    problems: list = []
+    language = mbp_language_factor(tables[MBP_LANGUAGE_KEY])
+    factors[MBP_LANGUAGE_KEY] = language.factor
+    problems += language.problems
+    for key, bonus_kw in MBP_SIMPLE_FACTORS:
+        part = mbp_simple_factor(MbSimpleIn(table=tables[key], key=key, bonus_kw=bonus_kw))
+        problems += part.problems
+        if part.factor:
+            factors[key] = part.factor
+    adapt_step = mbp_adapt_step(MbAdaptStepIn(table=tables[MBP_ADAPTABILITY_KEY], factors=factors))
+    problems += adapt_step.problems
+    group_adapt = adapt_step.group_adapt
+    risk = mbp_risk_factor(tables[MBP_RISK_KEY])
+    factors[MBP_RISK_KEY] = risk.factor
+    problems += risk.problems
+    if problems:
+        fail_zh(problems)
+    max_total = (factors[MBP_LANGUAGE_KEY][K_MAX] + factors[MBP_AGE_KEY][K_MAX]
+                 + factors[MBP_WORK_KEY][K_MAX] + factors[MBP_EDUCATION_KEY][K_MAX] + group_adapt)
+    if max_total != MBP_MAX_TOTAL:
+        fail_zh([MBP_PROBLEM_TOTAL_TPL.format(total=max_total)])
+    OUT_MB_POINTS.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_MB_POINTS, payload={
+        K_PROVINCE: PROV_MB, K_SYSTEM: MBP_SYSTEM, K_MAX_TOTAL: max_total,
+        K_PASS_MARK: None,
+        K_SOURCE: MBP_SOURCE,
+        K_URL: MBP_PAGE_URL, K_PAGE_URL: MBP_MPNP_URL,
+        K_GUIDE_EFFECTIVE: "", K_FETCHED: page.fetched,
+        K_GROUP_MAX: {MBP_GROUP_ADAPTABILITY: group_adapt},
+        K_FACTORS: factors,
+    }, indent=INDENT_2))
+    say(MBP_PRINT_DONE_TPL.format(path=OUT_MB_POINTS, total=max_total, note=page.note,
+                                  fetched=page.fetched))
+    for key, f in factors.items():
+        say(MBP_PRINT_FACTOR_TPL.format(key=key, group=f.get(K_GROUP, ""), rows=len(f[K_ROWS]),
+                                        bonus=len(f[K_BONUS]), max_n=f[K_MAX]))
+
+
+# =========================================================================
+# 30. NL EE 分值表(Annex A,100 分制,67 分线;英文档报数原样保留)
+# =========================================================================
+
+
+def fail_nlp(problems: list) -> None:
+    """NL 分值表自校未过(本段英文档报数,原样保留)。"""
+    fail_keep_old(FailIn(problems=problems, header=NLP_FAIL_HEADER, bullet=NLP_FAIL_BULLET))
+
+
+def nlp_norm(text: str) -> str:
+    """弯引号/长短破折号/软连字符归一 + 压平空白。"""
+    s = text.replace(NLP_QUOTE_RIGHT, NLP_QUOTE_PLAIN).replace(NLP_QUOTE_LEFT, NLP_QUOTE_PLAIN)
+    s = s.replace(NLP_DASH_EN, NLP_DASH_PLAIN).replace(NLP_DASH_EM, NLP_DASH_PLAIN)
+    return fold_ws(s.replace(NLP_SOFT_HYPHEN, EMPTY_JOIN)).strip()
+
+
+def slice_between(x: SliceIn) -> str:
+    """两个锚点之间的正文片段;锚不到返回空串。"""
+    a = x.text.find(x.start)
+    b = -1
+    if a >= 0:
+        b = x.text.find(x.end, a + len(x.start))
+    if a >= 0 and b > a:
+        return x.text[a:b]
+    return ""
+
+
+def rows_by_labels(x: RowsByLabelsIn) -> list:
+    """按给定标签序切段,各段取一个数(默认第一个;Connection 那节取最后一个)。"""
+    rows: list = []
+    for i, label in enumerate(x.labels):
+        a = x.text.find(label)
+        if a < 0:
+            continue
+        b = len(x.text)
+        if i + 1 < len(x.labels):
+            b = x.text.find(x.labels[i + 1], a + len(label))
+        nums = NLP_NUM_RE.findall(x.text[a + len(label):b])
+        if nums:
+            idx = 0
+            if x.last_number:
+                idx = -1
+            rows.append({K_LABEL: NLP_OR_TAIL_RE.sub(EMPTY_JOIN, label), K_POINTS: int(nums[idx])})
+    return rows
+
+
+def year_rows(text: str) -> list:
+    """工作经验节的「N years M」档位。"""
+    out: list = []
+    for years, points in NLP_YEAR_ROW_RE.findall(text):
+        plural = PLURAL_S
+        if years == NLP_YEAR_ONE:
+            plural = ""
+        out.append({K_LABEL: NLP_YEAR_LABEL_TPL.format(years=years, plural=plural),
+                    K_POINTS: int(points)})
+    return out
+
+
+def nlp_language_rows(text: str) -> list:
+    """语言节的「CLB N M」档位(CLB 8 那档带 and higher)。"""
+    out: list = []
+    for clb, points in NLP_CLB_ROW_RE.findall(text):
+        tail = ""
+        if clb == NLP_CLB_TOP:
+            tail = NLP_CLB_TAIL
+        out.append({K_LABEL: NLP_CLB_LABEL_TPL.format(clb=clb, tail=tail), K_POINTS: int(points)})
+    return out
+
+
+def nlp_annex_text() -> str:
+    """Annex A PDF 全文(官方 URL 维护期会返回 HTML,先认字节)。"""
+    pdf_res = httpx.get(NLP_PDF_URL, headers={HDR_UA: BROWSER_UA}, follow_redirects=True,
+                        timeout=NLP_PDF_TIMEOUT_S)
+    pdf_res.raise_for_status()
+    if not pdf_res.content.startswith(NLP_PDF_MAGIC):
+        fail_nlp([NLP_PROBLEM_NOT_PDF])
+    with fitz.open(stream=pdf_res.content, filetype=FILETYPE_PDF) as doc:
+        parts: list = []
+        for page in doc:
+            parts.append(page.get_text(NLP_TEXT_MODE))
+    return nlp_norm(LINE_JOIN_SEP.join(parts))
+
+
+def nlp_pass_mark() -> int | None:
+    """通道页现取的 pass mark(官方要求 67/100)。"""
+    page_res = httpx.get(NLP_PAGE_URL, headers={HDR_UA: BROWSER_UA}, follow_redirects=True,
+                         timeout=NLP_PAGE_TIMEOUT_S)
+    page_res.raise_for_status()
+    mark = NLP_MARK_RE.search(nlp_norm(NLP_TAG_RE.sub(TEXT_JOIN_SEP, page_res.text)))
+    if not mark:
+        return None
+    return int(mark.group(1))
+
+
+def nlp_factors(text: str) -> dict:
+    """Annex A 六个因素(education / work5 / work610 / language1 / age / connection)。"""
+    education = rows_by_labels(RowsByLabelsIn(
+        text=slice_between(SliceIn(text=text, start=NLP_EDU_START, end=NLP_EDU_END)),
+        labels=NLP_EDU_LABELS))
+    work5 = year_rows(slice_between(SliceIn(text=text, start=NLP_WORK5_START, end=NLP_WORK610_START)))
+    work610 = year_rows(slice_between(SliceIn(text=text, start=NLP_WORK610_START, end=NLP_LANG_START)))
+    language = nlp_language_rows(slice_between(SliceIn(text=text, start=NLP_LANG_START, end=NLP_AGE_START)))
+    age = rows_by_labels(RowsByLabelsIn(
+        text=slice_between(SliceIn(text=text, start=NLP_AGE_START, end=NLP_CONN_START)),
+        labels=NLP_AGE_LABELS))
+    connection = rows_by_labels(RowsByLabelsIn(text=text[text.find(NLP_CONN_START):],
+                                               labels=NLP_CONN_LABELS, last_number=True))[:-1]
+    return {
+        NLP_EDUCATION_KEY: {K_GROUP: "", K_ROWS: education, K_BONUS: [], K_MAX: NLP_EDU_MAX},
+        NLP_WORK5_KEY: {K_GROUP: NLP_WORK_GROUP, K_ROWS: work5, K_BONUS: [], K_MAX: NLP_WORK5_MAX},
+        NLP_WORK610_KEY: {K_GROUP: NLP_WORK_GROUP, K_ROWS: work610, K_BONUS: [], K_MAX: NLP_WORK610_MAX},
+        NLP_LANGUAGE_KEY: {K_GROUP: "", K_ROWS: language, K_BONUS: [], K_MAX: NLP_LANG_MAX},
+        NLP_AGE_KEY: {K_GROUP: "", K_ROWS: age, K_BONUS: [], K_MAX: NLP_AGE_MAX},
+        NLP_CONNECTION_KEY: {K_GROUP: "", K_ROWS: [], K_BONUS: connection, K_MAX: NLP_CONN_MAX},
+    }
+
+
+def nlp_problems(x: NlpCheckIn) -> list:
+    """逐因素分值序对金标 + 各因素上限加得出官方 100 分。"""
+    problems: list = []
+    if x.pass_mark != NLP_PASS_MARK:
+        problems.append(NLP_PROBLEM_PASS_TPL.format(mark=x.pass_mark))
+    for key, values in NLP_EXPECTED.items():
+        bucket = K_ROWS
+        if key == NLP_CONNECTION_KEY:
+            bucket = K_BONUS
+        got = points_list(x.factors[key][bucket])
+        if got != values:
+            problems.append(NLP_PROBLEM_ROWS_TPL.format(key=key, got=got, expected=values))
+    total = (max_points(x.factors[NLP_EDUCATION_KEY][K_ROWS]) + NLP_WORK_TOTAL_IN_SUM
+             + max_points(x.factors[NLP_LANGUAGE_KEY][K_ROWS])
+             + max_points(x.factors[NLP_AGE_KEY][K_ROWS])
+             + sum_points(x.factors[NLP_CONNECTION_KEY][K_BONUS]))
+    if total != NLP_MAX_TOTAL:
+        problems.append(NLP_PROBLEM_TOTAL)
+    return problems
+
+
+def build_nl_points() -> None:
+    """NL EE 分值表入口:Annex A PDF + 通道页 pass mark,全部对上才替换旧表。"""
+    text = nlp_annex_text()
+    pass_mark = nlp_pass_mark()
+    factors = nlp_factors(text)
+    problems = nlp_problems(NlpCheckIn(pass_mark=pass_mark, factors=factors))
+    if problems:
+        fail_nlp(problems)
+    OUT_NL_POINTS.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_NL_POINTS, payload={
+        K_PROVINCE: PROV_NL, K_SYSTEM: NLP_SYSTEM,
+        K_MAX_TOTAL: NLP_MAX_TOTAL, K_PASS_MARK: pass_mark,
+        K_SOURCE: NLP_SOURCE,
+        K_URL: NLP_PDF_URL, K_PAGE_URL: NLP_PAGE_URL, K_GUIDE_EFFECTIVE: "", K_FETCHED: today_iso(),
+        K_GROUP_MAX: {NLP_WORK_GROUP: NLP_WORK_GROUP_MAX}, K_FACTORS: factors,
+    }, indent=INDENT_2))
+    say(NLP_PRINT_DONE_TPL.format(path=OUT_NL_POINTS, mark=pass_mark))
+
+
+# =========================================================================
+# 31. NL 指定雇主名录(纯本地缓存读取,不发一个 HTTP 请求)
+# =========================================================================
+
+
+def parse_nl_employer(x: EmployerRowIn) -> dict | None:
+    """单个雇主页 → {name, location, nocs, url};解不出雇主名 → None(页面异常,跳过不硬凑)。"""
+    soup = BeautifulSoup(x.html, PARSER_HTML)
+    h1 = soup.find(TAG_H1, class_=NLE_ENTRY_TITLE_CLASS)
+    if not h1:
+        return None
+    name = fold_ws(h1.get_text(TEXT_JOIN_SEP, strip=True)).strip()
+    if not name:
+        return None
+    field: dict = {}
+    dl = soup.find(TAG_DL)
+    if dl:
+        for dt, dd in zip(dl.find_all(TAG_DT), dl.find_all(TAG_DD)):
+            key = fold_ws(dt.get_text(TEXT_JOIN_SEP, strip=True)).strip()
+            field[key] = fold_ws(dd.get_text(TEXT_JOIN_SEP, strip=True)).strip()
+    nocs: list = []
+    for code in NLE_NOC_CODE_RE.findall(field.get(NLE_FIELD_NOCS, "")):
+        nocs.append({K_NOC: code, K_TITLE: None})
+    return {K_NAME: name, K_LOCATION: field.get(NLE_FIELD_LOCATION, ""), K_NOCS: nocs, K_URL: x.url}
+
+
+def name_lower_of(r: dict) -> str:
+    """按雇主名排序的键(原 lambda 退役)。"""
+    return r[K_NAME].lower()
+
+
+def has_noc_code(e: dict) -> bool:
+    """这家雇主申报了至少一个 NOC 码。"""
+    for n in e[K_NOCS]:
+        if n[K_NOC]:
+            return True
+    return False
+
+
+def nl_employer_pages(manifest: dict) -> list:
+    """manifest 里属于雇主子页且抓成功的那些页。"""
+    out: list = []
+    for p in manifest.get(K_PAGES, []):
+        if p.get(K_STATUS) == NLE_STATUS_OK and p.get(K_HTML) \
+                and p.get(K_URL, "").startswith(NLE_EMPLOYER_PREFIX):
+            out.append(p)
+    return out
+
+
+def say_nl_employer_stats(x: NlEmployerStatsIn) -> None:
+    """名录收尾的四行口径报数(申报 NOC 的家数 / 码总数 / 探针命中 / 跳过清单)。"""
+    with_noc = 0
+    no_noc = 0
+    codeless = 0
+    total_codes = 0
+    probe: list = []
+    for e in x.employers:
+        total_codes += len(e[K_NOCS])
+        if has_noc_code(e):
+            with_noc += 1
+        elif not e[K_NOCS]:
+            no_noc += 1
+        else:
+            codeless += 1
+        for n in e[K_NOCS]:
+            if n[K_NOC] == NLE_NOC_PROBE:
+                probe.append(e[K_NAME])
+                break
+    say(NLE_PRINT_NOC_STATS_TPL.format(with_noc=with_noc, no_noc=no_noc, codeless=codeless))
+    say(NLE_PRINT_TOTAL_CODES_TPL.format(n=total_codes))
+    say(NLE_PRINT_PROBE_TPL.format(n=len(probe), names=probe))
+    if x.skipped:
+        more = ""
+        if len(x.skipped) > NLE_SKIP_SHOW:
+            more = NLE_SKIP_MORE
+        say(NLE_PRINT_SKIPPED_TPL.format(shown=x.skipped[:NLE_SKIP_SHOW], more=more))
+
+
+def build_nl_employers() -> None:
+    """NL 指定雇主名录入口:crawl 缓存里的 639 个雇主子页逐页解析,不发一个请求。"""
+    say(NLE_PRINT_IN_MANIFEST_TPL.format(path=IN_NL_MANIFEST))
+    say(NLE_PRINT_IN_CACHE_TPL.format(path=IN_NL_HTML_CACHE))
+    say(PRINT_OUT_TPL.format(path=OUT_NL_EMPLOYERS))
+    if not IN_NL_MANIFEST.exists():
+        say(NLE_PRINT_NO_MANIFEST_TPL.format(path=IN_NL_MANIFEST))
+        sys.exit(1)
+    manifest = json.loads(IN_NL_MANIFEST.read_text(encoding=ENC_UTF8))
+    fetched = str(manifest.get(K_CRAWLED_AT) or "")[:10]
+    pages = nl_employer_pages(manifest)
+    employers: list = []
+    skipped: list = []
+    for p in pages:
+        f = IN_NL_HTML_CACHE / p[K_HTML]
+        if not f.exists():
+            skipped.append(p[K_URL])
+            continue
+        row = parse_nl_employer(EmployerRowIn(html=f.read_text(encoding=ENC_UTF8, errors=ERRORS_REPLACE),
+                                              url=p[K_URL]))
+        if row is None:
+            skipped.append(p[K_URL])
+            continue
+        employers.append(row)
+    employers.sort(key=name_lower_of)
+    OUT_PNP_DIR.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_NL_EMPLOYERS, payload={
+        K_PROVINCE: PROV_NL, K_LABEL: NLE_LABEL, K_SOURCE: NLE_SOURCE,
+        K_URL: NLE_ENTRY_URL, K_FETCHED: fetched,
+        K_EMPLOYERS: employers,
+    }, indent=INDENT_2))
+    say(NLE_PRINT_DONE_TPL.format(n=len(employers), pages=len(pages), skipped=len(skipped),
+                                  path=OUT_NL_EMPLOYERS))
+    say(NLE_PRINT_FETCHED_TPL.format(fetched=fetched))
+    say_nl_employer_stats(NlEmployerStatsIn(employers=employers, skipped=skipped))
+
+
+# =========================================================================
+# 32. SK Job Offer 排除清单(Employment Offer 子类别专属的另一张表)
+# =========================================================================
+
+
+def download_sk_pdfs() -> dict:
+    """下载两份 PDF 到 data/crawl/sk-sinp/,打印大小与前几字节确认是 PDF。返回 {out文件名: bytes}。"""
+    SKJ_CRAWL_DIR.mkdir(parents=True, exist_ok=True)
+    content: dict = {}
+    for p in SKJ_PDFS:
+        url = SKJ_DL_TPL.format(p=p[K_PRODUCT], f=p[K_FMT])
+        try:
+            data = fetch_bytes(FetchHtmlIn(url=url, timeout_s=SKJ_TIMEOUT_S))
+        except Exception as e:  # noqa: BLE001
+            say(SKJ_PRINT_DL_FAIL_TPL.format(out=p[K_OUT], name=type(e).__name__, detail=e))
+            continue
+        out_path = SKJ_CRAWL_DIR / p[K_OUT]
+        out_path.write_bytes(data)
+        head = data[:SKJ_HEAD_BYTES]
+        say(SKJ_PRINT_DL_TPL.format(mark=mark_of(head.startswith(SKJ_PDF_MAGIC)), desc=p[K_DESC],
+                                    size=len(data), head=head, path=out_path))
+        content[p[K_OUT]] = data
+    return content
+
+
+def parse_joboffer_pdf(pdf_bytes: bytes) -> list:
+    """解析 Job Offer 排除清单 PDF → [{noc, name}]。"""
+    lines: list = []
+    for ln in pdf_text(pdf_bytes).splitlines():
+        lines.append(ln.strip())
+    occ: dict = {}
+    for i, ln in enumerate(lines):
+        m = SKJ_ROW_RE.match(ln)
+        if m:
+            noc, name = m.group(1), m.group(2)
+        elif SKJ_CODE_RE.match(ln):
+            nxt = ""
+            for cand in lines[i + 1:i + SK_EXCL_LOOKAHEAD]:
+                if cand:
+                    nxt = cand
+                    break
+            if not nxt or not (nxt[0].isalpha() or nxt[0] == SKJ_STAR):
+                continue
+            noc, name = ln.strip(), nxt
+        else:
+            continue
+        name = fold_ws(SKJ_STAR_PREFIX_RE.sub(EMPTY_JOIN, name)).strip(STRIP_DOT_SPACE)
+        if is_header_row(name):
+            continue
+        occ.setdefault(noc, name)
+    return occ_rows_of(occ)
+
+
+def occ_by_noc(x: OccProbeIn) -> dict | None:
+    """清单里某个 NOC 那一行(收尾探针用)。"""
+    for o in x.occupations:
+        if o[K_NOC] == x.noc:
+            return o
+    return None
+
+
+def build_sk_joboffer() -> None:
+    """SK Job Offer 排除清单入口:两份 PDF 都下载留痕,只解析 Job Offer 那份。"""
+    files = download_sk_pdfs()
+    joboffer_pdf = files.get(SKJ_JOBOFFER_PDF)
+    if not joboffer_pdf:
+        say(SKJ_PRINT_NO_PDF)
+        return
+    occs = parse_joboffer_pdf(joboffer_pdf)
+    if not occs:
+        say(SKJ_PRINT_NO_NOC)
+        return
+    fetched = today_iso()
+    table = {
+        K_STREAM: SKJ_STREAM, K_LABEL: SKJ_LABEL,
+        K_PROVINCE: PROV_SK, K_PROGRAM: PROGRAM_PNP, K_TYPE: TYPE_INELIGIBLE,
+        K_APPLIES_TO: SKJ_APPLIES_TO,
+        K_NOTE: SKJ_NOTE,
+        K_URL: SK_EXCL_PAGE, K_FETCHED: fetched,
+        K_OCCUPATIONS: occs,
+    }
+    write_pnp_table(BuildTableIn(filename=OUT_SK_JOBOFFER_FILE, table=table,
+                                 line=SKJ_PRINT_DONE_TPL.format(n=len(occs), out=OUT_SK_JOBOFFER_FILE,
+                                                                fetched=fetched)))
+    carpenter = occ_by_noc(OccProbeIn(occupations=occs, noc=SKJ_PROBE_NOC))
+    if carpenter:
+        say(SKJ_PRINT_PROBE_HIT_TPL.format(name=carpenter[K_NAME]))
+    else:
+        say(SKJ_PRINT_PROBE_MISS)
+
+
+# =========================================================================
+# 33. 抽选流名中文灰注(本地 Ollama 意译;非默认链,手动跑)
+# =========================================================================
+
+
+def distinct_streams() -> list:
+    """draws.json 全部省块的 distinct stream 名(dict 保序:先出现先翻,比 set 更好读日志)。"""
+    data = json.loads(IN_DRAWS_FOR_ZH.read_text(encoding=ENC_UTF8))
+    seen: dict = {}
+    for _prov, v in data.get(K_PROVINCES, {}).items():
+        for dr in v.get(K_DRAWS, []):
+            s = (dr.get(K_STREAM) or "").strip()
+            if s:
+                seen.setdefault(s, None)
+    return list(seen.keys())
+
+
+def qwen_translate(x: TranslateIn) -> str | None:
+    """本地 qwen 意译一条通道名;校验不过返回 None(下轮重试,绝不塞半吊子译文)。"""
+    from zhconv import convert as zh_convert
+    try:
+        r = x.client.post(ZH_OLLAMA_URL,
+                          json={K_MODEL: ZH_MODEL, K_PROMPT: ZH_PROMPT_TPL.format(name=x.name),
+                                K_STREAM_FLAG: False, K_OPTIONS: {K_TEMPERATURE: ZH_TEMPERATURE}},
+                          timeout=ZH_TIMEOUT_S)
+        r.raise_for_status()
+        out = (r.json().get(K_RESPONSE) or "").strip().strip(ZH_STRIP_CHARS)
+        if out:
+            out = out.splitlines()[-1].strip()
+        if not out or len(out) > ZH_MAX_LEN or not ZH_CJK_RE.search(out):
+            return None
+        return zh_convert(out, ZH_LOCALE_CN)
+    except Exception as e:  # noqa: BLE001
+        err(x.name, e)
+        return None
+
+
+def save_stream_zh(cache: dict) -> None:
+    """灰注缓存落盘(增量、可断点续跑)。"""
+    paths.write_json(paths.WriteJsonIn(path=OUT_DRAW_STREAM_ZH, payload=cache, indent=INDENT_1))
+
+
+def translate_draw_streams() -> None:
+    """抽选流名中文灰注入口:只翻缓存里没有的,校验不过的留到下轮。"""
+    say(ZH_PRINT_IN_OUT_TPL.format(in_path=IN_DRAWS_FOR_ZH, out_path=OUT_DRAW_STREAM_ZH))
+    streams = distinct_streams()
+    cache: dict = {}
+    if OUT_DRAW_STREAM_ZH.exists():
+        cache = json.loads(OUT_DRAW_STREAM_ZH.read_text(encoding=ENC_UTF8))
+    todo: list = []
+    for s in streams:
+        if s not in cache:
+            todo.append(s)
+    say(ZH_PRINT_TODO_TPL.format(total=len(streams), todo=len(todo), cached=len(cache)))
+    if not todo:
+        return
+    done = 0
+    with httpx.Client() as client:
+        for i, name in enumerate(todo):
+            zh = qwen_translate(TranslateIn(client=client, name=name))
+            if zh:
+                cache[name] = {K_ZH: zh, K_TRANSLATED_AT: datetime.now(timezone.utc).isoformat()}
+                done += 1
+            else:
+                say(ZH_PRINT_BAD_TPL.format(name=name))
+            if (i + 1) % ZH_SAVE_EVERY == 0:
+                save_stream_zh(cache)
+                say(ZH_PRINT_PROGRESS_TPL.format(done=i + 1, total=len(todo), hit=done))
+    save_stream_zh(cache)
+    say(ZH_PRINT_DONE_TPL.format(path=OUT_DRAW_STREAM_ZH, done=done, todo=len(todo), cached=len(cache)))
+
+
+# =========================================================================
+# 34. 名额公告哨兵(只提醒不写表;失败不拦役)
+# =========================================================================
+
+
+def watch_targets() -> dict:
+    """{省: {监视年份}}:配额表里为 null 的 y 字段年份;外加下一年(公告常提前一个年底发)全省都盯。"""
+    alloc = json.loads(IN_ALLOC_TABLE.read_text(encoding=ENC_UTF8))
+    out: dict = {}
+    for r in alloc.get(K_ROWS_LOWER, []):
+        missing: set = set()
+        for k, v in r.items():
+            if WATCH_YEAR_FIELD_RE.fullmatch(k) and v is None:
+                missing.add(k[1:])
+        missing.add(str(date.today().year + 1))
+        out[r[K_PROV]] = missing
+    return out
+
+
+def provs_in_window(x: WindowProvIn) -> set:
+    """窗口里点名的省名优先(同页可能列多省),没点名才用来源省。"""
+    found: set = set()
+    for name, code in WATCH_PROV_NAMES.items():
+        if name in x.win:
+            found.add(code)
+    if found:
+        return found
+    if x.src_prov:
+        return {x.src_prov}
+    return set()
+
+
+def hits_in_text(x: HitsIn) -> list:
+    """一段纯文本里的疑似名额句:allocat* 窗口内(目标年份 + 量级合理的数字)。"""
+    found: list = []
+    for m in WATCH_ALLOC_RE.finditer(x.text):
+        win = x.text[max(0, m.start() - WATCH_WINDOW): m.end() + WATCH_WINDOW]
+        if not WATCH_NOM_RE.search(win):
+            continue
+        for prov in provs_in_window(WindowProvIn(win=win, src_prov=x.src_prov)):
+            for year in x.want.get(prov, ()):
+                if year not in win:
+                    continue
+                for nm in WATCH_NUM_RE.finditer(win):
+                    n = int(nm.group(1).replace(COMMA, EMPTY_JOIN))
+                    if WATCH_N_MIN <= n <= WATCH_N_MAX and not WATCH_YEAR_MIN <= n <= WATCH_YEAR_MAX:
+                        found.append({K_PROV: prov, K_YEAR: year, K_N: n,
+                                      K_QUOTE: TEXT_JOIN_SEP.join(win.split())[:WATCH_QUOTE_CLIP]})
+    return found
+
+
+def hit_with_src(x: HitSrcIn) -> dict:
+    """一条命中挂上来源(原字典展开退役,字段写全)。"""
+    return {K_PROV: x.hit[K_PROV], K_YEAR: x.hit[K_YEAR], K_N: x.hit[K_N],
+            K_QUOTE: x.hit[K_QUOTE], K_SRC: x.src}
+
+
+def seen_entry(x: SeenEntryIn) -> dict:
+    """state 里记一条已见命中(挂首次命中日期)。"""
+    return {K_PROV: x.hit[K_PROV], K_YEAR: x.hit[K_YEAR], K_N: x.hit[K_N],
+            K_QUOTE: x.hit[K_QUOTE], K_SRC: x.hit.get(K_SRC, ""), K_FIRST: x.today}
+
+
+def say_ns_reconcile(alloc_rows: dict) -> None:
+    """NS 对账:人工表 NS 行 vs 省官方开放数据(NSNP 口径)。不一致或官方有数我们空着 → 喊人。
+
+    每轮都喊(不进 state 去重)—— 对不上就该一直响,修对了自然静音。
+    """
+    if not OUT_NS_ALLOCATIONS.exists():
+        return
+    try:
+        nsnp = (json.loads(OUT_NS_ALLOCATIONS.read_text(encoding=ENC_UTF8)).get(K_BY_PROGRAM)
+                or {}).get(NS_ALLOC_PROG_NSNP) or {}
+        ns_row = alloc_rows.get(PROV_NS) or {}
+        for y, official in sorted(nsnp.items()):
+            field = WATCH_YEAR_FIELD_TPL.format(year=y)
+            if field not in ns_row:
+                continue
+            ours = ns_row.get(field)
+            if ours is None:
+                say(WATCH_PRINT_NS_MISSING_TPL.format(year=y, official=official))
+            elif int(ours) != int(official):
+                say(WATCH_PRINT_NS_DIFF_TPL.format(year=y, ours=ours, official=official,
+                                                   file=OUT_NS_ALLOCATIONS.name))
+    except Exception as e:  # noqa: BLE001
+        say(WATCH_PRINT_NS_FAIL_TPL.format(name=type(e).__name__))
+        err(OUT_NS_ALLOCATIONS, e)
+
+
+def watch_state() -> dict:
+    """哨兵 state(坏了当首轮,顶多重复喊一遍)。"""
+    if not OUT_ALLOC_WATCH.exists():
+        return {}
+    try:
+        return json.loads(OUT_ALLOC_WATCH.read_text(encoding=ENC_UTF8)).get(K_SEEN) or {}
+    except Exception as e:  # noqa: BLE001
+        err(OUT_ALLOC_WATCH, e)
+        return {}
+
+
+def scan_crawl_cache(x: ScanIn) -> int:
+    """扫目标省的 crawl html_cache;返回扫了多少份文本。"""
+    scanned = 0
+    for slug, prov in WATCH_SLUG_PROV.items():
+        if prov not in x.watch_provs:
+            continue
+        cache = IN_CRAWL_DIR / slug / WATCH_CACHE_DIR
+        if not cache.is_dir():
+            continue
+        for f in cache.glob(WATCH_HTML_GLOB):
+            scanned += 1
+            try:
+                text = WATCH_TAG_RE.sub(TEXT_JOIN_SEP, f.read_text(encoding=ENC_UTF8,
+                                                                   errors=ERRORS_REPLACE))
+            except OSError as e:
+                err(f, e)
+                continue
+            for h in hits_in_text(HitsIn(text=text, src_prov=prov, want=x.want)):
+                x.hits.append(hit_with_src(HitSrcIn(hit=h, src=WATCH_SRC_TPL.format(slug=slug,
+                                                                                    name=f.name))))
+    return scanned
+
+
+def scan_news(x: ScanIn) -> int:
+    """扫 news.json(官方公告聚合;region 即省码);返回扫了多少条。"""
+    if not IN_NEWS_FILE.exists():
+        return 0
+    scanned = 0
+    try:
+        news = json.loads(IN_NEWS_FILE.read_text(encoding=ENC_UTF8))
+        for it in news.get(K_ITEMS) or []:
+            scanned += 1
+            text = WATCH_NEWS_TEXT_TPL.format(title=it.get(K_TITLE) or "", body=it.get(K_BODY_EN) or "")
+            for h in hits_in_text(HitsIn(text=text, src_prov=str(it.get(K_REGION) or ""), want=x.want)):
+                x.hits.append(hit_with_src(HitSrcIn(hit=h, src=it.get(K_URL) or WATCH_SRC_NEWS)))
+    except Exception as e:  # noqa: BLE001
+        say(WATCH_PRINT_NEWS_FAIL_TPL.format(name=type(e).__name__))
+        err(IN_NEWS_FILE, e)
+    return scanned
+
+
+def run_allocation_watch() -> None:
+    """哨兵一轮:配额表目标 → 扫 crawl 与 news → 新命中喊人 + 记 state。"""
+    say(WATCH_PRINT_IN_OUT_TPL.format(alloc=IN_ALLOC_TABLE, crawl=IN_CRAWL_DIR,
+                                      news=IN_NEWS_FILE, state=OUT_ALLOC_WATCH))
+    if not IN_ALLOC_TABLE.exists():
+        say(WATCH_PRINT_NO_TABLE)
+        return
+    alloc_rows: dict = {}
+    for r in json.loads(IN_ALLOC_TABLE.read_text(encoding=ENC_UTF8))[K_ROWS_LOWER]:
+        alloc_rows[r[K_PROV]] = r
+    say_ns_reconcile(alloc_rows)
+    want = watch_targets()
+    watch_provs: set = set()
+    for p, ys in want.items():
+        if ys:
+            watch_provs.add(p)
+    seen = watch_state()
+    hits: list = []
+    scan = ScanIn(want=want, watch_provs=watch_provs, hits=hits)
+    scanned = scan_crawl_cache(scan) + scan_news(scan)
+    today = today_iso()
+    fresh: list = []
+    for h in hits:
+        key = WATCH_KEY_TPL.format(prov=h[K_PROV], year=h[K_YEAR], n=h[K_N])
+        if key in seen:
+            continue
+        seen[key] = seen_entry(SeenEntryIn(hit=h, today=today))
+        fresh.append(h)
+    for h in fresh[:WATCH_MAX_ALERTS]:
+        say(WATCH_PRINT_HIT_TPL.format(prov=h[K_PROV], year=h[K_YEAR], n=h[K_N],
+                                       quote=h[K_QUOTE], src=h[K_SRC]))
+    if len(fresh) > WATCH_MAX_ALERTS:
+        say(WATCH_PRINT_MORE_TPL.format(n=len(fresh) - WATCH_MAX_ALERTS, file=OUT_ALLOC_WATCH.name))
+    watch: dict = {}
+    for p, ys in want.items():
+        watch[p] = sorted(ys)
+    paths.write_json(paths.WriteJsonIn(path=OUT_ALLOC_WATCH, payload={
+        K_FETCHED: today,
+        K_NOTE: WATCH_NOTE,
+        K_WATCH: watch,
+        K_SEEN: seen,
+    }, indent=INDENT_1))
+    say(WATCH_PRINT_DONE_TPL.format(scanned=scanned, provs=len(watch_provs), fresh=len(fresh),
+                                    seen=len(seen)))
+
+
+def watch_prov_allocations() -> None:
+    """名额公告哨兵入口:**自身任何失败都不拦役**(报错但不中止本轮)。"""
+    try:
+        run_allocation_watch()
+    except Exception as e:  # noqa: BLE001
+        say(WATCH_PRINT_CRASH_TPL.format(name=type(e).__name__, detail=e))
