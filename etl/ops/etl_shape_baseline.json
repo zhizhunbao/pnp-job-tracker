@@ -1,21 +1,4 @@
 [
- "ee/build_ircc_ee_categories.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "ee/build_ircc_ee_categories.py: 缺 IN_/OUT_ 显式路径常量",
- "ee/build_ircc_ee_draws.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "ee/build_ircc_ee_draws.py: 缺 IN_/OUT_ 显式路径常量",
- "ee/build_ircc_ee_rules.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "fsa/build_geonames_fsa_districts.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "ircc/build_ircc_fees.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "ircc/build_ircc_fees.py: 缺 IN_/OUT_ 显式路径常量",
- "ircc/build_ircc_pgwp_rules.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "ircc/build_ircc_pgwp_rules.py: 缺 IN_/OUT_ 显式路径常量",
- "ircc/scrape_ircc_stats.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "ircc/scrape_statcan_npr.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "ircc/scrape_statcan_npr.py: 缺 IN_/OUT_ 显式路径常量",
- "ircc/scrape_statcan_tr_prov.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "ircc/scrape_statcan_tr_prov.py: 缺 IN_/OUT_ 显式路径常量",
- "noc_facts/build_statcan_noc_descriptions.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "noc_facts/build_statcan_noc_structure.py: 步骤模块带 __main__(一域一门,该收成 run())",
  "ops/audit_c01_gold.py: 步骤模块带 __main__(一域一门,该收成 run())",
  "ops/audit_data.py: 步骤模块带 __main__(一域一门,该收成 run())",
  "ops/audit_noc_classes.py: 步骤模块带 __main__(一域一门,该收成 run())",
@@ -24,10 +7,5 @@
  "ops/check_freshness.py: 步骤模块带 __main__(一域一门,该收成 run())",
  "ops/scan_gate_quotes.py: 步骤模块带 __main__(一域一门,该收成 run())",
  "ops/verify_expired.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "ops/verify_field_source_pages.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "pilot/build_aip_rules.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "pilot/build_pilot_communities.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "pilot/build_pilot_details.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "pilot/build_pilot_quota.py: 步骤模块带 __main__(一域一门,该收成 run())",
- "pilot/scrape_aip_employers.py: 步骤模块带 __main__(一域一门,该收成 run())"
+ "ops/verify_field_source_pages.py: 步骤模块带 __main__(一域一门,该收成 run())"
 ]

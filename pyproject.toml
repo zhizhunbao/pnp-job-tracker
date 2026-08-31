@@ -68,11 +68,11 @@ max-args = 1
 # 2026-08-30 一参令兑现(Frank:参数和返回值只允许一个):fetch 豁免清零;
 # news/functions 只剩 run() 复杂度拆分债(随批C news 溶解还)。
 "etl/news/functions.py" = ["C901", "PLR0915"]
-"etl/noc.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-# ⚠ noc_buckets 另豁免 F601(重复字典键 9 处:金融/行政/法律/教育/社会服务/体育/销售/零售/运输)——
+# ⚠ noc/constants 只豁免 F601(重复字典键 9 处:金融/行政/法律/教育/社会服务/体育/销售/零售/运输)——
 # python 语义=后键赢,前键是死行;哪个该赢是**分类口径判定**(改分类必跑 audit_noc_classes),
-# 台账待 Frank 拍,拍完删此行豁免(2026-08-29 批3 盘出)
-"etl/noc_buckets.py" = ["ANN", "D1", "N", "C901", "PLR0915", "BLE", "S110", "S112", "F601"]
+# 台账待 Frank 拍,拍完删此行豁免(2026-08-29 批3 盘出;2026-08-31「noc 就叫 noc」并域,
+# 豁免随 I18N 表从 noc_buckets.py 搬家,其余全严格零豁免)
+"etl/noc/constants.py" = ["F601"]
 "etl/grades.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/run_now.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/upload_mart.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
@@ -84,17 +84,8 @@ max-args = 1
 "etl/crawl/functions.py" = ["C901", "PLR0915"]
 "etl/sources/**/*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/pilot/extractors/*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-# 各域存量步骤文件(按动词前缀点名,一域一组;新域没有这些行 = 天然全严)
-"etl/ee/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/ircc/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/ircc/scrape_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/noc_facts/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/fsa/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/pilot/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/pilot/scrape_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/company/build_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/company/scrape_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
-"etl/company/enrich_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
+# 各域存量步骤文件豁免(按动词前缀点名)2026-08-31 批C 全数摘除:
+# ee/ircc/company/noc_facts/fsa/pilot 的步骤文件已全溶,新五件天然全严。
 "etl/ops/audit_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/ops/check_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]
 "etl/ops/verify_*.py" = ["ANN", "D1", "N", "C901", "PLR0913", "PLR0915", "BLE", "S110", "S112"]

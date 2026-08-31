@@ -20,7 +20,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import paths
-from noc_buckets import SLUGS as BROAD_SLUG  # 大类 zh → URL slug 段,单一来源在 noc_buckets
+from noc.constants import SLUGS as BROAD_SLUG  # 大类 zh → URL slug 段,单一来源在 noc/ 域(2026-08-31 并域)
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
     sys.stdout.reconfigure(encoding="utf-8")

@@ -1,6 +1,7 @@
 """
 pilot 域:试点家族(AIP/RCIP/FCIP)—— 指定雇主名单、社区清单细节、名额状态。
-社区名单 build_pilot_communities 仍作为 build 管线步骤跑(05f 旗标依赖它),本域不重复调度。
+社区名单(communities)仍作为 build 管线步骤跑(05f 旗标依赖它;sources/build 经本域门
+`main.py --only communities` 调,2026-08-31 批C 全溶后改此口径),本域不重复调度。
 
 META = 域即役的调度声明(2026-08-29 批2):role=挂哪个角色容器(SOURCE 环境变量),
 interval=本域一轮的间隔秒;入口固定 etl/pilot/main.py,步骤清单在 main.py 里。

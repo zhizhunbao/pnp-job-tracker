@@ -24,8 +24,8 @@ from collections import Counter, defaultdict
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一级)有 paths 等共享库
 from paths import MART, PROCESSED
-from noc import classify, official_broad_of
-from noc_buckets import BROADS, bucket_of
+from noc.constants import BROADS
+from noc.functions import bucket_of, classify, official_broad_of
 
 IN_STATS = MART / "stats_occupation.json"      # 每职业一行(province=all 那批带在招量与中位薪资)
 IN_DESCR = MART / "noc_descriptions.json"      # 官方名 + 中文名(职业名的真相来源)
@@ -113,7 +113,7 @@ def main():
     hand = sum(1 for x in rows if x["byHand"])
     nofine = sum(1 for x in rows if x["noFine"])
     print(f"    ✅ 映射覆盖: {hand} / {len(rows)}" if hand == len(rows) else
-          f"    ❌ 漏映射 {len(rows) - hand} 个(必须补进 noc_buckets,不许兜底):")
+          f"    ❌ 漏映射 {len(rows) - hand} 个(必须补进 noc/constants 的 BUCKETS 表,不许兜底):")
     for x in rows:
         if not x["byHand"]:
             print(f"        {x['noc']} {x['zh'][:24]} {x['open']} 在招")

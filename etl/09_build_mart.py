@@ -19,7 +19,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import paths
-import noc as NOC  # NOC 分类法(单一来源)
+from noc.functions import broad_of, classify  # NOC 分类法(单一来源;2026-08-31「noc 就叫 noc」并为 noc/ 域)
 import grades as GR  # E12-08 档位(1-5,单一来源;职位三维+公司四维)
 from clean import visa_flag  # GAP1③ 身份预筛(JD 正文 → 红旗+quote)
 
@@ -251,7 +251,7 @@ def expand_applies(applies: dict, universe) -> dict:
     trade = (applies.get("anyTrade") or "").strip()
     if trade:
         for code in universe:
-            if code not in nocs and NOC.broad_of(code) == "技工":
+            if code not in nocs and broad_of(code) == "技工":
                 nocs[code] = trade
     return {"appliesNoc": nocs}
 
@@ -685,7 +685,7 @@ def build():
         # (weekly-top 全库入池、stats 7天新增=在招总数),前端 slice(0,10) 还截出「June 26, 2」。单点断根。
         fields["datePosted"] = iso_date(fields.get("datePosted"))
         sc = scored.get(external_id, {})
-        cls = NOC.classify(sc.get("noc"))  # noc → teer/broad/mid/fine(分类法在 etl/noc.py)
+        cls = classify(sc.get("noc"))  # noc → teer/broad/mid/fine(分类法在 etl/noc/functions.py)
         # 试点职业交叉(批C 尾巴):yes=NOC 在所在社区在收清单;no=不在(RCIP 要求 offer 职业在清单内,
         # 官方清单为据的负判定);''=非试点岗/该社区清单无 NOC/岗位无 NOC(判不了不硬判)
         _pc = fields.get("pilotCommunity") or ""
@@ -1005,7 +1005,7 @@ def build():
     cat_keys = sorted({(j["broad"], j["mid"], j["fine"], j["teer"] if j["teer"] is not None else -1) for j in jobs})
     cat_i18n = {}
     for n in {j.get("noc") for j in jobs if j.get("noc")}:
-        c = NOC.classify(n)
+        c = classify(n)
         cat_i18n.setdefault(c["broad"], (c["broadEn"], c["broadKo"]))
         cat_i18n.setdefault(c["mid"], (c["midEn"], c["midKo"]))
         cat_i18n.setdefault(c["fine"], (c["fineEn"], c["fineKo"]))

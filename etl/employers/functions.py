@@ -14,8 +14,8 @@ from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import noc
 import paths
+from noc.functions import broad_of, teer_of
 from log.functions import say
 from employers.constants import (ENTRY_LEVELS, EXP_RANK, GUARD_FEW_TPL, GUARD_MIN_POOL,
                                  IN_COMPANIES, IN_DESIGNATED, IN_JOBS, IN_LMIA, IN_POSTINGS,
@@ -61,10 +61,10 @@ def skilled_broads_of(lmia_row: dict) -> dict:
     """LMIA 行的逐 NOC 份数 → {大类桶: 技能类份数}(TEER≤3 才算;裸总量不出此门)。"""
     out: dict = {}
     for code, n in (lmia_row.get(K_NOCS) or {}).items():
-        teer = noc.teer_of(code)
+        teer = teer_of(code)
         if teer is None or teer > SKILLED_TEER_MAX:
             continue
-        broad = noc.broad_of(code)
+        broad = broad_of(code)
         if not broad:
             continue
         out[broad] = out.get(broad, 0) + int(n)
@@ -350,7 +350,7 @@ def bucket_rows_of(x: KeyIn) -> list:
     broads.update(skilled_broads_of(ctx.lmia_by_key.get(x.key) or {}))
     for row in des_rows:
         for code in row.get(K_NOCS) or []:
-            b = noc.broad_of(code)
+            b = broad_of(code)
             if b:
                 broads.add(b)
     if not broads and des_rows:

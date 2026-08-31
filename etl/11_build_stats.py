@@ -24,7 +24,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import paths
-import noc as NOC  # E13-02:NOC 分类法(单一来源),给 stats_daily 的 closed 归 broad 桶用
+from noc.functions import broad_of, teer_of  # E13-02:NOC 分类法(单一来源;2026-08-31 并为 noc/ 域),给 stats_daily 的 closed 归 broad 桶用
 
 # E13-05:全国 occ 行的 pnpProvs 复用 08_score.pnp_eligible(禁复制判定逻辑)。
 # 08_score 是数字开头的模块名,不能直接 import;importlib 按路径加载——顶层只有表构建
@@ -233,7 +233,7 @@ def build_flow_stats() -> tuple[dict, dict, dict]:
     for p in postings:
         noc = p.get("noc") or ""
         pid = p.get("posting_id")
-        if not pid or NOC.teer_of(noc) is None:
+        if not pid or teer_of(noc) is None:
             continue
         recs.append((noc, (p.get("province") or "").upper(), _parse_posted(p.get("date")), pid))
 
@@ -260,7 +260,7 @@ def build_flow_stats() -> tuple[dict, dict, dict]:
                 flow[k]["closed30d"] += 1
         # stats_daily「当日下架计数」= 台账判死日恰好是今天(不是推导,是台账写入日,不存在 1 天滞后)
         if closed_date == today_d and prov in PROVS:
-            broad = NOC.broad_of(noc)
+            broad = broad_of(noc)
             daily_closed[(prov, broad)] += 1
             daily_closed[(prov, "all")] += 1
 
@@ -280,7 +280,7 @@ def build_flow_stats() -> tuple[dict, dict, dict]:
             if not pp:
                 continue
             noc = pp.get("noc") or ""
-            if NOC.teer_of(noc) is None:
+            if teer_of(noc) is None:
                 continue
             posted = _parse_posted(pp.get("date"))
             closed_at = _parse_iso_date(c.get("closedAt"))

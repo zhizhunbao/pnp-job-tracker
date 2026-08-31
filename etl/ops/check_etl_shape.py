@@ -19,12 +19,15 @@ ETL = Path(__file__).resolve().parent.parent
 BASELINE = Path(__file__).resolve().parent / "etl_shape_baseline.json"
 
 DOMAINS = ["company", "crawl", "dli", "ee", "employers", "fetch", "fsa", "ircc", "lmia",
-           "load", "log", "news", "noc_facts", "ops", "paths", "pilot", "pnp", "wages"]
+           "load", "log", "news", "noc", "ops", "paths", "pilot", "pnp", "wages"]
+# noc_facts → noc(2026-08-31 Frank「noc 就叫 noc」:根上 noc.py/noc_buckets.py 两库并入,
+# 双重身份同 fetch/crawl:既被扫也可被依赖)
 # fetch/crawl 2026-08-30 零字符串溶完即入册(INFRA 身份不变:域可引;双重身份 = 既被扫也可被依赖)
 # crawl 2026-08-30 批A 升格基础设施(判据:被十几个 build 当地基读缓存 ——「换掉它
 # 业务一个字不用改」;正门 from crawl.cache import …,path-hack 黑通道批B 拆光)
 
-INFRA = {"paths", "fetch", "_steps", "log", "noc", "noc_buckets", "grades", "crawl"}
+INFRA = {"paths", "fetch", "_steps", "log", "noc", "grades", "crawl"}
+# noc_buckets 2026-08-31 随「noc 就叫 noc」并入 noc/ 域,模块名退役摘出白名单
 
 IMPORT_RE = re.compile(r"^(?:from|import)\s+([A-Za-z_][A-Za-z0-9_]*)", re.M)
 INOUT_RE = re.compile(r"^(?:IN|OUT)_[A-Z0-9_]*\s*=", re.M)

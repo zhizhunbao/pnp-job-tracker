@@ -10,7 +10,9 @@ BUILD_STEPS = [
     ["python", "etl/clean/04c_clean_ats_locations.py"],
     ["python", "etl/clean/04d_clean_salary.py"],
     ["python", "etl/clean/05c_flag_aip.py"],
-    ["python", "etl/pilot/build_pilot_communities.py"],           # E6-11:试点社区名单(读 fed-rcip crawl 缓存,改版保旧不拦役)
+    # E6-11:试点社区名单(读 fed-rcip crawl 缓存,改版保旧不拦役)。
+    # 2026-08-31 批C:步骤文件全溶进 pilot 域,跨役走域门 --only 点名(顺序不动,仍在 05f 之前)
+    ["python", "etl/pilot/main.py", "--only", "communities"],
     ["python", "etl/clean/05f_flag_pilot.py"],   # E6-11:城市×省 → jobs.pilot/pilotCommunity(05c 同款一字段一脚本)
     ["python", "etl/clean/05d_noc_sanity.py"],  # #47:标题↔NOC 失配护栏(泛词标题×TEER0/1×低薪 → NOC 置空转未分类)
                                                 # 🔴 必须排在 04d 之后:它的判据里有「低薪」,读的是 04d 算出的 salaryAnnual

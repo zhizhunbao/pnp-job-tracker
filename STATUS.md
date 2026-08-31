@@ -12,6 +12,7 @@
 - **漏斗实测**(funnel_events,累计):jd-open 3,090 → dp-open 454(决策页=第二大主动动作)→ lock-seen ~233 → pricing-open 30 → pay-click 1。**M3 的分叉数据已经够读了**:锁区曝光不小、pricing 转化极低 → 按主线判据该判「锁的东西值不值钱」了。
 - **工程近况**:8 月底形制马拉松十班车全上线(页面门定形、og/sitemaps/seed 三族归 /api/、JsonLd 收拢、refs/裸钮清零、main.css 一期、designated 去重);docs 清仓从新开始;报告驱动工作流(`cd cms && npm run lint:report`)。
 - **在手工作**:**雇主板重构**已成文待开工([设计稿](docs/design/雇主板重构-20260829.md),三批:池表 mart → 板收敛 → 盯钮)。排队批:main.css 二期、「水合」27 处、列宽种子英文重铺、收拢批(表卡切换×3 等)、大小写僵尸基线。
+- **etl 分域**(2026-08-31 批C 收口):17 域已溶 17(步骤文件清零,基线只剩 ops 9 条);裸账 424→325。三个新拍板排队:**批D ops 拆散**(对照表在[分域设计稿](docs/design/etl分域-20260829.md) §8 待 Frank 逐行点头)、**批E pilot 拆三域 rcip/fcip/aip**(拍板点 8,方案已成文)、noc 已并库落地(「noc 就叫 noc」)。
 - **数据**:全国全职业日更(Job Bank 全量 + ATS);指定雇主 6,664;LMIA/工资/抽选/试点/新闻各源 docker 无人值守。
 
 ## 2. 主线与支线(判据不变,2026-08-01 立)
