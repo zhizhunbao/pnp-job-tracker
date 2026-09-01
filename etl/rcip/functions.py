@@ -40,7 +40,7 @@ from datetime import date
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit
 
-import fitz
+import pymupdf
 import httpx
 
 from log.functions import say
@@ -918,7 +918,7 @@ def timmins_pdf_rows(data: bytes) -> list:
 
 def timmins_spans(data: bytes) -> list:
     """PDF → (页号, y 取整, x, 文字) 片段流,按页/y/x 排序。"""
-    doc = fitz.open(stream=data, filetype=FILETYPE_PDF)
+    doc = pymupdf.open(stream=data, filetype=FILETYPE_PDF)
     lines: list = []
     for pi, page in enumerate(doc):
         # pyrefly: ignore[bad-index] — pymupdf get_text("dict") 档位返回 dict,存根把三档位并成 str|list|dict
@@ -1093,7 +1093,7 @@ def thunder_bay_pdf_url(html: str) -> str:
 def thunder_bay_pdf_rows(data: bytes) -> list:
     """y 聚簇双列(名 x<290 / 地址 x>=290),跨行名前向拼接;
     「excluded from 2026」段起整段剔除;红字(not hiring)行保留。"""
-    doc = fitz.open(stream=data, filetype=FILETYPE_PDF)
+    doc = pymupdf.open(stream=data, filetype=FILETYPE_PDF)
     raw: list = []
     state = TbState(pending="", excluded=False)
     for page in doc:
@@ -1106,7 +1106,7 @@ def thunder_bay_pdf_rows(data: bytes) -> list:
     return rows
 
 
-def tb_clusters(page: fitz.Page) -> list:
+def tb_clusters(page: pymupdf.Page) -> list:
     """一页 → y 聚簇清单({y, items});同 y(±3)的片段并成一簇。"""
     spans: list = []
     # pyrefly: ignore[bad-index] — pymupdf get_text("dict") 档位返回 dict,存根把三档位并成 str|list|dict
@@ -1335,7 +1335,7 @@ def nos_employer_rows(data: bytes) -> list:
     行业行数与雇主名数对不上 = 解析漏行,抛异常保旧;带 * 的(快餐/加油站子行业暂停受理)
     官方仍列入指定 → 原样保留(* 是官方标注,与批B 一致)。
     """
-    doc = fitz.open(stream=data, filetype=FILETYPE_PDF)
+    doc = pymupdf.open(stream=data, filetype=FILETYPE_PDF)
     parts: list = []
     starts = 0
     for page in doc:
@@ -1348,7 +1348,7 @@ def nos_employer_rows(data: bytes) -> list:
     return bc_dedupe(rows)
 
 
-def bc_page_cells(page: fitz.Page) -> list:
+def bc_page_cells(page: pymupdf.Page) -> list:
     """一页 → (y 取整, x 取整, 归一后文字) 格子流,已排序(NOS 与 NEBC 两处共用,原文逐字相同)。"""
     cells: list = []
     # pyrefly: ignore[bad-index] — pymupdf get_text("dict") 档位返回 dict,存根把三档位并成 str|list|dict
@@ -1457,7 +1457,7 @@ def nebc_pdf_employers(url: str) -> list:
 
     PDF 自带总数(As of … • N Designated Employers)对账,对不上 = 解析漏行,抛。
     """
-    doc = fitz.open(stream=fetch_bc_response(url).content, filetype=FILETYPE_PDF)
+    doc = pymupdf.open(stream=fetch_bc_response(url).content, filetype=FILETYPE_PDF)
     rows: list = []
     for page in doc:
         nebc_take_page(NebcPageIn(cells=bc_page_cells(page), rows=rows))
@@ -1509,7 +1509,7 @@ def nebc_norm_key(s: str) -> str:
     return NEBC_NORM_RE.sub("", s.lower())
 
 
-def nebc_pdf_text(doc: fitz.Document) -> str:
+def nebc_pdf_text(doc: pymupdf.Document) -> str:
     """整份 PDF 的纯文本(拿来读 PDF 自带的总数对账)。"""
     parts: list = []
     for p in doc:
@@ -1620,9 +1620,9 @@ def prairie_pdf_url(x: PdfLinkIn) -> str:
     return urljoin(x.base_url, m.group(1).replace(AMP_ENTITY, AMP))
 
 
-def prairie_pdf(url: str) -> fitz.Document:
+def prairie_pdf(url: str) -> pymupdf.Document:
     """草原段下一份 PDF 并打开。"""
-    return fitz.open(stream=fetch_prairie_response(url).content, filetype=FILETYPE_PDF)
+    return pymupdf.open(stream=fetch_prairie_response(url).content, filetype=FILETYPE_PDF)
 
 
 def prairie_tidy(text: str) -> str:
@@ -1874,7 +1874,7 @@ def atl_pdf_lines(url: str) -> list:
     """下载 PDF,按页返回去首尾空白后的非空文本行。"""
     resp = fetch_atl_response(url)
     pages: list = []
-    with fitz.open(stream=resp.content, filetype=FILETYPE_PDF) as doc:
+    with pymupdf.open(stream=resp.content, filetype=FILETYPE_PDF) as doc:
         for page in doc:
             lines: list = []
             # pyrefly: ignore[missing-attribute] — pymupdf get_text() 无参档位恒返回 str,存根把三档位并成 str|list|dict

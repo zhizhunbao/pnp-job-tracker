@@ -23,7 +23,7 @@ from datetime import date, datetime, timezone
 from typing import cast
 from urllib.parse import urljoin
 
-import fitz
+import pymupdf
 import httpx
 from bs4 import BeautifulSoup
 
@@ -358,7 +358,7 @@ def fetch_md(url: str) -> str:
 
 def pdf_text(data: bytes) -> str:
     """PDF 字节 → 逐页文本拼接(各门槛步共用的第一步)。"""
-    with fitz.open(stream=data, filetype=FILETYPE_PDF) as doc:
+    with pymupdf.open(stream=data, filetype=FILETYPE_PDF) as doc:
         parts: list = []
         for page in doc:
             parts.append(page.get_text())
@@ -2607,7 +2607,7 @@ def sirs_problems(x: SirsProblemsIn) -> list:
 
 def build_bc_sirs() -> None:
     """BC SIRS 分值表入口:指南 PDF 逐表取 → 四节 + wage 规则 + 执业资格对照表。"""
-    with fitz.open(stream=fetch_bytes(FetchHtmlIn(url=BC_GUIDE_URL, timeout_s=BCR_TIMEOUT_S)),
+    with pymupdf.open(stream=fetch_bytes(FetchHtmlIn(url=BC_GUIDE_URL, timeout_s=BCR_TIMEOUT_S)),
                    filetype=FILETYPE_PDF) as doc:
         eff = ""
         # pyrefly: ignore[no-matching-overload] — pymupdf 的 get_text() 无参档位恒返回 str,存根把三档位并成 str|list|dict
@@ -5152,7 +5152,7 @@ def nlp_annex_text() -> str:
     pdf_res.raise_for_status()
     if not pdf_res.content.startswith(NLP_PDF_MAGIC):
         fail_nlp([NLP_PROBLEM_NOT_PDF])
-    with fitz.open(stream=pdf_res.content, filetype=FILETYPE_PDF) as doc:
+    with pymupdf.open(stream=pdf_res.content, filetype=FILETYPE_PDF) as doc:
         parts: list = []
         for page in doc:
             parts.append(page.get_text(NLP_TEXT_MODE))
@@ -5958,7 +5958,7 @@ def scan_gate_pdf(key: str) -> None:
             data = httpx.get(url, headers={HDR_UA: POLITE_UA}, follow_redirects=True,
                              timeout=GQ_PDF_TIMEOUT_S).content
             parts: list = []
-            with fitz.open(stream=data, filetype=FILETYPE_PDF) as doc:
+            with pymupdf.open(stream=data, filetype=FILETYPE_PDF) as doc:
                 for pg in doc:
                     parts.append(pg.get_text())
             text = WS_RE.sub(WS_FOLD, TEXT_JOIN_SEP.join(parts))

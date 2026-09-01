@@ -26,7 +26,7 @@ import time
 from datetime import date
 from typing import cast
 
-import fitz
+import pymupdf
 import httpx
 from bs4 import BeautifulSoup
 
@@ -132,7 +132,7 @@ def parse_pdf_bullets(x: PdfBulletsIn) -> list:
     """
     data = httpx.get(x.url, headers={HDR_UA: BROWSER_UA}, follow_redirects=True,
                      timeout=EMP_TIMEOUT_S).content
-    doc = fitz.open(stream=data, filetype=PDF_FILETYPE)
+    doc = pymupdf.open(stream=data, filetype=PDF_FILETYPE)
     parts: list = []
     for p in doc:
         parts.append(p.get_text())

@@ -38,7 +38,7 @@ from datetime import date
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit
 
-import fitz
+import pymupdf
 import httpx
 
 from log.functions import say
@@ -852,9 +852,9 @@ def prairie_pdf_url(x: PdfLinkIn) -> str:
     return urljoin(x.base_url, m.group(1).replace(AMP_ENTITY, AMP))
 
 
-def prairie_pdf(url: str) -> fitz.Document:
+def prairie_pdf(url: str) -> pymupdf.Document:
     """草原段下一份 PDF 并打开。"""
-    return fitz.open(stream=fetch_prairie_response(url).content, filetype=FILETYPE_PDF)
+    return pymupdf.open(stream=fetch_prairie_response(url).content, filetype=FILETYPE_PDF)
 
 
 def prairie_tidy(text: str) -> str:
@@ -886,7 +886,7 @@ def sp_employer_rows(pdf_url: str) -> list:
     return rows
 
 
-def prairie_pdf_text(doc: fitz.Document) -> str:
+def prairie_pdf_text(doc: pymupdf.Document) -> str:
     """整份 PDF 的纯文本(逐页拼)。"""
     parts: list = []
     for page in doc:
@@ -951,7 +951,7 @@ def atl_pdf_lines(url: str) -> list:
     """下载 PDF,按页返回去首尾空白后的非空文本行。"""
     resp = fetch_atl_response(url)
     pages: list = []
-    with fitz.open(stream=resp.content, filetype=FILETYPE_PDF) as doc:
+    with pymupdf.open(stream=resp.content, filetype=FILETYPE_PDF) as doc:
         for page in doc:
             lines: list = []
             # pyrefly: ignore[missing-attribute] — pymupdf get_text() 无参档位恒返回 str,存根把三档位并成 str|list|dict
