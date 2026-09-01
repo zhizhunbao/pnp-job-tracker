@@ -7,7 +7,9 @@
 # 入口不用 xvfb-run(它会吞日志);改「需有头才后台起 Xvfb + 设 DISPLAY,再 exec python」,日志正常。
 # 源码与 data/ 由 compose bind-mount 注入(working_dir=/repo),镜像不 COPY 源码。
 FROM python:3.12-slim
-RUN pip install --no-cache-dir playwright "httpx>=0.27" "beautifulsoup4>=4.12" "lxml>=5.0" "loguru>=0.7" \
+# pydantic 2026-08-31 补装:08-30 全域采用 pydantic 边界校验时只加了通用镜像(etl/Dockerfile),
+# 本镜像漏配 → crawl 容器每轮 import 即折(ModuleNotFoundError 实撞,日志扫查逮到)
+RUN pip install --no-cache-dir playwright "httpx>=0.27" "beautifulsoup4>=4.12" "lxml>=5.0" "loguru>=0.7" "pydantic>=2.7" \
  && playwright install --with-deps chromium \
  && apt-get update && apt-get install -y --no-install-recommends xvfb && rm -rf /var/lib/apt/lists/*
 CMD ["sh", "-c", "if [ \"$BROWSER_HEADLESS\" != \"1\" ]; then Xvfb :99 -screen 0 1280x1024x24 -nolisten tcp >/dev/null 2>&1 & export DISPLAY=:99; sleep 1; fi; exec python etl/sched/main.py"]

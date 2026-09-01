@@ -223,7 +223,7 @@ pnp-job-tracker/
 cd cms && npm run dev                    # localhost:3000(读写生产!测试号 @test.local);本机只准一个 dev 实例,验完即关
 # 改 collection 字段:显式 DB_PUSH=1 单次推(删列/改类型手写 SQL,提示删列必答 N);改 Jobs 字段后重启 dev 再重灌
 # seed 必带 token(直连生产,reset=1 会清库慎用):curl -H "x-seed-token: $SEED_TOKEN" localhost:3000/api/seed
-# 无人值守全栈(仓库根):docker compose --profile unattended up -d --build(批N:一域一容器,compose 住根,Dockerfile 归域)
+# 无人值守全栈(仓库根):docker compose up -d --build(批N 一域一容器 15 ETL 容器;本地 postgres/cms 闲置件 08-31 拍板删除,dev 直连生产库、seed 直打 offer2pr.com)
 # 完整 ETL:python etl/sched/main.py --only now(2026-08-31 批K 调度器域化;编号主管线已全数入域,mart 域=跨源清洗+汇装)
 ```
 

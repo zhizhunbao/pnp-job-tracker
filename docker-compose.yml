@@ -2,15 +2,13 @@
 # 2026-08-31 批N Frank 拍板「一域一容器 + docker/ 目录退役」:本文件自 docker/ 迁仓库根,
 # Dockerfile 归域(通用轻镜像 etl/Dockerfile、浏览器重镜像 etl/crawl/Dockerfile),
 # 原挂 pnp/ee 角色合租的七域(ats/lmia/aip/citations/dli/fcip/rcip)拆成各自 service。
-#   postgres  数据库(发布 :5432 给 host npm run dev;容器内用服务名 postgres 连)
-#   cms       Next/Payload 应用(仅 unattended profile 起,发布 :3001;本地开发用 host npm run dev 占 :3000)
-#   其余 15 个 = 一域一容器,SOURCE=域名,节奏真相在各域 META
+# 2026-08-31 Frank 拍板:本地闲置的 postgres/cms 两 service 删除(07-16 割接 Render 后,
+# dev 直连生产库、seed 直打 offer2pr.com,这套本地件零流量还顶着陈 schema 报错)——
+# 全栈 = 15 个 ETL 容器,一域一容器,SOURCE=域名,节奏真相在各域 META。
 #
 # 用法(仓库根执行):
-#   开发:        docker compose up -d postgres        # 只起库,cms 用 host npm run dev
-#   跑自动机:    docker compose up -d                 # postgres+全部 etl(cms 仍 host)
-#   无人值守全栈:docker compose --profile unattended up -d --build   # 再加容器化 cms
-#   日志 docker compose logs -f  |  停 docker compose --profile unattended down
+#   无人值守全栈:docker compose up -d --build
+#   日志 docker compose logs -f  |  停 docker compose down
 # 开机自启:Docker Desktop 勾「登录时启动」+ 各容器 restart:unless-stopped。
 name: pnp
 
@@ -26,23 +24,6 @@ x-etl: &etl                        # 通用数据层镜像(httpx 类源 + build/
     - 'host.docker.internal:host-gateway'
 
 services:
-  postgres:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: pnp
-      POSTGRES_PASSWORD: pnp
-      POSTGRES_DB: pnp
-    ports:
-      - '5432:5432'
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U pnp']
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
   jobbank:                         # 抓 Job Bank(只刷 raw/jobbank/)
     <<: *etl
     environment:
@@ -172,28 +153,10 @@ services:
       SOURCE: build
       HEALTHCHECK_PING_BUILD: ${HEALTHCHECK_PING_BUILD:-}
       # SCRAPE_INTERVAL 2026-08-31 批F 退役:节奏真相=load 域 METAS build 役(3600 兜底 + after=jobbank;#128 文字随迁)
-      SEED_URL: ${SEED_URL:-http://host.docker.internal:3001/api/seed}  # 默认灌 docker cms(:3001);R3 起步档在 docker/.env 覆写为云端 https://pnp-cms.onrender.com/api/seed
-      SEED_TOKEN: ${SEED_TOKEN:-}  # 云端 seed 鉴权(docker/.env 注入;本地空=不带头);upload_mart 推 /api/mart 同用这对(E7-04,Supabase Storage 已退役)
+      SEED_URL: ${SEED_URL:-https://offer2pr.com/api/seed}  # 灌库端点由根 .env 提供(现值即生产);2026-08-31 本地 cms 容器删除后 :3001 默认档随之退役
+      SEED_TOKEN: ${SEED_TOKEN:-}  # 云端 seed 鉴权(根 .env 注入);upload_mart 推 /api/mart 同用这对(E7-04,Supabase Storage 已退役)
       TZ: EST5EDT                  # 日志东部时区
 
-  cms:                             # 生产容器:仅 --profile unattended 起;本地开发用 host npm run dev(占 :3000)
-    profiles: ['unattended']
-    build:
-      context: ./cms
-      dockerfile: Dockerfile       # 需 next.config output:'standalone'(已加)
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-    ports:
-      - '3001:3000'                # 发布 :3001(让出 :3000 给 host npm run dev 本地测试;容器内仍 3000)
-    env_file:
-      - ./cms/.env                 # PAYLOAD_SECRET / OLLAMA_* 等
-    environment:
-      DATABASE_URI: postgresql://pnp:pnp@postgres:5432/pnp  # 同网络用服务名连库(覆盖 .env 的 localhost)
-    volumes:
-      - ./data:/data               # seed 读 /data/mart(standalone server cwd=/app,./data=/data)
-
-volumes:
-  pgdata:
-    name: cms_pgdata               # pin 现有卷,合并项目后不丢已灌的库
+# postgres/cms 两 service + pgdata 卷 2026-08-31 Frank 拍板删除:07-16 割接 Render 后
+# 本地 dev 直连生产库、seed 直打 offer2pr.com,这套本地件零流量、schema 停摆只剩报错。
+# cms/Dockerfile(standalone 镜像配方)保留 —— 它不只属于这套 compose。
