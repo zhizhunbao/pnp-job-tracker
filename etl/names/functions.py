@@ -7,6 +7,9 @@ employers.norm_name_of(雇主池三源对齐面,故意只剥法务后缀防硬�
 company.norm_company_name(Wikidata facts 缓存键,已落盘改不起)各有设计意图,不收,
 两处注释各自挂账。例外表(尺子对不上的同名雇主,离线 AI 提名+人工冻结)是将来证据到了
 再开的抽屉,先不建 —— 没抓到例外不建例外表。
+
+@author Frank
+@time 2026-08-31 20:31
 """
 from fetch.constants import SPACE_SEP, WS_RE
 from names.constants import ALIAS_SPLIT_RE, KEEP_RE, SUFFIX_RE
