@@ -44,7 +44,7 @@ import fitz
 import httpx
 
 from log.functions import say
-from fetch.constants import HDR_UA, LINE_SEP, SPACE_SEP, WS_RE
+from fetch.constants import BROWSER_UA, HDR_UA, LINE_SEP, SPACE_SEP, WS_RE
 from rcip.constants import (
     AIA_FAIL_TPL, AL_CELL_RE, AL_COMMUNITY, AL_EMP_LABEL, AL_EMP_URL, AL_OCC_LABEL, AL_OCC_URL,
     AMP, AMP_ENTITY, ASCII, ASOF_LEN, ATL_ACCEPT_LANG, BASELINE_EMP, BOM, BR_COMMUNITY,
@@ -94,7 +94,7 @@ from rcip.constants import (
     TB_SOVEREIGN_LOC1, TB_SOVEREIGN_LOC2, TB_SOVEREIGN_PAIR, TB_X_SPLIT, TB_Y_TOL, TIMEOUT_S,
     TM_COMMUNITY, TM_CONT_NAME, TM_HDR_RE, TM_NON_ALPHA_RE, TM_NOT_HIRING_RE, TM_NO_PDF,
     TM_NO_TABS, TM_OCC_BLOCK_RE, TM_PAGE, TM_PDF_HREF_RE, TM_PILOT_CODES, TM_SHORT_TPL,
-    TM_TAB_TITLE_RE, TM_X_NAME_MIN, TM_X_PILOT_MIN, TM_Y_TOL, TYPE_RCIP, UA_CHROME126, UL_OPEN_RE,
+    TM_TAB_TITLE_RE, TM_X_NAME_MIN, TM_X_PILOT_MIN, TM_Y_TOL, TYPE_RCIP, UL_OPEN_RE,
     UL_TAG_RE, URL_SEP, WK_COMMUNITY, WK_EMP_URL, WK_HEADER_MARK, WK_HOST_INDEX, WK_HREF_RE,
     WK_LIST_END, WK_LIST_START, WK_LOC_SEP, WK_NEW_MARK, WK_NO_BOUNDS, WK_OCC_URL, WK_POST_LIMIT,
     WK_POST_RE, WK_TD_ANY_RE, WK_TD_RE, WK_TR_RE, WK_UPDATES_URL,
@@ -557,15 +557,17 @@ def fetch_index(idx_url: str) -> FetchLiveOut:
 
     索引页要的是 href,不能先去 tag —— 与 fetch_live 的分工就在这。
     (原脚本这里是个内联 lambda 拆响应元组,2026-08-31 批C 改显式两行。)
+    2026-08-31 批M:本域六个直连函数原共用自留的 UA_CHROME126(批L 由 LIVE_UA 与四个
+    抽取器抄本收成一处,Chrome/126),整体并进 fetch.constants.BROWSER_UA(Chrome/131)。
     """
-    r = httpx.get(idx_url, headers={HDR_UA: UA_CHROME126}, follow_redirects=True,
+    r = httpx.get(idx_url, headers={HDR_UA: BROWSER_UA}, follow_redirects=True,
                   timeout=TIMEOUT_S)
     return FetchLiveOut(url=str(r.url), text=r.text)
 
 
 def fetch_live(url: str) -> FetchLiveOut:
     """直连取页 → (最终 URL, 纯文本)。跟重定向(WK 换域全靠它);原 `_live`,下划线名退役。"""
-    r = httpx.get(url, headers={HDR_UA: UA_CHROME126}, follow_redirects=True, timeout=TIMEOUT_S)
+    r = httpx.get(url, headers={HDR_UA: BROWSER_UA}, follow_redirects=True, timeout=TIMEOUT_S)
     r.raise_for_status()
     return FetchLiveOut(url=str(r.url), text=text_of_html(r.text))
 
@@ -808,7 +810,7 @@ def fetch_on_response(x: OnFetchIn) -> httpx.Response:
 
     params 空就不传 —— 与原脚本 `c.get(url)` 那一路逐字一致,不靠空 dict 合并出同样的 URL。
     """
-    with httpx.Client(headers={HDR_UA: UA_CHROME126}, timeout=TIMEOUT_S,
+    with httpx.Client(headers={HDR_UA: BROWSER_UA}, timeout=TIMEOUT_S,
                       follow_redirects=True) as c:
         if len(x.params) == 0:
             r = c.get(x.url)
@@ -1251,7 +1253,7 @@ def west_kootenay() -> dict:
 
 def fetch_bc_response(url: str) -> httpx.Response:
     """BC 段取页(httpx.get + 浏览器 UA + 跟随重定向)。"""
-    r = httpx.get(url, headers={HDR_UA: UA_CHROME126}, follow_redirects=True, timeout=TIMEOUT_S)
+    r = httpx.get(url, headers={HDR_UA: BROWSER_UA}, follow_redirects=True, timeout=TIMEOUT_S)
     r.raise_for_status()
     return r
 
@@ -1550,12 +1552,12 @@ def moose_jaw() -> dict:
 def fetch_prairie_response(url: str) -> httpx.Response:
     """草原段取页;证书校验失败(Brandon 官网漏发中间证书)时走一次 AIA 补链重试。"""
     try:
-        r = httpx.get(url, headers={HDR_UA: UA_CHROME126}, timeout=TIMEOUT_S,
+        r = httpx.get(url, headers={HDR_UA: BROWSER_UA}, timeout=TIMEOUT_S,
                       follow_redirects=True)
     except httpx.ConnectError as e:
         if CERT_FAIL_MARK not in str(e):
             raise
-        r = httpx.get(url, headers={HDR_UA: UA_CHROME126}, timeout=TIMEOUT_S,
+        r = httpx.get(url, headers={HDR_UA: BROWSER_UA}, timeout=TIMEOUT_S,
                       follow_redirects=True, verify=prairie_aia_context(url))
     r.raise_for_status()
     return r
@@ -1856,7 +1858,7 @@ def pictou_county() -> dict:
 
 def fetch_atl_response(url: str) -> httpx.Response:
     """大西洋段取页(浏览器 UA + 英优先的语言偏好,英法双语站的实况值)。"""
-    with httpx.Client(headers={HDR_UA: UA_CHROME126, HDR_ACCEPT_LANGUAGE: ATL_ACCEPT_LANG},
+    with httpx.Client(headers={HDR_UA: BROWSER_UA, HDR_ACCEPT_LANGUAGE: ATL_ACCEPT_LANG},
                       follow_redirects=True, timeout=TIMEOUT_S) as client:
         resp = client.get(url)
         resp.raise_for_status()

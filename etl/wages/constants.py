@@ -119,9 +119,6 @@ ENV_JVWS_QUARTERS = "JVWS_QUARTERS"
 JVWS_QUARTERS_DEFAULT = "4"
 """默认最近 4 个季度。"""
 
-JVWS_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) pnp-job-tracker-etl/1.0"
-"""自报家门头(curl -A 传)。"""
-
 JVWS_CSV_NAME_TPL = "{product_id}.csv"
 """zip 里的全表 CSV 名。"""
 

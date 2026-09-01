@@ -31,7 +31,7 @@ from bs4 import BeautifulSoup
 
 import paths
 from log.functions import err, say
-from fetch.constants import BROWSER_UA, HDR_UA, PARSER_HTML, WS_RE
+from fetch.constants import BROWSER_UA, HDR_UA, PARSER_HTML, POLITE_UA, WS_RE
 from crawl.functions import convert_md, get_cached_page
 from crawl.scheme import ConvertIn
 from pnp.constants import (
@@ -78,7 +78,7 @@ from pnp.constants import (
     DRAWS_SOURCE, DRAWS_STREAM_CLIP, DRAWS_TIMEOUT_S, DROP_TAGS, EMPTY_JOIN, ENC_UTF8, ERRORS_REPLACE,
     FACTOR_EMP_REVENUE, FACTOR_EMP_STAFF, FACTOR_EMP_YEARS, FACTOR_EXPERIENCE, FACTOR_EXPERIENCE_EXCLUDED,
     FACTOR_INCOME, FACTOR_LANGUAGE, FACTOR_LANGUAGE_EXEMPT, FACTOR_RESIDENCE, FACTOR_WAGE, FILETYPE_PDF,
-    HDR_ACCEPT_JSON, HEADER_WORDS, INDENT_1, INDENT_2, IN_ALLOC_TABLE, IN_CRAWL_DIR, IN_DRAWS_FOR_ZH, IN_NEWS_FILE,
+    HEADER_WORDS, INDENT_1, INDENT_2, IN_ALLOC_TABLE, IN_CRAWL_DIR, IN_DRAWS_FOR_ZH, IN_NEWS_FILE,
     IN_NL_HTML_CACHE, IN_NL_MANIFEST, K_ALLOCATION, K_ALLOC_PROGRAM, K_ALLOC_VALUE, K_ALLOC_YEAR, K_ANNUAL, K_ANY,
     K_ANY_TRADE, K_API, K_APPLIES_AREA, K_APPLIES_CONDITION, K_APPLIES_NOC, K_APPLIES_TEER, K_APPLIES_TO,
     K_APPLIES_TO_QUOTE, K_APPROVED_DAYS, K_AS_OF_LOWER, K_BAND_COUNT, K_BASIS, K_BODY_EN, K_BONUS, K_BY_PROGRAM,
@@ -299,7 +299,7 @@ from pnp.constants import (
     GQ_P_PDF_FILE_TPL, GQ_P_PDF_HEAD_TPL, GQ_P_SENT_TPL, GQ_P_UNKNOWN_TPL, GQ_P_URL_TPL,
     GQ_PAGES_MAX, GQ_PATHWAYS, GQ_PDF_HITS_SHOW, GQ_PDF_SENT_SHOW_LEN, GQ_PDF_SOURCES,
     GQ_PDF_TIMEOUT_S, GQ_SENT_MAX, GQ_SENT_MIN, GQ_SENT_SHOW_LEN, GQ_SENT_SPLIT_RE,
-    GQ_STATUS_OK, GQ_UA, GQ_URL_SEP, K_DRAW_DATE, K_FACTOR_MAX, K_KIND, K_METRIC, K_PERIOD,
+    GQ_STATUS_OK, GQ_URL_SEP, K_DRAW_DATE, K_FACTOR_MAX, K_KIND, K_METRIC, K_PERIOD,
     WS_FOLD,
 )
 """批D 三段(35 金标体检 / 36 门槛取证器 / 37 新鲜度哨兵)的常量单列一块 ——
@@ -1810,7 +1810,7 @@ def scrape_ns_allocations() -> None:
     say(NS_ALLOC_PRINT_OUT_TPL.format(path=OUT_NS_ALLOCATIONS))
     OUT_IRCC_DIR.mkdir(parents=True, exist_ok=True)
     try:
-        r = httpx.get(NS_ALLOC_API, timeout=NS_ALLOC_TIMEOUT_S, headers={HDR_ACCEPT_JSON: NS_ALLOC_UA})
+        r = httpx.get(NS_ALLOC_API, timeout=NS_ALLOC_TIMEOUT_S, headers={HDR_UA: NS_ALLOC_UA})
         r.raise_for_status()
         by_prog = ns_allocations_by_program(r.json())
         nsnp = by_prog.get(NS_ALLOC_PROG_NSNP) or {}
@@ -5955,10 +5955,14 @@ def scan_gate_pathway(key: str) -> None:
 
 def scan_gate_pdf(key: str) -> None:
     """官方 PDF 里捞候选句(WAF 挡着 HTML、或页面把条件推给指南 PDF 的通道走这条;
-    与 build_pe_req 同一套解析器,不另立一套)。"""
+    与 build_pe_req 同一套解析器,不另立一套)。
+
+    2026-08-31 批M:原 GQ_UA(本域自留的 offer2pr 自报家门 dict)并进
+    fetch.constants.POLITE_UA,头 dict 就地拼。
+    """
     for url in GQ_PDF_SOURCES.get(key) or []:
         try:
-            data = httpx.get(url, headers=GQ_UA, follow_redirects=True,
+            data = httpx.get(url, headers={HDR_UA: POLITE_UA}, follow_redirects=True,
                              timeout=GQ_PDF_TIMEOUT_S).content
             parts: list = []
             with fitz.open(stream=data, filetype=FILETYPE_PDF) as doc:

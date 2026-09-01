@@ -18,9 +18,10 @@ import httpx
 
 import paths
 from log.functions import say
+from fetch.constants import HDR_UA, POLITE_UA
 from dli.constants import (
     ATLANTIC, FETCH_TIMEOUT_S, IN_TPL, IN_URL, LANDING, MIN_ROWS, OUT_FILE, OUT_INDENT, OUT_TPL,
-    PROV_CODE, PUBLIC_TOKEN, SKIPPED_TPL, SOURCE_ROWS_TPL, TEXT_ENCODING, TOO_FEW_TPL, UA,
+    PROV_CODE, PUBLIC_TOKEN, SKIPPED_TPL, SOURCE_ROWS_TPL, TEXT_ENCODING, TOO_FEW_TPL,
     WROTE_TPL, YES,
 )
 from dli.scheme import (
@@ -94,10 +95,13 @@ def build_ircc_dli_pgwp() -> None:
 
     源默认 charset 声明不可靠 → 强制 utf-8 解码(法语校名 Collège 防 mojibake);
     行数低于防线整轮失败(宁可不更新,别灌半截)。
+    2026-08-31 批M:原 UA(本域自留的 dli-builder 自报家门 dict)并进
+    fetch.constants.POLITE_UA,头 dict 就地拼。
     """
     say(IN_TPL.format(url=IN_URL))
     say(OUT_TPL.format(path=OUT_FILE))
-    r = httpx.get(IN_URL, headers=UA, timeout=FETCH_TIMEOUT_S, follow_redirects=True)
+    r = httpx.get(IN_URL, headers={HDR_UA: POLITE_UA}, timeout=FETCH_TIMEOUT_S,
+                  follow_redirects=True)
     r.raise_for_status()
     r.encoding = TEXT_ENCODING
     source = DliSource.model_validate_json(r.text)

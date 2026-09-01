@@ -16,11 +16,12 @@ from typing import cast
 import httpx
 
 import paths
+from fetch.constants import HDR_UA, POLITE_UA
 from citations.constants import (
     DATASETS, DERIVED, DESC_ALT_RE, DESC_MAX, DESC_RE, DONE_TPL, FETCH_FAIL_TPL, FETCH_TIMEOUT_S,
     HTTP_OK, IN_TPL, K_FIELDS, K_URL, KIND_DATASET, KIND_DERIVED,
     OUT_FILE, OUT_INDENT, OUT_TPL, PUBLISHER_DERIVED, SPACE, SPACE_RE, STATUS_DERIVED,
-    STATUS_UNVERIFIED, STATUS_VERIFIED, TITLE_MAX, TITLE_RE, UA,
+    STATUS_UNVERIFIED, STATUS_VERIFIED, TITLE_MAX, TITLE_RE,
 )
 from citations.scheme import (
     DatasetRowIn, DerivedRowIn, FetchIn, HttpGetLike, PageMeta, SourceFile, SourceRow, StatusCount,
@@ -71,9 +72,14 @@ def fetch_all_meta() -> dict:
 
 
 def fetch_meta(x: FetchIn) -> PageMeta:
-    """抓着陆页,抽 <title> + meta description 原文;失败/非 200 → unverified(宁可留空)。"""
+    """抓着陆页,抽 <title> + meta description 原文;失败/非 200 → unverified(宁可留空)。
+
+    2026-08-31 批M:原 UA(本域自留的 source-verifier 自报家门 dict)并进
+    fetch.constants.POLITE_UA,头 dict 就地拼。
+    """
     try:
-        r = x.client.get(x.url, headers=UA, timeout=FETCH_TIMEOUT_S, follow_redirects=True)
+        r = x.client.get(x.url, headers={HDR_UA: POLITE_UA}, timeout=FETCH_TIMEOUT_S,
+                         follow_redirects=True)
         if r.status_code != HTTP_OK:
             return PageMeta(status=STATUS_UNVERIFIED, title="", description="")
         meta = to_page_meta(r.text)

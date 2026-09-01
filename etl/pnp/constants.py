@@ -96,9 +96,6 @@ ATTR_ROWSPAN = "rowspan"
 ATTR_COLSPAN = "colspan"
 """跨列属性名。"""
 
-HDR_ACCEPT_JSON = "User-Agent"
-"""Socrata API 的自报家门头名(与伪装档分开:开放数据平台不需要伪装)。"""
-
 DIGIT_RE = re.compile(r"\d")
 """单个数字 —— teers() 用它把「2, 3, 4 or 5」拆成 [2,3,4,5](官方就是这么写的,别自己推区间)。"""
 
@@ -5432,9 +5429,6 @@ GQ_SENT_MIN = 25
 
 GQ_SENT_MAX = 320
 """候选句最长长度(长于它的多半是整段粘连)。"""
-
-GQ_UA = {"User-Agent": "Mozilla/5.0 (compatible; offer2pr/1.0; +https://offer2pr.com)"}
-"""PDF 直取的自报家门头。"""
 
 GQ_PDF_TIMEOUT_S = 60
 """PDF 下载超时。"""

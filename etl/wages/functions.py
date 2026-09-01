@@ -19,6 +19,7 @@ import httpx
 
 import paths
 from log.functions import say
+from fetch.constants import POLITE_UA
 from wages.constants import (
     COL_COORDINATE, COL_REF_DATE, COL_STATUS, COL_VALUE, COORD_SEP, CSV_BOM_ENCODING, CURL_CMD,
     CURL_FAIL_TPL, CURL_FLAG_DATA, CURL_FLAG_HEADER, CURL_FLAG_MAX_TIME, CURL_FLAG_METHOD,
@@ -30,7 +31,7 @@ from wages.constants import (
     JVWS_NOC_VERSION_QUOTE, JVWS_NOT_CURRENT_TPL, JVWS_OUT_TPL, JVWS_PROBE_DASH,
     JVWS_PROBE_HEAD_TPL, JVWS_PROBE_LABELS, JVWS_PROBE_TPL, JVWS_PRODUCT_ID, JVWS_PROV_CODE,
     JVWS_QUARTERS_DEFAULT, JVWS_QUARTER_TPL, JVWS_SAVED_TPL, JVWS_STAT_MISSING_TPL,
-    JVWS_STAT_VACANCIES, JVWS_STATUS_HEAD_LEN, JVWS_TABLE_NO, JVWS_TITLE_TPL, JVWS_UA,
+    JVWS_STAT_VACANCIES, JVWS_STATUS_HEAD_LEN, JVWS_TABLE_NO, JVWS_TITLE_TPL,
     JVWS_WDS_CSV_LINK, JVWS_WDS_META, JVWS_ZIP_TIMEOUT_S, MART_DONE_TPL, MART_IN_TPL, MART_OUT_TPL,
     MART_UNAVAILABLE_QUALITY, MONTH_LEN, MONTH_QUARTER, OUT_JVWS_TABLE, OUT_MART, OUT_WAGE_TABLE,
     PROV_NAT, READ_ERRORS, TEXT_ENCODING, WAGE_ANNUAL_FLAG_TRUE, WAGE_CACHED_TPL, WAGE_DONE_TPL,
@@ -167,8 +168,10 @@ def curl_get(x: CurlGetIn) -> str | None:
 
     statcan.gc.ca 用 httpx 直连**实测 100% ConnectError/握手超时**(WinError 10054,
     重试 5 次仍失败;curl 走 schannel + 强制 http/1.1 能稳定连上,同一台机同一网络)。
+    2026-08-31 批M:原 JVWS_UA(浏览器串 + 自报家门混写,curl -A 传)并进
+    fetch.constants.POLITE_UA;本段两处 curl 调用共用。
     """
-    args = list(CURL_CMD) + [CURL_FLAG_MAX_TIME, str(x.timeout), CURL_FLAG_UA, JVWS_UA]
+    args = list(CURL_CMD) + [CURL_FLAG_MAX_TIME, str(x.timeout), CURL_FLAG_UA, POLITE_UA]
     if x.out_path is not None:
         args += [CURL_FLAG_OUT, str(x.out_path)]
     args.append(x.url)
@@ -194,7 +197,7 @@ def fetch_metadata() -> JvwsMeta:
     """WDS getCubeMetadata 实查 —— 每次跑都验一遍表还在(CURRENT)、拿最新 releaseTime,
     不缓存(便宜);不是 CURRENT 就整轮失败,禁止凭旧表号继续跑。"""
     args = list(CURL_CMD) + [
-        CURL_FLAG_MAX_TIME, str(JVWS_META_TIMEOUT_S), CURL_FLAG_UA, JVWS_UA,
+        CURL_FLAG_MAX_TIME, str(JVWS_META_TIMEOUT_S), CURL_FLAG_UA, POLITE_UA,
         CURL_FLAG_METHOD, CURL_METHOD_POST, JVWS_WDS_META,
         CURL_FLAG_HEADER, CURL_HDR_JSON,
         CURL_FLAG_DATA, to_cube_query(JVWS_PRODUCT_ID),

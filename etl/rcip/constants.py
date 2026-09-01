@@ -90,16 +90,6 @@ K_HTML = "html"
 HTML_CACHE_DIR = "html_cache"
 """crawl 缓存实体目录名(manifest 同级)。"""
 
-UA_CHROME126 = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
-"""直连官方源的浏览器 UA —— **本域自留一份**:与 fetch.constants.BROWSER_UA(Chrome/131)
-不是同一个串,换成那份等于换 UA,不属「行为不变」的搬运(原 LIVE_UA 的判据,逐字沿用)。
-
-批L 溶解改动(2026-08-31):原名 LIVE_UA(quota 直连补抓专用),抽取器群溶进本域后
-数出五份同值抄本(quota 一份 + extractors/{on,bc,prairie,atl} 各一份)—— 同一文件里
-五份同串是「读的人要多翻」,收成本常量一处,改名去掉 LIVE_ 前缀(现在五段共用)。
-值一字未改:仍是 Chrome/126,不借 fetch 那份 131。"""
-
 TIMEOUT_S = 60
 """直连官方源的超时秒数(五段共用)。
 批L 溶解改动:原 LIVE_TIMEOUT_S(quota)与四个抽取器文件各自的 TIMEOUT 同值 60,收成一处。"""

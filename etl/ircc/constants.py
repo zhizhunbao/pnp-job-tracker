@@ -578,11 +578,6 @@ PGWP_URL_ABOUT = PGWP_BASE + "/about.html"
 PGWP_URL_ELIG = PGWP_BASE + "/eligibility.html"
 """申请窗/最低时长/语言的出处页。"""
 
-PGWP_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-           "Chrome/120 Safari/537.36")
-"""段5 的伪装 UA(原脚本原值 Chrome/120)。⚠ 与 fetch.constants.BROWSER_UA(Chrome/131)
-不是一份 —— 2026-08-30 批C 是「行为逐字不变」的溶解批,抓取头不在本批变换范围内。"""
-
 PGWP_TIMEOUT_S = 40
 """两页抓取超时。"""
 
@@ -692,10 +687,6 @@ factor='fee' → 天然不进门槛节,只被 fees 消费点读。
 
 FEES_URL = "https://ircc.canada.ca/english/information/fees/fees.asp"
 """IRCC 官方费用总表(httpx 直连 200)。"""
-
-FEES_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-           "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
-"""段6 的伪装 UA(原脚本原值 Chrome/126)。"""
 
 FEES_TIMEOUT_S = 45
 """费用页抓取超时。"""

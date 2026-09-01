@@ -612,9 +612,6 @@ OUT_DESC = paths.NOC / "descriptions.json"
 DESC_TIMEOUT_S = 120
 """Elements CSV 下载超时(~5MB)。"""
 
-DESC_UA = {"User-Agent": "Mozilla/5.0"}
-"""下载头(StatCan 静态资源,礼貌标识即可)。"""
-
 ERRORS_REPLACE = "replace"
 """读 Elements CSV 的容错模式:坏字节替换不炸(原脚本既有)。"""
 

@@ -92,16 +92,6 @@ K_HTML = "html"
 HTML_CACHE_DIR = "html_cache"
 """crawl 缓存实体目录名(manifest 同级)。"""
 
-UA_CHROME126 = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
-"""直连官方源的浏览器 UA —— **本域自留一份**:与 fetch.constants.BROWSER_UA(Chrome/131)
-不是同一个串,换成那份等于换 UA,不属「行为不变」的搬运。
-
-批L 溶解改动(2026-08-31):四个抽取器文件各自的 UA 抄本(on 是裸串、bc/prairie 是
-{"User-Agent": …} 的 dict、atl 是带 Accept-Language 的两键 dict)溶进来后数出四份同值,
-收成本常量一处 + 各段自己拼 headers;与 rcip.constants.UA_CHROME126 是**镜像**
-(两域各留一份,改一边记得改另一边)。"""
-
 TIMEOUT_S = 60
 """直连官方源的超时秒数(四段共用;原四个文件各一份 TIMEOUT=60,rcip 侧镜像同名)。"""
 

@@ -67,12 +67,6 @@ OUT_CATEGORIES = paths.EE / "federal-categories.json"
 """段2 输出:raw/ee/federal-categories.json。产出与旧 etl/crawl/_fetch_ee_categories.py
 完全同构:{source,url,fetched,categories:[{key,label,occupations:[{noc,teer,title}]}]}。"""
 
-CAT_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-          "Chrome/120 Safari/537.36")
-"""本段的伪装 UA(原脚本原值 Chrome/120)。⚠ 与 fetch.constants.BROWSER_UA(Chrome/131)
-不是一份 —— 2026-08-30 批C 全溶是「行为逐字不变」的溶解批,抓取头不在本批变换范围内,
-要不要并进 fetch 单一来源留给收口批判。"""
-
 CAT_TIMEOUT_S = 30
 """类别页抓取超时。"""
 
@@ -147,9 +141,6 @@ byCategory  每类别**最近一次**抽选 → 09 join 进 ee_categories(EE 节
 history     每类别**历次**抽选(#135 Frank「点开按时间线看每一轮」)→ 09 灌进 pnp_draws
             (province=FED,零新表)
 recent      全类别混合最近 20 轮(参考)。"""
-
-DRAWS_UA = "Mozilla/5.0"
-"""段3 的最简 UA(原脚本原值;开放 JSON 端点不挑 UA)。"""
 
 DRAWS_TIMEOUT_S = 30
 """抽选 JSON 抓取超时。"""

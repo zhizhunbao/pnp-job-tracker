@@ -42,7 +42,7 @@ import fitz
 import httpx
 
 from log.functions import say
-from fetch.constants import HDR_UA, LINE_SEP, SPACE_SEP, WS_RE
+from fetch.constants import BROWSER_UA, HDR_UA, LINE_SEP, SPACE_SEP, WS_RE
 from fcip.constants import (
     ACAD_BR_RE, ACAD_COMMUNITY, ACAD_EMP_SHORT_TPL, ACAD_HEADER_PREFIXES, ACAD_ICON_RE,
     ACAD_MIN_EMP, ACAD_MIN_OCC, ACAD_NOTE_RE, ACAD_NO_PDF, ACAD_OCC_RE, ACAD_OCC_SHORT_TPL,
@@ -68,7 +68,7 @@ from fcip.constants import (
     SE_BREAK_RE, SE_COMMUNITY, SE_EMP_URL, SE_LIST_RE, SE_NO_LIST, SE_OCC_LINE_RE, SE_OCC_URL,
     SE_SHORT_TPL, SLUG_TO_COMMUNITY, SP_BULLET, SP_COMMUNITY, SP_DASH_FIX_RE, SP_DASH_FIX_TO,
     SP_EMP_LABEL, SP_HOME, SP_NOT_HIRING_RE, SP_OCC_LABEL, SP_OCC_RE, SP_OCC_URL, SP_PDF_PATTERN,
-    SP_PDF_RE, STATUS_FULL, STRAIGHT_QUOTE, TAG_RE, TIMEOUT_S, TYPE_FCIP, UA_CHROME126,
+    SP_PDF_RE, STATUS_FULL, STRAIGHT_QUOTE, TAG_RE, TIMEOUT_S, TYPE_FCIP,
 )
 from fcip.scheme import (
     CommDocIn, CommRowIn, CommunityIn, CommunityOut, CountTypeIn, DetailDocIn, DetailRowIn,
@@ -623,8 +623,13 @@ def superior_east() -> dict:
 
 
 def fetch_on_page(url: str) -> str:
-    """ON 段取一页 HTML(每次开一个 httpx.Client,原脚本的 with 写法)。"""
-    with httpx.Client(headers={HDR_UA: UA_CHROME126}, timeout=TIMEOUT_S,
+    """ON 段取一页 HTML(每次开一个 httpx.Client,原脚本的 with 写法)。
+
+    2026-08-31 批M:本域四个直连函数原共用自留的 UA_CHROME126(批L 由四个抽取器抄本 ——
+    on 裸串、bc/prairie 的 dict、atl 的两键 dict —— 收成一处,Chrome/126),
+    整体并进 fetch.constants.BROWSER_UA(Chrome/131);与 rcip 同批同向,镜像关系解除。
+    """
+    with httpx.Client(headers={HDR_UA: BROWSER_UA}, timeout=TIMEOUT_S,
                       follow_redirects=True) as c:
         r = c.get(url)
         r.raise_for_status()
@@ -692,7 +697,7 @@ def kelowna() -> dict:
 
 def fetch_bc_response(url: str) -> httpx.Response:
     """BC 段取页(httpx.get + 浏览器 UA + 跟随重定向)。"""
-    r = httpx.get(url, headers={HDR_UA: UA_CHROME126}, follow_redirects=True, timeout=TIMEOUT_S)
+    r = httpx.get(url, headers={HDR_UA: BROWSER_UA}, follow_redirects=True, timeout=TIMEOUT_S)
     r.raise_for_status()
     return r
 
@@ -779,12 +784,12 @@ def st_pierre_jolys() -> dict:
 def fetch_prairie_response(url: str) -> httpx.Response:
     """草原段取页;证书校验失败时走一次 AIA 补链重试(与 rcip 域的 Brandon 那条路同形镜像)。"""
     try:
-        r = httpx.get(url, headers={HDR_UA: UA_CHROME126}, timeout=TIMEOUT_S,
+        r = httpx.get(url, headers={HDR_UA: BROWSER_UA}, timeout=TIMEOUT_S,
                       follow_redirects=True)
     except httpx.ConnectError as e:
         if CERT_FAIL_MARK not in str(e):
             raise
-        r = httpx.get(url, headers={HDR_UA: UA_CHROME126}, timeout=TIMEOUT_S,
+        r = httpx.get(url, headers={HDR_UA: BROWSER_UA}, timeout=TIMEOUT_S,
                       follow_redirects=True, verify=prairie_aia_context(url))
     r.raise_for_status()
     return r
@@ -930,7 +935,7 @@ def acadian_peninsula() -> dict:
 
 def fetch_atl_response(url: str) -> httpx.Response:
     """大西洋段取页(浏览器 UA + 英优先的语言偏好,英法双语站的实况值)。"""
-    with httpx.Client(headers={HDR_UA: UA_CHROME126, HDR_ACCEPT_LANGUAGE: ATL_ACCEPT_LANG},
+    with httpx.Client(headers={HDR_UA: BROWSER_UA, HDR_ACCEPT_LANGUAGE: ATL_ACCEPT_LANG},
                       follow_redirects=True, timeout=TIMEOUT_S) as client:
         resp = client.get(url)
         resp.raise_for_status()

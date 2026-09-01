@@ -39,7 +39,7 @@ from bs4 import BeautifulSoup
 
 import paths
 from log.functions import err, say
-from fetch.constants import HDR_UA, PARSER_HTML, WS_RE
+from fetch.constants import BROWSER_UA, HDR_UA, PARSER_HTML, WS_RE
 from crawl.functions import convert_md
 from crawl.scheme import ConvertIn
 from ircc.constants import (
@@ -51,7 +51,7 @@ from ircc.constants import (
     BLANK_VALUES, COMMA, COORD_SEP, COORD_TPL, ENC_UTF8, FEE_FACTOR, FEE_OP, FEE_UNIT, FEES_BIO_ITEMS, FEES_BULLET_TPL,
     FEES_DONE_TPL, FEES_DROP_TAGS, FEES_FAIL_HEADER, FEES_ITEMS, FEES_NOTE, FEES_PRINT_OUT_TPL,
     FEES_PROBLEM_ITEM_TPL, FEES_PROBLEM_NO_SECTION_TPL, FEES_PROBLEM_RPRF_TPL, FEES_PROGRAM,
-    FEES_SECTION, FEES_SECTION_BIO, FEES_SEG_LEN, FEES_SOURCE, FEES_TIMEOUT_S, FEES_UA, FEES_URL,
+    FEES_SECTION, FEES_SECTION_BIO, FEES_SEG_LEN, FEES_SOURCE, FEES_TIMEOUT_S, FEES_URL,
     FEES_VALUE_CLIP, FLOW_BLANKS, FLOW_TAIL_PARTIAL_TPL, FLOW_TAIL_SEP, FLOW_TAIL_TPL,
     FLOW_TAIL_YEARS, FLOW_YEAR_ROW_MIN, GEO_DIM, HDR_MIN_DIGITS, HDR_PROBE_YEAR, INDENT_1,
     K_APPLIES_AREA, K_APPLIES_NOC, K_APPLIES_TEER, K_BASIS, K_BY_PROV, K_BY_YEAR, K_COMPLETE,
@@ -68,7 +68,7 @@ from ircc.constants import (
     NPR_WDS, OUT_FEES, OUT_FLOW, OUT_NPR, OUT_PGWP, OUT_PNP, OUT_TR, OUT_TR_PROV, PCT_SCALE,
     PGWP_DONE_TPL, PGWP_MISSING_ROW_TPL, PGWP_MISSING_TPL, PGWP_NOTE, PGWP_PAGE_ABOUT,
     PGWP_PAGE_ELIG, PGWP_PRINT_OUT_TPL, PGWP_PROGRAM, PGWP_QUOTE_CLIP, PGWP_RULES, PGWP_STAR,
-    PGWP_TIMEOUT_S, PGWP_UA, PGWP_URL_ABOUT, PGWP_URL_ELIG, PNP_CATEGORY_WORD, PROV_CODE, PROV_ON,
+    PGWP_TIMEOUT_S, PGWP_URL_ABOUT, PGWP_URL_ELIG, PNP_CATEGORY_WORD, PROV_CODE, PROV_ON,
     PROVINCE_FED, QUARTERS_ROUND, QUOTE_CURLY_LEFT, QUOTE_CURLY_RIGHT, QUOTE_STRAIGHT, SHARE_ROUND,
     SPACE, STATS_FLOW_NOTE, STATS_FLOW_TPL, STATS_NO_FLOW_HEADER, STATS_NO_HEADER,
     STATS_NO_PNP_HEADER, STATS_PNP_NOTE, STATS_PNP_TPL, STATS_PRINT_OUT_TPL, STATS_SRC,
@@ -711,8 +711,12 @@ def norm_pgwp(t: str) -> str:
 
 
 def fetch_norm(url: str) -> str:
-    """实抓一页 → md → 归一化全文(引用逐字核验的比对底本)。"""
-    html = httpx.get(url, headers={HDR_UA: PGWP_UA}, follow_redirects=True,
+    """实抓一页 → md → 归一化全文(引用逐字核验的比对底本)。
+
+    2026-08-31 批M:原 PGWP_UA(段5 自留,Chrome/120,批C 溶解批未动的抓取头)
+    并进 fetch.constants.BROWSER_UA。
+    """
+    html = httpx.get(url, headers={HDR_UA: BROWSER_UA}, follow_redirects=True,
                      timeout=PGWP_TIMEOUT_S).text
     md = convert_md(ConvertIn(html=html, url=url, selector=None, removes=()))
     return norm_pgwp(md)
@@ -866,9 +870,10 @@ def build_ircc_fees() -> None:
     源 = IRCC 官方费用总表(ircc.canada.ca/english/information/fees/fees.asp,httpx 直连 200)。
     只收 **Economic immigration (including Express Entry)** 一节(官方明示适用于 PNP/EE/AIP/RCIP)
     + 生物识别两档。**段落定位后逐项正则**,任何一项没解析到 → 保留旧表 exit 1(硬闸,照 build_pgwp)。
+    2026-08-31 批M:原 FEES_UA(段6 自留,Chrome/126)并进 fetch.constants.BROWSER_UA。
     """
     say(FEES_PRINT_OUT_TPL.format(path=OUT_FEES))
-    html = httpx.get(FEES_URL, headers={HDR_UA: FEES_UA}, follow_redirects=True,
+    html = httpx.get(FEES_URL, headers={HDR_UA: BROWSER_UA}, follow_redirects=True,
                      timeout=FEES_TIMEOUT_S).text
     txt = fees_text(html)
     i = txt.find(FEES_SECTION)

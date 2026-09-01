@@ -20,9 +20,6 @@ LANDING = ("https://www.canada.ca/en/immigration-refugees-citizenship/services/s
 OUT_FILE = paths.DLI / "dli.json"
 """输出:PGWP 子集(院校级;跟踪,09 直通进 mart/dli.json)。"""
 
-UA = {"User-Agent": "Mozilla/5.0 (compatible; pnp-job-tracker dli-builder)"}
-"""本域抓取的自报家门头(canada.ca 静态资源不设防,礼貌标识即可)。"""
-
 PROV_CODE = {
     "Alberta": "AB", "British Columbia": "BC", "Manitoba": "MB", "New Brunswick": "NB",
     "Newfoundland and Labrador": "NL", "Northwest Territories": "NT", "Nova Scotia": "NS",

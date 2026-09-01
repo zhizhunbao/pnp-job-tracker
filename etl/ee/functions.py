@@ -23,14 +23,14 @@ from bs4 import BeautifulSoup
 
 import paths
 from log.functions import say
-from fetch.constants import HDR_UA, PARSER_HTML, WS_RE
+from fetch.constants import BROWSER_UA, HDR_UA, PARSER_HTML, WS_RE
 from crawl.functions import get_cached_page
 from ee.constants import (
     BENCHMARK_CLB, BENCHMARK_CLB_PREFIX, BENCHMARK_HEADERS, BENCHMARK_NCLC, BREAKDOWN_WORD,
     CACHE_MISS_TPL, CAT_HEAD_TAGS, CAT_MAP, CAT_MIN_CELLS, CAT_PRINT_DONE_TPL, CAT_PRINT_EMPTY_TPL,
-    CAT_PRINT_ROW_TPL, CAT_SOURCE, CAT_TIMEOUT_S, CAT_UA, CAT_URL, CELL_TAGS, COMMA, CRS_LETTERS,
+    CAT_PRINT_ROW_TPL, CAT_SOURCE, CAT_TIMEOUT_S, CAT_URL, CELL_TAGS, COMMA, CRS_LETTERS,
     CRS_MIN_ROWS, CRS_NOTE, CRS_PRINT_DONE_TPL, CRS_PROBLEM_TPL, CRS_SOURCE, DRAWS_CAT_MAP,
-    DRAWS_PRINT_DONE_TPL, DRAWS_PRINT_ROW_TPL, DRAWS_SOURCE, DRAWS_TIMEOUT_S, DRAWS_UA, DRAWS_URL,
+    DRAWS_PRINT_DONE_TPL, DRAWS_PRINT_ROW_TPL, DRAWS_SOURCE, DRAWS_TIMEOUT_S, DRAWS_URL,
     ECA_EXPECTED, ECA_FACTOR, ECA_MIN_ROWS, ECA_PROBLEM_NO_TABLE, ECA_PROBLEM_ROWS_TPL,
     ELIG_NOTE, ELIG_PRINT_DONE_TPL, ELIG_PROGRAMS, ELIG_SOURCE, FRANCO_MISSING_HEADER,
     FSW_SECTION_LABEL, FSW_SECTION_LETTER, FSW_SEL_MIN_ROWS, FSW_SEL_PROBLEM_TPL, GCDS_DATE_TAG,
@@ -177,8 +177,9 @@ def build_ircc_ee_categories() -> None:
     canada.ca 该页 2026-07 实测 httpx 200 无 Akamai;DataTables 只是前端分页,原始 HTML
     表格行全量 → bs4 直接解析,无需浏览器。
     失败安全:抓不到 / 解析出的类别为空 → 跳过写盘、保留旧表(源站改版时不丢数据)。
+    2026-08-31 批M:原 CAT_UA(Chrome/120,批C 溶解批留给收口判的那份)并进 BROWSER_UA。
     """
-    r = httpx.get(CAT_URL, headers={HDR_UA: CAT_UA}, follow_redirects=True, timeout=CAT_TIMEOUT_S)
+    r = httpx.get(CAT_URL, headers={HDR_UA: BROWSER_UA}, follow_redirects=True, timeout=CAT_TIMEOUT_S)
     r.raise_for_status()
     soup = cast(SoupNodeLike, BeautifulSoup(r.text, PARSER_HTML))
     out_cats = out_categories_of(cat_buckets_of(soup))
@@ -262,9 +263,13 @@ def collect_draws(rounds: list) -> DrawsOut:
 
 
 def build_ircc_ee_draws() -> None:
-    """联邦 Express Entry「抽选轮次」→ raw/ee/draws.json(byCategory / history / recent 三块)。"""
+    """联邦 Express Entry「抽选轮次」→ raw/ee/draws.json(byCategory / history / recent 三块)。
+
+    2026-08-31 批M:原 DRAWS_UA 是裸 "Mozilla/5.0"(开放 JSON 端点不挑 UA),
+    并进 BROWSER_UA 完整串。
+    """
     r = httpx.get(DRAWS_URL, timeout=DRAWS_TIMEOUT_S, follow_redirects=True,
-                  headers={HDR_UA: DRAWS_UA})
+                  headers={HDR_UA: BROWSER_UA})
     r.raise_for_status()
     rounds = r.json().get(K_ROUNDS, [])
     got = collect_draws(rounds)

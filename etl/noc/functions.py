@@ -27,6 +27,7 @@ import httpx
 
 import paths
 from log.functions import say
+from fetch.constants import BROWSER_UA, HDR_UA
 from noc.constants import (
     ARG_FORCE, ARG_LANG, ARG_SEP, CHAT_FAIL_TPL, CHAT_TEMPERATURE,
     CHAT_TIMEOUT_S, CHAT_URL_TPL, LANG_EN, LATIN3_RE,
@@ -45,7 +46,7 @@ from noc.constants import (
     COLLISION_LANGS, COLLISION_OK_TPL, COLLISION_ROW_TPL, COLLISION_SEP, COLLISION_SHOW_MAX,
     COLLISION_WARN_TPL, COLON, COVER_BAD_TPL, COVER_OK_TPL, DESC_CACHE_TPL, DESC_DL_TPL,
     DESC_DONE_TPL, DESC_SOURCE,
-    DESC_TIMEOUT_S, DESC_UA, DESC_URL, DOWNLOAD_TPL, DUTIES_LEAD_SUFFIX, EMPTY_MARK, ENC_UTF8,
+    DESC_TIMEOUT_S, DESC_URL, DOWNLOAD_TPL, DUTIES_LEAD_SUFFIX, EMPTY_MARK, ENC_UTF8,
     ENC_UTF8_SIG, ERRORS_REPLACE, FILL_KEYS, FINE_NO, FINE_SHOW_LEN, FINE_YES, FIX, GEN_URL_TPL,
     HAND_NO, HAND_YES, HANGUL_RE, HIT_HEAD_TPL, HIT_MORE_TPL, HIT_ROW_TPL, HIT_SHOW_MAX,
     I18N, IN_DESC_CSV, IN_DESCR,
@@ -548,13 +549,18 @@ def report_desc_probe(out: dict) -> None:
 
 
 def fetch_elements_csv() -> str:
-    """Elements CSV:缓存在就用(可删缓存强制重下),否则下载并落缓存。"""
+    """Elements CSV:缓存在就用(可删缓存强制重下),否则下载并落缓存。
+
+    2026-08-31 批M:原 DESC_UA(整只 {"User-Agent": "Mozilla/5.0"} 的 dict,StatCan 静态
+    资源只要个标识)并进 fetch.constants.BROWSER_UA,头 dict 就地拼。
+    """
     IN_DESC_CSV.parent.mkdir(parents=True, exist_ok=True)
     if IN_DESC_CSV.exists():
         say(DESC_CACHE_TPL.format(path=IN_DESC_CSV))
         return IN_DESC_CSV.read_text(encoding=ENC_UTF8_SIG, errors=ERRORS_REPLACE)
     say(DESC_DL_TPL.format(url=DESC_URL))
-    r = httpx.get(DESC_URL, timeout=DESC_TIMEOUT_S, follow_redirects=True, headers=DESC_UA)
+    r = httpx.get(DESC_URL, timeout=DESC_TIMEOUT_S, follow_redirects=True,
+                  headers={HDR_UA: BROWSER_UA})
     r.raise_for_status()
     IN_DESC_CSV.write_bytes(r.content)
     return r.content.decode(ENC_UTF8_SIG, errors=ERRORS_REPLACE)

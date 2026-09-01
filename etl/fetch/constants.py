@@ -8,10 +8,14 @@ import re
 
 BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
               "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
-"""伪装 UA 全站单一来源(2026-08-30 批A 收拢:本件 Chrome/120 与 company 的 131 已漂移,取新)。"""
+"""伪装 UA 全站单一来源(2026-08-30 批A 收拢:本件 Chrome/120 与 company 的 131 已漂移,取新)。
+2026-08-31 批M(Frank「别各自抄一份」):九域自抄的伪装 UA 全数收拢至此,
+ee/ircc 的 Chrome/120、rcip/fcip 的 Chrome/126、noc 的裸 Mozilla/5.0 一律并入本档。"""
 
-POLITE_UA = "Mozilla/5.0 (compatible; PNPJobTracker/1.0; +https://offer2pr.com)"
-"""自报家门的礼貌 UA(抓第三方官网/搜索用;与伪装档用途相反,两档并存是设计)。"""
+POLITE_UA = "Mozilla/5.0 (compatible; offer2pr/1.0; +https://offer2pr.com)"
+"""自报家门的礼貌 UA(抓第三方官网/搜索用;与伪装档用途相反,两档并存是设计)。
+2026-08-31 批M:品牌统一 offer2pr(旧值 PNPJobTracker/1.0 是旧项目名);
+citations/dli/wages/pnp 四域自抄的自报家门串同批收拢至此。"""
 
 UA = BROWSER_UA
 """旧名别名(news 子源体系沿用;新代码一律用 BROWSER_UA/POLITE_UA 两个明确档名)。"""

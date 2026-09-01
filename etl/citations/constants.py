@@ -89,9 +89,6 @@ DERIVED = [
 """派生字段:本站口径(kind=derived,不抓网;citation = 口径一句 + 底层来源链)。
 静态文案住这里,单一来源。"""
 
-UA = {"User-Agent": "Mozilla/5.0 (compatible; pnp-job-tracker source-verifier)"}
-"""抓着陆页的自报家门头。"""
-
 FETCH_TIMEOUT_S = 30
 """单个着陆页抓取超时。"""
 
