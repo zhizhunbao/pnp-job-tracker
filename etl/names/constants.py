@@ -2,7 +2,7 @@
 names 域常量 —— 公司名归一的三条正则(方言:constants 只许 import re / paths)。
 
 @author Frank
-@time 2026-08-31 20:31
+@time 2026-08-31 20:52:27
 """
 import re
 

@@ -9,7 +9,7 @@ company.norm_company_name(Wikidata facts 缓存键,已落盘改不起)各有设�
 再开的抽屉,先不建 —— 没抓到例外不建例外表。
 
 @author Frank
-@time 2026-08-31 20:31
+@time 2026-08-31 20:52:27
 """
 from fetch.constants import SPACE_SEP, WS_RE
 from names.constants import ALIAS_SPLIT_RE, KEEP_RE, SUFFIX_RE
