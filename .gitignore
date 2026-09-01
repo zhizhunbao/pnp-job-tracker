@@ -76,3 +76,6 @@ cms/dev.log
 !/.claude/skills/
 # 🔴 但口令文件永不放行 —— 它在 .claude/ 与 .agents/ 各有一份,而当初正是「只点名一份」把另一份漏了出去
 /.claude/skills/**/credentials*.json/reports
+
+# gate --only report 的写法债报告(一次性产物,随时可再生;2026-08-31)
+/reports/
