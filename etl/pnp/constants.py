@@ -1515,14 +1515,17 @@ DRAWS_NL_URL = "https://www.gov.nl.ca/immigration/invitations-to-apply-updates/"
 (不是抓漏了,是官方不发)。Notes 列写 NLPNP / AIP 各多少,原样留在 note 里
 (AIP 是联邦大西洋项目,与省提名同批发)。"""
 
-DRAWS_NB_URL = "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/invitations-to-apply.html"
-"""NB 当期页(2026-08-05 接入,海洋四省第二份):ImmigrationNB 也是 EOI 模型,**按职业类别
-定向发邀请,不发分数线** —— score/scale 一律 None,不假装有分制。当期页只挂最新一轮(~5 条)。
-URL 经 data/crawl/nb-imm/manifest.json 核对,禁凭印象猜。"""
+DRAWS_NB_URL = "https://www.gnb.ca/en/topic/family-home-community/immigration/invitation-selection-rounds.html"
+"""NB 抽选页(2026-08-05 接入,海洋四省第二份):ImmigrationNB 也是 EOI 模型,**按职业类别
+定向发邀请,不发分数线** —— score/scale 一律 None,不假装有分制。
+⚠ 2026-08-31 换址(NB 官网迁版 www2→www,urls 哨兵逮到):新站把当期+历史并成单页
+invitation-selection-rounds;「加粗通道名 + 两列表格」的块格式原样保留,解析器零改
+(新页实测 4 轮直接通吃)。"""
 
-DRAWS_NB_PREV_URL = ("https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/"
-                     "immigrating-to-nb/invitations-to-apply/previous-invitations-2026.html")
-"""NB 本年历史页(~20+ 条)—— 更早的轮次要来这里才有;两页合并去重后再按日期倒排、截 NB_MAX。"""
+DRAWS_NB_PREV_URL = "https://www.gnb.ca/en/topic/family-home-community/immigration/invitation-selection-rounds.html"
+"""NB 历史页 —— 2026-08-31 起与当期同一页(新站单页合并;旧 previous-invitations-2026.html
+随 www2 退役)。两常量同值:build_nb_draws 的双页循环 + 去重语义原样,只是第二趟命中缓存
+级重复、全被 seen 滤掉 —— 不为省一次请求改函数形。"""
 
 DRAWS_NUM_STRIP_RE = re.compile(r"[,\s]")
 """数字里的千分位逗号与空白(int_of 先剥再转)。"""
@@ -3483,8 +3486,10 @@ NLR_POLICY_URL = "https://www.gov.nl.ca/immigration/4-skilled-worker-category-el
 """NLPNP Skilled Worker 资格政策页(gov.nl.ca 直连 200)。"""
 
 NLR_PAGE_URL = ("https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/"
-                "provincial-nominee-program/applicants/skilled-worker-category/")
-"""Skilled Worker 通道的人可读页(表级 pageUrl)。"""
+                "provincial-nominee-program/applicants/skilled-worker/")
+"""Skilled Worker 通道的人可读页(表级 pageUrl)。2026-08-31 官方改名
+skilled-worker-category/ → skilled-worker/(旧径 404,urls 哨兵逮到;新径在
+applicants/ 索引页上实核)。"""
 
 NLR_EMPLOYER_URL = ("https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/"
                     "provincial-nominee-program/employers/employer-criteria")

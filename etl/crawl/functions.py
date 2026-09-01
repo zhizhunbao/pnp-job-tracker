@@ -11,6 +11,7 @@ converters/discover_sources 五件收拢;crawl_all/download_md/check_crawl/子�
 """
 from __future__ import annotations
 
+import ast
 import asyncio
 import hashlib
 import json
@@ -31,11 +32,12 @@ from fetch.constants import BROWSER_UA, HDR_UA, LINE_SEP, PARA_SEP, PARSER_HTML,
 from crawl.constants import (ACCEPT_HTML, ACCEPT_LANGUAGE, ADMONITION_TITLE_CLASS, ADMONITION_WORDS, ATTR_ALT,
                              ATTR_CLASS, ATTR_SRC, ATTR_TITLE, BLANKS_RE, BLOCK_TAGS, BOLD_TAGS,
                              BROWSER_ARGS, CELL_TAGS, CHALLENGE_SNIFF_LEN, CHALLENGE_TIMEOUT_MS,
-                             CHANGES_FILE, COND_AND, CT_HTML, DEFAULT_CONTENT_SELECTORS,
+                             CHANGES_FILE, COND_AND, CONSTANTS_GLOB, CT_HTML, DEFAULT_CONTENT_SELECTORS,
                              DEFAULT_REMOVE_SELECTORS, DIFF_SHOW_MAX, DISCOVER_CONCURRENCY,
                              DOMCONTENTLOADED, EE_CAT_MAP, EE_EXPAND_JS, EE_EXPAND_WAIT_MS, ERRORS_REPLACE,
                              EE_EXTRACT_JS, EE_NOC_RE, EE_NUM_RE, EE_OUT_FILE, EE_SOURCE_LABEL,
                              EE_TEER_RE, EE_URL, EM_TAGS, ENC_UTF8, ENV_HEADLESS, ENV_ON, FM_TPL,
+                             ETL_DIR_NAME,
                              GUARD_ALL_FAILED, H_LEVEL_TPL, HDR_ACCEPT, HDR_ACCEPT_LANGUAGE,
                              HDR_CONTENT_TYPE, HEADING_TAGS, HTML_CACHE_DIR, HTML_CHALLENGE_MARKERS,
                              HTML_SUFFIX, HTTP_FORBIDDEN, HTTP_TIMEOUT_S, IFRAME_TITLE_FALLBACK,
@@ -59,13 +61,16 @@ from crawl.constants import (ACCEPT_HTML, ACCEPT_LANGUAGE, ADMONITION_TITLE_CLAS
                              PRINT_SKIP_ERR_TPL, PRINT_SKIP_HTTP_TPL, PROFILE_DIR, SCROLL_PASSES,
                              SCROLL_PAUSE_MS, SCROLL_STEP_PX, SEEDS, SEED_TIMEOUT_S,
                              SKIP_EXTENSIONS, SKIP_HREF_PREFIXES, SKIP_PATH_PATTERNS, STATUS_OK,
+                             URL_DEAD_CODES, URL_HTTP_PREFIXES, URL_SKIP_MARKS, URL_TIMEOUT_S,
+                             URLS_P_DEAD_TPL, URLS_P_HTTP_TPL, URLS_P_MOVED_TPL, URLS_P_OK_TPL,
+                             URLS_P_SOFT_TPL, URLS_P_SUMMARY_TPL, URL_CDN_SUFFIXES, WWW_PREFIX,
                              STEALTH_JS, TAG_A, TAG_BLOCKQUOTE, TAG_CODE, TAG_DD, TAG_DL, TAG_DT,
                              TAG_HR, TAG_IFRAME, TAG_IMG, TAG_OL, TAG_P, TAG_PRE, TAG_SOURCE,
                              TAG_TABLE, TAG_TR, TAG_VIDEO, TIMESPEC_SECONDS, TITLE_CHALLENGE_MARKERS, TITLE_COND_TPL,
                              URL_SLASH, SCHEME_SEP, VIEWPORT_H, VIEWPORT_W, WAIT_FN_TPL)
 from crawl.scheme import (HttpAsyncClientLike, PageLike,
                           CacheHit, ConvertIn, CrawlCtx, DiscoverIn, EeCat, FetchPageIn, InlineIn,
-                          PageRow, ScopeIn, SeedSpec, WalkIn)
+                          PageRow, ScopeIn, SeedSpec, UrlRow, UrlVerdict, WalkIn)
 from crawl.variables import CACHE
 from fetch.constants import ATTR_HREF, TAG_BR, TAG_LI, TAG_TITLE
 import os
@@ -902,3 +907,104 @@ async def fetch_ee_categories() -> None:
 def run_ee_categories() -> None:
     """TOOLS 入口:同步壳(asyncio.run)。"""
     asyncio.run(fetch_ee_categories())
+
+
+# =========================================================================
+# 7. urls 哨兵(各域 constants 里的官方 URL 还活着吗;「禁猜 URL」铁律的机器面)
+# =========================================================================
+
+
+def check_official_urls() -> None:
+    """役步(链尾哨兵):各域 constants 赋值里的官方 URL 逐条实测,硬红(404/410 或
+    跨站重定向)则本轮记失败 → 扣 ping 转红;设计判据与误伤防线见 constants.URLS_DOC。
+    """
+    rows = collect_official_urls()
+    hard: list = []
+    soft = 0
+    for r in rows:
+        got = url_verdict_of(r.url)
+        if got.dead:
+            hard.append(URLS_P_DEAD_TPL.format(dom=r.dom, url=r.url, status=got.status))
+            continue
+        if got.moved_to != "":
+            hard.append(URLS_P_MOVED_TPL.format(dom=r.dom, url=r.url, final=got.moved_to))
+            continue
+        if got.soft != "":
+            say(URLS_P_SOFT_TPL.format(dom=r.dom, url=r.url, what=got.soft))
+            soft += 1
+    if len(hard) > 0:
+        for line in hard:
+            say(line)
+        say(URLS_P_SUMMARY_TPL.format(n=len(hard), total=len(rows)))
+        sys.exit(1)
+    say(URLS_P_OK_TPL.format(total=len(rows), soft=soft))
+
+
+def collect_official_urls() -> list:
+    """ast 扫 etl/*/constants.py 的**赋值**收 URL(不碰 docstring —— 沿革注释里的旧址
+    是故意留档;同 URL 多域出现只查一次,记首见域)。"""
+    out: list = []
+    seen: set = set()
+    for f in sorted((paths.ROOT / ETL_DIR_NAME).glob(CONSTANTS_GLOB)):
+        tree = ast.parse(f.read_text(encoding=ENC_UTF8), filename=str(f))
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.Assign, ast.AnnAssign)):
+                v = node.value
+                if v is None:
+                    continue
+                for c in ast.walk(v):
+                    if isinstance(c, ast.Constant) and isinstance(c.value, str):
+                        if is_official_url(c.value) and c.value not in seen:
+                            seen.add(c.value)
+                            out.append(UrlRow(dom=f.parent.name, url=c.value))
+    return out
+
+
+def is_official_url(s: str) -> bool:
+    """这个赋值串要不要进哨兵:http(s) 起头,且不含跳过特征(模板占位/存档站/内网)。"""
+    hit = False
+    for p in URL_HTTP_PREFIXES:
+        if s.startswith(p):
+            hit = True
+    if hit is False:
+        return False
+    for m in URL_SKIP_MARKS:
+        if m in s:
+            return False
+    return True
+
+
+def url_verdict_of(url: str) -> UrlVerdict:
+    """一条 URL 实测:死码/跨站跳 = 硬红格;连接失败与非 2xx 其余码 = 软格;全空 = 健康。"""
+    try:
+        r = httpx.get(url, headers={HDR_UA: BROWSER_UA}, follow_redirects=True,
+                      timeout=URL_TIMEOUT_S)
+    except Exception as e:  # noqa: BLE001 — 网络故障是软档:留痕不拦轮,判定收进出参
+        return UrlVerdict(dead=False, status=0, moved_to="", soft=type(e).__name__)
+    if r.status_code in URL_DEAD_CODES:
+        return UrlVerdict(dead=True, status=r.status_code, moved_to="", soft="")
+    home = bare_host_of(url)
+    final = bare_host_of(str(r.url))
+    if final != home and is_cdn_host(final) is False:
+        return UrlVerdict(dead=False, status=r.status_code, moved_to=final, soft="")
+    if r.status_code != STATUS_OK:
+        return UrlVerdict(dead=False, status=r.status_code, moved_to="",
+                          soft=URLS_P_HTTP_TPL.format(status=r.status_code))
+    return UrlVerdict(dead=False, status=r.status_code, moved_to="", soft="")
+
+
+def is_cdn_host(host: str) -> bool:
+    """跳转落点是不是下载门户的正常出口 CDN(判据与误报案例见 URL_CDN_SUFFIXES)。"""
+    for s in URL_CDN_SUFFIXES:
+        if host.endswith(s):
+            return True
+    return False
+
+
+def bare_host_of(url: str) -> str:
+    """主机名剥 www. 前缀(www 有无不算迁站;www2→无前缀 = 跨站,NB 实例)。"""
+    host = urlparse(url).netloc.lower()
+    if host.startswith(WWW_PREFIX):
+        return host[len(WWW_PREFIX):]
+    return host
+

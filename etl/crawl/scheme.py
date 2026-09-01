@@ -286,3 +286,32 @@ class EeCat:
 
     label: str
     """中文标签。"""
+
+
+@dataclass
+class UrlRow:
+    """urls 哨兵的一条被检项(2026-08-31 段7):哪个域的哪条官方 URL。"""
+
+    dom: str
+    """URL 所在域(constants.py 的宿主目录名)。"""
+
+    url: str
+    """官方 URL 原文。"""
+
+
+@dataclass
+class UrlVerdict:
+    """url_verdict_of() 出参:一条 URL 的实测判定(四格互斥,全空 = 健康)。"""
+
+    dead: bool
+    """命中死码(404/410)。"""
+
+    status: int
+    """实测状态码(异常档为 0)。"""
+
+    moved_to: str
+    """跨站重定向的落点主机(空 = 没跨站)。"""
+
+    soft: str
+    """软故障描述(异常名或「HTTP 4xx/5xx」;空 = 无)。"""
+

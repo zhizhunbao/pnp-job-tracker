@@ -224,6 +224,9 @@ TAG_P = "p"
 TAG_H2 = "h2"
 """二级标题标签名。"""
 
+TAG_DIV = "div"
+"""div(AEM 组件容器;NB 新站警示框定位用,2026-08-31)。"""
+
 TAG_H3 = "h3"
 """三级标题标签名。"""
 
@@ -235,6 +238,9 @@ HREF_ATTR = "href"
 
 ATTR_ID = "id"
 """标题节点自带的锚点 id 属性名(ON/NB 优先用它,缺才合成)。"""
+
+ATTR_CLASS = "class"
+"""class 属性名(NB 警示框兄弟组件的终止判定读它)。"""
 
 WS_FOLD_RE = re.compile(r"\s+")
 """连续空白折一个(清抓来的文本)。"""
@@ -342,13 +348,17 @@ BC_TITLE_LEN_MAX = 120
 # 10. 子源 NB(通告页,日期藏正文)
 # =========================================================================
 
-NB_LIST_URL = "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/notice.html"
+NB_LIST_URL = "https://www.gnb.ca/en/topic/family-home-community/immigration/important-notices.html"
 """新不伦瑞克 NBPNP 官方「Important notices」页(gnb.ca)。
 
 E6-09:项目此前无 NB 新闻源(独缺),导致 NB 岗弹框「本省最新公告」空。
-结构(与 ontario.ca 不同):H2「Current notices」→ 多个 H3「Notice/Important」(标题是通用词),
-**日期在正文里**(如「Effective May 4, 2026」),故标题从正文首句取、日期正文正则提;
-无可提取日期的通告跳过(news 需 date)。bodyEn 就地取本页;bodyZh 由母脚本 AI 翻译。"""
+⚠ 2026-08-31 换址重锚(NB 官网整体迁版 www2→www,urls 哨兵首扫逮到):新页无
+「Current notices」H2、无 H3 —— 每条通告 = AEM 警示框 div(class 含 gnb-alert)里的
+标题 <p>(这回是**真标题**,如「Skilled Worker and Express Entry streams – NOC and
+sector restrictions」,不再是通用词「Notice」),正文散在其后的同级组件 div 里,
+至下一个警示框/任一 H2 组件为止;「Past notices」H2 之后是存档,不收。
+**日期仍在正文里**(「Effective February 3, 2026」),无可提取日期的通告跳过(news 需
+date)。bodyEn 就地取本页;bodyZh 由母脚本 AI 翻译。"""
 
 NB_MONTHS = "January|February|March|April|May|June|July|August|September|October|November|December"
 """月份 alternation(日期提取与标题前缀剥离共用一份)。"""
@@ -356,23 +366,14 @@ NB_MONTHS = "January|February|March|April|May|June|July|August|September|October
 NB_DATE_RE = re.compile(rf"\b({NB_MONTHS})\s+\d{{1,2}},\s+\d{{4}}\b")
 """正文里的发布/生效日(通告标题是通用词,日期只在正文)。"""
 
-NB_EFFECTIVE_RE = re.compile(
-    rf"^Effective\s+(?:{NB_MONTHS})\s+\d{{1,2}},\s+\d{{4}}\b[,\s]*(?:and until further notice,?\s*)?",
-    re.I)
-"""标题前缀噪声:开头的「Effective <Month> <day>, <year>」(及可选的
-"and until further notice," 从句)。月份 alternation 必须分组 (?:...) 否则破坏锚定。"""
+NB_ALERT_CLASS_RE = re.compile(r"gnb-alert")
+"""通告警示框的 class 记号(bs4 class_ 正则:对每个 class token 逐个 search)。
+2026-08-31 换址重锚:原「Current notices」H2 + H3 条目结构在新站不存在,
+NB_CURRENT_HEAD / NB_HEAD_RE / NB_STOP_TAGS / NB_EFFECTIVE_RE / NB_SENT_SPLIT_RE
+五常量随旧解析器退役(标题不再从正文首句剥 —— 警示框里就是官方真标题)。"""
 
-NB_SENT_SPLIT_RE = re.compile(r"(?<=[.。])\s")
-"""首句切分(标题取首句)。"""
-
-NB_CURRENT_HEAD = "current notices"
-"""起点 H2 的小写文本(往后收到下一个 H2「Past notices/Get in touch」即止)。"""
-
-NB_HEAD_RE = re.compile(r"^h[23]$")
-"""往后遍历时认的标题标签(H3=条目,H2=终止)。"""
-
-NB_STOP_TAGS = ("h3", "h2")
-"""正文收集的停止标签。"""
+NB_PAST_HEAD = "past notices"
+"""存档节 H2 的小写判词:文档序走到它之后的警示框全是历史存档,不收。"""
 
 NB_TITLE_LEN_MAX = 72
 """标题截断长度(超了挂 ELLIPSIS)。"""

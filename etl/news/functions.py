@@ -40,7 +40,7 @@ from log.functions import err, say
 from fetch.functions import (extract_detail, fetch, iso_date, make_client, page_og_image,
                              parse_feed, section_body, slugify)
 from fetch.scheme import DetailIn, FetchIn, HttpClientLike, SectionIn
-from news.scheme import (CallLlmIn, CallTitleIn, LlmClientLike, LlmConfig, MakeLlmClientIn,
+from news.scheme import (CallLlmIn, CallTitleIn, LlmClientLike, LlmConfig, MakeLlmClientIn, NbBoxLike,
                          NumberedIn, RunIn, TitleCheckIn, TranslateOneIn, TranslateTask)
 from news.constants import (AB_HEAD_SEL, AB_HEAD_SEP, AB_LIST_URL, AB_STOP_TAGS, ALIGN_SHOW_MAX,
                             ANCHOR_SEP, ANCHOR_SLUG_TPL, ANCHOR_URL_TPL, ANTHROPIC_BASE,
@@ -59,9 +59,9 @@ from news.constants import (AB_HEAD_SEL, AB_HEAD_SEP, AB_LIST_URL, AB_STOP_TAGS,
                             KIND_HTML, KIND_RSS, LANG_ZH, LANGS, LINE_SEP, LLM_LOCAL_MODEL_DEFAULT,
                             LLM_MODEL, MAX_AGE_DAYS, MAX_DETAIL_PER_RUN, MB_BODY_SELECTOR,
                             MB_CITATION, MB_LIST_URL, MD_BOLD_KEEP, MD_BOLD_MARK, MD_BOLD_RE,
-                            MD_HEAD_RE, MIN_TOTAL, MONTH_NUM, NB_CURRENT_HEAD, NB_DATE_RE,
-                            NB_EFFECTIVE_RE, NB_HEAD_RE, NB_LIST_URL, NB_SENT_SPLIT_RE,
-                            NB_STOP_TAGS, NB_TITLE_LEN_MAX, NS_CITATION, NS_LINK_SEL,
+                            MD_HEAD_RE, MIN_TOTAL, MONTH_NUM, NB_DATE_RE,
+                            ATTR_CLASS, NB_ALERT_CLASS_RE, NB_LIST_URL, NB_PAST_HEAD, TAG_DIV,
+                            NB_TITLE_LEN_MAX, NS_CITATION, NS_LINK_SEL,
                             NS_LIST_URL, NS_ROW_SEL, ON_LIST_URL, ON_STOP_TAGS, OUT_NEWS_FILE,
                             P_CONTENT, P_MAX_TOKENS, P_MESSAGE, P_MESSAGES, P_MINISTRY_ID,
                             P_MODEL, P_MONTH, P_NUM_PREDICT, P_OPTIONS, P_PROMPT, P_RESPONSE,
@@ -311,44 +311,58 @@ def nb_date_from(body: str) -> str | None:
     return iso_date(m.group(0)) if m else None
 
 
-def nb_title_from(body: str) -> str:
-    """通告正文 → 标题:剥掉开头的 Effective 日期从句,再取首句(超长截断挂省略号)。"""
-    t = WS_FOLD_RE.sub(TEXT_JOIN_SEP, body.strip())
-    t = NB_EFFECTIVE_RE.sub("", t).strip()
-    first = NB_SENT_SPLIT_RE.split(t, maxsplit=1)[0].strip()
-    if len(first) > NB_TITLE_LEN_MAX:
-        return first[:NB_TITLE_LEN_MAX].rstrip() + ELLIPSIS
-    return first
+def nb_title_of(box: NbBoxLike) -> str:
+    """警示框 → 标题(框里的 <p> 就是官方真标题;2026-08-31 换址重锚:旧版从正文首句
+    剥 Effective 从句的 nb_title_from 随旧结构退役)。超长截断挂省略号。"""
+    p = box.find(TAG_P)
+    if p is None:
+        return ""
+    t = WS_FOLD_RE.sub(TEXT_JOIN_SEP, p.get_text(TEXT_JOIN_SEP, strip=True)).strip()
+    if len(t) > NB_TITLE_LEN_MAX:
+        return t[:NB_TITLE_LEN_MAX].rstrip() + ELLIPSIS
+    return t
+
+
+def nb_box_body(box: NbBoxLike) -> str:
+    """警示框之后的正文:收同级组件 div 的整块文本,至下一个警示框/含 H2 的组件为止
+    (新站是 AEM 网格,通告正文不与标题同框 —— 散在其后的兄弟组件里)。"""
+    paras: list = []
+    for sib in box.find_next_siblings():
+        classes = TEXT_JOIN_SEP.join(sib.get(ATTR_CLASS) or [])
+        if NB_ALERT_CLASS_RE.search(classes) or sib.find(TAG_H2) is not None:
+            break
+        txt = WS_FOLD_RE.sub(TEXT_JOIN_SEP, sib.get_text(PARA_SEP, strip=True)).strip()
+        if txt:
+            paras.append(txt)
+    return PARA_SEP.join(paras)
 
 
 def parse_nb(html: str) -> list[dict]:
-    """NBPNP Important notices 页 → 条目行;只收 Current notices 段,同标题去重。"""
+    """NBPNP Important notices 页 → 条目行;同标题去重。
+
+    2026-08-31 换址重锚(结构举证见 constants.NB_LIST_URL):一条通告 = 警示框标题 +
+    其后兄弟组件正文;文档序走到「Past notices」H2 之后全是存档,当场收工。
+    """
     soup = BeautifulSoup(html, HTML_PARSER)
     main = soup.find(TAG_MAIN) or soup.body
-    cur = None
-    # pyrefly: ignore[missing-attribute] — 同上
-    for h in main.find_all(TAG_H2):
-        if NB_CURRENT_HEAD in h.get_text(TEXT_JOIN_SEP, strip=True).lower():
-            cur = h
-            break
-    if not cur:
-        return []
     items = []
     seen = set()
-    for node in cur.find_all_next(NB_HEAD_RE):
-        if node.name == TAG_H2:
+    # pyrefly: ignore[missing-attribute] — 同上
+    for box in main.find_all(TAG_DIV, class_=NB_ALERT_CLASS_RE):
+        prev_h2 = box.find_previous(TAG_H2)
+        if prev_h2 is not None and NB_PAST_HEAD in prev_h2.get_text(TEXT_JOIN_SEP, strip=True).lower():
             break
-        body = section_body(SectionIn(heading=node, stop_names=NB_STOP_TAGS))
+        body = nb_box_body(box)
         if not body:
             continue
         date = nb_date_from(body)
         if not date:
             continue
-        title = nb_title_from(body)
+        title = nb_title_of(box)
         if not title or title in seen:
             continue
         seen.add(title)
-        anchor = node.get(ATTR_ID) or ANCHOR_SLUG_TPL.format(date=date, slug=slugify(title))
+        anchor = box.get(ATTR_ID) or ANCHOR_SLUG_TPL.format(date=date, slug=slugify(title))
         items.append({K_TITLE: title, K_DATE: date,
                       K_URL: ANCHOR_URL_TPL.format(base=NB_LIST_URL, anchor=anchor),
                       K_BODY_EN: body})

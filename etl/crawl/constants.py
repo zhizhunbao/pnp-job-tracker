@@ -666,3 +666,66 @@ TIMESPEC_SECONDS = "seconds"
 
 ERRORS_REPLACE = "replace"
 """读缓存的解码容错档(历史缓存偶有混编码字节,宁可替换不炸读)。"""
+
+
+# =========================================================================
+# 7. urls 哨兵(各域 constants 里的官方 URL 还活着吗;「禁猜 URL」铁律的机器面)
+# =========================================================================
+
+URLS_DOC = """2026-08-31 Frank「那个 gate 校验 URL 的小批也做了吧」,边界两刀:
+① 住 crawl 不住 gate —— gate 是 dev 时的代码形制闸(快、零网络),本步要网络实测,
+  是数据哨兵,与 pnp watch / sched 保鲜同族;crawl 本就回答「官方 URL 在哪/还活着吗」。
+② 只从各域 constants.py 的**赋值**里抽 URL(ast 解析,不碰 docstring)—— 沿革注释里
+  故意留档的旧址(NB www2 考据)不误扫;functions 零字符串令本就不许藏 URL,两闸互补。
+判红判据(NB 迁版实撞定型):404/410 或**跨站重定向** = 官方真挪窝 → 硬红,本轮记失败
+扣 ping 转红;403/5xx/超时/连接失败 = WAF/抖动档,只留痕不拦轮(archive.org 503 阵发、
+PE 200 挑战壳都不误伤 —— PE 同站 200 直接过)。"""
+"""urls 哨兵的设计判据(决策记录)。"""
+
+ETL_DIR_NAME = "etl"
+"""数据层目录名(相对仓库根)。"""
+
+CONSTANTS_GLOB = "*/constants.py"
+"""被扫文件样式(etl/ 下逐域)。"""
+
+URL_HTTP_PREFIXES = ("http://", "https://")
+"""赋值字符串算 URL 的前缀。"""
+
+URL_SKIP_MARKS = ("{", "web.archive.org", "host.docker.internal", "localhost", "127.0.0.1",
+                  "192.168.", "api.anthropic.com", "/wds/rest/", "publications.saskatchewan.ca/api/")
+"""不进哨兵的 URL 特征:模板占位、存档站(自带逐份重试路,503 阵发不当官方死讯)、本机/内网、
+API 基址(2026-08-31 首扫误报三条定型:裸基址不带参数 GET 天然 404/405,健康与否由消费它们
+的步每轮实证,哨兵只管「人能读的页」)。"""
+
+URL_TIMEOUT_S = 30
+"""单条 URL 实测超时秒数。"""
+
+URL_DEAD_CODES = (404, 410)
+"""硬红状态码:官方页真删。"""
+
+WWW_PREFIX = "www."
+"""比对跳转是否跨站前,两端主机名先剥的裸前缀(www 有无不算迁站;www2→www 算)。"""
+
+URL_CDN_SUFFIXES = ("googleusercontent.com", "blob.core.windows.net")
+"""下载门户的正常出口 CDN(2026-08-31 首扫误报两条定型:docs.google 表格发布件跳
+googleusercontent、open.canada.ca 数据集跳 Azure blob —— 服务形态不是迁站,跳到这些
+后缀不算硬红)。"""
+
+URLS_P_DEAD_TPL = "✗ urls {dom}: {url} → HTTP {status}(官方页已删/失联)"
+"""硬红行:死码。"""
+
+URLS_P_MOVED_TPL = "✗ urls {dom}: {url} → 跨站跳 {final}(官方站迁版,NB 08-31 同款;去新站找对应页改常量)"
+"""硬红行:跨站重定向。"""
+
+URLS_P_SOFT_TPL = "! urls {dom}: {url} → {what}(WAF/抖动档,留痕不拦轮)"
+"""软留痕行。"""
+
+URLS_P_HTTP_TPL = "HTTP {status}"
+"""软留痕的状态码措辞。"""
+
+URLS_P_SUMMARY_TPL = "✗ urls 哨兵:{n}/{total} 条官方 URL 硬红(见上;本轮记失败)"
+"""收口行:有硬红。"""
+
+URLS_P_OK_TPL = "✓ urls 哨兵:{total} 条官方 URL 无硬红(软留痕 {soft} 条)"
+"""收口行:全过。"""
+

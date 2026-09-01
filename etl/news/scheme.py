@@ -139,3 +139,29 @@ class TranslateOneIn:
 
     task: TranslateTask
     """这一条一语的活。"""
+
+
+class NbBoxLike(Protocol):
+    """bs4 节点形(NB 新站警示框解析用,2026-08-31 换址重锚;Protocol 自声明只真用的格
+    —— 叶子律下 scheme 不 import bs4,方法签名库定死,一参令例外)。"""
+
+    def find(self, *args: object, **kwargs: object) -> "NbBoxLike | None":
+        """找子节点(命中同形节点,缺 None)。"""
+        ...
+
+    def get(self, *args: object, **kwargs: object) -> object:
+        """读属性。"""
+        ...
+
+    def get_text(self, *args: object, **kwargs: object) -> str:
+        """压平文本。"""
+        ...
+
+    def find_next_siblings(self) -> list:
+        """同级后继元素清单。"""
+        ...
+
+    def find_previous(self, *args: object, **kwargs: object) -> "NbBoxLike | None":
+        """文档序上最近的前驱节点(缺 None)。"""
+        ...
+
