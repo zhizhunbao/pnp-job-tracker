@@ -22,6 +22,7 @@ aip.scheme。产物路径一字不动(raw/aip/ 两件 + raw/ircc/aip_rules.json)
 """
 import html as html_lib
 import json
+import time
 from datetime import date
 from typing import cast
 
@@ -46,8 +47,8 @@ from aip.constants import (
     MD_TECH_ROW_TPL, MIN_ROWS, MISSING_QUOTE_LEN, NAME_MIN_LEN, NAME_TRIM_CHARS, NL_LOC_RE,
     NL_MARKER, NL_MD_GLOB, NL_OFFICE_RE, NL_TITLE_RE, NOC5_RE, NOISE_RE, NS_LOC_RE, OUT_AIP_DIR,
     OUT_AIP_JSON, OUT_AIP_MD, OUT_AIP_RULES, PAGE_URLS, PDF_FAIL_TPL, PDF_FILETYPE, PDFS,
-    PE_FAIL_TPL, PE_LI_RE, PE_MIN_ROWS, PE_NAME_MAX_LEN, PE_NAV_RE, PE_OK_TPL, PE_PAGE,
-    PE_SHORT_TPL, PE_TS_LEN, PERCENT_BASE, PROV_NAME, PROV_NL, PROV_NS, PROV_ORDER_ALL,
+    HTTP_OK, PE_ALL_FAIL_MSG, PE_FAIL_TPL, PE_LI_RE, PE_MIN_ROWS, PE_NAME_MAX_LEN, PE_NAV_RE,
+    PE_OK_TPL, PE_PAGE, PE_SNAP_RETRY_TPL, PE_SNAP_THIN_TPL, PE_TS_LEN, WAYBACK_RETRY_S, WAYBACK_TRIES, PERCENT_BASE, PROV_NAME, PROV_NL, PROV_NS, PROV_ORDER_ALL,
     PROV_ORDER_TECH, PROV_PE, QUOTE_FIXES, RULES, RULES_DONE_TPL, RULES_IN_TPL,
     RULES_MISSING_ROW_TPL, RULES_MISSING_TPL, RULES_NO_CACHE_TPL, RULES_OUT_NOTE, RULES_OUT_TPL,
     RULES_PROGRAM, RULES_PROVINCE, SKIP_WORDS, SUBJECT_APPLICANT, TECH_NAME, TECH_NOC,
@@ -186,30 +187,53 @@ def to_pdf_row(x: PdfRowIn) -> dict:
 def load_pe() -> list:
     """PE:官方页在 WAF 后,经 web.archive.org 快照直取(举证见 constants.PE_DOC)。
 
-    cdx 索引首行是表头,从第 2 行起取最大时间戳 = 最新快照。自带同款塌方闸
-    (PE_MIN_ROWS):取不回或解析残缺一律保旧,不清空。
+    cdx 索引首行是表头,从第 2 行起是快照时间戳。2026-08-31 批P:原「只取最大时间戳、
+    一败即保旧」升成**从新到旧逐份试**,每份带重试(archive.org 内容服务阵发 503 实撞;
+    被存档的挑战壳解析出 0 行,同样跳去试更旧一份)。首份解析 ≥ PE_MIN_ROWS 的快照即用;
+    五份全败一律保旧,不清空(塌方闸语义不变)。
     """
     try:
         cdx = httpx.get(CDX_URL, params=CDX_PARAMS, headers={HDR_UA: BROWSER_UA},
                         timeout=CDX_TIMEOUT_S).json()
-        stamps: list = []
-        for row in cdx[1:]:
-            stamps.append(row[1])
-        ts = max(stamps)
-        page = httpx.get(WAYBACK_TPL.format(ts=ts, url=PE_PAGE), headers={HDR_UA: BROWSER_UA},
-                         follow_redirects=True, timeout=WAYBACK_TIMEOUT_S).text
     except Exception as e:  # noqa: BLE001
         say(PE_FAIL_TPL.format(err=e))
         return pe_previous()
-    names = pe_names_of(page)
-    if len(names) < PE_MIN_ROWS:
-        say(PE_SHORT_TPL.format(n=len(names), floor=PE_MIN_ROWS))
-        return pe_previous()
-    say(PE_OK_TPL.format(ts=ts[:PE_TS_LEN], n=len(names)))
-    rows: list = []
-    for n in names:
-        rows.append(to_pe_row(PeRowIn(name=n, ts=ts[:PE_TS_LEN])))
-    return rows
+    stamps: list = []
+    for row in cdx[1:]:
+        stamps.append(row[1])
+    stamps.sort(reverse=True)
+    for ts in stamps:
+        page = fetch_pe_snapshot(ts)
+        if page == "":
+            continue
+        names = pe_names_of(page)
+        if len(names) < PE_MIN_ROWS:
+            say(PE_SNAP_THIN_TPL.format(ts=ts[:PE_TS_LEN], n=len(names)))
+            continue
+        say(PE_OK_TPL.format(ts=ts[:PE_TS_LEN], n=len(names)))
+        rows: list = []
+        for n in names:
+            rows.append(to_pe_row(PeRowIn(name=n, ts=ts[:PE_TS_LEN])))
+        return rows
+    say(PE_ALL_FAIL_MSG)
+    return pe_previous()
+
+
+def fetch_pe_snapshot(ts: str) -> str:
+    """取一份快照正文,带重试(archive.org 503 阵发);轮次用尽返回空串,调用方跳下一份。"""
+    for attempt in range(WAYBACK_TRIES):
+        try:
+            r = httpx.get(WAYBACK_TPL.format(ts=ts, url=PE_PAGE), headers={HDR_UA: BROWSER_UA},
+                          follow_redirects=True, timeout=WAYBACK_TIMEOUT_S)
+            if r.status_code == HTTP_OK:
+                return r.text
+            say(PE_SNAP_RETRY_TPL.format(ts=ts[:PE_TS_LEN], attempt=attempt + 1,
+                                         status=r.status_code))
+        except Exception as e:  # noqa: BLE001
+            say(PE_SNAP_RETRY_TPL.format(ts=ts[:PE_TS_LEN], attempt=attempt + 1,
+                                         status=type(e).__name__))
+        time.sleep(WAYBACK_RETRY_S)
+    return ""
 
 
 def pe_names_of(page: str) -> list:

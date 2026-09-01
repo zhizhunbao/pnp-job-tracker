@@ -149,7 +149,9 @@ PROV_PE = "PE"
 
 PE_DOC = """PE(B4 §3b,2026-08-08):官方只发网页不发文件,页面在 Radware WAF 后(不绕验证码)。
 数据经 web.archive.org 存档快照 httpx 直取(存档站公开;快照 1-3 月一存)——staleness 以快照里
-页面自带的 Published date 为准。2026-04-19 快照实核 391 家(A-Z <li> 列表,首条 100066 PEI Inc.)。"""
+页面自带的 Published date 为准。2026-04-19 快照实核 391 家(A-Z <li> 列表,首条 100066 PEI Inc.)。
+2026-08-31 批P 追记:官方页直连从 403 变 200 **挑战壳**(125KB 混淆 JS,正文零处
+employer/designated 字样)—— WAF 没撤只是换演法,直连仍不可用,勿因 200 误判已开闸。"""
 """PE 一路为何走 Wayback 的举证(原行内注释,逐字折进)。"""
 
 PE_PAGE = ("https://www.princeedwardisland.ca/en/information/office-of-immigration/"
@@ -205,6 +207,25 @@ K_EMPLOYER = "employer"
 
 K_LOCATION = "location"
 """雇主行键:地点(NB/NL 常为空)。"""
+
+WAYBACK_TRIES = 3
+"""单份快照的取档尝试次数(2026-08-31 批P 实撞:archive.org 内容服务整晚 503 ——
+CDX 索引活着、取正文全趴;阵发性故障靠重试兜)。"""
+
+WAYBACK_RETRY_S = 15
+"""两次尝试之间的等待秒数。"""
+
+HTTP_OK = 200
+"""快照取档的成功状态码(503 等一律进重试)。"""
+
+PE_SNAP_RETRY_TPL = "  PE: Wayback {ts} 第 {attempt} 次取档未成({status})"
+"""单份快照一次尝试失败的留痕行(状态码或异常名)。"""
+
+PE_SNAP_THIN_TPL = "  PE: Wayback {ts} 快照仅解析 {n} 行,跳过试更旧一份"
+"""某份快照残缺/是被存档的挑战壳 → 跳过留痕(逐份从新到旧试)。"""
+
+PE_ALL_FAIL_MSG = "  PE: 近 5 份快照全部取不回或残缺,本轮保旧"
+"""全部快照都不可用时的收口行(保旧不清空)。"""
 
 PE_FAIL_TPL = "  PE: Wayback 取档失败({err}),本轮保旧"
 """PE 快照取不回来时的留痕行。"""
