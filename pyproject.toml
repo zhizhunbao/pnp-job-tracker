@@ -26,7 +26,7 @@ browser = ["playwright>=1.45"]
 [dependency-groups]
 # pyrefly 2026-08-31 批I 收口进依赖(此前 uv run --with 临时环境,每跑重搭;
 # 类型闸随批I 清零上线 pre-push,Frank 拍「要,但要便宜地进」)
-dev = ["pyrefly"]
+dev = ["pyrefly", "types-openpyxl", "types-beautifulsoup4"]  # 存根包 2026-08-31:pyrefly untyped-import 警告清零(openpyxl/bs4)
 
 [tool.uv]
 package = false

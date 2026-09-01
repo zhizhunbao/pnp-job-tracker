@@ -59,7 +59,7 @@ def median_of(values: list) -> int | None:
     if len(vals) == 0:
         return None
     vals.sort()
-    return int(round(vals[len(vals) // 2]))
+    return round(vals[len(vals) // 2])
 
 
 def skilled_broads_of(lmia_row: dict) -> dict:
@@ -327,13 +327,13 @@ def bucket_row_of(x: BucketIn) -> BucketRow:
     scan = bucket_scan_of(rows)
     share = None
     if len(rows) > 0:
-        share = int(round(WAGE_INDEX_BASE * scan.entry / len(rows)))
+        share = round(WAGE_INDEX_BASE * scan.entry / len(rows))
     wage_med = median_of(scan.wages)
     index = None
     if wage_med is not None and scan.prov_top:
         cell_med = median_of(ctx.wage_cells.get((x.broad, scan.prov_top)) or [])
         if cell_med:
-            index = int(round(WAGE_INDEX_BASE * wage_med / cell_med))
+            index = round(WAGE_INDEX_BASE * wage_med / cell_med)
     lmia_n = skilled_broads_of(lmia_row).get(x.broad, 0)
     star = star_of(StarIn(designated=len(des_rows) > 0, open_jobs=len(rows),
                           entry_jobs=scan.entry, lmia_skilled=lmia_n))

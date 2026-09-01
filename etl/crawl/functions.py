@@ -503,7 +503,7 @@ def code_lang_of(pre: Tag) -> str:
     # pyrefly: ignore[bad-argument-type] — bs4 存根把 get 的 default 收成 AttributeValueList|str|None,class 缺席给 [] 是本域惯例
     classes = pre.get(ATTR_CLASS, [])
     code_tag = pre.find(TAG_CODE)
-    if code_tag:
+    if isinstance(code_tag, Tag):
         # pyrefly: ignore[unsupported-operation, bad-argument-type] — 同上;class 是多值属性,运行时两边都是 list
         classes = classes + code_tag.get(ATTR_CLASS, [])
     # pyrefly: ignore[not-iterable] — 同上,上面两行的 default=[] 保证 classes 恒是 list
@@ -614,7 +614,7 @@ def walk(x: WalkIn) -> None:
         if is_admonition:
             lines.append("")
             adm_title = node.find(class_=ADMONITION_TITLE_CLASS)
-            if adm_title:
+            if isinstance(adm_title, Tag):
                 lines.append(MD_QUOTE_TITLE_TPL.format(title=adm_title.get_text(strip=True)))
                 adm_title.decompose()
             for child in node.children:
@@ -662,7 +662,7 @@ def walk(x: WalkIn) -> None:
     if tag == TAG_VIDEO:
         src = cast(str, node.get(ATTR_SRC, ""))
         source_tag = node.find(TAG_SOURCE)
-        if not src and source_tag:
+        if not src and isinstance(source_tag, Tag):
             src = cast(str, source_tag.get(ATTR_SRC, ""))
         if src:
             src = urljoin(x.url, src)

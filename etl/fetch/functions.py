@@ -145,11 +145,11 @@ def extract_detail(x: DetailIn) -> DetailOut:
     (bs4 可能给 AttributeValueList,company 同例)。"""
     soup = BeautifulSoup(x.html, PARSER_HTML)
     og = soup.find(TAG_META, property=OG_PROP)
-    og_val = og.get(ATTR_CONTENT) if og else None
+    og_val = og.get(ATTR_CONTENT) if isinstance(og, Tag) else None
     og_image = str(og_val) if og_val else None
     scope = (soup.select_one(x.selector) if x.selector else None) \
         or soup.find(TAG_MAIN) or soup.find(TAG_ARTICLE) or soup.body
-    if scope is None:
+    if not isinstance(scope, Tag):
         return DetailOut(og_image=og_image, body="")
     for junk in scope.find_all(JUNK_TAGS):
         junk.decompose()
