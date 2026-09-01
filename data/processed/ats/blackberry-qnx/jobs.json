@@ -11,16 +11,7 @@
       "posted": "2026-08-26",
       "address": "",
       "salary": "",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "QNX Senior Quality Manager",
@@ -30,18 +21,7 @@
       "posted": "2026-08-25",
       "address": "275 million vehicles on the road today",
       "salary": "$96,000.00 - $126,000.00",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 111000,
-      "salaryText": "$96K–$126K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
     },
     {
       "title": "QNX Principal Systems Software Developer",
@@ -51,18 +31,7 @@
       "posted": "2026-08-19",
       "address": "275 million vehicles on the road today",
       "salary": "$131,250.00 - $181,250.00",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 156250,
-      "salaryText": "$131K–$181K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "QNX Senior Technical Product Manager (Industrial Automation & Robotics)",
@@ -72,18 +41,7 @@
       "posted": "2026-08-17",
       "address": "275 million vehicles on the road today",
       "salary": "$108,750.00 - $158,750.00",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 133750,
-      "salaryText": "$109K–$159K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
     },
     {
       "title": "QNX Senior Manager, IDE & Tools Team",
@@ -93,18 +51,7 @@
       "posted": "2026-08-17",
       "address": "275 million vehicles on the road today",
       "salary": "$131,250.00 - $181,250.00",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 156250,
-      "salaryText": "$131K–$181K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
     },
     {
       "title": "QNX Software Test Specialist II",
@@ -114,18 +61,7 @@
       "posted": "2026-08-10",
       "address": "",
       "salary": "$80,000.00 - $112,500.00",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 96250,
-      "salaryText": "$80K–$112K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "Financial Analyst",
@@ -135,18 +71,7 @@
       "posted": "2026-08-10",
       "address": "275 million vehicles on the road today",
       "salary": "$60,800.00 - $85,500.00",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 73150,
-      "salaryText": "$61K–$86K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "QNX Senior Cybersecurity Manager",
@@ -156,18 +81,7 @@
       "posted": "2026-08-10",
       "address": "",
       "salary": "$108,750.00 - $158,750.00",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 133750,
-      "salaryText": "$109K–$159K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "QNX Systems Software Developer II",
@@ -177,18 +91,7 @@
       "posted": "2026-08-04",
       "address": "275 million vehicles on the road today",
       "salary": "$90,000.00 - $132,000.00",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 111000,
-      "salaryText": "$90K–$132K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "QNX Senior Software Test Specialist",
@@ -198,18 +101,7 @@
       "posted": "2026-07-28",
       "address": "275 million vehicles on the road today",
       "salary": "$96,000.00 - $135,000.00",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 115500,
-      "salaryText": "$96K–$135K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "QNX Senior Security Researcher",
@@ -219,18 +111,7 @@
       "posted": "2026-07-07",
       "address": "275 million vehicles on the road today",
       "salary": "$108,750.00 - $158,750.00",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 133750,
-      "salaryText": "$109K–$159K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "QNX Senior Security Researcher",
@@ -240,18 +121,7 @@
       "posted": "2026-07-07",
       "address": "275 million vehicles on the road today",
       "salary": "$108,750.00 - $158,750.00",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 133750,
-      "salaryText": "$109K–$159K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "Customer Success Manager, QNX",
@@ -261,18 +131,7 @@
       "posted": "2026-06-29",
       "address": "275 million vehicles on the road today",
       "salary": "$72,800.00 - $102,375.00",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 87588,
-      "salaryText": "$73K–$102K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
     },
     {
       "title": "QNX Senior Software Developer in Test (12-Month Contract, Maternity Leave Coverage)",
@@ -282,18 +141,7 @@
       "posted": "2026-08-26",
       "address": "",
       "salary": "$108,750.00 - $152,250.00",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 130500,
-      "salaryText": "$109K–$152K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "QNX Senior Quality Manager",
@@ -303,18 +151,7 @@
       "posted": "2026-08-25",
       "address": "275 million vehicles on the road today",
       "salary": "$96,000.00 - $126,000.00",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 111000,
-      "salaryText": "$96K–$126K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
     },
     {
       "title": "QNX Principal Systems Software Developer",
@@ -324,18 +161,7 @@
       "posted": "2026-08-19",
       "address": "275 million vehicles on the road today",
       "salary": "$131,250.00 - $181,250.00",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 156250,
-      "salaryText": "$131K–$181K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "QNX Senior Technical Product Manager (Industrial Automation & Robotics)",
@@ -345,18 +171,7 @@
       "posted": "2026-08-17",
       "address": "275 million vehicles on the road today",
       "salary": "$108,750.00 - $158,750.00",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 133750,
-      "salaryText": "$109K–$159K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
     },
     {
       "title": "QNX Senior Manager, IDE & Tools Team",
@@ -366,18 +181,7 @@
       "posted": "2026-08-17",
       "address": "275 million vehicles on the road today",
       "salary": "$131,250.00 - $181,250.00",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 156250,
-      "salaryText": "$131K–$181K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
     },
     {
       "title": "QNX Software Test Specialist II",
@@ -387,18 +191,7 @@
       "posted": "2026-08-10",
       "address": "",
       "salary": "$80,000.00 - $112,500.00",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 96250,
-      "salaryText": "$80K–$112K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "Financial Analyst",
@@ -408,18 +201,7 @@
       "posted": "2026-08-10",
       "address": "275 million vehicles on the road today",
       "salary": "$60,800.00 - $85,500.00",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 73150,
-      "salaryText": "$61K–$86K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "QNX Senior Cybersecurity Manager",
@@ -429,18 +211,7 @@
       "posted": "2026-08-10",
       "address": "",
       "salary": "$108,750.00 - $158,750.00",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 133750,
-      "salaryText": "$109K–$159K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "QNX Systems Software Developer II",
@@ -450,18 +221,7 @@
       "posted": "2026-08-04",
       "address": "275 million vehicles on the road today",
       "salary": "$90,000.00 - $132,000.00",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 111000,
-      "salaryText": "$90K–$132K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "QNX Senior Software Test Specialist",
@@ -471,18 +231,7 @@
       "posted": "2026-07-28",
       "address": "275 million vehicles on the road today",
       "salary": "$96,000.00 - $135,000.00",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 115500,
-      "salaryText": "$96K–$135K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "QNX Senior Security Researcher",
@@ -492,18 +241,7 @@
       "posted": "2026-07-07",
       "address": "275 million vehicles on the road today",
       "salary": "$108,750.00 - $158,750.00",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 133750,
-      "salaryText": "$109K–$159K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "QNX Senior Security Researcher",
@@ -513,18 +251,7 @@
       "posted": "2026-07-07",
       "address": "275 million vehicles on the road today",
       "salary": "$108,750.00 - $158,750.00",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 133750,
-      "salaryText": "$109K–$159K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     }
   ]
 }

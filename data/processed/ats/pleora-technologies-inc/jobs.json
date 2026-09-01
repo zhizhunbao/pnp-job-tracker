@@ -11,16 +11,7 @@
       "posted": "",
       "address": "",
       "salary": "",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "Kanata",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
     },
     {
       "title": "Software Developer",
@@ -30,18 +21,7 @@
       "posted": "",
       "address": "",
       "salary": "$80,000 - $120,000",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "Kanata",
-      "salaryAnnual": 100000,
-      "salaryText": "$80K–$120K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     }
   ]
 }

@@ -11,16 +11,7 @@
       "posted": "2026-08-24",
       "address": "",
       "salary": "",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     }
   ]
 }

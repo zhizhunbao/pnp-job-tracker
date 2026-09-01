@@ -611,7 +611,7 @@
     "NB": {
       "label": "NBPNP + AIP",
       "scale": null,
-      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/invitations-to-apply.html",
+      "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/invitation-selection-rounds.html",
       "draws": [
         {
           "date": "2026-07-22",
@@ -619,6 +619,20 @@
           "note": "Categories: Construction trades, Education, social and community services, Health care, Manufacturing, Other trades, Professional and IT, Sales and services, Tr",
           "score": null,
           "invitations": 114
+        },
+        {
+          "date": "2026-07-18",
+          "stream": "NB Graduates",
+          "note": "Categories: Construction trades, Education, social and community services, Health care, Manufacturing, Other trades, Professional and IT, Sales and services, Tr",
+          "score": null,
+          "invitations": 209
+        },
+        {
+          "date": "2026-07-18",
+          "stream": "NB Experience + NB Priorities",
+          "note": "Categories: Construction trades, Health care",
+          "score": null,
+          "invitations": 58
         },
         {
           "date": "2026-07-18",
@@ -633,6 +647,20 @@
           "note": "Categories: Construction trades, Health care",
           "score": null,
           "invitations": 58
+        },
+        {
+          "date": "2026-07-16",
+          "stream": "Employment in New Brunswick",
+          "note": "Categories: Education, social and community services, Health care, Manufacturing, Professional and IT, Sales and services, Transportation",
+          "score": null,
+          "invitations": 115
+        },
+        {
+          "date": "2026-07-16",
+          "stream": "Francophone workers in New Brunswick + NB Francophone priorities",
+          "note": "Categories: Education, social and community services, Food and accommodation, Health care, Manufacturing, Professional and IT, Sales and services, Transportatio",
+          "score": null,
+          "invitations": 254
         },
         {
           "date": "2026-07-16",

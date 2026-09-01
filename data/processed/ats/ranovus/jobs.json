@@ -1,7 +1,7 @@
 {
   "ats": "bamboohr",
   "token": "ranovus",
-  "count": 8,
+  "count": 11,
   "jobs": [
     {
       "title": "Silicon Photonics Designer and Tester Engineer",
@@ -11,16 +11,7 @@
       "posted": "",
       "address": "",
       "salary": "",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "Product Line Manager",
@@ -30,16 +21,27 @@
       "posted": "",
       "address": "",
       "salary": "",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
+    },
+    {
+      "title": "Internship Germany",
+      "location": "Nürnberg",
+      "url": "https://ranovus.bamboohr.com/careers/55",
+      "department": "Mixed Signal IC & ASIC Integration",
+      "posted": "",
+      "address": "",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Analog ASIC Design Engineer  ",
+      "location": "Nürnberg",
+      "url": "https://ranovus.bamboohr.com/careers/59",
+      "department": "Mixed Signal IC & ASIC Integration",
+      "posted": "",
+      "address": "",
+      "salary": "",
+      "tech": true
     },
     {
       "title": "Silicon Photonics Layout Designer ",
@@ -49,16 +51,7 @@
       "posted": "",
       "address": "",
       "salary": "",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
     },
     {
       "title": "Senior Optical Technician",
@@ -68,16 +61,7 @@
       "posted": "",
       "address": "",
       "salary": "",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
     },
     {
       "title": "Senior Application Engineer / Senior Field Application Engineer",
@@ -87,18 +71,17 @@
       "posted": "",
       "address": "",
       "salary": "135000",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 135000,
-      "salaryText": "$135K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
+    },
+    {
+      "title": "Internship Germany",
+      "location": "Nürnberg",
+      "url": "https://ranovus.bamboohr.com/careers/73",
+      "department": "Office of CTO",
+      "posted": "",
+      "address": "",
+      "salary": "",
+      "tech": false
     },
     {
       "title": "Optical Engineer ",
@@ -108,16 +91,7 @@
       "posted": "",
       "address": "",
       "salary": "",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "Principal Advanced Optical Packaging Engineer",
@@ -127,16 +101,7 @@
       "posted": "",
       "address": "",
       "salary": "",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "System Architect Verification Engineer",
@@ -146,16 +111,7 @@
       "posted": "",
       "address": "",
       "salary": "",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     }
   ]
 }

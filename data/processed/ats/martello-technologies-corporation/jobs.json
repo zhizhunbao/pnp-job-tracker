@@ -11,16 +11,7 @@
       "posted": "",
       "address": "",
       "salary": "",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "Kanata",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
     },
     {
       "title": "Finance Associate, Shared Services",
@@ -30,18 +21,7 @@
       "posted": "",
       "address": "",
       "salary": "$60,000-$80,000",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "Kanata",
-      "salaryAnnual": 70000,
-      "salaryText": "$60K–$80K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
     }
   ]
 }

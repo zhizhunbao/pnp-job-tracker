@@ -1,6 +1,1007 @@
 {
   "ats": "smartrecruiters",
   "token": "RenesasElectronics",
-  "count": 0,
-  "jobs": []
+  "count": 100,
+  "jobs": [
+    {
+      "title": "Director, Capacity Planning and Resource Management",
+      "location": "San Jose, CALIFORNIA",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146549899",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "San Jose",
+      "salary": "$216,000 - $270,000",
+      "tech": false
+    },
+    {
+      "title": "Senior Staff Product Definition Engineer",
+      "location": "Austin, TEXAS",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146539229",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Austin",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Senior Analog Engineering Manager",
+      "location": "Austin, TX",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146519284",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Austin",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Manager – Solution Marketing ",
+      "location": "Bengaluru, KA",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146521429",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Bengaluru",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Staff Environmental Health & Safety Engineer",
+      "location": "Palm Bay, Florida",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146511219",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Palm Bay",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Fab Equipment Engineer",
+      "location": "Palm Bay, Florida",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146495197",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Palm Bay",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Senior Sales Account Manager",
+      "location": "San Jose, CALIFORNIA",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146466927",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "San Jose",
+      "salary": "$118,000",
+      "tech": false
+    },
+    {
+      "title": "Principal Distribution Manager Rockies | Mass Market & Channel Leadership",
+      "location": "Denver, Colorado",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146466879",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Denver",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "HPC DDR Controller Design Engineer / Leader",
+      "location": "Kodaira",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146448330",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Kodaira",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "HPC SoC Interconnect Design Engineer / Leader",
+      "location": "Kodaira",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146447549",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Kodaira",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Sr Procurement Specialist- experience for OSAT is required",
+      "location": "Zhubei, Hsinchu County",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146419109",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Zhubei",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Sr Procurement Specialist- experience for OSAT is required",
+      "location": "Taipei",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146418999",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Taipei",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Staff Sales account Mgr- (Sales experience  managing Auto customer or Sales role for  Auto tier 1 is required) ",
+      "location": "Shanghai",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146418849",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Shanghai",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Staff / Sr. Sales Account Manager - Automotive OEM ( Sales experience with automotive  OEM or  tier 1 /tier 2 customer  in IC companies is required)",
+      "location": "Shanghai",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146418719",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Shanghai",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Sr. Manager , Channel Marketing ",
+      "location": "Shenzhen, Guangdong Province",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146416495",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Shenzhen",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Sr. Manager , Channel Marketing (experienced in IC company is required ) ",
+      "location": "Shanghai",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146418528",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Shanghai",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Staff Package Design Engineer- experienced in package development of power SiP/module",
+      "location": "Zhubei",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146418449",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Zhubei",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "(Sr.) Staff Package Design Engineer - MIS substrate/FC expose die （ Experienced in Power or Gan is requried ) ",
+      "location": "Kaohsiung, Kaohsiung City",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146418229",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Kaohsiung",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "(Sr.) Staff Package Design Engineer - MIS substrate/FC expose die （ Experienced in Power or Gan is requried ) ",
+      "location": "Suzhou, Jiangsu",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146418169",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Suzhou",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "(Sr.) Staff Package Design Engineer - MIS substrate/FC expose die （ Experienced in Power or Gan is requried ) ",
+      "location": "Shanghai, Shanghai",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146418139",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Shanghai",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "(Sr.) Staff Package Design Engineer - MIS substrate/FC expose die （ Experienced in Power or Gan is requried ) ",
+      "location": "Taichung, Taichung City",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146417969",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Taichung",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "(Sr.) Staff Package Design Engineer - MIS substrate/FC expose die （ Experienced in Power or Gan is requried ) ",
+      "location": "Taipei",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146417799",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Taipei",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "(Sr.) Staff Package Design Engineer - MIS substrate/FC expose die （ Experienced in Power or Gan is requried ) ",
+      "location": "Zhubei",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146416490",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Zhubei",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Staff Application Engineer- PMIC ",
+      "location": "chengdu, Sichuan",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146416241",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "chengdu",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Sr Staff CQE- AI Customers  ",
+      "location": "Taipei",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146414373",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Taipei",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Principal /Sr. Staff  Strategy Sourcing Specialist- NPI & Capacity ",
+      "location": "Taipei",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146414087",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Taipei",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Staff / Sr Test Operations Engineer - OSAT",
+      "location": "Singapore",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146416709",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Singapore",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Sr. Staff Digital Verification Engineer",
+      "location": "Shanghai",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146416659",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Shanghai",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Sr Staff Digital Verfication Engineer",
+      "location": "Shanghai",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146416429",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Shanghai",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Staff Validation Engineer ",
+      "location": "Shanghai",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146415919",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Shanghai",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Sr. Manager Solution Marketing -Industrial",
+      "location": "Shenzhen, Guangdong Province",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146415259",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Shenzhen",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Sr. Manager Solution Marketing -Industrial",
+      "location": "Shanghai",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146414989",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Shanghai",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Regional Business lead/ Product Line Manager -Low end automotive MCU",
+      "location": "Shanghai, Shanghai",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146414849",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Shanghai",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Senior Solutions Engineer",
+      "location": "Munich",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146414839",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Munich",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Innovation Platform Lead - Director / Senior Manager 创新平台负责人-experience in semiconductor industry is required",
+      "location": "Shenzhen, Guangdong Province",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146414749",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Shenzhen",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Innovation Platform Lead - Director / Senior Manager 创新平台负责人-experience in semiconductor industry is required.",
+      "location": "Beijing, Beijing",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146414464",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Beijing",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Innovation Platform Lead - Director / Senior Manager 创新平台负责人-experience in semiconductor industry is required",
+      "location": "Shanghai",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146414629",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Shanghai",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Full-Stack Engineer",
+      "location": "Cambridge",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146413814",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Cambridge",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Sr. Staff System Architect – Energy Generation, Storage & Conversion系统架构师（能源/储能）",
+      "location": "Shanghai",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146401504",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Shanghai",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Sr Staff Solution Marketing Specialist -Physical AI & Humanoid Robotic",
+      "location": "Shenzhen",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146388399",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Shenzhen",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Staff Package Design Engineer - Cu FSM/BGBM/Bumping  封装设计专家",
+      "location": "Suzhou, Jiangsu",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146388289",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Suzhou",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Staff Package Design Engineer - Cu FSM/BGBM/Bumping  封装设计专家",
+      "location": "Shanghai",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146388189",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Shanghai",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Staff Package Design Engineer - Substrate 封装设计专家（基板方向）",
+      "location": "Suzhou, Jiangsu",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146387565",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Suzhou",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Staff Package Design Engineer - Substrate 封装设计专家（基板方向）",
+      "location": "Shanghai, Shanghai",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146387544",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Shanghai",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Staff Application Engineer 高级应用工程师- 机器人硬件嵌入式解决方案 ( experienced in hardware is required )",
+      "location": "Beijing",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146387389",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Beijing",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Sr. Procurement Manager -AI projects",
+      "location": "Zhubei, Hsinchu County",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146387179",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Zhubei",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Sr. Procurement Manager -AI projects",
+      "location": "Taipei",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146387139",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Taipei",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Staff Supply Chain Specialist- logistics",
+      "location": "Shanghai",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146386625",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Shanghai",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Principal Linux Driver Engineer",
+      "location": "Chengdu",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146386849",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Chengdu",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Sr Test Engineer",
+      "location": "Tianjin",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146386789",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Tianjin",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Principal Procurement/Purchasing Specialist",
+      "location": "Taipei, Zhubei, Hukou, Taichung, Kaohsiung",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146386709",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Taipei, Zhubei, Hukou, Taichung, Kaohsiung",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": " Sr Staff Procurement/Purchasing Specialist - experienced for Passive Component is required",
+      "location": "Zhubei, Hsinchu County",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146386500",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Zhubei",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Sr Staff Procurement/Purchasing Specialist - experienced for Passive Component is required",
+      "location": "Taipei",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146386509",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "Taipei",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Cloud DevOps and AI Security Engineer",
+      "location": "San Jose, CALIFORNIA",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146372177",
+      "department": "",
+      "posted": "2026-08-31",
+      "address": "San Jose",
+      "salary": "$65,000 to $85,000",
+      "tech": true
+    },
+    {
+      "title": "Senior Manager, Product Engineering",
+      "location": "Austin, TEXAS",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146315929",
+      "department": "",
+      "posted": "2026-08-29",
+      "address": "Austin",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Senior Staff Product Assurance Manager",
+      "location": "Plano, TEXAS",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146306729",
+      "department": "",
+      "posted": "2026-08-29",
+      "address": "Plano",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Sr Staff Software Engineer (Operations Software & Tools)",
+      "location": "Bayan Lepas",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146156269",
+      "department": "",
+      "posted": "2026-08-28",
+      "address": "Bayan Lepas",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Staff Process Engineer",
+      "location": "Bayan Lepas",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146133409",
+      "department": "",
+      "posted": "2026-08-28",
+      "address": "Bayan Lepas",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Staff Process Engineer",
+      "location": "Shah Alam",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146133169",
+      "department": "",
+      "posted": "2026-08-28",
+      "address": "Shah Alam",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Staff Process Engineer",
+      "location": "Ipoh",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146132849",
+      "department": "",
+      "posted": "2026-08-28",
+      "address": "Ipoh",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Staff Process Engineer",
+      "location": "Bayan Lepas",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146131459",
+      "department": "",
+      "posted": "2026-08-28",
+      "address": "Bayan Lepas",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Senior Field Applications Engineer (FAE)",
+      "location": "Toyosu",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146084159",
+      "department": "",
+      "posted": "2026-08-28",
+      "address": "Toyosu",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Customer Technical Lead",
+      "location": "San Jose, CA",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146054389",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "San Jose",
+      "salary": "$180,000-$225,000",
+      "tech": false
+    },
+    {
+      "title": "Senior Implementation Engineer",
+      "location": "La Jolla Ranch, CA",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146039334",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "La Jolla Ranch",
+      "salary": "$120,000",
+      "tech": true
+    },
+    {
+      "title": "Senior Implementation Engineer",
+      "location": "Frisco, TEXAS",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146040949",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Frisco",
+      "salary": "$120,000",
+      "tech": true
+    },
+    {
+      "title": "Senior Implementation Engineer",
+      "location": "Karlsruhe, BW",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146040744",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Karlsruhe",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Senior Implementation Engineer",
+      "location": "Munich",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146040749",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Munich",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Strategic Account Manager",
+      "location": "Frisco, TX",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146040339",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Frisco",
+      "salary": "$120,000 - $150,000",
+      "tech": false
+    },
+    {
+      "title": "Senior Manager Analog Engineering",
+      "location": "Duluth, GA",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146025599",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Duluth",
+      "salary": "$225,000",
+      "tech": true
+    },
+    {
+      "title": "Director, Hyperscaler / AI Accelerator Power",
+      "location": "San Jose, CALIFORNIA",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146023319",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "San Jose",
+      "salary": "$220",
+      "tech": true
+    },
+    {
+      "title": "Senior Analog Engineer",
+      "location": "San Jose, CALIFORNIA",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146022459",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "San Jose",
+      "salary": "$135,000 - $160,000",
+      "tech": true
+    },
+    {
+      "title": "Staff Business Development Specialist",
+      "location": "Palm Bay, Florida",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000146012417",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Palm Bay",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Staff Software Development Engineer",
+      "location": "Wrocław, Lower Silesian Voivodeship",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145949120",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Wrocław",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Staff Software Development Engineer",
+      "location": "Katowice",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145949379",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Katowice",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Senior Sofware Development Engineer (.NET)",
+      "location": "Katowice, Silesian Voivodeship",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145948729",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Katowice",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Senior Sofware Development Engineer (.NET)",
+      "location": "Wrocław, Lower Silesian Voivodeship",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145948709",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Wrocław",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Senior Software Development Engineer (Java)",
+      "location": "Wroclaw",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145944864",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Wroclaw",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Foundry Technical Manager",
+      "location": "Bayan Lepas",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145944315",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Bayan Lepas",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Engineering Operations Manager (F/M/D)",
+      "location": "Graz",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145936519",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Graz",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Product Development Engineer for Discrete Power",
+      "location": "Takasaki",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145929799",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Takasaki",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Sr Staff Project/Program Management Specialist",
+      "location": "Kodaira",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145928274",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Kodaira",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Staff Process Engineer",
+      "location": "Bangkok",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145923450",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Bangkok",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Senior Software Development Engineer",
+      "location": "Wrocław, Lower Silesian Voivodeship",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145925364",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Wrocław",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Senior Software Development Engineer",
+      "location": "Katowice",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145927039",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Katowice",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Sr Staff Project/Program Management Specialist",
+      "location": "Kodaira",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145926529",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Kodaira",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Sr Staff Project/Program Management Specialist",
+      "location": "Kodaira",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145926109",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Kodaira",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Test Maintenance Technician (Interviewer 2)",
+      "location": "Kulim",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145905672",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Kulim",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Test Maintenance Technician (Interviewer 1)",
+      "location": "Kulim",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145907092",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Kulim",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Design Verification Engineer（SoC機能検証エンジニア）",
+      "location": "Kodaira",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145901329",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Kodaira",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Low Voltage Chargeman (LV Chargeman)",
+      "location": "Kulim",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145891269",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Kulim",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Sr Staff Engineer",
+      "location": "Hitachinaka",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145885339",
+      "department": "",
+      "posted": "2026-08-27",
+      "address": "Hitachinaka",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Customer Success Manager",
+      "location": "Frisco, TX",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145792529",
+      "department": "",
+      "posted": "2026-08-26",
+      "address": "Frisco",
+      "salary": "$130,000-$150,000",
+      "tech": false
+    },
+    {
+      "title": "Sr Staff Process Engineer",
+      "location": "Bangkok",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145790039",
+      "department": "",
+      "posted": "2026-08-26",
+      "address": "Bangkok",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Sr Staff Quality Assurance Engineer",
+      "location": "Bayan Lepas",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145772214",
+      "department": "",
+      "posted": "2026-08-26",
+      "address": "Bayan Lepas",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "HR Project Manager (HR PMO)",
+      "location": "Chandler, AZ",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145758766",
+      "department": "",
+      "posted": "2026-08-26",
+      "address": "Chandler",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "HR Project Manager (HR PMO)",
+      "location": "San Jose, CA",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145759569",
+      "department": "",
+      "posted": "2026-08-26",
+      "address": "San Jose",
+      "salary": "$175,000 - $200,000",
+      "tech": false
+    },
+    {
+      "title": "Senior Staff Solutions Marketing Specialist",
+      "location": "Raleigh, NC",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145736903",
+      "department": "",
+      "posted": "2026-08-26",
+      "address": "Raleigh",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Senior Staff Solutions Marketing Specialist",
+      "location": "Detroit, MI",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145739149",
+      "department": "",
+      "posted": "2026-08-26",
+      "address": "Detroit",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Sr. Staff Strategic Power Conversion Technologist",
+      "location": "Catania",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145735960",
+      "department": "",
+      "posted": "2026-08-26",
+      "address": "Catania",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Senior Staff Application Engineer",
+      "location": "Austin, TEXAS",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000145731399",
+      "department": "",
+      "posted": "2026-08-26",
+      "address": "Austin",
+      "salary": "",
+      "tech": true
+    }
+  ]
 }

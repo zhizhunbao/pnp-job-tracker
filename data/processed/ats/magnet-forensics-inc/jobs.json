@@ -1,8 +1,68 @@
 {
   "ats": "lever",
   "token": "magnetforensics",
-  "count": 4,
+  "count": 44,
   "jobs": [
+    {
+      "title": "AI & Automation Engineer",
+      "location": "United States",
+      "url": "https://jobs.lever.co/magnetforensics/7a86a5a7-79a6-41fd-8ac4-e668ae34665f",
+      "department": "Business Systems",
+      "posted": "2026-08-27",
+      "address": "",
+      "salary": "$80,000 to $95,000",
+      "tech": true
+    },
+    {
+      "title": "AI & Automation Engineer",
+      "location": "Waterloo / Ontario",
+      "url": "https://jobs.lever.co/magnetforensics/a8a5602b-d957-409b-9ea1-379a8343221e",
+      "department": "Business Systems",
+      "posted": "2026-08-25",
+      "address": "",
+      "salary": "$110,000 to $130,000",
+      "tech": true
+    },
+    {
+      "title": "Country Manager",
+      "location": "Singapore",
+      "url": "https://jobs.lever.co/magnetforensics/e4bd9004-a15b-4bb1-957a-55221a1e30ae",
+      "department": "Sales",
+      "posted": "2026-08-28",
+      "address": "",
+      "salary": "$140,000 - $190,000",
+      "tech": false
+    },
+    {
+      "title": "Director of Tax",
+      "location": "Waterloo / Ontario",
+      "url": "https://jobs.lever.co/magnetforensics/1afc0241-97d4-4473-9fb8-f1dc8c776d91",
+      "department": "Finance",
+      "posted": "2026-06-12",
+      "address": "",
+      "salary": "$150,000 to $200,000",
+      "tech": false
+    },
+    {
+      "title": "Director of Tax",
+      "location": "United States",
+      "url": "https://jobs.lever.co/magnetforensics/da08e6d4-0e68-41c1-a771-aec02ff35ad9",
+      "department": "Finance",
+      "posted": "2026-06-12",
+      "address": "",
+      "salary": "$160,000 to $210,000",
+      "tech": false
+    },
+    {
+      "title": "Director, Cloud Engineering",
+      "location": "Waterloo, Ontario",
+      "url": "https://jobs.lever.co/magnetforensics/6fc0fdc2-e264-4324-bc7b-c0d5fa8a6a05",
+      "department": "Engineering",
+      "posted": "2026-07-15",
+      "address": "",
+      "salary": "$200,000 - $250,000",
+      "tech": true
+    },
     {
       "title": "Director, Product Management - Examination & Analysis",
       "location": "Waterloo / Ottawa / Toronto/ Ontario",
@@ -11,18 +71,137 @@
       "posted": "2026-06-25",
       "address": "",
       "salary": "$190,000 - $240,000",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 215000,
-      "salaryText": "$190K–$240K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
+    },
+    {
+      "title": "Embedded Linux Engineering Lead",
+      "location": "United States",
+      "url": "https://jobs.lever.co/magnetforensics/f8675bbe-033a-42d6-b303-f16c1b639ca5",
+      "department": "Engineering",
+      "posted": "2026-06-08",
+      "address": "",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Engineering Manager, AI Engineering",
+      "location": "Waterloo, Ontario",
+      "url": "https://jobs.lever.co/magnetforensics/d65821b9-3c66-4c57-b98c-8f7412b92c18",
+      "department": "Engineering",
+      "posted": "2026-06-02",
+      "address": "",
+      "salary": "$160,000 - $210,000",
+      "tech": true
+    },
+    {
+      "title": "Engineering Manager, AI Engineering (Magnet-Griffeye)",
+      "location": "Gothenburg",
+      "url": "https://jobs.lever.co/magnetforensics/ff7957b7-de85-4b8f-9a50-4cea8a93dbd9",
+      "department": "Engineering",
+      "posted": "2026-06-02",
+      "address": "",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Enterprise Account Executive - Corporate (US West)",
+      "location": "California",
+      "url": "https://jobs.lever.co/magnetforensics/cec5d4e9-5df9-4753-9068-3dedceb2ba54",
+      "department": "Sales",
+      "posted": "2026-06-29",
+      "address": "",
+      "salary": "$200,000 - $250,000 USD",
+      "tech": false
+    },
+    {
+      "title": "Enterprise Account Executive (EMEA)",
+      "location": "Germany",
+      "url": "https://jobs.lever.co/magnetforensics/375a0f97-68b3-46f4-bb95-628636a0e076",
+      "department": "Sales",
+      "posted": "2026-08-18",
+      "address": "",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Facilities Security Officer",
+      "location": "Virginia",
+      "url": "https://jobs.lever.co/magnetforensics/02df5edf-2380-4983-98e7-5160dc8d5446",
+      "department": "Vulnerability Research",
+      "posted": "2026-07-24",
+      "address": "",
+      "salary": "$80,000 - $130,000 USD",
+      "tech": true
+    },
+    {
+      "title": "FedRamp Customer Success Manager",
+      "location": "United States",
+      "url": "https://jobs.lever.co/magnetforensics/c524a80f-ee6e-435c-9363-0a2786b51f97",
+      "department": "Customer Experience",
+      "posted": "2026-07-28",
+      "address": "",
+      "salary": "$100,000 to $140,000",
+      "tech": false
+    },
+    {
+      "title": "I Want to Work in Vulnerability Research & Exploit Engineering",
+      "location": "TBD",
+      "url": "https://jobs.lever.co/magnetforensics/1c4a6264-1904-4191-a0a2-96c5dc5c07e8",
+      "department": "I want to work in Vulnerability Research & Exploit Engineering!",
+      "posted": "2023-09-26",
+      "address": "",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Join Our Talent Pipeline!",
+      "location": "TBD",
+      "url": "https://jobs.lever.co/magnetforensics/18f6d866-36cb-43d2-8312-9bc28454db96",
+      "department": "Join Our Talent Pipeline!",
+      "posted": "2021-04-08",
+      "address": "",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Manager, IT Support",
+      "location": "Waterloo / Ontario",
+      "url": "https://jobs.lever.co/magnetforensics/382474e6-0ab5-465a-af5d-60e9445da380",
+      "department": "Information Technology",
+      "posted": "2026-08-21",
+      "address": "",
+      "salary": "$100,000 - $150,000 CAD",
+      "tech": true
+    },
+    {
+      "title": "Manager, Private Sector Marketing",
+      "location": "Waterloo / Toronto",
+      "url": "https://jobs.lever.co/magnetforensics/fc604104-d2d1-446d-8956-7416a9d409e0",
+      "department": "Marketing",
+      "posted": "2026-07-21",
+      "address": "",
+      "salary": "$110,000 to $140,000",
+      "tech": false
+    },
+    {
+      "title": "Marketing Operations Manager",
+      "location": "Waterloo / Ontario",
+      "url": "https://jobs.lever.co/magnetforensics/942a1244-184a-4fa5-9691-b7152a508c62",
+      "department": "Marketing",
+      "posted": "2026-05-20",
+      "address": "",
+      "salary": "$90,000 to $115,000",
+      "tech": false
+    },
+    {
+      "title": "Microsoft Security Automation & Incident Response Engineer - Contract Position",
+      "location": "United States",
+      "url": "https://jobs.lever.co/magnetforensics/b9398342-bc38-4ade-b37d-2d7f660ffa09",
+      "department": "Security",
+      "posted": "2026-07-13",
+      "address": "",
+      "salary": "",
+      "tech": true
     },
     {
       "title": "Product Management Lead, AI",
@@ -32,18 +211,7 @@
       "posted": "2026-06-23",
       "address": "",
       "salary": "$175,000 - $225,000",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 200000,
-      "salaryText": "$175K–$225K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "Product Management Lead, Private Sector",
@@ -53,18 +221,117 @@
       "posted": "2026-06-24",
       "address": "",
       "salary": "$150,000 - $200,000",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 175000,
-      "salaryText": "$150K–$200K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
+    },
+    {
+      "title": "Regional Account Manager - Public Sector",
+      "location": "Germany",
+      "url": "https://jobs.lever.co/magnetforensics/308fb1a8-2205-4814-a45d-dcef93d25165",
+      "department": "Sales",
+      "posted": "2026-07-21",
+      "address": "",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Sales Development Representative",
+      "location": "Waterloo",
+      "url": "https://jobs.lever.co/magnetforensics/7c827d8f-9276-42db-9526-322e10bcf3ab",
+      "department": "Sales",
+      "posted": "2026-06-03",
+      "address": "",
+      "salary": "$50,000 – $75,000",
+      "tech": false
+    },
+    {
+      "title": "Sales Development Representative (Bilingual English & Spanish)",
+      "location": "Waterloo, Ontario",
+      "url": "https://jobs.lever.co/magnetforensics/edc38020-6c55-4bda-bafb-3306c665dd41",
+      "department": "Sales",
+      "posted": "2026-08-14",
+      "address": "",
+      "salary": "$50,000 – $75,000",
+      "tech": false
+    },
+    {
+      "title": "Sales Development Representative (EMEA)",
+      "location": "United Kingdom",
+      "url": "https://jobs.lever.co/magnetforensics/4e3d1234-f14f-42aa-8677-02f5b38954c9",
+      "department": "Sales",
+      "posted": "2026-08-04",
+      "address": "",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Sales Development Representative (EMEA)",
+      "location": "Germany",
+      "url": "https://jobs.lever.co/magnetforensics/b9e02102-0482-463c-8235-e2509fdea373",
+      "department": "Sales",
+      "posted": "2026-08-04",
+      "address": "",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Senior AI/ML Engineer (Magnet-Griffeye)",
+      "location": "Gothenburg",
+      "url": "https://jobs.lever.co/magnetforensics/77b3dd39-5858-4877-a7ca-d0aa6dd385e2",
+      "department": "Engineering",
+      "posted": "2026-05-12",
+      "address": "",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Senior Customer Delivery Specialist – West Coast (United States)",
+      "location": "Washington (WA)",
+      "url": "https://jobs.lever.co/magnetforensics/66f99f0f-ae62-43f5-9bd3-9e164ac4b529",
+      "department": "Technical Support",
+      "posted": "2026-04-03",
+      "address": "",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Senior Embedded Firmware Engineer",
+      "location": "United States",
+      "url": "https://jobs.lever.co/magnetforensics/47785d97-dde1-481c-b60b-dfbff4db9873",
+      "department": "Engineering",
+      "posted": "2026-08-05",
+      "address": "",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Senior Federal Account Executive (Intelligence Community)",
+      "location": "Washington, DC",
+      "url": "https://jobs.lever.co/magnetforensics/d8a7f42b-9ba4-4f4b-be14-5cc84818dce7",
+      "department": "Sales",
+      "posted": "2026-04-30",
+      "address": "",
+      "salary": "$270,000 - $320,000",
+      "tech": false
+    },
+    {
+      "title": "Senior Griffeye UX Designer",
+      "location": "Sweden",
+      "url": "https://jobs.lever.co/magnetforensics/a95575f6-6325-4a4d-b322-3f706ebfe3e3",
+      "department": "UX",
+      "posted": "2026-02-23",
+      "address": "",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Senior iOS Platform Engineer",
+      "location": "United States",
+      "url": "https://jobs.lever.co/magnetforensics/ecafb45d-3636-47f7-bdad-a0f16749e499",
+      "department": "Engineering",
+      "posted": "2026-06-16",
+      "address": "",
+      "salary": "",
+      "tech": true
     },
     {
       "title": "Senior Product Manager, Graykey",
@@ -74,18 +341,107 @@
       "posted": "2026-05-27",
       "address": "",
       "salary": "$145,0000 - $195,000",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 195000,
-      "salaryText": "$195K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
+    },
+    {
+      "title": "Senior Product Operations Manager",
+      "location": "Waterloo / Ontario",
+      "url": "https://jobs.lever.co/magnetforensics/c40a3bb5-ba93-4b15-8919-17a5f9a998a3",
+      "department": "Product Management",
+      "posted": "2026-08-10",
+      "address": "",
+      "salary": "$100,000 - $150,000",
+      "tech": false
+    },
+    {
+      "title": "Senior Site Reliability Engineer (Cloud Networking & Infrastructure as Code)",
+      "location": "Waterloo, Ontario",
+      "url": "https://jobs.lever.co/magnetforensics/3f6b4416-c786-42a0-b169-150b36b8654c",
+      "department": "Engineering",
+      "posted": "2026-08-14",
+      "address": "",
+      "salary": "$120,000 - $170,000",
+      "tech": true
+    },
+    {
+      "title": "Senior Software Development Engineer in Test",
+      "location": "Waterloo, Ontario",
+      "url": "https://jobs.lever.co/magnetforensics/03abb42a-063d-4ddd-92d4-17856346e099",
+      "department": "Engineering",
+      "posted": "2026-05-25",
+      "address": "",
+      "salary": "$125,000 - $175,000",
+      "tech": true
+    },
+    {
+      "title": "Software Development Engineer in Test",
+      "location": "Waterloo, Ontario",
+      "url": "https://jobs.lever.co/magnetforensics/7cfeada6-21d6-44e6-be7d-81afbee2b502",
+      "department": "Engineering",
+      "posted": "2026-07-21",
+      "address": "",
+      "salary": "$70,000 - $120,000",
+      "tech": true
+    },
+    {
+      "title": "Software Engineer - Magnet One (front-end, back-end, or full-stack opportunities)",
+      "location": "Waterloo, Ontario",
+      "url": "https://jobs.lever.co/magnetforensics/39181882-5eae-41c6-b494-c3d6791c978b",
+      "department": "Engineering",
+      "posted": "2026-07-10",
+      "address": "",
+      "salary": "$90,000 - $140,000",
+      "tech": true
+    },
+    {
+      "title": "Software Engineer, GKOS",
+      "location": "Canada",
+      "url": "https://jobs.lever.co/magnetforensics/8d402b0c-12b6-4114-bfc9-4ef95f4742e1",
+      "department": "Engineering",
+      "posted": "2026-08-25",
+      "address": "",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Sr. Product Marketing Manager",
+      "location": "United States",
+      "url": "https://jobs.lever.co/magnetforensics/16741279-4e4b-40dc-9924-aea87df18428",
+      "department": "Marketing",
+      "posted": "2026-07-17",
+      "address": "",
+      "salary": "$110,000 to $140,000",
+      "tech": false
+    },
+    {
+      "title": "Sr. Product Marketing Manager",
+      "location": "Waterloo / Ontario",
+      "url": "https://jobs.lever.co/magnetforensics/f83d7e05-1fb8-4916-9f25-4e3edd7ed6dc",
+      "department": "Marketing",
+      "posted": "2026-07-15",
+      "address": "",
+      "salary": "$100,000 to $140,000",
+      "tech": false
+    },
+    {
+      "title": "Vulnerability Researcher",
+      "location": "United States",
+      "url": "https://jobs.lever.co/magnetforensics/0c7c5eb2-f0fc-4327-a038-f56de3fcc218",
+      "department": "Vulnerability Research",
+      "posted": "2026-01-20",
+      "address": "",
+      "salary": "$250,000",
+      "tech": false
+    },
+    {
+      "title": "Vulnerability Researcher",
+      "location": "United Kingdom",
+      "url": "https://jobs.lever.co/magnetforensics/88365952-25db-48a5-95c0-cdb9e3efe55e",
+      "department": "Vulnerability Research",
+      "posted": "2026-02-04",
+      "address": "",
+      "salary": "",
+      "tech": false
     }
   ]
 }

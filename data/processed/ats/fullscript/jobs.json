@@ -1,7 +1,7 @@
 {
   "ats": "lever",
   "token": "fullscript",
-  "count": 9,
+  "count": 17,
   "jobs": [
     {
       "title": "Accounts Payable Manager",
@@ -11,18 +11,17 @@
       "posted": "2026-08-26",
       "address": "",
       "salary": "$85,000",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 85000,
-      "salaryText": "$85K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
+    },
+    {
+      "title": "Compliance Lead",
+      "location": "Boston, MA",
+      "url": "https://jobs.lever.co/fullscript/314f182c-6fe9-4cfc-b7cb-bc8c2eaf2bcc",
+      "department": "Legal",
+      "posted": "2026-06-05",
+      "address": "",
+      "salary": "$125,000",
+      "tech": false
     },
     {
       "title": "Director of Engineering, Developer Infrastructure",
@@ -32,16 +31,7 @@
       "posted": "2026-04-27",
       "address": "",
       "salary": "",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "Engineering Manager, Ecommerce",
@@ -51,16 +41,17 @@
       "posted": "2026-08-25",
       "address": "",
       "salary": "",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
+    },
+    {
+      "title": "Enterprise Customer Success Manager, Growth & Expansion",
+      "location": "Manchester, NH",
+      "url": "https://jobs.lever.co/fullscript/dc3ed31f-e59f-4111-a73e-32c63a70c867",
+      "department": "Enterprise Sales & Customer Success",
+      "posted": "2026-07-17",
+      "address": "",
+      "salary": "$100,000",
+      "tech": false
     },
     {
       "title": "Financial Planning & Analysis Manager",
@@ -70,18 +61,27 @@
       "posted": "2026-08-17",
       "address": "",
       "salary": "$145,000",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 145000,
-      "salaryText": "$145K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
+    },
+    {
+      "title": "Head of Design",
+      "location": "Toronto, ON",
+      "url": "https://jobs.lever.co/fullscript/84a42c7b-6485-452b-a146-45b37bd56526",
+      "department": "Product",
+      "posted": "2026-06-30",
+      "address": "",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Lead Data Scientist — Growth & Experimentation",
+      "location": "Toronto, ON",
+      "url": "https://jobs.lever.co/fullscript/580fdc9a-9565-4a20-a9d6-a552c606fcaa",
+      "department": "Finance: Data",
+      "posted": "2026-07-17",
+      "address": "",
+      "salary": "",
+      "tech": true
     },
     {
       "title": "Senior Developer, Backend - Developer Infrastructure",
@@ -91,18 +91,7 @@
       "posted": "2026-07-16",
       "address": "",
       "salary": "$125,000",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 125000,
-      "salaryText": "$125K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "Senior Developer, Fullstack - Identity and Access Management (IAM)",
@@ -112,18 +101,7 @@
       "posted": "2026-07-17",
       "address": "",
       "salary": "$125,000",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 125000,
-      "salaryText": "$125K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "Senior Developer, Fullstack - Warehouse Management Systems (WMS)",
@@ -133,18 +111,7 @@
       "posted": "2026-08-14",
       "address": "",
       "salary": "$125,000",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 125000,
-      "salaryText": "$125K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "Sr Lead, Benefits",
@@ -154,18 +121,17 @@
       "posted": "2026-08-19",
       "address": "",
       "salary": "$143,200",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 143200,
-      "salaryText": "$143K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
+    },
+    {
+      "title": "Staff Product Manager - Onboarding and Growth",
+      "location": "Toronto, ON",
+      "url": "https://jobs.lever.co/fullscript/9cd60056-bc76-4b43-8410-b41970bffd5b",
+      "department": "Product",
+      "posted": "2026-07-27",
+      "address": "",
+      "salary": "$140,000",
+      "tech": false
     },
     {
       "title": "Staff, Security Engineer",
@@ -175,16 +141,37 @@
       "posted": "2026-06-05",
       "address": "",
       "salary": "",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
+    },
+    {
+      "title": "Warehouse Associate (Lenexa, KS)",
+      "location": "Lenexa, KS",
+      "url": "https://jobs.lever.co/fullscript/3aaf9d47-d40f-4edc-82b0-939e6aa85c4a",
+      "department": "Kansas Warehouse",
+      "posted": "2026-07-20",
+      "address": "",
+      "salary": "$20.25 USD per hour",
+      "tech": false
+    },
+    {
+      "title": "Warehouse Associate (Phoenix, AZ)",
+      "location": "Phoenix, AZ",
+      "url": "https://jobs.lever.co/fullscript/7c5f5607-0573-4e6f-9916-7ba0575c6b57",
+      "department": "Arizona Warehouse",
+      "posted": "2026-07-20",
+      "address": "",
+      "salary": "$20.25 USD per hour",
+      "tech": false
+    },
+    {
+      "title": "Warehouse Operations Supervisor",
+      "location": "Lenexa, KS",
+      "url": "https://jobs.lever.co/fullscript/5315f7fe-3afb-404d-a4d2-fb730e19c948",
+      "department": "Kansas Warehouse",
+      "posted": "2026-08-06",
+      "address": "",
+      "salary": "",
+      "tech": false
     }
   ]
 }

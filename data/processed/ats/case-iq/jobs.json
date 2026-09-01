@@ -1,6 +1,27 @@
 {
   "ats": "bamboohr",
   "token": "caseiq",
-  "count": 0,
-  "jobs": []
+  "count": 2,
+  "jobs": [
+    {
+      "title": "Account Executive",
+      "location": "",
+      "url": "https://caseiq.bamboohr.com/careers/334",
+      "department": "Sales",
+      "posted": "",
+      "address": "",
+      "salary": "70-80k CAD Base + $68k Commission",
+      "tech": false
+    },
+    {
+      "title": "Support Application Developer",
+      "location": "",
+      "url": "https://caseiq.bamboohr.com/careers/336",
+      "department": "Support",
+      "posted": "",
+      "address": "",
+      "salary": "60-65k GBP",
+      "tech": true
+    }
+  ]
 }
