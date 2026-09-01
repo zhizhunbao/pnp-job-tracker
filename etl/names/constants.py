@@ -1,8 +1,5 @@
 """
 names 域常量 —— 公司名归一的三条正则(方言:constants 只许 import re / paths)。
-
-@author Claude Fable 5
-@time 2026-08-31
 """
 import re
 
