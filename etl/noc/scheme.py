@@ -4,9 +4,10 @@ noc 域形状(照 pnp/company 样张;2026-08-31 并域批C)。
 全是域内接线形状(XxxIn)= dataclass:一参令下多入参收编的口袋,不是外来数据,
 校验加不了值。边界(StatCan CSV / structure.json)是 dict 直读,键词汇住 constants
 的 K_ 词族与 to_* 行构造器体内。段横幅与 constants/functions 同名同序镜像;
-第 2/4/8 段无形状,占位横幅保留镜像编号。
-2026-08-31 批I3 溶段:批H2 归户进来的三个步骤文件(translate_noc_titles / shorten_noc_titles /
-build_city_names)溶成段6/7/8,本段起的形状全是新增。`import re` 是标准库(叶子律允许):
+第 2/4 段无形状,占位横幅保留镜像编号。
+2026-08-31 批I3 溶段:批H2 归户进来的步骤文件(translate_noc_titles / shorten_noc_titles)
+溶成段6/7(build_city_names 曾同批溶成段8,2026-08-31 迁 mart 域段20,占位横幅随迁摘除),
+本段起的形状全是新增。`import re` 是标准库(叶子律允许):
 段7 的三语规格表带编译好的正则,ShortSpec 要给它一个真类型,裸 object 让检查器判不动。
 """
 import re
@@ -449,8 +450,3 @@ class DupReportIn:
 
     done: dict
     """产出表当前态。"""
-
-
-# =========================================================================
-# 8. cities 步(纯常量段,无形状 —— 镜像占位)
-# =========================================================================

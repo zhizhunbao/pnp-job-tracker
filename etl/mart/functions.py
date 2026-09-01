@@ -45,7 +45,8 @@ from noc.functions import broad_of, classify, teer_of
 from mart.constants import (
     AB_SPOT_METRICS, AB_SUMMARY_METRICS, ACC_POINTS, ACC_POINTS_DEFAULT, ACC_RULES, ACC_UNKNOWN,
     ACTIVE_BUSY, ACTIVE_MID, AGENCY_NOTE, AGENCY_RE, AGG_NEW_DAYS, AIP_PROVS, AIP_TEERS, ALL,
-    AND_ABOVE_RE, ATS_EXT_TPL, ATS_LOC_TPL, AVG_DAYS_MIN_N, BC_PROC_LABEL_TPL,
+    AND_ABOVE_RE, ATS_EXT_TPL, ATS_LOC_TPL, AVG_DAYS_MIN_N, BC_PROC_LABEL_TPL, CITIES,
+    CITIES_DONE_TPL, CITIES_OUT_TPL,
     BC_PROC_METRIC_TPL, BC_PROC_PLAIN_TPL, BC_PROC_SECTION, BENEFIT_RE, BENEFIT_WINDOW,
     BLANK_RUN_RE, BROAD_TRADES, CAREGIVER_NOCS, CATEGORY_UNCLASSIFIED, CELPIP_TAIL_RE,
     CITY_I18N_KEY_TPL, CITY_ROWS_TPL, COLON, COMMA, COMMA_SPACE_RE, COUNTRY_CANADA, COUNT_WIDTH,
@@ -106,7 +107,8 @@ from mart.constants import (
     NUM_EXACT_RE, NUM_MIN_RE, NUM_RANGE_MIN_RE, NUM_RANGE_RE, OCC_ROWS_TPL, ON_RE, ON_YEAR_METRICS,
     OP_GTE, ORIGIN_ATS, ORIGIN_JOBBANK, OTTAWA_CITY, OTTAWA_CITY_LOWER, OTTAWA_CITY_NAMES,
     OTTAWA_COMMUNITIES, OTTAWA_DISTRICTS, OTTAWA_DISTRICT_KEYS, OTTAWA_JB_FSA, OUT_CITY, OUT_DAILY,
-    OUT_JOBBANK, OUT_MART, OUT_MART_OPEN_IDS, OUT_OCC, OUT_RANKINGS, OUT_SCORED, OUT_STATS,
+    OUT_CITY_I18N, OUT_JOBBANK, OUT_MART, OUT_MART_OPEN_IDS, OUT_OCC, OUT_RANKINGS, OUT_SCORED,
+    OUT_STATS,
     PARA_SEP, PAREN_CLOSE, PAREN_OPEN, PAREN_RE, PCT_SCALE, PERCENT_SIGN, PE_DESIGNATED_URL,
     PILOT_OA_TAIL_RE, PILOT_OCC_NO, PILOT_OCC_YES,
     PILOT_TYPES, PLUS, PNP_PROV_ORDER, PNP_TYPE_INDEMAND, PNP_TYPE_INELIGIBLE,
@@ -4508,3 +4510,30 @@ def blank_ats_pilot(tally: PilotTally) -> None:
                 changed = True
         if changed:
             paths.write_json(paths.WriteJsonIn(path=jobs_json, payload=data, indent=INDENT_2))
+
+# =========================================================================
+# 20. cities 步(城市名的中/韩通行译名;#151,人工核定表不用模型)
+# =========================================================================
+
+
+def build_city_names() -> None:
+    """人工核定的城市中/韩译名表 → processed/city_names_i18n.json(入口,门直调)。
+
+    IN : 无外部输入(表就在 constants.CITIES 里)
+    OUT: processed/city_names_i18n.json(name|prov → {zh, ko};本域段 9 维度装配自己读)
+    沿革:clean/04g → 批H2 noc 域 → 批I3 溶段(产物 byte-identical 金标已验)→
+    2026-08-31 Frank 拍板迁本域(城市是 DB 维度,译名是维度装配的料),逻辑一字未动。
+    """
+    say(CITIES_OUT_TPL.format(path=OUT_CITY_I18N))
+    out = to_city_i18n(CITIES)
+    OUT_CITY_I18N.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_CITY_I18N, payload=out, indent=1))
+    say(CITIES_DONE_TPL.format(n=len(out)))
+
+
+def to_city_i18n(table: dict) -> dict:
+    """人工核定表 → 落盘形({名字|省: {zh, ko}};顺序即表序,不排序)。"""
+    out: dict = {}
+    for key, names in table.items():
+        out[key] = {"zh": names[0], "ko": names[1]}
+    return out

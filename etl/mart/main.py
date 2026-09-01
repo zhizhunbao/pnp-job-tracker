@@ -19,8 +19,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
 from mart.functions import (
-    build_mart, build_mart_rankings, build_mart_stats, clean_job_locations, clean_job_salary,
-    flag_job_pilot, score_mart_jobs,
+    build_city_names, build_mart, build_mart_rankings, build_mart_stats, clean_job_locations,
+    clean_job_salary, flag_job_pilot, score_mart_jobs,
 )
 
 SCHEDULED = [
@@ -46,8 +46,9 @@ TOOLS = {
     "locations": clean_job_locations,
     "salary": clean_job_salary,
     "pilot_flag": flag_job_pilot,
+    "cities": build_city_names,
 }
-"""全部可 --only 点名的步 = 默认链四步 + 三个跨源清洗步:
+"""全部可 --only 点名的步 = 默认链四步 + 三个跨源清洗步 + 一个手动件:
 
   locations   ATS/JB 同一套地点清洗(country/province/city/district/address;ATS 岗筛焦点区)
   salary      ATS/JB 同一套薪资归一(salaryAnnual / salaryText + 五道护栏)
@@ -57,9 +58,13 @@ TOOLS = {
 **不进本域默认链**:它们跟的是 load 域 build 链的节奏,在评分之前由那条链逐步点名,
 顺序与溶解前逐位相同(locations → salary →(aip/rcip/fcip)→ pilot_flag → jobbank noc_sanity)。
 
+  cities      城市中/韩通行译名(人工核定表,不用模型;2026-08-31 Frank 拍板自 noc 域迁入 ——
+              城市是 DB 维度,译名是维度装配的料,本域段 9 自己读。手动件,不进任何链)
+
 ⚠ --only 是子串匹配(门形样张同款):`--only mart` 只命中 mart 本身,`--only s` 会同时
 命中 score / stats / salary —— 要单点请写全名。批J 三个新键与既有四键互不误命中
-(逐对核过:locations / salary / pilot_flag 既不含既有键、也不被既有键含)。
+(逐对核过:locations / salary / pilot_flag 既不含既有键、也不被既有键含);cities 与
+七个既有键同样逐对核过互不含。
 """
 
 

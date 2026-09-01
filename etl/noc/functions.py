@@ -7,7 +7,8 @@ noc 域函数 —— 分类库(单一来源,08/09/10/11/employers 消费)+ 官�
 noc_buckets.py(bucket_of)与 noc_facts/ 两个步骤文件全溶进本文件;
 行为逐字不变,金标 = 全码域 10 万 classify 探针 byte-identical + 两步产物重跑比对。
 2026-08-31 批I3 溶段:批H2 从 clean/ 归户进来的三件(translate_noc_titles /
-shorten_noc_titles / build_city_names)溶成段6/7/8,本域步骤文件清零。
+shorten_noc_titles)溶成段6/7,本域步骤文件清零(cities 件曾同批溶成段8,
+2026-08-31 Frank 拍板迁 mart 域段20 —— 城市译名是维度装配的料,不是 NOC 的东西)。
 两处收拢有据可查:① 段6 与段7 的 /api/chat 调用**逐字相同、只差 num_predict**,
 合成 ask_chat 一份(差异收进入参 = 超集);② 三段各抄一份的 OLLAMA_URL / OLLAMA_MODEL
 取值合成 ollama_base / ollama_model。⚠ 段3 的 /api/generate 与段6/7 的 /api/chat
@@ -28,8 +29,8 @@ import paths
 from log.functions import say
 from noc.constants import (
     ARG_FORCE, ARG_LANG, ARG_SEP, CHAT_FAIL_TPL, CHAT_TEMPERATURE,
-    CHAT_TIMEOUT_S, CHAT_URL_TPL, CITIES, CITIES_DONE_TPL, CITIES_OUT_TPL, LANG_EN, LATIN3_RE,
-    OUT_CITY_I18N, OUT_TITLES_I18N, ROLE_USER, SHORT_DONE_TPL, SHORT_DUP_OK_TPL,
+    CHAT_TIMEOUT_S, CHAT_URL_TPL, LANG_EN, LATIN3_RE,
+    OUT_TITLES_I18N, ROLE_USER, SHORT_DONE_TPL, SHORT_DUP_OK_TPL,
     SHORT_DUP_ROW_TPL, SHORT_DUP_SEP, SHORT_DUP_SHOW_MAX, SHORT_DUP_WARN_TPL, SHORT_FIX_BY_LANG,
     SHORT_HAVE_TPL, SHORT_IN_TPL, SHORT_LANG_DONE_TPL, SHORT_MIN_LEN, SHORT_MODEL_TPL,
     SHORT_NUM_PREDICT, SHORT_OUT_TPL, SHORT_PROGRESS_TPL, SHORT_SAVE_EVERY, SHORT_SKIP_TPL,
@@ -1135,33 +1136,3 @@ def to_en_of(rows: list) -> dict:
     for row in rows:
         en_of[row.get("noc", "")] = row.get("title", "")
     return en_of
-
-
-# =========================================================================
-# 8. cities 步(城市名的中/韩通行译名;#151,人工核定表不用模型)
-# =========================================================================
-
-
-def build_city_names() -> None:
-    """人工核定的城市中/韩译名表 → processed/city_names_i18n.json(入口,门直调)。
-
-    IN : 无外部输入(表就在 constants.CITIES 里)
-    OUT: processed/city_names_i18n.json(name|prov → {zh, ko})
-    2026-08-31 批H2 归户搬家:自 etl/clean/04g_city_names.py 迁进 noc 域;
-    2026-08-31 批I3 溶段:整件溶进本文件成段8,逻辑一字未动(字典推导拆成 to_city_i18n 的
-    显式 for、裸 print 改 say、落盘走 paths.write_json —— 产物 byte-identical 金标已验)。
-    归属存疑见 constants.OUT_CITY_I18N 的 docstring。
-    """
-    say(CITIES_OUT_TPL.format(path=OUT_CITY_I18N))
-    out = to_city_i18n(CITIES)
-    OUT_CITY_I18N.parent.mkdir(parents=True, exist_ok=True)
-    paths.write_json(paths.WriteJsonIn(path=OUT_CITY_I18N, payload=out, indent=1))
-    say(CITIES_DONE_TPL.format(n=len(out)))
-
-
-def to_city_i18n(table: dict) -> dict:
-    """人工核定表 → 落盘形({名字|省: {zh, ko}};顺序即表序,不排序)。"""
-    out: dict = {}
-    for key, names in table.items():
-        out[key] = {"zh": names[0], "ko": names[1]}
-    return out
