@@ -644,9 +644,11 @@ WIKI_CHECKED_MARK = 1
 FACTS_SUFFIX_RE = re.compile(
     r"\b(incorporated|inc|ltd|limited|llp|llc|corp|corporation|co|company|ltee|ltée|group|"
     r"holdings?)\b\.?", re.I)
-"""公司名归一:法人后缀。⚠ 与本仓另外两把尺子(aip 的 norm_name、mart 试点段的
-PILOT_SUFFIX_RE)词表各不相同 —— 2026-08-31 批J 溶解逐字保留本件自己的一份,
-谁该收敛是另一批的判定(cms/src/lib/employers 那侧的注释也点名本件为同门槛来源)。"""
+"""公司名归一:法人后缀。⚠ 故意不收进 names 基建叶(2026-08-31 收拢批 Frank 拍板
+「合两把留两把」):本件产出的归一名已作为键落盘在 Wikidata facts 缓存里,换尺子 = 现有
+缓存键全部失配,而 Wikidata 半边已退役(#109/#111)禁重跑 —— 改不起也没必要改。
+56,909 名探针:与 names.norm_name 差 23%(本件保留标点、词表更短)。
+(cms/src/lib/employers 那侧的注释也点名本件为同门槛来源。)"""
 
 FACTS_COMMA = ","
 """归一时折成空格的逗号。"""

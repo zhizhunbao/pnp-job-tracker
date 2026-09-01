@@ -15,10 +15,10 @@ aip.scheme。产物路径一字不动(raw/aip/ 两件 + raw/ircc/aip_rules.json)
   · employers —— 单省塌方保旧,永不清空,正常返回;
   · aip_rules —— 引用核验未过 → 保留旧表 + SystemExit(1),门见 SystemExit 直接中止本轮。
 2026-08-31 批I3 溶段:批H2 从 clean/05c_flag_aip.py 归户进来的 flag_aip_jobs.py 溶成**段4**,
-本域步骤文件清零。⚠ 段4 的 norm_name 是**跨域单一来源**:lmia 域 importlib 按路径拉它当
-雇主聚合键,本批把 lmia/constants.py 的 NORM_MODULE_PATH 从 aip/flag_aip_jobs.py 改指本文件
-(函数名 norm_name 保持不变,getattr 拿得到);别复制、别就地「优化」。
-依赖单边:本文件 → constants/scheme + 基础设施叶(paths / log / fetch / crawl)。
+本域步骤文件清零。段4 曾是 norm_name 的跨域单一来源(lmia/mart importlib 按路径拉它当尺子);
+2026-08-31 收拢批把 norm_name 抽成基础设施叶 names 域,本域与 lmia/mart 一样改正规 import,
+两条路径缝随之拆除。
+依赖单边:本文件 → constants/scheme + 基础设施叶(paths / log / fetch / crawl / names)。
 """
 import html as html_lib
 import json
@@ -33,10 +33,11 @@ import paths
 from log.functions import err, say
 from fetch.constants import BROWSER_UA, HDR_UA, LINE_SEP, SPACE_SEP, WS_RE
 from crawl.functions import get_cached_page
+from names.functions import norm_name
 from aip.constants import (
-    ALIAS_RE, ALIAS_SPLIT_RE, ATLANTIC, ATS_JOBS_GLOB, FLAG_DONE_TPL, FLAG_IN_LIST_TPL,
+    ALIAS_RE, ATLANTIC, ATS_JOBS_GLOB, FLAG_DONE_TPL, FLAG_IN_LIST_TPL,
     FLAG_IN_OUT_TPL, FLAG_NAMES_TPL, IN_AIP_LIST, IN_OUT_COMPANIES_DIR, IN_OUT_POSTINGS, INDENT_2,
-    K_AIP, K_JOBS, KEEP_RE, SUFFIX_RE,
+    K_AIP, K_JOBS,
     BULLET, CDX_PARAMS, CDX_TIMEOUT_S, CDX_URL, EMP_OUT_TPL, EMP_PROV_TPL, EMP_TABLE_HEAD,
     EMP_TIMEOUT_S, ENC_UTF8, ERRORS_IGNORE, GUARD_KEEP_TPL, GUARD_NO_OLD, GUARD_WARN_TPL,
     HTML_PARSER, IN_NL_EMP_DIR, IN_URL_ELIG, K_EMPLOYER, K_FACTOR, K_FAMILY_SIZE, K_LOCATION,
@@ -434,21 +435,6 @@ def flag_aip_jobs() -> None:
     got = flag_jobbank(names)
     total = got.total + flag_ats_jobs()
     say(FLAG_DONE_TPL.format(flagged=got.flagged, total=total))
-
-
-def norm_name(name: str) -> str:
-    """公司名归一:去 o/a 别名前缀、去公司后缀、去标点、压空格、小写。
-
-    ⚠ **跨域单一来源**:lmia 域按路径 importlib 拉本函数当聚合键(lmia/constants.py 的
-    NORM_MODULE_PATH,2026-08-31 批I3 随本件溶段从 aip/flag_aip_jobs.py 改指本文件),
-    mart 汇装拉它对 companies 做同一把尺子的 join —— 三处必须同一份实现,改这个函数等于改
-    LMIA 榜单与 AIP 匹配两处口径,别复制、别就地「优化」。
-    """
-    n = (name or "").lower()
-    n = ALIAS_SPLIT_RE.split(n)[0]
-    n = SUFFIX_RE.sub(SPACE_SEP, n)
-    n = KEEP_RE.sub(SPACE_SEP, n)
-    return WS_RE.sub(SPACE_SEP, n).strip()
 
 
 def load_aip_names() -> set:

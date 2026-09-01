@@ -13,7 +13,6 @@ lmia 域常量 —— 域词汇表(五件全溶,照样张 etl/company/;2026-08-3
 聚合保留股别/季度/职位数,展示层必须带这些语境。
 """
 import re
-from pathlib import Path
 
 import paths
 
@@ -25,24 +24,10 @@ IN_XLSX_DIR = paths.LMIA
 """输入②:季度源缓存 tfwp_YYYYqN_pos_en.xlsx(gitignore,已缓存季度不重下)。"""
 
 OUT_TABLE = paths.LMIA / "lmia-employers.json"
-"""输出:按雇主聚合的维护表(gitignore,可由缓存重建;09 消费)。"""
-
-NORM_MODULE_NAME = "flag_aip"
-"""norm_name 宿主模块的 importlib 名(沿用旧名:原宿主 clean/05c_flag_aip.py 数字开头,
-常规 import 拉不动才走 importlib;2026-08-31 批H2 宿主归户成 aip/flag_aip_jobs.py 后
-常规 import 拉得动了,但那会变成 lmia → aip 的域间 import(check_shape 硬红),
-故仍走 importlib 按路径拉,模块名保持不变。2026-08-31 批I3 宿主再迁 aip/functions.py,
-这个 importlib 名仍不改 —— 它只是给 spec 起的内部名,不参与解析。"""
-
-NORM_MODULE_PATH = Path(__file__).resolve().parent.parent / "aip" / "functions.py"
-"""聚合键 = norm_name(与 AIP 匹配同一把尺子,mart join 时对 companies 用同一函数)——
-单一来源住宿主文件,这里只拉不复制。2026-08-31 批H2 宿主从 etl/clean/05c_flag_aip.py
-迁到 etl/aip/flag_aip_jobs.py(clean 横切层清算,「谁的数据谁管」);2026-08-31 批I3 该步骤
-文件溶进 aip 域的 functions.py 成段4,本常量随迁改指 aip/functions.py —— 函数名 norm_name
-不变,getattr 照样拿得到,聚合键口径不变(实测 load_norm_name()('Foo Holdings Ltd.')=='foo')。
-⚠ 这条边(lmia 读 aip 域的一个文件)是**待判的收拢账**:norm_name 现有三个消费者
-(aip 自己打标、lmia 聚合键、mart 汇装 join),按「数消费者」判据够格抽成基础设施叶子,
-但抽哪、叫什么归 Frank 拍 —— 批H2/批I3 都只搬家不收拢。"""
+"""输出:按雇主聚合的维护表(gitignore,可由缓存重建;09 消费)。
+聚合键 = norm_name(与 AIP 匹配同一把尺子)。批H2/批I3 时代靠 importlib 按路径拉 aip 的
+实现(NORM_MODULE_NAME/PATH 两常量),那笔「待判的收拢账」2026-08-31 Frank 拍板结清:
+norm_name 抽成基础设施叶 names 域,本域改正规 import,路径缝与两常量随之退役。"""
 
 ENV_KEEP_QUARTERS = "LMIA_QUARTERS"
 """保留季度数的环境键(LMIA_QUARTERS=12 可扩窗)。"""

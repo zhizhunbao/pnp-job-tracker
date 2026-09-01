@@ -38,7 +38,12 @@ from employers.scheme import (BucketIn, BucketRow, DesignatedOut, HistOut, HomeO
 
 def norm_name_of(name: str) -> str:
     """公司名归一键:小写、剥法务后缀、非字母数字折空格(三源同名不同写的对齐面;
-    归一撞不上就各自成行 —— 残差留空不硬合)。"""
+    归一撞不上就各自成行 —— 残差留空不硬合)。
+
+    ⚠ 故意不收进 names 基建叶(2026-08-31 收拢批 Frank 拍板「合两把留两把」):本把只剥
+    纯法务后缀、保留 services/company/group 与中文字符、不切 o/a —— 池对齐面尺子保守是
+    设计红线(宁可对不上各自成行,不硬合两家不同公司)。56,909 名探针:与 names.norm_name
+    差 16%,差异全部朝「更保守」方向。"""
     low = (name or "").lower()
     low = LEGAL_SUFFIX_RE.sub(NAME_SEP, low)
     low = NAME_JUNK_RE.sub(NAME_SEP, low)

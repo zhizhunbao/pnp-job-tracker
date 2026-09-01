@@ -18,8 +18,9 @@ build_pnp_ops_stats 里的 add、stats 里的 sponsor_of/agg/flow_of 等内嵌�
 依赖单边:本文件 → constants/scheme + 基础设施叶(paths / log / noc)。NOC 分类法是单一来源
 (2026-08-31 Frank「noc 就叫 noc」,根上两库并成 noc/ 域):teer/broad/mid/fine 与三语名一律
 `from noc.functions import …`,本域一个字不重算。
-跨域件(aip 的 norm_name)仍按路径拉:域间禁 import(形制闸①)—— 装载点收在步骤入口一次,
-经 ctx 显式下传。
+公司名归一 = names 基建叶的 norm_name(2026-08-31 收拢批:此前「aip 的 norm_name 按路径拉」
+的缝拆除,连同只剩这一个消费者的 load_module_by_path 装载器与本域复制品 norm_pilot_name
+——56,909 名探针证得与 aip 零差异 —— 一并退役)。
 2026-08-31 **批J**(clean/ 目录退役,「谁的数据谁清洗」归户):三件**跨源**清洗溶进本文件
 成第 17/18/19 段 —— clean/04c 地点(clean_job_locations)、clean/04d 薪资(clean_job_salary)、
 clean/05f 试点打标(flag_job_pilot)。判据:它们对 ATS 与 JB 两源过同一套尺子,不归任何
@@ -34,18 +35,17 @@ import re
 import statistics
 from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta, timezone
-from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
-from typing import cast
 
 import paths
 from log.functions import err, say
+from names.functions import norm_name
 from noc.constants import SLUGS as NOC_BROAD_SLUG
 from noc.functions import broad_of, classify, teer_of
 from mart.constants import (
     AB_SPOT_METRICS, AB_SUMMARY_METRICS, ACC_POINTS, ACC_POINTS_DEFAULT, ACC_RULES, ACC_UNKNOWN,
     ACTIVE_BUSY, ACTIVE_MID, AGENCY_NOTE, AGENCY_RE, AGG_NEW_DAYS, AIP_PROVS, AIP_TEERS, ALL,
-    AND_ABOVE_RE, ATS_EXT_TPL, ATS_LOC_TPL, ATTR_NORM_NAME, AVG_DAYS_MIN_N, BC_PROC_LABEL_TPL,
+    AND_ABOVE_RE, ATS_EXT_TPL, ATS_LOC_TPL, AVG_DAYS_MIN_N, BC_PROC_LABEL_TPL,
     BC_PROC_METRIC_TPL, BC_PROC_PLAIN_TPL, BC_PROC_SECTION, BENEFIT_RE, BENEFIT_WINDOW,
     BLANK_RUN_RE, BROAD_TRADES, CAREGIVER_NOCS, CATEGORY_UNCLASSIFIED, CELPIP_TAIL_RE,
     CITY_I18N_KEY_TPL, CITY_ROWS_TPL, COLON, COMMA, COMMA_SPACE_RE, COUNTRY_CANADA, COUNT_WIDTH,
@@ -59,7 +59,7 @@ from mart.constants import (
     FLOW_COUNT_TPL, FLOW_IN_TPL, FLOW_NO_POSTINGS_TPL, FLOW_SERIES_YEARS, FRONTMATTER_RE,
     FRONT_URL_RE, FSA_DISTRICT, FSA_PREFIX_LEN, GLOB_JSON, GLOB_MD, GRADE_1, GRADE_2, GRADE_3,
     GRADE_4, GRADE_5, GRID_CRS, GRID_FSW67, HYPHEN, I18N_BLANK, I18N_CITY_FILE, I18N_NOC_FILE,
-    INDEMAND2, INDENT_2, IN_AIP, IN_AIP_NORM_PY, IN_ATS_COMPANIES, IN_COMPANY_FACTS, IN_DIFFICULTY,
+    INDEMAND2, INDENT_2, IN_AIP, IN_ATS_COMPANIES, IN_COMPANY_FACTS, IN_DIFFICULTY,
     IN_DLI, IN_DRAW_STREAM_ZH, IN_EE_CATEGORIES, IN_EE_CRS, IN_EE_DRAWS, IN_EE_ELIG, IN_EE_LANG,
     IN_ENRICH, IN_EXPIRED, IN_FIELD_SOURCES, IN_FSA_TABLE, IN_IRCC_ALLOC, IN_IRCC_FLOW, IN_IRCC_PR,
     IN_IRCC_TR, IN_JD_ROOTS, IN_JOBBANK, IN_JVWS_RAW, IN_LMIA, IN_LMIA_XLSX_DIR, IN_MART_CLOSED,
@@ -99,7 +99,7 @@ from mart.constants import (
     MB_GROUP_LABEL_TPL, MB_INVENTORY_METRICS, MB_PROC_LABEL_TPL, MB_SECTION_TPL, MB_YTD_GROUPS,
     MB_YTD_TPL, METRIC_ALLOCATION, METRIC_ASSESSING, METRIC_EOI_POOL, METRIC_EOI_POOL_TOTAL,
     METRIC_NOM_ENHANCED_YTD, METRIC_PRIORITY_SECTOR, METRIC_PROCESSING_WEEKS,
-    METRIC_PROC_COMMITMENT, METRIC_SIRS_POOL, MOD_AIP_NORM, MOM_MIN_PREV, MONTHS_PER_QUARTER,
+    METRIC_PROC_COMMITMENT, METRIC_SIRS_POOL, MOM_MIN_PREV, MONTHS_PER_QUARTER,
     MONTH_ABBR_LEN, MONTH_LEN, MV_ADJ_MAX, MV_ADJ_MIN, MV_ADJ_SCALE, NEWS_EXCERPT_MAX,
     NEWS_FROM_PREFIX, NEWS_MAX, NEWS_NOISE, NEWS_SLUG_N_TPL, NEWS_SLUG_TPL, NL, NOC_LEN,
     NOC_MAJOR_LEN, NOC_RE, NOC_RULES, NON_CITY_PREFIXES, NON_PNP_PROV, NON_WORD_RE, NORM_RE,
@@ -108,8 +108,8 @@ from mart.constants import (
     OTTAWA_COMMUNITIES, OTTAWA_DISTRICTS, OTTAWA_DISTRICT_KEYS, OTTAWA_JB_FSA, OUT_CITY, OUT_DAILY,
     OUT_JOBBANK, OUT_MART, OUT_MART_OPEN_IDS, OUT_OCC, OUT_RANKINGS, OUT_SCORED, OUT_STATS,
     PARA_SEP, PAREN_CLOSE, PAREN_OPEN, PAREN_RE, PCT_SCALE, PERCENT_SIGN, PE_DESIGNATED_URL,
-    PILOT_KEEP_RE, PILOT_OA_SPLIT_RE, PILOT_OA_TAIL_RE, PILOT_OCC_NO, PILOT_OCC_YES,
-    PILOT_SUFFIX_RE, PILOT_TYPES, PLUS, PNP_PROV_ORDER, PNP_TYPE_INDEMAND, PNP_TYPE_INELIGIBLE,
+    PILOT_OA_TAIL_RE, PILOT_OCC_NO, PILOT_OCC_YES,
+    PILOT_TYPES, PLUS, PNP_PROV_ORDER, PNP_TYPE_INDEMAND, PNP_TYPE_INELIGIBLE,
     POSTAL_FSA_RE, POSTING_URL_RE, PRINT_INOUT_COMPANIES_TPL, PRINT_INOUT_JOBBANK_TPL,
     PRINT_LOC_ATS_TPL, PRINT_LOC_BACKFILL_TPL, PRINT_LOC_DONE_TPL, PRINT_PILOT_DONE_TPL,
     PRINT_PILOT_IN_TPL, PRINT_PILOT_MAP_TPL, PRINT_SAL_DONE_TPL, PRINT_SAL_GUARD_TPL, PROFILE_FILE,
@@ -154,9 +154,9 @@ from mart.scheme import (
     FlowFinishIn, FlowOfIn, FlowRec, FlowStatsOut, FlowWindows, GradeActiveIn, GradeCellIn,
     GradeChannelIn, GradeEmpIn, GradeFameIn, GradeSalaryIn, GradeSponsorIn, JbExtIn, JbLocIn,
     JdFlagIn, JobDetailIn, JobGradesIn, JobGradesOut, JobRowIn, LangCellIn, LmiaFillIn,
-    LmiaWindows, LocKeptOut, MartCtx, MbAnnualIn, MbBlockIn, ModuleLoadIn, MomIn, MoneyIn,
+    LmiaWindows, LocKeptOut, MartCtx, MbAnnualIn, MbBlockIn, MomIn, MoneyIn,
     MoneyTextIn, MvScoreIn, NewsExcerptIn, NewsRowIn, NewsSlugIn, NlEmployerIn, NocDescIn,
-    NocDescRowIn, NocOpeningIn, NocOpeningsIn, NormNameLike, NoticeRowIn, NumericRangeOut,
+    NocDescRowIn, NocOpeningIn, NocOpeningsIn, NoticeRowIn, NumericRangeOut,
     OccBaseIn, OccBuildIn, OccNationalIn, OccRowIn, OpsCtx, OpsProvIn, OpsRowIn, OpsRowOut,
     OttawaLocIn, PilotEmployerIn, PilotFlagIn, PilotOccIn, PilotQuotaIn, PilotRowIn, PilotTally,
     PilotVerdictOut, PnpJudgeIn, PnpMergeIn, PnpOccIn, PnpStreamBucketIn, PnpStreamIn, PnpTables,
@@ -986,13 +986,13 @@ def fill_companies_lmia(ctx: MartCtx) -> None:
 
     按 norm_name 精确匹配(3.2 统计:公司命中 18.2%,抽检零误报)。只挂 companies
     (列表 SQL 已 join companies,jobs 零改动);语义=历史事实,展示层必须带股别/季度。
-    公司名归一件住 aip 域(LMIA 匹配与 AIP 打标同一把尺子),按路径拉进来 —— 域间禁 import。
+    公司名归一 = names 基建叶的 norm_name(LMIA 匹配与 AIP 打标同一把尺子;2026-08-31
+    收拢批抽叶,此前按路径拉 aip 文件的缝随之拆除)。
     """
     if not IN_LMIA.exists():
         return
     lmia = read_table(IN_LMIA).get(K_EMPLOYERS, {})
     windows = lmia_windows_of(lmia)
-    norm_name = load_norm_name()
     hit = 0
     for c in ctx.companies.values():
         e = lmia.get(norm_name(c.get(K_NAME, "")))
@@ -2992,28 +2992,6 @@ def to_closed_job_row(x: ClosedJobIn) -> dict:
 # =========================================================================
 
 
-def load_module_by_path(x: ModuleLoadIn) -> object:
-    """按文件路径拉一个模块(域间禁 import 的合法出口)。
-
-    消费点只剩公司名归一一处:aip 是域,形制闸①不许跨域正规 import。
-    (原第二个消费点是 clean/04d 薪资归一件 —— 它住横切层且文件名以数字开头,`import`
-    语法上就不成立;2026-08-31 批J clean/ 退役、该件溶进本域第 18 段后,那一路改成域内
-    直调,按路径拉的理由随之消失。)装载点收在这一处,调用方拿到的是模块对象。
-    """
-    spec = spec_from_file_location(x.name, x.path)
-    # pyrefly: ignore[bad-argument-type] — spec_from_file_location 只在路径不存在时给 None;此处是仓内固定文件,拿不到就该当场炸
-    mod = module_from_spec(spec)
-    # pyrefly: ignore[missing-attribute] — 同上,spec 非 None 时 loader 恒在
-    spec.loader.exec_module(mod)
-    return mod
-
-
-def load_norm_name() -> NormNameLike:
-    """公司名归一单一来源在 aip 域 —— LMIA 匹配与 AIP 打标用同一把尺子(路径沿革见常量 docstring)。"""
-    mod = load_module_by_path(ModuleLoadIn(name=MOD_AIP_NORM, path=IN_AIP_NORM_PY))
-    return cast(NormNameLike, getattr(mod, ATTR_NORM_NAME))
-
-
 def new_mart_ctx() -> MartCtx:
     """装配累加器初值(读齐四份输入 + 三个去重集 + 两个计数器)。
 
@@ -4471,21 +4449,12 @@ def load_pilot_employer_names() -> dict:
         for row in read_table(src).get(K_ROWS, []):
             names = out.setdefault(row.get(K_COMMUNITY, ""), set())
             raw = row.get(K_NAME, "")
-            names.add(norm_pilot_name(raw))
+            names.add(norm_name(raw))
             m = PILOT_OA_TAIL_RE.search(raw)
             if m is not None:
-                names.add(norm_pilot_name(m.group(1)))
+                names.add(norm_name(m.group(1)))
             names.discard("")
     return out
-
-
-def norm_pilot_name(name: str) -> str:
-    """雇主名归一(去 o/a 别名、去法人后缀、去标点小写)。"""
-    one = (name or "").lower()
-    one = PILOT_OA_SPLIT_RE.split(one)[0]
-    one = PILOT_SUFFIX_RE.sub(SPACE, one)
-    one = PILOT_KEEP_RE.sub(SPACE, one)
-    return WS_RE.sub(SPACE, one).strip()
 
 
 def flag_pilot_row(x: PilotFlagIn) -> None:
@@ -4501,7 +4470,7 @@ def flag_pilot_row(x: PilotFlagIn) -> None:
     x.job[K_PILOT] = got.pilot
     x.job[K_PILOT_COMMUNITY] = got.community
     x.tally.flagged += 1
-    hit_emp = norm_pilot_name(x.job.get(K_EMPLOYER, "")) in x.emp.get(got.community, set())
+    hit_emp = norm_name(x.job.get(K_EMPLOYER, "")) in x.emp.get(got.community, set())
     x.job[K_PILOT_EMPLOYER] = hit_emp
     if hit_emp:
         x.tally.emp_hits += 1

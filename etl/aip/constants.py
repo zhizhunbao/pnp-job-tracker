@@ -589,19 +589,10 @@ K_AIP = "aip"
 K_JOBS = "jobs"
 """ATS 岗位文件的行清单键。"""
 
-SUFFIX_RE = re.compile(
-    r"\b(inc|incorporated|ltd|limited|llp|llc|corp|corporation|co|company|enr|ltee|lt[eé]e|"
-    r"holdings?|group|services?|enterprises?)\b\.?", re.I)
-"""公司后缀词(归一时整体去掉;原脚本常量名 `_SUFFIX`,溶段时按「主题_角色」改名,值一字未改)。"""
-
-ALIAS_SPLIT_RE = re.compile(r"\bo/a\b|\bdba\b|\bd/b/a\b|\bo\.a\.\b")
-"""「operating as」别名分隔:切开取前面的主名(输入已小写,故不带 re.I,原值)。"""
-
 ALIAS_RE = re.compile(r"\bo/a\b(.+)", re.I)
-"""名录行里的 o/a 别名(别名也单独入集合,两种写法都能匹配到)。"""
-
-KEEP_RE = re.compile(r"[^a-z0-9& ]")
-"""归一后允许保留的字符之外的一切(标点全换空格)。"""
+"""名录行里的 o/a 别名(别名也单独入集合,两种写法都能匹配到)。
+(SUFFIX_RE / ALIAS_SPLIT_RE / KEEP_RE 三条归一正则 2026-08-31 随 norm_name 迁基建叶
+names 域 —— 洗名尺子收拢批,沿革注释随迁。)"""
 
 FLAG_IN_LIST_TPL = "IN aip list      : {path}"
 """段4 开工报输入名录(原脚本对齐空格原样保留)。"""

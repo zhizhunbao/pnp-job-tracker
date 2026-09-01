@@ -19,20 +19,11 @@ import 只有标准库(叶子律:形状本域自声明,零跨域)。
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
-from typing import Protocol
 
 
 # =========================================================================
 # 1. 共享词汇(库形 Protocol + 落盘/报数的公共入参)
 # =========================================================================
-
-
-class NormNameLike(Protocol):
-    """aip 域 functions.py 的 norm_name 形(公司名归一;LMIA 匹配与 AIP 打标同一把尺子)。"""
-
-    def __call__(self, name: str) -> str:
-        """公司名 → 归一键。"""
-        ...
 
 
 @dataclass
@@ -1567,16 +1558,6 @@ class NocOpeningIn:
 
     desc: dict
     """该 NOC 的官方名行(缺 = 空 dict)。"""
-
-@dataclass
-class ModuleLoadIn:
-    """load_module_by_path() 入参:按文件路径拉一个模块(域间禁 import 的合法出口)。"""
-
-    name: str
-    """给 spec 的模块名(别与本进程真要 import 的包名撞车)。"""
-
-    path: Path
-    """.py 文件路径(Path)。"""
 
 
 # =========================================================================

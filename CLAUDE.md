@@ -62,10 +62,10 @@ etl/ (Python: 抓取 → 清洗 → 评分, 写 data/) ──> cms/ (Payload + N
 
 ```
 pnp-job-tracker/
-├── etl/                       # 数据层(Python):26 域全五件套 —— 抓岗 jobbank/ats,汇装 mart(跨源清洗+评分+27 表),调度 sched,闸 gate
+├── etl/                       # 数据层(Python):27 域全五件套 —— 抓岗 jobbank/ats,汇装 mart(跨源清洗+评分+27 表),调度 sched,闸 gate
 │   ├── <域>/                  #   一域一役:__init__ META/METAS 声明 role/interval,main 门;auto_update 自动发现(2026-08-31 批F:sources/ 役册退役)
 │   ├── pnp/ crawl/ news/      #   省 PNP 事实构建;官方站 URL 探索(政策雷达);官方新闻
-│   └── noc/ paths/ log/ fetch/ crawl/  #   基建叶五片(分类法/路径+锁/日志/抓取件/官方站缓存),形制闸 INFRA 名单即此
+│   └── noc/ names/ paths/ log/ fetch/ crawl/  #   基建叶六片(职业分类法/公司名归一/路径+锁/日志/抓取件/官方站缓存),形制闸 INFRA 名单即此
 ├── data/                      # raw/<源>/ 原始 → processed/ 当前态 → mart/ 最终表;crawl/<slug>/manifest.json = 官方 URL 清单(**找官方数据先 grep 这里**)
 ├── cms/
 │   ├── src/collections/       #   Payload collection = 表 schema

@@ -7,10 +7,9 @@ lmia 域函数 —— 全部行为住这(五件全溶,照样张 etl/company/func
 依赖单边:本文件 → constants/scheme + 基础设施叶子(paths 经 constants / log)。
 
 产出的是「雇主雇过外国人的历史事实」,不是「能担保」判定(实现文档 §0 语义红线);
-聚合键 = aip/flag_aip_jobs 的 norm_name(与 AIP 匹配同一把尺子;原 clean/05c,
-2026-08-31 批H2 归户),那份实现不复制、importlib 拉。
+聚合键 = names 域的 norm_name(与 AIP 匹配同一把尺子;2026-08-31 收拢批抽成基础设施叶,
+此前靠 importlib 按路径拉 aip 实现的缝随之拆除)。
 """
-import importlib.util
 import os
 from pathlib import Path
 
@@ -18,35 +17,23 @@ import httpx
 
 import paths
 from log.functions import say
+from names.functions import norm_name
 from lmia.constants import (
     CKAN_PKG, CKAN_TIMEOUT_S, DONE_TPL, DOWNLOAD_TIMEOUT_S, DOWNLOAD_TPL, ENV_KEEP_QUARTERS,
     HEADER_FIRST_COL, IN_TPL, IN_XLSX_DIR, KEEP_QUARTERS_DEFAULT, MIN_CELLS,
-    NOC_RE, NORM_MODULE_NAME, NORM_MODULE_PATH, OUT_TABLE, OUT_TPL, PROBE_HIT_TPL,
+    NOC_RE, OUT_TABLE, OUT_TPL, PROBE_HIT_TPL,
     PROBE_MISS_TPL, PROBE_NAMES, QUARTER_RE, QUARTER_TPL, SKILLED_STREAM_RE, SOURCE_LABEL,
     XLSX_NAME_TPL,
 )
 from lmia.scheme import (
     AccumIn, CkanPackage, CountsIn, LmiaCells, LmiaCounts, LmiaEmployer, LmiaFileIn,
-    NormNameFn, ParseQuarterIn, ProbeIn, QuarterSource,
+    ParseQuarterIn, ProbeIn, QuarterSource,
 )
 
 
 # =========================================================================
 # 1. 季度源清单与缓存(CKAN → 近 N 季 xlsx;已缓存季度不重下)
 # =========================================================================
-
-
-def load_norm_name() -> NormNameFn:
-    """拉宿主文件的 norm_name(走 importlib:常规 import 会变成 lmia → aip 的域间 import)。
-
-    单一来源不复制:雇主聚合键与 AIP 匹配必须是同一把尺子,复制一份=给口径开岔。
-    """
-    spec = importlib.util.spec_from_file_location(NORM_MODULE_NAME, NORM_MODULE_PATH)
-    # pyrefly: ignore[bad-argument-type] — spec_from_file_location 只在路径不存在时给 None;此处是仓内固定文件,拿不到就该当场炸
-    mod = importlib.util.module_from_spec(spec)
-    # pyrefly: ignore[missing-attribute] — 同上,spec 非 None 时 loader 恒在
-    spec.loader.exec_module(mod)
-    return mod.norm_name
 
 
 def quarter_sort_key(src: QuarterSource) -> tuple:
@@ -216,7 +203,6 @@ def build_esdc_lmia_employers() -> None:
     say(IN_TPL.format(dir=IN_XLSX_DIR, n=len(quarters), first=quarters[0].quarter,
                       last=quarters[-1].quarter))
     say(OUT_TPL.format(path=OUT_TABLE))
-    norm_name = load_norm_name()
     table: dict = {}
     quarter_names = []
     for src in quarters:

@@ -1771,19 +1771,6 @@ K_CLOSED_AT = "closedAt"
 # 14. mart:装配与落盘(27 张表一次算齐;跨源汇装的收口点)
 # =========================================================================
 
-IN_AIP_NORM_PY = paths.ROOT / "etl" / "aip" / "functions.py"
-"""公司名归一(o/a 前缀、公司后缀、标点)单一来源 —— LMIA 匹配与 AIP 打标用同一把尺子。
-路径沿革:clean/05c_flag_aip.py →(2026-08-31 批H2)aip/flag_aip_jobs.py →(同日批I,aip 域
-全溶)aip/functions.py。**取的函数名 norm_name 三次搬家未变**;批I 溶解时 aip 那边对 52,522 个
-真实公司名验过新旧零差异,本域只跟路径。
-仍走按路径拉:**域间禁 import**(形制闸①),不能写成 `from aip...` 的正规 import。"""
-
-MOD_AIP_NORM = "aip_norm"
-"""上件的模块名(spec 用;不叫 aip.functions —— 那会与本进程真要 import 的包名撞车)。"""
-
-ATTR_NORM_NAME = "norm_name"
-"""上件里要取的那个函数名。"""
-
 IN_SCORED = OUT_SCORED
 """汇装层读的评分产物 = 评分步的落盘处(同一份,两个角色各自具名)。"""
 
@@ -2395,21 +2382,11 @@ PRINT_SAL_GUARD_TPL = ("  护栏拦截 {guarded} 条置 NULL:离谱金额 {absur
 # 19. 跨源清洗:试点打标(城市×省 → pilot / pilotCommunity / pilotEmployer)
 # =========================================================================
 
-PILOT_SUFFIX_RE = re.compile(
-    r"\b(inc|incorporated|ltd|limited|llp|llc|corp|corporation|co|company|enr|ltee|lt[eé]e|"
-    r"holdings?|group|services?|enterprises?)\b\.?", re.I)
-"""雇主名归一:法人后缀(与 aip 打标 / cms designationMatch.ts 同源口径)。
-⚠ 与本域 to_* 那边经 aip.norm_name 走的那把尺子**不是同一条正则**(词表不同):
-批J 溶解逐字保留原 clean/05f 自己的一份,谁该收敛是另一批的判定。"""
-
-PILOT_OA_SPLIT_RE = re.compile(r"\bo/a\b|\bdba\b|\bd/b/a\b|\bo\.a\.\b")
-"""归一第一刀:切掉 o/a 别名之后的部分,只留法人名。"""
-
 PILOT_OA_TAIL_RE = re.compile(r"\bo/a\b(.+)", re.I)
-"""建雇主索引时反过来取 o/a 后面那截 —— legal 名与别名都要能匹配上。"""
-
-PILOT_KEEP_RE = re.compile(r"[^a-z0-9& ]")
-"""归一第三刀:非字母数字与 & 一律折空格。"""
+"""建雇主索引时反过来取 o/a 后面那截 —— legal 名与别名都要能匹配上。
+(归一三刀 PILOT_SUFFIX_RE / PILOT_OA_SPLIT_RE / PILOT_KEEP_RE 2026-08-31 收拢批退役:
+56,909 名探针证得 norm_pilot_name ≡ aip norm_name 零差异 —— 批J 那句「词表不同」是搬运期
+陈旧断言 —— 打标改用 names 基建叶的 norm_name,复制品删除。)"""
 
 K_CITIES = "cities"
 """社区名单行里的城市清单键(区域型社区 cities=[] 不参与打标,宁漏勿错)。"""

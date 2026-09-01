@@ -39,8 +39,10 @@ fetch/crawl 2026-08-30 零字符串溶完即入册(INFRA 身份不变:域可引;
 crawl 2026-08-30 批A 升格基础设施(判据:被十几个 build 当地基读缓存 ——「换掉它
 业务一个字不用改」;正门 from crawl.cache import …,path-hack 黑通道批B 拆光)"""
 
-INFRA = {"paths", "fetch", "log", "noc", "crawl"}
+INFRA = {"paths", "fetch", "log", "noc", "crawl", "names"}
 """基础设施叶:域可引(判据「换掉它业务一个字不用改」)。
+names 2026-08-31 收拢批入册:公司名归一唯一尺子(aip 打标 / lmia 聚合键 / mart join 判
+「同一家雇主」必须同一把,原先四份复制 → 探针取证后收一),与 noc 同款判定叶。
 grades 2026-08-31 批H 摘出:随 mart 立域收编为域内私件(唯一消费者 build_mart),
 不再是根上被谁都能引的基础设施叶。
 noc_buckets 2026-08-31 随「noc 就叫 noc」并入 noc/ 域,模块名退役摘出白名单;
