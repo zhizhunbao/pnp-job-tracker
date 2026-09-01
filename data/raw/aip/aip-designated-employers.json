@@ -733,12 +733,6 @@
   },
   {
     "province": "NB",
-    "employer": "Access Home Care",
-    "location": "",
-    "tech": false
-  },
-  {
-    "province": "NB",
     "employer": "Accor Global Reservation Centre",
     "location": "",
     "tech": false
@@ -1891,7 +1885,7 @@
   },
   {
     "province": "NB",
-    "employer": "Comité d’accueil, d'intégration et d'établissement des nouveaux arrivants de la Péninsule acadienne -",
+    "employer": "Comité d’accueil, d'intégration et d'établissement des nouveaux arrivants de la Péninsule acadienne - Shippagan",
     "location": "",
     "tech": false
   },
@@ -3499,12 +3493,6 @@
   },
   {
     "province": "NB",
-    "employer": "Greenlight Property Management Inc",
-    "location": "",
-    "tech": false
-  },
-  {
-    "province": "NB",
     "employer": "Grey Rock Entertainment Center",
     "location": "",
     "tech": false
@@ -3925,7 +3913,13 @@
   },
   {
     "province": "NB",
-    "employer": "Irving Pulp & Paper",
+    "employer": "Irving Forest Services",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NB",
+    "employer": "Irving Pulp & Paper, Limited",
     "location": "",
     "tech": false
   },
@@ -3979,7 +3973,7 @@
   },
   {
     "province": "NB",
-    "employer": "J.D. Irving, Limited - Custom Fabricators & Machinists (CFM)",
+    "employer": "J.D. Irving, Limited - Custom Fabricators & Machinists Limited",
     "location": "",
     "tech": false
   },
@@ -4016,18 +4010,6 @@
   {
     "province": "NB",
     "employer": "J.D. Irving, Limited - Irving Equipment Limited",
-    "location": "",
-    "tech": false
-  },
-  {
-    "province": "NB",
-    "employer": "J.D. Irving, Limited - Irving Forest Services",
-    "location": "",
-    "tech": false
-  },
-  {
-    "province": "NB",
-    "employer": "J.D. Irving, Limited - Irving Transportation Services",
     "location": "",
     "tech": false
   },
@@ -4261,7 +4243,7 @@
   },
   {
     "province": "NB",
-    "employer": "Kent Line Agency",
+    "employer": "Kent Line Limited",
     "location": "",
     "tech": false
   },
@@ -5119,7 +5101,7 @@
   },
   {
     "province": "NB",
-    "employer": "Moncton Residence Inn",
+    "employer": "Moncton Residence Inn (JMV Hospitality Inc.)",
     "location": "",
     "tech": false
   },
@@ -6091,12 +6073,6 @@
   },
   {
     "province": "NB",
-    "employer": "Residence Collette Residence Inc",
-    "location": "",
-    "tech": false
-  },
-  {
-    "province": "NB",
     "employer": "Résidence Communautaire St-Joseph",
     "location": "",
     "tech": false
@@ -6128,6 +6104,12 @@
   {
     "province": "NB",
     "employer": "Résidence Prestige Inc",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NB",
+    "employer": "Résidence Vienneau Inc",
     "location": "",
     "tech": false
   },
@@ -6818,12 +6800,6 @@
   {
     "province": "NB",
     "employer": "Spitfire Design Corp",
-    "location": "",
-    "tech": false
-  },
-  {
-    "province": "NB",
-    "employer": "St Ignace Golf Club (St Ignace Pvt Ltd)",
     "location": "",
     "tech": false
   },

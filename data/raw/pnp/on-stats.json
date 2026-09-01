@@ -5,13 +5,13 @@
   "url": "https://www.ontario.ca/page/oinp-application-processing-times-and-nominations-issued",
   "note": "OINP 官方专页「Application processing times and nominations issued」已 302 重定向到总览页(官方自己登记的 redirect_id,非抓取失败),全站翻遍也找不到第二处仍在发布**逐stream 审理时长**的页面 —— processing 留空是举证过的「本站未收录」,不是「官方不公布」的猜测(2026 年 OINP 改制为单一 Ontario Workforce Priority stream 后,旧的多 stream 时长表随旧页一起下线)。已发提名数改从每年一页的「OINP Program Updates」年末公告句摘取(部分年份被 Radware 反爬拦截,拿不到就跳过,不补数)。2026 配额 14,119 出自2026-02-06 那条更新,官方原句 quote-anchored。",
   "asOf": "",
-  "fetched": "2026-08-05",
+  "fetched": "2026-08-30",
   "pageRedirect": {
     "requestedUrl": "https://www.ontario.ca/page/oinp-application-processing-times-and-nominations-issued",
     "status": 200,
     "resolvedUrl": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp?redirect_id=page%2Foinp-application-processing-times-and-nominations-issued&redirect_year=2025",
     "isRedirected": true,
-    "checked": "2026-08-05"
+    "checked": "2026-08-30"
   },
   "processing": [],
   "allocation": [
@@ -22,7 +22,7 @@
       "unit": "nominations",
       "section": "2026 Ontario Immigrant Nominee Program Updates",
       "url": "https://www.ontario.ca/page/2026-ontario-immigrant-nominee-program-updates",
-      "fetched": "2026-08-05"
+      "fetched": "2026-08-30"
     }
   ],
   "nominationsIssued": [
@@ -33,7 +33,7 @@
       "unit": "nominations",
       "section": "2025 Ontario Immigrant Nominee Program Updates",
       "url": "https://www.ontario.ca/page/2025-ontario-immigrant-nominee-program-updates",
-      "fetched": "2026-08-05"
+      "fetched": "2026-08-30"
     },
     {
       "year": 2019,
@@ -42,7 +42,7 @@
       "unit": "nominations",
       "section": "2019 Ontario Immigrant Nominee Program Updates",
       "url": "https://www.ontario.ca/page/2019-ontario-immigrant-nominee-program-updates",
-      "fetched": "2026-08-05"
+      "fetched": "2026-08-30"
     },
     {
       "year": 2018,
@@ -51,7 +51,7 @@
       "unit": "nominations",
       "section": "2018 Ontario Immigrant Nominee Program Updates",
       "url": "https://www.ontario.ca/page/2018-ontario-immigrant-nominee-program-updates",
-      "fetched": "2026-08-05"
+      "fetched": "2026-08-30"
     }
   ]
 }

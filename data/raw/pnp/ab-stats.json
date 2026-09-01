@@ -5,7 +5,7 @@
   "url": "https://www.alberta.ca/aaip-processing-information",
   "note": "AAIP 官方处理信息页:配额/已发/剩余、积压游标(正在审哪天收到的申请)、**EOI 池内人数**(被抽中概率的分母 —— 单轮概率 ≈ 当轮邀请数 ÷ 池内人数)与抽选史。官方注明所有数字随时可变、配额可在 stream 间腾挪;医生与法语者走联邦附加名额,不占本省配额。抽选史的 canonical 维度表仍由 build_draws.py 维护,本表原样留档。",
   "asOf": "2026-08-25",
-  "fetched": "2026-08-26",
+  "fetched": "2026-08-31",
   "summary": {
     "allocation": 6603,
     "issued": 4560,

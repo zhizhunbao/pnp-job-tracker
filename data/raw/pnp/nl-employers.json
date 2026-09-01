@@ -3,7 +3,7 @@
   "label": "NL 官网指定雇主名录",
   "source": "NLPNP designated employers",
   "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/atlantic-immigration-program/designated-employers",
-  "fetched": "2026-08-05",
+  "fetched": "2026-08-30",
   "employers": [
     {
       "name": "10112755 Canada Inc. o/a Strobel TEK",
@@ -999,6 +999,17 @@
       "url": "https://www.gov.nl.ca/immigration/employer/alexander-bay-automotive-ltd"
     },
     {
+      "name": "All Care Home Support Ltd.",
+      "location": "St. John's",
+      "nocs": [
+        {
+          "noc": "44101",
+          "title": null
+        }
+      ],
+      "url": "https://www.gov.nl.ca/immigration/employer/all-care-home-support-ltd"
+    },
+    {
       "name": "AMAL Youth and Family Centre INC. a/o Amal Youth and Family Centre",
       "location": "Happy Valley-Goose Bay, St. John's",
       "nocs": [
@@ -1208,6 +1219,21 @@
       "url": "https://www.gov.nl.ca/immigration/employer/awesome-enterprises-limited-o-a-acropolis-pizza"
     },
     {
+      "name": "B & B Nepali Cuisine Ltd. o/a T/A PETER’S PIZZA",
+      "location": "Mount Pearl",
+      "nocs": [
+        {
+          "noc": "60030",
+          "title": null
+        },
+        {
+          "noc": "63200",
+          "title": null
+        }
+      ],
+      "url": "https://www.gov.nl.ca/immigration/employer/b-b-nepali-cuisine-ltd-o-a-t-a-peters-pizza"
+    },
+    {
       "name": "B & F Enterprises Ltd (Mary Browns)",
       "location": "Baie Verte",
       "nocs": [
@@ -1232,6 +1258,21 @@
         }
       ],
       "url": "https://www.gov.nl.ca/immigration/employer/baccalieu-retirement-living-inc-o-a-baccalieu-retirement-living"
+    },
+    {
+      "name": "Baie Verte Building Supplies Inc. o/a Home Hardware",
+      "location": "Baie Verte",
+      "nocs": [
+        {
+          "noc": "62010",
+          "title": null
+        },
+        {
+          "noc": "72310",
+          "title": null
+        }
+      ],
+      "url": "https://www.gov.nl.ca/immigration/employer/baie-verte-building-supplies-inc-o-a-home-hardware"
     },
     {
       "name": "Baie Vista Inn Limited o/a Baie Vista Inn",
@@ -1275,6 +1316,17 @@
       "url": "https://www.gov.nl.ca/immigration/employer/bali-nail-salon-ltd"
     },
     {
+      "name": "Bartlett Food Services Ltd. o/a A&W C.B.S",
+      "location": "Conception Bay South",
+      "nocs": [
+        {
+          "noc": "62020",
+          "title": null
+        }
+      ],
+      "url": "https://www.gov.nl.ca/immigration/employer/bartlett-food-services-ltd-o-a-aw-c-b-s"
+    },
+    {
       "name": "Bay Group Inc. o/a Mary Brown’s",
       "location": "Whitbourne",
       "nocs": [
@@ -1299,6 +1351,17 @@
         }
       ],
       "url": "https://www.gov.nl.ca/immigration/employer/bay-roberts-food-services-ltd-o-a-aw-bay-roberts"
+    },
+    {
+      "name": "Bay View Holdings Inc. o/a Battens Esso",
+      "location": "Bay Roberts",
+      "nocs": [
+        {
+          "noc": "64100",
+          "title": null
+        }
+      ],
+      "url": "https://www.gov.nl.ca/immigration/employer/bay-view-holdings-inc-o-a-battens-esso"
     },
     {
       "name": "BC General Partners Inc. o/a Bishops Gardens Seniors Living",
@@ -1456,6 +1519,21 @@
         }
       ],
       "url": "https://www.gov.nl.ca/immigration/employer/bishops-gardens-seniors-living-lp"
+    },
+    {
+      "name": "BJH Enterprises Inc. o/a Wing’n It Kenmount",
+      "location": "St. John's",
+      "nocs": [
+        {
+          "noc": "6322",
+          "title": null
+        },
+        {
+          "noc": "6311",
+          "title": null
+        }
+      ],
+      "url": "https://www.gov.nl.ca/immigration/employer/bjh-enterprises-inc-o-a-wingn-it-kenmount"
     },
     {
       "name": "BL 668 Food Co. Ltd. o/a Dragon 88 Restaurant",

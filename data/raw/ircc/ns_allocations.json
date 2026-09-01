@@ -1,7 +1,7 @@
 {
  "source": "https://data.novascotia.ca/Immigration-and-Migration/Annual-Allocations-for-Immigration-Programs/8rf7-hw2p",
  "api": "https://data.novascotia.ca/resource/8rf7-hw2p.json",
- "fetched": "2026-08-14",
+ "fetched": "2026-08-31",
  "byProgram": {
   "nsnp": {
    "2015": 1350,

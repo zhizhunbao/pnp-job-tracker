@@ -2,7 +2,7 @@
  "province": "FED",
  "program": "AIP",
  "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/eligibility.html",
- "fetched": "2026-08-09",
+ "fetched": "2026-08-31",
  "note": "quote-anchored:valueText=官方原文,本脚本每轮验证其仍逐字在页面上;字段语义见 basis。覆盖工作经验(小时数/时间窗/TEER 匹配/国际毕业生豁免)、job offer 条款(全职/非季节性/时长/雇主指定/健康照护职业互认)、语言(CLB 按 TEER 分档)、学历(境内/境外+ECA)、安家资金(fundsMinimum 按 familySize 分档,fundsPerAdditionalMember 是超 7 人后的每人递增,value=None 编码进 basis,照 22P02 教训)。AIP 只是三个大西洋省(NB/NS/PE/NL)共用的联邦项目框架——省一级各自的紧缺职业清单/雇主指定名单不在本表,那是各省 <省>-req.json 的事。",
  "requirements": [
   {
@@ -16,7 +16,7 @@
    "basis": "windowYears=5;hoursPerWeek=30;minYears=1",
    "label": "At least 1,560 hours (30 hrs/week for 1 year) of related work experience in the past 5 years",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/work-experience.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -29,7 +29,7 @@
    "basis": "windowYears=5",
    "label": "The 1,560 hours must be worked over a period of at least 1 year",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/work-experience.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -42,7 +42,7 @@
    "basis": "jobOfferTeer0->workTeer0,1,2,3,4;jobOfferTeer1->workTeer1,2,3,4;jobOfferTeer2->workTeer2,3,4;jobOfferTeer3->workTeer3,4;jobOfferTeer4->workTeer4",
    "label": "Work experience must be in the same TEER category as the job offer, or higher",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/work-experience.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -55,7 +55,7 @@
    "basis": "",
    "label": "Work experience must be from a paid job; volunteer work and unpaid internships don't count",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/work-experience.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -68,7 +68,7 @@
    "basis": "",
    "label": "Self-employment does not count toward the work experience requirement",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/work-experience.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -81,7 +81,7 @@
    "basis": "",
    "label": "International graduates of a recognized Atlantic Canada post-secondary institution are exempt from the work experience requirement",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/work-experience.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -94,7 +94,7 @@
    "basis": "appliesTo=workExemptGrad",
    "label": "Exemption credential (degree/diploma/certificate/trade or apprenticeship) must have taken at least 2 years",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/work-experience.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -107,7 +107,7 @@
    "basis": "appliesTo=workExemptGrad",
    "label": "Exemption credential must have been received less than 2 years before applying for PR",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/work-experience.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -120,7 +120,7 @@
    "basis": "appliesTo=workExemptGrad;windowYears=2",
    "label": "Must have lived in 1 of the 4 Atlantic provinces for at least 16 months during the last 2 years before graduating",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/work-experience.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -133,7 +133,7 @@
    "basis": "",
    "label": "Job offer must be full-time: at least 30 hours a week",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/job-offer.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -146,7 +146,7 @@
    "basis": "",
    "label": "Job offer must be non-seasonal (consistent and paid all year)",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/job-offer.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "teer-0-3",
@@ -159,7 +159,7 @@
    "basis": "",
    "label": "TEER 0/1/2/3 job offers: at least 1 year of employment from the date of becoming a permanent resident",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/job-offer.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "teer-4",
@@ -172,7 +172,7 @@
    "basis": "",
    "label": "TEER 4 job offers: permanent employment with no set end date",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/job-offer.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -185,7 +185,7 @@
    "basis": "",
    "label": "Job offer must be at the same or higher skill level as the qualifying work experience",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/job-offer.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -198,7 +198,7 @@
    "basis": "",
    "label": "The job offer must come from a provincially designated employer",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/job-offer.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -211,7 +211,7 @@
    "basis": "",
    "label": "The job offer can't come from a company where you (or your spouse/common-law partner) are a majority owner",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/job-offer.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -224,7 +224,7 @@
    "basis": "",
    "label": "Work experience as a licensed practical nurse (NOC 31201) or registered nurse (NOC 31301) can be used for a job offer in NOC 33102 or NOC 44101",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/job-offer.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "teer-0-3",
@@ -237,7 +237,7 @@
    "basis": "",
    "label": "CLB 5 minimum for a job offer in TEER 0, 1, 2 or 3",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/language-testing.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "teer-4",
@@ -250,7 +250,7 @@
    "basis": "",
    "label": "CLB 4 minimum for a job offer in TEER 4",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/language-testing.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -263,7 +263,7 @@
    "basis": "",
    "label": "Language test results must be less than 2 years old when you apply",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/language-testing.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "teer-0-1",
@@ -276,7 +276,7 @@
    "basis": "",
    "label": "Education in Canada, TEER 0/1: a Canadian one-year post-secondary (or higher) credential",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/education-assessment.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "teer-2-4",
@@ -289,7 +289,7 @@
    "basis": "",
    "label": "Education in Canada, TEER 2/3/4: a Canadian high school diploma (or higher)",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/education-assessment.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "teer-0-1",
@@ -302,7 +302,7 @@
    "basis": "",
    "label": "Education outside Canada, TEER 0/1: the foreign equivalent of a Canadian one-year post-secondary (or higher) credential",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/education-assessment.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "teer-2-4",
@@ -315,7 +315,7 @@
    "basis": "",
    "label": "Education outside Canada, TEER 2/3/4: the foreign equivalent of a Canadian high school diploma (or higher)",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/education-assessment.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -328,7 +328,7 @@
    "basis": "",
    "label": "Foreign education needs an Educational Credential Assessment (ECA) for immigration",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/education-assessment.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -341,7 +341,7 @@
    "basis": "",
    "label": "An ECA is only valid for 5 years",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/education-assessment.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -354,7 +354,7 @@
    "basis": "",
    "label": "Must prove enough money to support yourself and your family after arriving in Canada",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/proof-funds.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -367,7 +367,7 @@
    "basis": "",
    "label": "Proof of funds is waived if already working in Canada with a valid work permit",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/proof-funds.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -380,7 +380,7 @@
    "basis": "perAdditionalMemberCAD=1028;baseFamilySize=7",
    "label": "For each additional family member beyond 7, add $1,028",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/proof-funds.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -394,7 +394,7 @@
    "label": "Minimum settlement funds for a family of 1: $3,815 CAD",
    "familySize": 1,
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/proof-funds.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -408,7 +408,7 @@
    "label": "Minimum settlement funds for a family of 2: $4,750 CAD",
    "familySize": 2,
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/proof-funds.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -422,7 +422,7 @@
    "label": "Minimum settlement funds for a family of 3: $5,840 CAD",
    "familySize": 3,
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/proof-funds.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -436,7 +436,7 @@
    "label": "Minimum settlement funds for a family of 4: $7,090 CAD",
    "familySize": 4,
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/proof-funds.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -450,7 +450,7 @@
    "label": "Minimum settlement funds for a family of 5: $8,042 CAD",
    "familySize": 5,
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/proof-funds.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -464,7 +464,7 @@
    "label": "Minimum settlement funds for a family of 6: $9,070 CAD",
    "familySize": 6,
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/proof-funds.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   },
   {
    "stream": "",
@@ -478,7 +478,7 @@
    "label": "Minimum settlement funds for a family of 7: $10,098 CAD",
    "familySize": 7,
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/proof-funds.html",
-   "fetched": "2026-08-09"
+   "fetched": "2026-08-30"
   }
  ]
 }

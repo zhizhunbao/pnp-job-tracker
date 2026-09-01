@@ -1,7 +1,7 @@
 {
  "source": "NOC 2021 V1.0 Elements (StatCan)",
  "url": "https://www.statcan.gc.ca/en/subjects/standard/noc/2021/indexV1/noc-2021-v1.0-elements.csv",
- "fetched": "2026-06-28",
+ "fetched": "2026-08-31",
  "byNoc": {
   "00010": {
    "noc": "00010",

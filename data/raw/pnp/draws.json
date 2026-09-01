@@ -1,6 +1,6 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-08-26",
+  "fetched": "2026-08-31",
   "provinces": {
     "BC": {
       "label": "BC PNP Skills Immigration",
@@ -287,6 +287,34 @@
       "scale": "MPNP EOI",
       "url": "https://immigratemanitoba.com/draws/",
       "draws": [
+        {
+          "date": "2026-08-27",
+          "stream": "Occupation-specific selections",
+          "note": "Draw #278",
+          "score": null,
+          "invitations": 62
+        },
+        {
+          "date": "2026-08-27",
+          "stream": "Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in major group 72 – Technical trades and tran",
+          "note": "Draw #278",
+          "score": 731,
+          "invitations": 600
+        },
+        {
+          "date": "2026-08-27",
+          "stream": "Francophone selection",
+          "note": "Draw #278",
+          "score": null,
+          "invitations": 21
+        },
+        {
+          "date": "2026-08-27",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #278",
+          "score": null,
+          "invitations": 58
+        },
         {
           "date": "2026-08-13",
           "stream": "Skilled Worker Stream",

@@ -5,7 +5,7 @@
   "url": "https://immigratemanitoba.com/resources/data/monthly-data-2026",
   "note": "MPNP 官方运营统计:年度配额与年初至今提名/拒/LAA/收件(月度数据页)、在审与待审库存(逐月,取最新月)、逐通道平均处理天数与「6 个月」服务承诺(年报 §9)、EOI 池在册人数(年报 §10,**全省唯一的池子人数**,年度快照口径,与 AB 的实时池不可混用)。单位照官方原单位(天/月),不换算。⚠️ 2026-08-04 更正:此前站内写着「MB 官方不发运营统计」是错的 —— 那是爬取种子只圈了 /mpnp/、漏了 /resources/data/ 造成的误判。",
   "asOf": "",
-  "fetched": "2026-08-11",
+  "fetched": "2026-08-30",
   "monthly": {
     "nominationsYtd": {
       "section": "Nominations and approvals",
@@ -102,7 +102,7 @@
     "through": "2026-06",
     "throughMonth": "June",
     "url": "https://immigratemanitoba.com/resources/data/monthly-data-2026",
-    "fetched": "2026-08-11",
+    "fetched": "2026-08-30",
     "year": 2026,
     "section": "MPNP Monthly Data 2026",
     "allocation": {
@@ -113,7 +113,7 @@
   },
   "annual": {
     "url": "https://immigratemanitoba.com/resources/data/annual-report-2024",
-    "fetched": "2026-08-11",
+    "fetched": "2026-08-30",
     "year": 2024,
     "section": "MPNP Annual Report 2024 — 9. Processing Times",
     "commitmentMonths": 6,

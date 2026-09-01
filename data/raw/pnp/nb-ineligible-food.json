@@ -6,8 +6,8 @@
   "type": "ineligible",
   "overlay": true,
   "note": "自 2026-02-03 起,NB 不受理住宿餐饮业(NAICS 72)这些职业的省提名 EOI/ITA。官方留了口子:雇主本身不属住宿餐饮业的同款岗仍可提交——本站无雇主行业字段,按多数情形判不符合,请按自己雇主的实际行业核对。",
-  "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/notice.html",
-  "fetched": "2026-08-10",
+  "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/important-notices.html",
+  "fetched": "2026-08-31",
   "occupations": [
     {
       "noc": "60030",

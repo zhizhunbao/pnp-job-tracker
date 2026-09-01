@@ -1,6 +1,6 @@
 {
  "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/prepare/designated-learning-institutions-list.html",
- "fetched": "2026-08-26",
+ "fetched": "2026-08-31",
  "rows": [
   {
    "province": "AB",
@@ -112,7 +112,7 @@
   },
   {
    "province": "AB",
-   "name": "MaKami College Inc.",
+   "name": "MaKami College",
    "dliNumber": "O113097545597",
    "city": "Calgary",
    "campuses": 2,

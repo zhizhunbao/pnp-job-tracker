@@ -1,5 +1,5 @@
 {
- "fetched": "2026-08-02",
+ "fetched": "2026-08-31",
  "source": "https://www.statcan.gc.ca/en/subjects/standard/noc/2021/indexV1/noc-2021-v1.0-classification-structure.csv",
  "levels": {
   "0": {
@@ -1088,7 +1088,7 @@
    "enShort": "Primary combat members of the Canadian Armed Forces",
    "zh": "加拿大武装部队初级作战人员",
    "ko": "캐나다 군의 주요 전투 요원",
-   "zhUi": "",
+   "zhUi": "加拿大军队现役军人",
    "koUi": "군대 전투원",
    "enUi": "Primary combat members of the Canadian Armed Forces"
   },
@@ -1098,7 +1098,7 @@
    "enShort": "Primary combat members of the Canadian Armed Forces",
    "zh": "加拿大武装部队初级作战人员",
    "ko": "캐나다 군의 주요 전투 요원",
-   "zhUi": "",
+   "zhUi": "加拿大军队现役军人",
    "koUi": "군대 전투원",
    "enUi": "Primary combat members of the Canadian Armed Forces"
   },
@@ -1298,7 +1298,7 @@
    "enShort": "Support occupations in sport",
    "zh": "体育支持职业",
    "ko": "스포츠 지원 직업",
-   "zhUi": "",
+   "zhUi": "体育支持",
    "koUi": "스포츠 지원 직무",
    "enUi": "Support occupations in sport"
   },
@@ -1448,7 +1448,7 @@
    "enShort": "Specialized services occupations",
    "zh": "专业服务职业",
    "ko": "전문 서비스 직업",
-   "zhUi": "",
+   "zhUi": "专业技术服务",
    "koUi": "전문 서비스 직무",
    "enUi": "Specialized services occupations"
   },

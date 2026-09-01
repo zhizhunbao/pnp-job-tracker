@@ -7,7 +7,7 @@
   "appliesTo": "Employment Offer",
   "note": "SINP International Skilled Worker: With an Employment Offer 子类别的排除清单——与 sk-excluded.json(OID/EE 排除清单)是两张不同的表,互不通用。官方原句(PDF):「The following occupations are not eligible for the SINP sub-categories requiring a job offer and JAL from a Saskatchewan employer unless certain requirements, listed below, are met.」即多数行是**条件性排除**(如持有效 LMIA/CUAET 工签在萨省该职业已在职则不受限);本表 name 字段为 PDF 逐行解析,长条件文本可能截到第一行,完整条件请查 PDF 原文。",
   "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/occupation-restrictions-and-requirements",
-  "fetched": "2026-08-05",
+  "fetched": "2026-08-30",
   "occupations": [
     {
       "noc": "10022",
