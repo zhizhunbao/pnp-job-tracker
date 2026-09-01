@@ -75,7 +75,7 @@ def stray_tracked_of() -> list[str]:
     """⑩号规全文件面(2026-08-31 批O,Frank「有 .json 怎么没检查出来」):受 git 管的
     域内文件,名字不在六件套 + DOMAIN_EXTRA_FILES 词汇里就硬红。
     .py 让位给上面的 rglob 面(它连没提交的野 .py 都抓,不报两遍);etl 根上的文件
-    (etl/Dockerfile 通用镜像)不属域射程;git 不可用时本面跳过,.py 面照常全量。"""
+    (历史上 etl/Dockerfile 通用镜像曾住这;08-31 迁 etl/sched/ 后根上现无文件)不属域射程;git 不可用时本面跳过,.py 面照常全量。"""
     r = subprocess.run(GIT_LSFILES, cwd=ETL_DIR, capture_output=True, text=True,
                        encoding=ENC_UTF8, errors=ERRORS_REPLACE)
     hits: list[str] = []

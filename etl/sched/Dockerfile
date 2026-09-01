@@ -1,3 +1,7 @@
+# 数据层通用轻镜像(15 个役共用;装的是**全层**依赖集 —— bs4=jobbank、pymupdf=pnp/aip、
+# openpyxl=lmia/employers、pg_dump=backup —— 改哪个域的依赖都动本文件)。
+# 2026-08-31 Frank 拍板自 etl/ 根迁入 sched(与 CMD 的调度门同居;lead 曾按「镜像=环境
+# 不=调度」持保留,审美账归 Frank)。
 # 方式 = httpx:抓「有固定 DOM 的结构化列表/详情页」(Job Bank、ATS careers)。
 # 轻 python + HTML 解析库(bs4/lxml/pymupdf),不装浏览器。
 # build/clean 角色也复用本镜像(它们只需 python + 这些库 + httpx)。

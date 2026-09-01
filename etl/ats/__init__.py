@@ -16,7 +16,7 @@ interval=本域一轮的间隔秒;入口固定 etl/ats/main.py,步骤清单在 m
 """
 META = {
     "role": "ats",
-    "method": "httpx",       # 对应 etl/Dockerfile 通用轻镜像(批N 自 docker/etl/httpx/ 迁入)
+    "method": "httpx",       # 对应 etl/sched/Dockerfile 通用轻镜像(批N 自 docker/etl/httpx/ 迁入,08-31 Frank 拍板随调度门迁 sched)
     "interval": 3600,        # 1h(2026-08-31 Frank「都改成小时更新也不费劲」;立域时沿旧役册日更,同日拉平)
     "seed": False,           # 抓取源只刷 raw,不灌库
     "ping": True,            # 本角色唯一单元,沿袭旧役册单元 ping 恒 True 的行为

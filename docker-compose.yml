@@ -1,6 +1,6 @@
 # pnp-job-tracker 运行时全栈(单一 compose,项目名 pnp → 容器统一 pnp-* 前缀)。
 # 2026-08-31 批N Frank 拍板「一域一容器 + docker/ 目录退役」:本文件自 docker/ 迁仓库根,
-# Dockerfile 归域(通用轻镜像 etl/Dockerfile、浏览器重镜像 etl/crawl/Dockerfile),
+# Dockerfile 归域(通用轻镜像 etl/sched/Dockerfile —— 2026-08-31 Frank 拍板随调度门走;浏览器重镜像 etl/crawl/Dockerfile),
 # 原挂 pnp/ee 角色合租的七域(ats/lmia/aip/citations/dli/fcip/rcip)拆成各自 service。
 # 2026-08-31 Frank 拍板:本地闲置的 postgres/cms 两 service 删除(07-16 割接 Render 后,
 # dev 直连生产库、seed 直打 offer2pr.com,这套本地件零流量还顶着陈 schema 报错)——
@@ -15,7 +15,7 @@ name: pnp
 x-etl: &etl                        # 通用数据层镜像(httpx 类源 + build/backup 共用;YAML 锚点)
   build:
     context: .                     # 仓库根(compose 与它同级)
-    dockerfile: etl/Dockerfile
+    dockerfile: etl/sched/Dockerfile
   restart: unless-stopped
   working_dir: /repo               # etl/paths 以此为根解析 data/
   volumes:
