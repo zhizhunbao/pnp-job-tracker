@@ -23,5 +23,8 @@ META = {
         {"glob": "raw/pnp/*.json", "cadence_days": 2},
         {"file": "raw/pnp/on-workforce-priority.json", "cadence_days": 60,
          "note": "人工核对表(官方公告后手改,Frank 抽查制)"},
+        {"file": "raw/pnp/ab-eoi-points.json", "cadence_days": 60,
+         "note": "人工核对表(AAIP Worker EOI 分值,161be8be 竞争卡批一次性核入,无生产者;"
+                 "分值表极少变,变了随 AB 公告手改)"},
     ],
 }

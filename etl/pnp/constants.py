@@ -1227,8 +1227,12 @@ MB_PRINT_TABLE_TPL = "  ✓ {label:<8} {n:>3} 个职业 → pnp/{out}  (实时 {
 # 7. NB 不受理职业清单(PNP 两表 + AIP 两表,叠加式排除)
 # =========================================================================
 
-NB_URL = "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/notice.html"
+NB_URL = "https://www.gnb.ca/en/topic/family-home-community/immigration/important-notices.html"
 """gnb.ca「Important notices」页(httpx 直连 200)。
+⚠ 2026-08-31 换址:NB 官网整体迁版 www2.gnb.ca → www.gnb.ca(旧 notice.html 301 到新站首页,
+通告正文不在落地页 → 08-10 起四表保旧三周)。新页通告原文逐条核对过:02-03 两条排除清单
+(NOC 列表、regardless of sectors 分界句、However 口子句)一字未变,05-04 限行业通告措辞
+改为 health care/education/construction(见 NB_SECTOR_KWS)。
 E6-09 全省核查纠正了两条旧假设:
 ① 旧记忆「NB 2026-02 暂停省提名」错误 —— NB 在办,只是层层收窄;
 ② 首版曾想把 2026-05-04「NB Experience pathway 限 Healthcare/Education/Construction Trades」
@@ -1274,8 +1278,12 @@ program 决定下游怎么用:PNP 表进 08_score 资格判定;AIP 表只作展�
 除清单外全可」不同,NB 的排除是**叠加**在默认 TEER 规则上的(NB Skilled Worker 仍要技能岗 offer)
 —— 08_score 见 overlay 只做「命中即不可」,不把该省 TEER4-5 默认放开。"""
 
-NB_NOTICE_SPLIT = "### Notice"
-"""整页按通告切段的分隔标题。"""
+NB_NOTICE_SPLIT = "## "
+"""整页按通告切段的分隔标题。2026-08-31 新站改版:通告不再是「### Notice …」,而是
+折叠件(转 md 成「> 标题」行),大节才有标题 —— 按 h2 切四大块(General / PNP / AIP /
+Past notices),块的认领仍靠 NB_NOTICES 的 must 关键词;PNP/AIP 两节排在 Past notices
+之前,notice_of 先匹配先赢,旧通告存档不会被误认(首修时曾切 ###:整页一块,两条通告
+认领同一块,四表数字互相污染 24/13/24/13 —— 数字对不上老表当场暴露,改本值后 14/13/6/10 归位)。"""
 
 NB_NOC_LINE_RE = re.compile(r"NOC\s*(\d{5})\s*\*{0,2}\s*[–—-]\s*\*{0,2}\s*(.+?)\s*"
                             r"(?=\*{0,2}\s*NOC\s*\d{5}|$)", re.S)
@@ -1293,8 +1301,10 @@ NB_NAME_MAX = 80
 NB_SECTOR_NOTICE = "2026-05-04 起 NB Experience pathway 新 ITA 只限 Healthcare/Education/Construction Trades"
 """行业限制的政策校验句(不做逐岗判定,但政策还在不在得盯着 —— 变了要人工复核新闻文案)。"""
 
-NB_SECTOR_KWS = ("healthcare", "construction trades")
-"""行业限制原文的必含关键词。"""
+NB_SECTOR_KWS = ("health care", "education", "construction")
+"""行业限制原文的必含关键词。2026-08-31 随新站措辞更新:旧页写 Healthcare/Education/
+Construction Trades,新页写 health care/education/construction(政策同一条,05-04 生效
+日未变 —— 只是文案换词,判据句随官方现文走)。"""
 
 NB_SECTOR_DATE_KW = "may 4, 2026"
 """行业限制原文的日期判词。"""

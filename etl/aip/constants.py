@@ -83,7 +83,9 @@ PDF_FILETYPE = "pdf"
 """fitz.open 的 filetype 参数(从内存流开 PDF 必须显式给)。"""
 
 PDFS = {
-    "NB": "https://www2.gnb.ca/content/dam/gnb/Corporate/Promo/Immigration/designated-employers-employeurs-designes.pdf",
+    "NB": "https://www.gnb.ca/content/dam/GNB3/t/fhc-fmc/immigration/docs/designated-employers-employeurs-designes.pdf",
+    # NB 2026-08-31 换址:官网迁版 www2→www,旧 PDF 404(错误页被当 PDF 解析出 29 行,
+    # MIN_ROWS 护栏保旧 1263 行三周);新址同名文件,住新站 AIP 页 docs/ 下
     "NS": "https://liveinnovascotia.com/sites/default/files/2024-07/Designated_AIP_employers.pdf",
 }
 """走 PDF 的两省(省码 → 官方名录 PDF 直链)。"""

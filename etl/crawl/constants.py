@@ -13,9 +13,12 @@ SEED_MB_ROOT = {"slug": "mb-root", "seed": "https://immigratemanitoba.com/", "de
 SEED_NS_ROOT = {"slug": "ns-root", "seed": "https://liveinnovascotia.com/", "depth": 2, "max_pages": 400}
 """NS 全站。"""
 
-SEED_NB_IMM = {"slug": "nb-imm", "seed": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration.html",
-               "depth": 3, "max_pages": 400, "keywords": "/promo/immigration"}
-"""NB gnb 移民区:种子带 .html → 子页不共享路径前缀,必须走 keyword 限域(首轮只爬到 1 页的教训)。"""
+SEED_NB_IMM = {"slug": "nb-imm", "seed": "https://www.gnb.ca/en/topic/family-home-community/immigration.html",
+               "depth": 3, "max_pages": 400, "keywords": "/immigration"}
+"""NB gnb 移民区:种子带 .html → 子页不共享路径前缀,必须走 keyword 限域(首轮只爬到 1 页的教训)。
+2026-08-31 换址:NB 官网整体迁版 www2.gnb.ca → www.gnb.ca(旧种子 301 跳外域,BFS 不出站
+→ 08-30 那轮只抓到 1 页);新站移民区路径 /en/topic/family-home-community/immigration/,
+keyword 相应放宽到 /immigration。"""
 
 SEED_NL_IMM = {"slug": "nl-imm", "seed": "https://www.gov.nl.ca/immigration/", "depth": 3, "max_pages": 800}
 """NL immigration 区:含新闻存档,首轮顶到 500 上限(地图可能不全)→ 抬到 800。"""
