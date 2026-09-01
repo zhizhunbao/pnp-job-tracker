@@ -503,7 +503,7 @@ ENV_LLM_MODEL = "NEWS_LLM_MODEL"
 """环境开关:局域网模型名(缺省 LLM_LOCAL_MODEL_DEFAULT)。"""
 
 ENV_API_KEY = "ANTHROPIC_API_KEY"
-"""环境开关:Anthropic key。未设 = 跳过翻译只抓原文(运维项:key 进 docker/.env,
+"""环境开关:Anthropic key。未设 = 跳过翻译只抓原文(运维项:key 进根 .env(批N 起 compose 住仓库根),
 Frank 拍板 2026-07-18)。"""
 
 LLM_LOCAL_MODEL_DEFAULT = "qwen3.6:latest"

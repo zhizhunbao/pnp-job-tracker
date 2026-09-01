@@ -13,7 +13,6 @@ import 两个洞:标准库 + 本域 constants(叶子律的域内松绑,跨域仍
 import re
 from dataclasses import dataclass
 from html.parser import HTMLParser
-from pathlib import Path
 from typing import Callable, Iterator, Protocol
 
 from pnp.constants import GQ_SKIP_TAGS
@@ -1349,19 +1348,3 @@ class GateText(HTMLParser):
         """不在跳过层的非空文本收进 buf。"""
         if not self.skip and data.strip():
             self.buf.append(data.strip())
-
-
-# =========================================================================
-# 37. 新鲜度哨兵(2026-08-31 批D 收编)
-# =========================================================================
-
-
-@dataclass
-class StampIn:
-    """stamp_of 的入参:取一个数据文件的「数据是哪天的」。"""
-
-    path: Path
-    """数据文件路径。"""
-
-    key: str
-    """取戳键(fetched/checkedAt 顶层键,或 mtime 兜底)。"""

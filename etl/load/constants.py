@@ -88,7 +88,7 @@ ERR_BODY_TPL = "{name}: {detail}"
 """网络错转数据时的 body 摘要形(异常类名 + 详情)。"""
 
 ENV_BACKUP_URI = "BACKUP_DATABASE_URI"
-"""备份库连接串环境键(compose 从 docker/.env 注入)。"""
+"""备份库连接串环境键(compose 从根 .env 注入(批N 起 compose 住仓库根))。"""
 
 ENV_DB_URI = "DATABASE_URI"
 """备份库连接串兜底键。"""

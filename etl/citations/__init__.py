@@ -10,9 +10,9 @@ META = 域即役的调度声明(2026-08-29 批2):role=挂哪个角色容器(SOUR
 interval=本域一轮的间隔秒;入口固定 etl/citations/main.py,步骤清单在 main.py 里。
 """
 META = {
-    "role": "pnp",
+    "role": "citations",     # 2026-08-31 批N Frank「一域一容器」:原挂 pnp 角色,拆出自役
     "method": "httpx",
     "interval": 3600,          # 1h(2026-08-31 Frank「都改成小时更新也不费劲」;原周更 —— 23 个 URL 一轮,量极小)
     "seed": False,             # 只刷 raw 注册表,build 角色统一灌库
-    "ping": False,  # ping 权在 pnp 角色链尾的 freshness 哨兵(lead 批D 收口拍板),防遮蔽
+    "ping": False,  # 报警走 pnp 链尾 freshness 哨兵(盯的是产物文件,跨容器仍有效;批O 重排)
 }

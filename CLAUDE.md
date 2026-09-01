@@ -75,7 +75,6 @@ pnp-job-tracker/
 │   ├── src/components/        #   组件桶 44 个:通用(button/table/card/modal/select/shell/banner…)+ 业务(jobs/employers/chat…);og 桶含 server 门(HTTP 芯住组件桶首例)
 │   ├── src/lib/               #   领域模块:一域一目录+桶;db/(database+sql)、i18n/(zh/en/ko 一语一文件)、ruling/ points/ jobs/(判定评分)、agent/ consult/ llm/(对话)…
 │   └── tests/                 #   int(vitest)、e2e(playwright)、eval(评测批)
-├── docker/                    # 无人值守:一役一 service
 └── docs/                      # prd.md + design/(一案一文件带日期)+ sql/(生产 DDL,永不清仓)
 ```
 
@@ -224,7 +223,7 @@ pnp-job-tracker/
 cd cms && npm run dev                    # localhost:3000(读写生产!测试号 @test.local);本机只准一个 dev 实例,验完即关
 # 改 collection 字段:显式 DB_PUSH=1 单次推(删列/改类型手写 SQL,提示删列必答 N);改 Jobs 字段后重启 dev 再重灌
 # seed 必带 token(直连生产,reset=1 会清库慎用):curl -H "x-seed-token: $SEED_TOKEN" localhost:3000/api/seed
-# 无人值守全栈:cd docker && docker compose --profile unattended up -d --build
+# 无人值守全栈(仓库根):docker compose --profile unattended up -d --build(批N:一域一容器,compose 住根,Dockerfile 归域)
 # 完整 ETL:python etl/sched/main.py --only now(2026-08-31 批K 调度器域化;编号主管线已全数入域,mart 域=跨源清洗+汇装)
 ```
 

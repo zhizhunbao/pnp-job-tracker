@@ -17,7 +17,7 @@ SINCE_DAYS = os.environ.get("SINCE_DAYS", "3")
 
 META = {
     "role": "jobbank",
-    "method": "httpx",       # 对应 docker/etl/httpx/ 镜像
+    "method": "httpx",       # 对应 etl/Dockerfile 通用轻镜像(批N 自 docker/etl/httpx/ 迁入)
     # 沿革(2026-08-31 批F):旧役册 META 写 7200(2h),但 docker-compose 的
     # SCRAPE_INTERVAL=3600 一路压过它 —— 单轨后没有覆盖层了(域单元不吃
     # SCRAPE_INTERVAL),这里写现役生效值 1h,调度节奏与迁移前逐分钟相同

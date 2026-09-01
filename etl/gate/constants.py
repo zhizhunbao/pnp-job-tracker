@@ -62,10 +62,23 @@ DOMAIN_FILES = ("__init__.py", "main.py", "constants.py", "scheme.py", "function
 都需要检查的」):**域 = 五件套,生而合规;野文件 = 乱的入口**。九个抽屉都装不下 =
 那东西不属于这个域。照 (frontend) 白名单三文件先例做成机器闸,**硬红,无例外登记表** ——
 要加名过 Frank(改的是这行常量,不是给某个目录开后门)。
-只扫 .py:数据契约件(gate/etl_shape_baseline.json、sched/source_manifest.json)不在射程。"""
+批K 原「只扫 .py:数据契约件不在射程」的豁免 2026-08-31 批O 作废(Frank「有 .json 文件
+怎么没检查出来」):两件契约 json 已退役(source_manifest 进各域 META,形制基线缺文件=零),
+⑩号规扩到**全部受 git 管的文件**,非 .py 词汇见 DOMAIN_EXTRA_FILES。"""
+
+DOMAIN_EXTRA_FILES = ("Dockerfile",)
+"""⑩号规的非 .py 词汇:域目录里唯一许住的非 Python 文件名(2026-08-31 批N「一域一容器」,
+crawl 域自带浏览器重镜像)。运行时垃圾(crawl/.browser-profile、__pycache__)不受 git 管,
+git ls-files 枚举下自然免检;域里再落任何杂 json/杂件当场硬红。"""
+
+GIT_LSFILES = ("git", "ls-files", "--", ".")
+"""⑩号规全文件面的枚举命令(在 ETL_DIR 下执行,只看受 git 管的文件)。"""
 
 PY_GLOB = "*.py"
-"""域内被扫文件的样式。"""
+"""域内被扫文件的样式(.py 面走 rglob:没提交的野 .py 也要抓)。"""
+
+PY_SUFFIX = ".py"
+"""全文件面里让位给 .py 面的后缀(同一文件不报两遍)。"""
 
 PYCACHE = "__pycache__"
 """扫描时跳过的字节码目录。"""
@@ -178,14 +191,12 @@ NESTED_FN_TPL = "内嵌函数 {name}(出户成顶层,cms tsx 同律)"
 
 BASELINE = ETL_DIR / "gate" / "etl_shape_baseline.json"
 """②③两条软规的存量基线:新增违规即红;修掉存量后跑 `--only prune` 收紧 —— 只紧不松
-(同 cms suppressions 惯例)。2026-08-31 批D 自 ops/ 迁根,批K 随 gate 立域搬进本目录
-(闸的账本跟着闸走)。"""
+(同 cms suppressions 惯例)。2026-08-31 批D 自 ops/ 迁根,批K 随 gate 立域搬进本目录。
+批O(Frank「有 .json 怎么没检查出来」):存量清零后**文件退役** —— 缺文件 = 零基线,
+prune 只在还有存量时落盘(有债才有账本;账本自己也别当杂 json 赖在域里)。"""
 
 BASELINE_INDENT = 1
 """基线 JSON 的缩进(逐行可读,diff 友好)。"""
-
-BASELINE_NEW_TPL = "✓ 首建基线:{n} 条存量入册(此后只紧不松)"
-"""基线文件不存在时的首建行。"""
 
 PRUNE_REJECT_MSG = "✗ prune 拒绝:基线只紧不松,先修掉新增违规:"
 """收紧前发现新增违规(拒绝写盘)。"""

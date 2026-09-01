@@ -18,11 +18,15 @@ sink 的**重配住门**(main.py:守护档带时间戳走 stderr,手动档纯 me
 本文件只调用不配置 —— 🔴 且**永不 import log.functions**:那个模块 import 即 remove+add
 纯 message 档,会当场劫持调度器的时间戳前缀(log/paths/load 三处头注都为此立过判据)。
 """
+import glob
 import importlib.util
+import json
 import os
 import subprocess
 import sys
 import time
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import cast
 
 import httpx
@@ -35,7 +39,11 @@ from sched.constants import (
     DEFAULT_INTERVAL_S, DEFAULT_ROLES, DEFAULT_SEED_URL, DEFAULT_SOURCE, DOM_MAIN_TPL,
     DOM_MOD_TPL, DONE_NAME_TPL, ENC_UTF8, ENV_FILE, ENV_IOENCODING, ENV_PING_TPL,
     ENV_SEED_TOKEN, ENV_SEED_URL, ENV_SOURCE, ENV_UNBUFFERED, ERRORS_REPLACE, ERR_PREFIXES,
-    ETL_DIR, FAIL_RETRY_S, INIT_GLOB, K_AFTER, K_INTERVAL, K_NAME, K_ONLY, K_PING, K_ROLE,
+    ETL_DIR, FAIL_RETRY_S, FRESH_DATE_FMT, FRESH_K_CADENCE, FRESH_K_FILE, FRESH_K_GLOB,
+    FRESH_K_KEY, FRESH_K_NOTE, FRESH_KEY_DEFAULT, FRESH_KEY_MTIME, FRESH_P_ALL_OK_TPL,
+    FRESH_P_BADDATE_TPL, FRESH_P_MISSING_TPL, FRESH_P_NOSTAMP_TPL, FRESH_P_STALE_NOTE_TPL,
+    FRESH_P_STALE_TPL, FRESH_P_SUMMARY_TPL, FRESH_STAMP_LEN,
+    INIT_GLOB, K_AFTER, K_FRESH, K_INTERVAL, K_NAME, K_ONLY, K_PING, K_ROLE,
     K_SEED, KV_SEP, LVL_ERROR, LVL_INFO, MANUAL_SEED_URL, META_FAIL_TPL, NAME_JOIN, NEWLINE,
     NOT_DOMAIN, NOW_END_TPL, NOW_FAIL_TPL, NOW_HEAD_TPL, NOW_OK_TPL, NO_UNIT_TPL,
     PING_FAIL_TPL, PING_OK_MSG, PING_TIMEOUT_S, POLL_S, ROUNDS_DIR, ROUND_DONE_TPL,
@@ -44,7 +52,7 @@ from sched.constants import (
     UNKNOWN_ROLE_TPL, U_LINE_TPL, U_MODE_CONSUMER_TPL, U_MODE_EVERY_TPL, U_SEED_SUFFIX_TPL,
     VAL_ONE,
 )
-from sched.scheme import LogLike, MetaHit, RunStepIn, ToUnitIn, Unit
+from sched.scheme import FreshStampIn, LogLike, MetaHit, RunStepIn, ToUnitIn, Unit
 
 
 # =========================================================================
@@ -290,12 +298,18 @@ def finish_seed() -> bool:
 
 
 def ping_health(x: Unit) -> None:
-    """监控心跳(E7-01):本轮全部成功且本单元持 ping 权 → ping healthchecks.io
-    (env 缺省不 ping;判据与授权范围见 constants.ENV_PING_TPL 的 docstring)。"""
+    """监控心跳(E7-01):本轮全部成功且本单元持 ping 权 → 过保鲜闸 → ping healthchecks.io
+    (env 缺省不 ping;判据与授权范围见 constants.ENV_PING_TPL 的 docstring)。
+
+    2026-08-31 批O:发 ping 前先过 freshness_ok() 全域保鲜闸(原 pnp 链尾哨兵搬进本门口,
+    source_manifest 中央花名册随之退役)—— 有陈数据就扣 ping 转红,语义与 B3-1 原样。
+    """
     if x.ping is False:
         return
     url = os.environ.get(ENV_PING_TPL.format(role=current_role().upper()), "")
     if url == "":
+        return
+    if freshness_ok() is False:
         return
     try:
         httpx.get(url, timeout=PING_TIMEOUT_S)
@@ -303,6 +317,94 @@ def ping_health(x: Unit) -> None:
         logger.error(PING_FAIL_TPL.format(name=type(e).__name__))
         return
     logger.info(PING_OK_MSG)
+
+
+def freshness_ok() -> bool:
+    """全域保鲜闸(B3-1 哨兵,2026-08-31 批O 自 pnp 段37 迁入):扫全部域 META 的 fresh
+    契约,逐文件核 fetched(或 checkedAt/mtime)与 cadence_days;超期逐行 ERROR + 收口行,
+    返回 False → 调用方扣 ping → healthchecks 转红报警。
+
+    住 ping 门口而不是某域链尾:**任一持 ping 的单元都替全舰队盯保鲜** —— 覆盖没配
+    healthchecks URL 的役(批N 拆容器后 dli/aip 等无 ping env,报警面 = 现有检查数);
+    待各役配齐自己的 URL 后可改回按域分摊。判定逻辑与原 pnp 段37 逐字同源。
+    """
+    rows = fresh_rows()
+    today = datetime.now(timezone.utc).date()
+    stale: list = []
+    for rel in sorted(rows):
+        r = rows[rel]
+        path = paths.DATA / rel
+        if not path.exists():
+            stale.append(FRESH_P_MISSING_TPL.format(rel=rel))
+            continue
+        stamp = fresh_stamp_of(FreshStampIn(path=path, key=r[FRESH_K_KEY]))
+        if not stamp:
+            stale.append(FRESH_P_NOSTAMP_TPL.format(rel=rel, key=r[FRESH_K_KEY]))
+            continue
+        try:
+            age = (today - datetime.strptime(stamp, FRESH_DATE_FMT).date()).days
+        except ValueError:
+            stale.append(FRESH_P_BADDATE_TPL.format(rel=rel, key=r[FRESH_K_KEY], stamp=repr(stamp)))
+            continue
+        if age > r[FRESH_K_CADENCE]:
+            if r[FRESH_K_NOTE]:
+                stale.append(FRESH_P_STALE_NOTE_TPL.format(rel=rel, stamp=stamp, age=age,
+                                                           cad=r[FRESH_K_CADENCE], note=r[FRESH_K_NOTE]))
+            else:
+                stale.append(FRESH_P_STALE_TPL.format(rel=rel, stamp=stamp, age=age,
+                                                      cad=r[FRESH_K_CADENCE]))
+    if len(stale) > 0:
+        for s in stale:
+            logger.error(s)
+        logger.error(FRESH_P_SUMMARY_TPL.format(n=len(stale), total=len(rows)))
+        return False
+    logger.info(FRESH_P_ALL_OK_TPL.format(n=len(rows)))
+    return True
+
+
+def fresh_rows() -> dict:
+    """全域 fresh 契约展开(rel path → 契约行):glob 行铺全量,再被 file 行压过
+    (原 source_manifest 的 defaults/overrides 语义原样,只是声明搬进了各域 META)。"""
+    rows: dict = {}
+    hits = domain_metas()
+    for hit in hits:
+        for d in hit.meta.get(K_FRESH) or []:
+            if FRESH_K_GLOB not in d:
+                continue
+            for f in glob.glob(str(paths.DATA / d[FRESH_K_GLOB])):
+                rel = Path(f).relative_to(paths.DATA).as_posix()
+                rows[rel] = {FRESH_K_CADENCE: d[FRESH_K_CADENCE], FRESH_K_KEY: FRESH_KEY_DEFAULT,
+                             FRESH_K_NOTE: ""}
+    for hit in hits:
+        for o in hit.meta.get(K_FRESH) or []:
+            if FRESH_K_FILE not in o:
+                continue
+            note = o.get(FRESH_K_NOTE)
+            if note is None:
+                note = ""
+            key = o.get(FRESH_K_KEY)
+            if key is None:
+                key = FRESH_KEY_DEFAULT
+            rows[o[FRESH_K_FILE]] = {FRESH_K_CADENCE: o[FRESH_K_CADENCE], FRESH_K_KEY: key,
+                                     FRESH_K_NOTE: note}
+    return rows
+
+
+def fresh_stamp_of(x: FreshStampIn) -> str:
+    """取该文件的「数据是哪天的」:fetched/checkedAt 顶层键,或 mtime 兜底。
+    取不到返回空(坏 JSON 本身就是要报的病 —— 空戳会被上游记成「无戳」超期行,留痕在报告里)。"""
+    if x.key == FRESH_KEY_MTIME:
+        return datetime.fromtimestamp(x.path.stat().st_mtime, tz=timezone.utc).date().isoformat()
+    try:
+        d = json.loads(x.path.read_text(encoding=ENC_UTF8))
+    except Exception:  # noqa: BLE001, S110
+        return ""
+    v = None
+    if isinstance(d, dict):
+        v = d.get(x.key)
+    if v:
+        return str(v)[:FRESH_STAMP_LEN]
+    return ""
 
 
 # =========================================================================

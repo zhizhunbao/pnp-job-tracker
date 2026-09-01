@@ -16,7 +16,12 @@ META = {
     "interval": 3600,          # 1h(#128 Frank「都改成小时更,不知道什么时候有新数据」。批2 换轨时被写成周更
                                # —— 域单元不吃 SCRAPE_INTERVAL,#128 拍板被静默回归两天;2026-08-31 批F 修回)
     "seed": False,             # 只刷 raw 参考表,build 角色统一灌库(避免抢 mart/seed)
-    "ping": True,   # 2026-08-31 批D:ops 拆散,本域链尾收编 watch+freshness 两哨兵,
-                    # ping 权随 freshness 走(报警语义 = freshness 红了本轮不 ping;
-                    # 角色内其余单元 dli/pilot/citations 一律 ping=False 防遮蔽)
+    "ping": True,   # 2026-08-31 批D:ops 拆散,ping 权随 freshness 哨兵迁本域;
+                    # 批O:哨兵再迁 sched 的 ping 门口(全域保鲜闸,任一持 ping 单元
+                    # 发 ping 前都过闸),本域链尾只剩 watch 哨兵,ping 权保留
+    "fresh": [      # 保鲜契约(2026-08-31 批O:source_manifest 退役,行原样搬入;语义见 sched.K_FRESH)
+        {"glob": "raw/pnp/*.json", "cadence_days": 2},
+        {"file": "raw/pnp/on-workforce-priority.json", "cadence_days": 60,
+         "note": "人工核对表(官方公告后手改,Frank 抽查制)"},
+    ],
 }

@@ -216,6 +216,63 @@ PING_OK_MSG = "✓ healthcheck ping"
 PING_FAIL_TPL = "✗ healthcheck ping 失败({name})"
 """心跳失败行(只留痕,不影响本轮成败)。"""
 
+K_FRESH = "fresh"
+"""META 键:保鲜契约(2026-08-31 批O,Frank「source_manifest 也不需要」:中央花名册退役,
+谁的产物谁声明「该多新」)。行清单,一行 = {glob 或 file, cadence_days, 可选 key/note};
+glob 行铺全量后被 file 行压过(原 defaults/overrides 语义原样)。
+原契约 v1 的决策记录随迁(B3-1/B3-2,2026-08-03):cadence_days 是**抓取回写节奏**的宽限,
+不是官方发布节奏;glob 默认让新落的抓取产物自动进哨兵(铁律 2「抓完必须入役」的机器面);
+超期即红 → 不 ping → 报警 —— ping 从此证明「数据是新的」而不只是「脚本跑完」
+(2026-08-03 实撞:pnp 役每小时绿着,MB/NB 的表停在 8 天前;ON 抽选断档三个月没人发现)。"""
+
+FRESH_K_FILE = "file"
+"""fresh 行键:相对 data/ 的文件路径(覆盖档)。"""
+
+FRESH_K_GLOB = "glob"
+"""fresh 行键:glob 模式(默认档)。"""
+
+FRESH_K_CADENCE = "cadence_days"
+"""fresh 行键:保鲜期天数。"""
+
+FRESH_K_KEY = "key"
+"""fresh 行键:取「数据是哪天的」用哪个顶层键。"""
+
+FRESH_K_NOTE = "note"
+"""fresh 行键:超期时的补充说明。"""
+
+FRESH_KEY_DEFAULT = "fetched"
+"""默认取戳键。"""
+
+FRESH_KEY_MTIME = "mtime"
+"""特殊取戳键:文件修改时刻兜底。"""
+
+FRESH_DATE_FMT = "%Y-%m-%d"
+"""戳的日期格式。"""
+
+FRESH_STAMP_LEN = 10
+"""戳截断长度(ISO 日期前 10 位)。"""
+
+FRESH_P_MISSING_TPL = "✗ 保鲜 {rel}: 文件不存在(契约里在,盘上没有)"
+"""超期行:文件缺席。"""
+
+FRESH_P_NOSTAMP_TPL = "✗ 保鲜 {rel}: 取不到 {key}(无戳的数据不能拿来下结论,见 B3-3)"
+"""超期行:无戳。"""
+
+FRESH_P_BADDATE_TPL = "✗ 保鲜 {rel}: {key}={stamp} 不是日期"
+"""超期行:戳不是日期(stamp 已 repr 后传入)。"""
+
+FRESH_P_STALE_TPL = "✗ 保鲜 {rel}: {stamp}({age} 天前,限 {cad} 天)"
+"""超期行。"""
+
+FRESH_P_STALE_NOTE_TPL = "✗ 保鲜 {rel}: {stamp}({age} 天前,限 {cad} 天) —— {note}"
+"""超期行(带契约备注)。"""
+
+FRESH_P_SUMMARY_TPL = "✗ {n}/{total} 个源超期或无戳,本轮扣 ping 转红"
+"""保鲜闸收口行(先逐行打超期,再打本行;ping 被扣下 → healthchecks 转红报警)。"""
+
+FRESH_P_ALL_OK_TPL = "✓ 保鲜 {n} 个源全部在期"
+"""保鲜闸通过行(ping 前打一行,证明「数据是新的」有据)。"""
+
 # =========================================================================
 # 5. 手动一轮(run_now:管理台不赚钱先放,给脚本直接执行能看进度)
 # =========================================================================

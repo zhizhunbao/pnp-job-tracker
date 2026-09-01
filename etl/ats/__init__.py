@@ -8,16 +8,15 @@ jobs.json + jobs/<职位>.md;ATS 专属的薪资抽取(extract_ats_salary)跟在
 2026-08-31 批H2 clean 横切层清算:薪资抽取件(原 clean/04b_extract_ats_salary.py)
 本体也迁进来了,门从 subprocess 包装改直调 —— 上面那句拍板点至此才真正兑现。
 
-⚠ 本域现处休眠:docker/docker-compose.yml 里 ats 服务整段是注释态(原注「加 ATS
-第一方源时取消注释(Kanata 名录变动少,频率可低)」)—— 没有 SOURCE=ats 的容器在跑,
-META 先就位等启用,启用只需取消 compose 那段注释,域这边零改。
+2026-08-31 批N「一域一容器」起本域已启用:根 docker-compose.yml 有 SOURCE=ats 的
+service(此前整段注释态休眠、META 就位等启用 —— 那一步在批N 兑现,域这边零改)。
 
 META = 域即役的调度声明(2026-08-29 批2):role=挂哪个角色容器(SOURCE 环境变量),
 interval=本域一轮的间隔秒;入口固定 etl/ats/main.py,步骤清单在 main.py 里。
 """
 META = {
     "role": "ats",
-    "method": "httpx",       # 对应 docker/etl/httpx/ 镜像
+    "method": "httpx",       # 对应 etl/Dockerfile 通用轻镜像(批N 自 docker/etl/httpx/ 迁入)
     "interval": 3600,        # 1h(2026-08-31 Frank「都改成小时更新也不费劲」;立域时沿旧役册日更,同日拉平)
     "seed": False,           # 抓取源只刷 raw,不灌库
     "ping": True,            # 本角色唯一单元,沿袭旧役册单元 ping 恒 True 的行为

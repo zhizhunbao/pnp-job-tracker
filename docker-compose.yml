@@ -1,25 +1,27 @@
 # pnp-job-tracker 运行时全栈(单一 compose,项目名 pnp → 容器统一 pnp-* 前缀)。
+# 2026-08-31 批N Frank 拍板「一域一容器 + docker/ 目录退役」:本文件自 docker/ 迁仓库根,
+# Dockerfile 归域(通用轻镜像 etl/Dockerfile、浏览器重镜像 etl/crawl/Dockerfile),
+# 原挂 pnp/ee 角色合租的七域(ats/lmia/aip/citations/dli/fcip/rcip)拆成各自 service。
 #   postgres  数据库(发布 :5432 给 host npm run dev;容器内用服务名 postgres 连)
 #   cms       Next/Payload 应用(仅 unattended profile 起,发布 :3001;本地开发用 host npm run dev 占 :3000)
-#   jobbank   抓 Job Bank → raw            (etl httpx 镜像)
-#   build     清洗→评分→mart→seed(灌库唯一角色,默认 curl host.docker.internal:3001/api/seed;本地测试可 export SEED_URL=…:3000)
+#   其余 15 个 = 一域一容器,SOURCE=域名,节奏真相在各域 META
 #
-# 用法:
-#   开发:        cd docker && docker compose up -d postgres        # 只起库,cms 用 host npm run dev
-#   跑自动机:    cd docker && docker compose up -d                 # postgres+jobbank+build(cms 仍 host)
-#   无人值守全栈:cd docker && docker compose --profile unattended up -d --build   # 再加容器化 cms
+# 用法(仓库根执行):
+#   开发:        docker compose up -d postgres        # 只起库,cms 用 host npm run dev
+#   跑自动机:    docker compose up -d                 # postgres+全部 etl(cms 仍 host)
+#   无人值守全栈:docker compose --profile unattended up -d --build   # 再加容器化 cms
 #   日志 docker compose logs -f  |  停 docker compose --profile unattended down
 # 开机自启:Docker Desktop 勾「登录时启动」+ 各容器 restart:unless-stopped。
 name: pnp
 
-x-etl: &etl                        # httpx 类源 + build 共用(YAML 锚点)
+x-etl: &etl                        # 通用数据层镜像(httpx 类源 + build/backup 共用;YAML 锚点)
   build:
-    context: ..                    # 仓库根(docker/ 上一级)
-    dockerfile: docker/etl/httpx/Dockerfile
+    context: .                     # 仓库根(compose 与它同级)
+    dockerfile: etl/Dockerfile
   restart: unless-stopped
-  working_dir: /repo               # etl/_paths.py 以此为根解析 data/
+  working_dir: /repo               # etl/paths 以此为根解析 data/
   volumes:
-    - ..:/repo                     # 源码 + data/ 落盘到宿主
+    - .:/repo                      # 源码 + data/ 落盘到宿主
   extra_hosts:
     - 'host.docker.internal:host-gateway'
 
@@ -50,19 +52,64 @@ services:
       SINCE_DAYS: '3'
       TZ: EST5EDT                  # 日志用东部时区(glibc 原生,无需 tzdata);postgres 保持 UTC
 
-  pnp:                             # 省提名/AIP 具名清单实时刷新(低频,只刷 raw;build 角色消费灌库)
+  pnp:                             # 省提名事实构建 + watch/freshness 两哨兵(只刷 raw;build 角色消费灌库)
     <<: *etl
     environment:
       SOURCE: pnp
       HEALTHCHECK_PING_PNP: ${HEALTHCHECK_PING_PNP:-}
       # SCRAPE_INTERVAL 2026-08-31 批F 退役:节奏真相=pnp 域 META(3600;#128 拍板文字随迁,批2 周更回归已修)
+      # 2026-08-31 批N「一域一容器」:原合租本角色的 aip/citations/dli/fcip/rcip 各自成 service,
+      # 本容器只剩 pnp 域;freshness 哨兵盯的是产物文件,跨容器仍有效(批O 随 manifest 退役重排)
+      TZ: EST5EDT
+
+  aip:                             # AIP 大西洋试点:指定雇主名单 + 规则(原挂 pnp 角色,批N 拆出)
+    <<: *etl
+    environment:
+      SOURCE: aip
+      TZ: EST5EDT
+
+  citations:                       # 官方引用着陆页核验(field-sources 32 行;原挂 pnp 角色,批N 拆出)
+    <<: *etl
+    environment:
+      SOURCE: citations
+      TZ: EST5EDT
+
+  dli:                             # DLI 指定院校 + PGWP 资格表(原挂 pnp 角色,批N 拆出)
+    <<: *etl
+    environment:
+      SOURCE: dli
+      TZ: EST5EDT
+
+  fcip:                            # FCIP 法语社区试点三件(社区/职业/配额;原挂 pnp 角色,批N 拆出)
+    <<: *etl
+    environment:
+      SOURCE: fcip
+      TZ: EST5EDT
+
+  rcip:                            # RCIP 乡村社区试点三件(雇主/职业/配额;原挂 pnp 角色,批N 拆出)
+    <<: *etl
+    environment:
+      SOURCE: rcip
+      TZ: EST5EDT
+
+  lmia:                            # ESDC 正面 LMIA 雇主季表(原挂 ee 角色,批N 拆出)
+    <<: *etl
+    environment:
+      SOURCE: lmia
+      TZ: EST5EDT
+
+  ats:                             # Kanata 第一方 ATS 抓岗(2026-08-31 批N 启用 —— 此前 META 就位、服务注释态休眠)
+    <<: *etl
+    environment:
+      SOURCE: ats
+      SINCE_DAYS: '3'
       TZ: EST5EDT
 
   crawl:                           # 九省官方站 URL 探索 + 站点地图 diff(政策雷达;只产 data/crawl/,不灌库)
     <<: *etl
     build:                         # 用带 Playwright 的重镜像(非 httpx 轻镜像):PE 在 Radware 后面,
-      context: ..                  # bfs_crawler 的浏览器兜底(403/验证壳→chromium)只有这个镜像跑得动
-      dockerfile: docker/etl/crawl/Dockerfile
+      context: .                   # bfs_crawler 的浏览器兜底(403/验证壳→chromium)只有这个镜像跑得动
+      dockerfile: etl/crawl/Dockerfile
     environment:
       SOURCE: crawl
       HEALTHCHECK_PING_CRAWL: ${HEALTHCHECK_PING_CRAWL:-}
@@ -132,7 +179,7 @@ services:
   cms:                             # 生产容器:仅 --profile unattended 起;本地开发用 host npm run dev(占 :3000)
     profiles: ['unattended']
     build:
-      context: ../cms
+      context: ./cms
       dockerfile: Dockerfile       # 需 next.config output:'standalone'(已加)
     restart: unless-stopped
     depends_on:
@@ -141,18 +188,11 @@ services:
     ports:
       - '3001:3000'                # 发布 :3001(让出 :3000 给 host npm run dev 本地测试;容器内仍 3000)
     env_file:
-      - ../cms/.env                # PAYLOAD_SECRET / OLLAMA_* 等
+      - ./cms/.env                 # PAYLOAD_SECRET / OLLAMA_* 等
     environment:
       DATABASE_URI: postgresql://pnp:pnp@postgres:5432/pnp  # 同网络用服务名连库(覆盖 .env 的 localhost)
     volumes:
-      - ../data:/data              # seed 读 /data/mart(standalone server cwd=/app,../data=/data)
-
-  # 加 ATS 第一方源时取消注释(Kanata 名录变动少,频率可低):
-  # ats:
-  #   <<: *etl
-  #   environment:
-  #     SOURCE: ats
-  #     SCRAPE_INTERVAL: '86400'
+      - ./data:/data               # seed 读 /data/mart(standalone server cwd=/app,./data=/data)
 
 volumes:
   pgdata:

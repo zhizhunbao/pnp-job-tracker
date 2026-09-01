@@ -6,9 +6,9 @@ META = 域即役的调度声明(2026-08-29 批2):role=挂哪个角色容器(SOUR
 interval=本域一轮的间隔秒;入口固定 etl/lmia/main.py,步骤清单在 main.py 里。
 """
 META = {
-    "role": "ee",
+    "role": "lmia",     # 2026-08-31 批N Frank「一域一容器」:原挂 ee 角色,拆出自役
     "method": "httpx",
     "interval": 2592000,       # 月检查:ESDC LMIA 季度数据,已缓存季度不重下
     "seed": False,
-    "ping": False,  # ping 权在本角色的指定单元(pnp 角色=ops 哨兵),防遮蔽
+    "ping": False,  # 报警走 pnp 链尾 freshness 哨兵(盯的是产物文件,跨容器仍有效;批O 重排)
 }

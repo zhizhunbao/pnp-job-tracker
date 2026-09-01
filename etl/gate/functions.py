@@ -30,9 +30,11 @@ from datetime import datetime
 from log.functions import say
 from gate.constants import (
     ABOVE, ARG_OUTPUT_FORMAT, ARG_STATISTICS, BACKSLASH, BANNED_SYNTAX_TPL, BARE_PRINT_TPL,
-    BASELINE, BASELINE_INDENT, BASELINE_NEW_TPL, COLON, CONST_STRIP, CROSS_IMPORT_TPL,
-    DEFAULT_ARG_TPL, DISSOLVED, DOMAINS, DOMAIN_FILES, ENC_UTF8, ERRORS_REPLACE, ETL_DIR,
+    BASELINE, BASELINE_INDENT, COLON, CONST_STRIP, CROSS_IMPORT_TPL,
+    DEFAULT_ARG_TPL, DISSOLVED, DOMAINS, DOMAIN_EXTRA_FILES, DOMAIN_FILES, ENC_UTF8,
+    ERRORS_REPLACE, ETL_DIR,
     ETL_PREFIX, EXEMPT_VALUES, EXTRA_MAIN_TPL, FENCE, FIXED_TPL, FRAG_LEN, FRESH_ROW_TPL,
+    GIT_LSFILES, PY_SUFFIX,
     FUNCTIONS_NAME, HARD_ROW_TPL, IMPORT_RE, INFRA, INOUT_RE, KEY_CALLS, LBL_DICTCOMP,
     LBL_GENEXP, LBL_LAMBDA, LBL_LISTCOMP, LBL_SETCOMP, LOCK_VERBOSITY, MAIN_NAME, MAIN_RE,
     MD_EXEMPT_NOTE, MD_INTRO, MD_ROW_TPL, MD_SEC1, MD_SEC2, MD_SEC3_TPL, MD_SEC4_TPL,
@@ -65,7 +67,31 @@ def scan() -> ScanOut:
             out = scan_file(FileScanIn(dom=dom, path=p))
             hard.extend(out.hard)
             soft.extend(out.soft)
+    hard.extend(stray_tracked_of())
     return ScanOut(hard=sorted(hard), soft=sorted(soft))
+
+
+def stray_tracked_of() -> list[str]:
+    """⑩号规全文件面(2026-08-31 批O,Frank「有 .json 怎么没检查出来」):受 git 管的
+    域内文件,名字不在六件套 + DOMAIN_EXTRA_FILES 词汇里就硬红。
+    .py 让位给上面的 rglob 面(它连没提交的野 .py 都抓,不报两遍);etl 根上的文件
+    (etl/Dockerfile 通用镜像)不属域射程;git 不可用时本面跳过,.py 面照常全量。"""
+    r = subprocess.run(GIT_LSFILES, cwd=ETL_DIR, capture_output=True, text=True,
+                       encoding=ENC_UTF8, errors=ERRORS_REPLACE)
+    hits: list[str] = []
+    if r.returncode != 0:
+        return hits
+    for raw in r.stdout.splitlines():
+        rel = raw.strip()
+        if rel == "" or SLASH not in rel:
+            continue
+        name = rel.rsplit(SLASH, 1)[1]
+        if name.endswith(PY_SUFFIX):
+            continue
+        if name in DOMAIN_EXTRA_FILES:
+            continue
+        hits.append(STRAY_FILE_TPL.format(rel=rel))
+    return hits
 
 
 def scan_file(x: FileScanIn) -> ScanOut:
@@ -272,12 +298,6 @@ def check_shape() -> None:
     退出码穿门(SystemExit 不被门的 except Exception 捕获),pre-push 靠它拦 push。
     """
     out = scan()
-    if BASELINE.exists() is False:
-        write_baseline(out.soft)
-        say(BASELINE_NEW_TPL.format(n=len(out.soft)))
-        if len(out.hard) > 0:
-            sys.exit(1)
-        return
     known = read_baseline()
     fresh = missing_of(DiffIn(items=out.soft, known=known))
     for row in out.hard:
@@ -293,12 +313,9 @@ def check_shape() -> None:
 
 
 def prune_baseline() -> None:
-    """把当前 soft 违规写成新基线(只许变小,收紧);有新增违规则拒绝写盘并 exit 1。"""
+    """把当前 soft 违规写成新基线(只许变小,收紧);有新增违规则拒绝写盘并 exit 1。
+    批O 起基线归零后文件退役:soft 空 = 删账本,缺文件 = 零基线。"""
     out = scan()
-    if BASELINE.exists() is False:
-        write_baseline(out.soft)
-        say(BASELINE_NEW_TPL.format(n=len(out.soft)))
-        return
     known = read_baseline()
     grown = missing_of(DiffIn(items=out.soft, known=known))
     if len(grown) > 0:
@@ -320,12 +337,18 @@ def missing_of(x: DiffIn) -> list[str]:
 
 
 def read_baseline() -> list[str]:
-    """读基线(② ③ 两条软规的存量册)。"""
+    """读基线(② ③ 两条软规的存量册);批O 起缺文件 = 零基线(存量清零后账本退役)。"""
+    if BASELINE.exists() is False:
+        return []
     return json.loads(BASELINE.read_text(encoding=ENC_UTF8))
 
 
 def write_baseline(soft: list[str]) -> None:
-    """写基线(逐行可读,diff 友好)。"""
+    """写基线(逐行可读,diff 友好);批O 起 soft 空 = 删账本,不留空 json 赖在域里。"""
+    if len(soft) == 0:
+        if BASELINE.exists():
+            BASELINE.unlink()
+        return
     BASELINE.write_text(json.dumps(soft, ensure_ascii=False, indent=BASELINE_INDENT),
                         encoding=ENC_UTF8)
 

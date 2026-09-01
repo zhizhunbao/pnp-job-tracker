@@ -16,12 +16,10 @@ docs/design/etl分域-20260829.md §4)。
 库类型(bs4 节点 / pymupdf 页表 / httpx 客户端)经 scheme 的 Protocol 自声明只真用的格,
 `cast` 只住装配点(2026-08-31 批G,照 company/ee 样张;裸 object 会让检查器判不动)。
 """
-import glob
 import json
 import re
 import sys
 from datetime import date, datetime, timezone
-from pathlib import Path
 from typing import cast
 from urllib.parse import urljoin
 
@@ -288,13 +286,8 @@ from pnp.constants import (
     C01_MART_FILE_TPL, C01_MB275_DATE, C01_MB276_DATE, C01_METRIC_ALLOC, C01_METRIC_NOMS,
     C01_NOC_CARPENTER, C01_NOTE_CONS, C01_OK_TPL, C01_PASS_TPL, C01_PERIOD_2025, C01_PROV_MB,
     C01_PROV_NB, C01_PROV_NL, C01_PROV_ON, C01_PROV_SK, C01_T_DRAWS, C01_T_EMP, C01_T_OCC,
-    C01_T_OPS, C01_T_SCORE, C01_TYPE_INELIGIBLE, C01_YEAR_2026, FRESH_DATE_FMT, FRESH_K_CADENCE,
-    FRESH_K_DEFAULTS, FRESH_K_FILE, FRESH_K_GLOB, FRESH_K_KEY, FRESH_K_NOTE, FRESH_K_OVERRIDES,
-    FRESH_KEY_DEFAULT, FRESH_KEY_MTIME, FRESH_MANIFEST, FRESH_P_ALL_OK_TPL, FRESH_P_BADDATE_TPL,
-    FRESH_P_IN_TPL, FRESH_P_MISSING_TPL, FRESH_P_NOSTAMP_TPL, FRESH_P_OK_TPL,
-    FRESH_P_STALE_NOTE_TPL, FRESH_P_STALE_TPL, FRESH_P_SUMMARY_TPL, FRESH_STAMP_LEN,
-    GQ_CACHE_DIR, GQ_ERRORS_IGNORE, GQ_GATES, GQ_HITS_SHOW, GQ_K_CRAWLED_AT, GQ_K_HTML,
-    GQ_K_PAGES, GQ_K_STATUS, GQ_K_URL, GQ_MANIFEST_NAME, GQ_P_GATE_TPL, GQ_P_HEAD_TPL,
+    C01_T_OPS, C01_T_SCORE, C01_TYPE_INELIGIBLE, C01_YEAR_2026, GQ_CACHE_DIR, GQ_ERRORS_IGNORE, GQ_GATES, GQ_HITS_SHOW, GQ_K_CRAWLED_AT, GQ_K_HTML,
+    GQ_K_PAGES, GQ_K_STATUS, GQ_K_URL, GQ_MANIFEST_NAME, GQ_P_GATE_TPL, GQ_P_HEAD_TPL, GQ_STAMP_LEN,
     GQ_P_NO_CRAWL_TPL, GQ_P_NO_PAGES, GQ_P_PARSE_FAIL_TPL, GQ_P_PDF_FAIL_TPL,
     GQ_P_PDF_FILE_TPL, GQ_P_PDF_HEAD_TPL, GQ_P_SENT_TPL, GQ_P_UNKNOWN_TPL, GQ_P_URL_TPL,
     GQ_PAGES_MAX, GQ_PATHWAYS, GQ_PDF_HITS_SHOW, GQ_PDF_SENT_SHOW_LEN, GQ_PDF_SOURCES,
@@ -304,7 +297,7 @@ from pnp.constants import (
 )
 """批D 三段(35 金标体检 / 36 门槛取证器 / 37 新鲜度哨兵)的常量单列一块 ——
 主 import 块 230 行按字母序排满,批量插名易错行;ruff 未启 isort,双块合法。"""
-from pnp.scheme import GateText, GoldCheckIn, PtsIn, StampIn
+from pnp.scheme import GateText, GoldCheckIn, PtsIn
 
 # =========================================================================
 # 1. 共享词汇(≥2 段消费:取页 / 抽文 / 解析 / 落盘 / 自校的公共件)
@@ -5928,7 +5921,7 @@ def scan_gate_pathway(key: str) -> None:
         if p.get(GQ_K_STATUS) == GQ_STATUS_OK and re.search(url_re, p[GQ_K_URL], re.I):
             pages.append(p)
     at = man.get(GQ_K_CRAWLED_AT) or ""
-    say(GQ_P_HEAD_TPL.format(key=key, slug=slug, at=at[:FRESH_STAMP_LEN], n=len(pages)))
+    say(GQ_P_HEAD_TPL.format(key=key, slug=slug, at=at[:GQ_STAMP_LEN], n=len(pages)))
     if len(pages) == 0:
         say(GQ_P_NO_PAGES)
         return
@@ -6002,90 +5995,3 @@ def gate_sentences(text: str) -> list:
         if GQ_SENT_MIN <= len(s) <= GQ_SENT_MAX:
             out.append(s)
     return out
-
-
-# =========================================================================
-# 37. 新鲜度哨兵(B3-1;2026-08-31 批D 自 ops/check_freshness.py 收编,钉本域链尾)
-# =========================================================================
-
-
-def check_freshness() -> None:
-    """新鲜度哨兵入口(定时链最末步):按 source_manifest 契约逐文件核 fetched(或
-    checkedAt/mtime)与 cadence_days,超期打 ✗ 并 exit 1 —— 本轮记「未完整完成」→
-    本域不 ping healthchecks → 转红报警;钉在链尾,红了不挡前面的真实步骤。
-    病根(2026-08-03 实撞):healthchecks 的 ping 只证明脚本跑完,不证明数据是新的
-    (pnp 役每小时绿着,MB/NB 的表停在 8 天前;ON 抽选断档三个月没人发现)。"""
-    say(FRESH_P_IN_TPL.format(path=FRESH_MANIFEST))
-    m = json.loads(FRESH_MANIFEST.read_text(encoding=ENC_UTF8))
-    rows = freshness_rows(m)
-    today = datetime.now(timezone.utc).date()
-    stale: list = []
-    for rel in sorted(rows):
-        r = rows[rel]
-        path = paths.DATA / rel
-        if not path.exists():
-            stale.append(FRESH_P_MISSING_TPL.format(rel=rel))
-            continue
-        stamp = stamp_of(StampIn(path=path, key=r[FRESH_K_KEY]))
-        if not stamp:
-            stale.append(FRESH_P_NOSTAMP_TPL.format(rel=rel, key=r[FRESH_K_KEY]))
-            continue
-        try:
-            age = (today - datetime.strptime(stamp, FRESH_DATE_FMT).date()).days
-        except ValueError:
-            stale.append(FRESH_P_BADDATE_TPL.format(rel=rel, key=r[FRESH_K_KEY], stamp=repr(stamp)))
-            continue
-        if age > r[FRESH_K_CADENCE]:
-            if r[FRESH_K_NOTE]:
-                stale.append(FRESH_P_STALE_NOTE_TPL.format(rel=rel, stamp=stamp, age=age,
-                                                           cad=r[FRESH_K_CADENCE], note=r[FRESH_K_NOTE]))
-            else:
-                stale.append(FRESH_P_STALE_TPL.format(rel=rel, stamp=stamp, age=age,
-                                                      cad=r[FRESH_K_CADENCE]))
-        else:
-            say(FRESH_P_OK_TPL.format(rel=rel, stamp=stamp, age=age, cad=r[FRESH_K_CADENCE]))
-    if len(stale) > 0:
-        say("")
-        say(FRESH_P_SUMMARY_TPL.format(n=len(stale), total=len(rows)))
-        for s in stale:
-            say(s)
-        sys.exit(1)
-    say("")
-    say(FRESH_P_ALL_OK_TPL.format(n=len(rows)))
-
-
-def freshness_rows(m: dict) -> dict:
-    """契约展开:glob 默认档铺全量,再被逐文件覆盖档压过(rel path → 契约行)。"""
-    rows: dict = {}
-    for d in m.get(FRESH_K_DEFAULTS) or []:
-        for f in glob.glob(str(paths.DATA / d[FRESH_K_GLOB])):
-            rel = Path(f).relative_to(paths.DATA).as_posix()
-            rows[rel] = {FRESH_K_CADENCE: d[FRESH_K_CADENCE], FRESH_K_KEY: FRESH_KEY_DEFAULT,
-                         FRESH_K_NOTE: ""}
-    for o in m.get(FRESH_K_OVERRIDES) or []:
-        note = o.get(FRESH_K_NOTE)
-        if note is None:
-            note = ""
-        key = o.get(FRESH_K_KEY)
-        if key is None:
-            key = FRESH_KEY_DEFAULT
-        rows[o[FRESH_K_FILE]] = {FRESH_K_CADENCE: o[FRESH_K_CADENCE], FRESH_K_KEY: key,
-                                 FRESH_K_NOTE: note}
-    return rows
-
-
-def stamp_of(x: StampIn) -> str:
-    """取该文件的「数据是哪天的」:fetched/checkedAt 顶层键,或 mtime 兜底。
-    取不到返回空(坏 JSON 本身就是要报的病 —— 空戳会被上游记成「无戳」超期行,留痕在报告里)。"""
-    if x.key == FRESH_KEY_MTIME:
-        return datetime.fromtimestamp(x.path.stat().st_mtime, tz=timezone.utc).date().isoformat()
-    try:
-        d = json.loads(x.path.read_text(encoding=ENC_UTF8))
-    except Exception:  # noqa: BLE001, S110
-        return ""
-    v = None
-    if isinstance(d, dict):
-        v = d.get(x.key)
-    if v:
-        return str(v)[:FRESH_STAMP_LEN]
-    return ""

@@ -8,6 +8,7 @@ sched.scheme — 调度域形状(一参令 XxxIn / 单元 dataclass / 库形状 
 装配点(logger.bind)用 cast 收窄,不把库类型拉进本文件。
 """
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Protocol
 
 # =========================================================================
@@ -97,3 +98,20 @@ class RunStepIn:
 
     log: LogLike
     """本单元的日志面(前缀 = 角色·单元)。"""
+
+
+# =========================================================================
+# 4. 轮次收尾(seed / alerts / ping)
+# =========================================================================
+
+
+@dataclass
+class FreshStampIn:
+    """fresh_stamp_of() 入参:一个契约文件 + 取戳键(2026-08-31 批O 保鲜闸随迁,
+    原 pnp 段37 的 StampIn 同形)。"""
+
+    path: Path
+    """契约文件(data/ 下)。"""
+
+    key: str
+    """取戳键(fetched/checkedAt,或 mtime 兜底)。"""

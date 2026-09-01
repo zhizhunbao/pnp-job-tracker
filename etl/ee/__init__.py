@@ -12,4 +12,7 @@ META = {
     "interval": 3600,          # 1h(#128 同拍:EE 抽选两周一轮,月更会漏;批2 误写月更,2026-08-31 批F 修回)
     "seed": False,
     "ping": True,   # 本角色的 healthchecks 心跳由本域发
+    "fresh": [      # 保鲜契约(2026-08-31 批O:source_manifest 退役,行原样搬入;语义见 sched.K_FRESH)
+        {"glob": "raw/ee/*.json", "cadence_days": 2},
+    ],
 }
