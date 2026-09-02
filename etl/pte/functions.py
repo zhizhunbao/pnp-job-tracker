@@ -12,12 +12,37 @@ from datetime import date
 from typing import cast
 
 from log.functions import say
+from crawl.constants import PROFILE_DIR
+from crawl.functions import put_cached_page
+from crawl.scheme import CachePutIn
 from fetch.functions import fetch, make_client
 from fetch.scheme import FetchIn, HttpClientLike as FetchClientLike
 from paths.constants import ENC_UTF8
-from paths.functions import write_json
-from paths.scheme import WriteJsonIn
-from pte.constants import (ARRAY_HEAD_RE, AUTH_TPL, BACKSLASH, BANG, BOOL_FALSE_DIGIT,
+from paths.functions import write_json, write_text
+from paths.scheme import WriteJsonIn, WriteTextIn
+from pte.constants import (DK_AVATAR_MARKS, DK_CRAWL_SLUG, DK_ENTRY_DELAY_S, DK_ENTRY_FILE_TPL,
+                           DK_ENTRY_JS, DK_ENTRY_TPL, DK_ENTRY_WAIT_S, DK_FREQ_HOT, DK_J_HTML,
+                           DK_J_IMGS, DK_J_TEXT, DK_J_TITLE, DK_K_FREQ, DK_SHOW_ROUNDS_MAX,
+                           DK_BLOCK_ABORT_MAX, DK_BLOCK_MARK, DK_BLOCK_POLL_S, DK_BLOCK_WAIT_S,
+                           DK_BODY_TEXT_JS, P_DK_BLOCK_ABORT, P_DK_BLOCK_OK, P_DK_BLOCK_TIMEOUT,
+                           P_DK_BLOCK_WAIT,
+                           DK_K_ID, DK_K_TEXT, DK_TITLE_KEYS, DK_LIST_TPL, DK_NAV_TIMEOUT_MS, DK_PAGE_WAIT_S,
+                           DK_PART_TOKEN, DK_PART_TYPE, DK_PARTS, DK_R_CONTENT, DK_R_IMAGES, DK_R_PART,
+                           DK_RAW_LIST_TPL, DK_SHOW_JS, DK_SHOW_WAIT_S, DK_SOURCE, DK_STORE_JS,
+                           DK_TEXT_END, DK_TEXT_PARTS, DK_TEXT_START, DK_WAIT_UNTIL, OUT_DK_BANK,
+                           OUT_DK_CHANGES, OUT_DK_ENTRIES_DIR, OUT_DK_IMG_DIR, OUT_DK_PREV,
+                           OUT_DK_RAW_DIR, P_DK_DONE_TPL, P_DK_ENTRIES_TPL, P_DK_LIST_TPL,
+                           P_DK_LISTS_DONE_TPL, P_DK_LOGIN_LOST, P_DK_NO_BROWSER, SRC_DUOINK,
+                           DATE_LEN, DAYS_BAD, DK_K_FREQ_CORE, DK_K_SEEN, EXAM_DATE_RE, OUT_RECENT,
+                           P_RECENT_DONE_TPL, R_K_FREQ, R_K_SEEN, R_K_SEEN_N, R_K_SUMMARY, R_K_VOTES,
+                           R_S_LAST, R_S_SEEN, R_S_TOTAL, R_S_WIN_TPL, RECENT_WINDOWS_D, V_C_CONTENT,
+                           V_C_REPLIES, V_T_COUNT, YN_VOTE_TYPE,
+                           CORE_TYPES, KIND_AUDIO, KIND_IMAGE, M_K_FILE, M_K_KIND, M_K_URL,
+                           OUT_MEDIA, OUT_PB_IMG_DIR, OUT_YN_AUDIO_DIR, P_MEDIA_DONE_TPL,
+                           P_PB_IMG_EMPTY, P_PB_IMG_TPL, P_YN_AUDIO_EMPTY, P_YN_AUDIO_TPL,
+                           YN_AUDIO_TPL, CT_AUDIO_PREFIX, HDR_CONTENT_TYPE,
+                           PB_IMG_RE, PB_THUMB_RE, RAW_PTE,
+                           ARRAY_HEAD_RE, AUTH_TPL, BACKSLASH, BANG, BOOL_FALSE_DIGIT,
                            BOOL_TRUE_DIGIT, BRACKET_CLOSE, BRACKET_OPEN, BUNDLE_HASH_RE, BUNDLE_RE,
                            CH_K_ADDED, CH_K_FETCHED, CH_K_GONE, CH_K_HINT, CH_K_ID, CH_K_LABEL,
                            CH_K_SIGNATURE, CH_K_TYPES, COMMENTS_TPL, COUNT_FIELD, CTRL_ESCAPES,
@@ -53,8 +78,9 @@ from pte.constants import (ARRAY_HEAD_RE, AUTH_TPL, BACKSLASH, BANG, BOOL_FALSE_
                            TRAILING_COMMA_SUB, TRUE_LIT, URL_SLASH, V_K_COMMENTS, V_K_FETCHED,
                            V_K_ID, V_K_TAGS, V_K_TOTAL, V_K_TYPES, VALID_ESCAPE_NEXT,
                            VOTE_API, VOTE_CODES, VOTE_DELAY_S, VOTE_MAX_ID, VOTE_MISS_MAX)
-from pte.scheme import (BankIn, CloseIn, CollectIn, DiffIn, Group, GroupIn, HttpClientLike,
-                        PbBankIn, PbGroupsIn, PbRowIn, RadarIn, SnapshotIn, VoteGetIn)
+from pte.scheme import (BankIn, CloseIn, CollectIn, DiffIn, DkEntryIn, DkImagesIn, DkPageIn, DkPageLike,
+                        Group, GroupIn, HttpClientLike, MediaRowIn, PbBankIn, PbGroupsIn, PbRowIn,
+                        DaysIn, RadarIn, RecentRowIn, RecentSummaryIn, SnapshotIn, VoteGetIn)
 
 
 # =========================================================================
@@ -122,7 +148,7 @@ def snapshot_bundle(x: SnapshotIn) -> None:
         h = m.group(1)
     OUT_RAW_DIR.mkdir(parents=True, exist_ok=True)
     path = OUT_RAW_DIR / RAW_BUNDLE_TPL.format(hash=h)
-    path.write_text(x.text, encoding=ENC_UTF8)
+    write_text(WriteTextIn(path=path, text=x.text))
 
 
 # =========================================================================
@@ -562,7 +588,7 @@ def pb_categories_of(client: HttpClientLike) -> dict:
     if r.status_code != HTTP_OK:
         raise ValueError(url)
     OUT_PB_RAW_DIR.mkdir(parents=True, exist_ok=True)
-    (OUT_PB_RAW_DIR / PB_RAW_CATS).write_text(r.text, encoding=ENC_UTF8)
+    write_text(WriteTextIn(path=OUT_PB_RAW_DIR / PB_RAW_CATS, text=r.text))
     data = r.json()
     if not isinstance(data, list):
         raise ValueError(url)
@@ -588,7 +614,8 @@ def pb_posts_of(client: HttpClientLike) -> list:
             raise ValueError(HDR_WP_TOTAL_PAGES)
         pages = int(tp)
         OUT_PB_RAW_DIR.mkdir(parents=True, exist_ok=True)
-        (OUT_PB_RAW_DIR / PB_RAW_POSTS_TPL.format(page=page)).write_text(r.text, encoding=ENC_UTF8)
+        write_text(WriteTextIn(path=OUT_PB_RAW_DIR / PB_RAW_POSTS_TPL.format(page=page),
+                               text=r.text))
         batch = r.json()
         if not isinstance(batch, list):
             raise ValueError(url)
@@ -735,6 +762,9 @@ def run_index() -> None:
     with OUT_PB_BANK.open(encoding=ENC_UTF8) as f:
         pb = json.load(f)
     rows = to_yn_index_rows(yn) + to_pb_index_rows(pb)
+    if OUT_DK_BANK.exists():
+        with OUT_DK_BANK.open(encoding=ENC_UTF8) as f:
+            rows = rows + to_dk_index_rows(json.load(f))
     counts = index_counts_of(rows)
     payload = {
         OUT_K_FETCHED: date.today().isoformat(),
@@ -892,22 +922,59 @@ def timeline_hits_of(row: dict) -> int:
 
 
 def run_words() -> None:
-    """词表一轮:双库句库题型(WFD/RS)全部正文分词 → 停用词外的词频降序落盘。
+    """词表一轮:三库句库题型(WFD/RS)全部正文分词 → 停用词外的词频降序落盘。
 
-    词不是题面表达,不受版权保护 —— 第一个可直接上产品的资产(高频考点词表)。"""
+    词不是题面表达,不受版权保护 —— 第一个可直接上产品的资产(高频考点词表)。
+    2026-09-02 三库:duoink 接入(WFD/RS 全句在列表 te 格),分词与排名拆具名小函数(C901 14>12 同批清)。"""
     with OUT_BANK.open(encoding=ENC_UTF8) as f:
         yn = json.load(f)
     with OUT_PB_BANK.open(encoding=ENC_UTF8) as f:
         pb = json.load(f)
-    sentences = []
+    sentences = w_yn_sentences_of(yn) + w_pb_sentences_of(pb)
+    if OUT_DK_BANK.exists():
+        with OUT_DK_BANK.open(encoding=ENC_UTF8) as f:
+            sentences += w_dk_sentences_of(json.load(f))
+    ranked = w_ranked_of(sentences)
+    payload = {OUT_K_FETCHED: date.today().isoformat(), W_K_SENTENCES: len(sentences), W_K_WORDS: ranked}
+    write_json(WriteJsonIn(path=OUT_WORDS, payload=payload, indent=JSON_INDENT))
+    say(P_W_DONE_TPL.format(sentences=len(sentences), words=len(ranked), path=OUT_WORDS))
+
+
+def w_yn_sentences_of(yn: dict) -> list:
+    """ynwac 库 → 句库题型正文清单(组签名经 YN_SIG_TYPE 映射后取 WFD/RS)。"""
+    out = []
     for g in yn[OUT_K_GROUPS]:
         if YN_SIG_TYPE.get(g[OUT_K_SIGNATURE], TYPE_UNKNOWN) in W_TYPES:
             for q in g[OUT_K_QUESTIONS]:
-                sentences.append(tl_norm(str(q.get(K_TEXT))))
+                out.append(tl_norm(str(q.get(K_TEXT))))
+    return out
+
+
+def w_pb_sentences_of(pb: dict) -> list:
+    """ptebank 库 → 句库题型正文清单(题型从分类格逐题判)。"""
+    out = []
     for g in pb[OUT_K_GROUPS]:
         for q in g[OUT_K_QUESTIONS]:
             if pb_type_of(q[PB_R_CATS]) in W_TYPES:
-                sentences.append(tl_norm(q[PB_K_CONTENT]))
+                out.append(tl_norm(q[PB_K_CONTENT]))
+    return out
+
+
+def w_dk_sentences_of(dk: dict) -> list:
+    """duoink 库 → 句库题型正文清单(组签名已是标准码;WFD/RS 全句在列表 te 格,空格跳过不造)。"""
+    out = []
+    for g in dk[OUT_K_GROUPS]:
+        if g[OUT_K_SIGNATURE] not in W_TYPES:
+            continue
+        for q in g[OUT_K_QUESTIONS]:
+            v = q.get(DK_K_TEXT)
+            if isinstance(v, str) and len(v) > 0:
+                out.append(tl_norm(v))
+    return out
+
+
+def w_ranked_of(sentences: list) -> dict:
+    """正文清单 → 词频降序表(短词/停用词剔除,低频截断;同频按字母序稳定)。"""
     counts = {}
     for s in sentences:
         for w in W_TOKEN_RE.findall(s):
@@ -924,6 +991,651 @@ def run_words() -> None:
     ranked = {}
     for neg, w in pairs:
         ranked[w] = -neg
-    payload = {OUT_K_FETCHED: date.today().isoformat(), W_K_SENTENCES: len(sentences), W_K_WORDS: ranked}
-    write_json(WriteJsonIn(path=OUT_WORDS, payload=payload, indent=JSON_INDENT))
-    say(P_W_DONE_TPL.format(sentences=len(sentences), words=len(ranked), path=OUT_WORDS))
+    return ranked
+
+
+# =========================================================================
+# 11. 媒体资产收口(pb 图片 Core 筛下载 + 题目↔媒体映射)
+# =========================================================================
+
+
+def run_pb_images() -> None:
+    """读 ptebank 库 → Core 帖收图片直链(缩略图变体弃)→ 下载到 raw/pte/ptebank/images/(幂等)。
+
+    2026-09-01 Frank「继续」(照 run_pb_audio 形):图片大头在 TIPS 文章插图,
+    Core 白名单筛后剩题干本体(DI 图等);单条失败计数留痕,不拖全轮。"""
+    client = cast(HttpClientLike, make_client(HTTP_TIMEOUT_S))
+    with OUT_PB_BANK.open(encoding=ENC_UTF8) as f:
+        bank = json.load(f)
+    urls = pb_image_urls_of(bank)
+    if len(urls) == 0:
+        say(P_PB_IMG_EMPTY)
+        return
+    OUT_PB_IMG_DIR.mkdir(parents=True, exist_ok=True)
+    got = 0
+    skip = 0
+    fail = 0
+    for u in urls:
+        name = u.rsplit(URL_SLASH, 1)[-1]
+        path = OUT_PB_IMG_DIR / name
+        if path.exists():
+            skip += 1
+            continue
+        try:
+            resp = client.get(u)
+        except Exception:  # noqa: BLE001 — 单条网络错跳过计数,不拖全轮
+            fail += 1
+            continue
+        if resp.status_code != HTTP_OK:
+            fail += 1
+            continue
+        path.write_bytes(resp.content)
+        got += 1
+        time.sleep(PB_ASSET_DELAY_S)
+    say(P_PB_IMG_TPL.format(got=got, skip=skip, fail=fail, total=len(urls), dir=OUT_PB_IMG_DIR))
+
+
+def pb_image_urls_of(bank: dict) -> list:
+    """ptebank 整库 → Core 帖内去重排序的图片直链清单(缩略图尺寸变体剔除)。"""
+    urls = set()
+    for g in bank[OUT_K_GROUPS]:
+        for q in g[OUT_K_QUESTIONS]:
+            if pb_type_of(q[PB_R_CATS]) not in CORE_TYPES:
+                continue
+            for u in PB_IMG_RE.findall(q[PB_K_CONTENT]):
+                if PB_THUMB_RE.search(u) is None:
+                    urls.add(u)
+    return sorted(urls)
+
+
+def run_media() -> None:
+    """媒体映射一轮:读两库 → 每条媒体 URL 一行(题 id/题型/种类/本地文件)→ 落 OUT_MEDIA。
+
+    file=null 三种成因全留痕:ynwac 音频付费墙(api.ynwac.com 401 实撞)、下载失败/
+    对方删档、非 Core 图不下 —— 消费端按 type × file 一眼分得清,不静默折「没有」。"""
+    with OUT_BANK.open(encoding=ENC_UTF8) as f:
+        yn = json.load(f)
+    with OUT_PB_BANK.open(encoding=ENC_UTF8) as f:
+        pb = json.load(f)
+    rows = to_yn_media_rows(yn) + to_pb_media_rows(pb)
+    if OUT_DK_BANK.exists():
+        with OUT_DK_BANK.open(encoding=ENC_UTF8) as f:
+            rows = rows + to_dk_media_rows(json.load(f))
+    have = 0
+    for r in rows:
+        if r[M_K_FILE] is not None:
+            have += 1
+    payload = {OUT_K_FETCHED: date.today().isoformat(), IDX_K_ROWS: rows}
+    write_json(WriteJsonIn(path=OUT_MEDIA, payload=payload, indent=JSON_INDENT))
+    say(P_MEDIA_DONE_TPL.format(rows=len(rows), have=have, miss=len(rows) - have, path=OUT_MEDIA))
+
+
+def to_yn_media_rows(bank: dict) -> list:
+    """ynwac 整库 → 媒体映射行(DI 图按 basename 对上落盘位;音频付费墙未落盘 file=null)。"""
+    rows = []
+    for g in bank[OUT_K_GROUPS]:
+        t = YN_SIG_TYPE.get(g[OUT_K_SIGNATURE], TYPE_UNKNOWN)
+        for q in g[OUT_K_QUESTIONS]:
+            img = q.get(K_IMAGE_URL)
+            if isinstance(img, str) and len(img) > 0:
+                name = img.rsplit(URL_SLASH, 1)[-1]
+                rows.append(media_row_of(MediaRowIn(
+                    source=SRC_YNWAC, qid=q.get(CH_K_ID), qtype=t, kind=KIND_IMAGE,
+                    url=yn_abs_of(img), local=OUT_IMG_DIR / name)))
+            au = q.get(K_AUDIO_URL_YN)
+            if isinstance(au, str) and len(au) > 0:
+                qid = q.get(CH_K_ID)
+                rows.append(media_row_of(MediaRowIn(
+                    source=SRC_YNWAC, qid=qid, qtype=t, kind=KIND_AUDIO,
+                    url=yn_audio_url_of(qid), local=OUT_YN_AUDIO_DIR / yn_audio_name_of(qid))))
+    return rows
+
+
+def yn_abs_of(u: str) -> str:
+    """ynwac 媒体地址绝对化(库内相对路径拼站点源;已绝对的原样)。"""
+    if u.startswith(URL_SLASH):
+        return SITE_ORIGIN + u
+    return u
+
+
+def to_pb_media_rows(bank: dict) -> list:
+    """ptebank 整库 → 媒体映射行(音频全量对落盘位;图片同 Core 筛口径,非 Core 的 file=null)。"""
+    rows = []
+    for g in bank[OUT_K_GROUPS]:
+        for q in g[OUT_K_QUESTIONS]:
+            t = pb_type_of(q[PB_R_CATS])
+            for u in q[PB_R_AUDIO]:
+                name = u.rsplit(URL_SLASH, 1)[-1]
+                rows.append(media_row_of(MediaRowIn(
+                    source=SRC_PTEBANK, qid=q[CH_K_ID], qtype=t, kind=KIND_AUDIO,
+                    url=u, local=OUT_PB_AUDIO_DIR / name)))
+            for u in PB_IMG_RE.findall(q[PB_K_CONTENT]):
+                if PB_THUMB_RE.search(u) is not None:
+                    continue
+                name = u.rsplit(URL_SLASH, 1)[-1]
+                rows.append(media_row_of(MediaRowIn(
+                    source=SRC_PTEBANK, qid=q[CH_K_ID], qtype=t, kind=KIND_IMAGE,
+                    url=u, local=OUT_PB_IMG_DIR / name)))
+    return rows
+
+
+def run_yn_audio() -> None:
+    """读 ynwac 库 → 带音频的题按 id 拼公开静态地址 → 下载 mp3 到 raw/pte/ynwac/audio/(幂等)。
+
+    2026-09-02 浏览器实测定案(照 run_pb_audio 形):`/sst/{id}.mp3` 匿名可下,无需登录;
+    SPA 对不存在的文件回 200 壳页,content-type 非 audio/* 一律计 fail 不落盘。"""
+    client = cast(HttpClientLike, make_client(HTTP_TIMEOUT_S))
+    bank = load_bank()
+    qids = yn_audio_qids_of(bank)
+    if len(qids) == 0:
+        say(P_YN_AUDIO_EMPTY)
+        return
+    OUT_YN_AUDIO_DIR.mkdir(parents=True, exist_ok=True)
+    got = 0
+    skip = 0
+    fail = 0
+    for qid in qids:
+        path = OUT_YN_AUDIO_DIR / yn_audio_name_of(qid)
+        if path.exists():
+            skip += 1
+            continue
+        try:
+            resp = client.get(yn_audio_url_of(qid))
+        except Exception:  # noqa: BLE001 — 单条网络错跳过计数,不拖全轮
+            fail += 1
+            continue
+        ct = resp.headers.get(HDR_CONTENT_TYPE)
+        if resp.status_code != HTTP_OK or ct is None or not ct.startswith(CT_AUDIO_PREFIX):
+            fail += 1
+            continue
+        path.write_bytes(resp.content)
+        got += 1
+        time.sleep(PB_ASSET_DELAY_S)
+    say(P_YN_AUDIO_TPL.format(got=got, skip=skip, fail=fail, total=len(qids), dir=OUT_YN_AUDIO_DIR))
+
+
+def yn_audio_qids_of(bank: dict) -> list:
+    """ynwac 整库 → 带音频的题 id 清单(audioUrl 非空 = 这题有音频;地址本身是死路不用)。"""
+    qids = []
+    for g in bank[OUT_K_GROUPS]:
+        for q in g[OUT_K_QUESTIONS]:
+            u = q.get(K_AUDIO_URL_YN)
+            if isinstance(u, str) and len(u) > 0:
+                qids.append(q.get(CH_K_ID))
+    return sorted(qids, key=str)
+
+
+def yn_audio_url_of(qid: object) -> str:
+    """SST 题 id → 主站公开静态音频地址(2026-09-02 浏览器实测的播放器 currentSrc 形)。"""
+    return SITE_ORIGIN + YN_AUDIO_TPL.format(id=qid)
+
+
+def yn_audio_name_of(qid: object) -> str:
+    """SST 题 id → 落盘文件名(与线上路径同名,媒体映射按此对上)。"""
+    return YN_AUDIO_TPL.format(id=qid).rsplit(URL_SLASH, 1)[-1]
+
+
+def to_dk_media_rows(bank: dict) -> list:
+    """duoink 整库 → 媒体映射行(题图按 basename 对落盘位;音频是 TTS 无实体,不出行)。"""
+    rows = []
+    for g in bank[OUT_K_GROUPS]:
+        t = g[OUT_K_SIGNATURE]
+        for q in g[OUT_K_QUESTIONS]:
+            for u in q.get(DK_R_IMAGES, []):
+                name = u.rsplit(URL_SLASH, 1)[-1]
+                rows.append(media_row_of(MediaRowIn(
+                    source=SRC_DUOINK, qid=q[DK_K_ID], qtype=t, kind=KIND_IMAGE,
+                    url=u, local=OUT_DK_IMG_DIR / name)))
+    return rows
+
+
+def media_row_of(x: MediaRowIn) -> dict:
+    """一条媒体 → 映射行(落盘现状定 file:存在 = 相对 data/raw/pte/ 的 POSIX 路径,否则 null)。"""
+    file = None
+    if x.local.exists():
+        file = x.local.relative_to(RAW_PTE).as_posix()
+    return {
+        IDX_K_SOURCE: x.source,
+        CH_K_ID: x.qid,
+        IDX_K_TYPE: x.qtype,
+        M_K_KIND: x.kind,
+        M_K_URL: x.url,
+        M_K_FILE: file,
+    }
+
+
+# =========================================================================
+# 12. duoink 第三源(登录态浏览器读渲染态:Vuex 列表 → 题页正文 → 装库雷达)
+# =========================================================================
+
+
+def run_dk_lists() -> None:
+    """列表步:逐 Core 题型开列表页 → 读 Vuex 内存态 items → 原样落 raw/pte/duoink/list-<PART>.json。
+
+    2026-09-02 立(constants §13 定案):登录态住统一 profile;全部题型都空 = 登录态丢,当场红。
+    无 playwright 的机器(容器)跳过不报错 —— 渲染态抓取只在装了浏览器的机器跑。"""
+    if dk_browser_ok() is False:
+        say(P_DK_NO_BROWSER)
+        return
+    from playwright.sync_api import sync_playwright
+    OUT_DK_RAW_DIR.mkdir(parents=True, exist_ok=True)
+    total = 0
+    with sync_playwright() as p:
+        ctx = p.chromium.launch_persistent_context(str(PROFILE_DIR), headless=False)
+        page = cast(DkPageLike, dk_first_page(ctx))
+        for part in DK_PARTS:
+            items = dk_list_of(DkPageIn(page=page, part=part))
+            payload = {OUT_K_SOURCE: DK_SOURCE, OUT_K_FETCHED: date.today().isoformat(),
+                       DK_R_PART: part, OUT_K_QUESTIONS: items}
+            write_json(WriteJsonIn(path=OUT_DK_RAW_DIR / DK_RAW_LIST_TPL.format(part=part),
+                                   payload=payload, indent=JSON_INDENT))
+            say(P_DK_LIST_TPL.format(part=part, n=len(items)))
+            total += len(items)
+        ctx.close()
+    if total == 0:
+        raise ValueError(P_DK_LOGIN_LOST)
+    say(P_DK_LISTS_DONE_TPL.format(parts=len(DK_PARTS), total=total, dir=OUT_DK_RAW_DIR))
+
+
+def dk_browser_ok() -> bool:
+    """playwright 可导入即 True(缺席是预期形态:容器不装浏览器)。"""
+    try:
+        import playwright.sync_api  # noqa: F401 — 只探可用性
+    except ImportError:
+        return False
+    return True
+
+
+def dk_first_page(ctx: object) -> object:
+    """持久上下文的首页(persistent context 自带一页;没有就新开)。外部库形状,装配点 cast 收窄。"""
+    pages = getattr(ctx, "pages")
+    if isinstance(pages, list) and len(pages) > 0:
+        return pages[0]
+    return getattr(ctx, "new_page")()
+
+
+def dk_list_of(x: DkPageIn) -> list:
+    """一个题型列表页 → Vuex items 原样清单(非 list 视为空,由上层零基线防线判)。"""
+    x.page.goto(DK_SOURCE + DK_LIST_TPL.format(part=x.part), wait_until=DK_WAIT_UNTIL, timeout=DK_NAV_TIMEOUT_MS)
+    time.sleep(DK_PAGE_WAIT_S)
+    items = x.page.evaluate(DK_STORE_JS.replace(DK_PART_TOKEN, x.part))
+    if isinstance(items, list):
+        return items
+    return []
+
+
+def run_dk_entries() -> None:
+    """题页步:读各题型列表 → 非纯文本题型逐题开题页(已存跳过,幂等断续)→ 展开折叠 → 落 entries/<id>.json;
+    题图公开直链顺手下载到 images/。单题失败计数留痕不拖全轮。"""
+    if dk_browser_ok() is False:
+        say(P_DK_NO_BROWSER)
+        return
+    from playwright.sync_api import sync_playwright
+    OUT_DK_ENTRIES_DIR.mkdir(parents=True, exist_ok=True)
+    OUT_DK_IMG_DIR.mkdir(parents=True, exist_ok=True)
+    client = cast(HttpClientLike, make_client(HTTP_TIMEOUT_S))
+    got = 0
+    skip = 0
+    fail = 0
+    imgs = 0
+    streak = 0
+    with sync_playwright() as p:
+        ctx = p.chromium.launch_persistent_context(str(PROFILE_DIR), headless=False)
+        page = cast(DkPageLike, dk_first_page(ctx))
+        for part in DK_PARTS:
+            if part in DK_TEXT_PARTS or streak >= DK_BLOCK_ABORT_MAX:
+                continue
+            for item in dk_list_items_of(part):
+                eid = str(item[DK_K_ID])
+                path = OUT_DK_ENTRIES_DIR / DK_ENTRY_FILE_TPL.format(id=eid)
+                if path.exists():
+                    skip += 1
+                    continue
+                try:
+                    entry = dk_entry_of(DkEntryIn(page=page, part=part, eid=eid))
+                except Exception:  # noqa: BLE001 — 单题导航/渲染/验证错跳过计数,不拖全轮
+                    fail += 1
+                    streak += 1
+                    if streak >= DK_BLOCK_ABORT_MAX:
+                        say(P_DK_BLOCK_ABORT.format(n=streak))
+                        break
+                    continue
+                streak = 0
+                write_json(WriteJsonIn(path=path, payload=entry, indent=JSON_INDENT))
+                got += 1
+                imgs += dk_images_fetch(DkImagesIn(client=client, urls=entry[DK_R_IMAGES]))
+                time.sleep(DK_ENTRY_DELAY_S)
+        ctx.close()
+    say(P_DK_ENTRIES_TPL.format(got=got, skip=skip, fail=fail, imgs=imgs, dir=OUT_DK_ENTRIES_DIR))
+
+
+def dk_list_items_of(part: str) -> list:
+    """读回一个题型的列表落盘(列表步产物;文件不在 = 列表步没跑,当场抛由 main 留痕)。"""
+    with (OUT_DK_RAW_DIR / DK_RAW_LIST_TPL.format(part=part)).open(encoding=ENC_UTF8) as f:
+        return json.load(f)[OUT_K_QUESTIONS]
+
+
+def dk_entry_of(x: DkEntryIn) -> dict:
+    """一道题的题页 → {id, part, content, images}:导航 → 等渲染 → 点开折叠 → 原文进 crawl 层 → 倒文本切正文段 + 题图。"""
+    url = DK_SOURCE + DK_ENTRY_TPL.format(part=x.part, id=x.eid)
+    x.page.goto(url, wait_until=DK_WAIT_UNTIL, timeout=DK_NAV_TIMEOUT_MS)
+    time.sleep(DK_ENTRY_WAIT_S)
+    if dk_blocked(x.page):
+        say(P_DK_BLOCK_WAIT)
+        if dk_wait_unblocked(x.page) is False:
+            say(P_DK_BLOCK_TIMEOUT)
+            raise ValueError(P_DK_BLOCK_TIMEOUT)
+        say(P_DK_BLOCK_OK)
+    for _ in range(DK_SHOW_ROUNDS_MAX):
+        opened = x.page.evaluate(DK_SHOW_JS)
+        time.sleep(DK_SHOW_WAIT_S)
+        if opened == 0:
+            break
+    dump = x.page.evaluate(DK_ENTRY_JS)
+    text = ""
+    html = ""
+    title = ""
+    urls = []
+    if isinstance(dump, dict):
+        text = str(dump.get(DK_J_TEXT, ""))
+        html = str(dump.get(DK_J_HTML, ""))
+        title = str(dump.get(DK_J_TITLE, ""))
+        raw = dump.get(DK_J_IMGS, [])
+        if isinstance(raw, list):
+            urls = dk_images_of(raw)
+    put_cached_page(CachePutIn(slug=DK_CRAWL_SLUG, url=url, html=html, title=title))
+    return {DK_K_ID: x.eid, DK_R_PART: x.part, DK_R_CONTENT: dk_content_of(text), DK_R_IMAGES: urls}
+
+
+def dk_blocked(page: DkPageLike) -> bool:
+    """题页当前是不是验证壳(极验拦截判词在,或正文起点标记不在 = 没渲染出题)。
+    2026-09-02 实撞:249 页验证壳被当正文存档 —— 照 crawl 域「challenge 页绝不存档」立此门。"""
+    s = str(page.evaluate(DK_BODY_TEXT_JS))
+    return DK_BLOCK_MARK in s or DK_TEXT_START not in s
+
+
+def dk_wait_unblocked(page: DkPageLike) -> bool:
+    """等人工在有头窗里完成验证:轮询到正文出现返回 True;到 DK_BLOCK_WAIT_S 仍挡着返回 False。"""
+    waited = 0.0
+    while waited < DK_BLOCK_WAIT_S:
+        time.sleep(DK_BLOCK_POLL_S)
+        waited += DK_BLOCK_POLL_S
+        if dk_blocked(page) is False:
+            return True
+    return False
+
+
+def dk_content_of(text: str) -> str:
+    """整页文本 → CONTENT…START 之间的正文;标记缺失时整页留痕(不静默裁空)。"""
+    i = text.find(DK_TEXT_START)
+    if i < 0:
+        return text
+    j = text.find(DK_TEXT_END, i)
+    if j < 0:
+        return text[i:]
+    return text[i:j]
+
+
+def dk_images_of(urls: list) -> list:
+    """题页图片地址 → 剔除头像后的题图清单(去重保序)。"""
+    out = []
+    for u in urls:
+        s = str(u)
+        if any(m in s for m in DK_AVATAR_MARKS):
+            continue
+        if s not in out:
+            out.append(s)
+    return out
+
+
+def dk_images_fetch(x: DkImagesIn) -> int:
+    """题图公开直链下载到 images/(已存跳过;非 200 留给 media 映射的 file=null 说话)→ 新下张数。"""
+    n = 0
+    for u in x.urls:
+        path = OUT_DK_IMG_DIR / u.rsplit(URL_SLASH, 1)[-1]
+        if path.exists():
+            continue
+        try:
+            resp = x.client.get(u)
+        except Exception:  # noqa: BLE001 — 单图网络错当未下,不拖题页步
+            resp = None
+        if resp is None or resp.status_code != HTTP_OK:
+            continue
+        path.write_bytes(resp.content)
+        n += 1
+    return n
+
+
+def run_duoink() -> None:
+    """装库步:列表 + 题页产物 → 按题型分组(签名 = 标准题型码)→ 雷达 → 落 OUT_DK_BANK。
+
+    题页缺席的题只带列表元数据(content 不造);列表文件不在 = 列表步没跑,open 抛出留痕。"""
+    groups = []
+    total = 0
+    for part in DK_PARTS:
+        questions = []
+        for item in dk_list_items_of(part):
+            questions.append(dk_question_of(item))
+        groups.append({OUT_K_LABEL: part, OUT_K_SIGNATURE: DK_PART_TYPE[part],
+                       OUT_K_COUNT: len(questions), OUT_K_QUESTIONS: questions})
+        total += len(questions)
+    payload = {OUT_K_SOURCE: DK_SOURCE, OUT_K_FETCHED: date.today().isoformat(),
+               OUT_K_TOTAL: total, OUT_K_GROUPS: groups}
+    OUT_DK_BANK.parent.mkdir(parents=True, exist_ok=True)
+    radar(RadarIn(cur_payload=payload, bank=OUT_DK_BANK, prev=OUT_DK_PREV, changes=OUT_DK_CHANGES))
+    write_json(WriteJsonIn(path=OUT_DK_BANK, payload=payload, indent=JSON_INDENT))
+    say(P_DK_DONE_TPL.format(groups=len(groups), total=total, path=OUT_DK_BANK))
+
+
+def dk_question_of(item: dict) -> dict:
+    """列表项 + 题页产物(若有)→ 库内题行(列表格原样保留,题页正文/题图并入)。"""
+    q = dict(item)
+    path = OUT_DK_ENTRIES_DIR / DK_ENTRY_FILE_TPL.format(id=item[DK_K_ID])
+    if path.exists():
+        with path.open(encoding=ENC_UTF8) as f:
+            entry = json.load(f)
+        q[DK_R_CONTENT] = entry[DK_R_CONTENT]
+        q[DK_R_IMAGES] = entry[DK_R_IMAGES]
+    return q
+
+
+def to_dk_index_rows(bank: dict) -> list:
+    """duoink 整库 → 索引行清单(组签名已是标准码;热度 3 = hot 记 frequent 押题信号)。"""
+    rows = []
+    for g in bank[OUT_K_GROUPS]:
+        for q in g[OUT_K_QUESTIONS]:
+            flags = []
+            if q.get(DK_K_FREQ) == DK_FREQ_HOT:
+                flags.append(FLAG_FREQUENT)
+            rows.append({
+                IDX_K_TYPE: g[OUT_K_SIGNATURE],
+                IDX_K_SOURCE: SRC_DUOINK,
+                CH_K_ID: q[DK_K_ID],
+                K_TITLE: dk_title_of(q),
+                IDX_K_FLAGS: flags,
+                IDX_K_AUDIO: False,
+            })
+    return rows
+
+
+def dk_title_of(q: dict) -> str:
+    """列表项 → 索引标题(te → tt → q 首个非空,截 SNIPPET_LEN;全空留空串不造)。"""
+    for k in DK_TITLE_KEYS:
+        v = q.get(k)
+        if isinstance(v, str) and len(v) > 0:
+            return v[:SNIPPET_LEN]
+    return ""
+
+
+# =========================================================================
+# 13. 「最近考了」组织层(三源回忆信号 → 每题四格 + 分源分型窗口盘点)
+# =========================================================================
+
+
+def run_recent() -> None:
+    """最近考了一轮:读索引 → 三源信号各成表 → 逐行贴 seen/seen_n/freq/votes → 分源分型窗口盘点 → 落 OUT_RECENT。
+
+    2026-09-02 立(Frank「最主要的是每个来源哪些题最近考了」):信号缺席四格 null 不造;
+    某源产物不在(votes/timeline/duoink 未跑)= 该源全 null,不当红。"""
+    with OUT_INDEX.open(encoding=ENC_UTF8) as f:
+        idx = json.load(f)
+    today = date.today()
+    signals: dict[tuple, dict] = {}
+    signals.update(dk_signals_of())
+    signals.update(yn_signals_of(today))
+    signals.update(pb_signals_of())
+    rows = []
+    for r in idx[IDX_K_ROWS]:
+        key = (r[IDX_K_SOURCE], r[IDX_K_TYPE], str(r[CH_K_ID]))
+        rows.append(recent_row_of(RecentRowIn(row=r, signal=signals.get(key))))
+    summary = recent_summary_of(RecentSummaryIn(rows=rows, today=today))
+    payload = {OUT_K_FETCHED: today.isoformat(), R_K_SUMMARY: summary, IDX_K_ROWS: rows}
+    write_json(WriteJsonIn(path=OUT_RECENT, payload=payload, indent=JSON_INDENT))
+    seen = 0
+    d30 = 0
+    for r in rows:
+        if r[R_K_SEEN] is not None:
+            seen += 1
+            if days_since(DaysIn(seen=r[R_K_SEEN], today=today)) <= RECENT_WINDOWS_D[0]:
+                d30 += 1
+    say(P_RECENT_DONE_TPL.format(rows=len(rows), seen=seen, d30=d30, path=OUT_RECENT))
+
+
+def dk_signals_of() -> dict:
+    """duoink 整库 → {(源,型,id): 信号}(seen = e 截日期;freq = f_c;库不在 = 空表)。"""
+    out = {}
+    if not OUT_DK_BANK.exists():
+        return out
+    with OUT_DK_BANK.open(encoding=ENC_UTF8) as f:
+        bank = json.load(f)
+    for g in bank[OUT_K_GROUPS]:
+        for q in g[OUT_K_QUESTIONS]:
+            e = q.get(DK_K_SEEN)
+            seen = None
+            if isinstance(e, str) and len(e) >= DATE_LEN:
+                seen = e[:DATE_LEN]
+            n = 0
+            if seen is not None:
+                n = 1
+            freq = q.get(DK_K_FREQ_CORE)
+            if not isinstance(freq, int):
+                freq = None
+            out[(SRC_DUOINK, g[OUT_K_SIGNATURE], str(q[DK_K_ID]))] = {
+                R_K_SEEN: seen, R_K_SEEN_N: n, R_K_FREQ: freq, R_K_VOTES: None}
+    return out
+
+
+def yn_signals_of(today: date) -> dict:
+    """ynwac votes.json → {(源,型,id): 信号}(seen = 评论考试记录最晚日期;votes = 考过票数;文件不在 = 空表)。
+
+    未来日期剔除(2026-09-02 实撞:用户把预约考试日也写成「考试记录」,出现 2027-07-14 之类;
+    今天之后的不是「考过」,不进 seen 也不计数)。"""
+    out = {}
+    if not OUT_VOTES.exists():
+        return out
+    with OUT_VOTES.open(encoding=ENC_UTF8) as f:
+        v = json.load(f)
+    cutoff = today.isoformat()
+    for code, rows in v[V_K_TYPES].items():
+        t = YN_VOTE_TYPE.get(code, TYPE_UNKNOWN)
+        for r in rows:
+            dates = [d for d in exam_dates_of(r[V_K_COMMENTS]) if d <= cutoff]
+            seen = None
+            if len(dates) > 0:
+                seen = max(dates)
+            votes = None
+            tags = r[V_K_TAGS]
+            if isinstance(tags, dict) and isinstance(tags.get(V_T_COUNT), int):
+                votes = tags[V_T_COUNT]
+            out[(SRC_YNWAC, t, str(r[V_K_ID]))] = {
+                R_K_SEEN: seen, R_K_SEEN_N: len(dates), R_K_FREQ: None, R_K_VOTES: votes}
+    return out
+
+
+def exam_dates_of(comments: object) -> list:
+    """一题的评论响应 → 正文与回复里全部「考试记录」日期(YYYY-MM-DD;形状不对 = 空)。"""
+    dates = []
+    if not isinstance(comments, dict):
+        return dates
+    lst = comments.get(V_C_CONTENT)
+    if not isinstance(lst, list):
+        return dates
+    for c in lst:
+        if not isinstance(c, dict):
+            continue
+        for m in EXAM_DATE_RE.finditer(str(c.get(V_C_CONTENT, ""))):
+            dates.append(m.group(1))
+        replies = c.get(V_C_REPLIES)
+        if isinstance(replies, list):
+            for rp in replies:
+                if isinstance(rp, dict):
+                    for m in EXAM_DATE_RE.finditer(str(rp.get(V_C_CONTENT, ""))):
+                        dates.append(m.group(1))
+    return dates
+
+
+def pb_signals_of() -> dict:
+    """ptebank timeline.json → {(源,型,id): 信号}(seen = 存档引用最晚日期;文件不在 = 空表)。"""
+    out = {}
+    if not OUT_TIMELINE.exists():
+        return out
+    with OUT_TIMELINE.open(encoding=ENC_UTF8) as f:
+        tl = json.load(f)
+    for r in tl[IDX_K_ROWS]:
+        dates = r[TL_K_DATES]
+        seen = None
+        if len(dates) > 0:
+            seen = max(dates)
+        out[(r[IDX_K_SOURCE], r[IDX_K_TYPE], str(r[CH_K_ID]))] = {
+            R_K_SEEN: seen, R_K_SEEN_N: len(dates), R_K_FREQ: None, R_K_VOTES: None}
+    return out
+
+
+def recent_row_of(x: RecentRowIn) -> dict:
+    """索引行 + 信号 → 带四格的行(信号缺席四格全 null)。"""
+    row = dict(x.row)
+    sig = x.signal
+    if sig is None:
+        sig = {R_K_SEEN: None, R_K_SEEN_N: 0, R_K_FREQ: None, R_K_VOTES: None}
+    row[R_K_SEEN] = sig[R_K_SEEN]
+    row[R_K_SEEN_N] = sig[R_K_SEEN_N]
+    row[R_K_FREQ] = sig[R_K_FREQ]
+    row[R_K_VOTES] = sig[R_K_VOTES]
+    return row
+
+
+def recent_summary_of(x: RecentSummaryIn) -> dict:
+    """全部行 → {源: {型: {total, seen, last, d30, d90, d180}}}(窗口按 today 算)。"""
+    out = {}
+    for r in x.rows:
+        src = r[IDX_K_SOURCE]
+        t = r[IDX_K_TYPE]
+        if src not in out:
+            out[src] = {}
+        if t not in out[src]:
+            cell = {R_S_TOTAL: 0, R_S_SEEN: 0, R_S_LAST: None}
+            for d in RECENT_WINDOWS_D:
+                cell[R_S_WIN_TPL.format(days=d)] = 0
+            out[src][t] = cell
+        cell = out[src][t]
+        cell[R_S_TOTAL] += 1
+        seen = r[R_K_SEEN]
+        if seen is None:
+            continue
+        cell[R_S_SEEN] += 1
+        if cell[R_S_LAST] is None or seen > cell[R_S_LAST]:
+            cell[R_S_LAST] = seen
+        age = days_since(DaysIn(seen=seen, today=x.today))
+        for d in RECENT_WINDOWS_D:
+            if age <= d:
+                cell[R_S_WIN_TPL.format(days=d)] += 1
+    return out
+
+
+def days_since(x: DaysIn) -> int:
+    """回忆日期 → 距 today 的天数(未来日期算 0;日期串坏 = 极大值,等于「不在任何窗口」不静默算进)。"""
+    try:
+        d = date.fromisoformat(x.seen)
+    except ValueError:
+        return DAYS_BAD
+    return max(0, (x.today - d).days)

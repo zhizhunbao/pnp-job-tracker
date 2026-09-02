@@ -575,7 +575,7 @@ YN_SIG_TYPE = {
     "content,correctAnswers,explanation,id,options,question,title": "RMCM",
     "content,correctAnswer,explanation,id,options,question,title": "RMCS",
     "answer,correctOrder,description,id,paragraphs,title": "ROP",
-    "id,isImportant,text": "RS/WFD?",
+    "id,isImportant,text": "RS",
     "id,isImportant,text,title": "RTS",
     "id,text,title": "WE?",
     "id,summary,text,title": "SWT",
@@ -583,7 +583,9 @@ YN_SIG_TYPE = {
     "id,isFrequent,isImportant,text": "WFD",
 }
 """ynwac 组签名 → 标准题型码(签名是题型稳定身份,19 组签名互异实测确认)。
-确证依据 same-source-analysis §1(2026-09-01 抽读):RTS/EMAIL 确证;RS/WFD?、WE? 存疑留问号。"""
+确证依据 same-source-analysis §1(2026-09-01 抽读):RTS/EMAIL 确证;WE? 存疑留问号。
+arr13(id,isImportant,text)2026-09-02 由投票 API 定为 RS:votes 按 RS/WFD 分型,arr18 已是 WFD
+(带 isFrequent),库内唯一剩下的句库组只能对 RS(RS 投票 id ≤ 73 落在其 1..186 内)。"""
 
 PB_SLUG_TYPE = {
     "ra": "RA", "rs": "RS", "di": "DI", "rl": "RL", "audio-rl": "RL",
@@ -714,8 +716,369 @@ W_K_SENTENCES = "sentences"
 W_K_WORDS = "words"
 """词表:{词: 次数}(降序)。"""
 
-W_TYPES = ("WFD", "RS/WFD?", "RS")
-"""进词表的题型码(双库句库:ynwac WFD/句库 + ptebank RS)。"""
+W_TYPES = ("WFD", "RS")
+"""进词表的题型码(句库:WFD + RS;2026-09-02 arr13 定为 RS 后「RS/WFD?」码退役)。"""
 
 P_W_DONE_TPL = "✓ 词表:{sentences} 句 → {words} 词({path})"
+"""日志:词表收口。"""
+
+# =========================================================================
+# 12. 媒体资产收口(Core 题型筛选下载 + 题目↔媒体映射)
+# =========================================================================
+# 2026-09-01 Frank「继续」:媒体只为 PTE Core 备考研究服务 —— 新下载按 Core 题型
+# 白名单筛(RL/SGD/WE 是 Academic 独有、TIPS 是文章,不下);已落盘的历史文件不删
+# (raw 不回收)。映射 = 题 id ↔ 媒体 URL ↔ 本地文件,file=null 留痕未落盘
+# (ynwac 音频 401 付费墙实撞 / 下载失败 / 非 Core 不下),不静默折成「没有」。
+
+CORE_TYPES = frozenset((
+    "RA", "RS", "DI", "RTS", "ASQ",
+    "SWT", "EMAIL",
+    "RWFIB", "RMCM", "ROP", "RFIB", "RMCS",
+    "SST", "LMCM", "LFIB", "HCS", "LMCS", "SMW", "HIW", "WFD",
+))
+"""PTE Core 官方题型码白名单(四行 = Speaking/Writing/Reading/Listening 考试结构序;
+RL/SGD/WE 为 Academic 独有、TIPS/? 非题,均不在此)。"""
+
+PB_IMG_RE = re.compile(r"https?://[^\s\"']+/wp-content/uploads/[^\s\"']+?\.(?:png|jpe?g|gif|webp)",
+                       re.IGNORECASE)
+"""content 里的公开图片直链(DI 图 = 题干本体;形照 MP3_RE,查询串自然截断)。"""
+
+PB_THUMB_RE = re.compile(r"-\d+x\d+\.(?:png|jpe?g|gif|webp)$", re.IGNORECASE)
+"""WP 缩略图尺寸变体后缀(-300x200.jpg 等副本;只下原图,变体弃 —— 一图多尺寸不算多图)。"""
+
+OUT_PB_IMG_DIR = RAW_PTE / "ptebank" / "images"
+"""图片资产 data/raw/pte/ptebank/images/(Core 帖的图;链接会腐,趁开放落盘)。"""
+
+P_PB_IMG_TPL = "  图片资产:新下 {got} · 已存 {skip} · 失败 {fail} · 共 {total}(Core 筛后)→ {dir}"
+"""日志:图片下载收口(失败计数留痕,不静默)。"""
+
+P_PB_IMG_EMPTY = "  图片资产:Core 帖内无图片直链 —— 跳过"
+"""日志:筛后没有图片 URL(留痕)。"""
+
+OUT_MEDIA = PROCESSED_PTE / "media.json"
+"""媒体映射产物:meta + 一媒体一行(题 id/题型/种类/URL/本地文件)。"""
+
+M_K_KIND = "kind"
+"""映射行:媒体种类(image/audio)。"""
+
+M_K_URL = "url"
+"""映射行:媒体源地址(绝对)。"""
+
+M_K_FILE = "file"
+"""映射行:本地文件(相对 data/raw/pte/ 的 POSIX 路径;null = 未落盘)。对法 = URL basename:
+同名不同 URL 会指同一文件、内容以先下者为准(2026-09-01 实测 285 文件仅 8 个被多 URL 认领,
+研究用途可忍;要精确需内容寻址改名,连既存 251 音频一起迁,暂不做)。"""
+
+KIND_IMAGE = "image"
+"""媒体种类:图片。"""
+
+KIND_AUDIO = "audio"
+"""媒体种类:音频。"""
+
+P_MEDIA_DONE_TPL = "✓ 媒体映射:{rows} 行(已落盘 {have} · 未落盘 {miss})→ {path}"
+"""日志:映射收口(未落盘计数当场可见)。"""
+
+OUT_YN_AUDIO_DIR = RAW_PTE / "ynwac" / "audio"
+"""ynwac 听力 mp3 资产 data/raw/pte/ynwac/audio/(文件名 = SST 题 id)。2026-09-02 浏览器实测
+定案:播放器是不进 DOM 的裸 Audio,currentSrc = 主站公开静态 `/sst/{id}.mp3`(匿名可下,
+无需登录);库内 audioUrl 的 `/audio/canada_news_*.mp3` 与 api.ynwac.com 同路径(401/500)
+都是死路,仅作历史留痕。SPA 对不存在的文件回 200 text/html 壳页 —— 下载必须验 content-type。"""
+
+YN_AUDIO_TPL = "/sst/{id}.mp3"
+"""SST 音频的主站相对路径模板(id = 题 id;2026-09-02 实测 1..8 在线,9..20 回壳页)。"""
+
+CT_AUDIO_PREFIX = "audio/"
+"""音频响应 content-type 前缀(守卫:壳页 200 text/html 不许落成 mp3)。"""
+
+HDR_CONTENT_TYPE = "Content-Type"
+"""响应头:内容类型(音频守卫读取)。"""
+
+P_YN_AUDIO_TPL = "  ynwac 音频:新下 {got} · 已存 {skip} · 失败 {fail} · 共 {total} → {dir}"
+"""日志:音频下载收口(失败 = 网络错或非音频响应,计数留痕不静默)。"""
+
+P_YN_AUDIO_EMPTY = "  ynwac 音频:库内无 audioUrl —— 跳过"
+"""日志:库里没有音频 URL(异常留痕)。"""
+
+# =========================================================================
+# 13. duoink 第三源(上游池主;登录态浏览器读渲染态 —— Vuex 内存表 + 题页正文)
+# =========================================================================
+# 2026-09-02 Frank「接一下 duoink」。实撞定案:① 路由守卫查 localStorage._lk,无 = 报
+# Invalid login session(不是反自动化,browser-guard.js 只是老浏览器兼容检查);② 后端
+# LeanCloud 云函数(Exps.GetEntryList/GetEntry),响应加密、客户端解密 —— 解密不碰(权限闸
+# 拦下且该拦),走渲染态:列表页 Vuex 内存态 $store.state.entryList[PART].items 带全量元数据
+# (ObjectId/sn/题面 te/等级 l/热度 f/话题 tp/时间),题页正文在 CONTENT…START 之间;
+# ③ 音频全是 TTS 现合成(随机 speaker),非真录音,不抓;DI 图在 cdn.duoink.co 公开可下。
+# 登录态住统一 profile(crawl PROFILE_DIR,Frank 亲手扫码);无 playwright 的机器跳过不报错。
+
+DK_SOURCE = "https://duoink.co"
+"""duoink 站点源(产物 meta 出处 + 拼绝对地址)。"""
+
+DK_LIST_TPL = "/pte/entry-list/part/{part}"
+"""题型列表页路径(part = 站内题型键)。"""
+
+DK_ENTRY_TPL = "/pte/entry/part/{part}/{id}"
+"""单题页路径(id = LeanCloud ObjectId;ynwac 的 duomoLink 也是这个形)。"""
+
+DK_PARTS = ("RA", "RS", "DI", "ASQ", "RTS", "SWT", "WEM", "FIB_RW", "MA_R", "RP", "FIB_R", "SA_R",
+            "SST", "MA_L", "FIB_LW", "HCS", "SA_L", "SMW", "HIW", "WFD")
+"""抓取的站内题型键(Core 20 型;INTRO 非题、RL/SGD/WE 为 Academic 独有,不抓)。"""
+
+DK_PART_TYPE = {
+    "RA": "RA", "RS": "RS", "DI": "DI", "ASQ": "ASQ", "RTS": "RTS", "SWT": "SWT", "WEM": "EMAIL",
+    "FIB_RW": "RWFIB", "MA_R": "RMCM", "RP": "ROP", "FIB_R": "RFIB", "SA_R": "RMCS",
+    "SST": "SST", "MA_L": "LMCM", "FIB_LW": "LFIB", "HCS": "HCS", "SA_L": "LMCS", "SMW": "SMW",
+    "HIW": "HIW", "WFD": "WFD",
+}
+"""站内题型键 → 标准题型码(与 §10 索引同一套码)。"""
+
+DK_TEXT_PARTS = frozenset(("WFD", "RS"))
+"""题面全文就在列表 te 格的题型(听写/复述句 = 一句话;音频是 TTS 不抓)—— 不进题页。"""
+
+DK_PART_TOKEN = "__PART__"
+"""JS 片段里的题型占位(字符串替换,避免 format 撞 JS 花括号)。"""
+
+DK_STORE_JS = ("() => { const s = document.querySelector('#app').__vue__.$store.state.entryList;"
+               " const e = s['__PART__']; return e && Array.isArray(e.items) ? JSON.parse(JSON.stringify(e.items)) : []; }")
+"""读 Vuex 内存态列表(Vue 2 根实例挂 __vue__)。JSON 往返一次:store 里的 Date 会被 playwright
+转成 python datetime 而写不进 json,往返后成 ISO 字符串(实撞 2026-09-02);值不洗只转形。"""
+
+DK_SHOW_JS = ("() => { const els = [...document.querySelectorAll('*')].filter(e => /CLICK TO SHOW/i.test(e.innerText || '')"
+              " && ![...e.children].some(c => /CLICK TO SHOW/i.test(c.innerText || ''))); for (const e of els) { e.click(); }"
+              " return els.length; }")
+"""展开题页里折叠的 transcript/答案:点「含 CLICK TO SHOW 的最深元素」并返回点开数(2026-09-02 实撞:
+折叠头不是叶节点,按叶点永远点不到;ASQ/DI/SST 的本体全在折叠里)。上层循环到返回 0 为止。"""
+
+DK_SHOW_ROUNDS_MAX = 4
+"""展开循环上限(一轮点开可能露出下一层折叠;实测两轮到底)。"""
+
+DK_ENTRY_JS = ("() => ({ text: document.body.innerText, html: document.documentElement.outerHTML,"
+               " title: document.title, imgs: [...document.querySelectorAll('img')]"
+               ".map(i => i.currentSrc || i.src || '').filter(s => s.length > 0 && !s.startsWith('data:')) })")
+"""题页倒出:整页文本 + 渲染后完整 HTML(raw 缓存,照 crawl 域 html_cache 思路 —— 解析规则变了离线重切,
+不再碰网站)+ 图片地址(头像等在 python 侧按标记剔除)。"""
+
+DK_J_HTML = "html"
+"""DK_ENTRY_JS 返回对象:渲染后 HTML 格。"""
+
+DK_J_TITLE = "title"
+"""DK_ENTRY_JS 返回对象:页标题格(manifest 页行用)。"""
+
+DK_CRAWL_SLUG = "duoink-pte"
+"""题页原文进 crawl 层的 slug(data/crawl/duoink-pte/html_cache/,与 Codex 首爬同目录一份真相)。
+2026-09-02 Frank 拍板数据链 crawl → raw → processed → mart:HTML 住 crawl,抽出的 json 住 raw。"""
+
+DK_TEXT_START = "CONTENT"
+"""题页正文起点标记(CONTENT/COMMENTS/MINE/NOTES 页签行)。"""
+
+DK_TEXT_END = "START"
+"""题页正文终点标记(练习开始钮)。"""
+
+DK_AVATAR_MARKS = ("avatar", "cdn-avt")
+"""图片地址里的头像标记(评论区头像/TTS 头像不是题图)。"""
+
+DK_WAIT_UNTIL = "networkidle"
+"""页面导航等待条件(SPA 数据到齐再读 store)。"""
+
+DK_NAV_TIMEOUT_MS = 60000
+"""导航超时(SPA 首屏含 chunk 加载,给宽)。"""
+
+DK_PAGE_WAIT_S = 4.0
+"""列表页 networkidle 后再等(Vuex 灌表有尾巴)。"""
+
+DK_ENTRY_WAIT_S = 3.0
+"""题页 networkidle 后再等(正文渲染)。"""
+
+DK_SHOW_WAIT_S = 1.0
+"""点开 CLICK TO SHOW 后等渲染。"""
+
+DK_ENTRY_DELAY_S = 8.0
+"""题页间隔(礼貌;千级题页跑数小时,幂等可断续)。2026-09-02 两次上调:1.0 → 3.0(每 10 秒一页跑到
+~500 页触发极验,249 页被验证页顶替);3.0 → 8.0(13 秒一页仍每 ~50 页弹一次,人工滑不过来)。"""
+
+DK_BODY_TEXT_JS = "() => document.body.innerText"
+"""读整页文本(验证壳判定用)。"""
+
+DK_BLOCK_MARK = "need verification"
+"""验证壳页判词(duoink 极验拦截后正文 = 「User need verification | RETRY BACK」)。"""
+
+DK_BLOCK_WAIT_S = 600
+"""验证壳等人工处理的上限(秒;照 crawl 域 CHALLENGE 形:有头窗里 Frank 手动滑,脚本轮询)。"""
+
+DK_BLOCK_POLL_S = 5.0
+"""等人工处理时的轮询间隔。"""
+
+DK_BLOCK_ABORT_MAX = 3
+"""连续验证超时次数上限(达到即中止题页步,不再硬撞;下次 --only dk-entries 幂等续跑)。"""
+
+P_DK_BLOCK_WAIT = "  duoink ⏳ 验证码拦截:请在浏览器窗口手动完成验证(最多等 10 分钟)…"
+"""日志:遇验证壳等人工。"""
+
+P_DK_BLOCK_OK = "  duoink ✅ 验证通过,继续"
+"""日志:人工验证后恢复。"""
+
+P_DK_BLOCK_TIMEOUT = "  duoink ⚠️ 验证未在超时内完成,该题计失败(不存档)"
+"""日志:等人工超时(验证页绝不当正文存档)。"""
+
+P_DK_BLOCK_ABORT = "duoink 连续验证超时 {n} 次 —— 中止题页步(幂等,处理完验证后再 --only dk-entries 续跑)"
+"""中止文案(不硬撞极验)。"""
+
+DK_K_ID = "id"
+"""列表项:LeanCloud ObjectId(题 id;与 CH_K_ID 同值,索引/雷达按它对)。"""
+
+DK_K_SN = "sn"
+"""列表项:站内序号(#10624 那个)。"""
+
+DK_K_TEXT = "te"
+"""列表项:题面/标题文本(WFD/RS 即全句;其余题型此格为空,标题在 tt / 问句在 q)。"""
+
+DK_TITLE_KEYS = ("te", "tt", "q")
+"""索引标题的取值顺序(全句 → 标题 → 问句;实测 2026-09-02:RA/DI/FIB 走 tt,ASQ 走 q)。"""
+
+DK_K_LEVEL = "l"
+"""列表项:难度等级 1-5。"""
+
+DK_K_FREQ = "f"
+"""列表项:热度 0-3(3 = hot)。"""
+
+DK_K_TOPICS = "tp"
+"""列表项:话题标签清单。"""
+
+DK_FREQ_HOT = 3
+"""热度值 3 = 站内「hot」(索引里记为 frequent 押题信号)。"""
+
+DK_J_TEXT = "text"
+"""DK_ENTRY_JS 返回对象:整页文本格。"""
+
+DK_J_IMGS = "imgs"
+"""DK_ENTRY_JS 返回对象:图片地址清单格。"""
+
+DK_ENTRY_FILE_TPL = "{id}.json"
+"""题页产物落盘名(id = ObjectId)。"""
+
+DK_R_PART = "part"
+"""题页产物:站内题型键。"""
+
+DK_R_CONTENT = "content"
+"""题页产物:CONTENT…START 之间的正文(含题干/选项/答案展开);标记缺失时整页留痕。"""
+
+DK_R_IMAGES = "images"
+"""题页产物:题图地址清单(已剔头像)。"""
+
+OUT_DK_RAW_DIR = RAW_PTE / "duoink"
+"""raw 落盘目录 data/raw/pte/duoink/(列表 + 题页 + 图)。"""
+
+DK_RAW_LIST_TPL = "list-{part}.json"
+"""一个题型的列表原样落盘名。"""
+
+OUT_DK_ENTRIES_DIR = OUT_DK_RAW_DIR / "entries"
+"""题页产物目录(一题一文件 <id>.json,存在即跳过 —— 断续续跑)。"""
+
+OUT_DK_IMG_DIR = OUT_DK_RAW_DIR / "images"
+"""题图资产目录(DI 等;文件名 = URL basename)。"""
+
+OUT_DK_BANK = PROCESSED_PTE / "duoink-bank.json"
+"""组织后的整库(照 ynwac bank 形:meta + 按题型分组;组签名 = 标准题型码)。"""
+
+OUT_DK_PREV = PROCESSED_PTE / "duoink-bank-prev.json"
+"""上一轮库(diff 基准)。"""
+
+OUT_DK_CHANGES = PROCESSED_PTE / "duoink-changes.json"
+"""本轮变更(新题/消失题;机经雷达第三源 —— 上游池的新题最早在这冒头)。"""
+
+SRC_DUOINK = "duoink"
+"""索引 source 值:duoink(上游池主)。"""
+
+P_DK_NO_BROWSER = "  duoink:playwright 不可用 —— 跳过(渲染态抓取只在装了浏览器的机器跑)"
+"""日志:无浏览器跳过(容器缺 playwright 是预期形态,不当红)。"""
+
+P_DK_LIST_TPL = "  duoink 列表 {part}:{n} 条"
+"""日志:一个题型列表读完。"""
+
+P_DK_LOGIN_LOST = "duoink 全部题型列表为空 —— 登录态丢失(localStorage._lk),请在统一 profile 重新扫码"
+"""登录态防线文案(全空 = 没登录,当场红不静默建空库)。"""
+
+P_DK_LISTS_DONE_TPL = "✓ duoink 列表:{parts} 题型 · {total} 条 → {dir}"
+"""日志:列表步收口。"""
+
+P_DK_ENTRIES_TPL = "  duoink 题页:新抓 {got} · 已存 {skip} · 失败 {fail} · 图 {imgs} → {dir}"
+"""日志:题页步收口(失败留痕)。"""
+
+P_DK_DONE_TPL = "✓ duoink 第三源:{groups} 组 · {total} 题 → {path}"
+"""日志:装库收口。"""
+
+# =========================================================================
+# 14. 「最近考了」组织层(三源考场回忆信号 → 每题 seen/seen_n/freq/votes + 分源分型窗口盘点)
+# =========================================================================
+# 2026-09-02 Frank「最主要的是每个来源哪些题最近考了」。信号各源各形,统一成四格:
+# seen = 最近一次考场回忆日期(null = 该源没有这题的记录);seen_n = 我们持有的带日期回忆条数;
+# freq = duoink Core 热度 0-3(仅 duoink);votes = ynwac「考过」票数(仅 ynwac)。
+# 源形:duoink 列表 e(recent seen)+ f_c;ynwac votes.json 评论「[考试记录] 日期:YYYY-MM-DD」+ tags.count;
+# ptebank timeline.json 月更存档引用日期。猩际无(有防护未收录)。
+
+YN_VOTE_TYPE = {
+    "RA": "RA", "RS": "RS", "DI": "DI", "RTS": "RTS", "ASQ": "ASQ", "SWT": "SWT", "WE": "WE?",
+    "WFD": "WFD", "RO": "ROP", "FIBR": "RFIB", "FIBL": "LFIB", "FIBRW": "RWFIB", "SST": "SST",
+    "RMSMA": "RMCM",
+}
+"""ynwac 投票 API 题型代码 → 标准题型码(与 YN_SIG_TYPE 同码,按 (源,型,id) 对上索引行)。"""
+
+EXAM_DATE_RE = re.compile(r"考试记录[^0-9]{0,10}(\d{4}-\d{2}-\d{2})")
+"""ynwac 评论里的考试记录日期(格式「[考试记录] 日期:2026-08-29」,分隔符全半角不定)。"""
+
+V_T_COUNT = "count"
+"""votes.json 一题 tags 格里的「考过」票数键。"""
+
+V_C_CONTENT = "content"
+"""votes.json 一题 comments 格:既是评论清单键,也是每条评论的正文键(API 原形)。"""
+
+V_C_REPLIES = "replies"
+"""votes.json 每条评论的回复清单键(回复里也会带考试记录)。"""
+
+DK_K_SEEN = "e"
+"""duoink 列表项:最近一次考场回忆时间(Codex 命名 recent_seen_at;1633 题全有,最新到抓取当日)。"""
+
+DK_K_FREQ_CORE = "f_c"
+"""duoink 列表项:Core 热度 0-3(f 是混合热度;Core 模式看这个)。"""
+
+RECENT_WINDOWS_D = (30, 90, 180)
+"""盘点窗口(天):最近 N 天内有回忆记录的题数。"""
+
+DATE_LEN = 10
+"""ISO 日期前缀长度(YYYY-MM-DD;时间戳截前 10 位)。"""
+
+DAYS_BAD = 10 ** 6
+"""坏日期串的天数哨值(落在所有窗口之外 = 不静默算进任何窗口)。"""
+
+OUT_RECENT = PROCESSED_PTE / "recent.json"
+"""「最近考了」产物:meta + 分源分型盘点 + 一题一行(索引行 + 四格)。"""
+
+R_K_SEEN = "seen"
+"""行:最近考场回忆日期(YYYY-MM-DD 或 null)。"""
+
+R_K_SEEN_N = "seen_n"
+"""行:持有的带日期回忆条数。"""
+
+R_K_FREQ = "freq"
+"""行:duoink Core 热度 0-3(其他源 null)。"""
+
+R_K_VOTES = "votes"
+"""行:ynwac 考过票数(其他源 null)。"""
+
+R_K_SUMMARY = "summary"
+"""产物:{源: {型: {total, seen, last, d30, d90, d180}}} 盘点。"""
+
+R_S_TOTAL = "total"
+"""盘点格:该源该型题数。"""
+
+R_S_SEEN = "seen"
+"""盘点格:有回忆日期的题数。"""
+
+R_S_LAST = "last"
+"""盘点格:该源该型最近一次回忆日期。"""
+
+R_S_WIN_TPL = "d{days}"
+"""盘点格名模板:最近 N 天内有回忆的题数(d30/d90/d180)。"""
+
+P_RECENT_DONE_TPL = "✓ 最近考了:{rows} 行 · 有日期 {seen} · 30 天内 {d30} → {path}"
+"""日志:收口。"""
 """日志:词表收口。"""

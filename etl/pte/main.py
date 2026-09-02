@@ -10,33 +10,53 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
-from pte.functions import (run, run_assets, run_index, run_pb_audio, run_ptebank, run_timeline,
-                           run_votes, run_words)
+from pte.functions import (run, run_assets, run_dk_entries, run_dk_lists, run_duoink, run_index,
+                           run_media, run_pb_audio, run_pb_images, run_ptebank, run_recent,
+                           run_timeline, run_votes, run_words, run_yn_audio)
 
 SCHEDULED = [
     ("ynwac", run),
     ("assets", run_assets),
     ("votes", run_votes),
+    ("yn-audio", run_yn_audio),
     ("ptebank", run_ptebank),
     ("pb-audio", run_pb_audio),
+    ("pb-images", run_pb_images),
+    ("dk-lists", run_dk_lists),
+    ("dk-entries", run_dk_entries),
+    ("duoink", run_duoink),
     ("index", run_index),
     ("timeline", run_timeline),
     ("words", run_words),
+    ("recent", run_recent),
+    ("media", run_media),
 ]
 """默认链:整库抽取 → DI 图片 → 考过投票+评论 → ptebank 第二源 → ptebank 音频(私有研究,不灌库不上线)。
-votes 步:配了 YNWAC_TOKEN 才抓(空则跳过不报错),你部署的容器自动跑;ynwac 听力 mp3 付费墙后不抓。
+votes 步:配了 YNWAC_TOKEN 才抓(空则跳过不报错),你部署的容器自动跑;ynwac 听力 mp3 付费墙后不抓
+(2026-09-02 推翻:浏览器实测播放器 currentSrc = 主站公开静态 /sst/{id}.mp3,匿名可下 ——
+yn-audio 步无鉴权直抓,api.ynwac.com 的 401 是死路不是付费墙)。
 ptebank 步(2026-09-01):WP REST 整库,音频重补 ynwac 文本重;raw 快照先落 data/raw/pte/ptebank/。
-pb-audio 步:ptebank 公开 mp3 落盘(幂等;链接会腐,趁开放抓)。"""
+pb-audio 步:ptebank 公开 mp3 落盘(幂等;链接会腐,趁开放抓)。
+pb-images/media 步(2026-09-01「继续」):Core 筛图下载 + 题目↔媒体映射(media 殿后,收全链落盘现状)。
+dk-lists/dk-entries/duoink 步(2026-09-02「接一下 duoink」):登录态浏览器读渲染态 —— Vuex 列表元数据 →
+题页正文/题图(幂等断续)→ 装库雷达;无 playwright 的机器跳过,登录态住 crawl 统一 profile。"""
 
 TOOLS = {
     "ynwac": run,
     "assets": run_assets,
     "votes": run_votes,
+    "yn-audio": run_yn_audio,
     "ptebank": run_ptebank,
     "pb-audio": run_pb_audio,
+    "pb-images": run_pb_images,
+    "dk-lists": run_dk_lists,
+    "dk-entries": run_dk_entries,
+    "duoink": run_duoink,
     "index": run_index,
     "timeline": run_timeline,
     "words": run_words,
+    "recent": run_recent,
+    "media": run_media,
 }
 """全部可 --only 点名的步。"""
 

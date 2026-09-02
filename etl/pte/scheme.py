@@ -5,6 +5,7 @@
 json 键只在 functions 的 to_* 行构造器里出现)。
 """
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 from typing import Protocol
 
@@ -188,3 +189,105 @@ class PbBankIn:
 
     groups: list
     """全部分组(pb_groups_of 出品的组 dict 清单)。"""
+
+
+class DkPageLike(Protocol):
+    """浏览器页形状(duoink 渲染态只用两门:导航 + 跑 JS;装配点 cast 真 playwright Page)。"""
+
+    def goto(self, url: str, wait_until: str, timeout: int) -> object:
+        """导航到 url,按 wait_until 条件等到 timeout 毫秒。"""
+
+    def evaluate(self, script: str) -> object:
+        """在页内跑一段 JS,返回其 JSON 值。"""
+
+
+@dataclass
+class DkPageIn:
+    """dk_list_of() 入参(一个题型的列表页 → Vuex items)。"""
+
+    page: DkPageLike
+    """已登录 profile 起的页。"""
+
+    part: str
+    """站内题型键。"""
+
+
+@dataclass
+class DkEntryIn:
+    """dk_entry_of() 入参(一道题的题页 → 正文 + 题图)。"""
+
+    page: DkPageLike
+    """已登录 profile 起的页。"""
+
+    part: str
+    """站内题型键。"""
+
+    eid: str
+    """题 id(ObjectId)。"""
+
+
+@dataclass
+class DkImagesIn:
+    """dk_images_fetch() 入参(一题的题图清单 → 落盘)。"""
+
+    client: HttpClientLike
+    """公开直链客户端(装配点 cast 真 httpx)。"""
+
+    urls: list
+    """题图地址清单(已剔头像)。"""
+
+
+@dataclass
+class RecentRowIn:
+    """recent_row_of() 入参(一条索引行 + 该题的回忆信号 → 带四格的行)。"""
+
+    row: dict
+    """索引行(source/type/id/title/flags/audio)。"""
+
+    signal: dict | None
+    """回忆信号 {seen, seen_n, freq, votes};None = 该源没这题的记录(四格全 null)。"""
+
+
+@dataclass
+class RecentSummaryIn:
+    """recent_summary_of() 入参(全部行 → 分源分型窗口盘点)。"""
+
+    rows: list
+    """带四格的行清单。"""
+
+    today: date
+    """窗口计算基准日(抓取日)。"""
+
+
+@dataclass
+class DaysIn:
+    """days_since() 入参(回忆日期 → 距基准日天数)。"""
+
+    seen: str
+    """回忆日期(YYYY-MM-DD)。"""
+
+    today: date
+    """基准日。"""
+
+
+@dataclass
+class MediaRowIn:
+    """media_row_of() 入参(一条媒体 URL → 映射行;file 有无由 local 落盘现状定)。"""
+
+    source: str
+    """来源(ynwac/ptebank)。"""
+
+    qid: object
+    """题目 id(两库 id 类型不一,原样携带)。"""
+
+    qtype: str
+    """标准题型码(签名/分类换译后)。"""
+
+    kind: str
+    """媒体种类(image/audio)。"""
+
+    url: str
+    """媒体源地址(绝对)。"""
+
+    local: Path
+    """预期落盘位(存在 → 相对路径进 file;不存在 → file=null 留痕)。"""
