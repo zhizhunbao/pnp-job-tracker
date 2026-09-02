@@ -558,8 +558,11 @@ def pb_categories_of(client: HttpClientLike) -> dict:
         raise ValueError(url)
     OUT_PB_RAW_DIR.mkdir(parents=True, exist_ok=True)
     (OUT_PB_RAW_DIR / PB_RAW_CATS).write_text(r.text, encoding=ENC_UTF8)
+    data = r.json()
+    if not isinstance(data, list):
+        raise ValueError(url)
     cats = {}
-    for c in r.json():
+    for c in data:
         cats[c[CH_K_ID]] = {PB_K_SLUG: c[PB_K_SLUG], PB_K_NAME: c[PB_K_NAME]}
     return cats
 
@@ -582,6 +585,8 @@ def pb_posts_of(client: HttpClientLike) -> list:
         OUT_PB_RAW_DIR.mkdir(parents=True, exist_ok=True)
         (OUT_PB_RAW_DIR / PB_RAW_POSTS_TPL.format(page=page)).write_text(r.text, encoding=ENC_UTF8)
         batch = r.json()
+        if not isinstance(batch, list):
+            raise ValueError(url)
         posts.extend(batch)
         say(P_PB_PAGE_TPL.format(page=page, pages=pages, n=len(batch)))
         page += 1
