@@ -51,6 +51,8 @@ cms/dev.log
 /data/raw/lmia/
 # StatCan JVWS 全表 CSV zip 源(~97MB,可从 WDS API 重下;衍生表 jvws/jvws-vacancies.json 跟踪;E14-01)
 /data/raw/jvws/*.zip
+# ptebank 听力 mp3 资产(361MB,pb-audio 步幂等可重抓;json 快照与题库仍跟踪;2026-09-01)
+/data/raw/pte/ptebank/audio/
 .claude/skills/iterate-audit/credentials.local.json
 
 # 政策雷达产物(crawl 役时更再生成:manifest/changes/html_cache,후자上千文件)

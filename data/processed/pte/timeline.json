@@ -1,0 +1,742 @@
+{
+  "fetched": "2026-09-01",
+  "rows": [
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 5537,
+      "title": "Management Education (Summarize Spoken Text, SST)",
+      "dates": [
+        "2020-04-03",
+        "2020-10-01",
+        "2021-04-18",
+        "2023-12-07",
+        "2024-06-06",
+        "2024-10-03",
+        "2024-11-07",
+        "2024-12-04"
+      ]
+    },
+    {
+      "type": "RA",
+      "source": "ynwac",
+      "id": 18,
+      "title": "Tutor",
+      "dates": [
+        "2023-03-23",
+        "2023-04-07",
+        "2023-07-13",
+        "2023-12-07",
+        "2024-09-01",
+        "2024-12-04"
+      ]
+    },
+    {
+      "type": "RL",
+      "source": "ptebank",
+      "id": 10841,
+      "title": "Venus &#8211; Retell Lecture",
+      "dates": [
+        "2023-07-10",
+        "2023-10-05",
+        "2024-07-08",
+        "2024-09-01",
+        "2025-03-11"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 12428,
+      "title": "Paper Windmill &#8211; Summarize Spoken Text",
+      "dates": [
+        "2019-03-25",
+        "2019-07-18",
+        "2019-09-13",
+        "2019-10-19",
+        "2019-10-27"
+      ]
+    },
+    {
+      "type": "RA",
+      "source": "ynwac",
+      "id": 6,
+      "title": "Enough fluid",
+      "dates": [
+        "2023-04-07",
+        "2024-06-13",
+        "2024-07-15",
+        "2024-12-04"
+      ]
+    },
+    {
+      "type": "RA",
+      "source": "ynwac",
+      "id": 2,
+      "title": "Mammal",
+      "dates": [
+        "2019-03-25",
+        "2019-04-11",
+        "2020-03-05"
+      ]
+    },
+    {
+      "type": "RA",
+      "source": "ynwac",
+      "id": 39,
+      "title": "Food",
+      "dates": [
+        "2026-01-09",
+        "2026-06-03",
+        "2026-07-30"
+      ]
+    },
+    {
+      "type": "RA",
+      "source": "ynwac",
+      "id": 40,
+      "title": "Community Gardening",
+      "dates": [
+        "2026-01-09",
+        "2026-06-03",
+        "2026-07-30"
+      ]
+    },
+    {
+      "type": "RA",
+      "source": "ynwac",
+      "id": 41,
+      "title": "Smart Cooking",
+      "dates": [
+        "2026-01-09",
+        "2026-06-03",
+        "2026-07-30"
+      ]
+    },
+    {
+      "type": "RS/WFD?",
+      "source": "ynwac",
+      "id": 67,
+      "title": "The best time to visit Canada is during fall months.",
+      "dates": [
+        "2026-01-09",
+        "2026-06-03",
+        "2026-07-30"
+      ]
+    },
+    {
+      "type": "RL",
+      "source": "ptebank",
+      "id": 12674,
+      "title": "British Policy &#8211; Retell Lecture",
+      "dates": [
+        "2026-01-09",
+        "2026-06-03",
+        "2026-07-30"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 12793,
+      "title": "Modern Poetry &#8211; Summarize Spoken Text",
+      "dates": [
+        "2019-03-25",
+        "2019-07-18",
+        "2019-10-19"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 12595,
+      "title": "Bee Hive &#8211; Summarize Spoken Text",
+      "dates": [
+        "2019-03-25",
+        "2019-07-18",
+        "2019-10-19"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 12164,
+      "title": "Dancing Bees &#8211; Summarize Spoken Text",
+      "dates": [
+        "2019-03-25",
+        "2019-07-18",
+        "2019-10-19"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 11884,
+      "title": "Dog&#8217;s Happiness &#8211; Summarize Spoken Text",
+      "dates": [
+        "2019-03-25",
+        "2019-07-18",
+        "2019-10-19"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 11738,
+      "title": "Fish &#8211; Summarize Spoken Text",
+      "dates": [
+        "2019-03-25",
+        "2019-07-18",
+        "2019-10-19"
+      ]
+    },
+    {
+      "type": "RA",
+      "source": "ynwac",
+      "id": 4,
+      "title": "Teenage Girls",
+      "dates": [
+        "2020-02-03",
+        "2024-10-03"
+      ]
+    },
+    {
+      "type": "RA",
+      "source": "ynwac",
+      "id": 10,
+      "title": "History is selective",
+      "dates": [
+        "2020-05-05",
+        "2021-10-13"
+      ]
+    },
+    {
+      "type": "RA",
+      "source": "ynwac",
+      "id": 11,
+      "title": "Parents attend school conference",
+      "dates": [
+        "2025-03-11",
+        "2026-04-09"
+      ]
+    },
+    {
+      "type": "RA",
+      "source": "ynwac",
+      "id": 28,
+      "title": "Tortoise",
+      "dates": [
+        "2023-02-16",
+        "2023-03-08"
+      ]
+    },
+    {
+      "type": "RA",
+      "source": "ynwac",
+      "id": 31,
+      "title": "Antarctic",
+      "dates": [
+        "2022-02-04",
+        "2022-03-03"
+      ]
+    },
+    {
+      "type": "RA",
+      "source": "ynwac",
+      "id": 42,
+      "title": "return Book",
+      "dates": [
+        "2026-01-09",
+        "2026-06-03"
+      ]
+    },
+    {
+      "type": "RL",
+      "source": "ptebank",
+      "id": 10493,
+      "title": "Universal Philosophy &#8211; Retell Lecture",
+      "dates": [
+        "2023-03-08",
+        "2023-05-07"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 5644,
+      "title": "Einstein (Summarize Spoken Text, SST)",
+      "dates": [
+        "2020-05-05",
+        "2020-09-07"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 5458,
+      "title": "Ugly Building (Summarize Spoken Text, SST)",
+      "dates": [
+        "2020-02-03",
+        "2020-04-03"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 5434,
+      "title": "Misuse of Drugs (Summarize Spoken Text, SST)",
+      "dates": [
+        "2020-08-10",
+        "2021-02-17"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 10321,
+      "title": "PTE Recently Asked Summarize Spoken Text (January 2023)",
+      "dates": [
+        "2020-08-10",
+        "2021-02-17"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 10229,
+      "title": "PTE Recently Asked Summarize Spoken Text (December 2022)",
+      "dates": [
+        "2020-08-10",
+        "2021-02-17"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 9991,
+      "title": "PTE Recently Asked Summarize Spoken Text (September 2022)",
+      "dates": [
+        "2020-08-10",
+        "2021-02-17"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 8717,
+      "title": "PTE Recently Asked Summarize Spoken Text (July 2021)",
+      "dates": [
+        "2020-08-10",
+        "2021-02-17"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 8166,
+      "title": "PTE Recently Asked Summarize Spoken Text (February 2021)",
+      "dates": [
+        "2020-05-05",
+        "2020-09-07"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 5555,
+      "title": "The Most Frequently Asked Summarize Spoken Text",
+      "dates": [
+        "2020-08-10",
+        "2021-02-17"
+      ]
+    },
+    {
+      "type": "RA",
+      "source": "ptebank",
+      "id": 2250,
+      "title": "Most Frequently Asked Read Aloud Questions",
+      "dates": [
+        "2019-04-11",
+        "2021-10-13"
+      ]
+    },
+    {
+      "type": "RFIB",
+      "source": "ynwac",
+      "id": 10,
+      "title": "Children and Music",
+      "dates": [
+        "2020-08-10"
+      ]
+    },
+    {
+      "type": "RFIB",
+      "source": "ynwac",
+      "id": 16,
+      "title": "Physical Activity and Health",
+      "dates": [
+        "2021-07-06"
+      ]
+    },
+    {
+      "type": "RA",
+      "source": "ynwac",
+      "id": 8,
+      "title": "Neighbor",
+      "dates": [
+        "2021-03-16"
+      ]
+    },
+    {
+      "type": "RA",
+      "source": "ynwac",
+      "id": 12,
+      "title": "Making notes",
+      "dates": [
+        "2023-01-27"
+      ]
+    },
+    {
+      "type": "RA",
+      "source": "ynwac",
+      "id": 16,
+      "title": "Liverpool",
+      "dates": [
+        "2021-10-06"
+      ]
+    },
+    {
+      "type": "RA",
+      "source": "ynwac",
+      "id": 25,
+      "title": "Tesla",
+      "dates": [
+        "2019-04-11"
+      ]
+    },
+    {
+      "type": "RS/WFD?",
+      "source": "ynwac",
+      "id": 163,
+      "title": "The competency in the language in the assignment is to use m",
+      "dates": [
+        "2019-11-27"
+      ]
+    },
+    {
+      "type": "RL",
+      "source": "ptebank",
+      "id": 11059,
+      "title": "Animal Behavior (Version 2) &#8211; Retell Lecture",
+      "dates": [
+        "2024-04-01"
+      ]
+    },
+    {
+      "type": "RL",
+      "source": "ptebank",
+      "id": 10417,
+      "title": "Energy Challenge &#8211; Retell Lecture",
+      "dates": [
+        "2023-04-07"
+      ]
+    },
+    {
+      "type": "RL",
+      "source": "ptebank",
+      "id": 10337,
+      "title": "Facial Recognition &#8211; Retell Lecture",
+      "dates": [
+        "2023-04-07"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 11510,
+      "title": "Industrial Revolution &#8211; Summarize Spoken Text",
+      "dates": [
+        "2024-06-13"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 5669,
+      "title": "Faults and Earthquake (Summarize Spoken Text, SST)",
+      "dates": [
+        "2020-03-05"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 5659,
+      "title": "Indian Peasants Debt (Version 1) (Summarize Spoken Text, SST)",
+      "dates": [
+        "2020-05-05"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 5655,
+      "title": "Face Recognition (Summarize Spoken Text, SST)",
+      "dates": [
+        "2023-04-07"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 5645,
+      "title": "Australian Housing Price (Summarize Spoken Text, SST)",
+      "dates": [
+        "2020-06-08"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 5639,
+      "title": "Drug Advertisement (Summarize Spoken Text, SST)",
+      "dates": [
+        "2020-03-05"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 5549,
+      "title": "Agriculture and Urbanization (Summarize Spoken Text, SST)",
+      "dates": [
+        "2020-09-07"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 5534,
+      "title": "The Definition of Risk (Summarize Spoken Text, SST)",
+      "dates": [
+        "2020-07-16"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 5521,
+      "title": "Implicit and Explicit Memories (Summarize Spoken Text, SST)",
+      "dates": [
+        "2020-07-16"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 5498,
+      "title": "The History of Software (Summarize Spoken Text, SST)",
+      "dates": [
+        "2024-08-08"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 5480,
+      "title": "Industrial Revolution (Version2) (Summarize Spoken Text, SST)",
+      "dates": [
+        "2024-06-13"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 5451,
+      "title": "Curators (Summarize Spoken Text, SST)",
+      "dates": [
+        "2020-10-01"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 5641,
+      "title": "A Female Novelist (Summarize Spoken Text, SST)",
+      "dates": [
+        "2020-04-03"
+      ]
+    },
+    {
+      "type": "RFIB",
+      "source": "ptebank",
+      "id": 7799,
+      "title": "PTE Top 3 Frequently Asked Fill in the Blanks (November 2020)",
+      "dates": [
+        "2020-09-07"
+      ]
+    },
+    {
+      "type": "RFIB",
+      "source": "ptebank",
+      "id": 7252,
+      "title": "PTE Top 3 Frequently Asked Fill in the Blanks (June 2020)",
+      "dates": [
+        "2020-09-07"
+      ]
+    },
+    {
+      "type": "RL",
+      "source": "ptebank",
+      "id": 6891,
+      "title": "PTE Top 3 Frequently Asked Retell Lecture Questions (March 2020)",
+      "dates": [
+        "2024-11-07"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 8046,
+      "title": "PTE Recently Asked Summarize Spoken Text (January 2021)",
+      "dates": [
+        "2020-06-08"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 7359,
+      "title": "PTE Recently Asked Summarize Spoken Text (July 2020)",
+      "dates": [
+        "2021-02-17"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 7216,
+      "title": "PTE Recently Asked Summarize Spoken Text (June 2020)",
+      "dates": [
+        "2020-05-05"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 6944,
+      "title": "PTE Recently Asked Summarize Spoken Text (April 2020)",
+      "dates": [
+        "2020-07-16"
+      ]
+    },
+    {
+      "type": "SST",
+      "source": "ptebank",
+      "id": 6585,
+      "title": "PTE Recently Asked Summarize Spoken Text (February 2020)",
+      "dates": [
+        "2020-06-08"
+      ]
+    },
+    {
+      "type": "SWT",
+      "source": "ptebank",
+      "id": 10187,
+      "title": "PTE Repeated Questions &#8211; Summarize Written Text (SWT December 2022)",
+      "dates": [
+        "2022-11-15"
+      ]
+    },
+    {
+      "type": "SWT",
+      "source": "ptebank",
+      "id": 10014,
+      "title": "PTE Repeated Questions &#8211; Summarize Written Text (SWT September 2022)",
+      "dates": [
+        "2022-09-13"
+      ]
+    },
+    {
+      "type": "SWT",
+      "source": "ptebank",
+      "id": 7661,
+      "title": "PTE Frequently Asked Summarize Written Text (October 2020)",
+      "dates": [
+        "2020-05-05"
+      ]
+    },
+    {
+      "type": "SWT",
+      "source": "ptebank",
+      "id": 7566,
+      "title": "PTE Frequently Asked Summarize Written Text (September 2020)",
+      "dates": [
+        "2020-07-16"
+      ]
+    },
+    {
+      "type": "SWT",
+      "source": "ptebank",
+      "id": 7064,
+      "title": "PTE Top 3 Frequently Asked Summarize Written Text (May 2020)",
+      "dates": [
+        "2020-09-07"
+      ]
+    },
+    {
+      "type": "SWT",
+      "source": "ptebank",
+      "id": 6723,
+      "title": "PTE Top 3 Frequently Asked Summarize Written Text (February 2020)",
+      "dates": [
+        "2020-10-01"
+      ]
+    },
+    {
+      "type": "SWT",
+      "source": "ptebank",
+      "id": 5839,
+      "title": "Recently Asked PTE Summarize Written Text",
+      "dates": [
+        "2020-09-07"
+      ]
+    },
+    {
+      "type": "RA",
+      "source": "ptebank",
+      "id": 1900,
+      "title": "New Read Aloud Questions (March 2019 RA Sample)",
+      "dates": [
+        "2019-03-25"
+      ]
+    },
+    {
+      "type": "RL",
+      "source": "ptebank",
+      "id": 2558,
+      "title": "Discovering the Port of Roman London (May 2019 RL)",
+      "dates": [
+        "2024-06-06"
+      ]
+    },
+    {
+      "type": "RL",
+      "source": "ptebank",
+      "id": 1207,
+      "title": "Wilson",
+      "dates": [
+        "2024-12-04"
+      ]
+    },
+    {
+      "type": "SWT",
+      "source": "ptebank",
+      "id": 1358,
+      "title": "Beauty Contest in Australia (SWT)",
+      "dates": [
+        "2020-04-03"
+      ]
+    }
+  ]
+}
