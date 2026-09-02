@@ -5,6 +5,40 @@
 json 键只在 functions 的 to_* 行构造器里出现)。
 """
 from dataclasses import dataclass
+from typing import Protocol
+
+
+class HttpHeadersLike(Protocol):
+    """响应头形状(pte 只用 get 一门:X-WP-TotalPages 分页计数)。"""
+
+    def get(self, name: str) -> str | None:
+        """按头名取值;缺席 None(调用方显式判,不静默)。"""
+
+
+class HttpRespLike(Protocol):
+    """HTTP 响应形状(本域真用的格自声明,照 fetch.scheme 同律 —— 不跨域借形)。"""
+
+    status_code: int
+    """状态码(200/401 判定)。"""
+
+    text: str
+    """响应正文(raw 快照落盘)。"""
+
+    content: bytes
+    """响应字节(mp3 资产落盘)。"""
+
+    headers: HttpHeadersLike
+    """响应头(分页计数)。"""
+
+    def json(self) -> object:
+        """正文解析成 JSON 值。"""
+
+
+class HttpClientLike(Protocol):
+    """HTTP 客户端形状(pte 只用 get 一门;装配点直喂真 httpx 客户端,鸭子类型)。"""
+
+    def get(self, url: str) -> HttpRespLike:
+        """GET 一发。"""
 
 
 @dataclass

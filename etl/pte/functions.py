@@ -52,8 +52,8 @@ from pte.constants import (ARRAY_HEAD_RE, AUTH_TPL, BACKSLASH, BANG, BOOL_FALSE_
                            TRAILING_COMMA_SUB, TRUE_LIT, URL_SLASH, V_K_COMMENTS, V_K_FETCHED,
                            V_K_ID, V_K_TAGS, V_K_TOTAL, V_K_TYPES, VALID_ESCAPE_NEXT,
                            VOTE_API, VOTE_CODES, VOTE_DELAY_S, VOTE_MAX_ID, VOTE_MISS_MAX)
-from pte.scheme import (BankIn, CloseIn, CollectIn, DiffIn, Group, GroupIn, PbBankIn, PbGroupsIn,
-                        PbRowIn, RadarIn, SnapshotIn, VoteGetIn)
+from pte.scheme import (BankIn, CloseIn, CollectIn, DiffIn, Group, GroupIn, HttpClientLike,
+                        PbBankIn, PbGroupsIn, PbRowIn, RadarIn, SnapshotIn, VoteGetIn)
 
 
 # =========================================================================
@@ -550,7 +550,7 @@ def run_ptebank() -> None:
     say(P_PB_DONE_TPL.format(groups=len(groups), total=len(rows), path=OUT_PB_BANK))
 
 
-def pb_categories_of(client: object) -> dict:
+def pb_categories_of(client: HttpClientLike) -> dict:
     """分类端点一发 → {id: {slug, name}}(原始响应先落 raw/categories.json)。非 200 即抛(不猜)。"""
     url = PB_API + PB_CATS_TPL.format(per=PB_PER_PAGE)
     r = client.get(url)
@@ -564,7 +564,7 @@ def pb_categories_of(client: object) -> dict:
     return cats
 
 
-def pb_posts_of(client: object) -> list:
+def pb_posts_of(client: HttpClientLike) -> list:
     """帖子分页抓全 → 帖清单;每页原始响应先落 raw/posts-p<n>.json。
     页数取 X-WP-TotalPages 响应头(权威);头缺失或非 200 即抛(不静默截断)。"""
     posts = []
