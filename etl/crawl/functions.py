@@ -36,7 +36,7 @@ from crawl.constants import (ACCEPT_HTML, ACCEPT_LANGUAGE, ADMONITION_TITLE_CLAS
                              DEFAULT_REMOVE_SELECTORS, DIFF_SHOW_MAX, DISCOVER_CONCURRENCY,
                              DOMCONTENTLOADED, EE_CAT_MAP, EE_EXPAND_JS, EE_EXPAND_WAIT_MS, ERRORS_REPLACE,
                              EE_EXTRACT_JS, EE_NOC_RE, EE_NUM_RE, EE_OUT_FILE, EE_SOURCE_LABEL,
-                             EE_TEER_RE, EE_URL, EM_TAGS, ENC_UTF8, ENV_HEADLESS, ENV_ON, FM_TPL,
+                             EE_TEER_RE, EE_URL, EM_TAGS, ENC_UTF8, FM_TPL,
                              ETL_DIR_NAME,
                              GUARD_ALL_FAILED, H_LEVEL_TPL, HDR_ACCEPT, HDR_ACCEPT_LANGUAGE,
                              HDR_CONTENT_TYPE, HEADING_TAGS, HTML_CACHE_DIR, HTML_CHALLENGE_MARKERS,
@@ -73,7 +73,6 @@ from crawl.scheme import (HttpAsyncClientLike, PageLike,
                           PageRow, ScopeIn, SeedSpec, UrlRow, UrlVerdict, WalkIn)
 from crawl.variables import CACHE
 from fetch.constants import ATTR_HREF, TAG_BR, TAG_LI, TAG_TITLE
-import os
 
 
 # =========================================================================
@@ -146,7 +145,7 @@ async def get_browser_page() -> PageLike | None:
             CACHE.pw = await async_playwright().start()
             CACHE.context = await CACHE.pw.chromium.launch_persistent_context(
                 str(PROFILE_DIR),
-                headless=os.environ.get(ENV_HEADLESS) == ENV_ON,
+                headless=False,  # 2026-09-01 Frank:全有头(无头基本被封),BROWSER_HEADLESS 开关废除;docker 靠 Xvfb 起显示
                 args=list(BROWSER_ARGS),
                 user_agent=BROWSER_UA,
                 viewport={K_WIDTH: VIEWPORT_W, K_HEIGHT: VIEWPORT_H},

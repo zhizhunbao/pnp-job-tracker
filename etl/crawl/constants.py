@@ -259,12 +259,6 @@ HDR_ACCEPT_LANGUAGE = "Accept-Language"
 ACCEPT_LANGUAGE = "en-CA,en;q=0.9"
 """浏览器 Accept-Language 值。"""
 
-ENV_HEADLESS = "BROWSER_HEADLESS"
-"""=1 → 无头(docker 无人值守;实测 canada.ca/Akamai 无头+stealth 直通)。默认有头(host 解验证框)。"""
-
-ENV_ON = "1"
-"""环境开关开启值。"""
-
 BROWSER_ARGS = ("--disable-blink-features=AutomationControlled", "--no-sandbox")
 """chromium 启动参数(--no-sandbox:容器内以 root 跑必需,host 上无害)。"""
 
