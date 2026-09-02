@@ -1,0 +1,190 @@
+{
+  "source": "https://duoink.co",
+  "fetched": "2026-09-02",
+  "part": "MA_R",
+  "questions": [
+    {
+      "id": "691590d7096517792f971b6f",
+      "tt": {
+        "en": "History of Sleep",
+        "zh-CN": "睡眠的历史",
+        "ja": "睡眠の歴史",
+        "zh-TW": "睡眠的歷史"
+      },
+      "sn": 10148,
+      "p": "MA_R",
+      "u": "2026-06-22T06:44:00.773Z",
+      "e": "2025-11-13T08:07:20.261Z",
+      "c": "2025-11-13T08:03:35.005Z",
+      "t": "Reading",
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "691591b821dce511396465dc",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "5b7637ac808ca4006f0fe90c",
+      "tt": {
+        "fr": "Dennett",
+        "ja": "デネット",
+        "es": "Dennett",
+        "pt": "Dennett",
+        "zh-CN": "丹尼特",
+        "tr": "Dennett",
+        "ko": "데넷",
+        "it": "Dennett",
+        "zh-TW": "丹尼特",
+        "en": "Dennett",
+        "de": "Dennett",
+        "ru": "Dennett",
+        "vi": "Dennett"
+      },
+      "sn": 4653,
+      "p": "MA_R",
+      "u": "2026-06-22T06:43:42.501Z",
+      "e": "2025-11-13T08:12:26.877Z",
+      "c": "2018-08-17T02:49:16.954Z",
+      "t": "Reading",
+      "ie": false,
+      "f": 0,
+      "f_c": 0,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "pets"
+      ],
+      "bid": "691592eae338d34df458b3f7",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5af546ce9f5454005eb710aa",
+      "tt": {
+        "fr": "Glissade de neige",
+        "ja": "雪崩",
+        "es": "Tobogán de nieve",
+        "pt": "Escorrega de neve",
+        "zh-CN": "雪崩",
+        "tr": "Kar Kaydırağı",
+        "ko": "스노우 슬라이드",
+        "it": "Scivolo di neve",
+        "zh-TW": "雪滑梯",
+        "en": "Snow Slide",
+        "de": "Schneerutsche",
+        "ru": "Снежная горка",
+        "vi": "Trượt tuyết"
+      },
+      "sn": 4016,
+      "p": "MA_R",
+      "u": "2026-06-22T06:43:40.643Z",
+      "e": "2025-11-13T08:11:16.152Z",
+      "c": "2018-05-11T07:31:26.969Z",
+      "t": "Reading",
+      "ie": false,
+      "f": 0,
+      "f_c": 0,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "health"
+      ],
+      "bid": "691592a421dce51139646c83",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "59000691ac502e0063c33182",
+      "tt": {
+        "fr": "Prendre une décision",
+        "ja": "決める",
+        "es": "Toma una decision",
+        "pt": "Tomar uma decisão",
+        "zh-CN": "做出决定",
+        "tr": "Karar vermek",
+        "ko": "결정을 내리다",
+        "it": "Prendere una decisione",
+        "zh-TW": "做決定",
+        "en": "Make a decision",
+        "de": "Triff eine Entscheidung",
+        "ru": "Принимать решение",
+        "vi": "Quyết định"
+      },
+      "sn": 610,
+      "p": "MA_R",
+      "u": "2026-06-22T06:43:38.908Z",
+      "e": "2025-11-13T08:10:17.562Z",
+      "c": "2017-04-26T02:31:45.809Z",
+      "t": "Reading",
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "education"
+      ],
+      "bid": "69159269eb5f221d6f77a631",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "59000366da2f60005ddb11b5",
+      "tt": {
+        "fr": "Espagne",
+        "ja": "スペイン",
+        "es": "España",
+        "pt": "Espanha",
+        "zh-CN": "西班牙",
+        "tr": "ispanya",
+        "ko": "스페인",
+        "it": "Spagna",
+        "zh-TW": "西班牙",
+        "en": "Spain",
+        "de": "Spanien",
+        "ru": "Испания",
+        "vi": "Tây Ban Nha"
+      },
+      "sn": 605,
+      "p": "MA_R",
+      "u": "2026-06-22T06:43:36.813Z",
+      "e": "2025-11-13T08:09:32.554Z",
+      "c": "2017-04-26T02:18:14.686Z",
+      "t": "Reading",
+      "ie": false,
+      "f": 0,
+      "f_c": 0,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "business"
+      ],
+      "bid": "6915923c21dce511396468a4",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,6530 @@
+{
+  "source": "https://duoink.co",
+  "fetched": "2026-09-02",
+  "part": "WFD",
+  "questions": [
+    {
+      "id": "5ab1b201fe88c200381202fb",
+      "sn": 3559,
+      "p": "WFD",
+      "u": "2026-08-29T23:04:46.993Z",
+      "e": "2026-05-06T08:27:02.802Z",
+      "c": "2018-03-21T01:14:41.549Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Traffic is the main cause of air pollution in many cities.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "science"
+      ],
+      "bid": "69fafb5667a8944c51ffc0f1",
+      "onoff": true,
+      "ttps": [
+        "c",
+        "a"
+      ]
+    },
+    {
+      "id": "5c26d85dac502e006772000b",
+      "sn": 5494,
+      "p": "WFD",
+      "u": "2026-08-13T11:43:50.405Z",
+      "e": "2026-03-30T02:04:12.546Z",
+      "c": "2018-12-29T02:13:49.882Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The teacher training is an observation of the classes.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "69c9da1cf971c56b799fb57a",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5cb44ed9a91c9300698c2098",
+      "sn": 6304,
+      "p": "WFD",
+      "u": "2026-07-08T12:36:18.412Z",
+      "e": "2025-04-16T08:48:38.308Z",
+      "c": "2019-04-15T09:28:56.999Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You need to put these books on the table over there.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "art"
+      ],
+      "bid": "67ff6ee63f81e43d5f98af69",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "692e908af05e621fb1698281",
+      "sn": 10358,
+      "p": "WFD",
+      "u": "2026-07-06T23:51:33.404Z",
+      "e": "2025-12-02T07:09:52.727Z",
+      "c": "2025-12-02T07:08:58.885Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "There was a lot of traffic this morning.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "692e90c005564e31267eab86",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9d1cc6a394b5e5c210550",
+      "sn": 10489,
+      "p": "WFD",
+      "u": "2026-07-06T05:50:48.551Z",
+      "e": "2026-03-30T01:31:34.123Z",
+      "c": "2026-03-30T01:28:44.966Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The restroom is down the hall and on the right.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "69c9d276f971c56b799f828a",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9f9ad8591971b5416e09b",
+      "sn": 10501,
+      "p": "WFD",
+      "u": "2026-07-06T05:41:34.095Z",
+      "e": "2026-03-30T04:19:46.540Z",
+      "c": "2026-03-30T04:18:53.627Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The weather has been lovely from this time of the year.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "69c9f9e28591971b5416e172",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6a42544181df541954ac67d0",
+      "sn": 10624,
+      "p": "WFD",
+      "u": "2026-06-29T11:17:59.303Z",
+      "e": "2026-06-29T11:17:59.255Z",
+      "c": "2026-06-29T11:17:21.631Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Please get us a meeting room for the next hour.",
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "6a42546773f4b6282c7afe19",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6a4253c024a83f4fbda61a25",
+      "sn": 10622,
+      "p": "WFD",
+      "u": "2026-06-29T11:15:50.437Z",
+      "e": "2026-06-29T11:15:50.400Z",
+      "c": "2026-06-29T11:15:12.038Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You will get your uniform on the first day of school.",
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6a4253e681df541954ac6655",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6a42529dbc37d772be6c8620",
+      "sn": 10619,
+      "p": "WFD",
+      "u": "2026-06-29T11:11:06.883Z",
+      "e": "2026-06-29T11:11:06.784Z",
+      "c": "2026-06-29T11:10:21.906Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Being a vegan means not consuming any animal products.",
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6a4252cac27e22207c0a9790",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6a4251d573f4b6282c7af252",
+      "sn": 10616,
+      "p": "WFD",
+      "u": "2026-06-29T11:07:49.741Z",
+      "e": "2026-06-29T11:07:49.687Z",
+      "c": "2026-06-29T11:07:01.358Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The meeting for first-year economics students is on Tuesday.",
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6a425205c27e22207c0a940c",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6a42518724a83f4fbda61014",
+      "sn": 10615,
+      "p": "WFD",
+      "u": "2026-06-29T11:06:45.301Z",
+      "e": "2026-06-29T11:06:45.224Z",
+      "c": "2026-06-29T11:05:43.033Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "All the new students will be gathering at the canteen before the class starts.",
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6a4251c517c4a74197adc9ed",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6a42507981df541954ac56d1",
+      "sn": 10611,
+      "p": "WFD",
+      "u": "2026-06-29T11:01:54.453Z",
+      "e": "2026-06-29T11:01:54.322Z",
+      "c": "2026-06-29T11:01:13.170Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The weather report advised us to prepare for a big freeze.",
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6a4250a224a83f4fbda609c1",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6a424ffac27e22207c0a8866",
+      "sn": 10610,
+      "p": "WFD",
+      "u": "2026-06-29T11:00:28.560Z",
+      "e": "2026-06-29T11:00:28.465Z",
+      "c": "2026-06-29T10:59:06.031Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The university canteen offers so many options.",
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6a42504cc27e22207c0a8a0d",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "59008307a0bb9f0065dc8f12",
+      "sn": 849,
+      "p": "WFD",
+      "u": "2026-06-29T10:55:29.193Z",
+      "e": "2026-06-29T10:55:29.066Z",
+      "c": "2017-04-26T11:22:47.576Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The cart carries a single object.",
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "technology"
+      ],
+      "bid": "6a424f21bc37d772be6c7053",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6396e45e2cbe5519dc53cf77",
+      "sn": 8564,
+      "p": "WFD",
+      "u": "2026-06-26T09:01:30.647Z",
+      "e": "2026-06-26T09:01:30.533Z",
+      "c": "2022-12-12T08:21:34.736Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The marketing budget has doubled since the beginning of the year.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6a3e3fea81df5419549a5c1d",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5d259b8830863b0068244ad2",
+      "sn": 6628,
+      "p": "WFD",
+      "u": "2026-06-26T09:01:08.605Z",
+      "e": "2026-06-26T09:01:08.556Z",
+      "c": "2019-07-10T08:02:16.936Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Air pollution is a serious problem all over the world.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "science"
+      ],
+      "bid": "6a3e3fd417c4a741979bb014",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c8eff768d6d81006fc27b20",
+      "sn": 6036,
+      "p": "WFD",
+      "u": "2026-06-26T09:00:56.658Z",
+      "e": "2026-06-26T09:00:56.595Z",
+      "c": "2019-03-18T02:16:22.164Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Criminal charges will be brought against all of the men.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "society"
+      ],
+      "bid": "6a3e3fc8bc37d772be5a6bd0",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c498e5267f35600616a180b",
+      "sn": 5672,
+      "p": "WFD",
+      "u": "2026-06-26T09:00:45.348Z",
+      "e": "2026-06-26T09:00:45.298Z",
+      "c": "2019-01-24T10:07:14.032Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Take the first step to apply for your university scholarship.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "education"
+      ],
+      "bid": "6a3e3fbd73f4b6282c687809",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6762669b6a0b720006f72749",
+      "sn": 9506,
+      "p": "WFD",
+      "u": "2026-06-26T09:00:30.831Z",
+      "e": "2026-06-26T09:00:30.765Z",
+      "c": "2024-12-18T06:07:23.910Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Your tutor will provide the guidance on how to structure the essay.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6a3e3faec27e22207cf85951",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "67568cee77124e2a6c1f0f33",
+      "sn": 9499,
+      "p": "WFD",
+      "u": "2026-06-26T09:00:20.448Z",
+      "e": "2026-06-26T09:00:20.366Z",
+      "c": "2024-12-09T06:23:42.215Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Medical books and journals have been moved to the second floor.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6a3e3fa4c27e22207cf85907",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "66c6f88ff6e24b644beb15dc",
+      "sn": 9429,
+      "p": "WFD",
+      "u": "2026-06-26T09:00:08.509Z",
+      "e": "2026-06-26T09:00:08.457Z",
+      "c": "2024-08-22T08:36:31.794Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Employment figures will decrease in the next few years.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6a3e3f98c27e22207cf8588c",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "66c6ae625252347cdbad8411",
+      "sn": 9427,
+      "p": "WFD",
+      "u": "2026-06-26T08:59:13.559Z",
+      "e": "2026-06-26T08:59:13.497Z",
+      "c": "2024-08-22T03:20:02.055Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "We will hold a celebration for the graduated students.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6a3e3f6124a83f4fbd940f81",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "66b579414095855b7c26edba",
+      "sn": 9413,
+      "p": "WFD",
+      "u": "2026-06-26T08:58:57.872Z",
+      "e": "2026-06-26T08:58:57.808Z",
+      "c": "2024-08-09T02:04:49.974Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Social media is responsible for helping the government to solve social problems.",
+      "f": 2,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6a3e3f51bc37d772be5a6941",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "64756665902ee364cca20af8",
+      "sn": 8760,
+      "p": "WFD",
+      "u": "2026-06-26T08:58:17.979Z",
+      "e": "2026-06-26T08:58:17.902Z",
+      "c": "2023-05-30T02:58:45.631Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "New media have a significant impact on human communications.",
+      "f": 2,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6a3e3f29c27e22207cf85643",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "621890fa4d562832e74d2613",
+      "sn": 8231,
+      "p": "WFD",
+      "u": "2026-06-26T08:57:50.660Z",
+      "e": "2026-06-26T08:57:50.603Z",
+      "c": "2022-02-25T08:20:41.605Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Online courses enable people to improve their skills while employed.",
+      "f": 2,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6a3e3f0e24a83f4fbd940dcb",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "619745398572763fc58aab62",
+      "sn": 8146,
+      "p": "WFD",
+      "u": "2026-06-26T08:57:37.560Z",
+      "e": "2026-06-26T08:57:37.489Z",
+      "c": "2021-11-19T08:53:07.545Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Digital gadgets are an excellent addition to any outdoor venture.",
+      "f": 2,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6a3e3f0181df5419549a56fa",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "60d92d12645591332ffcbd6a",
+      "sn": 7912,
+      "p": "WFD",
+      "u": "2026-06-26T08:57:22.823Z",
+      "e": "2026-06-26T08:57:22.664Z",
+      "c": "2021-06-28T01:59:46.314Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The use of wind energy has increased rapidly.",
+      "f": 2,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6a3e3ef224a83f4fbd940d31",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "60865b11e11036132e8c36c1",
+      "sn": 7722,
+      "p": "WFD",
+      "u": "2026-06-26T08:56:57.451Z",
+      "e": "2026-06-26T08:56:57.366Z",
+      "c": "2021-04-26T06:17:53.291Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Global pollution levels are rising at an increasing rate.",
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6a3e3ed917c4a741979baa0d",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "608217a82b3c4422e7d90799",
+      "sn": 7706,
+      "p": "WFD",
+      "u": "2026-06-26T08:56:41.260Z",
+      "e": "2026-06-26T08:56:41.189Z",
+      "c": "2021-04-23T00:41:12.290Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Electric buses have an impact on air pollution.",
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6a3e3ec917c4a741979ba9c3",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "605acac19f306304d0c53542",
+      "sn": 7637,
+      "p": "WFD",
+      "u": "2026-06-26T08:56:26.729Z",
+      "e": "2026-06-26T08:56:26.619Z",
+      "c": "2021-03-24T05:14:41.977Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Our undergraduate courses are designed with employment ability in mind.",
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6a3e3ebabc37d772be5a65cf",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6033825f0292980a61f181a2",
+      "sn": 7560,
+      "p": "WFD",
+      "u": "2026-06-26T08:55:36.958Z",
+      "e": "2026-06-26T08:55:36.887Z",
+      "c": "2021-02-22T10:07:27.805Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "It is generally accepted that language is a part of the culture.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "6a3e3e88bc37d772be5a64bd",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5e4c86431358aa006ae044e3",
+      "sn": 7154,
+      "p": "WFD",
+      "u": "2026-06-26T08:55:00.617Z",
+      "e": "2026-06-26T08:55:00.543Z",
+      "c": "2020-02-19T00:50:11.533Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Please click the logo above to enter the site.",
+      "f": 2,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "art"
+      ],
+      "bid": "6a3e3e6481df5419549a5368",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5e4655ef5620710077022e6b",
+      "sn": 7140,
+      "p": "WFD",
+      "u": "2026-06-26T08:54:45.202Z",
+      "e": "2026-06-26T08:54:45.133Z",
+      "c": "2020-02-14T08:10:23.971Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Many cities are actively working on ways to reduce air pollution.",
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "automotive"
+      ],
+      "bid": "6a3e3e55bc37d772be5a630a",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5e3a981e21b47e0077582263",
+      "sn": 7123,
+      "p": "WFD",
+      "u": "2026-06-26T08:53:18.460Z",
+      "e": "2026-06-26T08:53:18.391Z",
+      "c": "2020-02-05T10:25:34.231Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "It is possible to keep the energy of an atom in two ways.",
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "science"
+      ],
+      "bid": "6a3e3dfe24a83f4fbd9407ce",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5def60badd3c13006968b0bf",
+      "sn": 7048,
+      "p": "WFD",
+      "u": "2026-06-26T08:53:04.131Z",
+      "e": "2026-06-26T08:53:04.039Z",
+      "c": "2019-12-10T09:09:14.872Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Rising inflation means increasing goods prices and decreasing demand for products.",
+      "f": 2,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "business"
+      ],
+      "bid": "6a3e3df0bc37d772be5a60b1",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ddc9fd943c2570074d36c69",
+      "sn": 6956,
+      "p": "WFD",
+      "u": "2026-06-26T08:52:17.265Z",
+      "e": "2026-06-26T08:52:17.198Z",
+      "c": "2019-11-26T03:45:29.911Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The technology has transformed the nature of society.",
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "technology"
+      ],
+      "bid": "6a3e3dc173f4b6282c686cea",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ddb958b8a84ab0068cd0536",
+      "sn": 6945,
+      "p": "WFD",
+      "u": "2026-06-26T08:51:56.131Z",
+      "e": "2026-06-26T08:51:55.825Z",
+      "c": "2019-11-25T08:49:15.164Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Education is more about just learning skills for employment.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "6a3e3dab81df5419549a4e86",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ddb89e48a84ab0068ccb26a",
+      "sn": 6940,
+      "p": "WFD",
+      "u": "2026-06-26T08:50:59.989Z",
+      "e": "2026-06-26T08:50:59.890Z",
+      "c": "2019-11-25T07:59:32.593Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Research shows that spending time in outdoors has a range of benefits.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "society"
+      ],
+      "bid": "6a3e3d7324a83f4fbd940471",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c9b954730863b0069a08b10",
+      "sn": 6157,
+      "p": "WFD",
+      "u": "2026-06-26T08:50:30.803Z",
+      "e": "2026-06-26T08:50:30.711Z",
+      "c": "2019-03-27T15:22:47.832Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Employment figures are expected to be improved in the next few years.",
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "careers"
+      ],
+      "bid": "6a3e3d5681df5419549a4c69",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c930c67a3180b00731558b0",
+      "sn": 6084,
+      "p": "WFD",
+      "u": "2026-06-26T08:50:01.204Z",
+      "e": "2026-06-26T08:50:01.138Z",
+      "c": "2019-03-21T04:00:39.499Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "We hold the visiting tours throughout the year for students.",
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "6a3e3d39bc37d772be5a5cc1",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c3595d2808ca4006e391244",
+      "sn": 5562,
+      "p": "WFD",
+      "u": "2026-06-26T08:49:40.812Z",
+      "e": "2026-06-26T08:49:40.741Z",
+      "c": "2019-01-09T06:33:54.797Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "A rising population means more trees are cut down.",
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "society"
+      ],
+      "bid": "6a3e3d2424a83f4fbd940295",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c09cbf275657100681b447e",
+      "sn": 5323,
+      "p": "WFD",
+      "u": "2026-06-26T08:48:31.592Z",
+      "e": "2026-06-26T08:48:31.522Z",
+      "c": "2018-12-07T01:25:06.330Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Both staff and students can purchase car parking permits online.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "real estate"
+      ],
+      "bid": "6a3e3cdf73f4b6282c686724",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5bfe4d687565710068817502",
+      "sn": 5278,
+      "p": "WFD",
+      "u": "2026-06-26T08:48:08.401Z",
+      "e": "2026-06-26T08:48:08.335Z",
+      "c": "2018-11-28T08:10:16.123Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Get enough sleep the night before the test.",
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "health"
+      ],
+      "bid": "6a3e3cc8bc37d772be5a5a69",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5bee90de4773f7005fed5c1e",
+      "sn": 5234,
+      "p": "WFD",
+      "u": "2026-06-26T08:47:56.326Z",
+      "e": "2026-06-26T08:47:56.276Z",
+      "c": "2018-11-16T09:41:50.654Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The visiting speaker used to be a lecturer in this department.",
+      "f": 2,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "politics"
+      ],
+      "bid": "6a3e3cbc81df5419549a48cb",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5be54d1a9f545400691b9247",
+      "sn": 5153,
+      "p": "WFD",
+      "u": "2026-06-26T08:47:43.778Z",
+      "e": "2026-06-26T08:47:43.711Z",
+      "c": "2018-11-09T09:02:18.441Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Governments need to make solar energy more affordable to everyone.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "business"
+      ],
+      "bid": "6a3e3caf24a83f4fbd93fff0",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5abb3217ee920a004759b6b6",
+      "sn": 3640,
+      "p": "WFD",
+      "u": "2026-06-26T08:47:29.423Z",
+      "e": "2026-06-26T08:47:29.346Z",
+      "c": "2018-03-28T06:11:35.327Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Increasing population results in an increasing demand in energy.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "business"
+      ],
+      "bid": "6a3e3ca173f4b6282c6865a7",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ab0e621ee920a0043b6f989",
+      "sn": 3488,
+      "p": "WFD",
+      "u": "2026-06-26T08:47:10.443Z",
+      "e": "2026-06-26T08:47:10.360Z",
+      "c": "2018-03-20T10:44:49.575Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Most of the students have not considered this issue before.",
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "6a3e3c8e81df5419549a47d0",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a0066c867f3560063353a80",
+      "sn": 1832,
+      "p": "WFD",
+      "u": "2026-06-26T08:46:58.460Z",
+      "e": "2026-06-26T08:46:58.391Z",
+      "c": "2017-11-06T13:42:32.043Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "That means they have so many struggling overlaps.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "politics"
+      ],
+      "bid": "6a3e3c82c27e22207cf84656",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a00650667f35600633529cf",
+      "sn": 1821,
+      "p": "WFD",
+      "u": "2026-06-26T08:46:42.318Z",
+      "e": "2026-06-26T08:46:42.245Z",
+      "c": "2017-11-06T13:35:02.240Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Online courses allow students to work at their own pace.",
+      "f": 2,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6a3e3c7273f4b6282c68648d",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5950eeaf8d6d810057105a0f",
+      "sn": 1241,
+      "p": "WFD",
+      "u": "2026-06-26T08:46:29.669Z",
+      "e": "2026-06-26T08:46:29.610Z",
+      "c": "2017-06-26T11:23:27.715Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The history of the movement was recorded by several writers.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "art"
+      ],
+      "bid": "6a3e3c65bc37d772be5a5811",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590095c50ce46300614b7881",
+      "sn": 923,
+      "p": "WFD",
+      "u": "2026-06-26T08:46:16.641Z",
+      "e": "2026-06-26T08:46:16.551Z",
+      "c": "2017-04-26T12:42:45.540Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "They were struggling last year to make their service pay.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "automotive"
+      ],
+      "bid": "6a3e3c5824a83f4fbd93fdbc",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "68b6a120c29a3849f87657af",
+      "sn": 10071,
+      "p": "WFD",
+      "u": "2026-06-26T02:06:32.163Z",
+      "e": "2026-03-30T01:27:32.780Z",
+      "c": "2025-09-02T07:47:44.231Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The restrooms are down the hall to the right.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "69c9d184807d4d3fd7fed1cb",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "68355c1e6993d81fe62d6aad",
+      "sn": 9840,
+      "p": "WFD",
+      "u": "2026-06-26T02:06:31.537Z",
+      "e": "2025-05-27T06:31:28.624Z",
+      "c": "2025-05-27T06:30:54.260Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Speak to your tutor if you need further assistance.",
+      "f": 2,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "68355c406993d81fe62d6b73",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6835263ace7fc86faf7ddd3d",
+      "sn": 9828,
+      "p": "WFD",
+      "u": "2026-06-26T02:06:30.915Z",
+      "e": "2026-03-30T04:10:54.074Z",
+      "c": "2025-05-27T02:40:58.473Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You can get your coffee or tea in the lounge room.",
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "69c9f7ceb7e0dd42b236a89c",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6825945fb9570274df0ca77b",
+      "sn": 9696,
+      "p": "WFD",
+      "u": "2026-06-26T02:06:30.239Z",
+      "e": "2025-10-13T08:04:55.302Z",
+      "c": "2025-05-15T07:14:39.629Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Before preparing food, please make sure to wash your hands.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "68ecb2a7eb5f221d6fd34e0e",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "661254c56357e9735e313813",
+      "sn": 9176,
+      "p": "WFD",
+      "u": "2026-06-26T02:06:25.845Z",
+      "e": "2025-04-15T09:24:50.559Z",
+      "c": "2024-04-07T08:09:41.668Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "In my opinion, this car should be repaired soon.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "67fe25e23f81e43d5f92c6a2",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65d471a4881ec62a69d464f5",
+      "sn": 9102,
+      "p": "WFD",
+      "u": "2026-06-26T02:06:25.186Z",
+      "e": "2024-02-20T09:33:03.406Z",
+      "c": "2024-02-20T09:32:20.395Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "At that time, few people moved through the town to the village.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "65d471cff82e5958b0d14430",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65d46dc0288c180715eeed21",
+      "sn": 9099,
+      "p": "WFD",
+      "u": "2026-06-26T02:06:24.510Z",
+      "e": "2025-04-15T09:29:12.804Z",
+      "c": "2024-02-20T09:15:44.167Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The restroom is down the hall and on the right.",
+      "f": 2,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "67fe26e8a2c0e443c80744aa",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "639823fffa857223e7f38d7c",
+      "sn": 8577,
+      "p": "WFD",
+      "u": "2026-06-26T02:06:23.264Z",
+      "e": "2025-04-16T02:52:54.193Z",
+      "c": "2022-12-13T07:05:30.444Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Today we have a guest speaker who is visiting from Canada.",
+      "f": 2,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "67ff1b863f81e43d5f9694e7",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "63087f04e8f18b220aff8814",
+      "sn": 8444,
+      "p": "WFD",
+      "u": "2026-06-26T02:06:22.589Z",
+      "e": "2026-03-30T01:25:11.343Z",
+      "c": "2022-08-26T08:11:51.323Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Please make an appointment with your tutor about work.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "69c9d0f72a96a0191aaacd42",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5fa914f20868457605f0a5e3",
+      "sn": 7487,
+      "p": "WFD",
+      "u": "2026-06-26T02:06:17.372Z",
+      "e": "2026-03-30T01:24:37.410Z",
+      "c": "2020-11-09T10:07:46.293Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "I want to make an appointment with the manager.",
+      "f": 2,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "politics"
+      ],
+      "bid": "69c9d0d5807d4d3fd7fecd36",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5f9fa551ebe6441929a41701",
+      "sn": 7458,
+      "p": "WFD",
+      "u": "2026-06-26T02:06:16.711Z",
+      "e": "2025-04-16T07:51:29.212Z",
+      "c": "2020-11-02T06:21:05.732Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "There were a lot of traffic jams this morning.",
+      "f": 2,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "news"
+      ],
+      "bid": "67ff61812c0db64bfb78366a",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5f9fa501103dba7368632ab9",
+      "sn": 7456,
+      "p": "WFD",
+      "u": "2026-06-26T02:06:16.074Z",
+      "e": "2025-11-21T09:42:58.346Z",
+      "c": "2020-11-02T06:19:45.280Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Students will meet their new teachers after the summer vacation.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "6920342205564e3126308682",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5e49fa3c8a84ab006a2e7ebb",
+      "sn": 7142,
+      "p": "WFD",
+      "u": "2026-06-26T02:06:14.659Z",
+      "e": "2025-11-24T02:22:15.298Z",
+      "c": "2020-02-17T02:28:12.719Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The digital revolution has changed the way we read.",
+      "f": 2,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "politics"
+      ],
+      "bid": "6923c157171b217b0e8fa27a",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5de712c921460d0068193a26",
+      "sn": 7026,
+      "p": "WFD",
+      "u": "2026-06-26T02:06:11.937Z",
+      "e": "2025-04-16T07:59:25.821Z",
+      "c": "2019-12-04T01:58:33.381Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The island is located at the south end of the bay.",
+      "f": 2,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "sports"
+      ],
+      "bid": "67ff635dfe6af4500b8305a2",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5dd23f6c8a84ab0074d222de",
+      "sn": 6886,
+      "p": "WFD",
+      "u": "2026-06-26T02:06:09.250Z",
+      "e": "2025-11-24T02:20:39.893Z",
+      "c": "2019-11-18T06:51:24.706Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The falling birth rate means the number of students dropped.",
+      "f": 2,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "6923c0f7171b217b0e8f9fb5",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c987fcf0237d7006831181e",
+      "sn": 6112,
+      "p": "WFD",
+      "u": "2026-06-26T02:06:07.896Z",
+      "e": "2025-03-27T07:57:58.333Z",
+      "c": "2019-03-25T07:14:23.632Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "We can all meet at my office after the lecture.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "politics"
+      ],
+      "bid": "67e5050631731c30f8ed02d5",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c0f8af3808ca4006787779f",
+      "sn": 5353,
+      "p": "WFD",
+      "u": "2026-06-26T02:06:04.850Z",
+      "e": "2026-03-30T04:03:14.127Z",
+      "c": "2018-12-11T10:01:23.121Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You can ask your tutor for further assistance.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "society"
+      ],
+      "bid": "69c9f6022a96a0191aabf7f9",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590096b4570c350058fd225d",
+      "sn": 939,
+      "p": "WFD",
+      "u": "2026-06-26T02:05:26.806Z",
+      "e": "2024-08-07T02:51:42.998Z",
+      "c": "2017-04-26T12:46:44.693Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "I thought it was thrown in the small meeting room.",
+      "f": 2,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "science"
+      ],
+      "bid": "66b2e13e3196dc398171244f",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "69c9fa1df971c56b79a09b23",
+      "sn": 10502,
+      "p": "WFD",
+      "u": "2026-06-26T02:01:46.712Z",
+      "e": "2026-03-30T04:21:53.259Z",
+      "c": "2026-03-30T04:20:45.926Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Before the summer vacation, students will meet their new teachers.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "69c9fa61807d4d3fd7000d96",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9dc0b6a394b5e5c215338",
+      "sn": 10496,
+      "p": "WFD",
+      "u": "2026-06-26T02:01:46.044Z",
+      "e": "2026-03-30T02:13:51.412Z",
+      "c": "2026-03-30T02:12:27.741Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The teacher asked the group to complete the task.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "69c9dc5f8591971b541614da",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9da7ef971c56b799fb84f",
+      "sn": 10495,
+      "p": "WFD",
+      "u": "2026-06-26T02:01:45.429Z",
+      "e": "2026-03-30T02:07:31.908Z",
+      "c": "2026-03-30T02:05:50.905Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The fiction books are just past the counter.",
+      "f": 2,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "69c9dae3f971c56b799fbac7",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9d93ef971c56b799faf62",
+      "sn": 10493,
+      "p": "WFD",
+      "u": "2026-06-26T02:01:44.750Z",
+      "e": "2026-03-30T02:01:39.676Z",
+      "c": "2026-03-30T02:00:30.170Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The weather used to be lovely at this time of the year.",
+      "f": 2,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "69c9d983b7e0dd42b235a17c",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "68259617b9570274df0cb9e1",
+      "sn": 9697,
+      "p": "WFD",
+      "u": "2026-06-26T01:49:23.551Z",
+      "e": "2025-12-02T02:18:07.152Z",
+      "c": "2025-05-15T07:21:59.245Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The fiction books have just passed to the counter.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "692e4c5fa54da130bebfbf4f",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9291f05e621fb1699223",
+      "sn": 10362,
+      "p": "WFD",
+      "u": "2026-06-25T10:34:19.767Z",
+      "e": "2026-05-13T07:40:43.898Z",
+      "c": "2025-12-02T07:17:37.230Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Currently the growth of the economy is unpredictable.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6a042af967a8944c51316236",
+      "onoff": true,
+      "ttps": [
+        "c",
+        "a"
+      ]
+    },
+    {
+      "id": "5f978e8ae8ed3c21a4d852f3",
+      "sn": 7448,
+      "p": "WFD",
+      "u": "2026-06-24T09:49:15.314Z",
+      "e": "2026-06-24T09:49:15.224Z",
+      "c": "2020-10-27T03:05:46.362Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Make sure you wash your hands before preparing the food.",
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "food"
+      ],
+      "bid": "6a3ba81b24a83f4fbd87e174",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "692e9a48daee5f72f25beedd",
+      "sn": 10368,
+      "p": "WFD",
+      "u": "2026-06-22T11:55:59.569Z",
+      "e": "2026-06-22T11:55:59.485Z",
+      "c": "2025-12-02T07:50:32.362Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "I want to make an appointment with the manager.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6a3922cfad8e5638f508e34b",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9fbc76a394b5e5c222811",
+      "sn": 10504,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:05.179Z",
+      "e": "2026-03-30T04:28:51.594Z",
+      "c": "2026-03-30T04:27:51.525Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You can get your coffee or tea in the lunch room.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "69c9fc03b7e0dd42b236bd7c",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9f9306a394b5e5c221c75",
+      "sn": 10500,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:05.121Z",
+      "e": "2026-03-30T04:17:44.270Z",
+      "c": "2026-03-30T04:16:48.635Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "There were a lot of traffic jams on the road in the morning.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "69c9f968f971c56b79a097cb",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9f086b7e0dd42b2366f8a",
+      "sn": 10499,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:05.107Z",
+      "e": "2026-03-30T03:41:32.781Z",
+      "c": "2026-03-30T03:39:50.054Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The university canteen offers different healthy meal options.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "69c9f0ecf971c56b79a0694b",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9d9a5807d4d3fd7ff080c",
+      "sn": 10494,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:05.049Z",
+      "e": "2026-03-30T02:03:07.021Z",
+      "c": "2026-03-30T02:02:13.332Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Everyone in this room needs to follow the rules.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "69c9d9dbb7e0dd42b235a38c",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9d8a52a96a0191aab0294",
+      "sn": 10492,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:05.029Z",
+      "e": "2026-03-30T01:59:32.938Z",
+      "c": "2026-03-30T01:57:57.005Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You can keep your bag in the back room.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "69c9d9048591971b5415fc9b",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9d5d2807d4d3fd7feea81",
+      "sn": 10491,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:05.016Z",
+      "e": "2026-03-30T01:48:38.709Z",
+      "c": "2026-03-30T01:45:54.463Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Before preparing any food, be sure to wash your hands well.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "69c9d6766a394b5e5c21227b",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9d2fdb7e0dd42b2356f34",
+      "sn": 10490,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:05.002Z",
+      "e": "2026-03-30T01:38:25.257Z",
+      "c": "2026-03-30T01:33:49.449Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You need to turn off the lights to save energy.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "69c9d4112a96a0191aaae10a",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692ea21905564e31267f48ac",
+      "sn": 10386,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.920Z",
+      "e": "2025-12-02T08:24:21.259Z",
+      "c": "2025-12-02T08:23:53.889Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Let me give you an example to explain what I mean.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "692ea235171b217b0ecd7e42",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692ea18f171b217b0ecd79bb",
+      "sn": 10384,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.890Z",
+      "e": "2025-12-02T08:22:06.013Z",
+      "c": "2025-12-02T08:21:35.524Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The new camera can identify your eyes and focus on them.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "692ea1aef05e621fb16a0f18",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692ea140daee5f72f25c2bcd",
+      "sn": 10383,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.874Z",
+      "e": "2025-12-02T08:20:57.445Z",
+      "c": "2025-12-02T08:20:16.908Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Students are advised to use multiple methods for this project.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "692ea169af4f482042bd7e35",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692ea0eedaee5f72f25c298a",
+      "sn": 10382,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.858Z",
+      "e": "2025-12-02T08:19:41.163Z",
+      "c": "2025-12-02T08:18:54.574Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Sales figures for last year were better than expected.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "692ea11df05e621fb16a0ac2",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692ea086daee5f72f25c26c6",
+      "sn": 10381,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.840Z",
+      "e": "2025-12-02T08:17:38.110Z",
+      "c": "2025-12-02T08:17:10.223Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You should draw your graph on a separate page.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "692ea0a2af4f482042bd7232",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692ea039daee5f72f25c2476",
+      "sn": 10380,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.823Z",
+      "e": "2025-12-02T08:16:51.623Z",
+      "c": "2025-12-02T08:15:53.453Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Students who study overseas can significantly improve their employment opportunities.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 3,
+      "tp": [],
+      "bid": "692ea073a54da130bec25b6c",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9f9cdaee5f72f25c1d0a",
+      "sn": 10378,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.794Z",
+      "e": "2025-12-02T08:14:18.396Z",
+      "c": "2025-12-02T08:13:16.928Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The teacher training includes observing the classes.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "692e9fdaf05e621fb16a0213",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9ef7171b217b0ecd66fb",
+      "sn": 10377,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.778Z",
+      "e": "2025-12-02T08:11:05.956Z",
+      "c": "2025-12-02T08:10:31.936Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The history lecture has been moved to the lecture theater.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "692e9f19daee5f72f25c17ba",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9eabaf4f482042bd64b7",
+      "sn": 10376,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.763Z",
+      "e": "2025-12-02T08:09:50.693Z",
+      "c": "2025-12-02T08:09:15.923Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The bus to London will leave ten minutes later than planned.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "692e9ece171b217b0ecd65c0",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9d26171b217b0ecd57f8",
+      "sn": 10374,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.739Z",
+      "e": "2025-12-02T08:03:19.494Z",
+      "c": "2025-12-02T08:02:46.133Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "At that time, few people moved from towns to villages.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "692e9d47a54da130bec24083",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9cbcf05e621fb169e96d",
+      "sn": 10373,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.724Z",
+      "e": "2025-12-02T08:01:52.878Z",
+      "c": "2025-12-02T08:01:00.721Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The university canteen is now offering many healthy meal options.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "692e9cf0af4f482042bd5690",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9c65f05e621fb169e6b8",
+      "sn": 10372,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.707Z",
+      "e": "2025-12-02T08:00:15.480Z",
+      "c": "2025-12-02T07:59:33.495Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The restrooms are down the entrance and to the right.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "692e9c8f171b217b0ecd5367",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9bcaaf4f482042bd4dd2",
+      "sn": 10371,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.689Z",
+      "e": "2025-12-02T07:58:11.316Z",
+      "c": "2025-12-02T07:56:58.298Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Please turn off the light to save energy.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "692e9c13a54da130bec23708",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9b37daee5f72f25bf630",
+      "sn": 10370,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.672Z",
+      "e": "2025-12-02T07:55:17.921Z",
+      "c": "2025-12-02T07:54:31.263Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You will get your uniform on the first day.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "692e9b65171b217b0ecd49c3",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9ac4af4f482042bd4618",
+      "sn": 10369,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.652Z",
+      "e": "2025-12-02T07:53:31.207Z",
+      "c": "2025-12-02T07:52:36.935Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The stairs are to the left of the elevator.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "692e9afbdaee5f72f25bf47a",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e998da54da130bec22045",
+      "sn": 10367,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.619Z",
+      "e": "2025-12-02T07:48:18.800Z",
+      "c": "2025-12-02T07:47:25.339Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The weather used to be lovely for this time of year.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "692e99c2af4f482042bd3a45",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e97fa05564e31267ef203",
+      "sn": 10366,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.605Z",
+      "e": "2025-12-02T07:42:10.360Z",
+      "c": "2025-12-02T07:40:42.048Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You should submit your term papers to the general office.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "692e9852daee5f72f25bddf3",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9757af4f482042bd247f",
+      "sn": 10365,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.586Z",
+      "e": "2025-12-02T07:39:04.337Z",
+      "c": "2025-12-02T07:37:59.327Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Exam results will be published on the noticeboard.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "692e9798af4f482042bd286f",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9338171b217b0eccf961",
+      "sn": 10364,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.567Z",
+      "e": "2025-12-02T07:21:08.181Z",
+      "c": "2025-12-02T07:20:24.526Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Please make an appointment with your tutor about work.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "692e9364f05e621fb169981d",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e92f1af4f482042bcfbab",
+      "sn": 10363,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.550Z",
+      "e": "2025-12-02T07:19:55.205Z",
+      "c": "2025-12-02T07:19:13.580Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "All laboratory equipment will be provided in class.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "692e931b171b217b0eccf875",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9238af4f482042bcf5fc",
+      "sn": 10361,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.286Z",
+      "e": "2025-12-02T07:17:04.704Z",
+      "c": "2025-12-02T07:16:08.674Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The timetable for the next term will be available next week.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "692e9270daee5f72f25ba532",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e91dc171b217b0eccee20",
+      "sn": 10360,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.273Z",
+      "e": "2025-12-02T07:15:23.504Z",
+      "c": "2025-12-02T07:14:36.687Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Some studies show the link between depression and social media.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "692e920b171b217b0eccef9b",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9105af4f482042bceccd",
+      "sn": 10359,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:04.260Z",
+      "e": "2025-12-02T07:12:02.858Z",
+      "c": "2025-12-02T07:11:01.068Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Social policy is a study of the government's social response to social issues.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "692e9142171b217b0ecce95e",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923cc61171b217b0e8ff857",
+      "sn": 10270,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:02.984Z",
+      "e": "2025-11-24T03:10:54.822Z",
+      "c": "2025-11-24T03:09:21.954Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "I thought we would meet in the small meeting room.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "6923ccbedaee5f72f21e1ac5",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923cbd6f05e621fb12c1a0d",
+      "sn": 10269,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:02.968Z",
+      "e": "2025-11-24T03:09:00.502Z",
+      "c": "2025-11-24T03:07:02.051Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "All students have their own styles of learning.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6923cc4caf4f4820427f438e",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923cb99a54da130be83fbd7",
+      "sn": 10268,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:02.954Z",
+      "e": "2025-11-24T03:06:48.706Z",
+      "c": "2025-11-24T03:06:01.266Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Understanding visual media has never been more challenging.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6923cbc8daee5f72f21e0ec0",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923cb31a54da130be83f896",
+      "sn": 10267,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:02.938Z",
+      "e": "2026-03-30T04:09:17.711Z",
+      "c": "2025-11-24T03:04:17.169Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Online courses allow students to work on their own paces.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "69c9f76d807d4d3fd7000030",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923caf0171b217b0e8fe8d7",
+      "sn": 10266,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:02.925Z",
+      "e": "2025-11-24T03:03:56.295Z",
+      "c": "2025-11-24T03:03:12.348Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The digital revolution has changed the way we read.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6923cb1cdaee5f72f21e09a6",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923caabdaee5f72f21e0633",
+      "sn": 10265,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:02.910Z",
+      "e": "2025-11-24T03:02:54.321Z",
+      "c": "2025-11-24T03:02:03.238Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Rail transport is becoming more and more popular.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6923cadedaee5f72f21e07b4",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923ca7305564e3126415481",
+      "sn": 10264,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:02.895Z",
+      "e": "2025-11-24T03:01:51.154Z",
+      "c": "2025-11-24T03:01:07.076Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Before architecture was invented, humans lived in underground houses.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6923ca9fdaee5f72f21e05af",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923ca0a05564e31264151a9",
+      "sn": 10263,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:02.884Z",
+      "e": "2025-11-24T03:00:46.140Z",
+      "c": "2025-11-24T02:59:22.123Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The falling birth rate means the number of students drops.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6923ca5e171b217b0e8fe45d",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c9ca05564e3126414fc4",
+      "sn": 10262,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:02.872Z",
+      "e": "2025-11-24T02:59:04.844Z",
+      "c": "2025-11-24T02:58:18.019Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Before the invention of the refrigerator, people stored food in underground ice houses.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6923c9f8171b217b0e8fe1bc",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c975a54da130be83e967",
+      "sn": 10261,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:02.856Z",
+      "e": "2025-11-24T02:57:50.158Z",
+      "c": "2025-11-24T02:56:53.307Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Atoms are the basic building blocks of matter.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6923c9ae05564e3126414ef3",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c93605564e3126414bc2",
+      "sn": 10260,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:02.844Z",
+      "e": "2025-11-24T02:56:45.003Z",
+      "c": "2025-11-24T02:55:50.311Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Our culture influences the choices we make.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6923c96cdaee5f72f21dfcc7",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c8f1af4f4820427f2967",
+      "sn": 10259,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:02.830Z",
+      "e": "2025-11-24T02:55:29.557Z",
+      "c": "2025-11-24T02:54:41.562Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "There will be a guest lecturer in the next class.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6923c921af4f4820427f2a92",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c8a3171b217b0e8fd81f",
+      "sn": 10258,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:02.813Z",
+      "e": "2025-11-24T02:54:21.355Z",
+      "c": "2025-11-24T02:53:23.081Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The staff is cleaning the room for tomorrow morning's meeting.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6923c8dd171b217b0e8fd9ac",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c858a54da130be83e160",
+      "sn": 10257,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:02.797Z",
+      "e": "2025-11-24T02:53:04.504Z",
+      "c": "2025-11-24T02:52:08.220Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Students can find news about climate change.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6923c890a54da130be83e301",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c80caf4f4820427f22ff",
+      "sn": 10256,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:02.779Z",
+      "e": "2025-11-24T02:51:48.797Z",
+      "c": "2025-11-24T02:50:52.894Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You need to pass the written exam for the driver's license.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6923c844a54da130be83e0bb",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c6eddaee5f72f21deac9",
+      "sn": 10255,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:02.767Z",
+      "e": "2025-11-24T02:50:30.602Z",
+      "c": "2025-11-24T02:46:05.756Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Stock predictions can be very capricious even for professionals.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6923c7f6171b217b0e8fd37a",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c66df05e621fb12bef6b",
+      "sn": 10254,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:02.573Z",
+      "e": "2025-11-24T02:49:58.689Z",
+      "c": "2025-11-24T02:43:57.587Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You are trained to be a specialized journalist.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6923c7d6171b217b0e8fd272",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c622171b217b0e8fc5e0",
+      "sn": 10253,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:02.560Z",
+      "e": "2025-11-24T02:43:43.462Z",
+      "c": "2025-11-24T02:42:42.868Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You must wear a hard hat on the construction site.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6923c65f05564e3126413421",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c5aaa54da130be83ccce",
+      "sn": 10252,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:02.546Z",
+      "e": "2025-11-24T02:42:16.956Z",
+      "c": "2025-11-24T02:40:42.514Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "At this time experts are not able to analyze the effects of the new policy.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6923c608daee5f72f21de299",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c506171b217b0e8fbe64",
+      "sn": 10251,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:02.533Z",
+      "e": "2025-11-24T02:42:28.195Z",
+      "c": "2025-11-24T02:37:58.756Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Undergraduate students can apply for the new biology course.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6923c614171b217b0e8fc576",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6920307405564e3126307030",
+      "sn": 10250,
+      "p": "WFD",
+      "u": "2026-06-22T06:44:02.521Z",
+      "e": "2025-11-21T09:30:34.705Z",
+      "c": "2025-11-21T09:27:16.318Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "All students are allowed to take the notes from the library.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6920313adaee5f72f20cf904",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "68355bc1b9570274df6937bf",
+      "sn": 9839,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:59.863Z",
+      "e": "2025-12-02T07:53:51.093Z",
+      "c": "2025-05-27T06:29:21.022Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You must call your doctor to make an appointment.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "692e9b0f05564e31267f0f02",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "68355b47d3496c4246bdc940",
+      "sn": 9838,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:59.848Z",
+      "e": "2025-12-02T07:44:45.507Z",
+      "c": "2025-05-27T06:27:19.525Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The teacher explained the homework to the students.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "692e98edf05e621fb169c987",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "683526896993d81fe62be2cc",
+      "sn": 9829,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:59.711Z",
+      "e": "2025-11-24T02:28:12.034Z",
+      "c": "2025-05-27T02:42:17.650Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "We cannot consider an increase in our price at this stage.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6923c2bca54da130be83b64a",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6833d963d3496c4246b4a043",
+      "sn": 9811,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:59.471Z",
+      "e": "2025-12-02T07:10:17.995Z",
+      "c": "2025-05-26T03:00:51.297Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "New classroom will be put into use next month.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "692e90d9af4f482042bcebad",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6833d8d3c02b652dbcc6cdab",
+      "sn": 9810,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:59.456Z",
+      "e": "2026-03-30T01:22:37.466Z",
+      "c": "2025-05-26T02:58:27.215Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You have to make an appointment with your doctor.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "69c9d05d807d4d3fd7fec874",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "682596c6ce7fc86faf230252",
+      "sn": 9698,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:57.653Z",
+      "e": "2025-12-02T08:12:09.540Z",
+      "c": "2025-05-15T07:24:54.367Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Everyone in this room needs to follow the rules",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "692e9f59a54da130bec2517c",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "67bec872c180622876cb0d7d",
+      "sn": 9530,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:56.018Z",
+      "e": "2025-11-21T09:32:35.435Z",
+      "c": "2025-02-26T07:53:22.560Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Assignments must be submitted at the end of the term.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "692031b3daee5f72f20cfc17",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "661cc6a9f5de3008bc7799e5",
+      "sn": 9244,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:55.083Z",
+      "e": "2025-12-02T02:18:50.266Z",
+      "c": "2024-04-15T06:18:17.366Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Please move us to the meeting room for the next hour.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "692e4c8aa54da130bebfc096",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "661ca68f91cabd6bfff140d3",
+      "sn": 9242,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:55.068Z",
+      "e": "2025-04-15T09:23:59.203Z",
+      "c": "2024-04-15T04:01:19.053Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "All answers must be thoroughly researched and supported by relevant theories.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "67fe25af3f81e43d5f92c589",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65d46e06333d503618220503",
+      "sn": 9100,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:54.326Z",
+      "e": "2025-04-15T09:28:31.724Z",
+      "c": "2024-02-20T09:16:54.197Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The teacher explains the homework to the students.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "67fe26bfe478a528a0bbca28",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65a8e0d4011c097af243eb9c",
+      "sn": 9070,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:54.119Z",
+      "e": "2025-03-28T09:33:00.568Z",
+      "c": "2024-01-18T08:27:00.367Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Americans have typically defined the process of plant growth in quantitative terms.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "67e66ccc685d2315e6852045",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65a7879e90f1e64a726d6ffb",
+      "sn": 9067,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:54.105Z",
+      "e": "2024-01-17T07:55:16.643Z",
+      "c": "2024-01-17T07:54:06.132Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You do not need specialist knowledge to enjoy this book.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "65a787e4d3a3253d03c2f8ca",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6583a1318279bd2e8eb3fb5f",
+      "sn": 9044,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:54.045Z",
+      "e": "2025-04-15T09:32:05.925Z",
+      "c": "2023-12-21T02:21:37.007Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The subject was complex and difficult to explain.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "67fe27953f81e43d5f92d1b1",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "657fb95a64950e10fee92c8b",
+      "sn": 9042,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:54.031Z",
+      "e": "2025-04-15T09:32:54.844Z",
+      "c": "2023-12-18T03:15:38.615Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Visual aid can be really helpful when you are revising.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "67fe27c62c0db64bfb72be56",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "657fb55dbb133643d26d7ce1",
+      "sn": 9041,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:54.012Z",
+      "e": "2023-12-18T02:59:30.221Z",
+      "c": "2023-12-18T02:58:37.426Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Physical strength can be enhanced through regular training.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "657fb5922be3a26cec81dddc",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "657a755f64950e10fecb02f9",
+      "sn": 9039,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:53.997Z",
+      "e": "2025-03-28T08:58:08.785Z",
+      "c": "2023-12-14T03:24:15.751Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "A visit to the designed museum is of great value.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "67e664a0a34a4b79fc606bc7",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65767d44b6b4c524246bc537",
+      "sn": 9027,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:53.896Z",
+      "e": "2025-11-24T02:27:56.483Z",
+      "c": "2023-12-11T03:08:52.540Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "New media have transcended traditional national boundaries.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 3,
+      "tp": [],
+      "bid": "6923c2ac171b217b0e8fabdd",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6566d4a48279bd2e8e16f1df",
+      "sn": 9016,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:53.863Z",
+      "e": "2025-04-15T09:35:35.100Z",
+      "c": "2023-11-29T06:05:24.722Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You should have awareness of how the business operates globally.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "67fe28672c0db64bfb72cb11",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65658b27fe9b9b2ea34a3163",
+      "sn": 9008,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:53.828Z",
+      "e": "2025-06-12T05:56:11.493Z",
+      "c": "2023-11-28T06:39:35.353Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Studies showed there is a positive correlation between the two variables.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "684a6bfb6993d81fe6aa8e3a",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "656587e1bb133643d2dda3ee",
+      "sn": 9006,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:53.816Z",
+      "e": "2025-04-15T09:37:09.588Z",
+      "c": "2023-11-28T06:25:37.175Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "There is no fixed career path for a qualified journalist.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "67fe28c5fe6af4500b7d88ec",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6565569c96756c0e346fc339",
+      "sn": 9002,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:53.803Z",
+      "e": "2025-04-15T09:38:25.132Z",
+      "c": "2023-11-28T02:55:24.391Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Rising sea temperatures are a sign of climate change.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "67fe29112c0db64bfb72cf58",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65654ed464950e10fe5c516b",
+      "sn": 8999,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:53.785Z",
+      "e": "2025-04-15T09:39:11.948Z",
+      "c": "2023-11-28T02:22:12.812Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Years of training are required to become a medical specialist.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "67fe293f3f81e43d5f92e16b",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65643f8f21823c2d366a0f91",
+      "sn": 8990,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:53.770Z",
+      "e": "2025-04-15T09:42:22.431Z",
+      "c": "2023-11-27T07:04:47.308Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Listening is the key skill needed to succeed in this course.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "67fe29fe117fb603c90e1e05",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65643ea28279bd2e8e0cefdb",
+      "sn": 8989,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:53.756Z",
+      "e": "2025-04-15T09:42:49.102Z",
+      "c": "2023-11-27T07:00:50.609Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Students should leave their bags on the table behind the door.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "67fe2a19a2c0e443c8075ec4",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "656434f81167fd28ac238138",
+      "sn": 8983,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:53.743Z",
+      "e": "2025-04-15T09:44:43.616Z",
+      "c": "2023-11-27T06:19:36.505Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "There are many different types of governments in the world.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "67fe2a8ba2c0e443c8076129",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "656431958279bd2e8e0cb5bf",
+      "sn": 8981,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:53.724Z",
+      "e": "2025-03-28T08:53:04.004Z",
+      "c": "2023-11-27T06:05:09.018Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "We encourage students to complete their applications before the deadline.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "67e66370b3002f28ab622cdc",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6507b38f39694113b5299fc0",
+      "sn": 8948,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:53.518Z",
+      "e": "2025-04-15T09:47:40.560Z",
+      "c": "2023-09-18T02:18:55.388Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The essay contains most of the important information.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "67fe2b3cfe6af4500b7d965f",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "64c1e498d29c5d0785735a0f",
+      "sn": 8911,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:53.191Z",
+      "e": "2025-10-13T08:33:41.818Z",
+      "c": "2023-07-27T03:29:28.335Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The course includes a combination of pure and applied mathematics.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "68ecb965a2e7070c5748aa62",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "64a7d0a45876b945d36c2006",
+      "sn": 8805,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:52.524Z",
+      "e": "2025-03-28T08:48:48.449Z",
+      "c": "2023-07-07T08:45:24.480Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Imported default packages are likely to be used for most computers.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "67e66270a2c0e443c89f16db",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "64a7cf815d666b1e29c5cbf4",
+      "sn": 8804,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:52.507Z",
+      "e": "2025-06-12T05:55:48.024Z",
+      "c": "2023-07-07T08:40:33.706Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You must answer security questions when you reset your password.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "684a6be4c02b652dbc4e1f39",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "64a7ce4a10df7e6978ce7c55",
+      "sn": 8803,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:52.491Z",
+      "e": "2025-03-28T08:48:11.461Z",
+      "c": "2023-07-07T08:35:22.098Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Educational level is found to be related to social and economic background.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "67e6624ba2c0e443c89f162a",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "64784a1630675327e1f68673",
+      "sn": 8764,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:52.343Z",
+      "e": "2025-04-15T09:55:02.890Z",
+      "c": "2023-06-01T07:34:46.582Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "It is clear that national trading system is a good thing.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "67fe2cf6117fb603c90e2f24",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6461cf7545e4710056b7918a",
+      "sn": 8745,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:52.309Z",
+      "e": "2025-11-19T03:39:23.466Z",
+      "c": "2023-05-15T06:21:41.186Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Vocabulary that is peculiar in a special field is called jargon.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "691d3bebf05e621fb108cc93",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6454723b823e815106b00023",
+      "sn": 8739,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:52.244Z",
+      "e": "2025-12-02T07:18:43.417Z",
+      "c": "2023-05-05T03:04:27.193Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Many students live in the hall of residence in term time.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "692e92d3a54da130bec1e4b6",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "63c14da3df47c237e827de63",
+      "sn": 8636,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:51.307Z",
+      "e": "2025-04-16T02:44:51.529Z",
+      "c": "2023-01-13T12:25:30.996Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Auditions for the university theater will be held next week.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "67ff19a38f5c603fa65e5c98",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "639b145063bf7d30c660a0a7",
+      "sn": 8596,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:51.121Z",
+      "e": "2025-04-16T02:49:09.142Z",
+      "c": "2022-12-15T12:35:09.189Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "She is giving an outline of the previous lecture.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "67ff1aa53f81e43d5f968f5b",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6399aafffa857223e7f99dde",
+      "sn": 8592,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:51.111Z",
+      "e": "2025-04-16T02:51:06.334Z",
+      "c": "2022-12-14T10:53:12.823Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Digital scans of archive materials are provided for a  small fee.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "67ff1b1a2c0db64bfb766461",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6399a65b85e17871eefa9f1e",
+      "sn": 8589,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:51.101Z",
+      "e": "2025-04-16T02:52:19.493Z",
+      "c": "2022-12-14T10:33:39.556Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Before choosing your university course, you should consider your future career.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "67ff1b63a2c0e443c80afd3c",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "63982eecc4d4a34867361f05",
+      "sn": 8580,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:51.091Z",
+      "e": "2025-03-28T08:33:01.143Z",
+      "c": "2022-12-13T07:51:55.526Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "An introduction is an essential element of a presentation.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "67e65ebda34a4b79fc6048d5",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6397edd963bf7d30c653e71e",
+      "sn": 8575,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:51.070Z",
+      "e": "2022-12-13T03:15:27.815Z",
+      "c": "2022-12-13T03:14:09.912Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The residence hall is closed prior to the academic building closing time at the end of the semester.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6397ee4f2cbe5519dc579529",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6397e170d63df325a4a05838",
+      "sn": 8572,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:51.058Z",
+      "e": "2025-10-13T08:29:11.677Z",
+      "c": "2022-12-13T02:21:01.289Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "There is a great deal of debate on that topic.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "68ecb857c29a3849f822e7e2",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "632d5fcc333e1c50bec7f9cc",
+      "sn": 8470,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:50.728Z",
+      "e": "2025-04-16T03:02:12.085Z",
+      "c": "2022-09-23T07:30:25.652Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "All the gains in property sales must be allocated promptly.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "67ff1db4e478a528a0bf90c2",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "62f4b39587408d7fab86c1ce",
+      "sn": 8424,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:50.486Z",
+      "e": "2025-04-16T03:03:30.918Z",
+      "c": "2022-08-11T07:48:14.525Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You may be charged for additional art supplies.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "67ff1e023f81e43d5f96a54d",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "62ec520b2b01cd15fe33da9d",
+      "sn": 8410,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:50.474Z",
+      "e": "2025-12-02T07:35:29.840Z",
+      "c": "2022-08-04T23:12:06.662Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Students in the first year usually live on campus.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "692e96c105564e31267ee880",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "62da21d970a8fc34faeb258e",
+      "sn": 8352,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:50.332Z",
+      "e": "2022-07-22T06:28:38.608Z",
+      "c": "2022-07-22T04:05:11.622Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Please note that the submission deadlines are only negotiable in exceptional circumstances.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 3,
+      "tp": [],
+      "bid": "62da43969231d45c9b808ad0",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "627e2904d4cef5295f87742e",
+      "sn": 8277,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:50.047Z",
+      "e": "2025-04-16T03:13:54.373Z",
+      "c": "2022-05-13T09:58:01.039Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Newspapers across the country have been reporting stories of the president.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "67ff20722c0db64bfb769058",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6233eda44504e12418c68c02",
+      "sn": 8246,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:49.826Z",
+      "e": "2025-11-21T09:36:31.741Z",
+      "c": "2022-03-18T02:26:01.629Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The exam results will be posted on the notice board.",
+      "f": 0,
+      "f_c": 0,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "6920329fa54da130be72987e",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "611e19d6b92c784ce1178892",
+      "sn": 8081,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:48.974Z",
+      "e": "2025-03-28T08:18:43.572Z",
+      "c": "2021-08-19T08:44:06.158Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Understanding how to use the library will save your time.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "67e65b63b3002f28ab61fafb",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "610259df9308437e2d680efb",
+      "sn": 8040,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:48.862Z",
+      "e": "2025-12-02T07:42:42.679Z",
+      "c": "2021-07-29T07:33:51.347Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The seminar on writing skills has been canceled.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "692e9872daee5f72f25bdefb",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "60dd6512e433550e2a6500c9",
+      "sn": 7935,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:48.686Z",
+      "e": "2025-03-28T08:16:39.668Z",
+      "c": "2021-07-01T06:47:46.536Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The rising inflation rate indicates a decrease in demand for consumer products.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "67e65ae7a2c0e443c89eec10",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "60dbd16b1b32f90efedb39b1",
+      "sn": 7923,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:48.669Z",
+      "e": "2025-12-02T07:39:25.393Z",
+      "c": "2021-06-30T02:05:31.735Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You should meet me in the lecture theater room.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "692e97ada54da130bec20f0d",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "60a5abbe36c49f4514f9bf68",
+      "sn": 7792,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:48.375Z",
+      "e": "2025-03-28T08:13:25.606Z",
+      "c": "2021-05-20T00:22:22.086Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Practical experience is a vital part of legal training.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "67e65a25a2c0e443c89ee7d4",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "607fdb716002fc5a2103904f",
+      "sn": 7700,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:48.249Z",
+      "e": "2025-04-16T03:26:10.578Z",
+      "c": "2021-04-21T07:59:45.679Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You will study two core and three optional modules.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "67ff2352a2c0e443c80b4b88",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6053f374c3941a097eef5938",
+      "sn": 7623,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:48.096Z",
+      "e": "2025-03-28T08:10:44.500Z",
+      "c": "2021-03-19T00:42:28.883Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Scientists have founded all parts of society today.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "67e65984a34a4b79fc602a80",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5fa91548ba47fa60885e085b",
+      "sn": 7488,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:47.594Z",
+      "e": "2025-12-02T07:51:51.480Z",
+      "c": "2020-11-09T10:09:12.920Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Restaurants are down the hall and next to the right.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "food"
+      ],
+      "bid": "692e9a97a54da130bec22a7b",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "5f9fa51a2f05294179b3a007",
+      "sn": 7457,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:47.540Z",
+      "e": "2025-12-02T03:05:21.260Z",
+      "c": "2020-11-02T06:20:10.465Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Please close the door behind you when you leave the room.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "sports"
+      ],
+      "bid": "692e5771f05e621fb1676997",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "5f902ec29f4de33b3c05cf2c",
+      "sn": 7412,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:47.427Z",
+      "e": "2025-12-02T03:06:09.993Z",
+      "c": "2020-10-21T12:51:14.899Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You can keep your bags in the back room.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "fashion"
+      ],
+      "bid": "692e57a1f05e621fb1676d7c",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "5f912a238390f6105696dc64",
+      "sn": 7435,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:47.361Z",
+      "e": "2026-05-25T09:26:09.887Z",
+      "c": "2020-10-22T06:43:47.188Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Restrooms are down the entrance and to the right.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "education"
+      ],
+      "bid": "6a1415b1d2a61074f2dc983c",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "5f912a66b4d7fb5119d23f21",
+      "sn": 7436,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:47.347Z",
+      "e": "2025-12-02T07:58:47.852Z",
+      "c": "2020-10-22T06:44:54.520Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "We should have a meeting to discuss and report.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "politics"
+      ],
+      "bid": "692e9c37af4f482042bd50c1",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "5ed84902ba01510009edf234",
+      "sn": 7264,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:46.929Z",
+      "e": "2025-12-02T08:02:10.802Z",
+      "c": "2020-06-04T01:06:10.722Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Time is needed to complete the lecture.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "692e9d02f05e621fb169ebcc",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "5d50cf3e0237d70069c62c5c",
+      "sn": 6723,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:46.914Z",
+      "e": "2025-04-16T08:04:48.466Z",
+      "c": "2019-08-12T02:30:22.398Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The orchestra will be led by a visiting conductor.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "art"
+      ],
+      "bid": "67ff64a0a2c0e443c80cd39a",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5db01a3d12215f0072256693",
+      "sn": 6842,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:46.805Z",
+      "e": "2025-12-02T08:06:57.712Z",
+      "c": "2019-10-23T09:15:41.817Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The school canteen sells a large variety of water and food.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "food"
+      ],
+      "bid": "692e9e2105564e31267f2918",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "5cce3ae630863b006873c025",
+      "sn": 6357,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:46.624Z",
+      "e": "2025-04-16T08:25:56.454Z",
+      "c": "2019-05-05T01:22:46.424Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You must hand in your essays by midday on Friday.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "news"
+      ],
+      "bid": "67ff6994e478a528a0c17daf",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5d6c737b7b968a0074209c94",
+      "sn": 6785,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:46.406Z",
+      "e": "2025-04-16T08:03:50.617Z",
+      "c": "2019-09-02T01:42:19.267Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "An effective business manager is always open to new ideas.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "education"
+      ],
+      "bid": "67ff64662c0db64bfb7847f7",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5e66e74a8a84ab006a039c22",
+      "sn": 7210,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:46.309Z",
+      "e": "2025-12-02T08:04:58.591Z",
+      "c": "2020-03-10T01:03:06.087Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Rail transport is becoming more and more popular.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "art"
+      ],
+      "bid": "692e9daadaee5f72f25c0af5",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "5c904ce6ba39c8006816070d",
+      "sn": 6044,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:46.294Z",
+      "e": "2025-03-27T07:45:53.588Z",
+      "c": "2019-03-19T01:59:02.820Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The library will be closed for staff training tomorrow morning.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "news"
+      ],
+      "bid": "67e502318f5c603fa6ebbfeb",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c7e28d50237d7006cf331e3",
+      "sn": 5909,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:46.232Z",
+      "e": "2025-11-21T09:32:04.237Z",
+      "c": "2019-03-05T07:44:21.682Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Sociology policies are the sources of governments to solve social problems.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "science"
+      ],
+      "bid": "69203194171b217b0e7f16a1",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5bebe94bee920a006748479a",
+      "sn": 5226,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:46.185Z",
+      "e": "2019-06-27T10:07:39.796Z",
+      "c": "2018-11-14T09:22:19.776Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "New credit cards will soon use the fingerprint technology.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "technology"
+      ],
+      "bid": "5fbf1badb1738f06234100e6",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5d81e22bd3761600732e984d",
+      "sn": 6806,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:45.722Z",
+      "e": "2025-04-16T08:02:23.573Z",
+      "c": "2019-09-18T07:52:11.575Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Honey can be used as a food and health product.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "food"
+      ],
+      "bid": "67ff640fa2c0e443c80cd066",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c8ef4d4ba39c80072294ff4",
+      "sn": 6031,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:45.657Z",
+      "e": "2025-03-27T07:40:28.831Z",
+      "c": "2019-03-18T01:31:00.047Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "It takes a long time to walk to the university.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "67e500ec117fb603c99deef5",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c3d430e0b61600066708c3c",
+      "sn": 5583,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:45.645Z",
+      "e": "2022-08-01T10:17:45.268Z",
+      "c": "2019-01-15T02:18:54.893Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Distance learning can help develop your career around the world.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "62e7a84978ecdd435527bf6a",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c9b939e30863b0069a07d20",
+      "sn": 6156,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:45.631Z",
+      "e": "2025-03-27T08:05:25.549Z",
+      "c": "2019-03-27T15:15:42.429Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Food has become a political issue in the world.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "food"
+      ],
+      "bid": "67e506c5b3002f28ab5c3539",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c7f95c10237d7006cfdeb80",
+      "sn": 5927,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:45.605Z",
+      "e": "2025-03-27T07:27:22.242Z",
+      "c": "2019-03-06T09:41:21.063Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Make sure you choose a course that provides great career opportunities.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "careers"
+      ],
+      "bid": "67e4fddafe6af4500b0ecbee",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c9777a530863b006c359b5c",
+      "sn": 6102,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:45.145Z",
+      "e": "2025-03-27T07:54:19.051Z",
+      "c": "2019-03-24T12:27:17.545Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The opening hours of the library are reduced during summer.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "art"
+      ],
+      "bid": "67e5042bb3002f28ab5c231c",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5d1b284843e78c0075c75153",
+      "sn": 6562,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:45.128Z",
+      "e": "2025-04-16T08:21:52.811Z",
+      "c": "2019-07-02T09:47:52.974Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Designers need to keep up with the social trends.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "fashion"
+      ],
+      "bid": "67ff68a0685d2315e6f38703",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c233cd5303f39005fdddcce",
+      "sn": 5478,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:45.083Z",
+      "e": "2025-11-24T02:29:52.707Z",
+      "c": "2018-12-26T08:33:25.372Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Students who study overseas can significantly improve work chances.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "education"
+      ],
+      "bid": "6923c320a54da130be83b919",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c80b429128fe10070ff32d5",
+      "sn": 5935,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:44.973Z",
+      "e": "2022-07-26T03:39:32.444Z",
+      "c": "2019-03-07T06:03:21.384Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The blue whale is the largest mammal that ever lived.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "pets"
+      ],
+      "bid": "62df61f4868b6172bf3c74c5",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5d1cab0bd5de2b007203f65e",
+      "sn": 6576,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:44.952Z",
+      "e": "2025-12-02T08:07:38.143Z",
+      "c": "2019-07-03T13:18:03.067Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Academic libraries across the world are steadily incorporating social media.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 3,
+      "tp": [
+        "technology"
+      ],
+      "bid": "692e9e4a05564e31267f2a51",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c88b899303f390065805f43",
+      "sn": 5990,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:44.914Z",
+      "e": "2025-04-16T09:07:41.824Z",
+      "c": "2019-03-13T08:00:25.001Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Students should leave their bags on the table by the door.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "education"
+      ],
+      "bid": "67ff735d8f5c603fa6609874",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c7f95eb128fe100668d2053",
+      "sn": 5928,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:44.641Z",
+      "e": "2019-06-27T11:05:41.076Z",
+      "c": "2019-03-06T09:42:03.493Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The printers automatically print both sides of each page.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "technology"
+      ],
+      "bid": "5fbf632d1d476e7d2edb13a6",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c87293a0237d7006c2a8f44",
+      "sn": 5977,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:44.605Z",
+      "e": "2025-11-24T02:26:00.624Z",
+      "c": "2019-03-12T03:36:26.511Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Sugar is a compound including carbon, hydrogen and oxygen atoms.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "business"
+      ],
+      "bid": "6923c238f05e621fb12bcffa",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c6d03a117b54d004ad02bd4",
+      "sn": 5824,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:44.517Z",
+      "e": "2025-03-27T07:24:23.805Z",
+      "c": "2019-02-20T07:37:05.162Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The professor took a year off to work on her book.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "careers"
+      ],
+      "bid": "67e4fd27685d2315e67eb852",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c207f9b303f39005fc70f26",
+      "sn": 5472,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:44.502Z",
+      "e": "2025-12-02T08:12:27.845Z",
+      "c": "2018-12-24T06:41:31.740Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "There will be a meeting for the first-year students on Friday.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "692e9f6bdaee5f72f25c1b63",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "5d36b4bbc05a800073b5b813",
+      "sn": 6667,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:44.456Z",
+      "e": "2025-10-13T07:59:27.783Z",
+      "c": "2019-07-23T07:18:19.157Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Farmers need to adapt to the changes in climate.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "business"
+      ],
+      "bid": "68ecb15f096517792ff4908c",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5e57607921460d007717a2eb",
+      "sn": 7184,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:44.443Z",
+      "e": "2025-11-24T02:21:06.348Z",
+      "c": "2020-02-27T06:23:53.283Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Before architecture was invented, people used to live in underground houses.",
+      "f": 0,
+      "f_c": 0,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "art"
+      ],
+      "bid": "6923c112a54da130be83a895",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5d258d7bba39c80068065e2f",
+      "sn": 6625,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:44.431Z",
+      "e": "2025-04-16T08:10:17.514Z",
+      "c": "2019-07-10T07:02:19.784Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "New media journalism is an interesting area for study.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "education"
+      ],
+      "bid": "67ff65e9e478a528a0c16609",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c92eeffa3180b00731441ce",
+      "sn": 6081,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:44.420Z",
+      "e": "2025-03-27T07:53:04.141Z",
+      "c": "2019-03-21T01:55:11.364Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Many vocational courses of the institution are funded by private enterprises.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "finance"
+      ],
+      "bid": "67e503e08f5c603fa6ebc993",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5d3946d317b54d007084abc2",
+      "sn": 6675,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:44.393Z",
+      "e": "2025-04-16T08:07:31.509Z",
+      "c": "2019-07-25T06:06:11.344Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The department works closely with its partners in the business community.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "politics"
+      ],
+      "bid": "67ff65432c0db64bfb784cd7",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5cb3e05e30863b00687eaa7e",
+      "sn": 6295,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:44.341Z",
+      "e": "2025-03-27T08:12:31.634Z",
+      "c": "2019-04-15T01:37:34.041Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The news is not received until the following week.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "news"
+      ],
+      "bid": "67e5086ffe6af4500b0f1118",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ceddc94eaa3750068a23aa6",
+      "sn": 6450,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:44.322Z",
+      "e": "2025-04-16T08:25:00.019Z",
+      "c": "2019-05-29T01:12:52.795Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Our study program equips students with essential skills for university.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "education"
+      ],
+      "bid": "67ff695c8f5c603fa66058bc",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c1a12de7565710068b54a3e",
+      "sn": 5443,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:43.589Z",
+      "e": "2025-04-16T09:14:16.647Z",
+      "c": "2018-12-19T09:43:58.503Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "They developed a unique approach to training their employees.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "business"
+      ],
+      "bid": "67ff74e8e478a528a0c1c834",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c8716d2128fe10066ff8a1a",
+      "sn": 5969,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:43.578Z",
+      "e": "2025-04-16T09:08:39.094Z",
+      "c": "2019-03-12T02:17:54.278Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The north campus car park could be closed on Sunday.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "education"
+      ],
+      "bid": "67ff73973f81e43d5f98cc8d",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5bfb5c179f545400678ae6d9",
+      "sn": 5257,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:43.031Z",
+      "e": "2019-06-27T10:07:40.472Z",
+      "c": "2018-11-26T02:36:07.585Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Students who attempt to go to the conference must register now.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "5fbf1ff5f6966f560b97227b",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b8376fad50eee003979d9bf",
+      "sn": 4691,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:42.879Z",
+      "e": "2025-04-17T02:09:28.847Z",
+      "c": "2018-08-27T03:58:50.628Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The economy is showing signs of revival.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "society"
+      ],
+      "bid": "680062d82c0db64bfb7c8512",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b7e1891d50eee0032f5b984",
+      "sn": 4678,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:42.866Z",
+      "e": "2025-11-24T02:30:22.496Z",
+      "c": "2018-08-23T02:14:41.473Z",
+      "t": "Listening",
+      "ie": true,
+      "te": "Behind the garage is a secret storage room.",
+      "f": 0,
+      "f_c": 0,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "automotive"
+      ],
+      "bid": "6923c33e171b217b0e8fb12a",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b40b5ecee920a003c2b29da",
+      "sn": 4344,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:42.635Z",
+      "e": "2024-07-01T09:28:34.050Z",
+      "c": "2018-07-07T12:45:32.347Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The summer course was canceled due to insufficient enrollments.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "education"
+      ],
+      "bid": "668276c2f504e025e7b1f136",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b3df6c2ee920a003c12bb0d",
+      "sn": 4342,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:42.527Z",
+      "e": "2018-07-26T10:29:53.617Z",
+      "c": "2018-07-05T10:45:22.860Z",
+      "t": "Listening",
+      "ie": false,
+      "te": " In this language course, we focus on fluency and accuracy.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "5fbe0d359de8bb2e624b5e44",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5bd81c93808ca40070b4b307",
+      "sn": 5085,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:41.962Z",
+      "e": "2025-03-27T07:09:05.991Z",
+      "c": "2018-10-30T08:55:47.690Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "In his lifetime, he composed a number of works.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "art"
+      ],
+      "bid": "67e4f991fe6af4500b0eb2c5",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5bfb5c4e7565710068688ec9",
+      "sn": 5258,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:41.925Z",
+      "e": "2025-04-16T09:14:42.349Z",
+      "c": "2018-11-26T02:37:02.334Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The poster of this play is hung in the large lecture theater.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "art"
+      ],
+      "bid": "67ff75028f5c603fa660a14e",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b3c6b18a22b9d0035467463",
+      "sn": 4322,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:41.845Z",
+      "e": "2018-07-26T10:28:40.234Z",
+      "c": "2018-07-04T06:37:12.088Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "There is a welcome party for all new students each term.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "education"
+      ],
+      "bid": "5fbe0ca5ba97f27cf9ec2313",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b584c64ee920a003d0d35d3",
+      "sn": 4458,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:41.726Z",
+      "e": "2025-04-17T02:12:01.988Z",
+      "c": "2018-07-25T10:09:40.676Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "One of the election promises is to decrease the income tax.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "finance"
+      ],
+      "bid": "68006371685d2315e6f79141",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b3c6a99a22b9d003ab9e05a",
+      "sn": 4321,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:41.656Z",
+      "e": "2025-03-27T06:50:21.485Z",
+      "c": "2018-07-04T06:35:05.714Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The site is designed to be highly interactive.",
+      "f": 0,
+      "f_c": 0,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "art"
+      ],
+      "bid": "67e4f52dfe6af4500b0e9833",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b2a29227f6fd300350fc5e7",
+      "sn": 4228,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:41.562Z",
+      "e": "2025-04-17T02:14:44.659Z",
+      "c": "2018-06-20T10:14:58.835Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The assessment of this course will begin next week. ",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "680064142c0db64bfb7c8dbf",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b839201d50eee00397ad805",
+      "sn": 4695,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:41.539Z",
+      "e": "2025-04-17T02:08:59.877Z",
+      "c": "2018-08-27T05:54:09.553Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Organic food is considered to be free of chemicals.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "business"
+      ],
+      "bid": "680062bbe478a528a0c58105",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b7e0cb4808ca40039c9bd9e",
+      "sn": 4677,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:41.516Z",
+      "e": "2024-02-26T08:54:07.165Z",
+      "c": "2018-08-23T01:24:04.866Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Some people are motivated by competition, while others prefer collaboration.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 3,
+      "tp": [
+        "art"
+      ],
+      "bid": "65dc51af436cc7685b9ec00f",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b7688e3808ca400399b2932",
+      "sn": 4659,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:41.503Z",
+      "e": "2019-06-27T10:07:43.611Z",
+      "c": "2018-08-17T08:35:47.242Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Education and training provide important skills for the labor force.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "education"
+      ],
+      "bid": "5fbe1aeb3263fa77d832b297",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b5ede1fa22b9d003ae564c8",
+      "sn": 4478,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:41.485Z",
+      "e": "2025-03-27T06:55:04.649Z",
+      "c": "2018-07-30T09:45:03.981Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Every student has the right and ability to succeed.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "67e4f648a34a4b79fc599b6c",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b90813e9f54540030913846",
+      "sn": 4747,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:41.368Z",
+      "e": "2025-04-17T02:07:03.036Z",
+      "c": "2018-09-06T01:22:06.771Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The economy now is showing the first sign of recovery.",
+      "f": 0,
+      "f_c": 0,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "society"
+      ],
+      "bid": "68006247a2c0e443c810eae7",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b110b999f545438106a09cb",
+      "sn": 4106,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:41.098Z",
+      "e": "2025-10-13T07:12:35.535Z",
+      "c": "2018-06-01T09:02:17.842Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Plants are the living things that can grow on land or in water.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "science"
+      ],
+      "bid": "68eca663eb5f221d6fd30b2e",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b8903b38d6d81005fe192ff",
+      "sn": 4722,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:40.823Z",
+      "e": "2025-03-27T07:06:38.949Z",
+      "c": "2018-08-31T09:00:35.186Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The designers will complete the plan today.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "art"
+      ],
+      "bid": "67e4f8fea34a4b79fc59acd2",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b6004829f54540035f06a9a",
+      "sn": 4490,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:40.705Z",
+      "e": "2025-03-27T06:56:17.823Z",
+      "c": "2018-07-31T06:41:06.585Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The bar chart provides useful means of data comparison.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "technology"
+      ],
+      "bid": "67e4f69131731c30f8eca598",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b5ee6a6808ca4006ea7d3ec",
+      "sn": 4480,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:40.656Z",
+      "e": "2025-03-27T06:55:40.260Z",
+      "c": "2018-07-30T10:21:26.433Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Building trust is not something that can be achieved overnight.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "real estate"
+      ],
+      "bid": "67e4f66cfe6af4500b0e9f69",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a6e96aa9f54540045523ff8",
+      "sn": 3316,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:40.463Z",
+      "e": "2025-11-24T02:35:42.612Z",
+      "c": "2018-01-29T03:36:10.529Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The article extrapolates a number of very interesting experiments.",
+      "f": 0,
+      "f_c": 0,
+      "lc": false,
+      "ipb": true,
+      "l": 3,
+      "tp": [
+        "science"
+      ],
+      "bid": "6923c47edaee5f72f21dd460",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ab05eb9fe88c200380b470a",
+      "sn": 3483,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:40.280Z",
+      "e": "2025-06-16T06:26:35.310Z",
+      "c": "2018-03-20T01:07:05.401Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The history of this university is a long and interesting one. ",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "science"
+      ],
+      "bid": "684fb91bbf6625518c78e9a8",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ab0f6fb1b69e6003e88bdae",
+      "sn": 3511,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:39.989Z",
+      "e": "2019-11-07T07:40:57.741Z",
+      "c": "2018-03-20T11:56:43.839Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The business policy seminar includes an internship with a local firm.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "business"
+      ],
+      "bid": "5fbdee7e92db8b53d63074c0",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ad2c25a1b69e60069b3d708",
+      "sn": 3725,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:39.933Z",
+      "e": "2019-05-15T03:57:16.299Z",
+      "c": "2018-04-15T03:09:14.069Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "It is important to make clear notes while you are reading. ",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "5fbdfd0c92db8b53d630eaff",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ab0ed8ffe88c200380ec261",
+      "sn": 3502,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:39.904Z",
+      "e": "2019-01-02T08:07:53.791Z",
+      "c": "2018-03-20T11:16:31.726Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Please visit the website for the information about the opening times.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "technology"
+      ],
+      "bid": "5fbdee5f88e25159b9d252b0",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ab1c0e6ee920a0043bacab8",
+      "sn": 3565,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:39.827Z",
+      "e": "2018-07-26T08:27:53.477Z",
+      "c": "2018-03-21T02:18:14.304Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Radio is a popular form of entertainment throughout the world.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "art"
+      ],
+      "bid": "5fbdf14d3c8b6a1080ff42b2",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ab2495eee920a0043bed189",
+      "sn": 3589,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:39.813Z",
+      "e": "2025-03-27T06:37:30.653Z",
+      "c": "2018-03-21T12:00:30.194Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The railway made long-distance travel possible for everyone. ",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "travel"
+      ],
+      "bid": "67e4f22aa2c0e443c898ca75",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ab115a5ee920a0043b8b926",
+      "sn": 3525,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:39.624Z",
+      "e": "2025-03-27T06:35:48.931Z",
+      "c": "2018-03-20T14:07:33.351Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Making a mistake is fine as long as you've learned from it.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "business"
+      ],
+      "bid": "67e4f1c4117fb603c99d8d14",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ac06a859f545400436ffb25",
+      "sn": 3682,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:39.611Z",
+      "e": "2025-12-02T08:18:02.174Z",
+      "c": "2018-04-01T05:13:41.180Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The teacher asked the group to commence the task. ",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "education"
+      ],
+      "bid": "692ea0baa54da130bec25d46",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "5ad804d57565710045f28c69",
+      "sn": 3751,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:39.526Z",
+      "e": "2018-12-17T05:49:20.316Z",
+      "c": "2018-04-19T02:54:13.233Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The equality has not yet been achieved in this society. ",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "politics"
+      ],
+      "bid": "5fbdfded9de8bb2e624aee38",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a77ddb0fe88c20045defbdf",
+      "sn": 3327,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:39.480Z",
+      "e": "2025-11-24T02:33:09.239Z",
+      "c": "2018-02-05T04:29:36.055Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The dance department stages elaborated performances each semester.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 3,
+      "tp": [
+        "art"
+      ],
+      "bid": "6923c3e5af4f4820427f0158",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ab0e68c1b69e6003e882327",
+      "sn": 3489,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:39.428Z",
+      "e": "2025-04-17T02:39:28.395Z",
+      "c": "2018-03-20T10:46:36.878Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The aim is to reduce the risks that people take.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "health"
+      ],
+      "bid": "680069e0fe6af4500b8758e5",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5abb324a1b69e60065a13355",
+      "sn": 3641,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:39.347Z",
+      "e": "2025-03-27T06:42:24.502Z",
+      "c": "2018-03-28T06:12:26.565Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Most university teaching takes place in lectures and seminars.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "education"
+      ],
+      "bid": "67e4f350a2c0e443c898d12e",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a005ef11579a300450ec59a",
+      "sn": 1797,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:39.209Z",
+      "e": "2025-10-13T08:24:04.294Z",
+      "c": "2017-11-06T13:09:05.816Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "When launching a product, investigating and marketing are very crucial.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "business"
+      ],
+      "bid": "68ecb7241c203d5a41b1a07e",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a005f38fe88c20068312241",
+      "sn": 1800,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:38.879Z",
+      "e": "2025-03-27T06:09:20.079Z",
+      "c": "2017-11-06T13:10:16.879Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Peer group pressure has a significant effect on young people.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "67e4eb908f5c603fa6eb323f",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a8b733ed50eee0065edee56",
+      "sn": 3340,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:38.864Z",
+      "e": "2023-11-06T02:12:37.009Z",
+      "c": "2018-02-20T01:00:46.540Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Important details from the article are missing in this summary.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "politics"
+      ],
+      "bid": "65484b958090e015d72950d6",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a0063b98d6d8100633812ec",
+      "sn": 1814,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:38.744Z",
+      "e": "2025-03-27T06:12:05.584Z",
+      "c": "2017-11-06T13:29:29.204Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Parents' talk to children tends to be simplified.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "family"
+      ],
+      "bid": "67e4ec35b3002f28ab5b87a2",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a0067e1ee920a00460cb096",
+      "sn": 1844,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:38.677Z",
+      "e": "2025-04-17T02:57:21.301Z",
+      "c": "2017-11-06T13:47:13.040Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Daily practice can build confidence and improve skills. ",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "68006e11117fb603c9181237",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a006b601579a300450f3e5a",
+      "sn": 1866,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:38.617Z",
+      "e": "2025-03-27T06:21:03.059Z",
+      "c": "2017-11-06T14:02:08.723Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Traveling by boat on the river is not possible in winter. ",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "sports"
+      ],
+      "bid": "67e4ee4fb3002f28ab5b9252",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a006abb8d6d81006338581d",
+      "sn": 1862,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:38.502Z",
+      "e": "2025-04-17T02:55:14.857Z",
+      "c": "2017-11-06T13:59:23.485Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The Earth atmosphere is mostly composed of nitrogen and oxygen gases.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "science"
+      ],
+      "bid": "68006d92fe6af4500b87704f",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a0efc0d1579a30038840711",
+      "sn": 2147,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:38.426Z",
+      "e": "2025-04-17T02:53:43.699Z",
+      "c": "2017-11-17T15:11:09.777Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Read the first section before the next meeting. ",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "politics"
+      ],
+      "bid": "68006d37117fb603c9180d11",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a0063d167f3560063351e29",
+      "sn": 1815,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:37.027Z",
+      "e": "2025-03-27T06:12:52.942Z",
+      "c": "2017-11-06T13:29:53.895Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The garden behind the university is open to the public in the summer. ",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "home"
+      ],
+      "bid": "67e4ec648f5c603fa6eb3701",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a005ecd8d6d81006337e447",
+      "sn": 1796,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:36.692Z",
+      "e": "2025-12-02T08:11:31.944Z",
+      "c": "2017-11-06T13:08:29.084Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "We have a lecture in the morning on Thursday.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [
+        "news"
+      ],
+      "bid": "692e9f33171b217b0ecd68a7",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a005f198d6d81006337e701",
+      "sn": 1798,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:36.667Z",
+      "e": "2025-04-17T03:10:34.783Z",
+      "c": "2017-11-06T13:09:45.342Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Packaging is very important to attract the attention of a buyer. ",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "real estate"
+      ],
+      "bid": "6800712aa2c0e443c8115014",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a005f5f8d6d81006337e97c",
+      "sn": 1802,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:36.630Z",
+      "e": "2025-03-27T06:10:03.665Z",
+      "c": "2017-11-06T13:10:55.499Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Students find true or false questions harder than short answers. ",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "67e4ebbbfe6af4500b0e6180",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a006943570c3500639f50b5",
+      "sn": 1855,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:36.505Z",
+      "e": "2025-04-17T02:55:40.625Z",
+      "c": "2017-11-06T13:53:07.207Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Many birds migrated to the warmer areas for the winter. ",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "pets"
+      ],
+      "bid": "68006dacfe6af4500b8770de",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a093e632f301e2c5cd20af2",
+      "sn": 2078,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:36.491Z",
+      "e": "2025-04-17T02:54:20.306Z",
+      "c": "2017-11-13T06:40:35.166Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "The most popular courses still have a few places left. ",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "68006d5ca2c0e443c81139f6",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "595f53df1b69e64c8df8af77",
+      "sn": 1437,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:36.385Z",
+      "e": "2025-04-17T03:11:31.733Z",
+      "c": "2017-07-07T09:26:55.279Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Water taps on the campus will discourage the frequent use of plastic bottles. ",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "food"
+      ],
+      "bid": "680071632c0db64bfb7cebba",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590095d761ff4b0066841ae5",
+      "sn": 924,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:36.176Z",
+      "e": "2025-04-17T03:21:49.967Z",
+      "c": "2017-04-26T12:43:03.473Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Avoid confusing the cause and effect of these changes.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "health"
+      ],
+      "bid": "680073cd2c0db64bfb7cfb7a",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590095b2a22b9d0065bebb06",
+      "sn": 922,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:36.094Z",
+      "e": "2025-03-27T03:37:33.650Z",
+      "c": "2017-04-26T12:42:26.084Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Nurses specialize in clinical work and management.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "careers"
+      ],
+      "bid": "67e4c7fd685d2315e67d9e06",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5950f0da128fe1006538562a",
+      "sn": 1260,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:36.075Z",
+      "e": "2025-04-17T03:13:43.840Z",
+      "c": "2017-06-26T11:32:42.345Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "He has landed a job in a very prestigious law firm.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "politics"
+      ],
+      "bid": "680071e7117fb603c9182853",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "595f3836ac502e006bb9a3ed",
+      "sn": 1387,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:36.014Z",
+      "e": "2025-03-27T06:03:49.299Z",
+      "c": "2017-07-07T07:28:54.744Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "A group meeting will be held tomorrow in the library conference room.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "art"
+      ],
+      "bid": "67e4ea45117fb603c99d5fe0",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5950ef998d6d810057106815",
+      "sn": 1249,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:35.926Z",
+      "e": "2026-03-30T04:06:04.667Z",
+      "c": "2017-06-26T11:27:21.648Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "We can’t consider any increase in our price at this stage.",
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "real estate"
+      ],
+      "bid": "69c9f6acf971c56b79a0859a",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5950f0280ce463005777c467",
+      "sn": 1252,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:35.839Z",
+      "e": "2025-04-17T03:14:11.904Z",
+      "c": "2017-06-26T11:29:44.256Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "Everyone must evacuate the premises during the fire drill.",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "politics"
+      ],
+      "bid": "680072038f5c603fa664afdf",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "59008c24b123db260cc02ce2",
+      "sn": 892,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:35.650Z",
+      "e": "2025-03-27T03:35:35.015Z",
+      "c": "2017-04-26T12:01:40.748Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "A number of students have volunteer jobs.",
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "67e4c786685d2315e67d9b6b",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "59007afe44d9040069038ed0",
+      "sn": 838,
+      "p": "WFD",
+      "u": "2026-06-22T06:43:35.600Z",
+      "e": "2025-04-17T03:28:12.662Z",
+      "c": "2017-04-26T10:48:30.230Z",
+      "t": "Listening",
+      "ie": false,
+      "te": "You must submit your assignments by next Friday at the latest. ",
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "politics"
+      ],
+      "bid": "6800754ca2c0e443c811699a",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    }
+  ]
+}

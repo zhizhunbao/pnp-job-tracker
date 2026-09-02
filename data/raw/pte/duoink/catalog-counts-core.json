@@ -1,0 +1,28 @@
+{
+  "source": "https://duoink.co/pte/",
+  "test_type": "PTE Core",
+  "fetched": "2026-09-02T03:04:57.494273+00:00",
+  "total_list_records": 1634,
+  "parts": {
+    "INTRO": 1,
+    "RA": 134,
+    "RS": 393,
+    "DI": 108,
+    "RTS": 61,
+    "ASQ": 151,
+    "SWT": 20,
+    "WEM": 25,
+    "FIB_RW": 153,
+    "MA_R": 5,
+    "RP": 57,
+    "FIB_R": 138,
+    "SA_R": 5,
+    "SST": 19,
+    "MA_L": 2,
+    "FIB_LW": 49,
+    "SA_L": 4,
+    "SMW": 6,
+    "HIW": 27,
+    "WFD": 276
+  }
+}

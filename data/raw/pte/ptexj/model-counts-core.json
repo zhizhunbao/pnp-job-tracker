@@ -1,0 +1,31 @@
+{
+  "source": "https://www.ptexj.com/pte/",
+  "api_origin": "https://any.ptexj.com/api/v1/questions/list_v2",
+  "profile_exam_type": "pte_core",
+  "fetched": "2026-09-02T03:06:03.177391+00:00",
+  "total_core_list_records": 15486,
+  "models": {
+    "read_alouds": 1443,
+    "repeat_sentences": 2844,
+    "describe_images": 1223,
+    "answer_questions": 2361,
+    "respond_situations": 108,
+    "write_emails": 80,
+    "core_swts": 80,
+    "fib_rd": 1046,
+    "fib_wr": 1135,
+    "r_mcm": 67,
+    "ro": 772,
+    "r_mcs": 115,
+    "core_ssts": 63,
+    "l_mcm": 70,
+    "l_fib": 288,
+    "l_hcs": 60,
+    "l_mcs": 87,
+    "l_smw": 89,
+    "hiws": 336,
+    "wfds": 3219
+  },
+  "errors": {},
+  "content_boundary": "Per-question item and q_full_text payloads are returned as e1 ciphertext; no decryption bypass was attempted."
+}

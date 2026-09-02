@@ -1,0 +1,4884 @@
+{
+  "source": "https://duoink.co/pte/",
+  "part": "WFD",
+  "test_type": "PTE Core",
+  "fetched": "2026-09-02T03:07:17.691638+00:00",
+  "total_questions": 276,
+  "hot_definition": "core_frequency >= 2",
+  "hot_questions": 237,
+  "frequency_distribution": {
+    "0": 6,
+    "1": 33,
+    "2": 52,
+    "3": 185
+  },
+  "questions": [
+    {
+      "id": "5ab1b201fe88c200381202fb",
+      "serial_number": 3559,
+      "text": "Traffic is the main cause of air pollution in many cities.",
+      "created_at": "2018-03-21T01:14:41.549Z",
+      "recent_seen_at": "2026-05-06T08:27:02.802Z",
+      "updated_at": "2026-08-29T23:04:46.993Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [
+        "science"
+      ],
+      "test_types": [
+        "c",
+        "a"
+      ]
+    },
+    {
+      "id": "5c26d85dac502e006772000b",
+      "serial_number": 5494,
+      "text": "The teacher training is an observation of the classes.",
+      "created_at": "2018-12-29T02:13:49.882Z",
+      "recent_seen_at": "2026-03-30T02:04:12.546Z",
+      "updated_at": "2026-08-13T11:43:50.405Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5cb44ed9a91c9300698c2098",
+      "serial_number": 6304,
+      "text": "You need to put these books on the table over there.",
+      "created_at": "2019-04-15T09:28:56.999Z",
+      "recent_seen_at": "2025-04-16T08:48:38.308Z",
+      "updated_at": "2026-07-08T12:36:18.412Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [
+        "art"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "692e908af05e621fb1698281",
+      "serial_number": 10358,
+      "text": "There was a lot of traffic this morning.",
+      "created_at": "2025-12-02T07:08:58.885Z",
+      "recent_seen_at": "2025-12-02T07:09:52.727Z",
+      "updated_at": "2026-07-06T23:51:33.404Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9d1cc6a394b5e5c210550",
+      "serial_number": 10489,
+      "text": "The restroom is down the hall and on the right.",
+      "created_at": "2026-03-30T01:28:44.966Z",
+      "recent_seen_at": "2026-03-30T01:31:34.123Z",
+      "updated_at": "2026-07-06T05:50:48.551Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9f9ad8591971b5416e09b",
+      "serial_number": 10501,
+      "text": "The weather has been lovely from this time of the year.",
+      "created_at": "2026-03-30T04:18:53.627Z",
+      "recent_seen_at": "2026-03-30T04:19:46.540Z",
+      "updated_at": "2026-07-06T05:41:34.095Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6a42544181df541954ac67d0",
+      "serial_number": 10624,
+      "text": "Please get us a meeting room for the next hour.",
+      "created_at": "2026-06-29T11:17:21.631Z",
+      "recent_seen_at": "2026-06-29T11:17:59.255Z",
+      "updated_at": "2026-06-29T11:17:59.303Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 0,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6a4253c024a83f4fbda61a25",
+      "serial_number": 10622,
+      "text": "You will get your uniform on the first day of school.",
+      "created_at": "2026-06-29T11:15:12.038Z",
+      "recent_seen_at": "2026-06-29T11:15:50.400Z",
+      "updated_at": "2026-06-29T11:15:50.437Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 0,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6a42529dbc37d772be6c8620",
+      "serial_number": 10619,
+      "text": "Being a vegan means not consuming any animal products.",
+      "created_at": "2026-06-29T11:10:21.906Z",
+      "recent_seen_at": "2026-06-29T11:11:06.784Z",
+      "updated_at": "2026-06-29T11:11:06.883Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 0,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6a4251d573f4b6282c7af252",
+      "serial_number": 10616,
+      "text": "The meeting for first-year economics students is on Tuesday.",
+      "created_at": "2026-06-29T11:07:01.358Z",
+      "recent_seen_at": "2026-06-29T11:07:49.687Z",
+      "updated_at": "2026-06-29T11:07:49.741Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 0,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6a42518724a83f4fbda61014",
+      "serial_number": 10615,
+      "text": "All the new students will be gathering at the canteen before the class starts.",
+      "created_at": "2026-06-29T11:05:43.033Z",
+      "recent_seen_at": "2026-06-29T11:06:45.224Z",
+      "updated_at": "2026-06-29T11:06:45.301Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 0,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6a42507981df541954ac56d1",
+      "serial_number": 10611,
+      "text": "The weather report advised us to prepare for a big freeze.",
+      "created_at": "2026-06-29T11:01:13.170Z",
+      "recent_seen_at": "2026-06-29T11:01:54.322Z",
+      "updated_at": "2026-06-29T11:01:54.453Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 0,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6a424ffac27e22207c0a8866",
+      "serial_number": 10610,
+      "text": "The university canteen offers so many options.",
+      "created_at": "2026-06-29T10:59:06.031Z",
+      "recent_seen_at": "2026-06-29T11:00:28.465Z",
+      "updated_at": "2026-06-29T11:00:28.560Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 0,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "59008307a0bb9f0065dc8f12",
+      "serial_number": 849,
+      "text": "The cart carries a single object.",
+      "created_at": "2017-04-26T11:22:47.576Z",
+      "recent_seen_at": "2026-06-29T10:55:29.066Z",
+      "updated_at": "2026-06-29T10:55:29.193Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 0,
+      "level": 1,
+      "topics": [
+        "technology"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6396e45e2cbe5519dc53cf77",
+      "serial_number": 8564,
+      "text": "The marketing budget has doubled since the beginning of the year.",
+      "created_at": "2022-12-12T08:21:34.736Z",
+      "recent_seen_at": "2026-06-26T09:01:30.533Z",
+      "updated_at": "2026-06-26T09:01:30.647Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5d259b8830863b0068244ad2",
+      "serial_number": 6628,
+      "text": "Air pollution is a serious problem all over the world.",
+      "created_at": "2019-07-10T08:02:16.936Z",
+      "recent_seen_at": "2026-06-26T09:01:08.556Z",
+      "updated_at": "2026-06-26T09:01:08.605Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [
+        "science"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c8eff768d6d81006fc27b20",
+      "serial_number": 6036,
+      "text": "Criminal charges will be brought against all of the men.",
+      "created_at": "2019-03-18T02:16:22.164Z",
+      "recent_seen_at": "2026-06-26T09:00:56.595Z",
+      "updated_at": "2026-06-26T09:00:56.658Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [
+        "society"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c498e5267f35600616a180b",
+      "serial_number": 5672,
+      "text": "Take the first step to apply for your university scholarship.",
+      "created_at": "2019-01-24T10:07:14.032Z",
+      "recent_seen_at": "2026-06-26T09:00:45.298Z",
+      "updated_at": "2026-06-26T09:00:45.348Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6762669b6a0b720006f72749",
+      "serial_number": 9506,
+      "text": "Your tutor will provide the guidance on how to structure the essay.",
+      "created_at": "2024-12-18T06:07:23.910Z",
+      "recent_seen_at": "2026-06-26T09:00:30.765Z",
+      "updated_at": "2026-06-26T09:00:30.831Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "67568cee77124e2a6c1f0f33",
+      "serial_number": 9499,
+      "text": "Medical books and journals have been moved to the second floor.",
+      "created_at": "2024-12-09T06:23:42.215Z",
+      "recent_seen_at": "2026-06-26T09:00:20.366Z",
+      "updated_at": "2026-06-26T09:00:20.448Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "66c6f88ff6e24b644beb15dc",
+      "serial_number": 9429,
+      "text": "Employment figures will decrease in the next few years.",
+      "created_at": "2024-08-22T08:36:31.794Z",
+      "recent_seen_at": "2026-06-26T09:00:08.457Z",
+      "updated_at": "2026-06-26T09:00:08.509Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "66c6ae625252347cdbad8411",
+      "serial_number": 9427,
+      "text": "We will hold a celebration for the graduated students.",
+      "created_at": "2024-08-22T03:20:02.055Z",
+      "recent_seen_at": "2026-06-26T08:59:13.497Z",
+      "updated_at": "2026-06-26T08:59:13.559Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "66b579414095855b7c26edba",
+      "serial_number": 9413,
+      "text": "Social media is responsible for helping the government to solve social problems.",
+      "created_at": "2024-08-09T02:04:49.974Z",
+      "recent_seen_at": "2026-06-26T08:58:57.808Z",
+      "updated_at": "2026-06-26T08:58:57.872Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 2,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "64756665902ee364cca20af8",
+      "serial_number": 8760,
+      "text": "New media have a significant impact on human communications.",
+      "created_at": "2023-05-30T02:58:45.631Z",
+      "recent_seen_at": "2026-06-26T08:58:17.902Z",
+      "updated_at": "2026-06-26T08:58:17.979Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 2,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "621890fa4d562832e74d2613",
+      "serial_number": 8231,
+      "text": "Online courses enable people to improve their skills while employed.",
+      "created_at": "2022-02-25T08:20:41.605Z",
+      "recent_seen_at": "2026-06-26T08:57:50.603Z",
+      "updated_at": "2026-06-26T08:57:50.660Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "619745398572763fc58aab62",
+      "serial_number": 8146,
+      "text": "Digital gadgets are an excellent addition to any outdoor venture.",
+      "created_at": "2021-11-19T08:53:07.545Z",
+      "recent_seen_at": "2026-06-26T08:57:37.489Z",
+      "updated_at": "2026-06-26T08:57:37.560Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 2,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "60d92d12645591332ffcbd6a",
+      "serial_number": 7912,
+      "text": "The use of wind energy has increased rapidly.",
+      "created_at": "2021-06-28T01:59:46.314Z",
+      "recent_seen_at": "2026-06-26T08:57:22.664Z",
+      "updated_at": "2026-06-26T08:57:22.823Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "60865b11e11036132e8c36c1",
+      "serial_number": 7722,
+      "text": "Global pollution levels are rising at an increasing rate.",
+      "created_at": "2021-04-26T06:17:53.291Z",
+      "recent_seen_at": "2026-06-26T08:56:57.366Z",
+      "updated_at": "2026-06-26T08:56:57.451Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 0,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "608217a82b3c4422e7d90799",
+      "serial_number": 7706,
+      "text": "Electric buses have an impact on air pollution.",
+      "created_at": "2021-04-23T00:41:12.290Z",
+      "recent_seen_at": "2026-06-26T08:56:41.189Z",
+      "updated_at": "2026-06-26T08:56:41.260Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 0,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "605acac19f306304d0c53542",
+      "serial_number": 7637,
+      "text": "Our undergraduate courses are designed with employment ability in mind.",
+      "created_at": "2021-03-24T05:14:41.977Z",
+      "recent_seen_at": "2026-06-26T08:56:26.619Z",
+      "updated_at": "2026-06-26T08:56:26.729Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 0,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6033825f0292980a61f181a2",
+      "serial_number": 7560,
+      "text": "It is generally accepted that language is a part of the culture.",
+      "created_at": "2021-02-22T10:07:27.805Z",
+      "recent_seen_at": "2026-06-26T08:55:36.887Z",
+      "updated_at": "2026-06-26T08:55:36.958Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5e4c86431358aa006ae044e3",
+      "serial_number": 7154,
+      "text": "Please click the logo above to enter the site.",
+      "created_at": "2020-02-19T00:50:11.533Z",
+      "recent_seen_at": "2026-06-26T08:55:00.543Z",
+      "updated_at": "2026-06-26T08:55:00.617Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 2,
+      "level": 0,
+      "topics": [
+        "art"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5e4655ef5620710077022e6b",
+      "serial_number": 7140,
+      "text": "Many cities are actively working on ways to reduce air pollution.",
+      "created_at": "2020-02-14T08:10:23.971Z",
+      "recent_seen_at": "2026-06-26T08:54:45.133Z",
+      "updated_at": "2026-06-26T08:54:45.202Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 0,
+      "level": 1,
+      "topics": [
+        "automotive"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5e3a981e21b47e0077582263",
+      "serial_number": 7123,
+      "text": "It is possible to keep the energy of an atom in two ways.",
+      "created_at": "2020-02-05T10:25:34.231Z",
+      "recent_seen_at": "2026-06-26T08:53:18.391Z",
+      "updated_at": "2026-06-26T08:53:18.460Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 0,
+      "level": 1,
+      "topics": [
+        "science"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5def60badd3c13006968b0bf",
+      "serial_number": 7048,
+      "text": "Rising inflation means increasing goods prices and decreasing demand for products.",
+      "created_at": "2019-12-10T09:09:14.872Z",
+      "recent_seen_at": "2026-06-26T08:53:04.039Z",
+      "updated_at": "2026-06-26T08:53:04.131Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 2,
+      "level": 2,
+      "topics": [
+        "business"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ddc9fd943c2570074d36c69",
+      "serial_number": 6956,
+      "text": "The technology has transformed the nature of society.",
+      "created_at": "2019-11-26T03:45:29.911Z",
+      "recent_seen_at": "2026-06-26T08:52:17.198Z",
+      "updated_at": "2026-06-26T08:52:17.265Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 0,
+      "level": 2,
+      "topics": [
+        "technology"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ddb958b8a84ab0068cd0536",
+      "serial_number": 6945,
+      "text": "Education is more about just learning skills for employment.",
+      "created_at": "2019-11-25T08:49:15.164Z",
+      "recent_seen_at": "2026-06-26T08:51:55.825Z",
+      "updated_at": "2026-06-26T08:51:56.131Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ddb89e48a84ab0068ccb26a",
+      "serial_number": 6940,
+      "text": "Research shows that spending time in outdoors has a range of benefits.",
+      "created_at": "2019-11-25T07:59:32.593Z",
+      "recent_seen_at": "2026-06-26T08:50:59.890Z",
+      "updated_at": "2026-06-26T08:50:59.989Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "society"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c9b954730863b0069a08b10",
+      "serial_number": 6157,
+      "text": "Employment figures are expected to be improved in the next few years.",
+      "created_at": "2019-03-27T15:22:47.832Z",
+      "recent_seen_at": "2026-06-26T08:50:30.711Z",
+      "updated_at": "2026-06-26T08:50:30.803Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 0,
+      "level": 1,
+      "topics": [
+        "careers"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c930c67a3180b00731558b0",
+      "serial_number": 6084,
+      "text": "We hold the visiting tours throughout the year for students.",
+      "created_at": "2019-03-21T04:00:39.499Z",
+      "recent_seen_at": "2026-06-26T08:50:01.138Z",
+      "updated_at": "2026-06-26T08:50:01.204Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 0,
+      "level": 1,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c3595d2808ca4006e391244",
+      "serial_number": 5562,
+      "text": "A rising population means more trees are cut down.",
+      "created_at": "2019-01-09T06:33:54.797Z",
+      "recent_seen_at": "2026-06-26T08:49:40.741Z",
+      "updated_at": "2026-06-26T08:49:40.812Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 0,
+      "level": 1,
+      "topics": [
+        "society"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c09cbf275657100681b447e",
+      "serial_number": 5323,
+      "text": "Both staff and students can purchase car parking permits online.",
+      "created_at": "2018-12-07T01:25:06.330Z",
+      "recent_seen_at": "2026-06-26T08:48:31.522Z",
+      "updated_at": "2026-06-26T08:48:31.592Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "real estate"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5bfe4d687565710068817502",
+      "serial_number": 5278,
+      "text": "Get enough sleep the night before the test.",
+      "created_at": "2018-11-28T08:10:16.123Z",
+      "recent_seen_at": "2026-06-26T08:48:08.335Z",
+      "updated_at": "2026-06-26T08:48:08.401Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 0,
+      "level": 0,
+      "topics": [
+        "health"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5bee90de4773f7005fed5c1e",
+      "serial_number": 5234,
+      "text": "The visiting speaker used to be a lecturer in this department.",
+      "created_at": "2018-11-16T09:41:50.654Z",
+      "recent_seen_at": "2026-06-26T08:47:56.276Z",
+      "updated_at": "2026-06-26T08:47:56.326Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 2,
+      "level": 2,
+      "topics": [
+        "politics"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5be54d1a9f545400691b9247",
+      "serial_number": 5153,
+      "text": "Governments need to make solar energy more affordable to everyone.",
+      "created_at": "2018-11-09T09:02:18.441Z",
+      "recent_seen_at": "2026-06-26T08:47:43.711Z",
+      "updated_at": "2026-06-26T08:47:43.778Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 2,
+      "topics": [
+        "business"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5abb3217ee920a004759b6b6",
+      "serial_number": 3640,
+      "text": "Increasing population results in an increasing demand in energy.",
+      "created_at": "2018-03-28T06:11:35.327Z",
+      "recent_seen_at": "2026-06-26T08:47:29.346Z",
+      "updated_at": "2026-06-26T08:47:29.423Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 2,
+      "topics": [
+        "business"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ab0e621ee920a0043b6f989",
+      "serial_number": 3488,
+      "text": "Most of the students have not considered this issue before.",
+      "created_at": "2018-03-20T10:44:49.575Z",
+      "recent_seen_at": "2026-06-26T08:47:10.360Z",
+      "updated_at": "2026-06-26T08:47:10.443Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 0,
+      "level": 1,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a0066c867f3560063353a80",
+      "serial_number": 1832,
+      "text": "That means they have so many struggling overlaps.",
+      "created_at": "2017-11-06T13:42:32.043Z",
+      "recent_seen_at": "2026-06-26T08:46:58.391Z",
+      "updated_at": "2026-06-26T08:46:58.460Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "politics"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a00650667f35600633529cf",
+      "serial_number": 1821,
+      "text": "Online courses allow students to work at their own pace.",
+      "created_at": "2017-11-06T13:35:02.240Z",
+      "recent_seen_at": "2026-06-26T08:46:42.245Z",
+      "updated_at": "2026-06-26T08:46:42.318Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5950eeaf8d6d810057105a0f",
+      "serial_number": 1241,
+      "text": "The history of the movement was recorded by several writers.",
+      "created_at": "2017-06-26T11:23:27.715Z",
+      "recent_seen_at": "2026-06-26T08:46:29.610Z",
+      "updated_at": "2026-06-26T08:46:29.669Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 2,
+      "topics": [
+        "art"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590095c50ce46300614b7881",
+      "serial_number": 923,
+      "text": "They were struggling last year to make their service pay.",
+      "created_at": "2017-04-26T12:42:45.540Z",
+      "recent_seen_at": "2026-06-26T08:46:16.551Z",
+      "updated_at": "2026-06-26T08:46:16.641Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "automotive"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "68b6a120c29a3849f87657af",
+      "serial_number": 10071,
+      "text": "The restrooms are down the hall to the right.",
+      "created_at": "2025-09-02T07:47:44.231Z",
+      "recent_seen_at": "2026-03-30T01:27:32.780Z",
+      "updated_at": "2026-06-26T02:06:32.163Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "68355c1e6993d81fe62d6aad",
+      "serial_number": 9840,
+      "text": "Speak to your tutor if you need further assistance.",
+      "created_at": "2025-05-27T06:30:54.260Z",
+      "recent_seen_at": "2025-05-27T06:31:28.624Z",
+      "updated_at": "2026-06-26T02:06:31.537Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6835263ace7fc86faf7ddd3d",
+      "serial_number": 9828,
+      "text": "You can get your coffee or tea in the lounge room.",
+      "created_at": "2025-05-27T02:40:58.473Z",
+      "recent_seen_at": "2026-03-30T04:10:54.074Z",
+      "updated_at": "2026-06-26T02:06:30.915Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 0,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6825945fb9570274df0ca77b",
+      "serial_number": 9696,
+      "text": "Before preparing food, please make sure to wash your hands.",
+      "created_at": "2025-05-15T07:14:39.629Z",
+      "recent_seen_at": "2025-10-13T08:04:55.302Z",
+      "updated_at": "2026-06-26T02:06:30.239Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "661254c56357e9735e313813",
+      "serial_number": 9176,
+      "text": "In my opinion, this car should be repaired soon.",
+      "created_at": "2024-04-07T08:09:41.668Z",
+      "recent_seen_at": "2025-04-15T09:24:50.559Z",
+      "updated_at": "2026-06-26T02:06:25.845Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65d471a4881ec62a69d464f5",
+      "serial_number": 9102,
+      "text": "At that time, few people moved through the town to the village.",
+      "created_at": "2024-02-20T09:32:20.395Z",
+      "recent_seen_at": "2024-02-20T09:33:03.406Z",
+      "updated_at": "2026-06-26T02:06:25.186Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65d46dc0288c180715eeed21",
+      "serial_number": 9099,
+      "text": "The restroom is down the hall and on the right.",
+      "created_at": "2024-02-20T09:15:44.167Z",
+      "recent_seen_at": "2025-04-15T09:29:12.804Z",
+      "updated_at": "2026-06-26T02:06:24.510Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 2,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "639823fffa857223e7f38d7c",
+      "serial_number": 8577,
+      "text": "Today we have a guest speaker who is visiting from Canada.",
+      "created_at": "2022-12-13T07:05:30.444Z",
+      "recent_seen_at": "2025-04-16T02:52:54.193Z",
+      "updated_at": "2026-06-26T02:06:23.264Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "63087f04e8f18b220aff8814",
+      "serial_number": 8444,
+      "text": "Please make an appointment with your tutor about work.",
+      "created_at": "2022-08-26T08:11:51.323Z",
+      "recent_seen_at": "2026-03-30T01:25:11.343Z",
+      "updated_at": "2026-06-26T02:06:22.589Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5fa914f20868457605f0a5e3",
+      "serial_number": 7487,
+      "text": "I want to make an appointment with the manager.",
+      "created_at": "2020-11-09T10:07:46.293Z",
+      "recent_seen_at": "2026-03-30T01:24:37.410Z",
+      "updated_at": "2026-06-26T02:06:17.372Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [
+        "politics"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5f9fa551ebe6441929a41701",
+      "serial_number": 7458,
+      "text": "There were a lot of traffic jams this morning.",
+      "created_at": "2020-11-02T06:21:05.732Z",
+      "recent_seen_at": "2025-04-16T07:51:29.212Z",
+      "updated_at": "2026-06-26T02:06:16.711Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 2,
+      "level": 0,
+      "topics": [
+        "news"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5f9fa501103dba7368632ab9",
+      "serial_number": 7456,
+      "text": "Students will meet their new teachers after the summer vacation.",
+      "created_at": "2020-11-02T06:19:45.280Z",
+      "recent_seen_at": "2025-11-21T09:42:58.346Z",
+      "updated_at": "2026-06-26T02:06:16.074Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5e49fa3c8a84ab006a2e7ebb",
+      "serial_number": 7142,
+      "text": "The digital revolution has changed the way we read.",
+      "created_at": "2020-02-17T02:28:12.719Z",
+      "recent_seen_at": "2025-11-24T02:22:15.298Z",
+      "updated_at": "2026-06-26T02:06:14.659Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [
+        "politics"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5de712c921460d0068193a26",
+      "serial_number": 7026,
+      "text": "The island is located at the south end of the bay.",
+      "created_at": "2019-12-04T01:58:33.381Z",
+      "recent_seen_at": "2025-04-16T07:59:25.821Z",
+      "updated_at": "2026-06-26T02:06:11.937Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [
+        "sports"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5dd23f6c8a84ab0074d222de",
+      "serial_number": 6886,
+      "text": "The falling birth rate means the number of students dropped.",
+      "created_at": "2019-11-18T06:51:24.706Z",
+      "recent_seen_at": "2025-11-24T02:20:39.893Z",
+      "updated_at": "2026-06-26T02:06:09.250Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c987fcf0237d7006831181e",
+      "serial_number": 6112,
+      "text": "We can all meet at my office after the lecture.",
+      "created_at": "2019-03-25T07:14:23.632Z",
+      "recent_seen_at": "2025-03-27T07:57:58.333Z",
+      "updated_at": "2026-06-26T02:06:07.896Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 0,
+      "topics": [
+        "politics"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c0f8af3808ca4006787779f",
+      "serial_number": 5353,
+      "text": "You can ask your tutor for further assistance.",
+      "created_at": "2018-12-11T10:01:23.121Z",
+      "recent_seen_at": "2026-03-30T04:03:14.127Z",
+      "updated_at": "2026-06-26T02:06:04.850Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "society"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590096b4570c350058fd225d",
+      "serial_number": 939,
+      "text": "I thought it was thrown in the small meeting room.",
+      "created_at": "2017-04-26T12:46:44.693Z",
+      "recent_seen_at": "2024-08-07T02:51:42.998Z",
+      "updated_at": "2026-06-26T02:05:26.806Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 2,
+      "level": 0,
+      "topics": [
+        "science"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "69c9fa1df971c56b79a09b23",
+      "serial_number": 10502,
+      "text": "Before the summer vacation, students will meet their new teachers.",
+      "created_at": "2026-03-30T04:20:45.926Z",
+      "recent_seen_at": "2026-03-30T04:21:53.259Z",
+      "updated_at": "2026-06-26T02:01:46.712Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9dc0b6a394b5e5c215338",
+      "serial_number": 10496,
+      "text": "The teacher asked the group to complete the task.",
+      "created_at": "2026-03-30T02:12:27.741Z",
+      "recent_seen_at": "2026-03-30T02:13:51.412Z",
+      "updated_at": "2026-06-26T02:01:46.044Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9da7ef971c56b799fb84f",
+      "serial_number": 10495,
+      "text": "The fiction books are just past the counter.",
+      "created_at": "2026-03-30T02:05:50.905Z",
+      "recent_seen_at": "2026-03-30T02:07:31.908Z",
+      "updated_at": "2026-06-26T02:01:45.429Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 2,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9d93ef971c56b799faf62",
+      "serial_number": 10493,
+      "text": "The weather used to be lovely at this time of the year.",
+      "created_at": "2026-03-30T02:00:30.170Z",
+      "recent_seen_at": "2026-03-30T02:01:39.676Z",
+      "updated_at": "2026-06-26T02:01:44.750Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 2,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "68259617b9570274df0cb9e1",
+      "serial_number": 9697,
+      "text": "The fiction books have just passed to the counter.",
+      "created_at": "2025-05-15T07:21:59.245Z",
+      "recent_seen_at": "2025-12-02T02:18:07.152Z",
+      "updated_at": "2026-06-26T01:49:23.551Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9291f05e621fb1699223",
+      "serial_number": 10362,
+      "text": "Currently the growth of the economy is unpredictable.",
+      "created_at": "2025-12-02T07:17:37.230Z",
+      "recent_seen_at": "2026-05-13T07:40:43.898Z",
+      "updated_at": "2026-06-25T10:34:19.767Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "c",
+        "a"
+      ]
+    },
+    {
+      "id": "5f978e8ae8ed3c21a4d852f3",
+      "serial_number": 7448,
+      "text": "Make sure you wash your hands before preparing the food.",
+      "created_at": "2020-10-27T03:05:46.362Z",
+      "recent_seen_at": "2026-06-24T09:49:15.224Z",
+      "updated_at": "2026-06-24T09:49:15.314Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "food"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "692e9a48daee5f72f25beedd",
+      "serial_number": 10368,
+      "text": "I want to make an appointment with the manager.",
+      "created_at": "2025-12-02T07:50:32.362Z",
+      "recent_seen_at": "2026-06-22T11:55:59.485Z",
+      "updated_at": "2026-06-22T11:55:59.569Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9fbc76a394b5e5c222811",
+      "serial_number": 10504,
+      "text": "You can get your coffee or tea in the lunch room.",
+      "created_at": "2026-03-30T04:27:51.525Z",
+      "recent_seen_at": "2026-03-30T04:28:51.594Z",
+      "updated_at": "2026-06-22T06:44:05.179Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9f9306a394b5e5c221c75",
+      "serial_number": 10500,
+      "text": "There were a lot of traffic jams on the road in the morning.",
+      "created_at": "2026-03-30T04:16:48.635Z",
+      "recent_seen_at": "2026-03-30T04:17:44.270Z",
+      "updated_at": "2026-06-22T06:44:05.121Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9f086b7e0dd42b2366f8a",
+      "serial_number": 10499,
+      "text": "The university canteen offers different healthy meal options.",
+      "created_at": "2026-03-30T03:39:50.054Z",
+      "recent_seen_at": "2026-03-30T03:41:32.781Z",
+      "updated_at": "2026-06-22T06:44:05.107Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9d9a5807d4d3fd7ff080c",
+      "serial_number": 10494,
+      "text": "Everyone in this room needs to follow the rules.",
+      "created_at": "2026-03-30T02:02:13.332Z",
+      "recent_seen_at": "2026-03-30T02:03:07.021Z",
+      "updated_at": "2026-06-22T06:44:05.049Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9d8a52a96a0191aab0294",
+      "serial_number": 10492,
+      "text": "You can keep your bag in the back room.",
+      "created_at": "2026-03-30T01:57:57.005Z",
+      "recent_seen_at": "2026-03-30T01:59:32.938Z",
+      "updated_at": "2026-06-22T06:44:05.029Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9d5d2807d4d3fd7feea81",
+      "serial_number": 10491,
+      "text": "Before preparing any food, be sure to wash your hands well.",
+      "created_at": "2026-03-30T01:45:54.463Z",
+      "recent_seen_at": "2026-03-30T01:48:38.709Z",
+      "updated_at": "2026-06-22T06:44:05.016Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "69c9d2fdb7e0dd42b2356f34",
+      "serial_number": 10490,
+      "text": "You need to turn off the lights to save energy.",
+      "created_at": "2026-03-30T01:33:49.449Z",
+      "recent_seen_at": "2026-03-30T01:38:25.257Z",
+      "updated_at": "2026-06-22T06:44:05.002Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692ea21905564e31267f48ac",
+      "serial_number": 10386,
+      "text": "Let me give you an example to explain what I mean.",
+      "created_at": "2025-12-02T08:23:53.889Z",
+      "recent_seen_at": "2025-12-02T08:24:21.259Z",
+      "updated_at": "2026-06-22T06:44:04.920Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692ea18f171b217b0ecd79bb",
+      "serial_number": 10384,
+      "text": "The new camera can identify your eyes and focus on them.",
+      "created_at": "2025-12-02T08:21:35.524Z",
+      "recent_seen_at": "2025-12-02T08:22:06.013Z",
+      "updated_at": "2026-06-22T06:44:04.890Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692ea140daee5f72f25c2bcd",
+      "serial_number": 10383,
+      "text": "Students are advised to use multiple methods for this project.",
+      "created_at": "2025-12-02T08:20:16.908Z",
+      "recent_seen_at": "2025-12-02T08:20:57.445Z",
+      "updated_at": "2026-06-22T06:44:04.874Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692ea0eedaee5f72f25c298a",
+      "serial_number": 10382,
+      "text": "Sales figures for last year were better than expected.",
+      "created_at": "2025-12-02T08:18:54.574Z",
+      "recent_seen_at": "2025-12-02T08:19:41.163Z",
+      "updated_at": "2026-06-22T06:44:04.858Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692ea086daee5f72f25c26c6",
+      "serial_number": 10381,
+      "text": "You should draw your graph on a separate page.",
+      "created_at": "2025-12-02T08:17:10.223Z",
+      "recent_seen_at": "2025-12-02T08:17:38.110Z",
+      "updated_at": "2026-06-22T06:44:04.840Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692ea039daee5f72f25c2476",
+      "serial_number": 10380,
+      "text": "Students who study overseas can significantly improve their employment opportunities.",
+      "created_at": "2025-12-02T08:15:53.453Z",
+      "recent_seen_at": "2025-12-02T08:16:51.623Z",
+      "updated_at": "2026-06-22T06:44:04.823Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 3,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9f9cdaee5f72f25c1d0a",
+      "serial_number": 10378,
+      "text": "The teacher training includes observing the classes.",
+      "created_at": "2025-12-02T08:13:16.928Z",
+      "recent_seen_at": "2025-12-02T08:14:18.396Z",
+      "updated_at": "2026-06-22T06:44:04.794Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9ef7171b217b0ecd66fb",
+      "serial_number": 10377,
+      "text": "The history lecture has been moved to the lecture theater.",
+      "created_at": "2025-12-02T08:10:31.936Z",
+      "recent_seen_at": "2025-12-02T08:11:05.956Z",
+      "updated_at": "2026-06-22T06:44:04.778Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9eabaf4f482042bd64b7",
+      "serial_number": 10376,
+      "text": "The bus to London will leave ten minutes later than planned.",
+      "created_at": "2025-12-02T08:09:15.923Z",
+      "recent_seen_at": "2025-12-02T08:09:50.693Z",
+      "updated_at": "2026-06-22T06:44:04.763Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9d26171b217b0ecd57f8",
+      "serial_number": 10374,
+      "text": "At that time, few people moved from towns to villages.",
+      "created_at": "2025-12-02T08:02:46.133Z",
+      "recent_seen_at": "2025-12-02T08:03:19.494Z",
+      "updated_at": "2026-06-22T06:44:04.739Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9cbcf05e621fb169e96d",
+      "serial_number": 10373,
+      "text": "The university canteen is now offering many healthy meal options.",
+      "created_at": "2025-12-02T08:01:00.721Z",
+      "recent_seen_at": "2025-12-02T08:01:52.878Z",
+      "updated_at": "2026-06-22T06:44:04.724Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9c65f05e621fb169e6b8",
+      "serial_number": 10372,
+      "text": "The restrooms are down the entrance and to the right.",
+      "created_at": "2025-12-02T07:59:33.495Z",
+      "recent_seen_at": "2025-12-02T08:00:15.480Z",
+      "updated_at": "2026-06-22T06:44:04.707Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9bcaaf4f482042bd4dd2",
+      "serial_number": 10371,
+      "text": "Please turn off the light to save energy.",
+      "created_at": "2025-12-02T07:56:58.298Z",
+      "recent_seen_at": "2025-12-02T07:58:11.316Z",
+      "updated_at": "2026-06-22T06:44:04.689Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9b37daee5f72f25bf630",
+      "serial_number": 10370,
+      "text": "You will get your uniform on the first day.",
+      "created_at": "2025-12-02T07:54:31.263Z",
+      "recent_seen_at": "2025-12-02T07:55:17.921Z",
+      "updated_at": "2026-06-22T06:44:04.672Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9ac4af4f482042bd4618",
+      "serial_number": 10369,
+      "text": "The stairs are to the left of the elevator.",
+      "created_at": "2025-12-02T07:52:36.935Z",
+      "recent_seen_at": "2025-12-02T07:53:31.207Z",
+      "updated_at": "2026-06-22T06:44:04.652Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e998da54da130bec22045",
+      "serial_number": 10367,
+      "text": "The weather used to be lovely for this time of year.",
+      "created_at": "2025-12-02T07:47:25.339Z",
+      "recent_seen_at": "2025-12-02T07:48:18.800Z",
+      "updated_at": "2026-06-22T06:44:04.619Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e97fa05564e31267ef203",
+      "serial_number": 10366,
+      "text": "You should submit your term papers to the general office.",
+      "created_at": "2025-12-02T07:40:42.048Z",
+      "recent_seen_at": "2025-12-02T07:42:10.360Z",
+      "updated_at": "2026-06-22T06:44:04.605Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9757af4f482042bd247f",
+      "serial_number": 10365,
+      "text": "Exam results will be published on the noticeboard.",
+      "created_at": "2025-12-02T07:37:59.327Z",
+      "recent_seen_at": "2025-12-02T07:39:04.337Z",
+      "updated_at": "2026-06-22T06:44:04.586Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9338171b217b0eccf961",
+      "serial_number": 10364,
+      "text": "Please make an appointment with your tutor about work.",
+      "created_at": "2025-12-02T07:20:24.526Z",
+      "recent_seen_at": "2025-12-02T07:21:08.181Z",
+      "updated_at": "2026-06-22T06:44:04.567Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e92f1af4f482042bcfbab",
+      "serial_number": 10363,
+      "text": "All laboratory equipment will be provided in class.",
+      "created_at": "2025-12-02T07:19:13.580Z",
+      "recent_seen_at": "2025-12-02T07:19:55.205Z",
+      "updated_at": "2026-06-22T06:44:04.550Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9238af4f482042bcf5fc",
+      "serial_number": 10361,
+      "text": "The timetable for the next term will be available next week.",
+      "created_at": "2025-12-02T07:16:08.674Z",
+      "recent_seen_at": "2025-12-02T07:17:04.704Z",
+      "updated_at": "2026-06-22T06:44:04.286Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e91dc171b217b0eccee20",
+      "serial_number": 10360,
+      "text": "Some studies show the link between depression and social media.",
+      "created_at": "2025-12-02T07:14:36.687Z",
+      "recent_seen_at": "2025-12-02T07:15:23.504Z",
+      "updated_at": "2026-06-22T06:44:04.273Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "692e9105af4f482042bceccd",
+      "serial_number": 10359,
+      "text": "Social policy is a study of the government's social response to social issues.",
+      "created_at": "2025-12-02T07:11:01.068Z",
+      "recent_seen_at": "2025-12-02T07:12:02.858Z",
+      "updated_at": "2026-06-22T06:44:04.260Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923cc61171b217b0e8ff857",
+      "serial_number": 10270,
+      "text": "I thought we would meet in the small meeting room.",
+      "created_at": "2025-11-24T03:09:21.954Z",
+      "recent_seen_at": "2025-11-24T03:10:54.822Z",
+      "updated_at": "2026-06-22T06:44:02.984Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923cbd6f05e621fb12c1a0d",
+      "serial_number": 10269,
+      "text": "All students have their own styles of learning.",
+      "created_at": "2025-11-24T03:07:02.051Z",
+      "recent_seen_at": "2025-11-24T03:09:00.502Z",
+      "updated_at": "2026-06-22T06:44:02.968Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923cb99a54da130be83fbd7",
+      "serial_number": 10268,
+      "text": "Understanding visual media has never been more challenging.",
+      "created_at": "2025-11-24T03:06:01.266Z",
+      "recent_seen_at": "2025-11-24T03:06:48.706Z",
+      "updated_at": "2026-06-22T06:44:02.954Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923cb31a54da130be83f896",
+      "serial_number": 10267,
+      "text": "Online courses allow students to work on their own paces.",
+      "created_at": "2025-11-24T03:04:17.169Z",
+      "recent_seen_at": "2026-03-30T04:09:17.711Z",
+      "updated_at": "2026-06-22T06:44:02.938Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923caf0171b217b0e8fe8d7",
+      "serial_number": 10266,
+      "text": "The digital revolution has changed the way we read.",
+      "created_at": "2025-11-24T03:03:12.348Z",
+      "recent_seen_at": "2025-11-24T03:03:56.295Z",
+      "updated_at": "2026-06-22T06:44:02.925Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923caabdaee5f72f21e0633",
+      "serial_number": 10265,
+      "text": "Rail transport is becoming more and more popular.",
+      "created_at": "2025-11-24T03:02:03.238Z",
+      "recent_seen_at": "2025-11-24T03:02:54.321Z",
+      "updated_at": "2026-06-22T06:44:02.910Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923ca7305564e3126415481",
+      "serial_number": 10264,
+      "text": "Before architecture was invented, humans lived in underground houses.",
+      "created_at": "2025-11-24T03:01:07.076Z",
+      "recent_seen_at": "2025-11-24T03:01:51.154Z",
+      "updated_at": "2026-06-22T06:44:02.895Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923ca0a05564e31264151a9",
+      "serial_number": 10263,
+      "text": "The falling birth rate means the number of students drops.",
+      "created_at": "2025-11-24T02:59:22.123Z",
+      "recent_seen_at": "2025-11-24T03:00:46.140Z",
+      "updated_at": "2026-06-22T06:44:02.884Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c9ca05564e3126414fc4",
+      "serial_number": 10262,
+      "text": "Before the invention of the refrigerator, people stored food in underground ice houses.",
+      "created_at": "2025-11-24T02:58:18.019Z",
+      "recent_seen_at": "2025-11-24T02:59:04.844Z",
+      "updated_at": "2026-06-22T06:44:02.872Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c975a54da130be83e967",
+      "serial_number": 10261,
+      "text": "Atoms are the basic building blocks of matter.",
+      "created_at": "2025-11-24T02:56:53.307Z",
+      "recent_seen_at": "2025-11-24T02:57:50.158Z",
+      "updated_at": "2026-06-22T06:44:02.856Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c93605564e3126414bc2",
+      "serial_number": 10260,
+      "text": "Our culture influences the choices we make.",
+      "created_at": "2025-11-24T02:55:50.311Z",
+      "recent_seen_at": "2025-11-24T02:56:45.003Z",
+      "updated_at": "2026-06-22T06:44:02.844Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c8f1af4f4820427f2967",
+      "serial_number": 10259,
+      "text": "There will be a guest lecturer in the next class.",
+      "created_at": "2025-11-24T02:54:41.562Z",
+      "recent_seen_at": "2025-11-24T02:55:29.557Z",
+      "updated_at": "2026-06-22T06:44:02.830Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c8a3171b217b0e8fd81f",
+      "serial_number": 10258,
+      "text": "The staff is cleaning the room for tomorrow morning's meeting.",
+      "created_at": "2025-11-24T02:53:23.081Z",
+      "recent_seen_at": "2025-11-24T02:54:21.355Z",
+      "updated_at": "2026-06-22T06:44:02.813Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c858a54da130be83e160",
+      "serial_number": 10257,
+      "text": "Students can find news about climate change.",
+      "created_at": "2025-11-24T02:52:08.220Z",
+      "recent_seen_at": "2025-11-24T02:53:04.504Z",
+      "updated_at": "2026-06-22T06:44:02.797Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c80caf4f4820427f22ff",
+      "serial_number": 10256,
+      "text": "You need to pass the written exam for the driver's license.",
+      "created_at": "2025-11-24T02:50:52.894Z",
+      "recent_seen_at": "2025-11-24T02:51:48.797Z",
+      "updated_at": "2026-06-22T06:44:02.779Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c6eddaee5f72f21deac9",
+      "serial_number": 10255,
+      "text": "Stock predictions can be very capricious even for professionals.",
+      "created_at": "2025-11-24T02:46:05.756Z",
+      "recent_seen_at": "2025-11-24T02:50:30.602Z",
+      "updated_at": "2026-06-22T06:44:02.767Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c66df05e621fb12bef6b",
+      "serial_number": 10254,
+      "text": "You are trained to be a specialized journalist.",
+      "created_at": "2025-11-24T02:43:57.587Z",
+      "recent_seen_at": "2025-11-24T02:49:58.689Z",
+      "updated_at": "2026-06-22T06:44:02.573Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c622171b217b0e8fc5e0",
+      "serial_number": 10253,
+      "text": "You must wear a hard hat on the construction site.",
+      "created_at": "2025-11-24T02:42:42.868Z",
+      "recent_seen_at": "2025-11-24T02:43:43.462Z",
+      "updated_at": "2026-06-22T06:44:02.560Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c5aaa54da130be83ccce",
+      "serial_number": 10252,
+      "text": "At this time experts are not able to analyze the effects of the new policy.",
+      "created_at": "2025-11-24T02:40:42.514Z",
+      "recent_seen_at": "2025-11-24T02:42:16.956Z",
+      "updated_at": "2026-06-22T06:44:02.546Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6923c506171b217b0e8fbe64",
+      "serial_number": 10251,
+      "text": "Undergraduate students can apply for the new biology course.",
+      "created_at": "2025-11-24T02:37:58.756Z",
+      "recent_seen_at": "2025-11-24T02:42:28.195Z",
+      "updated_at": "2026-06-22T06:44:02.533Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6920307405564e3126307030",
+      "serial_number": 10250,
+      "text": "All students are allowed to take the notes from the library.",
+      "created_at": "2025-11-21T09:27:16.318Z",
+      "recent_seen_at": "2025-11-21T09:30:34.705Z",
+      "updated_at": "2026-06-22T06:44:02.521Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "68355bc1b9570274df6937bf",
+      "serial_number": 9839,
+      "text": "You must call your doctor to make an appointment.",
+      "created_at": "2025-05-27T06:29:21.022Z",
+      "recent_seen_at": "2025-12-02T07:53:51.093Z",
+      "updated_at": "2026-06-22T06:43:59.863Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "68355b47d3496c4246bdc940",
+      "serial_number": 9838,
+      "text": "The teacher explained the homework to the students.",
+      "created_at": "2025-05-27T06:27:19.525Z",
+      "recent_seen_at": "2025-12-02T07:44:45.507Z",
+      "updated_at": "2026-06-22T06:43:59.848Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "683526896993d81fe62be2cc",
+      "serial_number": 9829,
+      "text": "We cannot consider an increase in our price at this stage.",
+      "created_at": "2025-05-27T02:42:17.650Z",
+      "recent_seen_at": "2025-11-24T02:28:12.034Z",
+      "updated_at": "2026-06-22T06:43:59.711Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6833d963d3496c4246b4a043",
+      "serial_number": 9811,
+      "text": "New classroom will be put into use next month.",
+      "created_at": "2025-05-26T03:00:51.297Z",
+      "recent_seen_at": "2025-12-02T07:10:17.995Z",
+      "updated_at": "2026-06-22T06:43:59.471Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "6833d8d3c02b652dbcc6cdab",
+      "serial_number": 9810,
+      "text": "You have to make an appointment with your doctor.",
+      "created_at": "2025-05-26T02:58:27.215Z",
+      "recent_seen_at": "2026-03-30T01:22:37.466Z",
+      "updated_at": "2026-06-22T06:43:59.456Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "682596c6ce7fc86faf230252",
+      "serial_number": 9698,
+      "text": "Everyone in this room needs to follow the rules",
+      "created_at": "2025-05-15T07:24:54.367Z",
+      "recent_seen_at": "2025-12-02T08:12:09.540Z",
+      "updated_at": "2026-06-22T06:43:57.653Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "67bec872c180622876cb0d7d",
+      "serial_number": 9530,
+      "text": "Assignments must be submitted at the end of the term.",
+      "created_at": "2025-02-26T07:53:22.560Z",
+      "recent_seen_at": "2025-11-21T09:32:35.435Z",
+      "updated_at": "2026-06-22T06:43:56.018Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "661cc6a9f5de3008bc7799e5",
+      "serial_number": 9244,
+      "text": "Please move us to the meeting room for the next hour.",
+      "created_at": "2024-04-15T06:18:17.366Z",
+      "recent_seen_at": "2025-12-02T02:18:50.266Z",
+      "updated_at": "2026-06-22T06:43:55.083Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "661ca68f91cabd6bfff140d3",
+      "serial_number": 9242,
+      "text": "All answers must be thoroughly researched and supported by relevant theories.",
+      "created_at": "2024-04-15T04:01:19.053Z",
+      "recent_seen_at": "2025-04-15T09:23:59.203Z",
+      "updated_at": "2026-06-22T06:43:55.068Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65d46e06333d503618220503",
+      "serial_number": 9100,
+      "text": "The teacher explains the homework to the students.",
+      "created_at": "2024-02-20T09:16:54.197Z",
+      "recent_seen_at": "2025-04-15T09:28:31.724Z",
+      "updated_at": "2026-06-22T06:43:54.326Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65a8e0d4011c097af243eb9c",
+      "serial_number": 9070,
+      "text": "Americans have typically defined the process of plant growth in quantitative terms.",
+      "created_at": "2024-01-18T08:27:00.367Z",
+      "recent_seen_at": "2025-03-28T09:33:00.568Z",
+      "updated_at": "2026-06-22T06:43:54.119Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65a7879e90f1e64a726d6ffb",
+      "serial_number": 9067,
+      "text": "You do not need specialist knowledge to enjoy this book.",
+      "created_at": "2024-01-17T07:54:06.132Z",
+      "recent_seen_at": "2024-01-17T07:55:16.643Z",
+      "updated_at": "2026-06-22T06:43:54.105Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6583a1318279bd2e8eb3fb5f",
+      "serial_number": 9044,
+      "text": "The subject was complex and difficult to explain.",
+      "created_at": "2023-12-21T02:21:37.007Z",
+      "recent_seen_at": "2025-04-15T09:32:05.925Z",
+      "updated_at": "2026-06-22T06:43:54.045Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "657fb95a64950e10fee92c8b",
+      "serial_number": 9042,
+      "text": "Visual aid can be really helpful when you are revising.",
+      "created_at": "2023-12-18T03:15:38.615Z",
+      "recent_seen_at": "2025-04-15T09:32:54.844Z",
+      "updated_at": "2026-06-22T06:43:54.031Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "657fb55dbb133643d26d7ce1",
+      "serial_number": 9041,
+      "text": "Physical strength can be enhanced through regular training.",
+      "created_at": "2023-12-18T02:58:37.426Z",
+      "recent_seen_at": "2023-12-18T02:59:30.221Z",
+      "updated_at": "2026-06-22T06:43:54.012Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "657a755f64950e10fecb02f9",
+      "serial_number": 9039,
+      "text": "A visit to the designed museum is of great value.",
+      "created_at": "2023-12-14T03:24:15.751Z",
+      "recent_seen_at": "2025-03-28T08:58:08.785Z",
+      "updated_at": "2026-06-22T06:43:53.997Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65767d44b6b4c524246bc537",
+      "serial_number": 9027,
+      "text": "New media have transcended traditional national boundaries.",
+      "created_at": "2023-12-11T03:08:52.540Z",
+      "recent_seen_at": "2025-11-24T02:27:56.483Z",
+      "updated_at": "2026-06-22T06:43:53.896Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 3,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6566d4a48279bd2e8e16f1df",
+      "serial_number": 9016,
+      "text": "You should have awareness of how the business operates globally.",
+      "created_at": "2023-11-29T06:05:24.722Z",
+      "recent_seen_at": "2025-04-15T09:35:35.100Z",
+      "updated_at": "2026-06-22T06:43:53.863Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65658b27fe9b9b2ea34a3163",
+      "serial_number": 9008,
+      "text": "Studies showed there is a positive correlation between the two variables.",
+      "created_at": "2023-11-28T06:39:35.353Z",
+      "recent_seen_at": "2025-06-12T05:56:11.493Z",
+      "updated_at": "2026-06-22T06:43:53.828Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "656587e1bb133643d2dda3ee",
+      "serial_number": 9006,
+      "text": "There is no fixed career path for a qualified journalist.",
+      "created_at": "2023-11-28T06:25:37.175Z",
+      "recent_seen_at": "2025-04-15T09:37:09.588Z",
+      "updated_at": "2026-06-22T06:43:53.816Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6565569c96756c0e346fc339",
+      "serial_number": 9002,
+      "text": "Rising sea temperatures are a sign of climate change.",
+      "created_at": "2023-11-28T02:55:24.391Z",
+      "recent_seen_at": "2025-04-15T09:38:25.132Z",
+      "updated_at": "2026-06-22T06:43:53.803Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65654ed464950e10fe5c516b",
+      "serial_number": 8999,
+      "text": "Years of training are required to become a medical specialist.",
+      "created_at": "2023-11-28T02:22:12.812Z",
+      "recent_seen_at": "2025-04-15T09:39:11.948Z",
+      "updated_at": "2026-06-22T06:43:53.785Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65643f8f21823c2d366a0f91",
+      "serial_number": 8990,
+      "text": "Listening is the key skill needed to succeed in this course.",
+      "created_at": "2023-11-27T07:04:47.308Z",
+      "recent_seen_at": "2025-04-15T09:42:22.431Z",
+      "updated_at": "2026-06-22T06:43:53.770Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65643ea28279bd2e8e0cefdb",
+      "serial_number": 8989,
+      "text": "Students should leave their bags on the table behind the door.",
+      "created_at": "2023-11-27T07:00:50.609Z",
+      "recent_seen_at": "2025-04-15T09:42:49.102Z",
+      "updated_at": "2026-06-22T06:43:53.756Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "656434f81167fd28ac238138",
+      "serial_number": 8983,
+      "text": "There are many different types of governments in the world.",
+      "created_at": "2023-11-27T06:19:36.505Z",
+      "recent_seen_at": "2025-04-15T09:44:43.616Z",
+      "updated_at": "2026-06-22T06:43:53.743Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "656431958279bd2e8e0cb5bf",
+      "serial_number": 8981,
+      "text": "We encourage students to complete their applications before the deadline.",
+      "created_at": "2023-11-27T06:05:09.018Z",
+      "recent_seen_at": "2025-03-28T08:53:04.004Z",
+      "updated_at": "2026-06-22T06:43:53.724Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6507b38f39694113b5299fc0",
+      "serial_number": 8948,
+      "text": "The essay contains most of the important information.",
+      "created_at": "2023-09-18T02:18:55.388Z",
+      "recent_seen_at": "2025-04-15T09:47:40.560Z",
+      "updated_at": "2026-06-22T06:43:53.518Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "64c1e498d29c5d0785735a0f",
+      "serial_number": 8911,
+      "text": "The course includes a combination of pure and applied mathematics.",
+      "created_at": "2023-07-27T03:29:28.335Z",
+      "recent_seen_at": "2025-10-13T08:33:41.818Z",
+      "updated_at": "2026-06-22T06:43:53.191Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "64a7d0a45876b945d36c2006",
+      "serial_number": 8805,
+      "text": "Imported default packages are likely to be used for most computers.",
+      "created_at": "2023-07-07T08:45:24.480Z",
+      "recent_seen_at": "2025-03-28T08:48:48.449Z",
+      "updated_at": "2026-06-22T06:43:52.524Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "64a7cf815d666b1e29c5cbf4",
+      "serial_number": 8804,
+      "text": "You must answer security questions when you reset your password.",
+      "created_at": "2023-07-07T08:40:33.706Z",
+      "recent_seen_at": "2025-06-12T05:55:48.024Z",
+      "updated_at": "2026-06-22T06:43:52.507Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "64a7ce4a10df7e6978ce7c55",
+      "serial_number": 8803,
+      "text": "Educational level is found to be related to social and economic background.",
+      "created_at": "2023-07-07T08:35:22.098Z",
+      "recent_seen_at": "2025-03-28T08:48:11.461Z",
+      "updated_at": "2026-06-22T06:43:52.491Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "64784a1630675327e1f68673",
+      "serial_number": 8764,
+      "text": "It is clear that national trading system is a good thing.",
+      "created_at": "2023-06-01T07:34:46.582Z",
+      "recent_seen_at": "2025-04-15T09:55:02.890Z",
+      "updated_at": "2026-06-22T06:43:52.343Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6461cf7545e4710056b7918a",
+      "serial_number": 8745,
+      "text": "Vocabulary that is peculiar in a special field is called jargon.",
+      "created_at": "2023-05-15T06:21:41.186Z",
+      "recent_seen_at": "2025-11-19T03:39:23.466Z",
+      "updated_at": "2026-06-22T06:43:52.309Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6454723b823e815106b00023",
+      "serial_number": 8739,
+      "text": "Many students live in the hall of residence in term time.",
+      "created_at": "2023-05-05T03:04:27.193Z",
+      "recent_seen_at": "2025-12-02T07:18:43.417Z",
+      "updated_at": "2026-06-22T06:43:52.244Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "63c14da3df47c237e827de63",
+      "serial_number": 8636,
+      "text": "Auditions for the university theater will be held next week.",
+      "created_at": "2023-01-13T12:25:30.996Z",
+      "recent_seen_at": "2025-04-16T02:44:51.529Z",
+      "updated_at": "2026-06-22T06:43:51.307Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "639b145063bf7d30c660a0a7",
+      "serial_number": 8596,
+      "text": "She is giving an outline of the previous lecture.",
+      "created_at": "2022-12-15T12:35:09.189Z",
+      "recent_seen_at": "2025-04-16T02:49:09.142Z",
+      "updated_at": "2026-06-22T06:43:51.121Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6399aafffa857223e7f99dde",
+      "serial_number": 8592,
+      "text": "Digital scans of archive materials are provided for a  small fee.",
+      "created_at": "2022-12-14T10:53:12.823Z",
+      "recent_seen_at": "2025-04-16T02:51:06.334Z",
+      "updated_at": "2026-06-22T06:43:51.111Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6399a65b85e17871eefa9f1e",
+      "serial_number": 8589,
+      "text": "Before choosing your university course, you should consider your future career.",
+      "created_at": "2022-12-14T10:33:39.556Z",
+      "recent_seen_at": "2025-04-16T02:52:19.493Z",
+      "updated_at": "2026-06-22T06:43:51.101Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "63982eecc4d4a34867361f05",
+      "serial_number": 8580,
+      "text": "An introduction is an essential element of a presentation.",
+      "created_at": "2022-12-13T07:51:55.526Z",
+      "recent_seen_at": "2025-03-28T08:33:01.143Z",
+      "updated_at": "2026-06-22T06:43:51.091Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6397edd963bf7d30c653e71e",
+      "serial_number": 8575,
+      "text": "The residence hall is closed prior to the academic building closing time at the end of the semester.",
+      "created_at": "2022-12-13T03:14:09.912Z",
+      "recent_seen_at": "2022-12-13T03:15:27.815Z",
+      "updated_at": "2026-06-22T06:43:51.070Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6397e170d63df325a4a05838",
+      "serial_number": 8572,
+      "text": "There is a great deal of debate on that topic.",
+      "created_at": "2022-12-13T02:21:01.289Z",
+      "recent_seen_at": "2025-10-13T08:29:11.677Z",
+      "updated_at": "2026-06-22T06:43:51.058Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "632d5fcc333e1c50bec7f9cc",
+      "serial_number": 8470,
+      "text": "All the gains in property sales must be allocated promptly.",
+      "created_at": "2022-09-23T07:30:25.652Z",
+      "recent_seen_at": "2025-04-16T03:02:12.085Z",
+      "updated_at": "2026-06-22T06:43:50.728Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "62f4b39587408d7fab86c1ce",
+      "serial_number": 8424,
+      "text": "You may be charged for additional art supplies.",
+      "created_at": "2022-08-11T07:48:14.525Z",
+      "recent_seen_at": "2025-04-16T03:03:30.918Z",
+      "updated_at": "2026-06-22T06:43:50.486Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "62ec520b2b01cd15fe33da9d",
+      "serial_number": 8410,
+      "text": "Students in the first year usually live on campus.",
+      "created_at": "2022-08-04T23:12:06.662Z",
+      "recent_seen_at": "2025-12-02T07:35:29.840Z",
+      "updated_at": "2026-06-22T06:43:50.474Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "62da21d970a8fc34faeb258e",
+      "serial_number": 8352,
+      "text": "Please note that the submission deadlines are only negotiable in exceptional circumstances.",
+      "created_at": "2022-07-22T04:05:11.622Z",
+      "recent_seen_at": "2022-07-22T06:28:38.608Z",
+      "updated_at": "2026-06-22T06:43:50.332Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 3,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "627e2904d4cef5295f87742e",
+      "serial_number": 8277,
+      "text": "Newspapers across the country have been reporting stories of the president.",
+      "created_at": "2022-05-13T09:58:01.039Z",
+      "recent_seen_at": "2025-04-16T03:13:54.373Z",
+      "updated_at": "2026-06-22T06:43:50.047Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6233eda44504e12418c68c02",
+      "serial_number": 8246,
+      "text": "The exam results will be posted on the notice board.",
+      "created_at": "2022-03-18T02:26:01.629Z",
+      "recent_seen_at": "2025-11-21T09:36:31.741Z",
+      "updated_at": "2026-06-22T06:43:49.826Z",
+      "frequency": 0,
+      "core_frequency": 0,
+      "academic_frequency": 0,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "611e19d6b92c784ce1178892",
+      "serial_number": 8081,
+      "text": "Understanding how to use the library will save your time.",
+      "created_at": "2021-08-19T08:44:06.158Z",
+      "recent_seen_at": "2025-03-28T08:18:43.572Z",
+      "updated_at": "2026-06-22T06:43:48.974Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "610259df9308437e2d680efb",
+      "serial_number": 8040,
+      "text": "The seminar on writing skills has been canceled.",
+      "created_at": "2021-07-29T07:33:51.347Z",
+      "recent_seen_at": "2025-12-02T07:42:42.679Z",
+      "updated_at": "2026-06-22T06:43:48.862Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "60dd6512e433550e2a6500c9",
+      "serial_number": 7935,
+      "text": "The rising inflation rate indicates a decrease in demand for consumer products.",
+      "created_at": "2021-07-01T06:47:46.536Z",
+      "recent_seen_at": "2025-03-28T08:16:39.668Z",
+      "updated_at": "2026-06-22T06:43:48.686Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "60dbd16b1b32f90efedb39b1",
+      "serial_number": 7923,
+      "text": "You should meet me in the lecture theater room.",
+      "created_at": "2021-06-30T02:05:31.735Z",
+      "recent_seen_at": "2025-12-02T07:39:25.393Z",
+      "updated_at": "2026-06-22T06:43:48.669Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "60a5abbe36c49f4514f9bf68",
+      "serial_number": 7792,
+      "text": "Practical experience is a vital part of legal training.",
+      "created_at": "2021-05-20T00:22:22.086Z",
+      "recent_seen_at": "2025-03-28T08:13:25.606Z",
+      "updated_at": "2026-06-22T06:43:48.375Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "607fdb716002fc5a2103904f",
+      "serial_number": 7700,
+      "text": "You will study two core and three optional modules.",
+      "created_at": "2021-04-21T07:59:45.679Z",
+      "recent_seen_at": "2025-04-16T03:26:10.578Z",
+      "updated_at": "2026-06-22T06:43:48.249Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6053f374c3941a097eef5938",
+      "serial_number": 7623,
+      "text": "Scientists have founded all parts of society today.",
+      "created_at": "2021-03-19T00:42:28.883Z",
+      "recent_seen_at": "2025-03-28T08:10:44.500Z",
+      "updated_at": "2026-06-22T06:43:48.096Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5fa91548ba47fa60885e085b",
+      "serial_number": 7488,
+      "text": "Restaurants are down the hall and next to the right.",
+      "created_at": "2020-11-09T10:09:12.920Z",
+      "recent_seen_at": "2025-12-02T07:51:51.480Z",
+      "updated_at": "2026-06-22T06:43:47.594Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [
+        "food"
+      ],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "5f9fa51a2f05294179b3a007",
+      "serial_number": 7457,
+      "text": "Please close the door behind you when you leave the room.",
+      "created_at": "2020-11-02T06:20:10.465Z",
+      "recent_seen_at": "2025-12-02T03:05:21.260Z",
+      "updated_at": "2026-06-22T06:43:47.540Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [
+        "sports"
+      ],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "5f902ec29f4de33b3c05cf2c",
+      "serial_number": 7412,
+      "text": "You can keep your bags in the back room.",
+      "created_at": "2020-10-21T12:51:14.899Z",
+      "recent_seen_at": "2025-12-02T03:06:09.993Z",
+      "updated_at": "2026-06-22T06:43:47.427Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [
+        "fashion"
+      ],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "5f912a238390f6105696dc64",
+      "serial_number": 7435,
+      "text": "Restrooms are down the entrance and to the right.",
+      "created_at": "2020-10-22T06:43:47.188Z",
+      "recent_seen_at": "2026-05-25T09:26:09.887Z",
+      "updated_at": "2026-06-22T06:43:47.361Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "5f912a66b4d7fb5119d23f21",
+      "serial_number": 7436,
+      "text": "We should have a meeting to discuss and report.",
+      "created_at": "2020-10-22T06:44:54.520Z",
+      "recent_seen_at": "2025-12-02T07:58:47.852Z",
+      "updated_at": "2026-06-22T06:43:47.347Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [
+        "politics"
+      ],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "5ed84902ba01510009edf234",
+      "serial_number": 7264,
+      "text": "Time is needed to complete the lecture.",
+      "created_at": "2020-06-04T01:06:10.722Z",
+      "recent_seen_at": "2025-12-02T08:02:10.802Z",
+      "updated_at": "2026-06-22T06:43:46.929Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "5d50cf3e0237d70069c62c5c",
+      "serial_number": 6723,
+      "text": "The orchestra will be led by a visiting conductor.",
+      "created_at": "2019-08-12T02:30:22.398Z",
+      "recent_seen_at": "2025-04-16T08:04:48.466Z",
+      "updated_at": "2026-06-22T06:43:46.914Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 2,
+      "topics": [
+        "art"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5db01a3d12215f0072256693",
+      "serial_number": 6842,
+      "text": "The school canteen sells a large variety of water and food.",
+      "created_at": "2019-10-23T09:15:41.817Z",
+      "recent_seen_at": "2025-12-02T08:06:57.712Z",
+      "updated_at": "2026-06-22T06:43:46.805Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [
+        "food"
+      ],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "5cce3ae630863b006873c025",
+      "serial_number": 6357,
+      "text": "You must hand in your essays by midday on Friday.",
+      "created_at": "2019-05-05T01:22:46.424Z",
+      "recent_seen_at": "2025-04-16T08:25:56.454Z",
+      "updated_at": "2026-06-22T06:43:46.624Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 0,
+      "topics": [
+        "news"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5d6c737b7b968a0074209c94",
+      "serial_number": 6785,
+      "text": "An effective business manager is always open to new ideas.",
+      "created_at": "2019-09-02T01:42:19.267Z",
+      "recent_seen_at": "2025-04-16T08:03:50.617Z",
+      "updated_at": "2026-06-22T06:43:46.406Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5e66e74a8a84ab006a039c22",
+      "serial_number": 7210,
+      "text": "Rail transport is becoming more and more popular.",
+      "created_at": "2020-03-10T01:03:06.087Z",
+      "recent_seen_at": "2025-12-02T08:04:58.591Z",
+      "updated_at": "2026-06-22T06:43:46.309Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [
+        "art"
+      ],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "5c904ce6ba39c8006816070d",
+      "serial_number": 6044,
+      "text": "The library will be closed for staff training tomorrow morning.",
+      "created_at": "2019-03-19T01:59:02.820Z",
+      "recent_seen_at": "2025-03-27T07:45:53.588Z",
+      "updated_at": "2026-06-22T06:43:46.294Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [
+        "news"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c7e28d50237d7006cf331e3",
+      "serial_number": 5909,
+      "text": "Sociology policies are the sources of governments to solve social problems.",
+      "created_at": "2019-03-05T07:44:21.682Z",
+      "recent_seen_at": "2025-11-21T09:32:04.237Z",
+      "updated_at": "2026-06-22T06:43:46.232Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 2,
+      "topics": [
+        "science"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5bebe94bee920a006748479a",
+      "serial_number": 5226,
+      "text": "New credit cards will soon use the fingerprint technology.",
+      "created_at": "2018-11-14T09:22:19.776Z",
+      "recent_seen_at": "2019-06-27T10:07:39.796Z",
+      "updated_at": "2026-06-22T06:43:46.185Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 2,
+      "topics": [
+        "technology"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5d81e22bd3761600732e984d",
+      "serial_number": 6806,
+      "text": "Honey can be used as a food and health product.",
+      "created_at": "2019-09-18T07:52:11.575Z",
+      "recent_seen_at": "2025-04-16T08:02:23.573Z",
+      "updated_at": "2026-06-22T06:43:45.722Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [
+        "food"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c8ef4d4ba39c80072294ff4",
+      "serial_number": 6031,
+      "text": "It takes a long time to walk to the university.",
+      "created_at": "2019-03-18T01:31:00.047Z",
+      "recent_seen_at": "2025-03-27T07:40:28.831Z",
+      "updated_at": "2026-06-22T06:43:45.657Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c3d430e0b61600066708c3c",
+      "serial_number": 5583,
+      "text": "Distance learning can help develop your career around the world.",
+      "created_at": "2019-01-15T02:18:54.893Z",
+      "recent_seen_at": "2022-08-01T10:17:45.268Z",
+      "updated_at": "2026-06-22T06:43:45.645Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c9b939e30863b0069a07d20",
+      "serial_number": 6156,
+      "text": "Food has become a political issue in the world.",
+      "created_at": "2019-03-27T15:15:42.429Z",
+      "recent_seen_at": "2025-03-27T08:05:25.549Z",
+      "updated_at": "2026-06-22T06:43:45.631Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [
+        "food"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c7f95c10237d7006cfdeb80",
+      "serial_number": 5927,
+      "text": "Make sure you choose a course that provides great career opportunities.",
+      "created_at": "2019-03-06T09:41:21.063Z",
+      "recent_seen_at": "2025-03-27T07:27:22.242Z",
+      "updated_at": "2026-06-22T06:43:45.605Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [
+        "careers"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c9777a530863b006c359b5c",
+      "serial_number": 6102,
+      "text": "The opening hours of the library are reduced during summer.",
+      "created_at": "2019-03-24T12:27:17.545Z",
+      "recent_seen_at": "2025-03-27T07:54:19.051Z",
+      "updated_at": "2026-06-22T06:43:45.145Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [
+        "art"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5d1b284843e78c0075c75153",
+      "serial_number": 6562,
+      "text": "Designers need to keep up with the social trends.",
+      "created_at": "2019-07-02T09:47:52.974Z",
+      "recent_seen_at": "2025-04-16T08:21:52.811Z",
+      "updated_at": "2026-06-22T06:43:45.128Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [
+        "fashion"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c233cd5303f39005fdddcce",
+      "serial_number": 5478,
+      "text": "Students who study overseas can significantly improve work chances.",
+      "created_at": "2018-12-26T08:33:25.372Z",
+      "recent_seen_at": "2025-11-24T02:29:52.707Z",
+      "updated_at": "2026-06-22T06:43:45.083Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 2,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c80b429128fe10070ff32d5",
+      "serial_number": 5935,
+      "text": "The blue whale is the largest mammal that ever lived.",
+      "created_at": "2019-03-07T06:03:21.384Z",
+      "recent_seen_at": "2022-07-26T03:39:32.444Z",
+      "updated_at": "2026-06-22T06:43:44.973Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "pets"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5d1cab0bd5de2b007203f65e",
+      "serial_number": 6576,
+      "text": "Academic libraries across the world are steadily incorporating social media.",
+      "created_at": "2019-07-03T13:18:03.067Z",
+      "recent_seen_at": "2025-12-02T08:07:38.143Z",
+      "updated_at": "2026-06-22T06:43:44.952Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 3,
+      "topics": [
+        "technology"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c88b899303f390065805f43",
+      "serial_number": 5990,
+      "text": "Students should leave their bags on the table by the door.",
+      "created_at": "2019-03-13T08:00:25.001Z",
+      "recent_seen_at": "2025-04-16T09:07:41.824Z",
+      "updated_at": "2026-06-22T06:43:44.914Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 0,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c7f95eb128fe100668d2053",
+      "serial_number": 5928,
+      "text": "The printers automatically print both sides of each page.",
+      "created_at": "2019-03-06T09:42:03.493Z",
+      "recent_seen_at": "2019-06-27T11:05:41.076Z",
+      "updated_at": "2026-06-22T06:43:44.641Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [
+        "technology"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c87293a0237d7006c2a8f44",
+      "serial_number": 5977,
+      "text": "Sugar is a compound including carbon, hydrogen and oxygen atoms.",
+      "created_at": "2019-03-12T03:36:26.511Z",
+      "recent_seen_at": "2025-11-24T02:26:00.624Z",
+      "updated_at": "2026-06-22T06:43:44.605Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [
+        "business"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c6d03a117b54d004ad02bd4",
+      "serial_number": 5824,
+      "text": "The professor took a year off to work on her book.",
+      "created_at": "2019-02-20T07:37:05.162Z",
+      "recent_seen_at": "2025-03-27T07:24:23.805Z",
+      "updated_at": "2026-06-22T06:43:44.517Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [
+        "careers"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c207f9b303f39005fc70f26",
+      "serial_number": 5472,
+      "text": "There will be a meeting for the first-year students on Friday.",
+      "created_at": "2018-12-24T06:41:31.740Z",
+      "recent_seen_at": "2025-12-02T08:12:27.845Z",
+      "updated_at": "2026-06-22T06:43:44.502Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "5d36b4bbc05a800073b5b813",
+      "serial_number": 6667,
+      "text": "Farmers need to adapt to the changes in climate.",
+      "created_at": "2019-07-23T07:18:19.157Z",
+      "recent_seen_at": "2025-10-13T07:59:27.783Z",
+      "updated_at": "2026-06-22T06:43:44.456Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [
+        "business"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5e57607921460d007717a2eb",
+      "serial_number": 7184,
+      "text": "Before architecture was invented, people used to live in underground houses.",
+      "created_at": "2020-02-27T06:23:53.283Z",
+      "recent_seen_at": "2025-11-24T02:21:06.348Z",
+      "updated_at": "2026-06-22T06:43:44.443Z",
+      "frequency": 0,
+      "core_frequency": 0,
+      "academic_frequency": 0,
+      "level": 2,
+      "topics": [
+        "art"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5d258d7bba39c80068065e2f",
+      "serial_number": 6625,
+      "text": "New media journalism is an interesting area for study.",
+      "created_at": "2019-07-10T07:02:19.784Z",
+      "recent_seen_at": "2025-04-16T08:10:17.514Z",
+      "updated_at": "2026-06-22T06:43:44.431Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c92eeffa3180b00731441ce",
+      "serial_number": 6081,
+      "text": "Many vocational courses of the institution are funded by private enterprises.",
+      "created_at": "2019-03-21T01:55:11.364Z",
+      "recent_seen_at": "2025-03-27T07:53:04.141Z",
+      "updated_at": "2026-06-22T06:43:44.420Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 2,
+      "topics": [
+        "finance"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5d3946d317b54d007084abc2",
+      "serial_number": 6675,
+      "text": "The department works closely with its partners in the business community.",
+      "created_at": "2019-07-25T06:06:11.344Z",
+      "recent_seen_at": "2025-04-16T08:07:31.509Z",
+      "updated_at": "2026-06-22T06:43:44.393Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 2,
+      "topics": [
+        "politics"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5cb3e05e30863b00687eaa7e",
+      "serial_number": 6295,
+      "text": "The news is not received until the following week.",
+      "created_at": "2019-04-15T01:37:34.041Z",
+      "recent_seen_at": "2025-03-27T08:12:31.634Z",
+      "updated_at": "2026-06-22T06:43:44.341Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [
+        "news"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ceddc94eaa3750068a23aa6",
+      "serial_number": 6450,
+      "text": "Our study program equips students with essential skills for university.",
+      "created_at": "2019-05-29T01:12:52.795Z",
+      "recent_seen_at": "2025-04-16T08:25:00.019Z",
+      "updated_at": "2026-06-22T06:43:44.322Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 2,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c1a12de7565710068b54a3e",
+      "serial_number": 5443,
+      "text": "They developed a unique approach to training their employees.",
+      "created_at": "2018-12-19T09:43:58.503Z",
+      "recent_seen_at": "2025-04-16T09:14:16.647Z",
+      "updated_at": "2026-06-22T06:43:43.589Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [
+        "business"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c8716d2128fe10066ff8a1a",
+      "serial_number": 5969,
+      "text": "The north campus car park could be closed on Sunday.",
+      "created_at": "2019-03-12T02:17:54.278Z",
+      "recent_seen_at": "2025-04-16T09:08:39.094Z",
+      "updated_at": "2026-06-22T06:43:43.578Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5bfb5c179f545400678ae6d9",
+      "serial_number": 5257,
+      "text": "Students who attempt to go to the conference must register now.",
+      "created_at": "2018-11-26T02:36:07.585Z",
+      "recent_seen_at": "2019-06-27T10:07:40.472Z",
+      "updated_at": "2026-06-22T06:43:43.031Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b8376fad50eee003979d9bf",
+      "serial_number": 4691,
+      "text": "The economy is showing signs of revival.",
+      "created_at": "2018-08-27T03:58:50.628Z",
+      "recent_seen_at": "2025-04-17T02:09:28.847Z",
+      "updated_at": "2026-06-22T06:43:42.879Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 2,
+      "topics": [
+        "society"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b7e1891d50eee0032f5b984",
+      "serial_number": 4678,
+      "text": "Behind the garage is a secret storage room.",
+      "created_at": "2018-08-23T02:14:41.473Z",
+      "recent_seen_at": "2025-11-24T02:30:22.496Z",
+      "updated_at": "2026-06-22T06:43:42.866Z",
+      "frequency": 0,
+      "core_frequency": 0,
+      "academic_frequency": 0,
+      "level": 0,
+      "topics": [
+        "automotive"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b40b5ecee920a003c2b29da",
+      "serial_number": 4344,
+      "text": "The summer course was canceled due to insufficient enrollments.",
+      "created_at": "2018-07-07T12:45:32.347Z",
+      "recent_seen_at": "2024-07-01T09:28:34.050Z",
+      "updated_at": "2026-06-22T06:43:42.635Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 2,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b3df6c2ee920a003c12bb0d",
+      "serial_number": 4342,
+      "text": " In this language course, we focus on fluency and accuracy.",
+      "created_at": "2018-07-05T10:45:22.860Z",
+      "recent_seen_at": "2018-07-26T10:29:53.617Z",
+      "updated_at": "2026-06-22T06:43:42.527Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5bd81c93808ca40070b4b307",
+      "serial_number": 5085,
+      "text": "In his lifetime, he composed a number of works.",
+      "created_at": "2018-10-30T08:55:47.690Z",
+      "recent_seen_at": "2025-03-27T07:09:05.991Z",
+      "updated_at": "2026-06-22T06:43:41.962Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "art"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5bfb5c4e7565710068688ec9",
+      "serial_number": 5258,
+      "text": "The poster of this play is hung in the large lecture theater.",
+      "created_at": "2018-11-26T02:37:02.334Z",
+      "recent_seen_at": "2025-04-16T09:14:42.349Z",
+      "updated_at": "2026-06-22T06:43:41.925Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [
+        "art"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b3c6b18a22b9d0035467463",
+      "serial_number": 4322,
+      "text": "There is a welcome party for all new students each term.",
+      "created_at": "2018-07-04T06:37:12.088Z",
+      "recent_seen_at": "2018-07-26T10:28:40.234Z",
+      "updated_at": "2026-06-22T06:43:41.845Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 0,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b584c64ee920a003d0d35d3",
+      "serial_number": 4458,
+      "text": "One of the election promises is to decrease the income tax.",
+      "created_at": "2018-07-25T10:09:40.676Z",
+      "recent_seen_at": "2025-04-17T02:12:01.988Z",
+      "updated_at": "2026-06-22T06:43:41.726Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [
+        "finance"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b3c6a99a22b9d003ab9e05a",
+      "serial_number": 4321,
+      "text": "The site is designed to be highly interactive.",
+      "created_at": "2018-07-04T06:35:05.714Z",
+      "recent_seen_at": "2025-03-27T06:50:21.485Z",
+      "updated_at": "2026-06-22T06:43:41.656Z",
+      "frequency": 0,
+      "core_frequency": 0,
+      "academic_frequency": 0,
+      "level": 1,
+      "topics": [
+        "art"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b2a29227f6fd300350fc5e7",
+      "serial_number": 4228,
+      "text": "The assessment of this course will begin next week. ",
+      "created_at": "2018-06-20T10:14:58.835Z",
+      "recent_seen_at": "2025-04-17T02:14:44.659Z",
+      "updated_at": "2026-06-22T06:43:41.562Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b839201d50eee00397ad805",
+      "serial_number": 4695,
+      "text": "Organic food is considered to be free of chemicals.",
+      "created_at": "2018-08-27T05:54:09.553Z",
+      "recent_seen_at": "2025-04-17T02:08:59.877Z",
+      "updated_at": "2026-06-22T06:43:41.539Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [
+        "business"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b7e0cb4808ca40039c9bd9e",
+      "serial_number": 4677,
+      "text": "Some people are motivated by competition, while others prefer collaboration.",
+      "created_at": "2018-08-23T01:24:04.866Z",
+      "recent_seen_at": "2024-02-26T08:54:07.165Z",
+      "updated_at": "2026-06-22T06:43:41.516Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 3,
+      "topics": [
+        "art"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b7688e3808ca400399b2932",
+      "serial_number": 4659,
+      "text": "Education and training provide important skills for the labor force.",
+      "created_at": "2018-08-17T08:35:47.242Z",
+      "recent_seen_at": "2019-06-27T10:07:43.611Z",
+      "updated_at": "2026-06-22T06:43:41.503Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b5ede1fa22b9d003ae564c8",
+      "serial_number": 4478,
+      "text": "Every student has the right and ability to succeed.",
+      "created_at": "2018-07-30T09:45:03.981Z",
+      "recent_seen_at": "2025-03-27T06:55:04.649Z",
+      "updated_at": "2026-06-22T06:43:41.485Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b90813e9f54540030913846",
+      "serial_number": 4747,
+      "text": "The economy now is showing the first sign of recovery.",
+      "created_at": "2018-09-06T01:22:06.771Z",
+      "recent_seen_at": "2025-04-17T02:07:03.036Z",
+      "updated_at": "2026-06-22T06:43:41.368Z",
+      "frequency": 0,
+      "core_frequency": 0,
+      "academic_frequency": 0,
+      "level": 1,
+      "topics": [
+        "society"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b110b999f545438106a09cb",
+      "serial_number": 4106,
+      "text": "Plants are the living things that can grow on land or in water.",
+      "created_at": "2018-06-01T09:02:17.842Z",
+      "recent_seen_at": "2025-10-13T07:12:35.535Z",
+      "updated_at": "2026-06-22T06:43:41.098Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [
+        "science"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b8903b38d6d81005fe192ff",
+      "serial_number": 4722,
+      "text": "The designers will complete the plan today.",
+      "created_at": "2018-08-31T09:00:35.186Z",
+      "recent_seen_at": "2025-03-27T07:06:38.949Z",
+      "updated_at": "2026-06-22T06:43:40.823Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [
+        "art"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b6004829f54540035f06a9a",
+      "serial_number": 4490,
+      "text": "The bar chart provides useful means of data comparison.",
+      "created_at": "2018-07-31T06:41:06.585Z",
+      "recent_seen_at": "2025-03-27T06:56:17.823Z",
+      "updated_at": "2026-06-22T06:43:40.705Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "technology"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b5ee6a6808ca4006ea7d3ec",
+      "serial_number": 4480,
+      "text": "Building trust is not something that can be achieved overnight.",
+      "created_at": "2018-07-30T10:21:26.433Z",
+      "recent_seen_at": "2025-03-27T06:55:40.260Z",
+      "updated_at": "2026-06-22T06:43:40.656Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [
+        "real estate"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a6e96aa9f54540045523ff8",
+      "serial_number": 3316,
+      "text": "The article extrapolates a number of very interesting experiments.",
+      "created_at": "2018-01-29T03:36:10.529Z",
+      "recent_seen_at": "2025-11-24T02:35:42.612Z",
+      "updated_at": "2026-06-22T06:43:40.463Z",
+      "frequency": 0,
+      "core_frequency": 0,
+      "academic_frequency": 0,
+      "level": 3,
+      "topics": [
+        "science"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ab05eb9fe88c200380b470a",
+      "serial_number": 3483,
+      "text": "The history of this university is a long and interesting one. ",
+      "created_at": "2018-03-20T01:07:05.401Z",
+      "recent_seen_at": "2025-06-16T06:26:35.310Z",
+      "updated_at": "2026-06-22T06:43:40.280Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 2,
+      "topics": [
+        "science"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ab0f6fb1b69e6003e88bdae",
+      "serial_number": 3511,
+      "text": "The business policy seminar includes an internship with a local firm.",
+      "created_at": "2018-03-20T11:56:43.839Z",
+      "recent_seen_at": "2019-11-07T07:40:57.741Z",
+      "updated_at": "2026-06-22T06:43:39.989Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [
+        "business"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ad2c25a1b69e60069b3d708",
+      "serial_number": 3725,
+      "text": "It is important to make clear notes while you are reading. ",
+      "created_at": "2018-04-15T03:09:14.069Z",
+      "recent_seen_at": "2019-05-15T03:57:16.299Z",
+      "updated_at": "2026-06-22T06:43:39.933Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ab0ed8ffe88c200380ec261",
+      "serial_number": 3502,
+      "text": "Please visit the website for the information about the opening times.",
+      "created_at": "2018-03-20T11:16:31.726Z",
+      "recent_seen_at": "2019-01-02T08:07:53.791Z",
+      "updated_at": "2026-06-22T06:43:39.904Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 2,
+      "topics": [
+        "technology"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ab1c0e6ee920a0043bacab8",
+      "serial_number": 3565,
+      "text": "Radio is a popular form of entertainment throughout the world.",
+      "created_at": "2018-03-21T02:18:14.304Z",
+      "recent_seen_at": "2018-07-26T08:27:53.477Z",
+      "updated_at": "2026-06-22T06:43:39.827Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 2,
+      "topics": [
+        "art"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ab2495eee920a0043bed189",
+      "serial_number": 3589,
+      "text": "The railway made long-distance travel possible for everyone. ",
+      "created_at": "2018-03-21T12:00:30.194Z",
+      "recent_seen_at": "2025-03-27T06:37:30.653Z",
+      "updated_at": "2026-06-22T06:43:39.813Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [
+        "travel"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ab115a5ee920a0043b8b926",
+      "serial_number": 3525,
+      "text": "Making a mistake is fine as long as you've learned from it.",
+      "created_at": "2018-03-20T14:07:33.351Z",
+      "recent_seen_at": "2025-03-27T06:35:48.931Z",
+      "updated_at": "2026-06-22T06:43:39.624Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 0,
+      "topics": [
+        "business"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ac06a859f545400436ffb25",
+      "serial_number": 3682,
+      "text": "The teacher asked the group to commence the task. ",
+      "created_at": "2018-04-01T05:13:41.180Z",
+      "recent_seen_at": "2025-12-02T08:18:02.174Z",
+      "updated_at": "2026-06-22T06:43:39.611Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "c"
+      ]
+    },
+    {
+      "id": "5ad804d57565710045f28c69",
+      "serial_number": 3751,
+      "text": "The equality has not yet been achieved in this society. ",
+      "created_at": "2018-04-19T02:54:13.233Z",
+      "recent_seen_at": "2018-12-17T05:49:20.316Z",
+      "updated_at": "2026-06-22T06:43:39.526Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "politics"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a77ddb0fe88c20045defbdf",
+      "serial_number": 3327,
+      "text": "The dance department stages elaborated performances each semester.",
+      "created_at": "2018-02-05T04:29:36.055Z",
+      "recent_seen_at": "2025-11-24T02:33:09.239Z",
+      "updated_at": "2026-06-22T06:43:39.480Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 3,
+      "topics": [
+        "art"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ab0e68c1b69e6003e882327",
+      "serial_number": 3489,
+      "text": "The aim is to reduce the risks that people take.",
+      "created_at": "2018-03-20T10:46:36.878Z",
+      "recent_seen_at": "2025-04-17T02:39:28.395Z",
+      "updated_at": "2026-06-22T06:43:39.428Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 0,
+      "topics": [
+        "health"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5abb324a1b69e60065a13355",
+      "serial_number": 3641,
+      "text": "Most university teaching takes place in lectures and seminars.",
+      "created_at": "2018-03-28T06:12:26.565Z",
+      "recent_seen_at": "2025-03-27T06:42:24.502Z",
+      "updated_at": "2026-06-22T06:43:39.347Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 2,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a005ef11579a300450ec59a",
+      "serial_number": 1797,
+      "text": "When launching a product, investigating and marketing are very crucial.",
+      "created_at": "2017-11-06T13:09:05.816Z",
+      "recent_seen_at": "2025-10-13T08:24:04.294Z",
+      "updated_at": "2026-06-22T06:43:39.209Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 2,
+      "topics": [
+        "business"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a005f38fe88c20068312241",
+      "serial_number": 1800,
+      "text": "Peer group pressure has a significant effect on young people.",
+      "created_at": "2017-11-06T13:10:16.879Z",
+      "recent_seen_at": "2025-03-27T06:09:20.079Z",
+      "updated_at": "2026-06-22T06:43:38.879Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a8b733ed50eee0065edee56",
+      "serial_number": 3340,
+      "text": "Important details from the article are missing in this summary.",
+      "created_at": "2018-02-20T01:00:46.540Z",
+      "recent_seen_at": "2023-11-06T02:12:37.009Z",
+      "updated_at": "2026-06-22T06:43:38.864Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 2,
+      "topics": [
+        "politics"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a0063b98d6d8100633812ec",
+      "serial_number": 1814,
+      "text": "Parents' talk to children tends to be simplified.",
+      "created_at": "2017-11-06T13:29:29.204Z",
+      "recent_seen_at": "2025-03-27T06:12:05.584Z",
+      "updated_at": "2026-06-22T06:43:38.744Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [
+        "family"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a0067e1ee920a00460cb096",
+      "serial_number": 1844,
+      "text": "Daily practice can build confidence and improve skills. ",
+      "created_at": "2017-11-06T13:47:13.040Z",
+      "recent_seen_at": "2025-04-17T02:57:21.301Z",
+      "updated_at": "2026-06-22T06:43:38.677Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a006b601579a300450f3e5a",
+      "serial_number": 1866,
+      "text": "Traveling by boat on the river is not possible in winter. ",
+      "created_at": "2017-11-06T14:02:08.723Z",
+      "recent_seen_at": "2025-03-27T06:21:03.059Z",
+      "updated_at": "2026-06-22T06:43:38.617Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "sports"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a006abb8d6d81006338581d",
+      "serial_number": 1862,
+      "text": "The Earth atmosphere is mostly composed of nitrogen and oxygen gases.",
+      "created_at": "2017-11-06T13:59:23.485Z",
+      "recent_seen_at": "2025-04-17T02:55:14.857Z",
+      "updated_at": "2026-06-22T06:43:38.502Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 2,
+      "topics": [
+        "science"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a0efc0d1579a30038840711",
+      "serial_number": 2147,
+      "text": "Read the first section before the next meeting. ",
+      "created_at": "2017-11-17T15:11:09.777Z",
+      "recent_seen_at": "2025-04-17T02:53:43.699Z",
+      "updated_at": "2026-06-22T06:43:38.426Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [
+        "politics"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a0063d167f3560063351e29",
+      "serial_number": 1815,
+      "text": "The garden behind the university is open to the public in the summer. ",
+      "created_at": "2017-11-06T13:29:53.895Z",
+      "recent_seen_at": "2025-03-27T06:12:52.942Z",
+      "updated_at": "2026-06-22T06:43:37.027Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "home"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a005ecd8d6d81006337e447",
+      "serial_number": 1796,
+      "text": "We have a lecture in the morning on Thursday.",
+      "created_at": "2017-11-06T13:08:29.084Z",
+      "recent_seen_at": "2025-12-02T08:11:31.944Z",
+      "updated_at": "2026-06-22T06:43:36.692Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 0,
+      "topics": [
+        "news"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a005f198d6d81006337e701",
+      "serial_number": 1798,
+      "text": "Packaging is very important to attract the attention of a buyer. ",
+      "created_at": "2017-11-06T13:09:45.342Z",
+      "recent_seen_at": "2025-04-17T03:10:34.783Z",
+      "updated_at": "2026-06-22T06:43:36.667Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 2,
+      "topics": [
+        "real estate"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a005f5f8d6d81006337e97c",
+      "serial_number": 1802,
+      "text": "Students find true or false questions harder than short answers. ",
+      "created_at": "2017-11-06T13:10:55.499Z",
+      "recent_seen_at": "2025-03-27T06:10:03.665Z",
+      "updated_at": "2026-06-22T06:43:36.630Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a006943570c3500639f50b5",
+      "serial_number": 1855,
+      "text": "Many birds migrated to the warmer areas for the winter. ",
+      "created_at": "2017-11-06T13:53:07.207Z",
+      "recent_seen_at": "2025-04-17T02:55:40.625Z",
+      "updated_at": "2026-06-22T06:43:36.505Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [
+        "pets"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a093e632f301e2c5cd20af2",
+      "serial_number": 2078,
+      "text": "The most popular courses still have a few places left. ",
+      "created_at": "2017-11-13T06:40:35.166Z",
+      "recent_seen_at": "2025-04-17T02:54:20.306Z",
+      "updated_at": "2026-06-22T06:43:36.491Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "595f53df1b69e64c8df8af77",
+      "serial_number": 1437,
+      "text": "Water taps on the campus will discourage the frequent use of plastic bottles. ",
+      "created_at": "2017-07-07T09:26:55.279Z",
+      "recent_seen_at": "2025-04-17T03:11:31.733Z",
+      "updated_at": "2026-06-22T06:43:36.385Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "food"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590095d761ff4b0066841ae5",
+      "serial_number": 924,
+      "text": "Avoid confusing the cause and effect of these changes.",
+      "created_at": "2017-04-26T12:43:03.473Z",
+      "recent_seen_at": "2025-04-17T03:21:49.967Z",
+      "updated_at": "2026-06-22T06:43:36.176Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [
+        "health"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590095b2a22b9d0065bebb06",
+      "serial_number": 922,
+      "text": "Nurses specialize in clinical work and management.",
+      "created_at": "2017-04-26T12:42:26.084Z",
+      "recent_seen_at": "2025-03-27T03:37:33.650Z",
+      "updated_at": "2026-06-22T06:43:36.094Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 2,
+      "topics": [
+        "careers"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5950f0da128fe1006538562a",
+      "serial_number": 1260,
+      "text": "He has landed a job in a very prestigious law firm.",
+      "created_at": "2017-06-26T11:32:42.345Z",
+      "recent_seen_at": "2025-04-17T03:13:43.840Z",
+      "updated_at": "2026-06-22T06:43:36.075Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [
+        "politics"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "595f3836ac502e006bb9a3ed",
+      "serial_number": 1387,
+      "text": "A group meeting will be held tomorrow in the library conference room.",
+      "created_at": "2017-07-07T07:28:54.744Z",
+      "recent_seen_at": "2025-03-27T06:03:49.299Z",
+      "updated_at": "2026-06-22T06:43:36.014Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 2,
+      "topics": [
+        "art"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5950ef998d6d810057106815",
+      "serial_number": 1249,
+      "text": "We can’t consider any increase in our price at this stage.",
+      "created_at": "2017-06-26T11:27:21.648Z",
+      "recent_seen_at": "2026-03-30T04:06:04.667Z",
+      "updated_at": "2026-06-22T06:43:35.926Z",
+      "frequency": 3,
+      "core_frequency": 3,
+      "academic_frequency": 3,
+      "level": 1,
+      "topics": [
+        "real estate"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5950f0280ce463005777c467",
+      "serial_number": 1252,
+      "text": "Everyone must evacuate the premises during the fire drill.",
+      "created_at": "2017-06-26T11:29:44.256Z",
+      "recent_seen_at": "2025-04-17T03:14:11.904Z",
+      "updated_at": "2026-06-22T06:43:35.839Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [
+        "politics"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "59008c24b123db260cc02ce2",
+      "serial_number": 892,
+      "text": "A number of students have volunteer jobs.",
+      "created_at": "2017-04-26T12:01:40.748Z",
+      "recent_seen_at": "2025-03-27T03:35:35.015Z",
+      "updated_at": "2026-06-22T06:43:35.650Z",
+      "frequency": 1,
+      "core_frequency": 1,
+      "academic_frequency": 1,
+      "level": 1,
+      "topics": [
+        "education"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "59007afe44d9040069038ed0",
+      "serial_number": 838,
+      "text": "You must submit your assignments by next Friday at the latest. ",
+      "created_at": "2017-04-26T10:48:30.230Z",
+      "recent_seen_at": "2025-04-17T03:28:12.662Z",
+      "updated_at": "2026-06-22T06:43:35.600Z",
+      "frequency": 2,
+      "core_frequency": 2,
+      "academic_frequency": 2,
+      "level": 1,
+      "topics": [
+        "politics"
+      ],
+      "test_types": [
+        "a",
+        "c"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "source": "https://duoink.co/pte/",
+  "test_type": "PTE Academic",
+  "observed_at": "2026-09-01",
+  "total_list_records": 7892,
+  "parts": {
+    "INTRO": 1,
+    "RA": 520,
+    "RS": 965,
+    "DI": 466,
+    "RL": 242,
+    "ASQ": 943,
+    "SGD": 59,
+    "RTS": 154,
+    "SWT": 227,
+    "WE": 190,
+    "FIB_RW": 560,
+    "MA_R": 82,
+    "RP": 313,
+    "FIB_R": 431,
+    "SA_R": 108,
+    "SST": 294,
+    "MA_L": 99,
+    "FIB_LW": 178,
+    "HCS": 90,
+    "SA_L": 89,
+    "SMW": 117,
+    "HIW": 114,
+    "WFD": 1650
+  }
+}

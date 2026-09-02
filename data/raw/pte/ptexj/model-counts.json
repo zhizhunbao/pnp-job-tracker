@@ -1,0 +1,36 @@
+{
+  "source": "https://www.ptexj.com/pte/",
+  "api_origin": "https://any.ptexj.com/api/v1/questions/list_v2",
+  "profile_exam_type": "pte_core",
+  "scope": "Mixed model inventory queried under a PTE Core user profile; includes shared and Academic-specific model names and must not be treated as an Academic total.",
+  "observed_at": "2026-09-01",
+  "total_queried_model_records_excluding_separate_core_models": 17487,
+  "models": {
+    "read_alouds": 1443,
+    "repeat_sentences": 2844,
+    "describe_images": 1223,
+    "retell_lectures": 550,
+    "answer_questions": 2361,
+    "summarize_group_discussions": 101,
+    "ptea_respond_situations": 226,
+    "swts": 414,
+    "essays": 448,
+    "fib_rd": 1046,
+    "fib_wr": 1135,
+    "r_mcm": 67,
+    "ro": 772,
+    "r_mcs": 115,
+    "wfds": 3219,
+    "ssts": 593,
+    "l_mcm": 70,
+    "l_fib": 288,
+    "l_hcs": 60,
+    "l_mcs": 87,
+    "l_smw": 89,
+    "hiws": 336
+  },
+  "separate_pte_core_models": {
+    "respond_situations": 108
+  },
+  "content_boundary": "Per-question item and q_full_text payloads are returned as e1 ciphertext; no decryption bypass was attempted."
+}

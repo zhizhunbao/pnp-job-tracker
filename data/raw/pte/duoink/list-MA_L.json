@@ -1,0 +1,57 @@
+{
+  "source": "https://duoink.co",
+  "fetched": "2026-09-02",
+  "part": "MA_L",
+  "questions": [
+    {
+      "id": "6915a58ca2e7070c57ee22b0",
+      "tt": {
+        "en": "Clinical Psychology",
+        "zh-CN": "临床心理学"
+      },
+      "sn": 10152,
+      "p": "MA_L",
+      "u": "2026-06-22T06:44:00.835Z",
+      "e": "2025-11-13T09:41:08.976Z",
+      "c": "2025-11-13T09:31:56.942Z",
+      "t": "Listening",
+      "ie": false,
+      "f": 0,
+      "f_c": 0,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6915a7b4a2e7070c57ee2bce",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6915a339eb5f221d6f7808c3",
+      "tt": {
+        "en": "Psychology",
+        "zh-CN": "心理学"
+      },
+      "sn": 10151,
+      "p": "MA_L",
+      "u": "2026-06-22T06:44:00.823Z",
+      "e": "2025-11-13T09:30:29.418Z",
+      "c": "2025-11-13T09:22:01.064Z",
+      "t": "Listening",
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6915a535c29a3849f8c475e7",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    }
+  ]
+}

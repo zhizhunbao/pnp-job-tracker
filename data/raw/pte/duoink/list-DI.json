@@ -1,0 +1,4249 @@
+{
+  "source": "https://duoink.co",
+  "fetched": "2026-09-02",
+  "part": "DI",
+  "questions": [
+    {
+      "id": "6926c2edf05e621fb13cc0c3",
+      "tt": {
+        "fr": "Emploi manufacturier",
+        "ja": "製造業雇用",
+        "pt": "Emprego manufatureiro",
+        "zh-CN": "制造业就业",
+        "tr": "Üretim İşleri",
+        "ko": "제조업 고용",
+        "it": "Occupazione manifatturiera",
+        "zh-TW": "製造業就業",
+        "en": "Manufacturing Employment",
+        "de": "Fertigung Beschäftigung",
+        "ru": "Занятость в промышленности"
+      },
+      "sn": 10329,
+      "p": "DI",
+      "u": "2026-09-02T08:04:11.299Z",
+      "e": "2026-03-19T09:00:48.520Z",
+      "c": "2025-11-26T09:05:49.418Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "69bbbb40b7e0dd42b2f064b1",
+      "onoff": true,
+      "ttps": [
+        "c",
+        "a"
+      ]
+    },
+    {
+      "id": "590d824144d904007bdcde75",
+      "tt": {
+        "fr": "Consommation de fruits et légumes",
+        "ja": "果物と野菜の消費",
+        "es": "Consumo de frutas y verduras",
+        "pt": "Consumo de frutas e vegetais",
+        "zh-CN": "水果与蔬菜消费",
+        "tr": "Meyve ve Sebze tüketimi",
+        "ko": "과일 및 야채 소비",
+        "it": "Consumo di frutta e verdura",
+        "zh-TW": "果蔬消費",
+        "en": "Fruit and Vegetable consumption",
+        "de": "Obst- und Gemüsekonsum",
+        "ru": "Потребление фруктов и овощей",
+        "vi": "Ăn trái cây và rau quả"
+      },
+      "sn": 1200,
+      "p": "DI",
+      "u": "2026-09-02T07:41:01.667Z",
+      "e": "2019-06-27T11:05:01.145Z",
+      "c": "2017-05-06T07:58:57.846Z",
+      "t": "Speaking",
+      "lb": [
+        "line chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "food"
+      ],
+      "bid": "5d49cbacd5de2b0073f0556b",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "59ed5f71fe88c2003c22a364",
+      "tt": {
+        "fr": "Production d'électricité en Chine par type",
+        "ja": "タイプ別の中国の発電",
+        "es": "Generación de electricidad en China por tipo",
+        "pt": "Geração de eletricidade na China por tipo",
+        "zh-CN": "中国发电类型",
+        "tr": "Türüne Göre Çin'de Elektrik Üretimi",
+        "ko": "유형별 중국의 발전량",
+        "it": "Produzione di elettricità in Cina per tipo",
+        "zh-TW": "中國發電類型",
+        "en": "Electricity Generation in China by Type",
+        "de": "Stromerzeugung in China nach Typ",
+        "ru": "Производство электроэнергии в Китае по типам",
+        "vi": "Sản xuất điện ở Trung Quốc theo loại"
+      },
+      "sn": 1681,
+      "p": "DI",
+      "u": "2026-09-02T07:30:08.581Z",
+      "e": "2025-11-26T03:36:40.341Z",
+      "c": "2017-10-23T03:18:09.161Z",
+      "t": "Speaking",
+      "lb": [
+        "line chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "automotive"
+      ],
+      "bid": "692675c8af4f4820428d7dc8",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "60f7f021c36cce0ee33c9c67",
+      "tt": {
+        "fr": "Recyclage des bouteilles",
+        "ja": "ボトルのリサイクル",
+        "es": "Reciclaje de botellas",
+        "pt": "Reciclagem de garrafas",
+        "zh-CN": "塑料瓶回收",
+        "tr": "Şişe geri dönüşümü",
+        "ko": "병 재활용",
+        "it": "Riciclo delle bottiglie",
+        "zh-TW": "瓶子回收",
+        "en": "Bottle recycling",
+        "de": "Flaschenrecycling",
+        "ru": "Переработка бутылок",
+        "vi": "Tái chế chai"
+      },
+      "sn": 8022,
+      "p": "DI",
+      "u": "2026-09-02T02:57:26.268Z",
+      "e": "2021-07-21T10:00:01.060Z",
+      "c": "2021-07-21T10:00:01.060Z",
+      "t": "Speaking",
+      "lb": [
+        "flow chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6103a9b927e81c24c1a08056",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "682ad7bac02b652dbc91aa93",
+      "tt": {
+        "fr": "Les ménages américains gardent des animaux de compagnie",
+        "ja": "米国のペット飼育家",
+        "es": "Los hogares de EE.UU. mantienen mascotas",
+        "pt": "Famílias dos EUA mantêm animais de estimação",
+        "zh-CN": "美国家庭饲养宠物",
+        "tr": "ABD 'de evcil hayvanları tutuyor",
+        "ko": "애완동물을 키우는 미국 가정",
+        "it": "Le famiglie statunitensi tengono animali domestici",
+        "zh-TW": "美國家庭飼養寵物",
+        "en": "U.S. Households Keeping Pets",
+        "de": "US-Haushalte halten Haustiere",
+        "ru": "Американские домохозяйства держат домашних животных",
+        "vi": "Các hộ gia đình Mỹ giữ vật nuôi"
+      },
+      "sn": 9783,
+      "p": "DI",
+      "u": "2026-09-02T02:20:02.651Z",
+      "e": "2025-12-31T06:23:41.023Z",
+      "c": "2025-05-19T07:03:22.973Z",
+      "t": "Speaking",
+      "lb": [
+        "bar chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6954c16cdaee5f72f22d555e",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6a4ce9cebc37d772be9c8a02",
+      "tt": {
+        "fr": "Café instantané",
+        "ja": "インスタントコーヒー",
+        "es": "Café instantáneo",
+        "pt": "Café instantâneo",
+        "zh-CN": "速溶咖啡",
+        "tr": "Anında kahve",
+        "ko": "인스턴트 커피",
+        "it": "Caffè istantaneo",
+        "zh-TW": "速溶咖啡",
+        "en": "Instant coffee",
+        "de": "Instant Kaffee",
+        "ru": "мгновенный кофе",
+        "vi": "Cà phê nhanh"
+      },
+      "sn": 10792,
+      "p": "DI",
+      "u": "2026-09-02T01:44:16.545Z",
+      "e": "2026-07-07T12:06:23.665Z",
+      "c": "2026-07-07T11:58:06.356Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6a4cebbf24a83f4fbdd75ac3",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "619f5a45d56152398d192395",
+      "tt": {
+        "fr": "Passeport le plus puissant",
+        "ja": "最も強力なパスポート",
+        "es": "Pasaporte más poderoso",
+        "pt": "Passaporte mais poderoso",
+        "zh-CN": "最强护照",
+        "tr": "En güçlü pasaport",
+        "ko": "가장 강력한 여권",
+        "it": "Il passaporto più potente",
+        "zh-TW": "最強護照",
+        "en": "Most powerful passport",
+        "de": "Der mächtigste Reisepass",
+        "ru": "Самый мощный паспорт",
+        "vi": "Hộ chiếu quyền lực nhất"
+      },
+      "sn": 8158,
+      "p": "DI",
+      "u": "2026-09-02T01:23:28.369Z",
+      "e": "2021-12-01T08:30:47.044Z",
+      "c": "2021-11-25T09:53:45.170Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "61a732b7b28fea1837cf22dd",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5f9123bbd845a647a5d6bd29",
+      "tt": {
+        "fr": "Papeterie",
+        "ja": "文具店",
+        "es": "Papelería",
+        "pt": "Papelaria",
+        "zh-CN": "文具店",
+        "tr": "kırtasiye mağazası",
+        "ko": "문구점",
+        "it": "cartoleria",
+        "zh-TW": "文具店",
+        "en": "Stationery store",
+        "de": "Schreibwarengeschäft",
+        "ru": "Магазин канцтоваров",
+        "vi": "Cửa hàng văn phòng phẩm"
+      },
+      "sn": 7431,
+      "p": "DI",
+      "u": "2026-09-01T20:45:54.059Z",
+      "e": "2025-12-30T08:03:31.860Z",
+      "c": "2020-10-22T06:16:27.563Z",
+      "t": "Speaking",
+      "lb": [
+        "picture chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "69538753448e782361481780",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5addaaca75657158c336338a",
+      "tt": {
+        "fr": "Aliments",
+        "ja": "食べ物",
+        "es": "Comida",
+        "pt": "Comida",
+        "zh-CN": "食物",
+        "tr": "Gıda",
+        "ko": "음식",
+        "it": "Cibo",
+        "zh-TW": "食物",
+        "en": "Food",
+        "de": "Essen",
+        "ru": "Еда",
+        "vi": "Món ăn"
+      },
+      "sn": 3804,
+      "p": "DI",
+      "u": "2026-09-01T13:30:45.930Z",
+      "e": "2022-10-20T07:50:26.739Z",
+      "c": "2018-04-23T09:43:38.312Z",
+      "t": "Speaking",
+      "lb": [
+        "picture chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "food"
+      ],
+      "bid": "6350fdc272b07a1554037f67",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6262636456ea7756291863a5",
+      "tt": {
+        "fr": "Heures de travail annuelles",
+        "ja": "年間労働時間",
+        "es": "Horas de trabajo anuales",
+        "pt": "Horas de trabalho anuais",
+        "zh-CN": "平均工时",
+        "tr": "Yıllık çalışma saatleri",
+        "ko": "연간 근무 시간",
+        "it": "Orario di lavoro annuale",
+        "zh-TW": "年工作時間",
+        "en": "Annual working hours",
+        "de": "Jährliche Arbeitszeit",
+        "ru": "Годовое рабочее время",
+        "vi": "Giờ làm việc hàng năm"
+      },
+      "sn": 8265,
+      "p": "DI",
+      "u": "2026-09-01T13:16:25.867Z",
+      "e": "2022-04-27T07:31:27.583Z",
+      "c": "2022-04-22T08:18:35.964Z",
+      "t": "Speaking",
+      "lb": [
+        "line chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6268f14f8efdff05d7b376a4",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5f93b03d1fc07172cb4b7274",
+      "tt": {
+        "fr": "Marché aux fruits",
+        "ja": "果物市場",
+        "es": "Mercado de fruta",
+        "pt": "Mercado de frutas",
+        "zh-CN": "水果市场",
+        "tr": "Meyve marketi",
+        "ko": "과일 시장",
+        "it": "Mercato della frutta",
+        "zh-TW": "水果市場",
+        "en": "Fruit market",
+        "de": "Obstmarkt",
+        "ru": "Фруктовый рынок",
+        "vi": "Chợ hoa quả"
+      },
+      "sn": 7444,
+      "p": "DI",
+      "u": "2026-09-01T10:50:46.994Z",
+      "e": "2020-10-24T04:40:29.675Z",
+      "c": "2020-10-24T04:40:29.675Z",
+      "t": "Speaking",
+      "lb": [
+        "picture chart"
+      ],
+      "ie": false,
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "5fa215936b44e540886744da",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a471a82128fe1007cdcef39",
+      "tt": {
+        "fr": "Dépense",
+        "ja": "支出",
+        "es": "Gasto",
+        "pt": "Despesa",
+        "zh-CN": "花销",
+        "tr": "harcama",
+        "ko": "지출",
+        "it": "Spesa",
+        "zh-TW": "支出",
+        "en": "Expenditure",
+        "de": "Ausgaben",
+        "ru": "Статья расхода",
+        "vi": "Chi phí"
+      },
+      "sn": 2439,
+      "p": "DI",
+      "u": "2026-09-01T09:15:20.485Z",
+      "e": "2026-03-02T08:33:16.432Z",
+      "c": "2017-12-30T04:48:02.770Z",
+      "t": "Speaking",
+      "lb": [
+        "pie chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "pets"
+      ],
+      "bid": "69a54b4c6a394b5e5c5a1311",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "62188dcf2f5f134f531c6b20",
+      "tt": {
+        "fr": "Consommateurs de chocolat",
+        "ja": "チョコレートの消費者",
+        "es": "Consumidores de chocolate",
+        "pt": "Consumidores de chocolate",
+        "zh-CN": "巧克力消费者",
+        "tr": "çikolata tüketicileri",
+        "ko": "초콜릿 소비자",
+        "it": "Consumatori di cioccolato",
+        "zh-TW": "巧克力消費者",
+        "en": "Chocolate consumers",
+        "de": "Konsumenten von Schokolade",
+        "ru": "Потребители шоколада",
+        "vi": "Người tiêu dùng sô cô la"
+      },
+      "sn": 8230,
+      "p": "DI",
+      "u": "2026-09-01T08:26:39.153Z",
+      "e": "2024-04-22T03:00:50.767Z",
+      "c": "2022-02-25T08:05:49.952Z",
+      "t": "Speaking",
+      "lb": [
+        "bar chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6625d2e2e2a31527b7cf1c8e",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "682c4a10ce7fc86faf4ab3c4",
+      "tt": {
+        "fr": "Utilisation du téléphone portable à Anytowne",
+        "ja": "Anytowne の携帯電話の使用",
+        "es": "Uso de teléfonos celulares en Anytowne",
+        "pt": "Uso de celular em Anytowne",
+        "zh-CN": "安托尼的手机使用",
+        "tr": "Cep telefonu kullanımı Anytowne",
+        "ko": "Anytowne 의 휴대전화 사용",
+        "it": "Uso del cellulare a Anytowne",
+        "zh-TW": "安托尼的手機使用",
+        "en": "Cell phone use in Anytowne",
+        "de": "Handys in Anytowne",
+        "ru": "Мобильный телефон в Anytowne",
+        "vi": "Sử dụng điện thoại di động ở Anytowne"
+      },
+      "sn": 9802,
+      "p": "DI",
+      "u": "2026-09-01T04:21:07.622Z",
+      "e": "2025-05-20T09:31:16.874Z",
+      "c": "2025-05-20T09:23:28.143Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 0,
+      "f_c": 0,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "682c4be4bf6625518ca6ed15",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6926c10f05564e312652739c",
+      "tt": {
+        "fr": " Taux d'imposition moyens",
+        "ja": " 平均税率",
+        "pt": " Taxas médias de imposto",
+        "zh-CN": " 平均税率",
+        "ko": " 평균 세율",
+        "it": " Tassi fiscali medie",
+        "zh-TW": " 平均稅率",
+        "en": " Average Tax Rates",
+        "de": " Durchschnittliche Steuersätze",
+        "ru": " Средние ставки налогообложения"
+      },
+      "sn": 10326,
+      "p": "DI",
+      "u": "2026-08-31T22:32:07.320Z",
+      "e": "2025-11-26T08:59:34.980Z",
+      "c": "2025-11-26T08:57:51.502Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "6926c176af4f4820428facfd",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6a4ba82517c4a74197d8e423",
+      "tt": {
+        "fr": "Graphique 3 Croissance de la population",
+        "ja": "図表 3 人口増加",
+        "es": "Gráfico 3 Crecimiento de la población",
+        "pt": "Gráfico 3 Crescimento populacional",
+        "zh-CN": "人口增长",
+        "tr": "Grafik 3 Nüfus büyümesi",
+        "ko": "차트 3 인구 증가",
+        "it": "Grafico 3 Crescita della popolazione",
+        "zh-TW": "圖3.人口增長",
+        "en": "Chart 3 Population growth",
+        "de": "Tabelle 3 Bevölkerungswachstum",
+        "ru": "Диаграмма 3 Рост населения",
+        "vi": "Biểu đồ 3 Tăng trưởng dân số"
+      },
+      "sn": 10778,
+      "p": "DI",
+      "u": "2026-08-31T20:12:53.547Z",
+      "e": "2026-07-07T11:43:29.204Z",
+      "c": "2026-07-06T13:05:41.902Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6a4ce66117c4a74197ddc8df",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6262747f94e14a013d059745",
+      "tt": {
+        "fr": "Popularité des sites culturels",
+        "ja": "文化的なウェブサイトの人気",
+        "es": "Popularidad de los sitios web culturales",
+        "pt": "Popularidade dos sites culturais",
+        "zh-CN": "文化网站的流行度",
+        "tr": "Kültürel web sitelerinin popülerliği",
+        "ko": "문화 사이트의 인기도",
+        "it": "Popolarità dei siti web culturali",
+        "zh-TW": "文化網站的流行度",
+        "en": "Popularity of cultural websites",
+        "de": "Popularität von kulturellen Websites",
+        "ru": "Популярность культурных сайтов",
+        "vi": "Mức độ phổ biến của các trang web văn hóa"
+      },
+      "sn": 8267,
+      "p": "DI",
+      "u": "2026-08-31T15:18:45.001Z",
+      "e": "2022-04-27T07:36:53.849Z",
+      "c": "2022-04-22T09:28:32.808Z",
+      "t": "Speaking",
+      "lb": [
+        "bar chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6268f295f92f2379368dae13",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5d90492d12215f0072ae2248",
+      "tt": {
+        "fr": "Cycle de vie des tomates",
+        "ja": "トマトのライフサイクル",
+        "es": "Ciclo de vida de los tomates",
+        "pt": "Ciclo de vida dos tomates",
+        "zh-CN": "番茄的生命周期",
+        "tr": "Domateslerin yaşam döngüsü",
+        "ko": "토마토의 수명주기",
+        "it": "Ciclo di vita dei pomodori",
+        "zh-TW": "西紅柿的生命週期",
+        "en": "Life cycle of tomatoes",
+        "de": "Lebenszyklus von Tomaten",
+        "ru": "Жизненный цикл помидоров",
+        "vi": "Vòng đời của cà chua"
+      },
+      "sn": 6816,
+      "p": "DI",
+      "u": "2026-08-31T14:17:34.797Z",
+      "e": "2019-11-07T07:41:42.794Z",
+      "c": "2019-09-29T06:03:25.887Z",
+      "t": "Speaking",
+      "lb": [
+        "flow chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "food"
+      ],
+      "bid": "5db6aa7fc05a80006811ca47",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "682c39666993d81fe6f7d336",
+      "tt": {
+        "fr": "La montée du smartphone",
+        "ja": "スマートフォンの台頭",
+        "es": "El ascenso del smartphone",
+        "pt": "A ascensão do smartphone",
+        "zh-CN": "智能手机的崛起",
+        "tr": "Akıllı telefonun yükselişi",
+        "ko": "스마트폰의 부상 (Rise of the Smartphone)",
+        "it": "L'ascesa dello smartphone",
+        "zh-TW": "智慧型手機的崛起",
+        "en": "The rise of the smartphone",
+        "de": "Der Aufstieg des Smartphones",
+        "ru": "Подъем смартфонов",
+        "vi": "Sự trỗi dậy của smartphone"
+      },
+      "sn": 9799,
+      "p": "DI",
+      "u": "2026-08-31T08:39:29.445Z",
+      "e": "2025-12-31T06:21:50.787Z",
+      "c": "2025-05-20T08:12:22.251Z",
+      "t": "Speaking",
+      "lb": [
+        "line chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6954c0feaf4f482042979a4f",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5cf731cd6e9ba100738cdb55",
+      "tt": {
+        "fr": "Temps de trajet",
+        "ja": "通勤時間",
+        "es": "Tiempo de traslado",
+        "pt": "Tempo de deslocamento",
+        "zh-CN": "通勤时间",
+        "tr": "işe gidiş zamanı",
+        "ko": "통근 시간",
+        "it": "Tempo di pendolarismo",
+        "zh-TW": "通勤時間",
+        "en": "Commuting time",
+        "de": "Pendelzeit",
+        "ru": "Время в пути",
+        "vi": "Thời gian giao tiếp"
+      },
+      "sn": 6504,
+      "p": "DI",
+      "u": "2026-08-31T02:12:40.178Z",
+      "e": "2019-11-07T07:41:42.738Z",
+      "c": "2019-06-05T03:06:53.492Z",
+      "t": "Speaking",
+      "lb": [
+        "bar chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "society"
+      ],
+      "bid": "5e756b561358aa0074da4383",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590d6ebea0bb9f00588d2549",
+      "tt": {
+        "fr": "Pourcentage de la population",
+        "ja": "人口の割合",
+        "es": "Porcentaje de población",
+        "pt": "Porcentagem da População",
+        "zh-CN": "城市地区人口百分比",
+        "tr": "Nüfus Yüzdesi",
+        "ko": "인구 비율",
+        "it": "Percentuale di popolazione",
+        "zh-TW": "人口百分比",
+        "en": "Percentage of Population ",
+        "de": "Prozentsatz der Bevölkerung",
+        "ru": "Процент населения",
+        "vi": "Phần trăm dân số"
+      },
+      "sn": 1096,
+      "p": "DI",
+      "u": "2026-08-30T18:55:00.421Z",
+      "e": "2026-07-06T12:43:56.499Z",
+      "c": "2017-05-06T06:35:42.093Z",
+      "t": "Speaking",
+      "lb": [
+        "bar chart"
+      ],
+      "ie": false,
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "society"
+      ],
+      "bid": "6a4ba30cc27e22207c335288",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "605d2874fb95582f84fbd4cd",
+      "tt": {
+        "fr": "Film",
+        "ja": "映画",
+        "es": "Película",
+        "pt": "Filme",
+        "zh-CN": "电影",
+        "tr": "Film",
+        "ko": "영화",
+        "it": "Film",
+        "zh-TW": "電影",
+        "en": "Movie",
+        "de": "Film",
+        "ru": "Кино",
+        "vi": "Bộ phim"
+      },
+      "sn": 7640,
+      "p": "DI",
+      "u": "2026-08-30T10:09:39.649Z",
+      "e": "2025-11-26T02:39:16.356Z",
+      "c": "2021-03-26T00:19:00.290Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 0,
+      "f_c": 0,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6926685405564e31264fe09d",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590d6f1644d904007bdc3316",
+      "tt": {
+        "fr": "Flux de travail du service de taxi",
+        "ja": "タクシーサービスのワークフロー",
+        "es": "Flujo de trabajo del servicio de taxi",
+        "pt": "Fluxo de trabalho do serviço de táxi",
+        "zh-CN": "的士服务流程",
+        "tr": "Taksi Hizmeti İş Akışı",
+        "ko": "택시 서비스 업무 흐름",
+        "it": "Flusso di lavoro del servizio taxi",
+        "zh-TW": "出租車服務工作流程",
+        "en": "Taxi Service Work Flow",
+        "de": "Arbeitsablauf beim Taxiservice",
+        "ru": "Порядок работы службы такси",
+        "vi": "Quy trình công việc của dịch vụ taxi"
+      },
+      "sn": 1103,
+      "p": "DI",
+      "u": "2026-08-30T09:45:36.062Z",
+      "e": "2023-06-25T08:01:37.483Z",
+      "c": "2017-05-06T06:37:10.686Z",
+      "t": "Speaking",
+      "lb": [
+        "flow chart"
+      ],
+      "ie": false,
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "automotive"
+      ],
+      "bid": "6497f46135ca1922eaf8a11a",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590d6dbfa0bb9f00588d1b59",
+      "tt": {
+        "fr": "La station de métro de Londres",
+        "ja": "ロンドン地下鉄駅",
+        "es": "Estación de metro de londres",
+        "pt": "Estação de metrô londrina",
+        "zh-CN": "伦敦地铁站客流量",
+        "tr": "Londra metro istasyonu",
+        "ko": "런던 지하철역",
+        "it": "Stazione della metropolitana di Londra",
+        "zh-TW": "倫敦地鐵站",
+        "en": "London underground station",
+        "de": "Londoner U-Bahnhof",
+        "ru": "Станция метро Лондона",
+        "vi": "Ga tàu điện ngầm London"
+      },
+      "sn": 1079,
+      "p": "DI",
+      "u": "2026-08-30T09:18:04.012Z",
+      "e": "2023-06-29T06:17:18.496Z",
+      "c": "2017-05-06T06:31:27.606Z",
+      "t": "Speaking",
+      "lb": [
+        "line chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "travel"
+      ],
+      "bid": "649d21ee62b8bf26a3120d21",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "64af7c672f4bf42bd94e31cf",
+      "tt": {
+        "fr": "Salaire moyen",
+        "ja": "平均給与",
+        "es": "Salario medio",
+        "pt": "Salário médio",
+        "zh-CN": "平均工资",
+        "tr": "ortalama maaş",
+        "ko": "평균 급여",
+        "it": "Stipendio medio",
+        "zh-TW": "平均工資",
+        "en": "Mean salary ",
+        "de": "Mittleres Gehalt",
+        "ru": "Средняя зарплата",
+        "vi": "lương trung bình"
+      },
+      "sn": 8875,
+      "p": "DI",
+      "u": "2026-08-30T09:02:43.714Z",
+      "e": "2025-12-31T06:28:10.552Z",
+      "c": "2023-07-13T04:24:07.158Z",
+      "t": "Speaking",
+      "lb": [
+        "bar chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6954c27a05564e312656bf09",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "68ae7f9d03c88b65d7ebd9d2",
+      "tt": {
+        "en": "Restaurant Booking ",
+        "zh-TW": "餐廳預訂 ",
+        "zh-CN": "餐厅预订 ",
+        "it": "Ristorante prenotazione ",
+        "fr": "Restaurant Réservation ",
+        "ko": "레스토랑 예약 ",
+        "ja": "レストラン予約 "
+      },
+      "sn": 10059,
+      "p": "DI",
+      "u": "2026-08-30T08:00:14.447Z",
+      "e": "2025-12-30T08:04:48.300Z",
+      "c": "2025-08-27T03:46:37.779Z",
+      "t": "Speaking",
+      "lb": [
+        "flow chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "695387a006646d6d768dc302",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "63ed958f10410c14da33e20b",
+      "tt": {
+        "fr": "Fabrication de diamants",
+        "ja": "ダイヤモンドの生産",
+        "es": "Producción de diamantes",
+        "pt": "Produção de diamantes",
+        "zh-CN": "钻石产量",
+        "tr": "Elmas üretimi",
+        "ko": "다이아몬드 생산",
+        "it": "Produzione di diamanti",
+        "zh-TW": "鑽石生產",
+        "en": "Diamond production",
+        "de": "Diamantenproduktion",
+        "ru": "Производство алмазов",
+        "vi": "sản xuất kim cương"
+      },
+      "sn": 8693,
+      "p": "DI",
+      "u": "2026-08-30T05:30:36.858Z",
+      "e": "2025-11-26T03:18:05.918Z",
+      "c": "2023-02-16T02:50:23.729Z",
+      "t": "Speaking",
+      "lb": [
+        "pie chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6926716df05e621fb13a7213",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590d824d44d904007bdcdeb0",
+      "tt": {
+        "fr": "Pommier",
+        "ja": "リンゴの木",
+        "es": "Árbol de manzana",
+        "pt": "Árvore de maçã",
+        "zh-CN": "苹果树",
+        "tr": "Elma ağacı",
+        "ko": "사과나무",
+        "it": "Albero di mele",
+        "zh-TW": "蘋果樹",
+        "en": "Apple Tree",
+        "de": "Apfelbaum",
+        "ru": "Яблоня",
+        "vi": "Cây táo"
+      },
+      "sn": 1201,
+      "p": "DI",
+      "u": "2026-08-30T05:04:20.336Z",
+      "e": "2019-06-27T11:05:04.764Z",
+      "c": "2017-05-06T07:59:09.236Z",
+      "t": "Speaking",
+      "lb": [
+        "flow chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "technology"
+      ],
+      "bid": "5d49cbb312215f00731d9c54",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "611637c86c5c545ff5ca5401",
+      "tt": {
+        "es": "Educación paga",
+        "pt": "Educação paga",
+        "zh-CN": "教育致富",
+        "tr": "Eğitim Ödeme",
+        "it": "Educazione Pays",
+        "zh-TW": "教育部",
+        "en": "Education Pays",
+        "de": "Bildung Pays",
+        "ru": "Образование Pays",
+        "cn": "巴西手机使用情况"
+      },
+      "sn": 8068,
+      "p": "DI",
+      "u": "2026-08-30T04:10:13.932Z",
+      "e": "2025-11-26T03:17:17.502Z",
+      "c": "2021-08-13T09:13:44.526Z",
+      "t": "Speaking",
+      "lb": [
+        "line chart"
+      ],
+      "ie": false,
+      "f": 0,
+      "f_c": 0,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6926713daf4f4820428d592c",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5f2d0be899ba270008e8382e",
+      "tt": {
+        "fr": "Chaîne d'approvisionnement en fruits",
+        "ja": "果物のサプライチェーン",
+        "es": "Cadena de suministro de frutas",
+        "pt": "Cadeia de abastecimento de frutas",
+        "zh-CN": "水果供应链",
+        "tr": "Meyve tedarik zinciri",
+        "ko": "과일 공급망",
+        "it": "Filiera frutta",
+        "zh-TW": "水果供應鏈",
+        "en": "Fruits supply chain",
+        "de": "Lieferkette für Obst",
+        "ru": "Цепочка поставок фруктов",
+        "vi": "Chuỗi cung ứng trái cây"
+      },
+      "sn": 7335,
+      "p": "DI",
+      "u": "2026-08-30T03:59:23.699Z",
+      "e": "2026-08-24T09:18:50.322Z",
+      "c": "2020-08-07T08:08:08.379Z",
+      "t": "Speaking",
+      "lb": [
+        "flow chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6a8c0c7a24a83f4fbd9f1360",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "619cb31925b5b026241ac3cd",
+      "tt": {
+        "fr": "Tranche d'âge",
+        "ja": "年齢層",
+        "es": "Grupo de edad",
+        "pt": "Grupo de idade",
+        "zh-CN": "年龄群体",
+        "tr": "Yaş grubu",
+        "ko": "연령대",
+        "it": "Fascia di età",
+        "zh-TW": "年齡階層",
+        "en": "Age group",
+        "de": "Altersgruppe",
+        "ru": "Возрастная группа",
+        "vi": "Nhóm tuổi"
+      },
+      "sn": 8156,
+      "p": "DI",
+      "u": "2026-08-29T15:23:22.277Z",
+      "e": "2025-12-31T06:29:57.646Z",
+      "c": "2021-11-25T09:53:31.306Z",
+      "t": "Speaking",
+      "lb": [
+        "bar chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6954c2e505564e312656c2fe",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "60eba4f1b8524555a2ed9b84",
+      "tt": {
+        "fr": "Cycle de transformation de la tomate",
+        "ja": "トマトの加工サイクル",
+        "es": "Ciclo de procesamiento de tomate",
+        "pt": "Ciclo de processamento de tomate",
+        "zh-CN": "西红柿处理流程",
+        "tr": "Domates işleme döngüsü",
+        "ko": "토마토 가공 주기",
+        "it": "Ciclo di lavorazione del pomodoro",
+        "zh-TW": "番茄加工週期",
+        "en": "Tomato processing cycle",
+        "de": "Tomatenverarbeitungszyklus",
+        "ru": "Цикл обработки помидоров",
+        "vi": "Chu trình chế biến cà chua"
+      },
+      "sn": 7996,
+      "p": "DI",
+      "u": "2026-08-29T15:16:56.410Z",
+      "e": "2025-12-30T07:50:24.082Z",
+      "c": "2021-07-12T02:12:01.126Z",
+      "t": "Speaking",
+      "lb": [
+        "flow chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6953844005564e312650feb1",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590d6e8b1b69e6006842ed1c",
+      "tt": {
+        "fr": "Année financière",
+        "ja": "会計年度",
+        "es": "Año financiero",
+        "pt": "Ano financeiro",
+        "zh-CN": "财年",
+        "tr": "Mali yıl",
+        "ko": "회계 연도",
+        "it": "Anno finanziario",
+        "zh-TW": "財政年度",
+        "en": " Financial year",
+        "de": "Geschäftsjahr",
+        "ru": "Финансовый год",
+        "vi": "Năm tài chính"
+      },
+      "sn": 1093,
+      "p": "DI",
+      "u": "2026-08-29T13:17:44.213Z",
+      "e": "2026-07-06T12:46:30.233Z",
+      "c": "2017-05-06T06:34:51.640Z",
+      "t": "Speaking",
+      "lb": [
+        "line chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "society"
+      ],
+      "bid": "6a4ba3a6c27e22207c3354d5",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5efedc40bf17d30009412c5d",
+      "tt": {
+        "fr": "Revenu au Royaume-Uni",
+        "ja": "英国の収入",
+        "es": "Ingresos en Reino Unido",
+        "pt": "Renda no Reino Unido",
+        "zh-CN": "英国收入统计",
+        "tr": "Birleşik Krallık'ta Gelir",
+        "ko": "영국 소득",
+        "it": "Reddito nel Regno Unito",
+        "zh-TW": "在英國的收入",
+        "en": "Income in UK",
+        "de": "Einkommen in Großbritannien",
+        "ru": "Доход в Великобритании",
+        "vi": "Thu nhập ở Anh"
+      },
+      "sn": 7304,
+      "p": "DI",
+      "u": "2026-08-29T13:10:29.136Z",
+      "e": "2020-07-03T07:20:32.238Z",
+      "c": "2020-07-03T07:20:32.238Z",
+      "t": "Speaking",
+      "lb": [
+        "line chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "5f00726eb9f9470008260768",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c2f28dcfb4ffe005f4b2783",
+      "tt": {
+        "fr": "Travail à temps partiel et à temps plein",
+        "ja": "アルバイトとフルタイムの仕事",
+        "es": "Trabajo a tiempo parcial y a tiempo completo",
+        "pt": "Trabalho a tempo parcial e a tempo inteiro",
+        "zh-CN": "兼职与全职工作",
+        "tr": "Yarı zamanlı ve tam zamanlı çalışma",
+        "ko": "파트타임 및 풀타임 근무",
+        "it": "Lavoro part-time e full-time",
+        "zh-TW": "兼職和全職工作",
+        "en": "Part-time and full-time working",
+        "de": "Teilzeit und Vollzeit arbeiten",
+        "ru": "Неполный и полный рабочий день",
+        "vi": "Làm việc bán thời gian và toàn thời gian"
+      },
+      "sn": 5543,
+      "p": "DI",
+      "u": "2026-08-29T09:08:45.393Z",
+      "e": "2025-11-26T03:01:29.135Z",
+      "c": "2019-01-04T09:35:24.817Z",
+      "t": "Speaking",
+      "lb": [
+        "table chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "education"
+      ],
+      "bid": "69266d89171b217b0e9e9d8a",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5ddb965143c2570074d11afe",
+      "tt": {
+        "fr": "Salle de conférence",
+        "ja": "講堂",
+        "es": "Sala de conferencias",
+        "pt": "Auditório",
+        "zh-CN": "礼堂",
+        "tr": "Konferans salonu",
+        "ko": "강당",
+        "it": "Sala conferenze",
+        "zh-TW": "演講廳",
+        "en": "Lecture hall",
+        "de": "Hörsaal",
+        "ru": "Лекционная",
+        "vi": "Hội trường"
+      },
+      "sn": 6946,
+      "p": "DI",
+      "u": "2026-08-29T08:25:44.364Z",
+      "e": "2019-11-25T08:53:36.266Z",
+      "c": "2019-11-25T08:52:33.656Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "home"
+      ],
+      "bid": "5e0038c3d4b56c0074dcccb8",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5a0009dcee920a00460970c7",
+      "tt": {
+        "fr": "L'ordinateur",
+        "ja": "コンピューター",
+        "es": "Computadora",
+        "pt": "Computador",
+        "zh-CN": "新老电脑对比",
+        "tr": "Bilgisayar",
+        "ko": "컴퓨터",
+        "it": "Computer",
+        "zh-TW": "計算機",
+        "en": "Computer",
+        "de": "Computer",
+        "ru": "Компьютер",
+        "vi": "Máy vi tính"
+      },
+      "sn": 1771,
+      "p": "DI",
+      "u": "2026-08-29T07:09:53.015Z",
+      "e": "2019-06-27T10:07:38.731Z",
+      "c": "2017-11-06T07:06:04.178Z",
+      "t": "Speaking",
+      "lb": [
+        "picture chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "technology"
+      ],
+      "bid": "5ec3aa292ca410000601e00d",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6360bd74c816dc75ecd8e671",
+      "tt": {
+        "fr": "Bénéfices avant impôts",
+        "ja": "税引前利益",
+        "es": "Beneficios pre-impuesto",
+        "pt": "Lucros antes de impostos",
+        "zh-CN": "税前利润",
+        "tr": "Vergi öncesi kar",
+        "ko": "세전 이익",
+        "it": "Utile prima delle imposte",
+        "zh-TW": "稅前利潤",
+        "en": "Pre-tax profits",
+        "de": "Gewinn vor Steuern",
+        "ru": "Доходы до налогообложения",
+        "vi": "Lợi nhuận trước thuế"
+      },
+      "sn": 8512,
+      "p": "DI",
+      "u": "2026-08-29T02:03:49.232Z",
+      "e": "2023-02-23T09:07:33.500Z",
+      "c": "2022-11-01T06:34:13.740Z",
+      "t": "Speaking",
+      "lb": [
+        "pie chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "63f72cd5fbf298770041080b",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6926bdf905564e3126525be7",
+      "tt": {
+        "ja": "米国ペット所有",
+        "pt": "US Pet Propriedade",
+        "zh-CN": "美国宠物所有权",
+        "tr": "ABD Pet Sahibi",
+        "ko": "미국 Pet Ownership",
+        "it": "US Pet Ownership",
+        "zh-TW": "美國寵物所有權",
+        "en": "US Pet Ownership",
+        "de": "US Pet Eigentum",
+        "ru": "США Pet Ownership"
+      },
+      "sn": 10325,
+      "p": "DI",
+      "u": "2026-08-28T20:06:20.431Z",
+      "e": "2025-12-30T08:00:53.129Z",
+      "c": "2025-11-26T08:44:41.813Z",
+      "t": "Speaking",
+      "lb": [
+        "pie chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "695386b5daee5f72f227b2d1",
+      "onoff": true,
+      "ttps": [
+        "c",
+        "a"
+      ]
+    },
+    {
+      "id": "5e202f737796d9006a4352ac",
+      "tt": {
+        "fr": "Voyages au Royaume-Uni",
+        "ja": "英国での旅",
+        "es": "Viajes en Reino Unido",
+        "pt": "Jornadas no Reino Unido",
+        "zh-CN": "英国人旅行目的",
+        "tr": "İngiltere'de Yolculuklar",
+        "ko": "영국 여행",
+        "it": "Viaggi nel Regno Unito",
+        "zh-TW": "英國之旅",
+        "en": "Journeys in UK",
+        "de": "Reisen in Großbritannien",
+        "ru": "Путешествие по Великобритании",
+        "vi": "Hành trình ở Vương quốc Anh"
+      },
+      "sn": 7115,
+      "p": "DI",
+      "u": "2026-08-28T15:16:52.463Z",
+      "e": "2020-01-16T09:40:03.684Z",
+      "c": "2020-01-16T09:40:03.684Z",
+      "t": "Speaking",
+      "lb": [
+        "bar chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "shopping"
+      ],
+      "bid": "5e4bb3d42a6bfd4d10070455",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590d7f9d2f301e006c157a89",
+      "tt": {
+        "fr": "Radio et télévision",
+        "ja": "ラジオとテレビ",
+        "es": "Radio y television",
+        "pt": "Rádio e televisão",
+        "zh-CN": "广播与电视",
+        "tr": "radyo ve televizyon",
+        "ko": "라디오 및 텔레비전",
+        "it": "Radio e televisione",
+        "zh-TW": "廣播和電視",
+        "en": "Radio and television",
+        "de": "Radio und Fernsehen",
+        "ru": "Радио и телевидение",
+        "vi": "Đài phát thanh và truyền hình"
+      },
+      "sn": 1158,
+      "p": "DI",
+      "u": "2026-08-28T10:18:54.890Z",
+      "e": "2023-06-25T07:35:51.759Z",
+      "c": "2017-05-06T07:47:41.248Z",
+      "t": "Speaking",
+      "lb": [
+        "line chart"
+      ],
+      "ie": false,
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "art"
+      ],
+      "bid": "6497ee57421716233af0a0fd",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590d6def2f301e0057ca6e8a",
+      "tt": {
+        "fr": "Utilisation du téléphone portable",
+        "ja": "携帯電話の使用",
+        "es": "Uso del teléfono celular",
+        "pt": "Uso de telefone celular",
+        "zh-CN": "手机的使用",
+        "tr": "cep telefonu kullanımı",
+        "ko": "휴대전화 사용",
+        "it": "Uso del cellulare",
+        "zh-TW": "手機使用",
+        "en": "Cell phone use",
+        "de": "Handynutzung",
+        "ru": "Использование сотового телефона",
+        "vi": "Sử dụng điện thoại di động"
+      },
+      "sn": 1081,
+      "p": "DI",
+      "u": "2026-08-28T05:45:20.735Z",
+      "e": "2025-11-26T03:29:36.166Z",
+      "c": "2017-05-06T06:32:15.024Z",
+      "t": "Speaking",
+      "lb": [
+        "line chart"
+      ],
+      "ie": false,
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "technology"
+      ],
+      "bid": "6926742005564e3126503ccc",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590d83deac502e00653b6603",
+      "tt": {
+        "fr": "Espérance de vie",
+        "ja": "平均寿命",
+        "es": "Esperanza de vida",
+        "pt": "Expectativa de vida",
+        "zh-CN": "预期寿命",
+        "tr": "yaşam beklentisi",
+        "ko": "기대 수명",
+        "it": "Aspettativa di vita",
+        "zh-TW": "預期壽命",
+        "en": "Life expectancy",
+        "de": "Lebenserwartung",
+        "ru": "Продолжительность жизни",
+        "vi": "Tuổi thọ"
+      },
+      "sn": 1221,
+      "p": "DI",
+      "u": "2026-08-28T04:08:30.508Z",
+      "e": "2019-06-27T11:05:01.231Z",
+      "c": "2017-05-06T08:05:50.077Z",
+      "t": "Speaking",
+      "lb": [
+        "line chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "sports"
+      ],
+      "bid": "5d49cbac12215f00731d9c40",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6006b28c39bcdd265f945aa1",
+      "tt": {
+        "fr": "les internautes",
+        "ja": "インターネットユーザー",
+        "es": "usuarios de Internet",
+        "pt": "usuários de internet",
+        "zh-CN": "网民",
+        "tr": "internet kullanıcıları",
+        "ko": "인터넷 사용자",
+        "it": "utenti di Internet",
+        "zh-TW": "互聯網用戶",
+        "en": "Internet users",
+        "de": "Internetbenutzer",
+        "ru": "Интернет-пользователи",
+        "vi": "những người sử dụng mạng"
+      },
+      "sn": 7538,
+      "p": "DI",
+      "u": "2026-08-28T03:18:02.721Z",
+      "e": "2021-01-19T10:21:00.446Z",
+      "c": "2021-01-19T10:21:00.446Z",
+      "t": "Speaking",
+      "lb": [
+        "bar chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "60094be652bdd01a25e7f7f6",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "619cb21790f9923ac0dae91d",
+      "tt": {
+        "fr": "Dépenses hebdomadaires des ménages",
+        "ja": "毎週の家計支出",
+        "es": "Gasto familiar semanal",
+        "pt": "Gastos domésticos semanais",
+        "zh-CN": "家庭每周开支",
+        "tr": "Haftalık hane harcaması",
+        "ko": "주간 가계 지출",
+        "it": "Spesa settimanale delle famiglie",
+        "zh-TW": "每周家庭支出",
+        "en": "Weekly household spending",
+        "de": "Wöchentliche Haushaltsausgaben",
+        "ru": "Еженедельные расходы домохозяйства",
+        "vi": "Chi tiêu hộ gia đình hàng tuần"
+      },
+      "sn": 8155,
+      "p": "DI",
+      "u": "2026-08-27T15:34:24.838Z",
+      "e": "2026-02-13T04:45:37.924Z",
+      "c": "2021-11-25T09:53:18.094Z",
+      "t": "Speaking",
+      "lb": [],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "698eac71f971c56b7980a7ab",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "619cb2100eb1c239185e2ee6",
+      "tt": {
+        "fr": "pays européens",
+        "ja": "欧州諸国",
+        "es": "países europeos",
+        "pt": "países europeus",
+        "zh-CN": "欧洲国家",
+        "tr": "Avrupa ülkeleri",
+        "ko": "유럽 국가",
+        "it": "paesi europei",
+        "zh-TW": "歐洲國家",
+        "en": "European countries",
+        "de": "europäische Länder",
+        "ru": "европейские страны",
+        "vi": "các nước châu Âu"
+      },
+      "sn": 8154,
+      "p": "DI",
+      "u": "2026-08-27T15:33:01.834Z",
+      "e": "2025-12-30T08:03:46.268Z",
+      "c": "2021-11-25T09:53:08.720Z",
+      "t": "Speaking",
+      "lb": [
+        "map chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "69538762448e7823614817de",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "62982f6c72f1884dd6d27c25",
+      "tt": {
+        "fr": "Brouillard",
+        "ja": "霧",
+        "es": "Niebla",
+        "pt": "Névoa",
+        "zh-CN": "大雾",
+        "tr": "Sis",
+        "ko": "안개",
+        "it": "Nebbia",
+        "zh-TW": "多霧路段",
+        "en": "Fog",
+        "de": "Nebel",
+        "ru": "Туман",
+        "vi": "Sương mù"
+      },
+      "sn": 8287,
+      "p": "DI",
+      "u": "2026-08-27T07:14:07.642Z",
+      "e": "2022-06-09T06:23:14.948Z",
+      "c": "2022-06-02T03:33:22.013Z",
+      "t": "Speaking",
+      "lb": [
+        "picture chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "62a191d284fb4470a3e408e5",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "605d7d18e71bf87e3e9767e9",
+      "tt": {
+        "fr": "Hall principal",
+        "ja": "メインホール",
+        "es": "Sala principal",
+        "pt": "Salão principal",
+        "zh-CN": "大厅",
+        "tr": "Ana koridor",
+        "ko": "정당",
+        "it": "Sala principale",
+        "zh-TW": "主廳",
+        "en": "Main hall",
+        "de": "Haupthalle",
+        "ru": "Основной зал",
+        "vi": "Sảnh chính"
+      },
+      "sn": 7654,
+      "p": "DI",
+      "u": "2026-08-27T06:51:16.814Z",
+      "e": "2025-12-31T07:37:16.223Z",
+      "c": "2021-03-26T06:20:08.483Z",
+      "t": "Speaking",
+      "lb": [
+        "picture chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6954d2ac06646d6d7694d3f2",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590d834b2f301e0057cb3197",
+      "tt": {
+        "fr": "Population Internet",
+        "ja": "インターネット人口",
+        "es": "Población de Internet",
+        "pt": "População da Internet",
+        "zh-CN": "网民",
+        "tr": "İnternet nüfusu",
+        "ko": "인터넷 인구",
+        "it": "Popolazione Internet",
+        "zh-TW": "網民",
+        "en": "Internet population",
+        "de": "Internet-Bevölkerung",
+        "ru": "Интернет-население",
+        "vi": "Dân số Internet"
+      },
+      "sn": 1209,
+      "p": "DI",
+      "u": "2026-08-26T21:06:44.889Z",
+      "e": "2021-12-29T10:34:18.441Z",
+      "c": "2017-05-06T08:03:23.134Z",
+      "t": "Speaking",
+      "lb": [
+        "bar chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "technology"
+      ],
+      "bid": "61cc39aa00d01362755fbb7e",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "682c3160b9570274df33a3b0",
+      "tt": {
+        "fr": "Étapes de préparation des aliments sûrs",
+        "ja": "安全な食品の準備手順",
+        "es": "Pasos de preparación de alimentos seguros",
+        "pt": "Passos para a preparação de alimentos seguros",
+        "zh-CN": "安全食品准备步骤",
+        "tr": "Güvenli Gıda Hazırlama Adımları",
+        "ko": "안전한 음식 준비 단계",
+        "it": "Passi di preparazione del cibo sicuro",
+        "zh-TW": "安全食品準備步驟",
+        "en": "Safe Food Preparation Steps",
+        "de": "Schritte zur sicheren Lebensmittelzubereitung",
+        "ru": "Шаги по безопасной приготовлению пищи",
+        "vi": "Bước chuẩn bị thực phẩm an toàn"
+      },
+      "sn": 9797,
+      "p": "DI",
+      "u": "2026-08-26T15:07:51.609Z",
+      "e": "2025-06-23T03:32:13.781Z",
+      "c": "2025-05-20T07:38:08.668Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 0,
+      "f_c": 0,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6858cabdb9570274df3d6253",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "64acd3d8481b88448555ab65",
+      "tt": {
+        "fr": "Heures de lever et de coucher du soleil à Détroit",
+        "ja": "デトロイトの日の出と日の入りの時間",
+        "es": "Horas de salida y puesta del sol de Detroit",
+        "pt": "Horários do nascer e do pôr do sol para Detroit",
+        "zh-CN": "底特律的日出日落时间表",
+        "tr": "Detroit için Gün Doğumu ve Gün Batımı Zamanları",
+        "ko": "디트로이트 일출 및 일몰 시간",
+        "it": "Alba e tramonto per Detroit",
+        "zh-TW": "底特律的日出日落時間表",
+        "en": "Sunrise and Sunset Times for Detroit",
+        "de": "Sonnenaufgangs- und Sonnenuntergangszeiten für Detroit",
+        "ru": "Время восхода и захода солнца в Детройте",
+        "vi": "Sunrise và Sunset Times cho Detroit"
+      },
+      "sn": 8855,
+      "p": "DI",
+      "u": "2026-08-26T14:22:58.553Z",
+      "e": "2025-12-01T02:16:36.329Z",
+      "c": "2023-07-11T04:00:24.939Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "692cfa84daee5f72f251940e",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "68ae7df89d67ec368914150f",
+      "tt": {
+        "fr": "Pourcentage de travail bénévole ",
+        "ja": "ボランティア活動の割合 ",
+        "es": "Porcentaje de trabajo voluntario ",
+        "pt": "Percentual de trabalho voluntário ",
+        "zh-CN": "志愿者工作比例 ",
+        "tr": "Gönüllü İş Yüzdesi ",
+        "ko": "자원봉사 일자리 비율 ",
+        "it": "Percentuale di lavoro volontario ",
+        "zh-TW": "志願者工作比例 ",
+        "en": "Percentage of Volunteer Job ",
+        "de": "Prozentsatz der Freiwilligenarbeit ",
+        "ru": "Процентная доля добровольцев ",
+        "vi": "Tỷ lệ công việc tình nguyện "
+      },
+      "sn": 10057,
+      "p": "DI",
+      "u": "2026-08-26T10:51:52.808Z",
+      "e": "2025-12-30T08:04:20.137Z",
+      "c": "2025-08-27T03:39:36.073Z",
+      "t": "Speaking",
+      "lb": [
+        "bar chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6953878406646d6d768dc25a",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "64afa747d1995c3ff5fb5523",
+      "tt": {
+        "fr": "Pluviométrie et température à Vancouver",
+        "ja": "バンクーバーの降水量と気温",
+        "es": "Precipitaciones y temperatura en Vancouver",
+        "pt": "Precipitação e temperatura em Vancouver",
+        "zh-CN": "温哥华降雨量和温度",
+        "tr": "Vancouver yağış ve sıcaklık",
+        "ko": "밴쿠버 강우량과 기온",
+        "it": "Pioggia e temperatura a Vancouver",
+        "zh-TW": "溫哥華降雨量和溫度",
+        "en": "Vancouver rainfall and temperature",
+        "de": "Niederschlag und Temperatur in Vancouver",
+        "ru": "Осадки и температура в Ванкувере",
+        "vi": "Vancouver lượng mưa và nhiệt độ"
+      },
+      "sn": 8884,
+      "p": "DI",
+      "u": "2026-08-26T08:57:31.343Z",
+      "e": "2023-07-13T07:35:11.286Z",
+      "c": "2023-07-13T07:27:03.970Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "64afa92f10df7e6978ebba37",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5bc8423b0b6160006fa50cac",
+      "tt": {
+        "fr": "La consommation moyenne d'énergie des ménages",
+        "ja": "平均家庭用エネルギー消費量",
+        "es": "El consumo medio de energía de los hogares",
+        "pt": "O consumo médio doméstico de energia",
+        "zh-CN": "家庭平均能源消耗",
+        "tr": "Ortalama Hanehalkı Enerji Tüketimi",
+        "ko": "평균 가계 에너지 소비",
+        "it": "Il consumo energetico medio delle famiglie",
+        "zh-TW": "家庭平均能源消耗",
+        "en": "The Average Household Energy Consumption",
+        "de": "Der durchschnittliche Energieverbrauch der Haushalte",
+        "ru": "Среднее потребление энергии домохозяйством",
+        "vi": "Mức tiêu thụ năng lượng trung bình của hộ gia đình"
+      },
+      "sn": 5028,
+      "p": "DI",
+      "u": "2026-08-26T07:33:53.460Z",
+      "e": "2019-06-27T11:05:03.631Z",
+      "c": "2018-10-18T08:20:11.839Z",
+      "t": "Speaking",
+      "lb": [
+        "pie chart"
+      ],
+      "ie": false,
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "business"
+      ],
+      "bid": "5d49cbb2f884af0065ccf478",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5f8e5a737ce8185e9c8b072f",
+      "tt": {
+        "fr": "Manger des repas",
+        "ja": "食事をする",
+        "es": "Comer comidas",
+        "pt": "Comer refeições",
+        "zh-CN": "吃饭",
+        "tr": "yemek yemek",
+        "ko": "식사하기",
+        "it": "Mangiare i pasti",
+        "zh-TW": "吃飯",
+        "en": "Eating meals",
+        "de": "Essen von Mahlzeiten",
+        "ru": "Прием пищи",
+        "vi": "Ăn các bữa ăn"
+      },
+      "sn": 7383,
+      "p": "DI",
+      "u": "2026-08-26T04:18:42.636Z",
+      "e": "2021-12-24T10:36:11.082Z",
+      "c": "2020-10-20T03:33:07.279Z",
+      "t": "Speaking",
+      "lb": [
+        "picture chart"
+      ],
+      "ie": false,
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "61c5a29b39907c66ea442cdd",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "64abd4e8481b884485524687",
+      "tt": {
+        "fr": "Nombre moyen de visites annuelles à l'hôpital",
+        "ja": "年間平均来院回数",
+        "es": "Promedio de visitas anuales al hospital",
+        "pt": "Número médio de consultas hospitalares anuais",
+        "zh-CN": "年平均就诊次数",
+        "tr": "Ortalama yıllık hastane ziyareti sayısı",
+        "ko": "연평균 병원 방문 횟수",
+        "it": "Numero medio di visite ospedaliere annuali",
+        "zh-TW": "年平均就診次數",
+        "en": "Average  number of annual hospital visits",
+        "de": "Durchschnittliche Anzahl jährlicher Krankenhausbesuche",
+        "ru": "Среднее количество посещений больницы в год",
+        "vi": "Số lần đến bệnh viện trung bình hàng năm"
+      },
+      "sn": 8853,
+      "p": "DI",
+      "u": "2026-08-26T02:47:40.500Z",
+      "e": "2025-08-19T02:57:52.585Z",
+      "c": "2023-07-10T09:52:40.066Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "68a3e8305be87d59d7b33e18",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590d822c44d904007bdcdde6",
+      "tt": {
+        "fr": "Précipitations moyennes",
+        "ja": "平均降雨量",
+        "es": "Lluvia promedio",
+        "pt": "Precipitação média",
+        "zh-CN": "平均降水量",
+        "tr": "Ortalama yağış",
+        "ko": "평균 강우량",
+        "it": "Precipitazioni medie",
+        "zh-TW": "平均降雨量",
+        "en": "Average rainfall",
+        "de": "Durchschnittlicher Niederschlag",
+        "ru": "Среднее количество осадков",
+        "vi": "Lượng mưa trung bình"
+      },
+      "sn": 1199,
+      "p": "DI",
+      "u": "2026-08-26T02:12:59.125Z",
+      "e": "2025-11-26T03:35:34.627Z",
+      "c": "2017-05-06T07:58:36.353Z",
+      "t": "Speaking",
+      "lb": [
+        "bar chart"
+      ],
+      "ie": false,
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "science"
+      ],
+      "bid": "69267586171b217b0e9edfa5",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "682af5abd3496c4246805ff2",
+      "tt": {
+        "fr": "Temps de travail en Ontario",
+        "ja": "オンタリオ州の仕事への移動時間",
+        "es": "Tiempo de viaje laboral en Ontario",
+        "pt": "Tempo de viagem em Ontário",
+        "zh-CN": "安大略省的工作旅行时间",
+        "tr": "Ontario 'ya Çalışma Seyahat Zamanı",
+        "ko": "온타리오에서 일하기 위한 여행 시간",
+        "it": "Tempo di lavoro in Ontario",
+        "zh-TW": "安大略省的工作旅行時間",
+        "en": "Work Travel Time in Ontario",
+        "de": "Reisezeit zur Arbeit in Ontario",
+        "ru": "Время работы в Онтарио",
+        "vi": "Thời gian đi làm ở Ontario"
+      },
+      "sn": 9786,
+      "p": "DI",
+      "u": "2026-08-26T01:53:37.488Z",
+      "e": "2025-05-27T02:33:07.427Z",
+      "c": "2025-05-19T09:11:07.042Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "68352463c02b652dbccec976",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6926bcf4171b217b0ea109fe",
+      "tt": {
+        "en": "Students to UK",
+        "zh-TW": "前往英國的學生",
+        "ko": "영국으로 가는 학생들",
+        "zh-CN": "前往英国的学生",
+        "tr": "Öğrenciler İngiltere 'ye",
+        "de": "Studenten nach UK",
+        "pt": "Estudantes para o Reino Unido",
+        "ru": "Студенты в Великобританию"
+      },
+      "sn": 10323,
+      "p": "DI",
+      "u": "2026-08-25T22:06:01.832Z",
+      "e": "2025-11-26T08:41:57.639Z",
+      "c": "2025-11-26T08:40:20.346Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6926bd55af4f4820428f89da",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "5c18a7c30b616000672ef4e1",
+      "tt": {
+        "fr": "Imposition",
+        "ja": "課税",
+        "es": "Impuestos",
+        "pt": "Tributação",
+        "zh-CN": "征税",
+        "tr": "Vergilendirme",
+        "ko": "과세",
+        "it": "Tassazione",
+        "zh-TW": "稅收",
+        "en": "Taxation",
+        "de": "Besteuerung",
+        "ru": "Налогообложение",
+        "vi": "Thuế"
+      },
+      "sn": 5410,
+      "p": "DI",
+      "u": "2026-08-25T05:18:17.037Z",
+      "e": "2019-06-27T11:05:01.958Z",
+      "c": "2018-12-18T07:54:43.618Z",
+      "t": "Speaking",
+      "lb": [
+        "bar chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "society"
+      ],
+      "bid": "5d49cbad12215f00731d9c47",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "682ad8f96993d81fe6ef6498",
+      "tt": {
+        "fr": "Propriétaires de chats de différents pays",
+        "ja": "各国の猫の飼い主",
+        "es": "Dueños de gatos de diferentes países",
+        "pt": "Proprietários de gatos de diferentes países",
+        "zh-CN": "不同国家的猫主人",
+        "tr": "Farklı ülkelerin kedi sahipleri",
+        "ko": "다른 나라의 고양이 소유자",
+        "it": "I proprietari di gatti di diversi paesi",
+        "zh-TW": "不同國家的貓主人",
+        "en": "Cat owners of different countries",
+        "de": "Katzenbesitzer aus verschiedenen Ländern",
+        "ru": "Собственники кошек разных стран",
+        "vi": "Chủ sở hữu mèo của các quốc gia khác nhau"
+      },
+      "sn": 9784,
+      "p": "DI",
+      "u": "2026-08-25T04:40:46.319Z",
+      "e": "2025-12-08T09:37:35.645Z",
+      "c": "2025-05-19T07:08:41.860Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "69369c5f171b217b0efdc9ce",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6926c1cfaf4f4820428faf8b",
+      "tt": {
+        "en": "Age Group",
+        "zh-CN": "年龄组",
+        "fr": "Groupe d'âge",
+        "ja": "年齢グループ",
+        "it": "Gruppo di età",
+        "ko": "나이 그룹",
+        "zh-TW": "年齡組"
+      },
+      "sn": 10327,
+      "p": "DI",
+      "u": "2026-08-25T01:49:05.812Z",
+      "e": "2025-12-31T06:19:56.723Z",
+      "c": "2025-11-26T09:01:03.072Z",
+      "t": "Speaking",
+      "lb": [
+        "bar chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "6954c08c05564e312656b283",
+      "onoff": true,
+      "ttps": [
+        "c",
+        "a"
+      ]
+    },
+    {
+      "id": "6926bc6a171b217b0ea105ed",
+      "tt": {
+        "en": " Newspaper Circulation",
+        "ja": " 新聞流通量",
+        "zh-TW": " 報紙發行量",
+        "zh-CN": " 报纸发行量",
+        "ko": " 신문의 유통",
+        "fr": " Circulation du journal",
+        "it": " Circolazione giornaliera"
+      },
+      "sn": 10322,
+      "p": "DI",
+      "u": "2026-08-24T18:44:07.824Z",
+      "e": "2025-11-26T08:39:12.449Z",
+      "c": "2025-11-26T08:38:02.031Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6926bcb0171b217b0ea10804",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "65defb25436cc7685bb06e86",
+      "tt": {
+        "fr": " Ménages en millions qui possèdent des animaux de compagnie.",
+        "ja": " ペットを飼っている数百万世帯。",
+        "es": " Millones de hogares que poseen mascotas.",
+        "pt": " Milhões de famílias que possuem animais de estimação.",
+        "zh-CN": " 数百万拥有宠物的家庭。",
+        "tr": " Milyonlarca Evcil Hayvan Sahibi Hane Sayısı.",
+        "ko": " 애완동물을 키우는 수백만 가구.",
+        "it": " Milioni di famiglie che possiedono animali domestici.",
+        "zh-TW": " 數百萬擁有寵物的家庭。",
+        "en": " Households in Millions Who Own Pets.",
+        "de": " Haushalte in Millionenhöhe, die Haustiere besitzen.",
+        "ru": " Миллионные домохозяйства, у которых есть домашние животные.",
+        "vi": " Hàng triệu hộ gia đình sở hữu thú cưng."
+      },
+      "sn": 9112,
+      "p": "DI",
+      "u": "2026-08-24T14:43:41.331Z",
+      "e": "2025-12-31T06:27:12.456Z",
+      "c": "2024-02-28T09:21:41.730Z",
+      "t": "Speaking",
+      "lb": [
+        "pie chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6954c240a54da130be9e964f",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "682af7ef6993d81fe6f07cff",
+      "tt": {
+        "fr": "Marché des fruits et légumes",
+        "ja": "果物 · 野菜市場",
+        "es": "Mercado de frutas y verduras",
+        "pt": "Mercado de Frutas e Vegetais",
+        "zh-CN": "果蔬市场",
+        "tr": "Meyve ve Sebze Pazarı",
+        "ko": "과일과 야채 시장 (Fruit and Vegetables Market)",
+        "it": "Mercato di frutta e verdura",
+        "zh-TW": "果蔬市場",
+        "en": "Fruits and Vegetables Market",
+        "de": "Obst - und Gemüsemarkt",
+        "ru": "Рынок фруктов и овощей",
+        "vi": "Chợ rau quả"
+      },
+      "sn": 9788,
+      "p": "DI",
+      "u": "2026-08-24T13:53:47.511Z",
+      "e": "2025-05-20T08:28:13.242Z",
+      "c": "2025-05-19T09:20:47.626Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "682c3d1d6993d81fe6f7f555",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "675951768097b23c9a7f5cdc",
+      "tt": {
+        "fr": "Coccinelle",
+        "ja": "テントウムシ",
+        "es": "Mariquita",
+        "pt": "Joaninha",
+        "zh-CN": "瓢虫",
+        "tr": "Uğur böceği",
+        "ko": "무당벌레",
+        "it": "Coccinella",
+        "zh-TW": "瓢蟲",
+        "en": "Ladybird",
+        "de": "Marienkäfer",
+        "ru": "Божья коровка",
+        "vi": "Bọ rùa"
+      },
+      "sn": 9501,
+      "p": "DI",
+      "u": "2026-08-24T13:16:51.534Z",
+      "e": "2025-12-30T08:04:03.037Z",
+      "c": "2024-12-11T08:46:46.366Z",
+      "t": "Speaking",
+      "lb": [
+        "map chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "69538773a54da130be98d172",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "59794c592f301e005865dd6a",
+      "tt": {
+        "fr": "Plans de maison",
+        "ja": "ハウスプラン",
+        "es": "Planes de casa",
+        "pt": "Houseplans",
+        "zh-CN": "房屋平面图",
+        "tr": "Ev planları",
+        "ko": "집 계획",
+        "it": "planimetrie",
+        "zh-TW": "房屋平面圖",
+        "en": " Houseplans",
+        "de": "Hauspläne",
+        "ru": "Планы дома",
+        "vi": "Kế hoạch nhà ở"
+      },
+      "sn": 1487,
+      "p": "DI",
+      "u": "2026-08-24T13:10:48.927Z",
+      "e": "2021-09-23T07:07:58.973Z",
+      "c": "2017-07-27T02:13:45.067Z",
+      "t": "Speaking",
+      "lb": [
+        "picture chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "home"
+      ],
+      "bid": "614c27cecc4ddb220a351007",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65d5968d85e2aa0e8b25354f",
+      "tt": {
+        "fr": "Plan d'étage",
+        "ja": "フロアプラン",
+        "es": "Planta baja",
+        "pt": "Planta",
+        "zh-CN": "平面图",
+        "tr": "Kat planı",
+        "ko": "평면도",
+        "it": "Piano terra",
+        "zh-TW": "平面圖",
+        "en": "Floor Plan",
+        "de": "Gebäudeplan",
+        "ru": "Поэтажный план",
+        "vi": "Kế hoạch sàn"
+      },
+      "sn": 9107,
+      "p": "DI",
+      "u": "2026-08-24T11:30:04.871Z",
+      "e": "2025-12-31T07:37:36.077Z",
+      "c": "2024-02-21T06:22:05.689Z",
+      "t": "Speaking",
+      "lb": [
+        "picture chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6954d2c0a54da130be9f04e1",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65defa70b96e6741677b36ed",
+      "tt": {
+        "fr": "Posséder un téléphone portable",
+        "ja": "携帯電話の所有権",
+        "es": "Propiedad de un teléfono móvil",
+        "pt": "Propriedade de telefone celular",
+        "zh-CN": "手机拥有量",
+        "tr": "Cep telefonu sahipliği",
+        "ko": "휴대폰 소유권",
+        "it": "Possesso del cellulare",
+        "zh-TW": "手機擁有量",
+        "en": "Mobile phone ownership",
+        "de": "Besitz eines Mobiltelefons",
+        "ru": "Владение мобильным телефоном",
+        "vi": "Quyền sở hữu điện thoại di động"
+      },
+      "sn": 9111,
+      "p": "DI",
+      "u": "2026-08-24T10:13:12.242Z",
+      "e": "2025-12-31T06:27:24.383Z",
+      "c": "2024-02-28T09:18:40.396Z",
+      "t": "Speaking",
+      "lb": [
+        "line chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6954c24c06646d6d76946538",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "682ad708ce7fc86faf41a8fd",
+      "tt": {
+        "fr": "Croissance de la population canadienne",
+        "ja": "カナダの人口増加",
+        "es": "Crecimiento de la población canadiense",
+        "pt": "Crescimento da população canadense",
+        "zh-CN": "加拿大人口增长",
+        "tr": "Kanada nüfus artışı",
+        "ko": "캐나다 인구 증가",
+        "it": "Crescita della popolazione canadese",
+        "zh-TW": "加拿大人口增長",
+        "en": "Canadian population growth",
+        "de": "Bevölkerungswachstum in Kanada",
+        "ru": "Рост населения Канады",
+        "vi": "Tăng trưởng dân số Canada"
+      },
+      "sn": 9782,
+      "p": "DI",
+      "u": "2026-08-24T09:22:58.000Z",
+      "e": "2025-05-20T07:53:47.017Z",
+      "c": "2025-05-19T07:00:24.146Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "682c350ad3496c424687e9f6",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "65def924caa7af401d17835e",
+      "tt": {
+        "fr": "Étape pour préparer du café instantané ",
+        "ja": "インスタントコーヒーを作る手順 ",
+        "es": "Paso para hacer café instantáneo ",
+        "pt": "Passo para fazer café instantâneo ",
+        "zh-CN": "制作速溶咖啡的步骤 ",
+        "tr": "Hazır kahve yapma adımı ",
+        "ko": "인스턴트 커피를 만드는 단계 ",
+        "it": "Passaggio per preparare il caffè istantaneo ",
+        "zh-TW": "製作即溶咖啡的步驟 ",
+        "en": "Step to make instant coffee ",
+        "de": "Schritt zur Zubereitung von Instantkaffee ",
+        "ru": "Шаг приготовления растворимого кофе ",
+        "vi": "Bước pha cà phê hòa tan "
+      },
+      "sn": 9110,
+      "p": "DI",
+      "u": "2026-08-24T04:01:30.784Z",
+      "e": "2025-12-31T06:27:43.460Z",
+      "c": "2024-02-28T09:13:08.394Z",
+      "t": "Speaking",
+      "lb": [
+        "flow chart",
+        "picture chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6954c25faf4f48204297a298",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b1ddd88a22b9d00395d754e",
+      "tt": {
+        "fr": "Plan d'étage",
+        "ja": "間取り",
+        "es": "Planta baja",
+        "pt": "Planta",
+        "zh-CN": "楼层规划",
+        "tr": "Kat planı",
+        "ko": "평면도",
+        "it": "Piano terra",
+        "zh-TW": "平面圖",
+        "en": "Floor plan",
+        "de": "Gebäudeplan",
+        "ru": "Поэтажный план",
+        "vi": "Kế hoạch sàn"
+      },
+      "sn": 4154,
+      "p": "DI",
+      "u": "2026-08-23T22:24:30.597Z",
+      "e": "2025-12-31T07:28:12.597Z",
+      "c": "2018-06-11T02:25:12.571Z",
+      "t": "Speaking",
+      "lb": [
+        "picture chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "science"
+      ],
+      "bid": "6954d08c05564e3126571b4e",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590d6e41da2f6000534b37b1",
+      "tt": {
+        "fr": "Technologie la plus utilisée",
+        "ja": "最も使用されているテクノロジー",
+        "es": "Tecnología más utilizada",
+        "pt": "Tecnologia mais usada",
+        "zh-CN": "最常用的科技产品",
+        "tr": "En Çok Kullanılan Teknoloji",
+        "ko": "가장 많이 사용되는 기술",
+        "it": "Tecnologia più utilizzata",
+        "zh-TW": "最常用的技術",
+        "en": "Most used Technology",
+        "de": "Am häufigsten verwendete Technologie",
+        "ru": "Наиболее используемые технологии",
+        "vi": "Công nghệ được sử dụng nhiều nhất"
+      },
+      "sn": 1088,
+      "p": "DI",
+      "u": "2026-08-23T14:09:26.183Z",
+      "e": "2021-12-29T10:31:33.700Z",
+      "c": "2017-05-06T06:33:37.445Z",
+      "t": "Speaking",
+      "lb": [
+        "bar chart"
+      ],
+      "ie": false,
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "technology"
+      ],
+      "bid": "61cc3905a724e81e36d286ef",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5c11d18b0b61600067f323ee",
+      "tt": {
+        "fr": "Activités éducatives pour les étudiants",
+        "ja": "学生の教育活動",
+        "es": "Actividades educativas para estudiantes",
+        "pt": "Atividades educacionais dos alunos",
+        "zh-CN": "学生家教时间",
+        "tr": "Öğrenci eğitim faaliyetleri",
+        "ko": "학생 교육 활동",
+        "it": "Attività didattiche degli studenti",
+        "zh-TW": "學生教育活動",
+        "en": "Student educational activities",
+        "de": "Bildungsaktivitäten für Schüler",
+        "ru": "Образовательная деятельность студентов",
+        "vi": "Hoạt động giáo dục học sinh"
+      },
+      "sn": 5362,
+      "p": "DI",
+      "u": "2026-08-23T11:20:16.516Z",
+      "e": "2022-10-21T10:04:51.927Z",
+      "c": "2018-12-13T03:27:07.249Z",
+      "t": "Speaking",
+      "lb": [
+        "line chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "education"
+      ],
+      "bid": "63526ec3cefdfb5520de93da",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590d72c0ac502e006ce862fb",
+      "tt": {
+        "fr": "Température",
+        "ja": "温度",
+        "es": "Temperatura",
+        "pt": "Temperatura",
+        "zh-CN": "气温",
+        "tr": "Hava sıcaklığı",
+        "ko": "온도",
+        "it": "Temperatura",
+        "zh-TW": "溫度",
+        "en": "Temperature",
+        "de": "Temperatur",
+        "ru": "Температура",
+        "vi": "Nhiệt độ"
+      },
+      "sn": 1117,
+      "p": "DI",
+      "u": "2026-08-23T09:04:50.448Z",
+      "e": "2023-05-04T08:33:06.315Z",
+      "c": "2017-05-06T06:52:48.151Z",
+      "t": "Speaking",
+      "lb": [
+        "line chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "health"
+      ],
+      "bid": "64536dc2e745e33de3df8ffe",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5f93b074b4d7fb5119d9222a",
+      "tt": {
+        "fr": "Clients dans un café",
+        "ja": "カフェのお客様",
+        "es": "Clientes en un café",
+        "pt": "Clientes em um café",
+        "zh-CN": "咖啡馆的顾客",
+        "tr": "Bir kafede müşteriler",
+        "ko": "카페에서 고객",
+        "it": "Clienti in un caffè",
+        "zh-TW": "咖啡館裡的顧客",
+        "en": "Customers in a cafe",
+        "de": "Kunden in einem Café",
+        "ru": "Посетители в кафе",
+        "vi": "Khách hàng trong quán cà phê"
+      },
+      "sn": 7445,
+      "p": "DI",
+      "u": "2026-08-23T06:43:45.477Z",
+      "e": "2020-10-24T04:41:24.205Z",
+      "c": "2020-10-24T04:41:24.205Z",
+      "t": "Speaking",
+      "lb": [
+        "picture chart"
+      ],
+      "ie": false,
+      "f": 2,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "5fa21402103dba73686949b6",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "682adf06b9570274df2b8f7c",
+      "tt": {
+        "fr": "Pets propriété",
+        "ja": "ペット所有",
+        "es": "Pets propiedad",
+        "pt": "Pets Propriedade",
+        "zh-CN": "宠物所有权",
+        "tr": "Pets Sahipliği",
+        "ko": "애완동물 소유권",
+        "it": "Pets di proprietà",
+        "zh-TW": "寵物所有權",
+        "en": "Pets Ownership",
+        "de": "Pets Eigentum",
+        "ru": "Питомцы собственность",
+        "vi": "Quyền sở hữu thú cưng"
+      },
+      "sn": 9785,
+      "p": "DI",
+      "u": "2026-08-23T05:14:00.502Z",
+      "e": "2025-12-31T06:21:38.523Z",
+      "c": "2025-05-19T07:34:30.660Z",
+      "t": "Speaking",
+      "lb": [
+        "pie chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6954c0f2448e7823614dcd31",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590d8259a0bb9f00588dd91a",
+      "tt": {
+        "fr": "Développement de la population mondiale",
+        "ja": "世界の人口増加",
+        "es": "Desarrollo de la población mundial",
+        "pt": "Desenvolvimento da população mundial",
+        "zh-CN": "世界人口增长",
+        "tr": "Dünya nüfus gelişimi",
+        "ko": "세계 인구 개발",
+        "it": "Sviluppo della popolazione mondiale",
+        "zh-TW": "世界人口發展",
+        "en": "World population development",
+        "de": "Entwicklung der Weltbevölkerung",
+        "ru": "Мировое развитие населения",
+        "vi": "Phát triển dân số thế giới"
+      },
+      "sn": 1202,
+      "p": "DI",
+      "u": "2026-08-22T11:40:33.355Z",
+      "e": "2019-06-27T11:05:04.298Z",
+      "c": "2017-05-06T07:59:21.609Z",
+      "t": "Speaking",
+      "lb": [
+        "line chart"
+      ],
+      "ie": false,
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "finance"
+      ],
+      "bid": "5d49cbb2d5de2b0073f05584",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6006b2c288424c75966ded15",
+      "tt": {
+        "fr": "Jardins historiques",
+        "ja": "歴史的な庭園",
+        "es": "Jardines historicos",
+        "pt": "Jardins históricos",
+        "zh-CN": "古典园林",
+        "tr": "Tarihi bahçeler",
+        "ko": "역사적인 정원",
+        "it": "Giardini storici",
+        "zh-TW": "歷史花園",
+        "en": "Historic gardens",
+        "de": "Historische Gärten",
+        "ru": "Исторические сады",
+        "vi": "Khu vườn lịch sử"
+      },
+      "sn": 7539,
+      "p": "DI",
+      "u": "2026-08-22T06:38:57.662Z",
+      "e": "2021-01-19T10:21:54.201Z",
+      "c": "2021-01-19T10:21:54.201Z",
+      "t": "Speaking",
+      "lb": [
+        "picture chart"
+      ],
+      "ie": false,
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "60094c4ba69c6a6bf8ef8a8d",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6006b34088424c75966df01b",
+      "tt": {
+        "fr": "Directives sur l'épaisseur de la glace",
+        "ja": "氷の厚さのガイドライン",
+        "es": "Pautas de espesor de hielo",
+        "pt": "Diretrizes de espessura do gelo",
+        "zh-CN": "冰厚指南",
+        "tr": "Buz kalınlığı kuralları",
+        "ko": "얼음 두께 지침",
+        "it": "Linee guida sullo spessore del ghiaccio",
+        "zh-TW": "冰厚指南",
+        "en": "Ice thickness guidelines",
+        "de": "Richtlinien zur Eisdicke",
+        "ru": "Рекомендации по толщине льда",
+        "vi": "Hướng dẫn về độ dày của băng"
+      },
+      "sn": 7540,
+      "p": "DI",
+      "u": "2026-08-22T06:36:25.640Z",
+      "e": "2024-12-02T02:09:35.113Z",
+      "c": "2021-01-19T10:24:00.835Z",
+      "t": "Speaking",
+      "lb": [
+        "picture chart"
+      ],
+      "ie": false,
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "674d16df93b15b4efd047ff6",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "682c4d9ab9570274df349c8c",
+      "tt": {
+        "fr": "Population de l'Union européenne",
+        "ja": "欧州連合の人口",
+        "pt": "População da União Europeia",
+        "zh-CN": "欧盟人口",
+        "tr": "Avrupa Birliği 'nin nüfusu",
+        "ko": "유럽 연합의 인구",
+        "zh-TW": "歐盟人口",
+        "en": "Population of the European Union",
+        "de": "Bevölkerung der Europäischen Union",
+        "ru": "Население Европейского Союза",
+        "vi": "Dân số của Liên minh châu Âu"
+      },
+      "sn": 9804,
+      "p": "DI",
+      "u": "2026-08-22T04:11:47.427Z",
+      "e": "2025-05-20T09:48:47.736Z",
+      "c": "2025-05-20T09:38:34.413Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "682c4fffbf6625518ca710f3",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6298667c1a62267d38390f03",
+      "tt": {
+        "fr": "Total des répondants",
+        "ja": "総回答者",
+        "es": "Total de encuestados",
+        "pt": "Total de entrevistados",
+        "zh-CN": "调查对象总数",
+        "tr": "Toplam yanıtlayan",
+        "ko": "총 응답자",
+        "it": "Totale intervistati",
+        "zh-TW": "受訪者總數",
+        "en": "Total respondents",
+        "de": "Befragte insgesamt",
+        "ru": "Всего респондентов",
+        "vi": "Tổng số người trả lời"
+      },
+      "sn": 8288,
+      "p": "DI",
+      "u": "2026-08-22T03:08:59.229Z",
+      "e": "2022-06-09T06:24:15.468Z",
+      "c": "2022-06-02T07:29:29.623Z",
+      "t": "Speaking",
+      "lb": [
+        "picture chart"
+      ],
+      "ie": false,
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "62a1920f8feb5251419f00b3",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5b8e25968d6d81005fffc4bc",
+      "tt": {
+        "fr": "Téléchargement de musique",
+        "ja": "音楽ダウンロード",
+        "es": "Descargar música",
+        "pt": "Download de música",
+        "zh-CN": "音乐下载",
+        "tr": "Müzik indirme",
+        "ko": "음악 다운로드",
+        "it": "Download di musica",
+        "zh-TW": "音樂下載",
+        "en": "Music download",
+        "de": "Musik herunterladen",
+        "ru": "Скачать музыку",
+        "vi": "Tải nhạc"
+      },
+      "sn": 4733,
+      "p": "DI",
+      "u": "2026-08-21T09:45:53.931Z",
+      "e": "2026-01-19T06:55:48.444Z",
+      "c": "2018-09-04T06:26:30.119Z",
+      "t": "Speaking",
+      "lb": [
+        "flow chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "technology"
+      ],
+      "bid": "696dd574fc754f151d32baa4",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590d8435a0bb9f00588de8de",
+      "tt": {
+        "fr": "Modes de transport",
+        "ja": "輸送モード",
+        "es": "Modos de transporte",
+        "pt": "Modos de Transporte",
+        "zh-CN": "欧洲城市交通方式",
+        "tr": "Taşıma Modları",
+        "ko": "운송 모드",
+        "it": "Modalità di trasporto",
+        "zh-TW": "運輸方式",
+        "en": "Transport Modes",
+        "de": "Transportmodi",
+        "ru": "Транспортные режимы",
+        "vi": "Phương thức vận chuyển"
+      },
+      "sn": 1228,
+      "p": "DI",
+      "u": "2026-08-21T09:19:07.201Z",
+      "e": "2019-06-27T11:05:10.328Z",
+      "c": "2017-05-06T08:07:17.852Z",
+      "t": "Speaking",
+      "lb": [
+        "bar chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "automotive"
+      ],
+      "bid": "5d49cbb812215f00731d9c80",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "619f4eb7bd97b759f1cd6c94",
+      "tt": {
+        "fr": "Les régions régionales les plus riches",
+        "ja": "最も豊かな地域",
+        "es": "Las zonas regionales más ricas",
+        "pt": "As áreas regionais mais ricas",
+        "zh-CN": "最富有的地区",
+        "tr": "En zengin bölgesel alanlar",
+        "ko": "가장 부유한 지역",
+        "it": "Le aree regionali più ricche",
+        "zh-TW": "最富裕的地區",
+        "en": "The richest regional areas",
+        "de": "Die reichsten Regionen der Region",
+        "ru": "Самые богатые регионы",
+        "vi": "Các khu vực giàu có nhất trong khu vực"
+      },
+      "sn": 8157,
+      "p": "DI",
+      "u": "2026-08-21T09:13:45.662Z",
+      "e": "2021-12-01T08:30:37.627Z",
+      "c": "2021-11-25T09:53:37.594Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "61a732ada621ed2f3f566871",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "597951191b69e6006c2a3952",
+      "tt": {
+        "fr": "L'assiette à manger",
+        "ja": "正しいプレート",
+        "es": "El plato Eatwell",
+        "pt": "O prato de comer",
+        "zh-CN": "健康食物摄入比",
+        "tr": "yemek tabağı",
+        "ko": "이트웰 플레이트",
+        "it": "Il piatto mangiatutto",
+        "zh-TW": "Eatwell 盤子",
+        "en": "The eatwell plate",
+        "de": "Die Eatwell-Platte",
+        "ru": "Тарелка для еды",
+        "vi": "Tấm ăn"
+      },
+      "sn": 1491,
+      "p": "DI",
+      "u": "2026-08-21T09:13:34.471Z",
+      "e": "2025-10-15T06:43:51.141Z",
+      "c": "2017-07-27T02:34:01.412Z",
+      "t": "Speaking",
+      "lb": [
+        "pie chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "food"
+      ],
+      "bid": "68ef42a7d9e1c5394ed1340b",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "59ed905567f356003a454fd6",
+      "tt": {
+        "fr": "Roue à aubes de Pitchback",
+        "ja": "ピッチバック水車",
+        "es": "Rueda de agua Pitchback",
+        "pt": "Pitchback roda d'água",
+        "zh-CN": "水车",
+        "tr": "Pitchback su çarkı",
+        "ko": "피치백 물레방아",
+        "it": "Ruota idraulica pitchback",
+        "zh-TW": "斜背式水輪",
+        "en": "Pitchback water wheel",
+        "de": "Pitchback-Wasserrad",
+        "ru": "Водяное колесо отката",
+        "vi": "Bánh xe nước Pitchback"
+      },
+      "sn": 1695,
+      "p": "DI",
+      "u": "2026-08-21T08:36:41.150Z",
+      "e": "2025-11-26T03:34:19.183Z",
+      "c": "2017-10-23T06:46:45.165Z",
+      "t": "Speaking",
+      "lb": [
+        "picture chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "business"
+      ],
+      "bid": "6926753baf4f4820428d79df",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6290806687875e5cf40c2efc",
+      "tt": {
+        "fr": "Taux de vaccination contre la grippe",
+        "ja": "インフルエンザの予防接種率",
+        "es": "Tasas de vacunación contra la gripe",
+        "pt": "Taxas de vacinação contra a gripe",
+        "zh-CN": "流感疫苗接种率",
+        "tr": "Grip aşısı oranları",
+        "ko": "독감 예방 접종률",
+        "it": "Tassi di vaccinazione antinfluenzale",
+        "zh-TW": "流感疫苗接種率",
+        "en": "Flu vaccination rates",
+        "de": "Grippeimpfraten",
+        "ru": "Показатели вакцинации против гриппа",
+        "vi": "Tỷ lệ tiêm phòng cúm"
+      },
+      "sn": 8284,
+      "p": "DI",
+      "u": "2026-08-21T07:03:33.716Z",
+      "e": "2022-05-27T07:47:45.666Z",
+      "c": "2022-05-27T07:45:31.908Z",
+      "t": "Speaking",
+      "lb": [
+        "bar chart"
+      ],
+      "ie": false,
+      "f": 2,
+      "f_c": 2,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6290822171919b5635882097",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6926bb9edaee5f72f22f4ce4",
+      "tt": {
+        "ja": "オーストラリアの人口と出生",
+        "es": "Población y nacimiento de Australia",
+        "pt": "Austrália População e Nascimento",
+        "zh-CN": "澳大利亚人口和出生",
+        "tr": "Avustralya Nüfus ve Doğum",
+        "ko": "호주 인구 및 출생",
+        "it": "Australia Popolazione e nascite",
+        "zh-TW": "澳大利亞人口和出生",
+        "en": "Australia Population and Birth",
+        "de": "Bevölkerung und Geburten in Australien",
+        "ru": "Австралия Население и рождаемость"
+      },
+      "sn": 10321,
+      "p": "DI",
+      "u": "2026-08-21T04:42:34.051Z",
+      "e": "2025-11-26T08:37:09.854Z",
+      "c": "2025-11-26T08:34:38.226Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6926bc35171b217b0ea1046f",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "632d51589f568725e0427778",
+      "tt": {
+        "fr": "Femmes non mariées",
+        "ja": "未婚の女性",
+        "es": "mujeres no casadas",
+        "pt": "Mulheres não casadas",
+        "zh-CN": "未婚女性",
+        "tr": "kadınlar evli değil",
+        "ko": "미혼 여성",
+        "it": "Donne non sposate",
+        "zh-TW": "未婚女性",
+        "en": "Women not married",
+        "de": "Frauen nicht verheiratet",
+        "ru": "Женщины не замужем",
+        "vi": "Phụ nữ chưa kết hôn"
+      },
+      "sn": 8467,
+      "p": "DI",
+      "u": "2026-08-21T04:02:58.826Z",
+      "e": "2022-10-21T08:47:04.512Z",
+      "c": "2022-09-23T06:29:23.908Z",
+      "t": "Speaking",
+      "lb": [
+        "line chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "63525c8857656544d4b35499",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "626268a0e9adba08502f51fc",
+      "tt": {
+        "fr": "Passagers des compagnies aériennes nationales",
+        "ja": "国内航空会社の乗客",
+        "es": "Pasajeros de líneas aéreas nacionales",
+        "pt": "Passageiros de companhias aéreas domésticas",
+        "zh-CN": "国内航空客运",
+        "tr": "iç hat yolcuları",
+        "ko": "국내선 승객",
+        "it": "Passeggeri delle compagnie aeree nazionali",
+        "zh-TW": "國內航空公司旅客",
+        "en": "Domestic airline passengers",
+        "de": "Passagiere von Inlandsflügen",
+        "ru": "Пассажиры внутренних авиалиний",
+        "vi": "Hành khách hàng không nội địa"
+      },
+      "sn": 8266,
+      "p": "DI",
+      "u": "2026-08-21T02:19:13.822Z",
+      "e": "2022-04-27T07:36:37.875Z",
+      "c": "2022-04-22T08:35:22.510Z",
+      "t": "Speaking",
+      "lb": [
+        "bar chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6268f2855f78cf0224f970d6",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "692679b5f05e621fb13ab323",
+      "tt": {
+        "fr": "Nourriture gaspillée",
+        "ja": "廃棄食品",
+        "es": "Alimentos desperdiciados",
+        "pt": "Alimentos desperdiçados",
+        "zh-CN": "浪费的食物",
+        "tr": "israf edilen gıda",
+        "ko": "낭비된 음식",
+        "zh-TW": "浪費的食物",
+        "en": "Wasted Food",
+        "de": "Verschwendetes Essen",
+        "ru": "Отпущенная пища"
+      },
+      "sn": 10303,
+      "p": "DI",
+      "u": "2026-08-20T17:40:12.677Z",
+      "e": "2025-11-26T08:56:35.945Z",
+      "c": "2025-11-26T03:53:25.819Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6926c0c3f05e621fb13cb177",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "5c10c1889f54540072d21bc6",
+      "tt": {
+        "fr": "Zones climatiques",
+        "ja": "気候帯",
+        "es": "Zonas climáticas",
+        "pt": "Zonas climáticas",
+        "zh-CN": "气候区域",
+        "tr": "İklim bölgeleri",
+        "ko": "기후대",
+        "it": "zone climatiche",
+        "zh-TW": "氣候帶",
+        "en": "Climate zones",
+        "de": "Klimazonen",
+        "ru": "Климатические зоны",
+        "vi": "Vùng khí hậu"
+      },
+      "sn": 5358,
+      "p": "DI",
+      "u": "2026-08-20T08:40:08.669Z",
+      "e": "2025-11-26T03:32:13.163Z",
+      "c": "2018-12-12T08:06:32.303Z",
+      "t": "Speaking",
+      "lb": [
+        "map chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "sports"
+      ],
+      "bid": "692674bda54da130be925c9a",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6926c287af4f4820428fb48b",
+      "tt": {
+        "en": "Australian Population Density",
+        "zh-TW": "澳大利亞人口密度",
+        "fr": "Densité de population australienne",
+        "zh-CN": "澳大利亚人口密度",
+        "ja": "オーストラリアの人口密度",
+        "ko": "호주 인구 밀도",
+        "it": "Densità di popolazione australiana"
+      },
+      "sn": 10328,
+      "p": "DI",
+      "u": "2026-08-19T10:33:10.775Z",
+      "e": "2025-11-26T09:05:27.337Z",
+      "c": "2025-11-26T09:04:07.886Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6926c2d7af4f4820428fb6c1",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "5bc59465808ca40072309df1",
+      "tt": {
+        "fr": "Langues en Suisse",
+        "ja": "スイスの言語",
+        "es": "Idiomas en Suiza",
+        "pt": "Línguas na Suíça",
+        "zh-CN": "瑞士语言区",
+        "tr": "İsviçre'deki Diller",
+        "ko": "스위스의 언어",
+        "it": "Lingue in Svizzera",
+        "zh-TW": "瑞士的語言",
+        "en": "Languages in Switzerland",
+        "de": "Sprachen in der Schweiz",
+        "ru": "Языки в Швейцарии",
+        "vi": "Ngôn ngữ ở Thụy Sĩ"
+      },
+      "sn": 5024,
+      "p": "DI",
+      "u": "2026-08-19T02:47:29.164Z",
+      "e": "2022-10-21T09:43:20.968Z",
+      "c": "2018-10-16T07:33:57.814Z",
+      "t": "Speaking",
+      "lb": [
+        "map chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "art"
+      ],
+      "bid": "635269b81dbc9336828afe92",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5aefb4b0a22b9d00456e7710",
+      "tt": {
+        "fr": "Dépenses publiques",
+        "ja": "政府支出",
+        "es": "Gastos gubernamentales",
+        "pt": "Despesas governamentais",
+        "zh-CN": "政府花销",
+        "tr": "Devlet harcamaları",
+        "ko": "정부 지출",
+        "it": "Spese governative",
+        "zh-TW": "政府開支",
+        "en": "Government expenditures",
+        "de": "Staatsausgaben",
+        "ru": "Государственные расходы",
+        "vi": "Chi tiêu của chính phủ"
+      },
+      "sn": 3923,
+      "p": "DI",
+      "u": "2026-08-19T01:13:55.931Z",
+      "e": "2019-06-27T11:05:11.159Z",
+      "c": "2018-05-07T02:06:40.548Z",
+      "t": "Speaking",
+      "lb": [
+        "picture chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "education"
+      ],
+      "bid": "5d49cbbe12215f00731d9ca2",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5e0971ad1358aa0077c30600",
+      "tt": {
+        "fr": "Tarif bénévole",
+        "ja": "ボランティア率",
+        "es": "Tasa de voluntariado",
+        "pt": "Taxa de voluntários",
+        "zh-CN": "志愿者率",
+        "tr": "gönüllü oranı",
+        "ko": "자원봉사율",
+        "it": "Tariffa volontario",
+        "zh-TW": "義工率",
+        "en": "Volunteer rate",
+        "de": "Freiwilligensatz",
+        "ru": "Оценка волонтеров",
+        "vi": "Tỷ lệ tình nguyện viên"
+      },
+      "sn": 7085,
+      "p": "DI",
+      "u": "2026-08-18T11:11:00.516Z",
+      "e": "2025-12-30T08:05:00.602Z",
+      "c": "2019-12-30T03:40:29.409Z",
+      "t": "Speaking",
+      "lb": [
+        "line chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 3,
+      "tp": [
+        "society"
+      ],
+      "bid": "695387aca54da130be98d2c1",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "692519a2af4f4820428647ef",
+      "tt": {
+        "fr": "Afrique",
+        "ja": "アフリカ",
+        "es": "África",
+        "pt": "África",
+        "zh-CN": "非洲",
+        "tr": "Afrika",
+        "ko": "아프리카",
+        "it": "Africa",
+        "zh-TW": "非洲",
+        "en": "Africa",
+        "de": "Afrika",
+        "ru": "Африка",
+        "vi": "Châu Phi"
+      },
+      "sn": 10274,
+      "p": "DI",
+      "u": "2026-08-17T21:18:44.447Z",
+      "e": "2025-11-25T02:52:02.198Z",
+      "c": "2025-11-25T02:51:14.672Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 0,
+      "f_c": 0,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "692519d2f05e621fb1330abd",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "682c4c00bf6625518ca6ee04",
+      "tt": {
+        "fr": "Les obstacles à la visite des musées",
+        "ja": "博物館への障壁",
+        "es": "Barreras para visitar museos",
+        "pt": "Barreiras para visitar museus",
+        "zh-CN": "参观博物馆的障碍",
+        "tr": "Müzeleri veya Galerileri Ziyaret Etmenin Engelleri",
+        "ko": "박물관 방문에 대한 장벽",
+        "it": "Barriere per visitare i musei",
+        "zh-TW": "參觀博物館的障礙",
+        "en": "Barriers to Visiting Museums",
+        "de": "Barrieren beim Besuch von Museen",
+        "ru": "Барьеры для посещения музеев",
+        "vi": "Những rào cản khi đến thăm bảo tàng"
+      },
+      "sn": 9803,
+      "p": "DI",
+      "u": "2026-08-17T00:32:03.946Z",
+      "e": "2026-07-06T13:00:01.494Z",
+      "c": "2025-05-20T09:31:44.984Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6a4ba6d1bc37d772be97b591",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6926bd7aa54da130be94c9fe",
+      "tt": {
+        "fr": "Visiteurs canadiens",
+        "ja": "カナダの訪問者",
+        "es": "Visitantes de Canadá",
+        "zh-CN": "加拿大游客",
+        "tr": "Kanada Ziyaretçileri",
+        "ko": "캐나다 방문자",
+        "it": "Visitatori del Canada",
+        "zh-TW": "加拿大遊客",
+        "en": "Canada Visitors",
+        "vi": "Du khách Canada"
+      },
+      "sn": 10324,
+      "p": "DI",
+      "u": "2026-08-16T12:22:48.036Z",
+      "e": "2025-11-26T08:44:05.638Z",
+      "c": "2025-11-26T08:42:34.989Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 0,
+      "tp": [],
+      "bid": "6926bdd5af4f4820428f8faa",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "682c405dd3496c4246885338",
+      "tt": {
+        "fr": "Dépenses des ménages en Australie",
+        "ja": "オーストラリアの家計支出",
+        "es": "Gastos de los hogares en Australia",
+        "pt": "Gastos das famílias na Austrália",
+        "zh-CN": "澳大利亚的家庭支出",
+        "tr": "Avustralya 'da ev harcamaları",
+        "ko": "호주의 가계 지출",
+        "it": "Spesa delle famiglie in Australia",
+        "zh-TW": "澳大利亞的家庭支出",
+        "en": "Household Spending in Australia",
+        "de": "Haushaltsausgaben in Australien",
+        "ru": "Расходы домашних хозяйств в Австралии",
+        "vi": "Chi tiêu hộ gia đình ở Úc"
+      },
+      "sn": 9801,
+      "p": "DI",
+      "u": "2026-08-15T05:05:53.095Z",
+      "e": "2026-01-12T02:34:45.427Z",
+      "c": "2025-05-20T08:42:05.931Z",
+      "t": "Speaking",
+      "lb": [
+        "bar chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "69645dc520c1620e1f3817ca",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "678603179d433b7c9629e382",
+      "tt": {
+        "fr": "La plus forte augmentation de la population",
+        "ja": "人口増加が最も大きい",
+        "es": "Mayor aumento de población",
+        "pt": "Maior aumento populacional",
+        "zh-CN": "人口增长最多",
+        "tr": "En Büyük Nüfus Artışı",
+        "ko": "가장 큰 인구 증가",
+        "it": "Maggiore incremento demografico",
+        "zh-TW": "人口增幅最大",
+        "en": "Largest Population Increase",
+        "de": "Größter Bevölkerungszuwachs",
+        "ru": "Самый большой прирост населения",
+        "vi": "Tăng trưởng dân số lớn nhất"
+      },
+      "sn": 9521,
+      "p": "DI",
+      "u": "2026-08-14T05:22:09.610Z",
+      "e": "2025-12-30T08:03:04.638Z",
+      "c": "2025-01-14T06:24:23.800Z",
+      "t": "Speaking",
+      "lb": [
+        "bar chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "69538738daee5f72f227b6d4",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "590d8413ac502e00653b67b4",
+      "tt": {
+        "fr": "Santé",
+        "ja": "健康",
+        "es": "Salud",
+        "pt": "Saúde",
+        "zh-CN": "健康",
+        "tr": "Sağlık",
+        "ko": "건강",
+        "it": "Salute",
+        "zh-TW": "健康",
+        "en": "Health",
+        "de": "Die Gesundheit",
+        "ru": "Здоровье",
+        "vi": "Sức khỏe"
+      },
+      "sn": 1225,
+      "p": "DI",
+      "u": "2026-08-14T03:15:46.171Z",
+      "e": "2022-10-20T02:22:38.062Z",
+      "c": "2017-05-06T08:06:43.670Z",
+      "t": "Speaking",
+      "lb": [
+        "picture chart"
+      ],
+      "ie": false,
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "health"
+      ],
+      "bid": "6350b0ee1dbc93368281729c",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6a4ba81f73f4b6282ca62483",
+      "tt": {
+        "fr": "Café",
+        "ja": "コーヒー",
+        "pt": "Café",
+        "zh-CN": "咖啡",
+        "tr": "Kahve",
+        "ko": "커피 커피",
+        "it": "Caffè",
+        "zh-TW": "咖啡",
+        "en": "Coffee",
+        "de": "Kaffee",
+        "ru": "Кофе",
+        "vi": "Cà phê"
+      },
+      "sn": 10777,
+      "p": "DI",
+      "u": "2026-08-14T00:48:41.973Z",
+      "e": "2026-07-07T11:39:00.282Z",
+      "c": "2026-07-06T13:05:35.576Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6a4ce55417c4a74197ddc4a6",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "6a4ba1f8c27e22207c334e4e",
+      "tt": {
+        "fr": "Guide du nouveau venu au café en Australie",
+        "ja": "オーストラリアのコーヒーの初心者ガイド",
+        "es": "Guía para recién llegados al café en Australia",
+        "pt": "Guia do recém-chegado para café na Austrália",
+        "zh-CN": "澳大利亚咖啡新人指南",
+        "tr": "Avustralya 'da kahve için yeni gelen kılavuz",
+        "ko": "Newcomer 's Guide to Coffee in Australia 에 대한 리뷰 보기",
+        "it": "Guida del nuovo arrivato al caffè in Australia",
+        "zh-TW": "澳大利亞咖啡新人指南",
+        "en": "Newcomer's guide to coffee in Australia",
+        "de": "Newcomer 's Guide zum Kaffee in Australien",
+        "ru": "Руководство по кофе в Австралии",
+        "vi": "Hướng dẫn của người mới đến cà phê ở Úc"
+      },
+      "sn": 10776,
+      "p": "DI",
+      "u": "2026-08-12T08:20:31.809Z",
+      "e": "2026-07-07T11:19:48.493Z",
+      "c": "2026-07-06T12:39:20.528Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6a4ce0d481df541954dffc56",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "5fe1bd7755fb073dea4a5408",
+      "tt": {
+        "fr": "Étape pour faire du café instantané",
+        "ja": "インスタントコーヒーを作るステップ",
+        "es": "Paso para hacer café instantáneo",
+        "pt": "Passo para fazer café instantâneo",
+        "zh-CN": "速溶咖啡制作步骤",
+        "tr": "Hazır kahve yapmak için adım",
+        "ko": "인스턴트 커피를 만드는 단계",
+        "it": "Step per fare il caffè istantaneo",
+        "zh-TW": "製作速溶咖啡的步驟",
+        "en": "Step to make instant coffee",
+        "de": "Schritt, um Instant-Kaffee zuzubereiten",
+        "ru": "Шаг по приготовлению растворимого кофе",
+        "vi": "Bước pha cà phê hòa tan"
+      },
+      "sn": 7519,
+      "p": "DI",
+      "u": "2026-08-12T07:14:46.825Z",
+      "e": "2026-07-06T13:01:53.615Z",
+      "c": "2020-12-22T09:33:43.903Z",
+      "t": "Speaking",
+      "lb": [
+        "flow chart"
+      ],
+      "ie": false,
+      "f": 1,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6a4ba74173f4b6282ca6208b",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "6a4ba831c27e22207c3368d2",
+      "tt": {
+        "fr": "Cuisiner un steak",
+        "ja": "ステーキの調理",
+        "es": "Cocinar un Steak",
+        "pt": "Cozinhar um bife",
+        "zh-CN": "煮牛排",
+        "tr": "Bir biftek pişirmek",
+        "ko": "스테이크를 요리하다",
+        "it": "Cucinare una Steak",
+        "zh-TW": "煮牛排",
+        "en": "Cooking a steak",
+        "de": "Kochen eines Steaks",
+        "ru": "Приготовление стейка",
+        "vi": "Nấu bít tết"
+      },
+      "sn": 10779,
+      "p": "DI",
+      "u": "2026-08-09T12:09:25.368Z",
+      "e": "2026-07-07T11:56:24.564Z",
+      "c": "2026-07-06T13:05:53.434Z",
+      "t": "Speaking",
+      "ie": false,
+      "f": 0,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6a4ce96824a83f4fbdd74d0a",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "68ad6c349d67ec368910db73",
+      "tt": {
+        "fr": "Le ratio des hommes et des femmes volontaires change ",
+        "ja": "男女ボランティアの比率変化 ",
+        "es": "La proporción de voluntarios varones y mujeres cambia ",
+        "pt": "A proporção de voluntários masculinos e femininos muda ",
+        "zh-CN": "男女志愿者比例变化 ",
+        "tr": "Kadın ve erkek gönüllülerin oranı değişir ",
+        "ko": "남성과 여성 자원봉사자의 비율이 바뀌었다. ",
+        "it": "Il rapporto tra volontari maschi e donne cambia ",
+        "zh-TW": "男女志願者比例變化 ",
+        "en": "The ratio of male and female volunteers changes ",
+        "de": "Das Verhältnis von männlichen und weiblichen Freiwilligen ändert sich ",
+        "ru": "Изменение соотношения мужчин и женщин-добровольцев ",
+        "vi": "Tỷ lệ tình nguyện viên nam và nữ thay đổi "
+      },
+      "sn": 10050,
+      "p": "DI",
+      "u": "2026-08-09T06:27:07.053Z",
+      "e": "2026-04-21T09:35:40.574Z",
+      "c": "2025-08-26T08:11:32.132Z",
+      "t": "Speaking",
+      "lb": [
+        "line chart"
+      ],
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "69e744ecd2a61074f2f85d9d",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,150 @@
+{
+  "source": "https://duoink.co",
+  "fetched": "2026-09-02",
+  "part": "SA_L",
+  "questions": [
+    {
+      "id": "6915a81feb5f221d6f782591",
+      "tt": {
+        "en": "Media",
+        "zh-CN": "媒体",
+        "zh-TW": "媒體"
+      },
+      "sn": 10153,
+      "p": "SA_L",
+      "u": "2026-06-22T06:44:01.020Z",
+      "e": "2025-11-14T09:04:16.792Z",
+      "c": "2025-11-13T09:42:55.410Z",
+      "t": "Listening",
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [],
+      "bid": "6916f090c29a3849f8c9a4c9",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "5af57dd7a22b9d00459fb7a4",
+      "tt": {
+        "fr": "Chocolat",
+        "ja": "チョコレート",
+        "es": "Chocolate",
+        "pt": "Chocolate",
+        "zh-CN": "巧克力",
+        "tr": "Çikolata",
+        "ko": "초콜릿",
+        "it": "Cioccolato",
+        "zh-TW": "巧克力",
+        "en": "Chocolate",
+        "de": "Schokolade",
+        "ru": "Шоколад",
+        "vi": "Sô cô la"
+      },
+      "sn": 4036,
+      "p": "SA_L",
+      "u": "2026-06-22T06:43:43.397Z",
+      "e": "2026-06-17T03:15:46.766Z",
+      "c": "2018-05-11T11:26:15.797Z",
+      "t": "Listening",
+      "ie": true,
+      "f": 0,
+      "f_c": 0,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "food"
+      ],
+      "bid": "6a3211623923da236b7bb65a",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5af57e7a9f5454005eba503e",
+      "tt": {
+        "fr": "Labyrinthe",
+        "ja": "迷路",
+        "es": "Laberinto",
+        "pt": "Labirinto",
+        "zh-CN": "迷宫",
+        "tr": "Labirent",
+        "ko": "미로",
+        "it": "Labirinto",
+        "zh-TW": "迷宮",
+        "en": "Maze",
+        "de": "Labyrinth",
+        "ru": "Лабиринт",
+        "vi": "mê cung"
+      },
+      "sn": 4038,
+      "p": "SA_L",
+      "u": "2026-06-22T06:43:43.043Z",
+      "e": "2026-06-17T03:15:31.655Z",
+      "c": "2018-05-11T11:28:58.014Z",
+      "t": "Listening",
+      "ie": true,
+      "f": 0,
+      "f_c": 0,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "family"
+      ],
+      "bid": "6a321153d2a61074f2725a2d",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5af57340a22b9d00459f2168",
+      "tt": {
+        "fr": "Dauphin",
+        "ja": "イルカ",
+        "es": "Delfín",
+        "pt": "Golfinho",
+        "zh-CN": "海豚",
+        "tr": "Yunus",
+        "ko": "돌고래",
+        "it": "Delfino",
+        "zh-TW": "海豚",
+        "en": "Dolphin",
+        "de": "Delfin",
+        "ru": "Дельфин",
+        "vi": "Cá heo"
+      },
+      "sn": 4020,
+      "p": "SA_L",
+      "u": "2026-06-22T06:43:42.990Z",
+      "e": "2026-06-17T03:16:06.939Z",
+      "c": "2018-05-11T10:41:04.982Z",
+      "t": "Listening",
+      "ie": true,
+      "f": 0,
+      "f_c": 0,
+      "lc": false,
+      "ipb": true,
+      "l": 1,
+      "tp": [
+        "sports"
+      ],
+      "bid": "6a321176d2a61074f2725b00",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    }
+  ]
+}

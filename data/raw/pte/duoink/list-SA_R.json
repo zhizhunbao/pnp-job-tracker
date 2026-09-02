@@ -1,0 +1,188 @@
+{
+  "source": "https://duoink.co",
+  "fetched": "2026-09-02",
+  "part": "SA_R",
+  "questions": [
+    {
+      "id": "69202fb1f05e621fb11a2a8c",
+      "tt": {
+        "fr": "Curiosité sur Mars",
+        "ja": "火星のキュリオシティ",
+        "es": "Curiosity en Marte",
+        "pt": "Curiosity em Marte",
+        "zh-CN": "好奇号在火星",
+        "tr": "Curiosity Mars 'ta",
+        "ko": "화성에 있는 호기심",
+        "it": "Curiosity su Marte",
+        "zh-TW": "好奇號在火星",
+        "en": "Curiosity on Mars",
+        "de": "Curiosity auf dem Mars",
+        "ru": "Любопытство на Марсе",
+        "vi": "Curiosity trên sao Hỏa"
+      },
+      "sn": 10249,
+      "p": "SA_R",
+      "u": "2026-06-22T06:44:02.508Z",
+      "e": "2025-11-22T21:56:32.117Z",
+      "c": "2025-11-21T09:24:01.640Z",
+      "t": "Reading",
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "6922319005564e312639df35",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "69202f12f05e621fb11a2690",
+      "tt": {
+        "en": "German Luftwaffe",
+        "zh-CN": "德国空军",
+        "zh-TW": "德國空軍",
+        "de": "German Luftwaffe",
+        "pt": "Luftwaffe alemã",
+        "ru": "Немецкие воздушные силы"
+      },
+      "sn": 10248,
+      "p": "SA_R",
+      "u": "2026-06-22T06:44:02.495Z",
+      "e": "2025-11-21T09:22:58.071Z",
+      "c": "2025-11-21T09:21:22.473Z",
+      "t": "Reading",
+      "ie": false,
+      "f": 3,
+      "f_c": 3,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "69202f72f05e621fb11a291b",
+      "onoff": true,
+      "ttps": [
+        "c"
+      ]
+    },
+    {
+      "id": "61adc60982620b012a2d41e9",
+      "tt": {
+        "fr": "La sécurité d'emploi",
+        "ja": "雇用保障",
+        "es": "Seguridad en el empleo",
+        "pt": "Seguro desemprego",
+        "zh-CN": "工作保障",
+        "tr": "İş güvenliği",
+        "ko": "고용 안정",
+        "it": "Sicurezza sul lavoro",
+        "zh-TW": "就業保障",
+        "en": "Job security",
+        "de": "Berufssicherheit",
+        "ru": "Безопасность работы",
+        "vi": "Đảm bảo công việc"
+      },
+      "sn": 8172,
+      "p": "SA_R",
+      "u": "2026-06-22T06:43:49.313Z",
+      "e": "2021-12-07T03:38:02.510Z",
+      "c": "2021-12-06T09:54:14.010Z",
+      "t": "Reading",
+      "ie": false,
+      "f": 0,
+      "f_c": 0,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [],
+      "bid": "61aed71a69525420f21a9ccc",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "5adfeee175657158c345bf9c",
+      "tt": {
+        "fr": "Art",
+        "ja": "美術",
+        "es": "Arte",
+        "pt": "Arte",
+        "zh-CN": "艺术",
+        "tr": "Sanat",
+        "ko": "미술",
+        "it": "Arte",
+        "zh-TW": "藝術",
+        "en": "Art",
+        "de": "Kunst",
+        "ru": "Искусство",
+        "vi": "Biệt tài"
+      },
+      "sn": 3812,
+      "p": "SA_R",
+      "u": "2026-06-22T06:43:40.530Z",
+      "e": "2025-11-21T09:25:22.051Z",
+      "c": "2018-04-25T02:58:41.664Z",
+      "t": "Reading",
+      "lb": [],
+      "ie": false,
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "art"
+      ],
+      "bid": "69203002daee5f72f20cf0ed",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "58ff74155c497d005813fd78",
+      "tt": {
+        "fr": "Changement climatique",
+        "ja": "気候変動",
+        "es": "Cambio climático",
+        "pt": "Das Alterações Climáticas",
+        "zh-CN": "气候变化",
+        "tr": "İklim değişikliği",
+        "ko": "기후 변화",
+        "it": "Cambiamento climatico",
+        "zh-TW": "氣候變化",
+        "en": "Climate change",
+        "de": "Klimawandel",
+        "ru": "Изменение климата",
+        "vi": "Khí hậu thay đổi"
+      },
+      "sn": 581,
+      "p": "SA_R",
+      "u": "2026-06-22T06:43:36.397Z",
+      "e": "2025-11-21T09:25:44.452Z",
+      "c": "2017-04-25T16:06:45.104Z",
+      "t": "Reading",
+      "ie": false,
+      "f": 1,
+      "f_c": 1,
+      "lc": false,
+      "ipb": true,
+      "l": 2,
+      "tp": [
+        "business"
+      ],
+      "bid": "69203018daee5f72f20cf15c",
+      "onoff": true,
+      "ttps": [
+        "a",
+        "c"
+      ]
+    }
+  ]
+}
