@@ -81,6 +81,12 @@ CRAWL = DATA / "crawl"
 """crawl 役产物(每小时):<slug>/manifest.json + html_cache/<md5>.html;
 定向抽取先查这里再考虑发请求(2026-08-03 Frank 拍板;读取正门 crawl.functions.get_cached_page)。"""
 
+RAW_PTE = RAW / "pte"
+"""pte 域原始抓取(2026-09-01):一源一目录 —— ynwac/(bundle 快照 + images + votes)、
+ptebank/(wp-json 快照 + audio)。
+⚠ 研究用途,不建 mart / 不灌库 / 不上线(开域手册 etl分域-20260829 §6.5:第三方商业题库
+不入库);分析「各家机经是否同源、是否与公开数据一致」。"""
+
 PROCESSED = DATA / "processed"
 """transform 层根。"""
 
@@ -92,6 +98,10 @@ COMPANIES = PROCESSED_ATS
 
 PROCESSED_JOBBANK = PROCESSED / "jobbank"
 """Job Bank 累积/去重/清洗后的 store(当前态,不按日期)。"""
+
+PROCESSED_PTE = PROCESSED / "pte"
+"""pte 域组织后产物(2026-09-01):ynwac 机经库解析分组(ynwac-bank.json,按题型分组 +
+签名 + 题目)。⚠ 同 RAW_PTE:研究用途,不建 mart / 不灌库 / 不上线。"""
 
 MART = DATA / "mart"
 """load 层:09 产出的最终表(seed 灌库;R3 下 load 域 upload 上传)。"""

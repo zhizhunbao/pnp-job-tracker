@@ -131,6 +131,13 @@ services:
   #     (SCRAPE_INTERVAL 已随批F 退役;亮回时节奏写 company 域 META)
   #     TZ: EST5EDT
 
+  pte:                             # ynwac 机经研究:抓公开 bundle → 解析 → diff 新题雷达(周更;只产 data/pte/,不灌库)
+    <<: *etl
+    environment:
+      SOURCE: pte
+      YNWAC_TOKEN: ${YNWAC_TOKEN:-}   # 考过投票+评论用(登录门控);根 .env 注入 auth_token,空=跳过votes步;JWT 过期换新
+      TZ: EST5EDT
+
   ircc:                            # IRCC 开放数据月更(E12-07 #116 难度指数:学签/工签存量+PNP 登陆;配额=人工维护表不在此)
     <<: *etl
     environment:
