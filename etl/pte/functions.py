@@ -9,10 +9,11 @@ import json
 import os
 import time
 from datetime import date
+from typing import cast
 
 from log.functions import say
 from fetch.functions import fetch, make_client
-from fetch.scheme import FetchIn
+from fetch.scheme import FetchIn, HttpClientLike as FetchClientLike
 from paths.constants import ENC_UTF8
 from paths.functions import write_json
 from paths.scheme import WriteJsonIn
@@ -66,7 +67,7 @@ def run() -> None:
 
     逐数组 try/except 隔离(留痕不丢);总题数跌破 MIN_TOTAL_FLOOR = bundle 结构变,当场抛
     (防线地基,不静默入库)。"""
-    client = make_client(HTTP_TIMEOUT_S)
+    client = cast(FetchClientLike, make_client(HTTP_TIMEOUT_S))
     index_html = fetch(FetchIn(client=client, url=INDEX_URL, post_data=None))
     bundle_url = bundle_url_of(index_html)
     bundle = fetch(FetchIn(client=client, url=bundle_url, post_data=None))
@@ -459,10 +460,11 @@ def run_votes() -> None:
         return
     client = make_client(HTTP_TIMEOUT_S)
     client.headers[HDR_AUTH] = AUTH_TPL.format(token=token)
+    like = cast(HttpClientLike, client)
     types_out = {}
     total = 0
     for code in VOTE_CODES:
-        rows = collect_code(CollectIn(client=client, code=code))
+        rows = collect_code(CollectIn(client=like, code=code))
         if rows is None:
             say(P_VOTES_EXPIRED)
             return
@@ -476,7 +478,7 @@ def run_votes() -> None:
     say(P_VOTES_DONE_TPL.format(types=len(types_out), total=total, path=OUT_VOTES))
 
 
-def collect_code(x: CollectIn) -> list:
+def collect_code(x: CollectIn) -> list | None:
     """一个题型代码从 id=1 探到连续 miss 到头 → 题行清单;命中 401 返回 None(token 失效,上层中止)。"""
     rows = []
     miss = 0
@@ -521,7 +523,10 @@ def vote_get(x: VoteGetIn) -> dict:
         return {MARK_EXPIRED: True}
     if r.status_code != HTTP_OK:
         return {MARK_MISS: True}
-    return r.json()
+    data = r.json()
+    if not isinstance(data, dict):
+        return {MARK_MISS: True}
+    return data
 
 
 # =========================================================================
@@ -534,7 +539,7 @@ def run_ptebank() -> None:
 
     2026-09-01 接入(same-source-analysis §7):第二个全开机经库,音频重补 ynwac 文本重;
     帖数跌破 PB_MIN_TOTAL_FLOOR = API/站点结构变,当场抛(不静默入库)。"""
-    client = make_client(HTTP_TIMEOUT_S)
+    client = cast(HttpClientLike, make_client(HTTP_TIMEOUT_S))
     cats = pb_categories_of(client)
     posts = pb_posts_of(client)
     if len(posts) < PB_MIN_TOTAL_FLOOR:
@@ -674,7 +679,7 @@ def run_pb_audio() -> None:
 
     2026-09-01 立(照 run_assets 形):音频 = 听力题干本体,链接会腐,趁开放落盘;
     单条失败计数留痕不拖全轮(公开静态文件,偶发 404 属对方删档,不当红)。"""
-    client = make_client(HTTP_TIMEOUT_S)
+    client = cast(HttpClientLike, make_client(HTTP_TIMEOUT_S))
     with OUT_PB_BANK.open(encoding=ENC_UTF8) as f:
         bank = json.load(f)
     urls = pb_audio_urls_of(bank)
@@ -911,10 +916,14 @@ def run_words() -> None:
             if w not in counts:
                 counts[w] = 0
             counts[w] += 1
+    pairs = []
+    for w, n in counts.items():
+        if n >= W_MIN_COUNT:
+            pairs.append((-n, w))
+    pairs.sort()
     ranked = {}
-    for w in sorted(counts, key=counts.get, reverse=True):
-        if counts[w] >= W_MIN_COUNT:
-            ranked[w] = counts[w]
+    for neg, w in pairs:
+        ranked[w] = -neg
     payload = {OUT_K_FETCHED: date.today().isoformat(), W_K_SENTENCES: len(sentences), W_K_WORDS: ranked}
     write_json(WriteJsonIn(path=OUT_WORDS, payload=payload, indent=JSON_INDENT))
     say(P_W_DONE_TPL.format(sentences=len(sentences), words=len(ranked), path=OUT_WORDS))

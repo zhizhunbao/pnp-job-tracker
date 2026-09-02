@@ -5,6 +5,7 @@
 json 键只在 functions 的 to_* 行构造器里出现)。
 """
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Protocol
 
 
@@ -124,22 +125,22 @@ class RadarIn:
     cur_payload: dict
     """本轮整库产物(to_bank/to_pb_bank 出品;写盘前先过雷达)。"""
 
-    bank: object
-    """现行库 Path(旧库 = diff 基准;不存在 = 首轮建档)。"""
+    bank: Path
+    """现行库(旧库 = diff 基准;不存在 = 首轮建档)。"""
 
-    prev: object
-    """基准落盘 Path(写新库前旧库挪这)。"""
+    prev: Path
+    """基准落盘位(写新库前旧库挪这)。"""
 
-    changes: object
-    """变更落盘 Path(新题/消失题清单)。"""
+    changes: Path
+    """变更落盘位(新题/消失题清单)。"""
 
 
 @dataclass
 class VoteGetIn:
     """vote_get() 入参(登录态一发 GET)。"""
 
-    client: object
-    """带 Authorization 头的 httpx 客户端(装配点直喂,本域只 .get)。"""
+    client: HttpClientLike
+    """带 Authorization 头的客户端(装配点 cast 真 httpx,本域只 .get)。"""
 
     url: str
     """目标 API 地址。"""
@@ -149,8 +150,8 @@ class VoteGetIn:
 class CollectIn:
     """collect_code() 入参(一个题型代码从 id=1 探到头)。"""
 
-    client: object
-    """带鉴权头的客户端。"""
+    client: HttpClientLike
+    """带鉴权头的客户端(装配点 cast 真 httpx)。"""
 
     code: str
     """题型代码(候选表里的一个)。"""
