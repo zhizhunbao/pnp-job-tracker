@@ -1,0 +1,18 @@
+#!/bin/sh
+# 提交前类型闸(2026-09-01 Frank「建」):pyrefly 前移到 commit 层。
+#
+# · pre-push 早有同闸(批I 2026-08-31),但一批多提交时类型错在 commit 就该拦,不等 push ——
+#   pte 立域实撞:IDE Pyrefly 红了三轮、五笔提交全过,靠 Frank 截图传错;
+# · 只在暂存区含 etl .py 改动时跑;查整 etl(类型错常跨文件,pre-push 同口径,秒级);
+# · 🔴 禁 --no-verify 绕过(CLAUDE.md 站规):报错就修,修不了先别提。
+# 生效条件与 pre-push 相同:git config core.hooksPath .githooks(每 clone 一次,已设)。
+
+staged=$(git diff --cached --name-only --diff-filter=d | grep -E '^etl/.*\.py$')
+[ -z "$staged" ] && exit 0
+
+echo "[pre-commit] etl 暂存 $(echo "$staged" | wc -l) 个 py,pyrefly 类型闸…"
+PYTHONIOENCODING=utf-8 uv run --group dev pyrefly check etl || {
+  echo "[pre-commit] pyrefly 有类型错,commit 已拦 —— 修完再提(禁 --no-verify)。"
+  exit 1
+}
+echo "[pre-commit] 类型闸过。"
