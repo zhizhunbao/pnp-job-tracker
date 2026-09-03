@@ -1147,6 +1147,8 @@ export const pteEn: Record<keyof typeof pteZh, string> = {
   'pte.lab.time': 'When', 'pte.lab.filter': 'Show', 'pte.lab.sort': 'Sort', 'pte.sortSeen': 'Last seen',
   'pte.sec.speaking': 'Speaking', 'pte.sec.writing': 'Writing', 'pte.sec.reading': 'Reading', 'pte.sec.listening': 'Listening',
   'pte.soon': 'Coming soon',
+  'pte.nav.home': 'PTE home', 'pte.nav.RA': 'Read Aloud', 'pte.nav.RS': 'Repeat Sentence', 'pte.nav.ASQ': 'Answer Short Question', 'pte.nav.WFD': 'Write From Dictation',
+  'pte.home.start': 'Start practicing', 'pte.home.progress': 'Progress', 'pte.home.total': 'Questions', 'pte.home.done': 'Done', 'pte.home.left': 'Left', 'pte.home.seen7': 'Seen in 7 days', 'pte.home.recent': 'Recently seen', 'pte.home.all': 'All questions',
   'pte.countWin': '{n} questions seen in the last {win} days, latest first', 'pte.countAll': '{n} questions, latest seen first',
   'pte.col.num': 'No.', 'pte.col.text': 'Question', 'pte.col.seen': 'Last seen', 'pte.col.n': 'Times seen', 'pte.col.hot': 'Predicted', 'pte.col.done': 'Done',
   'pte.seenToday': 'Seen today', 'pte.seenAgo': 'Seen {n} days ago', 'pte.today': 'Today', 'pte.ago': '{n} days ago', 'pte.times': 'Seen {n} times',

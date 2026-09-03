@@ -794,6 +794,10 @@
   .text {
     font-size: 16px;
   }
+
+  .statN {
+    font-size: 22px;
+  }
 }
 
 /*
@@ -882,4 +886,87 @@
   margin-top: 6px;
   font-size: 11px;
   color: #9ca3af;
+}
+
+/*
+ * ── 7. 门厅(/pte):进度四格、最近考了行 ────────────────────────────────
+ */
+
+/*
+ * 进度四格一排。
+ */
+.stats {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/*
+ * 一格。
+ */
+.stat {
+  flex: 1;
+  text-align: center;
+}
+
+/*
+ * 格里的数。
+ */
+.statN {
+  font-size: 26px;
+  font-weight: 700;
+  color: #111827;
+}
+
+/*
+ * 格里的标签。
+ */
+.statL {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+/*
+ * 最近考了一行(整行真链接):题型题号 | 题面 | N 天前。
+ */
+.recentRow {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 13.5px;
+  color: #111827;
+  text-decoration: none;
+}
+
+/*
+ * 题型 + 题号(灰)。
+ */
+.recentType {
+  color: #9ca3af;
+  font-size: 12px;
+  min-width: 4.5em;
+  white-space: nowrap;
+}
+
+/*
+ * 题面(单行截断)。
+ */
+.recentText {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/*
+ * N 天前(灰)。
+ */
+.recentAgo {
+  color: #9ca3af;
+  font-size: 12px;
+  white-space: nowrap;
 }

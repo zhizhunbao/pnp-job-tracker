@@ -1140,6 +1140,8 @@ export const pteKo: Record<keyof typeof pteZh, string> = {
   'pte.lab.time': '기간', 'pte.lab.filter': '필터', 'pte.lab.sort': '정렬', 'pte.sortSeen': '최근 출제',
   'pte.sec.speaking': '말하기', 'pte.sec.writing': '쓰기', 'pte.sec.reading': '읽기', 'pte.sec.listening': '듣기',
   'pte.soon': '준비 중',
+  'pte.nav.home': 'PTE 홈', 'pte.nav.RA': '소리 내어 읽기', 'pte.nav.RS': '문장 따라 말하기', 'pte.nav.ASQ': '짧게 답하기', 'pte.nav.WFD': '받아쓰기',
+  'pte.home.start': '연습 시작', 'pte.home.progress': '전체 진도', 'pte.home.total': '총 문제', 'pte.home.done': '연습함', 'pte.home.left': '남음', 'pte.home.seen7': '최근 7일 출제', 'pte.home.recent': '최근 출제', 'pte.home.all': '전체 문제',
   'pte.countWin': '최근 {win}일 출제 {n}문제, 최근 출제순', 'pte.countAll': '총 {n}문제, 최근 출제순',
   'pte.col.num': '번호', 'pte.col.text': '문제', 'pte.col.seen': '최근 출제', 'pte.col.n': '출제 횟수', 'pte.col.hot': '예상', 'pte.col.done': '연습',
   'pte.seenToday': '오늘 출제', 'pte.seenAgo': '{n}일 전 출제', 'pte.today': '오늘', 'pte.ago': '{n}일 전', 'pte.times': '출제 {n}회',

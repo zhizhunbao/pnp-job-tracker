@@ -1663,6 +1663,17 @@ export const PTE_EXAM_COUNTS = `SELECT qid, count(*)::int AS n, max(exam_date) A
      FROM comments WHERE kind = 'exam' AND status = 'approved' AND qid LIKE $1 GROUP BY qid`
 
 /**
+ * 门厅两个数:总题目 / 近 N 天考过(批三.5;$1=窗口起日 YYYY-MM-DD)。
+ */
+export const PTE_STATS = `SELECT count(*)::int AS n, count(*) FILTER (WHERE seen >= $1)::int AS recent FROM pte_questions`
+
+/**
+ * 门厅「最近考了」:全站最近考过的六题。
+ */
+export const PTE_RECENT = `SELECT qid, type, num, text, seen FROM pte_questions
+     WHERE seen IS NOT NULL ORDER BY seen DESC, seen_n DESC NULLS LAST, id ASC LIMIT 6`
+
+/**
  * 一题的合成音频(批三;b64 整段回来由路由解成字节)。$1=qid。
  */
 export const PTE_AUDIO_ONE = `SELECT mime, b64 FROM pte_audio WHERE qid = $1 ORDER BY id DESC LIMIT 1`

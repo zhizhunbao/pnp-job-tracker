@@ -11,8 +11,10 @@
  */
 export { PTE_DEFAULT_TYPE, PTE_META } from './constants'
 export {
-  loadPteComments, loadPteItem, loadPteList, loadPteTypes, pteItemMetaOf, pteListMetaOf, typeAt,
+  loadPteComments, loadPteItem, loadPteList, loadPteRecent, loadPteStats, loadPteTypes, pteItemMetaOf, pteListMetaOf,
+  typeAt,
 } from './functions'
 export { Pte } from './pte'
+export { PteHome } from './ptehome'
 export { PteItem } from './pteitem'
 export type { PteComment, PteItem as PteItemData, PteRow, PteType } from './types'

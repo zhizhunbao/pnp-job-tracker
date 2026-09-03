@@ -20,8 +20,9 @@ import {
   prepSecOf, recCapOf, serverEmptyOf, serverFalseOf, subscribeDone, subscribeNone, todayOf,
 } from './functions'
 import type {
-  DictEntry, DictPos, DictState, PostState, PteAnswerHookIn, PteAnswerPanel, PteBoardHookIn, PteBoardPanel, PteComment,
-  PteCommentsHookIn, PteCommentsPanel, PteDictPanel, PtePhase, RecorderHandle,
+  DictEntry, DictPos, DictState, DoneSyncIn, PostState, PteAnswerHookIn, PteAnswerPanel, PteBoardHookIn,
+  PteBoardPanel, PteComment, PteCommentsHookIn, PteCommentsPanel, PteDictPanel, PteHomePanel, PtePhase,
+  RecorderHandle,
 } from './types'
 
 /**
@@ -192,4 +193,20 @@ export function usePteDict(): PteDictPanel {
   }, [word])
 
   return { state, word, entry, pos, onClose: makeDictClose({ setWord }) }
+}
+
+/**
+ * 门厅整机:练过题数(本机练过集;登录挂载后与库并集)。
+ *
+ * @param x 登录态。
+ * @returns 面板。
+ */
+export function usePteHome(x: DoneSyncIn): PteHomePanel {
+  const done = useSyncExternalStore(subscribeDone, doneSnapshotOf, doneServerSnapshotOf)
+
+  useEffect(function syncDone() {
+    return makeDoneSync({ loggedIn: x.loggedIn })()
+  }, [x.loggedIn])
+
+  return { doneN: done.size }
 }

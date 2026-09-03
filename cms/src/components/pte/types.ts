@@ -2519,3 +2519,143 @@ export type StartRecIn = {
  * 答题卡三件(PteAnswerHead / PteAnswerBody / PteAnswerBtns)共用的 props(= PteAnswerIn)。
  */
 export type PteAnswerPartIn = PteAnswerIn
+
+/**
+ * 门厅统计的库行(`PTE_STATS`)。
+ */
+export type PteStatsDbRow = {
+  /**
+   * 总题目。
+   */
+  n: string | number | null
+
+  /**
+   * 窗口内考过的题数。
+   */
+  recent: string | number | null
+}
+
+/**
+ * 门厅统计(洗净)。
+ */
+export type PteStats = {
+  /**
+   * 总题目。
+   */
+  total: number
+
+  /**
+   * 近 7 天考过。
+   */
+  seen7: number
+}
+
+/**
+ * 门厅「最近考了」的库行(`PTE_RECENT`)。
+ */
+export type PteRecentDbRow = {
+  /**
+   * 题键。
+   */
+  qid: string
+
+  /**
+   * 题型码。
+   */
+  type: string
+
+  /**
+   * 题号。
+   */
+  num: string | null
+
+  /**
+   * 题面。
+   */
+  text: string | null
+
+  /**
+   * 最近考过日。
+   */
+  seen: string | null
+}
+
+/**
+ * 门厅「最近考了」一行(洗净)。
+ */
+export type PteRecentRow = {
+  /**
+   * 题键。
+   */
+  qid: string
+
+  /**
+   * 题型码。
+   */
+  type: string
+
+  /**
+   * 单题页地址。
+   */
+  href: string
+
+  /**
+   * 题号。
+   */
+  num: string
+
+  /**
+   * 题面。
+   */
+  text: string
+
+  /**
+   * 最近考过日。
+   */
+  seen: string
+}
+
+/**
+ * 取门厅统计(`loadPteStats`)的入参。
+ */
+export type PteStatsIn = {
+  /**
+   * 数据库连接。
+   */
+  db: DbPool
+}
+
+/**
+ * 门厅正文(PteHome)的 props。
+ */
+export type PteHomeIn = {
+  /**
+   * 统计两个数。
+   */
+  stats: PteStats
+
+  /**
+   * 最近考了六题。
+   */
+  recent: PteRecentRow[]
+
+  /**
+   * 登录态(练过档并集)。
+   */
+  loggedIn: boolean
+
+  /**
+   * 数据更新时刻(ETL 心跳 ISO;'' = 不渲)。
+   */
+  updatedAt: string
+}
+
+/**
+ * 门厅状态机(usePteHome)交回的面板。
+ */
+export type PteHomePanel = {
+  /**
+   * 练过的题数。
+   */
+  doneN: number
+}

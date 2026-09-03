@@ -33,6 +33,11 @@ export const QID_SEP = ':'
 export const PTE_DEFAULT_TYPE = 'WFD'
 
 /**
+ * 门厅「开始练习」的去处(默认型题单)。
+ */
+export const URL_PTE_START = '/pte/wfd'
+
+/**
  * 未登录发评论的去处(就地开登录框,与新闻评论同口径)。
  */
 export const URL_LOGIN = '/?login=1'
@@ -181,6 +186,11 @@ export const WIN_ALL = 0
  * 窗口档顺序(胶囊按此排)。
  */
 export const WINS = [WIN_7, WIN_30, WIN_90, WIN_ALL]
+
+/**
+ * 门厅「近 N 天考过」的窗口(天)。
+ */
+export const RECENT_DAYS = 7
 
 /**
  * 首屏显示条数;「显示更多」每次再加这么多。

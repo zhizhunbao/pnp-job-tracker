@@ -1,7 +1,6 @@
 /**
- * /pte 题单页的门(默认题型 WFD —— Frank 故事一「默认 WFD」):取池 + 两发取数 + 拼组件。
- * 一页一型的正门在 /pte/[type],本门只是默认型那一页。
- * 2026-09-03 批二新立(设计稿 docs/design/PTE刷题-20260903.md)。
+ * /pte 门厅的门(2026-09-03 晚 Frank「参考 ynwac 首页」→ 门厅三卡:开始练习 / 总体进度 / 最近考了):
+ * 取池 + 三发取数 + 拼组件。题单住 /pte/[type],题型清单在顶栏下拉。
  *
  * @author Frank
  * @time 2026-09-03 12:00:00
@@ -9,7 +8,7 @@
 import { headers } from 'next/headers'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
-import { PTE_DEFAULT_TYPE, PTE_META, Pte, loadPteList, loadPteTypes } from '@/components/pte'
+import { PTE_META, PteHome, loadPteRecent, loadPteStats } from '@/components/pte'
 import { Frame } from '@/components/shell'
 import { getDb } from '@/lib/db/server'
 import { checkedAt } from '@/lib/jobs/server'
@@ -23,20 +22,20 @@ export const dynamic = 'force-dynamic'
 export const metadata = PTE_META
 
 /**
- * 题单页(默认型)的门:取池、两发取数、拼壳与正文,没有别的。
+ * 门厅的门:取池、三发取数、拼壳与正文,没有别的。
  *
  * @returns 整页。
  */
 export default async function PtePage() {
   const db = await getDb()
-  const types = await loadPteTypes({ db })
-  const rows = await loadPteList({ db, type: PTE_DEFAULT_TYPE })
+  const stats = await loadPteStats({ db })
+  const recent = await loadPteRecent({ db })
   const updatedAt = await checkedAt(db)
   const user = await getUser(await headers())
   return (
     <Frame>
       <Header loggedIn={!!user} />
-      <Pte types={types} type={PTE_DEFAULT_TYPE} rows={rows} loggedIn={!!user} updatedAt={updatedAt} />
+      <PteHome stats={stats} recent={recent} loggedIn={!!user} updatedAt={updatedAt} />
       <Footer />
     </Frame>
   )
