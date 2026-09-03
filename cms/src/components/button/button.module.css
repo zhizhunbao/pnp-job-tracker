@@ -114,9 +114,10 @@ a.btn.secondary {
   color: var(--primary);
 }
 
-a.btn.ghost {
-  color: var(--primary);
-}
+/*
+ * ghost 不补:Chip(药丸)就是 ghost + 自己的类渲成 <a>,补了 0,2,1 会压过药丸选中态的白字
+ * (2026-09-03 生产实撞:题型胶囊选中后蓝底蓝字看不见);药丸的字色由 chip 桶自己的类定,0,1,0 已赢过 a。
+ */
 
 :where(.primary) {
   /*
