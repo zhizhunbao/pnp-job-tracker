@@ -1,0 +1,3 @@
+# piper 声音模型(~120MB onnx,首跑自动从 HF 下;资产不进 git)
+*
+!.gitignore

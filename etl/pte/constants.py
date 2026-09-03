@@ -1421,3 +1421,93 @@ OPEN_TIGHT_RE = re.compile(r"([(\[$“‘])\s+")
 
 P_MART_DONE_TPL = "✓ pte mart:{types} 题型 · {questions} 题(有音频 {audio} · 押题 {predicted})→ {dir}"
 """日志:出表收口。"""
+
+# =========================================================================
+# 17. 批三:跨源同题合并 + piper 合成音频(2026-09-03,设计稿 docs/design/PTE刷题-20260903.md 批三)
+# =========================================================================
+
+NORM_TEXT_RE = re.compile(r"[^a-z0-9 ]")
+"""跨源同题对账:题面小写后去掉非字母数字(标点/引号/连字符差异不算两题;
+2026-09-03 实测 137 组 284 行同题,WFD 92 / ASQ 32 / RA 8 / RS 5)。"""
+
+NORM_SPACE_RE = re.compile(r"\s+")
+"""对账键里连续空白压成一个。"""
+
+NORM_DROP = ""
+"""对账时被去掉的字符替换成空。"""
+
+MERGE_SRC_ORDER = (SRC_YNWAC, SRC_DUOINK)
+"""同题正本优先级:ynwac 有票数与页面题号先当正本;其余源的回忆条数、最近考过日、押题、答案并入正本行。"""
+
+P_MERGE_TPL = "  跨源同题合并:{groups} 组 {rows} 行 → 正本 {kept} 行"
+"""日志:合并统计。"""
+
+OUT_TTS_DIR = RAW_PTE / "tts"
+"""合成音频落盘目录(data/raw/pte/tts/<qid 冒号换下划线>.mp3;资产进 git,声音模型不进)。"""
+
+OUT_TTS_VOICES_DIR = OUT_TTS_DIR / "voices"
+"""piper 声音模型目录(首跑自动从 HF 下 onnx + json;目录内 .gitignore 挡住)。"""
+
+TTS_VOICE = "en_US-ryan-high"
+"""piper 声音(Frank 2026-09-03「盒子 TTS」:自合成不烧 API;ryan-high 22.05kHz,一句 0.7 s CPU)。
+换声音 = 改这一格 + 删 tts.json 全量重合成(pte_audio.voice 对账)。"""
+
+TTS_MODEL_SUFFIX = ".onnx"
+"""声音模型文件后缀。"""
+
+TTS_WAV_SUFFIX = ".wav"
+"""piper 直出的 wav 后缀(ffmpeg 在就转 mp3 删 wav)。"""
+
+TTS_MP3_SUFFIX = ".mp3"
+"""压缩后的 mp3 后缀(32 kbps 单声道,一句 ~8 KB,RA 段落 ~80 KB)。"""
+
+TTS_FILE_SEP = "_"
+"""文件名里替换题键冒号的字符(Windows 文件名不许冒号)。"""
+
+FFMPEG_BIN = "ffmpeg"
+"""mp3 编码器(PATH 里找;没有就留 wav,mime 随之)。"""
+
+FFMPEG_IN_ARGS = ("-y", "-loglevel", "error", "-i")
+"""ffmpeg 输入段参数(覆盖、只报错)。"""
+
+FFMPEG_OUT_ARGS = ("-codec:a", "libmp3lame", "-b:a", "32k", "-ac", "1")
+"""ffmpeg 输出段参数(mp3 32 kbps 单声道)。"""
+
+MIME_MP3 = "audio/mpeg"
+"""mp3 的 MIME。"""
+
+MIME_WAV = "audio/wav"
+"""wav 的 MIME。"""
+
+OUT_TTS_INDEX = PROCESSED_PTE / "tts.json"
+"""合成索引:{rows: [{qid, file, mime, voice}]}(file = data/raw/pte 相对路径);已有的不重合成。"""
+
+TTS_K_ROWS = "rows"
+"""合成索引:行清单键。"""
+
+TTS_K_FILE = "file"
+"""合成索引:文件相对路径。"""
+
+TTS_K_MIME = "mime"
+"""合成索引:MIME。"""
+
+TTS_K_VOICE = "voice"
+"""合成索引:声音名。"""
+
+MART_AUDIO_FILE = "pte_audio.json"
+"""mart 表文件名 = DB 表名 pte_audio(qid / mime / b64 / voice;生产镜像装不下仓库文件,音频走 seed 进库)。"""
+
+A_K_B64 = "b64"
+"""音频行:base64 正文。"""
+
+AUDIO_URL_TPL = "/api/pte/audio/{qid}"
+"""题行 audioUrl:站内路由(lib/pte 的 pteAudioRoute 按 qid 从 pte_audio 吐,带 immutable 缓存头)。"""
+
+P_TTS_VOICE_TPL = "  声音 {voice} 就绪 → {dir}"
+"""日志:声音模型就绪。"""
+
+P_TTS_DONE_TPL = "✓ pte tts:新合成 {made} · 已有 {have} · 失败 {fail} → {dir}(mp3 编码 {mp3})"
+"""日志:合成收口。"""
+
+P_TTS_FAIL_TPL = "  ✗ 合成失败 {qid}"
+"""日志:单题失败留痕。"""

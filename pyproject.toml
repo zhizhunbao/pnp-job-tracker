@@ -18,10 +18,13 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# 有头浏览器兜底(YT/NU 的 Cloudflare 交互式验证框只能有头人点一次,cookie 落盘后容器复用)。
+# 有头浏览器兜底(crawl 的验证框、登录型 SPA 与渲染态 HTML 缓存)。
 # 装:uv pip install -e .[browser] 或 .venv/Scripts/pip install playwright && playwright install chromium
 # 写在这里而不是只写 Dockerfile —— openpyxl 依赖真相分裂两处的教训(见 dependencies 注)。
 browser = ["playwright>=1.45"]
+# PTE 题目音频自合成(etl/pte 的 pte-tts 步;piper 离线免费,声音模型首跑自动下到 data/raw/pte/tts/voices)。
+# 装:uv pip install piper-tts;另需 PATH 里有 ffmpeg 才出 mp3(没有留 wav)。镜像未装,此步只在开发机手动跑。
+tts = ["piper-tts>=1.7"]
 
 [dependency-groups]
 # pyrefly 2026-08-31 批I 收口进依赖(此前 uv run --with 临时环境,每跑重搭;
@@ -94,4 +97,3 @@ max-args = 1
 "etl/employers/scheme.py" = ["N815"]
 "etl/*/scheme.py" = ["PLR0913"]
 "etl/*/main.py" = ["PLR0913"]
-

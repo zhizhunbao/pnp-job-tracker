@@ -6,15 +6,19 @@ OUT = data/pte/ynwac-bank.json(私有研究,不进 mart/DB)。逐数组 try/exce
 数据纯净假设:题库是 webpack 数据模块(只有 字符串/数字/布尔/数组/对象),无函数无计算值。
 """
 import asyncio
+import base64
 import json
 import os
+import shutil
+import subprocess
 import time
+import wave
 from datetime import date, timedelta
 from pathlib import Path
 from typing import cast
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
-from log.functions import say
+from log.functions import err, say
 from crawl.constants import PROFILE_DIR
 from crawl.functions import close_browser, get_browser_page, put_cached_page
 from crawl.scheme import CachePutIn
@@ -102,11 +106,16 @@ from pte.constants import (DK_AVATAR_MARKS, DK_CRAWL_SLUG, DK_ENTRY_DELAY_S, DK_
                            OPEN_TIGHT_RE, P_MART_DONE_TPL, PUNCT_TIGHT_RE, Q_K_ANSWER, Q_K_AUDIO_FILE,
                            Q_K_AUDIO_URL, Q_K_FETCHED, Q_K_IMAGE_URL, Q_K_NUM, Q_K_PREDICTED, Q_K_QID,
                            Q_K_SEEN_N, Q_K_TEXT, QID_SEP, TOKEN_JOIN, T_ASQ, T_RA, T_WFD, DK_K_SN)
+from pte.constants import (A_K_B64, AUDIO_URL_TPL, FFMPEG_BIN, FFMPEG_IN_ARGS, FFMPEG_OUT_ARGS, MART_AUDIO_FILE,
+                           MERGE_SRC_ORDER, MIME_MP3, MIME_WAV, NORM_DROP, NORM_SPACE_RE, NORM_TEXT_RE, OUT_TTS_DIR,
+                           OUT_TTS_INDEX, OUT_TTS_VOICES_DIR, P_MERGE_TPL, P_TTS_DONE_TPL, P_TTS_FAIL_TPL,
+                           P_TTS_VOICE_TPL, TTS_FILE_SEP, TTS_K_FILE, TTS_K_MIME, TTS_K_ROWS, TTS_K_VOICE,
+                           TTS_MODEL_SUFFIX, TTS_MP3_SUFFIX, TTS_VOICE, TTS_WAV_SUFFIX)
 from pte.scheme import (BankIn, CloseIn, CollectIn, DiffIn, DkEntryIn, DkImagesIn, DkPageIn, DkPageLike,
                         Group, GroupIn, HttpClientLike, MediaRowIn, PbBankIn, PbGroupsIn, PbRowIn,
                         DaysIn, RadarIn, RecentRowIn, RecentSummaryIn, SnapshotIn, VoteGetIn,
                         XjExamIn, XjExamUrlIn, XjGroupIn, XjListIn, XjPageLike, XjRowIn, XjSignalsIn,
-                        XjUrlIn, DkSegmentIn, PteQuestionIn, QuestionTextIn)
+                        XjUrlIn, DkSegmentIn, PteQuestionIn, QuestionTextIn, TtsOneIn)
 
 
 # =========================================================================
@@ -2071,13 +2080,15 @@ def run_pte_mart() -> None:
     banks = {SRC_YNWAC: bank_lookup_of(OUT_BANK), SRC_DUOINK: bank_lookup_of(OUT_DK_BANK)}
     media = media_lookup_of()
     fetched = date.today().isoformat()
-    rows = []
+    raw_rows = []
     for r in idx[IDX_K_ROWS]:
         if r[IDX_K_TYPE] not in MART_TYPES or r[IDX_K_SOURCE] not in banks:
             continue
         row = to_pte_question_row(PteQuestionIn(row=r, banks=banks, signals=signals, media=media, fetched=fetched))
         if row is not None:
-            rows.append(row)
+            raw_rows.append(row)
+    rows = renumber_rows(merge_same_text(raw_rows))
+    attach_tts(rows)
     MART.mkdir(parents=True, exist_ok=True)
     write_json(WriteJsonIn(path=MART / MART_TYPES_FILE, payload=list(MART_TYPE_ROWS), indent=JSON_INDENT))
     write_json(WriteJsonIn(path=MART / MART_QUESTIONS_FILE, payload=rows, indent=JSON_INDENT))
@@ -2226,3 +2237,196 @@ def dk_segment_of(x: DkSegmentIn) -> str:
     joined = TOKEN_JOIN.join(tokens)
     joined = PUNCT_TIGHT_RE.sub(r"\1", joined)
     return OPEN_TIGHT_RE.sub(r"\1", joined).strip()
+
+
+def merge_same_text(rows: list) -> list:
+    """跨源同题合并(批三):题面小写去标点相同 = 同一题;正本按 MERGE_SRC_ORDER 取,其余源的
+    回忆条数相加、最近考过日取近、押题取或、答案与热度取有。行序保持首次出现位。"""
+    groups: dict = {}
+    order = []
+    for r in rows:
+        key = (r[IDX_K_TYPE], norm_text_of(r[Q_K_TEXT]))
+        if key not in groups:
+            groups[key] = []
+            order.append(key)
+        groups[key].append(r)
+    out = []
+    merged_groups = 0
+    merged_rows = 0
+    for key in order:
+        grp = groups[key]
+        if len(grp) > 1:
+            merged_groups += 1
+            merged_rows += len(grp)
+        out.append(merge_group_of(grp))
+    say(P_MERGE_TPL.format(groups=merged_groups, rows=merged_rows, kept=len(out)))
+    return out
+
+
+def norm_text_of(s: str) -> str:
+    """对账键:小写 → 去非字母数字 → 压空白。"""
+    return NORM_SPACE_RE.sub(TOKEN_JOIN, NORM_TEXT_RE.sub(NORM_DROP, s.lower())).strip()
+
+
+def merge_group_of(grp: list) -> dict:
+    """一组同题 → 一行:正本取优先源,四格信号并入。"""
+    row = dict(canon_of(grp))
+    seen_n = 0
+    seen = None
+    predicted = False
+    answer = None
+    freq = None
+    for r in grp:
+        seen_n += r[Q_K_SEEN_N] or 0
+        if r[R_K_SEEN] is not None and (seen is None or r[R_K_SEEN] > seen):
+            seen = r[R_K_SEEN]
+        if r[Q_K_PREDICTED] is True:
+            predicted = True
+        if answer is None and r[Q_K_ANSWER] is not None:
+            answer = r[Q_K_ANSWER]
+        if r[R_K_FREQ] is not None and (freq is None or r[R_K_FREQ] > freq):
+            freq = r[R_K_FREQ]
+    row[Q_K_SEEN_N] = seen_n
+    row[R_K_SEEN] = seen
+    row[Q_K_PREDICTED] = predicted
+    row[Q_K_ANSWER] = answer
+    row[R_K_FREQ] = freq
+    return row
+
+
+def canon_of(grp: list) -> dict:
+    """同题组里的正本:按 MERGE_SRC_ORDER 第一个命中的源;都不命中取首行。"""
+    for src in MERGE_SRC_ORDER:
+        for r in grp:
+            if r[IDX_K_SOURCE] == src:
+                return r
+    return grp[0]
+
+
+def renumber_rows(rows: list) -> list:
+    """站内题号:每型按「源优先级 → 源内题号数值」稳定编 1..N(Frank 2026-09-03「题号怎么是不连续的」:
+    两源各自的编号混在一起看着乱;本站自己编,新题只往后追加)。行序不动,只改 num。"""
+    by_type: dict = {}
+    for r in rows:
+        by_type.setdefault(r[IDX_K_TYPE], []).append(r)
+    for grp in by_type.values():
+        ordered = sorted(grp, key=num_sort_key_of)
+        n = 0
+        for r in ordered:
+            n += 1
+            r[Q_K_NUM] = str(n)
+    return rows
+
+
+def num_sort_key_of(r: dict) -> tuple:
+    """稳定编号的排序键:(源序, 源内题号数值, 源内题号原串)。"""
+    src_rank = len(MERGE_SRC_ORDER)
+    for i, src in enumerate(MERGE_SRC_ORDER):
+        if r[IDX_K_SOURCE] == src:
+            src_rank = i
+    raw = str(r[Q_K_NUM])
+    num = 0
+    if raw.isdigit():
+        num = int(raw)
+    return (src_rank, num, raw)
+
+
+def tts_index_of() -> dict:
+    """合成索引 → {qid: 索引行};文件不在 = 空表。"""
+    out: dict = {}
+    if not OUT_TTS_INDEX.exists():
+        return out
+    with OUT_TTS_INDEX.open(encoding=ENC_UTF8) as f:
+        idx = json.load(f)
+    for r in idx[TTS_K_ROWS]:
+        out[r[Q_K_QID]] = r
+    return out
+
+
+def attach_tts(rows: list) -> None:
+    """把已合成的音频挂回题行(audioUrl = 站内路由,audioFile = raw 相对路径);没合成的保持原样。"""
+    index = tts_index_of()
+    for r in rows:
+        hit = index.get(r[Q_K_QID])
+        if hit is None:
+            continue
+        r[Q_K_AUDIO_URL] = AUDIO_URL_TPL.format(qid=r[Q_K_QID])
+        r[Q_K_AUDIO_FILE] = hit[TTS_K_FILE]
+
+
+def run_pte_tts() -> None:
+    """资产步(批三):mart 题行 → piper 合成 → mp3(ffmpeg 在)→ raw/pte/tts + processed tts.json
+    + mart pte_audio.json,并把 audioUrl/audioFile 写回 pte_questions.json。已有文件不重合成;
+    单题失败留痕继续。piper 是可选依赖(pyproject [tts]),体内延迟 import。"""
+    with (MART / MART_QUESTIONS_FILE).open(encoding=ENC_UTF8) as f:
+        rows = json.load(f)
+    voice = tts_voice_of()
+    mp3 = shutil.which(FFMPEG_BIN) is not None
+    index = tts_index_of()
+    made = 0
+    have = 0
+    fail = 0
+    for r in rows:
+        qid = r[Q_K_QID]
+        hit = index.get(qid)
+        if hit is not None and (RAW_PTE / hit[TTS_K_FILE]).exists():
+            have += 1
+            continue
+        try:
+            index[qid] = tts_one(TtsOneIn(voice=voice, text=r[Q_K_TEXT], qid=qid, mp3=mp3))
+            made += 1
+        except Exception as e:  # noqa: BLE001 — 单题失败留痕继续,整批不中止
+            err(P_TTS_FAIL_TPL.format(qid=qid), e)
+            fail += 1
+    write_json(WriteJsonIn(path=OUT_TTS_INDEX, payload={TTS_K_ROWS: list(index.values())}, indent=JSON_INDENT))
+    attach_tts(rows)
+    write_json(WriteJsonIn(path=MART / MART_QUESTIONS_FILE, payload=rows, indent=JSON_INDENT))
+    write_json(WriteJsonIn(path=MART / MART_AUDIO_FILE, payload=audio_rows_of(rows), indent=JSON_INDENT, compact=True))
+    say(P_TTS_DONE_TPL.format(made=made, have=have, fail=fail, dir=OUT_TTS_DIR, mp3=mp3))
+
+
+def tts_voice_of() -> object:
+    """piper 声音:模型不在就从 HF 下到 OUT_TTS_VOICES_DIR,再加载。"""
+    from piper import PiperVoice  # noqa: PLC0415 — 可选依赖,只在本步进口
+
+    from piper.download_voices import download_voice  # noqa: PLC0415
+
+    OUT_TTS_VOICES_DIR.mkdir(parents=True, exist_ok=True)
+    model = OUT_TTS_VOICES_DIR / (TTS_VOICE + TTS_MODEL_SUFFIX)
+    if not model.exists():
+        download_voice(TTS_VOICE, OUT_TTS_VOICES_DIR)
+    say(P_TTS_VOICE_TPL.format(voice=TTS_VOICE, dir=OUT_TTS_VOICES_DIR))
+    return PiperVoice.load(model)
+
+
+def tts_one(x: TtsOneIn) -> dict:
+    """一题:合成 wav → (ffmpeg 在)转 mp3 删 wav → 索引行。"""
+    stem = x.qid.replace(QID_SEP, TTS_FILE_SEP)
+    wav = OUT_TTS_DIR / (stem + TTS_WAV_SUFFIX)
+    with wave.open(str(wav), "wb") as w:
+        x.voice.synthesize_wav(x.text, w)  # pyrefly: ignore[missing-attribute] — PiperVoice 形状不在本域声明
+    out = wav
+    mime = MIME_WAV
+    if x.mp3:
+        mp3 = OUT_TTS_DIR / (stem + TTS_MP3_SUFFIX)
+        subprocess.run([FFMPEG_BIN, *FFMPEG_IN_ARGS, str(wav), *FFMPEG_OUT_ARGS, str(mp3)], check=True)
+        wav.unlink()
+        out = mp3
+        mime = MIME_MP3
+    return {Q_K_QID: x.qid, TTS_K_FILE: out.relative_to(RAW_PTE).as_posix(), TTS_K_MIME: mime, TTS_K_VOICE: TTS_VOICE}
+
+
+def audio_rows_of(rows: list) -> list:
+    """题行 → pte_audio 表行(qid / mime / b64 / voice);没音频文件的题不出行。"""
+    index = tts_index_of()
+    out = []
+    for r in rows:
+        hit = index.get(r[Q_K_QID])
+        if hit is None:
+            continue
+        path = RAW_PTE / hit[TTS_K_FILE]
+        if not path.exists():
+            continue
+        out.append({Q_K_QID: r[Q_K_QID], TTS_K_MIME: hit[TTS_K_MIME],
+                    A_K_B64: base64.b64encode(path.read_bytes()).decode(), TTS_K_VOICE: hit[TTS_K_VOICE]})
+    return out

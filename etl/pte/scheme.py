@@ -439,3 +439,20 @@ class MediaRowIn:
 
     local: Path
     """预期落盘位(存在 → 相对路径进 file;不存在 → file=null 留痕)。"""
+
+
+@dataclass(frozen=True)
+class TtsOneIn:
+    """tts_one() 入参(一题 → 一个音频文件 + 一条索引行)。"""
+
+    voice: object
+    """piper 声音(PiperVoice 实例;可选依赖,形状不在本域声明)。"""
+
+    text: str
+    """要读的英文题面。"""
+
+    qid: str
+    """题键(文件名由它派生)。"""
+
+    mp3: bool
+    """ffmpeg 在(转 mp3 删 wav);不在留 wav。"""
