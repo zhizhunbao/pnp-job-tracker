@@ -15,6 +15,7 @@
  */
 import { notFound } from 'next/navigation'
 import { getDb } from '@/lib/db/server'
+import { checkedAt } from '@/lib/jobs/server'
 import { RANKING_SLUGS } from '@/lib/rankings'
 import { loadRankingRows, loadRankingSlugs } from '@/lib/rankings/server'
 import { Footer } from '@/components/footer'
@@ -52,10 +53,11 @@ export default async function RankingPage({ params }: { params: Promise<{ slug: 
   }
   const db = await getDb()
   const [items, slugs] = await Promise.all([loadRankingRows({ db, slug }), loadRankingSlugs(db)])
+  const updatedAt = await checkedAt(db)
   return (
     <Frame>
       <Header />
-      <Ranking slug={slug} items={items} slugs={slugs} />
+      <Ranking slug={slug} items={items} slugs={slugs} updatedAt={updatedAt} />
       <Footer />
     </Frame>
   )

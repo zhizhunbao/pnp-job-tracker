@@ -5,11 +5,14 @@
  * (站规「电脑表格手机卡片」)。
  * 表格行不可点(E8-08 站规「可点才有态」),切省统一走 S4b 的 chips;手机卡片保留点卡切省。
  * 2026-08-28 换装批自 Pulse.tsx 提出成文件。
+ * 2026-09-03 Frank「所有的 table 右上角都应该有一个更新时间」:挂分区标题行右槽,
+ * 整区一枚(桌面表与手机卡是同一份数据的两副面孔)。
  *
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
 import { Table } from '@/components/table'
+import { Updated } from '@/components/time'
 import { ID_PROV, PH_PROV } from './constants'
 import { provColsOf, provRowKeyOf, toProvCellRows } from './functions'
 import { Band } from './band'
@@ -22,10 +25,10 @@ import css from './start.module.css'
 /**
  * 渲染分省概览区。
  *
- * @param props 取词函数、界面语言、加载态、汇总行、省卡增补、当前省与切省手柄工厂。
+ * @param props 取词函数、界面语言、更新时刻、加载态、汇总行、省卡增补、当前省与切省手柄工厂。
  * @returns 色带;数据到了而一行都没有时给 null。
  */
-export function ProvSection({ t, lang, loading, rows, provExtra, prov, provPickOf }: ProvSectionIn) {
+export function ProvSection({ t, lang, updatedAt, loading, rows, provExtra, prov, provPickOf }: ProvSectionIn) {
   if (loading === false && rows.length === 0) {
     return null
   }
@@ -36,7 +39,7 @@ export function ProvSection({ t, lang, loading, rows, provExtra, prov, provPickO
   }
   return (
     <Band id={ID_PROV}>
-      <Sec title={t('pulse.s4')}>
+      <Sec title={t('pulse.s4')} right={<Updated iso={updatedAt} t={t} />}>
         {loading && <Placeholder size={PH_PROV} />}
         {cells.length > 0 && (
           <div className={css.table}>

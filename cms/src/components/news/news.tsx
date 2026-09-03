@@ -13,6 +13,8 @@
  * 2026-08-27 换装批自 News.tsx 整体重写成小写件形制:壳件(整页外框/顶栏/页脚)拼装
  * 归页面门(样张 account),本件只出 Shell 轨往下的视图;排版拆成小件、状态收进
  * hooks.ts、样式迁 news.module.css。
+ * 2026-09-03 Frank「所有的 table 和可以更新数据的地方,右上角都应该有一个更新时间」:
+ * 列表区上方那一行地区筛选药丸的行尾挂 Updated(time 桶),更新时刻由页面门 SSR 取好递进来。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
@@ -37,7 +39,7 @@ import css from './news.module.css'
  * @param props 列表条目、头条与评论计数表(逐格注释见 NewsIn)。
  * @returns 正文(Shell 轨往下)。
  */
-export function News({ items, hero, cmtCounts }: NewsIn) {
+export function News({ items, hero, cmtCounts, updatedAt }: NewsIn) {
   const f = useNewsFilter()
   const shown = shownItemsOf({ items, hero, region: f.region })
   const groups = []
@@ -56,7 +58,8 @@ export function News({ items, hero, cmtCounts }: NewsIn) {
         regions={presentRegionsOf({ items })}
         region={f.region}
         onAll={f.onAll}
-        pickOf={f.pickOf} />
+        pickOf={f.pickOf}
+        updatedAt={updatedAt} />
       {f.region === TEXT_NONE && <FeaturedGrid t={f.t} lang={f.lang} slides={hero} />}
       {shown.length === 0 && <div className={css.empty}>{f.t('news.empty')}</div>}
       {groups}

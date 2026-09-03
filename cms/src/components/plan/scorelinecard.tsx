@@ -37,11 +37,11 @@ import css from './plan.module.css'
 /**
  * 渲染估分与抽选线卡。
  *
- * @param props 取词函数、界面语、通道行、抽选记录、页签省序与两段的计数、出口与渲染口。
+ * @param props 取词函数、界面语、通道行、抽选记录、更新时刻、页签省序与两段的计数、出口与渲染口。
  * @returns 估分卡。
  */
 export function ScoreLineCard({
-  t, lang, rows, draws, provinces, provDisp, done, total, onEdit, onPickProv,
+  t, lang, rows, draws, updatedAt, provinces, provDisp, done, total, onEdit, onPickProv,
   gridProvinces, tiles, pendingOf, onProv, noGridNote, children,
 }: ScoreLineCardIn) {
   const [active, setActive] = useState(firstLineProvOf(provinces))
@@ -70,7 +70,7 @@ export function ScoreLineCard({
         <ScoreLineVerdict t={t} prov={prov} provDisp={provDisp} score={score} list={list} />
       )}
       {prov !== TEXT_NONE && tiles != null && <div className={css.lineTiles}>{tiles(prov)}</div>}
-      {list.length > 0 && <ScoreLineDraws t={t} lang={lang} score={score} list={list} />}
+      {list.length > 0 && <ScoreLineDraws t={t} lang={lang} score={score} list={list} updatedAt={updatedAt} />}
       {list.length === 0 && prov !== TEXT_NONE && (
         <ScoreLineNote tone={TONE_MUTE}>{t('sl.noDraws', { prov: provDisp(prov) })}</ScoreLineNote>
       )}

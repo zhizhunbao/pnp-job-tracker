@@ -26,7 +26,7 @@ import { eeDisplay, isDirect, isJdNone, sourceLabel, streamDisplay } from '@/lib
 import { PROV_NAMES, mapQuery, mapsUrl, parseLoc, provName } from '@/lib/location'
 import { FREE_MATCH_JOBS_PER_DAY } from '@/lib/quota'
 import { catName, colorOf, nocLocalTitle } from '@/lib/noc'
-import { fmtLocal, fmtLocalSec, ymd } from '@/lib/time'
+import { fmtLocalSec, ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
   ACC_UNKNOWN, AI_BOLD_RE, AI_GAP_RE, AI_GAP_TO, AI_LEAD_BLANK_RE, AI_TAIL_BLANK_RE, APPLY_MAIL_RE, AT, AUTH_LOGIN,
@@ -80,7 +80,7 @@ import type {
   RoundIn, SavedEntry, SavedListJson, SaveLabelIn, SaveToggleIn, SeedFilterIn, SeedJson, SeedValueIn, SessionUser,
   ShowFallbackIn, ShowFormattedIn, ShowRelatedIn, ShowSourceIn, SlotIn, SortMarkIn, SortState, StickyOffsetsIn,
   SubOfIn, SubTextIn, SugOut, TakerIn, TextFn, TFn, ThWidthIn, TransLabelIn, TransShownIn, TransStatus,
-  UpdatedTextIn, UpsellKind, UpsellReasonIn, WantsIn, WidthsKeyIn,
+  UpsellKind, UpsellReasonIn, WantsIn, WidthsKeyIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './jobs.module.css'
@@ -3760,19 +3760,6 @@ export function showFallbackOf(x: ShowFallbackIn): boolean {
 }
 
 /**
- * 返回钮的类:在途态加灰底降透明。
- *
- * @param leaving 在途没。
- * @returns 类名。
- */
-export function backClsOf(leaving: boolean): string {
-  if (leaving) {
-    return cssOf(css.back) + SPACE + cssOf(css.backBusy)
-  }
-  return cssOf(css.back)
-}
-
-/**
  * 造一枚「点了相似职位」的埋点手柄(from 分两档:下架页的两组 / 两组都空时的兜底链)。
  *
  * @param from 来源格。
@@ -4628,19 +4615,6 @@ function fixedNoteOf(x: FixedNoteIn): string {
  */
 export function fieldsBtnClsOf(): string {
   return cssOf(css.btn38) + SPACE + cssOf(css.btnRow)
-}
-
-/**
- * 更新时间那句话(#202:不进窄屏隐藏,手机随换行落到下方仍看得见心跳)。
- *
- * @param x 取词函数与更新时间。
- * @returns 一句话;还没拿到给空串。
- */
-export function updatedTextOf(x: UpdatedTextIn): string {
-  if (x.updatedAt === TEXT_NONE) {
-    return TEXT_NONE
-  }
-  return x.t('updated', { t: fmtLocal(x.updatedAt) })
 }
 
 /**

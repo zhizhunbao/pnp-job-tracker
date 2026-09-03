@@ -50,6 +50,12 @@
    * 行距(面包屑窄屏会折行,松一点好点)。
    */
   line-height: 1.7;
+
+  /*
+   * 2026-09-03 返回钮移到 Shell back 槽(钉正文轨右上,与本行同高):首行给钮留位,
+   * 窄屏长面包屑折行而不是钻到钮底下。
+   */
+  padding-right: 90px;
 }
 
 /*
@@ -81,13 +87,10 @@
  * #200(Frank「还分卡片,类似类别」):CompanyBody 各段改回卡片 → 详情页不再套外层白卡
  * (禁卡套卡);H1 单独一张头卡,下面 CompanyBody 卡片自铺(与弹框同源)。
  * 白卡三格(底/描边/圆角)照全局 .card 逐格抄一份 —— 本域自足,不赌全局类与模块类的顺序。
+ * 2026-09-03 撤 position: relative —— 它原是右上角返回钮的定位基准,返回钮已改由
+ * Shell 的 back 槽钉在正文轨右上角,不再以头卡为基准。
  */
 .headCard {
-  /*
-   * 右上角返回钮的定位基准。
-   */
-  position: relative;
-
   /*
    * 白底(colors 域变量)。
    */
@@ -115,71 +118,33 @@
 }
 
 /*
- * 返回钮(Frank 走查 #18:右上角、浏览器返回,与职位详情页统一;底部返回同批删掉 ——
- * 返回统一到头卡右上角)。类名写两遍抬权重:本钮经 Button(kind ghost)渲染
- * (「<button 这种不允许直接使用」),要稳赢 button 域 .btn/.ghost 的同权重声明
- * 且不赌打包顺序(先例 account 的 .logoutBtn)。
+ * 头卡右上角的返回钮(.backBtn.backBtn)原在此:Frank 走查 #18 定的右上角、浏览器返回,
+ * 与职位详情页统一(底部返回同批删掉 —— 返回统一到右上角);类名写两遍是为抬权重 ——
+ * 本钮经 Button(kind ghost)渲染(「<button 这种不允许直接使用」),要稳赢 button 域
+ * .btn/.ghost 的同权重声明且不赌打包顺序。2026-09-03 Frank「所有的详情页面的返回按钮都在右上,
+ * 样式和位置应该是固定统一的」→ 长相进 button 桶的 .backButton(值逐格照抄),位置归 Shell 的
+ * back 槽,本域不再自绘。
  */
-.backBtn.backBtn {
+
+/*
+ * 在招职位卡的标题行(2026-09-03 起同时是更新时间的宿主:排成一行,Updated 自带
+ * margin-left:auto 顶到右端;全局 .mcardHead 只管字号字重,排布由本类补)。
+ */
+.jobsHead {
   /*
-   * 贴头卡右上角。
+   * 标题与更新时间排一行。
    */
-  position: absolute;
+  display: flex;
 
   /*
-   * 距卡顶 12。
+   * 两段字号不同,按基线对齐。
    */
-  top: 12px;
+  align-items: baseline;
 
   /*
-   * 距卡右 12。
+   * 挤在一起时的最小间距。
    */
-  right: 12px;
-
-  /*
-   * 描边灰(本页私有,不是全站色板成员)。
-   */
-  border: 1px solid #d1d5db;
-
-  /*
-   * 钮圆角。
-   */
-  border-radius: 8px;
-
-  /*
-   * 钮内衬(上下 6、左右 14)。
-   */
-  padding: 6px 14px;
-
-  /*
-   * 钮字号(小半档 —— 它是弱操作)。
-   */
-  font-size: 12.5px;
-
-  /*
-   * 深灰字(盖掉 .ghost 的品牌蓝:返回不是主行动)。
-   */
-  color: #374151;
-
-  /*
-   * 白底(盖掉 .ghost 的无底 —— 钮压在卡上要自己有底)。
-   */
-  background: #ffffff;
-
-  /*
-   * 常规字重(盖掉 .btn 的 600 —— 原先是裸 <button>,浏览器默认常规字重)。
-   */
-  font-weight: 400;
-
-  /*
-   * 钮文字不折行。
-   */
-  white-space: nowrap;
-
-  /*
-   * 可点手型。
-   */
-  cursor: pointer;
+  gap: 12px;
 }
 
 /*
@@ -202,14 +167,11 @@
   line-height: 1.35;
 
   /*
-   * 近黑(colors 域变量)。
+   * 近黑(colors 域变量)。此前还有一格 padding-right: 84px 给头卡内右上角返回钮留位
+   * (长公司名不许压到钮底下,名字不截断让它折行);2026-09-03 返回钮移到 Shell back 槽、
+   * 不再在头卡内,这格随之删。
    */
   color: var(--text);
-
-  /*
-   * 给右上角返回钮留出的位置 —— 长公司名不许压到钮底下(名字不截断,让它折行)。
-   */
-  padding-right: 84px;
 }
 
 /*

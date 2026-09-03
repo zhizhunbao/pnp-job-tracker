@@ -522,6 +522,11 @@ export type CompanyIn = {
    * 同省同行业的相似雇主;可省 —— 查不到相似雇主的调用方不传这一项(体内默认空列)。
    */
   similar?: SimilarEmployer[]
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO,页面门 SSR 取;'' = 还没拿到,不渲)。
+   */
+  updatedAt: string
 }
 
 /**
@@ -570,16 +575,6 @@ export type ProvHrefOfIn = {
 }
 
 /**
- * makeGoBack 的入参:无处可回时的落点。
- */
-export type GoBackIn = {
-  /**
-   * 无历史可回时跳转的地址。
-   */
-  fallback: string
-}
-
-/**
  * CompanyBody(公司域唯一骨架)的 props。弹框与 /companies/[slug] 页面渲的是同一棵树。
  */
 export type CompanyBodyIn = {
@@ -602,6 +597,12 @@ export type CompanyBodyIn = {
    * 界面语言。
    */
   lang: CompaniesLang
+
+  /**
+   * 数据更新时刻(在招职位卡标题行右端那句);'' = 还没拿到,整行不出 ——
+   * 弹框走客户端取数没有服务端心跳,传的就是空串。
+   */
+  updatedAt: string
 
   /**
    * 显示中文对照(#185:点了才在英文段下挂译文);可省 = 不显示。
@@ -1017,6 +1018,11 @@ export type CompanyJobsCardIn = {
    * 界面语言(岗名下的 NOC 译名跟着它走)。
    */
   lang: CompaniesLang
+
+  /**
+   * 数据更新时刻(卡标题行右端那句「更新时间 …」);'' = 还没拿到,整行不出。
+   */
+  updatedAt: string
 
   /**
    * 点职位的去处;可省 = 纯链接。

@@ -8,7 +8,7 @@
  */
 import { headers } from 'next/headers'
 import { getUser, isPro } from '@/lib/quota/server'
-import { loadMatchDims } from '@/lib/jobs/server'
+import { checkedAt, loadMatchDims } from '@/lib/jobs/server'
 import type { CompareRow } from '@/lib/employers'
 import { compareEmployers } from '@/lib/employers/server'
 import { getDb } from '@/lib/db/server'
@@ -48,10 +48,11 @@ export default async function CompareEmployersPage({ searchParams }: { searchPar
     const p = normalizeProfile(user?.profile as ProfileJson | null)
     rows = await compareEmployers({ db: await getDb(), names, profile: hasProfile(p) ? p : null, dims })
   }
+  const updatedAt = await checkedAt(await getDb())
   return (
     <Frame>
       <Header />
-      <Compare rows={rows} pro={pro} loggedIn={!!user} />
+      <Compare rows={rows} pro={pro} loggedIn={!!user} updatedAt={updatedAt} />
       <Footer />
     </Frame>
   )

@@ -24,7 +24,7 @@ import { Header } from '@/components/header'
 import { Frame } from '@/components/shell'
 import { SQL } from '@/lib/db'
 import { getDb } from '@/lib/db/server'
-import { getTopNocs } from '@/lib/jobs/server'
+import { checkedAt, getTopNocs } from '@/lib/jobs/server'
 import { getScoreTables } from '@/lib/points/server'
 import { getUser, isPro } from '@/lib/quota/server'
 import { tripleWireOf, type TripleWire } from '@/lib/ruling/server'
@@ -94,11 +94,13 @@ export default async function PlanPrPage({ searchParams }: { searchParams: Promi
     if (wire && !(WIRE_ERROR_KEY in wire)) initialVerdict = wire
   }
 
+  const updatedAt = await checkedAt(db)
+
   return (
     <Frame>
       <Header />
       <Decision overview={overview} drawsRecent={drawsRecent} competition={competition}
-        tvJob={tvJob} topNocs={topNocs} initialVerdict={initialVerdict} />
+        tvJob={tvJob} topNocs={topNocs} initialVerdict={initialVerdict} updatedAt={updatedAt} />
       <Footer />
     </Frame>
   )

@@ -58,6 +58,26 @@ export type DateAgeIn = {
 }
 
 /**
+ * 界面语取词函数(与 lib/i18n 的 TFn 同形,本域自声明 —— types 叶不 import)。
+ */
+export type TFn = (key: string, vars?: Record<string, string | number>) => string
+
+/**
+ * Updated(「更新时间 …」一行)的 props。
+ */
+export type UpdatedIn = {
+  /**
+   * 更新时刻的 ISO 串(页面门 SSR 取的 checkedAt);空串 = 还没拿到,整行不出。
+   */
+  iso: string
+
+  /**
+   * 取词函数(句子「更新时间 {t}」由本件用全站通用词拼,调用方只递 t)。
+   */
+  t: TFn
+}
+
+/**
  * textOf 的入参。
  */
 export type TimeTextValueIn = {

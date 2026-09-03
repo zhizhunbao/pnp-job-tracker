@@ -23,3 +23,13 @@ export const GRAIN_DATE = 'date'
  * 要正文色的地方自己传 normal。
  */
 export const TONE_DIM = 'dim'
+
+/**
+ * 「还没拿到更新时间」的哨兵值(与 jobs 域 TEXT_NONE 同一口径:空串 = 未知,不渲半句)。
+ */
+export const EMPTY_ISO = ''
+
+/**
+ * 「更新时间 {t}」的全站通用词键(住 i18n site 段,三语齐)。
+ */
+export const KEY_UPDATED = 'updated'

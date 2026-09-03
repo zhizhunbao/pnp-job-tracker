@@ -19,6 +19,9 @@
  * 内联 <style> 与 93 处内联样式迁 start.module.css、取数与派生下沉 functions.ts;
  * 同批壳件上交页面门(Frank「组装只许在 (frontend) 页面门里」,样张 companies)——
  * 整页外框走 shell 桶的 Frame,顶栏与页脚由 page.tsx 直接拼,本件只出导航条与正文。
+ * 2026-09-03 Frank「所有的 table 和可以更新数据的地方,右上角都应该有一个更新时间」:
+ * 门里早就取好的 ETL 心跳(stats.checkedAt)此前一处没消费,现分发给四个有表的分区
+ * (担保雇主 / 职业榜 / 分省概览 / 抽选尺子),各区标题行右槽一枚。
  *
  * @author Frank
  * @time 2026-08-28 14:20:00
@@ -50,13 +53,15 @@ export function Pulse({ stats }: PulseIn) {
         <Hero t={v.t} cards={v.numCards} />
         <SponsorSection t={v.t}
           lang={v.lang}
+          updatedAt={stats.checkedAt}
           sponsor={v.sponsor}
           occOpts={stats.occOpts}
           catMids={stats.catMids}
           nocCat={v.nocCat} />
-        <BoardsSection t={v.t} lang={v.lang} boards={v.boards} nocProvs={v.nocProvs} />
+        <BoardsSection t={v.t} lang={v.lang} updatedAt={stats.checkedAt} boards={v.boards} nocProvs={v.nocProvs} />
         <ProvSection t={v.t}
           lang={v.lang}
+          updatedAt={stats.checkedAt}
           loading={v.market == null}
           rows={v.provRows}
           provExtra={stats.provExtra}
@@ -74,6 +79,7 @@ export function Pulse({ stats }: PulseIn) {
         <DrawsSection t={v.t}
           tEn={v.tEn}
           lang={v.lang}
+          updatedAt={stats.checkedAt}
           draws={stats.draws}
           news={stats.news}
           drawsN={v.drawsN}

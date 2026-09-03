@@ -26,10 +26,10 @@ import css from './occupations.module.css'
 /**
  * 紧缺职业清单页正文。
  *
- * @param props 官方清单的全部行(逐格注释见 OccupationsIn)。
+ * @param props 官方清单的全部行与更新时刻(逐格注释见 OccupationsIn)。
  * @returns 正文(Shell 轨 + 页头横幅 + 口径注 + 省导航 + 逐省小节)。
  */
-export function Occupations({ rows }: OccupationsIn) {
+export function Occupations({ rows, updatedAt }: OccupationsIn) {
   const [, , t] = useLang()
   const provs = toProvGroups({ rows })
   const sections = []
@@ -44,7 +44,7 @@ export function Occupations({ rows }: OccupationsIn) {
         sub={t('dir.occ.sub')}
         images={BANNER_IMGS.jobs} />
       <div className={css.note}>{t('dir.occ.note')}</div>
-      <ProvNav provs={provs} t={t} />
+      <ProvNav provs={provs} updatedAt={updatedAt} t={t} />
       {sections}
     </Shell>
   )

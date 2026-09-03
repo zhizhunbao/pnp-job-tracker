@@ -11,6 +11,8 @@
  * 一起下到「已选」行,可没选职业时那一行就只剩它一颗,孤零零挂在右侧第二行 —— 一颗钮撑不起一行。
  * 显隐条件不动(anyFilter,有筛选才出);「保存此筛选」照旧留在「已选」行(它是对条件的操作,
  * 且只对登录用户出)。样式换 .clearFilt:形照旧,高度对齐本行的 38(理由在那条 CSS 注释里)。
+ * 2026-09-03 Frank「所有的 table 和可以更新数据的地方,右上角都应该有一个更新时间」:
+ * 右端那句更新时间改用 time 桶的 Updated(全站唯一一件,空串自己不渲),本域不再自绘。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -19,7 +21,8 @@ import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Search } from '@/components/search'
 import { Select } from '@/components/select'
-import { BTN_GHOST, BTN_SECONDARY, FK, SELECT_SM, TEXT_NONE } from './constants'
+import { Updated } from '@/components/time'
+import { BTN_GHOST, BTN_SECONDARY, FK, SELECT_SM } from './constants'
 import {
   foldBtnClsOf, foldCaretOf, makeBroadChange, makeCatLabel, makeProvChange, makeProvLabel, matchBtnClsOf,
   matchLabelOf, slotOf,
@@ -65,9 +68,7 @@ export function FilterRow({ b, boxRef }: BoardBoxIn) {
           {b.t('clear')}
         </Button>
       )}
-      {b.data.updatedAt !== TEXT_NONE && (
-        <span className={cssOf(css.updated)}>{b.updatedText}</span>
-      )}
+      <Updated iso={b.data.updatedAt} t={b.t} />
       <ColFields b={b} boxRef={boxRef} />
     </div>
   )

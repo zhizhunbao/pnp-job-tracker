@@ -6,10 +6,13 @@
  * 伞标题(2026-08-08 二次拍板):外层文字与二级导航项「职业榜」完全一致,
  * 四张分榜各自的题降级为子标题;榜题带涨跌箭头(收缩红↓/增长绿↑,同日 Frank 拍板)。
  * 2026-08-28 换装批自 Pulse.tsx 提出成文件。
+ * 2026-09-03 Frank「所有的 table 右上角都应该有一个更新时间」:挂伞标题行右槽,
+ * 整区一枚(四张分榜同一份数据,逐榜重复四遍是同一句话说四遍)。
  *
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
+import { Updated } from '@/components/time'
 import {
   ARROW_DOWN, ARROW_UP, ID_BOARDS, ID_BOARD_BACKUP, ID_BOARD_COOLING, ID_BOARD_HEATING, ID_BOARD_MINE,
   PH_BOARDS,
@@ -25,10 +28,10 @@ import css from './start.module.css'
 /**
  * 渲染三榜分层区。
  *
- * @param props 取词函数、界面语言、四张榜与可提名省份表。
+ * @param props 取词函数、界面语言、更新时刻、四张榜与可提名省份表。
  * @returns 白底色带;数据到了而四张榜全空时给 null。
  */
-export function BoardsSection({ t, lang, boards, nocProvs }: BoardsSectionIn) {
+export function BoardsSection({ t, lang, updatedAt, boards, nocProvs }: BoardsSectionIn) {
   if (boards != null && boardsEmptyOf(boards)) {
     return null
   }
@@ -55,7 +58,7 @@ export function BoardsSection({ t, lang, boards, nocProvs }: BoardsSectionIn) {
   }
   return (
     <Band white id={ID_BOARDS}>
-      <Sec title={t('pulse.nav.boards')}>
+      <Sec title={t('pulse.nav.boards')} right={<Updated iso={updatedAt} t={t} />}>
         {boards == null && <Placeholder size={PH_BOARDS} />}
         {items}
       </Sec>

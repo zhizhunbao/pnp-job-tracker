@@ -26,6 +26,11 @@ export const KIND_DEFAULT = 'primary'
 export const CLS_SEP = ' '
 
 /**
+ * 返回钮走的变体:弱操作幽灵钮(返回不是页面主行动;形由 .backButton 盖在幽灵底上)。
+ */
+export const KIND_BACK = 'ghost'
+
+/**
  * 新标签页链接必带的 rel 值(只有 target 传了才加)。
  * noreferrer 一次关掉两件事:目标页拿不到 `window.opener`(不能反手把本页导去钓鱼站),
  * 也拿不到 Referer 头(不把用户在本站看的是哪一页泄给外站)。

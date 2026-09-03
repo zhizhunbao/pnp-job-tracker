@@ -29,20 +29,62 @@
   box-sizing: border-box;
 
   /*
+   * 上内衬档写进变量:padding 与右上返回槽的 top 同读一个值,换档两处一起动。
+   */
+  --shell-top: 4px;
+
+  /*
+   * 左右内衬(全站恒定),返回槽的 right 同读。
+   */
+  --shell-side: 1.25rem;
+
+  /*
    * 默认内衬:上 4px、左右 1.25rem(全站恒定)、下 32px。
    */
-  padding: 4px 1.25rem 32px;
+  padding: var(--shell-top) var(--shell-side) 32px;
+
+  /*
+   * 右上返回槽的定位基准。
+   */
+  position: relative;
 }
 
 /*
- * 上内衬档(调用方按页选;写在 .shell 之后,后者覆盖前者的 padding 上格)。
+ * 右上返回槽(2026-09-03 Frank「所有的详情页面的返回按钮都在右上,样式和位置应该是固定统一的」):
+ * 钉在正文轨右上角、与上内衬齐平 —— 页面第一行是面包屑还是 H1 都无所谓,位置只由壳定。
+ * 此前 jobs/companies 钉在头卡内、pte/cases 在 H1 行尾、news 在卡上方左侧,三种位置各写各的。
+ */
+.back {
+  /*
+   * 脱离文档流。
+   */
+  position: absolute;
+
+  /*
+   * 与上内衬齐平。
+   */
+  top: var(--shell-top);
+
+  /*
+   * 与右内衬齐平。
+   */
+  right: var(--shell-side);
+
+  /*
+   * 盖在同高的 H1 / 面包屑之上。
+   */
+  z-index: 1;
+}
+
+/*
+ * 上内衬档(调用方按页选;写在 .shell 之后,后者覆盖前者的变量)。
  * 贴顶(/start 脉冲带自己管上下距)。
  */
 .top0 {
   /*
    * 上内衬归零。
    */
-  padding-top: 0;
+  --shell-top: 0px;
 }
 
 /*
@@ -52,7 +94,7 @@
   /*
    * 上内衬 14px。
    */
-  padding-top: 14px;
+  --shell-top: 14px;
 }
 
 /*
@@ -62,7 +104,7 @@
   /*
    * 上内衬 16px。
    */
-  padding-top: 16px;
+  --shell-top: 16px;
 }
 
 /*
@@ -72,7 +114,7 @@
   /*
    * 上内衬 18px。
    */
-  padding-top: 18px;
+  --shell-top: 18px;
 }
 
 /*
@@ -82,7 +124,7 @@
   /*
    * 上内衬 32px。
    */
-  padding-top: 32px;
+  --shell-top: 32px;
 }
 
 /*
@@ -92,7 +134,7 @@
   /*
    * 上内衬 40px。
    */
-  padding-top: 40px;
+  --shell-top: 40px;
 }
 
 /*

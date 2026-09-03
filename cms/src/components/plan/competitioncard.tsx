@@ -6,10 +6,14 @@
  * 口径脚注一行说完(2026-08-13 Frank「改成一行」);「本站更新」整列同一天 →
  * 撤列并进这行。
  * 2026-08-28 换装批自 Decision.tsx 的 competitionCard 提出成件。
+ * 2026-09-03 Frank「所有的 table 右上角都应该有一个更新时间」:年份胶囊下、表正上方
+ * 单起一行靠右。它与卡尾那行口径脚注不是一回事 —— 脚注说的是**官方数据**的截止期
+ * (v.generated / poolAsOf / flowPeriod),这一行说的是本站这批数据什么时候核对的。
  *
  * @author Frank
  * @time 2026-08-28 00:30:00
  */
+import { Updated } from '@/components/time'
 import { CompetitionCards } from './competitioncards'
 import { CompetitionTable } from './competitiontable'
 import { YearChips } from './yearchips'
@@ -32,6 +36,7 @@ export function CompetitionCard({ d }: CompetitionCardIn) {
     <div className={css.card}>
       <h2 className={css.h2}>{d.t('dp.compTitle')}</h2>
       <YearChips compYear={d.compYear} />
+      <Updated iso={d.updatedAt} t={d.t} />
       <CompetitionCards t={d.t} rows={v.rows} year={d.compYear.year} hasSplit={v.hasSplit}
         stockAsOf={v.stockAsOf} poolAsOf={v.poolAsOf} flowPeriod={v.flowPeriod} yearFlowPeriod={v.yearFlowPeriod} />
       <CompetitionTable t={d.t} rows={v.rows} year={d.compYear.year} hasSplit={v.hasSplit}

@@ -1536,6 +1536,11 @@ export type EmployersIn = {
    * SSR 解析出的初始筛选(深链 `/employers/designated?program=AIP&prov=NS` 直达)。
    */
   initialFilters: EmployerFilters
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   */
+  updatedAt: string
 }
 
 /**
@@ -1712,6 +1717,11 @@ export type CompareIn = {
    * 登录态(升级弹框按它决定先登录还是直接付)。
    */
   loggedIn: boolean
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   */
+  updatedAt: string
 }
 
 /**
@@ -1727,6 +1737,11 @@ export type CompareDemoIn = {
    * 登录态(透传给升级弹框)。
    */
   loggedIn: boolean
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   */
+  updatedAt: string
 }
 
 /**
@@ -1899,6 +1914,11 @@ export type CompareResultIn = {
    * 取词函数。
    */
   t: TFn
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   */
+  updatedAt: string
 }
 
 /**

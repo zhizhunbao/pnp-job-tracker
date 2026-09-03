@@ -10,15 +10,19 @@
  */
 import { shellClsOf } from './functions'
 import type { ShellIn } from './types'
+import css from './shell.module.css'
 
 /**
- * 正文轨壳:限宽 1320 居中,内衬按档选。
+ * 正文轨壳:限宽 1320 居中,内衬按档选;详情页的返回钮钉在轨右上角(back 槽)。
  *
- * @param props 内衬档与内容。
+ * @param props 内衬档、返回钮与内容。
  * @returns 正文轨。
  */
-export function Shell({ top = null, bottom = null, children }: ShellIn) {
+export function Shell({ top = null, bottom = null, back = null, children }: ShellIn) {
   return (
-    <div className={shellClsOf({ top, bottom })}>{children}</div>
+    <div className={shellClsOf({ top, bottom })}>
+      {back != null && <div className={css.back}>{back}</div>}
+      {children}
+    </div>
   )
 }

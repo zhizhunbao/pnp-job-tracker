@@ -189,14 +189,34 @@ export type BtnClsIn = {
  */
 export type BackButtonIn = {
   /**
-   * 返回目标(真 <a>,要能被爬、能整页导航)。
+   * 无历史可回时的落点(点击走 goBackOr:有历史就浏览器返回,保住列表页的滚动位与筛选)。
    */
-  href: string
+  fallback: string
 
   /**
-   * 钮文字(过 i18n 的词)。
+   * 钮文字(过 i18n 的词;全站统一 detail.back)。
    */
   label: string
+}
+
+/**
+ * 在途态 setter(React setState 的布尔形状;返回钮点下去置 true,页面卸载即消)。
+ */
+export type BusyFn = (busy: boolean) => void
+
+/**
+ * makeBack(返回钮点击手柄工厂)的入参。
+ */
+export type BackIn = {
+  /**
+   * 无历史可回时的落点。
+   */
+  fallback: string
+
+  /**
+   * 置在途态。
+   */
+  setBusy: BusyFn
 }
 
 /**

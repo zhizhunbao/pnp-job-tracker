@@ -8,13 +8,17 @@
  * 整页外框(顶栏 / 页脚 / 灰底纵向列)2026-08-27 起归页面门去拼(shell 桶的 Frame),
  * 本件只是正文那一段。
  * 2026-08-27 换装批整体重写:状态进 hooks、筛选区与列表区各自成件、样式进 module.css。
+ * 2026-09-03 Frank「所有主页面都不应该有返回按钮」:雇主板是顶栏一级页,H1 行尾的返回撤掉。
+ * 同日「所有的 table 右上角都应该有一个更新时间」:标题行尾(返回钮腾出的那个位置)挂
+ * Updated(time 桶);不挂筛选行是因为那一行尾已被名录抓取日占着(两个 margin-left:auto
+ * 会把抓取日推到行中间),两条事实各说各的,谁也不动谁。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
-import { BackButton } from '@/components/button'
 import { Shell } from '@/components/shell'
-import { EMP_BACK_URL, SHELL_BOTTOM_PX, SHELL_TOP_PX } from './constants'
+import { Updated } from '@/components/time'
+import { SHELL_BOTTOM_PX, SHELL_TOP_PX } from './constants'
 import { EmployerBoard } from './employerboard'
 import { EmployerFilterBar } from './employerfilterbar'
 import { titleTextOf } from './functions'
@@ -28,14 +32,14 @@ import css from './employers.module.css'
  * @param props SSR 首帧的第一页与初始筛选(见 EmployersIn 逐格注释)。
  * @returns 雇主板正文。
  */
-export function Employers({ initial, initialFilters }: EmployersIn) {
-  const p = useEmployersPage({ initial, initialFilters })
+export function Employers({ initial, initialFilters, updatedAt }: EmployersIn) {
+  const p = useEmployersPage({ initial, initialFilters, updatedAt })
   return (
     <div className={css.body}>
       <Shell top={SHELL_TOP_PX} bottom={SHELL_BOTTOM_PX}>
         <div className={css.head}>
           <h1 className={css.h1}>{titleTextOf({ t: p.t, f: p.f })}</h1>
-          <BackButton href={EMP_BACK_URL} label={p.t('de.back')} />
+          <Updated iso={updatedAt} t={p.t} />
         </div>
         <div className={css.card}>
           <EmployerFilterBar p={p} />

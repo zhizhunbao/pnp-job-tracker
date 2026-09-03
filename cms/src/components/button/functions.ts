@@ -6,7 +6,7 @@
  */
 import { cssOf } from '@/components/css'
 import { ACTION_KINDS, CLS_SEP } from './constants'
-import type { BtnClsIn, ButtonKind } from './types'
+import type { BackIn, BtnClsIn, ButtonKind } from './types'
 import css from './button.module.css'
 
 /**
@@ -72,4 +72,32 @@ export function goBackOr(fallback: string) {
   } else {
     window.location.href = fallback
   }
+}
+
+/**
+ * 造返回钮的点击手柄:先置在途态再走 goBackOr(2026-08-06 Frank「前面为什么出现三个…」:
+ * 在途反馈只靠灰底降透明,不在文案前拼「…」)。原住 jobs 的 useJobDetail.onBack,
+ * 2026-09-03 返回钮收成全站一件时搬到这,各详情页同一份在途行为。
+ *
+ * @param x 落点与置在途态。
+ * @returns 点击手柄。
+ */
+export function makeBack(x: BackIn): () => void {
+  return function goBack(): void {
+    x.setBusy(true)
+    goBackOr(x.fallback)
+  }
+}
+
+/**
+ * 返回钮的类:在途态叠灰底降透明。
+ *
+ * @param busy 在途没。
+ * @returns 类名。
+ */
+export function backClsOf(busy: boolean): string {
+  if (busy) {
+    return cssOf(css.backButton) + CLS_SEP + cssOf(css.backBusy)
+  }
+  return cssOf(css.backButton)
 }

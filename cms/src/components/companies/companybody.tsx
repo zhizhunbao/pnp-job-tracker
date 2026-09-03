@@ -26,7 +26,7 @@ import css from './companies.module.css'
 /**
  * 公司身体(详情页与弹框同源)。
  *
- * @param props 公司档案、相似雇主与五个开关/回调(逐格注释见 CompanyBodyIn)。
+ * @param props 公司档案、相似雇主、更新时刻与五个开关/回调(逐格注释见 CompanyBodyIn)。
  * @returns 卡组。
  */
 export function CompanyBody({
@@ -34,6 +34,7 @@ export function CompanyBody({
   similar,
   t,
   lang,
+  updatedAt,
   showTrans = false,
   hideTopInfo = false,
   onOpenJob,
@@ -63,6 +64,7 @@ export function CompanyBody({
       <CompanyJobsCard company={company}
         t={t}
         lang={lang}
+        updatedAt={updatedAt}
         onOpenJob={onOpenJob}
         resolveJob={resolveJob}
         newTab={newTab} />

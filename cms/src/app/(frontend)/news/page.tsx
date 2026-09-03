@@ -21,6 +21,7 @@ import { Header } from '@/components/header'
 import { NEWS_META, News, loadNewsCards, loadNewsCommentCounts, loadNewsHeroes } from '@/components/news'
 import { Frame } from '@/components/shell'
 import { dbOf } from '@/lib/db/server'
+import { checkedAt } from '@/lib/jobs/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -43,10 +44,11 @@ export default async function NewsPage() {
     loadNewsHeroes({ db }),
     loadNewsCommentCounts({ db }),
   ])
+  const updatedAt = await checkedAt(db)
   return (
     <Frame>
       <Header />
-      <News items={items} hero={hero} cmtCounts={cmtCounts} />
+      <News items={items} hero={hero} cmtCounts={cmtCounts} updatedAt={updatedAt} />
       <Footer />
     </Frame>
   )

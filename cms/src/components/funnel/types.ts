@@ -389,28 +389,20 @@ export type PropLineClsIn = {
 }
 
 /**
- * 无参无返的点击手柄(返回钮的 onClick;由 makeGoBack 造出来)。
- */
-export type GoBackFn = () => void
-
-/**
- * `makeGoBack` 的入参:无处可回时的落点。
- */
-export type GoBackIn = {
-  /**
-   * 无历史可回时跳转的地址。
-   */
-  fallback: string
-}
-
-/**
  * Funnel(看板正文)的 props。
+ * 旁边原有返回钮的两格形状(GoBackFn 点击手柄 / GoBackIn 无历史可回时的落点),
+ * 2026-09-03 撤编:Frank「所有主页面都不应该有返回按钮」。
  */
 export type FunnelIn = {
   /**
    * 服务端门洗好的整块看板数据。
    */
   board: FunnelBoard
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   */
+  updatedAt: string
 }
 
 /**

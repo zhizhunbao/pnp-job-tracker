@@ -7,11 +7,14 @@
  * 手机 = 卡片行,桌面 = 表格(与页尾抽选表同款二选一渲染):两份都在 DOM 里,
  * 由媒体查询选出一份。
  * 2026-08-28 换装批第二段自 ScoreLineCard.tsx 的抽选线两块提出成件。
+ * 2026-09-03 Frank「所有的 table 右上角都应该有一个更新时间」:挂在这一段的小标题行右端
+ * (估分卡内只有这一块是会更新的数据区,卡头右上角被两颗动作钮占着)。
  *
  * @author Frank
  * @time 2026-08-28 02:15:00
  */
 import { Table } from '@/components/table'
+import { Updated } from '@/components/time'
 import { ScoreLineDrawRow } from './scorelinedrawrow'
 import { makeLineGapCell } from './makelinegapcell'
 import { makeLineStreamCell } from './makelinestreamcell'
@@ -22,10 +25,10 @@ import css from './plan.module.css'
 /**
  * 渲染官方抽选线那一段。
  *
- * @param props 取词函数、界面语、这个省的估分与要摆的那几轮。
+ * @param props 取词函数、界面语、这个省的估分、要摆的那几轮与更新时刻。
  * @returns 抽选线段。
  */
-export function ScoreLineDraws({ t, lang, score, list }: ScoreLineDrawsIn) {
+export function ScoreLineDraws({ t, lang, score, list, updatedAt }: ScoreLineDrawsIn) {
   const cards = []
   let i = 0
   for (const draw of list) {
@@ -38,6 +41,7 @@ export function ScoreLineDraws({ t, lang, score, list }: ScoreLineDrawsIn) {
     <>
       <div className={css.lineDrawsHead}>
         <div className={css.lineDrawsTitle}>{t('sl.drawsTitle')}</div>
+        <Updated iso={updatedAt} t={t} />
       </div>
       <div className={css.lineCards}>{cards}</div>
       <div className={css.lineTbl}>

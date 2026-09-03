@@ -9,7 +9,6 @@
  * @time 2026-08-28 19:15:06
  */
 import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { goBackOr } from '@/components/button'
 import { useLang } from '@/components/i18n'
 import { useIsNarrow } from '@/components/modal'
 import { quizToProfile, readQuiz } from '@/components/quiz'
@@ -32,7 +31,7 @@ import {
   TRACK_SAVE_JOB, TRACK_SAVE_SEARCH, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UPSELL_LOCK, UPSELL_LOGIN, UPSELL_SS,
   URL_API_APPLY_HOW, URL_API_JD_FORMAT, URL_API_JD_TRANSLATE, URL_API_JOBS, URL_API_JOBS_DIMS,
   URL_API_SAVED_JOB_BY_JOB, URL_API_SAVED_JOB_BY_JOB_TAIL, URL_API_SAVED_JOBS, URL_API_SAVED_JOBS_LIST,
-  URL_API_SAVED_SEARCHES, URL_API_USERS_ME, URL_BOARD, URL_BOARD_BACK, URL_BOARD_MATCH, URL_TO_FILTER, VAL_MATCH,
+  URL_API_SAVED_SEARCHES, URL_API_USERS_ME, URL_BOARD, URL_BOARD_MATCH, URL_TO_FILTER, VAL_MATCH,
   VAL_ON, WIDTH_FULL, WINDOW_FEATURES,
 } from './constants'
 import {
@@ -42,7 +41,7 @@ import {
   jobsQueryOf, keysOf, lastOf, mailtoOf, makeColResize, makeColWidth, makeNocName, markObSeen, matchHrefOf,
   measureColWidths, nextSortOf, nocLabelOf, obSeen, pageSigOf, pickedShownOf, readColsPref, replaceQuery, savedMapOf,
   saveFiltersOf,
-  seedFilter, setterOf, shownColsOf, slotOf, stickyOffsetsOf, strOf, strOrNull, togglableColsOf, updatedTextOf,
+  seedFilter, setterOf, shownColsOf, slotOf, stickyOffsetsOf, strOf, strOrNull, togglableColsOf,
   widthsKeyOf, writeColsCookie, writeColsPref, writeColWidthCookie,
 } from './functions'
 import type {
@@ -1266,7 +1265,6 @@ export function useJobsBoard(props: JobsIn): JobsBoardOut {
     cellCtx: { t, plan, blocked, eeCats: data.dims.eeCategories },
     q: filters.q,
     onQ: filters.setQ,
-    updatedText: updatedTextOf({ t, updatedAt: data.updatedAt }),
     emptyText: emptyTextOf({ t, matchView }),
     emptyLink: emptyLinkOf({ t, matchView }),
     allShownText: t('allShown', { total: data.total }),
@@ -2289,15 +2287,15 @@ function openApply(x: OpenApplyIn): void {
  * 第 3 步「锁区曝光」有数,分母是空的,M3 的两种分叉(锁的东西不值钱 / 根本没人看见)
  * 照样分不开。30 天数据里入口 = 出口就是本页,它才是漏斗真正的第一格(列表页弹框另计 kind=modal)。
  * 列表页会注册整张分类维表;详情页直入也必须注册本岗这一行,否则英/韩界面会回退中文分类名。
- * 返回(Frank 走查#18):2026-07-25 用户「点击要有动画,不然不知道点没点,跳页有延迟」——
- * 按下即置忙态(变灰 + 降透明),导航期间可感。
+ * 返回(Frank 走查#18)的在途态(2026-07-25 用户「点击要有动画,不然不知道点没点,跳页有延迟」:
+ * 按下即置忙态变灰降透明)与落点 2026-09-03 随「返回钮全站一件」一起搬进 button 桶的 BackButton,
+ * 本台不再管返回。
  *
  * @param x 本岗、分层态、页面维度与相似职位。
  * @returns 详情页面板。
  */
 export function useJobDetail(x: JobIn): JobDetailPanel {
   const [lang, , t] = useLang()
-  const [leaving, setLeaving] = useState(false)
   const cats = x.dims.nocCategories
   useEffect(function trackOpen() {
     track(TRACK_JD_OPEN, { [TRACK_KEY_KIND]: TRACK_KIND_PAGE })
@@ -2308,12 +2306,7 @@ export function useJobDetail(x: JobIn): JobDetailPanel {
   return {
     t,
     lang,
-    leaving,
     view: jobDetailViewOf({ job: x.job, dims: x.dims, lang, t, related: x.related }),
-    onBack: function goBack(): void {
-      setLeaving(true)
-      goBackOr(URL_BOARD_BACK)
-    },
   }
 }
 

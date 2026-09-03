@@ -10,4 +10,5 @@
  */
 export { DateAge } from './dateage'
 export { TimeText } from './timetext'
-export type { DateAgeIn, TimeGrain, TimeTextIn, TimeTone } from './types'
+export { Updated } from './updated'
+export type { DateAgeIn, TimeGrain, TimeTextIn, TimeTone, UpdatedIn } from './types'

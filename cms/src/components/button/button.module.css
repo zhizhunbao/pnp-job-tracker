@@ -98,6 +98,26 @@
 /*
  * 普通行动(默认变体):品牌蓝实底。
  */
+/*
+ * 🔴 链接形态的字色(2026-09-03 PTE 单题页实撞:Button 传 href 渲成 <a>,main.css 的 `a { color: currentColor }`
+ * 是 0,0,1 权重,压过下面 :where() 零权重的变体字色 —— 「下一题」蓝底黑字。这里按变体再声明一遍字色,
+ * 双类拉到 0,2,0(news 桶 .cmtReply.cmtReply 同法);值与下面各变体逐格相等,改一处要改两处。
+ */
+a.btn.primary,
+a.btn.pro,
+a.btn.ai,
+a.btn.danger {
+  color: #ffffff;
+}
+
+a.btn.secondary {
+  color: var(--primary);
+}
+
+a.btn.ghost {
+  color: var(--primary);
+}
+
 :where(.primary) {
   /*
    * 品牌蓝实底(真值在 main.css 的 :root)。
@@ -247,49 +267,29 @@
  */
 
 /*
- * 返回钮(BackButton,渲真 <a> —— 内链要被爬到):药丸幽灵样式(白底描边),**不带箭头**(2026-07-27 Frank
- * 「带箭头的按钮,把箭头都删掉,不允许使用箭头」)。
+ * 返回钮(BackButton):**不带箭头**(2026-07-27 Frank「带箭头的按钮,把箭头都删掉,不允许使用箭头」)。
+ * 2026-08-24 时是「渲真 <a>、药丸幽灵(白底 #e5e7eb 描边、链接蓝、999px 圆角)」;
+ * 2026-09-03 Frank「样式和位置应该是固定统一的」→ 形改照职位详情页 .back 逐格抄(Frank 走查#18,
+ * 2026-07-25:右上角文字钮,直接走浏览器返回 —— 保留滚动位置与筛选状态,不重拉数据),
+ * 全站原 4 套(jobs .back / companies .backBtn / pte .back.back / funnel .backBtn)并入此一处。
+ * 类名写两遍抬权重:本钮经 Button(kind ghost)渲染,要稳赢 .btn/.ghost 的同权重声明
+ * 且不赌打包顺序(先例 account .logoutBtn / companies .backBtn)。
  */
-:where(.backButton) {
+.backButton.backButton {
   /*
-   * 行内弹性盒(文字与将来可能的图标排一行)。
+   * 描边灰。
    */
-  display: inline-flex;
+  border: 1px solid #d1d5db;
 
   /*
-   * 竖直居中。
+   * 钮圆角。
    */
-  align-items: center;
+  border-radius: 8px;
 
   /*
-   * 内容件间距。
+   * 上下 6px、左右 14px 内衬。
    */
-  gap: 6px;
-
-  /*
-   * 浅灰描边(幽灵钮:边有底无色)。
-   */
-  border: 1px solid #e5e7eb;
-
-  /*
-   * 白底。
-   */
-  background: #ffffff;
-
-  /*
-   * 链接蓝。
-   */
-  color: #2563eb;
-
-  /*
-   * 全圆 = 药丸形。
-   */
-  border-radius: 999px;
-
-  /*
-   * 上下 4px、左右 14px 内衬。
-   */
-  padding: 4px 14px;
+  padding: 6px 14px;
 
   /*
    * 返回钮字号。
@@ -297,14 +297,59 @@
   font-size: 12.5px;
 
   /*
-   * 链接不带下划线(全站口径)。
+   * 常规字重(幽灵底带 500,返回是弱操作压回 400)。
    */
-  text-decoration: none;
+  font-weight: 400;
+
+  /*
+   * 正文灰。
+   */
+  color: #374151;
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
 
   /*
    * 钮文字不折行。
    */
   white-space: nowrap;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 按下微缩的过渡。
+   */
+  transition: transform 0.06s;
+}
+
+/*
+ * 按下微缩。
+ */
+.backButton.backButton:active {
+  /*
+   * 缩到 95%。
+   */
+  transform: scale(0.95);
+}
+
+/*
+ * 在途态只靠灰底 + 降透明(2026-08-06 Frank「前面为什么出现三个…」:文案前拼「… 」只添困惑)。
+ */
+.backBusy.backBusy {
+  /*
+   * 灰底。
+   */
+  background: #f3f4f6;
+
+  /*
+   * 降透明。
+   */
+  opacity: 0.7;
 }
 
 /*

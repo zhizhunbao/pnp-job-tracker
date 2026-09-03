@@ -85,13 +85,10 @@ export const EMP_PATH_HEAD = '/employers/'
 
 /**
  * 雇主板首页(对照页的「回名录」与清空对比栏后的落点)。
+ * 旁边原有 EMP_BACK_URL('/plan/pr',雇主板右上角返回的落点 —— 初评表「查雇主」的来路),
+ * 2026-09-03 撤编:Frank「所有主页面都不应该有返回按钮」,雇主板是顶栏一级页。
  */
 export const EMP_URL = '/employers'
-
-/**
- * 雇主板右上角返回的落点(初评表「查雇主」的来路)。
- */
-export const EMP_BACK_URL = '/plan/pr'
 
 /**
  * 「看该雇主在招」的落点前缀:职位板按雇主名搜。雇主名本身就是这个直达 ——

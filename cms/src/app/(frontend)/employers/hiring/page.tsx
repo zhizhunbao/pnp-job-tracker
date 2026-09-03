@@ -9,6 +9,7 @@
  */
 import { employersBoardProps } from '@/lib/employers/server'
 import { getDb } from '@/lib/db/server'
+import { checkedAt } from '@/lib/jobs/server'
 import { Employers, MODE_HIRING, hiringMetaOf } from '@/components/employers'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
@@ -37,11 +38,13 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
  * @returns 整页。
  */
 export default async function HiringEmployersPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const props = await employersBoardProps({ sp: await searchParams, mode: MODE_HIRING, db: await getDb() })
+  const db = await getDb()
+  const props = await employersBoardProps({ sp: await searchParams, mode: MODE_HIRING, db })
+  const updatedAt = await checkedAt(db)
   return (
     <Frame>
       <Header />
-      <Employers initial={props.initial} initialFilters={props.initialFilters} />
+      <Employers initial={props.initial} initialFilters={props.initialFilters} updatedAt={updatedAt} />
       <Footer />
     </Frame>
   )

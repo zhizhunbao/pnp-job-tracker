@@ -32,6 +32,7 @@
 
 /*
  * 标题行:左边标题与小注,右边返回钮(钮靠 margin-left auto 推到最右)。
+ * 2026-09-03 起右边站的是更新时间(Updated),推到最右的手法一模一样。
  */
 .head {
   /*
@@ -91,66 +92,11 @@
 }
 
 /*
- * 右上返回钮。类名写两遍抬权重:本钮经 Button(kind ghost)渲染
- * (「<button 这种不允许直接使用」),要稳赢 button 域 .btn/.ghost 的同权重声明
- * 且不赌打包顺序(先例 account 的 .logoutBtn、companies 的 .backBtn)。
+ * 右上返回钮那一格原在此(.backBtn.backBtn,类名写两遍抬权重 —— 本钮经 Button(kind ghost)
+ * 渲染,要稳赢 button 域 .btn/.ghost 的同权重声明且不赌打包顺序;先例 account 的 .logoutBtn、
+ * companies 的 .backBtn)。2026-09-03 Frank「所有主页面都不应该有返回按钮」→ 本页撤返回;
+ * 标题行最右改站 time 桶的 Updated,靠右由它自带的 margin-left:auto 管,本域不再出样式。
  */
-.backBtn.backBtn {
-  /*
-   * 把钮推到标题行最右。
-   */
-  margin-left: auto;
-
-  /*
-   * 描边(colors 域变量)。
-   */
-  border: 1px solid var(--border);
-
-  /*
-   * 白底(盖掉 .ghost 的无底)。
-   */
-  background: var(--card);
-
-  /*
-   * 次级灰字(盖掉 .ghost 的品牌蓝:返回不是主行动)。
-   */
-  color: var(--text2);
-
-  /*
-   * 钮圆角。
-   */
-  border-radius: 8px;
-
-  /*
-   * 钮内衬(上下 6、左右 13)。
-   */
-  padding: 6px 13px;
-
-  /*
-   * 钮字号(小半档 —— 它是弱操作)。
-   */
-  font-size: 12.5px;
-
-  /*
-   * 常规字重(盖掉 .btn 的 600 —— 原先是裸 <button>,浏览器默认常规字重)。
-   */
-  font-weight: 400;
-
-  /*
-   * 跟随页面字体(原内联 font-family: inherit 迁来:裸 <button> 默认用系统 UI 字体)。
-   */
-  font-family: inherit;
-
-  /*
-   * 钮文字不折行。
-   */
-  white-space: nowrap;
-
-  /*
-   * 可点手型。
-   */
-  cursor: pointer;
-}
 
 /*
  * 表与标题行之间的间距。

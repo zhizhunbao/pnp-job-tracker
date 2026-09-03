@@ -11,15 +11,19 @@
  *    同期全渠道合计仅 7 次,同窗口详情页浏览 318 次)。两者的组件与接口都保留,只是不再落在详情页。
  * OccReportCard 2026-08-06 摘(Frank「没什么用可以删了」):它的付费出口挂在已退役的报告体系。
  * 2026-08-28 换装批重写落位:顶栏与页脚上交页面门,本件只出正文。
+ * 2026-09-03 Frank「所有的详情页面的返回按钮都在右上,样式和位置应该是固定统一的」:
+ * 卡内右上角那颗自绘返回钮撤,改递 Shell 的 back 槽(button 桶 BackButton,落点仍是 URL_BOARD_BACK);
+ * 同日「所有的 table 和可以更新数据的地方,右上角都应该有一个更新时间」:相似职位卡的心跳
+ * 由页面门取 checkedAt 递进来。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
-import { Button } from '@/components/button'
+import { BackButton } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Shell } from '@/components/shell'
-import { BTN_GHOST, CARD_MD_CLS, DETAIL_SHELL_TOP, TEXT_NONE } from './constants'
-import { backClsOf, showRelatedOf } from './functions'
+import { CARD_MD_CLS, DETAIL_SHELL_TOP, TEXT_NONE, URL_BOARD_BACK } from './constants'
+import { showRelatedOf } from './functions'
 import { useJobDetail } from './hooks'
 import { JobBody } from './jobbody'
 import { JobCrumbs } from './jobcrumbs'
@@ -30,26 +34,25 @@ import css from './jobs.module.css'
 /**
  * 渲染职位详情正文。
  *
- * @param props 本岗、分层态、页面维度与相似职位。
+ * @param props 本岗、分层态、页面维度、相似职位与数据更新时刻。
  * @returns 正文轨里的窄读列。
  */
-export function Job({ job, plan, dims, related }: JobIn) {
-  const d = useJobDetail({ job, plan, dims, related })
+export function Job({ job, plan, dims, related, updatedAt }: JobIn) {
+  const d = useJobDetail({ job, plan, dims, related, updatedAt })
   return (
-    <Shell top={DETAIL_SHELL_TOP}>
+    <Shell top={DETAIL_SHELL_TOP} back={<BackButton fallback={URL_BOARD_BACK} label={d.t('detail.back')} />}>
       <div className={cssOf(css.detail)}>
         <JobCrumbs home={d.t('detail.crumbHome')} prov={d.view.provFull} provHref={d.view.provHref}
           segs={d.view.segs} />
         <div className={`${CARD_MD_CLS} ${cssOf(css.card)}`}>
-          <Button kind={BTN_GHOST} onClick={d.onBack} className={backClsOf(d.leaving)}>
-            {d.t('detail.back')}
-          </Button>
           <h1 className={cssOf(css.title)}>{job.title}</h1>
           {d.view.alias !== TEXT_NONE && <div className={cssOf(css.titleAlias)}>{d.view.alias}</div>}
           <JobBody job={job} lang={d.lang} plan={plan} />
         </div>
         {showRelatedOf({ status: job.status, related, fallbackHref: d.view.fallbackHref }) && (
           <JobRelated head={d.t('detail.related')}
+            t={d.t}
+            updatedAt={updatedAt}
             sameCoLabel={d.t('detail.sameCo')}
             sameOccLabel={d.t('detail.sameOcc')}
             related={related}

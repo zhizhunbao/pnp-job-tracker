@@ -34,7 +34,7 @@ import { SQL } from '@/lib/db'
 import { JsonLd } from '@/components/jsonld'
 import { dbOf } from '@/lib/db/server'
 import { hasProfile, normalizeProfile, type ProfileJson } from '@/lib/jobs'
-import { jobPostingJsonOf, jobsIdMetaRoute, loadJobById, loadRelatedJobs } from '@/lib/jobs/server'
+import { checkedAt, jobPostingJsonOf, jobsIdMetaRoute, loadJobById, loadRelatedJobs } from '@/lib/jobs/server'
 import { getUser, isPro } from '@/lib/quota/server'
 import type { NocCategoryDoc, NocDescDoc, RelatedJobs, SessionUser } from '@/components/jobs'
 
@@ -109,6 +109,8 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
     nocCategoryDocs = found.docs
   }
 
+  const updatedAt = await checkedAt(db)
+
   const userProfile = normalizeProfile(user?.profile as ProfileJson | null)
   const plan = toJobPlan({
     user: user as SessionUser | null, pro, profile: userProfile, profileOk: hasProfile(userProfile),
@@ -129,7 +131,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
         <Header loggedIn={user != null} />
         <Job job={job} plan={plan}
           dims={{ nocDesc: toNocDescList(nocDescDocs), nocCategories: toCatLabelList(nocCategoryDocs) }}
-          related={related} />
+          related={related} updatedAt={updatedAt} />
         <Footer />
       </Frame>
     </>

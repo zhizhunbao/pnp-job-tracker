@@ -26,6 +26,7 @@ export function ScoreSection({ d, children }: ScoreSectionIn) {
   return (
     <ScoreLineCard t={d.t} lang={d.lang} rows={pathRowsOf({ paths: d.paths.paths })}
       draws={d.view.prov.lineDraws}
+      updatedAt={d.updatedAt}
       provinces={d.view.prov.lineProvinces}
       provDisp={makeProvDisp({ t: d.t })}
       done={d.progress.scoreDone} total={d.progress.scoreTotal}

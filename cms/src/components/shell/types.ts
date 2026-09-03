@@ -30,6 +30,13 @@ export type ShellIn = {
   bottom?: ShellBottom | null
 
   /**
+   * 右上角返回钮(详情页递 BackButton;主页面不递 —— 2026-09-03 Frank「所有主页面都不应该有
+   * 返回按钮,所有详情页面的返回按钮都在右上,样式和位置应该是固定统一的」)。
+   * 位置由本壳钉死:正文轨右上角,与上内衬齐平。
+   */
+  back?: React.ReactNode
+
+  /**
    * 页面内容。
    */
   children: React.ReactNode

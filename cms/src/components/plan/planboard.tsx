@@ -7,10 +7,13 @@
  * 粗筛态只留一句说明,不再摆第二颗「继续作答」(2026-08-15 Frank「未登录左下角还有
  * 一个继续作答按钮」):上面那张卡右上角就有同一颗钮,同屏两颗同名钮 = 一件事说两遍。
  * 2026-08-28 换装批自 Decision.tsx 的初评表分支提出成件。
+ * 2026-09-03 Frank「所有的 table 右上角都应该有一个更新时间」:表正上方单起一行靠右
+ * (卡的标题行 PlanHead 右上角已被两颗动作钮占着,不挤同一行)。
  *
  * @author Frank
  * @time 2026-08-28 00:30:00
  */
+import { Updated } from '@/components/time'
 import { OutsideNote } from './outsidenote'
 import { PlanCards } from './plancards'
 import { PlanTable } from './plantable'
@@ -27,6 +30,7 @@ export function PlanBoard({ d, rows }: PlanBoardIn) {
   const coarse = d.view.plan.coarse
   return (
     <>
+      <Updated iso={d.updatedAt} t={d.t} />
       <PlanCards t={d.t} rows={rows} coarse={coarse} />
       <PlanTable t={d.t} rows={rows} coarse={coarse} />
       {d.view.plan.topEmpty && <div className={css.topEmpty}>{d.t('dp.planTopEmpty')}</div>}

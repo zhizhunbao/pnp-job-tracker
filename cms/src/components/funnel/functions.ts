@@ -5,6 +5,8 @@
  * 零 JSX 零 hook —— 排版归 funnel.tsx 与两枚小件,死值归 constants.ts。
  * 本文件**不 import payload**:取数由页面门把连接注进 `queryRowsOrEmpty`,这里只收已经
  * 洗净的事实行,于是整块逻辑浏览器也打得进包。
+ * 2026-09-03 上面这句里的「返回钮手柄工厂」撤编(Frank「所有主页面都不应该有返回按钮」),
+ * 理由压在 propLineClsOf 的 JSDoc 里。
  *
  * @author Frank
  * @time 2026-08-27 03:00:00
@@ -13,7 +15,6 @@ import { count, text } from '@/lib/db'
 import {
   CHAT_STEPS, DECISION_STEPS, FUNNEL_STEPS, LEGACY_STEPS, chatRates, decisionRates, stepRates,
 } from '@/lib/funnel'
-import { goBackOr } from '@/components/button'
 import { cssOf } from '@/components/css'
 import {
   ALIGN_RIGHT, CLS_SEP, COL_D1_KEY, COL_D1_TEXT, COL_D30_KEY, COL_D30_TEXT, COL_D7_KEY, COL_D7_TEXT,
@@ -24,7 +25,7 @@ import {
 import type {
   ChainEntriesIn, ChainRateIn, FunnelBoard, FunnelBoardIn, FunnelCellRow, FunnelCol, FunnelEventDbRow,
   FunnelEventFact, FunnelPayCellRow, FunnelPayDbRow, FunnelPayFact, FunnelPropCellRow, FunnelPropRowsIn,
-  GoBackFn, GoBackIn, PropLineClsIn, RateEntry, RateMap, RateTextIn, StepCounts, StepCountsIn, SumStepIn,
+  PropLineClsIn, RateEntry, RateMap, RateTextIn, StepCounts, StepCountsIn, SumStepIn,
 } from './types'
 import css from './funnel.module.css'
 
@@ -365,6 +366,9 @@ export function footNoteClsOf(): string {
 
 /**
  * 分组行的类名:紧跟在另一条分组行下面的那一条间距收窄。
+ * 旁边原有返回钮的手柄工厂 makeGoBack(走 goBackOr 而不是裸 history.back():新标签页里
+ * `history.length === 1`,裸 back 是空操作),2026-09-03 撤编:Frank「所有主页面都不应该
+ * 有返回按钮」;goBackOr 那条教训归 components/button,别处还用得着。
  *
  * @param x 是不是紧跟在另一条下面。
  * @returns 类名。
@@ -374,19 +378,6 @@ export function propLineClsOf(x: PropLineClsIn): string {
     return cssOf(css.propLine) + CLS_SEP + cssOf(css.propLineTight)
   }
   return cssOf(css.propLine)
-}
-
-/**
- * 右上返回的点击手柄。走 goBackOr 而不是裸 history.back():这页可能是从别处新标签页
- * 打开的,新标签页里 `history.length === 1`,裸 `history.back()` 是**空操作**。
- *
- * @param x 无处可回时的落点。
- * @returns 返回钮的点击手柄。
- */
-export function makeGoBack(x: GoBackIn): GoBackFn {
-  return function goBack(): void {
-    goBackOr(x.fallback)
-  }
 }
 
 /**

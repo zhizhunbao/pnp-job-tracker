@@ -159,6 +159,11 @@ export type TimelineIn = {
    * 联邦 EE 各类别的距今。
    */
   eeCadence: EeCadenceRow[]
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   */
+  updatedAt: string
 }
 
 /**
@@ -309,6 +314,12 @@ export type FilterChipsIn = {
    * 本页事件里真出现过的省码(筛出来是空结果的省不给药丸)。
    */
   provs: string[]
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   * 药丸行就是时间轴正上方那一行,更新时间挂在它的右端。
+   */
+  updatedAt: string
 
   /**
    * 当前省筛。

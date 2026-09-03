@@ -5,6 +5,8 @@
  * 样例表 2026-08-11(Frank「都改成一套」)从自造的裸 `<table>` 改成公共 Table
  * (bare = 外面这层白卡就是它的壳);它是**转置**表:指标当行、三家假公司当列。
  * 2026-08-27 换装批自 Compare.tsx 的免费分支提出成文件。
+ * 2026-09-03 Frank「所有的 table 右上角都应该有一个更新时间」:样例表也是一张表,
+ * 卡正上方单独一行挂 Updated(time 桶)—— 时刻是真的(ETL 心跳),糊掉的只有表里的假值。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
@@ -15,6 +17,7 @@ import { cssOf } from '@/components/css'
 import { IconStar } from '@/components/icons'
 import { PricingModal } from '@/components/pricing'
 import { Table } from '@/components/table'
+import { Updated } from '@/components/time'
 import { BTN_PRO, CARD_CLS, CLS_SEP, PRICING_Z } from './constants'
 import { compareDemoColsOf, compareDemoRowsOf, demoMetricOf, makePricingSet } from './functions'
 import type { CompareDemoIn, CompareDemoRow } from './types'
@@ -26,7 +29,7 @@ import css from './employers.module.css'
  * @param props 取词函数与登录态(见 CompareDemoIn 逐格注释)。
  * @returns 价值点、模糊样例表与升级钮。
  */
-export function CompareDemo({ t, loggedIn }: CompareDemoIn) {
+export function CompareDemo({ t, loggedIn, updatedAt }: CompareDemoIn) {
   const [pricing, setPricing] = useState(false)
   return (
     <>
@@ -35,6 +38,7 @@ export function CompareDemo({ t, loggedIn }: CompareDemoIn) {
         <li>{t('ce.v2')}</li>
         <li>{t('ce.v3')}</li>
       </ul>
+      <div className={css.demoUpdatedRow}><Updated iso={updatedAt} t={t} /></div>
       <div className={[CARD_CLS, cssOf(css.demoCard)].join(CLS_SEP)}>
         <Table<CompareDemoRow> bare
           rowKey={demoMetricOf}

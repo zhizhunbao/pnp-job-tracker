@@ -1,6 +1,11 @@
 /**
- * rankings 页面域从组件体里迁出来的函数:榜名与口径注、导航各格、更新时间、
+ * rankings 页面域从组件体里迁出来的函数:榜名与口径注、导航各格、
  * **洗行**(事实行 → 展示行)、两张表的列组与取值器,以及这一页交给 Next 的 SEO 主体。
+ * 2026-09-03 Frank「所有的 table 右上角都应该有一个更新时间」:榜头那一行改由 time 桶的
+ * Updated 渲 ETL 心跳 checkedAt,本域的 updatedTextOf / maxPostedOf 同批撤编;旧口径存档一句
+ * —— 原取榜内最新发布日(第 11 轮 #30),用 ET 当天封顶防「更新于未来」(第 12 轮 #32),
+ * ET(America/Toronto)+ en-CA 两个死值是为了服务端与浏览器同算一个日期,不产生
+ * hydration 文本不匹配(#218 第 28 轮:Render 跑 UTC、用户跑本地时区,过午夜两端会差一天)。
  * 2026-08-26 Frank 立「tsx 组件体内不许声明内嵌函数」;2026-08-27 打回 make*Cell 工厂后
  * 再收一刀:要 t 才算得出的显示值(列名、卡上的标签、通道三语名)**全部在洗行时算好挂到
  * 展示行上**,单元格组件退成顶层哑组件。
@@ -21,7 +26,7 @@ import {
   KEY_NOTE_HEAD, KEY_TITLE_DAILY, KEY_TITLE_HEAD, LABEL_GAP, LOC_SEP, META_DAILY_DESC_HEAD,
   META_DAILY_DESC_TAIL, META_DAILY_TITLE_HEAD, META_DAILY_TITLE_TAIL, META_SEG_PLAIN, META_SEG_TAIL,
   RANK_MARK, RANK_META, SLUG_DAILY, SLUG_DAILY_HEAD, SLUG_SPONSOR, SLUG_WEEKLY, TARGET_BLANK, TEXT_NONE,
-  TITLE_GAP, URL_JOBS_SEARCH_HEAD, URL_RANK_HEAD, DATE_LOCALE, DATE_TZ,
+  TITLE_GAP, URL_JOBS_SEARCH_HEAD, URL_RANK_HEAD,
 } from './constants'
 import { EeCell } from './eecell'
 import { GoCell } from './gocell'
@@ -32,7 +37,7 @@ import { TitleCell } from './titlecell'
 import type {
   BoardsIn, CellRowsIn, CompanyCellRowIn, CompanyCellRowsIn, CompanyColsIn, ColsIn, JobCellRowIn, NoteIn,
   RankCardLink, RankCol, RankCompanyCellRow, RankJobCardParts, RankJobCellRow, RankRow, RankTabRow,
-  RankTitleIn, RankingMeta, RankingMetaIn, TabRowsIn, UpdatedIn,
+  RankTitleIn, RankingMeta, RankingMetaIn, TabRowsIn,
 } from './types'
 import css from './rankings.module.css'
 
@@ -122,40 +127,6 @@ export function toRankTabRows(x: TabRowsIn): RankTabRow[] {
     })
   }
   return out
-}
-
-/**
- * 「更新于」那一行。口径 = 榜内最新发布日(第 11 轮 #30),但**不超过今天**
- * (第 12 轮 #32:帖面日期是 ET 时区可到「明天」,「更新于未来」损口径可信度)——
- * 用 ET 当天封顶,理由见 constants 的 DATE_TZ。
- *
- * @param x 取词函数与本榜的行。
- * @returns 整句「更新于 …」。
- */
-export function updatedTextOf(x: UpdatedIn): string {
-  const today = new Date().toLocaleDateString(DATE_LOCALE, { timeZone: DATE_TZ })
-  const maxPosted = maxPostedOf(x.items)
-  let updated = today
-  if (maxPosted !== TEXT_NONE && maxPosted < today) {
-    updated = maxPosted
-  }
-  return x.t('rank.updated', { d: updated })
-}
-
-/**
- * 榜内最新的发布日(纯日期)。
- *
- * @param items 本榜的全部行。
- * @returns `YYYY-MM-DD`;一行都没记日期时给空串。
- */
-function maxPostedOf(items: RankRow[]): string {
-  let max = TEXT_NONE
-  for (const r of items) {
-    if (r.datePosted !== TEXT_NONE && r.datePosted > max) {
-      max = r.datePosted
-    }
-  }
-  return ymd(max)
 }
 
 /**

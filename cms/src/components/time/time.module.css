@@ -58,3 +58,41 @@
    */
   color: #b6bcc6;
 }
+
+/*
+ * 「更新时间 …」一行(2026-09-03 Frank「所有的 table 和可以更新数据的地方,右上角都应该有」):
+ * 灰小字靠右;在 flex 行里靠 margin-left:auto 顶到最右,在块级流里靠 text-align 靠右 ——
+ * 两种宿主同一份样式。值照 jobs 筛选行原 .updated 逐格抄(12px / #9ca3af / 不折行;
+ * #202:不进窄屏隐藏,手机随换行落到下方仍看得见心跳)。
+ */
+.updated {
+  /*
+   * 灰小字。
+   */
+  font-size: 12px;
+
+  /*
+   * 次要灰(与 .dim 同一档)。
+   */
+  color: #9ca3af;
+
+  /*
+   * 常规字重(挂在粗体卡头行里也不跟着变粗 —— 公司页在招职位卡实拍撞过)。
+   */
+  font-weight: 400;
+
+  /*
+   * 时间串不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * flex 宿主里顶到最右。
+   */
+  margin-left: auto;
+
+  /*
+   * 块级宿主里靠右。
+   */
+  text-align: right;
+}

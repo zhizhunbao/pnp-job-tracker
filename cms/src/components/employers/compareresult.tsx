@@ -3,6 +3,8 @@
  * 对比页付费态的正文:选了不足两家时给空态引导回名录(一家没什么好「对比」的),
  * 够两家就出手机卡 + 桌面表,底下挂「回名录」与「清空对比」两枚钮。
  * 2026-08-27 换装批自 Compare.tsx 的付费分支提出成文件。
+ * 2026-09-03 Frank「所有的 table 右上角都应该有一个更新时间」:卡与表正上方单独一行挂
+ * Updated(time 桶);选不够两家那一支只有空态引导没有表,不挂。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
@@ -10,6 +12,7 @@
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Notice } from '@/components/notice'
+import { Updated } from '@/components/time'
 import { BTN_GHOST, BTN_SECONDARY, COMPARE_MIN_ROWS, EMP_URL, NOTICE_INFO } from './constants'
 import { CompareCards } from './comparecards'
 import { CompareTable } from './comparetable'
@@ -23,7 +26,7 @@ import css from './employers.module.css'
  * @param props 展示行、维度行与取词函数(见 CompareResultIn 逐格注释)。
  * @returns 空态引导,或卡 + 表 + 两枚钮。
  */
-export function CompareResult({ rows, dims, t }: CompareResultIn) {
+export function CompareResult({ rows, dims, t, updatedAt }: CompareResultIn) {
   if (rows.length < COMPARE_MIN_ROWS) {
     return (
       <Notice kind={NOTICE_INFO}
@@ -34,6 +37,7 @@ export function CompareResult({ rows, dims, t }: CompareResultIn) {
   }
   return (
     <>
+      <div className={css.updatedRow}><Updated iso={updatedAt} t={t} /></div>
       <CompareCards rows={rows} dims={dims} />
       <CompareTable rows={rows} dims={dims} />
       <div className={css.compareActions}>

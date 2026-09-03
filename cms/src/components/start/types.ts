@@ -3021,6 +3021,12 @@ export type SponsorSectionIn = {
   lang: StartLang
 
   /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   * 挂在伞标题行右槽 —— 三张分表同一份数据,整区一枚,不逐表重复。
+   */
+  updatedAt: string
+
+  /**
    * 三分表。
    */
   sponsor: SponsorBoards
@@ -3211,6 +3217,12 @@ export type BoardsSectionIn = {
   lang: string
 
   /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   * 挂在伞标题行右槽 —— 四张分榜同一份数据,整区一枚,不逐榜重复。
+   */
+  updatedAt: string
+
+  /**
    * 三榜分层;null = 主图数据还没到,出占位块。
    */
   boards: OccBoards | null
@@ -3349,6 +3361,12 @@ export type ProvSectionIn = {
    * 界面语言。
    */
   lang: string
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   * 挂在分区标题行右槽 —— 桌面表与手机卡是同一份数据的两副面孔,整区一枚。
+   */
+  updatedAt: string
 
   /**
    * 主图数据到了没(没到出占位块)。
@@ -3529,6 +3547,12 @@ export type DrawsSectionIn = {
    * 界面语言。
    */
   lang: string
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   * 挂在抽选表那一区的标题行右槽(条数下拉与外链之后)。
+   */
+  updatedAt: string
 
   /**
    * 抽选行(全量;体内按条数档切片)。

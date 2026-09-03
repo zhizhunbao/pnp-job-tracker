@@ -20,6 +20,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { SQL, queryRowsOrEmpty } from '@/lib/db'
 import { dbOf } from '@/lib/db/server'
+import { checkedAt } from '@/lib/jobs/server'
 import { getUserOrNull } from '@/lib/quota/server'
 import { Funnel, ROLE_ADMIN, toFunnelBoard, toFunnelEventFact, toFunnelPayFact } from '@/components/funnel'
 import { Footer } from '@/components/footer'
@@ -41,10 +42,11 @@ export default async function FunnelPage() {
   const db = dbOf(await getPayload({ config: await config }))
   const events = await queryRowsOrEmpty({ db, sql: SQL.FUNNEL_EVENTS, params: [], map: toFunnelEventFact })
   const pays = await queryRowsOrEmpty({ db, sql: SQL.FUNNEL_USERS, params: [], map: toFunnelPayFact })
+  const updatedAt = await checkedAt(db)
   return (
     <Frame>
       <Header />
-      <Funnel board={toFunnelBoard({ events, pays })} />
+      <Funnel board={toFunnelBoard({ events, pays })} updatedAt={updatedAt} />
       <Footer />
     </Frame>
   )

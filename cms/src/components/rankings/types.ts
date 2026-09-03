@@ -558,6 +558,11 @@ export type RankingIn = {
    * 当天有数据的榜 slug 清单;可省 —— 查不到的调用方不传这一项(体内默认空列)。
    */
   slugs?: string[]
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   */
+  updatedAt: string
 }
 
 /**
@@ -573,6 +578,11 @@ export type RankingTableIn = {
    * 这一榜的全部行。
    */
   items: RankRow[]
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   */
+  updatedAt: string
 
   /**
    * 取词函数(壳与标题由宿主渲,所以译函数从宿主传进来)。
@@ -686,22 +696,9 @@ export type TabRowsIn = {
 }
 
 /**
- * updatedTextOf 的入参:取词函数与本榜的行。
- */
-export type UpdatedIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 本榜的全部行(取里面最新的发布日)。
-   */
-  items: RankRow[]
-}
-
-/**
  * noteTextOf 的入参:取词函数与榜 slug。
+ * (同位置原有 updatedTextOf 的入参 UpdatedIn,2026-09-03 随更新时间收单一出口撤编:
+ * 那一行的口径原是「榜内最新发布日、ET 当天封顶」,现由 time 桶的 Updated 渲 ETL 心跳。)
  */
 export type NoteIn = {
   /**

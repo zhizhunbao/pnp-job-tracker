@@ -189,14 +189,10 @@
 }
 
 /*
- * 更新时间:顶到本行最右(#202:不进窄屏隐藏,手机随 flexWrap 落到下方仍看得见心跳)。
+ * 筛选行右端的更新时间原在此(#202:不进窄屏隐藏,手机随 flexWrap 落到下方仍看得见心跳);
+ * 2026-09-03 Frank「所有的 table 和可以更新数据的地方,右上角都应该有一个更新时间」→
+ * 全站收成 time 桶的 Updated 一件(值逐格照抄进 time.module.css 的 .updated),本域不再自绘。
  */
-.updated {
-  color: #9ca3af;
-  font-size: 12px;
-  white-space: nowrap;
-  margin-left: auto;
-}
 
 /*
  * 折叠区外框。
@@ -1753,6 +1749,11 @@
   color: #6b7280;
   margin-bottom: 8px;
   line-height: 1.7;
+  /*
+   * 2026-09-03 返回钮移到 Shell back 槽(钉正文轨右上,与本行同高):首行给钮留位,
+   * 窄屏长面包屑折行而不是钻到钮底下(375px 实拍撞过)。
+   */
+  padding-right: 90px;
 }
 
 /*
@@ -1771,47 +1772,23 @@
 }
 
 /*
- * 返回(Frank 走查#18,2026-07-25):右上角文字钮,直接走浏览器返回 —— 保留滚动位置与
- * 筛选状态,不重拉数据;2026-07-28 改走 goBackOr:新标签页(站内「打开完整页」一律 _blank)
- * 无处可回时落职位板,不再点了没反应。
+ * 卡内右上角的返回钮(.back / .back:active / .backBusy)原在此:Frank 走查#18(2026-07-25)
+ * 定的右上角文字钮走浏览器返回 —— 保留滚动位置与筛选状态不重拉数据;2026-07-28 改走 goBackOr
+ * (新标签页无处可回时落职位板,不再点了没反应);2026-08-06「前面为什么出现三个…」定下在途态
+ * 只靠灰底降透明、不在文案前拼「…」。2026-09-03 Frank「所有的详情页面的返回按钮都在右上,
+ * 样式和位置应该是固定统一的」→ 三条理由随钮一起搬进 button 桶的 BackButton(位置归 Shell 的
+ * back 槽),本域不再自绘。
  */
-.back {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 6px 14px;
-  font-size: 12.5px;
-  font-weight: 400;
-  color: #374151;
-  background: #ffffff;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: transform 0.06s;
-}
-
-.back:active {
-  transform: scale(0.95);
-}
 
 /*
- * 在途态只靠灰底 + 降透明(2026-08-06 Frank「前面为什么出现三个…」:文案前拼「… 」只添困惑)。
- */
-.backBusy {
-  background: #f3f4f6;
-  opacity: 0.7;
-}
-
-/*
- * H1:右侧留出返回钮的位置。
+ * H1(2026-09-03 撤掉给卡内返回钮留位的 padding-right:120 —— 钮已不在卡内,再留右侧空档
+ * 会把长职位名无谓地挤折行)。
  */
 .title {
   margin: 0 0 2px;
   font-size: 22px;
   line-height: 1.35;
   color: #111827;
-  padding-right: 120px;
 }
 
 /*
@@ -1824,9 +1801,13 @@
 }
 
 /*
- * 相似职位卡的标题。
+ * 相似职位卡的标题(2026-09-03 起同时是更新时间的宿主行:排成一行,Updated 自带
+ * margin-left:auto 顶到右端)。
  */
 .relHead {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
   font-size: 13.5px;
   font-weight: 700;
   color: #111827;

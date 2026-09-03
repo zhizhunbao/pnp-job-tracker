@@ -17,6 +17,7 @@ import { Header } from '@/components/header'
 import { OCC_META, Occupations } from '@/components/occupations'
 import { Frame } from '@/components/shell'
 import { loadOccupations } from '@/lib/employers/server'
+import { checkedAt } from '@/lib/jobs/server'
 import { dbOf } from '@/lib/db/server'
 
 export const dynamic = 'force-dynamic'
@@ -36,10 +37,11 @@ export const metadata = OCC_META
 export default async function OccupationsPage() {
   const payload = await getPayload({ config: await config })
   const rows = await loadOccupations(dbOf(payload))
+  const updatedAt = await checkedAt(dbOf(payload))
   return (
     <Frame>
       <Header />
-      <Occupations rows={rows} />
+      <Occupations rows={rows} updatedAt={updatedAt} />
       <Footer />
     </Frame>
   )

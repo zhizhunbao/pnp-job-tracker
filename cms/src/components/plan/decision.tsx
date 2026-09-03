@@ -12,6 +12,8 @@
  * 2026-08-28 换装批整体重写成小写件形制:内联样式逐格迁 plan.module.css、排版拆成小件、
  * 状态收进 hooks.ts、派生进 functions.ts;壳件(整页外框/顶栏/页脚)拼装归页面门
  * (Frank「组装只许在 (frontend) 页面门里」,样张 account),本件只出 Shell 轨往下的视图。
+ * 2026-09-03 Frank「所有的 table 和可以更新数据的地方,右上角都应该有一个更新时间」:
+ * 页面门 SSR 取的 ETL 心跳经整机转交给各张事实卡(初评 / 抽选 / 名额竞争 / 职业竞争 / 抽选线)。
  *
  * @author Frank
  * @time 2026-08-28 00:30:00
@@ -29,13 +31,13 @@ import css from './plan.module.css'
 /**
  * 决策页正文。
  *
- * @param props SSR 直出的三份事实、带岗那份工作、热门职业榜与服务端先算好的判定。
+ * @param props SSR 直出的三份事实、带岗那份工作、热门职业榜、服务端先算好的判定与更新时刻。
  * @returns 正文(Shell 轨往下)。
  */
 export function Decision({
-  overview, drawsRecent = [], competition = [], tvJob, topNocs = [], initialVerdict,
+  overview, drawsRecent = [], competition = [], tvJob, topNocs = [], initialVerdict, updatedAt,
 }: DecisionIn) {
-  const d = useDecisionPage({ tvJob, overview, drawsRecent, competition })
+  const d = useDecisionPage({ tvJob, overview, drawsRecent, competition, updatedAt })
   return (
     <div className={css.main}>
       <Shell top={SHELL_TOP} bottom={SHELL_BOTTOM}>

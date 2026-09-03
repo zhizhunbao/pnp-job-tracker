@@ -20,7 +20,7 @@ import { Header } from '@/components/header'
 import { Frame } from '@/components/shell'
 import { getDb } from '@/lib/db/server'
 import { SITE_FALLBACK } from '@/lib/jobs'
-import { companyJsonOf, loadCompanyBySlug, loadSimilarEmployers } from '@/lib/jobs/server'
+import { checkedAt, companyJsonOf, loadCompanyBySlug, loadSimilarEmployers } from '@/lib/jobs/server'
 import { getUser } from '@/lib/quota/server'
 import type { SimilarEmployer } from '@/lib/jobs/server'
 
@@ -62,6 +62,7 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
   const { slug } = await params
   const company = await loadCompanyBySlug({ db: await getDb(), slug })
   const user = await getUser(await headers())
+  const updatedAt = await checkedAt(await getDb())
 
   if (!company) {
     return <Frame>
@@ -72,7 +73,7 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
         description: '', address: '', province: '',
         lmiaPositions: null, lmiaLmias: null, lmiaLastQuarter: '', lmiaStreams: '', lmiaSkilled: null,
         lmiaNocs: [], openCount: 0, jobs: [],
-      }} />
+      }} updatedAt={updatedAt} />
       <Footer />
     </Frame>
   }
@@ -90,7 +91,7 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
     <JsonLd json={companyJsonOf({ company })} />
     <Frame>
       <Header loggedIn={!!user} />
-      <Company company={company} similar={similar} />
+      <Company company={company} similar={similar} updatedAt={updatedAt} />
       <Footer />
     </Frame>
   </>

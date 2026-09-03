@@ -10,6 +10,8 @@
  * AI 速读段 2026-08-28 随 Frank 拍板改指 components/advisor:公司速读与 JD 速读是同一台机器
  * (同一道额度闸、同一套壳),而它答的是顾问的问题,所以那一件搬进了顾问域。
  * 仍然点**文件**不走 advisor 桶:桶里的完整弹框反过来要本桶的 CompanyPanel,走桶就成环。
+ * 2026-09-03「表右上角挂更新时间」那一格弹框递空串:心跳是页面门 SSR 取的 checkedAt,
+ * 弹框走客户端取数拿不到它,空串让那一行整个不出(不渲「更新时间 —」这种半句)。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -54,6 +56,7 @@ export function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: CompanyPanelI
         similar={p.data.similar}
         t={t}
         lang={lang}
+        updatedAt={TEXT_NONE}
         showTrans={p.showTrans}
         hideTopInfo
         onOpenJob={onOpenJob}

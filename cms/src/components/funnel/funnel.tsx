@@ -7,19 +7,22 @@
  * 逐格迁 funnel.module.css、散值进 constants、列组与洗行进 functions、闭包函数退役);
  * 同批壳件(整页外框 / 顶栏 / 页脚)拼装归页面门(Frank「组装只许在 (frontend) 页面门里」,
  * 样张 account/companies),本件只出 Shell 轨往下的视图。
+ * 2026-09-03 Frank「所有主页面都不应该有返回按钮」:标题行尾的返回撤掉;同日
+ * 「所有的 table 右上角都应该有一个更新时间」:同一个位置改挂 Updated(time 桶)。
+ * 这页的文案是硬编码中文(只给 Frank 看),但更新时间那一句是全站通用词,取词照全站走
+ * useLang —— 全站唯一的更新时间形只收 t,不为一页 fork 第二个实现。
  *
  * @author Frank
  * @time 2026-08-27 03:00:00
  */
-import { Button } from '@/components/button'
-import { cssOf } from '@/components/css'
+import { useLang } from '@/components/i18n'
 import { Shell } from '@/components/shell'
 import { Table } from '@/components/table'
+import { Updated } from '@/components/time'
 import {
-  BACK_TEXT, EMPTY_TEXT, ENTRY_HEAD_TEXT, PLAIN_BTN_KIND, PRICING_HEAD_TEXT, RATE_NOTE_TEXT,
-  SUBTITLE_TEXT, TITLE_TEXT, URL_HOME,
+  EMPTY_TEXT, ENTRY_HEAD_TEXT, PRICING_HEAD_TEXT, RATE_NOTE_TEXT, SUBTITLE_TEXT, TITLE_TEXT,
 } from './constants'
-import { funnelColsOf, funnelRowKeyOf, makeGoBack } from './functions'
+import { funnelColsOf, funnelRowKeyOf } from './functions'
 import { FunnelPayRow } from './funnelpayrow'
 import { FunnelPropLine } from './funnelpropline'
 import type { FunnelCellRow, FunnelIn } from './types'
@@ -28,10 +31,11 @@ import css from './funnel.module.css'
 /**
  * 漏斗看板正文。
  *
- * @param props 服务端门洗好的整块看板数据(逐格注释见 FunnelBoard)。
+ * @param props 服务端门洗好的整块看板数据与数据更新时刻(逐格注释见 FunnelIn)。
  * @returns 正文(Shell 轨 + 一张白卡:标题行、漏斗表、两条分组行、脚注与空态)。
  */
-export function Funnel({ board }: FunnelIn) {
+export function Funnel({ board, updatedAt }: FunnelIn) {
+  const [, , t] = useLang()
   return (
     <Shell>
       <div className={css.card}>
@@ -40,11 +44,7 @@ export function Funnel({ board }: FunnelIn) {
             <h1 className={css.h1}>{TITLE_TEXT}</h1>
             <div className={css.sub}>{SUBTITLE_TEXT}</div>
           </div>
-          <Button kind={PLAIN_BTN_KIND}
-            onClick={makeGoBack({ fallback: URL_HOME })}
-            className={cssOf(css.backBtn)}>
-            {BACK_TEXT}
-          </Button>
+          <Updated iso={updatedAt} t={t} />
         </div>
         <div className={css.tableBox}>
           <Table<FunnelCellRow> cols={funnelColsOf()}

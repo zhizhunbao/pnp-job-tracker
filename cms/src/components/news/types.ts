@@ -237,6 +237,11 @@ export type NewsIn = {
    * 每条动态的过审评论数,按 slug 索引;查不到的条目算 0。
    */
   cmtCounts: Record<string, number>
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   */
+  updatedAt: string
 }
 
 /**
@@ -437,6 +442,11 @@ export type NewsChipsIn = {
    * 点某个地区药丸(工厂按地区码给手柄)。
    */
   pickOf: (code: string) => ClickFn
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   */
+  updatedAt: string
 }
 
 /**

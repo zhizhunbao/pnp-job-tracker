@@ -4,10 +4,13 @@
  * 2026-08-15 Frank「该职业分省竞争放到各省名额竞争上面」→ 两种页态都摆在名额竞争之前:
  * 先看**这个职业**在哪个省好找,再看那个省的名额有多挤。
  * 2026-08-28 换装批自 Decision.tsx 的 occCompCard 提出成件。
+ * 2026-09-03 Frank「所有的 table 右上角都应该有一个更新时间」:表正上方单起一行靠右
+ * (职业胶囊只有多职业时才出,不能把更新时间挂在一个时有时无的行上)。
  *
  * @author Frank
  * @time 2026-08-28 00:30:00
  */
+import { Updated } from '@/components/time'
 import { TEXT_NONE } from './constants'
 import { OccChips } from './occchips'
 import { OccCompCards } from './occcompcards'
@@ -29,6 +32,7 @@ export function OccCompCard({ d }: OccCompCardIn) {
     <div className={css.card}>
       <h2 className={css.h2}>{d.t('dp.occCompTitle')}</h2>
       {d.answers.bands.nocs.length > 1 && <OccChips d={d} />}
+      <Updated iso={d.updatedAt} t={d.t} />
       <OccCompCards t={d.t} rows={d.view.occ.rows} />
       <OccCompTable t={d.t} rows={d.view.occ.rows} />
       <div className={css.note}>{d.t('dp.occCompNote')}</div>

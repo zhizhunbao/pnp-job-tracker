@@ -6,6 +6,8 @@
  * #200(Frank「岗位名称中文翻译默认都加上」):岗名下的 NOC 译名默认显示
  * (短、就是职业名、一直有用);简介/JD 正文的翻译仍留给「显示中文对照」。
  * 2026-08-28 拆域批自 jobs/Company.tsx 重写落位(展开态就近落在这一件里)。
+ * 2026-09-03 Frank「所有的 table 和可以更新数据的地方,右上角都应该有一个更新时间」:
+ * 卡标题行右端挂 time 桶的 Updated(心跳由页面门 SSR 取好递进来;弹框没有,空串自己不渲)。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -13,6 +15,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
+import { Updated } from '@/components/time'
 import { CompanyLink } from './companylink'
 import { JobMiniRow } from './jobminirow'
 import {
@@ -26,10 +29,12 @@ import css from './companies.module.css'
 /**
  * 在招职位卡。
  *
- * @param props 公司档案、取词函数、界面语言与两个回调(逐格注释见 CompanyJobsCardIn)。
+ * @param props 公司档案、取词函数、界面语言、更新时刻与两个回调(逐格注释见 CompanyJobsCardIn)。
  * @returns 一张卡;一个在招岗都没有时整卡不渲。
  */
-export function CompanyJobsCard({ company, t, lang, onOpenJob, resolveJob, newTab }: CompanyJobsCardIn) {
+export function CompanyJobsCard({
+  company, t, lang, updatedAt, onOpenJob, resolveJob, newTab,
+}: CompanyJobsCardIn) {
   const [allJobs, setAllJobs] = useState(false)
   if (company.jobs.length === 0) {
     return null
@@ -57,8 +62,9 @@ export function CompanyJobsCard({ company, t, lang, onOpenJob, resolveJob, newTa
   const restN = company.openCount - company.jobs.length
   return (
     <div className={CARD_MD_CLS}>
-      <div className={CARD_HEAD_CLS}>
+      <div className={CARD_HEAD_CLS + CLS_SEP + cssOf(css.jobsHead)}>
         {t('co.openJobs')} {PAREN_OPEN}{company.openCount}{PAREN_CLOSE}
+        <Updated iso={updatedAt} t={t} />
       </div>
       <div>
         {rows}

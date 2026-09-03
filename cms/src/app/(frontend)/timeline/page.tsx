@@ -16,6 +16,7 @@ import { Header } from '@/components/header'
 import { Frame } from '@/components/shell'
 import { TIMELINE_META, Timeline } from '@/components/timeline'
 import { dbOf } from '@/lib/db/server'
+import { checkedAt } from '@/lib/jobs/server'
 import { fetchTimeline } from '@/lib/plan/server'
 
 export const dynamic = 'force-dynamic'
@@ -35,10 +36,11 @@ export const metadata = TIMELINE_META
 export default async function TimelinePage() {
   const payload = await getPayload({ config: await config })
   const data = await fetchTimeline(dbOf(payload))
+  const updatedAt = await checkedAt(dbOf(payload))
   return (
     <Frame>
       <Header />
-      <Timeline events={data.events} cadence={data.cadence} eeCadence={data.eeCadence} />
+      <Timeline events={data.events} cadence={data.cadence} eeCadence={data.eeCadence} updatedAt={updatedAt} />
       <Footer />
     </Frame>
   )

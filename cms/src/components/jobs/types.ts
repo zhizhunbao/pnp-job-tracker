@@ -1077,11 +1077,6 @@ export type JobsBoardPanel = {
   onQ: TextFn
 
   /**
-   * 更新时间那句话;'' = 还没拿到。
-   */
-  updatedText: string
-
-  /**
    * 一行都没有时的正文(匹配视图与普通视图两句)。
    */
   emptyText: string
@@ -1669,6 +1664,11 @@ export type JobIn = {
    * 相似职位(在招岗恒空)。
    */
   related: RelatedJobs
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO,页面门 SSR 取;'' = 还没拿到,不渲)。
+   */
+  updatedAt: string
 }
 
 /**
@@ -1719,6 +1719,16 @@ export type JobRelatedIn = {
    * 卡标题。
    */
   head: string
+
+  /**
+   * 取词函数(卡标题行右端那句「更新时间 …」由 time 桶的 Updated 自己拼)。
+   */
+  t: TFn
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO);'' = 还没拿到,整行不出。
+   */
+  updatedAt: string
 
   /**
    * 同公司组的小标题。
@@ -5387,19 +5397,10 @@ export type JobDetailPanel = {
   lang: Lang
 
   /**
-   * 返回在途没(按下即置忙态,导航期间可感)。
-   */
-  leaving: boolean
-
-  /**
    * 现算好的那几样(面包屑、译名、兜底链)。
+   * 返回那两格(在途态 + 落点)2026-09-03 随「返回钮全站一件」搬进 button 桶的 BackButton。
    */
   view: JobDetailView
-
-  /**
-   * 返回:走浏览器返回,无处可回时落职位板。
-   */
-  onBack: ClickFn
 }
 
 /**
@@ -5815,21 +5816,6 @@ export type CardStarIn = {
    * 收/取消收藏。
    */
   onToggle: ClickFn
-}
-
-/**
- * updatedTextOf 的入参。
- */
-export type UpdatedTextIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 更新时间;'' = 还没拿到。
-   */
-  updatedAt: string
 }
 
 /**

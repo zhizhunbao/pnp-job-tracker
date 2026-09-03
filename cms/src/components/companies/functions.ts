@@ -1,8 +1,11 @@
 'use client'
 /**
- * companies 域的函数:译名取舍、面包屑省格的显示名与地址、返回手柄工厂,
+ * companies 域的函数:译名取舍、面包屑省格的显示名与地址,
  * 以及公司本体族的派生(简介分节、股别解析、四维依据句、职业名取舍、类名预算)
  * 与手柄工厂(折叠、展开、取数)。
+ * 返回手柄工厂 makeGoBack 2026-09-03 随「返回钮全站一件」撤编 —— 它那条 2026-07-28 的理由
+ * (公司页从职位板弹框 target="_blank" 打开,新标签页里裸 history.back() 是空操作)
+ * 连同行为一起住进 button 桶的 goBackOr/makeBack。
  * 零 JSX 零 hook —— 排版归各 tsx,状态归 hooks.ts,死值归 constants.ts。
  * 2026-08-28 拆域批自 jobs/Company.tsx 重写落位:原文件里的箭头小件(coParseSecs、
  * chColor、parseCoStreams、zhBlock、row…)全部落成这里的具名函数。
@@ -14,7 +17,6 @@
  * @author Frank
  * @time 2026-08-27 02:10:00
  */
-import { goBackOr } from '@/components/button'
 import { isJdNone } from '@/lib/jobs'
 import { provName } from '@/lib/location'
 import { track } from '@/lib/track'
@@ -38,7 +40,7 @@ import type {
   ActiveTextIn, AiNoteClsIn, AiToggleIn, AliasOfIn, BriefJson, BriefSecsIn, CanTransIn, ChColorIn,
   CompanyAiNoteKind, CompanyBriefFact, CompanyJobFact, CompanyJobRow, CompanyOnlyIn, CompanyStream, DeadFlag,
   DisplayNameIn,
-  FameTextIn, FlatIn, GoBackFn, GoBackIn, HasIdIn, HttpSourcesIn, IsGovIn, JobNocNameIn, JobsShownIn,
+  FameTextIn, FlatIn, GoBackFn, HasIdIn, HttpSourcesIn, IsGovIn, JobNocNameIn, JobsShownIn,
   LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadBriefIn, LoadFn, LoadPanelIn, LoadTransIn, NocRowsIn, OpenJobIn,
   PanelJson, PanelSlugIn, PillClsIn, ProvFullOfIn, ProvHrefOfIn, ResolveJobFn, ResolveJobIn, SalaryTextIn,
   SecKeyIn, SecTextIn, SecZhIn, ShowAllIn, SponsorTextIn, StreamLabel, StreamLabelIn, StreamsIn, ToggleIn,
@@ -84,20 +86,6 @@ export function provFullOf(x: ProvFullOfIn): string {
  */
 export function provHrefOf(x: ProvHrefOfIn): string {
   return URL_PROV_HEAD + encodeURIComponent(x.code)
-}
-
-/**
- * 右上返回的点击手柄。2026-07-28 走 goBackOr 而不是裸 history.back():公司页也是
- * 从职位板弹框 target="_blank" 打开的,新标签页里 `history.length === 1`,
- * 裸 `history.back()` 是**空操作** —— 用户点了页面纹丝不动(生产实测)。
- *
- * @param x 无处可回时的落点。
- * @returns 返回钮的点击手柄。
- */
-export function makeGoBack(x: GoBackIn): GoBackFn {
-  return function goBack(): void {
-    goBackOr(x.fallback)
-  }
 }
 
 /**

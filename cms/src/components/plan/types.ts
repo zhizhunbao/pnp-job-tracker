@@ -2163,6 +2163,11 @@ export type DecisionPageIn = {
    * 各省名额竞争。
    */
   competition: PlanCompetition[]
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   */
+  updatedAt: string
 }
 
 /**
@@ -2243,6 +2248,12 @@ export type DecisionPanel = {
    * 带岗进来那份工作;null = 无岗态。
    */
   tvJob: TvJob | null
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   * 页面门 SSR 取好经 props 进来,整机原样转交 —— 全页四张事实卡与估分卡的抽选线共用这一份。
+   */
+  updatedAt: string
 }
 
 /**
@@ -2519,6 +2530,11 @@ export type DecisionIn = {
    * 服务端先算好的判定卡(首屏不出骨架);客户端带本地答案再刷一次。
    */
   initialVerdict?: unknown
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   */
+  updatedAt: string
 }
 
 /**
@@ -5268,6 +5284,12 @@ export type ScoreLineCardIn = {
   draws: PlanDraw[]
 
   /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   * 卡内只有抽选线是会更新的数据区,所以整卡一枚,挂在那一段的小标题行右端。
+   */
+  updatedAt: string
+
+  /**
    * 页签省序:用户所选省,有分的在前。
    */
   provinces: string[]
@@ -5467,6 +5489,12 @@ export type ScoreLineDrawsIn = {
    * 要摆的那几轮抽选。
    */
   list: LineDraw[]
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   * 挂在这一段的小标题行右端 —— 抽选线表就在它下面。
+   */
+  updatedAt: string
 }
 
 /**

@@ -6,6 +6,8 @@
  * 2026-08-27 换装批自 News.tsx 整体重写成小写件形制:壳件(整页外框/顶栏/页脚)拼装
  * 归页面门(样张 account),本件只出 Shell 轨往下的视图;速读与懒翻译的状态收进
  * hooks.ts 的 useNewsDetail。
+ * 2026-09-03 Frank「详情页返回按钮都在右上,样式位置固定统一」:返回改递 Shell 的 back 槽
+ * (button 桶 BackButton,goBackOr 落 /news),不再在正文卡上方左侧自摆一行。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
@@ -28,9 +30,8 @@ import css from './news.module.css'
 export function NewsDetail({ row, comments, loggedIn }: NewsDetailIn) {
   const d = useNewsDetail({ row })
   return (
-    <Shell top={SHELL_TOP_DETAIL}>
+    <Shell top={SHELL_TOP_DETAIL} back={<BackButton fallback={URL_NEWS} label={d.t('detail.back')} />}>
       <div className={css.track}>
-        <div className={css.back}><BackButton href={URL_NEWS} label={d.t('news.back')} /></div>
         <NewsArticle t={d.t}
           lang={d.lang}
           row={row}

@@ -332,7 +332,7 @@ export function useEscExit(x: QuizChromeEscIn): void {
 /**
  * 决策页整机:把各分机器并到一起,再把派生视图与手柄一次算好交出去。
  *
- * @param x 带岗那份工作与 SSR 直出的三份事实。
+ * @param x 带岗那份工作、SSR 直出的三份事实与更新时刻。
  * @returns 整机面板。
  */
 export function useDecisionPage(x: DecisionPageIn): DecisionPanel {
@@ -386,6 +386,7 @@ competition: x.competition,
     acts,
     view,
     tvJob: x.tvJob,
+    updatedAt: x.updatedAt,
   }
 }
 

@@ -11,35 +11,37 @@
  * 散值进 constants、三目与闭包函数进 functions);同日 Frank 走查再收一刀 ——
  * 壳件(整页容器 / 顶栏 / 页脚)拼装归页面门(样张 account),本件只出 Shell 轨往下的视图,
  * `loggedIn` 随顶栏一起退出本件的契约。
+ * 2026-09-03 Frank「所有的详情页面的返回按钮都在右上,样式和位置应该是固定统一的」:
+ * 头卡右上角那颗自绘返回钮撤,改递 Shell 的 back 槽(button 桶 BackButton,落点仍是 URL_BACK)。
  *
  * @author Frank
  * @time 2026-08-27 02:10:00
  */
-import { Button, LinkButton } from '@/components/button'
+import { BackButton, LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { useLang } from '@/components/i18n'
 import { CompanyBody } from './companybody'
 import { Notice } from '@/components/notice'
 import { Shell } from '@/components/shell'
 import {
-  ALIAS_GAP, CRUMB_SEP, NOTICE_KIND_INFO, PLAIN_BTN_KIND, SHELL_TOP, TEXT_NONE, URL_BACK, URL_HOME,
+  ALIAS_GAP, CRUMB_SEP, NOTICE_KIND_INFO, SHELL_TOP, TEXT_NONE, URL_BACK, URL_HOME,
 } from './constants'
-import { aliasOf, makeGoBack, provFullOf, provHrefOf } from './functions'
+import { aliasOf, provFullOf, provHrefOf } from './functions'
 import type { CompanyIn } from './types'
 import css from './companies.module.css'
 
 /**
  * 公司详情页正文。
  *
- * @param props 公司档案与相似雇主(逐格注释见 CompanyIn)。
+ * @param props 公司档案、相似雇主与数据更新时刻(逐格注释见 CompanyIn)。
  * @returns 正文(Shell 轨 + 面包屑 + 头卡 + CompanyBody 卡组)。
  */
-export function Company({ company, similar = [] }: CompanyIn) {
+export function Company({ company, similar = [], updatedAt }: CompanyIn) {
   const [lang, , t] = useLang()
   const alias = aliasOf({ lang, aliasZh: company.aliasZh, aliasKo: company.aliasKo })
   const provFull = provFullOf({ t, code: company.province })
   return (
-    <Shell top={SHELL_TOP}>
+    <Shell top={SHELL_TOP} back={<BackButton fallback={URL_BACK} label={t('detail.back')} />}>
       <div className={css.track}>
         <div className={css.crumb}>
           <LinkButton href={URL_HOME} className={cssOf(css.crumbLink)}>{t('detail.crumbHome')}</LinkButton>
@@ -53,17 +55,12 @@ export function Company({ company, similar = [] }: CompanyIn) {
           <span className={css.crumbNow}>{t('co.crumb')}</span>
         </div>
         <div className={css.headCard}>
-          <Button kind={PLAIN_BTN_KIND}
-            onClick={makeGoBack({ fallback: URL_BACK })}
-            className={cssOf(css.backBtn)}>
-            {t('detail.back')}
-          </Button>
           <h1 className={css.h1}>
             {company.name}
             {alias !== TEXT_NONE && <span className={css.alias}>{ALIAS_GAP}{alias}</span>}
           </h1>
         </div>
-        <CompanyBody company={company} similar={similar} t={t} lang={lang} />
+        <CompanyBody company={company} similar={similar} t={t} lang={lang} updatedAt={updatedAt} />
         {company.jobs.length === 0 && <Notice kind={NOTICE_KIND_INFO}>{t('co.notFound')}</Notice>}
       </div>
     </Shell>

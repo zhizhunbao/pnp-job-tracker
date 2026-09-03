@@ -3,6 +3,8 @@
  * 以及返回钮的落点与变体档。文案只有中文 —— 这页只给 Frank 看,不是产品页面,翻三语是浪费
  * (所以不走 lib/i18n)。
  * 2026-08-27 换装批自 Funnel.tsx 与 funnel/page.tsx 的散值收拢挂注释,值一个不改。
+ * 2026-09-03 返回钮那三格(上面这句里说的「返回钮的落点与变体档」)撤编,理由压在
+ * SUBTITLE_TEXT 的 JSDoc 里。
  *
  * @author Frank
  * @time 2026-08-27 03:00:00
@@ -257,24 +259,12 @@ export const TITLE_TEXT = '漏斗五个数'
 
 /**
  * 标题下的小注(第一方计数,不受广告拦截器影响;转化率按 30 天合计)。
+ * 旁边原有右上返回钮的三格死值(BACK_TEXT '返回'、URL_HOME '/' = 无历史可回时的落点、
+ * PLAIN_BTN_KIND 'ghost' = 定制样式钮的统一底座,2026-08-26 Frank「<button 这种不允许
+ * 直接使用」的产物),2026-09-03 撤编:Frank「所有主页面都不应该有返回按钮」;
+ * 那条「裸 <button> 一律改经 button 族」的规矩仍然有效,只是这页已经没有钮了。
  */
 export const SUBTITLE_TEXT = '第一方计数,不受广告拦截器影响;转化率按 30 天合计'
-
-/**
- * 返回钮的字。
- */
-export const BACK_TEXT = '返回'
-
-/**
- * 右上返回无历史可回时的落点(这页没有上级索引页,回首页)。
- */
-export const URL_HOME = '/'
-
-/**
- * 定制样式钮的统一底座(2026-08-26 Frank「<button 这种不允许直接使用」——
- * 裸 <button> 一律改经 button 族):ghost 底最素,视觉全由本域的加倍类定形。
- */
-export const PLAIN_BTN_KIND = 'ghost'
 
 /**
  * 看得见这一页的角色码(users.role 里的值)。🔴 只有 admin 看得见,其余一律 notFound()

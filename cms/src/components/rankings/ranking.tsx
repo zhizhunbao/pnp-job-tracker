@@ -26,10 +26,10 @@ import type { RankingIn } from './types'
 /**
  * 榜单页正文。
  *
- * @param props 榜 slug、本榜的行与当天有数据的榜(逐格注释见 RankingIn)。
+ * @param props 榜 slug、本榜的行、当天有数据的榜与更新时刻(逐格注释见 RankingIn)。
  * @returns 正文(Shell 轨 + 页头 + 导航 + 榜单表)。
  */
-export function Ranking({ slug, items, slugs = [] }: RankingIn) {
+export function Ranking({ slug, items, slugs = [], updatedAt }: RankingIn) {
   const [, , t] = useLang()
   const boards = boardsOf({ slug, slugs })
   return (
@@ -44,7 +44,7 @@ export function Ranking({ slug, items, slugs = [] }: RankingIn) {
           { v: items.length, label: t('rank.bnRows') },
         ]} />
       <RankTabs rows={toRankTabRows({ boards, slug, t })} />
-      <RankingTable slug={slug} items={items} t={t} />
+      <RankingTable slug={slug} items={items} updatedAt={updatedAt} t={t} />
     </Shell>
   )
 }

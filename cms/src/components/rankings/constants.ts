@@ -121,21 +121,12 @@ export const URL_JOBS_SEARCH_HEAD = '/?q='
 export const TARGET_BLANK = '_blank'
 
 /**
- * 「更新于」取当天日期时用的地区码。en-CA 排出来就是 `YYYY-MM-DD`,与库里的帖面日期同形,
- * 两个日期才比得起来。
- */
-export const DATE_LOCALE = 'en-CA'
-
-/**
- * 「更新于」取当天日期时用的时区。#218(第 28 轮体检:生产 console React #418 文本不一致,
- * 本地 dev 复现不出):这一行在**服务端(Render 跑 UTC)和浏览器(用户本地时区)各算一次**
- * —— UTC 已过午夜而用户还在前一天时,两端渲染出的日期不同 → hydration 文本不匹配。
- * 数据本身就是 ET 口径(帖面日期),索性两端都按 ET 算。
- */
-export const DATE_TZ = 'America/Toronto'
-
-/**
  * 纯日期的长度(`YYYY-MM-DD` 十位):库里的发布时间带时分秒,比日期前先裁到这一位。
+ * (同位置原有「更新于」取当天日期用的 DATE_LOCALE='en-CA' 与 DATE_TZ='America/Toronto',
+ * 2026-09-03 随更新时间收单一出口撤编 —— en-CA 是为了排出 `YYYY-MM-DD` 与帖面日期同形好比,
+ * ET 是为了服务端 UTC 与浏览器本地时区两端同算一个日期,过午夜不出 hydration 文本不匹配
+ * [#218 第 28 轮:生产 console React #418,本地 dev 复现不出];现更新时间走 ETL 心跳,
+ * 值由页面门 SSR 取好递下来,两端只有一个来源。)
  */
 export const YMD_LEN = 10
 

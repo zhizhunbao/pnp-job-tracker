@@ -164,6 +164,11 @@ export type OccupationsIn = {
    * 官方清单的全部行(已按 省/通道/职业码 排好序,分组只顺着扫一遍)。
    */
   rows: OccupationRow[]
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   */
+  updatedAt: string
 }
 
 /**
@@ -174,6 +179,12 @@ export type ProvNavIn = {
    * 页面上出现的省(顺序即导航顺序)。
    */
   provs: ProvGroup[]
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   * 导航行就是全部通道表正上方那一行,更新时间挂在它的右端(整页一枚,不逐通道表重复)。
+   */
+  updatedAt: string
 
   /**
    * 取词函数。
