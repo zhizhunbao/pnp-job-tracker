@@ -323,6 +323,16 @@ export const TBL_NOC_DESCRIPTIONS = 'noc_descriptions'
 export const TBL_DLI = 'dli'
 
 /**
+ * PTE Core 题型维度表(2026-09-03 pte 域升产品域)。
+ */
+export const TBL_PTE_TYPES = 'pte_types'
+
+/**
+ * PTE Core 机经题表(2026-09-03;一题一行按源,四格信号随行)。
+ */
+export const TBL_PTE_QUESTIONS = 'pte_questions'
+
+/**
  * 字段级来源表(E4-04)。
  */
 export const TBL_FIELD_SOURCES = 'field_sources'
@@ -503,6 +513,17 @@ export const COLS_NOC_DESCRIPTIONS = ['noc', 'title', 'title_zh', 'title_zh_shor
  * dli 列。
  */
 export const COLS_DLI = ['province', 'name', 'dli_number', 'city', 'campuses', 'is_public', 'grad_program', 'url', 'fetched']
+
+/**
+ * pte_types 列。⚠️ **先在生产跑 docs/sql/pte-tables.sql**(建两表 + 锁表各补一列)。
+ */
+export const COLS_PTE_TYPES = ['code', 'section', 'seq', 'name_zh', 'name_en', 'name_ko', 'audio']
+
+/**
+ * pte_questions 列(同上一份 SQL)。⚠️ votes / freq / seen / answer / audio_* 可空 = 该源没有,
+ * 不是 0/空串 —— 映射器一律 cellOf 保 null,禁折默认值。
+ */
+export const COLS_PTE_QUESTIONS = ['qid', 'source', 'type', 'num', 'title', 'text', 'answer', 'audio_url', 'audio_file', 'image_url', 'predicted', 'seen', 'seen_n', 'votes', 'freq', 'fetched']
 
 /**
  * field_sources 列(坑 2:白名单必须显式列全字段)。

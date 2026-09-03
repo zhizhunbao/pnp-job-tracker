@@ -341,6 +341,51 @@ class XjRowIn:
 
 
 @dataclass
+class PteQuestionIn:
+    """to_pte_question_row() 入参(一条索引行 + 三张查表 → 一行 mart 题行)。"""
+
+    row: dict
+    """索引行(type / source / id / title / flags / audio)。"""
+
+    banks: dict
+    """{源: {(型, id 串): 库内题 dict}}(题面/答案从这取)。"""
+
+    signals: dict
+    """{(源, 型, id 串): recent 四格}。"""
+
+    media: dict
+    """{(源, 型, id 串, 种类): (url, 本地文件或 None)}。"""
+
+    fetched: str
+    """出表日期。"""
+
+
+@dataclass
+class QuestionTextIn:
+    """question_text_of() / question_answer_of() / question_num_of() 入参(源 + 型 + 库内题 → 一格)。"""
+
+    source: str
+    """来源(ynwac / duoink)。"""
+
+    qtype: str
+    """标准题型码。"""
+
+    q: dict
+    """库内题 dict(各源原形)。"""
+
+
+@dataclass
+class DkSegmentIn:
+    """dk_segment_of() 入参(duoink 一词一行正文 → 标记之间的一段拼成句)。"""
+
+    text: str
+    """题页整段正文。"""
+
+    mark: str
+    """起点标记(标记行之后开始)。"""
+
+
+@dataclass
 class RecentRowIn:
     """recent_row_of() 入参(一条索引行 + 该题的回忆信号 → 带四格的行)。"""
 

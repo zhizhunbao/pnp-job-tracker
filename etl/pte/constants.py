@@ -1318,3 +1318,105 @@ XJ_STOP_MAX = "翻页上限"
 
 P_XJ_EXAM_DONE_TPL = "✓ ptexj 考试记录流:新收 {new} 条 · 库存 {total} 条(Core,{keep} 天内)→ {path}"
 """日志:流步收口。"""
+
+# =========================================================================
+# 16. mart 出表(pte 域升产品域:题型维度 + 题目事实,一文件 = 一张 DB 表)
+# =========================================================================
+# 2026-09-03 05:00 Frank 拍板「上」:推翻立域时「研究用途,不建 mart / 不灌库 / 不上线」的板
+# (设计稿 docs/design/PTE刷题-20260903.md;判据:机经是考生回忆的公共池,三家都在卖同一池水)。
+# 首批四型 RA / RS / WFD / ASQ;题面只取 ynwac(公开 bundle)与 duoink(题页正文),猩际无题面不出行;
+# 「最近考了」四格并进题行(一张表够页面一次 SELECT,recent.json 仍是组织层真相);
+# 一题一行按源不合并(跨源对题留批三)。列名 camelCase,seed 端 to* 转 snake_case(mart 惯例)。
+
+T_RA = "RA"
+"""标准题型码:朗读。"""
+
+T_RS = "RS"
+"""标准题型码:复述句子。"""
+
+T_ASQ = "ASQ"
+"""标准题型码:简答题。"""
+
+T_WFD = "WFD"
+"""标准题型码:听写句子。"""
+
+MART_TYPES = (T_RA, T_RS, T_WFD, T_ASQ)
+"""首批出表的标准题型码(Frank 2026-09-03:四型先上,其余 15 型批二后扩)。"""
+
+MART_TYPE_ROWS = (
+    {"code": "RA", "section": "Speaking", "seq": 1, "nameZh": "朗读", "nameEn": "Read Aloud",
+     "nameKo": "소리 내어 읽기", "audio": False},
+    {"code": "RS", "section": "Speaking", "seq": 2, "nameZh": "复述句子", "nameEn": "Repeat Sentence",
+     "nameKo": "문장 따라 말하기", "audio": True},
+    {"code": "ASQ", "section": "Speaking", "seq": 3, "nameZh": "简答题", "nameEn": "Answer Short Question",
+     "nameKo": "짧게 답하기", "audio": True},
+    {"code": "WFD", "section": "Listening", "seq": 4, "nameZh": "听写句子", "nameEn": "Write From Dictation",
+     "nameKo": "받아쓰기", "audio": True},
+)
+"""题型维度行(三语名 + 所属 section + 考试序 + 题面是否以音频呈现);官方英文名照 Pearson 题型名。"""
+
+MART_TYPES_FILE = "pte_types.json"
+"""mart 表文件名 = DB 表名 pte_types。"""
+
+MART_QUESTIONS_FILE = "pte_questions.json"
+"""mart 表文件名 = DB 表名 pte_questions。"""
+
+QID_SEP = ":"
+"""题目主键拼法 `源:源内 id`(跨源不合并,主键必须带源)。"""
+
+Q_K_QID = "qid"
+"""题行:主键 `源:源内 id`。"""
+
+Q_K_NUM = "num"
+"""题行:站内题号(duoink sn / ynwac id),页面显示的 #N。"""
+
+Q_K_TEXT = "text"
+"""题行:题面全文(WFD/RS 一句话;RA 段落;ASQ 问句)。"""
+
+Q_K_ANSWER = "answer"
+"""题行:答案(ASQ 短答;其余 null)。"""
+
+Q_K_AUDIO_URL = "audioUrl"
+"""题行:公开音频直链(没有 = null;RS/ASQ/WFD 的 TTS 批三合成)。"""
+
+Q_K_AUDIO_FILE = "audioFile"
+"""题行:音频本地文件(data/raw/pte 相对路径;未落盘 null)。"""
+
+Q_K_IMAGE_URL = "imageUrl"
+"""题行:题图直链(四型基本无;留列给 DI)。"""
+
+Q_K_PREDICTED = "predicted"
+"""题行:押题(源方 hot / frequent / important 任一)。"""
+
+Q_K_SEEN_N = "seenN"
+"""题行:持有的带日期回忆条数(recent seen_n)。"""
+
+Q_K_FETCHED = "fetched"
+"""题行:出表日期。"""
+
+DK_TEXT_MARK = "ITEM TEXT"
+"""duoink 题页正文里 RA 段落的起点标记。"""
+
+DK_TRANSCRIPT_MARK = "ITEM TRANSCRIPT"
+"""duoink 题页正文里 ASQ 问句(转写)的起点标记。"""
+
+DK_ANSWER_MARK = "EXAMPLE ANSWER"
+"""duoink 题页正文里 ASQ 示例答案的起点标记。"""
+
+DK_STOP_MARKS = ("CLICK TO HIDE", "CLICK TO SHOW", "ITEM AUDIO", "EXAMPLE ANSWER", "COMMENTS")
+"""duoink 正文段的终点标记(任一出现即止)。"""
+
+DK_LINE_SEP = "\n"
+"""duoink 题页正文是一词一行(渲染态倒出的 innerText),拼句先按行切。"""
+
+TOKEN_JOIN = " "
+"""词元拼句的连接符。"""
+
+PUNCT_TIGHT_RE = re.compile(r"\s+([,.;:!?%)\]'’”])")
+"""标点前多出的空格(词元逐行倒出后 `word ,` 要收成 `word,`)。"""
+
+OPEN_TIGHT_RE = re.compile(r"([(\[$“‘])\s+")
+"""开括号/开引号后多出的空格。"""
+
+P_MART_DONE_TPL = "✓ pte mart:{types} 题型 · {questions} 题(有音频 {audio} · 押题 {predicted})→ {dir}"
+"""日志:出表收口。"""

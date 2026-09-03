@@ -10,6 +10,7 @@ import json
 import os
 import time
 from datetime import date, timedelta
+from pathlib import Path
 from typing import cast
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
@@ -19,7 +20,7 @@ from crawl.functions import close_browser, get_browser_page, put_cached_page
 from crawl.scheme import CachePutIn
 from fetch.functions import fetch, make_client
 from fetch.scheme import FetchIn, HttpClientLike as FetchClientLike
-from paths.constants import ENC_UTF8
+from paths.constants import ENC_UTF8, MART
 from paths.functions import write_json, write_text
 from paths.scheme import WriteJsonIn, WriteTextIn
 from pte.constants import (DK_AVATAR_MARKS, DK_CRAWL_SLUG, DK_ENTRY_DELAY_S, DK_ENTRY_FILE_TPL,
@@ -94,12 +95,18 @@ from pte.constants import (DK_AVATAR_MARKS, DK_CRAWL_SLUG, DK_ENTRY_DELAY_S, DK_
                            XJ_EXAM_KEEP_D, XJ_EXAM_LOG_EVERY, XJ_EXAM_PAGE_SIZE, XJ_EXAM_PAGES_MAX,
                            XJ_K_EXAM_DATES, XJ_K_PREDICTED, XJ_P_PAGE, XJ_P_PAGE_SIZE, XJ_STOP_DEPTH,
                            XJ_STOP_EMPTY, XJ_STOP_END, XJ_STOP_KNOWN, XJ_STOP_MAX, XJ_WAIT_UNTIL,
-                           XJ_EXAM_STOP_STREAK)
+                           XJ_EXAM_STOP_STREAK,
+                           DK_ANSWER_MARK, DK_LINE_SEP, DK_STOP_MARKS, DK_TEXT_MARK, DK_TRANSCRIPT_MARK,
+                           K_ANSWER, K_CONTENT, K_ID, K_QUESTION,
+                           MART_QUESTIONS_FILE, MART_TYPE_ROWS, MART_TYPES, MART_TYPES_FILE,
+                           OPEN_TIGHT_RE, P_MART_DONE_TPL, PUNCT_TIGHT_RE, Q_K_ANSWER, Q_K_AUDIO_FILE,
+                           Q_K_AUDIO_URL, Q_K_FETCHED, Q_K_IMAGE_URL, Q_K_NUM, Q_K_PREDICTED, Q_K_QID,
+                           Q_K_SEEN_N, Q_K_TEXT, QID_SEP, TOKEN_JOIN, T_ASQ, T_RA, T_WFD, DK_K_SN)
 from pte.scheme import (BankIn, CloseIn, CollectIn, DiffIn, DkEntryIn, DkImagesIn, DkPageIn, DkPageLike,
                         Group, GroupIn, HttpClientLike, MediaRowIn, PbBankIn, PbGroupsIn, PbRowIn,
                         DaysIn, RadarIn, RecentRowIn, RecentSummaryIn, SnapshotIn, VoteGetIn,
                         XjExamIn, XjExamUrlIn, XjGroupIn, XjListIn, XjPageLike, XjRowIn, XjSignalsIn,
-                        XjUrlIn)
+                        XjUrlIn, DkSegmentIn, PteQuestionIn, QuestionTextIn)
 
 
 # =========================================================================
@@ -2044,3 +2051,178 @@ def xj_signals_of(x: XjSignalsIn) -> dict:
             out[(SRC_PTEXJ, g[OUT_K_SIGNATURE], str(q[CH_K_ID]))] = {
                 R_K_SEEN: seen, R_K_SEEN_N: len(dates), R_K_FREQ: None, R_K_VOTES: q[XJ_A_EXAM_COUNT]}
     return out
+
+
+# =========================================================================
+# 15. mart 出表(题型维度 + 题目事实;pte 域升产品域的落库口 —— constants §16 定案)
+# =========================================================================
+
+
+def run_pte_mart() -> None:
+    """出表步:读索引 + 两库 + recent + media → data/mart/pte_types.json / pte_questions.json。
+
+    2026-09-03 立(Frank「上」):首批四型;题面只取 ynwac / duoink,猩际无题面不出行;
+    四格信号并进题行;一题一行按源。索引/recent 文件不在 = 上游没跑,open 抛出留痕。"""
+    with OUT_INDEX.open(encoding=ENC_UTF8) as f:
+        idx = json.load(f)
+    signals: dict = {}
+    signals.update(dk_signals_of())
+    signals.update(yn_signals_of(date.today()))
+    banks = {SRC_YNWAC: bank_lookup_of(OUT_BANK), SRC_DUOINK: bank_lookup_of(OUT_DK_BANK)}
+    media = media_lookup_of()
+    fetched = date.today().isoformat()
+    rows = []
+    for r in idx[IDX_K_ROWS]:
+        if r[IDX_K_TYPE] not in MART_TYPES or r[IDX_K_SOURCE] not in banks:
+            continue
+        row = to_pte_question_row(PteQuestionIn(row=r, banks=banks, signals=signals, media=media, fetched=fetched))
+        if row is not None:
+            rows.append(row)
+    MART.mkdir(parents=True, exist_ok=True)
+    write_json(WriteJsonIn(path=MART / MART_TYPES_FILE, payload=list(MART_TYPE_ROWS), indent=JSON_INDENT))
+    write_json(WriteJsonIn(path=MART / MART_QUESTIONS_FILE, payload=rows, indent=JSON_INDENT))
+    audio = 0
+    predicted = 0
+    for q in rows:
+        if q[Q_K_AUDIO_URL] is not None:
+            audio += 1
+        if q[Q_K_PREDICTED] is True:
+            predicted += 1
+    say(P_MART_DONE_TPL.format(types=len(MART_TYPE_ROWS), questions=len(rows), audio=audio,
+                               predicted=predicted, dir=MART))
+
+
+def bank_lookup_of(path: object) -> dict:
+    """一份库 → {(标准题型码, id 串): 题 dict}(库不在 = 空表;ynwac 组签名经 YN_SIG_TYPE 换码)。"""
+    out: dict = {}
+    p = cast(Path, path)
+    if not p.exists():
+        return out
+    with p.open(encoding=ENC_UTF8) as f:
+        bank = json.load(f)
+    for g in bank[OUT_K_GROUPS]:
+        t = YN_SIG_TYPE.get(g[OUT_K_SIGNATURE], g[OUT_K_SIGNATURE])
+        for q in g[OUT_K_QUESTIONS]:
+            out[(t, str(q[K_ID]))] = q
+    return out
+
+
+def media_lookup_of() -> dict:
+    """media.json → {(源, 型, id 串, 种类): (url, 本地文件或 None)}(文件不在 = 空表;同键多条取首条)。"""
+    out: dict = {}
+    if not OUT_MEDIA.exists():
+        return out
+    with OUT_MEDIA.open(encoding=ENC_UTF8) as f:
+        m = json.load(f)
+    for r in m[IDX_K_ROWS]:
+        key = (r[IDX_K_SOURCE], r[IDX_K_TYPE], str(r[CH_K_ID]), r[M_K_KIND])
+        if key not in out:
+            out[key] = (r[M_K_URL], r[M_K_FILE])
+    return out
+
+
+def to_pte_question_row(x: PteQuestionIn) -> dict | None:
+    """索引行 → mart 题行;题面取不到(库里没这题 / 该型不会切)= None 不出行(题面空的题练不了)。"""
+    src = x.row[IDX_K_SOURCE]
+    t = x.row[IDX_K_TYPE]
+    sid = str(x.row[CH_K_ID])
+    q = x.banks[src].get((t, sid))
+    if q is None:
+        return None
+    text = question_text_of(QuestionTextIn(source=src, qtype=t, q=q))
+    if text == "":
+        return None
+    sig = x.signals.get((src, t, sid))
+    if sig is None:
+        sig = {R_K_SEEN: None, R_K_SEEN_N: 0, R_K_FREQ: None, R_K_VOTES: None}
+    audio = x.media.get((src, t, sid, KIND_AUDIO), (None, None))
+    image = x.media.get((src, t, sid, KIND_IMAGE), (None, None))
+    return {
+        Q_K_QID: src + QID_SEP + sid,
+        IDX_K_SOURCE: src,
+        IDX_K_TYPE: t,
+        Q_K_NUM: question_num_of(QuestionTextIn(source=src, qtype=t, q=q)),
+        K_TITLE: x.row[K_TITLE],
+        Q_K_TEXT: text,
+        Q_K_ANSWER: question_answer_of(QuestionTextIn(source=src, qtype=t, q=q)),
+        Q_K_AUDIO_URL: audio[0],
+        Q_K_AUDIO_FILE: audio[1],
+        Q_K_IMAGE_URL: image[0],
+        Q_K_PREDICTED: len(x.row[IDX_K_FLAGS]) > 0,
+        R_K_SEEN: sig[R_K_SEEN],
+        Q_K_SEEN_N: sig[R_K_SEEN_N],
+        R_K_VOTES: sig[R_K_VOTES],
+        R_K_FREQ: sig[R_K_FREQ],
+        Q_K_FETCHED: x.fetched,
+    }
+
+
+def question_num_of(x: QuestionTextIn) -> str:
+    """站内题号:duoink 取 sn,ynwac 取 id(页面显示 #N;两源各自的编号体系,不互通)。"""
+    if x.source == SRC_DUOINK:
+        return str(x.q.get(DK_K_SN, ""))
+    return str(x.q.get(K_ID, ""))
+
+
+def question_text_of(x: QuestionTextIn) -> str:
+    """题面:ynwac 按型取字段(WFD text / RA content / ASQ question);duoink WFD·RS 取 te,
+    RA 切 ITEM TEXT 段、ASQ 切 ITEM TRANSCRIPT 段(一词一行拼回句子)。取不到给空串,由上层不出行。"""
+    if x.source == SRC_YNWAC:
+        if x.qtype == T_WFD:
+            return str(x.q.get(K_TEXT, "")).strip()
+        if x.qtype == T_RA:
+            return str(x.q.get(K_CONTENT, "")).strip()
+        if x.qtype == T_ASQ:
+            return str(x.q.get(K_QUESTION, "")).strip()
+        return ""
+    if x.qtype in DK_TEXT_PARTS:
+        return str(x.q.get(DK_K_TEXT, "")).strip()
+    content = x.q.get(DK_R_CONTENT)
+    if not isinstance(content, str):
+        return ""
+    if x.qtype == T_RA:
+        return dk_segment_of(DkSegmentIn(text=content, mark=DK_TEXT_MARK))
+    if x.qtype == T_ASQ:
+        return dk_segment_of(DkSegmentIn(text=content, mark=DK_TRANSCRIPT_MARK))
+    return ""
+
+
+def question_answer_of(x: QuestionTextIn) -> str | None:
+    """答案:ASQ 才有(ynwac answer 字段 / duoink EXAMPLE ANSWER 段);其余 null 不造。"""
+    if x.qtype != T_ASQ:
+        return None
+    if x.source == SRC_YNWAC:
+        a = str(x.q.get(K_ANSWER, "")).strip()
+        if a == "":
+            return None
+        return a
+    content = x.q.get(DK_R_CONTENT)
+    if not isinstance(content, str):
+        return None
+    a = dk_segment_of(DkSegmentIn(text=content, mark=DK_ANSWER_MARK))
+    if a == "":
+        return None
+    return a
+
+
+def dk_segment_of(x: DkSegmentIn) -> str:
+    """duoink 一词一行正文 → 起点标记之后、任一终点标记之前的词元拼成句(标点贴前词,开括号贴后词)。"""
+    lines = x.text.split(DK_LINE_SEP)
+    start = -1
+    for i, line in enumerate(lines):
+        if line.strip() == x.mark:
+            start = i + 1
+            break
+    if start < 0:
+        return ""
+    tokens = []
+    for line in lines[start:]:
+        s = line.strip()
+        if s in DK_STOP_MARKS:
+            break
+        if s == "":
+            continue
+        tokens.append(s)
+    joined = TOKEN_JOIN.join(tokens)
+    joined = PUNCT_TIGHT_RE.sub(r"\1", joined)
+    return OPEN_TIGHT_RE.sub(r"\1", joined).strip()

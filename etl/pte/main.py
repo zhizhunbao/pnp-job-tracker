@@ -11,8 +11,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
 from pte.functions import (run, run_assets, run_dk_entries, run_dk_lists, run_duoink, run_index,
-                           run_media, run_pb_audio, run_pb_images, run_ptebank, run_ptexj, run_recent,
-                           run_timeline, run_votes, run_words, run_xj_exam, run_xj_lists, run_yn_audio)
+                           run_media, run_pb_audio, run_pb_images, run_pte_mart, run_ptebank, run_ptexj,
+                           run_recent, run_timeline, run_votes, run_words, run_xj_exam, run_xj_lists, run_yn_audio)
 
 SCHEDULED = [
     ("ynwac", run),
@@ -33,6 +33,7 @@ SCHEDULED = [
     ("words", run_words),
     ("recent", run_recent),
     ("media", run_media),
+    ("pte-mart", run_pte_mart),
 ]
 """默认链:整库抽取 → DI 图片 → 考过投票+评论 → ptebank 第二源 → ptebank 音频(私有研究,不灌库不上线)。
 votes 步:配了 YNWAC_TOKEN 才抓(空则跳过不报错),你部署的容器自动跑;ynwac 听力 mp3 付费墙后不抓
@@ -46,7 +47,9 @@ dk-lists/dk-entries/duoink 步(2026-09-02「接一下 duoink」):登录态浏览
 xj-lists/ptexj 步(2026-09-03「照 duoink 的形开一步」):猩际第四源 —— 登录态页内 fetch 明文 API,
 沿 next_num 链收 19 型 Core 预测清单 + 考过票数(题干密文/canvas 不碰)→ 装库雷达 → 索引 frequent 旗 + recent votes。
 xj-exam 步(同日「补 seen」):全站「确认考过」流增量拉取(首轮 180 天,此后追到上次 id 即停)→ 装库并入
-exam_dates → recent seen/seen_n;预测清单 ∪ 近期考过 = 猩际在索引里的全部行。"""
+exam_dates → recent seen/seen_n;预测清单 ∪ 近期考过 = 猩际在索引里的全部行。
+pte-mart 步(2026-09-03 05:00 Frank「上」:pte 研究域升产品域,推翻立域时「不建 mart 不灌库不上线」):
+四型题面(ynwac/duoink)+ 四格信号 → data/mart/pte_types.json / pte_questions.json,seed 照 mart 惯例灌库。"""
 
 TOOLS = {
     "ynwac": run,
@@ -67,6 +70,7 @@ TOOLS = {
     "words": run_words,
     "recent": run_recent,
     "media": run_media,
+    "pte-mart": run_pte_mart,
 }
 """全部可 --only 点名的步。"""
 
