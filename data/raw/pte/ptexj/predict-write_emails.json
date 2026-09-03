@@ -1,0 +1,88 @@
+{
+  "source": "https://www.ptexj.com",
+  "fetched": "2026-09-03",
+  "model": "write_emails",
+  "tag": "predict_core",
+  "questions": [
+    {
+      "id": 58,
+      "exam_count": 366,
+      "current_count": 1,
+      "count": 10,
+      "prev_num": null,
+      "next_num": 59
+    },
+    {
+      "id": 59,
+      "exam_count": 308,
+      "current_count": 2,
+      "count": 10,
+      "prev_num": 58,
+      "next_num": 61
+    },
+    {
+      "id": 61,
+      "exam_count": 181,
+      "current_count": 3,
+      "count": 10,
+      "prev_num": 59,
+      "next_num": 63
+    },
+    {
+      "id": 63,
+      "exam_count": 294,
+      "current_count": 4,
+      "count": 10,
+      "prev_num": 61,
+      "next_num": 67
+    },
+    {
+      "id": 67,
+      "exam_count": 278,
+      "current_count": 5,
+      "count": 10,
+      "prev_num": 63,
+      "next_num": 55
+    },
+    {
+      "id": 55,
+      "exam_count": 267,
+      "current_count": 6,
+      "count": 10,
+      "prev_num": 67,
+      "next_num": 56
+    },
+    {
+      "id": 56,
+      "exam_count": 390,
+      "current_count": 7,
+      "count": 10,
+      "prev_num": 55,
+      "next_num": 57
+    },
+    {
+      "id": 57,
+      "exam_count": 427,
+      "current_count": 8,
+      "count": 10,
+      "prev_num": 56,
+      "next_num": 64
+    },
+    {
+      "id": 64,
+      "exam_count": 406,
+      "current_count": 9,
+      "count": 10,
+      "prev_num": 57,
+      "next_num": 66
+    },
+    {
+      "id": 66,
+      "exam_count": 305,
+      "current_count": 10,
+      "count": 10,
+      "prev_num": 64,
+      "next_num": null
+    }
+  ]
+}

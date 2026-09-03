@@ -1,0 +1,40 @@
+{
+  "source": "https://www.ptexj.com",
+  "fetched": "2026-09-03",
+  "model": "r_mcs",
+  "tag": "predict_core",
+  "questions": [
+    {
+      "id": 216,
+      "exam_count": 40,
+      "current_count": 1,
+      "count": 4,
+      "prev_num": null,
+      "next_num": 215
+    },
+    {
+      "id": 215,
+      "exam_count": 8,
+      "current_count": 2,
+      "count": 4,
+      "prev_num": 216,
+      "next_num": 14
+    },
+    {
+      "id": 14,
+      "exam_count": 101,
+      "current_count": 3,
+      "count": 4,
+      "prev_num": 215,
+      "next_num": 12
+    },
+    {
+      "id": 12,
+      "exam_count": 40,
+      "current_count": 4,
+      "count": 4,
+      "prev_num": 14,
+      "next_num": null
+    }
+  ]
+}

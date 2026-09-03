@@ -1,0 +1,29 @@
+{
+  "source": "https://www.ptexj.com/practice/<model>",
+  "api": "any.ptexj.com/api/v1/questions/list_v2?tag=predict_core&page_size=20 → page_info.total_count",
+  "exam_type": "pte_core",
+  "fetched": "2026-09-02",
+  "note": "登录态渲染态抓取;item 为 e1 密文未存;仅列表规模。tag 全集:all / exam_core / predict_core / question_list。",
+  "predict_core": {
+    "read_alouds": 15,
+    "repeat_sentences": 62,
+    "describe_images": 9,
+    "answer_questions": 19,
+    "respond_situations": 21,
+    "core_swts": 8,
+    "write_emails": 10,
+    "fib_wr": 16,
+    "r_mcm": 1,
+    "ro": 25,
+    "fib_rd": 62,
+    "r_mcs": 4,
+    "core_ssts": 4,
+    "l_mcm": 0,
+    "l_fib": 38,
+    "l_mcs": 1,
+    "l_smw": 0,
+    "hiws": 7,
+    "wfds": 31
+  },
+  "total": 333
+}

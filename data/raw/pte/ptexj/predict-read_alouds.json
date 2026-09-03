@@ -1,0 +1,128 @@
+{
+  "source": "https://www.ptexj.com",
+  "fetched": "2026-09-03",
+  "model": "read_alouds",
+  "tag": "predict_core",
+  "questions": [
+    {
+      "id": 302,
+      "exam_count": 810,
+      "current_count": 1,
+      "count": 15,
+      "prev_num": null,
+      "next_num": 250
+    },
+    {
+      "id": 250,
+      "exam_count": 351,
+      "current_count": 2,
+      "count": 15,
+      "prev_num": 302,
+      "next_num": 541
+    },
+    {
+      "id": 541,
+      "exam_count": 101,
+      "current_count": 3,
+      "count": 15,
+      "prev_num": 250,
+      "next_num": 1022
+    },
+    {
+      "id": 1022,
+      "exam_count": 287,
+      "current_count": 4,
+      "count": 15,
+      "prev_num": 541,
+      "next_num": 338
+    },
+    {
+      "id": 338,
+      "exam_count": 2899,
+      "current_count": 5,
+      "count": 15,
+      "prev_num": 1022,
+      "next_num": 1454
+    },
+    {
+      "id": 1454,
+      "exam_count": 1906,
+      "current_count": 6,
+      "count": 15,
+      "prev_num": 338,
+      "next_num": 4
+    },
+    {
+      "id": 4,
+      "exam_count": 523,
+      "current_count": 7,
+      "count": 15,
+      "prev_num": 1454,
+      "next_num": 147
+    },
+    {
+      "id": 147,
+      "exam_count": 85,
+      "current_count": 8,
+      "count": 15,
+      "prev_num": 4,
+      "next_num": 269
+    },
+    {
+      "id": 269,
+      "exam_count": 117,
+      "current_count": 9,
+      "count": 15,
+      "prev_num": 147,
+      "next_num": 288
+    },
+    {
+      "id": 288,
+      "exam_count": 263,
+      "current_count": 10,
+      "count": 15,
+      "prev_num": 269,
+      "next_num": 463
+    },
+    {
+      "id": 463,
+      "exam_count": 100,
+      "current_count": 11,
+      "count": 15,
+      "prev_num": 288,
+      "next_num": 550
+    },
+    {
+      "id": 550,
+      "exam_count": 40,
+      "current_count": 12,
+      "count": 15,
+      "prev_num": 463,
+      "next_num": 710
+    },
+    {
+      "id": 710,
+      "exam_count": 175,
+      "current_count": 13,
+      "count": 15,
+      "prev_num": 550,
+      "next_num": 1452
+    },
+    {
+      "id": 1452,
+      "exam_count": 260,
+      "current_count": 14,
+      "count": 15,
+      "prev_num": 710,
+      "next_num": 1453
+    },
+    {
+      "id": 1453,
+      "exam_count": 454,
+      "current_count": 15,
+      "count": 15,
+      "prev_num": 1452,
+      "next_num": null
+    }
+  ]
+}

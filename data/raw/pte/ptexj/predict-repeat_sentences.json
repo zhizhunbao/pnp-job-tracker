@@ -1,0 +1,504 @@
+{
+  "source": "https://www.ptexj.com",
+  "fetched": "2026-09-03",
+  "model": "repeat_sentences",
+  "tag": "predict_core",
+  "questions": [
+    {
+      "id": 613,
+      "exam_count": 215,
+      "current_count": 1,
+      "count": 62,
+      "prev_num": null,
+      "next_num": 934
+    },
+    {
+      "id": 934,
+      "exam_count": 267,
+      "current_count": 2,
+      "count": 62,
+      "prev_num": 613,
+      "next_num": 413
+    },
+    {
+      "id": 413,
+      "exam_count": 84,
+      "current_count": 3,
+      "count": 62,
+      "prev_num": 934,
+      "next_num": 624
+    },
+    {
+      "id": 624,
+      "exam_count": 13,
+      "current_count": 4,
+      "count": 62,
+      "prev_num": 413,
+      "next_num": 741
+    },
+    {
+      "id": 741,
+      "exam_count": 44,
+      "current_count": 5,
+      "count": 62,
+      "prev_num": 624,
+      "next_num": 368
+    },
+    {
+      "id": 368,
+      "exam_count": 23,
+      "current_count": 6,
+      "count": 62,
+      "prev_num": 741,
+      "next_num": 848
+    },
+    {
+      "id": 848,
+      "exam_count": 160,
+      "current_count": 7,
+      "count": 62,
+      "prev_num": 368,
+      "next_num": 1681
+    },
+    {
+      "id": 1681,
+      "exam_count": 72,
+      "current_count": 8,
+      "count": 62,
+      "prev_num": 848,
+      "next_num": 1862
+    },
+    {
+      "id": 1862,
+      "exam_count": 47,
+      "current_count": 9,
+      "count": 62,
+      "prev_num": 1681,
+      "next_num": 2296
+    },
+    {
+      "id": 2296,
+      "exam_count": 141,
+      "current_count": 10,
+      "count": 62,
+      "prev_num": 1862,
+      "next_num": 148
+    },
+    {
+      "id": 148,
+      "exam_count": 153,
+      "current_count": 11,
+      "count": 62,
+      "prev_num": 2296,
+      "next_num": 715
+    },
+    {
+      "id": 715,
+      "exam_count": 87,
+      "current_count": 12,
+      "count": 62,
+      "prev_num": 148,
+      "next_num": 304
+    },
+    {
+      "id": 304,
+      "exam_count": 47,
+      "current_count": 13,
+      "count": 62,
+      "prev_num": 715,
+      "next_num": 329
+    },
+    {
+      "id": 329,
+      "exam_count": 179,
+      "current_count": 14,
+      "count": 62,
+      "prev_num": 304,
+      "next_num": 367
+    },
+    {
+      "id": 367,
+      "exam_count": 111,
+      "current_count": 15,
+      "count": 62,
+      "prev_num": 329,
+      "next_num": 376
+    },
+    {
+      "id": 376,
+      "exam_count": 78,
+      "current_count": 16,
+      "count": 62,
+      "prev_num": 367,
+      "next_num": 377
+    },
+    {
+      "id": 377,
+      "exam_count": 43,
+      "current_count": 17,
+      "count": 62,
+      "prev_num": 376,
+      "next_num": 380
+    },
+    {
+      "id": 380,
+      "exam_count": 83,
+      "current_count": 18,
+      "count": 62,
+      "prev_num": 377,
+      "next_num": 381
+    },
+    {
+      "id": 381,
+      "exam_count": 93,
+      "current_count": 19,
+      "count": 62,
+      "prev_num": 380,
+      "next_num": 382
+    },
+    {
+      "id": 382,
+      "exam_count": 72,
+      "current_count": 20,
+      "count": 62,
+      "prev_num": 381,
+      "next_num": 385
+    },
+    {
+      "id": 385,
+      "exam_count": 50,
+      "current_count": 21,
+      "count": 62,
+      "prev_num": 382,
+      "next_num": 387
+    },
+    {
+      "id": 387,
+      "exam_count": 50,
+      "current_count": 22,
+      "count": 62,
+      "prev_num": 385,
+      "next_num": 393
+    },
+    {
+      "id": 393,
+      "exam_count": 44,
+      "current_count": 23,
+      "count": 62,
+      "prev_num": 387,
+      "next_num": 416
+    },
+    {
+      "id": 416,
+      "exam_count": 154,
+      "current_count": 24,
+      "count": 62,
+      "prev_num": 393,
+      "next_num": 446
+    },
+    {
+      "id": 446,
+      "exam_count": 73,
+      "current_count": 25,
+      "count": 62,
+      "prev_num": 416,
+      "next_num": 455
+    },
+    {
+      "id": 455,
+      "exam_count": 106,
+      "current_count": 26,
+      "count": 62,
+      "prev_num": 446,
+      "next_num": 467
+    },
+    {
+      "id": 467,
+      "exam_count": 96,
+      "current_count": 27,
+      "count": 62,
+      "prev_num": 455,
+      "next_num": 528
+    },
+    {
+      "id": 528,
+      "exam_count": 89,
+      "current_count": 28,
+      "count": 62,
+      "prev_num": 467,
+      "next_num": 537
+    },
+    {
+      "id": 537,
+      "exam_count": 37,
+      "current_count": 29,
+      "count": 62,
+      "prev_num": 528,
+      "next_num": 540
+    },
+    {
+      "id": 540,
+      "exam_count": 51,
+      "current_count": 30,
+      "count": 62,
+      "prev_num": 537,
+      "next_num": 549
+    },
+    {
+      "id": 549,
+      "exam_count": 35,
+      "current_count": 31,
+      "count": 62,
+      "prev_num": 540,
+      "next_num": 559
+    },
+    {
+      "id": 559,
+      "exam_count": 87,
+      "current_count": 32,
+      "count": 62,
+      "prev_num": 549,
+      "next_num": 565
+    },
+    {
+      "id": 565,
+      "exam_count": 26,
+      "current_count": 33,
+      "count": 62,
+      "prev_num": 559,
+      "next_num": 578
+    },
+    {
+      "id": 578,
+      "exam_count": 47,
+      "current_count": 34,
+      "count": 62,
+      "prev_num": 565,
+      "next_num": 583
+    },
+    {
+      "id": 583,
+      "exam_count": 69,
+      "current_count": 35,
+      "count": 62,
+      "prev_num": 578,
+      "next_num": 585
+    },
+    {
+      "id": 585,
+      "exam_count": 45,
+      "current_count": 36,
+      "count": 62,
+      "prev_num": 583,
+      "next_num": 620
+    },
+    {
+      "id": 620,
+      "exam_count": 92,
+      "current_count": 37,
+      "count": 62,
+      "prev_num": 585,
+      "next_num": 638
+    },
+    {
+      "id": 638,
+      "exam_count": 16,
+      "current_count": 38,
+      "count": 62,
+      "prev_num": 620,
+      "next_num": 660
+    },
+    {
+      "id": 660,
+      "exam_count": 36,
+      "current_count": 39,
+      "count": 62,
+      "prev_num": 638,
+      "next_num": 707
+    },
+    {
+      "id": 707,
+      "exam_count": 38,
+      "current_count": 40,
+      "count": 62,
+      "prev_num": 660,
+      "next_num": 760
+    },
+    {
+      "id": 760,
+      "exam_count": 18,
+      "current_count": 41,
+      "count": 62,
+      "prev_num": 707,
+      "next_num": 803
+    },
+    {
+      "id": 803,
+      "exam_count": 25,
+      "current_count": 42,
+      "count": 62,
+      "prev_num": 760,
+      "next_num": 835
+    },
+    {
+      "id": 835,
+      "exam_count": 18,
+      "current_count": 43,
+      "count": 62,
+      "prev_num": 803,
+      "next_num": 856
+    },
+    {
+      "id": 856,
+      "exam_count": 43,
+      "current_count": 44,
+      "count": 62,
+      "prev_num": 835,
+      "next_num": 869
+    },
+    {
+      "id": 869,
+      "exam_count": 61,
+      "current_count": 45,
+      "count": 62,
+      "prev_num": 856,
+      "next_num": 876
+    },
+    {
+      "id": 876,
+      "exam_count": 38,
+      "current_count": 46,
+      "count": 62,
+      "prev_num": 869,
+      "next_num": 912
+    },
+    {
+      "id": 912,
+      "exam_count": 65,
+      "current_count": 47,
+      "count": 62,
+      "prev_num": 876,
+      "next_num": 926
+    },
+    {
+      "id": 926,
+      "exam_count": 21,
+      "current_count": 48,
+      "count": 62,
+      "prev_num": 912,
+      "next_num": 972
+    },
+    {
+      "id": 972,
+      "exam_count": 82,
+      "current_count": 49,
+      "count": 62,
+      "prev_num": 926,
+      "next_num": 990
+    },
+    {
+      "id": 990,
+      "exam_count": 14,
+      "current_count": 50,
+      "count": 62,
+      "prev_num": 972,
+      "next_num": 1034
+    },
+    {
+      "id": 1034,
+      "exam_count": 13,
+      "current_count": 51,
+      "count": 62,
+      "prev_num": 990,
+      "next_num": 1040
+    },
+    {
+      "id": 1040,
+      "exam_count": 20,
+      "current_count": 52,
+      "count": 62,
+      "prev_num": 1034,
+      "next_num": 1094
+    },
+    {
+      "id": 1094,
+      "exam_count": 25,
+      "current_count": 53,
+      "count": 62,
+      "prev_num": 1040,
+      "next_num": 1122
+    },
+    {
+      "id": 1122,
+      "exam_count": 31,
+      "current_count": 54,
+      "count": 62,
+      "prev_num": 1094,
+      "next_num": 1168
+    },
+    {
+      "id": 1168,
+      "exam_count": 21,
+      "current_count": 55,
+      "count": 62,
+      "prev_num": 1122,
+      "next_num": 1171
+    },
+    {
+      "id": 1171,
+      "exam_count": 16,
+      "current_count": 56,
+      "count": 62,
+      "prev_num": 1168,
+      "next_num": 1179
+    },
+    {
+      "id": 1179,
+      "exam_count": 19,
+      "current_count": 57,
+      "count": 62,
+      "prev_num": 1171,
+      "next_num": 2370
+    },
+    {
+      "id": 2370,
+      "exam_count": 54,
+      "current_count": 58,
+      "count": 62,
+      "prev_num": 1179,
+      "next_num": 2419
+    },
+    {
+      "id": 2419,
+      "exam_count": 73,
+      "current_count": 59,
+      "count": 62,
+      "prev_num": 2370,
+      "next_num": 1026
+    },
+    {
+      "id": 1026,
+      "exam_count": 62,
+      "current_count": 60,
+      "count": 62,
+      "prev_num": 2419,
+      "next_num": 1112
+    },
+    {
+      "id": 1112,
+      "exam_count": 171,
+      "current_count": 61,
+      "count": 62,
+      "prev_num": 1026,
+      "next_num": 2847
+    },
+    {
+      "id": 2847,
+      "exam_count": 170,
+      "current_count": 62,
+      "count": 62,
+      "prev_num": 1112,
+      "next_num": null
+    }
+  ]
+}
