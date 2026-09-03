@@ -56,7 +56,7 @@ export function usePteBoard(x: PteBoardHookIn): PteBoardPanel {
     winPickOf: makeWinPickOf({ setWin }),
     onHot: makeToggle({ on: hot, set: setHot }),
     onTodo: makeToggle({ on: todo, set: setTodo }),
-    onByNum: makeToggle({ on: byNum, set: setByNum }),
+    onBySeen: makeToggle({ on: byNum, set: setByNum }),
     onMore: makeMore({ shown, setShown }),
   }
 }

@@ -105,10 +105,15 @@
 }
 
 /*
- * 第二排胶囊与第一排之间的距离。
+ * 三行开关(时间 / 筛选 / 排序):与题型分栏一条分隔线隔开,行距同分栏。
  */
-.chipsGap {
-  margin-top: 10px;
+.filterRows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
 }
 
 /*

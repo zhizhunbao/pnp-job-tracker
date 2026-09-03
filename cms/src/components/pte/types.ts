@@ -872,7 +872,7 @@ export type PteBoardPanel = {
   /**
    * 切按题号排。
    */
-  onByNum: () => void
+  onBySeen: () => void
 
   /**
    * 显示更多。

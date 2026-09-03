@@ -1144,6 +1144,7 @@ export const pteEn: Record<keyof typeof pteZh, string> = {
   'pte.disclaimer': 'Compiled from test-taker recollections',
   'pte.win7': 'Last 7 days', 'pte.win30': 'Last 30 days', 'pte.win90': 'Last 90 days', 'pte.winAll': 'All',
   'pte.hot': 'Predicted only', 'pte.todo': 'Not practiced', 'pte.byNum': 'By number',
+  'pte.lab.time': 'When', 'pte.lab.filter': 'Show', 'pte.lab.sort': 'Sort', 'pte.sortSeen': 'Last seen',
   'pte.sec.speaking': 'Speaking', 'pte.sec.writing': 'Writing', 'pte.sec.reading': 'Reading', 'pte.sec.listening': 'Listening',
   'pte.countWin': '{n} questions seen in the last {win} days, latest first', 'pte.countAll': '{n} questions, latest seen first',
   'pte.col.num': 'No.', 'pte.col.text': 'Question', 'pte.col.seen': 'Last seen', 'pte.col.n': 'Times seen', 'pte.col.hot': 'Predicted', 'pte.col.done': 'Done',
