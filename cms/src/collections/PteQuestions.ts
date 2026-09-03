@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 // PTE Core 机经题(2026-09-03 Frank「上」:pte 研究域升产品域,设计稿 docs/design/PTE刷题-20260903.md)
-// — ETL(etl/pte pte-mart 步)写入。一题一行按源不合并(qid = 源:源内 id;跨源对题留批三);
+// — ETL(etl/pte pte-mart 步)写入。一题一行按源不合并(qid = 源:题型:源内 id;跨源对题留批三);
 // 题面来自 ynwac 公开 bundle 与 duoink 题页正文,猩际只有信号无题面不出行。
 // 「最近考了」四格随行(seen / seenN / votes / freq,来自 processed/pte/recent.json,考生回忆非官方)。
 // 🔴 votes / freq / seen / answer / audio* 空 = 该源没有,不是 0/空串(seed 端 cellOf 保 null)。
@@ -9,7 +9,7 @@ export const PteQuestions: CollectionConfig = {
   slug: 'pte-questions',
   admin: { useAsTitle: 'title', defaultColumns: ['type', 'source', 'num', 'title', 'seen', 'predicted'], group: 'Data (ETL)' },
   fields: [
-    { name: 'qid', type: 'text', required: true, index: true, admin: { description: '源:源内 id' } },
+    { name: 'qid', type: 'text', required: true, index: true, admin: { description: '源:题型:源内 id' } },
     { name: 'source', type: 'text', required: true, index: true, admin: { description: 'ynwac | duoink' } },
     { name: 'type', type: 'text', required: true, index: true, admin: { description: '标准题型码' } },
     { name: 'num', type: 'text', admin: { description: '站内题号(duoink sn / ynwac id),页面显示 #N' } },

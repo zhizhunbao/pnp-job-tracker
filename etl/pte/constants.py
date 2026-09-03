@@ -1362,10 +1362,11 @@ MART_QUESTIONS_FILE = "pte_questions.json"
 """mart 表文件名 = DB 表名 pte_questions。"""
 
 QID_SEP = ":"
-"""题目主键拼法 `源:源内 id`(跨源不合并,主键必须带源)。"""
+"""题目主键拼法 `源:题型:源内 id`(跨源不合并,主键必须带源;2026-09-03 加题型段 —— ynwac 的 id 按型各自从 1 起,
+`源:源内 id` 在 mart 撞了 62 个键,单题页 URL 靠它唯一)。"""
 
 Q_K_QID = "qid"
-"""题行:主键 `源:源内 id`。"""
+"""题行:主键 `源:题型:源内 id`。"""
 
 Q_K_NUM = "num"
 """题行:站内题号(duoink sn / ynwac id),页面显示的 #N。"""

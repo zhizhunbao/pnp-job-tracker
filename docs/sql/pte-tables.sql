@@ -9,7 +9,7 @@
 --   与「最近考了」四格一起出表,seed 照 mart 惯例灌;页面只 SELECT。
 --
 -- 口径:
---   一题一行按源不合并(qid = 源:源内 id;跨源对题留批三);猩际只有信号无题面,不出行。
+--   一题一行按源不合并(qid = 源:题型:源内 id;跨源对题留批三);猩际只有信号无题面,不出行。
 --   seen / seen_n / votes / freq 来自 processed/pte/recent.json(考生回忆,非官方);
 --   🔴 votes / freq / seen / answer / audio_* 可空 = 该源没有,不是 0/空串(seed 端 cellOf 保 null)。
 --
@@ -35,7 +35,7 @@ CREATE INDEX IF NOT EXISTS pte_types_code_idx ON pte_types (code);
 
 CREATE TABLE IF NOT EXISTS pte_questions (
   id         serial PRIMARY KEY,
-  qid        varchar NOT NULL,        -- 源:源内 id(duoink:682703ac… / ynwac:137)
+  qid        varchar NOT NULL,        -- 源:题型:源内 id(duoink:RS:682703ac… / ynwac:WFD:137;09-03 加题型段,ynwac id 按型各起)
   source     varchar NOT NULL,        -- ynwac | duoink
   type       varchar NOT NULL,        -- 标准题型码
   num        varchar,                 -- 站内题号(duoink sn / ynwac id),页面显示 #N

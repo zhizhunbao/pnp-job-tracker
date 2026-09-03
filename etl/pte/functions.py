@@ -2138,7 +2138,7 @@ def to_pte_question_row(x: PteQuestionIn) -> dict | None:
     audio = x.media.get((src, t, sid, KIND_AUDIO), (None, None))
     image = x.media.get((src, t, sid, KIND_IMAGE), (None, None))
     return {
-        Q_K_QID: src + QID_SEP + sid,
+        Q_K_QID: src + QID_SEP + t + QID_SEP + sid,
         IDX_K_SOURCE: src,
         IDX_K_TYPE: t,
         Q_K_NUM: question_num_of(QuestionTextIn(source=src, qtype=t, q=q)),
