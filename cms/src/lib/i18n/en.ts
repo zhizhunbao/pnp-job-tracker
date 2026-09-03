@@ -1160,8 +1160,8 @@ export const pteEn: Record<keyof typeof pteZh, string> = {
   'pte.diff': '{ok} words right, {bad} wrong', 'pte.done': 'Marked as done', 'pte.showText': 'Show text',
   'pte.noTts': 'This browser cannot read aloud', 'pte.noMic': 'No microphone',
   'pte.f.seen': 'Last seen', 'pte.f.n': 'Times seen', 'pte.f.hot': 'Predicted', 'pte.f.num': 'No.', 'pte.yes': 'Yes', 'pte.no': 'No', 'pte.none': 'No record yet',
-  'pte.c.exam': 'Exam sightings', 'pte.c.iSat': 'I got this one', 'pte.c.date': 'Exam date', 'pte.c.city': 'Test centre city', 'pte.c.cityPh': 'Optional',
-  'pte.c.send': 'Send', 'pte.c.cancel': 'Cancel', 'pte.c.notes': 'Comments', 'pte.c.ph': 'Write a comment', 'pte.c.empty': 'No comments yet',
-  'pte.c.login': 'Log in to post', 'pte.c.sent': 'Submitted, shown after review', 'pte.c.err': 'Not sent, please retry', 'pte.c.examOk': 'Recorded',
+  'pte.c.seen': 'Seen it ({n})',
+  'pte.c.send': 'Send', 'pte.c.notes': 'Comments', 'pte.c.write': 'Write a comment', 'pte.c.ph': 'Write a comment', 'pte.c.empty': 'No comments yet',
+  'pte.c.sent': 'Submitted, shown after review', 'pte.c.err': 'Not sent, please retry',
   'pte.dict.close': 'Close', 'pte.dict.loading': 'Looking up', 'pte.dict.none': 'No entry',
 }

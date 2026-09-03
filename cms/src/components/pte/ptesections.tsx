@@ -2,14 +2,15 @@
 /**
  * 域内小件:题型四栏面板(口语 / 写作 / 阅读 / 听力;照小枫叶「练习」面板整块铺开 ——
  * Frank 2026-09-03「可以按这种整体都显示出来」「最好是有点设计质感的」):栏头带色图标与下划线,
- * 19 型全列带重要度星;有题的是真链接、当前型主色加粗,没题的灰字不可点、不写解释。手机四栏叠一列。
+ * 19 型全列带重要度星;有题的是药丸钮(当前型亮态 —— Frank 2026-09-04「可以点击的应该显示成按钮」),
+ * 没题的灰字不可点、不写解释。手机四栏叠一列。
  *
  * @author Frank
  * @time 2026-09-03 12:00:00
  */
 import { cssOf } from '@/components/css'
 import { IconChat, IconClipboard, IconMedal, IconNews } from '@/components/icons'
-import { LinkButton } from '@/components/button'
+import { Chip } from '@/components/chip'
 import { CLS_SEP, SEC_READING, SEC_SPEAKING, SEC_WRITING } from './constants'
 import { listHrefOf, sectionLabelOf, sectionsOf, starsOf, typeNameOf } from './functions'
 import type { PteSectionsIn } from './types'
@@ -29,10 +30,8 @@ export function PteSections({ types, type, lang, t }: PteSectionsIn) {
       const name = typeNameOf({ type: x, lang })
       const stars = starsOf({ weight: x.weight })
       let body = <span className={css.typeOff}>{name}</span>
-      if (x.count > 0 && x.code === type) {
-        body = <span className={css.typeNow}>{name}</span>
-      } else if (x.count > 0) {
-        body = <LinkButton href={listHrefOf({ type: x.code })} className={cssOf(css.typeLink)}>{name}</LinkButton>
+      if (x.count > 0) {
+        body = <Chip href={listHrefOf({ type: x.code })} active={x.code === type}>{name}</Chip>
       }
       rows.push(
         <div key={x.code} className={css.typeRow}>

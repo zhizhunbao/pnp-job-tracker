@@ -1,7 +1,9 @@
 'use client'
 /**
- * pte 域的结构:/pte/[type] 题单页正文 —— Shell 轨 + 头行(H1)+ 免责一句 + 白卡
- * (题型胶囊 / 窗口与筛胶囊 / 计数行 + 更新时间 / 桌面表或手机卡 / 显示更多)。壳件拼装归页面门。
+ * pte 域的结构:/pte/[type] 题单页正文 —— Shell 轨 + 头行(H1)+ 两张白卡:题型四栏面板一张、
+ * 题表一张(右上更新时间 / 桌面表或手机卡 / 显示更多)。壳件拼装归页面门。
+ * 2026-09-04 Frank「这个上下应该分成两个 section」「这个筛选都删了」「考生回忆整理不需要显示」:
+ * 窗口 / 押题 / 未练过 / 排序四行胶囊与计数行整体撤掉,排序走表头,免责句撤。
  * 2026-09-03 批二新立(设计稿 docs/design/PTE刷题-20260903.md,效果图 img/PTE题单-*)。
  * 同日 Frank「所有主页面都不应该有返回按钮」:题单页是主页面,右上返回撤掉;
  * 「所有的 table 右上角都应该有一个更新时间」:计数行右端挂 Updated(time 桶)。
@@ -14,10 +16,9 @@ import { useLang } from '@/components/i18n'
 import { Shell } from '@/components/shell'
 import { Updated } from '@/components/time'
 import { KIND_SECONDARY, SHELL_TOP } from './constants'
-import { cellRowsOf, countTextOf } from './functions'
+import { cellRowsOf } from './functions'
 import { usePteBoard } from './hooks'
 import { PteCards } from './ptecards'
-import { PteFilters } from './ptefilters'
 import { PteTable } from './ptetable'
 import { PteSections } from './ptesections'
 import type { PteIn } from './types'
@@ -39,12 +40,11 @@ export function Pte({ types, type, rows, loggedIn, updatedAt }: PteIn) {
         <div className={css.headRow}>
           <h1 className={css.h1}>{t('pte.title')}</h1>
         </div>
-        <div className={css.sub}>{t('pte.disclaimer')}</div>
         <div className={css.card}>
           <PteSections types={types} type={type} lang={lang} t={t} />
-          <PteFilters t={t} b={b} />
+        </div>
+        <div className={css.card}>
           <div className={css.count}>
-            {countTextOf({ t, win: b.win, n: b.rows.length })}
             <Updated iso={updatedAt} t={t} />
           </div>
           <PteTable t={t} rows={cells} />

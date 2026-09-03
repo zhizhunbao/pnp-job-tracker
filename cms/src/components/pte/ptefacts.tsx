@@ -18,10 +18,6 @@ import css from './pte.module.css'
  * @returns 一张卡。
  */
 export function PteFacts({ t, q }: PteFactsIn) {
-  let hot = t('pte.no')
-  if (q.predicted) {
-    hot = t('pte.yes')
-  }
   return (
     <div className={css.card}>
       <div className={css.fact}>
@@ -32,7 +28,6 @@ export function PteFacts({ t, q }: PteFactsIn) {
         <span>{t('pte.f.n')}</span>
         <span className={css.factV}>{t('pte.times', { n: q.times })}</span>
       </div>
-      <div className={css.fact}><span>{t('pte.f.hot')}</span><span className={css.factV}>{hot}</span></div>
       <div className={css.fact}><span>{t('pte.f.num')}</span><span className={css.factV}>{NUM_HEAD}{q.num}</span></div>
     </div>
   )

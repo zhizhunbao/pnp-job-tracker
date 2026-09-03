@@ -11,39 +11,37 @@
 import { cssOf } from '@/components/css'
 import { SQL, count, numOrNull, queryRowsOrEmpty, text, textOrNull } from '@/lib/db'
 import {
-  ALIGN_LEFT, ALIGN_RIGHT, API_COMMENTS, API_PTE_DONE, CHECK_MARK, CLOCK_PAD, CLOCK_SEP, CLS_SEP, COL_DONE, COL_HOT,
-  COL_NUM, COL_SEEN, COL_TEXT, COL_TIMES, CRED_INCLUDE, DATE_LEN, DAY_MS, DESC_LEN_MAX, DICT_API, DICT_BUSY,
-  DICT_DEFS_MAX, DICT_EDGE_PX, DICT_GAP_PX, DICT_IDLE, DICT_MIN_LEN, DICT_NONE, DICT_OK, DICT_W_PX, DONE_KEY,
-  EMPTY_DONE, EV_MOUSEUP, EV_TOUCHEND, EXAM_HINT_KEY, HDR_CONTENT_TYPE, ID_SEP, INST_KEY, ITEM_DESC_TPL,
-  ITEM_TITLE_TPL, KIND_EXAM, KIND_NOTE, LANG_KO, LANG_ZH, LIKE_ANY, LIST_DESC_TPL, LIST_TITLE_TPL, METHOD_POST,
-  METHOD_PUT, MIME_JSON, MS_PER_MIN, NOTE_HINT_KEY, NOT_FOUND_TITLE, NUM_HEAD, PAD_CHAR, PAGE_STEP,
-  PHASE_ANSWERING, PHASE_CHECKED, PHASE_READY, PREP_S, PTE_META, PUNCT_RE, QID_ID_AT, QID_SEP, RECENT_DAYS,
-  REC_CAP_S, REC_MIME, REC_STATE_INACTIVE, SECTION_KEY, SECTION_ORDER, SEC_PER_MIN, STAR, STARS_ONE_MIN,
-  STARS_TWO_MIN, STATE_BUSY, STATE_ERR, STATE_SENT, TEXT_NONE, TICK_MS, TITLE_LEN_MAX, TTS_GUARD_BASE_MS, TTS_LANG,
-  TTS_LANG_HEAD, TTS_MS_PER_WORD, TTS_RATE, T_RA, URL_PTE, URL_SEP, VAR_N, VAR_NUM, VAR_TEXT, VAR_TITLE, VAR_TYPE,
-  WIN_ALL, WIN_KEY, WORD_RE, WORD_SPLIT_RE, W_DONE, W_HOT, W_NUM, W_SEEN, W_TEXT, W_TIMES,
+  ALIGN_LEFT, ALIGN_RIGHT, API_COMMENTS, API_PTE_DONE, CHECK_MARK, CLOCK_PAD, CLOCK_SEP, CLS_SEP, COL_DONE, COL_NUM,
+  COL_SEEN, COL_TEXT, COL_TIMES, CRED_INCLUDE, DATE_LEN, DAY_MS, DESC_LEN_MAX, DICT_API, DICT_BUSY, DICT_DEFS_MAX,
+  DICT_EDGE_PX, DICT_GAP_PX, DICT_IDLE, DICT_MIN_LEN, DICT_NONE, DICT_OK, DICT_W_PX, DONE_KEY, EMPTY_DONE, EV_MOUSEUP,
+  EV_TOUCHEND, HDR_CONTENT_TYPE, ID_SEP, INST_KEY, ITEM_DESC_TPL, ITEM_TITLE_TPL, KIND_EXAM, KIND_NOTE, LANG_KO,
+  LANG_ZH, LIKE_ANY, LIST_DESC_TPL, LIST_TITLE_TPL, METHOD_POST, METHOD_PUT, MIME_JSON, MS_PER_MIN, NOTE_HINT_KEY,
+  NOT_FOUND_TITLE, NUM_HEAD, PAD_CHAR, PAGE_STEP, PHASE_ANSWERING, PHASE_CHECKED, PHASE_READY, PREP_S, PTE_META,
+  PUNCT_RE, QID_ID_AT, QID_SEP, RECENT_DAYS, REC_CAP_S, REC_MIME, REC_STATE_INACTIVE, SECTION_KEY, SECTION_ORDER,
+  SEC_PER_MIN, STAR, STARS_ONE_MIN, STARS_TWO_MIN, STATE_BUSY, STATE_ERR, STATE_IDLE, STATE_SENT, TEXT_NONE, TICK_MS,
+  TITLE_LEN_MAX, TTS_GUARD_BASE_MS, TTS_LANG, TTS_LANG_HEAD, TTS_MS_PER_WORD, TTS_RATE, T_RA, URL_PTE, URL_SEP, VAR_N,
+  VAR_NUM, VAR_TEXT, VAR_TITLE, VAR_TYPE, WORD_RE, WORD_SPLIT_RE, W_DONE, W_NUM, W_SEEN, W_TEXT, W_TIMES,
 } from './constants'
 import { CACHE } from './variables'
 import css from './pte.module.css'
 import { DoneCell } from './donecell'
-import { HotCell } from './hotcell'
 import { NumCell } from './numcell'
 import { SeenCell } from './seencell'
 import { TextCell } from './textcell'
 import { TimesCell } from './timescell'
 import type {
-  AgoTextIn, CanPlayIn, CellRowsIn, ChunkSinkFn, ClickFn, ClockIn, ColsOfIn, CommentsOfKindIn, CountTextIn,
+  AgoTextIn, CanPlayIn, CellRowsIn, ChunkSinkFn, ClickFn, ClockIn, ColsOfIn, CommentsOfKindIn,
   DaysAgoIn, DeadFlag, DictApiEntry, DictCloseIn, DictEntry, DictLookupIn, DictPos, DictPosIn, DiffIn, DiffOut,
-  DiffToken, DoneClsIn, DoneResBody, DoneSyncIn, EffectFn, ExamCountsIn, ExamSubmitIn, FilterRowsIn, HintIn,
-  InputChangeFn, InputChangeIn, IsDoneIn, ItemHrefIn, ItemMetaIn, LcsAtIn, ListMetaIn, LookupNowIn, MarkDoneIn,
+  DiffToken, DoneClsIn, DoneResBody, DoneSyncIn, EffectFn, ExamCountsIn, ExamSubmitIn, HintIn,
+  IsDoneIn, ItemHrefIn, ItemMetaIn, LcsAtIn, ListMetaIn, LookupNowIn, MarkDoneIn,
   MaybeHref, MoreIn, NeighborsIn, NeighborsOut, NoteSubmitIn, PhaseSetIn, PlayIn, PlayUrlIn, PostCommentIn,
   PteCellRow, PteCol, PteComment, PteCommentDbRow, PteCommentsIn, PteExamCount, PteExamCountDbRow, PteItem,
   PteItemLoadIn, PteListDbRow, PteListIn, PteMeta, PteOneDbRow, PteQuestion, PteQuestionIn, PteRecentDbRow,
   PteRecentRow, PteRow, PteRowIn, PteSection, PteStats, PteStatsDbRow, PteStatsIn, PteType,
   PteTypeDbRow, PteTypesIn, QidOfIn, RecorderHandle, RecorderStopFn, RecorderStopIn, RedoIn, SaveDoneIn,
-  SectionLabelIn, SectionsIn, SeenTextIn, SelectedWord, SelectionWatchIn,
+  SectionLabelIn, SectionsIn, SeenCountIn, SeenTextIn, SelectedWord, SelectionWatchIn,
   SettleDictIn, SpeakIn, StartRecIn, StartRecorderIn, SubmitIn, TextChangeFn, TextChangeIn, TextShownIn, TickerIn,
-  ToggleIn, TypeAtIn, TypeCodeIn, TypeNameIn, WeightTextIn, WinLabelIn, WinPickIn, WinPickOfFn, WordCountIn,
+  ToggleIn, TypeAtIn, TypeCodeIn, TypeNameIn, WeightTextIn, WordCountIn,
 } from './types'
 
 /**
@@ -405,43 +403,7 @@ export function seenTextOf(x: SeenTextIn): string {
   return x.t('pte.seenAgo', { n })
 }
 
-/**
- * 题单筛选:窗口(最近考过日在 N 天内;全部 = 不筛)、押题、未练过。顺序不动(SQL 已排好)。
- *
- * @param x 全部行与三个开关。
- * @returns 筛完的行。
- */
-export function filterRows(x: FilterRowsIn): PteRow[] {
-  const out: PteRow[] = []
-  for (const r of x.rows) {
-    if (x.win !== WIN_ALL && (r.seen == null || daysAgoOf({ iso: r.seen }) > x.win)) {
-      continue
-    }
-    if (x.hot && r.predicted === false) {
-      continue
-    }
-    if (x.todo && x.done.has(r.qid)) {
-      continue
-    }
-    out.push(r)
-  }
-  if (x.byNum) {
-    out.sort(byNumOf)
-  }
-  return out
-}
 
-/**
- * 题号升序比较器(sort 比较器是库定的双参签名)。
- *
- * @param a 左行。
- * @param b 右行。
- * @returns 负 / 零 / 正。
- */
-// eslint-disable-next-line local/one-parameter -- Array.prototype.sort 定死的双参比较器
-function byNumOf(a: PteRow, b: PteRow): number {
-  return Number(a.num) - Number(b.num)
-}
 
 /**
  * 题型按栏分组(Speaking / Writing / Reading / Listening 定序;栏内按 seq;没归栏的型落最后一栏)。
@@ -511,18 +473,6 @@ export function hrefOrNone(h: MaybeHref): string {
   return h
 }
 
-/**
- * 计数行文案。
- *
- * @param x 取词函数、窗口与条数。
- * @returns 文案。
- */
-export function countTextOf(x: CountTextIn): string {
-  if (x.win === WIN_ALL) {
-    return x.t('pte.countAll', { n: x.n })
-  }
-  return x.t('pte.countWin', { win: x.win, n: x.n })
-}
 
 /**
  * 练过判定。
@@ -544,10 +494,6 @@ export function cellRowsOf(x: CellRowsIn): PteCellRow[] {
   const out: PteCellRow[] = []
   for (const r of x.rows) {
     const done = isDone({ done: x.done, qid: r.qid })
-    let hotText = TEXT_NONE
-    if (r.predicted) {
-      hotText = x.t('pte.hotMark')
-    }
     let doneText = TEXT_NONE
     if (done) {
       doneText = CHECK_MARK
@@ -562,7 +508,6 @@ export function cellRowsOf(x: CellRowsIn): PteCellRow[] {
       textCls: textCellClsOf({ done }),
       seenText: seenTextOf({ t: x.t, seen: r.seen }),
       times: r.times,
-      hotText,
       doneText,
       done,
     })
@@ -571,7 +516,7 @@ export function cellRowsOf(x: CellRowsIn): PteCellRow[] {
 }
 
 /**
- * 桌面表六列(百分比固定版式,永不横滚)。render 收整行递给哑单元格 —— 表格库定的调法。
+ * 桌面表五列(百分比固定版式,永不横滚;押题列 2026-09-04 撤 —— Frank「每行都是押题有什么意义」)。render 收整行递给哑单元格 —— 表格库定的调法。
  *
  * @param x 取词函数。
  * @returns 列声明。
@@ -584,7 +529,6 @@ export function colsOf(x: ColsOfIn): PteCol[] {
     {
       key: COL_TIMES, label: x.t('pte.col.n'), width: W_TIMES, align: ALIGN_RIGHT, render: TimesCell, sort: timesSortOf,
     },
-    { key: COL_HOT, label: x.t('pte.col.hot'), width: W_HOT, align: ALIGN_LEFT, render: HotCell, sort: hotSortOf },
     { key: COL_DONE, label: x.t('pte.col.done'), width: W_DONE, align: ALIGN_LEFT, render: DoneCell, sort: doneSortOf },
   ]
 }
@@ -629,18 +573,6 @@ function timesSortOf(r: PteCellRow): number {
   return r.times
 }
 
-/**
- * 押题列排序取值(是 1 否 0)。
- *
- * @param r 展示行。
- * @returns 0 / 1。
- */
-function hotSortOf(r: PteCellRow): number {
-  if (r.hotText === TEXT_NONE) {
-    return 0
-  }
-  return 1
-}
 
 /**
  * 练过列排序取值(是 1 否 0)。
@@ -1031,19 +963,6 @@ async function syncDoneNow(): Promise<void> {
   saveDone({ done: new Set(merged) })
 }
 
-/**
- * 造窗口手柄工厂:一档一只。
- *
- * @param x 落格。
- * @returns 收档给手柄的函数。
- */
-export function makeWinPickOf(x: WinPickIn): WinPickOfFn {
-  return function pickOf(win: number): ClickFn {
-    return function pick(): void {
-      x.setWin(win)
-    }
-  }
-}
 
 /**
  * 造布尔开关手柄。
@@ -1218,17 +1137,6 @@ export function makeTextChange(x: TextChangeIn): TextChangeFn {
   }
 }
 
-/**
- * 造单行输入手柄。
- *
- * @param x 落格。
- * @returns 手柄。
- */
-export function makeInputChange(x: InputChangeIn): InputChangeFn {
-  return function onChange(e: React.ChangeEvent<HTMLInputElement>): void {
-    x.set(e.target.value)
-  }
-}
 
 /**
  * 起录音:要麦克风 → MediaRecorder 攒块;拿不到就回调 onDenied 并给 null。
@@ -1441,19 +1349,6 @@ export function isTextShown(x: TextShownIn): boolean {
   return x.textShown
 }
 
-/**
- * 窗口档的胶囊文案。
- *
- * @param x 取词函数与窗口天数。
- * @returns 文案(表里没有的档给天数本身)。
- */
-export function winLabelOf(x: WinLabelIn): string {
-  const key = WIN_KEY[x.win]
-  if (key == null) {
-    return String(x.win)
-  }
-  return x.t(key)
-}
 
 /**
  * 题面格类名(练过的灰掉)。
@@ -1608,6 +1503,17 @@ export function commentsOfKind(x: CommentsOfKindIn): PteComment[] {
 }
 
 /**
+ * 「考过 (N)」的 N:来源合成的考过次数(库里 times 已含本站过审记录)+ 本次会话刚记的条数。
+ *
+ * @param x 来源次数、SSR 带下的评论与现时考试记录。
+ * @returns 次数。
+ */
+export function seenCountOf(x: SeenCountIn): number {
+  const was = commentsOfKind({ comments: x.comments, kind: KIND_EXAM }).length
+  return x.times + x.exams.length - was
+}
+
+/**
  * 今天的日期串(YYYY-MM-DD,本地时区)。
  *
  * @returns 日期串。
@@ -1639,7 +1545,7 @@ async function postComment(x: PostCommentIn): Promise<boolean> {
 }
 
 /**
- * 造「我考到了」提交手柄:发成功当场并进考试记录栏(免审,不用等刷新)。
+ * 造「考过」钮手柄:记今天,发成功当场并进考试记录栏(免审,不用等刷新);点过一次就不再收(状态离开闲置)。
  *
  * @param x 题键、两格现值、状态与三个落格。
  * @returns 手柄。
@@ -1657,11 +1563,12 @@ export function makeExamSubmit(x: ExamSubmitIn): ClickFn {
  * @returns 无。
  */
 async function examSubmitNow(x: ExamSubmitIn): Promise<void> {
-  if (x.state === STATE_BUSY || x.examDate.length !== DATE_LEN) {
+  if (x.state !== STATE_IDLE) {
     return
   }
   x.setState(STATE_BUSY)
-  const body = JSON.stringify({ qid: x.qid, kind: KIND_EXAM, examDate: x.examDate, examCity: x.examCity.trim() })
+  const examDate = todayOf()
+  const body = JSON.stringify({ qid: x.qid, kind: KIND_EXAM, examDate, examCity: TEXT_NONE })
   const ok = await postComment({ body })
   if (ok === false) {
     x.setState(STATE_ERR)
@@ -1670,15 +1577,14 @@ async function examSubmitNow(x: ExamSubmitIn): Promise<void> {
   const mine: PteComment = {
     id: 0,
     kind: KIND_EXAM,
-    examDate: x.examDate,
-    examCity: x.examCity.trim(),
+    examDate,
+    examCity: TEXT_NONE,
     authorName: TEXT_NONE,
     body: TEXT_NONE,
-    date: todayOf(),
+    date: examDate,
   }
   x.setExams([mine].concat(x.exams))
   x.setState(STATE_SENT)
-  x.setOpen(false)
 }
 
 /**
@@ -1728,19 +1634,6 @@ export function noteHintOf(x: HintIn): string {
   return x.t(key)
 }
 
-/**
- * 考试记录提交状态的提示;闲置与在途给空串。
- *
- * @param x 取词函数与状态。
- * @returns 提示文案或空串。
- */
-export function examHintOf(x: HintIn): string {
-  const key = EXAM_HINT_KEY[x.s]
-  if (key == null) {
-    return TEXT_NONE
-  }
-  return x.t(key)
-}
 
 
 /**

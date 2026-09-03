@@ -1,6 +1,6 @@
 'use client'
 /**
- * 域内小件:答题卡头(英文题型名 + 缩写灰注 + 押题标 | 位置;下一行官方一句指令;
+ * 域内小件:答题卡头(英文题型名 + 缩写灰注 | 「考过 (N)」钮 + 位置;下一行官方一句指令;
  * RA 准备段再一行倒计时 | 跳过准备)。
  *
  * @author Frank
@@ -18,7 +18,7 @@ import css from './pte.module.css'
  * @param props 同答题卡。
  * @returns 头两三行。
  */
-export function PteAnswerHead({ t, q, type, pos, a }: PteAnswerPartIn) {
+export function PteAnswerHead({ t, q, type, pos, a, seen }: PteAnswerPartIn) {
   const inPrep = a.phase === PHASE_READY && a.prepLeft > 0
   return (
     <>
@@ -26,9 +26,11 @@ export function PteAnswerHead({ t, q, type, pos, a }: PteAnswerPartIn) {
         <div>
           {type.nameEn}
           <span className={css.code}>{q.type}</span>
-          {q.predicted && <span className={css.tag}>{t('pte.hotMark')}</span>}
         </div>
-        <div className={css.pos}>{pos}</div>
+        <div className={css.headRight}>
+          {seen}
+          <span className={css.pos}>{pos}</span>
+        </div>
       </div>
       <div className={css.inst}>{t(instKeyOf({ type: q.type }))}</div>
       {inPrep && (

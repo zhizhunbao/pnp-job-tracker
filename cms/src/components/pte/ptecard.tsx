@@ -6,7 +6,6 @@
  * @time 2026-09-03 12:00:00
  */
 import { LinkButton } from '@/components/button'
-import { TEXT_NONE } from './constants'
 import { cardClsOf } from './functions'
 import type { PteCardViewIn } from './types'
 import css from './pte.module.css'
@@ -23,7 +22,6 @@ export function PteCard({ t, r }: PteCardViewIn) {
       <div className={css.mHead}>
         <span>
           {r.num}
-          {r.hotText !== TEXT_NONE && <span className={css.hot}> {r.hotText}</span>}
         </span>
         <span>{r.seenText}</span>
       </div>

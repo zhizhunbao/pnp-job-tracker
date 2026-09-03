@@ -338,14 +338,79 @@ export type RunResizeIn = {
   key: string
 
   /**
-   * 起手时这一列的宽(px)。
+   * 列 key 按表序(定哪些在竖线左边、哪些在右边)。
    */
-  from: number
+  keys: string[]
+
+  /**
+   * 起手时各列的宽(px)快照。
+   */
+  snap: Record<string, number>
 
   /**
    * 写列宽的 setter(React 的 setState 形状)。
    */
   setWidths: (f: (w: Record<string, number>) => Record<string, number>) => void
+}
+
+/**
+ * snapOf(起手列宽快照)的入参。
+ */
+export type SnapIn<T> = {
+  /**
+   * 列声明(按表序)。
+   */
+  cols: Col<T>[]
+
+  /**
+   * 已拖出的像素宽。
+   */
+  widths: Record<string, number>
+
+  /**
+   * 表头元素表(实测宽)。
+   */
+  ths: Record<string, HTMLTableCellElement | null>
+}
+
+/**
+ * widthsAfterDrag 的入参(拖到某处时全表列宽的算法输入)。
+ */
+export type DragWidthsIn = {
+  /**
+   * 列 key 按表序。
+   */
+  keys: string[]
+
+  /**
+   * 起手时各列的宽(px)快照。
+   */
+  snap: Record<string, number>
+
+  /**
+   * 被拖的列 key(竖线在它右边)。
+   */
+  key: string
+
+  /**
+   * 指针相对起手点的水平位移(px)。
+   */
+  delta: number
+}
+
+/**
+ * pxAt(快照取宽)的入参。
+ */
+export type PxAtIn = {
+  /**
+   * 起手宽快照。
+   */
+  snap: Record<string, number>
+
+  /**
+   * 列 key。
+   */
+  key: string
 }
 
 /**

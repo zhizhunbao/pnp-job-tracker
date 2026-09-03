@@ -188,30 +188,10 @@ export const SEC_LISTENING = 'Listening'
 export const SECTION_ORDER = [SEC_SPEAKING, SEC_WRITING, SEC_READING, SEC_LISTENING]
 
 
-/**
- * 窗口档(天);0 = 全部。默认 30(设计稿)。
- */
-export const WIN_7 = 7
 
-/**
- * 窗口档:近 30 天(默认)。
- */
-export const WIN_30 = 30
 
-/**
- * 窗口档:近 90 天。
- */
-export const WIN_90 = 90
 
-/**
- * 窗口档:全部。
- */
-export const WIN_ALL = 0
 
-/**
- * 窗口档顺序(胶囊按此排)。
- */
-export const WINS = [WIN_7, WIN_30, WIN_90, WIN_ALL]
 
 /**
  * 门厅「近 N 天考过」的窗口(天)。
@@ -314,31 +294,6 @@ export const INST_KEY: Record<string, string> = {
 export const QID_ID_AT = 2
 
 /**
- * 窗口档 → 胶囊词键。
- */
-export const WIN_KEY: Record<number, string> = {
-  /**
-   * 近 7 天。
-   */
-  7: 'pte.win7',
-
-  /**
-   * 近 30 天。
-   */
-  30: 'pte.win30',
-
-  /**
-   * 近 90 天。
-   */
-  90: 'pte.win90',
-
-  /**
-   * 全部。
-   */
-  0: 'pte.winAll',
-}
-
-/**
  * 留言提交状态 → 提示词键(闲置与在途没有提示)。
  */
 export const NOTE_HINT_KEY: Record<string, string> = {
@@ -353,20 +308,6 @@ export const NOTE_HINT_KEY: Record<string, string> = {
   err: 'pte.c.err',
 }
 
-/**
- * 考试记录提交状态 → 提示词键。
- */
-export const EXAM_HINT_KEY: Record<string, string> = {
-  /**
-   * 已记录(免审当场入栏)。
-   */
-  sent: 'pte.c.examOk',
-
-  /**
-   * 没发出去。
-   */
-  err: 'pte.c.err',
-}
 
 /**
  * 秒表节拍。
@@ -468,10 +409,6 @@ export const KIND_EXAM = 'exam'
  */
 export const KIND_NOTE = 'note'
 
-/**
- * 考点城市上限字数(与 collection 闸同值)。
- */
-export const CITY_MAX = 40
 
 /**
  * 留言上限字数(与 collection 闸同值)。
@@ -584,15 +521,7 @@ export const CLOSE_MARK = '×'
  */
 export const REC_MARK = '●'
 
-/**
- * 日期输入框类型。
- */
-export const INPUT_DATE = 'date'
 
-/**
- * 文本输入框类型。
- */
-export const INPUT_TEXT = 'text'
 
 /**
  * 通知件的信息档。
@@ -659,10 +588,6 @@ export const W_SEEN = '14%'
  */
 export const W_TIMES = '12%'
 
-/**
- * 题单列宽:押题。
- */
-export const W_HOT = '8%'
 
 /**
  * 题单列宽:练过。
@@ -689,10 +614,6 @@ export const COL_SEEN = 'seen'
  */
 export const COL_TIMES = 'times'
 
-/**
- * 列身份。
- */
-export const COL_HOT = 'hot'
 
 /**
  * 列身份。

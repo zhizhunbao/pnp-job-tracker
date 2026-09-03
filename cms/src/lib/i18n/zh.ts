@@ -1275,8 +1275,8 @@ export const pteZh = {
   'pte.diff': '{ok} 词对,{bad} 词错', 'pte.done': '已记为练过', 'pte.showText': '显示原句',
   'pte.noTts': '此浏览器不支持朗读', 'pte.noMic': '没拿到麦克风',
   'pte.f.seen': '最近考过', 'pte.f.n': '考过次数', 'pte.f.hot': '押题', 'pte.f.num': '题号', 'pte.yes': '是', 'pte.no': '否', 'pte.none': '暂无记录',
-  'pte.c.exam': '考试记录', 'pte.c.iSat': '我考到了', 'pte.c.date': '考试日期', 'pte.c.city': '考点城市', 'pte.c.cityPh': '选填',
-  'pte.c.send': '发送', 'pte.c.cancel': '取消', 'pte.c.notes': '留言', 'pte.c.ph': '写留言', 'pte.c.empty': '还没人留言',
-  'pte.c.login': '登录后可发', 'pte.c.sent': '已提交,审核后显示', 'pte.c.err': '没发出去,请重试', 'pte.c.examOk': '已记录',
+  'pte.c.seen': '考过 ({n})',
+  'pte.c.send': '发送', 'pte.c.notes': '留言', 'pte.c.write': '写评论', 'pte.c.ph': '写留言', 'pte.c.empty': '还没人留言',
+  'pte.c.sent': '已提交,审核后显示', 'pte.c.err': '没发出去,请重试',
   'pte.dict.close': '关闭', 'pte.dict.loading': '查词中', 'pte.dict.none': '没查到',
 }

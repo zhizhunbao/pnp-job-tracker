@@ -599,20 +599,6 @@ export type PteSectionsIn = {
   t: TFn
 }
 
-/**
- * 窗口与筛选胶囊排(PteFilters)的 props。
- */
-export type PteFiltersIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 题单状态机面板。
-   */
-  b: PteBoardPanel
-}
 
 /**
  * 桌面表(PteTable)/ 手机卡列(PteCards)的 props。
@@ -677,6 +663,11 @@ export type PteAnswerIn = {
    * 答题状态机面板。
    */
   a: PteAnswerPanel
+
+  /**
+   * 「考过 (N)」钮(评论机器在单题页装配,钮挂题卡头 —— Frank 2026-09-04 照小枫叶「就考过就完事了」)。
+   */
+  seen: React.ReactNode
 
   /**
    * 上一题地址。
@@ -784,14 +775,9 @@ export type PteCommentsViewIn = {
   t: TFn
 
   /**
-   * 题键。
+   * 评论状态机面板(单题页装配,与题卡头的「考过」钮同一台)。
    */
-  qid: string
-
-  /**
-   * SSR 带下的过审评论。
-   */
-  comments: PteComment[]
+  c: PteCommentsPanel
 
   /**
    * 登录态。
@@ -799,20 +785,6 @@ export type PteCommentsViewIn = {
   loggedIn: boolean
 }
 
-/**
- * 「我考到了」表单(PteExamForm)的 props。
- */
-export type PteExamFormIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 评论状态机面板。
-   */
-  c: PteCommentsPanel
-}
 
 /**
  * 留言表单(PteNoteForm)的 props。
@@ -849,37 +821,12 @@ export type PteBoardHookIn = {
  */
 export type PteBoardPanel = {
   /**
-   * 窗口天数;0 = 全部。
-   */
-  win: number
-
-  /**
-   * 只看押题。
-   */
-  hot: boolean
-
-  /**
-   * 只看未练过。
-   */
-  todo: boolean
-
-  /**
-   * 按题号排(默认按最近考过日)。
-   */
-  byNum: boolean
-
-  /**
    * 练过的题键。
    */
   done: Set<string>
 
   /**
-   * 筛完的全部行。
-   */
-  rows: PteRow[]
-
-  /**
-   * 当前显示的行(前 shown 条)。
+   * 当前显示的行(前 shown 条;顺序 = 入参顺序,排序走表头)。
    */
   shown: PteRow[]
 
@@ -887,26 +834,6 @@ export type PteBoardPanel = {
    * 还没显示的条数。
    */
   rest: number
-
-  /**
-   * 切窗口(造好的手柄,一档一只)。
-   */
-  winPickOf: (win: number) => () => void
-
-  /**
-   * 切押题。
-   */
-  onHot: () => void
-
-  /**
-   * 切未练过。
-   */
-  onTodo: () => void
-
-  /**
-   * 切按题号排。
-   */
-  onBySeen: () => void
 
   /**
    * 显示更多。
@@ -1042,6 +969,11 @@ export type PteCommentsHookIn = {
    * SSR 带下的过审评论。
    */
   comments: PteComment[]
+
+  /**
+   * 来源合成的考过次数(题的 times)。
+   */
+  times: number
 }
 
 /**
@@ -1054,29 +986,24 @@ export type PteCommentsPanel = {
   exams: PteComment[]
 
   /**
+   * 「考过 (N)」的 N(来源次数 + 本次会话刚记的)。
+   */
+  seenN: number
+
+  /**
    * 留言。
    */
   notes: PteComment[]
 
   /**
-   * 「我考到了」表单开着。
-   */
-  examOpen: boolean
-
-  /**
-   * 考试日现值。
-   */
-  examDate: string
-
-  /**
-   * 城市现值。
-   */
-  examCity: string
-
-  /**
    * 考试记录提交状态。
    */
   examState: PostState
+
+  /**
+   * 留言表单开着(点「写评论」才开)。
+   */
+  noteOpen: boolean
 
   /**
    * 留言现值。
@@ -1089,24 +1016,14 @@ export type PteCommentsPanel = {
   noteState: PostState
 
   /**
-   * 开/关「我考到了」表单。
-   */
-  onExamToggle: () => void
-
-  /**
-   * 考试日输入。
-   */
-  onExamDate: (e: React.ChangeEvent<HTMLInputElement>) => void
-
-  /**
-   * 城市输入。
-   */
-  onExamCity: (e: React.ChangeEvent<HTMLInputElement>) => void
-
-  /**
    * 发考试记录。
    */
   onExamSubmit: () => void
+
+  /**
+   * 开/关留言表单。
+   */
+  onNoteOpen: () => void
 
   /**
    * 留言输入。
@@ -1159,20 +1076,12 @@ export type LcsAtIn = {
   j: number
 }
 
-/**
- * 窗口手柄工厂交回的函数:收档给手柄。
- */
-export type WinPickOfFn = (win: number) => ClickFn
 
 /**
  * 多行文本框输入手柄。
  */
 export type TextChangeFn = (e: React.ChangeEvent<HTMLTextAreaElement>) => void
 
-/**
- * 单行输入手柄。
- */
-export type InputChangeFn = (e: React.ChangeEvent<HTMLInputElement>) => void
 
 /**
  * effect 体(交回清理函数)。
@@ -1569,60 +1478,7 @@ export type AgoTextIn = {
   iso: string | null
 }
 
-/**
- * 题单筛选(`filterRows`)的入参。
- */
-export type FilterRowsIn = {
-  /**
-   * 全部行。
-   */
-  rows: PteRow[]
 
-  /**
-   * 窗口天数;0 = 全部。
-   */
-  win: number
-
-  /**
-   * 只看押题。
-   */
-  hot: boolean
-
-  /**
-   * 只看未练过。
-   */
-  todo: boolean
-
-  /**
-   * 按题号排。
-   */
-  byNum: boolean
-
-  /**
-   * 练过的题键。
-   */
-  done: Set<string>
-}
-
-/**
- * 题单计数文案(`countTextOf`)的入参。
- */
-export type CountTextIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 窗口天数;0 = 全部。
-   */
-  win: number
-
-  /**
-   * 筛完的条数。
-   */
-  n: number
-}
 
 /**
  * WFD 逐词对照的一个词。
@@ -1804,15 +1660,7 @@ export type DoneResBody = {
  */
 export type MaybeHref = string | null
 
-/**
- * 窗口手柄工厂(`makeWinPickOf`)的入参。
- */
-export type WinPickIn = {
-  /**
-   * 落格。
-   */
-  setWin: (win: number) => void
-}
+
 
 /**
  * 布尔开关手柄(`makeToggle`)的入参。
@@ -1929,15 +1777,6 @@ export type TextChangeIn = {
   set: (v: string) => void
 }
 
-/**
- * 单行输入手柄(`makeInputChange`)的入参。
- */
-export type InputChangeIn = {
-  /**
-   * 落格。
-   */
-  set: (v: string) => void
-}
 
 /**
  * 录音机句柄:浏览器 MediaRecorder 那一格由 startRecorder 交回,stop 时收 blob。
@@ -2099,16 +1938,6 @@ export type ExamSubmitIn = {
   qid: string
 
   /**
-   * 考试日。
-   */
-  examDate: string
-
-  /**
-   * 城市。
-   */
-  examCity: string
-
-  /**
    * 现状态。
    */
   state: PostState
@@ -2127,11 +1956,6 @@ export type ExamSubmitIn = {
    * 落记录(发成功当场并进去)。
    */
   setExams: (rows: PteComment[]) => void
-
-  /**
-   * 收起表单。
-   */
-  setOpen: (on: boolean) => void
 }
 
 /**
@@ -2162,6 +1986,26 @@ export type NoteSubmitIn = {
    * 清正文。
    */
   setNote: (v: string) => void
+}
+
+/**
+ * 「考过 (N)」计数(`seenCountOf`)的入参。
+ */
+export type SeenCountIn = {
+  /**
+   * 来源合成的考过次数。
+   */
+  times: number
+
+  /**
+   * SSR 带下的评论。
+   */
+  comments: PteComment[]
+
+  /**
+   * 现时考试记录(含刚发的)。
+   */
+  exams: PteComment[]
 }
 
 /**
@@ -2299,11 +2143,6 @@ export type PteCellRow = {
   times: number
 
   /**
-   * 押题标文案;空串 = 不是。
-   */
-  hotText: string
-
-  /**
    * 练过勾;空串 = 没练。
    */
   doneText: string
@@ -2429,20 +2268,6 @@ export type DoneClsIn = {
   done: boolean
 }
 
-/**
- * 窗口档胶囊文案(`winLabelOf`)的入参。
- */
-export type WinLabelIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 窗口天数;0 = 全部。
-   */
-  win: number
-}
 
 /**
  * 「能不能播」快照(`canPlaySnapshotOf`)的入参。

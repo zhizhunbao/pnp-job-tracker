@@ -1,8 +1,8 @@
 'use client'
 /**
- * pte 域的状态机器:题单(usePteBoard:窗口 / 押题 / 未练过三开关 + 显示更多 + 练过集)、
+ * pte 域的状态机器:题单(usePteBoard:显示更多 + 练过集)、
  * 答题(usePteAnswer:准备 → 作答 → 对照三段,倒计时 / 秒表 / 朗读 / 录音)、
- * 评论(usePteComments:「我考到了」表单与留言表单)。
+ * 评论(usePteComments:「考过」钮与留言表单)。
  * 体内只有 useState、具名 effect 壳与工厂装配;步骤与口径注释全在 ./functions 的 make* 工厂里
  * (hooks 抽屉的形制照样张 companies/hooks.ts)。
  *
@@ -11,13 +11,13 @@
  */
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import {
-  DICT_IDLE, KIND_EXAM, KIND_NOTE, PAGE_STEP, PHASE_ANSWERING, PHASE_READY, STATE_IDLE, T_WFD, TEXT_NONE, WIN_30,
+  DICT_IDLE, KIND_EXAM, KIND_NOTE, PAGE_STEP, PHASE_ANSWERING, PHASE_READY, STATE_IDLE, T_WFD, TEXT_NONE,
 } from './constants'
 import {
-  commentsOfKind, doneServerSnapshotOf, doneSnapshotOf, filterRows, makeCanPlaySnapshot, makeCountdown, makeDictClose,
-  makeDictLookup, makeDoneSync, makeExamSubmit, makeInputChange, makeMore, makeNoteSubmit, makePhaseSet, makePlay,
-  makeRedo, makeSelectionWatch, makeStartRec, makeSubmit, makeTextChange, makeTicker, makeToggle, makeWinPickOf,
-  prepSecOf, recCapOf, serverEmptyOf, serverFalseOf, subscribeDone, subscribeNone, todayOf,
+  commentsOfKind, doneServerSnapshotOf, doneSnapshotOf, makeCanPlaySnapshot, makeCountdown, makeDictClose,
+  makeDictLookup, makeDoneSync, makeExamSubmit, makeMore, makeNoteSubmit, makePhaseSet, makePlay,
+  makeRedo, makeSelectionWatch, makeStartRec, makeSubmit, makeTextChange, makeTicker, makeToggle,
+  prepSecOf, recCapOf, seenCountOf, serverFalseOf, subscribeDone, subscribeNone,
 } from './functions'
 import type {
   DictEntry, DictPos, DictState, DoneSyncIn, PostState, PteAnswerHookIn, PteAnswerPanel, PteBoardHookIn,
@@ -26,16 +26,12 @@ import type {
 } from './types'
 
 /**
- * 题单整机:三开关筛、前 N 条显示、练过集(首帧空集,挂载后从 localStorage 读 —— SSR 没有它)。
+ * 题单整机:前 N 条显示、练过集(首帧空集,挂载后从 localStorage 读 —— SSR 没有它)。
  *
  * @param x 这一型的全部题。
  * @returns 面板。
  */
 export function usePteBoard(x: PteBoardHookIn): PteBoardPanel {
-  const [win, setWin] = useState(WIN_30)
-  const [hot, setHot] = useState(false)
-  const [todo, setTodo] = useState(false)
-  const [byNum, setByNum] = useState(false)
   const [shown, setShown] = useState(PAGE_STEP)
   const done = useSyncExternalStore(subscribeDone, doneSnapshotOf, doneServerSnapshotOf)
 
@@ -43,21 +39,11 @@ export function usePteBoard(x: PteBoardHookIn): PteBoardPanel {
     return makeDoneSync({ loggedIn: x.loggedIn })()
   }, [x.loggedIn])
 
-  const rows = filterRows({ rows: x.rows, win, hot, todo, byNum, done })
-  const shownRows = rows.slice(0, shown)
+  const shownRows = x.rows.slice(0, shown)
   return {
-    win,
-    hot,
-    todo,
-    byNum,
     done,
-    rows,
     shown: shownRows,
-    rest: rows.length - shownRows.length,
-    winPickOf: makeWinPickOf({ setWin }),
-    onHot: makeToggle({ on: hot, set: setHot }),
-    onTodo: makeToggle({ on: todo, set: setTodo }),
-    onBySeen: makeToggle({ on: byNum, set: setByNum }),
+    rest: x.rows.length - shownRows.length,
     onMore: makeMore({ shown, setShown }),
   }
 }
@@ -132,41 +118,29 @@ export function usePteAnswer(x: PteAnswerHookIn): PteAnswerPanel {
 }
 
 /**
- * 评论整机:考试记录栏(发成功当场并入)与留言栏(发出去待审)。考试日默认今天 ——
- * 挂载后才填(服务端与浏览器时区不同,首帧写死会水合不一致)。
+ * 评论整机:考试记录(一颗「考过」钮,点了记今天、当场并入)与留言栏(发出去待审)。
  *
  * @param x 题键与 SSR 带下的评论。
  * @returns 面板。
  */
 export function usePteComments(x: PteCommentsHookIn): PteCommentsPanel {
   const [exams, setExams] = useState<PteComment[]>(commentsOfKind({ comments: x.comments, kind: KIND_EXAM }))
-  const [examOpen, setExamOpen] = useState(false)
-  const [examDateTyped, setExamDate] = useState<string | null>(null)
-  const [examCity, setExamCity] = useState(TEXT_NONE)
+  const seenN = seenCountOf({ times: x.times, comments: x.comments, exams })
   const [examState, setExamState] = useState<PostState>(STATE_IDLE)
+  const [noteOpen, setNoteOpen] = useState(false)
   const [note, setNote] = useState(TEXT_NONE)
   const [noteState, setNoteState] = useState<PostState>(STATE_IDLE)
-  const today = useSyncExternalStore(subscribeNone, todayOf, serverEmptyOf)
-  let examDate = today
-  if (examDateTyped != null) {
-    examDate = examDateTyped
-  }
 
   return {
     exams,
+    seenN,
     notes: commentsOfKind({ comments: x.comments, kind: KIND_NOTE }),
-    examOpen,
-    examDate,
-    examCity,
     examState,
+    noteOpen,
     note,
     noteState,
-    onExamToggle: makeToggle({ on: examOpen, set: setExamOpen }),
-    onExamDate: makeInputChange({ set: setExamDate }),
-    onExamCity: makeInputChange({ set: setExamCity }),
-    onExamSubmit: makeExamSubmit({
-      qid: x.qid, examDate, examCity, state: examState, setState: setExamState, exams, setExams, setOpen: setExamOpen,
-    }),
+    onNoteOpen: makeToggle({ on: noteOpen, set: setNoteOpen }),
+    onExamSubmit: makeExamSubmit({ qid: x.qid, state: examState, setState: setExamState, exams, setExams }),
     onNote: makeTextChange({ set: setNote }),
     onNoteSubmit: makeNoteSubmit({ qid: x.qid, note, state: noteState, setState: setNoteState, setNote }),
   }

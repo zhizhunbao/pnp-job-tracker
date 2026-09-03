@@ -1153,8 +1153,8 @@ export const pteKo: Record<keyof typeof pteZh, string> = {
   'pte.diff': '{ok}단어 정답, {bad}단어 오답', 'pte.done': '연습 완료로 기록됨', 'pte.showText': '원문 보기',
   'pte.noTts': '이 브라우저는 낭독을 지원하지 않습니다', 'pte.noMic': '마이크를 못 받았습니다',
   'pte.f.seen': '최근 출제', 'pte.f.n': '출제 횟수', 'pte.f.hot': '예상', 'pte.f.num': '번호', 'pte.yes': '예', 'pte.no': '아니오', 'pte.none': '기록 없음',
-  'pte.c.exam': '출제 기록', 'pte.c.iSat': '시험에 나왔어요', 'pte.c.date': '시험 날짜', 'pte.c.city': '시험 도시', 'pte.c.cityPh': '선택',
-  'pte.c.send': '보내기', 'pte.c.cancel': '취소', 'pte.c.notes': '댓글', 'pte.c.ph': '댓글 쓰기', 'pte.c.empty': '아직 댓글이 없습니다',
-  'pte.c.login': '로그인 후 작성', 'pte.c.sent': '제출됨, 검토 후 표시', 'pte.c.err': '전송 실패, 다시 시도하세요', 'pte.c.examOk': '기록됨',
+  'pte.c.seen': '출제됨 ({n})',
+  'pte.c.send': '보내기', 'pte.c.notes': '댓글', 'pte.c.write': '댓글 쓰기', 'pte.c.ph': '댓글 쓰기', 'pte.c.empty': '아직 댓글이 없습니다',
+  'pte.c.sent': '제출됨, 검토 후 표시', 'pte.c.err': '전송 실패, 다시 시도하세요',
   'pte.dict.close': '닫기', 'pte.dict.loading': '검색 중', 'pte.dict.none': '없음',
 }

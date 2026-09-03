@@ -14,7 +14,8 @@ import {
 } from './constants'
 import { sortRows } from './functions'
 import type {
-  Col, ColWidthsIn, ColWidthsOut, MeasureIn, ResizeIn, RowsIn, RowsOut, RunResizeIn, SortState,
+  Col, ColWidthsIn, ColWidthsOut, DragWidthsIn, MeasureIn, PxAtIn, ResizeIn, RowsIn, RowsOut, RunResizeIn, SnapIn,
+  SortState,
 } from './types'
 
 /**
@@ -144,18 +145,8 @@ export function useColWidths<T>(x: ColWidthsIn<T>): ColWidthsOut<T> {
   }
 
   function startResize(x2: ResizeIn) {
-    runResize({ e: x2.e, key: x2.key, from: startWidthOf(x2.key), setWidths })
-  }
-
-  function startWidthOf(key: string): number {
-    if (widths[key] != null) {
-      return widths[key]
-    }
-    const el = thRefs.current[key]
-    if (el != null) {
-      return el.offsetWidth
-    }
-    return COL_W_FALLBACK
+    const snap = snapOf({ cols: x.cols, widths, ths: thRefs.current })
+    runResize({ e: x2.e, key: x2.key, keys: x.cols.map(keyOf), snap, setWidths })
   }
 
   let layout: 'auto' | 'fixed' = 'auto'
@@ -197,10 +188,36 @@ function measureCols<T>(x: MeasureIn<T>): Record<string, string> | null {
 }
 
 /**
+ * 起手时各列的宽快照(px):拖出来的像素 > 表头元素实测 > 兜底。
+ *
+ * @param x 列声明、已拖出的宽与表头元素表。
+ * @returns 列 key → px。
+ */
+function snapOf<T>(x: SnapIn<T>): Record<string, number> {
+  const snap: Record<string, number> = {}
+  for (const c of x.cols) {
+    let w = COL_W_FALLBACK
+    const el = x.ths[c.key]
+    if (el != null) {
+      w = el.offsetWidth
+    }
+    const dragged = x.widths[c.key]
+    if (dragged != null) {
+      w = dragged
+    }
+    snap[c.key] = w
+  }
+  return snap
+}
+
+/**
  * 拖列宽的窗口级跟手(自 useColWidths 提出:那台机器 103 行超闸,而这段与 React 状态
  * 只有一个 setter 的接触面)。按下起手 → 跟手写像素宽 → 松手摘监听。
+ * 2026-09-04 Frank「竖线左右拖动的时候,右边整体跟着动,竖线左边的所有列都不要动」:
+ * 起手时把全部列宽快照成像素,拖动只改被拖列,左边各列原样钉住,右边各列按快照比例
+ * 分剩下的宽(总宽不变,永不横滚);先前只写被拖那一列,fixed 布局按比例重摊会连左边一起挪。
  *
- * @param x 起手事件、列 key、起手宽与写宽的 setter。
+ * @param x 起手事件、列 key、列序与起手宽快照、写宽的 setter。
  * @returns 无。
  */
 function runResize(x: RunResizeIn) {
@@ -209,13 +226,8 @@ function runResize(x: RunResizeIn) {
   const sx = x.e.clientX
 
   function move(ev: PointerEvent) {
-    function put(w: Record<string, number>): Record<string, number> {
-      const next: Record<string, number> = {}
-      for (const [k, v] of Object.entries(w)) {
-        next[k] = v
-      }
-      next[x.key] = Math.max(COL_W_MIN, x.from + ev.clientX - sx)
-      return next
+    function put(): Record<string, number> {
+      return widthsAfterDrag({ keys: x.keys, snap: x.snap, key: x.key, delta: ev.clientX - sx })
     }
     x.setWidths(put)
   }
@@ -227,4 +239,59 @@ function runResize(x: RunResizeIn) {
 
   window.addEventListener(EV_POINTERMOVE, move)
   window.addEventListener(EV_POINTERUP, up)
+}
+
+/**
+ * 拖到某处时全表的列宽:被拖列 = 起手宽 + 位移(不低于下限,也不能把右边挤到下限以下);
+ * 左边各列 = 快照;右边各列按快照比例分剩余宽。
+ *
+ * @param x 列序、起手宽快照、被拖列与位移。
+ * @returns 列 key → 像素宽。
+ */
+function widthsAfterDrag(x: DragWidthsIn): Record<string, number> {
+  const at = x.keys.indexOf(x.key)
+  const right = x.keys.slice(at + 1)
+  let total = 0
+  let rightSnap = 0
+  for (const k of x.keys) {
+    total = total + pxAt({ snap: x.snap, key: k })
+  }
+  for (const k of right) {
+    rightSnap = rightSnap + pxAt({ snap: x.snap, key: k })
+  }
+  let left = 0
+  for (const k of x.keys.slice(0, at)) {
+    left = left + pxAt({ snap: x.snap, key: k })
+  }
+  const rightMin = right.length * COL_W_MIN
+  const dragMax = Math.max(COL_W_MIN, total - left - rightMin)
+  const dragged = Math.min(dragMax, Math.max(COL_W_MIN, pxAt({ snap: x.snap, key: x.key }) + x.delta))
+  const rest = total - left - dragged
+  const out: Record<string, number> = {}
+  for (const k of x.keys.slice(0, at)) {
+    out[k] = pxAt({ snap: x.snap, key: k })
+  }
+  out[x.key] = dragged
+  for (const k of right) {
+    let w = rest / right.length
+    if (rightSnap > 0) {
+      w = rest * pxAt({ snap: x.snap, key: k }) / rightSnap
+    }
+    out[k] = Math.max(COL_W_MIN, w)
+  }
+  return out
+}
+
+/**
+ * 快照里某列的宽;没这一列(理论上不会)给兜底宽 —— 索引可空是类型规定,不是业务态。
+ *
+ * @param x 快照与列 key。
+ * @returns px。
+ */
+function pxAt(x: PxAtIn): number {
+  const v = x.snap[x.key]
+  if (v == null) {
+    return COL_W_FALLBACK
+  }
+  return v
 }

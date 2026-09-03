@@ -17,12 +17,12 @@ import css from './pte.module.css'
  * @param props 题、题型、位置、面板与前后邻(逐格注释见 PteAnswerIn)。
  * @returns 一张卡。
  */
-export function PteAnswer({ t, q, type, pos, a, prevHref, nextHref }: PteAnswerIn) {
+export function PteAnswer({ t, q, type, pos, a, seen, prevHref, nextHref }: PteAnswerIn) {
   return (
     <div className={css.card}>
-      <PteAnswerHead t={t} q={q} type={type} pos={pos} a={a} prevHref={prevHref} nextHref={nextHref} />
-      <PteAnswerBody t={t} q={q} type={type} pos={pos} a={a} prevHref={prevHref} nextHref={nextHref} />
-      <PteAnswerBtns t={t} q={q} type={type} pos={pos} a={a} prevHref={prevHref} nextHref={nextHref} />
+      <PteAnswerHead t={t} q={q} type={type} pos={pos} a={a} seen={seen} prevHref={prevHref} nextHref={nextHref} />
+      <PteAnswerBody t={t} q={q} type={type} pos={pos} a={a} seen={seen} prevHref={prevHref} nextHref={nextHref} />
+      <PteAnswerBtns t={t} q={q} type={type} pos={pos} a={a} seen={seen} prevHref={prevHref} nextHref={nextHref} />
     </div>
   )
 }
