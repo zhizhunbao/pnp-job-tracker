@@ -11,8 +11,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
 from pte.functions import (run, run_assets, run_dk_entries, run_dk_lists, run_duoink, run_index,
-                           run_media, run_pb_audio, run_pb_images, run_ptebank, run_recent,
-                           run_timeline, run_votes, run_words, run_yn_audio)
+                           run_media, run_pb_audio, run_pb_images, run_ptebank, run_ptexj, run_recent,
+                           run_timeline, run_votes, run_words, run_xj_exam, run_xj_lists, run_yn_audio)
 
 SCHEDULED = [
     ("ynwac", run),
@@ -25,6 +25,9 @@ SCHEDULED = [
     ("dk-lists", run_dk_lists),
     ("dk-entries", run_dk_entries),
     ("duoink", run_duoink),
+    ("xj-lists", run_xj_lists),
+    ("xj-exam", run_xj_exam),
+    ("ptexj", run_ptexj),
     ("index", run_index),
     ("timeline", run_timeline),
     ("words", run_words),
@@ -39,7 +42,11 @@ ptebank 步(2026-09-01):WP REST 整库,音频重补 ynwac 文本重;raw 快照�
 pb-audio 步:ptebank 公开 mp3 落盘(幂等;链接会腐,趁开放抓)。
 pb-images/media 步(2026-09-01「继续」):Core 筛图下载 + 题目↔媒体映射(media 殿后,收全链落盘现状)。
 dk-lists/dk-entries/duoink 步(2026-09-02「接一下 duoink」):登录态浏览器读渲染态 —— Vuex 列表元数据 →
-题页正文/题图(幂等断续)→ 装库雷达;无 playwright 的机器跳过,登录态住 crawl 统一 profile。"""
+题页正文/题图(幂等断续)→ 装库雷达;无 playwright 的机器跳过,登录态住 crawl 统一 profile。
+xj-lists/ptexj 步(2026-09-03「照 duoink 的形开一步」):猩际第四源 —— 登录态页内 fetch 明文 API,
+沿 next_num 链收 19 型 Core 预测清单 + 考过票数(题干密文/canvas 不碰)→ 装库雷达 → 索引 frequent 旗 + recent votes。
+xj-exam 步(同日「补 seen」):全站「确认考过」流增量拉取(首轮 180 天,此后追到上次 id 即停)→ 装库并入
+exam_dates → recent seen/seen_n;预测清单 ∪ 近期考过 = 猩际在索引里的全部行。"""
 
 TOOLS = {
     "ynwac": run,
@@ -52,6 +59,9 @@ TOOLS = {
     "dk-lists": run_dk_lists,
     "dk-entries": run_dk_entries,
     "duoink": run_duoink,
+    "xj-lists": run_xj_lists,
+    "xj-exam": run_xj_exam,
+    "ptexj": run_ptexj,
     "index": run_index,
     "timeline": run_timeline,
     "words": run_words,

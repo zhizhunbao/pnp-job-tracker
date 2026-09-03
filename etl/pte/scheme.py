@@ -237,6 +237,109 @@ class DkImagesIn:
     """题图地址清单(已剔头像)。"""
 
 
+class XjPageLike(Protocol):
+    """浏览器页形状(猩际用四门:当前地址 / 导航 / 页内跑带参 JS / 挂请求监听;装配点 cast crawl 域
+    get_browser_page 给的 async playwright Page —— 猩际必须走 crawl 域浏览器,见 constants §15 ⑥)。"""
+
+    url: str
+    """当前地址(站点自跳后从中读题号)。"""
+
+    async def goto(self, url: str, wait_until: str, timeout: int) -> object:
+        """导航到 url,按 wait_until 条件等到 timeout 毫秒。"""
+
+    async def evaluate(self, script: str, arg: object) -> object:
+        """在页内跑一段 JS(arg 作实参),返回其 JSON 值。"""
+
+    def on(self, event: str, handler: object) -> None:
+        """挂页面事件监听(request:截页面自发的接口地址)。"""
+
+
+@dataclass
+class XjListIn:
+    """xj_list_of() 入参(一个题型 → 沿 next_num 链走完预测清单)。"""
+
+    page: XjPageLike
+    """已登录 profile 起的页。"""
+
+    model: str
+    """站内题型键。"""
+
+    urls: list
+    """本页发出的请求地址收集槽(request 监听往里 append;每型开页前清空)。"""
+
+
+@dataclass
+class XjUrlIn:
+    """xj_url_with_num() 入参(截到的接口地址 + 目标题号 → 只换 num 的地址)。"""
+
+    seed: str
+    """页面自发的 single_num_v2 完整地址(鉴权/过滤参数齐)。"""
+
+    num: int
+    """要请求的题号。"""
+
+
+@dataclass
+class XjExamIn:
+    """xj_exam_pull() 入参(截到的流地址 + 停机线 → 新条目)。"""
+
+    page: XjPageLike
+    """已登录 profile 起的页(页内 fetch)。"""
+
+    seed: str
+    """页面自发的 comments/exam 完整地址(鉴权参数齐;去 commentable_id/filter 后成全站流)。"""
+
+    known_id: int
+    """上次已存的最大评论 id(0 = 首轮)。"""
+
+    cutoff: str
+    """回溯深度线(YYYY-MM-DD;本页最新提交早于它即停)。"""
+
+
+@dataclass
+class XjExamUrlIn:
+    """xj_exam_url_of() 入参(流地址 + 页码 → 本页地址)。"""
+
+    seed: str
+    """页面自发的 comments/exam 完整地址。"""
+
+    page: int
+    """页码(1 起)。"""
+
+
+@dataclass
+class XjGroupIn:
+    """xj_group_of() 入参(一个题型的预测清单 + 该型考试记录 → bank 分组)。"""
+
+    model: str
+    """站内题型键。"""
+
+    predicted: list
+    """列表步的明文行(id / exam_count …)。"""
+
+    dates: dict
+    """{题号: [exam_date …]}(流步产物按该型筛出)。"""
+
+
+@dataclass
+class XjSignalsIn:
+    """xj_signals_of() 入参(bank → 信号表;未来日期按 today 剔)。"""
+
+    today: date
+    """基准日。"""
+
+
+@dataclass
+class XjRowIn:
+    """xj_row_of() 入参(一次 single_num_v2 响应 → 一题明文行)。"""
+
+    num: int
+    """本次请求的题号(= 题 id)。"""
+
+    resp: object
+    """接口返回的 JSON 值(形状不对 = None 行,由上层断链留痕)。"""
+
+
 @dataclass
 class RecentRowIn:
     """recent_row_of() 入参(一条索引行 + 该题的回忆信号 → 带四格的行)。"""

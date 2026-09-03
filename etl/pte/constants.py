@@ -1014,6 +1014,8 @@ P_DK_DONE_TPL = "✓ duoink 第三源:{groups} 组 · {total} 题 → {path}"
 # freq = duoink Core 热度 0-3(仅 duoink);votes = ynwac「考过」票数(仅 ynwac)。
 # 源形:duoink 列表 e(recent seen)+ f_c;ynwac votes.json 评论「[考试记录] 日期:YYYY-MM-DD」+ tags.count;
 # ptebank timeline.json 月更存档引用日期。猩际无(有防护未收录)。
+# 2026-09-03 猩际接入(§15):votes 第二来源 = 猩际 exam_count(「考过 (413)」那个数);预测清单
+# 成员进索引 frequent 旗(与 duoink hot 同格);seen/freq 猩际仍 null(考试记录评论要逐题拉,未开)。
 
 YN_VOTE_TYPE = {
     "RA": "RA", "RS": "RS", "DI": "DI", "RTS": "RTS", "ASQ": "ASQ", "SWT": "SWT", "WE": "WE?",
@@ -1062,7 +1064,7 @@ R_K_FREQ = "freq"
 """行:duoink Core 热度 0-3(其他源 null)。"""
 
 R_K_VOTES = "votes"
-"""行:ynwac 考过票数(其他源 null)。"""
+"""行:ynwac 考过票数(其他源 null)。2026-09-03 起猩际 exam_count 也进这格(同语义:考生点「考过」的票数)。"""
 
 R_K_SUMMARY = "summary"
 """产物:{源: {型: {total, seen, last, d30, d90, d180}}} 盘点。"""
@@ -1082,3 +1084,237 @@ R_S_WIN_TPL = "d{days}"
 P_RECENT_DONE_TPL = "✓ 最近考了:{rows} 行 · 有日期 {seen} · 30 天内 {d30} → {path}"
 """日志:收口。"""
 """日志:词表收口。"""
+
+# =========================================================================
+# 15. 猩际(ptexj / APEUni)第四源(登录态浏览器页内 fetch 明文 API —— 预测清单 + 考过票数)
+# =========================================================================
+# 2026-09-03 Frank「照 duoink 的形开一步,考过票数和预测清单接进最近考了」。探索定案
+# (data/processed/pte/ptexj-practice-crawl-analysis.md):① 题干两层都拿不到 —— API `item` 是 e1
+# 密文,渲染态逐词画 canvas;不解密不 OCR,本源只当信号源不当题面源。② 明文可得:tags_v2 的
+# predict_core「Core 预测」清单、single_num_v2 的 exam_count(考过票数)/ prev_num / next_num。
+# ③ 题号 num 不在明文里 —— 开 /practice/<model> 站点自动跳到预测清单首题 /practice/<model>/<num>,
+# 此后沿 next_num 链走完整个清单,每一步请求的 num 就是题 id。④ 请求地址不自拼:从页面自己发出的
+# single_num_v2 请求截取(token 等鉴权参数随之带上),只改 num;页内 fetch 复用登录态。
+# ⑤ 登录态住统一 profile,且猩际单会话互斥(crawl 登录会踢掉 Chrome 里的同账号)。
+# ⑥ 浏览器必须走 crawl 域 get_browser_page,不能像 duoink 那样裸起 launch_persistent_context:猩际主包
+# 带 ondevtoolopen 自毁(认出自动化/devtools 就 window.close 跳 about:blank),crawl 域 SCRIPT_PATCH_ROWS
+# 在脚本加载前把它拍掉;裸起实撞 2026-09-03 —— 页面秒变 about:blank,single_num_v2 永远发不出。
+
+XJ_SOURCE = "https://www.ptexj.com"
+"""猩际站点源(产物 meta 出处 + 拼练习页地址)。"""
+
+XJ_PRACTICE_TPL = "/practice/{model}"
+"""题型练习入口路径(站根,不在 /pte 下;开它自动跳到 tag=predict_core 首题)。"""
+
+XJ_MODELS = ("read_alouds", "repeat_sentences", "describe_images", "answer_questions", "respond_situations",
+             "core_swts", "write_emails", "fib_wr", "r_mcm", "ro", "fib_rd", "r_mcs", "core_ssts",
+             "l_mcm", "l_fib", "l_mcs", "l_smw", "hiws", "wfds")
+"""站内题型键(PTE Core 19 型,来自 /pte/index 渲染态导航;HCS 猩际 Core 无)。"""
+
+XJ_MODEL_TYPE = {
+    "read_alouds": "RA", "repeat_sentences": "RS", "describe_images": "DI", "answer_questions": "ASQ",
+    "respond_situations": "RTS", "core_swts": "SWT", "write_emails": "EMAIL", "fib_wr": "RWFIB",
+    "r_mcm": "RMCM", "ro": "ROP", "fib_rd": "RFIB", "r_mcs": "RMCS", "core_ssts": "SST",
+    "l_mcm": "LMCM", "l_fib": "LFIB", "l_mcs": "LMCS", "l_smw": "SMW", "hiws": "HIW", "wfds": "WFD",
+}
+"""站内题型键 → 标准题型码(与 §10 索引 / DK_PART_TYPE 同一套码)。"""
+
+XJ_API_SINGLE = "/api/v1/questions/single_num_v2"
+"""单题元数据接口路径(截取页面自发请求的判词;响应 data.item 密文不存,只取明文格)。"""
+
+XJ_P_NUM = "num"
+"""单题接口 query 参数:题号(沿链只改这一个参数)。"""
+
+XJ_NUM_RE = re.compile(r"/practice/[a-z_]+/(\d+)")
+"""练习页地址里的题号(站点跳转后 /practice/<model>/<num>;没跳 = 该型预测清单为空)。"""
+
+XJ_FETCH_JS = "(url) => fetch(url).then(r => r.json())"
+"""页内 fetch 一发(同反爬姿态;鉴权全在 query 的 token 里,不带 cookie —— 接口在 any.ptexj.com 跨域,
+CORS 是 * 不许 credentials:'include',带了就 Failed to fetch,2026-09-03 实撞;返回 JSON 值)。"""
+
+XJ_NAV_TIMEOUT_MS = 60000
+"""导航超时(SPA 首屏 + 站点自跳)。"""
+
+XJ_WAIT_UNTIL = "domcontentloaded"
+"""导航等待档:不用 networkidle —— 练习页有轮询请求,60 秒等不到 idle(2026-09-03 流步首跑实撞超时);
+DOM 就绪后靠 XJ_PAGE_WAIT_S 固定等待让站点自跳 + 首批接口发出。"""
+
+XJ_PAGE_WAIT_S = 6.0
+"""练习页 DOM 就绪后再等(站点跳到首题 + single_num_v2 / comments/exam 发出;侦察实测 4 秒够,留余量)。"""
+
+XJ_CALL_DELAY_S = 1.0
+"""链上两次 fetch 的间隔(礼貌;预测清单合计 ~333 题,一轮约 6 分钟)。"""
+
+XJ_CHAIN_MAX = 2000
+"""单题型沿链上限(防 next_num 成环;预测清单实测最大 62)。"""
+
+XJ_A_DATA = "data"
+"""接口响应:数据格。"""
+
+XJ_A_ADDITION = "item_addition"
+"""接口响应 data:明文附加格(exam_count 等)。"""
+
+XJ_A_EXAM_COUNT = "exam_count"
+"""接口响应 item_addition:考过票数(渲染态「考过 (413)」)。"""
+
+XJ_A_NEXT = "next_num"
+"""接口响应 data:清单里下一题题号(None = 链尾)。"""
+
+XJ_A_PREV = "prev_num"
+"""接口响应 data:上一题题号。"""
+
+XJ_A_COUNT = "count"
+"""接口响应 data:该 tag 下题数(链长自校用)。"""
+
+XJ_A_CURRENT = "current_count"
+"""接口响应 data:本题在清单里的序(1 起)。"""
+
+XJ_TAG_PREDICT = "predict_core"
+"""tags_v2 的「Core 预测」tag(站点开练习页的默认 tag;raw 产物 meta 记它)。"""
+
+XJ_K_TAG = "tag"
+"""raw 产物 meta:清单 tag。"""
+
+XJ_K_MODEL = "model"
+"""raw 产物 meta:站内题型键。"""
+
+OUT_XJ_RAW_DIR = RAW_PTE / "ptexj"
+"""raw 落盘目录 data/raw/pte/ptexj/(09-01 探索的 model-counts 也在此)。"""
+
+XJ_RAW_LIST_TPL = "predict-{model}.json"
+"""一个题型的预测清单原样落盘名。"""
+
+OUT_XJ_BANK = PROCESSED_PTE / "ptexj-bank.json"
+"""组织后的清单库(照 duoink bank 形:meta + 按题型分组;组签名 = 标准题型码;无题面)。"""
+
+OUT_XJ_PREV = PROCESSED_PTE / "ptexj-bank-prev.json"
+"""上一轮库(diff 基准)。"""
+
+OUT_XJ_CHANGES = PROCESSED_PTE / "ptexj-changes.json"
+"""本轮变更(预测清单进出的题 —— 押题雷达第四源)。"""
+
+SRC_PTEXJ = "ptexj"
+"""索引 source 值:猩际。"""
+
+P_XJ_NO_BROWSER = "  ptexj:playwright 不可用 —— 跳过(登录态抓取只在装了浏览器的机器跑)"
+"""日志:无浏览器跳过(容器缺 playwright 是预期形态,不当红)。"""
+
+P_XJ_NO_SEED_TPL = "  ptexj {model}:没跳到题或没截到 single_num_v2(停在 {url},截到 {n} 条)—— 记空"
+"""日志:截不到接口地址 / 没跳到首题(留痕并报现场;该型预测清单为空时也走这行;全型皆空由 P_XJ_LOGIN_LOST 升红)。"""
+
+P_XJ_BAD_SHAPE_TPL = "  ptexj {model} #{num}:响应形状不对,链在此断"
+"""日志:单步响应缺 data/item_addition(不猜,断链留痕)。"""
+
+P_XJ_LIST_TPL = "  ptexj 预测 {model}:{n} 题(接口报 {count})"
+"""日志:一个题型链走完(n ≠ count 即链有洞,人眼可核)。"""
+
+P_XJ_LOGIN_LOST = "ptexj 全部题型预测清单为空 —— 登录态丢失,请在统一 profile 重新登录(猩际单会话互斥)"
+"""登录态防线文案(全空 = 没登录,当场红不静默建空库)。"""
+
+P_XJ_LISTS_DONE_TPL = "✓ ptexj 预测清单:{models} 题型 · {total} 题 → {dir}"
+"""日志:列表步收口。"""
+
+P_XJ_DONE_TPL = "✓ ptexj 第四源:{groups} 组 · {total} 题(预测 {predicted} · 仅近期考过 {examined})→ {path}"
+"""日志:装库收口。"""
+
+# 考试记录流(2026-09-03 Frank「补 seen」侦察定案):`comments/exam` 不带 commentable_id = 全站「确认考过」
+# 流(实测 59.8 万条,按提交时间倒序,Core/Academic 混流,条目 commentable.model/num 明文);page_size 硬顶 20;
+# 深度实测 1000 页 ≈ 37 天、2000 页 ≈ 85 天。逐题开页拿 comments 也能得同样日期,但 335 次开页 ≈ 45 分钟
+# 且暴露极验风险,不取。增量:首轮拉到 XJ_EXAM_DEPTH_D 天前,此后拉到上次最大评论 id 即停。
+
+XJ_API_EXAM = "/api/v1/comments/exam"
+"""考试记录流接口路径(截页面自发请求的判词;练习页一开就发,带鉴权参数)。"""
+
+XJ_EXAM_DROP_PARAMS = ("commentable_id", "filter")
+"""从截到的地址里去掉的参数:去 commentable_id 成全站流,去 filter(页面发的是 mine = 只看自己)。"""
+
+XJ_P_PAGE = "page"
+"""流接口 query:页码(1 起)。"""
+
+XJ_P_PAGE_SIZE = "page_size"
+"""流接口 query:每页条数。"""
+
+XJ_EXAM_PAGE_SIZE = 20
+"""每页条数(实测传 50/100/200 都只回 20 —— 服务端硬顶)。"""
+
+XJ_EXAM_DEPTH_D = 180
+"""首轮回溯深度(天)= RECENT_WINDOWS_D 最宽窗口;更早的记录不进任何盘点格,不拉。"""
+
+XJ_EXAM_KEEP_D = 365
+"""raw 流文件保留深度(天;按 created_at 修剪,防文件无限长)。"""
+
+XJ_EXAM_PAGES_MAX = 8000
+"""单轮翻页上限(防排序异常翻不到底;180 天实测 ≈ 4000 页)。"""
+
+XJ_EXAM_DELAY_S = 0.5
+"""流接口两页间隔(首轮 ≈ 4000 发 ≈ 35 分钟;此后增量每轮 ~200 页)。"""
+
+XJ_EXAM_LOG_EVERY = 200
+"""翻页进度播报间隔(页)。"""
+
+XJ_EXAM_STOP_STREAK = 5
+"""停机需要连续多少页满足判据(追上上次 id / 早于深度线)。2026-09-03 首跑实撞:流不严格按时间排序,
+第 1842 页整页是 2025 年的旧记录,单页判据当场停机,6 月 1–18 日几千条没拉到;连续 5 页 = 100 条才算真到底。"""
+
+XJ_A_COMMENTS = "comments"
+"""流响应 data:条目清单;raw 产物里也用它当条目键。"""
+
+XJ_A_PAGE_INFO = "page_info"
+"""流响应 data:分页格。"""
+
+XJ_A_TOTAL_PAGES = "total_pages"
+"""流响应 page_info:总页数(翻到底判据)。"""
+
+XJ_A_ID = "id"
+"""流条目:评论 id(自增;增量停机判据)。"""
+
+XJ_A_CREATED = "created_at"
+"""流条目:提交时刻(ISO,前 10 位日期;深度判据)。"""
+
+XJ_A_EXAM_DATE = "exam_date"
+"""流条目:考生填的考试日期(YYYY-MM-DD;seen 的来源)。"""
+
+XJ_A_COMMENTABLE = "commentable"
+"""流条目:所评题目格(model / num 明文)。"""
+
+XJ_A_MODEL = "model"
+"""commentable 格:站内题型键(非 XJ_MODELS 的 = Academic 型,不收)。"""
+
+XJ_A_NUM = "num"
+"""commentable 格:题号(= 题 id)。"""
+
+OUT_XJ_EXAM = OUT_XJ_RAW_DIR / "exam-comments.json"
+"""考试记录流 raw(去用户化:只留评论 id / model / num / exam_date / created_at;增量合并,按 id 去重)。"""
+
+XJ_K_PREDICTED = "predicted"
+"""bank 题行:在预测清单里(True → 索引 frequent 旗)。"""
+
+XJ_K_EXAM_DATES = "exam_dates"
+"""bank 题行:考试记录日期清单(raw 流里该题全部 exam_date;未来日期在信号层剔)。"""
+
+P_XJ_EXAM_NO_SEED = "ptexj 考试记录流:练习页没发出 comments/exam 请求 —— 登录态丢失或站点改版"
+"""流步防线文案(截不到地址 = 拉不了,当场红)。"""
+
+P_XJ_EXAM_PAGE_TPL = "  ptexj 考试记录流:第 {page} 页,已收 {n} 条(Core),最早提交 {oldest}"
+"""日志:翻页进度。"""
+
+P_XJ_EXAM_STOP_TPL = "  ptexj 考试记录流:第 {page} 页停 —— {why}"
+"""日志:停机原因(追上上次 / 到深度 / 翻到底 / 空页 / 上限)。"""
+
+XJ_STOP_KNOWN = "追上上次已存的评论"
+"""停机原因:本页全部 id ≤ 上次最大 id。"""
+
+XJ_STOP_DEPTH = "到回溯深度"
+"""停机原因:本页最新提交早于深度线。"""
+
+XJ_STOP_END = "翻到底"
+"""停机原因:page ≥ total_pages。"""
+
+XJ_STOP_EMPTY = "空页"
+"""停机原因:响应无条目。"""
+
+XJ_STOP_MAX = "翻页上限"
+"""停机原因:达到 XJ_EXAM_PAGES_MAX。"""
+
+P_XJ_EXAM_DONE_TPL = "✓ ptexj 考试记录流:新收 {new} 条 · 库存 {total} 条(Core,{keep} 天内)→ {path}"
+"""日志:流步收口。"""

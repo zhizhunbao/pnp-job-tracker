@@ -5,15 +5,17 @@ OUT = data/pte/ynwac-bank.json(私有研究,不进 mart/DB)。逐数组 try/exce
 一个模块的诡异嵌套引号解析不动就跳过留痕,不拖垮整轮、不静默丢(no silent cap)。
 数据纯净假设:题库是 webpack 数据模块(只有 字符串/数字/布尔/数组/对象),无函数无计算值。
 """
+import asyncio
 import json
 import os
 import time
-from datetime import date
+from datetime import date, timedelta
 from typing import cast
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 from log.functions import say
 from crawl.constants import PROFILE_DIR
-from crawl.functions import put_cached_page
+from crawl.functions import close_browser, get_browser_page, put_cached_page
 from crawl.scheme import CachePutIn
 from fetch.functions import fetch, make_client
 from fetch.scheme import FetchIn, HttpClientLike as FetchClientLike
@@ -77,10 +79,27 @@ from pte.constants import (DK_AVATAR_MARKS, DK_CRAWL_SLUG, DK_ENTRY_DELAY_S, DK_
                            SITE_ORIGIN, SNIPPET_KEYS, SNIPPET_LEN, TAGS_TPL, TRAILING_COMMA_RE,
                            TRAILING_COMMA_SUB, TRUE_LIT, URL_SLASH, V_K_COMMENTS, V_K_FETCHED,
                            V_K_ID, V_K_TAGS, V_K_TOTAL, V_K_TYPES, VALID_ESCAPE_NEXT,
-                           VOTE_API, VOTE_CODES, VOTE_DELAY_S, VOTE_MAX_ID, VOTE_MISS_MAX)
+                           VOTE_API, VOTE_CODES, VOTE_DELAY_S, VOTE_MAX_ID, VOTE_MISS_MAX,
+                           OUT_XJ_BANK, OUT_XJ_CHANGES, OUT_XJ_PREV, OUT_XJ_RAW_DIR, P_XJ_BAD_SHAPE_TPL,
+                           P_XJ_DONE_TPL, P_XJ_LIST_TPL, P_XJ_LISTS_DONE_TPL, P_XJ_LOGIN_LOST,
+                           P_XJ_NO_BROWSER, P_XJ_NO_SEED_TPL, SRC_PTEXJ, XJ_A_ADDITION, XJ_A_COUNT,
+                           XJ_A_CURRENT, XJ_A_DATA, XJ_A_EXAM_COUNT, XJ_A_NEXT, XJ_A_PREV, XJ_API_SINGLE,
+                           XJ_CALL_DELAY_S, XJ_CHAIN_MAX, XJ_FETCH_JS, XJ_K_MODEL, XJ_K_TAG,
+                           XJ_MODEL_TYPE, XJ_MODELS, XJ_NAV_TIMEOUT_MS, XJ_NUM_RE, XJ_P_NUM,
+                           XJ_PAGE_WAIT_S, XJ_PRACTICE_TPL, XJ_RAW_LIST_TPL, XJ_SOURCE, XJ_TAG_PREDICT,
+                           OUT_XJ_EXAM, P_XJ_EXAM_DONE_TPL, P_XJ_EXAM_NO_SEED, P_XJ_EXAM_PAGE_TPL,
+                           P_XJ_EXAM_STOP_TPL, XJ_A_COMMENTABLE, XJ_A_COMMENTS, XJ_A_CREATED,
+                           XJ_A_EXAM_DATE, XJ_A_ID, XJ_A_MODEL, XJ_A_NUM, XJ_A_PAGE_INFO, XJ_A_TOTAL_PAGES,
+                           XJ_API_EXAM, XJ_EXAM_DELAY_S, XJ_EXAM_DEPTH_D, XJ_EXAM_DROP_PARAMS,
+                           XJ_EXAM_KEEP_D, XJ_EXAM_LOG_EVERY, XJ_EXAM_PAGE_SIZE, XJ_EXAM_PAGES_MAX,
+                           XJ_K_EXAM_DATES, XJ_K_PREDICTED, XJ_P_PAGE, XJ_P_PAGE_SIZE, XJ_STOP_DEPTH,
+                           XJ_STOP_EMPTY, XJ_STOP_END, XJ_STOP_KNOWN, XJ_STOP_MAX, XJ_WAIT_UNTIL,
+                           XJ_EXAM_STOP_STREAK)
 from pte.scheme import (BankIn, CloseIn, CollectIn, DiffIn, DkEntryIn, DkImagesIn, DkPageIn, DkPageLike,
                         Group, GroupIn, HttpClientLike, MediaRowIn, PbBankIn, PbGroupsIn, PbRowIn,
-                        DaysIn, RadarIn, RecentRowIn, RecentSummaryIn, SnapshotIn, VoteGetIn)
+                        DaysIn, RadarIn, RecentRowIn, RecentSummaryIn, SnapshotIn, VoteGetIn,
+                        XjExamIn, XjExamUrlIn, XjGroupIn, XjListIn, XjPageLike, XjRowIn, XjSignalsIn,
+                        XjUrlIn)
 
 
 # =========================================================================
@@ -765,6 +784,9 @@ def run_index() -> None:
     if OUT_DK_BANK.exists():
         with OUT_DK_BANK.open(encoding=ENC_UTF8) as f:
             rows = rows + to_dk_index_rows(json.load(f))
+    if OUT_XJ_BANK.exists():
+        with OUT_XJ_BANK.open(encoding=ENC_UTF8) as f:
+            rows = rows + to_xj_index_rows(json.load(f))
     counts = index_counts_of(rows)
     payload = {
         OUT_K_FETCHED: date.today().isoformat(),
@@ -1484,6 +1506,7 @@ def run_recent() -> None:
     signals.update(dk_signals_of())
     signals.update(yn_signals_of(today))
     signals.update(pb_signals_of())
+    signals.update(xj_signals_of(XjSignalsIn(today=today)))
     rows = []
     for r in idx[IDX_K_ROWS]:
         key = (r[IDX_K_SOURCE], r[IDX_K_TYPE], str(r[CH_K_ID]))
@@ -1639,3 +1662,385 @@ def days_since(x: DaysIn) -> int:
     except ValueError:
         return DAYS_BAD
     return max(0, (x.today - d).days)
+
+
+# =========================================================================
+# 14. 猩际第四源(登录态浏览器页内 fetch 明文 API:预测清单沿 next_num 链 → 装库雷达 → 索引/信号)
+# =========================================================================
+
+
+def run_xj_lists() -> None:
+    """列表步:逐 Core 题型开 /practice/<model>(站点自跳到预测清单首题)→ 截页面自发的 single_num_v2 地址
+    → 页内 fetch 沿 next_num 走完清单 → 明文行原样落 raw/pte/ptexj/predict-<model>.json。
+
+    2026-09-03 立(constants §15 定案):题号不在明文里,只能从跳转地址读首题、沿链拿其余;
+    全部题型都空 = 登录态丢,当场红。无 playwright 的机器跳过不报错。
+    浏览器走 crawl 域 get_browser_page(async 单例,带反自毁补丁;§15 ⑥),所以本步是 asyncio 壳。"""
+    if dk_browser_ok() is False:
+        say(P_XJ_NO_BROWSER)
+        return
+    asyncio.run(xj_lists_async())
+
+
+async def xj_lists_async() -> None:
+    """列表步主体:crawl 浏览器 → 逐题型沿链 → 落盘;收摊在 finally(断网/断链都不留窗)。"""
+    page = await get_browser_page()
+    if page is None:
+        say(P_XJ_NO_BROWSER)
+        return
+    OUT_XJ_RAW_DIR.mkdir(parents=True, exist_ok=True)
+    xp = cast(XjPageLike, page)
+    urls: list = []
+    xp.on("request", make_xj_url_sink(urls))
+    total = 0
+    try:
+        for model in XJ_MODELS:
+            urls.clear()
+            rows = await xj_list_of(XjListIn(page=xp, model=model, urls=urls))
+            payload = {OUT_K_SOURCE: XJ_SOURCE, OUT_K_FETCHED: date.today().isoformat(),
+                       XJ_K_MODEL: model, XJ_K_TAG: XJ_TAG_PREDICT, OUT_K_QUESTIONS: rows}
+            write_json(WriteJsonIn(path=OUT_XJ_RAW_DIR / XJ_RAW_LIST_TPL.format(model=model),
+                                   payload=payload, indent=JSON_INDENT))
+            total += len(rows)
+    finally:
+        await close_browser()
+    if total == 0:
+        raise ValueError(P_XJ_LOGIN_LOST)
+    say(P_XJ_LISTS_DONE_TPL.format(models=len(XJ_MODELS), total=total, dir=OUT_XJ_RAW_DIR))
+
+
+def make_xj_url_sink(urls: list) -> object:
+    """request 监听工厂:把页面自发的 single_num_v2 请求地址收进 urls(外部库回调接缝,形状由 playwright 定)。"""
+    def sink(req: object) -> None:
+        u = str(getattr(req, "url", ""))
+        if XJ_API_SINGLE in u:
+            urls.append(u)
+    return sink
+
+
+async def xj_list_of(x: XjListIn) -> list:
+    """一个题型 → 预测清单明文行(开页 → 截接口地址 + 读首题号 → 沿链 fetch;截不到 / 没跳到题 = 空清单留痕)。"""
+    await x.page.goto(XJ_SOURCE + XJ_PRACTICE_TPL.format(model=x.model), wait_until=XJ_WAIT_UNTIL,
+                      timeout=XJ_NAV_TIMEOUT_MS)
+    await asyncio.sleep(XJ_PAGE_WAIT_S)
+    m = XJ_NUM_RE.search(str(x.page.url))
+    if len(x.urls) == 0 or m is None:
+        say(P_XJ_NO_SEED_TPL.format(model=x.model, url=str(x.page.url), n=len(x.urls)))
+        return []
+    seed = x.urls[0]
+    num: int | None = int(m.group(1))
+    rows: list = []
+    count = 0
+    while num is not None and len(rows) < XJ_CHAIN_MAX:
+        resp = await x.page.evaluate(XJ_FETCH_JS, xj_url_with_num(XjUrlIn(seed=seed, num=num)))
+        row = xj_row_of(XjRowIn(num=num, resp=resp))
+        if row is None:
+            say(P_XJ_BAD_SHAPE_TPL.format(model=x.model, num=num))
+            break
+        rows.append(row)
+        count = row[XJ_A_COUNT]
+        num = row[XJ_A_NEXT]
+        await asyncio.sleep(XJ_CALL_DELAY_S)
+    say(P_XJ_LIST_TPL.format(model=x.model, n=len(rows), count=count))
+    return rows
+
+
+def xj_url_with_num(x: XjUrlIn) -> str:
+    """接口地址只换 num 参数(其余鉴权/过滤参数原样)。"""
+    p = urlparse(x.seed)
+    q = []
+    for k, v in parse_qsl(p.query, keep_blank_values=True):
+        if k == XJ_P_NUM:
+            q.append((k, str(x.num)))
+        else:
+            q.append((k, v))
+    return urlunparse((p.scheme, p.netloc, p.path, p.params, urlencode(q), p.fragment))
+
+
+def xj_row_of(x: XjRowIn) -> dict | None:
+    """一次响应 → 明文行 {id, exam_count, current_count, count, prev_num, next_num}(密文 item 不存;
+    缺 data / item_addition = None,不猜)。"""
+    if not isinstance(x.resp, dict):
+        return None
+    data = x.resp.get(XJ_A_DATA)
+    if not isinstance(data, dict):
+        return None
+    add = data.get(XJ_A_ADDITION)
+    if not isinstance(add, dict):
+        return None
+    exam_count = add.get(XJ_A_EXAM_COUNT)
+    if not isinstance(exam_count, int):
+        exam_count = None
+    nxt = data.get(XJ_A_NEXT)
+    if not isinstance(nxt, int):
+        nxt = None
+    count = data.get(XJ_A_COUNT)
+    if not isinstance(count, int):
+        count = 0
+    return {CH_K_ID: x.num, XJ_A_EXAM_COUNT: exam_count, XJ_A_CURRENT: data.get(XJ_A_CURRENT),
+            XJ_A_COUNT: count, XJ_A_PREV: data.get(XJ_A_PREV), XJ_A_NEXT: nxt}
+
+
+def run_xj_exam() -> None:
+    """流步:全站「确认考过」流增量拉取 → 去用户化条目并入 raw/pte/ptexj/exam-comments.json。
+
+    2026-09-03 立(constants §15 流段定案):地址从练习页自发的 comments/exam 请求截取,去 commentable_id /
+    filter 成全站流;首轮拉到 XJ_EXAM_DEPTH_D 天前,此后追到上次最大 id 即停;截不到地址当场红。"""
+    if dk_browser_ok() is False:
+        say(P_XJ_NO_BROWSER)
+        return
+    asyncio.run(xj_exam_async())
+
+
+async def xj_exam_async() -> None:
+    """流步主体:crawl 浏览器开一页练习页取地址 → 翻页 → 合并落盘;收摊在 finally。"""
+    page = await get_browser_page()
+    if page is None:
+        say(P_XJ_NO_BROWSER)
+        return
+    xp = cast(XjPageLike, page)
+    urls: list = []
+    xp.on("request", make_xj_exam_url_sink(urls))
+    today = date.today()
+    old = xj_exam_rows_of()
+    known_id = 0
+    for r in old:
+        if r[XJ_A_ID] > known_id:
+            known_id = r[XJ_A_ID]
+    try:
+        await xp.goto(XJ_SOURCE + XJ_PRACTICE_TPL.format(model=XJ_MODELS[0]), wait_until=XJ_WAIT_UNTIL,
+                      timeout=XJ_NAV_TIMEOUT_MS)
+        await asyncio.sleep(XJ_PAGE_WAIT_S)
+        if len(urls) == 0:
+            raise ValueError(P_XJ_EXAM_NO_SEED)
+        cutoff = (today - timedelta(days=XJ_EXAM_DEPTH_D)).isoformat()
+        new = await xj_exam_pull(XjExamIn(page=xp, seed=urls[0], known_id=known_id, cutoff=cutoff))
+    finally:
+        await close_browser()
+    keep_from = (today - timedelta(days=XJ_EXAM_KEEP_D)).isoformat()
+    merged: dict = {}
+    for r in old + new:
+        if r[XJ_A_CREATED][:DATE_LEN] >= keep_from:
+            merged[r[XJ_A_ID]] = r
+    rows = sorted(merged.values(), key=xj_exam_id_of, reverse=True)
+    OUT_XJ_RAW_DIR.mkdir(parents=True, exist_ok=True)
+    write_json(WriteJsonIn(path=OUT_XJ_EXAM, payload={OUT_K_SOURCE: XJ_SOURCE, OUT_K_FETCHED: today.isoformat(),
+                                                      XJ_A_COMMENTS: rows}, indent=JSON_INDENT))
+    say(P_XJ_EXAM_DONE_TPL.format(new=len(new), total=len(rows), keep=XJ_EXAM_KEEP_D, path=OUT_XJ_EXAM))
+
+
+def make_xj_exam_url_sink(urls: list) -> object:
+    """request 监听工厂:把页面自发的 comments/exam 请求地址收进 urls(外部库回调接缝)。"""
+    def sink(req: object) -> None:
+        u = str(getattr(req, "url", ""))
+        if XJ_API_EXAM in u:
+            urls.append(u)
+    return sink
+
+
+def xj_exam_rows_of() -> list:
+    """读回 raw 流文件的条目(文件不在 = 首轮,空清单)。"""
+    if not OUT_XJ_EXAM.exists():
+        return []
+    with OUT_XJ_EXAM.open(encoding=ENC_UTF8) as f:
+        return json.load(f)[XJ_A_COMMENTS]
+
+
+def xj_exam_id_of(r: dict) -> int:
+    """条目排序键(评论 id)。"""
+    return r[XJ_A_ID]
+
+
+async def xj_exam_pull(x: XjExamIn) -> list:
+    """从第 1 页翻到停机线:每页 Core 条目收成去用户化行;停机判据按整页看且要连续 XJ_EXAM_STOP_STREAK 页
+    (流不严格按时间排序,整页旧记录会混在中间 —— 单页作数就停早,首跑实撞)。"""
+    rows: list = []
+    page_no = 1
+    why = XJ_STOP_MAX
+    known_streak = 0
+    depth_streak = 0
+    while page_no <= XJ_EXAM_PAGES_MAX:
+        resp = await x.page.evaluate(XJ_FETCH_JS, xj_exam_url_of(XjExamUrlIn(seed=x.seed, page=page_no)))
+        items = xj_exam_items_of(resp)
+        if len(items) == 0:
+            why = XJ_STOP_EMPTY
+            break
+        ids = []
+        newest = ""
+        for it in items:
+            ids.append(int(it.get(XJ_A_ID, 0)))
+            created = str(it.get(XJ_A_CREATED, ""))[:DATE_LEN]
+            if created > newest:
+                newest = created
+            row = xj_exam_row_of(it)
+            if row is not None and row[XJ_A_ID] > x.known_id:
+                rows.append(row)
+        if max(ids) <= x.known_id:
+            known_streak += 1
+        else:
+            known_streak = 0
+        if newest < x.cutoff:
+            depth_streak += 1
+        else:
+            depth_streak = 0
+        if known_streak >= XJ_EXAM_STOP_STREAK:
+            why = XJ_STOP_KNOWN
+            break
+        if depth_streak >= XJ_EXAM_STOP_STREAK:
+            why = XJ_STOP_DEPTH
+            break
+        if page_no % XJ_EXAM_LOG_EVERY == 0:
+            say(P_XJ_EXAM_PAGE_TPL.format(page=page_no, n=len(rows), oldest=newest))
+        if page_no >= xj_exam_total_pages_of(resp):
+            why = XJ_STOP_END
+            break
+        page_no += 1
+        await asyncio.sleep(XJ_EXAM_DELAY_S)
+    say(P_XJ_EXAM_STOP_TPL.format(page=page_no, why=why))
+    return rows
+
+
+def xj_exam_url_of(x: XjExamUrlIn) -> str:
+    """截到的地址 → 全站流第 N 页地址(去 commentable_id / filter,换 page / page_size,其余原样)。"""
+    p = urlparse(x.seed)
+    q = []
+    for k, v in parse_qsl(p.query, keep_blank_values=True):
+        if k in XJ_EXAM_DROP_PARAMS or k == XJ_P_PAGE or k == XJ_P_PAGE_SIZE:
+            continue
+        q.append((k, v))
+    q.append((XJ_P_PAGE, str(x.page)))
+    q.append((XJ_P_PAGE_SIZE, str(XJ_EXAM_PAGE_SIZE)))
+    return urlunparse((p.scheme, p.netloc, p.path, p.params, urlencode(q), p.fragment))
+
+
+def xj_exam_items_of(resp: object) -> list:
+    """流响应 → 条目清单(形状不对 = 空,由上层当空页停)。"""
+    if not isinstance(resp, dict):
+        return []
+    data = resp.get(XJ_A_DATA)
+    if not isinstance(data, dict):
+        return []
+    items = data.get(XJ_A_COMMENTS)
+    if not isinstance(items, list):
+        return []
+    return items
+
+
+def xj_exam_total_pages_of(resp: object) -> int:
+    """流响应 → 总页数(缺 = 极大,交给上限守)。"""
+    if isinstance(resp, dict):
+        data = resp.get(XJ_A_DATA)
+        if isinstance(data, dict):
+            info = data.get(XJ_A_PAGE_INFO)
+            if isinstance(info, dict) and isinstance(info.get(XJ_A_TOTAL_PAGES), int):
+                return info[XJ_A_TOTAL_PAGES]
+    return XJ_EXAM_PAGES_MAX
+
+
+def xj_exam_row_of(it: dict) -> dict | None:
+    """一条流条目 → 去用户化行 {id, model, num, exam_date, created_at};非 Core 题型 / 缺格 = None(不收)。"""
+    c = it.get(XJ_A_COMMENTABLE)
+    if not isinstance(c, dict):
+        return None
+    model = c.get(XJ_A_MODEL)
+    num = c.get(XJ_A_NUM)
+    cid = it.get(XJ_A_ID)
+    exam_date = it.get(XJ_A_EXAM_DATE)
+    created = it.get(XJ_A_CREATED)
+    if model not in XJ_MODEL_TYPE or not isinstance(num, int) or not isinstance(cid, int):
+        return None
+    if not isinstance(exam_date, str) or len(exam_date) != DATE_LEN or not isinstance(created, str):
+        return None
+    return {XJ_A_ID: cid, XJ_A_MODEL: model, XJ_A_NUM: num, XJ_A_EXAM_DATE: exam_date,
+            XJ_A_CREATED: created[:DATE_LEN]}
+
+
+def run_ptexj() -> None:
+    """装库步:19 份预测清单 ∪ 考试记录流 → 按题型分组(签名 = 标准题型码;预测题带 predicted,
+    每题挂 exam_dates)→ 雷达(题进出 = 进/出预测清单或近期考过)→ 落 OUT_XJ_BANK。
+    清单文件不在 = 列表步没跑,open 抛出留痕;流文件不在 = 只有预测清单(exam_dates 全空)。"""
+    dates = xj_dates_by_model_of()
+    groups = []
+    total = 0
+    predicted = 0
+    for model in XJ_MODELS:
+        with (OUT_XJ_RAW_DIR / XJ_RAW_LIST_TPL.format(model=model)).open(encoding=ENC_UTF8) as f:
+            plist = json.load(f)[OUT_K_QUESTIONS]
+        questions = xj_group_of(XjGroupIn(model=model, predicted=plist, dates=dates.get(model, {})))
+        groups.append({OUT_K_LABEL: model, OUT_K_SIGNATURE: XJ_MODEL_TYPE[model],
+                       OUT_K_COUNT: len(questions), OUT_K_QUESTIONS: questions})
+        total += len(questions)
+        predicted += len(plist)
+    payload = {OUT_K_SOURCE: XJ_SOURCE, OUT_K_FETCHED: date.today().isoformat(),
+               XJ_K_TAG: XJ_TAG_PREDICT, OUT_K_TOTAL: total, OUT_K_GROUPS: groups}
+    OUT_XJ_BANK.parent.mkdir(parents=True, exist_ok=True)
+    radar(RadarIn(cur_payload=payload, bank=OUT_XJ_BANK, prev=OUT_XJ_PREV, changes=OUT_XJ_CHANGES))
+    write_json(WriteJsonIn(path=OUT_XJ_BANK, payload=payload, indent=JSON_INDENT))
+    say(P_XJ_DONE_TPL.format(groups=len(groups), total=total, predicted=predicted,
+                             examined=total - predicted, path=OUT_XJ_BANK))
+
+
+def xj_dates_by_model_of() -> dict:
+    """raw 流 → {model: {题号: [exam_date …]}}(文件不在 = 空表)。"""
+    out: dict = {}
+    for r in xj_exam_rows_of():
+        by_num = out.setdefault(r[XJ_A_MODEL], {})
+        by_num.setdefault(r[XJ_A_NUM], []).append(r[XJ_A_EXAM_DATE])
+    return out
+
+
+def xj_group_of(x: XjGroupIn) -> list:
+    """一个题型 → bank 题行清单:预测行(predicted=True + exam_dates)在前,只在流里出现的题殿后
+    (exam_count null 不造,predicted=False)。"""
+    rows = []
+    seen = set()
+    for q in x.predicted:
+        num = q[CH_K_ID]
+        seen.add(num)
+        rows.append({CH_K_ID: num, XJ_A_EXAM_COUNT: q[XJ_A_EXAM_COUNT], XJ_K_PREDICTED: True,
+                     XJ_K_EXAM_DATES: sorted(x.dates.get(num, []))})
+    for num in sorted(x.dates):
+        if num in seen:
+            continue
+        rows.append({CH_K_ID: num, XJ_A_EXAM_COUNT: None, XJ_K_PREDICTED: False,
+                     XJ_K_EXAM_DATES: sorted(x.dates[num])})
+    return rows
+
+
+def to_xj_index_rows(bank: dict) -> list:
+    """猩际库 → 索引行清单(在预测清单里 = frequent 押题信号;无题面,标题留空不造)。"""
+    rows = []
+    for g in bank[OUT_K_GROUPS]:
+        for q in g[OUT_K_QUESTIONS]:
+            flags = []
+            if q[XJ_K_PREDICTED] is True:
+                flags.append(FLAG_FREQUENT)
+            rows.append({
+                IDX_K_TYPE: g[OUT_K_SIGNATURE],
+                IDX_K_SOURCE: SRC_PTEXJ,
+                CH_K_ID: q[CH_K_ID],
+                K_TITLE: "",
+                IDX_K_FLAGS: flags,
+                IDX_K_AUDIO: False,
+            })
+    return rows
+
+
+def xj_signals_of(x: XjSignalsIn) -> dict:
+    """猩际库 → {(源,型,id): 信号}(seen = 考试记录最晚日期,未来日期剔(ynwac 同律);seen_n = 持有条数;
+    votes = exam_count;freq 本源无 null;库不在 = 空表)。"""
+    out = {}
+    if not OUT_XJ_BANK.exists():
+        return out
+    with OUT_XJ_BANK.open(encoding=ENC_UTF8) as f:
+        bank = json.load(f)
+    cutoff = x.today.isoformat()
+    for g in bank[OUT_K_GROUPS]:
+        for q in g[OUT_K_QUESTIONS]:
+            dates = [d for d in q[XJ_K_EXAM_DATES] if d <= cutoff]
+            seen = None
+            if len(dates) > 0:
+                seen = max(dates)
+            out[(SRC_PTEXJ, g[OUT_K_SIGNATURE], str(q[CH_K_ID]))] = {
+                R_K_SEEN: seen, R_K_SEEN_N: len(dates), R_K_FREQ: None, R_K_VOTES: q[XJ_A_EXAM_COUNT]}
+    return out
