@@ -88,8 +88,9 @@ def scrape_aip_employers() -> None:
     by_prov: dict = {}
     for r in rows:
         by_prov.setdefault(r[K_PROVINCE], []).append(r)
-    OUT_AIP_JSON.write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding=ENC_UTF8)
-    OUT_AIP_MD.write_text(render_employers_md(by_prov), encoding=ENC_UTF8)
+    paths.write_text(paths.WriteTextIn(path=OUT_AIP_JSON,
+                                       text=json.dumps(rows, ensure_ascii=False, indent=2)))
+    paths.write_text(paths.WriteTextIn(path=OUT_AIP_MD, text=render_employers_md(by_prov)))
     say(EMP_TABLE_HEAD)
     for prov in PROV_ORDER_TECH:
         rs = by_prov.get(prov, [])
@@ -370,8 +371,9 @@ def build_aip_rules() -> None:
     for r in RULES:
         reqs.append(to_requirement(RequirementIn(rule=r, page=pages[r[K_PAGE]])))
     OUT_AIP_RULES.parent.mkdir(parents=True, exist_ok=True)
-    OUT_AIP_RULES.write_text(json.dumps(to_rules_doc(RulesDocIn(requirements=reqs)),
-                                        ensure_ascii=False, indent=1), encoding=ENC_UTF8)
+    paths.write_text(paths.WriteTextIn(path=OUT_AIP_RULES,
+                                       text=json.dumps(to_rules_doc(RulesDocIn(requirements=reqs)),
+                                                       ensure_ascii=False, indent=1)))
     say(RULES_DONE_TPL.format(n=len(reqs), name=OUT_AIP_RULES.name))
 
 
@@ -514,6 +516,7 @@ def flag_ats_jobs() -> int:
                 job[K_AIP] = False
                 changed = True
         if changed:
-            jobs_json.write_text(json.dumps(data, ensure_ascii=False, indent=INDENT_2),
-                                 encoding=ENC_UTF8)
+            paths.write_text(paths.WriteTextIn(path=jobs_json,
+                                               text=json.dumps(data, ensure_ascii=False,
+                                                               indent=INDENT_2)))
     return total

@@ -8,6 +8,7 @@
     mart/        load: 列对齐 DB 的最终表(09 产出,seed 灌库)
     crawl/       crawl 役产物(manifest + html_cache,政策雷达语料)
 """
+
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -112,8 +113,10 @@ TMP_SUFFIX = ".tmp"
 ENC_UTF8 = "utf-8"
 """落盘编码。"""
 
-RETRY_MAX = 5
-"""写盘 OSError 重试上限(卷抖动;第 N 次仍失败照抛)。"""
+RETRY_MAX = 7
+"""写盘 OSError 重试上限(卷抖动;第 N 次仍失败照抛)。2026-09-02 5→7:宿主侧 VS Code git
+刷新风暴实测波长 ~2s 且随写入自续,7.5s 窗扛不住(build 自 09-01 22:02 连死 20 轮);
+7 次退避窗 ~31.5s,只在失败时付出。"""
 
 RETRY_DELAY_S = 0.5
 """首次重试等待秒数(逐次翻倍)。"""

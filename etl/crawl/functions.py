@@ -9,12 +9,14 @@ converters/discover_sources 五件收拢;crawl_all/download_md/check_crawl/子�
 日志口径:逐页跳过(404/非 HTML/浏览器拿不回)是探索的设计内损耗,say 留痕不升级;
 单省整轮失败、缓存写盘失败、浏览器启动失败走 err(✗ 升 ERROR)。
 """
+
 from __future__ import annotations
 
 import ast
 import asyncio
 import hashlib
 import json
+import re
 import shutil
 import sys
 from datetime import date, datetime
@@ -29,48 +31,218 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import paths
 from log.functions import err, say
 from fetch.constants import BROWSER_UA, HDR_UA, LINE_SEP, PARA_SEP, PARSER_HTML, SPACE_SEP, WS_RE
-from crawl.constants import (ACCEPT_HTML, ACCEPT_LANGUAGE, ADMONITION_TITLE_CLASS, ADMONITION_WORDS, ATTR_ALT,
-                             ATTR_CLASS, ATTR_SRC, ATTR_TITLE, BLANKS_RE, BLOCK_TAGS, BOLD_TAGS,
-                             BROWSER_ARGS, CELL_TAGS, CHALLENGE_SNIFF_LEN, CHALLENGE_TIMEOUT_MS,
-                             CHANGES_FILE, COND_AND, CONSTANTS_GLOB, CT_HTML, DEFAULT_CONTENT_SELECTORS,
-                             DEFAULT_REMOVE_SELECTORS, DIFF_SHOW_MAX, DISCOVER_CONCURRENCY,
-                             DOMCONTENTLOADED, EE_CAT_MAP, EE_EXPAND_JS, EE_EXPAND_WAIT_MS, ERRORS_REPLACE,
-                             EE_EXTRACT_JS, EE_NOC_RE, EE_NUM_RE, EE_OUT_FILE, EE_SOURCE_LABEL,
-                             EE_TEER_RE, EE_URL, EM_TAGS, ENC_UTF8, FM_TPL,
-                             ETL_DIR_NAME,
-                             GUARD_ALL_FAILED, H_LEVEL_TPL, HDR_ACCEPT, HDR_ACCEPT_LANGUAGE,
-                             HDR_CONTENT_TYPE, HEADING_TAGS, HTML_CACHE_DIR, HTML_CHALLENGE_MARKERS,
-                             HTML_SUFFIX, HTTP_FORBIDDEN, HTTP_TIMEOUT_S, IFRAME_TITLE_FALLBACK,
-                             K_ADDED, K_CAT, K_CATEGORIES, K_CRAWLED_AT, K_DATE,
-                             K_FETCHED, K_GONE, K_HEIGHT, K_HTML, K_KEY, K_LABEL, K_MAX_DEPTH,
-                             K_NOC, K_OCCUPATIONS, K_PAGES, K_ROWS, K_SEED_URL, K_SEEN, K_SLUG, K_SOURCE,
-                             K_STATUS, K_TEER, K_TITLE, K_TOTAL, K_TOTAL_URLS, K_URL, K_WIDTH,
-                             KEYWORDS_SEP, LANG_CLASS_RE, LANG_STOPWORDS, LIST_TAGS, LOCALE, MANIFEST_FILE,
-                             MANIFEST_GLOB, MANIFEST_PREV_FILE, MD_BOLD_TPL, MD_CELL_SEP,
-                             MD_DD_INDENT, MD_EM_TPL, MD_FENCE, MD_H, MD_HEADER_DASH, MD_HR,
-                             MD_IMG_TPL, MD_LINK_TPL, MD_OL_TPL, MD_QUOTE_PREFIX,
-                             MD_QUOTE_TITLE_TPL, MD_ROW_EDGE, MD_ROW_END, MD_TICK, MD_TICK2_TPL,
-                             MD_TICK_TPL, MD_UL_PREFIX, MD_VIDEO_TPL, NAV_TIMEOUT_MS, NETWORKIDLE,
-                             NETWORK_IDLE_MS, NOTE_FIRST_ROUND, NOTE_NO_CHANGE, PRINT_BFS_CFG_TPL,
-                             PRINT_BFS_START_TPL, PRINT_BROWSER_200_TPL, PRINT_BROWSER_403_TPL,
-                             PRINT_BROWSER_DOWN, PRINT_BROWSER_NONE, PRINT_CHALLENGE_OK,
-                             PRINT_CHALLENGE_TIMEOUT, PRINT_CHALLENGE_WAIT_TPL,
-                             PRINT_DISCOVER_DONE_TPL, PRINT_EE_CAT_TPL, PRINT_EE_DONE_TPL,
-                             PRINT_LEVEL_TPL, PRINT_MANIFEST_TPL, PRINT_PAGE_TPL, PRINT_RADAR_ADD_TPL,
-                             PRINT_RADAR_GONE_TPL, PRINT_RADAR_TPL, PRINT_SEED_OK_TPL, PRINT_SEED_TPL,
-                             PRINT_SKIP_ERR_TPL, PRINT_SKIP_HTTP_TPL, PROFILE_DIR, SCROLL_PASSES,
-                             SCROLL_PAUSE_MS, SCROLL_STEP_PX, SEEDS, SEED_TIMEOUT_S,
-                             SKIP_EXTENSIONS, SKIP_HREF_PREFIXES, SKIP_PATH_PATTERNS, STATUS_OK,
-                             URL_DEAD_CODES, URL_HTTP_PREFIXES, URL_SKIP_MARKS, URL_TIMEOUT_S,
-                             URLS_P_DEAD_TPL, URLS_P_HTTP_TPL, URLS_P_MOVED_TPL, URLS_P_OK_TPL,
-                             URLS_P_SOFT_TPL, URLS_P_SUMMARY_TPL, URL_CDN_SUFFIXES, WWW_PREFIX,
-                             STEALTH_JS, TAG_A, TAG_BLOCKQUOTE, TAG_CODE, TAG_DD, TAG_DL, TAG_DT,
-                             TAG_HR, TAG_IFRAME, TAG_IMG, TAG_OL, TAG_P, TAG_PRE, TAG_SOURCE,
-                             TAG_TABLE, TAG_TR, TAG_VIDEO, TIMESPEC_SECONDS, TITLE_CHALLENGE_MARKERS, TITLE_COND_TPL,
-                             URL_SLASH, SCHEME_SEP, VIEWPORT_H, VIEWPORT_W, WAIT_FN_TPL)
-from crawl.scheme import (HttpAsyncClientLike, PageLike,
-                          CacheHit, ConvertIn, CrawlCtx, DiscoverIn, EeCat, FetchPageIn, InlineIn,
-                          PageRow, ScopeIn, SeedSpec, UrlRow, UrlVerdict, WalkIn)
+from crawl.constants import (
+    ACCEPT_HTML,
+    ACCEPT_LANGUAGE,
+    ADMONITION_TITLE_CLASS,
+    ADMONITION_WORDS,
+    ATTR_ALT,
+    ATTR_CLASS,
+    ATTR_SRC,
+    ATTR_TITLE,
+    BLANKS_RE,
+    BLOCK_TAGS,
+    BOLD_TAGS,
+    BROWSER_ARGS,
+    CELL_TAGS,
+    CHALLENGE_SNIFF_LEN,
+    CHALLENGE_TIMEOUT_MS,
+    CHANGES_FILE,
+    COND_AND,
+    CONSTANTS_GLOB,
+    CT_HTML,
+    DEFAULT_CONTENT_SELECTORS,
+    DEFAULT_REMOVE_SELECTORS,
+    DIFF_SHOW_MAX,
+    DISCOVER_CONCURRENCY,
+    DOMCONTENTLOADED,
+    EE_CAT_MAP,
+    EE_EXPAND_JS,
+    EE_EXPAND_WAIT_MS,
+    ERRORS_REPLACE,
+    EE_EXTRACT_JS,
+    EE_NOC_RE,
+    EE_NUM_RE,
+    EE_OUT_FILE,
+    EE_SOURCE_LABEL,
+    EE_TEER_RE,
+    EE_URL,
+    EM_TAGS,
+    ENC_UTF8,
+    FM_TPL,
+    ETL_DIR_NAME,
+    GUARD_ALL_FAILED,
+    H_LEVEL_TPL,
+    HDR_ACCEPT,
+    HDR_ACCEPT_LANGUAGE,
+    HDR_CONTENT_TYPE,
+    HEADING_TAGS,
+    HTML_CACHE_DIR,
+    HTML_CHALLENGE_MARKERS,
+    HTML_SUFFIX,
+    HTTP_FORBIDDEN,
+    HTTP_TIMEOUT_S,
+    IFRAME_TITLE_FALLBACK,
+    K_ADDED,
+    K_CAT,
+    K_CATEGORIES,
+    K_CRAWLED_AT,
+    K_DATE,
+    K_DEPTH,
+    K_FETCHED,
+    K_GONE,
+    K_HEIGHT,
+    K_HTML,
+    K_KEY,
+    K_LABEL,
+    K_MAX_DEPTH,
+    K_NOC,
+    K_OCCUPATIONS,
+    K_PAGES,
+    K_ROWS,
+    K_SEED_URL,
+    K_SEEN,
+    K_SLUG,
+    K_SOURCE,
+    K_STATUS,
+    K_TEER,
+    K_TITLE,
+    K_TOTAL,
+    K_TOTAL_URLS,
+    K_URL,
+    K_WIDTH,
+    KEYWORDS_SEP,
+    LANG_CLASS_RE,
+    LANG_STOPWORDS,
+    LIST_TAGS,
+    LOCALE,
+    MANIFEST_FILE,
+    MANIFEST_GLOB,
+    MANIFEST_PREV_FILE,
+    MD_BOLD_TPL,
+    MD_CELL_SEP,
+    MD_DD_INDENT,
+    MD_EM_TPL,
+    MD_FENCE,
+    MD_H,
+    MD_HEADER_DASH,
+    MD_HR,
+    MD_IMG_TPL,
+    MD_LINK_TPL,
+    MD_OL_TPL,
+    MD_QUOTE_PREFIX,
+    MD_QUOTE_TITLE_TPL,
+    MD_ROW_EDGE,
+    MD_ROW_END,
+    MD_TICK,
+    MD_TICK2_TPL,
+    MD_TICK_TPL,
+    MD_UL_PREFIX,
+    MD_VIDEO_TPL,
+    NAV_TIMEOUT_MS,
+    NETWORKIDLE,
+    NETWORK_IDLE_MS,
+    NOTE_FIRST_ROUND,
+    NOTE_NO_CHANGE,
+    PRINT_BFS_CFG_TPL,
+    PRINT_BFS_START_TPL,
+    PRINT_BROWSER_200_TPL,
+    PRINT_BROWSER_403_TPL,
+    PRINT_BROWSER_DOWN,
+    PRINT_BROWSER_NONE,
+    PRINT_CHALLENGE_OK,
+    PRINT_CHALLENGE_TIMEOUT,
+    PRINT_CHALLENGE_WAIT_TPL,
+    PRINT_DISCOVER_DONE_TPL,
+    PRINT_EE_CAT_TPL,
+    PRINT_EE_DONE_TPL,
+    PRINT_LEVEL_TPL,
+    PRINT_MANIFEST_TPL,
+    PRINT_PAGE_TPL,
+    PRINT_RADAR_ADD_TPL,
+    PRINT_RADAR_GONE_TPL,
+    PRINT_RADAR_TPL,
+    PRINT_SEED_OK_TPL,
+    PRINT_SEED_TPL,
+    PRINT_SCRIPT_PATCH_FAIL_TPL,
+    PRINT_SCRIPT_PATCH_TPL,
+    PRINT_SKIP_ERR_TPL,
+    PRINT_SKIP_HTTP_TPL,
+    PROFILE_DIR,
+    HDR_CONTENT_ENCODING,
+    HDR_CONTENT_LENGTH,
+    RE_OR,
+    ROUTE_ABORT_REASON,
+    SCRIPT_PATCH_DRIFT_TPL,
+    SCROLL_PASSES,
+    SCROLL_PAUSE_MS,
+    SCROLL_STEP_PX,
+    SEEDS,
+    SEED_TIMEOUT_S,
+    SCRIPT_PATCH_ROWS,
+    SKIP_EXTENSIONS,
+    SKIP_HREF_PREFIXES,
+    SKIP_PATH_PATTERNS,
+    STATUS_OK,
+    URL_DEAD_CODES,
+    URL_HTTP_PREFIXES,
+    URL_SKIP_MARKS,
+    URL_TIMEOUT_S,
+    URLS_P_DEAD_TPL,
+    URLS_P_HTTP_TPL,
+    URLS_P_MOVED_TPL,
+    URLS_P_OK_TPL,
+    URLS_P_SOFT_TPL,
+    URLS_P_SUMMARY_TPL,
+    URL_CDN_SUFFIXES,
+    WWW_PREFIX,
+    STEALTH_JS,
+    TAG_A,
+    TAG_BLOCKQUOTE,
+    TAG_CODE,
+    TAG_DD,
+    TAG_DL,
+    TAG_DT,
+    TAG_HR,
+    TAG_IFRAME,
+    TAG_IMG,
+    TAG_OL,
+    TAG_P,
+    TAG_PRE,
+    TAG_SOURCE,
+    TAG_TABLE,
+    TAG_TR,
+    TAG_VIDEO,
+    TIMESPEC_SECONDS,
+    TITLE_CHALLENGE_MARKERS,
+    TITLE_COND_TPL,
+    URL_SLASH,
+    SCHEME_SEP,
+    VIEWPORT_H,
+    VIEWPORT_W,
+    WAIT_FN_TPL,
+)
+from crawl.scheme import (
+    BrowserRouteLike,
+    HttpAsyncClientLike,
+    PageLike,
+    CacheHit,
+    CachePutIn,
+    ConvertIn,
+    CrawlCtx,
+    DiscoverIn,
+    EeCat,
+    FetchPageIn,
+    InlineIn,
+    PageRow,
+    ScopeIn,
+    ScriptPatchSpec,
+    ScriptRewriteIn,
+    SeedSpec,
+    UrlRow,
+    UrlVerdict,
+    WalkIn,
+)
 from crawl.variables import CACHE
 from fetch.constants import ATTR_HREF, TAG_BR, TAG_LI, TAG_TITLE
 
@@ -116,6 +288,38 @@ def get_cached_page(url: str) -> CacheHit:
     return CacheHit(html=best[1].read_text(encoding=ENC_UTF8, errors=ERRORS_REPLACE), fetched=best[0][:10])
 
 
+def put_cached_page(x: CachePutIn) -> Path:
+    """一页原文进 crawl 层:html_cache/md5(url).html 落盘 + manifest 页行按 url 增改 → 缓存文件路径。
+
+    2026-09-02 Frank 拍板数据链 crawl → raw → processed → mart 的写门(读门是 get_cached_page):
+    浏览器渲染态抓取(pte duoink 题页)也从这进,不在各域自定目录另存一份原文。manifest 不在
+    即建(seed_url = 本页,深度 0);crawled_at 刷成本次写盘时刻(cache 取最新份的比较键)。"""
+    out_dir = paths.CRAWL / x.slug
+    html_dir = out_dir / HTML_CACHE_DIR
+    html_dir.mkdir(parents=True, exist_ok=True)
+    html_name = hashlib.md5(x.url.encode()).hexdigest() + HTML_SUFFIX
+    paths.write_text(paths.WriteTextIn(path=html_dir / html_name, text=x.html))
+    manifest_path = out_dir / MANIFEST_FILE
+    manifest: dict = {K_SEED_URL: x.url, K_SLUG: x.slug, K_TOTAL_URLS: 0, K_MAX_DEPTH: 0, K_CRAWLED_AT: "", K_PAGES: []}
+    if manifest_path.exists():
+        loaded = json.loads(manifest_path.read_text(encoding=ENC_UTF8))
+        if isinstance(loaded, dict):
+            manifest = loaded
+    row = {K_URL: x.url, K_TITLE: x.title, K_DEPTH: 0, K_STATUS: STATUS_OK, K_HTML: html_name}
+    pages = []
+    old = manifest.get(K_PAGES)
+    if isinstance(old, list):
+        for p in old:
+            if isinstance(p, dict) and p.get(K_URL) != x.url:
+                pages.append(p)
+    pages.append(row)
+    manifest[K_PAGES] = pages
+    manifest[K_TOTAL_URLS] = len(pages)
+    manifest[K_CRAWLED_AT] = datetime.now().isoformat()
+    paths.write_text(paths.WriteTextIn(path=manifest_path, text=json.dumps(manifest, ensure_ascii=False, indent=2)))
+    return html_dir / html_name
+
+
 # =========================================================================
 # 2. 浏览器兜底(Cloudflare/Akamai/Radware 挡 httpx 时的有头持久档)
 # =========================================================================
@@ -130,6 +334,42 @@ def is_challenge_html(html: str) -> bool:
     return False
 
 
+async def rewrite_script(x: ScriptRewriteIn) -> None:
+    """在目标脚本执行前做精确替换；次数漂移即中止，防原反调试逻辑漏跑。"""
+    url = x.route.request.url
+    patches = []
+    for patch in x.patches:
+        if patch.url_contains in url:
+            patches.append(patch)
+    if not patches:
+        await x.route.continue_()
+        return
+    try:
+        response = await x.route.fetch()
+        text = (await response.body()).decode(ENC_UTF8)
+        total = 0
+        for patch in patches:
+            count = text.count(patch.find)
+            if count != patch.expected_count:
+                raise RuntimeError(SCRIPT_PATCH_DRIFT_TPL.format(want=patch.expected_count, got=count))
+            text = text.replace(patch.find, patch.replace)
+            total += count
+        headers = dict(response.headers)
+        headers.pop(HDR_CONTENT_ENCODING, None)
+        headers.pop(HDR_CONTENT_LENGTH, None)
+        await x.route.fulfill(status=response.status, headers=headers, body=text.encode(ENC_UTF8))
+        say(PRINT_SCRIPT_PATCH_TPL.format(count=total, url=url))
+    except Exception as e:  # noqa: BLE001 — 路由回调须统一阻断规则漂移、解码及回填异常
+        err(PRINT_SCRIPT_PATCH_FAIL_TPL.format(url=url), e)
+        await x.route.abort(ROUTE_ABORT_REASON)
+
+
+async def rewrite_route(route: object) -> None:
+    """context.route 的回调(playwright 定死只收一参):补丁表从 CACHE.patches 取,转交 rewrite_script。
+    2026-09-03 由 lambda 闭包改成顶层具名 —— pre-push 形制闸首次扫到这段未提交代码。"""
+    await rewrite_script(ScriptRewriteIn(route=cast(BrowserRouteLike, route), patches=CACHE.patches))
+
+
 async def get_browser_page() -> PageLike | None:
     """浏览器单例标签(带单件缓存;launch 一次,cf_clearance 随 profile 落盘复用);
     playwright 缺席/启动失败 → None(警告一次,后续 403 页跳过)。"""
@@ -142,6 +382,7 @@ async def get_browser_page() -> PageLike | None:
             return CACHE.page
         try:
             from playwright.async_api import async_playwright
+
             CACHE.pw = await async_playwright().start()
             CACHE.context = await CACHE.pw.chromium.launch_persistent_context(
                 str(PROFILE_DIR),
@@ -153,6 +394,15 @@ async def get_browser_page() -> PageLike | None:
                 extra_http_headers={HDR_ACCEPT_LANGUAGE: ACCEPT_LANGUAGE},
             )
             await CACHE.context.add_init_script(STEALTH_JS)
+            patches = []
+            marks = []
+            for row in SCRIPT_PATCH_ROWS:
+                spec = ScriptPatchSpec.model_validate(row)
+                patches.append(spec)
+                marks.append(re.escape(spec.url_contains))
+            CACHE.patches = tuple(patches)
+            if patches:
+                await CACHE.context.route(re.compile(RE_OR.join(marks)), rewrite_route)
             if CACHE.context.pages:
                 CACHE.page = CACHE.context.pages[0]
             else:
@@ -195,8 +445,7 @@ async def fetch_browser_html(url: str) -> str | None:
                     parts.append(TITLE_COND_TPL.format(marker=m))
                 cond = COND_AND.join(parts)
                 try:
-                    await page.wait_for_function(WAIT_FN_TPL.format(cond=cond),
-                                                 timeout=CHALLENGE_TIMEOUT_MS)
+                    await page.wait_for_function(WAIT_FN_TPL.format(cond=cond), timeout=CHALLENGE_TIMEOUT_MS)
                     await page.wait_for_load_state(NETWORKIDLE, timeout=NETWORK_IDLE_MS)
                     say(PRINT_CHALLENGE_OK)
                 except Exception:  # noqa: BLE001 — 没人点验证框,跳过该页
@@ -315,13 +564,12 @@ async def fetch_page(x: FetchPageIn) -> list:
         async with ctx.lock:
             if len(ctx.discovered) >= ctx.max_pages:
                 return []
-            row = PageRow(url=x.url, title=title, depth=x.depth,
-                          status=status or STATUS_OK, html=html_name)
+            row = PageRow(url=x.url, title=title, depth=x.depth, status=status or STATUS_OK, html=html_name)
             ctx.discovered.append(row.model_dump())
             idx = len(ctx.discovered)
 
         try:
-            (ctx.html_dir / html_name).write_text(html, encoding=ENC_UTF8)
+            paths.write_text(paths.WriteTextIn(path=ctx.html_dir / html_name, text=html))
         except Exception as e:  # noqa: BLE001 — 缓存写盘失败要留痕(Errno 22 卷抖动病史)
             err(str(ctx.html_dir / html_name), e)
 
@@ -363,12 +611,22 @@ async def discover_urls(x: DiscoverIn) -> Path:
     say(PRINT_BFS_START_TPL.format(seed=seed_url))
     say(PRINT_BFS_CFG_TPL.format(depth=spec.depth, max=spec.max_pages, c=concurrency))
 
-    async with httpx.AsyncClient(follow_redirects=True, timeout=HTTP_TIMEOUT_S, verify=False,
-                                 headers={HDR_UA: BROWSER_UA, HDR_ACCEPT: ACCEPT_HTML}) as client:
-        ctx = CrawlCtx(seed_url=seed_url, keywords=tuple(keywords), max_depth=spec.depth,
-                       max_pages=spec.max_pages, html_dir=html_dir,
-                       client=cast(HttpAsyncClientLike, client),
-                       sem=asyncio.Semaphore(concurrency), lock=asyncio.Lock())
+    async with httpx.AsyncClient(
+        follow_redirects=True,
+        timeout=HTTP_TIMEOUT_S,
+        verify=False,
+        headers={HDR_UA: BROWSER_UA, HDR_ACCEPT: ACCEPT_HTML},
+    ) as client:
+        ctx = CrawlCtx(
+            seed_url=seed_url,
+            keywords=tuple(keywords),
+            max_depth=spec.depth,
+            max_pages=spec.max_pages,
+            html_dir=html_dir,
+            client=cast(HttpAsyncClientLike, client),
+            sem=asyncio.Semaphore(concurrency),
+            lock=asyncio.Lock(),
+        )
         ctx.visited.add(seed_url)
         current_level = [(seed_url, 0)]
 
@@ -401,9 +659,14 @@ async def discover_urls(x: DiscoverIn) -> Path:
                     next_level.append((child_url, child_depth))
             current_level = next_level
 
-    manifest = {K_SEED_URL: seed_url, K_SLUG: spec.slug, K_TOTAL_URLS: len(ctx.discovered),
-                K_MAX_DEPTH: spec.depth, K_CRAWLED_AT: datetime.now().isoformat(),
-                K_PAGES: ctx.discovered}
+    manifest = {
+        K_SEED_URL: seed_url,
+        K_SLUG: spec.slug,
+        K_TOTAL_URLS: len(ctx.discovered),
+        K_MAX_DEPTH: spec.depth,
+        K_CRAWLED_AT: datetime.now().isoformat(),
+        K_PAGES: ctx.discovered,
+    }
     paths.write_json(paths.WriteJsonIn(path=manifest_path, payload=manifest, indent=2))
     await close_browser()
     say(PRINT_MANIFEST_TPL.format(n=len(ctx.discovered), path=manifest_path))
@@ -794,8 +1057,7 @@ def discover_all() -> None:
 
         say(PRINT_SEED_TPL.format(slug=spec.slug, seed=spec.seed))
         try:
-            asyncio.run(asyncio.wait_for(discover_urls(DiscoverIn(spec=spec)),
-                                         timeout=SEED_TIMEOUT_S))
+            asyncio.run(asyncio.wait_for(discover_urls(DiscoverIn(spec=spec)), timeout=SEED_TIMEOUT_S))
         except Exception as e:  # noqa: BLE001 — 单省失败保留上一份地图,下轮重试
             err(spec.slug, e)
             continue
@@ -806,8 +1068,19 @@ def discover_all() -> None:
         after = urls_of(manifest)
         added = sorted(after - before)
         gone = sorted(before - after)
-        paths.write_json(paths.WriteJsonIn(path=slug_dir / CHANGES_FILE, payload={K_SLUG: spec.slug, K_DATE: date.today().isoformat(),
-                           K_TOTAL: len(after), K_ADDED: added, K_GONE: gone}, indent=2))
+        paths.write_json(
+            paths.WriteJsonIn(
+                path=slug_dir / CHANGES_FILE,
+                payload={
+                    K_SLUG: spec.slug,
+                    K_DATE: date.today().isoformat(),
+                    K_TOTAL: len(after),
+                    K_ADDED: added,
+                    K_GONE: gone,
+                },
+                indent=2,
+            )
+        )
         ok += 1
         if before and (added or gone):
             say(PRINT_RADAR_TPL.format(slug=spec.slug, added=len(added), gone=len(gone)))
@@ -889,12 +1162,20 @@ async def fetch_ee_categories() -> None:
 
     out_cats = []
     for c in cats.values():
-        out_cats.append({K_KEY: c[K_KEY], K_LABEL: c[K_LABEL],
-                         K_OCCUPATIONS: sorted(c[K_OCCUPATIONS], key=ee_noc_of)})
+        out_cats.append({K_KEY: c[K_KEY], K_LABEL: c[K_LABEL], K_OCCUPATIONS: sorted(c[K_OCCUPATIONS], key=ee_noc_of)})
     out_file = paths.EE / EE_OUT_FILE
-    paths.write_json(paths.WriteJsonIn(path=out_file, payload={K_SOURCE: EE_SOURCE_LABEL, K_URL: EE_URL,
-                                 K_FETCHED: date.today().isoformat(),
-                                 K_CATEGORIES: out_cats}, indent=2))
+    paths.write_json(
+        paths.WriteJsonIn(
+            path=out_file,
+            payload={
+                K_SOURCE: EE_SOURCE_LABEL,
+                K_URL: EE_URL,
+                K_FETCHED: date.today().isoformat(),
+                K_CATEGORIES: out_cats,
+            },
+            indent=2,
+        )
+    )
     total = 0
     for c in out_cats:
         total += len(c[K_OCCUPATIONS])
@@ -976,8 +1257,7 @@ def is_official_url(s: str) -> bool:
 def url_verdict_of(url: str) -> UrlVerdict:
     """一条 URL 实测:死码/跨站跳 = 硬红格;连接失败与非 2xx 其余码 = 软格;全空 = 健康。"""
     try:
-        r = httpx.get(url, headers={HDR_UA: BROWSER_UA}, follow_redirects=True,
-                      timeout=URL_TIMEOUT_S)
+        r = httpx.get(url, headers={HDR_UA: BROWSER_UA}, follow_redirects=True, timeout=URL_TIMEOUT_S)
     except Exception as e:  # noqa: BLE001 — 网络故障是软档:留痕不拦轮,判定收进出参
         return UrlVerdict(dead=False, status=0, moved_to="", soft=type(e).__name__)
     if r.status_code in URL_DEAD_CODES:
@@ -987,8 +1267,9 @@ def url_verdict_of(url: str) -> UrlVerdict:
     if final != home and is_cdn_host(final) is False:
         return UrlVerdict(dead=False, status=r.status_code, moved_to=final, soft="")
     if r.status_code != STATUS_OK:
-        return UrlVerdict(dead=False, status=r.status_code, moved_to="",
-                          soft=URLS_P_HTTP_TPL.format(status=r.status_code))
+        return UrlVerdict(
+            dead=False, status=r.status_code, moved_to="", soft=URLS_P_HTTP_TPL.format(status=r.status_code)
+        )
     return UrlVerdict(dead=False, status=r.status_code, moved_to="", soft="")
 
 
@@ -1004,6 +1285,5 @@ def bare_host_of(url: str) -> str:
     """主机名剥 www. 前缀(www 有无不算迁站;www2→无前缀 = 跨站,NB 实例)。"""
     host = urlparse(url).netloc.lower()
     if host.startswith(WWW_PREFIX):
-        return host[len(WWW_PREFIX):]
+        return host[len(WWW_PREFIX) :]
     return host
-

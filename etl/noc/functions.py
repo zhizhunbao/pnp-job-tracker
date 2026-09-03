@@ -473,7 +473,8 @@ def write_structure(levels: dict) -> None:
             n_ko += 1
     doc = {K_FETCHED: datetime.date.today().isoformat(), K_SOURCE: STRUCTURE_URL,
            K_LEVELS: levels}
-    OUT_STRUCT.write_text(json.dumps(doc, ensure_ascii=False, indent=1), encoding=ENC_UTF8)
+    paths.write_text(paths.WriteTextIn(path=OUT_STRUCT,
+                                       text=json.dumps(doc, ensure_ascii=False, indent=1)))
     say(STRUCT_DONE_TPL.format(path=OUT_STRUCT, n=len(levels), zh=n_zh, ko=n_ko))
 
 
@@ -500,7 +501,8 @@ def build_descriptions() -> None:
     OUT_DESC.parent.mkdir(parents=True, exist_ok=True)
     doc = {K_SOURCE: DESC_SOURCE, K_URL: DESC_URL,
            K_FETCHED: datetime.date.today().isoformat(), K_BY_NOC: out}
-    OUT_DESC.write_text(json.dumps(doc, ensure_ascii=False, indent=1), encoding=ENC_UTF8)
+    paths.write_text(paths.WriteTextIn(path=OUT_DESC,
+                                       text=json.dumps(doc, ensure_ascii=False, indent=1)))
     wd = 0
     for v in out.values():
         if v[K_DUTIES]:
@@ -769,7 +771,8 @@ def write_audit_tsv(rows: list[AuditRow]) -> None:
             noc=row.noc, teer=row.teer, broad=row.broad, mid=row.mid, fine=row.fine,
             zh=row.zh, en=row.en, open=row.open_jobs,
             hand=hand_label_of(row), fine_flag=fine_label_of(row)))
-    OUT_TSV.write_text("".join(parts), encoding=ENC_UTF8_SIG, newline="")
+    paths.write_text(paths.WriteTextIn(path=OUT_TSV, text="".join(parts),
+                                       encoding=ENC_UTF8_SIG, newline=""))
     say(TSV_DONE_TPL.format(path=OUT_TSV))
 
 

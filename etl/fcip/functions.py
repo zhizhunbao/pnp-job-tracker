@@ -43,6 +43,7 @@ import httpx
 
 from log.functions import say
 from fetch.constants import BROWSER_UA, HDR_UA, LINE_SEP, SPACE_SEP, WS_RE
+from paths import WriteTextIn, write_text
 from fcip.constants import (
     ACAD_BR_RE, ACAD_COMMUNITY, ACAD_EMP_SHORT_TPL, ACAD_HEADER_PREFIXES, ACAD_ICON_RE,
     ACAD_MIN_EMP, ACAD_MIN_OCC, ACAD_NOTE_RE, ACAD_NO_PDF, ACAD_OCC_RE, ACAD_OCC_SHORT_TPL,
@@ -263,10 +264,14 @@ def to_occ_row(x: DetailRowIn) -> dict:
 def write_details(x: WriteDetailsIn) -> None:
     """两份 raw 原地落盘 + 收尾报数(保旧的社区逐个点名)。"""
     today = date.today().isoformat()
-    OUT_EMP.write_text(json.dumps(to_emp_doc(DetailDocIn(fetched=today, rows=x.emp_rows)),
-                                  ensure_ascii=False, indent=1), encoding=ENC_UTF8)
-    OUT_OCC.write_text(json.dumps(to_occ_doc(DetailDocIn(fetched=today, rows=x.occ_rows)),
-                                  ensure_ascii=False, indent=1), encoding=ENC_UTF8)
+    write_text(WriteTextIn(path=OUT_EMP,
+                           text=json.dumps(to_emp_doc(DetailDocIn(fetched=today,
+                                                                  rows=x.emp_rows)),
+                                           ensure_ascii=False, indent=1)))
+    write_text(WriteTextIn(path=OUT_OCC,
+                           text=json.dumps(to_occ_doc(DetailDocIn(fetched=today,
+                                                                  rows=x.occ_rows)),
+                                           ensure_ascii=False, indent=1)))
     if len(x.kept) > 0:
         tail = DET_KEPT_TPL.format(names=DET_KEPT_SEP.join(x.kept))
     else:
@@ -448,8 +453,8 @@ def quota_flags(x: FlagsIn) -> str:
 def write_quota(x: WriteQuotaIn) -> None:
     """落盘 + 收尾报数。"""
     OUT_QUOTA.parent.mkdir(parents=True, exist_ok=True)
-    OUT_QUOTA.write_text(json.dumps(to_quota_doc(x), ensure_ascii=False, indent=1),
-                         encoding=ENC_UTF8)
+    write_text(WriteTextIn(path=OUT_QUOTA,
+                           text=json.dumps(to_quota_doc(x), ensure_ascii=False, indent=1)))
     say(QUOTA_DONE_TPL.format(path=OUT_QUOTA, comm=len(x.communities),
                               occ=len(x.occupations)))
 
@@ -489,9 +494,10 @@ def build_pilot_communities() -> None:
     if n_fcip < MIN_FCIP:
         say(COMM_COLLAPSE_TPL.format(fcip=n_fcip))
         return
-    OUT_COMMUNITIES.write_text(
-        json.dumps(to_communities_doc(CommDocIn(source=page[K_URL], rows=rows)),
-                   ensure_ascii=False, indent=1), encoding=ENC_UTF8)
+    write_text(WriteTextIn(path=OUT_COMMUNITIES,
+                           text=json.dumps(to_communities_doc(CommDocIn(source=page[K_URL],
+                                                                        rows=rows)),
+                                           ensure_ascii=False, indent=1)))
     say(COMM_DONE_TPL.format(n=len(rows), fcip=n_fcip,
                              mapped=count_mapped(rows), name=OUT_COMMUNITIES.name))
 

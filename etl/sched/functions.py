@@ -215,8 +215,8 @@ def newest_upstream(after: list[str]) -> float:
 def mark_done(name: str) -> None:
     """单元跑完一轮 → 更新自己的标记(下游靠它的 mtime 判断「有新轮次」,如 build after=jobbank)。"""
     ROUNDS_DIR.mkdir(parents=True, exist_ok=True)
-    (ROUNDS_DIR / DONE_NAME_TPL.format(name=name)).write_text(
-        ROUND_STAMP_TPL.format(t=time.time()))
+    paths.write_text(paths.WriteTextIn(path=ROUNDS_DIR / DONE_NAME_TPL.format(name=name),
+                                       text=ROUND_STAMP_TPL.format(t=time.time())))
 
 
 # =========================================================================

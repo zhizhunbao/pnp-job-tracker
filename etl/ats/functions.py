@@ -23,6 +23,7 @@ from datetime import datetime, timezone
 from typing import cast
 
 from fetch.constants import WS_RE
+from paths import WriteTextIn, write_text
 from fetch.functions import make_client
 from log.functions import err, say
 from ats.constants import (
@@ -513,11 +514,11 @@ def write_company_jobs(x: WriteJobsIn) -> None:
         body = MD_TPL.format(title=job.title, company=x.folder.name, location=job.location,
                              posted=job.posted, ats=x.ats, url=job.url,
                              desc=plain_text_of(job.description))
-        (md_dir / (job_id_of(job) + SUFFIX_MD)).write_text(body, encoding=ENC_UTF8)
+        write_text(WriteTextIn(path=md_dir / (job_id_of(job) + SUFFIX_MD), text=body))
         rows.append(to_job_row(job))
     payload = {K_ATS: x.ats, K_TOKEN: x.token, K_COUNT: len(x.jobs), K_JOBS: rows}
-    (x.folder / FILE_JOBS_JSON).write_text(
-        json.dumps(payload, ensure_ascii=False, indent=JSON_INDENT), encoding=ENC_UTF8)
+    write_text(WriteTextIn(path=x.folder / FILE_JOBS_JSON,
+                           text=json.dumps(payload, ensure_ascii=False, indent=JSON_INDENT)))
 
 
 def job_id_of(job: AtsJob) -> str:
@@ -591,8 +592,8 @@ def fill_company_salaries(x: FillIn) -> SalaryTally:
         job[K_SALARY] = salary
         updated += 1
     if updated > 0:
-        x.jobs_json.write_text(json.dumps(data, ensure_ascii=False, indent=JSON_INDENT),
-                               encoding=ENC_UTF8)
+        write_text(WriteTextIn(path=x.jobs_json,
+                               text=json.dumps(data, ensure_ascii=False, indent=JSON_INDENT)))
     return SalaryTally(total=total, updated=updated)
 
 

@@ -5,6 +5,7 @@
 asyncio 原语与 httpx 客户端字段原按存量宽型(object)登记,2026-08-31 批G 收紧成 Protocol
 (company/scheme.py 的 HttpClientLike/TagLike 样张):只声明本域真用的格,装配点 cast。
 """
+
 from asyncio import Lock, Semaphore
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -103,6 +104,79 @@ class PageLike(Protocol):
         ...
 
 
+class BrowserRequestLike(Protocol):
+    """Playwright 路由请求里脚本预处理真用的格。"""
+
+    url: str
+    """待加载资源 URL。"""
+
+
+class BrowserResponseLike(Protocol):
+    """Playwright route.fetch 响应里真用的格。"""
+
+    status: int
+    """HTTP 状态。"""
+
+    headers: dict[str, str]
+    """响应头。"""
+
+    async def body(self) -> bytes:
+        """读取已解压响应体。"""
+        ...
+
+
+class BrowserRouteLike(Protocol):
+    """Playwright 路由里脚本预处理真用的格。"""
+
+    request: BrowserRequestLike
+    """当前请求。"""
+
+    async def continue_(self) -> None:
+        """非目标资源原样继续。"""
+        ...
+
+    async def fetch(self) -> BrowserResponseLike:
+        """取得目标资源原响应。"""
+        ...
+
+    async def fulfill(self, *, status: int, headers: dict[str, str], body: bytes) -> None:
+        """以改写后的响应完成请求。"""
+        ...
+
+    async def abort(self, error_code: str) -> None:
+        """规则漂移时拒绝执行原脚本。"""
+        ...
+
+
+class ScriptPatchSpec(BaseModel):
+    """一个浏览器脚本精确替换规则。"""
+
+    model_config = ConfigDict(extra="forbid", use_attribute_docstrings=True)
+
+    url_contains: str
+    """目标脚本 URL 的稳定判词。"""
+
+    find: str
+    """必须精确出现的原脚本文本。"""
+
+    replace: str
+    """交给浏览器执行的替换文本。"""
+
+    expected_count: int
+    """每份命中脚本的预期替换次数。"""
+
+
+@dataclass
+class ScriptRewriteIn:
+    """rewrite_script() 入参。"""
+
+    route: BrowserRouteLike
+    """Playwright 当前资源路由。"""
+
+    patches: tuple[ScriptPatchSpec, ...]
+    """启动时严格校验过的脚本规则。"""
+
+
 class SeedSpec(BaseModel):
     """一条探索种子(constants.SEEDS 的洗净形)。"""
 
@@ -158,6 +232,25 @@ class CacheHit:
     fetched: str
     """该轮 crawl 的日期(ISO,YYYY-MM-DD);没爬到 = 空串。出处日期必须是页面
     真正被取回的那天,不是脚本跑的今天。"""
+
+
+@dataclass
+class CachePutIn:
+    """put_cached_page() 入参(一页原文 → html_cache 落盘 + manifest 登记)。
+    2026-09-02 Frank 拍板数据链 crawl → raw → processed → mart:任何抓取(含浏览器渲染态)
+    的页面原文都从这道门进 crawl 层,再由各域抽数据到 raw。"""
+
+    slug: str
+    """站点 slug(data/crawl/<slug>/;无则建)。"""
+
+    url: str
+    """页面地址(缓存文件名 = md5(url).html;取回靠 get_cached_page(url))。"""
+
+    html: str
+    """页面原文(渲染态取 outerHTML)。"""
+
+    title: str
+    """页标题(manifest 页行;空串可)。"""
 
 
 @dataclass
@@ -314,4 +407,3 @@ class UrlVerdict:
 
     soft: str
     """软故障描述(异常名或「HTTP 4xx/5xx」;空 = 无)。"""
-

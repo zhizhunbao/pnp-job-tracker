@@ -10,6 +10,7 @@ from fsa.constants import (
 )
 from fsa.scheme import PlaceIn
 from log.functions import say
+from paths import WriteTextIn, write_text
 
 
 def build_districts() -> None:
@@ -25,8 +26,9 @@ def build_districts() -> None:
         if len(fsa) != FSA_LEN:
             continue
         table[fsa] = to_district_row(PlaceIn(place=f[2].strip(), prov=f[4].strip()))
-    OUT_TABLE.write_text(json.dumps(table, ensure_ascii=False, indent=1, sort_keys=True),
-                         encoding=ENC_UTF8)
+    write_text(WriteTextIn(path=OUT_TABLE,
+                           text=json.dumps(table, ensure_ascii=False, indent=1,
+                                           sort_keys=True)))
     say(DONE_TPL.format(n=len(table)))
 
 

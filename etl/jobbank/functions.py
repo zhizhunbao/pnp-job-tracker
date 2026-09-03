@@ -39,7 +39,7 @@ from typing import cast
 import httpx
 from bs4 import BeautifulSoup, NavigableString, Tag
 
-from paths import JOBBANK_STORE_LOCK, jobbank_store_lock
+from paths import JOBBANK_STORE_LOCK, WriteTextIn, jobbank_store_lock, write_text
 from log.functions import err, say
 from fetch.functions import make_client
 from jobbank import SINCE_DAYS
@@ -50,7 +50,7 @@ from jobbank.constants import (
     CAT_SALARY_LOW, CAT_URL_DUP, CHAIN_DELAY_S, CHAIN_MAX_PAGES, CITY_PROV_RE,
     CLASS_ATTRIBUTE_VALUE, COMPANY_SLUG_MAX, DATE_DIR_RE, DATE_FMTS, DATE_POSTED_PREFIX,
     DETAIL_HTML_TPL, DETAIL_MD_TPL, DETAIL_SLEEP_S, DETAIL_SLUG_MAX, DETAIL_TICK, DETAIL_TIMEOUT_S,
-    DETAIL_TMP_TPL, DIR_COMPANIES, DIR_DETAILS, DIR_JOBS, DIRECT_MARK, EDUCATION_JOIN_SEP,
+    DIR_COMPANIES, DIR_DETAILS, DIR_JOBS, DIRECT_MARK, EDUCATION_JOIN_SEP,
     EMAIL_DOMAIN_RE, EMAIL_SKIP_DOMAINS, EMPLOYER_CLIP, EMPLOYER_FALLBACK, ENC_UTF8, ENV_ON,
     ENV_REPARSE, ENV_VERIFY_MAX, ENV_VERIFY_SLEEP, ERR_PAGE_TPL, ESCAPED_HTML_RE, FILE_JOBS,
     FILE_PROFILE, FRONTMATTER_SEP, GENERIC_EMAIL, GENERIC_TITLES, GLOB_HTML, GLOB_MD,
@@ -87,7 +87,7 @@ from jobbank.constants import (
     SEL_JOB_SOURCE, SEL_LOCATION, SEL_NOC_NO, SEL_NOC_NO_CLASS, SEL_NOC_TITLE, SEL_ORG_LINK,
     SEL_REQUIREMENTS, SEL_SALARY, SINCE_DAYS_FLAG, SKIP_TAGS, SLUG_DASH, SLUG_FALLBACK, SLUG_RE,
     SNAP_PAGE_TPL, SOURCE_JOBBANK, SPACE_SEP, STEM_DUP_TPL, STEM_FALLBACK, STEM_FILE_TPL,
-    STEM_JOIN, SUFFIX_JSON_TMP, SUFFIX_TMP, TAG_A, TAG_BR, TAG_H4, TAG_LI, TAG_SPAN, TAG_UL,
+    STEM_JOIN, TAG_A, TAG_BR, TAG_H4, TAG_LI, TAG_SPAN, TAG_UL,
     TEER_PRO_DIGITS, TERM_MAP, TIMESPEC_SECONDS, TITLE_TRIM_CHARS, UNCLASSIFIED, UNKNOWN_PROV,
     URL_LINE_RE, URL_PARAM_SEP, UTC_OFFSET, UTC_Z, VERIFY_DATE_FMTS, VERIFY_DEAD_CODES,
     VERIFY_FRESH_DAYS, VERIFY_HEAD_BYTES, VERIFY_HOST, VERIFY_MARKER, VERIFY_MAX_DEFAULT,
@@ -250,8 +250,8 @@ def fetch_listing_snapshots(x: ListingIn) -> dict:
                                                  snap_dir=snap_dir, pages=pages,
                                                  max_pages=x.max_pages, delay=x.delay))
             say(PRINT_PROV_SAVED_TPL.format(prov=prov, saved=saved, cutoff=cutoff))
-    (snap_dir / MANIFEST_FILE).write_text(
-        json.dumps(manifest, ensure_ascii=False, indent=JSON_INDENT), encoding=ENC_UTF8)
+    write_text(WriteTextIn(path=snap_dir / MANIFEST_FILE,
+                           text=json.dumps(manifest, ensure_ascii=False, indent=JSON_INDENT)))
     say(PRINT_SNAPSHOT_TPL.format(snap_dir=snap_dir, pages=len(pages)))
     return manifest
 
@@ -271,7 +271,7 @@ def snapshot_province(x: ProvinceIn) -> int:
             exhausted = False
             break
         name = SNAP_PAGE_TPL.format(prov=PROV_FULL.get(x.prov, x.prov.lower()), page=page)
-        (x.snap_dir / name).write_text(out.html, encoding=ENC_UTF8)
+        write_text(WriteTextIn(path=x.snap_dir / name, text=out.html))
         x.pages.append({K_PROV: x.prov, K_PAGE: page, K_FILE: name, K_ROWS: len(rows)})
         saved += 1
         if all_rows_old(AllOldIn(rows=rows, cutoff=x.cutoff)):
@@ -460,13 +460,13 @@ def to_scraped_row(row: dict) -> dict:
 
 
 def write_postings(by_id: dict) -> None:
-    """按日期降序写回(新帖在前);temp + os.replace 同目录原子 rename。"""
+    """按日期降序写回(新帖在前);temp + os.replace 同目录原子 rename(2026-09-02 收编
+    paths.write_text —— 原子不变,补 Errno 22 重试)。"""
     OUT_POSTINGS.parent.mkdir(parents=True, exist_ok=True)
     rows = list(by_id.values())
     rows.sort(key=row_date_key, reverse=True)
-    tmp = OUT_POSTINGS.with_suffix(SUFFIX_JSON_TMP)
-    tmp.write_text(json.dumps(rows, ensure_ascii=False, indent=JSON_INDENT), encoding=ENC_UTF8)
-    os.replace(tmp, OUT_POSTINGS)
+    write_text(WriteTextIn(path=OUT_POSTINGS,
+                           text=json.dumps(rows, ensure_ascii=False, indent=JSON_INDENT)))
     say(PRINT_WROTE_TPL.format(n=len(rows), out=OUT_POSTINGS))
 
 
@@ -541,10 +541,8 @@ def needs_detail(x: NeedIn) -> bool:
 
 
 def save_detail_html(x: SaveIn) -> None:
-    """temp+rename 落盘,避免半截文件占位致永不重抓。"""
-    tmp = x.raw_dir / DETAIL_TMP_TPL.format(pid=x.pid)
-    tmp.write_text(x.html, encoding=ENC_UTF8)
-    os.replace(tmp, x.raw_dir / DETAIL_HTML_TPL.format(pid=x.pid))
+    """temp+rename 落盘,避免半截文件占位致永不重抓(2026-09-02 收编 paths.write_text)。"""
+    write_text(WriteTextIn(path=x.raw_dir / DETAIL_HTML_TPL.format(pid=x.pid), text=x.html))
 
 
 def detail_tick(x: TickIn) -> str:
@@ -800,7 +798,7 @@ def write_detail_md(x: DetailMdIn) -> None:
     if stem in x.seen:
         name = STEM_DUP_TPL.format(stem=stem, pid=pid_of(x.job))
     x.seen.add(stem)
-    (OUT_DETAILS / name).write_text(md, encoding=ENC_UTF8)
+    write_text(WriteTextIn(path=OUT_DETAILS / name, text=md))
 
 
 def stem_of(x: StemIn) -> str:
@@ -823,9 +821,8 @@ def write_enriched(jobs: list) -> None:
     崩整轮(2026-07-17 实测),故先 mkdir。
     """
     IN_POSTINGS.parent.mkdir(parents=True, exist_ok=True)
-    tmp = IN_POSTINGS.with_suffix(SUFFIX_JSON_TMP)
-    tmp.write_text(json.dumps(jobs, ensure_ascii=False, indent=JSON_INDENT), encoding=ENC_UTF8)
-    os.replace(tmp, IN_POSTINGS)
+    write_text(WriteTextIn(path=IN_POSTINGS,
+                           text=json.dumps(jobs, ensure_ascii=False, indent=JSON_INDENT)))
 
 
 def store_tally(jobs: list) -> DetailTally:
@@ -910,11 +907,12 @@ def write_company(x: CompanyIn) -> int:
         K_AIP: any_value(FieldIn(jobs=x.jobs, key=K_AIP)),
         K_JOB_COUNT: len(x.jobs),
     }
-    (cdir / FILE_PROFILE).write_text(
-        json.dumps(profile, ensure_ascii=False, indent=JSON_INDENT), encoding=ENC_UTF8)
-    (cdir / FILE_JOBS).write_text(
-        json.dumps({K_COMPANY: x.employer, K_COUNT: len(x.jobs), K_JOBS: x.jobs},
-                   ensure_ascii=False, indent=JSON_INDENT), encoding=ENC_UTF8)
+    write_text(WriteTextIn(path=cdir / FILE_PROFILE,
+                           text=json.dumps(profile, ensure_ascii=False, indent=JSON_INDENT)))
+    write_text(WriteTextIn(path=cdir / FILE_JOBS,
+                           text=json.dumps({K_COMPANY: x.employer, K_COUNT: len(x.jobs),
+                                            K_JOBS: x.jobs},
+                                           ensure_ascii=False, indent=JSON_INDENT)))
     seen: set = set()
     written = 0
     for job in x.jobs:
@@ -924,8 +922,8 @@ def write_company(x: CompanyIn) -> int:
         if stem in seen:
             name = MD_DUP_TPL.format(stem=stem, tail=dup_tail(DupIn(job=job, seen=seen)))
         seen.add(stem)
-        (cdir / DIR_JOBS / MD_NAME_TPL.format(stem=name)).write_text(
-            to_job_md(JobMdIn(job=job, desc=desc)), encoding=ENC_UTF8)
+        write_text(WriteTextIn(path=cdir / DIR_JOBS / MD_NAME_TPL.format(stem=name),
+                               text=to_job_md(JobMdIn(job=job, desc=desc))))
         written += 1
     return written
 
@@ -1015,8 +1013,8 @@ def audit_jobbank_data() -> None:
                                        employer=rows[0][K_EMPLOYER]))
     say(PRINT_AUDIT_TOTAL_TPL.format(total=flagged, n=total, pct=flagged * PERCENT // total))
     OUT_FLAGS.parent.mkdir(parents=True, exist_ok=True)
-    OUT_FLAGS.write_text(json.dumps(flags, ensure_ascii=False, indent=JSON_INDENT),
-                         encoding=ENC_UTF8)
+    write_text(WriteTextIn(path=OUT_FLAGS,
+                           text=json.dumps(flags, ensure_ascii=False, indent=JSON_INDENT)))
     say(PRINT_AUDIT_OUT_TPL.format(out=OUT_FLAGS))
 
 
@@ -1147,9 +1145,7 @@ def verify_jobbank_expired() -> None:
     if len(picked.cands) == 0:
         return
     out = verify_batch(VerifyIn(cands=picked.cands[:budget], state=state, now=now))
-    tmp = OUT_STATE.with_suffix(SUFFIX_TMP)
-    tmp.write_text(json.dumps(state, ensure_ascii=False), encoding=ENC_UTF8)
-    tmp.replace(OUT_STATE)
+    write_text(WriteTextIn(path=OUT_STATE, text=json.dumps(state, ensure_ascii=False)))
     say(PRINT_VERIFY_DONE_TPL.format(dead=out.dead, alive=out.alive, errs=out.errs,
                                      total=len(state[K_DEAD])))
 
@@ -1269,10 +1265,8 @@ def flag_jobbank_apprentice() -> None:
         posts = json.loads(IN_POSTINGS.read_text(encoding=ENC_UTF8))
         for job in posts:
             flag_apprentice_row(ApprenticeRowIn(job=job, phrases=phrases, tally=tally))
-        tmp = OUT_POSTINGS.with_suffix(SUFFIX_JSON_TMP)
-        tmp.write_text(json.dumps(posts, ensure_ascii=False, indent=JSON_INDENT),
-                       encoding=ENC_UTF8)
-        os.replace(tmp, OUT_POSTINGS)
+        write_text(WriteTextIn(path=OUT_POSTINGS,
+                               text=json.dumps(posts, ensure_ascii=False, indent=JSON_INDENT)))
     blank_ats_apprentice()
     say(PRINT_APPRENTICE_DONE_TPL.format(
         flagged=tally.flagged, total=tally.total, phrase=tally.by_phrase, title=tally.by_title,
@@ -1340,8 +1334,9 @@ def blank_ats_apprentice() -> None:
                 job[K_APPRENTICE_FRIENDLY] = False
                 changed = True
         if changed:
-            jobs_json.write_text(json.dumps(data, ensure_ascii=False, indent=JSON_INDENT),
-                                 encoding=ENC_UTF8)
+            write_text(WriteTextIn(path=jobs_json,
+                                   text=json.dumps(data, ensure_ascii=False,
+                                                   indent=JSON_INDENT)))
 
 
 # =========================================================================
@@ -1377,10 +1372,8 @@ def guard_jobbank_noc_sanity() -> None:
         if line != "":
             blanked.append(line)
     if len(blanked) > 0:
-        tmp = OUT_POSTINGS.with_suffix(SUFFIX_JSON_TMP)
-        tmp.write_text(json.dumps(jobs, ensure_ascii=False, indent=JSON_INDENT),
-                       encoding=ENC_UTF8)
-        os.replace(tmp, OUT_POSTINGS)
+        write_text(WriteTextIn(path=OUT_POSTINGS,
+                               text=json.dumps(jobs, ensure_ascii=False, indent=JSON_INDENT)))
     say(PRINT_SANITY_DONE_TPL.format(n=len(blanked)))
     for line in blanked[:SANITY_SHOW_MAX]:
         say(line)

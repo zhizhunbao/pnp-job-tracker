@@ -15,10 +15,10 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import IO, Iterator
 
-from paths.constants import (ENC_UTF8, JSON_COMPACT_SEPS, LOCK_OPEN_MODE, LOCK_POLL_S,
+from paths.constants import (JSON_COMPACT_SEPS, LOCK_OPEN_MODE, LOCK_POLL_S,
                              LOCK_SEED, OS_WINDOWS, RETRY_BACKOFF, RETRY_DELAY_S,
                              RETRY_MAX, TMP_SUFFIX)
-from paths.scheme import WriteJsonIn
+from paths.scheme import WriteJsonIn, WriteTextIn
 
 
 def dumped_of(x: WriteJsonIn) -> str:
@@ -30,16 +30,24 @@ def dumped_of(x: WriteJsonIn) -> str:
 
 
 def write_json(x: WriteJsonIn) -> None:
-    """原子写 JSON:临时文件 + os.replace,OSError 重试 RETRY_MAX 次退避(RETRY_DELAY_S 起翻倍)。
+    """原子写 JSON:序列化后交 write_text 落盘(同一把「临时文件 + os.replace + 重试」伞)。
 
     只重试 OSError(卷抖动);TypeError 等序列化错误照抛 —— 那是代码病不是环境病。
     """
+    write_text(WriteTextIn(path=x.path, text=dumped_of(x)))
+
+
+def write_text(x: WriteTextIn) -> None:
+    """原子写文本:临时文件 + os.replace,OSError 重试 RETRY_MAX 次退避(RETRY_DELAY_S 起翻倍)。
+
+    2026-09-02 自 write_json 抽出:etl 44 处裸 Path.write_text 零重试,宿主侧(VS Code git
+    刷新等)持锁风暴一撞即死整轮中止 —— 全部收编到这。重试过程静默,第 RETRY_MAX 次照抛。
+    """
     tmp = x.path.with_suffix(x.path.suffix + TMP_SUFFIX)
-    text = dumped_of(x)
     delay = RETRY_DELAY_S
     for attempt in range(RETRY_MAX):
         try:
-            tmp.write_text(text, encoding=ENC_UTF8)
+            tmp.write_text(x.text, encoding=x.encoding, newline=x.newline)
             os.replace(tmp, x.path)
             return
         except OSError:

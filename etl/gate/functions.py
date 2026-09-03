@@ -28,6 +28,7 @@ import unittest
 from datetime import datetime
 
 from log.functions import say
+from paths import WriteTextIn, write_text
 from gate.constants import (
     ABOVE, ARG_OUTPUT_FORMAT, ARG_STATISTICS, BACKSLASH, BANNED_SYNTAX_TPL, BARE_PRINT_TPL,
     BASELINE, BASELINE_INDENT, COLON, CONST_STRIP, CROSS_IMPORT_TPL,
@@ -349,8 +350,9 @@ def write_baseline(soft: list[str]) -> None:
         if BASELINE.exists():
             BASELINE.unlink()
         return
-    BASELINE.write_text(json.dumps(soft, ensure_ascii=False, indent=BASELINE_INDENT),
-                        encoding=ENC_UTF8)
+    write_text(WriteTextIn(path=BASELINE,
+                           text=json.dumps(soft, ensure_ascii=False,
+                                           indent=BASELINE_INDENT)))
 
 
 # =========================================================================
@@ -391,7 +393,7 @@ def report_ruff() -> None:
     for f, n in top[:TOP_N]:
         md.append(MD_ROW_TPL.format(n=n, f=f))
     md.append("")
-    out_file.write_text(NEWLINE.join(md), encoding=ENC_UTF8)
+    write_text(WriteTextIn(path=out_file, text=NEWLINE.join(md)))
     say(str(out_file))
 
 

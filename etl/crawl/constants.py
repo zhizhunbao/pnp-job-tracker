@@ -4,6 +4,7 @@
 不在这 —— 住 fetch.constants,由 functions 统一引(三份 Chrome/131 抄本就此收拢)。
 种子册 = 一省一常量,决策记录挂各自 docstring(原 discover_sources.SEEDS 行内注释搬家)。
 """
+
 import re
 from pathlib import Path
 
@@ -13,8 +14,13 @@ SEED_MB_ROOT = {"slug": "mb-root", "seed": "https://immigratemanitoba.com/", "de
 SEED_NS_ROOT = {"slug": "ns-root", "seed": "https://liveinnovascotia.com/", "depth": 2, "max_pages": 400}
 """NS 全站。"""
 
-SEED_NB_IMM = {"slug": "nb-imm", "seed": "https://www.gnb.ca/en/topic/family-home-community/immigration.html",
-               "depth": 3, "max_pages": 400, "keywords": "/immigration"}
+SEED_NB_IMM = {
+    "slug": "nb-imm",
+    "seed": "https://www.gnb.ca/en/topic/family-home-community/immigration.html",
+    "depth": 3,
+    "max_pages": 400,
+    "keywords": "/immigration",
+}
 """NB gnb 移民区:种子带 .html → 子页不共享路径前缀,必须走 keyword 限域(首轮只爬到 1 页的教训)。
 2026-08-31 换址:NB 官网整体迁版 www2.gnb.ca → www.gnb.ca(旧种子 301 跳外域,BFS 不出站
 → 08-30 那轮只抓到 1 页);新站移民区路径 /en/topic/family-home-community/immigration/,
@@ -23,29 +29,52 @@ keyword 相应放宽到 /immigration。"""
 SEED_NL_IMM = {"slug": "nl-imm", "seed": "https://www.gov.nl.ca/immigration/", "depth": 3, "max_pages": 800}
 """NL immigration 区:含新闻存档,首轮顶到 500 上限(地图可能不全)→ 抬到 800。"""
 
-SEED_SK_SINP = {"slug": "sk-sinp",
-                "seed": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/"
-                        "live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program",
-                "depth": 3, "max_pages": 400}
+SEED_SK_SINP = {
+    "slug": "sk-sinp",
+    "seed": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/"
+    "live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program",
+    "depth": 3,
+    "max_pages": 400,
+}
 """SK SINP 区:层级深所以 depth 3。"""
 
-SEED_BC_IMMIGRATE = {"slug": "bc-immigrate", "seed": "https://www.welcomebc.ca/immigrate-to-b-c",
-                     "depth": 3, "max_pages": 400}
+SEED_BC_IMMIGRATE = {
+    "slug": "bc-immigrate",
+    "seed": "https://www.welcomebc.ca/immigrate-to-b-c",
+    "depth": 3,
+    "max_pages": 400,
+}
 """BC immigrate 区(2026-08-03 实测 33 页)。"""
 
-SEED_AB_AAIP = {"slug": "ab-aaip", "seed": "https://www.alberta.ca/alberta-advantage-immigration-program",
-                "depth": 2, "max_pages": 400, "keywords": "aaip,expression-of-interest,weoi"}
+SEED_AB_AAIP = {
+    "slug": "ab-aaip",
+    "seed": "https://www.alberta.ca/alberta-advantage-immigration-program",
+    "depth": 2,
+    "max_pages": 400,
+    "keywords": "aaip,expression-of-interest,weoi",
+}
 """AB 扁平站 keyword 限域。2026-08-14 keywords 放宽:AAIP 的 Worker EOI 打分材料 URL 不带 aaip
 (实撞:/system/files/im-worker-stream-expression-of-interest-points-grid.pdf 被限域滤掉,
 差点把「AB 有没有打分制」答成没有)。PDF 本体 crawler 不收(SKIP_EXTENSIONS 设计如此),
 这里放的是让 EOI 相关 HTML 页此后能进地图/政策雷达;分值表 PDF 走 raw 落盘。"""
 
-SEED_ON_OINP = {"slug": "on-oinp", "seed": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp",
-                "depth": 2, "max_pages": 400, "keywords": "oinp,ontario-immigrant,workforce-priority"}
+SEED_ON_OINP = {
+    "slug": "on-oinp",
+    "seed": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp",
+    "depth": 2,
+    "max_pages": 400,
+    "keywords": "oinp,ontario-immigrant,workforce-priority",
+}
 """ON 扁平站 keyword 限域。"""
 
-SEED_PE_IMM = {"slug": "pe-imm", "seed": "https://www.princeedwardisland.ca/en/information/office-of-immigration",
-               "depth": 3, "max_pages": 300, "keywords": "office-of-immigration,immigration", "concurrency": 1}
+SEED_PE_IMM = {
+    "slug": "pe-imm",
+    "seed": "https://www.princeedwardisland.ca/en/information/office-of-immigration",
+    "depth": 3,
+    "max_pages": 300,
+    "keywords": "office-of-immigration,immigration",
+    "concurrency": 1,
+}
 """PE:Radware 后面(TLS 指纹墙,改 header 无用)→ 靠浏览器兜底(验证壳→chromium)。
 ⚠️ 已知盲区(2026-08-03 实测):Radware EUDA 连有头自动化浏览器都识别(CDP 探测),
 壳指纹(eudaenableagent)已能认出并转浏览器,但浏览器拿回的仍是壳 → 地图停在 1 页。
@@ -59,57 +88,105 @@ SEED_QC_IMM = {"slug": "qc-imm", "seed": "https://www.quebec.ca/en/immigration",
 SEED_NT_IMM = {"slug": "nt-imm", "seed": "https://www.immigratenwt.ca/", "depth": 2, "max_pages": 300}
 """NT(偏远地区,2026-08-03 Frank:「偏远地区也加上」)。"""
 
-SEED_YT_IMM = {"slug": "yt-imm", "seed": "https://yukon.ca/en/immigrate-yukon",
-               "depth": 2, "max_pages": 300, "keywords": "immigrat,nominee", "concurrency": 1}
+SEED_YT_IMM = {
+    "slug": "yt-imm",
+    "seed": "https://yukon.ca/en/immigrate-yukon",
+    "depth": 2,
+    "max_pages": 300,
+    "keywords": "immigrat,nominee",
+    "concurrency": 1,
+}
 """YT:Cloudflare 后面(403)→ 浏览器兜底;无头过不了交互式验证框时单省失败不拖全轮
 (真要解锁得在有头环境点一次验证框,profile 落盘后续免检)。"""
 
-SEED_NU_IMM = {"slug": "nu-imm", "seed": "https://www.gov.nu.ca/edt/programs-services/nunavut-nominee-program",
-               "depth": 2, "max_pages": 200, "keywords": "nominee,immigrat", "concurrency": 1}
+SEED_NU_IMM = {
+    "slug": "nu-imm",
+    "seed": "https://www.gov.nu.ca/edt/programs-services/nunavut-nominee-program",
+    "depth": 2,
+    "max_pages": 200,
+    "keywords": "nominee,immigrat",
+    "concurrency": 1,
+}
 """⚠️ NU 已知盲区(2026-08-03 实测):gov.nu.ca 的 Cloudflare 质询连有头浏览器都不自动清,
 fetch 返回质询页(且等待逻辑没拦住,疑似标题闪变竞态 —— 待查)。先留种子每轮试
 (失败不拖全轮);NU 提名计划内容少,真要抓口径走官方 PDF 路线。"""
 
-SEED_FED_RCIP = {"slug": "fed-rcip",
-                 "seed": "https://www.canada.ca/en/immigration-refugees-citizenship/services/"
-                         "immigrate-canada/rural-franco-pilots.html",
-                 "depth": 3, "max_pages": 300, "keywords": "rural-franco,rural-community,francophone-community"}
+SEED_FED_RCIP = {
+    "slug": "fed-rcip",
+    "seed": "https://www.canada.ca/en/immigration-refugees-citizenship/services/"
+    "immigrate-canada/rural-franco-pilots.html",
+    "depth": 3,
+    "max_pages": 300,
+    "keywords": "rural-franco,rural-community,francophone-community",
+}
 """联邦 RCIP/FCIP(偏远/法语社区试点):canada.ca 扁平路径 → keyword 限域;httpx 直通。"""
 
-SEED_FED_PGWP = {"slug": "fed-pgwp",
-                 "seed": "https://www.canada.ca/en/immigration-refugees-citizenship/services/"
-                         "study-canada/work/after-graduation.html",
-                 "depth": 3, "max_pages": 200, "keywords": "after-graduation,post-graduation,study-canada/work"}
+SEED_FED_PGWP = {
+    "slug": "fed-pgwp",
+    "seed": "https://www.canada.ca/en/immigration-refugees-citizenship/services/"
+    "study-canada/work/after-graduation.html",
+    "depth": 3,
+    "max_pages": 200,
+    "keywords": "after-graduation,post-graduation,study-canada/work",
+}
 """B1-4 PGWP 规则库(2026-08-03,铁律 4「没有数据先补 URL」):时长叠加 / field-of-study 官方页,
 全挂在 study-canada/work 区(after-graduation 一族)。"""
 
-SEED_FED_AIP = {"slug": "fed-aip",
-                "seed": "https://www.canada.ca/en/immigration-refugees-citizenship/services/"
-                        "immigrate-canada/atlantic-immigration.html",
-                "depth": 3, "max_pages": 80, "keywords": "atlantic-immigration"}
+SEED_FED_AIP = {
+    "slug": "fed-aip",
+    "seed": "https://www.canada.ca/en/immigration-refugees-citizenship/services/"
+    "immigrate-canada/atlantic-immigration.html",
+    "depth": 3,
+    "max_pages": 80,
+    "keywords": "atlantic-immigration",
+}
 """E13-08(2026-08-07)雷区判定通道锚页,进周更当政策雷达(diff 报了才知道口径常量过期):
 AIP job offer TEER 0-4 原句在 how-to-immigrate/job-offer.html。深度 2→3(G-AIP 抓取批,
 2026-08-09):申请人门槛细节页(work-experience/proof-funds/settlement-service-provider-
 organizations)全挂在 how-to-immigrate/eligibility.html 之下一跳,depth=2 探不到
 (17 页里三个申请人门槛细节页缺失,build_aip_rules.py 核对 manifest 时实测发现)。"""
 
-SEED_FED_CAREGIVER = {"slug": "fed-caregiver",
-                      "seed": "https://www.canada.ca/en/immigration-refugees-citizenship/services/"
-                              "immigrate-canada/caregivers.html",
-                      "depth": 2, "max_pages": 60, "keywords": "caregivers,home-care-worker"}
+SEED_FED_CAREGIVER = {
+    "slug": "fed-caregiver",
+    "seed": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/caregivers.html",
+    "depth": 2,
+    "max_pages": 60,
+    "keywords": "caregivers,home-care-worker",
+}
 """保育专项四 NOC 在 child-care-home-support/eligibility.html(E13-08 同批)。"""
 
-SEED_FED_EE = {"slug": "fed-ee",
-               "seed": "https://www.canada.ca/en/immigration-refugees-citizenship/services/"
-                       "immigrate-canada/express-entry/rounds-invitations/category-based-selection.html",
-               "depth": 4, "max_pages": 300, "keywords": "express-entry"}
+SEED_FED_EE = {
+    "slug": "fed-ee",
+    "seed": "https://www.canada.ca/en/immigration-refugees-citizenship/services/"
+    "immigrate-canada/express-entry/rounds-invitations/category-based-selection.html",
+    "depth": 4,
+    "max_pages": 300,
+    "keywords": "express-entry",
+}
 """联邦 Express Entry(2026-08-05,铁律「URL → 数据 → SQL」):CRS 计分表 + CEC/FSW/FST 资格页。
 种子不是猜的 —— 用 raw/ee/federal-categories.json 里已举证的官方 URL 起爬,keyword 限域
 展开整个 express-entry 区(who-can-apply 一族 = 资格;check-score/criteria = CRS 计分)。"""
 
-SEEDS = [SEED_MB_ROOT, SEED_NS_ROOT, SEED_NB_IMM, SEED_NL_IMM, SEED_SK_SINP, SEED_BC_IMMIGRATE,
-         SEED_AB_AAIP, SEED_ON_OINP, SEED_PE_IMM, SEED_QC_IMM, SEED_NT_IMM, SEED_YT_IMM, SEED_NU_IMM,
-         SEED_FED_RCIP, SEED_FED_PGWP, SEED_FED_AIP, SEED_FED_CAREGIVER, SEED_FED_EE]
+SEEDS = [
+    SEED_MB_ROOT,
+    SEED_NS_ROOT,
+    SEED_NB_IMM,
+    SEED_NL_IMM,
+    SEED_SK_SINP,
+    SEED_BC_IMMIGRATE,
+    SEED_AB_AAIP,
+    SEED_ON_OINP,
+    SEED_PE_IMM,
+    SEED_QC_IMM,
+    SEED_NT_IMM,
+    SEED_YT_IMM,
+    SEED_NU_IMM,
+    SEED_FED_RCIP,
+    SEED_FED_PGWP,
+    SEED_FED_AIP,
+    SEED_FED_CAREGIVER,
+    SEED_FED_EE,
+]
 """种子册全序(九省 + QC + 三地区 + 联邦五案;PE/NU 已知盲区留种子每轮试)。"""
 
 K_SLUG = "slug"
@@ -187,16 +264,47 @@ HTML_SUFFIX = ".html"
 STATUS_OK = 200
 """cache 只认的 HTTP 状态。"""
 
-SKIP_EXTENSIONS = (".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico", ".webp",
-                   ".pdf", ".zip", ".tar", ".gz", ".bz2", ".xz",
-                   ".mp4", ".mp3", ".avi", ".mov", ".wmv",
-                   ".woff", ".woff2", ".ttf", ".eot",
-                   ".css", ".js", ".map", ".json",
-                   ".xml", ".rss", ".atom")
+SKIP_EXTENSIONS = (
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".svg",
+    ".ico",
+    ".webp",
+    ".pdf",
+    ".zip",
+    ".tar",
+    ".gz",
+    ".bz2",
+    ".xz",
+    ".mp4",
+    ".mp3",
+    ".avi",
+    ".mov",
+    ".wmv",
+    ".woff",
+    ".woff2",
+    ".ttf",
+    ".eot",
+    ".css",
+    ".js",
+    ".map",
+    ".json",
+    ".xml",
+    ".rss",
+    ".atom",
+)
 """BFS 不收的文件后缀(资产/文档/流媒体;PDF 走 raw 落盘不进地图)。"""
 
-SKIP_PATH_PATTERNS = (re.compile(r"/_sources/"), re.compile(r"/_static/"), re.compile(r"/_images/"),
-                      re.compile(r"/genindex"), re.compile(r"/search\.html"), re.compile(r"/py-modindex"))
+SKIP_PATH_PATTERNS = (
+    re.compile(r"/_sources/"),
+    re.compile(r"/_static/"),
+    re.compile(r"/_images/"),
+    re.compile(r"/genindex"),
+    re.compile(r"/search\.html"),
+    re.compile(r"/py-modindex"),
+)
 """BFS 不收的路径样式(Sphinx 遗产,保留无害)。"""
 
 DISCOVER_CONCURRENCY = 20
@@ -265,14 +373,56 @@ BROWSER_ARGS = ("--disable-blink-features=AutomationControlled", "--no-sandbox")
 STEALTH_JS = "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
 """隐掉 navigator.webdriver 自动化旗(Cloudflare/Akamai 查它)。"""
 
-TITLE_CHALLENGE_MARKERS = ("just a moment", "请稍候", "checking your browser", "attention required",
-                           "安全验证", "请验证")
+SCRIPT_PATCH_ROWS = (
+    {
+        "url_contains": "https://dl26yht2ovo33.cloudfront.net/public/web/distFolder/production/main-",
+        "find": (
+            'ondevtoolopen:function(){try{window.opener=null,window.open("","_self"),window.close(),'
+            'setTimeout(function(){window.location.href="about:blank"},200)}catch(e){}}'
+        ),
+        "replace": "ondevtoolopen:function(){}",
+        "expected_count": 1,
+    },
+)
+"""浏览器加载前的站点脚本精确替换；规则漂移时失败关闭，不缓存未处理页面。"""
+
+SCRIPT_PATCH_DRIFT_TPL = "预期命中 {want} 次,实际 {got} 次"
+"""补丁规则漂移的错误文案(命中次数与预期不符 = 站点脚本改版,当场断)。"""
+
+HDR_CONTENT_ENCODING = "content-encoding"
+"""响应头:内容编码(回填改写后的脚本前摘掉 —— 正文已解压重编)。"""
+
+HDR_CONTENT_LENGTH = "content-length"
+"""响应头:内容长度(同上,改写后长度变了)。"""
+
+ROUTE_ABORT_REASON = "failed"
+"""补丁失败时中止请求的原因码(playwright route.abort 的 errorCode)。"""
+
+RE_OR = "|"
+"""正则「或」连接符(把多条补丁的 url_contains 拼成一条路由样式)。"""
+
+TITLE_CHALLENGE_MARKERS = (
+    "just a moment",
+    "请稍候",
+    "checking your browser",
+    "attention required",
+    "安全验证",
+    "请验证",
+)
 """页标题里的人机验证判词(浏览器侧等待放行的条件)。"""
 
-HTML_CHALLENGE_MARKERS = ("just a moment", "请稍候", "正在进行安全验证", "请验证您是真人",
-                          "checking your browser", "attention required",
-                          "cf-browser-verification", "/cdn-cgi/challenge-platform",
-                          "verifying your browser", "eudaenableagent")
+HTML_CHALLENGE_MARKERS = (
+    "just a moment",
+    "请稍候",
+    "正在进行安全验证",
+    "请验证您是真人",
+    "checking your browser",
+    "attention required",
+    "cf-browser-verification",
+    "/cdn-cgi/challenge-platform",
+    "verifying your browser",
+    "eudaenableagent",
+)
 """HTTP 200 里的验证壳判词(challenge 页当正文存档 = 脏语料)。最后一枚 = Radware EUDA 的
 JS 加载器壳(princeedwardisland.ca 实见,2026-08-03:200 + 125KB webpack JS,「Verifying
 your browser」文字在 12 万字开外,前 4000 字检测窗口里只有 EUDA 的常量名可认)。"""
@@ -298,13 +448,29 @@ NETWORKIDLE = "networkidle"
 SCROLL_STEP_PX = 5000
 """每次滚轮的像素量。"""
 
-DEFAULT_CONTENT_SELECTORS = ("article", "main", "[role='main']", ".bd-article",
-                             ".document", ".content", "#content", "body")
+DEFAULT_CONTENT_SELECTORS = (
+    "article",
+    "main",
+    "[role='main']",
+    ".bd-article",
+    ".document",
+    ".content",
+    "#content",
+    "body",
+)
 """正文容器兜底顺序(无显式 selector 时逐个试)。"""
 
-DEFAULT_REMOVE_SELECTORS = ("script", "style", "nav", "footer", "header",
-                            ".headerlink", ".viewcode-link", ".highlight-link",
-                            "a.reference.external.image-reference")
+DEFAULT_REMOVE_SELECTORS = (
+    "script",
+    "style",
+    "nav",
+    "footer",
+    "header",
+    ".headerlink",
+    ".viewcode-link",
+    ".highlight-link",
+    "a.reference.external.image-reference",
+)
 """转 md 前先拆掉的噪音选择器(Sphinx 遗产项保留无害)。"""
 
 HEADING_TAGS = ("h1", "h2", "h3", "h4", "h5", "h6")
@@ -466,21 +632,29 @@ H_LEVEL_TPL = "{hashes} {text}"
 BLANKS_RE = re.compile(r"\n{3,}")
 """三连以上空行(压成两连)。"""
 
-FM_TPL = "---\nsource: {url}\ntitle: \"{title}\"\nfetched: {fetched}\n---\n\n"
+FM_TPL = '---\nsource: {url}\ntitle: "{title}"\nfetched: {fetched}\n---\n\n'
 """md 头部 frontmatter(fetched = 取回时刻,出处日期真相)。"""
 
-EE_URL = ("https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/"
-          "express-entry/rounds-invitations/category-based-selection.html")
+EE_URL = (
+    "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/"
+    "express-entry/rounds-invitations/category-based-selection.html"
+)
 """EE 类别抽选页(ee_categories 回退工具的目标;canada.ca 走 Akamai,httpx 403 → 浏览器)。"""
 
 EE_OUT_FILE = "federal-categories.json"
 """回退工具产出文件名(落 paths.EE)。"""
 
-EE_CAT_MAP = (("healthcare", "healthcare", "医疗社服"), ("Science", "stem", "STEM"),
-              ("trade", "trade", "技工"), ("education", "education", "教育"),
-              ("transport", "transport", "运输"), ("physicians", "physicians", "医生"),
-              ("senior managers", "senior-managers", "高管"), ("researchers", "researchers", "研究"),
-              ("military", "military", "军职"))
+EE_CAT_MAP = (
+    ("healthcare", "healthcare", "医疗社服"),
+    ("Science", "stem", "STEM"),
+    ("trade", "trade", "技工"),
+    ("education", "education", "教育"),
+    ("transport", "transport", "运输"),
+    ("physicians", "physicians", "医生"),
+    ("senior managers", "senior-managers", "高管"),
+    ("researchers", "researchers", "研究"),
+    ("military", "military", "军职"),
+)
 """类别英文标题关键词 → (短 key, 中文标签)。"""
 
 EE_EXPAND_JS = """() => {
@@ -611,15 +785,13 @@ PRINT_BROWSER_403_TPL = "  [browser] 403→browser: {url}"
 PRINT_BROWSER_200_TPL = "  [browser] 200-challenge→browser: {url}"
 """200 验证壳转浏览器成功。"""
 
-PRINT_BROWSER_DOWN = ("浏览器兜底不可用;403 页将跳过。装法:uv sync --extra browser && "
-                      "uv run playwright install chromium")
+PRINT_BROWSER_DOWN = "浏览器兜底不可用;403 页将跳过。装法:uv sync --extra browser && uv run playwright install chromium"
 """playwright 缺席/启动失败(警告一次)。"""
 
 PRINT_BROWSER_NONE = "浏览器不可用(playwright 未装?)"
 """EE 回退工具无浏览器可用。"""
 
-PRINT_CHALLENGE_WAIT_TPL = ("  [browser] ⏳ 人机验证:请在浏览器窗口点一下验证框"
-                            "(最多等 {s}s,解过一次后续免验证) {url}")
+PRINT_CHALLENGE_WAIT_TPL = "  [browser] ⏳ 人机验证:请在浏览器窗口点一下验证框(最多等 {s}s,解过一次后续免验证) {url}"
 """交互式验证等待提示(有头环境手点)。"""
 
 PRINT_CHALLENGE_OK = "  [browser] ✅ 验证通过,继续"
@@ -627,6 +799,12 @@ PRINT_CHALLENGE_OK = "  [browser] ✅ 验证通过,继续"
 
 PRINT_CHALLENGE_TIMEOUT = "  [browser] ⚠️ 验证未在超时内完成,跳过该页"
 """验证超时。"""
+
+PRINT_SCRIPT_PATCH_TPL = "  [browser] script-patch {count}x: {url}"
+"""站点脚本预处理命中。"""
+
+PRINT_SCRIPT_PATCH_FAIL_TPL = "浏览器脚本预处理失败:{url}"
+"""脚本规则漂移、响应解码或回填失败。"""
 
 PRINT_MANIFEST_TPL = "[OK] {n} pages → {path}"
 """一颗种子收轮。"""
@@ -685,8 +863,17 @@ CONSTANTS_GLOB = "*/constants.py"
 URL_HTTP_PREFIXES = ("http://", "https://")
 """赋值字符串算 URL 的前缀。"""
 
-URL_SKIP_MARKS = ("{", "web.archive.org", "host.docker.internal", "localhost", "127.0.0.1",
-                  "192.168.", "api.anthropic.com", "/wds/rest/", "publications.saskatchewan.ca/api/")
+URL_SKIP_MARKS = (
+    "{",
+    "web.archive.org",
+    "host.docker.internal",
+    "localhost",
+    "127.0.0.1",
+    "192.168.",
+    "api.anthropic.com",
+    "/wds/rest/",
+    "publications.saskatchewan.ca/api/",
+)
 """不进哨兵的 URL 特征:模板占位、存档站(自带逐份重试路,503 阵发不当官方死讯)、本机/内网、
 API 基址(2026-08-31 首扫误报三条定型:裸基址不带参数 GET 天然 404/405,健康与否由消费它们
 的步每轮实证,哨兵只管「人能读的页」)。"""
@@ -722,4 +909,3 @@ URLS_P_SUMMARY_TPL = "✗ urls 哨兵:{n}/{total} 条官方 URL 硬红(见上;�
 
 URLS_P_OK_TPL = "✓ urls 哨兵:{total} 条官方 URL 无硬红(软留痕 {soft} 条)"
 """收口行:全过。"""
-
