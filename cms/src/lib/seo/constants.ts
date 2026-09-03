@@ -31,6 +31,31 @@ export const CORE_PAGES = [
   { path: '/', priority: 1, freq: 'daily' },
 
   /**
+   * PTE 刷题题单(默认型;2026-09-03 批二上线,日用页)。
+   */
+  { path: '/pte', priority: 0.8, freq: 'daily' },
+
+  /**
+   * PTE 题单 · 朗读。
+   */
+  { path: '/pte/ra', priority: 0.7, freq: 'daily' },
+
+  /**
+   * PTE 题单 · 复述句子。
+   */
+  { path: '/pte/rs', priority: 0.7, freq: 'daily' },
+
+  /**
+   * PTE 题单 · 简答题。
+   */
+  { path: '/pte/asq', priority: 0.7, freq: 'daily' },
+
+  /**
+   * PTE 题单 · 听写句子。
+   */
+  { path: '/pte/wfd', priority: 0.7, freq: 'daily' },
+
+  /**
    * 定价页。
    */
   { path: '/pricing', priority: 0.8, freq: 'weekly' },

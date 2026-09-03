@@ -968,7 +968,7 @@ export const siteZh = {
   'tl.min': '最低分 {n}', 'tl.notCrs': ',非 CRS', 'tl.inv': '邀请 {n} 人', 'tl.src': '官方来源',
   'tl.entry': '抽选与政策时间线', 'tl.empty': '没有匹配的事件', 'tl.hist': '历次抽选',
   'loading': '更新中…',
-  'nav.library': '资料库', 'nav.employers': '雇主', 'nav.jobs': '职位', 'tl.tabNews': '最新公告',
+  'nav.library': '资料库', 'nav.employers': '雇主', 'nav.jobs': '职位', 'nav.pte': 'PTE 刷题', 'tl.tabNews': '最新公告',
   'rank.bnSub': '按移民价值评分排序,随日更自动刷新', 'rank.bnRows': '本榜岗位',
   // #54 登录改版(careerbeacon 骨架)
   'acct.hero.login': '欢迎回来', 'acct.hero.reg': '免费注册,看每份工作对你的匹配度',
@@ -1245,4 +1245,35 @@ export const caseZh: Record<string, string> = {
   'case.C15.q': '我 480 稳吗?',
   'case.C16.label': '站里查不到自己的工种',
   'case.C16.q': '我的职业你们怎么没有?',
+}
+
+// =========================================================================
+// PTE Core 刷题(2026-09-03 批二,设计稿 docs/design/PTE刷题-20260903.md)
+// =========================================================================
+/**
+ * 文案 · PTE 刷题 —— 题单页(胶囊 / 窗口 / 列名)、单题页(三段动线 / 事实卡)、题下评论区。
+ * 术语三个:「考过」「押题」「练过」;解释类只留「考生回忆,非官方」一条。题型名不在这里 —— 住 pte_types 三语列。
+ */
+export const pteZh = {
+  'pte.title': 'PTE Core 机经',
+  'pte.disclaimer': '考生回忆整理,非官方题库',
+  'pte.back': '返回',
+  'pte.win7': '近 7 天', 'pte.win30': '近 30 天', 'pte.win90': '近 90 天', 'pte.winAll': '全部',
+  'pte.hot': '只看押题', 'pte.todo': '未练过',
+  'pte.countWin': '近 {win} 天考过 {n} 题,按最近考过日排', 'pte.countAll': '共 {n} 题,按最近考过日排',
+  'pte.col.num': '题号', 'pte.col.text': '题面', 'pte.col.seen': '最近考过', 'pte.col.n': '考过次数', 'pte.col.hot': '押题', 'pte.col.done': '练过',
+  'pte.seenToday': '今天考过', 'pte.seenAgo': '{n} 天前考过', 'pte.today': '今天', 'pte.ago': '{n} 天前', 'pte.times': '考过 {n} 次',
+  'pte.hotMark': '押题', 'pte.doneMark': '练过', 'pte.empty': '没有符合的题', 'pte.more': '显示更多(还有 {n} 题)',
+  'pte.pos': '{i} / {n}',
+  'pte.inst.RA': '40 秒内自然清晰地读出来', 'pte.inst.RS': '听一遍,原样复述', 'pte.inst.ASQ': '听问题,一两个词作答', 'pte.inst.WFD': '听一遍,原样写下来',
+  'pte.prep': '准备', 'pte.skipPrep': '跳过准备', 'pte.play': '播放题目', 'pte.replay': '再听一遍', 'pte.audio': '题目音频',
+  'pte.tts': '示范朗读', 'pte.myRec': '我的录音', 'pte.recording': '录音中', 'pte.recCap': '{s} 秒内答完', 'pte.stop': '停止',
+  'pte.submit': '提交', 'pte.redo': '重做', 'pte.rerec': '重录', 'pte.next': '下一题', 'pte.prev': '上一题',
+  'pte.typed': '你写的', 'pte.orig': '原句', 'pte.answer': '答案', 'pte.words': '{n} 词', 'pte.timer': '作答 {t}',
+  'pte.diff': '{ok} 词对,{bad} 词错', 'pte.done': '已记为练过', 'pte.showText': '显示原句',
+  'pte.noTts': '此浏览器不支持朗读,先看原句练', 'pte.noMic': '没拿到麦克风,直接对照', 'pte.listen': '自己听一遍对照示范',
+  'pte.f.seen': '最近考过', 'pte.f.n': '考过次数', 'pte.f.hot': '押题', 'pte.f.num': '题号', 'pte.yes': '是', 'pte.no': '否', 'pte.none': '暂无记录',
+  'pte.c.exam': '考试记录', 'pte.c.iSat': '我考到了', 'pte.c.date': '考试日期', 'pte.c.city': '考点城市', 'pte.c.cityPh': '选填',
+  'pte.c.send': '发送', 'pte.c.cancel': '取消', 'pte.c.notes': '留言', 'pte.c.ph': '写留言', 'pte.c.empty': '还没人留言',
+  'pte.c.login': '登录后可发', 'pte.c.sent': '已提交,审核后显示', 'pte.c.err': '没发出去,请重试', 'pte.c.examOk': '已记录',
 }

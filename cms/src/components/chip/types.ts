@@ -25,6 +25,12 @@ export type ChipIn = {
   onClick?: () => void
 
   /**
+   * 去处(传了渲成真 <a>,内链要被爬到 —— 2026-09-03 PTE 题型胶囊是一页一型的路由,
+   * 扩通用件而不是在业务桶 fork 第二种药丸)。
+   */
+  href?: string
+
+  /**
    * 悬停提示(原生 title 属性;可省)。
    */
   title?: string

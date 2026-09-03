@@ -6,7 +6,7 @@
  * @time 2026-08-22 20:00:00
  */
 
-import { consultZh, jobsZh, legalZh, quizZh, reportZh, siteZh } from './zh'
+import { consultZh, jobsZh, legalZh, pteZh, quizZh, reportZh, siteZh } from './zh'
 // =========================================================================
 // 判定与报告(原 report.ts)
 // =========================================================================
@@ -882,7 +882,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'tl.min': 'Min {n}', 'tl.notCrs': ', not CRS', 'tl.inv': '{n} invited', 'tl.src': 'Official source',
   'tl.entry': 'Draws & policy timeline', 'tl.empty': 'No matching events', 'tl.hist': 'Draw history',
   'loading': 'Updating…',
-  'nav.library': 'Library', 'nav.employers': 'Employers', 'nav.jobs': 'Jobs', 'tl.tabNews': 'Latest updates',
+  'nav.library': 'Library', 'nav.employers': 'Employers', 'nav.jobs': 'Jobs', 'nav.pte': 'PTE practice', 'tl.tabNews': 'Latest updates',
   'rank.bnSub': 'Ranked by immigration-value score, refreshed daily', 'rank.bnRows': 'jobs on board',
   'acct.hero.login': 'Welcome back', 'acct.hero.reg': 'Sign up free — see your match for every job',
   'acct.google': 'Continue with Google', 'acct.orEmail': 'or with email',
@@ -1131,4 +1131,34 @@ export const caseEn: Record<string, string> = {
   'case.C15.q': 'Is 480 safe?',
   'case.C16.label': 'Cannot find my occupation here',
   'case.C16.q': 'Why is my occupation missing here?',
+}
+
+// =========================================================================
+// PTE Core 刷题(2026-09-03 批二)
+// =========================================================================
+/**
+ * pteEn: 词表块(与 zh.ts 同名块逐键对齐)。
+ */
+export const pteEn: Record<keyof typeof pteZh, string> = {
+  'pte.title': 'PTE Core question bank',
+  'pte.disclaimer': 'Compiled from test-taker recollections, not an official bank',
+  'pte.back': 'Back',
+  'pte.win7': 'Last 7 days', 'pte.win30': 'Last 30 days', 'pte.win90': 'Last 90 days', 'pte.winAll': 'All',
+  'pte.hot': 'Predicted only', 'pte.todo': 'Not practiced',
+  'pte.countWin': '{n} questions seen in the last {win} days, latest first', 'pte.countAll': '{n} questions, latest seen first',
+  'pte.col.num': 'No.', 'pte.col.text': 'Question', 'pte.col.seen': 'Last seen', 'pte.col.n': 'Times seen', 'pte.col.hot': 'Predicted', 'pte.col.done': 'Done',
+  'pte.seenToday': 'Seen today', 'pte.seenAgo': 'Seen {n} days ago', 'pte.today': 'Today', 'pte.ago': '{n} days ago', 'pte.times': 'Seen {n} times',
+  'pte.hotMark': 'Predicted', 'pte.doneMark': 'Done', 'pte.empty': 'No matching questions', 'pte.more': 'Show more ({n} left)',
+  'pte.pos': '{i} / {n}',
+  'pte.inst.RA': 'Read it aloud naturally and clearly within 40 seconds', 'pte.inst.RS': 'Listen once, repeat it exactly', 'pte.inst.ASQ': 'Listen, answer in a word or two', 'pte.inst.WFD': 'Listen once, type it exactly',
+  'pte.prep': 'Prepare', 'pte.skipPrep': 'Skip prep', 'pte.play': 'Play question', 'pte.replay': 'Play again', 'pte.audio': 'Question audio',
+  'pte.tts': 'Model reading', 'pte.myRec': 'My recording', 'pte.recording': 'Recording', 'pte.recCap': 'Finish within {s} seconds', 'pte.stop': 'Stop',
+  'pte.submit': 'Submit', 'pte.redo': 'Redo', 'pte.rerec': 'Record again', 'pte.next': 'Next', 'pte.prev': 'Previous',
+  'pte.typed': 'You typed', 'pte.orig': 'Original', 'pte.answer': 'Answer', 'pte.words': '{n} words', 'pte.timer': 'Elapsed {t}',
+  'pte.diff': '{ok} words right, {bad} wrong', 'pte.done': 'Marked as done', 'pte.showText': 'Show text',
+  'pte.noTts': 'This browser cannot read aloud, practice from the text', 'pte.noMic': 'No microphone, skipping to the answer', 'pte.listen': 'Listen and compare with the model reading',
+  'pte.f.seen': 'Last seen', 'pte.f.n': 'Times seen', 'pte.f.hot': 'Predicted', 'pte.f.num': 'No.', 'pte.yes': 'Yes', 'pte.no': 'No', 'pte.none': 'No record yet',
+  'pte.c.exam': 'Exam sightings', 'pte.c.iSat': 'I got this one', 'pte.c.date': 'Exam date', 'pte.c.city': 'Test centre city', 'pte.c.cityPh': 'Optional',
+  'pte.c.send': 'Send', 'pte.c.cancel': 'Cancel', 'pte.c.notes': 'Comments', 'pte.c.ph': 'Write a comment', 'pte.c.empty': 'No comments yet',
+  'pte.c.login': 'Log in to post', 'pte.c.sent': 'Submitted, shown after review', 'pte.c.err': 'Not sent, please retry', 'pte.c.examOk': 'Recorded',
 }

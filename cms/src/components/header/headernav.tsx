@@ -10,12 +10,12 @@
  * @time 2026-08-24 08:00:00
  */
 import { cssOf } from '@/components/css'
-import { IconChart, IconClipboard, IconCompass, IconNews, IconUsers } from '@/components/icons'
+import { IconChart, IconClipboard, IconCompass, IconMedal, IconNews, IconUsers } from '@/components/icons'
 import { LinkButton } from '@/components/button'
 import {
-  A_EMPLOYERS, A_JOBS, A_LIBRARY, A_MATCH, A_NEWS, A_PATHWAYS, A_RANK, A_START, A_STATS, PATH_CASES,
+  A_EMPLOYERS, A_JOBS, A_LIBRARY, A_MATCH, A_NEWS, A_PATHWAYS, A_PTE, A_RANK, A_START, A_STATS, PATH_CASES,
   PATH_EMPLOYERS, PATH_HOME,
-  PATH_NEWS, PATH_OCC, PATH_PLAN_PR, PATH_RESOURCES, PATH_START, PATH_TIMELINE,
+  PATH_NEWS, PATH_OCC, PATH_PLAN_PR, PATH_PTE, PATH_RESOURCES, PATH_START, PATH_TIMELINE,
 } from './constants'
 import { withOn } from './functions'
 import { NavDrop } from './navdrop'
@@ -45,6 +45,9 @@ export function HeaderNav({ t, active }: HeaderNavIn) {
       </LinkButton>
       <LinkButton href={PATH_EMPLOYERS} className={withOn({ base: cssOf(css.navLink), on: active === A_EMPLOYERS })}>
         <IconUsers /> {t('nav.employers')}
+      </LinkButton>
+      <LinkButton href={PATH_PTE} className={withOn({ base: cssOf(css.navLink), on: active === A_PTE })}>
+        <IconMedal /> {t('nav.pte')}
       </LinkButton>
       <NavDrop label={t('nav.library')}
         icon={<IconUsers />}

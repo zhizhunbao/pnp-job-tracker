@@ -24,7 +24,7 @@ export type TFn = (key: string, vars?: Record<string, string | number>) => strin
  * 看着像点错了跳去雇主,实为清单页历史上挂在雇主名录下的遗留高亮)。
  */
 export type ActiveKey =
-  'rank' | 'stats' | 'account' | 'pathways' | 'news' | 'employers' | 'start' | 'match' | 'jobs' | 'library'
+  'rank' | 'stats' | 'account' | 'pathways' | 'news' | 'employers' | 'start' | 'match' | 'jobs' | 'library' | 'pte'
 
 
 /**

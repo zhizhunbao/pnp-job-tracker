@@ -7,6 +7,13 @@ import type { CollectionConfig, PayloadRequest } from 'payload'
 const isAdmin = (req: PayloadRequest) => req.user?.role === 'admin'
 const PENDING_CAP = 10   // 单用户待审上限(防灌水;审核过了就释放额度)
 const BODY_MAX = 1000
+// PTE 题下评论(2026-09-03,设计稿 docs/design/PTE刷题-20260903.md「题下评论区」;DDL docs/sql/pte-comments.sql):
+// kind=exam「我考到了」= 日期 + 城市两格结构化数据,没有广告位,**免审直接 approved**;
+// kind=note 留言走新闻评论同款人工闸。题下不开楼中楼(批二)。
+const KIND_EXAM = 'exam'
+const KIND_NOTE = 'note'
+const EXAM_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
+const CITY_MAX = 40
 
 const mask = (u: { displayName?: string | null; email?: string | null }) => {
   let name = (u.displayName || '').trim()
@@ -31,6 +38,38 @@ export const Comments: CollectionConfig = {
   },
   hooks: {
     beforeChange: [async ({ req, data, operation }) => {
+      if (operation === 'create' && req.user && !isAdmin(req) && typeof data.qid === 'string' && data.qid !== '') {
+        // PTE 题下:两种东西,各自的闸(见文件头 KIND_*)
+        if (data.parent != null) throw new Error('pte comments have no replies')
+        data.newsSlug = null
+        data.user = req.user.id
+        data.authorName = mask(req.user as { displayName?: string; email?: string })
+        data.pinned = false
+        if (data.kind === KIND_EXAM) {
+          const d = String(data.examDate || '').trim()
+          const city = String(data.examCity || '').trim()
+          if (!EXAM_DATE_RE.test(d) || d > new Date().toISOString().slice(0, 10)) throw new Error('exam date must be YYYY-MM-DD and not in the future')
+          if (city.length > CITY_MAX) throw new Error(`exam city must be <= ${CITY_MAX} chars`)
+          data.kind = KIND_EXAM
+          data.examDate = d
+          data.examCity = city
+          data.body = `${d} ${city}`.trim()
+          data.status = 'approved'
+          return data
+        }
+        const body = (data.body || '').trim()
+        if (!body || body.length > BODY_MAX) throw new Error(`comment body must be 1-${BODY_MAX} chars`)
+        const pending = await req.payload.count({
+          collection: 'comments', where: { and: [{ user: { equals: req.user.id } }, { status: { equals: 'pending' } }] },
+        })
+        if (pending.totalDocs >= PENDING_CAP) throw new Error('too many pending comments')
+        data.kind = KIND_NOTE
+        data.examDate = null
+        data.examCity = null
+        data.body = body
+        data.status = 'pending'
+        return data
+      }
       if (operation === 'create' && req.user && !isAdmin(req)) {
         const body = (data.body || '').trim()
         if (!body || body.length > BODY_MAX) throw new Error(`comment body must be 1-${BODY_MAX} chars`)
@@ -62,5 +101,10 @@ export const Comments: CollectionConfig = {
     // ALTER TABLE comments ADD COLUMN parent_id integer / pinned boolean DEFAULT false
     { name: 'parent', type: 'relationship', relationTo: 'comments', index: true, admin: { description: '楼中楼:指向顶层楼(一层封顶,hook 校验);空=顶层' } },
     { name: 'pinned', type: 'checkbox', defaultValue: false, admin: { description: '置顶楼(admin 专属;配合 admin 号发的评论=官方置顶)' } },
+    // PTE 题下评论四格(2026-09-03;DDL docs/sql/pte-comments.sql 先行生产)
+    { name: 'qid', type: 'text', index: true, admin: { description: '所评 PTE 题(pte_questions.qid);空 = 新闻评论' } },
+    { name: 'kind', type: 'text', admin: { description: 'exam(考试记录,免审)/ note(留言,待审);空 = 新闻评论' } },
+    { name: 'examDate', type: 'text', admin: { description: '考试日 YYYY-MM-DD(kind=exam)' } },
+    { name: 'examCity', type: 'text', admin: { description: '考点城市(kind=exam,选填)' } },
   ],
 }

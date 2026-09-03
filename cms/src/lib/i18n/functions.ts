@@ -10,9 +10,9 @@
  * @author Frank
  * @time 2026-08-24 03:30:00
  */
-import { caseZh, consultZh, jobsZh, legalZh, quizZh, reportZh, siteZh } from './zh'
-import { caseEn, consultEn, jobsEn, legalEn, quizEn, reportEn, siteEn } from './en'
-import { caseKo, consultKo, jobsKo, legalKo, quizKo, reportKo, siteKo } from './ko'
+import { caseZh, consultZh, jobsZh, legalZh, pteZh, quizZh, reportZh, siteZh } from './zh'
+import { caseEn, consultEn, jobsEn, legalEn, pteEn, quizEn, reportEn, siteEn } from './en'
+import { caseKo, consultKo, jobsKo, legalKo, pteKo, quizKo, reportKo, siteKo } from './ko'
 import { nocLabels } from '@/lib/jobs'
 import { pathwayNames } from '@/lib/pathways'
 import { ACCEPT_NONE, COOKIE_EQ, COOKIE_PATH_AGE, COOKIE_SAMESITE, LANG_COOKIE, LANG_COOKIE_MAX_AGE_S, LANG_EN, LANG_KEY, LANG_KO, LANG_ZH, LANGS, VAR_L, VAR_R } from './constants'
@@ -146,7 +146,8 @@ function messagesOf(): Messages {
   const quiz: Record<Lang, Dict> = { zh: quizZh, en: quizEn, ko: quizKo }
   const legal: Record<Lang, Dict> = { zh: legalZh, en: legalEn, ko: legalKo }
   const caseCopy: Record<Lang, Dict> = { zh: caseZh, en: caseEn, ko: caseKo }
-  const parts: Record<Lang, Dict>[] = [report, pathwayNames, caseCopy, jobs, nocLabels, site, consult, quiz, legal]
+  const pte: Record<Lang, Dict> = { zh: pteZh, en: pteEn, ko: pteKo }
+  const parts: Record<Lang, Dict>[] = [report, pathwayNames, caseCopy, jobs, nocLabels, site, consult, quiz, legal, pte]
   const merged: Messages = { zh: {}, en: {}, ko: {} }
   for (const part of parts) {
     for (const one of LANGS) {

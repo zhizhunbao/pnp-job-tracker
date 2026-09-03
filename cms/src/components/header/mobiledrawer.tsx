@@ -17,9 +17,9 @@ import { IconX } from '@/components/icons'
 import { Button, LinkButton } from '@/components/button'
 
 import {
-  A_EMPLOYERS, A_JOBS, A_MATCH, A_NEWS, A_PATHWAYS, A_RANK, A_START, A_STATS, BRAND_MARK, GRP_INFO, GRP_LIB,
-  GRP_NONE, PATH_CASES, PATH_EMPLOYERS, PATH_HOME, PATH_NEWS, PATH_OCC, PATH_PLAN_PR, PATH_RESOURCES, PATH_START,
-  PATH_TIMELINE, PLAIN_BTN_KIND,
+  A_EMPLOYERS, A_JOBS, A_MATCH, A_NEWS, A_PATHWAYS, A_PTE, A_RANK, A_START, A_STATS, BRAND_MARK, GRP_INFO, GRP_LIB,
+  GRP_NONE, PATH_CASES, PATH_EMPLOYERS, PATH_HOME, PATH_NEWS, PATH_OCC, PATH_PLAN_PR, PATH_PTE, PATH_RESOURCES,
+  PATH_START, PATH_TIMELINE, PLAIN_BTN_KIND,
 } from './constants'
 import { makeGroupToggle, stopClick, withOn } from './functions'
 import { DrawerGroup } from './drawergroup'
@@ -69,6 +69,10 @@ export function MobileDrawer({ t, active, onClose }: MobileDrawerIn) {
           <LinkButton href={PATH_EMPLOYERS}
             className={withOn({ base: cssOf(css.drawerItem), on: active === A_EMPLOYERS })}>
             {t('nav.employers')}
+          </LinkButton>
+          <LinkButton href={PATH_PTE}
+            className={withOn({ base: cssOf(css.drawerItem), on: active === A_PTE })}>
+            {t('nav.pte')}
           </LinkButton>
           <DrawerGroup groupKey={GRP_LIB}
             label={t('nav.library')}

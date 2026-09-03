@@ -1,0 +1,698 @@
+/*
+ * pte 页面域的私有样式(2026-09-03 批二新立)。白卡/钮/胶囊/表走通用桶,这里只有
+ * 本页的排版:正文轨、头行、题卡内的几块、事实卡、评论区两栏,以及 700px 处表↔卡切换。
+ */
+
+/*
+ * ── 1. 正文轨与头行 ──────────────────────────────────────────────────────
+ */
+
+/*
+ * 正文轨:白卡之间的纵向节奏。
+ */
+.track {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/*
+ * 头行:H1 左、返回右。
+ */
+.headRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+/*
+ * 页标题。
+ */
+.h1 {
+  font-size: 24px;
+  margin: 0;
+  line-height: 1.3;
+}
+
+/*
+ * 灰字副行(免责一句)。
+ */
+.sub {
+  font-size: 12.5px;
+  color: #9ca3af;
+}
+
+/*
+ * 白卡。
+ */
+.card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+/*
+ * ── 2. 题单页:胶囊排、计数行、表与卡 ───────────────────────────────────
+ */
+
+/*
+ * 一排胶囊(题型 / 窗口 / 筛)。
+ */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+/*
+ * 第二排胶囊与第一排之间的距离。
+ */
+.chipsGap {
+  margin-top: 10px;
+}
+
+/*
+ * 计数行(「近 30 天考过 281 题」)。
+ */
+.count {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 10px;
+}
+
+/*
+ * 桌面表(手机隐藏)。
+ */
+.desk {
+  display: block;
+  margin-top: 10px;
+}
+
+/*
+ * 表格百分比固定版式(宪法「表格百分比固定布局永不横滚」):通用表在量宽前是 auto 布局,
+ * 题面格的单行截断在 auto 下会把列撑开;这里按本页六列的显式百分比直接锁死。
+ */
+.desk table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+/*
+ * 手机卡列(桌面隐藏)。
+ */
+.mob {
+  display: none;
+}
+
+/*
+ * 题面格:单行截断,不折行(一行放得下)。
+ */
+.cellText {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/*
+ * 表里的题面链接。
+ */
+.rowLink {
+  color: #111827;
+  text-decoration: none;
+}
+
+/*
+ * 灰字题号。
+ */
+.dim {
+  color: #9ca3af;
+}
+
+/*
+ * 押题标(主色字)。
+ */
+.hot {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/*
+ * 练过的行(灰掉)。
+ */
+.doneRow {
+  opacity: 0.55;
+}
+
+/*
+ * 手机卡。
+ */
+.mCard {
+  display: block;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-top: 8px;
+  color: #111827;
+  text-decoration: none;
+}
+
+/*
+ * 卡头行(题号 + 押题 | N 天前考过)。
+ */
+.mHead {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/*
+ * 卡里的题面。
+ */
+.mText {
+  font-size: 14px;
+  margin-top: 4px;
+  line-height: 1.45;
+}
+
+/*
+ * 卡底行(考过次数 | 练过)。
+ */
+.mFoot {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 6px;
+}
+
+/*
+ * 「显示更多」钮行。
+ */
+.moreRow {
+  margin-top: 12px;
+}
+
+/*
+ * 空态。
+ */
+.empty {
+  padding: 24px 0;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+/*
+ * ── 3. 单题页:双栏与答题卡 ──────────────────────────────────────────────
+ */
+
+/*
+ * 桌面双栏:左答题卡 + 评论,右事实卡。
+ */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 16px;
+  align-items: start;
+}
+
+/*
+ * 左栏纵向节奏。
+ */
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/*
+ * 题卡头行:英文题型名 + 缩写 + 押题 | 位置。
+ */
+.qHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/*
+ * 缩写灰字小注。
+ */
+.code {
+  color: #9ca3af;
+  margin-left: 6px;
+}
+
+/*
+ * 押题标(圆角淡底)。
+ */
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  background: #eff6ff;
+  color: var(--primary);
+  font-weight: 600;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+/*
+ * 位置(`12 / 137`)。
+ */
+.pos {
+  font-size: 12.5px;
+  color: #9ca3af;
+}
+
+/*
+ * 官方一句指令(灰字)。
+ */
+.inst {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 6px;
+}
+
+/*
+ * 准备行:倒计时 | 跳过准备。
+ */
+.prepRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  font-size: 12.5px;
+  color: #6b7280;
+}
+
+/*
+ * 倒计时数字。
+ */
+.prepNum {
+  color: #111827;
+  font-weight: 600;
+}
+
+/*
+ * 题面正文(朗读型 / 对照段展开的原句)。
+ */
+.text {
+  margin-top: 12px;
+  font-size: 17px;
+  line-height: 1.7;
+  color: #111827;
+}
+
+/*
+ * 播放件外框。
+ */
+.player {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-top: 10px;
+}
+
+/*
+ * 播放件标签。
+ */
+.playerLabel {
+  flex: 1;
+  font-size: 12.5px;
+  color: #6b7280;
+}
+
+/*
+ * 录音件外框。
+ */
+.rec {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+/*
+ * 录音红点。
+ */
+.recDot {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #dc2626;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex: none;
+}
+
+/*
+ * 录音件中栏。
+ */
+.recMain {
+  flex: 1;
+}
+
+/*
+ * 录音中 + 秒数。
+ */
+.recLine {
+  font-size: 13.5px;
+  color: #111827;
+}
+
+/*
+ * 录音提示(上限秒数)。
+ */
+.recHint {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+/*
+ * 打字框(WFD)。
+ */
+.typed {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 14px;
+  border: 1px solid var(--primary);
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #111827;
+  font-family: inherit;
+  resize: vertical;
+}
+
+/*
+ * 打字框下的一行(词数 | 计时)。
+ */
+.typedFoot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: #9ca3af;
+}
+
+/*
+ * 对照段小标(你写的 / 原句 / 答案)。
+ */
+.label {
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: #6b7280;
+}
+
+/*
+ * 对照段句框。
+ */
+.box {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 15px;
+  line-height: 1.5;
+  margin-top: 6px;
+}
+
+/*
+ * 原句框(淡灰底)。
+ */
+.boxOrig {
+  background: #f9fafb;
+}
+
+/*
+ * 对错行(9 词对,2 词错 | 已记为练过)。
+ */
+.verdict {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: #6b7280;
+}
+
+/*
+ * 「已记为练过」(主色字)。
+ */
+.doneNote {
+  color: var(--primary);
+}
+
+/*
+ * 对错的词(标红下划线)。
+ */
+.bad {
+  color: #dc2626;
+  text-decoration: underline;
+}
+
+/*
+ * 一排钮(主钮一颗 + 次钮同形)。
+ */
+.btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+/*
+ * 通知行(没麦克风 / 不支持朗读)。
+ */
+.notice {
+  margin-top: 10px;
+}
+
+/*
+ * ── 4. 事实卡与评论区 ────────────────────────────────────────────────────
+ */
+
+/*
+ * 事实卡一行:左键右值。
+ */
+.fact {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: #6b7280;
+  padding: 6px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/*
+ * 事实卡的值。
+ */
+.factV {
+  color: #111827;
+}
+
+/*
+ * 事实卡底的免责。
+ */
+.factNote {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 8px;
+}
+
+/*
+ * 评论区小标行(标题 + 计数 | 钮)。
+ */
+.secHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/*
+ * 第二栏(留言)的小标行与上一栏的距离。
+ */
+.secGap {
+  margin-top: 18px;
+}
+
+/*
+ * 评论区小标。
+ */
+.secTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/*
+ * 计数灰字。
+ */
+.secN {
+  font-weight: 400;
+  color: #9ca3af;
+  margin-left: 6px;
+}
+
+/*
+ * 考试记录一行:日期 | 城市。
+ */
+.examRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/*
+ * 城市(灰)。
+ */
+.examCity {
+  color: #6b7280;
+}
+
+/*
+ * 「我考到了」表单行。
+ */
+.examForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+/*
+ * 表单输入(日期 / 城市)。
+ */
+.input {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #111827;
+}
+
+/*
+ * 留言一条。
+ */
+.note {
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/*
+ * 留言头(昵称 + 日期)。
+ */
+.noteHead {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/*
+ * 留言日期与昵称之间。
+ */
+.noteDate {
+  margin-left: 8px;
+}
+
+/*
+ * 留言正文。
+ */
+.noteBody {
+  font-size: 13.5px;
+  color: #111827;
+  margin-top: 3px;
+  white-space: pre-wrap;
+}
+
+/*
+ * 留言表单行。
+ */
+.noteForm {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  align-items: flex-start;
+}
+
+/*
+ * 留言框。
+ */
+.noteBox {
+  flex: 1;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+/*
+ * 提交结果提示。
+ */
+.hint {
+  font-size: 12.5px;
+  color: #6b7280;
+  margin-top: 6px;
+}
+
+/*
+ * 空态一句。
+ */
+.emptyLine {
+  font-size: 13px;
+  color: #9ca3af;
+  padding: 8px 0;
+}
+
+/*
+ * ── 5. 手机(≤ 700px):表↔卡切换、单栏 ─────────────────────────────────
+ */
+@media (max-width: 700px) {
+  .h1 {
+    font-size: 20px;
+  }
+
+  .card {
+    padding: 12px;
+  }
+
+  .desk {
+    display: none;
+  }
+
+  .mob {
+    display: block;
+  }
+
+  .grid {
+    display: block;
+  }
+
+  .text {
+    font-size: 16px;
+  }
+}

@@ -86,6 +86,8 @@ export interface Config {
     'pilot-communities': PilotCommunity;
     'pilot-occupations': PilotOccupation;
     'pilot-quota': PilotQuota;
+    'pte-types': PteType;
+    'pte-questions': PteQuestion;
     provinces: Province;
     cities: City;
     districts: District;
@@ -129,6 +131,8 @@ export interface Config {
     'pilot-communities': PilotCommunitiesSelect<false> | PilotCommunitiesSelect<true>;
     'pilot-occupations': PilotOccupationsSelect<false> | PilotOccupationsSelect<true>;
     'pilot-quota': PilotQuotaSelect<false> | PilotQuotaSelect<true>;
+    'pte-types': PteTypesSelect<false> | PteTypesSelect<true>;
+    'pte-questions': PteQuestionsSelect<false> | PteQuestionsSelect<true>;
     provinces: ProvincesSelect<false> | ProvincesSelect<true>;
     cities: CitiesSelect<false> | CitiesSelect<true>;
     districts: DistrictsSelect<false> | DistrictsSelect<true>;
@@ -1328,6 +1332,110 @@ export interface PilotQuota {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pte-types".
+ */
+export interface PteType {
+  id: number;
+  /**
+   * 标准题型码(RA / RS / ASQ / WFD …)
+   */
+  code: string;
+  /**
+   * Speaking / Writing / Reading / Listening
+   */
+  section?: string | null;
+  /**
+   * 考试序(页面胶囊按它排)
+   */
+  seq?: number | null;
+  nameZh?: string | null;
+  /**
+   * 官方英文题型名(Pearson)
+   */
+  nameEn?: string | null;
+  nameKo?: string | null;
+  /**
+   * 题面以音频呈现(先听后答)
+   */
+  audio?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pte-questions".
+ */
+export interface PteQuestion {
+  id: number;
+  /**
+   * 源:题型:源内 id
+   */
+  qid: string;
+  /**
+   * ynwac | duoink
+   */
+  source: string;
+  /**
+   * 标准题型码
+   */
+  type: string;
+  /**
+   * 站内题号(duoink sn / ynwac id),页面显示 #N
+   */
+  num?: string | null;
+  /**
+   * 索引标题(题面首句截断)
+   */
+  title?: string | null;
+  /**
+   * 题面全文
+   */
+  text?: string | null;
+  /**
+   * ASQ 答案;其余空
+   */
+  answer?: string | null;
+  /**
+   * 公开音频直链;空 = 无(TTS 批三合成)
+   */
+  audioUrl?: string | null;
+  /**
+   * 本地文件(data/raw/pte 相对路径);空 = 未落盘
+   */
+  audioFile?: string | null;
+  /**
+   * 题图;四型基本空,留给 DI
+   */
+  imageUrl?: string | null;
+  /**
+   * 押题(源方 hot / frequent / important 任一)
+   */
+  predicted?: boolean | null;
+  /**
+   * 最近考过日 YYYY-MM-DD;空 = 该源无记录
+   */
+  seen?: string | null;
+  /**
+   * 持有的带日期回忆条数
+   */
+  seenN?: number | null;
+  /**
+   * ynwac 考过票数;空 = 非 ynwac
+   */
+  votes?: number | null;
+  /**
+   * duoink Core 热度 0-3;空 = 非 duoink
+   */
+  freq?: number | null;
+  /**
+   * 出表日期
+   */
+  fetched?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "provinces".
  */
 export interface Province {
@@ -1878,6 +1986,22 @@ export interface Comment {
    * 置顶楼(admin 专属;配合 admin 号发的评论=官方置顶)
    */
   pinned?: boolean | null;
+  /**
+   * 所评 PTE 题(pte_questions.qid);空 = 新闻评论
+   */
+  qid?: string | null;
+  /**
+   * exam(考试记录,免审)/ note(留言,待审);空 = 新闻评论
+   */
+  kind?: string | null;
+  /**
+   * 考试日 YYYY-MM-DD(kind=exam)
+   */
+  examDate?: string | null;
+  /**
+   * 考点城市(kind=exam,选填)
+   */
+  examCity?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2061,6 +2185,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'pilot-quota';
         value: number | PilotQuota;
+      } | null)
+    | ({
+        relationTo: 'pte-types';
+        value: number | PteType;
+      } | null)
+    | ({
+        relationTo: 'pte-questions';
+        value: number | PteQuestion;
       } | null)
     | ({
         relationTo: 'provinces';
@@ -2641,6 +2773,45 @@ export interface PilotQuotaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pte-types_select".
+ */
+export interface PteTypesSelect<T extends boolean = true> {
+  code?: T;
+  section?: T;
+  seq?: T;
+  nameZh?: T;
+  nameEn?: T;
+  nameKo?: T;
+  audio?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pte-questions_select".
+ */
+export interface PteQuestionsSelect<T extends boolean = true> {
+  qid?: T;
+  source?: T;
+  type?: T;
+  num?: T;
+  title?: T;
+  text?: T;
+  answer?: T;
+  audioUrl?: T;
+  audioFile?: T;
+  imageUrl?: T;
+  predicted?: T;
+  seen?: T;
+  seenN?: T;
+  votes?: T;
+  freq?: T;
+  fetched?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "provinces_select".
  */
 export interface ProvincesSelect<T extends boolean = true> {
@@ -2911,6 +3082,10 @@ export interface CommentsSelect<T extends boolean = true> {
   status?: T;
   parent?: T;
   pinned?: T;
+  qid?: T;
+  kind?: T;
+  examDate?: T;
+  examCity?: T;
   updatedAt?: T;
   createdAt?: T;
 }

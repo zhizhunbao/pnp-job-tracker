@@ -6,7 +6,7 @@
  * @time 2026-08-22 20:00:00
  */
 
-import { consultZh, jobsZh, legalZh, quizZh, reportZh, siteZh } from './zh'
+import { consultZh, jobsZh, legalZh, pteZh, quizZh, reportZh, siteZh } from './zh'
 // =========================================================================
 // 判定与报告(原 report.ts)
 // =========================================================================
@@ -875,7 +875,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'tl.min': '최저 {n}점', 'tl.notCrs': ', 비CRS', 'tl.inv': '초청 {n}명', 'tl.src': '공식 출처',
   'tl.entry': '추첨·정책 타임라인', 'tl.empty': '일치하는 이벤트 없음', 'tl.hist': '추첨 이력',
   'loading': '업데이트 중…',
-  'nav.library': '자료실', 'nav.employers': '고용주', 'nav.jobs': '채용공고', 'tl.tabNews': '최신 공지',
+  'nav.library': '자료실', 'nav.employers': '고용주', 'nav.jobs': '채용공고', 'nav.pte': 'PTE 문제풀이', 'tl.tabNews': '최신 공지',
   'rank.bnSub': '이민 가치 점수순, 매일 자동 갱신', 'rank.bnRows': '이 랭킹 공고',
   'acct.hero.login': '다시 오신 것을 환영합니다', 'acct.hero.reg': '무료 가입 — 모든 공고의 매칭도를 확인하세요',
   'acct.google': 'Google로 계속하기', 'acct.orEmail': '또는 이메일로',
@@ -1124,4 +1124,34 @@ export const caseKo: Record<string, string> = {
   'case.C15.q': '480점이면 안정권인가요?',
   'case.C16.label': '내 직종을 찾을 수 없다',
   'case.C16.q': '제 직종은 왜 없나요?',
+}
+
+// =========================================================================
+// PTE Core 刷题(2026-09-03 批二)
+// =========================================================================
+/**
+ * pteKo: 词表块(与 zh.ts 同名块逐键对齐)。
+ */
+export const pteKo: Record<keyof typeof pteZh, string> = {
+  'pte.title': 'PTE Core 기출 문제',
+  'pte.disclaimer': '수험생 기억으로 정리한 자료이며 공식 문제은행이 아닙니다',
+  'pte.back': '뒤로',
+  'pte.win7': '최근 7일', 'pte.win30': '최근 30일', 'pte.win90': '최근 90일', 'pte.winAll': '전체',
+  'pte.hot': '예상 문제만', 'pte.todo': '미연습',
+  'pte.countWin': '최근 {win}일 출제 {n}문제, 최근 출제순', 'pte.countAll': '총 {n}문제, 최근 출제순',
+  'pte.col.num': '번호', 'pte.col.text': '문제', 'pte.col.seen': '최근 출제', 'pte.col.n': '출제 횟수', 'pte.col.hot': '예상', 'pte.col.done': '연습',
+  'pte.seenToday': '오늘 출제', 'pte.seenAgo': '{n}일 전 출제', 'pte.today': '오늘', 'pte.ago': '{n}일 전', 'pte.times': '출제 {n}회',
+  'pte.hotMark': '예상', 'pte.doneMark': '연습함', 'pte.empty': '조건에 맞는 문제가 없습니다', 'pte.more': '더 보기({n}문제 남음)',
+  'pte.pos': '{i} / {n}',
+  'pte.inst.RA': '40초 안에 자연스럽고 또렷하게 읽으세요', 'pte.inst.RS': '한 번 듣고 그대로 따라 말하세요', 'pte.inst.ASQ': '질문을 듣고 한두 단어로 답하세요', 'pte.inst.WFD': '한 번 듣고 그대로 받아쓰세요',
+  'pte.prep': '준비', 'pte.skipPrep': '준비 건너뛰기', 'pte.play': '문제 재생', 'pte.replay': '다시 듣기', 'pte.audio': '문제 음성',
+  'pte.tts': '모범 낭독', 'pte.myRec': '내 녹음', 'pte.recording': '녹음 중', 'pte.recCap': '{s}초 안에 답하세요', 'pte.stop': '정지',
+  'pte.submit': '제출', 'pte.redo': '다시 풀기', 'pte.rerec': '다시 녹음', 'pte.next': '다음 문제', 'pte.prev': '이전 문제',
+  'pte.typed': '내 답', 'pte.orig': '원문', 'pte.answer': '정답', 'pte.words': '{n}단어', 'pte.timer': '경과 {t}',
+  'pte.diff': '{ok}단어 정답, {bad}단어 오답', 'pte.done': '연습 완료로 기록됨', 'pte.showText': '원문 보기',
+  'pte.noTts': '이 브라우저는 낭독을 지원하지 않아 원문으로 연습합니다', 'pte.noMic': '마이크를 못 받아 바로 정답으로 넘어갑니다', 'pte.listen': '직접 듣고 모범 낭독과 비교하세요',
+  'pte.f.seen': '최근 출제', 'pte.f.n': '출제 횟수', 'pte.f.hot': '예상', 'pte.f.num': '번호', 'pte.yes': '예', 'pte.no': '아니오', 'pte.none': '기록 없음',
+  'pte.c.exam': '출제 기록', 'pte.c.iSat': '시험에 나왔어요', 'pte.c.date': '시험 날짜', 'pte.c.city': '시험 도시', 'pte.c.cityPh': '선택',
+  'pte.c.send': '보내기', 'pte.c.cancel': '취소', 'pte.c.notes': '댓글', 'pte.c.ph': '댓글 쓰기', 'pte.c.empty': '아직 댓글이 없습니다',
+  'pte.c.login': '로그인 후 작성', 'pte.c.sent': '제출됨, 검토 후 표시', 'pte.c.err': '전송 실패, 다시 시도하세요', 'pte.c.examOk': '기록됨',
 }

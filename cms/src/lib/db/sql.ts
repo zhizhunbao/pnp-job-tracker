@@ -1620,3 +1620,43 @@ export const DIMS_NOC_DESCRIPTIONS = `SELECT noc, title, title_zh, title_ko, dut
 export const NOC_BY_TITLE_SIM = `SELECT j.noc, max(similarity(j.title, $1)) AS sim, count(*) AS n
    FROM jobs j WHERE j.noc IS NOT NULL AND j.noc <> '' AND similarity(j.title, $1) > 0.3
    GROUP BY j.noc ORDER BY sim DESC, n DESC LIMIT 3`
+
+// =========================================================================
+// 28. PTE Core 刷题(/pte;2026-09-03 批二,设计稿 docs/design/PTE刷题-20260903.md)
+// =========================================================================
+// 两张 ETL 表(pte_types / pte_questions,DDL docs/sql/pte-tables.sql)只读;题下评论住 comments 表
+// (qid / kind / exam_date / exam_city 四列,DDL docs/sql/pte-comments.sql)。
+// 🔴 seen_n / votes / freq 是 numeric,回来是字符串,消费端一律 numOrNull;seen 空 = 该源无记录,不折。
+
+/**
+ * 题型维度(四型起,批二后扩 19 型;按考试序)。
+ */
+export const PTE_TYPES = `SELECT code, section, seq, name_zh AS "nameZh", name_en AS "nameEn", name_ko AS "nameKo", audio
+     FROM pte_types ORDER BY seq ASC LIMIT 50`
+
+/**
+ * 一型的题单(全量在手,窗口/押题/练过筛在客户端):最近考过日倒序,同日按回忆条数、票数。$1=题型码。
+ */
+export const PTE_LIST = `SELECT qid, source, type, num, title, text, predicted, seen, seen_n AS "seenN", votes, freq
+     FROM pte_questions WHERE type = $1
+     ORDER BY seen DESC NULLS LAST, seen_n DESC NULLS LAST, votes DESC NULLS LAST, id ASC LIMIT 3000`
+
+/**
+ * 单题(题面 + 答案 + 音频直链)。$1=qid。
+ */
+export const PTE_ONE = `SELECT qid, source, type, num, title, text, answer, audio_url AS "audioUrl", predicted,
+            seen, seen_n AS "seenN", votes, freq
+     FROM pte_questions WHERE qid = $1 LIMIT 1`
+
+/**
+ * 题下评论(考试记录 + 留言,只取过审;时间倒序)。$1=qid。
+ */
+export const PTE_COMMENTS = `SELECT c.id, c.kind, c.exam_date AS "examDate", c.exam_city AS "examCity",
+            c.author_name AS "authorName", c.body, to_char(c.created_at, 'YYYY-MM-DD') AS date
+     FROM comments c WHERE c.qid = $1 AND c.status = 'approved' ORDER BY c.created_at DESC LIMIT 200`
+
+/**
+ * 一型的自家考试记录聚合(并进题单的「考过次数 / 最近考过」)。$1=qid 前缀模式(`%:WFD:%`)。
+ */
+export const PTE_EXAM_COUNTS = `SELECT qid, count(*)::int AS n, max(exam_date) AS last
+     FROM comments WHERE kind = 'exam' AND status = 'approved' AND qid LIKE $1 GROUP BY qid`

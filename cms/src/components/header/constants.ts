@@ -124,6 +124,16 @@ export const A_NEWS = 'news'
 export const A_LIBRARY = 'library'
 
 /**
+ * PTE 刷题的高亮键(2026-09-03 批二上线;日用功能,导航排给它一个正位)。
+ */
+export const A_PTE = 'pte'
+
+/**
+ * PTE 刷题题单页地址(默认型)。
+ */
+export const PATH_PTE = '/pte'
+
+/**
  * 路径段分隔符(activeOf 拼「前缀 + 段界」判断用,防 /news 误吃 /newsroom)。
  */
 export const PATH_SEP = '/'
@@ -135,6 +145,7 @@ export const PATH_SEP = '/'
  * 根路径 '/' 就是职位板(offer2pr.com 不带 /jobs 后缀的拍板)。
  */
 export const PATH_ACTIVE = [
+  ['/pte', 'pte'],
   ['/start', 'start'],
   ['/rankings', 'rank'],
   ['/plan', 'pathways'],
