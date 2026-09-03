@@ -14,8 +14,8 @@ import {
 } from './constants'
 import { sortRows } from './functions'
 import type {
-  Col, ColWidthsIn, ColWidthsOut, DragWidthsIn, MeasureIn, PxAtIn, ResizeIn, RowsIn, RowsOut, RunResizeIn, SnapIn,
-  SortState,
+  AllExplicitIn, Col, ColWidthsIn, ColWidthsOut, DragWidthsIn, MeasureIn, PxAtIn, ResizeIn, RowsIn, RowsOut,
+  RunResizeIn, SnapIn, SortState,
 } from './types'
 
 /**
@@ -150,7 +150,7 @@ export function useColWidths<T>(x: ColWidthsIn<T>): ColWidthsOut<T> {
   }
 
   let layout: 'auto' | 'fixed' = 'auto'
-  if (pct != null) {
+  if (pct != null || allExplicitOf({ cols: x.cols })) {
     layout = LAYOUT_LOCKED
   }
   return { thRefOf, layout, widthOf, startResize }
@@ -185,6 +185,22 @@ function measureCols<T>(x: MeasureIn<T>): Record<string, string> | null {
     m[c.key] = (el.offsetWidth / total * 100).toFixed(PCT_DECIMALS) + PCT_UNIT
   }
   return m
+}
+
+/**
+ * 列宽是否全由调用方显式给定:是则没什么可量的,首帧就锁 fixed(Frank 2026-09-04
+ * 「切换的时候为什么这个会先变长」:auto 量宽那一帧里 nowrap 长题面把整表撑爆,锁完才缩回)。
+ *
+ * @param x 列声明。
+ * @returns 全显式为 true。
+ */
+function allExplicitOf<T>(x: AllExplicitIn<T>): boolean {
+  for (const c of x.cols) {
+    if (c.width == null) {
+      return false
+    }
+  }
+  return true
 }
 
 /**

@@ -354,6 +354,16 @@ export type RunResizeIn = {
 }
 
 /**
+ * allExplicitOf(列宽是否全显式)的入参。
+ */
+export type AllExplicitIn<T> = {
+  /**
+   * 列声明。
+   */
+  cols: Col<T>[]
+}
+
+/**
  * snapOf(起手列宽快照)的入参。
  */
 export type SnapIn<T> = {

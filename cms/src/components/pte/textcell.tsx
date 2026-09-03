@@ -15,5 +15,5 @@ import type { PteCellRow } from './types'
  * @returns 格。
  */
 export function TextCell(r: PteCellRow) {
-  return <LinkButton href={r.href} className={r.textCls} title={r.text}>{r.text}</LinkButton>
+  return <LinkButton href={r.href} className={r.textCls}>{r.text}</LinkButton>
 }

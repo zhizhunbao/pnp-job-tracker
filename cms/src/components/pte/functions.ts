@@ -11,7 +11,7 @@
 import { cssOf } from '@/components/css'
 import { SQL, count, numOrNull, queryRowsOrEmpty, text, textOrNull } from '@/lib/db'
 import {
-  ALIGN_LEFT, ALIGN_RIGHT, API_COMMENTS, API_PTE_DONE, CHECK_MARK, CLOCK_PAD, CLOCK_SEP, CLS_SEP, COL_DONE, COL_NUM,
+  ALIGN_LEFT, API_COMMENTS, API_PTE_DONE, CHECK_MARK, CLOCK_PAD, CLOCK_SEP, CLS_SEP, COL_DONE, COL_NUM,
   COL_SEEN, COL_TEXT, COL_TIMES, CRED_INCLUDE, DATE_LEN, DAY_MS, DESC_LEN_MAX, DICT_API, DICT_BUSY, DICT_DEFS_MAX,
   DICT_EDGE_PX, DICT_GAP_PX, DICT_IDLE, DICT_MIN_LEN, DICT_NONE, DICT_OK, DICT_W_PX, DONE_KEY, EMPTY_DONE, EV_MOUSEUP,
   EV_TOUCHEND, HDR_CONTENT_TYPE, ID_SEP, INST_KEY, ITEM_DESC_TPL, ITEM_TITLE_TPL, KIND_EXAM, KIND_NOTE, LANG_KO,
@@ -516,7 +516,8 @@ export function cellRowsOf(x: CellRowsIn): PteCellRow[] {
 }
 
 /**
- * 桌面表五列(百分比固定版式,永不横滚;押题列 2026-09-04 撤 —— Frank「每行都是押题有什么意义」)。render 收整行递给哑单元格 —— 表格库定的调法。
+ * 桌面表五列(百分比固定版式,永不横滚;押题列 2026-09-04 撤 —— Frank「每行都是押题有什么意义」;
+ * 五列全左对齐 —— 同日 Frank「全部靠左还是全部居中」,站规优先左对齐)。render 收整行递给哑单元格 —— 表格库定的调法。
  *
  * @param x 取词函数。
  * @returns 列声明。
@@ -527,7 +528,7 @@ export function colsOf(x: ColsOfIn): PteCol[] {
     { key: COL_TEXT, label: x.t('pte.col.text'), width: W_TEXT, align: ALIGN_LEFT, render: TextCell, sort: textSortOf },
     { key: COL_SEEN, label: x.t('pte.col.seen'), width: W_SEEN, align: ALIGN_LEFT, render: SeenCell, sort: seenSortOf },
     {
-      key: COL_TIMES, label: x.t('pte.col.n'), width: W_TIMES, align: ALIGN_RIGHT, render: TimesCell, sort: timesSortOf,
+      key: COL_TIMES, label: x.t('pte.col.n'), width: W_TIMES, align: ALIGN_LEFT, render: TimesCell, sort: timesSortOf,
     },
     { key: COL_DONE, label: x.t('pte.col.done'), width: W_DONE, align: ALIGN_LEFT, render: DoneCell, sort: doneSortOf },
   ]

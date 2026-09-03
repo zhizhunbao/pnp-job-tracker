@@ -241,13 +241,13 @@
 }
 
 /*
- * 题面格:单行截断,不折行(一行放得下)。
+ * 题面格:整段折行显示(Frank 2026-09-04「这个不要隐藏吧」:截断的省略号撤)。
  */
 .cellText {
   display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
 }
 
 /*

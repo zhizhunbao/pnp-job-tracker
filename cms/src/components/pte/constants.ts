@@ -625,10 +625,6 @@ export const COL_DONE = 'done'
  */
 export const ALIGN_LEFT = 'left'
 
-/**
- * 对齐档。
- */
-export const ALIGN_RIGHT = 'right'
 
 /**
  * 题单页 SEO 头(内容住桶;英文优先 —— 88% 流量来自 Google)。
