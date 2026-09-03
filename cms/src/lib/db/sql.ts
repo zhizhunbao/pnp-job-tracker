@@ -1660,3 +1660,18 @@ export const PTE_COMMENTS = `SELECT c.id, c.kind, c.exam_date AS "examDate", c.e
  */
 export const PTE_EXAM_COUNTS = `SELECT qid, count(*)::int AS n, max(exam_date) AS last
      FROM comments WHERE kind = 'exam' AND status = 'approved' AND qid LIKE $1 GROUP BY qid`
+
+/**
+ * 一题的合成音频(批三;b64 整段回来由路由解成字节)。$1=qid。
+ */
+export const PTE_AUDIO_ONE = `SELECT mime, b64 FROM pte_audio WHERE qid = $1 ORDER BY id DESC LIMIT 1`
+
+/**
+ * 本人的练过档(批三;users.pte_done jsonb = { done: string[], updatedAt })。$1=用户 id。
+ */
+export const USER_PTE_DONE = `SELECT pte_done AS "pteDone" FROM users WHERE id = $1 LIMIT 1`
+
+/**
+ * 写回练过档(整档覆盖;并集在路由里算)。$1=用户 id,$2=JSON 串。
+ */
+export const USER_PTE_DONE_SET = `UPDATE users SET pte_done = $2::jsonb WHERE id = $1`

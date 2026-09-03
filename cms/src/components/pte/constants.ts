@@ -43,6 +43,111 @@ export const URL_LOGIN = '/?login=1'
 export const API_COMMENTS = '/api/comments'
 
 /**
+ * 练过档接口(lib/pte;登录态 GET / PUT,服务端取并集)。
+ */
+export const API_PTE_DONE = '/api/pte/done'
+
+/**
+ * 写练过档的请求方法。
+ */
+export const METHOD_PUT = 'PUT'
+
+/**
+ * 字典接口(Free Dictionary API,无 key、CORS 开;Frank 2026-09-03「选中单词应该有字典功能」)。
+ */
+export const DICT_API = 'https://api.dictionaryapi.dev/api/v2/entries/en/'
+
+/**
+ * 算「一个单词」的形:字母开头,只含字母、撇号、连字符。
+ */
+export const WORD_RE = /^[A-Za-z][A-Za-z'-]*$/
+
+/**
+ * 最短查词长度(单字母不查)。
+ */
+export const DICT_MIN_LEN = 2
+
+/**
+ * 弹层里最多列几条释义。
+ */
+export const DICT_DEFS_MAX = 2
+
+/**
+ * 弹层离选区底边的距离(px)。
+ */
+export const DICT_GAP_PX = 8
+
+/**
+ * 弹层宽(px;定位时不出屏)。
+ */
+export const DICT_W_PX = 300
+
+/**
+ * 弹层离视口边的最小留白(px)。
+ */
+export const DICT_EDGE_PX = 8
+
+/**
+ * 查词状态:闲置(没选词)。
+ */
+export const DICT_IDLE = 'idle'
+
+/**
+ * 查词状态:在查。
+ */
+export const DICT_BUSY = 'busy'
+
+/**
+ * 查词状态:查到。
+ */
+export const DICT_OK = 'ok'
+
+/**
+ * 查词状态:没查到。
+ */
+export const DICT_NONE = 'none'
+
+/**
+ * 选区事件(桌面松开鼠标 / 手机松开手指)。
+ */
+export const EV_MOUSEUP = 'mouseup'
+
+/**
+ * 选区事件(手机)。
+ */
+export const EV_TOUCHEND = 'touchend'
+
+/**
+ * 题型分栏顺序(Frank 2026-09-03「题型应该听说读写分开来」:胶囊按 section 一栏一行;扩到 19 型各归各栏)。
+ */
+export const SECTION_ORDER = ['Speaking', 'Writing', 'Reading', 'Listening']
+
+/**
+ * section → 栏名词键。
+ */
+export const SECTION_KEY: Record<string, string> = {
+  /**
+   * 口语。
+   */
+  Speaking: 'pte.sec.speaking',
+
+  /**
+   * 写作。
+   */
+  Writing: 'pte.sec.writing',
+
+  /**
+   * 阅读。
+   */
+  Reading: 'pte.sec.reading',
+
+  /**
+   * 听力。
+   */
+  Listening: 'pte.sec.listening',
+}
+
+/**
  * 窗口档(天);0 = 全部。默认 30(设计稿)。
  */
 export const WIN_7 = 7
@@ -395,12 +500,12 @@ export const PHASE_CHECKED = 'checked'
 /**
  * 主钮(一排只有一颗:作答段 = 提交,对照段 = 下一题)。
  */
-export const KIND_PRIMARY = 'primary'
+export const KIND_PRIMARY = 'primary' as const
 
 /**
  * 次钮(重做 / 再听一遍 / 上一题;同形白底描边)。
  */
-export const KIND_SECONDARY = 'secondary'
+export const KIND_SECONDARY = 'secondary' as const
 
 /**
  * 行内文字动作(跳过准备 / 停止 / 返回):幽灵档 —— 全站文字钮都走它(button 桶 css 里控件档

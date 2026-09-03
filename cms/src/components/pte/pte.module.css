@@ -17,13 +17,17 @@
 }
 
 /*
- * 头行:H1 左、返回右。
+ * 头行:H1(返回钮 2026-09-03 起不在行内 —— 单题页由 Shell back 槽钉右上,题单页无返回)。
  */
 .headRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+  /*
+   * 单题页返回钮钉在 Shell 右上、与本行同高:给它留位,长题型名折行不钻到钮底下。
+   */
+  padding-right: 90px;
 }
 
 /*
@@ -58,6 +62,39 @@
  */
 
 /*
+ * 右上「返回」原在此(照公司详情页 .backBtn 的形,头行 flex 靠右);2026-09-03 Frank「返回按钮样式和
+ * 位置应该是固定统一的」→ 单题页改递 Shell 的 back 槽(button 桶 BackButton),题单页是主页面不再有返回。
+ */
+
+/*
+ * 题型分栏(一栏一行)。
+ */
+.secRows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/*
+ * 一栏:栏名 + 这一栏的胶囊。
+ */
+.secRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/*
+ * 栏名(口语 / 听力 …)。
+ */
+.secLabel {
+  font-size: 12.5px;
+  color: #6b7280;
+  white-space: nowrap;
+  min-width: 2.5em;
+}
+
+/*
  * 一排胶囊(题型 / 窗口 / 筛)。
  */
 .chips {
@@ -75,9 +112,13 @@
 }
 
 /*
- * 计数行(「近 30 天考过 281 题」)。
+ * 计数行(「近 30 天考过 281 题」左、「更新时间 …」右 —— 表的右上角就是这一行的右端)。
  */
 .count {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
   font-size: 12px;
   color: #9ca3af;
   margin-top: 10px;
@@ -695,4 +736,92 @@
   .text {
     font-size: 16px;
   }
+}
+
+/*
+ * ── 6. 字典弹层(选中单词后浮在选区下方) ─────────────────────────────────
+ */
+
+/*
+ * 弹层本体:固定定位(坐标由 style 进),白卡带阴影,宽 300。
+ */
+.dict {
+  position: fixed;
+  z-index: 60;
+  width: 300px;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.12);
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #111827;
+}
+
+/*
+ * 头行:词 + 音标 + 词性 | 关。
+ */
+.dictHead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/*
+ * 词。
+ */
+.dictWord {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/*
+ * 音标(灰)。
+ */
+.dictPhon {
+  color: #6b7280;
+}
+
+/*
+ * 词性(灰斜)。
+ */
+.dictPos {
+  color: #9ca3af;
+  font-style: italic;
+  flex: 1;
+}
+
+/*
+ * 在查 / 没查到 一句。
+ */
+.dictNote {
+  color: #9ca3af;
+  margin-top: 6px;
+}
+
+/*
+ * 释义清单。
+ */
+.dictDefs {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+/*
+ * 一条释义。
+ */
+.dictDef {
+  margin-top: 3px;
+  line-height: 1.45;
+}
+
+/*
+ * 出处一行(灰小字)。
+ */
+.dictSrc {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #9ca3af;
 }

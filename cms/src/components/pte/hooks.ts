@@ -11,17 +11,17 @@
  */
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import {
-  KIND_EXAM, KIND_NOTE, PAGE_STEP, PHASE_ANSWERING, PHASE_READY, STATE_IDLE, T_WFD, TEXT_NONE, WIN_30,
+  DICT_IDLE, KIND_EXAM, KIND_NOTE, PAGE_STEP, PHASE_ANSWERING, PHASE_READY, STATE_IDLE, T_WFD, TEXT_NONE, WIN_30,
 } from './constants'
 import {
-  commentsOfKind, doneServerSnapshotOf, doneSnapshotOf, filterRows, makeCanPlaySnapshot, makeCountdown,
-  makeExamSubmit, makeInputChange, makeMore, makeNoteSubmit, makePhaseSet, makePlay, makeRedo, makeStartRec,
-  makeSubmit, makeTextChange, makeTicker, makeToggle, makeWinPickOf, prepSecOf, recCapOf, serverEmptyOf,
-  serverFalseOf, subscribeNone, todayOf,
+  commentsOfKind, doneServerSnapshotOf, doneSnapshotOf, filterRows, makeCanPlaySnapshot, makeCountdown, makeDictClose,
+  makeDictLookup, makeDoneSync, makeExamSubmit, makeInputChange, makeMore, makeNoteSubmit, makePhaseSet, makePlay,
+  makeRedo, makeSelectionWatch, makeStartRec, makeSubmit, makeTextChange, makeTicker, makeToggle, makeWinPickOf,
+  prepSecOf, recCapOf, serverEmptyOf, serverFalseOf, subscribeDone, subscribeNone, todayOf,
 } from './functions'
 import type {
-  PostState, PteAnswerHookIn, PteAnswerPanel, PteBoardHookIn, PteBoardPanel, PteComment, PteCommentsHookIn,
-  PteCommentsPanel, PtePhase, RecorderHandle,
+  DictEntry, DictPos, DictState, PostState, PteAnswerHookIn, PteAnswerPanel, PteBoardHookIn, PteBoardPanel, PteComment,
+  PteCommentsHookIn, PteCommentsPanel, PteDictPanel, PtePhase, RecorderHandle,
 } from './types'
 
 /**
@@ -34,15 +34,21 @@ export function usePteBoard(x: PteBoardHookIn): PteBoardPanel {
   const [win, setWin] = useState(WIN_30)
   const [hot, setHot] = useState(false)
   const [todo, setTodo] = useState(false)
+  const [byNum, setByNum] = useState(false)
   const [shown, setShown] = useState(PAGE_STEP)
-  const done = useSyncExternalStore(subscribeNone, doneSnapshotOf, doneServerSnapshotOf)
+  const done = useSyncExternalStore(subscribeDone, doneSnapshotOf, doneServerSnapshotOf)
 
-  const rows = filterRows({ rows: x.rows, win, hot, todo, done })
+  useEffect(function syncDone() {
+    return makeDoneSync({ loggedIn: x.loggedIn })()
+  }, [x.loggedIn])
+
+  const rows = filterRows({ rows: x.rows, win, hot, todo, byNum, done })
   const shownRows = rows.slice(0, shown)
   return {
     win,
     hot,
     todo,
+    byNum,
     done,
     rows,
     shown: shownRows,
@@ -50,6 +56,7 @@ export function usePteBoard(x: PteBoardHookIn): PteBoardPanel {
     winPickOf: makeWinPickOf({ setWin }),
     onHot: makeToggle({ on: hot, set: setHot }),
     onTodo: makeToggle({ on: todo, set: setTodo }),
+    onByNum: makeToggle({ on: byNum, set: setByNum }),
     onMore: makeMore({ shown, setShown }),
   }
 }
@@ -77,7 +84,7 @@ export function usePteAnswer(x: PteAnswerHookIn): PteAnswerPanel {
   const [micDenied, setMicDenied] = useState(false)
   const [rec, setRec] = useState<RecorderHandle | null>(null)
 
-  const onSubmit = makeSubmit({ qid: x.q.qid, rec, setRecUrl, setRecording, setRec, setPhase })
+  const onSubmit = makeSubmit({ qid: x.q.qid, loggedIn: x.loggedIn, rec, setRecUrl, setRecording, setRec, setPhase })
   const toAnswering = makePhaseSet({ setPhase, phase: PHASE_ANSWERING })
 
   useEffect(function countdown() {
@@ -162,4 +169,27 @@ export function usePteComments(x: PteCommentsHookIn): PteCommentsPanel {
     onNote: makeTextChange({ set: setNote }),
     onNoteSubmit: makeNoteSubmit({ qid: x.qid, note, state: noteState, setState: setNoteState, setNote }),
   }
+}
+
+/**
+ * 查词整机(Frank 2026-09-03「选中单词应该有字典功能」):页上选中一个英文单词 → 弹层给音标与释义;
+ * 选区没了弹层就关。接口是 Free Dictionary API,结果按词缓存。
+ *
+ * @returns 面板。
+ */
+export function usePteDict(): PteDictPanel {
+  const [word, setWord] = useState(TEXT_NONE)
+  const [pos, setPos] = useState<DictPos>({ x: 0, y: 0 })
+  const [state, setState] = useState<DictState>(DICT_IDLE)
+  const [entry, setEntry] = useState<DictEntry | null>(null)
+
+  useEffect(function watchSelection() {
+    return makeSelectionWatch({ setWord, setPos })()
+  }, [])
+
+  useEffect(function lookup() {
+    return makeDictLookup({ word, setState, setEntry })()
+  }, [word])
+
+  return { state, word, entry, pos, onClose: makeDictClose({ setWord }) }
 }

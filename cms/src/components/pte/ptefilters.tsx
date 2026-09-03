@@ -30,6 +30,7 @@ export function PteFilters({ t, b }: PteFiltersIn) {
       {chips}
       <Chip active={b.hot} onClick={b.onHot}>{t('pte.hot')}</Chip>
       <Chip active={b.todo} onClick={b.onTodo}>{t('pte.todo')}</Chip>
+      <Chip active={b.byNum} onClick={b.onByNum}>{t('pte.byNum')}</Chip>
     </div>
   )
 }

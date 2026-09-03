@@ -12,6 +12,7 @@ import { Header } from '@/components/header'
 import { PTE_DEFAULT_TYPE, PTE_META, Pte, loadPteList, loadPteTypes } from '@/components/pte'
 import { Frame } from '@/components/shell'
 import { getDb } from '@/lib/db/server'
+import { checkedAt } from '@/lib/jobs/server'
 import { getUser } from '@/lib/quota/server'
 
 export const dynamic = 'force-dynamic'
@@ -30,11 +31,12 @@ export default async function PtePage() {
   const db = await getDb()
   const types = await loadPteTypes({ db })
   const rows = await loadPteList({ db, type: PTE_DEFAULT_TYPE })
+  const updatedAt = await checkedAt(db)
   const user = await getUser(await headers())
   return (
     <Frame>
       <Header loggedIn={!!user} />
-      <Pte types={types} type={PTE_DEFAULT_TYPE} rows={rows} />
+      <Pte types={types} type={PTE_DEFAULT_TYPE} rows={rows} loggedIn={!!user} updatedAt={updatedAt} />
       <Footer />
     </Frame>
   )

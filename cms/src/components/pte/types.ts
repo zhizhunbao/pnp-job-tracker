@@ -80,6 +80,11 @@ export type PteType = {
   code: string
 
   /**
+   * 所属栏(Speaking / Writing / Reading / Listening;胶囊按它分行)。
+   */
+  section: string
+
+  /**
    * 考试序(胶囊按它排)。
    */
   seq: number
@@ -448,6 +453,66 @@ export type PteIn = {
    * 这一型的全部题(窗口/押题/练过筛在客户端)。
    */
   rows: PteRow[]
+
+  /**
+   * 登录态(练过档与库并集)。
+   */
+  loggedIn: boolean
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
+   */
+  updatedAt: string
+}
+
+/**
+ * 一栏题型(`sectionsOf` 的产物)。
+ */
+export type PteSection = {
+  /**
+   * 栏(Speaking / …)。
+   */
+  section: string
+
+  /**
+   * 这一栏的题型(按 seq)。
+   */
+  types: PteType[]
+}
+
+/**
+ * 分栏(`sectionsOf`)的入参。
+ */
+export type SectionsIn = {
+  /**
+   * 题型维度。
+   */
+  types: PteType[]
+}
+
+/**
+ * 栏名(`sectionLabelOf`)的入参。
+ */
+export type SectionLabelIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 栏。
+   */
+  section: string
+}
+
+/**
+ * 练过档同步 effect 工厂(`makeDoneSync`)的入参。
+ */
+export type DoneSyncIn = {
+  /**
+   * 登录态(没登录什么都不做)。
+   */
+  loggedIn: boolean
 }
 
 /**
@@ -493,6 +558,11 @@ export type PteTypeChipsIn = {
    * 界面语言。
    */
   lang: PteLang
+
+  /**
+   * 取词函数(栏名)。
+   */
+  t: TFn
 }
 
 /**
@@ -733,6 +803,11 @@ export type PteBoardHookIn = {
    * 这一型的全部题。
    */
   rows: PteRow[]
+
+  /**
+   * 登录态(挂载后与库并集练过档)。
+   */
+  loggedIn: boolean
 }
 
 /**
@@ -753,6 +828,11 @@ export type PteBoardPanel = {
    * 只看未练过。
    */
   todo: boolean
+
+  /**
+   * 按题号排(默认按最近考过日)。
+   */
+  byNum: boolean
 
   /**
    * 练过的题键。
@@ -790,6 +870,11 @@ export type PteBoardPanel = {
   onTodo: () => void
 
   /**
+   * 切按题号排。
+   */
+  onByNum: () => void
+
+  /**
    * 显示更多。
    */
   onMore: () => void
@@ -808,6 +893,11 @@ export type PteAnswerHookIn = {
    * 题型。
    */
   type: PteType
+
+  /**
+   * 登录态(记练过时顺手写库)。
+   */
+  loggedIn: boolean
 }
 
 /**
@@ -1086,6 +1176,246 @@ export type RecorderStopIn = {
 }
 
 /**
+ * 查词状态。
+ */
+export type DictState = 'idle' | 'busy' | 'ok' | 'none'
+
+/**
+ * 一条字典结果(洗净)。
+ */
+export type DictEntry = {
+  /**
+   * 词。
+   */
+  word: string
+
+  /**
+   * 音标;空串 = 接口没给。
+   */
+  phonetic: string
+
+  /**
+   * 词性;空串 = 没给。
+   */
+  pos: string
+
+  /**
+   * 释义(最多 DICT_DEFS_MAX 条)。
+   */
+  defs: string[]
+}
+
+/**
+ * Free Dictionary API 的响应形(网络来的,只读真用的格;逐格判)。
+ */
+export type DictApiEntry = {
+  /**
+   * 词。
+   */
+  word: string
+
+  /**
+   * 音标。
+   */
+  phonetic: string
+
+  /**
+   * 词义组。
+   */
+  meanings: DictApiMeaning[]
+}
+
+/**
+ * 接口的一组词义。
+ */
+export type DictApiMeaning = {
+  /**
+   * 词性。
+   */
+  partOfSpeech: string
+
+  /**
+   * 释义清单。
+   */
+  definitions: DictApiDef[]
+}
+
+/**
+ * 接口的一条释义。
+ */
+export type DictApiDef = {
+  /**
+   * 释义正文。
+   */
+  definition: string
+}
+
+/**
+ * 弹层的位置(视口坐标)。
+ */
+export type DictPos = {
+  /**
+   * 左。
+   */
+  x: number
+
+  /**
+   * 上。
+   */
+  y: number
+}
+
+/**
+ * 查词状态机(usePteDict)交回的面板。
+ */
+export type PteDictPanel = {
+  /**
+   * 状态。
+   */
+  state: DictState
+
+  /**
+   * 选中的词;空串 = 没选。
+   */
+  word: string
+
+  /**
+   * 结果;null = 还没有。
+   */
+  entry: DictEntry | null
+
+  /**
+   * 弹层位置。
+   */
+  pos: DictPos
+
+  /**
+   * 关掉弹层。
+   */
+  onClose: () => void
+}
+
+/**
+ * 字典弹层(PteDict)的 props。
+ */
+export type PteDictIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 查词面板。
+   */
+  d: PteDictPanel
+}
+
+/**
+ * 选区监听 effect 工厂(`makeSelectionWatch`)的入参。
+ */
+export type SelectionWatchIn = {
+  /**
+   * 落词与位置。
+   */
+  setWord: (w: string) => void
+
+  /**
+   * 落位置。
+   */
+  setPos: (p: DictPos) => void
+}
+
+/**
+ * 查词 effect 工厂(`makeDictLookup`)的入参。
+ */
+export type DictLookupIn = {
+  /**
+   * 要查的词;空串 = 不查。
+   */
+  word: string
+
+  /**
+   * 落状态。
+   */
+  setState: (s: DictState) => void
+
+  /**
+   * 落结果。
+   */
+  setEntry: (e: DictEntry | null) => void
+}
+
+/**
+ * 查词真身(`lookupNow`)的入参:effect 入参 + 死亡标记。
+ */
+export type LookupNowIn = {
+  /**
+   * effect 入参。
+   */
+  x: DictLookupIn
+
+  /**
+   * 拆卸标记。
+   */
+  flag: DeadFlag
+}
+
+/**
+ * 落查词结果(`settleDict`)的入参。
+ */
+export type SettleDictIn = {
+  /**
+   * effect 入参。
+   */
+  x: DictLookupIn
+
+  /**
+   * 结果;null = 没查到。
+   */
+  entry: DictEntry | null
+}
+
+/**
+ * 关弹层手柄(`makeDictClose`)的入参。
+ */
+export type DictCloseIn = {
+  /**
+   * 落词(清成空串 = 关)。
+   */
+  setWord: (w: string) => void
+}
+
+/**
+ * 选区读取(`selectedWordOf`)的返回:词 + 位置;没选到词是 null。
+ */
+export type SelectedWord = {
+  /**
+   * 词。
+   */
+  word: string
+
+  /**
+   * 弹层位置。
+   */
+  pos: DictPos
+}
+
+/**
+ * 弹层定位(`dictPosOf`)的入参:选区矩形。
+ */
+export type DictPosIn = {
+  /**
+   * 选区左。
+   */
+  left: number
+
+  /**
+   * 选区底。
+   */
+  bottom: number
+}
+
+/**
  * 死亡标记(effect 拆卸后不再落格)。
  */
 export type DeadFlag = {
@@ -1228,6 +1558,11 @@ export type FilterRowsIn = {
    * 只看未练过。
    */
   todo: boolean
+
+  /**
+   * 按题号排。
+   */
+  byNum: boolean
 
   /**
    * 练过的题键。
@@ -1406,6 +1741,36 @@ export type SaveDoneIn = {
 }
 
 /**
+ * 记一题练过(`markDone`)的入参。
+ */
+export type MarkDoneIn = {
+  /**
+   * 题键。
+   */
+  qid: string
+
+  /**
+   * 登录态(顺手 PUT 到库)。
+   */
+  loggedIn: boolean
+}
+
+/**
+ * 练过档接口的响应形状(`{ ok, done }`;网络来的,逐格判)。
+ */
+export type DoneResBody = {
+  /**
+   * 并集后的题键。
+   */
+  done: string[]
+}
+
+/**
+ * 有无 href 的落格(`hrefOrNone`):null 给空串,Button 收到空串退回 <button>。
+ */
+export type MaybeHref = string | null
+
+/**
  * 窗口手柄工厂(`makeWinPickOf`)的入参。
  */
 export type WinPickIn = {
@@ -1471,6 +1836,21 @@ export type SpeakIn = {
 
   /**
    * 读完回调。
+   */
+  onEnd: () => void
+}
+
+/**
+ * 播直链(`playUrl`)的入参。
+ */
+export type PlayUrlIn = {
+  /**
+   * 音频地址。
+   */
+  url: string
+
+  /**
+   * 播完回调。
    */
   onEnd: () => void
 }
@@ -1553,6 +1933,11 @@ export type SubmitIn = {
    * 题键。
    */
   qid: string
+
+  /**
+   * 登录态(记练过时顺手 PUT 到库)。
+   */
+  loggedIn: boolean
 
   /**
    * 录音机;null = 这型不录。
@@ -1850,6 +2235,16 @@ export type PteCellRow = {
   num: string
 
   /**
+   * 题号数值(列排序用)。
+   */
+  numN: number
+
+  /**
+   * 最近考过日;null = 没记录(列排序用)。
+   */
+  seenIso: string | null
+
+  /**
    * 题面。
    */
   text: string
@@ -1925,6 +2320,11 @@ export type PteCol = {
   render: (r: PteCellRow) => React.ReactNode
 
   /**
+   * 排序取值器(表头可点排序;Frank 2026-09-03「table 怎么没有带排序」)。
+   */
+  sort: (r: PteCellRow) => string | number | null
+
+  /**
    * 显式列宽(百分比;固定版式,永不横滚)。
    */
   width: string
@@ -1993,16 +2393,6 @@ export type DoneClsIn = {
    * 练过。
    */
   done: boolean
-}
-
-/**
- * 返回手柄工厂(`makeGoBack`)的入参。
- */
-export type GoBackIn = {
-  /**
-   * 无历史可回时的落点。
-   */
-  fallback: string
 }
 
 /**

@@ -333,6 +333,11 @@ export const TBL_PTE_TYPES = 'pte_types'
 export const TBL_PTE_QUESTIONS = 'pte_questions'
 
 /**
+ * PTE 题目音频表(2026-09-03 批三;piper 合成的 mp3 按 base64 进库,/api/pte/audio 吐出 —— 生产镜像装不下仓库文件)。
+ */
+export const TBL_PTE_AUDIO = 'pte_audio'
+
+/**
  * 字段级来源表(E4-04)。
  */
 export const TBL_FIELD_SOURCES = 'field_sources'
@@ -524,6 +529,11 @@ export const COLS_PTE_TYPES = ['code', 'section', 'seq', 'name_zh', 'name_en', '
  * 不是 0/空串 —— 映射器一律 cellOf 保 null,禁折默认值。
  */
 export const COLS_PTE_QUESTIONS = ['qid', 'source', 'type', 'num', 'title', 'text', 'answer', 'audio_url', 'audio_file', 'image_url', 'predicted', 'seen', 'seen_n', 'votes', 'freq', 'fetched']
+
+/**
+ * pte_audio 列(mart 键 qid / mime / b64 / voice 同名)。
+ */
+export const COLS_PTE_AUDIO = ['qid', 'mime', 'b64', 'voice']
 
 /**
  * field_sources 列(坑 2:白名单必须显式列全字段)。

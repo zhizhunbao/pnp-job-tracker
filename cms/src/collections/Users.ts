@@ -95,6 +95,13 @@ export const Users: CollectionConfig = {
       type: 'json',
       admin: { readOnly: true, description: '问卷答案档(隐私):登录态自动同步,浏览器与库新者胜' },
     },
+    {
+      // PTE 练过档(2026-09-03 批三):{ done: string[](qid), updatedAt: ISO }。列由 docs/sql/pte-audio.sql 手写添加;
+      // 写入只走 /api/pte/done(cookie 鉴权取本人 id,服务端取并集),客户端 localStorage 与库并集。
+      name: 'pteDone',
+      type: 'json',
+      admin: { readOnly: true, description: 'PTE 练过题键清单(登录态自动同步,浏览器与库取并集)' },
+    },
     // 身份最小集(E11-01):均本人可改(无字段级锁),role/proUntil/stripe* 仍锁死。
     { name: 'displayName', type: 'text', admin: { description: '昵称(空则前端回退邮箱前缀)' } },
     { name: 'avatar', type: 'text', admin: { description: '头像 URL(v1 仅存 OAuth 带回的 URL,不做上传;无则前端画首字母块)' } },

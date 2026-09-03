@@ -8,19 +8,20 @@
  * @author Frank
  * @time 2026-09-03 12:00:00
  */
-import { goBackOr } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { SQL, count, numOrNull, queryRowsOrEmpty, text, textOrNull } from '@/lib/db'
 import {
-  ALIGN_LEFT, ALIGN_RIGHT, API_COMMENTS, CHECK_MARK, CLOCK_PAD, CLOCK_SEP, CLS_SEP, COL_DONE, COL_HOT, COL_NUM,
-  COL_SEEN, COL_TEXT, COL_TIMES, CRED_INCLUDE, DATE_LEN, DAY_MS, DESC_LEN_MAX, DONE_KEY, HDR_CONTENT_TYPE, ID_SEP,
-  EMPTY_DONE, EXAM_HINT_KEY, INST_KEY, ITEM_DESC_TPL, ITEM_TITLE_TPL, KIND_EXAM, KIND_NOTE, LANG_KO, LANG_ZH, LIKE_ANY,
-  LIST_DESC_TPL, LIST_TITLE_TPL, METHOD_POST, MIME_JSON, MS_PER_MIN, NOT_FOUND_TITLE, NOTE_HINT_KEY, NUM_HEAD,
-  PAD_CHAR, PAGE_STEP, PHASE_ANSWERING, PHASE_CHECKED, PHASE_READY, PREP_S, PTE_META, PUNCT_RE, QID_ID_AT, QID_SEP,
-  REC_CAP_S, REC_MIME, REC_STATE_INACTIVE, SEC_PER_MIN, STATE_BUSY, STATE_ERR, STATE_SENT, T_RA, TEXT_NONE, TICK_MS,
-  TITLE_LEN_MAX, TTS_GUARD_BASE_MS, TTS_LANG, TTS_LANG_HEAD, TTS_MS_PER_WORD, TTS_RATE, URL_PTE, URL_SEP, VAR_N,
-  VAR_NUM, VAR_TEXT, VAR_TITLE, VAR_TYPE, W_DONE, W_HOT, W_NUM, W_SEEN, W_TEXT, W_TIMES, WIN_ALL, WIN_KEY,
-  WORD_SPLIT_RE,
+  ALIGN_LEFT, ALIGN_RIGHT, API_COMMENTS, API_PTE_DONE, CHECK_MARK, CLOCK_PAD, CLOCK_SEP, CLS_SEP, COL_DONE, COL_HOT,
+  COL_NUM, COL_SEEN, COL_TEXT, COL_TIMES, CRED_INCLUDE, DATE_LEN, DAY_MS, DESC_LEN_MAX, DICT_API, DICT_BUSY,
+  DICT_DEFS_MAX, DICT_EDGE_PX, DICT_GAP_PX, DICT_IDLE, DICT_MIN_LEN, DICT_NONE, DICT_OK, DICT_W_PX, DONE_KEY,
+  EMPTY_DONE, EV_MOUSEUP, EV_TOUCHEND, EXAM_HINT_KEY, HDR_CONTENT_TYPE, ID_SEP, INST_KEY, ITEM_DESC_TPL,
+  ITEM_TITLE_TPL, KIND_EXAM, KIND_NOTE, LANG_KO, LANG_ZH, LIKE_ANY, LIST_DESC_TPL, LIST_TITLE_TPL, METHOD_POST,
+  METHOD_PUT, MIME_JSON, MS_PER_MIN, NOTE_HINT_KEY, NOT_FOUND_TITLE, NUM_HEAD, PAD_CHAR, PAGE_STEP, PHASE_ANSWERING,
+  PHASE_CHECKED, PHASE_READY, PREP_S, PTE_META, PUNCT_RE, QID_ID_AT, QID_SEP, REC_CAP_S, REC_MIME,
+  REC_STATE_INACTIVE, SECTION_KEY, SECTION_ORDER, SEC_PER_MIN, STATE_BUSY, STATE_ERR, STATE_SENT, TEXT_NONE, TICK_MS,
+  TITLE_LEN_MAX, TTS_GUARD_BASE_MS, TTS_LANG, TTS_LANG_HEAD, TTS_MS_PER_WORD, TTS_RATE, T_RA, URL_PTE, URL_SEP,
+  VAR_N, VAR_NUM, VAR_TEXT, VAR_TITLE, VAR_TYPE, WIN_ALL, WIN_KEY, WORD_RE, WORD_SPLIT_RE, W_DONE, W_HOT, W_NUM,
+  W_SEEN, W_TEXT, W_TIMES,
 } from './constants'
 import { CACHE } from './variables'
 import css from './pte.module.css'
@@ -31,16 +32,17 @@ import { SeenCell } from './seencell'
 import { TextCell } from './textcell'
 import { TimesCell } from './timescell'
 import type {
-  AgoTextIn, CellRowsIn, ChunkSinkFn, ClickFn, ClockIn, ColsOfIn, CommentsOfKindIn, CountTextIn, DaysAgoIn, DiffIn,
-  DiffOut, DiffToken, EffectFn, ExamCountsIn, ExamSubmitIn, FilterRowsIn, HintIn, InputChangeFn, InputChangeIn,
-  IsDoneIn,
-  ItemHrefIn, ItemMetaIn, LcsAtIn, ListMetaIn, MoreIn, NeighborsIn, NeighborsOut, NoteSubmitIn, PhaseSetIn, PlayIn,
-  PostCommentIn, CanPlayIn, PteCellRow, PteCol, PteComment, PteCommentDbRow, PteCommentsIn, PteExamCount,
-  PteExamCountDbRow, PteItem, PteItemLoadIn, PteListDbRow, PteListIn, PteMeta, PteOneDbRow, PteQuestion,
-  PteQuestionIn, PteRow, PteRowIn, PteType, PteTypeDbRow, PteTypesIn, QidOfIn, RecorderHandle, RecorderStopFn,
-  RecorderStopIn, RedoIn, SaveDoneIn, SeenTextIn, SpeakIn, StartRecIn, StartRecorderIn, SubmitIn, TextChangeFn,
-  TextChangeIn, TextShownIn, TickerIn, ToggleIn, TypeAtIn, TypeCodeIn, TypeNameIn, WinLabelIn, WinPickIn,
-  WinPickOfFn, WordCountIn, DoneClsIn, GoBackIn,
+  AgoTextIn, CanPlayIn, CellRowsIn, ChunkSinkFn, ClickFn, ClockIn, ColsOfIn, CommentsOfKindIn, CountTextIn,
+  DaysAgoIn, DeadFlag, DictApiEntry, DictCloseIn, DictEntry, DictLookupIn, DictPos, DictPosIn, DiffIn, DiffOut,
+  DiffToken, DoneClsIn, DoneResBody, DoneSyncIn, EffectFn, ExamCountsIn, ExamSubmitIn, FilterRowsIn, HintIn,
+  InputChangeFn, InputChangeIn, IsDoneIn, ItemHrefIn, ItemMetaIn, LcsAtIn, ListMetaIn, LookupNowIn, MarkDoneIn,
+  MaybeHref, MoreIn, NeighborsIn, NeighborsOut, NoteSubmitIn, PhaseSetIn, PlayIn, PlayUrlIn, PostCommentIn,
+  PteCellRow, PteCol, PteComment, PteCommentDbRow, PteCommentsIn, PteExamCount, PteExamCountDbRow, PteItem,
+  PteItemLoadIn, PteListDbRow, PteListIn, PteMeta, PteOneDbRow, PteQuestion, PteQuestionIn, PteRow, PteRowIn,
+  PteSection, PteType, PteTypeDbRow, PteTypesIn, QidOfIn, RecorderHandle, RecorderStopFn, RecorderStopIn, RedoIn,
+  SaveDoneIn, SectionLabelIn, SectionsIn, SeenTextIn, SelectedWord, SelectionWatchIn, SettleDictIn, SpeakIn,
+  StartRecIn, StartRecorderIn, SubmitIn, TextChangeFn, TextChangeIn, TextShownIn, TickerIn, ToggleIn, TypeAtIn,
+  TypeCodeIn, TypeNameIn, WinLabelIn, WinPickIn, WinPickOfFn, WordCountIn,
 } from './types'
 
 /**
@@ -139,6 +141,7 @@ async function examCountsOf(x: ExamCountsIn): Promise<Map<string, PteExamCount>>
 export function toPteType(r: PteTypeDbRow): PteType {
   return {
     code: text(r.code),
+    section: text(r.section),
     seq: count(r.seq),
     nameZh: text(r.nameZh),
     nameEn: text(r.nameEn),
@@ -200,7 +203,7 @@ export function toPteRow(x: PteRowIn): PteRow {
   const own = x.own.get(qid)
   let times = count(r.seenN)
   const votes = numOrNull(r.votes)
-  if (votes != null) {
+  if (votes != null && votes > times) {
     times = votes
   }
   let seen = textOrNull(r.seen)
@@ -418,7 +421,71 @@ export function filterRows(x: FilterRowsIn): PteRow[] {
     }
     out.push(r)
   }
+  if (x.byNum) {
+    out.sort(byNumOf)
+  }
   return out
+}
+
+/**
+ * 题号升序比较器(sort 比较器是库定的双参签名)。
+ *
+ * @param a 左行。
+ * @param b 右行。
+ * @returns 负 / 零 / 正。
+ */
+// eslint-disable-next-line local/one-parameter -- Array.prototype.sort 定死的双参比较器
+function byNumOf(a: PteRow, b: PteRow): number {
+  return Number(a.num) - Number(b.num)
+}
+
+/**
+ * 题型按栏分组(Speaking / Writing / Reading / Listening 定序;栏内按 seq;没归栏的型落最后一栏)。
+ *
+ * @param x 题型维度。
+ * @returns 一栏一组(空栏不出)。
+ */
+export function sectionsOf(x: SectionsIn): PteSection[] {
+  const out: PteSection[] = []
+  for (const section of SECTION_ORDER) {
+    const types: PteType[] = []
+    for (const t of x.types) {
+      if (t.section === section) {
+        types.push(t)
+      }
+    }
+    if (types.length > 0) {
+      out.push({ section, types })
+    }
+  }
+  return out
+}
+
+/**
+ * 栏名(本语);表里没有的栏给原串。
+ *
+ * @param x 取词函数与栏。
+ * @returns 栏名。
+ */
+export function sectionLabelOf(x: SectionLabelIn): string {
+  const key = SECTION_KEY[x.section]
+  if (key == null) {
+    return x.section
+  }
+  return x.t(key)
+}
+
+/**
+ * 有无 href:null 给空串(Button 收到空串退回 <button>,配 disabled 就是「没有邻题」的灰钮)。
+ *
+ * @param h 地址或 null。
+ * @returns 地址或空串。
+ */
+export function hrefOrNone(h: MaybeHref): string {
+  if (h == null) {
+    return TEXT_NONE
+  }
+  return h
 }
 
 /**
@@ -466,6 +533,8 @@ export function cellRowsOf(x: CellRowsIn): PteCellRow[] {
       qid: r.qid,
       href: r.href,
       num: NUM_HEAD + r.num,
+      numN: Number(r.num),
+      seenIso: r.seen,
       text: r.text,
       textCls: textCellClsOf({ done }),
       seenText: seenTextOf({ t: x.t, seen: r.seen }),
@@ -486,13 +555,81 @@ export function cellRowsOf(x: CellRowsIn): PteCellRow[] {
  */
 export function colsOf(x: ColsOfIn): PteCol[] {
   return [
-    { key: COL_NUM, label: x.t('pte.col.num'), width: W_NUM, align: ALIGN_LEFT, render: NumCell },
-    { key: COL_TEXT, label: x.t('pte.col.text'), width: W_TEXT, align: ALIGN_LEFT, render: TextCell },
-    { key: COL_SEEN, label: x.t('pte.col.seen'), width: W_SEEN, align: ALIGN_LEFT, render: SeenCell },
-    { key: COL_TIMES, label: x.t('pte.col.n'), width: W_TIMES, align: ALIGN_RIGHT, render: TimesCell },
-    { key: COL_HOT, label: x.t('pte.col.hot'), width: W_HOT, align: ALIGN_LEFT, render: HotCell },
-    { key: COL_DONE, label: x.t('pte.col.done'), width: W_DONE, align: ALIGN_LEFT, render: DoneCell },
+    { key: COL_NUM, label: x.t('pte.col.num'), width: W_NUM, align: ALIGN_LEFT, render: NumCell, sort: numSortOf },
+    { key: COL_TEXT, label: x.t('pte.col.text'), width: W_TEXT, align: ALIGN_LEFT, render: TextCell, sort: textSortOf },
+    { key: COL_SEEN, label: x.t('pte.col.seen'), width: W_SEEN, align: ALIGN_LEFT, render: SeenCell, sort: seenSortOf },
+    {
+      key: COL_TIMES, label: x.t('pte.col.n'), width: W_TIMES, align: ALIGN_RIGHT, render: TimesCell, sort: timesSortOf,
+    },
+    { key: COL_HOT, label: x.t('pte.col.hot'), width: W_HOT, align: ALIGN_LEFT, render: HotCell, sort: hotSortOf },
+    { key: COL_DONE, label: x.t('pte.col.done'), width: W_DONE, align: ALIGN_LEFT, render: DoneCell, sort: doneSortOf },
   ]
+}
+
+/**
+ * 题号列排序取值。
+ *
+ * @param r 展示行。
+ * @returns 题号数值。
+ */
+function numSortOf(r: PteCellRow): number {
+  return r.numN
+}
+
+/**
+ * 题面列排序取值。
+ *
+ * @param r 展示行。
+ * @returns 题面。
+ */
+function textSortOf(r: PteCellRow): string {
+  return r.text
+}
+
+/**
+ * 最近考过列排序取值(没记录排最后)。
+ *
+ * @param r 展示行。
+ * @returns 日期串或 null。
+ */
+function seenSortOf(r: PteCellRow): string | null {
+  return r.seenIso
+}
+
+/**
+ * 考过次数列排序取值。
+ *
+ * @param r 展示行。
+ * @returns 次数。
+ */
+function timesSortOf(r: PteCellRow): number {
+  return r.times
+}
+
+/**
+ * 押题列排序取值(是 1 否 0)。
+ *
+ * @param r 展示行。
+ * @returns 0 / 1。
+ */
+function hotSortOf(r: PteCellRow): number {
+  if (r.hotText === TEXT_NONE) {
+    return 0
+  }
+  return 1
+}
+
+/**
+ * 练过列排序取值(是 1 否 0)。
+ *
+ * @param r 展示行。
+ * @returns 0 / 1。
+ */
+function doneSortOf(r: PteCellRow): number {
+  if (r.done) {
+    return 1
+  }
+  return 0
 }
 
 /**
@@ -759,7 +896,7 @@ export function serverEmptyOf(): string {
 }
 
 /**
- * 外部状态的订阅(useSyncExternalStore 要一只;这几样没有变更事件,交回空退订)。
+ * 外部状态的订阅(useSyncExternalStore 要一只;「能不能播」「今天」没有变更事件,交回空退订)。
  *
  * @param cb 变更回调(不会被调)。
  * @returns 退订函数。
@@ -769,6 +906,19 @@ export function subscribeNone(cb: () => void): () => void {
     return noop
   }
   return noop
+}
+
+/**
+ * 练过集的订阅:saveDone 之后叫醒(与库并集回来、交卷记练过都走 saveDone)。
+ *
+ * @param cb 变更回调。
+ * @returns 退订函数。
+ */
+export function subscribeDone(cb: () => void): () => void {
+  CACHE.listeners.add(cb)
+  return function unsubscribe(): void {
+    CACHE.listeners.delete(cb)
+  }
 }
 
 /**
@@ -783,6 +933,9 @@ export function saveDone(x: SaveDoneIn): void {
   } catch {
     return
   }
+  for (const cb of CACHE.listeners) {
+    cb()
+  }
 }
 
 /**
@@ -791,10 +944,68 @@ export function saveDone(x: SaveDoneIn): void {
  * @param qid 题键。
  * @returns 无。
  */
-export function markDone(qid: string): void {
+export function markDone(x: MarkDoneIn): void {
   const done = loadDone()
-  done.add(qid)
+  done.add(x.qid)
   saveDone({ done })
+  if (x.loggedIn) {
+    void putDone(done)
+  }
+}
+
+/**
+ * 把本机练过集 PUT 到库,交回并集(失败给 null,不留痕 —— 下次挂载会再并一次)。
+ *
+ * @param done 本机练过集。
+ * @returns 并集或 null。
+ */
+async function putDone(done: Set<string>): Promise<string[] | null> {
+  try {
+    const r = await fetch(API_PTE_DONE, {
+      method: METHOD_PUT,
+      credentials: CRED_INCLUDE,
+      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+      body: JSON.stringify({ done: Array.from(done) }),
+    })
+    if (r.ok === false) {
+      return null
+    }
+    const b = await r.json() as DoneResBody
+    if (Array.isArray(b.done) === false) {
+      return null
+    }
+    return b.done
+  } catch {
+    return null
+  }
+}
+
+/**
+ * 练过档同步 effect 工厂:登录态挂载后把本机练过集 PUT 上去,拿回并集落回本机(浏览器与库两边取并)。
+ *
+ * @param x 登录态。
+ * @returns effect 体。
+ */
+export function makeDoneSync(x: DoneSyncIn): EffectFn {
+  return function sync(): () => void {
+    if (x.loggedIn) {
+      void syncDoneNow()
+    }
+    return noop
+  }
+}
+
+/**
+ * makeDoneSync 的真身。
+ *
+ * @returns 无。
+ */
+async function syncDoneNow(): Promise<void> {
+  const merged = await putDone(loadDone())
+  if (merged == null) {
+    return
+  }
+  saveDone({ done: new Set(merged) })
 }
 
 /**
@@ -903,6 +1114,10 @@ export function stopSpeak(): void {
   if (canSpeak()) {
     window.speechSynthesis.cancel()
   }
+  if (CACHE.audio != null) {
+    CACHE.audio.pause()
+    CACHE.audio = null
+  }
 }
 
 /**
@@ -914,11 +1129,31 @@ export function stopSpeak(): void {
 export function makePlay(x: PlayIn): ClickFn {
   return function play(): void {
     x.setPlaying(true)
+    if (x.q.audioUrl != null) {
+      playUrl({ url: x.q.audioUrl, onEnd: makePlayEnd(x) })
+      return
+    }
     speak({
       text: x.q.text,
       onEnd: makePlayEnd(x),
     })
   }
+}
+
+/**
+ * 播直链音频(批三:自合成 mp3 由 /api/pte/audio 吐;一次只留一个在播,播完 / 出错都回调一次)。
+ *
+ * @param x 直链与播完回调。
+ * @returns 无。
+ */
+export function playUrl(x: PlayUrlIn): void {
+  stopSpeak()
+  const a = new Audio(x.url)
+  const once = makeOnce(x.onEnd)
+  a.onended = once
+  a.onerror = once
+  CACHE.audio = a
+  void a.play().catch(once)
 }
 
 /**
@@ -1063,7 +1298,7 @@ async function submitNow(x: SubmitIn): Promise<void> {
   }
   x.setRecording(false)
   x.setPhase(PHASE_CHECKED)
-  markDone(x.qid)
+  markDone({ qid: x.qid, loggedIn: x.loggedIn })
 }
 
 /**
@@ -1235,18 +1470,6 @@ export function origBoxClsOf(): string {
 }
 
 /**
- * 造右上「返回」手柄(无历史可回时落到题单)。
- *
- * @param x 落点。
- * @returns 手柄。
- */
-export function makeGoBack(x: GoBackIn): ClickFn {
-  return function goBack(): void {
-    goBackOr(x.fallback)
-  }
-}
-
-/**
  * 按码找题型;没有给一个空壳(码当名,不炸页)。
  *
  * @param x 题型清单与码。
@@ -1257,7 +1480,9 @@ export function typeAtOr(x: TypeAtIn): PteType {
   if (found != null) {
     return found
   }
-  return { code: x.code, seq: 0, nameZh: x.code, nameEn: x.code, nameKo: x.code, audio: x.code !== T_RA }
+  return {
+    code: x.code, section: TEXT_NONE, seq: 0, nameZh: x.code, nameEn: x.code, nameKo: x.code, audio: x.code !== T_RA,
+  }
 }
 
 /**
@@ -1486,3 +1711,223 @@ export function examHintOf(x: HintIn): string {
   return x.t(key)
 }
 
+
+/**
+ * 读当前选区:恰好一个英文单词(字母开头、≥ 2 字母)才算;交回词与弹层位置,否则 null。
+ *
+ * @returns 词与位置;没选到词是 null。
+ */
+export function selectedWordOf(): SelectedWord | null {
+  const sel = window.getSelection()
+  if (sel == null || sel.rangeCount === 0) {
+    return null
+  }
+  const word = sel.toString().trim()
+  if (word.length < DICT_MIN_LEN || WORD_RE.test(word) === false) {
+    return null
+  }
+  const rect = sel.getRangeAt(0).getBoundingClientRect()
+  return { word: word.toLowerCase(), pos: dictPosOf({ left: rect.left, bottom: rect.bottom }) }
+}
+
+/**
+ * 弹层定位:选区底边下方,左对齐选区,不出右边。
+ *
+ * @param x 选区左与底。
+ * @returns 视口坐标。
+ */
+export function dictPosOf(x: DictPosIn): DictPos {
+  let left = x.left
+  const maxLeft = window.innerWidth - DICT_W_PX - DICT_EDGE_PX
+  if (left > maxLeft) {
+    left = maxLeft
+  }
+  if (left < DICT_EDGE_PX) {
+    left = DICT_EDGE_PX
+  }
+  return { x: left, y: x.bottom + DICT_GAP_PX }
+}
+
+/**
+ * 选区监听 effect 工厂:松开鼠标 / 手指后读选区,选到词就落词与位置,没选到就清词(弹层关)。
+ *
+ * @param x 两个落格。
+ * @returns effect 体(挂两个监听,拆卸时摘掉)。
+ */
+export function makeSelectionWatch(x: SelectionWatchIn): EffectFn {
+  return function watch(): () => void {
+    const onUp = makeSelectionRead(x)
+    document.addEventListener(EV_MOUSEUP, onUp)
+    document.addEventListener(EV_TOUCHEND, onUp)
+    return function stop(): void {
+      document.removeEventListener(EV_MOUSEUP, onUp)
+      document.removeEventListener(EV_TOUCHEND, onUp)
+    }
+  }
+}
+
+/**
+ * 选区读取回调(松开后下一拍读,手机的选区在 touchend 时还没定)。
+ *
+ * @param x 两个落格。
+ * @returns 回调。
+ */
+function makeSelectionRead(x: SelectionWatchIn): ClickFn {
+  return function read(): void {
+    window.setTimeout(function later(): void {
+      const hit = selectedWordOf()
+      if (hit == null) {
+        x.setWord(TEXT_NONE)
+        return
+      }
+      x.setWord(hit.word)
+      x.setPos(hit.pos)
+    }, 0)
+  }
+}
+
+/**
+ * 查词 effect 工厂:词变了就查(命中缓存秒回);空词落闲置。
+ *
+ * @param x 词与两个落格。
+ * @returns effect 体。
+ */
+export function makeDictLookup(x: DictLookupIn): EffectFn {
+  return function lookup(): () => void {
+    if (x.word === TEXT_NONE) {
+      x.setState(DICT_IDLE)
+      x.setEntry(null)
+      return noop
+    }
+    const flag: DeadFlag = { dead: false }
+    void lookupNow({ x, flag })
+    return function stop(): void {
+      flag.dead = true
+    }
+  }
+}
+
+/**
+ * makeDictLookup 的真身:缓存 → 接口 → 落格(拆卸后不落)。
+ *
+ * @param y 入参与死亡标记。
+ * @returns 无。
+ */
+async function lookupNow(y: LookupNowIn): Promise<void> {
+  if (CACHE.dict.has(y.x.word)) {
+    const cached = CACHE.dict.get(y.x.word)
+    if (cached == null) {
+      settleDict({ x: y.x, entry: null })
+      return
+    }
+    settleDict({ x: y.x, entry: cached })
+    return
+  }
+  y.x.setState(DICT_BUSY)
+  const entry = await fetchDict(y.x.word)
+  CACHE.dict.set(y.x.word, entry)
+  if (y.flag.dead) {
+    return
+  }
+  settleDict({ x: y.x, entry })
+}
+
+/**
+ * 落查词结果:有 = ok,没有 = none。
+ *
+ * @param y 入参与结果。
+ * @returns 无。
+ */
+function settleDict(y: SettleDictIn): void {
+  y.x.setEntry(y.entry)
+  if (y.entry == null) {
+    y.x.setState(DICT_NONE)
+    return
+  }
+  y.x.setState(DICT_OK)
+}
+
+/**
+ * 打字典接口;404 / 网络错 / 形状不对都给 null(弹层显「没查到」)。`as DictApiEntry[]` 是跨边界断言,逐格判后才用。
+ *
+ * @param word 词(小写)。
+ * @returns 结果或 null。
+ */
+async function fetchDict(word: string): Promise<DictEntry | null> {
+  try {
+    const r = await fetch(DICT_API + encodeURIComponent(word))
+    if (r.ok === false) {
+      return null
+    }
+    const body = await r.json() as DictApiEntry[]
+    if (Array.isArray(body) === false) {
+      return null
+    }
+    for (const e of body) {
+      const entry = toDictEntry(e)
+      if (entry != null) {
+        return entry
+      }
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * 接口一条 → 字典结果(取第一组词义的前几条释义;没有释义 = null)。
+ *
+ * @param e 接口条目。
+ * @returns 结果或 null。
+ */
+function toDictEntry(e: DictApiEntry): DictEntry | null {
+  if (typeof e.word !== 'string' || Array.isArray(e.meanings) === false) {
+    return null
+  }
+  let phonetic = TEXT_NONE
+  if (typeof e.phonetic === 'string') {
+    phonetic = e.phonetic
+  }
+  for (const m of e.meanings) {
+    if (Array.isArray(m.definitions) === false) {
+      continue
+    }
+    const defs: string[] = []
+    for (const d of m.definitions) {
+      if (typeof d.definition === 'string' && defs.length < DICT_DEFS_MAX) {
+        defs.push(d.definition)
+      }
+    }
+    if (defs.length > 0) {
+      let pos = TEXT_NONE
+      if (typeof m.partOfSpeech === 'string') {
+        pos = m.partOfSpeech
+      }
+      return { word: e.word, phonetic, pos, defs }
+    }
+  }
+  return null
+}
+
+/**
+ * 造关弹层手柄(清词)。
+ *
+ * @param x 落词。
+ * @returns 手柄。
+ */
+export function makeDictClose(x: DictCloseIn): ClickFn {
+  return function close(): void {
+    x.setWord(TEXT_NONE)
+  }
+}
+
+/**
+ * 弹层的定位样式(位置是运行时数据,经 style 进是正当通道)。
+ *
+ * @param p 位置。
+ * @returns 样式。
+ */
+export function dictStyleOf(p: DictPos): React.CSSProperties {
+  return { left: p.x, top: p.y }
+}

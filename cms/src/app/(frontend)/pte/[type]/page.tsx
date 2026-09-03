@@ -13,6 +13,7 @@ import { Header } from '@/components/header'
 import { Pte, loadPteList, loadPteTypes, pteListMetaOf, typeAt } from '@/components/pte'
 import { Frame } from '@/components/shell'
 import { getDb } from '@/lib/db/server'
+import { checkedAt } from '@/lib/jobs/server'
 import { getUser } from '@/lib/quota/server'
 
 export const dynamic = 'force-dynamic'
@@ -44,11 +45,12 @@ export default async function PteTypePage({ params }: { params: Promise<{ type: 
   const code = type.toUpperCase()
   if (typeAt({ types, code }) == null) notFound()
   const rows = await loadPteList({ db, type })
+  const updatedAt = await checkedAt(db)
   const user = await getUser(await headers())
   return (
     <Frame>
       <Header loggedIn={!!user} />
-      <Pte types={types} type={code} rows={rows} />
+      <Pte types={types} type={code} rows={rows} loggedIn={!!user} updatedAt={updatedAt} />
       <Footer />
     </Frame>
   )

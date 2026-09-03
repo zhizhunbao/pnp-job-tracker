@@ -229,6 +229,18 @@ export interface User {
     | boolean
     | null;
   /**
+   * PTE 练过题键清单(登录态自动同步,浏览器与库取并集)
+   */
+  pteDone?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
    * 昵称(空则前端回退邮箱前缀)
    */
   displayName?: string | null;
@@ -2317,6 +2329,7 @@ export interface UsersSelect<T extends boolean = true> {
   lastWeeklyAt?: T;
   weeklyOptOut?: T;
   answers?: T;
+  pteDone?: T;
   displayName?: T;
   avatar?: T;
   loginProvider?: T;
