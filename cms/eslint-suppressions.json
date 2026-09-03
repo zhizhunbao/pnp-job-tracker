@@ -2171,17 +2171,8 @@
     }
   },
   "src/lib/seo/functions.ts": {
-    "jsdoc/check-param-names": {
-      "count": 1
-    },
-    "jsdoc/require-param": {
-      "count": 1
-    },
-    "local/doc-every-member": {
-      "count": 1
-    },
     "local/typed-signature": {
-      "count": 6
+      "count": 5
     }
   },
   "src/lib/seo/types.ts": {

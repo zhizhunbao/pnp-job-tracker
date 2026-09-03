@@ -15,11 +15,12 @@ import {
   HDR_CACHE_CONTROL, HDR_CONTENT_TYPE, INDEX_ITEM_TPL, INDEX_XML_HEAD, INDEX_XML_TAIL,
   JOB_PAGE_PREFIX, JOB_PRIORITY, JOB_SHARD_PATH, NL, ROBOTS_ALLOW, ROBOTS_DISALLOW, ROBOTS_UA,
   URLSET_ITEM_TPL, URLSET_XML_HEAD, URLSET_XML_TAIL,
-  PATH_SEP, SHARD_SIZE, SITE, SITEMAP_INDEX_PATH, SITEMAP_PATH, TEXT_NONE,
+  PATH_SEP, SEO_TTL_MS, SHARD_SIZE, SITE, SITEMAP_INDEX_PATH, SITEMAP_PATH, TEXT_NONE,
 } from './constants'
+import { CACHE } from './variables'
 import type {
-  CoShardDbRow, Freq, IndexXmlIn, JobShardDbRow, Robots, ShardCountIn, ShardCountOut,
-  MaybeShardNo, ShardNoIn, ShardPageIn, ShardPageOut, Sitemap, SitemapEntry,
+  CoShardDbRow, CoShardRowsOut, Freq, IndexXmlIn, JobShardDbRow, JobShardRowsOut, RefreshOut, Robots,
+  ShardCountIn, ShardCountOut, MaybeShardNo, ShardNoIn, ShardPageIn, ShardPageOut, Sitemap, SitemapEntry,
 } from './types'
 
 // =========================================================================
@@ -70,8 +71,12 @@ function freqOf(v: string): Freq {
 }
 
 // =========================================================================
-// 2. 分片(计数、白名单、单片;全纯收 db 注入)
+// 2. 分片(计数、白名单、单片;全纯收 db 注入;清单全量一次拉齐进程内切片,一小时 TTL)
 // =========================================================================
+// 2026-09-03 GSC 实查定案(constants.SEO_TTL_MS):此前索引两个 count + 每片 OFFSET 现查,
+// 索引 63 秒 / 分片 10–24 秒,Google 读索引后子表逐个超时 → 「发现 0 页」,新岗对 Google 不存在。
+// 现在两侧各一次全量查询(45k 行 id+last_seen,亚秒)落 CACHE,计数与切片全在内存;
+// 库抖时先吃过期缓存(有旧表不给空表),没有旧表才按原兜底(计数 1 片 / 分册空)。
 
 /**
  * 在招岗数 → 职位分片数。库不可达时回落 1 片(空片无害),绝不 0 片
@@ -81,13 +86,8 @@ function freqOf(v: string): Freq {
  * @returns 片数(≥1)。
  */
 export async function loadJobShardCount(input: ShardCountIn): ShardCountOut {
-  try {
-    const rows = await queryRows({ db: input.db, sql: SQL.jobsSitemapCount(SQL.SITEMAP_ACTIVE), params: [], map: toCountN })
-    return shardsOf(rows)
-  } catch (e) {
-    log({ tag: SEO_LOG.tag, text: SEO_LOG.countFail + String(e) })
-    return 1
-  }
+  const rows = await loadJobShardRows(input)
+  return shardsOf(rows.length)
 }
 
 /**
@@ -97,27 +97,17 @@ export async function loadJobShardCount(input: ShardCountIn): ShardCountOut {
  * @returns 片数(≥1)。
  */
 export async function loadCompanyShardCount(input: ShardCountIn): ShardCountOut {
-  try {
-    const rows = await queryRows({ db: input.db, sql: SQL.coSitemapCount(SQL.CO_SITEMAP_FROM), params: [], map: toCountN })
-    return shardsOf(rows)
-  } catch (e) {
-    log({ tag: SEO_LOG.tag, text: SEO_LOG.countFail + String(e) })
-    return 1
-  }
+  const rows = await loadCompanyShardRows(input)
+  return shardsOf(rows.length)
 }
 
 /**
- * 计数行 → 片数(向上取整,至少 1)。
+ * 条数 → 片数(向上取整,至少 1)。
  *
- * @param rows 单行计数结果集。
+ * @param n 清单条数。
  * @returns 片数。
  */
-function shardsOf(rows: number[]): number {
-  let n = 0
-  const rowsFirst = rows[0]
-  if (rowsFirst != null) {
-    n = rowsFirst
-  }
+function shardsOf(n: number): number {
   return Math.max(1, Math.ceil(n / SHARD_SIZE))
 }
 
@@ -132,23 +122,15 @@ export async function loadJobShardPage(input: ShardPageIn): ShardPageOut {
   if (Number.isFinite(input.shard) === false) {
     return []
   }
-  try {
-    const rows = await queryRows({
-      db: input.db, sql: SQL.jobsSitemapPage(SQL.SITEMAP_ACTIVE),
-      params: [SHARD_SIZE, input.shard * SHARD_SIZE], map: toJobShardRow,
+  const rows = await loadJobShardRows({ db: input.db })
+  const out: SitemapEntry[] = []
+  for (const r of rows.slice(input.shard * SHARD_SIZE, (input.shard + 1) * SHARD_SIZE)) {
+    out.push({
+      url: `${SITE}${JOB_PAGE_PREFIX}${r.id}`, lastModified: seenOf(r.last_seen),
+      changeFrequency: freqOf(FREQ_WEEKLY), priority: JOB_PRIORITY,
     })
-    const out: SitemapEntry[] = []
-    for (const r of rows) {
-      out.push({
-        url: `${SITE}${JOB_PAGE_PREFIX}${r.id}`, lastModified: seenOf(r.last_seen),
-        changeFrequency: freqOf(FREQ_WEEKLY), priority: JOB_PRIORITY,
-      })
-    }
-    return out
-  } catch (e) {
-    log({ tag: SEO_LOG.tag, text: SEO_LOG.pageFail + String(e) })
-    return []
   }
+  return out
 }
 
 /**
@@ -161,22 +143,95 @@ export async function loadCompanyShardPage(input: ShardPageIn): ShardPageOut {
   if (Number.isFinite(input.shard) === false) {
     return []
   }
-  try {
-    const rows = await queryRows({
-      db: input.db, sql: SQL.coSitemapPage(SQL.CO_SITEMAP_FROM),
-      params: [SHARD_SIZE, input.shard * SHARD_SIZE], map: toCoShardRow,
+  const rows = await loadCompanyShardRows({ db: input.db })
+  const out: SitemapEntry[] = []
+  for (const r of rows.slice(input.shard * SHARD_SIZE, (input.shard + 1) * SHARD_SIZE)) {
+    out.push({
+      url: `${SITE}${CO_PAGE_PREFIX}${r.slug}`, lastModified: seenOf(r.last_seen),
+      changeFrequency: freqOf(FREQ_WEEKLY), priority: CO_PRIORITY,
     })
-    const out: SitemapEntry[] = []
-    for (const r of rows) {
-      out.push({
-        url: `${SITE}${CO_PAGE_PREFIX}${r.slug}`, lastModified: seenOf(r.last_seen),
-        changeFrequency: freqOf(FREQ_WEEKLY), priority: CO_PRIORITY,
-      })
+  }
+  return out
+}
+
+/**
+ * 职位分片清单全量。有槽就立刻给槽里的(过期则顺手在后台刷新一次,请求本身不等库 ——
+ * 线上 63 秒的病根是连接池被撑着时的等待,Google 读索引多半落在冷态);没槽才等现查。
+ *
+ * @param input 连接。
+ * @returns 在架岗 id + last_seen 全量(id 升序)。
+ */
+async function loadJobShardRows(input: ShardCountIn): JobShardRowsOut {
+  const slot = CACHE.jobs
+  if (slot != null) {
+    if (Date.now() - slot.ts >= SEO_TTL_MS && CACHE.jobsBusy === false) {
+      void refreshJobShardRows(input)
     }
-    return out
+    return slot.rows
+  }
+  await refreshJobShardRows(input)
+  const fresh = CACHE.jobs
+  if (fresh == null) {
+    return []
+  }
+  return fresh.rows
+}
+
+/**
+ * 职位清单现查一次落槽(失败留痕、槽不动 —— 旧表比空表值钱);busy 旗防过期瞬间多请求齐打库。
+ *
+ * @param input 连接。
+ * @returns 无。
+ */
+async function refreshJobShardRows(input: ShardCountIn): RefreshOut {
+  CACHE.jobsBusy = true
+  try {
+    const rows = await queryRows({ db: input.db, sql: SQL.jobsSitemapAll(SQL.SITEMAP_ACTIVE), params: [], map: toJobShardRow })
+    CACHE.jobs = { rows, ts: Date.now() }
   } catch (e) {
     log({ tag: SEO_LOG.tag, text: SEO_LOG.pageFail + String(e) })
+  } finally {
+    CACHE.jobsBusy = false
+  }
+}
+
+/**
+ * 公司分片清单全量(同职位侧一套律)。
+ *
+ * @param input 连接。
+ * @returns 有在招岗的公司 slug + last_seen 全量(公司 id 升序)。
+ */
+async function loadCompanyShardRows(input: ShardCountIn): CoShardRowsOut {
+  const slot = CACHE.companies
+  if (slot != null) {
+    if (Date.now() - slot.ts >= SEO_TTL_MS && CACHE.companiesBusy === false) {
+      void refreshCompanyShardRows(input)
+    }
+    return slot.rows
+  }
+  await refreshCompanyShardRows(input)
+  const fresh = CACHE.companies
+  if (fresh == null) {
     return []
+  }
+  return fresh.rows
+}
+
+/**
+ * 公司清单现查一次落槽(同职位侧)。
+ *
+ * @param input 连接。
+ * @returns 无。
+ */
+async function refreshCompanyShardRows(input: ShardCountIn): RefreshOut {
+  CACHE.companiesBusy = true
+  try {
+    const rows = await queryRows({ db: input.db, sql: SQL.coSitemapAll(SQL.CO_SITEMAP_FROM), params: [], map: toCoShardRow })
+    CACHE.companies = { rows, ts: Date.now() }
+  } catch (e) {
+    log({ tag: SEO_LOG.tag, text: SEO_LOG.pageFail + String(e) })
+  } finally {
+    CACHE.companiesBusy = false
   }
 }
 
@@ -260,16 +315,6 @@ export function indexHeadersOf(): Record<string, string> {
 // =========================================================================
 // 4. 行构造器(rows 抽屉撤编后的固定尾段)
 // =========================================================================
-
-/**
- * 计数行 → 数字。
- *
- * @param r 原始行。
- * @returns n 格。
- */
-function toCountN(r: { n: number }): number {
-  return r.n
-}
 
 /**
  * 职位分片原始行 → 本域形状。

@@ -201,6 +201,14 @@ export const HDR_CACHE_CONTROL = 'Cache-Control'
 export const CACHE_1H = 'public, max-age=3600'
 
 /**
+ * 分片清单的进程内缓存寿命(与 CACHE_1H 同口径)。2026-09-03 GSC 实查定案:响应头的一小时缓存在
+ * Render 上没有 CDN 兜着,等于每次都现查 —— 索引 63 秒、分片 10–24 秒,Google 读索引后子表逐个超时,
+ * 8/30 提交的 sitemap「发现 0 页」,新岗全部对 Google 不存在(职位富结果 28K → 22)。
+ * 改成两侧各一次全量查询进程内切片,一小时一刷;Render 单实例,进程缓存即全局缓存。
+ */
+export const SEO_TTL_MS = 60 * 60_000
+
+/**
  * 换行(functions 不许裸字面量,XML 行粘接用)。
  */
 export const NL = '\n'

@@ -131,3 +131,73 @@ export type ShardNoIn = {
  * 片号或不合形。
  */
 export type MaybeShardNo = number | null
+
+/**
+ * 职位分片清单的缓存槽(全量行 + 落槽时刻)。
+ */
+export type JobShardSlot = {
+  /**
+   * 在架岗全量(按 id 升序;切片按 SHARD_SIZE 在进程内做)。
+   */
+  rows: JobShardDbRow[]
+
+  /**
+   * 落槽时刻(毫秒;TTL 判过期)。
+   */
+  ts: number
+}
+
+/**
+ * 公司分片清单的缓存槽。
+ */
+export type CoShardSlot = {
+  /**
+   * 有在招岗的公司全量(按公司 id 升序)。
+   */
+  rows: CoShardDbRow[]
+
+  /**
+   * 落槽时刻(毫秒)。
+   */
+  ts: number
+}
+
+/**
+ * 职位分片清单全量的返回(缓存槽里的行,或空表)。
+ */
+export type JobShardRowsOut = Promise<JobShardDbRow[]>
+
+/**
+ * 公司分片清单全量的返回。
+ */
+export type CoShardRowsOut = Promise<CoShardDbRow[]>
+
+/**
+ * 后台刷新一次的返回(只落槽,不回值)。
+ */
+export type RefreshOut = Promise<void>
+
+/**
+ * seo 域全部可变状态的形状。
+ */
+export type SeoCache = {
+  /**
+   * 职位分片清单;没拉过 null,过期由 TTL 判。
+   */
+  jobs: JobShardSlot | null
+
+  /**
+   * 公司分片清单;没拉过 null。
+   */
+  companies: CoShardSlot | null
+
+  /**
+   * 职位清单正在后台刷新(防过期瞬间多请求同时打库)。
+   */
+  jobsBusy: boolean
+
+  /**
+   * 公司清单正在后台刷新。
+   */
+  companiesBusy: boolean
+}

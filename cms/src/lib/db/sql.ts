@@ -1070,6 +1070,25 @@ export const coSitemapPage = (a1: string) => `SELECT c.slug, max(j.last_seen) AS
        GROUP BY c.id, c.slug
        ORDER BY c.id ASC LIMIT $1 OFFSET $2`
 
+/**
+ * 职位站点地图全量(一次拉齐,进程内切片;2026-09-03 GSC 实查:逐片 OFFSET 现查 10–24 秒、
+ * 索引两个 count 63 秒,Google 读索引后子表逐个超时 → 「发现 0 页」,新岗一个没进索引)。a1=口径片段。
+ *
+ * @param a1 在架口径片段(SITEMAP_ACTIVE)。
+ * @returns 全量 SELECT 语句。
+ */
+export const jobsSitemapAll = (a1: string) => `SELECT id, last_seen FROM jobs WHERE ${a1} ORDER BY id ASC`
+
+/**
+ * 公司站点地图全量(同上,一次拉齐进程内切片)。a1=FROM 骨架。
+ *
+ * @param a1 FROM/WHERE 骨架(CO_SITEMAP_FROM)。
+ * @returns 全量 SELECT 语句。
+ */
+export const coSitemapAll = (a1: string) => `SELECT c.slug, max(j.last_seen) AS last_seen ${a1}
+       GROUP BY c.id, c.slug
+       ORDER BY c.id ASC`
+
 // =========================================================================
 // 21. 漏斗看板(/funnel)
 // =========================================================================
