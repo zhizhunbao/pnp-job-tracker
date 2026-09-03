@@ -67,16 +67,64 @@
  */
 
 /*
- * 题型分栏(一栏一行)。
+ * 题型菜单四栏(口语 / 写作 / 阅读 / 听力;手机叠一列)。
  */
-.secRows {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.secCols {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
 }
 
 /*
- * 一栏:栏名 + 这一栏的胶囊。
+ * 一栏。
+ */
+.secCol {
+  min-width: 0;
+}
+
+/*
+ * 栏头(口语 / 听力 …):下划一条主色短线。
+ */
+.secHead {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+  border-bottom: 2px solid var(--primary);
+}
+
+/*
+ * 一型一行:胶囊(或灰名)+ 权重灰注。
+ */
+.typeItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  min-width: 0;
+}
+
+/*
+ * 还没接的型(灰字不可点)。
+ */
+.typeSoon {
+  font-size: 12.5px;
+  color: #9ca3af;
+  padding: 4px 0;
+}
+
+/*
+ * 占分权重 / 「整理中」灰注。
+ */
+.typeW {
+  font-size: 11.5px;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+/*
+ * 分栏一行(题型菜单外还有开关三行在用):栏名 + 这一栏的胶囊。
  */
 .secRow {
   display: flex;
@@ -85,7 +133,7 @@
 }
 
 /*
- * 栏名(口语 / 听力 …)。
+ * 栏名(时间 / 筛选 / 排序)。
  */
 .secLabel {
   font-size: 12.5px;
@@ -736,6 +784,11 @@
 
   .grid {
     display: block;
+  }
+
+  .secCols {
+    grid-template-columns: 1fr;
+    gap: 10px;
   }
 
   .text {

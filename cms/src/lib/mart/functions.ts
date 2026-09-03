@@ -567,6 +567,7 @@ function toPteType(r: MartRow): MartRow {
   return {
     code: cellOf(r.code), section: cellOf(r.section), seq: cellOf(r.seq),
     name_zh: cellOf(r.nameZh), name_en: cellOf(r.nameEn), name_ko: cellOf(r.nameKo), audio: cellOf(r.audio),
+    weight: cellOf(r.weight),
   }
 }
 

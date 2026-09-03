@@ -1629,10 +1629,11 @@ export const NOC_BY_TITLE_SIM = `SELECT j.noc, max(similarity(j.title, $1)) AS s
 // 🔴 seen_n / votes / freq 是 numeric,回来是字符串,消费端一律 numOrNull;seen 空 = 该源无记录,不折。
 
 /**
- * 题型维度(四型起,批二后扩 19 型;按考试序)。
+ * 题型维度(19 型全列,按考试序;带占分权重与在库题数 —— 没题的型菜单灰字)。
  */
-export const PTE_TYPES = `SELECT code, section, seq, name_zh AS "nameZh", name_en AS "nameEn", name_ko AS "nameKo", audio
-     FROM pte_types ORDER BY seq ASC LIMIT 50`
+export const PTE_TYPES = `SELECT t.code, t.section, t.seq, t.name_zh AS "nameZh", t.name_en AS "nameEn", t.name_ko AS "nameKo",
+            t.audio, t.weight, (SELECT count(*) FROM pte_questions q WHERE q.type = t.code) AS n
+     FROM pte_types t ORDER BY t.seq ASC LIMIT 50`
 
 /**
  * 一型的题单(全量在手,窗口/押题/练过筛在客户端):最近考过日倒序,同日按回忆条数、票数。$1=题型码。

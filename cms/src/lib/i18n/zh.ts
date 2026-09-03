@@ -1261,6 +1261,7 @@ export const pteZh = {
   'pte.hot': '只看押题', 'pte.todo': '未练过', 'pte.byNum': '题号',
   'pte.lab.time': '时间', 'pte.lab.filter': '筛选', 'pte.lab.sort': '排序', 'pte.sortSeen': '最近考过',
   'pte.sec.speaking': '口语', 'pte.sec.writing': '写作', 'pte.sec.reading': '阅读', 'pte.sec.listening': '听力',
+  'pte.soon': '整理中',
   'pte.countWin': '近 {win} 天考过 {n} 题,按最近考过日排', 'pte.countAll': '共 {n} 题,按最近考过日排',
   'pte.col.num': '题号', 'pte.col.text': '题面', 'pte.col.seen': '最近考过', 'pte.col.n': '考过次数', 'pte.col.hot': '押题', 'pte.col.done': '练过',
   'pte.seenToday': '今天考过', 'pte.seenAgo': '{n} 天前考过', 'pte.today': '今天', 'pte.ago': '{n} 天前', 'pte.times': '考过 {n} 次',

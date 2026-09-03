@@ -16,12 +16,12 @@ import {
   DICT_DEFS_MAX, DICT_EDGE_PX, DICT_GAP_PX, DICT_IDLE, DICT_MIN_LEN, DICT_NONE, DICT_OK, DICT_W_PX, DONE_KEY,
   EMPTY_DONE, EV_MOUSEUP, EV_TOUCHEND, EXAM_HINT_KEY, HDR_CONTENT_TYPE, ID_SEP, INST_KEY, ITEM_DESC_TPL,
   ITEM_TITLE_TPL, KIND_EXAM, KIND_NOTE, LANG_KO, LANG_ZH, LIKE_ANY, LIST_DESC_TPL, LIST_TITLE_TPL, METHOD_POST,
-  METHOD_PUT, MIME_JSON, MS_PER_MIN, NOTE_HINT_KEY, NOT_FOUND_TITLE, NUM_HEAD, PAD_CHAR, PAGE_STEP, PHASE_ANSWERING,
-  PHASE_CHECKED, PHASE_READY, PREP_S, PTE_META, PUNCT_RE, QID_ID_AT, QID_SEP, REC_CAP_S, REC_MIME,
+  METHOD_PUT, MIME_JSON, MS_PER_MIN, NOTE_HINT_KEY, NOT_FOUND_TITLE, NUM_HEAD, PAD_CHAR, PAGE_STEP, PERCENT,
+  PHASE_ANSWERING, PHASE_CHECKED, PHASE_READY, PREP_S, PTE_META, PUNCT_RE, QID_ID_AT, QID_SEP, REC_CAP_S, REC_MIME,
   REC_STATE_INACTIVE, SECTION_KEY, SECTION_ORDER, SEC_PER_MIN, STATE_BUSY, STATE_ERR, STATE_SENT, TEXT_NONE, TICK_MS,
   TITLE_LEN_MAX, TTS_GUARD_BASE_MS, TTS_LANG, TTS_LANG_HEAD, TTS_MS_PER_WORD, TTS_RATE, T_RA, URL_PTE, URL_SEP,
-  VAR_N, VAR_NUM, VAR_TEXT, VAR_TITLE, VAR_TYPE, WIN_ALL, WIN_KEY, WORD_RE, WORD_SPLIT_RE, W_DONE, W_HOT, W_NUM,
-  W_SEEN, W_TEXT, W_TIMES,
+  VAR_N, VAR_NUM, VAR_TEXT, VAR_TITLE, VAR_TYPE, WEIGHT_LT_ONE, WIN_ALL, WIN_KEY, WORD_RE, WORD_SPLIT_RE, W_DONE,
+  W_HOT, W_NUM, W_SEEN, W_TEXT, W_TIMES,
 } from './constants'
 import { CACHE } from './variables'
 import css from './pte.module.css'
@@ -42,7 +42,7 @@ import type {
   PteSection, PteType, PteTypeDbRow, PteTypesIn, QidOfIn, RecorderHandle, RecorderStopFn, RecorderStopIn, RedoIn,
   SaveDoneIn, SectionLabelIn, SectionsIn, SeenTextIn, SelectedWord, SelectionWatchIn, SettleDictIn, SpeakIn,
   StartRecIn, StartRecorderIn, SubmitIn, TextChangeFn, TextChangeIn, TextShownIn, TickerIn, ToggleIn, TypeAtIn,
-  TypeCodeIn, TypeNameIn, WinLabelIn, WinPickIn, WinPickOfFn, WordCountIn,
+  TypeCodeIn, TypeNameIn, WeightTextIn, WinLabelIn, WinPickIn, WinPickOfFn, WordCountIn,
 } from './types'
 
 /**
@@ -147,7 +147,25 @@ export function toPteType(r: PteTypeDbRow): PteType {
     nameEn: text(r.nameEn),
     nameKo: text(r.nameKo),
     audio: r.audio === true,
+    weight: count(r.weight),
+    count: count(r.n),
   }
+}
+
+/**
+ * 占分权重灰注:`16%`;不足 1 记的 0.5 显 `<1%`;没记给空串。
+ *
+ * @param x 权重。
+ * @returns 文案。
+ */
+export function weightTextOf(x: WeightTextIn): string {
+  if (x.weight <= 0) {
+    return TEXT_NONE
+  }
+  if (x.weight < 1) {
+    return WEIGHT_LT_ONE
+  }
+  return String(x.weight) + PERCENT
 }
 
 /**
@@ -1481,7 +1499,15 @@ export function typeAtOr(x: TypeAtIn): PteType {
     return found
   }
   return {
-    code: x.code, section: TEXT_NONE, seq: 0, nameZh: x.code, nameEn: x.code, nameKo: x.code, audio: x.code !== T_RA,
+    code: x.code,
+    section: TEXT_NONE,
+    seq: 0,
+    nameZh: x.code,
+    nameEn: x.code,
+    nameKo: x.code,
+    audio: x.code !== T_RA,
+    weight: 0,
+    count: 0,
   }
 }
 

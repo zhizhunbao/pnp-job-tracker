@@ -14,5 +14,6 @@ export const PteTypes: CollectionConfig = {
     { name: 'nameEn', type: 'text', admin: { description: '官方英文题型名(Pearson)' } },
     { name: 'nameKo', type: 'text' },
     { name: 'audio', type: 'checkbox', admin: { description: '题面以音频呈现(先听后答)' } },
+    { name: 'weight', type: 'number', admin: { description: '占总分百分比(猩际「占分权重」;<1% 记 0.5)—— 菜单灰注' } },
   ],
 }

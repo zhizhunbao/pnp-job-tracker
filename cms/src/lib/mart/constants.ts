@@ -522,7 +522,7 @@ export const COLS_DLI = ['province', 'name', 'dli_number', 'city', 'campuses', '
 /**
  * pte_types 列。⚠️ **先在生产跑 docs/sql/pte-tables.sql**(建两表 + 锁表各补一列)。
  */
-export const COLS_PTE_TYPES = ['code', 'section', 'seq', 'name_zh', 'name_en', 'name_ko', 'audio']
+export const COLS_PTE_TYPES = ['code', 'section', 'seq', 'name_zh', 'name_en', 'name_ko', 'audio', 'weight']
 
 /**
  * pte_questions 列(同上一份 SQL)。⚠️ votes / freq / seen / answer / audio_* 可空 = 该源没有,

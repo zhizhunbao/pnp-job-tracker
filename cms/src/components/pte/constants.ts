@@ -118,6 +118,16 @@ export const EV_MOUSEUP = 'mouseup'
 export const EV_TOUCHEND = 'touchend'
 
 /**
+ * 占分权重不足 1% 的灰注。
+ */
+export const WEIGHT_LT_ONE = '<1%'
+
+/**
+ * 百分号。
+ */
+export const PERCENT = '%'
+
+/**
  * 题型分栏顺序(Frank 2026-09-03「题型应该听说读写分开来」:胶囊按 section 一栏一行;扩到 19 型各归各栏)。
  */
 export const SECTION_ORDER = ['Speaking', 'Writing', 'Reading', 'Listening']

@@ -68,6 +68,16 @@ export type PteTypeDbRow = {
    * 题面以音频呈现(先听后答)。
    */
   audio: boolean | null
+
+  /**
+   * 占总分百分比;NULL = 没记。
+   */
+  weight: string | number | null
+
+  /**
+   * 在库题数(SQL 子查询;numeric 回来是字符串)。
+   */
+  n: string | number | null
 }
 
 /**
@@ -108,6 +118,26 @@ export type PteType = {
    * 题面以音频呈现。
    */
   audio: boolean
+
+  /**
+   * 占总分百分比;0 = 没记。
+   */
+  weight: number
+
+  /**
+   * 在库题数;0 = 还没接(菜单灰字「整理中」)。
+   */
+  count: number
+}
+
+/**
+ * 权重灰注(`weightTextOf`)的入参。
+ */
+export type WeightTextIn = {
+  /**
+   * 占总分百分比;0 = 没记。
+   */
+  weight: number
 }
 
 /**

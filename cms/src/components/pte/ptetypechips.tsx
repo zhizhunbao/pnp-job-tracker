@@ -1,39 +1,53 @@
 'use client'
 /**
- * 域内小件:题型胶囊按栏分行(口语 / 写作 / 阅读 / 听力;Frank 2026-09-03「题型应该听说读写分开来」),
- * 一页一型的真链接,当前型亮起;人话名主文案,缩写不上胶囊。
+ * 域内小件:题型菜单 —— 口语 / 写作 / 阅读 / 听力四栏,19 型全列(Frank 2026-09-03「人家这都带个分类」),
+ * 每型带占分权重灰注;有题的是真链接胶囊(当前型亮起),还没接的灰字「整理中」不可点。
+ * 手机四栏叠成一列。
  *
  * @author Frank
  * @time 2026-09-03 12:00:00
  */
 import { Chip } from '@/components/chip'
-import { listHrefOf, sectionLabelOf, sectionsOf, typeNameOf } from './functions'
+import { listHrefOf, sectionLabelOf, sectionsOf, typeNameOf, weightTextOf } from './functions'
 import type { PteTypeChipsIn } from './types'
 import css from './pte.module.css'
 
 /**
- * 渲染题型胶囊(一栏一行)。
+ * 渲染四栏题型菜单。
  *
  * @param props 题型维度、当前题型、界面语言与取词函数。
- * @returns 几行胶囊。
+ * @returns 四栏。
  */
 export function PteTypeChips({ types, type, lang, t }: PteTypeChipsIn) {
-  const rows = []
+  const cols = []
   for (const sec of sectionsOf({ types })) {
-    const chips = []
+    const items = []
     for (const x of sec.types) {
-      chips.push(
-        <Chip key={x.code} href={listHrefOf({ type: x.code })} active={x.code === type}>
-          {typeNameOf({ type: x, lang })}
-        </Chip>,
-      )
+      const name = typeNameOf({ type: x, lang })
+      const w = weightTextOf({ weight: x.weight })
+      if (x.count > 0) {
+        items.push(
+          <div key={x.code} className={css.typeItem}>
+            <Chip href={listHrefOf({ type: x.code })} active={x.code === type}>{name}</Chip>
+            <span className={css.typeW}>{w}</span>
+          </div>,
+        )
+      } else {
+        items.push(
+          <div key={x.code} className={css.typeItem}>
+            <span className={css.typeSoon}>{name}</span>
+            <span className={css.typeW}>{w}</span>
+            <span className={css.typeW}>{t('pte.soon')}</span>
+          </div>,
+        )
+      }
     }
-    rows.push(
-      <div key={sec.section} className={css.secRow}>
-        <span className={css.secLabel}>{sectionLabelOf({ t, section: sec.section })}</span>
-        <div className={css.chips}>{chips}</div>
+    cols.push(
+      <div key={sec.section} className={css.secCol}>
+        <div className={css.secHead}>{sectionLabelOf({ t, section: sec.section })}</div>
+        {items}
       </div>,
     )
   }
-  return <div className={css.secRows}>{rows}</div>
+  return <div className={css.secCols}>{cols}</div>
 }
