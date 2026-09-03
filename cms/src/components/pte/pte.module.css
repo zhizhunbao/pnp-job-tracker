@@ -83,43 +83,98 @@
 }
 
 /*
- * 栏头(口语 / 听力 …):下划一条主色短线。
+ * 栏头(口语 / 听力 …):图标 + 栏名,底下一条灰线(与评论卡的 .secHead 不是一回事,那个是两端排开的行)。
  */
-.secHead {
-  font-size: 14px;
+.colHead {
+  display: flex;
+  align-items: center;
+  font-size: 15px;
   font-weight: 600;
   color: #111827;
-  padding-bottom: 6px;
-  margin-bottom: 8px;
-  border-bottom: 2px solid var(--primary);
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 /*
- * 一型一行:胶囊(或灰名)+ 权重灰注。
+ * 栏头里的图标:四栏各一色(照小枫叶「练习」面板:口语绿 / 写作紫 / 阅读琥珀 / 听力蓝)。
  */
-.typeItem {
+.secIcon {
+  display: inline-flex;
+  margin-right: 8px;
+  vertical-align: -2px;
+}
+
+/*
+ * 口语栏图标色。
+ */
+.secSpeaking {
+  color: #16a34a;
+}
+
+/*
+ * 写作栏图标色。
+ */
+.secWriting {
+  color: #7c3aed;
+}
+
+/*
+ * 阅读栏图标色。
+ */
+.secReading {
+  color: #d97706;
+}
+
+/*
+ * 听力栏图标色。
+ */
+.secListening {
+  color: #2563eb;
+}
+
+/*
+ * 一型一行:名 + 星。
+ */
+.typeRow {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 8px;
-  margin-top: 6px;
+  padding: 7px 0;
+  font-size: 14px;
   min-width: 0;
 }
 
 /*
- * 还没接的型(灰字不可点)。
+ * 有题的型(真链接)。
  */
-.typeSoon {
-  font-size: 12.5px;
-  color: #9ca3af;
-  padding: 4px 0;
+.typeLink {
+  color: #374151;
+  text-decoration: none;
 }
 
 /*
- * 占分权重 / 「整理中」灰注。
+ * 当前型(主色加粗)。
  */
-.typeW {
-  font-size: 11.5px;
+.typeNow {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/*
+ * 还没题的型(灰字不可点)。
+ */
+.typeOff {
   color: #9ca3af;
+}
+
+/*
+ * 重要度星(琥珀)。
+ */
+.typeStars {
+  color: #f59e0b;
+  font-size: 12px;
+  letter-spacing: 1px;
   white-space: nowrap;
 }
 
@@ -879,14 +934,6 @@
   line-height: 1.45;
 }
 
-/*
- * 出处一行(灰小字)。
- */
-.dictSrc {
-  margin-top: 6px;
-  font-size: 11px;
-  color: #9ca3af;
-}
 
 /*
  * ── 7. 门厅(/pte):进度四格、最近考了行 ────────────────────────────────

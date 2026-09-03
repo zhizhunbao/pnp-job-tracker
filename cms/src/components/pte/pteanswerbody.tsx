@@ -70,7 +70,6 @@ export function PteAnswerBody({ t, q, type, a }: PteAnswerPartIn) {
       )}
       {checked && wfd === false && (
         <div className={css.verdict}>
-          <span>{t('pte.listen')}</span>
           <span className={css.doneNote}>{t('pte.done')}</span>
         </div>
       )}

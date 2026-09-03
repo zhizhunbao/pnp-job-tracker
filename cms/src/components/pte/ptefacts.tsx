@@ -1,7 +1,7 @@
 'use client'
 /**
- * 域内小件:事实卡(最近考过 / 考过次数 / 押题 / 题号 四行 + 免责一句;不标来源 ——
- * Frank 2026-09-03「没必要加来源」)。
+ * 域内小件:事实卡(最近考过 / 考过次数 / 押题 / 题号 四行;不标来源、不放解释 ——
+ * Frank 2026-09-03「没必要加来源」「你做的是产品,怎么把讨论的东西都显示在网页上」)。
  *
  * @author Frank
  * @time 2026-09-03 12:00:00
@@ -34,7 +34,6 @@ export function PteFacts({ t, q }: PteFactsIn) {
       </div>
       <div className={css.fact}><span>{t('pte.f.hot')}</span><span className={css.factV}>{hot}</span></div>
       <div className={css.fact}><span>{t('pte.f.num')}</span><span className={css.factV}>{NUM_HEAD}{q.num}</span></div>
-      <div className={css.factNote}>{t('pte.disclaimer')}</div>
     </div>
   )
 }

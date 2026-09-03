@@ -15,8 +15,7 @@ import { LinkButton } from '@/components/button'
 import {
   A_EMPLOYERS, A_JOBS, A_LIBRARY, A_MATCH, A_NEWS, A_PATHWAYS, A_PTE, A_RANK, A_START, A_STATS, PATH_CASES,
   PATH_EMPLOYERS, PATH_HOME,
-  PATH_NEWS, PATH_OCC, PATH_PLAN_PR, PATH_PTE, PATH_PTE_ASQ, PATH_PTE_RA, PATH_PTE_RS, PATH_PTE_WFD, PATH_RESOURCES,
-  PATH_START, PATH_TIMELINE,
+  PATH_NEWS, PATH_OCC, PATH_PLAN_PR, PATH_PTE, PATH_RESOURCES, PATH_START, PATH_TIMELINE,
 } from './constants'
 import { withOn } from './functions'
 import { NavDrop } from './navdrop'
@@ -47,16 +46,9 @@ export function HeaderNav({ t, active }: HeaderNavIn) {
       <LinkButton href={PATH_EMPLOYERS} className={withOn({ base: cssOf(css.navLink), on: active === A_EMPLOYERS })}>
         <IconUsers /> {t('nav.employers')}
       </LinkButton>
-      <NavDrop label={t('nav.pte')}
-        icon={<IconMedal />}
-        highlight={active === A_PTE}
-        items={[
-          { href: PATH_PTE, label: t('pte.nav.home') },
-          { href: PATH_PTE_RA, label: t('pte.nav.RA') },
-          { href: PATH_PTE_RS, label: t('pte.nav.RS') },
-          { href: PATH_PTE_ASQ, label: t('pte.nav.ASQ') },
-          { href: PATH_PTE_WFD, label: t('pte.nav.WFD') },
-        ]} />
+      <LinkButton href={PATH_PTE} className={withOn({ base: cssOf(css.navLink), on: active === A_PTE })}>
+        <IconMedal /> {t('nav.pte')}
+      </LinkButton>
       <NavDrop label={t('nav.library')}
         icon={<IconUsers />}
         highlight={active === A_LIBRARY}

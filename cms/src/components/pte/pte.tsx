@@ -19,7 +19,7 @@ import { usePteBoard } from './hooks'
 import { PteCards } from './ptecards'
 import { PteFilters } from './ptefilters'
 import { PteTable } from './ptetable'
-import { PteTypeChips } from './ptetypechips'
+import { PteSections } from './ptesections'
 import type { PteIn } from './types'
 import css from './pte.module.css'
 
@@ -41,7 +41,7 @@ export function Pte({ types, type, rows, loggedIn, updatedAt }: PteIn) {
         </div>
         <div className={css.sub}>{t('pte.disclaimer')}</div>
         <div className={css.card}>
-          <PteTypeChips types={types} type={type} lang={lang} t={t} />
+          <PteSections types={types} type={type} lang={lang} t={t} />
           <PteFilters t={t} b={b} />
           <div className={css.count}>
             {countTextOf({ t, win: b.win, n: b.rows.length })}

@@ -520,6 +520,7 @@ export type SectionsIn = {
   types: PteType[]
 }
 
+
 /**
  * 栏名(`sectionLabelOf`)的入参。
  */
@@ -534,6 +535,9 @@ export type SectionLabelIn = {
    */
   section: string
 }
+
+
+
 
 /**
  * 练过档同步 effect 工厂(`makeDoneSync`)的入参。
@@ -571,9 +575,9 @@ export type PteItemIn = {
 }
 
 /**
- * 题型胶囊排(PteTypeChips)的 props。
+ * 题型四栏面板(PteSections)的 props。
  */
-export type PteTypeChipsIn = {
+export type PteSectionsIn = {
   /**
    * 题型维度。
    */

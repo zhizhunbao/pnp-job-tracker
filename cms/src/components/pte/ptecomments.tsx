@@ -54,7 +54,6 @@ export function PteComments({ t, qid, comments, loggedIn }: PteCommentsViewIn) {
       {c.examOpen && <PteExamForm t={t} c={c} />}
       {examRows}
       {c.exams.length === 0 && <div className={css.emptyLine}>{t('pte.none')}</div>}
-      <div className={css.factNote}>{t('pte.disclaimer')}</div>
       <div className={cssOf(css.secHead) + CLS_SEP + cssOf(css.secGap)}>
         <div className={css.secTitle}>{t('pte.c.notes')}<span className={css.secN}>{c.notes.length}</span></div>
       </div>

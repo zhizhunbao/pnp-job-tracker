@@ -16,12 +16,12 @@ import {
   DICT_DEFS_MAX, DICT_EDGE_PX, DICT_GAP_PX, DICT_IDLE, DICT_MIN_LEN, DICT_NONE, DICT_OK, DICT_W_PX, DONE_KEY,
   EMPTY_DONE, EV_MOUSEUP, EV_TOUCHEND, EXAM_HINT_KEY, HDR_CONTENT_TYPE, ID_SEP, INST_KEY, ITEM_DESC_TPL,
   ITEM_TITLE_TPL, KIND_EXAM, KIND_NOTE, LANG_KO, LANG_ZH, LIKE_ANY, LIST_DESC_TPL, LIST_TITLE_TPL, METHOD_POST,
-  METHOD_PUT, MIME_JSON, MS_PER_MIN, NOTE_HINT_KEY, NOT_FOUND_TITLE, NUM_HEAD, PAD_CHAR, PAGE_STEP, PERCENT,
+  METHOD_PUT, MIME_JSON, MS_PER_MIN, NOTE_HINT_KEY, NOT_FOUND_TITLE, NUM_HEAD, PAD_CHAR, PAGE_STEP,
   PHASE_ANSWERING, PHASE_CHECKED, PHASE_READY, PREP_S, PTE_META, PUNCT_RE, QID_ID_AT, QID_SEP, RECENT_DAYS,
-  REC_CAP_S, REC_MIME, REC_STATE_INACTIVE, SECTION_KEY, SECTION_ORDER, SEC_PER_MIN, STATE_BUSY, STATE_ERR,
-  STATE_SENT, TEXT_NONE, TICK_MS, TITLE_LEN_MAX, TTS_GUARD_BASE_MS, TTS_LANG, TTS_LANG_HEAD, TTS_MS_PER_WORD,
-  TTS_RATE, T_RA, URL_PTE, URL_SEP, VAR_N, VAR_NUM, VAR_TEXT, VAR_TITLE, VAR_TYPE, WEIGHT_LT_ONE, WIN_ALL, WIN_KEY,
-  WORD_RE, WORD_SPLIT_RE, W_DONE, W_HOT, W_NUM, W_SEEN, W_TEXT, W_TIMES,
+  REC_CAP_S, REC_MIME, REC_STATE_INACTIVE, SECTION_KEY, SECTION_ORDER, SEC_PER_MIN, STAR, STARS_ONE_MIN,
+  STARS_TWO_MIN, STATE_BUSY, STATE_ERR, STATE_SENT, TEXT_NONE, TICK_MS, TITLE_LEN_MAX, TTS_GUARD_BASE_MS, TTS_LANG,
+  TTS_LANG_HEAD, TTS_MS_PER_WORD, TTS_RATE, T_RA, URL_PTE, URL_SEP, VAR_N, VAR_NUM, VAR_TEXT, VAR_TITLE, VAR_TYPE,
+  WIN_ALL, WIN_KEY, WORD_RE, WORD_SPLIT_RE, W_DONE, W_HOT, W_NUM, W_SEEN, W_TEXT, W_TIMES,
 } from './constants'
 import { CACHE } from './variables'
 import css from './pte.module.css'
@@ -39,11 +39,11 @@ import type {
   MaybeHref, MoreIn, NeighborsIn, NeighborsOut, NoteSubmitIn, PhaseSetIn, PlayIn, PlayUrlIn, PostCommentIn,
   PteCellRow, PteCol, PteComment, PteCommentDbRow, PteCommentsIn, PteExamCount, PteExamCountDbRow, PteItem,
   PteItemLoadIn, PteListDbRow, PteListIn, PteMeta, PteOneDbRow, PteQuestion, PteQuestionIn, PteRecentDbRow,
-  PteRecentRow, PteRow, PteRowIn, PteSection, PteStats, PteStatsDbRow, PteStatsIn, PteType, PteTypeDbRow, PteTypesIn,
-  QidOfIn, RecorderHandle, RecorderStopFn, RecorderStopIn, RedoIn, SaveDoneIn, SectionLabelIn, SectionsIn,
-  SeenTextIn, SelectedWord, SelectionWatchIn, SettleDictIn, SpeakIn, StartRecIn, StartRecorderIn, SubmitIn,
-  TextChangeFn, TextChangeIn, TextShownIn, TickerIn, ToggleIn, TypeAtIn, TypeCodeIn, TypeNameIn, WeightTextIn,
-  WinLabelIn, WinPickIn, WinPickOfFn, WordCountIn,
+  PteRecentRow, PteRow, PteRowIn, PteSection, PteStats, PteStatsDbRow, PteStatsIn, PteType,
+  PteTypeDbRow, PteTypesIn, QidOfIn, RecorderHandle, RecorderStopFn, RecorderStopIn, RedoIn, SaveDoneIn,
+  SectionLabelIn, SectionsIn, SeenTextIn, SelectedWord, SelectionWatchIn,
+  SettleDictIn, SpeakIn, StartRecIn, StartRecorderIn, SubmitIn, TextChangeFn, TextChangeIn, TextShownIn, TickerIn,
+  ToggleIn, TypeAtIn, TypeCodeIn, TypeNameIn, WeightTextIn, WinLabelIn, WinPickIn, WinPickOfFn, WordCountIn,
 } from './types'
 
 /**
@@ -153,21 +153,6 @@ export function toPteType(r: PteTypeDbRow): PteType {
   }
 }
 
-/**
- * 占分权重灰注:`16%`;不足 1 记的 0.5 显 `<1%`;没记给空串。
- *
- * @param x 权重。
- * @returns 文案。
- */
-export function weightTextOf(x: WeightTextIn): string {
-  if (x.weight <= 0) {
-    return TEXT_NONE
-  }
-  if (x.weight < 1) {
-    return WEIGHT_LT_ONE
-  }
-  return String(x.weight) + PERCENT
-}
 
 /**
  * 题单库行原样过手(queryRows 要一只映射;真正的清洗在 toPteRow,它还要自家聚合)。
@@ -480,6 +465,7 @@ export function sectionsOf(x: SectionsIn): PteSection[] {
   return out
 }
 
+
 /**
  * 栏名(本语);表里没有的栏给原串。
  *
@@ -492,6 +478,24 @@ export function sectionLabelOf(x: SectionLabelIn): string {
     return x.section
   }
   return x.t(key)
+}
+
+
+
+/**
+ * 重要度星(占分权重 ≥10% 两星、≥3% 一星、其余空串;权重取猩际「占分权重」)。
+ *
+ * @param x 权重。
+ * @returns 星串。
+ */
+export function starsOf(x: WeightTextIn): string {
+  if (x.weight >= STARS_TWO_MIN) {
+    return STAR + STAR
+  }
+  if (x.weight >= STARS_ONE_MIN) {
+    return STAR
+  }
+  return TEXT_NONE
 }
 
 /**
@@ -1966,8 +1970,7 @@ export function dictStyleOf(p: DictPos): React.CSSProperties {
  * @returns 统计。
  */
 export async function loadPteStats(x: PteStatsIn): Promise<PteStats> {
-  const since = new Date(Date.now() - RECENT_DAYS * DAY_MS).toISOString().slice(0, DATE_LEN)
-  const rows = await queryRowsOrEmpty({ db: x.db, sql: SQL.PTE_STATS, params: [since], map: toPteStats })
+  const rows = await queryRowsOrEmpty({ db: x.db, sql: SQL.PTE_STATS, params: [sinceOf()], map: toPteStats })
   let out: PteStats = { total: 0, seen7: 0 }
   for (const r of rows) {
     out = r
@@ -1976,13 +1979,22 @@ export async function loadPteStats(x: PteStatsIn): Promise<PteStats> {
 }
 
 /**
- * 门厅「最近考了」六题。
+ * 门厅「近 7 天考过」全列。
  *
  * @param x 数据库连接。
  * @returns 六行(表没建给空)。
  */
 export async function loadPteRecent(x: PteStatsIn): Promise<PteRecentRow[]> {
-  return queryRowsOrEmpty({ db: x.db, sql: SQL.PTE_RECENT, params: [], map: toPteRecent })
+  return queryRowsOrEmpty({ db: x.db, sql: SQL.PTE_RECENT, params: [sinceOf()], map: toPteRecent })
+}
+
+/**
+ * 门厅窗口的起日(今天往前 RECENT_DAYS 天,YYYY-MM-DD)。
+ *
+ * @returns 日期串。
+ */
+function sinceOf(): string {
+  return new Date(Date.now() - RECENT_DAYS * DAY_MS).toISOString().slice(0, DATE_LEN)
 }
 
 /**

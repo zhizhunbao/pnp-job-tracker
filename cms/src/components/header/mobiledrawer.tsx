@@ -17,9 +17,9 @@ import { IconX } from '@/components/icons'
 import { Button, LinkButton } from '@/components/button'
 
 import {
-  A_EMPLOYERS, A_JOBS, A_MATCH, A_NEWS, A_PATHWAYS, A_RANK, A_START, A_STATS, BRAND_MARK, GRP_INFO, GRP_LIB,
-  GRP_NONE, GRP_PTE, PATH_CASES, PATH_EMPLOYERS, PATH_HOME, PATH_NEWS, PATH_OCC, PATH_PLAN_PR, PATH_PTE, PATH_PTE_ASQ,
-  PATH_PTE_RA, PATH_PTE_RS, PATH_PTE_WFD, PATH_RESOURCES, PATH_START, PATH_TIMELINE, PLAIN_BTN_KIND,
+  A_EMPLOYERS, A_JOBS, A_MATCH, A_NEWS, A_PATHWAYS, A_PTE, A_RANK, A_START, A_STATS, BRAND_MARK, GRP_INFO, GRP_LIB,
+  GRP_NONE, PATH_CASES, PATH_EMPLOYERS, PATH_HOME, PATH_NEWS, PATH_OCC, PATH_PLAN_PR, PATH_PTE, PATH_RESOURCES,
+  PATH_START, PATH_TIMELINE, PLAIN_BTN_KIND,
 } from './constants'
 import { makeGroupToggle, stopClick, withOn } from './functions'
 import { DrawerGroup } from './drawergroup'
@@ -70,17 +70,10 @@ export function MobileDrawer({ t, active, onClose }: MobileDrawerIn) {
             className={withOn({ base: cssOf(css.drawerItem), on: active === A_EMPLOYERS })}>
             {t('nav.employers')}
           </LinkButton>
-          <DrawerGroup groupKey={GRP_PTE}
-            label={t('nav.pte')}
-            openKey={openGrp}
-            onToggle={toggleGrp}
-            items={[
-              { href: PATH_PTE, label: t('pte.nav.home') },
-              { href: PATH_PTE_RA, label: t('pte.nav.RA') },
-              { href: PATH_PTE_RS, label: t('pte.nav.RS') },
-              { href: PATH_PTE_ASQ, label: t('pte.nav.ASQ') },
-              { href: PATH_PTE_WFD, label: t('pte.nav.WFD') },
-            ]} />
+          <LinkButton href={PATH_PTE}
+            className={withOn({ base: cssOf(css.drawerItem), on: active === A_PTE })}>
+            {t('nav.pte')}
+          </LinkButton>
           <DrawerGroup groupKey={GRP_LIB}
             label={t('nav.library')}
             openKey={openGrp}

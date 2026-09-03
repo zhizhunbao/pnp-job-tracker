@@ -123,22 +123,22 @@ export const EV_MOUSEUP = 'mouseup'
 export const EV_TOUCHEND = 'touchend'
 
 /**
- * 占分权重不足 1% 的灰注。
+ * 重要度星。
  */
-export const WEIGHT_LT_ONE = '<1%'
+export const STAR = '★'
 
 /**
- * 百分号。
+ * 两星的权重下限(占总分 %)。
  */
-export const PERCENT = '%'
+export const STARS_TWO_MIN = 10
 
 /**
- * 题型分栏顺序(Frank 2026-09-03「题型应该听说读写分开来」:胶囊按 section 一栏一行;扩到 19 型各归各栏)。
+ * 一星的权重下限。
  */
-export const SECTION_ORDER = ['Speaking', 'Writing', 'Reading', 'Listening']
+export const STARS_ONE_MIN = 3
 
 /**
- * section → 栏名词键。
+ * section → 二级选项卡词键(Frank 2026-09-03「hero 下面加一个二级选项卡分听说读写四分部」)。
  */
 export const SECTION_KEY: Record<string, string> = {
   /**
@@ -161,6 +161,32 @@ export const SECTION_KEY: Record<string, string> = {
    */
   Listening: 'pte.sec.listening',
 }
+
+/**
+ * 栏:口语。
+ */
+export const SEC_SPEAKING = 'Speaking'
+
+/**
+ * 栏:写作。
+ */
+export const SEC_WRITING = 'Writing'
+
+/**
+ * 栏:阅读。
+ */
+export const SEC_READING = 'Reading'
+
+/**
+ * 栏:听力。
+ */
+export const SEC_LISTENING = 'Listening'
+
+/**
+ * 题型分栏顺序(Frank 2026-09-03「题型应该听说读写分开来」:胶囊按 section 一栏一行;扩到 19 型各归各栏)。
+ */
+export const SECTION_ORDER = [SEC_SPEAKING, SEC_WRITING, SEC_READING, SEC_LISTENING]
+
 
 /**
  * 窗口档(天);0 = 全部。默认 30(设计稿)。
@@ -547,6 +573,11 @@ export const PLAY_MARK = '▶'
  * 停止记号(在播时)。
  */
 export const STOP_MARK = '■'
+
+/**
+ * 弹层关闭记号(×;读屏名走 i18n)。
+ */
+export const CLOSE_MARK = '×'
 
 /**
  * 录音红点里的记号。

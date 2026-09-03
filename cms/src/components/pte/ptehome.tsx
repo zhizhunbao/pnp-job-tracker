@@ -1,6 +1,6 @@
 'use client'
 /**
- * pte 域的结构:/pte 门厅 —— H1 + 「开始练习」、总体进度四个数、最近考了六题。三张卡,没有卖点文案
+ * pte 域的结构:/pte 门厅 —— H1 + 「开始练习」、总体进度三个数、近 7 天考过的题全列。三张卡,没有卖点文案
  * (Frank 2026-09-03「这个文案读着很别扭」「简陋一些但是清晰,不会有那么多文案废话」)。题型清单在顶栏下拉。
  *
  * @author Frank
@@ -59,10 +59,6 @@ export function PteHome({ stats, recent, loggedIn, updatedAt }: PteHomeIn) {
             <div className={css.stat}>
               <div className={css.statN}>{stats.total - h.doneN}</div>
               <div className={css.statL}>{t('pte.home.left')}</div>
-            </div>
-            <div className={css.stat}>
-              <div className={css.statN}>{stats.seen7}</div>
-              <div className={css.statL}>{t('pte.home.seen7')}</div>
             </div>
           </div>
         </div>

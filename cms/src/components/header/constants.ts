@@ -129,35 +129,9 @@ export const A_LIBRARY = 'library'
 export const A_PTE = 'pte'
 
 /**
- * PTE 刷题门厅地址。
+ * PTE 刷题题单页地址(默认型)。
  */
 export const PATH_PTE = '/pte'
-
-/**
- * PTE 题单:朗读(顶栏下拉的四项 = 已有题的四型;Frank 2026-09-03「题型应该放到 header hover 才显示的二级标题」;
- * 新型接进来时在这加一项)。
- */
-export const PATH_PTE_RA = '/pte/ra'
-
-/**
- * PTE 题单:复述句子。
- */
-export const PATH_PTE_RS = '/pte/rs'
-
-/**
- * PTE 题单:简答题。
- */
-export const PATH_PTE_ASQ = '/pte/asq'
-
-/**
- * PTE 题单:听写句子。
- */
-export const PATH_PTE_WFD = '/pte/wfd'
-
-/**
- * 手机抽屉「PTE 刷题」分组键。
- */
-export const GRP_PTE = 'pte'
 
 /**
  * 路径段分隔符(activeOf 拼「前缀 + 段界」判断用,防 /news 误吃 /newsroom)。
