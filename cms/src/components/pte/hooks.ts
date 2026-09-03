@@ -77,6 +77,7 @@ export function usePteAnswer(x: PteAnswerHookIn): PteAnswerPanel {
   const [playing, setPlaying] = useState(false)
   const canPlay = useSyncExternalStore(subscribeNone, makeCanPlaySnapshot({ audioUrl: x.q.audioUrl }), serverFalseOf)
   const [textShown, setTextShown] = useState(false)
+  const [answerShown, setAnswerShown] = useState(false)
   const [typed, setTyped] = useState(TEXT_NONE)
   const [recording, setRecording] = useState(false)
   const [recUrl, setRecUrl] = useState<string | null>(null)
@@ -112,6 +113,7 @@ export function usePteAnswer(x: PteAnswerHookIn): PteAnswerPanel {
     playing,
     canPlay,
     textShown,
+    answerShown,
     typed,
     recording,
     recSeconds: elapsed,
@@ -120,6 +122,7 @@ export function usePteAnswer(x: PteAnswerHookIn): PteAnswerPanel {
     onPlay: makePlay({ q: x.q, audioType: x.type.audio, phase, setPlaying, setPhase }),
     onSkipPrep: toAnswering,
     onShowText: makeToggle({ on: textShown, set: setTextShown }),
+    onShowAnswer: makeToggle({ on: answerShown, set: setAnswerShown }),
     onTyped: makeTextChange({ set: setTyped }),
     onStopRec: onSubmit,
     onSubmit,

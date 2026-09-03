@@ -6,10 +6,6 @@
  * @time 2026-08-24 08:00:00
  */
 
-/**
- * 桌面下拉的延时关(ms):hover 离开后留一口气,斜着移进面板不至于闪关。
- */
-export const HOVER_CLOSE_MS = 150
 
 /**
  * 抽屉推主页面的位移(与抽屉同宽 —— push 而非 overlay,2026-08-09 Frank
@@ -230,23 +226,8 @@ export const KIND_LOGIN = 'ghost'
  */
 export const KIND_REGISTER = 'primary'
 
-/**
- * 抽屉分组键:资料库(职业库/官方资源/常见案例)。抽屉单开 —— 展开哪一组靠这个键
- * 比对,与桌面导航的「资料库 ▾」是同一组。
- */
-export const GRP_LIB = 'lib'
 
-/**
- * 抽屉分组键:资讯(移民新闻、政策时间线)。给 DrawerGroup 当 groupKey,与 openGrp
- * 比对决定这一组展不展开 —— 值只要与 GRP_LIB 不撞名就行(它不进 DOM、不进 URL),
- * 取 `info` 是照桌面导航「资讯 ▾」的名,两处对着读得出是同一组。
- */
-export const GRP_INFO = 'info'
 
-/**
- * 抽屉「没有组展开」态:空串 = 两组全收着(再点一次开着的那组也回到它)。
- */
-export const GRP_NONE = ''
 
 /**
  * 取当前登录态时的凭证策略。必须是 include ——

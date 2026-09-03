@@ -1294,15 +1294,6 @@ export type ChatComposerIn = {
   taEl: React.RefObject<HTMLTextAreaElement | null>
 }
 
-/**
- * ChatDisclaimer(免责行)的 props。
- */
-export type ChatDisclaimerIn = {
-  /**
-   * 对话面板。
-   */
-  p: ChatBoxPanel
-}
 
 /**
  * ChatDock(启动器)的 props。

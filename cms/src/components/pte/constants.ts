@@ -534,15 +534,7 @@ export const KIND_LINK = 'ghost'
  */
 export const KIND_ICON = 'secondary'
 
-/**
- * 播放记号。
- */
-export const PLAY_MARK = '▶'
 
-/**
- * 停止记号(在播时)。
- */
-export const STOP_MARK = '■'
 
 /**
  * 弹层关闭记号(×;读屏名走 i18n)。

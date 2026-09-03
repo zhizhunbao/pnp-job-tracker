@@ -153,6 +153,16 @@
 }
 
 /*
+ * 题型钮里的英文缩写灰注(代码不裸奔:人话名主文案,缩写灰字小注;Frank 2026-09-04「需要加英文缩写吗」)。
+ */
+.typeCode {
+  margin-left: 6px;
+  font-size: 11px;
+  opacity: 0.6;
+  letter-spacing: 0.3px;
+}
+
+/*
  * 分栏一行(题型菜单外还有开关三行在用):栏名 + 这一栏的胶囊。
  */
 .secRow {
@@ -539,6 +549,47 @@
 }
 
 /*
+ * 播放钮定宽:▶ 与 ■ 字宽不同,不定宽点一下钮就缩(Frank 2026-09-04「点这个按钮时候为什么会变小」)。
+ */
+.playBtn {
+  min-width: 44px;
+  justify-content: center;
+}
+
+/*
+ * 播放三角:12px 盒子里画的三角(与方块同盒同大)。
+ */
+.markPlay {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 11px solid currentColor;
+  margin-left: 2px;
+}
+
+/*
+ * 停止方块:12px 实心方。
+ */
+.markStop {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background: currentColor;
+  border-radius: 2px;
+}
+
+/*
+ * 我的录音回放:通栏,与示范朗读件同宽(Frank 2026-09-04「长度要保持一样吧」)。
+ */
+.recAudio {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+}
+
+/*
  * 播放件标签。
  */
 .playerLabel {
@@ -680,9 +731,14 @@
 /*
  * 一排钮(主钮一颗 + 次钮同形)。
  */
+.revealRow {
+  margin-top: 10px;
+}
+
 .btns {
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
   margin-top: 14px;
 }

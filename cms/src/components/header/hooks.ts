@@ -5,15 +5,15 @@
  * @author Frank
  * @time 2026-08-24 08:00:00
  */
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useSsrSession } from '@/components/auth'
 import {
-  ACCT_IN, ACCT_LOADING, ACCT_OUT, API_ME, CRED_INCLUDE, HOVER_CLOSE_MS, OVERFLOW_LOCK, PUSH_RESET_MS,
+  ACCT_IN, ACCT_LOADING, ACCT_OUT, API_ME, CRED_INCLUDE, OVERFLOW_LOCK, PUSH_RESET_MS,
   PUSH_TRANSITION, PUSH_X, SEL_MAIN, STYLE_RESET,
 } from './constants'
 import { emptyUser, meToAcct, seedUser } from './functions'
-import type { AcctHookIn, AcctPhase, AcctState, HoverOut, MeJson } from './types'
+import type { AcctHookIn, AcctPhase, AcctState, MeJson } from './types'
 
 /**
  * 账户三态整机(2026-07-19 Frank「我的账户模块应该是登录之后才显示」上提到 header 级)。
@@ -87,54 +87,6 @@ export function useAcct(x: AcctHookIn): AcctState {
   return acct
 }
 
-/**
- * 桌面 hover 下拉整机(E8-07 E 统一交互):hover 即开、离开 150ms 延时关(斜着移进
- * 面板不闪关)、键盘 focus 可开、点击切换(触屏兜底)、焦点移出整块关。
- * relatedTarget 是 DOM 的宽类型,contains 要 Node —— 跨边界断言收在 onBlur 体内那一行。
- *
- * @returns 机器面板(开合与四枚手柄)。
- */
-export function useHoverOpen(): HoverOut {
-  const [open, setOpen] = useState(false)
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  function clear() {
-    if (timer.current != null) {
-      clearTimeout(timer.current)
-    }
-  }
-
-  function close() {
-    setOpen(false)
-  }
-
-  function enter() {
-    clear()
-    setOpen(true)
-  }
-
-  function leave() {
-    clear()
-    timer.current = setTimeout(close, HOVER_CLOSE_MS)
-  }
-
-  function toggle() {
-    setOpen(open === false)
-  }
-
-  function onBlur(e: React.FocusEvent<HTMLElement>) {
-    const next = e.relatedTarget as Node
-    if (e.currentTarget.contains(next) === false) {
-      setOpen(false)
-    }
-  }
-
-  useEffect(function bind() {
-    return clear
-  }, [])
-
-  return { open, enter, leave, toggle, onBlur }
-}
 
 /**
  * 抽屉推主页面(2026-08-09 Frank「点击的时候要有一个推动主页面的动画」):

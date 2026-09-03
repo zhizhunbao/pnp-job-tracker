@@ -1147,6 +1147,7 @@ export const pteKo: Record<keyof typeof pteZh, string> = {
   'pte.submit': '제출', 'pte.redo': '다시 풀기', 'pte.rerec': '다시 녹음', 'pte.next': '다음 문제', 'pte.prev': '이전 문제',
   'pte.typed': '내 답', 'pte.orig': '원문', 'pte.answer': '정답', 'pte.words': '{n}단어', 'pte.timer': '경과 {t}',
   'pte.diff': '{ok}단어 정답, {bad}단어 오답', 'pte.showText': '원문 보기',
+  'pte.showAnswer': '정답 보기',
   'pte.noTts': '이 브라우저는 낭독을 지원하지 않습니다', 'pte.noMic': '마이크를 못 받았습니다',
   'pte.f.seen': '최근 출제', 'pte.f.n': '출제 횟수', 'pte.f.num': '번호', 'pte.none': '기록 없음',
   'pte.c.seen': '출제됨 ({n})',

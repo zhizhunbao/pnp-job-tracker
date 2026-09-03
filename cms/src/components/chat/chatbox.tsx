@@ -15,7 +15,6 @@
 import { TEXT_NONE } from './constants'
 import { useChatBox } from './hooks'
 import { ChatComposer } from './chatcomposer'
-import { ChatDisclaimer } from './chatdisclaimer'
 import { ChatTurn } from './chatturn'
 import type { ChatBoxIn } from './types'
 import css from './chat.module.css'
@@ -42,7 +41,6 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = TEXT_NON
         {turns}
       </div>
       <ChatComposer p={p} taEl={taEl} />
-      <ChatDisclaimer p={p} />
     </div>
   )
   if (compact) {

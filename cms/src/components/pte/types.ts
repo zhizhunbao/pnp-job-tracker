@@ -961,6 +961,11 @@ export type PteAnswerPanel = {
   textShown: boolean
 
   /**
+   * 答案已显示(默认藏着 —— Frank 2026-09-04「答案默认隐藏好一点吧」)。
+   */
+  answerShown: boolean
+
+  /**
    * WFD 打字框现值。
    */
   typed: string
@@ -999,6 +1004,11 @@ export type PteAnswerPanel = {
    * 显示原句。
    */
   onShowText: () => void
+
+  /**
+   * 显示答案。
+   */
+  onShowAnswer: () => void
 
   /**
    * 打字框输入。

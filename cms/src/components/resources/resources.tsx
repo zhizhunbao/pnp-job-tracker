@@ -14,7 +14,8 @@
 import { BANNER_IMGS, Banner } from '@/components/banner'
 import { Search } from '@/components/search'
 import { Shell } from '@/components/shell'
-import { BANNER_MODULE, SHELL_TOP } from './constants'
+import { SectionTabs } from '@/components/tabs'
+import { BANNER_MODULE, LIB_URL_CASES, LIB_URL_OCC, LIB_URL_RESOURCES, SHELL_TOP } from './constants'
 import { useResources } from './hooks'
 import { ResCategory } from './rescategory'
 import css from './resources.module.css'
@@ -36,6 +37,11 @@ export function Resources() {
         title={t('res.title')}
         sub={t('res.sub')}
         images={BANNER_IMGS.pathways} />
+      <SectionTabs tabs={[
+        { href: LIB_URL_OCC, label: t('dir.occ.title'), active: false },
+        { href: LIB_URL_RESOURCES, label: t('res.entry'), active: true },
+        { href: LIB_URL_CASES, label: t('dp.cases'), active: false },
+      ]} />
       <div className={css.searchRow}>
         <Search value={query} onChange={onQueryChange} placeholder={t('res.search')} />
       </div>

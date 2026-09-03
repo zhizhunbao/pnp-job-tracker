@@ -29,7 +29,6 @@ export function ChatComposer({ p, taEl }: ChatComposerIn) {
         className={css.cbIn}
         rows={1}
         value={p.input}
-        placeholder={p.t('chat.ph')}
         maxLength={TEXT_LEN_MAX}
         onFocus={p.onFocus}
         onChange={p.onChange}

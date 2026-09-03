@@ -106,3 +106,19 @@ export const OCC_META = {
     + ' with NOC codes and official source links. Being listed is a rough signal, not an eligibility decision.'
     + ' 各省省提名通道紧缺职业清单,NOC 码+官方来源链,周更。',
 }
+
+/**
+ * 资料库二级导航:紧缺职业清单(2026-09-04 Frank「这两个也改成选项卡模式,不要下拉了」:顶栏「资料库」
+ * 下拉撤,三页各自顶上一条 SectionTabs;三域各自声明去处,域间不互取常量)。
+ */
+export const LIB_URL_OCC = '/occupations'
+
+/**
+ * 资料库二级导航:官方资源。
+ */
+export const LIB_URL_RESOURCES = '/resources'
+
+/**
+ * 资料库二级导航:常见案例。
+ */
+export const LIB_URL_CASES = '/cases'

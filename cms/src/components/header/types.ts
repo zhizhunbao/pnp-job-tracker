@@ -204,80 +204,8 @@ export type AccountLiteIn = {
  */
 export type AuthOpen = '' | 'login' | 'register'
 
-/**
- * 下拉的一个条目。
- */
-export type NavDropItem = {
-  /**
-   * 去处。
-   */
-  href: string
 
-  /**
-   * 条目文字。
-   */
-  label: React.ReactNode
 
-  /**
-   * 是否当前页(蓝底高亮)。
-   */
-  active?: boolean
-}
-
-/**
- * NavDrop(桌面 hover 下拉)的 props。
- */
-export type NavDropIn = {
-  /**
-   * 触发器文字。
-   */
-  label: React.ReactNode
-
-  /**
-   * 触发器图标(可省)。
-   */
-  icon?: React.ReactNode
-
-  /**
-   * 触发器要不要按当前页高亮。
-   */
-  highlight: boolean
-
-  /**
-   * 条目清单。
-   */
-  items: NavDropItem[]
-}
-
-/**
- * useHoverOpen 交回的机器面板。
- */
-export type HoverOut = {
-  /**
-   * 面板开着没。
-   */
-  open: boolean
-
-  /**
-   * 鼠标进入/键盘 focus = 开(清延时)。
-   */
-  enter: () => void
-
-  /**
-   * 鼠标离开 = 延时关。
-   */
-  leave: () => void
-
-  /**
-   * 点击切换(触屏兜底)。
-   */
-  toggle: () => void
-
-  /**
-   * 焦点移出整块 = 关。
-   */
-  onBlur: (e: React.FocusEvent<HTMLElement>) => void
-}
 
 /**
  * HeaderNav(桌面导航排)的 props。
@@ -329,35 +257,6 @@ export type MobileDrawerIn = {
   onClose: () => void
 }
 
-/**
- * DrawerGroup(抽屉里带二级的组)的 props。
- */
-export type DrawerGroupIn = {
-  /**
-   * 组身份键(单开:开着的组 === 自己才展开)。
-   */
-  groupKey: string
-
-  /**
-   * 组标题。
-   */
-  label: React.ReactNode
-
-  /**
-   * 当前展开的组键;'' = 都收着。
-   */
-  openKey: string
-
-  /**
-   * 点组标题:开/收自己。
-   */
-  onToggle: (key: string) => void
-
-  /**
-   * 二级条目。
-   */
-  items: NavDropItem[]
-}
 
 /**
  * withOn(类名 + 当前态)的入参。
@@ -457,47 +356,8 @@ export type DrawerHandlesOut = {
   closeDrawer: ClickFn
 }
 
-/**
- * makeGroupClick 的入参(2026-08-26 同批:原 DrawerGroup 体内的 click 迁出,
- * 闭包的组键改走显式入参)。
- */
-export type GroupClickIn = {
-  /**
-   * 点组标题:开/收自己。
-   */
-  onToggle: (key: string) => void
 
-  /**
-   * 这一组的身份键。
-   */
-  groupKey: string
-}
 
-/**
- * 抽屉分组的单开切换手柄形状(参数是被点的组键)。
- */
-export type GroupToggleFn = (key: string) => void
-
-/**
- * makeGroupToggle 的入参(2026-08-26 同批:原 MobileDrawer 体内的 toggleGrp 迁出,
- * 闭包的当前展开组与 setter 改走显式入参)。
- */
-export type GroupToggleIn = {
-  /**
-   * 当前展开的组键;'' = 都收着(再点自己就收回这个值)。
-   */
-  openKey: string
-
-  /**
-   * 收着时的组键(点自己回落到它)。
-   */
-  noneKey: string
-
-  /**
-   * 写展开组键的 setter。
-   */
-  setOpenKey: (k: string) => void
-}
 
 /**
  * makeLangPick 的入参(2026-08-26 同批:原 LangSwitch 循环体内的 pick 迁出,

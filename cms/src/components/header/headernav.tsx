@@ -13,12 +13,11 @@ import { cssOf } from '@/components/css'
 import { IconChart, IconClipboard, IconCompass, IconMedal, IconNews, IconUsers } from '@/components/icons'
 import { LinkButton } from '@/components/button'
 import {
-  A_EMPLOYERS, A_JOBS, A_LIBRARY, A_MATCH, A_NEWS, A_PATHWAYS, A_PTE, A_RANK, A_START, A_STATS, PATH_CASES,
+  A_EMPLOYERS, A_JOBS, A_LIBRARY, A_MATCH, A_NEWS, A_PATHWAYS, A_PTE, A_RANK, A_START, A_STATS,
   PATH_EMPLOYERS, PATH_HOME,
-  PATH_NEWS, PATH_OCC, PATH_PLAN_PR, PATH_PTE, PATH_RESOURCES, PATH_START, PATH_TIMELINE,
+  PATH_NEWS, PATH_OCC, PATH_PLAN_PR, PATH_PTE, PATH_START,
 } from './constants'
 import { withOn } from './functions'
-import { NavDrop } from './navdrop'
 import type { HeaderNavIn } from './types'
 import css from './header.module.css'
 
@@ -49,21 +48,12 @@ export function HeaderNav({ t, active }: HeaderNavIn) {
       <LinkButton href={PATH_PTE} className={withOn({ base: cssOf(css.navLink), on: active === A_PTE })}>
         <IconMedal /> {t('nav.pte')}
       </LinkButton>
-      <NavDrop label={t('nav.library')}
-        icon={<IconUsers />}
-        highlight={active === A_LIBRARY}
-        items={[
-          { href: PATH_OCC, label: t('dir.occ.title') },
-          { href: PATH_RESOURCES, label: t('res.entry') },
-          { href: PATH_CASES, label: t('dp.cases') },
-        ]} />
-      <NavDrop label={t('nav.info')}
-        icon={<IconNews />}
-        highlight={onNews}
-        items={[
-          { href: PATH_NEWS, label: t('news.entry'), active: onNews },
-          { href: PATH_TIMELINE, label: t('nav.timeline') },
-        ]} />
+      <LinkButton href={PATH_OCC} className={withOn({ base: cssOf(css.navLink), on: active === A_LIBRARY })}>
+        <IconUsers /> {t('nav.library')}
+      </LinkButton>
+      <LinkButton href={PATH_NEWS} className={withOn({ base: cssOf(css.navLink), on: onNews })}>
+        <IconNews /> {t('nav.info')}
+      </LinkButton>
     </div>
   )
 }

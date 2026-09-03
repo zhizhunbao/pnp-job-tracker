@@ -11,8 +11,9 @@
  */
 import { BANNER_IMGS, Banner } from '@/components/banner'
 import { useLang } from '@/components/i18n'
+import { SectionTabs } from '@/components/tabs'
 import { CASES } from '@/lib/ruling'
-import { BANNER_MODULE } from './constants'
+import { BANNER_MODULE, LIB_URL_CASES, LIB_URL_OCC, LIB_URL_RESOURCES } from './constants'
 import { CaseRow } from './caserow'
 import css from './cases.module.css'
 
@@ -30,6 +31,11 @@ export function Cases() {
   return (
     <div className={css.track}>
       <Banner module={BANNER_MODULE} title={t('dp.cases')} images={BANNER_IMGS.pathways} />
+      <SectionTabs tabs={[
+        { href: LIB_URL_OCC, label: t('dir.occ.title'), active: false },
+        { href: LIB_URL_RESOURCES, label: t('res.entry'), active: false },
+        { href: LIB_URL_CASES, label: t('dp.cases'), active: true },
+      ]} />
       <div className={css.indexCard}>{rows}</div>
     </div>
   )

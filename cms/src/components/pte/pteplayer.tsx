@@ -6,7 +6,8 @@
  * @time 2026-09-03 12:00:00
  */
 import { Button } from '@/components/button'
-import { KIND_ICON, PLAY_MARK, STOP_MARK } from './constants'
+import { cssOf } from '@/components/css'
+import { KIND_ICON } from './constants'
 import type { PtePlayerIn } from './types'
 import css from './pte.module.css'
 
@@ -17,13 +18,15 @@ import css from './pte.module.css'
  * @returns 播放件。
  */
 export function PtePlayer({ label, playing, onClick, disabled }: PtePlayerIn) {
-  let mark = PLAY_MARK
+  let mark = <span className={css.markPlay} />
   if (playing) {
-    mark = STOP_MARK
+    mark = <span className={css.markStop} />
   }
   return (
     <div className={css.player}>
-      <Button kind={KIND_ICON} onClick={onClick} disabled={disabled} ariaLabel={label}>{mark}</Button>
+      <Button kind={KIND_ICON} onClick={onClick} disabled={disabled} ariaLabel={label} className={cssOf(css.playBtn)}>
+        {mark}
+      </Button>
       <span className={css.playerLabel}>{label}</span>
     </div>
   )

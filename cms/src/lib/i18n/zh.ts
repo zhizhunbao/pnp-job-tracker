@@ -1269,6 +1269,7 @@ export const pteZh = {
   'pte.submit': '提交', 'pte.redo': '重做', 'pte.rerec': '重录', 'pte.next': '下一题', 'pte.prev': '上一题',
   'pte.typed': '你写的', 'pte.orig': '原句', 'pte.answer': '答案', 'pte.words': '{n} 词', 'pte.timer': '作答 {t}',
   'pte.diff': '{ok} 词对,{bad} 词错', 'pte.showText': '显示原句',
+  'pte.showAnswer': '显示答案',
   'pte.noTts': '此浏览器不支持朗读', 'pte.noMic': '没拿到麦克风',
   'pte.f.seen': '最近考过', 'pte.f.n': '考过次数', 'pte.f.num': '题号', 'pte.none': '暂无记录',
   'pte.c.seen': '考过 ({n})',

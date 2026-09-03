@@ -1154,6 +1154,7 @@ export const pteEn: Record<keyof typeof pteZh, string> = {
   'pte.submit': 'Submit', 'pte.redo': 'Redo', 'pte.rerec': 'Record again', 'pte.next': 'Next', 'pte.prev': 'Previous',
   'pte.typed': 'You typed', 'pte.orig': 'Original', 'pte.answer': 'Answer', 'pte.words': '{n} words', 'pte.timer': 'Elapsed {t}',
   'pte.diff': '{ok} words right, {bad} wrong', 'pte.showText': 'Show text',
+  'pte.showAnswer': 'Show answer',
   'pte.noTts': 'This browser cannot read aloud', 'pte.noMic': 'No microphone',
   'pte.f.seen': 'Last seen', 'pte.f.n': 'Times seen', 'pte.f.num': 'No.', 'pte.none': 'No record yet',
   'pte.c.seen': 'Seen it ({n})',

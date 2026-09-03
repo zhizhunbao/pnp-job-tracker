@@ -10,19 +10,17 @@
  * @time 2026-08-24 08:00:00
  */
 import { cssOf } from '@/components/css'
-import { useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { IconX } from '@/components/icons'
 import { Button, LinkButton } from '@/components/button'
 
 import {
-  A_EMPLOYERS, A_JOBS, A_MATCH, A_NEWS, A_PATHWAYS, A_PTE, A_RANK, A_START, A_STATS, BRAND_MARK, GRP_INFO, GRP_LIB,
-  GRP_NONE, PATH_CASES, PATH_EMPLOYERS, PATH_HOME, PATH_NEWS, PATH_OCC, PATH_PLAN_PR, PATH_PTE, PATH_RESOURCES,
-  PATH_START, PATH_TIMELINE, PLAIN_BTN_KIND,
+  A_EMPLOYERS, A_JOBS, A_LIBRARY, A_MATCH, A_NEWS, A_PATHWAYS, A_PTE, A_RANK, A_START, A_STATS, BRAND_MARK,
+  PATH_EMPLOYERS, PATH_HOME, PATH_NEWS, PATH_OCC, PATH_PLAN_PR, PATH_PTE,
+  PATH_START, PLAIN_BTN_KIND,
 } from './constants'
-import { makeGroupToggle, stopClick, withOn } from './functions'
-import { DrawerGroup } from './drawergroup'
+import { stopClick, withOn } from './functions'
 import { useMainPush } from './hooks'
 import type { MobileDrawerIn } from './types'
 import css from './header.module.css'
@@ -34,10 +32,8 @@ import css from './header.module.css'
  * @returns portal 到 body 的抽屉。
  */
 export function MobileDrawer({ t, active, onClose }: MobileDrawerIn) {
-  const [openGrp, setOpenGrp] = useState(GRP_NONE)
   useMainPush()
 
-  const toggleGrp = makeGroupToggle({ openKey: openGrp, noneKey: GRP_NONE, setOpenKey: setOpenGrp })
   const onHome = active == null
   const onStart = active === A_START || active === A_STATS || active === A_RANK
   const onJobs = active === A_JOBS || active === A_MATCH
@@ -74,23 +70,13 @@ export function MobileDrawer({ t, active, onClose }: MobileDrawerIn) {
             className={withOn({ base: cssOf(css.drawerItem), on: active === A_PTE })}>
             {t('nav.pte')}
           </LinkButton>
-          <DrawerGroup groupKey={GRP_LIB}
-            label={t('nav.library')}
-            openKey={openGrp}
-            onToggle={toggleGrp}
-            items={[
-              { href: PATH_OCC, label: t('dir.occ.title') },
-              { href: PATH_RESOURCES, label: t('res.entry') },
-              { href: PATH_CASES, label: t('dp.cases') },
-            ]} />
-          <DrawerGroup groupKey={GRP_INFO}
-            label={t('nav.info')}
-            openKey={openGrp}
-            onToggle={toggleGrp}
-            items={[
-              { href: PATH_NEWS, label: t('news.entry'), active: onNews },
-              { href: PATH_TIMELINE, label: t('nav.timeline') },
-            ]} />
+          <LinkButton href={PATH_OCC}
+            className={withOn({ base: cssOf(css.drawerItem), on: active === A_LIBRARY })}>
+            {t('nav.library')}
+          </LinkButton>
+          <LinkButton href={PATH_NEWS} className={withOn({ base: cssOf(css.drawerItem), on: onNews })}>
+            {t('nav.info')}
+          </LinkButton>
         </nav>
       </div>
     </div>,

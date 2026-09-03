@@ -8,7 +8,7 @@
  */
 import { Button } from '@/components/button'
 import { Notice } from '@/components/notice'
-import { KIND_LINK, NOTICE_INFO, PHASE_ANSWERING, PHASE_CHECKED, T_WFD, TYPED_ROWS } from './constants'
+import { KIND_SECONDARY, NOTICE_INFO, PHASE_ANSWERING, PHASE_CHECKED, T_WFD, TYPED_ROWS } from './constants'
 import { clockOf, isTextShown, origBoxClsOf, recCapOf, wordCountOf } from './functions'
 import { PteDiff } from './ptediff'
 import { PtePlayer } from './pteplayer'
@@ -37,7 +37,9 @@ export function PteAnswerBody({ t, q, type, a }: PteAnswerPartIn) {
       )}
       {showText && <div className={css.text}>{q.text}</div>}
       {type.audio && showText === false && answering && (
-        <Button kind={KIND_LINK} onClick={a.onShowText}>{t('pte.showText')}</Button>
+        <div className={css.revealRow}>
+          <Button kind={KIND_SECONDARY} sm onClick={a.onShowText}>{t('pte.showText')}</Button>
+        </div>
       )}
       {wfd && answering && (
         <>
@@ -53,7 +55,12 @@ export function PteAnswerBody({ t, q, type, a }: PteAnswerPartIn) {
       )}
       {a.micDenied && <Notice kind={NOTICE_INFO} className={css.notice}>{t('pte.noMic')}</Notice>}
       {checked && wfd && <PteDiff t={t} typed={a.typed} text={q.text} />}
-      {checked && q.answer != null && (
+      {checked && q.answer != null && a.answerShown === false && (
+        <div className={css.revealRow}>
+          <Button kind={KIND_SECONDARY} sm onClick={a.onShowAnswer}>{t('pte.showAnswer')}</Button>
+        </div>
+      )}
+      {checked && q.answer != null && a.answerShown && (
         <>
           <div className={css.label}>{t('pte.answer')}</div>
           <div className={origBoxClsOf()}>{q.answer}</div>
@@ -62,7 +69,7 @@ export function PteAnswerBody({ t, q, type, a }: PteAnswerPartIn) {
       {checked && a.recUrl != null && (
         <>
           <div className={css.label}>{t('pte.myRec')}</div>
-          <audio controls src={a.recUrl} className={css.player} />
+          <audio controls src={a.recUrl} className={css.recAudio} />
         </>
       )}
       {checked && wfd === false && (

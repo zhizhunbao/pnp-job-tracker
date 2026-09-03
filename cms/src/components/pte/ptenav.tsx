@@ -31,6 +31,7 @@ export function PteNav({ types, type, rows, qid, lang }: PteNavIn) {
       chips.push(
         <Chip key={x.code} href={listHrefOf({ type: x.code })} active={x.code === type}>
           {typeLabelOf({ name: typeNameOf({ type: x, lang }), count: x.count })}
+          <span className={css.typeCode}>{x.code}</span>
         </Chip>,
       )
     }

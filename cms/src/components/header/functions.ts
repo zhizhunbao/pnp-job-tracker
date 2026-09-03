@@ -10,7 +10,7 @@ import {
 import type {
   ActiveKey,
   AccountLiteHandlesIn, AccountLiteHandlesOut, AcctState, AcctUser, ClickFn, DrawerHandlesIn, DrawerHandlesOut,
-  GroupClickIn, GroupToggleFn, GroupToggleIn, LangPickIn, MeJson, WithOnIn,
+ LangPickIn, MeJson, WithOnIn,
   SsrSeed,
 } from './types'
 import css from './header.module.css'
@@ -189,39 +189,7 @@ export function makeDrawerHandles(x: DrawerHandlesIn): DrawerHandlesOut {
   return { openDrawer, closeDrawer }
 }
 
-/**
- * 造抽屉分组的单开切换手柄(2026-08-26 同批,自 MobileDrawer 体内迁出)。
- * 再点已展开的那一组 = 收回「都收着」档。
- *
- * @param x 当前展开组键、收着档的键与写它的 setter。
- * @returns 挂到各组标题上的切换手柄(参数是被点的组键)。
- */
-export function makeGroupToggle(x: GroupToggleIn): GroupToggleFn {
-  function toggleGrp(key: string) {
-    if (x.openKey === key) {
-      x.setOpenKey(x.noneKey)
-      return
-    }
-    x.setOpenKey(key)
-  }
 
-  return toggleGrp
-}
-
-/**
- * 造一个抽屉分组标题的点击手柄(2026-08-26 同批,自 DrawerGroup 体内迁出)。
- * 逐组手柄要闭包住自己那一格组键,走工厂形态。
- *
- * @param x 切换回调与这一组的身份键。
- * @returns 挂到组标题钮上的 onClick。
- */
-export function makeGroupClick(x: GroupClickIn): ClickFn {
-  function click() {
-    x.onToggle(x.groupKey)
-  }
-
-  return click
-}
 
 /**
  * 造一枚语言钮的点击手柄(2026-08-26 同批,自 LangSwitch 的循环体内迁出)。

@@ -32,7 +32,7 @@ export function PteSections({ types, type, lang, t }: PteSectionsIn) {
       if (x.count > 0) {
         body = (
           <Chip href={listHrefOf({ type: x.code })} active={x.code === type}>
-            {typeLabelOf({ name, count: x.count })}
+            {typeLabelOf({ name, count: x.count })}<span className={css.typeCode}>{x.code}</span>
           </Chip>
         )
       }
