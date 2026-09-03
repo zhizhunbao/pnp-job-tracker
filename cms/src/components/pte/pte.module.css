@@ -153,16 +153,6 @@
 }
 
 /*
- * 重要度星(琥珀)。
- */
-.typeStars {
-  color: #f59e0b;
-  font-size: 12px;
-  letter-spacing: 1px;
-  white-space: nowrap;
-}
-
-/*
  * 分栏一行(题型菜单外还有开关三行在用):栏名 + 这一栏的胶囊。
  */
 .secRow {
@@ -328,6 +318,7 @@
  */
 .moreRow {
   margin-top: 12px;
+  text-align: center;
 }
 
 /*
@@ -349,9 +340,90 @@
  */
 .grid {
   display: grid;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: 250px 1fr 300px;
   gap: 16px;
   align-items: start;
+}
+
+/*
+ * 左侧目录树:吸顶、自己滚。
+ */
+.side {
+  position: sticky;
+  top: 72px;
+  max-height: calc(100vh - 96px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+/*
+ * 目录树上排:题型钮。
+ */
+.navChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/*
+ * 目录树清单:白卡里自己滚。
+ */
+.navList {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 6px;
+  overflow: auto;
+  min-height: 0;
+}
+
+/*
+ * 目录树一行:#题号 + 题面截尾。
+ */
+.navRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #374151;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.navRow:hover {
+  background: #f3f4f6;
+}
+
+/*
+ * 当前题。
+ */
+.navOn {
+  background: #eef2ff;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/*
+ * 目录树的题号(灰字定宽)。
+ */
+.navNum {
+  color: #9ca3af;
+  flex: 0 0 3.2em;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 目录树的题面(一行截尾)。
+ */
+.navText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 /*
@@ -598,13 +670,6 @@
 }
 
 /*
- * 「已记为练过」(主色字)。
- */
-.doneNote {
-  color: var(--primary);
-}
-
-/*
  * 对错的词(标红下划线)。
  */
 .bad {
@@ -834,6 +899,16 @@
     display: block;
   }
 
+  .side {
+    position: static;
+    max-height: none;
+    order: 3;
+  }
+
+  .navList {
+    max-height: 60vh;
+  }
+
   .secCols {
     grid-template-columns: 1fr;
     gap: 10px;
@@ -925,88 +1000,4 @@
 .dictDef {
   margin-top: 3px;
   line-height: 1.45;
-}
-
-
-/*
- * ── 7. 门厅(/pte):进度四格、最近考了行 ────────────────────────────────
- */
-
-/*
- * 进度四格一排。
- */
-.stats {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-/*
- * 一格。
- */
-.stat {
-  flex: 1;
-  text-align: center;
-}
-
-/*
- * 格里的数。
- */
-.statN {
-  font-size: 26px;
-  font-weight: 700;
-  color: #111827;
-}
-
-/*
- * 格里的标签。
- */
-.statL {
-  font-size: 12px;
-  color: #9ca3af;
-  margin-top: 2px;
-}
-
-/*
- * 最近考了一行(整行真链接):题型题号 | 题面 | N 天前。
- */
-.recentRow {
-  display: flex;
-  gap: 10px;
-  align-items: baseline;
-  padding: 8px 0;
-  border-bottom: 1px solid #e5e7eb;
-  font-size: 13.5px;
-  color: #111827;
-  text-decoration: none;
-}
-
-/*
- * 题型 + 题号(灰)。
- */
-.recentType {
-  color: #9ca3af;
-  font-size: 12px;
-  min-width: 4.5em;
-  white-space: nowrap;
-}
-
-/*
- * 题面(单行截断)。
- */
-.recentText {
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/*
- * N 天前(灰)。
- */
-.recentAgo {
-  color: #9ca3af;
-  font-size: 12px;
-  white-space: nowrap;
 }

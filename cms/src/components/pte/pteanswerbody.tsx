@@ -68,11 +68,6 @@ export function PteAnswerBody({ t, q, type, a }: PteAnswerPartIn) {
       {checked && wfd === false && (
         <PtePlayer label={t('pte.tts')} playing={a.playing} onClick={a.onPlay} disabled={a.canPlay === false} />
       )}
-      {checked && wfd === false && (
-        <div className={css.verdict}>
-          <span className={css.doneNote}>{t('pte.done')}</span>
-        </div>
-      )}
     </>
   )
 }

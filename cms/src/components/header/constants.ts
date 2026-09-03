@@ -129,9 +129,10 @@ export const A_LIBRARY = 'library'
 export const A_PTE = 'pte'
 
 /**
- * PTE 刷题题单页地址(默认型)。
+ * PTE 刷题题单页地址(默认型朗读;/pte 门厅 2026-09-04 撤 —— Frank「这个页面怎么还存在」,
+ * 题型面板已在题单页上,/pte 在 next.config 301 到这里)。
  */
-export const PATH_PTE = '/pte'
+export const PATH_PTE = '/pte/ra'
 
 /**
  * 路径段分隔符(activeOf 拼「前缀 + 段界」判断用,防 /news 误吃 /newsroom)。

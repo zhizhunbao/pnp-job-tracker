@@ -2,7 +2,7 @@
 /**
  * 域内小件:题型四栏面板(口语 / 写作 / 阅读 / 听力;照小枫叶「练习」面板整块铺开 ——
  * Frank 2026-09-03「可以按这种整体都显示出来」「最好是有点设计质感的」):栏头带色图标与下划线,
- * 19 型全列带重要度星;有题的是药丸钮(当前型亮态 —— Frank 2026-09-04「可以点击的应该显示成按钮」),
+ * 19 型全列;有题的是药丸钮带括号题数(2026-09-04 Frank「星星是什么意思」→ 重要度星撤;「和按钮放在一起,用括号」)(当前型亮态 —— Frank 2026-09-04「可以点击的应该显示成按钮」),
  * 没题的灰字不可点、不写解释。手机四栏叠一列。
  *
  * @author Frank
@@ -12,7 +12,7 @@ import { cssOf } from '@/components/css'
 import { IconChat, IconClipboard, IconMedal, IconNews } from '@/components/icons'
 import { Chip } from '@/components/chip'
 import { CLS_SEP, SEC_READING, SEC_SPEAKING, SEC_WRITING } from './constants'
-import { listHrefOf, sectionLabelOf, sectionsOf, starsOf, typeNameOf } from './functions'
+import { listHrefOf, sectionLabelOf, sectionsOf, typeLabelOf, typeNameOf } from './functions'
 import type { PteSectionsIn } from './types'
 import css from './pte.module.css'
 
@@ -28,15 +28,17 @@ export function PteSections({ types, type, lang, t }: PteSectionsIn) {
     const rows = []
     for (const x of sec.types) {
       const name = typeNameOf({ type: x, lang })
-      const stars = starsOf({ weight: x.weight })
       let body = <span className={css.typeOff}>{name}</span>
       if (x.count > 0) {
-        body = <Chip href={listHrefOf({ type: x.code })} active={x.code === type}>{name}</Chip>
+        body = (
+          <Chip href={listHrefOf({ type: x.code })} active={x.code === type}>
+            {typeLabelOf({ name, count: x.count })}
+          </Chip>
+        )
       }
       rows.push(
         <div key={x.code} className={css.typeRow}>
           {body}
-          <span className={css.typeStars}>{stars}</span>
         </div>,
       )
     }

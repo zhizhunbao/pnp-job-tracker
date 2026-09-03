@@ -15,7 +15,7 @@ import { LinkButton } from '@/components/button'
 import css from './tabs.module.css'
 
 /**
- * 二级 tab 条;当前页渲 span(不可点),其余渲 <a>(要被爬到)。
+ * 二级 tab 条;当前页渲 span(不可点),没开的面渲灰 span,其余渲 <a>(要被爬到)。
  *
  * @param props 页签清单与模块色档。
  * @returns 二级 tab 条。
@@ -30,6 +30,10 @@ export function SectionTabs({ tabs, tone = null }: SectionTabsIn) {
     if (tb.active) {
       items.push(
         <span key={tb.href} className={`${css.secTab} ${css.secOn}`}>{tb.label}</span>,
+      )
+    } else if (tb.disabled) {
+      items.push(
+        <span key={tb.href} className={`${css.secTab} ${css.secOff}`}>{tb.label}</span>,
       )
     } else {
       items.push(

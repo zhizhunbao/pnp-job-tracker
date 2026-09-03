@@ -1,7 +1,7 @@
 'use client'
 /**
  * pte 域的结构:/pte/[type]/[id] 单题页正文 —— Shell 轨(右上返回走壳的 back 槽)+ 头行(人话题型名 #题号)+
- * 双栏(左:答题卡 + 题下评论;右:事实卡;手机叠成单栏)。壳件拼装归页面门。
+ * 三栏(左:目录树;中:答题卡 + 题下留言;右:事实卡;手机叠成单栏,目录树垫底)。壳件拼装归页面门。
  * 2026-09-04 Frank「页面也是分不同的 section」「就考过就完事了」:评论机器在这里装配,
  * 「考过 (N)」钮挂题卡头,评论卡只剩留言 + 「写评论」。
  * 2026-09-03 批二新立(效果图 img/PTE单题*-*);同日 Frank「详情页返回按钮都在右上,样式位置固定统一」
@@ -10,16 +10,18 @@
  * @author Frank
  * @time 2026-09-03 12:00:00
  */
+import { AuthModal } from '@/components/auth'
 import { BackButton, Button } from '@/components/button'
 import { useLang } from '@/components/i18n'
 import { Shell } from '@/components/shell'
-import { KIND_PRIMARY, NUM_HEAD, SHELL_TOP, SPACE, STATE_IDLE, URL_LOGIN } from './constants'
+import { KIND_PRIMARY, NUM_HEAD, SHELL_TOP, SPACE, STATE_IDLE } from './constants'
 import { listHrefOf, typeAtOr, typeNameOf } from './functions'
 import { usePteAnswer, usePteComments, usePteDict } from './hooks'
 import { PteAnswer } from './pteanswer'
 import { PteComments } from './ptecomments'
 import { PteDict } from './ptedict'
 import { PteFacts } from './ptefacts'
+import { PteNav } from './ptenav'
 import type { PteItemIn } from './types'
 import css from './pte.module.css'
 
@@ -35,7 +37,7 @@ export function PteItem({ types, item, comments, loggedIn }: PteItemIn) {
   const a = usePteAnswer({ q: item.q, type, loggedIn })
   const d = usePteDict()
   const c = usePteComments({ qid: item.q.qid, comments, times: item.q.times })
-  let seen = <Button kind={KIND_PRIMARY} sm href={URL_LOGIN}>{t('pte.c.seen', { n: c.seenN })}</Button>
+  let seen = <Button kind={KIND_PRIMARY} sm onClick={c.onLoginOpen}>{t('pte.c.seen', { n: c.seenN })}</Button>
   if (loggedIn) {
     seen = (
       <Button kind={KIND_PRIMARY} sm onClick={c.onExamSubmit} disabled={c.examState !== STATE_IDLE}>
@@ -46,11 +48,13 @@ export function PteItem({ types, item, comments, loggedIn }: PteItemIn) {
   return (
     <Shell top={SHELL_TOP} back={<BackButton fallback={listHrefOf({ type: item.q.type })} label={t('detail.back')} />}>
       <PteDict t={t} d={d} />
+      {c.loginOpen && <AuthModal t={t} onClose={c.onLoginClose} onDone={c.onLoginDone} />}
       <div className={css.track}>
         <div className={css.headRow}>
           <h1 className={css.h1}>{typeNameOf({ type, lang })}{SPACE}{NUM_HEAD}{item.q.num}</h1>
         </div>
         <div className={css.grid}>
+          <PteNav t={t} types={types} type={item.q.type} rows={item.rows} qid={item.q.qid} lang={lang} />
           <div className={css.col}>
             <PteAnswer t={t}
               q={item.q}

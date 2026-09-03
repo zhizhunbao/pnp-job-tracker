@@ -32,15 +32,7 @@ export const QID_SEP = ':'
  */
 export const PTE_DEFAULT_TYPE = 'WFD'
 
-/**
- * 门厅「开始练习」的去处(默认型题单)。
- */
-export const URL_PTE_START = '/pte/wfd'
 
-/**
- * 未登录发评论的去处(就地开登录框,与新闻评论同口径)。
- */
-export const URL_LOGIN = '/?login=1'
 
 /**
  * 评论接口(Payload REST;闸在 collections/Comments 的 beforeChange)。
@@ -122,20 +114,8 @@ export const EV_MOUSEUP = 'mouseup'
  */
 export const EV_TOUCHEND = 'touchend'
 
-/**
- * 重要度星。
- */
-export const STAR = '★'
 
-/**
- * 两星的权重下限(占总分 %)。
- */
-export const STARS_TWO_MIN = 10
 
-/**
- * 一星的权重下限。
- */
-export const STARS_ONE_MIN = 3
 
 /**
  * section → 二级选项卡词键(Frank 2026-09-03「hero 下面加一个二级选项卡分听说读写四分部」)。
@@ -193,10 +173,6 @@ export const SECTION_ORDER = [SEC_SPEAKING, SEC_WRITING, SEC_READING, SEC_LISTEN
 
 
 
-/**
- * 门厅「近 N 天考过」的窗口(天)。
- */
-export const RECENT_DAYS = 7
 
 /**
  * 首屏显示条数;「显示更多」每次再加这么多。
@@ -287,6 +263,41 @@ export const INST_KEY: Record<string, string> = {
    */
   WFD: 'pte.inst.WFD',
 }
+
+/**
+ * 截尾省略号。
+ */
+export const ELLIPSIS = '…'
+
+/**
+ * 题型钮后的题数括号:左半(前带空格,照小枫叶「考过 (68人)」的半角形)。
+ */
+export const PAREN_L = ' ('
+
+/**
+ * 题型钮后的题数括号:右半。
+ */
+export const PAREN_R = ')'
+
+/**
+ * 题单页二级导航「模考」的去处(面还没开,SectionTab 灰字;Frank 2026-09-04「加两个功能一个是练习,模考」)。
+ */
+export const URL_PTE_MOCK = '/pte/mock'
+
+/**
+ * 单题页左侧目录树里每行的 DOM id 前缀(进页把当前题滚进视野用)。
+ */
+export const NAV_ID_PREFIX = 'pte-nav-'
+
+/**
+ * 目录树滚到当前题时把它放到容器中线:高度除以 2。
+ */
+export const NAV_CENTER_DIV = 2
+
+/**
+ * 目录树一行里题面最多显示的字符数(超出截尾,一行放得下)。
+ */
+export const NAV_TEXT_LEN = 48
 
 /**
  * 题键里源内 id 从第几段起(源:题型:源内 id —— 第三段起;源内 id 自己可能带冒号,余下整段拼回)。
@@ -553,10 +564,6 @@ export const SPACE = ' '
  */
 export const NUM_HEAD = '#'
 
-/**
- * 练过勾。
- */
-export const CHECK_MARK = '✓'
 
 /**
  * 题面里切词的空白。
@@ -571,28 +578,29 @@ export const PUNCT_RE = /[^\p{L}\p{N}']/gu
 /**
  * 题单列宽:题号。
  */
-export const W_NUM = '9%'
+export const W_NUM = '8%'
 
 /**
  * 题单列宽:题面。
  */
-export const W_TEXT = '49%'
+export const W_TEXT = '50%'
 
 /**
  * 题单列宽:最近考过。
  */
-export const W_SEEN = '14%'
+export const W_SEEN = '16%'
 
 /**
  * 题单列宽:考过次数。
  */
-export const W_TIMES = '12%'
-
+export const W_TIMES = '14%'
 
 /**
- * 题单列宽:练过。
+ * 操作列宽(练习钮;Frank 2026-09-04「最后一列加一个操作按钮」)。
  */
-export const W_DONE = '8%'
+export const W_ACT = '12%'
+
+
 
 /**
  * 列身份。
@@ -614,11 +622,12 @@ export const COL_SEEN = 'seen'
  */
 export const COL_TIMES = 'times'
 
-
 /**
- * 列身份。
+ * 操作列 key。
  */
-export const COL_DONE = 'done'
+export const COL_ACT = 'act'
+
+
 
 /**
  * 对齐档。

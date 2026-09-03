@@ -33,7 +33,7 @@ export const CORE_PAGES = [
   /**
    * PTE 刷题题单(默认型;2026-09-03 批二上线,日用页)。
    */
-  { path: '/pte', priority: 0.8, freq: 'daily' },
+  { path: '/pte/ra', priority: 0.8, freq: 'daily' },
 
   /**
    * PTE 题单 · 朗读。

@@ -1,7 +1,8 @@
 'use client'
 /**
  * pte 域的结构:/pte/[type] 题单页正文 —— Shell 轨 + 头行(H1)+ 两张白卡:题型四栏面板一张、
- * 题表一张(右上更新时间 / 桌面表或手机卡 / 显示更多)。壳件拼装归页面门。
+ * 题表一张(右上更新时间 / 桌面表或手机卡 / 显示更多)。H1 下一条二级导航(练习 | 模考,模考面未开;
+ * Frank 2026-09-04「上面应该有一个二级导航标题,加两个功能一个是练习,模考」)。壳件拼装归页面门。
  * 2026-09-04 Frank「这个上下应该分成两个 section」「这个筛选都删了」「考生回忆整理不需要显示」:
  * 窗口 / 押题 / 未练过 / 排序四行胶囊与计数行整体撤掉,排序走表头,免责句撤。
  * 2026-09-03 批二新立(设计稿 docs/design/PTE刷题-20260903.md,效果图 img/PTE题单-*)。
@@ -14,9 +15,10 @@
 import { Button } from '@/components/button'
 import { useLang } from '@/components/i18n'
 import { Shell } from '@/components/shell'
+import { SectionTabs } from '@/components/tabs'
 import { Updated } from '@/components/time'
-import { KIND_SECONDARY, SHELL_TOP } from './constants'
-import { cellRowsOf } from './functions'
+import { KIND_SECONDARY, SHELL_TOP, URL_PTE_MOCK } from './constants'
+import { cellRowsOf, listHrefOf } from './functions'
 import { usePteBoard } from './hooks'
 import { PteCards } from './ptecards'
 import { PteTable } from './ptetable'
@@ -40,6 +42,10 @@ export function Pte({ types, type, rows, loggedIn, updatedAt }: PteIn) {
         <div className={css.headRow}>
           <h1 className={css.h1}>{t('pte.title')}</h1>
         </div>
+        <SectionTabs tabs={[
+          { href: listHrefOf({ type }), label: t('pte.tab.practice'), active: true },
+          { href: URL_PTE_MOCK, label: t('pte.tab.mock'), disabled: true },
+        ]} />
         <div className={css.card}>
           <PteSections types={types} type={type} lang={lang} t={t} />
         </div>

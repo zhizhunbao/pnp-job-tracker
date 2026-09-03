@@ -2,7 +2,7 @@
 /**
  * pte 域的状态机器:题单(usePteBoard:显示更多 + 练过集)、
  * 答题(usePteAnswer:准备 → 作答 → 对照三段,倒计时 / 秒表 / 朗读 / 录音)、
- * 评论(usePteComments:「考过」钮与留言表单)。
+ * 评论(usePteComments:「考过」钮、留言表单与未登录时的原地登录框)。
  * 体内只有 useState、具名 effect 壳与工厂装配;步骤与口径注释全在 ./functions 的 make* 工厂里
  * (hooks 抽屉的形制照样张 companies/hooks.ts)。
  *
@@ -14,14 +14,14 @@ import {
   DICT_IDLE, KIND_EXAM, KIND_NOTE, PAGE_STEP, PHASE_ANSWERING, PHASE_READY, STATE_IDLE, T_WFD, TEXT_NONE,
 } from './constants'
 import {
-  commentsOfKind, doneServerSnapshotOf, doneSnapshotOf, makeCanPlaySnapshot, makeCountdown, makeDictClose,
-  makeDictLookup, makeDoneSync, makeExamSubmit, makeMore, makeNoteSubmit, makePhaseSet, makePlay,
-  makeRedo, makeSelectionWatch, makeStartRec, makeSubmit, makeTextChange, makeTicker, makeToggle,
-  prepSecOf, recCapOf, seenCountOf, serverFalseOf, subscribeDone, subscribeNone,
+  commentsOfKind, doneServerSnapshotOf, doneSnapshotOf, makeCanPlaySnapshot, makeCountdown, makeDictClose, makeClose,
+  makeDictLookup, makeDoneSync, makeExamSubmit, makeMore, makeNavScroll, makeNoteSubmit, makeOpen, makePhaseSet,
+  makePlay, makeRedo, makeSelectionWatch, makeStartRec, makeSubmit, makeTextChange, makeTicker, makeToggle, prepSecOf,
+  recCapOf, reloadPage, seenCountOf, serverFalseOf, subscribeDone, subscribeNone,
 } from './functions'
 import type {
-  DictEntry, DictPos, DictState, DoneSyncIn, PostState, PteAnswerHookIn, PteAnswerPanel, PteBoardHookIn,
-  PteBoardPanel, PteComment, PteCommentsHookIn, PteCommentsPanel, PteDictPanel, PteHomePanel, PtePhase,
+  DictEntry, DictPos, DictState, NavScrollIn, PostState, PteAnswerHookIn, PteAnswerPanel, PteBoardHookIn,
+  PteBoardPanel, PteComment, PteCommentsHookIn, PteCommentsPanel, PteDictPanel, PtePhase,
   RecorderHandle,
 } from './types'
 
@@ -46,6 +46,18 @@ export function usePteBoard(x: PteBoardHookIn): PteBoardPanel {
     rest: x.rows.length - shownRows.length,
     onMore: makeMore({ shown, setShown }),
   }
+}
+
+/**
+ * 目录树:进页把当前题滚进视野(换题重滚)。
+ *
+ * @param x 当前题键。
+ * @returns 无。
+ */
+export function usePteNav(x: NavScrollIn): void {
+  useEffect(function scrollNav() {
+    makeNavScroll({ qid: x.qid })()
+  }, [x.qid])
 }
 
 /**
@@ -127,6 +139,7 @@ export function usePteComments(x: PteCommentsHookIn): PteCommentsPanel {
   const [exams, setExams] = useState<PteComment[]>(commentsOfKind({ comments: x.comments, kind: KIND_EXAM }))
   const seenN = seenCountOf({ times: x.times, comments: x.comments, exams })
   const [examState, setExamState] = useState<PostState>(STATE_IDLE)
+  const [loginOpen, setLoginOpen] = useState(false)
   const [noteOpen, setNoteOpen] = useState(false)
   const [note, setNote] = useState(TEXT_NONE)
   const [noteState, setNoteState] = useState<PostState>(STATE_IDLE)
@@ -136,6 +149,10 @@ export function usePteComments(x: PteCommentsHookIn): PteCommentsPanel {
     seenN,
     notes: commentsOfKind({ comments: x.comments, kind: KIND_NOTE }),
     examState,
+    loginOpen,
+    onLoginOpen: makeOpen({ set: setLoginOpen }),
+    onLoginClose: makeClose({ set: setLoginOpen }),
+    onLoginDone: reloadPage,
     noteOpen,
     note,
     noteState,
@@ -169,18 +186,3 @@ export function usePteDict(): PteDictPanel {
   return { state, word, entry, pos, onClose: makeDictClose({ setWord }) }
 }
 
-/**
- * 门厅整机:练过题数(本机练过集;登录挂载后与库并集)。
- *
- * @param x 登录态。
- * @returns 面板。
- */
-export function usePteHome(x: DoneSyncIn): PteHomePanel {
-  const done = useSyncExternalStore(subscribeDone, doneSnapshotOf, doneServerSnapshotOf)
-
-  useEffect(function syncDone() {
-    return makeDoneSync({ loggedIn: x.loggedIn })()
-  }, [x.loggedIn])
-
-  return { doneN: done.size }
-}

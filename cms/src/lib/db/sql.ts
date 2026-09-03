@@ -1636,11 +1636,12 @@ export const PTE_TYPES = `SELECT t.code, t.section, t.seq, t.name_zh AS "nameZh"
      FROM pte_types t ORDER BY t.seq ASC LIMIT 50`
 
 /**
- * 一型的题单(全量在手,窗口/押题/练过筛在客户端):最近考过日倒序,同日按回忆条数、票数。$1=题型码。
+ * 一型的题单(全量在手,排序走表头):站内题号升序(2026-09-04 Frank「题号不应该用我自己的题号吗」——
+ * 原按最近考过日倒序,题号看着乱)。$1=题型码。
  */
 export const PTE_LIST = `SELECT qid, source, type, num, title, text, predicted, seen, seen_n AS "seenN", votes, freq
      FROM pte_questions WHERE type = $1
-     ORDER BY seen DESC NULLS LAST, seen_n DESC NULLS LAST, votes DESC NULLS LAST, id ASC LIMIT 3000`
+     ORDER BY NULLIF(regexp_replace(num, '\D', '', 'g'), '')::int ASC NULLS LAST, id ASC LIMIT 3000`
 
 /**
  * 单题(题面 + 答案 + 音频直链)。$1=qid。
@@ -1662,16 +1663,7 @@ export const PTE_COMMENTS = `SELECT c.id, c.kind, c.exam_date AS "examDate", c.e
 export const PTE_EXAM_COUNTS = `SELECT qid, count(*)::int AS n, max(exam_date) AS last
      FROM comments WHERE kind = 'exam' AND status = 'approved' AND qid LIKE $1 GROUP BY qid`
 
-/**
- * 门厅两个数:总题目 / 近 N 天考过(批三.5;$1=窗口起日 YYYY-MM-DD)。
- */
-export const PTE_STATS = `SELECT count(*)::int AS n, count(*) FILTER (WHERE seen >= $1)::int AS recent FROM pte_questions`
 
-/**
- * 门厅「近 7 天考过」:窗口内全站考过的题全列(Frank「考试只考 6 题吗」—— 截六条会被读成考试内容;上限 100 防炸)。$1=窗口起日。
- */
-export const PTE_RECENT = `SELECT qid, type, num, text, seen FROM pte_questions
-     WHERE seen IS NOT NULL AND seen >= $1 ORDER BY seen DESC, seen_n DESC NULLS LAST, id ASC LIMIT 100`
 
 /**
  * 一题的合成音频(批三;b64 整段回来由路由解成字节)。$1=qid。

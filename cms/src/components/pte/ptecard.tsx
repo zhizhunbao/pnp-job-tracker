@@ -28,7 +28,6 @@ export function PteCard({ t, r }: PteCardViewIn) {
       <div className={css.mText}>{r.text}</div>
       <div className={css.mFoot}>
         <span>{t('pte.times', { n: r.times })}</span>
-        {r.done && <span>{t('pte.doneMark')}</span>}
       </div>
     </LinkButton>
   )

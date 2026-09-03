@@ -129,6 +129,11 @@ export type SectionTab = {
    * 是否当前页(当前页 = span 不可点)。
    */
   active?: boolean
+
+  /**
+   * 还没开的面(渲灰字不可点;2026-09-04 pte「模考」先例)。
+   */
+  disabled?: boolean
 }
 
 /**

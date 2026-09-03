@@ -1,6 +1,6 @@
 'use client'
 /**
- * 域内小件:WFD 逐词对照(你写的逐词标红 / 原句 / 对错数 + 已记为练过)。
+ * 域内小件:WFD 逐词对照(你写的逐词标红 / 原句 / 对错数;「已记为练过」2026-09-04 撤 —— Frank「多余显示」)。
  *
  * @author Frank
  * @time 2026-09-03 12:00:00
@@ -36,7 +36,6 @@ export function PteDiff({ t, typed, text }: PteDiffIn) {
       <div className={origBoxClsOf()}>{text}</div>
       <div className={css.verdict}>
         <span>{t('pte.diff', { ok: d.ok, bad: d.bad })}</span>
-        <span className={css.doneNote}>{t('pte.done')}</span>
       </div>
     </>
   )

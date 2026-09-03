@@ -125,19 +125,9 @@ export type PteType = {
   weight: number
 
   /**
-   * 在库题数;0 = 还没接(菜单灰字「整理中」)。
+   * 在库题数;0 = 还没接(面板灰字不可点)。
    */
   count: number
-}
-
-/**
- * 权重灰注(`weightTextOf`)的入参。
- */
-export type WeightTextIn = {
-  /**
-   * 占总分百分比;0 = 没记。
-   */
-  weight: number
 }
 
 /**
@@ -403,6 +393,11 @@ export type PteItem = {
    * 题单总数。
    */
   total: number
+
+  /**
+   * 这一型的全部题(左侧目录树;Frank 2026-09-04「左侧应该有个目录树可以快速导航到其他题目」)。
+   */
+  rows: PteRow[]
 }
 
 /**
@@ -572,6 +567,76 @@ export type PteItemIn = {
    * 登录态(发评论分流)。
    */
   loggedIn: boolean
+}
+
+/**
+ * 单题页左侧目录树(PteNav)的 props:题型切换钮排 + 这一型全部题的清单。
+ */
+export type PteNavIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 题型维度(有题的才出钮)。
+   */
+  types: PteType[]
+
+  /**
+   * 当前题型码。
+   */
+  type: string
+
+  /**
+   * 这一型的全部题。
+   */
+  rows: PteRow[]
+
+  /**
+   * 当前题键(高亮 + 滚进视野)。
+   */
+  qid: string
+
+  /**
+   * 界面语。
+   */
+  lang: PteLang
+}
+
+/**
+ * 目录树一行题面截尾(`navTextOf`)的入参。
+ */
+export type NavTextIn = {
+  /**
+   * 整段题面。
+   */
+  text: string
+}
+
+/**
+ * 目录树进页滚到当前题(`makeNavScroll`)的入参。
+ */
+export type NavScrollIn = {
+  /**
+   * 当前题键。
+   */
+  qid: string
+}
+
+/**
+ * 题型钮文案(`typeLabelOf`,「朗读 (168)」)的入参。
+ */
+export type TypeLabelIn = {
+  /**
+   * 人话题型名。
+   */
+  name: string
+
+  /**
+   * 在库题数。
+   */
+  count: number
 }
 
 /**
@@ -999,6 +1064,27 @@ export type PteCommentsPanel = {
    * 考试记录提交状态。
    */
   examState: PostState
+
+  /**
+   * 原地登录框开着(未登录点「考过」/「写评论」—— Frank 2026-09-04「应该直接弹出登录页面,
+   * 为什么要跳到 jobs 页面再弹出」)。
+   */
+  loginOpen: boolean
+
+  /**
+   * 开登录框。
+   */
+  onLoginOpen: () => void
+
+  /**
+   * 关登录框。
+   */
+  onLoginClose: () => void
+
+  /**
+   * 登录完成:整页刷新按真实态重渲。
+   */
+  onLoginDone: () => void
 
   /**
    * 留言表单开着(点「写评论」才开)。
@@ -1663,6 +1749,16 @@ export type MaybeHref = string | null
 
 
 /**
+ * 置真/置假手柄(`makeOpen` / `makeClose`)的入参。
+ */
+export type SetBoolIn = {
+  /**
+   * 落格。
+   */
+  set: (on: boolean) => void
+}
+
+/**
  * 布尔开关手柄(`makeToggle`)的入参。
  */
 export type ToggleIn = {
@@ -2143,14 +2239,14 @@ export type PteCellRow = {
   times: number
 
   /**
-   * 练过勾;空串 = 没练。
-   */
-  doneText: string
-
-  /**
    * 练过(整行灰掉)。
    */
   done: boolean
+
+  /**
+   * 操作列钮文案(「练习」)。
+   */
+  actText: string
 }
 
 /**
@@ -2349,142 +2445,9 @@ export type StartRecIn = {
  */
 export type PteAnswerPartIn = PteAnswerIn
 
-/**
- * 门厅统计的库行(`PTE_STATS`)。
- */
-export type PteStatsDbRow = {
-  /**
-   * 总题目。
-   */
-  n: string | number | null
 
-  /**
-   * 窗口内考过的题数。
-   */
-  recent: string | number | null
-}
 
-/**
- * 门厅统计(洗净)。
- */
-export type PteStats = {
-  /**
-   * 总题目。
-   */
-  total: number
 
-  /**
-   * 近 7 天考过。
-   */
-  seen7: number
-}
 
-/**
- * 门厅「最近考了」的库行(`PTE_RECENT`)。
- */
-export type PteRecentDbRow = {
-  /**
-   * 题键。
-   */
-  qid: string
 
-  /**
-   * 题型码。
-   */
-  type: string
 
-  /**
-   * 题号。
-   */
-  num: string | null
-
-  /**
-   * 题面。
-   */
-  text: string | null
-
-  /**
-   * 最近考过日。
-   */
-  seen: string | null
-}
-
-/**
- * 门厅「最近考了」一行(洗净)。
- */
-export type PteRecentRow = {
-  /**
-   * 题键。
-   */
-  qid: string
-
-  /**
-   * 题型码。
-   */
-  type: string
-
-  /**
-   * 单题页地址。
-   */
-  href: string
-
-  /**
-   * 题号。
-   */
-  num: string
-
-  /**
-   * 题面。
-   */
-  text: string
-
-  /**
-   * 最近考过日。
-   */
-  seen: string
-}
-
-/**
- * 取门厅统计(`loadPteStats`)的入参。
- */
-export type PteStatsIn = {
-  /**
-   * 数据库连接。
-   */
-  db: DbPool
-}
-
-/**
- * 门厅正文(PteHome)的 props。
- */
-export type PteHomeIn = {
-  /**
-   * 统计两个数。
-   */
-  stats: PteStats
-
-  /**
-   * 最近考了六题。
-   */
-  recent: PteRecentRow[]
-
-  /**
-   * 登录态(练过档并集)。
-   */
-  loggedIn: boolean
-
-  /**
-   * 数据更新时刻(ETL 心跳 ISO;'' = 不渲)。
-   */
-  updatedAt: string
-}
-
-/**
- * 门厅状态机(usePteHome)交回的面板。
- */
-export type PteHomePanel = {
-  /**
-   * 练过的题数。
-   */
-  doneN: number
-}

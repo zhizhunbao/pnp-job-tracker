@@ -16,7 +16,6 @@ import { TEXT_NONE } from './constants'
 import { useChatBox } from './hooks'
 import { ChatComposer } from './chatcomposer'
 import { ChatDisclaimer } from './chatdisclaimer'
-import { ChatExamples } from './chatexamples'
 import { ChatTurn } from './chatturn'
 import type { ChatBoxIn } from './types'
 import css from './chat.module.css'
@@ -40,7 +39,6 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = TEXT_NON
   const card = (
     <div className={css.cbCard}>
       <div ref={threadEl} className={threadCls} onScroll={p.onScroll}>
-        <ChatExamples p={p} />
         {turns}
       </div>
       <ChatComposer p={p} taEl={taEl} />

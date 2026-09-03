@@ -38,6 +38,8 @@ const nextConfig: NextConfig = {
       // 2026-08-29 Frank「下架为什么不直接删了」:门文件删掉,308 降位成这行配置(随本族用 301,
       // 语义同为永久跳转);/employers/compare|designated|hiring 是子路径,source 精确匹配不误伤。
       { source: '/employers', destination: '/start', statusCode: 301 },
+      // PTE 门厅 2026-09-04 撤(Frank「这个页面怎么还存在」):题型面板已铺在题单页,/pte 直落默认型朗读。
+      { source: '/pte', destination: '/pte/ra', statusCode: 301 },
       // /companies 本无列表页(公司数据懒查询,详情只从职位行进),裸地址原是 404 的洞
       // (2026-08-29 Frank「这个下面没用 page.tsx 还没处理」)—— 与 /employers 同令:
       // 名录语义的承载=把脉页三分表橱窗(08-08 拍板),301 过去;/companies/<slug> 详情不受累。
