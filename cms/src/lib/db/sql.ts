@@ -1671,6 +1671,11 @@ export const PTE_EXAM_COUNTS = `SELECT qid, count(*)::int AS n, max(exam_date) A
 export const PTE_AUDIO_ONE = `SELECT mime, b64 FROM pte_audio WHERE qid = $1 ORDER BY id DESC LIMIT 1`
 
 /**
+ * 词典一词(2026-09-04 自托管 ECDICT 子集;$1=小写词)。
+ */
+export const PTE_DICT_ONE = `SELECT word, phonetic, translation, lemma FROM pte_dict WHERE word = $1 ORDER BY id ASC LIMIT 1`
+
+/**
  * 本人的练过档(批三;users.pte_done jsonb = { done: string[], updatedAt })。$1=用户 id。
  */
 export const USER_PTE_DONE = `SELECT pte_done AS "pteDone" FROM users WHERE id = $1 LIMIT 1`

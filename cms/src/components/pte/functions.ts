@@ -12,16 +12,15 @@ import { cssOf } from '@/components/css'
 import { SQL, count, numOrNull, queryRowsOrEmpty, text, textOrNull } from '@/lib/db'
 import {
   ALIGN_LEFT, API_COMMENTS, API_PTE_DONE, CLOCK_PAD, CLOCK_SEP, CLS_SEP, COL_ACT, COL_NUM, COL_SEEN, COL_TEXT,
-  COL_TIMES, CRED_INCLUDE, DATE_LEN, DAY_MS, DESC_LEN_MAX, DICT_API, DICT_BUSY, DICT_DEFS_MAX, DICT_EDGE_PX,
-  DICT_GAP_PX, DICT_IDLE, DICT_MIN_LEN, DICT_NONE, DICT_OK, DICT_W_PX, DONE_KEY, ELLIPSIS, EMPTY_DONE, EV_MOUSEUP,
-  EV_TOUCHEND, HDR_CONTENT_TYPE, ID_SEP, INST_KEY, ITEM_DESC_TPL, ITEM_TITLE_TPL, KIND_EXAM, KIND_NOTE, LANG_KO,
-  LANG_ZH, LIKE_ANY, LIST_DESC_TPL, LIST_TITLE_TPL, METHOD_POST, METHOD_PUT, MIME_JSON, MS_PER_MIN, NAV_CENTER_DIV,
-  NAV_ID_PREFIX, NAV_TEXT_LEN, NOTE_HINT_KEY, NOT_FOUND_TITLE, NUM_HEAD, PAD_CHAR, PAGE_STEP, PAREN_L, PAREN_R,
-  PHASE_ANSWERING, PHASE_CHECKED, PHASE_READY, PREP_S, PTE_META, PUNCT_RE, QID_ID_AT, QID_SEP, REC_CAP_S, REC_MIME,
-  REC_STATE_INACTIVE, SECTION_KEY, SECTION_ORDER, SEC_PER_MIN, STATE_BUSY, STATE_ERR, STATE_IDLE, STATE_SENT,
-  TEXT_NONE, TICK_MS, TITLE_LEN_MAX, TTS_GUARD_BASE_MS, TTS_LANG, TTS_LANG_HEAD, TTS_MS_PER_WORD, TTS_RATE, T_RA,
-  URL_PTE, URL_SEP, VAR_N, VAR_NUM, VAR_TEXT, VAR_TITLE, VAR_TYPE, WORD_RE, WORD_SPLIT_RE, W_ACT, W_NUM, W_SEEN,
-  W_TEXT, W_TIMES,
+  COL_TIMES, CRED_INCLUDE, DATE_LEN, DAY_MS, DESC_LEN_MAX, DICT_API, DICT_BUSY, DICT_EDGE_PX, DICT_GAP_PX, DICT_IDLE,
+  DICT_LINE_SEP, DICT_MIN_LEN, DICT_NONE, DICT_OK, DICT_W_PX, DONE_KEY, ELLIPSIS, EMPTY_DONE, EV_MOUSEUP, EV_TOUCHEND,
+  HDR_CONTENT_TYPE, ID_SEP, INST_KEY, ITEM_DESC_TPL, ITEM_TITLE_TPL, KIND_EXAM, KIND_NOTE, LANG_KO, LANG_ZH, LIKE_ANY,
+  LIST_DESC_TPL, LIST_TITLE_TPL, METHOD_POST, METHOD_PUT, MIME_JSON, MS_PER_MIN, NAV_CENTER_DIV, NAV_ID_PREFIX,
+  NAV_TEXT_LEN, NOTE_HINT_KEY, NOT_FOUND_TITLE, NUM_HEAD, PAD_CHAR, PAGE_STEP, PAREN_L, PAREN_R, PHASE_ANSWERING,
+  PHASE_CHECKED, PHASE_READY, PREP_S, PTE_META, PUNCT_RE, QID_ID_AT, QID_SEP, REC_CAP_S, REC_MIME, REC_STATE_INACTIVE,
+  SECTION_KEY, SECTION_ORDER, SEC_PER_MIN, STATE_BUSY, STATE_ERR, STATE_IDLE, STATE_SENT, TEXT_NONE, TICK_MS,
+  TITLE_LEN_MAX, TTS_GUARD_BASE_MS, TTS_LANG, TTS_LANG_HEAD, TTS_MS_PER_WORD, TTS_RATE, T_RA, URL_PTE, URL_SEP, VAR_N,
+  VAR_NUM, VAR_TEXT, VAR_TITLE, VAR_TYPE, WORD_RE, WORD_SPLIT_RE, W_ACT, W_NUM, W_SEEN, W_TEXT, W_TIMES,
 } from './constants'
 import { CACHE } from './variables'
 import css from './pte.module.css'
@@ -32,7 +31,7 @@ import { TextCell } from './textcell'
 import { TimesCell } from './timescell'
 import type {
   AgoTextIn, CanPlayIn, CellRowsIn, ChunkSinkFn, ClickFn, ClockIn, ColsOfIn, CommentsOfKindIn, DaysAgoIn, DeadFlag,
-  DictApiEntry, DictCloseIn, DictEntry, DictLookupIn, DictPos, DictPosIn, DiffIn, DiffOut, DiffToken, DoneClsIn,
+  DictApiBody, DictCloseIn, DictEntry, DictLookupIn, DictPos, DictPosIn, DiffIn, DiffOut, DiffToken, DoneClsIn,
   DoneResBody, DoneSyncIn, EffectFn, ExamCountsIn, ExamSubmitIn, HintIn, IsDoneIn, ItemHrefIn, ItemMetaIn, LcsAtIn,
   ListMetaIn, LookupNowIn, MarkDoneIn, MaybeHref, MoreIn, NeighborsIn, NeighborsOut, NoteSubmitIn, PhaseSetIn, PlayIn,
   PlayUrlIn, PostCommentIn, PteCellRow, PteCol, PteComment, PteCommentDbRow, PteCommentsIn, PteExamCount,
@@ -1821,9 +1820,9 @@ function settleDict(y: SettleDictIn): void {
 }
 
 /**
- * 打字典接口;404 / 网络错 / 形状不对都给 null(弹层显「没查到」)。`as DictApiEntry[]` 是跨边界断言,逐格判后才用。
+ * 打站内词典接口;404 / 网络错 / 形状不对都给 null(弹层显「没查到」)。`as DictApiBody` 是跨边界断言,逐格判后才用。
  *
- * @param word 词(小写)。
+ * @param word 选中的词。
  * @returns 结果或 null。
  */
 async function fetchDict(word: string): Promise<DictEntry | null> {
@@ -1832,55 +1831,41 @@ async function fetchDict(word: string): Promise<DictEntry | null> {
     if (r.ok === false) {
       return null
     }
-    const body = await r.json() as DictApiEntry[]
-    if (Array.isArray(body) === false) {
-      return null
-    }
-    for (const e of body) {
-      const entry = toDictEntry(e)
-      if (entry != null) {
-        return entry
-      }
-    }
-    return null
+    const body = await r.json() as DictApiBody
+    return toDictEntry(body)
   } catch {
     return null
   }
 }
 
 /**
- * 接口一条 → 字典结果(取第一组词义的前几条释义;没有释义 = null)。
+ * 接口响应 → 字典结果(释义按行拆;没释义 = null)。
  *
- * @param e 接口条目。
+ * @param e 响应体。
  * @returns 结果或 null。
  */
-function toDictEntry(e: DictApiEntry): DictEntry | null {
-  if (typeof e.word !== 'string' || Array.isArray(e.meanings) === false) {
+function toDictEntry(e: DictApiBody): DictEntry | null {
+  if (e.ok !== true || typeof e.word !== 'string' || typeof e.translation !== 'string') {
+    return null
+  }
+  const lines: string[] = []
+  for (const line of e.translation.split(DICT_LINE_SEP)) {
+    if (line.trim() !== TEXT_NONE) {
+      lines.push(line.trim())
+    }
+  }
+  if (lines.length === 0) {
     return null
   }
   let phonetic = TEXT_NONE
   if (typeof e.phonetic === 'string') {
     phonetic = e.phonetic
   }
-  for (const m of e.meanings) {
-    if (Array.isArray(m.definitions) === false) {
-      continue
-    }
-    const defs: string[] = []
-    for (const d of m.definitions) {
-      if (typeof d.definition === 'string' && defs.length < DICT_DEFS_MAX) {
-        defs.push(d.definition)
-      }
-    }
-    if (defs.length > 0) {
-      let pos = TEXT_NONE
-      if (typeof m.partOfSpeech === 'string') {
-        pos = m.partOfSpeech
-      }
-      return { word: e.word, phonetic, pos, defs }
-    }
+  let lemma = TEXT_NONE
+  if (typeof e.lemma === 'string') {
+    lemma = e.lemma
   }
-  return null
+  return { word: e.word, phonetic, lines, lemma }
 }
 
 /**

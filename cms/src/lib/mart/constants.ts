@@ -338,6 +338,11 @@ export const TBL_PTE_QUESTIONS = 'pte_questions'
 export const TBL_PTE_AUDIO = 'pte_audio'
 
 /**
+ * 题库词典表(2026-09-04;pte-dict 步出,word / phonetic / translation / lemma)。
+ */
+export const TBL_PTE_DICT = 'pte_dict'
+
+/**
  * 字段级来源表(E4-04)。
  */
 export const TBL_FIELD_SOURCES = 'field_sources'
@@ -534,6 +539,11 @@ export const COLS_PTE_QUESTIONS = ['qid', 'source', 'type', 'num', 'title', 'tex
  * pte_audio 列(mart 键 qid / mime / b64 / voice 同名)。
  */
 export const COLS_PTE_AUDIO = ['qid', 'mime', 'b64', 'voice']
+
+/**
+ * pte_dict 列(mart 键同名)。
+ */
+export const COLS_PTE_DICT = ['word', 'phonetic', 'translation', 'lemma']
 
 /**
  * field_sources 列(坑 2:白名单必须显式列全字段)。

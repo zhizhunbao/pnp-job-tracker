@@ -1257,8 +1257,9 @@ export const caseZh: Record<string, string> = {
 export const pteZh = {
   'pte.title': 'PTE Core 机经',
   'pte.tab.practice': '练习', 'pte.tab.mock': '模考',
+  'pte.tab.words': '单词表', 'pte.tab.scoring': '评分标准', 'pte.tab.recall': '考试回忆', 'pte.tab.tips': '备考技巧',
   'pte.sec.speaking': '口语', 'pte.sec.writing': '写作', 'pte.sec.reading': '阅读', 'pte.sec.listening': '听力',
-  'pte.col.num': '题号', 'pte.col.text': '题面', 'pte.col.seen': '最近考过', 'pte.col.n': '考过次数', 'pte.seenToday': '今天考过', 'pte.seenAgo': '{n} 天前考过', 'pte.today': '今天', 'pte.ago': '{n} 天前', 'pte.times': '考过 {n} 次',
+  'pte.col.num': '题号', 'pte.col.text': '题面', 'pte.col.seen': '最近考过', 'pte.col.n': '考过次数', 'pte.seenToday': '今天', 'pte.seenAgo': '{n} 天前', 'pte.today': '今天', 'pte.ago': '{n} 天前', 'pte.times': '考过 {n} 次',
   'pte.col.act': '操作', 'pte.go': '练习',
   'pte.empty': '没有符合的题', 'pte.more': '显示更多(还有 {n} 题)',
   'pte.pos': '{i} / {n}',

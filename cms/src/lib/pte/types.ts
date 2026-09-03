@@ -1,5 +1,5 @@
 /**
- * pte lib 域的形状:音频库行、练过档、两个芯的进出口。
+ * pte lib 域的形状:音频库行、词典库行、练过档、三个芯的进出口。
  * 唯一的 import 是 lib/db 的连接面(基础设施叶子,`no-import-in-leaf` 钦定的特批)。
  *
  * @author Frank
@@ -61,6 +61,81 @@ export type PteAudioIn = {
  * 取音频的返回。
  */
 export type PteAudioOut = Promise<MaybePteAudio>
+
+/**
+ * pte_dict 的库行(`PTE_DICT_ONE`)。
+ */
+export type PteDictDbRow = {
+  /**
+   * 词。
+   */
+  word: string | null
+
+  /**
+   * 音标。
+   */
+  phonetic: string | null
+
+  /**
+   * 中文释义(多义换行分隔)。
+   */
+  translation: string | null
+
+  /**
+   * 原形。
+   */
+  lemma: string | null
+}
+
+/**
+ * 一条词典结果(洗净;空串 = 词典没给)。
+ */
+export type PteDictEntry = {
+  /**
+   * 词。
+   */
+  word: string
+
+  /**
+   * 音标。
+   */
+  phonetic: string
+
+  /**
+   * 中文释义(多义换行分隔)。
+   */
+  translation: string
+
+  /**
+   * 原形;空串 = 本身就是原形。
+   */
+  lemma: string
+}
+
+/**
+ * 词典结果或没有。
+ */
+export type MaybePteDictEntry = PteDictEntry | null
+
+/**
+ * 查词(`loadPteDict`)的入参。
+ */
+export type PteDictIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 小写词。
+   */
+  word: string
+}
+
+/**
+ * 查词的返回。
+ */
+export type PteDictOut = Promise<MaybePteDictEntry>
 
 /**
  * 练过的题键清单。

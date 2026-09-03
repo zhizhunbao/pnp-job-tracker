@@ -456,3 +456,14 @@ class TtsOneIn:
 
     mp3: bool
     """ffmpeg 在(转 mp3 删 wav);不在留 wav。"""
+
+
+@dataclass(frozen=True)
+class DictRowIn:
+    """dict_row_of() 入参(一条词典命中 → 一行 mart)。"""
+
+    hit: dict
+    """本词在 ECDICT 里的行(phonetic / translation / exchange / word)。"""
+
+    base: dict
+    """原形表(原形 → 其 ECDICT 行),屈折形借释义用。"""

@@ -22,11 +22,11 @@ export function PteDict({ t, d }: PteDictIn) {
   if (d.state === DICT_IDLE) {
     return null
   }
-  const defs = []
+  const lines = []
   if (d.entry != null) {
     let i = 0
-    for (const def of d.entry.defs) {
-      defs.push(<li key={i} className={css.dictDef}>{def}</li>)
+    for (const line of d.entry.lines) {
+      lines.push(<div key={i} className={css.dictLine}>{line}</div>)
       i = i + 1
     }
   }
@@ -36,12 +36,12 @@ export function PteDict({ t, d }: PteDictIn) {
       <div className={css.dictHead}>
         <span className={css.dictWord}>{d.word}</span>
         {d.entry != null && d.entry.phonetic !== TEXT_NONE && <span className={css.dictPhon}>{d.entry.phonetic}</span>}
-        {d.entry != null && d.entry.pos !== TEXT_NONE && <span className={css.dictPos}>{d.entry.pos}</span>}
+        {d.entry != null && d.entry.lemma !== TEXT_NONE && <span className={css.dictLemma}>{d.entry.lemma}</span>}
         <Button kind={KIND_LINK} onClick={d.onClose} ariaLabel={t('pte.dict.close')}>{CLOSE_MARK}</Button>
       </div>
       {d.state === DICT_BUSY && <div className={css.dictNote}>{t('pte.dict.loading')}</div>}
       {d.state === DICT_NONE && <div className={css.dictNote}>{t('pte.dict.none')}</div>}
-      {defs.length > 0 && <ol className={css.dictDefs}>{defs}</ol>}
+      {lines.length > 0 && <div className={css.dictLines}>{lines}</div>}
     </div>
   )
 }

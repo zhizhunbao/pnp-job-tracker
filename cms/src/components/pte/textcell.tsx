@@ -5,7 +5,6 @@
  * @author Frank
  * @time 2026-09-03 12:00:00
  */
-import { LinkButton } from '@/components/button'
 import type { PteCellRow } from './types'
 
 /**
@@ -15,5 +14,5 @@ import type { PteCellRow } from './types'
  * @returns 格。
  */
 export function TextCell(r: PteCellRow) {
-  return <LinkButton href={r.href} className={r.textCls}>{r.text}</LinkButton>
+  return <span className={r.textCls}>{r.text}</span>
 }

@@ -1135,8 +1135,9 @@ export const caseKo: Record<string, string> = {
 export const pteKo: Record<keyof typeof pteZh, string> = {
   'pte.title': 'PTE Core 기출 문제',
   'pte.tab.practice': '연습', 'pte.tab.mock': '모의고사',
+  'pte.tab.words': '단어장', 'pte.tab.scoring': '채점 기준', 'pte.tab.recall': '시험 후기', 'pte.tab.tips': '준비 팁',
   'pte.sec.speaking': '말하기', 'pte.sec.writing': '쓰기', 'pte.sec.reading': '읽기', 'pte.sec.listening': '듣기',
-  'pte.col.num': '번호', 'pte.col.text': '문제', 'pte.col.seen': '최근 출제', 'pte.col.n': '출제 횟수', 'pte.seenToday': '오늘 출제', 'pte.seenAgo': '{n}일 전 출제', 'pte.today': '오늘', 'pte.ago': '{n}일 전', 'pte.times': '출제 {n}회',
+  'pte.col.num': '번호', 'pte.col.text': '문제', 'pte.col.seen': '최근 출제', 'pte.col.n': '출제 횟수', 'pte.seenToday': '오늘', 'pte.seenAgo': '{n}일 전', 'pte.today': '오늘', 'pte.ago': '{n}일 전', 'pte.times': '출제 {n}회',
   'pte.col.act': '작업', 'pte.go': '연습',
   'pte.empty': '조건에 맞는 문제가 없습니다', 'pte.more': '더 보기({n}문제 남음)',
   'pte.pos': '{i} / {n}',

@@ -27,6 +27,11 @@ export const HDR_CONTENT_TYPE = 'Content-Type'
 export const AUDIO_CACHE = 'public, max-age=31536000, immutable'
 
 /**
+ * 词典响应的缓存头(一天;词典随 seed 换版,不做 immutable)。
+ */
+export const DICT_CACHE = 'public, max-age=86400'
+
+/**
  * base64 编码名(Buffer.from 的第二参)。
  */
 export const B64 = 'base64'

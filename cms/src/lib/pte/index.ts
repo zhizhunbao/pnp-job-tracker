@@ -7,4 +7,4 @@
  * @time 2026-09-03 16:00:00
  */
 export { qidOfUrl, unionOf } from './functions'
-export type { DoneKeys, PteAudio, PteDoneDoc } from './types'
+export type { DoneKeys, PteAudio, PteDictEntry, PteDoneDoc } from './types'

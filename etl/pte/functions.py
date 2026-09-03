@@ -7,6 +7,7 @@ OUT = data/pte/ynwac-bank.json(私有研究,不进 mart/DB)。逐数组 try/exce
 """
 import asyncio
 import base64
+import csv
 import json
 import os
 import shutil
@@ -106,12 +107,12 @@ from pte.constants import (DK_AVATAR_MARKS, DK_CRAWL_SLUG, DK_ENTRY_DELAY_S, DK_
                            OPEN_TIGHT_RE, P_MART_DONE_TPL, PUNCT_TIGHT_RE, Q_K_ANSWER, Q_K_AUDIO_FILE,
                            Q_K_AUDIO_URL, Q_K_FETCHED, Q_K_IMAGE_URL, Q_K_NUM, Q_K_PREDICTED, Q_K_QID,
                            Q_K_SEEN_N, Q_K_TEXT, QID_SEP, TOKEN_JOIN, T_ASQ, T_RA, T_WFD, DK_K_SN)
-from pte.constants import (A_K_B64, AUDIO_URL_TPL, FFMPEG_BIN, FFMPEG_IN_ARGS, FFMPEG_OUT_ARGS, MART_AUDIO_FILE,
+from pte.constants import (A_K_B64, AUDIO_URL_TPL, D_K_LEMMA, D_K_MISSING, D_K_PHONETIC, D_K_ROWS, D_K_TRANSLATION, D_K_WORD, DICT_CSV_FIELD_MAX, DICT_CSV_K_EXCHANGE, DICT_CSV_K_PHONETIC, DICT_CSV_K_TRANSLATION, DICT_CSV_K_WORD, DICT_CSV_NL, DICT_EXCH_KV, DICT_EXCH_LEMMA, DICT_EXCH_SEP, DICT_MIN_LEN, DICT_WORD_RE, DICT_WORD_STRIP, IN_DICT_CSV, MART_DICT_FILE, OUT_DICT, P_DICT_DONE_TPL, FFMPEG_BIN, FFMPEG_IN_ARGS, FFMPEG_OUT_ARGS, MART_AUDIO_FILE,
                            MERGE_SRC_ORDER, MIME_MP3, MIME_WAV, NORM_DROP, NORM_SPACE_RE, NORM_TEXT_RE, OUT_TTS_DIR,
                            OUT_TTS_INDEX, OUT_TTS_VOICES_DIR, P_MERGE_TPL, P_TTS_DONE_TPL, P_TTS_FAIL_TPL,
                            P_TTS_VOICE_TPL, TTS_FILE_SEP, TTS_K_FILE, TTS_K_MIME, TTS_K_ROWS, TTS_K_VOICE,
                            TTS_MODEL_SUFFIX, TTS_MP3_SUFFIX, TTS_VOICE, TTS_WAV_SUFFIX)
-from pte.scheme import (BankIn, CloseIn, CollectIn, DiffIn, DkEntryIn, DkImagesIn, DkPageIn, DkPageLike,
+from pte.scheme import (DictRowIn, BankIn, CloseIn, CollectIn, DiffIn, DkEntryIn, DkImagesIn, DkPageIn, DkPageLike,
                         Group, GroupIn, HttpClientLike, MediaRowIn, PbBankIn, PbGroupsIn, PbRowIn,
                         DaysIn, RadarIn, RecentRowIn, RecentSummaryIn, SnapshotIn, VoteGetIn,
                         XjExamIn, XjExamUrlIn, XjGroupIn, XjListIn, XjPageLike, XjRowIn, XjSignalsIn,
@@ -2430,3 +2431,84 @@ def audio_rows_of(rows: list) -> list:
         out.append({Q_K_QID: r[Q_K_QID], TTS_K_MIME: hit[TTS_K_MIME],
                     A_K_B64: base64.b64encode(path.read_bytes()).decode(), TTS_K_VOICE: hit[TTS_K_VOICE]})
     return out
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# 18. pte-dict 步:题库词表 → ECDICT → mart pte_dict
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+def run_pte_dict() -> None:
+    """字典步:mart 题行切词表 → 在 ECDICT csv 里两趟查(本词 + 原形)→ processed dict.json + mart pte_dict.json。
+    词典 csv 不在就报错停(不猜、不打外网)。"""
+    if not IN_DICT_CSV.exists():
+        raise FileNotFoundError(str(IN_DICT_CSV))
+    with (MART / MART_QUESTIONS_FILE).open(encoding=ENC_UTF8) as f:
+        qrows = json.load(f)
+    vocab = vocab_of(qrows)
+    found = dict_lookup(vocab)
+    lemmas = {lemma_of(v[DICT_CSV_K_EXCHANGE]) for v in found.values()} - set(found) - {""}
+    base = dict_lookup(lemmas)
+    rows = []
+    missing = []
+    for w in sorted(vocab):
+        hit = found.get(w)
+        if hit is None:
+            missing.append(w)
+            continue
+        rows.append(dict_row_of(DictRowIn(hit=hit, base=base)))
+    write_json(WriteJsonIn(path=OUT_DICT, payload={D_K_ROWS: rows, D_K_MISSING: missing}, indent=JSON_INDENT))
+    write_json(WriteJsonIn(path=MART / MART_DICT_FILE, payload=rows, indent=JSON_INDENT, compact=True))
+    say(P_DICT_DONE_TPL.format(vocab=len(vocab), hit=len(rows), miss=len(missing), out=MART / MART_DICT_FILE))
+
+
+def vocab_of(rows: list) -> set:
+    """题行(题面 + 答案)切出的小写词表。"""
+    out: set = set()
+    for r in rows:
+        for field in (Q_K_TEXT, Q_K_ANSWER):
+            for w in DICT_WORD_RE.findall(str(r.get(field) or "")):
+                w2 = w.lower().strip(DICT_WORD_STRIP)
+                if len(w2) >= DICT_MIN_LEN:
+                    out.add(w2)
+    return out
+
+
+def dict_lookup(words: set) -> dict:
+    """在 ECDICT csv 里找这些词(按小写匹配,同词多行取第一行):词 → {phonetic, translation, exchange}。"""
+    csv.field_size_limit(DICT_CSV_FIELD_MAX)
+    out: dict = {}
+    if not words:
+        return out
+    with IN_DICT_CSV.open(encoding=ENC_UTF8, newline="") as f:
+        for row in csv.DictReader(f):
+            w = str(row.get(DICT_CSV_K_WORD) or "").lower()
+            if w in words and w not in out:
+                out[w] = {DICT_CSV_K_PHONETIC: str(row.get(DICT_CSV_K_PHONETIC) or ""),
+                          DICT_CSV_K_TRANSLATION: str(row.get(DICT_CSV_K_TRANSLATION) or ""),
+                          DICT_CSV_K_EXCHANGE: str(row.get(DICT_CSV_K_EXCHANGE) or ""),
+                          DICT_CSV_K_WORD: w}
+    return out
+
+
+def lemma_of(exchange: str) -> str:
+    """exchange 串里 `0:` 指回的原形;没有给空串。"""
+    for part in exchange.split(DICT_EXCH_SEP):
+        kv = part.split(DICT_EXCH_KV, 1)
+        if len(kv) == 2 and kv[0] == DICT_EXCH_LEMMA:
+            return kv[1].lower()
+    return ""
+
+
+def dict_row_of(x: DictRowIn) -> dict:
+    """一条词典命中 → mart 行:自己没释义就借原形的;释义里的字面 `\\n` 换成真换行。"""
+    lemma = lemma_of(x.hit[DICT_CSV_K_EXCHANGE])
+    translation = x.hit[DICT_CSV_K_TRANSLATION]
+    phonetic = x.hit[DICT_CSV_K_PHONETIC]
+    root = x.base.get(lemma)
+    if not translation and root is not None:
+        translation = root[DICT_CSV_K_TRANSLATION]
+    if not phonetic and root is not None:
+        phonetic = root[DICT_CSV_K_PHONETIC]
+    return {D_K_WORD: x.hit[DICT_CSV_K_WORD], D_K_PHONETIC: phonetic,
+            D_K_TRANSLATION: translation.replace(DICT_CSV_NL, "\n"), D_K_LEMMA: lemma}

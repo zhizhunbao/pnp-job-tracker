@@ -970,11 +970,10 @@
 }
 
 /*
- * 词性(灰斜)。
+ * 原形(灰,屈折形时挂在音标后)。
  */
-.dictPos {
+.dictLemma {
   color: #9ca3af;
-  font-style: italic;
   flex: 1;
 }
 
@@ -987,17 +986,17 @@
 }
 
 /*
- * 释义清单。
+ * 释义块。
  */
-.dictDefs {
-  margin: 6px 0 0;
-  padding-left: 18px;
+.dictLines {
+  margin-top: 6px;
 }
 
 /*
- * 一条释义。
+ * 一义一行(带词性)。
  */
-.dictDef {
+.dictLine {
   margin-top: 3px;
-  line-height: 1.45;
+  line-height: 1.5;
+  color: #374151;
 }

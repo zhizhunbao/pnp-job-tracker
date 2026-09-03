@@ -7,8 +7,9 @@
 import { SQL, jsonOrNull, queryRows, text } from '../db'
 import { B64, DONE_MAX, PATH_SEP, TEXT_NONE } from './constants'
 import type {
-  DoneKeys, MaybePteAudio, PteAudio, PteAudioDbRow, PteAudioIn, PteAudioOut, PteDoneDbRow, PteDoneDoc, PteDoneIn,
-  PteDoneOut, PteDoneSaveIn, Qid, SaveDoneOut, UnionIn,
+  DoneKeys, MaybePteAudio, MaybePteDictEntry, PteAudio, PteAudioDbRow, PteAudioIn, PteAudioOut, PteDictDbRow,
+  PteDictEntry, PteDictIn, PteDictOut, PteDoneDbRow, PteDoneDoc, PteDoneIn, PteDoneOut, PteDoneSaveIn, Qid,
+  SaveDoneOut, UnionIn,
 } from './types'
 
 /**
@@ -20,6 +21,21 @@ import type {
 export async function loadPteAudio(x: PteAudioIn): PteAudioOut {
   const rows = await queryRows({ db: x.db, sql: SQL.PTE_AUDIO_ONE, params: [x.qid], map: toPteAudio })
   let out: MaybePteAudio = null
+  for (const r of rows) {
+    out = r
+  }
+  return out
+}
+
+/**
+ * 一词的释义;词典里没有给 null。
+ *
+ * @param x 数据库连接与小写词。
+ * @returns 词典结果;查无是 null。
+ */
+export async function loadPteDict(x: PteDictIn): PteDictOut {
+  const rows = await queryRows({ db: x.db, sql: SQL.PTE_DICT_ONE, params: [x.word], map: toPteDict })
+  let out: MaybePteDictEntry = null
   for (const r of rows) {
     out = r
   }
@@ -94,6 +110,16 @@ export function qidOfUrl(url: string): Qid {
  */
 export function toPteAudio(r: PteAudioDbRow): PteAudio {
   return { mime: text(r.mime), bytes: new Uint8Array(Buffer.from(text(r.b64), B64)) }
+}
+
+/**
+ * 词典库行 → 词典结果(可空格折空串)。
+ *
+ * @param r 库行。
+ * @returns 结果。
+ */
+export function toPteDict(r: PteDictDbRow): PteDictEntry {
+  return { word: text(r.word), phonetic: text(r.phonetic), translation: text(r.translation), lemma: text(r.lemma) }
 }
 
 /**

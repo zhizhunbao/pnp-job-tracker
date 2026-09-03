@@ -57,7 +57,6 @@ cms/dev.log
 
 # 政策雷达产物(crawl 役时更再生成:manifest/changes/html_cache,후자上千文件)
 /data/crawl/
-
 # ── 截图与草稿:哪些不入 git(2026-08-18 清点:已跟踪位图 1212 个 / 145.7 MB,.git 已 230 MB)──
 # 走查与 A/B 探针截图:用完即弃,没有任何文档引用(设计文档要留的效果图不带这两个前缀 ——
 # 实测已跟踪的 302 张 mockups 里 0 张匹配,所以这条只拦新的,不动老的)
@@ -81,3 +80,5 @@ cms/dev.log
 
 # gate --only report 的写法债报告(一次性产物,随时可再生;2026-08-31)
 /reports/
+# ECDICT 全量词典 csv(66MB,pte-dict 步的输入;可从 skywind3000/ECDICT 重下;2026-09-04)
+/data/raw/pte/dict/

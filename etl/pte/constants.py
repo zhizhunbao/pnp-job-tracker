@@ -1542,3 +1542,78 @@ P_TTS_DONE_TPL = "✓ pte tts:新合成 {made} · 已有 {have} · 失败 {fail}
 
 P_TTS_FAIL_TPL = "  ✗ 合成失败 {qid}"
 """日志:单题失败留痕。"""
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# 18. pte-dict 步:题库词表 → ECDICT 英汉释义 → mart pte_dict(2026-09-04 Frank「你看人家这个翻译」
+#     「现在字典 API 可用吗」:外网 Free Dictionary API 只给英文释义且反复 522/超时,弹层「查词中」卡死;
+#     小枫叶的「adv. 使人惊奇, 出人意外」正是 ECDICT(skywind3000/ECDICT,MIT)的 translation 字段。
+#     词典 csv 66MB 落 data/raw/pte/dict/(gitignore),只把题库里出现的词(~3.6k)出到 mart;
+#     消费端 /api/pte/dict/[word] 只读库,自托管零外网依赖。
+# ═══════════════════════════════════════════════════════════════════════════
+
+IN_DICT_CSV = RAW_PTE / "dict" / "ecdict.csv"
+"""ECDICT 全量 csv(raw.githubusercontent.com/skywind3000/ECDICT/master/ecdict.csv;77 万行)。"""
+
+DICT_CSV_FIELD_MAX = 10**8
+"""csv 字段上限(ECDICT 的 detail 列有整段长文,默认 128KB 会炸)。"""
+
+DICT_CSV_K_WORD = "word"
+"""csv 列:词。"""
+
+DICT_CSV_K_PHONETIC = "phonetic"
+"""csv 列:音标。"""
+
+DICT_CSV_K_TRANSLATION = "translation"
+"""csv 列:中文释义(行内以字面 `\\n` 分行)。"""
+
+DICT_CSV_K_EXCHANGE = "exchange"
+"""csv 列:词形变化(`0:take/1:p/d:tooked` —— `0:` 指回原形)。"""
+
+DICT_CSV_NL = "\\n"
+"""csv 里释义的分行记号(两字符:反斜杠 + n),出 mart 时换成真换行。"""
+
+DICT_EXCH_SEP = "/"
+"""exchange 各项分隔。"""
+
+DICT_EXCH_KV = ":"
+"""exchange 一项里 标记:词 的分隔。"""
+
+DICT_EXCH_LEMMA = "0"
+"""exchange 里指回原形的标记。"""
+
+DICT_WORD_RE = re.compile(r"[A-Za-z][A-Za-z'-]*")
+"""题面切词(带撇号与连字符的算一个词,如 don't / well-known)。"""
+
+DICT_WORD_STRIP = "'-"
+"""切出的词两端要剥掉的记号。"""
+
+DICT_MIN_LEN = 2
+"""进词表的最短长度(单字母不查)。"""
+
+OUT_DICT = PROCESSED_PTE / "dict.json"
+"""processed 快照:{rows: [...], missing: [...]}(missing = 词典里没有的词,复查用)。"""
+
+MART_DICT_FILE = "pte_dict.json"
+"""mart 表文件名 = DB 表名 pte_dict(word / phonetic / translation / lemma)。"""
+
+D_K_WORD = "word"
+"""字典行:词(小写)。"""
+
+D_K_PHONETIC = "phonetic"
+"""字典行:音标;空串 = 词典没给。"""
+
+D_K_TRANSLATION = "translation"
+"""字典行:中文释义(多义换行分隔);自己没有就用原形的。"""
+
+D_K_LEMMA = "lemma"
+"""字典行:原形;空串 = 本身就是原形。"""
+
+D_K_ROWS = "rows"
+"""processed 快照:行清单键。"""
+
+D_K_MISSING = "missing"
+"""processed 快照:没查到的词。"""
+
+P_DICT_DONE_TPL = "✓ pte dict:词表 {vocab} · 查到 {hit} · 没查到 {miss} → {out}"
+"""日志:字典步收口。"""

@@ -50,9 +50,10 @@ export const API_PTE_DONE = '/api/pte/done'
 export const METHOD_PUT = 'PUT'
 
 /**
- * 字典接口(Free Dictionary API,无 key、CORS 开;Frank 2026-09-03「选中单词应该有字典功能」)。
+ * 查词接口(2026-09-04 换自托管:题库词表预抓 ECDICT 进库,/api/pte/dict/[word] 只读库 ——
+ * 原外网 Free Dictionary API 只有英文释义且反复 522/超时,Frank「你看人家这个翻译」「字典功能也不好使」)。
  */
-export const DICT_API = 'https://api.dictionaryapi.dev/api/v2/entries/en/'
+export const DICT_API = '/api/pte/dict/'
 
 /**
  * 算「一个单词」的形:字母开头,只含字母、撇号、连字符。
@@ -65,9 +66,10 @@ export const WORD_RE = /^[A-Za-z][A-Za-z'-]*$/
 export const DICT_MIN_LEN = 2
 
 /**
- * 弹层里最多列几条释义。
+ * 释义分行记号(库里多义以换行分隔,弹层一义一行)。
  */
-export const DICT_DEFS_MAX = 2
+export const DICT_LINE_SEP = '\n'
+
 
 /**
  * 弹层离选区底边的距离(px)。
@@ -283,6 +285,26 @@ export const PAREN_R = ')'
  * 题单页二级导航「模考」的去处(面还没开,SectionTab 灰字;Frank 2026-09-04「加两个功能一个是练习,模考」)。
  */
 export const URL_PTE_MOCK = '/pte/mock'
+
+/**
+ * 二级导航「单词表」的去处(面未开;Frank 2026-09-04「单词表和评分标准也需要吧」)。
+ */
+export const URL_PTE_WORDS = '/pte/words'
+
+/**
+ * 二级导航「评分标准」的去处(面未开)。
+ */
+export const URL_PTE_SCORING = '/pte/scoring'
+
+/**
+ * 二级导航「考试回忆」的去处(面未开;Frank 2026-09-04「还需要加一个考试回忆吧」)。
+ */
+export const URL_PTE_RECALL = '/pte/recall'
+
+/**
+ * 二级导航「备考技巧」的去处(面未开;Frank 2026-09-04「还需要加个备考技巧」)。
+ */
+export const URL_PTE_TIPS = '/pte/tips'
 
 /**
  * 单题页左侧目录树里每行的 DOM id 前缀(进页把当前题滚进视野用)。

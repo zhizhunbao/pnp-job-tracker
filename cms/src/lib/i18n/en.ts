@@ -1142,8 +1142,9 @@ export const caseEn: Record<string, string> = {
 export const pteEn: Record<keyof typeof pteZh, string> = {
   'pte.title': 'PTE Core question bank',
   'pte.tab.practice': 'Practice', 'pte.tab.mock': 'Mock test',
+  'pte.tab.words': 'Vocabulary', 'pte.tab.scoring': 'Scoring', 'pte.tab.recall': 'Exam recall', 'pte.tab.tips': 'Tips',
   'pte.sec.speaking': 'Speaking', 'pte.sec.writing': 'Writing', 'pte.sec.reading': 'Reading', 'pte.sec.listening': 'Listening',
-  'pte.col.num': 'No.', 'pte.col.text': 'Question', 'pte.col.seen': 'Last seen', 'pte.col.n': 'Times seen', 'pte.seenToday': 'Seen today', 'pte.seenAgo': 'Seen {n} days ago', 'pte.today': 'Today', 'pte.ago': '{n} days ago', 'pte.times': 'Seen {n} times',
+  'pte.col.num': 'No.', 'pte.col.text': 'Question', 'pte.col.seen': 'Last seen', 'pte.col.n': 'Times seen', 'pte.seenToday': 'Today', 'pte.seenAgo': '{n} days ago', 'pte.today': 'Today', 'pte.ago': '{n} days ago', 'pte.times': 'Seen {n} times',
   'pte.col.act': 'Action', 'pte.go': 'Practice',
   'pte.empty': 'No matching questions', 'pte.more': 'Show more ({n} left)',
   'pte.pos': '{i} / {n}',

@@ -5,5 +5,5 @@
  * @time 2026-09-03 16:00:00
  */
 
-export { loadPteAudio, loadPteDone, savePteDone } from './functions'
-export { pteAudioRoute, pteDoneGetRoute, pteDonePutRoute } from './routes'
+export { loadPteAudio, loadPteDict, loadPteDone, savePteDone } from './functions'
+export { pteAudioRoute, pteDictRoute, pteDoneGetRoute, pteDonePutRoute } from './routes'

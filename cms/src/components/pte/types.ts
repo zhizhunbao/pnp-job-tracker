@@ -1219,25 +1219,33 @@ export type DictEntry = {
   word: string
 
   /**
-   * 音标;空串 = 接口没给。
+   * 音标;空串 = 词典没给。
    */
   phonetic: string
 
   /**
-   * 词性;空串 = 没给。
+   * 释义,一义一行(带词性,如「adv. 使人惊奇, 出人意外」)。
    */
-  pos: string
+  lines: string[]
 
   /**
-   * 释义(最多 DICT_DEFS_MAX 条)。
+   * 原形;空串 = 本身就是原形(屈折形弹层多给一行原形)。
    */
-  defs: string[]
+  lemma: string
 }
 
+
+
+
 /**
- * Free Dictionary API 的响应形(网络来的,只读真用的格;逐格判)。
+ * /api/pte/dict/[word] 的响应形(网络来的,只读真用的格;逐格判)。
  */
-export type DictApiEntry = {
+export type DictApiBody = {
+  /**
+   * 查到了。
+   */
+  ok: boolean
+
   /**
    * 词。
    */
@@ -1249,34 +1257,14 @@ export type DictApiEntry = {
   phonetic: string
 
   /**
-   * 词义组。
+   * 中文释义(多义换行分隔)。
    */
-  meanings: DictApiMeaning[]
-}
-
-/**
- * 接口的一组词义。
- */
-export type DictApiMeaning = {
-  /**
-   * 词性。
-   */
-  partOfSpeech: string
+  translation: string
 
   /**
-   * 释义清单。
+   * 原形。
    */
-  definitions: DictApiDef[]
-}
-
-/**
- * 接口的一条释义。
- */
-export type DictApiDef = {
-  /**
-   * 释义正文。
-   */
-  definition: string
+  lemma: string
 }
 
 /**
