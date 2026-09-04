@@ -449,6 +449,15 @@ export const DESIGNATED_ALL = `SELECT name, province, location, source, nocs, ur
       ORDER BY location ASC, name ASC`
 
 /**
+ * 指定雇主里正在招人的那批(2026-09-04 Frank「指定雇主也得显示在招的才有用,不然一堆雇主不招人有什么用」):
+ * 雇主池 designated 且 open_jobs_total > 0(~423 家),按名对回名录行。employer_pool 未建/未灌时查空,
+ * 名录页照常出、在招一律 0 —— 走 queryRowsOrEmpty 兜底,不让新表拖垮旧页。
+ */
+export const DESIGNATED_OPEN_JOBS = `SELECT name, open_jobs_total::int AS open_jobs
+       FROM employer_pool
+      WHERE designated = true AND open_jobs_total > 0`
+
+/**
  * 某省某职业当前在招的雇主榜(按在招数)。$1=省,$2=NOC。
  */
 export const HIRING_EMPLOYERS = `SELECT c.name AS name, j.province AS province,

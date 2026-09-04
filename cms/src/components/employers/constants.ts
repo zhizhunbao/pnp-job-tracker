@@ -622,42 +622,53 @@ export const COL_VERDICT_KEY = 'verdict'
  * 名录口径·带出处列时雇主名列的宽。五列版把宽度预算重新分一遍 ——
  * 名录出处只占 8%,省下的宽还给名字与职业两列。
  */
-export const W_NAME_LIST = '34%'
+export const W_NAME_LIST = '30%'
 
 /**
  * 名录口径·不带出处列时雇主名列的宽。
  */
-export const W_NAME_PLAIN = '37%'
+export const W_NAME_PLAIN = '33%'
 
 /**
  * 名录口径·带出处列时所在地列的宽。
  */
-export const W_WHERE_LIST = '22%'
+export const W_WHERE_LIST = '19%'
 
 /**
  * 名录口径·不带出处列时所在地列的宽。
  */
-export const W_WHERE_PLAIN = '24%'
+export const W_WHERE_PLAIN = '21%'
 
 /**
  * 名录口径·带出处列时制度列的宽。
  */
-export const W_PROGRAM_LIST = '13%'
+export const W_PROGRAM_LIST = '11%'
 
 /**
  * 名录口径·不带出处列时制度列的宽。
  */
-export const W_PROGRAM_PLAIN = '14%'
+export const W_PROGRAM_PLAIN = '12%'
 
 /**
  * 名录口径·带出处列时职业列的宽。
  */
-export const W_NOC_LIST = '23%'
+export const W_NOC_LIST = '21%'
 
 /**
  * 名录口径·不带出处列时职业列的宽。
  */
-export const W_NOC_PLAIN = '25%'
+export const W_NOC_PLAIN = '22%'
+
+/**
+ * 名录口径·带出处列时在招列的宽(2026-09-04 名录页加在招列:六列 30/19/11/21/11/8,
+ * 五列 33/21/12/22/12,每列都从原预算里让一点)。
+ */
+export const W_OPEN_LIST = '11%'
+
+/**
+ * 名录口径·不带出处列时在招列的宽。
+ */
+export const W_OPEN_PLAIN = '12%'
 
 /**
  * 名录出处列的宽(只有一枚短链,给最窄那档)。

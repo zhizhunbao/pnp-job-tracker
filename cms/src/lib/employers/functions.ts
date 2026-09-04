@@ -34,6 +34,7 @@ import type {
   ApplyEmployerFiltersIn, ApplySponsorFiltersIn, BoardPropsIn, BoardPropsOut, ClipIn, CompanyAggIn,
   CompanyBriefDbRow, CompanyBriefIn, CompanyResearch, CompanyRowIn, CompanyRowOut, CompareAgg, CompareCompanyDbRow,
   CompareIn, CompareOut, CompareRow, DesignatedRowsOut, EmployerFacets, EmployerFacetsIn, EmployerFilters,
+  DesignatedOpenDbRow, DesignatedOpenRow, DesignatedOpenRowsOut, DesignatedRows, WithDesignatedOpenIn,
   EmployerMode, EmployerPage, EmployerRow, EmployerRows, EmptyPageIn, EntityNameHitsIn, InvestigateIn,
   InvestigateOut, LoadEmployerPageIn, LoadEmployerPageOut, MaybeNum, MaybeStrOut, MaybeTeer, NocMatchesIn,
   NocTitleMap, NocTitlesIn, NocTitlesOut, NormalizeFiltersIn, OccRowsOut, PageSliceIn, ParamGetter, ProgramMatchesIn,
@@ -298,16 +299,11 @@ export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerP
       }
     }
     const raw = await fetchAllDesignated(db)
-    const all = raw.map(toEmployerRow)
+    const openRows = await fetchDesignatedOpen(db)
+    const all = withDesignatedOpen({ rows: raw.map(toEmployerRow), openRows: openRows })
     const facets = employerFacets({ rows: all, filters: f })
     const hit = applyEmployerFilters({ rows: all, filters: f })
-    let fetched = FETCHED_NONE
-    for (const r of raw) {
-      if (r.fetched !== '') {
-        fetched = r.fetched
-        break
-      }
-    }
+    const fetched = latestFetchedOf(raw)
     return {
       mode: MODE.designated, rows: pageSlice({ rows: hit, page: f.page, size: input.pageSize }),
       total: hit.length, page: f.page, pageSize: input.pageSize,
@@ -349,6 +345,103 @@ function fetchAllDesignated(db: Db): DesignatedRowsOut {
     return Promise.resolve(hot.rows)
   }
   return CACHE.designatedInflight
+}
+
+/**
+ * 指定雇主在招数(雇主池 designated 且在招,~423 行)带 TTL 缓存取数,策略同 fetchAllDesignated
+ * (改 `CACHE.designatedOpen` / `CACHE.designatedOpenInflight`)。池表未建/未灌 → 空表,名录页照常出。
+ *
+ * @param db 数据库连接(池由调用方注进来)。
+ * @returns 在招数行。
+ */
+function fetchDesignatedOpen(db: Db): DesignatedOpenRowsOut {
+  const hot = CACHE.designatedOpen
+  if (hot != null && Date.now() - hot.at < CACHE_TTL_MS) {
+    return Promise.resolve(hot.rows)
+  }
+  if (CACHE.designatedOpenInflight == null) {
+    CACHE.designatedOpenInflight = queryRowsOrEmpty({
+      db: db, sql: SQL.DESIGNATED_OPEN_JOBS, params: [], map: toDesignatedOpenRow,
+    })
+      .then(function remember(rows) {
+        CACHE.designatedOpen = { at: Date.now(), rows: rows }
+        return rows
+      })
+      .finally(function clearInflight() {
+        CACHE.designatedOpenInflight = null
+      })
+  }
+  if (hot != null) {
+    return Promise.resolve(hot.rows)
+  }
+  return CACHE.designatedOpenInflight
+}
+
+/**
+ * 名录行合上在招数并按在招优先排(2026-09-04 Frank「指定雇主也得显示在招的才有用」):
+ * 在招多的在前,同数按名;只有指定资格没挂岗的**不剔除**(设计稿故事三:主动出击的对象,中档保底)。
+ *
+ * @param x 名录行与在招数行。
+ * @returns 带在招数、排好序的新数组(不改入参)。
+ */
+function withDesignatedOpen(x: WithDesignatedOpenIn): EmployerRows {
+  const openBy = new Map<string, number>()
+  for (const o of x.openRows) {
+    openBy.set(o.name.toLowerCase().trim(), o.openJobs)
+  }
+  const out: EmployerRow[] = []
+  for (const r of x.rows) {
+    let open = 0
+    const hit = openBy.get(r.name.toLowerCase().trim())
+    if (hit != null) {
+      open = hit
+    }
+    out.push({
+      name: r.name, province: r.province, where: r.where, program: r.program, nocs: r.nocs, openJobs: open, url: r.url,
+    })
+  }
+  out.sort(byOpenDescThenName)
+  return out
+}
+
+/**
+ * 在招数降序、同数按名升序(名录页默认序)。
+ *
+ * @param a 左行。
+ * @param b 右行。
+ * @returns 负=a 在前,正=b 在前。
+ */
+// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
+function byOpenDescThenName(a: EmployerRow, b: EmployerRow): number {
+  let oa = 0
+  if (a.openJobs != null) {
+    oa = a.openJobs
+  }
+  let ob = 0
+  if (b.openJobs != null) {
+    ob = b.openJobs
+  }
+  if (oa !== ob) {
+    return ob - oa
+  }
+  return a.name.localeCompare(b.name)
+}
+
+/**
+ * 名录的「抓取」日 = 全表最新一批(2026-09-04 修:原先取排序后第一条非空行,恰好撞上 PE 的
+ * 4 月存档快照,把当天抓的 2,811 行显示成 04-19)。空串不参与。
+ *
+ * @param rows 名录整表(fetched 已归一成 YYYY-MM-DD)。
+ * @returns 最新抓取日;全空回 FETCHED_NONE。
+ */
+function latestFetchedOf(rows: DesignatedRows): string {
+  let latest = FETCHED_NONE
+  for (const r of rows) {
+    if (r.fetched !== '' && r.fetched > latest) {
+      latest = r.fetched
+    }
+  }
+  return latest
 }
 
 /**
@@ -1240,6 +1333,16 @@ export function toDesignatedRow(r: DesignatedDbRow): DesignatedRow {
     name: text(r.name), province: text(r.province), location: text(r.location),
     source: text(r.source), nocs: text(r.nocs), url: text(r.url), fetched: fmtFetched(text(r.fetched)),
   }
+}
+
+/**
+ * `DESIGNATED_OPEN_JOBS` 一行 → 干净的在招数行(名留原样,比对时再小写)。
+ *
+ * @param r 原始行。
+ * @returns 收窄后的行。
+ */
+export function toDesignatedOpenRow(r: DesignatedOpenDbRow): DesignatedOpenRow {
+  return { name: text(r.name), openJobs: count(r.open_jobs) }
 }
 
 /**

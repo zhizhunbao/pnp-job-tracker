@@ -64,6 +64,36 @@ export type DesignatedRow = {
 export type DesignatedRows = DesignatedRow[]
 
 /**
+ * 指定雇主的在招数一行(雇主池里 designated 且在招的那批,`DESIGNATED_OPEN_JOBS`)。
+ */
+export type DesignatedOpenRow = {
+  /**
+   * 雇主名(与名录行按名对上,比对时两边都小写去空白)。
+   */
+  name: string
+
+  /**
+   * 本站库内在招岗数(> 0 才有行)。
+   */
+  openJobs: number
+}
+
+/**
+ * withDesignatedOpen 的入参:名录行与在招数行。
+ */
+export type WithDesignatedOpenIn = {
+  /**
+   * 名录行(已洗)。
+   */
+  rows: EmployerRow[]
+
+  /**
+   * 雇主池里的在招数行。
+   */
+  openRows: DesignatedOpenRow[]
+}
+
+/**
  * 在招雇主一行(SQL `HIRING_EMPLOYERS` 映射后的干净行)。
  */
 export type HiringRow = {
@@ -168,7 +198,8 @@ export type EmployerRow = {
   nocs: string[]
 
   /**
-   * hiring:本站库内在招岗数;designated:null(名录不含在招信息)。
+   * hiring:本站库内在招岗数;designated:雇主池对上的在招岗数,对不上或池未灌为 0
+   * (2026-09-04 起名录页在招优先;此前恒 null)。
    */
   openJobs: number | null
 
@@ -1330,6 +1361,21 @@ export type DesignatedSlot = {
 }
 
 /**
+ * 指定雇主在招数的缓存格。
+ */
+export type DesignatedOpenSlot = {
+  /**
+   * 灌入时刻(Date.now())。
+   */
+  at: number
+
+  /**
+   * 在招数行。
+   */
+  rows: DesignatedOpenRow[]
+}
+
+/**
  * 担保聚合整表缓存的一份。
  */
 export type SponsorSlot = {
@@ -1357,6 +1403,16 @@ export type EmployersCache = {
    * 名录刷新的单飞 promise;null = 没有在飞的。
    */
   designatedInflight: Promise<DesignatedRow[]> | null
+
+  /**
+   * 指定雇主在招数(雇主池 designated 且在招);null = 冷。
+   */
+  designatedOpen: DesignatedOpenSlot | null
+
+  /**
+   * 在招数刷新的单飞 promise;null = 没有在飞的。
+   */
+  designatedOpenInflight: Promise<DesignatedOpenRow[]> | null
 
   /**
    * 在招担保雇主聚合整表;null = 冷。
@@ -1388,6 +1444,11 @@ export type EmployersCache = {
  * `fetchAllDesignated` 的返回。
  */
 export type DesignatedRowsOut = Promise<DesignatedRow[]>
+
+/**
+ * fetchDesignatedOpen 的出参。
+ */
+export type DesignatedOpenRowsOut = Promise<DesignatedOpenRow[]>
 
 /**
  * `applySponsorFilters` 的入参。
@@ -1532,6 +1593,21 @@ export type DesignatedDbRow = {
    * 抓取日(库里两种写法:20260419 / 2026-04-19,映射时归一)。
    */
   fetched: string | null
+}
+
+/**
+ * `DESIGNATED_OPEN_JOBS` 的原始行。
+ */
+export type DesignatedOpenDbRow = {
+  /**
+   * 雇主名。
+   */
+  name: string | null
+
+  /**
+   * 在招岗数。
+   */
+  open_jobs: number | null
 }
 
 /**

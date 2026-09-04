@@ -43,6 +43,7 @@ import {
   VERDICT_FACTOR_KEY, VERDICT_MET, VERDICT_NG_HEAD, VERDICT_OK_HEAD, VERDICT_PUBLIC, VERDICT_RANK,
   VERDICT_SHORT, VERDICT_UNKNOWN, WHERE_PROV_MAX, W_HIRE_NAME, W_HIRE_OPEN,
   W_HIRE_WHERE, W_LIST, W_NAME_LIST, W_NAME_PLAIN, W_NOC_LIST, W_NOC_PLAIN, W_PROGRAM_LIST, W_PROGRAM_PLAIN,
+  W_OPEN_LIST, W_OPEN_PLAIN,
   W_WHERE_LIST, W_WHERE_PLAIN,
 } from './constants'
 import { IndustryCell } from './industrycell'
@@ -222,6 +223,9 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     cardNote = noc.cardNote
     programChip = x.r.program
     cardSalary = TEXT_NONE
+    if (open > 0) {
+      cardSalary = x.t('dp.planJobsN', { n: open })
+    }
   }
   return {
     key: x.r.where + KEY_SEP + x.r.name,
@@ -427,11 +431,13 @@ function designatedColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
   let wWhere = W_WHERE_PLAIN
   let wProgram = W_PROGRAM_PLAIN
   let wNoc = W_NOC_PLAIN
+  let wOpen = W_OPEN_PLAIN
   if (x.hasList) {
     wName = W_NAME_LIST
     wWhere = W_WHERE_LIST
     wProgram = W_PROGRAM_LIST
     wNoc = W_NOC_LIST
+    wOpen = W_OPEN_LIST
   }
   const cols: EmpCol<EmployerCellRow>[] = [
     { key: COL_NAME_KEY, label: x.t('de.colName'), width: wName, sort: empNameSortOf, render: NameCell },
@@ -445,6 +451,15 @@ function designatedColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
       render: empProgramOf,
     },
     { key: COL_NOC_KEY, label: x.t('de.colNoc'), width: wNoc, sort: empNocSortOf, render: NocCell },
+    {
+      key: COL_OPEN_KEY,
+      label: x.t('dp.planOpen'),
+      width: wOpen,
+      nowrap: true,
+      align: ALIGN_RIGHT,
+      sort: empOpenSortOf,
+      render: empOpenOf,
+    },
   ]
   if (x.hasList) {
     cols.push({

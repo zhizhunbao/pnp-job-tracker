@@ -10,7 +10,7 @@
 import type { EmployersCache } from './types'
 
 /**
- * 雇主域全部的可变状态,就这七格。
+ * 雇主域全部的可变状态,就这九格(2026-09-04 加指定雇主在招数两格)。
  */
 export const CACHE: EmployersCache = {
   /**
@@ -22,6 +22,16 @@ export const CACHE: EmployersCache = {
    * 名录刷新的单飞 promise。
    */
   designatedInflight: null,
+
+  /**
+   * 指定雇主在招数(雇主池 designated 且在招,~423 行;2026-09-04 名录页在招优先)。开机是空的。
+   */
+  designatedOpen: null,
+
+  /**
+   * 在招数刷新的单飞 promise。
+   */
+  designatedOpenInflight: null,
 
   /**
    * 在招担保雇主聚合整表。开机是空的。
