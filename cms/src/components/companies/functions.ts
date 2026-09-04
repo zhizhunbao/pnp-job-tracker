@@ -32,7 +32,8 @@ import {
   KEY_SAL_TIER_HEAD, KEY_SP_EVIDENCE, KEY_SP_EVIDENCE_AIP, KEY_SP_TIER_AIP, KEY_SP_TIER_HEAD, LANG_KO, LANG_ZH,
   METHOD_POST, MIME_JSON, NOCS_TOP_N, PROV_LOCALE_ONLY, SEP_ENUM, SIGN_PLUS, STREAM_AGRI_RE, STREAM_GTS_RE,
   STREAM_HIGH_RE, STREAM_LOW_RE, STREAM_PR_RE, KEY_STREAM_AGRI, KEY_STREAM_GTS, KEY_STREAM_HIGH, KEY_STREAM_LOW,
-  KEY_STREAM_PR, TEXT_NONE, TRACK_AI_READ, TRACK_KIND_COMPANY, TRACK_TV_ENTRY, URL_CO_INFO, URL_CO_TRANSLATE,
+  KEY_STREAM_PR, TEXT_NONE, TRACK_AI_READ, TRACK_CO_TRANSLATE, TRACK_KIND_COMPANY, TRACK_TV_ENTRY, URL_CO_INFO,
+  URL_CO_TRANSLATE,
   URL_JOBS_COMPANY, URL_PLAN_PR_HEAD, URL_PROV_HEAD,
 } from './constants'
 import { cssOf } from '@/components/css'
@@ -44,7 +45,7 @@ import type {
   LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadBriefIn, LoadFn, LoadPanelIn, LoadTransIn, NocRowsIn, OpenJobIn,
   PanelJson, PanelSlugIn, PillClsIn, ProvFullOfIn, ProvHrefOfIn, ResolveJobFn, ResolveJobIn, SalaryTextIn,
   SecKeyIn, SecTextIn, SecZhIn, ShowAllIn, SponsorTextIn, StreamLabel, StreamLabelIn, StreamsIn, ToggleIn,
-  TransJson, TvOpenIn, ZhLineClsIn,
+  TransToggleIn, TransJson, TvOpenIn, ZhLineClsIn,
 } from './types'
 import css from './companies.module.css'
 
@@ -756,6 +757,21 @@ export function makeAiToggle(x: AiToggleIn): GoBackFn {
   return function toggleAi(): void {
     if (x.on === false) {
       track(TRACK_AI_READ)
+    }
+    x.set(x.on === false)
+  }
+}
+
+/**
+ * 「显示中文对照」钮的点击手柄:第一次打开埋点(2026-09-04 /fe 补),再开合不重复记。
+ *
+ * @param x 现值与落格。
+ * @returns 点击手柄。
+ */
+export function makeTransToggle(x: TransToggleIn): GoBackFn {
+  return function toggleTrans(): void {
+    if (x.on === false) {
+      track(TRACK_CO_TRANSLATE)
     }
     x.set(x.on === false)
   }

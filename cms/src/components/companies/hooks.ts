@@ -12,7 +12,7 @@
  */
 import { useEffect, useState } from 'react'
 import { LANG_EN } from './constants'
-import { makeAiToggle, makeLoadBrief, makeLoadPanel, makeLoadTrans, makeToggle } from './functions'
+import { makeAiToggle, makeLoadBrief, makeLoadPanel, makeLoadTrans, makeTransToggle } from './functions'
 import type {
   CompanyAiHookIn, CompanyAiPanel, CompanyBriefFact, CompanyPanelData, CompanyPanelHookIn, CompanyPanelState,
   CompanyTransHookIn, DeadFlag,
@@ -116,7 +116,7 @@ export function useCompanyPanel(x: CompanyPanelHookIn): CompanyPanelState {
     loading,
     data,
     showTrans,
-    onToggleTrans: makeToggle({ on: showTrans, set: setShowTrans }),
+    onToggleTrans: makeTransToggle({ on: showTrans, set: setShowTrans }),
     aiOn,
     onToggleAi: makeAiToggle({ on: aiOn, set: setAiOn }),
   }

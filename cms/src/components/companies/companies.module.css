@@ -582,8 +582,11 @@
 
   /*
    * 前两列按内容定宽但可收,末列吃剩余宽也可收。
+   * 2026-09-04(/fe 公司弹框,Frank 拍板修):档名列封顶 45%、依据列保底 30% ——
+   * 担保「无记录」那一行把整句灰文放在档名格,375 上按 max-content 撑满后依据列被挤到
+   * 0 宽,灰句一字一行竖排、卡高 845px(生产实拍);封顶后 201px,桌面短档名不受影响。
    */
-  grid-template-columns: minmax(0, max-content) minmax(0, max-content) minmax(0, 1fr);
+  grid-template-columns: minmax(0, max-content) fit-content(45%) minmax(30%, 1fr);
 
   /*
    * 行间距(事实行贴紧)。

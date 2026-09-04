@@ -1482,6 +1482,21 @@ export type AiToggleIn = {
 }
 
 /**
+ * makeTransToggle 的入参:现值与落格。
+ */
+export type TransToggleIn = {
+  /**
+   * 当前开合。
+   */
+  on: boolean
+
+  /**
+   * 落格。
+   */
+  set: SetBoolFn
+}
+
+/**
  * makeLoadBrief 的入参:公司名与两个落格。
  */
 export type LoadBriefIn = {

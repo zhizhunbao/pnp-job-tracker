@@ -367,8 +367,16 @@ export const HTTP_OK = 200
 
 /**
  * AI 速读的埋点事件名(#129 功能级 umami 埋点)。
+ * 2026-09-04 /fe 公司弹框:原值 `ai-read-cat` 是分类域的名,地点弹框却发着 `ai-read-co`,
+ * 两边对调,面板上按名聚合就串;改回公司自己的 co(地点那份同日改 loc)。
  */
-export const TRACK_AI_READ = 'ai-read-cat'
+export const TRACK_AI_READ = 'ai-read-co'
+
+/**
+ * 公司弹框「显示中文对照」首次打开的埋点事件名(2026-09-04 /fe 补:此前这个开关不埋点,
+ * 与 jd-translate / cat-translate / imm-translate 同族)。
+ */
+export const TRACK_CO_TRANSLATE = 'co-translate'
 
 /**
  * 判定卡入口的埋点事件名。

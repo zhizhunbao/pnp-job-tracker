@@ -1079,8 +1079,10 @@ export const TRACK_IMM_TRANSLATE = 'imm-translate'
 
 /**
  * 埋点:地点弹框点开了 AI 解读。
+ * 2026-09-04 /fe 公司弹框:原值 `ai-read-co` 与公司弹框对调(公司那边发的是 cat),
+ * 改成地点自己的 loc,公司改回 co。
  */
-export const TRACK_AI_READ = 'ai-read-co'
+export const TRACK_AI_READ = 'ai-read-loc'
 
 /**
  * 埋点参数名:入口格是哪一列。
