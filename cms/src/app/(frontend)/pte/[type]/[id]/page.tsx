@@ -10,7 +10,9 @@ import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
-import { PteItem, loadPteComments, loadPteItem, loadPteNavRows, loadPteTypes, pteItemMetaOf, typeAt } from '@/components/pte'
+import {
+  PteItem, listOf, loadPteComments, loadPteItem, loadPteNavRows, loadPteTypes, pteItemMetaOf, typeAt,
+} from '@/components/pte'
 import { Frame } from '@/components/shell'
 import { getDb } from '@/lib/db/server'
 import { getUser, isPro } from '@/lib/quota/server'
@@ -27,7 +29,8 @@ export async function generateMetadata({ params }: { params: Promise<{ type: str
   const { type, id } = await params
   const db = await getDb()
   const types = await loadPteTypes({ db })
-  const item = await loadPteItem({ db, type, id })
+  const rowsByType = await loadPteNavRows({ db, types })
+  const item = await loadPteItem({ db, type, id, list: listOf({ rowsByType, type }) })
   return pteItemMetaOf({ item, type: typeAt({ types, code: type.toUpperCase() }) })
 }
 
@@ -40,11 +43,11 @@ export async function generateMetadata({ params }: { params: Promise<{ type: str
 export default async function PteItemPage({ params }: { params: Promise<{ type: string; id: string }> }) {
   const { type, id } = await params
   const db = await getDb()
-  const item = await loadPteItem({ db, type, id })
-  if (item == null) notFound()
   const types = await loadPteTypes({ db })
-  const comments = await loadPteComments({ db, qid: item.q.qid })
   const rowsByType = await loadPteNavRows({ db, types })
+  const item = await loadPteItem({ db, type, id, list: listOf({ rowsByType, type }) })
+  if (item == null) notFound()
+  const comments = await loadPteComments({ db, qid: item.q.qid })
   const user = await getUser(await headers())
   return (
     <Frame>

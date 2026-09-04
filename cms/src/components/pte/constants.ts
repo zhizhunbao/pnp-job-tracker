@@ -216,6 +216,56 @@ export const FORM_SEP = '/'
 export const FORM_KV = ':'
 
 /**
+ * 词形显示顺序(过去式 → 过去分词 → 现在分词 → 三单 → 复数 → 比较级 → 最高级)。
+ */
+export const FORM_ORDER = ['p', 'd', 'i', '3', 's', 'r', 't']
+
+/**
+ * 复数码(动词的「复数」与三单同形时是 ECDICT 噪音,丢掉)。
+ */
+export const FORM_PLURAL = 's'
+
+/**
+ * 三单码。
+ */
+export const FORM_THIRD = '3'
+
+/**
+ * 同一词形挂多个标签时的连接符(「过去式 / 过去分词 outperformed」)。
+ */
+export const FORM_LABEL_SEP = ' / '
+
+/**
+ * 派生词族桶 → 标签 i18n 键(名词 / 动词 / 形容词;Frank 2026-09-04「只列名词动词形容词的形式」)。
+ */
+export const FAMILY_KEY: Record<string, string> = {
+  /**
+   * 名词。
+   */
+  n: 'pte.fam.n',
+
+  /**
+   * 动词。
+   */
+  v: 'pte.fam.v',
+
+  /**
+   * 形容词。
+   */
+  a: 'pte.fam.a',
+}
+
+/**
+ * 词族桶显示顺序。
+ */
+export const FAMILY_ORDER = ['n', 'v', 'a']
+
+/**
+ * 同桶多个词的连接符。
+ */
+export const FAMILY_WORD_SEP = ', '
+
+/**
  * 字典弹框尺寸档(modal 桶的 sm)。
  */
 export const DICT_MODAL_SIZE = 'fit'
@@ -618,6 +668,11 @@ export const QID_ID_AT = 2
  * 路由第三段是不是站内题号(纯数字 → 按题号查;否则按老的 源-源内id 形查,旧链接不断)。
  */
 export const NUM_RE = /^[0-9]+$/
+
+/**
+ * 服务端进程内缓存时长(题型维度 / 各型题单;seed 日更,一分钟足够)。
+ */
+export const SERVER_TTL_MS = 60000
 
 /**
  * 留言提交状态 → 提示词键(闲置与在途没有提示)。

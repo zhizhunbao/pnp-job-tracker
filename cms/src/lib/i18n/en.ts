@@ -1169,6 +1169,7 @@ export const pteEn: Record<keyof typeof pteZh, string> = {
   'pte.dict.close': 'Close', 'pte.dict.loading': 'Looking up', 'pte.dict.none': 'No entry',
   'pte.dict.uk': 'UK', 'pte.dict.us': 'US',
   'pte.dict.zh': 'Chinese', 'pte.dict.en': 'English', 'pte.dict.forms': 'Forms',
+  'pte.fam.n': 'Noun', 'pte.fam.v': 'Verb', 'pte.fam.a': 'Adjective',
   'pte.form.p': 'Past', 'pte.form.d': 'Past participle', 'pte.form.i': 'Present participle', 'pte.form.3': '3rd person',
   'pte.form.r': 'Comparative', 'pte.form.t': 'Superlative', 'pte.form.s': 'Plural',
 }

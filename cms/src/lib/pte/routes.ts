@@ -60,6 +60,7 @@ export async function pteDictRoute(req: Request): Promise<Response> {
     {
       ok: true, word: entry.word, phonetic: entry.phonetic, translation: entry.translation, lemma: entry.lemma,
       phoneticUk: entry.phoneticUk, phoneticUs: entry.phoneticUs, definition: entry.definition, forms: entry.forms,
+      family: entry.family,
     },
     { headers: { [HDR_CACHE_CONTROL]: DICT_CACHE } },
   )

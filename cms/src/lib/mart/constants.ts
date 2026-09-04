@@ -543,7 +543,7 @@ export const COLS_PTE_AUDIO = ['qid', 'mime', 'b64', 'voice']
 /**
  * pte_dict 列(mart 键同名)。
  */
-export const COLS_PTE_DICT = ['word', 'phonetic', 'translation', 'lemma', 'phonetic_uk', 'phonetic_us', 'tag', 'collins', 'frq', 'definition', 'forms']
+export const COLS_PTE_DICT = ['word', 'phonetic', 'translation', 'lemma', 'phonetic_uk', 'phonetic_us', 'tag', 'collins', 'frq', 'definition', 'forms', 'family']
 
 /**
  * field_sources 列(坑 2:白名单必须显式列全字段)。

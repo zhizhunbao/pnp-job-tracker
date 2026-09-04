@@ -14,17 +14,18 @@ import {
   ALIGN_LEFT, API_COMMENTS, API_PTE_DONE, BRACKET_L, BRACKET_R, CLOCK_PAD, CLOCK_SEP, CLS_SEP, COL_ACT, COL_NUM,
   COL_SEEN, COL_TEXT, COL_TIMES, CRED_INCLUDE, DASH, DATE_LEN, DAY_MS, DESC_LEN_MAX, DICT_API, DICT_BUSY, DICT_EDGE_PX,
   DICT_GAP_PX, DICT_ID, DICT_IDLE, DICT_LINE_SEP, DICT_MIN_LEN, DICT_NONE, DICT_OK, DICT_TAG_KEY, DICT_W_PX, DONE_KEY,
-  ELLIPSIS, EMPTY_DONE, EV_MOUSEUP, EV_TOUCHEND, FORM_KEY, FORM_KV, FORM_SEP, GATE_LOGIN, GATE_NONE, GATE_UPGRADE,
-  HASH, HDR_CONTENT_TYPE, ID_SEP, INST_KEY, ITEM_DESC_TPL, ITEM_TITLE_TPL, KIND_EXAM, KIND_NOTE, LANG_EN, LANG_KO,
-  LANG_ZH, LIKE_ANY, LIST_DESC_TPL, LIST_TITLE_TPL, MARK_TAG, METHOD_POST, METHOD_PUT, MIME_JSON, MS_PER_MIN,
-  NAV_CENTER_DIV, NAV_ID_PREFIX, NAV_TEXT_LEN, NOTE_HINT_KEY, NOT_FOUND_TITLE, NUM_HEAD, NUM_RE, PAD_CHAR, PAGE_STEP,
-  PAREN_L, PAREN_R, PHASE_ANSWERING, PHASE_CHECKED, PHASE_READY, PREP_S, PTE_META, PUNCT_RE, QID_SEP,
-  QUOTA_KEY, QUOTA_MAX, RATE_DIGITS, RATE_HEAD, RATE_STEPS, REC_CAP_S, REC_MIME, REC_STATE_INACTIVE, SECTION_KEY,
-  SECTION_ORDER, SEC_PER_MIN, SPK_GUARD_MS, SPK_NONE, STATE_BUSY, STATE_ERR, STATE_IDLE, STATE_SENT, TAG_SEP,
-  TEXT_NONE, TEXT_TOKEN_RE, TICK_MS, TIER_CLS_HEAD, TIER_EASY_TAGS, TIER_FRQ_MIN, TIER_NONE, TIER_ORDER, TIER_TAGS,
-  TIME_SEP, TITLE_LEN_MAX, TTS_GUARD_BASE_MS, TTS_LANG, TTS_LANG_HEAD, TTS_MS_PER_WORD, TTS_RATE, T_RA, UNDERSCORE,
-  URL_PTE, URL_SEP, VAR_N, VAR_NUM, VAR_TEXT, VAR_TITLE, VAR_TYPE, WORD_RE, WORD_SPLIT_RE, WORD_TRIM, W_ACT, W_NUM,
-  W_SEEN, W_TEXT, W_TIMES,
+  ELLIPSIS, EMPTY_DONE, EV_MOUSEUP, EV_TOUCHEND, FAMILY_KEY, FAMILY_ORDER, FAMILY_WORD_SEP, FORM_KEY, FORM_KV,
+  FORM_LABEL_SEP, FORM_ORDER, FORM_PLURAL, FORM_SEP, FORM_THIRD, GATE_LOGIN, GATE_NONE, GATE_UPGRADE, HASH,
+  HDR_CONTENT_TYPE, ID_SEP, INST_KEY, ITEM_DESC_TPL, ITEM_TITLE_TPL, KIND_EXAM, KIND_NOTE, LANG_EN, LANG_KO, LANG_ZH,
+  LIKE_ANY, LIST_DESC_TPL, LIST_TITLE_TPL, MARK_TAG, METHOD_POST, METHOD_PUT, MIME_JSON, MS_PER_MIN, NAV_CENTER_DIV,
+  NAV_ID_PREFIX, NAV_TEXT_LEN, NOTE_HINT_KEY, NOT_FOUND_TITLE, NUM_HEAD, NUM_RE, PAD_CHAR, PAGE_STEP, PAREN_L, PAREN_R,
+  PHASE_ANSWERING, PHASE_CHECKED, PHASE_READY, PREP_S, PTE_META, PUNCT_RE, QID_SEP, QUOTA_KEY, QUOTA_MAX, RATE_DIGITS,
+  RATE_HEAD, RATE_STEPS, REC_CAP_S, REC_MIME, REC_STATE_INACTIVE, SECTION_KEY, SECTION_ORDER, SEC_PER_MIN,
+  SERVER_TTL_MS, SPK_GUARD_MS, SPK_NONE, STATE_BUSY, STATE_ERR, STATE_IDLE, STATE_SENT, TAG_SEP, TEXT_NONE,
+  TEXT_TOKEN_RE, TICK_MS, TIER_CLS_HEAD, TIER_EASY_TAGS, TIER_FRQ_MIN, TIER_NONE, TIER_ORDER, TIER_TAGS, TIME_SEP,
+  TITLE_LEN_MAX, TTS_GUARD_BASE_MS, TTS_LANG, TTS_LANG_HEAD, TTS_MS_PER_WORD, TTS_RATE, T_RA, UNDERSCORE, URL_PTE,
+  URL_SEP, VAR_N, VAR_NUM, VAR_TEXT, VAR_TITLE, VAR_TYPE, WORD_RE, WORD_SPLIT_RE, WORD_TRIM, W_ACT, W_NUM, W_SEEN,
+  W_TEXT, W_TIMES,
 } from './constants'
 import { CACHE } from './variables'
 import css from './pte.module.css'
@@ -35,19 +36,20 @@ import { TextCell } from './textcell'
 import { TimesCell } from './timescell'
 import type {
   AgoTextIn, AudioEndedIn, BracketIn, CanPlayIn, CellRowsIn, ChunkSinkFn, ClickFn, ClockIn, ColsOfIn, CommentsOfKindIn,
-  DaysAgoIn, DeadFlag, DictApiBody, DictCloseIn, DictEntry, DictForm, DictFormsIn, DictLinesIn, DictLookupIn, DictPos,
-  DictPosIn, DictTagKeyIn, DiffIn, DiffOut, DiffToken, DomEventFn, DoneClsIn, DoneResBody, DoneSyncIn, EffectFn,
-  ExamCountsIn, ExamOpenIn, ExamSubmitIn, GateCloseIn, GatedPlayIn, GatedStartIn, GatedSubmitIn, HintIn, HoverWordIn,
-  InputChangeIn, IsDoneIn, ItemHrefIn, ItemMetaIn, LcsAtIn, ListMetaIn, ListTiersIn, LookupNowIn, MarkDoneIn,
-  MaybeHref, MicIn, MoreIn, NavPickIn, NavRowsIn, NavScrollIn, NavTextIn, NeighborsIn, NeighborsOut, NoteSubmitIn,
-  PhaseSetIn, PhonIn, PlayIn, PlayUrlIn, PostCommentIn, PteCellRow, PteCol, PteComment, PteCommentDbRow, PteCommentsIn,
-  PteDictTagDbRow, PteExamCount, PteExamCountDbRow, PteItem, PteItemLoadIn, PteListDbRow, PteListIn, PteMeta,
-  PteOneDbRow, PteQuestion, PteQuestionIn, PteRow, PteRowIn, PteSection, PteTiersIn, PteType, PteTypeDbRow, PteTypesIn,
-  QidOfIn, QuotaDoc, RateAudioIn, RateTextIn, RecallsIn, RecorderHandle, RecorderStopFn, RecorderStopIn, RedoIn,
-  SaveDoneIn, SectionLabelIn, SectionsIn, SeekAudioIn, SeenCountIn, SeenTextIn, SelectedWord, SelectionWatchIn,
-  SetBoolIn, SetBoolValIn, SettleDictIn, SpeakIn, SpeakWordIn, SpkClsIn, StartRecIn, StartRecorderIn, SubmitIn,
-  TextChangeFn, TextChangeIn, TextPart, TextPartsIn, TextShownIn, TickerIn, TierOfIn, TimeTextIn, ToggleIn, TypeAtIn,
-  TypeCodeIn, TypeLabelIn, TypeNameIn, WordCountIn,
+  DaysAgoIn, DeadFlag, DictApiBody, DictCloseIn, DictEntry, DictFamilyIn, DictFamilyRow, DictForm, DictFormsIn,
+  DictLinesIn, DictLookupIn, DictPos, DictPosIn, DictTagKeyIn, DiffIn, DiffOut, DiffToken, DomEventFn, DoneClsIn,
+  DoneResBody, DoneSyncIn, DurationIn, EffectFn, ExamCountsIn, ExamOpenIn, ExamSubmitIn, FamilyOfIn, FormLabelIn,
+  GateCloseIn, GatedPlayIn, GatedStartIn, GatedSubmitIn, HintIn, HoverWordIn, InputChangeIn, IsDoneIn, ItemHrefIn,
+  ItemMetaIn, LcsAtIn, ListMetaIn, ListOfIn, ListTiersIn, LookupNowIn, MarkDoneIn, MaybeHref, MicIn, MoreIn, NavPickIn,
+  NavRowsIn, NavScrollIn, NavTextIn, NeighborsIn, NeighborsOut, NoteSubmitIn, PhaseSetIn, PhonIn, PlayIn, PlayUrlIn,
+  PostCommentIn, PteCellRow, PteCol, PteComment, PteCommentDbRow, PteCommentsIn, PteDictTagDbRow, PteExamCount,
+  PteExamCountDbRow, PteItem, PteItemLoadIn, PteListDbRow, PteListIn, PteMeta, PteOneDbRow, PteQuestion, PteQuestionIn,
+  PteRow, PteRowIn, PteSection, PteTiersIn, PteType, PteTypeDbRow, PteTypesIn, QidOfIn, QuotaDoc, RateAudioIn,
+  RateTextIn, RecallsIn, RecorderHandle, RecorderStopFn, RecorderStopIn, RedoIn, SaveDoneIn, SectionLabelIn,
+  SectionsIn, SeekAudioIn, SeenCountIn, SeenTextIn, SelectedWord, SelectionWatchIn, SetBoolIn, SetBoolValIn,
+  SettleDictIn, SpeakIn, SpeakWordIn, SpkClsIn, StartRecIn, StartRecorderIn, SubmitIn, TextChangeFn, TextChangeIn,
+  TextPart, TextPartsIn, TextShownIn, TickerIn, TierOfIn, TimeTextIn, ToggleIn, TypeAtIn, TypeCodeIn, TypeLabelIn,
+  TypeNameIn, WordCountIn,
 } from './types'
 
 /**
@@ -57,7 +59,13 @@ import type {
  * @returns 题型清单。
  */
 export async function loadPteTypes(x: PteTypesIn): Promise<PteType[]> {
-  return queryRowsOrEmpty({ db: x.db, sql: SQL.PTE_TYPES, params: [], map: toPteType })
+  const hit = CACHE.types
+  if (hit != null && Date.now() - hit.at < SERVER_TTL_MS) {
+    return hit.rows
+  }
+  const rows = await queryRowsOrEmpty({ db: x.db, sql: SQL.PTE_TYPES, params: [], map: toPteType })
+  CACHE.types = { at: Date.now(), rows }
+  return rows
 }
 
 /**
@@ -103,7 +111,7 @@ export async function loadPteItem(x: PteItemLoadIn): Promise<PteItem | null> {
     return null
   }
   const qid = text(row.qid)
-  const list = await loadPteList({ db: x.db, type: x.type })
+  const list = x.list
   let listed: PteRow | null = null
   for (const r of list) {
     if (r.qid === qid) {
@@ -1285,6 +1293,24 @@ export function makeSetBool(x: SetBoolValIn): ClickFn {
 }
 
 /**
+ * 播放条的总秒:浏览器给的时长只认有限值,且只许往大走(mp3 边下边估会先报小值,滑块跑到头又缩回来 ——
+ * Frank 2026-09-04「这个没有定格」);播到哪至少算到哪。
+ *
+ * @param x 元素与现总秒。
+ * @returns 总秒。
+ */
+export function durationOf(x: DurationIn): number {
+  let out = x.dur
+  if (Number.isFinite(x.el.duration) && x.el.duration > out) {
+    out = x.el.duration
+  }
+  if (x.el.currentTime > out) {
+    out = x.el.currentTime
+  }
+  return out
+}
+
+/**
  * 下一档倍速(按 RATE_STEPS 循环)。
  *
  * @param x 现倍速。
@@ -1802,18 +1828,37 @@ export function makeNavPick(x: NavPickIn): ClickFn {
 }
 
 /**
- * 全部有题的型各取一份题单(单题页目录树原地切型用)。
+ * 各型题单里取某一型(型段任意大小写;没有给空清单)。
+ *
+ * @param x 各型题单与型段。
+ * @returns 这一型的题单。
+ */
+export function listOf(x: ListOfIn): PteRow[] {
+  const rows = x.rowsByType[typeCodeOf({ type: x.type })]
+  if (rows == null) {
+    return []
+  }
+  return rows
+}
+
+/**
+ * 全部有题的型各取一份题单(单题页目录树原地切型用;进程内缓存一分钟,换题不再现查 —— 站级聚合禁每请求现算)。
  *
  * @param x 数据库连接与题型维度。
  * @returns 型码 → 题单。
  */
 export async function loadPteNavRows(x: NavRowsIn): Promise<Record<string, PteRow[]>> {
+  const hit = CACHE.navRows
+  if (hit != null && Date.now() - hit.at < SERVER_TTL_MS) {
+    return hit.byType
+  }
   const out: Record<string, PteRow[]> = {}
   for (const t of x.types) {
     if (t.count > 0) {
       out[t.code] = await loadPteList({ db: x.db, type: t.code })
     }
   }
+  CACHE.navRows = { at: Date.now(), byType: out }
   return out
 }
 
@@ -2431,7 +2476,11 @@ function toDictEntry(e: DictApiBody): DictEntry | null {
   if (typeof e.forms === 'string') {
     forms = e.forms
   }
-  return { word: e.word, phonetic, lines, lemma, phoneticUk, phoneticUs, linesEn, forms }
+  let family: Record<string, string[]> = {}
+  if (typeof e.family === 'string') {
+    family = familyOf({ raw: e.family })
+  }
+  return { word: e.word, phonetic, lines, lemma, phoneticUk, phoneticUs, linesEn, forms, family }
 }
 
 /**
@@ -2465,28 +2514,111 @@ export function dictTagKeyOf(x: DictTagKeyIn): string {
 }
 
 /**
- * 词形串 → 逐条(码不在表里的丢掉)。
+ * 词形串 → 逐条:固定顺序,同一词形的标签合并成一行,动词的「复数」与三单同形时丢掉
+ * (Frank 2026-09-04「词形部分看着别扭」)。
  *
  * @param x 词形串。
  * @returns 条目。
  */
 export function dictFormsOf(x: DictFormsIn): DictForm[] {
-  const out: DictForm[] = []
-  if (x.forms === TEXT_NONE) {
-    return out
+  const byCode: Record<string, string> = {}
+  if (x.forms !== TEXT_NONE) {
+    for (const part of x.forms.split(FORM_SEP)) {
+      const at = part.indexOf(FORM_KV)
+      if (at > 0) {
+        byCode[part.slice(0, at)] = part.slice(at + 1)
+      }
+    }
   }
-  for (const part of x.forms.split(FORM_SEP)) {
-    const at = part.indexOf(FORM_KV)
-    if (at <= 0) {
+  if (byCode[FORM_PLURAL] != null && byCode[FORM_PLURAL] === byCode[FORM_THIRD]) {
+    delete byCode[FORM_PLURAL]
+  }
+  const out: DictForm[] = []
+  for (const code of FORM_ORDER) {
+    const word = byCode[code]
+    const key = FORM_KEY[code]
+    if (word == null || key == null) {
       continue
     }
-    const key = FORM_KEY[part.slice(0, at)]
-    if (key == null) {
+    const same = out.find(function sameWord(f: DictForm): boolean {
+      return f.word === word
+    })
+    if (same != null) {
+      same.keys.push(key)
       continue
     }
-    out.push({ key, word: part.slice(at + 1) })
+    out.push({ keys: [key], word })
   }
   return out
+}
+
+/**
+ * 词族 JSON 串 → 桶表(网络来的串,解析失败或形状不对给空对象;只收字符串数组)。
+ *
+ * @param x JSON 串。
+ * @returns 桶码 → 词。
+ */
+export function familyOf(x: FamilyOfIn): Record<string, string[]> {
+  const out: Record<string, string[]> = {}
+  if (x.raw === TEXT_NONE) {
+    return out
+  }
+  let parsed: Record<string, string[]> = {}
+  try {
+    parsed = JSON.parse(x.raw) as Record<string, string[]>
+  } catch {
+    return out
+  }
+  for (const key of Object.keys(parsed)) {
+    const words = parsed[key]
+    if (Array.isArray(words)) {
+      out[key] = words.filter(isString)
+    }
+  }
+  return out
+}
+
+/**
+ * 字符串谓词(filter 用)。
+ *
+ * @param v 任一值。
+ * @returns 是字符串。
+ */
+function isString(v: string): v is string {
+  return typeof v === 'string'
+}
+
+/**
+ * 词族 → 逐行(名词 / 动词 / 形容词 固定顺序,空桶不出)。
+ *
+ * @param x 词族。
+ * @returns 行。
+ */
+export function dictFamilyOf(x: DictFamilyIn): DictFamilyRow[] {
+  const out: DictFamilyRow[] = []
+  for (const code of FAMILY_ORDER) {
+    const words = x.family[code]
+    const key = FAMILY_KEY[code]
+    if (words == null || words.length === 0 || key == null) {
+      continue
+    }
+    out.push({ key, words: words.join(FAMILY_WORD_SEP) })
+  }
+  return out
+}
+
+/**
+ * 词形行的标签串(多个标签用「 / 」连)。
+ *
+ * @param x 取词函数与标签键。
+ * @returns 标签串。
+ */
+export function formLabelOf(x: FormLabelIn): string {
+  const parts: string[] = []
+  for (const k of x.keys) {
+    parts.push(x.t(k))
+  }
+  return parts.join(FORM_LABEL_SEP)
 }
 
 /**

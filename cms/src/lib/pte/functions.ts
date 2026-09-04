@@ -122,6 +122,7 @@ export function toPteDict(r: PteDictDbRow): PteDictEntry {
   return {
     word: text(r.word), phonetic: text(r.phonetic), translation: text(r.translation), lemma: text(r.lemma),
     phoneticUk: text(r.phoneticUk), phoneticUs: text(r.phoneticUs), definition: text(r.definition), forms: text(r.forms),
+    family: text(r.family),
   }
 }
 

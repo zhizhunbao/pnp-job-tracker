@@ -1681,7 +1681,7 @@ export const PTE_AUDIO_ONE = `SELECT mime, b64 FROM pte_audio WHERE qid = $1 ORD
  * 词典一词(2026-09-04 自托管 ECDICT 子集;$1=小写词)。
  */
 export const PTE_DICT_ONE = `SELECT word, phonetic, translation, lemma, phonetic_uk AS "phoneticUk", phonetic_us AS "phoneticUs",
-            definition, forms
+            definition, forms, family
      FROM pte_dict WHERE word = $1 ORDER BY id ASC LIMIT 1`
 
 /**

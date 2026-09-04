@@ -39,3 +39,6 @@ ALTER TABLE pte_dict ADD COLUMN IF NOT EXISTS frq integer;         -- 词频排�
 -- 2026-09-04 晚 Frank「如果是韩国人呢?只能翻译成中文吗」「人家是这种的」(词形段):英文释义与词形随行进库。
 ALTER TABLE pte_dict ADD COLUMN IF NOT EXISTS definition text;     -- 英文释义(多义换行分隔);非中文界面用
 ALTER TABLE pte_dict ADD COLUMN IF NOT EXISTS forms varchar;       -- 词形变化(逗号分隔);空 = 没有
+
+-- 2026-09-04 晚 Frank「只列名词动词形容词的形式就可以了」:派生词族(WordNet derivation,JSON {n,v,a})随行进库,弹框词形段改列它。
+ALTER TABLE pte_dict ADD COLUMN IF NOT EXISTS family text;         -- 派生词族 JSON 串;'{}' = 没有

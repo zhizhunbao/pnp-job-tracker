@@ -15,6 +15,7 @@ dependencies = [
     # 结果 .venv 跑不了 ircc 役(本地一跑就 ModuleNotFoundError,只有容器里能跑)。
     "openpyxl>=3.1",
     "pydantic>=2.13.5",
+    "wn",
 ]
 
 [project.optional-dependencies]

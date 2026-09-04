@@ -1220,12 +1220,21 @@
 /*
  * 词形行前的词性标签(灰小字)。
  */
+/*
+ * 词形一行:标签列定宽对齐,词形列跟后。
+ */
+.dictForm {
+  display: grid;
+  grid-template-columns: 4.5em 1fr;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
 .dictFormTag {
-  display: inline-block;
-  min-width: 5.5em;
   color: #9ca3af;
   font-size: 12px;
-  margin-right: 6px;
 }
 
 /*

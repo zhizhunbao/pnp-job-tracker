@@ -1161,6 +1161,7 @@ export const pteKo: Record<keyof typeof pteZh, string> = {
   'pte.dict.close': '닫기', 'pte.dict.loading': '검색 중', 'pte.dict.none': '없음',
   'pte.dict.uk': '영', 'pte.dict.us': '미',
   'pte.dict.zh': '중국어', 'pte.dict.en': 'English', 'pte.dict.forms': '어형',
+  'pte.fam.n': '명사', 'pte.fam.v': '동사', 'pte.fam.a': '형용사',
   'pte.form.p': '과거형', 'pte.form.d': '과거분사', 'pte.form.i': '현재분사', 'pte.form.3': '3인칭 단수', 'pte.form.r': '비교급',
   'pte.form.t': '최상급', 'pte.form.s': '복수형',
 }

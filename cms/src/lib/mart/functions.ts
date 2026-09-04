@@ -607,6 +607,7 @@ function toPteDict(r: MartRow): MartRow {
     word: cellOf(r.word), phonetic: cellOf(r.phonetic), translation: cellOf(r.translation), lemma: cellOf(r.lemma),
     phonetic_uk: cellOf(r.phoneticUk), phonetic_us: cellOf(r.phoneticUs), tag: cellOf(r.tag), collins: cellOf(r.collins),
     frq: cellOf(r.frq), definition: cellOf(r.definition), forms: cellOf(r.forms),
+    family: cellOf(r.family),
   }
 }
 

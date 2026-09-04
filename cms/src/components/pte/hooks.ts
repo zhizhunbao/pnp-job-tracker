@@ -15,13 +15,13 @@ import {
   SPK_NONE, SPK_UK, SPK_US, STATE_IDLE, TEXT_NONE, T_WFD,
 } from './constants'
 import {
-  commentsOfKind, doneServerSnapshotOf, doneSnapshotOf, makeAudioEnded, makeCanPlaySnapshot, makeClose, makeCountdown,
-  makeDictClose, makeDictLookup, makeDictOpenFlag, makeDictSink, makeDoneSync, makeExamOpen, makeExamSubmit,
-  makeGateClose, makeGatedPlay, makeGatedSubmit, makeInputChange, makeMic, makeMore, makeNavPick, makeNavScroll,
-  makeNoteSubmit, makeOpen, makePhaseSet, makePlayEnd, makeRedo, makeSelectionWatch, makeSetBool, makeSpeakWord,
-  makeStartRec, makeSubmit, makeTextChange, makeTicker, makeToggle, nextRateOf, noop, openDictWord, prepSecOf,
-  quotaServerSnapshotOf, quotaSnapshotOf, rateAudio, recCapOf, reloadPage, seekAudio, seenCountOf, serverFalseOf,
-  stopSpeak, subscribeDone, subscribeNone,
+  commentsOfKind, doneServerSnapshotOf, doneSnapshotOf, durationOf, makeAudioEnded, makeCanPlaySnapshot, makeClose,
+  makeCountdown, makeDictClose, makeDictLookup, makeDictOpenFlag, makeDictSink, makeDoneSync, makeExamOpen,
+  makeExamSubmit, makeGateClose, makeGatedPlay, makeGatedSubmit, makeInputChange, makeMic, makeMore, makeNavPick,
+  makeNavScroll, makeNoteSubmit, makeOpen, makePhaseSet, makePlayEnd, makeRedo, makeSelectionWatch, makeSetBool,
+  makeSpeakWord, makeStartRec, makeSubmit, makeTextChange, makeTicker, makeToggle, nextRateOf, noop, openDictWord,
+  prepSecOf, quotaServerSnapshotOf, quotaSnapshotOf, rateAudio, recCapOf, reloadPage, seekAudio, seenCountOf,
+  serverFalseOf, stopSpeak, subscribeDone, subscribeNone,
 } from './functions'
 import type {
   DictEntry, DictPos, DictState, PlayerHookIn, PlayerPanel, PostState, PteAnswerHookIn, PteAnswerPanel, PteBoardHookIn,
@@ -103,9 +103,7 @@ export function usePlayer(x: PlayerHookIn): PlayerPanel {
       return
     }
     setCur(el.currentTime)
-    if (Number.isFinite(el.duration)) {
-      setDur(el.duration)
-    }
+    setDur(durationOf({ el, dur }))
   }
 
   return {

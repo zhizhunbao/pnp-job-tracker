@@ -107,12 +107,12 @@ from pte.constants import (DK_AVATAR_MARKS, DK_CRAWL_SLUG, DK_ENTRY_DELAY_S, DK_
                            OPEN_TIGHT_RE, P_MART_DONE_TPL, PUNCT_TIGHT_RE, Q_K_ANSWER, Q_K_AUDIO_FILE,
                            Q_K_AUDIO_URL, Q_K_FETCHED, Q_K_IMAGE_URL, Q_K_NUM, Q_K_PREDICTED, Q_K_QID,
                            Q_K_SEEN_N, Q_K_TEXT, QID_SEP, TOKEN_JOIN, T_ASQ, T_RA, T_WFD, DK_K_SN)
-from pte.constants import (A_K_B64, AUDIO_URL_TPL, NUM_DATE_SEP, N_K_NUM, N_K_QID, N_K_ROWS, N_K_TYPE, OUT_NUMBERS, D_K_COLLINS, D_K_DEFINITION, D_K_FORMS, D_K_FRQ, D_K_LEMMA, D_K_MISSING, D_K_TAG, D_K_PHON_UK, D_K_PHON_US, D_K_PHONETIC, D_K_ROWS, D_K_TRANSLATION, D_K_WORD, DICT_CSV_FIELD_MAX, DICT_CSV_K_COLLINS, DICT_CSV_K_DEFINITION, DICT_CSV_K_EXCHANGE, DICT_CSV_K_FRQ, DICT_DOMAIN_FULL, DICT_DOMAIN_RE, DICT_NL, DICT_CSV_K_TAG, DICT_CSV_K_PHONETIC, DICT_CSV_K_TRANSLATION, DICT_CSV_K_WORD, DICT_CSV_NL, DICT_EXCH_KV, DICT_EXCH_LEMMA, DICT_EXCH_SEP, DICT_EXCH_SKIP, DICT_MIN_LEN, DICT_WORD_RE, DICT_WORD_STRIP, IN_DICT_CSV, MART_DICT_FILE, OUT_DICT, P_DICT_DONE_TPL, P_DICT_YD_TPL, YD_API_TPL, YD_CRAWL_SLUG, YD_K_EC, YD_K_SIMPLE, YD_K_UK, YD_K_US, YD_K_WORD, YD_SLEEP_S, FFMPEG_BIN, FFMPEG_IN_ARGS, FFMPEG_OUT_ARGS, MART_AUDIO_FILE,
+from pte.constants import (A_K_B64, AUDIO_URL_TPL, NUM_DATE_SEP, N_K_NUM, N_K_QID, N_K_ROWS, N_K_TYPE, OUT_NUMBERS, D_K_COLLINS, D_K_DEFINITION, D_K_FAMILY, D_K_FORMS, D_K_FRQ, D_K_LEMMA, D_K_MISSING, D_K_TAG, D_K_PHON_UK, D_K_PHON_US, D_K_PHONETIC, D_K_ROWS, D_K_TRANSLATION, D_K_WORD, DICT_CSV_FIELD_MAX, DICT_CSV_K_COLLINS, DICT_CSV_K_DEFINITION, DICT_CSV_K_EXCHANGE, DICT_CSV_K_FRQ, DICT_DOMAIN_RE, DICT_NL, P_DICT_WN_TPL, WN_LEXICON, WN_POS_ADJ, WN_POS_KEEP, WN_POS_SAT, WN_REL_DERIVATION, DICT_CSV_K_TAG, DICT_CSV_K_PHONETIC, DICT_CSV_K_TRANSLATION, DICT_CSV_K_WORD, DICT_CSV_NL, DICT_EXCH_KV, DICT_EXCH_LEMMA, DICT_EXCH_SEP, DICT_EXCH_SKIP, DICT_MIN_LEN, DICT_WORD_RE, DICT_WORD_STRIP, IN_DICT_CSV, MART_DICT_FILE, OUT_DICT, P_DICT_DONE_TPL, P_DICT_YD_TPL, YD_API_TPL, YD_CRAWL_SLUG, YD_K_EC, YD_K_SIMPLE, YD_K_UK, YD_K_US, YD_K_WORD, YD_SLEEP_S, FFMPEG_BIN, FFMPEG_IN_ARGS, FFMPEG_OUT_ARGS, MART_AUDIO_FILE,
                            MERGE_SRC_ORDER, MIME_MP3, MIME_WAV, NORM_DROP, NORM_SPACE_RE, NORM_TEXT_RE, OUT_TTS_DIR,
                            OUT_TTS_INDEX, OUT_TTS_VOICES_DIR, P_MERGE_TPL, P_TTS_DONE_TPL, P_TTS_FAIL_TPL,
                            P_TTS_VOICE_TPL, TTS_FILE_SEP, TTS_K_FILE, TTS_K_MIME, TTS_K_ROWS, TTS_K_VOICE,
                            TTS_MODEL_SUFFIX, TTS_MP3_SUFFIX, TTS_VOICE, TTS_WAV_SUFFIX)
-from pte.scheme import (DictRowIn, BankIn, CloseIn, CollectIn, DiffIn, DkEntryIn, DkImagesIn, DkPageIn, DkPageLike,
+from pte.scheme import (FamilyIn, WnSense, WnWord, DictRowIn, BankIn, CloseIn, CollectIn, DiffIn, DkEntryIn, DkImagesIn, DkPageIn, DkPageLike,
                         Group, GroupIn, HttpClientLike, MediaRowIn, PbBankIn, PbGroupsIn, PbRowIn,
                         DaysIn, RadarIn, RecentRowIn, RecentSummaryIn, SnapshotIn, VoteGetIn,
                         XjExamIn, XjExamUrlIn, XjGroupIn, XjListIn, XjPageLike, XjRowIn, XjSignalsIn,
@@ -2350,14 +2350,21 @@ def save_numbers(known: dict) -> None:
 
 
 def expand_domains(translation: str) -> str:
-    """释义各行行首的领域缩写展开成全名(`[法]` → `[法律]`)。"""
-    out: list = []
+    """释义各行:行首带领域标签的(`[医学] 头痛`)是专业义,只在没有普通义时才留(去掉标签);有普通义就整行丢
+    (Frank 2026-09-04「头痛谁不知道是医学」「这种为什么要换一下行」);去重。函数名沿用(调用点不动)。"""
+    plain: list = []
+    tagged: list = []
     for line in translation.split(DICT_NL):
         m = DICT_DOMAIN_RE.match(line)
-        if m is not None and m.group(1) in DICT_DOMAIN_FULL:
-            line = "[" + DICT_DOMAIN_FULL[m.group(1)] + "]" + line[m.end():]
-        out.append(line)
-    return DICT_NL.join(out)
+        if m is not None:
+            body = line[m.end():].strip()
+            if body and body not in tagged:
+                tagged.append(body)
+        elif line and line not in plain:
+            plain.append(line)
+    if plain:
+        return DICT_NL.join(plain)
+    return DICT_NL.join(tagged)
 
 
 def forms_of(exchange: str) -> str:
@@ -2522,6 +2529,7 @@ def run_pte_dict() -> None:
             continue
         rows.append(dict_row_of(DictRowIn(hit=hit, base=base)))
     attach_phonetics(rows)
+    attach_families(rows)
     write_json(WriteJsonIn(path=OUT_DICT, payload={D_K_ROWS: rows, D_K_MISSING: missing}, indent=JSON_INDENT))
     write_json(WriteJsonIn(path=MART / MART_DICT_FILE, payload=rows, indent=JSON_INDENT, compact=True))
     say(P_DICT_DONE_TPL.format(vocab=len(vocab), hit=len(rows), miss=len(missing), out=MART / MART_DICT_FILE))
@@ -2658,3 +2666,53 @@ def phonetics_of(body: str) -> tuple:
             if uk or us:
                 return (uk, us)
     return ("", "")
+
+
+def attach_families(rows: list) -> None:
+    """给每行补派生词族:WordNet 里本词(及原形)各义项的 derivation 关系,按词性归成 n / v / a 三桶,
+    去掉本词与原形自身,JSON 串落 D_K_FAMILY。wn 是可选依赖(pyproject),体内延迟 import;词库不在就全空。"""
+    try:
+        import wn  # noqa: PLC0415 — 可选依赖,只在本步进口
+
+        lexicon = wn.Wordnet(WN_LEXICON)
+    except Exception as e:  # noqa: BLE001 — 词库缺席留痕,整批不中止
+        err(WN_LEXICON, e)
+        for r in rows:
+            r[D_K_FAMILY] = json.dumps({})
+        return
+    hit = 0
+    miss = 0
+    for r in rows:
+        fam = family_of(FamilyIn(lexicon=lexicon, word=r[D_K_WORD], lemma=r[D_K_LEMMA]))
+        r[D_K_FAMILY] = json.dumps(fam, ensure_ascii=False)
+        if fam:
+            hit += 1
+        else:
+            miss += 1
+    say(P_DICT_WN_TPL.format(hit=hit, miss=miss))
+
+
+def family_of(x: FamilyIn) -> dict:
+    """一词的派生词族 {pos: [词...]}(排序去重;本词与原形不算;只留 n / v / a,s 并进 a;桶空不出)。"""
+    own = {x.word, x.lemma}
+    buckets: dict = {}
+    for head in (x.word, x.lemma):
+        if not head:
+            continue
+        for w in x.lexicon.words(head):
+            word: WnWord = w
+            for sense in word.senses():
+                s_: WnSense = sense
+                for rel in s_.get_related(WN_REL_DERIVATION):
+                    r_: WnSense = rel
+                    related: WnWord = r_.word()
+                    pos = related.pos
+                    if pos == WN_POS_SAT:
+                        pos = WN_POS_ADJ
+                    if pos not in WN_POS_KEEP:
+                        continue
+                    lemma = related.lemma()
+                    if lemma in own:
+                        continue
+                    buckets.setdefault(pos, set()).add(lemma)
+    return {pos: sorted(words) for pos, words in buckets.items() if words}

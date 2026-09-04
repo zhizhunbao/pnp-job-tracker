@@ -448,6 +448,11 @@ export type PteItemLoadIn = {
    * 路由里的题段(`源-源内id`)。
    */
   id: string
+
+  /**
+   * 这一型的题单(门从缓存的各型题单里取,单题页不再为前后邻再查一遍)。
+   */
+  list: PteRow[]
 }
 
 /**
@@ -1423,6 +1428,11 @@ export type DictEntry = {
    * 词形变化(逗号分隔);空串 = 没有。
    */
   forms: string
+
+  /**
+   * 派生词族(桶码 n / v / a → 词);空对象 = 没有。
+   */
+  family: Record<string, string[]>
 }
 
 
@@ -1476,6 +1486,11 @@ export type DictApiBody = {
    * 词形变化。
    */
   forms: string
+
+  /**
+   * 派生词族 JSON 串。
+   */
+  family: string
 }
 
 /**
@@ -1851,6 +1866,21 @@ export type PlayerPanel = {
 
 
 /**
+ * `durationOf` 的入参。
+ */
+export type DurationIn = {
+  /**
+   * 音频元素。
+   */
+  el: HTMLAudioElement
+
+  /**
+   * 现总秒。
+   */
+  dur: number
+}
+
+/**
  * `makeAudioEnded` 的入参。
  */
 export type AudioEndedIn = {
@@ -2090,14 +2120,64 @@ export type SpkClsIn = {
  */
 export type DictForm = {
   /**
-   * 标签的 i18n 键。
+   * 标签的 i18n 键(同一词形挂多个标签就多个)。
    */
-  key: string
+  keys: string[]
 
   /**
    * 词形。
    */
   word: string
+}
+
+/**
+ * 词形标签串(`formLabelOf`)的入参。
+ */
+export type FormLabelIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 标签键。
+   */
+  keys: string[]
+}
+
+/**
+ * 弹框词族一行(标签键 + 该词性的词)。
+ */
+export type DictFamilyRow = {
+  /**
+   * 标签的 i18n 键。
+   */
+  key: string
+
+  /**
+   * 这一词性的派生词(逗号连好)。
+   */
+  words: string
+}
+
+/**
+ * 词族拆行(`dictFamilyOf`)的入参。
+ */
+export type DictFamilyIn = {
+  /**
+   * 派生词族。
+   */
+  family: Record<string, string[]>
+}
+
+/**
+ * 词族 JSON 串解析(`familyOf`)的入参。
+ */
+export type FamilyOfIn = {
+  /**
+   * JSON 串;空串或坏串给空对象。
+   */
+  raw: string
 }
 
 /**
@@ -3381,9 +3461,47 @@ export type StartRecIn = {
  */
 export type PteAnswerPartIn = PteAnswerIn
 
+/**
+ * 题型维度的进程内缓存项。
+ */
+export type TypesCache = {
+  /**
+   * 落缓存的时刻(ms)。
+   */
+  at: number
 
+  /**
+   * 题型维度。
+   */
+  rows: PteType[]
+}
 
+/**
+ * 各型题单的进程内缓存项。
+ */
+export type NavRowsCache = {
+  /**
+   * 落缓存的时刻(ms)。
+   */
+  at: number
 
+  /**
+   * 型码 → 题单。
+   */
+  byType: Record<string, PteRow[]>
+}
 
+/**
+ * `listOf` 的入参。
+ */
+export type ListOfIn = {
+  /**
+   * 各型题单。
+   */
+  rowsByType: Record<string, PteRow[]>
 
-
+  /**
+   * 路由里的型段。
+   */
+  type: string
+}

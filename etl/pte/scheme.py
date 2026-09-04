@@ -467,3 +467,52 @@ class DictRowIn:
 
     base: dict
     """原形表(原形 → 其 ECDICT 行),屈折形借释义用。"""
+
+
+class WnWord(Protocol):
+    """WordNet 词条(wn.Word)在本域只读的三格。"""
+
+    pos: str
+    """词性码(n / v / a / s / r)。"""
+
+    def lemma(self) -> str:
+        """词形。"""
+        ...
+
+    def senses(self) -> list:
+        """各义项。"""
+        ...
+
+
+class WnSense(Protocol):
+    """WordNet 义项(wn.Sense)在本域只用的两格。"""
+
+    def get_related(self, *args: str) -> list:
+        """按关系名取关联义项。"""
+        ...
+
+    def word(self) -> WnWord:
+        """义项所属词条。"""
+        ...
+
+
+class WnLexicon(Protocol):
+    """WordNet 词库(wn.Wordnet)在本域只用的一格。"""
+
+    def words(self, form: str) -> list:
+        """按词形查词条。"""
+        ...
+
+
+@dataclass
+class FamilyIn:
+    """family_of() 入参(一词 → 派生词族)。"""
+
+    lexicon: WnLexicon
+    """WordNet 词库实例(自声明 Protocol,可选依赖的形状不进本域)。"""
+
+    word: str
+    """本词(小写)。"""
+
+    lemma: str
+    """原形;空串 = 本身就是原形。"""

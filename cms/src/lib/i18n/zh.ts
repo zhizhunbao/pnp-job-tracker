@@ -1283,6 +1283,7 @@ export const pteZh = {
   'pte.dict.close': '关闭', 'pte.dict.loading': '查词中', 'pte.dict.none': '没查到',
   'pte.dict.uk': '英', 'pte.dict.us': '美',
   'pte.dict.zh': '中文', 'pte.dict.en': 'English', 'pte.dict.forms': '词形',
+  'pte.fam.n': '名词', 'pte.fam.v': '动词', 'pte.fam.a': '形容词',
   'pte.form.p': '过去式', 'pte.form.d': '过去分词', 'pte.form.i': '现在分词', 'pte.form.3': '第三人称单数', 'pte.form.r': '比较级',
   'pte.form.t': '最高级', 'pte.form.s': '复数',
 }

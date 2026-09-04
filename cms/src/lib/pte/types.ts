@@ -105,6 +105,11 @@ export type PteDictDbRow = {
    * 词形变化(逗号分隔)。
    */
   forms: string | null
+
+  /**
+   * 派生词族 JSON 串。
+   */
+  family: string | null
 }
 
 /**
@@ -150,6 +155,11 @@ export type PteDictEntry = {
    * 词形变化(逗号分隔);空串 = 没有。
    */
   forms: string
+
+  /**
+   * 派生词族 JSON 串({n,v,a});空串 = 没有。
+   */
+  family: string
 }
 
 /**
