@@ -23,9 +23,10 @@ ETL_DIR = REPO_ROOT / "etl"
 """被扫的根(域目录都在它下面)。"""
 
 DOMAINS = ["aip", "ats", "citations", "company", "crawl", "dli", "ee", "employers", "fcip",
-           "fetch", "fsa", "gate", "ircc", "jobbank", "lmia", "load", "log", "mart", "news",
+           "fetch", "fsa", "gate", "hwcr", "ircc", "jobbank", "lmia", "load", "log", "mart", "news",
            "noc", "paths", "pnp", "rcip", "sched", "wages"]
 """被扫的域清单(新立域在此登记,不登记 = 不被查 = 白写)。
+hwcr 2026-09-04 立域(Frank「创建一个单独的 etl 域」:海外超人渥太华站房屋帖,私用租房清单)
 gate/sched 2026-08-31 批K 立域(Frank「我觉得也需要设计成域」:根上五件管理层脚本
 全溶两域,etl/ 根 .py 清零)—— 自查闸自己也进名单,溶完用新门自查。
 mart 2026-08-31 批H 立域(Frank「可以」:08-11 跨源汇装四步 + grades 收编,回答「mart 怎么建」)

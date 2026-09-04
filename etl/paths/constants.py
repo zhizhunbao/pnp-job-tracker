@@ -88,6 +88,11 @@ ptebank/(wp-json 快照 + audio)。
 ⚠ 研究用途,不建 mart / 不灌库 / 不上线(开域手册 etl分域-20260829 §6.5:第三方商业题库
 不入库);分析「各家机经是否同源、是否与公开数据一致」。"""
 
+RAW_HWCR = RAW / "hwcr"
+"""hwcr 域原始抽取(2026-09-04 立域):海外超人便民信息系统(m.hwcr.vip)渥太华站房屋帖
+(ottawa-housing.json,按帖 id 增量去重累积)。接口响应原文住 crawl/hwcr/ 与 crawl/nominatim/。
+⚠ 私用清单(Frank 朋友给孩子在 Lisgar 中学附近租单间),不建 mart / 不灌库 / 不上线。"""
+
 PROCESSED = DATA / "processed"
 """transform 层根。"""
 
@@ -103,6 +108,10 @@ PROCESSED_JOBBANK = PROCESSED / "jobbank"
 PROCESSED_PTE = PROCESSED / "pte"
 """pte 域组织后产物(2026-09-01):ynwac 机经库解析分组(ynwac-bank.json,按题型分组 +
 签名 + 题目)。⚠ 同 RAW_PTE:研究用途,不建 mart / 不灌库 / 不上线。"""
+
+PROCESSED_HWCR = PROCESSED / "hwcr"
+"""hwcr 域组织后产物(2026-09-04):lisgar-rooms.json + lisgar-rooms.md(出租单间按到
+Lisgar Collegiate 距离排)。⚠ 同 RAW_HWCR:私用清单,不灌库不上线。"""
 
 MART = DATA / "mart"
 """load 层:09 产出的最终表(seed 灌库;R3 下 load 域 upload 上传)。"""
