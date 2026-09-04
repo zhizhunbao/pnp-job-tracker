@@ -405,7 +405,7 @@
 }
 
 .navRow:hover {
-  background: #f3f4f6;
+  background: var(--hover-bg);
 }
 
 /*
@@ -1397,7 +1397,7 @@
 }
 
 .kw0:hover {
-  background: #e5e7eb;
+  background: var(--hover-bg);
 }
 
 .kw1:hover {
