@@ -197,6 +197,11 @@ export type Price = {
    * 买 90 天比买 30 天每天省百分之几(徽标上的 N)。env 里 30 天档价读不出数时记 0。
    */
   savePct: number
+
+  /**
+   * 90 天档折成每 30 天的价(卡上「CA$4.33 / 30 天」)。
+   */
+  per30Of90: string
 }
 
 /**
@@ -866,6 +871,21 @@ export type UpgradeModalPanel = {
    * 关对比弹窗。
    */
   onCompareClose: ClickFn
+
+  /**
+   * 选中的档(默认 90 天)。
+   */
+  plan: PricePlan
+
+  /**
+   * 选某档(点卡)。
+   */
+  pickOf: (plan: PricePlan) => () => void
+
+  /**
+   * 「确认支付」:按选中档去 Checkout。
+   */
+  onPay: () => void
 }
 
 /**
@@ -973,4 +993,54 @@ export type LockFootIn = {
    * CTA 文案;可省 = 默认的升级词。
    */
   ctaLabel?: string
+}
+
+/**
+ * `per30Of` 的入参。
+ */
+export type Per30In = {
+  /**
+   * 90 天档展示价原文。
+   */
+  text: string
+}
+
+/**
+ * 升级弹框套餐卡类名(`upCardClsOf`)的入参。
+ */
+export type UpCardClsIn = {
+  /**
+   * 选中。
+   */
+  on: boolean
+}
+
+/**
+ * 选中档的价(`pickedPriceOf`)的入参。
+ */
+export type PickedPriceIn = {
+  /**
+   * 选中档。
+   */
+  plan: PricePlan
+
+  /**
+   * 两档价。
+   */
+  price: Price
+}
+
+/**
+ * 选档手柄(`makePlanSelect`)的入参。
+ */
+export type PlanSelectIn = {
+  /**
+   * 这张卡的档。
+   */
+  plan: PricePlan
+
+  /**
+   * 落选中档。
+   */
+  set: (plan: PricePlan) => void
 }

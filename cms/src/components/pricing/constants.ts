@@ -112,10 +112,10 @@ export const CTA_BLANK_MARK = '—'
 export const ARROW_NEXT = '→'
 
 /**
- * 展示价的兜底档(env `NEXT_PUBLIC_PRICE_DISPLAY` 没配时用它)。改价 = 换 Stripe Price
+ * 展示价(2026-09-04 Frank 拍板 5/13 两档,env 覆盖退役 —— Render 上老 env 会把展示价压回 19/39)。改价 = 换 Stripe Price
  * 与 env,零代码 —— 这两个数字只是「env 没配」时的最后一道保底,不是真价。
  */
-export const PRICE_DISPLAY_DEFAULT = 'CA$19,CA$39'
+export const PRICE_DISPLAY_DEFAULT = 'CA$5,CA$13'
 
 /**
  * 展示价 env 里两档之间的分隔符(`"CA$19,CA$39"` 前 30 天档、后 90 天档)。
@@ -156,6 +156,21 @@ export const PLAN_30 = '30'
  * 90 天时长包的档位标识(同上)。
  */
 export const PLAN_90 = '90'
+
+/**
+ * 90 天档折成「每 30 天」的除数(卡上写「CA$4.33 / 30 天」,照猩际的算法让用户自己比)。
+ */
+export const PER_30_DIV = 3
+
+/**
+ * 默认选中的档(季付更划算,先选它)。
+ */
+export const PLAN_DEFAULT = '90'
+
+/**
+ * 升级弹框权益清单的 i18n 键(只写已经有的功能;模考 / AI 评分做出来再加)。
+ */
+export const UP_PERK_KEYS = ['up.perk.quota', 'up.perk.sync']
 
 /**
  * 30 天档的天数(每天单价 = 档价 ÷ 它)。

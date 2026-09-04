@@ -708,6 +708,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'up.match': 'Free plan shows match details for the first {n} jobs per day',
   'up.cta': 'Upgrade to Pro',
   'up.compare': 'See full comparison',
+  'up.noRenew': 'No auto-renewal', 'up.per30': '{v} / 30 days', 'up.pay': 'Pay {v}', 'up.perk.quota': 'Unlimited practice',
+  'up.perk.sync': 'Progress synced across devices',
   'ob.step': 'Step {i} of {n}', 'ob.value': 'See your match with every job the moment you finish',
   'ob.skip': 'Skip', 'ob.back': 'Back', 'ob.next': 'Next', 'ob.finish': 'See my matches',
   'ob.nocHint': 'Not listed? Skip — search more jobs later in your account',
@@ -783,7 +785,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'acct.forgot': 'Forgot password?', 'acct.forgotSend': 'Send reset email', 'acct.forgotSent': 'If that email is registered, a reset link has been sent (valid for 1 hour).',
   'acct.resetTitle': 'Set a new password', 'acct.resetBtn': 'Set password & sign in', 'acct.resetBad': 'Link invalid or expired — go back and request a new one.', 'acct.backLogin': 'Back to sign in',
   // 时长包购买(E3-03)
-  'acct.buyTitle': 'Upgrade to Pro (one-time pass, no auto-renewal)',
+  'acct.buyTitle': 'Upgrade to Pro',
   'acct.buy30': 'Buy 30 days', 'acct.buy90': 'Buy 90 days',
   'acct.buyNote': 'Buying again before expiry extends the date · payments handled securely by Stripe',
   'acct.payOk': 'Payment received! Your expiry date updates within seconds — refresh to see it',

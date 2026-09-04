@@ -772,6 +772,8 @@ export const jobsZh = {
   'up.match': '匹配详情免费版每日仅前 {n} 岗',
   'up.cta': '升级 Pro',
   'up.compare': '看完整功能对比',
+  'up.noRenew': '到期不会自动续费', 'up.per30': '{v} / 30 天', 'up.pay': '确认支付 {v}', 'up.perk.quota': '无限刷题',
+  'up.perk.sync': '练过跨设备同步',
   'ob.step': '第 {i} 步 · 共 {n} 步', 'ob.value': '填完立刻看到与每个岗位的匹配度',
   'ob.skip': '跳过这步', 'ob.back': '上一步', 'ob.next': '下一步', 'ob.finish': '看我的匹配',
   'ob.nocHint': '没有?可跳过,稍后在账户里搜索更多职业',
@@ -859,7 +861,7 @@ export const siteZh = {
   'acct.forgot': '忘记密码?', 'acct.forgotSend': '发送重置邮件', 'acct.forgotSent': '如果该邮箱已注册,重置邮件已发出——请查收(链接 1 小时内有效)。',
   'acct.resetTitle': '设置新密码', 'acct.resetBtn': '设置新密码并登录', 'acct.resetBad': '链接无效或已过期,请返回登录重新发起找回。', 'acct.backLogin': '返回登录',
   // 时长包购买(E3-03)
-  'acct.buyTitle': '升级 Pro(一次性时长包,无自动续费)',
+  'acct.buyTitle': '升级 Pro',
   'acct.buy30': '购买 30 天', 'acct.buy90': '购买 90 天',
   'acct.buyNote': '未到期续买 = 到期日顺延 · 支付由 Stripe 安全处理',
   'acct.payOk': '支付成功!到期日将在数秒内更新,稍后刷新查看',

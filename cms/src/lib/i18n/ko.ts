@@ -705,6 +705,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'up.match': '무료 플랜은 하루 상위 {n}개 공고만 매칭 상세 제공',
   'up.cta': 'Pro 업그레이드',
   'up.compare': '전체 기능 비교',
+  'up.noRenew': '자동 갱신 없음', 'up.per30': '{v} / 30일', 'up.pay': '{v} 결제', 'up.perk.quota': '무제한 연습',
+  'up.perk.sync': '기기 간 진도 동기화',
   'ob.step': '{n}단계 중 {i}단계', 'ob.value': '완료하면 각 공고와의 매칭이 바로 보여요',
   'ob.skip': '건너뛰기', 'ob.back': '이전', 'ob.next': '다음', 'ob.finish': '내 매칭 보기',
   'ob.nocHint': '없나요? 건너뛰고 계정에서 직종 검색하기',
@@ -778,7 +780,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'acct.forgot': '비밀번호를 잊으셨나요?', 'acct.forgotSend': '재설정 메일 보내기', 'acct.forgotSent': '등록된 이메일인 경우 재설정 링크가 발송되었습니다(1시간 유효).',
   'acct.resetTitle': '새 비밀번호 설정', 'acct.resetBtn': '비밀번호 설정 및 로그인', 'acct.resetBad': '링크가 유효하지 않거나 만료되었습니다. 다시 요청해 주세요.', 'acct.backLogin': '로그인으로 돌아가기',
   // 时长包购买(E3-03)
-  'acct.buyTitle': 'Pro 업그레이드(일회성 기간권, 자동 갱신 없음)',
+  'acct.buyTitle': 'Pro 업그레이드',
   'acct.buy30': '30일 구매', 'acct.buy90': '90일 구매',
   'acct.buyNote': '만료 전 재구매 시 만료일 연장 · 결제는 Stripe로 안전하게 처리됩니다',
   'acct.payOk': '결제 완료! 만료일이 곧 업데이트되므로 새로고침하여 확인하세요.',

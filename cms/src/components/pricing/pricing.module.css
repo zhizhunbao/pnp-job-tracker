@@ -1102,3 +1102,87 @@
    */
   white-space: pre-line;
 }
+
+/*
+ * 2026-09-04 升级弹框重做:两张套餐卡(点选)、确认支付通栏钮、权益清单。
+ */
+.upCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 12px 12px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  color: #111827;
+  flex: 1;
+  min-width: 0;
+}
+
+/*
+ * 选中的卡:主色描边浅蓝底。
+ */
+.upCardOn {
+  border-color: var(--primary);
+  background: #eff6ff;
+}
+
+/*
+ * 卡上的天数。
+ */
+.upDays {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/*
+ * 卡上的价(大字)。
+ */
+.upPrice {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/*
+ * 「到期不会自动续费」。
+ */
+.upNoRenew {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
+/*
+ * 「确认支付 CA$x」通栏钮。
+ */
+.upPay {
+  width: 100%;
+  margin-top: 12px;
+  justify-content: center;
+}
+
+/*
+ * 权益清单。
+ */
+.upPerks {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 12px 0 0;
+  border-top: 1px solid #f3f4f6;
+  display: grid;
+  gap: 6px;
+  font-size: 13.5px;
+  color: #374151;
+}
+
+/*
+ * 权益一行(勾 + 字)。
+ */
+.upPerk {
+  display: flex;
+  align-items: center;
+  color: #374151;
+}

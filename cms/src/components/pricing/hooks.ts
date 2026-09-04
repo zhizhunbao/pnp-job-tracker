@@ -11,13 +11,13 @@
  */
 import { useEffect, useState } from 'react'
 import { useLang } from '@/components/i18n'
-import { TEXT_NONE, UPGRADE_CLOSED } from './constants'
+import { PLAN_DEFAULT, TEXT_NONE, UPGRADE_CLOSED } from './constants'
 import {
-  makeFlagSet, makePricingBuy, makeUpgradeBuy, makeUpgradeOpen, makeUpgradeSet, reloadPage, trackPricingModalOpen,
-  trackPricingOpen, trackShotClick, trackUpgradeOpen,
+  makeFlagSet, makePlanPick, makePlanSelect, makePricingBuy, makeUpgradeBuy, makeUpgradeOpen, makeUpgradeSet,
+  reloadPage, trackPricingModalOpen, trackPricingOpen, trackShotClick, trackUpgradeOpen,
 } from './functions'
 import type {
-  PricingBuyHookIn, PricingBuyPanel, PricingModalPanel, PricingPanel, UpgradeCtaHookIn, UpgradeCtaPanel,
+  PricePlan, PricingBuyHookIn, PricingBuyPanel, PricingModalPanel, PricingPanel, UpgradeCtaHookIn, UpgradeCtaPanel,
   UpgradeModalHookIn, UpgradeModalPanel, UpgradeOpen,
 } from './types'
 
@@ -91,16 +91,26 @@ export function useUpgradeModal(x: UpgradeModalHookIn): UpgradeModalPanel {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState(TEXT_NONE)
   const [compare, setCompare] = useState(false)
+  const [plan, setPlan] = useState<PricePlan>(PLAN_DEFAULT)
 
   useEffect(function reportOpen() {
     trackUpgradeOpen()
   }, [])
 
+  const onBuy = makeUpgradeBuy({ t: x.t, setBusy, setErr })
+
+  function pickOf(p: PricePlan): () => void {
+    return makePlanSelect({ plan: p, set: setPlan })
+  }
+
   return {
     busy,
     err,
     compare,
-    onBuy: makeUpgradeBuy({ t: x.t, setBusy, setErr }),
+    plan,
+    pickOf,
+    onPay: makePlanPick({ plan, onBuy }),
+    onBuy,
     onCompareOpen: makeFlagSet({ set: setCompare, v: true }),
     onCompareClose: makeFlagSet({ set: setCompare, v: false }),
   }

@@ -11,17 +11,18 @@ import { cssOf } from '@/components/css'
 import { FREE_ADVISOR_TRIES, FREE_JOBTEXT_TRIES, FREE_MATCH_JOBS_PER_DAY, PRO_ADVISOR_DAILY } from '@/lib/quota'
 import { track } from '@/lib/track'
 import {
-  CLS_SEP, CRED_INCLUDE, DAYS_30, DAYS_90, EVENT_CHECKOUT, EVENT_PAY_CLICK, EVENT_PRICING_OPEN,
-  EVENT_SHOT_CLICK, EVENT_UPGRADE_OPEN, FROM_RE, HDR_CONTENT_TYPE, KIND_DIRECT, LANG_ZH, LK_MASK_CLS,
-  MASK_LINES, MASK_SEP, METHOD_POST, MIME_JSON, P_FROM, PCT_FULL, PLAN_30, PLAN_90, PRICE_CURRENCY_RE,
-  PRICE_DECIMALS, PRICE_DIGITS_RE, PRICE_DISPLAY_DEFAULT, PRICE_P90_DEFAULT, PRICE_SEP, TEXT_NONE,
-  UPGRADE_AUTH, UPGRADE_BUY, URL_CHECKOUT, URL_SHOT_EN, URL_SHOT_ZH, WIDE_GAP,
+  CLS_SEP, CRED_INCLUDE, DAYS_30, DAYS_90, EVENT_CHECKOUT, EVENT_PAY_CLICK, EVENT_PRICING_OPEN, EVENT_SHOT_CLICK,
+  EVENT_UPGRADE_OPEN, FROM_RE, HDR_CONTENT_TYPE, KIND_DIRECT, LANG_ZH, LK_MASK_CLS, MASK_LINES, MASK_SEP, METHOD_POST,
+  MIME_JSON, PCT_FULL, PER_30_DIV, PLAN_30, PLAN_90, PRICE_CURRENCY_RE, PRICE_DECIMALS, PRICE_DIGITS_RE,
+  PRICE_DISPLAY_DEFAULT, PRICE_SEP, P_FROM, TEXT_NONE, UPGRADE_AUTH, UPGRADE_BUY, URL_CHECKOUT, URL_SHOT_EN,
+  URL_SHOT_ZH, WIDE_GAP,
 } from './constants'
 import type {
   BuyClsIn, BuyFn, CardClsIn, CheckoutRespJson, CheckoutUrlOfIn, ClickFn, CtaLabelOfIn, CtaSlotClsIn, FeatureClsIn,
-  FlagSetIn, FromKindOfIn, LockMsgOfIn, MaskTextOfIn, PerDayOfIn, PerLabelIn, PlanPickIn, Price, PriceAmountOfIn,
-  PriceCaps, PriceCurrencyOfIn, PricePlan, PricingBuyIn, PricingShotOfIn, PriceTexts, SavePctOfIn, TrackCheckoutIn,
-  TrackPayClickIn, UmamiWindow, UpBuyClsIn, UpgradeBuyIn, UpgradeOpen, UpgradeOpenIn, UpgradeOpenOfIn, UpgradeSetIn,
+  FlagSetIn, FromKindOfIn, LockMsgOfIn, MaskTextOfIn, Per30In, PerDayOfIn, PerLabelIn, PickedPriceIn, PlanPickIn,
+  PlanSelectIn, Price, PriceAmountOfIn, PriceCaps, PriceCurrencyOfIn, PricePlan, PriceTexts, PricingBuyIn,
+  PricingShotOfIn, SavePctOfIn, TrackCheckoutIn, TrackPayClickIn, UmamiWindow, UpBuyClsIn, UpCardClsIn, UpgradeBuyIn,
+  UpgradeOpen, UpgradeOpenIn, UpgradeOpenOfIn, UpgradeSetIn,
 } from './types'
 import css from './pricing.module.css'
 
@@ -112,26 +113,31 @@ export function priceOf(): Price {
     perDay30: perDayOf({ text: texts.p30, days: DAYS_30 }),
     perDay90: perDayOf({ text: texts.p90, days: DAYS_90 }),
     savePct: savePctOf({ p30: texts.p30, p90: texts.p90 }),
+    per30Of90: per30Of({ text: texts.p90 }),
   }
 }
 
 /**
- * 解析 env `NEXT_PUBLIC_PRICE_DISPLAY`(形如 `CA$19,CA$39`:逗号前 30 天档、逗号后 90 天档)。
- * env 没配就整行用兜底档;配了但没写逗号,就把整行当 30 天档、90 天档退回兜底价。
- * 不按下标取值(闸 no-literal-index):用逗号的位置切两刀,顺带把「压根没有逗号」这一支
- * 显式写出来 —— 原先靠数组解构的默认值兜,读的人看不出还有这么一种输入。
+ * 90 天档折成每 30 天多少钱(`CA$13` → `CA$4.33`)。
+ *
+ * @param x 90 天档展示价原文。
+ * @returns 每 30 天的价。
+ */
+export function per30Of(x: Per30In): string {
+  const each = priceAmountOf({ text: x.text }) / PER_30_DIV
+  return `${priceCurrencyOf({ text: x.text })}${each.toFixed(PRICE_DECIMALS)}`
+}
+
+/**
+ * 两档展示价(逗号前 30 天档、逗号后 90 天档;单一来源 PRICE_DISPLAY_DEFAULT,2026-09-04 env 覆盖退役)。
  *
  * @returns 两档的展示价原文(已去掉两头空白)。
  */
 export function priceTextsOf(): PriceTexts {
-  let line = PRICE_DISPLAY_DEFAULT
-  const env = process.env.NEXT_PUBLIC_PRICE_DISPLAY
-  if (env != null && env !== TEXT_NONE) {
-    line = env
-  }
+  const line = PRICE_DISPLAY_DEFAULT
   const cut = line.indexOf(PRICE_SEP)
   if (cut < 0) {
-    return { p30: line.trim(), p90: PRICE_P90_DEFAULT }
+    return { p30: line.trim(), p90: line.trim() }
   }
   return { p30: line.slice(0, cut).trim(), p90: line.slice(cut + PRICE_SEP.length).trim() }
 }
@@ -460,6 +466,39 @@ export function buyClsOf(x: BuyClsIn): string {
  * @param x 档位与忙态。
  * @returns 拼好的 className。
  */
+export function upCardClsOf(x: UpCardClsIn): string {
+  const cls = [cssOf(css.upCard)]
+  if (x.on) {
+    cls.push(cssOf(css.upCardOn))
+  }
+  return cls.join(CLS_SEP)
+}
+
+/**
+ * 「确认支付 CA$x」里选中档的价。
+ *
+ * @param x 选中档与两档价。
+ * @returns 展示价。
+ */
+export function pickedPriceOf(x: PickedPriceIn): string {
+  if (x.plan === PLAN_90) {
+    return x.price.p90
+  }
+  return x.price.p30
+}
+
+/**
+ * 造选档手柄(点卡只选中,不直接跳支付)。
+ *
+ * @param x 档与落格。
+ * @returns 手柄。
+ */
+export function makePlanSelect(x: PlanSelectIn): ClickFn {
+  return function select(): void {
+    x.set(x.plan)
+  }
+}
+
 export function upBuyClsOf(x: UpBuyClsIn): string {
   const planCls: Record<PricePlan, string> = {
     [PLAN_30]: cssOf(css.upBuy30),
