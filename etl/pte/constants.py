@@ -997,6 +997,63 @@ SRC_DUOINK = "duoink"
 P_DK_NO_BROWSER = "  duoink:playwright 不可用 —— 跳过(渲染态抓取只在装了浏览器的机器跑)"
 """日志:无浏览器跳过(容器缺 playwright 是预期形态,不当红)。"""
 
+DK_COMMENT_TPL = "/comment"
+"""题页评论路由尾巴(点 COMMENTS 页签即改路由;直开省一次点击)。评论接口 PTE.Comment.GetExpComments 响应
+_encryptedData 密文,只能读渲染态(2026-09-04 侦察)。"""
+
+DK_COMMENT_PARTS = ("RA", "RS", "ASQ", "WFD")
+"""抓评论的站内题型:先只抓已上 mart 的四型(2026-09-04 Frank「评论里可能有有价值的信息,我对谁评论不感兴趣」);
+阅读四型现只有小枫叶源,多墨接入时同步扩。"""
+
+DK_COMMENT_SCROLL_JS = ("() => { const c = document.querySelector('.comments-view-base'); if (c) { c.scrollTop = c.scrollHeight; }"
+                        " window.scrollTo(0, document.body.scrollHeight);"
+                        " return document.querySelectorAll('.divider-element').length; }")
+"""评论区滚到底(内层 .comments-view-base 自己滚)并返回已渲染条数;条数不再涨 = 到底。"""
+
+DK_COMMENT_SCROLL_MAX = 30
+"""滚到底最多轮数(实测 67 条一轮即全;上限防无限)。"""
+
+DK_COMMENT_SCROLL_WAIT_S = 2.0
+"""每轮滚动后等增量渲染。"""
+
+DK_COMMENTS_JS = ("() => [...document.querySelectorAll('.divider-element')]"
+                  ".filter(el => !el.parentElement.closest('.divider-element'))"
+                  ".map(el => { const t = el.querySelector('.item-text'); const g = el.querySelector('.tag');"
+                  " const head = el.querySelector('.caption span'); const row = el.querySelector('.mt-1');"
+                  " const meta = row ? [...row.querySelectorAll('span')].filter(x => x !== g).map(x => x.textContent.trim())"
+                  ".filter(x => x.length > 0) : [];"
+                  " return { num: head ? head.textContent.trim() : '', text: t ? t.textContent.trim() : '',"
+                  " tag: g ? g.textContent.trim() : '', meta: meta }; })")
+"""页内抽顶层评论(回复不进,原文在 crawl 层):站内编号 / 正文 / 类别标签(chitchat·memories·error correction·
+supplement·ask for help·experiences)/ 尾行零散字段(时间、点赞等原样清单)。**不取作者、不取头像**(Frank 2026-09-04)。"""
+
+DK_COMMENT_COUNT_RE = re.compile(r"(\d+) comments")
+"""评论区顶部「N comments」声明数(与抽到条数对账用)。"""
+
+DK_COMMENT_DELAY_S = 4.0
+"""评论页之间的间隔(比题页短:同站同会话,页轻)。"""
+
+OUT_DK_COMMENTS_DIR = OUT_DK_RAW_DIR / "comments"
+"""评论落盘目录:comments/<id>.json(幂等断续,已存跳过)。"""
+
+DK_R_DECLARED = "declared"
+"""评论落盘行:站内声明条数格。"""
+
+DK_R_COMMENTS = "comments"
+"""评论落盘行:评论清单格。"""
+
+DK_C_TEXT = "text"
+"""评论条:正文格(DK_COMMENTS_JS 返回键)。"""
+
+DK_C_TAG = "tag"
+"""评论条:类别标签格。"""
+
+P_DK_COMMENTS_TPL = "  duoink 评论:新抓 {got} · 已存 {skip} · 失败 {fail} · 条数 {rows} → {dir}"
+"""评论步收尾一行。"""
+
+P_DK_COMMENT_BLOCK_ABORT = "duoink 连续验证超时 {n} 次 —— 中止评论步(幂等,处理完验证后再 --only dk-comments 续跑)"
+"""评论步连续验证超时中止。"""
+
 P_DK_LIST_TPL = "  duoink 列表 {part}:{n} 条"
 """日志:一个题型列表读完。"""
 

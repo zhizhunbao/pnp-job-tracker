@@ -44,6 +44,10 @@ from pte.constants import (K_OPTIONS, K_PARAGRAPHS, K_BLANKS, DK_AVATAR_MARKS, D
                            OUT_DK_CHANGES, OUT_DK_ENTRIES_DIR, OUT_DK_IMG_DIR, OUT_DK_PREV,
                            OUT_DK_RAW_DIR, P_DK_DONE_TPL, P_DK_ENTRIES_TPL, P_DK_LIST_TPL,
                            P_DK_LISTS_DONE_TPL, P_DK_LOGIN_LOST, P_DK_NO_BROWSER, SRC_DUOINK,
+                           DK_COMMENT_TPL, DK_COMMENT_PARTS, DK_COMMENT_SCROLL_JS, DK_COMMENT_SCROLL_MAX,
+                           DK_COMMENT_SCROLL_WAIT_S, DK_COMMENTS_JS, DK_COMMENT_COUNT_RE, DK_COMMENT_DELAY_S,
+                           OUT_DK_COMMENTS_DIR, DK_R_DECLARED, DK_R_COMMENTS, P_DK_COMMENTS_TPL,
+                           P_DK_COMMENT_BLOCK_ABORT,
                            DATE_LEN, DAYS_BAD, DK_K_FREQ_CORE, DK_K_SEEN, EXAM_DATE_RE, OUT_RECENT,
                            P_RECENT_DONE_TPL, R_K_FREQ, R_K_SEEN, R_K_SEEN_N, R_K_SUMMARY, R_K_VOTES,
                            R_S_LAST, R_S_SEEN, R_S_TOTAL, R_S_WIN_TPL, RECENT_WINDOWS_D, V_C_CONTENT,
@@ -1349,6 +1353,107 @@ def run_dk_entries() -> None:
                 time.sleep(DK_ENTRY_DELAY_S)
         ctx.close()
     say(P_DK_ENTRIES_TPL.format(got=got, skip=skip, fail=fail, imgs=imgs, dir=OUT_DK_ENTRIES_DIR))
+
+
+def run_dk_comments() -> None:
+    """评论步(2026-09-04 Frank「评论里可能有有价值的信息,我对谁评论不感兴趣」):四型逐题直开 /comment 路由 →
+    滚到底 → 渲染态 HTML 进 crawl 层 → 页内抽 编号/正文/类别/尾行(不取作者)→ comments/<id>.json;已存跳过,单题失败计数。"""
+    if dk_browser_ok() is False:
+        say(P_DK_NO_BROWSER)
+        return
+    from playwright.sync_api import sync_playwright
+    OUT_DK_COMMENTS_DIR.mkdir(parents=True, exist_ok=True)
+    got = 0
+    skip = 0
+    fail = 0
+    rows = 0
+    streak = 0
+    with sync_playwright() as p:
+        ctx = p.chromium.launch_persistent_context(str(PROFILE_DIR), headless=False)
+        page = cast(DkPageLike, dk_first_page(ctx))
+        for part in DK_COMMENT_PARTS:
+            if streak >= DK_BLOCK_ABORT_MAX:
+                continue
+            for item in dk_list_items_of(part):
+                eid = str(item[DK_K_ID])
+                path = OUT_DK_COMMENTS_DIR / DK_ENTRY_FILE_TPL.format(id=eid)
+                if path.exists():
+                    skip += 1
+                    continue
+                try:
+                    payload = dk_comments_of(DkEntryIn(page=page, part=part, eid=eid))
+                except Exception:  # noqa: BLE001 — 单题导航/渲染/验证错跳过计数,不拖全轮
+                    fail += 1
+                    streak += 1
+                    if streak >= DK_BLOCK_ABORT_MAX:
+                        say(P_DK_COMMENT_BLOCK_ABORT.format(n=streak))
+                        break
+                    continue
+                streak = 0
+                write_json(WriteJsonIn(path=path, payload=payload, indent=JSON_INDENT))
+                got += 1
+                rows += len(payload[DK_R_COMMENTS])
+                time.sleep(DK_COMMENT_DELAY_S)
+        ctx.close()
+    say(P_DK_COMMENTS_TPL.format(got=got, skip=skip, fail=fail, rows=rows, dir=OUT_DK_COMMENTS_DIR))
+
+
+def dk_comments_of(x: DkEntryIn) -> dict:
+    """一道题的评论页 → {id, part, declared, comments}:导航 → 等渲染 → 验证壳门 → 滚到底 → 原文进 crawl 层 → 页内抽条。"""
+    url = DK_SOURCE + DK_ENTRY_TPL.format(part=x.part, id=x.eid) + DK_COMMENT_TPL
+    x.page.goto(url, wait_until=DK_WAIT_UNTIL, timeout=DK_NAV_TIMEOUT_MS)
+    time.sleep(DK_ENTRY_WAIT_S)
+    if dk_comment_blocked(x.page):
+        say(P_DK_BLOCK_WAIT)
+        if dk_wait_comment_unblocked(x.page) is False:
+            say(P_DK_BLOCK_TIMEOUT)
+            raise ValueError(P_DK_BLOCK_TIMEOUT)
+        say(P_DK_BLOCK_OK)
+    last = -1
+    for _ in range(DK_COMMENT_SCROLL_MAX):
+        n = x.page.evaluate(DK_COMMENT_SCROLL_JS)
+        time.sleep(DK_COMMENT_SCROLL_WAIT_S)
+        if n == last:
+            break
+        last = n
+    dump = x.page.evaluate(DK_ENTRY_JS)
+    text = ""
+    html = ""
+    title = ""
+    if isinstance(dump, dict):
+        text = str(dump.get(DK_J_TEXT, ""))
+        html = str(dump.get(DK_J_HTML, ""))
+        title = str(dump.get(DK_J_TITLE, ""))
+    put_cached_page(CachePutIn(slug=DK_CRAWL_SLUG, url=url, html=html, title=title))
+    rows = x.page.evaluate(DK_COMMENTS_JS)
+    if not isinstance(rows, list):
+        rows = []
+    return {DK_K_ID: x.eid, DK_R_PART: x.part, DK_R_DECLARED: dk_comment_count_of(text), DK_R_COMMENTS: rows}
+
+
+def dk_comment_count_of(text: str) -> int:
+    """整页文本 → 「N comments」声明数;没写 = 0。"""
+    m = DK_COMMENT_COUNT_RE.search(text)
+    if m is None:
+        return 0
+    return int(m.group(1))
+
+
+def dk_comment_blocked(page: DkPageLike) -> bool:
+    """评论页当前是不是验证壳(拦截判词在,或「N comments」声明不在 = 评论区没渲染出来)。"""
+    s = str(page.evaluate(DK_BODY_TEXT_JS))
+    return DK_BLOCK_MARK in s or DK_COMMENT_COUNT_RE.search(s) is None
+
+
+def dk_wait_comment_unblocked(page: DkPageLike) -> bool:
+    """等人工在有头窗里完成验证:轮询到评论区出现返回 True;到 DK_BLOCK_WAIT_S 仍挡着返回 False。"""
+    waited = 0.0
+    while waited < DK_BLOCK_WAIT_S:
+        time.sleep(DK_BLOCK_POLL_S)
+        waited += DK_BLOCK_POLL_S
+        if dk_comment_blocked(page) is False:
+            return True
+    return False
 
 
 def dk_list_items_of(part: str) -> list:
