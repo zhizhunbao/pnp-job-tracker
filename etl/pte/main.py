@@ -11,7 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
 from pte.functions import (run, run_assets, run_dk_entries, run_dk_lists, run_duoink, run_index,
-                           run_media, run_pb_audio, run_pb_images, run_pte_mart, run_pte_dict, run_pte_tts, run_ptebank, run_ptexj,
+                           run_media, run_pb_audio, run_pb_images, run_pte_mart, run_pte_dict, run_pte_tts, run_pte_zh, run_ptebank, run_ptexj,
                            run_recent, run_timeline, run_votes, run_words, run_xj_exam, run_xj_lists, run_yn_audio)
 
 SCHEDULED = [
@@ -73,6 +73,7 @@ TOOLS = {
     "pte-mart": run_pte_mart,
     "pte-tts": run_pte_tts,
     "pte-dict": run_pte_dict,
+    "pte-zh": run_pte_zh,
 }
 """全部可 --only 点名的步。"""
 

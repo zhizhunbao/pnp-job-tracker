@@ -12,21 +12,21 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import {
   DICT_IDLE, GATE_NONE, KIND_EXAM, KIND_NOTE, LANG_UK, LANG_US, PAGE_STEP, PHASE_ANSWERING, PHASE_READY, RATE_STEPS,
-  SPK_NONE, SPK_UK, SPK_US, STATE_IDLE, TEXT_NONE, T_WFD,
+  SENT_NONE, SPK_NONE, SPK_UK, SPK_US, STATE_IDLE, TEXT_NONE, T_WFD,
 } from './constants'
 import {
   commentsOfKind, doneServerSnapshotOf, doneSnapshotOf, durationOf, makeAudioEnded, makeCanPlaySnapshot, makeClose,
   makeCountdown, makeDictClose, makeDictLookup, makeDictOpenFlag, makeDictSink, makeDoneSync, makeExamOpen,
   makeExamSubmit, makeGateClose, makeGatedPlay, makeGatedSubmit, makeInputChange, makeMic, makeMore, makeNavPick,
   makeNavScroll, makeNoteSubmit, makeOpen, makePhaseSet, makePlayEnd, makeRedo, makeSelectionWatch, makeSetBool,
-  makeSpeakWord, makeStartRec, makeSubmit, makeTextChange, makeTicker, makeToggle, nextRateOf, noop, openDictWord,
-  prepSecOf, quotaServerSnapshotOf, quotaSnapshotOf, rateAudio, recCapOf, reloadPage, seekAudio, seenCountOf,
-  serverFalseOf, stopSpeak, subscribeDone, subscribeNone,
+  makeSpeakWord, makeStartRec, makeSubmit, makeTextChange, makeTicker, makeToggle, makeZhLookup, nextRateOf, noop,
+  openDictWord, prepSecOf, quotaServerSnapshotOf, quotaSnapshotOf, rateAudio, recCapOf, reloadPage, seekAudio,
+  seenCountOf, serverFalseOf, stopSpeak, subscribeDone, subscribeNone,
 } from './functions'
 import type {
-  DictEntry, DictPos, DictState, PlayerHookIn, PlayerPanel, PostState, PteAnswerHookIn, PteAnswerPanel, PteBoardHookIn,
-  PteBoardPanel, PteComment, PteCommentsHookIn, PteCommentsPanel, PteDictPanel, PteGate, PteNavHookIn, PteNavPanel,
-  PtePhase, RecorderHandle,
+  DictEntry, DictPos, DictSentence, DictState, PlayerHookIn, PlayerPanel, PostState, PteAnswerHookIn, PteAnswerPanel,
+  PteBoardHookIn, PteBoardPanel, PteComment, PteCommentsHookIn, PteCommentsPanel, PteDictPanel, PteGate, PteNavHookIn,
+  PteNavPanel, PtePhase, RecorderHandle, SentRef,
 } from './types'
 
 /**
@@ -289,6 +289,8 @@ export function usePteDict(): PteDictPanel {
   const [state, setState] = useState<DictState>(DICT_IDLE)
   const [entry, setEntry] = useState<DictEntry | null>(null)
   const [speaking, setSpeaking] = useState(SPK_NONE)
+  const [sent, setSent] = useState<SentRef>({ qid: TEXT_NONE, idx: SENT_NONE })
+  const [sentence, setSentence] = useState<DictSentence | null>(null)
 
   useEffect(function watchSelection() {
     return makeSelectionWatch({ setWord, setPos })()
@@ -299,8 +301,12 @@ export function usePteDict(): PteDictPanel {
   }, [word])
 
   useEffect(function sink() {
-    return makeDictSink({ setWord, setPos })()
+    return makeDictSink({ setWord, setPos, setSent })()
   }, [])
+
+  useEffect(function zh() {
+    return makeZhLookup({ sent, setSentence })()
+  }, [sent])
 
   useEffect(function openFlag() {
     return makeDictOpenFlag({ qid: word })()
@@ -314,6 +320,7 @@ export function usePteDict(): PteDictPanel {
     onClose: makeDictClose({ setWord }),
     onHoverWord: openDictWord,
     speaking,
+    sentence,
     onSpeakUk: makeSpeakWord({ word, lang: LANG_UK, key: SPK_UK, setSpeaking }),
     onSpeakUs: makeSpeakWord({ word, lang: LANG_US, key: SPK_US, setSpeaking }),
   }

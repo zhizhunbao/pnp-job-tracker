@@ -18,14 +18,16 @@ import css from './pte.module.css'
  * @param props 题面、档表与悬停手柄。
  * @returns 题面。
  */
-export function PteText({ text, tiers, onHoverWord }: PteTextIn) {
+export function PteText({ text, tiers, onHoverWord, qid }: PteTextIn) {
   const parts = []
   let i = 0
   for (const p of textPartsOf({ text, tiers })) {
     if (p.word === TEXT_NONE) {
       parts.push(<span key={i}>{p.text}</span>)
     } else {
-      parts.push(<mark key={i} className={p.cls} onClick={onHoverWord}>{p.text}</mark>)
+      parts.push(
+        <mark key={i} className={p.cls} onClick={onHoverWord} data-q={qid} data-i={p.sent}>{p.text}</mark>,
+      )
     }
     i = i + 1
   }

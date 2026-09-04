@@ -6,7 +6,7 @@
  * @time 2026-09-03 12:00:00
  */
 
-import type { DictEntry, HoverWordIn, NavRowsCache, TypesCache } from './types'
+import type { DictEntry, HoverWordIn, NavRowsCache, TypesCache, ZhApiRow } from './types'
 
 /**
  * 域内可变状态的容器。
@@ -41,6 +41,11 @@ export const CACHE = {
    * 字典弹框的两个落格(usePteDict 挂载时登记;点词的模块级手柄经它开弹框);没挂载 = null。
    */
   dictSink: null as HoverWordIn | null,
+
+  /**
+   * 查过的题的整句中文(题键 → 句清单),同一题反复点词不再打接口。
+   */
+  zh: new Map<string, ZhApiRow[]>(),
 
   /**
    * 服务端:题型维度的进程内缓存(带时刻;单题页每次换题不再现查 —— Frank 2026-09-04「卡的一笔」)。

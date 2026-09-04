@@ -21,7 +21,9 @@ export function TextCell(r: PteCellRow) {
     if (p.word === TEXT_NONE) {
       parts.push(<span key={i}>{p.text}</span>)
     } else {
-      parts.push(<mark key={i} className={p.cls} onClick={r.onHoverWord}>{p.text}</mark>)
+      parts.push(
+        <mark key={i} className={p.cls} onClick={r.onHoverWord} data-q={r.qid} data-i={p.sent}>{p.text}</mark>,
+      )
     }
     i = i + 1
   }

@@ -13,7 +13,7 @@ import { getUserOrNull } from '../quota/server'
 import {
   AUDIO_CACHE, DICT_CACHE, HDR_ACCEPT_RANGES, HDR_CONTENT_LENGTH, RANGES_BYTES, DONE_LEN_MAX, E_AUTH, E_BAD, E_NOT_FOUND, E_TOO_BIG, HDR_CACHE_CONTROL, HDR_CONTENT_TYPE,
 } from './constants'
-import { loadPteAudio, loadPteDict, loadPteDone, qidOfUrl, savePteDone, unionOf } from './functions'
+import { loadPteAudio, loadPteDict, loadPteDone, loadPteSentences, qidOfUrl, savePteDone, unionOf } from './functions'
 import type { PteDoneBody } from './types'
 
 /**
@@ -64,6 +64,21 @@ export async function pteDictRoute(req: Request): Promise<Response> {
     },
     { headers: { [HDR_CACHE_CONTROL]: DICT_CACHE } },
   )
+}
+
+/**
+ * GET /api/pte/zh/[qid]:一题的整句中文(2026-09-04;字典弹框在释义下面给这个词所在整句)。
+ *
+ * @param req 请求(qid 在路径最后一段)。
+ * @returns { ok, rows: [{ idx, en, zh }] };没题也给空清单(不 404,弹框不因它报错)。
+ */
+export async function pteZhRoute(req: Request): Promise<Response> {
+  const qid = qidOfUrl(req.url)
+  if (qid === '') {
+    return Response.json({ ok: false, error: E_BAD }, { status: BAD_REQUEST })
+  }
+  const rows = await loadPteSentences({ db: await getDb(), qid })
+  return Response.json({ ok: true, rows }, { headers: { [HDR_CACHE_CONTROL]: DICT_CACHE } })
 }
 
 /**

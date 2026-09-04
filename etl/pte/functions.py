@@ -8,7 +8,10 @@ OUT = data/pte/ynwac-bank.json(私有研究,不进 mart/DB)。逐数组 try/exce
 import asyncio
 import base64
 import csv
+import hashlib
 import json
+
+import httpx
 import os
 import shutil
 import subprocess
@@ -107,12 +110,12 @@ from pte.constants import (DK_AVATAR_MARKS, DK_CRAWL_SLUG, DK_ENTRY_DELAY_S, DK_
                            OPEN_TIGHT_RE, P_MART_DONE_TPL, PUNCT_TIGHT_RE, Q_K_ANSWER, Q_K_AUDIO_FILE,
                            Q_K_AUDIO_URL, Q_K_FETCHED, Q_K_IMAGE_URL, Q_K_NUM, Q_K_PREDICTED, Q_K_QID,
                            Q_K_SEEN_N, Q_K_TEXT, QID_SEP, TOKEN_JOIN, T_ASQ, T_RA, T_WFD, DK_K_SN)
-from pte.constants import (A_K_B64, AUDIO_URL_TPL, NUM_DATE_SEP, N_K_NUM, N_K_QID, N_K_ROWS, N_K_TYPE, OUT_NUMBERS, D_K_COLLINS, D_K_DEFINITION, D_K_FAMILY, D_K_FORMS, D_K_FRQ, D_K_LEMMA, D_K_MISSING, D_K_TAG, D_K_PHON_UK, D_K_PHON_US, D_K_PHONETIC, D_K_ROWS, D_K_TRANSLATION, D_K_WORD, DICT_CSV_FIELD_MAX, DICT_CSV_K_COLLINS, DICT_CSV_K_DEFINITION, DICT_CSV_K_EXCHANGE, DICT_CSV_K_FRQ, DICT_DOMAIN_RE, DICT_NL, P_DICT_WN_TPL, WN_LEXICON, WN_POS_ADJ, WN_POS_KEEP, WN_POS_SAT, WN_REL_DERIVATION, DICT_CSV_K_TAG, DICT_CSV_K_PHONETIC, DICT_CSV_K_TRANSLATION, DICT_CSV_K_WORD, DICT_CSV_NL, DICT_EXCH_KV, DICT_EXCH_LEMMA, DICT_EXCH_SEP, DICT_EXCH_SKIP, DICT_MIN_LEN, DICT_WORD_RE, DICT_WORD_STRIP, IN_DICT_CSV, MART_DICT_FILE, OUT_DICT, P_DICT_DONE_TPL, P_DICT_YD_TPL, YD_API_TPL, YD_CRAWL_SLUG, YD_K_EC, YD_K_SIMPLE, YD_K_UK, YD_K_US, YD_K_WORD, YD_SLEEP_S, FFMPEG_BIN, FFMPEG_IN_ARGS, FFMPEG_OUT_ARGS, MART_AUDIO_FILE,
+from pte.constants import (A_K_B64, AUDIO_URL_TPL, MART_SENTENCES_FILE, OUT_ZH, P_ZH_DONE_TPL, P_ZH_FAIL_TPL, P_ZH_TICK_TPL, SENT_SPLIT_RE, S_K_EN, S_K_IDX, S_K_SENTENCES, S_K_ZH, ZH_BATCH, ZH_K_MODEL, ZH_K_OPTIONS, ZH_K_PROMPT, ZH_K_RESPONSE, ZH_K_STREAM, ZH_K_THINK, ZH_LINE_RE, ZH_LINE_TPL, ZH_MODEL, ZH_OLLAMA_URL, ZH_OPTIONS, ZH_PROMPT_TPL, ZH_TICK_EVERY, ZH_TIMEOUT_S, NUM_DATE_SEP, N_K_NUM, N_K_QID, N_K_ROWS, N_K_TYPE, OUT_NUMBERS, D_K_COLLINS, D_K_DEFINITION, D_K_FAMILY, D_K_FORMS, D_K_FRQ, D_K_LEMMA, D_K_MISSING, D_K_TAG, D_K_PHON_UK, D_K_PHON_US, D_K_PHONETIC, D_K_ROWS, D_K_TRANSLATION, D_K_WORD, DICT_CSV_FIELD_MAX, DICT_CSV_K_COLLINS, DICT_CSV_K_DEFINITION, DICT_CSV_K_EXCHANGE, DICT_CSV_K_FRQ, DICT_DOMAIN_RE, DICT_NL, P_DICT_WN_TPL, WN_LEXICON, WN_POS_ADJ, WN_POS_KEEP, WN_POS_SAT, WN_REL_DERIVATION, DICT_CSV_K_TAG, DICT_CSV_K_PHONETIC, DICT_CSV_K_TRANSLATION, DICT_CSV_K_WORD, DICT_CSV_NL, DICT_EXCH_KV, DICT_EXCH_LEMMA, DICT_EXCH_SEP, DICT_EXCH_SKIP, DICT_MIN_LEN, DICT_WORD_RE, DICT_WORD_STRIP, IN_DICT_CSV, MART_DICT_FILE, OUT_DICT, P_DICT_DONE_TPL, P_DICT_YD_TPL, YD_API_TPL, YD_CRAWL_SLUG, YD_K_EC, YD_K_SIMPLE, YD_K_UK, YD_K_US, YD_K_WORD, YD_SLEEP_S, FFMPEG_BIN, FFMPEG_IN_ARGS, FFMPEG_OUT_ARGS, MART_AUDIO_FILE,
                            MERGE_SRC_ORDER, MIME_MP3, MIME_WAV, NORM_DROP, NORM_SPACE_RE, NORM_TEXT_RE, OUT_TTS_DIR,
                            OUT_TTS_INDEX, OUT_TTS_VOICES_DIR, P_MERGE_TPL, P_TTS_DONE_TPL, P_TTS_FAIL_TPL,
                            P_TTS_VOICE_TPL, TTS_FILE_SEP, TTS_K_FILE, TTS_K_MIME, TTS_K_ROWS, TTS_K_VOICE,
                            TTS_MODEL_SUFFIX, TTS_MP3_SUFFIX, TTS_VOICE, TTS_WAV_SUFFIX)
-from pte.scheme import (FamilyIn, WnSense, WnWord, DictRowIn, BankIn, CloseIn, CollectIn, DiffIn, DkEntryIn, DkImagesIn, DkPageIn, DkPageLike,
+from pte.scheme import (SentenceRowsIn, TranslateIn, FamilyIn, WnSense, WnWord, DictRowIn, BankIn, CloseIn, CollectIn, DiffIn, DkEntryIn, DkImagesIn, DkPageIn, DkPageLike,
                         Group, GroupIn, HttpClientLike, MediaRowIn, PbBankIn, PbGroupsIn, PbRowIn,
                         DaysIn, RadarIn, RecentRowIn, RecentSummaryIn, SnapshotIn, VoteGetIn,
                         XjExamIn, XjExamUrlIn, XjGroupIn, XjListIn, XjPageLike, XjRowIn, XjSignalsIn,
@@ -2716,3 +2719,99 @@ def family_of(x: FamilyIn) -> dict:
                         continue
                     buckets.setdefault(pos, set()).add(lemma)
     return {pos: sorted(words) for pos, words in buckets.items() if words}
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# 19. pte-zh 步:题面按句翻中文
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+def run_pte_zh() -> None:
+    """翻译步:mart 题行切句 → 缓存里没有的按批送本地 Ollama → processed zh.json + mart pte_sentences.json。
+    单批失败留痕继续(那批句子这轮空着,下次重跑再翻)。"""
+    with (MART / MART_QUESTIONS_FILE).open(encoding=ENC_UTF8) as f:
+        rows = json.load(f)
+    cache = zh_cache_of()
+    todo: list = []
+    for r in rows:
+        for sent in sentences_of(str(r.get(Q_K_TEXT) or "")):
+            key = sha1_of(sent)
+            if key not in cache and sent not in todo:
+                todo.append(sent)
+    made = 0
+    fail = 0
+    with httpx.Client(timeout=ZH_TIMEOUT_S) as client:
+        for at in range(0, len(todo), ZH_BATCH):
+            batch = todo[at:at + ZH_BATCH]
+            got = translate_batch(TranslateIn(client=client, sentences=batch))
+            if len(got) != len(batch):
+                err(P_ZH_FAIL_TPL.format(n=len(batch)), RuntimeError(str(len(got))))
+                fail += len(batch)
+            else:
+                for en, zh in zip(batch, got, strict=True):
+                    cache[sha1_of(en)] = {S_K_EN: en, S_K_ZH: zh}
+                made += len(batch)
+            if (at // ZH_BATCH) % (ZH_TICK_EVERY // ZH_BATCH) == 0:
+                say(P_ZH_TICK_TPL.format(done=min(at + ZH_BATCH, len(todo)), total=len(todo)))
+                write_json(WriteJsonIn(path=OUT_ZH, payload={S_K_SENTENCES: cache}, indent=JSON_INDENT))
+    write_json(WriteJsonIn(path=OUT_ZH, payload={S_K_SENTENCES: cache}, indent=JSON_INDENT))
+    out = sentence_rows_of(SentenceRowsIn(rows=rows, cache=cache))
+    write_json(WriteJsonIn(path=MART / MART_SENTENCES_FILE, payload=out, indent=JSON_INDENT, compact=True))
+    say(P_ZH_DONE_TPL.format(q=len(rows), s=len(out), made=made, fail=fail, out=MART / MART_SENTENCES_FILE))
+
+
+def zh_cache_of() -> dict:
+    """读翻译缓存 {sha1: {en, zh}};没有给空。"""
+    if not OUT_ZH.exists():
+        return {}
+    with OUT_ZH.open(encoding=ENC_UTF8) as f:
+        return dict(json.load(f).get(S_K_SENTENCES, {}))
+
+
+def sentences_of(text: str) -> list:
+    """题面切句(去两端空白,空句丢)。"""
+    out: list = []
+    for piece in SENT_SPLIT_RE.split(text):
+        piece = piece.strip()
+        if piece:
+            out.append(piece)
+    return out
+
+
+def sha1_of(text: str) -> str:
+    """句子的缓存键。"""
+    return hashlib.sha1(text.encode(ENC_UTF8)).hexdigest()  # noqa: S324 — 只做缓存键,不是安全用途
+
+
+def translate_batch(x: TranslateIn) -> list:
+    """一批句子编号送模型,按编号解析回来;行数或编号对不上给空清单(调用方计失败)。"""
+    lines = [ZH_LINE_TPL.format(n=i + 1, text=s) for i, s in enumerate(x.sentences)]
+    body = {ZH_K_MODEL: ZH_MODEL, ZH_K_PROMPT: ZH_PROMPT_TPL.format(lines="\n".join(lines)), ZH_K_STREAM: False,
+            ZH_K_OPTIONS: ZH_OPTIONS, ZH_K_THINK: False}
+    try:
+        resp = x.client.post(ZH_OLLAMA_URL, json=body)
+        text = str(resp.json().get(ZH_K_RESPONSE) or "")
+    except Exception as e:  # noqa: BLE001 — 网络 / 解析失败留痕,整批不中止
+        err(ZH_OLLAMA_URL, e)
+        return []
+    got: dict = {}
+    for line in text.split("\n"):
+        m = ZH_LINE_RE.match(line)
+        if m is not None:
+            got[int(m.group(1))] = m.group(2).strip()
+    out: list = []
+    for i in range(len(x.sentences)):
+        if i + 1 not in got:
+            return []
+        out.append(got[i + 1])
+    return out
+
+
+def sentence_rows_of(x: SentenceRowsIn) -> list:
+    """题行 + 缓存 → pte_sentences 表行(没翻到的句 zh 空串)。"""
+    out: list = []
+    for r in x.rows:
+        for idx, sent in enumerate(sentences_of(str(r.get(Q_K_TEXT) or ""))):
+            hit = x.cache.get(sha1_of(sent), {})
+            out.append({Q_K_QID: r[Q_K_QID], S_K_IDX: idx, S_K_EN: sent, S_K_ZH: str(hit.get(S_K_ZH) or "")})
+    return out

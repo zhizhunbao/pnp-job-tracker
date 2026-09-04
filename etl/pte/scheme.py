@@ -5,6 +5,8 @@
 json 键只在 functions 的 to_* 行构造器里出现)。
 """
 from dataclasses import dataclass
+
+import httpx
 from datetime import date
 from pathlib import Path
 from typing import Protocol
@@ -516,3 +518,25 @@ class FamilyIn:
 
     lemma: str
     """原形;空串 = 本身就是原形。"""
+
+
+@dataclass
+class TranslateIn:
+    """translate_batch() 入参(一批句子 → 一批译文)。"""
+
+    client: httpx.Client
+    """复用的 HTTP 客户端。"""
+
+    sentences: list
+    """英文句子清单。"""
+
+
+@dataclass
+class SentenceRowsIn:
+    """sentence_rows_of() 入参(题行 + 翻译缓存 → 句表行)。"""
+
+    rows: list
+    """mart 题行。"""
+
+    cache: dict
+    """翻译缓存 {sha1: {en, zh}}。"""

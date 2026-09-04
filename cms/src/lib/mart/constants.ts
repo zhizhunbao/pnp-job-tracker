@@ -343,6 +343,11 @@ export const TBL_PTE_AUDIO = 'pte_audio'
 export const TBL_PTE_DICT = 'pte_dict'
 
 /**
+ * 题面整句中文表(2026-09-04;pte-zh 步出,qid / idx / en / zh)。
+ */
+export const TBL_PTE_SENTENCES = 'pte_sentences'
+
+/**
  * 字段级来源表(E4-04)。
  */
 export const TBL_FIELD_SOURCES = 'field_sources'
@@ -544,6 +549,11 @@ export const COLS_PTE_AUDIO = ['qid', 'mime', 'b64', 'voice']
  * pte_dict 列(mart 键同名)。
  */
 export const COLS_PTE_DICT = ['word', 'phonetic', 'translation', 'lemma', 'phonetic_uk', 'phonetic_us', 'tag', 'collins', 'frq', 'definition', 'forms', 'family']
+
+/**
+ * pte_sentences 列(mart 键同名)。
+ */
+export const COLS_PTE_SENTENCES = ['qid', 'idx', 'en', 'zh']
 
 /**
  * field_sources 列(坑 2:白名单必须显式列全字段)。

@@ -1727,3 +1727,85 @@ D_K_PHON_US = "phoneticUs"
 
 P_DICT_YD_TPL = "  有道音标:缓存命中 {hit} · 新抓 {fetched} · 抓失败 {fail}"
 """日志:有道音标抓取收口。"""
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# 19. pte-zh 步:题面按句翻中文(本地 Ollama qwen3.6;Frank 2026-09-04「这个词下面列一下整句的翻译如何」)
+#     句子按内容哈希缓存在 processed/pte/zh.json,重跑只翻新句;mart pte_sentences.json 一句一行(qid / idx / en / zh)。
+# ═══════════════════════════════════════════════════════════════════════════
+
+ZH_OLLAMA_URL = "http://192.168.1.150:11434/api/generate"
+"""局域网 Ollama 生成接口(翻译类一律本地模型,不烧付费 API)。"""
+
+ZH_MODEL = "qwen3.6:latest"
+"""翻译用模型。"""
+
+ZH_BATCH = 8
+"""一次调用翻几句(编号行进、编号行出;行数对不上就逐句重翻)。"""
+
+ZH_TIMEOUT_S = 300.0
+"""一次调用超时(秒)。"""
+
+ZH_PROMPT_TPL = ("Translate each numbered English sentence into natural Simplified Chinese. "
+                 "Output exactly one line per input, formatted as `<number>. <translation>`, nothing else.\\n\\n{lines}")
+"""翻译提示(编号行协议)。"""
+
+ZH_LINE_TPL = "{n}. {text}"
+"""编号行。"""
+
+ZH_LINE_RE = re.compile(r"^\s*(\d+)\s*[.、:：)]\s*(.+)$")
+"""解析输出行:编号 + 译文。"""
+
+ZH_OPTIONS = {"temperature": 0.1}
+"""生成参数(低温,求稳)。"""
+
+ZH_K_MODEL = "model"
+"""请求体:模型。"""
+
+ZH_K_PROMPT = "prompt"
+"""请求体:提示。"""
+
+ZH_K_STREAM = "stream"
+"""请求体:流式开关。"""
+
+ZH_K_OPTIONS = "options"
+"""请求体:生成参数。"""
+
+ZH_K_THINK = "think"
+"""请求体:思考开关(关,只要译文)。"""
+
+ZH_K_RESPONSE = "response"
+"""响应体:生成文本。"""
+
+SENT_SPLIT_RE = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9\"'(])")
+"""切句:句末标点后接空白再接大写/数字/引号处切(缩写如 U.S. 后接小写不切)。"""
+
+OUT_ZH = PROCESSED_PTE / "zh.json"
+"""processed 快照:{sentences: {sha1(en): {en, zh}}}(翻译缓存,重跑只翻新句)。"""
+
+MART_SENTENCES_FILE = "pte_sentences.json"
+"""mart 表文件名 = DB 表名 pte_sentences(qid / idx / en / zh)。"""
+
+S_K_SENTENCES = "sentences"
+"""快照:句表键。"""
+
+S_K_EN = "en"
+"""句行:英文。"""
+
+S_K_ZH = "zh"
+"""句行:中文。"""
+
+S_K_IDX = "idx"
+"""句行:句在题面里的序号(0 起)。"""
+
+P_ZH_DONE_TPL = "✓ pte zh:题 {q} · 句 {s} · 新翻 {made} · 失败 {fail} → {out}"
+"""日志:翻译步收口。"""
+
+P_ZH_FAIL_TPL = "  ✗ 翻译失败(批 {n} 句)"
+"""日志:一批失败留痕。"""
+
+P_ZH_TICK_TPL = "  … 已翻 {done}/{total} 句"
+"""日志:进度。"""
+
+ZH_TICK_EVERY = 200
+"""每翻多少句打一行进度。"""

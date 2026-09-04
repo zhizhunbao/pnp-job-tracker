@@ -1601,6 +1601,11 @@ export type TextPart = {
    * 高亮类名(按档算好;不高亮为空串)—— 单元格只放不算。
    */
   cls: string
+
+  /**
+   * 这个词在题面里属于第几句(0 起;分隔段给 -1)。
+   */
+  sent: number
 }
 
 /**
@@ -1616,6 +1621,11 @@ export type HoverWordIn = {
    * 落弹层位置。
    */
   setPos: (p: DictPos) => void
+
+  /**
+   * 落「哪题第几句」。
+   */
+  setSent: (s: SentRef) => void
 }
 
 /**
@@ -1636,6 +1646,11 @@ export type PteTextIn = {
    * 悬停手柄。
    */
   onHoverWord: (e: React.MouseEvent<HTMLElement>) => void
+
+  /**
+   * 题键(点词时带进弹框查整句中文)。
+   */
+  qid: string
 }
 
 /**
@@ -2146,6 +2161,126 @@ export type FormLabelIn = {
 }
 
 /**
+ * 弹框里的整句(英 + 中)。
+ */
+export type DictSentence = {
+  /**
+   * 英文原句。
+   */
+  en: string
+
+  /**
+   * 中文;空串 = 没翻到(只显英文)。
+   */
+  zh: string
+}
+
+/**
+ * 点到的词属于哪题第几句。
+ */
+export type SentRef = {
+  /**
+   * 题键;空串 = 不在题面里(表格外的选词)。
+   */
+  qid: string
+
+  /**
+   * 句序;-1 = 没有。
+   */
+  idx: number
+}
+
+/**
+ * /api/pte/zh/[qid] 的响应形(只读真用的格,逐格判)。
+ */
+export type ZhApiBody = {
+  /**
+   * 成功。
+   */
+  ok: boolean
+
+  /**
+   * 句清单。
+   */
+  rows: ZhApiRow[]
+}
+
+/**
+ * 响应里的一句。
+ */
+export type ZhApiRow = {
+  /**
+   * 句序。
+   */
+  idx: number
+
+  /**
+   * 英文。
+   */
+  en: string
+
+  /**
+   * 中文。
+   */
+  zh: string
+}
+
+/**
+ * 整句查询 effect(`makeZhLookup`)的入参。
+ */
+export type ZhLookupIn = {
+  /**
+   * 哪题第几句。
+   */
+  sent: SentRef
+
+  /**
+   * 落整句。
+   */
+  setSentence: (s: DictSentence | null) => void
+}
+
+/**
+ * zhLookupNow 的入参。
+ */
+export type ZhLookupNowIn = {
+  /**
+   * 查询入参。
+   */
+  x: ZhLookupIn
+
+  /**
+   * 拆卸标记。
+   */
+  flag: DeadFlag
+}
+
+/**
+ * 题面切句偏移(`sentenceStartsOf`)的入参。
+ */
+export type SentStartsIn = {
+  /**
+   * 题面。
+   */
+  text: string
+}
+
+/**
+ * 偏移落句(`sentIndexOf`)的入参。
+ */
+export type SentIndexIn = {
+  /**
+   * 各句起始偏移。
+   */
+  starts: number[]
+
+  /**
+   * 词的起始偏移。
+   */
+  from: number
+}
+
+/**
  * 弹框词族一行(标签键 + 该词性的词)。
  */
 export type DictFamilyRow = {
@@ -2293,6 +2428,11 @@ export type PteDictPanel = {
    * 哪个喇叭在读('' / uk / us;读时图标动 —— Frank 2026-09-04「点击小喇叭的时候小喇叭要动」)。
    */
   speaking: string
+
+  /**
+   * 点到的词所在整句(英 + 中);没点在题面里或没翻到 = null。
+   */
+  sentence: DictSentence | null
 }
 
 /**

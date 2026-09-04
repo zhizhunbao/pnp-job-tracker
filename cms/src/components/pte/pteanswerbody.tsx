@@ -34,7 +34,7 @@ export function PteAnswerBody({ t, q, type, a, tiers, onHoverWord }: PteAnswerPa
         <PtePlayer label={t('pte.audio')} src={q.audioUrl} onEnd={a.onAudioEnd}
           speaking={a.playing} onSpeak={a.onPlay} disabled={a.canPlay === false} />
       )}
-      {showText && <PteText text={q.text} tiers={tiers} onHoverWord={onHoverWord} />}
+      {showText && <PteText text={q.text} tiers={tiers} onHoverWord={onHoverWord} qid={q.qid} />}
       {type.audio === false && wfd === false && (
         <PtePlayer label={t('pte.tts')} src={q.audioUrl} onEnd={a.onAudioEnd}
           speaking={a.playing} onSpeak={a.onPlay} disabled={a.canPlay === false} />

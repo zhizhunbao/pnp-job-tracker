@@ -4,12 +4,12 @@
  * @author Frank
  * @time 2026-09-03 16:00:00
  */
-import { SQL, jsonOrNull, queryRows, text } from '../db'
+import { SQL, count, jsonOrNull, queryRows, text } from '../db'
 import { B64, DONE_MAX, PATH_SEP, TEXT_NONE } from './constants'
 import type {
   DoneKeys, MaybePteAudio, MaybePteDictEntry, PteAudio, PteAudioDbRow, PteAudioIn, PteAudioOut, PteDictDbRow,
-  PteDictEntry, PteDictIn, PteDictOut, PteDoneDbRow, PteDoneDoc, PteDoneIn, PteDoneOut, PteDoneSaveIn, Qid,
-  SaveDoneOut, UnionIn,
+  PteDictEntry, PteDictIn, PteDictOut, PteDoneDbRow, PteDoneDoc, PteDoneIn, PteDoneOut, PteDoneSaveIn, PteSentence,
+  PteSentenceDbRow, PteSentencesIn, PteSentencesOut, Qid, SaveDoneOut, UnionIn,
 } from './types'
 
 /**
@@ -40,6 +40,16 @@ export async function loadPteDict(x: PteDictIn): PteDictOut {
     out = r
   }
   return out
+}
+
+/**
+ * 一题的整句中文(按句序;表里没有给空清单)。
+ *
+ * @param x 数据库连接与题键。
+ * @returns 句清单。
+ */
+export async function loadPteSentences(x: PteSentencesIn): PteSentencesOut {
+  return queryRows({ db: x.db, sql: SQL.PTE_SENTENCES, params: [x.qid], map: toPteSentence })
 }
 
 /**
@@ -124,6 +134,16 @@ export function toPteDict(r: PteDictDbRow): PteDictEntry {
     phoneticUk: text(r.phoneticUk), phoneticUs: text(r.phoneticUs), definition: text(r.definition), forms: text(r.forms),
     family: text(r.family),
   }
+}
+
+/**
+ * 句库行 → 句(可空格折默认)。
+ *
+ * @param r 库行。
+ * @returns 句。
+ */
+export function toPteSentence(r: PteSentenceDbRow): PteSentence {
+  return { idx: count(r.idx), en: text(r.en), zh: text(r.zh) }
 }
 
 /**

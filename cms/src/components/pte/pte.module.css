@@ -1223,6 +1223,27 @@
 /*
  * 词形一行:标签列定宽对齐,词形列跟后。
  */
+/*
+ * 整句英文(灰小字,上面一条细线分隔释义)。
+ */
+.dictSentEn {
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.5;
+  padding-top: 8px;
+  border-top: 1px solid #f3f4f6;
+}
+
+/*
+ * 整句中文。
+ */
+.dictSentZh {
+  font-size: 14px;
+  color: #111827;
+  line-height: 1.6;
+  margin-top: 4px;
+}
+
 .dictForm {
   display: grid;
   grid-template-columns: 4.5em 1fr;

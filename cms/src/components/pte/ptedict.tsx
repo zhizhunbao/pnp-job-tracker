@@ -83,7 +83,13 @@ export function PteDict({ t, d, lang }: PteDictIn) {
             <div className={css.dictLines}>{lines}</div>
           </div>
         )}
-        {forms.length > 0 && (
+        {d.sentence != null && (
+        <div className={css.dictSec}>
+          <div className={css.dictSentEn}>{d.sentence.en}</div>
+          {d.sentence.zh !== TEXT_NONE && <div className={css.dictSentZh}>{d.sentence.zh}</div>}
+        </div>
+      )}
+      {forms.length > 0 && (
           <div className={css.dictSec}>
             <span className={css.dictTag}>{t('pte.dict.forms')}</span>
             {forms}

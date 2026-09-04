@@ -1690,6 +1690,11 @@ export const PTE_DICT_ONE = `SELECT word, phonetic, translation, lemma, phonetic
 export const PTE_DICT_TAGS = `SELECT word, tag, collins, frq FROM pte_dict WHERE word = ANY($1::text[])`
 
 /**
+ * 一题的整句中文(2026-09-04;$1=qid,按句序)。
+ */
+export const PTE_SENTENCES = `SELECT idx, en, zh FROM pte_sentences WHERE qid = $1 ORDER BY idx ASC`
+
+/**
  * 本人的练过档(批三;users.pte_done jsonb = { done: string[], updatedAt })。$1=用户 id。
  */
 export const USER_PTE_DONE = `SELECT pte_done AS "pteDone" FROM users WHERE id = $1 LIMIT 1`

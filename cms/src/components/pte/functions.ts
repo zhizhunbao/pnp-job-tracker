@@ -11,21 +11,21 @@
 import { cssOf } from '@/components/css'
 import { SQL, count, numOrNull, queryRowsOrEmpty, text, textOrNull } from '@/lib/db'
 import {
-  ALIGN_LEFT, API_COMMENTS, API_PTE_DONE, BRACKET_L, BRACKET_R, CLOCK_PAD, CLOCK_SEP, CLS_SEP, COL_ACT, COL_NUM,
-  COL_SEEN, COL_TEXT, COL_TIMES, CRED_INCLUDE, DASH, DATE_LEN, DAY_MS, DESC_LEN_MAX, DICT_API, DICT_BUSY, DICT_EDGE_PX,
-  DICT_GAP_PX, DICT_ID, DICT_IDLE, DICT_LINE_SEP, DICT_MIN_LEN, DICT_NONE, DICT_OK, DICT_TAG_KEY, DICT_W_PX, DONE_KEY,
-  ELLIPSIS, EMPTY_DONE, EV_MOUSEUP, EV_TOUCHEND, FAMILY_KEY, FAMILY_ORDER, FAMILY_WORD_SEP, FORM_KEY, FORM_KV,
-  FORM_LABEL_SEP, FORM_ORDER, FORM_PLURAL, FORM_SEP, FORM_THIRD, GATE_LOGIN, GATE_NONE, GATE_UPGRADE, HASH,
-  HDR_CONTENT_TYPE, ID_SEP, INST_KEY, ITEM_DESC_TPL, ITEM_TITLE_TPL, KIND_EXAM, KIND_NOTE, LANG_EN, LANG_KO, LANG_ZH,
-  LIKE_ANY, LIST_DESC_TPL, LIST_TITLE_TPL, MARK_TAG, METHOD_POST, METHOD_PUT, MIME_JSON, MS_PER_MIN, NAV_CENTER_DIV,
-  NAV_ID_PREFIX, NAV_TEXT_LEN, NOTE_HINT_KEY, NOT_FOUND_TITLE, NUM_HEAD, NUM_RE, PAD_CHAR, PAGE_STEP, PAREN_L, PAREN_R,
-  PHASE_ANSWERING, PHASE_CHECKED, PHASE_READY, PREP_S, PTE_META, PUNCT_RE, QID_SEP, QUOTA_KEY, QUOTA_MAX, RATE_DIGITS,
-  RATE_HEAD, RATE_STEPS, REC_CAP_S, REC_MIME, REC_STATE_INACTIVE, SECTION_KEY, SECTION_ORDER, SEC_PER_MIN,
-  SERVER_TTL_MS, SPK_GUARD_MS, SPK_NONE, STATE_BUSY, STATE_ERR, STATE_IDLE, STATE_SENT, TAG_SEP, TEXT_NONE,
-  TEXT_TOKEN_RE, TICK_MS, TIER_CLS_HEAD, TIER_EASY_TAGS, TIER_FRQ_MIN, TIER_NONE, TIER_ORDER, TIER_TAGS, TIME_SEP,
-  TITLE_LEN_MAX, TTS_GUARD_BASE_MS, TTS_LANG, TTS_LANG_HEAD, TTS_MS_PER_WORD, TTS_RATE, T_RA, UNDERSCORE, URL_PTE,
-  URL_SEP, VAR_N, VAR_NUM, VAR_TEXT, VAR_TITLE, VAR_TYPE, WORD_RE, WORD_SPLIT_RE, WORD_TRIM, W_ACT, W_NUM, W_SEEN,
-  W_TEXT, W_TIMES,
+  ALIGN_LEFT, API_COMMENTS, API_PTE_DONE, API_PTE_ZH, BRACKET_L, BRACKET_R, CLOCK_PAD, CLOCK_SEP, CLS_SEP, COL_ACT,
+  COL_NUM, COL_SEEN, COL_TEXT, COL_TIMES, CRED_INCLUDE, DASH, DATA_QID, DATA_SENT, DATE_LEN, DAY_MS, DESC_LEN_MAX,
+  DICT_API, DICT_BUSY, DICT_EDGE_PX, DICT_GAP_PX, DICT_ID, DICT_IDLE, DICT_LINE_SEP, DICT_MIN_LEN, DICT_NONE, DICT_OK,
+  DICT_TAG_KEY, DICT_W_PX, DONE_KEY, ELLIPSIS, EMPTY_DONE, EV_MOUSEUP, EV_TOUCHEND, FAMILY_KEY, FAMILY_ORDER,
+  FAMILY_WORD_SEP, FORM_KEY, FORM_KV, FORM_LABEL_SEP, FORM_ORDER, FORM_PLURAL, FORM_SEP, FORM_THIRD, GATE_LOGIN,
+  GATE_NONE, GATE_UPGRADE, HASH, HDR_CONTENT_TYPE, ID_SEP, INST_KEY, ITEM_DESC_TPL, ITEM_TITLE_TPL, KIND_EXAM,
+  KIND_NOTE, LANG_EN, LANG_KO, LANG_ZH, LIKE_ANY, LIST_DESC_TPL, LIST_TITLE_TPL, MARK_TAG, METHOD_POST, METHOD_PUT,
+  MIME_JSON, MS_PER_MIN, NAV_CENTER_DIV, NAV_ID_PREFIX, NAV_TEXT_LEN, NOTE_HINT_KEY, NOT_FOUND_TITLE, NUM_HEAD, NUM_RE,
+  PAD_CHAR, PAGE_STEP, PAREN_L, PAREN_R, PHASE_ANSWERING, PHASE_CHECKED, PHASE_READY, PREP_S, PTE_META, PUNCT_RE,
+  QID_SEP, QUOTA_KEY, QUOTA_MAX, RATE_DIGITS, RATE_HEAD, RATE_STEPS, REC_CAP_S, REC_MIME, REC_STATE_INACTIVE,
+  SECTION_KEY, SECTION_ORDER, SEC_PER_MIN, SENT_GAP_RE, SENT_NONE, SENT_SPLIT_RE, SERVER_TTL_MS, SPK_GUARD_MS,
+  SPK_NONE, STATE_BUSY, STATE_ERR, STATE_IDLE, STATE_SENT, TAG_SEP, TEXT_NONE, TEXT_TOKEN_RE, TICK_MS, TIER_CLS_HEAD,
+  TIER_EASY_TAGS, TIER_FRQ_MIN, TIER_NONE, TIER_ORDER, TIER_TAGS, TIME_SEP, TITLE_LEN_MAX, TTS_GUARD_BASE_MS, TTS_LANG,
+  TTS_LANG_HEAD, TTS_MS_PER_WORD, TTS_RATE, T_RA, UNDERSCORE, URL_PTE, URL_SEP, VAR_N, VAR_NUM, VAR_TEXT, VAR_TITLE,
+  VAR_TYPE, WORD_RE, WORD_SPLIT_RE, WORD_TRIM, W_ACT, W_NUM, W_SEEN, W_TEXT, W_TIMES,
 } from './constants'
 import { CACHE } from './variables'
 import css from './pte.module.css'
@@ -37,19 +37,20 @@ import { TimesCell } from './timescell'
 import type {
   AgoTextIn, AudioEndedIn, BracketIn, CanPlayIn, CellRowsIn, ChunkSinkFn, ClickFn, ClockIn, ColsOfIn, CommentsOfKindIn,
   DaysAgoIn, DeadFlag, DictApiBody, DictCloseIn, DictEntry, DictFamilyIn, DictFamilyRow, DictForm, DictFormsIn,
-  DictLinesIn, DictLookupIn, DictPos, DictPosIn, DictTagKeyIn, DiffIn, DiffOut, DiffToken, DomEventFn, DoneClsIn,
-  DoneResBody, DoneSyncIn, DurationIn, EffectFn, ExamCountsIn, ExamOpenIn, ExamSubmitIn, FamilyOfIn, FormLabelIn,
-  GateCloseIn, GatedPlayIn, GatedStartIn, GatedSubmitIn, HintIn, HoverWordIn, InputChangeIn, IsDoneIn, ItemHrefIn,
-  ItemMetaIn, LcsAtIn, ListMetaIn, ListOfIn, ListTiersIn, LookupNowIn, MarkDoneIn, MaybeHref, MicIn, MoreIn, NavPickIn,
-  NavRowsIn, NavScrollIn, NavTextIn, NeighborsIn, NeighborsOut, NoteSubmitIn, PhaseSetIn, PhonIn, PlayIn, PlayUrlIn,
-  PostCommentIn, PteCellRow, PteCol, PteComment, PteCommentDbRow, PteCommentsIn, PteDictTagDbRow, PteExamCount,
-  PteExamCountDbRow, PteItem, PteItemLoadIn, PteListDbRow, PteListIn, PteMeta, PteOneDbRow, PteQuestion, PteQuestionIn,
-  PteRow, PteRowIn, PteSection, PteTiersIn, PteType, PteTypeDbRow, PteTypesIn, QidOfIn, QuotaDoc, RateAudioIn,
-  RateTextIn, RecallsIn, RecorderHandle, RecorderStopFn, RecorderStopIn, RedoIn, SaveDoneIn, SectionLabelIn,
-  SectionsIn, SeekAudioIn, SeenCountIn, SeenTextIn, SelectedWord, SelectionWatchIn, SetBoolIn, SetBoolValIn,
-  SettleDictIn, SpeakIn, SpeakWordIn, SpkClsIn, StartRecIn, StartRecorderIn, SubmitIn, TextChangeFn, TextChangeIn,
-  TextPart, TextPartsIn, TextShownIn, TickerIn, TierOfIn, TimeTextIn, ToggleIn, TypeAtIn, TypeCodeIn, TypeLabelIn,
-  TypeNameIn, WordCountIn,
+  DictLinesIn, DictLookupIn, DictPos, DictPosIn, DictSentence, DictTagKeyIn, DiffIn, DiffOut, DiffToken, DomEventFn,
+  DoneClsIn, DoneResBody, DoneSyncIn, DurationIn, EffectFn, ExamCountsIn, ExamOpenIn, ExamSubmitIn, FamilyOfIn,
+  FormLabelIn, GateCloseIn, GatedPlayIn, GatedStartIn, GatedSubmitIn, HintIn, HoverWordIn, InputChangeIn, IsDoneIn,
+  ItemHrefIn, ItemMetaIn, LcsAtIn, ListMetaIn, ListOfIn, ListTiersIn, LookupNowIn, MarkDoneIn, MaybeHref, MicIn,
+  MoreIn, NavPickIn, NavRowsIn, NavScrollIn, NavTextIn, NeighborsIn, NeighborsOut, NoteSubmitIn, PhaseSetIn, PhonIn,
+  PlayIn, PlayUrlIn, PostCommentIn, PteCellRow, PteCol, PteComment, PteCommentDbRow, PteCommentsIn, PteDictTagDbRow,
+  PteExamCount, PteExamCountDbRow, PteItem, PteItemLoadIn, PteListDbRow, PteListIn, PteMeta, PteOneDbRow, PteQuestion,
+  PteQuestionIn, PteRow, PteRowIn, PteSection, PteTiersIn, PteType, PteTypeDbRow, PteTypesIn, QidOfIn, QuotaDoc,
+  RateAudioIn, RateTextIn, RecallsIn, RecorderHandle, RecorderStopFn, RecorderStopIn, RedoIn, SaveDoneIn,
+  SectionLabelIn, SectionsIn, SeekAudioIn, SeenCountIn, SeenTextIn, SelectedWord, SelectionWatchIn, SentIndexIn,
+  SentRef, SentStartsIn, SetBoolIn, SetBoolValIn, SettleDictIn, SpeakIn, SpeakWordIn, SpkClsIn, StartRecIn,
+  StartRecorderIn, SubmitIn, TextChangeFn, TextChangeIn, TextPart, TextPartsIn, TextShownIn, TickerIn, TierOfIn,
+  TimeTextIn, ToggleIn, TypeAtIn, TypeCodeIn, TypeLabelIn, TypeNameIn, WordCountIn, ZhApiBody, ZhApiRow, ZhLookupIn,
+  ZhLookupNowIn,
 } from './types'
 
 /**
@@ -1943,7 +1944,13 @@ export async function loadPteListTiers(x: ListTiersIn): Promise<Record<string, n
  * @returns 词与档。
  */
 function toTierRow(r: PteDictTagDbRow): TextPart {
-  return { text: TEXT_NONE, word: text(r.word), tier: tierOf({ tag: text(r.tag), frq: count(r.frq) }), cls: TEXT_NONE }
+  return {
+    text: TEXT_NONE,
+    word: text(r.word),
+    tier: tierOf({ tag: text(r.tag), frq: count(r.frq) }),
+    cls: TEXT_NONE,
+    sent: SENT_NONE,
+  }
 }
 
 /**
@@ -1990,12 +1997,16 @@ export function tierOf(x: TierOfIn): number {
  */
 export function textPartsOf(x: TextPartsIn): TextPart[] {
   const out: TextPart[] = []
+  const starts = sentenceStartsOf({ text: x.text })
+  let at = 0
   for (const piece of x.text.split(TEXT_TOKEN_RE)) {
+    const from = at
+    at = at + piece.length
     if (piece === TEXT_NONE) {
       continue
     }
     if (TEXT_TOKEN_RE.test(piece) === false) {
-      out.push({ text: piece, word: TEXT_NONE, tier: TIER_NONE, cls: TEXT_NONE })
+      out.push({ text: piece, word: TEXT_NONE, tier: TIER_NONE, cls: TEXT_NONE, sent: SENT_NONE })
       continue
     }
     const word = trimWord(piece.toLowerCase())
@@ -2004,9 +2015,48 @@ export function textPartsOf(x: TextPartsIn): TextPart[] {
     if (hit != null) {
       tier = hit
     }
-    out.push({ text: piece, word, tier, cls: tierClsOf(tier) })
+    out.push({ text: piece, word, tier, cls: tierClsOf(tier), sent: sentIndexOf({ starts, from }) })
   }
   return out
+}
+
+/**
+ * 题面各句的起始偏移(与 ETL 同一条切句规则)。
+ *
+ * @param x 题面。
+ * @returns 起始偏移清单(第 0 句从 0 起)。
+ */
+export function sentenceStartsOf(x: SentStartsIn): number[] {
+  const starts = [0]
+  let at = 0
+  for (const piece of x.text.split(SENT_SPLIT_RE)) {
+    at = at + piece.length
+    const rest = x.text.slice(at)
+    const gap = rest.match(SENT_GAP_RE)
+    if (gap == null) {
+      break
+    }
+    at = at + gap[0].length
+    starts.push(at)
+  }
+  return starts
+}
+
+/**
+ * 某偏移落在第几句。
+ *
+ * @param x 句起始表与偏移。
+ * @returns 句序。
+ */
+function sentIndexOf(x: SentIndexIn): number {
+  let idx = 0
+  for (let i = 0; i < x.starts.length; i = i + 1) {
+    const start = x.starts[i]
+    if (start != null && x.from >= start) {
+      idx = i
+    }
+  }
+  return idx
 }
 
 /**
@@ -2049,7 +2099,7 @@ export function openDictWord(e: React.MouseEvent<HTMLElement>): void {
   if (sink == null) {
     return
   }
-  makeHoverWord({ setWord: sink.setWord, setPos: sink.setPos })(e)
+  makeHoverWord({ setWord: sink.setWord, setPos: sink.setPos, setSent: sink.setSent })(e)
 }
 
 /**
@@ -2068,6 +2118,93 @@ export function makeDictOpenFlag(x: NavScrollIn): EffectFn {
 }
 
 /**
+ * 高亮词元素上的题键与句序(没挂属性 = 不在题面里)。
+ *
+ * @param el 被点的元素。
+ * @returns 哪题第几句。
+ */
+function sentRefOf(el: HTMLElement): SentRef {
+  const qid = el.getAttribute(DATA_QID)
+  const idx = el.getAttribute(DATA_SENT)
+  if (qid == null || idx == null) {
+    return { qid: TEXT_NONE, idx: SENT_NONE }
+  }
+  return { qid, idx: Number(idx) }
+}
+
+/**
+ * 造「查整句中文」的 effect:按题键取(缓存),挑出这一句落格;没题键 / 没这句 = null。
+ *
+ * @param x 哪题第几句与落格。
+ * @returns effect 体(拆卸后不落)。
+ */
+export function makeZhLookup(x: ZhLookupIn): EffectFn {
+  return function lookup(): () => void {
+    if (x.sent.qid === TEXT_NONE || x.sent.idx === SENT_NONE) {
+      x.setSentence(null)
+      return noop
+    }
+    const flag: DeadFlag = { dead: false }
+    void zhLookupNow({ x, flag })
+    return function stop(): void {
+      flag.dead = true
+    }
+  }
+}
+
+/**
+ * makeZhLookup 的真身:缓存 → 接口 → 挑句落格。
+ *
+ * @param y 入参与死亡标记。
+ * @returns 无。
+ */
+async function zhLookupNow(y: ZhLookupNowIn): Promise<void> {
+  let rows = CACHE.zh.get(y.x.sent.qid)
+  if (rows == null) {
+    rows = await fetchZh(y.x.sent.qid)
+    CACHE.zh.set(y.x.sent.qid, rows)
+  }
+  if (y.flag.dead) {
+    return
+  }
+  let hit: DictSentence | null = null
+  for (const r of rows) {
+    if (r.idx === y.x.sent.idx) {
+      hit = { en: r.en, zh: r.zh }
+    }
+  }
+  y.x.setSentence(hit)
+}
+
+/**
+ * 打整句接口;失败或形状不对给空清单。`as ZhApiBody` 是跨边界断言,逐格判后才用。
+ *
+ * @param qid 题键。
+ * @returns 句清单。
+ */
+async function fetchZh(qid: string): Promise<ZhApiRow[]> {
+  try {
+    const r = await fetch(API_PTE_ZH + encodeURIComponent(qid))
+    if (r.ok === false) {
+      return []
+    }
+    const body = await r.json() as ZhApiBody
+    if (body.ok !== true || Array.isArray(body.rows) === false) {
+      return []
+    }
+    const out: ZhApiRow[] = []
+    for (const row of body.rows) {
+      if (typeof row.idx === 'number' && typeof row.en === 'string' && typeof row.zh === 'string') {
+        out.push({ idx: row.idx, en: row.en, zh: row.zh })
+      }
+    }
+    return out
+  } catch {
+    return []
+  }
+}
+
+/**
  * 造「登记弹框落格」的 effect(挂载登记,拆卸清掉)。
  *
  * @param x 两个落格。
@@ -2075,7 +2212,7 @@ export function makeDictOpenFlag(x: NavScrollIn): EffectFn {
  */
 export function makeDictSink(x: HoverWordIn): EffectFn {
   return function register(): () => void {
-    CACHE.dictSink = { setWord: x.setWord, setPos: x.setPos }
+    CACHE.dictSink = { setWord: x.setWord, setPos: x.setPos, setSent: x.setSent }
     return function clear(): void {
       CACHE.dictSink = null
     }
@@ -2097,6 +2234,7 @@ export function makeHoverWord(x: HoverWordIn): (e: React.MouseEvent<HTMLElement>
       return
     }
     x.setPos({ x: r.left + r.width / NAV_CENTER_DIV, y: r.bottom })
+    x.setSent(sentRefOf(el))
     x.setWord(trimWord(raw.toLowerCase()))
   }
 }

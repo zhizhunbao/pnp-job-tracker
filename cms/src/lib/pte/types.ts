@@ -188,6 +188,66 @@ export type PteDictIn = {
 export type PteDictOut = Promise<MaybePteDictEntry>
 
 /**
+ * pte_sentences 的库行(`PTE_SENTENCES`)。
+ */
+export type PteSentenceDbRow = {
+  /**
+   * 句序。
+   */
+  idx: number | null
+
+  /**
+   * 英文原句。
+   */
+  en: string | null
+
+  /**
+   * 中文;空 = 没翻到。
+   */
+  zh: string | null
+}
+
+/**
+ * 一句(洗净)。
+ */
+export type PteSentence = {
+  /**
+   * 句序。
+   */
+  idx: number
+
+  /**
+   * 英文原句。
+   */
+  en: string
+
+  /**
+   * 中文;空串 = 没翻到。
+   */
+  zh: string
+}
+
+/**
+ * 取一题整句中文(`loadPteSentences`)的入参。
+ */
+export type PteSentencesIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 题键。
+   */
+  qid: string
+}
+
+/**
+ * 取整句中文的返回。
+ */
+export type PteSentencesOut = Promise<PteSentence[]>
+
+/**
  * 练过的题键清单。
  */
 export type DoneKeys = string[]

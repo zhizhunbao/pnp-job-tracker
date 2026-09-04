@@ -56,6 +56,36 @@ export const METHOD_PUT = 'PUT'
 export const DICT_API = '/api/pte/dict/'
 
 /**
+ * 整句中文接口(一题一查,按题键缓存;Frank 2026-09-04「这个词下面列一下整句的翻译如何」)。
+ */
+export const API_PTE_ZH = '/api/pte/zh/'
+
+/**
+ * 切句(与 ETL 同一条规则:句末标点后接空白再接大写 / 数字 / 引号处切)。
+ */
+export const SENT_SPLIT_RE = /(?<=[.!?])\s+(?=[A-Z0-9"'(])/
+
+/**
+ * 高亮词元素上的题键属性名(点词时连题一起带进弹框)。
+ */
+export const DATA_QID = 'data-q'
+
+/**
+ * 高亮词元素上的句序属性名。
+ */
+export const DATA_SENT = 'data-i'
+
+/**
+ * 没有句序。
+ */
+export const SENT_NONE = -1
+
+/**
+ * 切句处的空白(算下一句起始偏移用)。
+ */
+export const SENT_GAP_RE = /^\s+/
+
+/**
  * 算「一个单词」的形:字母开头,只含字母、撇号、连字符。
  */
 export const WORD_RE = /^[A-Za-z][A-Za-z'-]*$/
