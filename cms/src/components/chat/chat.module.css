@@ -125,7 +125,7 @@
 
 .cbEx:hover {
   border-color: #bfdbfe;
-  background: #f8fafc;
+  background: var(--hover-bg);
 }
 
 /* C6 选项卡(设计 §一):答复下方的决定卡。胶囊沿 .cbEx 形态;推荐项蓝框浅蓝底 + 绿徽标;
@@ -166,7 +166,7 @@
 
 .cbOpt.cbOpt:hover {
   border-color: #bfdbfe;
-  background: #f8fafc;
+  background: var(--hover-bg);
 }
 
 .cbOpt.cbOpt:disabled {
@@ -710,7 +710,7 @@
 
 .cbAct.cbAct:hover:not(:disabled) {
   color: var(--text2);
-  background: var(--hairline);
+  background: var(--hover-bg);
 }
 
 /* 选中态:选的那个亮起来,另一个留着但退到极淡 —— 「我点过了」得一眼看得出来 */
@@ -833,7 +833,7 @@
 
 .cbFu:hover {
   border-color: #bfdbfe;
-  background: #f8fafc;
+  background: var(--hover-bg);
 }
 
 /* touch-action:none = 手指按在启动器上就是要拖它,不让浏览器抢去当滚动(拖动手感的前提) */
@@ -1074,7 +1074,7 @@
 }
 
 .clWin.clWin:hover {
-  background: #e5e7eb;
+  background: var(--hover-bg);
 }
 
 .clWin.clWin:focus-visible {

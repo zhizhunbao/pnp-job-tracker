@@ -266,5 +266,5 @@
   /*
    * 浅灰底。
    */
-  background: #f3f4f6;
+  background: var(--hover-bg);
 }

@@ -23,6 +23,7 @@
   --text3: #9ca3af;
   --border: #e5e7eb;
   --hairline: #f3f4f6;
+  --hover-bg: #eff6ff;
   --bg: #f9fafb;
   --card: #fff;
 }
@@ -138,14 +139,16 @@ button:not(:disabled):hover {
 /* hover 统一 token(2026-07-31 Frank「现在 hover 看着是灰色的」→ docs/design/hover统一-20260731.md 落地):
    块状链接(整行/整卡是 <a>)不再整块变暗发灰 —— 行=底色高亮、卡=蓝框+浅底,内容原样;
    filter:none 挡掉全局 a:hover 变暗;!important 压行内 background/border(resTile 同款手法)。
-   铁律不变:只有能点的才挂这两个类,不可点的不挂。文字链接/按钮仍走上面的全局规范。 */
+   铁律不变:只有能点的才挂这两个类,不可点的不挂。文字链接/按钮仍走上面的全局规范。
+   2026-09-04 Frank「所有 hover 背景变化都改成淡蓝色」:行/卡以及各模块的灰底 hover 统一走 --hover-bg
+   (#eff6ff,与职位板已选态同色);主色实心钮(白字)、语义色(红/绿/黄档)hover 不在此列,改了字看不见/档位失义。 */
 .rowHover:hover {
-  background: #f8fafc !important;
+  background: var(--hover-bg) !important;
   filter: none;
 }
 .cardHover:hover {
   border-color: #bfdbfe !important;
-  background: #f8faff !important;
+  background: var(--hover-bg) !important;
   filter: none;
 }
 

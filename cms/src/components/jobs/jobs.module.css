@@ -643,7 +643,7 @@
 }
 
 .cellAct:hover {
-  background: #eff6ff;
+  background: var(--hover-bg);
 }
 
 /*
