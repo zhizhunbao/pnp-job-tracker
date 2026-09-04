@@ -1673,7 +1673,13 @@ export const PTE_AUDIO_ONE = `SELECT mime, b64 FROM pte_audio WHERE qid = $1 ORD
 /**
  * 词典一词(2026-09-04 自托管 ECDICT 子集;$1=小写词)。
  */
-export const PTE_DICT_ONE = `SELECT word, phonetic, translation, lemma FROM pte_dict WHERE word = $1 ORDER BY id ASC LIMIT 1`
+export const PTE_DICT_ONE = `SELECT word, phonetic, translation, lemma, phonetic_uk AS "phoneticUk", phonetic_us AS "phoneticUs"
+     FROM pte_dict WHERE word = $1 ORDER BY id ASC LIMIT 1`
+
+/**
+ * 一题词表的高亮档依据(2026-09-04 关键词高亮;$1=小写词清单)。
+ */
+export const PTE_DICT_TAGS = `SELECT word, tag, collins FROM pte_dict WHERE word = ANY($1::text[])`
 
 /**
  * 本人的练过档(批三;users.pte_done jsonb = { done: string[], updatedAt })。$1=用户 id。

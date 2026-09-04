@@ -12,15 +12,17 @@ import { cssOf } from '@/components/css'
 import { SQL, count, numOrNull, queryRowsOrEmpty, text, textOrNull } from '@/lib/db'
 import {
   ALIGN_LEFT, API_COMMENTS, API_PTE_DONE, CLOCK_PAD, CLOCK_SEP, CLS_SEP, COL_ACT, COL_NUM, COL_SEEN, COL_TEXT,
-  COL_TIMES, CRED_INCLUDE, DATE_LEN, DAY_MS, DESC_LEN_MAX, DICT_API, DICT_BUSY, DICT_EDGE_PX, DICT_GAP_PX, DICT_IDLE,
-  DICT_LINE_SEP, DICT_MIN_LEN, DICT_NONE, DICT_OK, DICT_W_PX, DONE_KEY, ELLIPSIS, EMPTY_DONE, EV_MOUSEUP, EV_TOUCHEND,
-  HDR_CONTENT_TYPE, ID_SEP, INST_KEY, ITEM_DESC_TPL, ITEM_TITLE_TPL, KIND_EXAM, KIND_NOTE, LANG_KO, LANG_ZH, LIKE_ANY,
-  LIST_DESC_TPL, LIST_TITLE_TPL, METHOD_POST, METHOD_PUT, MIME_JSON, MS_PER_MIN, NAV_CENTER_DIV, NAV_ID_PREFIX,
-  NAV_TEXT_LEN, NOTE_HINT_KEY, NOT_FOUND_TITLE, NUM_HEAD, PAD_CHAR, PAGE_STEP, PAREN_L, PAREN_R, PHASE_ANSWERING,
-  PHASE_CHECKED, PHASE_READY, PREP_S, PTE_META, PUNCT_RE, QID_ID_AT, QID_SEP, REC_CAP_S, REC_MIME, REC_STATE_INACTIVE,
-  SECTION_KEY, SECTION_ORDER, SEC_PER_MIN, STATE_BUSY, STATE_ERR, STATE_IDLE, STATE_SENT, TEXT_NONE, TICK_MS,
-  TITLE_LEN_MAX, TTS_GUARD_BASE_MS, TTS_LANG, TTS_LANG_HEAD, TTS_MS_PER_WORD, TTS_RATE, T_RA, URL_PTE, URL_SEP, VAR_N,
-  VAR_NUM, VAR_TEXT, VAR_TITLE, VAR_TYPE, WORD_RE, WORD_SPLIT_RE, W_ACT, W_NUM, W_SEEN, W_TEXT, W_TIMES,
+  COL_TIMES, CRED_INCLUDE, DASH, DATE_LEN, DAY_MS, DESC_LEN_MAX, DICT_API, DICT_BUSY, DICT_EDGE_PX, DICT_GAP_PX,
+  DICT_IDLE, DICT_LINE_SEP, DICT_MIN_LEN, DICT_NONE, DICT_OK, DICT_W_PX, DONE_KEY, ELLIPSIS, EMPTY_DONE, EV_MOUSEUP,
+  EV_TOUCHEND, GATE_LOGIN, GATE_NONE, GATE_UPGRADE, HDR_CONTENT_TYPE, ID_SEP, INST_KEY, ITEM_DESC_TPL, ITEM_TITLE_TPL,
+  KIND_EXAM, KIND_NOTE, LANG_KO, LANG_ZH, LIKE_ANY, LIST_DESC_TPL, LIST_TITLE_TPL, METHOD_POST, METHOD_PUT, MIME_JSON,
+  MS_PER_MIN, NAV_CENTER_DIV, NAV_ID_PREFIX, NAV_TEXT_LEN, NOTE_HINT_KEY, NOT_FOUND_TITLE, NUM_HEAD, PAD_CHAR,
+  PAGE_STEP, PAREN_L, PAREN_R, PHASE_ANSWERING, PHASE_CHECKED, PHASE_READY, PREP_S, PTE_META, PUNCT_RE, QID_ID_AT,
+  QID_SEP, QUOTA_KEY, QUOTA_MAX, REC_CAP_S, REC_MIME, REC_STATE_INACTIVE, SECTION_KEY, SECTION_ORDER, SEC_PER_MIN,
+  STATE_BUSY, STATE_ERR, STATE_IDLE, STATE_SENT, TAG_SEP, TEXT_NONE, TEXT_TOKEN_RE, TICK_MS, TIER_CLS_HEAD, TIER_NONE,
+  TIER_ORDER, TIER_TAGS, TITLE_LEN_MAX, TTS_GUARD_BASE_MS, TTS_LANG, TTS_LANG_HEAD, TTS_MS_PER_WORD, TTS_RATE, T_RA,
+  UNDERSCORE, URL_PTE, URL_SEP, VAR_N, VAR_NUM, VAR_TEXT, VAR_TITLE, VAR_TYPE, WORD_RE, WORD_SPLIT_RE, WORD_TRIM,
+  W_ACT, W_NUM, W_SEEN, W_TEXT, W_TIMES,
 } from './constants'
 import { CACHE } from './variables'
 import css from './pte.module.css'
@@ -32,14 +34,16 @@ import { TimesCell } from './timescell'
 import type {
   AgoTextIn, CanPlayIn, CellRowsIn, ChunkSinkFn, ClickFn, ClockIn, ColsOfIn, CommentsOfKindIn, DaysAgoIn, DeadFlag,
   DictApiBody, DictCloseIn, DictEntry, DictLookupIn, DictPos, DictPosIn, DiffIn, DiffOut, DiffToken, DoneClsIn,
-  DoneResBody, DoneSyncIn, EffectFn, ExamCountsIn, ExamSubmitIn, HintIn, IsDoneIn, ItemHrefIn, ItemMetaIn, LcsAtIn,
-  ListMetaIn, LookupNowIn, MarkDoneIn, MaybeHref, MoreIn, NeighborsIn, NeighborsOut, NoteSubmitIn, PhaseSetIn, PlayIn,
-  PlayUrlIn, PostCommentIn, PteCellRow, PteCol, PteComment, PteCommentDbRow, PteCommentsIn, PteExamCount,
-  PteExamCountDbRow, PteItem, PteItemLoadIn, PteListDbRow, PteListIn, PteMeta, PteOneDbRow, PteQuestion, PteQuestionIn,
-  PteRow, PteRowIn, PteSection, PteType, PteTypeDbRow, PteTypesIn, QidOfIn, RecorderHandle, RecorderStopFn,
-  RecorderStopIn, RedoIn, SaveDoneIn, NavScrollIn, NavTextIn, SectionLabelIn, SectionsIn, SeenCountIn, SeenTextIn,
-  SetBoolIn, TypeLabelIn, SelectedWord, SelectionWatchIn, SettleDictIn, SpeakIn, StartRecIn, StartRecorderIn, SubmitIn,
-  TextChangeFn, TextChangeIn, TextShownIn, TickerIn, ToggleIn, TypeAtIn, TypeCodeIn, TypeNameIn, WordCountIn,
+  DoneResBody, DoneSyncIn, EffectFn, ExamCountsIn, ExamSubmitIn, GateCloseIn, GatedSubmitIn, HintIn, HoverWordIn,
+  IsDoneIn, ItemHrefIn, ItemMetaIn, LcsAtIn, ListMetaIn, LookupNowIn, MarkDoneIn, MaybeHref, MoreIn, NavScrollIn,
+  NavTextIn, NeighborsIn, NeighborsOut, NoteSubmitIn, PhaseSetIn, PhonIn, PlayIn, PlayUrlIn, PostCommentIn, PteCellRow,
+  PteCol, PteComment, PteCommentDbRow, PteCommentsIn, PteDictTagDbRow, PteExamCount, PteExamCountDbRow, PteItem,
+  PteItemLoadIn, PteListDbRow, PteListIn, PteMeta, PteOneDbRow, PteQuestion, PteQuestionIn, PteRow, PteRowIn,
+  PteSection, PteTiersIn, PteType, PteTypeDbRow, PteTypesIn, QidOfIn, QuotaDoc, RecorderHandle, RecorderStopFn,
+  RecorderStopIn, RedoIn, SaveDoneIn, SectionLabelIn, SectionsIn, SeenCountIn, SeenTextIn, SelectedWord,
+  SelectionWatchIn, SetBoolIn, SettleDictIn, SpeakIn, SpeakWordIn, StartRecIn, StartRecorderIn, SubmitIn, TextChangeFn,
+  TextChangeIn, TextPart, TextPartsIn, TextShownIn, TickerIn, TierOfIn, ToggleIn, TypeAtIn, TypeCodeIn, TypeLabelIn,
+  TypeNameIn, WordCountIn,
 } from './types'
 
 /**
@@ -100,6 +104,7 @@ export async function loadPteItem(x: PteItemLoadIn): Promise<PteItem | null> {
     nextHref: nb.nextHref,
     index: nb.index,
     rows: list,
+    tiers: await loadPteTiers({ db: x.db, text: text(row.text) }),
     total: list.length,
   }
 }
@@ -793,6 +798,109 @@ export function doneServerSnapshotOf(): Set<string> {
 }
 
 /**
+ * 今日已用配额的快照(useSyncExternalStore 的 getSnapshot;原始值可直接比较):
+ * 读 localStorage 的档,不是今天的算 0,坏档算 0。
+ *
+ * @returns 已用次数。
+ */
+export function quotaSnapshotOf(): number {
+  let raw: string | null = null
+  try {
+    raw = localStorage.getItem(QUOTA_KEY)
+  } catch {
+    raw = null
+  }
+  if (raw == null) {
+    return 0
+  }
+  const doc = quotaDocOf(raw)
+  if (doc.day !== todayOf()) {
+    return 0
+  }
+  return doc.n
+}
+
+/**
+ * 服务端的配额快照(SSR 没有 localStorage,一律 0)。
+ *
+ * @returns 0。
+ */
+export function quotaServerSnapshotOf(): number {
+  return 0
+}
+
+/**
+ * 配额档原串 → 档(解析失败或形状不对给「今天 0 次」)。
+ *
+ * @param raw 原串。
+ * @returns 档。
+ */
+function quotaDocOf(raw: string): QuotaDoc {
+  try {
+    const v = JSON.parse(raw) as QuotaDoc
+    if (typeof v.day === 'string' && typeof v.n === 'number') {
+      return { day: v.day, n: v.n }
+    }
+  } catch {
+    return { day: todayOf(), n: 0 }
+  }
+  return { day: todayOf(), n: 0 }
+}
+
+/**
+ * 今日配额 +1 并叫醒订阅者(与练过集共用 listeners)。
+ *
+ * @returns 无。
+ */
+function bumpQuota(): void {
+  const doc: QuotaDoc = { day: todayOf(), n: quotaSnapshotOf() + 1 }
+  try {
+    localStorage.setItem(QUOTA_KEY, JSON.stringify(doc))
+  } catch {
+    return
+  }
+  for (const cb of CACHE.listeners) {
+    cb()
+  }
+}
+
+/**
+ * 造关闸手柄(闸态回 none)。
+ *
+ * @param x 落闸。
+ * @returns 手柄。
+ */
+export function makeGateClose(x: GateCloseIn): ClickFn {
+  return function gateClose(): void {
+    x.setGate(GATE_NONE)
+  }
+}
+
+/**
+ * 造带配额闸的提交:Pro 直接过;免费用户今日未满 +1 再提交,满了不提交、开闸
+ * (未登录 → 注册框,已登录 → 升级框)。计时到点的自动提交也走这一道。
+ *
+ * @param x Pro / 登录态 / 已用 / 真提交 / 落闸。
+ * @returns 手柄。
+ */
+export function makeGatedSubmit(x: GatedSubmitIn): ClickFn {
+  return function gatedSubmit(): void {
+    if (x.pro === false && x.used >= QUOTA_MAX) {
+      if (x.loggedIn) {
+        x.setGate(GATE_UPGRADE)
+      } else {
+        x.setGate(GATE_LOGIN)
+      }
+      return
+    }
+    if (x.pro === false) {
+      bumpQuota()
+    }
+    x.submit()
+  }
+}
+
+/**
  * 造「能不能播」的快照函数(浏览器有朗读或题带直链;服务端一律 false)。
  *
  * @param x 题的音频直链。
@@ -1347,17 +1455,13 @@ export function isTextShown(x: TextShownIn): boolean {
 
 
 /**
- * 题面格类名(练过的灰掉)。
+ * 题面格类名(练过的原先灰字;2026-09-04 Frank「这个不要高亮」撤,入参留着与卡类名同形)。
  *
  * @param x 练过。
  * @returns 类名串。
  */
-export function textCellClsOf(x: DoneClsIn): string {
-  const out = [cssOf(css.rowLink), cssOf(css.cellText)]
-  if (x.done) {
-    out.push(cssOf(css.doneRow))
-  }
-  return out.join(CLS_SEP)
+export function textCellClsOf(_x: DoneClsIn): string {
+  return cssOf(css.cellText)
 }
 
 /**
@@ -1547,6 +1651,138 @@ export function makeNavScroll(x: NavScrollIn): ClickFn {
       return
     }
     box.scrollTop = el.offsetTop - box.clientHeight / NAV_CENTER_DIV
+  }
+}
+
+/**
+ * 一题题面里该高亮的词 → 档:切词去重后一查,按考纲标签分档;没档的不进表。
+ *
+ * @param x 数据库连接与题面。
+ * @returns 词 → 档。
+ */
+export async function loadPteTiers(x: PteTiersIn): Promise<Record<string, number>> {
+  const words: string[] = []
+  for (const p of textPartsOf({ text: x.text, tiers: {} })) {
+    if (p.word !== TEXT_NONE && words.includes(p.word) === false) {
+      words.push(p.word)
+    }
+  }
+  const out: Record<string, number> = {}
+  if (words.length === 0) {
+    return out
+  }
+  const rows = await queryRowsOrEmpty({ db: x.db, sql: SQL.PTE_DICT_TAGS, params: [words], map: toTierRow })
+  for (const r of rows) {
+    if (r.tier !== TIER_NONE) {
+      out[r.word] = r.tier
+    }
+  }
+  return out
+}
+
+/**
+ * 高亮依据库行 → (词, 档)。
+ *
+ * @param r 库行。
+ * @returns 词与档。
+ */
+function toTierRow(r: PteDictTagDbRow): TextPart {
+  return { text: TEXT_NONE, word: text(r.word), tier: tierOf({ tag: text(r.tag) }) }
+}
+
+/**
+ * 考纲标签 → 档(低档先判:命中最低的那级即定;都不命中 = 0 不高亮)。
+ *
+ * @param x 标签串。
+ * @returns 档。
+ */
+export function tierOf(x: TierOfIn): number {
+  const tags = x.tag.split(TAG_SEP)
+  for (const tier of TIER_ORDER) {
+    const want = TIER_TAGS[tier]
+    if (want == null) {
+      continue
+    }
+    for (const w of want) {
+      if (tags.includes(w)) {
+        return tier
+      }
+    }
+  }
+  return TIER_NONE
+}
+
+/**
+ * 题面切段:词与分隔交替,词按小写归一查档。
+ *
+ * @param x 题面与档表。
+ * @returns 段清单(原样拼回 = 题面)。
+ */
+export function textPartsOf(x: TextPartsIn): TextPart[] {
+  const out: TextPart[] = []
+  for (const piece of x.text.split(TEXT_TOKEN_RE)) {
+    if (piece === TEXT_NONE) {
+      continue
+    }
+    if (TEXT_TOKEN_RE.test(piece) === false) {
+      out.push({ text: piece, word: TEXT_NONE, tier: TIER_NONE })
+      continue
+    }
+    const word = trimWord(piece.toLowerCase())
+    let tier = TIER_NONE
+    const hit = x.tiers[word]
+    if (hit != null) {
+      tier = hit
+    }
+    out.push({ text: piece, word, tier })
+  }
+  return out
+}
+
+/**
+ * 剥掉词两端的撇号 / 连字符(与 ETL 切词同口径)。
+ *
+ * @param w 小写词。
+ * @returns 净词。
+ */
+function trimWord(w: string): string {
+  let a = 0
+  let b = w.length
+  while (a < b && WORD_TRIM.includes(w[a] as string)) {
+    a = a + 1
+  }
+  while (b > a && WORD_TRIM.includes(w[b - 1] as string)) {
+    b = b - 1
+  }
+  return w.slice(a, b)
+}
+
+/**
+ * 高亮词的类名(按档)。
+ *
+ * @param tier 档。
+ * @returns css module 类。
+ */
+export function tierClsOf(tier: number): string {
+  return cssOf(css[TIER_CLS_HEAD + String(tier)])
+}
+
+/**
+ * 造「悬到高亮词开弹层」手柄:词取自元素文本,弹层位置取元素矩形底边中点。
+ *
+ * @param x 两个落格。
+ * @returns 手柄(收鼠标事件 —— React 定的签名)。
+ */
+export function makeHoverWord(x: HoverWordIn): (e: React.MouseEvent<HTMLElement>) => void {
+  return function hoverWord(e: React.MouseEvent<HTMLElement>): void {
+    const el = e.currentTarget
+    const r = el.getBoundingClientRect()
+    const raw = el.textContent
+    if (raw == null) {
+      return
+    }
+    x.setPos({ x: r.left + r.width / NAV_CENTER_DIV, y: r.bottom })
+    x.setWord(trimWord(raw.toLowerCase()))
   }
 }
 
@@ -1865,7 +2101,55 @@ function toDictEntry(e: DictApiBody): DictEntry | null {
   if (typeof e.lemma === 'string') {
     lemma = e.lemma
   }
-  return { word: e.word, phonetic, lines, lemma }
+  let phoneticUk = TEXT_NONE
+  if (typeof e.phoneticUk === 'string') {
+    phoneticUk = e.phoneticUk
+  }
+  let phoneticUs = TEXT_NONE
+  if (typeof e.phoneticUs === 'string') {
+    phoneticUs = e.phoneticUs
+  }
+  return { word: e.word, phonetic, lines, lemma, phoneticUk, phoneticUs }
+}
+
+/**
+ * 弹层里一档音标:有道给了用有道的,没给用 ECDICT 那套;都没有给空串(弹层留空,不写「无」)。
+ *
+ * @param x 本档与兜底。
+ * @returns 音标。
+ */
+export function phonOf(x: PhonIn): string {
+  if (x.own !== TEXT_NONE) {
+    return x.own
+  }
+  return x.fallback
+}
+
+/**
+ * 造「读这个词」手柄(浏览器语音,按语言码挑声音:英音 en-GB / 美音 en-US;
+ * Frank 2026-09-04「英音和美音都要有吧」)。没语音能力就静默。
+ *
+ * @param x 词与语言码。
+ * @returns 手柄。
+ */
+export function makeSpeakWord(x: SpeakWordIn): ClickFn {
+  return function speakWord(): void {
+    if (canSpeak() === false || x.word === TEXT_NONE) {
+      return
+    }
+    const synth = window.speechSynthesis
+    synth.cancel()
+    const u = new SpeechSynthesisUtterance(x.word)
+    u.lang = x.lang
+    u.rate = TTS_RATE
+    for (const v of synth.getVoices()) {
+      if (v.lang.replace(UNDERSCORE, DASH).startsWith(x.lang)) {
+        u.voice = v
+        break
+      }
+    }
+    synth.speak(u)
+  }
 }
 
 /**

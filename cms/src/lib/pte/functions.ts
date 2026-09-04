@@ -119,7 +119,10 @@ export function toPteAudio(r: PteAudioDbRow): PteAudio {
  * @returns 结果。
  */
 export function toPteDict(r: PteDictDbRow): PteDictEntry {
-  return { word: text(r.word), phonetic: text(r.phonetic), translation: text(r.translation), lemma: text(r.lemma) }
+  return {
+    word: text(r.word), phonetic: text(r.phonetic), translation: text(r.translation), lemma: text(r.lemma),
+    phoneticUk: text(r.phoneticUk), phoneticUs: text(r.phoneticUs),
+  }
 }
 
 /**

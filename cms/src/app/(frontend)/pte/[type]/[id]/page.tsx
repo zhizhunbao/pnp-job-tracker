@@ -13,7 +13,7 @@ import { Header } from '@/components/header'
 import { PteItem, loadPteComments, loadPteItem, loadPteTypes, pteItemMetaOf, typeAt } from '@/components/pte'
 import { Frame } from '@/components/shell'
 import { getDb } from '@/lib/db/server'
-import { getUser } from '@/lib/quota/server'
+import { getUser, isPro } from '@/lib/quota/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -48,7 +48,7 @@ export default async function PteItemPage({ params }: { params: Promise<{ type: 
   return (
     <Frame>
       <Header loggedIn={!!user} />
-      <PteItem types={types} item={item} comments={comments} loggedIn={!!user} />
+      <PteItem types={types} item={item} comments={comments} loggedIn={!!user} pro={isPro(user)} />
       <Footer />
     </Frame>
   )

@@ -11,18 +11,19 @@
  */
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import {
-  DICT_IDLE, KIND_EXAM, KIND_NOTE, PAGE_STEP, PHASE_ANSWERING, PHASE_READY, STATE_IDLE, T_WFD, TEXT_NONE,
+  DICT_IDLE, GATE_NONE, KIND_EXAM, KIND_NOTE, LANG_UK, LANG_US, PAGE_STEP, PHASE_ANSWERING, PHASE_READY, STATE_IDLE,
+  TEXT_NONE, T_WFD,
 } from './constants'
 import {
-  commentsOfKind, doneServerSnapshotOf, doneSnapshotOf, makeCanPlaySnapshot, makeCountdown, makeDictClose, makeClose,
-  makeDictLookup, makeDoneSync, makeExamSubmit, makeMore, makeNavScroll, makeNoteSubmit, makeOpen, makePhaseSet,
-  makePlay, makeRedo, makeSelectionWatch, makeStartRec, makeSubmit, makeTextChange, makeTicker, makeToggle, prepSecOf,
-  recCapOf, reloadPage, seenCountOf, serverFalseOf, subscribeDone, subscribeNone,
+  commentsOfKind, doneServerSnapshotOf, doneSnapshotOf, makeCanPlaySnapshot, makeClose, makeCountdown, makeDictClose,
+  makeDictLookup, makeDoneSync, makeExamSubmit, makeGateClose, makeGatedSubmit, makeHoverWord, makeMore, makeNavScroll,
+  makeNoteSubmit, makeOpen, makePhaseSet, makePlay, makeRedo, makeSelectionWatch, makeSpeakWord, makeStartRec,
+  makeSubmit, makeTextChange, makeTicker, makeToggle, prepSecOf, quotaServerSnapshotOf, quotaSnapshotOf, recCapOf,
+  reloadPage, seenCountOf, serverFalseOf, subscribeDone, subscribeNone,
 } from './functions'
 import type {
   DictEntry, DictPos, DictState, NavScrollIn, PostState, PteAnswerHookIn, PteAnswerPanel, PteBoardHookIn,
-  PteBoardPanel, PteComment, PteCommentsHookIn, PteCommentsPanel, PteDictPanel, PtePhase,
-  RecorderHandle,
+  PteBoardPanel, PteComment, PteCommentsHookIn, PteCommentsPanel, PteDictPanel, PteGate, PtePhase, RecorderHandle,
 } from './types'
 
 /**
@@ -84,7 +85,10 @@ export function usePteAnswer(x: PteAnswerHookIn): PteAnswerPanel {
   const [micDenied, setMicDenied] = useState(false)
   const [rec, setRec] = useState<RecorderHandle | null>(null)
 
-  const onSubmit = makeSubmit({ qid: x.q.qid, loggedIn: x.loggedIn, rec, setRecUrl, setRecording, setRec, setPhase })
+  const [gate, setGate] = useState<PteGate>(GATE_NONE)
+  const used = useSyncExternalStore(subscribeDone, quotaSnapshotOf, quotaServerSnapshotOf)
+  const submit = makeSubmit({ qid: x.q.qid, loggedIn: x.loggedIn, rec, setRecUrl, setRecording, setRec, setPhase })
+  const onSubmit = makeGatedSubmit({ pro: x.pro, loggedIn: x.loggedIn, used, submit, setGate })
   const toAnswering = makePhaseSet({ setPhase, phase: PHASE_ANSWERING })
 
   useEffect(function countdown() {
@@ -119,6 +123,9 @@ export function usePteAnswer(x: PteAnswerHookIn): PteAnswerPanel {
     recSeconds: elapsed,
     recUrl,
     micDenied,
+    used,
+    gate,
+    onGateClose: makeGateClose({ setGate }),
     onPlay: makePlay({ q: x.q, audioType: x.type.audio, phase, setPlaying, setPhase }),
     onSkipPrep: toAnswering,
     onShowText: makeToggle({ on: textShown, set: setTextShown }),
@@ -186,6 +193,15 @@ export function usePteDict(): PteDictPanel {
     return makeDictLookup({ word, setState, setEntry })()
   }, [word])
 
-  return { state, word, entry, pos, onClose: makeDictClose({ setWord }) }
+  return {
+    state,
+    word,
+    entry,
+    pos,
+    onClose: makeDictClose({ setWord }),
+    onHoverWord: makeHoverWord({ setWord, setPos }),
+    onSpeakUk: makeSpeakWord({ word, lang: LANG_UK }),
+    onSpeakUs: makeSpeakWord({ word, lang: LANG_US }),
+  }
 }
 

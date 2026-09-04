@@ -52,7 +52,10 @@ export async function pteDictRoute(req: Request): Promise<Response> {
     return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
   }
   return Response.json(
-    { ok: true, word: entry.word, phonetic: entry.phonetic, translation: entry.translation, lemma: entry.lemma },
+    {
+      ok: true, word: entry.word, phonetic: entry.phonetic, translation: entry.translation, lemma: entry.lemma,
+      phoneticUk: entry.phoneticUk, phoneticUs: entry.phoneticUs,
+    },
     { headers: { [HDR_CACHE_CONTROL]: DICT_CACHE } },
   )
 }

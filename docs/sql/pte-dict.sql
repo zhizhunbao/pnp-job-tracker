@@ -26,3 +26,11 @@ CREATE INDEX IF NOT EXISTS pte_dict_word_idx ON pte_dict (word);
 ALTER TABLE payload_locked_documents_rels ADD COLUMN IF NOT EXISTS pte_dict_id integer;
 CREATE INDEX IF NOT EXISTS payload_locked_documents_rels_pte_dict_id_idx
   ON payload_locked_documents_rels (pte_dict_id);
+
+-- 2026-09-04 晚 Frank「英音和美音都要有吧」:ECDICT 只有一套混合音标,英/美音标由 pte-dict 步从有道接口补齐。
+ALTER TABLE pte_dict ADD COLUMN IF NOT EXISTS phonetic_uk varchar;   -- 英音音标;空 = 没给
+ALTER TABLE pte_dict ADD COLUMN IF NOT EXISTS phonetic_us varchar;   -- 美音音标;空 = 没给
+
+-- 2026-09-04 晚 Frank「关键单词应该高亮,多种颜色,鼠标放上去显示字典解析」:按考纲标签分档高亮,标签与柯林斯星级随行进库。
+ALTER TABLE pte_dict ADD COLUMN IF NOT EXISTS tag varchar;         -- 考纲标签(cet4 cet6 ky toefl ielts gre …,空格分隔)
+ALTER TABLE pte_dict ADD COLUMN IF NOT EXISTS collins integer;     -- 柯林斯星级 1–5;0 = 没评

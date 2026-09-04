@@ -13,6 +13,7 @@ import { clockOf, isTextShown, origBoxClsOf, recCapOf, wordCountOf } from './fun
 import { PteDiff } from './ptediff'
 import { PtePlayer } from './pteplayer'
 import { PteRecorder } from './pterecorder'
+import { PteText } from './ptetext'
 import type { PteAnswerPartIn } from './types'
 import css from './pte.module.css'
 
@@ -22,7 +23,7 @@ import css from './pte.module.css'
  * @param props 同答题卡。
  * @returns 该段该型的块。
  */
-export function PteAnswerBody({ t, q, type, a }: PteAnswerPartIn) {
+export function PteAnswerBody({ t, q, type, a, tiers, onHoverWord }: PteAnswerPartIn) {
   const wfd = q.type === T_WFD
   const answering = a.phase === PHASE_ANSWERING
   const checked = a.phase === PHASE_CHECKED
@@ -35,7 +36,7 @@ export function PteAnswerBody({ t, q, type, a }: PteAnswerPartIn) {
       {type.audio && a.canPlay === false && (
         <Notice kind={NOTICE_INFO} className={css.notice}>{t('pte.noTts')}</Notice>
       )}
-      {showText && <div className={css.text}>{q.text}</div>}
+      {showText && <PteText text={q.text} tiers={tiers} onHoverWord={onHoverWord} />}
       {type.audio && showText === false && answering && (
         <div className={css.revealRow}>
           <Button kind={KIND_SECONDARY} sm onClick={a.onShowText}>{t('pte.showText')}</Button>

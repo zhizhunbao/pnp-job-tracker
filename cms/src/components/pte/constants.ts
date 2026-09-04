@@ -70,6 +70,88 @@ export const DICT_MIN_LEN = 2
  */
 export const DICT_LINE_SEP = '\n'
 
+/**
+ * 英音语音语言码(浏览器 speechSynthesis 挑声音用)。
+ */
+export const LANG_UK = 'en-GB'
+
+/**
+ * 美音语音语言码。
+ */
+export const LANG_US = 'en-US'
+
+/**
+ * 语音 lang 里的下划线(部分浏览器给 en_US 形,比对前换成连字符)。
+ */
+export const UNDERSCORE = '_'
+
+/**
+ * 连字符。
+ */
+export const DASH = '-'
+
+/**
+ * 弹层里的播放记号(读音钮)。
+ */
+export const SPEAK_MARK = '▶'
+
+/**
+ * 高亮分档按「这词最低出现在哪级考纲」(ECDICT tag):中考 / 高考 / 四级词不高亮;
+ * 1 = 六级,2 = 考研 / 雅思 / 托福,3 = GRE;没标签的不高亮
+ * (Frank 2026-09-04「关键单词应该高亮,多种颜色」;optimistic 同时挂 cet4 与 toefl,按最低档算四级词不亮)。
+ */
+export const TIER_TAGS: Record<number, string[]> = {
+  /**
+   * 不高亮档(基础词)。
+   */
+  0: ['zk', 'gk', 'cet4'],
+
+  /**
+   * 六级档。
+   */
+  1: ['cet6'],
+
+  /**
+   * 考研 / 出国考试档。
+   */
+  2: ['ky', 'ielts', 'toefl'],
+
+  /**
+   * GRE 档。
+   */
+  3: ['gre'],
+}
+
+/**
+ * 档位判定顺序(低档先:命中最低档即定)。
+ */
+export const TIER_ORDER = [0, 1, 2, 3]
+
+/**
+ * 没档(不高亮)。
+ */
+export const TIER_NONE = 0
+
+/**
+ * 考纲标签串的分隔(空格)。
+ */
+export const TAG_SEP = ' '
+
+/**
+ * 题面切词(与 ETL 同一条正则:字母开头,可带撇号与连字符;保留分隔以原样重排)。
+ */
+export const TEXT_TOKEN_RE = /([A-Za-z][A-Za-z'-]*)/
+
+/**
+ * 切出的词两端要剥掉的记号。
+ */
+export const WORD_TRIM = "'-"
+
+/**
+ * 高亮词的 CSS 类名按档(css module 值在 functions 里拼)。
+ */
+export const TIER_CLS_HEAD = 'kw'
+
 
 /**
  * 弹层离选区底边的距离(px)。
@@ -426,6 +508,42 @@ export const REC_MIME = 'audio/webm'
  * 练过落盘键(localStorage;匿名用户按浏览器记,登录合并留批三)。
  */
 export const DONE_KEY = 'pte.done'
+
+/**
+ * 每日免费配额落盘键(localStorage:{ day: YYYY-MM-DD, n });Pro 不计
+ * (批四,Frank 2026-09-04「可以」:免费层留题面/答案/记录,锁「练」—— 第 21 题弹升级框)。
+ */
+export const QUOTA_KEY = 'pte.quota'
+
+/**
+ * 每日免费提交次数上限。
+ */
+export const QUOTA_MAX = 20
+
+/**
+ * 配额档:day 键。
+ */
+export const QUOTA_K_DAY = 'day'
+
+/**
+ * 配额档:n 键。
+ */
+export const QUOTA_K_N = 'n'
+
+/**
+ * 配额闸没开。
+ */
+export const GATE_NONE = 'none'
+
+/**
+ * 配额闸:未登录先注册(升级框只在登录态渲)。
+ */
+export const GATE_LOGIN = 'login'
+
+/**
+ * 配额闸:已登录弹升级框。
+ */
+export const GATE_UPGRADE = 'upgrade'
 
 /**
  * 服务端快照用的空练过集(同一引用,useSyncExternalStore 才不会当作每次都变)。

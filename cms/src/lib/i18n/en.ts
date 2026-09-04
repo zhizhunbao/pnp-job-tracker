@@ -1155,10 +1155,12 @@ export const pteEn: Record<keyof typeof pteZh, string> = {
   'pte.typed': 'You typed', 'pte.orig': 'Original', 'pte.answer': 'Answer', 'pte.words': '{n} words', 'pte.timer': 'Elapsed {t}',
   'pte.diff': '{ok} words right, {bad} wrong', 'pte.showText': 'Show text',
   'pte.showAnswer': 'Show answer',
+  'pte.quota': 'Today {n}/{max}', 'pte.quotaHit': 'Daily 20 used up',
   'pte.noTts': 'This browser cannot read aloud', 'pte.noMic': 'No microphone',
   'pte.f.seen': 'Last seen', 'pte.f.n': 'Times seen', 'pte.f.num': 'No.', 'pte.none': 'No record yet',
   'pte.c.seen': 'Seen it ({n})',
   'pte.c.send': 'Send', 'pte.c.notes': 'Comments', 'pte.c.write': 'Write a comment', 'pte.c.ph': 'Write a comment', 'pte.c.empty': 'No comments yet',
   'pte.c.sent': 'Submitted, shown after review', 'pte.c.err': 'Not sent, please retry',
   'pte.dict.close': 'Close', 'pte.dict.loading': 'Looking up', 'pte.dict.none': 'No entry',
+  'pte.dict.uk': 'UK', 'pte.dict.us': 'US',
 }

@@ -1148,10 +1148,12 @@ export const pteKo: Record<keyof typeof pteZh, string> = {
   'pte.typed': '내 답', 'pte.orig': '원문', 'pte.answer': '정답', 'pte.words': '{n}단어', 'pte.timer': '경과 {t}',
   'pte.diff': '{ok}단어 정답, {bad}단어 오답', 'pte.showText': '원문 보기',
   'pte.showAnswer': '정답 보기',
+  'pte.quota': '오늘 {n}/{max}', 'pte.quotaHit': '오늘 20문제 모두 사용',
   'pte.noTts': '이 브라우저는 낭독을 지원하지 않습니다', 'pte.noMic': '마이크를 못 받았습니다',
   'pte.f.seen': '최근 출제', 'pte.f.n': '출제 횟수', 'pte.f.num': '번호', 'pte.none': '기록 없음',
   'pte.c.seen': '출제됨 ({n})',
   'pte.c.send': '보내기', 'pte.c.notes': '댓글', 'pte.c.write': '댓글 쓰기', 'pte.c.ph': '댓글 쓰기', 'pte.c.empty': '아직 댓글이 없습니다',
   'pte.c.sent': '제출됨, 검토 후 표시', 'pte.c.err': '전송 실패, 다시 시도하세요',
   'pte.dict.close': '닫기', 'pte.dict.loading': '검색 중', 'pte.dict.none': '없음',
+  'pte.dict.uk': '영', 'pte.dict.us': '미',
 }

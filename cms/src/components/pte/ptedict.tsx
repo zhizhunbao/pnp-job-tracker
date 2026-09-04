@@ -7,8 +7,8 @@
  * @time 2026-09-03 18:00:00
  */
 import { Button } from '@/components/button'
-import { CLOSE_MARK, DICT_BUSY, DICT_IDLE, DICT_NONE, KIND_LINK, TEXT_NONE } from './constants'
-import { dictStyleOf } from './functions'
+import { CLOSE_MARK, DICT_BUSY, DICT_IDLE, DICT_NONE, KIND_LINK, SPEAK_MARK, TEXT_NONE } from './constants'
+import { dictStyleOf, phonOf } from './functions'
 import type { PteDictIn } from './types'
 import css from './pte.module.css'
 
@@ -35,10 +35,19 @@ export function PteDict({ t, d }: PteDictIn) {
     <div className={css.dict} style={dictStyleOf(d.pos)}>
       <div className={css.dictHead}>
         <span className={css.dictWord}>{d.word}</span>
-        {d.entry != null && d.entry.phonetic !== TEXT_NONE && <span className={css.dictPhon}>{d.entry.phonetic}</span>}
         {d.entry != null && d.entry.lemma !== TEXT_NONE && <span className={css.dictLemma}>{d.entry.lemma}</span>}
         <Button kind={KIND_LINK} onClick={d.onClose} ariaLabel={t('pte.dict.close')}>{CLOSE_MARK}</Button>
       </div>
+      {d.entry != null && (
+        <div className={css.dictPhons}>
+          <span className={css.dictPhonTag}>{t('pte.dict.uk')}</span>
+          <span className={css.dictPhon}>{phonOf({ own: d.entry.phoneticUk, fallback: d.entry.phonetic })}</span>
+          <Button kind={KIND_LINK} sm onClick={d.onSpeakUk} ariaLabel={t('pte.dict.uk')}>{SPEAK_MARK}</Button>
+          <span className={css.dictPhonTag}>{t('pte.dict.us')}</span>
+          <span className={css.dictPhon}>{phonOf({ own: d.entry.phoneticUs, fallback: d.entry.phonetic })}</span>
+          <Button kind={KIND_LINK} sm onClick={d.onSpeakUs} ariaLabel={t('pte.dict.us')}>{SPEAK_MARK}</Button>
+        </div>
+      )}
       {d.state === DICT_BUSY && <div className={css.dictNote}>{t('pte.dict.loading')}</div>}
       {d.state === DICT_NONE && <div className={css.dictNote}>{t('pte.dict.none')}</div>}
       {lines.length > 0 && <div className={css.dictLines}>{lines}</div>}

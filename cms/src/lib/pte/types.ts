@@ -85,6 +85,16 @@ export type PteDictDbRow = {
    * 原形。
    */
   lemma: string | null
+
+  /**
+   * 英音音标。
+   */
+  phoneticUk: string | null
+
+  /**
+   * 美音音标。
+   */
+  phoneticUs: string | null
 }
 
 /**
@@ -110,6 +120,16 @@ export type PteDictEntry = {
    * 原形;空串 = 本身就是原形。
    */
   lemma: string
+
+  /**
+   * 英音音标;空串 = 没给。
+   */
+  phoneticUk: string
+
+  /**
+   * 美音音标;空串 = 没给。
+   */
+  phoneticUs: string
 }
 
 /**

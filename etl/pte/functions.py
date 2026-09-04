@@ -21,9 +21,9 @@ from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 from log.functions import err, say
 from crawl.constants import PROFILE_DIR
-from crawl.functions import close_browser, get_browser_page, put_cached_page
+from crawl.functions import close_browser, get_browser_page, get_cached_page, put_cached_page
 from crawl.scheme import CachePutIn
-from fetch.functions import fetch, make_client
+from fetch.functions import fetch, make_client, make_polite_client
 from fetch.scheme import FetchIn, HttpClientLike as FetchClientLike
 from paths.constants import ENC_UTF8, MART
 from paths.functions import write_json, write_text
@@ -107,7 +107,7 @@ from pte.constants import (DK_AVATAR_MARKS, DK_CRAWL_SLUG, DK_ENTRY_DELAY_S, DK_
                            OPEN_TIGHT_RE, P_MART_DONE_TPL, PUNCT_TIGHT_RE, Q_K_ANSWER, Q_K_AUDIO_FILE,
                            Q_K_AUDIO_URL, Q_K_FETCHED, Q_K_IMAGE_URL, Q_K_NUM, Q_K_PREDICTED, Q_K_QID,
                            Q_K_SEEN_N, Q_K_TEXT, QID_SEP, TOKEN_JOIN, T_ASQ, T_RA, T_WFD, DK_K_SN)
-from pte.constants import (A_K_B64, AUDIO_URL_TPL, D_K_LEMMA, D_K_MISSING, D_K_PHONETIC, D_K_ROWS, D_K_TRANSLATION, D_K_WORD, DICT_CSV_FIELD_MAX, DICT_CSV_K_EXCHANGE, DICT_CSV_K_PHONETIC, DICT_CSV_K_TRANSLATION, DICT_CSV_K_WORD, DICT_CSV_NL, DICT_EXCH_KV, DICT_EXCH_LEMMA, DICT_EXCH_SEP, DICT_MIN_LEN, DICT_WORD_RE, DICT_WORD_STRIP, IN_DICT_CSV, MART_DICT_FILE, OUT_DICT, P_DICT_DONE_TPL, FFMPEG_BIN, FFMPEG_IN_ARGS, FFMPEG_OUT_ARGS, MART_AUDIO_FILE,
+from pte.constants import (A_K_B64, AUDIO_URL_TPL, N_K_NUM, N_K_QID, N_K_ROWS, N_K_TYPE, OUT_NUMBERS, D_K_COLLINS, D_K_LEMMA, D_K_MISSING, D_K_TAG, D_K_PHON_UK, D_K_PHON_US, D_K_PHONETIC, D_K_ROWS, D_K_TRANSLATION, D_K_WORD, DICT_CSV_FIELD_MAX, DICT_CSV_K_COLLINS, DICT_CSV_K_EXCHANGE, DICT_CSV_K_TAG, DICT_CSV_K_PHONETIC, DICT_CSV_K_TRANSLATION, DICT_CSV_K_WORD, DICT_CSV_NL, DICT_EXCH_KV, DICT_EXCH_LEMMA, DICT_EXCH_SEP, DICT_MIN_LEN, DICT_WORD_RE, DICT_WORD_STRIP, IN_DICT_CSV, MART_DICT_FILE, OUT_DICT, P_DICT_DONE_TPL, P_DICT_YD_TPL, YD_API_TPL, YD_CRAWL_SLUG, YD_K_EC, YD_K_SIMPLE, YD_K_UK, YD_K_US, YD_K_WORD, YD_SLEEP_S, FFMPEG_BIN, FFMPEG_IN_ARGS, FFMPEG_OUT_ARGS, MART_AUDIO_FILE,
                            MERGE_SRC_ORDER, MIME_MP3, MIME_WAV, NORM_DROP, NORM_SPACE_RE, NORM_TEXT_RE, OUT_TTS_DIR,
                            OUT_TTS_INDEX, OUT_TTS_VOICES_DIR, P_MERGE_TPL, P_TTS_DONE_TPL, P_TTS_FAIL_TPL,
                            P_TTS_VOICE_TPL, TTS_FILE_SEP, TTS_K_FILE, TTS_K_MIME, TTS_K_ROWS, TTS_K_VOICE,
@@ -2305,20 +2305,53 @@ def canon_of(grp: list) -> dict:
 
 
 def renumber_rows(rows: list) -> list:
-    """站内题号:每型按「源优先级 → 源内题号数值」稳定编 1..N(Frank 2026-09-03「题号怎么是不连续的」:
-    两源各自的编号混在一起看着乱;本站自己编,新题只往后追加)。行序不动,只改 num。"""
+    """站内题号:查登记表(processed/pte/numbers.json)—— 登记过的 qid 用老号,没登记的按型在最大号后按
+    「源优先级 → 源内题号数值」序追加领号,再把登记表写回。行序不动,只改 num。
+    (Frank 2026-09-03「题号怎么是不连续的」→ 本站自己编;2026-09-04「根据自己的逻辑来,而不是根据抓取的
+    题目来算」→ 号一经领出永不改,来源插题不挪本站的号。)"""
+    known = numbers_of()
     by_type: dict = {}
     for r in rows:
         by_type.setdefault(r[IDX_K_TYPE], []).append(r)
-    for grp in by_type.values():
-        ordered = sorted(grp, key=num_sort_key_of)
-        n = 0
-        for r in ordered:
-            n += 1
-            r[Q_K_NUM] = str(n)
+    for t, grp in by_type.items():
+        top = 0
+        for qid, num in known.get(t, {}).items():
+            top = max(top, num)
+        for r in sorted(grp, key=num_sort_key_of):
+            num = known.get(t, {}).get(r[Q_K_QID])
+            if num is None:
+                top += 1
+                num = top
+                known.setdefault(t, {})[r[Q_K_QID]] = num
+            r[Q_K_NUM] = str(num)
+    save_numbers(known)
     return rows
 
 
+def numbers_of() -> dict:
+    """读登记表 → {type: {qid: num}};没有登记表给空(首次建表)。"""
+    out: dict = {}
+    if not OUT_NUMBERS.exists():
+        return out
+    with OUT_NUMBERS.open(encoding=ENC_UTF8) as f:
+        data = json.load(f)
+    for row in data.get(N_K_ROWS, []):
+        out.setdefault(str(row[N_K_TYPE]), {})[str(row[N_K_QID])] = int(row[N_K_NUM])
+    return out
+
+
+def save_numbers(known: dict) -> None:
+    """写登记表(按型、号排序,便于 diff)。"""
+    payload = []
+    for t in sorted(known):
+        for qid, num in sorted(known[t].items(), key=num_of_pair):
+            payload.append({N_K_QID: qid, N_K_TYPE: t, N_K_NUM: num})
+    write_json(WriteJsonIn(path=OUT_NUMBERS, payload={N_K_ROWS: payload}, indent=JSON_INDENT))
+
+
+def num_of_pair(pair: tuple) -> int:
+    """(qid, num) 对的排序键 = 号。"""
+    return int(pair[1])
 def num_sort_key_of(r: dict) -> tuple:
     """稳定编号的排序键:(源序, 源内题号数值, 源内题号原串)。"""
     src_rank = len(MERGE_SRC_ORDER)
@@ -2457,6 +2490,7 @@ def run_pte_dict() -> None:
             missing.append(w)
             continue
         rows.append(dict_row_of(DictRowIn(hit=hit, base=base)))
+    attach_phonetics(rows)
     write_json(WriteJsonIn(path=OUT_DICT, payload={D_K_ROWS: rows, D_K_MISSING: missing}, indent=JSON_INDENT))
     write_json(WriteJsonIn(path=MART / MART_DICT_FILE, payload=rows, indent=JSON_INDENT, compact=True))
     say(P_DICT_DONE_TPL.format(vocab=len(vocab), hit=len(rows), miss=len(missing), out=MART / MART_DICT_FILE))
@@ -2487,6 +2521,8 @@ def dict_lookup(words: set) -> dict:
                 out[w] = {DICT_CSV_K_PHONETIC: str(row.get(DICT_CSV_K_PHONETIC) or ""),
                           DICT_CSV_K_TRANSLATION: str(row.get(DICT_CSV_K_TRANSLATION) or ""),
                           DICT_CSV_K_EXCHANGE: str(row.get(DICT_CSV_K_EXCHANGE) or ""),
+                          DICT_CSV_K_TAG: str(row.get(DICT_CSV_K_TAG) or ""),
+                          DICT_CSV_K_COLLINS: str(row.get(DICT_CSV_K_COLLINS) or ""),
                           DICT_CSV_K_WORD: w}
     return out
 
@@ -2510,5 +2546,59 @@ def dict_row_of(x: DictRowIn) -> dict:
         translation = root[DICT_CSV_K_TRANSLATION]
     if not phonetic and root is not None:
         phonetic = root[DICT_CSV_K_PHONETIC]
+    tag = x.hit[DICT_CSV_K_TAG]
+    collins = x.hit[DICT_CSV_K_COLLINS]
+    if not tag and root is not None:
+        tag = root[DICT_CSV_K_TAG]
+    if not collins and root is not None:
+        collins = root[DICT_CSV_K_COLLINS]
     return {D_K_WORD: x.hit[DICT_CSV_K_WORD], D_K_PHONETIC: phonetic,
-            D_K_TRANSLATION: translation.replace(DICT_CSV_NL, "\n"), D_K_LEMMA: lemma}
+            D_K_TRANSLATION: translation.replace(DICT_CSV_NL, "\n"), D_K_LEMMA: lemma,
+            D_K_TAG: tag, D_K_COLLINS: int(collins) if collins.isdigit() else 0}
+
+
+def attach_phonetics(rows: list) -> None:
+    """给每行补英音/美音音标:有道 json 接口,响应原文先落 crawl 层(get/put_cached_page),抽不到留空串。
+    单词失败留痕继续,整批不中止。"""
+    hit = 0
+    fetched = 0
+    fail = 0
+    with make_polite_client(HTTP_TIMEOUT_S) as client:
+        for r in rows:
+            url = YD_API_TPL.format(word=r[D_K_WORD])
+            body = get_cached_page(url).html
+            if body is None:
+                try:
+                    body = client.get(url).text
+                    put_cached_page(CachePutIn(slug=YD_CRAWL_SLUG, url=url, html=body, title=r[D_K_WORD]))
+                    fetched += 1
+                    time.sleep(YD_SLEEP_S)
+                except Exception as e:  # noqa: BLE001 — 单词失败留痕继续
+                    err(url, e)
+                    fail += 1
+                    body = ""
+            else:
+                hit += 1
+            uk, us = phonetics_of(body)
+            r[D_K_PHON_UK] = uk
+            r[D_K_PHON_US] = us
+    say(P_DICT_YD_TPL.format(hit=hit, fetched=fetched, fail=fail))
+
+
+def phonetics_of(body: str) -> tuple:
+    """有道响应正文 → (英音, 美音);段不在或坏了给 ("", "")。"""
+    if not body:
+        return ("", "")
+    try:
+        data = json.loads(body)
+    except ValueError:
+        return ("", "")
+    for seg in (YD_K_EC, YD_K_SIMPLE):
+        words = data.get(seg, {}).get(YD_K_WORD) if isinstance(data.get(seg), dict) else None
+        if isinstance(words, list) and words and isinstance(words[0], dict):
+            w = words[0]
+            uk = str(w.get(YD_K_UK) or "")
+            us = str(w.get(YD_K_US) or "")
+            if uk or us:
+                return (uk, us)
+    return ("", "")

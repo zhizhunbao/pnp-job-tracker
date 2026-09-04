@@ -8,7 +8,9 @@
  * @time 2026-09-03 12:00:00
  */
 import { Button } from '@/components/button'
-import { KIND_PRIMARY, KIND_SECONDARY, PHASE_ANSWERING, PHASE_CHECKED, T_WFD } from './constants'
+import {
+  KIND_PRIMARY, KIND_SECONDARY, PHASE_ANSWERING, PHASE_CHECKED, QUOTA_MAX, T_WFD,
+} from './constants'
 import { hrefOrNone } from './functions'
 import type { ButtonKind } from '@/components/button'
 import type { PteAnswerPartIn } from './types'
@@ -20,7 +22,7 @@ import css from './pte.module.css'
  * @param props 同答题卡。
  * @returns 一排钮。
  */
-export function PteAnswerBtns({ t, q, type, a, prevHref, nextHref }: PteAnswerPartIn) {
+export function PteAnswerBtns({ t, q, type, a, prevHref, nextHref, pro }: PteAnswerPartIn) {
   const wfd = q.type === T_WFD
   const answering = a.phase === PHASE_ANSWERING
   const checked = a.phase === PHASE_CHECKED
@@ -34,6 +36,7 @@ export function PteAnswerBtns({ t, q, type, a, prevHref, nextHref }: PteAnswerPa
   }
   return (
     <div className={css.btns}>
+      {pro === false && <span className={css.quota}>{t('pte.quota', { n: a.used, max: QUOTA_MAX })}</span>}
       {answering && <Button kind={KIND_PRIMARY} onClick={a.onSubmit}>{t('pte.submit')}</Button>}
       {answering && wfd && type.audio && a.canPlay && (
         <Button kind={KIND_SECONDARY} onClick={a.onPlay}>{t('pte.replay')}</Button>

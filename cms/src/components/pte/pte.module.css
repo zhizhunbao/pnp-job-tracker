@@ -744,6 +744,16 @@
 }
 
 /*
+ * 今日配额计数(免费用户;靠左,钮靠右)。
+ */
+.quota {
+  margin-right: auto;
+  align-self: center;
+  color: #9ca3af;
+  font-size: 12.5px;
+}
+
+/*
  * 通知行(没麦克风 / 不支持朗读)。
  */
 .notice {
@@ -1031,6 +1041,50 @@
 .dictLemma {
   color: #9ca3af;
   flex: 1;
+}
+
+/*
+ * 音标行:英 /…/ ▶  美 /…/ ▶。
+ */
+/*
+ * 关键词高亮三档(六级 / 雅思托福 / GRE):浅底色 + 同色系深字,悬停开弹层。
+ */
+.kw1,
+.kw2,
+.kw3 {
+  padding: 0 2px;
+  border-radius: 3px;
+  cursor: help;
+  color: inherit;
+}
+
+.kw1 {
+  background: #dcfce7;
+}
+
+.kw2 {
+  background: #fef3c7;
+}
+
+.kw3 {
+  background: #fee2e2;
+}
+
+.dictPhons {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+/*
+ * 「英」「美」小标。
+ */
+.dictPhonTag {
+  color: #9ca3af;
+  font-size: 12px;
 }
 
 /*

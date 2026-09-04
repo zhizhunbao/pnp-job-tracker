@@ -1468,6 +1468,23 @@ NORM_DROP = ""
 """对账时被去掉的字符替换成空。"""
 
 MERGE_SRC_ORDER = (SRC_YNWAC, SRC_DUOINK)
+
+OUT_NUMBERS = PROCESSED_PTE / "numbers.json"
+"""站内题号登记表:{rows: [{qid, type, num}]}。一个 qid 第一次出现时领号,以后永不改;新题按型往后追加
+(Frank 2026-09-04「题号是不是根据自己的逻辑来,而不是根据抓取的题目来算」—— 先前按源优先级 + 源内编号
+现排,来源一插题本站的号就挪)。首次建表时的领号序 = 当时的现排序,老号原样保住。"""
+
+N_K_ROWS = "rows"
+"""登记表:行清单键。"""
+
+N_K_QID = "qid"
+"""登记表:题键。"""
+
+N_K_TYPE = "type"
+"""登记表:题型码。"""
+
+N_K_NUM = "num"
+"""登记表:站内题号(整数)。"""
 """同题正本优先级:ynwac 有票数与页面题号先当正本;其余源的回忆条数、最近考过日、押题、答案并入正本行。"""
 
 P_MERGE_TPL = "  跨源同题合并:{groups} 组 {rows} 行 → 正本 {kept} 行"
@@ -1568,6 +1585,18 @@ DICT_CSV_K_TRANSLATION = "translation"
 """csv 列:中文释义(行内以字面 `\\n` 分行)。"""
 
 DICT_CSV_K_EXCHANGE = "exchange"
+
+DICT_CSV_K_TAG = "tag"
+"""csv 列:考纲标签(zk 中考 / gk 高考 / cet4 / cet6 / ky 考研 / toefl / ielts / gre,空格分隔)。"""
+
+DICT_CSV_K_COLLINS = "collins"
+"""csv 列:柯林斯星级(1–5;空 = 没评)。"""
+
+D_K_TAG = "tag"
+"""字典行:考纲标签(空格分隔;屈折形借原形的)。"""
+
+D_K_COLLINS = "collins"
+"""字典行:柯林斯星级 1–5;0 = 没评。"""
 """csv 列:词形变化(`0:take/1:p/d:tooked` —— `0:` 指回原形)。"""
 
 DICT_CSV_NL = "\\n"
@@ -1617,3 +1646,37 @@ D_K_MISSING = "missing"
 
 P_DICT_DONE_TPL = "✓ pte dict:词表 {vocab} · 查到 {hit} · 没查到 {miss} → {out}"
 """日志:字典步收口。"""
+
+YD_API_TPL = "https://dict.youdao.com/jsonapi?q={word}"
+"""有道词典 json 接口(英音/美音音标 ukphone/usphone;Frank 2026-09-04「英音和美音都要有吧」——
+ECDICT 只有一套混合音标)。响应原文经 put_cached_page 落 crawl 层,再抽两格。"""
+
+YD_CRAWL_SLUG = "youdao-dict"
+"""有道词典响应在 crawl 层的 slug(data/crawl/youdao-dict/)。"""
+
+YD_K_EC = "ec"
+"""有道响应:英汉段键。"""
+
+YD_K_SIMPLE = "simple"
+"""有道响应:简明段键(英汉段没有时的兜底)。"""
+
+YD_K_WORD = "word"
+"""有道响应:词条清单键。"""
+
+YD_K_UK = "ukphone"
+"""有道响应:英音音标键。"""
+
+YD_K_US = "usphone"
+"""有道响应:美音音标键。"""
+
+YD_SLEEP_S = 0.15
+"""有道接口逐词间隔(秒),礼貌抓。"""
+
+D_K_PHON_UK = "phoneticUk"
+"""字典行:英音音标;空串 = 没给。"""
+
+D_K_PHON_US = "phoneticUs"
+"""字典行:美音音标;空串 = 没给。"""
+
+P_DICT_YD_TPL = "  有道音标:缓存命中 {hit} · 新抓 {fetched} · 抓失败 {fail}"
+"""日志:有道音标抓取收口。"""

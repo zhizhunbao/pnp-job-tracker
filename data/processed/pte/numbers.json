@@ -1,0 +1,5239 @@
+{
+  "rows": [
+    {
+      "qid": "ynwac:ASQ:1",
+      "type": "ASQ",
+      "num": 1
+    },
+    {
+      "qid": "ynwac:ASQ:2",
+      "type": "ASQ",
+      "num": 2
+    },
+    {
+      "qid": "ynwac:ASQ:3",
+      "type": "ASQ",
+      "num": 3
+    },
+    {
+      "qid": "ynwac:ASQ:4",
+      "type": "ASQ",
+      "num": 4
+    },
+    {
+      "qid": "ynwac:ASQ:5",
+      "type": "ASQ",
+      "num": 5
+    },
+    {
+      "qid": "ynwac:ASQ:6",
+      "type": "ASQ",
+      "num": 6
+    },
+    {
+      "qid": "ynwac:ASQ:7",
+      "type": "ASQ",
+      "num": 7
+    },
+    {
+      "qid": "ynwac:ASQ:8",
+      "type": "ASQ",
+      "num": 8
+    },
+    {
+      "qid": "ynwac:ASQ:9",
+      "type": "ASQ",
+      "num": 9
+    },
+    {
+      "qid": "ynwac:ASQ:10",
+      "type": "ASQ",
+      "num": 10
+    },
+    {
+      "qid": "ynwac:ASQ:11",
+      "type": "ASQ",
+      "num": 11
+    },
+    {
+      "qid": "ynwac:ASQ:12",
+      "type": "ASQ",
+      "num": 12
+    },
+    {
+      "qid": "ynwac:ASQ:13",
+      "type": "ASQ",
+      "num": 13
+    },
+    {
+      "qid": "ynwac:ASQ:14",
+      "type": "ASQ",
+      "num": 14
+    },
+    {
+      "qid": "ynwac:ASQ:15",
+      "type": "ASQ",
+      "num": 15
+    },
+    {
+      "qid": "ynwac:ASQ:16",
+      "type": "ASQ",
+      "num": 16
+    },
+    {
+      "qid": "ynwac:ASQ:17",
+      "type": "ASQ",
+      "num": 17
+    },
+    {
+      "qid": "ynwac:ASQ:18",
+      "type": "ASQ",
+      "num": 18
+    },
+    {
+      "qid": "ynwac:ASQ:19",
+      "type": "ASQ",
+      "num": 19
+    },
+    {
+      "qid": "ynwac:ASQ:20",
+      "type": "ASQ",
+      "num": 20
+    },
+    {
+      "qid": "ynwac:ASQ:21",
+      "type": "ASQ",
+      "num": 21
+    },
+    {
+      "qid": "ynwac:ASQ:22",
+      "type": "ASQ",
+      "num": 22
+    },
+    {
+      "qid": "ynwac:ASQ:23",
+      "type": "ASQ",
+      "num": 23
+    },
+    {
+      "qid": "ynwac:ASQ:24",
+      "type": "ASQ",
+      "num": 24
+    },
+    {
+      "qid": "ynwac:ASQ:25",
+      "type": "ASQ",
+      "num": 25
+    },
+    {
+      "qid": "ynwac:ASQ:26",
+      "type": "ASQ",
+      "num": 26
+    },
+    {
+      "qid": "ynwac:ASQ:27",
+      "type": "ASQ",
+      "num": 27
+    },
+    {
+      "qid": "ynwac:ASQ:28",
+      "type": "ASQ",
+      "num": 28
+    },
+    {
+      "qid": "ynwac:ASQ:29",
+      "type": "ASQ",
+      "num": 29
+    },
+    {
+      "qid": "ynwac:ASQ:30",
+      "type": "ASQ",
+      "num": 30
+    },
+    {
+      "qid": "ynwac:ASQ:31",
+      "type": "ASQ",
+      "num": 31
+    },
+    {
+      "qid": "ynwac:ASQ:32",
+      "type": "ASQ",
+      "num": 32
+    },
+    {
+      "qid": "ynwac:ASQ:33",
+      "type": "ASQ",
+      "num": 33
+    },
+    {
+      "qid": "ynwac:ASQ:34",
+      "type": "ASQ",
+      "num": 34
+    },
+    {
+      "qid": "ynwac:ASQ:35",
+      "type": "ASQ",
+      "num": 35
+    },
+    {
+      "qid": "ynwac:ASQ:36",
+      "type": "ASQ",
+      "num": 36
+    },
+    {
+      "qid": "ynwac:ASQ:37",
+      "type": "ASQ",
+      "num": 37
+    },
+    {
+      "qid": "ynwac:ASQ:38",
+      "type": "ASQ",
+      "num": 38
+    },
+    {
+      "qid": "ynwac:ASQ:39",
+      "type": "ASQ",
+      "num": 39
+    },
+    {
+      "qid": "ynwac:ASQ:40",
+      "type": "ASQ",
+      "num": 40
+    },
+    {
+      "qid": "ynwac:ASQ:41",
+      "type": "ASQ",
+      "num": 41
+    },
+    {
+      "qid": "ynwac:ASQ:42",
+      "type": "ASQ",
+      "num": 42
+    },
+    {
+      "qid": "ynwac:ASQ:43",
+      "type": "ASQ",
+      "num": 43
+    },
+    {
+      "qid": "ynwac:ASQ:44",
+      "type": "ASQ",
+      "num": 44
+    },
+    {
+      "qid": "ynwac:ASQ:45",
+      "type": "ASQ",
+      "num": 45
+    },
+    {
+      "qid": "ynwac:ASQ:46",
+      "type": "ASQ",
+      "num": 46
+    },
+    {
+      "qid": "ynwac:ASQ:47",
+      "type": "ASQ",
+      "num": 47
+    },
+    {
+      "qid": "ynwac:ASQ:48",
+      "type": "ASQ",
+      "num": 48
+    },
+    {
+      "qid": "ynwac:ASQ:49",
+      "type": "ASQ",
+      "num": 49
+    },
+    {
+      "qid": "ynwac:ASQ:50",
+      "type": "ASQ",
+      "num": 50
+    },
+    {
+      "qid": "ynwac:ASQ:51",
+      "type": "ASQ",
+      "num": 51
+    },
+    {
+      "qid": "ynwac:ASQ:52",
+      "type": "ASQ",
+      "num": 52
+    },
+    {
+      "qid": "ynwac:ASQ:53",
+      "type": "ASQ",
+      "num": 53
+    },
+    {
+      "qid": "ynwac:ASQ:54",
+      "type": "ASQ",
+      "num": 54
+    },
+    {
+      "qid": "ynwac:ASQ:55",
+      "type": "ASQ",
+      "num": 55
+    },
+    {
+      "qid": "ynwac:ASQ:56",
+      "type": "ASQ",
+      "num": 56
+    },
+    {
+      "qid": "ynwac:ASQ:57",
+      "type": "ASQ",
+      "num": 57
+    },
+    {
+      "qid": "ynwac:ASQ:58",
+      "type": "ASQ",
+      "num": 58
+    },
+    {
+      "qid": "ynwac:ASQ:59",
+      "type": "ASQ",
+      "num": 59
+    },
+    {
+      "qid": "ynwac:ASQ:60",
+      "type": "ASQ",
+      "num": 60
+    },
+    {
+      "qid": "ynwac:ASQ:61",
+      "type": "ASQ",
+      "num": 61
+    },
+    {
+      "qid": "ynwac:ASQ:62",
+      "type": "ASQ",
+      "num": 62
+    },
+    {
+      "qid": "duoink:ASQ:58fe0e0161ff4b006671f50f",
+      "type": "ASQ",
+      "num": 63
+    },
+    {
+      "qid": "duoink:ASQ:5b232ea617d0090035d5c172",
+      "type": "ASQ",
+      "num": 64
+    },
+    {
+      "qid": "duoink:ASQ:5b5030cf808ca4003d454fea",
+      "type": "ASQ",
+      "num": 65
+    },
+    {
+      "qid": "duoink:ASQ:5b626b4ea22b9d003afc3cd6",
+      "type": "ASQ",
+      "num": 66
+    },
+    {
+      "qid": "duoink:ASQ:5bb081bb67f3560062929d65",
+      "type": "ASQ",
+      "num": 67
+    },
+    {
+      "qid": "duoink:ASQ:5bd184cf808ca40070720e19",
+      "type": "ASQ",
+      "num": 68
+    },
+    {
+      "qid": "duoink:ASQ:5bd184f79f545400707a1edb",
+      "type": "ASQ",
+      "num": 69
+    },
+    {
+      "qid": "duoink:ASQ:5c6392ad2438920054cff4d9",
+      "type": "ASQ",
+      "num": 70
+    },
+    {
+      "qid": "duoink:ASQ:5c74ec3117b54d004a0b390e",
+      "type": "ASQ",
+      "num": 71
+    },
+    {
+      "qid": "duoink:ASQ:5dd73de45620710075e6715f",
+      "type": "ASQ",
+      "num": 72
+    },
+    {
+      "qid": "duoink:ASQ:5ddf3601844bb40074c2237b",
+      "type": "ASQ",
+      "num": 73
+    },
+    {
+      "qid": "duoink:ASQ:5e1fd318dd3c13006aef01ec",
+      "type": "ASQ",
+      "num": 74
+    },
+    {
+      "qid": "duoink:ASQ:5e684c2f8a84ab006fbd4bcb",
+      "type": "ASQ",
+      "num": 75
+    },
+    {
+      "qid": "duoink:ASQ:5ef2f422ede9b6000659f77e",
+      "type": "ASQ",
+      "num": 76
+    },
+    {
+      "qid": "duoink:ASQ:5f02e5ce661f8300064303db",
+      "type": "ASQ",
+      "num": 77
+    },
+    {
+      "qid": "duoink:ASQ:5f11623017c8f50008485081",
+      "type": "ASQ",
+      "num": 78
+    },
+    {
+      "qid": "duoink:ASQ:5f45d07cd9b4ac000621b374",
+      "type": "ASQ",
+      "num": 79
+    },
+    {
+      "qid": "duoink:ASQ:5f4ba46cfe3f1907b8968e86",
+      "type": "ASQ",
+      "num": 80
+    },
+    {
+      "qid": "duoink:ASQ:5f4d96caaf3eff000845ad44",
+      "type": "ASQ",
+      "num": 81
+    },
+    {
+      "qid": "duoink:ASQ:5f64c13dd55a604904606236",
+      "type": "ASQ",
+      "num": 82
+    },
+    {
+      "qid": "duoink:ASQ:5f8e6dd7f21f8d65779fd939",
+      "type": "ASQ",
+      "num": 83
+    },
+    {
+      "qid": "duoink:ASQ:5f8e707db98eb64c633923cc",
+      "type": "ASQ",
+      "num": 84
+    },
+    {
+      "qid": "duoink:ASQ:60a3141ba069b632cf1e08a4",
+      "type": "ASQ",
+      "num": 85
+    },
+    {
+      "qid": "duoink:ASQ:60b992c65863d4114bd3e232",
+      "type": "ASQ",
+      "num": 86
+    },
+    {
+      "qid": "duoink:ASQ:60d061ca13fc2f7f61032443",
+      "type": "ASQ",
+      "num": 87
+    },
+    {
+      "qid": "duoink:ASQ:60e69b7f95ebf25e1b343d82",
+      "type": "ASQ",
+      "num": 88
+    },
+    {
+      "qid": "duoink:ASQ:6172294931a3af4705d26f39",
+      "type": "ASQ",
+      "num": 89
+    },
+    {
+      "qid": "duoink:ASQ:61bc0930e2c6011fa3c88cf7",
+      "type": "ASQ",
+      "num": 90
+    },
+    {
+      "qid": "duoink:ASQ:61db9341f6511c3f19447d28",
+      "type": "ASQ",
+      "num": 91
+    },
+    {
+      "qid": "duoink:ASQ:61db93f2d89e242996e186f9",
+      "type": "ASQ",
+      "num": 92
+    },
+    {
+      "qid": "duoink:ASQ:61db949945c7ef6f3a1ce3c8",
+      "type": "ASQ",
+      "num": 93
+    },
+    {
+      "qid": "duoink:ASQ:61db98ff2658ff04f595d4a8",
+      "type": "ASQ",
+      "num": 94
+    },
+    {
+      "qid": "duoink:ASQ:61dbe3ee9bca237bf8f2b7a1",
+      "type": "ASQ",
+      "num": 95
+    },
+    {
+      "qid": "duoink:ASQ:61df7ca3497b3814c4c02617",
+      "type": "ASQ",
+      "num": 96
+    },
+    {
+      "qid": "duoink:ASQ:62048016a7b650212d534755",
+      "type": "ASQ",
+      "num": 97
+    },
+    {
+      "qid": "duoink:ASQ:6229cecb7d2674251b712c17",
+      "type": "ASQ",
+      "num": 98
+    },
+    {
+      "qid": "duoink:ASQ:62341c2b4504e12418c6f3bb",
+      "type": "ASQ",
+      "num": 99
+    },
+    {
+      "qid": "duoink:ASQ:6262582894e14a013d0537ce",
+      "type": "ASQ",
+      "num": 100
+    },
+    {
+      "qid": "duoink:ASQ:62d10e8e9750b745c48160fc",
+      "type": "ASQ",
+      "num": 101
+    },
+    {
+      "qid": "duoink:ASQ:6323d6ee710f197e4e5c02f0",
+      "type": "ASQ",
+      "num": 102
+    },
+    {
+      "qid": "duoink:ASQ:6323dbed20392d3a371beecc",
+      "type": "ASQ",
+      "num": 103
+    },
+    {
+      "qid": "duoink:ASQ:63648233422ec2115cd1adbd",
+      "type": "ASQ",
+      "num": 104
+    },
+    {
+      "qid": "duoink:ASQ:63dcb9d345abf2708b1fff42",
+      "type": "ASQ",
+      "num": 105
+    },
+    {
+      "qid": "duoink:ASQ:63dcc5ed45abf2708b20441e",
+      "type": "ASQ",
+      "num": 106
+    },
+    {
+      "qid": "duoink:ASQ:63edcabdca61f36ffc618857",
+      "type": "ASQ",
+      "num": 107
+    },
+    {
+      "qid": "duoink:ASQ:6409a5c646ccdf6c04be2d3e",
+      "type": "ASQ",
+      "num": 108
+    },
+    {
+      "qid": "duoink:ASQ:641bfdbc8b54a17a2b27e52d",
+      "type": "ASQ",
+      "num": 109
+    },
+    {
+      "qid": "duoink:ASQ:641c037c93ed6706eda23fca",
+      "type": "ASQ",
+      "num": 110
+    },
+    {
+      "qid": "duoink:ASQ:6478569545e4710056341dbd",
+      "type": "ASQ",
+      "num": 111
+    },
+    {
+      "qid": "duoink:ASQ:648176de30675327e13cbff6",
+      "type": "ASQ",
+      "num": 112
+    },
+    {
+      "qid": "duoink:ASQ:648a7f2833d9bd7ea274b976",
+      "type": "ASQ",
+      "num": 113
+    },
+    {
+      "qid": "duoink:ASQ:648abf3d33d9bd7ea275ec96",
+      "type": "ASQ",
+      "num": 114
+    },
+    {
+      "qid": "duoink:ASQ:64abac65481b884485515c69",
+      "type": "ASQ",
+      "num": 115
+    },
+    {
+      "qid": "duoink:ASQ:64abae4cd1995c3ff5ec1445",
+      "type": "ASQ",
+      "num": 116
+    },
+    {
+      "qid": "duoink:ASQ:64abaeb04480cc05710db119",
+      "type": "ASQ",
+      "num": 117
+    },
+    {
+      "qid": "duoink:ASQ:64abaf025d666b1e29d39b6d",
+      "type": "ASQ",
+      "num": 118
+    },
+    {
+      "qid": "duoink:ASQ:64abb0472f4bf42bd94008c3",
+      "type": "ASQ",
+      "num": 119
+    },
+    {
+      "qid": "duoink:ASQ:64abb0ec2f4bf42bd9400bda",
+      "type": "ASQ",
+      "num": 120
+    },
+    {
+      "qid": "duoink:ASQ:64abb1285876b945d37a17c4",
+      "type": "ASQ",
+      "num": 121
+    },
+    {
+      "qid": "duoink:ASQ:64abb33e4480cc05710dcb14",
+      "type": "ASQ",
+      "num": 122
+    },
+    {
+      "qid": "duoink:ASQ:64abb375421716233a39b5e1",
+      "type": "ASQ",
+      "num": 123
+    },
+    {
+      "qid": "duoink:ASQ:64af97d24480cc05711c9c76",
+      "type": "ASQ",
+      "num": 124
+    },
+    {
+      "qid": "duoink:ASQ:64af991e35ca1922ea505641",
+      "type": "ASQ",
+      "num": 125
+    },
+    {
+      "qid": "duoink:ASQ:64af9ab02f4bf42bd94eb965",
+      "type": "ASQ",
+      "num": 126
+    },
+    {
+      "qid": "duoink:ASQ:64b8a634421716233a69af95",
+      "type": "ASQ",
+      "num": 127
+    },
+    {
+      "qid": "duoink:ASQ:64b8a69c62b8bf26a37828fd",
+      "type": "ASQ",
+      "num": 128
+    },
+    {
+      "qid": "duoink:ASQ:64b8a6a44480cc05713dbf77",
+      "type": "ASQ",
+      "num": 129
+    },
+    {
+      "qid": "duoink:ASQ:64b8a8fe4480cc05713dcbaf",
+      "type": "ASQ",
+      "num": 130
+    },
+    {
+      "qid": "duoink:ASQ:64c1e0de39694113b5318fa5",
+      "type": "ASQ",
+      "num": 131
+    },
+    {
+      "qid": "duoink:ASQ:64cb139b39694113b551b628",
+      "type": "ASQ",
+      "num": 132
+    },
+    {
+      "qid": "duoink:ASQ:6520d047ad3a4f6a2592bcaf",
+      "type": "ASQ",
+      "num": 133
+    },
+    {
+      "qid": "duoink:ASQ:6539d1b1ac72b60fb1a4ebaa",
+      "type": "ASQ",
+      "num": 134
+    },
+    {
+      "qid": "duoink:ASQ:6539d1f6ad15f91b728dde0e",
+      "type": "ASQ",
+      "num": 135
+    },
+    {
+      "qid": "duoink:ASQ:6543006a151c6a7a80aff9be",
+      "type": "ASQ",
+      "num": 136
+    },
+    {
+      "qid": "duoink:ASQ:657a6dd964950e10fecad500",
+      "type": "ASQ",
+      "num": 137
+    },
+    {
+      "qid": "duoink:ASQ:659f501896756c0e34a92f1b",
+      "type": "ASQ",
+      "num": 138
+    },
+    {
+      "qid": "duoink:ASQ:65d4742ab7bfc97ec538b81a",
+      "type": "ASQ",
+      "num": 139
+    },
+    {
+      "qid": "duoink:ASQ:65dff15d7d5eb67d3b6513ec",
+      "type": "ASQ",
+      "num": 140
+    },
+    {
+      "qid": "duoink:ASQ:65dff366436cc7685bb62c65",
+      "type": "ASQ",
+      "num": 141
+    },
+    {
+      "qid": "duoink:ASQ:6616314603caa45ae65e4448",
+      "type": "ASQ",
+      "num": 142
+    },
+    {
+      "qid": "duoink:ASQ:66dfe278154d657e59adb386",
+      "type": "ASQ",
+      "num": 143
+    },
+    {
+      "qid": "duoink:ASQ:68259c7e6993d81fe6d0d206",
+      "type": "ASQ",
+      "num": 144
+    },
+    {
+      "qid": "duoink:ASQ:6825a5ded3496c4246604831",
+      "type": "ASQ",
+      "num": 145
+    },
+    {
+      "qid": "duoink:ASQ:6825a6b9ce7fc86faf23a853",
+      "type": "ASQ",
+      "num": 146
+    },
+    {
+      "qid": "duoink:ASQ:6825a8c2b9570274df0d8f5c",
+      "type": "ASQ",
+      "num": 147
+    },
+    {
+      "qid": "duoink:ASQ:6825aa36d3496c42466078cb",
+      "type": "ASQ",
+      "num": 148
+    },
+    {
+      "qid": "duoink:ASQ:6825aaebc02b652dbc742f59",
+      "type": "ASQ",
+      "num": 149
+    },
+    {
+      "qid": "duoink:ASQ:6825ac4b6993d81fe6d178a1",
+      "type": "ASQ",
+      "num": 150
+    },
+    {
+      "qid": "duoink:ASQ:6825acdfb9570274df0db0d1",
+      "type": "ASQ",
+      "num": 151
+    },
+    {
+      "qid": "duoink:ASQ:6825adf66993d81fe6d18545",
+      "type": "ASQ",
+      "num": 152
+    },
+    {
+      "qid": "duoink:ASQ:6825af866993d81fe6d19132",
+      "type": "ASQ",
+      "num": 153
+    },
+    {
+      "qid": "duoink:ASQ:6825b270d3496c424660c200",
+      "type": "ASQ",
+      "num": 154
+    },
+    {
+      "qid": "duoink:ASQ:6825b302bf6625518c7fe112",
+      "type": "ASQ",
+      "num": 155
+    },
+    {
+      "qid": "duoink:ASQ:6825b38fc02b652dbc747c6d",
+      "type": "ASQ",
+      "num": 156
+    },
+    {
+      "qid": "duoink:ASQ:6826a07b6993d81fe6d65ee8",
+      "type": "ASQ",
+      "num": 157
+    },
+    {
+      "qid": "duoink:ASQ:6826a301d3496c4246656c6c",
+      "type": "ASQ",
+      "num": 158
+    },
+    {
+      "qid": "duoink:ASQ:6826a377bf6625518c84cfc8",
+      "type": "ASQ",
+      "num": 159
+    },
+    {
+      "qid": "duoink:ASQ:6826a47d6993d81fe6d681c2",
+      "type": "ASQ",
+      "num": 160
+    },
+    {
+      "qid": "duoink:ASQ:682ad34e6993d81fe6ef37cf",
+      "type": "ASQ",
+      "num": 161
+    },
+    {
+      "qid": "duoink:ASQ:6833dac5ce7fc86faf764253",
+      "type": "ASQ",
+      "num": 162
+    },
+    {
+      "qid": "duoink:ASQ:6833dc07b9570274df5ffd29",
+      "type": "ASQ",
+      "num": 163
+    },
+    {
+      "qid": "duoink:ASQ:6833e20bbf6625518cd2925a",
+      "type": "ASQ",
+      "num": 164
+    },
+    {
+      "qid": "duoink:ASQ:6833e331d3496c4246b4ebec",
+      "type": "ASQ",
+      "num": 165
+    },
+    {
+      "qid": "duoink:ASQ:6833e389b9570274df603919",
+      "type": "ASQ",
+      "num": 166
+    },
+    {
+      "qid": "duoink:ASQ:691ec83aaf4f482042667e36",
+      "type": "ASQ",
+      "num": 167
+    },
+    {
+      "qid": "duoink:ASQ:691ec966f05e621fb111991c",
+      "type": "ASQ",
+      "num": 168
+    },
+    {
+      "qid": "duoink:ASQ:691ecdb2af4f48204266b551",
+      "type": "ASQ",
+      "num": 169
+    },
+    {
+      "qid": "duoink:ASQ:691ed30bdaee5f72f20548b9",
+      "type": "ASQ",
+      "num": 170
+    },
+    {
+      "qid": "duoink:ASQ:69201160daee5f72f20becdb",
+      "type": "ASQ",
+      "num": 171
+    },
+    {
+      "qid": "duoink:ASQ:69201424daee5f72f20c0797",
+      "type": "ASQ",
+      "num": 172
+    },
+    {
+      "qid": "duoink:ASQ:692014a4af4f4820426da7ce",
+      "type": "ASQ",
+      "num": 173
+    },
+    {
+      "qid": "duoink:ASQ:69201656f05e621fb119642e",
+      "type": "ASQ",
+      "num": 174
+    },
+    {
+      "qid": "duoink:ASQ:69201744171b217b0e7e4f7f",
+      "type": "ASQ",
+      "num": 175
+    },
+    {
+      "qid": "duoink:ASQ:69201b61a54da130be71eeb0",
+      "type": "ASQ",
+      "num": 176
+    },
+    {
+      "qid": "duoink:ASQ:69201bd4daee5f72f20c5784",
+      "type": "ASQ",
+      "num": 177
+    },
+    {
+      "qid": "duoink:ASQ:69201c1f171b217b0e7e76d9",
+      "type": "ASQ",
+      "num": 178
+    },
+    {
+      "qid": "duoink:ASQ:6a42564873f4b6282c7b0635",
+      "type": "ASQ",
+      "num": 179
+    },
+    {
+      "qid": "duoink:ASQ:6a4257b973f4b6282c7b0d3d",
+      "type": "ASQ",
+      "num": 180
+    },
+    {
+      "qid": "ynwac:RA:1",
+      "type": "RA",
+      "num": 1
+    },
+    {
+      "qid": "ynwac:RA:2",
+      "type": "RA",
+      "num": 2
+    },
+    {
+      "qid": "ynwac:RA:3",
+      "type": "RA",
+      "num": 3
+    },
+    {
+      "qid": "ynwac:RA:4",
+      "type": "RA",
+      "num": 4
+    },
+    {
+      "qid": "ynwac:RA:5",
+      "type": "RA",
+      "num": 5
+    },
+    {
+      "qid": "ynwac:RA:6",
+      "type": "RA",
+      "num": 6
+    },
+    {
+      "qid": "ynwac:RA:7",
+      "type": "RA",
+      "num": 7
+    },
+    {
+      "qid": "ynwac:RA:8",
+      "type": "RA",
+      "num": 8
+    },
+    {
+      "qid": "ynwac:RA:9",
+      "type": "RA",
+      "num": 9
+    },
+    {
+      "qid": "ynwac:RA:10",
+      "type": "RA",
+      "num": 10
+    },
+    {
+      "qid": "ynwac:RA:11",
+      "type": "RA",
+      "num": 11
+    },
+    {
+      "qid": "ynwac:RA:12",
+      "type": "RA",
+      "num": 12
+    },
+    {
+      "qid": "ynwac:RA:13",
+      "type": "RA",
+      "num": 13
+    },
+    {
+      "qid": "ynwac:RA:14",
+      "type": "RA",
+      "num": 14
+    },
+    {
+      "qid": "ynwac:RA:15",
+      "type": "RA",
+      "num": 15
+    },
+    {
+      "qid": "ynwac:RA:16",
+      "type": "RA",
+      "num": 16
+    },
+    {
+      "qid": "ynwac:RA:17",
+      "type": "RA",
+      "num": 17
+    },
+    {
+      "qid": "ynwac:RA:18",
+      "type": "RA",
+      "num": 18
+    },
+    {
+      "qid": "ynwac:RA:19",
+      "type": "RA",
+      "num": 19
+    },
+    {
+      "qid": "ynwac:RA:20",
+      "type": "RA",
+      "num": 20
+    },
+    {
+      "qid": "ynwac:RA:21",
+      "type": "RA",
+      "num": 21
+    },
+    {
+      "qid": "ynwac:RA:22",
+      "type": "RA",
+      "num": 22
+    },
+    {
+      "qid": "ynwac:RA:23",
+      "type": "RA",
+      "num": 23
+    },
+    {
+      "qid": "ynwac:RA:24",
+      "type": "RA",
+      "num": 24
+    },
+    {
+      "qid": "ynwac:RA:25",
+      "type": "RA",
+      "num": 25
+    },
+    {
+      "qid": "ynwac:RA:26",
+      "type": "RA",
+      "num": 26
+    },
+    {
+      "qid": "ynwac:RA:27",
+      "type": "RA",
+      "num": 27
+    },
+    {
+      "qid": "ynwac:RA:28",
+      "type": "RA",
+      "num": 28
+    },
+    {
+      "qid": "ynwac:RA:29",
+      "type": "RA",
+      "num": 29
+    },
+    {
+      "qid": "ynwac:RA:30",
+      "type": "RA",
+      "num": 30
+    },
+    {
+      "qid": "ynwac:RA:31",
+      "type": "RA",
+      "num": 31
+    },
+    {
+      "qid": "ynwac:RA:32",
+      "type": "RA",
+      "num": 32
+    },
+    {
+      "qid": "ynwac:RA:33",
+      "type": "RA",
+      "num": 33
+    },
+    {
+      "qid": "ynwac:RA:34",
+      "type": "RA",
+      "num": 34
+    },
+    {
+      "qid": "ynwac:RA:35",
+      "type": "RA",
+      "num": 35
+    },
+    {
+      "qid": "ynwac:RA:36",
+      "type": "RA",
+      "num": 36
+    },
+    {
+      "qid": "ynwac:RA:37",
+      "type": "RA",
+      "num": 37
+    },
+    {
+      "qid": "ynwac:RA:38",
+      "type": "RA",
+      "num": 38
+    },
+    {
+      "qid": "ynwac:RA:39",
+      "type": "RA",
+      "num": 39
+    },
+    {
+      "qid": "ynwac:RA:40",
+      "type": "RA",
+      "num": 40
+    },
+    {
+      "qid": "ynwac:RA:41",
+      "type": "RA",
+      "num": 41
+    },
+    {
+      "qid": "ynwac:RA:42",
+      "type": "RA",
+      "num": 42
+    },
+    {
+      "qid": "ynwac:RA:43",
+      "type": "RA",
+      "num": 43
+    },
+    {
+      "qid": "duoink:RA:58fce22eac502e0063ad999d",
+      "type": "RA",
+      "num": 44
+    },
+    {
+      "qid": "duoink:RA:58fce39eac502e0063ad9e04",
+      "type": "RA",
+      "num": 45
+    },
+    {
+      "qid": "duoink:RA:58fce43944d9040069e96907",
+      "type": "RA",
+      "num": 46
+    },
+    {
+      "qid": "duoink:RA:58fce53061ff4b0066691f96",
+      "type": "RA",
+      "num": 47
+    },
+    {
+      "qid": "duoink:RA:58fce6868d6d81005897484e",
+      "type": "RA",
+      "num": 48
+    },
+    {
+      "qid": "duoink:RA:58fce6c08d6d8100589748e1",
+      "type": "RA",
+      "num": 49
+    },
+    {
+      "qid": "duoink:RA:58fce7178d6d8100589749c0",
+      "type": "RA",
+      "num": 50
+    },
+    {
+      "qid": "duoink:RA:58fce860ac502e0063adb000",
+      "type": "RA",
+      "num": 51
+    },
+    {
+      "qid": "duoink:RA:58fce9050ce463006130b1ab",
+      "type": "RA",
+      "num": 52
+    },
+    {
+      "qid": "duoink:RA:58fcea2561ff4b0066692f09",
+      "type": "RA",
+      "num": 53
+    },
+    {
+      "qid": "duoink:RA:58fceb115c497d00580213bf",
+      "type": "RA",
+      "num": 54
+    },
+    {
+      "qid": "duoink:RA:58fceb4eac502e0063adbb7c",
+      "type": "RA",
+      "num": 55
+    },
+    {
+      "qid": "duoink:RA:58fceb81a22b9d0065a3d1c2",
+      "type": "RA",
+      "num": 56
+    },
+    {
+      "qid": "duoink:RA:58fcec83a0bb9f0065c28d68",
+      "type": "RA",
+      "num": 57
+    },
+    {
+      "qid": "duoink:RA:590d266ca22b9d0058f014c6",
+      "type": "RA",
+      "num": 58
+    },
+    {
+      "qid": "duoink:RA:590d2c07a0bb9f00588ac82f",
+      "type": "RA",
+      "num": 59
+    },
+    {
+      "qid": "duoink:RA:590d33f944d904007bda2e6f",
+      "type": "RA",
+      "num": 60
+    },
+    {
+      "qid": "duoink:RA:5a2f3cf575657100431d0eda",
+      "type": "RA",
+      "num": 61
+    },
+    {
+      "qid": "duoink:RA:5a44b2c9d50eee0065b022de",
+      "type": "RA",
+      "num": 62
+    },
+    {
+      "qid": "duoink:RA:5a9c8826d50eee006548b922",
+      "type": "RA",
+      "num": 63
+    },
+    {
+      "qid": "duoink:RA:5a9c9ecc44d9040042c59f5a",
+      "type": "RA",
+      "num": 64
+    },
+    {
+      "qid": "duoink:RA:5a9c9efc9f54540045e3629b",
+      "type": "RA",
+      "num": 65
+    },
+    {
+      "qid": "duoink:RA:5a9ca0b744d9040042c5a6be",
+      "type": "RA",
+      "num": 66
+    },
+    {
+      "qid": "duoink:RA:5a9ca12044d9040042c5a77e",
+      "type": "RA",
+      "num": 67
+    },
+    {
+      "qid": "duoink:RA:5a9ca3769f54540045e37392",
+      "type": "RA",
+      "num": 68
+    },
+    {
+      "qid": "duoink:RA:5aa69d481b69e6003e51807f",
+      "type": "RA",
+      "num": 69
+    },
+    {
+      "qid": "duoink:RA:5ac85cd81b69e60065f7a81d",
+      "type": "RA",
+      "num": 70
+    },
+    {
+      "qid": "duoink:RA:5ad8b03a0b6160003d9643e0",
+      "type": "RA",
+      "num": 71
+    },
+    {
+      "qid": "duoink:RA:5b20bfaa7f6fd30035b3f3e0",
+      "type": "RA",
+      "num": 72
+    },
+    {
+      "qid": "duoink:RA:5b20e77567f356003bee46f8",
+      "type": "RA",
+      "num": 73
+    },
+    {
+      "qid": "duoink:RA:5b6a8eff9f5454003bb4a2cb",
+      "type": "RA",
+      "num": 74
+    },
+    {
+      "qid": "duoink:RA:5b6a9140808ca4006fdf94d1",
+      "type": "RA",
+      "num": 75
+    },
+    {
+      "qid": "duoink:RA:5b6a924c9f5454003bb4c2ca",
+      "type": "RA",
+      "num": 76
+    },
+    {
+      "qid": "duoink:RA:5b6d250a9f5454003bc98ff1",
+      "type": "RA",
+      "num": 77
+    },
+    {
+      "qid": "duoink:RA:5b8cd777d50eee0039b67f68",
+      "type": "RA",
+      "num": 78
+    },
+    {
+      "qid": "duoink:RA:5b8cd7a7756571003b4bc413",
+      "type": "RA",
+      "num": 79
+    },
+    {
+      "qid": "duoink:RA:5ba20b7d8d6d810059e3d060",
+      "type": "RA",
+      "num": 80
+    },
+    {
+      "qid": "duoink:RA:5baadbd6d50eee006ff148a9",
+      "type": "RA",
+      "num": 81
+    },
+    {
+      "qid": "duoink:RA:5bd6d75f808ca40070aa1ad1",
+      "type": "RA",
+      "num": 82
+    },
+    {
+      "qid": "duoink:RA:5be93abeee920a0069c88118",
+      "type": "RA",
+      "num": 83
+    },
+    {
+      "qid": "duoink:RA:5bebdea71579a3005eaa8cb9",
+      "type": "RA",
+      "num": 84
+    },
+    {
+      "qid": "duoink:RA:5bee18d99f545400709cb9ee",
+      "type": "RA",
+      "num": 85
+    },
+    {
+      "qid": "duoink:RA:5c00e3047f6fd3005fa1a73c",
+      "type": "RA",
+      "num": 86
+    },
+    {
+      "qid": "duoink:RA:5c11efe29f54540072dbaf24",
+      "type": "RA",
+      "num": 87
+    },
+    {
+      "qid": "duoink:RA:5c11fcd89f54540072dc3ab1",
+      "type": "RA",
+      "num": 88
+    },
+    {
+      "qid": "duoink:RA:5c2eb50efb4ffe005f468e21",
+      "type": "RA",
+      "num": 89
+    },
+    {
+      "qid": "duoink:RA:5c6bbfe0c05a800055aef2ba",
+      "type": "RA",
+      "num": 90
+    },
+    {
+      "qid": "duoink:RA:5c7f43700237d7006cfadc10",
+      "type": "RA",
+      "num": 91
+    },
+    {
+      "qid": "duoink:RA:5c7f6bbe0237d7006cfc5d22",
+      "type": "RA",
+      "num": 92
+    },
+    {
+      "qid": "duoink:RA:5c7f6f13128fe100668a4cfe",
+      "type": "RA",
+      "num": 93
+    },
+    {
+      "qid": "duoink:RA:5c90a8330237d70068ad8c45",
+      "type": "RA",
+      "num": 94
+    },
+    {
+      "qid": "duoink:RA:5cecfe5beaa37500689efa1b",
+      "type": "RA",
+      "num": 95
+    },
+    {
+      "qid": "duoink:RA:5d466ef5c05a800073e5471f",
+      "type": "RA",
+      "num": 96
+    },
+    {
+      "qid": "duoink:RA:5d46745cd5de2b0073e9cfef",
+      "type": "RA",
+      "num": 97
+    },
+    {
+      "qid": "duoink:RA:5e007ab6fc36ed0069b9d90e",
+      "type": "RA",
+      "num": 98
+    },
+    {
+      "qid": "duoink:RA:5e4665b921460d0077837d06",
+      "type": "RA",
+      "num": 99
+    },
+    {
+      "qid": "duoink:RA:5e68490156207100752cc4fd",
+      "type": "RA",
+      "num": 100
+    },
+    {
+      "qid": "duoink:RA:5efed89e63aafc0008671290",
+      "type": "RA",
+      "num": 101
+    },
+    {
+      "qid": "duoink:RA:6050814a8cd58a702798b015",
+      "type": "RA",
+      "num": 102
+    },
+    {
+      "qid": "duoink:RA:607d6362548d773b8d2aabd2",
+      "type": "RA",
+      "num": 103
+    },
+    {
+      "qid": "duoink:RA:609df61f024cca1d086e8ec4",
+      "type": "RA",
+      "num": 104
+    },
+    {
+      "qid": "duoink:RA:60c1d418867eeb3667aaaf4b",
+      "type": "RA",
+      "num": 105
+    },
+    {
+      "qid": "duoink:RA:60e2c6d3c4c89e151b2c1803",
+      "type": "RA",
+      "num": 106
+    },
+    {
+      "qid": "duoink:RA:610a3a6d410a2d5fdae27660",
+      "type": "RA",
+      "num": 107
+    },
+    {
+      "qid": "duoink:RA:612354ab130ce376e1005cba",
+      "type": "RA",
+      "num": 108
+    },
+    {
+      "qid": "duoink:RA:6127378dd582286de8ce136e",
+      "type": "RA",
+      "num": 109
+    },
+    {
+      "qid": "duoink:RA:61273ce220ea1645f7907cc5",
+      "type": "RA",
+      "num": 110
+    },
+    {
+      "qid": "duoink:RA:6233ec6eeee6d90067f6918e",
+      "type": "RA",
+      "num": 111
+    },
+    {
+      "qid": "duoink:RA:627e1bd9408a965e8f087cd2",
+      "type": "RA",
+      "num": 112
+    },
+    {
+      "qid": "duoink:RA:62c7a00ad2247b25a903b3c1",
+      "type": "RA",
+      "num": 113
+    },
+    {
+      "qid": "duoink:RA:62e228b158b41e188216236d",
+      "type": "RA",
+      "num": 114
+    },
+    {
+      "qid": "duoink:RA:62e22afb1e312603779236de",
+      "type": "RA",
+      "num": 115
+    },
+    {
+      "qid": "duoink:RA:62e8972458b41e18822fec9e",
+      "type": "RA",
+      "num": 116
+    },
+    {
+      "qid": "duoink:RA:63119ebae6f69b71e93c3dd1",
+      "type": "RA",
+      "num": 117
+    },
+    {
+      "qid": "duoink:RA:63119fdc7ccdb86c49ef603c",
+      "type": "RA",
+      "num": 118
+    },
+    {
+      "qid": "duoink:RA:631ae1c86bf78e7334d1abf2",
+      "type": "RA",
+      "num": 119
+    },
+    {
+      "qid": "duoink:RA:63687a1c9f061f2737dcea40",
+      "type": "RA",
+      "num": 120
+    },
+    {
+      "qid": "duoink:RA:6368bba99a50ae1fc5a93175",
+      "type": "RA",
+      "num": 121
+    },
+    {
+      "qid": "duoink:RA:6369bbdd47d71738825f93a0",
+      "type": "RA",
+      "num": 122
+    },
+    {
+      "qid": "duoink:RA:6369c312422ec2115ce775a6",
+      "type": "RA",
+      "num": 123
+    },
+    {
+      "qid": "duoink:RA:63b7837958586b45ae92138d",
+      "type": "RA",
+      "num": 124
+    },
+    {
+      "qid": "duoink:RA:63b7990577e95f29df0bd02c",
+      "type": "RA",
+      "num": 125
+    },
+    {
+      "qid": "duoink:RA:63b7fd2a77e95f29df0e3fb3",
+      "type": "RA",
+      "num": 126
+    },
+    {
+      "qid": "duoink:RA:63c10023df47c237e826640f",
+      "type": "RA",
+      "num": 127
+    },
+    {
+      "qid": "duoink:RA:63c100e43f89715e24d4c482",
+      "type": "RA",
+      "num": 128
+    },
+    {
+      "qid": "duoink:RA:63d35ce53f89715e240d2bef",
+      "type": "RA",
+      "num": 129
+    },
+    {
+      "qid": "duoink:RA:63d4c25bf82708695967e7a4",
+      "type": "RA",
+      "num": 130
+    },
+    {
+      "qid": "duoink:RA:63dc67020e809f71544ebf57",
+      "type": "RA",
+      "num": 131
+    },
+    {
+      "qid": "duoink:RA:63dc747fdbe67c12365d7dc6",
+      "type": "RA",
+      "num": 132
+    },
+    {
+      "qid": "duoink:RA:63e33f8145abf2708b3c22f1",
+      "type": "RA",
+      "num": 133
+    },
+    {
+      "qid": "duoink:RA:63e456e0281fd022e9560b63",
+      "type": "RA",
+      "num": 134
+    },
+    {
+      "qid": "duoink:RA:64097e2ea8e93b7cf4a48f85",
+      "type": "RA",
+      "num": 135
+    },
+    {
+      "qid": "duoink:RA:640981070c5448618c403194",
+      "type": "RA",
+      "num": 136
+    },
+    {
+      "qid": "duoink:RA:640985230c5448618c4048c0",
+      "type": "RA",
+      "num": 137
+    },
+    {
+      "qid": "duoink:RA:641beb907b1b0e03df269b8f",
+      "type": "RA",
+      "num": 138
+    },
+    {
+      "qid": "duoink:RA:641bee218b54a17a2b27687d",
+      "type": "RA",
+      "num": 139
+    },
+    {
+      "qid": "duoink:RA:641bef63e012e15ac4c05e33",
+      "type": "RA",
+      "num": 140
+    },
+    {
+      "qid": "duoink:RA:641bf05dece1b951747a5bfd",
+      "type": "RA",
+      "num": 141
+    },
+    {
+      "qid": "duoink:RA:641bf19393ed6706eda1b53e",
+      "type": "RA",
+      "num": 142
+    },
+    {
+      "qid": "duoink:RA:64376a37085d075d34e6a812",
+      "type": "RA",
+      "num": 143
+    },
+    {
+      "qid": "duoink:RA:64376b51af53bb284e0b3561",
+      "type": "RA",
+      "num": 144
+    },
+    {
+      "qid": "duoink:RA:64a7b9a15d666b1e29c550c4",
+      "type": "RA",
+      "num": 145
+    },
+    {
+      "qid": "duoink:RA:64a7bf1435ca1922ea334bea",
+      "type": "RA",
+      "num": 146
+    },
+    {
+      "qid": "duoink:RA:65d30f1d881ec62a69ccdaa2",
+      "type": "RA",
+      "num": 147
+    },
+    {
+      "qid": "duoink:RA:65dbf8f5caa7af401d027fc0",
+      "type": "RA",
+      "num": 148
+    },
+    {
+      "qid": "duoink:RA:6822f1f9b9570274dffc8247",
+      "type": "RA",
+      "num": 149
+    },
+    {
+      "qid": "duoink:RA:6823106cc02b652dbc63d248",
+      "type": "RA",
+      "num": 150
+    },
+    {
+      "qid": "duoink:RA:6826a564c02b652dbc793993",
+      "type": "RA",
+      "num": 151
+    },
+    {
+      "qid": "duoink:RA:682703acc02b652dbc7c0f1b",
+      "type": "RA",
+      "num": 152
+    },
+    {
+      "qid": "duoink:RA:682a9e0cd3496c42467db855",
+      "type": "RA",
+      "num": 153
+    },
+    {
+      "qid": "duoink:RA:682a9f13bf6625518c9c3b95",
+      "type": "RA",
+      "num": 154
+    },
+    {
+      "qid": "duoink:RA:682a9f99d3496c42467dc463",
+      "type": "RA",
+      "num": 155
+    },
+    {
+      "qid": "duoink:RA:682aa028d3496c42467dc97b",
+      "type": "RA",
+      "num": 156
+    },
+    {
+      "qid": "duoink:RA:682aa0f46993d81fe6edc174",
+      "type": "RA",
+      "num": 157
+    },
+    {
+      "qid": "duoink:RA:682aa1856993d81fe6edc602",
+      "type": "RA",
+      "num": 158
+    },
+    {
+      "qid": "duoink:RA:682aa20db9570274df29b4a8",
+      "type": "RA",
+      "num": 159
+    },
+    {
+      "qid": "duoink:RA:682aa29ebf6625518c9c5ced",
+      "type": "RA",
+      "num": 160
+    },
+    {
+      "qid": "duoink:RA:682aa3736993d81fe6edd769",
+      "type": "RA",
+      "num": 161
+    },
+    {
+      "qid": "duoink:RA:682aa3f1c02b652dbc90398d",
+      "type": "RA",
+      "num": 162
+    },
+    {
+      "qid": "duoink:RA:682aa4bbbf6625518c9c6ea0",
+      "type": "RA",
+      "num": 163
+    },
+    {
+      "qid": "duoink:RA:691a96abd9e1c5394e7b880d",
+      "type": "RA",
+      "num": 164
+    },
+    {
+      "qid": "duoink:RA:6925618a05564e31264b1b4c",
+      "type": "RA",
+      "num": 165
+    },
+    {
+      "qid": "duoink:RA:69256bb005564e31264b745e",
+      "type": "RA",
+      "num": 166
+    },
+    {
+      "qid": "duoink:RA:69256dcd171b217b0e9a1238",
+      "type": "RA",
+      "num": 167
+    },
+    {
+      "qid": "duoink:RA:6a3b9b1abc37d772be4dc166",
+      "type": "RA",
+      "num": 168
+    },
+    {
+      "qid": "duoink:RS:5950f426128fe100653877a8",
+      "type": "RS",
+      "num": 1
+    },
+    {
+      "qid": "duoink:RS:5950f4381b69e60062d66347",
+      "type": "RS",
+      "num": 2
+    },
+    {
+      "qid": "duoink:RS:5950f445570c357d06b7f43d",
+      "type": "RS",
+      "num": 3
+    },
+    {
+      "qid": "duoink:RS:5950f642fe88c2005f9dbeb5",
+      "type": "RS",
+      "num": 4
+    },
+    {
+      "qid": "duoink:RS:5950f652128fe1006538909a",
+      "type": "RS",
+      "num": 5
+    },
+    {
+      "qid": "duoink:RS:5950f691fe88c2005f9dc21d",
+      "type": "RS",
+      "num": 6
+    },
+    {
+      "qid": "duoink:RS:59857df8ac502e00693c802b",
+      "type": "RS",
+      "num": 7
+    },
+    {
+      "qid": "duoink:RS:5985800d8d6d8100583cdbfd",
+      "type": "RS",
+      "num": 8
+    },
+    {
+      "qid": "duoink:RS:59858118570c3500621dedf5",
+      "type": "RS",
+      "num": 9
+    },
+    {
+      "qid": "duoink:RS:5985a9e6570c350062202259",
+      "type": "RS",
+      "num": 10
+    },
+    {
+      "qid": "duoink:RS:5985aa9fa0bb9f00587f19de",
+      "type": "RS",
+      "num": 11
+    },
+    {
+      "qid": "duoink:RS:5985ab06128fe100568f08f6",
+      "type": "RS",
+      "num": 12
+    },
+    {
+      "qid": "duoink:RS:5985ab2e570c350062203425",
+      "type": "RS",
+      "num": 13
+    },
+    {
+      "qid": "duoink:RS:5985aba4fe88c20057375491",
+      "type": "RS",
+      "num": 14
+    },
+    {
+      "qid": "duoink:RS:5985ad8f1b69e6006cc3b276",
+      "type": "RS",
+      "num": 15
+    },
+    {
+      "qid": "duoink:RS:5985b0a5a22b9d006da93779",
+      "type": "RS",
+      "num": 16
+    },
+    {
+      "qid": "duoink:RS:5985b45261ff4b00573e950e",
+      "type": "RS",
+      "num": 17
+    },
+    {
+      "qid": "duoink:RS:5985b61961ff4b00573eb2a1",
+      "type": "RS",
+      "num": 18
+    },
+    {
+      "qid": "duoink:RS:5a66a5417565710043062ce5",
+      "type": "RS",
+      "num": 19
+    },
+    {
+      "qid": "duoink:RS:5a7d72a944d904004231a2e0",
+      "type": "RS",
+      "num": 20
+    },
+    {
+      "qid": "duoink:RS:5a7d72f9d50eee0065b4828f",
+      "type": "RS",
+      "num": 21
+    },
+    {
+      "qid": "duoink:RS:5aa11cde0b6160003fe4033b",
+      "type": "RS",
+      "num": 22
+    },
+    {
+      "qid": "duoink:RS:5aa11d249f54540043b4e321",
+      "type": "RS",
+      "num": 23
+    },
+    {
+      "qid": "duoink:RS:5aa13511a22b9d00433bf3e1",
+      "type": "RS",
+      "num": 24
+    },
+    {
+      "qid": "duoink:RS:5aa136271b69e6003ddfb6fb",
+      "type": "RS",
+      "num": 25
+    },
+    {
+      "qid": "duoink:RS:5aa137701b69e6003ddfc21f",
+      "type": "RS",
+      "num": 26
+    },
+    {
+      "qid": "duoink:RS:5aa1392f9f54540043b5dfd1",
+      "type": "RS",
+      "num": 27
+    },
+    {
+      "qid": "duoink:RS:5aa13ccfa22b9d00433c3273",
+      "type": "RS",
+      "num": 28
+    },
+    {
+      "qid": "duoink:RS:5aa140110b6160003fe532a8",
+      "type": "RS",
+      "num": 29
+    },
+    {
+      "qid": "duoink:RS:5aa22e829f54540043b98735",
+      "type": "RS",
+      "num": 30
+    },
+    {
+      "qid": "duoink:RS:5aa22ee01b69e6003de37977",
+      "type": "RS",
+      "num": 31
+    },
+    {
+      "qid": "duoink:RS:5aa22f370b6160003fe8a97b",
+      "type": "RS",
+      "num": 32
+    },
+    {
+      "qid": "duoink:RS:5aa233940b6160003fe8bd36",
+      "type": "RS",
+      "num": 33
+    },
+    {
+      "qid": "duoink:RS:5aa233b69f54540043b9a0ad",
+      "type": "RS",
+      "num": 34
+    },
+    {
+      "qid": "duoink:RS:5aa233d11b69e6003de39226",
+      "type": "RS",
+      "num": 35
+    },
+    {
+      "qid": "duoink:RS:5aa2340a1b69e6003de3947d",
+      "type": "RS",
+      "num": 36
+    },
+    {
+      "qid": "duoink:RS:5aa234469f54540043b9a5ab",
+      "type": "RS",
+      "num": 37
+    },
+    {
+      "qid": "duoink:RS:5aa234621b69e6003de395e4",
+      "type": "RS",
+      "num": 38
+    },
+    {
+      "qid": "duoink:RS:5aa234d80b6160003fe8c291",
+      "type": "RS",
+      "num": 39
+    },
+    {
+      "qid": "duoink:RS:5aa235069f54540043b9a78a",
+      "type": "RS",
+      "num": 40
+    },
+    {
+      "qid": "duoink:RS:5aa2352d9f54540043b9a88c",
+      "type": "RS",
+      "num": 41
+    },
+    {
+      "qid": "duoink:RS:5aa2355ba22b9d00433fdf9f",
+      "type": "RS",
+      "num": 42
+    },
+    {
+      "qid": "duoink:RS:5abe0894a22b9d00434393a4",
+      "type": "RS",
+      "num": 43
+    },
+    {
+      "qid": "duoink:RS:5abe0941ee920a0047685ec9",
+      "type": "RS",
+      "num": 44
+    },
+    {
+      "qid": "duoink:RS:5ad0c2f01b69e60069a5962e",
+      "type": "RS",
+      "num": 45
+    },
+    {
+      "qid": "duoink:RS:5ae43f6ea22b9d00450dda7a",
+      "type": "RS",
+      "num": 46
+    },
+    {
+      "qid": "duoink:RS:5ae43f6f9f5454005e28537a",
+      "type": "RS",
+      "num": 47
+    },
+    {
+      "qid": "duoink:RS:5ae43f70a22b9d00450dda94",
+      "type": "RS",
+      "num": 48
+    },
+    {
+      "qid": "duoink:RS:5ae43f71d50eee0042d6ca53",
+      "type": "RS",
+      "num": 49
+    },
+    {
+      "qid": "duoink:RS:5aebed91a22b9d00454d726a",
+      "type": "RS",
+      "num": 50
+    },
+    {
+      "qid": "duoink:RS:5afd1ec5a22b9d0045e7f28e",
+      "type": "RS",
+      "num": 51
+    },
+    {
+      "qid": "duoink:RS:5b10fc3bfe88c23827866bc3",
+      "type": "RS",
+      "num": 52
+    },
+    {
+      "qid": "duoink:RS:5b1782919f54543810a9b306",
+      "type": "RS",
+      "num": 53
+    },
+    {
+      "qid": "duoink:RS:5b21cddf9f5454003a482d20",
+      "type": "RS",
+      "num": 54
+    },
+    {
+      "qid": "duoink:RS:5b21d4ce17d0090035c862f6",
+      "type": "RS",
+      "num": 55
+    },
+    {
+      "qid": "duoink:RS:5b21d99967f356003bf67a09",
+      "type": "RS",
+      "num": 56
+    },
+    {
+      "qid": "duoink:RS:5b21e72467f356003bf72872",
+      "type": "RS",
+      "num": 57
+    },
+    {
+      "qid": "duoink:RS:5b21e9167f6fd30035bee140",
+      "type": "RS",
+      "num": 58
+    },
+    {
+      "qid": "duoink:RS:5b30a66e17d009003557e932",
+      "type": "RS",
+      "num": 59
+    },
+    {
+      "qid": "duoink:RS:5b359538ac502e00310727d8",
+      "type": "RS",
+      "num": 60
+    },
+    {
+      "qid": "duoink:RS:5b35b2ddac502e00310875ba",
+      "type": "RS",
+      "num": 61
+    },
+    {
+      "qid": "duoink:RS:5b3c9894ee920a003aea0db0",
+      "type": "RS",
+      "num": 62
+    },
+    {
+      "qid": "duoink:RS:5b598e07a22b9d003abc38ad",
+      "type": "RS",
+      "num": 63
+    },
+    {
+      "qid": "duoink:RS:5b59920f808ca4006e7e8ffb",
+      "type": "RS",
+      "num": 64
+    },
+    {
+      "qid": "duoink:RS:5b6283b9ee920a003d5a7829",
+      "type": "RS",
+      "num": 65
+    },
+    {
+      "qid": "duoink:RS:5b63cdd0808ca4006fe52fdf",
+      "type": "RS",
+      "num": 66
+    },
+    {
+      "qid": "duoink:RS:5b6a9b9e756571003b8e41f5",
+      "type": "RS",
+      "num": 67
+    },
+    {
+      "qid": "duoink:RS:5b70e8919f5454003be427db",
+      "type": "RS",
+      "num": 68
+    },
+    {
+      "qid": "duoink:RS:5b8f47ced50eee0039c4144b",
+      "type": "RS",
+      "num": 69
+    },
+    {
+      "qid": "duoink:RS:5b8f4ee3756571003b598fbd",
+      "type": "RS",
+      "num": 70
+    },
+    {
+      "qid": "duoink:RS:5b8f54df808ca4006f30b461",
+      "type": "RS",
+      "num": 71
+    },
+    {
+      "qid": "duoink:RS:5b960b74d50eee0032c08568",
+      "type": "RS",
+      "num": 72
+    },
+    {
+      "qid": "duoink:RS:5b978e64ee920a003cd1cb56",
+      "type": "RS",
+      "num": 73
+    },
+    {
+      "qid": "duoink:RS:5bb097c767f3560062936788",
+      "type": "RS",
+      "num": 74
+    },
+    {
+      "qid": "duoink:RS:5bb098d517d00900621c3397",
+      "type": "RS",
+      "num": 75
+    },
+    {
+      "qid": "duoink:RS:5bc5547967f35600624b974e",
+      "type": "RS",
+      "num": 76
+    },
+    {
+      "qid": "duoink:RS:5bebe80e1579a3005eaaf363",
+      "type": "RS",
+      "num": 77
+    },
+    {
+      "qid": "duoink:RS:5bfb4ce7756571006867ff6b",
+      "type": "RS",
+      "num": 78
+    },
+    {
+      "qid": "duoink:RS:5bfb50a47565710068682070",
+      "type": "RS",
+      "num": 79
+    },
+    {
+      "qid": "duoink:RS:5bfe030a9f54540067a0e216",
+      "type": "RS",
+      "num": 80
+    },
+    {
+      "qid": "duoink:RS:5bfe07787f6fd3005dc68d49",
+      "type": "RS",
+      "num": 81
+    },
+    {
+      "qid": "duoink:RS:5bfe08041579a300626e53a4",
+      "type": "RS",
+      "num": 82
+    },
+    {
+      "qid": "duoink:RS:5c05ea629f54540072792dad",
+      "type": "RS",
+      "num": 83
+    },
+    {
+      "qid": "duoink:RS:5c063fe90b61600067c82e8a",
+      "type": "RS",
+      "num": 84
+    },
+    {
+      "qid": "duoink:RS:5c06424d9f545400727c9a1d",
+      "type": "RS",
+      "num": 85
+    },
+    {
+      "qid": "duoink:RS:5c08988a0b61600067da966f",
+      "type": "RS",
+      "num": 86
+    },
+    {
+      "qid": "duoink:RS:5c1711dc808ca40067eb6786",
+      "type": "RS",
+      "num": 87
+    },
+    {
+      "qid": "duoink:RS:5c17126a9f5454007207f34f",
+      "type": "RS",
+      "num": 88
+    },
+    {
+      "qid": "duoink:RS:5c1714b60b6160006753df63",
+      "type": "RS",
+      "num": 89
+    },
+    {
+      "qid": "duoink:RS:5c17160e808ca40067ebb12c",
+      "type": "RS",
+      "num": 90
+    },
+    {
+      "qid": "duoink:RS:5c1850937565710068a36779",
+      "type": "RS",
+      "num": 91
+    },
+    {
+      "qid": "duoink:RS:5c32b00d1579a3005fcbf30c",
+      "type": "RS",
+      "num": 92
+    },
+    {
+      "qid": "duoink:RS:5c3719760b616000663cc72d",
+      "type": "RS",
+      "num": 93
+    },
+    {
+      "qid": "duoink:RS:5c5019e09f5454004b60549b",
+      "type": "RS",
+      "num": 94
+    },
+    {
+      "qid": "duoink:RS:5c63b9e5c05a8000556a41ab",
+      "type": "RS",
+      "num": 95
+    },
+    {
+      "qid": "duoink:RS:5c651d1afb4ffe0047df3c59",
+      "type": "RS",
+      "num": 96
+    },
+    {
+      "qid": "duoink:RS:5c65208b24389227819f8c4a",
+      "type": "RS",
+      "num": 97
+    },
+    {
+      "qid": "duoink:RS:5c6521fd2438920054df9dfa",
+      "type": "RS",
+      "num": 98
+    },
+    {
+      "qid": "duoink:RS:5c6b5de6fb4ffe00472b3432",
+      "type": "RS",
+      "num": 99
+    },
+    {
+      "qid": "duoink:RS:5c7f65aa303f3900654804c3",
+      "type": "RS",
+      "num": 100
+    },
+    {
+      "qid": "duoink:RS:5c7f65bb128fe10070f61a73",
+      "type": "RS",
+      "num": 101
+    },
+    {
+      "qid": "duoink:RS:5c88ecb7128fe1007030647a",
+      "type": "RS",
+      "num": 102
+    },
+    {
+      "qid": "duoink:RS:5c88eeb6303f390065827034",
+      "type": "RS",
+      "num": 103
+    },
+    {
+      "qid": "duoink:RS:5cb028f230863b0074db79a0",
+      "type": "RS",
+      "num": 104
+    },
+    {
+      "qid": "duoink:RS:5ce533e00237d7006c748bf0",
+      "type": "RS",
+      "num": 105
+    },
+    {
+      "qid": "duoink:RS:5cef7336a91c930068a8d0e3",
+      "type": "RS",
+      "num": 106
+    },
+    {
+      "qid": "duoink:RS:5cef74b3a91c930068a8d98c",
+      "type": "RS",
+      "num": 107
+    },
+    {
+      "qid": "duoink:RS:5cf0c49feaa3750068b03ba6",
+      "type": "RS",
+      "num": 108
+    },
+    {
+      "qid": "duoink:RS:5cf0e806a3180b00673c3801",
+      "type": "RS",
+      "num": 109
+    },
+    {
+      "qid": "duoink:RS:5d46e28912215f00731824ef",
+      "type": "RS",
+      "num": 110
+    },
+    {
+      "qid": "duoink:RS:5d5dfa36d5de2b006ded043d",
+      "type": "RS",
+      "num": 111
+    },
+    {
+      "qid": "duoink:RS:5d637f6dba39c80068ad4a54",
+      "type": "RS",
+      "num": 112
+    },
+    {
+      "qid": "duoink:RS:5d64cf110237d700680aa6bd",
+      "type": "RS",
+      "num": 113
+    },
+    {
+      "qid": "duoink:RS:5d706b9b43e78c0068b2f752",
+      "type": "RS",
+      "num": 114
+    },
+    {
+      "qid": "duoink:RS:5db156bc243892007256b3a1",
+      "type": "RS",
+      "num": 115
+    },
+    {
+      "qid": "duoink:RS:5db16c5a243892007256fe35",
+      "type": "RS",
+      "num": 116
+    },
+    {
+      "qid": "duoink:RS:5e13dfba1358aa0077db968e",
+      "type": "RS",
+      "num": 117
+    },
+    {
+      "qid": "duoink:RS:5e4f4a2c56207100774dd2c9",
+      "type": "RS",
+      "num": 118
+    },
+    {
+      "qid": "duoink:RS:5f925172d845a647a5da1c1b",
+      "type": "RS",
+      "num": 119
+    },
+    {
+      "qid": "duoink:RS:5f92518ce8ed3c21a4cb3366",
+      "type": "RS",
+      "num": 120
+    },
+    {
+      "qid": "duoink:RS:605089c593342843d98b9e7d",
+      "type": "RS",
+      "num": 121
+    },
+    {
+      "qid": "duoink:RS:60508a3db8596f036ac42060",
+      "type": "RS",
+      "num": 122
+    },
+    {
+      "qid": "duoink:RS:60540798c242e1575061357e",
+      "type": "RS",
+      "num": 123
+    },
+    {
+      "qid": "duoink:RS:606f89c4479db83d03dd0524",
+      "type": "RS",
+      "num": 124
+    },
+    {
+      "qid": "duoink:RS:60a6324685fd167d989b8fa5",
+      "type": "RS",
+      "num": 125
+    },
+    {
+      "qid": "duoink:RS:60a63289bc738a6e1cfbf846",
+      "type": "RS",
+      "num": 126
+    },
+    {
+      "qid": "duoink:RS:60b840d899cd4c1664086362",
+      "type": "RS",
+      "num": 127
+    },
+    {
+      "qid": "duoink:RS:60b840f8470dcb3d8e793bb9",
+      "type": "RS",
+      "num": 128
+    },
+    {
+      "qid": "duoink:RS:60b841153a1ba3026bd48f75",
+      "type": "RS",
+      "num": 129
+    },
+    {
+      "qid": "duoink:RS:60b875d95863d4114bce6d04",
+      "type": "RS",
+      "num": 130
+    },
+    {
+      "qid": "duoink:RS:60fe4b2fc102eb7fc21647be",
+      "type": "RS",
+      "num": 131
+    },
+    {
+      "qid": "duoink:RS:6143f9130b92b77f04a15a99",
+      "type": "RS",
+      "num": 132
+    },
+    {
+      "qid": "duoink:RS:61971d680eb1c239184c6bb2",
+      "type": "RS",
+      "num": 133
+    },
+    {
+      "qid": "duoink:RS:619740ac8572763fc58a9b3d",
+      "type": "RS",
+      "num": 134
+    },
+    {
+      "qid": "duoink:RS:61a82d39a621ed2f3f592e9f",
+      "type": "RS",
+      "num": 135
+    },
+    {
+      "qid": "duoink:RS:61b07f2d69aa4e42c26489c4",
+      "type": "RS",
+      "num": 136
+    },
+    {
+      "qid": "duoink:RS:61bc3cfe7e89ac3161fb718b",
+      "type": "RS",
+      "num": 137
+    },
+    {
+      "qid": "duoink:RS:61c185f99c333724e7baf6e7",
+      "type": "RS",
+      "num": 138
+    },
+    {
+      "qid": "duoink:RS:61c2a110b093eb465f5096ba",
+      "type": "RS",
+      "num": 139
+    },
+    {
+      "qid": "duoink:RS:6246bd89ec9ab571236eee7c",
+      "type": "RS",
+      "num": 140
+    },
+    {
+      "qid": "duoink:RS:6246c04fcc57e5518887efb6",
+      "type": "RS",
+      "num": 141
+    },
+    {
+      "qid": "duoink:RS:627e22598efdff05d7eb1c1c",
+      "type": "RS",
+      "num": 142
+    },
+    {
+      "qid": "duoink:RS:627e22ce862cf9784b11bd74",
+      "type": "RS",
+      "num": 143
+    },
+    {
+      "qid": "duoink:RS:62a2f00184fb4470a3e94f80",
+      "type": "RS",
+      "num": 144
+    },
+    {
+      "qid": "duoink:RS:62e0b5a23bba567764347c27",
+      "type": "RS",
+      "num": 145
+    },
+    {
+      "qid": "duoink:RS:62e0dd9e7706b025198fa93f",
+      "type": "RS",
+      "num": 146
+    },
+    {
+      "qid": "duoink:RS:62e0e03a868b6172bf426a4d",
+      "type": "RS",
+      "num": 147
+    },
+    {
+      "qid": "duoink:RS:62fa0d499820695e65df67f8",
+      "type": "RS",
+      "num": 148
+    },
+    {
+      "qid": "duoink:RS:62fa0fbb9c01f14a69d0c5b2",
+      "type": "RS",
+      "num": 149
+    },
+    {
+      "qid": "duoink:RS:6340e5bfa9e9c716c9cfec8c",
+      "type": "RS",
+      "num": 150
+    },
+    {
+      "qid": "duoink:RS:637b29e698cfe8409b556bf9",
+      "type": "RS",
+      "num": 151
+    },
+    {
+      "qid": "duoink:RS:6385d8230b77a72b0b73cd20",
+      "type": "RS",
+      "num": 152
+    },
+    {
+      "qid": "duoink:RS:63c11ce28e3dad777d6566f9",
+      "type": "RS",
+      "num": 153
+    },
+    {
+      "qid": "duoink:RS:63c11d9ddf47c237e826fd84",
+      "type": "RS",
+      "num": 154
+    },
+    {
+      "qid": "duoink:RS:63d357356895f37c63240e63",
+      "type": "RS",
+      "num": 155
+    },
+    {
+      "qid": "duoink:RS:63d357ab8e3dad777d9d2993",
+      "type": "RS",
+      "num": 156
+    },
+    {
+      "qid": "duoink:RS:63dc7eba2ec9fd1501cab266",
+      "type": "RS",
+      "num": 157
+    },
+    {
+      "qid": "duoink:RS:63dc7fd3dbe67c12365dcdb9",
+      "type": "RS",
+      "num": 158
+    },
+    {
+      "qid": "duoink:RS:63dc82c045abf2708b1ea432",
+      "type": "RS",
+      "num": 159
+    },
+    {
+      "qid": "duoink:RS:63dc837e2ec9fd1501cace5b",
+      "type": "RS",
+      "num": 160
+    },
+    {
+      "qid": "duoink:RS:63dc843945abf2708b1eabd4",
+      "type": "RS",
+      "num": 161
+    },
+    {
+      "qid": "duoink:RS:63e347892ec9fd1501e7f663",
+      "type": "RS",
+      "num": 162
+    },
+    {
+      "qid": "duoink:RS:640991ff46ccdf6c04bd7847",
+      "type": "RS",
+      "num": 163
+    },
+    {
+      "qid": "duoink:RS:640996d259a6c12e423eff57",
+      "type": "RS",
+      "num": 164
+    },
+    {
+      "qid": "duoink:RS:6409994159a6c12e423f133d",
+      "type": "RS",
+      "num": 165
+    },
+    {
+      "qid": "duoink:RS:641bf6df7b1b0e03df26eb43",
+      "type": "RS",
+      "num": 166
+    },
+    {
+      "qid": "duoink:RS:6434becc54099a7428f63505",
+      "type": "RS",
+      "num": 167
+    },
+    {
+      "qid": "duoink:RS:64814fddb5420e27670666bf",
+      "type": "RS",
+      "num": 168
+    },
+    {
+      "qid": "duoink:RS:6481509fb6a81d0c53a4d176",
+      "type": "RS",
+      "num": 169
+    },
+    {
+      "qid": "duoink:RS:64a7d3f7421716233a2bd983",
+      "type": "RS",
+      "num": 170
+    },
+    {
+      "qid": "duoink:RS:64a7d9f410df7e6978cebd11",
+      "type": "RS",
+      "num": 171
+    },
+    {
+      "qid": "duoink:RS:64a7dbbd5d666b1e29c60cb3",
+      "type": "RS",
+      "num": 172
+    },
+    {
+      "qid": "duoink:RS:64a7dbf435ca1922ea33e77e",
+      "type": "RS",
+      "num": 173
+    },
+    {
+      "qid": "duoink:RS:64a7dc705d666b1e29c61050",
+      "type": "RS",
+      "num": 174
+    },
+    {
+      "qid": "duoink:RS:64ab920410df7e6978dbfa13",
+      "type": "RS",
+      "num": 175
+    },
+    {
+      "qid": "duoink:RS:64ab92ea421716233a3902d3",
+      "type": "RS",
+      "num": 176
+    },
+    {
+      "qid": "duoink:RS:64ae77abd1995c3ff5f725e6",
+      "type": "RS",
+      "num": 177
+    },
+    {
+      "qid": "duoink:RS:64c1dab513c76d3ba01872e7",
+      "type": "RS",
+      "num": 178
+    },
+    {
+      "qid": "duoink:RS:64c1db6713c76d3ba01876f9",
+      "type": "RS",
+      "num": 179
+    },
+    {
+      "qid": "duoink:RS:64d04ecbad15f91b721e4d0d",
+      "type": "RS",
+      "num": 180
+    },
+    {
+      "qid": "duoink:RS:64dd82cf462d2a00278cd0b0",
+      "type": "RS",
+      "num": 181
+    },
+    {
+      "qid": "duoink:RS:64dd86a03904ab3e43842b1b",
+      "type": "RS",
+      "num": 182
+    },
+    {
+      "qid": "duoink:RS:650bab76ad3a4f6a254f150b",
+      "type": "RS",
+      "num": 183
+    },
+    {
+      "qid": "duoink:RS:6513962aad15f91b720d35d6",
+      "type": "RS",
+      "num": 184
+    },
+    {
+      "qid": "duoink:RS:65223af813c76d3ba0676bf2",
+      "type": "RS",
+      "num": 185
+    },
+    {
+      "qid": "duoink:RS:65712b5aa3a0ad20b930c1e9",
+      "type": "RS",
+      "num": 186
+    },
+    {
+      "qid": "duoink:RS:657a69c964950e10fecabbbd",
+      "type": "RS",
+      "num": 187
+    },
+    {
+      "qid": "duoink:RS:657a6a4796756c0e34dcc67d",
+      "type": "RS",
+      "num": 188
+    },
+    {
+      "qid": "duoink:RS:657a6ab3b6b4c524248480b7",
+      "type": "RS",
+      "num": 189
+    },
+    {
+      "qid": "duoink:RS:657a6c6496756c0e34dcd20e",
+      "type": "RS",
+      "num": 190
+    },
+    {
+      "qid": "duoink:RS:657a6d0964950e10fecad0b5",
+      "type": "RS",
+      "num": 191
+    },
+    {
+      "qid": "duoink:RS:6594d03ca5a5f273818726b4",
+      "type": "RS",
+      "num": 192
+    },
+    {
+      "qid": "duoink:RS:65961d2a8279bd2e8e18a14e",
+      "type": "RS",
+      "num": 193
+    },
+    {
+      "qid": "duoink:RS:65d2fdf110d1ac15398c5406",
+      "type": "RS",
+      "num": 194
+    },
+    {
+      "qid": "duoink:RS:65d31439d1ee107909630cbd",
+      "type": "RS",
+      "num": 195
+    },
+    {
+      "qid": "duoink:RS:65d41b909e58455761ad26ac",
+      "type": "RS",
+      "num": 196
+    },
+    {
+      "qid": "duoink:RS:65d41f7d881ec62a69d25438",
+      "type": "RS",
+      "num": 197
+    },
+    {
+      "qid": "duoink:RS:65d46551333d50361821ca46",
+      "type": "RS",
+      "num": 198
+    },
+    {
+      "qid": "duoink:RS:65d4699310d1ac1539953df2",
+      "type": "RS",
+      "num": 199
+    },
+    {
+      "qid": "duoink:RS:65d46a939d292c217ab0f521",
+      "type": "RS",
+      "num": 200
+    },
+    {
+      "qid": "duoink:RS:65d46b0e333d50361821ed7d",
+      "type": "RS",
+      "num": 201
+    },
+    {
+      "qid": "duoink:RS:6604d7d7ec430e61d3fe007f",
+      "type": "RS",
+      "num": 202
+    },
+    {
+      "qid": "duoink:RS:662deac48bf3f505e97f129a",
+      "type": "RS",
+      "num": 203
+    },
+    {
+      "qid": "duoink:RS:662dec674828413557f9429e",
+      "type": "RS",
+      "num": 204
+    },
+    {
+      "qid": "duoink:RS:662ded058bf3f505e97f1cc5",
+      "type": "RS",
+      "num": 205
+    },
+    {
+      "qid": "duoink:RS:662dee5462f81901d7dfbcc1",
+      "type": "RS",
+      "num": 206
+    },
+    {
+      "qid": "duoink:RS:662deed32f558907a1218114",
+      "type": "RS",
+      "num": 207
+    },
+    {
+      "qid": "duoink:RS:662def5562f81901d7dfc195",
+      "type": "RS",
+      "num": 208
+    },
+    {
+      "qid": "duoink:RS:662df0054828413557f95428",
+      "type": "RS",
+      "num": 209
+    },
+    {
+      "qid": "duoink:RS:662df05862f81901d7dfc6d3",
+      "type": "RS",
+      "num": 210
+    },
+    {
+      "qid": "duoink:RS:662df09558dabc14af76abe8",
+      "type": "RS",
+      "num": 211
+    },
+    {
+      "qid": "duoink:RS:662df0f88bf3f505e97f312c",
+      "type": "RS",
+      "num": 212
+    },
+    {
+      "qid": "duoink:RS:662df1ab7e64df5b8b6352f3",
+      "type": "RS",
+      "num": 213
+    },
+    {
+      "qid": "duoink:RS:66c6a03e5252347cdbad4a3e",
+      "type": "RS",
+      "num": 214
+    },
+    {
+      "qid": "duoink:RS:672b0588db467b1eb944b411",
+      "type": "RS",
+      "num": 215
+    },
+    {
+      "qid": "duoink:RS:6731c368012b52314f762b84",
+      "type": "RS",
+      "num": 216
+    },
+    {
+      "qid": "duoink:RS:677365cf631e1b04a0325cd5",
+      "type": "RS",
+      "num": 217
+    },
+    {
+      "qid": "duoink:RS:677f4143f2f9f93511b546ef",
+      "type": "RS",
+      "num": 218
+    },
+    {
+      "qid": "duoink:RS:6787253f6db11a18ac118775",
+      "type": "RS",
+      "num": 219
+    },
+    {
+      "qid": "duoink:RS:6822bf63ce7fc86faf10d2d5",
+      "type": "RS",
+      "num": 220
+    },
+    {
+      "qid": "duoink:RS:6822c1bfc02b652dbc6152db",
+      "type": "RS",
+      "num": 221
+    },
+    {
+      "qid": "duoink:RS:6822eb17b9570274dffc4c5d",
+      "type": "RS",
+      "num": 222
+    },
+    {
+      "qid": "duoink:RS:6822ec68bf6625518c6df0c5",
+      "type": "RS",
+      "num": 223
+    },
+    {
+      "qid": "duoink:RS:6822ee176993d81fe6bfe1df",
+      "type": "RS",
+      "num": 224
+    },
+    {
+      "qid": "duoink:RS:6822ee90ce7fc86faf1265a0",
+      "type": "RS",
+      "num": 225
+    },
+    {
+      "qid": "duoink:RS:6822ef3ebf6625518c6e085a",
+      "type": "RS",
+      "num": 226
+    },
+    {
+      "qid": "duoink:RS:6822f8a8bf6625518c6e5f08",
+      "type": "RS",
+      "num": 227
+    },
+    {
+      "qid": "duoink:RS:6822fa0cbf6625518c6e6904",
+      "type": "RS",
+      "num": 228
+    },
+    {
+      "qid": "duoink:RS:6822fa60c02b652dbc62fd25",
+      "type": "RS",
+      "num": 229
+    },
+    {
+      "qid": "duoink:RS:6822faa2bf6625518c6e6dbb",
+      "type": "RS",
+      "num": 230
+    },
+    {
+      "qid": "duoink:RS:6822faf3ce7fc86faf12d3a7",
+      "type": "RS",
+      "num": 231
+    },
+    {
+      "qid": "duoink:RS:6822fb5cce7fc86faf12d72b",
+      "type": "RS",
+      "num": 232
+    },
+    {
+      "qid": "duoink:RS:6822fbae6993d81fe6c05cfa",
+      "type": "RS",
+      "num": 233
+    },
+    {
+      "qid": "duoink:RS:6822fc93bf6625518c6e7e3d",
+      "type": "RS",
+      "num": 234
+    },
+    {
+      "qid": "duoink:RS:6822fe4eb9570274dffcecdb",
+      "type": "RS",
+      "num": 235
+    },
+    {
+      "qid": "duoink:RS:6822ff01c02b652dbc6325d4",
+      "type": "RS",
+      "num": 236
+    },
+    {
+      "qid": "duoink:RS:682300ced3496c42464fe7b3",
+      "type": "RS",
+      "num": 237
+    },
+    {
+      "qid": "duoink:RS:68230114d3496c42464fe9e5",
+      "type": "RS",
+      "num": 238
+    },
+    {
+      "qid": "duoink:RS:68230157d3496c42464fec29",
+      "type": "RS",
+      "num": 239
+    },
+    {
+      "qid": "duoink:RS:6823019fc02b652dbc633ce1",
+      "type": "RS",
+      "num": 240
+    },
+    {
+      "qid": "duoink:RS:6823025fb9570274dffd1144",
+      "type": "RS",
+      "num": 241
+    },
+    {
+      "qid": "duoink:RS:682302cece7fc86faf13193b",
+      "type": "RS",
+      "num": 242
+    },
+    {
+      "qid": "duoink:RS:68230319d3496c42464ffe62",
+      "type": "RS",
+      "num": 243
+    },
+    {
+      "qid": "duoink:RS:68230b75bf6625518c6f1c28",
+      "type": "RS",
+      "num": 244
+    },
+    {
+      "qid": "duoink:RS:68230d986993d81fe6c116f1",
+      "type": "RS",
+      "num": 245
+    },
+    {
+      "qid": "duoink:RS:68230df1b9570274dffd93c4",
+      "type": "RS",
+      "num": 246
+    },
+    {
+      "qid": "duoink:RS:68230e426993d81fe6c11bbf",
+      "type": "RS",
+      "num": 247
+    },
+    {
+      "qid": "duoink:RS:68230ea5bf6625518c6f36c5",
+      "type": "RS",
+      "num": 248
+    },
+    {
+      "qid": "duoink:RS:68230eface7fc86faf1394cc",
+      "type": "RS",
+      "num": 249
+    },
+    {
+      "qid": "duoink:RS:68230f4bd3496c424650781b",
+      "type": "RS",
+      "num": 250
+    },
+    {
+      "qid": "duoink:RS:68230f8d6993d81fe6c1252a",
+      "type": "RS",
+      "num": 251
+    },
+    {
+      "qid": "duoink:RS:68230fc5d3496c4246507b99",
+      "type": "RS",
+      "num": 252
+    },
+    {
+      "qid": "duoink:RS:6826a655b9570274df12ad15",
+      "type": "RS",
+      "num": 253
+    },
+    {
+      "qid": "duoink:RS:6826a6a1ce7fc86faf28f18a",
+      "type": "RS",
+      "num": 254
+    },
+    {
+      "qid": "duoink:RS:6826a7a7d3496c4246659759",
+      "type": "RS",
+      "num": 255
+    },
+    {
+      "qid": "duoink:RS:6826a8bfd3496c424665a10e",
+      "type": "RS",
+      "num": 256
+    },
+    {
+      "qid": "duoink:RS:6826fa64c02b652dbc7bbce4",
+      "type": "RS",
+      "num": 257
+    },
+    {
+      "qid": "duoink:RS:6826fb0d6993d81fe6d90896",
+      "type": "RS",
+      "num": 258
+    },
+    {
+      "qid": "duoink:RS:6826fba8bf6625518c876158",
+      "type": "RS",
+      "num": 259
+    },
+    {
+      "qid": "duoink:RS:6826fbedd3496c4246685bf3",
+      "type": "RS",
+      "num": 260
+    },
+    {
+      "qid": "duoink:RS:6826fcc06993d81fe6d9187b",
+      "type": "RS",
+      "num": 261
+    },
+    {
+      "qid": "duoink:RS:6826fcfeb9570274df15276c",
+      "type": "RS",
+      "num": 262
+    },
+    {
+      "qid": "duoink:RS:6826fdbfce7fc86faf2b77bf",
+      "type": "RS",
+      "num": 263
+    },
+    {
+      "qid": "duoink:RS:6826fe16bf6625518c878630",
+      "type": "RS",
+      "num": 264
+    },
+    {
+      "qid": "duoink:RS:6826fe60d3496c424668797a",
+      "type": "RS",
+      "num": 265
+    },
+    {
+      "qid": "duoink:RS:6826fe9db9570274df153cf1",
+      "type": "RS",
+      "num": 266
+    },
+    {
+      "qid": "duoink:RS:6826fed8ce7fc86faf2b80b2",
+      "type": "RS",
+      "num": 267
+    },
+    {
+      "qid": "duoink:RS:6826ff4bbf6625518c879228",
+      "type": "RS",
+      "num": 268
+    },
+    {
+      "qid": "duoink:RS:6826ff99b9570274df154506",
+      "type": "RS",
+      "num": 269
+    },
+    {
+      "qid": "duoink:RS:6826fff9ce7fc86faf2b894f",
+      "type": "RS",
+      "num": 270
+    },
+    {
+      "qid": "duoink:RS:68270030ce7fc86faf2b8cbd",
+      "type": "RS",
+      "num": 271
+    },
+    {
+      "qid": "duoink:RS:68270212b9570274df155a94",
+      "type": "RS",
+      "num": 272
+    },
+    {
+      "qid": "duoink:RS:68270250bf6625518c87b0c9",
+      "type": "RS",
+      "num": 273
+    },
+    {
+      "qid": "duoink:RS:6827028ac02b652dbc7c065e",
+      "type": "RS",
+      "num": 274
+    },
+    {
+      "qid": "duoink:RS:682702bf6993d81fe6d94bca",
+      "type": "RS",
+      "num": 275
+    },
+    {
+      "qid": "duoink:RS:682a9bb06993d81fe6ed95e6",
+      "type": "RS",
+      "num": 276
+    },
+    {
+      "qid": "duoink:RS:682a9bf4d3496c42467da57e",
+      "type": "RS",
+      "num": 277
+    },
+    {
+      "qid": "duoink:RS:682a9d0dbf6625518c9c27f5",
+      "type": "RS",
+      "num": 278
+    },
+    {
+      "qid": "duoink:RS:682a9d7c6993d81fe6eda4eb",
+      "type": "RS",
+      "num": 279
+    },
+    {
+      "qid": "duoink:RS:6837d3826993d81fe63b5570",
+      "type": "RS",
+      "num": 280
+    },
+    {
+      "qid": "duoink:RS:691bea3faf4f482042559124",
+      "type": "RS",
+      "num": 281
+    },
+    {
+      "qid": "duoink:RS:691beb06af4f482042559807",
+      "type": "RS",
+      "num": 282
+    },
+    {
+      "qid": "duoink:RS:691bed4cf05e621fb10072c9",
+      "type": "RS",
+      "num": 283
+    },
+    {
+      "qid": "duoink:RS:691bef2baf4f48204255b488",
+      "type": "RS",
+      "num": 284
+    },
+    {
+      "qid": "duoink:RS:691bef90a54da130be57bdea",
+      "type": "RS",
+      "num": 285
+    },
+    {
+      "qid": "duoink:RS:691c1256a54da130be589ffa",
+      "type": "RS",
+      "num": 286
+    },
+    {
+      "qid": "duoink:RS:692577d1af4f482042890cb5",
+      "type": "RS",
+      "num": 287
+    },
+    {
+      "qid": "duoink:RS:692578c4171b217b0e9a6429",
+      "type": "RS",
+      "num": 288
+    },
+    {
+      "qid": "duoink:RS:692579b5af4f4820428917a6",
+      "type": "RS",
+      "num": 289
+    },
+    {
+      "qid": "duoink:RS:69266a82af4f4820428d1d8f",
+      "type": "RS",
+      "num": 290
+    },
+    {
+      "qid": "duoink:RS:69266b82daee5f72f22cb812",
+      "type": "RS",
+      "num": 291
+    },
+    {
+      "qid": "duoink:RS:69266d1e05564e31265004f3",
+      "type": "RS",
+      "num": 292
+    },
+    {
+      "qid": "duoink:RS:69266d6da54da130be922080",
+      "type": "RS",
+      "num": 293
+    },
+    {
+      "qid": "duoink:RS:69266df7af4f4820428d39e4",
+      "type": "RS",
+      "num": 294
+    },
+    {
+      "qid": "duoink:RS:69266e3bf05e621fb13a5266",
+      "type": "RS",
+      "num": 295
+    },
+    {
+      "qid": "duoink:RS:69266e8b171b217b0e9ea6dc",
+      "type": "RS",
+      "num": 296
+    },
+    {
+      "qid": "duoink:RS:69266f20f05e621fb13a5943",
+      "type": "RS",
+      "num": 297
+    },
+    {
+      "qid": "duoink:RS:6926703705564e3126501fc1",
+      "type": "RS",
+      "num": 298
+    },
+    {
+      "qid": "duoink:RS:69267107171b217b0e9ebda4",
+      "type": "RS",
+      "num": 299
+    },
+    {
+      "qid": "duoink:RS:69267176f05e621fb13a7252",
+      "type": "RS",
+      "num": 300
+    },
+    {
+      "qid": "duoink:RS:692671fbaf4f4820428d5ee4",
+      "type": "RS",
+      "num": 301
+    },
+    {
+      "qid": "duoink:RS:692674ea05564e31265048d8",
+      "type": "RS",
+      "num": 302
+    },
+    {
+      "qid": "duoink:RS:6926a381af4f4820428eab51",
+      "type": "RS",
+      "num": 303
+    },
+    {
+      "qid": "duoink:RS:6926aa76171b217b0ea06de4",
+      "type": "RS",
+      "num": 304
+    },
+    {
+      "qid": "duoink:RS:6926abafaf4f4820428ef373",
+      "type": "RS",
+      "num": 305
+    },
+    {
+      "qid": "duoink:RS:6926b014af4f4820428f1a83",
+      "type": "RS",
+      "num": 306
+    },
+    {
+      "qid": "duoink:RS:6926b15005564e312651f53d",
+      "type": "RS",
+      "num": 307
+    },
+    {
+      "qid": "duoink:RS:6926b255171b217b0ea0b0cb",
+      "type": "RS",
+      "num": 308
+    },
+    {
+      "qid": "duoink:RS:6926b3b0a54da130be947b8f",
+      "type": "RS",
+      "num": 309
+    },
+    {
+      "qid": "duoink:RS:6926b748171b217b0ea0d881",
+      "type": "RS",
+      "num": 310
+    },
+    {
+      "qid": "duoink:RS:6926b7a5daee5f72f22f29cb",
+      "type": "RS",
+      "num": 311
+    },
+    {
+      "qid": "duoink:RS:6926b85aa54da130be949f2c",
+      "type": "RS",
+      "num": 312
+    },
+    {
+      "qid": "duoink:RS:6926b993171b217b0ea0e91a",
+      "type": "RS",
+      "num": 313
+    },
+    {
+      "qid": "duoink:RS:6926b9f4f05e621fb13c7b7d",
+      "type": "RS",
+      "num": 314
+    },
+    {
+      "qid": "duoink:RS:6926bad8af4f4820428f70fb",
+      "type": "RS",
+      "num": 315
+    },
+    {
+      "qid": "duoink:RS:692e5541daee5f72f259ab54",
+      "type": "RS",
+      "num": 316
+    },
+    {
+      "qid": "duoink:RS:692e568fa54da130bec0144b",
+      "type": "RS",
+      "num": 317
+    },
+    {
+      "qid": "duoink:RS:69bbb6e68591971b54d074de",
+      "type": "RS",
+      "num": 318
+    },
+    {
+      "qid": "duoink:RS:6a429aa473f4b6282c7ca50d",
+      "type": "RS",
+      "num": 319
+    },
+    {
+      "qid": "duoink:RS:6a429ba924a83f4fbda7d046",
+      "type": "RS",
+      "num": 320
+    },
+    {
+      "qid": "duoink:RS:6a429c38bc37d772be6e3d49",
+      "type": "RS",
+      "num": 321
+    },
+    {
+      "qid": "duoink:RS:6a429c77c27e22207c0c54d5",
+      "type": "RS",
+      "num": 322
+    },
+    {
+      "qid": "duoink:RS:6a429ceb24a83f4fbda7d4a0",
+      "type": "RS",
+      "num": 323
+    },
+    {
+      "qid": "duoink:RS:6a429e5e24a83f4fbda7d9d3",
+      "type": "RS",
+      "num": 324
+    },
+    {
+      "qid": "duoink:RS:6a429f8617c4a74197afa6ca",
+      "type": "RS",
+      "num": 325
+    },
+    {
+      "qid": "duoink:RS:6a429fe081df541954ae335c",
+      "type": "RS",
+      "num": 326
+    },
+    {
+      "qid": "duoink:RS:6a42a080bc37d772be6e4bbe",
+      "type": "RS",
+      "num": 327
+    },
+    {
+      "qid": "duoink:RS:6a42a0ad73f4b6282c7cbe20",
+      "type": "RS",
+      "num": 328
+    },
+    {
+      "qid": "duoink:RS:6a42a0fe81df541954ae36bf",
+      "type": "RS",
+      "num": 329
+    },
+    {
+      "qid": "duoink:RS:6a42a18c17c4a74197afac9c",
+      "type": "RS",
+      "num": 330
+    },
+    {
+      "qid": "duoink:RS:6a42a1d024a83f4fbda7e56e",
+      "type": "RS",
+      "num": 331
+    },
+    {
+      "qid": "duoink:RS:6a42a22424a83f4fbda7e64a",
+      "type": "RS",
+      "num": 332
+    },
+    {
+      "qid": "duoink:RS:6a42a276bc37d772be6e517a",
+      "type": "RS",
+      "num": 333
+    },
+    {
+      "qid": "duoink:RS:6a42a2b824a83f4fbda7e81e",
+      "type": "RS",
+      "num": 334
+    },
+    {
+      "qid": "duoink:RS:6a42a35d73f4b6282c7cc660",
+      "type": "RS",
+      "num": 335
+    },
+    {
+      "qid": "duoink:RS:6a42a3a681df541954ae3efa",
+      "type": "RS",
+      "num": 336
+    },
+    {
+      "qid": "duoink:RS:6a42a418c27e22207c0c6c2e",
+      "type": "RS",
+      "num": 337
+    },
+    {
+      "qid": "duoink:RS:6a434ab924a83f4fbdaa1732",
+      "type": "RS",
+      "num": 338
+    },
+    {
+      "qid": "duoink:RS:6a434ea873f4b6282c7ef8b3",
+      "type": "RS",
+      "num": 339
+    },
+    {
+      "qid": "duoink:RS:6a43511a81df541954b0d016",
+      "type": "RS",
+      "num": 340
+    },
+    {
+      "qid": "duoink:RS:6a43518273f4b6282c7f0831",
+      "type": "RS",
+      "num": 341
+    },
+    {
+      "qid": "duoink:RS:6a43525b73f4b6282c7f0b44",
+      "type": "RS",
+      "num": 342
+    },
+    {
+      "qid": "duoink:RS:6a4352fb17c4a74197b24d1d",
+      "type": "RS",
+      "num": 343
+    },
+    {
+      "qid": "duoink:RS:6a435478bc37d772be70991f",
+      "type": "RS",
+      "num": 344
+    },
+    {
+      "qid": "duoink:RS:6a4354ee81df541954b0e094",
+      "type": "RS",
+      "num": 345
+    },
+    {
+      "qid": "duoink:RS:6a435501bc37d772be709b91",
+      "type": "RS",
+      "num": 346
+    },
+    {
+      "qid": "duoink:RS:6a4355e117c4a74197b25884",
+      "type": "RS",
+      "num": 347
+    },
+    {
+      "qid": "duoink:RS:6a43567e73f4b6282c7f1db3",
+      "type": "RS",
+      "num": 348
+    },
+    {
+      "qid": "duoink:RS:6a435885c27e22207c0edc30",
+      "type": "RS",
+      "num": 349
+    },
+    {
+      "qid": "duoink:RS:6a4358e8c27e22207c0eddbf",
+      "type": "RS",
+      "num": 350
+    },
+    {
+      "qid": "duoink:RS:6a449fe2bc37d772be76ccb8",
+      "type": "RS",
+      "num": 351
+    },
+    {
+      "qid": "duoink:RS:6a44a040bc37d772be76ce34",
+      "type": "RS",
+      "num": 352
+    },
+    {
+      "qid": "duoink:RS:6a44a1bb17c4a74197b8837d",
+      "type": "RS",
+      "num": 353
+    },
+    {
+      "qid": "duoink:RS:6a44a285bc37d772be76daf5",
+      "type": "RS",
+      "num": 354
+    },
+    {
+      "qid": "duoink:RS:6a44a2f673f4b6282c857801",
+      "type": "RS",
+      "num": 355
+    },
+    {
+      "qid": "duoink:RS:6a44a3d317c4a74197b88da3",
+      "type": "RS",
+      "num": 356
+    },
+    {
+      "qid": "duoink:RS:6a44a417c27e22207c1508ef",
+      "type": "RS",
+      "num": 357
+    },
+    {
+      "qid": "duoink:RS:6a44a79717c4a74197b8a424",
+      "type": "RS",
+      "num": 358
+    },
+    {
+      "qid": "duoink:RS:6a44a7f3c27e22207c151f4d",
+      "type": "RS",
+      "num": 359
+    },
+    {
+      "qid": "duoink:RS:6a44a9a773f4b6282c859db2",
+      "type": "RS",
+      "num": 360
+    },
+    {
+      "qid": "duoink:RS:6a44a9f981df541954b7dab8",
+      "type": "RS",
+      "num": 361
+    },
+    {
+      "qid": "duoink:RS:6a44aac281df541954b7df4a",
+      "type": "RS",
+      "num": 362
+    },
+    {
+      "qid": "duoink:RS:6a44ab0dbc37d772be770c27",
+      "type": "RS",
+      "num": 363
+    },
+    {
+      "qid": "duoink:RS:6a44ab3f24a83f4fbdb0a9e0",
+      "type": "RS",
+      "num": 364
+    },
+    {
+      "qid": "duoink:RS:6a45fdb417c4a74197beb59b",
+      "type": "RS",
+      "num": 365
+    },
+    {
+      "qid": "duoink:RS:6a4a042b81df541954d48c79",
+      "type": "RS",
+      "num": 366
+    },
+    {
+      "qid": "duoink:RS:6a4a048e17c4a74197d1f845",
+      "type": "RS",
+      "num": 367
+    },
+    {
+      "qid": "duoink:RS:6a4b0dea73f4b6282ca30940",
+      "type": "RS",
+      "num": 368
+    },
+    {
+      "qid": "duoink:RS:6a4b130a17c4a74197d5cced",
+      "type": "RS",
+      "num": 369
+    },
+    {
+      "qid": "duoink:RS:6a4b13ccbc37d772be94bbec",
+      "type": "RS",
+      "num": 370
+    },
+    {
+      "qid": "duoink:RS:6a4b13fb73f4b6282ca3294c",
+      "type": "RS",
+      "num": 371
+    },
+    {
+      "qid": "duoink:RS:6a4b151673f4b6282ca337f9",
+      "type": "RS",
+      "num": 372
+    },
+    {
+      "qid": "duoink:RS:6a4b16f881df541954d86f91",
+      "type": "RS",
+      "num": 373
+    },
+    {
+      "qid": "duoink:RS:6a4b1959bc37d772be94e6eb",
+      "type": "RS",
+      "num": 374
+    },
+    {
+      "qid": "duoink:RS:6a4b1a7cbc37d772be94ece2",
+      "type": "RS",
+      "num": 375
+    },
+    {
+      "qid": "duoink:RS:6a4b1b2281df541954d8874f",
+      "type": "RS",
+      "num": 376
+    },
+    {
+      "qid": "duoink:RS:6a4b1b6617c4a74197d60e2a",
+      "type": "RS",
+      "num": 377
+    },
+    {
+      "qid": "duoink:RS:6a4b1ccfbc37d772be94f988",
+      "type": "RS",
+      "num": 378
+    },
+    {
+      "qid": "duoink:RS:6a4b1e9973f4b6282ca371c9",
+      "type": "RS",
+      "num": 379
+    },
+    {
+      "qid": "duoink:RS:6a4b1fc681df541954d89f3f",
+      "type": "RS",
+      "num": 380
+    },
+    {
+      "qid": "duoink:RS:6a4b202a17c4a74197d62b5f",
+      "type": "RS",
+      "num": 381
+    },
+    {
+      "qid": "duoink:RS:6a4b220d81df541954d8ace6",
+      "type": "RS",
+      "num": 382
+    },
+    {
+      "qid": "duoink:RS:6a4b746224a83f4fbdd16b78",
+      "type": "RS",
+      "num": 383
+    },
+    {
+      "qid": "duoink:RS:6a4b755bbc37d772be96be43",
+      "type": "RS",
+      "num": 384
+    },
+    {
+      "qid": "duoink:RS:6a4b759681df541954da57da",
+      "type": "RS",
+      "num": 385
+    },
+    {
+      "qid": "duoink:RS:6a4b774281df541954da6117",
+      "type": "RS",
+      "num": 386
+    },
+    {
+      "qid": "duoink:RS:6a4b783224a83f4fbdd180be",
+      "type": "RS",
+      "num": 387
+    },
+    {
+      "qid": "duoink:RS:6a4b786324a83f4fbdd181b2",
+      "type": "RS",
+      "num": 388
+    },
+    {
+      "qid": "ynwac:WFD:1",
+      "type": "WFD",
+      "num": 1
+    },
+    {
+      "qid": "ynwac:WFD:2",
+      "type": "WFD",
+      "num": 2
+    },
+    {
+      "qid": "ynwac:WFD:3",
+      "type": "WFD",
+      "num": 3
+    },
+    {
+      "qid": "ynwac:WFD:4",
+      "type": "WFD",
+      "num": 4
+    },
+    {
+      "qid": "ynwac:WFD:5",
+      "type": "WFD",
+      "num": 5
+    },
+    {
+      "qid": "ynwac:WFD:6",
+      "type": "WFD",
+      "num": 6
+    },
+    {
+      "qid": "ynwac:WFD:7",
+      "type": "WFD",
+      "num": 7
+    },
+    {
+      "qid": "ynwac:WFD:8",
+      "type": "WFD",
+      "num": 8
+    },
+    {
+      "qid": "ynwac:WFD:9",
+      "type": "WFD",
+      "num": 9
+    },
+    {
+      "qid": "ynwac:WFD:10",
+      "type": "WFD",
+      "num": 10
+    },
+    {
+      "qid": "ynwac:WFD:11",
+      "type": "WFD",
+      "num": 11
+    },
+    {
+      "qid": "ynwac:WFD:12",
+      "type": "WFD",
+      "num": 12
+    },
+    {
+      "qid": "ynwac:WFD:13",
+      "type": "WFD",
+      "num": 13
+    },
+    {
+      "qid": "ynwac:WFD:14",
+      "type": "WFD",
+      "num": 14
+    },
+    {
+      "qid": "ynwac:WFD:15",
+      "type": "WFD",
+      "num": 15
+    },
+    {
+      "qid": "ynwac:WFD:16",
+      "type": "WFD",
+      "num": 16
+    },
+    {
+      "qid": "ynwac:WFD:17",
+      "type": "WFD",
+      "num": 17
+    },
+    {
+      "qid": "ynwac:WFD:18",
+      "type": "WFD",
+      "num": 18
+    },
+    {
+      "qid": "ynwac:WFD:19",
+      "type": "WFD",
+      "num": 19
+    },
+    {
+      "qid": "ynwac:WFD:20",
+      "type": "WFD",
+      "num": 20
+    },
+    {
+      "qid": "ynwac:WFD:21",
+      "type": "WFD",
+      "num": 21
+    },
+    {
+      "qid": "ynwac:WFD:22",
+      "type": "WFD",
+      "num": 22
+    },
+    {
+      "qid": "ynwac:WFD:23",
+      "type": "WFD",
+      "num": 23
+    },
+    {
+      "qid": "ynwac:WFD:24",
+      "type": "WFD",
+      "num": 24
+    },
+    {
+      "qid": "ynwac:WFD:25",
+      "type": "WFD",
+      "num": 25
+    },
+    {
+      "qid": "ynwac:WFD:26",
+      "type": "WFD",
+      "num": 26
+    },
+    {
+      "qid": "ynwac:WFD:27",
+      "type": "WFD",
+      "num": 27
+    },
+    {
+      "qid": "ynwac:WFD:28",
+      "type": "WFD",
+      "num": 28
+    },
+    {
+      "qid": "ynwac:WFD:29",
+      "type": "WFD",
+      "num": 29
+    },
+    {
+      "qid": "ynwac:WFD:30",
+      "type": "WFD",
+      "num": 30
+    },
+    {
+      "qid": "ynwac:WFD:31",
+      "type": "WFD",
+      "num": 31
+    },
+    {
+      "qid": "ynwac:WFD:32",
+      "type": "WFD",
+      "num": 32
+    },
+    {
+      "qid": "ynwac:WFD:33",
+      "type": "WFD",
+      "num": 33
+    },
+    {
+      "qid": "ynwac:WFD:34",
+      "type": "WFD",
+      "num": 34
+    },
+    {
+      "qid": "ynwac:WFD:35",
+      "type": "WFD",
+      "num": 35
+    },
+    {
+      "qid": "ynwac:WFD:36",
+      "type": "WFD",
+      "num": 36
+    },
+    {
+      "qid": "ynwac:WFD:37",
+      "type": "WFD",
+      "num": 37
+    },
+    {
+      "qid": "ynwac:WFD:38",
+      "type": "WFD",
+      "num": 38
+    },
+    {
+      "qid": "ynwac:WFD:39",
+      "type": "WFD",
+      "num": 39
+    },
+    {
+      "qid": "ynwac:WFD:40",
+      "type": "WFD",
+      "num": 40
+    },
+    {
+      "qid": "ynwac:WFD:41",
+      "type": "WFD",
+      "num": 41
+    },
+    {
+      "qid": "ynwac:WFD:42",
+      "type": "WFD",
+      "num": 42
+    },
+    {
+      "qid": "ynwac:WFD:43",
+      "type": "WFD",
+      "num": 43
+    },
+    {
+      "qid": "ynwac:WFD:44",
+      "type": "WFD",
+      "num": 44
+    },
+    {
+      "qid": "ynwac:WFD:45",
+      "type": "WFD",
+      "num": 45
+    },
+    {
+      "qid": "ynwac:WFD:46",
+      "type": "WFD",
+      "num": 46
+    },
+    {
+      "qid": "ynwac:WFD:47",
+      "type": "WFD",
+      "num": 47
+    },
+    {
+      "qid": "ynwac:WFD:48",
+      "type": "WFD",
+      "num": 48
+    },
+    {
+      "qid": "ynwac:WFD:49",
+      "type": "WFD",
+      "num": 49
+    },
+    {
+      "qid": "ynwac:WFD:50",
+      "type": "WFD",
+      "num": 50
+    },
+    {
+      "qid": "ynwac:WFD:51",
+      "type": "WFD",
+      "num": 51
+    },
+    {
+      "qid": "ynwac:WFD:52",
+      "type": "WFD",
+      "num": 52
+    },
+    {
+      "qid": "ynwac:WFD:53",
+      "type": "WFD",
+      "num": 53
+    },
+    {
+      "qid": "ynwac:WFD:54",
+      "type": "WFD",
+      "num": 54
+    },
+    {
+      "qid": "ynwac:WFD:55",
+      "type": "WFD",
+      "num": 55
+    },
+    {
+      "qid": "ynwac:WFD:56",
+      "type": "WFD",
+      "num": 56
+    },
+    {
+      "qid": "ynwac:WFD:57",
+      "type": "WFD",
+      "num": 57
+    },
+    {
+      "qid": "ynwac:WFD:58",
+      "type": "WFD",
+      "num": 58
+    },
+    {
+      "qid": "ynwac:WFD:59",
+      "type": "WFD",
+      "num": 59
+    },
+    {
+      "qid": "ynwac:WFD:60",
+      "type": "WFD",
+      "num": 60
+    },
+    {
+      "qid": "ynwac:WFD:61",
+      "type": "WFD",
+      "num": 61
+    },
+    {
+      "qid": "ynwac:WFD:62",
+      "type": "WFD",
+      "num": 62
+    },
+    {
+      "qid": "ynwac:WFD:63",
+      "type": "WFD",
+      "num": 63
+    },
+    {
+      "qid": "ynwac:WFD:64",
+      "type": "WFD",
+      "num": 64
+    },
+    {
+      "qid": "ynwac:WFD:65",
+      "type": "WFD",
+      "num": 65
+    },
+    {
+      "qid": "ynwac:WFD:66",
+      "type": "WFD",
+      "num": 66
+    },
+    {
+      "qid": "ynwac:WFD:67",
+      "type": "WFD",
+      "num": 67
+    },
+    {
+      "qid": "ynwac:WFD:68",
+      "type": "WFD",
+      "num": 68
+    },
+    {
+      "qid": "ynwac:WFD:69",
+      "type": "WFD",
+      "num": 69
+    },
+    {
+      "qid": "ynwac:WFD:70",
+      "type": "WFD",
+      "num": 70
+    },
+    {
+      "qid": "ynwac:WFD:71",
+      "type": "WFD",
+      "num": 71
+    },
+    {
+      "qid": "ynwac:WFD:72",
+      "type": "WFD",
+      "num": 72
+    },
+    {
+      "qid": "ynwac:WFD:73",
+      "type": "WFD",
+      "num": 73
+    },
+    {
+      "qid": "ynwac:WFD:74",
+      "type": "WFD",
+      "num": 74
+    },
+    {
+      "qid": "ynwac:WFD:75",
+      "type": "WFD",
+      "num": 75
+    },
+    {
+      "qid": "ynwac:WFD:76",
+      "type": "WFD",
+      "num": 76
+    },
+    {
+      "qid": "ynwac:WFD:77",
+      "type": "WFD",
+      "num": 77
+    },
+    {
+      "qid": "ynwac:WFD:78",
+      "type": "WFD",
+      "num": 78
+    },
+    {
+      "qid": "ynwac:WFD:79",
+      "type": "WFD",
+      "num": 79
+    },
+    {
+      "qid": "ynwac:WFD:80",
+      "type": "WFD",
+      "num": 80
+    },
+    {
+      "qid": "ynwac:WFD:81",
+      "type": "WFD",
+      "num": 81
+    },
+    {
+      "qid": "ynwac:WFD:82",
+      "type": "WFD",
+      "num": 82
+    },
+    {
+      "qid": "ynwac:WFD:83",
+      "type": "WFD",
+      "num": 83
+    },
+    {
+      "qid": "ynwac:WFD:84",
+      "type": "WFD",
+      "num": 84
+    },
+    {
+      "qid": "ynwac:WFD:85",
+      "type": "WFD",
+      "num": 85
+    },
+    {
+      "qid": "ynwac:WFD:86",
+      "type": "WFD",
+      "num": 86
+    },
+    {
+      "qid": "ynwac:WFD:87",
+      "type": "WFD",
+      "num": 87
+    },
+    {
+      "qid": "ynwac:WFD:88",
+      "type": "WFD",
+      "num": 88
+    },
+    {
+      "qid": "ynwac:WFD:89",
+      "type": "WFD",
+      "num": 89
+    },
+    {
+      "qid": "ynwac:WFD:90",
+      "type": "WFD",
+      "num": 90
+    },
+    {
+      "qid": "ynwac:WFD:91",
+      "type": "WFD",
+      "num": 91
+    },
+    {
+      "qid": "ynwac:WFD:92",
+      "type": "WFD",
+      "num": 92
+    },
+    {
+      "qid": "ynwac:WFD:93",
+      "type": "WFD",
+      "num": 93
+    },
+    {
+      "qid": "ynwac:WFD:94",
+      "type": "WFD",
+      "num": 94
+    },
+    {
+      "qid": "ynwac:WFD:95",
+      "type": "WFD",
+      "num": 95
+    },
+    {
+      "qid": "ynwac:WFD:96",
+      "type": "WFD",
+      "num": 96
+    },
+    {
+      "qid": "ynwac:WFD:97",
+      "type": "WFD",
+      "num": 97
+    },
+    {
+      "qid": "ynwac:WFD:98",
+      "type": "WFD",
+      "num": 98
+    },
+    {
+      "qid": "ynwac:WFD:99",
+      "type": "WFD",
+      "num": 99
+    },
+    {
+      "qid": "ynwac:WFD:100",
+      "type": "WFD",
+      "num": 100
+    },
+    {
+      "qid": "ynwac:WFD:101",
+      "type": "WFD",
+      "num": 101
+    },
+    {
+      "qid": "ynwac:WFD:102",
+      "type": "WFD",
+      "num": 102
+    },
+    {
+      "qid": "ynwac:WFD:103",
+      "type": "WFD",
+      "num": 103
+    },
+    {
+      "qid": "ynwac:WFD:104",
+      "type": "WFD",
+      "num": 104
+    },
+    {
+      "qid": "ynwac:WFD:105",
+      "type": "WFD",
+      "num": 105
+    },
+    {
+      "qid": "ynwac:WFD:106",
+      "type": "WFD",
+      "num": 106
+    },
+    {
+      "qid": "ynwac:WFD:107",
+      "type": "WFD",
+      "num": 107
+    },
+    {
+      "qid": "ynwac:WFD:108",
+      "type": "WFD",
+      "num": 108
+    },
+    {
+      "qid": "ynwac:WFD:109",
+      "type": "WFD",
+      "num": 109
+    },
+    {
+      "qid": "ynwac:WFD:110",
+      "type": "WFD",
+      "num": 110
+    },
+    {
+      "qid": "ynwac:WFD:111",
+      "type": "WFD",
+      "num": 111
+    },
+    {
+      "qid": "ynwac:WFD:112",
+      "type": "WFD",
+      "num": 112
+    },
+    {
+      "qid": "ynwac:WFD:113",
+      "type": "WFD",
+      "num": 113
+    },
+    {
+      "qid": "ynwac:WFD:114",
+      "type": "WFD",
+      "num": 114
+    },
+    {
+      "qid": "ynwac:WFD:115",
+      "type": "WFD",
+      "num": 115
+    },
+    {
+      "qid": "ynwac:WFD:116",
+      "type": "WFD",
+      "num": 116
+    },
+    {
+      "qid": "ynwac:WFD:117",
+      "type": "WFD",
+      "num": 117
+    },
+    {
+      "qid": "ynwac:WFD:118",
+      "type": "WFD",
+      "num": 118
+    },
+    {
+      "qid": "ynwac:WFD:119",
+      "type": "WFD",
+      "num": 119
+    },
+    {
+      "qid": "ynwac:WFD:120",
+      "type": "WFD",
+      "num": 120
+    },
+    {
+      "qid": "ynwac:WFD:121",
+      "type": "WFD",
+      "num": 121
+    },
+    {
+      "qid": "ynwac:WFD:122",
+      "type": "WFD",
+      "num": 122
+    },
+    {
+      "qid": "ynwac:WFD:123",
+      "type": "WFD",
+      "num": 123
+    },
+    {
+      "qid": "ynwac:WFD:124",
+      "type": "WFD",
+      "num": 124
+    },
+    {
+      "qid": "ynwac:WFD:125",
+      "type": "WFD",
+      "num": 125
+    },
+    {
+      "qid": "ynwac:WFD:128",
+      "type": "WFD",
+      "num": 126
+    },
+    {
+      "qid": "ynwac:WFD:130",
+      "type": "WFD",
+      "num": 127
+    },
+    {
+      "qid": "ynwac:WFD:132",
+      "type": "WFD",
+      "num": 128
+    },
+    {
+      "qid": "ynwac:WFD:133",
+      "type": "WFD",
+      "num": 129
+    },
+    {
+      "qid": "ynwac:WFD:134",
+      "type": "WFD",
+      "num": 130
+    },
+    {
+      "qid": "ynwac:WFD:135",
+      "type": "WFD",
+      "num": 131
+    },
+    {
+      "qid": "ynwac:WFD:136",
+      "type": "WFD",
+      "num": 132
+    },
+    {
+      "qid": "ynwac:WFD:137",
+      "type": "WFD",
+      "num": 133
+    },
+    {
+      "qid": "duoink:WFD:59007afe44d9040069038ed0",
+      "type": "WFD",
+      "num": 134
+    },
+    {
+      "qid": "duoink:WFD:59008307a0bb9f0065dc8f12",
+      "type": "WFD",
+      "num": 135
+    },
+    {
+      "qid": "duoink:WFD:59008c24b123db260cc02ce2",
+      "type": "WFD",
+      "num": 136
+    },
+    {
+      "qid": "duoink:WFD:590095b2a22b9d0065bebb06",
+      "type": "WFD",
+      "num": 137
+    },
+    {
+      "qid": "duoink:WFD:590095d761ff4b0066841ae5",
+      "type": "WFD",
+      "num": 138
+    },
+    {
+      "qid": "duoink:WFD:590096b4570c350058fd225d",
+      "type": "WFD",
+      "num": 139
+    },
+    {
+      "qid": "duoink:WFD:5950f0280ce463005777c467",
+      "type": "WFD",
+      "num": 140
+    },
+    {
+      "qid": "duoink:WFD:5950f0da128fe1006538562a",
+      "type": "WFD",
+      "num": 141
+    },
+    {
+      "qid": "duoink:WFD:595f3836ac502e006bb9a3ed",
+      "type": "WFD",
+      "num": 142
+    },
+    {
+      "qid": "duoink:WFD:595f53df1b69e64c8df8af77",
+      "type": "WFD",
+      "num": 143
+    },
+    {
+      "qid": "duoink:WFD:5a005ef11579a300450ec59a",
+      "type": "WFD",
+      "num": 144
+    },
+    {
+      "qid": "duoink:WFD:5a005f198d6d81006337e701",
+      "type": "WFD",
+      "num": 145
+    },
+    {
+      "qid": "duoink:WFD:5a005f38fe88c20068312241",
+      "type": "WFD",
+      "num": 146
+    },
+    {
+      "qid": "duoink:WFD:5a005f5f8d6d81006337e97c",
+      "type": "WFD",
+      "num": 147
+    },
+    {
+      "qid": "duoink:WFD:5a0063b98d6d8100633812ec",
+      "type": "WFD",
+      "num": 148
+    },
+    {
+      "qid": "duoink:WFD:5a0063d167f3560063351e29",
+      "type": "WFD",
+      "num": 149
+    },
+    {
+      "qid": "duoink:WFD:5a00650667f35600633529cf",
+      "type": "WFD",
+      "num": 150
+    },
+    {
+      "qid": "duoink:WFD:5a0067e1ee920a00460cb096",
+      "type": "WFD",
+      "num": 151
+    },
+    {
+      "qid": "duoink:WFD:5a006943570c3500639f50b5",
+      "type": "WFD",
+      "num": 152
+    },
+    {
+      "qid": "duoink:WFD:5a006abb8d6d81006338581d",
+      "type": "WFD",
+      "num": 153
+    },
+    {
+      "qid": "duoink:WFD:5a006b601579a300450f3e5a",
+      "type": "WFD",
+      "num": 154
+    },
+    {
+      "qid": "duoink:WFD:5a0efc0d1579a30038840711",
+      "type": "WFD",
+      "num": 155
+    },
+    {
+      "qid": "duoink:WFD:5a6e96aa9f54540045523ff8",
+      "type": "WFD",
+      "num": 156
+    },
+    {
+      "qid": "duoink:WFD:5a77ddb0fe88c20045defbdf",
+      "type": "WFD",
+      "num": 157
+    },
+    {
+      "qid": "duoink:WFD:5a8b733ed50eee0065edee56",
+      "type": "WFD",
+      "num": 158
+    },
+    {
+      "qid": "duoink:WFD:5ab05eb9fe88c200380b470a",
+      "type": "WFD",
+      "num": 159
+    },
+    {
+      "qid": "duoink:WFD:5ab0e68c1b69e6003e882327",
+      "type": "WFD",
+      "num": 160
+    },
+    {
+      "qid": "duoink:WFD:5ab0ed8ffe88c200380ec261",
+      "type": "WFD",
+      "num": 161
+    },
+    {
+      "qid": "duoink:WFD:5ab0f6fb1b69e6003e88bdae",
+      "type": "WFD",
+      "num": 162
+    },
+    {
+      "qid": "duoink:WFD:5ab115a5ee920a0043b8b926",
+      "type": "WFD",
+      "num": 163
+    },
+    {
+      "qid": "duoink:WFD:5ab2495eee920a0043bed189",
+      "type": "WFD",
+      "num": 164
+    },
+    {
+      "qid": "duoink:WFD:5abb3217ee920a004759b6b6",
+      "type": "WFD",
+      "num": 165
+    },
+    {
+      "qid": "duoink:WFD:5abb324a1b69e60065a13355",
+      "type": "WFD",
+      "num": 166
+    },
+    {
+      "qid": "duoink:WFD:5ad2c25a1b69e60069b3d708",
+      "type": "WFD",
+      "num": 167
+    },
+    {
+      "qid": "duoink:WFD:5ad804d57565710045f28c69",
+      "type": "WFD",
+      "num": 168
+    },
+    {
+      "qid": "duoink:WFD:5b110b999f545438106a09cb",
+      "type": "WFD",
+      "num": 169
+    },
+    {
+      "qid": "duoink:WFD:5b2a29227f6fd300350fc5e7",
+      "type": "WFD",
+      "num": 170
+    },
+    {
+      "qid": "duoink:WFD:5b3c6a99a22b9d003ab9e05a",
+      "type": "WFD",
+      "num": 171
+    },
+    {
+      "qid": "duoink:WFD:5b3c6b18a22b9d0035467463",
+      "type": "WFD",
+      "num": 172
+    },
+    {
+      "qid": "duoink:WFD:5b3df6c2ee920a003c12bb0d",
+      "type": "WFD",
+      "num": 173
+    },
+    {
+      "qid": "duoink:WFD:5b40b5ecee920a003c2b29da",
+      "type": "WFD",
+      "num": 174
+    },
+    {
+      "qid": "duoink:WFD:5b5ede1fa22b9d003ae564c8",
+      "type": "WFD",
+      "num": 175
+    },
+    {
+      "qid": "duoink:WFD:5b5ee6a6808ca4006ea7d3ec",
+      "type": "WFD",
+      "num": 176
+    },
+    {
+      "qid": "duoink:WFD:5b6004829f54540035f06a9a",
+      "type": "WFD",
+      "num": 177
+    },
+    {
+      "qid": "duoink:WFD:5b7688e3808ca400399b2932",
+      "type": "WFD",
+      "num": 178
+    },
+    {
+      "qid": "duoink:WFD:5b7e0cb4808ca40039c9bd9e",
+      "type": "WFD",
+      "num": 179
+    },
+    {
+      "qid": "duoink:WFD:5b7e1891d50eee0032f5b984",
+      "type": "WFD",
+      "num": 180
+    },
+    {
+      "qid": "duoink:WFD:5b8376fad50eee003979d9bf",
+      "type": "WFD",
+      "num": 181
+    },
+    {
+      "qid": "duoink:WFD:5b839201d50eee00397ad805",
+      "type": "WFD",
+      "num": 182
+    },
+    {
+      "qid": "duoink:WFD:5b8903b38d6d81005fe192ff",
+      "type": "WFD",
+      "num": 183
+    },
+    {
+      "qid": "duoink:WFD:5b90813e9f54540030913846",
+      "type": "WFD",
+      "num": 184
+    },
+    {
+      "qid": "duoink:WFD:5bd81c93808ca40070b4b307",
+      "type": "WFD",
+      "num": 185
+    },
+    {
+      "qid": "duoink:WFD:5bebe94bee920a006748479a",
+      "type": "WFD",
+      "num": 186
+    },
+    {
+      "qid": "duoink:WFD:5bfb5c179f545400678ae6d9",
+      "type": "WFD",
+      "num": 187
+    },
+    {
+      "qid": "duoink:WFD:5bfb5c4e7565710068688ec9",
+      "type": "WFD",
+      "num": 188
+    },
+    {
+      "qid": "duoink:WFD:5c1a12de7565710068b54a3e",
+      "type": "WFD",
+      "num": 189
+    },
+    {
+      "qid": "duoink:WFD:5c233cd5303f39005fdddcce",
+      "type": "WFD",
+      "num": 190
+    },
+    {
+      "qid": "duoink:WFD:5c3d430e0b61600066708c3c",
+      "type": "WFD",
+      "num": 191
+    },
+    {
+      "qid": "duoink:WFD:5c6d03a117b54d004ad02bd4",
+      "type": "WFD",
+      "num": 192
+    },
+    {
+      "qid": "duoink:WFD:5c7e28d50237d7006cf331e3",
+      "type": "WFD",
+      "num": 193
+    },
+    {
+      "qid": "duoink:WFD:5c7f95c10237d7006cfdeb80",
+      "type": "WFD",
+      "num": 194
+    },
+    {
+      "qid": "duoink:WFD:5c7f95eb128fe100668d2053",
+      "type": "WFD",
+      "num": 195
+    },
+    {
+      "qid": "duoink:WFD:5c80b429128fe10070ff32d5",
+      "type": "WFD",
+      "num": 196
+    },
+    {
+      "qid": "duoink:WFD:5c87293a0237d7006c2a8f44",
+      "type": "WFD",
+      "num": 197
+    },
+    {
+      "qid": "duoink:WFD:5c88b899303f390065805f43",
+      "type": "WFD",
+      "num": 198
+    },
+    {
+      "qid": "duoink:WFD:5c8ef4d4ba39c80072294ff4",
+      "type": "WFD",
+      "num": 199
+    },
+    {
+      "qid": "duoink:WFD:5c8eff768d6d81006fc27b20",
+      "type": "WFD",
+      "num": 200
+    },
+    {
+      "qid": "duoink:WFD:5c904ce6ba39c8006816070d",
+      "type": "WFD",
+      "num": 201
+    },
+    {
+      "qid": "duoink:WFD:5c92eeffa3180b00731441ce",
+      "type": "WFD",
+      "num": 202
+    },
+    {
+      "qid": "duoink:WFD:5c930c67a3180b00731558b0",
+      "type": "WFD",
+      "num": 203
+    },
+    {
+      "qid": "duoink:WFD:5c9777a530863b006c359b5c",
+      "type": "WFD",
+      "num": 204
+    },
+    {
+      "qid": "duoink:WFD:5c9b939e30863b0069a07d20",
+      "type": "WFD",
+      "num": 205
+    },
+    {
+      "qid": "duoink:WFD:5c9b954730863b0069a08b10",
+      "type": "WFD",
+      "num": 206
+    },
+    {
+      "qid": "duoink:WFD:5cb3e05e30863b00687eaa7e",
+      "type": "WFD",
+      "num": 207
+    },
+    {
+      "qid": "duoink:WFD:5cb44ed9a91c9300698c2098",
+      "type": "WFD",
+      "num": 208
+    },
+    {
+      "qid": "duoink:WFD:5cce3ae630863b006873c025",
+      "type": "WFD",
+      "num": 209
+    },
+    {
+      "qid": "duoink:WFD:5ceddc94eaa3750068a23aa6",
+      "type": "WFD",
+      "num": 210
+    },
+    {
+      "qid": "duoink:WFD:5d1b284843e78c0075c75153",
+      "type": "WFD",
+      "num": 211
+    },
+    {
+      "qid": "duoink:WFD:5d1cab0bd5de2b007203f65e",
+      "type": "WFD",
+      "num": 212
+    },
+    {
+      "qid": "duoink:WFD:5d258d7bba39c80068065e2f",
+      "type": "WFD",
+      "num": 213
+    },
+    {
+      "qid": "duoink:WFD:5d36b4bbc05a800073b5b813",
+      "type": "WFD",
+      "num": 214
+    },
+    {
+      "qid": "duoink:WFD:5d3946d317b54d007084abc2",
+      "type": "WFD",
+      "num": 215
+    },
+    {
+      "qid": "duoink:WFD:5d50cf3e0237d70069c62c5c",
+      "type": "WFD",
+      "num": 216
+    },
+    {
+      "qid": "duoink:WFD:5d81e22bd3761600732e984d",
+      "type": "WFD",
+      "num": 217
+    },
+    {
+      "qid": "duoink:WFD:5dd23f6c8a84ab0074d222de",
+      "type": "WFD",
+      "num": 218
+    },
+    {
+      "qid": "duoink:WFD:5ddb89e48a84ab0068ccb26a",
+      "type": "WFD",
+      "num": 219
+    },
+    {
+      "qid": "duoink:WFD:5ddb958b8a84ab0068cd0536",
+      "type": "WFD",
+      "num": 220
+    },
+    {
+      "qid": "duoink:WFD:5ddc9fd943c2570074d36c69",
+      "type": "WFD",
+      "num": 221
+    },
+    {
+      "qid": "duoink:WFD:5e4c86431358aa006ae044e3",
+      "type": "WFD",
+      "num": 222
+    },
+    {
+      "qid": "duoink:WFD:5e57607921460d007717a2eb",
+      "type": "WFD",
+      "num": 223
+    },
+    {
+      "qid": "duoink:WFD:5f912a66b4d7fb5119d23f21",
+      "type": "WFD",
+      "num": 224
+    },
+    {
+      "qid": "duoink:WFD:5f978e8ae8ed3c21a4d852f3",
+      "type": "WFD",
+      "num": 225
+    },
+    {
+      "qid": "duoink:WFD:5f9fa501103dba7368632ab9",
+      "type": "WFD",
+      "num": 226
+    },
+    {
+      "qid": "duoink:WFD:5f9fa551ebe6441929a41701",
+      "type": "WFD",
+      "num": 227
+    },
+    {
+      "qid": "duoink:WFD:5fa91548ba47fa60885e085b",
+      "type": "WFD",
+      "num": 228
+    },
+    {
+      "qid": "duoink:WFD:6033825f0292980a61f181a2",
+      "type": "WFD",
+      "num": 229
+    },
+    {
+      "qid": "duoink:WFD:6053f374c3941a097eef5938",
+      "type": "WFD",
+      "num": 230
+    },
+    {
+      "qid": "duoink:WFD:607fdb716002fc5a2103904f",
+      "type": "WFD",
+      "num": 231
+    },
+    {
+      "qid": "duoink:WFD:608217a82b3c4422e7d90799",
+      "type": "WFD",
+      "num": 232
+    },
+    {
+      "qid": "duoink:WFD:60a5abbe36c49f4514f9bf68",
+      "type": "WFD",
+      "num": 233
+    },
+    {
+      "qid": "duoink:WFD:60dd6512e433550e2a6500c9",
+      "type": "WFD",
+      "num": 234
+    },
+    {
+      "qid": "duoink:WFD:610259df9308437e2d680efb",
+      "type": "WFD",
+      "num": 235
+    },
+    {
+      "qid": "duoink:WFD:611e19d6b92c784ce1178892",
+      "type": "WFD",
+      "num": 236
+    },
+    {
+      "qid": "duoink:WFD:6233eda44504e12418c68c02",
+      "type": "WFD",
+      "num": 237
+    },
+    {
+      "qid": "duoink:WFD:627e2904d4cef5295f87742e",
+      "type": "WFD",
+      "num": 238
+    },
+    {
+      "qid": "duoink:WFD:62da21d970a8fc34faeb258e",
+      "type": "WFD",
+      "num": 239
+    },
+    {
+      "qid": "duoink:WFD:62f4b39587408d7fab86c1ce",
+      "type": "WFD",
+      "num": 240
+    },
+    {
+      "qid": "duoink:WFD:632d5fcc333e1c50bec7f9cc",
+      "type": "WFD",
+      "num": 241
+    },
+    {
+      "qid": "duoink:WFD:6397e170d63df325a4a05838",
+      "type": "WFD",
+      "num": 242
+    },
+    {
+      "qid": "duoink:WFD:6397edd963bf7d30c653e71e",
+      "type": "WFD",
+      "num": 243
+    },
+    {
+      "qid": "duoink:WFD:63982eecc4d4a34867361f05",
+      "type": "WFD",
+      "num": 244
+    },
+    {
+      "qid": "duoink:WFD:6399a65b85e17871eefa9f1e",
+      "type": "WFD",
+      "num": 245
+    },
+    {
+      "qid": "duoink:WFD:6399aafffa857223e7f99dde",
+      "type": "WFD",
+      "num": 246
+    },
+    {
+      "qid": "duoink:WFD:639b145063bf7d30c660a0a7",
+      "type": "WFD",
+      "num": 247
+    },
+    {
+      "qid": "duoink:WFD:63c14da3df47c237e827de63",
+      "type": "WFD",
+      "num": 248
+    },
+    {
+      "qid": "duoink:WFD:6454723b823e815106b00023",
+      "type": "WFD",
+      "num": 249
+    },
+    {
+      "qid": "duoink:WFD:6461cf7545e4710056b7918a",
+      "type": "WFD",
+      "num": 250
+    },
+    {
+      "qid": "duoink:WFD:64756665902ee364cca20af8",
+      "type": "WFD",
+      "num": 251
+    },
+    {
+      "qid": "duoink:WFD:64784a1630675327e1f68673",
+      "type": "WFD",
+      "num": 252
+    },
+    {
+      "qid": "duoink:WFD:64a7ce4a10df7e6978ce7c55",
+      "type": "WFD",
+      "num": 253
+    },
+    {
+      "qid": "duoink:WFD:64a7cf815d666b1e29c5cbf4",
+      "type": "WFD",
+      "num": 254
+    },
+    {
+      "qid": "duoink:WFD:64a7d0a45876b945d36c2006",
+      "type": "WFD",
+      "num": 255
+    },
+    {
+      "qid": "duoink:WFD:64c1e498d29c5d0785735a0f",
+      "type": "WFD",
+      "num": 256
+    },
+    {
+      "qid": "duoink:WFD:6507b38f39694113b5299fc0",
+      "type": "WFD",
+      "num": 257
+    },
+    {
+      "qid": "duoink:WFD:656431958279bd2e8e0cb5bf",
+      "type": "WFD",
+      "num": 258
+    },
+    {
+      "qid": "duoink:WFD:656434f81167fd28ac238138",
+      "type": "WFD",
+      "num": 259
+    },
+    {
+      "qid": "duoink:WFD:65643ea28279bd2e8e0cefdb",
+      "type": "WFD",
+      "num": 260
+    },
+    {
+      "qid": "duoink:WFD:65643f8f21823c2d366a0f91",
+      "type": "WFD",
+      "num": 261
+    },
+    {
+      "qid": "duoink:WFD:65654ed464950e10fe5c516b",
+      "type": "WFD",
+      "num": 262
+    },
+    {
+      "qid": "duoink:WFD:6565569c96756c0e346fc339",
+      "type": "WFD",
+      "num": 263
+    },
+    {
+      "qid": "duoink:WFD:656587e1bb133643d2dda3ee",
+      "type": "WFD",
+      "num": 264
+    },
+    {
+      "qid": "duoink:WFD:65658b27fe9b9b2ea34a3163",
+      "type": "WFD",
+      "num": 265
+    },
+    {
+      "qid": "duoink:WFD:6566d4a48279bd2e8e16f1df",
+      "type": "WFD",
+      "num": 266
+    },
+    {
+      "qid": "duoink:WFD:65767d44b6b4c524246bc537",
+      "type": "WFD",
+      "num": 267
+    },
+    {
+      "qid": "duoink:WFD:657a755f64950e10fecb02f9",
+      "type": "WFD",
+      "num": 268
+    },
+    {
+      "qid": "duoink:WFD:657fb55dbb133643d26d7ce1",
+      "type": "WFD",
+      "num": 269
+    },
+    {
+      "qid": "duoink:WFD:657fb95a64950e10fee92c8b",
+      "type": "WFD",
+      "num": 270
+    },
+    {
+      "qid": "duoink:WFD:6583a1318279bd2e8eb3fb5f",
+      "type": "WFD",
+      "num": 271
+    },
+    {
+      "qid": "duoink:WFD:65a7879e90f1e64a726d6ffb",
+      "type": "WFD",
+      "num": 272
+    },
+    {
+      "qid": "duoink:WFD:65a8e0d4011c097af243eb9c",
+      "type": "WFD",
+      "num": 273
+    },
+    {
+      "qid": "duoink:WFD:661254c56357e9735e313813",
+      "type": "WFD",
+      "num": 274
+    },
+    {
+      "qid": "duoink:WFD:661ca68f91cabd6bfff140d3",
+      "type": "WFD",
+      "num": 275
+    },
+    {
+      "qid": "duoink:WFD:66b579414095855b7c26edba",
+      "type": "WFD",
+      "num": 276
+    },
+    {
+      "qid": "duoink:WFD:66c6ae625252347cdbad8411",
+      "type": "WFD",
+      "num": 277
+    },
+    {
+      "qid": "duoink:WFD:66c6f88ff6e24b644beb15dc",
+      "type": "WFD",
+      "num": 278
+    },
+    {
+      "qid": "duoink:WFD:67568cee77124e2a6c1f0f33",
+      "type": "WFD",
+      "num": 279
+    },
+    {
+      "qid": "duoink:WFD:6762669b6a0b720006f72749",
+      "type": "WFD",
+      "num": 280
+    },
+    {
+      "qid": "duoink:WFD:67bec872c180622876cb0d7d",
+      "type": "WFD",
+      "num": 281
+    },
+    {
+      "qid": "duoink:WFD:6825945fb9570274df0ca77b",
+      "type": "WFD",
+      "num": 282
+    },
+    {
+      "qid": "duoink:WFD:6833d963d3496c4246b4a043",
+      "type": "WFD",
+      "num": 283
+    },
+    {
+      "qid": "duoink:WFD:6920307405564e3126307030",
+      "type": "WFD",
+      "num": 284
+    },
+    {
+      "qid": "duoink:WFD:6923c506171b217b0e8fbe64",
+      "type": "WFD",
+      "num": 285
+    },
+    {
+      "qid": "duoink:WFD:6923c5aaa54da130be83ccce",
+      "type": "WFD",
+      "num": 286
+    },
+    {
+      "qid": "duoink:WFD:6923c622171b217b0e8fc5e0",
+      "type": "WFD",
+      "num": 287
+    },
+    {
+      "qid": "duoink:WFD:6923c66df05e621fb12bef6b",
+      "type": "WFD",
+      "num": 288
+    },
+    {
+      "qid": "duoink:WFD:6923c6eddaee5f72f21deac9",
+      "type": "WFD",
+      "num": 289
+    },
+    {
+      "qid": "duoink:WFD:6923c858a54da130be83e160",
+      "type": "WFD",
+      "num": 290
+    },
+    {
+      "qid": "duoink:WFD:6923c8a3171b217b0e8fd81f",
+      "type": "WFD",
+      "num": 291
+    },
+    {
+      "qid": "duoink:WFD:6923c975a54da130be83e967",
+      "type": "WFD",
+      "num": 292
+    },
+    {
+      "qid": "duoink:WFD:6923c9ca05564e3126414fc4",
+      "type": "WFD",
+      "num": 293
+    },
+    {
+      "qid": "duoink:WFD:6923ca7305564e3126415481",
+      "type": "WFD",
+      "num": 294
+    },
+    {
+      "qid": "duoink:WFD:692e9105af4f482042bceccd",
+      "type": "WFD",
+      "num": 295
+    },
+    {
+      "qid": "duoink:WFD:692e91dc171b217b0eccee20",
+      "type": "WFD",
+      "num": 296
+    },
+    {
+      "qid": "duoink:WFD:692e9238af4f482042bcf5fc",
+      "type": "WFD",
+      "num": 297
+    },
+    {
+      "qid": "duoink:WFD:692e9291f05e621fb1699223",
+      "type": "WFD",
+      "num": 298
+    },
+    {
+      "qid": "duoink:WFD:692e92f1af4f482042bcfbab",
+      "type": "WFD",
+      "num": 299
+    },
+    {
+      "qid": "duoink:WFD:692e9757af4f482042bd247f",
+      "type": "WFD",
+      "num": 300
+    },
+    {
+      "qid": "duoink:WFD:692e97fa05564e31267ef203",
+      "type": "WFD",
+      "num": 301
+    },
+    {
+      "qid": "duoink:WFD:692e998da54da130bec22045",
+      "type": "WFD",
+      "num": 302
+    },
+    {
+      "qid": "duoink:WFD:692e9bcaaf4f482042bd4dd2",
+      "type": "WFD",
+      "num": 303
+    },
+    {
+      "qid": "duoink:WFD:692e9c65f05e621fb169e6b8",
+      "type": "WFD",
+      "num": 304
+    },
+    {
+      "qid": "duoink:WFD:692e9eabaf4f482042bd64b7",
+      "type": "WFD",
+      "num": 305
+    },
+    {
+      "qid": "duoink:WFD:692e9f9cdaee5f72f25c1d0a",
+      "type": "WFD",
+      "num": 306
+    },
+    {
+      "qid": "duoink:WFD:692ea039daee5f72f25c2476",
+      "type": "WFD",
+      "num": 307
+    },
+    {
+      "qid": "duoink:WFD:692ea18f171b217b0ecd79bb",
+      "type": "WFD",
+      "num": 308
+    },
+    {
+      "qid": "duoink:WFD:692ea21905564e31267f48ac",
+      "type": "WFD",
+      "num": 309
+    },
+    {
+      "qid": "duoink:WFD:6a424ffac27e22207c0a8866",
+      "type": "WFD",
+      "num": 310
+    },
+    {
+      "qid": "duoink:WFD:6a4253c024a83f4fbda61a25",
+      "type": "WFD",
+      "num": 311
+    }
+  ]
+}

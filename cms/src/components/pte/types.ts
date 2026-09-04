@@ -395,6 +395,11 @@ export type PteItem = {
   total: number
 
   /**
+   * 题面里要高亮的词 → 档(1–3);不在表里 = 不高亮(2026-09-04 关键词高亮)。
+   */
+  tiers: Record<string, number>
+
+  /**
    * 这一型的全部题(左侧目录树;Frank 2026-09-04「左侧应该有个目录树可以快速导航到其他题目」)。
    */
   rows: PteRow[]
@@ -567,6 +572,11 @@ export type PteItemIn = {
    * 登录态(发评论分流)。
    */
   loggedIn: boolean
+
+  /**
+   * Pro 用户(批四配额不拦)。
+   */
+  pro: boolean
 }
 
 /**
@@ -743,6 +753,21 @@ export type PteAnswerIn = {
    * 下一题地址。
    */
   nextHref: string | null
+
+  /**
+   * 题面高亮词 → 档。
+   */
+  tiers: Record<string, number>
+
+  /**
+   * 鼠标悬到高亮词:开字典弹层(词 + 该元素矩形)。
+   */
+  onHoverWord: (e: React.MouseEvent<HTMLElement>) => void
+
+  /**
+   * Pro 用户(配额计数行不渲)。
+   */
+  pro: boolean
 }
 
 /**
@@ -924,6 +949,11 @@ export type PteAnswerHookIn = {
    * 登录态(记练过时顺手写库)。
    */
   loggedIn: boolean
+
+  /**
+   * Pro 用户(不计配额)。
+   */
+  pro: boolean
 }
 
 /**
@@ -1029,6 +1059,21 @@ export type PteAnswerPanel = {
    * 重做。
    */
   onRedo: () => void
+
+  /**
+   * 今日已用的免费提交次数(Pro 也照数,只是不拦)。
+   */
+  used: number
+
+  /**
+   * 配额闸:none / login / upgrade。
+   */
+  gate: PteGate
+
+  /**
+   * 关闸(关掉弹出来的注册框或升级框)。
+   */
+  onGateClose: () => void
 }
 
 /**
@@ -1242,6 +1287,16 @@ export type DictEntry = {
    * 原形;空串 = 本身就是原形(屈折形弹层多给一行原形)。
    */
   lemma: string
+
+  /**
+   * 英音音标;空串 = 没给。
+   */
+  phoneticUk: string
+
+  /**
+   * 美音音标;空串 = 没给。
+   */
+  phoneticUs: string
 }
 
 
@@ -1275,6 +1330,221 @@ export type DictApiBody = {
    * 原形。
    */
   lemma: string
+
+  /**
+   * 英音音标。
+   */
+  phoneticUk: string
+
+  /**
+   * 美音音标。
+   */
+  phoneticUs: string
+}
+
+/**
+ * pte_dict 高亮依据的库行(`PTE_DICT_TAGS`)。
+ */
+export type PteDictTagDbRow = {
+  /**
+   * 词。
+   */
+  word: string | null
+
+  /**
+   * 考纲标签(空格分隔)。
+   */
+  tag: string | null
+
+  /**
+   * 柯林斯星级。
+   */
+  collins: number | null
+}
+
+/**
+ * 取一题高亮档表(`loadPteTiers`)的入参。
+ */
+export type PteTiersIn = {
+  /**
+   * 数据库连接。
+   */
+  db: DbPool
+
+  /**
+   * 题面。
+   */
+  text: string
+}
+
+/**
+ * 档位判定(`tierOf`)的入参。
+ */
+export type TierOfIn = {
+  /**
+   * 考纲标签串(空格分隔)。
+   */
+  tag: string
+}
+
+/**
+ * 题面切段(`textPartsOf`)的入参。
+ */
+export type TextPartsIn = {
+  /**
+   * 题面。
+   */
+  text: string
+
+  /**
+   * 词 → 档。
+   */
+  tiers: Record<string, number>
+}
+
+/**
+ * 题面的一段:词或词间的分隔;tier > 0 的词高亮。
+ */
+export type TextPart = {
+  /**
+   * 原样文字。
+   */
+  text: string
+
+  /**
+   * 小写归一的词;分隔段为空串。
+   */
+  word: string
+
+  /**
+   * 档;0 = 不高亮。
+   */
+  tier: number
+}
+
+/**
+ * 悬停开弹层手柄(`makeHoverWord`)的入参。
+ */
+export type HoverWordIn = {
+  /**
+   * 落词。
+   */
+  setWord: (w: string) => void
+
+  /**
+   * 落弹层位置。
+   */
+  setPos: (p: DictPos) => void
+}
+
+/**
+ * 高亮题面(PteText)的 props。
+ */
+export type PteTextIn = {
+  /**
+   * 题面。
+   */
+  text: string
+
+  /**
+   * 词 → 档。
+   */
+  tiers: Record<string, number>
+
+  /**
+   * 悬停手柄。
+   */
+  onHoverWord: (e: React.MouseEvent<HTMLElement>) => void
+}
+
+/**
+ * 配额闸三态。
+ */
+export type PteGate = 'none' | 'login' | 'upgrade'
+
+/**
+ * 配额档(localStorage 里的 JSON)。
+ */
+export type QuotaDoc = {
+  /**
+   * 计数所属日(YYYY-MM-DD,本地时区)。
+   */
+  day: string
+
+  /**
+   * 当日已提交次数。
+   */
+  n: number
+}
+
+/**
+ * 关闸手柄(`makeGateClose`)的入参。
+ */
+export type GateCloseIn = {
+  /**
+   * 落闸态。
+   */
+  setGate: (g: PteGate) => void
+}
+
+/**
+ * 带配额闸的提交手柄(`makeGatedSubmit`)的入参。
+ */
+export type GatedSubmitIn = {
+  /**
+   * Pro(不拦)。
+   */
+  pro: boolean
+
+  /**
+   * 登录态(拦下时决定弹注册框还是升级框)。
+   */
+  loggedIn: boolean
+
+  /**
+   * 今日已用。
+   */
+  used: number
+
+  /**
+   * 真提交。
+   */
+  submit: () => void
+
+  /**
+   * 落闸态。
+   */
+  setGate: (g: PteGate) => void
+}
+
+/**
+ * 弹层一档音标取值(`phonOf`)的入参。
+ */
+export type PhonIn = {
+  /**
+   * 本档音标(英或美)。
+   */
+  own: string
+
+  /**
+   * 兜底音标(ECDICT 混合音标)。
+   */
+  fallback: string
+}
+
+/**
+ * 读一个词(`makeSpeakWord`)的入参。
+ */
+export type SpeakWordIn = {
+  /**
+   * 要读的词。
+   */
+  word: string
+
+  /**
+   * 语音语言码(en-GB / en-US)。
+   */
+  lang: string
 }
 
 /**
@@ -1320,6 +1590,21 @@ export type PteDictPanel = {
    * 关掉弹层。
    */
   onClose: () => void
+
+  /**
+   * 读英音(浏览器 en-GB 语音)。
+   */
+  onSpeakUk: () => void
+
+  /**
+   * 读美音(浏览器 en-US 语音)。
+   */
+  onSpeakUs: () => void
+
+  /**
+   * 鼠标悬到高亮词:以该元素位置开弹层(Frank 2026-09-04「鼠标放上去显示字典解析」)。
+   */
+  onHoverWord: (e: React.MouseEvent<HTMLElement>) => void
 }
 
 /**
