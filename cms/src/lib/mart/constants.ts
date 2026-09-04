@@ -538,7 +538,7 @@ export const COLS_PTE_TYPES = ['code', 'section', 'seq', 'name_zh', 'name_en', '
  * pte_questions 列(同上一份 SQL)。⚠️ votes / freq / seen / answer / audio_* 可空 = 该源没有,
  * 不是 0/空串 —— 映射器一律 cellOf 保 null,禁折默认值。
  */
-export const COLS_PTE_QUESTIONS = ['qid', 'source', 'type', 'num', 'title', 'text', 'answer', 'audio_url', 'audio_file', 'image_url', 'predicted', 'seen', 'seen_n', 'votes', 'freq', 'fetched']
+export const COLS_PTE_QUESTIONS = ['qid', 'source', 'type', 'num', 'title', 'text', 'answer', 'audio_url', 'audio_file', 'image_url', 'predicted', 'seen', 'seen_n', 'votes', 'freq', 'fetched', 'extra']
 
 /**
  * pte_audio 列(mart 键 qid / mime / b64 / voice 同名)。

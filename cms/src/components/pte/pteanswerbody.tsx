@@ -13,6 +13,7 @@ import { clockOf, isTextShown, origBoxClsOf, wordCountOf } from './functions'
 import { PteDiff } from './ptediff'
 import { PtePlayer } from './pteplayer'
 import { PteRecBar } from './pterecbar'
+import { PteReading } from './ptereading'
 import { PteText } from './ptetext'
 import type { PteAnswerPartIn } from './types'
 import css from './pte.module.css'
@@ -23,11 +24,14 @@ import css from './pte.module.css'
  * @param props 同答题卡。
  * @returns 该段该型的块。
  */
-export function PteAnswerBody({ t, q, type, a, tiers, onHoverWord }: PteAnswerPartIn) {
+export function PteAnswerBody({ t, q, type, a, r, tiers, onHoverWord }: PteAnswerPartIn) {
   const wfd = q.type === T_WFD
   const answering = a.phase === PHASE_ANSWERING
   const checked = a.phase === PHASE_CHECKED
   const showText = isTextShown({ audio: type.audio, textShown: a.textShown, phase: a.phase, wfd })
+  if (q.extra != null) {
+    return <PteReading t={t} q={q} extra={q.extra} r={r} checked={checked} tiers={tiers} onHoverWord={onHoverWord} />
+  }
   return (
     <>
       {type.audio && checked === false && (

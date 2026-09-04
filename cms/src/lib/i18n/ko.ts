@@ -1144,6 +1144,8 @@ export const pteKo: Record<keyof typeof pteZh, string> = {
   'pte.empty': '조건에 맞는 문제가 없습니다', 'pte.more': '더 보기({n}문제 남음)',
   'pte.pos': '{i} / {n}',
   'pte.inst.RA': '40초 안에 자연스럽고 또렷하게 읽으세요', 'pte.inst.RS': '한 번 듣고 그대로 따라 말하세요', 'pte.inst.ASQ': '질문을 듣고 한두 단어로 답하세요', 'pte.inst.WFD': '한 번 듣고 그대로 받아쓰세요',
+  'pte.inst.RFIB': '빈칸마다 단어 선택', 'pte.inst.RWFIB': '빈칸마다 드롭다운에서 선택', 'pte.inst.ROP': '문단을 올바른 순서로',
+  'pte.inst.RMCS': '정답 하나 선택', 'pte.up': '위로', 'pte.down': '아래로',
   'pte.prep': '준비', 'pte.skipPrep': '준비 건너뛰기', 'pte.play': '문제 재생', 'pte.replay': '다시 듣기', 'pte.audio': '문제 음성',
   'pte.rec': '녹음',
   'pte.tts': '모범 낭독', 'pte.myRec': '내 녹음', 'pte.recording': '녹음 중', 'pte.recCap': '{s}초 안에 답하세요', 'pte.stop': '정지',

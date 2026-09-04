@@ -7,6 +7,7 @@
  */
 import { TEXT_NONE } from './constants'
 import type { PteCellRow } from './types'
+import css from './pte.module.css'
 
 /**
  * 渲染题面格。
@@ -27,5 +28,10 @@ export function TextCell(r: PteCellRow) {
     }
     i = i + 1
   }
-  return <span className={r.textCls}>{parts}</span>
+  return (
+    <span className={r.textCls}>
+      {r.title !== TEXT_NONE && <b className={css.rowTitle}>{r.title}</b>}
+      {parts}
+    </span>
+  )
 }

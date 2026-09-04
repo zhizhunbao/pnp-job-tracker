@@ -1647,14 +1647,14 @@ export const PTE_LIST = `SELECT qid, source, type, num, title, text, predicted, 
  * 单题(题面 + 答案 + 音频直链)。$1=qid。
  */
 export const PTE_ONE = `SELECT qid, source, type, num, title, text, answer, audio_url AS "audioUrl", predicted,
-            seen, seen_n AS "seenN", votes, freq
+            seen, seen_n AS "seenN", votes, freq, extra
      FROM pte_questions WHERE qid = $1 LIMIT 1`
 
 /**
  * 单题按站内题号(2026-09-04 Frank「id 应该我们基于自己的规则生成」:URL 用 /pte/ra/12)。$1=题型码,$2=题号。
  */
 export const PTE_ONE_NUM = `SELECT qid, source, type, num, title, text, answer, audio_url AS "audioUrl", predicted,
-            seen, seen_n AS "seenN", votes, freq
+            seen, seen_n AS "seenN", votes, freq, extra
      FROM pte_questions WHERE type = $1 AND num = $2 LIMIT 1`
 
 /**

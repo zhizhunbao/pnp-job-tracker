@@ -880,6 +880,104 @@
   margin-top: 10px;
 }
 
+/*
+ * 批五阅读题:空位下拉、对错色、段落排序行、单选行。
+ */
+.blankWrap {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 0 2px;
+}
+
+.blankSel {
+  font: inherit;
+  padding: 2px 6px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  min-width: 7em;
+}
+
+.blankOk {
+  border-color: #22c55e;
+  background: #f0fdf4;
+}
+
+.blankBad {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+/*
+ * 答错时旁边给的正确词。
+ */
+.blankAns {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.orderList {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.orderRow {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  gap: 10px;
+  align-items: start;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.orderTag {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1.5px solid #cbd5e1;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.orderText {
+  line-height: 1.6;
+}
+
+.orderBtns {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.choice {
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.choiceQ {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.choiceRow {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  cursor: pointer;
+  line-height: 1.5;
+}
+
 .btns {
   display: flex;
   flex-wrap: wrap;
@@ -1395,4 +1493,30 @@
   margin-top: 3px;
   line-height: 1.5;
   color: #374151;
+}
+
+/* 题名:单题页 H1 尾随灰字;题单表题面前一行加粗(空串不占位)。批六 2026-09-04 */
+.h1Title {
+  margin-left: 12px;
+  font-size: 18px;
+  font-weight: 400;
+  color: #6b7280;
+}
+
+.h1Title:empty {
+  display: none;
+}
+
+/* 手机:题名另起一行,不跟型名 + 题号挤成三行折行(375px 实撞) */
+@media (max-width: 640px) {
+  .h1Title {
+    display: block;
+    margin-left: 0;
+  }
+}
+
+.rowTitle {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 2px;
 }

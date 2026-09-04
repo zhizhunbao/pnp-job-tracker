@@ -17,8 +17,8 @@ import { BackButton, Button } from '@/components/button'
 import { useLang } from '@/components/i18n'
 import { Shell } from '@/components/shell'
 import { GATE_LOGIN, GATE_UPGRADE, KIND_PRIMARY, NUM_HEAD, SHELL_TOP, SPACE, STATE_IDLE } from './constants'
-import { listHrefOf, typeAtOr, typeNameOf } from './functions'
-import { usePteAnswer, usePteComments, usePteDict } from './hooks'
+import { isReadingExtra, listHrefOf, typeAtOr, typeNameOf } from './functions'
+import { usePteAnswer, usePteComments, usePteDict, usePteReading } from './hooks'
 import { PteAnswer } from './pteanswer'
 import { PteComments } from './ptecomments'
 import { PteDict } from './ptedict'
@@ -37,7 +37,8 @@ import css from './pte.module.css'
 export function PteItem({ types, item, comments, loggedIn, pro, rowsByType }: PteItemIn) {
   const [lang, , t] = useLang()
   const type = typeAtOr({ types, code: item.q.type })
-  const a = usePteAnswer({ q: item.q, type, loggedIn, pro })
+  const a = usePteAnswer({ q: item.q, type, loggedIn, pro, reading: isReadingExtra(item.q.extra) })
+  const r = usePteReading({ extra: item.q.extra })
   const d = usePteDict()
   const c = usePteComments({ qid: item.q.qid, comments, times: item.q.times })
   let seen = <Button kind={KIND_PRIMARY} sm onClick={c.onLoginOpen}>{t('pte.c.seen', { n: c.seenN })}</Button>
@@ -57,7 +58,9 @@ export function PteItem({ types, item, comments, loggedIn, pro, rowsByType }: Pt
       {a.gate === GATE_UPGRADE && <UpgradeModal t={t} onClose={a.onGateClose} reason={t('pte.quotaHit')} />}
       <div className={css.track}>
         <div className={css.headRow}>
-          <h1 className={css.h1}>{typeNameOf({ type, lang })}{SPACE}{NUM_HEAD}{item.q.num}</h1>
+          <h1 className={css.h1}>{typeNameOf({ type, lang })}{SPACE}{NUM_HEAD}{item.q.num}
+            <span className={css.h1Title}>{item.q.title}</span>
+          </h1>
         </div>
         <div className={css.grid}>
           <PteNav t={t} types={types} type={item.q.type} rowsByType={rowsByType} qid={item.q.qid} lang={lang} />
@@ -67,6 +70,7 @@ export function PteItem({ types, item, comments, loggedIn, pro, rowsByType }: Pt
               type={type}
               pos={t('pte.pos', { i: item.index, n: item.total })}
               a={a}
+              r={r}
               seen={seen}
               pro={pro}
               tiers={item.tiers}

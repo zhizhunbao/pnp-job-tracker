@@ -11,21 +11,22 @@
 import { cssOf } from '@/components/css'
 import { SQL, count, numOrNull, queryRowsOrEmpty, text, textOrNull } from '@/lib/db'
 import {
-  ALIGN_LEFT, API_COMMENTS, API_PTE_DONE, API_PTE_ZH, BRACKET_L, BRACKET_R, CLOCK_PAD, CLOCK_SEP, CLS_SEP, COL_ACT,
-  COL_NUM, COL_SEEN, COL_TEXT, COL_TIMES, CRED_INCLUDE, DASH, DATA_QID, DATA_SENT, DATE_LEN, DAY_MS, DESC_LEN_MAX,
-  DICT_API, DICT_BUSY, DICT_EDGE_PX, DICT_GAP_PX, DICT_ID, DICT_IDLE, DICT_LINE_SEP, DICT_MIN_LEN, DICT_NONE, DICT_OK,
-  DICT_TAG_KEY, DICT_W_PX, DONE_KEY, ELLIPSIS, EMPTY_DONE, EV_MOUSEUP, EV_TOUCHEND, FAMILY_KEY, FAMILY_ORDER,
-  FAMILY_WORD_SEP, FORM_KEY, FORM_KV, FORM_LABEL_SEP, FORM_ORDER, FORM_PLURAL, FORM_SEP, FORM_THIRD, GATE_LOGIN,
-  GATE_NONE, GATE_UPGRADE, HASH, HDR_CONTENT_TYPE, ID_SEP, INST_KEY, ITEM_DESC_TPL, ITEM_TITLE_TPL, KIND_EXAM,
-  KIND_NOTE, LANG_EN, LANG_KO, LANG_ZH, LIKE_ANY, LIST_DESC_TPL, LIST_TITLE_TPL, MARK_TAG, METHOD_POST, METHOD_PUT,
-  MIME_JSON, MS_PER_MIN, NAV_CENTER_DIV, NAV_ID_PREFIX, NAV_TEXT_LEN, NOTE_HINT_KEY, NOT_FOUND_TITLE, NUM_HEAD, NUM_RE,
-  PAD_CHAR, PAGE_STEP, PAREN_L, PAREN_R, PHASE_ANSWERING, PHASE_CHECKED, PHASE_READY, PREP_S, PTE_META, PUNCT_RE,
-  QID_SEP, QUOTA_KEY, QUOTA_MAX, RATE_DIGITS, RATE_HEAD, RATE_STEPS, REC_CAP_S, REC_MIME, REC_STATE_INACTIVE,
-  SECTION_KEY, SECTION_ORDER, SEC_PER_MIN, SENT_GAP_RE, SENT_NONE, SENT_SPLIT_RE, SERVER_TTL_MS, SPK_GUARD_MS,
-  SPK_NONE, STATE_BUSY, STATE_ERR, STATE_IDLE, STATE_SENT, TAG_SEP, TEXT_NONE, TEXT_TOKEN_RE, TICK_MS, TIER_CLS_HEAD,
-  TIER_EASY_TAGS, TIER_FRQ_MIN, TIER_NONE, TIER_ORDER, TIER_TAGS, TIME_SEP, TITLE_LEN_MAX, TTS_GUARD_BASE_MS, TTS_LANG,
-  TTS_LANG_HEAD, TTS_MS_PER_WORD, TTS_RATE, T_RA, UNDERSCORE, URL_PTE, URL_SEP, VAR_N, VAR_NUM, VAR_TEXT, VAR_TITLE,
-  VAR_TYPE, WORD_RE, WORD_SPLIT_RE, WORD_TRIM, W_ACT, W_NUM, W_SEEN, W_TEXT, W_TIMES,
+  ALIGN_LEFT, API_COMMENTS, API_PTE_DONE, API_PTE_ZH, BLANK_RE, BRACKET_L, BRACKET_R, CLOCK_PAD, CLOCK_SEP, CLS_SEP,
+  COL_ACT, COL_NUM, COL_SEEN, COL_TEXT, COL_TIMES, CRED_INCLUDE, DASH, DATA_QID, DATA_SENT, DATE_LEN, DAY_MS,
+  DESC_LEN_MAX, DICT_API, DICT_BUSY, DICT_EDGE_PX, DICT_GAP_PX, DICT_ID, DICT_IDLE, DICT_LINE_SEP, DICT_MIN_LEN,
+  DICT_NONE, DICT_OK, DICT_TAG_KEY, DICT_W_PX, DONE_KEY, ELLIPSIS, EMPTY_DONE, EV_MOUSEUP, EV_TOUCHEND, FAMILY_KEY,
+  FAMILY_ORDER, FAMILY_WORD_SEP, FORM_KEY, FORM_KV, FORM_LABEL_SEP, FORM_ORDER, FORM_PLURAL, FORM_SEP, FORM_THIRD,
+  GATE_LOGIN, GATE_NONE, GATE_UPGRADE, HASH, HDR_CONTENT_TYPE, ID_SEP, INST_KEY, ITEM_DESC_TPL, ITEM_TITLE_TPL,
+  KIND_EXAM, KIND_NOTE, KIND_RFIB, KIND_RMCS, KIND_ROP, KIND_RWFIB, LANG_EN, LANG_KO, LANG_ZH, LIKE_ANY, LIST_DESC_TPL,
+  LIST_TITLE_TPL, MARK_TAG, METHOD_POST, METHOD_PUT, MIME_JSON, MS_PER_MIN, NAV_CENTER_DIV, NAV_ID_PREFIX,
+  NAV_TEXT_LEN, NOTE_HINT_KEY, NOT_FOUND_TITLE, NUM_HEAD, NUM_RE, ORDER_BASE, PAD_CHAR, PAGE_STEP, PAREN_L, PAREN_R,
+  PHASE_ANSWERING, PHASE_CHECKED, PHASE_READY, PREP_S, PTE_META, PUNCT_RE, QID_SEP, QUOTA_KEY, QUOTA_MAX, RATE_DIGITS,
+  RATE_HEAD, RATE_STEPS, REC_CAP_S, REC_MIME, REC_STATE_INACTIVE, SECTION_KEY, SECTION_ORDER, SEC_PER_MIN, SENT_GAP_RE,
+  SENT_NONE, SENT_SPLIT_RE, SERVER_TTL_MS, SPK_GUARD_MS, SPK_NONE, SPLIT_CAP_MOD, STATE_BUSY, STATE_ERR, STATE_IDLE,
+  STATE_SENT, TAG_SEP, TEXT_NONE, TEXT_TOKEN_RE, TICK_MS, TIER_CLS_HEAD, TIER_EASY_TAGS, TIER_FRQ_MIN, TIER_NONE,
+  TIER_ORDER, TIER_TAGS, TIME_SEP, TITLE_LEN_MAX, TTS_GUARD_BASE_MS, TTS_LANG, TTS_LANG_HEAD, TTS_MS_PER_WORD,
+  TTS_RATE, T_RA, UNDERSCORE, URL_PTE, URL_SEP, VAR_N, VAR_NUM, VAR_TEXT, VAR_TITLE, VAR_TYPE, WORD_RE, WORD_SPLIT_RE,
+  WORD_TRIM, W_ACT, W_NUM, W_SEEN, W_TEXT, W_TIMES,
 } from './constants'
 import { CACHE } from './variables'
 import css from './pte.module.css'
@@ -35,22 +36,24 @@ import { SeenCell } from './seencell'
 import { TextCell } from './textcell'
 import { TimesCell } from './timescell'
 import type {
-  AgoTextIn, AudioEndedIn, BracketIn, CanPlayIn, CellRowsIn, ChunkSinkFn, ClickFn, ClockIn, ColsOfIn, CommentsOfKindIn,
-  DaysAgoIn, DeadFlag, DictApiBody, DictCloseIn, DictEntry, DictFamilyIn, DictFamilyRow, DictForm, DictFormsIn,
-  DictLinesIn, DictLookupIn, DictPos, DictPosIn, DictSentence, DictTagKeyIn, DiffIn, DiffOut, DiffToken, DomEventFn,
-  DoneClsIn, DoneResBody, DoneSyncIn, DurationIn, EffectFn, ExamCountsIn, ExamOpenIn, ExamSubmitIn, FamilyOfIn,
-  FormLabelIn, GateCloseIn, GatedPlayIn, GatedStartIn, GatedSubmitIn, HintIn, HoverWordIn, InputChangeIn, IsDoneIn,
-  ItemHrefIn, ItemMetaIn, LcsAtIn, ListMetaIn, ListOfIn, ListTiersIn, LookupNowIn, MarkDoneIn, MaybeHref, MicIn,
-  MoreIn, NavPickIn, NavRowsIn, NavScrollIn, NavTextIn, NeighborsIn, NeighborsOut, NoteSubmitIn, PhaseSetIn, PhonIn,
-  PlayIn, PlayUrlIn, PostCommentIn, PteCellRow, PteCol, PteComment, PteCommentDbRow, PteCommentsIn, PteDictTagDbRow,
-  PteExamCount, PteExamCountDbRow, PteItem, PteItemLoadIn, PteListDbRow, PteListIn, PteMeta, PteOneDbRow, PteQuestion,
+  AgoTextIn, AudioEndedIn, BlankPart, BlankPartsIn, BlankStateIn, BracketIn, CanPlayIn, CellRowsIn, ChunkSinkFn,
+  ClickFn, ClockIn, ColsOfIn, CommentsOfKindIn, DaysAgoIn, DeadFlag, DictApiBody, DictCloseIn, DictEntry, DictFamilyIn,
+  DictFamilyRow, DictForm, DictFormsIn, DictLinesIn, DictLookupIn, DictPos, DictPosIn, DictSentence, DictTagKeyIn,
+  DiffIn, DiffOut, DiffToken, DomEventFn, DoneClsIn, DoneResBody, DoneSyncIn, DurationIn, EffectFn, ExamCountsIn,
+  ExamOpenIn, ExamSubmitIn, ExtraOfIn, FamilyOfIn, FillIn, FormLabelIn, GateCloseIn, GatedPlayIn, GatedStartIn,
+  GatedSubmitIn, GatesIn, GatesOut, HintIn, HoverWordIn, InitialPhaseIn, InputChangeIn, IsDoneIn, ItemHrefIn,
+  ItemMetaIn, LcsAtIn, ListMetaIn, ListOfIn, ListTiersIn, LookupNowIn, MarkDoneIn, MaybeHref, MicIn, MoreIn, MoveIn,
+  MovedOrderIn, NavPickIn, NavRowsIn, NavScrollIn, NavTextIn, NeighborsIn, NeighborsOut, NoteSubmitIn, OrderIndexIn,
+  PhaseSetIn, PhonIn, PlayIn, PlayUrlIn, PostCommentIn, PteBlank, PteBlanksExtra, PteCellRow, PteChoiceExtra, PteCol,
+  PteComment, PteCommentDbRow, PteCommentsIn, PteDictTagDbRow, PteExamCount, PteExamCountDbRow, PteExtra, PteItem,
+  PteItemLoadIn, PteListDbRow, PteListIn, PteMeta, PteOneDbRow, PteOrderExtra, PteParagraph, PtePhase, PteQuestion,
   PteQuestionIn, PteRow, PteRowIn, PteSection, PteTiersIn, PteType, PteTypeDbRow, PteTypesIn, QidOfIn, QuotaDoc,
   RateAudioIn, RateTextIn, RecallsIn, RecorderHandle, RecorderStopFn, RecorderStopIn, RedoIn, SaveDoneIn,
   SectionLabelIn, SectionsIn, SeekAudioIn, SeenCountIn, SeenTextIn, SelectedWord, SelectionWatchIn, SentIndexIn,
   SentRef, SentStartsIn, SetBoolIn, SetBoolValIn, SettleDictIn, SpeakIn, SpeakWordIn, SpkClsIn, StartRecIn,
-  StartRecorderIn, SubmitIn, TextChangeFn, TextChangeIn, TextPart, TextPartsIn, TextShownIn, TickerIn, TierOfIn,
-  TimeTextIn, ToggleIn, TypeAtIn, TypeCodeIn, TypeLabelIn, TypeNameIn, WordCountIn, ZhApiBody, ZhApiRow, ZhLookupIn,
-  ZhLookupNowIn,
+  StartRecorderIn, SubmitIn, SubmitOfIn, TextChangeFn, TextChangeIn, TextPart, TextPartsIn, TextShownIn, TickerIn,
+  TierOfIn, TimeTextIn, TitleTextIn, ToggleIn, TypeAtIn, TypeCodeIn, TypeLabelIn, TypeNameIn, WordCountIn, ZhApiBody,
+  ZhApiRow, ZhLookupIn, ZhLookupNowIn,
 } from './types'
 
 /**
@@ -246,6 +249,7 @@ export function toPteRow(x: PteRowIn): PteRow {
     type: text(r.type),
     href: itemHrefOf({ type: text(r.type), num: text(r.num) }),
     num: text(r.num),
+    title: r.title,
     text: text(r.text),
     predicted: r.predicted === true,
     seen,
@@ -269,14 +273,282 @@ export function toPteQuestion(x: PteQuestionIn): PteQuestion {
     type: base.type,
     href: base.href,
     num: base.num,
+    title: base.title,
     text: text(x.row.text),
     predicted: base.predicted,
     seen: base.seen,
     times: base.times,
     answer: textOrNull(x.row.answer),
     audioUrl: textOrNull(x.row.audioUrl),
+    extra: extraOf({ raw: textOrNull(x.row.extra) }),
   }
 }
+
+/**
+ * 载荷 JSON 串 → 分形载荷(解析失败 / 不认识的 kind / 缺格 = null,当没载荷的题处理)。
+ * `as` 是跨边界断言,逐格判后才用。
+ *
+ * @param x JSON 串。
+ * @returns 载荷或 null。
+ */
+export function extraOf(x: ExtraOfIn): PteExtra | null {
+  if (x.raw == null || x.raw === TEXT_NONE) {
+    return null
+  }
+  let v: PteBlanksExtra & PteOrderExtra & PteChoiceExtra
+  try {
+    v = JSON.parse(x.raw) as PteBlanksExtra & PteOrderExtra & PteChoiceExtra
+  } catch {
+    return null
+  }
+  if (v.kind === KIND_RFIB || v.kind === KIND_RWFIB) {
+    if (typeof v.content !== 'string' || Array.isArray(v.blanks) === false) {
+      return null
+    }
+    return { kind: v.kind, content: v.content, blanks: blanksOf(v.blanks), words: stringsOf(v.words) }
+  }
+  if (v.kind === KIND_ROP) {
+    if (Array.isArray(v.paragraphs) === false || Array.isArray(v.order) === false) {
+      return null
+    }
+    return { kind: v.kind, paragraphs: paragraphsOf(v.paragraphs), order: numbersOf(v.order) }
+  }
+  if (v.kind === KIND_RMCS) {
+    if (typeof v.question !== 'string' || Array.isArray(v.options) === false || typeof v.answer !== 'string') {
+      return null
+    }
+    return { kind: v.kind, question: v.question, options: stringsOf(v.options), answer: v.answer }
+  }
+  return null
+}
+
+/**
+ * 载荷空清单逐格洗(缺 options 给空清单)。
+ *
+ * @param rows 原清单。
+ * @returns 空清单。
+ */
+function blanksOf(rows: PteBlank[]): PteBlank[] {
+  const out: PteBlank[] = []
+  for (const b of rows) {
+    if (typeof b.id === 'number' && typeof b.answer === 'string') {
+      out.push({ id: b.id, answer: b.answer, options: stringsOf(b.options) })
+    }
+  }
+  return out
+}
+
+/**
+ * 载荷段落清单逐格洗。
+ *
+ * @param rows 原清单。
+ * @returns 段落清单。
+ */
+function paragraphsOf(rows: PteParagraph[]): PteParagraph[] {
+  const out: PteParagraph[] = []
+  for (const p of rows) {
+    if (typeof p.id === 'number' && typeof p.text === 'string') {
+      out.push({ id: p.id, text: p.text })
+    }
+  }
+  return out
+}
+
+/**
+ * 只收字符串的清单(缺席给空清单)。
+ *
+ * @param rows 原清单。
+ * @returns 字符串清单。
+ */
+function stringsOf(rows: string[] | null): string[] {
+  const out: string[] = []
+  if (Array.isArray(rows) === false || rows == null) {
+    return out
+  }
+  for (const r of rows) {
+    if (typeof r === 'string') {
+      out.push(r)
+    }
+  }
+  return out
+}
+
+/**
+ * 只收数字的清单。
+ *
+ * @param rows 原清单。
+ * @returns 数字清单。
+ */
+function numbersOf(rows: number[]): number[] {
+  const out: number[] = []
+  for (const r of rows) {
+    if (typeof r === 'number') {
+      out.push(r)
+    }
+  }
+  return out
+}
+
+/**
+ * 题面按 {bN} 占位切段(文字段 blank=0,空位段带序号)。
+ *
+ * @param x 带占位的题面。
+ * @returns 段清单。
+ */
+export function blankPartsOf(x: BlankPartsIn): BlankPart[] {
+  const out: BlankPart[] = []
+  const pieces = x.content.split(BLANK_RE)
+  for (let i = 0; i < pieces.length; i = i + 1) {
+    const piece = pieces[i]
+    if (piece == null) {
+      continue
+    }
+    if (i % SPLIT_CAP_MOD === 1) {
+      out.push({ text: TEXT_NONE, blank: Number(piece) })
+    } else if (piece !== TEXT_NONE) {
+      out.push({ text: piece, blank: 0 })
+    }
+  }
+  return out
+}
+
+/**
+ * 某空的样式态:没提交 = 平;提交后对 / 错。
+ *
+ * @param x 所选、正确词与是否提交。
+ * @returns 类名。
+ */
+export function blankStateOf(x: BlankStateIn): string {
+  if (x.checked === false) {
+    return cssOf(css.blankSel)
+  }
+  if (x.picked === x.answer) {
+    return cssOf(css.blankSel) + CLS_SEP + cssOf(css.blankOk)
+  }
+  return cssOf(css.blankSel) + CLS_SEP + cssOf(css.blankBad)
+}
+
+/**
+ * 某段在正确序里排第几(1 起;不在给 0)。
+ *
+ * @param x 正确序与段 id。
+ * @returns 位置。
+ */
+export function orderIndexOf(x: OrderIndexIn): number {
+  const at = x.order.indexOf(x.id)
+  if (at < 0) {
+    return 0
+  }
+  return at + ORDER_BASE
+}
+
+/**
+ * 段落挪一位后的序(到头不动)。
+ *
+ * @param x 现序、段 id 与方向。
+ * @returns 新序。
+ */
+export function movedOrderOf(x: MovedOrderIn): number[] {
+  const at = x.order.indexOf(x.id)
+  const to = at + x.dir
+  if (at < 0 || to < 0 || to >= x.order.length) {
+    return x.order
+  }
+  const out = x.order.slice()
+  const other = out[to]
+  if (other == null) {
+    return x.order
+  }
+  out[to] = x.id
+  out[at] = other
+  return out
+}
+
+/**
+ * 造段落挪位手柄。
+ *
+ * @param x 现序、落序、段 id 与方向。
+ * @returns 手柄。
+ */
+export function makeMove(x: MoveIn): ClickFn {
+  return function move(): void {
+    x.set(movedOrderOf({ order: x.order, id: x.id, dir: x.dir }))
+  }
+}
+
+/**
+ * 造某空的下拉手柄(收 select 的 change —— React 定的签名)。
+ *
+ * @param x 现所选表、落格与空序号。
+ * @returns 手柄。
+ */
+export function makeFill(x: FillIn): (e: React.ChangeEvent<HTMLSelectElement>) => void {
+  return function fill(e: React.ChangeEvent<HTMLSelectElement>): void {
+    const next: Record<number, string> = {}
+    for (const k of Object.keys(x.fills)) {
+      const v = x.fills[Number(k)]
+      if (v != null) {
+        next[Number(k)] = v
+      }
+    }
+    next[x.id] = e.target.value
+    x.set(next)
+  }
+}
+
+/**
+ * 载荷 → 段落初始序(给出的乱序)。
+ *
+ * @param extra 载荷。
+ * @returns 段 id 清单;不是排序题给空清单。
+ */
+export function initialOrderOf(extra: PteExtra | null): number[] {
+  const out: number[] = []
+  if (extra == null || extra.kind !== KIND_ROP) {
+    return out
+  }
+  for (const p of (extra as PteOrderExtra).paragraphs) {
+    out.push(p.id)
+  }
+  return out
+}
+
+/**
+ * 是不是阅读题载荷(批五四型)。
+ *
+ * @param extra 载荷。
+ * @returns 是。
+ */
+export function isReadingExtra(extra: PteExtra | null): boolean {
+  return extra != null
+}
+
+/**
+ * 起始段位:阅读题一进来就作答(没音频没准备);其余型从准备段起。
+ *
+ * @param x 阅读题。
+ * @returns 段位。
+ */
+export function initialPhaseOf(x: InitialPhaseIn): PtePhase {
+  if (x.reading) {
+    return PHASE_ANSWERING
+  }
+  return PHASE_READY
+}
+
+/**
+ * 提交手柄挑选:阅读题用带配额闸的,其余用裸的(闸在开始处已过)。
+ *
+ * @param x 阅读题、裸提交与带闸提交。
+ * @returns 手柄。
+ */
+export function submitOf(x: SubmitOfIn): ClickFn {
+  if (x.reading) {
+    return x.gated
+  }
+  return x.submit
+}
+
 
 /**
  * 评论库行 → 评论。
@@ -506,6 +778,7 @@ export function cellRowsOf(x: CellRowsIn): PteCellRow[] {
       href: r.href,
       num: NUM_HEAD + r.num,
       numN: Number(r.num),
+      title: titleTextOf({ title: r.title }),
       seenIso: r.seen,
       text: r.text,
       textCls: textCellClsOf({ done }),
@@ -973,6 +1246,25 @@ export function makeGatedSubmit(x: GatedSubmitIn): ClickFn {
       bumpQuota()
     }
     x.submit()
+  }
+}
+
+/**
+ * 造作答面板的两颗带闸手柄:提交(录音停 / 打字交)与进入作答(跳过准备)—— 同一把闸,两个去处。
+ *
+ * @param x 闸的判定件与两个去处。
+ * @returns 两颗手柄。
+ */
+export function makeGates(x: GatesIn): GatesOut {
+  return {
+    gated: makeGatedSubmit({ pro: x.pro, loggedIn: x.loggedIn, used: x.used, submit: x.submit, setGate: x.setGate }),
+    toAnswering: makeGatedSubmit({
+      pro: x.pro,
+      loggedIn: x.loggedIn,
+      used: x.used,
+      submit: makePhaseSet({ setPhase: x.setPhase, phase: PHASE_ANSWERING }),
+      setGate: x.setGate,
+    }),
   }
 }
 
@@ -1534,7 +1826,7 @@ export function makeRedo(x: RedoIn): ClickFn {
     x.setElapsed(0)
     x.setTextShown(false)
     x.setPrepLeft(x.prepS)
-    x.setPhase(PHASE_READY)
+    x.setPhase(initialPhaseOf({ reading: x.reading }))
   }
 }
 
@@ -1810,10 +2102,27 @@ export function typeLabelOf(x: TypeLabelIn): string {
  * @returns 短题面。
  */
 export function navTextOf(x: NavTextIn): string {
+  const title = titleTextOf({ title: x.title })
+  if (title !== TEXT_NONE) {
+    return title
+  }
   if (x.text.length <= NAV_TEXT_LEN) {
     return x.text
   }
   return x.text.slice(0, NAV_TEXT_LEN) + ELLIPSIS
+}
+
+/**
+ * 题名格归一:库里 null 与空串都给空串(多墨朗读/描图与小枫叶阅读题带题名,句型题没有)。
+ *
+ * @param x 库里的题名格。
+ * @returns 题名或空串。
+ */
+export function titleTextOf(x: TitleTextIn): string {
+  if (x.title == null) {
+    return TEXT_NONE
+  }
+  return x.title
 }
 
 /**

@@ -11,22 +11,23 @@
  */
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import {
-  DICT_IDLE, GATE_NONE, KIND_EXAM, KIND_NOTE, LANG_UK, LANG_US, PAGE_STEP, PHASE_ANSWERING, PHASE_READY, RATE_STEPS,
-  SENT_NONE, SPK_NONE, SPK_UK, SPK_US, STATE_IDLE, TEXT_NONE, T_WFD,
+  DICT_IDLE, GATE_NONE, KIND_EXAM, KIND_NOTE, LANG_UK, LANG_US, PAGE_STEP, PHASE_ANSWERING, PHASE_READY, PICK_NONE,
+  RATE_STEPS, SENT_NONE, SPK_NONE, SPK_UK, SPK_US, STATE_IDLE, TEXT_NONE, T_WFD,
 } from './constants'
 import {
-  commentsOfKind, doneServerSnapshotOf, doneSnapshotOf, durationOf, makeAudioEnded, makeCanPlaySnapshot, makeClose,
-  makeCountdown, makeDictClose, makeDictLookup, makeDictOpenFlag, makeDictSink, makeDoneSync, makeExamOpen,
-  makeExamSubmit, makeGateClose, makeGatedPlay, makeGatedSubmit, makeInputChange, makeMic, makeMore, makeNavPick,
-  makeNavScroll, makeNoteSubmit, makeOpen, makePhaseSet, makePlayEnd, makeRedo, makeSelectionWatch, makeSetBool,
-  makeSpeakWord, makeStartRec, makeSubmit, makeTextChange, makeTicker, makeToggle, makeZhLookup, nextRateOf, noop,
-  openDictWord, prepSecOf, quotaServerSnapshotOf, quotaSnapshotOf, rateAudio, recCapOf, reloadPage, seekAudio,
-  seenCountOf, serverFalseOf, stopSpeak, subscribeDone, subscribeNone,
+  commentsOfKind, doneServerSnapshotOf, doneSnapshotOf, durationOf, initialOrderOf, initialPhaseOf, makeAudioEnded,
+  makeCanPlaySnapshot, makeClose, makeCountdown, makeDictClose, makeDictLookup, makeDictOpenFlag, makeDictSink,
+  makeDoneSync, makeExamOpen, makeExamSubmit, makeFill, makeGateClose, makeGatedPlay, makeGates, makeInputChange,
+  makeMic, makeMore, makeMove, makeNavPick, makeNavScroll, makeNoteSubmit, makeOpen, makePlayEnd,
+  makeRedo, makeSelectionWatch, makeSetBool, makeSpeakWord, makeStartRec, makeSubmit, makeTextChange, makeTicker,
+  makeToggle, makeZhLookup, nextRateOf, noop, openDictWord, prepSecOf, quotaServerSnapshotOf, quotaSnapshotOf,
+  rateAudio, recCapOf, reloadPage, seekAudio, seenCountOf, serverFalseOf, stopSpeak, submitOf, subscribeDone,
+  subscribeNone,
 } from './functions'
 import type {
   DictEntry, DictPos, DictSentence, DictState, PlayerHookIn, PlayerPanel, PostState, PteAnswerHookIn, PteAnswerPanel,
   PteBoardHookIn, PteBoardPanel, PteComment, PteCommentsHookIn, PteCommentsPanel, PteDictPanel, PteGate, PteNavHookIn,
-  PteNavPanel, PtePhase, RecorderHandle, SentRef,
+  PteMoveIn, PteNavPanel, PtePhase, PteReadingHookIn, PteReadingPanel, RecorderHandle, SentRef,
 } from './types'
 
 /**
@@ -123,6 +124,32 @@ export function usePlayer(x: PlayerHookIn): PlayerPanel {
 }
 
 /**
+ * 阅读题作答整机(批五):各空所选 / 段落现序 / 单选所选;非阅读题空转。
+ *
+ * @param x 载荷。
+ * @returns 面板。
+ */
+export function usePteReading(x: PteReadingHookIn): PteReadingPanel {
+  const [fills, setFills] = useState<Record<number, string>>({})
+  const [order, setOrder] = useState<number[]>(initialOrderOf(x.extra))
+  const [choice, setChoice] = useState(PICK_NONE)
+
+  function fillOf(id: number): (e: React.ChangeEvent<HTMLSelectElement>) => void {
+    return makeFill({ fills, set: setFills, id })
+  }
+
+  function moveOf(m: PteMoveIn): () => void {
+    return makeMove({ order, set: setOrder, id: m.id, dir: m.dir })
+  }
+
+  function chooseOf(option: string): () => void {
+    return makeNavPick({ code: option, set: setChoice })
+  }
+
+  return { fills, order, choice, fillOf, moveOf, chooseOf }
+}
+
+/**
  * 目录树:进页把当前题滚进视野(换题重滚);题型钮原地切清单(不跳页)。
  *
  * @param x 当前题键。
@@ -152,7 +179,8 @@ export function usePteAnswer(x: PteAnswerHookIn): PteAnswerPanel {
   const prepS = prepSecOf({ type: x.q.type })
   const cap = recCapOf({ type: x.q.type })
   const wfd = x.q.type === T_WFD
-  const [phase, setPhase] = useState<PtePhase>(PHASE_READY)
+  const reading = x.reading
+  const [phase, setPhase] = useState<PtePhase>(initialPhaseOf({ reading }))
   const [prepLeft, setPrepLeft] = useState(prepS)
   const [elapsed, setElapsed] = useState(0)
   const [playing, setPlaying] = useState(false)
@@ -164,19 +192,17 @@ export function usePteAnswer(x: PteAnswerHookIn): PteAnswerPanel {
   const [recUrl, setRecUrl] = useState<string | null>(null)
   const [micDenied, setMicDenied] = useState(false)
   const [rec, setRec] = useState<RecorderHandle | null>(null)
-
   const [gate, setGate] = useState<PteGate>(GATE_NONE)
   const used = useSyncExternalStore(subscribeDone, quotaSnapshotOf, quotaServerSnapshotOf)
-  const onSubmit = makeSubmit({ qid: x.q.qid, loggedIn: x.loggedIn, rec, setRecUrl, setRecording, setRec, setPhase })
-  const toAnswering = makeGatedSubmit({
-    pro: x.pro, loggedIn: x.loggedIn, used, submit: makePhaseSet({ setPhase, phase: PHASE_ANSWERING }), setGate,
-  })
+  const submit = makeSubmit({ qid: x.q.qid, loggedIn: x.loggedIn, rec, setRecUrl, setRecording, setRec, setPhase })
+  const g = makeGates({ pro: x.pro, loggedIn: x.loggedIn, used, submit, setGate, setPhase })
+  const onSubmit = submitOf({ reading, submit, gated: g.gated })
 
   useEffect(function countdown() {
     return makeCountdown({
-      active: phase === PHASE_READY && prepS > 0, value: prepLeft, set: setPrepLeft, cap: 0, onCap: toAnswering,
+      active: phase === PHASE_READY && prepS > 0, value: prepLeft, set: setPrepLeft, cap: 0, onCap: g.toAnswering,
     })()
-  }, [prepLeft, phase, prepS, toAnswering])
+  }, [prepLeft, phase, prepS, g.toAnswering])
 
   useEffect(function ticker() {
     return makeTicker({ active: phase === PHASE_ANSWERING, value: elapsed, set: setElapsed, cap, onCap: onSubmit })()
@@ -184,12 +210,12 @@ export function usePteAnswer(x: PteAnswerHookIn): PteAnswerPanel {
 
   useEffect(function startRec() {
     return makeStartRec({
-      should: phase === PHASE_ANSWERING && wfd === false && rec == null && micDenied === false,
+      should: phase === PHASE_ANSWERING && wfd === false && reading === false && rec == null && micDenied === false,
       setRec,
       setRecording,
       setMicDenied,
     })()
-  }, [phase, wfd, rec, micDenied])
+  }, [phase, wfd, reading, rec, micDenied])
 
   return {
     phase,
@@ -210,16 +236,16 @@ export function usePteAnswer(x: PteAnswerHookIn): PteAnswerPanel {
     onPlay: makeGatedPlay({
       pro: x.pro, loggedIn: x.loggedIn, used, setGate, q: x.q, audioType: x.type.audio, phase, setPlaying, setPhase,
     }),
-    onSkipPrep: toAnswering,
+    onSkipPrep: g.toAnswering,
     onAudioEnd: makePlayEnd({ q: x.q, audioType: x.type.audio, phase, setPlaying, setPhase }),
-    onMic: makeMic({ phase, toAnswering, onStopRec: onSubmit }),
+    onMic: makeMic({ phase, toAnswering: g.toAnswering, onStopRec: onSubmit }),
     onShowText: makeToggle({ on: textShown, set: setTextShown }),
     onShowAnswer: makeToggle({ on: answerShown, set: setAnswerShown }),
     onTyped: makeTextChange({ set: setTyped }),
     onStopRec: onSubmit,
     onSubmit,
     onRedo: makeRedo({
-      setPhase, setRec, setMicDenied, setTyped, setRecUrl, setElapsed, setTextShown, setPrepLeft, prepS,
+      setPhase, setRec, setMicDenied, setTyped, setRecUrl, setElapsed, setTextShown, setPrepLeft, prepS, reading,
     }),
   }
 }

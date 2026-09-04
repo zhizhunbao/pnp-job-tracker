@@ -632,6 +632,26 @@ export const INST_KEY: Record<string, string> = {
    * 听写句子。
    */
   WFD: 'pte.inst.WFD',
+
+  /**
+   * 阅读填空。
+   */
+  RFIB: 'pte.inst.RFIB',
+
+  /**
+   * 读写填空。
+   */
+  RWFIB: 'pte.inst.RWFIB',
+
+  /**
+   * 段落排序。
+   */
+  ROP: 'pte.inst.ROP',
+
+  /**
+   * 阅读单选。
+   */
+  RMCS: 'pte.inst.RMCS',
 }
 
 /**
@@ -698,6 +718,71 @@ export const QID_ID_AT = 2
  * 路由第三段是不是站内题号(纯数字 → 按题号查;否则按老的 源-源内id 形查,旧链接不断)。
  */
 export const NUM_RE = /^[0-9]+$/
+
+/**
+ * 载荷型码:阅读填空(词库选词填空)。
+ */
+export const KIND_RFIB = 'RFIB'
+
+/**
+ * 载荷型码:读写填空(每空下拉)。
+ */
+export const KIND_RWFIB = 'RWFIB'
+
+/**
+ * 载荷型码:段落排序。
+ */
+export const KIND_ROP = 'ROP'
+
+/**
+ * 载荷型码:阅读单选。
+ */
+export const KIND_RMCS = 'RMCS'
+
+/**
+ * 载荷里空位占位(`{b1}`),按序号找空。
+ */
+export const BLANK_RE = /\{b(\d+)\}/
+
+/**
+ * 带捕获组的 split 结果:偶数位是文字段,奇数位是捕获到的空位序号 —— 按 2 取模判位。
+ */
+export const SPLIT_CAP_MOD = 2
+
+/**
+ * 没选。
+ */
+export const PICK_NONE = ''
+
+/**
+ * 空位下拉的占位项文字(不选时显示的一横)。
+ */
+export const PICK_DASH = '—'
+
+/**
+ * 段落上移。
+ */
+export const MOVE_UP = -1
+
+/**
+ * 段落下移。
+ */
+export const MOVE_DOWN = 1
+
+/**
+ * 段落序号显示(1 起)。
+ */
+export const ORDER_BASE = 1
+
+/**
+ * 单选项的 input type。
+ */
+export const INPUT_RADIO = 'radio'
+
+/**
+ * 单选项组名(同题一组)。
+ */
+export const RADIO_NAME = 'pte-choice'
 
 /**
  * 服务端进程内缓存时长(题型维度 / 各型题单;seed 日更,一分钟足够)。

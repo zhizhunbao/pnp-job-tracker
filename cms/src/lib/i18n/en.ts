@@ -1151,6 +1151,8 @@ export const pteEn: Record<keyof typeof pteZh, string> = {
   'pte.empty': 'No matching questions', 'pte.more': 'Show more ({n} left)',
   'pte.pos': '{i} / {n}',
   'pte.inst.RA': 'Read it aloud naturally and clearly within 40 seconds', 'pte.inst.RS': 'Listen once, repeat it exactly', 'pte.inst.ASQ': 'Listen, answer in a word or two', 'pte.inst.WFD': 'Listen once, type it exactly',
+  'pte.inst.RFIB': 'Pick a word for each blank', 'pte.inst.RWFIB': 'Choose from each dropdown', 'pte.inst.ROP': 'Put the paragraphs in order',
+  'pte.inst.RMCS': 'Choose one answer', 'pte.up': 'Up', 'pte.down': 'Down',
   'pte.prep': 'Prepare', 'pte.skipPrep': 'Skip prep', 'pte.play': 'Play question', 'pte.replay': 'Play again', 'pte.audio': 'Question audio',
   'pte.rec': 'Record',
   'pte.tts': 'Model reading', 'pte.myRec': 'My recording', 'pte.recording': 'Recording', 'pte.recCap': 'Finish within {s} seconds', 'pte.stop': 'Stop',

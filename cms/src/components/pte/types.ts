@@ -203,6 +203,11 @@ export type PteOneDbRow = PteListDbRow & {
    * 公开音频直链;NULL = 无(批三 TTS 合成)。
    */
   audioUrl: string | null
+
+  /**
+   * 型专属载荷 JSON 串(批五阅读四型);四型老题 null。
+   */
+  extra: string | null
 }
 
 /**
@@ -250,6 +255,11 @@ export type PteRow = {
   num: string
 
   /**
+   * 题名(多墨朗读/描图与小枫叶阅读题有;句型题为空串)。
+   */
+  title: string | null
+
+  /**
    * 题面(题单列显示首句截断,由 css 截)。
    */
   text: string
@@ -283,6 +293,11 @@ export type PteQuestion = PteRow & {
    * 音频直链;null = 用浏览器朗读顶(批三换盒子 TTS)。
    */
   audioUrl: string | null
+
+  /**
+   * 型专属载荷(解析好、按 kind 分形);四型老题 null。
+   */
+  extra: PteExtra | null
 }
 
 /**
@@ -634,9 +649,24 @@ export type PteNavIn = {
  */
 export type NavTextIn = {
   /**
+   * 题名(有题名的型显题名不显题面;空串 = 没有)。
+   */
+  title: string | null
+
+  /**
    * 整段题面。
    */
   text: string
+}
+
+/**
+ * 题名格归一的入参(库里 null 与空串都算「没有」)。
+ */
+export type TitleTextIn = {
+  /**
+   * 库里的题名格。
+   */
+  title: string | null
 }
 
 /**
@@ -843,6 +873,11 @@ export type PteAnswerIn = {
    * Pro 用户(配额计数行不渲)。
    */
   pro: boolean
+
+  /**
+   * 阅读题作答面板(非阅读题时空转)。
+   */
+  r: PteReadingPanel
 }
 
 
@@ -1030,6 +1065,11 @@ export type PteAnswerHookIn = {
    * Pro 用户(不计配额)。
    */
   pro: boolean
+
+  /**
+   * 阅读题(批五四型):一进来就是作答段,不起录音,配额闸在提交处。
+   */
+  reading: boolean
 }
 
 /**
@@ -1746,6 +1786,56 @@ export type GatedSubmitIn = {
    * 落闸态。
    */
   setGate: (g: PteGate) => void
+}
+
+/**
+ * 造两颗带配额闸手柄(提交 / 进入作答)的入参。
+ */
+export type GatesIn = {
+  /**
+   * Pro 会员不计配额。
+   */
+  pro: boolean
+
+  /**
+   * 是否已登录(满额时决定开注册框还是升级框)。
+   */
+  loggedIn: boolean
+
+  /**
+   * 今日已用次数。
+   */
+  used: number
+
+  /**
+   * 真提交。
+   */
+  submit: () => void
+
+  /**
+   * 落闸。
+   */
+  setGate: (g: PteGate) => void
+
+  /**
+   * 切阶段(进入作答用)。
+   */
+  setPhase: (p: PtePhase) => void
+}
+
+/**
+ * 两颗带配额闸的手柄。
+ */
+export type GatesOut = {
+  /**
+   * 带闸的提交。
+   */
+  gated: () => void
+
+  /**
+   * 带闸的「进入作答」。
+   */
+  toAnswering: () => void
 }
 
 /**
@@ -3103,6 +3193,11 @@ export type RedoIn = {
    * 准备秒数(RA);0 = 这型没有准备段。
    */
   prepS: number
+
+  /**
+   * 阅读题(重做回作答段而不是准备段)。
+   */
+  reading: boolean
 }
 
 /**
@@ -3348,6 +3443,11 @@ export type PteCellRow = {
    * 题号数值(列排序用)。
    */
   numN: number
+
+  /**
+   * 题名(空串 = 没有,题面前不加粗行)。
+   */
+  title: string
 
   /**
    * 最近考过日;null = 没记录(列排序用)。
@@ -3644,4 +3744,444 @@ export type ListOfIn = {
    * 路由里的型段。
    */
   type: string
+}
+
+/**
+ * 载荷里的一个空:序号、正确词、下拉选项(读写填空有;阅读填空没有,选项取词库)。
+ */
+export type PteBlank = {
+  /**
+   * 序号(1 起,对应题面里的 {bN})。
+   */
+  id: number
+
+  /**
+   * 正确词。
+   */
+  answer: string
+
+  /**
+   * 这一空的下拉选项;阅读填空为空清单。
+   */
+  options: string[]
+}
+
+/**
+ * 填空载荷(阅读填空 / 读写填空同形;阅读填空多一个词库)。
+ */
+export type PteBlanksExtra = {
+  /**
+   * 型码:RFIB / RWFIB。
+   */
+  kind: string
+
+  /**
+   * 带 {bN} 占位的题面。
+   */
+  content: string
+
+  /**
+   * 空清单。
+   */
+  blanks: PteBlank[]
+
+  /**
+   * 词库(阅读填空);读写填空为空清单。
+   */
+  words: string[]
+}
+
+/**
+ * 段落排序的一段。
+ */
+export type PteParagraph = {
+  /**
+   * 段 id(正确序用它指)。
+   */
+  id: number
+
+  /**
+   * 段正文。
+   */
+  text: string
+}
+
+/**
+ * 段落排序载荷。
+ */
+export type PteOrderExtra = {
+  /**
+   * 型码:ROP。
+   */
+  kind: string
+
+  /**
+   * 段落(给出的乱序)。
+   */
+  paragraphs: PteParagraph[]
+
+  /**
+   * 正确序(段 id 清单)。
+   */
+  order: number[]
+}
+
+/**
+ * 阅读单选载荷。
+ */
+export type PteChoiceExtra = {
+  /**
+   * 型码:RMCS。
+   */
+  kind: string
+
+  /**
+   * 题干。
+   */
+  question: string
+
+  /**
+   * 选项。
+   */
+  options: string[]
+
+  /**
+   * 正确项(与选项原文相同)。
+   */
+  answer: string
+}
+
+/**
+ * 型专属载荷(按 kind 分形)。
+ */
+export type PteExtra = PteBlanksExtra | PteOrderExtra | PteChoiceExtra
+
+/**
+ * 载荷 JSON 串解析(`extraOf`)的入参。
+ */
+export type ExtraOfIn = {
+  /**
+   * JSON 串;null / 坏串给 null。
+   */
+  raw: string | null
+}
+
+/**
+ * 阅读题作答状态机(usePteReading)的入参。
+ */
+export type PteReadingHookIn = {
+  /**
+   * 载荷;null = 不是阅读题(机器空转)。
+   */
+  extra: PteExtra | null
+}
+
+/**
+ * 阅读题作答面板(填空的各空所选 / 段落现序 / 单选所选 + 三只手柄)。
+ */
+export type PteReadingPanel = {
+  /**
+   * 各空所选(空序号 → 词;没选 = 空串)。
+   */
+  fills: Record<number, string>
+
+  /**
+   * 段落现序(段 id 清单)。
+   */
+  order: number[]
+
+  /**
+   * 单选所选(选项原文;没选 = 空串)。
+   */
+  choice: string
+
+  /**
+   * 某空的下拉手柄工厂。
+   */
+  fillOf: (id: number) => (e: React.ChangeEvent<HTMLSelectElement>) => void
+
+  /**
+   * 某段上移 / 下移的手柄工厂。
+   */
+  moveOf: (m: PteMoveIn) => () => void
+
+  /**
+   * 单选的手柄工厂。
+   */
+  chooseOf: (option: string) => () => void
+}
+
+/**
+ * 段落排序移动一步的入参。
+ */
+export type PteMoveIn = {
+  /**
+   * 段落号。
+   */
+  id: number
+
+  /**
+   * 方向(-1 上移,+1 下移)。
+   */
+  dir: number
+}
+
+/**
+ * 填空件(PteBlanks)的 props。
+ */
+export type PteBlanksIn = {
+  /**
+   * 载荷。
+   */
+  extra: PteBlanksExtra
+
+  /**
+   * 作答面板。
+   */
+  r: PteReadingPanel
+
+  /**
+   * 已提交(显示对错与正确词)。
+   */
+  checked: boolean
+}
+
+/**
+ * 段落排序件(PteOrder)的 props。
+ */
+export type PteOrderIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 载荷。
+   */
+  extra: PteOrderExtra
+
+  /**
+   * 作答面板。
+   */
+  r: PteReadingPanel
+
+  /**
+   * 已提交(显示正确序号)。
+   */
+  checked: boolean
+}
+
+/**
+ * 单选件(PteChoice)的 props。
+ */
+export type PteChoiceIn = {
+  /**
+   * 载荷。
+   */
+  extra: PteChoiceExtra
+
+  /**
+   * 作答面板。
+   */
+  r: PteReadingPanel
+
+  /**
+   * 已提交(显示对错)。
+   */
+  checked: boolean
+}
+
+/**
+ * 题面按空切段(`blankPartsOf`)的入参。
+ */
+export type BlankPartsIn = {
+  /**
+   * 带 {bN} 占位的题面。
+   */
+  content: string
+}
+
+/**
+ * 题面的一段:文字或空(blank 序号;文字段为 0)。
+ */
+export type BlankPart = {
+  /**
+   * 文字段的文字;空位段为空串。
+   */
+  text: string
+
+  /**
+   * 空位序号;文字段为 0。
+   */
+  blank: number
+}
+
+/**
+ * 某空的对错(`blankStateOf`)的入参。
+ */
+export type BlankStateIn = {
+  /**
+   * 所选。
+   */
+  picked: string
+
+  /**
+   * 正确词。
+   */
+  answer: string
+
+  /**
+   * 已提交。
+   */
+  checked: boolean
+}
+
+/**
+ * 段落排序某段在正确序里的位置(`orderIndexOf`)的入参。
+ */
+export type OrderIndexIn = {
+  /**
+   * 正确序。
+   */
+  order: number[]
+
+  /**
+   * 段 id。
+   */
+  id: number
+}
+
+/**
+ * 段落挪位(`movedOrderOf`)的入参。
+ */
+export type MovedOrderIn = {
+  /**
+   * 现序。
+   */
+  order: number[]
+
+  /**
+   * 要挪的段 id。
+   */
+  id: number
+
+  /**
+   * 方向(-1 上 / 1 下)。
+   */
+  dir: number
+}
+
+/**
+ * 段落挪位手柄(`makeMove`)的入参。
+ */
+export type MoveIn = {
+  /**
+   * 现序。
+   */
+  order: number[]
+
+  /**
+   * 落序。
+   */
+  set: (o: number[]) => void
+
+  /**
+   * 段 id。
+   */
+  id: number
+
+  /**
+   * 方向。
+   */
+  dir: number
+}
+
+/**
+ * 填空手柄(`makeFill`)的入参。
+ */
+export type FillIn = {
+  /**
+   * 现所选表。
+   */
+  fills: Record<number, string>
+
+  /**
+   * 落所选表。
+   */
+  set: (f: Record<number, string>) => void
+
+  /**
+   * 空序号。
+   */
+  id: number
+}
+
+/**
+ * 提交手柄挑选(`submitOf`)的入参:阅读题在提交处过配额闸,其余型在开始处过。
+ */
+export type SubmitOfIn = {
+  /**
+   * 阅读题。
+   */
+  reading: boolean
+
+  /**
+   * 真提交。
+   */
+  submit: () => void
+
+  /**
+   * 带闸的提交(阅读题用)。
+   */
+  gated: () => void
+}
+
+/**
+ * 起始段位(`initialPhaseOf`)的入参。
+ */
+export type InitialPhaseIn = {
+  /**
+   * 阅读题。
+   */
+  reading: boolean
+}
+
+/**
+ * 阅读题答题体(PteReading)的 props。
+ */
+export type PteReadingIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 题。
+   */
+  q: PteQuestion
+
+  /**
+   * 载荷。
+   */
+  extra: PteExtra
+
+  /**
+   * 作答面板。
+   */
+  r: PteReadingPanel
+
+  /**
+   * 已提交。
+   */
+  checked: boolean
+
+  /**
+   * 题面高亮词 → 档。
+   */
+  tiers: Record<string, number>
+
+  /**
+   * 点词开弹框。
+   */
+  onHoverWord: (e: React.MouseEvent<HTMLElement>) => void
 }

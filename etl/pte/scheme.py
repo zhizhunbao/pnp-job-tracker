@@ -540,3 +540,14 @@ class SentenceRowsIn:
 
     cache: dict
     """翻译缓存 {sha1: {en, zh}}。"""
+
+
+@dataclass
+class SnippetTitleIn:
+    """索引标题是不是题面片段的判定入参。"""
+
+    title: str
+    """索引标题。"""
+
+    text: str
+    """mart 题面。"""

@@ -1266,6 +1266,8 @@ export const pteZh = {
   'pte.empty': '没有符合的题', 'pte.more': '显示更多(还有 {n} 题)',
   'pte.pos': '{i} / {n}',
   'pte.inst.RA': '40 秒内自然清晰地读出来', 'pte.inst.RS': '听一遍,原样复述', 'pte.inst.ASQ': '听问题,一两个词作答', 'pte.inst.WFD': '听一遍,原样写下来',
+  'pte.inst.RFIB': '每个空选一个词', 'pte.inst.RWFIB': '每个空从下拉里选', 'pte.inst.ROP': '把段落排成正确顺序',
+  'pte.inst.RMCS': '选一个正确答案', 'pte.up': '上移', 'pte.down': '下移',
   'pte.prep': '准备', 'pte.skipPrep': '跳过准备', 'pte.play': '播放题目', 'pte.replay': '再听一遍', 'pte.audio': '题目音频',
   'pte.rec': '录音',
   'pte.tts': '示范朗读', 'pte.myRec': '我的录音', 'pte.recording': '录音中', 'pte.recCap': '{s} 秒内答完', 'pte.stop': '停止',

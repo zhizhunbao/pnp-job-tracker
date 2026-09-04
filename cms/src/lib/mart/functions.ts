@@ -582,7 +582,7 @@ function toPteQuestion(r: MartRow): MartRow {
     qid: cellOf(r.qid), source: cellOf(r.source), type: cellOf(r.type), num: cellOf(r.num), title: cellOf(r.title),
     text: cellOf(r.text), answer: cellOf(r.answer), audio_url: cellOf(r.audioUrl), audio_file: cellOf(r.audioFile),
     image_url: cellOf(r.imageUrl), predicted: cellOf(r.predicted), seen: cellOf(r.seen), seen_n: cellOf(r.seenN),
-    votes: cellOf(r.votes), freq: cellOf(r.freq), fetched: cellOf(r.fetched),
+    votes: cellOf(r.votes), freq: cellOf(r.freq), fetched: cellOf(r.fetched), extra: cellOf(r.extra),
   }
 }
 

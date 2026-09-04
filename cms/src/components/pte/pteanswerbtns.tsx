@@ -37,7 +37,7 @@ export function PteAnswerBtns({ t, q, type, a, prevHref, nextHref, pro }: PteAns
       {answering && wfd && type.audio && a.canPlay && (
         <Button kind={KIND_SECONDARY} onClick={a.onPlay}>{t('pte.replay')}</Button>
       )}
-      {checked && wfd && <Button kind={KIND_SECONDARY} onClick={a.onRedo}>{t('pte.redo')}</Button>}
+      {checked && (wfd || q.extra != null) && <Button kind={KIND_SECONDARY} onClick={a.onRedo}>{t('pte.redo')}</Button>}
       <Button kind={KIND_SECONDARY} href={hrefOrNone(prevHref)} disabled={prevHref == null}>{t('pte.prev')}</Button>
       <Button kind={nextKind} href={hrefOrNone(nextHref)} disabled={nextHref == null}>{t('pte.next')}</Button>
     </div>

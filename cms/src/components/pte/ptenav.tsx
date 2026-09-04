@@ -50,7 +50,7 @@ export function PteNav({ types, type, rowsByType, qid, lang }: PteNavIn) {
     items.push(
       <LinkButton key={r.qid} href={r.href} className={cls}>
         <span id={NAV_ID_PREFIX + r.qid} className={css.navNum}>{NUM_HEAD}{r.num}</span>
-        <span className={css.navText}>{navTextOf({ text: r.text })}</span>
+        <span className={css.navText}>{navTextOf({ text: r.text, title: r.title })}</span>
       </LinkButton>,
     )
   }

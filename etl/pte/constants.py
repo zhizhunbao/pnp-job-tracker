@@ -564,9 +564,9 @@ SRC_PTEBANK = "ptebank"
 YN_SIG_TYPE = {
     "answer,id,question": "ASQ",
     "id,imageId,imageUrl,question": "DI",
-    "blanks,id,text,title": "RWFIB",
-    "answerDescription,blanks,content,contentTranslation,id,title,words,wordsTranslation": "RWFIB",
-    "blanks,content,contentTranslation,id,isImportant,title": "RFIB",
+    "blanks,id,text,title": "RFIB-TYPED",
+    "answerDescription,blanks,content,contentTranslation,id,title,words,wordsTranslation": "RFIB",
+    "blanks,content,contentTranslation,id,isImportant,title": "RWFIB",
     "audioUrl,content,displayText,id,title,transcript": "SST",
     "audioUrl,content,correctAnswers,explanation,id,options,question,title,transcript": "LMCM",
     "audioUrl,content,correctAnswer,explanation,id,options,question,title,transcript": "LMCS",
@@ -583,6 +583,8 @@ YN_SIG_TYPE = {
     "id,isFrequent,isImportant,text": "WFD",
 }
 """ynwac 组签名 → 标准题型码(签名是题型稳定身份,19 组签名互异实测确认)。
+2026-09-04 批五改正:带 words 词库的是阅读填空 RFIB(拖词),blanks 里带 options 的是读写填空 RWFIB(下拉);
+只有 text + 正确答案没词库没选项的那组(51 题)另记 RFIB-TYPED,与 RFIB 的 id 撞号且不是考试形态,不出表。
 确证依据 same-source-analysis §1(2026-09-01 抽读):RTS/EMAIL 确证;WE? 存疑留问号。
 arr13(id,isImportant,text)2026-09-02 由投票 API 定为 RS:votes 按 RS/WFD 分型,arr18 已是 WFD
 (带 isFrequent),库内唯一剩下的句库组只能对 RS(RS 投票 id ≤ 73 落在其 1..186 内)。"""
@@ -933,6 +935,10 @@ DK_K_TEXT = "te"
 
 DK_TITLE_KEYS = ("te", "tt", "q")
 """索引标题的取值顺序(全句 → 标题 → 问句;实测 2026-09-02:RA/DI/FIB 走 tt,ASQ 走 q)。"""
+
+DK_TT_LANGS = ("en",)
+"""tt 是多语标题字典(fr/ja/es/zh-CN/en…),取值顺序:英文站英文题名先,没有再中文
+(2026-09-04 Frank「多墨的题名没加进来吗」—— 此前 dk_title_of 只认 str,字典一律跳过,朗读/描图题名全空)。;同日收窄只取 en:站点英文优先,中文题名一律不当题名,mart 段 CJK_RE 兜底)。"""
 
 DK_K_LEVEL = "l"
 """列表项:难度等级 1-5。"""
@@ -1340,8 +1346,100 @@ T_ASQ = "ASQ"
 T_WFD = "WFD"
 """标准题型码:听写句子。"""
 
-MART_TYPES = (T_RA, T_RS, T_WFD, T_ASQ)
-"""首批出表的标准题型码(Frank 2026-09-03:四型先上,其余 15 型批二后扩)。"""
+T_RFIB = "RFIB"
+"""阅读填空(拖词进空)。"""
+
+T_RWFIB = "RWFIB"
+"""读写填空(每空下拉选)。"""
+
+T_ROP = "ROP"
+"""段落排序。"""
+
+T_RMCS = "RMCS"
+"""阅读单选。"""
+
+TTS_TYPES = (T_RA, T_RS, T_WFD, T_ASQ)
+"""要合成音频的型(朗读的示范 + 三个听力型的题目音频);阅读型不合成。"""
+
+Q_K_EXTRA = "extra"
+"""题行:型专属载荷 JSON 串(填空的空与选项 / 排序的段落与正确序 / 单选的选项与正确项);四型老题 None。"""
+
+K_CORRECT_ANSWER = "correctAnswer"
+"""ynwac:单选正确项 / 填空一空的正确词。"""
+
+K_CORRECT_ORDER = "correctOrder"
+"""ynwac:段落排序的正确序(段 id 清单)。"""
+
+K_WORDS = "words"
+"""ynwac:阅读填空的词库(正确词 + 干扰词)。"""
+
+X_K_KIND = "kind"
+"""载荷:型码(前端按它挑答题件)。"""
+
+X_K_CONTENT = "content"
+"""载荷:带占位的题面(`{b1}` … 一空一个)。"""
+
+X_K_BLANKS = "blanks"
+"""载荷:空清单。"""
+
+X_K_ID = "id"
+"""载荷:空 / 段的 id。"""
+
+X_K_ANSWER = "answer"
+"""载荷:正确项。"""
+
+X_K_OPTIONS = "options"
+"""载荷:选项清单。"""
+
+X_K_WORDS = "words"
+"""载荷:词库。"""
+
+X_K_PARAGRAPHS = "paragraphs"
+"""载荷:段落清单。"""
+
+X_K_ORDER = "order"
+"""载荷:正确段序。"""
+
+X_K_QUESTION = "question"
+"""载荷:题干。"""
+
+X_K_TEXT = "text"
+"""载荷:段落正文。"""
+
+BLANK_TPL = "{{b{n}}}"
+"""载荷里空位占位(`{b1}`;前端按序号找空)。"""
+
+BLANK_YN_RE = re.compile(r"\{blank(\d+)\}")
+"""ynwac 阅读填空占位(`{blank1}`)。"""
+
+BLANK_OPTS_RE = re.compile(r"\{([^{}]+?,[^{}]+?)\}")
+"""ynwac 读写填空行内选项(`{use, estimate, predict, describe}`)。"""
+
+BLANK_SHOW = "____"
+"""题单里显示的空(占位换成四条下划线)。"""
+
+ANSWER_SEP = ", "
+"""多空答案在 answer 列的连接符。"""
+
+ORDER_SEP = "-"
+"""段落正确序在 answer 列的连接符(2-1-3-4)。"""
+
+PARA_SEP = " "
+"""段落排序题面(题单显示用)的段间连接。"""
+
+MART_TYPES = (T_RA, T_RS, T_WFD, T_ASQ, T_RFIB, T_RWFIB, T_ROP, T_RMCS)
+"""出表的标准题型码(2026-09-03 四型先上;2026-09-04 批五 +阅读填空 / 读写填空 / 段落排序 / 阅读单选,题面只取 ynwac)。"""
+
+EXTRA_TYPES = (T_RFIB, T_RWFIB, T_ROP, T_RMCS)
+"""必须带型专属载荷的型:载荷造不出(题干空 / 选项不足)= 空壳题不出行(2026-09-04 ynwac RMCS #3 实撞:
+正文只有一句中文回忆、一个选项)。"""
+
+RMCS_OPTIONS_MIN = 2
+"""阅读单选至少要的选项数,少于此 = 不是题。"""
+
+CJK_RE = re.compile(r"[一-鿿]")
+"""汉字探针:题面含汉字 = 考生中文回忆碎片(ynwac「碎片题」14 条实撞)不是题,带载荷的型不出行;
+题名含汉字 = 不是题名(小枫叶「碎片题」/ 多墨中文 tt),留空退回题面。"""
 
 MART_TYPE_ROWS = (
     {"code": "RA", "section": "Speaking", "seq": 1, "nameZh": "朗读", "nameEn": "Read Aloud",

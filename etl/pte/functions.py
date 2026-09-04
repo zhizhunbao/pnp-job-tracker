@@ -31,13 +31,13 @@ from fetch.scheme import FetchIn, HttpClientLike as FetchClientLike
 from paths.constants import ENC_UTF8, MART
 from paths.functions import write_json, write_text
 from paths.scheme import WriteJsonIn, WriteTextIn
-from pte.constants import (DK_AVATAR_MARKS, DK_CRAWL_SLUG, DK_ENTRY_DELAY_S, DK_ENTRY_FILE_TPL,
+from pte.constants import (K_OPTIONS, K_PARAGRAPHS, K_BLANKS, DK_AVATAR_MARKS, DK_CRAWL_SLUG, DK_ENTRY_DELAY_S, DK_ENTRY_FILE_TPL,
                            DK_ENTRY_JS, DK_ENTRY_TPL, DK_ENTRY_WAIT_S, DK_FREQ_HOT, DK_J_HTML,
                            DK_J_IMGS, DK_J_TEXT, DK_J_TITLE, DK_K_FREQ, DK_SHOW_ROUNDS_MAX,
                            DK_BLOCK_ABORT_MAX, DK_BLOCK_MARK, DK_BLOCK_POLL_S, DK_BLOCK_WAIT_S,
                            DK_BODY_TEXT_JS, P_DK_BLOCK_ABORT, P_DK_BLOCK_OK, P_DK_BLOCK_TIMEOUT,
                            P_DK_BLOCK_WAIT,
-                           DK_K_ID, DK_K_TEXT, DK_TITLE_KEYS, DK_LIST_TPL, DK_NAV_TIMEOUT_MS, DK_PAGE_WAIT_S,
+                           DK_K_ID, DK_K_TEXT, DK_TITLE_KEYS, DK_TT_LANGS, DK_LIST_TPL, DK_NAV_TIMEOUT_MS, DK_PAGE_WAIT_S,
                            DK_PART_TOKEN, DK_PART_TYPE, DK_PARTS, DK_R_CONTENT, DK_R_IMAGES, DK_R_PART,
                            DK_RAW_LIST_TPL, DK_SHOW_JS, DK_SHOW_WAIT_S, DK_SOURCE, DK_STORE_JS,
                            DK_TEXT_END, DK_TEXT_PARTS, DK_TEXT_START, DK_WAIT_UNTIL, OUT_DK_BANK,
@@ -106,16 +106,16 @@ from pte.constants import (DK_AVATAR_MARKS, DK_CRAWL_SLUG, DK_ENTRY_DELAY_S, DK_
                            XJ_EXAM_STOP_STREAK,
                            DK_ANSWER_MARK, DK_LINE_SEP, DK_STOP_MARKS, DK_TEXT_MARK, DK_TRANSCRIPT_MARK,
                            K_ANSWER, K_CONTENT, K_ID, K_QUESTION,
-                           MART_QUESTIONS_FILE, MART_TYPE_ROWS, MART_TYPES, MART_TYPES_FILE,
+                           MART_QUESTIONS_FILE, MART_TYPE_ROWS, MART_TYPES, EXTRA_TYPES, RMCS_OPTIONS_MIN, CJK_RE, MART_TYPES_FILE,
                            OPEN_TIGHT_RE, P_MART_DONE_TPL, PUNCT_TIGHT_RE, Q_K_ANSWER, Q_K_AUDIO_FILE,
                            Q_K_AUDIO_URL, Q_K_FETCHED, Q_K_IMAGE_URL, Q_K_NUM, Q_K_PREDICTED, Q_K_QID,
                            Q_K_SEEN_N, Q_K_TEXT, QID_SEP, TOKEN_JOIN, T_ASQ, T_RA, T_WFD, DK_K_SN)
-from pte.constants import (A_K_B64, AUDIO_URL_TPL, MART_SENTENCES_FILE, OUT_ZH, P_ZH_DONE_TPL, P_ZH_FAIL_TPL, P_ZH_TICK_TPL, SENT_SPLIT_RE, S_K_EN, S_K_IDX, S_K_SENTENCES, S_K_ZH, ZH_BATCH, ZH_K_MODEL, ZH_K_OPTIONS, ZH_K_PROMPT, ZH_K_RESPONSE, ZH_K_STREAM, ZH_K_THINK, ZH_LINE_RE, ZH_LINE_TPL, ZH_MODEL, ZH_OLLAMA_URL, ZH_OPTIONS, ZH_PROMPT_TPL, ZH_TICK_EVERY, ZH_TIMEOUT_S, NUM_DATE_SEP, N_K_NUM, N_K_QID, N_K_ROWS, N_K_TYPE, OUT_NUMBERS, D_K_COLLINS, D_K_DEFINITION, D_K_FAMILY, D_K_FORMS, D_K_FRQ, D_K_LEMMA, D_K_MISSING, D_K_TAG, D_K_PHON_UK, D_K_PHON_US, D_K_PHONETIC, D_K_ROWS, D_K_TRANSLATION, D_K_WORD, DICT_CSV_FIELD_MAX, DICT_CSV_K_COLLINS, DICT_CSV_K_DEFINITION, DICT_CSV_K_EXCHANGE, DICT_CSV_K_FRQ, DICT_DOMAIN_RE, DICT_NL, P_DICT_WN_TPL, WN_LEXICON, WN_POS_ADJ, WN_POS_KEEP, WN_POS_SAT, WN_REL_DERIVATION, DICT_CSV_K_TAG, DICT_CSV_K_PHONETIC, DICT_CSV_K_TRANSLATION, DICT_CSV_K_WORD, DICT_CSV_NL, DICT_EXCH_KV, DICT_EXCH_LEMMA, DICT_EXCH_SEP, DICT_EXCH_SKIP, DICT_MIN_LEN, DICT_WORD_RE, DICT_WORD_STRIP, IN_DICT_CSV, MART_DICT_FILE, OUT_DICT, P_DICT_DONE_TPL, P_DICT_YD_TPL, YD_API_TPL, YD_CRAWL_SLUG, YD_K_EC, YD_K_SIMPLE, YD_K_UK, YD_K_US, YD_K_WORD, YD_SLEEP_S, FFMPEG_BIN, FFMPEG_IN_ARGS, FFMPEG_OUT_ARGS, MART_AUDIO_FILE,
+from pte.constants import (A_K_B64, ANSWER_SEP, AUDIO_URL_TPL, BLANK_OPTS_RE, BLANK_SHOW, BLANK_TPL, BLANK_YN_RE, K_CORRECT_ANSWER, K_CORRECT_ORDER, K_WORDS, ORDER_SEP, PARA_SEP, Q_K_EXTRA, T_RFIB, T_RMCS, T_ROP, T_RWFIB, TTS_TYPES, X_K_ANSWER, X_K_BLANKS, X_K_CONTENT, X_K_ID, X_K_KIND, X_K_OPTIONS, X_K_ORDER, X_K_PARAGRAPHS, X_K_QUESTION, X_K_TEXT, X_K_WORDS, MART_SENTENCES_FILE, OUT_ZH, P_ZH_DONE_TPL, P_ZH_FAIL_TPL, P_ZH_TICK_TPL, SENT_SPLIT_RE, S_K_EN, S_K_IDX, S_K_SENTENCES, S_K_ZH, ZH_BATCH, ZH_K_MODEL, ZH_K_OPTIONS, ZH_K_PROMPT, ZH_K_RESPONSE, ZH_K_STREAM, ZH_K_THINK, ZH_LINE_RE, ZH_LINE_TPL, ZH_MODEL, ZH_OLLAMA_URL, ZH_OPTIONS, ZH_PROMPT_TPL, ZH_TICK_EVERY, ZH_TIMEOUT_S, NUM_DATE_SEP, N_K_NUM, N_K_QID, N_K_ROWS, N_K_TYPE, OUT_NUMBERS, D_K_COLLINS, D_K_DEFINITION, D_K_FAMILY, D_K_FORMS, D_K_FRQ, D_K_LEMMA, D_K_MISSING, D_K_TAG, D_K_PHON_UK, D_K_PHON_US, D_K_PHONETIC, D_K_ROWS, D_K_TRANSLATION, D_K_WORD, DICT_CSV_FIELD_MAX, DICT_CSV_K_COLLINS, DICT_CSV_K_DEFINITION, DICT_CSV_K_EXCHANGE, DICT_CSV_K_FRQ, DICT_DOMAIN_RE, DICT_NL, P_DICT_WN_TPL, WN_LEXICON, WN_POS_ADJ, WN_POS_KEEP, WN_POS_SAT, WN_REL_DERIVATION, DICT_CSV_K_TAG, DICT_CSV_K_PHONETIC, DICT_CSV_K_TRANSLATION, DICT_CSV_K_WORD, DICT_CSV_NL, DICT_EXCH_KV, DICT_EXCH_LEMMA, DICT_EXCH_SEP, DICT_EXCH_SKIP, DICT_MIN_LEN, DICT_WORD_RE, DICT_WORD_STRIP, IN_DICT_CSV, MART_DICT_FILE, OUT_DICT, P_DICT_DONE_TPL, P_DICT_YD_TPL, YD_API_TPL, YD_CRAWL_SLUG, YD_K_EC, YD_K_SIMPLE, YD_K_UK, YD_K_US, YD_K_WORD, YD_SLEEP_S, FFMPEG_BIN, FFMPEG_IN_ARGS, FFMPEG_OUT_ARGS, MART_AUDIO_FILE,
                            MERGE_SRC_ORDER, MIME_MP3, MIME_WAV, NORM_DROP, NORM_SPACE_RE, NORM_TEXT_RE, OUT_TTS_DIR,
                            OUT_TTS_INDEX, OUT_TTS_VOICES_DIR, P_MERGE_TPL, P_TTS_DONE_TPL, P_TTS_FAIL_TPL,
                            P_TTS_VOICE_TPL, TTS_FILE_SEP, TTS_K_FILE, TTS_K_MIME, TTS_K_ROWS, TTS_K_VOICE,
                            TTS_MODEL_SUFFIX, TTS_MP3_SUFFIX, TTS_VOICE, TTS_WAV_SUFFIX)
-from pte.scheme import (SentenceRowsIn, TranslateIn, FamilyIn, WnSense, WnWord, DictRowIn, BankIn, CloseIn, CollectIn, DiffIn, DkEntryIn, DkImagesIn, DkPageIn, DkPageLike,
+from pte.scheme import (SnippetTitleIn, SentenceRowsIn, TranslateIn, FamilyIn, WnSense, WnWord, DictRowIn, BankIn, CloseIn, CollectIn, DiffIn, DkEntryIn, DkImagesIn, DkPageIn, DkPageLike,
                         Group, GroupIn, HttpClientLike, MediaRowIn, PbBankIn, PbGroupsIn, PbRowIn,
                         DaysIn, RadarIn, RecentRowIn, RecentSummaryIn, SnapshotIn, VoteGetIn,
                         XjExamIn, XjExamUrlIn, XjGroupIn, XjListIn, XjPageLike, XjRowIn, XjSignalsIn,
@@ -1501,11 +1501,22 @@ def to_dk_index_rows(bank: dict) -> list:
 
 
 def dk_title_of(q: dict) -> str:
-    """列表项 → 索引标题(te → tt → q 首个非空,截 SNIPPET_LEN;全空留空串不造)。"""
+    """列表项 → 索引标题(te → tt → q 首个非空,截 SNIPPET_LEN;tt 是多语字典时按 DK_TT_LANGS 取;全空留空串不造)。"""
     for k in DK_TITLE_KEYS:
         v = q.get(k)
+        if isinstance(v, dict):
+            v = dk_tt_of(v)
         if isinstance(v, str) and len(v) > 0:
             return v[:SNIPPET_LEN]
+    return ""
+
+
+def dk_tt_of(tt: dict) -> str:
+    """多语标题字典 → 按 DK_TT_LANGS 首个非空串;都没有给空串。"""
+    for lang in DK_TT_LANGS:
+        v = tt.get(lang)
+        if isinstance(v, str) and len(v) > 0:
+            return v
     return ""
 
 
@@ -2136,6 +2147,18 @@ def media_lookup_of() -> dict:
     return out
 
 
+def is_snippet_title(x: SnippetTitleIn) -> bool:
+    """索引标题只是题面本身(整句或截到 SNIPPET_LEN 的前缀)= 不是题名,mart 留空;短题名(Yellow / Program)
+    恰是段首词也保留 —— 判据:对账键前缀相同 且(整句相等 或 标题长到截断线)。"""
+    nt = norm_text_of(x.text).replace(TOKEN_JOIN, NORM_DROP)
+    ni = norm_text_of(x.title).replace(TOKEN_JOIN, NORM_DROP)
+    if nt.startswith(ni) is False:
+        return False
+    if ni == nt:
+        return True
+    return len(x.title) >= SNIPPET_LEN - 1
+
+
 def to_pte_question_row(x: PteQuestionIn) -> dict | None:
     """索引行 → mart 题行;题面取不到(库里没这题 / 该型不会切)= None 不出行(题面空的题练不了)。"""
     src = x.row[IDX_K_SOURCE]
@@ -2147,6 +2170,12 @@ def to_pte_question_row(x: PteQuestionIn) -> dict | None:
     text = question_text_of(QuestionTextIn(source=src, qtype=t, q=q))
     if text == "":
         return None
+    extra = question_extra_of(QuestionTextIn(source=src, qtype=t, q=q))
+    if t in EXTRA_TYPES and (extra is None or CJK_RE.search(text) is not None):
+        return None
+    title = x.row[K_TITLE]
+    if is_snippet_title(SnippetTitleIn(title=title, text=text)) or CJK_RE.search(title) is not None:
+        title = ""
     sig = x.signals.get((src, t, sid))
     if sig is None:
         sig = {R_K_SEEN: None, R_K_SEEN_N: 0, R_K_FREQ: None, R_K_VOTES: None}
@@ -2157,9 +2186,10 @@ def to_pte_question_row(x: PteQuestionIn) -> dict | None:
         IDX_K_SOURCE: src,
         IDX_K_TYPE: t,
         Q_K_NUM: question_num_of(QuestionTextIn(source=src, qtype=t, q=q)),
-        K_TITLE: x.row[K_TITLE],
+        K_TITLE: title,
         Q_K_TEXT: text,
         Q_K_ANSWER: question_answer_of(QuestionTextIn(source=src, qtype=t, q=q)),
+        Q_K_EXTRA: extra,
         Q_K_AUDIO_URL: audio[0],
         Q_K_AUDIO_FILE: audio[1],
         Q_K_IMAGE_URL: image[0],
@@ -2170,6 +2200,118 @@ def to_pte_question_row(x: PteQuestionIn) -> dict | None:
         R_K_FREQ: sig[R_K_FREQ],
         Q_K_FETCHED: x.fetched,
     }
+
+
+def question_extra_of(x: QuestionTextIn) -> str | None:
+    """型专属载荷 JSON 串(批五):填空 = 带 {bN} 占位的题面 + 空(id / 正确词 / 下拉选项)+ 词库;
+    排序 = 段落 + 正确序;单选 = 题干 + 选项 + 正确项。四型老题与非 ynwac 源 None。"""
+    if x.source != SRC_YNWAC:
+        return None
+    if x.qtype == T_RFIB:
+        content = blank_yn_content_of(str(x.q.get(K_CONTENT, "")))
+        return json.dumps({X_K_KIND: x.qtype, X_K_CONTENT: content, X_K_BLANKS: blank_rows_of(list(x.q.get(K_BLANKS, []))),
+                           X_K_WORDS: str_list_of(list(x.q.get(K_WORDS, [])))}, ensure_ascii=False)
+    if x.qtype == T_RWFIB:
+        content = blank_inline_content_of(str(x.q.get(K_CONTENT, "")))
+        return json.dumps({X_K_KIND: x.qtype, X_K_CONTENT: content,
+                           X_K_BLANKS: blank_rows_of(list(x.q.get(K_BLANKS, [])))}, ensure_ascii=False)
+    if x.qtype == T_ROP:
+        return json.dumps({X_K_KIND: x.qtype, X_K_PARAGRAPHS: para_rows_of(list(x.q.get(K_PARAGRAPHS, []))),
+                           X_K_ORDER: int_list_of(list(x.q.get(K_CORRECT_ORDER, [])))}, ensure_ascii=False)
+    if x.qtype == T_RMCS:
+        question = str(x.q.get(K_QUESTION, "")).strip()
+        options = str_list_of(list(x.q.get(K_OPTIONS, [])))
+        if question == "" or len(options) < RMCS_OPTIONS_MIN:
+            return None
+        return json.dumps({X_K_KIND: x.qtype, X_K_QUESTION: question, X_K_OPTIONS: options,
+                           X_K_ANSWER: str(x.q.get(K_CORRECT_ANSWER, "")).strip()}, ensure_ascii=False)
+    return None
+
+
+def blank_yn_content_of(content: str) -> str:
+    """阅读填空:`{blank1}` → `{b1}`。"""
+    out = ""
+    at = 0
+    for m in BLANK_YN_RE.finditer(content):
+        out += content[at:m.start()] + BLANK_TPL.format(n=m.group(1))
+        at = m.end()
+    return out + content[at:]
+
+
+def blank_inline_content_of(content: str) -> str:
+    """读写填空:行内 `{a, b, c}` 按出现序换成 `{bN}`(blanks 序与行内序一致)。"""
+    out = ""
+    at = 0
+    n = 0
+    for m in BLANK_OPTS_RE.finditer(content):
+        n += 1
+        out += content[at:m.start()] + BLANK_TPL.format(n=n)
+        at = m.end()
+    return out + content[at:]
+
+
+def blank_rows_of(blanks: list) -> list:
+    """ynwac 空清单 → 载荷空清单 [{id, answer, options?}](有下拉选项的带 options)。"""
+    out: list = []
+    for i, b in enumerate(blanks):
+        row: dict = {X_K_ID: i + 1, X_K_ANSWER: str(b.get(K_CORRECT_ANSWER, "")).strip()}
+        if isinstance(b.get(K_OPTIONS), list):
+            row[X_K_OPTIONS] = str_list_of(list(b.get(K_OPTIONS)))
+        out.append(row)
+    return out
+
+
+def blank_answers_of(blanks: list) -> list:
+    """各空正确词(answer 列用)。"""
+    out: list = []
+    for b in blanks:
+        out.append(str(b.get(K_CORRECT_ANSWER, "")).strip())
+    return out
+
+
+def para_rows_of(paragraphs: list) -> list:
+    """ynwac 段落清单 → 载荷段落 [{id, text}]。"""
+    out: list = []
+    for p in paragraphs:
+        out.append({X_K_ID: int(p.get(K_ID, 0)), X_K_TEXT: str(p.get(K_TEXT, "")).strip()})
+    return out
+
+
+def para_text_of(paragraphs: list) -> str:
+    """段落排序的题单显示题面:各段正文按给定序拼一段。"""
+    out: list = []
+    for p in paragraphs:
+        out.append(str(p.get(K_TEXT, "")).strip())
+    return PARA_SEP.join(out)
+
+
+def str_list_of(items: list) -> list:
+    """任意清单 → 去两端空白的字符串清单。"""
+    out: list = []
+    for it in items:
+        out.append(str(it).strip())
+    return out
+
+
+def int_list_of(items: list) -> list:
+    """任意清单 → 整数清单。"""
+    out: list = []
+    for it in items:
+        out.append(int(it))
+    return out
+
+
+def int_strs_of(items: list) -> list:
+    """任意清单 → 整数的字符串清单(answer 列拼串用)。"""
+    out: list = []
+    for it in items:
+        out.append(str(int(it)))
+    return out
+
+
+def blank_show_of(content: str) -> str:
+    """题单显示用题面:两种占位都换成四条下划线。"""
+    return BLANK_OPTS_RE.sub(BLANK_SHOW, BLANK_YN_RE.sub(BLANK_SHOW, content)).strip()
 
 
 def question_num_of(x: QuestionTextIn) -> str:
@@ -2189,6 +2331,12 @@ def question_text_of(x: QuestionTextIn) -> str:
             return str(x.q.get(K_CONTENT, "")).strip()
         if x.qtype == T_ASQ:
             return str(x.q.get(K_QUESTION, "")).strip()
+        if x.qtype in (T_RFIB, T_RWFIB):
+            return blank_show_of(str(x.q.get(K_CONTENT, "")))
+        if x.qtype == T_ROP:
+            return para_text_of(list(x.q.get(K_PARAGRAPHS, [])))
+        if x.qtype == T_RMCS:
+            return str(x.q.get(K_CONTENT, "")).strip()
         return ""
     if x.qtype in DK_TEXT_PARTS:
         return str(x.q.get(DK_K_TEXT, "")).strip()
@@ -2203,7 +2351,14 @@ def question_text_of(x: QuestionTextIn) -> str:
 
 
 def question_answer_of(x: QuestionTextIn) -> str | None:
-    """答案:ASQ 才有(ynwac answer 字段 / duoink EXAMPLE ANSWER 段);其余 null 不造。"""
+    """答案:ASQ(ynwac answer 字段 / duoink EXAMPLE ANSWER 段);批五阅读四型给一行可读答案
+    (填空:各空正确词;排序:正确段序;单选:正确项);其余 null 不造。"""
+    if x.source == SRC_YNWAC and x.qtype in (T_RFIB, T_RWFIB):
+        return ANSWER_SEP.join(blank_answers_of(list(x.q.get(K_BLANKS, []))))
+    if x.source == SRC_YNWAC and x.qtype == T_ROP:
+        return ORDER_SEP.join(int_strs_of(list(x.q.get(K_CORRECT_ORDER, []))))
+    if x.source == SRC_YNWAC and x.qtype == T_RMCS:
+        return str(x.q.get(K_CORRECT_ANSWER, "")).strip()
     if x.qtype != T_ASQ:
         return None
     if x.source == SRC_YNWAC:
@@ -2441,6 +2596,8 @@ def run_pte_tts() -> None:
     have = 0
     fail = 0
     for r in rows:
+        if r[IDX_K_TYPE] not in TTS_TYPES:
+            continue
         qid = r[Q_K_QID]
         hit = index.get(qid)
         if hit is not None and (RAW_PTE / hit[TTS_K_FILE]).exists():
