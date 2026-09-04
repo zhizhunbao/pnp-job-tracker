@@ -9,6 +9,7 @@
  */
 import { Button } from '@/components/button'
 import { KIND_SECONDARY } from './constants'
+import { recallsOf } from './functions'
 import { PteNoteForm } from './ptenoteform'
 import type { PteCommentsViewIn } from './types'
 import css from './pte.module.css'
@@ -21,7 +22,7 @@ import css from './pte.module.css'
  */
 export function PteComments({ t, c, loggedIn }: PteCommentsViewIn) {
   const noteRows = []
-  for (const n of c.notes) {
+  for (const n of recallsOf({ exams: c.exams }).concat(c.notes)) {
     noteRows.push(
       <div key={n.id} className={css.note}>
         <div className={css.noteHead}>{n.authorName}<span className={css.noteDate}>{n.date}</span></div>
@@ -32,13 +33,15 @@ export function PteComments({ t, c, loggedIn }: PteCommentsViewIn) {
   return (
     <div className={css.card}>
       <div className={css.secHead}>
-        <div className={css.secTitle}>{t('pte.c.notes')}<span className={css.secN}>{c.notes.length}</span></div>
+        <div className={css.secTitle}>
+          {t('pte.c.notes')}<span className={css.secN}>{recallsOf({ exams: c.exams }).length + c.notes.length}</span>
+        </div>
         {loggedIn && <Button kind={KIND_SECONDARY} sm onClick={c.onNoteOpen}>{t('pte.c.write')}</Button>}
         {loggedIn === false && <Button kind={KIND_SECONDARY} sm onClick={c.onLoginOpen}>{t('pte.c.write')}</Button>}
       </div>
       {c.noteOpen && loggedIn && <PteNoteForm t={t} c={c} />}
       {noteRows}
-      {c.notes.length === 0 && <div className={css.emptyLine}>{t('pte.c.empty')}</div>}
+      {noteRows.length === 0 && <div className={css.emptyLine}>{t('pte.c.empty')}</div>}
     </div>
   )
 }

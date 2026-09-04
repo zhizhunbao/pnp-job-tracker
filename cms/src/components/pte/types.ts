@@ -898,6 +898,56 @@ export type PteCommentsViewIn = {
 
 
 /**
+ * 挑带回忆的考试记录(`recallsOf`)的入参。
+ */
+export type RecallsIn = {
+  /**
+   * 考试记录。
+   */
+  exams: PteComment[]
+}
+
+/**
+ * 「考过」弹框(PteExamModal)的 props。
+ */
+export type PteExamModalIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 评论状态机面板。
+   */
+  c: PteCommentsPanel
+}
+
+/**
+ * 单行输入手柄(`makeInputChange`)的入参。
+ */
+export type InputChangeIn = {
+  /**
+   * 落格。
+   */
+  set: (v: string) => void
+}
+
+/**
+ * 开弹框并把考试日置今天(`makeExamOpen`)的入参。
+ */
+export type ExamOpenIn = {
+  /**
+   * 落开合。
+   */
+  setOpen: (on: boolean) => void
+
+  /**
+   * 落考试日。
+   */
+  setDate: (d: string) => void
+}
+
+/**
  * 留言表单(PteNoteForm)的 props。
  */
 export type PteNoteFormIn = {
@@ -1206,6 +1256,41 @@ export type PteCommentsPanel = {
    * 发留言。
    */
   onNoteSubmit: () => void
+
+  /**
+   * 「考过」弹框开着(Frank 2026-09-04「点考过应该显示这样一个弹框」:日期必填 + 回忆选填)。
+   */
+  examOpen: boolean
+
+  /**
+   * 弹框里的考试日。
+   */
+  examDate: string
+
+  /**
+   * 弹框里的考试回忆。
+   */
+  examRecall: string
+
+  /**
+   * 开「考过」弹框(考试日默认今天)。
+   */
+  onExamOpen: () => void
+
+  /**
+   * 关弹框不记。
+   */
+  onExamCancel: () => void
+
+  /**
+   * 考试日输入。
+   */
+  onExamDate: (e: React.ChangeEvent<HTMLInputElement>) => void
+
+  /**
+   * 考试回忆输入。
+   */
+  onExamRecall: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
 }
 
 /**
@@ -2868,6 +2953,21 @@ export type ExamSubmitIn = {
    * 落记录(发成功当场并进去)。
    */
   setExams: (rows: PteComment[]) => void
+
+  /**
+   * 考试日(YYYY-MM-DD,弹框里填的)。
+   */
+  examDate: string
+
+  /**
+   * 考试回忆(选填,空串 = 没写)。
+   */
+  recall: string
+
+  /**
+   * 关弹框。
+   */
+  setOpen: (on: boolean) => void
 }
 
 /**

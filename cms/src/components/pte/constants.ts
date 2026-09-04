@@ -146,6 +146,21 @@ export const CLOCK_TWO = 2
 export const INPUT_RANGE = 'range'
 
 /**
+ * 考试日输入框的 input type。
+ */
+export const INPUT_DATE = 'date'
+
+/**
+ * 考试回忆输入框行数。
+ */
+export const RECALL_ROWS = 4
+
+/**
+ * 考试回忆字数上限(与留言同)。
+ */
+export const RECALL_MAX = 1000
+
+/**
  * audio 预载档:只拿元数据(时长)。
  */
 export const PRELOAD_META = 'metadata'
@@ -204,6 +219,11 @@ export const FORM_KV = ':'
  * 字典弹框尺寸档(modal 桶的 sm)。
  */
 export const DICT_MODAL_SIZE = 'fit'
+
+/**
+ * 「考过」弹框尺寸档。
+ */
+export const MODAL_SM = 'sm'
 
 /**
  * 弹框里在读的喇叭:没在读。

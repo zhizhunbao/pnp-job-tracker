@@ -37,17 +37,17 @@ import type {
   AgoTextIn, AudioEndedIn, BracketIn, CanPlayIn, CellRowsIn, ChunkSinkFn, ClickFn, ClockIn, ColsOfIn, CommentsOfKindIn,
   DaysAgoIn, DeadFlag, DictApiBody, DictCloseIn, DictEntry, DictForm, DictFormsIn, DictLinesIn, DictLookupIn, DictPos,
   DictPosIn, DictTagKeyIn, DiffIn, DiffOut, DiffToken, DomEventFn, DoneClsIn, DoneResBody, DoneSyncIn, EffectFn,
-  ExamCountsIn, ExamSubmitIn, GateCloseIn, GatedPlayIn, GatedStartIn, GatedSubmitIn, HintIn, HoverWordIn, IsDoneIn,
-  ItemHrefIn, ItemMetaIn, LcsAtIn, ListMetaIn, ListTiersIn, LookupNowIn, MarkDoneIn, MaybeHref, MicIn, MoreIn,
-  NavPickIn, NavRowsIn, NavScrollIn, NavTextIn, NeighborsIn, NeighborsOut, NoteSubmitIn, PhaseSetIn, PhonIn, PlayIn,
-  PlayUrlIn, PostCommentIn, PteCellRow, PteCol, PteComment, PteCommentDbRow, PteCommentsIn, PteDictTagDbRow,
-  PteExamCount, PteExamCountDbRow, PteItem, PteItemLoadIn, PteListDbRow, PteListIn, PteMeta, PteOneDbRow, PteQuestion,
-  PteQuestionIn, PteRow, PteRowIn, PteSection, PteTiersIn, PteType, PteTypeDbRow, PteTypesIn, QidOfIn, QuotaDoc,
-  RateAudioIn, RateTextIn, RecorderHandle, RecorderStopFn, RecorderStopIn, RedoIn, SaveDoneIn, SectionLabelIn,
-  SectionsIn, SeekAudioIn, SeenCountIn, SeenTextIn, SelectedWord, SelectionWatchIn, SetBoolIn, SetBoolValIn,
-  SettleDictIn, SpeakIn, SpeakWordIn, SpkClsIn, StartRecIn, StartRecorderIn, SubmitIn, TextChangeFn, TextChangeIn,
-  TextPart, TextPartsIn, TextShownIn, TickerIn, TierOfIn, TimeTextIn, ToggleIn, TypeAtIn, TypeCodeIn, TypeLabelIn,
-  TypeNameIn, WordCountIn,
+  ExamCountsIn, ExamOpenIn, ExamSubmitIn, GateCloseIn, GatedPlayIn, GatedStartIn, GatedSubmitIn, HintIn, HoverWordIn,
+  InputChangeIn, IsDoneIn, ItemHrefIn, ItemMetaIn, LcsAtIn, ListMetaIn, ListTiersIn, LookupNowIn, MarkDoneIn,
+  MaybeHref, MicIn, MoreIn, NavPickIn, NavRowsIn, NavScrollIn, NavTextIn, NeighborsIn, NeighborsOut, NoteSubmitIn,
+  PhaseSetIn, PhonIn, PlayIn, PlayUrlIn, PostCommentIn, PteCellRow, PteCol, PteComment, PteCommentDbRow, PteCommentsIn,
+  PteDictTagDbRow, PteExamCount, PteExamCountDbRow, PteItem, PteItemLoadIn, PteListDbRow, PteListIn, PteMeta,
+  PteOneDbRow, PteQuestion, PteQuestionIn, PteRow, PteRowIn, PteSection, PteTiersIn, PteType, PteTypeDbRow, PteTypesIn,
+  QidOfIn, QuotaDoc, RateAudioIn, RateTextIn, RecallsIn, RecorderHandle, RecorderStopFn, RecorderStopIn, RedoIn,
+  SaveDoneIn, SectionLabelIn, SectionsIn, SeekAudioIn, SeenCountIn, SeenTextIn, SelectedWord, SelectionWatchIn,
+  SetBoolIn, SetBoolValIn, SettleDictIn, SpeakIn, SpeakWordIn, SpkClsIn, StartRecIn, StartRecorderIn, SubmitIn,
+  TextChangeFn, TextChangeIn, TextPart, TextPartsIn, TextShownIn, TickerIn, TierOfIn, TimeTextIn, ToggleIn, TypeAtIn,
+  TypeCodeIn, TypeLabelIn, TypeNameIn, WordCountIn,
 } from './types'
 
 /**
@@ -903,6 +903,31 @@ export function makeGatedPlay(x: GatedPlayIn): ClickFn {
     active: x.audioType && x.phase === PHASE_READY,
     run: makePlay({ q: x.q, audioType: x.audioType, phase: x.phase, setPlaying: x.setPlaying, setPhase: x.setPhase }),
   })
+}
+
+/**
+ * 造单行输入手柄(收 input 的 change —— React 定的签名)。
+ *
+ * @param x 落格。
+ * @returns 手柄。
+ */
+export function makeInputChange(x: InputChangeIn): (e: React.ChangeEvent<HTMLInputElement>) => void {
+  return function change(e: React.ChangeEvent<HTMLInputElement>): void {
+    x.set(e.target.value)
+  }
+}
+
+/**
+ * 造开「考过」弹框手柄:考试日置今天再开。
+ *
+ * @param x 两个落格。
+ * @returns 手柄。
+ */
+export function makeExamOpen(x: ExamOpenIn): ClickFn {
+  return function open(): void {
+    x.setDate(todayOf())
+    x.setOpen(true)
+  }
 }
 
 /**
@@ -2032,6 +2057,22 @@ export function makeHoverWord(x: HoverWordIn): (e: React.MouseEvent<HTMLElement>
 }
 
 /**
+ * 带回忆文字的考试记录(正文不是日期占位的那些),按留言的样子列在留言区。
+ *
+ * @param x 考试记录。
+ * @returns 有回忆的那些。
+ */
+export function recallsOf(x: RecallsIn): PteComment[] {
+  const out: PteComment[] = []
+  for (const e of x.exams) {
+    if (e.body !== TEXT_NONE && e.body !== e.examDate) {
+      out.push(e)
+    }
+  }
+  return out
+}
+
+/**
  * 「考过 (N)」的 N:来源合成的考过次数(库里 times 已含本站过审记录)+ 本次会话刚记的条数。
  *
  * @param x 来源次数、SSR 带下的评论与现时考试记录。
@@ -2095,9 +2136,13 @@ async function examSubmitNow(x: ExamSubmitIn): Promise<void> {
   if (x.state !== STATE_IDLE) {
     return
   }
+  if (x.examDate === TEXT_NONE) {
+    return
+  }
   x.setState(STATE_BUSY)
-  const examDate = todayOf()
-  const body = JSON.stringify({ qid: x.qid, kind: KIND_EXAM, examDate, examCity: TEXT_NONE })
+  const body = JSON.stringify({
+    qid: x.qid, kind: KIND_EXAM, examDate: x.examDate, examCity: TEXT_NONE, body: x.recall,
+  })
   const ok = await postComment({ body })
   if (ok === false) {
     x.setState(STATE_ERR)
@@ -2106,14 +2151,15 @@ async function examSubmitNow(x: ExamSubmitIn): Promise<void> {
   const mine: PteComment = {
     id: 0,
     kind: KIND_EXAM,
-    examDate,
+    examDate: x.examDate,
     examCity: TEXT_NONE,
     authorName: TEXT_NONE,
-    body: TEXT_NONE,
-    date: examDate,
+    body: x.recall,
+    date: x.examDate,
   }
   x.setExams([mine].concat(x.exams))
   x.setState(STATE_SENT)
+  x.setOpen(false)
 }
 
 /**

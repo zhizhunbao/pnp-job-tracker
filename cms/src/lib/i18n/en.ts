@@ -1160,6 +1160,8 @@ export const pteEn: Record<keyof typeof pteZh, string> = {
   'pte.noTts': 'This browser cannot read aloud', 'pte.noMic': 'No microphone',
   'pte.f.seen': 'Last seen', 'pte.f.n': 'Times seen', 'pte.f.num': 'No.', 'pte.none': 'No record yet',
   'pte.c.seen': 'Seen it ({n})',
+  'pte.c.examTitle': 'Exam details', 'pte.c.date': 'Exam date', 'pte.c.recall': 'Exam recall', 'pte.c.cancel': 'Cancel',
+  'pte.c.confirm': 'Confirm',
   'pte.c.send': 'Send', 'pte.c.notes': 'Comments', 'pte.c.write': 'Write a comment', 'pte.c.ph': 'Write a comment', 'pte.c.empty': 'No comments yet',
   'pte.c.sent': 'Submitted, shown after review', 'pte.c.err': 'Not sent, please retry',
   'pte.dict.close': 'Close', 'pte.dict.loading': 'Looking up', 'pte.dict.none': 'No entry',

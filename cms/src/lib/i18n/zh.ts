@@ -1275,6 +1275,7 @@ export const pteZh = {
   'pte.noTts': '此浏览器不支持朗读', 'pte.noMic': '没拿到麦克风',
   'pte.f.seen': '最近考过', 'pte.f.n': '考过次数', 'pte.f.num': '题号', 'pte.none': '暂无记录',
   'pte.c.seen': '考过 ({n})',
+  'pte.c.examTitle': '考试信息', 'pte.c.date': '考试日期', 'pte.c.recall': '考试回忆', 'pte.c.cancel': '取消', 'pte.c.confirm': '确认考过',
   'pte.c.send': '发送', 'pte.c.notes': '留言', 'pte.c.write': '写评论', 'pte.c.ph': '写留言', 'pte.c.empty': '还没人留言',
   'pte.c.sent': '已提交,审核后显示', 'pte.c.err': '没发出去,请重试',
   'pte.dict.close': '关闭', 'pte.dict.loading': '查词中', 'pte.dict.none': '没查到',

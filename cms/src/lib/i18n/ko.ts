@@ -1153,6 +1153,7 @@ export const pteKo: Record<keyof typeof pteZh, string> = {
   'pte.noTts': '이 브라우저는 낭독을 지원하지 않습니다', 'pte.noMic': '마이크를 못 받았습니다',
   'pte.f.seen': '최근 출제', 'pte.f.n': '출제 횟수', 'pte.f.num': '번호', 'pte.none': '기록 없음',
   'pte.c.seen': '출제됨 ({n})',
+  'pte.c.examTitle': '시험 정보', 'pte.c.date': '시험 날짜', 'pte.c.recall': '시험 후기', 'pte.c.cancel': '취소', 'pte.c.confirm': '출제 확인',
   'pte.c.send': '보내기', 'pte.c.notes': '댓글', 'pte.c.write': '댓글 쓰기', 'pte.c.ph': '댓글 쓰기', 'pte.c.empty': '아직 댓글이 없습니다',
   'pte.c.sent': '제출됨, 검토 후 표시', 'pte.c.err': '전송 실패, 다시 시도하세요',
   'pte.dict.close': '닫기', 'pte.dict.loading': '검색 중', 'pte.dict.none': '없음',

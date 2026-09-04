@@ -3,7 +3,7 @@
  * pte 域的结构:/pte/[type]/[id] 单题页正文 —— Shell 轨(右上返回走壳的 back 槽)+ 头行(人话题型名 #题号)+
  * 三栏(左:目录树;中:答题卡 + 题下留言;右:事实卡;手机叠成单栏,目录树垫底)。壳件拼装归页面门。
  * 2026-09-04 Frank「页面也是分不同的 section」「就考过就完事了」:评论机器在这里装配,
- * 「考过 (N)」钮挂题卡头,评论卡只剩留言 + 「写评论」。批四(同日 Frank「可以」):免费每日 20 次提交,
+ * 「考过 (N)」钮挂题卡头(点了弹「考过」框:日期 + 回忆),评论卡只剩留言 + 「写评论」。批四(同日 Frank「可以」):免费每日 20 次提交,
  * 第 21 次开闸 —— 未登录弹注册框、已登录弹升级框,两框都由这里渲。
  * 2026-09-03 批二新立(效果图 img/PTE单题*-*);同日 Frank「详情页返回按钮都在右上,样式位置固定统一」
  * → 返回钮改用 button 桶 BackButton 经 Shell back 槽钉位,本域不再自绘。
@@ -22,6 +22,7 @@ import { usePteAnswer, usePteComments, usePteDict } from './hooks'
 import { PteAnswer } from './pteanswer'
 import { PteComments } from './ptecomments'
 import { PteDict } from './ptedict'
+import { PteExamModal } from './pteexammodal'
 import { PteFacts } from './ptefacts'
 import { PteNav } from './ptenav'
 import type { PteItemIn } from './types'
@@ -42,7 +43,7 @@ export function PteItem({ types, item, comments, loggedIn, pro, rowsByType }: Pt
   let seen = <Button kind={KIND_PRIMARY} sm onClick={c.onLoginOpen}>{t('pte.c.seen', { n: c.seenN })}</Button>
   if (loggedIn) {
     seen = (
-      <Button kind={KIND_PRIMARY} sm onClick={c.onExamSubmit} disabled={c.examState !== STATE_IDLE}>
+      <Button kind={KIND_PRIMARY} sm onClick={c.onExamOpen} disabled={c.examState !== STATE_IDLE}>
         {t('pte.c.seen', { n: c.seenN })}
       </Button>
     )
@@ -51,6 +52,7 @@ export function PteItem({ types, item, comments, loggedIn, pro, rowsByType }: Pt
     <Shell top={SHELL_TOP} back={<BackButton fallback={listHrefOf({ type: item.q.type })} label={t('detail.back')} />}>
       <PteDict t={t} d={d} lang={lang} />
       {c.loginOpen && <AuthModal t={t} onClose={c.onLoginClose} onDone={c.onLoginDone} />}
+      {c.examOpen && <PteExamModal t={t} c={c} />}
       {a.gate === GATE_LOGIN && <AuthModal t={t} onClose={a.onGateClose} onDone={c.onLoginDone} />}
       {a.gate === GATE_UPGRADE && <UpgradeModal t={t} onClose={a.onGateClose} reason={t('pte.quotaHit')} />}
       <div className={css.track}>

@@ -53,7 +53,10 @@ export const Comments: CollectionConfig = {
           data.kind = KIND_EXAM
           data.examDate = d
           data.examCity = city
-          data.body = `${d} ${city}`.trim()
+          // 2026-09-04 Frank「点考过应该显示这样一个弹框」:正文 = 考试回忆(选填);没写就落日期占位
+          const recall = String(data.body || '').trim()
+          if (recall.length > BODY_MAX) throw new Error(`comment body must be 1-${BODY_MAX} chars`)
+          data.body = recall || d
           data.status = 'approved'
           return data
         }

@@ -1048,6 +1048,33 @@
 /*
  * 留言表单行。
  */
+.examBox {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/*
+ * 「考过」弹框标题。
+ */
+.examTitle {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+/*
+ * 考试日输入框(与留言框同款描边)。
+ */
+.examInput {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font: inherit;
+}
+
 .noteForm {
   display: flex;
   gap: 8px;

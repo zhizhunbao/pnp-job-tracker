@@ -16,12 +16,12 @@ import {
 } from './constants'
 import {
   commentsOfKind, doneServerSnapshotOf, doneSnapshotOf, makeAudioEnded, makeCanPlaySnapshot, makeClose, makeCountdown,
-  makeDictClose, makeDictLookup, makeDictOpenFlag, makeDictSink, makeDoneSync, makeExamSubmit, makeGateClose,
-  makeGatedPlay, makeGatedSubmit, makeMic, makeMore, makeNavPick, makeNavScroll, makeNoteSubmit, makeOpen,
-  makePhaseSet, makePlayEnd, makeRedo, makeSelectionWatch, makeSetBool, makeSpeakWord, makeStartRec, makeSubmit,
-  makeTextChange, makeTicker, makeToggle, nextRateOf, noop, openDictWord, prepSecOf, quotaServerSnapshotOf,
-  quotaSnapshotOf, rateAudio, recCapOf, reloadPage, seekAudio, seenCountOf, serverFalseOf, stopSpeak, subscribeDone,
-  subscribeNone,
+  makeDictClose, makeDictLookup, makeDictOpenFlag, makeDictSink, makeDoneSync, makeExamOpen, makeExamSubmit,
+  makeGateClose, makeGatedPlay, makeGatedSubmit, makeInputChange, makeMic, makeMore, makeNavPick, makeNavScroll,
+  makeNoteSubmit, makeOpen, makePhaseSet, makePlayEnd, makeRedo, makeSelectionWatch, makeSetBool, makeSpeakWord,
+  makeStartRec, makeSubmit, makeTextChange, makeTicker, makeToggle, nextRateOf, noop, openDictWord, prepSecOf,
+  quotaServerSnapshotOf, quotaSnapshotOf, rateAudio, recCapOf, reloadPage, seekAudio, seenCountOf, serverFalseOf,
+  stopSpeak, subscribeDone, subscribeNone,
 } from './functions'
 import type {
   DictEntry, DictPos, DictState, PlayerHookIn, PlayerPanel, PostState, PteAnswerHookIn, PteAnswerPanel, PteBoardHookIn,
@@ -236,6 +236,9 @@ export function usePteComments(x: PteCommentsHookIn): PteCommentsPanel {
   const [exams, setExams] = useState<PteComment[]>(commentsOfKind({ comments: x.comments, kind: KIND_EXAM }))
   const seenN = seenCountOf({ times: x.times, comments: x.comments, exams })
   const [examState, setExamState] = useState<PostState>(STATE_IDLE)
+  const [examOpen, setExamOpen] = useState(false)
+  const [examDate, setExamDate] = useState(TEXT_NONE)
+  const [examRecall, setExamRecall] = useState(TEXT_NONE)
   const [loginOpen, setLoginOpen] = useState(false)
   const [noteOpen, setNoteOpen] = useState(false)
   const [note, setNote] = useState(TEXT_NONE)
@@ -254,7 +257,23 @@ export function usePteComments(x: PteCommentsHookIn): PteCommentsPanel {
     note,
     noteState,
     onNoteOpen: makeToggle({ on: noteOpen, set: setNoteOpen }),
-    onExamSubmit: makeExamSubmit({ qid: x.qid, state: examState, setState: setExamState, exams, setExams }),
+    examOpen,
+    examDate,
+    examRecall,
+    onExamOpen: makeExamOpen({ setOpen: setExamOpen, setDate: setExamDate }),
+    onExamCancel: makeClose({ set: setExamOpen }),
+    onExamDate: makeInputChange({ set: setExamDate }),
+    onExamRecall: makeTextChange({ set: setExamRecall }),
+    onExamSubmit: makeExamSubmit({
+      qid: x.qid,
+      state: examState,
+      setState: setExamState,
+      exams,
+      setExams,
+      examDate,
+      recall: examRecall,
+      setOpen: setExamOpen,
+    }),
     onNote: makeTextChange({ set: setNote }),
     onNoteSubmit: makeNoteSubmit({ qid: x.qid, note, state: noteState, setState: setNoteState, setNote }),
   }
