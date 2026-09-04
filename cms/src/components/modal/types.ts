@@ -8,7 +8,7 @@
 /**
  * 三档宽的档名。
  */
-export type ModalSize = 'sm' | 'md' | 'lg'
+export type ModalSize = 'sm' | 'md' | 'lg' | 'fit' | 'fit'
 
 /**
  * Modal 的 props。
@@ -58,6 +58,11 @@ export type ModalIn = {
    * 内容。
    */
   children: React.ReactNode
+
+  /**
+   * 四边 / 四角可拖拽缩放(光标到边上变缩放形;2026-09-04 pte 字典弹框先例,Frank「像应用那种」)。
+   */
+  edgeResize?: boolean
 }
 
 /**
@@ -245,4 +250,179 @@ export type CardStyleIn = {
    * 拖拽位移(进 transform)。
    */
   pos: DragPos
+
+  /**
+   * 拖出来的尺寸(px);null = 没拖过。
+   */
+  size: ResizeSize
+}
+
+/**
+ * 拖拽缩放后的尺寸;两格 null = 还没拖过,走尺寸档。
+ */
+export type ResizeSize = {
+  /**
+   * 宽(px)。
+   */
+  w: number | null
+
+  /**
+   * 高(px)。
+   */
+  h: number | null
+
+  /**
+   * 拖起手时卡片左边(视口 px);拖后卡片改绝对定位钉在这(Frank 2026-09-04「放大缩小的时候框要固定住」)。
+   */
+  left: number | null
+
+  /**
+   * 拖起手时卡片上边(视口 px)。
+   */
+  top: number | null
+}
+
+/**
+ * 缩放把手在哪条边 / 哪个角。
+ */
+export type ResizeEdge = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw'
+
+/**
+ * useEdgeResize 的入参。
+ */
+export type EdgeResizeIn = {
+  /**
+   * 开着没(窄屏 / 全屏态不开)。
+   */
+  enabled: boolean
+
+  /**
+   * 卡片元素 ref(起手时量当前尺寸与位置)。
+   */
+  cardRef: React.RefObject<HTMLDivElement | null>
+}
+
+/**
+ * useEdgeResize 交回的面板:尺寸 + 八个把手的起手。
+ */
+export type EdgeResizeOut = {
+  /**
+   * 拖出来的尺寸。
+   */
+  size: ResizeSize
+
+  /**
+   * 某条边 / 角的起手手柄(按下即开始跟手)。
+   */
+  startOf: (edge: ResizeEdge) => (e: React.PointerEvent) => void
+}
+
+/**
+ * sizedStyleOf 的入参。
+ */
+export type SizedStyleIn = {
+  /**
+   * 基础样式。
+   */
+  base: React.CSSProperties
+
+  /**
+   * 拖出来的尺寸。
+   */
+  size: ResizeSize
+}
+
+/**
+ * 缩放起手快照。
+ */
+export type ResizeStart = {
+  /**
+   * 起手指针 x。
+   */
+  x: number
+
+  /**
+   * 起手指针 y。
+   */
+  y: number
+
+  /**
+   * 起手宽。
+   */
+  w: number
+
+  /**
+   * 起手高。
+   */
+  h: number
+
+  /**
+   * 哪条边。
+   */
+  edge: ResizeEdge
+
+  /**
+   * 起手时卡片左边(视口 px)。
+   */
+  left: number
+
+  /**
+   * 起手时卡片上边(视口 px)。
+   */
+  top: number
+}
+
+/**
+ * resizedOf 的入参。
+ */
+export type ResizedIn = {
+  /**
+   * 起手快照。
+   */
+  st: ResizeStart
+
+  /**
+   * 指针水平位移。
+   */
+  dx: number
+
+  /**
+   * 指针垂直位移。
+   */
+  dy: number
+}
+
+/**
+ * resizedOf 的返回。
+ */
+export type ResizedOut = {
+  /**
+   * 新宽。
+   */
+  w: number
+
+  /**
+   * 新高。
+   */
+  h: number
+
+  /**
+   * 新左边(拖 w 边时随宽变,对边钉住)。
+   */
+  left: number
+
+  /**
+   * 新上边(拖 n 边时随高变)。
+   */
+  top: number
+}
+
+/**
+ * ResizeHandles 的 props。
+ */
+export type ResizeHandlesIn = {
+  /**
+   * 某条边 / 角的起手手柄工厂。
+   */
+  startOf: (edge: ResizeEdge) => (e: React.PointerEvent) => void
 }

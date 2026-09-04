@@ -33,7 +33,7 @@ import css from './pte.module.css'
  * @param props 题型维度、题、评论与登录态(逐格注释见 PteItemIn)。
  * @returns 正文。
  */
-export function PteItem({ types, item, comments, loggedIn, pro }: PteItemIn) {
+export function PteItem({ types, item, comments, loggedIn, pro, rowsByType }: PteItemIn) {
   const [lang, , t] = useLang()
   const type = typeAtOr({ types, code: item.q.type })
   const a = usePteAnswer({ q: item.q, type, loggedIn, pro })
@@ -49,7 +49,7 @@ export function PteItem({ types, item, comments, loggedIn, pro }: PteItemIn) {
   }
   return (
     <Shell top={SHELL_TOP} back={<BackButton fallback={listHrefOf({ type: item.q.type })} label={t('detail.back')} />}>
-      <PteDict t={t} d={d} />
+      <PteDict t={t} d={d} lang={lang} />
       {c.loginOpen && <AuthModal t={t} onClose={c.onLoginClose} onDone={c.onLoginDone} />}
       {a.gate === GATE_LOGIN && <AuthModal t={t} onClose={a.onGateClose} onDone={c.onLoginDone} />}
       {a.gate === GATE_UPGRADE && <UpgradeModal t={t} onClose={a.onGateClose} reason={t('pte.quotaHit')} />}
@@ -58,7 +58,7 @@ export function PteItem({ types, item, comments, loggedIn, pro }: PteItemIn) {
           <h1 className={css.h1}>{typeNameOf({ type, lang })}{SPACE}{NUM_HEAD}{item.q.num}</h1>
         </div>
         <div className={css.grid}>
-          <PteNav t={t} types={types} type={item.q.type} rows={item.rows} qid={item.q.qid} lang={lang} />
+          <PteNav t={t} types={types} type={item.q.type} rowsByType={rowsByType} qid={item.q.qid} lang={lang} />
           <div className={css.col}>
             <PteAnswer t={t}
               q={item.q}

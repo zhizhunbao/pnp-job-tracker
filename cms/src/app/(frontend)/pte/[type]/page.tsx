@@ -10,7 +10,7 @@ import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
-import { Pte, loadPteList, loadPteTypes, pteListMetaOf, typeAt } from '@/components/pte'
+import { Pte, loadPteList, loadPteListTiers, loadPteTypes, pteListMetaOf, typeAt } from '@/components/pte'
 import { Frame } from '@/components/shell'
 import { getDb } from '@/lib/db/server'
 import { checkedAt } from '@/lib/jobs/server'
@@ -45,12 +45,13 @@ export default async function PteTypePage({ params }: { params: Promise<{ type: 
   const code = type.toUpperCase()
   if (typeAt({ types, code }) == null) notFound()
   const rows = await loadPteList({ db, type })
+  const tiers = await loadPteListTiers({ db, rows })
   const updatedAt = await checkedAt(db)
   const user = await getUser(await headers())
   return (
     <Frame>
       <Header loggedIn={!!user} />
-      <Pte types={types} type={code} rows={rows} loggedIn={!!user} updatedAt={updatedAt} />
+      <Pte types={types} type={code} rows={rows} loggedIn={!!user} updatedAt={updatedAt} tiers={tiers} />
       <Footer />
     </Frame>
   )

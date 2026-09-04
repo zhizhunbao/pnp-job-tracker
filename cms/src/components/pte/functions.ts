@@ -11,18 +11,20 @@
 import { cssOf } from '@/components/css'
 import { SQL, count, numOrNull, queryRowsOrEmpty, text, textOrNull } from '@/lib/db'
 import {
-  ALIGN_LEFT, API_COMMENTS, API_PTE_DONE, CLOCK_PAD, CLOCK_SEP, CLS_SEP, COL_ACT, COL_NUM, COL_SEEN, COL_TEXT,
-  COL_TIMES, CRED_INCLUDE, DASH, DATE_LEN, DAY_MS, DESC_LEN_MAX, DICT_API, DICT_BUSY, DICT_EDGE_PX, DICT_GAP_PX,
-  DICT_IDLE, DICT_LINE_SEP, DICT_MIN_LEN, DICT_NONE, DICT_OK, DICT_W_PX, DONE_KEY, ELLIPSIS, EMPTY_DONE, EV_MOUSEUP,
-  EV_TOUCHEND, GATE_LOGIN, GATE_NONE, GATE_UPGRADE, HDR_CONTENT_TYPE, ID_SEP, INST_KEY, ITEM_DESC_TPL, ITEM_TITLE_TPL,
-  KIND_EXAM, KIND_NOTE, LANG_KO, LANG_ZH, LIKE_ANY, LIST_DESC_TPL, LIST_TITLE_TPL, METHOD_POST, METHOD_PUT, MIME_JSON,
-  MS_PER_MIN, NAV_CENTER_DIV, NAV_ID_PREFIX, NAV_TEXT_LEN, NOTE_HINT_KEY, NOT_FOUND_TITLE, NUM_HEAD, PAD_CHAR,
-  PAGE_STEP, PAREN_L, PAREN_R, PHASE_ANSWERING, PHASE_CHECKED, PHASE_READY, PREP_S, PTE_META, PUNCT_RE, QID_ID_AT,
-  QID_SEP, QUOTA_KEY, QUOTA_MAX, REC_CAP_S, REC_MIME, REC_STATE_INACTIVE, SECTION_KEY, SECTION_ORDER, SEC_PER_MIN,
-  STATE_BUSY, STATE_ERR, STATE_IDLE, STATE_SENT, TAG_SEP, TEXT_NONE, TEXT_TOKEN_RE, TICK_MS, TIER_CLS_HEAD, TIER_NONE,
-  TIER_ORDER, TIER_TAGS, TITLE_LEN_MAX, TTS_GUARD_BASE_MS, TTS_LANG, TTS_LANG_HEAD, TTS_MS_PER_WORD, TTS_RATE, T_RA,
-  UNDERSCORE, URL_PTE, URL_SEP, VAR_N, VAR_NUM, VAR_TEXT, VAR_TITLE, VAR_TYPE, WORD_RE, WORD_SPLIT_RE, WORD_TRIM,
-  W_ACT, W_NUM, W_SEEN, W_TEXT, W_TIMES,
+  ALIGN_LEFT, API_COMMENTS, API_PTE_DONE, BRACKET_L, BRACKET_R, CLOCK_PAD, CLOCK_SEP, CLS_SEP, COL_ACT, COL_NUM,
+  COL_SEEN, COL_TEXT, COL_TIMES, CRED_INCLUDE, DASH, DATE_LEN, DAY_MS, DESC_LEN_MAX, DICT_API, DICT_BUSY, DICT_EDGE_PX,
+  DICT_GAP_PX, DICT_ID, DICT_IDLE, DICT_LINE_SEP, DICT_MIN_LEN, DICT_NONE, DICT_OK, DICT_TAG_KEY, DICT_W_PX, DONE_KEY,
+  ELLIPSIS, EMPTY_DONE, EV_MOUSEUP, EV_TOUCHEND, FORM_KEY, FORM_KV, FORM_SEP, GATE_LOGIN, GATE_NONE, GATE_UPGRADE,
+  HASH, HDR_CONTENT_TYPE, ID_SEP, INST_KEY, ITEM_DESC_TPL, ITEM_TITLE_TPL, KIND_EXAM, KIND_NOTE, LANG_EN, LANG_KO,
+  LANG_ZH, LIKE_ANY, LIST_DESC_TPL, LIST_TITLE_TPL, MARK_TAG, METHOD_POST, METHOD_PUT, MIME_JSON, MS_PER_MIN,
+  NAV_CENTER_DIV, NAV_ID_PREFIX, NAV_TEXT_LEN, NOTE_HINT_KEY, NOT_FOUND_TITLE, NUM_HEAD, NUM_RE, PAD_CHAR, PAGE_STEP,
+  PAREN_L, PAREN_R, PHASE_ANSWERING, PHASE_CHECKED, PHASE_READY, PREP_S, PTE_META, PUNCT_RE, QID_SEP,
+  QUOTA_KEY, QUOTA_MAX, RATE_DIGITS, RATE_HEAD, RATE_STEPS, REC_CAP_S, REC_MIME, REC_STATE_INACTIVE, SECTION_KEY,
+  SECTION_ORDER, SEC_PER_MIN, SPK_GUARD_MS, SPK_NONE, STATE_BUSY, STATE_ERR, STATE_IDLE, STATE_SENT, TAG_SEP,
+  TEXT_NONE, TEXT_TOKEN_RE, TICK_MS, TIER_CLS_HEAD, TIER_EASY_TAGS, TIER_FRQ_MIN, TIER_NONE, TIER_ORDER, TIER_TAGS,
+  TIME_SEP, TITLE_LEN_MAX, TTS_GUARD_BASE_MS, TTS_LANG, TTS_LANG_HEAD, TTS_MS_PER_WORD, TTS_RATE, T_RA, UNDERSCORE,
+  URL_PTE, URL_SEP, VAR_N, VAR_NUM, VAR_TEXT, VAR_TITLE, VAR_TYPE, WORD_RE, WORD_SPLIT_RE, WORD_TRIM, W_ACT, W_NUM,
+  W_SEEN, W_TEXT, W_TIMES,
 } from './constants'
 import { CACHE } from './variables'
 import css from './pte.module.css'
@@ -32,17 +34,19 @@ import { SeenCell } from './seencell'
 import { TextCell } from './textcell'
 import { TimesCell } from './timescell'
 import type {
-  AgoTextIn, CanPlayIn, CellRowsIn, ChunkSinkFn, ClickFn, ClockIn, ColsOfIn, CommentsOfKindIn, DaysAgoIn, DeadFlag,
-  DictApiBody, DictCloseIn, DictEntry, DictLookupIn, DictPos, DictPosIn, DiffIn, DiffOut, DiffToken, DoneClsIn,
-  DoneResBody, DoneSyncIn, EffectFn, ExamCountsIn, ExamSubmitIn, GateCloseIn, GatedSubmitIn, HintIn, HoverWordIn,
-  IsDoneIn, ItemHrefIn, ItemMetaIn, LcsAtIn, ListMetaIn, LookupNowIn, MarkDoneIn, MaybeHref, MoreIn, NavScrollIn,
-  NavTextIn, NeighborsIn, NeighborsOut, NoteSubmitIn, PhaseSetIn, PhonIn, PlayIn, PlayUrlIn, PostCommentIn, PteCellRow,
-  PteCol, PteComment, PteCommentDbRow, PteCommentsIn, PteDictTagDbRow, PteExamCount, PteExamCountDbRow, PteItem,
-  PteItemLoadIn, PteListDbRow, PteListIn, PteMeta, PteOneDbRow, PteQuestion, PteQuestionIn, PteRow, PteRowIn,
-  PteSection, PteTiersIn, PteType, PteTypeDbRow, PteTypesIn, QidOfIn, QuotaDoc, RecorderHandle, RecorderStopFn,
-  RecorderStopIn, RedoIn, SaveDoneIn, SectionLabelIn, SectionsIn, SeenCountIn, SeenTextIn, SelectedWord,
-  SelectionWatchIn, SetBoolIn, SettleDictIn, SpeakIn, SpeakWordIn, StartRecIn, StartRecorderIn, SubmitIn, TextChangeFn,
-  TextChangeIn, TextPart, TextPartsIn, TextShownIn, TickerIn, TierOfIn, ToggleIn, TypeAtIn, TypeCodeIn, TypeLabelIn,
+  AgoTextIn, AudioEndedIn, BracketIn, CanPlayIn, CellRowsIn, ChunkSinkFn, ClickFn, ClockIn, ColsOfIn, CommentsOfKindIn,
+  DaysAgoIn, DeadFlag, DictApiBody, DictCloseIn, DictEntry, DictForm, DictFormsIn, DictLinesIn, DictLookupIn, DictPos,
+  DictPosIn, DictTagKeyIn, DiffIn, DiffOut, DiffToken, DomEventFn, DoneClsIn, DoneResBody, DoneSyncIn, EffectFn,
+  ExamCountsIn, ExamSubmitIn, GateCloseIn, GatedPlayIn, GatedStartIn, GatedSubmitIn, HintIn, HoverWordIn, IsDoneIn,
+  ItemHrefIn, ItemMetaIn, LcsAtIn, ListMetaIn, ListTiersIn, LookupNowIn, MarkDoneIn, MaybeHref, MicIn, MoreIn,
+  NavPickIn, NavRowsIn, NavScrollIn, NavTextIn, NeighborsIn, NeighborsOut, NoteSubmitIn, PhaseSetIn, PhonIn, PlayIn,
+  PlayUrlIn, PostCommentIn, PteCellRow, PteCol, PteComment, PteCommentDbRow, PteCommentsIn, PteDictTagDbRow,
+  PteExamCount, PteExamCountDbRow, PteItem, PteItemLoadIn, PteListDbRow, PteListIn, PteMeta, PteOneDbRow, PteQuestion,
+  PteQuestionIn, PteRow, PteRowIn, PteSection, PteTiersIn, PteType, PteTypeDbRow, PteTypesIn, QidOfIn, QuotaDoc,
+  RateAudioIn, RateTextIn, RecorderHandle, RecorderStopFn, RecorderStopIn, RedoIn, SaveDoneIn, SectionLabelIn,
+  SectionsIn, SeekAudioIn, SeenCountIn, SeenTextIn, SelectedWord, SelectionWatchIn, SetBoolIn, SetBoolValIn,
+  SettleDictIn, SpeakIn, SpeakWordIn, SpkClsIn, StartRecIn, StartRecorderIn, SubmitIn, TextChangeFn, TextChangeIn,
+  TextPart, TextPartsIn, TextShownIn, TickerIn, TierOfIn, TimeTextIn, ToggleIn, TypeAtIn, TypeCodeIn, TypeLabelIn,
   TypeNameIn, WordCountIn,
 } from './types'
 
@@ -81,8 +85,16 @@ export async function loadPteList(x: PteListIn): Promise<PteRow[]> {
  * @returns 装配好的单题;查无是 null。
  */
 export async function loadPteItem(x: PteItemLoadIn): Promise<PteItem | null> {
-  const qid = qidOf({ type: x.type, id: x.id })
-  const rows = await queryRowsOrEmpty({ db: x.db, sql: SQL.PTE_ONE, params: [qid], map: keepOneRow })
+  let rows: PteOneDbRow[] = []
+  if (NUM_RE.test(x.id)) {
+    rows = await queryRowsOrEmpty({
+      db: x.db, sql: SQL.PTE_ONE_NUM, params: [typeCodeOf({ type: x.type }), x.id], map: keepOneRow,
+    })
+  } else {
+    rows = await queryRowsOrEmpty({
+      db: x.db, sql: SQL.PTE_ONE, params: [qidOf({ type: x.type, id: x.id })], map: keepOneRow,
+    })
+  }
   let row: PteOneDbRow | null = null
   for (const r of rows) {
     row = r
@@ -90,6 +102,7 @@ export async function loadPteItem(x: PteItemLoadIn): Promise<PteItem | null> {
   if (row == null) {
     return null
   }
+  const qid = text(row.qid)
   const list = await loadPteList({ db: x.db, type: x.type })
   let listed: PteRow | null = null
   for (const r of list) {
@@ -222,7 +235,7 @@ export function toPteRow(x: PteRowIn): PteRow {
   return {
     qid,
     type: text(r.type),
-    href: itemHrefOf({ qid }),
+    href: itemHrefOf({ type: text(r.type), num: text(r.num) }),
     num: text(r.num),
     text: text(r.text),
     predicted: r.predicted === true,
@@ -301,17 +314,13 @@ export function qidOf(x: QidOfIn): string {
 }
 
 /**
- * 题键 → 单题页地址:`ynwac:WFD:11` → `/pte/wfd/ynwac-11`。
+ * 题型 + 站内题号 → 单题页地址:`/pte/wfd/11`(2026-09-04 Frank「id 应该我们基于自己的规则生成」,来源 id 退出 URL)。
  *
  * @param x 题键。
  * @returns 地址。
  */
 export function itemHrefOf(x: ItemHrefIn): string {
-  const parts = x.qid.split(QID_SEP)
-  const source = text(parts.at(0))
-  const type = text(parts.at(1))
-  const id = parts.slice(QID_ID_AT).join(QID_SEP)
-  return URL_PTE + URL_SEP + type.toLowerCase() + URL_SEP + source + ID_SEP + id
+  return URL_PTE + URL_SEP + x.type.toLowerCase() + URL_SEP + x.num
 }
 
 /**
@@ -494,6 +503,8 @@ export function cellRowsOf(x: CellRowsIn): PteCellRow[] {
       seenText: seenTextOf({ t: x.t, seen: r.seen }),
       times: r.times,
       actText: x.t('pte.go'),
+      parts: textPartsOf({ text: r.text, tiers: x.tiers }),
+      onHoverWord: x.onHoverWord,
       done,
     })
   }
@@ -865,6 +876,36 @@ function bumpQuota(): void {
 }
 
 /**
+ * 造带配额闸的「播题目」:只在准备段的那一下过闸(那一下 = 开始作答);其余段位原样播。
+ *
+ * @param x 闸的入参、是否在准备段与真播。
+ * @returns 手柄。
+ */
+export function makeGatedStart(x: GatedStartIn): ClickFn {
+  if (x.active === false) {
+    return x.run
+  }
+  return makeGatedSubmit({ pro: x.pro, loggedIn: x.loggedIn, used: x.used, submit: x.run, setGate: x.setGate })
+}
+
+/**
+ * 造带配额闸的播题目(准备段那一下算开始作答;其余段位原样播)—— usePteAnswer 的装配一行。
+ *
+ * @param x 闸与播的入参。
+ * @returns 手柄。
+ */
+export function makeGatedPlay(x: GatedPlayIn): ClickFn {
+  return makeGatedStart({
+    pro: x.pro,
+    loggedIn: x.loggedIn,
+    used: x.used,
+    setGate: x.setGate,
+    active: x.audioType && x.phase === PHASE_READY,
+    run: makePlay({ q: x.q, audioType: x.audioType, phase: x.phase, setPlaying: x.setPlaying, setPhase: x.setPhase }),
+  })
+}
+
+/**
  * 造关闸手柄(闸态回 none)。
  *
  * @param x 落闸。
@@ -877,8 +918,9 @@ export function makeGateClose(x: GateCloseIn): ClickFn {
 }
 
 /**
- * 造带配额闸的提交:Pro 直接过;免费用户今日未满 +1 再提交,满了不提交、开闸
- * (未登录 → 注册框,已登录 → 升级框)。计时到点的自动提交也走这一道。
+ * 造带配额闸的「开始作答」:Pro 直接过;免费用户今日未满 +1 再放行,满了不放行、开闸
+ * (未登录 → 注册框,已登录 → 升级框)。闸设在开始那一下(点麦克风 / 播题目),不设在停止提交
+ * (2026-09-04 Frank「录音没法停,一点就弹框」)。
  *
  * @param x Pro / 登录态 / 已用 / 真提交 / 落闸。
  * @returns 手柄。
@@ -1186,6 +1228,94 @@ export function makePlay(x: PlayIn): ClickFn {
   }
 }
 
+
+
+
+
+
+
+/**
+ * 播放条:播完 —— 落「不在播」再叫外部回调。
+ *
+ * @param x 落格与回调。
+ * @returns 手柄。
+ */
+export function makeAudioEnded(x: AudioEndedIn): ClickFn {
+  return function ended(): void {
+    x.setPlaying(false)
+    x.onEnd()
+  }
+}
+
+/**
+ * 把「布尔落某值」包成无参手柄(audio 的 play / pause 事件同步在播态)。
+ *
+ * @param x 落格与值。
+ * @returns 手柄。
+ */
+export function makeSetBool(x: SetBoolValIn): ClickFn {
+  return function set(): void {
+    x.set(x.value)
+  }
+}
+
+/**
+ * 下一档倍速(按 RATE_STEPS 循环)。
+ *
+ * @param x 现倍速。
+ * @returns 下一档。
+ */
+export function nextRateOf(x: RateTextIn): number {
+  const at = RATE_STEPS.indexOf(x.rate)
+  const cand = RATE_STEPS[at + 1]
+  if (cand != null) {
+    return cand
+  }
+  const first = RATE_STEPS[0]
+  if (first == null) {
+    return x.rate
+  }
+  return first
+}
+
+/**
+ * 倍速文案「x1.0」。
+ *
+ * @param x 倍速。
+ * @returns 文案。
+ */
+export function rateTextOf(x: RateTextIn): string {
+  return RATE_HEAD + x.rate.toFixed(RATE_DIGITS)
+}
+
+/**
+ * 播放条的时间「00:12 / 00:17」。
+ *
+ * @param x 当前秒与总秒。
+ * @returns 文案。
+ */
+export function timeTextOf(x: TimeTextIn): string {
+  return clockOf({ seconds: Math.floor(x.cur) }) + TIME_SEP + clockOf({ seconds: Math.floor(x.dur) })
+}
+
+/**
+ * 造麦克风钮手柄:准备段开录(进作答段,录音随段起),作答段停止提交。
+ *
+ * @param x 段位、进作答与停止提交。
+ * @returns 手柄。
+ */
+export function makeMic(x: MicIn): ClickFn {
+  return function mic(): void {
+    if (x.phase === PHASE_READY) {
+      x.toAnswering()
+      return
+    }
+    if (x.phase === PHASE_ANSWERING) {
+      x.onStopRec()
+    }
+  }
+}
+
 /**
  * 播直链音频(批三:自合成 mp3 由 /api/pte/audio 吐;一次只留一个在播,播完 / 出错都回调一次)。
  *
@@ -1208,7 +1338,7 @@ export function playUrl(x: PlayUrlIn): void {
  * @param x 同 makePlay。
  * @returns 回调。
  */
-function makePlayEnd(x: PlayIn): ClickFn {
+export function makePlayEnd(x: PlayIn): ClickFn {
   return function ended(): void {
     x.setPlaying(false)
     if (x.audioType && x.phase === PHASE_READY) {
@@ -1568,7 +1698,7 @@ export function makeCountdown(x: TickerIn): EffectFn {
  *
  * @returns 无。
  */
-function noop(): void {
+export function noop(): void {
   return
 }
 
@@ -1635,6 +1765,34 @@ export function navTextOf(x: NavTextIn): string {
 }
 
 /**
+ * 造目录树题型钮手柄:原地切清单不跳页(Frank 2026-09-04「点击的时候不要跳页面,还是在当前页面筛选」)。
+ *
+ * @param x 题型码与落格。
+ * @returns 手柄。
+ */
+export function makeNavPick(x: NavPickIn): ClickFn {
+  return function pick(): void {
+    x.set(x.code)
+  }
+}
+
+/**
+ * 全部有题的型各取一份题单(单题页目录树原地切型用)。
+ *
+ * @param x 数据库连接与题型维度。
+ * @returns 型码 → 题单。
+ */
+export async function loadPteNavRows(x: NavRowsIn): Promise<Record<string, PteRow[]>> {
+  const out: Record<string, PteRow[]> = {}
+  for (const t of x.types) {
+    if (t.count > 0) {
+      out[t.code] = await loadPteList({ db: x.db, type: t.code })
+    }
+  }
+  return out
+}
+
+/**
  * 造「进页把目录树滚到当前题」的 effect(只滚目录树自己的滚动容器,不动整页)。
  *
  * @param x 当前题键。
@@ -1681,23 +1839,65 @@ export async function loadPteTiers(x: PteTiersIn): Promise<Record<string, number
 }
 
 /**
+ * 整张题单的高亮档表:全部题面切词并集一查(词表上限就是题库词表 ~3.6k,一条 ANY 足够)。
+ *
+ * @param x 数据库连接与全部题。
+ * @returns 词 → 档。
+ */
+export async function loadPteListTiers(x: ListTiersIn): Promise<Record<string, number>> {
+  const seen = new Set<string>()
+  for (const r of x.rows) {
+    for (const p of textPartsOf({ text: r.text, tiers: {} })) {
+      if (p.word !== TEXT_NONE) {
+        seen.add(p.word)
+      }
+    }
+  }
+  const out: Record<string, number> = {}
+  if (seen.size === 0) {
+    return out
+  }
+  const rows = await queryRowsOrEmpty({ db: x.db, sql: SQL.PTE_DICT_TAGS, params: [Array.from(seen)], map: toTierRow })
+  for (const r of rows) {
+    if (r.tier !== TIER_NONE) {
+      out[r.word] = r.tier
+    }
+  }
+  return out
+}
+
+/**
  * 高亮依据库行 → (词, 档)。
  *
  * @param r 库行。
  * @returns 词与档。
  */
 function toTierRow(r: PteDictTagDbRow): TextPart {
-  return { text: TEXT_NONE, word: text(r.word), tier: tierOf({ tag: text(r.tag) }) }
+  return { text: TEXT_NONE, word: text(r.word), tier: tierOf({ tag: text(r.tag), frq: count(r.frq) }), cls: TEXT_NONE }
 }
 
 /**
- * 考纲标签 → 档(低档先判:命中最低的那级即定;都不命中 = 0 不高亮)。
+ * 词频排名 / 考纲标签 → 档:有排名按排名门槛(高档先),没排名按标签(基础词标签命中即 0;否则高档先)。
  *
- * @param x 标签串。
+ * @param x 标签串与排名。
  * @returns 档。
  */
 export function tierOf(x: TierOfIn): number {
+  if (x.frq > 0) {
+    for (const tier of TIER_ORDER) {
+      const min = TIER_FRQ_MIN[tier]
+      if (min != null && x.frq >= min) {
+        return tier
+      }
+    }
+    return TIER_NONE
+  }
   const tags = x.tag.split(TAG_SEP)
+  for (const easy of TIER_EASY_TAGS) {
+    if (tags.includes(easy)) {
+      return TIER_NONE
+    }
+  }
   for (const tier of TIER_ORDER) {
     const want = TIER_TAGS[tier]
     if (want == null) {
@@ -1725,7 +1925,7 @@ export function textPartsOf(x: TextPartsIn): TextPart[] {
       continue
     }
     if (TEXT_TOKEN_RE.test(piece) === false) {
-      out.push({ text: piece, word: TEXT_NONE, tier: TIER_NONE })
+      out.push({ text: piece, word: TEXT_NONE, tier: TIER_NONE, cls: TEXT_NONE })
       continue
     }
     const word = trimWord(piece.toLowerCase())
@@ -1734,7 +1934,7 @@ export function textPartsOf(x: TextPartsIn): TextPart[] {
     if (hit != null) {
       tier = hit
     }
-    out.push({ text: piece, word, tier })
+    out.push({ text: piece, word, tier, cls: tierClsOf(tier) })
   }
   return out
 }
@@ -1758,13 +1958,58 @@ function trimWord(w: string): string {
 }
 
 /**
- * 高亮词的类名(按档)。
+ * 词的类名(按档;0 档 = 普通词,只有悬停底色 —— Frank 2026-09-04「所有的单词鼠标放上去都可以点」)。
  *
  * @param tier 档。
  * @returns css module 类。
  */
 export function tierClsOf(tier: number): string {
   return cssOf(css[TIER_CLS_HEAD + String(tier)])
+}
+
+/**
+ * 点词开弹框(模块级稳定函数:行数据里只放它一个引用,列表就不用每次弹框都重算切词 ——
+ * Frank 2026-09-04「弹框的时候看着很慢」;落格由 usePteDict 挂载时登记进 CACHE)。
+ *
+ * @param e 点击事件(词取自元素文本,位置取元素矩形)。
+ * @returns 无。
+ */
+export function openDictWord(e: React.MouseEvent<HTMLElement>): void {
+  const sink = CACHE.dictSink
+  if (sink == null) {
+    return
+  }
+  makeHoverWord({ setWord: sink.setWord, setPos: sink.setPos })(e)
+}
+
+/**
+ * 造「弹框开合旗」的 effect:词非空 = 开着(选词监听放过期间的松开),拆卸或词清空 = 关。
+ *
+ * @param x 当前词。
+ * @returns effect 体。
+ */
+export function makeDictOpenFlag(x: NavScrollIn): EffectFn {
+  return function flag(): () => void {
+    CACHE.dictOpen = x.qid !== TEXT_NONE
+    return function clear(): void {
+      CACHE.dictOpen = false
+    }
+  }
+}
+
+/**
+ * 造「登记弹框落格」的 effect(挂载登记,拆卸清掉)。
+ *
+ * @param x 两个落格。
+ * @returns effect 体。
+ */
+export function makeDictSink(x: HoverWordIn): EffectFn {
+  return function register(): () => void {
+    CACHE.dictSink = { setWord: x.setWord, setPos: x.setPos }
+    return function clear(): void {
+      CACHE.dictSink = null
+    }
+  }
 }
 
 /**
@@ -1975,13 +2220,32 @@ export function makeSelectionWatch(x: SelectionWatchIn): EffectFn {
 }
 
 /**
+ * 这次松开是不是落在字典弹层里(点弹层里的 ▶ / × 不算清选区,不然弹层自己就关了 ——
+ * Frank 2026-09-04「这个点击播放自己就关闭了」)。
+ *
+ * @param e 松开事件。
+ * @returns 在弹层里为 true。
+ */
+function insideDictOf(e: Event): boolean {
+  const el = e.target
+  if (el instanceof Element === false) {
+    return false
+  }
+  const target = el as Element
+  return target.closest(HASH + DICT_ID) != null || target.closest(MARK_TAG) != null
+}
+
+/**
  * 选区读取回调(松开后下一拍读,手机的选区在 touchend 时还没定)。
  *
  * @param x 两个落格。
  * @returns 回调。
  */
-function makeSelectionRead(x: SelectionWatchIn): ClickFn {
-  return function read(): void {
+function makeSelectionRead(x: SelectionWatchIn): DomEventFn {
+  return function read(e: Event): void {
+    if (CACHE.dictOpen || insideDictOf(e)) {
+      return
+    }
     window.setTimeout(function later(): void {
       const hit = selectedWordOf()
       if (hit == null) {
@@ -2109,7 +2373,107 @@ function toDictEntry(e: DictApiBody): DictEntry | null {
   if (typeof e.phoneticUs === 'string') {
     phoneticUs = e.phoneticUs
   }
-  return { word: e.word, phonetic, lines, lemma, phoneticUk, phoneticUs }
+  const linesEn: string[] = []
+  if (typeof e.definition === 'string') {
+    for (const line of e.definition.split(DICT_LINE_SEP)) {
+      if (line.trim() !== TEXT_NONE) {
+        linesEn.push(line.trim())
+      }
+    }
+  }
+  let forms = TEXT_NONE
+  if (typeof e.forms === 'string') {
+    forms = e.forms
+  }
+  return { word: e.word, phonetic, lines, lemma, phoneticUk, phoneticUs, linesEn, forms }
+}
+
+/**
+ * 弹层释义按界面语:中文界面给中文;其余给英文释义,英文释义没有就退回中文。
+ *
+ * @param x 结果与界面语。
+ * @returns 一义一行。
+ */
+export function dictLinesOf(x: DictLinesIn): string[] {
+  if (x.lang === LANG_ZH) {
+    return x.entry.lines
+  }
+  if (x.entry.linesEn.length > 0) {
+    return x.entry.linesEn
+  }
+  return x.entry.lines
+}
+
+/**
+ * 释义标签的 i18n 键按界面语(表里没有的语言给英文标签)。
+ *
+ * @param x 界面语。
+ * @returns 键。
+ */
+export function dictTagKeyOf(x: DictTagKeyIn): string {
+  const key = DICT_TAG_KEY[x.lang]
+  if (key == null) {
+    return DICT_TAG_KEY[LANG_EN] as string
+  }
+  return key
+}
+
+/**
+ * 词形串 → 逐条(码不在表里的丢掉)。
+ *
+ * @param x 词形串。
+ * @returns 条目。
+ */
+export function dictFormsOf(x: DictFormsIn): DictForm[] {
+  const out: DictForm[] = []
+  if (x.forms === TEXT_NONE) {
+    return out
+  }
+  for (const part of x.forms.split(FORM_SEP)) {
+    const at = part.indexOf(FORM_KV)
+    if (at <= 0) {
+      continue
+    }
+    const key = FORM_KEY[part.slice(0, at)]
+    if (key == null) {
+      continue
+    }
+    out.push({ key, word: part.slice(at + 1) })
+  }
+  return out
+}
+
+/**
+ * audio 元素:跳到某秒(hooks 里不许直接改元素属性,搬到这里)。
+ *
+ * @param x 元素与秒。
+ * @returns 无。
+ */
+export function seekAudio(x: SeekAudioIn): void {
+  x.el.currentTime = x.n
+}
+
+/**
+ * audio 元素:改倍速。
+ *
+ * @param x 元素与倍速。
+ * @returns 无。
+ */
+export function rateAudio(x: RateAudioIn): void {
+  x.el.playbackRate = x.rate
+}
+
+/**
+ * 音标加中括号;空串原样。
+ *
+ * @param x 音标。
+ * @returns 「[…]」。
+ */
+export function bracketOf(x: BracketIn): string {
+  if (x.phon === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  return BRACKET_L + x.phon + BRACKET_R
 }
 
 /**
@@ -2148,8 +2512,29 @@ export function makeSpeakWord(x: SpeakWordIn): ClickFn {
         break
       }
     }
+    function done(): void {
+      x.setSpeaking(SPK_NONE)
+    }
+    const once = makeOnce(done)
+    u.onend = once
+    u.onerror = once
+    x.setSpeaking(x.key)
     synth.speak(u)
+    window.setTimeout(once, SPK_GUARD_MS)
   }
+}
+
+/**
+ * 喇叭钮类名:在读时加动效类。
+ *
+ * @param x 在读。
+ * @returns 类名。
+ */
+export function spkClsOf(x: SpkClsIn): string {
+  if (x.on) {
+    return cssOf(css.spkBtn) + CLS_SEP + cssOf(css.spkOn)
+  }
+  return cssOf(css.spkBtn)
 }
 
 /**

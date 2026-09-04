@@ -1143,6 +1143,7 @@ export const pteKo: Record<keyof typeof pteZh, string> = {
   'pte.pos': '{i} / {n}',
   'pte.inst.RA': '40초 안에 자연스럽고 또렷하게 읽으세요', 'pte.inst.RS': '한 번 듣고 그대로 따라 말하세요', 'pte.inst.ASQ': '질문을 듣고 한두 단어로 답하세요', 'pte.inst.WFD': '한 번 듣고 그대로 받아쓰세요',
   'pte.prep': '준비', 'pte.skipPrep': '준비 건너뛰기', 'pte.play': '문제 재생', 'pte.replay': '다시 듣기', 'pte.audio': '문제 음성',
+  'pte.rec': '녹음',
   'pte.tts': '모범 낭독', 'pte.myRec': '내 녹음', 'pte.recording': '녹음 중', 'pte.recCap': '{s}초 안에 답하세요', 'pte.stop': '정지',
   'pte.submit': '제출', 'pte.redo': '다시 풀기', 'pte.rerec': '다시 녹음', 'pte.next': '다음 문제', 'pte.prev': '이전 문제',
   'pte.typed': '내 답', 'pte.orig': '원문', 'pte.answer': '정답', 'pte.words': '{n}단어', 'pte.timer': '경과 {t}',
@@ -1156,4 +1157,7 @@ export const pteKo: Record<keyof typeof pteZh, string> = {
   'pte.c.sent': '제출됨, 검토 후 표시', 'pte.c.err': '전송 실패, 다시 시도하세요',
   'pte.dict.close': '닫기', 'pte.dict.loading': '검색 중', 'pte.dict.none': '없음',
   'pte.dict.uk': '영', 'pte.dict.us': '미',
+  'pte.dict.zh': '중국어', 'pte.dict.en': 'English', 'pte.dict.forms': '어형',
+  'pte.form.p': '과거형', 'pte.form.d': '과거분사', 'pte.form.i': '현재분사', 'pte.form.3': '3인칭 단수', 'pte.form.r': '비교급',
+  'pte.form.t': '최상급', 'pte.form.s': '복수형',
 }

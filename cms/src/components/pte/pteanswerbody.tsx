@@ -9,10 +9,10 @@
 import { Button } from '@/components/button'
 import { Notice } from '@/components/notice'
 import { KIND_SECONDARY, NOTICE_INFO, PHASE_ANSWERING, PHASE_CHECKED, T_WFD, TYPED_ROWS } from './constants'
-import { clockOf, isTextShown, origBoxClsOf, recCapOf, wordCountOf } from './functions'
+import { clockOf, isTextShown, origBoxClsOf, wordCountOf } from './functions'
 import { PteDiff } from './ptediff'
 import { PtePlayer } from './pteplayer'
-import { PteRecorder } from './pterecorder'
+import { PteRecBar } from './pterecbar'
 import { PteText } from './ptetext'
 import type { PteAnswerPartIn } from './types'
 import css from './pte.module.css'
@@ -31,12 +31,14 @@ export function PteAnswerBody({ t, q, type, a, tiers, onHoverWord }: PteAnswerPa
   return (
     <>
       {type.audio && checked === false && (
-        <PtePlayer label={t('pte.audio')} playing={a.playing} onClick={a.onPlay} disabled={a.canPlay === false} />
-      )}
-      {type.audio && a.canPlay === false && (
-        <Notice kind={NOTICE_INFO} className={css.notice}>{t('pte.noTts')}</Notice>
+        <PtePlayer label={t('pte.audio')} src={q.audioUrl} onEnd={a.onAudioEnd}
+          speaking={a.playing} onSpeak={a.onPlay} disabled={a.canPlay === false} />
       )}
       {showText && <PteText text={q.text} tiers={tiers} onHoverWord={onHoverWord} />}
+      {type.audio === false && wfd === false && (
+        <PtePlayer label={t('pte.tts')} src={q.audioUrl} onEnd={a.onAudioEnd}
+          speaking={a.playing} onSpeak={a.onPlay} disabled={a.canPlay === false} />
+      )}
       {type.audio && showText === false && answering && (
         <div className={css.revealRow}>
           <Button kind={KIND_SECONDARY} sm onClick={a.onShowText}>{t('pte.showText')}</Button>
@@ -51,8 +53,9 @@ export function PteAnswerBody({ t, q, type, a, tiers, onHoverWord }: PteAnswerPa
           </div>
         </>
       )}
-      {wfd === false && a.recording && (
-        <PteRecorder t={t} seconds={a.recSeconds} cap={recCapOf({ type: q.type })} onStop={a.onStopRec} />
+      {wfd === false && (
+        <PteRecBar t={t} recording={a.recording} seconds={a.recSeconds} checked={checked} onMic={a.onMic}
+          onRedo={a.onRedo} />
       )}
       {a.micDenied && <Notice kind={NOTICE_INFO} className={css.notice}>{t('pte.noMic')}</Notice>}
       {checked && wfd && <PteDiff t={t} typed={a.typed} text={q.text} />}
@@ -72,9 +75,6 @@ export function PteAnswerBody({ t, q, type, a, tiers, onHoverWord }: PteAnswerPa
           <div className={css.label}>{t('pte.myRec')}</div>
           <audio controls src={a.recUrl} className={css.recAudio} />
         </>
-      )}
-      {checked && wfd === false && (
-        <PtePlayer label={t('pte.tts')} playing={a.playing} onClick={a.onPlay} disabled={a.canPlay === false} />
       )}
     </>
   )

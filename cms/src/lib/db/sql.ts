@@ -1651,6 +1651,13 @@ export const PTE_ONE = `SELECT qid, source, type, num, title, text, answer, audi
      FROM pte_questions WHERE qid = $1 LIMIT 1`
 
 /**
+ * 单题按站内题号(2026-09-04 Frank「id 应该我们基于自己的规则生成」:URL 用 /pte/ra/12)。$1=题型码,$2=题号。
+ */
+export const PTE_ONE_NUM = `SELECT qid, source, type, num, title, text, answer, audio_url AS "audioUrl", predicted,
+            seen, seen_n AS "seenN", votes, freq
+     FROM pte_questions WHERE type = $1 AND num = $2 LIMIT 1`
+
+/**
  * 题下评论(考试记录 + 留言,只取过审;时间倒序)。$1=qid。
  */
 export const PTE_COMMENTS = `SELECT c.id, c.kind, c.exam_date AS "examDate", c.exam_city AS "examCity",
@@ -1673,13 +1680,14 @@ export const PTE_AUDIO_ONE = `SELECT mime, b64 FROM pte_audio WHERE qid = $1 ORD
 /**
  * 词典一词(2026-09-04 自托管 ECDICT 子集;$1=小写词)。
  */
-export const PTE_DICT_ONE = `SELECT word, phonetic, translation, lemma, phonetic_uk AS "phoneticUk", phonetic_us AS "phoneticUs"
+export const PTE_DICT_ONE = `SELECT word, phonetic, translation, lemma, phonetic_uk AS "phoneticUk", phonetic_us AS "phoneticUs",
+            definition, forms
      FROM pte_dict WHERE word = $1 ORDER BY id ASC LIMIT 1`
 
 /**
  * 一题词表的高亮档依据(2026-09-04 关键词高亮;$1=小写词清单)。
  */
-export const PTE_DICT_TAGS = `SELECT word, tag, collins FROM pte_dict WHERE word = ANY($1::text[])`
+export const PTE_DICT_TAGS = `SELECT word, tag, collins, frq FROM pte_dict WHERE word = ANY($1::text[])`
 
 /**
  * 本人的练过档(批三;users.pte_done jsonb = { done: string[], updatedAt })。$1=用户 id。

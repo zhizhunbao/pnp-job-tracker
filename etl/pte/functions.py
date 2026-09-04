@@ -107,7 +107,7 @@ from pte.constants import (DK_AVATAR_MARKS, DK_CRAWL_SLUG, DK_ENTRY_DELAY_S, DK_
                            OPEN_TIGHT_RE, P_MART_DONE_TPL, PUNCT_TIGHT_RE, Q_K_ANSWER, Q_K_AUDIO_FILE,
                            Q_K_AUDIO_URL, Q_K_FETCHED, Q_K_IMAGE_URL, Q_K_NUM, Q_K_PREDICTED, Q_K_QID,
                            Q_K_SEEN_N, Q_K_TEXT, QID_SEP, TOKEN_JOIN, T_ASQ, T_RA, T_WFD, DK_K_SN)
-from pte.constants import (A_K_B64, AUDIO_URL_TPL, N_K_NUM, N_K_QID, N_K_ROWS, N_K_TYPE, OUT_NUMBERS, D_K_COLLINS, D_K_LEMMA, D_K_MISSING, D_K_TAG, D_K_PHON_UK, D_K_PHON_US, D_K_PHONETIC, D_K_ROWS, D_K_TRANSLATION, D_K_WORD, DICT_CSV_FIELD_MAX, DICT_CSV_K_COLLINS, DICT_CSV_K_EXCHANGE, DICT_CSV_K_TAG, DICT_CSV_K_PHONETIC, DICT_CSV_K_TRANSLATION, DICT_CSV_K_WORD, DICT_CSV_NL, DICT_EXCH_KV, DICT_EXCH_LEMMA, DICT_EXCH_SEP, DICT_MIN_LEN, DICT_WORD_RE, DICT_WORD_STRIP, IN_DICT_CSV, MART_DICT_FILE, OUT_DICT, P_DICT_DONE_TPL, P_DICT_YD_TPL, YD_API_TPL, YD_CRAWL_SLUG, YD_K_EC, YD_K_SIMPLE, YD_K_UK, YD_K_US, YD_K_WORD, YD_SLEEP_S, FFMPEG_BIN, FFMPEG_IN_ARGS, FFMPEG_OUT_ARGS, MART_AUDIO_FILE,
+from pte.constants import (A_K_B64, AUDIO_URL_TPL, NUM_DATE_SEP, N_K_NUM, N_K_QID, N_K_ROWS, N_K_TYPE, OUT_NUMBERS, D_K_COLLINS, D_K_DEFINITION, D_K_FORMS, D_K_FRQ, D_K_LEMMA, D_K_MISSING, D_K_TAG, D_K_PHON_UK, D_K_PHON_US, D_K_PHONETIC, D_K_ROWS, D_K_TRANSLATION, D_K_WORD, DICT_CSV_FIELD_MAX, DICT_CSV_K_COLLINS, DICT_CSV_K_DEFINITION, DICT_CSV_K_EXCHANGE, DICT_CSV_K_FRQ, DICT_DOMAIN_FULL, DICT_DOMAIN_RE, DICT_NL, DICT_CSV_K_TAG, DICT_CSV_K_PHONETIC, DICT_CSV_K_TRANSLATION, DICT_CSV_K_WORD, DICT_CSV_NL, DICT_EXCH_KV, DICT_EXCH_LEMMA, DICT_EXCH_SEP, DICT_EXCH_SKIP, DICT_MIN_LEN, DICT_WORD_RE, DICT_WORD_STRIP, IN_DICT_CSV, MART_DICT_FILE, OUT_DICT, P_DICT_DONE_TPL, P_DICT_YD_TPL, YD_API_TPL, YD_CRAWL_SLUG, YD_K_EC, YD_K_SIMPLE, YD_K_UK, YD_K_US, YD_K_WORD, YD_SLEEP_S, FFMPEG_BIN, FFMPEG_IN_ARGS, FFMPEG_OUT_ARGS, MART_AUDIO_FILE,
                            MERGE_SRC_ORDER, MIME_MP3, MIME_WAV, NORM_DROP, NORM_SPACE_RE, NORM_TEXT_RE, OUT_TTS_DIR,
                            OUT_TTS_INDEX, OUT_TTS_VOICES_DIR, P_MERGE_TPL, P_TTS_DONE_TPL, P_TTS_FAIL_TPL,
                            P_TTS_VOICE_TPL, TTS_FILE_SEP, TTS_K_FILE, TTS_K_MIME, TTS_K_ROWS, TTS_K_VOICE,
@@ -2349,11 +2349,36 @@ def save_numbers(known: dict) -> None:
     write_json(WriteJsonIn(path=OUT_NUMBERS, payload={N_K_ROWS: payload}, indent=JSON_INDENT))
 
 
+def expand_domains(translation: str) -> str:
+    """释义各行行首的领域缩写展开成全名(`[法]` → `[法律]`)。"""
+    out: list = []
+    for line in translation.split(DICT_NL):
+        m = DICT_DOMAIN_RE.match(line)
+        if m is not None and m.group(1) in DICT_DOMAIN_FULL:
+            line = "[" + DICT_DOMAIN_FULL[m.group(1)] + "]" + line[m.end():]
+        out.append(line)
+    return DICT_NL.join(out)
+
+
+def forms_of(exchange: str) -> str:
+    """exchange 串 → 带词性码的词形清单(`p:took/d:taken/i:taking/3:takes`,去重保序;跳过 0/1 两个指向标记;
+    码 → 标签由前端按界面语翻 —— Frank 2026-09-04「词形应该加上是什么词性缩写」)。"""
+    out: list = []
+    seen: set = set()
+    for part in exchange.split(DICT_EXCH_SEP):
+        kv = part.split(DICT_EXCH_KV, 1)
+        if len(kv) == 2 and kv[0] not in DICT_EXCH_SKIP and kv[1] and part not in seen:
+            seen.add(part)
+            out.append(part)
+    return DICT_EXCH_SEP.join(out)
+
+
 def num_of_pair(pair: tuple) -> int:
     """(qid, num) 对的排序键 = 号。"""
     return int(pair[1])
 def num_sort_key_of(r: dict) -> tuple:
-    """稳定编号的排序键:(源序, 源内题号数值, 源内题号原串)。"""
+    """首次领号的排序键:最近考过日新的在前(Frank 2026-09-04「100 多天考过的序号需要放到前面吗」),
+    同日票数多的在前,再按(源序, 源内题号数值, 源内题号原串)。只影响第一次领号,领过的号永不变。"""
     src_rank = len(MERGE_SRC_ORDER)
     for i, src in enumerate(MERGE_SRC_ORDER):
         if r[IDX_K_SOURCE] == src:
@@ -2362,7 +2387,12 @@ def num_sort_key_of(r: dict) -> tuple:
     num = 0
     if raw.isdigit():
         num = int(raw)
-    return (src_rank, num, raw)
+    seen_digits = str(r.get(R_K_SEEN) or "").replace(NUM_DATE_SEP, "")
+    seen_key = 0
+    if seen_digits.isdigit():
+        seen_key = -int(seen_digits)
+    votes = int(r.get(R_K_VOTES) or 0)
+    return (seen_key == 0, seen_key, -votes, src_rank, num, raw)
 
 
 def tts_index_of() -> dict:
@@ -2482,6 +2512,7 @@ def run_pte_dict() -> None:
     found = dict_lookup(vocab)
     lemmas = {lemma_of(v[DICT_CSV_K_EXCHANGE]) for v in found.values()} - set(found) - {""}
     base = dict_lookup(lemmas)
+    base.update(found)
     rows = []
     missing = []
     for w in sorted(vocab):
@@ -2523,6 +2554,8 @@ def dict_lookup(words: set) -> dict:
                           DICT_CSV_K_EXCHANGE: str(row.get(DICT_CSV_K_EXCHANGE) or ""),
                           DICT_CSV_K_TAG: str(row.get(DICT_CSV_K_TAG) or ""),
                           DICT_CSV_K_COLLINS: str(row.get(DICT_CSV_K_COLLINS) or ""),
+                          DICT_CSV_K_FRQ: str(row.get(DICT_CSV_K_FRQ) or ""),
+                          DICT_CSV_K_DEFINITION: str(row.get(DICT_CSV_K_DEFINITION) or ""),
                           DICT_CSV_K_WORD: w}
     return out
 
@@ -2542,7 +2575,7 @@ def dict_row_of(x: DictRowIn) -> dict:
     translation = x.hit[DICT_CSV_K_TRANSLATION]
     phonetic = x.hit[DICT_CSV_K_PHONETIC]
     root = x.base.get(lemma)
-    if not translation and root is not None:
+    if root is not None and root[DICT_CSV_K_TRANSLATION]:
         translation = root[DICT_CSV_K_TRANSLATION]
     if not phonetic and root is not None:
         phonetic = root[DICT_CSV_K_PHONETIC]
@@ -2552,9 +2585,18 @@ def dict_row_of(x: DictRowIn) -> dict:
         tag = root[DICT_CSV_K_TAG]
     if not collins and root is not None:
         collins = root[DICT_CSV_K_COLLINS]
+    frq = x.hit[DICT_CSV_K_FRQ]
+    if root is not None and root[DICT_CSV_K_FRQ] not in ("", "0"):
+        frq = root[DICT_CSV_K_FRQ]
+    definition = x.hit[DICT_CSV_K_DEFINITION]
+    if root is not None and root[DICT_CSV_K_DEFINITION]:
+        definition = root[DICT_CSV_K_DEFINITION]
     return {D_K_WORD: x.hit[DICT_CSV_K_WORD], D_K_PHONETIC: phonetic,
-            D_K_TRANSLATION: translation.replace(DICT_CSV_NL, "\n"), D_K_LEMMA: lemma,
-            D_K_TAG: tag, D_K_COLLINS: int(collins) if collins.isdigit() else 0}
+            D_K_TRANSLATION: expand_domains(translation.replace(DICT_CSV_NL, DICT_NL)), D_K_LEMMA: lemma,
+            D_K_TAG: tag, D_K_COLLINS: int(collins) if collins.isdigit() else 0,
+            D_K_FRQ: int(frq) if frq.isdigit() else 0,
+            D_K_DEFINITION: definition.replace(DICT_CSV_NL, "\n"),
+            D_K_FORMS: forms_of(x.hit[DICT_CSV_K_EXCHANGE])}
 
 
 def attach_phonetics(rows: list) -> None:
@@ -2582,7 +2624,21 @@ def attach_phonetics(rows: list) -> None:
             uk, us = phonetics_of(body)
             r[D_K_PHON_UK] = uk
             r[D_K_PHON_US] = us
+    borrow_phonetics(rows)
     say(P_DICT_YD_TPL.format(hit=hit, fetched=fetched, fail=fail))
+
+
+def borrow_phonetics(rows: list) -> None:
+    """屈折形自己没英/美音标的,借原形的(examples → example;Frank 2026-09-04 实撞「英 — 」空档)。"""
+    by_word: dict = {r[D_K_WORD]: r for r in rows}
+    for r in rows:
+        root = by_word.get(r[D_K_LEMMA])
+        if root is None:
+            continue
+        if not r[D_K_PHON_UK]:
+            r[D_K_PHON_UK] = root[D_K_PHON_UK]
+        if not r[D_K_PHON_US]:
+            r[D_K_PHON_US] = root[D_K_PHON_US]
 
 
 def phonetics_of(body: str) -> tuple:

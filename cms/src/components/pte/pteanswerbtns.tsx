@@ -26,10 +26,6 @@ export function PteAnswerBtns({ t, q, type, a, prevHref, nextHref, pro }: PteAns
   const wfd = q.type === T_WFD
   const answering = a.phase === PHASE_ANSWERING
   const checked = a.phase === PHASE_CHECKED
-  let redoLabel = t('pte.rerec')
-  if (wfd) {
-    redoLabel = t('pte.redo')
-  }
   let nextKind: ButtonKind = KIND_SECONDARY
   if (checked) {
     nextKind = KIND_PRIMARY
@@ -41,7 +37,7 @@ export function PteAnswerBtns({ t, q, type, a, prevHref, nextHref, pro }: PteAns
       {answering && wfd && type.audio && a.canPlay && (
         <Button kind={KIND_SECONDARY} onClick={a.onPlay}>{t('pte.replay')}</Button>
       )}
-      {checked && <Button kind={KIND_SECONDARY} onClick={a.onRedo}>{redoLabel}</Button>}
+      {checked && wfd && <Button kind={KIND_SECONDARY} onClick={a.onRedo}>{t('pte.redo')}</Button>}
       <Button kind={KIND_SECONDARY} href={hrefOrNone(prevHref)} disabled={prevHref == null}>{t('pte.prev')}</Button>
       <Button kind={nextKind} href={hrefOrNone(nextHref)} disabled={nextHref == null}>{t('pte.next')}</Button>
     </div>

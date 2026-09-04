@@ -11,19 +11,22 @@
  */
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import {
-  DICT_IDLE, GATE_NONE, KIND_EXAM, KIND_NOTE, LANG_UK, LANG_US, PAGE_STEP, PHASE_ANSWERING, PHASE_READY, STATE_IDLE,
-  TEXT_NONE, T_WFD,
+  DICT_IDLE, GATE_NONE, KIND_EXAM, KIND_NOTE, LANG_UK, LANG_US, PAGE_STEP, PHASE_ANSWERING, PHASE_READY, RATE_STEPS,
+  SPK_NONE, SPK_UK, SPK_US, STATE_IDLE, TEXT_NONE, T_WFD,
 } from './constants'
 import {
-  commentsOfKind, doneServerSnapshotOf, doneSnapshotOf, makeCanPlaySnapshot, makeClose, makeCountdown, makeDictClose,
-  makeDictLookup, makeDoneSync, makeExamSubmit, makeGateClose, makeGatedSubmit, makeHoverWord, makeMore, makeNavScroll,
-  makeNoteSubmit, makeOpen, makePhaseSet, makePlay, makeRedo, makeSelectionWatch, makeSpeakWord, makeStartRec,
-  makeSubmit, makeTextChange, makeTicker, makeToggle, prepSecOf, quotaServerSnapshotOf, quotaSnapshotOf, recCapOf,
-  reloadPage, seenCountOf, serverFalseOf, subscribeDone, subscribeNone,
+  commentsOfKind, doneServerSnapshotOf, doneSnapshotOf, makeAudioEnded, makeCanPlaySnapshot, makeClose, makeCountdown,
+  makeDictClose, makeDictLookup, makeDictOpenFlag, makeDictSink, makeDoneSync, makeExamSubmit, makeGateClose,
+  makeGatedPlay, makeGatedSubmit, makeMic, makeMore, makeNavPick, makeNavScroll, makeNoteSubmit, makeOpen,
+  makePhaseSet, makePlayEnd, makeRedo, makeSelectionWatch, makeSetBool, makeSpeakWord, makeStartRec, makeSubmit,
+  makeTextChange, makeTicker, makeToggle, nextRateOf, noop, openDictWord, prepSecOf, quotaServerSnapshotOf,
+  quotaSnapshotOf, rateAudio, recCapOf, reloadPage, seekAudio, seenCountOf, serverFalseOf, stopSpeak, subscribeDone,
+  subscribeNone,
 } from './functions'
 import type {
-  DictEntry, DictPos, DictState, NavScrollIn, PostState, PteAnswerHookIn, PteAnswerPanel, PteBoardHookIn,
-  PteBoardPanel, PteComment, PteCommentsHookIn, PteCommentsPanel, PteDictPanel, PteGate, PtePhase, RecorderHandle,
+  DictEntry, DictPos, DictState, PlayerHookIn, PlayerPanel, PostState, PteAnswerHookIn, PteAnswerPanel, PteBoardHookIn,
+  PteBoardPanel, PteComment, PteCommentsHookIn, PteCommentsPanel, PteDictPanel, PteGate, PteNavHookIn, PteNavPanel,
+  PtePhase, RecorderHandle,
 } from './types'
 
 /**
@@ -50,15 +53,94 @@ export function usePteBoard(x: PteBoardHookIn): PteBoardPanel {
 }
 
 /**
- * 目录树:进页把当前题滚进视野(换题重滚)。
+ * 播放条整机:一个 audio 元素的在播 / 进度 / 时长 / 倍速(直链形态;没直链的圆钮走 usePteAnswer 的朗读)。
+ * ref 由挂 audio 的组件持有经 x 传进来(react-hooks/refs:面板里混装 ref 会被判成渲染期读 ref,同 table 先例);
+ * 手柄写成体内具名函数,只在调用时读 ref.current。
+ *
+ * @param x 直链与播完回调。
+ * @returns 面板。
+ */
+export function usePlayer(x: PlayerHookIn): PlayerPanel {
+  const [playing, setPlaying] = useState(false)
+  const [cur, setCur] = useState(0)
+  const [dur, setDur] = useState(0)
+  const [rate, setRate] = useState(RATE_STEPS[0] as number)
+
+  function toggle(): void {
+    const el = x.audioRef.current
+    if (el == null) {
+      return
+    }
+    if (playing) {
+      el.pause()
+      return
+    }
+    stopSpeak()
+    void el.play().catch(noop)
+  }
+
+  function seek(e: React.ChangeEvent<HTMLInputElement>): void {
+    const n = Number(e.target.value)
+    const el = x.audioRef.current
+    if (el != null) {
+      seekAudio({ el, n })
+    }
+    setCur(n)
+  }
+
+  function cycleRate(): void {
+    const next = nextRateOf({ rate })
+    const el = x.audioRef.current
+    if (el != null) {
+      rateAudio({ el, rate: next })
+    }
+    setRate(next)
+  }
+
+  function time(): void {
+    const el = x.audioRef.current
+    if (el == null) {
+      return
+    }
+    setCur(el.currentTime)
+    if (Number.isFinite(el.duration)) {
+      setDur(el.duration)
+    }
+  }
+
+  return {
+    playing,
+    cur,
+    dur,
+    rate,
+    onToggle: toggle,
+    onSeek: seek,
+    onRate: cycleRate,
+    onTime: time,
+    onMeta: time,
+    onEnded: makeAudioEnded({ setPlaying, onEnd: x.onEnd }),
+    onPlayEv: makeSetBool({ set: setPlaying, value: true }),
+    onPauseEv: makeSetBool({ set: setPlaying, value: false }),
+  }
+}
+
+/**
+ * 目录树:进页把当前题滚进视野(换题重滚);题型钮原地切清单(不跳页)。
  *
  * @param x 当前题键。
  * @returns 无。
  */
-export function usePteNav(x: NavScrollIn): void {
+export function usePteNav(x: PteNavHookIn): PteNavPanel {
+  const [navType, setNavType] = useState(x.type)
   useEffect(function scrollNav() {
     makeNavScroll({ qid: x.qid })()
   }, [x.qid])
+
+  function pickOf(code: string): () => void {
+    return makeNavPick({ code, set: setNavType })
+  }
+
+  return { navType, pickOf }
 }
 
 /**
@@ -87,9 +169,10 @@ export function usePteAnswer(x: PteAnswerHookIn): PteAnswerPanel {
 
   const [gate, setGate] = useState<PteGate>(GATE_NONE)
   const used = useSyncExternalStore(subscribeDone, quotaSnapshotOf, quotaServerSnapshotOf)
-  const submit = makeSubmit({ qid: x.q.qid, loggedIn: x.loggedIn, rec, setRecUrl, setRecording, setRec, setPhase })
-  const onSubmit = makeGatedSubmit({ pro: x.pro, loggedIn: x.loggedIn, used, submit, setGate })
-  const toAnswering = makePhaseSet({ setPhase, phase: PHASE_ANSWERING })
+  const onSubmit = makeSubmit({ qid: x.q.qid, loggedIn: x.loggedIn, rec, setRecUrl, setRecording, setRec, setPhase })
+  const toAnswering = makeGatedSubmit({
+    pro: x.pro, loggedIn: x.loggedIn, used, submit: makePhaseSet({ setPhase, phase: PHASE_ANSWERING }), setGate,
+  })
 
   useEffect(function countdown() {
     return makeCountdown({
@@ -126,8 +209,12 @@ export function usePteAnswer(x: PteAnswerHookIn): PteAnswerPanel {
     used,
     gate,
     onGateClose: makeGateClose({ setGate }),
-    onPlay: makePlay({ q: x.q, audioType: x.type.audio, phase, setPlaying, setPhase }),
+    onPlay: makeGatedPlay({
+      pro: x.pro, loggedIn: x.loggedIn, used, setGate, q: x.q, audioType: x.type.audio, phase, setPlaying, setPhase,
+    }),
     onSkipPrep: toAnswering,
+    onAudioEnd: makePlayEnd({ q: x.q, audioType: x.type.audio, phase, setPlaying, setPhase }),
+    onMic: makeMic({ phase, toAnswering, onStopRec: onSubmit }),
     onShowText: makeToggle({ on: textShown, set: setTextShown }),
     onShowAnswer: makeToggle({ on: answerShown, set: setAnswerShown }),
     onTyped: makeTextChange({ set: setTyped }),
@@ -184,6 +271,7 @@ export function usePteDict(): PteDictPanel {
   const [pos, setPos] = useState<DictPos>({ x: 0, y: 0 })
   const [state, setState] = useState<DictState>(DICT_IDLE)
   const [entry, setEntry] = useState<DictEntry | null>(null)
+  const [speaking, setSpeaking] = useState(SPK_NONE)
 
   useEffect(function watchSelection() {
     return makeSelectionWatch({ setWord, setPos })()
@@ -193,15 +281,24 @@ export function usePteDict(): PteDictPanel {
     return makeDictLookup({ word, setState, setEntry })()
   }, [word])
 
+  useEffect(function sink() {
+    return makeDictSink({ setWord, setPos })()
+  }, [])
+
+  useEffect(function openFlag() {
+    return makeDictOpenFlag({ qid: word })()
+  }, [word])
+
   return {
     state,
     word,
     entry,
     pos,
     onClose: makeDictClose({ setWord }),
-    onHoverWord: makeHoverWord({ setWord, setPos }),
-    onSpeakUk: makeSpeakWord({ word, lang: LANG_UK }),
-    onSpeakUs: makeSpeakWord({ word, lang: LANG_US }),
+    onHoverWord: openDictWord,
+    speaking,
+    onSpeakUk: makeSpeakWord({ word, lang: LANG_UK, key: SPK_UK, setSpeaking }),
+    onSpeakUs: makeSpeakWord({ word, lang: LANG_US, key: SPK_US, setSpeaking }),
   }
 }
 

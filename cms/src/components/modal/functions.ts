@@ -7,9 +7,10 @@
  */
 import { cssOf } from '@/components/css'
 import {
-  CLS_SEP, MAX_KEY, RESTORE_KEY, TRANSFORM_NONE,
+  CLS_SEP, EDGE_E, EDGE_N, EDGE_S, EDGE_W, MAX_KEY, POS_ABSOLUTE, RESIZE_MAX_VH, RESIZE_MAX_VW, RESIZE_MIN_H,
+  RESIZE_MIN_W, RESTORE_KEY, TRANSFORM_NONE,
 } from './constants'
-import type { CardStyleIn, ClsIn, ClsOut, ModalSize } from './types'
+import type { CardStyleIn, ClsIn, ClsOut, ModalSize, ResizedIn, ResizedOut } from './types'
 import css from './modal.module.css'
 
 /**
@@ -45,16 +46,19 @@ export function clsOf(x: ClsIn): ClsOut {
     sm: cssOf(css.narrowSm),
     md: cssOf(css.narrowFull),
     lg: cssOf(css.narrowFull),
+    fit: cssOf(css.narrowSm),
   }
   const narrowOverlay: Record<ModalSize, string> = {
     sm: cssOf(css.overlayNarrowSm),
     md: cssOf(css.overlayNarrowFull),
     lg: cssOf(css.overlayNarrowFull),
+    fit: cssOf(css.overlayNarrowSm),
   }
   const sizeCls: Record<ModalSize, string> = {
     sm: cssOf(css.sm),
     md: cssOf(css.md),
     lg: cssOf(css.lg),
+    fit: cssOf(css.fit),
   }
   const card = [css.card]
   const overlay = [css.overlay]
@@ -114,7 +118,12 @@ export function cardStyleOf(x: CardStyleIn): React.CSSProperties {
     // eslint-disable-next-line local/no-bare-strings -- 见本函数 JSDoc:CSS 值不拆片
     transform = `translate3d(${x.pos.x}px, ${x.pos.y}px, 0)`
   }
-  return { transform }
+  if (x.size.w == null || x.size.h == null || x.size.left == null || x.size.top == null) {
+    return { transform }
+  }
+  return {
+    transform, width: x.size.w, height: x.size.h, position: POS_ABSOLUTE, left: x.size.left, top: x.size.top, margin: 0,
+  }
 }
 
 /**
@@ -126,4 +135,39 @@ export function cardStyleOf(x: CardStyleIn): React.CSSProperties {
  */
 export function overlayCls(): string {
   return cssOf(css.overlay)
+}
+
+/**
+ * 缩放跟手算法:按边算新宽高(夹在下限与视口上限之间);卡片钉在起手位置,n / w 边把差值补进 left / top 让对边钉住。
+ *
+ * @param x 起手快照与位移量。
+ * @returns 新宽高与位移。
+ */
+export function resizedOf(x: ResizedIn): ResizedOut {
+  const e = x.st.edge
+  let w = x.st.w
+  let h = x.st.h
+  if (e.includes(EDGE_E)) {
+    w = x.st.w + x.dx
+  }
+  if (e.includes(EDGE_W)) {
+    w = x.st.w - x.dx
+  }
+  if (e.includes(EDGE_S)) {
+    h = x.st.h + x.dy
+  }
+  if (e.includes(EDGE_N)) {
+    h = x.st.h - x.dy
+  }
+  w = Math.min(Math.max(w, RESIZE_MIN_W), window.innerWidth * RESIZE_MAX_VW)
+  h = Math.min(Math.max(h, RESIZE_MIN_H), window.innerHeight * RESIZE_MAX_VH)
+  let left = x.st.left
+  let top = x.st.top
+  if (e.includes(EDGE_W)) {
+    left = x.st.left + (x.st.w - w)
+  }
+  if (e.includes(EDGE_N)) {
+    top = x.st.top + (x.st.h - h)
+  }
+  return { w, h, left, top }
 }

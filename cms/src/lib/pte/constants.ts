@@ -22,6 +22,21 @@ export const HDR_CACHE_CONTROL = 'Cache-Control'
 export const HDR_CONTENT_TYPE = 'Content-Type'
 
 /**
+ * 响应头:正文长度(浏览器拿不到 mp3 时长就显 0:00 —— 2026-09-04 播放条实撞,给了长度才能算)。
+ */
+export const HDR_CONTENT_LENGTH = 'Content-Length'
+
+/**
+ * 响应头:支持字节区间(拖进度用)。
+ */
+export const HDR_ACCEPT_RANGES = 'Accept-Ranges'
+
+/**
+ * Accept-Ranges 的值。
+ */
+export const RANGES_BYTES = 'bytes'
+
+/**
  * 音频的缓存口径:一年 + immutable(同一 qid 的音频换声音时整表重灌,浏览器缓存靠换 URL 不靠过期)。
  */
 export const AUDIO_CACHE = 'public, max-age=31536000, immutable'

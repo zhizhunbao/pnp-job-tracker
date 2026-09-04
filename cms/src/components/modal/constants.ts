@@ -207,3 +207,83 @@ export const MQ_MAX_WIDTH_TAIL = 'px)'
  * Button 只出统一的语义与可达性(disabled/aria)。
  */
 export const PLAIN_BTN_KIND = 'ghost'
+
+/**
+ * 拖拽缩放:最小宽(px)。
+ */
+export const RESIZE_MIN_W = 240
+
+/**
+ * 拖拽缩放:最小高(px)。
+ */
+export const RESIZE_MIN_H = 120
+
+/**
+ * 拖拽缩放:最大宽占视口比。
+ */
+export const RESIZE_MAX_VW = 0.92
+
+/**
+ * 拖拽缩放:最大高占视口比。
+ */
+export const RESIZE_MAX_VH = 0.85
+
+/**
+ * 边码:北(上)。
+ */
+export const EDGE_N = 'n'
+
+/**
+ * 边码:南(下)。
+ */
+export const EDGE_S = 's'
+
+/**
+ * 边码:东(右)。
+ */
+export const EDGE_E = 'e'
+
+/**
+ * 边码:西(左)。
+ */
+export const EDGE_W = 'w'
+
+/**
+ * 边码:东北角。
+ */
+export const EDGE_NE = 'ne'
+
+/**
+ * 边码:西北角。
+ */
+export const EDGE_NW = 'nw'
+
+/**
+ * 边码:东南角。
+ */
+export const EDGE_SE = 'se'
+
+/**
+ * 边码:西南角。
+ */
+export const EDGE_SW = 'sw'
+
+/**
+ * 窗口级指针事件名:移动。
+ */
+export const EV_POINTERMOVE = 'pointermove'
+
+/**
+ * 窗口级指针事件名:松开。
+ */
+export const EV_POINTERUP = 'pointerup'
+
+/**
+ * 对半(缩放时位移补一半,对边钉住)。
+ */
+export const HALF = 2
+
+/**
+ * 拖拽缩放后卡片的定位方式(钉在起手位置,不再随遮罩居中)。
+ */
+export const POS_ABSOLUTE = 'absolute'

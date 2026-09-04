@@ -1150,6 +1150,7 @@ export const pteEn: Record<keyof typeof pteZh, string> = {
   'pte.pos': '{i} / {n}',
   'pte.inst.RA': 'Read it aloud naturally and clearly within 40 seconds', 'pte.inst.RS': 'Listen once, repeat it exactly', 'pte.inst.ASQ': 'Listen, answer in a word or two', 'pte.inst.WFD': 'Listen once, type it exactly',
   'pte.prep': 'Prepare', 'pte.skipPrep': 'Skip prep', 'pte.play': 'Play question', 'pte.replay': 'Play again', 'pte.audio': 'Question audio',
+  'pte.rec': 'Record',
   'pte.tts': 'Model reading', 'pte.myRec': 'My recording', 'pte.recording': 'Recording', 'pte.recCap': 'Finish within {s} seconds', 'pte.stop': 'Stop',
   'pte.submit': 'Submit', 'pte.redo': 'Redo', 'pte.rerec': 'Record again', 'pte.next': 'Next', 'pte.prev': 'Previous',
   'pte.typed': 'You typed', 'pte.orig': 'Original', 'pte.answer': 'Answer', 'pte.words': '{n} words', 'pte.timer': 'Elapsed {t}',
@@ -1163,4 +1164,7 @@ export const pteEn: Record<keyof typeof pteZh, string> = {
   'pte.c.sent': 'Submitted, shown after review', 'pte.c.err': 'Not sent, please retry',
   'pte.dict.close': 'Close', 'pte.dict.loading': 'Looking up', 'pte.dict.none': 'No entry',
   'pte.dict.uk': 'UK', 'pte.dict.us': 'US',
+  'pte.dict.zh': 'Chinese', 'pte.dict.en': 'English', 'pte.dict.forms': 'Forms',
+  'pte.form.p': 'Past', 'pte.form.d': 'Past participle', 'pte.form.i': 'Present participle', 'pte.form.3': '3rd person',
+  'pte.form.r': 'Comparative', 'pte.form.t': 'Superlative', 'pte.form.s': 'Plural',
 }

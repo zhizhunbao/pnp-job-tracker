@@ -11,7 +11,7 @@ import { getDb } from '../db/server'
 import { BAD_REQUEST, NOT_FOUND, TOO_LARGE, UNAUTHORIZED } from '../http'
 import { getUserOrNull } from '../quota/server'
 import {
-  AUDIO_CACHE, DICT_CACHE, DONE_LEN_MAX, E_AUTH, E_BAD, E_NOT_FOUND, E_TOO_BIG, HDR_CACHE_CONTROL, HDR_CONTENT_TYPE,
+  AUDIO_CACHE, DICT_CACHE, HDR_ACCEPT_RANGES, HDR_CONTENT_LENGTH, RANGES_BYTES, DONE_LEN_MAX, E_AUTH, E_BAD, E_NOT_FOUND, E_TOO_BIG, HDR_CACHE_CONTROL, HDR_CONTENT_TYPE,
 } from './constants'
 import { loadPteAudio, loadPteDict, loadPteDone, qidOfUrl, savePteDone, unionOf } from './functions'
 import type { PteDoneBody } from './types'
@@ -32,7 +32,12 @@ export async function pteAudioRoute(req: Request): Promise<Response> {
     return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
   }
   return new Response(audio.bytes, {
-    headers: { [HDR_CONTENT_TYPE]: audio.mime, [HDR_CACHE_CONTROL]: AUDIO_CACHE },
+    headers: {
+      [HDR_CONTENT_TYPE]: audio.mime,
+      [HDR_CACHE_CONTROL]: AUDIO_CACHE,
+      [HDR_CONTENT_LENGTH]: String(audio.bytes.byteLength),
+      [HDR_ACCEPT_RANGES]: RANGES_BYTES,
+    },
   })
 }
 
@@ -54,7 +59,7 @@ export async function pteDictRoute(req: Request): Promise<Response> {
   return Response.json(
     {
       ok: true, word: entry.word, phonetic: entry.phonetic, translation: entry.translation, lemma: entry.lemma,
-      phoneticUk: entry.phoneticUk, phoneticUs: entry.phoneticUs,
+      phoneticUk: entry.phoneticUk, phoneticUs: entry.phoneticUs, definition: entry.definition, forms: entry.forms,
     },
     { headers: { [HDR_CACHE_CONTROL]: DICT_CACHE } },
   )

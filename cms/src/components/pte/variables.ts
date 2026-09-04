@@ -6,7 +6,7 @@
  * @time 2026-09-03 12:00:00
  */
 
-import type { DictEntry } from './types'
+import type { DictEntry, HoverWordIn } from './types'
 
 /**
  * 域内可变状态的容器。
@@ -36,4 +36,14 @@ export const CACHE = {
    * 查过的词(词 → 结果;null = 查过没有),同一页反复选同一个词不再打接口。
    */
   dict: new Map<string, DictEntry | null>(),
+
+  /**
+   * 字典弹框的两个落格(usePteDict 挂载时登记;点词的模块级手柄经它开弹框);没挂载 = null。
+   */
+  dictSink: null as HoverWordIn | null,
+
+  /**
+   * 字典弹框开着(选词监听据此放过弹框期间的所有松开 —— 拖弹框松手不能关,Frank 2026-09-04)。
+   */
+  dictOpen: false,
 }

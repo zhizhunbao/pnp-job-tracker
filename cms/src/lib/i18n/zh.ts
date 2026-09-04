@@ -1265,6 +1265,7 @@ export const pteZh = {
   'pte.pos': '{i} / {n}',
   'pte.inst.RA': '40 秒内自然清晰地读出来', 'pte.inst.RS': '听一遍,原样复述', 'pte.inst.ASQ': '听问题,一两个词作答', 'pte.inst.WFD': '听一遍,原样写下来',
   'pte.prep': '准备', 'pte.skipPrep': '跳过准备', 'pte.play': '播放题目', 'pte.replay': '再听一遍', 'pte.audio': '题目音频',
+  'pte.rec': '录音',
   'pte.tts': '示范朗读', 'pte.myRec': '我的录音', 'pte.recording': '录音中', 'pte.recCap': '{s} 秒内答完', 'pte.stop': '停止',
   'pte.submit': '提交', 'pte.redo': '重做', 'pte.rerec': '重录', 'pte.next': '下一题', 'pte.prev': '上一题',
   'pte.typed': '你写的', 'pte.orig': '原句', 'pte.answer': '答案', 'pte.words': '{n} 词', 'pte.timer': '作答 {t}',
@@ -1278,4 +1279,7 @@ export const pteZh = {
   'pte.c.sent': '已提交,审核后显示', 'pte.c.err': '没发出去,请重试',
   'pte.dict.close': '关闭', 'pte.dict.loading': '查词中', 'pte.dict.none': '没查到',
   'pte.dict.uk': '英', 'pte.dict.us': '美',
+  'pte.dict.zh': '中文', 'pte.dict.en': 'English', 'pte.dict.forms': '词形',
+  'pte.form.p': '过去式', 'pte.form.d': '过去分词', 'pte.form.i': '现在分词', 'pte.form.3': '第三人称单数', 'pte.form.r': '比较级',
+  'pte.form.t': '最高级', 'pte.form.s': '复数',
 }

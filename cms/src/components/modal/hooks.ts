@@ -8,10 +8,14 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import {
-  DRAG_IGNORE_SEL, EV_CHANGE, EV_KEYDOWN, KEY_ESC, MQ_MAX_WIDTH_HEAD, MQ_MAX_WIDTH_TAIL, NARROW_BP,
+  DRAG_IGNORE_SEL, EV_CHANGE, EV_KEYDOWN, EV_POINTERMOVE, EV_POINTERUP, KEY_ESC, MQ_MAX_WIDTH_HEAD, MQ_MAX_WIDTH_TAIL,
+  NARROW_BP,
 } from './constants'
-import { elOf } from './functions'
-import type { CardIn, CardOut, DragPos, DragStart, OverlayHandlers } from './types'
+import { elOf, resizedOf } from './functions'
+import type {
+  CardIn, CardOut, DragPos, DragStart, EdgeResizeIn, EdgeResizeOut, OverlayHandlers, ResizeEdge, ResizeSize,
+  ResizeStart,
+} from './types'
 
 /**
  * 窄屏判定(E8-03,单一来源):≤640px 弹窗一律全屏。
@@ -138,4 +142,49 @@ export function useCard(x: CardIn): CardOut {
   }
 
   return { maximized, toggleMax, pos, dragging, onPointerDown, onPointerMove, onPointerUp }
+}
+
+/**
+ * 四边 / 四角拖拽缩放:按下把手记快照(尺寸 + 视口位置),窗口级跟手写尺寸;卡片拖过后改绝对定位钉在起手位置,
+ * n / w 边随宽高挪 left / top 让对边不动;松开摘监听。
+ * 最小 240×120,最大视口 92%×85%。
+ *
+ * @param x 开关、卡片 ref、位移与落位移。
+ * @returns 尺寸与把手起手工厂。
+ */
+export function useEdgeResize(x: EdgeResizeIn): EdgeResizeOut {
+  const [size, setSize] = useState<ResizeSize>({ w: null, h: null, left: null, top: null })
+  const startRef = useRef<ResizeStart | null>(null)
+
+  function move(ev: PointerEvent): void {
+    const st = startRef.current
+    if (st == null) {
+      return
+    }
+      const next = resizedOf({ st, dx: ev.clientX - st.x, dy: ev.clientY - st.y })
+    setSize({ w: next.w, h: next.h, left: next.left, top: next.top })
+  }
+
+  function up(): void {
+    startRef.current = null
+    window.removeEventListener(EV_POINTERMOVE, move)
+    window.removeEventListener(EV_POINTERUP, up)
+  }
+
+  function startOf(edge: ResizeEdge): (e: React.PointerEvent) => void {
+    return function start(e: React.PointerEvent): void {
+      const el = x.cardRef.current
+      if (x.enabled === false || el == null) {
+        return
+      }
+      e.preventDefault()
+      e.stopPropagation()
+      const r = el.getBoundingClientRect()
+      startRef.current = { x: e.clientX, y: e.clientY, w: r.width, h: r.height, left: r.left, top: r.top, edge }
+      window.addEventListener(EV_POINTERMOVE, move)
+      window.addEventListener(EV_POINTERUP, up)
+    }
+  }
+
+  return { size, startOf }
 }

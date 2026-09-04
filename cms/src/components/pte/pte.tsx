@@ -12,6 +12,7 @@
  * @author Frank
  * @time 2026-09-03 12:00:00
  */
+import { useMemo } from 'react'
 import { Button } from '@/components/button'
 import { useLang } from '@/components/i18n'
 import { Shell } from '@/components/shell'
@@ -21,8 +22,9 @@ import {
   KIND_SECONDARY, SHELL_TOP, URL_PTE_MOCK, URL_PTE_RECALL, URL_PTE_SCORING, URL_PTE_TIPS, URL_PTE_WORDS,
 } from './constants'
 import { cellRowsOf, listHrefOf } from './functions'
-import { usePteBoard } from './hooks'
+import { usePteBoard, usePteDict } from './hooks'
 import { PteCards } from './ptecards'
+import { PteDict } from './ptedict'
 import { PteTable } from './ptetable'
 import { PteSections } from './ptesections'
 import type { PteIn } from './types'
@@ -34,12 +36,16 @@ import css from './pte.module.css'
  * @param props 题型维度、当前题型与这一型的全部题(逐格注释见 PteIn)。
  * @returns 正文。
  */
-export function Pte({ types, type, rows, loggedIn, updatedAt }: PteIn) {
+export function Pte({ types, type, rows, loggedIn, updatedAt, tiers }: PteIn) {
   const [lang, , t] = useLang()
   const b = usePteBoard({ rows, loggedIn })
-  const cells = cellRowsOf({ t, rows: b.shown, done: b.done })
+  const d = usePteDict()
+  const cells = useMemo(function rows() {
+    return cellRowsOf({ t, rows: b.shown, done: b.done, tiers, onHoverWord: d.onHoverWord })
+  }, [t, b.shown, b.done, tiers, d.onHoverWord])
   return (
     <Shell top={SHELL_TOP}>
+      <PteDict t={t} d={d} lang={lang} />
       <div className={css.track}>
         <div className={css.headRow}>
           <h1 className={css.h1}>{t('pte.title')}</h1>

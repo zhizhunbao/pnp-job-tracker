@@ -1,14 +1,14 @@
 'use client'
 /**
  * 域内小件:带关键词高亮的题面 —— 按考纲档给词上色(六级 / 雅思托福 / GRE 三档),
- * 鼠标悬上去开字典弹层(Frank 2026-09-04「关键单词应该高亮,多种颜色。鼠标放上去显示字典解析」)。
+ * 悬停变色、点一下开字典弹层(Frank 2026-09-04「鼠标放上去先变颜色,然后点击才显示翻译」)(Frank 2026-09-04「关键单词应该高亮,多种颜色。鼠标放上去显示字典解析」)。
  * 选中任意词查词的老路照旧(弹层同一个)。
  *
  * @author Frank
  * @time 2026-09-04 12:00:00
  */
-import { TIER_NONE } from './constants'
-import { textPartsOf, tierClsOf } from './functions'
+import { TEXT_NONE } from './constants'
+import { textPartsOf } from './functions'
 import type { PteTextIn } from './types'
 import css from './pte.module.css'
 
@@ -22,10 +22,10 @@ export function PteText({ text, tiers, onHoverWord }: PteTextIn) {
   const parts = []
   let i = 0
   for (const p of textPartsOf({ text, tiers })) {
-    if (p.tier === TIER_NONE) {
+    if (p.word === TEXT_NONE) {
       parts.push(<span key={i}>{p.text}</span>)
     } else {
-      parts.push(<mark key={i} className={tierClsOf(p.tier)} onMouseEnter={onHoverWord}>{p.text}</mark>)
+      parts.push(<mark key={i} className={p.cls} onClick={onHoverWord}>{p.text}</mark>)
     }
     i = i + 1
   }

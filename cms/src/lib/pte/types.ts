@@ -95,6 +95,16 @@ export type PteDictDbRow = {
    * 美音音标。
    */
   phoneticUs: string | null
+
+  /**
+   * 英文释义(多义换行分隔)。
+   */
+  definition: string | null
+
+  /**
+   * 词形变化(逗号分隔)。
+   */
+  forms: string | null
 }
 
 /**
@@ -130,6 +140,16 @@ export type PteDictEntry = {
    * 美音音标;空串 = 没给。
    */
   phoneticUs: string
+
+  /**
+   * 英文释义(多义换行分隔);空串 = 没给。
+   */
+  definition: string
+
+  /**
+   * 词形变化(逗号分隔);空串 = 没有。
+   */
+  forms: string
 }
 
 /**

@@ -16,18 +16,20 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { useRef } from 'react'
 import { Button } from '@/components/button'
 import { useLang } from '@/components/i18n'
 import { CLOSE_ARIA, PLAIN_BTN_KIND, SIZE_DEFAULT, Z_MODAL } from './constants'
 import { cardStyleOf, clsOf, maxKeyOf, stopClick } from './functions'
 import { IconX, MaxIcon } from '@/components/icons'
-import { useCard, useEscClose, useIsNarrow, useOverlayClose } from './hooks'
+import { useCard, useEdgeResize, useEscClose, useIsNarrow, useOverlayClose } from './hooks'
+import { ResizeHandles } from './resizehandles'
 import type { ModalIn } from './types'
 import css from './modal.module.css'
 
 /**
  * 居中弹框壳:sm=390, md=560, lg=760;支持 header 按住拖拽移动(draggable)
- * 与右上角全屏/还原(resizable)。
+ * 与右上角全屏/还原(resizable);edgeResize = 四边四角拖拽缩放(2026-09-04 pte 字典弹框先例)。
  *
  * @param props 关闭回调与形态开关。
  * @returns 弹框。
@@ -40,6 +42,7 @@ export function Modal({
   tall = false,
   draggable = true,
   resizable = true,
+  edgeResize = false,
   actions,
   children,
 }: ModalIn) {
@@ -58,13 +61,16 @@ export function Modal({
     tall,
     dragging: card.dragging(),
   })
-  const cardStyle = cardStyleOf({ narrow, maximized: card.maximized, pos: card.pos })
+  const cardRef = useRef<HTMLDivElement | null>(null)
+  const rs = useEdgeResize({ enabled: edgeResize && narrow === false && card.maximized === false, cardRef })
+  const cardStyle = cardStyleOf({ narrow, maximized: card.maximized, pos: card.pos, size: rs.size })
   const maxLabel = t(maxKeyOf(card.maximized))
 
   return (
     // eslint-disable-next-line react/forbid-dom-props -- 层级是调用方传的运行时数据(有 z+10 算术叠层)
     <div onMouseDown={ov.onMouseDown} onClick={ov.onClick} className={cls.overlay} style={{ zIndex: z }}>
       <div onClick={stopClick}
+        ref={cardRef}
         onPointerDown={card.onPointerDown}
         onPointerMove={card.onPointerMove}
         onPointerUp={card.onPointerUp}
@@ -88,6 +94,7 @@ export function Modal({
             className={css.iconBtn}><IconX /></Button>
         </div>
         {children}
+        {edgeResize && narrow === false && card.maximized === false && <ResizeHandles startOf={rs.startOf} />}
       </div>
     </div>
   )

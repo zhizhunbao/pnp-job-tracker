@@ -10,11 +10,10 @@
  * @time 2026-08-24 04:30:00
  */
 import {
-  ArrowUp, ChartColumn, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, ClipboardList, Compass,
-  Lock, Mail, MapPin, Maximize, Medal, Menu, MessageCircle, Minimize, Minus, Newspaper, Paperclip, Rocket,
-  RotateCcw, Save, Scale, Search, Settings, Square, Star, Target, ThumbsDown, ThumbsUp, TriangleAlert, User,
-  Users, X,
-  Map as LMap,
+  ArrowUp, ChartColumn, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, ClipboardList, Compass, Lock, Mail,
+  Map as LMap, MapPin, Maximize, Medal, Menu, MessageCircle, Mic, Minimize, Minus, Newspaper, Paperclip, Pause, Play,
+  Rocket, RotateCcw, Save, Scale, Search, Settings, Square, Star, Target, ThumbsDown, ThumbsUp, TriangleAlert, User,
+  Users, Volume2, X,
 } from 'lucide-react'
 
 import { makeIcon } from './functions'
@@ -33,6 +32,31 @@ export const IconChart = makeIcon(ChartColumn)
  * 右下角对话挂件的气泡钮(ChatLauncher)。
  */
 export const IconChat = makeIcon(MessageCircle)
+
+/**
+ * 喇叭(字典弹层读音钮 —— Frank 2026-09-04「人家的播放按钮也是蓝方块吗」)。
+ */
+export const IconVolume = makeIcon(Volume2)
+
+/**
+ * 播放(pte 播放条圆钮)。
+ */
+export const IconPlay = makeIcon(Play)
+
+/**
+ * 暂停(pte 播放条圆钮在播态)。
+ */
+export const IconPause = makeIcon(Pause)
+
+/**
+ * 麦克风(pte 录音条圆钮)。
+ */
+export const IconMic = makeIcon(Mic)
+
+/**
+ * 重来(pte 录音条 ↻)。
+ */
+export const IconRedo = makeIcon(RotateCcw)
 
 /**
  * 命中/已选(定价清单、匹配结果的绿勾)。

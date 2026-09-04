@@ -11,7 +11,8 @@
  */
 export { PTE_DEFAULT_TYPE, PTE_META } from './constants'
 export {
-  loadPteComments, loadPteItem, loadPteList, loadPteTypes, pteItemMetaOf, pteListMetaOf, typeAt,
+  loadPteComments, loadPteItem, loadPteList, loadPteListTiers, loadPteNavRows, loadPteTypes, pteItemMetaOf,
+  pteListMetaOf, typeAt,
 } from './functions'
 export { Pte } from './pte'
 export { PteItem } from './pteitem'

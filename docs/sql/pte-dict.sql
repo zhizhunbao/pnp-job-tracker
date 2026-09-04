@@ -34,3 +34,8 @@ ALTER TABLE pte_dict ADD COLUMN IF NOT EXISTS phonetic_us varchar;   -- 美音�
 -- 2026-09-04 晚 Frank「关键单词应该高亮,多种颜色,鼠标放上去显示字典解析」:按考纲标签分档高亮,标签与柯林斯星级随行进库。
 ALTER TABLE pte_dict ADD COLUMN IF NOT EXISTS tag varchar;         -- 考纲标签(cet4 cet6 ky toefl ielts gre …,空格分隔)
 ALTER TABLE pte_dict ADD COLUMN IF NOT EXISTS collins integer;     -- 柯林斯星级 1–5;0 = 没评
+ALTER TABLE pte_dict ADD COLUMN IF NOT EXISTS frq integer;         -- 词频排名(COCA;越小越常见;0 = 没排)—— 高亮分档改按它(标签太稀)
+
+-- 2026-09-04 晚 Frank「如果是韩国人呢?只能翻译成中文吗」「人家是这种的」(词形段):英文释义与词形随行进库。
+ALTER TABLE pte_dict ADD COLUMN IF NOT EXISTS definition text;     -- 英文释义(多义换行分隔);非中文界面用
+ALTER TABLE pte_dict ADD COLUMN IF NOT EXISTS forms varchar;       -- 词形变化(逗号分隔);空 = 没有

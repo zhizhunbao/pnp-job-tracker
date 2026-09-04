@@ -10,7 +10,7 @@ import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
-import { PteItem, loadPteComments, loadPteItem, loadPteTypes, pteItemMetaOf, typeAt } from '@/components/pte'
+import { PteItem, loadPteComments, loadPteItem, loadPteNavRows, loadPteTypes, pteItemMetaOf, typeAt } from '@/components/pte'
 import { Frame } from '@/components/shell'
 import { getDb } from '@/lib/db/server'
 import { getUser, isPro } from '@/lib/quota/server'
@@ -44,11 +44,13 @@ export default async function PteItemPage({ params }: { params: Promise<{ type: 
   if (item == null) notFound()
   const types = await loadPteTypes({ db })
   const comments = await loadPteComments({ db, qid: item.q.qid })
+  const rowsByType = await loadPteNavRows({ db, types })
   const user = await getUser(await headers())
   return (
     <Frame>
       <Header loggedIn={!!user} />
-      <PteItem types={types} item={item} comments={comments} loggedIn={!!user} pro={isPro(user)} />
+      <PteItem types={types} item={item} comments={comments} loggedIn={!!user} pro={isPro(user)}
+        rowsByType={rowsByType} />
       <Footer />
     </Frame>
   )

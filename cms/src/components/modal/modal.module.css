@@ -68,6 +68,14 @@
 }
 
 /*
+ * 跟内容走(2026-09-04 pte 字典弹框先例:里层 css resize 拉多大卡片就多大;上限视口 92%)。
+ */
+.fit {
+  width: auto;
+  max-width: 92vw;
+}
+
+/*
  * 加高档(全站只有 PricingModal 用,94vh)。
  */
 .tall {
@@ -167,4 +175,83 @@
   font-weight: 400;
   white-space: normal;
   padding: 1px 6px;
+}
+
+/*
+ * 拖拽缩放把手(2026-09-04 edgeResize):透明、贴边 6px,光标按方向变。
+ */
+.hN,
+.hS,
+.hE,
+.hW,
+.hNE,
+.hNW,
+.hSE,
+.hSW {
+  position: absolute;
+  z-index: 2;
+}
+
+.hN {
+  top: 0;
+  left: 10px;
+  right: 10px;
+  height: 6px;
+  cursor: ns-resize;
+}
+
+.hS {
+  bottom: 0;
+  left: 10px;
+  right: 10px;
+  height: 6px;
+  cursor: ns-resize;
+}
+
+.hE {
+  right: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 6px;
+  cursor: ew-resize;
+}
+
+.hW {
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 6px;
+  cursor: ew-resize;
+}
+
+.hNE {
+  top: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  cursor: nesw-resize;
+}
+
+.hSW {
+  bottom: 0;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  cursor: nesw-resize;
+}
+
+.hNW {
+  top: 0;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  cursor: nwse-resize;
+}
+
+.hSE {
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  cursor: nwse-resize;
 }

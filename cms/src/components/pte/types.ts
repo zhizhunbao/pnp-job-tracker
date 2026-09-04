@@ -493,6 +493,11 @@ export type PteIn = {
    * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
    */
   updatedAt: string
+
+  /**
+   * 题面高亮词 → 档(整型一查;Frank 2026-09-04「题单里的题面也要亮」)。
+   */
+  tiers: Record<string, number>
 }
 
 /**
@@ -577,6 +582,11 @@ export type PteItemIn = {
    * Pro 用户(批四配额不拦)。
    */
   pro: boolean
+
+  /**
+   * 各型题单(目录树原地切型)。
+   */
+  rowsByType: Record<string, PteRow[]>
 }
 
 /**
@@ -599,9 +609,9 @@ export type PteNavIn = {
   type: string
 
   /**
-   * 这一型的全部题。
+   * 各型题单(型码 → 题;钮点了原地切)。
    */
-  rows: PteRow[]
+  rowsByType: Record<string, PteRow[]>
 
   /**
    * 当前题键(高亮 + 滚进视野)。
@@ -622,6 +632,66 @@ export type NavTextIn = {
    * 整段题面。
    */
   text: string
+}
+
+/**
+ * 目录树题型钮手柄(`makeNavPick`)的入参。
+ */
+export type NavPickIn = {
+  /**
+   * 这颗钮的题型码。
+   */
+  code: string
+
+  /**
+   * 落当前清单型。
+   */
+  set: (code: string) => void
+}
+
+/**
+ * 取各型题单(`loadPteNavRows`)的入参。
+ */
+export type NavRowsIn = {
+  /**
+   * 数据库连接。
+   */
+  db: DbPool
+
+  /**
+   * 题型维度。
+   */
+  types: PteType[]
+}
+
+/**
+ * 目录树状态机(usePteNav)的入参。
+ */
+export type PteNavHookIn = {
+  /**
+   * 当前题键(滚进视野)。
+   */
+  qid: string
+
+  /**
+   * 当前题型码(清单初值)。
+   */
+  type: string
+}
+
+/**
+ * 目录树交回的面板。
+ */
+export type PteNavPanel = {
+  /**
+   * 清单现在显示哪一型。
+   */
+  navType: string
+
+  /**
+   * 某型钮的手柄。
+   */
+  pickOf: (code: string) => () => void
 }
 
 /**
@@ -770,55 +840,6 @@ export type PteAnswerIn = {
   pro: boolean
 }
 
-/**
- * 音频播放件(PtePlayer)的 props:一颗播放钮 + 标签 + 状态。
- */
-export type PtePlayerIn = {
-  /**
-   * 标签文案。
-   */
-  label: string
-
-  /**
-   * 在播。
-   */
-  playing: boolean
-
-  /**
-   * 点击。
-   */
-  onClick: () => void
-
-  /**
-   * 不可点(没有音源)。
-   */
-  disabled: boolean
-}
-
-/**
- * 录音件(PteRecorder)的 props。
- */
-export type PteRecorderIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 已录秒数。
-   */
-  seconds: number
-
-  /**
-   * 上限秒数。
-   */
-  cap: number
-
-  /**
-   * 停止。
-   */
-  onStop: () => void
-}
 
 /**
  * WFD 逐词对照(PteDiff)的 props。
@@ -1074,6 +1095,16 @@ export type PteAnswerPanel = {
    * 关闸(关掉弹出来的注册框或升级框)。
    */
   onGateClose: () => void
+
+  /**
+   * 播放条播完(听力型在准备段播完进作答段;朗读型不动)。
+   */
+  onAudioEnd: () => void
+
+  /**
+   * 麦克风钮:准备段 = 开录进作答段;作答段 = 停止提交。
+   */
+  onMic: () => void
 }
 
 /**
@@ -1297,6 +1328,16 @@ export type DictEntry = {
    * 美音音标;空串 = 没给。
    */
   phoneticUs: string
+
+  /**
+   * 英文释义,一义一行(非中文界面用);空 = 没给。
+   */
+  linesEn: string[]
+
+  /**
+   * 词形变化(逗号分隔);空串 = 没有。
+   */
+  forms: string
 }
 
 
@@ -1340,6 +1381,16 @@ export type DictApiBody = {
    * 美音音标。
    */
   phoneticUs: string
+
+  /**
+   * 英文释义(多义换行分隔)。
+   */
+  definition: string
+
+  /**
+   * 词形变化。
+   */
+  forms: string
 }
 
 /**
@@ -1360,6 +1411,11 @@ export type PteDictTagDbRow = {
    * 柯林斯星级。
    */
   collins: number | null
+
+  /**
+   * 词频排名(COCA;越小越常见;0 = 没排)。
+   */
+  frq: number | null
 }
 
 /**
@@ -1378,6 +1434,21 @@ export type PteTiersIn = {
 }
 
 /**
+ * 取整张题单高亮档表(`loadPteListTiers`)的入参。
+ */
+export type ListTiersIn = {
+  /**
+   * 数据库连接。
+   */
+  db: DbPool
+
+  /**
+   * 这一型的全部题。
+   */
+  rows: PteRow[]
+}
+
+/**
  * 档位判定(`tierOf`)的入参。
  */
 export type TierOfIn = {
@@ -1385,6 +1456,11 @@ export type TierOfIn = {
    * 考纲标签串(空格分隔)。
    */
   tag: string
+
+  /**
+   * 词频排名;0 = 没排。
+   */
+  frq: number
 }
 
 /**
@@ -1420,6 +1496,11 @@ export type TextPart = {
    * 档;0 = 不高亮。
    */
   tier: number
+
+  /**
+   * 高亮类名(按档算好;不高亮为空串)—— 单元格只放不算。
+   */
+  cls: string
 }
 
 /**
@@ -1478,6 +1559,41 @@ export type QuotaDoc = {
 }
 
 /**
+ * 带配额闸的「播题目」(`makeGatedStart`)的入参。
+ */
+export type GatedStartIn = {
+  /**
+   * Pro(不拦)。
+   */
+  pro: boolean
+
+  /**
+   * 登录态。
+   */
+  loggedIn: boolean
+
+  /**
+   * 今日已用。
+   */
+  used: number
+
+  /**
+   * 落闸态。
+   */
+  setGate: (g: PteGate) => void
+
+  /**
+   * 这一下算不算「开始作答」(音频型且在准备段)。
+   */
+  active: boolean
+
+  /**
+   * 真播。
+   */
+  run: () => void
+}
+
+/**
  * 关闸手柄(`makeGateClose`)的入参。
  */
 export type GateCloseIn = {
@@ -1518,6 +1634,398 @@ export type GatedSubmitIn = {
 }
 
 /**
+ * DOM 事件监听回调(addEventListener 定的签名,收原生事件)。
+ */
+export type DomEventFn = (e: Event) => void
+
+/**
+ * 弹层释义按界面语取(`dictLinesOf`)的入参。
+ */
+export type DictLinesIn = {
+  /**
+   * 字典结果。
+   */
+  entry: DictEntry
+
+  /**
+   * 界面语。
+   */
+  lang: PteLang
+}
+
+/**
+ * 释义标签键(`dictTagKeyOf`)的入参。
+ */
+export type DictTagKeyIn = {
+  /**
+   * 界面语。
+   */
+  lang: PteLang
+}
+
+/**
+ * 音标加中括号(`bracketOf`)的入参。
+ */
+export type BracketIn = {
+  /**
+   * 音标;空串给空串。
+   */
+  phon: string
+}
+
+/**
+ * 播放条状态机(usePlayer)的入参。
+ */
+export type PlayerHookIn = {
+  /**
+   * 音频直链;null = 没直链(条上只剩圆钮走浏览器朗读)。
+   */
+  src: string | null
+
+  /**
+   * 播完回调(听力型在准备段播完进作答段)。
+   */
+  onEnd: () => void
+
+  /**
+   * 音频元素 ref(由挂 audio 的组件持有)。
+   */
+  audioRef: React.RefObject<HTMLAudioElement | null>
+}
+
+/**
+ * 播放条交回的面板。
+ */
+export type PlayerPanel = {
+  /**
+   * 在播。
+   */
+  playing: boolean
+
+  /**
+   * 当前秒。
+   */
+  cur: number
+
+  /**
+   * 总秒;0 = 还没拿到。
+   */
+  dur: number
+
+  /**
+   * 倍速。
+   */
+  rate: number
+
+  /**
+   * 播 / 暂停。
+   */
+  onToggle: () => void
+
+  /**
+   * 拖进度(range 的 change —— React 定的签名)。
+   */
+  onSeek: (e: React.ChangeEvent<HTMLInputElement>) => void
+
+  /**
+   * 切倍速。
+   */
+  onRate: () => void
+
+  /**
+   * audio 进度事件。
+   */
+  onTime: () => void
+
+  /**
+   * audio 拿到时长。
+   */
+  onMeta: () => void
+
+  /**
+   * audio 播完。
+   */
+  onEnded: () => void
+
+  /**
+   * audio 开播(外部 play 也同步态)。
+   */
+  onPlayEv: () => void
+
+  /**
+   * audio 暂停。
+   */
+  onPauseEv: () => void
+}
+
+
+
+
+
+
+
+
+/**
+ * `makeAudioEnded` 的入参。
+ */
+export type AudioEndedIn = {
+  /**
+   * 落在播。
+   */
+  setPlaying: (on: boolean) => void
+
+  /**
+   * 播完回调。
+   */
+  onEnd: () => void
+}
+
+/**
+ * `makeSetBool`(把布尔落格包成无参手柄)的入参。
+ */
+export type SetBoolValIn = {
+  /**
+   * 落格。
+   */
+  set: (on: boolean) => void
+
+  /**
+   * 要落的值。
+   */
+  value: boolean
+}
+
+/**
+ * 倍速文案(`rateTextOf`)的入参。
+ */
+export type RateTextIn = {
+  /**
+   * 倍速。
+   */
+  rate: number
+}
+
+/**
+ * 时间文案(`timeTextOf`)的入参。
+ */
+export type TimeTextIn = {
+  /**
+   * 当前秒。
+   */
+  cur: number
+
+  /**
+   * 总秒。
+   */
+  dur: number
+}
+
+/**
+ * 麦克风钮手柄(`makeMic`)的入参。
+ */
+export type MicIn = {
+  /**
+   * 现段位。
+   */
+  phase: PtePhase
+
+  /**
+   * 进作答段。
+   */
+  toAnswering: () => void
+
+  /**
+   * 停止录音并提交。
+   */
+  onStopRec: () => void
+}
+
+/**
+ * 播放条(PtePlayer)的 props。
+ */
+export type PtePlayerIn = {
+  /**
+   * 条头文案(示范朗读 / 题目音频)。
+   */
+  label: string
+
+  /**
+   * 音频直链;null = 走浏览器朗读(条上只剩圆钮)。
+   */
+  src: string | null
+
+  /**
+   * 播完回调(听力型准备段播完进作答)。
+   */
+  onEnd: () => void
+
+  /**
+   * 没直链时的兜底:浏览器朗读在播。
+   */
+  speaking: boolean
+
+  /**
+   * 没直链时的兜底:点圆钮朗读。
+   */
+  onSpeak: () => void
+
+  /**
+   * 没直链且浏览器也不能读:圆钮禁用。
+   */
+  disabled: boolean
+}
+
+/**
+ * 录音条(PteRecBar)的 props。
+ */
+export type PteRecBarIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 录音中。
+   */
+  recording: boolean
+
+  /**
+   * 已录秒数。
+   */
+  seconds: number
+
+  /**
+   * 已提交(对照段):麦克风钮禁用,只剩 ↻。
+   */
+  checked: boolean
+
+  /**
+   * 点麦克风:没在录 = 开录(进作答段),在录 = 停止提交。
+   */
+  onMic: () => void
+
+  /**
+   * ↻ 重做。
+   */
+  onRedo: () => void
+}
+
+/**
+ * `seekAudio` 的入参。
+ */
+export type SeekAudioIn = {
+  /**
+   * 音频元素。
+   */
+  el: HTMLAudioElement
+
+  /**
+   * 秒。
+   */
+  n: number
+}
+
+/**
+ * `rateAudio` 的入参。
+ */
+export type RateAudioIn = {
+  /**
+   * 音频元素。
+   */
+  el: HTMLAudioElement
+
+  /**
+   * 倍速。
+   */
+  rate: number
+}
+
+/**
+ * `makeGatedPlay` 的入参(闸四格 + 播五格)。
+ */
+export type GatedPlayIn = {
+  /**
+   * Pro。
+   */
+  pro: boolean
+
+  /**
+   * 登录态。
+   */
+  loggedIn: boolean
+
+  /**
+   * 今日已用。
+   */
+  used: number
+
+  /**
+   * 落闸态。
+   */
+  setGate: (g: PteGate) => void
+
+  /**
+   * 题。
+   */
+  q: PteQuestion
+
+  /**
+   * 音频型。
+   */
+  audioType: boolean
+
+  /**
+   * 现段位。
+   */
+  phase: PtePhase
+
+  /**
+   * 落在播。
+   */
+  setPlaying: (on: boolean) => void
+
+  /**
+   * 落段位。
+   */
+  setPhase: (p: PtePhase) => void
+}
+
+/**
+ * 喇叭类名(`spkClsOf`)的入参。
+ */
+export type SpkClsIn = {
+  /**
+   * 在读。
+   */
+  on: boolean
+}
+
+/**
+ * 弹框里的一条词形(标签键 + 词)。
+ */
+export type DictForm = {
+  /**
+   * 标签的 i18n 键。
+   */
+  key: string
+
+  /**
+   * 词形。
+   */
+  word: string
+}
+
+/**
+ * 词形串拆行(`dictFormsOf`)的入参。
+ */
+export type DictFormsIn = {
+  /**
+   * 库里的词形串(`p:took/d:taken`)。
+   */
+  forms: string
+}
+
+/**
  * 弹层一档音标取值(`phonOf`)的入参。
  */
 export type PhonIn = {
@@ -1545,6 +2053,16 @@ export type SpeakWordIn = {
    * 语音语言码(en-GB / en-US)。
    */
   lang: string
+
+  /**
+   * 这颗喇叭的键(uk / us)。
+   */
+  key: string
+
+  /**
+   * 落「哪个在读」。
+   */
+  setSpeaking: (k: string) => void
 }
 
 /**
@@ -1605,6 +2123,11 @@ export type PteDictPanel = {
    * 鼠标悬到高亮词:以该元素位置开弹层(Frank 2026-09-04「鼠标放上去显示字典解析」)。
    */
   onHoverWord: (e: React.MouseEvent<HTMLElement>) => void
+
+  /**
+   * 哪个喇叭在读('' / uk / us;读时图标动 —— Frank 2026-09-04「点击小喇叭的时候小喇叭要动」)。
+   */
+  speaking: string
 }
 
 /**
@@ -1620,6 +2143,11 @@ export type PteDictIn = {
    * 查词面板。
    */
   d: PteDictPanel
+
+  /**
+   * 界面语(中文界面给中文释义,其余给英文释义)。
+   */
+  lang: PteLang
 }
 
 /**
@@ -1777,9 +2305,14 @@ export type TypeAtIn = {
  */
 export type ItemHrefIn = {
   /**
-   * 题键(源:题型:源内 id)。
+   * 题型码。
    */
-  qid: string
+  type: string
+
+  /**
+   * 站内题号。
+   */
+  num: string
 }
 
 /**
@@ -2530,6 +3063,16 @@ export type PteCellRow = {
    * 操作列钮文案(「练习」)。
    */
   actText: string
+
+  /**
+   * 题面切段(高亮词带档)。
+   */
+  parts: TextPart[]
+
+  /**
+   * 悬到高亮词开字典弹层。
+   */
+  onHoverWord: (e: React.MouseEvent<HTMLElement>) => void
 }
 
 /**
@@ -2550,6 +3093,16 @@ export type CellRowsIn = {
    * 练过的题键。
    */
   done: Set<string>
+
+  /**
+   * 题面高亮词 → 档。
+   */
+  tiers: Record<string, number>
+
+  /**
+   * 悬停手柄。
+   */
+  onHoverWord: (e: React.MouseEvent<HTMLElement>) => void
 }
 
 /**

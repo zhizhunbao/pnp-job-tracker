@@ -96,16 +96,177 @@ export const DASH = '-'
 export const SPEAK_MARK = '▶'
 
 /**
- * 高亮分档按「这词最低出现在哪级考纲」(ECDICT tag):中考 / 高考 / 四级词不高亮;
- * 1 = 六级,2 = 考研 / 雅思 / 托福,3 = GRE;没标签的不高亮
- * (Frank 2026-09-04「关键单词应该高亮,多种颜色」;optimistic 同时挂 cet4 与 toefl,按最低档算四级词不亮)。
+ * 字典弹层根元素 id(选词监听据此放过弹层内的点击)。
+ */
+export const DICT_ID = 'pte-dict'
+
+/**
+ * id 选择器前缀。
+ */
+export const HASH = '#'
+
+/**
+ * 高亮词的标签名(选词监听放过点在它上面的那次松开 —— Frank 2026-09-04「点一下闪一下注释就没了」)。
+ */
+export const MARK_TAG = 'mark'
+
+/**
+ * 播放条倍速档(点倍速钮循环)。
+ */
+export const RATE_STEPS = [1, 1.25, 1.5, 0.75]
+
+/**
+ * 倍速钮文案前缀(「x1.0」)。
+ */
+export const RATE_HEAD = 'x'
+
+/**
+ * 倍速显示小数位。
+ */
+export const RATE_DIGITS = 1
+
+/**
+ * 进度条步长(秒)。
+ */
+export const SEEK_STEP = 0.1
+
+/**
+ * 时间显示分隔(「00:12 / 00:17」)。
+ */
+export const TIME_SEP = ' / '
+
+/**
+ * 时钟两位补齐长度。
+ */
+export const CLOCK_TWO = 2
+
+/**
+ * 进度条的 input type。
+ */
+export const INPUT_RANGE = 'range'
+
+/**
+ * audio 预载档:只拿元数据(时长)。
+ */
+export const PRELOAD_META = 'metadata'
+
+/**
+ * 词形码 → 标签 i18n 键(ECDICT exchange:p 过去式 / d 过去分词 / i 现在分词 / 3 三单 / r 比较级 / t 最高级 / s 复数)。
+ */
+export const FORM_KEY: Record<string, string> = {
+  /**
+   * 过去式。
+   */
+  p: 'pte.form.p',
+
+  /**
+   * 过去分词。
+   */
+  d: 'pte.form.d',
+
+  /**
+   * 现在分词。
+   */
+  i: 'pte.form.i',
+
+  /**
+   * 第三人称单数。
+   */
+  3: 'pte.form.3',
+
+  /**
+   * 比较级。
+   */
+  r: 'pte.form.r',
+
+  /**
+   * 最高级。
+   */
+  t: 'pte.form.t',
+
+  /**
+   * 复数。
+   */
+  s: 'pte.form.s',
+}
+
+/**
+ * 词形串各项分隔(与 ECDICT exchange 同形)。
+ */
+export const FORM_SEP = '/'
+
+/**
+ * 词形一项里 码:词 的分隔。
+ */
+export const FORM_KV = ':'
+
+/**
+ * 字典弹框尺寸档(modal 桶的 sm)。
+ */
+export const DICT_MODAL_SIZE = 'fit'
+
+/**
+ * 弹框里在读的喇叭:没在读。
+ */
+export const SPK_NONE = ''
+
+/**
+ * 弹框里在读的喇叭:英音。
+ */
+export const SPK_UK = 'uk'
+
+/**
+ * 弹框里在读的喇叭:美音。
+ */
+export const SPK_US = 'us'
+
+/**
+ * 喇叭动效兜底时长(语音 onend 不来时也停;ms)。
+ */
+export const SPK_GUARD_MS = 2500
+
+/**
+ * 普通词(不分档)的悬停类头:kw0 = 只有悬停底色。
+ */
+export const TIER_HOVER = 0
+
+
+/**
+ * 音标左括号(Frank 2026-09-04「音标应该用中括号括起来吧」)。
+ */
+export const BRACKET_L = '['
+
+/**
+ * 音标右括号。
+ */
+export const BRACKET_R = ']'
+
+/**
+ * 释义标签按界面语:中文界面「中文」,其余「English」。
+ */
+export const DICT_TAG_KEY: Record<string, string> = {
+  /**
+   * 中文界面。
+   */
+  zh: 'pte.dict.zh',
+
+  /**
+   * 英文界面。
+   */
+  en: 'pte.dict.en',
+
+  /**
+   * 韩文界面(没有韩文释义,给英文)。
+   */
+  ko: 'pte.dict.en',
+}
+
+/**
+ * 高亮分档按词频排名(ECDICT frq = COCA 排名,越小越常见):排名 3000 外一档、6000 外二档、10000 外三档;
+ * 没排名的看考纲标签 —— GRE 三档、考研/雅思/托福二档、六级一档;四级及以下不亮
+ * (Frank 2026-09-04「关键单词应该高亮,多种颜色」;先前按「最低考纲」朗读#1 只亮一个词,太稀)。
  */
 export const TIER_TAGS: Record<number, string[]> = {
-  /**
-   * 不高亮档(基础词)。
-   */
-  0: ['zk', 'gk', 'cet4'],
-
   /**
    * 六级档。
    */
@@ -123,9 +284,34 @@ export const TIER_TAGS: Record<number, string[]> = {
 }
 
 /**
- * 档位判定顺序(低档先:命中最低档即定)。
+ * 基础词标签(命中即不亮,不看更高标签)。
  */
-export const TIER_ORDER = [0, 1, 2, 3]
+export const TIER_EASY_TAGS = ['zk', 'gk', 'cet4']
+
+/**
+ * 档位判定顺序(高档先)。
+ */
+export const TIER_ORDER = [3, 2, 1]
+
+/**
+ * 词频档门槛:排名 ≥ 此值进该档(键 = 档)。
+ */
+export const TIER_FRQ_MIN: Record<number, number> = {
+  /**
+   * 一档。
+   */
+  1: 3000,
+
+  /**
+   * 二档。
+   */
+  2: 6000,
+
+  /**
+   * 三档。
+   */
+  3: 10000,
+}
 
 /**
  * 没档(不高亮)。
@@ -298,9 +484,9 @@ export const T_WFD = 'WFD'
  */
 export const PREP_S: Record<string, number> = {
   /**
-   * 朗读:官方 30–40 s,两家都给 33–35。
+   * 朗读:官方 30–40 s;2026-09-04 Frank「不要显示准备时间」→ 0,准备段只等一颗麦克风钮。
    */
-  RA: 35,
+  RA: 0,
 }
 
 /**
@@ -409,6 +595,11 @@ export const NAV_TEXT_LEN = 48
 export const QID_ID_AT = 2
 
 /**
+ * 路由第三段是不是站内题号(纯数字 → 按题号查;否则按老的 源-源内id 形查,旧链接不断)。
+ */
+export const NUM_RE = /^[0-9]+$/
+
+/**
  * 留言提交状态 → 提示词键(闲置与在途没有提示)。
  */
 export const NOTE_HINT_KEY: Record<string, string> = {
@@ -448,6 +639,11 @@ export const REC_STATE_INACTIVE = 'inactive'
  * 中文界面的语言码(题型名取 nameZh)。
  */
 export const LANG_ZH = 'zh'
+
+/**
+ * 英文界面语码。
+ */
+export const LANG_EN = 'en'
 
 /**
  * 韩文界面的语言码。

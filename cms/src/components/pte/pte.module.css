@@ -538,6 +538,151 @@
 /*
  * 播放件外框。
  */
+/*
+ * 播放条(浅蓝底胶囊):条头 | 进度 | 时间 | 倍速 | 圆钮。
+ */
+.playBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #eff6ff;
+  border-radius: 999px;
+  padding: 8px 8px 8px 18px;
+  margin-top: 12px;
+  min-height: 84px;
+  box-sizing: border-box;
+}
+
+/*
+ * 条头文案。
+ */
+.playLabel {
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+
+/*
+ * 进度条(吃满中段)。
+ */
+.playRange {
+  flex: 1;
+  min-width: 60px;
+  accent-color: var(--primary);
+}
+
+/*
+ * 时间「00:12 / 00:17」。
+ */
+.playTime {
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+/*
+ * 倍速胶囊(白底描边)。
+ */
+.playRate {
+  background: #fff;
+}
+
+/*
+ * 圆形播放钮(主色实心)。
+ */
+.playRound {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  justify-content: center;
+}
+
+/*
+ * 录音条(浅绿底胶囊):左空 | 居中麦克风 | 右 ↻。
+ */
+.recBar {
+  display: flex;
+  align-items: center;
+  background: #f0fdf4;
+  border-radius: 999px;
+  padding: 8px 12px;
+  margin-top: 12px;
+  min-height: 84px;
+  box-sizing: border-box;
+}
+
+.recSpacer,
+.recRight {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/*
+ * 居中的麦克风 + 说明字。
+ */
+.recCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/*
+ * 圆形麦克风钮(绿色实心)。
+ */
+.micRound {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border-radius: 50%;
+  justify-content: center;
+  background: #22c55e;
+  border-color: #22c55e;
+}
+
+/*
+ * 在录:红色跳动。
+ */
+.micOn {
+  background: #ef4444;
+  border-color: #ef4444;
+  animation: pteMicPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pteMicPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45);
+  }
+
+  100% {
+    box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
+  }
+}
+
+/*
+ * 麦克风钮下的字(「录音」/ 秒数)。
+ */
+.recUnder {
+  font-size: 12.5px;
+  color: #6b7280;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * ↻ 圆钮(白底描边)。
+ */
+.redoRound {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  justify-content: center;
+  background: #fff;
+}
+
 .player {
   display: flex;
   align-items: center;
@@ -997,17 +1142,11 @@
  * 弹层本体:固定定位(坐标由 style 进),白卡带阴影,宽 300。
  */
 .dict {
-  position: fixed;
-  z-index: 60;
-  width: 300px;
-  box-sizing: border-box;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.12);
-  padding: 10px 12px;
-  font-size: 13px;
+  font-size: 14px;
   color: #111827;
+  min-width: 360px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /*
@@ -1015,9 +1154,51 @@
  */
 .dictHead {
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
-  flex-wrap: wrap;
+}
+
+/*
+ * 音标胶囊(浅灰底)。
+ */
+.dictPill {
+  background: #f3f4f6;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 13px;
+  color: #374151;
+}
+
+/*
+ * 「中文」「词形」段标签(主色字浅蓝底)。
+ */
+.dictTag {
+  display: inline-block;
+  background: #eef2ff;
+  color: var(--primary);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+/*
+ * 弹层里的一段(释义 / 词形)。
+ */
+.dictSec {
+  margin-top: 10px;
+}
+
+/*
+ * 词形行前的词性标签(灰小字)。
+ */
+.dictFormTag {
+  display: inline-block;
+  min-width: 5.5em;
+  color: #9ca3af;
+  font-size: 12px;
+  margin-right: 6px;
 }
 
 /*
@@ -1049,13 +1230,31 @@
 /*
  * 关键词高亮三档(六级 / 雅思托福 / GRE):浅底色 + 同色系深字,悬停开弹层。
  */
+.kw0,
 .kw1,
 .kw2,
 .kw3 {
   padding: 0 2px;
   border-radius: 3px;
-  cursor: help;
+  cursor: pointer;
   color: inherit;
+  background: transparent;
+}
+
+.kw0:hover {
+  background: #e5e7eb;
+}
+
+.kw1:hover {
+  background: #bbf7d0;
+}
+
+.kw2:hover {
+  background: #fde68a;
+}
+
+.kw3:hover {
+  background: #fecaca;
 }
 
 .kw1 {
@@ -1073,10 +1272,40 @@
 .dictPhons {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 4px 6px;
-  margin-top: 4px;
+  flex-wrap: nowrap;
+  gap: 6px;
+  margin-top: 6px;
   font-size: 13px;
+  white-space: nowrap;
+}
+
+/*
+ * 在读的喇叭:主色 + 呼吸放大。
+ */
+.spkBtn {
+  min-width: 36px;
+  min-height: 36px;
+  justify-content: center;
+  padding: 0;
+}
+
+.spkOn {
+  color: var(--primary);
+  animation: pteSpk 0.8s ease-in-out infinite;
+}
+
+@keyframes pteSpk {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.25);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 /*
