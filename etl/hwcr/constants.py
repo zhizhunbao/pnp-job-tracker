@@ -283,9 +283,18 @@ OUT_ROOMS = PROCESSED_HWCR / "lisgar-rooms.json"
 OUT_REPORT = PROCESSED_HWCR / "lisgar-rooms.md"
 """输出:给人读的清单(NEAR_KM 内一节 + 位置不明一节)。"""
 
-ROOM_RE = re.compile(r"单间|独立卧室|独立房间|一间|1间|主卧|次卧|卧室|房间|合租|一室|1b\b|\broom\b|bedroom|studio",
-                     re.IGNORECASE)
-"""「单间类」出租帖判词(整租 house 也常写「卧室」,宁可多收让人翻,不漏)。"""
+SHARED_STRONG_RE = re.compile(r"合租|分租|室友|舍友|招租一间|单间|次卧|主卧|独立卧室|独立房间|room ?mate|roommate|shared|share ",
+                              re.IGNORECASE)
+"""合租强判词:命中即算合租,不再看整租词(2026-09-04 Frank「可以加筛选」:韩国朋友的孩子要的是
+shared house,Studio / 整套整层不要;此前「宁可多收」的 ROOM_RE 退役)。"""
+
+SHARED_WEAK_RE = re.compile(r"一间|1间|卧室|房间|\broom\b|bedroom", re.IGNORECASE)
+"""合租弱判词:只说「一间/卧室/room」的帖,再看有没有整租词 —— 有则剔,无则收。"""
+
+WHOLE_RE = re.compile(r"studio|bachelor|整租|整套|整层|整栋|整间公寓|whole (?:house|unit|apartment|condo)|entire|"
+                      r"1b1b|1b1d|一室一厅|一房一厅|one bedroom apartment",
+                      re.IGNORECASE)
+"""整租判词:Studio / bachelor / 整套一居这类一个人住的单元,不是 shared。"""
 
 RENT_STRONG_RE = re.compile(r"\$\s?(\d{3,4})|(\d{3,4})\s*(?:/\s*月|/\s*mo|刀|每月|一个月|加币|加元|cad|per month|月)",
                             re.IGNORECASE)

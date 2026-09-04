@@ -33,9 +33,10 @@ from hwcr.constants import (
     P_IDENTITY, P_LIMIT, P_PAGE, PAGE_LIMIT, PAGE_TPL, POSTAL_RE, PREC_ADDRESS, QUERY_SEP,
     PREC_LABEL, PREC_LANDMARK, PREC_POSTAL, PREC_UNKNOWN, RAW_INDENT, RAW_WROTE_TPL, RECENT_DAYS,
     RENT_MAX, RENT_MIN, RENT_STRONG_RE, RENT_WEAK_RE, REPORT_FAR_TPL, YEAR_MAX, YEAR_MIN, FAR_CITIES, REPORT_META_TPL, REPORT_NEAR_TPL, REPORT_TITLE_TPL,
-    REPORT_UNKNOWN_TPL, ROOM_RE, ROOMS_INDENT, ROOMS_WROTE_TPL, ROW_ADDRESS_TPL, ROW_DESC_TPL,
-    ROW_HEAD_TPL, ROW_LAYOUT_TPL, ROW_LINK_TPL, ROW_PLACE_TPL, ROW_RENT_TPL, SPACE, STREET_RE,
-    TIME_FMT, TPL_NAME, TPL_RENT_ID, WALK_MIN_PER_KM, WS_RE,
+    REPORT_UNKNOWN_TPL, ROOMS_INDENT, ROOMS_WROTE_TPL, ROW_ADDRESS_TPL, ROW_DESC_TPL,
+    ROW_HEAD_TPL, ROW_LAYOUT_TPL, ROW_LINK_TPL, ROW_PLACE_TPL, ROW_RENT_TPL, SHARED_STRONG_RE, SHARED_WEAK_RE,
+    SPACE, STREET_RE,
+    TIME_FMT, TPL_NAME, TPL_RENT_ID, WALK_MIN_PER_KM, WHOLE_RE, WS_RE,
 )
 from hwcr.scheme import (
     DistanceIn, GeoHit, GeoIn, GeoPoint, GeoStat, HwcrApiPost, HwcrApiResp, HwcrPostRow, HwcrRawFile,
@@ -333,13 +334,22 @@ def distance_km_of(x: DistanceIn) -> float:
 # =========================================================================
 
 
+def is_shared_text(text: str) -> bool:
+    """帖文是不是合租:强判词直接算;弱判词(一间/卧室/room)要没整租词才算;Studio 整套一律不算。"""
+    if SHARED_STRONG_RE.search(text) is not None:
+        return True
+    if SHARED_WEAK_RE.search(text) is None:
+        return False
+    return WHOLE_RE.search(text) is None
+
+
 def is_room_rental(post: HwcrPostRow) -> bool:
-    """出租模板 + 未结束 + 单间判词命中。"""
+    """出租模板 + 未结束 + 合租判定(2026-09-04 收紧:只留 shared,整租 Studio 剔)。"""
     if post.template_id != TPL_RENT_ID:
         return False
     if post.is_end:
         return False
-    return ROOM_RE.search(post.content) is not None
+    return is_shared_text(post.content)
 
 
 def is_rent_like(n: int) -> bool:
