@@ -15,7 +15,7 @@ import { useLang } from '@/components/i18n'
 import { Q_DEBOUNCE_MS, TEXT_NONE } from './constants'
 import {
   boardUrlOf, loadBoard, makeCity, makeClear, makeDrawerToggle, makeMode, makeNoc, makePage, makeProgram,
-  makeProv, qsOf, withQOf,
+  makeProv, makeQCommit, qsOf,
 } from './functions'
 import type { EmployerFilters, EmployerPage, EmployersIn, EmployersPanel } from './types'
 
@@ -41,9 +41,7 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
     if (qDraft === f.q) {
       return
     }
-    const id = setTimeout(function commitQuery() {
-      setF(withQOf({ f, q: qDraft }))
-    }, Q_DEBOUNCE_MS)
+    const id = setTimeout(makeQCommit({ f, q: qDraft, setF }), Q_DEBOUNCE_MS)
     return function cancelCommit() {
       clearTimeout(id)
     }

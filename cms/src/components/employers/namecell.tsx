@@ -23,7 +23,7 @@ import css from './employers.module.css'
  */
 export function NameCell(r: EmployerCellRow) {
   return (
-    <LinkButton href={r.href} title={r.hrefTitle} className={cssOf(css.nameLink)}>
+    <LinkButton href={r.href} title={r.hrefTitle} onClick={r.onView} className={cssOf(css.nameLink)}>
       {r.name}
     </LinkButton>
   )

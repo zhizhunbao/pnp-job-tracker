@@ -33,7 +33,7 @@ import { SQL, type DbClient, type SqlParam } from '../db'
 import {
   BATCH_ROWS, COLS_CITIES, COLS_COMPANIES, COLS_COMPANIES_COALESCE, COLS_COMPANIES_PLAIN, COLS_DEAD_EXT,
   COLS_DESIGNATED_EMPLOYERS, COLS_DISTRICTS, COLS_DLI, COLS_EE_CATEGORIES, COLS_EE_POINTS_GRID,
-  COLS_EXPERIENCE_LEVELS, COLS_FIELD_SOURCES, COLS_JOBS, COLS_JOBS_COALESCE, COLS_JOBS_FIXED, COLS_NEWS,
+  COLS_EMPLOYER_POOL, COLS_EMPLOYER_POOL_BUCKETS, COLS_EXPERIENCE_LEVELS, COLS_FIELD_SOURCES, COLS_JOBS, COLS_JOBS_COALESCE, COLS_JOBS_FIXED, COLS_NEWS,
   COLS_NEWS_CACHE, COLS_NOC_CATEGORIES, COLS_NOC_DESCRIPTIONS, COLS_NOC_OPENINGS, COLS_PILOT_COMMUNITIES,
   COLS_PILOT_OCCUPATIONS, COLS_PILOT_QUOTA, COLS_PNP_DRAWS, COLS_PTE_AUDIO, COLS_PTE_DICT, COLS_PTE_QUESTIONS, COLS_PTE_SENTENCES, COLS_PTE_TYPES, COLS_PNP_OCCUPATIONS, COLS_PNP_OPS_STATS,
   COLS_PNP_REQUIREMENTS, COLS_PNP_SCORE_FACTORS, COLS_PROVINCES, COLS_RANKINGS, COLS_ROW_TS, COLS_SOURCES,
@@ -42,7 +42,7 @@ import {
   MART_SEEN_IDS, MD5, META_SUFFIX, MID_ALL, PART_INFIX, PG_UNDEFINED_TABLE, PROGRAM_PNP, SHARD_SEP, STATUS_OPEN,
   SUFFIX_NONE, TEXT_EMPTY,
   TBL_CITIES, TBL_COMPANIES, TBL_DESIGNATED_EMPLOYERS, TBL_DISTRICTS, TBL_DLI, TBL_DEAD_EXT, TBL_EE_CATEGORIES,
-  TBL_EE_POINTS_GRID, TBL_EXPERIENCE_LEVELS, TBL_FIELD_SOURCES, TBL_JOBS, TBL_NEWS, TBL_NOC_CATEGORIES,
+  TBL_EE_POINTS_GRID, TBL_EMPLOYER_POOL, TBL_EMPLOYER_POOL_BUCKETS, TBL_EXPERIENCE_LEVELS, TBL_FIELD_SOURCES, TBL_JOBS, TBL_NEWS, TBL_NOC_CATEGORIES,
   TBL_NOC_DESCRIPTIONS, TBL_NOC_OPENINGS, TBL_PILOT_COMMUNITIES, TBL_PILOT_OCCUPATIONS, TBL_PILOT_QUOTA, TBL_PTE_AUDIO, TBL_PTE_DICT, TBL_PTE_QUESTIONS, TBL_PTE_SENTENCES, TBL_PTE_TYPES,
   TBL_PNP_DRAWS, TBL_PNP_OCCUPATIONS, TBL_PNP_OPS_STATS, TBL_PNP_REQUIREMENTS, TBL_PNP_SCORE_FACTORS,
   TBL_PROVINCES, TBL_RANKINGS, TBL_SOURCES, TBL_STATS, TBL_STATS_CITY, TBL_STATS_DAILY, TBL_STATS_OCCUPATION,
@@ -322,6 +322,43 @@ function toDesignatedEmployer(r: MartRow): MartRow {
   return {
     name: cellOf(r.name), province: cellOf(r.province), location: cellOf(r.location), is_tech: cellOf(r.isTech),
     source: cellOf(r.source), nocs: textOf(r.nocs), url: textOf(r.url), fetched: textOf(r.fetched),
+  }
+}
+
+/**
+ * employer_pool 行(雇主池主表)。designated_programs / designated_provinces 是 jsonb,
+ * pg 参数须传 JSON 串(同 jobs.certificates)。
+ *
+ * @param r mart 行。
+ * @returns 库行。
+ */
+function toEmployerPool(r: MartRow): MartRow {
+  return {
+    key: cellOf(r.key), slug: cellOf(r.slug), name: cellOf(r.name), industry: cellOf(r.industry),
+    province: cellOf(r.province), city: cellOf(r.city), designated: truthyOf(r.designated),
+    designated_programs: jsonTextOf(r.designatedPrograms), designated_provinces: jsonTextOf(r.designatedProvinces),
+    open_jobs_total: cellOf(r.openJobsTotal), hist_jobs: cellOf(r.histJobs),
+    provinces_active: cellOf(r.provincesActive), cities_active: cellOf(r.citiesActive),
+    website_known: truthyOf(r.websiteKnown), lmia_skilled_total: cellOf(r.lmiaSkilledTotal),
+    lmia_last_quarter: cellOf(r.lmiaLastQuarter), fetched: textOf(r.fetched),
+  }
+}
+
+/**
+ * employer_pool_buckets 行(雇主 × 大类桶;切面星住桶行)。
+ * ⚠️ entry_share / wage_med_annual / wage_index_pct 走 cellOf 保 null ——
+ * 空 = 无在招/无水位不表态,折 0 = 替官方编数。top_titles 是 jsonb。
+ *
+ * @param r mart 行。
+ * @returns 库行。
+ */
+function toEmployerPoolBucket(r: MartRow): MartRow {
+  return {
+    employer_key: cellOf(r.employerKey), broad: textOf(r.broad), open_jobs: cellOf(r.openJobs),
+    latest_posted: cellOf(r.latestPosted), top_titles: jsonTextOf(r.topTitles), entry_jobs: cellOf(r.entryJobs),
+    entry_share: cellOf(r.entryShare), min_experience: cellOf(r.minExperience),
+    lmia_skilled: cellOf(r.lmiaSkilled), lmia_last_quarter: cellOf(r.lmiaLastQuarter), star: cellOf(r.star),
+    wage_med_annual: cellOf(r.wageMedAnnual), wage_index_pct: cellOf(r.wageIndexPct),
   }
 }
 
@@ -826,6 +863,8 @@ export function dimSpecs(): DimSpecs {
     { table: TBL_CITIES, cols: COLS_CITIES, toRow: toCity },
     { table: TBL_DISTRICTS, cols: COLS_DISTRICTS, toRow: toDistrict },
     { table: TBL_DESIGNATED_EMPLOYERS, cols: COLS_DESIGNATED_EMPLOYERS, toRow: toDesignatedEmployer },
+    { table: TBL_EMPLOYER_POOL, cols: COLS_EMPLOYER_POOL, toRow: toEmployerPool },
+    { table: TBL_EMPLOYER_POOL_BUCKETS, cols: COLS_EMPLOYER_POOL_BUCKETS, toRow: toEmployerPoolBucket },
     { table: TBL_PILOT_COMMUNITIES, cols: COLS_PILOT_COMMUNITIES, toRow: toPilotCommunity },
     { table: TBL_PILOT_OCCUPATIONS, cols: COLS_PILOT_OCCUPATIONS, toRow: toPilotOccupation },
     { table: TBL_PILOT_QUOTA, cols: COLS_PILOT_QUOTA, toRow: toPilotQuota },
@@ -929,6 +968,10 @@ async function loadSeedState(client: DbClient): SeedHashesOut {
  * 上传内容为 [] 的文件)→ 表未建 -3 → 内容与上轮一致 -2。
  * 全空行(每格都是 null/空串)不入库 —— 与老版 filter 口径逐字一致。
  *
+ * 2026-09-04 雇主池两表(employer_pool 6.8 万行 / buckets 8.3 万行,各 ~28MB)入 dims 起改**逐片流式**:
+ * 内存峰值 = 单片,不再整表 martRows 拼接(jobs 27k 行整解析 OOM 实撞同因);先清后灌与旧序不同,
+ * 但整段在 TX_BEGIN/TX_COMMIT 事务里,toRow 半途抛照样整体回滚。
+ *
  * @param x 连接、时刻、上轮哈希与计数板。
  * @returns 无(计数就地记)。
  */
@@ -948,21 +991,26 @@ async function seedDims(x: SeedDimsIn): DoneOut {
       x.counts[spec.table] = COUNT_UNCHANGED
       continue
     }
-    const rows: MartRow[] = []
-    for (const raw of martRows(spec.table)) {
-      const row = spec.toRow(raw)
-      if (emptyRow(row)) {
-        continue
-      }
-      row.created_at = x.now
-      row.updated_at = x.now
-      rows.push(row)
-    }
     await x.client.query(SQL.clearLockedRels(spec.table))
     await x.client.query(SQL.deleteAll(spec.table))
-    await insertBatch({ client: x.client, table: spec.table, cols: spec.cols.concat(COLS_ROW_TS), rows: rows, suffix: SUFFIX_NONE })
+    let n = 0
+    for (const shard of martPaths(spec.table)) {
+      const list: MartRow[] = JSON.parse(fs.readFileSync(shard, UTF8))
+      const rows: MartRow[] = []
+      for (const raw of list) {
+        const row = spec.toRow(raw)
+        if (emptyRow(row)) {
+          continue
+        }
+        row.created_at = x.now
+        row.updated_at = x.now
+        rows.push(row)
+      }
+      await insertBatch({ client: x.client, table: spec.table, cols: spec.cols.concat(COLS_ROW_TS), rows: rows, suffix: SUFFIX_NONE })
+      n += rows.length
+    }
     await x.client.query(SQL.SEED_STATE_UPSERT, [spec.table, hash])
-    x.counts[spec.table] = rows.length
+    x.counts[spec.table] = n
   }
 }
 

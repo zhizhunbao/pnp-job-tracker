@@ -243,6 +243,16 @@ export const TBL_DISTRICTS = 'districts'
 export const TBL_DESIGNATED_EMPLOYERS = 'designated_employers'
 
 /**
+ * 雇主池主表(雇主板重构批一,2026-08-30)。
+ */
+export const TBL_EMPLOYER_POOL = 'employer_pool'
+
+/**
+ * 雇主 × 大类桶行表(切面星住这儿;雇主板重构批一)。
+ */
+export const TBL_EMPLOYER_POOL_BUCKETS = 'employer_pool_buckets'
+
+/**
  * RCIP/FCIP 试点社区表(E6-11)。
  */
 export const TBL_PILOT_COMMUNITIES = 'pilot_communities'
@@ -436,6 +446,20 @@ export const COLS_DISTRICTS = ['name', 'city', 'province']
  * designated_employers 列。
  */
 export const COLS_DESIGNATED_EMPLOYERS = ['name', 'province', 'location', 'is_tech', 'source', 'nocs', 'url', 'fetched']
+
+/**
+ * employer_pool 列。⚠️ **先在生产跑 docs/sql/employer-pool.sql**(建表 + 索引 + 锁表补列),
+ * 否则这段 INSERT 撞 42P01 → 整个 seed 事务回滚。
+ * designated_programs / designated_provinces 是 jsonb,映射器走 jsonTextOf 传 JSON 串。
+ */
+export const COLS_EMPLOYER_POOL = ['key', 'slug', 'name', 'industry', 'province', 'city', 'designated', 'designated_programs', 'designated_provinces', 'open_jobs_total', 'hist_jobs', 'provinces_active', 'cities_active', 'website_known', 'lmia_skilled_total', 'lmia_last_quarter', 'fetched']
+
+/**
+ * employer_pool_buckets 列。⚠️ 同上,建表走 docs/sql/employer-pool.sql。
+ * ⚠️ entry_share / wage_med_annual / wage_index_pct 保持可空 —— 空 = 无在招/无水位不表态,
+ * 映射器里走 cellOf 保 null,禁折 0(折 0 = 替官方编数)。top_titles 是 jsonb。
+ */
+export const COLS_EMPLOYER_POOL_BUCKETS = ['employer_key', 'broad', 'open_jobs', 'latest_posted', 'top_titles', 'entry_jobs', 'entry_share', 'min_experience', 'lmia_skilled', 'lmia_last_quarter', 'star', 'wage_med_annual', 'wage_index_pct']
 
 /**
  * pilot_communities 列。⚠️ **先在生产跑 docs/sql/e6-11-pilot.sql**(建表 + 锁表补列)。

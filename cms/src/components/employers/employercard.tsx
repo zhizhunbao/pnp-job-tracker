@@ -13,7 +13,6 @@
  */
 import { JobCard } from '@/components/card'
 import { TEXT_NONE } from './constants'
-import { makeCardClick } from './functions'
 import type { EmployerCardIn } from './types'
 import css from './employers.module.css'
 
@@ -24,8 +23,8 @@ import css from './employers.module.css'
  * @returns 一张职位卡形态的雇主卡。
  */
 export function EmployerCard({ r }: EmployerCardIn) {
-  const title = { text: r.name, href: r.href, title: r.hrefTitle }
-  const onCardClick = makeCardClick({ href: r.href })
+  const title = { text: r.name, href: r.href, title: r.hrefTitle, onClick: r.onView }
+  const onCardClick = r.onCard
   let salary = null
   if (r.cardSalary !== TEXT_NONE) {
     salary = r.cardSalary

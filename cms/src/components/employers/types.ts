@@ -539,6 +539,17 @@ export type EmployerCellRow = {
    * (名录不含在招信息)。
    */
   cardSalary: string
+
+  /**
+   * 点雇主名的埋点手柄(emp-row;表格那一列的链接与手机卡标题链共用同一枚)。
+   */
+  onView: ClickFn
+
+  /**
+   * 整卡点击手柄(手机卡的触控靶:卡本身 ≥70px,标题链只有 23px 高)。
+   * 点在卡内链接上时它早退,那一次由链接自己的 onView 记,不重复计数。
+   */
+  onCard: CardClickFn
 }
 
 /**
@@ -1446,6 +1457,41 @@ export type CardClickIn = {
    * 这一行的落点(整卡点击去哪)。
    */
   href: string
+
+  /**
+   * 当前口径(emp-row 的分组值)。
+   */
+  mode: EmployerMode
+}
+
+/**
+ * makeQCommit 的入参(搜索词落词那一下)。
+ */
+export type QCommitIn = {
+  /**
+   * 当前筛选(口径当 emp-search 的分组值,其余原样抄回)。
+   */
+  f: EmployerFilters
+
+  /**
+   * 防抖满了才落进来的搜索词。🔴 它只进筛选,不进埋点(高基数自由文本)。
+   */
+  q: string
+
+  /**
+   * 筛选态落格。
+   */
+  setF: SetFilters
+}
+
+/**
+ * makeRowView 的入参。
+ */
+export type RowViewIn = {
+  /**
+   * 当前口径(emp-row 的分组值)。
+   */
+  mode: EmployerMode
 }
 
 /**

@@ -30,7 +30,9 @@ import {
   DESIGNATED_DESC, DESIGNATED_TITLE_TAIL, DIFF_KEY_HEAD,
   DIFF_TAG, DIFF_VARIANT_NONE, DIM_AIP_KEY, DIM_AVG_KEY, DIM_BRIEF_KEY, DIM_INDUSTRY_KEY, DIM_LMIA_KEY,
   DIM_MATCH_KEY, DIM_NAMED_KEY, DIM_OPEN_KEY, DIM_PROV_KEY, DIM_QUARTER_KEY, DIM_SAL_KEY, DIM_SKILLED_KEY,
-  CTL_CLS, EMP_API_URL, EMP_PATH_HEAD, EMP_URL, EV_VIEW_JOBS, HIRING_DESC, HIRING_TITLE_TAIL,
+  CTL_CLS, EMP_API_URL, EMP_PATH_HEAD, EMP_URL, EV_FILTER, EV_PAGE, EV_PROP_CITY, EV_PROP_KEY,
+  EV_PROP_MODE, EV_PROP_NOC, EV_PROP_PROGRAM, EV_PROP_PROV, EV_ROW, EV_SEARCH, EV_VIEW_JOBS,
+  HIRING_DESC, HIRING_TITLE_TAIL,
   HOME_SEARCH_HEAD, JOBS_SEARCH_HEAD, KEY_SEP, KIND_AIP,
   KIND_LMIA, KIND_NAMED, LABEL_SEP, LANG_KO, LANG_ZH, LINK_SELECTOR,
   META_PROGRAMS, META_PROV_RE, META_SCOPE_SEP, MODE_DESIGNATED, MODE_HIRING,
@@ -65,7 +67,8 @@ import type {
   ListClsIn, LoadBoardIn, MaxPageIn, MoneyIn, MoreBtnClsIn,
   NocLabelIn, NocLabelListIn, NocNameFn, NoteTextIn, PageFn, PickFn, ProvNameIn, SponsorCellRow,
   SponsorCellRowIn, SponsorCellRowsIn, SponsorColsIn, SponsorColsWordsIn, SponsorEmployerRow, SponsorKindIn,
-  PricingSetIn, TextByFiltersIn, VerdictFact, VerdictFactIn, VerdictToneIn, WhereTextIn, WithQIn,
+  PricingSetIn, QCommitIn, RowViewIn, TextByFiltersIn, VerdictFact, VerdictFactIn, VerdictToneIn, WhereTextIn,
+  WithQIn,
   WordsIn,
 } from './types'
 import { VerdictCell } from './verdictcell'
@@ -241,6 +244,8 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     programChip,
     cardNote,
     cardSalary,
+    onView: makeRowView({ mode: x.f.mode }),
+    onCard: makeCardClick({ href, mode: x.f.mode }),
   }
 }
 
@@ -1450,6 +1455,21 @@ export async function loadBoard(x: LoadBoardIn): Promise<void> {
 }
 
 /**
+ * 造「搜索词落词」的手柄(防抖计时器到点时跑的就是它,2026-09-04 /fe 雇主模块补埋点)。
+ * 先记一次 `emp-search` 再把词落进筛选 —— 分组值只有口径,搜索词本身不进埋点。
+ *
+ * @param x 当前筛选、防抖满了的搜索词与落格。
+ * @returns 防抖计时器的回调。
+ */
+export function makeQCommit(x: QCommitIn): ClickFn {
+  function commitQuery(): void {
+    track(EV_SEARCH, { [EV_PROP_KEY]: x.f.mode })
+    x.setF(withQOf({ f: x.f, q: x.q }))
+  }
+  return commitQuery
+}
+
+/**
  * 只换搜索词那一格(防抖满了才落进筛选),顺带回第一页。
  *
  * @param x 当前筛选与新词。
@@ -1476,6 +1496,7 @@ export function withQOf(x: WithQIn): EmployerFilters {
  */
 export function makeMode(x: FilterPickIn): PickFn {
   function onMode(v: string): void {
+    track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_MODE })
     let mode: EmployerMode = MODE_DESIGNATED
     let program = x.f.program
     if (v === MODE_HIRING) {
@@ -1503,6 +1524,7 @@ export function makeMode(x: FilterPickIn): PickFn {
  */
 export function makeProv(x: FilterPickIn): PickFn {
   function onProv(v: string): void {
+    track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_PROV })
     x.setF({
       mode: x.f.mode,
       program: x.f.program,
@@ -1524,6 +1546,7 @@ export function makeProv(x: FilterPickIn): PickFn {
  */
 export function makeProgram(x: FilterPickIn): PickFn {
   function onProgram(v: string): void {
+    track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_PROGRAM })
     x.setF({
       mode: x.f.mode,
       program: v,
@@ -1545,6 +1568,7 @@ export function makeProgram(x: FilterPickIn): PickFn {
  */
 export function makeCity(x: FilterPickIn): PickFn {
   function onCity(v: string): void {
+    track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_CITY })
     x.setF({
       mode: x.f.mode,
       program: x.f.program,
@@ -1566,6 +1590,7 @@ export function makeCity(x: FilterPickIn): PickFn {
  */
 export function makeNoc(x: FilterPickIn): PickFn {
   function onNoc(v: string): void {
+    track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_NOC })
     x.setF({
       mode: x.f.mode,
       program: x.f.program,
@@ -1609,6 +1634,7 @@ export function makeClear(x: ClearIn): ClickFn {
  */
 export function makePage(x: FilterPickIn): PageFn {
   function onPage(p: number): void {
+    track(EV_PAGE, { [EV_PROP_KEY]: x.f.mode })
     x.setF({
       mode: x.f.mode,
       program: x.f.program,
@@ -1648,9 +1674,24 @@ export function makeCardClick(x: CardClickIn): CardClickFn {
     if (el instanceof HTMLElement && el.closest(LINK_SELECTOR) != null) {
       return
     }
+    track(EV_ROW, { [EV_PROP_KEY]: x.mode })
     window.location.href = x.href
   }
   return onCardClick
+}
+
+/**
+ * 造「点雇主名」的埋点手柄(emp-row):表格那一列的链接与手机卡标题链共用同一枚,
+ * 落点由链接自己的 href 走,这里只记一笔。
+ *
+ * @param x 当前口径(分组值)。
+ * @returns 链接的 onClick。
+ */
+export function makeRowView(x: RowViewIn): ClickFn {
+  function onView(): void {
+    track(EV_ROW, { [EV_PROP_KEY]: x.mode })
+  }
+  return onView
 }
 
 /**

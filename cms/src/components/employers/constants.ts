@@ -113,6 +113,64 @@ export const TARGET_BLANK = '_blank'
 export const EV_VIEW_JOBS = 'se-view-jobs'
 
 /**
+ * 埋点事件名:雇主板搜索框落词(2026-09-04 /fe 雇主模块补)。防抖满了那一下才算一次,
+ * 不是每敲一个字算一次。
+ * 🔴 分组值是**口径**(designated / hiring),搜索词本身永不进埋点 —— 它是高基数自由文本,
+ * 进了漏斗日聚合表就把表撑成明细表(lib/funnel 的 PROP_OK 也不收),还踩隐私页那句承诺。
+ */
+export const EV_SEARCH = 'emp-search'
+
+/**
+ * 埋点事件名:雇主板换了任意一格筛选。分组值是**哪一格**(见 EV_PROP_* 一族),
+ * 不是选了什么值 —— 省码尚可,职业码是高基数,同上。
+ */
+export const EV_FILTER = 'emp-filter'
+
+/**
+ * 埋点事件名:雇主板点雇主名去看在招岗(表格行、手机卡标题、整卡触控靶三处同一件事;
+ * 整卡那处点在卡内链接上时交给链接自己记,不重复)。分组值是口径。
+ */
+export const EV_ROW = 'emp-row'
+
+/**
+ * 埋点事件名:雇主板翻页。分组值是口径。
+ */
+export const EV_PAGE = 'emp-page'
+
+/**
+ * 埋点分组值:换的是口径那一格。
+ * 🔴 与查询参数名 `P_MODE` 恰好同字,但**各自声明一份**:改 URL 参数名不该顺手改埋点分组值 ——
+ * 改了历史计数就断在半路,再也对不上。下面四格同理。
+ */
+export const EV_PROP_MODE = 'mode'
+
+/**
+ * 埋点分组值:换的是省那一格。
+ */
+export const EV_PROP_PROV = 'prov'
+
+/**
+ * 埋点分组值:换的是制度那一格。
+ */
+export const EV_PROP_PROGRAM = 'program'
+
+/**
+ * 埋点分组值:换的是社区那一格。
+ */
+export const EV_PROP_CITY = 'city'
+
+/**
+ * 埋点分组值:换的是职业那一格。
+ */
+export const EV_PROP_NOC = 'noc'
+
+/**
+ * 埋点附加值里承载低基数分组的那个键。lib/track 的 pickProp 只认 plan / kind / card 三个键,
+ * 换个键名不会报错,只会让分组值静默丢掉(事件照记,prop 永远是空)。
+ */
+export const EV_PROP_KEY = 'kind'
+
+/**
  * 缺数记号。🔴 口径:它是「本站没有这一格」,不是 0 —— 官方可空的数值折 0 = 替官方编数。
  */
 export const DASH_MARK = '—'
