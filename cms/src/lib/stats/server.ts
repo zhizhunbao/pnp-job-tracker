@@ -7,5 +7,8 @@
  * @time 2026-08-22 14:00:00
  */
 
-export { loadChannelNocs, loadCityStats, loadFineCounts, loadOccStats, loadProvExtra, loadStats, loadStatSources } from './functions'
+export {
+  loadChannelNocs, loadCityStats, loadDailySeries, loadFineCounts, loadOccStats, loadProvExtra, loadStats,
+  loadStatSources,
+} from './functions'
 export { statsDataRoute, statsFineRoute, statsMarketRoute } from './routes'

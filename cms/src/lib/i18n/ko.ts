@@ -931,7 +931,16 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'se.col.lmia': 'LMIA 승인(2년)', 'se.col.w1': 'LMIA 최근 분기', 'se.col.w2': 'LMIA 6개월', 'se.col.w4': 'LMIA 1년',
   'se.grp.aip': 'AIP 지정 고용주', 'se.grp.lmia': 'LMIA 승인 고용주(2년)', 'se.grp.named': '구인 직종이 수요 목록에 오른 고용주', 'pulse.nav.boards': '직업 보드',
   // #312 보조 내비 짧은 라벨(TOC와 섹션 h2 전체 명칭 차별화)
-  'pulse.nav.se': '스폰서 고용주', 'pulse.nav.occ': '직업', 'pulse.nav.prov': '주별', 'pulse.nav.provocc': '주별 직업', 'pulse.nav.draws': '추첨',
+  'pulse.nav.se': '고용주', 'pulse.nav.occ': '직업', 'pulse.nav.prov': '주별', 'pulse.nav.provocc': '주별 직업', 'pulse.nav.draws': '추첨',
+  // 2026-09-04 진단 페이지 재구성(docs/design/把脉页重构-20260904.md): 6개 섹션 내비 + 업종별 표 + 도시 / 추세 섹션
+  'pulse.nav.lmia': 'LMIA', 'pulse.nav.city': '도시', 'pulse.nav.trend': '추세',
+  'pulse.city': '도시 개요', 'pulse.trend': '구인 추세', 'pulse.trend.nat': '전국',
+  'pulse.top.open': '구인 최다', 'pulse.top.wage': '최고 임금',
+  'pulse.ind.health': '의료', 'pulse.ind.stem': 'STEM', 'pulse.ind.trades': '기능직', 'pulse.ind.construction': '건설',
+  'pulse.ind.food': '요식 및 소매', 'pulse.ind.transport': '운송 및 물류', 'pulse.ind.manufacturing': '제조 및 자원',
+  'pulse.ind.business': '비즈니스 및 사무', 'pulse.ind.education': '교육 및 사회',
+  'pulse.col.signals': '스폰서 신호', 'pulse.sig.named': '수요 목록 해당', 'pulse.sig.aip': 'AIP 지정', 'pulse.sig.lmia': '숙련 LMIA {n}',
+  'pulse.drawsLink': '최근 추첨 및 정책 동향',
   // B4 고용주 주정부 지명 기준 판정: 3단계 + 공공 부문 예외, 기준 대조일 뿐 공식 인증 아님
   'se.col.verdict': '고용주 기준', 'se.verdict.met': '기준 충족', 'se.verdict.short': '{items} 미달', 'se.verdict.unknown': '확인 중', 'se.verdict.public': '공공 부문',
   'se.verdict.factor.years': '운영 연차', 'se.verdict.factor.staff': '직원 수',
@@ -1145,7 +1154,7 @@ export const pteKo: Record<keyof typeof pteZh, string> = {
   'pte.pos': '{i} / {n}',
   'pte.inst.RA': '40초 안에 자연스럽고 또렷하게 읽으세요', 'pte.inst.RS': '한 번 듣고 그대로 따라 말하세요', 'pte.inst.ASQ': '질문을 듣고 한두 단어로 답하세요', 'pte.inst.WFD': '한 번 듣고 그대로 받아쓰세요',
   'pte.inst.RFIB': '빈칸마다 단어 선택', 'pte.inst.RWFIB': '빈칸마다 드롭다운에서 선택', 'pte.inst.ROP': '문단을 올바른 순서로',
-  'pte.inst.RMCS': '정답 하나 선택', 'pte.up': '위로', 'pte.down': '아래로',
+  'pte.inst.RMCS': '정답 하나 선택', 'pte.drag': '드래그',
   'pte.prep': '준비', 'pte.skipPrep': '준비 건너뛰기', 'pte.play': '문제 재생', 'pte.replay': '다시 듣기', 'pte.audio': '문제 음성',
   'pte.rec': '녹음',
   'pte.tts': '모범 낭독', 'pte.myRec': '내 녹음', 'pte.recording': '녹음 중', 'pte.recCap': '{s}초 안에 답하세요', 'pte.stop': '정지',
@@ -1162,8 +1171,7 @@ export const pteKo: Record<keyof typeof pteZh, string> = {
   'pte.c.sent': '제출됨, 검토 후 표시', 'pte.c.err': '전송 실패, 다시 시도하세요',
   'pte.dict.close': '닫기', 'pte.dict.loading': '검색 중', 'pte.dict.none': '없음',
   'pte.dict.uk': '영', 'pte.dict.us': '미',
-  'pte.dict.zh': '중국어', 'pte.dict.en': 'English', 'pte.dict.forms': '어형',
-  'pte.fam.n': '명사', 'pte.fam.v': '동사', 'pte.fam.a': '형용사',
+  'pte.dict.zh': '중국어', 'pte.dict.en': 'English',
   'pte.form.p': '과거형', 'pte.form.d': '과거분사', 'pte.form.i': '현재분사', 'pte.form.3': '3인칭 단수', 'pte.form.r': '비교급',
   'pte.form.t': '최상급', 'pte.form.s': '복수형',
 }

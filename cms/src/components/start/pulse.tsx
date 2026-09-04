@@ -1,39 +1,35 @@
 'use client'
 /**
  * start 域的结构:E13-03 把脉首页整块视图(路由仍是 /start —— URL 是 SEO 资产,
- * 不随组件改名动)——「开始规划 + 榜单 + 地区统计」三合一。
- * 规格 = docs/implementation/E13-把脉首页/00_总设计与口径.md §4 的 S1-S7,一区一事、
- * 全宽色带交替:S1 判决区(动态冷脸标题 + 三脉象卡)/ S2 劝退榜 / S3 真香榜 /
- * S4 省份照妖镜 / S5 抽选尺子(抽选表 + 冷解读 + 政策动态)/ S6 职位板入口 / S7 订阅与分享。
- * 信条:**「难听,但没骗你」—— 调性激进,数据保守,每个数字可溯源**。
- * 三条硬红线,改这一域前先读:
- *   ① 判决语一律「模板 + 库内数字填槽」(三语进 lib/i18n),LLM 不参与下结论;
- *   ② E13-02 的派生列(mom14d/avgDaysOpen/pulseScore)**可能还没落库** —— 值为 null 时
- *      该卡 / 该行 / 该榜**整块不渲染**,绝不显示 0 或 NaN,页面退化成「现有数据撑得住的版本」;
- *      变化量口径按契约 v3 一律用**近 14 天新发环比 mom14d**:30 天窗卡在抓取爬坡期(假涨)、
- *      下架 / 净流失卡在排水期(虚高),两者的数字与措辞都不上前端(同入 E13-04);
- *   ③ 每行可溯源:职业名点开落到按该 NOC 筛过的职位板,省卡下钻落 /stats/[prov]。
- * SSR 瘦身手法守住:职业大表(occ ~3400 行)不进 HTML,挂载后拉 /api/stats/market
- * (与旧版同一端点);橱窗三分表同理走 /api/employers/sponsors。
- * 2026-08-28 换装批自 Pulse.tsx 整体重写成小写件形制:排版拆成 30 件、状态收进 hooks.ts、
- * 内联 <style> 与 93 处内联样式迁 start.module.css、取数与派生下沉 functions.ts;
- * 同批壳件上交页面门(Frank「组装只许在 (frontend) 页面门里」,样张 companies)——
- * 整页外框走 shell 桶的 Frame,顶栏与页脚由 page.tsx 直接拼,本件只出导航条与正文。
+ * 不随组件改名动)。
+ * 2026-09-04 重构(/fe 评估,设计稿 docs/design/把脉页重构-20260904.md):近 30 天剔掉 Frank 设备后
+ * 只有十几次浏览零交互,20 屏长页先刷三张雇主表才到职业榜。Frank 拍板**按类型分段,段内按行业出表,
+ * 不让用户筛**:首屏(轮播 + 四卡)→ 职业(全职业两榜 + 行业各一表)→ 雇主(在招且带担保信号,行业各一表)
+ * → LMIA(技能类获批,行业各一表)→ 省份(分省概览 + 省内职业榜)→ 城市 → 趋势(全国一条线 + 行业小图)
+ * → 一行抽选链接 → 职位板入口。每张表 Top N 下拉默认 5。
+ * 撤掉:四榜、雇主表的筛选下拉与「问 AI 顾问」钮、抽选表与政策动态段、把脉页上的分布探索图。
+ * 信条不变:**「难听,但没骗你」—— 数据保守,每个数字可溯源**;
+ * 判决语一律「模板 + 库内数字填槽」,LLM 不参与下结论;派生列为 null 时该卡 / 该行整块不渲,绝不显示 0。
+ * SSR 瘦身手法守住:职业大表(occ ~3400 行)不进 HTML,挂载后拉 /api/stats/market;
+ * 担保雇主全量同理走 /api/employers/sponsors。
+ * 2026-08-28 换装批自 Pulse.tsx 整体重写成小写件形制;壳件(Frame / 顶栏 / 页脚)由页面门拼装。
  * 2026-09-03 Frank「所有的 table 和可以更新数据的地方,右上角都应该有一个更新时间」:
- * 门里早就取好的 ETL 心跳(stats.checkedAt)此前一处没消费,现分发给四个有表的分区
- * (担保雇主 / 职业榜 / 分省概览 / 抽选尺子),各区标题行右槽一枚。
+ * ETL 心跳(stats.checkedAt)分发给每个有表的分区,各区标题行右槽一枚。
  *
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
 import { BoardsSection } from './boardssection'
+import { EMP_KIND_LMIA, EMP_KIND_SIGNAL, ID_LMIA, ID_SE } from './constants'
+import { CitySection } from './citysection'
 import { CtaBand } from './ctaband'
-import { DrawsSection } from './drawssection'
+import { DrawsLink } from './drawslink'
+import { EmpSection } from './empsection'
 import { Hero } from './hero'
 import { ProvOccSection } from './provoccsection'
 import { ProvSection } from './provsection'
 import { PulseNav } from './pulsenav'
-import { SponsorSection } from './sponsorsection'
+import { TrendSection } from './trendsection'
 import { usePulse } from './hooks'
 import type { PulseIn } from './types'
 import css from './start.module.css'
@@ -42,7 +38,7 @@ import css from './start.module.css'
  * 把脉首页正文。
  *
  * @param props 页面门取好的那份 SSR 数据(逐格注释见 HomeStats)。
- * @returns 二级导航条 + 七个分区。
+ * @returns 二级导航条 + 八个分区。
  */
 export function Pulse({ stats }: PulseIn) {
   const v = usePulse({ stats })
@@ -51,14 +47,19 @@ export function Pulse({ stats }: PulseIn) {
       <PulseNav t={v.t} navSec={v.navSec} />
       <main className={css.main}>
         <Hero t={v.t} cards={v.numCards} />
-        <SponsorSection t={v.t}
-          lang={v.lang}
+        <BoardsSection t={v.t} lang={v.lang} updatedAt={stats.checkedAt} secs={v.occSecs} nocProvs={v.nocProvs} />
+        <EmpSection t={v.t}
+          id={ID_SE}
+          title={v.t('se.title')}
+          kind={EMP_KIND_SIGNAL}
           updatedAt={stats.checkedAt}
-          sponsor={v.sponsor}
-          occOpts={stats.occOpts}
-          catMids={stats.catMids}
-          nocCat={v.nocCat} />
-        <BoardsSection t={v.t} lang={v.lang} updatedAt={stats.checkedAt} boards={v.boards} nocProvs={v.nocProvs} />
+          secs={v.empSecs} />
+        <EmpSection t={v.t}
+          id={ID_LMIA}
+          title={v.t('se.grp.lmia')}
+          kind={EMP_KIND_LMIA}
+          updatedAt={stats.checkedAt}
+          secs={v.lmiaSecs} />
         <ProvSection t={v.t}
           lang={v.lang}
           updatedAt={stats.checkedAt}
@@ -74,18 +75,10 @@ export function Pulse({ stats }: PulseIn) {
           provPickOf={v.provPickOf}
           provStat={v.provStat}
           provOcc={v.provOcc}
-          nocProvs={v.nocProvs}
-          market={v.market} />
-        <DrawsSection t={v.t}
-          tEn={v.tEn}
-          lang={v.lang}
-          updatedAt={stats.checkedAt}
-          draws={stats.draws}
-          news={stats.news}
-          drawsN={v.drawsN}
-          onDrawsN={v.onDrawsN}
-          newsN={v.newsN}
-          onNewsN={v.onNewsN} />
+          nocProvs={v.nocProvs} />
+        <CitySection t={v.t} lang={v.lang} updatedAt={stats.checkedAt} rows={v.cityRows} />
+        <TrendSection t={v.t} updatedAt={stats.checkedAt} trend={v.trend} />
+        <DrawsLink t={v.t} />
         <CtaBand t={v.t} />
       </main>
     </>

@@ -719,6 +719,36 @@ export type CityRows = CityRow[]
 export type CityRowsOut = Promise<CityRows>
 
 /**
+ * 把脉页趋势段·逐日在招量一行(SQL.STATS_DAILY_SERIES:日期 × 大类,十省已加总)。
+ */
+export type DailyRow = {
+  /**
+   * 日期(YYYY-MM-DD)。
+   */
+  date: string
+
+  /**
+   * 本站大类;'all' = 该日全国汇总行。
+   */
+  broad: string
+
+  /**
+   * 该日该大类在招量(十省加总)。
+   */
+  openJobs: number
+}
+
+/**
+ * 逐日在招量清单(按日期升序)。
+ */
+export type DailyRows = DailyRow[]
+
+/**
+ * `loadDailySeries` 的返回。
+ */
+export type DailyRowsOut = Promise<DailyRows>
+
+/**
  * 通道筛选的职业码清单(E8-14 ⑥,只取**职业粒度能判定**的两条)。
  */
 export type ChannelNocs = {

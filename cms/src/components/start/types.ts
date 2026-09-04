@@ -14,16 +14,11 @@
  * @time 2026-08-28 14:20:00
  */
 // eslint-disable-next-line local/no-import-in-leaf -- 引擎输出形状特批(先例 icons/types):lib/stats 契约,零处读格、原样透传同源 MarketChart
-import type { OccRow, ProvExtra, StatRow } from '@/lib/stats'
+import type { CityRow, DailyRow, OccRow, ProvExtra, StatRow } from '@/lib/stats'
 // eslint-disable-next-line local/no-import-in-leaf -- lib/employers 的引擎契约,原样透传给 employers 桶的洗行函数与卡片
 import type { SponsorEmployerRow } from '@/lib/employers'
 // eslint-disable-next-line local/no-import-in-leaf -- components/stats 取数钩子的返回,原样交给 MarketChart 的四份数据
 import type { MarketData } from '@/components/stats'
-import type { DbPool } from '@/lib/db'
-// eslint-disable-next-line local/no-import-in-leaf -- payload 的 find 由库定死(分类维度表那条查询),自抄一份等于替库维护它的重载表
-import type { Payload } from 'payload'
-// eslint-disable-next-line local/no-import-in-leaf -- 分类维度表的行形状由 payload 从 collection 生成,不手抄
-import type { NocCategory } from '@/payload-types'
 
 /**
  * 界面语言(三字面量各域自抄)。
@@ -31,21 +26,10 @@ import type { NocCategory } from '@/payload-types'
 export type StartLang = 'zh' | 'en' | 'ko'
 
 /**
- * 通道译名小表认得的语言码(与界面语言同值,但它是另一域的入参,单独起名)。
- */
-export type DrawLang = 'zh' | 'en' | 'ko'
-
-/**
  * 界面语取词函数(与 lib/i18n 的 TFn 同形:键 + 可选插值 —— 形状本域自己声明,
  * 不从别的域取;真参数是 lib/i18n 那个带附加成员的交叉类型,结构上兜得住)。
  */
 export type TFn = (key: string, vars?: Record<string, string | number>) => string
-
-/**
- * 橱窗人群档(三分表按人群拆:没工签 → LMIA / 有工签 → PNP 担保记录 / 去海洋省 → AIP;
- * 与 components/employers 的同名联合逐字同值,结构相同即兼容)。
- */
-export type StartSponsorKind = 'lmia' | 'named' | 'aip'
 
 /**
  * 一行职业统计(lib/stats 的引擎契约,本域只透传)。
@@ -68,11 +52,6 @@ export type StatRowOne = StatRow
 export type StatRowList = StatRow[]
 
 /**
- * 一行担保雇主事实。
- */
-export type SponsorRowOne = SponsorEmployerRow
-
-/**
  * 担保雇主事实行的清单。
  */
 export type SponsorRowList = SponsorEmployerRow[]
@@ -86,11 +65,6 @@ export type ProvExtraMap = Record<string, ProvExtra>
  * 省卡 IRCC 体量里能取的那四格。
  */
 export type ProvInfoKey = 'study' | 'tfwp' | 'imp' | 'pnpPr'
-
-/**
- * 分类三级里能筛的那三级。
- */
-export type NocCatKey = 'broad' | 'mid' | 'fine'
 
 /**
  * 单元格渲染器的形状(一个参数收这一行,哑单元格的签名天然就是它)。
@@ -210,66 +184,6 @@ export type NocCatMap = Map<string, NocCat>
 export type NocProvsMap = Map<string, string[]>
 
 /**
- * 职业筛 datalist 的一个候选(noc_descriptions,~500 行)。
- */
-export type OccOption = {
-  /**
-   * NOC 2021 五位码。
-   */
-  noc: string
-
-  /**
-   * 官方英文职业名。
-   */
-  title: string
-
-  /**
-   * 中文译名(本站译,非官方)。
-   */
-  titleZh: string
-}
-
-/**
- * 职业筛联动的一行中/小类名(noc_categories,一行 = 一个小类)。
- */
-export type CatOption = {
-  /**
-   * 本站大类。
-   */
-  broad: string
-
-  /**
-   * NOC 中类(中文值,也是行键)。
-   */
-  mid: string
-
-  /**
-   * 中类英文名。
-   */
-  midEn: string
-
-  /**
-   * 中类韩文名。
-   */
-  midKo: string
-
-  /**
-   * NOC 小类(中文值,也是行键)。
-   */
-  fine: string
-
-  /**
-   * 小类英文名。
-   */
-  fineEn: string
-
-  /**
-   * 小类韩文名。
-   */
-  fineKo: string
-}
-
-/**
  * 一批担保雇主(某一张橱窗表)。
  */
 export type SponsorGroup = {
@@ -326,91 +240,6 @@ export type SponsorFullProbe = {
 } | null
 
 /**
- * 一期抽选 + 冷解读三标量(近 12 期同通道的期数/最低/最高,服务端算好)。
- */
-export type PulseDraw = {
-  /**
-   * 抽选日。
-   */
-  date: string
-
-  /**
-   * 两位省码;'FED' = 联邦 EE。
-   */
-  province: string
-
-  /**
-   * 官方通道名。
-   */
-  stream: string
-
-  /**
-   * 通道名的中文批译(ETL 产出;没翻到给空串,回退手工小表)。
-   */
-  streamZh: string
-
-  /**
-   * 联邦 EE 的类别键(省抽选没有,给空串)。
-   */
-  label: string
-
-  /**
-   * 分数线;官方没公布保 null。
-   */
-  score: number | null
-
-  /**
-   * 邀请数;官方没公布保 null。
-   */
-  invitations: number | null
-
-  /**
-   * 回看窗内有分数线的期数;不足门槛给 null(整句解读不出)。
-   */
-  histN: number | null
-
-  /**
-   * 回看窗内的最低分;同上。
-   */
-  histMin: number | null
-
-  /**
-   * 回看窗内的最高分;同上。
-   */
-  histMax: number | null
-}
-
-/**
- * 一条政策动态(列表用的几格)。
- */
-export type PulseNews = {
-  /**
-   * 发布日期。
-   */
-  date: string
-
-  /**
-   * 发布方(federal 或省码);库里没记给空串。
-   */
-  region: string
-
-  /**
-   * 官方原标题。
-   */
-  title: string
-
-  /**
-   * 标题中文译名(E13-06 由 ETL 本地翻译;没译文给空串)。
-   */
-  titleZh: string
-
-  /**
-   * 详情页 slug;没有则空串(整行落到列表页)。
-   */
-  slug: string
-}
-
-/**
  * S1 中间两卡的标量(2026-08-09 下沉 SSR 消刷新闪占位,Frank「中间两个数为什么会闪」)。
  */
 export type PulseScalars = {
@@ -427,6 +256,8 @@ export type PulseScalars = {
 
 /**
  * 把脉首页的 SSR 契约(页面门取好数一次性下发)。
+ * 2026-09-04 重构:抽选 / 政策动态两格撤(段撤成一行链接)、职业筛字典两格撤(筛选下拉撤),
+ * 加逐日在招量(趋势段原料)。
  */
 export type HomeStats = {
   /**
@@ -440,29 +271,9 @@ export type HomeStats = {
   named: number | null
 
   /**
-   * 抽选表(前端 Top N 下拉再切)。
-   */
-  draws: PulseDraw[]
-
-  /**
-   * 政策动态(同上)。
-   */
-  news: PulseNews[]
-
-  /**
-   * 橱窗三分表(SSR 只带每表前几十行)。
+   * 担保雇主三分表(SSR 只带每表前几十行;雇主段与 LMIA 段按行业重分)。
    */
   sponsor: SponsorBoards
-
-  /**
-   * 橱窗职业筛的候选。
-   */
-  occOpts: OccOption[]
-
-  /**
-   * 职业筛联动的中/小类名。
-   */
-  catMids: CatOption[]
 
   /**
    * S1 中间两卡的标量。
@@ -470,9 +281,14 @@ export type HomeStats = {
   pulse: PulseScalars
 
   /**
-   * 三分表职业筛联动 noc → 分类(只含橱窗行出现过的 NOC;occ 全表仍不进 HTML)。
+   * noc → 分类(只含担保雇主行出现过的 NOC;雇主归行业组靠它)。
    */
   nocCat: Record<string, NocCat>
+
+  /**
+   * 逐日 × 大类的在招量(趋势段:全国线 + 行业小图)。
+   */
+  daily: DailyRow[]
 
   /**
    * S4 省卡:IRCC 体量 + 难度档。
@@ -511,167 +327,13 @@ export type HomeSlot = {
 }
 
 /**
- * 职业筛候选缓存的一格。
- */
-export type OccOptionSlot = {
-  /**
-   * 写入时刻(ms)。
-   */
-  ts: number
-
-  /**
-   * 缓存的候选。
-   */
-  rows: OccOption[]
-}
-
-/**
- * 分类联动缓存的一格。
- */
-export type CatOptionSlot = {
-  /**
-   * 写入时刻(ms)。
-   */
-  ts: number
-
-  /**
-   * 缓存的中/小类名。
-   */
-  rows: CatOption[]
-}
-
-/**
- * 本域全部可变状态的形状(住 variables.ts 的 CACHE)。
+ * 本域可变状态的形状(住 variables.ts 的 CACHE)。2026-09-04:字典两格随筛选下拉撤。
  */
 export type StartCache = {
   /**
-   * 首页聚合;没拉过/过期由 TTL 判。
+   * 首页聚合;null = 没拉过。
    */
   home: HomeSlot | null
-
-  /**
-   * 职业筛 datalist 候选。
-   */
-  occOpts: OccOptionSlot | null
-
-  /**
-   * 职业筛联动的中/小类名。
-   */
-  catOpts: CatOptionSlot | null
-}
-
-/**
- * `SQL.PNP_DRAWS_RECENT` 回来的那一行。列名即库列名;走 `SELECT *` 的容缺手法
- * (#280:不点名 stream_zh —— DDL 没跑的库上那一列压根不存在,点名会整块炸,
- * 而 catch 吞掉会连累 score/invitations 一起消失;`*` 容缺列,400 行无压力)。
- */
-export type DrawDbRow = {
-  /**
-   * 两位省码;'FED' = 联邦。
-   */
-  province: string
-
-  /**
-   * 抽选日。
-   */
-  draw_date: string
-
-  /**
-   * 官方通道名。
-   */
-  stream: string | null
-
-  /**
-   * 通道名中文批译 —— E13-06 的列,DDL 没跑的库上这一格压根不存在。
-   */
-  stream_zh?: string | null
-
-  /**
-   * 联邦 EE 的类别键。
-   */
-  label: string | null
-
-  /**
-   * 分数线。
-   */
-  score: number | null
-
-  /**
-   * 邀请数。
-   */
-  invitations: number | null
-}
-
-/**
- * `SQL.NOC_ALL_TITLES` 回来的那一行(职业筛 datalist 的候选)。列名即库列名。
- * 2026-08-27 lint 还账批把原来的 `any` 换成本形状,取值表达式一个字没动。
- */
-export type NocTitleDbRow = {
-  /**
-   * NOC 2021 五位码。
-   */
-  noc: string
-
-  /**
-   * 官方英文职业名。
-   */
-  title: string | null
-
-  /**
-   * 中文译名(本站译,非官方)。
-   */
-  title_zh: string | null
-}
-
-/**
- * `SQL.NEWS_RECENT_80` 回来的那一行。同样走 `SELECT *` 的容缺手法:title_zh 列
- * (E13-06)可能还没加,点名会整块炸;`*` 容缺列,80 行无压力。
- */
-export type NewsRecentDbRow = {
-  /**
-   * 发布日期。
-   */
-  date: string
-
-  /**
-   * 发布方(federal 或省码)。
-   */
-  region: string | null
-
-  /**
-   * 官方原标题。
-   */
-  title: string | null
-
-  /**
-   * 标题中文译名 —— E13-06 的列,DDL 没跑的库上这一格压根不存在。
-   */
-  title_zh?: string | null
-
-  /**
-   * 详情页 slug。
-   */
-  slug: string | null
-}
-
-/**
- * 查询挂了的空结果面(每项独立兜空,一张表缺只丢它自己那块)。
- */
-export type EmptyQueryResult = {
-  /**
-   * 零行。
-   */
-  rows: never[]
-}
-
-/**
- * 分类维度表查询挂了的空结果面。
- */
-export type EmptyDocs = {
-  /**
-   * 零行。
-   */
-  docs: never[]
 }
 
 /**
@@ -720,53 +382,7 @@ export type ProvPresetIn = {
 }
 
 /**
- * `loadOccOptions` 的入参(方案 A:连接池由页面门注进来)。
- */
-export type OccOptionsIn = {
-  /**
-   * 数据库连接。
-   */
-  db: DbPool
-}
-
-/**
- * `loadCatOptions` 的入参。
- */
-export type CatOptionsIn = {
-  /**
-   * payload 实例。
-   */
-  payload: Payload
-}
-
-/**
- * 分类维度行上的一格(payload 从 collection 生成的形状:这些列都是「可以不填」的,
- * 所以那份类型里天然带着「键可能不在」;取值处一律 `== null` 一网收)。
- */
-export type CatCell = NocCategory['broad']
-
-/**
- * `toCatOptions` 的入参。
- */
-export type CatOptionsRowsIn = {
-  /**
-   * 分类维度行。
-   */
-  docs: NocCategory[]
-}
-
-/**
- * `toOccOptions` 的入参。
- */
-export type OccOptionsRowsIn = {
-  /**
-   * 职业名维度行。
-   */
-  rows: NocTitleDbRow[]
-}
-
-/**
- * `homeCoreOf` 的入参:各条查询的结果与两处条数上限。
+ * 首页聚合缓存的一格。
  */
 export type HomeCoreIn = {
   /**
@@ -775,37 +391,17 @@ export type HomeCoreIn = {
   proof: ProofFact | null
 
   /**
-   * 抽选原始行。
-   */
-  drawRows: DrawDbRow[]
-
-  /**
-   * 抽选下发条数上限。
-   */
-  drawsLimit: number
-
-  /**
-   * 政策动态原始行。
-   */
-  newsRows: NewsRecentDbRow[]
-
-  /**
-   * 政策动态下发条数上限。
-   */
-  newsLimit: number
-
-  /**
    * 省卡增补。
    */
   provExtra: ProvExtraMap
 
   /**
-   * 橱窗事实行(职业筛联动只带这些行出现过的 NOC 下去)。
+   * 担保雇主事实行(分类映射只带这些行出现过的 NOC 下去)。
    */
   sponsorRows: SponsorRowList
 
   /**
-   * 已按人群建好的橱窗三表。
+   * 已按人群建好的担保雇主三表。
    */
   boards: SponsorBoards
 
@@ -815,19 +411,14 @@ export type HomeCoreIn = {
   ssrRows: number
 
   /**
-   * 职业筛候选。
-   */
-  occOpts: OccOption[]
-
-  /**
-   * 职业筛联动的中/小类名。
-   */
-  catMids: CatOption[]
-
-  /**
    * 职业统计行(中间两卡与分类映射的原料)。
    */
   occRows: OccRowList
+
+  /**
+   * 逐日 × 大类的在招量。
+   */
+  dailyRows: DailyRow[]
 }
 
 /**
@@ -890,86 +481,6 @@ export type NocCatOfIn = {
   sponsorRows: SponsorRowList
 }
 
-/**
- * 一期抽选的回看三标量。
- */
-export type DrawHist = {
-  /**
-   * 回看窗内有分数线的期数。
-   */
-  n: number
-
-  /**
-   * 回看窗内的最低分。
-   */
-  min: number
-
-  /**
-   * 回看窗内的最高分。
-   */
-  max: number
-}
-
-/**
- * `drawHistOf` 的入参。
- */
-export type DrawHistIn = {
-  /**
-   * 同省同通道的那一组(已按日期降序)。
-   */
-  group: DrawDbRow[]
-
-  /**
-   * 本期在组内的位置。
-   */
-  i: number
-}
-
-/**
- * `toPulseDraw` 的入参。
- */
-export type PulseDrawIn = {
-  /**
-   * 这一期原始行。
-   */
-  r: DrawDbRow
-
-  /**
-   * 它的回看三标量;样本不足则 null。
-   */
-  hist: DrawHist | null
-}
-
-/**
- * `toDrawsWithHistory` 的入参。
- */
-export type DrawsIn = {
-  /**
-   * 抽选原始行(已按日期降序,组内自然也降序)。
-   */
-  rows: DrawDbRow[]
-
-  /**
-   * 下发条数上限。
-   */
-  limit: number
-}
-
-/**
- * `toNewsRows` 的入参。
- */
-export type NewsRowsIn = {
-  /**
-   * 政策动态原始行(多取了几条,去重后再切片)。
-   */
-  rows: NewsRecentDbRow[]
-
-  /**
-   * 下发条数上限。
-   */
-  limit: number
-}
-
 
 /**
  * `occMainOf` / `occNoteOf` 的入参。
@@ -999,16 +510,6 @@ export type ProvLabelOfIn = {
    * 两位省码。
    */
   code: string
-}
-
-/**
- * 只要一个取词函数的显示名工厂入参(`makeProvLabel` / `makeBroadLabel`)。
- */
-export type LabelFactoryIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
 }
 
 /**
@@ -1547,186 +1048,6 @@ export type ProvColsIn = {
 }
 
 /**
- * 抽选表一行的展示行。
- */
-export type DrawCellRow = {
-  /**
-   * 行键(行序 —— 同省同通道同日可能有多期,只有位置能当身份)。
-   */
-  key: string
-
-  /**
-   * 抽选日(已裁到年月日)。
-   */
-  date: string
-
-  /**
-   * 省码或 EE 标签。
-   */
-  prog: string
-
-  /**
-   * 通道名主文案(官方英文名)。
-   */
-  main: string
-
-  /**
-   * 通道名灰注(界面语言译名);空串 = 不出。
-   */
-  note: string
-
-  /**
-   * 分数线;官方没公布给横杠。
-   */
-  score: string
-
-  /**
-   * 邀请数;官方没公布给横杠。
-   */
-  invitations: string
-
-  /**
-   * 冷解读(当期分数线 vs 近 12 期同通道区间);空串 = 样本不足,整格留空不编话。
-   */
-  read: string
-}
-
-/**
- * `toDrawCellRows` 的入参。
- */
-export type DrawCellRowsIn = {
-  /**
-   * 抽选行。
-   */
-  rows: PulseDraw[]
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 英文取词函数(官方英文名主文案由它取)。
-   */
-  tEn: TFn
-
-  /**
-   * 界面语言。
-   */
-  lang: string
-}
-
-/**
- * `toDrawCellRow` 的入参(逐行,其余同 `toDrawCellRows`)。
- */
-export type DrawCellRowIn = {
-  /**
-   * 这一期抽选。
-   */
-  r: PulseDraw
-
-  /**
-   * 行序(当行键)。
-   */
-  i: number
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 英文取词函数。
-   */
-  tEn: TFn
-
-  /**
-   * 界面语言。
-   */
-  lang: string
-}
-
-/**
- * `drawColsOf` 的入参。
- */
-export type DrawColsIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-}
-
-/**
- * 政策动态一条的展示行。
- */
-export type NewsCellRow = {
-  /**
-   * 行键。
-   */
-  key: string
-
-  /**
-   * 整行的去处(没 slug 落到列表页)。
-   */
-  href: string
-
-  /**
-   * 发布日期(已裁到年月日)。
-   */
-  date: string
-
-  /**
-   * 发布方标签(联邦显 IRCC,省显省码大写)。
-   */
-  tag: string
-
-  /**
-   * 官方原标题。
-   */
-  title: string
-
-  /**
-   * 中文界面下的标题译名灰注;空串 = 不出。
-   */
-  titleZh: string
-}
-
-/**
- * `toNewsCellRows` 的入参。
- */
-export type NewsCellRowsIn = {
-  /**
-   * 政策动态行。
-   */
-  rows: PulseNews[]
-
-  /**
-   * 界面语言。
-   */
-  lang: string
-}
-
-/**
- * `toNewsCellRow` 的入参(逐条,其余同 `toNewsCellRows`)。
- */
-export type NewsCellRowIn = {
-  /**
-   * 这一条政策动态。
-   */
-  r: PulseNews
-
-  /**
-   * 行序(没 slug 时当行键)。
-   */
-  i: number
-
-  /**
-   * 界面语言。
-   */
-  lang: string
-}
-
-/**
  * S1 一张脉象卡的展示行。
  */
 export type NumCardRow = {
@@ -1778,46 +1099,6 @@ export type NumCardsIn = {
 
 
 /**
- * 三榜分层的结果(判据 = **省具名紧缺清单命中**(namedJobs),≠「有无 PNP 通道」)。
- */
-export type OccBoards = {
-  /**
-   * 雷区榜:不在任何省紧缺清单,且存在完全无路可走的省。
-   */
-  mine: OccRowList
-
-  /**
-   * 有兜底榜:不在任何省紧缺清单,但处处有路。
-   */
-  backup: OccRowList
-
-  /**
-   * 降温榜:清单在列且 14 天新发环比跌破门槛。
-   */
-  cooling: OccRowList
-
-  /**
-   * 升温榜:清单在列且 14 天新发环比涨过门槛。
-   */
-  heating: OccRowList
-}
-
-/**
- * `occBoardsOf` 的入参。
- */
-export type OccBoardsIn = {
-  /**
-   * 全国行(province='all')。
-   */
-  natOcc: OccRowList
-
-  /**
-   * NOC → 可提名省份清单。
-   */
-  nocProvs: NocProvsMap
-}
-
-/**
  * 二级导航条上的一项。
  */
 export type NavItem = {
@@ -1840,31 +1121,6 @@ export type NavItemsIn = {
    * 取词函数。
    */
   t: TFn
-}
-
-/**
- * 橱窗三分表按人群拆开后的一项(人群档 + 那张表)。
- */
-export type SponsorGroupEntry = {
-  /**
-   * 人群档。
-   */
-  kind: StartSponsorKind
-
-  /**
-   * 那张表。
-   */
-  group: SponsorGroup
-}
-
-/**
- * `sponsorGroupsOf` 的入参。
- */
-export type SponsorGroupsIn = {
-  /**
-   * 橱窗三分表。
-   */
-  sponsor: SponsorBoards
 }
 
 /**
@@ -1942,386 +1198,6 @@ export type ProvOccHitIn = {
   prov: string
 }
 
-
-/**
- * 橱窗表六格筛选的现值与落格。
- */
-export type SponsorFilterState = {
-  /**
-   * 省筛现值;'' = 全部。
-   */
-  fProv: string
-
-  /**
-   * 通道筛现值(named 表专属);'' = 全部。
-   */
-  fStream: string
-
-  /**
-   * 大类筛现值;'' = 全部。
-   */
-  fBroad: string
-
-  /**
-   * 中类筛现值;'' = 全部。
-   */
-  fMid: string
-
-  /**
-   * 小类筛现值;'' = 全部。
-   */
-  fFine: string
-
-  /**
-   * 职业筛现值;'' = 全部。
-   */
-  fNoc: string
-
-  /**
-   * 换省。
-   */
-  onProv: FilterFn
-
-  /**
-   * 换通道。
-   */
-  onStream: FilterFn
-
-  /**
-   * 换大类(下三级一并清空)。
-   */
-  onBroad: FilterFn
-
-  /**
-   * 换中类(下两级一并清空)。
-   */
-  onMid: FilterFn
-
-  /**
-   * 换小类(职业一并清空)。
-   */
-  onFine: FilterFn
-
-  /**
-   * 换职业。
-   */
-  onNoc: FilterFn
-}
-
-/**
- * `provOptsOf` 的入参。
- */
-export type ProvOptsIn = {
-  /**
-   * 本表的全量事实行(省选项只列本表真实存在的省)。
-   */
-  rows: SponsorRowList
-}
-
-/**
- * `streamOptsOf` 的入参。
- */
-export type StreamOptsIn = {
-  /**
-   * 本表的全量事实行。
-   */
-  rows: SponsorRowList
-
-  /**
-   * 人群档(只有具名省清单表出通道筛)。
-   */
-  kind: StartSponsorKind
-}
-
-/**
- * `broadOptsOf` 的入参。
- */
-export type BroadOptsIn = {
-  /**
-   * 本表的全量事实行(选项只列本表真实存在的分类)。
-   */
-  rows: SponsorRowList
-
-  /**
-   * NOC → 分类三级。
-   */
-  nocCat: NocCatMap
-}
-
-/**
- * `midOptsOf` 的入参。
- */
-export type MidOptsIn = {
-  /**
-   * 本表的全量事实行。
-   */
-  rows: SponsorRowList
-
-  /**
-   * NOC → 分类三级。
-   */
-  nocCat: NocCatMap
-
-  /**
-   * 上一级大类筛现值;'' = 不收窄。
-   */
-  fBroad: string
-}
-
-/**
- * `fineOptsOf` 的入参。
- */
-export type FineOptsIn = {
-  /**
-   * 本表的全量事实行。
-   */
-  rows: SponsorRowList
-
-  /**
-   * NOC → 分类三级。
-   */
-  nocCat: NocCatMap
-
-  /**
-   * 上一级大类筛现值。
-   */
-  fBroad: string
-
-  /**
-   * 上一级中类筛现值。
-   */
-  fMid: string
-}
-
-/**
- * 职业筛的一个选项(值 + 显示名 + 雇主数)。
- */
-export type OccSelOption = {
-  /**
-   * NOC 码。
-   */
-  noc: string
-
-  /**
-   * 显示名(字典缺题名的码原样兜底,不因缺翻译丢筛选项)。
-   */
-  label: string
-
-  /**
-   * 本表里有几家雇主招这个职业(排序键:常用职业置顶)。
-   */
-  count: number
-}
-
-/**
- * `occSelOptsOf` 的入参。
- */
-export type OccSelOptsIn = {
-  /**
-   * 本表的全量事实行。
-   */
-  rows: SponsorRowList
-
-  /**
-   * 职业筛候选(取显示名)。
-   */
-  occOpts: OccOption[]
-
-  /**
-   * 界面语言。
-   */
-  lang: string
-
-  /**
-   * NOC → 分类三级。
-   */
-  nocCat: NocCatMap
-
-  /**
-   * 上一级大类筛现值。
-   */
-  fBroad: string
-
-  /**
-   * 中类筛现值。
-   */
-  fMid: string
-
-  /**
-   * 小类筛现值。
-   */
-  fFine: string
-}
-
-/**
- * `occSelHitOf` 的入参。
- */
-export type OccSelHitIn = {
-  /**
-   * NOC 码。
-   */
-  n: string
-
-  /**
-   * NOC → 分类三级。
-   */
-  nocCat: NocCatMap
-
-  /**
-   * 大类筛现值。
-   */
-  fBroad: string
-
-  /**
-   * 中类筛现值。
-   */
-  fMid: string
-
-  /**
-   * 小类筛现值。
-   */
-  fFine: string
-}
-
-/**
- * `occTitleOf` 的入参。
- */
-export type OccTitleIn = {
-  /**
-   * 这一条职业筛候选。
-   */
-  o: OccOption
-
-  /**
-   * 界面语言。
-   */
-  lang: string
-}
-
-/**
- * `shownSponsorsOf` 的入参。
- */
-export type ShownSponsorsIn = {
-  /**
-   * 本表的全量事实行。
-   */
-  rows: SponsorRowList
-
-  /**
-   * 六格筛选现值。
-   */
-  f: SponsorFilterState
-
-  /**
-   * NOC → 分类三级。
-   */
-  nocCat: NocCatMap
-}
-
-/**
- * `sponsorHitOf` 的入参。
- */
-export type SponsorHitIn = {
-  /**
-   * 这一行事实。
-   */
-  r: SponsorRowOne
-
-  /**
-   * 六格筛选现值。
-   */
-  f: SponsorFilterState
-
-  /**
-   * NOC → 分类三级。
-   */
-  nocCat: NocCatMap
-}
-
-/**
- * `someCatOf` 的入参。
- */
-export type SomeCatIn = {
-  /**
-   * 这一行事实。
-   */
-  r: SponsorRowOne
-
-  /**
-   * NOC → 分类三级。
-   */
-  nocCat: NocCatMap
-
-  /**
-   * 取哪一级。
-   */
-  key: NocCatKey
-
-  /**
-   * 要等于什么。
-   */
-  v: string
-}
-
-/**
- * `sponsorNoteOf` 的入参。
- */
-export type SponsorNoteIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 命中几家。
-   */
-  shown: number
-
-  /**
-   * 一共几家(筛选前)。
-   */
-  total: number
-}
-
-/**
- * `makeCatLabel` 的入参(中类与小类共用一个工厂,差别只在取哪三列)。
- */
-export type CatLabelIn = {
-  /**
-   * 职业筛联动的中/小类名。
-   */
-  catMids: CatOption[]
-
-  /**
-   * 界面语言。
-   */
-  lang: string
-
-  /**
-   * 行键取哪一列。
-   */
-  keyCol: 'mid' | 'fine'
-
-  /**
-   * 英文名取哪一列。
-   */
-  enCol: 'midEn' | 'fineEn'
-
-  /**
-   * 韩文名取哪一列。
-   */
-  koCol: 'midKo' | 'fineKo'
-}
-
-/**
- * `makeOccLabel` 的入参。
- */
-export type OccLabelIn = {
-  /**
-   * 职业筛的选项(显示名从这儿查)。
-   */
-  opts: OccSelOption[]
-}
 
 
 /**
@@ -2405,41 +1281,6 @@ export type ProvCardClsIn = {
 }
 
 /**
- * `drawRowClsOf` 的入参。
- */
-export type DrawRowClsIn = {
-  /**
-   * 是不是最后一条。
-   */
-  last: boolean
-}
-
-/**
- * `newsRowClsOf` 的入参。
- */
-export type NewsRowClsIn = {
-  /**
-   * 是不是第一条。
-   */
-  first: boolean
-}
-
-/**
- * `makeFilterPick` 的入参(换一级筛选时把下面几级一并清空)。
- */
-export type FilterPickIn = {
-  /**
-   * 本级的落格。
-   */
-  set: FilterFn
-
-  /**
-   * 下面几级的落格(按顺序全清成空串)。
-   */
-  resets: FilterFn[]
-}
-
-/**
  * `makeProvPick` 的入参。
  */
 export type ProvPickIn = {
@@ -2470,21 +1311,6 @@ export type TopNChangeIn = {
 }
 
 /**
- * `makeAskChat` 的入参。
- */
-export type AskChatIn = {
-  /**
-   * 人群档(预填问句按它取词)。
-   */
-  kind: StartSponsorKind
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-}
-
-/**
  * `makeSponsorLoad` 的入参(挂载后拉全量三分表换掉 SSR 那几十行)。
  */
 export type SponsorLoadIn = {
@@ -2504,246 +1330,6 @@ export type NavWatchIn = {
   setNavSec: FilterFn
 }
 
-
-/**
- * 橱窗一张表的整机面板。
- */
-export type SponsorBoardPanel = {
-  /**
-   * 六格筛选的现值与落格。
-   */
-  f: SponsorFilterState
-
-  /**
-   * 五只下拉的选项。
-   */
-  opts: SponsorOpts
-
-  /**
-   * 五只下拉的显示名函数。
-   */
-  labels: SponsorLabels
-
-  /**
-   * 通过全部筛选的行。
-   */
-  shown: SponsorRowList
-
-  /**
-   * 手机卡片当前页(已收在合法区间内)。
-   */
-  page: number
-
-  /**
-   * 手机卡片总页数。
-   */
-  maxPage: number
-
-  /**
-   * 页脚说明(命中数 / 总数)。
-   */
-  note: string
-
-  /**
-   * 本榜整批有没有判得出雇主门槛(整批全 unknown 则门槛列压根不进列组)。
-   */
-  showVerdict: boolean
-
-  /**
-   * 翻页手柄。
-   */
-  onPage: PageFn
-}
-
-/**
- * 橱窗表五只下拉的选项。
- */
-export type SponsorOpts = {
-  /**
-   * 省。
-   */
-  prov: string[]
-
-  /**
-   * 通道(只有具名省清单表有)。
-   */
-  stream: string[]
-
-  /**
-   * 大类。
-   */
-  broad: string[]
-
-  /**
-   * 中类。
-   */
-  mid: string[]
-
-  /**
-   * 小类。
-   */
-  fine: string[]
-
-  /**
-   * 职业(码清单;显示名走 labels.occ)。
-   */
-  occ: string[]
-}
-
-/**
- * 橱窗表五只下拉的显示名函数。
- */
-export type SponsorLabels = {
-  /**
-   * 省。
-   */
-  prov: LabelFn
-
-  /**
-   * 通道。
-   */
-  stream: LabelFn
-
-  /**
-   * 大类。
-   */
-  broad: LabelFn
-
-  /**
-   * 中类。
-   */
-  mid: LabelFn
-
-  /**
-   * 小类。
-   */
-  fine: LabelFn
-
-  /**
-   * 职业。
-   */
-  occ: LabelFn
-}
-
-/**
- * `useSponsorOpts` 的入参。
- */
-export type SponsorOptsHookIn = {
-  /**
-   * 本表的全量事实行。
-   */
-  rows: SponsorRowList
-
-  /**
-   * 人群档(只有具名省清单表出通道筛)。
-   */
-  kind: StartSponsorKind
-
-  /**
-   * 职业筛候选(取显示名)。
-   */
-  occOpts: OccOption[]
-
-  /**
-   * 界面语言。
-   */
-  lang: string
-
-  /**
-   * NOC → 分类三级。
-   */
-  nocCat: NocCatMap
-
-  /**
-   * 六格筛选现值(逐级收窄看它)。
-   */
-  f: SponsorFilterState
-}
-
-/**
- * `useSponsorOpts` 交回的面板。
- */
-export type SponsorOptsPanel = {
-  /**
-   * 五只下拉的选项。
-   */
-  opts: SponsorOpts
-
-  /**
-   * 职业筛那份带显示名与雇主数的选项(显示名函数也要它)。
-   */
-  occSel: OccSelOption[]
-}
-
-/**
- * `sponsorLabelsOf` 的入参。
- */
-export type SponsorLabelsIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 职业筛联动的中/小类名。
-   */
-  catMids: CatOption[]
-
-  /**
-   * 界面语言。
-   */
-  lang: string
-
-  /**
-   * 职业筛的选项。
-   */
-  occSel: OccSelOption[]
-}
-
-/**
- * `useSponsorBoard` 的入参。
- */
-export type SponsorBoardHookIn = {
-  /**
-   * 本表的全量事实行。
-   */
-  rows: SponsorRowList
-
-  /**
-   * 人群档。
-   */
-  kind: StartSponsorKind
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 界面语言。
-   */
-  lang: StartLang
-
-  /**
-   * 本表总条数(筛选前)。
-   */
-  total: number
-
-  /**
-   * 职业筛候选。
-   */
-  occOpts: OccOption[]
-
-  /**
-   * 职业筛联动的中/小类名。
-   */
-  catMids: CatOption[]
-
-  /**
-   * NOC → 分类三级。
-   */
-  nocCat: NocCatMap
-}
 
 /**
  * 职业榜的手机卡片页态(桌面表格的页态在 Table 里,俩视图同刻只显示一个,各翻各的)。
@@ -2771,8 +1357,9 @@ export type OccBoardPanel = {
 export type CardPageIn = {
   /**
    * 本榜的原始行(比对它的**身份**来判「换了一榜」—— 洗过的展示行每次渲染都是新数组)。
+   * 只读身份与长度,行的形状不管(职业榜与雇主表共用这台页态)。
    */
-  rows: OccRowList
+  rows: object[]
 
   /**
    * 每页几行。
@@ -2782,6 +1369,7 @@ export type CardPageIn = {
 
 /**
  * 把脉首页整机的面板(视图要的一切)。
+ * 2026-09-04 重构:四榜 / 抽选 / 政策三格撤,加职业段、雇主段、LMIA 段的行业分表与城市、趋势两段。
  */
 export type PulsePanel = {
   /**
@@ -2800,19 +1388,24 @@ export type PulsePanel = {
   market: MarketData | null
 
   /**
-   * 橱窗三分表(拉到全量就用全量,拉挂/拉到空表继续用 SSR 那几十行,不闪不塌)。
-   */
-  sponsor: SponsorBoards
-
-  /**
-   * S1 四张脉象卡。
+   * S1 三脉象卡。
    */
   numCards: NumCardRow[]
 
   /**
-   * 三榜分层;null = 主图数据还没到。
+   * 职业段的分表(全职业两榜 + 行业各一表);null = 主图数据还没到。
    */
-  boards: OccBoards | null
+  occSecs: OccSec[] | null
+
+  /**
+   * 雇主段的行业分表(在招且带担保信号)。
+   */
+  empSecs: EmpSec[]
+
+  /**
+   * LMIA 段的行业分表(技能类 LMIA 获批 > 0)。
+   */
+  lmiaSecs: EmpSec[]
 
   /**
    * NOC → 可提名省份清单。
@@ -2820,64 +1413,44 @@ export type PulsePanel = {
   nocProvs: NocProvsMap
 
   /**
-   * NOC → 分类三级。
-   */
-  nocCat: NocCatMap
-
-  /**
-   * 分省概览的行(省 × 大类汇总行)。
+   * 分省概览的行。
    */
   provRows: StatRowList
 
   /**
-   * 当前省的统计行;没有则 null。
+   * 当前省的统计行;null = 还没到或没有。
    */
   provStat: StatRowOne | null
 
   /**
-   * 省内职业榜的行;null = 主图数据还没到。
+   * 当前省的职业榜;null = 还没到。
    */
   provOcc: OccRowList | null
 
   /**
-   * 当前省(全国档是 'ALL')。
+   * 当前省码。
    */
   prov: string
 
   /**
-   * 切省下拉的换值手柄。
+   * 省下拉的换值手柄。
    */
   onProvSelect: SelectChangeFn
 
   /**
-   * 省 chips 逐项的点击手柄工厂。
+   * 省卡的点击手柄工厂。
    */
   provPickOf: ProvPickFn
 
   /**
-   * 抽选表当前条数档。
+   * 城市段的行(按在招排);null = 主图数据还没到。
    */
-  drawsN: number
+  cityRows: CityRow[] | null
 
   /**
-   * 抽选表条数下拉的手柄。
+   * 趋势段:全国线 + 行业小图;null = 逐日数据不够画。
    */
-  onDrawsN: TopNFn
-
-  /**
-   * 政策动态当前条数档。
-   */
-  newsN: number
-
-  /**
-   * 政策动态条数下拉的手柄。
-   */
-  onNewsN: TopNFn
-
-  /**
-   * 英文取词函数(抽选主文案取官方英文名,与界面语言无关;整页只造一次)。
-   */
-  tEn: TFn
+  trend: TrendPanel | null
 
   /**
    * 当前所在分区的锚点 id;'' = 还没滚到任何分区。
@@ -3007,182 +1580,6 @@ export type NumCardIn = {
 }
 
 /**
- * SponsorSection(在招担保雇主橱窗三分表)的 props。
- */
-export type SponsorSectionIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 界面语言。
-   */
-  lang: StartLang
-
-  /**
-   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
-   * 挂在伞标题行右槽 —— 三张分表同一份数据,整区一枚,不逐表重复。
-   */
-  updatedAt: string
-
-  /**
-   * 三分表。
-   */
-  sponsor: SponsorBoards
-
-  /**
-   * 职业筛候选。
-   */
-  occOpts: OccOption[]
-
-  /**
-   * 职业筛联动的中/小类名。
-   */
-  catMids: CatOption[]
-
-  /**
-   * NOC → 分类三级。
-   */
-  nocCat: NocCatMap
-}
-
-/**
- * SponsorTable(橱窗里的一张表:子标题 + 对话导流钮 + 表身)的 props。
- */
-export type SponsorTableIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 界面语言。
-   */
-  lang: StartLang
-
-  /**
-   * 人群档。
-   */
-  kind: StartSponsorKind
-
-  /**
-   * 这张表的行与总数。
-   */
-  group: SponsorGroup
-
-  /**
-   * 与上一张表留不留间距(第一张不留)。
-   */
-  gap: boolean
-
-  /**
-   * 职业筛候选。
-   */
-  occOpts: OccOption[]
-
-  /**
-   * 职业筛联动的中/小类名。
-   */
-  catMids: CatOption[]
-
-  /**
-   * NOC → 分类三级。
-   */
-  nocCat: NocCatMap
-}
-
-/**
- * SponsorBoard(橱窗单表的筛选 + 表格 + 卡片)的 props。
- */
-export type SponsorBoardIn = {
-  /**
-   * 本表的全量事实行。
-   */
-  rows: SponsorRowList
-
-  /**
-   * 人群档。
-   */
-  kind: StartSponsorKind
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 界面语言。
-   */
-  lang: StartLang
-
-  /**
-   * 本表总条数(筛选前)。
-   */
-  total: number
-
-  /**
-   * 职业筛候选。
-   */
-  occOpts: OccOption[]
-
-  /**
-   * 职业筛联动的中/小类名。
-   */
-  catMids: CatOption[]
-
-  /**
-   * NOC → 分类三级。
-   */
-  nocCat: NocCatMap
-}
-
-/**
- * SponsorFilters(橱窗单表的筛选行)的 props。
- */
-export type SponsorFiltersIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 人群档(决定控件顺序与出不出通道筛)。
-   */
-  kind: StartSponsorKind
-
-  /**
-   * 六格筛选的现值与落格。
-   */
-  f: SponsorFilterState
-
-  /**
-   * 五只下拉的选项。
-   */
-  opts: SponsorOpts
-
-  /**
-   * 五只下拉的显示名函数。
-   */
-  labels: SponsorLabels
-}
-
-/**
- * AskChatBtn(表题旁的对话导流钮)的 props。
- */
-export type AskChatBtnIn = {
-  /**
-   * 人群档。
-   */
-  kind: StartSponsorKind
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-}
-
-/**
  * TopN(条数下拉)的 props。
  */
 export type TopNIn = {
@@ -3203,7 +1600,7 @@ export type TopNIn = {
 }
 
 /**
- * BoardsSection(S2 三榜分层)的 props。
+ * BoardsSection(职业段:全职业两榜 + 行业各一表)的 props。
  */
 export type BoardsSectionIn = {
   /**
@@ -3218,14 +1615,14 @@ export type BoardsSectionIn = {
 
   /**
    * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
-   * 挂在伞标题行右槽 —— 四张分榜同一份数据,整区一枚,不逐榜重复。
+   * 挂在伞标题行右槽 —— 各分表同一份数据,整区一枚,不逐表重复。
    */
   updatedAt: string
 
   /**
-   * 三榜分层;null = 主图数据还没到,出占位块。
+   * 分表清单;null = 主图数据还没到,出占位块。
    */
-  boards: OccBoards | null
+  secs: OccSec[] | null
 
   /**
    * NOC → 可提名省份清单。
@@ -3279,7 +1676,7 @@ export type OccBoardIn = {
 }
 
 /**
- * OccBoardSec(职业榜的一张分榜:子标题 + 榜身)的 props。
+ * OccBoardSec(一张带子标题与 Top N 下拉的职业分表)的 props。
  */
 export type OccBoardSecIn = {
   /**
@@ -3298,34 +1695,19 @@ export type OccBoardSecIn = {
   nocProvs: NocProvsMap
 
   /**
-   * 本榜的职业统计行。
+   * 本表全部候选行(已排好序;Top N 在本件里切)。
    */
   rows: OccRowList
 
   /**
-   * 榜题(降温 / 升温两榜的题带涨跌箭头,所以是 ReactNode 不是 string)。
+   * 子标题。
    */
-  title: React.ReactNode
+  title: string
 
   /**
-   * 与上一张分榜留不留间距(第一张不留)。
+   * 与上一表留不留间距(第一表不留)。
    */
   gap: boolean
-
-  /**
-   * 出「紧缺」列。
-   */
-  showProvs: boolean
-
-  /**
-   * 出「完全无路可走的省」列。
-   */
-  deadCol: boolean
-
-  /**
-   * 环比列不上红绿。
-   */
-  flatDelta: boolean
 }
 
 /**
@@ -3435,7 +1817,7 @@ export type KvRowIn = {
 }
 
 /**
- * ProvOccSection(S4b 省内职业榜)的 props。
+ * ProvOccSection(S4b 省内职业榜)的 props。2026-09-04:分布探索图撤出把脉页,market 格随之撤。
  */
 export type ProvOccSectionIn = {
   /**
@@ -3449,27 +1831,27 @@ export type ProvOccSectionIn = {
   lang: StartLang
 
   /**
-   * 当前省。
+   * 当前省码。
    */
   prov: string
 
   /**
-   * 切省下拉的换值手柄。
+   * 省下拉的换值手柄。
    */
   onProvSelect: SelectChangeFn
 
   /**
-   * 省 chips 逐项的点击手柄工厂。
+   * 省胶囊的点击手柄工厂。
    */
   provPickOf: ProvPickFn
 
   /**
-   * 当前省的统计行;null = 没有(该省提名通道那一行整行不出)。
+   * 当前省的统计行;null = 还没到或没有。
    */
   provStat: StatRowOne | null
 
   /**
-   * 省内职业榜的行;null = 主图数据还没到。
+   * 当前省的职业榜;null = 还没到。
    */
   provOcc: OccRowList | null
 
@@ -3477,11 +1859,6 @@ export type ProvOccSectionIn = {
    * NOC → 可提名省份清单。
    */
   nocProvs: NocProvsMap
-
-  /**
-   * 主图四份数据;null = 加载中。
-   */
-  market: MarketData | null
 }
 
 /**
@@ -3530,142 +1907,6 @@ export type ProvStreamsIn = {
 }
 
 /**
- * DrawsSection(S5 抽选尺子 + 政策动态)的 props。
- */
-export type DrawsSectionIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 英文取词函数(抽选主文案取官方英文名)。
-   */
-  tEn: TFn
-
-  /**
-   * 界面语言。
-   */
-  lang: string
-
-  /**
-   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
-   * 挂在抽选表那一区的标题行右槽(条数下拉与外链之后)。
-   */
-  updatedAt: string
-
-  /**
-   * 抽选行(全量;体内按条数档切片)。
-   */
-  draws: PulseDraw[]
-
-  /**
-   * 政策动态行(同上)。
-   */
-  news: PulseNews[]
-
-  /**
-   * 抽选表当前条数档。
-   */
-  drawsN: number
-
-  /**
-   * 抽选表条数下拉的手柄。
-   */
-  onDrawsN: TopNFn
-
-  /**
-   * 政策动态当前条数档。
-   */
-  newsN: number
-
-  /**
-   * 政策动态条数下拉的手柄。
-   */
-  onNewsN: TopNFn
-}
-
-/**
- * DrawBoard(抽选表:桌面表格 + 手机卡)的 props。
- */
-export type DrawBoardIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 展示行(已切到条数档)。
-   */
-  rows: DrawCellRow[]
-}
-
-/**
- * DrawCard(抽选表手机形态的一条)的 props。
- */
-export type DrawCardIn = {
-  /**
-   * 这一期的展示行。
-   */
-  row: DrawCellRow
-
-  /**
-   * 是不是最后一条(末条不出分隔线)。
-   */
-  last: boolean
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-}
-
-/**
- * NewsSection(政策动态)的 props。
- */
-export type NewsSectionIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 展示行(已切到条数档)。
-   */
-  rows: NewsCellRow[]
-
-  /**
-   * 当前条数档。
-   */
-  newsN: number
-
-  /**
-   * 条数下拉的手柄。
-   */
-  onNewsN: TopNFn
-
-  /**
-   * 数据一共有多少条。
-   */
-  total: number
-}
-
-/**
- * NewsRow(政策动态的一条)的 props。
- */
-export type NewsRowIn = {
-  /**
-   * 这一条的展示行。
-   */
-  row: NewsCellRow
-
-  /**
-   * 是不是第一条(第一条不出上分隔线 —— 白卡自己有描边)。
-   */
-  first: boolean
-}
-
-/**
  * CtaBand(S6 职位板入口)的 props。
  */
 export type CtaBandIn = {
@@ -3673,4 +1914,641 @@ export type CtaBandIn = {
    * 取词函数。
    */
   t: TFn
+}
+
+
+/**
+ * 职业段的一张分表(全职业两榜之一,或一个行业组)。
+ */
+export type OccSec = {
+  /**
+   * 表的键(SEC_TOP_OPEN / SEC_TOP_WAGE / 行业组键)。
+   */
+  key: string
+
+  /**
+   * 子标题(已取词)。
+   */
+  title: string
+
+  /**
+   * 候选行,已按本表口径排好序,最多 TOPN_MAX 行。
+   */
+  rows: OccRowList
+}
+
+/**
+ * 雇主表的表种:担保信号表 / LMIA 表(列集不同)。
+ */
+export type EmpKind = 'signal' | 'lmia'
+
+/**
+ * 雇主表的展示行(值级清洗在 toEmpCellRow 做完)。
+ */
+export type EmpCellRow = {
+  /**
+   * 行键(雇主名)。
+   */
+  key: string
+
+  /**
+   * 雇主英文名(2026-09-04 Frank「先只显示英文名」:中文别名是机器音译,不上页)。
+   */
+  name: string
+
+  /**
+   * 点名字落到职位板按雇主名筛。
+   */
+  href: string
+
+  /**
+   * 在招数。
+   */
+  open: number
+
+  /**
+   * 在招数文案。
+   */
+  openText: string
+
+  /**
+   * 担保信号胶囊文案(紧缺清单命中 / AIP 指定 / 技能 LMIA n);可空清单。
+   */
+  signals: string[]
+
+  /**
+   * 技能类 LMIA 获批数(近两年);0 = 没有。
+   */
+  skilled: number
+
+  /**
+   * 技能类 LMIA 获批数文案;没有给 DASH_MARK。
+   */
+  skilledText: string
+
+  /**
+   * LMIA 最近一季;没有给 DASH_MARK。
+   */
+  quarterText: string
+
+  /**
+   * 所在省(顿号并列)。
+   */
+  provsText: string
+
+  /**
+   * 点了雇主名的回调(埋点;形照 OccCellRow.onView,哑单元格不 import functions,免循环依赖)。
+   */
+  onView: ClickFn
+}
+
+/**
+ * `useEmpSecs` 的返回:雇主段与 LMIA 段的行业分表。
+ */
+export type EmpSecsPanel = {
+  /**
+   * 雇主段(在招且带担保信号)。
+   */
+  empSecs: EmpSec[]
+
+  /**
+   * LMIA 段(技能类 LMIA 获批 > 0)。
+   */
+  lmiaSecs: EmpSec[]
+}
+
+/**
+ * 雇主段 / LMIA 段的一张行业分表。
+ */
+export type EmpSec = {
+  /**
+   * 行业组键。
+   */
+  key: string
+
+  /**
+   * 子标题(已取词)。
+   */
+  title: string
+
+  /**
+   * 展示行,已排好序,最多 TOPN_MAX 行。
+   */
+  rows: EmpCellRow[]
+}
+
+/**
+ * 趋势段的一条线(全国,或一个行业组)。
+ */
+export type TrendSeries = {
+  /**
+   * 线的键(BROAD_ALL 或行业组键)。
+   */
+  key: string
+
+  /**
+   * 标题(已取词)。
+   */
+  title: string
+
+  /**
+   * 横轴日期(YYYY-MM-DD,升序)。
+   */
+  dates: string[]
+
+  /**
+   * 逐日在招量,与 dates 等长。
+   */
+  values: number[]
+
+  /**
+   * 最新一日的在招量文案。
+   */
+  lastText: string
+}
+
+/**
+ * 趋势段:全国一条线 + 行业小图。
+ */
+export type TrendPanel = {
+  /**
+   * 全国线。
+   */
+  nat: TrendSeries
+
+  /**
+   * 行业线(按 IND_KEYS 序;点数不足的组不出)。
+   */
+  inds: TrendSeries[]
+}
+
+/**
+ * 日期 → 在招量的累加器。
+ */
+export type DateSum = Map<string, number>
+
+/**
+ * `occSecsOf` 的入参。
+ */
+export type OccSecsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 全国行(province='all')。
+   */
+  natOcc: OccRowList
+}
+
+/**
+ * `empSecsOf` 的入参。
+ */
+export type EmpSecsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 担保雇主三分表(SSR 切片或挂载后拉到的全量)。
+   */
+  sponsor: SponsorBoards
+
+  /**
+   * NOC → 分类(雇主归行业组用)。
+   */
+  nocCat: NocCatMap
+
+  /**
+   * 表种(决定入选口径与排序)。
+   */
+  kind: EmpKind
+}
+
+/**
+ * `indOfNocs` 的入参。
+ */
+export type IndOfIn = {
+  /**
+   * 该雇主在招岗的 NOC 清单。
+   */
+  nocs: string[]
+
+  /**
+   * NOC → 分类。
+   */
+  nocCat: NocCatMap
+}
+
+/**
+ * `toEmpCellRow` 的入参。
+ */
+export type EmpCellRowIn = {
+  /**
+   * 这一行事实。
+   */
+  r: SponsorEmployerRow
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * `empColsOf` 的入参。
+ */
+export type EmpColsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 表种。
+   */
+  kind: EmpKind
+}
+
+/**
+ * `trendOf` 的入参。
+ */
+export type TrendOfIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 逐日 × 大类的在招量。
+   */
+  daily: DailyRow[]
+}
+
+/**
+ * `lineOptionOf` 的入参。
+ */
+export type LineOptionIn = {
+  /**
+   * 这条线。
+   */
+  s: TrendSeries
+
+  /**
+   * 是不是行业小图(小图不出坐标轴)。
+   */
+  small: boolean
+}
+
+/**
+ * `toCityCellRows` 的入参。
+ */
+export type CityCellRowsIn = {
+  /**
+   * 城市统计行。
+   */
+  rows: CityRow[]
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言(城市译名按语言取)。
+   */
+  lang: StartLang
+}
+
+/**
+ * 城市卡的展示行。
+ */
+export type CityCellRow = {
+  /**
+   * 行键(城市 + 省)。
+   */
+  key: string
+
+  /**
+   * 城市名(界面语言有译名用译名,否则英文)。
+   */
+  name: string
+
+  /**
+   * 省全名。
+   */
+  provName: string
+
+  /**
+   * 省码(灰字小注)。
+   */
+  provCode: string
+
+  /**
+   * 在招数文案。
+   */
+  openText: string
+
+  /**
+   * 近 7 天新增文案;没有给 DASH_MARK。
+   */
+  new7Text: string
+
+  /**
+   * 中位年薪文案;没有给 DASH_MARK。
+   */
+  wageText: string
+
+  /**
+   * 紧缺清单岗文案;没有给 DASH_MARK。
+   */
+  namedText: string
+
+  /**
+   * 点卡落到职位板按城市筛。
+   */
+  href: string
+}
+
+/**
+ * EmpSection(雇主段 / LMIA 段:行业各一表)的 props。
+ */
+export type EmpSectionIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 分区锚点 id。
+   */
+  id: string
+
+  /**
+   * 伞标题(已取词)。
+   */
+  title: string
+
+  /**
+   * 表种。
+   */
+  kind: EmpKind
+
+  /**
+   * 数据更新时刻(ISO;'' 不渲)。
+   */
+  updatedAt: string
+
+  /**
+   * 行业分表。
+   */
+  secs: EmpSec[]
+}
+
+/**
+ * EmpBoardSec(一张带子标题与 Top N 下拉的雇主分表)的 props。
+ */
+export type EmpBoardSecIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 这张表。
+   */
+  sec: EmpSec
+
+  /**
+   * 表种。
+   */
+  kind: EmpKind
+
+  /**
+   * 与上一表留不留间距。
+   */
+  gap: boolean
+}
+
+/**
+ * EmpBoard(雇主表:桌面表格 + 手机卡片)的 props。
+ */
+export type EmpBoardIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 展示行(已切到 Top N)。
+   */
+  rows: EmpCellRow[]
+
+  /**
+   * 表种。
+   */
+  kind: EmpKind
+}
+
+/**
+ * EmpCard(雇主手机卡)的 props。
+ */
+export type EmpCardIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 这一行。
+   */
+  row: EmpCellRow
+
+  /**
+   * 表种。
+   */
+  kind: EmpKind
+}
+
+/**
+ * CitySection(城市段)的 props。
+ */
+export type CitySectionIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: StartLang
+
+  /**
+   * 数据更新时刻(ISO;'' 不渲)。
+   */
+  updatedAt: string
+
+  /**
+   * 城市统计行(按在招排);null = 主图数据还没到。
+   */
+  rows: CityRow[] | null
+}
+
+/**
+ * CityCard(城市卡)的 props。
+ */
+export type CityCardIn = {
+  /**
+   * 取词函数(卡内四行键值的键)。
+   */
+  t: TFn
+
+  /**
+   * 这一行。
+   */
+  row: CityCellRow
+}
+
+/**
+ * TrendSection(趋势段)的 props。
+ */
+export type TrendSectionIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 数据更新时刻(ISO;'' 不渲)。
+   */
+  updatedAt: string
+
+  /**
+   * 全国线 + 行业小图;null = 数据不够画,段整块不出。
+   */
+  trend: TrendPanel | null
+}
+
+/**
+ * TrendCard(一条趋势线的卡:标题 + 最新值 + 图)的 props。
+ */
+export type TrendCardIn = {
+  /**
+   * 这条线。
+   */
+  s: TrendSeries
+
+  /**
+   * 是不是行业小图。
+   */
+  small: boolean
+}
+
+/**
+ * DrawsLink(抽选与政策动态那一行链接)的 props。
+ */
+export type DrawsLinkIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * `useTopN` 的返回:当前档与换档手柄。
+ */
+export type TopNPanel = {
+  /**
+   * 当前档。
+   */
+  n: number
+
+  /**
+   * 换档手柄。
+   */
+  onN: TopNFn
+}
+
+
+/**
+ * `trendCardClsOf` / `trendHeightOf` 的入参。
+ */
+export type TrendSmallIn = {
+  /**
+   * 是不是行业小图。
+   */
+  small: boolean
+}
+
+/**
+ * `cityNameOf` 的入参。
+ */
+export type CityNameIn = {
+  /**
+   * 城市统计行。
+   */
+  r: CityRow
+
+  /**
+   * 界面语言。
+   */
+  lang: StartLang
+}
+
+/**
+ * `seriesOf` 的入参。
+ */
+export type SeriesIn = {
+  /**
+   * 逐日 × 大类的在招量。
+   */
+  daily: DailyRow[]
+
+  /**
+   * 要加总的大类清单(全国线给 [BROAD_ALL])。
+   */
+  broads: string[]
+
+  /**
+   * 线的键。
+   */
+  key: string
+
+  /**
+   * 标题(已取词)。
+   */
+  title: string
+}
+
+/**
+ * `indRowsOf` 的入参。
+ */
+export type IndRowsIn = {
+  /**
+   * 全国行。
+   */
+  natOcc: OccRowList
+
+  /**
+   * 行业组键。
+   */
+  key: string
+}
+
+/**
+ * `isValuableEmp` 的入参。
+ */
+export type ValuableIn = {
+  /**
+   * 这一行事实。
+   */
+  r: SponsorEmployerRow
+
+  /**
+   * 表种。
+   */
+  kind: EmpKind
 }

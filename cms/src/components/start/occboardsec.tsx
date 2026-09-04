@@ -1,36 +1,31 @@
 'use client'
 /**
- * 域内小件:职业榜的一张分榜(子标题 + 榜身)。四张分榜按用户决策顺序排:
- * 先排除(不在任何省紧缺清单且有省完全无路)→ 有兜底 → 有通道但在降温 → 有通道且在升温。
- * 口径说明句与悬停提示 2026-08-06 全撤(Frank「tooltips 都去掉」),榜题裸标题;
- * 「≠推荐」小注 08-10 也拍掉(解释类文案一律不留,靠表题自解释或问顾问)。
- * 2026-08-28 换装批自 Pulse.tsx 提出成文件。
+ * 域内小件:一张带子标题与 Top N 下拉的职业分表(全职业两榜之一,或一个行业组)。
+ * 2026-09-04 重构:Top N 住这一件(每表各一把,默认 5 行),切完的行再交给 OccBoard 出表格与卡片;
+ * 原先按榜切列(雷区列 / 通道列 / 平变化)的三个开关随四榜一起撤,全表同一列集。
  *
  * @author Frank
- * @time 2026-08-28 14:20:00
+ * @time 2026-09-04 22:10:00
  */
 import { boardGapClsOf } from './functions'
+import { useTopN } from './hooks'
 import { OccBoard } from './occboard'
 import { Sec } from './sec'
+import { TopN } from './topn'
 import type { OccBoardSecIn } from './types'
 
 /**
- * 渲染一张分榜。
+ * 渲染一张职业分表。
  *
- * @param props 榜题、本榜的行与三个列形开关。
- * @returns 子标题 + 榜身。
+ * @param props 候选行、子标题、间距与可提名省映射。
+ * @returns 子标题 + 表。
  */
-export function OccBoardSec({ t, lang, nocProvs, rows, title, gap, showProvs, deadCol, flatDelta }: OccBoardSecIn) {
+export function OccBoardSec({ t, lang, nocProvs, rows, title, gap }: OccBoardSecIn) {
+  const p = useTopN()
   return (
     <div className={boardGapClsOf({ gap })}>
-      <Sec title={title} sub>
-        <OccBoard rows={rows}
-          t={t}
-          lang={lang}
-          nocProvs={nocProvs}
-          showProvs={showProvs}
-          deadCol={deadCol}
-          flatDelta={flatDelta} />
+      <Sec title={title} right={<TopN v={p.n} on={p.onN} max={rows.length} />} sub>
+        <OccBoard rows={rows.slice(0, p.n)} t={t} lang={lang} nocProvs={nocProvs} />
       </Sec>
     </div>
   )

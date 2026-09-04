@@ -14,6 +14,7 @@
  * @author Frank
  * @time 2026-08-28 12:43:43
  */
+export { EChart } from './echart'
 export { MarketChart } from './marketchart'
 export { useMarketStats } from './hooks'
-export type { ChannelNocs, MarketChartIn, MarketData } from './types'
+export type { ChannelNocs, ChartOption, MarketChartIn, MarketData } from './types'

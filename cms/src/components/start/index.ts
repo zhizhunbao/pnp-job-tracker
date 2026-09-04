@@ -17,12 +17,8 @@
  */
 export { Pulse } from './pulse'
 export {
-  cachedHomeOf, emptyDocs, emptyOccRows, emptyProvExtra, emptyQueryResult, emptySponsorRows, emptyText,
-  homeCoreOf, homeStatsOf, loadCatOptions, loadOccOptions, nullProof, nullUser, provPresetOf, putHomeCache,
+  cachedHomeOf, emptyDailyRows, emptyOccRows, emptyProvExtra, emptySponsorRows, emptyText,
+  homeCoreOf, homeStatsOf, nullProof, nullUser, provPresetOf, putHomeCache,
 } from './functions'
-export {
-  DRAWS_LIMIT, NEWS_LIMIT,
-
-  START_META,
-} from './constants'
+export { START_META } from './constants'
 export type { HomeStats } from './types'

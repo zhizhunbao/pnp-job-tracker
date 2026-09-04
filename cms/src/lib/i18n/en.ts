@@ -938,7 +938,16 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'se.col.lmia': 'LMIA approved (2 yrs)', 'se.col.w1': 'LMIA last quarter', 'se.col.w2': 'LMIA 6 months', 'se.col.w4': 'LMIA 1 year',
   'se.grp.aip': 'AIP designated employers', 'se.grp.lmia': 'LMIA-approved employers (2 yrs)', 'se.grp.named': 'Employers with jobs on shortage lists', 'pulse.nav.boards': 'Occupation boards',
   // #312 secondary-nav short labels (TOC differentiated from full section h2 wording)
-  'pulse.nav.se': 'Sponsor employers', 'pulse.nav.occ': 'Occupations', 'pulse.nav.prov': 'Provinces', 'pulse.nav.provocc': 'Provincial jobs', 'pulse.nav.draws': 'Draws',
+  'pulse.nav.se': 'Employers', 'pulse.nav.occ': 'Occupations', 'pulse.nav.prov': 'Provinces', 'pulse.nav.provocc': 'Provincial jobs', 'pulse.nav.draws': 'Draws',
+  // 2026-09-04 pulse page rebuild (docs/design/把脉页重构-20260904.md): six-section nav + per-industry tables + city / trend sections
+  'pulse.nav.lmia': 'LMIA', 'pulse.nav.city': 'Cities', 'pulse.nav.trend': 'Trends',
+  'pulse.city': 'City overview', 'pulse.trend': 'Open jobs over time', 'pulse.trend.nat': 'Canada',
+  'pulse.top.open': 'Most jobs', 'pulse.top.wage': 'Highest wage',
+  'pulse.ind.health': 'Healthcare', 'pulse.ind.stem': 'STEM', 'pulse.ind.trades': 'Trades', 'pulse.ind.construction': 'Construction',
+  'pulse.ind.food': 'Food & retail', 'pulse.ind.transport': 'Transport & logistics', 'pulse.ind.manufacturing': 'Manufacturing & resources',
+  'pulse.ind.business': 'Business & office', 'pulse.ind.education': 'Education & social',
+  'pulse.col.signals': 'Sponsor signals', 'pulse.sig.named': 'On shortage list', 'pulse.sig.aip': 'AIP designated', 'pulse.sig.lmia': 'Skilled LMIA {n}',
+  'pulse.drawsLink': 'Recent draws and policy updates',
   // B4 employer PNP bar check (design/雇主省提名门槛判定-20260808.md): three states + public-sector bypass, a check against the bar, not an official certification
   'se.col.verdict': 'Employer bar', 'se.verdict.met': 'Meets bar', 'se.verdict.short': 'Short on {items}', 'se.verdict.unknown': 'Pending', 'se.verdict.public': 'Public sector',
   'se.verdict.factor.years': 'years operating', 'se.verdict.factor.staff': 'staff count',
@@ -1152,7 +1161,7 @@ export const pteEn: Record<keyof typeof pteZh, string> = {
   'pte.pos': '{i} / {n}',
   'pte.inst.RA': 'Read it aloud naturally and clearly within 40 seconds', 'pte.inst.RS': 'Listen once, repeat it exactly', 'pte.inst.ASQ': 'Listen, answer in a word or two', 'pte.inst.WFD': 'Listen once, type it exactly',
   'pte.inst.RFIB': 'Pick a word for each blank', 'pte.inst.RWFIB': 'Choose from each dropdown', 'pte.inst.ROP': 'Put the paragraphs in order',
-  'pte.inst.RMCS': 'Choose one answer', 'pte.up': 'Up', 'pte.down': 'Down',
+  'pte.inst.RMCS': 'Choose one answer', 'pte.drag': 'Drag',
   'pte.prep': 'Prepare', 'pte.skipPrep': 'Skip prep', 'pte.play': 'Play question', 'pte.replay': 'Play again', 'pte.audio': 'Question audio',
   'pte.rec': 'Record',
   'pte.tts': 'Model reading', 'pte.myRec': 'My recording', 'pte.recording': 'Recording', 'pte.recCap': 'Finish within {s} seconds', 'pte.stop': 'Stop',
@@ -1170,8 +1179,7 @@ export const pteEn: Record<keyof typeof pteZh, string> = {
   'pte.c.sent': 'Submitted, shown after review', 'pte.c.err': 'Not sent, please retry',
   'pte.dict.close': 'Close', 'pte.dict.loading': 'Looking up', 'pte.dict.none': 'No entry',
   'pte.dict.uk': 'UK', 'pte.dict.us': 'US',
-  'pte.dict.zh': 'Chinese', 'pte.dict.en': 'English', 'pte.dict.forms': 'Forms',
-  'pte.fam.n': 'Noun', 'pte.fam.v': 'Verb', 'pte.fam.a': 'Adjective',
+  'pte.dict.zh': 'Chinese', 'pte.dict.en': 'English',
   'pte.form.p': 'Past', 'pte.form.d': 'Past participle', 'pte.form.i': 'Present participle', 'pte.form.3': '3rd person',
   'pte.form.r': 'Comparative', 'pte.form.t': 'Superlative', 'pte.form.s': 'Plural',
 }

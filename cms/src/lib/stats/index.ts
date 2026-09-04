@@ -13,4 +13,4 @@
  */
 
 export { BROAD_SLUGS, PROVS, PROV_NAME } from './constants'
-export type { ChannelNocs, CityRow, OccRow, ProvExtra, ProvVol, ProvVolNum, SrcRow, StatRow } from './types'
+export type { ChannelNocs, CityRow, DailyRow, OccRow, ProvExtra, ProvVol, ProvVolNum, SrcRow, StatRow } from './types'

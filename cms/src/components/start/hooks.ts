@@ -1,35 +1,31 @@
 'use client'
 /**
- * start 域的状态机器:整页那一台(语言、主图数据、橱窗全量、切省、两处条数档、
- * 导航跟随与全部派生)、橱窗单表那三台(六格筛选 / 五只下拉的选项 / 命中行与页态)、
- * 职业榜手机卡的页态。
+ * start 域的状态机器:整页那一台(语言、主图数据、担保雇主全量、切省、导航跟随与全部派生)、
+ * 每张表各一把的 Top N、手机卡列表的页态。
  * 体内不留函数体 —— 带口径的步骤全在 ./functions 的工厂与 xxxOf 里(注释即它们的 JSDoc),
  * 这里只剩 useState / useMemo、具名 effect 壳与工厂装配(形制同 news 的 useNewsFilter
  * 与 stats 的 useMarketChart)。
  * 2026-08-28 换装批自 Pulse.tsx 的三个组件体收进来。
+ * 2026-09-04 重构:雇主表六格筛选 / 五只下拉的三台状态机随筛选下拉撤;抽选 / 政策两处条数档撤,
+ * 换成每张表各一把的 useTopN;新增职业分表、雇主分表、LMIA 分表、城市行、趋势五份派生。
  *
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
 import { useEffect, useMemo, useState } from 'react'
-import { hasVerdictSignal } from '@/components/employers'
 import { useLang } from '@/components/i18n'
 import { useMarketStats } from '@/components/stats'
-import { makeT } from '@/lib/i18n'
-import { CARD_PAGE_SIZE, KEY_SEP, KIND_NAMED, LANG_EN, TEXT_NONE, TOPN_MIN } from './constants'
+import { EMP_KIND_LMIA, EMP_KIND_SIGNAL, TEXT_NONE, TOPN_MIN } from './constants'
 import {
-  broadOptsOf, fineOptsOf, makeFilterPick, makeNavWatch, makeProvPick, makeSelectChange, makeSponsorLoad,
-  midOptsOf, natOccOf, nocProvsOf, numCardsOf, occBoardsOf, occSelOptsOf, occSelValuesOf, provInitOf,
-  provOccOf, provOptsOf, provRowsOf, provStatOf, shownSponsorsOf, sponsorLabelsOf, sponsorNoteOf,
-  streamOptsOf,
+  cityRowsOf, empSecsOf, makeNavWatch, makeProvPick, makeSelectChange, makeSponsorLoad, natOccOf, nocProvsOf,
+  numCardsOf, occSecsOf, provInitOf, provOccOf, provRowsOf, provStatOf, trendOf,
 } from './functions'
 import type {
-  CardPageIn, NocCatMap, OccBoardPanel, PulseIn, PulsePanel, SponsorBoardHookIn, SponsorBoardPanel,
-  SponsorBoards, SponsorFilterState, SponsorOptsHookIn, SponsorOptsPanel, TFn,
+  CardPageIn, EmpSecsPanel, NocCatMap, OccBoardPanel, PulseIn, PulsePanel, SponsorBoards, TopNPanel,
 } from './types'
 
 /**
- * #313:橱窗三分表 SSR 只带每表前几十行(RSC payload 6.5MB 瘦身),挂载后拉全量换上
+ * #313:担保雇主三分表 SSR 只带每表前几十行(RSC payload 6.5MB 瘦身),挂载后拉全量换上
  * (手法照 occ 大表的 /api/stats/market);拉挂 / 拉到空表就继续用 SSR 那几十行,不闪不塌。
  *
  * @returns 全量三分表;还没到手则 null。
@@ -60,14 +56,13 @@ export function useNavSec(): string {
 }
 
 /**
- * 抽选主文案要的英文取词函数(官方英文名与界面语言无关,整页只造一次)。
+ * 一张表的 Top N 档(2026-09-04 Frank「应该是有 5 10 20 50 100 这种下拉筛选」):每表各一把,默认 TOPN_MIN。
  *
- * @returns 英文取词函数。
+ * @returns 当前档与换档手柄。
  */
-export function useEnglishT(): TFn {
-  return useMemo(function makeEnglish() {
-    return makeT(LANG_EN)
-  }, [])
+export function useTopN(): TopNPanel {
+  const [n, setN] = useState(TOPN_MIN)
+  return { n, onN: setN }
 }
 
 /**
@@ -90,119 +85,38 @@ export function useCardPage(x: CardPageIn): OccBoardPanel {
 }
 
 /**
- * 橱窗单表的六格筛选现值与落格。四级联动(大类→中类→小类→职业)由 makeFilterPick
- * 把下面几级一并清空 —— 换了大类还留着旧中类,选项对不上就成了死筛。
+ * 雇主段与 LMIA 段的行业分表(担保雇主全量到手前用 SSR 那几十行)。
  *
- * @returns 六格现值与六只换值手柄。
+ * @param x 页面门取好的那份 SSR 数据。
+ * @returns 两段的分表。
  */
-export function useSponsorFilters(): SponsorFilterState {
-  const [fProv, setFProv] = useState(TEXT_NONE)
-  const [fStream, setFStream] = useState(TEXT_NONE)
-  const [fBroad, setFBroad] = useState(TEXT_NONE)
-  const [fMid, setFMid] = useState(TEXT_NONE)
-  const [fFine, setFFine] = useState(TEXT_NONE)
-  const [fNoc, setFNoc] = useState(TEXT_NONE)
+export function useEmpSecs(x: PulseIn): EmpSecsPanel {
+  const [, , t] = useLang()
+  const sponsorFull = useSponsorFull()
 
-  return {
-    fProv,
-    fStream,
-    fBroad,
-    fMid,
-    fFine,
-    fNoc,
-    onProv: setFProv,
-    onStream: setFStream,
-    onBroad: makeFilterPick({ set: setFBroad, resets: [setFMid, setFFine, setFNoc] }),
-    onMid: makeFilterPick({ set: setFMid, resets: [setFFine, setFNoc] }),
-    onFine: makeFilterPick({ set: setFFine, resets: [setFNoc] }),
-    onNoc: setFNoc,
+  let sponsor = x.stats.sponsor
+  if (sponsorFull != null) {
+    sponsor = sponsorFull
   }
+
+  const nocCat: NocCatMap = useMemo(function pickNocCat() {
+    return new Map(Object.entries(x.stats.nocCat))
+  }, [x.stats.nocCat])
+
+  const empSecs = useMemo(function pickEmpSecs() {
+    return empSecsOf({ t, sponsor, nocCat, kind: EMP_KIND_SIGNAL })
+  }, [t, sponsor, nocCat])
+
+  const lmiaSecs = useMemo(function pickLmiaSecs() {
+    return empSecsOf({ t, sponsor, nocCat, kind: EMP_KIND_LMIA })
+  }, [t, sponsor, nocCat])
+
+  return { empSecs, lmiaSecs }
 }
 
 /**
- * 橱窗单表五只下拉的选项。选项只列本表真实存在的值(小样本橱窗表不比全量职位板,
- * 摆满 89 个中类全是死选项),且逐级受上一级收窄。
- *
- * @param x 本表的行、人群档、职业名候选、界面语言、分类映射与六格现值。
- * @returns 五只下拉的选项与职业筛那份带显示名的选项。
- */
-export function useSponsorOpts(x: SponsorOptsHookIn): SponsorOptsPanel {
-  const occSel = useMemo(function pickOcc() {
-    return occSelOptsOf({
-      rows: x.rows,
-      occOpts: x.occOpts,
-      lang: x.lang,
-      nocCat: x.nocCat,
-      fBroad: x.f.fBroad,
-      fMid: x.f.fMid,
-      fFine: x.f.fFine,
-    })
-  }, [x.rows, x.occOpts, x.lang, x.nocCat, x.f.fBroad, x.f.fMid, x.f.fFine])
-
-  const prov = useMemo(function pickProv() {
-    return provOptsOf({ rows: x.rows })
-  }, [x.rows])
-
-  const stream = useMemo(function pickStream() {
-    return streamOptsOf({ rows: x.rows, kind: x.kind })
-  }, [x.rows, x.kind])
-
-  const broad = useMemo(function pickBroad() {
-    return broadOptsOf({ rows: x.rows, nocCat: x.nocCat })
-  }, [x.rows, x.nocCat])
-
-  const mid = useMemo(function pickMid() {
-    return midOptsOf({ rows: x.rows, nocCat: x.nocCat, fBroad: x.f.fBroad })
-  }, [x.rows, x.nocCat, x.f.fBroad])
-
-  const fine = useMemo(function pickFine() {
-    return fineOptsOf({ rows: x.rows, nocCat: x.nocCat, fBroad: x.f.fBroad, fMid: x.f.fMid })
-  }, [x.rows, x.nocCat, x.f.fBroad, x.f.fMid])
-
-  return { opts: { prov, stream, broad, mid, fine, occ: occSelValuesOf(occSel) }, occSel }
-}
-
-/**
- * 橱窗单表的整机:六格筛选 + 五只下拉的选项与显示名 + 命中行 + 手机卡页态。
- * 换了筛选就回第一页。
- *
- * @param x 本表的行、人群档、取词函数、界面语言、总数与三张字典。
- * @returns 整机面板。
- */
-export function useSponsorBoard(x: SponsorBoardHookIn): SponsorBoardPanel {
-  const f = useSponsorFilters()
-  const [page, setPage] = useState(0)
-  const filterKey = [f.fProv, f.fStream, f.fBroad, f.fMid, f.fFine, f.fNoc].join(KEY_SEP)
-  const [filterKeySeen, setFilterKeySeen] = useState(filterKey)
-  if (filterKey !== filterKeySeen) {
-    setFilterKeySeen(filterKey)
-    setPage(0)
-  }
-
-  const o = useSponsorOpts({ rows: x.rows, kind: x.kind, occOpts: x.occOpts, lang: x.lang, nocCat: x.nocCat, f })
-
-  const shown = useMemo(function pickShown() {
-    return shownSponsorsOf({ rows: x.rows, f, nocCat: x.nocCat })
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- f 每次渲染都是新对象;真正的依赖是它那六格值,已压成 filterKey
-  }, [x.rows, x.nocCat, filterKey])
-
-  const maxPage = Math.max(1, Math.ceil(shown.length / CARD_PAGE_SIZE))
-  return {
-    f,
-    opts: o.opts,
-    labels: sponsorLabelsOf({ t: x.t, catMids: x.catMids, lang: x.lang, occSel: o.occSel }),
-    shown,
-    page: Math.min(page, maxPage - 1),
-    maxPage,
-    note: sponsorNoteOf({ t: x.t, shown: shown.length, total: x.total }),
-    showVerdict: x.kind === KIND_NAMED && hasVerdictSignal(x.rows),
-    onPage: setPage,
-  }
-}
-
-/**
- * 把脉首页的整机:界面语言、主图四份数据、橱窗全量、切省与两处条数档、导航跟随,
- * 以及吃这些现值算出来的七份派生。
+ * 把脉首页的整机:界面语言、主图四份数据、切省、导航跟随,
+ * 以及吃这些现值算出来的派生(职业分表 / 雇主分表 / LMIA 分表 / 省份 / 城市 / 趋势)。
  *
  * @param x 页面门取好的那份 SSR 数据。
  * @returns 整机面板。
@@ -210,17 +124,9 @@ export function useSponsorBoard(x: SponsorBoardHookIn): SponsorBoardPanel {
 export function usePulse(x: PulseIn): PulsePanel {
   const [lang, , t] = useLang()
   const market = useMarketStats()
-  const sponsorFull = useSponsorFull()
+  const emp = useEmpSecs(x)
   const navSec = useNavSec()
-  const tEn = useEnglishT()
-  const [drawsN, setDrawsN] = useState(TOPN_MIN)
-  const [newsN, setNewsN] = useState(TOPN_MIN)
   const [prov, setProv] = useState(provInitOf(x.stats.provPreset))
-
-  let sponsor = x.stats.sponsor
-  if (sponsorFull != null) {
-    sponsor = sponsorFull
-  }
 
   const natOcc = useMemo(function pickNat() {
     return natOccOf({ market })
@@ -230,16 +136,12 @@ export function usePulse(x: PulseIn): PulsePanel {
     return nocProvsOf({ market })
   }, [market])
 
-  const nocCat: NocCatMap = useMemo(function pickNocCat() {
-    return new Map(Object.entries(x.stats.nocCat))
-  }, [x.stats.nocCat])
-
-  const boards = useMemo(function pickBoards() {
+  const occSecs = useMemo(function pickOccSecs() {
     if (natOcc == null) {
       return null
     }
-    return occBoardsOf({ natOcc, nocProvs })
-  }, [natOcc, nocProvs])
+    return occSecsOf({ t, natOcc })
+  }, [t, natOcc])
 
   const numCards = useMemo(function pickCards() {
     return numCardsOf({ t, total: x.stats.total, named: x.stats.named, pulse: x.stats.pulse })
@@ -257,26 +159,31 @@ export function usePulse(x: PulseIn): PulsePanel {
     return provOccOf({ market, prov })
   }, [market, prov])
 
+  const cityRows = useMemo(function pickCityRows() {
+    return cityRowsOf({ market })
+  }, [market])
+
+  const trend = useMemo(function pickTrend() {
+    return trendOf({ t, daily: x.stats.daily })
+  }, [t, x.stats.daily])
+
   return {
     t,
     lang,
     market,
-    sponsor,
     numCards,
-    boards,
+    occSecs,
+    empSecs: emp.empSecs,
+    lmiaSecs: emp.lmiaSecs,
     nocProvs,
-    nocCat,
     provRows,
     provStat,
     provOcc,
     prov,
     onProvSelect: makeSelectChange({ set: setProv }),
     provPickOf: makeProvPick({ setProv }),
-    drawsN,
-    onDrawsN: setDrawsN,
-    newsN,
-    onNewsN: setNewsN,
-    tEn,
+    cityRows,
+    trend,
     navSec,
   }
 }

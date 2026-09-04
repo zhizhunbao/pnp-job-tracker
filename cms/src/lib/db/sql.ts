@@ -729,6 +729,19 @@ export const CITY_STATS = `SELECT s.city, s.province, c.name_zh, c.name_ko, s.op
        ORDER BY s.open_jobs DESC NULLS LAST LIMIT $1`
 
 /**
+ * 把脉页趋势段·逐日在招量(2026-09-04 Frank「趋势先一张全国,再按行业拆」)。
+ * stats_daily 一行 = 日期 × 省 × 大类,大类含汇总行 'all';这里按日期 × 大类把十省加总,
+ * 全国线取 broad='all',行业线由前端按 9 组再加总。$1=回看天数。
+ * date 列是 varchar(YYYY-MM-DD),不是 date 型 —— 比较把日期折成同形串(ISO 串按字典序即按日序),
+ * 直接拿 date 型比会报「operator does not exist: character varying >= date」(2026-09-04 实撞)。
+ */
+export const STATS_DAILY_SERIES = `SELECT date AS date, broad, SUM(open_jobs)::int AS open_jobs
+       FROM stats_daily
+       WHERE date >= to_char(CURRENT_DATE - $1::int, 'YYYY-MM-DD')
+       GROUP BY date, broad
+       ORDER BY date ASC, broad ASC`
+
+/**
  * citation 来源三行(field-sources 维度,$1=字段名数组;2026-08-22 stats 定型批自 payload.find 换来)。
  */
 export const STAT_FIELD_SOURCES = `SELECT field, publisher, url, fetched FROM field_sources WHERE field = ANY($1) ORDER BY id LIMIT 10`

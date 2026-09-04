@@ -53,9 +53,19 @@ describe('漏斗事件白名单', () => {
     // 那条转化边;se-view-jobs 只作参照)—— 同样追加在尾部,当时漏更了这条断言(spec 自那起一直红)。
     // 2026-08-11:PR 评估四步进白名单(先前这页一条数都没有,Frank 问「有人访问吗」只能靠
     // 登录态 umami 一条条翻 session)—— 同样**追加在尾部**,自成一条并行链,不进前五步的相邻计算。
+    // 2026-09-04(/fe 雇主模块):雇主板四事件进白名单 —— 它们**不是一条链**,只做计数,
+    // 同样追加在尾部,不动前面任何下标切片。
     expect([...FUNNEL_STEPS]).toEqual(['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click',
       'chat-open', 'chat-answer', 'chat-feedback', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs',
-      'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done'])
+      'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done',
+      'pulse-card', 'pulse-occ', 'pulse-cta',
+      'emp-search', 'emp-filter', 'emp-row', 'emp-page'])
+  })
+
+  it('把脉页三点击各自归位(2026-09-04),调用点沿用下划线原名', () => {
+    expect(toFunnelHit({ name: 'pulse_card_click', prop: '' })).toEqual({ event: 'pulse-card', prop: '' })
+    expect(toFunnelHit({ name: 'pulse_occ_click', prop: '' })).toEqual({ event: 'pulse-occ', prop: '' })
+    expect(toFunnelHit({ name: 'landing_cta_browse', prop: '' })).toEqual({ event: 'pulse-cta', prop: '' })
   })
 
   it('PR 评估四步各自归位,且相邻转化率只在本链内算', () => {

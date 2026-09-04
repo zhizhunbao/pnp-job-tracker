@@ -16,7 +16,7 @@
  * `docs/design/对话即产品-20260803.md` §六:两形态的转化对照才是撤旧页的判据,
  * 塞进同一条链会把两套口径搅成一锅。后接雇主线三步与 PR 评估四步(各自成链)。
  */
-export const FUNNEL_STEPS = ['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click', 'chat-open', 'chat-answer', 'chat-feedback', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs', 'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done'] as const
+export const FUNNEL_STEPS = ['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click', 'chat-open', 'chat-answer', 'chat-feedback', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs', 'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done', 'pulse-card', 'pulse-occ', 'pulse-cta', 'emp-search', 'emp-filter', 'emp-row', 'emp-page'] as const
 
 /**
  * 漏斗步骤名(从白名单数组派生 —— 类型与它派生自的数组同居,派生即护栏:加一步只改数组)。
@@ -38,6 +38,16 @@ export type FunnelStep = (typeof FUNNEL_STEPS)[number]
  * se-view-jobs(把脉页橱窗点雇主名)只作参照,不进这条转化率(来源不同的两条路)。
  * PR 评估页(2026-08-11):调用点早就在打,只是没进白名单 —— 于是 Frank 问「有人访问吗」时
  * 第一方表里一条都查不到;四步是一条**自己的链**:打开 → 答完基础卷 → 进估分 → 估分答完。
+ * 把脉页三点击(2026-09-04 /fe 评估):脉象卡 / 榜上职业名 / 职位板入口大钮。此前只打 umami,
+ * 剔掉 Frank 自己的设备后 30 天全是 0,而 umami 被拦截器吃一截 —— 改版后要拿准数验有没有人点。
+ * 同样**追加在尾部**,自成一条并行链;调用点沿用原事件名(下划线),白名单里映射成 kebab 步名。
+ *
+ * 雇主板四事件(2026-09-04 /fe 雇主模块):搜索 / 换筛选 / 点雇主名 / 翻页。
+ * **不是一条转化链,只做计数** —— 四件事互相之间没有父子关系(换个筛选不是搜索的下一步),
+ * 排成链算相邻转化率只会算出没有意义的比值,所以它们不进任何 *_STEPS 切片,
+ * 与 se-view-jobs 同属**参照**。同样追加在尾部,免得动了前面的下标切片。
+ * prop 是低基数枚举:搜索 / 点名 / 翻页记口径(designated|hiring),换筛选记的是**哪一格**
+ * (mode|prov|program|city|noc)—— 🔴 搜索词与雇主名永不进 prop,高基数会把日聚合撑成明细表。
  */
 export const ALIAS: Record<string, FunnelStep> = {
   'modal-jd': 'jd-open',
@@ -61,6 +71,13 @@ export const ALIAS: Record<string, FunnelStep> = {
   'dp-quiz-done': 'dp-quiz-done',
   'dp-score-start': 'dp-score-start',
   'dp-score-done': 'dp-score-done',
+  'pulse_card_click': 'pulse-card',
+  'pulse_occ_click': 'pulse-occ',
+  'landing_cta_browse': 'pulse-cta',
+  'emp-search': 'emp-search',
+  'emp-filter': 'emp-filter',
+  'emp-row': 'emp-row',
+  'emp-page': 'emp-page',
 }
 
 /**

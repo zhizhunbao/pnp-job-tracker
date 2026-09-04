@@ -1029,7 +1029,16 @@ export const siteZh = {
   'se.col.lmia': 'LMIA 获批(近两年)', 'se.col.w1': 'LMIA 最近一季', 'se.col.w2': 'LMIA 近半年', 'se.col.w4': 'LMIA 近一年',
   'se.grp.aip': 'AIP 指定雇主', 'se.grp.lmia': 'LMIA 获批雇主(近两年)', 'se.grp.named': '在招岗命中紧缺清单的雇主', 'pulse.nav.boards': '职业榜',
   // #312 二级导航短词(TOC 与分区 h2 全称差异化,同屏同一事实只说一次)
-  'pulse.nav.se': '担保雇主', 'pulse.nav.occ': '职业', 'pulse.nav.prov': '省份', 'pulse.nav.provocc': '省内职业', 'pulse.nav.draws': '抽选',
+  'pulse.nav.se': '雇主', 'pulse.nav.occ': '职业', 'pulse.nav.prov': '省份', 'pulse.nav.provocc': '省内职业', 'pulse.nav.draws': '抽选',
+  // 2026-09-04 把脉页重构(docs/design/把脉页重构-20260904.md):六段导航 + 行业分表 + 城市 / 趋势两段
+  'pulse.nav.lmia': 'LMIA', 'pulse.nav.city': '城市', 'pulse.nav.trend': '趋势',
+  'pulse.city': '城市概览', 'pulse.trend': '在招走势', 'pulse.trend.nat': '全国',
+  'pulse.top.open': '最多岗位', 'pulse.top.wage': '最高工资',
+  'pulse.ind.health': '医疗', 'pulse.ind.stem': 'STEM', 'pulse.ind.trades': '技工', 'pulse.ind.construction': '建筑',
+  'pulse.ind.food': '餐饮零售', 'pulse.ind.transport': '运输物流', 'pulse.ind.manufacturing': '制造农矿',
+  'pulse.ind.business': '商务办公', 'pulse.ind.education': '教育文体',
+  'pulse.col.signals': '担保信号', 'pulse.sig.named': '紧缺清单命中', 'pulse.sig.aip': 'AIP 指定', 'pulse.sig.lmia': '技能 LMIA {n}',
+  'pulse.drawsLink': '近期抽选与政策动态',
   // B4 雇主省提名门槛判定(design/雇主省提名门槛判定-20260808.md):三态 + 公共部门旁路,判定≠官方认证
   'se.col.verdict': '雇主门槛', 'se.verdict.met': '达标', 'se.verdict.short': '差{items}', 'se.verdict.unknown': '待核', 'se.verdict.public': '公共部门',
   'se.verdict.factor.years': '年限', 'se.verdict.factor.staff': '雇员数',
@@ -1267,7 +1276,7 @@ export const pteZh = {
   'pte.pos': '{i} / {n}',
   'pte.inst.RA': '40 秒内自然清晰地读出来', 'pte.inst.RS': '听一遍,原样复述', 'pte.inst.ASQ': '听问题,一两个词作答', 'pte.inst.WFD': '听一遍,原样写下来',
   'pte.inst.RFIB': '每个空选一个词', 'pte.inst.RWFIB': '每个空从下拉里选', 'pte.inst.ROP': '把段落排成正确顺序',
-  'pte.inst.RMCS': '选一个正确答案', 'pte.up': '上移', 'pte.down': '下移',
+  'pte.inst.RMCS': '选一个正确答案', 'pte.drag': '拖动',
   'pte.prep': '准备', 'pte.skipPrep': '跳过准备', 'pte.play': '播放题目', 'pte.replay': '再听一遍', 'pte.audio': '题目音频',
   'pte.rec': '录音',
   'pte.tts': '示范朗读', 'pte.myRec': '我的录音', 'pte.recording': '录音中', 'pte.recCap': '{s} 秒内答完', 'pte.stop': '停止',
@@ -1284,8 +1293,7 @@ export const pteZh = {
   'pte.c.sent': '已提交,审核后显示', 'pte.c.err': '没发出去,请重试',
   'pte.dict.close': '关闭', 'pte.dict.loading': '查词中', 'pte.dict.none': '没查到',
   'pte.dict.uk': '英', 'pte.dict.us': '美',
-  'pte.dict.zh': '中文', 'pte.dict.en': 'English', 'pte.dict.forms': '词形',
-  'pte.fam.n': '名词', 'pte.fam.v': '动词', 'pte.fam.a': '形容词',
+  'pte.dict.zh': '中文', 'pte.dict.en': 'English',
   'pte.form.p': '过去式', 'pte.form.d': '过去分词', 'pte.form.i': '现在分词', 'pte.form.3': '第三人称单数', 'pte.form.r': '比较级',
   'pte.form.t': '最高级', 'pte.form.s': '复数',
 }

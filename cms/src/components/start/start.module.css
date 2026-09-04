@@ -2523,3 +2523,172 @@
     padding: 9px 0;
   }
 }
+
+
+/*
+ * 2026-09-04 重构新增:雇主卡标题、趋势段、抽选链接行。
+ */
+
+/*
+ * 雇主卡的标题行(形照 employers 桶的 .cardTitle)。
+ */
+.empCardTitle {
+  /*
+   * 标题与键值行的间距。
+   */
+  margin-bottom: 8px;
+
+  /*
+   * 标题字号。
+   */
+  font-size: 15px;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 趋势段的行业小图网格(与省卡同一套自适应列)。
+ */
+.trendGrid {
+  /*
+   * 自适应列数,单列不超过整宽。
+   */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+
+  /*
+   * 卡间距。
+   */
+  gap: 12px;
+
+  /*
+   * 与上面全国主图的间距。
+   */
+  margin-top: 14px;
+}
+
+/*
+ * 趋势卡(主图与小图共一个底)。
+ */
+.trendCard {
+  /*
+   * 白卡底。
+   */
+  background: var(--card);
+
+  /*
+   * 细边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 圆角(与省卡同档)。
+   */
+  border-radius: 12px;
+
+  /*
+   * 内衬。
+   */
+  padding: 10px 12px;
+}
+
+/*
+ * 全国主图那张卡:不进网格,独占一行。
+ */
+.trendCardMain {
+  /*
+   * 与伞标题的间距。
+   */
+  margin-top: 4px;
+}
+
+/*
+ * 趋势卡标题行:名在左,最新值在右。
+ */
+.trendHead {
+  /*
+   * 两端对齐,按基线。
+   */
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+
+  /*
+   * 与图的间距。
+   */
+  margin-bottom: 4px;
+}
+
+/*
+ * 趋势卡的名。
+ */
+.trendName {
+  /*
+   * 加粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 字号。
+   */
+  font-size: 14px;
+}
+
+/*
+ * 趋势卡的最新值。
+ */
+.trendVal {
+  /*
+   * 等宽数字。
+   */
+  font-variant-numeric: tabular-nums;
+
+  /*
+   * 正文色。
+   */
+  color: var(--text);
+
+  /*
+   * 字号。
+   */
+  font-size: 14px;
+}
+
+/*
+ * 抽选与政策动态那一行链接。
+ */
+.drawsLink.drawsLink {
+  /*
+   * 整行可点。
+   */
+  display: block;
+
+  /*
+   * 字号与加粗(与 CTA 标题同档)。
+   */
+  font-size: 15px;
+  font-weight: 600;
+
+  /*
+   * 主色。
+   */
+  color: var(--primary);
+}
+
+/*
+ * 城市卡:省卡的形套在链接上 —— 链接的下划线与主色不许漫到卡内四行键值。
+ */
+.cityCard.cityCard {
+  /*
+   * 去下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 字色跟省卡走,不用链接色。
+   */
+  color: inherit;
+}

@@ -1,16 +1,15 @@
 'use client'
 /**
- * 域内小件:S4b 省内职业榜 —— chips 切省(档案省预选 / 匿名默认 ON,禁 IP 定位)
- * + 通道标签 + 职业榜 + 分布主图。
- * 分布主图常驻(Frank 2026-08-06「柱状图带拖动的找回来 / 最重要的」;7-28 也骂过图被藏
- * —— 不再折叠)。
+ * 域内小件:S4b 省内职业榜(省胶囊切省 → 该省通道标签 + 该省职业榜)。
+ * 2026-09-04 重构:原挂在榜下的「在招职位分布」探索图(横轴 / 簇内 / 右轴 / 通道筛 / 排序七个控件)
+ * 从把脉页撤出,留在 /stats;Frank「现在一个趋势图会包含太多的信息用户能看明白吗」——
+ * 把脉页的走势归趋势段,一张图只答一个问题。
  * 2026-08-28 换装批自 Pulse.tsx 提出成文件。
  *
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
-import { MarketChart } from '@/components/stats'
-import { ID_PROVOCC, PH_CHART, PH_PROVOCC, TEXT_NONE } from './constants'
+import { ID_PROVOCC, PH_PROVOCC, TEXT_NONE } from './constants'
 import { Band } from './band'
 import { OccBoard } from './occboard'
 import { Placeholder } from './placeholder'
@@ -18,13 +17,12 @@ import { ProvChips } from './provchips'
 import { ProvStreams } from './provstreams'
 import { Sec } from './sec'
 import type { ProvOccSectionIn } from './types'
-import css from './start.module.css'
 
 /**
- * 渲染省内职业榜区。
+ * 渲染省内职业榜。
  *
- * @param props 取词函数、界面语言、切省三件、当前省统计行、榜行与主图四份数据。
- * @returns 白底色带。
+ * @param props 当前省、切省手柄、该省统计行与职业榜。
+ * @returns 一条色带。
  */
 export function ProvOccSection({
   t,
@@ -35,7 +33,6 @@ export function ProvOccSection({
   provStat,
   provOcc,
   nocProvs,
-  market,
 }: ProvOccSectionIn) {
   return (
     <Band white id={ID_PROVOCC}>
@@ -47,17 +44,6 @@ export function ProvOccSection({
         {provOcc == null && <Placeholder size={PH_PROVOCC} />}
         {provOcc != null && provOcc.length > 0 && (
           <OccBoard rows={provOcc} t={t} lang={lang} nocProvs={nocProvs} />
-        )}
-        {market == null && <Placeholder size={PH_CHART} />}
-        {market != null && market.occ.length > 0 && (
-          <div className={css.chartWrap}>
-            <MarketChart occ={market.occ}
-              city={market.city}
-              rows={market.rows}
-              t={t}
-              lang={lang}
-              channels={market.channels} />
-          </div>
         )}
       </Sec>
     </Band>

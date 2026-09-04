@@ -105,6 +105,11 @@ export const OCC_COL_PREFIX = ', s.'
 export const CITY_LIMIT = 400
 
 /**
+ * 把脉页趋势段回看几天(stats_daily 自 2026-07-28 起逐日;90 天足够画一季走势)。
+ */
+export const DAILY_DAYS_BACK = 90
+
+/**
  * stats 表大类汇总行的 mid 值(旧行/mid 列未落地时读取层回填它)。
  */
 export const MID_ALL = 'all'

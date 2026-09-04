@@ -11,33 +11,37 @@
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
-import { SQL } from '@/lib/db'
-import { drawStreamNote, eeKeyDisplay, normalizeProfile, streamDisplay } from '@/lib/jobs'
-import { BROAD_SLUGS, PROVS, PROV_NAME } from '@/lib/stats'
-import { ymd } from '@/lib/time'
+import { normalizeProfile, streamDisplay } from '@/lib/jobs'
+import { PROVS, PROV_NAME } from '@/lib/stats'
 import { track } from '@/lib/track'
 import { cssOf } from '@/components/css'
 import { shortOcc } from '@/components/quiz'
 import {
-  ANCHOR_HEAD, BROAD_ALL, BROAD_UNCAT, CARD_GAP, CAT_COLLECTION, CAT_FIND_DEPTH, CAT_FIND_LIMIT,
-  CLS_CARD_HOVER, CLS_MKT_CTL, CLS_ROW_HOVER, CLS_SEP, COL_DATE, COL_DEAD, COL_DIFF, COL_FINE_EN,
-  COL_FINE_KEY, COL_FINE_KO, COL_HOT, COL_INV, COL_MID_EN, COL_MID_KEY, COL_MID_KO,
-  COL_MOM, COL_NAMED, COL_NOC, COL_OCC, COL_OPEN, COL_PNP_PROVS, COL_PR, COL_PROG, COL_PROV, COL_READ,
-  COL_SAL, COL_SCORE, COL_SPONSOR_RATE, COL_STREAM, COL_STUDY, COL_TEER, COL_WORK, COOLING_MAX, DASH_MARK,
-  DEAD_PROV_ORDER, DICT_TTL_MS, DIFF_EASY, DIFF_MID, DIFF_ORDER, DIFF_TIGHT, EV_CHAT_OPEN, EV_SCROLL,
-  HEATING_MIN, HIST_MIN_N, HIST_WINDOW, HOME_TTL_MS, INFO_IMP, INFO_PNP_PR, INFO_STUDY, INFO_TFWP,
-  ID_BOARDS, ID_DRAWS, ID_PROV, ID_PROVOCC, ID_SE, KEY_BROAD_HEAD, KEY_DIFF_HEAD, KEY_PROV_HEAD,
-  KEY_PR_HEAD, KEY_SEP, KEY_SE_ASK_HEAD, KIND_AIP, KIND_LMIA, KIND_NAMED, LABEL_NOC,
-  LANG_EN, LANG_KO, LANG_ZH, MID_ALL, MOM_FLAT, NAT_MIN_OPEN, NAV_IDS, NAV_TOP_LINE, NEWS_TAIL_RE,
-  NOC_HEAD, NOC_KEY_BROAD, NOC_KEY_FINE, NOC_KEY_MID, NUM_LOCALE, PAREN_L, PAREN_R, PCT_MARK, PCT_SCALE,
+  ANCHOR_HEAD, BROAD_ALL, CARD_GAP,
+  CLS_CARD_HOVER, CLS_MKT_CTL, CLS_SEP, COL_DEAD, COL_DIFF,
+  COL_HOT,
+  COL_MOM, COL_NAMED, COL_NOC, COL_OCC, COL_OPEN, COL_PNP_PROVS, COL_PR, COL_PROV,
+  COL_SAL, COL_SPONSOR_RATE, COL_STUDY, COL_TEER, COL_WORK, DASH_MARK,
+  DEAD_PROV_ORDER, DIFF_EASY, DIFF_MID, DIFF_ORDER, DIFF_TIGHT, EV_SCROLL,
+  HOME_TTL_MS, INFO_IMP, INFO_PNP_PR, INFO_STUDY, INFO_TFWP,
+  ID_BOARDS, ID_PROV, ID_SE, KEY_DIFF_HEAD, KEY_PROV_HEAD,
+  KEY_PR_HEAD, KEY_SEP, LABEL_NOC,
+  LANG_EN, LANG_KO, LANG_ZH, MID_ALL, MOM_FLAT, NAT_MIN_OPEN, NAV_IDS, NAV_TOP_LINE,
+  NOC_HEAD, NUM_LOCALE, PAREN_L, PAREN_R, PCT_MARK, PCT_SCALE,
   PNP_SORT_SCALE, PROV_ALL, PROV_ALL_LOWER,
-  PROV_DEFAULT, PROV_FED, PROV_MIN_OPEN, PROV_ORDER_LAST, PROV_QC, RATE_DIGITS, RATE_MAX, RATE_OVER_TEXT,
-  REGION_FEDERAL, SEP_LIST, SHORT_PROV, SIGN_MINUS, SIGN_PLUS, TAG_FED, TAG_IRCC, TEER_HEAD, TEXT_NONE,
-  TIER_BOTH, TIER_FED, TIER_RANK, TIER_RANK_LAST, TOPN_MIN, TOPN_OPTS, TRACK_ASK, TRACK_CARD, TRACK_CTA,
-  TRACK_OCC, URL_HOME, URL_HOME_PNP, URL_HOME_Q_HEAD, URL_NEWS, URL_NEWS_HEAD, URL_SPONSORS_API, W_DATE,
-  W_INV, W_PROG, W_READ, W_SCORE, W_STREAM, WAGE_K, WAGE_K_MARK, WAGE_RANGE_SEP, WAGE_SIGN,
+  PROV_DEFAULT, PROV_MIN_OPEN, PROV_QC, RATE_DIGITS, RATE_MAX, RATE_OVER_TEXT,
+  SEP_LIST, SHORT_PROV, SIGN_MINUS, SIGN_PLUS, TEER_HEAD, TEXT_NONE,
+  TIER_BOTH, TIER_FED, TOPN_MIN, TOPN_OPTS, TRACK_CARD, TRACK_CTA,
+  TRACK_OCC, URL_HOME, URL_HOME_PNP, URL_HOME_Q_HEAD, URL_SPONSORS_API,
+  COL_EMP, COL_QUARTER, COL_SIGNALS, COL_SKILLED, EMP_KIND_LMIA, ID_CITY, ID_LMIA, ID_TREND, IND_BROADS, IND_KEYS,
+  KEY_IND_HEAD, SEC_TOP_OPEN, SEC_TOP_WAGE, TOPN_MAX, TRACK_EMP, TREND_AREA_OPACITY, TREND_COLOR, TREND_H_MAIN,
+  TREND_H_SMALL, TREND_MIN_POINTS, TREND_PAD_MAIN, TREND_PAD_SMALL, URL_HOME_CITY_HEAD, WAGE_MIN_OPEN,
+  AXIS_CATEGORY, AXIS_VALUE, CHART_TRIGGER_AXIS, SERIES_LINE_TYPE, TREND_LINE_WIDTH,
+  WAGE_K, WAGE_K_MARK, WAGE_RANGE_SEP, WAGE_SIGN,
 } from './constants'
 import { DeadCell } from './deadcell'
+import { EmpNameCell } from './empnamecell'
+import { EmpSignalsCell } from './empsignalscell'
 import { DiffCell } from './diffcell'
 import { HotCell } from './hotcell'
 import { MomCell } from './momcell'
@@ -46,31 +50,32 @@ import { OccNameCell } from './occnamecell'
 import { OpenStrongCell } from './openstrongcell'
 import { PnpCell } from './pnpcell'
 import { PrCell } from './prcell'
-import { ProgCell } from './progcell'
 import { ProvNameCell } from './provnamecell'
-import { ReadCell } from './readcell'
-import { StreamCell } from './streamcell'
-import type { SponsorCellRow } from '@/components/employers'
+import type { ChartOption } from '@/components/stats'
+import type { SponsorEmployerRow } from '@/lib/employers'
+import type { CityRow, DailyRow } from '@/lib/stats'
 import { CACHE } from './variables'
 import type {
-  AskChatIn, BandClsIn, BroadOptsIn, CatLabelIn, CatOption, CatOptionsIn, CatOptionsRowsIn, CleanupFn,
-  ClickFn, DrawCellRow, DrawCellRowIn, DrawCellRowsIn, DrawColsIn, DrawDbRow, DrawHist, DrawHistIn,
-  DrawLang, DrawRowClsIn, DrawsIn, EmptyDocs, EmptyQueryResult, FilterFn, FilterPickIn, FineOptsIn,
-  CatCell, HomeCoreIn, HomeStats, HomeStatsCore, HomeStatsOfIn, HotPillsIn, LabelFactoryIn, LabelFn,
-  MidOptsIn, MomClsIn,
-  NatOccIn, NavLinkClsIn, NavWatchIn, NewsCellRow, NewsCellRowIn, NewsCellRowsIn, NewsRecentDbRow,
-  NewsRowClsIn, NewsRowsIn, NocCat, NocCatOfIn, NocProvsIn, NocProvsMap, NocTitleDbRow,
-  GapClsIn, NavItem, NavItemsIn, NumCardRow, NumCardsIn, OccBoards, OccBoardsIn, OccCellRow, OccCellRowIn,
-  OccCellRowsIn, OccColsIn, SponsorGroupEntry, SponsorGroupsIn,
-  OccLabelIn, OccNameIn, OccOption, OccOptionsIn, OccOptionsRowsIn, OccRowList, OccRowOne, OccSelHitIn,
-  OccSelOption, OccSelOptsIn, OccTitleIn, PlaceholderClsIn, ProvCardClsIn, ProvCellRow, ProvCellRowIn,
+  BandClsIn, CleanupFn,
+  ClickFn,
+  HomeCoreIn, HomeStats, HomeStatsCore, HomeStatsOfIn, HotPillsIn, LabelFn,
+  MomClsIn,
+  NatOccIn, NavLinkClsIn, NavWatchIn,
+  NocCat, NocCatOfIn, NocProvsIn, NocProvsMap,
+  GapClsIn, NavItem, NavItemsIn, NumCardRow, NumCardsIn, OccCellRow, OccCellRowIn,
+  OccCellRowsIn, OccColsIn,
+  OccNameIn, OccRowList, OccRowOne,
+  PlaceholderClsIn, ProvCardClsIn, ProvCellRow, ProvCellRowIn,
   ProvCellRowsIn, ProvColsIn, ProvExtraMap, ProvInfoKey, ProvLabelOfIn, ProvLocaleIn, ProvOccHitIn,
-  ProvOccIn, ProvOptsIn, ProvPickFn, ProvPickIn, ProvPresetIn, ProvStatIn, ProvsOfOccIn, PulseDraw,
-  PulseDrawIn, PulseNews, PulseScalars, PulseScalarsIn, SecHeadClsIn, SelectChangeFn, SelectChangeIn,
-  ShownSponsorsIn, SomeCatIn, SponsorFullProbe, SponsorGroup, SponsorHitIn, SponsorLoadIn, SponsorNoteIn,
-  SponsorLabels, SponsorLabelsIn, SponsorRowList, SponsorSliceIn, StartCol, StartPill, StartProfileObj,
+  ProvOccIn, ProvPickFn, ProvPickIn, ProvPresetIn, ProvStatIn, ProvsOfOccIn,
+  PulseScalars, PulseScalarsIn, SecHeadClsIn, SelectChangeFn, SelectChangeIn,
+  SponsorFullProbe, SponsorGroup, SponsorLoadIn,
+  SponsorRowList, SponsorSliceIn, StartCol, StartPill, StartProfileObj,
   StatRowList, StatRowOne,
-  StreamLabelIn, StreamOptsIn, TierClsIn, TierTextIn, TopNChangeIn,
+  StreamLabelIn, TierClsIn, TierTextIn, TopNChangeIn,
+  CityCellRow, CityCellRowsIn, CityNameIn, DateSum, EmpCellRow, EmpCellRowIn, EmpColsIn, EmpSec, EmpSecsIn, IndOfIn,
+  IndRowsIn, LineOptionIn, OccSec, OccSecsIn, SeriesIn, SponsorBoards, TrendOfIn, TrendPanel, TrendSeries,
+  TrendSmallIn, ValuableIn,
 } from './types'
 import css from './start.module.css'
 
@@ -102,79 +107,6 @@ export function cachedHomeOf(): HomeStatsCore | null {
 export function putHomeCache(v: HomeStatsCore): HomeStatsCore {
   CACHE.home = { v, ts: Date.now() }
   return v
-}
-
-/**
- * 橱窗职业筛 datalist 的候选(旧货架页同款手法,1h 进程缓存;~500 行,gzip 15KB)。
- * 查询挂了照样把空清单存进缓存 —— 与原实现同口径:宁可这一格空着,不拖累整页。
- *
- * @param x 数据库连接。
- * @returns 候选清单。
- */
-export async function loadOccOptions(x: OccOptionsIn): Promise<OccOption[]> {
-  const hit = CACHE.occOpts
-  if (hit != null && Date.now() - hit.ts < DICT_TTL_MS) {
-    return hit.rows
-  }
-  let raw: NocTitleDbRow[] = []
-  try {
-    const res = await x.db.query(SQL.NOC_ALL_TITLES)
-    raw = res.rows as NocTitleDbRow[]
-  } catch {
-    raw = []
-  }
-  const rows = toOccOptions({ rows: raw })
-  CACHE.occOpts = { ts: Date.now(), rows }
-  return rows
-}
-
-/**
- * 职业筛联动(大类→中类→小类→职业,2026-08-08 Frank「大类种类小类联动过滤要加上」;
- * 小类一级 08-09 补,Frank「全部小类呢?」)的中/小类英韩名 —— 与职位板同一张
- * noc_categories 维度表(一行 = 一个小类,1h 进程缓存);大类沿用既有 i18n `broad.*` 键
- * (27 个已全译,不必再查)。
- *
- * @param x payload 实例。
- * @returns 中/小类名清单。
- */
-export async function loadCatOptions(x: CatOptionsIn): Promise<CatOption[]> {
-  const hit = CACHE.catOpts
-  if (hit != null && Date.now() - hit.ts < DICT_TTL_MS) {
-    return hit.rows
-  }
-  let docs: CatOptionsRowsIn['docs'] = []
-  try {
-    const res = await x.payload.find({
-      collection: CAT_COLLECTION,
-      limit: CAT_FIND_LIMIT,
-      depth: CAT_FIND_DEPTH,
-    })
-    docs = res.docs
-  } catch {
-    docs = []
-  }
-  const rows = toCatOptions({ docs })
-  CACHE.catOpts = { ts: Date.now(), rows }
-  return rows
-}
-
-/**
- * 查询挂了的空结果面。每项独立兜空:一张表缺 / 查询挂只丢它自己那块,页面照常
- * —— 宁可留空,绝不显示 0。
- *
- * @returns 零行的结果面。
- */
-export function emptyQueryResult(): EmptyQueryResult {
-  return { rows: [] }
-}
-
-/**
- * 分类维度表查询挂了的空结果面。
- *
- * @returns 零行的结果面。
- */
-export function emptyDocs(): EmptyDocs {
-  return { docs: [] }
 }
 
 /**
@@ -234,10 +166,11 @@ export function nullUser(): null {
 
 
 /**
- * 把各条查询的结果组装成一份聚合。纯拼装 —— 每一格的算法各自成函数。
+ * 首页聚合的组装(纯函数;进程内缓存存的就是它的返回)。
+ * 2026-09-04 重构:抽选 / 政策 / 职业筛字典三块撤,加逐日在招量透传。
  *
- * @param x 各条查询的结果、已建好的橱窗三表、SSR 每表带几行与两处条数上限。
- * @returns 一份聚合(逐用户的两格由 `homeStatsOf` 补)。
+ * @param x 页面门并发取好的原料。
+ * @returns 与用户无关的那份聚合。
  */
 export function homeCoreOf(x: HomeCoreIn): HomeStatsCore {
   let total: number | null = null
@@ -256,33 +189,27 @@ export function homeCoreOf(x: HomeCoreIn): HomeStatsCore {
       named: sponsorSliceOf({ group: x.boards.named, rows: x.ssrRows }),
       aip: sponsorSliceOf({ group: x.boards.aip, rows: x.ssrRows }),
     },
-    occOpts: x.occOpts,
-    catMids: x.catMids,
     pulse: pulseScalarsOf({ occ: x.occRows }),
     nocCat: nocCatOf({ occ: x.occRows, sponsorRows: x.sponsorRows }),
-    draws: toDrawsWithHistory({ rows: x.drawRows, limit: x.drawsLimit }),
-    news: toNewsRows({ rows: x.newsRows, limit: x.newsLimit }),
+    daily: x.dailyRows,
     provExtra: x.provExtra,
   }
 }
 
 /**
- * 把聚合与逐用户那两格拼成整份 SSR 契约。
+ * 缓存里那份聚合 + 逐用户两格 → 整份 SSR 契约。
  *
  * @param x 聚合、预选省与抓取时刻。
- * @returns 整份 SSR 契约。
+ * @returns SSR 契约。
  */
 export function homeStatsOf(x: HomeStatsOfIn): HomeStats {
   return {
     total: x.core.total,
     named: x.core.named,
-    draws: x.core.draws,
-    news: x.core.news,
     sponsor: x.core.sponsor,
-    occOpts: x.core.occOpts,
-    catMids: x.core.catMids,
     pulse: x.core.pulse,
     nocCat: x.core.nocCat,
+    daily: x.core.daily,
     provExtra: x.core.provExtra,
     provPreset: x.provPreset,
     checkedAt: x.checkedAt,
@@ -386,217 +313,6 @@ export function nocCatOf(x: NocCatOfIn): Record<string, NocCat> {
 }
 
 /**
- * 抽选表 + 冷解读三标量。冷解读的口径(设计 §4):当期分数线 vs **近 12 期同通道**的区间
- * —— 在服务端算完只带三个标量下去(histN/histMin/histMax),而不是把 400 行抽选史塞进 HTML。
- *
- * @param x 抽选原始行与下发条数上限。
- * @returns 前 N 期(每期挂好三标量)。
- */
-export function toDrawsWithHistory(x: DrawsIn): PulseDraw[] {
-  const groups = new Map<string, DrawDbRow[]>()
-  for (const r of x.rows) {
-    const k = drawGroupKeyOf(r)
-    const g = groups.get(k)
-    if (g == null) {
-      groups.set(k, [r])
-    } else {
-      g.push(r)
-    }
-  }
-  const hist = new Map<DrawDbRow, DrawHist | null>()
-  for (const g of groups.values()) {
-    for (let i = 0; i < g.length; i += 1) {
-      const r = g[i]
-      if (r != null) {
-        hist.set(r, drawHistOf({ group: g, i }))
-      }
-    }
-  }
-  const out: PulseDraw[] = []
-  for (const r of x.rows.slice(0, x.limit)) {
-    let h = hist.get(r)
-    if (h == null) {
-      h = null
-    }
-    out.push(toPulseDraw({ r, hist: h }))
-  }
-  return out
-}
-
-/**
- * 抽选分组键:省 + 通道(同省同通道才算「同一条通道」,冷解读只在组内回看)。
- *
- * @param r 一期抽选原始行。
- * @returns 分组键。
- */
-function drawGroupKeyOf(r: DrawDbRow): string {
-  let stream = r.stream
-  if (stream == null || stream === TEXT_NONE) {
-    stream = r.label
-  }
-  if (stream == null) {
-    stream = TEXT_NONE
-  }
-  return r.province + KEY_SEP + stream
-}
-
-/**
- * 从本期往回数 12 期(含本期):只统计有分数线的期次;有效期数不足门槛给 null
- * (样本太少的「区间」是噪音,宁可不说)。行已按日期降序,组内自然也降序。
- *
- * @param x 本组与本期在组内的位置。
- * @returns 期数与区间;样本不足则 null。
- */
-function drawHistOf(x: DrawHistIn): DrawHist | null {
-  const scores: number[] = []
-  for (const r of x.group.slice(x.i, x.i + HIST_WINDOW)) {
-    if (r.score != null) {
-      scores.push(r.score)
-    }
-  }
-  if (scores.length < HIST_MIN_N) {
-    return null
-  }
-  return { n: scores.length, min: Math.min(...scores), max: Math.max(...scores) }
-}
-
-/**
- * 洗一期抽选:各格照实兜空,数值列保 null(官方没公布不折 0)。
- *
- * @param x 这一期原始行与它的回看三标量。
- * @returns 一期抽选。
- */
-function toPulseDraw(x: PulseDrawIn): PulseDraw {
-  let histN: number | null = null
-  let histMin: number | null = null
-  let histMax: number | null = null
-  if (x.hist != null) {
-    histN = x.hist.n
-    histMin = x.hist.min
-    histMax = x.hist.max
-  }
-  let streamZh = TEXT_NONE
-  if (x.r.stream_zh != null) {
-    streamZh = x.r.stream_zh
-  }
-  return {
-    date: String(x.r.draw_date),
-    province: textOf(x.r.province),
-    stream: textOf(x.r.stream),
-    streamZh,
-    label: textOf(x.r.label),
-    score: numOrNullOf(x.r.score),
-    invitations: numOrNullOf(x.r.invitations),
-    histN,
-    histMin,
-    histMax,
-  }
-}
-
-/**
- * 政策动态:同题去重带归一化 —— IRCC 同一稿隔日重发常只差尾部「(城市)」括注,
- * 精确比对抓不住。去重后再切到条数上限。
- *
- * @param x 原始行与下发条数上限。
- * @returns 去重切片后的动态。
- */
-export function toNewsRows(x: NewsRowsIn): PulseNews[] {
-  const seen = new Set<string>()
-  const out: PulseNews[] = []
-  for (const r of x.rows) {
-    if (out.length >= x.limit) {
-      return out
-    }
-    const k = newsKeyOf(textOf(r.title))
-    if (seen.has(k) === false) {
-      seen.add(k)
-      out.push(toPulseNews(r))
-    }
-  }
-  return out
-}
-
-/**
- * 同题去重的比对键:剪掉尾部括注、掐头去尾、转小写。
- *
- * @param title 官方原标题。
- * @returns 比对键。
- */
-function newsKeyOf(title: string): string {
-  return title.replace(NEWS_TAIL_RE, TEXT_NONE).trim().toLowerCase()
-}
-
-/**
- * 洗一条政策动态:各格照实兜空串。
- *
- * @param r 一条原始行。
- * @returns 一条动态。
- */
-function toPulseNews(r: NewsRecentDbRow): PulseNews {
-  let titleZh = TEXT_NONE
-  if (r.title_zh != null) {
-    titleZh = r.title_zh
-  }
-  return {
-    date: String(r.date),
-    region: textOf(r.region),
-    title: textOf(r.title),
-    titleZh,
-    slug: textOf(r.slug),
-  }
-}
-
-/**
- * 洗职业筛候选:题名照实兜空串(缺翻译不丢筛选项)。
- *
- * @param x 职业名维度行。
- * @returns 候选清单。
- */
-export function toOccOptions(x: OccOptionsRowsIn): OccOption[] {
-  const out: OccOption[] = []
-  for (const r of x.rows) {
-    out.push({ noc: r.noc, title: textOf(r.title), titleZh: textOf(r.title_zh) })
-  }
-  return out
-}
-
-/**
- * 洗职业筛联动的中/小类名:各格照实兜空串。
- *
- * @param x 分类维度行。
- * @returns 中/小类名清单。
- */
-export function toCatOptions(x: CatOptionsRowsIn): CatOption[] {
-  const out: CatOption[] = []
-  for (const c of x.docs) {
-    out.push({
-      broad: catTextOf(c.broad),
-      mid: catTextOf(c.mid),
-      midEn: catTextOf(c.midEn),
-      midKo: catTextOf(c.midKo),
-      fine: catTextOf(c.fine),
-      fineEn: catTextOf(c.fineEn),
-      fineKo: catTextOf(c.fineKo),
-    })
-  }
-  return out
-}
-
-/**
- * 分类维度行上的一格 → 显示串。这张表的列在 payload 那份生成类型里是「可以不填」的
- * (键可能压根不在),`== null` 一次收掉两种「没有」。
- *
- * @param v 那一格。
- * @returns 显示串;没有则空串。
- */
-function catTextOf(v: CatCell): string {
-  if (v == null) {
-    return TEXT_NONE
-  }
-  return v
-}
-
-/**
  * S4 省份预选(设计 §1 拍板 4):**已建档按档案省,匿名默认 ON —— 不许按 IP 判**
  * (站内零 geo 能力,且主力受众在境外;同 i18n「不许按 IP 判语言」同族红线)。
  * 跨域形状接缝:quota 域声明的 users.profile 允许嵌套对象,jobs 域的 ProfileJson 只到扁平格
@@ -619,32 +335,6 @@ export function provPresetOf(x: ProvPresetIn): string {
   return TEXT_NONE
 }
 
-
-/**
- * 库里的字符串格 → 显示串(官方没写保空串)。
- *
- * @param v 库值。
- * @returns 显示串。
- */
-function textOf(v: string | null): string {
-  if (v == null) {
-    return TEXT_NONE
-  }
-  return v
-}
-
-/**
- * 库里的数值格 → 数值。🔴 官方可空的数值必须保 null —— 折 0 = 替官方编数。
- *
- * @param v 库值。
- * @returns 数值;没有则 null。
- */
-function numOrNullOf(v: number | null): number | null {
-  if (v == null) {
-    return null
-  }
-  return Number(v)
-}
 
 /**
  * 数字的千分位显示。
@@ -855,45 +545,21 @@ export function occHrefOf(noc: string): string {
 }
 
 /**
- * 二级导航条上的五项(顺序即条上的顺序)。#312:导航用短词(pulse.nav.*),
- * 分区 h2 保全称 —— 逐字同文等于同屏同一事实说两遍。
+ * 二级导航的六项(顺序即页面上的顺序;#312:短词,与分区 h2 措辞差异化)。
+ * 2026-09-04 重排:职业 → 雇主 → LMIA → 省份 → 城市 → 趋势。
  *
  * @param x 取词函数。
- * @returns 五项。
+ * @returns 六项。
  */
 export function navItemsOf(x: NavItemsIn): NavItem[] {
   return [
-    { id: ID_SE, label: x.t('pulse.nav.se') },
     { id: ID_BOARDS, label: x.t('pulse.nav.occ') },
+    { id: ID_SE, label: x.t('pulse.nav.se') },
+    { id: ID_LMIA, label: x.t('pulse.nav.lmia') },
     { id: ID_PROV, label: x.t('pulse.nav.prov') },
-    { id: ID_PROVOCC, label: x.t('pulse.nav.provocc') },
-    { id: ID_DRAWS, label: x.t('pulse.nav.draws') },
+    { id: ID_CITY, label: x.t('pulse.nav.city') },
+    { id: ID_TREND, label: x.t('pulse.nav.trend') },
   ]
-}
-
-/**
- * 橱窗三分表按人群拆开(顺序即页面上的顺序:没工签 → 有工签 → 去海洋省)。
- * 空表不在这里滤 —— 「第几张」要按这个固定次序算,间距才跟原实现一致。
- *
- * @param x 橱窗三分表。
- * @returns 三项。
- */
-export function sponsorGroupsOf(x: SponsorGroupsIn): SponsorGroupEntry[] {
-  return [
-    { kind: KIND_LMIA, group: x.sponsor.lmia },
-    { kind: KIND_NAMED, group: x.sponsor.named },
-    { kind: KIND_AIP, group: x.sponsor.aip },
-  ]
-}
-
-/**
- * 四张分榜是不是全空(数据到了但榜全空才整块不渲染,绝不拿存量榜顶包)。
- *
- * @param b 四张榜。
- * @returns 是不是全空。
- */
-export function boardsEmptyOf(b: OccBoards): boolean {
-  return b.mine.length === 0 && b.backup.length === 0 && b.cooling.length === 0 && b.heating.length === 0
 }
 
 /**
@@ -1365,162 +1031,6 @@ function namedSortOf(n: number | null): number {
 }
 
 /**
- * 洗一整张抽选表。
- *
- * @param x 抽选行、两个取词函数与界面语言。
- * @returns 展示行。
- */
-export function toDrawCellRows(x: DrawCellRowsIn): DrawCellRow[] {
-  const out: DrawCellRow[] = []
-  for (let i = 0; i < x.rows.length; i += 1) {
-    const r = x.rows[i]
-    if (r != null) {
-      out.push(toDrawCellRow({ r, i, t: x.t, tEn: x.tEn, lang: x.lang }))
-    }
-  }
-  return out
-}
-
-/**
- * 洗一期抽选:官方英文名主文案 + 界面语言译名灰注(与旧版同口径),外加冷解读。
- *
- * @param x 这一期与洗行要的上下文。
- * @returns 展示行。
- */
-export function toDrawCellRow(x: DrawCellRowIn): DrawCellRow {
-  let prog = x.r.province
-  if (x.r.province === PROV_FED) {
-    prog = TAG_FED
-  }
-  return {
-    key: String(x.i),
-    date: ymd(x.r.date),
-    prog,
-    main: drawMainOf(x),
-    note: drawNoteOf(x),
-    score: numTextOf(x.r.score),
-    invitations: numTextOf(x.r.invitations),
-    read: drawReadOf(x),
-  }
-}
-
-/**
- * 抽选主文案:联邦走英文类别名,省抽选走官方通道名(没有就退回类别键)。
- *
- * @param x 这一期与两个取词函数。
- * @returns 主文案。
- */
-function drawMainOf(x: DrawCellRowIn): string {
-  if (x.r.province === PROV_FED) {
-    return eeKeyDisplay({ t: x.tEn, key: x.r.label })
-  }
-  if (x.r.stream !== TEXT_NONE) {
-    return x.r.stream
-  }
-  return x.r.label
-}
-
-/**
- * 抽选灰注:界面语言的译名。#280 —— 省抽选优先用 ETL 批译
- * (data/processed/draw_stream_zh.json → pnp_draws.stream_zh,覆盖全部 41 个 distinct 流名);
- * 缺列 / 还没翻到的 stream 回退旧的手工小表(17 条,覆盖有限但零延迟)。
- * 联邦走界面语言的类别名,与主文案同文时不出。
- *
- * @param x 这一期与两个取词函数。
- * @returns 灰注;不出时空串。
- */
-function drawNoteOf(x: DrawCellRowIn): string {
-  if (x.lang === LANG_EN) {
-    return TEXT_NONE
-  }
-  if (x.r.province !== PROV_FED) {
-    if (x.lang === LANG_ZH && x.r.streamZh !== TEXT_NONE) {
-      return x.r.streamZh
-    }
-    return drawStreamNote({ stream: x.r.stream, lang: drawLangOf(x.lang) })
-  }
-  const zh = eeKeyDisplay({ t: x.t, key: x.r.label })
-  if (zh === drawMainOf(x)) {
-    return TEXT_NONE
-  }
-  return zh
-}
-
-/**
- * 界面语言 → 通道译名小表认得的语言码(表外的语言当英文,与它自己的默认同义)。
- *
- * @param lang 界面语言。
- * @returns 语言码。
- */
-function drawLangOf(lang: string): DrawLang {
-  if (lang === LANG_ZH) {
-    return LANG_ZH
-  }
-  if (lang === LANG_KO) {
-    return LANG_KO
-  }
-  return LANG_EN
-}
-
-/**
- * 冷解读:当期分数线 vs 近 12 期同通道区间(服务端算好的三标量填槽)。
- * 样本不足 → 不出这句(整格留空,不编一句话)。
- *
- * @param x 这一期与取词函数。
- * @returns 冷解读;样本不足时空串。
- */
-function drawReadOf(x: DrawCellRowIn): string {
-  if (x.r.histN == null || x.r.histMin == null || x.r.histMax == null) {
-    return TEXT_NONE
-  }
-  return x.t('pulse.dr.note', { n: x.r.histN, min: numOf(x.r.histMin), max: numOf(x.r.histMax) })
-}
-
-/**
- * 洗一整批政策动态。
- *
- * @param x 动态行与界面语言。
- * @returns 展示行。
- */
-export function toNewsCellRows(x: NewsCellRowsIn): NewsCellRow[] {
-  const out: NewsCellRow[] = []
-  for (let i = 0; i < x.rows.length; i += 1) {
-    const r = x.rows[i]
-    if (r != null) {
-      out.push(toNewsCellRow({ r, i, lang: x.lang }))
-    }
-  }
-  return out
-}
-
-/**
- * 洗一条政策动态:地址、日期、发布方标签与中文界面下的标题译名灰注
- * (E13-06,titleZh 由 ETL 本地翻译;没译文只出原题)。
- *
- * @param x 这一条与洗行要的上下文。
- * @returns 展示行。
- */
-export function toNewsCellRow(x: NewsCellRowIn): NewsCellRow {
-  let key = x.r.slug
-  if (key === TEXT_NONE) {
-    key = String(x.i)
-  }
-  let href = URL_NEWS
-  if (x.r.slug !== TEXT_NONE) {
-    href = URL_NEWS_HEAD + x.r.slug
-  }
-  let tag = x.r.region.toUpperCase()
-  if (x.r.region === REGION_FEDERAL) {
-    tag = TAG_IRCC
-  }
-  let titleZh = TEXT_NONE
-  if (x.lang === LANG_ZH && x.r.titleZh !== TEXT_NONE) {
-    titleZh = x.r.titleZh
-  }
-  return { key, href, date: ymd(x.r.date), tag, title: x.r.title, titleZh }
-}
-
-/**
  * S1 四张脉象卡(契约 v3):体量 / 近 14 天新发 / 平均在架天数 / PNP 命中率。
  * 逐卡 null 守卫 —— 缺数的卡整张不出。净值卡(在架存量差)本批**不做**:
  * 7-25 起验尸排水清了 2.7 万死帖,存量下跌是数据清洗不是市场收缩,上线 = 撒谎(后置 E13-04)。
@@ -1603,44 +1113,6 @@ export function nocProvsOf(x: NocProvsIn): NocProvsMap {
 }
 
 /**
- * 三榜分层(Frank 2026-08-06 深夜拍板,口径 08-06 二改):判据 = **省具名紧缺清单命中**
- * (namedJobs),≠「有无 PNP 通道」—— 排除式省(AB;ON 改制后全职业可)和雇主担保类通用通道
- * 不进 namedJobs(Chefs 教训:榜A原名「无省提名通道」= 撒谎),榜题一律说「紧缺清单」。
- * E13-08:≥100 大盘门槛撤,全 NOC 入榜(Frank 2026-08-07);分页在表内,
- * 小样本环比由 mom14d 的 prev<5→null 守着。
- * AIP 维度职业级现库没有(occ 表无 aip 计数)→ 雷区 / 有兜底两榜暂按 PNP 清单口径,
- * ETL 加列后升级「PNP+AIP 双无」。
- *
- * @param x 全国行与可提名省份表。
- * @returns 四张榜。
- */
-export function occBoardsOf(x: OccBoardsIn): OccBoards {
-  const mine: OccRowList = []
-  const backup: OccRowList = []
-  const cooling: OccRowList = []
-  const heating: OccRowList = []
-  for (const o of x.natOcc) {
-    if (provsOfOcc({ o, nocProvs: x.nocProvs }).length > 0) {
-      if (o.mom14d != null && o.mom14d < COOLING_MAX) {
-        cooling.push(o)
-      }
-      if (o.mom14d != null && o.mom14d > HEATING_MIN) {
-        heating.push(o)
-      }
-    } else if (o.deadProvs != null && o.deadProvs !== TEXT_NONE) {
-      mine.push(o)
-    } else {
-      backup.push(o)
-    }
-  }
-  mine.sort(byOpenDesc)
-  backup.sort(byTierThenOpen)
-  cooling.sort(byMomAsc)
-  heating.sort(byMomDesc)
-  return { mine, backup, cooling, heating }
-}
-
-/**
  * 在架量(排序用;没算出来当 0)。
  *
  * @param o 这一行。
@@ -1654,36 +1126,6 @@ function openOf(o: OccRowOne): number {
 }
 
 /**
- * 14 天新发环比(排序用;两张榜的入榜条件已保证非 null)。
- *
- * @param o 这一行。
- * @returns 环比。
- */
-function momOf(o: OccRowOne): number {
-  if (o.mom14d == null) {
-    return 0
-  }
-  return o.mom14d
-}
-
-/**
- * 通道档的行序(档未落库时全档同 rank,退回按在架量)。
- *
- * @param o 这一行。
- * @returns 行序。
- */
-function tierRankOf(o: OccRowOne): number {
-  if (o.channelTier == null) {
-    return TIER_RANK_LAST
-  }
-  const rank = TIER_RANK[o.channelTier]
-  if (rank == null) {
-    return TIER_RANK_LAST
-  }
-  return rank
-}
-
-/**
  * 按在架量降序(中介推得最凶的先看到)。
  *
  * @param a 一行。
@@ -1693,46 +1135,6 @@ function tierRankOf(o: OccRowOne): number {
 // eslint-disable-next-line local/one-parameter -- 比较器的两参一返由 Array.prototype.sort 定死(宪法钦定的豁免形态)
 function byOpenDesc(a: OccRowOne, b: OccRowOne): number {
   return openOf(b) - openOf(a)
-}
-
-/**
- * 通道档难的在上(Frank「把最难的放上面」),同档按在架量。
- *
- * @param a 一行。
- * @param b 另一行。
- * @returns 比较结果。
- */
-// eslint-disable-next-line local/one-parameter -- 比较器的两参一返由 Array.prototype.sort 定死
-function byTierThenOpen(a: OccRowOne, b: OccRowOne): number {
-  const byTier = tierRankOf(a) - tierRankOf(b)
-  if (byTier !== 0) {
-    return byTier
-  }
-  return openOf(b) - openOf(a)
-}
-
-/**
- * 跌得狠的在前。
- *
- * @param a 一行。
- * @param b 另一行。
- * @returns 比较结果。
- */
-// eslint-disable-next-line local/one-parameter -- 比较器的两参一返由 Array.prototype.sort 定死
-function byMomAsc(a: OccRowOne, b: OccRowOne): number {
-  return momOf(a) - momOf(b)
-}
-
-/**
- * 涨得猛的在前。
- *
- * @param a 一行。
- * @param b 另一行。
- * @returns 比较结果。
- */
-// eslint-disable-next-line local/one-parameter -- 比较器的两参一返由 Array.prototype.sort 定死
-function byMomDesc(a: OccRowOne, b: OccRowOne): number {
-  return momOf(b) - momOf(a)
 }
 
 /**
@@ -1805,440 +1207,6 @@ function provOccHitOf(x: ProvOccHitIn): boolean {
   return x.o.province === x.prov && openOf(x.o) >= PROV_MIN_OPEN
 }
 
-
-/**
- * 省筛的选项:只列本表真实存在的省,按职位板的省序排(表外的码兜到队尾)。
- *
- * @param x 本表的全量事实行。
- * @returns 省码清单。
- */
-export function provOptsOf(x: ProvOptsIn): string[] {
-  const set = new Set<string>()
-  for (const r of x.rows) {
-    for (const p of r.provs) {
-      set.add(p)
-    }
-  }
-  return [...set].sort(byProvOrder)
-}
-
-/**
- * 按职位板的省序比较两个省码。
- *
- * @param a 一个省码。
- * @param b 另一个省码。
- * @returns 比较结果。
- */
-// eslint-disable-next-line local/one-parameter -- 比较器的两参一返由 Array.prototype.sort 定死
-function byProvOrder(a: string, b: string): number {
-  return provOrderOf(a) - provOrderOf(b)
-}
-
-/**
- * 一个省码在职位板省序里的位置;表外的码排最后。
- *
- * @param p 省码。
- * @returns 位置。
- */
-function provOrderOf(p: string): number {
-  const i = PROVS.indexOf(p)
-  if (i < 0) {
-    return PROV_ORDER_LAST
-  }
-  return i
-}
-
-/**
- * 通道筛的选项:只有具名省清单那张表出这一格(省提名绑省,通道是它的第二维)。
- *
- * @param x 本表的全量事实行与人群档。
- * @returns 通道名清单。
- */
-export function streamOptsOf(x: StreamOptsIn): string[] {
-  if (x.kind !== KIND_NAMED) {
-    return []
-  }
-  const set = new Set<string>()
-  for (const r of x.rows) {
-    for (const s of r.streams) {
-      set.add(s)
-    }
-  }
-  return [...set].sort()
-}
-
-/**
- * 大类筛的选项:只列本表真实存在的分类(小样本橱窗表不比全量职位板,摆满 89 个中类
- * 全是死选项),按职位板的大类顺序(BROAD_SLUGS / etl/noc_buckets)排。
- *
- * @param x 本表的全量事实行与分类映射。
- * @returns 大类清单。
- */
-export function broadOptsOf(x: BroadOptsIn): string[] {
-  const set = new Set<string>()
-  for (const r of x.rows) {
-    for (const n of r.nocs) {
-      const c = x.nocCat.get(n)
-      if (c != null && c.broad !== TEXT_NONE) {
-        set.add(c.broad)
-      }
-    }
-  }
-  return [...set].sort(byBroadOrder)
-}
-
-/**
- * 按职位板的大类顺序比较两个大类。
- *
- * @param a 一个大类。
- * @param b 另一个大类。
- * @returns 比较结果。
- */
-// eslint-disable-next-line local/one-parameter -- 比较器的两参一返由 Array.prototype.sort 定死
-function byBroadOrder(a: string, b: string): number {
-  return broadOrderOf(a) - broadOrderOf(b)
-}
-
-/**
- * 一个大类在职位板大类序里的位置;表外的排最后。
- *
- * @param b 大类。
- * @returns 位置。
- */
-function broadOrderOf(b: string): number {
-  for (let i = 0; i < BROAD_SLUGS.length; i += 1) {
-    const pair = BROAD_SLUGS[i]
-    if (pair != null) {
-      const [, broad] = pair
-      if (broad === b) {
-        return i
-      }
-    }
-  }
-  return PROV_ORDER_LAST
-}
-
-/**
- * 中类筛的选项:受上一级大类联动收窄。
- *
- * @param x 本表的全量事实行、分类映射与大类筛现值。
- * @returns 中类清单。
- */
-export function midOptsOf(x: MidOptsIn): string[] {
-  const set = new Set<string>()
-  for (const r of x.rows) {
-    for (const n of r.nocs) {
-      const c = x.nocCat.get(n)
-      if (c != null && c.mid !== TEXT_NONE && (x.fBroad === TEXT_NONE || c.broad === x.fBroad)) {
-        set.add(c.mid)
-      }
-    }
-  }
-  return [...set].sort()
-}
-
-/**
- * 小类筛的选项(2026-08-09 Frank「全部小类呢?」—— 此前从中类直接跳到职业,
- * 少了职位板同款的一级):受上两级大类 / 中类联动收窄。
- *
- * @param x 本表的全量事实行、分类映射与上两级筛现值。
- * @returns 小类清单。
- */
-export function fineOptsOf(x: FineOptsIn): string[] {
-  const set = new Set<string>()
-  for (const r of x.rows) {
-    for (const n of r.nocs) {
-      const c = x.nocCat.get(n)
-      if (c != null && c.fine !== TEXT_NONE
-        && (x.fBroad === TEXT_NONE || c.broad === x.fBroad)
-        && (x.fMid === TEXT_NONE || c.mid === x.fMid)) {
-        set.add(c.fine)
-      }
-    }
-  }
-  return [...set].sort()
-}
-
-/**
- * 职业筛的选项 = 纯点选(Frank 2026-08-08「手机上也没办法敲字」;搜雇主名文本框同日拍掉
- * 「文本框是干啥的」+ 手机零打字,筛选全点选;「只看技能类获批」钮 08-10 也拍掉 ——
- * 技能类获批数已是表内一列,自己点列排序即可):只列本表真实存在的职业,按雇主数倒序;
- * 字典缺题名的码原样兜底(不因缺翻译丢筛选项);受上三级联动收窄。
- *
- * @param x 本表的全量事实行、职业名候选、界面语言、分类映射与上三级筛现值。
- * @returns 职业选项。
- */
-export function occSelOptsOf(x: OccSelOptsIn): OccSelOption[] {
-  const cnt = new Map<string, number>()
-  for (const r of x.rows) {
-    for (const n of r.nocs) {
-      if (occSelHitOf({ n, nocCat: x.nocCat, fBroad: x.fBroad, fMid: x.fMid, fFine: x.fFine })) {
-        let had = cnt.get(n)
-        if (had == null) {
-          had = 0
-        }
-        cnt.set(n, had + 1)
-      }
-    }
-  }
-  const title = new Map<string, string>()
-  for (const o of x.occOpts) {
-    title.set(o.noc, occTitleOf({ o, lang: x.lang }))
-  }
-  const out: OccSelOption[] = []
-  for (const [noc, count] of cnt.entries()) {
-    let label = title.get(noc)
-    if (label == null || label === TEXT_NONE) {
-      label = noc
-    }
-    out.push({ noc, label, count })
-  }
-  out.sort(byCountDesc)
-  return out
-}
-
-/**
- * 这个 NOC 过不过上三级分类筛(职业筛的选项按这一条收窄)。
- *
- * @param x NOC 码、分类映射与上三级筛现值。
- * @returns 过不过。
- */
-function occSelHitOf(x: OccSelHitIn): boolean {
-  const c = x.nocCat.get(x.n)
-  if (x.fBroad !== TEXT_NONE && (c == null || c.broad !== x.fBroad)) {
-    return false
-  }
-  if (x.fMid !== TEXT_NONE && (c == null || c.mid !== x.fMid)) {
-    return false
-  }
-  if (x.fFine !== TEXT_NONE && (c == null || c.fine !== x.fFine)) {
-    return false
-  }
-  return true
-}
-
-/**
- * 职业筛候选的显示名:中文界面优先中文译名,其余走官方英文名。
- *
- * @param x 这一条候选与界面语言。
- * @returns 显示名。
- */
-function occTitleOf(x: OccTitleIn): string {
-  if (x.lang === LANG_ZH && x.o.titleZh !== TEXT_NONE) {
-    return x.o.titleZh
-  }
-  return x.o.title
-}
-
-/**
- * 按雇主数倒序比较两个职业选项。
- *
- * @param a 一项。
- * @param b 另一项。
- * @returns 比较结果。
- */
-// eslint-disable-next-line local/one-parameter -- 比较器的两参一返由 Array.prototype.sort 定死
-function byCountDesc(a: OccSelOption, b: OccSelOption): number {
-  return b.count - a.count
-}
-
-/**
- * 通过全部六格筛选的行(全量已在客户端 → 筛选纯前端)。
- *
- * @param x 本表的全量事实行、六格筛选现值与分类映射。
- * @returns 命中行。
- */
-export function shownSponsorsOf(x: ShownSponsorsIn): SponsorRowList {
-  const out: SponsorRowList = []
-  for (const r of x.rows) {
-    if (sponsorHitOf({ r, f: x.f, nocCat: x.nocCat })) {
-      out.push(r)
-    }
-  }
-  return out
-}
-
-/**
- * 这一行过不过六格筛选。三级分类各判各的(与原实现同口径:大类命中的 NOC 与中类命中的
- * NOC 不必是同一个),职业筛按码直判。
- *
- * @param x 这一行、六格筛选现值与分类映射。
- * @returns 过不过。
- */
-function sponsorHitOf(x: SponsorHitIn): boolean {
-  if (x.f.fProv !== TEXT_NONE && x.r.provs.includes(x.f.fProv) === false) {
-    return false
-  }
-  if (x.f.fStream !== TEXT_NONE && x.r.streams.includes(x.f.fStream) === false) {
-    return false
-  }
-  const broadHit = someCatOf({ r: x.r, nocCat: x.nocCat, key: NOC_KEY_BROAD, v: x.f.fBroad })
-  if (x.f.fBroad !== TEXT_NONE && broadHit === false) {
-    return false
-  }
-  if (x.f.fMid !== TEXT_NONE && someCatOf({ r: x.r, nocCat: x.nocCat, key: NOC_KEY_MID, v: x.f.fMid }) === false) {
-    return false
-  }
-  if (x.f.fFine !== TEXT_NONE && someCatOf({ r: x.r, nocCat: x.nocCat, key: NOC_KEY_FINE, v: x.f.fFine }) === false) {
-    return false
-  }
-  if (x.f.fNoc !== TEXT_NONE && x.r.nocs.includes(x.f.fNoc) === false) {
-    return false
-  }
-  return true
-}
-
-/**
- * 这一行有没有哪个 NOC 的某一级分类等于给定值。
- *
- * @param x 这一行、分类映射、取哪一级与要等于什么。
- * @returns 有没有。
- */
-function someCatOf(x: SomeCatIn): boolean {
-  for (const n of x.r.nocs) {
-    const c = x.nocCat.get(n)
-    if (c != null && c[x.key] === x.v) {
-      return true
-    }
-  }
-  return false
-}
-
-/**
- * 橱窗表页脚的说明:筛过就说命中几家 / 共几家,没筛就只说共几家。
- *
- * @param x 取词函数、命中数与总数。
- * @returns 说明文案。
- */
-export function sponsorNoteOf(x: SponsorNoteIn): string {
-  if (x.shown !== x.total) {
-    return x.t('pulse.hitEmp', { m: numOf(x.shown), n: numOf(x.total) })
-  }
-  return x.t('pulse.totalEmp', { n: numOf(x.total) })
-}
-
-/**
- * 省筛下拉的显示名函数。
- *
- * @param x 取词函数。
- * @returns 显示名函数。
- */
-export function makeProvLabel(x: LabelFactoryIn): LabelFn {
-  return function provLabel(code: string): string {
-    return provLabelOf({ t: x.t, code })
-  }
-}
-
-/**
- * 通道筛下拉的显示名函数(数据层中文 label → 界面语言短名)。
- *
- * @param x 取词函数。
- * @returns 显示名函数。
- */
-export function makeStreamLabel(x: StreamLabelIn): LabelFn {
-  return function streamLabel(label: string): string {
-    return streamDisplay({ t: x.t, label })
-  }
-}
-
-/**
- * 大类筛下拉的显示名函数(未分类那一档另有一条词)。
- *
- * @param x 取词函数。
- * @returns 显示名函数。
- */
-export function makeBroadLabel(x: LabelFactoryIn): LabelFn {
-  return function broadLabel(broad: string): string {
-    if (broad === BROAD_UNCAT) {
-      return x.t('cell.uncat')
-    }
-    return x.t(KEY_BROAD_HEAD + broad)
-  }
-}
-
-/**
- * 中类 / 小类筛下拉的显示名函数(两级共用一个工厂,差别只在取哪三列):
- * 中文界面直接用数据层的中文值,英韩走 noc_categories 的对应列,缺就原样。
- *
- * @param x 分类维度行、界面语言与三个列名。
- * @returns 显示名函数。
- */
-export function makeCatLabel(x: CatLabelIn): LabelFn {
-  const en = new Map<string, string>()
-  const ko = new Map<string, string>()
-  for (const r of x.catMids) {
-    en.set(r[x.keyCol], r[x.enCol])
-    ko.set(r[x.keyCol], r[x.koCol])
-  }
-  return function catLabel(v: string): string {
-    if (x.lang === LANG_ZH) {
-      return v
-    }
-    let hit = en.get(v)
-    if (x.lang === LANG_KO) {
-      hit = ko.get(v)
-    }
-    if (hit == null || hit === TEXT_NONE) {
-      return v
-    }
-    return hit
-  }
-}
-
-/**
- * 职业筛下拉的显示名函数。
- *
- * @param x 职业筛的选项。
- * @returns 显示名函数。
- */
-export function makeOccLabel(x: OccLabelIn): LabelFn {
-  const byNoc = new Map<string, string>()
-  for (const o of x.opts) {
-    byNoc.set(o.noc, o.label)
-  }
-  return function occLabel(noc: string): string {
-    const hit = byNoc.get(noc)
-    if (hit == null) {
-      return noc
-    }
-    return hit
-  }
-}
-
-/**
- * 橱窗单表五只下拉的显示名函数(中类与小类共用一个工厂,差别只在取哪三列)。
- *
- * @param x 取词函数、分类维度行、界面语言与职业筛的选项。
- * @returns 五只显示名函数。
- */
-export function sponsorLabelsOf(x: SponsorLabelsIn): SponsorLabels {
-  return {
-    prov: makeProvLabel({ t: x.t }),
-    stream: makeStreamLabel({ t: x.t }),
-    broad: makeBroadLabel({ t: x.t }),
-    mid: makeCatLabel({
-      catMids: x.catMids, lang: x.lang, keyCol: COL_MID_KEY, enCol: COL_MID_EN, koCol: COL_MID_KO,
-    }),
-    fine: makeCatLabel({
-      catMids: x.catMids, lang: x.lang, keyCol: COL_FINE_KEY, enCol: COL_FINE_EN, koCol: COL_FINE_KO,
-    }),
-    occ: makeOccLabel({ opts: x.occSel }),
-  }
-}
-
-/**
- * 职业筛下拉的值清单(只要码,显示名走 labelOf)。
- *
- * @param opts 职业筛的选项。
- * @returns 码清单。
- */
-export function occSelValuesOf(opts: OccSelOption[]): string[] {
-  const out: string[] = []
-  for (const o of opts) {
-    out.push(o.noc)
-  }
-  return out
-}
 
 
 /**
@@ -2316,24 +1284,6 @@ export function provColsOf(x: ProvColsIn): StartCol<ProvCellRow>[] {
     { key: COL_WORK, label: x.t('stats.cardWork'), nowrap: true, sort: provWorkSortOf, render: provWorkTextOf },
     { key: COL_STUDY, label: x.t('stats.cardStudy'), nowrap: true, sort: provStudySortOf, render: provStudyTextOf },
     { key: COL_PR, label: x.t('stats.cardPr'), nowrap: true, sort: provPrSortOf, render: PrCell },
-  ]
-}
-
-/**
- * 抽选表的列组。列宽写死(冷解读吃最宽一列,它是这张表的结论);百分比固定布局永不横滚。
- * 2026-08-11(Frank「都改成一套」):自造裸 table → 公共 Table(bare = 外面那层就是卡壳)。
- *
- * @param x 取词函数。
- * @returns 列组。
- */
-export function drawColsOf(x: DrawColsIn): StartCol<DrawCellRow>[] {
-  return [
-    { key: COL_DATE, label: x.t('home.dr.date'), width: W_DATE, render: drawDateOf },
-    { key: COL_PROG, label: x.t('home.dr.prog'), width: W_PROG, render: ProgCell },
-    { key: COL_STREAM, label: x.t('home.dr.stream'), width: W_STREAM, render: StreamCell },
-    { key: COL_SCORE, label: x.t('home.dr.score'), width: W_SCORE, render: drawScoreOf },
-    { key: COL_INV, label: x.t('home.dr.inv'), width: W_INV, render: drawInvOf },
-    { key: COL_READ, label: x.t('pulse.dr.read'), width: W_READ, render: ReadCell },
   ]
 }
 
@@ -2598,46 +1548,6 @@ export function provRowKeyOf(r: ProvCellRow): string {
   return r.key
 }
 
-/**
- * 抽选日期单元格。
- *
- * @param r 这一期。
- * @returns 日期。
- */
-export function drawDateOf(r: DrawCellRow): string {
-  return r.date
-}
-
-/**
- * 分数线单元格。
- *
- * @param r 这一期。
- * @returns 分数线文案。
- */
-export function drawScoreOf(r: DrawCellRow): string {
-  return r.score
-}
-
-/**
- * 邀请数单元格。
- *
- * @param r 这一期。
- * @returns 邀请数文案。
- */
-export function drawInvOf(r: DrawCellRow): string {
-  return r.invitations
-}
-
-/**
- * 抽选表的行身份(同省同通道同日可能有多期,只有位置能当身份)。
- *
- * @param r 这一期。
- * @returns 行键。
- */
-export function drawRowKeyOf(r: DrawCellRow): string {
-  return r.key
-}
-
 
 /**
  * 把几个类拼成一个 className(HTML 的 class 属性按空白切词)。
@@ -2857,13 +1767,24 @@ export function boardGapClsOf(x: GapClsIn): string {
 }
 
 /**
- * 橱窗表的行身份。
+ * 通道筛下拉的显示名函数(数据层中文 label → 界面语言短名)。
  *
- * @param r 这一行展示行。
- * @returns 行键(雇主名)。
+ * @param x 取词函数。
+ * @returns 显示名函数。
  */
-export function sponsorRowKeyOf(r: SponsorCellRow): string {
-  return r.name
+export function makeStreamLabel(x: StreamLabelIn): LabelFn {
+  return function streamLabel(label: string): string {
+    return streamDisplay({ t: x.t, label })
+  }
+}
+
+/**
+ * 逐日在招量查询挂了时的兜底:空清单(趋势段整块不渲,不显示 0)。
+ *
+ * @returns 空清单。
+ */
+export function emptyDailyRows(): DailyRow[] {
+  return []
 }
 
 /**
@@ -2890,34 +1811,6 @@ export function provCardClsOf(x: ProvCardClsIn): string {
 }
 
 /**
- * 抽选卡一条的类:基座 + 末条无分隔线。
- *
- * @param x 是不是最后一条。
- * @returns className。
- */
-export function drawRowClsOf(x: DrawRowClsIn): string {
-  const cls = [cssOf(css.drawRow)]
-  if (x.last) {
-    cls.push(cssOf(css.drawRowLast))
-  }
-  return joinCls(cls)
-}
-
-/**
- * 政策动态一条的类:基座 + 全局 hover 高亮 + 第二条起的上分隔线。
- *
- * @param x 是不是第一条。
- * @returns className。
- */
-export function newsRowClsOf(x: NewsRowClsIn): string {
-  const cls = [cssOf(css.newsRow), CLS_ROW_HOVER]
-  if (x.first === false) {
-    cls.push(cssOf(css.newsRowTop))
-  }
-  return joinCls(cls)
-}
-
-/**
  * 条数下拉的类:全局 .mktCtl(手机 44 触控靶的跨页规范)+ 本域的长相。
  *
  * @returns className。
@@ -2933,15 +1826,6 @@ export function topnSelClsOf(): string {
  */
 export function provSelClsOf(): string {
   return joinCls([CLS_MKT_CTL, cssOf(css.provSel)])
-}
-
-/**
- * 对话导流钮的类(经 Button 渲染,权重靠 css 里的类名加倍,这里只取一次)。
- *
- * @returns className。
- */
-export function askClsOf(): string {
-  return cssOf(css.ask)
 }
 
 /**
@@ -2968,21 +1852,6 @@ export function topnOptsOf(max: number): number[] {
     }
   }
   return out
-}
-
-/**
- * 换一级筛选的手柄:落本级的值,再把下面几级一并清空(大类→中类→小类→职业四级联动)。
- *
- * @param x 本级落格与下面几级的落格。
- * @returns 换值手柄。
- */
-export function makeFilterPick(x: FilterPickIn): FilterFn {
-  return function pick(v: string): void {
-    x.set(v)
-    for (const reset of x.resets) {
-      reset(TEXT_NONE)
-    }
-  }
 }
 
 /**
@@ -3020,21 +1889,6 @@ export function makeSelectChange(x: SelectChangeIn): SelectChangeFn {
 export function makeTopNChange(x: TopNChangeIn): SelectChangeFn {
   return function onChange(e: React.ChangeEvent<HTMLSelectElement>): void {
     x.set(Number(e.target.value))
-  }
-}
-
-/**
- * 表题旁对话导流钮的点击手柄。2026-08-08 Frank 追加「表管事实,人话归对话」:
- * 行为复刻 C6 通道卡 PathwaysCard.openChat 的既有写法(o2p:chat-open + prefill),
- * 不自造事件;预填问句只填框,**绝不代发送**。
- *
- * @param x 人群档与取词函数。
- * @returns 点击手柄。
- */
-export function makeAskChat(x: AskChatIn): ClickFn {
-  return function open(): void {
-    track(TRACK_ASK)
-    window.dispatchEvent(new CustomEvent(EV_CHAT_OPEN, { detail: { prefill: x.t(KEY_SE_ASK_HEAD + x.kind) } }))
   }
 }
 
@@ -3146,4 +2000,693 @@ export function trackOccClick(): void {
  */
 export function trackCtaClick(): void {
   track(TRACK_CTA)
+}
+
+
+
+/**
+ * 职业段的分表:最多岗位、最高工资两张全职业榜,再按 IND_KEYS 序每个行业组一张(凑不出一行的组不出)。
+ * 每表最多留 TOPN_MAX 行(Top N 下拉的最大档),排序在这里做完,视图只切片。
+ *
+ * @param x 取词函数与全国行。
+ * @returns 分表清单。
+ */
+export function occSecsOf(x: OccSecsIn): OccSec[] {
+  const out: OccSec[] = [
+    { key: SEC_TOP_OPEN, title: x.t('pulse.top.open'), rows: topOpenOf(x.natOcc) },
+    { key: SEC_TOP_WAGE, title: x.t('pulse.top.wage'), rows: topWageOf(x.natOcc) },
+  ]
+  for (const key of IND_KEYS) {
+    const rows = indRowsOf({ natOcc: x.natOcc, key })
+    if (rows.length > 0) {
+      out.push({ key, title: x.t(KEY_IND_HEAD + key), rows })
+    }
+  }
+  return out
+}
+
+/**
+ * 最多岗位榜:全部职业按在招降序。
+ *
+ * @param natOcc 全国行。
+ * @returns 前 TOPN_MAX 行。
+ */
+function topOpenOf(natOcc: OccRowList): OccRowList {
+  const rows = natOcc.slice()
+  rows.sort(byOpenDesc)
+  return rows.slice(0, TOPN_MAX)
+}
+
+/**
+ * 最高工资榜:在招 ≥ WAGE_MIN_OPEN 且有官方中位年薪的职业,按中位年薪降序。
+ *
+ * @param natOcc 全国行。
+ * @returns 前 TOPN_MAX 行。
+ */
+function topWageOf(natOcc: OccRowList): OccRowList {
+  const rows: OccRowList = []
+  for (const o of natOcc) {
+    if (o.openJobs != null && o.openJobs >= WAGE_MIN_OPEN && o.medianWageAnnual != null) {
+      rows.push(o)
+    }
+  }
+  rows.sort(byWageDesc)
+  return rows.slice(0, TOPN_MAX)
+}
+
+/**
+ * 一个行业组的职业:大类落在该组的行,按在招降序。
+ *
+ * @param x 全国行与行业组键。
+ * @returns 前 TOPN_MAX 行。
+ */
+function indRowsOf(x: IndRowsIn): OccRowList {
+  const broads = IND_BROADS[x.key]
+  const rows: OccRowList = []
+  if (broads == null) {
+    return rows
+  }
+  for (const o of x.natOcc) {
+    if (broads.includes(o.broad)) {
+      rows.push(o)
+    }
+  }
+  rows.sort(byOpenDesc)
+  return rows.slice(0, TOPN_MAX)
+}
+
+/**
+ * 中位年薪(null 当 0,只用于排序)。
+ *
+ * @param o 一行。
+ * @returns 中位年薪。
+ */
+function wageOf(o: OccRowOne): number {
+  if (o.medianWageAnnual == null) {
+    return 0
+  }
+  return o.medianWageAnnual
+}
+
+/**
+ * 按中位年薪降序。
+ *
+ * @param a 一行。
+ * @param b 另一行。
+ * @returns 比较结果。
+ */
+// eslint-disable-next-line local/one-parameter -- 比较器的两参一返由 Array.prototype.sort 定死
+function byWageDesc(a: OccRowOne, b: OccRowOne): number {
+  return wageOf(b) - wageOf(a)
+}
+
+
+/**
+ * 雇主段或 LMIA 段的分表。三分表并成一份(按雇主名去重)后按表种筛:
+ * 担保信号表 = 紧缺清单命中 / AIP 指定 / 技能类 LMIA > 0 之一,按在招降序;
+ * LMIA 表 = 技能类 LMIA > 0,按获批数降序(同数按在招)。
+ * 行业 = 该雇主在招岗 NOC 的大类多数归组(companies.industry 两万家是空的,不靠它);归不到组的不出。
+ *
+ * @param x 三分表、分类映射与表种。
+ * @returns 按 IND_KEYS 序的分表(凑不出一行的组不出)。
+ */
+export function empSecsOf(x: EmpSecsIn): EmpSec[] {
+  const byInd = new Map<string, SponsorRowList>()
+  for (const r of unionSponsorRows(x.sponsor)) {
+    if (isValuableEmp({ r, kind: x.kind }) === false) {
+      continue
+    }
+    const ind = indOfNocs({ nocs: r.nocs, nocCat: x.nocCat })
+    if (ind === TEXT_NONE) {
+      continue
+    }
+    const arr = byInd.get(ind)
+    if (arr == null) {
+      byInd.set(ind, [r])
+    } else {
+      arr.push(r)
+    }
+  }
+  const out: EmpSec[] = []
+  for (const key of IND_KEYS) {
+    const rows = byInd.get(key)
+    if (rows == null || rows.length === 0) {
+      continue
+    }
+    if (x.kind === EMP_KIND_LMIA) {
+      rows.sort(byEmpSkilledDesc)
+    } else {
+      rows.sort(byEmpOpenDesc)
+    }
+    const cells: EmpCellRow[] = []
+    for (const r of rows.slice(0, TOPN_MAX)) {
+      cells.push(toEmpCellRow({ r, t: x.t }))
+    }
+    out.push({ key, title: x.t(KEY_IND_HEAD + key), rows: cells })
+  }
+  return out
+}
+
+/**
+ * 三分表并成一份,按雇主名去重(一家可能同时在 LMIA 表与紧缺表)。
+ *
+ * @param sponsor 三分表。
+ * @returns 去重后的事实行。
+ */
+function unionSponsorRows(sponsor: SponsorBoards): SponsorRowList {
+  const seen = new Set<string>()
+  const out: SponsorRowList = []
+  for (const g of [sponsor.lmia, sponsor.named, sponsor.aip]) {
+    for (const r of g.top) {
+      if (seen.has(r.name) === false) {
+        seen.add(r.name)
+        out.push(r)
+      }
+    }
+  }
+  return out
+}
+
+/**
+ * 这家雇主够不够格进该表种(Frank「列出在招的有价值的雇主才有意义」)。
+ *
+ * @param x 事实行与表种。
+ * @returns 够格与否。
+ */
+function isValuableEmp(x: ValuableIn): boolean {
+  const skilled = skilledOf(x.r)
+  if (x.kind === EMP_KIND_LMIA) {
+    return skilled > 0
+  }
+  return x.r.named || x.r.aip || skilled > 0
+}
+
+/**
+ * 技能类 LMIA 获批数(null 当 0)。
+ *
+ * @param r 事实行。
+ * @returns 获批数。
+ */
+function skilledOf(r: SponsorEmployerRow): number {
+  if (r.lmiaPositionsSkilled == null) {
+    return 0
+  }
+  return r.lmiaPositionsSkilled
+}
+
+/**
+ * 一家雇主归哪个行业组:数它在招岗 NOC 的大类,票多的组赢;一个 NOC 都归不到给 ''。
+ *
+ * @param x NOC 清单与分类映射。
+ * @returns 行业组键或 ''。
+ */
+function indOfNocs(x: IndOfIn): string {
+  const votes = new Map<string, number>()
+  for (const n of x.nocs) {
+    const cat = x.nocCat.get(n)
+    if (cat == null) {
+      continue
+    }
+    const key = indKeyOfBroad(cat.broad)
+    if (key === TEXT_NONE) {
+      continue
+    }
+    const cur = votes.get(key)
+    if (cur == null) {
+      votes.set(key, 1)
+    } else {
+      votes.set(key, cur + 1)
+    }
+  }
+  let best = TEXT_NONE
+  let bestN = 0
+  for (const key of IND_KEYS) {
+    const n = votes.get(key)
+    if (n != null && n > bestN) {
+      best = key
+      bestN = n
+    }
+  }
+  return best
+}
+
+/**
+ * 本站大类 → 行业组键;不在任何组给 ''。
+ *
+ * @param broad 本站大类。
+ * @returns 行业组键或 ''。
+ */
+function indKeyOfBroad(broad: string): string {
+  for (const key of IND_KEYS) {
+    const broads = IND_BROADS[key]
+    if (broads != null && broads.includes(broad)) {
+      return key
+    }
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 按在招降序。
+ *
+ * @param a 一行。
+ * @param b 另一行。
+ * @returns 比较结果。
+ */
+// eslint-disable-next-line local/one-parameter -- 比较器的两参一返由 Array.prototype.sort 定死
+function byEmpOpenDesc(a: SponsorEmployerRow, b: SponsorEmployerRow): number {
+  return b.openJobs - a.openJobs
+}
+
+/**
+ * 按技能类 LMIA 获批数降序,同数按在招降序。
+ *
+ * @param a 一行。
+ * @param b 另一行。
+ * @returns 比较结果。
+ */
+// eslint-disable-next-line local/one-parameter -- 比较器的两参一返由 Array.prototype.sort 定死
+function byEmpSkilledDesc(a: SponsorEmployerRow, b: SponsorEmployerRow): number {
+  const bySkilled = skilledOf(b) - skilledOf(a)
+  if (bySkilled !== 0) {
+    return bySkilled
+  }
+  return b.openJobs - a.openJobs
+}
+
+/**
+ * 事实行 → 雇主表展示行(值级清洗全在这里:文案、胶囊、链接)。
+ *
+ * @param x 事实行与取词函数。
+ * @returns 展示行。
+ */
+function toEmpCellRow(x: EmpCellRowIn): EmpCellRow {
+  const r = x.r
+  const skilled = skilledOf(r)
+  const signals: string[] = []
+  if (r.named) {
+    signals.push(x.t('pulse.sig.named'))
+  }
+  if (r.aip) {
+    signals.push(x.t('pulse.sig.aip'))
+  }
+  if (skilled > 0) {
+    signals.push(x.t('pulse.sig.lmia', { n: numOf(skilled) }))
+  }
+  let skilledText = DASH_MARK
+  if (skilled > 0) {
+    skilledText = numOf(skilled)
+  }
+  let quarterText = DASH_MARK
+  if (r.lmiaLastQuarter !== TEXT_NONE) {
+    quarterText = r.lmiaLastQuarter
+  }
+  return {
+    key: r.name,
+    name: r.name,
+    href: URL_HOME_Q_HEAD + encodeURIComponent(r.name),
+    open: r.openJobs,
+    openText: numOf(r.openJobs),
+    signals,
+    skilled,
+    skilledText,
+    quarterText,
+    provsText: r.provs.join(SEP_LIST),
+    onView: trackEmpClick,
+  }
+}
+
+/**
+ * 雇主表的列(按表种):担保信号表 = 雇主 / 在招 / 担保信号 / 所在地;
+ * LMIA 表 = 雇主 / 技能类 LMIA 获批 / 最近一季 / 在招 / 所在地。
+ *
+ * @param x 取词函数与表种。
+ * @returns 列定义。
+ */
+export function empColsOf(x: EmpColsIn): StartCol<EmpCellRow>[] {
+  const name: StartCol<EmpCellRow> = {
+    key: COL_EMP, label: x.t('de.colName'), sort: empNameSortOf, render: EmpNameCell,
+  }
+  const open: StartCol<EmpCellRow> = {
+    key: COL_OPEN, label: x.t('pulse.col.open'), nowrap: true, sort: empOpenSortOf, render: empOpenOf,
+  }
+  const where: StartCol<EmpCellRow> = { key: COL_PROV, label: x.t('se.col.where'), nowrap: true, render: empProvsOf }
+  if (x.kind === EMP_KIND_LMIA) {
+    return [
+      name,
+      { key: COL_SKILLED, label: x.t('dir.col.skilled'), nowrap: true, sort: empSkilledSortOf, render: empSkilledOf },
+      { key: COL_QUARTER, label: x.t('se.col.w1'), nowrap: true, render: empQuarterOf },
+      open,
+      where,
+    ]
+  }
+  return [name, open, { key: COL_SIGNALS, label: x.t('pulse.col.signals'), render: EmpSignalsCell }, where]
+}
+
+/**
+ * 雇主表的行键。
+ *
+ * @param r 一行。
+ * @returns 行键。
+ */
+export function empRowKeyOf(r: EmpCellRow): string {
+  return r.key
+}
+
+/**
+ * 雇主名排序键。
+ *
+ * @param r 一行。
+ * @returns 雇主名。
+ */
+function empNameSortOf(r: EmpCellRow): string {
+  return r.name
+}
+
+/**
+ * 在招排序键。
+ *
+ * @param r 一行。
+ * @returns 在招数。
+ */
+function empOpenSortOf(r: EmpCellRow): number {
+  return r.open
+}
+
+/**
+ * 技能类 LMIA 排序键。
+ *
+ * @param r 一行。
+ * @returns 获批数。
+ */
+function empSkilledSortOf(r: EmpCellRow): number {
+  return r.skilled
+}
+
+/**
+ * 在招格文案。
+ *
+ * @param r 一行。
+ * @returns 文案。
+ */
+function empOpenOf(r: EmpCellRow): string {
+  return r.openText
+}
+
+/**
+ * 技能类 LMIA 格文案。
+ *
+ * @param r 一行。
+ * @returns 文案。
+ */
+function empSkilledOf(r: EmpCellRow): string {
+  return r.skilledText
+}
+
+/**
+ * 最近一季格文案。
+ *
+ * @param r 一行。
+ * @returns 文案。
+ */
+function empQuarterOf(r: EmpCellRow): string {
+  return r.quarterText
+}
+
+/**
+ * 所在地格文案。
+ *
+ * @param r 一行。
+ * @returns 文案。
+ */
+function empProvsOf(r: EmpCellRow): string {
+  return r.provsText
+}
+
+/**
+ * 点了雇主名(沿用 se-view-jobs,已在第一方白名单)。
+ *
+ * @returns 无。
+ */
+export function trackEmpClick(): void {
+  track(TRACK_EMP)
+}
+
+
+/**
+ * 城市段的候选行:主图的 city 行按在招降序,最多 TOPN_MAX 行;主图没到给 null。
+ *
+ * @param x 主图四份数据。
+ * @returns 城市行或 null。
+ */
+export function cityRowsOf(x: NatOccIn): CityRow[] | null {
+  if (x.market == null) {
+    return null
+  }
+  const rows = x.market.city.slice()
+  rows.sort(byCityOpenDesc)
+  return rows.slice(0, TOPN_MAX)
+}
+
+/**
+ * 在招(null 当 0,只用于排序)。
+ *
+ * @param r 一行。
+ * @returns 在招数。
+ */
+function cityOpenOf(r: CityRow): number {
+  if (r.openJobs == null) {
+    return 0
+  }
+  return r.openJobs
+}
+
+/**
+ * 按在招降序。
+ *
+ * @param a 一行。
+ * @param b 另一行。
+ * @returns 比较结果。
+ */
+// eslint-disable-next-line local/one-parameter -- 比较器的两参一返由 Array.prototype.sort 定死
+function byCityOpenDesc(a: CityRow, b: CityRow): number {
+  return cityOpenOf(b) - cityOpenOf(a)
+}
+
+/**
+ * 城市统计行 → 城市卡展示行(值级清洗全在这里)。
+ *
+ * @param x 城市行、取词函数与语言。
+ * @returns 展示行。
+ */
+export function toCityCellRows(x: CityCellRowsIn): CityCellRow[] {
+  const out: CityCellRow[] = []
+  for (const r of x.rows) {
+    out.push(toCityCellRow(r, x))
+  }
+  return out
+}
+
+/**
+ * 一行城市统计 → 展示行。
+ *
+ * @param r 城市统计行。
+ * @param x 取词函数与语言。
+ * @returns 展示行。
+ */
+// eslint-disable-next-line local/one-parameter -- 行构造器照 toOccCellRow 的形:行 + 上下文两参
+function toCityCellRow(r: CityRow, x: CityCellRowsIn): CityCellRow {
+  return {
+    key: r.city + KEY_SEP + r.province,
+    name: cityNameOf({ r, lang: x.lang }),
+    provName: provLabelOf({ t: x.t, code: r.province }),
+    provCode: r.province,
+    openText: numOrDashOf(r.openJobs),
+    new7Text: numOrDashOf(r.new7d),
+    wageText: wageOrDashOf(r.medianWageAnnual),
+    namedText: numOrDashOf(r.namedJobs),
+    href: URL_HOME_CITY_HEAD + encodeURIComponent(r.city),
+  }
+}
+
+/**
+ * 城市名:界面语言有译名用译名(48 个主要城市有),否则英文原名。
+ *
+ * @param x 城市行与语言。
+ * @returns 城市名。
+ */
+function cityNameOf(x: CityNameIn): string {
+  if (x.lang === LANG_ZH && x.r.cityZh !== TEXT_NONE) {
+    return x.r.cityZh
+  }
+  if (x.lang === LANG_KO && x.r.cityKo !== TEXT_NONE) {
+    return x.r.cityKo
+  }
+  return x.r.city
+}
+
+/**
+ * 可空数 → 千分位文案;null 给 DASH_MARK(官方没数就画杠,不编 0)。
+ *
+ * @param n 可空数。
+ * @returns 文案。
+ */
+function numOrDashOf(n: number | null): string {
+  if (n == null) {
+    return DASH_MARK
+  }
+  return numOf(n)
+}
+
+/**
+ * 可空年薪 → 带币种的千分位文案;null 给 DASH_MARK。
+ *
+ * @param n 可空年薪。
+ * @returns 文案。
+ */
+function wageOrDashOf(n: number | null): string {
+  if (n == null) {
+    return DASH_MARK
+  }
+  return WAGE_SIGN + numOf(n)
+}
+
+/**
+ * 城市卡的类(与省卡同形,不带选中态)。
+ *
+ * @returns 类名。
+ */
+export function cityCardClsOf(): string {
+  return joinCls([cssOf(css.provCard), cssOf(css.cityCard), CLS_CARD_HOVER])
+}
+
+
+/**
+ * 趋势段的数据:全国线(stats_daily 的 'all' 汇总行按日加总)+ 每个行业组一条线(组内大类按日加总)。
+ * 全国线点数不足 TREND_MIN_POINTS 整段不出(给 null);点数不足的行业组只丢它自己。
+ *
+ * @param x 取词函数与逐日 × 大类在招量。
+ * @returns 趋势面板或 null。
+ */
+export function trendOf(x: TrendOfIn): TrendPanel | null {
+  const nat = seriesOf({ daily: x.daily, broads: [BROAD_ALL], key: BROAD_ALL, title: x.t('pulse.trend.nat') })
+  if (nat == null) {
+    return null
+  }
+  const inds: TrendSeries[] = []
+  for (const key of IND_KEYS) {
+    const broads = IND_BROADS[key]
+    if (broads == null) {
+      continue
+    }
+    const s = seriesOf({ daily: x.daily, broads, key, title: x.t(KEY_IND_HEAD + key) })
+    if (s != null) {
+      inds.push(s)
+    }
+  }
+  return { nat, inds }
+}
+
+/**
+ * 一条线:把清单里的大类按日期加总,日期升序;点数不足给 null。
+ *
+ * @param x 逐日行、大类清单、键与标题。
+ * @returns 一条线或 null。
+ */
+function seriesOf(x: SeriesIn): TrendSeries | null {
+  const sum: DateSum = new Map()
+  for (const d of x.daily) {
+    if (x.broads.includes(d.broad) === false) {
+      continue
+    }
+    const cur = sum.get(d.date)
+    if (cur == null) {
+      sum.set(d.date, d.openJobs)
+    } else {
+      sum.set(d.date, cur + d.openJobs)
+    }
+  }
+  const dates = Array.from(sum.keys())
+  dates.sort()
+  if (dates.length < TREND_MIN_POINTS) {
+    return null
+  }
+  const values: number[] = []
+  for (const d of dates) {
+    const v = sum.get(d)
+    if (v != null) {
+      values.push(v)
+    }
+  }
+  const last = values[values.length - 1]
+  let lastText = DASH_MARK
+  if (last != null) {
+    lastText = numOf(last)
+  }
+  return { key: x.key, title: x.title, dates, values, lastText }
+}
+
+/**
+ * 一条线的 echarts 配置:单序列平滑线 + 淡填充;主图带坐标轴与轴触发提示,小图只有线。
+ *
+ * @param x 这条线与是否小图。
+ * @returns echarts 配置。
+ */
+export function lineOptionOf(x: LineOptionIn): ChartOption {
+  let pad = TREND_PAD_MAIN
+  if (x.small) {
+    pad = TREND_PAD_SMALL
+  }
+  return {
+    animation: false,
+    grid: { left: pad, right: pad, top: pad, bottom: pad, containLabel: x.small === false },
+    tooltip: { trigger: CHART_TRIGGER_AXIS, show: x.small === false },
+    xAxis: { type: AXIS_CATEGORY, data: x.s.dates, show: x.small === false, boundaryGap: false },
+    yAxis: { type: AXIS_VALUE, scale: true, show: x.small === false },
+    series: [{
+      type: SERIES_LINE_TYPE,
+      data: x.s.values,
+      showSymbol: false,
+      smooth: true,
+      lineStyle: { width: TREND_LINE_WIDTH, color: TREND_COLOR },
+      itemStyle: { color: TREND_COLOR },
+      areaStyle: { color: TREND_COLOR, opacity: TREND_AREA_OPACITY },
+    }],
+  }
+}
+
+/**
+ * 趋势卡的类:主图与小图共一个底,主图不进网格。
+ *
+ * @param x 是否小图。
+ * @returns 类名。
+ */
+export function trendCardClsOf(x: TrendSmallIn): string {
+  const cls = [cssOf(css.trendCard)]
+  if (x.small === false) {
+    cls.push(cssOf(css.trendCardMain))
+  }
+  return joinCls(cls)
+}
+
+/**
+ * 趋势图高度(px)。
+ *
+ * @param x 是否小图。
+ * @returns 高度。
+ */
+export function trendHeightOf(x: TrendSmallIn): number {
+  if (x.small) {
+    return TREND_H_SMALL
+  }
+  return TREND_H_MAIN
+}
+
+/**
+ * 抽选与政策动态那一行链接的类。
+ *
+ * @returns 类名。
+ */
+export function drawsLinkClsOf(): string {
+  return cssOf(css.drawsLink)
 }
