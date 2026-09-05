@@ -12,7 +12,6 @@
  * @time 2026-08-28 12:39:03
  */
 import { BANNER_IMGS, Banner } from '@/components/banner'
-import { IconMap } from '@/components/icons'
 import { Search } from '@/components/search'
 import { Shell } from '@/components/shell'
 import { SectionTabs } from '@/components/tabs'
@@ -35,7 +34,6 @@ export function Resources() {
   return (
     <Shell top={SHELL_TOP}>
       <Banner module={BANNER_MODULE}
-        icon={<IconMap />}
         title={t('res.title')}
         sub={t('res.sub')}
         images={BANNER_IMGS.library} />

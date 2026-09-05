@@ -19,7 +19,6 @@
  * @time 2026-08-28 00:30:00
  */
 import { BANNER_IMGS, Banner } from '@/components/banner'
-import { IconCompass } from '@/components/icons'
 import { Shell } from '@/components/shell'
 import { DrawsCard } from './drawscard'
 import { JobBoard } from './jobboard'
@@ -43,10 +42,7 @@ export function Decision({
     <div className={css.main}>
       <Shell top={SHELL_TOP} bottom={SHELL_BOTTOM}>
         <div className={css.track}>
-          <Banner module={MODULE_PATHWAYS}
-            icon={<IconCompass />}
-            title={d.t('plan.pr.title')}
-            sub={d.t('dp.sub')}
+          <Banner module={MODULE_PATHWAYS} title={d.t('plan.pr.title')} sub={d.t('dp.sub')}
             images={BANNER_IMGS.pathways} />
           {tvJob == null && <NoJobBoard d={d} topNocs={topNocs} />}
           {tvJob != null && <JobBoard d={d} topNocs={topNocs} initialVerdict={initialVerdict} />}

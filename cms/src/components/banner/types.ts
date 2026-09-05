@@ -12,6 +12,21 @@
 export type BannerModule = 'home' | 'jobs' | 'pathways' | 'rank' | 'stats' | 'news' | 'employers' | 'library'
 
 /**
+ * 关键数字块(≤3,Frank:「显示关键信息但不能太多」;仅图版渲染)。
+ */
+export type BannerStat = {
+  /**
+   * 数字。
+   */
+  v: React.ReactNode
+
+  /**
+   * 数字的标签。
+   */
+  label: React.ReactNode
+}
+
+/**
  * Banner 的 props(两形态一组件:images 传了且没挂 = 图版,否则渐变带兜底)。
  */
 export type BannerIn = {
@@ -39,6 +54,11 @@ export type BannerIn = {
    * 实景图组(可省 = 渐变带;图挂了自动回落渐变带,发布零风险)。
    */
   images?: readonly string[]
+
+  /**
+   * 关键数字块(仅图版渲染,最多 STATS_MAX 个;≤640 藏)。
+   */
+  stats?: BannerStat[]
 
 }
 
@@ -91,6 +111,11 @@ export type ImageBannerIn = {
    * 副题(可省 = null)。
    */
   sub: React.ReactNode
+
+  /**
+   * 关键数字块(可省 = null;最多渲 STATS_MAX 个,手机藏)。
+   */
+  stats: BannerStat[] | null
 
   /**
    * 轮播图组(非空,Banner 选形时已判)。

@@ -65,6 +65,11 @@ export const BANNER_IMGS = {
 export const ROTATE_MS = 8000
 
 /**
+ * 关键数字块上限(Frank:「显示关键信息但不能太多」)。
+ */
+export const STATS_MAX = 3
+
+/**
  * 「减少动态」系统偏好的媒体查询串(命中就不轮播,静止在第一张)。
  */
 export const REDUCED_MOTION_MQ = '(prefers-reduced-motion: reduce)'

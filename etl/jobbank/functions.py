@@ -61,6 +61,7 @@ from jobbank.constants import (
     K_ANNUAL, K_APPRENTICE_FRIENDLY, K_CATEGORY, K_CERTIFICATES, K_CHECKED, K_CITY, K_COMPANY,
     K_COUNT, K_CUTOFF, K_DATE, K_DATE_DETAIL, K_DEAD, K_DESCRIPTION, K_DETAIL_FETCHED, K_DIRECT,
     K_DISTRICT, K_EDUCATION, K_EMAIL, K_EMPLOYER, K_EMPLOYMENT_HOURS, K_EMPLOYMENT_TERM, K_WHO_CAN_APPLY,
+    DETAIL_BACKFILL_MAX,
     SEL_AUDIENCE, WHO_ANYONE, WHO_ANYONE_MARK, WHO_CITIZENS, WHO_TEMPORARY, WHO_TEMPORARY_MARK,
     K_EXPERIENCE_REQ, K_EXTERNAL_ID, K_FETCHED_AT, K_FILE, K_JOB_COUNT, K_JOBS, K_LAST_SEEN,
     K_NAME, K_NOC, K_NOC_BLANKED, K_PAGE, K_PAGES, K_PHONE, K_POSTING_ID, K_PROV, K_PROVINCE,
@@ -576,10 +577,15 @@ def parse_jobbank_details() -> None:
         seen: set = set()
         reparse = os.environ.get(ENV_REPARSE) == ENV_ON
         parsed = 0
+        backfilled = 0
         for job in jobs:
             raw_file = have.get(pid_of(job))
             if not should_parse(ShouldParseIn(job=job, raw_file=raw_file, reparse=reparse)):
                 continue
+            if is_backfill_only(job):
+                if backfilled >= DETAIL_BACKFILL_MAX:
+                    continue
+                backfilled += 1
             enrich_job(EnrichIn(job=job, raw_file=cast(Path, raw_file), seen=seen))
             parsed += 1
         if parsed > 0:
@@ -587,6 +593,11 @@ def parse_jobbank_details() -> None:
         tally = store_tally(jobs)
     say(PRINT_DETAILS_DONE_TPL.format(parsed=parsed, addrs=tally.addrs, webs=tally.webs,
                                       emp=tally.emp, certs=tally.certs, out=OUT_DETAILS))
+
+
+def is_backfill_only(job: dict) -> bool:
+    """这帖早已富集完(有 detail_fetched / noc / 雇佣形态),这次重解析只为补新键 —— 受 DETAIL_BACKFILL_MAX 限量。"""
+    return bool(job.get(K_DETAIL_FETCHED) and job.get(K_NOC) and K_EMPLOYMENT_HOURS in job)
 
 
 def should_parse(x: ShouldParseIn) -> bool:

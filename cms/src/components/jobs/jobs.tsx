@@ -26,14 +26,14 @@
  */
 import { BANNER_IMGS, Banner } from '@/components/banner'
 import { cssOf } from '@/components/css'
-import { IconClipboard } from '@/components/icons'
-import { BANNER_MODULE } from './constants'
-import { mvBarTextOf } from './functions'
+import { BANNER_MODULE, BANNER_TITLE } from './constants'
+import { mvBarTextOf, proofTextOf, subTextOf } from './functions'
 import { useJobsBoard } from './hooks'
 import { BoardCards } from './boardcards'
 import { BoardFilters } from './boardfilters'
 import { BoardLoading } from './boardloading'
 import { BoardModals } from './boardmodals'
+import { BoardSub } from './boardsub'
 import { BoardTable } from './boardtable'
 import { MatchBar } from './matchbar'
 import { MatchEntry } from './matchentry'
@@ -53,11 +53,16 @@ export function Jobs(props: JobsIn) {
   return (
     <div className={cssOf(css.page)}>
       <div className={cssOf(css.main)}>
-        <Banner module={BANNER_MODULE}
-          icon={<IconClipboard />}
-          title={b.t('nav.jobs')}
-          sub={b.t('subtitle.board')}
-          images={BANNER_IMGS.jobs} />
+        <Banner module={BANNER_MODULE} title={BANNER_TITLE} images={BANNER_IMGS.jobs}
+          sub={
+            <BoardSub text={subTextOf({
+              t: b.t,
+              anyFilter: b.filters.anyFilter,
+              matchView: b.matchView,
+              total: b.data.total,
+            })}
+              proof={proofTextOf({ t: b.t, named: b.proof.named, lmia: b.proof.lmia })} />
+          } />
         <BoardFilters b={b} boxRef={boxRef} />
         {b.matchView === false && <MatchEntry label={b.t('mv.entry')} onClick={b.gate.onToggle} />}
         {b.matchView && (

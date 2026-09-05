@@ -10,7 +10,6 @@
  * @time 2026-08-27 01:30:00
  */
 import { BANNER_IMGS, Banner } from '@/components/banner'
-import { IconMap } from '@/components/icons'
 import { useLang } from '@/components/i18n'
 import { SectionTabs } from '@/components/tabs'
 import { CASES } from '@/lib/ruling'
@@ -31,11 +30,7 @@ export function Cases() {
   }
   return (
     <div className={css.track}>
-      <Banner module={BANNER_MODULE}
-        icon={<IconMap />}
-        title={t('dp.cases')}
-        sub={t('dp.casesSub')}
-        images={BANNER_IMGS.library} />
+      <Banner module={BANNER_MODULE} title={t('dp.cases')} images={BANNER_IMGS.library} />
       <SectionTabs tabs={[
         { href: LIB_URL_OCC, label: t('dir.occ.title'), active: false },
         { href: LIB_URL_RESOURCES, label: t('res.entry'), active: false },

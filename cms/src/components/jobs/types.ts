@@ -1251,23 +1251,18 @@ export type AccountAreaIn = {
 }
 
 /**
- * BoardCounts(筛选行计数)的 props(2026-09-05 自 BoardSubIn 改名:数字出横幅进筛选行)。
+ * BoardSub(横幅副标)的 props。
  */
-export type BoardCountsIn = {
+export type BoardSubIn = {
   /**
-   * 第一条:库内总数 / 筛选命中数。
+   * 主句:库内总数 / 筛选命中数。
    */
-  count: string
+  text: string
 
   /**
-   * 第二条:命中省提名清单岗数;'' = 不渲(为 0)。
+   * 证言句;'' = 不渲(数字全为 0 时)。
    */
-  named: string
-
-  /**
-   * 第三条:有外劳记录雇主数;'' = 不渲(为 0)。
-   */
-  lmia: string
+  proof: string
 }
 
 /**
@@ -5849,9 +5844,9 @@ export type SubTextIn = {
 }
 
 /**
- * namedTextOf 的入参。
+ * proofTextOf 的入参。
  */
-export type NamedTextIn = {
+export type ProofTextIn = {
   /**
    * 取词函数。
    */
@@ -5861,16 +5856,6 @@ export type NamedTextIn = {
    * 命中省提名具名清单的岗位数。
    */
   named: number
-}
-
-/**
- * lmiaTextOf 的入参。
- */
-export type LmiaTextIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
 
   /**
    * 有外劳记录的雇主数。

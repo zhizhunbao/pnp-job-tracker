@@ -60,6 +60,55 @@
 }
 
 /*
+ * #267 方案B:H1 文字只给读屏与搜索引擎,视觉不渲(标准 sr-only 裁剪法)。
+ * 裸删会让 #267 的空 H1 复发,SEO 与无障碍双输。
+ */
+.srOnly {
+  /*
+   * 脱离文档流。
+   */
+  position: absolute;
+
+  /*
+   * 收成 1×1(不是 display:none —— 那样读屏也读不到)。
+   */
+  width: 1px;
+  height: 1px;
+
+  /*
+   * 内衬清零。
+   */
+  padding: 0;
+
+  /*
+   * 负外边距把这 1px 也挪出视野。
+   */
+  margin: -1px;
+
+  /*
+   * 溢出裁掉。
+   */
+  overflow: hidden;
+
+  /*
+   * 裁剪成零面积(旧版裁剪法,兼容面最宽)。
+   */
+
+  /* stylelint-disable-next-line property-no-deprecated -- 迁移保值(#267 方案B 的 sr-only 原样搬,换 clip-path 是改行为) */
+  clip: rect(0 0 0 0);
+
+  /*
+   * 不折行(折行会撑破 1px 盒)。
+   */
+  white-space: nowrap;
+
+  /*
+   * 无描边。
+   */
+  border: 0;
+}
+
+/*
  * 整页正文段(顶栏与页脚之间那一格):撑开高度把页脚推到视口底。
  */
 .main {

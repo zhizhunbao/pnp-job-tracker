@@ -425,6 +425,11 @@ WHO_ANYONE_MARK = "with or without"
 
 WHO_TEMPORARY_MARK = "temporary resident"
 """temporary_ok 档的判词(原文片段)。"""
+
+DETAIL_BACKFILL_MAX = 3000
+"""一轮最多回填几帖(已富集过、只为补新键的重解析)。2026-09-05 实撞:who_can_apply 上线让 136k 帖一口气全重解析,
+持仓锁两小时不放,build 整轮卡在等锁没法汇装 seed;改成每轮回填一批(约 10 分钟),几十轮慢慢补齐,
+新抓的帖不受此限。"""
 """详情页的雇佣形态(Full/Part time)。"""
 
 SEL_HIRING_ORG = '[property="hiringOrganization"]'

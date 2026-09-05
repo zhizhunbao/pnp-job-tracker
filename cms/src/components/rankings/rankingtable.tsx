@@ -8,7 +8,6 @@
  * 2026-08-28 换装批自 Ranking.tsx 的 RankingTable 整体重写成小写件形制。
  * 2026-09-03 Frank「所有的 table 右上角都应该有一个更新时间」:榜头那一行自算的
  * updatedTextOf 换成 time 桶的 Updated(全站唯一形),值 = 页面门 SSR 取的 ETL 心跳。
- * 2026-09-05 Frank 拍板 banner 文字统一:横幅数字胶囊撤编,本榜岗位数落到 Updated 左侧同一行。
  *
  * @author Frank
  * @time 2026-08-28 12:49:56
@@ -32,10 +31,7 @@ export function RankingTable({ slug, items, updatedAt, t }: RankingTableIn) {
   const company = isCompanyBoard(slug)
   return (
     <>
-      <div className={css.top}>
-        <span className={css.count}>{t('rank.bnRows', { n: items.length })}</span>
-        <Updated iso={updatedAt} t={t} />
-      </div>
+      <Updated iso={updatedAt} t={t} />
       {note !== TEXT_NONE && <div className={css.note}>{note}</div>}
       {company && <RankCompanyBoard items={items} t={t} />}
       {company === false && <RankJobBoard items={items} t={t} />}

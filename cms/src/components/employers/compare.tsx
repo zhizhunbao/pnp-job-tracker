@@ -42,11 +42,7 @@ export function Compare({ rows, pro, loggedIn, updatedAt }: CompareIn) {
   }
   return (
     <Shell top={COMPARE_SHELL_TOP_PX}>
-      <Banner module={BANNER_MODULE}
-        icon={<IconScale />}
-        title={t('ce.title')}
-        sub={t('ce.bnSub')}
-        images={BANNER_IMGS.employers} />
+      <Banner module={BANNER_MODULE} icon={<IconScale />} title={t('ce.title')} images={BANNER_IMGS.employers} />
       <div className={css.compareNote}>{t('ce.note')}</div>
       {body}
     </Shell>

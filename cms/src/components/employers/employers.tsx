@@ -44,7 +44,6 @@ export function Employers({ initial, initialFilters, updatedAt }: EmployersIn) {
         <Banner module={BANNER_MODULE}
           icon={<IconUsers />}
           title={titleTextOf({ t: p.t, f: p.f })}
-          sub={p.t('de.bnSub')}
           images={BANNER_IMGS.employers} />
         <div className={css.head}>
           <Updated iso={updatedAt} t={p.t} />
