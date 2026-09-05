@@ -51,6 +51,7 @@ import {
 } from './constants'
 import { DeadCell } from './deadcell'
 import { EmpActCell } from './empactcell'
+import { EmpBriefCell } from './empbriefcell'
 import { EmpNameCell } from './empnamecell'
 import { EmpHiringCell } from './emphiringcell'
 import { OccActCell } from './occactcell'
@@ -90,7 +91,7 @@ import type {
   CityCellRow, CityCellRowsIn, CityNameIn, DateSum, EmpCellRow, EmpCellRowIn, EmpColsIn, EmpSec, EmpSecsIn, IndOfIn,
   HiringMoreIn, IndRowsIn, LineOptionIn, OccSec, OccSecsIn, SeriesIn, SponsorBoards, TrendOfIn, TrendPanel, TrendSeries,
   EmpKind, HiringOccIn, KindChip, KindPickFn, KindPickIn, NocInfo, NocInfoIn, NocInfoMap, PulseIn2,
-  AliasIn, BriefOfIn, BriefsIn, CompanyBrief, DesignatedIn, InPilotIn, PilotNamesIn, PilotSecsIn,
+  AliasIn, BriefOfIn, BriefTextOut, BriefsIn, CompanyBrief, DesignatedIn, InPilotIn, PilotNamesIn, PilotSecsIn,
   Teer03In, VerdictTextIn,
   TrendSmallIn, ValuableIn,
   EmptyQueryResult, PulseDraw, DrawDbRow, DrawHist, DrawHistIn, DrawsIn, PulseDrawIn, DrawCellRow, DrawCellRowIn,
@@ -2887,6 +2888,7 @@ function toEmpCellRow(x: EmpCellRowIn): EmpCellRow {
   const key = r.name.toLowerCase()
   const designated = isDesignated({ r, extra: x.extra })
   const pulse = pulseOf({ teer03, named: r.named, state: r.verdict.state, designated })
+  const briefText = briefOf({ briefs: x.extra.briefs, key, lang: x.lang })
   return {
     key: r.name,
     name: displayNameOf(r.name),
@@ -2901,7 +2903,8 @@ function toEmpCellRow(x: EmpCellRowIn): EmpCellRow {
     aip: r.aip,
     rcip: x.extra.rcip.has(key),
     fcip: x.extra.fcip.has(key),
-    brief: briefOf({ briefs: x.extra.briefs, key, lang: x.lang }),
+    brief: briefText.main,
+    briefNote: briefText.note,
     flagCls: cls,
     teer03,
     lmia2q: r.lmia2q,
@@ -3072,7 +3075,7 @@ export function empColsOf(x: EmpColsIn): StartCol<EmpCellRow>[] {
     key: COL_OPEN, label: x.t('pulse.col.open'), nowrap: true, sort: empOpenSortOf, render: empOpenOf,
   }
   const act: StartCol<EmpCellRow> = { key: COL_ACT, label: x.t('col.actions'), nowrap: true, render: EmpActCell }
-  const biz: StartCol<EmpCellRow> = { key: COL_BIZ, label: x.t('pulse.col.biz'), render: empBriefOf }
+  const biz: StartCol<EmpCellRow> = { key: COL_BIZ, label: x.t('pulse.col.biz'), render: EmpBriefCell }
   if (x.kind === TABLE_PILOT) {
     return [
       name,
@@ -3249,7 +3252,7 @@ function pilotNamesOf(x: PilotNamesIn): string[] {
 function briefsOf(x: BriefsIn): Record<string, CompanyBrief> {
   const all = new Map<string, CompanyBrief>()
   for (const r of x.rows) {
-    all.set(r.name, { en: r.brief, zh: zhOrNone(r.brief_zh) })
+    all.set(r.name, { en: r.brief, zh: translationOf(r.brief_zh), ko: translationOf(r.brief_ko) })
   }
   const out: Record<string, CompanyBrief> = {}
   for (const s of x.sponsorRows) {
@@ -3263,12 +3266,12 @@ function briefsOf(x: BriefsIn): Record<string, CompanyBrief> {
 }
 
 /**
- * 译文列:库里 NULL 给 ''。
+ * 译文列(中/韩同用):库里 NULL 给 ''。
  *
  * @param zh 译文或 null。
  * @returns 译文或 ''。
  */
-function zhOrNone(zh: string | null): string {
+function translationOf(zh: string | null): string {
   if (zh == null) {
     return TEXT_NONE
   }
@@ -3276,20 +3279,24 @@ function zhOrNone(zh: string | null): string {
 }
 
 /**
- * 简介格文案:中文界面有译文用译文(2026-09-05 ai_brief_zh 落库),否则英文;没有给 DASH_MARK。
+ * 简介格文案:中/韩界面有译文用译文当主文案、英文原文作灰注(2026-09-05 Frank「改成中英双语的吗」、
+ * 韩语界面「没有翻译」);没译文时只英文;没有给 DASH_MARK 无注。
  *
  * @param x 简介表与名(小写)。
- * @returns 文案。
+ * @returns 主文案 + 灰注。
  */
-function briefOf(x: BriefOfIn): string {
+function briefOf(x: BriefOfIn): BriefTextOut {
   const b = x.briefs.get(x.key)
   if (b == null) {
-    return DASH_MARK
+    return { main: DASH_MARK, note: TEXT_NONE }
   }
   if (x.lang === LANG_ZH && b.zh !== TEXT_NONE) {
-    return whatOf(b.zh)
+    return { main: whatOf(b.zh), note: whatOf(b.en) }
   }
-  return whatOf(b.en)
+  if (x.lang === LANG_KO && b.ko !== TEXT_NONE) {
+    return { main: whatOf(b.ko), note: whatOf(b.en) }
+  }
+  return { main: whatOf(b.en), note: TEXT_NONE }
 }
 
 /**
@@ -3322,16 +3329,6 @@ function whatOf(brief: string): string {
 function isDesignated(x: DesignatedIn): boolean {
   const key = x.r.name.toLowerCase()
   return x.r.aip || x.extra.rcip.has(key) || x.extra.fcip.has(key)
-}
-
-/**
- * 业务格文案(公司简介)。
- *
- * @param r 一行。
- * @returns 文案。
- */
-function empBriefOf(r: EmpCellRow): string {
-  return r.brief
 }
 
 /**

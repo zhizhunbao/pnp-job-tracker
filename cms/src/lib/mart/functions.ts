@@ -769,7 +769,8 @@ export function toCompany(x: ToCompanyIn): MartRow {
     lmia_positions_4q: cellOf(x.r.lmiaPositions4q), lmia_positions_2q: cellOf(x.r.lmiaPositions2q),
     lmia_positions_1q: cellOf(x.r.lmiaPositions1q), lmia_nocs: cellOf(x.r.lmiaNocs),
     sponsor_grade: cellOf(x.r.sponsorGrade), score_detail: jsonTextOf(x.r.scoreDetail),
-    ai_brief: cellOf(x.r.aiBrief), ai_brief_zh: cellOf(x.r.aiBriefZh), ai_sources: cellOf(x.r.aiSources),
+    ai_brief: cellOf(x.r.aiBrief), ai_brief_zh: cellOf(x.r.aiBriefZh), ai_brief_ko: cellOf(x.r.aiBriefKo),
+    ai_sources: cellOf(x.r.aiSources),
     ai_fetched: cellOf(x.r.aiFetched),
     created_at: x.now, updated_at: x.now,
   }

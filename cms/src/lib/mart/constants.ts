@@ -632,7 +632,7 @@ export const COLS_NEWS_CACHE = ['body_zh', 'body_ko', 'summary_zh', 'summary_ko'
 /**
  * companies 列(含时间戳;按 slug upsert)。
  */
-export const COLS_COMPANIES = ['slug', 'name', 'website', 'website_source', 'email', 'region', 'sectors', 'address', 'description', 'source', 'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'lmia_positions_skilled', 'lmia_positions_4q', 'lmia_positions_2q', 'lmia_positions_1q', 'lmia_nocs', 'sponsor_grade', 'score_detail', 'ai_brief', 'ai_brief_zh', 'ai_sources', 'ai_fetched', 'created_at', 'updated_at']
+export const COLS_COMPANIES = ['slug', 'name', 'website', 'website_source', 'email', 'region', 'sectors', 'address', 'description', 'source', 'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'lmia_positions_skilled', 'lmia_positions_4q', 'lmia_positions_2q', 'lmia_positions_1q', 'lmia_nocs', 'sponsor_grade', 'score_detail', 'ai_brief', 'ai_brief_zh', 'ai_brief_ko', 'ai_sources', 'ai_fetched', 'created_at', 'updated_at']
 
 /**
  * companies 更新分支按 EXCLUDED 直写、且参与「真变了才写」比较的列
@@ -645,7 +645,7 @@ export const COLS_COMPANIES_PLAIN = ['name', 'website', 'website_source', 'email
  * companies 走 COALESCE 保旧值的列(E12-08 担保档 + 四维档明细:盒过渡期缺键
  * 保留旧值不清空,GAP1 惯例)。
  */
-export const COLS_COMPANIES_COALESCE = ['sponsor_grade', 'score_detail', 'ai_brief', 'ai_brief_zh', 'ai_sources', 'ai_fetched']
+export const COLS_COMPANIES_COALESCE = ['sponsor_grade', 'score_detail', 'ai_brief', 'ai_brief_zh', 'ai_brief_ko', 'ai_sources', 'ai_fetched']
 
 /**
  * jobs 列(含状态与时间戳;按 external_id upsert)。

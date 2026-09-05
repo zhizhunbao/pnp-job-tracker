@@ -761,6 +761,12 @@ K_BRIEF = "brief"
 K_BRIEF_ZH = "brief_zh"
 """简介记录里的中文五节键。"""
 
+K_BRIEF_KO = "brief_ko"
+"""简介记录里的韩文五节键(2026-09-05 加)。"""
+
+K_AI_BRIEF_KO = "aiBriefKo"
+"""companies 列:简介韩文。"""
+
 K_SOURCES = "sources"
 """简介记录里的出处 URL 表键。"""
 

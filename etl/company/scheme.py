@@ -1012,6 +1012,9 @@ class BriefRecord(BaseModel):
     brief_zh: str = ""
     """五节中文(同结构);空串 = 译文没过节标记校验,等重跑。"""
 
+    brief_ko: str = ""
+    """五节韩文(同结构;2026-09-05 加);空串 = 没翻或没过校验,brief 步每轮顺手补。"""
+
     model: str = ""
     """生成用的模型名。"""
 
@@ -1151,6 +1154,31 @@ class BriefOneIn:
 
     about: AboutRecord
     """这家的官网正文。"""
+
+
+@dataclass
+class BriefKoIn:
+    """fill_brief_ko 的入参(记录原地写)。"""
+
+    client: HttpClientLike
+    """复用的 httpx 客户端。"""
+
+    cfg: LlmCfg
+    """模型接线。"""
+
+    rec: BriefRecord
+    """已有英文五节的记录。"""
+
+
+@dataclass
+class PickKoIn:
+    """pick_ko_todo 的入参。"""
+
+    cache: dict
+    """slug → BriefRecord。"""
+
+    limit: int
+    """本轮最多补几家。"""
 
 
 @dataclass

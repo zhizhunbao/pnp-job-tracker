@@ -750,7 +750,7 @@ export const DESIGNATED_PILOT_NAMES = `SELECT DISTINCT lower(name) AS name, sour
 /**
  * 有简介的公司名(小写)与简介(AI 简介优先,退回描述;全文不截 —— 2026-09-05 Frank「怎么还有截断」;把脉页雇主段「主营业务」一列按名取交集)。
  */
-export const COMPANY_BRIEFS = `SELECT lower(name) AS name, COALESCE(NULLIF(ai_brief, ''), description) AS brief, ai_brief_zh AS brief_zh
+export const COMPANY_BRIEFS = `SELECT lower(name) AS name, COALESCE(NULLIF(ai_brief, ''), description) AS brief, ai_brief_zh AS brief_zh, ai_brief_ko AS brief_ko
        FROM companies WHERE COALESCE(NULLIF(ai_brief, ''), NULLIF(description, '')) IS NOT NULL`
 
 /**

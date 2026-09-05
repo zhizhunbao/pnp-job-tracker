@@ -82,6 +82,7 @@ from company.constants import (
     PATH_OLLAMA_GENERATE, PRINT_ABOUT_DONE_TPL, PRINT_ABOUT_ROW_TPL, PRINT_ABOUT_TARGETS_TPL,
     PRINT_BRIEF_DONE_TPL, PRINT_BRIEF_ROW_TPL, PRINT_BRIEF_TARGETS_TPL, P_MODEL, P_NUM_PREDICT, P_OPTIONS,
     NEWLINE, P_PROMPT, P_RESPONSE, P_STREAM, P_TEMPERATURE, P_THINK, STRIP_TAGS, THINK_RE, URL_TAIL_SLASH,
+    BRIEF_KO_PROMPT_TPL, BRIEF_KO_TOKENS, NOTE_KO_MARKERS, PRINT_BRIEF_KO_TPL,
     DDG_BACKOFF_S, DDG_FAIL_STOP, DDG_NO_RESULTS_MARK, FIND_FLUSH_N, MARK_COLON_RE, MARK_SPACE, PATH_SEP, PRINT_DDG_STOP_TPL,
     PRINT_FIND_ROW_TPL, K_LOCALITY, K_PROVINCE, MONTH_LEN, PLACES_MASK_ENT, PLACES_MASK_PRO,
     PLACES_MONTH_FREE_ENT, PLACES_MONTH_FREE_PRO, PLACES_MONTH_RESERVE, PRINT_PLACES_BUDGET_TPL, TIER_ENT, TIER_PRO,
@@ -96,6 +97,7 @@ from company.scheme import (
     TagLike, ToPlaceIn, WikiProbe, WpEnvelope,
     AboutFetchIn, AboutLinkIn, AboutRecord, AboutTarget, BriefOneIn, BriefRecord, DdgLoopIn, DdgOut,
     JobCounts, LlmCallIn, LlmCfg, MonthUsage, PageIn, PageOut, PageTextIn, PickAboutIn, PickBriefIn,
+    BriefKoIn, PickKoIn,
 )
 
 # =========================================================================
@@ -1419,6 +1421,12 @@ def build_company_briefs() -> None:
             say(PRINT_BRIEF_ROW_TPL.format(status=rec.status, name=a.name, what=what_line_of(rec)))
             if (ok + fail) % FIND_FLUSH_N == 0:
                 write_brief_cache(cache)
+        ko_todo = pick_ko_todo(PickKoIn(cache=cache, limit=BRIEF_LIMIT))
+        say(PRINT_BRIEF_KO_TPL.format(n=len(ko_todo)))
+        for i, rec in enumerate(ko_todo):
+            fill_brief_ko(BriefKoIn(client=cast(HttpClientLike, client), cfg=cfg, rec=rec))
+            if (i + 1) % FIND_FLUSH_N == 0:
+                write_brief_cache(cache)
     total = write_brief_cache(cache)
     say(PRINT_BRIEF_DONE_TPL.format(ok=ok, fail=fail, total=total, n=len(cache), out=OUT_BRIEF.name))
 
@@ -1494,7 +1502,34 @@ def brief_one(x: BriefOneIn) -> BriefRecord:
     else:
         rec.note = NOTE_ZH_MARKERS
     rec.status = ST_OK
+    fill_brief_ko(BriefKoIn(client=x.client, cfg=x.cfg, rec=rec))
     return rec
+
+
+def fill_brief_ko(x: BriefKoIn) -> None:
+    """给已有英文五节的记录补韩文(原地写 brief_ko;失败只记 note 不抛,等下轮再补)。"""
+    try:
+        ko = call_company_llm(LlmCallIn(client=x.client, cfg=x.cfg, tokens=BRIEF_KO_TOKENS,
+                                        prompt=BRIEF_KO_PROMPT_TPL.format(text=x.rec.brief)))
+    except Exception as e:  # noqa: BLE001
+        x.rec.note = type(e).__name__
+        return
+    ko = MARK_COLON_RE.sub(MARK_SPACE, ko)
+    if has_brief_marks(ko):
+        x.rec.brief_ko = ko
+    else:
+        x.rec.note = NOTE_KO_MARKERS
+
+
+def pick_ko_todo(x: PickKoIn) -> list[BriefRecord]:
+    """已做成英文但缺韩文的记录(韩文 2026-09-05 才加,存量要补),凑够 limit 即止。"""
+    todo: list[BriefRecord] = []
+    for rec in x.cache.values():
+        if len(todo) >= x.limit:
+            break
+        if rec.status == ST_OK and rec.brief != "" and rec.brief_ko == "":
+            todo.append(rec)
+    return todo
 
 
 def call_company_llm(x: LlmCallIn) -> str:

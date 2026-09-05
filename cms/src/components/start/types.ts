@@ -2053,9 +2053,15 @@ export type EmpCellRow = {
   fcip: boolean
 
   /**
-   * 公司简介(有就显,没有给 DASH_MARK;2026-09-05 Frank「需要一个单独的列来解释公司业务」)。
+   * 主营业务主文案(中文界面有译文用译文,否则英文;没有给 DASH_MARK;2026-09-05 Frank「需要一个单独的列来解释公司业务」)。
    */
   brief: string
+
+  /**
+   * 主营业务灰注:中文界面显了译文时挂英文原文(2026-09-05 Frank「改成中英双语的吗」,形照名字格的别名注);
+   * 没有第二语时 TEXT_NONE 不出行。
+   */
+  briefNote: string
 
   /**
    * 勾的胶囊类(与紧缺列的省胶囊同一形)。
@@ -3333,6 +3339,11 @@ export type BriefDbRow = {
    * 中文译文;没翻过 null(2026-09-05 ai_brief_zh 落库)。
    */
   brief_zh: string | null
+
+  /**
+   * 韩文译文;没翻过 null(2026-09-05 ai_brief_ko 落库)。
+   */
+  brief_ko: string | null
 }
 
 /**
@@ -3348,6 +3359,11 @@ export type CompanyBrief = {
    * 中文;没翻过 ''。
    */
   zh: string
+
+  /**
+   * 韩文五节;没翻过 ''(2026-09-05 加)。
+   */
+  ko: string
 }
 
 /**
@@ -3403,6 +3419,21 @@ export type EmpExtra = {
    * 名(小写)→ 简介两语。
    */
   briefs: Map<string, CompanyBrief>
+}
+
+/**
+ * `briefOf` 的出参:主文案 + 灰注。
+ */
+export type BriefTextOut = {
+  /**
+   * 主文案(界面语言优先)。
+   */
+  main: string
+
+  /**
+   * 灰注(另一语的原文;没有 TEXT_NONE)。
+   */
+  note: string
 }
 
 /**

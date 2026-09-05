@@ -1042,6 +1042,23 @@ NOTE_MARKERS = "markers missing"
 NOTE_ZH_MARKERS = "zh markers missing"
 """中文译文缺节标记(英文照收,中文留空等重跑)。"""
 
+BRIEF_KO_PROMPT_TPL = """Translate the following company profile from English to Korean.
+Keep the section markers [WHAT] [BASE] [SIZE] [FOUNDED] [NOTE] exactly as they are at the start of each line.
+Keep "(not stated)" untranslated. Keep company, brand and product names in English.
+One line per section, same order, no commentary. /no_think
+
+{text}"""
+"""韩文翻译提示词(text 一槽;2026-09-05 Frank 韩语界面「没有翻译」)。"""
+
+BRIEF_KO_TOKENS = 800
+"""韩文译文的生成上限。"""
+
+NOTE_KO_MARKERS = "ko markers missing"
+"""韩文译文缺节标记(英文照收,韩文留空等补翻)。"""
+
+PRINT_BRIEF_KO_TPL = "补韩文 {n} 家(已有英文、缺韩文)"
+"""brief 步韩文补翻报数。"""
+
 PRINT_BRIEF_TARGETS_TPL = "有正文 {about} 家 · 已做 {cache} · 本轮做 {todo}(limit {limit},model {model})"
 """brief 步报候选与本轮量。"""
 
