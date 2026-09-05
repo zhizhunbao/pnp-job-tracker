@@ -471,7 +471,6 @@ export const reportEn: Record<keyof typeof reportZh, string> = {
   'tv.k.staff': 'Staff size', 'tv.k.public': 'Employer type', 'tv.k.collect': 'Coverage',
 }
 
-
 // =========================================================================
 // 职位板(原 jobs.ts)
 // =========================================================================
@@ -550,8 +549,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'cell.pnpExcl': 'Excluded', 'cell.aipBlocked': 'Not accepted',
   'cell.pnpSkilled': 'Eligible', 'cell.pnpSkilledProv': '{p} eligible', 'cell.pnpIndemand': 'In-demand', 'cell.pnpQc': 'Quebec', 'cell.aipYes': 'Designated', 'cell.lmiaYes': '✓ {n} positions　{q}', 'cell.closed': 'Closed', 'cell.open': 'Open',
   'pnplist.title': 'PNP occupation list', 'pnplist.source': 'Source', 'pnplist.your': 'This job', 'pnplist.gta': 'Outside GTA', 'pnplist.loading': 'Loading list…', 'pnplist.showOther': 'Show other {n} ▾', 'pnplist.foldOther': 'Collapse ▴',
- 
- 
+
   'pnplist.qc': 'Quebec uses its own selection (CSQ/Arrima), not PNP',
   'pnpdraws.title': 'Recent draws {label}', 'pnpdraws.min': 'min {score}', 'pnpdraws.inv': '{n} invitations',
   'pnpdraws.notice': 'OINP redesign ({date}): former streams closed, EOI invitations stopped; new Ontario Workforce Priority stream criteria pending',
@@ -637,7 +635,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'rm.arch.save': 'Save to my profile for next time', 'rm.arch.used': 'Using the resume you saved on {d}', 'rm.arch.done': 'Saved to your profile',
   'rm.arch.title': 'Saved resume', 'rm.arch.meta': 'Saved {d}, {n} chars', 'rm.arch.empty': 'Save your resume in a job match to reuse it',
   'rm.arch.view': 'View', 'rm.arch.hide': 'Hide', 'rm.arch.clear': 'Clear', 'rm.arch.sure': 'Confirm clear', 'rm.arch.cancel': 'Cancel',
-  'cw.open': 'Ask a question', 'cw.minimize': 'Minimize', 'cw.close': 'Close', 'cw.hint': 'Questions? Just ask',
+  'cw.open': 'Find something', 'cw.minimize': 'Minimize', 'cw.close': 'Close', 'cw.hint': 'Looking for something? Ask',
   'cw.max': 'Fullscreen', 'cw.restore': 'Exit fullscreen',
   'cw.reset': 'Reset', 'cw.resetOk': 'Confirm',
   // 档案匹配(E5-00)
@@ -748,7 +746,6 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   // #49 兜底:占位里把公司名统一替换成指代词(prompt 约束模型不稳定遵守)
   'jd.sugGeneric': 'this company',
 }
-
 
 // =========================================================================
 // 站壳与其余页面(原 site.ts)
@@ -967,7 +964,6 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'stats.title': '{prov} job statistics', 'stats.catTitle': '{prov} · {cat} job statistics', 'stats.openJobs': 'Open jobs', 'stats.new7d': 'Posted in last 7 days', 'stats.medWage': 'Median wage (ESDC)', 'stats.medSalary': 'Median posted salary', 'stats.named': 'In-demand list jobs', 'stats.aip': 'AIP designated-employer jobs', 'stats.topCities': 'Top cities', 'stats.streams': 'Streams hit', 'stats.byCat': 'By occupation group', 'stats.entry': 'Region stats', 'stats.toJobs': 'See these jobs', 'stats.caliber': 'Methodology', 'stats.noList': 'No list', 'stats.noList.tip': 'This province currently publishes no PNP occupation list (e.g. OINP after its 2026-06 redesign) — eligibility runs on TEER and other conditions. Not missing data.', 'stats.naQc': 'N/A', 'stats.naQc.tip': 'Quebec does not take part in the PNP — it runs its own selection system.', 'stats.provIndex': 'Choose a province', 'stats.compare': 'Compare provinces (Pro)', 'stats.pickProv': 'Pick 2–4 provinces', 'stats.myNoc': 'Highlight by my profile', 'stats.cardWork': 'Work permits (TFWP+IMP)', 'stats.cardStudy': 'Study permits', 'stats.cardPr': 'PNP admissions (yr)',
 }
 
-
 // =========================================================================
 // 对话与顾问(原 consult.ts)
 // =========================================================================
@@ -992,44 +988,33 @@ export const consultEn: Record<keyof typeof consultZh, string> = {
   'advisor.footTpl': 'Auto-generated, not immigration or legal advice',
   'advisor.applyLink': 'Apply', 'advisor.siteLink': 'Website',
   // Chat-first landing (C2). Every error code says its own thing — a generic "try later" makes users retry for nothing
-  'chat.title': 'AI advisor', 'chat.ph': 'Your situation in one sentence', 'chat.send': 'Ask',
-  'chat.waiting': 'Checking official data', 'chat.sources': 'Source', 'chat.followups': 'Ask next',
-  'chat.steps': 'How this was checked',
-  'chat.stepsRunning': 'Checking', 'chat.stepsDone': 'Checked {n} items',
-  'chat.activity': 'Activity', 'chat.thinking': 'Thinking', 'chat.memory': 'Memory', 'chat.web': 'Web',
-  'chat.done': 'Done', 'chat.memoryAnon': 'Sign in to remember your occupation, status and target provinces for future answers',
-  'chat.memoryEmpty': 'No saved profile details yet', 'chat.memoryManage': 'Manage memory', 'chat.memorySignIn': 'Sign in to enable memory',
-  'chat.mem.status': 'Current situation: {value}', 'chat.mem.occ': 'Occupation: {value}', 'chat.mem.clb': 'Language: CLB {value}',
-  'chat.mem.crs': 'EE score: CRS {value}', 'chat.mem.prov': 'Target provinces: {value}', 'chat.mem.pgwp': 'Work permit: {value} months left on PGWP',
-  'chat.copy': 'Copy', 'chat.copied': 'Copied',
+  'chat.title': 'Site guide', 'chat.ph': 'What to see, or what to ask', 'chat.send': 'Send',
+  'chat.waiting': 'Looking',
+
   // Keep every error under ~38 chars: the error box has ~265px of writable width at 375
-  'chat.err.tooShort': 'Add your job and your province',
-  'chat.err.noOcc': 'Tell us what work you do',
+
   'chat.err.limit': "That's a lot for today — try tomorrow",
-  'chat.err.llm': 'Could not answer that — try rephrasing',
-  'chat.err.guard': 'Failed our source check — not shown',
-  'chat.err.busy': 'System is busy — try again shortly',
+
   'chat.err.net': 'Could not reach the service — retry',
   // 空态三条示例:真人开口的第一句,三类人各一条(刚毕业没工作 / 有 offer / 中介开价)
-  'chat.try': 'Try asking',
-  'chat.padVerdict': 'Which pathway is fastest for my situation?',
-  'chat.thread': 'Conversation ID', 'chat.threadCopied': 'Copied',
-  'chat.opt.rec': 'Recommended', 'chat.opt.self': 'Type my own answer',
-  'chat.ex1': 'Ontario college grad, software dev, no job yet — can I stay?',
-  'chat.ex2': 'A Nova Scotia restaurant gave me a cook offer and says it will help with the nomination. Can I trust that?',
-  'chat.ex3': 'An agent says they can guarantee a Manitoba carpenter offer and nomination. Can I trust that?',
-  'chat.ex.reg1': 'I am a PSW (NOC 33102) in Ontario with CLB 6 — is this path workable?',
-  'chat.ex.reg2': 'I am an electrician with 12 months left on my PGWP — which province should I push for now?',
-  'chat.ex.reg3': 'I am a truck driver targeting BC with two years of experience — can I apply for a nomination?',
-  'chat.ex.pgwp': 'I am a {title} (NOC {noc}) with {m} months left on my PGWP — is there still time to make this work?',
-  'chat.ex.occProv': 'NOC {noc} ({title}) — does this have a shot in {prov}?',
-  'chat.ex.occCmp': 'NOC {noc} ({title}) — which is faster, {prov} or {prov2}?',
-  'chat.ex.clbProv': 'I am a {title} (NOC {noc}) with CLB {clb} targeting {prov} — what am I still missing?',
-  'chat.retry': 'Retry', 'chat.open': 'Open',
-  'chat.fb.good': 'Helpful', 'chat.fb.bad': 'Not helpful',
+
+  'chat.opt.rec': 'Recommended',
+
+  'chat.retry': 'Retry',
+  'chat.hello': 'Hi, I am the site guide. Tell me what you want to see and I will take you there. Questions and suggestions go here too, I note them all.',
+  'chat.why': 'What are you looking for?', 'chat.ask': 'Questions and suggestions go here',
+  'chat.chip1': 'Carpenter jobs in BC', 'chat.chip2': 'Employers with LMIA approvals', 'chat.chip3': 'Ontario PNP requirements', 'chat.chip4': 'PTE speaking questions',
+  'chat.noted': 'Not on this site yet. Noted. It will show up here once built.', 'chat.gotIt': 'Got it, noted. It will show up here once built.',
+  'chat.notify': 'Leave an email, get notified', 'chat.emailPh': 'Email', 'chat.emailSent': 'Noted, you will hear from us when it is live', 'chat.emailFail': 'Not sent, try again',
+  'chat.openDest': 'Open {name}',
+  'guide.dest.jobs': 'the job board', 'guide.dest.occupations': 'the occupation directory', 'guide.dest.employers_hiring': 'employers hiring',
+  'guide.dest.employers_designated': 'designated employers', 'guide.dest.employers_compare': 'employer comparison', 'guide.dest.pulse': 'the market pulse',
+  'guide.dest.plan_pr': 'the PR path check', 'guide.dest.pte': 'PTE practice', 'guide.dest.news': 'news', 'guide.dest.cases': 'cases',
+  'guide.dest.rankings': 'rankings', 'guide.dest.timeline': 'the timeline', 'guide.dest.resources': 'resources', 'guide.dest.pricing': 'pricing',
+  'guide.dest.account': 'your account',
+
   'advisor.disclaimer': 'AI-generated assessment, not immigration advice (we are not RCIC); verify with official sources',
 }
-
 
 // =========================================================================
 // 答题(原 quiz.ts)
@@ -1089,7 +1074,6 @@ export const quizEn: Record<keyof typeof quizZh, string> = {
   'prof.err': 'Save failed, please retry',
 }
 
-
 // =========================================================================
 // 法务短句(原 legal.ts;四页长文在 labels.ts)
 // =========================================================================
@@ -1103,7 +1087,6 @@ export const legalEn: Record<keyof typeof legalZh, string> = {
   'legal.title': 'Disclaimer',
   'legal.wip': 'Full legal pages (privacy policy / terms of use / about) will be published before paid plans go live.',
 }
-
 
 // =========================================================================
 // 案例库 C01-C16

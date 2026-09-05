@@ -16,26 +16,6 @@
 export type TFn = (key: string, vars?: Record<string, string | number>) => string
 
 /**
- * 界面语言(三字面量各域自抄;发请求时带上,服务端按它写轨迹与答复)。
- */
-export type ChatLang = 'zh' | 'en' | 'ko'
-
-/**
- * 多轮上下文里的一条消息(带回服务端让模型读语义)。
- */
-export type Msg = {
-  /**
-   * 谁说的。
-   */
-  role: 'user' | 'assistant'
-
-  /**
-   * 那句话的原文。
-   */
-  content: string
-}
-
-/**
  * 故障码(与引导码相对:引导是助手接着聊,故障是低调行内提示 + 可重试)。
  * 白名单只此一份 —— 漏一个码 = 把「系统繁忙」说成「没连上服务」。
  */
@@ -210,67 +190,6 @@ export type Answer = {
 }
 
 /**
- * SSE 一帧 `data:` 解出来的形状(线格式:一帧只带其中一格,每格都可能不在;
- * 带 answer 的那帧整体就是定稿 Answer,取值处照旧逐格判)。
- */
-export type SseFrame = {
-  /**
-   * 轨迹行(服务端已按用户语言写好,前端不拼字)。
-   */
-  step?: string
-
-  /**
-   * 撤回信号:前面发过的正文作废,清屏重等。
-   */
-  reset?: boolean
-
-  /**
-   * 正文增量,按句发,拼在已有的后面。
-   */
-  delta?: string
-
-  /**
-   * 定稿正文;这一格是字符串就说明整帧是 Answer。
-   */
-  answer?: string
-
-  /**
-   * 开流后才出的故障码(前置错误仍走 JSON + 状态码)。
-   */
-  error?: string
-}
-
-/**
- * readSse 的入参(SSE 流与四个回调 —— 流帧五种,DONE 之外每种一个去处)。
- */
-export type ReadSseIn = {
-  /**
-   * 响应体流。
-   */
-  body: ReadableStream<Uint8Array>
-
-  /**
-   * 正文增量(按句,拼在已有后面)。
-   */
-  onDelta: (s: string) => void
-
-  /**
-   * 收尾定稿(facts 是出口校验的产物,只能整段给)。
-   */
-  onFinal: (a: Answer) => void
-
-  /**
-   * 追加一条轨迹。
-   */
-  onStep: (s: string) => void
-
-  /**
-   * 撤回:前面发的正文作废,清屏重等。
-   */
-  onReset: () => void
-}
-
-/**
  * 一轮 = 用户那句 + 其中**恰好一种**结果:引导(接着聊)/ 故障 / 答复 / 还在等。
  */
 export type Turn = {
@@ -319,27 +238,6 @@ export type Turn = {
    * 落地时结算的耗时秒数(至少 1:显示 0s 像没查过,而每一轮都真的打了后端)。
    */
   secs: number
-}
-
-/**
- * 正文排版块(不是 markdown:只认空行分段与行首 `- ` 两个自家记号,
- * 产出永远是纯文本节点,注入面为零)。
- */
-export type Block = {
-  /**
-   * p = 段落,ul = 项目符号组。
-   */
-  type: 'p' | 'ul'
-
-  /**
-   * 段落文本(type = p 时有内容;ul 时空串)。
-   */
-  text: string
-
-  /**
-   * 项目符号条目(type = ul 时有内容;p 时空表)。
-   */
-  items: string[]
 }
 
 /**
@@ -407,26 +305,6 @@ export type ExampleItem = {
    * 槽值插参(已建档的候选带;写死档不带)。
    */
   params?: Record<string, string | number>
-}
-
-/**
- * pickExamples / profileMemories 的入参(D4:空态示例句三态动态化)。
- */
-export type ExamplesIn = {
-  /**
-   * 登录着 = true(匿名走写死三句)。
-   */
-  loggedIn: boolean
-
-  /**
-   * 档案;没有 = null(注册未建档走示范三句)。
-   */
-  profile: ChatProfile | null
-
-  /**
-   * 取词函数(把省码/职业码译成人话织进句里)。
-   */
-  t: TFn
 }
 
 /**
@@ -523,36 +401,6 @@ export type ChatBoxIn = {
 }
 
 /**
- * ChatText(助手正文唯一渲染出口)的 props。
- */
-export type ChatTextIn = {
-  /**
-   * 正文(答复 / 降级清单 / 引导语 / 逐句流式的半截共用同一套排版)。
-   */
-  text: string
-
-  /**
-   * 降级清单档:左细线示意「这是原始事实,不是组织好的答复」。
-   */
-  sheet?: boolean
-
-  /**
-   * 还在写(光标跟在最后一个块尾巴上)。
-   */
-  caret?: boolean
-}
-
-/**
- * ChatAnswer(一条答复的三段结构)的 props。
- */
-export type ChatAnswerIn = {
-  /**
-   * 那条答复。
-   */
-  a: Answer
-}
-
-/**
  * 发一句话的入参:at = null 是新一轮;数字 = 重试那一轮(原地重开)。
  */
 export type SendIn = {
@@ -565,68 +413,6 @@ export type SendIn = {
    * 重试哪一轮;新一轮给 null。
    */
   at: number | null
-}
-
-/**
- * 发话机器的依赖包(useSend 的入参,sendNow 与两条分支的真身共用同一包)。
- * 2026-08-29 自 useSend 的内联形状提出来:真身住 functions、机器住 hooks,
- * 两边要指同一个形状,就不能再用 `Parameters<typeof …>` 反着取(那要跨文件取值)。
- */
-export type UseSendIn = {
-  /**
-   * 当前轮次表(取历史与稳定记忆)。
-   */
-  turns: Turn[]
-
-  /**
-   * 有一轮在跑(闸:同时只可能有一轮)。
-   */
-  busy: boolean
-
-  /**
-   * 界面语言(服务端按它写轨迹与答复)。
-   */
-  lang: ChatLang
-
-  /**
-   * 取词函数(引导话术)。
-   */
-  t: TFn
-
-  /**
-   * 轮次表落格。
-   */
-  setTurns: SetTurns
-
-  /**
-   * 输入框落格(发出即清)。
-   */
-  setInput: (v: string) => void
-
-  /**
-   * 秒数落格(新一轮清零重计)。
-   */
-  setSecs: (v: number) => void
-
-  /**
-   * 忙态落格。
-   */
-  setBusy: (v: boolean) => void
-
-  /**
-   * 贴底引用(发话即回贴底)。
-   */
-  stick: MutBool
-
-  /**
-   * 输入框引用(清高度、引导轮还光标)。
-   */
-  taEl: React.RefObject<HTMLTextAreaElement | null>
-
-  /**
-   * 答复落地后重查登录档案(空态例句跟着换)。
-   */
-  refreshMe: () => void
 }
 
 /**
@@ -999,46 +785,6 @@ export type LauncherOut = {
 }
 
 /**
- * 一轮的定点补丁:带哪格改哪格(用 `in` 判在不在,不靠 undefined 探测)。
- */
-export type TurnPatch = {
-  /**
-   * 落地答复。
-   */
-  a?: Answer | null
-
-  /**
-   * 轨迹整表替换。
-   */
-  steps?: string[]
-
-  /**
-   * 半截流式正文。
-   */
-  stream?: string
-
-  /**
-   * 引导语。
-   */
-  guide?: string
-
-  /**
-   * 故障码。
-   */
-  fault?: FaultOrNone
-
-  /**
-   * 折叠条开合。
-   */
-  stepsOpen?: boolean | null
-}
-
-/**
- * 轮次表的函数式落格(React setState 的更新器形态;库定的形状,只声明用到的那半)。
- */
-export type SetTurns = (f: (prev: Turn[]) => Turn[]) => void
-
-/**
  * 可变布尔引用(useRef 的形状,本域自声明:贴底/触屏/拖动判定这些不驱动渲染的量)。
  */
 export type MutBool = {
@@ -1057,77 +803,6 @@ export type MutBox = {
    */
   current: Box | null
 }
-
-/**
- * Activity 面板官方来源胶囊的一枚(cited 外链去重后)。
- */
-export type WebSource = {
-  /**
-   * 官方原页地址。
-   */
-  url: string
-
-  /**
-   * 站点显示名(域名去 www)。
-   */
-  name: string
-}
-
-/**
- * JSON 错误体里只读的那一格(归一前:错误码可能不在)。
- */
-export type ErrBody = {
-  /**
-   * 服务端回的错误码;正常答复没有这格。
-   */
-  error?: string
-}
-
-/**
- * 职业码 + 人话名(热门表解析出的那一对;与 profile 域同名同义,各家一份)。
- */
-export type NocOpt = {
-  /**
-   * NOC 五位码。
-   */
-  noc: string
-
-  /**
-   * 人话职业名(斜杠杂糅已裁)。
-   */
-  title: string
-}
-
-/**
- * 受控 details 的 onToggle 事件(只读 currentTarget.open 一格;实参是 React 的
- * ToggleEvent,结构上兜得住)。
- */
-export type StepsToggleEvent = {
-  /**
-   * 事件源(details 本体)。
-   */
-  currentTarget: {
-    /**
-     * 开合现值。
-     */
-    open: boolean
-  }
-}
-
-/**
- * /api/users/me 响应体里本域真读的两格(归一前)。
- */
-export type MeBody = {
-  /**
-   * 登录人;匿名 = 缺席或 null。
-   */
-  user?: {
-    /**
-     * 档案;没建 = 缺席或 null。
-     */
-    profile?: ChatProfile | null
-  } | null
-} | null
 
 /**
  * o2p:chat-open 事件的 detail(我们自己 dispatch 的,仍只读声明格)。
@@ -1173,127 +848,6 @@ export type GrabStart = {
    */
   h: number
 }
-
-/**
- * ChatSources(出处清单)的 props。
- */
-export type ChatSourcesIn = {
-  /**
-   * 答复真用到的事实(citedFactsOf 滤过)。
-   */
-  facts: Fact[]
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-}
-
-/**
- * ChatOptions(每轮唯一交互块)的 props。
- */
-export type ChatOptionsIn = {
-  /**
-   * 对话面板。
-   */
-  p: ChatBoxPanel
-
-  /**
-   * 这一轮。
-   */
-  turn: Turn
-}
-
-/**
- * ChatExamples(空态示例块)的 props。
- */
-export type ChatExamplesIn = {
-  /**
-   * 对话面板。
-   */
-  p: ChatBoxPanel
-}
-
-/**
- * ChatActivity(轨迹/记忆/来源三节面板)的 props。
- */
-export type ChatActivityIn = {
-  /**
-   * 对话面板。
-   */
-  p: ChatBoxPanel
-
-  /**
-   * 这一轮。
-   */
-  turn: Turn
-
-  /**
-   * 这一轮还在跑。
-   */
-  live: boolean
-}
-
-/**
- * ChatTurn(一轮)的 props。
- */
-export type ChatTurnIn = {
-  /**
-   * 对话面板。
-   */
-  p: ChatBoxPanel
-
-  /**
-   * 这一轮。
-   */
-  turn: Turn
-
-  /**
-   * 第几轮(选项卡只挂最后一轮)。
-   */
-  i: number
-}
-
-/**
- * ChatTurnBody(一轮的结果体)的 props。
- */
-export type ChatTurnBodyIn = {
-  /**
-   * 对话面板。
-   */
-  p: ChatBoxPanel
-
-  /**
-   * 这一轮。
-   */
-  turn: Turn
-
-  /**
-   * 第几轮。
-   */
-  i: number
-
-  /**
-   * 是最后一轮(选项卡只挂它)。
-   */
-  isLast: boolean
-}
-
-/**
- * ChatComposer(输入条)的 props。
- */
-export type ChatComposerIn = {
-  /**
-   * 对话面板。
-   */
-  p: ChatBoxPanel
-
-  /**
-   * 输入框 DOM 引用(单独一格交进来:ref 不进面板对象,见 ChatBoxOut)。
-   */
-  taEl: React.RefObject<HTMLTextAreaElement | null>
-}
-
 
 /**
  * ChatDock(启动器)的 props。
@@ -1355,7 +909,7 @@ export type PanelGuardState = {
  */
 export type LazyBoxModule = {
   /**
-   * 对话框组件本体。
+   * 站内向导对话框组件本体(components/guide 的 GuideBox;props 形状与老 ChatBox 一致:compact / autoFocus / prefill)。
    */
-  ChatBox: (x: ChatBoxIn) => React.ReactNode
+  GuideBox: (x: ChatBoxIn) => React.ReactNode
 }

@@ -10,5 +10,3 @@
  * @time 2026-08-27 02:30:00
  */
 export { ChatLauncher } from './chatlauncher'
-export { exampleKind, pickExamples, profileMemories } from './functions'
-export type { ChatProfile } from './types'

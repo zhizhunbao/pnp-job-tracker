@@ -505,7 +505,6 @@ export const reportZh = {
   'tv.k.staff': '雇员规模', 'tv.k.public': '雇主类型', 'tv.k.collect': '门槛收录',
 }
 
-
 // =========================================================================
 // 职位板(原 jobs.ts)
 // =========================================================================
@@ -597,8 +596,7 @@ export const jobsZh = {
   'cell.pnpExcl': '不符合清单', 'cell.aipBlocked': '职业不受理',
   'cell.pnpSkilled': '可提名', 'cell.pnpSkilledProv': '{p} 可提名', 'cell.pnpIndemand': '紧缺', 'cell.pnpQc': '魁省', 'cell.aipYes': '指定雇主', 'cell.lmiaYes': '✓ {n} 职位　{q}', 'cell.closed': '已下架', 'cell.open': '在招',
   'pnplist.title': '省提名职业清单', 'pnplist.source': '来源', 'pnplist.your': '本岗', 'pnplist.gta': '大多区域外', 'pnplist.loading': '加载清单…', 'pnplist.showOther': '展开其他 {n} 个 ▾', 'pnplist.foldOther': '收起 ▴',
- 
- 
+
   'pnplist.qc': '魁省走自己的甄选(CSQ/Arrima),不属省提名',
   'pnpdraws.title': '本省最近抽选 {label}', 'pnpdraws.min': '最低 {score} 分', 'pnpdraws.inv': '{n} 份邀请',
   'pnpdraws.notice': 'OINP {date} 改制:旧通道已关停、EOI 停发邀请;新 Ontario Workforce Priority 通道细则待公布',
@@ -696,7 +694,7 @@ export const jobsZh = {
   'rm.arch.title': '简历存档', 'rm.arch.meta': '{d} 存入,{n} 字', 'rm.arch.empty': '对照职位时可以存下来,下次直接用',
   'rm.arch.view': '查看', 'rm.arch.hide': '收起', 'rm.arch.clear': '清除', 'rm.arch.sure': '确认清除', 'rm.arch.cancel': '取消',
   // cw.* = 全站右下角对话挂件的**壳**(ChatLauncher);面板标题复用 chat.title,不另开一份
-  'cw.open': '问 AI 顾问', 'cw.minimize': '最小化', 'cw.close': '关闭', 'cw.hint': '有问题?问 AI 顾问',
+  'cw.open': '找东西', 'cw.minimize': '最小化', 'cw.close': '关闭', 'cw.hint': '想看什么?问一句',
   'cw.max': '全屏', 'cw.restore': '退出全屏',  // 桌面面板大小(手机恒全屏,不出这个钮)
   'cw.reset': '重置', 'cw.resetOk': '确认清空',   // 就地二次确认(误清一整轮问答不可逆),不上弹框
   // 档案匹配(E5-00)+ 我的匹配视图(E5-05)
@@ -817,7 +815,6 @@ export const jobsZh = {
   // #49 兜底:占位里把公司名统一替换成指代词(prompt 约束模型不稳定遵守)
   'jd.sugGeneric': '这家公司',
 }
-
 
 // =========================================================================
 // 站壳与其余页面(原 site.ts)
@@ -1059,7 +1056,6 @@ export const siteZh = {
   'stats.title': '{prov} 地区职位统计', 'stats.catTitle': '{prov} · {cat} 职位统计', 'stats.openJobs': '在招职位', 'stats.new7d': '近 7 天发布', 'stats.medWage': '中位年薪(ESDC)', 'stats.medSalary': '帖面中位年薪', 'stats.named': '紧缺清单岗', 'stats.aip': 'AIP 指定雇主岗', 'stats.topCities': '主要城市', 'stats.streams': '命中通道', 'stats.byCat': '按职业大类', 'stats.entry': '地区统计', 'stats.toJobs': '看这些职位', 'stats.caliber': '口径说明', 'stats.noList': '无清单', 'stats.noList.tip': '该省当前不公布省提名职业清单(如 OINP 2026-06 改制后),按 TEER 等条件判定,不是数据缺失。', 'stats.naQc': '不适用', 'stats.naQc.tip': '魁省不参加省提名(PNP),走自己的甄选体系。', 'stats.provIndex': '选择省份', 'stats.compare': '跨省对比(Pro)', 'stats.pickProv': '选 2-4 个省对比', 'stats.myNoc': '按我的档案高亮', 'stats.cardWork': '工签存量(TFWP+IMP)', 'stats.cardStudy': '学签存量', 'stats.cardPr': 'PNP 拿到 PR(年)',
 }
 
-
 // =========================================================================
 // 对话与顾问(原 consult.ts)
 // =========================================================================
@@ -1088,56 +1084,50 @@ export const consultZh = {
   'advisor.applyLink': '投递页', 'advisor.siteLink': '公司官网',
   // 对话即产品(C2):landing 主输入框。错误码一句一说 —— 笼统的「稍后再试」让用户白重试(简历对照实撞)
   // 标题=身份词(2026-08-06 Frank「有冗余」:原「说说你的情况」与输入框占位重复,动作指引留给占位符)
-  'chat.title': 'AI 顾问', 'chat.ph': '一句话说说你的情况', 'chat.send': '提问',
-  'chat.waiting': '正在查官方数据', 'chat.sources': '官方来源', 'chat.followups': '接着问',
-  'chat.steps': '查询过程',        // 工具轨迹的折叠条(答复落地后弱化,见 ChatBox §流式)
+  'chat.title': '站内向导', 'chat.ph': '想看什么,或者想问什么', 'chat.send': '发送',
+  'chat.waiting': '正在找',
+  // 工具轨迹的折叠条(答复落地后弱化,见 ChatBox §流式)
   // 轨迹折叠条的一行文案(2026-08-04:等待期就折叠,后面那个秒数是**实测**的,不是编的)
-  'chat.stepsRunning': '正在查询', 'chat.stepsDone': '已核查 {n} 项',
-  'chat.activity': 'Activity', 'chat.thinking': 'Thinking', 'chat.memory': 'Memory', 'chat.web': 'Web',
-  'chat.done': '完成', 'chat.memoryAnon': '登录后会记住你的职业、身份和目标省，用在后续回答里',
-  'chat.memoryEmpty': '还没有已保存的档案', 'chat.memoryManage': '管理记忆', 'chat.memorySignIn': '登录并开启记忆',
-  'chat.mem.status': '目前情况：{value}', 'chat.mem.occ': '职业：{value}', 'chat.mem.clb': '语言：CLB {value}',
-  'chat.mem.crs': 'EE 分数：CRS {value}', 'chat.mem.prov': '目标省：{value}', 'chat.mem.pgwp': '工签：PGWP 还剩 {value} 个月',
-  'chat.copy': '复制', 'chat.copied': '已复制',   // 每条答复唯一的操作钮(不做分叉/重生成/继续)
+
+  // 每条答复唯一的操作钮(不做分叉/重生成/继续)
   // 错误文案一律 ≤20 字:375 上错误框可写宽约 265px,超了就折行(文案一行放下站规)
-  'chat.err.tooShort': '再多说两句,你做什么工作、在哪个省',
-  'chat.err.noOcc': '说说你做的是什么工作,才查得到',
+
   'chat.err.limit': '今天问得有点多,明天再来',
-  'chat.err.llm': '这次没答上来,换个说法再问',
-  'chat.err.guard': '这次答复没对上官方出处,不显示',
-  'chat.err.busy': '系统繁忙,稍后再试',
+
   'chat.err.net': '没连上服务,请重试',
   // 空态三条示例(2026-08-04 对话形态重做):照案例库原话形状写成**真人会说的一句话**,
   // 覆盖三类人 —— 刚毕业没工作(C06)、有 offer 不知道够不够(C13)、中介开价该不该信(C01/C14)。
   // 检索式的「查询 XX 省提名要求」不写:那是搜索框的说法,不是人开口的第一句
-  'chat.try': '试试这样问',
-  'chat.padVerdict': '按我的情况判一判走哪条路最快',
-  'chat.thread': '会话 ID', 'chat.threadCopied': '已复制',
-  'chat.opt.rec': '推荐', 'chat.opt.self': '自行输入',
+
+  'chat.opt.rec': '推荐',
   // D4(对话闭环总设计-20260809 §2):匿名三句原样保留 ——
   // tests/int/chatPreset1-3.int.spec.ts 三份端到端回归把这三句原文当 fixture 常量硬编码并做
   // 逐字断言(makeT(lang)('chat.ex1')===preset),字面改一个字就会带崩那三份测试;骨架本就
   // 已经是「#287 形状」(每句都在问「这条路走不走得通」,且各带一个具体职业,不撞编排层 noOcc 闸),
   // 无须改字面。
-  'chat.ex1': '安省大专毕业,做软件开发,还没工作,毕业后能留下吗?',
-  'chat.ex2': '新斯科舍的餐厅给了我厨师 offer,老板说帮我办,可信吗?',
-  'chat.ex3': '中介说能包曼省木匠 offer 和省提名,可信吗?',
+
   // 注册未建档:边问边建档句(职业+CLB/PGWP/目标省+经验示范值全带),照着改一改发出去就是自己的档案
-  'chat.ex.reg1': '我是护理员(NOC 33102),在安省,CLB 6,这条路走得通吗?',
-  'chat.ex.reg2': '我是电工,PGWP 还剩 12 个月,该冲刺哪个省?',
-  'chat.ex.reg3': '我是卡车司机,目标卑诗省,已经干了两年,能申省提名吗?',
+
   // 已建档:从档案槽位生成(chatExamples.ts pickExamples),{noc}/{title}/{prov}/{clb}/{m} 由调用方注入
-  'chat.ex.pgwp': '我是{title}(NOC {noc}),PGWP 还剩 {m} 个月,现在冲刺还来得及吗?',
-  'chat.ex.occProv': 'NOC {noc}({title})在 {prov} 有戏吗?',
-  'chat.ex.occCmp': 'NOC {noc}({title})在 {prov} 和 {prov2} 哪条更快?',
-  'chat.ex.clbProv': '我是{title}(NOC {noc}),CLB {clb},目标省 {prov},还差哪项?',
-  'chat.retry': '重试', 'chat.open': '打开',
+
+  'chat.retry': '重试',
+  // 站内向导(2026-09-05 批三,设计稿 docs/design/顾问改向导-20260904.md §5):开场白 / 胶囊 / 固定答复 / 留邮箱 / 目的地名
+  'chat.hello': '你好,我是站内向导。想看什么直接说,我带你过去。有问题、有建议也写在这里,我都记下。',
+  'chat.why': '想看什么?', 'chat.ask': '问题和建议直接写',
+  'chat.chip1': 'BC 省的木匠岗位', 'chat.chip2': '哪些雇主拿过 LMIA', 'chat.chip3': '安省提名要什么条件', 'chat.chip4': 'PTE 口语题',
+  'chat.noted': '这个站上还没有。已经记下,做出来会放在这里。', 'chat.gotIt': '收到,记下了。做出来会放在这里。',
+  'chat.notify': '留个邮箱,上线通知我', 'chat.emailPh': '邮箱', 'chat.emailSent': '记下了,上线会通知你', 'chat.emailFail': '没发出去,再试一次',
+  'chat.openDest': '打开{name}',
+  'guide.dest.jobs': '职位板', 'guide.dest.occupations': '职业目录', 'guide.dest.employers_hiring': '在招雇主',
+  'guide.dest.employers_designated': '指定雇主', 'guide.dest.employers_compare': '雇主对比', 'guide.dest.pulse': '把脉',
+  'guide.dest.plan_pr': 'PR 决策', 'guide.dest.pte': 'PTE 刷题', 'guide.dest.news': '新闻', 'guide.dest.cases': '案例',
+  'guide.dest.rankings': '榜单', 'guide.dest.timeline': '时间线', 'guide.dest.resources': '资料库', 'guide.dest.pricing': '定价',
+  'guide.dest.account': '账户',
   // 答复反馈(2026-08-05)。**点踩是数据缺口报警器,不是训练信号** —— 用户在替我们标注
   // 「这里答不好」,而且按真实频次排好序。所以问句要轻到不烦人、又显眼到有人愿意点。
-  'chat.fb.good': '有帮助', 'chat.fb.bad': '没帮助',
+
   'advisor.disclaimer': 'AI 生成判断,非移民建议(我们非持牌顾问 RCIC),以官方来源为准',
 }
-
 
 // =========================================================================
 // 答题(原 quiz.ts)
@@ -1198,7 +1188,6 @@ export const quizZh = {
   'prof.err': '保存失败,请重试',
 }
 
-
 // =========================================================================
 // 法务短句(原 legal.ts;四页长文在 labels.ts)
 // =========================================================================
@@ -1214,7 +1203,6 @@ export const legalZh = {
   'legal.title': '免责声明',
   'legal.wip': '完整版法律页面(隐私政策 / 使用条款 / 关于)将在正式收费前发布。',
 }
-
 
 // =========================================================================
 // 案例库 C01-C16(原 report.ts 尾部)

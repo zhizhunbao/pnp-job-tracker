@@ -468,7 +468,6 @@ export const reportKo: Record<keyof typeof reportZh, string> = {
   'tv.k.staff': '직원 규모', 'tv.k.public': '고용주 유형', 'tv.k.collect': '수록 범위',
 }
 
-
 // =========================================================================
 // 职位板(原 jobs.ts)
 // =========================================================================
@@ -547,8 +546,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'cell.pnpExcl': '제외 목록', 'cell.aipBlocked': '직종 접수 제외',
   'cell.pnpSkilled': '지명 가능', 'cell.pnpSkilledProv': '{p} 지명 가능', 'cell.pnpIndemand': '부족직종', 'cell.pnpQc': '퀘벡', 'cell.aipYes': '지정 고용주', 'cell.lmiaYes': '✓ {n} 포지션　{q}', 'cell.closed': '마감', 'cell.open': '채용중',
   'pnplist.title': 'PNP 직업 목록', 'pnplist.source': '출처', 'pnplist.your': '이 채용', 'pnplist.gta': 'GTA 외', 'pnplist.loading': '목록 불러오는 중…', 'pnplist.showOther': '다른 {n}개 보기 ▾', 'pnplist.foldOther': '접기 ▴',
- 
- 
+
   'pnplist.qc': '퀘벡주는 자체 선발(CSQ/Arrima)을 사용하므로 PNP 대상 아님',
   'pnpdraws.title': '최근 추첨 {label}', 'pnpdraws.min': '최저 {score}점', 'pnpdraws.inv': '{n}개 초청',
   'pnpdraws.notice': 'OINP 개편({date}): 기존 스트림 폐지 및 EOI 초청 중단, 신규 Ontario Workforce Priority 스트림 기준 미정',
@@ -634,7 +632,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'rm.arch.save': '내 프로필에 저장, 다음에 바로 사용', 'rm.arch.used': '{d}에 저장한 이력서 사용 중', 'rm.arch.done': '프로필에 저장됨',
   'rm.arch.title': '저장된 이력서', 'rm.arch.meta': '{d} 저장, {n}자', 'rm.arch.empty': '공고 대조할 때 저장하면 다음에 바로 사용',
   'rm.arch.view': '보기', 'rm.arch.hide': '접기', 'rm.arch.clear': '삭제', 'rm.arch.sure': '삭제 확인', 'rm.arch.cancel': '취소',
-  'cw.open': '질문하기', 'cw.minimize': '최소화', 'cw.close': '닫기', 'cw.hint': '궁금한 점 물어보세요',
+  'cw.open': '찾기', 'cw.minimize': '최소화', 'cw.close': '닫기', 'cw.hint': '무엇을 찾으세요? 물어보세요',
   'cw.max': '전체 화면', 'cw.restore': '전체 화면 종료',
   'cw.reset': '초기화', 'cw.resetOk': '지우기 확인',
   // 档案匹配(E5-00)
@@ -745,7 +743,6 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   // #49 兜底:占位里把公司名统一替换成指代词(prompt 约束模型不稳定遵守)
   'jd.sugGeneric': '이 회사',
 }
-
 
 // =========================================================================
 // 站壳与其余页面(原 site.ts)
@@ -960,7 +957,6 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'stats.title': '{prov} 채용 통계', 'stats.catTitle': '{prov} · {cat} 채용 통계', 'stats.openJobs': '채용 중', 'stats.new7d': '최근 7일 게시', 'stats.medWage': '중위 연봉(ESDC)', 'stats.medSalary': '게시된 중위 연봉', 'stats.named': '수요 목록 공고', 'stats.aip': 'AIP 지정 고용주 공고', 'stats.topCities': '주요 도시', 'stats.streams': '해당 스트림', 'stats.byCat': '직업 대분류별', 'stats.entry': '지역 통계', 'stats.toJobs': '이 공고 보기', 'stats.caliber': '산정 기준', 'stats.noList': '목록 없음', 'stats.noList.tip': '해당 주는 현재 PNP 직업 목록을 공개하지 않습니다(예: OINP 2026-06 개편 후). TEER 등 조건으로 판단하며 데이터 누락이 아닙니다.', 'stats.naQc': '해당없음', 'stats.naQc.tip': '퀘벡주는 PNP에 참여하지 않고 자체 선발 제도를 운영합니다.', 'stats.provIndex': '주 선택', 'stats.compare': '주 간 비교 (Pro)', 'stats.pickProv': '2–4개 주 선택', 'stats.myNoc': '내 프로필로 강조', 'stats.cardWork': '취업비자 보유량(TFWP+IMP)', 'stats.cardStudy': '학생비자 보유량', 'stats.cardPr': 'PNP 영주권 승인(연간)',
 }
 
-
 // =========================================================================
 // 对话与顾问(原 consult.ts)
 // =========================================================================
@@ -985,44 +981,33 @@ export const consultKo: Record<keyof typeof consultZh, string> = {
   'advisor.footTpl': '자동 생성이며 이민·법률 자문이 아닙니다',
   'advisor.applyLink': '지원하기', 'advisor.siteLink': '회사 웹사이트',
   // 대화형 랜딩(C2). 오류 코드마다 다른 안내 — 뭉뚱그린 "잠시 후 다시"는 헛된 재시도만 부름
-  'chat.title': 'AI 상담', 'chat.ph': '한 문장으로 상황을 알려 주세요', 'chat.send': '질문',
-  'chat.waiting': '공식 데이터 확인 중', 'chat.sources': '공식 출처', 'chat.followups': '이어서 질문',
-  'chat.steps': '조회 과정',
-  'chat.stepsRunning': '조회 중', 'chat.stepsDone': '{n}개 항목 확인',
-  'chat.activity': 'Activity', 'chat.thinking': 'Thinking', 'chat.memory': 'Memory', 'chat.web': 'Web',
-  'chat.done': '완료', 'chat.memoryAnon': '로그인하면 직업, 신분, 목표 주를 기억해 다음 답변에 활용합니다',
-  'chat.memoryEmpty': '저장된 프로필 정보가 없습니다', 'chat.memoryManage': '기억 관리', 'chat.memorySignIn': '로그인하고 기억 사용',
-  'chat.mem.status': '현재 상황: {value}', 'chat.mem.occ': '직업: {value}', 'chat.mem.clb': '언어: CLB {value}',
-  'chat.mem.crs': 'EE 점수: CRS {value}', 'chat.mem.prov': '목표 주: {value}', 'chat.mem.pgwp': '취업 허가: PGWP {value}개월 남음',
-  'chat.copy': '복사', 'chat.copied': '복사됨',
+  'chat.title': '사이트 안내', 'chat.ph': '보고 싶은 것, 묻고 싶은 것', 'chat.send': '보내기',
+  'chat.waiting': '찾는 중',
+
   // 오류 문구는 20자 이내: 375에서 오류 박스의 가용 폭은 약 265px(넘으면 줄바꿈)
-  'chat.err.tooShort': '직업과 주를 알려 주세요',
-  'chat.err.noOcc': '어떤 일을 하시는지 알려 주세요',
+
   'chat.err.limit': '오늘 질문 한도에 도달했습니다',
-  'chat.err.llm': '답하지 못했습니다. 다르게 물어보세요',
-  'chat.err.guard': '출처 확인을 통과하지 못한 답변입니다',
-  'chat.err.busy': '시스템이 혼잡합니다. 잠시 후 다시 시도해 주세요',
+
   'chat.err.net': '서비스에 연결하지 못했습니다',
   // 빈 화면 예시 3개:실제 사람이 처음 꺼내는 한 문장(졸업 직후 / 오퍼 보유 / 에이전트 견적)
-  'chat.try': '이렇게 물어보세요',
-  'chat.padVerdict': '제 상황이면 어느 경로로 가야 하나요?',
-  'chat.thread': '대화 ID', 'chat.threadCopied': '복사됨',
-  'chat.opt.rec': '추천', 'chat.opt.self': '직접 입력',
-  'chat.ex1': '온타리오 컬리지 졸업, 소프트웨어 개발자, 아직 무직인데 남을 수 있나요?',
-  'chat.ex2': '노바스코샤 식당에서 요리사 오퍼를 받았고 고용주가 주정부 지명을 도와준다고 합니다. 믿어도 될까요?',
-  'chat.ex3': '에이전트가 매니토바 목수 오퍼와 주정부 지명을 보장한다고 합니다. 믿어도 될까요?',
-  'chat.ex.reg1': '저는 온타리오에서 일하는 PSW(NOC 33102)이고 CLB 6인데, 이 길이 통할까요?',
-  'chat.ex.reg2': '저는 전기공이고 PGWP가 12개월 남았는데, 지금 어느 주를 노려야 할까요?',
-  'chat.ex.reg3': '저는 트럭 운전기사이고 BC를 목표로 2년 경력이 있는데, 주정부 지명 신청이 가능할까요?',
-  'chat.ex.pgwp': '저는 {title}(NOC {noc})이고 PGWP가 {m}개월 남았는데, 지금 시작해도 늦지 않을까요?',
-  'chat.ex.occProv': 'NOC {noc}({title}), {prov}에서 가능성이 있을까요?',
-  'chat.ex.occCmp': 'NOC {noc}({title}), {prov}와 {prov2} 중 어디가 더 빠를까요?',
-  'chat.ex.clbProv': '저는 {title}(NOC {noc})이고 CLB {clb}, 목표 주는 {prov}인데, 아직 뭐가 부족할까요?',
-  'chat.retry': '다시 시도', 'chat.open': '열기',
-  'chat.fb.good': '도움됨', 'chat.fb.bad': '도움 안 됨',
+
+  'chat.opt.rec': '추천',
+
+  'chat.retry': '다시 시도',
+  'chat.hello': '안녕하세요, 사이트 안내입니다. 보고 싶은 것을 말하면 그 페이지로 안내합니다. 질문과 제안도 여기에 적어 주세요. 모두 기록합니다.',
+  'chat.why': '무엇을 찾으세요?', 'chat.ask': '질문과 제안은 바로 적어 주세요',
+  'chat.chip1': 'BC 목수 채용', 'chat.chip2': 'LMIA 승인 고용주', 'chat.chip3': '온타리오 주정부 지명 요건', 'chat.chip4': 'PTE 말하기 문제',
+  'chat.noted': '아직 이 사이트에 없습니다. 기록했고, 만들어지면 여기에 올라옵니다.', 'chat.gotIt': '알겠습니다, 기록했습니다. 만들어지면 여기에 올라옵니다.',
+  'chat.notify': '이메일을 남기면 출시 때 알려 드립니다', 'chat.emailPh': '이메일', 'chat.emailSent': '기록했습니다. 출시되면 알려 드립니다', 'chat.emailFail': '전송되지 않았습니다. 다시 시도해 주세요',
+  'chat.openDest': '{name} 열기',
+  'guide.dest.jobs': '채용 게시판', 'guide.dest.occupations': '직업 목록', 'guide.dest.employers_hiring': '채용 중인 고용주',
+  'guide.dest.employers_designated': '지정 고용주', 'guide.dest.employers_compare': '고용주 비교', 'guide.dest.pulse': '시장 동향',
+  'guide.dest.plan_pr': 'PR 경로 점검', 'guide.dest.pte': 'PTE 연습', 'guide.dest.news': '뉴스', 'guide.dest.cases': '사례',
+  'guide.dest.rankings': '순위', 'guide.dest.timeline': '타임라인', 'guide.dest.resources': '자료실', 'guide.dest.pricing': '요금',
+  'guide.dest.account': '내 계정',
+
   'advisor.disclaimer': 'AI 기반 판단이며 이민 자문이 아닙니다(당사는 RCIC가 아님) · 공식 출처를 기준으로 확인하세요.',
 }
-
 
 // =========================================================================
 // 答题(原 quiz.ts)
@@ -1082,7 +1067,6 @@ export const quizKo: Record<keyof typeof quizZh, string> = {
   'prof.err': '저장 실패, 다시 시도하세요',
 }
 
-
 // =========================================================================
 // 法务短句(原 legal.ts;四页长文在 labels.ts)
 // =========================================================================
@@ -1096,7 +1080,6 @@ export const legalKo: Record<keyof typeof legalZh, string> = {
   'legal.title': '면책 조항',
   'legal.wip': '전체 법률 페이지(개인정보 처리방침 / 이용약관 / 소개)는 유료 서비스 시작 전에 게시됩니다.',
 }
-
 
 // =========================================================================
 // 案例库 C01-C16

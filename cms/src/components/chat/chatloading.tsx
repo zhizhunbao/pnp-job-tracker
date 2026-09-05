@@ -16,5 +16,5 @@ import css from './chat.module.css'
  * @returns 等待帧。
  */
 export function ChatLoading() {
-  return <div className={`${css.clLoad} ${css.cbDots}`} aria-hidden><i /><i /><i /></div>
+  return <div className={css.clLoad} aria-hidden><i /><i /><i /></div>
 }

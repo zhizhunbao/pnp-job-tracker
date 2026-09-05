@@ -1,0 +1,345 @@
+/*
+ * 站内向导对话框(components/guide)的私有样式。2026-09-05 批三自 components/chat 的 chat.module.css
+ * 挑出对话框那半(卡壳 / 历史区 / 提问气泡 / 卡 / 等待 / composer / 正文),值一个不改;
+ * 轨迹条、出处、Activity、反馈钮那些随老循环退役。原模板里的决策注释保留在各规则头上。
+ * --cbW = 正文读列宽。
+ */
+
+/* --cbW = **正文读列宽**(2026-08-04 Open WebUI 取样:它 860px,我们桌面小窗只有 354px ——
+           「Frank 在电脑上看到的就是别人手机上的观感」)。860 是上限不是宽度:
+           小于它的容器(375 手机 / 380 小窗)完全吃不到这条,自然还是满宽,不横滚不截字;
+           最大化(面板封 1100)才真的收到 860,并且**居中**。 */
+.cbCard {
+  --cbW: 860px;
+
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cbTurn,
+.cbEmpty,
+.cbCol {
+  width: 100%;
+  max-width: var(--cbW);
+  margin-inline: auto;
+}
+
+/* 历史在上:自身滚动 + 高度封顶,composer 永远在视野里 */
+.cbThread {
+  /* 滚轮只控制读列,滚到底不带动背景页(与弹框 CARD 同规矩,08-09 Frank) */
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  overflow-y: auto;
+  max-height: min(56vh, 520px);
+  padding: 2px;
+}
+
+/* compact(嵌在挂件面板里):卸掉自己的卡壳,历史区改成撑满父级剩余高度。
+           min-height:0 那三处是 flex 子项能真正收缩的前提,少一处历史区就把 composer 顶出面板。 */
+.cbFill {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.cbFill .cbCard {
+  flex: 1;
+  min-height: 0;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.cbFill .cbThread {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+}
+
+.cbTurn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* 提问气泡:靠右、封顶宽。**气泡只给用户消息** —— 向导那行满宽无气泡。字号跟正文同一档(15/1.625) */
+.cbQ {
+  align-self: flex-end;
+  max-width: min(88%, 560px);
+  background: #eff6ff;
+  color: var(--primary-deep);
+  border-radius: 12px 12px 4px;
+  padding: 9px 12px;
+  font-size: 15px;
+  line-height: 1.625;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* 卡(答复下 / 开场白下同一种形态,2026-08-09 Frank):推荐项蓝框浅蓝底 + 绿徽标;点击目标 ≥44px;
+           标签一行放下(文案铁律:零逗号、禁口语腔)。 */
+.cbOpts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cbOptWhy {
+  font-size: 12px;
+  color: var(--text3);
+  line-height: 1.5;
+}
+
+.cbOpt.cbOpt {
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+  text-decoration: none;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 12px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.cbOpt.cbOpt:hover {
+  border-color: #bfdbfe;
+  background: var(--hover-bg);
+}
+
+.cbOpt.cbOpt:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.cbOptRec.cbOptRec {
+  border-color: #93c5fd;
+  background: #f8fbff;
+}
+
+.cbOptTag {
+  background: #dcfce7;
+  color: var(--ok);
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 1px 7px;
+  font-size: 11.5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cbOptMain {
+  min-width: 0;
+}
+
+.cbOptLabel {
+  font-weight: 600;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 等待:三点 + 一句 */
+.cbWait {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text2);
+}
+
+.cbDots {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.cbDots i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #93c5fd;
+  animation: cb-blink 1.2s infinite;
+}
+
+.cbDots i:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.cbDots i:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes cb-blink {
+  0%,
+  80%,
+  100% {
+    opacity: 0.28;
+  }
+
+  40% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cbDots i {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+/* GPT 式 composer:默认一条紧凑圆角输入条,文字变多才向上生长;发送钮固定右下。
+           右侧 54px padding 是按钮的实体槽位。box-sizing:border-box 保证 padding 与 border 都算进 --cbW。 */
+.cbComposer {
+  position: relative;
+  box-sizing: border-box;
+  min-height: 54px;
+  border: 1px solid var(--border);
+  border-radius: 27px;
+  background: var(--bg);
+  padding: 14px 54px 14px 18px;
+}
+
+.cbComposer:focus-within {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 10%);
+}
+
+/* 16px:小于 16 时 iOS Safari 聚焦会自动放大页面(手机优先站规,这是全站主输入) */
+.cbIn {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+  resize: none;
+  min-height: 24px;
+  height: 24px;
+  padding: 0;
+  background: transparent;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--text);
+  font-family: inherit;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.cbBar {
+  position: absolute;
+  right: 9px;
+  bottom: 9px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cbNum {
+  flex: 1;
+  min-width: 0;
+  font-size: 11.5px;
+  color: var(--text3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cbSend.cbSend {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary);
+  color: #ffffff;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.cbSend.cbSend:disabled {
+  background: #d1d5db;
+  color: #ffffff;
+  cursor: default;
+}
+
+.cbSend.cbSend:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.cbSend.cbSend:hover:not(:disabled) {
+  background: var(--primary-deep);
+}
+
+/* 留邮箱一行:输入框 + 同款发送钮,与 composer 同一条圆角形态 */
+.cbEmailRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 27px;
+  background: var(--bg);
+  padding: 8px 9px 8px 18px;
+}
+
+.cbEmailRow:focus-within {
+  border-color: #93c5fd;
+}
+
+.cbEmailIn {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--text);
+  font-family: inherit;
+}
+
+.cbMsg {
+  min-width: 0;
+}
+
+/* 排版基线(2026-08-04 对齐 Open WebUI 取样:15px / 1.625)。向导那行满宽无气泡。 */
+.cbP {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.625;
+  color: var(--text);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+/* 行内可收窄的文本格 */
+.cbMin0 {
+  min-width: 0;
+}

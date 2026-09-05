@@ -15,13 +15,13 @@ import importX from 'eslint-plugin-import-x'
 import stylistic from '@stylistic/eslint-plugin'
 
 // 带桶的模块(`lib/<名>/index.ts`)—— 下面那道边界闸认这几个,加新桶就加这里一行。
-const BARRELS = ['agent', 'consult', 'db', 'i18n', 'jobs', 'pathways', 'gauge', 'points', 'quiz', 'ruling', 'employers', 'plan', 'stats', 'quota', 'llm', 'resume', 'legal', 'official',
+const BARRELS = ['agent', 'db', 'i18n', 'jobs', 'pathways', 'gauge', 'points', 'quiz', 'ruling', 'employers', 'plan', 'stats', 'quota', 'llm', 'resume', 'legal', 'official',
   // 2026-08-23 singles 批立域:funnel/location/noc/rankings/mailer/lmia/track 有 index 桶;
   // profile/auth/stripe 只有 server 门(纯服务端域),照样进名单 —— ABSOLUTE 拦直点文件,ALLOW 放行 server。
   'funnel', 'location', 'noc', 'rankings', 'mail', 'lmia', 'track', 'profile', 'auth', 'stripe',
   // 2026-08-23 log/error 自单文件升目录(Frank「log 和 error 呢」),既有 '../log' import 经桶续命。
   'log', 'error', 'news', 'mart', 'advisor', 'seo', 'alerts',
-  // 2026-09-05 批二:站内向导域(替 consult;consult 删目录时把它那行一起撤)。
+  // 2026-09-05 批二立 guide 替 consult;批三 consult 目录已删,它那行一起撤。
   'guide']
 const ABSOLUTE = BARRELS.map((m) => `**/lib/${m}/*`)
 // jobs / points / ruling / employers / plan / quiz / stats / quota / pathways 有**两个门**(index=客户端也安全的那半、server=要连库的那半;
@@ -40,7 +40,6 @@ const ALLOW = [
   '!**/lib/quota/server', '!./quota/server', '!../quota/server',
   '!**/lib/pathways/server', '!./pathways/server', '!../pathways/server',
   '!**/lib/agent/server', '!./agent/server', '!../agent/server',
-  '!**/lib/consult/server', '!./consult/server', '!../consult/server',
   '!**/lib/db/server', '!./db/server', '!../db/server',
   '!**/lib/i18n/server', '!./i18n/server', '!../i18n/server',
   '!**/lib/profile/server', '!./profile/server', '!../profile/server',
@@ -2494,7 +2493,7 @@ const eslintConfig = [
     // ── 数据表的对象排版(2026-08-22 Frank「闸门没有 json 格式化检查吗」):身份键+三语值的
     //    嵌套表一键一块、一语一行,@stylistic 两条带 fixer —— 格式化由闸执行,不靠手排。
     //    jobs/constants 不进:它的 W/FV 等扁平词表是**故意**多键一行分组的,展开反而毁可查性。
-    files: ['src/lib/official/constants.ts', 'src/lib/pathways/constants.ts', 'src/lib/consult/constants.ts', 'src/lib/legal/constants.ts'],
+    files: ['src/lib/official/constants.ts', 'src/lib/pathways/constants.ts', 'src/lib/legal/constants.ts'],
     plugins: { '@stylistic': stylistic },
     rules: {
       '@stylistic/object-curly-newline': ['error', { ObjectExpression: { multiline: true, minProperties: 3 } }],
@@ -2511,7 +2510,7 @@ const eslintConfig = [
     // 声明里的旁注(quote 判读、拆闸缘由)比模板化键注释信息量大得多,别逼着换。
     // 数据体 constants(键即身份 —— 官方原句/工具名/分类码/法务页,逐键注释是复读):
     // 2026-08-22「所有都按域来管理」后三语映射表并进各域 constants,豁免名单随之点名到文件。
-    files: ['src/lib/pathways/constants.ts', 'src/lib/jobs/constants.ts', 'src/lib/consult/constants.ts', 'src/lib/legal/constants.ts', 'src/lib/official/constants.ts',
+    files: ['src/lib/pathways/constants.ts', 'src/lib/jobs/constants.ts', 'src/lib/legal/constants.ts', 'src/lib/official/constants.ts',
       // 2026-08-23 singles 批的数据体 constants:事件名别名/来源表(funnel)、省码→中位时薪(lmia)、
       // 省码→省名(location)、分类→配色(noc)—— 键即身份,逐键注释是复读。
       'src/lib/funnel/constants.ts', 'src/lib/lmia/constants.ts', 'src/lib/location/constants.ts', 'src/lib/noc/constants.ts',
@@ -2610,28 +2609,9 @@ const eslintConfig = [
     rules: { 'local/no-unknown-type': 'error' },
   },
   {
-    // ── consult 定型进闸(2026-08-21,Frank 实拍「怎么有函数内注释没检查出来」)────────
-    // 五道里只开四道:`no-import-in-leaf` 不开 —— consult 与 agent 一样是**包 pi 的域**,
-    // types.ts 里的 `Model<…>` / `AgentTool<…>` / `Static<…>` 是外部库的泛型形状,自声明不了;
-    // 这批债和 agent 的那 5 处同挂在上面 domain-file-names 名单的注释里,等外部库形状的
-    // 统一解法一起清,别拿 eslint-disable 一行行糊。
-    files: ['src/lib/consult/**/*.ts'],
-    plugins: { local: localRules },
-    rules: {
-      'local/no-literal-index': 'error',
-      'local/no-comment-in-function': 'error',
-      'local/no-magic-number': 'error',
-      'local/no-split-import': 'error',
-      'local/no-inline-coercion': 'error',
-      'local/no-optional': 'error',
-      'local/no-ternary-branch': 'error',
-      'local/no-undefined-type': 'error',
-    },
-  },
-  {
     // ── 禁三目:全站 warn = 整改清单(2026-08-21,consult 先清零)──────────────────
     files: REFACTORED,
-    ignores: ['src/lib/consult/**', 'src/lib/db/functions.ts'],
+    ignores: ['src/lib/db/functions.ts'],
     plugins: { local: localRules },
     rules: { 'local/no-ternary-branch': 'error' },
   },
@@ -2642,7 +2622,6 @@ const eslintConfig = [
     // db 原本整层豁免,2026-08-21 晚收回后剩 3 处真边界进了基线;其中 PayloadWithPool 那类
     // 「描述别人家对象的形状」现在合法了,下次跑 `npm run lint:prune` 会被收掉,不必手动清。
     files: REFACTORED,
-    ignores: ['src/lib/consult/**'],
     plugins: { local: localRules },
     rules: { 'local/no-optional': 'error' },
   },
@@ -2680,7 +2659,7 @@ const eslintConfig = [
     // ── 函数内注释:全站 warn = 整改清单(2026-08-21 Frank 实看 agent 的 2 条欠账后补)──
     // ruling/gauge/points/consult 已清零升 error(各自的块),ignores 逐一对齐别盖降。
     files: REFACTORED,
-    ignores: ['src/lib/ruling/**', 'src/lib/gauge/**', 'src/lib/points/**', 'src/lib/consult/**'],
+    ignores: ['src/lib/ruling/**', 'src/lib/gauge/**', 'src/lib/points/**'],
     plugins: { local: localRules },
     rules: { 'local/no-comment-in-function': 'error' },
   },
@@ -2695,7 +2674,7 @@ const eslintConfig = [
     // ── 禁 undefined 出现在类型里:全站 warn = 整改清单(2026-08-21 Frank「都不允许」)──
     // consult 与 db 已清零升 error(各自的块);其余按清单清,清完一个域升一个。
     files: REFACTORED,
-    ignores: ['src/lib/consult/**', 'src/lib/db/**'],
+    ignores: ['src/lib/db/**'],
     plugins: { local: localRules },
     rules: { 'local/no-undefined-type': 'error' },
   },
@@ -2703,7 +2682,6 @@ const eslintConfig = [
     // ── 边界收窄成语:全站 warn = 整改清单(2026-08-21,设计见 默认值架构 卷宗 §5)──
     // consult 已迁完(上面那块 error 守着);其余域按清单一点一点改,迁完一个升一个 error。
     files: REFACTORED,
-    ignores: ['src/lib/consult/**'],
     plugins: { local: localRules },
     rules: { 'local/no-inline-coercion': 'error' },
   },
