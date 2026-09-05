@@ -24,13 +24,19 @@ export const ROLE_LINE =
 
 /**
  * 四类的判据。「问题」的范围故意写宽:凡是要判断的都记下,不带路。
+ * 🔴 2026-09-05 生产实拍(friend 网关):「想看 BC 省木匠的岗位」被判 chat —— 提示词里连示例都是这句,
+ * 模型还是把「想看 X」读成闲聊。所以 nav 的触发词写死(想看 / 哪里看 / 有没有 X 的岗 / 名了职业或省),
+ * chat 收窄成「整句没有任何请求」。网关按整段提示词缓存,改一字才换得掉粘住的答案。
  */
 export const RULE_KIND =
-  'KIND. "nav" only when one of the listed pages shows the thing they asked to see or find. '
-  + '"question" for anything that needs an answer about their own case — eligibility, chances, requirements, wait times, '
-  + 'whether something is true — or any topic no listed page covers. '
-  + '"suggestion" when they want the site to add, change or do something. '
-  + '"chat" for a greeting, thanks, or asking what you can do.'
+  'KIND. Decide in this order. '
+  + '(1) "nav" whenever the message asks to see, find, look at, browse or open something, or names a job, a province, '
+  + 'a city, an employer, LMIA, PNP lists, PTE, news, rankings, pricing or the account — and one of the listed pages '
+  + 'shows it. A message like "想看 BC 省木匠的岗位" or "carpenter jobs in BC" is always nav. '
+  + '(2) "question" for anything that needs an answer about their own case — eligibility, chances, requirements, wait '
+  + 'times, whether something is true — or any topic no listed page covers. '
+  + '(3) "suggestion" when they want the site to add, change or do something. '
+  + '(4) "chat" only when the whole message contains no request at all: a bare greeting, thanks, or asking what you can do.'
 
 /**
  * 目的地只能从目录里选。
@@ -46,7 +52,8 @@ export const RULE_SLOTS =
   'SLOTS. occupation: the job they named as a short English job title (for example "carpenter", "software developer"), '
   + 'null if none — never a five-digit code. prov: the two-letter province code (ON BC AB QC MB SK NS NB NL PE NT YT NU) '
   + 'or null. city: the city name in English or null. q: a short keyword for the page search when no occupation fits, '
-  + 'else null. sub: only for pte, one of its sub values from the catalogue, else null.'
+  + 'else null — never a programme or list name (LMIA, PNP, AIP, EE) since the pages already show those. '
+  + 'sub: only for pte, one of its sub values from the catalogue, else null.'
 
 /**
  * `say` 的口径:带路时一句话说页与筛法;问题与建议留空(站有固定文案);闲聊一句自我介绍。
@@ -99,7 +106,8 @@ export const DEST_DESC: Record<string, string> = {
   /**
    * 在招雇主榜。
    */
-  employers_hiring: 'employers currently hiring that show a sponsorship signal (LMIA approvals, designated status)',
+  employers_hiring: 'the list of employers currently hiring that show a sponsorship signal — use this for any question '
+    + 'about which employers have LMIA approvals or sponsor workers',
 
   /**
    * 指定雇主。
@@ -114,7 +122,8 @@ export const DEST_DESC: Record<string, string> = {
   /**
    * 把脉页。
    */
-  pulse: 'the market pulse page: occupations, employers, LMIA, provinces, cities and trends by industry',
+  pulse: 'the market pulse page: charts and tables of occupations, provinces, cities and trends by industry (overview, '
+    + 'not an employer list)',
 
   /**
    * PR 决策页。
