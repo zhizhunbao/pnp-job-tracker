@@ -9,6 +9,7 @@
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
+import { Updated } from '@/components/time'
 import { ID_PROVOCC, PH_PROVOCC, TEXT_NONE } from './constants'
 import { Band } from './band'
 import { OccBoard } from './occboard'
@@ -33,10 +34,11 @@ export function ProvOccSection({
   provStat,
   provOcc,
   nocProvs,
+  updatedAt,
 }: ProvOccSectionIn) {
   return (
-    <Band white id={ID_PROVOCC}>
-      <Sec title={t('pulse.s4b')}>
+    <Band id={ID_PROVOCC}>
+      <Sec title={t('pulse.s4b')} right={<Updated iso={updatedAt} t={t} />}>
         <ProvChips t={t} lang={lang} prov={prov} onProvSelect={onProvSelect} provPickOf={provPickOf} />
         {provStat != null && provStat.streamLabels !== TEXT_NONE && (
           <ProvStreams t={t} labels={provStat.streamLabels} />

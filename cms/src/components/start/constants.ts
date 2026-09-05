@@ -60,11 +60,6 @@ export const ID_PROV = 'pl-prov'
 export const ID_PROVOCC = 'pl-provocc'
 
 /**
- * LMIA 获批雇主区的锚点 id(2026-09-04 Frank「LMIA 单独算一个部分」)。
- */
-export const ID_LMIA = 'pl-lmia'
-
-/**
  * 城市概览区的锚点 id(2026-09-04 新段)。
  */
 export const ID_CITY = 'pl-city'
@@ -76,9 +71,9 @@ export const ID_TREND = 'pl-trend'
 
 /**
  * 二级导航条上的六个分区 id(顺序即条上的顺序;分区可能条件不渲,取元素时空安全)。
- * 2026-09-04 重排:职业 → 雇主 → LMIA → 省份 → 城市 → 趋势(抽选段撤成一行链接,不进导航)。
+ * 2026-09-04 重排:职业 → 雇主 → 省份 → 城市 → 趋势(LMIA 段 09-05 并回雇主段的没工签档;抽选段不进导航)。
  */
-export const NAV_IDS = [ID_BOARDS, ID_SE, ID_LMIA, ID_PROV, ID_CITY, ID_TREND]
+export const NAV_IDS = [ID_BOARDS, ID_SE, ID_PROV, ID_CITY, ID_TREND]
 
 /**
  * 滚动跟随的判定线(px):当前分区 = 顶部粘条下沿以上最后一个分区标题。
@@ -182,34 +177,14 @@ export const MOM_FLAT = 0
 
 /**
  * 卡片列表的每页条数(手机档;桌面表格的页态在 Table 里,俩视图同刻只显示一个,各翻各的)。
+ * 2026-09-04 Frank「默认显示 10 行,显示所有条目,加上分页」:与桌面表格同 10。
  */
-export const CARD_PAGE_SIZE = 5
+export const CARD_PAGE_SIZE = 10
 
 /**
  * 桌面表格的每页行数。
  */
 export const TABLE_PAGE_SIZE = 10
-
-/**
- * 条数下拉的档位。2026-09-04 Frank「应该是有 5 10 20 50 100 这种下拉筛选」:
- * 把脉页每张表(职业 / 雇主 / LMIA / 城市)各带一把,默认 5 行;数据已在手,前端只切片。
- */
-export const TOPN_OPTS = [5, 10, 20, 50, 100]
-
-/**
- * 条数下拉的起始档 = 每张表默认行数(条数不足这个数时下拉整个不出)。
- */
-export const TOPN_MIN = 5
-
-/**
- * 条数下拉每一项的前缀。
- */
-export const TOPN_LABEL_HEAD = 'Top '
-
-/**
- * 条数下拉至少要有两档才值得出(只剩一档 = 没得选)。
- */
-export const TOPN_MIN_OPTS = 2
 
 /**
  * 首页聚合的进程内缓存时长(ms)。手法照 jobs/page.tsx 的 ssrDimsCache:判决证据/抽选/
@@ -533,6 +508,11 @@ export const TAG_VARIANT_WARN = 'warn'
 export const PLAIN_BTN_KIND = 'ghost'
 
 /**
+ * 表格操作小钮走 button 桶的 mini 档(2026-09-05 Frank「按钮样式不能全站统一吗」:与职位板操作列同一颗)。
+ */
+export const MINI_BTN_KIND = 'mini'
+
+/**
  * 本页的 SEO 头(英文优先 —— 88% 流量来自 Google;中文一句压在后面)。
  * 住这里而不是页面门里:门里不留死值常量,页面门只 `export const metadata = START_META` 一行转发。
  */
@@ -579,15 +559,15 @@ export const TRACK_CTA = 'landing_cta_browse'
 
 
 /**
- * 行业组的键(2026-09-04 Frank「职业应该分行业,比如医疗、技工、STEM」;顺序即页面上的顺序)。
+ * 行业组的键(2026-09-04 Frank「职业应该分行业,比如医疗、技工、STEM」;顺序即页面上的顺序;8 组)。
  * 组名文案 = KEY_IND_HEAD + 键(三语在 lib/i18n)。职业 / 雇主 / LMIA / 趋势四段共用这一份。
  */
 export const IND_KEYS = [
-  'health', 'stem', 'trades', 'construction', 'food', 'transport', 'manufacturing', 'business', 'education',
+  'health', 'stem', 'trades', 'food', 'transport', 'manufacturing', 'business', 'education',
 ]
 
 /**
- * 行业组 → 本站大类(etl/noc 的 27 大类归成 9 组)。只在把脉页用,住这里;
+ * 行业组 → 本站大类(etl/noc 的 27 大类归成 8 组)。只在把脉页用,住这里;
  * 第二个消费者出现时搬 etl/noc 成数据层事实(设计稿 docs/design/把脉页重构-20260904.md §4)。
  */
 export const IND_BROADS: Record<string, string[]> = {
@@ -602,14 +582,10 @@ export const IND_BROADS: Record<string, string[]> = {
   stem: ['IT', '工程', '科学'],
 
   /**
-   * 技工:大类只有一个(Frank 点名的组)。
+   * 技工:技工 + 建筑两大类并一组(2026-09-04 Frank「应该放一起,名字都叫技工」;官方 NOC 第 7 大类
+   * 本就把两者编在一起,站内 27 大类拆开的是 08-02 的心智切法,把脉页按官方口径合回)。
    */
-  trades: ['技工'],
-
-  /**
-   * 建筑:大类只有一个。
-   */
-  construction: ['建筑'],
+  trades: ['技工', '建筑'],
 
   /**
    * 餐饮零售:餐饮、住宿、零售、销售、生活服务五个服务业大类。
@@ -648,11 +624,6 @@ export const KEY_IND_HEAD = 'pulse.ind.'
 export const WAGE_MIN_OPEN = 10
 
 /**
- * 每张表最多留几行(Top N 最大档;超出的行前端不必留在内存里)。
- */
-export const TOPN_MAX = 100
-
-/**
  * 全职业榜的键:最多岗位。
  */
 export const SEC_TOP_OPEN = 'topOpen'
@@ -663,34 +634,9 @@ export const SEC_TOP_OPEN = 'topOpen'
 export const SEC_TOP_WAGE = 'topWage'
 
 /**
- * 雇主段的表种:在招且带担保信号(紧缺清单命中 / AIP 指定 / 技能类 LMIA)。
- */
-export const EMP_KIND_SIGNAL = 'signal'
-
-/**
- * LMIA 段的表种:技能类 LMIA 获批 > 0,按获批数排。
- */
-export const EMP_KIND_LMIA = 'lmia'
-
-/**
  * 雇主表列键:雇主名。
  */
 export const COL_EMP = 'emp'
-
-/**
- * 雇主表列键:担保信号。
- */
-export const COL_SIGNALS = 'signals'
-
-/**
- * 雇主表列键:技能类 LMIA 获批(近两年)。
- */
-export const COL_SKILLED = 'skilled'
-
-/**
- * 雇主表列键:LMIA 最近一季。
- */
-export const COL_QUARTER = 'quarter'
 
 /**
  * 职位板按城市筛的地址头(城市卡下钻:该市全部在招岗)。
@@ -763,3 +709,327 @@ export const SERIES_LINE_TYPE = 'line'
  * 趋势线线宽(px)。
  */
 export const TREND_LINE_WIDTH = 2
+
+/**
+ * 抽选表下发条数上限(前端 Top N 下拉再切;冷解读要按通道回看 12 期,
+ * 多取的那批只在服务端用完即丢,不进 HTML)。
+ */
+export const DRAWS_LIMIT = 50
+
+/**
+ * 抽选尺子区的锚点 id。
+ */
+export const ID_DRAWS = 'pl-draws'
+
+/**
+ * 冷解读的回看窗(设计 §4):当期分数线 vs **近 12 期同通道**的区间。
+ */
+export const HIST_WINDOW = 12
+
+/**
+ * 冷解读的样本门槛:同通道有效期数 <4 不出解读(样本太少的「区间」是噪音,宁可不说)。
+ */
+export const HIST_MIN_N = 4
+
+/**
+ * 联邦抽选在表上显示的标签(省码那一格)。
+ */
+export const TAG_FED = 'EE'
+
+/**
+ * 联邦发布方在 news 表里的 region 值。
+ */
+export const REGION_FEDERAL = 'federal'
+
+/**
+ * 联邦发布方在列表上显示的标签。
+ */
+export const TAG_IRCC = 'IRCC'
+
+/**
+ * 联邦抽选在 pnp_draws 里的省字段值。
+ */
+export const PROV_FED = 'FED'
+
+/**
+ * 表格列的 key:抽选日期。
+ */
+export const COL_DATE = 'date'
+
+/**
+ * 表格列的 key:抽选项目(省码或 EE)。
+ */
+export const COL_PROG = 'prog'
+
+/**
+ * 表格列的 key:抽选通道名。
+ */
+export const COL_STREAM = 'stream'
+
+/**
+ * 表格列的 key:分数线。
+ */
+export const COL_SCORE = 'score'
+
+/**
+ * 表格列的 key:邀请数。
+ */
+export const COL_INV = 'inv'
+
+/**
+ * 表格列的 key:冷解读。
+ */
+export const COL_READ = 'read'
+
+/**
+ * 抽选表日期列的列宽(百分比;列宽写死,冷解读吃最宽一列 —— 它是这张表的结论。
+ * 百分比固定布局永不横滚)。
+ */
+export const W_DATE = '12%'
+
+/**
+ * 抽选表项目列的列宽。
+ */
+export const W_PROG = '8%'
+
+/**
+ * 抽选表通道名列的列宽。
+ */
+export const W_STREAM = '22%'
+
+/**
+ * 抽选表分数线列的列宽。
+ */
+export const W_SCORE = '10%'
+
+/**
+ * 抽选表邀请数列的列宽。
+ */
+export const W_INV = '10%'
+
+/**
+ * 抽选表冷解读列的列宽。
+ */
+export const W_READ = '38%'
+
+/**
+ * 行 hover 高亮的全局规范类(同上)。
+ */
+export const CLS_ROW_HOVER = 'rowHover'
+
+/**
+ * 城市行没到时页态吃的那份空清单(模块级单例:每次渲染新建空数组会让页态每帧回第一页)。
+ */
+export const EMPTY_CITY_ROWS: never[] = []
+
+/**
+ * 身份档:没工签(境外或访客)—— 看雇主办过 LMIA 没有、在不在 AIP / RCIP 名单。
+ */
+export const ID_NOWP = 'nowp'
+
+/**
+ * 身份档:PGWP 或其他工签 —— 看雇主招不招 TEER 0-3、岗位在不在省清单、雇主够不够省提名门槛。
+ * 默认档:本站主流量是学签转 PGWP 的人群(2026-09-05 Frank「我应该选什么雇主是根据我的身份来的」)。
+ */
+export const ID_PGWP = 'pgwp'
+
+/**
+ * 身份档的文案键头(拼上档键)。
+ */
+export const KEY_ID_HEAD = 'pulse.id.'
+
+/**
+ * 雇主表列键:近一年 LMIA 获批。
+ */
+export const COL_LMIA_4Q = 'lmia4q'
+
+/**
+ * 雇主表列键:雇主门槛。
+ */
+export const COL_VERDICT = 'verdict'
+
+/**
+ * 雇主表列键:在招职业。
+ */
+export const COL_HIRING_OCC = 'hiringOcc'
+
+/**
+ * 表列键:操作(看岗位 / 看公司)。
+ */
+export const COL_ACT = 'act'
+
+/**
+ * 公司页地址头(雇主表「看公司」)。
+ */
+export const URL_COMPANY_HEAD = '/companies/'
+
+/**
+ * 在招职业一格最多摆几个职业名(其余折成「等 N 个」)。
+ */
+export const HIRING_OCC_MAX = 2
+
+/**
+ * TEER 的可提名上界:0-3 才走得了 CEC 与省提名的技术类。
+ */
+export const TEER_PNP_MAX = 3
+
+/**
+ * 雇主门槛判定态的文案键头(拼上 met / short / unknown / public)。
+ */
+export const KEY_VERDICT_HEAD = 'se.verdict.'
+
+/**
+ * 雇主门槛差项的文案键头(拼上 years / staff)。
+ */
+export const KEY_VERDICT_FACTOR_HEAD = 'se.verdict.factor.'
+
+/**
+ * 雇主门槛判定态:差项。
+ */
+export const VERDICT_SHORT = 'short'
+
+/**
+ * 雇主门槛判定态:达标。
+ */
+export const VERDICT_MET = 'met'
+
+/**
+ * 雇主门槛判定态:公共部门(省提名对公共部门雇主不设年限雇员数门槛)。
+ */
+export const VERDICT_PUBLIC = 'public'
+
+/**
+ * PGWP 档把脉结论:省提名可走(有 TEER 0-3 岗、岗位在省清单、雇主门槛达标或公共部门)。排序权 0。
+ */
+export const PULSE_OK = 'ok'
+
+/**
+ * PGWP 档把脉结论:省提名待核(岗与清单都对,雇主门槛本站还没核到)。排序权 1。
+ */
+export const PULSE_CHECK = 'check'
+
+/**
+ * PGWP 档把脉结论:差门槛(雇主门槛判定差项)。排序权 2。
+ */
+export const PULSE_SHORT = 'short'
+
+/**
+ * PGWP 档把脉结论:只能攒 CEC(没有在省清单上的 TEER 0-3 岗,省提名雇主类走不通)。排序权 3。
+ */
+export const PULSE_CEC = 'cec'
+
+/**
+ * 把脉结论 → 排序权(小在前)。
+ */
+export const PULSE_RANK: Record<string, number> = {
+  /**
+   * 可走。
+   */
+  ok: 0,
+
+  /**
+   * 待核。
+   */
+  check: 1,
+
+  /**
+   * 差门槛。
+   */
+  short: 2,
+
+  /**
+   * 只能攒 CEC。
+   */
+  cec: 3,
+}
+
+/**
+ * 「是」的记号(与 DASH_MARK「没有」成对;在省清单 / AIP / RCIP 三格只放勾或杠)。
+ */
+export const CHECK_MARK = '✓'
+
+/**
+ * 雇主表列键:近半年 LMIA 获批(没工签档显示这一档;入选看近一年)。
+ */
+export const COL_LMIA_2Q = 'lmia2q'
+
+/**
+ * 雇主表列键:业务(公司简介)。
+ */
+export const COL_BIZ = 'biz'
+
+/**
+ * 试点名单 source 里认 RCIP 的记号。
+ */
+export const PILOT_RCIP = 'RCIP'
+
+/**
+ * 试点名单 source 里认 FCIP 的记号。
+ */
+export const PILOT_FCIP = 'FCIP'
+
+/**
+ * 雇主表的表种:三试点指定雇主表(不分身份档,不分行业;2026-09-05 Frank「AIP / RCIP / FCIP 在招的单独开 table,
+ * 不要和一般走 PNP 的雇主放到一起」)。
+ */
+export const TABLE_PILOT = 'pilot'
+
+/**
+ * 三试点的键(顺序即三张表的顺序);表题文案 = KEY_PILOT_HEAD + 键。
+ */
+export const PILOT_KEYS = ['aip', 'rcip', 'fcip']
+
+/**
+ * 试点表题的文案键头。
+ */
+export const KEY_PILOT_HEAD = 'pulse.pilot.'
+
+/**
+ * 试点键:AIP(大西洋四省)。
+ */
+export const PILOT_KEY_AIP = 'aip'
+
+/**
+ * 试点键:RCIP(乡村社区)。
+ */
+export const PILOT_KEY_RCIP = 'rcip'
+
+/**
+ * 试点键:FCIP(法语社区)。
+ */
+export const PILOT_KEY_FCIP = 'fcip'
+
+/**
+ * 词间空格(雇主名按词拆再拼)。
+ */
+export const SPACE_SEP = ' '
+
+/**
+ * 全大写雇主名里,几个字母以内的词当缩写保留大写(KFC / A&W / CDC / RBC)。
+ */
+export const ACRONYM_MAX = 3
+
+/**
+ * 公司后缀词(全大写名里即使短也转词首大写:INC → Inc)。
+ */
+export const CORP_SUFFIXES = ['INC', 'LTD', 'CO', 'LLC', 'LLP', 'LTEE', 'LP']
+
+/**
+ * 去掉非字母(数缩写长度时 A&W 算 2 个字母)。
+ */
+export const NON_LETTER_RE = /[^A-Za-z]/g
+
+/**
+ * 操作钮的打开方式:新标签页(2026-09-05 Frank「看岗位 看公司,应该跳到一个新的 tab」;把脉页是查询台,不离开)。
+ */
+export const NEW_TAB = '_blank'
+
+/**
+ * AI 简介里「做什么」那一段的标记(公司信息批的落库格式:[WHAT] [BASE] [SIZE] [FOUNDED] [NOTE] 五段串一行)。
+ */
+export const BRIEF_TAG_WHAT = '[WHAT]'
+
+/**
+ * AI 简介里任一段标记(切出 [WHAT] 段的右界)。
+ */
+export const BRIEF_TAG_RE = /\[(BASE|SIZE|FOUNDED|NOTE|WHAT)\]/

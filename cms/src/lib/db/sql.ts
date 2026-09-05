@@ -742,6 +742,18 @@ export const STATS_DAILY_SERIES = `SELECT date AS date, broad, SUM(open_jobs)::i
        ORDER BY date ASC, broad ASC`
 
 /**
+ * 社区试点(RCIP / FCIP)指定雇主名(小写)与来源(把脉页雇主段的两格,按名与担保雇主取交集;
+ * 一行可能同属两个试点,source 形如 'RCIP+FCIP',前端按包含判)。
+ */
+export const DESIGNATED_PILOT_NAMES = `SELECT DISTINCT lower(name) AS name, source FROM designated_employers WHERE source LIKE '%RCIP%' OR source LIKE '%FCIP%'`
+
+/**
+ * 有简介的公司名(小写)与简介(AI 简介优先,退回描述;全文不截 —— 2026-09-05 Frank「怎么还有截断」;把脉页雇主段「主营业务」一列按名取交集)。
+ */
+export const COMPANY_BRIEFS = `SELECT lower(name) AS name, COALESCE(NULLIF(ai_brief, ''), description) AS brief
+       FROM companies WHERE COALESCE(NULLIF(ai_brief, ''), NULLIF(description, '')) IS NOT NULL`
+
+/**
  * citation 来源三行(field-sources 维度,$1=字段名数组;2026-08-22 stats 定型批自 payload.find 换来)。
  */
 export const STAT_FIELD_SOURCES = `SELECT field, publisher, url, fetched FROM field_sources WHERE field = ANY($1) ORDER BY id LIMIT 10`

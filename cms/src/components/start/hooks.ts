@@ -7,7 +7,7 @@
  * 与 stats 的 useMarketChart)。
  * 2026-08-28 换装批自 Pulse.tsx 的三个组件体收进来。
  * 2026-09-04 重构:雇主表六格筛选 / 五只下拉的三台状态机随筛选下拉撤;抽选 / 政策两处条数档撤,
- * 换成每张表各一把的 useTopN;新增职业分表、雇主分表、LMIA 分表、城市行、趋势五份派生。
+ * Top N 一度每表各一把,同日 Frank 拍板撤(全量 + 分页);新增职业分表、雇主分表、LMIA 分表、城市行、趋势五份派生。
  *
  * @author Frank
  * @time 2026-08-28 14:20:00
@@ -15,13 +15,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { useMarketStats } from '@/components/stats'
-import { EMP_KIND_LMIA, EMP_KIND_SIGNAL, TEXT_NONE, TOPN_MIN } from './constants'
+import { makeT } from '@/lib/i18n'
+import { ID_PGWP, LANG_EN, TEXT_NONE } from './constants'
 import {
-  cityRowsOf, empSecsOf, makeNavWatch, makeProvPick, makeSelectChange, makeSponsorLoad, natOccOf, nocProvsOf,
-  numCardsOf, occSecsOf, provInitOf, provOccOf, provRowsOf, provStatOf, trendOf,
+  cityRowsOf, empSecsOf, makeKindPick, makeNavWatch, makeProvPick, makeSelectChange, makeSponsorLoad, natOccOf,
+  nocInfoOf, nocProvsOf, numCardsOf, pilotSecsOf, occSecsOf, provInitOf, provOccOf, provRowsOf, provStatOf, trendOf,
 } from './functions'
 import type {
-  CardPageIn, EmpSecsPanel, NocCatMap, OccBoardPanel, PulseIn, PulsePanel, SponsorBoards, TopNPanel,
+  CardPageIn, EmpExtra, EmpKind, EmpSecsHookIn, EmpSecsPanel, NocCatMap, OccBoardPanel, PulseIn, PulsePanel,
+  SponsorBoards, TFn,
 } from './types'
 
 /**
@@ -56,13 +58,14 @@ export function useNavSec(): string {
 }
 
 /**
- * 一张表的 Top N 档(2026-09-04 Frank「应该是有 5 10 20 50 100 这种下拉筛选」):每表各一把,默认 TOPN_MIN。
+ * 抽选主文案要的英文取词函数(官方英文名与界面语言无关,整页只造一次)。
  *
- * @returns 当前档与换档手柄。
+ * @returns 英文取词函数。
  */
-export function useTopN(): TopNPanel {
-  const [n, setN] = useState(TOPN_MIN)
-  return { n, onN: setN }
+export function useEnglishT(): TFn {
+  return useMemo(function makeEnglish() {
+    return makeT(LANG_EN)
+  }, [])
 }
 
 /**
@@ -85,12 +88,12 @@ export function useCardPage(x: CardPageIn): OccBoardPanel {
 }
 
 /**
- * 雇主段与 LMIA 段的行业分表(担保雇主全量到手前用 SSR 那几十行)。
+ * 雇主段的行业分表(按当前身份档)+ 三试点表;担保雇主全量到手前用 SSR 那几十行。
  *
- * @param x 页面门取好的那份 SSR 数据。
- * @returns 两段的分表。
+ * @param x SSR 数据、主图、语言与身份档。
+ * @returns 当前档的分表。
  */
-export function useEmpSecs(x: PulseIn): EmpSecsPanel {
+export function useEmpSecs(x: EmpSecsHookIn): EmpSecsPanel {
   const [, , t] = useLang()
   const sponsorFull = useSponsorFull()
 
@@ -103,15 +106,27 @@ export function useEmpSecs(x: PulseIn): EmpSecsPanel {
     return new Map(Object.entries(x.stats.nocCat))
   }, [x.stats.nocCat])
 
-  const empSecs = useMemo(function pickEmpSecs() {
-    return empSecsOf({ t, sponsor, nocCat, kind: EMP_KIND_SIGNAL })
-  }, [t, sponsor, nocCat])
+  const nocInfo = useMemo(function pickNocInfo() {
+    return nocInfoOf({ market: x.market, lang: x.lang })
+  }, [x.market, x.lang])
 
-  const lmiaSecs = useMemo(function pickLmiaSecs() {
-    return empSecsOf({ t, sponsor, nocCat, kind: EMP_KIND_LMIA })
-  }, [t, sponsor, nocCat])
+  const extra: EmpExtra = useMemo(function pickExtra() {
+    return {
+      rcip: new Set<string>(x.stats.rcipNames),
+      fcip: new Set<string>(x.stats.fcipNames),
+      briefs: new Map(Object.entries(x.stats.briefs)),
+    }
+  }, [x.stats.rcipNames, x.stats.fcipNames, x.stats.briefs])
 
-  return { empSecs, lmiaSecs }
+  const secs = useMemo(function pickEmpSecs() {
+    return empSecsOf({ t, sponsor, nocCat, nocInfo, extra, kind: x.kind, lang: x.lang })
+  }, [t, sponsor, nocCat, nocInfo, extra, x.kind, x.lang])
+
+  const pilotSecs = useMemo(function pickPilotSecs() {
+    return pilotSecsOf({ t, sponsor, nocCat, nocInfo, extra, lang: x.lang })
+  }, [t, sponsor, nocCat, nocInfo, extra, x.lang])
+
+  return { secs, pilotSecs }
 }
 
 /**
@@ -124,8 +139,10 @@ export function useEmpSecs(x: PulseIn): EmpSecsPanel {
 export function usePulse(x: PulseIn): PulsePanel {
   const [lang, , t] = useLang()
   const market = useMarketStats()
-  const emp = useEmpSecs(x)
+  const [empKind, setEmpKind] = useState<EmpKind>(ID_PGWP)
+  const emp = useEmpSecs({ stats: x.stats, market, lang, kind: empKind })
   const navSec = useNavSec()
+  const tEn = useEnglishT()
   const [prov, setProv] = useState(provInitOf(x.stats.provPreset))
 
   const natOcc = useMemo(function pickNat() {
@@ -173,8 +190,10 @@ export function usePulse(x: PulseIn): PulsePanel {
     market,
     numCards,
     occSecs,
-    empSecs: emp.empSecs,
-    lmiaSecs: emp.lmiaSecs,
+    empSecs: emp.secs,
+    pilotSecs: emp.pilotSecs,
+    empKind,
+    kindPickOf: makeKindPick({ setKind: setEmpKind }),
     nocProvs,
     provRows,
     provStat,
@@ -184,6 +203,7 @@ export function usePulse(x: PulseIn): PulsePanel {
     provPickOf: makeProvPick({ setProv }),
     cityRows,
     trend,
+    tEn,
     navSec,
   }
 }

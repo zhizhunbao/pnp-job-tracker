@@ -3030,6 +3030,11 @@ export const CARD_MD_CLS = 'cardMd'
 export const BTN_GHOST = 'ghost'
 
 /**
+ * 表格操作小钮走 button 桶的 mini 档(2026-09-05 收拢:原 .actBtn 加倍类搬进 button 桶,全站一形)。
+ */
+export const BTN_MINI = 'mini'
+
+/**
  * 白底描边钮(筛选行那几颗)。
  */
 export const BTN_SECONDARY = 'secondary'

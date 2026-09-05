@@ -1,7 +1,7 @@
 'use client'
 /**
- * 域内小件:抽选与政策动态那一行链接(2026-09-04 重构:原 S5 抽选表 + 政策动态段撤,
- * /news 与时间线已承载同一事实,这里只留一行入口)。
+ * 域内小件:政策动态那一行链接(2026-09-04 重构:政策动态段撤,/news 承载,这里只留一行入口;
+ * 抽选表 Frank 走查要求保留,住 DrawsSection)。
  *
  * @author Frank
  * @time 2026-09-04 22:10:00
@@ -20,9 +20,9 @@ import type { DrawsLinkIn } from './types'
  */
 export function DrawsLink({ t }: DrawsLinkIn) {
   return (
-    <Band white>
+    <Band>
       <LinkButton href={URL_NEWS} className={drawsLinkClsOf()}>
-        {t('pulse.drawsLink')}
+        {t('home.pulse.all')}
       </LinkButton>
     </Band>
   )

@@ -10,7 +10,7 @@
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { BTN_GHOST } from './constants'
+import { BTN_MINI } from './constants'
 import { actBtnClsOf } from './functions'
 import type { ActionsCellIn } from './types'
 import css from './jobs.module.css'
@@ -24,7 +24,7 @@ import css from './jobs.module.css'
 export function ActionsCell({ label, on, onToggle }: ActionsCellIn) {
   return (
     <span className={cssOf(css.actCell)}>
-      <Button kind={BTN_GHOST} onClick={onToggle} className={actBtnClsOf(on)}>{label}</Button>
+      <Button kind={BTN_MINI} onClick={onToggle} className={actBtnClsOf(on)}>{label}</Button>
     </span>
   )
 }

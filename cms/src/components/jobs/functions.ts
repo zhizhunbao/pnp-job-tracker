@@ -3786,16 +3786,16 @@ export function matchToneClsOf(level: string): string {
 }
 
 /**
- * 收藏钮的类:已收藏加一档琥珀。
+ * 收藏钮的类:已收藏加一档琥珀(钮本体 2026-09-05 收进 button 桶 mini 档,这里只剩修饰档)。
  *
  * @param on 已收藏没。
  * @returns 类名。
  */
 export function actBtnClsOf(on: boolean): string {
   if (on) {
-    return cssOf(css.actBtn) + SPACE + cssOf(css.actBtnOn)
+    return cssOf(css.actBtnOn)
   }
-  return cssOf(css.actBtn)
+  return TEXT_NONE
 }
 
 /**

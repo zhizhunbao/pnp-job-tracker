@@ -6,7 +6,7 @@
  * 只有十几次浏览零交互,20 屏长页先刷三张雇主表才到职业榜。Frank 拍板**按类型分段,段内按行业出表,
  * 不让用户筛**:首屏(轮播 + 四卡)→ 职业(全职业两榜 + 行业各一表)→ 雇主(在招且带担保信号,行业各一表)
  * → LMIA(技能类获批,行业各一表)→ 省份(分省概览 + 省内职业榜)→ 城市 → 趋势(全国一条线 + 行业小图)
- * → 一行抽选链接 → 职位板入口。每张表 Top N 下拉默认 5。
+ * → 近期抽选表(Frank 走查要求保留)→ 一行政策动态链接 → 职位板入口。每张表全量,每页 10 行分页(Frank 同日撤 Top N)。
  * 撤掉:四榜、雇主表的筛选下拉与「问 AI 顾问」钮、抽选表与政策动态段、把脉页上的分布探索图。
  * 信条不变:**「难听,但没骗你」—— 数据保守,每个数字可溯源**;
  * 判决语一律「模板 + 库内数字填槽」,LLM 不参与下结论;派生列为 null 时该卡 / 该行整块不渲,绝不显示 0。
@@ -20,10 +20,10 @@
  * @time 2026-08-28 14:20:00
  */
 import { BoardsSection } from './boardssection'
-import { EMP_KIND_LMIA, EMP_KIND_SIGNAL, ID_LMIA, ID_SE } from './constants'
 import { CitySection } from './citysection'
 import { CtaBand } from './ctaband'
 import { DrawsLink } from './drawslink'
+import { DrawsSection } from './drawssection'
 import { EmpSection } from './empsection'
 import { Hero } from './hero'
 import { ProvOccSection } from './provoccsection'
@@ -49,17 +49,11 @@ export function Pulse({ stats }: PulseIn) {
         <Hero t={v.t} cards={v.numCards} />
         <BoardsSection t={v.t} lang={v.lang} updatedAt={stats.checkedAt} secs={v.occSecs} nocProvs={v.nocProvs} />
         <EmpSection t={v.t}
-          id={ID_SE}
-          title={v.t('se.title')}
-          kind={EMP_KIND_SIGNAL}
           updatedAt={stats.checkedAt}
-          secs={v.empSecs} />
-        <EmpSection t={v.t}
-          id={ID_LMIA}
-          title={v.t('se.grp.lmia')}
-          kind={EMP_KIND_LMIA}
-          updatedAt={stats.checkedAt}
-          secs={v.lmiaSecs} />
+          secs={v.empSecs}
+          pilotSecs={v.pilotSecs}
+          kind={v.empKind}
+          kindPickOf={v.kindPickOf} />
         <ProvSection t={v.t}
           lang={v.lang}
           updatedAt={stats.checkedAt}
@@ -75,9 +69,15 @@ export function Pulse({ stats }: PulseIn) {
           provPickOf={v.provPickOf}
           provStat={v.provStat}
           provOcc={v.provOcc}
-          nocProvs={v.nocProvs} />
+          nocProvs={v.nocProvs}
+          updatedAt={stats.checkedAt} />
         <CitySection t={v.t} lang={v.lang} updatedAt={stats.checkedAt} rows={v.cityRows} />
         <TrendSection t={v.t} updatedAt={stats.checkedAt} trend={v.trend} />
+        <DrawsSection t={v.t}
+          tEn={v.tEn}
+          lang={v.lang}
+          updatedAt={stats.checkedAt}
+          draws={stats.draws} />
         <DrawsLink t={v.t} />
         <CtaBand t={v.t} />
       </main>

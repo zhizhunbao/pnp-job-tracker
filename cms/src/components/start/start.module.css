@@ -36,15 +36,6 @@
   font-size: 20px;
 }
 
-/*
- * 白底色带(S2 职业榜与 S4b 省内职业榜两处)。
- */
-.bandWhite {
-  /*
-   * 白底(与灰底色带交替)。
-   */
-  background: #ffffff;
-}
 
 /*
  * hero 段:banner→卡 16px(.nums 的 margin-top),卡→下段标题也收到 16px
@@ -2691,4 +2682,33 @@
    * 字色跟省卡走,不用链接色。
    */
   color: inherit;
+}
+
+/*
+ * 操作格:看岗位 / 看公司两个钮并排。
+ */
+.acts {
+  /*
+   * 一行,两件之间留一档。
+   */
+  display: inline-flex;
+  gap: 6px;
+}
+
+/*
+ * 身份胶囊(与雇主分表子标题同一行,紧跟行业名)。
+ */
+.idRow {
+  /*
+   * 一行胶囊,可折行,与标题字基线对齐。
+   */
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+
+  /*
+   * 与行业名的距离。
+   */
+  margin-left: 6px;
 }

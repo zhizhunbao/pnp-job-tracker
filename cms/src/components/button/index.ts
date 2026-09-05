@@ -7,6 +7,6 @@
  */
 export { BackButton } from './backbutton'
 export { Button } from './button'
-export { goBackOr } from './functions'
+export { btnClsOf, goBackOr } from './functions'
 export { LinkButton } from './linkbutton'
 export type { BackButtonIn, BackIn, BusyFn, ButtonIn, ButtonKind, LinkButtonIn } from './types'

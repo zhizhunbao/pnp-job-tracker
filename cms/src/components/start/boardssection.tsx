@@ -2,13 +2,12 @@
 /**
  * 域内小件:职业段的伞(2026-09-04 重构)。Frank「职业应该分行业,比如医疗、技工、STEM 这种,
  * 但是还需要一个所有职业的,比如说加拿大最高工资榜单、最多工作的榜单」:
- * 先两张全职业榜(最多岗位 / 最高工资),再 9 个行业各一表;不让用户筛,每表各带 Top N。
+ * 先两张全职业榜(最多岗位 / 最高工资),再 8 个行业各一表;不让用户筛,每表各带 Top N。
  * 原四榜(雷区 / 备选 / 降温 / 升温)同批撤。主图数据没到出占位块。
  *
  * @author Frank
  * @time 2026-09-04 22:10:00
  */
-import { Updated } from '@/components/time'
 import { ID_BOARDS, PH_BOARDS } from './constants'
 import { Band } from './band'
 import { OccBoardSec } from './occboardsec'
@@ -38,14 +37,15 @@ export function BoardsSection({ t, lang, updatedAt, secs, nocProvs }: BoardsSect
             nocProvs={nocProvs}
             rows={sec.rows}
             title={sec.title}
-            gap={i !== 0} />,
+            gap={i !== 0}
+            updatedAt={updatedAt} />,
         )
       }
     }
   }
   return (
-    <Band white id={ID_BOARDS}>
-      <Sec title={t('pulse.nav.boards')} right={<Updated iso={updatedAt} t={t} />}>
+    <Band id={ID_BOARDS}>
+      <Sec title={t('pulse.nav.occ')}>
         {secs == null && <Placeholder size={PH_BOARDS} />}
         {items}
       </Sec>

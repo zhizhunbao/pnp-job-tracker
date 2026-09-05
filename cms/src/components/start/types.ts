@@ -123,11 +123,6 @@ export type ClickFn = () => void
 export type SelectChangeFn = (e: React.ChangeEvent<HTMLSelectElement>) => void
 
 /**
- * 条数下拉交回新档位的手柄。
- */
-export type TopNFn = (n: number) => void
-
-/**
  * 筛选下拉交回新值的手柄。
  */
 export type FilterFn = (v: string) => void
@@ -291,6 +286,26 @@ export type HomeStats = {
   daily: DailyRow[]
 
   /**
+   * 担保雇主里在 RCIP 指定名单上的雇主名(小写;只带交集,名单本身两千多家不下发)。
+   */
+  rcipNames: string[]
+
+  /**
+   * 担保雇主里在 FCIP 指定名单上的雇主名(小写;同上)。
+   */
+  fcipNames: string[]
+
+  /**
+   * 担保雇主的公司简介(名小写 → 简介;只带有简介的,现在约一成)。
+   */
+  briefs: Record<string, string>
+
+  /**
+   * 抽选表(全量,前端分页;2026-09-04 Frank「这个 table 还是要保留的」,政策动态不回)。
+   */
+  draws: PulseDraw[]
+
+  /**
    * S4 省卡:IRCC 体量 + 难度档。
    */
   provExtra: ProvExtraMap
@@ -419,6 +434,26 @@ export type HomeCoreIn = {
    * 逐日 × 大类的在招量。
    */
   dailyRows: DailyRow[]
+
+  /**
+   * 社区试点指定雇主原始行(名小写 + source)。
+   */
+  pilotRows: PilotNameDbRow[]
+
+  /**
+   * 公司简介原始行(名小写 + 简介)。
+   */
+  briefRows: BriefDbRow[]
+
+  /**
+   * 抽选原始行。
+   */
+  drawRows: DrawDbRow[]
+
+  /**
+   * 抽选下发条数上限。
+   */
+  drawsLimit: number
 }
 
 /**
@@ -710,6 +745,16 @@ export type OccCellRow = {
    * 担保率排序键。
    */
   rateSort: number | null
+
+  /**
+   * 「看岗位」文案(操作列;2026-09-04 Frank「每个列是不是都应该加一个操作列」)。
+   */
+  actJobsText: string
+
+  /**
+   * 操作钮的类(button 桶 ghost 小号档)。
+   */
+  actBtnCls: string
 }
 
 /**
@@ -1204,10 +1249,6 @@ export type ProvOccHitIn = {
  * `bandClsOf` 的入参。
  */
 export type BandClsIn = {
-  /**
-   * 白底档。
-   */
-  white: boolean
 
   /**
    * hero 档。
@@ -1301,16 +1342,6 @@ export type SelectChangeIn = {
 }
 
 /**
- * `makeTopNChange` 的入参(条数下拉的事件拆包 —— 值是数字)。
- */
-export type TopNChangeIn = {
-  /**
-   * 换档的落格。
-   */
-  set: TopNFn
-}
-
-/**
  * `makeSponsorLoad` 的入参(挂载后拉全量三分表换掉 SSR 那几十行)。
  */
 export type SponsorLoadIn = {
@@ -1398,14 +1429,24 @@ export type PulsePanel = {
   occSecs: OccSec[] | null
 
   /**
-   * 雇主段的行业分表(在招且带担保信号)。
+   * 雇主段的行业分表(按当前身份档算好)。
    */
   empSecs: EmpSec[]
 
   /**
-   * LMIA 段的行业分表(技能类 LMIA 获批 > 0)。
+   * 雇主段的三试点指定雇主表。
    */
-  lmiaSecs: EmpSec[]
+  pilotSecs: EmpSec[]
+
+  /**
+   * 当前身份档。
+   */
+  empKind: EmpKind
+
+  /**
+   * 切身份档的手柄工厂。
+   */
+  kindPickOf: KindPickFn
 
   /**
    * NOC → 可提名省份清单。
@@ -1452,6 +1493,13 @@ export type PulsePanel = {
    */
   trend: TrendPanel | null
 
+
+
+  /**
+   * 英文取词函数(抽选主文案取官方英文名,与界面语言无关;整页只造一次)。
+   */
+  tEn: TFn
+
   /**
    * 当前所在分区的锚点 id;'' = 还没滚到任何分区。
    */
@@ -1478,10 +1526,6 @@ export type BandIn = {
    */
   id?: string
 
-  /**
-   * 白底档(与灰底色带交替)。
-   */
-  white?: boolean
 
   /**
    * hero 档(banner 那一段自己管上下距)。
@@ -1514,7 +1558,7 @@ export type SecIn = {
   title: React.ReactNode
 
   /**
-   * 标题行右侧控件(TopN / 外链 / 对话导流钮)。
+   * 标题行右侧控件(更新时间 / 外链)。
    */
   right?: React.ReactNode
 
@@ -1577,26 +1621,6 @@ export type NumCardIn = {
    * 这张卡的展示行。
    */
   card: NumCardRow
-}
-
-/**
- * TopN(条数下拉)的 props。
- */
-export type TopNIn = {
-  /**
-   * 当前档位。
-   */
-  v: number
-
-  /**
-   * 换档手柄。
-   */
-  on: TopNFn
-
-  /**
-   * 数据一共有多少条(不足的档不出)。
-   */
-  max: number
 }
 
 /**
@@ -1673,6 +1697,7 @@ export type OccBoardIn = {
    * 每页行数;可省 = 10。
    */
   pageSize?: number
+
 }
 
 /**
@@ -1695,7 +1720,7 @@ export type OccBoardSecIn = {
   nocProvs: NocProvsMap
 
   /**
-   * 本表全部候选行(已排好序;Top N 在本件里切)。
+   * 本表全部行(已排好序;分页在表里)。
    */
   rows: OccRowList
 
@@ -1708,6 +1733,11 @@ export type OccBoardSecIn = {
    * 与上一表留不留间距(第一表不留)。
    */
   gap: boolean
+
+  /**
+   * 数据更新时刻(ISO;'' 不渲)—— 每张表标题行右槽各一枚(2026-09-04 Frank「每个表都应该有更新时间」)。
+   */
+  updatedAt: string
 }
 
 /**
@@ -1859,6 +1889,11 @@ export type ProvOccSectionIn = {
    * NOC → 可提名省份清单。
    */
   nocProvs: NocProvsMap
+
+  /**
+   * 数据更新时刻(ISO;'' 不渲)。
+   */
+  updatedAt: string
 }
 
 /**
@@ -1932,18 +1967,23 @@ export type OccSec = {
   title: string
 
   /**
-   * 候选行,已按本表口径排好序,最多 TOPN_MAX 行。
+   * 全部行,已按本表口径排好序(视图分页)。
    */
   rows: OccRowList
 }
 
 /**
- * 雇主表的表种:担保信号表 / LMIA 表(列集不同)。
+ * 身份档:没工签 / PGWP 或工签(2026-09-05 Frank「雇主需要按身份筛」;学签在读档等兼职与 co-op 数据到位再开)。
  */
-export type EmpKind = 'signal' | 'lmia'
+export type EmpKind = 'nowp' | 'pgwp'
 
 /**
- * 雇主表的展示行(值级清洗在 toEmpCellRow 做完)。
+ * 雇主表的表种:两个身份档的行业表,或三试点指定雇主表(列集各自不同)。
+ */
+export type EmpTableKind = EmpKind | 'pilot'
+
+/**
+ * 雇主表的展示行(值级清洗在 toEmpCellRow 做完)。一格一个事实(2026-09-05 Frank「一个字段怎么包含这么多信息」)。
  */
 export type EmpCellRow = {
   /**
@@ -1952,14 +1992,25 @@ export type EmpCellRow = {
   key: string
 
   /**
-   * 雇主英文名(2026-09-04 Frank「先只显示英文名」:中文别名是机器音译,不上页)。
+   * 雇主英文名(全大写的转成词首大写显示)。
    */
   name: string
 
   /**
-   * 点名字落到职位板按雇主名筛。
+   * 界面语言的别名(中文 / 韩文机器音译,数据层给的;英文界面与没别名的给 '',名下不出注)。
+   * 2026-09-05 Frank「雇主和主营业务下面应该有中文翻译吧」。
    */
-  href: string
+  alias: string
+
+  /**
+   * 「看岗位」:职位板按雇主名筛。
+   */
+  jobsHref: string
+
+  /**
+   * 「看公司」:公司页。
+   */
+  companyHref: string
 
   /**
    * 在招数。
@@ -1972,49 +2023,114 @@ export type EmpCellRow = {
   openText: string
 
   /**
-   * 担保信号胶囊文案(紧缺清单命中 / AIP 指定 / 技能 LMIA n);可空清单。
+   * 在招职业胶囊(最多 HIRING_OCC_MAX 个,本行业组的职业排前;主图没到时空清单)。
    */
-  signals: string[]
+  hiringOcc: StartPill[]
 
   /**
-   * 技能类 LMIA 获批数(近两年);0 = 没有。
+   * 「等 N 个」文案;职业数不超过胶囊数时给 ''。
    */
-  skilled: number
+  hiringMoreText: string
 
   /**
-   * 技能类 LMIA 获批数文案;没有给 DASH_MARK。
+   * 在招岗命中省清单。
    */
-  skilledText: string
+  named: boolean
 
   /**
-   * LMIA 最近一季;没有给 DASH_MARK。
+   * AIP 指定雇主。
    */
-  quarterText: string
+  aip: boolean
 
   /**
-   * 所在省(顿号并列)。
+   * RCIP 指定雇主(社区试点名单按名匹配)。
    */
-  provsText: string
+  rcip: boolean
 
   /**
-   * 点了雇主名的回调(埋点;形照 OccCellRow.onView,哑单元格不 import functions,免循环依赖)。
+   * FCIP 指定雇主(同上)。
+   */
+  fcip: boolean
+
+  /**
+   * 公司简介(有就显,没有给 DASH_MARK;2026-09-05 Frank「需要一个单独的列来解释公司业务」)。
+   */
+  brief: string
+
+  /**
+   * 勾的胶囊类(与紧缺列的省胶囊同一形)。
+   */
+  flagCls: string
+
+  /**
+   * TEER 0-3 在招职业数(按 NOC 去重;主图没到给 0)。
+   */
+  teer03: number
+
+  /**
+   * 近半年 LMIA 获批数(没工签档显示这一档)。
+   */
+  lmia2q: number
+
+  /**
+   * 近半年文案;0 给 DASH_MARK(近一年批过但近半年没有 = 办过但停了)。
+   */
+  lmia2qText: string
+
+  /**
+   * 近一年 LMIA 获批数(入选口径)。
+   */
+  lmia4q: number
+
+  /**
+   * 近一年 LMIA 获批数文案;0 给 DASH_MARK。
+   */
+  lmia4qText: string
+
+  /**
+   * 雇主门槛判定文案(达标 / 差 X / 待核 / 公共部门)。
+   */
+  verdictText: string
+
+  /**
+   * PGWP 档把脉结论键(PULSE_OK / CHECK / SHORT / CEC),只用来排序(可走在前),不上表。
+   */
+  pulse: string
+
+  /**
+   * 「看岗位」文案。
+   */
+  actJobsText: string
+
+  /**
+   * 「看公司」文案。
+   */
+  actCompanyText: string
+
+  /**
+   * 操作钮的类(button 桶 ghost 小号档)。
+   */
+  actBtnCls: string
+
+  /**
+   * 点了「看岗位」的回调(埋点;形照 OccCellRow.onView,哑单元格不 import functions,免循环依赖)。
    */
   onView: ClickFn
 }
 
 /**
- * `useEmpSecs` 的返回:雇主段与 LMIA 段的行业分表。
+ * `useEmpSecs` 的返回:当前身份档的行业分表 + 三试点表。
  */
 export type EmpSecsPanel = {
   /**
-   * 雇主段(在招且带担保信号)。
+   * 行业分表。
    */
-  empSecs: EmpSec[]
+  secs: EmpSec[]
 
   /**
-   * LMIA 段(技能类 LMIA 获批 > 0)。
+   * 三试点指定雇主表。
    */
-  lmiaSecs: EmpSec[]
+  pilotSecs: EmpSec[]
 }
 
 /**
@@ -2032,7 +2148,7 @@ export type EmpSec = {
   title: string
 
   /**
-   * 展示行,已排好序,最多 TOPN_MAX 行。
+   * 展示行,已排好序(视图分页)。
    */
   rows: EmpCellRow[]
 }
@@ -2122,9 +2238,24 @@ export type EmpSecsIn = {
   nocCat: NocCatMap
 
   /**
-   * 表种(决定入选口径与排序)。
+   * NOC → 职业名与 TEER(主图到了才有;没到给空表)。
+   */
+  nocInfo: NocInfoMap
+
+  /**
+   * 试点名单两集合与简介表。
+   */
+  extra: EmpExtra
+
+  /**
+   * 身份档(决定入选口径、把脉规则与排序)。
    */
   kind: EmpKind
+
+  /**
+   * 界面语言(别名取哪种)。
+   */
+  lang: StartLang
 }
 
 /**
@@ -2155,21 +2286,31 @@ export type EmpCellRowIn = {
    * 取词函数。
    */
   t: TFn
-}
-
-/**
- * `empColsOf` 的入参。
- */
-export type EmpColsIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
 
   /**
-   * 表种。
+   * 这一行归的行业组键(在招职业胶囊里本组职业排前)。
    */
-  kind: EmpKind
+  ind: string
+
+  /**
+   * NOC → 职业名与 TEER。
+   */
+  nocInfo: NocInfoMap
+
+  /**
+   * NOC → 分类。
+   */
+  nocCat: NocCatMap
+
+  /**
+   * 试点名单两集合与简介表。
+   */
+  extra: EmpExtra
+
+  /**
+   * 界面语言(取哪种别名)。
+   */
+  lang: StartLang
 }
 
 /**
@@ -2273,7 +2414,7 @@ export type CityCellRow = {
 }
 
 /**
- * EmpSection(雇主段 / LMIA 段:行业各一表)的 props。
+ * EmpSection(雇主段:行业各一表,子标题下身份胶囊)的 props。
  */
 export type EmpSectionIn = {
   /**
@@ -2282,33 +2423,33 @@ export type EmpSectionIn = {
   t: TFn
 
   /**
-   * 分区锚点 id。
-   */
-  id: string
-
-  /**
-   * 伞标题(已取词)。
-   */
-  title: string
-
-  /**
-   * 表种。
-   */
-  kind: EmpKind
-
-  /**
    * 数据更新时刻(ISO;'' 不渲)。
    */
   updatedAt: string
 
   /**
-   * 行业分表。
+   * 行业分表(已按当前身份档算好)。
    */
   secs: EmpSec[]
+
+  /**
+   * 三试点指定雇主表(AIP / RCIP / FCIP,在招的;不分档不分行业)。
+   */
+  pilotSecs: EmpSec[]
+
+  /**
+   * 当前身份档。
+   */
+  kind: EmpKind
+
+  /**
+   * 切身份档的手柄工厂。
+   */
+  kindPickOf: KindPickFn
 }
 
 /**
- * EmpBoardSec(一张带子标题与 Top N 下拉的雇主分表)的 props。
+ * EmpBoardSec(一张雇主分表:子标题 + 身份胶囊行 + 表)的 props。
  */
 export type EmpBoardSecIn = {
   /**
@@ -2322,14 +2463,34 @@ export type EmpBoardSecIn = {
   sec: EmpSec
 
   /**
-   * 表种。
+   * 当前身份档。
    */
   kind: EmpKind
+
+  /**
+   * 切身份档的手柄工厂。
+   */
+  kindPickOf: KindPickFn
+
+  /**
+   * 出不出身份胶囊(行业表出,试点表不出)。
+   */
+  chips: boolean
+
+  /**
+   * 表种(决定列集)。
+   */
+  tableKind: EmpTableKind
 
   /**
    * 与上一表留不留间距。
    */
   gap: boolean
+
+  /**
+   * 数据更新时刻(ISO;'' 不渲)。
+   */
+  updatedAt: string
 }
 
 /**
@@ -2349,7 +2510,8 @@ export type EmpBoardIn = {
   /**
    * 表种。
    */
-  kind: EmpKind
+  kind: EmpTableKind
+
 }
 
 /**
@@ -2369,7 +2531,7 @@ export type EmpCardIn = {
   /**
    * 表种。
    */
-  kind: EmpKind
+  kind: EmpTableKind
 }
 
 /**
@@ -2457,21 +2619,6 @@ export type DrawsLinkIn = {
   t: TFn
 }
 
-/**
- * `useTopN` 的返回:当前档与换档手柄。
- */
-export type TopNPanel = {
-  /**
-   * 当前档。
-   */
-  n: number
-
-  /**
-   * 换档手柄。
-   */
-  onN: TopNFn
-}
-
 
 /**
  * `trendCardClsOf` / `trendHeightOf` 的入参。
@@ -2548,7 +2695,792 @@ export type ValuableIn = {
   r: SponsorEmployerRow
 
   /**
-   * 表种。
+   * 身份档。
    */
   kind: EmpKind
+
+  /**
+   * 试点名单两集合与简介表。
+   */
+  extra: EmpExtra
+
+  /**
+   * NOC → 职业名与 TEER。
+   */
+  nocInfo: NocInfoMap
+}
+
+/**
+ * 查询挂了的空结果面(每项独立兜空,一张表缺只丢它自己那块)。
+ */
+export type EmptyQueryResult = {
+  /**
+   * 零行。
+   */
+  rows: never[]
+}
+
+/**
+ * 一期抽选 + 冷解读三标量(近 12 期同通道的期数/最低/最高,服务端算好)。
+ */
+export type PulseDraw = {
+  /**
+   * 抽选日。
+   */
+  date: string
+
+  /**
+   * 两位省码;'FED' = 联邦 EE。
+   */
+  province: string
+
+  /**
+   * 官方通道名。
+   */
+  stream: string
+
+  /**
+   * 通道名的中文批译(ETL 产出;没翻到给空串,回退手工小表)。
+   */
+  streamZh: string
+
+  /**
+   * 联邦 EE 的类别键(省抽选没有,给空串)。
+   */
+  label: string
+
+  /**
+   * 分数线;官方没公布保 null。
+   */
+  score: number | null
+
+  /**
+   * 邀请数;官方没公布保 null。
+   */
+  invitations: number | null
+
+  /**
+   * 回看窗内有分数线的期数;不足门槛给 null(整句解读不出)。
+   */
+  histN: number | null
+
+  /**
+   * 回看窗内的最低分;同上。
+   */
+  histMin: number | null
+
+  /**
+   * 回看窗内的最高分;同上。
+   */
+  histMax: number | null
+}
+
+/**
+ * `SQL.PNP_DRAWS_RECENT` 回来的那一行。列名即库列名;走 `SELECT *` 的容缺手法
+ * (#280:不点名 stream_zh —— DDL 没跑的库上那一列压根不存在,点名会整块炸,
+ * 而 catch 吞掉会连累 score/invitations 一起消失;`*` 容缺列,400 行无压力)。
+ */
+export type DrawDbRow = {
+  /**
+   * 两位省码;'FED' = 联邦。
+   */
+  province: string
+
+  /**
+   * 抽选日。
+   */
+  draw_date: string
+
+  /**
+   * 官方通道名。
+   */
+  stream: string | null
+
+  /**
+   * 通道名中文批译 —— E13-06 的列,DDL 没跑的库上这一格压根不存在。
+   */
+  stream_zh?: string | null
+
+  /**
+   * 联邦 EE 的类别键。
+   */
+  label: string | null
+
+  /**
+   * 分数线。
+   */
+  score: number | null
+
+  /**
+   * 邀请数。
+   */
+  invitations: number | null
+}
+
+/**
+ * 一期抽选的回看三标量。
+ */
+export type DrawHist = {
+  /**
+   * 回看窗内有分数线的期数。
+   */
+  n: number
+
+  /**
+   * 回看窗内的最低分。
+   */
+  min: number
+
+  /**
+   * 回看窗内的最高分。
+   */
+  max: number
+}
+
+/**
+ * `drawHistOf` 的入参。
+ */
+export type DrawHistIn = {
+  /**
+   * 同省同通道的那一组(已按日期降序)。
+   */
+  group: DrawDbRow[]
+
+  /**
+   * 本期在组内的位置。
+   */
+  i: number
+}
+
+/**
+ * `toDrawsWithHistory` 的入参。
+ */
+export type DrawsIn = {
+  /**
+   * 抽选原始行(已按日期降序,组内自然也降序)。
+   */
+  rows: DrawDbRow[]
+
+  /**
+   * 下发条数上限。
+   */
+  limit: number
+}
+
+/**
+ * `toPulseDraw` 的入参。
+ */
+export type PulseDrawIn = {
+  /**
+   * 这一期原始行。
+   */
+  r: DrawDbRow
+
+  /**
+   * 它的回看三标量;样本不足则 null。
+   */
+  hist: DrawHist | null
+}
+
+/**
+ * 抽选表一行的展示行。
+ */
+export type DrawCellRow = {
+  /**
+   * 行键(行序 —— 同省同通道同日可能有多期,只有位置能当身份)。
+   */
+  key: string
+
+  /**
+   * 抽选日(已裁到年月日)。
+   */
+  date: string
+
+  /**
+   * 省码或 EE 标签。
+   */
+  prog: string
+
+  /**
+   * 通道名主文案(官方英文名)。
+   */
+  main: string
+
+  /**
+   * 通道名灰注(界面语言译名);空串 = 不出。
+   */
+  note: string
+
+  /**
+   * 分数线;官方没公布给横杠。
+   */
+  score: string
+
+  /**
+   * 邀请数;官方没公布给横杠。
+   */
+  invitations: string
+
+  /**
+   * 冷解读(当期分数线 vs 近 12 期同通道区间);空串 = 样本不足,整格留空不编话。
+   */
+  read: string
+}
+
+/**
+ * `toDrawCellRow` 的入参(逐行,其余同 `toDrawCellRows`)。
+ */
+export type DrawCellRowIn = {
+  /**
+   * 这一期抽选。
+   */
+  r: PulseDraw
+
+  /**
+   * 行序(当行键)。
+   */
+  i: number
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 英文取词函数。
+   */
+  tEn: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: string
+}
+
+/**
+ * `toDrawCellRows` 的入参。
+ */
+export type DrawCellRowsIn = {
+  /**
+   * 抽选行。
+   */
+  rows: PulseDraw[]
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 英文取词函数(官方英文名主文案由它取)。
+   */
+  tEn: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: string
+}
+
+/**
+ * `drawColsOf` 的入参。
+ */
+export type DrawColsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * `drawRowClsOf` 的入参。
+ */
+export type DrawRowClsIn = {
+  /**
+   * 是不是最后一条。
+   */
+  last: boolean
+}
+
+/**
+ * 通道译名小表认得的语言码(与界面语言同值,但它是另一域的入参,单独起名)。
+ */
+export type DrawLang = 'zh' | 'en' | 'ko'
+
+/**
+ * DrawBoard(抽选表:桌面表格 + 手机卡)的 props。
+ */
+export type DrawBoardIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 展示行(已切到条数档)。
+   */
+  rows: DrawCellRow[]
+
+}
+
+/**
+ * DrawCard(抽选表手机形态的一条)的 props。
+ */
+export type DrawCardIn = {
+  /**
+   * 这一期的展示行。
+   */
+  row: DrawCellRow
+
+  /**
+   * 是不是最后一条(末条不出分隔线)。
+   */
+  last: boolean
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * DrawsSection(近期抽选表)的 props。
+ */
+export type DrawsSectionIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 英文取词函数(通道官方英文名)。
+   */
+  tEn: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: string
+
+  /**
+   * 数据更新时刻(ISO;'' 不渲)。
+   */
+  updatedAt: string
+
+  /**
+   * 抽选行(服务端已算好冷解读三标量)。
+   */
+  draws: PulseDraw[]
+
+
+}
+
+
+/**
+ * `useEmpSecs` 的入参。
+ */
+export type EmpSecsHookIn = {
+  /**
+   * 页面门取好的那份 SSR 数据。
+   */
+  stats: HomeStats
+
+  /**
+   * 主图四份数据;null = 还没到。
+   */
+  market: MarketData | null
+
+  /**
+   * 界面语言。
+   */
+  lang: StartLang
+
+  /**
+   * 当前身份档。
+   */
+  kind: EmpKind
+}
+/**
+ * `empColsOf` 的入参。
+ */
+export type EmpColsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 表种(决定列集)。
+   */
+  kind: EmpTableKind
+}
+
+/**
+ * 一个 NOC 的职业名与 TEER(从主图全国行取,随语言重建)。
+ */
+export type NocInfo = {
+  /**
+   * 界面语言的职业名。
+   */
+  name: string
+
+  /**
+   * TEER;官方没标给 null。
+   */
+  teer: number | null
+}
+
+/**
+ * NOC 码 → 职业名与 TEER。
+ */
+export type NocInfoMap = Map<string, NocInfo>
+
+/**
+ * `nocInfoOf` 的入参。
+ */
+export type NocInfoIn = {
+  /**
+   * 主图四份数据;null = 还没到。
+   */
+  market: MarketData | null
+
+  /**
+   * 界面语言。
+   */
+  lang: StartLang
+}
+
+/**
+ * `hiringOccOf` 的入参。
+ */
+export type HiringOccIn = {
+  /**
+   * 该雇主在招岗的 NOC 清单。
+   */
+  nocs: string[]
+
+  /**
+   * 这一行归的行业组键。
+   */
+  ind: string
+
+  /**
+   * NOC → 职业名与 TEER。
+   */
+  nocInfo: NocInfoMap
+
+  /**
+   * NOC → 分类。
+   */
+  nocCat: NocCatMap
+
+  /**
+   * 胶囊类。
+   */
+  cls: string
+}
+
+/**
+ * `teer03Of` 的入参。
+ */
+export type Teer03In = {
+  /**
+   * 该雇主在招岗的 NOC 清单。
+   */
+  nocs: string[]
+
+  /**
+   * NOC → 职业名与 TEER。
+   */
+  nocInfo: NocInfoMap
+}
+
+/**
+ * `verdictTextOf` 的入参。
+ */
+export type VerdictTextIn = {
+  /**
+   * 雇主门槛判定(lib/employers 的引擎契约,按索引取形,不另抄)。
+   */
+  v: SponsorEmployerRow['verdict']
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * `pulseOf` 的入参(PGWP 档把脉规则要看的三格事实)。
+ */
+export type PulseIn2 = {
+  /**
+   * TEER 0-3 在招职业数。
+   */
+  teer03: number
+
+  /**
+   * 在招岗命中省清单。
+   */
+  named: boolean
+
+  /**
+   * 雇主门槛判定态。
+   */
+  state: string
+
+  /**
+   * 是不是 AIP / RCIP / FCIP 指定雇主(指定 = 直通 PR 的雇主类通道,不看省清单与门槛)。
+   */
+  designated: boolean
+}
+
+/**
+ * 切身份档的手柄工厂(每个胶囊一只)。
+ */
+export type KindPickFn = (k: EmpKind) => ClickFn
+
+/**
+ * `makeKindPick` 的入参。
+ */
+export type KindPickIn = {
+  /**
+   * 落身份档。
+   */
+  setKind: (k: EmpKind) => void
+}
+
+/**
+ * IdChips(身份胶囊行)的 props。
+ */
+export type IdChipsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 当前身份档。
+   */
+  kind: EmpKind
+
+  /**
+   * 切身份档的手柄工厂。
+   */
+  kindPickOf: KindPickFn
+}
+
+/**
+ * `hiringMoreOf` 的入参。
+ */
+export type HiringMoreIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 在招职业总数。
+   */
+  n: number
+}
+
+/**
+ * 身份胶囊一枚(键是两档字面量之一,切档工厂直接吃)。
+ */
+export type KindChip = {
+  /**
+   * 身份档键。
+   */
+  key: EmpKind
+
+  /**
+   * 胶囊文案。
+   */
+  text: string
+}
+
+/**
+ * 社区试点指定雇主一行(SQL.DESIGNATED_PILOT_NAMES)。
+ */
+export type PilotNameDbRow = {
+  /**
+   * 雇主名(小写)。
+   */
+  name: string
+
+  /**
+   * 来源记号('RCIP' / 'FCIP' / 'RCIP+FCIP')。
+   */
+  source: string
+}
+
+/**
+ * 公司简介一行(SQL.COMPANY_BRIEFS)。
+ */
+export type BriefDbRow = {
+  /**
+   * 公司名(小写)。
+   */
+  name: string
+
+  /**
+   * 简介(已截)。
+   */
+  brief: string
+}
+
+/**
+ * `pilotNamesOf` 的入参。
+ */
+export type PilotNamesIn = {
+  /**
+   * 试点名单原始行。
+   */
+  rows: PilotNameDbRow[]
+
+  /**
+   * 担保雇主事实行(只留交集)。
+   */
+  sponsorRows: SponsorRowList
+
+  /**
+   * 认哪个试点(PILOT_RCIP / PILOT_FCIP)。
+   */
+  pilot: string
+}
+
+/**
+ * `briefsOf` 的入参。
+ */
+export type BriefsIn = {
+  /**
+   * 简介原始行。
+   */
+  rows: BriefDbRow[]
+
+  /**
+   * 担保雇主事实行(只留交集)。
+   */
+  sponsorRows: SponsorRowList
+}
+
+/**
+ * 雇主段的三份补充事实(试点名单两集合 + 简介表),随身份档一起喂给 empSecsOf。
+ */
+export type EmpExtra = {
+  /**
+   * RCIP 指定雇主名(小写)集合。
+   */
+  rcip: Set<string>
+
+  /**
+   * FCIP 指定雇主名(小写)集合。
+   */
+  fcip: Set<string>
+
+  /**
+   * 名(小写)→ 简介。
+   */
+  briefs: Map<string, string>
+}
+
+/**
+ * `briefOf` 的入参。
+ */
+export type BriefOfIn = {
+  /**
+   * 名(小写)→ 简介。
+   */
+  briefs: Map<string, string>
+
+  /**
+   * 雇主名(小写)。
+   */
+  key: string
+}
+
+/**
+ * `isDesignated` 的入参。
+ */
+export type DesignatedIn = {
+  /**
+   * 这一行事实。
+   */
+  r: SponsorEmployerRow
+
+  /**
+   * 试点名单两集合与简介表。
+   */
+  extra: EmpExtra
+}
+
+/**
+ * `pilotSecsOf` 的入参。
+ */
+export type PilotSecsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 担保雇主三分表。
+   */
+  sponsor: SponsorBoards
+
+  /**
+   * NOC → 分类。
+   */
+  nocCat: NocCatMap
+
+  /**
+   * NOC → 职业名与 TEER。
+   */
+  nocInfo: NocInfoMap
+
+  /**
+   * 试点名单两集合与简介表。
+   */
+  extra: EmpExtra
+
+  /**
+   * 界面语言(别名取哪种)。
+   */
+  lang: StartLang
+}
+
+/**
+ * `inPilotOf` 的入参。
+ */
+export type InPilotIn = {
+  /**
+   * 这一行事实。
+   */
+  r: SponsorEmployerRow
+
+  /**
+   * 试点键(aip / rcip / fcip)。
+   */
+  pilot: string
+
+  /**
+   * 试点名单两集合与简介表。
+   */
+  extra: EmpExtra
+}
+
+/**
+ * `aliasOf` 的入参。
+ */
+export type AliasIn = {
+  /**
+   * 这一行事实。
+   */
+  r: SponsorEmployerRow
+
+  /**
+   * 界面语言。
+   */
+  lang: StartLang
 }

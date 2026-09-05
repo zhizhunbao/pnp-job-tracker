@@ -4,7 +4,8 @@
  * 2026-08-09 Frank「这个地方的高亮也不对啊」:原先五个锚点永远灰、属主永远蓝
  * = 看着像永远停在第一项 —— 现加滚动跟随(当前分区的锚点亮蓝),属主前缀改深色粗体,
  * 蓝色只有一个语义:你现在在哪。
- * 归属设计(Frank 2026-08-08「二级标题应该只属于这个一级标题」):条首挂一级项作属主。
+ * 归属设计(Frank 2026-08-08「二级标题应该只属于这个一级标题」):条首挂一级项作属主 ——
+ * 2026-09-04 Frank「就业把脉这几个没必要显示吧」:属主与分隔线撤,条上只剩六个分区。
  * #312:导航项与分区 h2 逐字同文 = 同屏同一事实说两遍 —— TOC 保留(可点锚跳),
  * 措辞差异化:导航用短词(pulse.nav.*),h2 保全称(se.title / pulse.s4 等不动)。
  * 2026-08-28 换装批自 Pulse.tsx 提出成文件。
@@ -38,8 +39,6 @@ export function PulseNav({ t, navSec }: PulseNavIn) {
     <div className={css.navBar}>
       <Shell top={SHELL_TOP} bottom={SHELL_BOTTOM}>
         <div className={css.navRow}>
-          <span className={css.navOwner}>{t('pulse.entry')}</span>
-          <span className={css.navSep} />
           {items}
         </div>
       </Shell>

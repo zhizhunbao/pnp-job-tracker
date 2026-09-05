@@ -382,3 +382,43 @@ a.btn.secondary {
    */
   cursor: default;
 }
+
+/*
+ * mini 档:表格里的操作小钮(2026-09-05 Frank「按钮样式不能全站统一吗」)。原是职位板 jobs.module.css 的 .actBtn
+ * 加倍类,收进 button 桶成一档,职位板操作列与把脉页操作列共用。加倍类压住 .btn 基座的字重 600 与字号 13;
+ * 值逐格照抄原 .actBtn,视觉零变。
+ */
+.mini.mini {
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 小内衬。
+   */
+  padding: 2px 7px;
+
+  /*
+   * 小字号,字重随表格。
+   */
+  font-size: 11.5px;
+  font-weight: 400;
+
+  /*
+   * 细灰边,小圆角。
+   */
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+
+  /*
+   * 白底深灰字。
+   */
+  background: #ffffff;
+  color: #374151;
+
+  /*
+   * 可点。
+   */
+  cursor: pointer;
+}

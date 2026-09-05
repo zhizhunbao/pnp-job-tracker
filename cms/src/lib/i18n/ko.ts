@@ -933,14 +933,14 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   // #312 보조 내비 짧은 라벨(TOC와 섹션 h2 전체 명칭 차별화)
   'pulse.nav.se': '고용주', 'pulse.nav.occ': '직업', 'pulse.nav.prov': '주별', 'pulse.nav.provocc': '주별 직업', 'pulse.nav.draws': '추첨',
   // 2026-09-04 진단 페이지 재구성(docs/design/把脉页重构-20260904.md): 6개 섹션 내비 + 업종별 표 + 도시 / 추세 섹션
-  'pulse.nav.lmia': 'LMIA', 'pulse.nav.city': '도시', 'pulse.nav.trend': '추세',
+  'pulse.nav.city': '도시', 'pulse.nav.trend': '추세',
   'pulse.city': '도시 개요', 'pulse.trend': '구인 추세', 'pulse.trend.nat': '전국',
   'pulse.top.open': '구인 최다', 'pulse.top.wage': '최고 임금',
-  'pulse.ind.health': '의료', 'pulse.ind.stem': 'STEM', 'pulse.ind.trades': '기능직', 'pulse.ind.construction': '건설',
+  'pulse.ind.health': '의료', 'pulse.ind.stem': 'STEM', 'pulse.ind.trades': '기능직',
   'pulse.ind.food': '요식 및 소매', 'pulse.ind.transport': '운송 및 물류', 'pulse.ind.manufacturing': '제조 및 자원',
   'pulse.ind.business': '비즈니스 및 사무', 'pulse.ind.education': '교육 및 사회',
-  'pulse.col.signals': '스폰서 신호', 'pulse.sig.named': '수요 목록 해당', 'pulse.sig.aip': 'AIP 지정', 'pulse.sig.lmia': '숙련 LMIA {n}',
-  'pulse.drawsLink': '최근 추첨 및 정책 동향',
+  'pulse.col.biz': '주요 사업', 'pulse.pilot.aip': 'AIP 지정 고용주', 'pulse.pilot.rcip': 'RCIP 지정 고용주', 'pulse.pilot.fcip': 'FCIP 지정 고용주',   'pulse.id.nowp': '취업허가 없음', 'pulse.id.pgwp': '취업허가 있음',
+  'pulse.col.hiringOcc': '채용 직종', 'pulse.nocMore': '총 {n}개', 'pulse.act.jobs': '채용 보기', 'pulse.act.company': '회사 보기',
   // B4 고용주 주정부 지명 기준 판정: 3단계 + 공공 부문 예외, 기준 대조일 뿐 공식 인증 아님
   'se.col.verdict': '고용주 기준', 'se.verdict.met': '기준 충족', 'se.verdict.short': '{items} 미달', 'se.verdict.unknown': '확인 중', 'se.verdict.public': '공공 부문',
   'se.verdict.factor.years': '운영 연차', 'se.verdict.factor.staff': '직원 수',

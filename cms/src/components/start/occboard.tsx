@@ -51,7 +51,6 @@ export function OccBoard({
     showProvs,
     deadCol,
   })
-  const note = t('pulse.total', { n: rows.length })
   const cards = []
   for (const c of cells.slice(p.page * pageSize, (p.page + 1) * pageSize)) {
     cards.push(<OccCard key={c.key} row={c} showProvs={showProvs} deadCol={deadCol} />)
@@ -59,12 +58,12 @@ export function OccBoard({
   return (
     <>
       <div className={css.table}>
-        <Table<OccCellRow> rows={cells} cols={cols} rowKey={occRowKeyOf} pageSize={pageSize} footerNote={note} />
+        <Table<OccCellRow> rows={cells} cols={cols} rowKey={occRowKeyOf} pageSize={pageSize} />
       </div>
       <div className={css.cards}>
         {cards}
         <div className={css.pagerWrap}>
-          <Pager page={p.page} max={p.maxPage} note={note} onPage={p.onPage} />
+          <Pager page={p.page} max={p.maxPage} onPage={p.onPage} />
         </div>
       </div>
     </>

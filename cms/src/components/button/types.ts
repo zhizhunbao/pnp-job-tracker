@@ -27,6 +27,7 @@ export type ButtonKind =
   | 'primary' | 'pro' | 'secondary' | 'ai' | 'ghost' | 'danger'
   | 'icon' | 'iconGhost' | 'box' | 'step' | 'tab' | 'drop'
   | 'seg' | 'menu' | 'groupRow' | 'dot' | 'linkText' | 'linkDim'
+  | 'mini'
 
 /**
  * Button 的 props。
@@ -61,6 +62,11 @@ export type ButtonIn = {
    * 传了就渲成 <a>(内链要被爬到);禁用时不生效。
    */
   href?: string
+
+  /**
+   * href 形态下顶掉当前历史条目(同动线换题用;见 LinkButtonIn.replace)。
+   */
+  replace?: boolean
 
   /**
    * <a> 的 target(传了自动补 rel="noreferrer")。
@@ -233,6 +239,12 @@ export type LinkButtonIn = {
    * 点击回调(拦截成弹框/回放历史这类;可省)。
    */
   onClick?: (e: React.MouseEvent) => void
+
+  /**
+   * 站内切页时顶掉当前历史条目而不是压栈(Frank 2026-09-04「返回为什么每次返回到之前的题」:
+   * 同一动线里换题的链接一律 replace,返回才落回进来的那一页)。
+   */
+  replace?: boolean
 
   /**
    * 新开页目标(传了自动补 rel="noreferrer" —— 这条原先在三处逐字抄)。

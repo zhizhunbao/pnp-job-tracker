@@ -719,25 +719,7 @@
 }
 
 /*
- * 收藏钮。
- * 2026-08-29 换装回归修:这颗换装后走 button 族 ghost 型,`.btn` 基座会顶进来字重 600
- * 与字号 13(原形是裸 <button>:11.5px、字重随表格继承 400)。整条写成**加倍类**(0,2,0)
- * 压住基座,不靠两张表谁先谁后;字重显式写回 400。
- */
-.actBtn.actBtn {
-  white-space: nowrap;
-  padding: 2px 7px;
-  font-size: 11.5px;
-  font-weight: 400;
-  border: 1px solid #d1d5db;
-  border-radius: 5px;
-  background: #ffffff;
-  color: #374151;
-  cursor: pointer;
-}
-
-/*
- * 已收藏。同样加倍类 —— 基座压住之后,修饰档还得压得过加倍了的 `.actBtn`。
+ * 已收藏。加倍类 —— 修饰档要压得过 button 桶加倍了的 `.mini`(钮本体 2026-09-05 收进 button 桶)。
  */
 .actBtnOn.actBtnOn {
   color: #b45309;

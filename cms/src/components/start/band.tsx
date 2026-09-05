@@ -18,9 +18,9 @@ import type { BandIn } from './types'
  * @param props 锚点 id、三个档位开关与内容。
  * @returns 色带。
  */
-export function Band({ id, white = false, hero = false, cta = false, children }: BandIn) {
+export function Band({ id, hero = false, cta = false, children }: BandIn) {
   return (
-    <div id={id} className={bandClsOf({ white, hero, cta })}>
+    <div id={id} className={bandClsOf({ hero, cta })}>
       <Shell top={SHELL_TOP} bottom={SHELL_BOTTOM}>{children}</Shell>
     </div>
   )

@@ -27,20 +27,18 @@ export function EmpBoard({ t, rows, kind }: EmpBoardIn) {
   for (const r of rows.slice(p.page * CARD_PAGE_SIZE, (p.page + 1) * CARD_PAGE_SIZE)) {
     cards.push(<EmpCard key={r.key} t={t} row={r} kind={kind} />)
   }
-  const note = t('pulse.totalEmp', { n: rows.length })
   return (
     <>
       <div className={css.table}>
         <Table<EmpCellRow> rows={rows}
           cols={empColsOf({ t, kind })}
           rowKey={empRowKeyOf}
-          pageSize={TABLE_PAGE_SIZE}
-          footerNote={note} />
+          pageSize={TABLE_PAGE_SIZE} />
       </div>
       <div className={css.cards}>
         {cards}
         <div className={css.pagerWrap}>
-          <Pager page={p.page} max={p.maxPage} note={note} onPage={p.onPage} />
+          <Pager page={p.page} max={p.maxPage} onPage={p.onPage} />
         </div>
       </div>
     </>

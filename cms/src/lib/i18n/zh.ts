@@ -1031,14 +1031,14 @@ export const siteZh = {
   // #312 二级导航短词(TOC 与分区 h2 全称差异化,同屏同一事实只说一次)
   'pulse.nav.se': '雇主', 'pulse.nav.occ': '职业', 'pulse.nav.prov': '省份', 'pulse.nav.provocc': '省内职业', 'pulse.nav.draws': '抽选',
   // 2026-09-04 把脉页重构(docs/design/把脉页重构-20260904.md):六段导航 + 行业分表 + 城市 / 趋势两段
-  'pulse.nav.lmia': 'LMIA', 'pulse.nav.city': '城市', 'pulse.nav.trend': '趋势',
+  'pulse.nav.city': '城市', 'pulse.nav.trend': '趋势',
   'pulse.city': '城市概览', 'pulse.trend': '在招走势', 'pulse.trend.nat': '全国',
   'pulse.top.open': '最多岗位', 'pulse.top.wage': '最高工资',
-  'pulse.ind.health': '医疗', 'pulse.ind.stem': 'STEM', 'pulse.ind.trades': '技工', 'pulse.ind.construction': '建筑',
+  'pulse.ind.health': '医疗', 'pulse.ind.stem': 'STEM', 'pulse.ind.trades': '技工',
   'pulse.ind.food': '餐饮零售', 'pulse.ind.transport': '运输物流', 'pulse.ind.manufacturing': '制造农矿',
   'pulse.ind.business': '商务办公', 'pulse.ind.education': '教育文体',
-  'pulse.col.signals': '担保信号', 'pulse.sig.named': '紧缺清单命中', 'pulse.sig.aip': 'AIP 指定', 'pulse.sig.lmia': '技能 LMIA {n}',
-  'pulse.drawsLink': '近期抽选与政策动态',
+  'pulse.col.biz': '主营业务', 'pulse.pilot.aip': 'AIP 指定雇主', 'pulse.pilot.rcip': 'RCIP 指定雇主', 'pulse.pilot.fcip': 'FCIP 指定雇主',   'pulse.id.nowp': '没工签', 'pulse.id.pgwp': '有工签',
+  'pulse.col.hiringOcc': '在招职业', 'pulse.nocMore': '等 {n} 个', 'pulse.act.jobs': '看岗位', 'pulse.act.company': '看公司',
   // B4 雇主省提名门槛判定(design/雇主省提名门槛判定-20260808.md):三态 + 公共部门旁路,判定≠官方认证
   'se.col.verdict': '雇主门槛', 'se.verdict.met': '达标', 'se.verdict.short': '差{items}', 'se.verdict.unknown': '待核', 'se.verdict.public': '公共部门',
   'se.verdict.factor.years': '年限', 'se.verdict.factor.staff': '雇员数',
