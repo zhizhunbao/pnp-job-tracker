@@ -98,6 +98,12 @@
   gap: 6px;
 }
 
+/* 站内地图:八张卡横向流式换行(竖着排一屏都是卡;卡本就按文字包裹,一行放三四张) */
+.cbOptsRow {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
 .cbOptWhy {
   width: 100%;
   font-size: 12px;

@@ -29,5 +29,5 @@ export function GuideMap({ p }: GuideHelloIn) {
       </LinkButton>,
     )
   }
-  return <div className={css.cbOpts}>{cards}</div>
+  return <div className={`${css.cbOpts} ${css.cbOptsRow}`}>{cards}</div>
 }
