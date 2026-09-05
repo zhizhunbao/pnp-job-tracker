@@ -4,6 +4,7 @@
  * 遮罩/× 关,当前页高亮;portal 到 body —— 抽屉原来渲在 header 里 = main 内部,
  * main 一 transform 就成了 fixed 的包含块,抽屉会跟着页面一起被推走。
  * 推主页面的机器在 hooks 的 useMainPush。
+ * 2026-09-05 Frank「职位板和职位重复」:去掉首项「职位板」(与「职位」同指 /,且桌面导航本无此项)。
  * 2026-08-24 自 Header 拆出(一个 tsx 一个组件)。
  *
  * @author Frank
@@ -34,7 +35,6 @@ import css from './header.module.css'
 export function MobileDrawer({ t, active, onClose }: MobileDrawerIn) {
   useMainPush()
 
-  const onHome = active == null
   const onStart = active === A_START || active === A_STATS || active === A_RANK
   const onJobs = active === A_JOBS || active === A_MATCH
   const onNews = active === A_NEWS
@@ -49,9 +49,6 @@ export function MobileDrawer({ t, active, onClose }: MobileDrawerIn) {
             ariaLabel={t('nav.menu')}><IconX /></Button>
         </div>
         <nav className={css.drawerNav}>
-          <LinkButton href={PATH_HOME} className={withOn({ base: cssOf(css.drawerItem), on: onHome })}>
-            {t('detail.crumbHome')}
-          </LinkButton>
           <LinkButton href={PATH_START} className={withOn({ base: cssOf(css.drawerItem), on: onStart })}>
             {t('pulse.entry')}
           </LinkButton>
