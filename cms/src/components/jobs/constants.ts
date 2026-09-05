@@ -3141,13 +3141,10 @@ export const UPSELL_MATCH = 'match'
 
 /**
  * 横幅的模块名(#65/#66 五模块统一浅色带,职位板 = 蓝)。
+ * 2026-09-05 Frank 拍板 banner 文字统一:标题随界面语言取 nav.jobs,原「标题就是 Jobs 这两个字的英文」
+ * 的 BANNER_TITLE 撤编;岗位数与证言句出横幅进筛选行(BoardCounts)。
  */
 export const BANNER_MODULE = 'jobs'
-
-/**
- * 横幅大标题(站点定位是日更职位板,标题就是这两个字的英文)。
- */
-export const BANNER_TITLE = 'Jobs'
 
 /**
  * 职位板的 SEO 头(静态定稿;门里只 `export const metadata = BOARD_META` 一行转发 ——

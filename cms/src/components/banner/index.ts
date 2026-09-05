@@ -8,4 +8,4 @@
  */
 export { Banner } from './banner'
 export { BANNER_IMGS } from './constants'
-export type { BannerIn, BannerModule, BannerStat } from './types'
+export type { BannerIn, BannerModule } from './types'

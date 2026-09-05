@@ -13,7 +13,7 @@
  * @time 2026-08-28 00:10:00
  */
 import { BANNER_IMGS, Banner } from '@/components/banner'
-import { IconClipboard } from '@/components/icons'
+import { IconMap } from '@/components/icons'
 import { useLang } from '@/components/i18n'
 import { Shell } from '@/components/shell'
 import { SectionTabs } from '@/components/tabs'
@@ -40,7 +40,7 @@ export function Occupations({ rows, updatedAt }: OccupationsIn) {
   return (
     <Shell top={SHELL_TOP}>
       <Banner module={BANNER_MODULE}
-        icon={<IconClipboard />}
+        icon={<IconMap />}
         title={t('dir.occ.title')}
         sub={t('dir.occ.sub')}
         images={BANNER_IMGS.library} />

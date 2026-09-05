@@ -7,11 +7,13 @@
  * (裸删 = #267 空 H1 复发,SEO / 无障碍双输);页 title 不受影响。
  * 2026-08-28 换装批自 Pulse.tsx 提出成文件。
  * 2026-09-05 /fe banner(Frank「每个页面的 banner 保持一致大小」):200 加高档撤编,与全站同 130。
+ * 同日 Frank 拍板 banner 文字统一(图标 + 页名 + 一句副题):#267 方案B 的 sr-only 撤编,页名与副题回图上。
  *
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
 import { BANNER_IMGS, Banner } from '@/components/banner'
+import { IconTarget } from '@/components/icons'
 import { BANNER_MODULE } from './constants'
 import { Band } from './band'
 import { NumCard } from './numcard'
@@ -32,7 +34,9 @@ export function Hero({ t, cards }: HeroIn) {
   return (
     <Band hero>
       <Banner module={BANNER_MODULE}
-        title={<span className={css.srOnly}>{t('pulse.entry')}</span>}
+        icon={<IconTarget />}
+        title={t('pulse.entry')}
+        sub={t('pulse.bnSub')}
         images={BANNER_IMGS.home} />
       {cards.length > 0 && <div className={css.nums}>{items}</div>}
     </Band>

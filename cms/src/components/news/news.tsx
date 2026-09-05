@@ -48,7 +48,11 @@ export function News({ items, hero, cmtCounts, updatedAt }: NewsIn) {
   }
   return (
     <Shell top={SHELL_TOP_LIST}>
-      <Banner module={BANNER_MODULE} icon={<IconNews />} title={f.t('news.title')} images={BANNER_IMGS.news} />
+      <Banner module={BANNER_MODULE}
+        icon={<IconNews />}
+        title={f.t('news.title')}
+        sub={f.t('news.bnSub')}
+        images={BANNER_IMGS.news} />
       <SectionTabs tone={TABS_TONE}
         tabs={[
           { href: URL_NEWS, label: f.t('tl.tabNews'), active: true },

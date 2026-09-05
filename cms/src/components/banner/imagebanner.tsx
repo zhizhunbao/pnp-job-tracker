@@ -4,14 +4,15 @@
  * 同日批槽位:标题+副题左下、数字胶囊右下、轮播圆点右上):恒 130px(tall 200)定框
  * cover 裁剪,背景 crossfade 氛围轮播 —— 前景信息恒定,区别于 news 头条的内容轮播。
  * 2026-09-05 /fe banner:tall 加高档撤编(全站统一 130);右槽撤编;img 只挂到 reach
- *(首帧只下首图,省手机 100–150KB,LCP 不再等三张)。
+ *(首帧只下首图,省手机 100–150KB,LCP 不再等三张)。同日 Frank 拍板文字统一:每页
+ * 图标 + 页名 + 一句副题,副题 ≤18 汉字 / 40 英文字符一行放完(不折行不省略);数字胶囊撤编。
  * 2026-08-24 自 ui/Banner.tsx 拆出(一个 tsx 一个组件;轮播机器在 hooks)。
  *
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
 import { BannerDots } from './bannerdots'
-import { IMG_CREDIT, STATS_MAX } from './constants'
+import { IMG_CREDIT } from './constants'
 import { moduleClsOf } from './functions'
 import type { ImageBannerIn } from './types'
 import css from './banner.module.css'
@@ -27,7 +28,6 @@ export function ImageBanner({
   icon,
   title,
   sub,
-  stats,
   imgs,
   idx,
   reach,
@@ -51,21 +51,6 @@ export function ImageBanner({
     )
   }
 
-  const statEls = []
-  if (stats != null) {
-    for (let i = 0; i < stats.length && i < STATS_MAX; i = i + 1) {
-      const s = stats[i]
-      if (s == null) {
-        continue
-      }
-      statEls.push(
-        <span key={i} className={css.stat}>
-          <b className={css.statV}>{s.v}</b>{s.label}
-        </span>,
-      )
-    }
-  }
-
   return (
     <div className={boxCls} onMouseEnter={onEnter} onMouseLeave={onLeave}>
       {imgEls}
@@ -74,9 +59,6 @@ export function ImageBanner({
         <div className={css.bodyLeft}>
           <h1 className={`${css.h1} ${css.hShadow}`}>{icon}{title}</h1>
           {sub != null && <div className={css.imgSub}>{sub}</div>}
-        </div>
-        <div className={css.statRow}>
-          {statEls}
         </div>
       </div>
       <BannerDots imgs={imgs} cur={cur} pick={pick} />
