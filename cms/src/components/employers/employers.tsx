@@ -12,13 +12,17 @@
  * 同日「所有的 table 右上角都应该有一个更新时间」:标题行尾(返回钮腾出的那个位置)挂
  * Updated(time 桶);不挂筛选行是因为那一行尾已被名录抓取日占着(两个 margin-left:auto
  * 会把抓取日推到行中间),两条事实各说各的,谁也不动谁。
+ * 2026-09-05 /fe banner(Frank「雇主页现在没有 banner」):H1 进 Banner 图版(雇主档三张),
+ * Updated 独占原标题行靠右。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
+import { Banner, BANNER_IMGS } from '@/components/banner'
+import { IconUsers } from '@/components/icons'
 import { Shell } from '@/components/shell'
 import { Updated } from '@/components/time'
-import { SHELL_BOTTOM_PX, SHELL_TOP_PX } from './constants'
+import { BANNER_MODULE, SHELL_BOTTOM_PX, SHELL_TOP_PX } from './constants'
 import { EmployerBoard } from './employerboard'
 import { EmployerFilterBar } from './employerfilterbar'
 import { titleTextOf } from './functions'
@@ -37,8 +41,11 @@ export function Employers({ initial, initialFilters, updatedAt }: EmployersIn) {
   return (
     <div className={css.body}>
       <Shell top={SHELL_TOP_PX} bottom={SHELL_BOTTOM_PX}>
+        <Banner module={BANNER_MODULE}
+          icon={<IconUsers />}
+          title={titleTextOf({ t: p.t, f: p.f })}
+          images={BANNER_IMGS.employers} />
         <div className={css.head}>
-          <h1 className={css.h1}>{titleTextOf({ t: p.t, f: p.f })}</h1>
           <Updated iso={updatedAt} t={p.t} />
         </div>
         <div className={css.card}>

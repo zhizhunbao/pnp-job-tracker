@@ -43,7 +43,7 @@ export function Occupations({ rows, updatedAt }: OccupationsIn) {
         icon={<IconClipboard />}
         title={t('dir.occ.title')}
         sub={t('dir.occ.sub')}
-        images={BANNER_IMGS.jobs} />
+        images={BANNER_IMGS.library} />
       <SectionTabs tabs={[
         { href: LIB_URL_OCC, label: t('dir.occ.title'), active: true },
         { href: LIB_URL_RESOURCES, label: t('res.entry'), active: false },

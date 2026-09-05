@@ -36,7 +36,7 @@ export function Resources() {
       <Banner module={BANNER_MODULE}
         title={t('res.title')}
         sub={t('res.sub')}
-        images={BANNER_IMGS.pathways} />
+        images={BANNER_IMGS.library} />
       <SectionTabs tabs={[
         { href: LIB_URL_OCC, label: t('dir.occ.title'), active: false },
         { href: LIB_URL_RESOURCES, label: t('res.entry'), active: true },

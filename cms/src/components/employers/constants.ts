@@ -384,6 +384,11 @@ export const SHELL_TOP_PX = 16
 export const SHELL_BOTTOM_PX = 40
 
 /**
+ * banner 配色档(雇主档,2026-09-05 /fe banner:雇主板与对照页同档)。
+ */
+export const BANNER_MODULE = 'employers'
+
+/**
  * 正文轨的上内衬档(对照页;它没有筛选行,标题往下压一档更稳)。
  */
 export const COMPARE_SHELL_TOP_PX = 32

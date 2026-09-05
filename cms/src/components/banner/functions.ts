@@ -24,6 +24,8 @@ export function moduleClsOf(module: BannerModule): string {
     rank: cssOf(css.rank),
     stats: cssOf(css.stats),
     news: cssOf(css.news),
+    employers: cssOf(css.employers),
+    library: cssOf(css.library),
   }
   return moduleCls[module]
 }

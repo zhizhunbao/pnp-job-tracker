@@ -6,6 +6,7 @@
  * 「这个文字是不是应该删了」→ 切 #267 方案B:视觉纯图,H1 文字 sr-only 保留
  * (裸删 = #267 空 H1 复发,SEO / 无障碍双输);页 title 不受影响。
  * 2026-08-28 换装批自 Pulse.tsx 提出成文件。
+ * 2026-09-05 /fe banner(Frank「每个页面的 banner 保持一致大小」):200 加高档撤编,与全站同 130。
  *
  * @author Frank
  * @time 2026-08-28 14:20:00
@@ -31,7 +32,6 @@ export function Hero({ t, cards }: HeroIn) {
   return (
     <Band hero>
       <Banner module={BANNER_MODULE}
-        tall
         title={<span className={css.srOnly}>{t('pulse.entry')}</span>}
         images={BANNER_IMGS.home} />
       {cards.length > 0 && <div className={css.nums}>{items}</div>}

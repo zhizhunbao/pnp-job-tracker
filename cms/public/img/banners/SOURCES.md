@@ -17,3 +17,16 @@
 
 home(L1-01 landing 首屏,2026-07-30):不新增下载,复用既有三张 —— pathways-2(Pier 21 移民博物馆)/
 jobs-1(多伦多夜景)/ stats-3(佩姬湾灯塔);出处同上。要换专属图改 primitives.tsx 的 BANNER_IMGS.home。
+
+2026-09-05 /fe banner(Frank「各板块首图重复」→ 下载专属图;「雇主页现在没有 banner」→ 新开雇主组):
+同法 Special:FilePath 1600px 取图,统一裁 1280×300;license 与作者照 Commons extmetadata 抄录。
+- news-1 ← File:DSC02758 - Supreme Court of Canada (44891560021).jpg(CC BY-SA 2.0,Dennis G. Jarvis)
+- news-2 ← File:Rideau Canal skating 6548.jpg(CC0,Ahunt)
+- news-3 ← File:OttawaPanorama2017.jpg(CC BY-SA 4.0,Harleyd613)
+- library-1 ← File:Toronto Reference Library (01560).jpg(CC BY-SA 4.0,Rhododendrites)
+- library-2 ← File:Vancouver Public Central Library (37319131610).jpg(CC BY 2.0,GoToVan from Vancouver, Canada)
+- library-3 ← File:Halifax Central Library (40843345493).jpg(CC BY 2.0,Paulo O from Halifax, Canada)
+- employers-1 ← File:Financial District May 2010.jpg(CC BY 2.0,mark.watmough from Edinburgh, UK)
+- employers-2 ← File:Bankers Hall Calgary. (13440087335).jpg(CC0,Bernard Spragg. NZ from Christchurch, Ne)
+- employers-3 ← File:Coal Harbour, Vancouver (470065) (9441357251).jpg(CC BY 2.0,Robert Linsdell from St. Andrews, Canada)
+home 组改用 stats-1/2/3(/stats 路由退役后空着的三张),不新增下载;news 三张旧复用图路径退役。

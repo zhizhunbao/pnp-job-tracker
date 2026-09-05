@@ -9,7 +9,7 @@
 /**
  * 模块名(定 banner 的配色档;home 复用 jobs 档 —— 主品牌蓝不发明新色)。
  */
-export type BannerModule = 'home' | 'jobs' | 'pathways' | 'rank' | 'stats' | 'news'
+export type BannerModule = 'home' | 'jobs' | 'pathways' | 'rank' | 'stats' | 'news' | 'employers' | 'library'
 
 /**
  * 关键数字块(≤3,Frank:「显示关键信息但不能太多」;仅图版渲染)。
@@ -51,24 +51,15 @@ export type BannerIn = {
   sub?: React.ReactNode
 
   /**
-   * 右槽(钮/链接;可省)。
-   */
-  right?: React.ReactNode
-
-  /**
    * 实景图组(可省 = 渐变带;图挂了自动回落渐变带,发布零风险)。
    */
   images?: readonly string[]
 
   /**
-   * 关键数字块(仅图版渲染,最多 STATS_MAX 个)。
+   * 关键数字块(仅图版渲染,最多 STATS_MAX 个;≤640 藏)。
    */
   stats?: BannerStat[]
 
-  /**
-   * L1-01 landing 首屏加高档:130 → 200(门面比二级页重);其余槽位语法不变。
-   */
-  tall?: boolean
 }
 
 /**
@@ -95,10 +86,6 @@ export type GradientBannerIn = {
    */
   sub: React.ReactNode
 
-  /**
-   * 右槽(可省 = null)。
-   */
-  right: React.ReactNode
 }
 
 /**
@@ -126,19 +113,9 @@ export type ImageBannerIn = {
   sub: React.ReactNode
 
   /**
-   * 右槽(可省 = null)。
-   */
-  right: React.ReactNode
-
-  /**
    * 关键数字块(可省 = null;最多渲 STATS_MAX 个,手机藏)。
    */
   stats: BannerStat[] | null
-
-  /**
-   * 加高档。
-   */
-  tall: boolean
 
   /**
    * 轮播图组(非空,Banner 选形时已判)。
@@ -149,6 +126,12 @@ export type ImageBannerIn = {
    * 当前图序(可能超组长,消费端取模)。
    */
   idx: number
+
+  /**
+   * 已挂载到的最高图序(2026-09-05 Frank「后两张懒加载」:序号大于它的 img 不进 DOM,
+   * 首帧只下首图;轮到谁挂谁,并顺手预挂下一张)。
+   */
+  reach: number
 
   /**
    * 鼠标进入 = 暂停轮播。
@@ -204,6 +187,12 @@ export type CarouselOut = {
    * 当前图序(消费端取模)。
    */
   idx: number
+
+  /**
+   * 已挂载到的最高图序(2026-09-05 Frank「后两张懒加载」:序号大于它的 img 不进 DOM,
+   * 首帧只下首图;轮到谁挂谁,并顺手预挂下一张)。
+   */
+  reach: number
 
   /**
    * 鼠标进入 = 暂停。

@@ -14,8 +14,9 @@ export const SHELL_TOP = 16
 
 /**
  * 页头横幅的模块档(jobs = 主品牌蓝那一套;本页是职位板的同族清单页,不发明新色)。
+ * 2026-09-05 /fe banner(Frank「各板块首图重复」):与官方资源/案例同归资料库档 library,图组换图书馆三张。
  */
-export const BANNER_MODULE = 'jobs'
+export const BANNER_MODULE = 'library'
 
 /**
  * 省码标签的变体档(region = 省/地区那一套配色)。

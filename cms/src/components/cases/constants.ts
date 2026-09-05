@@ -187,8 +187,9 @@ export const OPS_POOL_ON_KEY = 'case.ops.poolOn'
 
 /**
  * 索引页 banner 的模块档(banner 域按模块配图与配色;处境页归 pathways 族)。
+ * 2026-09-05 /fe banner(Frank「各板块首图重复」):改归资料库档 library,与职业清单/官方资源同图组。
  */
-export const BANNER_MODULE = 'pathways'
+export const BANNER_MODULE = 'library'
 
 /**
  * 工作机会 bullet 的固定列表 key(一条通道里它至多一条)。

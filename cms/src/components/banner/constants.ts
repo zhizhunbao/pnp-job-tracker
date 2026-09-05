@@ -13,8 +13,10 @@ export const BANNER_IMGS = {
   /**
    * home(L1-01 landing 首屏):复用既有已裁图起步(Pier 21 移民博物馆/多伦多/佩姬湾),
    * 不新增下载;换专属图 = 改这三个路径。
+   * 2026-09-05 /fe banner(Frank「各板块首图重复」):改用 stats 三张(梦莲湖/萨省议会/佩姬湾)——
+   * /stats 路由已退役,这组图空着;首页与职位板不再共用多伦多塔。
    */
-  home: ['/img/banners/pathways-2.jpg', '/img/banners/jobs-1.jpg', '/img/banners/stats-3.jpg'],
+  home: ['/img/banners/stats-1.jpg', '/img/banners/stats-2.jpg', '/img/banners/stats-3.jpg'],
 
   /**
    * 职位板三张。
@@ -40,8 +42,21 @@ export const BANNER_IMGS = {
    * news(2026-07-31 Frank「没有图片的 banner 加上对应的图片」):照 home 先例复用
    * 既有已裁图不新增下载 —— 国会山(政策感最贴动态)/雾中高楼/卡尔加里天际线;
    * 要换专属图改这三个路径。
+   * 2026-09-05 /fe banner 换专属图:最高法院/丽都运河滑冰道/渥太华全景。
    */
-  news: ['/img/banners/pathways-1.jpg', '/img/banners/rank-1.jpg', '/img/banners/jobs-3.jpg'],
+  news: ['/img/banners/news-1.jpg', '/img/banners/news-2.jpg', '/img/banners/news-3.jpg'],
+
+  /**
+   * 资料库三板(职业清单/官方资源/常见案例)共用一组(2026-09-05 /fe banner 新下载:
+   * 多伦多参考图书馆/温哥华中央图书馆/哈利法克斯中央图书馆)。
+   */
+  library: ['/img/banners/library-1.jpg', '/img/banners/library-2.jpg', '/img/banners/library-3.jpg'],
+
+  /**
+   * 雇主板与对比页(2026-09-05 Frank「雇主页现在没有 banner」;新下载:多伦多金融区/
+   * 卡尔加里 Bankers Hall/温哥华天际线)。
+   */
+  employers: ['/img/banners/employers-1.jpg', '/img/banners/employers-2.jpg', '/img/banners/employers-3.jpg'],
 } as const
 
 /**

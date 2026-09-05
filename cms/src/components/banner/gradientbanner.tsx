@@ -14,15 +14,14 @@ import css from './banner.module.css'
 /**
  * 渐变带。
  *
- * @param props 模块/图标/标题/副题/右槽。
+ * @param props 模块/图标/标题/副题。
  * @returns 渐变带页头。
  */
-export function GradientBanner({ module, icon, title, sub, right }: GradientBannerIn) {
+export function GradientBanner({ module, icon, title, sub }: GradientBannerIn) {
   return (
     <div className={`${css.band} ${moduleClsOf(module)}`}>
       <h1 className={css.h1}>{icon}{title}</h1>
       {sub != null && <span className={css.bandSub}>{sub}</span>}
-      {right != null && <span className={css.bandRight}>{right}</span>}
     </div>
   )
 }

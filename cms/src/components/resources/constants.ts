@@ -14,8 +14,9 @@ export const SHELL_TOP = 16
 
 /**
  * 本页在 banner 域里的模块名(定配色档与图组 —— 官方资源属通道模块,不发明新配色)。
+ * 2026-09-05 /fe banner(Frank「各板块首图重复」):改归资料库档 library,不再与通道页共用国会山。
  */
-export const BANNER_MODULE = 'pathways'
+export const BANNER_MODULE = 'library'
 
 /**
  * 「没有」的空文本(搜索框初值、判空基准)。与 companies/account 域同名同义,各家一份。

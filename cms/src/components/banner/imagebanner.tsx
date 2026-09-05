@@ -3,6 +3,8 @@
  * banner 域的图版形态(#66 → banner 图版,2026-07-19 Frank「按这个做」批设计总表;
  * 同日批槽位:标题+副题左下、数字胶囊右下、轮播圆点右上):恒 130px(tall 200)定框
  * cover 裁剪,背景 crossfade 氛围轮播 —— 前景信息恒定,区别于 news 头条的内容轮播。
+ * 2026-09-05 /fe banner:tall 加高档撤编(全站统一 130);右槽撤编;img 只挂到 reach
+ *(首帧只下首图,省手机 100–150KB,LCP 不再等三张)。
  * 2026-08-24 自 ui/Banner.tsx 拆出(一个 tsx 一个组件;轮播机器在 hooks)。
  *
  * @author Frank
@@ -25,24 +27,20 @@ export function ImageBanner({
   icon,
   title,
   sub,
-  right,
   stats,
-  tall,
   imgs,
   idx,
+  reach,
   onEnter,
   onLeave,
   pick,
   fail,
 }: ImageBannerIn) {
-  let boxCls = `${css.imgBanner} ${moduleClsOf(module)}`
-  if (tall) {
-    boxCls = `${boxCls} ${css.tall}`
-  }
+  const boxCls = `${css.imgBanner} ${moduleClsOf(module)}`
   const cur = idx % imgs.length
 
   const imgEls = []
-  for (let i = 0; i < imgs.length; i = i + 1) {
+  for (let i = 0; i < imgs.length && i <= reach; i = i + 1) {
     let imgCls = css.img
     if (i === cur) {
       imgCls = `${css.img} ${css.imgOn}`
@@ -79,7 +77,6 @@ export function ImageBanner({
         </div>
         <div className={css.statRow}>
           {statEls}
-          {right != null && <span className={css.rightPill}>{right}</span>}
         </div>
       </div>
       <BannerDots imgs={imgs} cur={cur} pick={pick} />

@@ -18,8 +18,9 @@
  */
 import { useLang } from '@/components/i18n'
 import { IconScale } from '@/components/icons'
+import { Banner, BANNER_IMGS } from '@/components/banner'
 import { Shell } from '@/components/shell'
-import { COMPARE_SHELL_TOP_PX } from './constants'
+import { BANNER_MODULE, COMPARE_SHELL_TOP_PX } from './constants'
 import { CompareDemo } from './comparedemo'
 import { CompareResult } from './compareresult'
 import { compareDimsOf, toCompareCellRows, withMatchOf } from './functions'
@@ -41,7 +42,7 @@ export function Compare({ rows, pro, loggedIn, updatedAt }: CompareIn) {
   }
   return (
     <Shell top={COMPARE_SHELL_TOP_PX}>
-      <h1 className={css.compareH1}><IconScale /> {t('ce.title')}</h1>
+      <Banner module={BANNER_MODULE} icon={<IconScale />} title={t('ce.title')} images={BANNER_IMGS.employers} />
       <div className={css.compareNote}>{t('ce.note')}</div>
       {body}
     </Shell>

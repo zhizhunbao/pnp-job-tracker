@@ -3,6 +3,7 @@
  * banner 域的主结构:模块统一页头,两形态一组件(#66,2026-07-19 Frank「按这个做」)——
  * images 传了且没挂 = 实景图版(氛围轮播),否则浅色渐变带兜底。
  * 本组件只做选形:轮播机器在 hooks(useCarousel),两形态各归各文件。
+ * 2026-09-05 /fe banner:right 右槽(零消费者)与 tall 加高档(全站统一 130)撤编。
  * 2026-08-24 自 ui/Banner.tsx 按组件域形制迁入。
  *
  * @author Frank
@@ -24,10 +25,8 @@ export function Banner({
   icon,
   title,
   sub,
-  right,
   images,
   stats,
-  tall = false,
 }: BannerIn) {
   let imagesIn: readonly string[] | null = null
   if (images != null) {
@@ -39,18 +38,17 @@ export function Banner({
   }
   const c = useCarousel(imagesIn)
   if (c.imgs == null) {
-    return <GradientBanner module={module} icon={icon} title={title} sub={sub} right={right} />
+    return <GradientBanner module={module} icon={icon} title={title} sub={sub} />
   }
   return (
     <ImageBanner module={module}
       icon={icon}
       title={title}
       sub={sub}
-      right={right}
       stats={statsIn}
-      tall={tall}
       imgs={c.imgs}
       idx={c.idx}
+      reach={c.reach}
       onEnter={c.onEnter}
       onLeave={c.onLeave}
       pick={c.pick}
