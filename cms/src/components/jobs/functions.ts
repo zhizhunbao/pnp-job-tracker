@@ -75,7 +75,8 @@ import type {
   MailtoIn, MapHrefIn, MatchLabelIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn,
   MeasureWordIn, MidOptsIn, MoreLabelIn, MvBarTextIn, NextSortIn, NocCategoryDoc, NocCatRow, NocDescDoc, NocDescFact,
   NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NoTextIn, NumOrIn, OrigLabelIn, PageSigIn, PayFallbackForIn,
-  PickedShownIn, PlanProfileIn, PnpOccRow, PrefixLabelIn, ProMatchIn, ProofTextIn, ProvFullIn, ProvWordIn, RankOfIn,
+  LmiaTextIn, NamedTextIn, PickedShownIn, PlanProfileIn, PnpOccRow, PrefixLabelIn, ProMatchIn, ProvFullIn, ProvWordIn,
+  RankOfIn,
   ResizeBindIn,
   RoundIn, SavedEntry, SavedListJson, SaveLabelIn, SaveToggleIn, SeedFilterIn, SeedJson, SeedValueIn, SessionUser,
   ShowFallbackIn, ShowFormattedIn, ShowRelatedIn, ShowSourceIn, SlotIn, SortMarkIn, SortState, StickyOffsetsIn,
@@ -4664,17 +4665,30 @@ export function subTextOf(x: SubTextIn): string {
 }
 
 /**
- * 横幅副标的证言句(第 5 轮 #14):省提名清单命中岗 + 有外劳记录雇主数 ——
- * 首屏 3 秒讲清与聚合站的区别。两个数都为 0 就不出。
+ * 计数行第二条:省提名清单命中岗数(第 5 轮 #14 的证言句拆成两条,2026-09-05 Frank 拍板
+ * banner 文字统一后出横幅进筛选行,一行一条)。为 0 不出。
  *
- * @param x 取词函数与两个数。
- * @returns 证言句;没数给空串。
+ * @param x 取词函数与命中数。
+ * @returns 一条计数;为 0 给空串。
  */
-export function proofTextOf(x: ProofTextIn): string {
-  if (x.named === 0 && x.lmia === 0) {
+export function namedTextOf(x: NamedTextIn): string {
+  if (x.named === 0) {
     return TEXT_NONE
   }
-  return x.t('subtitle.proof', { named: x.named, lmia: x.lmia })
+  return x.t('subtitle.named', { named: x.named })
+}
+
+/**
+ * 计数行第三条:有外劳雇佣记录的雇主数(同上拆出)。为 0 不出。
+ *
+ * @param x 取词函数与雇主数。
+ * @returns 一条计数;为 0 给空串。
+ */
+export function lmiaTextOf(x: LmiaTextIn): string {
+  if (x.lmia === 0) {
+    return TEXT_NONE
+  }
+  return x.t('subtitle.lmia', { lmia: x.lmia })
 }
 
 /**

@@ -161,7 +161,7 @@ export const reportZh = {
   'pv.resShort': '居住门槛 {n} 个月,差 {short} 个月',
   'pv.selfEmp': '自雇经历不计入工作经验',
   'pv.nlDesignated': '{total} 家 NL 指定雇主中 {hits} 家申报过 {noc}',
-  'dp.cases': '常见案例', 'dp.caseAnswer': '完整案例',
+  'dp.cases': '常见案例', 'dp.casesSub': '常见处境的通道判定', 'dp.caseAnswer': '完整案例',
   'plan.job.title': '找工作', 'plan.job.sub': '填 2 项条件,看你的职业在目标省的在招与薪资',
   'plan.career.title': '职业规划', 'plan.career.sub': '填 1 项条件,看相邻职业的在招与薪资对照',
   'plan.pdf': '存为 PDF',
@@ -515,10 +515,10 @@ export const reportZh = {
  * 这里只装职位板这条线上的东西。
  */
 export const jobsZh = {
-  'subtitle.count': '{n} 个职位',
+  'subtitle.count': '{n} 个职位', 'subtitle.board': '全加拿大职位每日更新',
   'subtitle.hits': '{n} 个命中',
   // #170:去「·」杂糅(站内硬规矩)——两条事实改全角空格分隔;「官方公开数据」是限定语不是事实,砍掉
-  'subtitle.proof': '其中 {named} 岗命中省提名清单　{lmia} 家雇主有外劳雇佣记录',
+  'subtitle.named': '{named} 岗命中省提名清单', 'subtitle.lmia': '{lmia} 家雇主有外劳雇佣记录',
   'mv.today': '与你高匹配的岗位:{h} 个', 'up.matchN': '你共 {h} 个高匹配岗,免费版仅显示前 {n} 岗',
   'stream.abTech': 'AB 科技', 'stream.skHealth': 'SK 医疗', 'stream.skTech': 'SK 科技', 'stream.skAgri': 'SK 农业', 'stream.nsCritical': 'NS 紧缺空缺', 'stream.nsGrad': 'NS 毕业生', 'stream.aaipExcl': 'AAIP 不符合清单',
   'stream.bcHealth': 'BC 医疗', 'stream.bcChildcare': 'BC 幼教', 'stream.bcEdu': 'BC 法语教师', 'stream.bcVet': 'BC 兽医', 'stream.bcConstr': 'BC 建筑技工',
@@ -843,7 +843,7 @@ export const siteZh = {
   // max(last_seen) 冻结像站死了;现在时间源已是 etl_heartbeat=每轮跑完时刻,叫「更新」也说得通)
   'updated': '更新时间 {t}',
   'tagline': '每日更新、全加拿大全职业、移民价值视角',
-  'res.title': '官方资源导航', 'res.sub': '加拿大移民官方入口一页汇总:官方来源,可自行核实', 'res.go': '官方页', 'res.entry': '官方资源', 'res.search': '搜索官方资源…', 'res.empty': '没有匹配的资源',
+  'res.title': '官方资源导航', 'res.sub': '加拿大移民官方入口一页汇总', 'res.go': '官方页', 'res.entry': '官方资源', 'res.search': '搜索官方资源…', 'res.empty': '没有匹配的资源',
   'res.cat.federal': '联邦移民', 'res.cat.pnp': '各省提名(PNP)', 'res.cat.study': '留学 DLI', 'res.cat.language': '语言考试', 'res.cat.wage': '工资与职业数据', 'res.cat.lmia': 'LMIA 与雇主担保', 'res.cat.authority': '权威与合规',
   'clear': '清除筛选',
   'empty': '无匹配职位', 'allShown': '已全部显示 {total} 个', 'loadMore': '显示更多(还有 {n} 条)',
@@ -887,7 +887,7 @@ export const siteZh = {
   'home.jobs': '职位榜', 'home.jobs.new': '最新', 'home.jobs.paid': '高薪', 'home.jobs.most': '最多', 'home.jobs.med': '中位 {v}', 'home.jobs.rangeTip': 'ESDC 官方年薪区间(低位–高位;各岗按所在省查表取中位)', 'home.jobs.all': '全部职位',
   // E13-03 把脉首页(/start = 开始规划+榜单+地区统计 三合一)
   // 判决语一律「模板 + 库内数字填槽」(E13-00 §1 拍板 7:LLM 不参与下结论);措辞冷,不许乐观修饰。
-  'pulse.entry': '就业把脉',
+  'pulse.entry': '就业把脉', 'pulse.bnSub': '分省看在招与紧缺',
   'pulse.card.total': '全国在招岗位', 'pulse.card.total.tip': '全站在招有效岗位总数,与职位板同一口径',
   'pulse.card.new14': '近14天新增',
   'pulse.card.days': '平均在招天数', 'pulse.card.pnp': '紧缺清单岗',
@@ -932,7 +932,7 @@ export const siteZh = {
   'pulse.dr.note': '近 {n} 期 {min}–{max} 分,低于 {min} 没进过',
   'pulse.s6.t': '全加拿大职位板', 'pulse.s6.s': '全职业收录,每日更新',
   // 雇主板(2026-08-16 照职位板重做:指定名录与在招雇主并成一块板,口径作筛选项)
-  'de.title': '指定雇主名录', 'de.count': '{n} 家', 'de.colName': '雇主', 'de.colWhere': '所在地', 'de.colProgram': '制度',
+  'de.title': '指定雇主名录', 'de.bnSub': '指定雇主与在招雇主', 'de.count': '{n} 家', 'de.colName': '雇主', 'de.colWhere': '所在地', 'de.colProgram': '制度',
   'de.empty': '本站尚未收录该范围的指定雇主名录',
   'de.hiringTitle': '在招雇主', 'de.hiringEmpty': '本站职位库里该省该职业暂无在招雇主',
   'de.mode': '口径', 'de.mode.designated': '指定名录', 'de.mode.hiring': '在招雇主',
@@ -956,15 +956,15 @@ export const siteZh = {
   // 省全名(#58 零黑话:chips 显示全名,码存幕后)
   'pr.ON': '安大略', 'pr.BC': '不列颠哥伦比亚', 'pr.AB': '阿尔伯塔', 'pr.SK': '萨斯喀彻温', 'pr.MB': '曼尼托巴',
   'pr.QC': '魁北克', 'pr.NS': '新斯科舍', 'pr.NB': '新不伦瑞克', 'pr.NL': '纽芬兰与拉布拉多', 'pr.PE': '爱德华王子岛',
-  'rank.bnBoards': '个榜单', 'stats.bnProvs': '省全覆盖', 'stats.bnBroads': '职业大类',
+  'stats.bnProvs': '省全覆盖', 'stats.bnBroads': '职业大类',
   // B4-01 实体名录(雇主名录 + 紧缺职业清单)
   'dir.title': '雇主名录',
   'dir.col.employer': '雇主', 'dir.col.skilled': '技能类 LMIA 获批(近两年)', 'dir.col.quarter': '最近季度', 'dir.col.skilled.tip': '高薪(High Wage)与全球人才(Global Talent)通道的 LMIA 获批职位数——不含农业/低薪季节工;想找愿意办技能类工作担保的雇主,看这个数',
-  'dir.occ.title': '紧缺职业清单', 'dir.occ.sub': '各省具体通道的职业清单,随官方页面周更',
+  'dir.occ.title': '紧缺职业清单', 'dir.occ.sub': '各省通道的紧缺职业清单',
   'dir.occ.note': '清单命中是粗筛信号,不是资格认定。',
   'dir.occ.colStream': '通道', 'dir.occ.colNoc': 'NOC', 'dir.occ.colName': '职业', 'dir.occ.fetched': '抓取 {d}', 'dir.occ.src': '官方清单',
   // C6-01 政策时间线
-  'tl.title': '抽选与政策时间线', 'tl.sub': '省抽选 + 联邦 EE 抽选 + 官方政策公告,一条时间轴看全',
+  'tl.title': '抽选与政策时间线', 'tl.sub': '省抽选与联邦 EE 抽选时间线',
   'tl.cadence': '抽选节奏', 'tl.events': '事件流', 'tl.fed': '联邦', 'tl.imp': '重要',
   'tl.last': '最近 {d}', 'tl.daysSince': '距今 {n} 天', 'tl.avgGap': '近 {m} 期平均间隔 ~{n} 天',
   'tl.kindAll': '全部类型', 'tl.kindDraw': '抽选', 'tl.kindPolicy': '政策公告', 'tl.notice': '通告',
@@ -972,13 +972,13 @@ export const siteZh = {
   'tl.entry': '抽选与政策时间线', 'tl.empty': '没有匹配的事件', 'tl.hist': '历次抽选',
   'loading': '更新中…',
   'nav.library': '资料库', 'nav.employers': '雇主', 'nav.jobs': '职位', 'nav.pte': 'PTE 刷题', 'tl.tabNews': '最新公告',
-  'rank.bnSub': '按移民价值评分排序,随日更自动刷新', 'rank.bnRows': '本榜岗位',
+  'rank.bnSub': '按移民价值评分排序', 'rank.bnRows': '{n} 本榜岗位',
   // #54 登录改版(careerbeacon 骨架)
   'acct.hero.login': '欢迎回来', 'acct.hero.reg': '免费注册,看每份工作对你的匹配度',
   'acct.google': '使用 Google 继续', 'acct.orEmail': '或用邮箱',
   // 移民动态(E12-06):官方新闻转载——姿势四件套(©/非官方声明/原文链/日期);只摆事实不解读
   'news.entry': '移民动态',
-  'news.title': '移民政策动态',
+  'news.title': '移民政策动态', 'news.bnSub': '联邦与各省移民公告',
   'news.sub': '联邦 IRCC 与 7 省官方发布聚合 · 每 12 小时刷新 · 只收官方源',
   'news.federal': '联邦 IRCC',
   'news.qcNote': '魁省走自己的移民体系(非 PNP)',
@@ -1047,7 +1047,7 @@ export const siteZh = {
   'spl.head': '担保雇主', 'spl.aip': 'AIP 指定雇主(官方名单)', 'spl.lmia': '近两年 LMIA 获批 {n} 岗', 'spl.lmia1': '近两年 LMIA 获批 1 岗',
   'spl.coJobs': '看它全部在招职位',
   'rank.title.daily-top': '每日高分新岗 TOP 20', 'rank.note.daily-top': '口径:近 48 小时新发布,移民价值评分 ≥60 的岗位按评分精选(同分薪资高优先);大类榜岗位不足当日不出榜;随每小时数据更新自动刷新。', 'rank.title.weekly-top': '本周新增 TOP 50', 'rank.title.sponsor-likely': '最可能担保雇主榜', 'rank.entry': '榜单', 'rank.col.company': '公司', 'rank.col.openJobs': '在招', 'rank.col.namedJobs': '省提名清单岗', 'rank.col.avgScore': '移民价值分', 'rank.col.score': '移民价值分', 'rank.col.lmia': 'LMIA 获批职位(近两年)', 'rank.viewJobs': '在职位板查看', 'rank.note.weekly-top': '', 'rank.note.sponsor-likely': '口径:第一方直发雇主,按「近两年获批 LMIA 职位数(仅高薪、GTS、PR 股,ESDC 公开数据)→ 具体通道命中 → 在招量 → 移民价值分」排序;LMIA 记录=雇过外国人的历史事实,为粗筛信号非担保承诺。',
-  'ce.title': '多雇主对比', 'ce.aip': 'AIP 指定雇主', 'ce.provDiff': '主要省·移民难度', 'ce.match': '与我的匹配', 'ce.matchHigh': '高匹配 {n} 岗', 'ce.matchMid': '中匹配 {n} 岗', 'ce.brief': 'AI 调查简介',
+  'ce.title': '多雇主对比', 'ce.bnSub': '雇主担保记录并排对照', 'ce.aip': 'AIP 指定雇主', 'ce.provDiff': '主要省·移民难度', 'ce.match': '与我的匹配', 'ce.matchHigh': '高匹配 {n} 岗', 'ce.matchMid': '中匹配 {n} 岗', 'ce.brief': 'AI 调查简介',
   'ce.note': '口径:LMIA=雇过外国人的历史记录,不代表会担保你;AIP 指定≠有配额;数字为本站库内口径,非资格认定。', 'ce.empty': '至少选 2 家雇主才能对比——去名录行点「+ 对比」', 'ce.goDir': '去雇主名录', 'ce.clear': '清空重选',
   'ce.v1': 'LMIA 担保记录并排看,技能类获批数一眼比高下', 'ce.v2': '在招岗、省提名清单命中、AIP 指定同屏对齐', 'ce.v3': '建档后逐家看「与我的匹配」高/中命中岗数', 'ce.add': '+ 对比', 'ce.added': '已在对比 ✓', 'ce.bar': '已选 {n} 家', 'price.f10': '多雇主对比(2-4 家并排)',
   // E8-14 统计主图

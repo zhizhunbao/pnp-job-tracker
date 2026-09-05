@@ -38,11 +38,7 @@ export function Ranking({ slug, items, slugs = [], updatedAt }: RankingIn) {
         icon={<IconChart />}
         title={rankTitleOf({ t, slug })}
         images={BANNER_IMGS.rank}
-        sub={t('rank.bnSub')}
-        stats={[
-          { v: boards.length, label: t('rank.bnBoards') },
-          { v: items.length, label: t('rank.bnRows') },
-        ]} />
+        sub={t('rank.bnSub')} />
       <RankTabs rows={toRankTabRows({ boards, slug, t })} />
       <RankingTable slug={slug} items={items} updatedAt={updatedAt} t={t} />
     </Shell>

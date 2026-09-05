@@ -25,8 +25,9 @@ import { Updated } from '@/components/time'
 import { BTN_GHOST, BTN_SECONDARY, FK, SELECT_SM } from './constants'
 import {
   foldBtnClsOf, foldCaretOf, makeBroadChange, makeCatLabel, makeProvChange, makeProvLabel, matchBtnClsOf,
-  matchLabelOf, slotOf,
+  lmiaTextOf, matchLabelOf, namedTextOf, slotOf, subTextOf,
 } from './functions'
+import { BoardCounts } from './boardcounts'
 import { ColFields } from './colfields'
 import type { BoardBoxIn } from './types'
 import css from './jobs.module.css'
@@ -68,6 +69,9 @@ export function FilterRow({ b, boxRef }: BoardBoxIn) {
           {b.t('clear')}
         </Button>
       )}
+      <BoardCounts count={subTextOf({ t: b.t, anyFilter: f.anyFilter, matchView: b.matchView, total: b.data.total })}
+        named={namedTextOf({ t: b.t, named: b.proof.named })}
+        lmia={lmiaTextOf({ t: b.t, lmia: b.proof.lmia })} />
       <Updated iso={b.data.updatedAt} t={b.t} />
       <ColFields b={b} boxRef={boxRef} />
     </div>
