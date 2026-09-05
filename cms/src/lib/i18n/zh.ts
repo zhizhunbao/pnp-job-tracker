@@ -1118,6 +1118,7 @@ export const consultZh = {
   'chat.noted': '这个站上还没有。已经记下,做出来会放在这里。', 'chat.gotIt': '收到,记下了。做出来会放在这里。',
   'chat.notify': '留个邮箱,上线通知我', 'chat.emailPh': '邮箱', 'chat.emailSent': '记下了,上线会通知你', 'chat.emailFail': '没发出去,再试一次',
   'chat.openDest': '打开{name}',
+  'chat.map': '站上有这些,点一个过去',
   'guide.dest.jobs': '职位板', 'guide.dest.occupations': '职业目录', 'guide.dest.employers_hiring': '在招雇主',
   'guide.dest.employers_designated': '指定雇主', 'guide.dest.employers_compare': '雇主对比', 'guide.dest.pulse': '把脉',
   'guide.dest.plan_pr': 'PR 决策', 'guide.dest.pte': 'PTE 刷题', 'guide.dest.news': '新闻', 'guide.dest.cases': '案例',

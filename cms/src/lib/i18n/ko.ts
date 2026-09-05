@@ -1000,6 +1000,7 @@ export const consultKo: Record<keyof typeof consultZh, string> = {
   'chat.noted': '아직 이 사이트에 없습니다. 기록했고, 만들어지면 여기에 올라옵니다.', 'chat.gotIt': '알겠습니다, 기록했습니다. 만들어지면 여기에 올라옵니다.',
   'chat.notify': '이메일을 남기면 출시 때 알려 드립니다', 'chat.emailPh': '이메일', 'chat.emailSent': '기록했습니다. 출시되면 알려 드립니다', 'chat.emailFail': '전송되지 않았습니다. 다시 시도해 주세요',
   'chat.openDest': '{name} 열기',
+  'chat.map': '사이트에 있는 것들입니다. 하나 골라 주세요.',
   'guide.dest.jobs': '채용 게시판', 'guide.dest.occupations': '직업 목록', 'guide.dest.employers_hiring': '채용 중인 고용주',
   'guide.dest.employers_designated': '지정 고용주', 'guide.dest.employers_compare': '고용주 비교', 'guide.dest.pulse': '시장 동향',
   'guide.dest.plan_pr': 'PR 경로 점검', 'guide.dest.pte': 'PTE 연습', 'guide.dest.news': '뉴스', 'guide.dest.cases': '사례',

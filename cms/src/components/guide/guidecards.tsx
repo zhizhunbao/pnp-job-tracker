@@ -1,7 +1,7 @@
 'use client'
 /**
  * 答复下的卡:带路 → 「打开 X」(推荐徽标,站内链接);问题 / 建议 → 「留个邮箱,上线通知我」→ 邮箱框 → 已记。
- * 闲聊与故障不出卡。
+ * 闲聊 → 站内地图(主要页面各一卡);故障不出卡。
  *
  * @author Frank
  * @time 2026-09-05 16:00:00
@@ -11,6 +11,7 @@ import { cssOf } from '@/components/css'
 import { EMAIL, KIND, PLAIN_BTN_KIND } from './constants'
 import { destLabelOf, makeEmailOpenClick, makeNavClick, wantsEmail } from './functions'
 import { GuideEmail } from './guideemail'
+import { GuideMap } from './guidemap'
 import type { GuideCardsIn } from './types'
 import css from './guide.module.css'
 
@@ -41,6 +42,9 @@ export function GuideCards({ p, turn, i }: GuideCardsIn) {
         </LinkButton>
       </div>
     )
+  }
+  if (r.kind === KIND.chat) {
+    return <GuideMap p={p} />
   }
   if (wantsEmail(turn) === false) {
     return null

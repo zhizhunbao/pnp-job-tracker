@@ -1007,6 +1007,7 @@ export const consultEn: Record<keyof typeof consultZh, string> = {
   'chat.noted': 'Not on this site yet. Noted. It will show up here once built.', 'chat.gotIt': 'Got it, noted. It will show up here once built.',
   'chat.notify': 'Leave an email, get notified', 'chat.emailPh': 'Email', 'chat.emailSent': 'Noted, you will hear from us when it is live', 'chat.emailFail': 'Not sent, try again',
   'chat.openDest': 'Open {name}',
+  'chat.map': 'Here is what the site has. Pick one.',
   'guide.dest.jobs': 'the job board', 'guide.dest.occupations': 'the occupation directory', 'guide.dest.employers_hiring': 'employers hiring',
   'guide.dest.employers_designated': 'designated employers', 'guide.dest.employers_compare': 'employer comparison', 'guide.dest.pulse': 'the market pulse',
   'guide.dest.plan_pr': 'the PR path check', 'guide.dest.pte': 'PTE practice', 'guide.dest.news': 'news', 'guide.dest.cases': 'cases',

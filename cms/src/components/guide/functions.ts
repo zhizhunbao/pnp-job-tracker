@@ -7,11 +7,12 @@
  * @time 2026-09-05 16:00:00
  */
 
+import { DEST_ROUTE, DEST_SUB } from '@/lib/guide'
 import { track } from '@/lib/track'
 import {
-  COARSE_MQ, CRED_INCLUDE, DEST_KEY_PREFIX, EMAIL, EV_ANSWER, EV_EMAIL, EV_NAV, EV_PROP_DEST, EV_SUBMIT, FAULT,
-  H_AUTO, HDR_CONTENT_TYPE, HISTORY_MAX, KEY_ENTER, KIND, METHOD_POST, MIME_JSON, PX, ROLE, STICK_SLACK_PX, TA_H_MAX,
-  TEXT_NONE, TOO_MANY, URL_GUIDE, URL_GUIDE_EMAIL,
+  COARSE_MQ, CRED_INCLUDE, DEST_KEY_PREFIX, EMAIL,  EV_ANSWER, EV_EMAIL, EV_NAV, EV_PROP_DEST, EV_SUBMIT, FAULT,
+  H_AUTO, HDR_CONTENT_TYPE, HISTORY_MAX, KEY_ENTER, KIND, METHOD_POST, MIME_JSON, PX, ROLE, SLASH, STICK_SLACK_PX,
+  TA_H_MAX, TEXT_NONE, TOO_MANY, URL_GUIDE, URL_GUIDE_EMAIL,
 } from './constants'
 import type {
   AutofocusIn, ChipHandleIn, CoarseIn, ComposerChangeEvent, ComposerKeyEvent, DestLabelIn, EmailChangeEvent,
@@ -185,7 +186,44 @@ export function replyTextOf(input: ReplyTextIn): string {
   if (r.kind === KIND.suggestion) {
     return input.t('chat.gotIt')
   }
+  if (r.kind === KIND.chat) {
+    return input.t('chat.map')
+  }
   return r.say
+}
+
+/**
+ * 站内地图卡的链接:目的地的路由;带子路径的页落清单第一项(PTE → /pte/ra)。
+ *
+ * @param dest 目的地键。
+ * @returns 站内路径;目录里没有是空串(MAP_DESTS 与目录同源,生产不会走到)。
+ */
+export function mapHrefOf(dest: string): string {
+  const route = DEST_ROUTE[dest]
+  if (route == null) {
+    return TEXT_NONE
+  }
+  const subs = DEST_SUB[dest]
+  if (subs == null) {
+    return route
+  }
+  const first = subs[0]
+  if (first == null) {
+    return route
+  }
+  return route + SLASH + first
+}
+
+/**
+ * 造站内地图卡点击手柄(tsx 里用):只打埋点,跳转由链接自己走。
+ *
+ * @param dest 目的地键。
+ * @returns 零参手柄。
+ */
+export function makeMapClick(dest: string): VoidFn {
+  return function click(): void {
+    track(EV_NAV, { [EV_PROP_DEST]: dest })
+  }
 }
 
 /**

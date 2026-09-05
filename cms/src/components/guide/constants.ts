@@ -73,6 +73,12 @@ export const KIND = {
 export const DEST_KEY_PREFIX = 'guide.dest.'
 
 /**
+ * 闲聊类(打招呼、「有什么功能」「怎么使用」)答的站内地图:主要页面的目的地键,按用户关心的顺序。
+ * 2026-09-05 Frank「???? 这是回答了什么」:模型那句自我介绍等于没答 —— 改成固定一句 + 这些页的卡。
+ */
+export const MAP_DESTS = ['jobs', 'employers_hiring', 'occupations', 'pulse', 'plan_pr', 'pte', 'news', 'rankings']
+
+/**
  * 空态四条胶囊的 i18n 键(点即发)。
  */
 export const CHIP_KEYS = ['chat.chip1', 'chat.chip2', 'chat.chip3', 'chat.chip4']
@@ -231,6 +237,11 @@ export const ROLE = {
    */
   assistant: 'assistant',
 } as const
+
+/**
+ * 路径分隔。
+ */
+export const SLASH = '/'
 
 /**
  * 邮箱输入框的 type。

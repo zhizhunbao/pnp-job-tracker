@@ -2,11 +2,10 @@
 // 请求体校验。不连库、不打模型 —— 模型与检索都是注入的,这里只验「模型给什么我们认什么」。
 // 设计稿 docs/design/顾问改向导-20260904.md §2 §3。
 import { describe, expect, it } from 'vitest'
-import {
-  DEST_DESC, DEST_ROUTE, DEST_SUB, DEST_URL_KEYS, jsonOf, messagesOf, systemOf, toEmailInput, toInput, toModelReply,
-  toTurns, urlOf,
-} from '@/lib/guide'
+import { DEST_ROUTE, DEST_SUB, DEST_URL_KEYS } from '@/lib/guide'
 import type { ResolvedSlots } from '@/lib/guide'
+import { DEST_DESC } from '@/lib/guide/prompts'
+import { jsonOf, messagesOf, systemOf, toEmailInput, toInput, toModelReply, toTurns, urlOf } from '@/lib/guide/functions'
 
 const EMPTY: ResolvedSlots = { noc: null, prov: null, city: null, q: null, sub: null }
 
