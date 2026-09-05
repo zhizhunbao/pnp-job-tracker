@@ -530,6 +530,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'filter.geo': 'Location', 'filter.cat': 'Occupation', 'filter.src': 'Source', 'filter.elig': 'Eligibility', 'filter.statusexp': 'Status / level', 'filter.status': 'Status', 'filter.exp': 'Level', 'filter.drawer': 'Filters',
   'filter.emp': 'Job type', 'all.emp': 'All types', 'emp.full': 'Full-time', 'emp.part': 'Part-time', 'emp.gig': 'Gig / temp',
   'term.permanent': 'Permanent', 'term.term': 'Contract', 'term.casual': 'Casual', 'term.seasonal': 'Seasonal',
+  'who.citizens_pr': 'Citizens and PR only', 'who.temporary_ok': 'Work permit holders welcome', 'who.anyone': 'Applicants abroad welcome',
   'fact.edu': 'Education', 'fact.cert': 'Certificates / licences',
   'all.prov': 'All provinces', 'all.city': 'All cities', 'all.district': 'All districts',
   'all.broad': 'All major groups', 'all.mid': 'All sub-groups', 'all.fine': 'All occupations',
@@ -601,7 +602,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'fact.coSponsor': 'Sponsorship history', 'fact.coLmia': '{n} approved LMIA positions in the past 2 years · {q}', 'fact.coAip': 'Atlantic AIP designated employer',
   'fact.coLmiaNote': 'Sponsorship history is an ESDC record of the past, not a commitment',
   // J·K·M batch (2026-07-19)
-  'col.empHours': 'Hours', 'col.empTerm': 'Term', 'fact.unstated': 'Not stated in posting',
+  'col.empHours': 'Hours', 'col.whoCanApply': 'Who can apply', 'col.empTerm': 'Term', 'fact.unstated': 'Not stated in posting',
   'act.ai': 'AI-organized', 'act.aiNote': 'rearranged from the posting, nothing added', 'act.aiQuota': 'Daily AI quota used up — resets tomorrow', 'act.aiQuotaLogin': 'Sign in for more daily uses', 'act.seeOrig': 'View original ▾', 'act.seeFmt': 'View organized ▴', 'act.aiWorking': 'AI organizing, showing original…', 'act.aiFail': 'AI organizing failed',
   'act.f.role': 'Job description', 'act.f.reqs': 'Hard requirements', 'act.f.pay': 'Pay & benefits', 'act.f.hours': 'Schedule & location', 'act.f.apply': 'How to apply', 'act.f.none': 'Not mentioned in posting',
   'co.f.what': 'What it does', 'co.f.base': 'Based in', 'co.f.size': 'Size', 'co.f.founded': 'Founded', 'co.f.note': 'Worth knowing',

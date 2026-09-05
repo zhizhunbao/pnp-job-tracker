@@ -95,6 +95,11 @@ export const COL = {
   empTerm: 'empTerm',
 
   /**
+   * 谁能投(2026-09-05)。
+   */
+  whoCanApply: 'whoCanApply',
+
+  /**
    * 职位名。
    */
   title: 'title',
@@ -1172,6 +1177,11 @@ export const K_EMP = 'emp.'
 export const K_TERM = 'term.'
 
 /**
+ * 谁能投三档的文案键前缀(后接 citizens_pr / temporary_ok / anyone)。
+ */
+export const K_WHO = 'who.'
+
+/**
  * 年薪档下拉项。
  */
 export const K_SAL = 'sal.'
@@ -1250,6 +1260,7 @@ export const COLUMNS: ColSpec[] = [
   { key: 'teer', label: 'TEER' },
   { key: 'empHours', label: '工时' },
   { key: 'empTerm', label: '雇佣期' },
+  { key: 'whoCanApply', label: '谁能投' },
   { key: 'company', label: '公司' },
   { key: 'title', label: '职位', always: true },
   { key: 'match', label: '与我的匹配' },
@@ -1313,7 +1324,7 @@ export const COL_SALARY_YR: JobColKey = 'salaryYr'
  */
 export const NOWRAP_COLS = new Set<JobColKey>([
   'datePosted', 'lastSeen', 'closedAt', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian', 'teer',
-  'empHours', 'empTerm', 'status', 'direct', 'aip', 'pilot', 'lmia', 'eligibility', 'match',
+  'empHours', 'empTerm', 'whoCanApply', 'status', 'direct', 'aip', 'pilot', 'lmia', 'eligibility', 'match',
 ])
 
 /**
@@ -1481,6 +1492,11 @@ export const FIELD_GROUP: Partial<Record<JobColKey, Disposition>> = {
    * 雇佣期。
    */
   empTerm: 'none',
+
+  /**
+   * 谁能投。
+   */
+  whoCanApply: 'none',
 
   /**
    * 经验级别。

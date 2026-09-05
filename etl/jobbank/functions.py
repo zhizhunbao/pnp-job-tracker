@@ -60,7 +60,8 @@ from jobbank.constants import (
     ISO_DATE_FMT, JOB_MD_TPL, JOB_STEM_FALLBACK, JOBBANK_ORIGIN, JSON_INDENT, K_ADDRESS, K_AIP,
     K_ANNUAL, K_APPRENTICE_FRIENDLY, K_CATEGORY, K_CERTIFICATES, K_CHECKED, K_CITY, K_COMPANY,
     K_COUNT, K_CUTOFF, K_DATE, K_DATE_DETAIL, K_DEAD, K_DESCRIPTION, K_DETAIL_FETCHED, K_DIRECT,
-    K_DISTRICT, K_EDUCATION, K_EMAIL, K_EMPLOYER, K_EMPLOYMENT_HOURS, K_EMPLOYMENT_TERM,
+    K_DISTRICT, K_EDUCATION, K_EMAIL, K_EMPLOYER, K_EMPLOYMENT_HOURS, K_EMPLOYMENT_TERM, K_WHO_CAN_APPLY,
+    SEL_AUDIENCE, WHO_ANYONE, WHO_ANYONE_MARK, WHO_CITIZENS, WHO_TEMPORARY, WHO_TEMPORARY_MARK,
     K_EXPERIENCE_REQ, K_EXTERNAL_ID, K_FETCHED_AT, K_FILE, K_JOB_COUNT, K_JOBS, K_LAST_SEEN,
     K_NAME, K_NOC, K_NOC_BLANKED, K_PAGE, K_PAGES, K_PHONE, K_POSTING_ID, K_PROV, K_PROVINCE,
     K_ROWS, K_SALARY, K_SALARY_ANNUAL, K_SINCE_DAYS, K_SLUG, K_SOURCE, K_TITLE, K_URL, K_WEBSITE,
@@ -597,7 +598,8 @@ def should_parse(x: ShouldParseIn) -> bool:
         return False
     if x.reparse:
         return True
-    if x.job.get(K_DETAIL_FETCHED) and x.job.get(K_NOC) and K_EMPLOYMENT_HOURS in x.job:
+    if x.job.get(K_DETAIL_FETCHED) and x.job.get(K_NOC) and K_EMPLOYMENT_HOURS in x.job \
+            and K_WHO_CAN_APPLY in x.job:
         return False
     return True
 
@@ -624,6 +626,7 @@ def enrich_job(x: EnrichIn) -> None:
     employment = employment_of(soup)
     x.job[K_EMPLOYMENT_TERM] = employment.term
     x.job[K_EMPLOYMENT_HOURS] = employment.hours
+    x.job[K_WHO_CAN_APPLY] = who_can_apply_of(soup)
     x.job[K_CERTIFICATES] = req_section(ReqIn(soup=soup, heading=HEADING_CERTIFICATES))
     x.job[K_EDUCATION] = EDUCATION_JOIN_SEP.join(
         req_section(ReqIn(soup=soup, heading=HEADING_EDUCATION)))
@@ -689,6 +692,20 @@ def serialize_node(node: object) -> str:
             return ""
         return LINE_BREAK + body + PARA_BREAK
     return inner
+
+
+def who_can_apply_of(soup: SoupNodeLike) -> str:
+    """谁能投:读「Who can apply」那块的原文 —— 提到「with or without」= anyone,提到「temporary resident」=
+    temporary_ok,有这块但都没提 = citizens_pr,没这块 = 空(外站聚合帖,宁缺不猜)。"""
+    node = soup.select_one(SEL_AUDIENCE)
+    if node is None:
+        return ""
+    txt = node.get_text(SPACE_SEP, strip=True).lower()
+    if WHO_ANYONE_MARK in txt:
+        return WHO_ANYONE
+    if WHO_TEMPORARY_MARK in txt:
+        return WHO_TEMPORARY
+    return WHO_CITIZENS
 
 
 def employment_of(soup: SoupNodeLike) -> EmploymentOut:

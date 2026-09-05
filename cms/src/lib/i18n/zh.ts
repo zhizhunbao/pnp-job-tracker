@@ -577,6 +577,7 @@ export const jobsZh = {
   // 职位类型(E6-06)+ 入职要求(E6-07A)
   'filter.emp': '职位类型', 'all.emp': '全部类型', 'emp.full': '全职', 'emp.part': '兼职', 'emp.gig': '零工·临时',
   'term.permanent': '长期', 'term.term': '合同', 'term.casual': '临时', 'term.seasonal': '季节',
+  'who.citizens_pr': '只招公民和永久居民', 'who.temporary_ok': '接受工签', 'who.anyone': '接受境外申请',
   'fact.edu': '学历要求', 'fact.cert': '证书/执照',
   'all.prov': '全部省', 'all.city': '全部市', 'all.district': '全部区',
   'all.broad': '全部大类', 'all.mid': '全部中类', 'all.fine': '全部小类',
@@ -654,7 +655,7 @@ export const jobsZh = {
   'fact.coSponsor': '担保史', 'fact.coLmia': '近两年 {n} 个 LMIA 获批职位 · {q}', 'fact.coAip': '大西洋 AIP 指定雇主',
   'fact.coLmiaNote': '担保史为 ESDC 历史记录,非担保承诺',
   // J·K·M 批(2026-07-19 Frank 批):J1 多列 · J3 五节整理版 · K 公司调查 · M 对比表
-  'col.empHours': '工时', 'col.empTerm': '雇佣期', 'fact.unstated': '原帖未标注',
+  'col.empHours': '工时', 'col.empTerm': '雇佣期', 'col.whoCanApply': '谁能投', 'fact.unstated': '原帖未标注',
   'act.ai': 'AI 整理', 'act.aiNote': '只搬运原帖信息,未添加', 'act.aiQuota': '今日 AI 次数已用完,明天重置', 'act.aiQuotaLogin': '登录后每日次数更多', 'act.seeOrig': '看原文 ▾', 'act.seeFmt': '看整理版 ▴', 'act.aiWorking': 'AI 整理中,先看原文…', 'act.aiFail': 'AI 整理没成功',
   'act.f.role': '职位描述', 'act.f.reqs': '硬性要求', 'act.f.pay': '薪资福利', 'act.f.hours': '工时地点', 'act.f.apply': '怎么投', 'act.f.none': '原帖未提及',
   'co.f.what': '主营业务', 'co.f.base': '所在地', 'co.f.size': '规模', 'co.f.founded': '成立时间', 'co.f.note': '其他要点',   // #158 公司简介分节(2026-07-21 增至五节)

@@ -1474,6 +1474,7 @@ def to_jb_job_fields(j: dict) -> dict:
         "apprenticeFriendly": bool(j.get("apprentice_friendly")),
         "datePosted": j.get("date"), "lastSeen": j.get("last_seen"),
         "employmentTerm": j.get("employment_term"), "employmentHours": j.get("employment_hours"),
+        "whoCanApply": j.get("who_can_apply"),
         "certificates": j.get("certificates") or None, "education": j.get("education"),
     }
 

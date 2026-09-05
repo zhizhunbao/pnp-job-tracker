@@ -402,6 +402,29 @@ SEL_DATE_POSTED = '[property="datePosted"]'
 """详情页的发布日。"""
 
 SEL_EMPLOYMENT_TYPE = '[property="employmentType"]'
+
+SEL_AUDIENCE = "div.job-audience"
+"""详情页「Who can apply for this job?」那块(只有 Job Bank 原生帖有;聚合自 CareerBeacon 等外站的帖没有,
+2026-09-05 抽样 538 帖:122 有,416 无)。"""
+
+K_WHO_CAN_APPLY = "who_can_apply"
+"""帖子键:谁能投(citizens_pr / temporary_ok / anyone / 空 = 帖里没这块;2026-09-05 Frank「只招公民这种怎么标注」
+→ 岗位级字段,不塞雇主类别)。"""
+
+WHO_CITIZENS = "citizens_pr"
+"""只招公民与永久居民(有这块但没提临时居民)。"""
+
+WHO_TEMPORARY = "temporary_ok"
+"""接受持有效工签的临时居民(官方原文「a temporary resident of Canada with a valid work permit」)。"""
+
+WHO_ANYONE = "anyone"
+"""也接受境外/无工签申请人(官方原文「other candidates, with or without a valid Canadian work permit」)。"""
+
+WHO_ANYONE_MARK = "with or without"
+"""anyone 档的判词(原文片段)。"""
+
+WHO_TEMPORARY_MARK = "temporary resident"
+"""temporary_ok 档的判词(原文片段)。"""
 """详情页的雇佣形态(Full/Part time)。"""
 
 SEL_HIRING_ORG = '[property="hiringOrganization"]'

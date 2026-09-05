@@ -2864,6 +2864,7 @@ export function toJobRow(input: ToJobRowIn): JobRow {
     pilotEmployer: j.pilot_employer === true, pilotOcc: text(j.pilot_occ),
     employmentTerm: text(j.employment_term),
     employmentHours: text(j.employment_hours),
+    whoCanApply: text(j.who_can_apply),
     eligibilityFlag: text(j.eligibility_flag),
     eligibilityQuote: text(j.eligibility_quote),
     certificates: certificates,

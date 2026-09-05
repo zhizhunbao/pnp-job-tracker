@@ -238,6 +238,7 @@ export const SORT_COLUMNS: Record<string, string> = {
    * 雇佣形态。
    */
   empTerm: `COALESCE(j.employment_term,'')`,
+  whoCanApply: `COALESCE(j.who_can_apply,'')`,
 
   /**
    * 中位时薪。

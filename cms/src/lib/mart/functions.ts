@@ -842,6 +842,7 @@ export function toJob(x: ToJobIn): MartRow {
     aip: truthyOf(x.r.aip), pilot: textOf(x.r.pilot), pilot_community: textOf(x.r.pilotCommunity),
     pilot_employer: truthyOf(x.r.pilotEmployer), pilot_occ: textOf(x.r.pilotOcc),
     apprentice_friendly: truthyOf(x.r.apprenticeFriendly), employment_term: cellOf(x.r.employmentTerm),
+    who_can_apply: cellOf(x.r.whoCanApply),
     employment_hours: cellOf(x.r.employmentHours), certificates: jsonTextOf(x.r.certificates),
     education: cellOf(x.r.education), eligibility_flag: cellOf(x.r.eligibilityFlag),
     eligibility_quote: cellOf(x.r.eligibilityQuote), status: STATUS_OPEN, closed_at: null, first_seen: x.now,

@@ -527,6 +527,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'filter.geo': '지역', 'filter.cat': '직업 분류', 'filter.src': '출처', 'filter.elig': '이민 자격', 'filter.statusexp': '상태 / 경력', 'filter.status': '상태', 'filter.exp': '경력', 'filter.drawer': '필터',
   'filter.emp': '고용 형태', 'all.emp': '모든 유형', 'emp.full': '정규직', 'emp.part': '파트타임', 'emp.gig': '단기·임시',
   'term.permanent': '상시', 'term.term': '계약직', 'term.casual': '비정규직', 'term.seasonal': '계절직',
+  'who.citizens_pr': '시민권자·영주권자만', 'who.temporary_ok': '취업허가 소지자 가능', 'who.anyone': '해외 지원 가능',
   'fact.edu': '학력 요건', 'fact.cert': '자격증/면허',
   'all.prov': '모든 주', 'all.city': '모든 시', 'all.district': '모든 지역',
   'all.broad': '전체 대분류', 'all.mid': '중분류 전체', 'all.fine': '직무 전체',
@@ -598,7 +599,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'fact.coSponsor': '스폰서 이력', 'fact.coLmia': '최근 2년 LMIA 승인 {n}개 포지션 · {q}', 'fact.coAip': '대서양 AIP 지정 고용주',
   'fact.coLmiaNote': '스폰서 이력은 ESDC의 과거 기록이며, 스폰서 보장을 의미하지 않음',
   // J·K·M batch (2026-07-19)
-  'col.empHours': '근무 형태', 'col.empTerm': '고용 기간', 'fact.unstated': '원문에 명시 없음',
+  'col.empHours': '근무 형태', 'col.whoCanApply': '지원 자격', 'col.empTerm': '고용 기간', 'fact.unstated': '원문에 명시 없음',
   'act.ai': 'AI 정리', 'act.aiNote': '원문 재배열, 추가 없음', 'act.aiQuota': '오늘 AI 사용량을 모두 사용했습니다. 내일 초기화됩니다', 'act.aiQuotaLogin': '로그인하면 일일 횟수가 늘어납니다', 'act.seeOrig': '원문 보기 ▾', 'act.seeFmt': '정리본 보기 ▴', 'act.aiWorking': 'AI 정리 중, 우선 원문 표시…', 'act.aiFail': 'AI 정리 실패',
   'act.f.role': '직무 설명', 'act.f.reqs': '필수 요건', 'act.f.pay': '급여·복지', 'act.f.hours': '근무 형태·장소', 'act.f.apply': '지원 방법', 'act.f.none': '원문에 언급 없음',
   'co.f.what': '주요 사업', 'co.f.base': '소재지', 'co.f.size': '규모', 'co.f.founded': '설립 연도', 'co.f.note': '참고 사항',

@@ -43,7 +43,7 @@ import {
   JD_LABEL_LINE_RE, JD_LEAD_BULLET_RE, JD_MONEY_RE, JD_SEC_APPLY, JD_SEC_PAY, JD_SEC_ROLE, JD_SEC_SPLIT_RE,
   JD_SEC_STEP, JD_SECS, JD_SENTENCE_RE, JD_SPACES_RE, JD_STAR_ITEM_RE, JD_STAR_RE, JD_SUB_HEADS, JD_TOP_HEADS,
   JD_TPL_SLOT, K_ACC, K_COL, K_DIVISOR, K_ELIG, K_EMP, K_LOCK_TIP, K_MATCH, K_OPT, K_ORIGIN, K_PROV, K_SPONSOR_GRADE,
-  K_SUG_GENERIC, K_TEER, K_TERM, K_UNCAT, KIND, LANG_ZH, LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID,
+  K_SUG_GENERIC, K_TEER, K_TERM, K_WHO, K_UNCAT, KIND, LANG_ZH, LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID,
   LMIA_PREFIX, LOC_SEP, MAIL_ATTACH, MAIL_BLANK, MAIL_BODY_AT, MAIL_BODY_DOT, MAIL_BODY_HEAD, MAIL_BODY_IN,
   MAIL_BODY_QUOTE, MAIL_CRLF, MAIL_HELLO, MAIL_POSTING, MAIL_REGARDS, MAIL_SUBJECT_AT, MAIL_SUBJECT_HEAD, MAILTO,
   MAILTO_BODY, MAILTO_SUBJECT, MATCH_TONE_CLS, MEASURE_CLS, MEASURE_ROWS, MV_DOT, NEWLINE, NOWRAP_COLS, P90, P_DIR,
@@ -755,6 +755,12 @@ function jobCellOf(x: CellIn): CellView | null {
       return blankView({ tone: TONE.faintSm })
     }
     return blankView({ text: x.cx.t(K_TERM + x.j.employmentTerm), tone: TONE.slateSm })
+  }
+  if (x.k === COL.whoCanApply) {
+    if (hasText(x.j.whoCanApply) === false) {
+      return blankView({ tone: TONE.faintSm })
+    }
+    return blankView({ text: x.cx.t(K_WHO + x.j.whoCanApply), tone: TONE.slateSm })
   }
   return null
 }

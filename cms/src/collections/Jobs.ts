@@ -64,6 +64,7 @@ export const Jobs: CollectionConfig = {
     { name: 'isDup', type: 'checkbox', defaultValue: false, admin: { description: '#125 展示层重复标记:同 公司×岗名×城市 非最新帖(09 算);列表隐藏,行保留统计不动' } },
     // 雇佣形态 + 入职要求(E6-06/E6-07A):Job Bank 详情页结构化标注,05b 规则解析;无标注/ATS=空(宁缺)
     { name: 'employmentTerm', type: 'text', admin: { description: '雇佣期 permanent/term/casual/seasonal;空=未标注' } },
+    { name: 'whoCanApply', type: 'text', admin: { description: '谁能投 citizens_pr/temporary_ok/anyone;空=帖里没这块(外站聚合帖;docs/sql/jobs-who-can-apply.sql)' } },
     { name: 'employmentHours', type: 'text', admin: { description: '工时 full/part;空=未标注' } },
     // J2 JD 整理版懒生成(2026-07-19):首开时 AI 五节整理一次,存列永久复用;原文 description 永不覆盖
     { name: 'jdFormatted', type: 'textarea', admin: { description: 'AI 五节整理版([ROLE]/[REQS]/[PAY]/[HOURS]/[APPLY] 标记文本,懒生成)' } },

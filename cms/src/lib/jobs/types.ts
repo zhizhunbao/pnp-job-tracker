@@ -238,6 +238,11 @@ export type JobDbRow = {
   employment_term: string | null
 
   /**
+   * 谁能投(citizens_pr / temporary_ok / anyone;NULL = 帖里没这块)。
+   */
+  who_can_apply: string | null
+
+  /**
    * 全职/兼职(full/part/'')。
    */
   employment_hours: string | null
@@ -545,6 +550,11 @@ export type JobRow = {
    * 雇佣形态(permanent/term/casual/seasonal/'';E6-06 详情页结构化标注,ATS 岗天然空)。
    */
   employmentTerm: string
+
+  /**
+   * 谁能投(citizens_pr / temporary_ok / anyone / '' = 帖里没这块;2026-09-05 Job Bank「Who can apply」)。
+   */
+  whoCanApply: string
 
   /**
    * 全职/兼职(full/part/'')。
@@ -3551,7 +3561,7 @@ export type Plan = {
  * 主表列名全集。显示顺序/默认可见/表头文案在 Table.tsx,这里只定「有哪些列」——
  * 它同时是**字段名**:顾问弹框按字段开、字段来源按字段查,都拿它当键。
  */
-export type ColKey = 'score' | 'match' | 'pnp' | 'ee' | 'aip' | 'pilot' | 'lmia' | 'eligibility' | 'broad' | 'mid' | 'fine' | 'teer' | 'empHours' | 'empTerm' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
+export type ColKey = 'score' | 'match' | 'pnp' | 'ee' | 'aip' | 'pilot' | 'lmia' | 'eligibility' | 'broad' | 'mid' | 'fine' | 'teer' | 'empHours' | 'empTerm' | 'whoCanApply' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
 
 /**
  * 弹框分组(E8-10 三合一后陆续拆出的九组)。
