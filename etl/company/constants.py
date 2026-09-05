@@ -274,6 +274,10 @@ DDG_TIMEOUT_S = 12
 FIND_SLEEP_S = 1.5
 """搜索限速(礼貌:比抓首页更保守)。"""
 
+DDG_NO_RESULTS_MARK = "no-results"
+"""DDG HTML 版「真的没结果」页的标记(class="no-results")。零结果链接又没这个标记 = 挡壳页
+(2026-09-05 实撞:容器里 DDG 回 200 空壳,原逻辑当查无记了 47 家 nosite 冷却 90 天)—— 记传输失败。"""
+
 DDG_FAIL_STOP = 3
 """DDG 连续几次传输失败(断连/超时/非 2xx)就停本轮 —— 2026-09-05 实撞:sites 首跑中途被 DDG
 限流,后面每家 ConnectTimeout,原逻辑把它们全记成 nosite 冷却 90 天(传输失败 ≠ 查无)。"""

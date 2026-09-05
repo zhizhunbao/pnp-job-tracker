@@ -82,7 +82,7 @@ from company.constants import (
     PATH_OLLAMA_GENERATE, PRINT_ABOUT_DONE_TPL, PRINT_ABOUT_ROW_TPL, PRINT_ABOUT_TARGETS_TPL,
     PRINT_BRIEF_DONE_TPL, PRINT_BRIEF_ROW_TPL, PRINT_BRIEF_TARGETS_TPL, P_MODEL, P_NUM_PREDICT, P_OPTIONS,
     NEWLINE, P_PROMPT, P_RESPONSE, P_STREAM, P_TEMPERATURE, P_THINK, STRIP_TAGS, THINK_RE, URL_TAIL_SLASH,
-    DDG_BACKOFF_S, DDG_FAIL_STOP, FIND_FLUSH_N, MARK_COLON_RE, MARK_SPACE, PATH_SEP, PRINT_DDG_STOP_TPL,
+    DDG_BACKOFF_S, DDG_FAIL_STOP, DDG_NO_RESULTS_MARK, FIND_FLUSH_N, MARK_COLON_RE, MARK_SPACE, PATH_SEP, PRINT_DDG_STOP_TPL,
     PRINT_FIND_ROW_TPL, K_LOCALITY, K_PROVINCE, MONTH_LEN, PLACES_MASK_ENT, PLACES_MASK_PRO,
     PLACES_MONTH_FREE_ENT, PLACES_MONTH_FREE_PRO, PLACES_MONTH_RESERVE, PRINT_PLACES_BUDGET_TPL, TIER_ENT, TIER_PRO,
     JSON_INDENT, PLACES_CACHE_URL_TPL, COUNTRY_CA, K_COUNTRY, NOTE_OUTSIDE_CA, TEER_SKILLED,
@@ -480,8 +480,11 @@ def ddg_find(x: DdgFindIn) -> DdgOut:
     except Exception as e:  # noqa: BLE001
         err(x.name, e)
         return DdgOut(site="", failed=True)
+    hrefs = DDG_RESULT_RE.findall(r.text)
+    if len(hrefs) == 0 and DDG_NO_RESULTS_MARK not in r.text:
+        return DdgOut(site="", failed=True)
     seen: list[str] = []
-    for href in DDG_RESULT_RE.findall(r.text)[:DDG_SCAN_N]:
+    for href in hrefs[:DDG_SCAN_N]:
         target = href
         if DDG_REDIRECT_PARAM in href:
             target = unquote(parse_qs(urlparse(href).query).get(DDG_REDIRECT_PARAM, [""])[0])
