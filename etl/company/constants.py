@@ -720,10 +720,10 @@ PRINT_FACTS_DONE_TPL = "done → {out} · industry {n} · wiki {hit} · 有中/�
 
 
 # =========================================================================
-# 7. 在招担保雇主补官网(2026-09-04 Frank「帮我开」Google Places → 试跑 10 家后改口
-#    「走 DuckDuckGo 跑起来」:官网免费走 D2 阶梯(sites 步,复用第 5 段 find_websites),
-#    Places 只留地址/业务类型(places 步,限量 PLACES_LIMIT)。母集 = 把脉页雇主表那批
-#    (在招 + 近四季有 LMIA),不是全量 —— 与「公司详情全懒」(2026-07-20)不冲突)
+# 7. 把脉页雇主补官网/地址(2026-09-04 Frank「帮我开」Google Places → 试跑 10 家后改口
+#    「走 DuckDuckGo 跑起来」→ DDG 限流实撞 → Places 两档只吃免费额)。母集 = 把脉页雇主段
+#    两栏都在的雇主:在招且(近四季有 LMIA 或 在招 TEER 0-3 岗)—— 2026-09-05 Frank「不花钱就跑呗」
+#    从 3,995 家扩到两栏口径;不是全量 —— 与「公司详情全懒」(2026-07-20)不冲突)
 # =========================================================================
 
 PLACES_CACHE_URL_TPL = "{url}?q={query}"
@@ -732,6 +732,9 @@ PLACES_CACHE_URL_TPL = "{url}?q={query}"
 
 JSON_INDENT = 2
 """原响应落 crawl 层时的缩进(人眼可读)。"""
+
+TEER_SKILLED = ["0", "1", "2", "3"]
+"""「有工签」栏的雇主判据:在招岗里有 TEER 0-3 的(与 cms start 域 isValuableEmp 的 pgwp 档同口径)。"""
 
 ENV_PLACES_KEY = "GOOGLE_PLACES_KEY"
 """密钥环境变量名(仓库根 .env;Frank 亲手抄,代码与日志不落值)。"""
@@ -850,19 +853,9 @@ PRINT_PLACES_ROW_TPL = "  {status:4} {tier:10} {name} → {site} | {address} | {
 PRINT_PLACES_DONE_TPL = "本轮 ✓ {hit} 命中 · ○ {miss} 查无 · ✗ {fail} 失败 → {out}"
 """places 步收尾报数。"""
 
-SITES_LIMIT = 2600
-"""sites 步一轮的 DDG 预算(2026-09-04 首跑:缺官网候选 2,535 家,一轮清完;DDG 礼貌限速
-FIND_SLEEP_S 下约两小时)。"""
-
-PRINT_SITES_TARGETS_TPL = "在招担保雇主 {cands} 家 · 缺官网 {nosite} · 缓存 {cache}(limit {limit})"
-"""sites 步报候选与缺官网数。"""
-
-PRINT_SITES_DONE_TPL = "本轮 JD 线索 +{jd} · DDG +{search} · 累计成功 {total}/{n} 家 → {out}"
-"""sites 步收尾报数(found 记录由下一轮 build 合并官网进 companies)。"""
-
-SITES_LIMIT = 2600
-"""sites 步一轮的 DDG 预算(2026-09-04 首跑:缺官网候选 2,535 家,一轮清完;DDG 礼貌限速
-FIND_SLEEP_S 下约两小时)。"""
+SITES_LIMIT = 60
+"""sites 步一轮的 DDG 预算。2026-09-04 首跑排 2,600 家一口气清 → 中途被 DDG 按 IP 封;
+09-05 进定时链后改成细水长流:每轮 60 家(与老 enrich 步的 FIND_LIMIT 同量,从没触发过封禁)。"""
 
 PRINT_SITES_TARGETS_TPL = "在招担保雇主 {cands} 家 · 缺官网 {nosite} · 缓存 {cache}(limit {limit})"
 """sites 步报候选与缺官网数。"""
@@ -908,8 +901,8 @@ ABOUT_TIMEOUT_S = 12
 ABOUT_SLEEP_S = 0.3
 """两家之间的礼貌间隔(不同站点,轻)。"""
 
-ABOUT_LIMIT = 1500
-"""一轮最多抓几家(2026-09-05 10 家试跑验过后放到覆盖全部有官网候选 ~1,470 家)。"""
+ABOUT_LIMIT = 400
+"""一轮最多抓几家(2026-09-05 进定时链:6h 一轮 400 家,约 15 分钟;积压按在招数排队慢慢清)。"""
 
 ABOUT_REFRESH_DAYS = 180
 """正文多久后重抓(公司介绍半年级稳定);失败走 RETRY_FAILED_DAYS。"""
@@ -996,8 +989,8 @@ BRIEF_TOKENS = 500
 BRIEF_ZH_TOKENS = 800
 """中文译文的生成上限(中文 token 更密)。"""
 
-BRIEF_LIMIT = 1500
-"""一轮最多做几家(2026-09-05 10 家试跑验过后放量;盒子约 40s/家,整轮十几小时,后台跑)。"""
+BRIEF_LIMIT = 400
+"""一轮最多做几家(2026-09-05 进定时链:盒子约 40s/家,400 家 ≈ 4.5h,压在 6h 一轮之内)。"""
 
 BRIEF_MARKS = ["[WHAT]", "[BASE]", "[SIZE]", "[FOUNDED]", "[NOTE]"]
 """五节标记:输出必须五个都在(缺一记 fail,不收半份)。"""

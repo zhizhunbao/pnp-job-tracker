@@ -836,13 +836,16 @@ class MartJob(BaseModel):
     status: str = ""
     """open / closed。"""
 
-    @field_validator("company_slug", "status", mode="before")
+    teer: str = ""
+    """TEER 档(0-5;mart 里是数字或串,统一成串;空串 = 未分类)。"""
+
+    @field_validator("company_slug", "status", "teer", mode="before")
     @classmethod
     def none_as_empty(cls, v: object) -> object:
-        """两格可能是 null —— 折空串。"""
+        """三格可能是 null —— 折空串;teer 数字折串。"""
         if v is None:
             return ""
-        return v
+        return str(v)
 
 
 @dataclass
@@ -869,14 +872,25 @@ class PlaceTarget:
 
 
 @dataclass
+class JobCounts:
+    """jobs.json 一遍扫出的两张计数(job_counts_by_slug 的出参)。"""
+
+    open: dict
+    """slug → 在招岗数。"""
+
+    skilled: dict
+    """slug → 在招 TEER 0-3 岗数。"""
+
+
+@dataclass
 class PlacesCandsIn:
     """places_candidates 的入参。"""
 
     companies: list
     """PlaceCompany 列表。"""
 
-    open_by_slug: dict
-    """slug → 在招岗数。"""
+    counts: JobCounts
+    """在招 / 在招 TEER 0-3 两张计数。"""
 
 
 @dataclass

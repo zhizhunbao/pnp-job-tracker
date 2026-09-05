@@ -6,7 +6,7 @@ company 域唯一入口(一域一门;步骤 2026-08-30 全溶进 functions.py,�
 批J 自 clean/_enrich_company_facts.py 归户)是休眠引导/手动工具,不进默认链 ——
 语义与旧役册完全一致。
 一律从仓库根执行:
-    python etl/company/main.py                 # 默认链(enrich)
+    python etl/company/main.py                 # 默认链(places → sites → about → brief)
     python etl/company/main.py --only kanata   # 手动件:kanata / folders / careers / facts
 """
 import sys
@@ -20,8 +20,16 @@ from company.functions import (
     scrape_kanata_directory,
 )
 
-SCHEDULED = [("enrich", enrich_company_websites)]
-"""默认链(调度真相):按序执行,一步抛错即中止本轮(_steps 同款语义)。"""
+SCHEDULED = [
+    ("places", lookup_company_places),
+    ("sites", lookup_sponsor_websites),
+    ("about", crawl_company_about),
+    ("brief", build_company_briefs),
+]
+"""默认链(调度真相):按序执行,一步抛错即中止本轮(_steps 同款语义)。
+2026-09-05 Frank「不花钱就跑呗」「最好能定时跑」:把脉页雇主数据链四步进链(Places 两档只吃当月免费额、
+DDG 每轮 60 家、正文 400 家、qwen 简介 400 家),enrich 容器亮回;老 enrich 步(首页 meta 简介)退出默认链
+留作手动件 —— about 步抓的正文盖过它,且两步都打 DDG 会双倍撞限流。"""
 
 TOOLS = {
     "kanata": scrape_kanata_directory,

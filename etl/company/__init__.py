@@ -1,6 +1,7 @@
 """
 company 域:公司实体(目录穷举/一司一档/careers 定位/官网富化)。
-定时单元只有官网富化(E8-04 拆分沿革:原 enrich 役);Kanata 三件是休眠引导工具,手动跑。
+定时单元 2026-09-05 起 = 把脉页雇主数据链四步(places/sites/about/brief,见 main.SCHEDULED);
+老官网富化(E8-04 enrich 役)退为手动件;Kanata 三件是休眠引导工具,手动跑。
 产出 company_enrich.json,build 角色下一轮 09 自然合并进 companies。
 2026-08-31 批J 再收一件手动件:雇主 D 富化(行业 + 中韩别名 + 知名,原
 clean/_enrich_company_facts.py),产 company_facts.json;Wikidata 那半边已退役,别批量跑。
@@ -11,7 +12,7 @@ interval=本域一轮的间隔秒;入口固定 etl/company/main.py,步骤清单�
 META = {
     "role": "enrich",
     "method": "httpx",
-    "interval": 21600,        # 6h 一轮(官网快照不需要小时级新鲜度)
+    "interval": 21600,        # 6h 一轮(brief 400 家 ≈ 4.5h 压在一轮内;官网快照不需要小时级新鲜度)
     "seed": False,
     "ping": True,   # 本角色的 healthchecks 心跳由本域发
 }

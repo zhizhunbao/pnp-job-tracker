@@ -85,7 +85,7 @@ from company.constants import (
     DDG_BACKOFF_S, DDG_FAIL_STOP, FIND_FLUSH_N, MARK_COLON_RE, MARK_SPACE, PATH_SEP, PRINT_DDG_STOP_TPL,
     PRINT_FIND_ROW_TPL, K_LOCALITY, K_PROVINCE, MONTH_LEN, PLACES_MASK_ENT, PLACES_MASK_PRO,
     PLACES_MONTH_FREE_ENT, PLACES_MONTH_FREE_PRO, PLACES_MONTH_RESERVE, PRINT_PLACES_BUDGET_TPL, TIER_ENT, TIER_PRO,
-    JSON_INDENT, PLACES_CACHE_URL_TPL, COUNTRY_CA, K_COUNTRY, NOTE_OUTSIDE_CA,
+    JSON_INDENT, PLACES_CACHE_URL_TPL, COUNTRY_CA, K_COUNTRY, NOTE_OUTSIDE_CA, TEER_SKILLED,
 )
 from company.scheme import (
     CandsIn, CardColIn, CareerScanRow, CareersFileRow, CareersProbe, CompanyRow, DdgFindIn,
@@ -95,7 +95,7 @@ from company.scheme import (
     PlaceTarget, PostingLead, ProbeIn, ProfileRow, SaveFactsIn, SiteLead, SkipFindIn, SkipPlacesIn,
     TagLike, ToPlaceIn, WikiProbe, WpEnvelope,
     AboutFetchIn, AboutLinkIn, AboutRecord, AboutTarget, BriefOneIn, BriefRecord, DdgLoopIn, DdgOut,
-    LlmCallIn, LlmCfg, MonthUsage, PageIn, PageOut, PageTextIn, PickAboutIn, PickBriefIn,
+    JobCounts, LlmCallIn, LlmCfg, MonthUsage, PageIn, PageOut, PageTextIn, PickAboutIn, PickBriefIn,
 )
 
 # =========================================================================
@@ -974,7 +974,7 @@ def lookup_company_places() -> None:
     companies: list[PlaceCompany] = []
     for d in json.loads(IN_PLACES_COMPANIES.read_text(encoding=TEXT_ENCODING)):
         companies.append(PlaceCompany.model_validate(d))
-    cands = places_candidates(PlacesCandsIn(companies=companies, open_by_slug=open_jobs_by_slug()))
+    cands = places_candidates(PlacesCandsIn(companies=companies, counts=job_counts_by_slug()))
     used = month_usage_of(cache)
     pro_budget = max(0, PLACES_MONTH_FREE_PRO - PLACES_MONTH_RESERVE - used.pro)
     ent_budget = max(0, PLACES_MONTH_FREE_ENT - PLACES_MONTH_RESERVE - used.ent)
@@ -1048,7 +1048,7 @@ def lookup_sponsor_websites() -> None:
     companies: list[PlaceCompany] = []
     for d in json.loads(IN_PLACES_COMPANIES.read_text(encoding=TEXT_ENCODING)):
         companies.append(PlaceCompany.model_validate(d))
-    cands = places_candidates(PlacesCandsIn(companies=companies, open_by_slug=open_jobs_by_slug()))
+    cands = places_candidates(PlacesCandsIn(companies=companies, counts=job_counts_by_slug()))
     nosite = sponsor_nosite_of(cands)
     say(PRINT_SITES_TARGETS_TPL.format(cands=len(cands), nosite=len(nosite), cache=len(cache), limit=SITES_LIMIT))
     targets: dict[str, SiteLead] = {}
@@ -1077,22 +1077,27 @@ def read_places_cache() -> dict[str, PlaceRecord]:
     return cache
 
 
-def open_jobs_by_slug() -> Counter:
-    """jobs.json → slug → 在招岗数(只数 status=open)。"""
-    counts: Counter = Counter()
+def job_counts_by_slug() -> JobCounts:
+    """jobs.json 一遍扫出 slug → 在招岗数 与 slug → 在招 TEER 0-3 岗数(只数 status=open)。"""
+    counts = JobCounts(open=Counter(), skilled=Counter())
     for j in json.loads(IN_PLACES_JOBS.read_text(encoding=TEXT_ENCODING)):
         job = MartJob.model_validate(j)
-        if job.status == STATUS_OPEN and job.company_slug:
-            counts[job.company_slug] += 1
+        if job.status != STATUS_OPEN or job.company_slug == "":
+            continue
+        counts.open[job.company_slug] += 1
+        if job.teer in TEER_SKILLED:
+            counts.skilled[job.company_slug] += 1
     return counts
 
 
 def places_candidates(x: PlacesCandsIn) -> list[PlaceTarget]:
-    """在招且近四季有 LMIA 的公司 = 把脉页雇主表的母集;按在招数、LMIA 数降序。"""
+    """把脉页雇主段两栏的母集:在招且(近四季有 LMIA 或 在招 TEER 0-3 岗);按在招数、LMIA 数降序。"""
     out: list[PlaceTarget] = []
     for c in x.companies:
-        open_n = x.open_by_slug.get(c.slug, 0)
-        if open_n <= 0 or c.lmia_4q <= 0:
+        open_n = x.counts.open.get(c.slug, 0)
+        if open_n <= 0:
+            continue
+        if c.lmia_4q <= 0 and x.counts.skilled.get(c.slug, 0) <= 0:
             continue
         out.append(PlaceTarget(slug=c.slug, name=c.name, region=c.region, website=c.website,
                                open_jobs=open_n, lmia_4q=c.lmia_4q))
@@ -1243,7 +1248,15 @@ def crawl_company_about() -> None:
                 fail += 1
             say(PRINT_ABOUT_ROW_TPL.format(status=rec.status, name=t.name, about=rec.about_url or rec.note,
                                            chars=len(rec.text)))
+            if (ok + fail) % FIND_FLUSH_N == 0:
+                write_about_cache(cache)
             time.sleep(ABOUT_SLEEP_S)
+    total = write_about_cache(cache)
+    say(PRINT_ABOUT_DONE_TPL.format(ok=ok, fail=fail, total=total, n=len(cache), out=OUT_ABOUT.name))
+
+
+def write_about_cache(cache: dict[str, AboutRecord]) -> int:
+    """缓存落盘 OUT_ABOUT,返回累计 ok 家数(每 FIND_FLUSH_N 家落一次,中途被杀不丢)。"""
     out: dict[str, dict] = {}
     total = 0
     for sl, rec in cache.items():
@@ -1252,7 +1265,7 @@ def crawl_company_about() -> None:
             total += 1
     OUT_ABOUT.parent.mkdir(parents=True, exist_ok=True)
     paths.write_json(paths.WriteJsonIn(path=OUT_ABOUT, payload=out, indent=1))
-    say(PRINT_ABOUT_DONE_TPL.format(ok=ok, fail=fail, total=total, n=len(cache), out=OUT_ABOUT.name))
+    return total
 
 
 def read_about_cache() -> dict[str, AboutRecord]:
@@ -1273,7 +1286,7 @@ def about_targets() -> list[AboutTarget]:
     companies: list[PlaceCompany] = []
     for d in json.loads(IN_PLACES_COMPANIES.read_text(encoding=TEXT_ENCODING)):
         companies.append(PlaceCompany.model_validate(d))
-    cands = places_candidates(PlacesCandsIn(companies=companies, open_by_slug=open_jobs_by_slug()))
+    cands = places_candidates(PlacesCandsIn(companies=companies, counts=job_counts_by_slug()))
     out: list[AboutTarget] = []
     for t in cands:
         site = t.website

@@ -121,15 +121,19 @@ services:
       NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
       TZ: EST5EDT
 
-  # enrich 批量爬虫退役(#110,2026-07-20 Frank「不要提前跑,公司详情全懒」):
-  # K 懒探索(cms companyResearch:AI 联网调查+Wikidata)全替,谁被点开谁被查;
-  # 已抓的 company_enrich.json 当静态缓存(09 照旧合并)。亮回=取消注释+up -d。
-  # enrich:                        # 公司官网富化(E8-04 拆分,2026-07-16「分开来跑」:从 build 轮摘出,6h 独立节奏)
-  #   <<: *etl
-  #   environment:
-  #     SOURCE: enrich
-  #     (SCRAPE_INTERVAL 已随批F 退役;亮回时节奏写 company 域 META)
-  #     TZ: EST5EDT
+  # enrich 批量爬虫 2026-07-20 退役(#110 Frank「不要提前跑,公司详情全懒」),2026-09-05 亮回
+  # (Frank「不花钱就跑呗」「最好能定时跑」):跑的不是全量预抓,是把脉页雇主段两栏的母集
+  # (在招且 有 LMIA 或 在招 TEER 0-3),四步 places(Google 免费额内)/ sites(DDG 每轮 60)/
+  # about(官网正文进 crawl 层)/ brief(局域网 qwen 五节简介);节奏在 company 域 META(6h)。
+  company:                         # 把脉页雇主数据链(role=enrich;company 域 SCHEDULED 四步)
+    <<: *etl
+    environment:
+      SOURCE: enrich
+      HEALTHCHECK_PING_ENRICH: ${HEALTHCHECK_PING_ENRICH:-}
+      GOOGLE_PLACES_KEY: ${GOOGLE_PLACES_KEY:-}   # 根 .env;空=places 步跳过
+      NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(与 news 同一台盒子同一个变量);空=brief 步跳过
+      NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
+      TZ: EST5EDT
 
   pte:                             # ynwac 机经研究:抓公开 bundle → 解析 → diff 新题雷达(周更;只产 data/pte/,不灌库)
     <<: *etl
