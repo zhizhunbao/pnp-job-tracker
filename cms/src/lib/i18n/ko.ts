@@ -941,7 +941,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'pulse.ind.food': '요식 및 소매', 'pulse.ind.transport': '운송 및 물류', 'pulse.ind.manufacturing': '제조 및 자원',
   'pulse.ind.business': '비즈니스 및 사무', 'pulse.ind.education': '교육 및 사회',
   'pulse.col.biz': '주요 사업', 'pulse.col.sector': '고용주 유형', 'pulse.sector.private': '민간 기업',
-  'pulse.sector.public': '공공 부문', 'pulse.sector.government': '정부 기관', 'se.verdict.na': '해당 없음', 'pulse.pilot.aip': 'AIP 지정 고용주', 'pulse.pilot.rcip': 'RCIP 지정 고용주', 'pulse.pilot.fcip': 'FCIP 지정 고용주',   'pulse.id.nowp': '취업허가 없음', 'pulse.id.pgwp': '취업허가 있음',
+  'pulse.sector.public': '공공 부문', 'pulse.sector.government': '정부 기관', 'pulse.pilot.aip': 'AIP 지정 고용주', 'pulse.pilot.rcip': 'RCIP 지정 고용주', 'pulse.pilot.fcip': 'FCIP 지정 고용주',   'pulse.id.nowp': '취업허가 없음', 'pulse.id.pgwp': '취업허가 있음',
   'pulse.col.hiringOcc': '채용 직종', 'pulse.nocMore': '총 {n}개', 'pulse.act.jobs': '채용 보기', 'pulse.act.company': '회사 보기',
   // B4 고용주 주정부 지명 기준 판정: 3단계 + 공공 부문 예외, 기준 대조일 뿐 공식 인증 아님
   'se.col.verdict': '고용주 기준', 'se.verdict.met': '기준 충족', 'se.verdict.short': '{items} 미달', 'se.verdict.unknown': '확인 중', 'se.verdict.public': '공공 부문',

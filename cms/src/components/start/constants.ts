@@ -910,11 +910,6 @@ export const VERDICT_PUBLIC = 'public'
 export const COL_SECTOR = 'sector'
 
 /**
- * 雇主门槛「不适用」的文案键(公共部门 / 政府机关整体旁路;类别另有一列说)。
- */
-export const KEY_VERDICT_NA = 'se.verdict.na'
-
-/**
  * 雇主类别的文案键前缀(后接 private / public / government)。
  */
 export const KEY_SECTOR_HEAD = 'pulse.sector.'

@@ -2155,7 +2155,8 @@ export type EmpCellRow = {
   lmia4qText: string
 
   /**
-   * 雇主门槛判定文案(达标 / 差 X / 待核 / 不适用)。
+   * 雇主门槛判定文案(达标 / 差 X / 待核;公共部门与政府机关给 DASH_MARK —— 门槛对它们不设,类别另有一列说,
+   * Frank 2026-09-05「雇主门槛现在还是显示不适用啊」)。
    */
   verdictText: string
 
