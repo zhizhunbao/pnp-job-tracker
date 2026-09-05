@@ -83,6 +83,8 @@ export interface Config {
     'noc-openings': NocOpening;
     'policy-docs': PolicyDoc;
     'designated-employers': DesignatedEmployer;
+    'employer-pool': EmployerPool;
+    'employer-pool-buckets': EmployerPoolBucket;
     'pilot-communities': PilotCommunity;
     'pilot-occupations': PilotOccupation;
     'pilot-quota': PilotQuota;
@@ -105,6 +107,7 @@ export interface Config {
     news: News;
     comments: Comment;
     'chat-logs': ChatLog;
+    asks: Ask;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -128,6 +131,8 @@ export interface Config {
     'noc-openings': NocOpeningsSelect<false> | NocOpeningsSelect<true>;
     'policy-docs': PolicyDocsSelect<false> | PolicyDocsSelect<true>;
     'designated-employers': DesignatedEmployersSelect<false> | DesignatedEmployersSelect<true>;
+    'employer-pool': EmployerPoolSelect<false> | EmployerPoolSelect<true>;
+    'employer-pool-buckets': EmployerPoolBucketsSelect<false> | EmployerPoolBucketsSelect<true>;
     'pilot-communities': PilotCommunitiesSelect<false> | PilotCommunitiesSelect<true>;
     'pilot-occupations': PilotOccupationsSelect<false> | PilotOccupationsSelect<true>;
     'pilot-quota': PilotQuotaSelect<false> | PilotQuotaSelect<true>;
@@ -150,6 +155,7 @@ export interface Config {
     news: NewsSelect<false> | NewsSelect<true>;
     comments: CommentsSelect<false> | CommentsSelect<true>;
     'chat-logs': ChatLogsSelect<false> | ChatLogsSelect<true>;
+    asks: AsksSelect<false> | AsksSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -426,6 +432,14 @@ export interface Company {
    * AI 检索整理的公司简介(懒生成)
    */
   aiBrief?: string | null;
+  /**
+   * 简介的中文译文(本地 qwen3.6 翻,五节标记保留;懒翻译路由翻完落库,docs/sql/company-brief-zh.sql)
+   */
+  aiBriefZh?: string | null;
+  /**
+   * 简介的韩文译文(company 域 brief 步本地 qwen 翻,mart 汇装;docs/sql/company-brief-ko.sql)
+   */
+  aiBriefKo?: string | null;
   /**
    * AI 检索到的官网(非库内 directory 原有,前端标注区分)
    */
@@ -1247,6 +1261,150 @@ export interface DesignatedEmployer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "employer-pool".
+ */
+export interface EmployerPool {
+  id: number;
+  /**
+   * 池主键:slug 或 n:+归一名
+   */
+  key: string;
+  /**
+   * 有公司详情页才有;空 = 池内只有名字
+   */
+  slug?: string | null;
+  name: string;
+  industry?: string | null;
+  province?: string | null;
+  city?: string | null;
+  /**
+   * 指定雇主(AIP/RCIP/FCIP 名单命中);星级权重里最重的一档
+   */
+  designated?: boolean | null;
+  /**
+   * 命中的项目清单 string[](["AIP","RCIP",…])
+   */
+  designatedPrograms?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 命中的省清单 string[]
+   */
+  designatedProvinces?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 在招总量(全大类合计);裸 LMIA 总量永不入排序,这个才入
+   */
+  openJobsTotal?: number | null;
+  /**
+   * 历史累计岗位数(含已下架)
+   */
+  histJobs?: number | null;
+  provincesActive?: number | null;
+  citiesActive?: number | null;
+  /**
+   * 本站是否已知官网
+   */
+  websiteKnown?: boolean | null;
+  /**
+   * 技能类 LMIA 获批数(旁证,不单独入星)
+   */
+  lmiaSkilledTotal?: number | null;
+  /**
+   * 最近一期 LMIA 季度标(如 2025Q2);空 = 无记录
+   */
+  lmiaLastQuarter?: string | null;
+  /**
+   * 本站构建日(evidence 随行)
+   */
+  fetched?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "employer-pool-buckets".
+ */
+export interface EmployerPoolBucket {
+  id: number;
+  /**
+   * = employer_pool.key
+   */
+  employerKey: string;
+  /**
+   * 本站大类;空串 = 指定雇主无线索通用桶
+   */
+  broad?: string | null;
+  /**
+   * 该大类下在招量
+   */
+  openJobs?: number | null;
+  /**
+   * 该大类下最新发布日;空 = 无在招
+   */
+  latestPosted?: string | null;
+  /**
+   * 该大类下代表职位名 string[]
+   */
+  topTitles?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 入门可及岗数(不要经验/带训)
+   */
+  entryJobs?: number | null;
+  /**
+   * 入门可及占比;空 = 无在招不表态,不是 0
+   */
+  entryShare?: number | null;
+  /**
+   * 该大类最低经验档;空 = 官方未写
+   */
+  minExperience?: string | null;
+  /**
+   * 该大类技能类 LMIA 获批数(旁证)
+   */
+  lmiaSkilled?: number | null;
+  /**
+   * 该大类最近一期 LMIA 季度标;空 = 无记录
+   */
+  lmiaLastQuarter?: string | null;
+  /**
+   * 切面星级 1-5:指定雇主 >> 在招活跃+入门可及 > 技能类 LMIA
+   */
+  star?: number | null;
+  /**
+   * 该大类年薪中位;空 = 无水位数据,不折 0
+   */
+  wageMedAnnual?: number | null;
+  /**
+   * vs 同大类中位的百分位;空 = 无水位数据
+   */
+  wageIndexPct?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pilot-communities".
  */
 export interface PilotCommunity {
@@ -1370,6 +1528,10 @@ export interface PteType {
    * 题面以音频呈现(先听后答)
    */
   audio?: boolean | null;
+  /**
+   * 占总分百分比(猩际「占分权重」;<1% 记 0.5)—— 菜单灰注
+   */
+  weight?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2100,6 +2262,75 @@ export interface ChatLog {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "asks".
+ */
+export interface Ask {
+  id: number;
+  /**
+   * sha256(首轮提问)前 16 位:串起多轮,不指向人
+   */
+  thread?: string | null;
+  /**
+   * 本串里的第几轮(由 history 里的 user 消息数推)
+   */
+  turn?: number | null;
+  /**
+   * zh / en / ko
+   */
+  lang?: string | null;
+  /**
+   * 提问时所在页(带参)
+   */
+  path?: string | null;
+  /**
+   * 用户原话(截断 2,000)
+   */
+  question?: string | null;
+  /**
+   * nav / question / suggestion
+   */
+  kind?: string | null;
+  /**
+   * 目的地目录键;非 nav 为空
+   */
+  dest?: string | null;
+  /**
+   * 带去目的地的参数(省 / NOC / 市 …)。用 json 不用 array:array 会被拆成子表
+   */
+  params?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 向导那一句
+   */
+  say?: string | null;
+  /**
+   * 用户主动留的邮箱;没留为空
+   */
+  email?: string | null;
+  /**
+   * new / answered / built,后台手改
+   */
+  status?: string | null;
+  /**
+   * 端到端耗时
+   */
+  ms?: number | null;
+  /**
+   * llm / limit / net;成功为空
+   */
+  err?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -2185,6 +2416,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'designated-employers';
         value: number | DesignatedEmployer;
+      } | null)
+    | ({
+        relationTo: 'employer-pool';
+        value: number | EmployerPool;
+      } | null)
+    | ({
+        relationTo: 'employer-pool-buckets';
+        value: number | EmployerPoolBucket;
       } | null)
     | ({
         relationTo: 'pilot-communities';
@@ -2273,6 +2512,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'chat-logs';
         value: number | ChatLog;
+      } | null)
+    | ({
+        relationTo: 'asks';
+        value: number | Ask;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -2412,6 +2655,8 @@ export interface CompaniesSelect<T extends boolean = true> {
   lmiaStreams?: T;
   lmiaNocs?: T;
   aiBrief?: T;
+  aiBriefZh?: T;
+  aiBriefKo?: T;
   aiWebsite?: T;
   aiSources?: T;
   aiFetched?: T;
@@ -2731,6 +2976,52 @@ export interface DesignatedEmployersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "employer-pool_select".
+ */
+export interface EmployerPoolSelect<T extends boolean = true> {
+  key?: T;
+  slug?: T;
+  name?: T;
+  industry?: T;
+  province?: T;
+  city?: T;
+  designated?: T;
+  designatedPrograms?: T;
+  designatedProvinces?: T;
+  openJobsTotal?: T;
+  histJobs?: T;
+  provincesActive?: T;
+  citiesActive?: T;
+  websiteKnown?: T;
+  lmiaSkilledTotal?: T;
+  lmiaLastQuarter?: T;
+  fetched?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "employer-pool-buckets_select".
+ */
+export interface EmployerPoolBucketsSelect<T extends boolean = true> {
+  employerKey?: T;
+  broad?: T;
+  openJobs?: T;
+  latestPosted?: T;
+  topTitles?: T;
+  entryJobs?: T;
+  entryShare?: T;
+  minExperience?: T;
+  lmiaSkilled?: T;
+  lmiaLastQuarter?: T;
+  star?: T;
+  wageMedAnnual?: T;
+  wageIndexPct?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pilot-communities_select".
  */
 export interface PilotCommunitiesSelect<T extends boolean = true> {
@@ -2796,6 +3087,7 @@ export interface PteTypesSelect<T extends boolean = true> {
   nameEn?: T;
   nameKo?: T;
   audio?: T;
+  weight?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3119,6 +3411,27 @@ export interface ChatLogsSelect<T extends boolean = true> {
   degraded?: T;
   err?: T;
   ms?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "asks_select".
+ */
+export interface AsksSelect<T extends boolean = true> {
+  thread?: T;
+  turn?: T;
+  lang?: T;
+  path?: T;
+  question?: T;
+  kind?: T;
+  dest?: T;
+  params?: T;
+  say?: T;
+  email?: T;
+  status?: T;
+  ms?: T;
+  err?: T;
   updatedAt?: T;
   createdAt?: T;
 }

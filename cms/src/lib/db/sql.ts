@@ -1747,3 +1747,20 @@ export const USER_PTE_DONE = `SELECT pte_done AS "pteDone" FROM users WHERE id =
  * 写回练过档(整档覆盖;并集在路由里算)。$1=用户 id,$2=JSON 串。
  */
 export const USER_PTE_DONE_SET = `UPDATE users SET pte_done = $2::jsonb WHERE id = $1`
+
+// =========================================================================
+// 29. 站内向导留痕(/api/guide;2026-09-05 批二,设计稿 docs/design/顾问改向导-20260904.md §4)
+// =========================================================================
+
+/**
+ * 记一轮:带路 / 问题 / 建议 / 闲聊各一行。$1=thread,$2=turn,$3=lang,$4=path,$5=question,$6=kind,$7=dest,
+ * $8=params(JSON 串),$9=say,$10=ms,$11=err。回 id 给前端,留邮箱时按 id + thread 找回这一行。
+ */
+export const ASK_INSERT = `INSERT INTO asks (thread, turn, lang, path, question, kind, dest, params, say, ms, err)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11) RETURNING id`
+
+/**
+ * 用户主动留邮箱:只写到他自己那一行(id 与 thread 都对得上才写)。$1=id,$2=thread,$3=email。
+ */
+export const ASK_SET_EMAIL = `UPDATE asks SET email = $3, updated_at = now() WHERE id = $1 AND thread = $2 RETURNING id`
+

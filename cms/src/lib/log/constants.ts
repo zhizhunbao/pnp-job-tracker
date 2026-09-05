@@ -744,3 +744,54 @@ export const AUTH_LOG = {
    */
   failed: 'fail: ',
 } as const
+
+/**
+ * 站内向导域(lib/guide)的日志字面量(2026-09-05 批二立)。
+ */
+export const GUIDE_LOG = {
+  /**
+   * 这个域每一行日志的来源标签。
+   */
+  tag: 'guide',
+
+  /**
+   * 一轮走完:后面接类别、目的地、耗时。
+   */
+  routed: 'kind=',
+
+  /**
+   * 接上一条:目的地。
+   */
+  destSep: ' dest=',
+
+  /**
+   * 接上一条:耗时(毫秒)。
+   */
+  msSep: ' ms=',
+
+  /**
+   * 模型没答上来:这一轮按「问题」记下,用户无感。
+   */
+  llmFailed: 'llm failed, recorded as question: ',
+
+  /**
+   * 模型答了但不是合法 JSON:同样按「问题」记下。
+   */
+  parseFailed: 'reply not json, recorded as question: ',
+
+  /**
+   * 职业检索挂了:职业码留空,其余照常。
+   */
+  resolveFailed: 'noc resolve failed, slot left empty: ',
+
+  /**
+   * asks 写库失败(留痕是副产品,不影响答复)。
+   */
+  askFailed: 'asks insert failed: ',
+
+  /**
+   * 留邮箱写库失败。
+   */
+  emailFailed: 'asks email update failed: ',
+} as const
+

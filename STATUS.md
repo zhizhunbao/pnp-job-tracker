@@ -15,6 +15,7 @@
 - **etl 分域**(2026-08-31 批C~L 一日收官,十一批):**27 域全五件套(含 clean 退役、管理层 sched/gate 域化、extractors 溶段),零步骤文件、零 etl 豁免行(仅存 F601 台账/scheme-PLR0913/clean 留守)、形制基线 0 条、Pyrefly 0 错**;sources 役册与编号主管线退役(抓岗入 jobbank/ats,汇装入 mart,build/backup 收 load METAS 双役);四道闸上线 pre-push(ruff/形制/**pyrefly 类型闸**/eslint)。金标顺手逮到并修掉:MB 825 截断、noc_categories 哈希序翻覆、#128 调度回归。尾账三笔 08-31 已拍:CA/NAT 工资兜底键修正(13 帖判定归位)、norm_name 四把尺子取证后收 names 基建叶(合两把留两把,importlib 缝清零,27 域)、build_city_names 迁 mart 段20(byte-identical 金标复验)。批M~O 同晚收官:UA 两真相收 fetch(九域 11 处退役);一域一容器(15 ETL service,compose 迁根,Dockerfile 归域,docker/ 目录与 R3 云端预案删除);source_manifest 退役(保鲜契约进各域 META,哨兵迁 sched ping 门口=全域保鲜闸)+ gate ⑩号规扩到全部受 git 管文件(阴性探针验咬)+ 形制基线 json 退役(缺文件=零基线)。⚠ 保鲜闸首扫咬出 6/64 陈源待 Frank 人工复核:NB 排除清单四件(08-10 起scraper 每小时报「没找到通告请人工复核」保旧)、ab-eoi-points(08-14)、ircc/aip_rules(08-09);不修则全部 healthchecks 如实转红。
 - **数据**:全国全职业日更(Job Bank 全量 + ATS);指定雇主 6,664;LMIA/工资/抽选/试点/新闻各源 docker 无人值守。
 - **hwcr 私用域**(2026-09-04 Frank 点名):海外超人渥太华站房屋帖 → Lisgar 中学 3 km 内合租单间清单(`data/processed/hwcr/lisgar-rooms.md`,给韩国朋友的孩子找房);不建 mart 不灌库不上线,compose 挂 hwcr 容器小时更。同日拍板**不挂网站页**:数据不是我们的、联系方式在站方微信后面、受众与 88% 英文流量不对 —— 值钱的形态见 §3 候选「租房雷达」。
+- **AI 顾问改站内向导**(2026-09-04 Frank 四条拍板,[设计稿](docs/design/顾问改向导-20260904.md)):挂件只带路 + 收问题建议 + 开场白,不再替人下判断。批一 asks 表已上生产;批二 `lib/guide` + `/api/guide` 已提交(真模型探针 8/8);批三挂件换装待开,切完消费者整删 consult。
 
 ## 2. 主线与支线(判据不变,2026-08-01 立)
 
