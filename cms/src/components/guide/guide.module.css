@@ -88,14 +88,18 @@
 }
 
 /* 卡(答复下 / 开场白下同一种形态,2026-08-09 Frank):推荐项蓝框浅蓝底 + 绿徽标;点击目标 ≥44px;
-           标签一行放下(文案铁律:零逗号、禁口语腔)。 */
+           标签一行放下(文案铁律:零逗号、禁口语腔)。
+           2026-09-05 Frank「这个按钮是不是太宽了」:桌面面板拉宽后通栏胶囊成了一米长白条 —— 改按文字包裹
+           (沿老示例题 .cbEx 的 width: fit-content,「不把短问题的浅色背景铺满整条读列」),窄屏仍封顶 100%。 */
 .cbOpts {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 6px;
 }
 
 .cbOptWhy {
+  width: 100%;
   font-size: 12px;
   color: var(--text3);
   line-height: 1.5;
@@ -106,7 +110,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 100%;
+  width: fit-content;
   max-width: 100%;
   box-sizing: border-box;
   text-align: left;
@@ -297,8 +301,9 @@
   background: var(--primary-deep);
 }
 
-/* 留邮箱一行:输入框 + 同款发送钮,与 composer 同一条圆角形态 */
+/* 留邮箱一行:输入框 + 同款发送钮,与 composer 同一条圆角形态(通栏:输入框要地方) */
 .cbEmailRow {
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 8px;
