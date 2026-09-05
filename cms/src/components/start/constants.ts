@@ -182,6 +182,12 @@ export const MOM_FLAT = 0
 export const CARD_PAGE_SIZE = 10
 
 /**
+ * 雇主表操作列的显式宽:两只 mini 钮并排在最宽的韩文(「채용 보기」「회사 보기」)下也放得下,
+ * 不参与量宽也不折行(2026-09-05 Frank 韩语截图右钮被切 →「最好是不要换行」)。
+ */
+export const W_EMP_ACT = '150px'
+
+/**
  * 桌面表格的每页行数。
  */
 export const TABLE_PAGE_SIZE = 10

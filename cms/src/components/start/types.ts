@@ -311,6 +311,22 @@ export type HomeStats = {
   provExtra: ProvExtraMap
 
   /**
+   * 全国职业行(2026-09-05 Frank「为什么会空白很长时间」:职业段两榜与行业表原等挂载后的
+   * /api/stats/market(2.8MB)才出,改随 SSR 契约直出;雇主表的职业名与 TEER 也从这取)。
+   */
+  natOcc: OccRowList
+
+  /**
+   * NOC → 紧缺省清单(同上,原从 market 派生)。
+   */
+  nocProvs: Record<string, string[]>
+
+  /**
+   * 城市统计行(城市段直出,同上)。
+   */
+  city: CityRow[]
+
+  /**
    * S4 预选省(档案省;匿名为空 → 默认 ON。禁 IP 定位)。
    */
   provPreset: string
@@ -421,9 +437,9 @@ export type HomeCoreIn = {
   boards: SponsorBoards
 
   /**
-   * SSR 每表带几行。
+   * 城市统计行(城市段 SSR 直出,2026-09-05)。
    */
-  ssrRows: number
+  cityRows: CityRow[]
 
   /**
    * 职业统计行(中间两卡与分类映射的原料)。
@@ -477,18 +493,53 @@ export type HomeStatsOfIn = {
 }
 
 /**
- * `sponsorSliceOf` 的入参。
+ * `sponsorSeedOf` 的入参。
  */
-export type SponsorSliceIn = {
+export type SponsorSeedIn = {
   /**
-   * 这张表的全量行与总数。
+   * 三分表全量。
+   */
+  boards: SponsorBoards
+
+  /**
+   * NOC → 分类(对象形,SSR 契约同款)。
+   */
+  nocCat: Record<string, NocCat>
+
+  /**
+   * 全国职业行(算职业名与 TEER)。
+   */
+  natOcc: OccRowList
+
+  /**
+   * 试点集合与简介(与挂载后同一份)。
+   */
+  extra: EmpExtra
+}
+
+/**
+ * `seedGroupOf` 的入参。
+ */
+export type SeedGroupIn = {
+  /**
+   * 一张分表全量。
    */
   group: SponsorGroup
 
   /**
-   * SSR 只带前几行。
+   * 要留的雇主名(原样,= EmpCellRow.key)。
    */
-  rows: number
+  keep: Set<string>
+}
+
+/**
+ * `cityRowsOf` 的入参。
+ */
+export type CityRowsIn = {
+  /**
+   * 城市统计行。
+   */
+  city: CityRow[]
 }
 
 /**
@@ -1179,9 +1230,9 @@ export type GapClsIn = {
 }
 
 /**
- * `natOccOf` / `provRowsOf` 的入参。
+ * `provRowsOf` 的入参(分省概览仍吃挂载后的 market;职业/城市段 2026-09-05 改 SSR 直出后它是唯一还等 market 的段)。
  */
-export type NatOccIn = {
+export type MarketIn = {
   /**
    * 主图四份数据;null = 还没到。
    */
@@ -1189,13 +1240,23 @@ export type NatOccIn = {
 }
 
 /**
+ * `natOccOf` / `provRowsOf` 的入参。
+ */
+export type NatOccIn = {
+  /**
+   * 职业统计行(含各省行与全国行);null = 还没到。
+   */
+  occ: OccRowList | null
+}
+
+/**
  * `nocProvsOf` 的入参。
  */
 export type NocProvsIn = {
   /**
-   * 主图四份数据;null = 还没到。
+   * 职业统计行(含各省行与全国行);null = 还没到。
    */
-  market: MarketData | null
+  occ: OccRowList | null
 }
 
 /**
@@ -2053,13 +2114,13 @@ export type EmpCellRow = {
   fcip: boolean
 
   /**
-   * 主营业务主文案(中文界面有译文用译文,否则英文;没有给 DASH_MARK;2026-09-05 Frank「需要一个单独的列来解释公司业务」)。
+   * 主营业务主文案(英文原文;没有给 DASH_MARK;2026-09-05 Frank「需要一个单独的列来解释公司业务」)。
    */
   brief: string
 
   /**
-   * 主营业务灰注:中文界面显了译文时挂英文原文(2026-09-05 Frank「改成中英双语的吗」,形照名字格的别名注);
-   * 没有第二语时 TEXT_NONE 不出行。
+   * 主营业务灰注:中/韩界面挂译文(2026-09-05 Frank「改成中英双语的吗」「先英文再中文」,形照名字格的别名注:
+   * 英文主、界面语言注);没译文时 TEXT_NONE 不出行。
    */
   briefNote: string
 
@@ -3092,11 +3153,6 @@ export type EmpSecsHookIn = {
   stats: HomeStats
 
   /**
-   * 主图四份数据;null = 还没到。
-   */
-  market: MarketData | null
-
-  /**
    * 界面语言。
    */
   lang: StartLang
@@ -3146,9 +3202,9 @@ export type NocInfoMap = Map<string, NocInfo>
  */
 export type NocInfoIn = {
   /**
-   * 主图四份数据;null = 还没到。
+   * 全国职业行(SSR 契约带的那份)。
    */
-  market: MarketData | null
+  natOcc: OccRowList
 
   /**
    * 界面语言。

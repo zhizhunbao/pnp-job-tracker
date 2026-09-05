@@ -12,6 +12,7 @@
  * @time 2026-08-28 14:20:00
  */
 import { drawStreamNote, eeKeyDisplay, normalizeProfile, streamDisplay } from '@/lib/jobs'
+import { makeT } from '@/lib/i18n'
 import { PROVS, PROV_NAME } from '@/lib/stats'
 import { track } from '@/lib/track'
 import { ymd } from '@/lib/time'
@@ -45,7 +46,7 @@ import {
   COL_ACT, COL_HIRING_OCC, COL_LMIA_2Q, COL_VERDICT,
   HIRING_OCC_MAX, ID_NOWP, ID_PGWP, KEY_ID_HEAD, KEY_VERDICT_FACTOR_HEAD, KEY_VERDICT_HEAD,
   PULSE_CEC, PULSE_CHECK, PULSE_OK, PULSE_RANK, PULSE_SHORT, TEER_PNP_MAX, URL_COMPANY_HEAD, VERDICT_MET,
-  VERDICT_PUBLIC, VERDICT_SHORT, MINI_BTN_KIND,
+  VERDICT_PUBLIC, VERDICT_SHORT, MINI_BTN_KIND, W_EMP_ACT, CARD_PAGE_SIZE,
   COL_BIZ, PILOT_FCIP, PILOT_RCIP, KEY_PILOT_HEAD, PILOT_KEYS, PILOT_KEY_AIP, PILOT_KEY_RCIP, TABLE_PILOT,
   SPACE_SEP, ACRONYM_MAX, CORP_SUFFIXES, NON_LETTER_RE, BRIEF_TAG_RE, BRIEF_TAG_WHAT,
 } from './constants'
@@ -75,7 +76,7 @@ import type {
   ClickFn,
   HomeCoreIn, HomeStats, HomeStatsCore, HomeStatsOfIn, HotPillsIn, LabelFn,
   MomClsIn,
-  NatOccIn, NavLinkClsIn, NavWatchIn,
+  MarketIn, NatOccIn, NavLinkClsIn, NavWatchIn,
   NocCat, NocCatOfIn, NocProvsIn, NocProvsMap,
   GapClsIn, NavItem, NavItemsIn, NumCardRow, NumCardsIn, OccCellRow, OccCellRowIn,
   OccCellRowsIn, OccColsIn,
@@ -85,13 +86,14 @@ import type {
   ProvOccIn, ProvPickFn, ProvPickIn, ProvPresetIn, ProvStatIn, ProvsOfOccIn,
   PulseScalars, PulseScalarsIn, SecHeadClsIn, SelectChangeFn, SelectChangeIn,
   SponsorFullProbe, SponsorGroup, SponsorLoadIn,
-  SponsorRowList, SponsorSliceIn, StartCol, StartPill, StartProfileObj,
+  SponsorRowList, StartCol, StartPill, StartProfileObj,
   StatRowList, StatRowOne,
   StreamLabelIn, TierClsIn, TierTextIn,
   CityCellRow, CityCellRowsIn, CityNameIn, DateSum, EmpCellRow, EmpCellRowIn, EmpColsIn, EmpSec, EmpSecsIn, IndOfIn,
   HiringMoreIn, IndRowsIn, LineOptionIn, OccSec, OccSecsIn, SeriesIn, SponsorBoards, TrendOfIn, TrendPanel, TrendSeries,
   EmpKind, HiringOccIn, KindChip, KindPickFn, KindPickIn, NocInfo, NocInfoIn, NocInfoMap, PulseIn2,
-  AliasIn, BriefOfIn, BriefTextOut, BriefsIn, CompanyBrief, DesignatedIn, InPilotIn, PilotNamesIn, PilotSecsIn,
+  AliasIn, BriefOfIn, BriefTextOut, BriefsIn, CityRowsIn, CompanyBrief, SeedGroupIn, SponsorSeedIn, EmpExtra,
+  NocCatMap, DesignatedIn, InPilotIn, PilotNamesIn, PilotSecsIn,
   Teer03In, VerdictTextIn,
   TrendSmallIn, ValuableIn,
   EmptyQueryResult, PulseDraw, DrawDbRow, DrawHist, DrawHistIn, DrawsIn, PulseDrawIn, DrawCellRow, DrawCellRowIn,
@@ -202,22 +204,33 @@ export function homeCoreOf(x: HomeCoreIn): HomeStatsCore {
   if (x.proof != null && x.proof.named > 0) {
     named = x.proof.named
   }
+  const natOccMaybe = natOccOf({ occ: x.occRows })
+  let natOcc: OccRowList = []
+  if (natOccMaybe != null) {
+    natOcc = natOccMaybe
+  }
+  const nocCat = nocCatOf({ occ: x.occRows, sponsorRows: x.sponsorRows })
+  const rcipNames = pilotNamesOf({ rows: x.pilotRows, sponsorRows: x.sponsorRows, pilot: PILOT_RCIP })
+  const fcipNames = pilotNamesOf({ rows: x.pilotRows, sponsorRows: x.sponsorRows, pilot: PILOT_FCIP })
+  const briefs = briefsOf({ rows: x.briefRows, sponsorRows: x.sponsorRows })
+  const extra: EmpExtra = {
+    rcip: new Set(rcipNames), fcip: new Set(fcipNames), briefs: new Map(Object.entries(briefs)),
+  }
   return {
     total,
     named,
-    sponsor: {
-      lmia: sponsorSliceOf({ group: x.boards.lmia, rows: x.ssrRows }),
-      named: sponsorSliceOf({ group: x.boards.named, rows: x.ssrRows }),
-      aip: sponsorSliceOf({ group: x.boards.aip, rows: x.ssrRows }),
-    },
+    sponsor: sponsorSeedOf({ boards: x.boards, nocCat, natOcc, extra }),
     pulse: pulseScalarsOf({ occ: x.occRows }),
-    nocCat: nocCatOf({ occ: x.occRows, sponsorRows: x.sponsorRows }),
+    nocCat,
     daily: x.dailyRows,
     draws: toDrawsWithHistory({ rows: x.drawRows, limit: x.drawsLimit }),
-    rcipNames: pilotNamesOf({ rows: x.pilotRows, sponsorRows: x.sponsorRows, pilot: PILOT_RCIP }),
-    fcipNames: pilotNamesOf({ rows: x.pilotRows, sponsorRows: x.sponsorRows, pilot: PILOT_FCIP }),
-    briefs: briefsOf({ rows: x.briefRows, sponsorRows: x.sponsorRows }),
+    rcipNames,
+    fcipNames,
+    briefs,
     provExtra: x.provExtra,
+    natOcc,
+    nocProvs: Object.fromEntries(nocProvsOf({ occ: x.occRows })),
+    city: x.cityRows,
   }
 }
 
@@ -240,6 +253,9 @@ export function homeStatsOf(x: HomeStatsOfIn): HomeStats {
     fcipNames: x.core.fcipNames,
     briefs: x.core.briefs,
     provExtra: x.core.provExtra,
+    natOcc: x.core.natOcc,
+    nocProvs: x.core.nocProvs,
+    city: x.core.city,
     provPreset: x.provPreset,
     checkedAt: x.checkedAt,
   }
@@ -247,14 +263,63 @@ export function homeStatsOf(x: HomeStatsOfIn): HomeStats {
 
 /**
  * #313(LCP 7.15s 真因):三表全量(16,430 行)序列化进 RSC payload 把 SSR 文档撑到 6.92MB
- * ——「全量可翻页」拍板不动,只换运输方式:SSR 只带每表前几十行 + total,挂载后
- * Pulse 拉 `/api/employers/sponsors` 换全量(手法照 occ 大表的 `/api/stats/market` 先例)。
+ * ——「全量可翻页」拍板不动,只换运输方式:SSR 只带种子 + total,挂载后 Pulse 拉
+ * `/api/employers/sponsors` 换全量。种子 2026-09-05 从「每分表前 50 行」改成「每张行业表 × 两档身份
+ * + 三试点表各自的第一页」(Frank「为什么会空白很长时间」:原种子按分表切,行业表在 SSR 里大多是空的);
+ * 用与挂载后同一套 empSecsOf / pilotSecsOf 挑行,英文 t 只为排序不进文案,第一页与最终一致不闪。
  *
- * @param x 这张表的全量行与 SSR 带几行。
- * @returns 切好的那一段。
+ * @param x 三分表全量、分类、全国职业行与试点集合。
+ * @returns 只留各表第一页的三分表(total 照旧)。
  */
-export function sponsorSliceOf(x: SponsorSliceIn): SponsorGroup {
-  return { top: x.group.top.slice(0, x.rows), total: x.group.total }
+export function sponsorSeedOf(x: SponsorSeedIn): SponsorBoards {
+  const t = makeT(LANG_EN)
+  const nocCat: NocCatMap = new Map(Object.entries(x.nocCat))
+  const nocInfo = nocInfoOf({ natOcc: x.natOcc, lang: LANG_EN })
+  const keep = new Set<string>()
+  const kinds: EmpKind[] = [ID_NOWP, ID_PGWP]
+  for (const kind of kinds) {
+    const secs = empSecsOf({ t, sponsor: x.boards, nocCat, nocInfo, extra: x.extra, kind, lang: LANG_EN })
+    for (const sec of secs) {
+      for (const r of sec.rows.slice(0, CARD_PAGE_SIZE)) {
+        keep.add(r.key)
+      }
+    }
+  }
+  for (const sec of pilotSecsOf({ t, sponsor: x.boards, nocCat, nocInfo, extra: x.extra, lang: LANG_EN })) {
+    for (const r of sec.rows.slice(0, CARD_PAGE_SIZE)) {
+      keep.add(r.key)
+    }
+  }
+  return {
+    lmia: seedGroupOf({ group: x.boards.lmia, keep }),
+    named: seedGroupOf({ group: x.boards.named, keep }),
+    aip: seedGroupOf({ group: x.boards.aip, keep }),
+  }
+}
+
+/**
+ * 一张分表只留名在 keep 里的行(total 照旧,分页数不变)。
+ *
+ * @param x 分表与要留的名集。
+ * @returns 切好的分表。
+ */
+function seedGroupOf(x: SeedGroupIn): SponsorGroup {
+  const top: SponsorRowList = []
+  for (const r of x.group.top) {
+    if (x.keep.has(r.name)) {
+      top.push(r)
+    }
+  }
+  return { top, total: x.group.total }
+}
+
+/**
+ * 城市统计行的空表(城市段取数挂了给它,段整段不出)。
+ *
+ * @returns 空表。
+ */
+export function emptyCityRows(): CityRow[] {
+  return []
 }
 
 /**
@@ -1106,11 +1171,11 @@ export function numCardsOf(x: NumCardsIn): NumCardRow[] {
  * @returns 全国行;数据还没到则 null。
  */
 export function natOccOf(x: NatOccIn): OccRowList | null {
-  if (x.market == null) {
+  if (x.occ == null) {
     return null
   }
   const out: OccRowList = []
-  for (const o of x.market.occ) {
+  for (const o of x.occ) {
     if (isAllProv(o.province)) {
       out.push(o)
     }
@@ -1126,10 +1191,10 @@ export function natOccOf(x: NatOccIn): OccRowList | null {
  */
 export function nocProvsOf(x: NocProvsIn): NocProvsMap {
   const m: NocProvsMap = new Map()
-  if (x.market == null) {
+  if (x.occ == null) {
     return m
   }
-  for (const o of x.market.occ) {
+  for (const o of x.occ) {
     if (isAllProv(o.province) === false && o.namedJobs != null && o.namedJobs > 0) {
       const arr = m.get(o.noc)
       if (arr == null) {
@@ -1173,7 +1238,7 @@ function byOpenDesc(a: OccRowOne, b: OccRowOne): number {
  * @param x 主图四份数据。
  * @returns 汇总行(数据还没到给空清单)。
  */
-export function provRowsOf(x: NatOccIn): StatRowList {
+export function provRowsOf(x: MarketIn): StatRowList {
   const out: StatRowList = []
   if (x.market == null) {
     return out
@@ -2099,11 +2164,8 @@ function byWageDesc(a: OccRowOne, b: OccRowOne): number {
  * @param x 主图四份数据。
  * @returns 城市行或 null。
  */
-export function cityRowsOf(x: NatOccIn): CityRow[] | null {
-  if (x.market == null) {
-    return null
-  }
-  const rows = x.market.city.slice()
+export function cityRowsOf(x: CityRowsIn): CityRow[] | null {
+  const rows = x.city.slice()
   rows.sort(byCityOpenDesc)
   return rows
 }
@@ -3043,14 +3105,9 @@ function verdictTextOf(x: VerdictTextIn): string {
  */
 export function nocInfoOf(x: NocInfoIn): NocInfoMap {
   const m: NocInfoMap = new Map()
-  if (x.market == null) {
-    return m
-  }
-  for (const o of x.market.occ) {
-    if (isAllProv(o.province)) {
-      const info: NocInfo = { name: occMainOf({ o, lang: x.lang }), teer: o.teer }
-      m.set(o.noc, info)
-    }
+  for (const o of x.natOcc) {
+    const info: NocInfo = { name: occMainOf({ o, lang: x.lang }), teer: o.teer }
+    m.set(o.noc, info)
   }
   return m
 }
@@ -3074,7 +3131,9 @@ export function empColsOf(x: EmpColsIn): StartCol<EmpCellRow>[] {
   const open: StartCol<EmpCellRow> = {
     key: COL_OPEN, label: x.t('pulse.col.open'), nowrap: true, sort: empOpenSortOf, render: empOpenOf,
   }
-  const act: StartCol<EmpCellRow> = { key: COL_ACT, label: x.t('col.actions'), nowrap: true, render: EmpActCell }
+  const act: StartCol<EmpCellRow> = {
+    key: COL_ACT, label: x.t('col.actions'), nowrap: true, width: W_EMP_ACT, render: EmpActCell,
+  }
   const biz: StartCol<EmpCellRow> = { key: COL_BIZ, label: x.t('pulse.col.biz'), render: EmpBriefCell }
   if (x.kind === TABLE_PILOT) {
     return [
@@ -3279,8 +3338,8 @@ function translationOf(zh: string | null): string {
 }
 
 /**
- * 简介格文案:中/韩界面有译文用译文当主文案、英文原文作灰注(2026-09-05 Frank「改成中英双语的吗」、
- * 韩语界面「没有翻译」);没译文时只英文;没有给 DASH_MARK 无注。
+ * 简介格文案:英文原文作主文案,中/韩界面有译文挂译文灰注(2026-09-05 Frank「改成中英双语的吗」→
+ * 「这两个保持一致」「先英文再中文」:与名字格同形,英文主、界面语言注);没译文时只英文;没有给 DASH_MARK 无注。
  *
  * @param x 简介表与名(小写)。
  * @returns 主文案 + 灰注。
@@ -3291,10 +3350,10 @@ function briefOf(x: BriefOfIn): BriefTextOut {
     return { main: DASH_MARK, note: TEXT_NONE }
   }
   if (x.lang === LANG_ZH && b.zh !== TEXT_NONE) {
-    return { main: whatOf(b.zh), note: whatOf(b.en) }
+    return { main: whatOf(b.en), note: whatOf(b.zh) }
   }
   if (x.lang === LANG_KO && b.ko !== TEXT_NONE) {
-    return { main: whatOf(b.ko), note: whatOf(b.en) }
+    return { main: whatOf(b.en), note: whatOf(b.ko) }
   }
   return { main: whatOf(b.en), note: TEXT_NONE }
 }

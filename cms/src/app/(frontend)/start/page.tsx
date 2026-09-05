@@ -23,16 +23,17 @@ import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
 import { Frame } from '@/components/shell'
 import {
-  DRAWS_LIMIT, Pulse, START_META, cachedHomeOf, emptyDailyRows, emptyOccRows, emptyProvExtra, emptyQueryResult,
+  DRAWS_LIMIT, Pulse, START_META, cachedHomeOf, emptyCityRows, emptyDailyRows, emptyOccRows, emptyProvExtra,
+  emptyQueryResult,
   emptySponsorRows, emptyText, homeCoreOf, homeStatsOf, nullProof, nullUser, provPresetOf, putHomeCache,
 } from '@/components/start'
 import { SQL } from '@/lib/db'
 import { dbOf } from '@/lib/db/server'
-import { SE_SSR_ROWS, buildSponsorBoards, loadSponsorEmployers } from '@/lib/employers/server'
+import { buildSponsorBoards, loadSponsorEmployers } from '@/lib/employers/server'
 import { checkedAt, loadTotalAndProof } from '@/lib/jobs/server'
 import { getUser } from '@/lib/quota/server'
 import { employerVerdict } from '@/lib/ruling/server'
-import { loadDailySeries, loadOccStats, loadProvExtra } from '@/lib/stats/server'
+import { loadCityStats, loadDailySeries, loadOccStats, loadProvExtra } from '@/lib/stats/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -50,11 +51,12 @@ export default async function PulsePage() {
   const db = dbOf(payload)
   let core = cachedHomeOf()
   if (core == null) {
-    const [proof, provExtra, sponsorRows, occRows, dailyRows, drawRes, pilotRes, briefRes] = await Promise.all([
+    const [proof, provExtra, sponsorRows, occRows, cityRows, dailyRows, drawRes, pilotRes, briefRes] = await Promise.all([
       loadTotalAndProof(db).catch(nullProof),
       loadProvExtra(db).catch(emptyProvExtra),
       loadSponsorEmployers({ db, judge: employerVerdict }).catch(emptySponsorRows),
       loadOccStats(db).catch(emptyOccRows),
+      loadCityStats(db).catch(emptyCityRows),
       loadDailySeries(db).catch(emptyDailyRows),
       db.query(SQL.PNP_DRAWS_RECENT).catch(emptyQueryResult),
       db.query(SQL.DESIGNATED_PILOT_NAMES).catch(emptyQueryResult),
@@ -65,8 +67,8 @@ export default async function PulsePage() {
       provExtra,
       sponsorRows,
       boards: buildSponsorBoards(sponsorRows),
-      ssrRows: SE_SSR_ROWS,
       occRows,
+      cityRows,
       dailyRows,
       drawRows: drawRes.rows,
       drawsLimit: DRAWS_LIMIT,

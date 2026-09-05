@@ -18,12 +18,13 @@ import { useMarketStats } from '@/components/stats'
 import { makeT } from '@/lib/i18n'
 import { ID_PGWP, LANG_EN, TEXT_NONE } from './constants'
 import {
-  cityRowsOf, empSecsOf, makeKindPick, makeNavWatch, makeProvPick, makeSelectChange, makeSponsorLoad, natOccOf,
-  nocInfoOf, nocProvsOf, numCardsOf, pilotSecsOf, occSecsOf, provInitOf, provOccOf, provRowsOf, provStatOf, trendOf,
+  cityRowsOf, empSecsOf, makeKindPick, makeNavWatch, makeProvPick, makeSelectChange, makeSponsorLoad,
+  nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provInitOf, provOccOf, provRowsOf, provStatOf, trendOf,
 } from './functions'
 import type {
   CardPageIn, EmpExtra, EmpKind, EmpSecsHookIn, EmpSecsPanel, NocCatMap, OccBoardPanel, PulseIn, PulsePanel,
   SponsorBoards, TFn,
+  NocProvsMap,
 } from './types'
 
 /**
@@ -107,8 +108,8 @@ export function useEmpSecs(x: EmpSecsHookIn): EmpSecsPanel {
   }, [x.stats.nocCat])
 
   const nocInfo = useMemo(function pickNocInfo() {
-    return nocInfoOf({ market: x.market, lang: x.lang })
-  }, [x.market, x.lang])
+    return nocInfoOf({ natOcc: x.stats.natOcc, lang: x.lang })
+  }, [x.stats.natOcc, x.lang])
 
   const extra: EmpExtra = useMemo(function pickExtra() {
     return {
@@ -140,25 +141,18 @@ export function usePulse(x: PulseIn): PulsePanel {
   const [lang, , t] = useLang()
   const market = useMarketStats()
   const [empKind, setEmpKind] = useState<EmpKind>(ID_PGWP)
-  const emp = useEmpSecs({ stats: x.stats, market, lang, kind: empKind })
+  const emp = useEmpSecs({ stats: x.stats, lang, kind: empKind })
   const navSec = useNavSec()
   const tEn = useEnglishT()
   const [prov, setProv] = useState(provInitOf(x.stats.provPreset))
 
-  const natOcc = useMemo(function pickNat() {
-    return natOccOf({ market })
-  }, [market])
-
-  const nocProvs = useMemo(function pickNocProvs() {
-    return nocProvsOf({ market })
-  }, [market])
+  const nocProvs: NocProvsMap = useMemo(function pickNocProvs() {
+    return new Map(Object.entries(x.stats.nocProvs))
+  }, [x.stats.nocProvs])
 
   const occSecs = useMemo(function pickOccSecs() {
-    if (natOcc == null) {
-      return null
-    }
-    return occSecsOf({ t, natOcc })
-  }, [t, natOcc])
+    return occSecsOf({ t, natOcc: x.stats.natOcc })
+  }, [t, x.stats.natOcc])
 
   const numCards = useMemo(function pickCards() {
     return numCardsOf({ t, total: x.stats.total, named: x.stats.named, pulse: x.stats.pulse })
@@ -177,8 +171,8 @@ export function usePulse(x: PulseIn): PulsePanel {
   }, [market, prov])
 
   const cityRows = useMemo(function pickCityRows() {
-    return cityRowsOf({ market })
-  }, [market])
+    return cityRowsOf({ city: x.stats.city })
+  }, [x.stats.city])
 
   const trend = useMemo(function pickTrend() {
     return trendOf({ t, daily: x.stats.daily })
