@@ -25,6 +25,8 @@ cms/dev.log
 # 公司富化/事实缓存(懒查询产出,可重抓)
 /data/processed/company_enrich.json
 /data/processed/company_facts.json
+/data/processed/company_brief.json
+/data/raw/companies/
 # 人读导出视图(csv)
 /data/**/*.csv
 # 公司名录导出视图(保留 .json)

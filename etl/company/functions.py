@@ -16,6 +16,7 @@ wire 词(头名/查询参数/属性名)用 constants 的 HDR_/P_ 词族;文案�
 """
 import html as html_lib
 import json
+import os
 import time
 import urllib.parse
 import urllib.request
@@ -30,6 +31,8 @@ from bs4 import BeautifulSoup
 
 import paths
 from log.functions import err, say
+from crawl.functions import get_cached_page, is_challenge_html, put_cached_page
+from crawl.scheme import CachePutIn
 from fetch.functions import make_client, make_polite_client
 from company.constants import (
     ACT_GET_ENTITIES, ACT_SEARCH, ALIAS_SPLIT_RE, ATS_HOSTS, CAND_MIN_JOBS, CAND_MIN_LMIA_SKILLED,
@@ -65,13 +68,34 @@ from company.constants import (
     URL_DEFAULT_SCHEME, URL_DOMAIN_RE, URL_ROOT_TPL, WD_API_URL, WD_LANGUAGES, WD_PROPS,
     WD_SEARCH_LIMIT, WD_SLEEP_S, WD_TIMEOUT_S, WD_UA, WIKI_CHECKED_MARK, WIKI_SPACE,
     WIKI_UNDERSCORE, WIKI_URL_PREFIX, WS_FOLD_RE, WWW_PREFIX,
+    ENV_PLACES_KEY, HDR_API_KEY, HDR_FIELD_MASK, IN_PLACES_COMPANIES, IN_PLACES_JOBS, NOTE_NO_KEY,
+    OUT_PLACES, PLACES_LANG, PLACES_LIMIT, PLACES_PAGE_SIZE,
+    PLACES_QUERY_TPL, PLACES_REFRESH_DAYS, PLACES_REGION, PLACES_SLEEP_S, PLACES_TIMEOUT_S,
+    PLACES_URL, PRINT_PLACES_DONE_TPL, PRINT_PLACES_IN_TPL, PRINT_PLACES_ROW_TPL,
+    PRINT_PLACES_TARGETS_TPL, P_LANGUAGE_CODE, P_PAGE_SIZE_PLACES, P_REGION_CODE, P_TEXT_QUERY,
+    PRINT_SITES_DONE_TPL, PRINT_SITES_TARGETS_TPL, SITES_LIMIT, ST_HIT, ST_MISS,
+    ABOUT_LIMIT, ABOUT_RE, ABOUT_REFRESH_DAYS, ABOUT_SLEEP_S, ABOUT_TEXT_MAX, ABOUT_TEXT_MIN,
+    ABOUT_TIMEOUT_S, BRIEF_LIMIT, BRIEF_MARKS, BRIEF_PROMPT_TPL, BRIEF_TOKENS, BRIEF_ZH_PROMPT_TPL,
+    BRIEF_ZH_TOKENS, CRAWL_SLUG_COMPANIES, ENV_LLM_BASE, ENV_LLM_MODEL, HOME_TEXT_MAX, IN_ABOUT_ENRICH,
+    LLM_MODEL_DEFAULT, LLM_TEMPERATURE, LLM_TIMEOUT_S, NOTE_CHALLENGE, NOTE_MARKERS,
+    NOTE_NO_LLM, NOTE_NO_TEXT, NOTE_ZH_MARKERS, NOT_FOUND, OUT_ABOUT, OUT_BRIEF, PAGE_SEP,
+    PATH_OLLAMA_GENERATE, PRINT_ABOUT_DONE_TPL, PRINT_ABOUT_ROW_TPL, PRINT_ABOUT_TARGETS_TPL,
+    PRINT_BRIEF_DONE_TPL, PRINT_BRIEF_ROW_TPL, PRINT_BRIEF_TARGETS_TPL, P_MODEL, P_NUM_PREDICT, P_OPTIONS,
+    NEWLINE, P_PROMPT, P_RESPONSE, P_STREAM, P_TEMPERATURE, P_THINK, STRIP_TAGS, THINK_RE, URL_TAIL_SLASH,
+    DDG_BACKOFF_S, DDG_FAIL_STOP, FIND_FLUSH_N, MARK_COLON_RE, MARK_SPACE, PATH_SEP, PRINT_DDG_STOP_TPL,
+    PRINT_FIND_ROW_TPL, K_LOCALITY, K_PROVINCE, MONTH_LEN, PLACES_MASK_ENT, PLACES_MASK_PRO,
+    PLACES_MONTH_FREE_ENT, PLACES_MONTH_FREE_PRO, PLACES_MONTH_RESERVE, PRINT_PLACES_BUDGET_TPL, TIER_ENT, TIER_PRO,
+    JSON_INDENT, PLACES_CACHE_URL_TPL, COUNTRY_CA, K_COUNTRY, NOTE_OUTSIDE_CA,
 )
 from company.scheme import (
     CandsIn, CardColIn, CareerScanRow, CareersFileRow, CareersProbe, CompanyRow, DdgFindIn,
     EnrichRecord, EntityIn, FactsIndustryOut, FetchProfileIn, FetchTextIn, FindWebsitesIn,
     GuardMatchIn, HttpClientLike, IndexRow, MetaOut, MetaScanIn, NositeLead, PickTodoIn,
-    PostingLead, ProbeIn, ProfileRow, SaveFactsIn, SiteLead, SkipFindIn, TagLike, WikiProbe,
-    WpEnvelope,
+    MartJob, PickPlacesIn, PlaceCompany, PlaceRecord, PlacesCandsIn, PlacesEnvelope, PlacesSearchIn,
+    PlaceTarget, PostingLead, ProbeIn, ProfileRow, SaveFactsIn, SiteLead, SkipFindIn, SkipPlacesIn,
+    TagLike, ToPlaceIn, WikiProbe, WpEnvelope,
+    AboutFetchIn, AboutLinkIn, AboutRecord, AboutTarget, BriefOneIn, BriefRecord, DdgLoopIn, DdgOut,
+    LlmCallIn, LlmCfg, MonthUsage, PageIn, PageOut, PageTextIn, PickAboutIn, PickBriefIn,
 )
 
 # =========================================================================
@@ -443,16 +467,19 @@ def jd_domain_hints() -> dict[str, set[str]]:
     return hints
 
 
-def ddg_find(x: DdgFindIn) -> str:
-    """找官网②:DDG HTML 搜索兜底,前几个非聚合域逐个过护栏(含首页标题复核)。"""
+def ddg_find(x: DdgFindIn) -> DdgOut:
+    """找官网②:DDG HTML 搜索兜底,前几个非聚合域逐个过护栏(含首页标题复核)。
+
+    传输失败(异常/非 2xx)回 failed=True —— 调用方不得记 nosite(2026-09-05 限流实撞)。
+    """
     try:
         query = DDG_QUERY_TPL.format(name=x.name, province=x.province)
         r = x.client.get(DDG_HTML_URL, params={P_QUERY: query}, timeout=DDG_TIMEOUT_S)
         if not r.is_success:
-            return ""
+            return DdgOut(site="", failed=True)
     except Exception as e:  # noqa: BLE001
         err(x.name, e)
-        return ""
+        return DdgOut(site="", failed=True)
     seen: list[str] = []
     for href in DDG_RESULT_RE.findall(r.text)[:DDG_SCAN_N]:
         target = href
@@ -463,8 +490,8 @@ def ddg_find(x: DdgFindIn) -> str:
             seen.append(dom)
     for dom in seen[:DDG_GUARD_N]:
         if guard_match(GuardMatchIn(client=x.client, name=x.name, dom=dom)):
-            return HTTPS_PREFIX + dom
-    return ""
+            return DdgOut(site=HTTPS_PREFIX + dom, failed=False)
+    return DdgOut(site="", failed=False)
 
 
 def now_iso() -> str:
@@ -585,23 +612,46 @@ def find_websites(x: FindWebsitesIn) -> tuple[int, int]:
                                                status=ST_FOUND, fetched=now_iso())
                     found_jd += 1
                     break
-        budget = x.find_limit
-        for sl, v in sorted(x.nosite.items(), key=nosite_priority_of):
-            if budget <= 0:
-                break
-            if sl in x.targets or should_skip_find(SkipFindIn(cache=x.cache, slug=sl)):
-                continue
-            budget -= 1
-            site = ddg_find(DdgFindIn(client=cast(HttpClientLike, client), name=v.name, province=v.province))
-            if site:
-                x.targets[sl] = SiteLead(name=v.name, website=site, found=FOUND_SEARCHED)
-                x.cache[sl] = EnrichRecord(name=v.name, website=site, found=FOUND_SEARCHED,
-                                           status=ST_FOUND, fetched=now_iso())
-                found_search += 1
-            else:
-                x.cache[sl] = EnrichRecord(name=v.name, status=ST_NOSITE, fetched=now_iso())
-            time.sleep(FIND_SLEEP_S)
+        found_search = ddg_search_loop(DdgLoopIn(client=cast(HttpClientLike, client), cache=x.cache,
+                                                 targets=x.targets, nosite=x.nosite, find_limit=x.find_limit))
     return found_jd, found_search
+
+
+def ddg_search_loop(x: DdgLoopIn) -> int:
+    """阶梯②的循环:按岗数排队逐家 DDG;命中记 found、查无记 nosite、传输失败不记并歇 DDG_BACKOFF_S,
+    连续 DDG_FAIL_STOP 次失败熔断;每 FIND_FLUSH_N 家落一次盘。返回本轮命中数。"""
+    found = done = fails = 0
+    budget = x.find_limit
+    for sl, v in sorted(x.nosite.items(), key=nosite_priority_of):
+        if budget <= 0:
+            break
+        if sl in x.targets or should_skip_find(SkipFindIn(cache=x.cache, slug=sl)):
+            continue
+        budget -= 1
+        got = ddg_find(DdgFindIn(client=x.client, name=v.name, province=v.province))
+        if got.failed:
+            fails += 1
+            say(PRINT_FIND_ROW_TPL.format(status=ST_FAIL, name=v.name, site=""))
+            if fails >= DDG_FAIL_STOP:
+                say(PRINT_DDG_STOP_TPL.format(n=fails, done=done))
+                break
+            time.sleep(DDG_BACKOFF_S)
+            continue
+        fails = 0
+        done += 1
+        if got.site != "":
+            x.targets[sl] = SiteLead(name=v.name, website=got.site, found=FOUND_SEARCHED)
+            x.cache[sl] = EnrichRecord(name=v.name, website=got.site, found=FOUND_SEARCHED,
+                                       status=ST_FOUND, fetched=now_iso())
+            found += 1
+            say(PRINT_FIND_ROW_TPL.format(status=ST_FOUND, name=v.name, site=got.site))
+        else:
+            x.cache[sl] = EnrichRecord(name=v.name, status=ST_NOSITE, fetched=now_iso())
+            say(PRINT_FIND_ROW_TPL.format(status=ST_NOSITE, name=v.name, site=""))
+        if done % FIND_FLUSH_N == 0:
+            write_enrich_cache(x.cache)
+        time.sleep(FIND_SLEEP_S)
+    return found
 
 
 def pick_todo(x: PickTodoIn) -> list[tuple[str, SiteLead]]:
@@ -679,6 +729,14 @@ def enrich_company_websites() -> None:
                 fail += 1
             cache[sl] = rec
             time.sleep(FETCH_SLEEP_S)
+    total_ok = write_enrich_cache(cache)
+    say(PRINT_ENRICH_DONE_TPL.format(ok=ok, fail=fail, total=total_ok, n=len(cache),
+                                     out=OUT_ENRICH_CACHE.name))
+
+
+def write_enrich_cache(cache: dict[str, EnrichRecord]) -> int:
+    """缓存落盘 OUT_ENRICH_CACHE,返回累计 ok 家数(enrich 与 sites 两步共用的尾巴,
+    2026-09-04 随 sites 步抽出 —— 行为复制不许)。"""
     OUT_ENRICH_CACHE.parent.mkdir(parents=True, exist_ok=True)
     out: dict[str, dict] = {}
     total_ok = 0
@@ -687,8 +745,7 @@ def enrich_company_websites() -> None:
         if rec.status == ST_OK:
             total_ok += 1
     paths.write_json(paths.WriteJsonIn(path=OUT_ENRICH_CACHE, payload=out, indent=2))
-    say(PRINT_ENRICH_DONE_TPL.format(ok=ok, fail=fail, total=total_ok, n=len(cache),
-                                     out=OUT_ENRICH_CACHE.name))
+    return total_ok
 
 
 # =========================================================================
@@ -895,3 +952,561 @@ def save_company_facts(x: SaveFactsIn) -> None:
 def to_industry_cell(value: str) -> dict:
     """by_slug 的一格。"""
     return {"industry": value}
+
+
+# =========================================================================
+# 7. Places 查询(2026-09-04:Google Places API (New) 文本搜索补官网/地址/业务类型;
+#    手动件 main --only places,限量;raw 原响应一司一份,processed 一表)
+# =========================================================================
+
+
+def lookup_company_places() -> None:
+    """Places 步入口:在招担保雇主按在招数排队,限量查 Google Places,增量落 OUT_PLACES。
+
+    没密钥直接退(手动件缺配置不是代码病);单家失败只记 status 不炸整轮。
+    """
+    key = os.environ.get(ENV_PLACES_KEY, "")
+    if key == "":
+        say(NOTE_NO_KEY)
+        return
+    say(PRINT_PLACES_IN_TPL.format(companies=IN_PLACES_COMPANIES, jobs=IN_PLACES_JOBS))
+    cache = read_places_cache()
+    companies: list[PlaceCompany] = []
+    for d in json.loads(IN_PLACES_COMPANIES.read_text(encoding=TEXT_ENCODING)):
+        companies.append(PlaceCompany.model_validate(d))
+    cands = places_candidates(PlacesCandsIn(companies=companies, open_by_slug=open_jobs_by_slug()))
+    used = month_usage_of(cache)
+    pro_budget = max(0, PLACES_MONTH_FREE_PRO - PLACES_MONTH_RESERVE - used.pro)
+    ent_budget = max(0, PLACES_MONTH_FREE_ENT - PLACES_MONTH_RESERVE - used.ent)
+    say(PRINT_PLACES_BUDGET_TPL.format(pro_used=used.pro, pro_free=PLACES_MONTH_FREE_PRO, ent_used=used.ent,
+                                       ent_free=PLACES_MONTH_FREE_ENT, pro=pro_budget, ent=ent_budget))
+    todo = pick_places_todo(PickPlacesIn(cache=cache, cands=cands, limit=PLACES_LIMIT,
+                                         pro_budget=pro_budget, ent_budget=ent_budget))
+    say(PRINT_PLACES_TARGETS_TPL.format(cands=len(cands), cached=len(cache), todo=len(todo), limit=PLACES_LIMIT))
+    hit = miss = fail = 0
+    with make_client(timeout=PLACES_TIMEOUT_S) as client:
+        for t in todo:
+            rec = places_search(PlacesSearchIn(client=cast(HttpClientLike, client), key=key, target=t,
+                                               tier=tier_of(t)))
+            cache[t.slug] = rec
+            if rec.status == ST_HIT:
+                hit += 1
+            elif rec.status == ST_MISS:
+                miss += 1
+            else:
+                fail += 1
+            say(PRINT_PLACES_ROW_TPL.format(status=rec.status, tier=rec.tier, name=t.name, site=rec.website,
+                                            address=rec.address, ptype=rec.primary_type))
+            if (hit + miss + fail) % FIND_FLUSH_N == 0:
+                write_places_cache(cache)
+            time.sleep(PLACES_SLEEP_S)
+    write_places_cache(cache)
+    say(PRINT_PLACES_DONE_TPL.format(hit=hit, miss=miss, fail=fail, out=OUT_PLACES.name))
+
+
+def write_places_cache(cache: dict[str, PlaceRecord]) -> None:
+    """缓存落盘 OUT_PLACES(整轮几千家,每 FIND_FLUSH_N 家落一次,中途被杀不丢)。"""
+    OUT_PLACES.parent.mkdir(parents=True, exist_ok=True)
+    out: dict[str, dict] = {}
+    for sl, rec in cache.items():
+        out[sl] = rec.model_dump()
+    paths.write_json(paths.WriteJsonIn(path=OUT_PLACES, payload=out, indent=2))
+
+
+def month_usage_of(cache: dict[str, PlaceRecord]) -> MonthUsage:
+    """当月两档已发出的请求数(按记录 fetched 的年-月计;fail 也计 —— Google 照样收费)。"""
+    month = now_iso()[:MONTH_LEN]
+    used = MonthUsage(pro=0, ent=0)
+    for rec in cache.values():
+        if rec.fetched[:MONTH_LEN] != month:
+            continue
+        if rec.tier == TIER_ENT:
+            used.ent += 1
+        elif rec.tier == TIER_PRO:
+            used.pro += 1
+    return used
+
+
+def tier_of(t: PlaceTarget) -> str:
+    """有官网的走 Pro(补地址/类型),缺官网的走 Enterprise(要 websiteUri)。"""
+    if t.website == "":
+        return TIER_ENT
+    return TIER_PRO
+
+
+def lookup_sponsor_websites() -> None:
+    """sites 步入口:在招担保雇主里缺官网的,走第 5 段 D2 阶梯(JD 线索 → DDG)找官网,
+    命中记 found 进 OUT_ENRICH_CACHE,下一轮 build 合并进 companies.website。
+
+    2026-09-04 Frank「走 DuckDuckGo 跑起来」:免费替代 Places Enterprise 档;母集限把脉页
+    雇主表那批,不是全量预抓。
+    """
+    cache: dict[str, EnrichRecord] = {}
+    if OUT_ENRICH_CACHE.exists():
+        for sl, d in json.loads(OUT_ENRICH_CACHE.read_text(encoding=TEXT_ENCODING)).items():
+            cache[sl] = EnrichRecord.model_validate(d)
+    companies: list[PlaceCompany] = []
+    for d in json.loads(IN_PLACES_COMPANIES.read_text(encoding=TEXT_ENCODING)):
+        companies.append(PlaceCompany.model_validate(d))
+    cands = places_candidates(PlacesCandsIn(companies=companies, open_by_slug=open_jobs_by_slug()))
+    nosite = sponsor_nosite_of(cands)
+    say(PRINT_SITES_TARGETS_TPL.format(cands=len(cands), nosite=len(nosite), cache=len(cache), limit=SITES_LIMIT))
+    targets: dict[str, SiteLead] = {}
+    found_jd, found_search = find_websites(FindWebsitesIn(cache=cache, targets=targets,
+                                                          nosite=nosite, find_limit=SITES_LIMIT))
+    total_ok = write_enrich_cache(cache)
+    say(PRINT_SITES_DONE_TPL.format(jd=found_jd, search=found_search, total=total_ok, n=len(cache),
+                                    out=OUT_ENRICH_CACHE.name))
+
+
+def sponsor_nosite_of(cands: list[PlaceTarget]) -> dict[str, NositeLead]:
+    """候选里缺官网的 → find_websites 要的 nosite 表(在招数当岗数 = 搜索优先级)。"""
+    nosite: dict[str, NositeLead] = {}
+    for t in cands:
+        if t.website == "":
+            nosite[t.slug] = NositeLead(name=t.name, province=t.region, jobs=t.open_jobs)
+    return nosite
+
+
+def read_places_cache() -> dict[str, PlaceRecord]:
+    """读上轮产出(缺文件 = 空表)。"""
+    cache: dict[str, PlaceRecord] = {}
+    if OUT_PLACES.exists():
+        for sl, d in json.loads(OUT_PLACES.read_text(encoding=TEXT_ENCODING)).items():
+            cache[sl] = PlaceRecord.model_validate(d)
+    return cache
+
+
+def open_jobs_by_slug() -> Counter:
+    """jobs.json → slug → 在招岗数(只数 status=open)。"""
+    counts: Counter = Counter()
+    for j in json.loads(IN_PLACES_JOBS.read_text(encoding=TEXT_ENCODING)):
+        job = MartJob.model_validate(j)
+        if job.status == STATUS_OPEN and job.company_slug:
+            counts[job.company_slug] += 1
+    return counts
+
+
+def places_candidates(x: PlacesCandsIn) -> list[PlaceTarget]:
+    """在招且近四季有 LMIA 的公司 = 把脉页雇主表的母集;按在招数、LMIA 数降序。"""
+    out: list[PlaceTarget] = []
+    for c in x.companies:
+        open_n = x.open_by_slug.get(c.slug, 0)
+        if open_n <= 0 or c.lmia_4q <= 0:
+            continue
+        out.append(PlaceTarget(slug=c.slug, name=c.name, region=c.region, website=c.website,
+                               open_jobs=open_n, lmia_4q=c.lmia_4q))
+    out.sort(key=places_priority_of)
+    return out
+
+
+def places_priority_of(t: PlaceTarget) -> tuple:
+    """候选排序键:在招多的先查,再看 LMIA 量,最后 slug 稳序。"""
+    return (-t.open_jobs, -t.lmia_4q, t.slug)
+
+
+def pick_places_todo(x: PickPlacesIn) -> list[PlaceTarget]:
+    """按序挑本轮要查的公司:跳过命中未过期与冷却中的;两档各自吃到当月免费额即止,总闸 limit。"""
+    todo: list[PlaceTarget] = []
+    pro = x.pro_budget
+    ent = x.ent_budget
+    for t in x.cands:
+        if len(todo) >= x.limit:
+            break
+        if should_skip_places(SkipPlacesIn(cache=x.cache, slug=t.slug)):
+            continue
+        if tier_of(t) == TIER_ENT:
+            if ent <= 0:
+                continue
+            ent -= 1
+        else:
+            if pro <= 0:
+                continue
+            pro -= 1
+        todo.append(t)
+    return todo
+
+
+def should_skip_places(x: SkipPlacesIn) -> bool:
+    """命中记录在 PLACES_REFRESH_DAYS 内不重查;查无/失败冷却 RETRY_FAILED_DAYS。"""
+    c = x.cache.get(x.slug)
+    if c is None:
+        return False
+    if c.status == ST_HIT:
+        return days_since(c.fetched) <= PLACES_REFRESH_DAYS
+    return days_since(c.fetched) <= RETRY_FAILED_DAYS
+
+
+def places_query_of(t: PlaceTarget) -> str:
+    """搜索词 = 公司名 + 地域 + Canada(地域缺格时折掉多余空格)。"""
+    return WS_FOLD_RE.sub(TEXT_JOIN_SEP, PLACES_QUERY_TPL.format(name=t.name, region=t.region)).strip()
+
+
+def places_search(x: PlacesSearchIn) -> PlaceRecord:
+    """查一家:crawl 层有这条查询的原响应就直接用(不打 API 不计费);没有才 POST,
+    原响应经 put_cached_page 进 crawl/companies/,再由第一条候选成记录。
+
+    网络/解析异常记 fail 不抛;非 2xx 不落缓存(错误体不是原文)只记 fail。
+    """
+    query = places_query_of(x.target)
+    cache_url = PLACES_CACHE_URL_TPL.format(url=PLACES_URL, query=query)
+    cached = get_cached_page(cache_url).html
+    if cached is not None:
+        env = PlacesEnvelope.model_validate(json.loads(cached))
+        return to_place_record(ToPlaceIn(target=x.target, query=query, hits=env.places, tier=x.tier))
+    body = {P_TEXT_QUERY: query, P_REGION_CODE: PLACES_REGION,
+            P_LANGUAGE_CODE: PLACES_LANG, P_PAGE_SIZE_PLACES: PLACES_PAGE_SIZE}
+    headers = {HDR_API_KEY: x.key, HDR_FIELD_MASK: mask_of(x.tier)}
+    try:
+        r = x.client.post(PLACES_URL, json=body, headers=headers)
+        raw = r.json()
+    except Exception as e:  # noqa: BLE001
+        return PlaceRecord(name=x.target.name, query=query, status=ST_FAIL, tier=x.tier,
+                           note=type(e).__name__, fetched=now_iso())
+    if not r.is_success:
+        return PlaceRecord(name=x.target.name, query=query, status=ST_FAIL, tier=x.tier,
+                           note=NOTE_HTTP_TPL.format(status=r.status_code), fetched=now_iso())
+    put_cached_page(CachePutIn(slug=CRAWL_SLUG_COMPANIES, url=cache_url, title=x.target.name,
+                               html=json.dumps(raw, ensure_ascii=False, indent=JSON_INDENT)))
+    env = PlacesEnvelope.model_validate(raw)
+    return to_place_record(ToPlaceIn(target=x.target, query=query, hits=env.places, tier=x.tier))
+
+
+def mask_of(tier: str) -> str:
+    """档位 → 字段掩码。"""
+    if tier == TIER_ENT:
+        return PLACES_MASK_ENT
+    return PLACES_MASK_PRO
+
+
+def to_place_record(x: ToPlaceIn) -> PlaceRecord:
+    """候选表 → 记录:零候选或第一条不在加拿大记 miss;否则采信第一条,格照抄,市/省从地址分量认。"""
+    rec = PlaceRecord(name=x.target.name, query=x.query, fetched=now_iso(), tier=x.tier)
+    if len(x.hits) == 0:
+        rec.status = ST_MISS
+        return rec
+    h = x.hits[0]
+    for comp in h.address_components:
+        if K_COUNTRY in comp.types and comp.short_text != COUNTRY_CA:
+            rec.status = ST_MISS
+            rec.note = NOTE_OUTSIDE_CA
+            rec.place_name = h.display_name.text
+            rec.address = h.formatted_address
+            return rec
+    rec.status = ST_HIT
+    rec.place_id = h.id
+    rec.place_name = h.display_name.text
+    rec.address = h.formatted_address
+    rec.short_address = h.short_formatted_address
+    rec.website = h.website_uri
+    rec.primary_type = h.primary_type
+    rec.primary_type_label = h.primary_type_display_name.text
+    rec.types = h.types
+    rec.business_status = h.business_status
+    rec.lat = h.location.latitude
+    rec.lng = h.location.longitude
+    rec.maps_url = h.google_maps_uri
+    rec.phone = h.national_phone_number
+    rec.phone_intl = h.international_phone_number
+    rec.rating = h.rating
+    rec.rating_count = h.user_rating_count
+    for comp in h.address_components:
+        if K_LOCALITY in comp.types:
+            rec.city = comp.long_text
+        if K_PROVINCE in comp.types:
+            rec.province = comp.short_text
+    return rec
+
+
+# =========================================================================
+# 8. 官网正文(2026-09-05:首页 + About 页 → crawl 层原文 → 剥标签裁长;手动件 main --only about)
+# =========================================================================
+
+
+def crawl_company_about() -> None:
+    """about 步入口:有官网的在招担保雇主,抓首页找 About 页,两页正文合成一份落 OUT_ABOUT。
+
+    原文一律经 crawl 层读写门(有缓存不重抓);单家失败只记 status 不炸整轮。
+    """
+    cache = read_about_cache()
+    targets = about_targets()
+    todo = pick_about_todo(PickAboutIn(cache=cache, targets=targets, limit=ABOUT_LIMIT))
+    say(PRINT_ABOUT_TARGETS_TPL.format(targets=len(targets), cache=len(cache), todo=len(todo), limit=ABOUT_LIMIT))
+    ok = fail = 0
+    with make_polite_client(timeout=ABOUT_TIMEOUT_S) as client:
+        for t in todo:
+            rec = fetch_about(AboutFetchIn(client=cast(HttpClientLike, client), target=t))
+            cache[t.slug] = rec
+            if rec.status == ST_OK:
+                ok += 1
+            else:
+                fail += 1
+            say(PRINT_ABOUT_ROW_TPL.format(status=rec.status, name=t.name, about=rec.about_url or rec.note,
+                                           chars=len(rec.text)))
+            time.sleep(ABOUT_SLEEP_S)
+    out: dict[str, dict] = {}
+    total = 0
+    for sl, rec in cache.items():
+        out[sl] = rec.model_dump()
+        if rec.status == ST_OK:
+            total += 1
+    OUT_ABOUT.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_ABOUT, payload=out, indent=1))
+    say(PRINT_ABOUT_DONE_TPL.format(ok=ok, fail=fail, total=total, n=len(cache), out=OUT_ABOUT.name))
+
+
+def read_about_cache() -> dict[str, AboutRecord]:
+    """读上轮产出(缺文件 = 空表)。"""
+    cache: dict[str, AboutRecord] = {}
+    if OUT_ABOUT.exists():
+        for sl, d in json.loads(OUT_ABOUT.read_text(encoding=TEXT_ENCODING)).items():
+            cache[sl] = AboutRecord.model_validate(d)
+    return cache
+
+
+def about_targets() -> list[AboutTarget]:
+    """在招担保雇主里有官网的(库里的,或 sites 步刚找到还没合并的),保持候选序。"""
+    enrich: dict[str, EnrichRecord] = {}
+    if IN_ABOUT_ENRICH.exists():
+        for sl, d in json.loads(IN_ABOUT_ENRICH.read_text(encoding=TEXT_ENCODING)).items():
+            enrich[sl] = EnrichRecord.model_validate(d)
+    companies: list[PlaceCompany] = []
+    for d in json.loads(IN_PLACES_COMPANIES.read_text(encoding=TEXT_ENCODING)):
+        companies.append(PlaceCompany.model_validate(d))
+    cands = places_candidates(PlacesCandsIn(companies=companies, open_by_slug=open_jobs_by_slug()))
+    out: list[AboutTarget] = []
+    for t in cands:
+        site = t.website
+        if site == "" and t.slug in enrich:
+            site = enrich[t.slug].website
+        if site != "":
+            out.append(AboutTarget(slug=t.slug, name=t.name, website=site))
+    return out
+
+
+def pick_about_todo(x: PickAboutIn) -> list[AboutTarget]:
+    """按序挑本轮要抓的:ok 未过期与失败冷却中的跳过,凑够 limit 即止。"""
+    todo: list[AboutTarget] = []
+    for t in x.targets:
+        if len(todo) >= x.limit:
+            break
+        c = x.cache.get(t.slug)
+        if c is not None:
+            if c.status == ST_OK and days_since(c.fetched) <= ABOUT_REFRESH_DAYS:
+                continue
+            if c.status == ST_FAIL and days_since(c.fetched) <= RETRY_FAILED_DAYS:
+                continue
+        todo.append(t)
+    return todo
+
+
+def fetch_about(x: AboutFetchIn) -> AboutRecord:
+    """抓一家:首页 → 找 About 链接 → About 页;两页正文合一(短于 ABOUT_TEXT_MIN 记 fail)。"""
+    rec = AboutRecord(name=x.target.name, website=x.target.website, fetched=now_iso())
+    home = fetch_site_page(PageIn(client=x.client, url=x.target.website, title=x.target.name))
+    if home.html == "":
+        rec.status = ST_FAIL
+        rec.note = home.note
+        return rec
+    text = page_text_of(PageTextIn(html=home.html, limit=HOME_TEXT_MAX))
+    about_url = about_link_of(AboutLinkIn(html=home.html, base=x.target.website))
+    if about_url != "" and about_url != x.target.website:
+        about = fetch_site_page(PageIn(client=x.client, url=about_url, title=x.target.name))
+        if about.html != "":
+            rec.about_url = about_url
+            text = text + PAGE_SEP + page_text_of(PageTextIn(html=about.html, limit=ABOUT_TEXT_MAX))
+    if len(text.strip()) < ABOUT_TEXT_MIN:
+        rec.status = ST_FAIL
+        rec.note = NOTE_NO_TEXT
+        return rec
+    rec.text = text.strip()
+    rec.status = ST_OK
+    return rec
+
+
+def fetch_site_page(x: PageIn) -> PageOut:
+    """一页官网:crawl 层有原文直接用;没有才 GET,过人机验证判词后落 crawl 层。"""
+    hit = get_cached_page(x.url)
+    if hit.html is not None:
+        return PageOut(html=hit.html, note="")
+    try:
+        r = x.client.get(x.url)
+    except Exception as e:  # noqa: BLE001
+        return PageOut(html="", note=type(e).__name__)
+    if not r.is_success or r.text == "":
+        return PageOut(html="", note=NOTE_HTTP_TPL.format(status=r.status_code))
+    if is_challenge_html(r.text):
+        return PageOut(html="", note=NOTE_CHALLENGE)
+    put_cached_page(CachePutIn(slug=CRAWL_SLUG_COMPANIES, url=x.url, html=r.text, title=x.title))
+    return PageOut(html=r.text, note="")
+
+
+def about_link_of(x: AboutLinkIn) -> str:
+    """首页里同站、路径末段整段命中 ABOUT_RE 的链接(剥 query/hash),多条取最短;没有回空串。"""
+    soup = cast(TagLike, BeautifulSoup(x.html, HTML_PARSER))
+    host = urlparse(x.base).netloc
+    best = ""
+    for a in soup.find_all(LINK_TAG, href=True):
+        full = urljoin(x.base, str(a[HREF_ATTR]))
+        parsed = urlparse(full)
+        if parsed.netloc != host or not ABOUT_RE.search(last_segment_of(parsed.path)):
+            continue
+        clean = parsed.scheme + PORT_SEP + PATH_SEP + PATH_SEP + parsed.netloc + parsed.path
+        if best == "" or len(clean) < len(best):
+            best = clean
+    return best
+
+
+def last_segment_of(path: str) -> str:
+    """URL 路径的末段(剥尾斜杠;根路径回空串)。"""
+    return path.rstrip(PATH_SEP).split(PATH_SEP)[-1]
+
+
+def page_text_of(x: PageTextIn) -> str:
+    """页面原文 → 正文:摘掉导航/脚本/页脚,取文本折空白,裁到 limit。"""
+    soup = cast(TagLike, BeautifulSoup(x.html, HTML_PARSER))
+    for name in STRIP_TAGS:
+        for node in soup.find_all(name):
+            node.decompose()
+    text = WS_FOLD_RE.sub(TEXT_JOIN_SEP, soup.get_text(TEXT_JOIN_SEP)).strip()
+    return text[:x.limit]
+
+
+# =========================================================================
+# 9. 五节简介(2026-09-05:官网正文 → 本地 qwen 五节英文 + 中文;手动件 main --only brief)
+# =========================================================================
+
+
+def build_company_briefs() -> None:
+    """brief 步入口:有正文的公司逐家过 qwen,五节英文 + 中文落 OUT_BRIEF。
+
+    没盒子地址直接退;单家失败只记 status 不炸整轮。
+    """
+    cfg = company_llm_config()
+    if cfg.base == "":
+        say(NOTE_NO_LLM)
+        return
+    cache = read_brief_cache()
+    about = read_about_cache()
+    todo = pick_brief_todo(PickBriefIn(cache=cache, about=about, limit=BRIEF_LIMIT))
+    say(PRINT_BRIEF_TARGETS_TPL.format(about=len(about), cache=len(cache), todo=len(todo),
+                                       limit=BRIEF_LIMIT, model=cfg.model))
+    ok = fail = 0
+    with make_client(timeout=LLM_TIMEOUT_S) as client:
+        for sl, a in todo:
+            rec = brief_one(BriefOneIn(client=cast(HttpClientLike, client), cfg=cfg, about=a))
+            cache[sl] = rec
+            if rec.status == ST_OK:
+                ok += 1
+            else:
+                fail += 1
+            say(PRINT_BRIEF_ROW_TPL.format(status=rec.status, name=a.name, what=what_line_of(rec)))
+            if (ok + fail) % FIND_FLUSH_N == 0:
+                write_brief_cache(cache)
+    total = write_brief_cache(cache)
+    say(PRINT_BRIEF_DONE_TPL.format(ok=ok, fail=fail, total=total, n=len(cache), out=OUT_BRIEF.name))
+
+
+def write_brief_cache(cache: dict[str, BriefRecord]) -> int:
+    """缓存落盘 OUT_BRIEF,返回累计 ok 家数(整轮十几小时,每 FIND_FLUSH_N 家落一次,中途被杀不丢)。"""
+    out: dict[str, dict] = {}
+    total = 0
+    for sl, rec in cache.items():
+        out[sl] = rec.model_dump()
+        if rec.status == ST_OK:
+            total += 1
+    paths.write_json(paths.WriteJsonIn(path=OUT_BRIEF, payload=out, indent=1))
+    return total
+
+
+def company_llm_config() -> LlmCfg:
+    """读环境定盒子地址与模型名。"""
+    return LlmCfg(base=os.environ.get(ENV_LLM_BASE, "").strip().rstrip(URL_TAIL_SLASH),
+                  model=os.environ.get(ENV_LLM_MODEL, LLM_MODEL_DEFAULT))
+
+
+def read_brief_cache() -> dict[str, BriefRecord]:
+    """读上轮产出(缺文件 = 空表)。"""
+    cache: dict[str, BriefRecord] = {}
+    if OUT_BRIEF.exists():
+        for sl, d in json.loads(OUT_BRIEF.read_text(encoding=TEXT_ENCODING)).items():
+            cache[sl] = BriefRecord.model_validate(d)
+    return cache
+
+
+def pick_brief_todo(x: PickBriefIn) -> list[tuple[str, AboutRecord]]:
+    """有正文且还没做成 ok 的(失败冷却 RETRY_FAILED_DAYS),按 about 表序,凑够 limit 即止。"""
+    todo: list[tuple[str, AboutRecord]] = []
+    for sl, a in x.about.items():
+        if len(todo) >= x.limit:
+            break
+        if a.status != ST_OK:
+            continue
+        c = x.cache.get(sl)
+        if c is not None:
+            if c.status == ST_OK:
+                continue
+            if days_since(c.fetched) <= RETRY_FAILED_DAYS:
+                continue
+        todo.append((sl, a))
+    return todo
+
+
+def brief_one(x: BriefOneIn) -> BriefRecord:
+    """一家:英文五节(缺标记/NOT_FOUND 记 fail)→ 中文五节(缺标记只空中文,英文照收)。"""
+    rec = BriefRecord(name=x.about.name, model=x.cfg.model, fetched=now_iso(), sources=[x.about.website])
+    if x.about.about_url != "":
+        rec.sources.append(x.about.about_url)
+    try:
+        en = call_company_llm(LlmCallIn(client=x.client, cfg=x.cfg, tokens=BRIEF_TOKENS,
+                                        prompt=BRIEF_PROMPT_TPL.format(name=x.about.name, text=x.about.text)))
+        en = MARK_COLON_RE.sub(MARK_SPACE, en)
+        if en.startswith(NOT_FOUND) or not has_brief_marks(en):
+            rec.status = ST_FAIL
+            rec.note = NOTE_MARKERS
+            return rec
+        rec.brief = en
+        zh = call_company_llm(LlmCallIn(client=x.client, cfg=x.cfg, tokens=BRIEF_ZH_TOKENS,
+                                        prompt=BRIEF_ZH_PROMPT_TPL.format(text=en)))
+    except Exception as e:  # noqa: BLE001
+        rec.status = ST_FAIL
+        rec.note = type(e).__name__
+        return rec
+    zh = MARK_COLON_RE.sub(MARK_SPACE, zh)
+    if has_brief_marks(zh):
+        rec.brief_zh = zh
+    else:
+        rec.note = NOTE_ZH_MARKERS
+    rec.status = ST_OK
+    return rec
+
+
+def call_company_llm(x: LlmCallIn) -> str:
+    """单轮生成:Ollama /api/generate,think 关,剥 think 块双保险。"""
+    r = x.client.post(x.cfg.base + PATH_OLLAMA_GENERATE,
+                      json={P_MODEL: x.cfg.model, P_PROMPT: x.prompt, P_STREAM: False, P_THINK: False,
+                            P_OPTIONS: {P_NUM_PREDICT: x.tokens, P_TEMPERATURE: LLM_TEMPERATURE}})
+    if not r.is_success:
+        raise RuntimeError(NOTE_HTTP_TPL.format(status=r.status_code))
+    body = r.json()
+    if not isinstance(body, dict):
+        return ""
+    return THINK_RE.sub("", str(body.get(P_RESPONSE, ""))).strip()
+
+
+def has_brief_marks(text: str) -> bool:
+    """五个节标记是否都在行首出现。"""
+    for m in BRIEF_MARKS:
+        if not text.startswith(m) and (NEWLINE + m) not in text:
+            return False
+    return True
+
+
+def what_line_of(rec: BriefRecord) -> str:
+    """[WHAT] 那一行(报数用;fail 时回 note)。"""
+    if rec.status != ST_OK:
+        return rec.note
+    for line in rec.brief.splitlines():
+        if line.startswith(BRIEF_MARKS[0]):
+            return line
+    return ""

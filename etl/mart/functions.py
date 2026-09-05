@@ -92,6 +92,8 @@ from mart.constants import (
     K_SOURCE_LABEL, K_STAGE, K_STATUS, K_STREAM, K_STREAMS, K_STREAM_KEY, K_STUDY_FLOW, K_SUMMARY,
     K_TABLES, K_TEER, K_THROUGH_MONTH, K_TITLE, K_TR_SERIES, K_TYPE, K_UNIT, K_URL, K_VALUE,
     K_WAGE_HIGH_ANNUAL, K_WAGE_LOW_ANNUAL, K_WAGE_MED_ANNUAL, K_WEBSITE, K_WEBSITE_SOURCE, K_WEEKS,
+    BRIEF_OK, FOUND_PLACES, IN_BRIEF, IN_PLACES, K_AI_BRIEF, K_AI_BRIEF_ZH, K_AI_FETCHED, K_AI_SOURCES, K_BRIEF,
+    K_BRIEF_ZH, K_SOURCES, PLACES_HIT,
     K_WIKI, K_YEAR, K_ZH, LANG_ABILITIES, LANG_PER_ABILITY, LANG_POINTS_PER_ABILITY,
     LANG_POINTS_TOTAL, LANG_POINTS_WORD, LANG_TOTAL_WORD, LMIA_HEADER_WORD, LMIA_HIT_TPL,
     LMIA_MIN_COLS, LMIA_SOURCE_NOTE, LMIA_STREAM_SEP, LMIA_STREAM_TOP, LMIA_STREAM_TPL,
@@ -917,6 +919,28 @@ def load_enrich() -> dict:
     return out
 
 
+def load_places() -> dict:
+    """Google Places 命中行:slug → 记录(官网/地址;缺文件 = 空表,历史轮次没这份也照常汇装)。"""
+    out: dict = {}
+    if not IN_PLACES.exists():
+        return out
+    for slug, c in read_table(IN_PLACES).items():
+        if c.get(K_STATUS) == PLACES_HIT:
+            out[slug] = c
+    return out
+
+
+def load_briefs() -> dict:
+    """qwen 五节简介:slug → 记录(只取 ok;缺文件 = 空表)。"""
+    out: dict = {}
+    if not IN_BRIEF.exists():
+        return out
+    for slug, c in read_table(IN_BRIEF).items():
+        if c.get(K_STATUS) == BRIEF_OK:
+            out[slug] = c
+    return out
+
+
 def strip_wp_tail(s: str) -> str:
     """剥 WordPress 摘要尾巴「[…]/[...]」(源站自动截断标记,66/3492 家;Frank 2026-07-19 报障)。"""
     return WP_TAIL_RE.sub("", s)
@@ -937,7 +961,33 @@ def add_company(x: CompanyExtraIn) -> None:
                 x.extra[k] = strip_wp_tail(x.extra[k])
             if k == K_WEBSITE and en.get(K_FOUND):
                 x.extra[K_WEBSITE_SOURCE] = en[K_FOUND]
+    fill_places(x)
+    fill_brief(x)
     x.ctx.companies[x.slug] = to_company_row(CompanyRowIn(name=x.name, slug=x.slug, extra=x.extra))
+
+
+def fill_places(x: CompanyExtraIn) -> None:
+    """Places 命中行只填空:官网(记来路 places)与地址;来源侧与富化已有的不覆盖。"""
+    pl = x.ctx.places.get(x.slug)
+    if pl is None:
+        return
+    if not x.extra.get(K_WEBSITE) and pl.get(K_WEBSITE):
+        x.extra[K_WEBSITE] = pl[K_WEBSITE]
+        x.extra[K_WEBSITE_SOURCE] = FOUND_PLACES
+    if not x.extra.get(K_ADDRESS) and pl.get(K_ADDRESS):
+        x.extra[K_ADDRESS] = pl[K_ADDRESS]
+
+
+def fill_brief(x: CompanyExtraIn) -> None:
+    """qwen 五节简介进 aiBrief 四列(有就给,库里懒检索版让位;中文缺格不落列)。"""
+    br = x.ctx.briefs.get(x.slug)
+    if br is None or not br.get(K_BRIEF):
+        return
+    x.extra[K_AI_BRIEF] = br[K_BRIEF]
+    if br.get(K_BRIEF_ZH):
+        x.extra[K_AI_BRIEF_ZH] = br[K_BRIEF_ZH]
+    x.extra[K_AI_SOURCES] = json.dumps(br.get(K_SOURCES, []), ensure_ascii=False)
+    x.extra[K_AI_FETCHED] = br.get(K_FETCHED)
 
 
 def nonempty_of(d: dict) -> dict:
@@ -3010,7 +3060,7 @@ def new_mart_ctx() -> MartCtx:
     if IN_WAGES.exists():
         wages = read_table(IN_WAGES)
     guards = SalaryGuards(absurd=0, ratio=0, cap=0, gig=0, hifold=0)
-    return MartCtx(scored=scored, wages=wages, enrich=load_enrich(),
+    return MartCtx(scored=scored, wages=wages, enrich=load_enrich(), places=load_places(), briefs=load_briefs(),
                    pilot_occ_sets=load_pilot_occ_sets(), expired=load_expired_ids(),
                    salary_guards=guards, companies={}, jobs=[], seen=set(),
                    seen_ext=set(), seen_ids=set(), dropped_expired=0, late_salary=0)

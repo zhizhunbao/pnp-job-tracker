@@ -522,6 +522,12 @@ class MartCtx:
     enrich: dict
     """slug → 公司官网富化(简介/行业/官网)。"""
 
+    places: dict
+    """slug → Google Places 命中行(官网/地址;2026-09-05)。"""
+
+    briefs: dict
+    """slug → qwen 五节简介行(英/中/出处;2026-09-05)。"""
+
     pilot_occ_sets: dict
     """社区名 → 在收 NOC 集合(RCIP/FCIP 并集)。"""
 

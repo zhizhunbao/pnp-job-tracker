@@ -23,11 +23,16 @@ RAW = DATA / "raw"
 RAW_ATS = RAW / "ats"
 """ATS 公司名录根(扁平:<slug>/ 直接挂;roster json 也在此)。"""
 
-RAW_COMPANIES = RAW_ATS
-"""公司名录/文件夹根的别名(= raw/ats;kanata 系写这)。"""
+RAW_KANATA = RAW_ATS
+"""Kanata 目录三件的根(= raw/ats;2026-09-05 由 RAW_COMPANIES 改名,名字让给真目录 raw/companies/)。"""
+
+RAW_COMPANIES = RAW / "companies"
+"""company 域从原文抽出的表(2026-09-05 Frank「都放到 companies 目录」):company_places.json
+(Places 抽出的字段)、company_about.json(官网正文);原文全在 crawl/companies/。"""
 
 RAW_JOBBANK = RAW / "jobbank"
 """Job Bank 原始 HTML 快照:<日期>/ · <日期>/details/。"""
+
 
 PNP = RAW / "pnp"
 """各省 PNP 维护表(aaip-ineligible/sk-*.json 等)。"""

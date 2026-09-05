@@ -738,6 +738,44 @@ ENRICH_KEYS = ("description", "sectors", "website")
 """富化只填这三格,且**只填空**:ATS 已自带 profile 的 description/sectors 优先,
 Job Bank 公司无 profile 全靠它。"""
 
+IN_PLACES = paths.RAW_COMPANIES / "company_places.json"
+"""Google Places 查得的官网/地址(company 域 places 步产,2026-09-05):只填空,来源侧已有的不覆盖;
+官网由此来的 websiteSource 记 places。"""
+
+PLACES_HIT = "hit"
+"""Places 记录状态:命中(只取命中行)。"""
+
+FOUND_PLACES = "places"
+"""官网发现路径:Google Places(与 jd/searched 并列,前端小字标注)。"""
+
+IN_BRIEF = paths.PROCESSED / "company_brief.json"
+"""官网正文 → qwen 五节简介(company 域 brief 步产,2026-09-05):进 companies 的 aiBrief 四列。
+mart 有就覆盖库里懒检索版(官网原文比网页搜索可靠);mart 没有的公司列缺键,seed 侧 COALESCE 保旧值。"""
+
+BRIEF_OK = "ok"
+"""简介记录状态:做成(只取 ok 行)。"""
+
+K_BRIEF = "brief"
+"""简介记录里的英文五节键。"""
+
+K_BRIEF_ZH = "brief_zh"
+"""简介记录里的中文五节键。"""
+
+K_SOURCES = "sources"
+"""简介记录里的出处 URL 表键。"""
+
+K_AI_BRIEF = "aiBrief"
+"""companies 列:AI 整理的五节简介。"""
+
+K_AI_BRIEF_ZH = "aiBriefZh"
+"""companies 列:简介中文。"""
+
+K_AI_SOURCES = "aiSources"
+"""companies 列:出处 URL 列表(JSON 数组串)。"""
+
+K_AI_FETCHED = "aiFetched"
+"""companies 列:简介产出时刻。"""
+
 WP_TAIL_RE = re.compile(r"\s*\[(?:\.\.\.|…)\]\s*$")
 """WordPress 摘要尾巴「[…]/[...]」(源站自动截断标记,66/3492 家;Frank 2026-07-19 报障)。"""
 

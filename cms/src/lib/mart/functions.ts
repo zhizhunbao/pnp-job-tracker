@@ -749,7 +749,8 @@ function toStat(r: MartRow): MartRow {
 }
 
 /**
- * companies 行(name 缺席回落 slug;E12-08 两档列缺键由 UPSERT 侧 COALESCE 保旧值)。
+ * companies 行(name 缺席回落 slug;E12-08 两档列与 aiBrief 四列缺键由 UPSERT 侧 COALESCE 保旧值 ——
+ * 2026-09-05 起简介优先来自 mart 的官网正文版,mart 没做到的公司保留库里懒检索版)。
  *
  * @param x mart 行与本轮时间戳。
  * @returns 库行(含时间戳)。
@@ -768,6 +769,8 @@ export function toCompany(x: ToCompanyIn): MartRow {
     lmia_positions_4q: cellOf(x.r.lmiaPositions4q), lmia_positions_2q: cellOf(x.r.lmiaPositions2q),
     lmia_positions_1q: cellOf(x.r.lmiaPositions1q), lmia_nocs: cellOf(x.r.lmiaNocs),
     sponsor_grade: cellOf(x.r.sponsorGrade), score_detail: jsonTextOf(x.r.scoreDetail),
+    ai_brief: cellOf(x.r.aiBrief), ai_brief_zh: cellOf(x.r.aiBriefZh), ai_sources: cellOf(x.r.aiSources),
+    ai_fetched: cellOf(x.r.aiFetched),
     created_at: x.now, updated_at: x.now,
   }
 }
