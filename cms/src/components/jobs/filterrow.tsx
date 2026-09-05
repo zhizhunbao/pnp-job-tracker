@@ -69,11 +69,11 @@ export function FilterRow({ b, boxRef }: BoardBoxIn) {
           {b.t('clear')}
         </Button>
       )}
+      <Updated iso={b.data.updatedAt} t={b.t} />
+      <ColFields b={b} boxRef={boxRef} />
       <BoardCounts count={subTextOf({ t: b.t, anyFilter: f.anyFilter, matchView: b.matchView, total: b.data.total })}
         named={namedTextOf({ t: b.t, named: b.proof.named })}
         lmia={lmiaTextOf({ t: b.t, lmia: b.proof.lmia })} />
-      <Updated iso={b.data.updatedAt} t={b.t} />
-      <ColFields b={b} boxRef={boxRef} />
     </div>
   )
 }
