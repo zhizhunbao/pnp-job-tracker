@@ -1522,6 +1522,7 @@ export function toSponsorRow(input: ToSponsorRowIn): SponsorEmployerRow {
     lmiaLastQuarter: text(r.lmia_last_quarter),
     lmia4q: count(r.lmia_positions_4q), lmia2q: count(r.lmia_positions_2q), lmia1q: count(r.lmia_positions_1q),
     streams: toStrList(r.streams),
+    sector: text(r.sector),
     verdict: input.verdict,
   }
 }
@@ -1560,7 +1561,7 @@ export function toSlimSponsorRow(r: SponsorEmployerRow): SponsorEmployerRow {
     lmiaPositions: r.lmiaPositions, lmiaPositionsSkilled: r.lmiaPositionsSkilled,
     lmiaLastQuarter: r.lmiaLastQuarter,
     lmia4q: r.lmia4q, lmia2q: r.lmia2q, lmia1q: r.lmia1q,
-    streams: r.streams, verdict: r.verdict,
+    streams: r.streams, sector: r.sector, verdict: r.verdict,
   }
 }
 

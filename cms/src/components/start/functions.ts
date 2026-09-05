@@ -46,7 +46,8 @@ import {
   COL_ACT, COL_HIRING_OCC, COL_LMIA_2Q, COL_VERDICT,
   HIRING_OCC_MAX, ID_NOWP, ID_PGWP, KEY_ID_HEAD, KEY_VERDICT_FACTOR_HEAD, KEY_VERDICT_HEAD,
   PULSE_CEC, PULSE_CHECK, PULSE_OK, PULSE_RANK, PULSE_SHORT, TEER_PNP_MAX, URL_COMPANY_HEAD, VERDICT_MET,
-  VERDICT_PUBLIC, VERDICT_SHORT, MINI_BTN_KIND, W_EMP_ACT, CARD_PAGE_SIZE,
+  VERDICT_PUBLIC, VERDICT_SHORT, MINI_BTN_KIND, W_EMP_ACT, CARD_PAGE_SIZE, COL_SECTOR, KEY_SECTOR_HEAD,
+  KEY_VERDICT_NA, SECTOR_GOVERNMENT, SECTOR_PRIVATE, SECTOR_PUBLIC,
   COL_BIZ, PILOT_FCIP, PILOT_RCIP, KEY_PILOT_HEAD, PILOT_KEYS, PILOT_KEY_AIP, PILOT_KEY_RCIP, TABLE_PILOT,
   SPACE_SEP, ACRONYM_MAX, CORP_SUFFIXES, NON_LETTER_RE, BRIEF_TAG_RE, BRIEF_TAG_WHAT,
 } from './constants'
@@ -2974,6 +2975,7 @@ function toEmpCellRow(x: EmpCellRowIn): EmpCellRow {
     lmia4q: r.lmia4q,
     lmia4qText: countOrDashOf(r.lmia4q),
     verdictText: verdictTextOf({ v: r.verdict, t: x.t }),
+    sectorText: x.t(KEY_SECTOR_HEAD + sectorKeyOf(r.sector)),
     pulse,
     actJobsText: x.t('pulse.act.jobs'),
     actCompanyText: x.t('pulse.act.company'),
@@ -3081,12 +3083,28 @@ function countOrDashOf(n: number): string {
 }
 
 /**
+ * 雇主类别 → 文案键尾:government / public 原样,空 = 私营企业。
+ *
+ * @param sector 数据层的类别标注。
+ * @returns 文案键尾。
+ */
+function sectorKeyOf(sector: string): string {
+  if (sector === SECTOR_GOVERNMENT || sector === SECTOR_PUBLIC) {
+    return sector
+  }
+  return SECTOR_PRIVATE
+}
+
+/**
  * 雇主门槛判定 → 文案:达标 / 差{年限、雇员数} / 待核 / 公共部门(B4 判定,文案键与 employers 桶同一套)。
  *
  * @param x 判定与取词函数。
  * @returns 文案。
  */
 function verdictTextOf(x: VerdictTextIn): string {
+  if (x.v.state === VERDICT_PUBLIC) {
+    return x.t(KEY_VERDICT_NA)
+  }
   if (x.v.state === VERDICT_SHORT) {
     const items: string[] = []
     for (const factor of x.v.failed) {
@@ -3135,10 +3153,14 @@ export function empColsOf(x: EmpColsIn): StartCol<EmpCellRow>[] {
     key: COL_ACT, label: x.t('col.actions'), nowrap: true, width: W_EMP_ACT, render: EmpActCell,
   }
   const biz: StartCol<EmpCellRow> = { key: COL_BIZ, label: x.t('pulse.col.biz'), render: EmpBriefCell }
+  const sector: StartCol<EmpCellRow> = {
+    key: COL_SECTOR, label: x.t('pulse.col.sector'), nowrap: true, render: empSectorOf,
+  }
   if (x.kind === TABLE_PILOT) {
     return [
       name,
       biz,
+      sector,
       hiring,
       open,
       act,
@@ -3148,6 +3170,7 @@ export function empColsOf(x: EmpColsIn): StartCol<EmpCellRow>[] {
     return [
       name,
       biz,
+      sector,
       { key: COL_LMIA_2Q, label: x.t('se.col.w2'), nowrap: true, sort: empLmia2qSortOf, render: empLmia2qOf },
       hiring,
       open,
@@ -3157,6 +3180,7 @@ export function empColsOf(x: EmpColsIn): StartCol<EmpCellRow>[] {
   return [
     name,
     biz,
+    sector,
     { key: COL_VERDICT, label: x.t('se.col.verdict'), nowrap: true, render: empVerdictOf },
     hiring,
     open,
@@ -3222,6 +3246,16 @@ function empLmia2qSortOf(r: EmpCellRow): number {
  */
 function empLmia2qOf(r: EmpCellRow): string {
   return r.lmia2qText
+}
+
+/**
+ * 雇主类别格(哑:行上已算好文案)。
+ *
+ * @param r 一行。
+ * @returns 类别文案。
+ */
+function empSectorOf(r: EmpCellRow): string {
+  return r.sectorText
 }
 
 /**

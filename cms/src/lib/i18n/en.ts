@@ -946,7 +946,8 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'pulse.ind.health': 'Healthcare', 'pulse.ind.stem': 'STEM', 'pulse.ind.trades': 'Trades',
   'pulse.ind.food': 'Food & retail', 'pulse.ind.transport': 'Transport & logistics', 'pulse.ind.manufacturing': 'Manufacturing & resources',
   'pulse.ind.business': 'Business & office', 'pulse.ind.education': 'Education & social',
-  'pulse.col.biz': 'Main business', 'pulse.pilot.aip': 'AIP designated employers', 'pulse.pilot.rcip': 'RCIP designated employers', 'pulse.pilot.fcip': 'FCIP designated employers',   'pulse.id.nowp': 'No work permit', 'pulse.id.pgwp': 'Work permit',
+  'pulse.col.biz': 'Main business', 'pulse.col.sector': 'Employer type', 'pulse.sector.private': 'Private',
+  'pulse.sector.public': 'Public sector', 'pulse.sector.government': 'Government', 'se.verdict.na': 'N/A', 'pulse.pilot.aip': 'AIP designated employers', 'pulse.pilot.rcip': 'RCIP designated employers', 'pulse.pilot.fcip': 'FCIP designated employers',   'pulse.id.nowp': 'No work permit', 'pulse.id.pgwp': 'Work permit',
   'pulse.col.hiringOcc': 'Hiring for', 'pulse.nocMore': '{n} in total', 'pulse.act.jobs': 'Jobs', 'pulse.act.company': 'Company',
   // B4 employer PNP bar check (design/雇主省提名门槛判定-20260808.md): three states + public-sector bypass, a check against the bar, not an official certification
   'se.col.verdict': 'Employer bar', 'se.verdict.met': 'Meets bar', 'se.verdict.short': 'Short on {items}', 'se.verdict.unknown': 'Pending', 'se.verdict.public': 'Public sector',

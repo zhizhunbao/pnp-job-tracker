@@ -767,6 +767,42 @@ K_BRIEF_KO = "brief_ko"
 K_AI_BRIEF_KO = "aiBriefKo"
 """companies 列:简介韩文。"""
 
+SECTOR_GOVERNMENT = "government"
+"""雇主类别(companies.sector 列,键名 K_SECTOR 在第 14 段):政府机关(联邦/省/市镇政府、部委、军队警察税务、
+原住民政府)。2026-09-05 Frank「公共部门 政府部门 私营企业这些应该是雇主类别吧」—— 与雇主门槛判定拆成两个字段,
+按名字规则在这算,库里原 123 行手工值一并覆盖(那批一半是动物医院与民间社团,规则本身错)。空 = 私营企业。"""
+
+SECTOR_PUBLIC = "public"
+"""雇主类别:公立机构(卫生局/医院、学区/学校委员会、大学/学院、公营公司/交通)。省提名的雇主门槛不适用。"""
+
+SECTOR_GOV_RE = re.compile(
+    r"^(the )?government of\b"
+    r"|^(city|town|village|district|township|municipality|county|regional municipality|regional district"
+    r"|municipalit[eé]|ville|corporation of the (city|town|township|county|district)) (of|de|du|d')\b"
+    r"|^(ministry|minist[eè]re|department|d[eé]partement) (of|de|du|des)\b"
+    r"|\b(canada revenue agency|canada border services|royal canadian mounted police|canadian armed forces"
+    r"|forces arm[eé]es|correctional service|service canada|statistics canada|legislative assembly"
+    r"|public service commission|water security agency)\b"
+    r"|\b(first nation|tribal council|m[eé]tis nation|band council)\b",
+    re.I,
+)
+"""政府机关的名字特征(英法两套;2026-09-05 原型跑 mart 52k 家命中 421 家,人眼抽查无误伤)。"""
+
+SECTOR_PUBLIC_RE = re.compile(
+    r"\b(health authority|health network|health region|health services authority|r[eé]gie r[eé]gionale"
+    r"|regional health|public health|cancer agency|children'?s aid|school district|school division|school board"
+    r"|centre de services scolaire|commission scolaire|regional centre for education|conseil scolaire"
+    r"|public library|community college|c[eé]gep|university|universit[eé]|polytechnic|national research council"
+    r"|bank of canada|canada post|via rail|bc hydro|hydro-qu[eé]bec|hydro qu[eé]bec|saskpower|sasktel"
+    r"|manitoba hydro|bc transit|translink|toronto transit|soci[eé]t[eé] de transport|radio-canada"
+    r"|crown corporation|ciusss|cisss|hospital)\b",
+    re.I,
+)
+"""公立机构的名字特征(2026-09-05 原型命中 260 家)。"""
+
+SECTOR_VET_RE = re.compile(r"\b(animal|veterinary|pet|vet)\b", re.I)
+"""「hospital」的反例:动物医院是私企(库里旧手工值把它们标成公共部门,正是这一撞)。"""
+
 K_SOURCES = "sources"
 """简介记录里的出处 URL 表键。"""
 

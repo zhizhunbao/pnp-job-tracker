@@ -632,14 +632,14 @@ export const COLS_NEWS_CACHE = ['body_zh', 'body_ko', 'summary_zh', 'summary_ko'
 /**
  * companies 列(含时间戳;按 slug upsert)。
  */
-export const COLS_COMPANIES = ['slug', 'name', 'website', 'website_source', 'email', 'region', 'sectors', 'address', 'description', 'source', 'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'lmia_positions_skilled', 'lmia_positions_4q', 'lmia_positions_2q', 'lmia_positions_1q', 'lmia_nocs', 'sponsor_grade', 'score_detail', 'ai_brief', 'ai_brief_zh', 'ai_brief_ko', 'ai_sources', 'ai_fetched', 'created_at', 'updated_at']
+export const COLS_COMPANIES = ['slug', 'name', 'website', 'website_source', 'email', 'region', 'sectors', 'address', 'description', 'source', 'sector', 'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'lmia_positions_skilled', 'lmia_positions_4q', 'lmia_positions_2q', 'lmia_positions_1q', 'lmia_nocs', 'sponsor_grade', 'score_detail', 'ai_brief', 'ai_brief_zh', 'ai_brief_ko', 'ai_sources', 'ai_fetched', 'created_at', 'updated_at']
 
 /**
  * companies 更新分支按 EXCLUDED 直写、且参与「真变了才写」比较的列
  * (2026-07-25 跳过未变行:全量重写把整轮从秒级抬到 100s+ 必撞代理上限;
  * updated_at 不参与比较,数据没变就不该跳)。
  */
-export const COLS_COMPANIES_PLAIN = ['name', 'website', 'website_source', 'email', 'region', 'sectors', 'address', 'description', 'source', 'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'lmia_positions_skilled', 'lmia_positions_4q', 'lmia_positions_2q', 'lmia_positions_1q', 'lmia_nocs']
+export const COLS_COMPANIES_PLAIN = ['name', 'website', 'website_source', 'email', 'region', 'sectors', 'address', 'description', 'source', 'sector', 'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'lmia_positions_skilled', 'lmia_positions_4q', 'lmia_positions_2q', 'lmia_positions_1q', 'lmia_nocs']
 
 /**
  * companies 走 COALESCE 保旧值的列(E12-08 担保档 + 四维档明细:盒过渡期缺键

@@ -905,6 +905,36 @@ export const VERDICT_MET = 'met'
 export const VERDICT_PUBLIC = 'public'
 
 /**
+ * 雇主类别列键。
+ */
+export const COL_SECTOR = 'sector'
+
+/**
+ * 雇主门槛「不适用」的文案键(公共部门 / 政府机关整体旁路;类别另有一列说)。
+ */
+export const KEY_VERDICT_NA = 'se.verdict.na'
+
+/**
+ * 雇主类别的文案键前缀(后接 private / public / government)。
+ */
+export const KEY_SECTOR_HEAD = 'pulse.sector.'
+
+/**
+ * 雇主类别的两个标注值(数据层 companies.sector;空 = 私营企业)。
+ */
+export const SECTOR_GOVERNMENT = 'government'
+
+/**
+ * 同上:公立机构。
+ */
+export const SECTOR_PUBLIC = 'public'
+
+/**
+ * 私营企业的文案键尾(sector 为空时)。
+ */
+export const SECTOR_PRIVATE = 'private'
+
+/**
  * PGWP 档把脉结论:省提名可走(有 TEER 0-3 岗、岗位在省清单、雇主门槛达标或公共部门)。排序权 0。
  */
 export const PULSE_OK = 'ok'

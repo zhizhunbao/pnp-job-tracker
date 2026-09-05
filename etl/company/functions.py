@@ -1084,7 +1084,7 @@ def read_places_cache() -> dict[str, PlaceRecord]:
 
 def job_counts_by_slug() -> JobCounts:
     """jobs.json 一遍扫出 slug → 在招岗数 与 slug → 在招 TEER 0-3 岗数(只数 status=open)。"""
-    counts = JobCounts(open=Counter(), skilled=Counter())
+    counts = JobCounts(open=Counter(), skilled=Counter(), broad={})
     for j in json.loads(IN_PLACES_JOBS.read_text(encoding=TEXT_ENCODING)):
         job = MartJob.model_validate(j)
         if job.status != STATUS_OPEN or job.company_slug == "":
@@ -1092,6 +1092,12 @@ def job_counts_by_slug() -> JobCounts:
         counts.open[job.company_slug] += 1
         if job.teer in TEER_SKILLED:
             counts.skilled[job.company_slug] += 1
+        if job.broad != "":
+            votes = counts.broad.get(job.company_slug)
+            if votes is None:
+                votes = Counter()
+                counts.broad[job.company_slug] = votes
+            votes[job.broad] += 1
     return counts
 
 
@@ -1105,14 +1111,42 @@ def places_candidates(x: PlacesCandsIn) -> list[PlaceTarget]:
         if c.lmia_4q <= 0 and x.counts.skilled.get(c.slug, 0) <= 0:
             continue
         out.append(PlaceTarget(slug=c.slug, name=c.name, region=c.region, website=c.website,
-                               open_jobs=open_n, lmia_4q=c.lmia_4q))
+                               open_jobs=open_n, lmia_4q=c.lmia_4q, broad=broad_of(x.counts.broad.get(c.slug))))
+    rank_within_broad(out)
     out.sort(key=places_priority_of)
     return out
 
 
-def places_priority_of(t: PlaceTarget) -> tuple:
-    """候选排序键:在招多的先查,再看 LMIA 量,最后 slug 稳序。"""
+def broad_of(votes: Counter | None) -> str:
+    """公司的大类 = 在招岗里票最多的大类;没票空串。"""
+    if votes is None or len(votes) == 0:
+        return ""
+    return votes.most_common(1)[0][0]
+
+
+def rank_within_broad(targets: list[PlaceTarget]) -> None:
+    """按大类分组,组内按在招数、LMIA 数降序给名次(原地写 rank;各行业头部先补)。"""
+    groups: dict[str, list[PlaceTarget]] = {}
+    for t in targets:
+        arr = groups.get(t.broad)
+        if arr is None:
+            groups[t.broad] = [t]
+        else:
+            arr.append(t)
+    for arr in groups.values():
+        arr.sort(key=open_then_lmia_of)
+        for i, t in enumerate(arr):
+            t.rank = i
+
+
+def open_then_lmia_of(t: PlaceTarget) -> tuple:
+    """组内排序键:在招多的先,再看 LMIA 量,最后 slug 稳序。"""
     return (-t.open_jobs, -t.lmia_4q, t.slug)
+
+
+def places_priority_of(t: PlaceTarget) -> tuple:
+    """候选排序键:先各行业的名次(每个行业的第一名都排在任何行业的第二名前面),再在招数、LMIA 量、slug。"""
+    return (t.rank, -t.open_jobs, -t.lmia_4q, t.slug)
 
 
 def pick_places_todo(x: PickPlacesIn) -> list[PlaceTarget]:

@@ -839,10 +839,13 @@ class MartJob(BaseModel):
     teer: str = ""
     """TEER 档(0-5;mart 里是数字或串,统一成串;空串 = 未分类)。"""
 
-    @field_validator("company_slug", "status", "teer", mode="before")
+    broad: str = ""
+    """NOC 大类(把脉页行业分表的依据;公司归多数派大类,2026-09-05 Frank「优先补我列表前面的公司」)。"""
+
+    @field_validator("company_slug", "status", "teer", "broad", mode="before")
     @classmethod
     def none_as_empty(cls, v: object) -> object:
-        """三格可能是 null —— 折空串;teer 数字折串。"""
+        """四格可能是 null —— 折空串;teer 数字折串。"""
         if v is None:
             return ""
         return str(v)
@@ -865,10 +868,16 @@ class PlaceTarget:
     """库里已有的官网(空串 = 缺)。"""
 
     open_jobs: int
-    """在招岗数(优先级第一键)。"""
+    """在招岗数(优先级第二键)。"""
 
     lmia_4q: int
-    """近四季 LMIA 岗位数(优先级第二键)。"""
+    """近四季 LMIA 岗位数(优先级第三键)。"""
+
+    broad: str = ""
+    """所属大类(在招岗多数派;空 = 未分类)。"""
+
+    rank: int = 0
+    """在本大类里按在招数的名次(优先级第一键:各行业头部先补,把脉页每张行业表第一页最先填满)。"""
 
 
 @dataclass
@@ -880,6 +889,9 @@ class JobCounts:
 
     skilled: dict
     """slug → 在招 TEER 0-3 岗数。"""
+
+    broad: dict
+    """slug → Counter(大类 → 在招岗数);多数派大类 = 公司所属行业。"""
 
 
 @dataclass

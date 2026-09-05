@@ -93,7 +93,8 @@ from mart.constants import (
     K_TABLES, K_TEER, K_THROUGH_MONTH, K_TITLE, K_TR_SERIES, K_TYPE, K_UNIT, K_URL, K_VALUE,
     K_WAGE_HIGH_ANNUAL, K_WAGE_LOW_ANNUAL, K_WAGE_MED_ANNUAL, K_WEBSITE, K_WEBSITE_SOURCE, K_WEEKS,
     BRIEF_OK, FOUND_PLACES, IN_BRIEF, IN_PLACES, K_AI_BRIEF, K_AI_BRIEF_KO, K_AI_BRIEF_ZH, K_AI_FETCHED,
-    K_AI_SOURCES, K_BRIEF, K_BRIEF_KO, K_BRIEF_ZH, K_SOURCES, PLACES_HIT,
+    K_AI_SOURCES, K_BRIEF, K_BRIEF_KO, K_BRIEF_ZH, K_SOURCES, PLACES_HIT, SECTOR_GOVERNMENT,
+    SECTOR_GOV_RE, SECTOR_PUBLIC, SECTOR_PUBLIC_RE, SECTOR_VET_RE,
     K_WIKI, K_YEAR, K_ZH, LANG_ABILITIES, LANG_PER_ABILITY, LANG_POINTS_PER_ABILITY,
     LANG_POINTS_TOTAL, LANG_POINTS_WORD, LANG_TOTAL_WORD, LMIA_HEADER_WORD, LMIA_HIT_TPL,
     LMIA_MIN_COLS, LMIA_SOURCE_NOTE, LMIA_STREAM_SEP, LMIA_STREAM_TOP, LMIA_STREAM_TPL,
@@ -963,7 +964,17 @@ def add_company(x: CompanyExtraIn) -> None:
                 x.extra[K_WEBSITE_SOURCE] = en[K_FOUND]
     fill_places(x)
     fill_brief(x)
+    x.extra[K_SECTOR] = sector_of(x.name)
     x.ctx.companies[x.slug] = to_company_row(CompanyRowIn(name=x.name, slug=x.slug, extra=x.extra))
+
+
+def sector_of(name: str) -> str:
+    """雇主类别:名字命中政府特征 → government;命中公立特征且不是动物医院 → public;其余空串(私营,不落列)。"""
+    if SECTOR_GOV_RE.search(name):
+        return SECTOR_GOVERNMENT
+    if SECTOR_PUBLIC_RE.search(name) and not SECTOR_VET_RE.search(name):
+        return SECTOR_PUBLIC
+    return ""
 
 
 def fill_places(x: CompanyExtraIn) -> None:

@@ -92,6 +92,12 @@ export const EMP_FACTOR = {
 export const SECTOR_PUBLIC = 'public'
 
 /**
+ * 政府机关(联邦/省/市镇政府、部委、军警税务;2026-09-05 与公共部门拆开成雇主类别的两档)。
+ * 同样不在企业注册库里,门槛整体旁路。
+ */
+export const SECTOR_GOVERNMENT = 'government'
+
+/**
  * 一年几个月。官方原文单位不统一(SK 用月、其余用年),换算成年再比。
  */
 export const MONTHS_PER_YEAR = 12

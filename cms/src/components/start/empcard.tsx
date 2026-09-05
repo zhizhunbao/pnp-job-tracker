@@ -27,6 +27,7 @@ export function EmpCard({ t, row, kind }: EmpCardIn) {
     kv.push({ k: t('se.col.w2'), v: row.lmia2qText })
     kv.push({ k: t('se.col.w4'), v: row.lmia4qText })
   } else if (kind !== TABLE_PILOT) {
+    kv.push({ k: t('pulse.col.sector'), v: row.sectorText })
     kv.push({ k: t('se.col.verdict'), v: row.verdictText })
   }
   kv.push({ k: t('pulse.col.hiringOcc'), v: EmpHiringCell(row), wide: true })

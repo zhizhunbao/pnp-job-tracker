@@ -437,6 +437,11 @@ export type SponsorEmployerRow = {
   streams: string[]
 
   /**
+   * 雇主类别(government / public / '' = 私营;数据层按名字规则算,2026-09-05)。
+   */
+  sector: string
+
+  /**
    * 雇主侧门槛判定(公司事实 × 该省官方门槛)。字段没落库/门槛未收录时 state 恒 'unknown',
    * 不是一等公民的报错 —— 消费端(表列)据此判断要不要整列隐藏。
    */

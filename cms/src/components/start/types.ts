@@ -2155,9 +2155,14 @@ export type EmpCellRow = {
   lmia4qText: string
 
   /**
-   * 雇主门槛判定文案(达标 / 差 X / 待核 / 公共部门)。
+   * 雇主门槛判定文案(达标 / 差 X / 待核 / 不适用)。
    */
   verdictText: string
+
+  /**
+   * 雇主类别文案(私营企业 / 公共部门 / 政府部门;2026-09-05 Frank「雇主门槛和雇主类别应该是两个字段吧」)。
+   */
+  sectorText: string
 
   /**
    * PGWP 档把脉结论键(PULSE_OK / CHECK / SHORT / CEC),只用来排序(可走在前),不上表。

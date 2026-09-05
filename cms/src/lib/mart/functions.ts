@@ -763,7 +763,8 @@ export function toCompany(x: ToCompanyIn): MartRow {
   return {
     slug: cellOf(x.r.slug), name: name, website: cellOf(x.r.website), website_source: cellOf(x.r.websiteSource),
     email: cellOf(x.r.email), region: cellOf(x.r.region), sectors: cellOf(x.r.sectors), address: cellOf(x.r.address),
-    description: cellOf(x.r.description), source: cellOf(x.r.source), lmia_positions: cellOf(x.r.lmiaPositions),
+    description: cellOf(x.r.description), source: cellOf(x.r.source), sector: cellOf(x.r.sector),
+    lmia_positions: cellOf(x.r.lmiaPositions),
     lmia_lmias: cellOf(x.r.lmiaLmias), lmia_last_quarter: cellOf(x.r.lmiaLastQuarter),
     lmia_streams: cellOf(x.r.lmiaStreams), lmia_positions_skilled: cellOf(x.r.lmiaPositionsSkilled),
     lmia_positions_4q: cellOf(x.r.lmiaPositions4q), lmia_positions_2q: cellOf(x.r.lmiaPositions2q),
