@@ -296,9 +296,9 @@ export type HomeStats = {
   fcipNames: string[]
 
   /**
-   * 担保雇主的公司简介(名小写 → 简介;只带有简介的,现在约一成)。
+   * 担保雇主的公司简介(名小写 → 英文 + 中文;只带有简介的,现在约一成)。
    */
-  briefs: Record<string, string>
+  briefs: Record<string, CompanyBrief>
 
   /**
    * 抽选表(全量,前端分页;2026-09-04 Frank「这个 table 还是要保留的」,政策动态不回)。
@@ -3325,9 +3325,29 @@ export type BriefDbRow = {
   name: string
 
   /**
-   * 简介(已截)。
+   * 英文简介全文。
    */
   brief: string
+
+  /**
+   * 中文译文;没翻过 null(2026-09-05 ai_brief_zh 落库)。
+   */
+  brief_zh: string | null
+}
+
+/**
+ * 一家公司的简介两语(英文全文 + 中文译文;没译文给 '')。
+ */
+export type CompanyBrief = {
+  /**
+   * 英文。
+   */
+  en: string
+
+  /**
+   * 中文;没翻过 ''。
+   */
+  zh: string
 }
 
 /**
@@ -3380,9 +3400,9 @@ export type EmpExtra = {
   fcip: Set<string>
 
   /**
-   * 名(小写)→ 简介。
+   * 名(小写)→ 简介两语。
    */
-  briefs: Map<string, string>
+  briefs: Map<string, CompanyBrief>
 }
 
 /**
@@ -3390,14 +3410,19 @@ export type EmpExtra = {
  */
 export type BriefOfIn = {
   /**
-   * 名(小写)→ 简介。
+   * 名(小写)→ 简介两语。
    */
-  briefs: Map<string, string>
+  briefs: Map<string, CompanyBrief>
 
   /**
    * 雇主名(小写)。
    */
   key: string
+
+  /**
+   * 界面语言(中文界面有译文用译文,否则英文)。
+   */
+  lang: StartLang
 }
 
 /**

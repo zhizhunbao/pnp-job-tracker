@@ -2406,3 +2406,38 @@ export type EmployersTransBody = {
    */
   lang: string | null
 }
+
+/**
+ * 一行简介译文(SQL.COMPANY_BRIEF_ZH_BY_NAME)。
+ */
+export type CompanyBriefZhDbRow = {
+  /**
+   * 译文;库里 NULL 给 null。
+   */
+  ai_brief_zh: string | null
+}
+
+/**
+ * `saveCompanyBriefZh` 的入参。
+ */
+export type SaveBriefZhIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 公司名(按名写,同名多行一起)。
+   */
+  name: string
+
+  /**
+   * 译文全文(五节标记保留)。
+   */
+  text: string
+}
+
+/**
+ * 只写不回值的异步出参(写回译文这类)。
+ */
+export type DoneOut = Promise<void>

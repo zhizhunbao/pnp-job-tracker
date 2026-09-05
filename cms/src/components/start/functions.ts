@@ -90,7 +90,7 @@ import type {
   CityCellRow, CityCellRowsIn, CityNameIn, DateSum, EmpCellRow, EmpCellRowIn, EmpColsIn, EmpSec, EmpSecsIn, IndOfIn,
   HiringMoreIn, IndRowsIn, LineOptionIn, OccSec, OccSecsIn, SeriesIn, SponsorBoards, TrendOfIn, TrendPanel, TrendSeries,
   EmpKind, HiringOccIn, KindChip, KindPickFn, KindPickIn, NocInfo, NocInfoIn, NocInfoMap, PulseIn2,
-  AliasIn, BriefOfIn, BriefsIn, DesignatedIn, InPilotIn, PilotNamesIn, PilotSecsIn,
+  AliasIn, BriefOfIn, BriefsIn, CompanyBrief, DesignatedIn, InPilotIn, PilotNamesIn, PilotSecsIn,
   Teer03In, VerdictTextIn,
   TrendSmallIn, ValuableIn,
   EmptyQueryResult, PulseDraw, DrawDbRow, DrawHist, DrawHistIn, DrawsIn, PulseDrawIn, DrawCellRow, DrawCellRowIn,
@@ -2901,7 +2901,7 @@ function toEmpCellRow(x: EmpCellRowIn): EmpCellRow {
     aip: r.aip,
     rcip: x.extra.rcip.has(key),
     fcip: x.extra.fcip.has(key),
-    brief: briefOf({ briefs: x.extra.briefs, key }),
+    brief: briefOf({ briefs: x.extra.briefs, key, lang: x.lang }),
     flagCls: cls,
     teer03,
     lmia2q: r.lmia2q,
@@ -3246,12 +3246,12 @@ function pilotNamesOf(x: PilotNamesIn): string[] {
  * @param x 简介原始行与担保雇主行。
  * @returns 映射(对象,进 SSR 契约)。
  */
-function briefsOf(x: BriefsIn): Record<string, string> {
-  const all = new Map<string, string>()
+function briefsOf(x: BriefsIn): Record<string, CompanyBrief> {
+  const all = new Map<string, CompanyBrief>()
   for (const r of x.rows) {
-    all.set(r.name, r.brief)
+    all.set(r.name, { en: r.brief, zh: zhOrNone(r.brief_zh) })
   }
-  const out: Record<string, string> = {}
+  const out: Record<string, CompanyBrief> = {}
   for (const s of x.sponsorRows) {
     const key = s.name.toLowerCase()
     const b = all.get(key)
@@ -3263,7 +3263,20 @@ function briefsOf(x: BriefsIn): Record<string, string> {
 }
 
 /**
- * 简介格文案:有就给,没有给 DASH_MARK。
+ * 译文列:库里 NULL 给 ''。
+ *
+ * @param zh 译文或 null。
+ * @returns 译文或 ''。
+ */
+function zhOrNone(zh: string | null): string {
+  if (zh == null) {
+    return TEXT_NONE
+  }
+  return zh
+}
+
+/**
+ * 简介格文案:中文界面有译文用译文(2026-09-05 ai_brief_zh 落库),否则英文;没有给 DASH_MARK。
  *
  * @param x 简介表与名(小写)。
  * @returns 文案。
@@ -3273,7 +3286,10 @@ function briefOf(x: BriefOfIn): string {
   if (b == null) {
     return DASH_MARK
   }
-  return whatOf(b)
+  if (x.lang === LANG_ZH && b.zh !== TEXT_NONE) {
+    return whatOf(b.zh)
+  }
+  return whatOf(b.en)
 }
 
 /**

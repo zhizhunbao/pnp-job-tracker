@@ -43,6 +43,7 @@ import type {
   CompareJobDbRow, DesignatedDbRow, DesignatedRow, DifficultyDbRow, DifficultyObj, DifficultyPair, EmployerFacts,
   HiringDbRow, HiringRow, IdCell, MaybeStr, NocTitleDbRow, NocTitlePair, OccDbRow, OccRow, ReqDbRow, ReqRow,
   SponsorDbRow, StrListCell, ToCompareRowIn, ToSponsorRowIn, SponsorsIn,
+  CompanyBriefZhDbRow, SaveBriefZhIn, DoneOut,
 } from './types'
 import { HDR_USER_AGENT } from '../http'
 // =========================================================================
@@ -1318,6 +1319,27 @@ export async function loadCompanyBrief(input: CompanyBriefIn): MaybeStrOut {
   return firstOf(rows)
 }
 
+/**
+ * 库内已落的简介中文译文(2026-09-05 ai_brief_zh 落库:批量由本地 qwen3.6 翻,懒翻译路由翻完也写回);没翻过 null。
+ *
+ * @param input 连接与公司名。
+ * @returns 译文或 null。
+ */
+export async function loadCompanyBriefZh(input: CompanyBriefIn): MaybeStrOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_BRIEF_ZH_BY_NAME, params: [input.name], map: toBriefZhCell })
+  return firstOf(rows)
+}
+
+/**
+ * 懒翻译翻完写回 ai_brief_zh(同名多行一起写),下次直接读。
+ *
+ * @param input 连接、公司名与译文。
+ * @returns 无。
+ */
+export async function saveCompanyBriefZh(input: SaveBriefZhIn): DoneOut {
+  await input.db.query(SQL.COMPANY_UPDATE_AI_BRIEF_ZH, [input.text, input.name])
+}
+
 // =========================================================================
 // 行构造器(rows 抽屉 2026-08-23 撤编后的固定尾段;体内只许词汇表 + 纯拼装)
 // =========================================================================
@@ -1662,6 +1684,16 @@ export function toCompareRow(input: ToCompareRowIn): CompareRow {
  */
 export function toBriefCell(r: CompanyBriefDbRow): MaybeStr {
   return textOrNull(r.ai_brief)
+}
+
+/**
+ * 一行译文(SQL.COMPANY_BRIEF_ZH_BY_NAME)→ 译文或 null。
+ *
+ * @param r 库里的一行。
+ * @returns 译文或 null。
+ */
+export function toBriefZhCell(r: CompanyBriefZhDbRow): MaybeStr {
+  return textOrNull(r.ai_brief_zh)
 }
 
 // =========================================================================

@@ -24,11 +24,11 @@ import {
   CACHE_TTL_MS, CITY_LEN_MAX, CO_IP_DAILY, CO_LIMIT_PREFIX, CO_MARKS_RE, CSV_CACHE_CONTROL, CSV_CONTENT_TYPE, CSV_DISPOSITION, E_PRO, EMP_CACHE_CONTROL,
   EMP_PAGE_SIZE, EXPORT_PROVS, EXPORT_Q_LEN_MAX, MODE, NAME_LEN_MAX, NOC5_RE, PAGE_SIZE_MAX, PARAM, SORT_OPEN,
   SORT_SKILLED, SPONSORS_CACHE_CONTROL, VIEW,
-  FETCHED_NONE, FILTER_UNSET, LANG_UNSET, NAME_UNSET,
+  FETCHED_NONE, FILTER_UNSET, LANG_UNSET, NAME_UNSET, WD_LANG_ZH,
 } from './constants'
 import {
   applySponsorFilters, buildSponsorBoards, companyRow, loadSponsorEmployers, investigateCompany,
-  loadCompanyBrief, loadEmployerPage, normalizeEmployerFilters, sponsorCsvOf,
+  loadCompanyBrief, loadCompanyBriefZh, loadEmployerPage, normalizeEmployerFilters, saveCompanyBriefZh, sponsorCsvOf,
 } from './functions'
 import { CACHE } from './variables'
 import type { EmployersTransBody, InfoBody, SponsorFilters } from './types'
@@ -230,7 +230,15 @@ export async function employersTranslateRoute(req: Request): Promise<Response> {
   if (hit != null) {
     return Response.json({ ok: true, text: hit, cached: true })
   }
-  const brief = await loadCompanyBrief({ db: await getDb(), name: name })
+  const db = await getDb()
+  if (lang === WD_LANG_ZH) {
+    const stored = await loadCompanyBriefZh({ db: db, name: name })
+    if (stored != null) {
+      CACHE.briefTransBy.set(ck, stored)
+      return Response.json({ ok: true, text: stored, cached: true })
+    }
+  }
+  const brief = await loadCompanyBrief({ db: db, name: name })
   if (brief == null) {
     return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
   }
@@ -244,6 +252,9 @@ export async function employersTranslateRoute(req: Request): Promise<Response> {
     })
     if (r.full) {
       CACHE.briefTransBy.set(ck, r.text)
+      if (lang === WD_LANG_ZH) {
+        await saveCompanyBriefZh({ db: db, name: name, text: r.text })
+      }
     }
     return Response.json({ ok: true, text: r.text, cached: false })
   } catch (e) {

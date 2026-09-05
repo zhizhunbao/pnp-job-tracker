@@ -1,6 +1,7 @@
 'use client'
 /**
- * 域内哑单元格:雇主表「在招职业」格 —— 前两个职业名胶囊 + 「等 N 个」灰注;主图没到时空着。
+ * 域内哑单元格:雇主表「在招职业」格 —— 前两个职业名绿胶囊 + 「等 N 个」灰胶囊(同一形才排得齐,
+ * 2026-09-05 Frank「换行太难看了不协调」);主图没到时空着。
  *
  * @author Frank
  * @time 2026-09-05 01:10:00
@@ -23,7 +24,7 @@ export function EmpHiringCell(r: EmpCellRow) {
   return (
     <span className={css.pills}>
       {pills}
-      {r.hiringMoreText !== TEXT_NONE && <span className={css.dim}>{r.hiringMoreText}</span>}
+      {r.hiringMoreText !== TEXT_NONE && <span className={css.chipGray}>{r.hiringMoreText}</span>}
     </span>
   )
 }

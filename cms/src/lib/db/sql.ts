@@ -750,7 +750,7 @@ export const DESIGNATED_PILOT_NAMES = `SELECT DISTINCT lower(name) AS name, sour
 /**
  * 有简介的公司名(小写)与简介(AI 简介优先,退回描述;全文不截 —— 2026-09-05 Frank「怎么还有截断」;把脉页雇主段「主营业务」一列按名取交集)。
  */
-export const COMPANY_BRIEFS = `SELECT lower(name) AS name, COALESCE(NULLIF(ai_brief, ''), description) AS brief
+export const COMPANY_BRIEFS = `SELECT lower(name) AS name, COALESCE(NULLIF(ai_brief, ''), description) AS brief, ai_brief_zh AS brief_zh
        FROM companies WHERE COALESCE(NULLIF(ai_brief, ''), NULLIF(description, '')) IS NOT NULL`
 
 /**
@@ -1264,6 +1264,16 @@ export const JD_FORMATTED_BY_URL = `SELECT jd_formatted FROM jobs WHERE apply_ur
  * 按公司名取 AI 简报(有才回)。$1=公司名。
  */
 export const COMPANY_BRIEF_BY_NAME = `SELECT ai_brief FROM companies WHERE lower(name) = lower($1) AND ai_brief IS NOT NULL LIMIT 1`
+
+/**
+ * 公司 AI 简介的中文译文(2026-09-05 落库:docs/sql/company-brief-zh.sql);没翻过给空行。$1=公司名。
+ */
+export const COMPANY_BRIEF_ZH_BY_NAME = `SELECT ai_brief_zh FROM companies WHERE lower(name) = lower($1) AND ai_brief_zh IS NOT NULL LIMIT 1`
+
+/**
+ * 懒翻译翻完落库(同名多行一起写;下次直接读,不再过模型)。$1=译文,$2=公司名。
+ */
+export const COMPANY_UPDATE_AI_BRIEF_ZH = `UPDATE companies SET ai_brief_zh = $1 WHERE lower(name) = lower($2)`
 
 /**
  * 职位的投递链接一列。$1=职位 id。
