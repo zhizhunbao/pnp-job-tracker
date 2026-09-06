@@ -768,9 +768,30 @@ K_AI_BRIEF_KO = "aiBriefKo"
 """companies 列:简介韩文。"""
 
 SECTOR_GOVERNMENT = "government"
-"""雇主类别(companies.sector 列,键名 K_SECTOR 在第 14 段):政府机关(联邦/省/市镇政府、部委、军队警察税务、
-原住民政府)。2026-09-05 Frank「公共部门 政府部门 私营企业这些应该是雇主类别吧」—— 与雇主门槛判定拆成两个字段,
+"""雇主类别(companies.sector 列,键名 K_SECTOR 在第 14 段):省市政府(省政府与部厅、市镇政府、原住民政府;
+联邦的另归 SECTOR_FEDERAL)。2026-09-05 Frank「公共部门 政府部门 私营企业这些应该是雇主类别吧」—— 与雇主门槛判定拆成两个字段,
 按名字规则在这算,库里原 123 行手工值一并覆盖(那批一半是动物医院与民间社团,规则本身错)。空 = 私营企业。"""
+
+SECTOR_FEDERAL = "federal"
+"""雇主类别:联邦机关(联邦各部、CRA/CBSA、军警、联邦机构;2026-09-05 Frank「雇主类别细到四档」从政府档拆出:
+联邦公务员招聘优先公民/永居、军队要公民,与省市政府对持工签的人是两回事)。"""
+
+SECTOR_FEDERAL_RE = re.compile(
+    r"^(?:the )?(?:government of canada|gouvernement du canada|canada revenue agency|canada border services"
+    r"|royal canadian mounted police|rcmp|canadian armed forces|forces arm[eé]es canadiennes|national defence"
+    r"|department of national defence|correctional service canada|service canada|statistics canada"
+    r"|public service commission of canada|employment and social development canada"
+    r"|immigration, refugees and citizenship canada|public services and procurement canada|parks canada"
+    r"|fisheries and oceans canada|transport canada|health canada|environment and climate change canada"
+    r"|natural resources canada|agriculture and agri-food canada|innovation, science and economic development canada"
+    r"|global affairs canada|canadian coast guard|treasury board of canada|shared services canada"
+    r"|library and archives canada|elections canada|veterans affairs canada|indigenous services canada"
+    r"|crown-indigenous relations|canadian food inspection agency|canadian security intelligence service"
+    r"|national research council)\b",
+    re.I,
+)
+"""联邦机关的名字特征:只认**名字开头**(「Corporate Health Canada」「ALSTOM Transport Canada」这类私企
+名字里夹着部门名,不能按子串命中;2026-09-05 原型 97 家,收紧到开头后误伤清零)。"""
 
 SECTOR_PUBLIC = "public"
 """雇主类别:公立机构(卫生局/医院、学区/学校委员会、大学/学院、公营公司/交通)。省提名的雇主门槛不适用。"""

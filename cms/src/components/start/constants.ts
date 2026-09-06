@@ -915,9 +915,14 @@ export const COL_SECTOR = 'sector'
 export const KEY_SECTOR_HEAD = 'pulse.sector.'
 
 /**
- * 雇主类别的两个标注值(数据层 companies.sector;空 = 私营企业)。
+ * 雇主类别的标注值(数据层 companies.sector;空 = 私营企业):省市政府。
  */
 export const SECTOR_GOVERNMENT = 'government'
+
+/**
+ * 同上:联邦机关(2026-09-05 Frank「雇主类别细到四档」)。
+ */
+export const SECTOR_FEDERAL = 'federal'
 
 /**
  * 同上:公立机构。

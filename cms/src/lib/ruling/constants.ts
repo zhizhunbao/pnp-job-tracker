@@ -98,6 +98,11 @@ export const SECTOR_PUBLIC = 'public'
 export const SECTOR_GOVERNMENT = 'government'
 
 /**
+ * 联邦机关(2026-09-05 从政府档拆出;门槛同样旁路)。
+ */
+export const SECTOR_FEDERAL = 'federal'
+
+/**
  * 一年几个月。官方原文单位不统一(SK 用月、其余用年),换算成年再比。
  */
 export const MONTHS_PER_YEAR = 12

@@ -47,7 +47,7 @@ import {
   HIRING_OCC_MAX, ID_NOWP, ID_PGWP, KEY_ID_HEAD, KEY_VERDICT_FACTOR_HEAD, KEY_VERDICT_HEAD,
   PULSE_CEC, PULSE_CHECK, PULSE_OK, PULSE_RANK, PULSE_SHORT, TEER_PNP_MAX, URL_COMPANY_HEAD, VERDICT_MET,
   VERDICT_PUBLIC, VERDICT_SHORT, MINI_BTN_KIND, W_EMP_ACT, CARD_PAGE_SIZE, COL_SECTOR, KEY_SECTOR_HEAD,
-  SECTOR_GOVERNMENT, SECTOR_PRIVATE, SECTOR_PUBLIC,
+  SECTOR_FEDERAL, SECTOR_GOVERNMENT, SECTOR_PRIVATE, SECTOR_PUBLIC,
   COL_BIZ, PILOT_FCIP, PILOT_RCIP, KEY_PILOT_HEAD, PILOT_KEYS, PILOT_KEY_AIP, PILOT_KEY_RCIP, TABLE_PILOT,
   SPACE_SEP, ACRONYM_MAX, CORP_SUFFIXES, NON_LETTER_RE, BRIEF_TAG_RE, BRIEF_TAG_WHAT,
 } from './constants'
@@ -3083,13 +3083,13 @@ function countOrDashOf(n: number): string {
 }
 
 /**
- * 雇主类别 → 文案键尾:government / public 原样,空 = 私营企业。
+ * 雇主类别 → 文案键尾:federal / government / public 原样,空 = 私营企业。
  *
  * @param sector 数据层的类别标注。
  * @returns 文案键尾。
  */
 function sectorKeyOf(sector: string): string {
-  if (sector === SECTOR_GOVERNMENT || sector === SECTOR_PUBLIC) {
+  if (sector === SECTOR_GOVERNMENT || sector === SECTOR_PUBLIC || sector === SECTOR_FEDERAL) {
     return sector
   }
   return SECTOR_PRIVATE
