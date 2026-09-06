@@ -402,6 +402,16 @@ export type SponsorEmployerRow = {
   provsAip: string[]
 
   /**
+   * AIP 岗(aip=true,数据层已含 TEER 0-4 门)的 NOC 清单(去重);把脉页 AIP 表「在招职业」只列它(2026-09-05)。
+   */
+  nocsAip: string[]
+
+  /**
+   * 是不是连锁:在招岗覆盖大西洋以外 ≥ CHAIN_PROVS_MIN 省(2026-09-05 Frank 拆本地/连锁两表)。
+   */
+  chain: boolean
+
+  /**
    * LMIA 获批岗位数(历史事实)。
    */
   lmiaPositions: number
@@ -1834,6 +1844,16 @@ export type SponsorDbRow = {
    * AIP 视图所在省(array_agg)。
    */
   provs_aip: string[] | null
+
+  /**
+   * AIP 岗的 NOC(array_agg,只计 aip=true)。
+   */
+  nocs_aip: string[] | null
+
+  /**
+   * 在招岗覆盖的大西洋以外省数(COUNT DISTINCT)。
+   */
+  provs_out: number | string | null
 
   /**
    * LMIA 获批岗位数。

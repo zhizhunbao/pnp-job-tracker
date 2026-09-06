@@ -17,7 +17,7 @@ import { friendChat } from '../llm'
 import { EMP_LOG, log } from '../log'
 import {
   ALIAS_NONE, BRIEF_MAX, BRIEF_MIN, BRIEF_V2_MARK, CACHE_TTL_MS, CAP_MODE, CAP_NOC, CAP_PAGE, CAP_PROGRAM, CAP_PROV,
-  CAP_TEXT, CMP_MAX, CMP_MIN, COL_PREFIX, CSV_BOM, CSV_EMPTY, CSV_HEAD, CSV_NL, CSV_QUOTE, CSV_QUOTE_ESC,
+  CAP_TEXT, CHAIN_PROVS_MIN, CMP_MAX, CMP_MIN, COL_PREFIX, CSV_BOM, CSV_EMPTY, CSV_HEAD, CSV_NL, CSV_QUOTE, CSV_QUOTE_ESC,
   CSV_QUOTE_G_RE, CSV_QUOTE_RE, CSV_SEP, CSV_YES, DATE8_DASHED, DATE8_RE, DATE_LEN, EMP_PROGRAMS,
   EMP_SSR_ROWS, ENWIKI_BASE, FACT_COLS, FETCHED_NONE, FILTER_UNSET, FORMAT_JSON, FORMAT_KEY, HTTP_URL_RE,
   JOIN_COMMA, LEVEL, LMIA_QUARTER_NONE, MEDIAN_HALF, MODE, NOC_LEN, NOC_RE, NOC_SPLIT_RE, NOC_TEER_RE,
@@ -1517,6 +1517,7 @@ export function toSponsorRow(input: ToSponsorRowIn): SponsorEmployerRow {
     provs: toStrList(r.provs), nocs: toStrList(r.nocs), cities: toStrList(r.cities),
     aip: r.aip === true, named: r.named === true,
     openJobsAip: count(r.open_jobs_aip), provsAip: toStrList(r.provs_aip),
+    nocsAip: toStrList(r.nocs_aip), chain: count(r.provs_out) >= CHAIN_PROVS_MIN,
     lmiaPositions: count(r.lmia_positions),
     lmiaPositionsSkilled: numOrNull(r.lmia_positions_skilled),
     lmiaLastQuarter: text(r.lmia_last_quarter),
@@ -1557,7 +1558,7 @@ export function toSlimSponsorRow(r: SponsorEmployerRow): SponsorEmployerRow {
     sponsorGrade: r.sponsorGrade,
     openJobs: r.openJobs, city: r.city, provs: r.provs, nocs: r.nocs, cities: [],
     aip: r.aip, named: r.named,
-    openJobsAip: r.openJobsAip, provsAip: r.provsAip,
+    openJobsAip: r.openJobsAip, provsAip: r.provsAip, nocsAip: r.nocsAip, chain: r.chain,
     lmiaPositions: r.lmiaPositions, lmiaPositionsSkilled: r.lmiaPositionsSkilled,
     lmiaLastQuarter: r.lmiaLastQuarter,
     lmia4q: r.lmia4q, lmia2q: r.lmia2q, lmia1q: r.lmia1q,

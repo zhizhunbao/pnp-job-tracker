@@ -2041,7 +2041,7 @@ export type EmpKind = 'nowp' | 'pgwp'
 /**
  * 雇主表的表种:两个身份档的行业表,或三试点指定雇主表(列集各自不同)。
  */
-export type EmpTableKind = EmpKind | 'pilot'
+export type EmpTableKind = EmpKind | 'pilot' | 'aip'
 
 /**
  * 雇主表的展示行(值级清洗在 toEmpCellRow 做完)。一格一个事实(2026-09-05 Frank「一个字段怎么包含这么多信息」)。
@@ -2092,6 +2092,11 @@ export type EmpCellRow = {
    * 「等 N 个」文案;职业数不超过胶囊数时给 ''。
    */
   hiringMoreText: string
+
+  /**
+   * 省份胶囊(只 AIP 表的行有:AIP 岗所在的大西洋省,省全名;其余行空排)。
+   */
+  provPills: StartPill[]
 
   /**
    * 在招岗命中省清单。
@@ -2224,6 +2229,11 @@ export type EmpSec = {
    * 展示行,已排好序(视图分页)。
    */
   rows: EmpCellRow[]
+
+  /**
+   * 这张表的表种(列集按它取:行业表 = 身份档,试点表 = pilot,AIP 两张 = aip;2026-09-05)。
+   */
+  table: EmpTableKind
 }
 
 /**
@@ -2354,6 +2364,11 @@ export type EmpCellRowIn = {
    * 这一行事实。
    */
   r: SponsorEmployerRow
+
+  /**
+   * 只按 AIP 岗算(AIP 表:在招 = openJobsAip、职业 = nocsAip、看岗位带省、出省份胶囊;其余表 false)。
+   */
+  aipOnly: boolean
 
   /**
    * 取词函数。
@@ -3531,6 +3546,86 @@ export type DesignatedIn = {
    * 试点名单两集合与简介表。
    */
   extra: EmpExtra
+}
+
+/**
+ * `empNocsOf` / `empOpenCountOf` / `empJobsHrefOf` 的入参:事实行 + 是否只按 AIP 岗取。
+ */
+export type AipPickIn = {
+  /**
+   * 事实行。
+   */
+  r: SponsorEmployerRow
+
+  /**
+   * 只按 AIP 岗取值。
+   */
+  aipOnly: boolean
+}
+
+/**
+ * `provPillsOf` 的入参。
+ */
+export type ProvPillsIn = {
+  /**
+   * 事实行。
+   */
+  r: SponsorEmployerRow
+
+  /**
+   * 只按 AIP 岗取值(false = 空排)。
+   */
+  aipOnly: boolean
+
+  /**
+   * 胶囊类名。
+   */
+  cls: string
+}
+
+/**
+ * 试点表的一「份」:一个试点出一张表,AIP 拆本地 / 连锁两张(2026-09-05)。
+ */
+export type PilotPart = {
+  /**
+   * 表键(表题文案 = KEY_PILOT_HEAD + 键)。
+   */
+  key: string
+
+  /**
+   * 试点键(inPilotOf 按它判名单)。
+   */
+  pilot: string
+
+  /**
+   * 连锁筛:true 只留连锁、false 只留本地、null 不筛(RCIP / FCIP)。
+   */
+  chain: boolean | null
+
+  /**
+   * 表种(列集)。
+   */
+  table: EmpTableKind
+}
+
+/**
+ * `pilotCellsOf` 的入参。
+ */
+export type PilotCellsIn = {
+  /**
+   * 试点表入参(取词、分类、职业表、集合、语言)。
+   */
+  x: PilotSecsIn
+
+  /**
+   * 去重后的事实行。
+   */
+  rows: SponsorRowList
+
+  /**
+   * 这一份表。
+   */
+  part: PilotPart
 }
 
 /**

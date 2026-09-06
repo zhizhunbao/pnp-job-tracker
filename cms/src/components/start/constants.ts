@@ -23,6 +23,12 @@ export const URL_HOME_PNP = '/?pnp=yes'
 export const URL_HOME_Q_HEAD = '/?q='
 
 /**
+ * 职位板省参数尾巴(lib/jobs 的 P_PROV,只吃单省)。AIP 表「看岗位」只在雇主 AIP 岗只在一省时带,
+ * 多省时落全国搜(2026-09-05;职位板多省筛选没有,不在本批造)。
+ */
+export const URL_PROV_TAIL = '&prov='
+
+/**
  * 移民动态列表页(政策动态标题旁那条外链,也是无 slug 时的兜底去处)。
  */
 export const URL_NEWS = '/news'
@@ -910,6 +916,11 @@ export const VERDICT_PUBLIC = 'public'
 export const COL_SECTOR = 'sector'
 
 /**
+ * 雇主表列 key:省份(只在 AIP 表出,该雇主 AIP 岗所在的大西洋省;2026-09-05 Frank 拍板加列)。
+ */
+export const COL_AIP_PROVS = 'aipProvs'
+
+/**
  * 雇主类别的文案键前缀(后接 private / public / government)。
  */
 export const KEY_SECTOR_HEAD = 'pulse.sector.'
@@ -1009,6 +1020,23 @@ export const PILOT_FCIP = 'FCIP'
  * 不要和一般走 PNP 的雇主放到一起」)。
  */
 export const TABLE_PILOT = 'pilot'
+
+/**
+ * 雇主表的表种:AIP 表(本地 / 连锁两张同种;2026-09-05 /fe 把脉 AIP 批:在招只算 AIP 岗、在招职业只列 AIP 岗、
+ * 多一列省份;RCIP / FCIP 仍是 TABLE_PILOT,按名单交集匹配没有岗级事实,口径不动)。
+ */
+export const TABLE_AIP = 'aip'
+
+/**
+ * AIP 表的两半之一:本地雇主(在招岗没出大西洋,或只出了一省);表题文案 = KEY_PILOT_HEAD + 键。
+ * 拆表理由见 lib/employers CHAIN_PROVS_MIN(Frank 2026-09-05「当地的企业更容易 AIP 吧」)。
+ */
+export const AIP_SEC_LOCAL = 'aipLocal'
+
+/**
+ * AIP 表的两半之一:连锁雇主(在招岗覆盖大西洋以外 ≥ 2 省,品牌名匹配是模糊命中)。
+ */
+export const AIP_SEC_CHAIN = 'aipChain'
 
 /**
  * 三试点的键(顺序即三张表的顺序);表题文案 = KEY_PILOT_HEAD + 键。

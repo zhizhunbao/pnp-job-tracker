@@ -26,6 +26,14 @@ export const EMP_PROGRAMS = ['AIP', 'RCIP', 'FCIP'] as const
 export const SE_SSR_ROWS = 50
 
 /**
+ * 「连锁」判据:在招岗覆盖大西洋以外至少几个省(2026-09-05 Frank「AIP 应该是分两部分吧 一部分是当地的企业,
+ * 一部分是像这个连锁的企业。当地的企业更容易 AIP 吧」)—— 连锁的指定按加盟法人逐家给(官方名单里是
+ * 「10113 Newfoundland Ltd. o/a Mary Brown's」这种法人),按品牌名匹配是模糊命中;把脉页 AIP 表按此拆
+ * 「本地 / 连锁」两张。Tim Hortons 9 省 → 连锁;Kent Building Supplies 四省全在大西洋 → 本地。
+ */
+export const CHAIN_PROVS_MIN = 2
+
+/**
  * 对照最多几家(D3 拍板)。
  */
 export const CMP_MAX = 4

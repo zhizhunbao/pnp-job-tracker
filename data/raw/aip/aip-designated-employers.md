@@ -5,12 +5,12 @@
 
 | 省 | 指定雇主总数 | 科技相关 | 占比 |
 |---|---:|---:|---:|
-| 纽芬兰与拉布拉多（NL） | 94 | 12 | 13% |
+| 纽芬兰与拉布拉多（NL） | 645 | 45 | 7% |
 | 新不伦瑞克（NB） | 1259 | 48 | 4% |
 | 新斯科舍（NS） | 1574 | 66 | 4% |
-| 爱德华王子岛（PE） | 386 | 13 | 3% |
+| 爱德华王子岛（PE） | 391 | 13 | 3% |
 
-## 纽芬兰与拉布拉多（NL） — 科技相关指定雇主（12 家）
+## 纽芬兰与拉布拉多（NL） — 科技相关指定雇主（45 家）
 
 | 雇主 | 地点 |
 |---|---|
@@ -18,7 +18,7 @@
 | 13910 NF & Lab Inc. o/a Fewers Ambulance Service | Holyrood, Conception Bay South |
 | 72351 NL & LAB INC o/a Reliable Ambulance Service | Stephenville |
 | 75961 Newfoundland and Labrador Inc. o/a Cyno | St. John's |
-| 79726 NL & Lab. Inc. o/a Oram's Bethesda Manor | Gander |
+| 79726 NL & Lab. Inc. o/a Oram’s Bethesda Manor | Gander |
 | 85429 Newfoundland and Labrador Corp. | Mount Pearl |
 | ABM Systems Limited Systemes ABM Limitee o/a ABM Integrated Solutions | St. John's |
 | Admiral Immigration Solutions Inc. | Mount Pearl |
@@ -26,6 +26,39 @@
 | Avalon Holographics Inc. o/a Avalon Holographics | St. John's |
 | Avalon Laboratories Inc a/o Avalon Labs | St John's |
 | Avalon Tech and Tailor Inc. | St. John's |
+| Beaufort Solutions Inc. | St. John's |
+| Bluedrop ISM Limited o/a Bluedrop ISM | St. John's |
+| Clear Risk Inc. | St John's |
+| Clear Risk Inc. o/a ClearRisk | St. John's |
+| CoLab Software Inc | St. John's |
+| DBC Marine Safety Systems Ltd | Mount Pearl |
+| Dr. Vikram Vasamreddy Dentistry Professional Corp. o/a Lab City Dental | Labrador City |
+| EcoBloc Inc. | St. John's |
+| Empowered Homes Inc. | St. John's |
+| GET Payroll Solutions Inc. o/a NorthStar Payroll | St. John's |
+| Government of Newfoundland and Labrador o/a Digital Government and Service NL | Clarenville |
+| Government of Newfoundland and Labrador o/a Office of the Chief Information Officer | St. John's |
+| Greenfoot Energy Solutions, Inc. | Newfoundland |
+| HW Consulting and Property Management Inc. | St John's |
+| John Atkins Marketing Inc. o/a JAC | Mount Pearl |
+| Karwood Engineering Inc. | Paradise |
+| Kraken Robotic Inc. | Mount Pearl |
+| LOCKEY HAVEN LTD o/a Jiffy Cabs | St John's |
+| MechMonkey Solutions Inc. o/a Mxpert | St. John's |
+| Nasdaq Canada Inc. | St John's |
+| Nor-Lab Limited | Happy Valley-Goose Bay |
+| Nor-Lab Limited o/a Bentley’s Restaurant | Happy Valley-Goose Bay |
+| Other Ocean Interactive NL Limited o/a Other Ocean | St. John's |
+| PAL Aerospace Ltd. o/a PAL Aerospace/PAL Technical Services | St. John's |
+| PolyUnity Tech Inc. o/a PolyUnity | St. John's |
+| Pragmaclin Research Inc. o/a Pragmaclin Research | St. John's |
+| Sepideh Mehrani a/o Adorify Analytics Inc. | PO Box 1653 Station C |
+| Sift Med Inc. | St. John's |
+| Sushi Shokumin Inc. o/a Sun Sushi | St. John's |
+| Telem61 Software Inc. a/o trophi.ai | St John's |
+| The New Vogue Furriers Limited o/a Always In Vogue | St. John's |
+| Verafin Solutions ULC | St. John's |
+| Vision33 Canada Inc. o/a Vision33 | St. John's |
 
 ## 新不伦瑞克（NB） — 科技相关指定雇主（48 家）
 

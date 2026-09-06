@@ -7,13 +7,13 @@
   },
   {
     "province": "NL",
-    "employer": "10113 Newfoundland Ltd. o/a Mary Brown's",
+    "employer": "10113 Newfoundland Ltd. o/a Mary Brown’s",
     "location": "Clarenville",
     "tech": false
   },
   {
     "province": "NL",
-    "employer": "10464 Newfoundland Ltd. o/a Jungle Jim's Restaurant",
+    "employer": "10464 Newfoundland Ltd. o/a Jungle Jim’s Restaurant",
     "location": "St. John's",
     "tech": false
   },
@@ -31,8 +31,14 @@
   },
   {
     "province": "NL",
-    "employer": "13199657 Canada Inc o/a Brophy's Ultramar",
+    "employer": "13199657 Canada Inc o/a Brophy’s Ultramar",
     "location": "Fermeuse",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "1342205 Ontario Ltd. a/o Surplus Furniture and Mattress Warehouse",
+    "location": "",
     "tech": false
   },
   {
@@ -49,14 +55,8 @@
   },
   {
     "province": "NL",
-    "employer": "3T's Limited o/a 3T's",
+    "employer": "3T’s Limited o/a 3T’s",
     "location": "Little Rapids & Woody Point",
-    "tech": false
-  },
-  {
-    "province": "NL",
-    "employer": "84379 Newfoundland & Labrador Corp. o/a NLCC Service Group",
-    "location": "St. John's",
     "tech": false
   },
   {
@@ -67,13 +67,19 @@
   },
   {
     "province": "NL",
+    "employer": "56955 Nfld & Labrador Inc o/a Pleasantview Manor",
+    "location": "Lewisporte",
+    "tech": false
+  },
+  {
+    "province": "NL",
     "employer": "61065 Newfoundland and Labrador Inc o/a The Golden Years Estate",
     "location": "Gander",
     "tech": false
   },
   {
     "province": "NL",
-    "employer": "64354 Newfoundland & Labrador Ltd. o/a Freedom Foods/McDonald's",
+    "employer": "64354 Newfoundland & Labrador Ltd. o/a Freedom Foods/McDonald’s",
     "location": "St. John's, Mount Pearl",
     "tech": false
   },
@@ -91,7 +97,7 @@
   },
   {
     "province": "NL",
-    "employer": "71516 NEWFOUNDLAND & LABRADOR INC. a/o Ye's Wok Restaurant",
+    "employer": "71516 NEWFOUNDLAND & LABRADOR INC. a/o Ye’s Wok Restaurant",
     "location": "Paradise",
     "tech": false
   },
@@ -109,7 +115,7 @@
   },
   {
     "province": "NL",
-    "employer": "72764 Newfoundland & Labrador o/a Mary Brown's",
+    "employer": "72764 Newfoundland & Labrador o/a Mary Brown’s",
     "location": "Springdale",
     "tech": false
   },
@@ -121,7 +127,7 @@
   },
   {
     "province": "NL",
-    "employer": "74501 Newfoundland & Labrador Inc. o/a St. John's Fish Exchange",
+    "employer": "74501 Newfoundland & Labrador Inc. o/a St. John’s Fish Exchange",
     "location": "St. John's",
     "tech": false
   },
@@ -133,7 +139,7 @@
   },
   {
     "province": "NL",
-    "employer": "75211 Newfoundland & Labrador Inc. o/a Holiday Inn Express & Suites St. John's Airport",
+    "employer": "75211 Newfoundland & Labrador Inc. o/a Holiday Inn Express & Suites St. John’s Airport",
     "location": "St. John's",
     "tech": false
   },
@@ -175,13 +181,13 @@
   },
   {
     "province": "NL",
-    "employer": "78426 Newfoundland and Labrador Limited o/a Volkswagen St. John's",
+    "employer": "78426 Newfoundland and Labrador Limited o/a Volkswagen St. John’s",
     "location": "St. John's",
     "tech": false
   },
   {
     "province": "NL",
-    "employer": "79726 NL & Lab. Inc. o/a Oram's Bethesda Manor",
+    "employer": "79726 NL & Lab. Inc. o/a Oram’s Bethesda Manor",
     "location": "Gander",
     "tech": true
   },
@@ -205,7 +211,7 @@
   },
   {
     "province": "NL",
-    "employer": "81587 Newfoundland & Labrador Corp. o/a Mary Brown's",
+    "employer": "81587 Newfoundland & Labrador Corp. o/a Mary Brown’s",
     "location": "Twillingate",
     "tech": false
   },
@@ -229,14 +235,14 @@
   },
   {
     "province": "NL",
-    "employer": "85216 Newfoundland and Labrador Ltd. o/a Wok Box",
+    "employer": "84379 Newfoundland & Labrador Corp. o/a NLCC Service Group",
     "location": "St. John's",
     "tech": false
   },
   {
     "province": "NL",
-    "employer": "85429 Newfoundland and Labrador Corp. o/a Freedom Foods/McDonald's",
-    "location": "St. John's, Mount Pearl",
+    "employer": "85216 Newfoundland and Labrador Ltd. o/a Wok Box",
+    "location": "St. John's",
     "tech": false
   },
   {
@@ -244,6 +250,12 @@
     "employer": "85429 Newfoundland and Labrador Corp.",
     "location": "Mount Pearl",
     "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "85429 Newfoundland and Labrador Corp. o/a Freedom Foods/McDonald’s",
+    "location": "St. John's, Mount Pearl",
+    "tech": false
   },
   {
     "province": "NL",
@@ -301,14 +313,14 @@
   },
   {
     "province": "NL",
-    "employer": "A+ Auto Service Center (2017) Ltd.",
-    "location": "St. John's",
+    "employer": "A & H Pizza Inc. o/a Peter’s Pizza",
+    "location": "Paradise",
     "tech": false
   },
   {
     "province": "NL",
-    "employer": "A & H Pizza Inc. o/a Peter's Pizza",
-    "location": "Paradise",
+    "employer": "A+ Auto Service Center (2017) Ltd.",
+    "location": "St. John's",
     "tech": false
   },
   {
@@ -349,7 +361,7 @@
   },
   {
     "province": "NL",
-    "employer": "Adelaide and George Inc. o/a Kelly's Pub",
+    "employer": "Adelaide and George Inc. o/a Kelly’s Pub",
     "location": "St. John's",
     "tech": false
   },
@@ -358,6 +370,12 @@
     "employer": "Admiral Immigration Solutions Inc.",
     "location": "Mount Pearl",
     "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Admirals Coast Retirement Centre Inc. o/a Admirals Coast Retirement Centre",
+    "location": "",
+    "tech": false
   },
   {
     "province": "NL",
@@ -373,13 +391,13 @@
   },
   {
     "province": "NL",
-    "employer": "AG Pike's Holdings Ltd. o/a Pike's Home Hardware Building Centre",
+    "employer": "AG Pike’s Holdings Ltd. o/a Pike’s Home Hardware Building Centre",
     "location": "Happy Valley-Goose Bay",
     "tech": false
   },
   {
     "province": "NL",
-    "employer": "AHF Developments o/a Cora's Breakfast and Lunch",
+    "employer": "AHF Developments o/a Cora’s Breakfast and Lunch",
     "location": "St. John's",
     "tech": false
   },
@@ -409,13 +427,13 @@
   },
   {
     "province": "NL",
-    "employer": "Amauligak Services & Contracting Ltd. o/a Pep's Diner",
+    "employer": "Amauligak Services & Contracting Ltd. o/a Pep’s Diner",
     "location": "Happy Valley-Goose Bay",
     "tech": false
   },
   {
     "province": "NL",
-    "employer": "Amity Foods Inc. o/a Tim Horton's",
+    "employer": "Amity Foods Inc. o/a Tim Horton’s",
     "location": "St. John's",
     "tech": false
   },
@@ -493,7 +511,7 @@
   },
   {
     "province": "NL",
-    "employer": "B & B Nepali Cuisine Ltd. o/a T/A PETER'S PIZZA",
+    "employer": "B & B Nepali Cuisine Ltd. o/a T/A PETER’S PIZZA",
     "location": "Mount Pearl",
     "tech": false
   },
@@ -541,7 +559,7 @@
   },
   {
     "province": "NL",
-    "employer": "Bay Group Inc. o/a Mary Brown's",
+    "employer": "Bay Group Inc. o/a Mary Brown’s",
     "location": "Whitbourne",
     "tech": false
   },
@@ -560,6 +578,3294 @@
   {
     "province": "NL",
     "employer": "BC General Partners Inc. o/a Bishops Gardens Seniors Living",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "BDF Restaurant Ltd. o/a Pizza Delight",
+    "location": "Goose Bay",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Beachside Manor Ltd.",
+    "location": "Placentia",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Beaufort Solutions Inc.",
+    "location": "St. John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Beauty Nails Ltd. o/a Beauty Nails",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Beauty Valley Spa",
+    "location": "Happy Valley Goose Bay",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Bennett’s Limited o/a Bennett’s Ultramar",
+    "location": "Goose Bay",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Bensaid Services Ltd. o/a Bensaid Housing",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Bidgoods Wholesale Ltd. o/a Bidgoods Supermarket",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Big Sky Inc. o/a Montana’s BBQ & Bar",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Biiftuu Oromia Cleaning Services Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Bilroc Industries Ltd. o/a Rockwater Professional Products",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Bishops Gardens Seniors Living LP",
+    "location": "St. John's, Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "BJH Enterprises Inc. o/a Wing’n It Kenmount",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "BL 668 Food Co. Ltd. o/a Dragon 88 Restaurant",
+    "location": "Conception Bay South",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Blackhawk Food Services Inc. o/a Wing’N It",
+    "location": "Marystown",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Blair Holdings Limited o/a U Got It Maid Cleaning Service",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Blanchard’s Heating & Cooling Ltd.",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Blizzard Valley Inc. o/a Dairy Queen Grill & Chill",
+    "location": "Happy Valley-Goose Bay",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Blue Holdings Ltd o/a Blue on Water",
+    "location": "St John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Bluedrop ISM Limited o/a Bluedrop ISM",
+    "location": "St. John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Bluesky Family Care Ltd.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "BN Crane Services 2020 Limited",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Bogart’s Jewelry Ltd. o/a Bogart’s Jewelry",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Boutcher Holdings Inc. o/a Tim Horton’s",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Bralin Services Limited o/a Mieneke Car Care",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Breton Bay Holding o/a Tim Horton’s",
+    "location": "Conception Bay South",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Briarside Addendum o/a Animal House Grooming",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Brockways Restaurant and Bar Ltd o/a Brockways Restaurant and Bar",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Bugden Enterprises Limited o/a Mary Brown’s",
+    "location": "Conception Bay South",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Buott Bros Restaurants Inc. o/a Montanas BBQ and Bar",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Burin Living Inc. o/a Grand Bank Retirement Living",
+    "location": "Grand Bank",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Bursey Cleaners (2010) Limited",
+    "location": "St John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Burton’s Adventure o/a Dairy Queen",
+    "location": "St. John's/Deer Lake",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Byron D. Smith Professional Corporation",
+    "location": "Spaniard's Bay",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "C&C Enterprises o/a The Bargain Centre",
+    "location": "Port Aux Basques",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "C-Gas Management Inc.",
+    "location": "Holyrood, St. John's, Clarenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Cabot Endeavour Inc. o/a Mary Brown’s",
+    "location": "C.B.S, Holyrood",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Cabot Graphics Inc. o/a Print Three Newfoundland",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Calvary Baptist Church Inc.",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Canadian Courier Ltd o/a Dooleys Trucking",
+    "location": "Mount Pearl, Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Canning Ventures Ltd. o/a Canning Personal Care Home",
+    "location": "Conception Bay South",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Cape D’or Holdings o/a Topsail Road Esso",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Capital City Cleaners Inc.",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Capital Motors Inc. a/o Capital Auto Centre",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Capital Motors Ltd. 2004 o/a Capital Hyundai",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Capitol Hair Studio Inc o/a Capitol Unisex Salon",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Carol Automobile Ltd",
+    "location": "Lab",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Casablanca Bakery and Catering Inc o/a Casablanca Bakery and Catering",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Catholic School Foundation of Corner Brook o/a Immaculate Heart of Mary School",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Cavendish Hotel GP Ltd o/a Sheraton Hotel Newfoundland",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "CBS Foods Ltd o/a Jungle Jim’s",
+    "location": "Conception Bay South",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Celtic Enterprises Ltd. o/a Canadian Tire Gas Bar and Subway",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "CENTRAL CONVENIENCE LTD o/a CENTRAL CONVENIENCE",
+    "location": "Baie Verte",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Central Health Integrated Health Authority o/a Central Health",
+    "location": "Grand Falls - Windsor",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "CG Aberdeen Holdings o/a Harvey’s",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "CG West Holdings o/a Harvey’s",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Chadwick Limited o/a Mary Brown’s",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Chancellor Park Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Child Matters Incorporated o/a Child Matters",
+    "location": "Conception Bay South",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "China-Mart Wholesale Ltd. o/a China-Mart",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "CIMA Canada Inc. o/a CIMA+",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Citadel House Inc a/o The Citadel House",
+    "location": "Lewisporte",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "City Light Holdings Inc. o/a City Light Restaurant",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "City Tire & Auto Center Ltd.",
+    "location": "various",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "CJP Investments Limited o/a Little Caesars",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Clarenville Foods Inc. o/a Jungle Jim’s Restaurant",
+    "location": "Clarenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Clear Risk Inc.",
+    "location": "St John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Clear Risk Inc. o/a ClearRisk",
+    "location": "St. John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Coalescence Convenience Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Coastal Bay Coffee Ltd. o/a Tim Hortons",
+    "location": "Whitbourne",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Coastal Pizza Company Incorporated o/a Boston Pizza",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Coastline Adventures Inc. o/a Coastline Adventures",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "CoLab Software Inc",
+    "location": "St. John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Collins’ Ambulance Service Ltd.",
+    "location": "Clarke's Beach, Bay Roberts",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Comfort Home Care Inc.",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Commonwealth Foods Ltd. o/a A&W Mount Pearl",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Community Sector Council Newfoundland & Labrador Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Compass Seniors’ Services Incorporated a/o Connections for Seniors",
+    "location": "St John's, Conception Bay South",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Compassion HomeCare Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Condon’s Home for Special Care Inc. o/a Hi Haven Manor",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Connor Madyson Enterprises o/a Tim Horton’s",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Copperstop Ltd.",
+    "location": "Baie Verte",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Corner Brook Hotel Ltd. o/a Quality Inn Corner Brook",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Corner Brook Pulp and Paper Limited",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Corner Brook Roman Catholic Episcopal Corporation",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Cosmos Enterprises Ltd.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "CROSSROADS HOLDINGS INC a/o CROSSROADS INN & SUITES",
+    "location": "Paradise",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Crosswind Investments Inc. a/o Crosswinds Seniors Resort",
+    "location": "Robinsons",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Crown Cabinet and Fireplaces Ltd.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Crystal Yoga o/a New Dimensions Child Care Centre",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "D-J Composites Inc.",
+    "location": "Gander",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "D.J. Gift Shop Ltd. o/a DJs Convenience",
+    "location": "Hopedale",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "DAC Holdings Inc. o/a Mr. Lube",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Daleco Ltd. o/a A&W",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Daleco Ltd. o/a Greco",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Dandy Dan’s Fish Market Ltd",
+    "location": "Ship Harbour",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Darren Jackman Enterprises Inc. o/a Pizza Delight",
+    "location": "Marystown",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Dash Foods Inc. o/a Mary Brown’s",
+    "location": "St. Anthony",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Dave Gulliver Cab Ltd. o/a City Wide Taxi",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Dave Patey Denture Centre Inc. o/a Clarenville Denture Clinic",
+    "location": "Clarenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Day & Ross Inc.",
+    "location": "Corner Brook, Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "DBC Marine Safety Systems Ltd",
+    "location": "Mount Pearl",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "DC Ventures Inc. o/a Allen’s One Stop",
+    "location": "Channel-Port aux Basques",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Deer Lake Express Hotel Ltd. o/a Holiday Inn Express Deer Lake",
+    "location": "Deer Lake",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Dental Crafts Ltd.",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Dental Crafts Ltd. o/a Smile Innovations Group",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Discovery UNESCO Global Geopark",
+    "location": "Trinity Bay North",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Donna’s Daycare Centre Inc.",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Dory’s Way Inc. o/a Greco Pizza",
+    "location": "Whitbourne",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Dot’s Bakery & Coffee Shop",
+    "location": "L'Anse Au Loup",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "DQGANDER&GFW FOOD INC. o/a Dairy Queen",
+    "location": "Gander, Grand-Falls Windsor",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Dr Sarath Amerasinghe Dental Clinic Inc o/a Star Dental",
+    "location": "Happy Valley - Goose Bay",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Dr. Amandeep Garg Dentistry Professional Corp. a/o Northern Dental",
+    "location": "Happy Valley-Goose Bay",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Dr. Chandrasegaram Labrador Professional Dental Corporation o/a Labrador Dental Clinic",
+    "location": "Happy Valley-Goose Bay",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Dr. Chedella Venkata Professional Dental Corporation o/a Epic Dental Specialist",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Dr. H. Hans and Dr. P. Hans PMC, Inc.",
+    "location": "Labrador City",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Dr. Kapil Kapoor Dental Professional Corporation o/a Northern Dental",
+    "location": "Happy Valley-Goose Bay",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Dr. Omer Mallhi Professional Dental Corporation o/a Paradise Dental",
+    "location": "Paraidse",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Dr. Reem Mamarbachi Professional Dental Corporation",
+    "location": "Clarenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Dr. Refus Meshack Dentistry Professional Corporation o/a Summerville Dental Office",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Dr. Rehan Malik",
+    "location": "Labrador City",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Dr. Vikram Vasamreddy Dentistry Professional Corp. o/a Lab City Dental",
+    "location": "Labrador City",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Dragon Enterprises Inc. o/a RED PEPPER RESTAURANT",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Drover Insurance Services Inc. o/a Drover Financial",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Dunne’s Petroleum Incorporated",
+    "location": "St John's, Conception Bay South, Witless Bay, Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "D’Alan Inc. o/a Mary Brown’s Famous Chicken & Taters",
+    "location": "Grand Falls-Windsor & Lewisporte",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "E.E.M. holdings Inc o/a Battens Esso",
+    "location": "Bay Roberts",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Earle’s Groceries Ltd",
+    "location": "L'Anse Au Loup",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Early Childhood Development Association a/o Pumpkin House Childcare Center",
+    "location": "Goose Bay",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "East Coast Sushi Restaurant Inc. o/a Sunshi Island",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "East End Tailoring Ltd.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "East Ocean Food Inc. a/o Ocean Sushi",
+    "location": "Paradise",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "East to West Corner Brook Inc o/a Wendy’s Corner Brook",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "East to West Holdings Inc. o/a Wendy’s Topsail Road",
+    "location": "St John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "EcoBloc Inc.",
+    "location": "St. John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Ecole Prescholaire o/a Mes Amis Daycare & Preschool",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "ECW Holdings Ltd. o/a Wok Box",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "EgyCana Fast Food Enterprises Inc. o/a Big Bite Pita",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "ELH Enterprises Inc. o/a Wing’n It Corner Brook",
+    "location": "Corner Brook, NL",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "ELJ Holdings Inc. o/a Creative Discover Children’s Centre",
+    "location": "Goulds (St. John's)",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "EM-K Investments Ltd. o/a Burger King",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "EMA-A-PIZZA INC. o/a Peter’s Pizza",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Empowered Homes Inc.",
+    "location": "St. John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "ENC Holdings Limited o/a Little Caesars – Southlands",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "English’s Paving Corp.",
+    "location": "Paradise",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Enterprises Rent A Car Canada Company",
+    "location": "St. John's, Mount Pearl, Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "EVG Enterprises Ltd o/a E & E Drive-In",
+    "location": "Brigus",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Exploits Appliance and Refrigeration Ltd.",
+    "location": "Lewisporte",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Exploits Valley Air Services Ltd.",
+    "location": "Gander",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Exploits Valley Animal Hospital Limited",
+    "location": "Grand Falls-Windsor",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Fahey Building Ltd. o/a The Labrador Inn",
+    "location": "Happy Valley-Goose Bay",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Faith Assets Inc. o/a Cora’s Breakfast & Lunch",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Fast Path Snow Clearing and Lawn Care Ltd.",
+    "location": "Logy Bay",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "FB Burrito Partnership / Fat Bastard Enterprises Inc. o/a Fat Bastard Burrito",
+    "location": "St. John's, Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Ferryland Emergency Services Limited",
+    "location": "Ferryland - Cape Broyle",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Fewer’s Ambulance Service Ltd.",
+    "location": "Clarenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "FGI Group Inc. o/a Subway",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Fibreglass Works Ltd.",
+    "location": "Centreville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Field Power Foods Inc o/a Wing’n It",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "FireFly Metals Canada Ltd a/o FireFly Metals",
+    "location": "Baie Verte",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Flavours Indian Cuisine Ltd.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "FMI Atlantic o/a KFC",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Focenco Ltd o/a Coleman’s Food Center",
+    "location": "various",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Four Guys Enterprises Ltd. o/a Paradise Dairy Queen",
+    "location": "Paradise",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Frank’s General Store Ltd. o/a Franks Store",
+    "location": "Makkovik",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Fraser Properties LP o/a Rock Cliffe Children’s Centre",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Fred Earle Chartered Professional Accountant",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Futurity Limited o/a Tim’s Horton’s",
+    "location": "St. John's, Paradise",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "G & M Enterprises Ltd.",
+    "location": "Gander",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "G.J. Cahill & Company o/a The Cahill Group",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Galway Coffee Inc. o/a Tim Hortons",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Gander Day Care Centre Limited o/a Peter Pan Pre-School & Child Care",
+    "location": "Gander",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Gander Flight Training",
+    "location": "Gander",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Ganesh Food Ltd o/a Smokes Poutinerie",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Garda Canada Security Corporation a/o GardaWorld",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Gary’s Convenience Limited o/a Robin Donuts",
+    "location": "Glovertown",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "GATEWAY DONUTS INC a/o TIM HORTONS",
+    "location": "Channel Port Aux Basques, NL",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Genoa Design International",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Georgia Holdings Limited o/a Wendy’s Topsail Road",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "GET Payroll Solutions Inc. o/a NorthStar Payroll",
+    "location": "St. John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Gittens & Associations o/a Gittens de Beer and Associates",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "GJM ENTERPRISES LTD.",
+    "location": "Catalina",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Glenview Farm Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Glovertown Convenience Limited o/a Robin’s Donuts",
+    "location": "Glovertown",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Glovertown Pharmacy Ltd. o/a Glovertown Pharmachoice",
+    "location": "Glovertown",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Golden Harbour Trading Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Good Fortune Food Industry Inc. o/a Golden Phoenix Buffett",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Goose Bay Airport Restaurant (1972) Ltd. o/a El Greco",
+    "location": "Happy Valley-Goose Bay",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Gould’s Foods Inc. o/a Jungle Jim’s Restaurant",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Government of Newfoundland and Labrador a/o Department of Children, Seniors and Social Development",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Government of Newfoundland and Labrador a/o Royal Newfoundland Constabulary",
+    "location": "Newfoundland",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Government of Newfoundland and Labrador o/a Digital Government and Service NL",
+    "location": "Clarenville",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Government of Newfoundland and Labrador o/a Office of the Chief Information Officer",
+    "location": "St. John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Government of NL",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Grace Hotel Ltd. o/a Amaguk Hotel",
+    "location": "Hopedale",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Grand Enterprises Limited o/a The Gypsy Tea Room",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Grand Falls Hotel GP o/a Mount Peyton Resort & Conference Centre",
+    "location": "Grand Falls-Windsor",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Granite Department Store Inc. o/a Pipers",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Green Bay Fibre Products Ltd. o/a Green Bay Fibre",
+    "location": "King's Point",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Green Bay Retirement Living Inc. o/a Kingsway Living Springdale",
+    "location": "Springdale",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Greenfoot Energy Solutions, Inc.",
+    "location": "Newfoundland",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Greenwood Services Inc.",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Gullies Convenience & Deli Inc.",
+    "location": "Conception Bay South",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Gupta 999 Restaurants Inc. o/a Subway",
+    "location": "Grand Falls-Windsor",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "HAC General Partner Inc. o/a ALT Hotel St. John’s",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Harnois Energies Inc.",
+    "location": "Labrador City",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Hawkno Holding Ltd. o/a Wendy’s",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Hefferman’s Guest Home Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Hellen Young o/a Vitality Salon and Spa",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Heritage Square Retirement Living o/a Heritage Square Retirement",
+    "location": "Conception Bay South",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Hickey’s Building Supplies Limited o/a Hickey’s Timber Mart",
+    "location": "Conception Bay South, Harbour Main",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "HINGSING TRADING INC.",
+    "location": "Lewisporte",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Horner Investments Limited o/a Little Caesars – White Rose",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "House’s Limited o/a Shallow Bay Motel & Cabins",
+    "location": "Cow Head",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "House’s Service Ltd.",
+    "location": "Port Saunders",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "HRH Investments o/a Boston Pizza",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Hubert Murphy (2009) Limited o/a Hubert Murphy Ltd",
+    "location": "Paradise",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Humber Tumblers o/a Saltos Gymnastics",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Hunt’s Transport Ltd. o/a Hunt’s Logistics",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "HW Consulting and Property Management Inc.",
+    "location": "St John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Hyde Park Homes Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "I.C. Pizza House Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Ida’s Seniors Home o/a Ida’s Seniors Home/Mountain Hope Manor",
+    "location": "Channel-Port aux Basques",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Independent Security Services Atlantic (ISS) Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Indian Express Ltd. o/a The Indian Express",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Indus Eatery Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Infinity Realty Inc. o/a Re/Max Infinity Realty",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Iras Holding Ltd. o/a Wendy’s",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "J & B Outfitters Limited",
+    "location": "Main Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "J & K Subway Ltd. o/a Subway",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "J&K Subway Ltd. o/a Subway",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "J. Co Holdings Inc. o/a Kelseys 7120",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "J.D Irving Limited o/a Ken Building Supplies",
+    "location": "various",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Jacobssons Enterprises Ltd. o/a Mark’s",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Jago Auto Ltd. o/a Western Toyota",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Jamonli Restaurant Inc. a/o Taiwan Restaurant",
+    "location": "Grand Falls-Windsor",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Jigger Foods Inc o/a Jigger Foods",
+    "location": "Bay Bulls",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Jillian Bessey o/a Exhale Spa & Laser Center",
+    "location": "St Anthony",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Jingxin Holdings Inc. a/o Whee",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "JJC Investments o/a Little Caesars Paradise",
+    "location": "Paradise",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "John Atkins Marketing Inc. o/a JAC",
+    "location": "Mount Pearl",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "John D Allan Limited o/a Cabot Business",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "JPJC Holdings Incorporated o/a Mister T’s Ultramar",
+    "location": "Gander",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Jubilee Investments Incorporated a/o Booster Juice",
+    "location": "PARADISE",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Julmar Holdings Limited o/a The Sprout Restaurant",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Jumping Bean Coffee Inc.",
+    "location": "St. John's, Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Just Goody Merchants Inc. o/a Just Goody Mart",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "K&D Pratt Limited a/o K&D Pratt Group Inc.",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "K&S Holdings o/a Jungle Jim’s",
+    "location": "Labrador City",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Kariss Enterprises Limited",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Karlee Enterprise Ltd. o/a Deer Lake Irving Big Stop",
+    "location": "Deer Lake",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Karwood Engineering Inc.",
+    "location": "Paradise",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Kelsey Drive Pizza Company o/a Boston Pizza Kelsey Drive",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Kids Kampus Inc. o/a Kids Kampus Paradise",
+    "location": "Portugal Cove",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Killbride to Ferryland Resource Coalition Inc.",
+    "location": "Bay Bulls",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Kingsway Living",
+    "location": "Paradise",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Kingsway Living Grand Falls-Windsor Inc. o/a Kingsway Living Grand Falls-Windsor",
+    "location": "Grand Falls-Windsor",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Kingsway Living Lewisporte Inc. o/a Kingsway Living Lewisporte",
+    "location": "Lewisporte, NL",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Kittiwake Dance Theatre",
+    "location": "St. John's, Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Komatic Support Services Inc. o/a Royal Inn & Suites",
+    "location": "Happy Valley-Goose Bay",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Kraken Robotic Inc.",
+    "location": "Mount Pearl",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Kung Fu Chinese Restaurant Ltd. a/o Kungfu Restaurant",
+    "location": "St John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "L & H Tucker Holdings Inc. o/a Tim Horton’s",
+    "location": "St. Anthony/ Deer Lake",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Labrador Grenfell Health",
+    "location": "various",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Lagisetty Vankadara Dental Services Inc. o/a The Dentists at Galway",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Lanes Retirement Living Botwood Inc.",
+    "location": "Botwood",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Lanes Retirement Living Carbonear Inc.",
+    "location": "Carbonear",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Lanes Retirement Living Irishtown-Summerside Inc.",
+    "location": "Irishtown-Summerside",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Lanes Retirement Living Port Saunders Inc.",
+    "location": "Port Saunders",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Lanes Retirement Living St. John’s Inc. o/a Lanes Retirement Living",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Larch Grove Farm",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Laro Enterprises Limited o/a Carpet Factory Super Store",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "LC Stephenville a/o Little Caesars",
+    "location": "Stephenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Lead Enterprises Limited o/a Subway Springdale",
+    "location": "Springdale",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Leadon (St. John’s) Operations LP o/a Fairfield Inn & Suites",
+    "location": "St John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Letto’s Enterprises Ltd. o/a Northern Light Inn",
+    "location": "L'anse Au Clair, NL",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Little People’s Workshop Ltd",
+    "location": "Paradise, St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Little Rushy Enterprises Inc o/a Lefty’s Pizzeria & Lounge",
+    "location": "Grand Falls-Windsor",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Li’s Restaurant Limited a/o Li’s Restaurant",
+    "location": "Lewisporte",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "LL & C Holdings Inc. o/a Boca Tapas Bar",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "LOCKEY HAVEN LTD o/a Jiffy Cabs",
+    "location": "St John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Lolo’s Investments o/a Peter’s Pizza (CBS)",
+    "location": "CBS",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "LUCKY HOUSE RESTAURANT LIMITED o/a LUCKY HOUSE RESTAURANT",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Luxury Nails and Spa Ltd.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Lynda and Albert Enterprises Inc. o/a Dairy Queen",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Lynwell Auto Ltd. o/a Western Mazda",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "L’Association Communautaire Francophones de Saint-Jean Inc. o/a ACFSJ",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "M.C. Investment Inc. a/o Kumabento",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Magic Foods Ltd. o/a A&W",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Majes Tea Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Major’s Contracting Limited",
+    "location": "Deer Lake",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "MAR Investments Limited o/a Tim Horton’s",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Marble Resort Development o/a MARBLE RESORT DEVELOPMENT LTD.",
+    "location": "Steady Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Maritime Paper Products Limited Partnership",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Mary Brown’s Enterprises Inc. o/a Mary Brown’s",
+    "location": "Deer Lake, St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Mary Brown’s Inc.",
+    "location": "Torbay, St. John's, Paradise, Bay Roberts, Carbonear, Gander, Stephenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Marystown Donuts Inc. o/a Tim Hortons",
+    "location": "Marystown",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "MD Jamil Hossain o/a NJ’s Kitchen",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "MDH Enterprises Inc o/a Wing’n It",
+    "location": "Gander",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "MDM Holding Inc. o/a Robin’s Donuts Roddickton",
+    "location": "Roddickton-Bide Arm",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "MechMonkey Solutions Inc. o/a Mxpert",
+    "location": "St. John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Med Tropicals o/a Med Tropicals Limited",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Medcare Aesthetics Ltd.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Meldi Food Ltd o/a Dairy Queen Grill & Chill",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Melsha Investments Ltd. o/a Domino’s Pizza",
+    "location": "Paradise",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Memorial Cafe o/a Memorial Cafe Inc.",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Memorial University",
+    "location": "Various",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Mercer Investments o/a Mary Brown’s",
+    "location": "Conception Bay South",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Mercer’s Ambulance Service Limited",
+    "location": "Boyd's Cove",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Mes Amis Daycare & Preschool Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Miao’s Holding Inc. o/a Miao’s Farm",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Mid Island Animal Health Center Inc. o/a Mid Island Animal Health Center",
+    "location": "Grand Falls-Windsor",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Mid Island Collision Centre Ltd.",
+    "location": "Springdale",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Mila Foods Inc. o/a Mary Brown’s",
+    "location": "Blackmarsh Road, Topsail Road, Mount Pearl and Goulds",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "MJ Personal Care Home Inc.",
+    "location": "Conception Bay South",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "MJR MASONRY INC.",
+    "location": "Carbonear",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Momentum Development Support Corp.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Morgans Community Care Home o/a A. Morgan Management Inc.",
+    "location": "Conception Bay South",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Moshood Ahmeed o/a Intercontinental Cleaning Services",
+    "location": "Conception Bay South",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Mount Olives Anglican Church Corporation o/a Mount Olives",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Moxies Leaseholds (St. John’s) Inc. o/a Moxies Grill & Bars",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "MP Pizza Ltd. o/a Pizza Delight",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "MSPD Food NL Inc. o/a Freshii",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "MSPD FreshFood NL Inc. o/a Freshii",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "MUP Restaurant Inc. o/a Dairy Queen",
+    "location": "Happy Valley-Goose Bay",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Murphy’s Convenience Inc. o/a Ultramar",
+    "location": "St John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Murray Premises Hotel Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Music Industry Association of Newfoundland and Labrador, Inc. o/a Music NL",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Nain Hotel Ltd. o/a Atsanik Hotel",
+    "location": "Nain",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Naite Healthcare Ltd. o/a Hoyles Pharmachoice",
+    "location": "Botwood",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "NARL Services LP a/o North Atlantic",
+    "location": "Paradise",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Nasdaq Canada Inc.",
+    "location": "St John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "NBR Investments Inc. o/a Robin’s Donuts Baie Verte",
+    "location": "Baie Verte",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "NCS Enterprises Limited a/o Suris Convenience",
+    "location": "Springdale",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "New Moon Restaurant Inc. o/a New Moon Restaurant",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "New World Dairy",
+    "location": "St. David's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Newex Delivery Inc.",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Newfound Mortgage Professionals Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Newfoundland and Labrador Credit Union Limited o/a NLCU",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Newfoundland and Labrador Health Services o/a Eastern Zone",
+    "location": "Eastern Region",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Newfoundland Balance & Dizziness Rehab Inc o/a NL Balance & Dizziness Centre",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Newfoundland Chocolate Company Inc. a/o Newfoundland Chocolate Company",
+    "location": "St. John's, Paradise",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Newfoundland International Vacation Group Ltd.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Newont Limited o/a Burger King",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Next Generation 4.0 Ltd.",
+    "location": "Bay Roberts, Carbonear",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "NL Bus Tours Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "NL Gold Factory Inc. a/o NL Gold Factory a/o NLGF",
+    "location": "Mt Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "NL Schools Branch – Department of Education o/a NL Schools",
+    "location": "Labrador City, Rigolet",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "NL Vegetation Control Ltd.",
+    "location": "Springdale Newfoundland",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Noble’s Holdings Inc. o/a Mid Island Motorsports",
+    "location": "Springdale",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Nomad Stages Inc. o/a Nomad Stages",
+    "location": "Stephenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Noodle Nami Churchill Square Restaurant Inc. o/a Noodle Nami",
+    "location": "St. Jo",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Noodles Express Restaurant Ltd o/a Noodles Express",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Nor-Lab Limited",
+    "location": "Happy Valley-Goose Bay",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Nor-Lab Limited o/a Bentley’s Restaurant",
+    "location": "Happy Valley-Goose Bay",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Normie’s Enterprises Inc. o/a Jungle Jim’s Restaurant",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Northern Grocery Inc.",
+    "location": "Port au Choix",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Northland Properties Corporation o/a Denny’s Restaurant",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Oceanic Releaf Inc.",
+    "location": "Burin",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Odriscoll Restaurants Ltd. o/a Mr. Sub",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Old Town Pizzeria Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Orange Beans Villa Development & Management Company Ltd.",
+    "location": "St John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Orcinus Technologies Inc. o/a Orcintech",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Other Ocean Interactive NL Limited o/a Other Ocean",
+    "location": "St. John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "P & B Enterprises Limited o/a Alexis Hotel",
+    "location": "Port Hope Simpson",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "P.S You Design Ltd. o/a Western Phone and Tablet Repair",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "PAL Aerospace Ltd. o/a PAL Aerospace/PAL Technical Services",
+    "location": "St. John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "PAL Airlines Ltd. o/a PAL Airlines",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Patrick Keogh o/a KeoCan Siding and Windows",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Pelley Inn Limited",
+    "location": "Springdale",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "PENINSULA DONUTS INC a/o TIM HORTONS",
+    "location": "Burin Peninsula",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Peninsula Optical Services Limited",
+    "location": "Marystown",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Peoples Food Inc. o/a People’s Pizza",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Persepolis Persian Restaurant Ltd.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Pet Central Limited",
+    "location": "Gander",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Peters & Young Cold Storage Ltd. o/a Rapid Power Sports",
+    "location": "Little Rapids",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Peter’s Pizza & Golden Foods Limited",
+    "location": "St. John's, Newfoundland",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Peyton Food Services Ltd. o/a A&W Restaurant",
+    "location": "Grand Falls - Windsor",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Philrobben Janitorial Limited",
+    "location": "Paradise",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Pho F & M Restaurant Limited o/a Pho F&M",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Piatto Neapolitan Pizza (St. John’s) Inc. o/a Piatto Pizzeria Elizabeth Ave",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Piatto@Home",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Piatto@Home Inc. o/a Piatto@Home",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Pittmans Enterprises Limited",
+    "location": "St Pauls",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Placentia Mall Inc.",
+    "location": "Placentia",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "PMH Holdings Inc. o/a Postmaster’s Baker",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "PolyUnity Tech Inc. o/a PolyUnity",
+    "location": "St. John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Pomerleau Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Portugal Cove – St. Philip’s Minor Soccer Association o/a PCSPSA",
+    "location": "Portugal Cove - St. Philip's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Pragmaclin Research Inc. o/a Pragmaclin Research",
+    "location": "St. John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Priceless Treasures Inc.",
+    "location": "Paradise",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Pride Pak Canada Ltd. a/o Pride Pak NFLD Ltd.",
+    "location": "Paradise",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Pride Restaurant Enterprise Inc. o/a Greco Pizza",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Prominent Transportation Inc.",
+    "location": "Great Rattling Brook Region",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Pronto Pizza Inc. o/a Pronto Pizza",
+    "location": "Conception Bay South",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Proper Care Services Inc. a/o Debbie Rumbolt",
+    "location": "Happy valley",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Public Service Credit Union Ltd.",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Puldin Enterprises Inc. o/a Venice Pizzaria",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Pure Bliss General Trading Inc.",
+    "location": "Paradise",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Quidi Vidi Brewing Company Ltd. o/a Quidi Vidi Brewery",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Quinlan Enterprises Ltd. o/a Subway",
+    "location": "Gander",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "R & L Food Services o/a A&W Restaurant",
+    "location": "Clarenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "R&M Food Services Ltd. o/a Greco Pizza",
+    "location": "St John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "R&R Coffee Ltd o/a Tim Horton’s",
+    "location": "Gander",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "R. & S. Screen Printers Limited o/a R&S Screen Printers",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Rainbow Day Care Centre Ltd",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Raj Restaurants Inc. o/a Subway",
+    "location": "Labrador City",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Rambler Metals and Mining",
+    "location": "Baie Verte",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Random Donut’s Inc. o/a Tim Horton’s",
+    "location": "Clarenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Redmond Hurley Pond St. Anthony Family Dental Clinic Professional Dental Corp. o/a St. Anthony Family Dental Clinic",
+    "location": "St. Anthony",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Reliable Ambulance Service Limited",
+    "location": "Corner Brook, Burgeo",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "RelyOn Nutec Canada (NL) Incorporated",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Restaurant P.H.R. Inc. o/a McDonald’s",
+    "location": "Labrador City",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Rideout’s Convenience",
+    "location": "Springdale",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "RMS Pope Incorporated",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Robin’s Bay Roberts Ltd. o/a Robin’s & 241Pizza",
+    "location": "Carbonear, Bay Roberts, Clarenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Rock Island Food & Beverage Inc. o/a Booster Juice",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Romm Holdings Limited o/a Pizza Delight",
+    "location": "Deer Lake",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Rossco Services Limited o/a Meineke Car Care",
+    "location": "Gander",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Rowsell’s Petroleum Limited",
+    "location": "Marys",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Royal Wood Design Ltd.",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "RTS Janitorial Maintenance Inc.",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Ruby Manor Ltd. o/a Ruby Manor Retirement Home",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Ryan’s Ambulance Service Ltd.",
+    "location": "Clarenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "S & J Investments Inc. o/a Mary Brown’s",
+    "location": "CBS; Holyrood",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "S&M Park Limited o/a Historic Hotel Corner Brook",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Saltwater Subway Inc. o/a Subway",
+    "location": "Conception Bay South",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Samy’s Restaurant Ltd.",
+    "location": "Baie Verte",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Sandman Signature St. John’s Hotel",
+    "location": "St John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Scotia Recycling Limited (NL) o/a Scotia Recycling Limited",
+    "location": "St. Johns",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "SDC Enterprises Ltd. o/a Smoke’s Poutinerie",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Seabreeze Subway Inc.",
+    "location": "Gould's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Seaside Subway Inc. a/o Subway",
+    "location": "Conception Bay South",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Seaspray Construction Corp. o/a Piatto Pizzeria and Enoteca",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Sepideh Mehrani a/o Adorify Analytics Inc.",
+    "location": "PO Box 1653 Station C",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Serenity Nursing and Home Support Services Ltd.",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Seventh-day Adventist Church in Newfoundland and Labrador a/o Seventh-day Adventist Church",
+    "location": "Conception Bay South, NL",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Shamel Investments Ltd. o/a Domino’s Pizza",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "She-Can Investments Limited o/a Crossroads Orangestore",
+    "location": "Paradise",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Sift Med Inc.",
+    "location": "St. John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "SMR Petroleum Ltd. o/a Canadian Tire Gas+",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Solace Power Inc.",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Sooley Designs Inc. a/o Sooley Designs",
+    "location": "St John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Sound Donuts Inc. o/a Tim Horton’s",
+    "location": "Clarenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "South Park Driving School o/a South Park Driver Training",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Southlands Food Inc. o/a Dairy Queen",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Spectrum Investigation and Security (1998) Limited",
+    "location": "Paradise, St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Spences Service Station Limited o/a Sea Echo Motel",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "SpiceX International Inc. o/a SpiceX",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Springdale Retirement Living Inc. o/a Providential Living",
+    "location": "Springdale",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "St. John’s 2025 Canada Games Host Society Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Stanley’s Trucking Ltd.",
+    "location": "Clarenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Startastic Ventures Inc",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Stassis Investment Inc. o/a No Name Pizza",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Stavanger Drive Pizza Company Inc. o/a Boston Pizza Stavanger Drive",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Steele Hotels Ltd. o/a The Capital Hotel/Jag Hotel/Sinbad’s Hotel",
+    "location": "St. John's, Gander",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Stepping Stones Daycare/Preschool Inc.",
+    "location": "Corner Brook, NL",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Stone Ducky Restaurant and Lounge Inc. o/a Stone Ducky Restaurant and Lounge",
+    "location": "Bay Bulls",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Stone Jug Holdings Ltd. o/a Stone Jug",
+    "location": "Carbonear",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Strong Roots Early Learning Centre",
+    "location": "Avalon",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Subs at Burin Inc. o/a Subway",
+    "location": "Marystown",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Subs at Subway Inc. o/a Subway",
+    "location": "Bay Roberts",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Subs@58838 o/a Subway",
+    "location": "Whitbourne",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Subway @ Random Inc. o/a Subway",
+    "location": "Clarenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Subway@Random o/a Subway 21487",
+    "location": "Clarenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Sugar & Dice Inc. o/a Sugar & Dice",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Sun Sushi Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Sunny Corner Enterprises Inc.",
+    "location": "Wabush",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Sunrise Ventures Inc. (Tim Horton’s)",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Sushi On Kenmount Inc. o/a Sushi Island",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Sushi Shokumin Inc. o/a Sun Sushi",
+    "location": "St. John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Sysco Canada Inc.",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "T & M Group SJ Ltd. o/a Best Western Plus St. John’s Airport Hotel and Suites",
+    "location": "St John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "T.G.Y.estate Ltd o/a The Golden Years Estate",
+    "location": "Grand Falls - Windsor",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "T.J Foods Enterprise Ltd. o/a Wing’n It",
+    "location": "Deer Lake",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "T.M.B. Seafoods Inc.",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Tacora Resources Inc. o/a Tacora Resources",
+    "location": "Wabush",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Tailwind Investments o/a Tim Horton’s",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Taste East Inc",
+    "location": "St. John's, Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Taste East Inc. o/a Desi Meal – Desi Mart",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "TBXB Restaurant Inc. a/o Pizza Delight",
+    "location": "St John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Telem61 Software Inc. a/o trophi.ai",
+    "location": "St John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "TG Holdings Ltd. o/a Pizza Delight",
+    "location": "St. Anthony",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Thao Mo Nguyen o/a Hollywood Nails",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "The Call Centre Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "The Collision Clinic Ltd.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "The Glynmill Inn Inc.",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "The Hair Cutting Shop Inc.",
+    "location": "Clarenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "The Indian Bawarchi Inc. o/a Mega Bazaar",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "The New Vogue Furriers Limited o/a Always In Vogue",
+    "location": "St. John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "The Sand Bar Ltd. o/a The Sand Bar",
+    "location": "Goose Bay",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Thy T. Nguyen o/a Pho Vietnam Restaurant",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Tiffany Village Retirement Residence Partnership o/a Tiffany Village Retirement Residence",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Tilt House Bakery & Fine Foods Ltd. o/a Tilt House Bakery",
+    "location": "Portugal Cove-St. Philip's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "TJR Enterprises Inc. o/a Booster Juice",
+    "location": "Paradise",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Tobin’s Convenience Limited o/a Tobin’s Convenience",
+    "location": "Labrador City",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Todd Rowe Ltd. o/a North Atlantic – Orangestore",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Topsail Foods Ent. Inc.",
+    "location": "St John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Torbay Fun Foods Inc. o/a Jungle Jim’s Restaurant",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Total Care in the Home Services Ltd.",
+    "location": "Clarenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Treehouse Daycare lll Ltd.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Treehouse Daycare Ltd.",
+    "location": "St John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Tremblett’s Ambulance Service Ltd.",
+    "location": "Bell Island",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Trinity Hospitality Services Inc. o/a Swiss Chalet",
+    "location": "St. John's, Gander",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "TSJ INTERNATIONAL LIMITED a/o Hoi Pun Restaurant",
+    "location": "Placentia",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "TTSJ Holdings Ltd. o/a Robin’s Donuts",
+    "location": "Lethbridge",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "TV Fish Inc. o/a TV Fish",
+    "location": "Glovertown",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Twin Town Manor Inc. o/a Twin Town Retirement Centre",
+    "location": "Grand Falls-Windsor",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "United Foods Inc. o/a McDonald’s",
+    "location": "Grand Falls-Windsor, Lewisporte, Corner Brook & Stephenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Uzor Enterprises Ltd. o/a Evoo",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Valley Veterinary Clinic Ltd",
+    "location": "Happy Valley - Goose Bay",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Vatcher Restaurant Inc. o/a Best Coast Restaurant",
+    "location": "Newfoundland and Labrador",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Verafin Solutions ULC",
+    "location": "St. John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "VerMel Enterprises Ltd. o/a Mary Brown’s",
+    "location": "Placentia",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Vet Strategy Newfoundland Inc. o/a VetStrategy",
+    "location": "Mount Pearl, St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Vision33 Canada Inc. o/a Vision33",
+    "location": "St. John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
+    "employer": "Volare Hospitality ULC o/a Union East + Drinks",
+    "location": "Gander",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Wabush Convenience Store Limited a/o Wabush True Value",
+    "location": "Wabush",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Walmart International, ULC o/a Walmart Canada Corp.",
+    "location": "Lab City, St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Walters Donuts Ltd. o/a Robins",
+    "location": "Doyles",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Wandebo Adey Groups Inc. o/a Wandebo African Store",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Warr’s Pharmacy LTD o/a Warr’s Pharmacy",
+    "location": "Happy Valley-Goose Bay",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Waterwerks Communications Inc. o/a Waterwerks Agency",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Wayne Hanlon Incorporated a/o Hanlon Reality",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Way’s Restaurant Ltd. o/a Pizza Delight",
+    "location": "Corner Brook",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "WBO Holdings Ltd. o/a Pizza Delight",
+    "location": "Stephenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "WDI Coffee Incorporated o/a Tim Horton’s",
+    "location": "Conception Bay South",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "West End Foods Ltd. o/a Jungle Jim’s Restaurant",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Western Health",
+    "location": "various",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Whale House Guest House Inc. o/a Whale House Guest House",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Whitbourne Food Services Ltd. o/a A&W #9314",
+    "location": "Whitbourne",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "White Bay Retirement Living Inc. o/a Providential Living",
+    "location": "Baie Verte",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Wik Enterprises Inc. o/a Wendy’s",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Winston Fowlow",
+    "location": "Clarenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Witless Bay Coffee Inc. o/a Tim Horton’s",
+    "location": "Witless Bay",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "WJ Dober Limited o/a Mary Browns",
+    "location": "Marystown",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Wong’s Palace Ltd a/o Wong’s Palace Restaurant",
+    "location": "Marystown",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Work Global Canada Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "XL Food Inc. o/a Sun Sushi",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Y & T Full House Inc. a/o Full House Restaurant",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Y&T Full House Inc. o/a Full House Restaurant",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Yes B’y Phone Repairs Ltd.",
+    "location": "Avalon Peninsula",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "YH Holdings Inc. o/a Mr. Souvlaki",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "YM Inc (Sales)",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "YMCA of Northeast Avalon Inc. o/a YMCA of Newfoundland and Labrador",
+    "location": "various",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Younger Years Daycare Inc.",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Yue Gourmet Restaurant Inc. a/o Golden House Restaurant",
+    "location": "Conception Bay South",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Zein Press & Printed Packaging Corporation",
     "location": "St. John's",
     "tech": false
   },
@@ -17566,2701 +20872,2736 @@
     "employer": "100066 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "10014729 Canada Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "100367 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "100542 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "101407 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "10141186 Canada Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "101435 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "101446 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "101513 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "101595 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
-  },
-  {
-    "province": "PE",
-    "employer": "101719 PEI Inc.",
-    "location": "",
-    "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "101775 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "101865 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "101874 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "101939 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "102157 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "102163 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "102216 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "102221 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "102224 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "102405 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "102642 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "102650 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "102673 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "102812 PEI Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "10301639 Canada Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "10713490 Canada Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "10941883 Canada Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "11075616 Canada Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "11865498 Canada Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "12199343 Canada Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "12428971 Canada Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "12699575 Canada Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "13482936 Canada Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "7332122 Canada Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "7628382 Canada Corp.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "8649847 Canada Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "9545832 Canada Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "9892788 Canada Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "A & J Holdings Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "A&C Enterprises Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "A&K Auto and Truck Repair",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "A&S Scrap Metal Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "ABM Systems Ltd.",
     "location": "",
     "tech": true,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Action Aero Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "ADEEM Management Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Advance Plus Tech Solutions Inc.",
     "location": "",
     "tech": true,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Agafran Holdings Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Agrawest Investments Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Agro Co-operative Association Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "ALG (PEI) Management Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "All Kids Learning Center Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Allan Equipment Manufacturing Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "ALR Builds Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "AMAC Electric (2004) Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Amalgamated Dairies Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Amsted Canada Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Anchor Refrigeration Inc",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Andrews of Charlottetown Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Andrews of Park West Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Andrews of Parkhill Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Andrews of Stratford Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Andrews of Summerside Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Angel's Nails & Spa Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
+  },
+  {
+    "province": "PE",
+    "employer": "Anne of Green Gables Chocolates Inc.",
+    "location": "",
+    "tech": false,
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "A-OK Gardens",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
+  },
+  {
+    "province": "PE",
+    "employer": "APM Landmark Inc.",
+    "location": "",
+    "tech": false,
+    "asOf": "20260419"
+  },
+  {
+    "province": "PE",
+    "employer": "AR Home Renovation and Construction Inc.",
+    "location": "",
+    "tech": false,
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Arsenault Bros. Construction Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Arts Hotel Management Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
+  },
+  {
+    "province": "PE",
+    "employer": "Ashe Roofing Ltd",
+    "location": "",
+    "tech": false,
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Asia Food Stock Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Asian First Sauce Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Aspin Kemp & Associates Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Association des centres de la petite enfance francophones de l'Î.-P.-É.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Atlantic Aqua Farms Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Atlantic Beef Products Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Atlantic Grown Organics Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Atlantic Roofers Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Atlas Structural Systems Ltd.",
     "location": "",
     "tech": true,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Ayoub Holdings Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Azim Enterprises Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "B&D Development Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Backwoods Burger Craft Beer & Cookhouse",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Bait Masters Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Bayshore Healthcare Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Belfast Mini Mills Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Bevan Bros. Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Bill Koughan Auto Body Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Biovectra Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Birch Farms Limited",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Bishop's Rest Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "BKR Management Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Black Cultural Society of Prince Edward Island Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Blackbush Beach Resort",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Blue Goose Restaurant Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Blue Heron Enterprises Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "BMC Charlottetown Hospitality Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Bombay Cuisine Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Bonafide Investment Group Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "BOOMburger Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Brilliant Me Academy Early Years Centre Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Byron Ferguson Sales Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "C&T Stratford Holdings Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Cadiesbeauty Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Cameron Apartments Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Cameron J And D Beach Sales Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Canada-Ask Immigration & Investment Services Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Canada's Island Garden Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Canadian Red Cross Society",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
+  },
+  {
+    "province": "PE",
+    "employer": "Capital Area Recreation Inc.",
+    "location": "",
+    "tech": false,
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Cardigan Bearing And Steel Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Cardigan Feed Services Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Casa Mia Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Cavendish Agri Services Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Cavendish Farms Corp.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "CBI Island Health Centre Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Cedars Foods (2010) Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
+  },
+  {
+    "province": "PE",
+    "employer": "Chapman Bros Construction Ltd",
+    "location": "",
+    "tech": false,
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Charlottetown Fresh Casual Restaurants Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Charlottetown Metal Products Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Circle K Couche-Tard",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "City of Charlottetown",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "City of Summerside",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Coach Atlantic Transportation Group Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Coast Tire & Auto Service Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Coastal Culture Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Cocoon Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Cocopower Home Services Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "CoffeeNUT Hospitality Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Complete Fusion Welding Ltd",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Country Garden Florists Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Country Kids Early Learning Center",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "CP Construction Services Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Creative Childcare Centre Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "CY.Yumi Catering Management Co. Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "D&D Brothers Investment Group Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "D&L Crane Holdings Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "D.C. Tire Sales & Service Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "D.L. McQuaid Holdings Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "D.L. McQuaid Holdings Summerside Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Dalmack Holdings Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "David Gallant Pharmacy Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Day & Ross Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "DJC Construction Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Donaldston Enterprises Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Doucette's Boat Building Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Dougan Insurance Group Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "DP Murphy (Pizza) Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "DP Murphy Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Drake's Truck Box Sales Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "DRM Company Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Drs d'Eon and Peters Professional Corporation",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Duke Food Service Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Dyne Holdings Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "EAccountingServices.ca",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "East Coast Accounting Solutions Inc.",
     "location": "",
     "tech": true,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "East Coast Hospitality Group Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "East Point Potato 2009 Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Elite Convenience Store Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Empire Bagels Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Epekwitk Gas Bar",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Extondale Farms Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Fair Isle Motel Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "First Friends Child Care Centre Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Fitzgerald and Snow (2010) Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Five Star Shellfish Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "FMI Atlantic Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Fortune Travelstop Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "FR Enterprises Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Fresh Cuts By Roberto",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Freshstone Brands Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Fundy Agriculture Services Island Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Furrow Creative Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "FYB - Fuel Your Body - Healthy Meal Delivery Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "G. Visser & Sons Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "G.E. Silliker & Sons Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Garden Home Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Garden Isle Farms Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Garden of the Gulf Court and Motel Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Garderie Éducative Cornwall Child Education Centre Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
+  },
+  {
+    "province": "PE",
+    "employer": "GBS Communications",
+    "location": "",
+    "tech": false,
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "GFL Environmental Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Glover Group Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "GPS Foods Inc",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Grain Essence Garden Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Great George Properties Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Green Diamond Equipment Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Greenfoot Energy Solutions Inc.",
     "location": "",
     "tech": true,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Greg Butler Investments Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Groom Foods Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "GSSJ McMillan Holdings Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Hartshire Community Care Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Haru K-BBQ",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Health PEI",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Helios Holding Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Highfield Construction Company Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Hilltop Produce Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Holland College",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Holy Cow Restaurant Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Holyheart Construction Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Hopyard Beer Bar Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "House Of Spice Restaurant Incorporated",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "HR Associates Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Humble Consultancy and Recruitment Services Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Hutt Bros. Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "InnVest Hotels GO XV Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "InnVest Hotels LP",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Invesco Enterprise Services",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Island Acres Produce Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Island Coastal Services Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Island EMS Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Island Lightning Rod Co. Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Island Painting and Decorative Services Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Island Retail Group Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Islandsand Holdings Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Jasper Wyman & Son Canada Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
+  },
+  {
+    "province": "PE",
+    "employer": "JD Irving Ltd.",
+    "location": "",
+    "tech": false,
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Jeremy & Joel Holdings Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "JMK Fish Mart Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Kamchhichi Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Karma Farms Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Kays Wholesale Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "KB9 Construction Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Kennedy Metals Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Kensington Agricultural Services Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Kensington Community Care Home Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Khan Anaesthesiolgy Professional Corporation",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Kildare Fisheries Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "King's BBQ & Chinese Food",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Kinkora Holdings Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "KY Home Solutions Inc.",
     "location": "",
     "tech": true,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Landing Designs Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Larkin Bros Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Leather Leader Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Linkletter's Welding Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Little Angels Daycare",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Little Lambs Child Care Centre",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Little Wonders Early Learning Centre",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Lowther Refrigeration Ltd",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "M&A O'Connor Holdings Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "MacInnis Express 1983 Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "MacKenzie Builder Services Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "MacKinnon Family Hospitality Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "MacKinnon Pines Lodge Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "MacLean Construction Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "MacLeod Group Health Services PEI Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "MacZak Holdings Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Majhail Construction Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Mallard Painting Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Mango Fresh Market Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
+  },
+  {
+    "province": "PE",
+    "employer": "Maritime Electric Ltd",
+    "location": "",
+    "tech": false,
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Maritime Fun Group (PEI) Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Maritime Hairwaves Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Maritime Heating and Cooling Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
-  },
-  {
-    "province": "PE",
-    "employer": "Maritime Home Improvement Ltd.",
-    "location": "",
-    "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Maritime Industrial Services 2022 Inc",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Maritime Precast Products (2011) Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Markan Woodmillers Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Master Packaging Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Maximus Canada Services Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "McInnis Group (1993) Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "McKennco Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "McQuaid Motors Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Mel's Enterprises Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Merry Pop-Ins Childcare Centre Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Meyer Housewares Canada Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Midland Transport Ltd",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Mill River Resort",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Mitch MacAdam Pharmacy Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Monaghan Farms Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Montague Bakery (1979) Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Mr Sushi Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
-  },
-  {
-    "province": "PE",
-    "employer": "Mr. Bill Swim School Inc.",
-    "location": "",
-    "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Mr. Xiao Sushi Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "MSM Restaurants Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Murphy Investments Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Murphy's Pharmacies Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Nabuurs Gardens Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Navigate Food Safety Solutions Inc.",
     "location": "",
     "tech": true,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "NIC Holdings Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "NorCan Marine Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Nortons Jewellers Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Noye and Noye Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Number Five Food Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Nuwelcom Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Om's Excellent Food Services Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Outer Limit Sports",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Oyster Creek Farms Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Oyster Island Hospitality Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "P.E.I. MUSSEL KING (1994) INC.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Paul Gaudet Autobody 1994 Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Pegasus Biotech Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "PEI Atlantic Baptist Home Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "PEI Bag Company Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "PEI Lube Limited",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Perrin's Marina Villa Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "PreBilt Structures Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Precision G&T Engineering",
     "location": "",
     "tech": true,
-    "asOf": "20251006"
-  },
-  {
-    "province": "PE",
-    "employer": "Prestige Kitchens",
-    "location": "",
-    "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Prince Edward Aqua Farms Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Princess Nails",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "ProServeIT Corporation",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Punjabi Bites Restaurant Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Pure Pork Farms Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Quinn Law Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Rashed Enterprises Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Raspberry Point Oyster Co. Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Red Island Hospitality Group",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Redrock Power Systems",
     "location": "",
     "tech": true,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Redsands Developments Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Reito Industrial Products Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Renewable Lifestyles Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
-    "employer": "Richard's Roofing",
+    "employer": "Richards' Roofing Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Richburg Dundee Arms Limited Partnership",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Richburg Redwater LP",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Richie Foods Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Ridgeline Construction Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Roach Oasis Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Roberts Developments Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Roberts Holdings Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Rodd Management Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Rollo Bay Holdings Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Romy's Hair Studio",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Royal Star Foods Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Rural Municipality of North Shore",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "RWL Holdings Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Ryan Coffin Pharmacy Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Salvador Dali Café Limited Partnership",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "San He Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Seafood Express (PEI) Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Seawin Racing Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Selkirk Enterprises Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Shamrock Enterprises Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Shelby Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Sherwood Autohaus Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
-    "employer": "Shree krishna Eatery Inc.",
+    "employer": "Shree Krishna Eatery Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Signature Accounting & Tax",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Sleep Concept Enterprises Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Small Steps Early Learning Centre",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Smith Farms Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "South Shore Holdings Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Spring Valley Building Centre Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Spruce Lane Investments",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "SpryPoint Services Inc",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "SSL Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "ST Motors Limited",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "St Peter's Bay General Store",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Stratford Pizza Corner",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Study Abroad Canada College",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Summerside Seafood Supreme Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "T&J Construction Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Tasty Indian Cuisine Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Tethys Aquaculture Canada, Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "The Adventure Group Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "The Lost Pixels Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "The Mount Nursing Care Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "The Noodle House Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "The Old Triangle Irish Alehouse Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "The PEI Car Rental Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "The Shed Coffee Corp.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "The Techie Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "The Thoughtful Giver Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "ThermoTech Industries Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Thinking Big Information Technology Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Thomas Martin Group Inc",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Thompson Potato Company Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Timeless Medical Systems Inc.",
     "location": "",
     "tech": true,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Tina’s Nails & Spa Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Tiny Tot Day Care Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "TopGum Canada Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Totally Taco Eatery Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Township Chevrolet Buick GMC",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Tri-Maritime Bus Network Inc.",
     "location": "",
     "tech": true,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Trinity Maintenance Solutions Ltd.",
     "location": "",
     "tech": true,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Trius Transit (2007) Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Trout River Industries Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Universal Sales Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Unwind on Market Hair and Suites",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Vanco Farms Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Vesey Seeds Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "VN Holdings Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "W & R Fisheries Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Walmart Canada Corporation",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Well Done Farm Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Whisperwood Villa Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Willscott Farm Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Wilmac Construction Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "WM&M (1993) Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Women's Network PEI",
     "location": "",
     "tech": true,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Workers Compensation Board of Prince Edward Island",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Worklinks Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "XPY Union Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Yumi Sushi Inc.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   },
   {
     "province": "PE",
     "employer": "Z&C Flourish International Ltd.",
     "location": "",
     "tech": false,
-    "asOf": "20251006"
+    "asOf": "20260419"
   }
 ]

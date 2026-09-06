@@ -489,6 +489,8 @@ export const PNP_REQ_EMPLOYER = `SELECT province, factor, op, value, unit, appli
 
 /**
  * 担保雇主榜主查询:LMIA/AIP/具名通道三路并一张表。a1/a2=有无 additive 列时的列清单差。
+ * 2026-09-05 加 nocs_aip(只计 aip=true 岗的 NOC)与 provs_out(在招岗覆盖的大西洋以外省数):
+ * 把脉页 AIP 表「在招职业」只列 AIP 岗、按省外省数拆本地/连锁两表(Frank「AIP 应该是分两部分吧」)。
  *
  * @param a1 SELECT 侧的附加列片段(additive 列在时非空)。
  * @param a2 GROUP BY 侧的对应片段。
@@ -501,6 +503,8 @@ export const sponsorEmployers = (a1: string, a2: string) => `
       COUNT(*)::int AS open_jobs,
       COUNT(*) FILTER (WHERE j.aip)::int AS open_jobs_aip,
       COALESCE(ARRAY_AGG(DISTINCT j.province) FILTER (WHERE j.aip AND COALESCE(j.province, '') <> ''), '{}') AS provs_aip,
+      COALESCE(ARRAY_AGG(DISTINCT j.noc) FILTER (WHERE j.aip AND COALESCE(j.noc, '') <> ''), '{}') AS nocs_aip,
+      COUNT(DISTINCT j.province) FILTER (WHERE COALESCE(j.province, '') <> '' AND j.province NOT IN ('NL', 'NB', 'NS', 'PE'))::int AS provs_out,
       BOOL_OR(j.aip) AS aip,
       BOOL_OR(COALESCE(j.pnp_stream, '') <> '') AS named,
       COALESCE(ARRAY_AGG(DISTINCT j.pnp_stream) FILTER (WHERE COALESCE(j.pnp_stream, '') <> ''), '{}') AS streams,

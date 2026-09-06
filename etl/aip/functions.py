@@ -35,17 +35,19 @@ from log.functions import err, say
 from fetch.constants import BROWSER_UA, HDR_UA, LINE_SEP, SPACE_SEP, WS_RE
 from crawl.functions import get_cached_page
 from names.functions import norm_name
+from noc.functions import teer_of
 from aip.constants import (
-    ALIAS_RE, ATLANTIC, ATS_JOBS_GLOB, FLAG_DONE_TPL, FLAG_IN_LIST_TPL,
+    AIP_TEER_MAX, ALIAS_RE, ATLANTIC, ATS_JOBS_GLOB, FLAG_DONE_TPL, FLAG_IN_LIST_TPL,
     FLAG_IN_OUT_TPL, FLAG_NAMES_TPL, IN_AIP_LIST, IN_OUT_COMPANIES_DIR, IN_OUT_POSTINGS, INDENT_2,
     K_AIP, K_JOBS,
     BULLET, CDX_PARAMS, CDX_TIMEOUT_S, CDX_URL, EMP_OUT_TPL, EMP_PROV_TPL, EMP_TABLE_HEAD,
-    EMP_TIMEOUT_S, ENC_UTF8, ERRORS_IGNORE, GUARD_KEEP_TPL, GUARD_NO_OLD, GUARD_WARN_TPL,
-    HTML_PARSER, IN_NL_EMP_DIR, IN_URL_ELIG, K_EMPLOYER, K_FACTOR, K_FAMILY_SIZE, K_LOCATION,
+    EMP_TIMEOUT_S, ENC_UTF8, GUARD_KEEP_TPL, GUARD_NO_OLD, GUARD_WARN_TPL,
+    HTML_PARSER, IN_NL_EMPLOYERS, IN_URL_ELIG, K_EMPLOYER, K_EMPLOYERS, K_FACTOR, K_FAMILY_SIZE, K_LOCATION,
+    K_NAME, K_NOC, K_NOCS,
     K_PAGE, K_PROVINCE, K_QUOTE, K_STREAM, K_TECH, K_TEXT, MAIN_TAG, MD_HEAD,
     MD_LINE_SEP, MD_ROW_EMPTY_TPL, MD_ROW_TPL, MD_TAIL, MD_TECH_COLS, MD_TECH_HEAD_TPL,
-    MD_TECH_ROW_TPL, MIN_ROWS, MISSING_QUOTE_LEN, NAME_MIN_LEN, NAME_TRIM_CHARS, NL_LOC_RE,
-    NL_MARKER, NL_MD_GLOB, NL_OFFICE_RE, NL_TITLE_RE, NOC5_RE, NOISE_RE, NS_LOC_RE, OUT_AIP_DIR,
+    MD_TECH_ROW_TPL, MIN_ROWS, MISSING_QUOTE_LEN, NAME_MIN_LEN, NAME_TRIM_CHARS,
+    NOISE_RE, NS_LOC_RE, OUT_AIP_DIR,
     OUT_AIP_JSON, OUT_AIP_MD, OUT_AIP_RULES, PAGE_URLS, PDF_FAIL_TPL, PDF_FILETYPE, PDFS,
     HTTP_OK, PE_ALL_FAIL_MSG, PE_FAIL_TPL, PE_LI_RE, PE_MIN_ROWS, PE_NAME_MAX_LEN, PE_NAV_RE,
     PE_OK_TPL, PE_PAGE, PE_SNAP_RETRY_TPL, PE_SNAP_THIN_TPL, PE_TS_LEN, WAYBACK_RETRY_S, WAYBACK_TRIES, PERCENT_BASE, PROV_NAME, PROV_NL, PROV_NS, PROV_ORDER_ALL,
@@ -99,20 +101,20 @@ def scrape_aip_employers() -> None:
 
 
 def load_nl() -> list:
-    """NL:从 nl-immigration crawl 语料逐份雇主档抽 —— 这一路**带 NOC**,科技判定精确。"""
+    """NL:读官方名录全量(pnp 域产物,645 家,每家带申报 NOC)—— 这一路**带 NOC**,科技判定精确。
+    文件不在 = 本轮 NL 零行(与 NB/NS PDF 拉不到同一档:护栏 GUARD 会保旧名录,不静默出半份)。"""
     rows: list = []
-    for f in sorted(IN_NL_EMP_DIR.glob(NL_MD_GLOB)):
-        t = f.read_text(encoding=ENC_UTF8, errors=ERRORS_IGNORE)
-        if NL_MARKER not in t:
+    if IN_NL_EMPLOYERS.exists() is False:
+        return rows
+    data = json.loads(IN_NL_EMPLOYERS.read_text(encoding=ENC_UTF8))
+    for e in data.get(K_EMPLOYERS, []):
+        name = str(e.get(K_NAME, "")).strip()
+        if name == "":
             continue
-        tm = NL_TITLE_RE.search(t)
-        name = tm.group(1).strip() if tm else f.stem
-        name = NL_OFFICE_RE.split(name)[0].strip()
-        loc_m = NL_LOC_RE.search(t)
-        location = loc_m.group(1).strip() if loc_m else ""
+        location = str(e.get(K_LOCATION, "") or "").strip()
         tech = False
-        for n in NOC5_RE.findall(t):
-            if n in TECH_NOC:
+        for item in e.get(K_NOCS, []) or []:
+            if str(item.get(K_NOC, "")) in TECH_NOC:
                 tech = True
         if tech is False:
             tech = bool(TECH_NAME.search(name))
@@ -494,8 +496,12 @@ def flag_jobbank(names: set) -> FlagOut:
 
 
 def aip_hit(x: AipHitIn) -> bool:
-    """一岗是否命中:省在大西洋四省 **且** 归一化雇主名在官方名单里。"""
+    """一岗是否命中:省在大西洋四省 **且** 归一化雇主名在官方名单里 **且** 岗位 TEER 0-4
+    (AIP_TEER_MAX;TEER 5 岗官方不认,2026-09-05 加门;NOC 缺失/非法 = 不算)。"""
     if x.job.get(K_PROVINCE) not in ATLANTIC:
+        return False
+    teer = teer_of(x.job.get(K_NOC))
+    if teer is None or teer > AIP_TEER_MAX:
         return False
     return norm_name(x.job.get(K_EMPLOYER, "")) in x.names
 

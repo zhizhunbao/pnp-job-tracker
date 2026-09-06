@@ -33,10 +33,6 @@ ENC_UTF8 = "utf-8"
 # 2. employers 步(AIP 官方指定雇主名录:NL/NB/NS/PE 四省)
 # =========================================================================
 
-ERRORS_IGNORE = "ignore"
-"""读外来文本的容错模式:坏字节直接丢(employers 读 NL 语料 md、quota 读 crawl 缓存 html
-两处原样沿用 —— 与 communities 的 replace 不是一档,别并)。"""
-
 K_PROVINCE = "province"
 """行键:省码(employers/details/quota/communities 四步共用)。"""
 
@@ -62,8 +58,17 @@ B4 判定留痕(2026-08-08,docs/implementation/在招担保雇主/04_B4 §3c):
 """本步的来源与判定留痕(原 scrape_aip_employers.py 文件头,逐字折进;
 Frank 的方言律「注释只许 docstring」下,长篇背景以常量 docstring 存档)。"""
 
-IN_NL_EMP_DIR = paths.POLICY / "nl-immigration" / "md" / "employer"
-"""NL 雇主页语料目录(nl-immigration crawl 役产,每雇主一个 md,带 NAICS + NOC)。"""
+IN_NL_EMPLOYERS = paths.PNP / "nl-employers.json"
+"""NL 官方指定雇主名录(pnp 域 nl_employers 步产:gov.nl.ca 逐雇主页解析,645 家,每家带申报 NOC)。
+2026-09-05 换源(/fe 把脉 AIP 批,Frank「不应该补在 aip 目录下吗」):此前读
+`data/raw/policy/nl-immigration/md/employer` 的 md 语料 —— 那份语料是早期一次性抓的,
+只到字母 B 就停了(95 份 md → 94 家),且仓库里已无役再产它;本域名录 NL 段因此只有 94 家,
+岗位侧打标跟着漏(生产库核对:16 家在招雇主在官方名单上却没标)。pnp 域的 nl-employers.json
+就是同一份官方名录的全量(mart 汇装维度表早已按它让位,见 mart build_designated 的 docstring),
+本域直接读它的产物文件(跨域只读产物,不借函数);语料路径与解析它的六个常量
+(IN_NL_EMP_DIR / NL_MARKER / NL_MD_GLOB / NL_TITLE_RE / NL_OFFICE_RE / NL_LOC_RE / NOC5_RE)
+按方言律⑨「零消费者退役」一并摘除,记录在此;第 1 段的 ERRORS_IGNORE(坏字节直接丢的读模式)
+只有 md 语料这一个读者,同批退役。"""
 
 OUT_AIP_DIR = paths.AIP
 """AIP 名录两件产出的目录。"""
@@ -123,23 +128,17 @@ NS_LOC_RE = re.compile(r"\s[-–]\s([A-Za-z .'/]+)$")
 PROV_NS = "NS"
 """省码 NS —— 地点尾巴只在这一省剥。"""
 
-NL_MARKER = "NOC's Requested"
-"""NL 雇主页的判据串:有它才是一份真雇主档(没有的 md 是别的页)。"""
+K_EMPLOYERS = "employers"
+"""NL 官方名录文件的行表键(pnp 域产物的 wire 键,本域只读)。"""
 
-NL_MD_GLOB = "*.md"
-"""NL 语料目录的文件通配。"""
+K_NAME = "name"
+"""NL 官方名录一行的雇主名键。"""
 
-NL_TITLE_RE = re.compile(r'^title:\s*"?(.+?)"?\s*$', re.M)
-"""NL md front-matter 的 title 行(取不到就退回文件名 stem)。"""
+K_NOCS = "nocs"
+"""NL 官方名录一行的申报 NOC 表键(每项一个 dict,码在 K_NOC)。"""
 
-NL_OFFICE_RE = re.compile(r"\s+-\s+Office")
-"""NL 雇主名后的站点后缀(「 - Office …」),按它切掉。"""
-
-NL_LOC_RE = re.compile(r"\*\*Location\*\*\s*\n\s*(.+)")
-"""NL md 里的地点行。"""
-
-NOC5_RE = re.compile(r"\b\d{5}\b")
-"""五位 NOC 码(NL 页里 NOC's Requested 段落的码)。"""
+K_NOC = "noc"
+"""NL 官方名录 NOC 项的码键;岗位行的 NOC 键也是它(段4 打标按它取 TEER)。"""
 
 PROV_NL = "NL"
 """省码 NL。"""
@@ -602,6 +601,16 @@ ATS_JOBS_GLOB = "jobs.json"
 
 ATLANTIC = {"NL", "NB", "NS", "PE"}
 """AIP 只限大西洋四省;别省同名 franchise 不算。"""
+
+AIP_TEER_MAX = 4
+"""AIP 认的 job offer 只到 TEER 4(2026-09-05 /fe 把脉 AIP 批加门,Frank「现在看着只要去
+tim hortons 打工就能走 AIP 稳拿 PR 一样」):官方 job-offer 页只给 TEER 0/1/2/3 与 TEER 4 两档条款
+——「for at least 1 year from the time you become a permanent resident for TEER 0, 1, 2 or 3 job offers」
+「for permanent employment with no set end date for TEER 4 job offers」(quote-anchored,
+raw/ircc/aip_rules.json offerDuration 两行,fetched 2026-09-05;
+https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/job-offer.html),
+TEER 5 岗不在 AIP 之内。加门前四省指定雇主的 891 个在招岗里 170 个是 TEER 5(Tim Hortons 26 个里 12 个),
+全被标成 AIP 岗;TEER 取自岗位 NOC 第二位(noc 基建叶 teer_of,单一来源),码非法/缺失 = 不算。"""
 
 INDENT_2 = 2
 """岗位表落盘缩进(与 05/05b 抓岗件一致,原值)。"""

@@ -160,7 +160,7 @@ class AipHitIn:
     """aip_hit() 入参:一条岗位行 + 归一化后的名录集合。"""
 
     job: dict
-    """岗位行(只读 province / employer 两格)。"""
+    """岗位行(只读 province / employer / noc 三格;noc 2026-09-05 起用于 TEER 门)。"""
 
     names: set
     """归一化后的官方指定雇主名集合。"""
