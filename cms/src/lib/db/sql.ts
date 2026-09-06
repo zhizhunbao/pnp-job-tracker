@@ -493,7 +493,8 @@ export const PNP_REQ_EMPLOYER = `SELECT province, factor, op, value, unit, appli
  * 把脉页 AIP 表「在招职业」只列 AIP 岗、按省外省数拆本地/连锁两表(Frank「AIP 应该是分两部分吧」)。
  * 2026-09-06 加 open_jobs_rcip / nocs_rcip / open_jobs_fcip / nocs_fcip:RCIP / FCIP 岗 = 岗在该试点社区
  * (pilot 含 RCIP / FCIP,mart pilot_flag 步产)且雇主在该社区指定名单(pilot_employer),
- * 把脉页两张试点表改按它数在招与职业(Frank「rcip 和 fcip 也有这个问题吧」),不再挂全国数。
+ * 把脉页两张试点表改按它数在招与职业(Frank「rcip 和 fcip 也有这个问题吧」),不再挂全国数;
+ * HAVING 同批加 pilot_employer 一路 —— 只有社区指定资格、没 LMIA 没具名通道的雇主此前进不了榜(119 家只剩 42)。
  *
  * @param a1 SELECT 侧的附加列片段(additive 列在时非空)。
  * @param a2 GROUP BY 侧的对应片段。
@@ -525,6 +526,7 @@ export const sponsorEmployers = (a1: string, a2: string) => `
       c.lmia_positions, c.lmia_positions_skilled, c.lmia_last_quarter, c.lmia_streams,
       c.lmia_positions_4q, c.lmia_positions_2q, c.lmia_positions_1q${a2}
     HAVING BOOL_OR(j.aip) OR BOOL_OR(COALESCE(j.pnp_stream, '') <> '') OR COALESCE(c.lmia_positions, 0) > 0
+      OR BOOL_OR(COALESCE(j.pilot_employer, false))
     ORDER BY open_jobs DESC, c.name ASC`
 
 /**
