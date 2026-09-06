@@ -23,10 +23,11 @@ export const URL_HOME_PNP = '/?pnp=yes'
 export const URL_HOME_Q_HEAD = '/?q='
 
 /**
- * 职位板省参数尾巴(lib/jobs 的 P_PROV,只吃单省)。AIP 表「看岗位」只在雇主 AIP 岗只在一省时带,
- * 多省时落全国搜(2026-09-05;职位板多省筛选没有,不在本批造)。
+ * 职位板 AIP 筛选参数尾巴(components/jobs URL_TO_FILTER 的 aip → fAip=yes,SQL 只留 aip=true 的岗)。
+ * AIP 表「看岗位」一律带它(2026-09-05 Frank「看岗位的时候是不是也需要加上省份筛选」):AIP 岗天然只在
+ * 大西洋四省且 TEER 0-4,比拼省清单准,也绕开职位板省参数只吃单省的限制;点进去的数与表里「在招」一致。
  */
-export const URL_PROV_TAIL = '&prov='
+export const URL_AIP_TAIL = '&aip=yes'
 
 /**
  * 移民动态列表页(政策动态标题旁那条外链,也是无 slug 时的兜底去处)。
@@ -914,11 +915,6 @@ export const VERDICT_PUBLIC = 'public'
  * 雇主类别列键。
  */
 export const COL_SECTOR = 'sector'
-
-/**
- * 雇主表列 key:省份(只在 AIP 表出,该雇主 AIP 岗所在的大西洋省;2026-09-05 Frank 拍板加列)。
- */
-export const COL_AIP_PROVS = 'aipProvs'
 
 /**
  * 雇主类别的文案键前缀(后接 private / public / government)。

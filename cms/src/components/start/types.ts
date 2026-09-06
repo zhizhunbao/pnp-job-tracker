@@ -2094,11 +2094,6 @@ export type EmpCellRow = {
   hiringMoreText: string
 
   /**
-   * 省份胶囊(只 AIP 表的行有:AIP 岗所在的大西洋省,省全名;其余行空排)。
-   */
-  provPills: StartPill[]
-
-  /**
    * 在招岗命中省清单。
    */
   named: boolean
@@ -2366,7 +2361,7 @@ export type EmpCellRowIn = {
   r: SponsorEmployerRow
 
   /**
-   * 只按 AIP 岗算(AIP 表:在招 = openJobsAip、职业 = nocsAip、看岗位带省、出省份胶囊;其余表 false)。
+   * 只按 AIP 岗算(AIP 表:在招 = openJobsAip、职业 = nocsAip、看岗位带 AIP 筛;其余表 false)。
    */
   aipOnly: boolean
 
@@ -3561,26 +3556,6 @@ export type AipPickIn = {
    * 只按 AIP 岗取值。
    */
   aipOnly: boolean
-}
-
-/**
- * `provPillsOf` 的入参。
- */
-export type ProvPillsIn = {
-  /**
-   * 事实行。
-   */
-  r: SponsorEmployerRow
-
-  /**
-   * 只按 AIP 岗取值(false = 空排)。
-   */
-  aipOnly: boolean
-
-  /**
-   * 胶囊类名。
-   */
-  cls: string
 }
 
 /**

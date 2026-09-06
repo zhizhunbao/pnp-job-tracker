@@ -11,7 +11,6 @@ import { ID_NOWP, TABLE_AIP, TABLE_PILOT, TEXT_NONE } from './constants'
 import { EmpActCell } from './empactcell'
 import { EmpBriefCell } from './empbriefcell'
 import { EmpHiringCell } from './emphiringcell'
-import { EmpProvCell } from './empprovcell'
 import type { EmpCardIn } from './types'
 import css from './start.module.css'
 
@@ -29,7 +28,6 @@ export function EmpCard({ t, row, kind }: EmpCardIn) {
     kv.push({ k: t('se.col.w4'), v: row.lmia4qText })
   } else if (kind === TABLE_AIP) {
     kv.push({ k: t('pulse.col.sector'), v: row.sectorText })
-    kv.push({ k: t('pulse.col.aipProvs'), v: EmpProvCell(row), wide: true })
   } else if (kind !== TABLE_PILOT) {
     kv.push({ k: t('pulse.col.sector'), v: row.sectorText })
     kv.push({ k: t('se.col.verdict'), v: row.verdictText })

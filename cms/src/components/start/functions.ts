@@ -50,14 +50,13 @@ import {
   SECTOR_FEDERAL, SECTOR_GOVERNMENT, SECTOR_PRIVATE, SECTOR_PUBLIC,
   COL_BIZ, PILOT_FCIP, PILOT_RCIP, KEY_PILOT_HEAD, PILOT_KEYS, PILOT_KEY_AIP, PILOT_KEY_RCIP, TABLE_PILOT,
   SPACE_SEP, ACRONYM_MAX, CORP_SUFFIXES, NON_LETTER_RE, BRIEF_TAG_RE, BRIEF_TAG_WHAT,
-  TABLE_AIP, AIP_SEC_LOCAL, AIP_SEC_CHAIN, COL_AIP_PROVS, URL_PROV_TAIL,
+  TABLE_AIP, AIP_SEC_LOCAL, AIP_SEC_CHAIN, URL_AIP_TAIL,
 } from './constants'
 import { DeadCell } from './deadcell'
 import { EmpActCell } from './empactcell'
 import { EmpBriefCell } from './empbriefcell'
 import { EmpNameCell } from './empnamecell'
 import { EmpHiringCell } from './emphiringcell'
-import { EmpProvCell } from './empprovcell'
 import { OccActCell } from './occactcell'
 import { DiffCell } from './diffcell'
 import { HotCell } from './hotcell'
@@ -102,7 +101,7 @@ import type {
   EmptyQueryResult, PulseDraw, DrawDbRow, DrawHist, DrawHistIn, DrawsIn, PulseDrawIn, DrawCellRow, DrawCellRowIn,
   DrawCellRowsIn, DrawColsIn, DrawRowClsIn, DrawLang,
   TFn,
-  AipPickIn, ProvPillsIn, PilotPart, PilotCellsIn,
+  AipPickIn, PilotPart, PilotCellsIn,
 } from './types'
 import css from './start.module.css'
 
@@ -2969,7 +2968,6 @@ function toEmpCellRow(x: EmpCellRowIn): EmpCellRow {
     openText: numOf(open),
     hiringOcc: hiringOccOf({ nocs, ind: x.ind, nocInfo: x.nocInfo, nocCat: x.nocCat, cls }),
     hiringMoreText: hiringMoreOf({ t: x.t, n: nocs.length }),
-    provPills: provPillsOf({ r, aipOnly: x.aipOnly, cls }),
     named: r.named,
     aip: r.aip,
     rcip: x.extra.rcip.has(key),
@@ -3020,38 +3018,18 @@ function empOpenCountOf(x: AipPickIn): number {
 }
 
 /**
- * 「看岗位」链接:职位板按雇主名搜;AIP 表且雇主的 AIP 岗只在一省时带省参数(职位板只吃单省),
- * 多省时仍是全国搜。
+ * 「看岗位」链接:职位板按雇主名搜;AIP 表的行再带 AIP 筛选,点进去只见该雇主的 AIP 岗
+ * (与表里「在招」同一个数,不再落到安省岗)。
  *
  * @param x 事实行与是否只按 AIP 岗取。
  * @returns 链接。
  */
 function empJobsHrefOf(x: AipPickIn): string {
   const base = URL_HOME_Q_HEAD + encodeURIComponent(x.r.name)
-  if (x.aipOnly === false || x.r.provsAip.length !== 1) {
-    return base
-  }
-  for (const p of x.r.provsAip) {
-    return base + URL_PROV_TAIL + p
+  if (x.aipOnly) {
+    return base + URL_AIP_TAIL
   }
   return base
-}
-
-/**
- * 省份胶囊:AIP 表的行出该雇主 AIP 岗所在的大西洋省(省全名),其余行空排。
- *
- * @param x 事实行、是否只按 AIP 岗取与胶囊类。
- * @returns 胶囊排。
- */
-function provPillsOf(x: ProvPillsIn): StartPill[] {
-  const out: StartPill[] = []
-  if (x.aipOnly === false) {
-    return out
-  }
-  for (const p of x.r.provsAip) {
-    out.push({ key: p, text: provFullOf(p), cls: x.cls })
-  }
-  return out
 }
 
 /**
@@ -3231,7 +3209,6 @@ export function empColsOf(x: EmpColsIn): StartCol<EmpCellRow>[] {
       name,
       biz,
       sector,
-      { key: COL_AIP_PROVS, label: x.t('pulse.col.aipProvs'), render: EmpProvCell },
       hiring,
       open,
       act,
