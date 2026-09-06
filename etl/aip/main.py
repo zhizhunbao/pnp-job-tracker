@@ -38,8 +38,8 @@ TOOLS = {
 }
 """全部可 --only 点名的步(含两个不进默认链的件):
   employers  AIP 四省官方指定雇主名录 → raw/aip/aip-designated-employers.{json,md}
-  (rules     AIP 申请人门槛库 2026-09-06 整段搬去 rules 域 —— Frank「这种不同省的规则也需要一个
-             单独模块维护吧」;产物 raw/ircc/aip_rules.json 路径不变,入口 python etl/rules/main.py --only aip)
+  (rules     AIP 申请人门槛库 2026-09-06 整段搬去 eligibility 域 —— Frank「这种不同省的规则也需要一个
+             单独模块维护吧」;产物 raw/ircc/aip_rules.json 路径不变,入口 python etl/eligibility/main.py --only aip)
   flag       employers 名单 × 岗位雇主名 → 就地写回 postings.json / ATS jobs.json 的 aip
              (原 clean/05c_flag_aip.py,2026-08-31 批H2 归户、批I3 溶成 functions 段4;
              归 load 建表链排序,不进本域默认链)

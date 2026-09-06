@@ -1325,8 +1325,8 @@ IN_REQ_TABLES = [paths.PNP / "bc-req.json", paths.PNP / "on-req.json", paths.PNP
        走同一张表=引擎 facts.requirements 免费拿到;FED 行不会漏进省级门槛节(那边按省名挑行);
   G8  联邦段官方规费(program='PR-fees',ircc 域产)—— 第三次复用,同上安全;
   G9  联邦 Express Entry 三个项目的资格门槛(province='FED',ee 域产,quote-anchored)。
-  2026-09-06 再加 rcip_rules / fcip_rules(rules 域产,program='RCIP'/'FCIP',与 aip_rules 同形,
-       aip_rules 本身也随 aip 域规则步搬入 rules 域,路径不变)。
+  2026-09-06 再加 rcip_rules / fcip_rules(eligibility 域产,program='RCIP'/'FCIP',与 aip_rules 同形,
+       aip_rules 本身也随 aip 域规则步搬入 eligibility 域,路径不变)。
       **一个文件三个项目** → program 逐行写在 requirements[].program('CEC'/'FSW'/'FST'),
       表级只有 province —— 按行覆盖 program,零新表;
   G-AIP 联邦大西洋移民计划(AIP)申请人门槛(province='FED' program='AIP',aip 域产,

@@ -1,5 +1,5 @@
 """
-rules 域形状 —— quote-anchored 规则引擎的入参/出参 dataclass(照 aip 三件套样张;段横幅与 constants /
+eligibility 域形状 —— quote-anchored 规则引擎的入参/出参 dataclass(照 aip 三件套样张;段横幅与 constants /
 functions 同名同序镜像)。段 2-4 三个试点共用段 1 的形状:引擎只认 ProgramSpec,不认试点名。
 
 沿革:2026-09-06 立域。PageOut / PageEntryIn / RequirementIn / RulesDocIn 从 aip 域 scheme 第 3 段整段搬入

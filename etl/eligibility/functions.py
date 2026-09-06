@@ -1,5 +1,5 @@
 """
-rules 域函数 —— quote-anchored 规则引擎(段 1)+ 三个试点各一个入口(段 2-4,门直调)。
+eligibility 域函数 —— quote-anchored 规则引擎(段 1)+ 三个试点各一个入口(段 2-4,门直调)。
 
 沿革:2026-09-06 立域。引擎从 aip 域 functions 第 3 段搬入并按 ProgramSpec 参数化(原段把 RULES / PAGE_URLS /
 OUT_AIP_RULES / RULES_PROGRAM 写死成模块常量;一个域装三个试点后引擎只认规格,行为逐条与原段等价:
@@ -16,7 +16,7 @@ import paths
 from log.functions import say
 from fetch.constants import SPACE_SEP, WS_RE
 from crawl.functions import get_cached_page
-from rules.constants import (
+from eligibility.constants import (
     AIP_CRAWL_SLUG, AIP_PAGE_URLS, AIP_PROGRAM, AIP_RULES, AIP_RULES_NOTE, AIP_URL_ELIG,
     FCIP_CRAWL_SLUG, FCIP_PAGE_URLS, FCIP_PROGRAM, FCIP_RULES, FCIP_RULES_NOTE, FCIP_URL_ELIG,
     HTML_PARSER, INDENT_1, K_FACTOR, K_FAMILY_SIZE, K_PAGE, K_QUOTE, K_STREAM, K_TEXT, MAIN_TAG,
@@ -25,7 +25,7 @@ from rules.constants import (
     RULES_DONE_TPL, RULES_IN_TPL, RULES_MISSING_ROW_TPL, RULES_MISSING_TPL, RULES_NO_CACHE_TPL,
     RULES_OUT_TPL, RULES_PROVINCE_FED, SUBJECT_APPLICANT,
 )
-from rules.scheme import (
+from eligibility.scheme import (
     LoadIn, MissingIn, PageEntryIn, PageOut, ProgramSpec, RequirementIn, RulesDocIn, SoupNodeLike,
 )
 

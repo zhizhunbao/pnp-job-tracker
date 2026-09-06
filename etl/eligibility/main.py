@@ -1,9 +1,9 @@
 """
-rules 域门 —— 联邦试点申请人门槛库(AIP / RCIP / FCIP,quote-anchored)的唯一入口。
+eligibility 域门 —— 联邦试点申请人门槛库(AIP / RCIP / FCIP,quote-anchored)的唯一入口。
 
 用法:
-    python etl/rules/main.py                 # 默认链:aip → rcip → fcip(三份规则表逐一核引用落盘)
-    python etl/rules/main.py --only rcip     # 只跑一步(--only 按子串匹配 TOOLS 键)
+    python etl/eligibility/main.py                 # 默认链:aip → rcip → fcip(三份规则表逐一核引用落盘)
+    python etl/eligibility/main.py --only rcip     # 只跑一步(--only 按子串匹配 TOOLS 键)
 
 2026-09-06 立域:aip 步从 aip 域 main 的 SCHEDULED/TOOLS 搬来(键名 rules → aip),rcip / fcip 新增。
 引用核验未过 → 保留旧表 + SystemExit(1) 中止本轮 → 报警语义与 aip 时代一字不差。
@@ -14,7 +14,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from log.functions import err, say
-from rules.functions import build_aip_rules, build_fcip_rules, build_rcip_rules
+from eligibility.functions import build_aip_rules, build_fcip_rules, build_rcip_rules
 
 SCHEDULED = [
     ("aip", build_aip_rules),
