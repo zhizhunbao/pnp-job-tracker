@@ -82,8 +82,14 @@ ALL = "all"
 EMPTY_VALUES = (None, "")
 """岗位行「不落列」的判据:None 与空串才算空 —— False/0 是事实,要留。"""
 
+SLUG_APOSTROPHE_RE = re.compile(r"['’]")
+"""slug 化前先整个删掉的撇号(直、弯两种)。2026-09-06 Frank「怎么有两个」:「Tim Horton's」slug 成
+tim-horton-s、与「Tim Hortons」的 tim-hortons 各成一家(生产库 56 组只差撇号的同名公司);删撇号再压连字符,
+两种写法落同一 slug 同一家。⚠️ 带撇号的 2,511 家公司 slug 随之变(domino-s → dominos),旧 /companies/ URL 不再命中,
+只影响公司页不影响职位页(职位页靠 external_id)。"""
+
 SLUG_RE = re.compile(r"[^a-z0-9]+")
-"""slug 化:非字母数字压成连字符。"""
+"""slug 化:非字母数字压成连字符(撇号已在前一步删掉)。"""
 
 SLUG_DASH = "-"
 """slug 的连接字符(也是首尾修剪的字符)。"""

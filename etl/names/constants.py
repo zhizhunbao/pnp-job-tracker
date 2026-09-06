@@ -16,5 +16,10 @@ SUFFIX_RE = re.compile(
 ALIAS_SPLIT_RE = re.compile(r"\bo/a\b|\bdba\b|\bd/b/a\b|\bo\.a\.\b")
 """「operating as」别名分隔:切开取前面的主名(输入已小写,故不带 re.I,原值)。"""
 
+APOSTROPHE_RE = re.compile(r"['’]")
+"""撇号(直、弯两种)—— 2026-09-06 起先整个删掉再做其它归一:KEEP_RE 把撇号换成空格会让
+「Tim Horton's」变成「tim horton s」、与「Tim Hortons」对不上(生产库 56 组同名只差撇号的公司各成两家,
+Frank「怎么有两个」);删掉才是同一把尺子。"""
+
 KEEP_RE = re.compile(r"[^a-z0-9& ]")
-"""归一后允许保留的字符之外的一切(标点全换空格,& 保留)。"""
+"""归一后允许保留的字符之外的一切(标点全换空格,& 保留;撇号已在前一步删掉,不到这里)。"""
