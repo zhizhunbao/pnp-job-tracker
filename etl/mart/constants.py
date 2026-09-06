@@ -911,6 +911,22 @@ ORIGIN_ATS = "ats"
 ORIGIN_JOBBANK = "jobbank"
 """来源渠道:Job Bank。"""
 
+IN_BOARD_STORES = ((paths.PROCESSED_JOBILLICO / "postings.json", "jobillico"),
+                   (paths.PROCESSED_JOBBOOM / "postings.json", "jobboom"))
+"""第三方招聘板的 postings 仓 → (路径, origin) 表(2026-09-06 jobillico/jobboom 立域,Frank「两站都接,
+Jobboom 剔 Job Bank 转载」)。仓与 Job Bank 仓同键(各板域自己归一成同形),评分 / 岗位装配 /
+三段跨源清洗都按这张表多走一轮;origin 记板名(jobs.origin 渠道筛选随之多两个值),source 是板域
+写的板名。板帖不进验尸(过期由板域按 validThrough 出仓)。加第三个板 = 这里加一行。"""
+
+BOARD_EXT_TPL = "{origin}:{pid}"
+"""板帖的 externalId(`jobillico:<帖号>`;与 jb: 前缀同律 —— 帖号只在各自板内唯一,前缀防撞)。"""
+
+K_ORIGIN = "origin"
+"""jobs 行的来源渠道键(板帖装配时覆盖成板名)。"""
+
+PRINT_INOUT_BOARD_TPL = "IN/OUT board     : {out}"
+"""三段跨源清洗对每个板仓的 IN/OUT 留痕。"""
+
 
 # =========================================================================
 # 8. mart:岗位装配(ATS/JB 两源 → jobs 行;JD 正文下沉 + 身份预筛)

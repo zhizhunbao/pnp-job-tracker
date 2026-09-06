@@ -157,6 +157,8 @@ from mart.constants import (
     VISA_RULES, WAGE_NATIONAL, WEEKLY_DAYS, WEEKLY_DONE_TPL, WEEKLY_N, WORD_BOUND_TPL, WP_TAIL_RE,
     WS_RE, YEAR_END_TPL, YEAR_LEN, YEAR_START_TPL,
 )
+from mart.constants import BOARD_EXT_TPL, IN_BOARD_STORES, K_ORIGIN, PRINT_INOUT_BOARD_TPL
+from mart.scheme import BoardJobIn, BoardPilotIn, BoardSalaryIn
 from mart.scheme import (
     AddJobIn, ApplyLocIn, ApplySalaryIn, AtsExtIn, AtsJobIn, AvgDaysIn, BasisIn, CatI18nIn,
     ChannelTierIn, CityBuildIn, CityRowIn, CityStatsIn, CityStatsRowIn, ClosedDaysIn, ClosedJobIn,
@@ -873,6 +875,26 @@ def jobbank_ext_of(j: dict) -> str:
     return JB_EXT_TPL.format(pid=j.get(K_POSTING_ID, ""))
 
 
+def collect_board_jobs() -> list:
+    """第三方板仓(processed/<板>/postings.json)里的岗 → 待评分清单(板不给 NOC,hint 空 → 按标题分类;
+    2026-09-06 jobillico/jobboom 立域)。"""
+    out: list = []
+    for path, origin in IN_BOARD_STORES:
+        if not path.exists():
+            continue
+        for j in read_rows(path):
+            out.append(CollectedJob(ext=board_ext_of(BoardJobIn(job=j, origin=origin)),
+                                    title=j.get(K_TITLE, ""),
+                                    agency=bool(AGENCY_RE.search(j.get(K_EMPLOYER, ""))),
+                                    prov=j.get(K_PROVINCE, ""), hint=""))
+    return out
+
+
+def board_ext_of(x: BoardJobIn) -> str:
+    """板帖的 externalId(`<板名>:<帖号>`;评分层与汇装层同一把尺子,不分叉)。"""
+    return BOARD_EXT_TPL.format(origin=x.origin, pid=x.job.get(K_POSTING_ID, ""))
+
+
 def to_scored_row(x: ScoredRowIn) -> dict:
     """一条岗的评分行(externalId 为键,给 09 汇装 join)。"""
     noc = x.job.hint
@@ -898,7 +920,7 @@ def score_mart_jobs() -> None:
     """步骤①:NOC → TEER → 每 TEER 自己的评分表 + pnpEligible/pnpStream(processed/all-scored.json)。"""
     tables = load_pnp_tables()
     out = []
-    for job in collect_ats_jobs() + collect_jobbank_jobs():
+    for job in collect_ats_jobs() + collect_jobbank_jobs() + collect_board_jobs():
         out.append(to_scored_row(ScoredRowIn(tables=tables, job=job)))
     OUT_SCORED.parent.mkdir(parents=True, exist_ok=True)
     paths.write_json(paths.WriteJsonIn(path=OUT_SCORED, payload=out, indent=INDENT_2))
@@ -1361,6 +1383,35 @@ def collect_jobbank_rows(ctx: MartCtx) -> None:
                          fields=to_jb_job_fields(j)))
 
 
+def collect_board_rows(ctx: MartCtx) -> None:
+    """③ 第三方板(jobillico / jobboom,2026-09-06)→ companies + jobs。
+
+    仓与 Job Bank 仓同键:中介两道过滤、展示去重、「见过」集三件与 collect_jobbank_rows 逐位相同
+    (先记「见过」再展示去重,顺序同样是硬的)。板帖不进验尸(过期由板域按 validThrough 出仓),
+    externalId 带板名前缀不与 jb: 相撞。
+    """
+    for path, origin in IN_BOARD_STORES:
+        if not path.exists():
+            continue
+        for j in read_rows(path):
+            if MART_AGENCY_RE.search(j.get(K_EMPLOYER, "")):
+                continue
+            if AGENCY_NOTE in (j.get(K_TITLE) or "").lower():
+                continue
+            cslug = slugify(j.get(K_EMPLOYER) or SLUG_UNKNOWN)
+            key = DEDUP_KEY_TPL.format(slug=cslug, title=norm_title(j.get(K_TITLE, "")))
+            ext = board_ext_of(BoardJobIn(job=j, origin=origin))
+            ctx.seen_ids.add(ext)
+            if key in ctx.seen:
+                continue
+            ctx.seen.add(key)
+            add_company(CompanyExtraIn(ctx=ctx, name=j.get(K_EMPLOYER) or EM_DASH, slug=cslug,
+                                       extra=to_jb_company_extra(j)))
+            fill_salary(FillSalaryIn(ctx=ctx, job=j))
+            add_job(AddJobIn(ctx=ctx, external_id=ext, company_slug=cslug,
+                             fields=to_board_job_fields(BoardJobIn(job=j, origin=origin))))
+
+
 def mart_jb_ext_of(x: JbExtIn) -> str:
     """汇装层的 Job Bank externalId(`jb:<帖号>`;取不到帖号退回帖 URL,再退回展示去重键
     —— ⚠ 与评分层 jobbank_ext_of 的最末一档不同,两处各自的历史口径,不合并)。"""
@@ -1489,6 +1540,15 @@ def to_jb_job_fields(j: dict) -> dict:
         "whoCanApply": j.get("who_can_apply"),
         "certificates": j.get("certificates") or None, "education": j.get("education"),
     }
+
+
+def to_board_job_fields(x: BoardJobIn) -> dict:
+    """板帖 → jobs 行的来源侧字段:仓与 Job Bank 同键所以同一把尺子,只改两格 —— origin 记板名
+    (渠道筛选分得开),正文随行下沉(板帖没有 .md,fill_jd_bodies 按 applyUrl 找不到就不覆盖)。"""
+    fields = to_jb_job_fields(x.job)
+    fields[K_ORIGIN] = x.origin
+    fields[K_DESCRIPTION] = x.job.get(K_DESCRIPTION) or None
+    return fields
 
 
 def to_job_row(x: JobRowIn) -> dict:
@@ -3124,6 +3184,7 @@ def to_mart_tables() -> dict:
     ctx = new_mart_ctx()
     collect_ats_rows(ctx)
     collect_jobbank_rows(ctx)
+    collect_board_rows(ctx)
     fill_companies_lmia(ctx)
     fill_company_grades(ctx)
     fill_jd_bodies(ctx)
@@ -4159,6 +4220,24 @@ def clean_job_locations() -> None:
     for job in posts:
         dist[job.get(K_PROVINCE, PROV_MISSING_MARK)] += 1
     say(PRINT_LOC_DONE_TPL.format(n=len(posts), provs=len(dist), dist=dict(dist)))
+    clean_board_locations(fsa_table)
+
+
+def clean_board_locations(fsa_table: dict) -> None:
+    """第三方板仓走 Job Bank 同一把地点尺子(省/市/地址 → 五格;板帖带邮编,区靠 FSA 表补;
+    2026-09-06 jobillico/jobboom 立域)。原地清洗:读哪个仓写回哪个仓。"""
+    for path, _origin in IN_BOARD_STORES:
+        if not path.exists():
+            continue
+        say(PRINT_INOUT_BOARD_TPL.format(out=path))
+        posts = read_rows(path)
+        for job in posts:
+            if not job.get(K_CITY_RAW):
+                job[K_CITY_RAW] = job.get(K_CITY, "")
+            apply_location(ApplyLocIn(job=job, loc=normalize_jobbank_location(
+                JbLocIn(prov=job.get(K_PROVINCE, ""), city=job.get(K_CITY_RAW, ""),
+                        addr=job.get(K_ADDRESS, ""), fsa_table=fsa_table))))
+        paths.write_json(paths.WriteJsonIn(path=path, payload=posts, indent=INDENT_2))
 
 
 def clean_ats_file(jobs_json: Path) -> LocKeptOut:
@@ -4318,12 +4397,28 @@ def clean_job_salary() -> None:
         if changed:
             paths.write_json(paths.WriteJsonIn(path=OUT_JOBBANK, payload=postings,
                                                indent=INDENT_2))
+    clean_board_salary(BoardSalaryIn(tally=tally, guards=guards))
     guarded = guards.absurd + guards.ratio + guards.cap + guards.gig + guards.hifold
     say(PRINT_SAL_DONE_TPL.format(updated=tally.updated, priced=tally.priced, total=tally.total))
     say(PRINT_SAL_GUARD_TPL.format(guarded=guarded, absurd=guards.absurd,
                                    ratio_max=SAL_RATIO_MAX, ratio=guards.ratio,
                                    cap_max=SAL_ANNUAL_MAX, cap=guards.cap, gig=guards.gig,
                                    fold_max=SAL_HOURLY_FOLD_MAX, hifold=guards.hifold))
+
+
+def clean_board_salary(x: BoardSalaryIn) -> None:
+    """第三方板仓走同一把薪资尺子(板域已把薪资拼成 Job Bank 写法;2026-09-06)。原地清洗,幂等。"""
+    for path, _origin in IN_BOARD_STORES:
+        if not path.exists():
+            continue
+        say(PRINT_INOUT_BOARD_TPL.format(out=path))
+        postings = read_rows(path)
+        changed = False
+        for job in postings:
+            if salary_tick(SalaryTickIn(job=job, tally=x.tally, guards=x.guards)):
+                changed = True
+        if changed:
+            paths.write_json(paths.WriteJsonIn(path=path, payload=postings, indent=INDENT_2))
 
 
 def salary_tick(x: SalaryTickIn) -> bool:
@@ -4504,6 +4599,7 @@ def flag_job_pilot() -> None:
         for job in posts:
             flag_pilot_row(PilotFlagIn(job=job, cmap=cmap, emp=emp, tally=tally))
         paths.write_json(paths.WriteJsonIn(path=OUT_JOBBANK, payload=posts, indent=INDENT_2))
+    flag_board_pilot(BoardPilotIn(cmap=cmap, emp=emp, tally=tally))
     blank_ats_pilot(tally)
     say(PRINT_PILOT_DONE_TPL.format(flagged=tally.flagged, total=tally.total,
                                     emp_hits=tally.emp_hits))
@@ -4534,6 +4630,18 @@ def load_pilot_employer_names() -> dict:
                 names.add(norm_name(m.group(1)))
             names.discard("")
     return out
+
+
+def flag_board_pilot(x: BoardPilotIn) -> None:
+    """第三方板仓走同一把试点尺子(城市 × 省 精确匹配;2026-09-06)。原地打标。"""
+    for path, _origin in IN_BOARD_STORES:
+        if not path.exists():
+            continue
+        say(PRINT_INOUT_BOARD_TPL.format(out=path))
+        posts = read_rows(path)
+        for job in posts:
+            flag_pilot_row(PilotFlagIn(job=job, cmap=x.cmap, emp=x.emp, tally=x.tally))
+        paths.write_json(paths.WriteJsonIn(path=path, payload=posts, indent=INDENT_2))
 
 
 def flag_pilot_row(x: PilotFlagIn) -> None:

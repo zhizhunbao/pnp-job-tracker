@@ -92,6 +92,20 @@ services:
       SINCE_DAYS: '3'
       TZ: EST5EDT
 
+  jobillico:                       # Jobillico 全国板抓岗(2026-09-06 立域,Frank「两站都接」;站点地图 → 详情 ld+json → processed/jobillico/)
+    <<: *etl
+    environment:
+      SOURCE: jobillico
+      DETAILS_PER_RUN: '3000'      # 每轮详情页上限(首轮 3.5 万张分十几轮跑完;域 __init__ 同名默认值)
+      TZ: EST5EDT
+
+  jobboom:                         # Jobboom 雇主直发岗(2026-09-06 立域;站点地图剔 /job-bank/ 转载 86% → 详情 ld+json → processed/jobboom/)
+    <<: *etl
+    environment:
+      SOURCE: jobboom
+      DETAILS_PER_RUN: '3000'
+      TZ: EST5EDT
+
   crawl:                           # 九省官方站 URL 探索 + 站点地图 diff(政策雷达;只产 data/crawl/,不灌库)
     <<: *etl
     build:                         # 用带 Playwright 的重镜像(非 httpx 轻镜像):PE 在 Radware 后面,

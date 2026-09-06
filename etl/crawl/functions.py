@@ -228,6 +228,7 @@ from crawl.scheme import (
     PageLike,
     CacheHit,
     CachePutIn,
+    CachePutManyIn,
     ConvertIn,
     CrawlCtx,
     DiscoverIn,
@@ -318,6 +319,66 @@ def put_cached_page(x: CachePutIn) -> Path:
     manifest[K_CRAWLED_AT] = datetime.now().isoformat()
     paths.write_text(paths.WriteTextIn(path=manifest_path, text=json.dumps(manifest, ensure_ascii=False, indent=2)))
     return html_dir / html_name
+
+
+def load_cache_index(slug: str) -> dict:
+    """一个 slug 的 manifest → url → html_cache 文件路径(只认 status 200 且文件真在盘上的行)。
+
+    2026-09-06 随批量写门立:get_cached_page(url) 每问一次都扫全部 manifest,数万条 URL 逐个问
+    = 数万次全扫;抓详情的域先取一份索引再判「抓过没」。manifest 不在 = 空索引。"""
+    manifest_path = paths.CRAWL / slug / MANIFEST_FILE
+    out: dict = {}
+    if not manifest_path.exists():
+        return out
+    loaded = json.loads(manifest_path.read_text(encoding=ENC_UTF8))
+    if not isinstance(loaded, dict):
+        return out
+    html_dir = manifest_path.parent / HTML_CACHE_DIR
+    pages = loaded.get(K_PAGES)
+    if not isinstance(pages, list):
+        return out
+    for p in pages:
+        if not isinstance(p, dict) or p.get(K_STATUS) != STATUS_OK:
+            continue
+        name = p.get(K_HTML)
+        if isinstance(name, str) and name != "" and (html_dir / name).exists():
+            out[p.get(K_URL)] = html_dir / name
+    return out
+
+
+def put_cached_pages(x: CachePutManyIn) -> int:
+    """一批原文进 crawl 层:逐页 html_cache/md5(url).html 落盘,manifest 只在末尾写一次 → 写入页数。
+
+    与 put_cached_page 同一套文件名与页行形状(取回照旧 get_cached_page / load_cache_index);
+    区别只在 manifest 的写盘次数。一页都没有也照常返回 0(不碰 manifest)。"""
+    if len(x.pages) == 0:
+        return 0
+    out_dir = paths.CRAWL / x.slug
+    html_dir = out_dir / HTML_CACHE_DIR
+    html_dir.mkdir(parents=True, exist_ok=True)
+    manifest_path = out_dir / MANIFEST_FILE
+    manifest: dict = {K_SEED_URL: x.pages[0].url, K_SLUG: x.slug, K_TOTAL_URLS: 0, K_MAX_DEPTH: 0,
+                      K_CRAWLED_AT: "", K_PAGES: []}
+    if manifest_path.exists():
+        loaded = json.loads(manifest_path.read_text(encoding=ENC_UTF8))
+        if isinstance(loaded, dict):
+            manifest = loaded
+    by_url: dict = {}
+    old = manifest.get(K_PAGES)
+    if isinstance(old, list):
+        for p in old:
+            if isinstance(p, dict):
+                by_url[p.get(K_URL)] = p
+    for page in x.pages:
+        html_name = hashlib.md5(page.url.encode()).hexdigest() + HTML_SUFFIX
+        paths.write_text(paths.WriteTextIn(path=html_dir / html_name, text=page.html))
+        by_url[page.url] = {K_URL: page.url, K_TITLE: page.title, K_DEPTH: 0, K_STATUS: STATUS_OK,
+                            K_HTML: html_name}
+    manifest[K_PAGES] = list(by_url.values())
+    manifest[K_TOTAL_URLS] = len(by_url)
+    manifest[K_CRAWLED_AT] = datetime.now().isoformat()
+    paths.write_text(paths.WriteTextIn(path=manifest_path, text=json.dumps(manifest, ensure_ascii=False, indent=2)))
+    return len(x.pages)
 
 
 # =========================================================================

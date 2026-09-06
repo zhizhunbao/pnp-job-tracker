@@ -33,6 +33,14 @@ RAW_COMPANIES = RAW / "companies"
 RAW_JOBBANK = RAW / "jobbank"
 """Job Bank 原始 HTML 快照:<日期>/ · <日期>/details/。"""
 
+RAW_JOBILLICO = RAW / "jobillico"
+"""jobillico 域抽出的表(2026-09-06 立域,Frank「两站都接」):urls.json(站点地图枚举:帖号 → 详情 URL)
++ jobs.json(详情页 ld+json JobPosting 抽出的事实,帖号为键);页面原文全在 crawl/board-jobillico/。"""
+
+RAW_JOBBOOM = RAW / "jobboom"
+"""jobboom 域抽出的表(2026-09-06 立域,与 jobillico 同形):urls.json + jobs.json;原文在 crawl/board-jobboom/。
+Job Bank 转载条(站点地图 URL 含 /job-bank/,占 86%)在枚举时就剔,不进这里(Frank 2026-09-06「剔 Job Bank 转载」)。"""
+
 
 PNP = RAW / "pnp"
 """各省 PNP 维护表(aaip-ineligible/sk-*.json 等)。"""
@@ -115,6 +123,13 @@ COMPANIES = PROCESSED_ATS
 
 PROCESSED_JOBBANK = PROCESSED / "jobbank"
 """Job Bank 累积/去重/清洗后的 store(当前态,不按日期)。"""
+
+PROCESSED_JOBILLICO = PROCESSED / "jobillico"
+"""jobillico 域归一后的 postings.json(当前态:只留站点地图仍在列且未过截止日的帖;
+行形与 Job Bank 仓同键,mart 用同一套尺子汇装)。"""
+
+PROCESSED_JOBBOOM = PROCESSED / "jobboom"
+"""jobboom 域归一后的 postings.json(同 PROCESSED_JOBILLICO 的形与口径)。"""
 
 PROCESSED_PTE = PROCESSED / "pte"
 """pte 域组织后产物(2026-09-01):ynwac 机经库解析分组(ynwac-bank.json,按题型分组 +

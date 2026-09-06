@@ -804,6 +804,17 @@ class DirectOfIn:
     """原始来源板。"""
 
 @dataclass
+class BoardJobIn:
+    """board_ext_of() / to_board_job_fields() 入参:一条第三方板帖 + 它的板名(2026-09-06)。"""
+
+    job: dict
+    """板仓的一行(与 Job Bank 仓同键)。"""
+
+    origin: str
+    """板名(jobillico / jobboom;IN_BOARD_STORES 表里的第二格)。"""
+
+
+@dataclass
 class JbExtIn:
     """mart_jb_ext_of() 入参。"""
 
@@ -2194,6 +2205,17 @@ class SalaryTally:
 
 
 @dataclass
+class BoardSalaryIn:
+    """clean_board_salary() 入参:两个累加器(板仓与 Job Bank 仓同一轮报数)。"""
+
+    tally: SalaryTally
+    """总数/有薪/改写 三计数。"""
+
+    guards: SalaryGuards
+    """五道护栏各拦了多少。"""
+
+
+@dataclass
 class SalaryTickIn:
     """salary_tick() 入参:一个岗 + 两个累加器。"""
 
@@ -2317,6 +2339,20 @@ class PilotTally:
 
     emp_hits: int
     """雇主同时在本社区指定名单上的岗数。"""
+
+
+@dataclass
+class BoardPilotIn:
+    """flag_board_pilot() 入参:两张索引 + 报数(与 Job Bank 仓同一轮)。"""
+
+    cmap: dict
+    """(province, city) → 社区行清单。"""
+
+    emp: dict
+    """试点指定雇主名索引(与 PilotFlagIn.emp 同一份)。"""
+
+    tally: PilotTally
+    """打标报数。"""
 
 
 @dataclass

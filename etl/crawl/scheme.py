@@ -254,6 +254,33 @@ class CachePutIn:
 
 
 @dataclass
+class CachePage:
+    """put_cached_pages() 的一页(批量写门的行;字段与 CachePutIn 同义,少 slug)。"""
+
+    url: str
+    """页面地址(缓存文件名 = md5(url).html)。"""
+
+    html: str
+    """页面原文。"""
+
+    title: str
+    """页标题(空串可)。"""
+
+
+@dataclass
+class CachePutManyIn:
+    """put_cached_pages() 入参(一批原文 → html_cache 逐页落盘 + manifest 只写一次)。
+    2026-09-06 jobillico/jobboom 立域时开的批量门:两站详情页各数万张,逐页走 put_cached_page
+    等于每页重写一遍整份 manifest(O(n²),四万页 = 四万次数 MB 写盘),单页门撑不住。"""
+
+    slug: str
+    """站点 slug(data/crawl/<slug>/;无则建)。"""
+
+    pages: list
+    """CachePage 清单(同 url 后者覆盖前者)。"""
+
+
+@dataclass
 class ScopeIn:
     """is_in_scope() 入参。"""
 
