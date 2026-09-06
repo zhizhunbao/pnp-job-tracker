@@ -7,7 +7,7 @@
  * @time 2026-09-04 22:10:00
  */
 import { Card, CardAction, CardKV } from '@/components/card'
-import { ID_NOWP, TABLE_AIP, TABLE_PILOT, TEXT_NONE } from './constants'
+import { ID_NOWP, TABLE_PILOT, TEXT_NONE } from './constants'
 import { EmpActCell } from './empactcell'
 import { EmpBriefCell } from './empbriefcell'
 import { EmpHiringCell } from './emphiringcell'
@@ -26,9 +26,9 @@ export function EmpCard({ t, row, kind }: EmpCardIn) {
   if (kind === ID_NOWP) {
     kv.push({ k: t('se.col.w2'), v: row.lmia2qText })
     kv.push({ k: t('se.col.w4'), v: row.lmia4qText })
-  } else if (kind === TABLE_AIP) {
+  } else if (kind === TABLE_PILOT) {
     kv.push({ k: t('pulse.col.sector'), v: row.sectorText })
-  } else if (kind !== TABLE_PILOT) {
+  } else {
     kv.push({ k: t('pulse.col.sector'), v: row.sectorText })
     kv.push({ k: t('se.col.verdict'), v: row.verdictText })
   }

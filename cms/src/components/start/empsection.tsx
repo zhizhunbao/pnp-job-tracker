@@ -2,7 +2,7 @@
 /**
  * 域内小件:雇主段的伞 —— 行业各一表(子标题行带身份胶囊:没工签 / PGWP,切一处全段跟着切;分表已按当前档算好),
  * 后接三试点指定雇主表(AIP / RCIP / FCIP 在招的,不分档不分行业;Frank「不要和一般的走 pnp 的雇主放到一起」;
- * AIP 2026-09-05 拆本地 / 连锁两张,表种随分表带来)。
+ * AIP 2026-09-05 拆本地 / 连锁两张;09-06 起三试点表在招都只算该试点的岗)。
  * 2026-09-05 Frank 拍板:「在招担保雇主」就叫「雇主」;LMIA 段并回没工签档;
  * 「我看不了别人装逼」—— 每家一列把脉,规则是模板 + 库内事实,不上 LLM。
  * 空段(一个行业都凑不出一行)整块不渲,绝不出空壳。
@@ -10,7 +10,7 @@
  * @author Frank
  * @time 2026-09-04 22:10:00
  */
-import { ID_SE } from './constants'
+import { ID_SE, TABLE_PILOT } from './constants'
 import { Band } from './band'
 import { EmpBoardSec } from './empboardsec'
 import { Sec } from './sec'
@@ -51,7 +51,7 @@ export function EmpSection({ t, updatedAt, secs, pilotSecs, kind, kindPickOf }: 
         kind={kind}
         kindPickOf={kindPickOf}
         chips={false}
-        tableKind={sec.table}
+        tableKind={TABLE_PILOT}
         gap
         updatedAt={updatedAt} />,
     )

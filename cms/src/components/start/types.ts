@@ -2041,7 +2041,7 @@ export type EmpKind = 'nowp' | 'pgwp'
 /**
  * 雇主表的表种:两个身份档的行业表,或三试点指定雇主表(列集各自不同)。
  */
-export type EmpTableKind = EmpKind | 'pilot' | 'aip'
+export type EmpTableKind = EmpKind | 'pilot'
 
 /**
  * 雇主表的展示行(值级清洗在 toEmpCellRow 做完)。一格一个事实(2026-09-05 Frank「一个字段怎么包含这么多信息」)。
@@ -2224,11 +2224,6 @@ export type EmpSec = {
    * 展示行,已排好序(视图分页)。
    */
   rows: EmpCellRow[]
-
-  /**
-   * 这张表的表种(列集按它取:行业表 = 身份档,试点表 = pilot,AIP 两张 = aip;2026-09-05)。
-   */
-  table: EmpTableKind
 }
 
 /**
@@ -2361,9 +2356,9 @@ export type EmpCellRowIn = {
   r: SponsorEmployerRow
 
   /**
-   * 只按 AIP 岗算(AIP 表:在招 = openJobsAip、职业 = nocsAip、看岗位带 AIP 筛;其余表 false)。
+   * 按哪个试点的岗取值(PILOT_KEY_AIP / RCIP / FCIP:在招、职业、看岗位只看该试点的岗;PILOT_NONE = 全国)。
    */
-  aipOnly: boolean
+  pick: string
 
   /**
    * 取词函数。
@@ -3544,18 +3539,18 @@ export type DesignatedIn = {
 }
 
 /**
- * `empNocsOf` / `empOpenCountOf` / `empJobsHrefOf` 的入参:事实行 + 是否只按 AIP 岗取。
+ * `empNocsOf` / `empOpenCountOf` / `empJobsHrefOf` 的入参:事实行 + 按哪个试点取。
  */
-export type AipPickIn = {
+export type PilotPickIn = {
   /**
    * 事实行。
    */
   r: SponsorEmployerRow
 
   /**
-   * 只按 AIP 岗取值。
+   * 试点键;PILOT_NONE = 全国。
    */
-  aipOnly: boolean
+  pick: string
 }
 
 /**
@@ -3576,11 +3571,6 @@ export type PilotPart = {
    * 连锁筛:true 只留连锁、false 只留本地、null 不筛(RCIP / FCIP)。
    */
   chain: boolean | null
-
-  /**
-   * 表种(列集)。
-   */
-  table: EmpTableKind
 }
 
 /**

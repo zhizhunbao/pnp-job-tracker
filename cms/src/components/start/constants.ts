@@ -30,6 +30,13 @@ export const URL_HOME_Q_HEAD = '/?q='
 export const URL_AIP_TAIL = '&aip=yes'
 
 /**
+ * 职位板试点社区筛选参数尾巴(URL_TO_FILTER 的 pilot → fPilot=yes,SQL 留 pilot 非空的岗)。
+ * RCIP / FCIP 表「看岗位」带它(2026-09-06):职位板没有按单个试点筛的参数,任一试点社区的岗都出,
+ * 雇主同时在两种社区有岗时会比表里「在招」多几条。
+ */
+export const URL_PILOT_TAIL = '&pilot=yes'
+
+/**
  * 移民动态列表页(政策动态标题旁那条外链,也是无 slug 时的兜底去处)。
  */
 export const URL_NEWS = '/news'
@@ -1018,12 +1025,6 @@ export const PILOT_FCIP = 'FCIP'
 export const TABLE_PILOT = 'pilot'
 
 /**
- * 雇主表的表种:AIP 表(本地 / 连锁两张同种;2026-09-05 /fe 把脉 AIP 批:在招只算 AIP 岗、在招职业只列 AIP 岗、
- * 多一列省份;RCIP / FCIP 仍是 TABLE_PILOT,按名单交集匹配没有岗级事实,口径不动)。
- */
-export const TABLE_AIP = 'aip'
-
-/**
  * AIP 表的两半之一:本地雇主(在招岗没出大西洋,或只出了一省);表题文案 = KEY_PILOT_HEAD + 键。
  * 拆表理由见 lib/employers CHAIN_PROVS_MIN(Frank 2026-09-05「当地的企业更容易 AIP 吧」)。
  */
@@ -1036,8 +1037,15 @@ export const AIP_SEC_CHAIN = 'aipChain'
 
 /**
  * 三试点的键(顺序即三张表的顺序);表题文案 = KEY_PILOT_HEAD + 键。
+ * 2026-09-06 起三张表都按岗级事实数(AIP 岗 / RCIP 岗 / FCIP 岗,见 lib/db sponsorEmployers),
+ * 在招、在招职业、看岗位都只看该试点的岗,不再挂全国数(Frank「rcip 和 fcip 也有这个问题吧」)。
  */
 export const PILOT_KEYS = ['aip', 'rcip', 'fcip']
+
+/**
+ * 不按试点取值的记号(行业表的行:在招 = 全国在招、职业 = 全部在招岗)。
+ */
+export const PILOT_NONE = ''
 
 /**
  * 试点表题的文案键头。

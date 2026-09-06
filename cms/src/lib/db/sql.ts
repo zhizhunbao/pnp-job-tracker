@@ -491,6 +491,9 @@ export const PNP_REQ_EMPLOYER = `SELECT province, factor, op, value, unit, appli
  * 担保雇主榜主查询:LMIA/AIP/具名通道三路并一张表。a1/a2=有无 additive 列时的列清单差。
  * 2026-09-05 加 nocs_aip(只计 aip=true 岗的 NOC)与 provs_out(在招岗覆盖的大西洋以外省数):
  * 把脉页 AIP 表「在招职业」只列 AIP 岗、按省外省数拆本地/连锁两表(Frank「AIP 应该是分两部分吧」)。
+ * 2026-09-06 加 open_jobs_rcip / nocs_rcip / open_jobs_fcip / nocs_fcip:RCIP / FCIP 岗 = 岗在该试点社区
+ * (pilot 含 RCIP / FCIP,mart pilot_flag 步产)且雇主在该社区指定名单(pilot_employer),
+ * 把脉页两张试点表改按它数在招与职业(Frank「rcip 和 fcip 也有这个问题吧」),不再挂全国数。
  *
  * @param a1 SELECT 侧的附加列片段(additive 列在时非空)。
  * @param a2 GROUP BY 侧的对应片段。
@@ -504,6 +507,10 @@ export const sponsorEmployers = (a1: string, a2: string) => `
       COUNT(*) FILTER (WHERE j.aip)::int AS open_jobs_aip,
       COALESCE(ARRAY_AGG(DISTINCT j.province) FILTER (WHERE j.aip AND COALESCE(j.province, '') <> ''), '{}') AS provs_aip,
       COALESCE(ARRAY_AGG(DISTINCT j.noc) FILTER (WHERE j.aip AND COALESCE(j.noc, '') <> ''), '{}') AS nocs_aip,
+      COUNT(*) FILTER (WHERE COALESCE(j.pilot_employer, false) AND COALESCE(j.pilot, '') LIKE '%RCIP%')::int AS open_jobs_rcip,
+      COALESCE(ARRAY_AGG(DISTINCT j.noc) FILTER (WHERE COALESCE(j.pilot_employer, false) AND COALESCE(j.pilot, '') LIKE '%RCIP%' AND COALESCE(j.noc, '') <> ''), '{}') AS nocs_rcip,
+      COUNT(*) FILTER (WHERE COALESCE(j.pilot_employer, false) AND COALESCE(j.pilot, '') LIKE '%FCIP%')::int AS open_jobs_fcip,
+      COALESCE(ARRAY_AGG(DISTINCT j.noc) FILTER (WHERE COALESCE(j.pilot_employer, false) AND COALESCE(j.pilot, '') LIKE '%FCIP%' AND COALESCE(j.noc, '') <> ''), '{}') AS nocs_fcip,
       COUNT(DISTINCT j.province) FILTER (WHERE COALESCE(j.province, '') <> '' AND j.province NOT IN ('NL', 'NB', 'NS', 'PE'))::int AS provs_out,
       BOOL_OR(j.aip) AS aip,
       BOOL_OR(COALESCE(j.pnp_stream, '') <> '') AS named,

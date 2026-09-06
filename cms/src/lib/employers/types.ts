@@ -412,6 +412,26 @@ export type SponsorEmployerRow = {
   chain: boolean
 
   /**
+   * RCIP 岗数:岗在 RCIP 社区且雇主在该社区指定名单(2026-09-06,把脉页 RCIP 表的「在招」)。
+   */
+  openJobsRcip: number
+
+  /**
+   * RCIP 岗的 NOC 清单(去重)。
+   */
+  nocsRcip: string[]
+
+  /**
+   * FCIP 岗数(口径同 RCIP)。
+   */
+  openJobsFcip: number
+
+  /**
+   * FCIP 岗的 NOC 清单(去重)。
+   */
+  nocsFcip: string[]
+
+  /**
    * LMIA 获批岗位数(历史事实)。
    */
   lmiaPositions: number
@@ -1854,6 +1874,26 @@ export type SponsorDbRow = {
    * 在招岗覆盖的大西洋以外省数(COUNT DISTINCT)。
    */
   provs_out: number | string | null
+
+  /**
+   * RCIP 岗数(社区内 + 指定雇主)。
+   */
+  open_jobs_rcip: number | string | null
+
+  /**
+   * RCIP 岗的 NOC(array_agg)。
+   */
+  nocs_rcip: string[] | null
+
+  /**
+   * FCIP 岗数(社区内 + 指定雇主)。
+   */
+  open_jobs_fcip: number | string | null
+
+  /**
+   * FCIP 岗的 NOC(array_agg)。
+   */
+  nocs_fcip: string[] | null
 
   /**
    * LMIA 获批岗位数。

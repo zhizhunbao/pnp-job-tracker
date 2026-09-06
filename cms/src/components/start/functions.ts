@@ -50,7 +50,7 @@ import {
   SECTOR_FEDERAL, SECTOR_GOVERNMENT, SECTOR_PRIVATE, SECTOR_PUBLIC,
   COL_BIZ, PILOT_FCIP, PILOT_RCIP, KEY_PILOT_HEAD, PILOT_KEYS, PILOT_KEY_AIP, PILOT_KEY_RCIP, TABLE_PILOT,
   SPACE_SEP, ACRONYM_MAX, CORP_SUFFIXES, NON_LETTER_RE, BRIEF_TAG_RE, BRIEF_TAG_WHAT,
-  TABLE_AIP, AIP_SEC_LOCAL, AIP_SEC_CHAIN, URL_AIP_TAIL,
+  AIP_SEC_LOCAL, AIP_SEC_CHAIN, URL_AIP_TAIL, URL_PILOT_TAIL, PILOT_NONE, PILOT_KEY_FCIP,
 } from './constants'
 import { DeadCell } from './deadcell'
 import { EmpActCell } from './empactcell'
@@ -101,7 +101,7 @@ import type {
   EmptyQueryResult, PulseDraw, DrawDbRow, DrawHist, DrawHistIn, DrawsIn, PulseDrawIn, DrawCellRow, DrawCellRowIn,
   DrawCellRowsIn, DrawColsIn, DrawRowClsIn, DrawLang,
   TFn,
-  AipPickIn, PilotPart, PilotCellsIn,
+  PilotPickIn, PilotPart, PilotCellsIn,
 } from './types'
 import css from './start.module.css'
 
@@ -2777,7 +2777,7 @@ export function empSecsOf(x: EmpSecsIn): EmpSec[] {
       continue
     }
     const cell = toEmpCellRow({
-      r, t: x.t, ind, nocInfo: x.nocInfo, nocCat: x.nocCat, extra: x.extra, lang: x.lang, aipOnly: false,
+      r, t: x.t, ind, nocInfo: x.nocInfo, nocCat: x.nocCat, extra: x.extra, lang: x.lang, pick: PILOT_NONE,
     })
     const arr = byInd.get(ind)
     if (arr == null) {
@@ -2797,7 +2797,7 @@ export function empSecsOf(x: EmpSecsIn): EmpSec[] {
     } else {
       rows.sort(byPulseThenOpen)
     }
-    out.push({ key, title: x.t(KEY_IND_HEAD + key), rows, table: x.kind })
+    out.push({ key, title: x.t(KEY_IND_HEAD + key), rows })
   }
   return out
 }
@@ -2951,8 +2951,8 @@ function pulseRankOf(pulse: string): number {
 function toEmpCellRow(x: EmpCellRowIn): EmpCellRow {
   const r = x.r
   const cls = pillClsOf(cssOf(css.pillProv))
-  const nocs = empNocsOf({ r, aipOnly: x.aipOnly })
-  const open = empOpenCountOf({ r, aipOnly: x.aipOnly })
+  const nocs = empNocsOf({ r, pick: x.pick })
+  const open = empOpenCountOf({ r, pick: x.pick })
   const teer03 = teer03Of({ nocs, nocInfo: x.nocInfo })
   const key = r.name.toLowerCase()
   const designated = isDesignated({ r, extra: x.extra })
@@ -2962,7 +2962,7 @@ function toEmpCellRow(x: EmpCellRowIn): EmpCellRow {
     key: r.name,
     name: displayNameOf(r.name),
     alias: aliasOf({ r, lang: x.lang }),
-    jobsHref: empJobsHrefOf({ r, aipOnly: x.aipOnly }),
+    jobsHref: empJobsHrefOf({ r, pick: x.pick }),
     companyHref: URL_COMPANY_HEAD + r.slug,
     open,
     openText: numOf(open),
@@ -2991,43 +2991,58 @@ function toEmpCellRow(x: EmpCellRowIn): EmpCellRow {
 }
 
 /**
- * 表里用的 NOC 清单:AIP 表只列 AIP 岗(大西洋、TEER 0-4)的职业,其余表列全部在招岗的
- * (2026-09-05 Frank「现在看着只要去 tim hortons 打工就能走 AIP 稳拿 PR 一样」)。
+ * 表里用的 NOC 清单:试点表只列该试点岗(AIP = 大西洋、TEER 0-4;RCIP / FCIP = 社区内 + 指定雇主)的职业,
+ * 行业表列全部在招岗的(2026-09-05 Frank「现在看着只要去 tim hortons 打工就能走 AIP 稳拿 PR 一样」)。
  *
- * @param x 事实行与是否只按 AIP 岗取。
+ * @param x 事实行与试点键。
  * @returns NOC 清单。
  */
-function empNocsOf(x: AipPickIn): string[] {
-  if (x.aipOnly) {
+function empNocsOf(x: PilotPickIn): string[] {
+  if (x.pick === PILOT_KEY_AIP) {
     return x.r.nocsAip
+  }
+  if (x.pick === PILOT_KEY_RCIP) {
+    return x.r.nocsRcip
+  }
+  if (x.pick === PILOT_KEY_FCIP) {
+    return x.r.nocsFcip
   }
   return x.r.nocs
 }
 
 /**
- * 表里用的在招数:AIP 表只算 AIP 岗(排序也按它),其余表全国在招。
+ * 表里用的在招数:试点表只算该试点岗(排序也按它),行业表全国在招。
  *
- * @param x 事实行与是否只按 AIP 岗取。
+ * @param x 事实行与试点键。
  * @returns 在招数。
  */
-function empOpenCountOf(x: AipPickIn): number {
-  if (x.aipOnly) {
+function empOpenCountOf(x: PilotPickIn): number {
+  if (x.pick === PILOT_KEY_AIP) {
     return x.r.openJobsAip
+  }
+  if (x.pick === PILOT_KEY_RCIP) {
+    return x.r.openJobsRcip
+  }
+  if (x.pick === PILOT_KEY_FCIP) {
+    return x.r.openJobsFcip
   }
   return x.r.openJobs
 }
 
 /**
- * 「看岗位」链接:职位板按雇主名搜;AIP 表的行再带 AIP 筛选,点进去只见该雇主的 AIP 岗
- * (与表里「在招」同一个数,不再落到安省岗)。
+ * 「看岗位」链接:职位板按雇主名搜;AIP 表的行带 AIP 筛选(点进去与「在招」同数),RCIP / FCIP 表的行带
+ * 试点社区筛选(职位板没有按单个试点筛的参数,任一试点社区的岗都出),行业表全国搜。
  *
- * @param x 事实行与是否只按 AIP 岗取。
+ * @param x 事实行与试点键。
  * @returns 链接。
  */
-function empJobsHrefOf(x: AipPickIn): string {
+function empJobsHrefOf(x: PilotPickIn): string {
   const base = URL_HOME_Q_HEAD + encodeURIComponent(x.r.name)
-  if (x.aipOnly) {
+  if (x.pick === PILOT_KEY_AIP) {
     return base + URL_AIP_TAIL
+  }
+  if (x.pick === PILOT_KEY_RCIP || x.pick === PILOT_KEY_FCIP) {
+    return base + URL_PILOT_TAIL
   }
   return base
 }
@@ -3203,16 +3218,6 @@ export function empColsOf(x: EmpColsIn): StartCol<EmpCellRow>[] {
   const biz: StartCol<EmpCellRow> = { key: COL_BIZ, label: x.t('pulse.col.biz'), render: EmpBriefCell }
   const sector: StartCol<EmpCellRow> = {
     key: COL_SECTOR, label: x.t('pulse.col.sector'), nowrap: true, render: empSectorOf,
-  }
-  if (x.kind === TABLE_AIP) {
-    return [
-      name,
-      biz,
-      sector,
-      hiring,
-      open,
-      act,
-    ]
   }
   if (x.kind === TABLE_PILOT) {
     return [
@@ -3484,7 +3489,7 @@ function isDesignated(x: DesignatedIn): boolean {
 
 /**
  * 三试点指定雇主表(AIP 本地 / AIP 连锁 / RCIP / FCIP 四张,在招的;不分身份档不分行业,按在招降序;
- * AIP 两张在招只算 AIP 岗)。
+ * 每张在招只算该试点的岗)。
  *
  * @param x 三分表、分类映射、职业表与试点集合。
  * @returns 四张表(凑不出一行的不出)。
@@ -3499,7 +3504,7 @@ export function pilotSecsOf(x: PilotSecsIn): EmpSec[] {
         continue
       }
       cells.sort(byOpenDescEmp)
-      out.push({ key: part.key, title: x.t(KEY_PILOT_HEAD + part.key), rows: cells, table: part.table })
+      out.push({ key: part.key, title: x.t(KEY_PILOT_HEAD + part.key), rows: cells })
     }
   }
   return out
@@ -3514,11 +3519,11 @@ export function pilotSecsOf(x: PilotSecsIn): EmpSec[] {
 function pilotPartsOf(pilot: string): PilotPart[] {
   if (pilot === PILOT_KEY_AIP) {
     return [
-      { key: AIP_SEC_LOCAL, pilot, chain: false, table: TABLE_AIP },
-      { key: AIP_SEC_CHAIN, pilot, chain: true, table: TABLE_AIP },
+      { key: AIP_SEC_LOCAL, pilot, chain: false },
+      { key: AIP_SEC_CHAIN, pilot, chain: true },
     ]
   }
-  return [{ key: pilot, pilot, chain: null, table: TABLE_PILOT }]
+  return [{ key: pilot, pilot, chain: null }]
 }
 
 /**
@@ -3545,27 +3550,28 @@ function pilotCellsOf(x: PilotCellsIn): EmpCellRow[] {
       nocCat: x.x.nocCat,
       extra: x.x.extra,
       lang: x.x.lang,
-      aipOnly: x.part.chain != null,
+      pick: x.part.pilot,
     }))
   }
   return cells
 }
 
 /**
- * 这家雇主在不在该试点的指定名单上(AIP 看岗位事实,RCIP / FCIP 看名单交集)。
+ * 这家雇主进不进该试点的表:有没有该试点的在招岗(AIP 岗 / RCIP 岗 / FCIP 岗,全是岗级事实;
+ * 2026-09-06 起 RCIP / FCIP 不再按名单交集 —— 名单交集只说明雇主名在某社区名单上,
+ * 岗未必在那个社区,挂出来的在招数是全国数)。
  *
  * @param x 事实行、试点键与集合。
- * @returns 在不在。
+ * @returns 进不进。
  */
 function inPilotOf(x: InPilotIn): boolean {
-  const key = x.r.name.toLowerCase()
   if (x.pilot === PILOT_KEY_AIP) {
     return x.r.aip
   }
   if (x.pilot === PILOT_KEY_RCIP) {
-    return x.extra.rcip.has(key)
+    return x.r.openJobsRcip > 0
   }
-  return x.extra.fcip.has(key)
+  return x.r.openJobsFcip > 0
 }
 
 /**
