@@ -11,6 +11,7 @@
  * @time 2026-09-04 22:10:00
  */
 import { ID_SE, TABLE_PILOT } from './constants'
+import { subIdOf } from './functions'
 import { Band } from './band'
 import { EmpBoardSec } from './empboardsec'
 import { Sec } from './sec'
@@ -33,6 +34,7 @@ export function EmpSection({ t, updatedAt, secs, pilotSecs, kind, kindPickOf }: 
       items.push(
         <EmpBoardSec key={sec.key}
           t={t}
+          anchor={subIdOf({ band: ID_SE, key: sec.key })}
           sec={sec}
           kind={kind}
           kindPickOf={kindPickOf}
@@ -47,6 +49,7 @@ export function EmpSection({ t, updatedAt, secs, pilotSecs, kind, kindPickOf }: 
     items.push(
       <EmpBoardSec key={sec.key}
         t={t}
+        anchor={subIdOf({ band: ID_SE, key: sec.key })}
         sec={sec}
         kind={kind}
         kindPickOf={kindPickOf}

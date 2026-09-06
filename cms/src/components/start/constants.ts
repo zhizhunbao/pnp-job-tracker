@@ -90,6 +90,13 @@ export const ID_TREND = 'pl-trend'
 export const NAV_IDS = [ID_BOARDS, ID_SE, ID_PROV, ID_CITY, ID_TREND]
 
 /**
+ * 分表锚点 id 的连接符:分区 id + 连接符 + 分表键(pl-se-health / pl-boards-topOpen)。
+ * 2026-09-06 Frank「这个应该加子项,要不然手机端没法跳转」:二级导航按当前分区出一行子项,
+ * 职业 = 两榜 + 8 行业,雇主 = 8 行业 + 三试点,省份 = 概览 / 省内榜;城市、趋势没有分表不出。
+ */
+export const SUB_ID_SEP = '-'
+
+/**
  * 滚动跟随的判定线(px):当前分区 = 顶部粘条下沿以上最后一个分区标题。
  */
 export const NAV_TOP_LINE = 96

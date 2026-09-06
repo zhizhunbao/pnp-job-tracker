@@ -27,7 +27,7 @@ import {
   COL_SAL, COL_SPONSOR_RATE, COL_STUDY, COL_TEER, COL_WORK, DASH_MARK,
   DEAD_PROV_ORDER, DIFF_EASY, DIFF_MID, DIFF_ORDER, DIFF_TIGHT, EV_SCROLL,
   HOME_TTL_MS, INFO_IMP, INFO_PNP_PR, INFO_STUDY, INFO_TFWP,
-  ID_BOARDS, ID_PROV, ID_SE, KEY_DIFF_HEAD, KEY_PROV_HEAD,
+  ID_BOARDS, ID_PROV, ID_PROVOCC, ID_SE, KEY_DIFF_HEAD, KEY_PROV_HEAD,
   KEY_PR_HEAD, KEY_SEP, LABEL_NOC,
   LANG_EN, LANG_KO, LANG_ZH, MID_ALL, MOM_FLAT, NAT_MIN_OPEN, NAV_IDS, NAV_TOP_LINE,
   NOC_HEAD, NUM_LOCALE, PAREN_L, PAREN_R, PCT_MARK, PCT_SCALE,
@@ -50,7 +50,7 @@ import {
   SECTOR_FEDERAL, SECTOR_GOVERNMENT, SECTOR_PRIVATE, SECTOR_PUBLIC,
   COL_BIZ, PILOT_FCIP, PILOT_RCIP, KEY_PILOT_HEAD, PILOT_KEYS, PILOT_KEY_AIP, PILOT_KEY_RCIP, TABLE_PILOT,
   SPACE_SEP, ACRONYM_MAX, CORP_SUFFIXES, NON_LETTER_RE, BRIEF_TAG_RE, BRIEF_TAG_WHAT,
-  KEY_CHAIN, KEY_CHAIN_TIP, URL_AIP_TAIL, URL_PILOT_TAIL, PILOT_NONE, PILOT_KEY_FCIP,
+  KEY_CHAIN, KEY_CHAIN_TIP, URL_AIP_TAIL, URL_PILOT_TAIL, PILOT_NONE, PILOT_KEY_FCIP, SUB_ID_SEP,
 } from './constants'
 import { DeadCell } from './deadcell'
 import { EmpActCell } from './empactcell'
@@ -101,7 +101,7 @@ import type {
   EmptyQueryResult, PulseDraw, DrawDbRow, DrawHist, DrawHistIn, DrawsIn, PulseDrawIn, DrawCellRow, DrawCellRowIn,
   DrawCellRowsIn, DrawColsIn, DrawRowClsIn, DrawLang,
   TFn,
-  PilotPickIn, PilotCellsIn, ChainTextIn,
+  PilotPickIn, PilotCellsIn, ChainTextIn, NavSubItemsIn, SubIdIn,
 } from './types'
 import css from './start.module.css'
 
@@ -657,6 +657,73 @@ export function navItemsOf(x: NavItemsIn): NavItem[] {
     { id: ID_CITY, label: x.t('pulse.nav.city') },
     { id: ID_TREND, label: x.t('pulse.nav.trend') },
   ]
+}
+
+/**
+ * 二级导航当前分区的子项(2026-09-06 Frank「这个应该加子项,要不然手机端没法跳转」):
+ * 职业 = 两榜 + 8 行业;雇主 = 8 行业 + 三试点;省份 = 分省概览 / 省内职业榜;城市、趋势没有分表给空。
+ *
+ * @param x 取词函数与当前分区。
+ * @returns 子项清单(空 = 不出子项行)。
+ */
+export function navSubItemsOf(x: NavSubItemsIn): NavItem[] {
+  if (x.navSec === ID_BOARDS) {
+    return boardSubsOf(x.t)
+  }
+  if (x.navSec === ID_SE) {
+    return empSubsOf(x.t)
+  }
+  if (x.navSec === ID_PROV) {
+    return [
+      { id: ID_PROV, label: x.t('pulse.s4') },
+      { id: ID_PROVOCC, label: x.t('pulse.s4b') },
+    ]
+  }
+  return []
+}
+
+/**
+ * 职业段的子项:最多岗位、最高工资两榜 + 8 个行业表。
+ *
+ * @param t 取词函数。
+ * @returns 子项清单。
+ */
+function boardSubsOf(t: TFn): NavItem[] {
+  const out: NavItem[] = [
+    { id: subIdOf({ band: ID_BOARDS, key: SEC_TOP_OPEN }), label: t('pulse.top.open') },
+    { id: subIdOf({ band: ID_BOARDS, key: SEC_TOP_WAGE }), label: t('pulse.top.wage') },
+  ]
+  for (const key of IND_KEYS) {
+    out.push({ id: subIdOf({ band: ID_BOARDS, key }), label: t(KEY_IND_HEAD + key) })
+  }
+  return out
+}
+
+/**
+ * 雇主段的子项:8 个行业表 + AIP / RCIP / FCIP 三试点表(试点用制度名本身,三语同形)。
+ *
+ * @param t 取词函数。
+ * @returns 子项清单。
+ */
+function empSubsOf(t: TFn): NavItem[] {
+  const out: NavItem[] = []
+  for (const key of IND_KEYS) {
+    out.push({ id: subIdOf({ band: ID_SE, key }), label: t(KEY_IND_HEAD + key) })
+  }
+  for (const key of PILOT_KEYS) {
+    out.push({ id: subIdOf({ band: ID_SE, key }), label: key.toUpperCase() })
+  }
+  return out
+}
+
+/**
+ * 分表锚点 id:分区 id + 连接符 + 分表键(分表挂它,子项跳它)。
+ *
+ * @param x 分区 id 与分表键。
+ * @returns 锚点 id。
+ */
+export function subIdOf(x: SubIdIn): string {
+  return x.band + SUB_ID_SEP + x.key
 }
 
 /**

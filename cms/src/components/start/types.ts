@@ -1230,6 +1230,36 @@ export type NavItemsIn = {
 }
 
 /**
+ * `navSubItemsOf` 的入参。
+ */
+export type NavSubItemsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 当前所在分区的锚点 id;'' = 还没滚到任何分区。
+   */
+  navSec: string
+}
+
+/**
+ * `subIdOf` 的入参。
+ */
+export type SubIdIn = {
+  /**
+   * 分区 id(NAV_IDS 之一)。
+   */
+  band: string
+
+  /**
+   * 分表键(行业组键 / 试点键 / 两榜键)。
+   */
+  key: string
+}
+
+/**
  * `sponsorGapClsOf` / `boardGapClsOf` 的入参。
  */
 export type GapClsIn = {
@@ -1779,6 +1809,11 @@ export type OccBoardSecIn = {
    * 取词函数。
    */
   t: TFn
+
+  /**
+   * 这张表的锚点 id(二级导航子项跳到这里)。
+   */
+  anchor: string
 
   /**
    * 界面语言。
@@ -2554,6 +2589,11 @@ export type EmpBoardSecIn = {
    * 取词函数。
    */
   t: TFn
+
+  /**
+   * 这张表的锚点 id(二级导航子项跳到这里)。
+   */
+  anchor: string
 
   /**
    * 这张表。

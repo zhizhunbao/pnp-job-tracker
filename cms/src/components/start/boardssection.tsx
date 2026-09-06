@@ -11,6 +11,7 @@
 import { ID_BOARDS, PH_BOARDS } from './constants'
 import { Band } from './band'
 import { OccBoardSec } from './occboardsec'
+import { subIdOf } from './functions'
 import { Placeholder } from './placeholder'
 import { Sec } from './sec'
 import type { BoardsSectionIn } from './types'
@@ -33,6 +34,7 @@ export function BoardsSection({ t, lang, updatedAt, secs, nocProvs }: BoardsSect
         items.push(
           <OccBoardSec key={sec.key}
             t={t}
+            anchor={subIdOf({ band: ID_BOARDS, key: sec.key })}
             lang={lang}
             nocProvs={nocProvs}
             rows={sec.rows}

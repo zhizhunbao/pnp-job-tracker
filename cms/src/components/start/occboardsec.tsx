@@ -12,6 +12,7 @@ import { OccBoard } from './occboard'
 import { Updated } from '@/components/time'
 import { Sec } from './sec'
 import type { OccBoardSecIn } from './types'
+import css from './start.module.css'
 
 /**
  * 渲染一张职业分表。
@@ -19,12 +20,14 @@ import type { OccBoardSecIn } from './types'
  * @param props 候选行、子标题、间距与可提名省映射。
  * @returns 子标题 + 表。
  */
-export function OccBoardSec({ t, lang, nocProvs, rows, title, gap, updatedAt }: OccBoardSecIn) {
+export function OccBoardSec({ t, anchor, lang, nocProvs, rows, title, gap, updatedAt }: OccBoardSecIn) {
   return (
-    <div className={boardGapClsOf({ gap })}>
-      <Sec title={title} right={<Updated iso={updatedAt} t={t} />} sub>
-        <OccBoard rows={rows} t={t} lang={lang} nocProvs={nocProvs} />
-      </Sec>
+    <div id={anchor} className={css.subAnchor}>
+      <div className={boardGapClsOf({ gap })}>
+        <Sec title={title} right={<Updated iso={updatedAt} t={t} />} sub>
+          <OccBoard rows={rows} t={t} lang={lang} nocProvs={nocProvs} />
+        </Sec>
+      </div>
     </div>
   )
 }
