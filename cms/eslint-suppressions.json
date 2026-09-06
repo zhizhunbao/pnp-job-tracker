@@ -246,139 +246,6 @@
       "count": 1
     }
   },
-  "src/components/chat/ChatAnswer.tsx": {
-    "@stylistic/brace-style": {
-      "count": 12
-    },
-    "@stylistic/object-property-newline": {
-      "count": 7
-    },
-    "curly": {
-      "count": 6
-    },
-    "func-style": {
-      "count": 6
-    },
-    "local/component-file-names": {
-      "count": 1
-    },
-    "local/component-name-match": {
-      "count": 2
-    },
-    "local/doc-every-member": {
-      "count": 35
-    },
-    "local/doc-multiline": {
-      "count": 1
-    },
-    "local/file-header": {
-      "count": 1
-    },
-    "local/function-length": {
-      "count": 1
-    },
-    "local/jsdoc-comments-only": {
-      "count": 39
-    },
-    "local/no-arrow-function": {
-      "count": 18
-    },
-    "local/no-bang": {
-      "count": 11
-    },
-    "local/no-bare-strings": {
-      "count": 69
-    },
-    "local/no-comment-in-function": {
-      "count": 21
-    },
-    "local/no-literal-index": {
-      "count": 2
-    },
-    "local/no-nullish": {
-      "count": 3
-    },
-    "no-ternary": {
-      "count": 12
-    },
-    "react/forbid-dom-props": {
-      "count": 1
-    },
-    "react/forbid-elements": {
-      "count": 5
-    },
-    "react/no-multi-comp": {
-      "count": 1
-    }
-  },
-  "src/components/chat/ChatBox.tsx": {
-    "@stylistic/brace-style": {
-      "count": 40
-    },
-    "@stylistic/max-len": {
-      "count": 17
-    },
-    "@stylistic/object-property-newline": {
-      "count": 5
-    },
-    "curly": {
-      "count": 19
-    },
-    "func-style": {
-      "count": 6
-    },
-    "local/component-file-names": {
-      "count": 1
-    },
-    "local/component-name-match": {
-      "count": 1
-    },
-    "local/doc-every-member": {
-      "count": 18
-    },
-    "local/file-header": {
-      "count": 1
-    },
-    "local/function-length": {
-      "count": 1
-    },
-    "local/jsdoc-comments-only": {
-      "count": 75
-    },
-    "local/no-arrow-function": {
-      "count": 64
-    },
-    "local/no-bang": {
-      "count": 24
-    },
-    "local/no-bare-strings": {
-      "count": 176
-    },
-    "local/no-comment-in-function": {
-      "count": 49
-    },
-    "local/no-double-assertion": {
-      "count": 1
-    },
-    "local/no-nullish": {
-      "count": 8
-    },
-    "local/no-object-spread": {
-      "count": 4
-    },
-    "local/one-parameter": {
-      "count": 1
-    },
-    "no-ternary": {
-      "count": 39
-    },
-    "react/forbid-dom-props": {
-      "count": 5
-    },
-    "react/forbid-elements": {
-      "count": 8
-    }
-  },
   "src/components/chat/ChatLauncher.tsx": {
     "@stylistic/brace-style": {
       "count": 57
@@ -2052,21 +1919,6 @@
       "count": 4
     }
   },
-  "src/lib/consult/constants.ts": {
-    "local/no-import-in-leaf": {
-      "count": 2
-    }
-  },
-  "src/lib/consult/routes.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 1
-    }
-  },
-  "src/lib/consult/types.ts": {
-    "local/no-import-in-leaf": {
-      "count": 4
-    }
-  },
   "src/lib/employers/constants.ts": {
     "local/doc-every-export": {
       "count": 1
@@ -2172,7 +2024,7 @@
   },
   "src/lib/seo/functions.ts": {
     "local/typed-signature": {
-      "count": 5
+      "count": 3
     }
   },
   "src/lib/seo/types.ts": {
